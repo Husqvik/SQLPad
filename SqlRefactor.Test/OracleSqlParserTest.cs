@@ -19,9 +19,10 @@ namespace SqlRefactor.Test
 				var result = _oracleSqlParser.Parse(OracleTokenReader.Create(reader));
 				result.ShouldNotBe(null);
 
+				var i = 0;
 				foreach (var statement in result)
 				{
-					
+					Trace.WriteLine(++i + ". statement parse status: " + statement.ProcessingResult);
 				}
 			}
 		}
@@ -133,6 +134,17 @@ namespace SqlRefactor.Test
 			result = _oracleSqlParser.Parse(CreateTokenReader(sqlText));
 
 			result.Count.ShouldBe(0);
+
+			// TODO: Precise assertions
+		}
+
+		[Test(Description = @"Tests query. ")]
+		public void Test8()
+		{
+			const string sqlText = @"SELECT 1 FROM T1;SELECT 2 FROM T2";
+			var result = _oracleSqlParser.Parse(CreateTokenReader(sqlText));
+
+			result.Count.ShouldBe(2);
 
 			// TODO: Precise assertions
 		}

@@ -217,6 +217,16 @@ namespace SqlRefactor.Test
 			tokens.ShouldBe(new[] { "select", ".1e+1", "xfrom", "dual" });
 		}
 
+		[Test(Description = "Tests bind variable placeholders. "), Ignore]
+		public void Test26()
+		{
+			var tokens = GetTokenValuesFromOracleSql("select:1,:1 from dual");
+			tokens.ShouldBe(new[] { "select", ":1", ",", ":1", "from", "dual" });
+			
+			tokens = GetTokenValuesFromOracleSql("select:1,:1from dual");
+			tokens.ShouldBe(new[] { "select", ":1", ",", ":1from", "dual" });
+		}
+
 		private string[] GetTokenValuesFromOracleSql(string sqlText)
 		{
 			return GetTokensFromOracleSql(sqlText).Select(t => t.Value).ToArray();
