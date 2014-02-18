@@ -1,0 +1,150 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://husqvik.com/SqlRefactor/2014/02" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="SqlGrammar">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="StartSymbols">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element maxOccurs="unbounded" name="StartSymbol">
+                <xs:complexType>
+                  <xs:attribute name="Id" type="xs:string" use="required" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="Rules">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element maxOccurs="unbounded" name="Rule">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="Sequences">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element maxOccurs="unbounded" name="Sequence">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:choice maxOccurs="unbounded">
+                                  <xs:element name="Terminal">
+                                    <xs:complexType>
+                                      <xs:attribute name="Id" type="xs:string" use="required" />
+                                      <xs:attribute name="Comment" type="xs:string" use="optional" />
+                                      <xs:attribute name="IsOptional" type="xs:boolean" use="optional" />
+                                    </xs:complexType>
+                                  </xs:element>
+                                  <xs:element maxOccurs="unbounded" name="NonTerminal">
+                                    <xs:complexType>
+                                      <xs:attribute name="Id" type="xs:string" use="required" />
+                                      <xs:attribute name="IsOptional" type="xs:boolean" use="optional" />
+                                    </xs:complexType>
+                                  </xs:element>
+                                </xs:choice>
+                              </xs:sequence>
+                              <xs:attribute name="Comment" type="xs:string" use="optional" />
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                  <xs:attribute name="StartingNonTerminal" type="xs:string" use="required" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="Terminals">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element maxOccurs="unbounded" name="Terminal">
+                <xs:complexType>
+                  <xs:sequence minOccurs="0">
+                    <xs:element name="Synonyms">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element maxOccurs="unbounded" name="Synonym">
+                            <xs:complexType>
+                              <xs:attribute name="Id" type="xs:string" use="required" />
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                  <xs:attribute name="Id" type="xs:string" use="required" />
+                  <xs:attribute name="Value" type="xs:string" use="optional" />
+                  <xs:attribute name="IsKeyword" type="xs:boolean" use="optional" />
+                  <xs:attribute name="RegexValue" type="xs:string" use="optional" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="SqlBuildinFunctions">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element maxOccurs="unbounded" name="Function">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="Parameters">
+                      <xs:complexType mixed="true">
+                        <xs:sequence minOccurs="0">
+                          <xs:element maxOccurs="unbounded" name="Parameter">
+                            <xs:complexType>
+                              <xs:sequence minOccurs="0">
+                                <xs:element minOccurs="0" name="ParameterTypeReference">
+                                  <xs:complexType>
+                                    <xs:attribute name="Id" type="xs:string" use="required" />
+                                  </xs:complexType>
+                                </xs:element>
+                                <xs:element minOccurs="0" name="Types">
+                                  <xs:complexType>
+                                    <xs:sequence>
+                                      <xs:element maxOccurs="unbounded" name="Type">
+                                        <xs:complexType>
+                                          <xs:attribute name="Name" type="xs:string" use="required" />
+                                        </xs:complexType>
+                                      </xs:element>
+                                    </xs:sequence>
+                                  </xs:complexType>
+                                </xs:element>
+                              </xs:sequence>
+                              <xs:attribute name="Id" type="xs:string" use="optional" />
+                              <xs:attribute name="Liability" type="xs:string" use="required" />
+                              <xs:attribute name="AllowAsterisk" type="xs:boolean" use="optional" />
+                              <xs:attribute name="AllowDistinct" type="xs:boolean" use="optional" />
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                        <xs:attribute name="MinimumCount" type="xs:unsignedByte" use="optional" />
+                        <xs:attribute name="MaximumCount" type="xs:string" use="optional" />
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                  <xs:attribute name="Type" type="xs:string" use="required" />
+                  <xs:attribute name="Name" type="xs:string" use="required" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="DatabaseTypes">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element maxOccurs="unbounded" name="Type">
+                <xs:complexType>
+                  <xs:attribute name="Name" type="xs:string" use="required" />
+                  <xs:attribute name="IsKeyword" type="xs:boolean" use="optional" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <xs:attribute name="Dbms" type="xs:string" use="required" />
+      <xs:attribute name="Version" type="xs:string" use="required" />
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

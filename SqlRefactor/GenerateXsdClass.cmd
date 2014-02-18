@@ -1,0 +1,1 @@
+xsd OracleSqlGrammar.xsd /c /n:SqlRefactor
