@@ -10,7 +10,7 @@ namespace SqlRefactor
 	[DebuggerDisplay("OracleToken (Value={Value}, Index={Index})")]
 	public struct OracleToken
 	{
-		public static OracleToken EmptyToken = new OracleToken();
+		public static OracleToken Empty = new OracleToken();
 
 		public string Value { get; internal set; }
 		public int Index { get; internal set; }

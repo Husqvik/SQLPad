@@ -71,14 +71,6 @@ namespace SqlRefactor
 
 		private ICollection<OracleSql> Parse()
 		{
-			_tokenBuffer.Clear();
-			
-			/*var tokenEnumerator = GetTokens();
-			while (tokenEnumerator.MoveNext())
-			{
-				Trace.WriteLine(tokenEnumerator.Current);
-			}*/
-
 			ProceedGrammar();
 
 			return _oracleSqlCollection.AsReadOnly();
@@ -92,29 +84,32 @@ namespace SqlRefactor
 
 			var result = new ProcessingResult();
 
+			var isTokenAvailable = true;
+
 			do
 			{
+				_tokenBuffer.Clear();
+
+				if (isTokenAvailable = _tokenEnumerator.MoveNext())
+					_tokenBuffer.Add(_tokenEnumerator.Current);
+
 				var oracleSql = new OracleSql();
 
 				foreach (var nonTerminal in availableNonTerminals)
 				{
 					result = ProceedNonTerminal(nonTerminal, 0, 0);
-					
-					if (result.Value == NonTerminalProcessingResult.TerminatorDetected ||
-						result.Value == NonTerminalProcessingResult.Success ||
-						result.Value == NonTerminalProcessingResult.InputEnd)
+
+					if (result.Value == NonTerminalProcessingResult.Success)
+					{
 						break;
+					}
 				}
 
-				if (result.Value != NonTerminalProcessingResult.TerminatorDetected)
+				if (_tokenBuffer.Count > 0 && _tokenBuffer[_tokenBuffer.Count - 1].Value != ";")
 				{
-					bool isTokenAvailable;
 					while (isTokenAvailable = _tokenEnumerator.MoveNext())
 						if (_tokenEnumerator.Current.Value == ";")
 							break;
-
-					if (!isTokenAvailable)
-						result.Value = NonTerminalProcessingResult.InputEnd;
 				}
 
 				if (result.Tokens.Count > 0)
@@ -125,7 +120,7 @@ namespace SqlRefactor
 
 				oracleSql.ProcessingResult = result.Value;
 			}
-			while (result.Value != NonTerminalProcessingResult.InputEnd);
+			while (isTokenAvailable);
 		}
 
 		private ProcessingResult ProceedNonTerminal(string nonTerminal, int level, int tokenStartOffset)
@@ -139,9 +134,7 @@ namespace SqlRefactor
 
 			foreach (var sequence in _startingNonTerminalSequences[nonTerminal])
 			{
-				if (result.Value == NonTerminalProcessingResult.Success ||
-					result.Value == NonTerminalProcessingResult.TerminatorDetected ||
-					result.Value == NonTerminalProcessingResult.InputEnd)
+				if (result.Value == NonTerminalProcessingResult.Success)
 				{
 					break;
 				}
@@ -163,8 +156,7 @@ namespace SqlRefactor
 						}
 
 						if (result.Value == NonTerminalProcessingResult.SequenceNotFound ||
-							result.Value == NonTerminalProcessingResult.FailureStop ||
-							result.Value == NonTerminalProcessingResult.InputEnd)
+							result.Value == NonTerminalProcessingResult.FailureStop)
 							break;
 
 						if (nestedResult.Value == NonTerminalProcessingResult.Success && nestedResult.Tokens.Count > 0)
@@ -185,8 +177,8 @@ namespace SqlRefactor
 					{
 						var terminalReference = (SqlGrammarRuleSequenceTerminal)item;
 
-						bool tokenIsValid;
-						OracleToken currentToken;
+						var tokenIsValid = false;
+						var currentToken = OracleToken.Empty;
 						var newTokenFetched = false;
 
 						if (_tokenBuffer.Count > tokenOffset || (newTokenFetched = _tokenEnumerator.MoveNext()))
@@ -206,18 +198,7 @@ namespace SqlRefactor
 							else
 							{
 								tokenIsValid = terminal.Value == currentToken.Value.ToUpperInvariant();
-
-								if (tokenIsValid && terminal.Value == ";")
-								{
-									result.Value = NonTerminalProcessingResult.TerminatorDetected;
-									break;
-								}
 							}
-						}
-						else
-						{
-							result.Value = NonTerminalProcessingResult.InputEnd;
-							break;
 						}
 
 						if (!tokenIsValid)
@@ -237,12 +218,6 @@ namespace SqlRefactor
 						localTokenIndex++;
 						result.Value = NonTerminalProcessingResult.Success;
 					}
-
-					if (result.Value == NonTerminalProcessingResult.FailureStop ||
-						result.Value == NonTerminalProcessingResult.InputEnd ||
-						result.Value == NonTerminalProcessingResult.TerminatorDetected ||
-						result.Value == NonTerminalProcessingResult.InputEnd)
-						break;
 				}
 			}
 
@@ -266,8 +241,6 @@ namespace SqlRefactor
 		Start,
 		Success,
 		SequenceNotFound,
-		FailureStop,
-		InputEnd,
-		TerminatorDetected
+		FailureStop
 	}
 }
