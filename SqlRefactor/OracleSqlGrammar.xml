@@ -2,8 +2,8 @@
 <SqlGrammar xmlns="http://husqvik.com/SqlRefactor/2014/02"
             Dbms="Oracle" Version="12.1.0.1.0">
   <StartSymbols>
-    <StartSymbol Id="OracleQueryStarter" />
-    <StartSymbol Id="SubqueryFactoringClause" />
+    <StartSymbol Id="Query" />
+    <!--<StartSymbol Id="SubqueryFactoringClause" />-->
     <!--<StartSymbol Id="Insert" />
     <StartSymbol Id="Update" />
     <StartSymbol Id="Delete" />
@@ -15,9 +15,10 @@
     
   <Rules>
     <!-- Unify with with clause and query factoring into single starting non terminal -->
-    <Rule StartingNonTerminal="OracleQueryStarter">
+    <Rule StartingNonTerminal="Query">
       <Sequences>
         <Sequence>
+          <NonTerminal Id="SubqueryFactoringClause" IsOptional="true"/>
           <NonTerminal Id="Subquery" />
           <Terminal Id="Semicolon" IsOptional="true" />
         </Sequence>

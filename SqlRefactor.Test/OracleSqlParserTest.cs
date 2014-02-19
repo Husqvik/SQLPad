@@ -161,6 +161,18 @@ namespace SqlRefactor.Test
 			// TODO: Precise assertions
 		}
 
+		[Test(Description = @"Tests simple query with common table expression. ")]
+		public void Test10()
+		{
+			const string sqlText = @"with x as (select 1 from d) SELECT * FROM D;";
+			var result = _oracleSqlParser.Parse(CreateTokenReader(sqlText));
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+
+			// TODO: Precise assertions
+		}
+
 		private OracleTokenReader CreateTokenReader(string sqlText)
 		{
 			Trace.WriteLine("SQL text: " + sqlText);
