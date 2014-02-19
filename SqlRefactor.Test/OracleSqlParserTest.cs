@@ -149,6 +149,18 @@ namespace SqlRefactor.Test
 			// TODO: Precise assertions
 		}
 
+		[Test(Description = @"Tests query. ")]
+		public void Test9()
+		{
+			const string sqlText = @"SELECT 1 FROM DUAL,";
+			var result = _oracleSqlParser.Parse(CreateTokenReader(sqlText));
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.SequenceNotFound);
+
+			// TODO: Precise assertions
+		}
+
 		private OracleTokenReader CreateTokenReader(string sqlText)
 		{
 			Trace.WriteLine("SQL text: " + sqlText);

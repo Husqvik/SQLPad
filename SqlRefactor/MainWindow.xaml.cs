@@ -34,7 +34,7 @@ namespace SqlRefactor
 			//var oracleTokens = OracleTokenReader.Create(File.OpenText(@"D:\testSql.sql")).GetTokens().ToList();
 
 			//var tokenReader = OracleTokenReader.Create(File.OpenText(@"D:\testSql.sql"));
-			var sql = new OracleSqlParser().Parse(@"SELECT 1 FROM DUAL,");
+			//var sql = new OracleSqlParser().Parse(@"SELECT 1 FROM DUAL,");
 			//var sql = new OracleSqlParser().Parse(@"WITH 1 AS (");
 
 			Editor.TextArea.TextView.LineTransformers.Add(new ColorizeAvalonEdit());
@@ -54,7 +54,7 @@ namespace SqlRefactor
 		protected override void Colorize(ITextRunConstructionContext context)
 		{
 			var sqlCollection = _sqlParser.Parse(context.Document.Text);
-			var backgroundColor = sqlCollection.Count > 0 ? Colors.LightGreen : Colors.PaleVioletRed;
+			var backgroundColor = sqlCollection.Count > 0 && sqlCollection.First().ProcessingResult == NonTerminalProcessingResult.Success ? Colors.LightGreen : Colors.PaleVioletRed;
 
 			ChangeVisualElements(0, 80,
 				line =>

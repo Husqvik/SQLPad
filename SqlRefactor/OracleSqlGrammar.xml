@@ -618,7 +618,7 @@
     <Terminal Id="OperatorConcatenation" Value="||" />
     <Terminal Id="Dot" Value="." />
     <Terminal Id="Comma" Value="," />
-    <Terminal Id="Semicolon" Value="," />
+    <Terminal Id="Semicolon" Value=";" />
     <Terminal Id="Asterisk" Value="*" />
     <Terminal Id="At" Value="@" />
     <Terminal Id="Space" RegexValue="[:space:]+" />

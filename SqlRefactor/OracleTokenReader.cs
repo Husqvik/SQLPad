@@ -11,9 +11,22 @@ namespace SqlRefactor
 	public struct OracleToken
 	{
 		public static OracleToken Empty = new OracleToken();
+		private readonly string _value;
+		private readonly int _index;
 
-		public string Value { get; internal set; }
-		public int Index { get; internal set; }
+		public OracleToken(string value, int index)
+		{
+			_value = value;
+			_index = index;
+
+#if DEBUG
+			Trace.Write("{" + value + "@" + index + "}");
+#endif
+		}
+
+		public string Value { get { return _value; } }
+
+		public int Index { get { return _index; } }
 	}
 
 	public class OracleTokenReader : IDisposable
@@ -230,7 +243,7 @@ namespace SqlRefactor
 				{
 					var indexOffset = _builder.Length + (quotedIdentifierOrStringLiteralEnabled || isSingleCharacterSeparator ? 1 : 0);
 					if (TryNormalizeToken(out token))
-						yield return new OracleToken { Value = token, Index = _currentIndex - indexOffset };
+						yield return new OracleToken(token, _currentIndex - indexOffset);
 
 					_builder.Clear();
 					
@@ -241,7 +254,7 @@ namespace SqlRefactor
 					inExponentWithOperator = false;
 
 					if (isSingleCharacterSeparator)
-						yield return new OracleToken { Value = new String(character, 1), Index = _currentIndex - 1 };
+						yield return new OracleToken(new String(character, 1), _currentIndex - 1);
 
 					if (quotedIdentifierOrStringLiteralEnabled && !isSpace)
 						_builder.Append(character);
@@ -249,7 +262,9 @@ namespace SqlRefactor
 			}
 
 			if (TryNormalizeToken(out token))
-				yield return new OracleToken { Value = token, Index = _currentIndex - token.Length };
+				yield return new OracleToken(token, _currentIndex - token.Length);
+
+			Trace.WriteLine(null);
 		}
 
 		private void Initialize()

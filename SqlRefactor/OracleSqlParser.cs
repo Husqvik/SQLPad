@@ -17,7 +17,6 @@ namespace SqlRefactor
 		private static readonly XmlSerializer XmlSerializer = new XmlSerializer(typeof(SqlGrammar));
 		private readonly List<OracleSql> _oracleSqlCollection = new List<OracleSql>();
 		private readonly HashSet<string> _keywords;
-		private IEnumerator<OracleToken> _tokenEnumerator;
 		
 		private readonly List<OracleToken> _tokenBuffer = new List<OracleToken>();
 
@@ -31,17 +30,6 @@ namespace SqlRefactor
 			_startingNonTerminalSequences = _sqlGrammar.Rules.ToDictionary(r => r.StartingNonTerminal, r => r.Sequences);
 			_terminals = _sqlGrammar.Terminals.ToDictionary(t => t.Id, t => t);
 			_keywords = new HashSet<string>(_sqlGrammar.Terminals.Where(t => t.IsKeyword).Select(t => t.Value));
-
-			/*var hashSet = new HashSet<string>();
-			foreach (var x in _sqlGrammar.Terminals)
-			{
-				if (hashSet.Contains(x.Id))
-				{
-					
-				}
-
-				hashSet.Add(x.Id);
-			}*/
 		}
 
 		public ICollection<OracleSql> Parse(string sqlText)
@@ -57,20 +45,14 @@ namespace SqlRefactor
 			if (tokenReader == null)
 				throw new ArgumentNullException("tokenReader");
 
-			_tokenEnumerator = tokenReader.GetTokens().GetEnumerator();
-
-			return Parse();
+			return Parse(tokenReader.GetTokens());
 		}
 
 		public ICollection<OracleSql> Parse(IEnumerable<OracleToken> tokens)
 		{
-			_tokenEnumerator = tokens.GetEnumerator();
+			_tokenBuffer.Clear();
+			_tokenBuffer.AddRange(tokens);
 
-			return Parse();
-		}
-
-		private ICollection<OracleSql> Parse()
-		{
 			ProceedGrammar();
 
 			return _oracleSqlCollection.AsReadOnly();
@@ -84,32 +66,36 @@ namespace SqlRefactor
 
 			var result = new ProcessingResult();
 
-			var isTokenAvailable = true;
-
 			do
 			{
-				_tokenBuffer.Clear();
-
-				if (isTokenAvailable = _tokenEnumerator.MoveNext())
-					_tokenBuffer.Add(_tokenEnumerator.Current);
-
 				var oracleSql = new OracleSql();
 
 				foreach (var nonTerminal in availableNonTerminals)
 				{
 					result = ProceedNonTerminal(nonTerminal, 0, 0);
 
-					if (result.Value == NonTerminalProcessingResult.Success)
-					{
-						break;
-					}
+					if (result.Value != NonTerminalProcessingResult.Success)
+						continue;
+					
+					var lastTerminal = result.Terminals.Last();
+					_tokenBuffer.RemoveRange(0, result.TerminalCount);
+					if (lastTerminal.Value.Value != ";" && _tokenBuffer.Count > 0)
+						result.Value = NonTerminalProcessingResult.SequenceNotFound;
+
+					break;
 				}
 
-				if (_tokenBuffer.Count > 0 && _tokenBuffer[_tokenBuffer.Count - 1].Value != ";")
+				if (result.Value != NonTerminalProcessingResult.Success)
 				{
-					while (isTokenAvailable = _tokenEnumerator.MoveNext())
-						if (_tokenEnumerator.Current.Value == ";")
-							break;
+					var index = _tokenBuffer.FindIndex(t => t.Value == ";");
+					if (index == -1)
+					{
+						_tokenBuffer.Clear();
+					}
+					else
+					{
+						_tokenBuffer.RemoveRange(0, index + 1);
+					}
 				}
 
 				if (result.Tokens.Count > 0)
@@ -120,7 +106,7 @@ namespace SqlRefactor
 
 				oracleSql.ProcessingResult = result.Value;
 			}
-			while (isTokenAvailable);
+			while (_tokenBuffer.Count > 0);
 		}
 
 		private ProcessingResult ProceedNonTerminal(string nonTerminal, int level, int tokenStartOffset)
@@ -155,10 +141,6 @@ namespace SqlRefactor
 							result.Value = nestedResult.Value;
 						}
 
-						if (result.Value == NonTerminalProcessingResult.SequenceNotFound ||
-							result.Value == NonTerminalProcessingResult.FailureStop)
-							break;
-
 						if (nestedResult.Value == NonTerminalProcessingResult.Success && nestedResult.Tokens.Count > 0)
 						{
 							localTokenIndex += nestedResult.TerminalCount;
@@ -172,6 +154,10 @@ namespace SqlRefactor
 
 							tokens.Add(nestedNode);
 						}
+
+						if (result.Value == NonTerminalProcessingResult.SequenceNotFound ||
+						    result.Value == NonTerminalProcessingResult.FailureStop)
+							break;
 					}
 					else
 					{
@@ -179,15 +165,9 @@ namespace SqlRefactor
 
 						var tokenIsValid = false;
 						var currentToken = OracleToken.Empty;
-						var newTokenFetched = false;
 
-						if (_tokenBuffer.Count > tokenOffset || (newTokenFetched = _tokenEnumerator.MoveNext()))
+						if (_tokenBuffer.Count > tokenOffset)
 						{
-							if (newTokenFetched)
-							{
-								_tokenBuffer.Add(_tokenEnumerator.Current);
-							}
-
 							currentToken = _tokenBuffer[tokenOffset];
 
 							var terminal = _terminals[terminalReference.Id];
@@ -225,10 +205,21 @@ namespace SqlRefactor
 		}
 	}
 
+	[DebuggerDisplay("ProcessingResult (Value={Value}, TerminalCount={TerminalCount})")]
 	public struct ProcessingResult
 	{
 		public NonTerminalProcessingResult Value { get; set; }
 		public ICollection<SqlDescriptionNode> Tokens { get; set; }
+
+		public IEnumerable<SqlDescriptionNode> Terminals
+		{
+			get
+			{
+				return Tokens == null
+					? Enumerable.Empty<SqlDescriptionNode>()
+					: Tokens.SelectMany(t => t.Terminals);
+			}
+		} 
 
 		public int TerminalCount
 		{
