@@ -14,12 +14,12 @@
   </StartSymbols>
     
   <Rules>
-    <!-- Unify with with clause and query factoring into single starting non terminal -->
     <Rule StartingNonTerminal="Query">
       <Sequences>
         <Sequence>
           <NonTerminal Id="SubqueryFactoringClause" IsOptional="true"/>
           <NonTerminal Id="Subquery" />
+          <NonTerminal Id="ForUpdateClause" IsOptional="true" />
           <Terminal Id="Semicolon" IsOptional="true" />
         </Sequence>
       </Sequences>
@@ -594,6 +594,50 @@
         </Sequence>
       </Sequences>
     </Rule>
+
+    <Rule StartingNonTerminal="ForUpdateClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="For" />
+          <Terminal Id="Update" />
+          <!--<NonTerminal Id="ForUpdateOfColumnsClause" IsOptional="true" />-->
+          <NonTerminal Id="ForUpdateLockingClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ForUpdateOfColumnsClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Of" />
+          <!--<NonTerminal Id="ColumnList" />--><!--TODO-->
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ForUpdateLockingClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Skip" />
+          <Terminal Id="Locked" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ForUpdateWaitClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ForUpdateWaitClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Nowait" />
+        </Sequence>
+        <!--<Sequence>
+          <Terminal Id="Wait" />
+          <Terminal Id="Integer" />
+        </Sequence>-->
+      </Sequences>
+    </Rule>
   </Rules>
       
   <Terminals>
@@ -652,6 +696,13 @@
     <Terminal Id="SetMinus" Value="MINUS" IsKeyword="true" />
     <Terminal Id="Intersect" Value="INTERSECT" IsKeyword="true" />
     <Terminal Id="Select" Value="SELECT" IsKeyword="true" />
+    <Terminal Id="For" Value="FOR" IsKeyword="true" />
+    <Terminal Id="Update" Value="UPDATE" IsKeyword="true" />
+    <Terminal Id="Nowait" Value="NOWAIT" IsKeyword="true" />
+    <Terminal Id="Wait" Value="WAIT" />
+    <Terminal Id="Skip" Value="SKIP" />
+    <Terminal Id="Locked" Value="LOCKED" />
+    <Terminal Id="Of" Value="OF" IsKeyword="true" />
     <Terminal Id="Distinct" Value="DISTINCT" IsKeyword="true">
       <Synonyms>
         <Synonym Id="Unique" />
