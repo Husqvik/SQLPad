@@ -533,15 +533,12 @@
       <Sequences>
         <Sequence>
           <NonTerminal Id="QueryBlock" />
+          <NonTerminal Id="ConcatenatedSubquery" IsOptional="true" />
         </Sequence>
         <Sequence>
           <Terminal Id="LeftParent" />
           <NonTerminal Id="Subquery" />
           <Terminal Id="RightParent" />
-        </Sequence>
-        <Sequence>
-          <NonTerminal Id="QueryBlock" />
-          <NonTerminal Id="ConcatenatedSubquery" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -562,14 +559,11 @@
           <Terminal Id="Intersect" />
         </Sequence>
         <Sequence>
-          <Terminal Id="Minus" />
+          <Terminal Id="SetMinus" />
         </Sequence>
         <Sequence>
           <Terminal Id="Union" />
-        </Sequence>
-        <Sequence>
-          <Terminal Id="Union" />
-          <Terminal Id="All" />
+          <Terminal Id="All" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
