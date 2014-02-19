@@ -37,10 +37,6 @@ namespace SqlRefactor
 		private readonly HashSet<char> _singleCharacterTerminals =
 			new HashSet<char> { '(', ')', ',', ';', '.', '/', '+', '-', '*', ';', '@' };
 
-		private bool _inString;
-		private bool _inLineComment;
-		private bool _inBlockComment;
-		private bool _inQuotedIdentifier;
 		private int _currentIndex;
 
 		private OracleTokenReader(TextReader sqlReader)
@@ -70,8 +66,13 @@ namespace SqlRefactor
 
 		public IEnumerable<OracleToken> GetTokens(bool includeCommentBlocks = false)
 		{
-			Initialize();
+			_builder.Clear();
+			_currentIndex = 0;
 
+			var inString = false;
+			var inLineComment = false;
+			var inBlockComment = false;
+			var inQuotedIdentifier = false;
 			var yieldToken = false;
 			var inNumber = false;
 			var inDecimalNumber = false;
@@ -86,63 +87,63 @@ namespace SqlRefactor
 				var quotedIdentifierOrStringLiteralEnabled = false;
 
 				var isSpace = character == ' ' || character == '\t' || character == '\n' || character == '\r';
-				if (!_inBlockComment && !_inLineComment)
+				if (!inBlockComment && !inLineComment)
 				{
-					if (isSpace && !_inString && !_inQuotedIdentifier)
+					if (isSpace && !inString && !inQuotedIdentifier)
 					{
 						yieldToken = true;
 					}
 
 					if (character == '"')
 					{
-						if (!_inQuotedIdentifier)
+						if (!inQuotedIdentifier)
 						{
 							quotedIdentifierOrStringLiteralEnabled = true;
 						}
 
-						_inQuotedIdentifier = !_inQuotedIdentifier;
-						yieldToken |= !_inQuotedIdentifier;
+						inQuotedIdentifier = !inQuotedIdentifier;
+						yieldToken |= !inQuotedIdentifier;
 					}
-					else if (character == '\'' && !_inQuotedIdentifier)
+					else if (character == '\'' && !inQuotedIdentifier)
 					{
 						var nextCharacter = (char)_sqlReader.Read();
-						if (nextCharacter != '\'' || !_inString)
+						if (nextCharacter != '\'' || !inString)
 						{
-							if (!_inString &&
+							if (!inString &&
 								!(_builder.Length == 1 && new[] { 'Q', 'N' }.Any(c => c == _builder.ToString(0, 1).ToUpperInvariant()[0]) ||
 								  _builder.Length == 2 && _builder.ToString(0, 2).ToUpperInvariant() == "NQ"))
 							{
 								quotedIdentifierOrStringLiteralEnabled = true;
 							}
 
-							_inString = !_inString;
-							yieldToken |= !_inString;
+							inString = !inString;
+							yieldToken |= !inString;
 						}
 
 						_buffer.Enqueue(nextCharacter);
 					}
 				}
 
-				if (!_inString && !_inQuotedIdentifier && (_inBlockComment || _inLineComment))
+				if (!inString && !inQuotedIdentifier && (inBlockComment || inLineComment))
 				{
 					var nextCharacterCode = _sqlReader.Read();
 					if (nextCharacterCode == -1)
 						continue;
 
 					var nextCharacter = (char)nextCharacterCode;
-					if (_inLineComment &&
+					if (inLineComment &&
 						character == Environment.NewLine[0] &&
 						(Environment.NewLine.Length == 1 || nextCharacter == Environment.NewLine[1]))
 					{
-						_inLineComment = false;
+						inLineComment = false;
 					}
 
-					if (_inBlockComment && character == '*' && nextCharacter == '/')
+					if (inBlockComment && character == '*' && nextCharacter == '/')
 					{
-						_inBlockComment = false;
+						inBlockComment = false;
 					}
 
-					if (!_inLineComment && !_inBlockComment)
+					if (!inLineComment && !inBlockComment)
 					{
 						_currentIndex++;
 						continue;
@@ -151,17 +152,17 @@ namespace SqlRefactor
 					_buffer.Enqueue(nextCharacter);
 				}
 
-				if (!_inString && !_inQuotedIdentifier && !_inBlockComment && !_inLineComment && (character == '-' || character == '/'))
+				if (!inString && !inQuotedIdentifier && !inBlockComment && !inLineComment && (character == '-' || character == '/'))
 				{
 					var nextCharacterCode = _sqlReader.Read();
 					var nextCharacter = (char)nextCharacterCode;
-					if (character == '-' && nextCharacter == '-' && !_inLineComment)
-						_inLineComment = true;
+					if (character == '-' && nextCharacter == '-' && !inLineComment)
+						inLineComment = true;
 
-					if (character == '/' && nextCharacter == '*' && !_inBlockComment)
-						_inBlockComment = true;
+					if (character == '/' && nextCharacter == '*' && !inBlockComment)
+						inBlockComment = true;
 
-					if (_inLineComment || _inBlockComment)
+					if (inLineComment || inBlockComment)
 					{
 						_currentIndex++;
 						yieldToken = true;
@@ -170,10 +171,13 @@ namespace SqlRefactor
 						_buffer.Enqueue(nextCharacter);
 				}
 
-				var isSingleCharacterSeparator = _singleCharacterTerminals.Contains(character) && !_inString && !_inQuotedIdentifier && !_inLineComment && !_inBlockComment;
+				var isSingleCharacterSeparator = _singleCharacterTerminals.Contains(character) && !inString && !inQuotedIdentifier && !inLineComment && !inBlockComment;
 
-				if (!_inString && !_inQuotedIdentifier && !_inBlockComment && !_inLineComment)
+				if (!inString && !inQuotedIdentifier && !inBlockComment && !inLineComment)
 				{
+					if (characterCode == ':')
+						;
+
 					if (characterCode >= 48 && characterCode <= 57)
 					{
 						if (_builder.Length == 0 || (_builder.Length == 1 && _builder[0] == '.'))
@@ -236,7 +240,7 @@ namespace SqlRefactor
 
 				yieldToken |= isSingleCharacterSeparator;
 
-				if (!isSingleCharacterSeparator && !_inLineComment && !_inBlockComment && !quotedIdentifierOrStringLiteralEnabled)
+				if (!isSingleCharacterSeparator && !inLineComment && !inBlockComment && !quotedIdentifierOrStringLiteralEnabled)
 					_builder.Append(character);
 
 				if (yieldToken || quotedIdentifierOrStringLiteralEnabled)
@@ -265,16 +269,6 @@ namespace SqlRefactor
 				yield return new OracleToken(token, _currentIndex - token.Length);
 
 			Trace.WriteLine(null);
-		}
-
-		private void Initialize()
-		{
-			_builder.Clear();
-			_currentIndex = 0;
-			_inLineComment = false;
-			_inBlockComment = false;
-			_inQuotedIdentifier = false;
-			_inString = false;
 		}
 
 		private int GetNextCharacterCode()
