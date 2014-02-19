@@ -132,10 +132,10 @@
       <Sequences>
         <Sequence>
           <Terminal Id="As" />
-          <Terminal Id="Identifier" />
+          <Terminal Id="Alias" />
         </Sequence>
         <Sequence>
-          <Terminal Id="Identifier" />
+          <Terminal Id="Alias" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -428,7 +428,7 @@
     <Rule StartingNonTerminal="TableAlias">
       <Sequences>
         <Sequence>
-          <Terminal Id="Identifier" />
+          <Terminal Id="Alias" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -680,6 +680,7 @@
     <Terminal Id="RowNumberPseudoColumn" Value="ROWNUM" IsKeyword="true" />
     <Terminal Id="RowIdPseudoColumn" Value="ROWID" IsKeyword="true" />
     <Terminal Id="Identifier" RegexValue="^((&quot;[^&quot;]{1,28}&quot;)|([a-zA-Z][\w\d]{0,29}))$" />
+    <Terminal Id="Alias" RegexValue="^((&quot;[^&quot;]{1,28}&quot;)|([a-zA-Z][\w\d]{0,29}))$" />
     <Terminal Id="StringLiteral" RegexValue="(&apos;([^&apos;]|(&apos;&apos;))*&apos;)$" /> <!--TODO: Add quoted literal option -->
     <Terminal Id="NumberLiteral" RegexValue="^((\d+\.?\d*)|(\d*\.?\d+))([eE][+-]?\d+)?[fFdD]?$" />
   </Terminals>

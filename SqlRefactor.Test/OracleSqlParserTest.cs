@@ -59,7 +59,7 @@ namespace SqlRefactor.Test
 			terminals[0].Id.ShouldBe("Select");
 			terminals[1].Id.ShouldBe("Null");
 			terminals[2].Id.ShouldBe("As");
-			terminals[3].Id.ShouldBe("Identifier");
+			terminals[3].Id.ShouldBe("Alias");
 			terminals[3].Value.Value.ShouldBe("\">=;+Alias/*--^\"");
 			terminals[4].Id.ShouldBe("Comma");
 			terminals[5].Id.ShouldBe("Identifier");
