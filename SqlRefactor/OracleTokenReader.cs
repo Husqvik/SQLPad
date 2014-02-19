@@ -73,18 +73,22 @@ namespace SqlRefactor
 			var inLineComment = false;
 			var inBlockComment = false;
 			var inQuotedIdentifier = false;
-			var yieldToken = false;
 			var inNumber = false;
 			var inDecimalNumber = false;
 			var inExponent = false;
 			var inExponentWithOperator = false;
+			var yieldToken = false;
+			var currentIndexOffset = 0;
 			string token;
 
 			int characterCode;
 			while ((characterCode = GetNextCharacterCode()) != -1)
 			{
+				_currentIndex += currentIndexOffset;
+				currentIndexOffset = 0;
+
 				var character = (char)characterCode;
-				var quotedIdentifierOrStringLiteralEnabled = false;
+				var quotedIdentifierOrLiteralOrBindVariableEnabled = false;
 
 				var isSpace = character == ' ' || character == '\t' || character == '\n' || character == '\r';
 				if (!inBlockComment && !inLineComment)
@@ -96,9 +100,9 @@ namespace SqlRefactor
 
 					if (character == '"')
 					{
-						if (!inQuotedIdentifier)
+						if (!inQuotedIdentifier && (_builder.Length != 1 || _builder[0] != ':'))
 						{
-							quotedIdentifierOrStringLiteralEnabled = true;
+							quotedIdentifierOrLiteralOrBindVariableEnabled = true;
 						}
 
 						inQuotedIdentifier = !inQuotedIdentifier;
@@ -113,7 +117,7 @@ namespace SqlRefactor
 								!(_builder.Length == 1 && new[] { 'Q', 'N' }.Any(c => c == _builder.ToString(0, 1).ToUpperInvariant()[0]) ||
 								  _builder.Length == 2 && _builder.ToString(0, 2).ToUpperInvariant() == "NQ"))
 							{
-								quotedIdentifierOrStringLiteralEnabled = true;
+								quotedIdentifierOrLiteralOrBindVariableEnabled = true;
 							}
 
 							inString = !inString;
@@ -145,7 +149,7 @@ namespace SqlRefactor
 
 					if (!inLineComment && !inBlockComment)
 					{
-						_currentIndex++;
+						currentIndexOffset = 1;
 						continue;
 					}
 
@@ -164,7 +168,7 @@ namespace SqlRefactor
 
 					if (inLineComment || inBlockComment)
 					{
-						_currentIndex++;
+						currentIndexOffset = 1;
 						yieldToken = true;
 					}
 					else if (nextCharacterCode != -1)
@@ -175,9 +179,6 @@ namespace SqlRefactor
 
 				if (!inString && !inQuotedIdentifier && !inBlockComment && !inLineComment)
 				{
-					if (characterCode == ':')
-						;
-
 					if (characterCode >= 48 && characterCode <= 57)
 					{
 						if (_builder.Length == 0 || (_builder.Length == 1 && _builder[0] == '.'))
@@ -187,6 +188,12 @@ namespace SqlRefactor
 					{
 						var nextCharacterCode = _sqlReader.Read();
 						var nextCharacter = (char)nextCharacterCode;
+
+						if (characterCode == ':' && _builder.Length > 0)
+						{
+							yieldToken = true;
+							quotedIdentifierOrLiteralOrBindVariableEnabled = true;
+						}
 
 						if (characterCode == '.' && (inNumber || _builder.Length == 0) && !inDecimalNumber)
 						{
@@ -209,7 +216,7 @@ namespace SqlRefactor
 							if ((character != 'd' && character != 'D' && character != 'f' && character != 'F') || previousCharacterCode == 'f' || previousCharacterCode == 'F' || previousCharacterCode == 'd' || previousCharacterCode == 'D')
 							{
 								inNumber = false;
-								quotedIdentifierOrStringLiteralEnabled = true;
+								quotedIdentifierOrLiteralOrBindVariableEnabled = true;
 							}
 						}
 
@@ -217,7 +224,7 @@ namespace SqlRefactor
 						{
 							if (nextCharacterCode != -1 && nextCharacterCode >= 48 && nextCharacterCode <= 57)
 							{
-								quotedIdentifierOrStringLiteralEnabled = true;
+								quotedIdentifierOrLiteralOrBindVariableEnabled = true;
 								isSingleCharacterSeparator = false;
 							}
 						}
@@ -232,7 +239,7 @@ namespace SqlRefactor
 
 						if (_builder.Length == 1 && _builder[0] != '<' && _builder[0] != '>' && _builder[0] != '^')
 						{
-							quotedIdentifierOrStringLiteralEnabled = false;
+							quotedIdentifierOrLiteralOrBindVariableEnabled = false;
 							isSingleCharacterSeparator = true;
 						}
 					}
@@ -240,12 +247,12 @@ namespace SqlRefactor
 
 				yieldToken |= isSingleCharacterSeparator;
 
-				if (!isSingleCharacterSeparator && !inLineComment && !inBlockComment && !quotedIdentifierOrStringLiteralEnabled)
+				if (!isSingleCharacterSeparator && !inLineComment && !inBlockComment && !quotedIdentifierOrLiteralOrBindVariableEnabled)
 					_builder.Append(character);
 
-				if (yieldToken || quotedIdentifierOrStringLiteralEnabled)
+				if (yieldToken || quotedIdentifierOrLiteralOrBindVariableEnabled)
 				{
-					var indexOffset = _builder.Length + (quotedIdentifierOrStringLiteralEnabled || isSingleCharacterSeparator ? 1 : 0);
+					var indexOffset = _builder.Length + (quotedIdentifierOrLiteralOrBindVariableEnabled || isSingleCharacterSeparator || inLineComment || inBlockComment ? 1 : 0);
 					if (TryNormalizeToken(out token))
 						yield return new OracleToken(token, _currentIndex - indexOffset);
 
@@ -260,7 +267,7 @@ namespace SqlRefactor
 					if (isSingleCharacterSeparator)
 						yield return new OracleToken(new String(character, 1), _currentIndex - 1);
 
-					if (quotedIdentifierOrStringLiteralEnabled && !isSpace)
+					if (quotedIdentifierOrLiteralOrBindVariableEnabled && !isSpace)
 						_builder.Append(character);
 				}
 			}
