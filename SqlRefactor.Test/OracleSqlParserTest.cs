@@ -173,7 +173,7 @@ namespace SqlRefactor.Test
 			// TODO: Precise assertions
 		}
 
-		[Test(Description = @"Tests simple query with IN and BETWEEN cluases. ")]
+		[Test(Description = @"Tests simple query with IN and BETWEEN clauses. ")]
 		public void Test11()
 		{
 			const string sqlText = @"SELECT 1 FROM DUAL WHERE 1 IN (1, 2, 3) AND 4 NOT IN (5, 6, 7) AND (8 + 0) BETWEEN (0 * 0) AND (9 - 0);";
@@ -181,6 +181,38 @@ namespace SqlRefactor.Test
 
 			result.Count.ShouldBe(1);
 			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+
+			// TODO: Precise assertions
+		}
+
+		[Test(Description = @"Tests simple queries connected by set operations. ")]
+		public void Test12()
+		{
+			const string sqlText = @"select 1 from dual union all select 1 from dual union select 1 from dual minus select 1 from dual intersect select 1 from dual";
+			var result = _oracleSqlParser.Parse(CreateTokenReader(sqlText));
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+
+			// TODO: Precise assertions
+		}
+
+		[Test(Description = @"Tests simple queries with group by and having clauses. ")]
+		public void Test13()
+		{
+			const string query1 = @"select 1 from dual group by 1 having 1 = 1";
+			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+
+			// TODO: Precise assertions
+
+			const string query2 = @"select 1 from dual having 1 = 1";
+			result = _oracleSqlParser.Parse(CreateTokenReader(query2));
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.SequenceNotFound);
 
 			// TODO: Precise assertions
 		}

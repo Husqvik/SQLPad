@@ -34,10 +34,9 @@
           <Terminal Id="From" />
           <NonTerminal Id="FromClause" />
           <NonTerminal Id="WhereClause" IsOptional="true" />
-          <!--<NonTerminal Id="HierarchicalQueryClause" />
-          <NonTerminal Id="GroupByClause" />
-          <NonTerminal Id="HavingClause" />
-          <NonTerminal Id="ModelClause" />-->
+          <!--<NonTerminal Id="HierarchicalQueryClause" IsOptional="true" />-->
+          <NonTerminal Id="GroupByClause" IsOptional="true" />
+          <!--<NonTerminal Id="ModelClause" IsOptional="true" />-->
           <!-- TODO -->
         </Sequence>
       </Sequences>
@@ -62,7 +61,7 @@
         <Sequence Comment="*">
           <Terminal Id="Asterisk" />
         </Sequence>
-        <Sequence>
+        <Sequence Comment="(Schema.)Object.*">
           <Terminal Id="Identifier" Comment="Query name" />
           <Terminal Id="Dot" />
           <NonTerminal Id="SelectListSchemaItem" IsOptional="true" />
@@ -130,13 +129,10 @@
       </Sequences>
     </Rule>
     
-    <Rule StartingNonTerminal="ColumnAlias"> <!--Could be inlined with optional terminal -->
+    <Rule StartingNonTerminal="ColumnAlias">
       <Sequences>
         <Sequence>
-          <Terminal Id="As" />
-          <Terminal Id="Alias" />
-        </Sequence>
-        <Sequence>
+          <Terminal Id="As" IsOptional="true" />
           <Terminal Id="Alias" />
         </Sequence>
       </Sequences>
@@ -534,6 +530,7 @@
         <Sequence>
           <NonTerminal Id="QueryBlock" />
           <NonTerminal Id="ConcatenatedSubquery" IsOptional="true" />
+          <!--<NonTerminal Id="OrderByClause" />-->
         </Sequence>
         <Sequence>
           <Terminal Id="LeftParent" />
@@ -572,6 +569,27 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Where" />
+          <NonTerminal Id="Condition" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="GroupByClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Group" />
+          <Terminal Id="By" />
+          <NonTerminal Id="Expression" />
+          <!-- TODO: Add CUBE, ROLLUP and GROUPING SETs -->
+          <NonTerminal Id="HavingClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="HavingClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Having" />
           <NonTerminal Id="Condition" />
         </Sequence>
       </Sequences>
@@ -645,7 +663,9 @@
       </Synonyms>
     </Terminal>
     <Terminal Id="From" Value="FROM" IsKeyword="true" />
-    <Terminal Id="Having" Value="HAVING"  IsKeyword="true"/>
+    <Terminal Id="Having" Value="HAVING" IsKeyword="true"/>
+    <Terminal Id="Group" Value="GROUP" IsKeyword="true"/>
+    <Terminal Id="By" Value="BY" IsKeyword="true"/>
     <Terminal Id="Case" Value="CASE" />
     <Terminal Id="When" Value="WHEN" />
     <Terminal Id="Then" Value="THEN" IsKeyword="true" />
