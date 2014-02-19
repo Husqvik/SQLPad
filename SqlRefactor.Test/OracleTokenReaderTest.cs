@@ -235,6 +235,17 @@ namespace SqlRefactor.Test
 			tokenIndexes.ShouldBe(new[] { 0, 6, 8, 9, 13, 14, 21 });
 		}
 
+		[Test(Description = "Tests IN clause and not equals operators. ")]
+		public void Test27()
+		{
+			const string testQuery = "select 1 from dual where 1 in (1, 2, 3) and 4 not in (5, 6, 7) and 8 != 9";
+			var tokens = GetTokenValuesFromOracleSql(testQuery);
+			tokens.ShouldBe(new[] { "select", "1", "from", "dual", "where", "1", "in", "(", "1", ",", "2", ",", "3", ")", "and", "4", "not", "in", "(", "5", ",", "6", ",", "7", ")", "and", "8", "!=", "9" });
+
+			var tokenIndexes = GetTokenIndexesFromOracleSql(testQuery);
+			tokenIndexes.ShouldBe(new[] { 0, 7, 9, 14, 19, 25, 27, 30, 31, 32, 34, 35, 37, 38, 40, 44, 46, 50, 53, 54, 55, 57, 58, 60, 61, 63, 67, 69, 72 });
+		}
+
 		private string[] GetTokenValuesFromOracleSql(string sqlText)
 		{
 			return GetTokensFromOracleSql(sqlText).Select(t => t.Value).ToArray();

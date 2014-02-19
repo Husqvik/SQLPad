@@ -107,6 +107,7 @@
         <Sequence>
           <Terminal Id="Comma" />
           <NonTerminal Id="Expression" />
+          <NonTerminal Id="ExpressionCommaChainedList" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>

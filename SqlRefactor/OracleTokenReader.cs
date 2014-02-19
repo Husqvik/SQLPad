@@ -237,7 +237,7 @@ namespace SqlRefactor
 					{
 						yieldToken = true;
 
-						if (_builder.Length == 1 && _builder[0] != '<' && _builder[0] != '>' && _builder[0] != '^')
+						if (_builder.Length == 1 && _builder[0] != '<' && _builder[0] != '>' && _builder[0] != '^' && _builder[0] != '!')
 						{
 							quotedIdentifierOrLiteralOrBindVariableEnabled = false;
 							isSingleCharacterSeparator = true;

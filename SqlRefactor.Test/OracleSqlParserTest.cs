@@ -173,6 +173,18 @@ namespace SqlRefactor.Test
 			// TODO: Precise assertions
 		}
 
+		[Test(Description = @"Tests simple query with IN and BETWEEN cluases. ")]
+		public void Test11()
+		{
+			const string sqlText = @"SELECT 1 FROM DUAL WHERE 1 IN (1, 2, 3) AND 4 NOT IN (5, 6, 7) AND (8 + 0) BETWEEN (0 * 0) AND (9 - 0);";
+			var result = _oracleSqlParser.Parse(CreateTokenReader(sqlText));
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+
+			// TODO: Precise assertions
+		}
+
 		private OracleTokenReader CreateTokenReader(string sqlText)
 		{
 			Trace.WriteLine("SQL text: " + sqlText);

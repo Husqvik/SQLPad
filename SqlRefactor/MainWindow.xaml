@@ -11,6 +11,6 @@
         <avalonedit:TextEditor x:Name="Editor" FontFamily="Consolas" ShowLineNumbers="True" TextChanged="EditorTextChangedHandler">
             
         </avalonedit:TextEditor>
-        <TextBlock Grid.Row="1" x:Name="TextBlockToken" />
+        <TextBlock Grid.Row="1" x:Name="TextBlockToken" TextWrapping="WrapWithOverflow" />
     </Grid>
 </Window>

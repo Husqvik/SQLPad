@@ -56,7 +56,7 @@ namespace SqlRefactor
 			var sqlCollection = _sqlParser.Parse(context.Document.Text);
 			var backgroundColor = sqlCollection.Count > 0 && sqlCollection.First().ProcessingResult == NonTerminalProcessingResult.Success ? Colors.LightGreen : Colors.PaleVioletRed;
 
-			ChangeVisualElements(0, 80,
+			ChangeVisualElements(0, context.VisualLine.VisualLength,
 				line =>
 				{
 					line.BackgroundBrush = new SolidColorBrush(backgroundColor);
