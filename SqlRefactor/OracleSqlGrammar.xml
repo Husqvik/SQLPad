@@ -466,9 +466,15 @@
           <NonTerminal Id="FromClauseChained" IsOptional="true" />
         </Sequence>
         
+        <!--<Sequence>
+          <NonTerminal Id="TableReference" />
+          <NonTerminal Id="JoinClause" IsOptional="true" />
+          <NonTerminal Id="FromClauseChained" IsOptional="true" />
+        </Sequence>-->
         <Sequence>
           <NonTerminal Id="TableReference" />
           <Terminal Id="Alias" IsOptional="true" />
+          <NonTerminal Id="JoinClause" IsOptional="true" />
           <NonTerminal Id="FromClauseChained" IsOptional="true" />
         </Sequence>
         <!-- TODO -->
@@ -793,6 +799,112 @@
         </Sequence>
       </Sequences>
     </Rule>
+  
+    <!-- JOIN syntax -->
+    <Rule StartingNonTerminal="JoinClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="InnerJoinClause" />
+          <NonTerminal Id="JoinClause" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="OuterJoinClause" />
+          <NonTerminal Id="JoinClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+      
+    <Rule StartingNonTerminal="InnerJoinClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Inner" IsOptional="true" />
+          <Terminal Id="Join" />
+          <NonTerminal Id="TableReference" />
+          <NonTerminal Id="JoinColumnsOrCondition" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Cross" />
+          <Terminal Id="Join" />
+          <NonTerminal Id="TableReference" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Natural" />
+          <Terminal Id="Inner" IsOptional="true" />
+          <Terminal Id="Join" />
+          <NonTerminal Id="TableReference" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="JoinColumnsOrCondition">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="On" />
+          <NonTerminal Id="Condition" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Using" />
+          <Terminal Id="LeftParenthesis" />
+          <Terminal Id="Identifier" />
+          <NonTerminal Id="ColumnChainedList" IsOptional="true" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ColumnChainedList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <Terminal Id="Identifier" />
+          <NonTerminal Id="ColumnChainedList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+  
+    <Rule StartingNonTerminal="OuterJoinClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="OuterJoinPartitionClause" IsOptional="true" />
+          <Terminal Id="Natural" />
+          <NonTerminal Id="OuterJoinType" />
+          <Terminal Id="Outer" IsOptional="true" />
+          <Terminal Id="Join" />
+          <NonTerminal Id="TableReference" />
+          <NonTerminal Id="OuterJoinPartitionClause" IsOptional="true" />
+          <NonTerminal Id="JoinColumnsOrCondition" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="OuterJoinPartitionClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Partition" />
+          <Terminal Id="By" />
+          <NonTerminal Id="ParenthesisEnclosedExpressionList" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Partition" />
+          <Terminal Id="By" />
+          <NonTerminal Id="ExpressionList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="OuterJoinType">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Full" />
+        </Sequence>
+        <Sequence>
+           <Terminal Id="Left" />
+        </Sequence>
+        <Sequence>
+           <Terminal Id="Right" />
+        </Sequence>
+      </Sequences>
+    </Rule>
   </Rules>
       
   <Terminals>
@@ -897,6 +1009,8 @@
     <Terminal Id="Pivot" Value="PIVOT" />
     <Terminal Id="Unpivot" Value="UNPIVOT" />
     <Terminal Id="Xml" Value="XML" />
+    <Terminal Id="Partition" Value="PARTITION" />
+    <Terminal Id="Subpartition" Value="SUBPARTITION" />
     <Terminal Id="Table" Value="TABLE" IsKeyword="true" />
     <Terminal Id="Connect" Value="CONNECT" IsKeyword="true" />
     <Terminal Id="Start" Value="START" IsKeyword="true" />
@@ -910,12 +1024,24 @@
     <Terminal Id="NumberLiteral" RegexValue="^((\d+\.?\d*)|(\d*\.?\d+))([eE][+-]?\d+)?[fFdD]?$" />
     <Terminal Id="IntegerLiteral" RegexValue="^\d+([eE]((\+?\d+)|(-0)))?$" />
     
-    <!--Flashback-->
+    <!-- Flashback -->
     <Terminal Id="Versions" Value="VERSIONS" />
     <Terminal Id="SystemChangeNumber" Value="SCN" />
     <Terminal Id="Timestamp" Value="TIMESTAMP" />
     <Terminal Id="MinimumValue" Value="MINVALUE" />
     <Terminal Id="MaximumValue" Value="MAXVALUE" />
+  
+    <!-- Joim -->
+    <Terminal Id="Join" Value="JOIN" />
+    <Terminal Id="Left" Value="LEFT" />
+    <Terminal Id="Right" Value="RIGHT" />
+    <Terminal Id="Full" Value="FULL" />
+    <Terminal Id="Inner" Value="INNER" />
+    <Terminal Id="Outer" Value="OUTER" />
+    <Terminal Id="Natural" Value="NATURAL" />
+    <Terminal Id="Cross" Value="CROSS" />
+    <Terminal Id="Using" Value="USING" />
+    <Terminal Id="On" Value="ON" IsKeyword="true" />
   </Terminals>
   
   <SqlBuildinFunctions>
