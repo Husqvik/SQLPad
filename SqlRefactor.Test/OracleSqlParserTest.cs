@@ -336,6 +336,16 @@ namespace SqlRefactor.Test
 			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
 		}
 
+		[Test(Description = @"Tests LIKE clause. ")]
+		public void Test21()
+		{
+			const string query1 = @"SELECT CASE WHEN 'abc' LIKE 'a%' THEN 'true' END FROM DUAL WHERE 'def' LIKE 'd%'";
+			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+		}
+
 		private OracleTokenReader CreateTokenReader(string sqlText)
 		{
 			Trace.WriteLine("SQL text: " + sqlText);

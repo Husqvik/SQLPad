@@ -258,7 +258,7 @@
         </Sequence>
         <Sequence>
           <NonTerminal Id="Expression" />
-          <NonTerminal Id="RelationalOperator" />
+          <NonTerminal Id="RelationalOperatorOrLike" />
           <NonTerminal Id="Expression" />
           <NonTerminal Id="ChainedCondition" IsOptional="true" />
         </Sequence>
@@ -325,6 +325,17 @@
       </Sequences>
     </Rule>
     
+    <Rule StartingNonTerminal="RelationalOperatorOrLike">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="RelationalOperator" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Like" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
     <Rule StartingNonTerminal="RelationalOperator">
       <Sequences>
         <Sequence>
@@ -350,9 +361,6 @@
         </Sequence>
         <Sequence>
           <Terminal Id="MathLessThanOrEquals" />
-        </Sequence>
-        <Sequence>
-          <Terminal Id="Like" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -585,6 +593,20 @@
         <Sequence>
           <Terminal Id="Union" />
           <Terminal Id="All" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="SetQualifier">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Any" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Some" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="All" />
         </Sequence>
       </Sequences>
     </Rule>

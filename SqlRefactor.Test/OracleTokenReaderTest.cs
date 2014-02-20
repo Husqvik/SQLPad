@@ -246,6 +246,17 @@ namespace SqlRefactor.Test
 			tokenIndexes.ShouldBe(new[] { 0, 7, 9, 14, 19, 25, 27, 30, 31, 32, 34, 35, 37, 38, 40, 44, 46, 50, 53, 54, 55, 57, 58, 60, 61, 63, 67, 69, 72 });
 		}
 
+		[Test(Description = "Tests string literal as the last token. ")]
+		public void Test28()
+		{
+			const string testQuery = "SELECT 1 FROM DUAL WHERE 'def' LIKE 'd'";
+			var tokens = GetTokenValuesFromOracleSql(testQuery);
+			tokens.ShouldBe(new[] { "SELECT", "1", "FROM", "DUAL", "WHERE", "'def'", "LIKE", "'d'" });
+
+			var tokenIndexes = GetTokenIndexesFromOracleSql(testQuery);
+			tokenIndexes.ShouldBe(new[] { 0, 7, 9, 14, 19, 25, 31, 36 });
+		}
+
 		private string[] GetTokenValuesFromOracleSql(string sqlText)
 		{
 			return GetTokensFromOracleSql(sqlText).Select(t => t.Value).ToArray();

@@ -110,7 +110,8 @@ namespace SqlRefactor
 					}
 					else if (character == '\'' && !inQuotedIdentifier)
 					{
-						var nextCharacter = (char)_sqlReader.Read();
+						var nextCharacterCode = _sqlReader.Read();
+						var nextCharacter = (char)nextCharacterCode;
 						if (nextCharacter != '\'' || !inString)
 						{
 							if (!inString &&
@@ -124,7 +125,8 @@ namespace SqlRefactor
 							yieldToken |= !inString;
 						}
 
-						_buffer.Enqueue(nextCharacter);
+						if (nextCharacterCode != -1)
+							_buffer.Enqueue(nextCharacter);
 					}
 				}
 
