@@ -161,9 +161,9 @@
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
-          <Terminal Id="LeftParent" />
+          <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="Expression" />
-          <Terminal Id="RightParent" />
+          <Terminal Id="RightParenthesis" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
@@ -228,9 +228,16 @@
     <Rule StartingNonTerminal="Condition">
       <Sequences>
         <Sequence>
-          <Terminal Id="LeftParent" />
+          <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="Condition" />
-          <Terminal Id="RightParent" />
+          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="ChainedCondition" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Exists" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="Subquery" />
+          <Terminal Id="RightParenthesis" />
           <NonTerminal Id="ChainedCondition" IsOptional="true" />
         </Sequence>
         <Sequence>
@@ -255,10 +262,10 @@
           <NonTerminal Id="Expression" />
           <Terminal Id="Not" IsOptional="true" />
           <Terminal Id="In" />
-          <Terminal Id="LeftParent" />
+          <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="Expression" />
           <NonTerminal Id="ExpressionCommaChainedList" IsOptional="true" />
-          <Terminal Id="RightParent" />
+          <Terminal Id="RightParenthesis" />
           <NonTerminal Id="ChainedCondition" IsOptional="true" />
         </Sequence>
         <Sequence>
@@ -395,10 +402,10 @@
         
         <!-- Really not sure about this -->
         <Sequence>
-          <Terminal Id="LeftParent" />
+          <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="QueryTableExpression" />
           <NonTerminal Id="TableAlias" IsOptional="true" />
-          <Terminal Id="RightParent" />
+          <Terminal Id="RightParenthesis" />
           <NonTerminal Id="FromClauseChained" IsOptional="true" />
         </Sequence>
         
@@ -424,9 +431,9 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Only" />
-          <Terminal Id="LeftParent" />
+          <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="QueryTableExpression" />
-          <Terminal Id="RightParent" />
+          <Terminal Id="RightParenthesis" />
           <!--<NonTerminal Id="FlashbackQueryClause" IsOptional="true" />-->
         </Sequence>
         <Sequence>
@@ -453,9 +460,9 @@
           <NonTerminal Id="PartitionOrDatabaseLink" IsOptional="true" />
         </Sequence>
         <!--<Sequence>
-          <Terminal Id="LeftParent" />
+          <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="SubQuery" />
-          <Terminal Id="RightParent" />
+          <Terminal Id="RightParenthesis" />
         </Sequence>-->
         <Sequence>
           <NonTerminal Id="TableCollectionExpression" />
@@ -467,9 +474,9 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Table" />
-          <Terminal Id="LeftParent" />
+          <Terminal Id="LeftParenthesis" />
            <!--TODO--><!--<NonTerminal Id="CollectionExpression" />-->
-          <Terminal Id="RightParent" />
+          <Terminal Id="RightParenthesis" />
           <NonTerminal Id="OuterJoinOld" IsOptional="true" />
         </Sequence>
       </Sequences>
@@ -478,9 +485,9 @@
     <Rule StartingNonTerminal="OuterJoinOld">
       <Sequences>
         <Sequence>
-          <Terminal Id="LeftParent" />
+          <Terminal Id="LeftParenthesis" />
           <Terminal Id="MathPlus" />
-          <Terminal Id="RightParent" />
+          <Terminal Id="RightParenthesis" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -522,9 +529,9 @@
         <Sequence>
           <Terminal Id="Identifier" />
           <Terminal Id="As" />
-          <Terminal Id="LeftParent" />
+          <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="Subquery" />
-          <Terminal Id="RightParent" />
+          <Terminal Id="RightParenthesis" />
           <NonTerminal Id="SubqueryComponentChained" IsOptional="true" />
         </Sequence>
       </Sequences>
@@ -547,9 +554,9 @@
           <!--<NonTerminal Id="OrderByClause" />-->
         </Sequence>
         <Sequence>
-          <Terminal Id="LeftParent" />
+          <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="Subquery" />
-          <Terminal Id="RightParent" />
+          <Terminal Id="RightParenthesis" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -658,8 +665,8 @@
     <Terminal Id="With" Value="WITH" IsKeyword="true" />
     <Terminal Id="As" Value="AS" />
     <Terminal Id="Is" Value="IS" IsKeyword="true" />
-    <Terminal Id="LeftParent" Value="(" />
-    <Terminal Id="RightParent" Value=")" />
+    <Terminal Id="LeftParenthesis" Value="(" />
+    <Terminal Id="RightParenthesis" Value=")" />
     <Terminal Id="MathPlus" Value="+" />
     <Terminal Id="MathMinus" Value="-" />
     <Terminal Id="MathFactor" Value="*" />

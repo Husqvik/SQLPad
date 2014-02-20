@@ -306,6 +306,16 @@ namespace SqlRefactor.Test
 			result.Last().TokenCollection.Single().TerminalCount.ShouldBe(4);
 		}
 
+		[Test(Description = @"Tests EXISTS and NOT EXISTS. ")]
+		public void Test18()
+		{
+			const string query1 = @"select case when not exists (select 1 from dual) then 'false' else 'true' end from dual where exists (select 1 from dual) and exists (select 2 from dual)";
+			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+		}
+
 		private OracleTokenReader CreateTokenReader(string sqlText)
 		{
 			Trace.WriteLine("SQL text: " + sqlText);
