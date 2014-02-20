@@ -3,7 +3,6 @@
             Dbms="Oracle" Version="12.1.0.1.0">
   <StartSymbols>
     <StartSymbol Id="Query" />
-    <!--<StartSymbol Id="SubqueryFactoringClause" />-->
     <!--<StartSymbol Id="Insert" />
     <StartSymbol Id="Update" />
     <StartSymbol Id="Delete" />
@@ -105,6 +104,14 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Comma" />
+          <NonTerminal Id="ExpressionList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ExpressionList">
+      <Sequences>
+        <Sequence>
           <NonTerminal Id="Expression" />
           <NonTerminal Id="ExpressionCommaChainedList" IsOptional="true" />
         </Sequence>
@@ -115,8 +122,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="LeftParenthesis" />
-          <NonTerminal Id="Expression" />
-          <NonTerminal Id="ExpressionCommaChainedList" IsOptional="true" />
+          <NonTerminal Id="ExpressionList" />
           <Terminal Id="RightParenthesis" />
         </Sequence>
       </Sequences>
@@ -274,8 +280,7 @@
           <Terminal Id="Not" IsOptional="true" />
           <Terminal Id="In" />
           <Terminal Id="LeftParenthesis" />
-          <NonTerminal Id="Expression" />
-          <NonTerminal Id="ExpressionCommaChainedList" IsOptional="true" />
+          <NonTerminal Id="ExpressionListOrSubquery" />
           <Terminal Id="RightParenthesis" />
           <NonTerminal Id="ChainedCondition" IsOptional="true" />
         </Sequence>
@@ -288,6 +293,17 @@
           <NonTerminal Id="ChainedCondition" IsOptional="true" />
         </Sequence>
         <!--TODO Add set conditions -->
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ExpressionListOrSubquery">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ExpressionList" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="Subquery" />
+        </Sequence>
       </Sequences>
     </Rule>
     
