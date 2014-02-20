@@ -632,10 +632,10 @@
         <Sequence>
           <Terminal Id="Nowait" />
         </Sequence>
-        <!--<Sequence>
+        <Sequence>
           <Terminal Id="Wait" />
-          <Terminal Id="Integer" />
-        </Sequence>-->
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
       </Sequences>
     </Rule>
   </Rules>
@@ -750,6 +750,7 @@
     <Terminal Id="Alias" RegexValue="^((&quot;[^&quot;]{1,28}&quot;)|([a-zA-Z][\w\d]{0,29}))$" />
     <Terminal Id="StringLiteral" RegexValue="(&apos;([^&apos;]|(&apos;&apos;))*&apos;)$" /> <!--TODO: Add quoted literal option -->
     <Terminal Id="NumberLiteral" RegexValue="^((\d+\.?\d*)|(\d*\.?\d+))([eE][+-]?\d+)?[fFdD]?$" />
+    <Terminal Id="IntegerLiteral" RegexValue="^\d+([eE]((\+?\d+)|(-0)))?$" />
   </Terminals>
   
   <SqlBuildinFunctions>

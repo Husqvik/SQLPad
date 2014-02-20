@@ -235,6 +235,22 @@ namespace SqlRefactor.Test
 			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
 
 			// TODO: Precise assertions
+
+			const string query3 = @"select 1 from dual alias for update wait 10e-0";
+			result = _oracleSqlParser.Parse(CreateTokenReader(query3));
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+
+			// TODO: Precise assertions
+
+			const string query4 = @"select 1 from dual alias for update wait -1";
+			result = _oracleSqlParser.Parse(CreateTokenReader(query4));
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.SequenceNotFound);
+
+			// TODO: Precise assertions
 		}
 
 		private OracleTokenReader CreateTokenReader(string sqlText)
