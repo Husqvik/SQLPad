@@ -346,6 +346,16 @@ namespace SqlRefactor.Test
 			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
 		}
 
+		[Test(Description = @"Tests IN clause with subquery. ")]
+		public void Test22()
+		{
+			const string query1 = @"select 1 from dual where 1 not in (with xxx as (select 1 from dual) select 1 from dual dd) and exists (with xxx as (select 1 from dual) select 1 from dual dd)";
+			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+		}
+
 		private OracleTokenReader CreateTokenReader(string sqlText)
 		{
 			Trace.WriteLine("SQL text: " + sqlText);

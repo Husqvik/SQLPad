@@ -16,10 +16,18 @@
     <Rule StartingNonTerminal="Query">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="SubqueryFactoringClause" IsOptional="true"/>
-          <NonTerminal Id="Subquery" />
+          <NonTerminal Id="NestedQuery" />
           <NonTerminal Id="ForUpdateClause" IsOptional="true" />
           <Terminal Id="Semicolon" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="NestedQuery">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="SubqueryFactoringClause" IsOptional="true"/>
+          <NonTerminal Id="Subquery" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -253,7 +261,7 @@
         <Sequence>
           <Terminal Id="Exists" />
           <Terminal Id="LeftParenthesis" />
-          <NonTerminal Id="Subquery" />
+          <NonTerminal Id="NestedQuery" />
           <Terminal Id="RightParenthesis" />
           <NonTerminal Id="ChainedCondition" IsOptional="true" />
         </Sequence>
@@ -280,7 +288,7 @@
           <Terminal Id="Not" IsOptional="true" />
           <Terminal Id="In" />
           <Terminal Id="LeftParenthesis" />
-          <NonTerminal Id="ExpressionListOrSubquery" />
+          <NonTerminal Id="ExpressionListOrNestedQuery" />
           <Terminal Id="RightParenthesis" />
           <NonTerminal Id="ChainedCondition" IsOptional="true" />
         </Sequence>
@@ -296,13 +304,13 @@
       </Sequences>
     </Rule>
 
-    <Rule StartingNonTerminal="ExpressionListOrSubquery">
+    <Rule StartingNonTerminal="ExpressionListOrNestedQuery">
       <Sequences>
         <Sequence>
           <NonTerminal Id="ExpressionList" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="Subquery" />
+          <NonTerminal Id="NestedQuery" />
         </Sequence>
       </Sequences>
     </Rule>
