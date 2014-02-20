@@ -253,6 +253,26 @@ namespace SqlRefactor.Test
 			// TODO: Precise assertions
 		}
 
+		[Test(Description = @"Tests simple queries with IS (NOT) <terminal> conditions. ")]
+		public void Test15()
+		{
+			const string query1 = @"select 1 from dual where null is null and 1 is not null";
+			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+
+			// TODO: Precise assertions
+
+			const string query2 = @"select 'a' NaN, 'b' AS INFINITE from dual where 1 is not NaN and 1 is not infinite";
+			result = _oracleSqlParser.Parse(CreateTokenReader(query2));
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+
+			// TODO: Precise assertions
+		}
+
 		private OracleTokenReader CreateTokenReader(string sqlText)
 		{
 			Trace.WriteLine("SQL text: " + sqlText);

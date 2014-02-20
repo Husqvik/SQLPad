@@ -248,7 +248,7 @@
           <NonTerminal Id="Expression" />
           <Terminal Id="Is" />
           <Terminal Id="Not" IsOptional="true" />
-          <Terminal Id="Null" />
+          <NonTerminal Id="NullNaNOrInfinite" />
           <NonTerminal Id="ChainedCondition" IsOptional="true" />
         </Sequence>
         <Sequence>
@@ -270,6 +270,20 @@
           <NonTerminal Id="ChainedCondition" IsOptional="true" />
         </Sequence>
         <!--TODO Add set conditions -->
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="NullNaNOrInfinite">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Null" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="MathNotANumber" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="MathInfinite" />
+        </Sequence>
       </Sequences>
     </Rule>
 
@@ -673,6 +687,8 @@
     <Terminal Id="MathGreatherThanOrEquals" Value="&gt;=" />
     <Terminal Id="MathLessThan" Value="&lt;" />
     <Terminal Id="MathLessThanOrEquals" Value="&lt;=" />
+    <Terminal Id="MathNotANumber" Value="NAN" />
+    <Terminal Id="MathInfinite" Value="INFINITE" />
     <Terminal Id="OperatorConcatenation" Value="||" />
     <Terminal Id="Dot" Value="." />
     <Terminal Id="Comma" Value="," />
