@@ -257,6 +257,17 @@ namespace SqlRefactor.Test
 			tokenIndexes.ShouldBe(new[] { 0, 7, 9, 14, 19, 25, 31, 36 });
 		}
 
+		[Test(Description = "Tests ANSI DATE and TIMESTAMP literals. ")]
+		public void Test29()
+		{
+			const string testQuery = "SELECT DATE'2014-20-02', DATE		'2014-20-02', TIMESTAMP '2014-20-02 12:34:56.789' FROM DUAL";
+			var tokens = GetTokenValuesFromOracleSql(testQuery);
+			tokens.ShouldBe(new[] { "SELECT", "DATE", "'2014-20-02'", ",", "DATE", "'2014-20-02'", ",", "TIMESTAMP", "'2014-20-02 12:34:56.789'", "FROM", "DUAL" });
+
+			var tokenIndexes = GetTokenIndexesFromOracleSql(testQuery);
+			tokenIndexes.ShouldBe(new[] { 0, 7, 11, 23, 25, 31, 43, 45, 55, 81, 86 });
+		}
+
 		private string[] GetTokenValuesFromOracleSql(string sqlText)
 		{
 			return GetTokensFromOracleSql(sqlText).Select(t => t.Value).ToArray();

@@ -324,6 +324,12 @@ namespace SqlRefactor.Test
 
 			result.Count.ShouldBe(1);
 			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+
+			const string query2 = @"SELECT * FROM T1 VERSIONS BETWEEN TIMESTAMP TIMESTAMP'2014-02-20 00:00:00' AND DATE'2014-02-20'";
+			result = _oracleSqlParser.Parse(CreateTokenReader(query2));
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
 		}
 
 		[Test(Description = @"Tests chained asterisk clause. ")]

@@ -206,6 +206,10 @@
           <NonTerminal Id="Expression" />
         </Sequence>
         <Sequence>
+          <Terminal Id="Timestamp" />
+          <Terminal Id="StringLiteral" />
+        </Sequence>
+        <Sequence>
           <Terminal Id="Identifier" />
           <Terminal Id="Dot" />
           <NonTerminal Id="SelectListSchemaItem" IsOptional="true" />
@@ -215,6 +219,10 @@
         <Sequence>
           <NonTerminal Id="ColumnReference" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Date" />
+          <Terminal Id="StringLiteral" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -719,7 +727,19 @@
     <Rule StartingNonTerminal="FlashbackQueryClause">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="FlashbackVersionsClause" IsOptional="true" />
+          <!-- Find out why parsing doesn't work when all the non-terminals are optional -->
+          <NonTerminal Id="FlashbackVersionsClause" />
+          <NonTerminal Id="FlashbackAsOfClause" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="FlashbackAsOfClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="FlashbackAsOfClause">
+      <Sequences>
+        <Sequence>
           <Terminal Id="As" />
           <Terminal Id="Of" />
           <NonTerminal Id="SystemChangeNumberOrTimestamp" />
@@ -869,6 +889,7 @@
     <Terminal Id="Where" Value="WHERE" IsKeyword="true" />
     <Terminal Id="Like" Value="LIKE" IsKeyword="true" />
     <Terminal Id="Between" Value="BETWEEN" IsKeyword="true" />
+    <Terminal Id="Date" Value="DATE" IsKeyword="true" />
     <Terminal Id="Over" Value="OVER" />
     <Terminal Id="Only" Value="ONLY" />
     <Terminal Id="Include" Value="INCLUDE" />
