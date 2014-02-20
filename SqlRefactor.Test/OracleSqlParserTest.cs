@@ -316,6 +316,16 @@ namespace SqlRefactor.Test
 			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
 		}
 
+		[Test(Description = @"Tests flashback clauses. ")]
+		public void Test19()
+		{
+			const string query1 = @"SELECT 1 FROM T1 VERSIONS BETWEEN SCN MINVALUE AND MAXVALUE AS OF SCN 123";
+			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+		}
+
 		private OracleTokenReader CreateTokenReader(string sqlText)
 		{
 			Trace.WriteLine("SQL text: " + sqlText);

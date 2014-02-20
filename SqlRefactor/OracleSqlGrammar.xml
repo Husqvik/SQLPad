@@ -110,6 +110,17 @@
         </Sequence>
       </Sequences>
     </Rule>
+    
+    <Rule StartingNonTerminal="ParenthesisEnclosedExpressionList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="Expression" />
+          <NonTerminal Id="ExpressionCommaChainedList" IsOptional="true" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
 
     <Rule StartingNonTerminal="ExpressionMathOperatorChainedList">
       <Sequences>
@@ -404,14 +415,14 @@
         <Sequence>
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="QueryTableExpression" />
-          <NonTerminal Id="TableAlias" IsOptional="true" />
+          <Terminal Id="Alias" IsOptional="true" />
           <Terminal Id="RightParenthesis" />
           <NonTerminal Id="FromClauseChained" IsOptional="true" />
         </Sequence>
         
         <Sequence>
           <NonTerminal Id="TableReference" />
-          <NonTerminal Id="TableAlias" IsOptional="true" />
+          <Terminal Id="Alias" IsOptional="true" />
           <NonTerminal Id="FromClauseChained" IsOptional="true" />
         </Sequence>
         <!-- TODO -->
@@ -434,24 +445,16 @@
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="QueryTableExpression" />
           <Terminal Id="RightParenthesis" />
-          <!--<NonTerminal Id="FlashbackQueryClause" IsOptional="true" />-->
+          <NonTerminal Id="FlashbackQueryClause" IsOptional="true" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="QueryTableExpression" />
-          <!--<NonTerminal Id="FlashbackQueryClause" IsOptional="true" />-->
+          <NonTerminal Id="FlashbackQueryClause" IsOptional="true" />
         </Sequence>
         <!-- TODO -->
       </Sequences>
     </Rule>
-    
-    <Rule StartingNonTerminal="TableAlias">
-      <Sequences>
-        <Sequence>
-          <Terminal Id="Alias" />
-        </Sequence>
-      </Sequences>
-    </Rule>
-  
+
     <Rule StartingNonTerminal="QueryTableExpression">
       <Sequences>
         <Sequence>
@@ -659,6 +662,65 @@
         </Sequence>
       </Sequences>
     </Rule>
+    
+    <!-- Flashback -->
+    <Rule StartingNonTerminal="FlashbackQueryClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="FlashbackVersionsClause" IsOptional="true" />
+          <Terminal Id="As" />
+          <Terminal Id="Of" />
+          <NonTerminal Id="SystemChangeNumberOrTimestamp" />
+          <NonTerminal Id="Expression" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+  
+    <Rule StartingNonTerminal="FlashbackVersionsClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Versions" />
+          <Terminal Id="Between" />
+          <NonTerminal Id="SystemChangeNumberOrTimestamp" />
+          <NonTerminal Id="FlashbackMinimumValue" />
+          <Terminal Id="And" />
+          <NonTerminal Id="FlashbackMaximumValue" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+  
+    <Rule StartingNonTerminal="SystemChangeNumberOrTimestamp">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="SystemChangeNumber" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Timestamp" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+  
+    <Rule StartingNonTerminal="FlashbackMinimumValue">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="Expression" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="MinimumValue" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+  
+    <Rule StartingNonTerminal="FlashbackMaximumValue">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="Expression" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="MaximumValue" />
+        </Sequence>
+      </Sequences>
+    </Rule>
   </Rules>
       
   <Terminals>
@@ -774,6 +836,13 @@
     <Terminal Id="StringLiteral" RegexValue="(&apos;([^&apos;]|(&apos;&apos;))*&apos;)$" /> <!--TODO: Add quoted literal option -->
     <Terminal Id="NumberLiteral" RegexValue="^((\d+\.?\d*)|(\d*\.?\d+))([eE][+-]?\d+)?[fFdD]?$" />
     <Terminal Id="IntegerLiteral" RegexValue="^\d+([eE]((\+?\d+)|(-0)))?$" />
+    
+    <!--Flashback-->
+    <Terminal Id="Versions" Value="VERSIONS" />
+    <Terminal Id="SystemChangeNumber" Value="SCN" />
+    <Terminal Id="Timestamp" Value="TIMESTAMP" />
+    <Terminal Id="MinimumValue" Value="MINVALUE" />
+    <Terminal Id="MaximumValue" Value="MAXVALUE" />
   </Terminals>
   
   <SqlBuildinFunctions>
