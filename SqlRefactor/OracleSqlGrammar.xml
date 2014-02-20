@@ -61,6 +61,15 @@
         <Sequence Comment="*">
           <Terminal Id="Asterisk" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="AliasedExpressionOrAllTableColumns" />
+          <NonTerminal Id="SelectExpressionExpressionChainedList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AliasedExpressionOrAllTableColumns">
+      <Sequences>
         <Sequence Comment="(Schema.)Object.*">
           <Terminal Id="Identifier" Comment="Query name" />
           <Terminal Id="Dot" />
@@ -68,7 +77,7 @@
           <Terminal Id="Asterisk" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="SelectExpressionExpressionList" />
+          <NonTerminal Id="AliasedExpression" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -82,20 +91,11 @@
       </Sequences>
     </Rule>
 
-    <Rule StartingNonTerminal="SelectExpressionExpressionList">
-      <Sequences>
-        <Sequence>
-          <NonTerminal Id="AliasedExpression" />
-          <NonTerminal Id="SelectExpressionExpressionChainedList" IsOptional="true" />
-        </Sequence>
-      </Sequences>
-    </Rule>
-
     <Rule StartingNonTerminal="SelectExpressionExpressionChainedList">
       <Sequences>
         <Sequence>
           <Terminal Id="Comma" />
-          <NonTerminal Id="AliasedExpression" />
+          <NonTerminal Id="AliasedExpressionOrAllTableColumns" />
           <NonTerminal Id="SelectExpressionExpressionChainedList" IsOptional="true" />
         </Sequence>
       </Sequences>

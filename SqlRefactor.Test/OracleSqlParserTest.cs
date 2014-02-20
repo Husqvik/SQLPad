@@ -326,6 +326,16 @@ namespace SqlRefactor.Test
 			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
 		}
 
+		[Test(Description = @"Tests chained asterisk clause. ")]
+		public void Test20()
+		{
+			const string query1 = @"SELECT T1.*, 1, T1.*, 2, T1.*, 3 FROM T1";
+			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+		}
+
 		private OracleTokenReader CreateTokenReader(string sqlText)
 		{
 			Trace.WriteLine("SQL text: " + sqlText);
