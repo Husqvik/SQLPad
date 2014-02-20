@@ -39,7 +39,6 @@ namespace SqlRefactor
 
 		public int TerminalCount
 		{
-			//get { return Type == SqlNodeType.Terminal ? 1 : ChildTokens.Sum(t => t.TerminalCount); }
 			get { return Terminals.Count(); }
 		}
 		

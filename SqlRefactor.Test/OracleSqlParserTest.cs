@@ -117,7 +117,9 @@ namespace SqlRefactor.Test
 			const string sqlText = @"SELECT 1 1 FROM DUAL";
 			var result = _oracleSqlParser.Parse(CreateTokenReader(sqlText));
 
-			result.Count.ShouldBe(0);
+			result.Count.ShouldBe(1);
+			result.Single().TokenCollection.Count.ShouldBe(0);
+			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.SequenceNotFound);
 
 			// TODO: Precise assertions
 		}
@@ -128,12 +130,16 @@ namespace SqlRefactor.Test
 			var sqlText = @"SELECT 1FF F FROM DUAL";
 			var result = _oracleSqlParser.Parse(CreateTokenReader(sqlText));
 
-			result.Count.ShouldBe(0);
+			result.Count.ShouldBe(1);
+			result.Single().TokenCollection.Count.ShouldBe(0);
+			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.SequenceNotFound);
 
 			sqlText = @"SELECT . FROM DUAL";
 			result = _oracleSqlParser.Parse(CreateTokenReader(sqlText));
 
-			result.Count.ShouldBe(0);
+			result.Count.ShouldBe(1);
+			result.Single().TokenCollection.Count.ShouldBe(0);
+			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.SequenceNotFound);
 
 			// TODO: Precise assertions
 		}
@@ -271,6 +277,33 @@ namespace SqlRefactor.Test
 			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
 
 			// TODO: Precise assertions
+		}
+
+		[Test(Description = @"Tests empty token set. ")]
+		public void Test16()
+		{
+			const string query1 = @"--select 1 from dual where null is null and 1 is not null";
+			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+			result.Single().TokenCollection.Count.ShouldBe(0);
+		}
+
+		[Test(Description = @"Tests correct recovery after invalid statement. ")]
+		public void Test17()
+		{
+			const string query1 = @"/*invalid statement */ select 1 from dual+;/* valid statement */ select 1 from dual";
+			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
+
+			result.Count.ShouldBe(2);
+			result.First().ProcessingResult.ShouldBe(NonTerminalProcessingResult.SequenceNotFound);
+			result.First().TokenCollection.Count.ShouldBe(1);
+			result.First().TokenCollection.Single().TerminalCount.ShouldBe(4);
+
+			result.Last().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+			result.Last().TokenCollection.Count.ShouldBe(1);
+			result.Last().TokenCollection.Single().TerminalCount.ShouldBe(4);
 		}
 
 		private OracleTokenReader CreateTokenReader(string sqlText)

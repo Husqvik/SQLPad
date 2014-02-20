@@ -19,6 +19,7 @@ namespace SqlRefactor
 		private readonly HashSet<string> _keywords;
 		
 		private readonly List<OracleToken> _tokenBuffer = new List<OracleToken>();
+		private readonly List<string> _availableNonTerminals;
 
 		public OracleSqlParser()
 		{
@@ -30,6 +31,7 @@ namespace SqlRefactor
 			_startingNonTerminalSequences = _sqlGrammar.Rules.ToDictionary(r => r.StartingNonTerminal, r => r.Sequences);
 			_terminals = _sqlGrammar.Terminals.ToDictionary(t => t.Id, t => t);
 			_keywords = new HashSet<string>(_sqlGrammar.Terminals.Where(t => t.IsKeyword).Select(t => t.Value));
+			_availableNonTerminals = _sqlGrammar.StartSymbols.Select(s => s.Id).ToList();
 		}
 
 		public ICollection<OracleSql> Parse(string sqlText)
@@ -60,17 +62,21 @@ namespace SqlRefactor
 
 		private void ProceedGrammar()
 		{
-			var availableNonTerminals = _sqlGrammar.StartSymbols.Select(s => s.Id).ToList();
-
 			_oracleSqlCollection.Clear();
 
+			if (_tokenBuffer.Count == 0)
+			{
+				_oracleSqlCollection.Add(new OracleSql { ProcessingResult = NonTerminalProcessingResult.Success, TokenCollection = new SqlDescriptionNode[0] });
+				return;
+			}
+			
 			var result = new ProcessingResult();
 
 			do
 			{
 				var oracleSql = new OracleSql();
 
-				foreach (var nonTerminal in availableNonTerminals)
+				foreach (var nonTerminal in _availableNonTerminals)
 				{
 					result = ProceedNonTerminal(nonTerminal, 0, 0);
 
@@ -100,11 +106,12 @@ namespace SqlRefactor
 
 				if (result.Tokens.Count > 0)
 				{
-					oracleSql.TokenCollection = result.Tokens;
-					_oracleSqlCollection.Add(oracleSql);
+					//oracleSql.TokenCollection = result.Tokens;
+					//_oracleSqlCollection.Add(oracleSql);
 				}
-
+				oracleSql.TokenCollection = result.Tokens;
 				oracleSql.ProcessingResult = result.Value;
+				_oracleSqlCollection.Add(oracleSql);
 			}
 			while (_tokenBuffer.Count > 0);
 		}
