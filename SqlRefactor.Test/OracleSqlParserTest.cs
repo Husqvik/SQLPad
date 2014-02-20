@@ -356,6 +356,16 @@ namespace SqlRefactor.Test
 			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
 		}
 
+		[Test(Description = @"Tests scalar subquery clause. ")]
+		public void Test23()
+		{
+			const string query1 = @"select 1 C1, (select (select 2 from dual) from dual) C2, (select 3 from dual) C3 from dual";
+			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+		}
+
 		private OracleTokenReader CreateTokenReader(string sqlText)
 		{
 			Trace.WriteLine("SQL text: " + sqlText);

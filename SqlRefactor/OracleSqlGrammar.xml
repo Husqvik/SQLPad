@@ -192,6 +192,12 @@
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="NestedQuery" />
+          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
+        </Sequence>
+        <Sequence>
           <Terminal Id="MathPlus" />
           <NonTerminal Id="Expression" />
         </Sequence>
