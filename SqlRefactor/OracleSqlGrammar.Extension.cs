@@ -1,17 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace SqlRefactor
 {
 	public partial class SqlGrammar
 	{
-		//private bool _initialized;
-		private HashSet<string> _startSymbols = new HashSet<string>();
-
-		internal void Initialize()
-		{
-			//_initialized = true;
-		}
 	}
 
 	[DebuggerDisplay("SqlGrammarStartSymbol (Id={Id})")]
@@ -20,9 +12,9 @@ namespace SqlRefactor
 
 	}
 
-	public partial class SqlGrammarRule
+	[DebuggerDisplay("SqlGrammarRuleSequence (Elements={Items.Length}, Comment={Comment})")]
+	public partial class SqlGrammarRuleSequence
 	{
-		
 	}
 
 	[DebuggerDisplay("SqlGrammarTerminal (Id={Id}, Value={Value}, RegexValue={RegexValue})")]

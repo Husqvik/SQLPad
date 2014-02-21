@@ -33,9 +33,7 @@ namespace SqlRefactor
 		{
 			//var oracleTokens = OracleTokenReader.Create(File.OpenText(@"D:\testSql.sql")).GetTokens().ToList();
 
-			//var tokenReader = OracleTokenReader.Create(File.OpenText(@"D:\testSql.sql"));
-			//var sql = new OracleSqlParser().Parse(@"SELECT 1 FROM DUAL,");
-			//var sql = new OracleSqlParser().Parse(@"WITH 1 AS (");
+			//var sql = new OracleSqlParser().Parse(@"select 1 from dual versions between scn minvalue and maxvalue");
 
 			Editor.TextArea.TextView.LineTransformers.Add(new ColorizeAvalonEdit());
 		}

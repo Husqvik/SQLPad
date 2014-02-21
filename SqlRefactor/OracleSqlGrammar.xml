@@ -501,6 +501,7 @@
         </Sequence>
         <Sequence>
           <NonTerminal Id="QueryTableExpression" />
+          <!-- TODO: Pivot and Unpivot clauses -->
           <NonTerminal Id="FlashbackQueryClause" IsOptional="true" />
         </Sequence>
         <!-- TODO -->
@@ -513,10 +514,12 @@
           <Terminal Id="Identifier" />
           <NonTerminal Id="SchemaObject" IsOptional="true" />
           <NonTerminal Id="PartitionOrDatabaseLink" IsOptional="true" />
+          <!--<NonTerminal Id="SampleClause" IsOptional="true" />-->
         </Sequence>
         <!--<Sequence>
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="SubQuery" />
+          <NonTerminal Id="SubQueryRestrictionClause" IsOptional="true" />
           <Terminal Id="RightParenthesis" />
         </Sequence>-->
         <Sequence>
@@ -734,12 +737,12 @@
       <Sequences>
         <Sequence>
           <!-- Find out why parsing doesn't work when all the non-terminals are optional -->
-          <NonTerminal Id="FlashbackVersionsClause" />
+          <NonTerminal Id="FlashbackVersionsClause" IsOptional="true" />
           <NonTerminal Id="FlashbackAsOfClause" IsOptional="true" />
         </Sequence>
-        <Sequence>
+        <!--<Sequence>
           <NonTerminal Id="FlashbackAsOfClause" />
-        </Sequence>
+        </Sequence>-->
       </Sequences>
     </Rule>
 
@@ -866,13 +869,23 @@
       <Sequences>
         <Sequence>
           <NonTerminal Id="OuterJoinPartitionClause" IsOptional="true" />
-          <Terminal Id="Natural" />
-          <NonTerminal Id="OuterJoinType" />
-          <Terminal Id="Outer" IsOptional="true" />
+          <NonTerminal Id="NaturalOrOuterJoinType" />
           <Terminal Id="Join" />
           <NonTerminal Id="TableReference" />
           <NonTerminal Id="OuterJoinPartitionClause" IsOptional="true" />
           <NonTerminal Id="JoinColumnsOrCondition" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="NaturalOrOuterJoinType">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="OuterJoinTypeWithKeyword" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Natural" />
+          <NonTerminal Id="OuterJoinTypeWithKeyword" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -888,6 +901,15 @@
           <Terminal Id="Partition" />
           <Terminal Id="By" />
           <NonTerminal Id="ExpressionList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="OuterJoinTypeWithKeyword">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="OuterJoinType" />
+          <Terminal Id="Outer" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>

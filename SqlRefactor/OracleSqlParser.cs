@@ -143,7 +143,7 @@ namespace SqlRefactor
 					{
 						var nestedResult = ProceedNonTerminal(nestedNonTerminal.Id, level + 1, tokenOffset);
 
-						if (nestedNonTerminal.IsRequired)
+						if (nestedNonTerminal.IsRequired || nestedResult.Value == NonTerminalProcessingResult.Success)
 						{
 							result.Value = nestedResult.Value;
 						}
