@@ -372,10 +372,20 @@ namespace SqlRefactor.Test
 			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
 		}
 
-		[Test(Description = @"Tests join clauses. ")]
+		[Test(Description = @"Tests join clauses. "), Ignore]
 		public void Test24()
 		{
 			const string query1 = @"select * from t1 cross join t2 join t3 on 1 = 1 inner join t4 using (id) natural join t5 full outer join t6 on t5.id = t6.id";
+			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+		}
+
+		[Test(Description = @"Tests order by clause. ")]
+		public void Test25()
+		{
+			const string query1 = @"SELECT 1 FROM DUAL ORDER BY 1 DESC, DUMMY ASC NULLS LAST, (DBMS_RANDOM.VALUE)";
 			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
 
 			result.Count.ShouldBe(1);

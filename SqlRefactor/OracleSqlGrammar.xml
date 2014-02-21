@@ -609,7 +609,7 @@
         <Sequence>
           <NonTerminal Id="QueryBlock" />
           <NonTerminal Id="ConcatenatedSubquery" IsOptional="true" />
-          <!--<NonTerminal Id="OrderByClause" />-->
+          <NonTerminal Id="OrderByClause" IsOptional="true" />
         </Sequence>
         <Sequence>
           <Terminal Id="LeftParenthesis" />
@@ -927,6 +927,74 @@
         </Sequence>
       </Sequences>
     </Rule>
+
+    <!-- ORDER BY syntax -->
+    <Rule StartingNonTerminal="OrderByClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Order" />
+          <Terminal Id="Siblings" IsOptional="true" />
+          <Terminal Id="By" />
+          <NonTerminal Id="OrderExpression" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="OrderExpression">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="OrderExpressionType" />
+          <NonTerminal Id="SortOrder" IsOptional="true" />
+          <NonTerminal Id="NullsClause" IsOptional="true" />
+          <NonTerminal Id="OrderExpressionChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="OrderExpressionChained">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="OrderExpression" />
+          <NonTerminal Id="OrderExpressionChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="OrderExpressionType">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="Expression" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Alias" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SortOrder">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Asc" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Desc" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="NullsClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Nulls" />
+          <Terminal Id="First" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Nulls" />
+          <Terminal Id="Last" />
+        </Sequence>
+      </Sequences>
+    </Rule>
   </Rules>
       
   <Terminals>
@@ -1015,7 +1083,6 @@
     <Terminal Id="End" Value="END" />
     <Terminal Id="Null" Value="NULL" IsKeyword="true" />
     <Terminal Id="Ignore" Value="IGNORE" />
-    <Terminal Id="Nulls" Value="NULLS" />
     <Terminal Id="And" Value="AND" IsKeyword="true" />
     <Terminal Id="Or" Value="OR" IsKeyword="true" />
     <Terminal Id="Not" Value="NOT" IsKeyword="true" />
@@ -1053,7 +1120,7 @@
     <Terminal Id="MinimumValue" Value="MINVALUE" />
     <Terminal Id="MaximumValue" Value="MAXVALUE" />
   
-    <!-- Joim -->
+    <!-- Join -->
     <Terminal Id="Join" Value="JOIN" />
     <Terminal Id="Left" Value="LEFT" />
     <Terminal Id="Right" Value="RIGHT" />
@@ -1064,6 +1131,15 @@
     <Terminal Id="Cross" Value="CROSS" />
     <Terminal Id="Using" Value="USING" />
     <Terminal Id="On" Value="ON" IsKeyword="true" />
+
+    <!-- Order by -->
+    <Terminal Id="Order" Value="ORDER" IsKeyword="true" />
+    <Terminal Id="Asc" Value="ASC" IsKeyword="true" />
+    <Terminal Id="Desc" Value="DESC" IsKeyword="true" />
+    <Terminal Id="Siblings" Value="SIBLINGS" />
+    <Terminal Id="Nulls" Value="NULLS" />
+    <Terminal Id="First" Value="FIRST" />
+    <Terminal Id="Last" Value="LAST" />
   </Terminals>
   
   <SqlBuildinFunctions>
