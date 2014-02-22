@@ -27,6 +27,8 @@ namespace SqlRefactor
 		private readonly OracleSqlParser _sqlParser = new OracleSqlParser();
 		private readonly ColorizeAvalonEdit _colorizeAvalonEdit = new ColorizeAvalonEdit();
 
+		public static RoutedCommand CommandAddColumnAliases = new RoutedCommand();
+
 		public MainWindow()
 		{
 			InitializeComponent();
@@ -46,6 +48,16 @@ namespace SqlRefactor
 			TextBlockToken.Text = String.Join(", ", OracleTokenReader.Create(Editor.Text).GetTokens().Select(t => "{" + t.Value + "}"));
 			_colorizeAvalonEdit.SetStatementCollection(_sqlParser.Parse(Editor.Text));
 			Editor.TextArea.TextView.Redraw();
+		}
+
+		private void AddColumnAliasesExecutedHandler(object sender, ExecutedRoutedEventArgs e)
+		{
+			MessageBox.Show(this, "not implemented yet");
+		}
+
+		private void AddColumnAliasesCanExecuteHandler(object sender, CanExecuteRoutedEventArgs e)
+		{
+			e.CanExecute = true;
 		}
 	}
 

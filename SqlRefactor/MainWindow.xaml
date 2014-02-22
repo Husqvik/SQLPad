@@ -2,7 +2,14 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
+        xmlns:local="clr-namespace:SqlRefactor"
         Title="MainWindow" Height="640" Width="960" Loaded="WindowLoadedHandler">
+
+    <Window.CommandBindings>
+        <CommandBinding Command="{x:Static local:MainWindow.CommandAddColumnAliases}"
+                    Executed="AddColumnAliasesExecutedHandler" CanExecute="AddColumnAliasesCanExecuteHandler" />
+    </Window.CommandBindings>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition />
@@ -16,8 +23,12 @@
             
         </avalonedit:TextEditor>
         <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="TextBlockToken" TextWrapping="WrapWithOverflow" />
-        <ListBox Grid.Column="1" Grid.Row="0">
 
-        </ListBox>
+        <StackPanel Grid.Column="1" Grid.Row="0">
+            <Button Content="_Add column aliases" Command="{x:Static local:MainWindow.CommandAddColumnAliases}" />
+            <Button Content="_Wrap as common table expression"/>
+            <Button Content="W_rap as subquery"/>
+            <Button Content="A_dd fully qualified names"/>
+        </StackPanel>
     </Grid>
 </Window>

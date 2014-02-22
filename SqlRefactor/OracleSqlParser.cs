@@ -84,8 +84,7 @@ namespace SqlRefactor
 						continue;
 					
 					var lastTerminal = result.Terminals.Last();
-					_tokenBuffer.RemoveRange(0, result.TerminalCount);
-					if (lastTerminal.Value.Value != ";" && _tokenBuffer.Count > 0)
+					if (lastTerminal.Value.Value != ";" && _tokenBuffer.Count > result.TerminalCount)
 						result.Value = NonTerminalProcessingResult.SequenceNotFound;
 
 					break;
@@ -115,6 +114,8 @@ namespace SqlRefactor
 					var lastTerminal = result.Terminals.Last().Value;
 					indexStart = result.Terminals.First().Value.Index;
 					indexEnd = lastTerminal.Index + lastTerminal.Value.Length;
+
+					_tokenBuffer.RemoveRange(0, result.TerminalCount);
 				}
 
 				oracleSql.SourcePosition = new SourcePosition { IndexStart = indexStart, IndexEnd = indexEnd };
