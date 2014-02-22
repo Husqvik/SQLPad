@@ -41,7 +41,7 @@
           <Terminal Id="From" />
           <NonTerminal Id="FromClause" />
           <NonTerminal Id="WhereClause" IsOptional="true" />
-          <!--<NonTerminal Id="HierarchicalQueryClause" IsOptional="true" />-->
+          <NonTerminal Id="HierarchicalQueryClause" IsOptional="true" />
           <NonTerminal Id="GroupByClause" IsOptional="true" />
           <!--<NonTerminal Id="ModelClause" IsOptional="true" />-->
           <!-- TODO -->
@@ -736,13 +736,9 @@
     <Rule StartingNonTerminal="FlashbackQueryClause">
       <Sequences>
         <Sequence>
-          <!-- Find out why parsing doesn't work when all the non-terminals are optional -->
           <NonTerminal Id="FlashbackVersionsClause" IsOptional="true" />
           <NonTerminal Id="FlashbackAsOfClause" IsOptional="true" />
         </Sequence>
-        <!--<Sequence>
-          <NonTerminal Id="FlashbackAsOfClause" />
-        </Sequence>-->
       </Sequences>
     </Rule>
 
@@ -995,6 +991,41 @@
         </Sequence>
       </Sequences>
     </Rule>
+
+    <!-- Hierarchical query -->
+    <Rule StartingNonTerminal="HierarchicalQueryClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="HierarchicalQueryConnectByClause" />
+          <NonTerminal Id="HierarchicalQueryStartWithClause" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="HierarchicalQueryStartWithClause" />
+          <NonTerminal Id="HierarchicalQueryConnectByClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="HierarchicalQueryConnectByClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Connect" />
+          <Terminal Id="By" />
+          <Terminal Id="NoCycle" IsOptional="true" />
+          <NonTerminal Id="Condition" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="HierarchicalQueryStartWithClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Start" />
+          <Terminal Id="With" />
+          <NonTerminal Id="Condition" />
+        </Sequence>
+      </Sequences>
+    </Rule>
   </Rules>
       
   <Terminals>
@@ -1101,8 +1132,6 @@
     <Terminal Id="Partition" Value="PARTITION" />
     <Terminal Id="Subpartition" Value="SUBPARTITION" />
     <Terminal Id="Table" Value="TABLE" IsKeyword="true" />
-    <Terminal Id="Connect" Value="CONNECT" IsKeyword="true" />
-    <Terminal Id="Start" Value="START" IsKeyword="true" />
     <Terminal Id="SequenceCurrentValue" Value="CURRVAL" />
     <Terminal Id="SequenceNextValue" Value="NEXTVAL" />
     <Terminal Id="RowNumberPseudoColumn" Value="ROWNUM" IsKeyword="true" />
@@ -1140,6 +1169,11 @@
     <Terminal Id="Nulls" Value="NULLS" />
     <Terminal Id="First" Value="FIRST" />
     <Terminal Id="Last" Value="LAST" />
+
+    <!-- Hierarchical query -->
+    <Terminal Id="Connect" Value="CONNECT" IsKeyword="true" />
+    <Terminal Id="Start" Value="START" IsKeyword="true" />
+    <Terminal Id="NoCycle" Value="NOCYCLE" />
   </Terminals>
   
   <SqlBuildinFunctions>
