@@ -206,7 +206,7 @@ namespace SqlRefactor.Test
 		[Test(Description = @"Tests simple queries with group by and having clauses. ")]
 		public void Test13()
 		{
-			const string query1 = @"select 1 from dual group by 1 having 1 = 1";
+			const string query1 = @"select 1 from dual group by 1, dummy having 1 = 1";
 			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
 
 			result.Count.ShouldBe(1);
@@ -406,6 +406,18 @@ namespace SqlRefactor.Test
 
 			result.Count.ShouldBe(1);
 			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+		}
+
+		[Test(Description = @"Tests group by rollup and cube clauses. ")]
+		public void Test27()
+		{
+			const string query1 = @"select 1 from dual group by 1, 2, (3 || dummy), rollup(1, (1, 2 || dummy)), cube(2, (3, 4 + 2))";
+			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+
+			// TODO: Precise assertions
 		}
 
 		private static OracleTokenReader CreateTokenReader(string sqlText)

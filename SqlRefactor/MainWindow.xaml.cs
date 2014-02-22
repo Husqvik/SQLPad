@@ -51,15 +51,24 @@ namespace SqlRefactor
 		#region Overrides of DocumentColorizingTransformer
 		protected override void Colorize(ITextRunConstructionContext context)
 		{
-			var sqlCollection = _sqlParser.Parse(context.Document.Text);
-			// TODO: Add colorizing for each statement
-			var backgroundColor = sqlCollection.Count > 0 && sqlCollection.First().ProcessingResult == NonTerminalProcessingResult.Success ? Colors.LightGreen : Colors.PaleVioletRed;
+			try
+			{
+				var sqlCollection = _sqlParser.Parse(context.Document.Text);
 
-			ChangeVisualElements(0, context.VisualLine.VisualLength,
-				line =>
-				{
-					line.BackgroundBrush = new SolidColorBrush(backgroundColor);
-				});
+
+				// TODO: Add colorizing for each statement
+				var backgroundColor = sqlCollection.Count > 0 && sqlCollection.First().ProcessingResult == NonTerminalProcessingResult.Success ? Colors.LightGreen : Colors.PaleVioletRed;
+
+				ChangeVisualElements(0, context.VisualLine.VisualLength,
+					line =>
+					{
+						line.BackgroundBrush = new SolidColorBrush(backgroundColor);
+					});
+			}
+			catch (Exception e)
+			{
+				MessageBox.Show("Exception: " + e.Message);
+			}
 		}
 		#endregion
 

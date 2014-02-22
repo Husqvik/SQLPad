@@ -403,6 +403,7 @@
       </Sequences>
     </Rule>
 
+    <!-- CASE expression -->
     <Rule StartingNonTerminal="CaseExpression">
       <Sequences>
         <Sequence>
@@ -658,6 +659,7 @@
       </Sequences>
     </Rule>
 
+    <!-- Where clause -->
     <Rule StartingNonTerminal="WhereClause">
       <Sequences>
         <Sequence>
@@ -667,18 +669,87 @@
       </Sequences>
     </Rule>
 
+    <!-- Group by clause -->
     <Rule StartingNonTerminal="GroupByClause">
       <Sequences>
         <Sequence>
           <Terminal Id="Group" />
           <Terminal Id="By" />
-          <NonTerminal Id="Expression" />
-          <!-- TODO: Add CUBE, ROLLUP and GROUPING SETs -->
+          <NonTerminal Id="GroupingClause" />
           <NonTerminal Id="HavingClause" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
-    
+
+    <Rule StartingNonTerminal="GroupingClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="RollupCubeClause" />
+          <NonTerminal Id="GroupingClauseChained" IsOptional="true" />
+        </Sequence>
+        <!-- TODO: Add GROUPING SETs -->
+        <Sequence>
+          <NonTerminal Id="Expression" />
+          <NonTerminal Id="GroupingClauseChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="GroupingClauseChained">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="GroupingClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="RollupCubeClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Rollup" />
+          <NonTerminal Id="ParenthesisEnclosedGroupingExpressionList" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Cube" />
+          <NonTerminal Id="ParenthesisEnclosedGroupingExpressionList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ParenthesisEnclosedGroupingExpressionList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="GroupingExpressionList" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="GroupingExpressionList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ParenthesisEnclosedExpressionList" />
+          <NonTerminal Id="GroupingExpressionListChained" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ExpressionList" />
+          <NonTerminal Id="GroupingExpressionListChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="GroupingExpressionListChained">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="GroupingExpressionList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <!-- Having clause -->
     <Rule StartingNonTerminal="HavingClause">
       <Sequences>
         <Sequence>
@@ -688,6 +759,7 @@
       </Sequences>
     </Rule>
 
+    <!-- For update clause -->
     <Rule StartingNonTerminal="ForUpdateClause">
       <Sequences>
         <Sequence>
@@ -1086,13 +1158,6 @@
     <Terminal Id="SetMinus" Value="MINUS" IsKeyword="true" />
     <Terminal Id="Intersect" Value="INTERSECT" IsKeyword="true" />
     <Terminal Id="Select" Value="SELECT" IsKeyword="true" />
-    <Terminal Id="For" Value="FOR" IsKeyword="true" />
-    <Terminal Id="Update" Value="UPDATE" IsKeyword="true" />
-    <Terminal Id="Nowait" Value="NOWAIT" IsKeyword="true" />
-    <Terminal Id="Wait" Value="WAIT" />
-    <Terminal Id="Skip" Value="SKIP" />
-    <Terminal Id="Locked" Value="LOCKED" />
-    <Terminal Id="Of" Value="OF" IsKeyword="true" />
     <Terminal Id="Distinct" Value="DISTINCT" IsKeyword="true">
       <Synonyms>
         <Synonym Id="Unique" />
@@ -1104,14 +1169,6 @@
       </Synonyms>
     </Terminal>
     <Terminal Id="From" Value="FROM" IsKeyword="true" />
-    <Terminal Id="Having" Value="HAVING" IsKeyword="true"/>
-    <Terminal Id="Group" Value="GROUP" IsKeyword="true"/>
-    <Terminal Id="By" Value="BY" IsKeyword="true"/>
-    <Terminal Id="Case" Value="CASE" />
-    <Terminal Id="When" Value="WHEN" />
-    <Terminal Id="Then" Value="THEN" IsKeyword="true" />
-    <Terminal Id="Else" Value="ELSE" IsKeyword="true" />
-    <Terminal Id="End" Value="END" />
     <Terminal Id="Null" Value="NULL" IsKeyword="true" />
     <Terminal Id="Ignore" Value="IGNORE" />
     <Terminal Id="And" Value="AND" IsKeyword="true" />
@@ -1141,6 +1198,29 @@
     <Terminal Id="StringLiteral" RegexValue="(&apos;([^&apos;]|(&apos;&apos;))*&apos;)$" /> <!--TODO: Add quoted literal option -->
     <Terminal Id="NumberLiteral" RegexValue="^((\d+\.?\d*)|(\d*\.?\d+))([eE][+-]?\d+)?[fFdD]?$" />
     <Terminal Id="IntegerLiteral" RegexValue="^\d+([eE]((\+?\d+)|(-0)))?$" />
+
+    <!-- For update -->
+    <Terminal Id="For" Value="FOR" IsKeyword="true" />
+    <Terminal Id="Update" Value="UPDATE" IsKeyword="true" />
+    <Terminal Id="Nowait" Value="NOWAIT" IsKeyword="true" />
+    <Terminal Id="Wait" Value="WAIT" />
+    <Terminal Id="Skip" Value="SKIP" />
+    <Terminal Id="Locked" Value="LOCKED" />
+    <Terminal Id="Of" Value="OF" IsKeyword="true" />
+    
+    <!-- Case expression -->
+    <Terminal Id="Case" Value="CASE" />
+    <Terminal Id="When" Value="WHEN" />
+    <Terminal Id="Then" Value="THEN" IsKeyword="true" />
+    <Terminal Id="Else" Value="ELSE" IsKeyword="true" />
+    <Terminal Id="End" Value="END" />
+
+    <!-- Group by -->
+    <Terminal Id="Group" Value="GROUP" IsKeyword="true" />
+    <Terminal Id="By" Value="BY" IsKeyword="true" />
+    <Terminal Id="Rollup" Value="ROLLUP" />
+    <Terminal Id="Cube" Value="CUBE" />
+    <Terminal Id="Having" Value="HAVING" IsKeyword="true" />
     
     <!-- Flashback -->
     <Terminal Id="Versions" Value="VERSIONS" />
