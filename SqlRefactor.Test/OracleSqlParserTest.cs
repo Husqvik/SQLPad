@@ -408,11 +408,20 @@ namespace SqlRefactor.Test
 			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
 		}
 
-		[Test(Description = @"Tests group by rollup and cube clauses. ")]
+		[Test(Description = @"Tests group by rollup, cube and grouping sets clauses. ")]
 		public void Test27()
 		{
 			const string query1 = @"select 1 from dual group by 1, 2, (3 || dummy), rollup(1, (1, 2 || dummy)), cube(2, (3, 4 + 2))";
 			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+
+			// TODO: Precise assertions
+
+			//const string query2 = @"SELECT 1 from dual group by grouping sets (1, dummy, (1, dummy), rollup(dummy), cube(dummy)), grouping sets (1), cube(1), rollup(1, dummy);"; // doesn't work yet
+			const string query2 = @"SELECT 1 from dual group by grouping sets (rollup(dummy), cube(dummy), 1, dummy, (1, dummy)), grouping sets (1), cube(1), rollup(1, dummy);";
+			result = _oracleSqlParser.Parse(CreateTokenReader(query2));
 
 			result.Count.ShouldBe(1);
 			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);

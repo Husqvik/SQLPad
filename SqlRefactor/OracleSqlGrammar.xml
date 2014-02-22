@@ -687,7 +687,10 @@
           <NonTerminal Id="RollupCubeClause" />
           <NonTerminal Id="GroupingClauseChained" IsOptional="true" />
         </Sequence>
-        <!-- TODO: Add GROUPING SETs -->
+        <Sequence>
+          <NonTerminal Id="GroupingSetsClause" />
+          <NonTerminal Id="GroupingClauseChained" IsOptional="true" />
+        </Sequence>
         <Sequence>
           <NonTerminal Id="Expression" />
           <NonTerminal Id="GroupingClauseChained" IsOptional="true" />
@@ -699,7 +702,41 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Comma" />
-          <NonTerminal Id="GroupingClause" IsOptional="true" />
+          <NonTerminal Id="GroupingClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="GroupingSetsClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Grouping" />
+          <Terminal Id="Sets" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="GroupingExpressionListOrRollupCubeClause" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="GroupingExpressionListOrRollupCubeClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="RollupCubeClause" />
+          <NonTerminal Id="GroupingExpressionListOrRollupCubeClauseChained" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="GroupingExpressionList" />
+          <NonTerminal Id="GroupingExpressionListOrRollupCubeClauseChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="GroupingExpressionListOrRollupCubeClauseChained">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="GroupingExpressionListOrRollupCubeClause" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -1155,6 +1192,7 @@
       </Synonyms>
     </Terminal>
     <Terminal Id="In" Value="IN" IsKeyword="true" />
+    <Terminal Id="Set" Value="SET" IsKeyword="true" />
     <Terminal Id="SetMinus" Value="MINUS" IsKeyword="true" />
     <Terminal Id="Intersect" Value="INTERSECT" IsKeyword="true" />
     <Terminal Id="Select" Value="SELECT" IsKeyword="true" />
@@ -1221,6 +1259,8 @@
     <Terminal Id="Rollup" Value="ROLLUP" />
     <Terminal Id="Cube" Value="CUBE" />
     <Terminal Id="Having" Value="HAVING" IsKeyword="true" />
+    <Terminal Id="Grouping" Value="GROUPING" />
+    <Terminal Id="Sets" Value="SETS" />
     
     <!-- Flashback -->
     <Terminal Id="Versions" Value="VERSIONS" />
@@ -1254,6 +1294,9 @@
     <Terminal Id="Connect" Value="CONNECT" IsKeyword="true" />
     <Terminal Id="Start" Value="START" IsKeyword="true" />
     <Terminal Id="NoCycle" Value="NOCYCLE" />
+
+    <!-- Model clause -->
+    <Terminal Id="Model" Value="MODEL" />
   </Terminals>
   
   <SqlBuildinFunctions>
