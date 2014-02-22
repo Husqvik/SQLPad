@@ -581,7 +581,7 @@
           <Terminal Id="Identifier" />
           <NonTerminal Id="SchemaObject" IsOptional="true" />
           <NonTerminal Id="PartitionOrDatabaseLink" IsOptional="true" />
-          <!--<NonTerminal Id="SampleClause" IsOptional="true" />-->
+          <NonTerminal Id="SampleClause" IsOptional="true" />
         </Sequence>
         <!--<Sequence>
           <Terminal Id="LeftParenthesis" />
@@ -1201,6 +1201,31 @@
         </Sequence>
       </Sequences>
     </Rule>
+
+    <!-- Sample clause -->
+    <Rule StartingNonTerminal="SampleClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Sample" />
+          <Terminal Id="Block" IsOptional="true" />
+          <Terminal Id="LeftParenthesis" />
+          <Terminal Id="NumberLiteral" />
+          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="SeedClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="SeedClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Seed" />
+          <Terminal Id="LeftParenthesis" />
+          <Terminal Id="NumberLiteral" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
   </Rules>
       
   <Terminals>
@@ -1283,7 +1308,6 @@
     <Terminal Id="Between" Value="BETWEEN" IsKeyword="true" />
     <Terminal Id="Date" Value="DATE" IsKeyword="true" />
     <Terminal Id="Over" Value="OVER" />
-    <Terminal Id="Only" Value="ONLY" />
     <Terminal Id="Include" Value="INCLUDE" />
     <Terminal Id="Exclude" Value="EXCLUDE" />
     <Terminal Id="Pivot" Value="PIVOT" />
@@ -1301,6 +1325,18 @@
     <Terminal Id="StringLiteral" RegexValue="(&apos;([^&apos;]|(&apos;&apos;))*&apos;)$" /> <!--TODO: Add quoted literal option -->
     <Terminal Id="NumberLiteral" RegexValue="^((\d+\.?\d*)|(\d*\.?\d+))([eE][+-]?\d+)?[fFdD]?$" />
     <Terminal Id="IntegerLiteral" RegexValue="^\d+([eE]((\+?\d+)|(-0)))?$" />
+
+    <!-- Sample clause -->
+    <Terminal Id="Sample" Value="SAMPLE" />
+    <Terminal Id="Block" Value="BLOCK" />
+    <Terminal Id="Seed" Value="SEED" />
+
+    <!-- Restriction clause -->
+    <Terminal Id="Read" Value="READ" />
+    <Terminal Id="Only" Value="ONLY" />
+    <Terminal Id="Check" Value="CHECK" IsKeyword="true" />
+    <Terminal Id="Option" Value="OPTION" IsKeyword="true" />
+    <Terminal Id="Constraint" Value="CONSTRAINT" />
 
     <!-- LIKE -->
     <Terminal Id="Like" Value="LIKE" IsKeyword="true" Comment="Uses input character set" />
