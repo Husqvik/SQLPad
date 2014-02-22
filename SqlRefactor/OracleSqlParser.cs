@@ -66,7 +66,7 @@ namespace SqlRefactor
 
 			if (_tokenBuffer.Count == 0)
 			{
-				_oracleSqlCollection.Add(new OracleStatement { ProcessingResult = NonTerminalProcessingResult.Success, TokenCollection = new StatementDescriptionNode[0] });
+				_oracleSqlCollection.Add(OracleStatement.EmptyStatement);
 				return;
 			}
 			
@@ -91,19 +91,33 @@ namespace SqlRefactor
 					break;
 				}
 
+				int indexStart;
+				int indexEnd;
 				if (result.Value != NonTerminalProcessingResult.Success)
 				{
+					indexStart = _tokenBuffer.First().Index;
+
 					var index = _tokenBuffer.FindIndex(t => t.Value == ";");
 					if (index == -1)
 					{
+						var lastToken = _tokenBuffer[_tokenBuffer.Count - 1];
+						indexEnd = lastToken.Index + lastToken.Value.Length;
 						_tokenBuffer.Clear();
 					}
 					else
 					{
+						indexEnd = _tokenBuffer[index].Index + 1;
 						_tokenBuffer.RemoveRange(0, index + 1);
 					}
 				}
+				else
+				{
+					var lastTerminal = result.Terminals.Last().Value;
+					indexStart = result.Terminals.First().Value.Index;
+					indexEnd = lastTerminal.Index + lastTerminal.Value.Length;
+				}
 
+				oracleSql.SourcePosition = new SourcePosition { IndexStart = indexStart, IndexEnd = indexEnd };
 				oracleSql.TokenCollection = result.Tokens;
 				oracleSql.ProcessingResult = result.Value;
 				_oracleSqlCollection.Add(oracleSql);

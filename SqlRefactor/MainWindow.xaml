@@ -8,9 +8,16 @@
             <RowDefinition />
             <RowDefinition Height="72" />
         </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition Width="240" />
+        </Grid.ColumnDefinitions>
         <avalonedit:TextEditor x:Name="Editor" FontFamily="Consolas" ShowLineNumbers="True" TextChanged="EditorTextChangedHandler">
             
         </avalonedit:TextEditor>
-        <TextBlock Grid.Row="1" x:Name="TextBlockToken" TextWrapping="WrapWithOverflow" />
+        <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="TextBlockToken" TextWrapping="WrapWithOverflow" />
+        <ListBox Grid.Column="1" Grid.Row="0">
+
+        </ListBox>
     </Grid>
 </Window>

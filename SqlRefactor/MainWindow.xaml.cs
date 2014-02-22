@@ -22,8 +22,11 @@ namespace SqlRefactor
 	/// <summary>
 	/// Interaction logic for MainWindow.xaml
 	/// </summary>
-	public partial class MainWindow : Window
+	public partial class MainWindow
 	{
+		private readonly OracleSqlParser _sqlParser = new OracleSqlParser();
+		private readonly ColorizeAvalonEdit _colorizeAvalonEdit = new ColorizeAvalonEdit();
+
 		public MainWindow()
 		{
 			InitializeComponent();
@@ -35,56 +38,45 @@ namespace SqlRefactor
 
 			//var sql = new OracleSqlParser().Parse(@"select 1 from dual versions between scn minvalue and maxvalue");
 
-			Editor.TextArea.TextView.LineTransformers.Add(new ColorizeAvalonEdit());
+			Editor.TextArea.TextView.LineTransformers.Add(_colorizeAvalonEdit);
 		}
 
 		private void EditorTextChangedHandler(object sender, EventArgs e)
 		{
 			TextBlockToken.Text = String.Join(", ", OracleTokenReader.Create(Editor.Text).GetTokens().Select(t => "{" + t.Value + "}"));
+			_colorizeAvalonEdit.SetStatementCollection(_sqlParser.Parse(Editor.Text));
+			Editor.TextArea.TextView.Redraw();
 		}
 	}
 
 	public class ColorizeAvalonEdit : DocumentColorizingTransformer
 	{
-		private readonly OracleSqlParser _sqlParser = new OracleSqlParser();
+		private ICollection<OracleStatement> _parsedStatements = new List<OracleStatement>();
 
-		#region Overrides of DocumentColorizingTransformer
-		protected override void Colorize(ITextRunConstructionContext context)
+		public void SetStatementCollection(ICollection<OracleStatement> statements)
 		{
-			try
-			{
-				var sqlCollection = _sqlParser.Parse(context.Document.Text);
-
-
-				// TODO: Add colorizing for each statement
-				var backgroundColor = sqlCollection.Count > 0 && sqlCollection.First().ProcessingResult == NonTerminalProcessingResult.Success ? Colors.LightGreen : Colors.PaleVioletRed;
-
-				ChangeVisualElements(0, context.VisualLine.VisualLength,
-					line =>
-					{
-						line.BackgroundBrush = new SolidColorBrush(backgroundColor);
-					});
-			}
-			catch (Exception e)
-			{
-				MessageBox.Show("Exception: " + e.Message);
-			}
+			_parsedStatements = statements;
 		}
-		#endregion
 
 		protected override void ColorizeLine(DocumentLine line)
 		{
-			/*var lineStartOffset = line.Offset;
-			var text = CurrentContext.Document.GetText(line);
-			var start = 0;
-			int index;
-			while ((index = text.IndexOf("AvalonEdit", start)) >= 0)
+			var statementsAtLine = _parsedStatements.Where(s => s.SourcePosition.IndexStart <= line.EndOffset && s.SourcePosition.IndexEnd >= line.Offset);
+
+			foreach (var statement in statementsAtLine)
 			{
+				var backgroundColor = new SolidColorBrush(statement.ProcessingResult == NonTerminalProcessingResult.Success ? Colors.LightGreen : Colors.PaleVioletRed);
+
+				var colorStartOffset = Math.Max(line.Offset, statement.SourcePosition.IndexStart);
+				var colorEndOffset = Math.Min(line.EndOffset, statement.SourcePosition.IndexEnd);
+
 				ChangeLinePart(
-					lineStartOffset + index, // startOffset
-					lineStartOffset + index + 10, // endOffset
+					colorStartOffset,
+					colorEndOffset,
 					element =>
 					{
+						element.BackgroundBrush = backgroundColor;
+
+						/*
 						// This lambda gets called once for every VisualLineElement
 						// between the specified offsets.
 						var tf = element.TextRunProperties.Typeface;
@@ -95,10 +87,9 @@ namespace SqlRefactor
 							FontStyles.Italic,
 							FontWeights.Bold,
 							tf.Stretch
-						));
+						));*/
 					});
-				start = index + 1; // search for next occurrence
-			}*/
+			}
 		}
 	}
 }
