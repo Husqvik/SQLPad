@@ -59,7 +59,7 @@
     <Compile Include="Extensions.cs" />
     <Compile Include="IToken.cs" />
     <Compile Include="ITokenReader.cs" />
-    <Compile Include="OracleSql.cs" />
+    <Compile Include="OracleStatement.cs" />
     <Compile Include="OracleSqlGrammar.cs">
       <DependentUpon>OracleSqlGrammar.xsd</DependentUpon>
     </Compile>

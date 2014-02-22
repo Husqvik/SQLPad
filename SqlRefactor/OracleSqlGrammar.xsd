@@ -6,7 +6,7 @@
         <xs:element name="StartSymbols">
           <xs:complexType>
             <xs:sequence>
-              <xs:element maxOccurs="unbounded" name="StartSymbol">
+              <xs:element name="StartSymbol">
                 <xs:complexType>
                   <xs:attribute name="Id" type="xs:string" use="required" />
                 </xs:complexType>
@@ -27,17 +27,17 @@
                             <xs:complexType>
                               <xs:sequence>
                                 <xs:choice maxOccurs="unbounded">
-                                  <xs:element name="Terminal">
-                                    <xs:complexType>
-                                      <xs:attribute name="Id" type="xs:string" use="required" />
-                                      <xs:attribute name="Comment" type="xs:string" use="optional" />
-                                      <xs:attribute name="IsOptional" type="xs:boolean" use="optional" />
-                                    </xs:complexType>
-                                  </xs:element>
                                   <xs:element maxOccurs="unbounded" name="NonTerminal">
                                     <xs:complexType>
                                       <xs:attribute name="Id" type="xs:string" use="required" />
                                       <xs:attribute name="IsOptional" type="xs:boolean" use="optional" />
+                                    </xs:complexType>
+                                  </xs:element>
+                                  <xs:element name="Terminal">
+                                    <xs:complexType>
+                                      <xs:attribute name="Id" type="xs:string" use="required" />
+                                      <xs:attribute name="IsOptional" type="xs:boolean" use="optional" />
+                                      <xs:attribute name="Comment" type="xs:string" use="optional" />
                                     </xs:complexType>
                                   </xs:element>
                                 </xs:choice>
@@ -77,6 +77,7 @@
                   <xs:attribute name="Value" type="xs:string" use="optional" />
                   <xs:attribute name="IsKeyword" type="xs:boolean" use="optional" />
                   <xs:attribute name="RegexValue" type="xs:string" use="optional" />
+                  <xs:attribute name="Comment" type="xs:string" use="optional" />
                 </xs:complexType>
               </xs:element>
             </xs:sequence>

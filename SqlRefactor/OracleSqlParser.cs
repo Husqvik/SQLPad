@@ -15,7 +15,7 @@ namespace SqlRefactor
 		private readonly Dictionary<string, SqlGrammarRuleSequence[]> _startingNonTerminalSequences;
 		private readonly Dictionary<string, SqlGrammarTerminal> _terminals;
 		private static readonly XmlSerializer XmlSerializer = new XmlSerializer(typeof(SqlGrammar));
-		private readonly List<OracleSql> _oracleSqlCollection = new List<OracleSql>();
+		private readonly List<OracleStatement> _oracleSqlCollection = new List<OracleStatement>();
 		private readonly HashSet<string> _keywords;
 		
 		private readonly List<OracleToken> _tokenBuffer = new List<OracleToken>();
@@ -34,7 +34,7 @@ namespace SqlRefactor
 			_availableNonTerminals = _sqlGrammar.StartSymbols.Select(s => s.Id).ToList();
 		}
 
-		public ICollection<OracleSql> Parse(string sqlText)
+		public ICollection<OracleStatement> Parse(string sqlText)
 		{
 			using (var reader = new StringReader(sqlText))
 			{
@@ -42,7 +42,7 @@ namespace SqlRefactor
 			}
 		}
 
-		public ICollection<OracleSql> Parse(OracleTokenReader tokenReader)
+		public ICollection<OracleStatement> Parse(OracleTokenReader tokenReader)
 		{
 			if (tokenReader == null)
 				throw new ArgumentNullException("tokenReader");
@@ -50,7 +50,7 @@ namespace SqlRefactor
 			return Parse(tokenReader.GetTokens().Cast<OracleToken>());
 		}
 
-		public ICollection<OracleSql> Parse(IEnumerable<OracleToken> tokens)
+		public ICollection<OracleStatement> Parse(IEnumerable<OracleToken> tokens)
 		{
 			_tokenBuffer.Clear();
 			_tokenBuffer.AddRange(tokens);
@@ -66,7 +66,7 @@ namespace SqlRefactor
 
 			if (_tokenBuffer.Count == 0)
 			{
-				_oracleSqlCollection.Add(new OracleSql { ProcessingResult = NonTerminalProcessingResult.Success, TokenCollection = new SqlDescriptionNode[0] });
+				_oracleSqlCollection.Add(new OracleStatement { ProcessingResult = NonTerminalProcessingResult.Success, TokenCollection = new StatementDescriptionNode[0] });
 				return;
 			}
 			
@@ -74,7 +74,7 @@ namespace SqlRefactor
 
 			do
 			{
-				var oracleSql = new OracleSql();
+				var oracleSql = new OracleStatement();
 
 				foreach (var nonTerminal in _availableNonTerminals)
 				{
@@ -104,11 +104,6 @@ namespace SqlRefactor
 					}
 				}
 
-				if (result.Tokens.Count > 0)
-				{
-					//oracleSql.TokenCollection = result.Tokens;
-					//_oracleSqlCollection.Add(oracleSql);
-				}
 				oracleSql.TokenCollection = result.Tokens;
 				oracleSql.ProcessingResult = result.Value;
 				_oracleSqlCollection.Add(oracleSql);
@@ -118,7 +113,7 @@ namespace SqlRefactor
 
 		private ProcessingResult ProceedNonTerminal(string nonTerminal, int level, int tokenStartOffset)
 		{
-			var tokens = new List<SqlDescriptionNode>();
+			var tokens = new List<StatementDescriptionNode>();
 			var result = new ProcessingResult
 			             {
 				             Value = NonTerminalProcessingResult.Start,
@@ -152,7 +147,7 @@ namespace SqlRefactor
 						{
 							localTokenIndex += nestedResult.TerminalCount;
 
-							var nestedNode = new SqlDescriptionNode { Id = nestedNonTerminal.Id, Type = SqlNodeType.NonTerminal };
+							var nestedNode = new StatementDescriptionNode { Id = nestedNonTerminal.Id, Type = NodeType.NonTerminal };
 							foreach (var nonTerminalNode in nestedResult.Tokens)
 							{
 								nestedNode.ChildTokens.Add(nonTerminalNode);
@@ -197,7 +192,7 @@ namespace SqlRefactor
 							break;
 						}
 
-						var sqlToken = new SqlDescriptionNode { Value = currentToken, Id = terminalReference.Id, Type = SqlNodeType.Terminal };
+						var sqlToken = new StatementDescriptionNode { Value = currentToken, Id = terminalReference.Id, Type = NodeType.Terminal };
 						tokens.Add(sqlToken);
 
 						//Trace.WriteLine(string.Format("newTokenFetched: {0}; nonTerminal: {1}; token: {2}", newTokenFetched, nonTerminal, sqlToken));
@@ -216,14 +211,14 @@ namespace SqlRefactor
 	public struct ProcessingResult
 	{
 		public NonTerminalProcessingResult Value { get; set; }
-		public ICollection<SqlDescriptionNode> Tokens { get; set; }
+		public ICollection<StatementDescriptionNode> Tokens { get; set; }
 
-		public IEnumerable<SqlDescriptionNode> Terminals
+		public IEnumerable<StatementDescriptionNode> Terminals
 		{
 			get
 			{
 				return Tokens == null
-					? Enumerable.Empty<SqlDescriptionNode>()
+					? Enumerable.Empty<StatementDescriptionNode>()
 					: Tokens.SelectMany(t => t.Terminals);
 			}
 		} 

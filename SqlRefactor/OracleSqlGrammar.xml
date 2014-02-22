@@ -369,7 +369,34 @@
           <NonTerminal Id="RelationalOperator" />
         </Sequence>
         <Sequence>
+          <NonTerminal Id="LikeOperator" />
+          <!--<NonTerminal Id="EscapeClause" IsOptional="true" />-->
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="LikeOperator">
+      <Sequences>
+        <Sequence>
           <Terminal Id="Like" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="LikeUcs2" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="LikeUcs4" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="LikeUnicode" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="EscapeClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Escape" />
+          <Terminal Id="StringLiteral" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -1214,7 +1241,6 @@
     <Terminal Id="Not" Value="NOT" IsKeyword="true" />
     <Terminal Id="Exists" Value="EXISTS" IsKeyword="true" />
     <Terminal Id="Where" Value="WHERE" IsKeyword="true" />
-    <Terminal Id="Like" Value="LIKE" IsKeyword="true" />
     <Terminal Id="Between" Value="BETWEEN" IsKeyword="true" />
     <Terminal Id="Date" Value="DATE" IsKeyword="true" />
     <Terminal Id="Over" Value="OVER" />
@@ -1236,6 +1262,13 @@
     <Terminal Id="StringLiteral" RegexValue="(&apos;([^&apos;]|(&apos;&apos;))*&apos;)$" /> <!--TODO: Add quoted literal option -->
     <Terminal Id="NumberLiteral" RegexValue="^((\d+\.?\d*)|(\d*\.?\d+))([eE][+-]?\d+)?[fFdD]?$" />
     <Terminal Id="IntegerLiteral" RegexValue="^\d+([eE]((\+?\d+)|(-0)))?$" />
+
+    <!-- LIKE -->
+    <Terminal Id="Like" Value="LIKE" IsKeyword="true" Comment="Uses input character set" />
+    <Terminal Id="LikeUcs2" Value="LIKE2" Comment="2 byte Universal Character Set" />
+    <Terminal Id="LikeUcs4" Value="LIKE4" Comment="4 byte Universal Character Set" />
+    <Terminal Id="LikeUnicode" Value="LIKEC" Comment="Unicode" />
+    <Terminal Id="Escape" Value="ESCAPE" />
 
     <!-- For update -->
     <Terminal Id="For" Value="FOR" IsKeyword="true" />
