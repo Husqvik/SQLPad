@@ -47,7 +47,7 @@ namespace SqlRefactor
 			if (tokenReader == null)
 				throw new ArgumentNullException("tokenReader");
 
-			return Parse(tokenReader.GetTokens());
+			return Parse(tokenReader.GetTokens().Cast<OracleToken>());
 		}
 
 		public ICollection<OracleSql> Parse(IEnumerable<OracleToken> tokens)

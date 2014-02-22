@@ -8,7 +8,7 @@ using System.Text;
 namespace SqlRefactor
 {
 	[DebuggerDisplay("OracleToken (Value={Value}, Index={Index})")]
-	public struct OracleToken
+	public struct OracleToken : IToken
 	{
 		public static OracleToken Empty = new OracleToken();
 		private readonly string _value;
@@ -29,7 +29,7 @@ namespace SqlRefactor
 		public int Index { get { return _index; } }
 	}
 
-	public class OracleTokenReader : IDisposable
+	public class OracleTokenReader : IDisposable, ITokenReader
 	{
 		private readonly TextReader _sqlReader;
 		private readonly Queue<int> _buffer = new Queue<int>();
@@ -64,7 +64,7 @@ namespace SqlRefactor
 		}
 		#endregion
 
-		public IEnumerable<OracleToken> GetTokens(bool includeCommentBlocks = false)
+		public IEnumerable<IToken> GetTokens(bool includeCommentBlocks = false)
 		{
 			_builder.Clear();
 			_currentIndex = 0;

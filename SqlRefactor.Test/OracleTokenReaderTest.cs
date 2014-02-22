@@ -285,7 +285,7 @@ namespace SqlRefactor.Test
 			using (var reader = new StringReader(sqlText))
 			{
 				var tokenReader = OracleTokenReader.Create(reader);
-				return tokenReader.GetTokens().ToArray();
+				return tokenReader.GetTokens().Cast<OracleToken>().ToArray();
 			}
 		}
     }
