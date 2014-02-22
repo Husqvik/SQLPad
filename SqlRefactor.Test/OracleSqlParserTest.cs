@@ -461,6 +461,19 @@ namespace SqlRefactor.Test
 			// TODO: Precise assertions
 		}
 
+		[Test(Description = @"Tests nested subquery. ")]
+		public void Test30()
+		{
+			const string query1 = @"SELECT * FROM (SELECT LEVEL ORDERED_COLUMN FROM DUAL CONNECT BY LEVEL <= 5 ORDER BY ORDERED_COLUMN DESC) WHERE ROWNUM <= 3";
+			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+
+			// TODO: Precise assertions
+		}
+
+
 		private static OracleTokenReader CreateTokenReader(string sqlText)
 		{
 			Trace.WriteLine("SQL text: " + sqlText);

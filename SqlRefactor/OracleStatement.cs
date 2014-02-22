@@ -38,8 +38,8 @@ namespace SqlRefactor
 		{
 			get
 			{
-				int indexStart = -1;
-				int indexEnd = -1;
+				var indexStart = -1;
+				var indexEnd = -1;
 				if (Type == NodeType.Terminal)
 				{
 					indexStart = Value.Index;

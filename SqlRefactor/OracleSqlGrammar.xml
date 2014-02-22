@@ -540,7 +540,6 @@
         </Sequence>-->
         <Sequence>
           <NonTerminal Id="TableReference" />
-          <Terminal Id="Alias" IsOptional="true" />
           <NonTerminal Id="JoinClause" IsOptional="true" />
           <NonTerminal Id="FromClauseChained" IsOptional="true" />
         </Sequence>
@@ -565,13 +564,14 @@
           <NonTerminal Id="QueryTableExpression" />
           <Terminal Id="RightParenthesis" />
           <NonTerminal Id="FlashbackQueryClause" IsOptional="true" />
+          <Terminal Id="Alias" IsOptional="true" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="QueryTableExpression" />
           <!-- TODO: Pivot and Unpivot clauses -->
           <NonTerminal Id="FlashbackQueryClause" IsOptional="true" />
+          <Terminal Id="Alias" IsOptional="true" />
         </Sequence>
-        <!-- TODO -->
       </Sequences>
     </Rule>
 
@@ -583,12 +583,12 @@
           <NonTerminal Id="PartitionOrDatabaseLink" IsOptional="true" />
           <NonTerminal Id="SampleClause" IsOptional="true" />
         </Sequence>
-        <!--<Sequence>
+        <Sequence>
           <Terminal Id="LeftParenthesis" />
-          <NonTerminal Id="SubQuery" />
-          <NonTerminal Id="SubQueryRestrictionClause" IsOptional="true" />
+          <NonTerminal Id="NestedQuery" />
+          <!--<NonTerminal Id="SubQueryRestrictionClause" IsOptional="true" />-->
           <Terminal Id="RightParenthesis" />
-        </Sequence>-->
+        </Sequence>
         <Sequence>
           <NonTerminal Id="TableCollectionExpression" />
         </Sequence>
