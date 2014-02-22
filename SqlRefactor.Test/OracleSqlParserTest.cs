@@ -345,7 +345,7 @@ namespace SqlRefactor.Test
 		[Test(Description = @"Tests LIKE clause. ")]
 		public void Test21()
 		{
-			const string query1 = @"SELECT CASE WHEN 'abc' LIKE 'a%' OR '123' LIKEC '1%' OR '456' LIKE2 '4%' OR '789' LIKE4 '%7%' THEN 'true' END FROM DUAL WHERE 'def' LIKE 'd%'";
+			const string query1 = @"SELECT CASE WHEN 'abc' LIKE 'a%' OR '123' LIKEC '1%' OR '456' LIKE2 '4%' OR '789' LIKE4 '%7%' ESCAPE '\' THEN 'true' END FROM DUAL WHERE 'def' LIKE 'd%' ESCAPE '\'";
 			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
 
 			result.Count.ShouldBe(1);

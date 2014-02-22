@@ -286,8 +286,15 @@
         </Sequence>
         <Sequence>
           <NonTerminal Id="Expression" />
-          <NonTerminal Id="RelationalOperatorOrLike" />
+          <NonTerminal Id="RelationalOperator" />
           <NonTerminal Id="Expression" />
+          <NonTerminal Id="ChainedCondition" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="Expression" />
+          <NonTerminal Id="LikeOperator" />
+          <NonTerminal Id="Expression" />
+          <NonTerminal Id="EscapeClause" IsOptional="true" />
           <NonTerminal Id="ChainedCondition" IsOptional="true" />
         </Sequence>
         <Sequence>
@@ -315,6 +322,15 @@
           <NonTerminal Id="ChainedCondition" IsOptional="true" />
         </Sequence>
         <!--TODO Add set conditions -->
+        <Sequence>
+          <NonTerminal Id="ParenthesisEnclosedExpressionList" />
+          <NonTerminal Id="RelationalEquiOperator" />
+          <NonTerminal Id="SetQualifier" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="ExpressionListOrNestedQuery" />
+          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="ChainedCondition" IsOptional="true" />
+        </Sequence>
       </Sequences>
     </Rule>
 
@@ -363,18 +379,6 @@
       </Sequences>
     </Rule>
     
-    <Rule StartingNonTerminal="RelationalOperatorOrLike">
-      <Sequences>
-        <Sequence>
-          <NonTerminal Id="RelationalOperator" />
-        </Sequence>
-        <Sequence>
-          <NonTerminal Id="LikeOperator" />
-          <!--<NonTerminal Id="EscapeClause" IsOptional="true" />-->
-        </Sequence>
-      </Sequences>
-    </Rule>
-
     <Rule StartingNonTerminal="LikeOperator">
       <Sequences>
         <Sequence>
@@ -400,8 +404,19 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="RelationalOperator">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="RelationalEquiOperator" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="RelationalNonEquiOperator" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="RelationalEquiOperator">
       <Sequences>
         <Sequence>
           <Terminal Id="MathEquals" />
@@ -415,6 +430,11 @@
         <Sequence>
           <Terminal Id="MathNotEqualsCircumflex" />
         </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="RelationalNonEquiOperator">
+      <Sequences>
         <Sequence>
           <Terminal Id="MathGreatherThan" />
         </Sequence>
