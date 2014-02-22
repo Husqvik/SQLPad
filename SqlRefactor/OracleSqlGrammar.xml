@@ -335,7 +335,7 @@
           <NonTerminal Id="RelationalEquiOperator" />
           <NonTerminal Id="SetQualifier" />
           <Terminal Id="LeftParenthesis" />
-          <NonTerminal Id="ExpressionListOrNestedQuery" /><!-- TODO: check nested expression lists -->
+          <NonTerminal Id="GroupingExpressionListOrNestedQuery" />
           <Terminal Id="RightParenthesis" />
           <NonTerminal Id="ChainedCondition" IsOptional="true" />
         </Sequence>
@@ -346,6 +346,17 @@
       <Sequences>
         <Sequence>
           <NonTerminal Id="ExpressionList" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="NestedQuery" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="GroupingExpressionListOrNestedQuery">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="GroupingExpressionList" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="NestedQuery" />
