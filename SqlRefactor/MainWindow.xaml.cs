@@ -16,6 +16,7 @@ using System.Windows.Shapes;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Highlighting;
 using ICSharpCode.AvalonEdit.Rendering;
+using SqlRefactor.Commands;
 
 namespace SqlRefactor
 {
@@ -52,7 +53,7 @@ namespace SqlRefactor
 
 		private void AddColumnAliasesExecutedHandler(object sender, ExecutedRoutedEventArgs e)
 		{
-			MessageBox.Show(this, "not implemented yet");
+			Editor.Text = new AddMissingAliasesCommand().Execute(Editor.CaretOffset, Editor.Text);
 		}
 
 		private void AddColumnAliasesCanExecuteHandler(object sender, CanExecuteRoutedEventArgs e)

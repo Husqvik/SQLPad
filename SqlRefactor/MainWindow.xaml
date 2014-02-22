@@ -29,6 +29,7 @@
             <Button Content="_Wrap as common table expression"/>
             <Button Content="W_rap as subquery"/>
             <Button Content="A_dd fully qualified names"/>
+            <Button Content="E_xpand columns"/>
         </StackPanel>
     </Grid>
 </Window>

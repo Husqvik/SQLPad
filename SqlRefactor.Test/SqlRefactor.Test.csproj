@@ -41,6 +41,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AddMissingAliasesCommandTest.cs" />
     <Compile Include="OracleSqlParserTest.cs" />
     <Compile Include="OracleTokenReaderTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

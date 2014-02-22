@@ -14,6 +14,11 @@ namespace SqlRefactor
 		public ICollection<StatementDescriptionNode> TokenCollection { get; set; }
 
 		public SourcePosition SourcePosition { get; set; }
+
+		public StatementDescriptionNode GetNodeAtPosition(int offset)
+		{
+			return TokenCollection.FirstOrDefault(t => t.SourcePosition.IndexStart <= offset && t.SourcePosition.IndexEnd >= offset);
+		}
 	}
 
 	[DebuggerDisplay("{ToString()}")]
@@ -21,18 +26,18 @@ namespace SqlRefactor
 	{
 		public StatementDescriptionNode()
 		{
-			ChildTokens = new List<StatementDescriptionNode>();
+			ChildNodes = new List<StatementDescriptionNode>();
 		}
 
 		public NodeType Type { get; set; }
 
-		public StatementDescriptionNode ParentDescriptionNode { get; set; }
+		public StatementDescriptionNode ParentNode { get; set; }
 		
 		public OracleToken Value { get; set; }
 		
 		public string Id { get; set; }
 
-		public ICollection<StatementDescriptionNode> ChildTokens { get; set; }
+		public ICollection<StatementDescriptionNode> ChildNodes { get; set; }
 
 		public SourcePosition SourcePosition
 		{
@@ -59,7 +64,7 @@ namespace SqlRefactor
 		#region Overrides of Object
 		public override string ToString()
 		{
-			return string.Format("StatementDescriptionNode (Id={0}; Type={1})", Id, Type);
+			return string.Format("StatementDescriptionNode (Id={0}; Type={1}; SourcePosition=({2}-{3}))", Id, Type, SourcePosition.IndexStart, SourcePosition.IndexEnd);
 		}
 		#endregion
 
@@ -70,7 +75,38 @@ namespace SqlRefactor
 		
 		public IEnumerable<StatementDescriptionNode> Terminals 
 		{
-			get { return Type == NodeType.Terminal ? Enumerable.Repeat(this, 1) : ChildTokens.SelectMany(t => t.Terminals); }
+			get { return Type == NodeType.Terminal ? Enumerable.Repeat(this, 1) : ChildNodes.SelectMany(t => t.Terminals); }
+		}
+
+		public IEnumerable<StatementDescriptionNode> AllChildNodes
+		{
+			get
+			{
+				return Type == NodeType.Terminal
+					? Enumerable.Empty<StatementDescriptionNode>()
+					: ChildNodes.Concat(ChildNodes.SelectMany(n => n.AllChildNodes));
+			}
+		}
+
+		public IEnumerable<StatementDescriptionNode> GetDescendants(string startingNodeId, params string[] descendantNodeIds)
+		{
+			var startingNode = AllChildNodes.FirstOrDefault(t => t.Id == startingNodeId);
+			return startingNode == null
+				? Enumerable.Empty<StatementDescriptionNode>()
+				: startingNode.AllChildNodes.Where(t => descendantNodeIds.Contains(t.Id));
+		}
+
+		public StatementDescriptionNode GetAncestor(string ancestorNodeId, bool includeSelf = true)
+		{
+			if (includeSelf && Id == ancestorNodeId)
+				return this;
+
+			if (ParentNode == null)
+				return null;
+
+			return ParentNode.Id == ancestorNodeId
+				? ParentNode
+				: ParentNode.GetAncestor(ancestorNodeId);
 		}
 	}
 

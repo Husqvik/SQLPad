@@ -60,6 +60,11 @@
     <Compile Include="Extensions.cs" />
     <Compile Include="IToken.cs" />
     <Compile Include="ITokenReader.cs" />
+    <Compile Include="OracleGramarDescription.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>OracleGramarDescription.tt</DependentUpon>
+    </Compile>
     <Compile Include="OracleStatement.cs" />
     <Compile Include="OracleSqlGrammar.cs">
       <DependentUpon>OracleSqlGrammar.xsd</DependentUpon>
@@ -98,6 +103,10 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <Compile Include="OracleSqlGrammar.Extension.cs" />
+    <None Include="OracleGramarDescription.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>OracleGramarDescription.cs</LastGenOutput>
+    </None>
     <None Include="OracleSqlGrammar.xsd">
       <SubType>Designer</SubType>
     </None>
@@ -115,6 +124,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <SubType>Designer</SubType>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

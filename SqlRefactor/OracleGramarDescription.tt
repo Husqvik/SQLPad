@@ -1,0 +1,47 @@
+﻿<#@ template debug="true" hostspecific="true" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ assembly name="System.Xml" #>
+<#@ assembly name="System.Xml.Linq" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.Xml.Linq" #>
+<#@ import namespace="System.IO" #>
+<#@ output extension=".cs" #>
+<#
+	const string xmlNamespace = "{http://husqvik.com/SqlRefactor/2014/02}";
+	var grammarDescriptionPath = Path.Combine(Path.GetDirectoryName(Host.TemplateFile), @"OracleSqlGrammar.xml");
+	var grammarXml = XDocument.Load(grammarDescriptionPath);
+#>
+namespace SqlRefactor
+{
+	public static class OracleGrammarDescription
+	{
+		public static class NonTerminals
+		{
+<#
+		var nonTerminalIds = grammarXml.Element(xmlNamespace + "SqlGrammar").Element(xmlNamespace + "Rules").Elements().Select(r => r.Element(xmlNamespace + "Sequences"))
+			.SelectMany(s => s.Elements()).SelectMany(s => s.Elements(xmlNamespace + "NonTerminal")).Select(e => e.Attribute("Id").Value).Distinct().OrderBy(id => id);
+		foreach(var nonTerminalId in nonTerminalIds)
+		{
+#>
+			public const string <#=nonTerminalId#> = "<#=nonTerminalId#>";
+<#
+		}
+#>
+		}
+
+		public static class Terminals
+		{
+<#
+		var terminalIds = grammarXml.Element(xmlNamespace + "SqlGrammar").Element(xmlNamespace + "Terminals").Elements().Select(e => e.Attribute("Id").Value).OrderBy(id => id);
+		foreach(var terminalId in terminalIds)
+		{
+#>
+			public const string <#=terminalId#> = "<#=terminalId#>";
+<#
+		}
+#>
+		}
+	}
+}

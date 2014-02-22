@@ -11,6 +11,11 @@
     <StartSymbol Id="Alter" />
     <StartSymbol Id="Rename" />-->
   </StartSymbols>
+
+  <Terminators>
+    <Terminator Value =";" />
+    <!--<Terminator RegexValue="TODO" />-->
+  </Terminators>
     
   <Rules>
     <Rule StartingNonTerminal="Query">

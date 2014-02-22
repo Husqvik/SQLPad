@@ -6,9 +6,21 @@
         <xs:element name="StartSymbols">
           <xs:complexType>
             <xs:sequence>
-              <xs:element name="StartSymbol">
+              <xs:element maxOccurs="unbounded" name="StartSymbol">
                 <xs:complexType>
                   <xs:attribute name="Id" type="xs:string" use="required" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="Terminators">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element maxOccurs="unbounded" name="Terminator">
+                <xs:complexType>
+                  <xs:attribute name="Value" type="xs:string" use="optional" />
+                  <xs:attribute name="RegexValue" type="xs:string" use="optional" />
                 </xs:complexType>
               </xs:element>
             </xs:sequence>

@@ -26,6 +26,8 @@ namespace SqlRefactor {
         
         private SqlGrammarStartSymbol[] startSymbolsField;
         
+        private SqlGrammarTerminator[] terminatorsField;
+        
         private SqlGrammarRule[] rulesField;
         
         private SqlGrammarTerminal[] terminalsField;
@@ -46,6 +48,17 @@ namespace SqlRefactor {
             }
             set {
                 this.startSymbolsField = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlArrayItemAttribute("Terminator", IsNullable=false)]
+        public SqlGrammarTerminator[] Terminators {
+            get {
+                return this.terminatorsField;
+            }
+            set {
+                this.terminatorsField = value;
             }
         }
         
@@ -134,6 +147,41 @@ namespace SqlRefactor {
             }
             set {
                 this.idField = value;
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.0.30319.33440")]
+    [System.SerializableAttribute()]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://husqvik.com/SqlRefactor/2014/02")]
+    public partial class SqlGrammarTerminator {
+        
+        private string valueField;
+        
+        private string regexValueField;
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string Value {
+            get {
+                return this.valueField;
+            }
+            set {
+                this.valueField = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string RegexValue {
+            get {
+                return this.regexValueField;
+            }
+            set {
+                this.regexValueField = value;
             }
         }
     }
@@ -267,11 +315,11 @@ namespace SqlRefactor {
         
         private string idField;
         
-        private string commentField;
-        
         private bool isOptionalField;
         
         private bool isOptionalFieldSpecified;
+        
+        private string commentField;
         
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
@@ -281,17 +329,6 @@ namespace SqlRefactor {
             }
             set {
                 this.idField = value;
-            }
-        }
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public string Comment {
-            get {
-                return this.commentField;
-            }
-            set {
-                this.commentField = value;
             }
         }
         
@@ -316,6 +353,17 @@ namespace SqlRefactor {
                 this.isOptionalFieldSpecified = value;
             }
         }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string Comment {
+            get {
+                return this.commentField;
+            }
+            set {
+                this.commentField = value;
+            }
+        }
     }
     
     /// <remarks/>
@@ -337,6 +385,8 @@ namespace SqlRefactor {
         private bool isKeywordFieldSpecified;
         
         private string regexValueField;
+        
+        private string commentField;
         
         /// <remarks/>
         [System.Xml.Serialization.XmlArrayItemAttribute("Synonym", IsNullable=false)]
@@ -401,6 +451,17 @@ namespace SqlRefactor {
             }
             set {
                 this.regexValueField = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string Comment {
+            get {
+                return this.commentField;
+            }
+            set {
+                this.commentField = value;
             }
         }
     }

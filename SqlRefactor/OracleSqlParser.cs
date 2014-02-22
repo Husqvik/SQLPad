@@ -17,9 +17,13 @@ namespace SqlRefactor
 		private static readonly XmlSerializer XmlSerializer = new XmlSerializer(typeof(SqlGrammar));
 		private readonly List<OracleStatement> _oracleSqlCollection = new List<OracleStatement>();
 		private readonly HashSet<string> _keywords;
+		private readonly HashSet<string> _terminators;
 		
 		private readonly List<OracleToken> _tokenBuffer = new List<OracleToken>();
 		private readonly List<string> _availableNonTerminals;
+
+		public ICollection<string> TerminalIds { get { return _terminals.Keys; } }
+		public IEnumerable<string> NonTerminalIds { get { return _sqlGrammar.Rules.SelectMany(r => r.Sequences).SelectMany(s => s.Items.OfType<SqlGrammarRuleSequenceNonTerminal>().Select(n => n.Id)); } } 
 
 		public OracleSqlParser()
 		{
@@ -32,6 +36,7 @@ namespace SqlRefactor
 			_terminals = _sqlGrammar.Terminals.ToDictionary(t => t.Id, t => t);
 			_keywords = new HashSet<string>(_sqlGrammar.Terminals.Where(t => t.IsKeyword).Select(t => t.Value));
 			_availableNonTerminals = _sqlGrammar.StartSymbols.Select(s => s.Id).ToList();
+			_terminators = new HashSet<string>(_sqlGrammar.Terminators.Select(t => t.Value));
 		}
 
 		public ICollection<OracleStatement> Parse(string sqlText)
@@ -84,7 +89,7 @@ namespace SqlRefactor
 						continue;
 					
 					var lastTerminal = result.Terminals.Last();
-					if (lastTerminal.Value.Value != ";" && _tokenBuffer.Count > result.TerminalCount)
+					if (!_terminators.Contains(lastTerminal.Value.Value) && _tokenBuffer.Count > result.TerminalCount)
 						result.Value = NonTerminalProcessingResult.SequenceNotFound;
 
 					break;
@@ -96,7 +101,7 @@ namespace SqlRefactor
 				{
 					indexStart = _tokenBuffer.First().Index;
 
-					var index = _tokenBuffer.FindIndex(t => t.Value == ";");
+					var index = _tokenBuffer.FindIndex(t => _terminators.Contains(t.Value));
 					if (index == -1)
 					{
 						var lastToken = _tokenBuffer[_tokenBuffer.Count - 1];
@@ -165,8 +170,8 @@ namespace SqlRefactor
 							var nestedNode = new StatementDescriptionNode { Id = nestedNonTerminal.Id, Type = NodeType.NonTerminal };
 							foreach (var nonTerminalNode in nestedResult.Tokens)
 							{
-								nestedNode.ChildTokens.Add(nonTerminalNode);
-								nonTerminalNode.ParentDescriptionNode = nestedNode;
+								nestedNode.ChildNodes.Add(nonTerminalNode);
+								nonTerminalNode.ParentNode = nestedNode;
 							}
 
 							tokens.Add(nestedNode);
