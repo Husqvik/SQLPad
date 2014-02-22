@@ -299,6 +299,15 @@
         </Sequence>
         <Sequence>
           <NonTerminal Id="Expression" />
+          <NonTerminal Id="RelationalOperator" />
+          <NonTerminal Id="SetQualifier" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="ExpressionListOrNestedQuery" />
+          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="ChainedCondition" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="Expression" />
           <Terminal Id="Is" />
           <Terminal Id="Not" IsOptional="true" />
           <NonTerminal Id="NullNaNOrInfinite" />
@@ -321,13 +330,12 @@
           <NonTerminal Id="Expression" />
           <NonTerminal Id="ChainedCondition" IsOptional="true" />
         </Sequence>
-        <!--TODO Add set conditions -->
         <Sequence>
           <NonTerminal Id="ParenthesisEnclosedExpressionList" />
           <NonTerminal Id="RelationalEquiOperator" />
           <NonTerminal Id="SetQualifier" />
           <Terminal Id="LeftParenthesis" />
-          <NonTerminal Id="ExpressionListOrNestedQuery" />
+          <NonTerminal Id="ExpressionListOrNestedQuery" /><!-- TODO: check nested expression lists -->
           <Terminal Id="RightParenthesis" />
           <NonTerminal Id="ChainedCondition" IsOptional="true" />
         </Sequence>

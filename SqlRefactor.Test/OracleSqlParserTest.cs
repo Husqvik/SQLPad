@@ -429,6 +429,26 @@ namespace SqlRefactor.Test
 			// TODO: Precise assertions
 		}
 
+		[Test(Description = @"Tests ANY and ALL operators with expression list and subquery. ")]
+		public void Test28()
+		{
+			const string query1 = @"SELECT 1 FROM DUAL WHERE DUMMY = ANY(1, 2, 3) OR DUMMY = ALL(SELECT * FROM DUAL)";
+			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+
+			// TODO: Precise assertions
+
+			const string query2 = @"SELECT 1 FROM DUAL WHERE (1, 2, 3) = ALL(SELECT 1, 2, 3 FROM DUAL)";
+			result = _oracleSqlParser.Parse(CreateTokenReader(query2));
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+
+			// TODO: Precise assertions
+		}
+
 		private static OracleTokenReader CreateTokenReader(string sqlText)
 		{
 			Trace.WriteLine("SQL text: " + sqlText);
