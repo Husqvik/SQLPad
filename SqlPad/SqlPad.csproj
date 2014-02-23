@@ -56,9 +56,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Commands\TogleQuotedIdentifierCommand.cs" />
     <Compile Include="Commands\WrapAsCommonTableExpressionCommand.cs" />
     <Compile Include="Commands\AddMissingAliasesCommand.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="IDatabaseModel.cs" />
     <Compile Include="IToken.cs" />
     <Compile Include="ITokenReader.cs" />
     <Compile Include="OracleGramarDescription.cs">

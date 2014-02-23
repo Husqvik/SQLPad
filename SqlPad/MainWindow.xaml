@@ -10,6 +10,8 @@
                     Executed="AddColumnAliasesExecutedHandler" CanExecute="AddColumnAliasesCanExecuteHandler" />
         <CommandBinding Command="{x:Static local:MainWindow.CommandWrapAsCommonTableExpression}"
                     Executed="WrapAsCommonTableExpressionExecutedHandler" CanExecute="WrapAsCommonTableExpressionCanExecuteHandler" />
+        <CommandBinding Command="{x:Static local:MainWindow.CommandToggleQuotedIdentifier}"
+                    Executed="ToggleQuotedIdentifierExecutedHandler" CanExecute="ToggleQuotedIdentifierCanExecuteHandler" />
     </Window.CommandBindings>
 
     <Grid>
@@ -29,9 +31,10 @@
         <StackPanel Grid.Column="1" Grid.Row="0">
             <Button Content="_Add column aliases" Command="{x:Static local:MainWindow.CommandAddColumnAliases}" />
             <Button Content="_Wrap as common table expression" Command="{x:Static local:MainWindow.CommandWrapAsCommonTableExpression}" />
-            <Button Content="W_rap as subquery" />
-            <Button Content="A_dd fully qualified names" />
-            <Button Content="E_xpand columns" />
+            <Button Content="W_rap as subquery" IsEnabled="False" />
+            <Button Content="A_dd fully qualified names" IsEnabled="False" />
+            <Button Content="E_xpand columns" IsEnabled="False" />
+            <Button Content="Toggle quoted identifiers" Command="{x:Static local:MainWindow.CommandToggleQuotedIdentifier}" />
         </StackPanel>
     </Grid>
 </Window>

@@ -30,6 +30,7 @@ namespace SqlPad
 
 		public static RoutedCommand CommandAddColumnAliases = new RoutedCommand();
 		public static RoutedCommand CommandWrapAsCommonTableExpression = new RoutedCommand();
+		public static RoutedCommand CommandToggleQuotedIdentifier = new RoutedCommand();
 
 		public MainWindow()
 		{
@@ -68,6 +69,16 @@ namespace SqlPad
 		}
 
 		private void WrapAsCommonTableExpressionCanExecuteHandler(object sender, CanExecuteRoutedEventArgs e)
+		{
+			e.CanExecute = true;
+		}
+
+		private void ToggleQuotedIdentifierExecutedHandler(object sender, ExecutedRoutedEventArgs e)
+		{
+			Editor.Text = new TogleQuotedIdentifierCommand().Execute(Editor.Text, Editor.CaretOffset);
+		}
+
+		private void ToggleQuotedIdentifierCanExecuteHandler(object sender, CanExecuteRoutedEventArgs e)
 		{
 			e.CanExecute = true;
 		}

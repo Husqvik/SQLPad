@@ -27,15 +27,15 @@ namespace SqlPad.Commands
 
 			var currentColumn = 0;
 			var addedOffset = 0;
-			foreach (var aliasedExpression in aliasedColumns)
+			foreach (var aliasedColumn in aliasedColumns)
 			{
 				currentColumn++;
-				if (aliasedExpression.ChildNodes.Count == 2 ||
-					(aliasedExpression.Terminals.Count() == 1 && aliasedExpression.Terminals.Single().Id == OracleGrammarDescription.Terminals.Identifier))
+				if (aliasedColumn.ChildNodes.Count == 2 ||
+					(aliasedColumn.Terminals.Count() == 1 && aliasedColumn.Terminals.Single().Id == OracleGrammarDescription.Terminals.Identifier))
 					continue;
 
 				var alias = " COLUMN" + currentColumn;
-				builder.Insert(aliasedExpression.SourcePosition.IndexEnd + 1 + addedOffset, alias);
+				builder.Insert(aliasedColumn.SourcePosition.IndexEnd + 1 + addedOffset, alias);
 				addedOffset += alias.Length;
 			}
 

@@ -56,25 +56,25 @@ namespace SqlPad.Commands
 
 			var nestedQueryRoot = queryBlockRoot.GetAncestor(OracleGrammarDescription.NonTerminals.NestedQuery);
 			var lastSubquery = nestedQueryRoot.GetDescendants(OracleGrammarDescription.NonTerminals.SubqueryComponent).LastOrDefault();
-			int statementPosition;
 			int whiteSpace;
+			int insertIndex;
+			string initialToken;
 			if (lastSubquery == null)
 			{
-				addedOffset += builder.InsertAt(0, "WITH " + queryName + " AS (");
-				addedOffset += builder.InsertAt(addedOffset, movedStatement);
-				addedOffset += builder.InsertAt(addedOffset, ") ");
-				statementPosition = addedOffset;
+				insertIndex = nestedQueryRoot.SourcePosition.IndexStart;
+				initialToken = "WITH ";
 				whiteSpace = 0;
 			}
 			else
 			{
-				var insertIndex = lastSubquery.SourcePosition.IndexEnd + 1;
-				addedOffset += builder.InsertAt(insertIndex, ", " + queryName + " AS (");
-				addedOffset += builder.InsertAt(insertIndex + addedOffset, movedStatement);
-				addedOffset += builder.InsertAt(insertIndex + addedOffset, ") ");
-				statementPosition = insertIndex + addedOffset;
+				insertIndex = lastSubquery.SourcePosition.IndexEnd + 1;
+				initialToken = ", ";
 				whiteSpace = queryBlockRoot.SourcePosition.IndexStart - lastSubquery.SourcePosition.IndexEnd - 1;
 			}
+
+			addedOffset += builder.InsertAt(insertIndex + addedOffset, initialToken + queryName + " AS (" + movedStatement + ") ");
+
+			var statementPosition = insertIndex + addedOffset;
 
 			builder.Insert(statementPosition, newStatementBuilder.ToString());
 			builder.Remove(statementPosition + newStatementBuilder.Length, movedStatementLength + whiteSpace);
