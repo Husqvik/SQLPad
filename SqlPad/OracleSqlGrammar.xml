@@ -658,11 +658,23 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Identifier" />
+          <NonTerminal Id="ParenthesisEnclosedColumnIdentifierList" IsOptional="true" />
           <Terminal Id="As" />
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="Subquery" />
           <Terminal Id="RightParenthesis" />
           <NonTerminal Id="SubqueryComponentChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ParenthesisEnclosedColumnIdentifierList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <Terminal Id="Identifier" />
+          <NonTerminal Id="ColumnChainedList" IsOptional="true" />
+          <Terminal Id="RightParenthesis" />
         </Sequence>
       </Sequences>
     </Rule>

@@ -179,7 +179,7 @@ namespace SqlPad.Test
 		[Test(Description = @"Tests simple query with common table expression. ")]
 		public void Test10()
 		{
-			const string sqlText = @"with x as (select 1 from d) SELECT * FROM D;";
+			const string sqlText = @"WITH X(A, B, C) AS (SELECT 1 FROM D) SELECT * FROM D;";
 			var result = _oracleSqlParser.Parse(CreateTokenReader(sqlText));
 
 			result.Count.ShouldBe(1);
@@ -203,7 +203,7 @@ namespace SqlPad.Test
 		[Test(Description = @"Tests simple queries connected by set operations. ")]
 		public void Test12()
 		{
-			const string sqlText = @"select 1 from dual union all select 1 from dual union select 1 from dual minus select 1 from dual intersect select 1 from dual";
+			const string sqlText = @"SELECT 1 FROM DUAL UNION ALL SELECT 1 FROM DUAL UNION SELECT 1 FROM DUAL MINUS SELECT 1 FROM DUAL INTERSECT SELECT 1 FROM DUAL";
 			var result = _oracleSqlParser.Parse(CreateTokenReader(sqlText));
 
 			result.Count.ShouldBe(1);
@@ -215,7 +215,7 @@ namespace SqlPad.Test
 		[Test(Description = @"Tests simple queries with group by and having clauses. ")]
 		public void Test13()
 		{
-			const string query1 = @"select 1 from dual group by 1, dummy having 1 = 1";
+			const string query1 = @"SELECT 1 FROM DUAL GROUP BY 1, DUMMY HAVING 1 = 1";
 			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
 
 			result.Count.ShouldBe(1);
@@ -223,7 +223,7 @@ namespace SqlPad.Test
 
 			// TODO: Precise assertions
 
-			const string query2 = @"select 1 from dual having 1 = 1";
+			const string query2 = @"SELECT 1 FROM DUAL HAVING 1 = 1";
 			result = _oracleSqlParser.Parse(CreateTokenReader(query2));
 
 			result.Count.ShouldBe(1);
@@ -235,7 +235,7 @@ namespace SqlPad.Test
 		[Test(Description = @"Tests simple queries with for update clause. ")]
 		public void Test14()
 		{
-			const string query1 = @"select 1 from dual for update skip locked";
+			const string query1 = @"SELECT 1 FROM DUAL FOR UPDATE SKIP LOCKED";
 			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
 
 			result.Count.ShouldBe(1);
@@ -243,7 +243,7 @@ namespace SqlPad.Test
 
 			// TODO: Precise assertions
 
-			const string query2 = @"select 1 from dual alias for update nowait";
+			const string query2 = @"SELECT 1 FROM DUAL ALIAS FOR UPDATE NOWAIT";
 			result = _oracleSqlParser.Parse(CreateTokenReader(query2));
 
 			result.Count.ShouldBe(1);
@@ -251,7 +251,7 @@ namespace SqlPad.Test
 
 			// TODO: Precise assertions
 
-			const string query3 = @"select 1 from dual alias for update wait 10e-0";
+			const string query3 = @"SELECT 1 FROM DUAL ALIAS FOR UPDATE WAIT 10E-0";
 			result = _oracleSqlParser.Parse(CreateTokenReader(query3));
 
 			result.Count.ShouldBe(1);
@@ -259,7 +259,7 @@ namespace SqlPad.Test
 
 			// TODO: Precise assertions
 
-			const string query4 = @"select 1 from dual alias for update wait -1";
+			const string query4 = @"SELECT 1 FROM DUAL ALIAS FOR UPDATE WAIT -1";
 			result = _oracleSqlParser.Parse(CreateTokenReader(query4));
 
 			result.Count.ShouldBe(1);
@@ -271,7 +271,7 @@ namespace SqlPad.Test
 		[Test(Description = @"Tests simple queries with IS (NOT) <terminal> conditions. ")]
 		public void Test15()
 		{
-			const string query1 = @"select 1 from dual where null is null and 1 is not null";
+			const string query1 = @"SELECT 1 FROM DUAL WHERE NULL IS NULL AND 1 IS NOT NULL";
 			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
 
 			result.Count.ShouldBe(1);
@@ -279,7 +279,7 @@ namespace SqlPad.Test
 
 			// TODO: Precise assertions
 
-			const string query2 = @"select 'a' NaN, 'b' AS INFINITE from dual where 1 is not NaN and 1 is not infinite";
+			const string query2 = @"SELECT 'A' NAN, 'B' AS INFINITE FROM DUAL WHERE 1 IS NOT NAN AND 1 IS NOT INFINITE";
 			result = _oracleSqlParser.Parse(CreateTokenReader(query2));
 
 			result.Count.ShouldBe(1);
@@ -291,7 +291,7 @@ namespace SqlPad.Test
 		[Test(Description = @"Tests empty token set. ")]
 		public void Test16()
 		{
-			const string query1 = @"--select 1 from dual where null is null and 1 is not null";
+			const string query1 = @"--SELECT 1 FROM DUAL WHERE NULL IS NULL AND 1 IS NOT NULL";
 			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
 
 			result.Count.ShouldBe(1);
@@ -302,7 +302,7 @@ namespace SqlPad.Test
 		[Test(Description = @"Tests correct recovery after invalid statement. ")]
 		public void Test17()
 		{
-			const string query1 = @"/*invalid statement */ select 1 from dual+;/* valid statement */ select 1 from dual";
+			const string query1 = @"/*invalid statement */ SELECT 1 FROM DUAL+;/* valid statement */ SELECT 1 FROM DUAL";
 			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
 
 			result.Count.ShouldBe(2);
@@ -318,7 +318,7 @@ namespace SqlPad.Test
 		[Test(Description = @"Tests EXISTS and NOT EXISTS. ")]
 		public void Test18()
 		{
-			const string query1 = @"select case when not exists (select 1 from dual) then 'false' else 'true' end from dual where exists (select 1 from dual) and exists (select 2 from dual)";
+			const string query1 = @"SELECT CASE WHEN NOT EXISTS (SELECT 1 FROM DUAL) THEN 'FALSE' ELSE 'TRUE' END FROM DUAL WHERE EXISTS (SELECT 1 FROM DUAL) AND EXISTS (SELECT 2 FROM DUAL)";
 			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
 
 			result.Count.ShouldBe(1);
@@ -364,7 +364,7 @@ namespace SqlPad.Test
 		[Test(Description = @"Tests IN clause with subquery. ")]
 		public void Test22()
 		{
-			const string query1 = @"select 1 from dual where 1 not in (with xxx as (select 1 from dual) select 1 from dual dd) and exists (with xxx as (select 1 from dual) select 1 from dual dd)";
+			const string query1 = @"SELECT 1 FROM DUAL WHERE 1 NOT IN (WITH XXX AS (SELECT 1 FROM DUAL) SELECT 1 FROM DUAL DD) AND EXISTS (WITH XXX AS (SELECT 1 FROM DUAL) SELECT 1 FROM DUAL DD)";
 			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
 
 			result.Count.ShouldBe(1);
@@ -374,7 +374,7 @@ namespace SqlPad.Test
 		[Test(Description = @"Tests scalar subquery clause. ")]
 		public void Test23()
 		{
-			const string query1 = @"select 1 C1, (select (select 2 from dual) from dual) C2, (select 3 from dual) C3 from dual";
+			const string query1 = @"SELECT 1 C1, (SELECT (SELECT 2 FROM DUAL) FROM DUAL) C2, (SELECT 3 FROM DUAL) C3 FROM DUAL";
 			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
 
 			result.Count.ShouldBe(1);
@@ -384,7 +384,7 @@ namespace SqlPad.Test
 		[Test(Description = @"Tests join clauses. "), Ignore]
 		public void Test24()
 		{
-			const string query1 = @"select * from t1 cross join t2 join t3 on 1 = 1 inner join t4 using (id) natural join t5 full outer join t6 on t5.id = t6.id";
+			const string query1 = @"SELECT * FROM T1 CROSS JOIN T2 JOIN T3 ON 1 = 1 INNER JOIN T4 USING (ID) NATURAL JOIN T5 FULL OUTER JOIN T6 ON T5.ID = T6.ID";
 			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
 
 			result.Count.ShouldBe(1);
@@ -420,7 +420,7 @@ namespace SqlPad.Test
 		[Test(Description = @"Tests group by rollup, cube and grouping sets clauses. ")]
 		public void Test27()
 		{
-			const string query1 = @"select 1 from dual group by 1, 2, (3 || dummy), rollup(1, (1, 2 || dummy)), cube(2, (3, 4 + 2))";
+			const string query1 = @"SELECT 1 FROM DUAL GROUP BY 1, 2, (3 || DUMMY), ROLLUP(1, (1, 2 || DUMMY)), CUBE(2, (3, 4 + 2))";
 			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
 
 			result.Count.ShouldBe(1);
@@ -428,8 +428,8 @@ namespace SqlPad.Test
 
 			// TODO: Precise assertions
 
-			//const string query2 = @"SELECT 1 from dual group by grouping sets (1, dummy, (1, dummy), rollup(dummy), cube(dummy)), grouping sets (1), cube(1), rollup(1, dummy);"; // doesn't work yet
-			const string query2 = @"SELECT 1 from dual group by grouping sets (rollup(dummy), cube(dummy), 1, dummy, (1, dummy)), grouping sets (1), cube(1), rollup(1, dummy);";
+			//const string query2 = @"SELECT 1 FROM DUAL GROUP BY GROUPING SETS (1, DUMMY, (1, DUMMY), ROLLUP(DUMMY), CUBE(DUMMY)), GROUPING SETS (1), CUBE(1), ROLLUP(1, DUMMY);"; // doesn't work yet
+			const string query2 = @"SELECT 1 FROM DUAL GROUP BY GROUPING SETS (ROLLUP(DUMMY), CUBE(DUMMY), 1, DUMMY, (1, DUMMY)), GROUPING SETS (1), CUBE(1), ROLLUP(1, DUMMY);";
 			result = _oracleSqlParser.Parse(CreateTokenReader(query2));
 
 			result.Count.ShouldBe(1);
