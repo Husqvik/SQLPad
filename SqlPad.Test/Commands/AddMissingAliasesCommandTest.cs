@@ -46,10 +46,21 @@ namespace SqlPad.Test.Commands
 		[Test(Description = @"")]
 		public void Test3()
 		{
-			const string testQuery = "WITH OLDQUERY AS (SELECT OLD FROM OLD) SELECT 1, 1 + 1 MYCOLUMN, DUMMY || '3' FROM DUAL";
-			var result = new WrapAsCommonTableExpressionCommand().Execute(testQuery, 44, "NEWQUERY");
+			const string testQuery = "\t\t            WITH OLDQUERY AS (SELECT OLD FROM OLD) SELECT 1, 1 + 1 MYCOLUMN, DUMMY || '3' FROM DUAL";
+			var result = new WrapAsCommonTableExpressionCommand().Execute(testQuery, 58 /*44 crashes */, "NEWQUERY");
 
-			const string expectedResult = "WITH OLDQUERY AS (SELECT OLD FROM OLD), NEWQUERY AS (SELECT 1 COLUMN1, 1 + 1 MYCOLUMN, DUMMY || '3' COLUMN3 FROM DUAL) SELECT COLUMN1, MYCOLUMN, COLUMN3 FROM NEWQUERY";
+			const string expectedResult = "\t\t            WITH OLDQUERY AS (SELECT OLD FROM OLD), NEWQUERY AS (SELECT 1 COLUMN1, 1 + 1 MYCOLUMN, DUMMY || '3' COLUMN3 FROM DUAL) SELECT COLUMN1, MYCOLUMN, COLUMN3 FROM NEWQUERY";
+			Trace.WriteLine(result);
+			result.ShouldBe(expectedResult);
+		}
+
+		[Test(Description = @"")]
+		public void Test5()
+		{
+			const string testQuery = "SELECT COLUMN1, COLUMN2, column3 FROM DUAL";
+			var result = new TogleQuotedIdentifierCommand().Execute(testQuery, 10);
+
+			const string expectedResult = "SELECT \"COLUMN1\", \"COLUMN2\", column3 FROM \"DUAL\"";
 			Trace.WriteLine(result);
 			result.ShouldBe(expectedResult);
 		}

@@ -30,18 +30,18 @@ namespace SqlPad.Commands
 			}
 			else
 			{
-				var firstAlias = queryBlockRoot.GetDescendants(OracleGrammarDescription.Terminals.Alias).FirstOrDefault();
+				var firstAlias = queryBlockRoot.GetDescendants(OracleGrammarDescription.Terminals.Alias, OracleGrammarDescription.Terminals.Identifier).FirstOrDefault();
 				if (firstAlias == null)
 					return statementText;
 
 				enableQuoting = !firstAlias.Token.Value.StartsWith("\"");
 			}
 
-			var aliases = queryBlockRoot.GetDescendants(OracleGrammarDescription.Terminals.Alias);
+			var aliases = queryBlockRoot.GetDescendants(OracleGrammarDescription.Terminals.Alias, OracleGrammarDescription.Terminals.Identifier);
 
 			foreach (var alias in aliases.OrderByDescending(a => a.SourcePosition.IndexEnd))
 			{
-				var aliasTerminal = alias;//.Terminals.Last();
+				var aliasTerminal = alias;
 				if ((aliasTerminal.Token.Value.StartsWith("\"") && enableQuoting) ||
 					(!aliasTerminal.Token.Value.StartsWith("\"") && !enableQuoting))
 					continue;
