@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.30110.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlPad", "SqlPad\SqlPad.csproj", "{A899ECDC-34CF-4B97-A25F-774CFCDBFDAC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlPad.Test", "SqlPad.Test\SqlPad.Test.csproj", "{15B68042-211B-48A7-8395-FD330755B690}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A899ECDC-34CF-4B97-A25F-774CFCDBFDAC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A899ECDC-34CF-4B97-A25F-774CFCDBFDAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A899ECDC-34CF-4B97-A25F-774CFCDBFDAC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A899ECDC-34CF-4B97-A25F-774CFCDBFDAC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{15B68042-211B-48A7-8395-FD330755B690}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{15B68042-211B-48A7-8395-FD330755B690}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{15B68042-211B-48A7-8395-FD330755B690}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{15B68042-211B-48A7-8395-FD330755B690}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
