@@ -159,7 +159,7 @@ namespace SqlPad
 						{
 							localTokenIndex += nestedResult.TerminalCount;
 
-							var nestedNode = new StatementDescriptionNode { Id = nestedNonTerminal.Id, Type = NodeType.NonTerminal, Level = level };
+							var nestedNode = new StatementDescriptionNode(NodeType.NonTerminal) { Id = nestedNonTerminal.Id, Level = level };
 							nestedNode.AddChildNodes(nestedResult.Tokens);
 
 							tokens.Add(nestedNode);
@@ -199,7 +199,7 @@ namespace SqlPad
 							break;
 						}
 
-						var node = new StatementDescriptionNode { Token = currentToken, Id = terminalReference.Id, Type = NodeType.Terminal, Level = level };
+						var node = new StatementDescriptionNode(NodeType.Terminal) { Token = currentToken, Id = terminalReference.Id, Level = level };
 						tokens.Add(node);
 
 						//Trace.WriteLine(string.Format("newTokenFetched: {0}; nonTerminal: {1}; token: {2}", newTokenFetched, nonTerminal, sqlToken));

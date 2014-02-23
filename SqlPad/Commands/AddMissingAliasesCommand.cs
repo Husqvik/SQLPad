@@ -20,6 +20,9 @@ namespace SqlPad.Commands
 			var selectedToken = statement.GetNodeAtPosition(offset);
 
 			var queryBlockRoot = selectedToken.GetAncestor(OracleGrammarDescription.NonTerminals.QueryBlock);
+			if (queryBlockRoot == null)
+				return statementText;
+
 			var aliasedColumns = queryBlockRoot.GetDescendants(OracleGrammarDescription.NonTerminals.AliasedExpression);
 
 			var currentColumn = 0;

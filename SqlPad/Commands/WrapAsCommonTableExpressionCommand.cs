@@ -20,9 +20,11 @@ namespace SqlPad.Commands
 
 			var selectedToken = statement.GetNodeAtPosition(offset);
 
-			var queryBlockRook = selectedToken.GetAncestor(OracleGrammarDescription.NonTerminals.QueryBlock);
+			var queryBlockRoot = selectedToken.GetAncestor(OracleGrammarDescription.NonTerminals.QueryBlock);
+			if (queryBlockRoot == null)
+				return statementText;
 
-			var columnAliases = queryBlockRook
+			var columnAliases = queryBlockRoot
 				.GetDescendants(OracleGrammarDescription.NonTerminals.AliasedExpression)
 				.Select(e => e.Terminals.Last());
 			
@@ -41,18 +43,18 @@ namespace SqlPad.Commands
 			newStatementBuilder.Append(" FROM ");
 			newStatementBuilder.Append(queryName);
 
-			var lastEffectiveNode = queryBlockRook.Terminals.LastOrDefault(t => t.Id != OracleGrammarDescription.Terminals.Semicolon);
+			var lastEffectiveNode = queryBlockRoot.Terminals.LastOrDefault(t => t.Id != OracleGrammarDescription.Terminals.Semicolon);
 			var indexEnd = lastEffectiveNode == null
-				? queryBlockRook.SourcePosition.IndexEnd
+				? queryBlockRoot.SourcePosition.IndexEnd
 				: lastEffectiveNode.SourcePosition.IndexEnd;
 
-			var movedStatementLength = indexEnd - queryBlockRook.SourcePosition.IndexStart + 1;
-			var movedStatement = statementText.Substring(queryBlockRook.SourcePosition.IndexStart, movedStatementLength);
+			var movedStatementLength = indexEnd - queryBlockRoot.SourcePosition.IndexStart + 1;
+			var movedStatement = statementText.Substring(queryBlockRoot.SourcePosition.IndexStart, movedStatementLength);
 
 			var builder = new StringBuilder(statementText);
 			var addedOffset = 0;
 
-			var nestedQueryRoot = queryBlockRook.GetAncestor(OracleGrammarDescription.NonTerminals.NestedQuery);
+			var nestedQueryRoot = queryBlockRoot.GetAncestor(OracleGrammarDescription.NonTerminals.NestedQuery);
 			var lastSubquery = nestedQueryRoot.GetDescendants(OracleGrammarDescription.NonTerminals.SubqueryComponent).LastOrDefault();
 			int statementPosition;
 			int whiteSpace;
@@ -71,7 +73,7 @@ namespace SqlPad.Commands
 				addedOffset += builder.InsertAt(insertIndex + addedOffset, movedStatement);
 				addedOffset += builder.InsertAt(insertIndex + addedOffset, ") ");
 				statementPosition = insertIndex + addedOffset;
-				whiteSpace = queryBlockRook.SourcePosition.IndexStart - lastSubquery.SourcePosition.IndexEnd - 1;
+				whiteSpace = queryBlockRoot.SourcePosition.IndexStart - lastSubquery.SourcePosition.IndexEnd - 1;
 			}
 
 			builder.Insert(statementPosition, newStatementBuilder.ToString());

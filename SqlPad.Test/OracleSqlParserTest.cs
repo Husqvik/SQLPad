@@ -54,14 +54,15 @@ namespace SqlPad.Test
 		}
 
 		[Test(Description = @"Tests query with fully qualified names and aliases. ")]
-		public void Test3()
+		public void TestQueryWithFullyQualifiedNamesAndAliases()
 		{
 			const string sqlText = @"SELECT NULL AS "">=;+Alias/*--^"", SYS.DUAL.DUMMY FROM SYS.DUAL";
 			var result = _oracleSqlParser.Parse(CreateTokenReader(sqlText));
 
 			result.ShouldNotBe(null);
 			result.Count.ShouldBe(1);
-			var terminals = result.Single().TokenCollection.SelectMany(i => i.Terminals).ToList();
+			var rootToken = result.Single().TokenCollection.Single();
+			var terminals = rootToken.Terminals.ToList();
 
 			terminals.Count.ShouldBe(14);
 			terminals[0].Id.ShouldBe("Select");

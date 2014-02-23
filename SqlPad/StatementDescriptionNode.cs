@@ -10,15 +10,29 @@ namespace SqlPad
 	{
 		private readonly List<StatementDescriptionNode> _childNodes = new List<StatementDescriptionNode>();
 
-		public NodeType Type { get; set; }
+		private StatementDescriptionNode _firstTerminal;
+		private StatementDescriptionNode _lastTerminal;
+
+		public StatementDescriptionNode(NodeType type)
+		{
+			Type = type;
+
+			if (Type != NodeType.Terminal)
+				return;
+			
+			_firstTerminal = this;
+			_lastTerminal = this;
+		}
+
+		public NodeType Type { get; private set; }
 
 		public StatementDescriptionNode ParentNode { get; private set; }
 
 		//public StatementDescriptionNode PreviousTerminal { get; private set; }
 		
 		//public StatementDescriptionNode NextTerminal { get; private set; }
-		
-		public OracleToken Token { get; set; }
+
+		public IToken Token { get; set; }
 		
 		public string Id { get; set; }
 		
@@ -50,7 +64,12 @@ namespace SqlPad
 
 		public IEnumerable<StatementDescriptionNode> Terminals 
 		{
-			get { return Type == NodeType.Terminal ? Enumerable.Repeat(this, 1) : ChildNodes.SelectMany(t => t.Terminals); }
+			get
+			{
+				return Type == NodeType.Terminal
+					? Enumerable.Repeat(this, 1)
+					: ChildNodes.SelectMany(t => t.Terminals);
+			}
 		}
 
 		public IEnumerable<StatementDescriptionNode> AllChildNodes
@@ -82,6 +101,17 @@ namespace SqlPad
 
 			foreach (var node in nodes)
 			{
+				if (node.Type == NodeType.Terminal)
+				{
+					_firstTerminal = _firstTerminal ?? node;
+					_lastTerminal = node;
+				}
+				else
+				{
+					_firstTerminal = _firstTerminal ?? node._firstTerminal;
+					_lastTerminal = node._lastTerminal;
+				}
+
 				_childNodes.Add(node);
 				node.ParentNode = this;
 			}
@@ -114,5 +144,20 @@ namespace SqlPad
 				.OrderBy(n => n.SourcePosition.IndexEnd - n.SourcePosition.IndexStart).ThenByDescending(n => n.Level)
 				.FirstOrDefault();
 		}
+
+		/*private void ResolveLinks()
+		{
+			StatementDescriptionNode previousTerminal = null;
+			foreach (var terminal in Terminals)
+			{
+				if (previousTerminal != null)
+				{
+					terminal.PreviousTerminal = previousTerminal;
+					previousTerminal.NextTerminal = terminal;
+				}
+
+				previousTerminal = terminal;
+			}
+		}*/
 	}
 }
