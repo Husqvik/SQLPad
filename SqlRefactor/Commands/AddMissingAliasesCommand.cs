@@ -7,7 +7,7 @@ namespace SqlRefactor.Commands
 	{
 		private readonly OracleSqlParser _sqlParser = new OracleSqlParser();
 
-		public string Execute(int offset, string statementText)
+		public string Execute(string statementText, int offset)
 		{
 			var statements = _sqlParser.Parse(statementText);
 			var statement = statements.FirstOrDefault(s => s.SourcePosition.IndexStart <= offset && s.SourcePosition.IndexEnd >= offset);
@@ -19,20 +19,20 @@ namespace SqlRefactor.Commands
 
 			var selectedToken = statement.GetNodeAtPosition(offset);
 
-			var nestedQueryRoot = selectedToken.GetAncestor(OracleGrammarDescription.NonTerminals.NestedQuery);
-
-			var aliasedExpressions = nestedQueryRoot.GetDescendants(OracleGrammarDescription.NonTerminals.SelectList, OracleGrammarDescription.NonTerminals.AliasedExpression).OrderBy(e => e.SourcePosition.IndexStart);
+			var queryBlockRoot = selectedToken.GetAncestor(OracleGrammarDescription.NonTerminals.QueryBlock);
+			var aliasedColumns = queryBlockRoot.GetDescendants(OracleGrammarDescription.NonTerminals.AliasedExpression);
 
 			var currentColumn = 0;
 			var addedOffset = 0;
-			foreach (var aliasedExpression in aliasedExpressions)
+			foreach (var aliasedExpression in aliasedColumns)
 			{
 				currentColumn++;
-				if (aliasedExpression.ChildNodes.Count == 2)
+				if (aliasedExpression.ChildNodes.Count == 2 ||
+					(aliasedExpression.TerminalCount == 1 && aliasedExpression.Terminals.Single().Id == OracleGrammarDescription.Terminals.Identifier))
 					continue;
 
 				var alias = " COLUMN" + currentColumn;
-				builder.Insert(aliasedExpression.SourcePosition.IndexEnd + addedOffset, alias);
+				builder.Insert(aliasedExpression.SourcePosition.IndexEnd + 1 + addedOffset, alias);
 				addedOffset += alias.Length;
 			}
 

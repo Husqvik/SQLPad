@@ -105,12 +105,12 @@ namespace SqlRefactor
 					if (index == -1)
 					{
 						var lastToken = _tokenBuffer[_tokenBuffer.Count - 1];
-						indexEnd = lastToken.Index + lastToken.Value.Length;
+						indexEnd = lastToken.Index + lastToken.Value.Length - 1;
 						_tokenBuffer.Clear();
 					}
 					else
 					{
-						indexEnd = _tokenBuffer[index].Index + 1;
+						indexEnd = _tokenBuffer[index].Index;
 						_tokenBuffer.RemoveRange(0, index + 1);
 					}
 				}
@@ -118,7 +118,7 @@ namespace SqlRefactor
 				{
 					var lastTerminal = result.Terminals.Last().Value;
 					indexStart = result.Terminals.First().Value.Index;
-					indexEnd = lastTerminal.Index + lastTerminal.Value.Length;
+					indexEnd = lastTerminal.Index + lastTerminal.Value.Length - 1;
 
 					_tokenBuffer.RemoveRange(0, result.TerminalCount);
 				}
@@ -167,7 +167,7 @@ namespace SqlRefactor
 						{
 							localTokenIndex += nestedResult.TerminalCount;
 
-							var nestedNode = new StatementDescriptionNode { Id = nestedNonTerminal.Id, Type = NodeType.NonTerminal };
+							var nestedNode = new StatementDescriptionNode { Id = nestedNonTerminal.Id, Type = NodeType.NonTerminal, Level = level };
 							foreach (var nonTerminalNode in nestedResult.Tokens)
 							{
 								nestedNode.ChildNodes.Add(nonTerminalNode);
@@ -212,8 +212,8 @@ namespace SqlRefactor
 							break;
 						}
 
-						var sqlToken = new StatementDescriptionNode { Value = currentToken, Id = terminalReference.Id, Type = NodeType.Terminal };
-						tokens.Add(sqlToken);
+						var node = new StatementDescriptionNode { Value = currentToken, Id = terminalReference.Id, Type = NodeType.Terminal, Level = level };
+						tokens.Add(node);
 
 						//Trace.WriteLine(string.Format("newTokenFetched: {0}; nonTerminal: {1}; token: {2}", newTokenFetched, nonTerminal, sqlToken));
 

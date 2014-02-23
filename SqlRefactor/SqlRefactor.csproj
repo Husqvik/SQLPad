@@ -56,6 +56,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Commands\WrapAsCommonTableExpressionCommand.cs" />
     <Compile Include="Commands\AddMissingAliasesCommand.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="IToken.cs" />
@@ -70,6 +71,7 @@
       <DependentUpon>OracleSqlGrammar.xsd</DependentUpon>
     </Compile>
     <Compile Include="OracleSqlParser.cs" />
+    <Compile Include="StatementDescriptionNode.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

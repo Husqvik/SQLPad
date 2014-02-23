@@ -8,6 +8,8 @@
     <Window.CommandBindings>
         <CommandBinding Command="{x:Static local:MainWindow.CommandAddColumnAliases}"
                     Executed="AddColumnAliasesExecutedHandler" CanExecute="AddColumnAliasesCanExecuteHandler" />
+        <CommandBinding Command="{x:Static local:MainWindow.CommandWrapAsCommonTableExpression}"
+                    Executed="WrapAsCommonTableExpressionExecutedHandler" CanExecute="WrapAsCommonTableExpressionCanExecuteHandler" />
     </Window.CommandBindings>
 
     <Grid>
@@ -26,10 +28,10 @@
 
         <StackPanel Grid.Column="1" Grid.Row="0">
             <Button Content="_Add column aliases" Command="{x:Static local:MainWindow.CommandAddColumnAliases}" />
-            <Button Content="_Wrap as common table expression"/>
-            <Button Content="W_rap as subquery"/>
-            <Button Content="A_dd fully qualified names"/>
-            <Button Content="E_xpand columns"/>
+            <Button Content="_Wrap as common table expression" Command="{x:Static local:MainWindow.CommandWrapAsCommonTableExpression}" />
+            <Button Content="W_rap as subquery" />
+            <Button Content="A_dd fully qualified names" />
+            <Button Content="E_xpand columns" />
         </StackPanel>
     </Grid>
 </Window>

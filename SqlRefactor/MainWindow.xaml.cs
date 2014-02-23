@@ -29,6 +29,7 @@ namespace SqlRefactor
 		private readonly ColorizeAvalonEdit _colorizeAvalonEdit = new ColorizeAvalonEdit();
 
 		public static RoutedCommand CommandAddColumnAliases = new RoutedCommand();
+		public static RoutedCommand CommandWrapAsCommonTableExpression = new RoutedCommand();
 
 		public MainWindow()
 		{
@@ -53,10 +54,20 @@ namespace SqlRefactor
 
 		private void AddColumnAliasesExecutedHandler(object sender, ExecutedRoutedEventArgs e)
 		{
-			Editor.Text = new AddMissingAliasesCommand().Execute(Editor.CaretOffset, Editor.Text);
+			Editor.Text = new AddMissingAliasesCommand().Execute(Editor.Text, Editor.CaretOffset);
 		}
 
 		private void AddColumnAliasesCanExecuteHandler(object sender, CanExecuteRoutedEventArgs e)
+		{
+			e.CanExecute = true;
+		}
+
+		private void WrapAsCommonTableExpressionExecutedHandler(object sender, ExecutedRoutedEventArgs e)
+		{
+			Editor.Text = new WrapAsCommonTableExpressionCommand().Execute(Editor.Text, Editor.CaretOffset, "WRAPPED_QUERY");
+		}
+
+		private void WrapAsCommonTableExpressionCanExecuteHandler(object sender, CanExecuteRoutedEventArgs e)
 		{
 			e.CanExecute = true;
 		}
@@ -80,7 +91,7 @@ namespace SqlRefactor
 				var backgroundColor = new SolidColorBrush(statement.ProcessingResult == NonTerminalProcessingResult.Success ? Colors.LightGreen : Colors.PaleVioletRed);
 
 				var colorStartOffset = Math.Max(line.Offset, statement.SourcePosition.IndexStart);
-				var colorEndOffset = Math.Min(line.EndOffset, statement.SourcePosition.IndexEnd);
+				var colorEndOffset = Math.Min(line.EndOffset, statement.SourcePosition.IndexEnd + 1);
 
 				ChangeLinePart(
 					colorStartOffset,

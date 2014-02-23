@@ -473,6 +473,17 @@ namespace SqlRefactor.Test
 			// TODO: Precise assertions
 		}
 
+		[Test(Description = @"Tests incorrectly nested factored subquery. ")]
+		public void Test31()
+		{
+			const string query1 = @"WITH TEST AS (WITH T2 AS (SELECT 1 FROM DUAL) SELECT * FROM T2) SELECT * FROM TEST";
+			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.SequenceNotFound);
+
+			// TODO: Precise assertions
+		}
 
 		private static OracleTokenReader CreateTokenReader(string sqlText)
 		{
