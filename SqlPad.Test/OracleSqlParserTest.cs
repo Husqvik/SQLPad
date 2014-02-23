@@ -384,7 +384,7 @@ namespace SqlPad.Test
 		[Test(Description = @"Tests join clauses. "), Ignore]
 		public void Test24()
 		{
-			const string query1 = @"SELECT * FROM T1 CROSS JOIN T2 JOIN T3 ON 1 = 1 INNER JOIN T4 USING (ID) NATURAL JOIN T5 FULL OUTER JOIN T6 ON T5.ID = T6.ID";
+			const string query1 = @"SELECT * FROM T1 CROSS JOIN T2 JOIN T3 ON 1 = 1 INNER JOIN T4 USING (ID) NATURAL JOIN T5 FULL OUTER JOIN T6 ON T5.ID = T6.ID, V$SESSION";
 			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
 
 			result.Count.ShouldBe(1);
@@ -490,6 +490,18 @@ namespace SqlPad.Test
 
 			result.Count.ShouldBe(1);
 			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.SequenceNotFound);
+
+			// TODO: Precise assertions
+		}
+
+		[Test(Description = @"Tests query with multiple tables in from clause; also tests '$' character within standard identifier. ")]
+		public void Test32()
+		{
+			const string query1 = @"SELECT * FROM SYS.DUAL, HUSQVIK.COUNTRY, HUSQVIK.INVALID, INVALID.ORDERS, V$SESSION";
+			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
 
 			// TODO: Precise assertions
 		}

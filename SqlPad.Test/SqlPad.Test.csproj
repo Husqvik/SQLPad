@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands\AddMissingAliasesCommandTest.cs" />
+    <Compile Include="OracleSemanticValidatorTest.cs" />
     <Compile Include="OracleSqlParserTest.cs" />
     <Compile Include="OracleTokenReaderTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
