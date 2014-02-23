@@ -28,7 +28,7 @@ namespace SqlPad.Test
 		}
 
 		[Test(Description = @"Tests trivial query. ")]
-		public void Test2()
+		public void TestTrivialQuery()
 		{
 			const string sqlText = @"SELECT NULL FROM DUAL";
 			var result = _oracleSqlParser.Parse(CreateTokenReader(sqlText));
@@ -39,10 +39,18 @@ namespace SqlPad.Test
 
 			terminals.Count.ShouldBe(4);
 			terminals[0].Id.ShouldBe("Select");
+			terminals[0].SourcePosition.IndexStart.ShouldBe(0);
+			terminals[0].SourcePosition.IndexEnd.ShouldBe(5);
 			terminals[1].Id.ShouldBe("Null");
+			terminals[1].SourcePosition.IndexStart.ShouldBe(7);
+			terminals[1].SourcePosition.IndexEnd.ShouldBe(10);
 			terminals[2].Id.ShouldBe("From");
+			terminals[2].SourcePosition.IndexStart.ShouldBe(12);
+			terminals[2].SourcePosition.IndexEnd.ShouldBe(15);
 			terminals[3].Id.ShouldBe("Identifier");
-			terminals[3].Value.Value.ShouldBe("DUAL");
+			terminals[3].Token.Value.ShouldBe("DUAL");
+			terminals[3].SourcePosition.IndexStart.ShouldBe(17);
+			terminals[3].SourcePosition.IndexEnd.ShouldBe(20);
 		}
 
 		[Test(Description = @"Tests query with fully qualified names and aliases. ")]
@@ -60,22 +68,22 @@ namespace SqlPad.Test
 			terminals[1].Id.ShouldBe("Null");
 			terminals[2].Id.ShouldBe("As");
 			terminals[3].Id.ShouldBe("Alias");
-			terminals[3].Value.Value.ShouldBe("\">=;+Alias/*--^\"");
+			terminals[3].Token.Value.ShouldBe("\">=;+Alias/*--^\"");
 			terminals[4].Id.ShouldBe("Comma");
 			terminals[5].Id.ShouldBe("Identifier");
-			terminals[5].Value.Value.ShouldBe("SYS");
+			terminals[5].Token.Value.ShouldBe("SYS");
 			terminals[6].Id.ShouldBe("Dot");
 			terminals[7].Id.ShouldBe("Identifier");
-			terminals[7].Value.Value.ShouldBe("DUAL");
+			terminals[7].Token.Value.ShouldBe("DUAL");
 			terminals[8].Id.ShouldBe("Dot");
 			terminals[9].Id.ShouldBe("Identifier");
-			terminals[9].Value.Value.ShouldBe("DUMMY");
+			terminals[9].Token.Value.ShouldBe("DUMMY");
 			terminals[10].Id.ShouldBe("From");
 			terminals[11].Id.ShouldBe("Identifier");
-			terminals[11].Value.Value.ShouldBe("SYS");
+			terminals[11].Token.Value.ShouldBe("SYS");
 			terminals[12].Id.ShouldBe("Dot");
 			terminals[13].Id.ShouldBe("Identifier");
-			terminals[13].Value.Value.ShouldBe("DUAL");
+			terminals[13].Token.Value.ShouldBe("DUAL");
 		}
 
 		[Test(Description = @"Tests complex case expression with literals. ")]
@@ -92,7 +100,7 @@ namespace SqlPad.Test
 			terminals[1].Id.ShouldBe("Case");
 			terminals[2].Id.ShouldBe("When");
 			terminals[3].Id.ShouldBe("NumberLiteral");
-			terminals[3].Value.Value.ShouldBe("1");
+			terminals[3].Token.Value.ShouldBe("1");
 
 			// TODO: Precise assertions
 		}
@@ -299,11 +307,11 @@ namespace SqlPad.Test
 			result.Count.ShouldBe(2);
 			result.First().ProcessingResult.ShouldBe(NonTerminalProcessingResult.SequenceNotFound);
 			result.First().TokenCollection.Count.ShouldBe(1);
-			result.First().TokenCollection.Single().TerminalCount.ShouldBe(4);
+			result.First().TokenCollection.Single().Terminals.Count().ShouldBe(4);
 
 			result.Last().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
 			result.Last().TokenCollection.Count.ShouldBe(1);
-			result.Last().TokenCollection.Single().TerminalCount.ShouldBe(4);
+			result.Last().TokenCollection.Single().Terminals.Count().ShouldBe(4);
 		}
 
 		[Test(Description = @"Tests EXISTS and NOT EXISTS. ")]

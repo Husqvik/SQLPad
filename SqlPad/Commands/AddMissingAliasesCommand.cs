@@ -28,7 +28,7 @@ namespace SqlPad.Commands
 			{
 				currentColumn++;
 				if (aliasedExpression.ChildNodes.Count == 2 ||
-					(aliasedExpression.TerminalCount == 1 && aliasedExpression.Terminals.Single().Id == OracleGrammarDescription.Terminals.Identifier))
+					(aliasedExpression.Terminals.Count() == 1 && aliasedExpression.Terminals.Single().Id == OracleGrammarDescription.Terminals.Identifier))
 					continue;
 
 				var alias = " COLUMN" + currentColumn;

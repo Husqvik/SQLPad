@@ -35,7 +35,7 @@ namespace SqlPad.Commands
 
 				isFirst = false;
 
-				newStatementBuilder.Append(column.Value.Value);
+				newStatementBuilder.Append(column.Token.Value);
 			}
 
 			newStatementBuilder.Append(" FROM ");

@@ -22,9 +22,6 @@ namespace SqlPad
 		private readonly List<OracleToken> _tokenBuffer = new List<OracleToken>();
 		private readonly List<string> _availableNonTerminals;
 
-		public ICollection<string> TerminalIds { get { return _terminals.Keys; } }
-		public IEnumerable<string> NonTerminalIds { get { return _sqlGrammar.Rules.SelectMany(r => r.Sequences).SelectMany(s => s.Items.OfType<SqlGrammarRuleSequenceNonTerminal>().Select(n => n.Id)); } } 
-
 		public OracleSqlParser()
 		{
 			using (var grammarReader = XmlReader.Create("OracleSqlGrammar.xml"))
@@ -89,7 +86,7 @@ namespace SqlPad
 						continue;
 					
 					var lastTerminal = result.Terminals.Last();
-					if (!_terminators.Contains(lastTerminal.Value.Value) && _tokenBuffer.Count > result.TerminalCount)
+					if (!_terminators.Contains(lastTerminal.Token.Value) && _tokenBuffer.Count > result.TerminalCount)
 						result.Value = NonTerminalProcessingResult.SequenceNotFound;
 
 					break;
@@ -116,8 +113,8 @@ namespace SqlPad
 				}
 				else
 				{
-					var lastTerminal = result.Terminals.Last().Value;
-					indexStart = result.Terminals.First().Value.Index;
+					var lastTerminal = result.Terminals.Last().Token;
+					indexStart = result.Terminals.First().Token.Index;
 					indexEnd = lastTerminal.Index + lastTerminal.Value.Length - 1;
 
 					_tokenBuffer.RemoveRange(0, result.TerminalCount);
@@ -142,11 +139,6 @@ namespace SqlPad
 
 			foreach (var sequence in _startingNonTerminalSequences[nonTerminal])
 			{
-				if (result.Value == NonTerminalProcessingResult.Success)
-				{
-					break;
-				}
-
 				tokens.Clear();
 				var localTokenIndex = 0;
 
@@ -168,17 +160,12 @@ namespace SqlPad
 							localTokenIndex += nestedResult.TerminalCount;
 
 							var nestedNode = new StatementDescriptionNode { Id = nestedNonTerminal.Id, Type = NodeType.NonTerminal, Level = level };
-							foreach (var nonTerminalNode in nestedResult.Tokens)
-							{
-								nestedNode.ChildNodes.Add(nonTerminalNode);
-								nonTerminalNode.ParentNode = nestedNode;
-							}
+							nestedNode.AddChildNodes(nestedResult.Tokens);
 
 							tokens.Add(nestedNode);
 						}
 
-						if (result.Value == NonTerminalProcessingResult.SequenceNotFound ||
-						    result.Value == NonTerminalProcessingResult.FailureStop)
+						if (result.Value == NonTerminalProcessingResult.SequenceNotFound)
 							break;
 					}
 					else
@@ -212,7 +199,7 @@ namespace SqlPad
 							break;
 						}
 
-						var node = new StatementDescriptionNode { Value = currentToken, Id = terminalReference.Id, Type = NodeType.Terminal, Level = level };
+						var node = new StatementDescriptionNode { Token = currentToken, Id = terminalReference.Id, Type = NodeType.Terminal, Level = level };
 						tokens.Add(node);
 
 						//Trace.WriteLine(string.Format("newTokenFetched: {0}; nonTerminal: {1}; token: {2}", newTokenFetched, nonTerminal, sqlToken));
@@ -221,6 +208,9 @@ namespace SqlPad
 						result.Value = NonTerminalProcessingResult.Success;
 					}
 				}
+
+				if (result.Value == NonTerminalProcessingResult.Success)
+					break;
 			}
 
 			return result;
@@ -245,7 +235,7 @@ namespace SqlPad
 
 		public int TerminalCount
 		{
-			get { return Tokens == null ? 0 : Tokens.Sum(t => t.TerminalCount); }
+			get { return Tokens == null ? 0 : Terminals.Count(); }
 		}
 	}
 
@@ -253,7 +243,6 @@ namespace SqlPad
 	{
 		Start,
 		Success,
-		SequenceNotFound,
-		FailureStop
+		SequenceNotFound
 	}
 }

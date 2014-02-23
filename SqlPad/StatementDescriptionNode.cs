@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -7,22 +8,23 @@ namespace SqlPad
 	[DebuggerDisplay("{ToString()}")]
 	public class StatementDescriptionNode
 	{
-		public StatementDescriptionNode()
-		{
-			ChildNodes = new List<StatementDescriptionNode>();
-		}
+		private readonly List<StatementDescriptionNode> _childNodes = new List<StatementDescriptionNode>();
 
 		public NodeType Type { get; set; }
 
-		public StatementDescriptionNode ParentNode { get; set; }
+		public StatementDescriptionNode ParentNode { get; private set; }
+
+		//public StatementDescriptionNode PreviousTerminal { get; private set; }
 		
-		public OracleToken Value { get; set; }
+		//public StatementDescriptionNode NextTerminal { get; private set; }
+		
+		public OracleToken Token { get; set; }
 		
 		public string Id { get; set; }
 		
 		public int Level { get; set; }
 
-		public ICollection<StatementDescriptionNode> ChildNodes { get; set; }
+		public ICollection<StatementDescriptionNode> ChildNodes { get { return _childNodes.AsReadOnly(); } }
 
 		public SourcePosition SourcePosition
 		{
@@ -32,13 +34,13 @@ namespace SqlPad
 				var indexEnd = -1;
 				if (Type == NodeType.Terminal)
 				{
-					indexStart = Value.Index;
-					indexEnd = Value.Index + Value.Value.Length - 1;
+					indexStart = Token.Index;
+					indexEnd = Token.Index + Token.Value.Length - 1;
 				}
 				else if (Terminals.Any())
 				{
-					indexStart = Terminals.First().Value.Index;
-					var lastTerminal = Terminals.Last().Value;
+					indexStart = Terminals.First().Token.Index;
+					var lastTerminal = Terminals.Last().Token;
 					indexEnd = lastTerminal.Index + lastTerminal.Value.Length - 1;
 				}
 
@@ -46,18 +48,6 @@ namespace SqlPad
 			}
 		}
 
-		#region Overrides of Object
-		public override string ToString()
-		{
-			return string.Format("StatementDescriptionNode (Id={0}; Type={1}; SourcePosition=({2}-{3}))", Id, Type, SourcePosition.IndexStart, SourcePosition.IndexEnd);
-		}
-		#endregion
-
-		public int TerminalCount
-		{
-			get { return Terminals.Count(); }
-		}
-		
 		public IEnumerable<StatementDescriptionNode> Terminals 
 		{
 			get { return Type == NodeType.Terminal ? Enumerable.Repeat(this, 1) : ChildNodes.SelectMany(t => t.Terminals); }
@@ -73,18 +63,34 @@ namespace SqlPad
 			}
 		}
 
+		#region Overrides of Object
+		public override string ToString()
+		{
+			return string.Format("StatementDescriptionNode (Id={0}; Type={1}; SourcePosition=({2}-{3}))", Id, Type, SourcePosition.IndexStart, SourcePosition.IndexEnd);
+		}
+		#endregion
+
+		public void AddChildNodes(params StatementDescriptionNode[] nodes)
+		{
+			AddChildNodes((IEnumerable<StatementDescriptionNode>)nodes);
+		}
+
+		public void AddChildNodes(IEnumerable<StatementDescriptionNode> nodes)
+		{
+			if (Type == NodeType.Terminal)
+				throw new InvalidOperationException("Terminal nodes cannot have child nodes. ");
+
+			foreach (var node in nodes)
+			{
+				_childNodes.Add(node);
+				node.ParentNode = this;
+			}
+		}
+
 		public IEnumerable<StatementDescriptionNode> GetDescendants(params string[] descendantNodeIds)
 		{
 			return AllChildNodes.Where(t => descendantNodeIds == null || descendantNodeIds.Length == 0 || descendantNodeIds.Contains(t.Id));
 		}
-
-		/*public IEnumerable<StatementDescriptionNode> GetDescendants(string startingNodeId, params string[] descendantNodeIds)
-		{
-			var startingNode = AllChildNodes.FirstOrDefault(t => t.Id == startingNodeId);
-			return startingNode == null
-				? Enumerable.Empty<StatementDescriptionNode>()
-				: startingNode.GetDescendants(descendantNodeIds);
-		}*/
 
 		public StatementDescriptionNode GetAncestor(string ancestorNodeId, bool includeSelf = true)
 		{
