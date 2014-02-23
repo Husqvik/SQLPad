@@ -27,6 +27,7 @@ namespace SqlPad
 	{
 		private readonly OracleSqlParser _sqlParser = new OracleSqlParser();
 		private readonly ColorizeAvalonEdit _colorizeAvalonEdit = new ColorizeAvalonEdit();
+		private readonly IDatabaseModel _databaseModel = new DatabaseModelFake();
 
 		public static RoutedCommand CommandAddColumnAliases = new RoutedCommand();
 		public static RoutedCommand CommandWrapAsCommonTableExpression = new RoutedCommand();

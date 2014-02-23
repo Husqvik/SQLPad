@@ -38,6 +38,7 @@
       <HintPath>..\References\ICSharpCode.AvalonEdit.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
@@ -59,6 +60,7 @@
     <Compile Include="Commands\TogleQuotedIdentifierCommand.cs" />
     <Compile Include="Commands\WrapAsCommonTableExpressionCommand.cs" />
     <Compile Include="Commands\AddMissingAliasesCommand.cs" />
+    <Compile Include="DatabaseModelFake.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="IDatabaseModel.cs" />
     <Compile Include="IToken.cs" />
@@ -68,6 +70,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>OracleGramarDescription.tt</DependentUpon>
     </Compile>
+    <Compile Include="OracleSemanticValidator.cs" />
     <Compile Include="OracleStatement.cs" />
     <Compile Include="OracleSqlGrammar.cs">
       <DependentUpon>OracleSqlGrammar.xsd</DependentUpon>

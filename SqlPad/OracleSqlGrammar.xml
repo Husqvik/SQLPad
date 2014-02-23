@@ -235,16 +235,18 @@
     <Rule StartingNonTerminal="ColumnReference">
       <Sequences>
         <Sequence>
-          <Terminal Id="Identifier" />
-        </Sequence>
-        <Sequence>
           <Terminal Id="RowIdPseudoColumn" />
         </Sequence>
         <Sequence>
           <Terminal Id="SequenceCurrentValue" />
+          <NonTerminal Id="DatabaseLink" IsOptional="true" />
         </Sequence>
         <Sequence>
           <Terminal Id="SequenceNextValue" />
+          <NonTerminal Id="DatabaseLink" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Identifier" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -637,6 +639,14 @@
         <!--<Sequence>
           <NonTerminal Id="PartitionClause" />
         </Sequence>-->
+        <Sequence>
+          <NonTerminal Id="DatabaseLink" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DatabaseLink">
+      <Sequences>
         <Sequence>
           <Terminal Id="At" />
           <Terminal Id="Identifier" />
