@@ -110,6 +110,10 @@ namespace SqlPad
 
 				foreach (var nodeValidity in _validator.Validate(statement, _databaseModel).NodeValidity)
 				{
+					if (line.Offset > nodeValidity.Key.SourcePosition.IndexEnd + 1 ||
+						line.EndOffset < nodeValidity.Key.SourcePosition.IndexStart)
+						continue;
+
 					var errorColorStartOffset = Math.Max(line.Offset, nodeValidity.Key.SourcePosition.IndexStart);
 					var errorColorEndOffset = Math.Min(line.EndOffset, nodeValidity.Key.SourcePosition.IndexEnd + 1);
 
@@ -117,7 +121,6 @@ namespace SqlPad
 						element =>
 						{
 							element.TextRunProperties.SetForegroundBrush(nodeValidity.Value ? NormalTextBrush : ErrorBrush);
-							//element.TextRunProperties.SetBackgroundBrush(backgroundColor);
 						});
 				}
 

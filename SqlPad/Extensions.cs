@@ -13,7 +13,7 @@ namespace SqlPad
 		public static string ToOracleIdentifier(this string identifier)
 		{
 			if (String.IsNullOrWhiteSpace(identifier))
-				throw new ArgumentException("");
+				return String.Empty;
 
 			return identifier[0] == '"' ? identifier : "\"" + identifier.ToUpperInvariant() + "\"";
 		}

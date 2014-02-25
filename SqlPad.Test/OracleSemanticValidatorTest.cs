@@ -18,6 +18,7 @@ namespace SqlPad.Test
 			var validationModel = _semanticValidator.Validate(statement, _databaseModel);
 
 			var nodeValidity = validationModel.NodeValidity.Values.ToArray();
+			nodeValidity.Length.ShouldBe(9);
 			nodeValidity[0].ShouldBe(true);
 			nodeValidity[1].ShouldBe(true);
 			nodeValidity[2].ShouldBe(true);
@@ -27,6 +28,18 @@ namespace SqlPad.Test
 			nodeValidity[6].ShouldBe(false);
 			nodeValidity[7].ShouldBe(false);
 			nodeValidity[8].ShouldBe(true);
+		}
+
+		[Test(Description = @"")]
+		public void Test2()
+		{
+			var statement = _oracleSqlParser.Parse("WITH XXX1 AS (SELECT 1 FROM XXX1) SELECT * FROM XXX1").Single();
+			var validationModel = _semanticValidator.Validate(statement, _databaseModel);
+
+			var nodeValidity = validationModel.NodeValidity.Values.ToArray();
+			nodeValidity.Length.ShouldBe(2);
+			nodeValidity[0].ShouldBe(false);
+			nodeValidity[1].ShouldBe(true);
 		}
 	}
 }

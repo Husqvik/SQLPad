@@ -12,13 +12,12 @@ namespace SqlPad
 			var queryTableExpressions = statement.TokenCollection.SelectMany(t => t.GetDescendants(OracleGrammarDescription.NonTerminals.QueryTableExpression)).ToList();
 			foreach (var node in queryTableExpressions)
 			{
-				StatementDescriptionNode objectNameNode;
 				string owner;
 				if (node.ChildNodes.Count == 2)
 				{
 					var ownerNode = node.GetDescendants(OracleGrammarDescription.Terminals.Identifier).First();
 					owner = ownerNode.Token.Value;
-					objectNameNode = node.GetDescendants(OracleGrammarDescription.Terminals.Identifier).Last();
+					var objectNameNode = node.GetDescendants(OracleGrammarDescription.Terminals.Identifier).Last();
 
 					model.NodeValidity.Add(ownerNode, databaseModel.Schemas.Any(s => s == owner.ToOracleIdentifier()));
 					model.NodeValidity.Add(objectNameNode, databaseModel.AllObjects.ContainsKey(OracleObjectIdentifier.Create(owner, objectNameNode.Token.Value)));
@@ -26,11 +25,25 @@ namespace SqlPad
 				}
 				else // TODO: Resolve if the identifier is a query name or an object name.
 				{
+					var objectNameNode = node.GetDescendants(OracleGrammarDescription.Terminals.Identifier).FirstOrDefault();
+					if (objectNameNode == null)
+						continue;
+
+					var factoredSubquery = node.GetAncestor(OracleGrammarDescription.NonTerminals.SubqueryComponent);
+					var factoredQueryExists = factoredSubquery == null &&
+					                          node.GetAncestor(OracleGrammarDescription.NonTerminals.NestedQuery)
+						                          .GetDescendants(OracleGrammarDescription.NonTerminals.SubqueryComponent)
+						                          .SelectMany(s => s.ChildNodes).Where(n => n.Id == OracleGrammarDescription.Terminals.Identifier)
+												  .Select(i => i.Token.Value.ToOracleIdentifier()).Contains(objectNameNode.Token.Value.ToOracleIdentifier());
+
 					owner = databaseModel.CurrentSchema;
-					objectNameNode = node.GetDescendants(OracleGrammarDescription.Terminals.Identifier).Single();
 					var currentSchemaObject = OracleObjectIdentifier.Create(owner, objectNameNode.Token.Value);
 					var publicSchemaObject = OracleObjectIdentifier.Create(DatabaseModelFake.SchemaPublic, objectNameNode.Token.Value);
-					model.NodeValidity.Add(objectNameNode, databaseModel.AllObjects.ContainsKey(currentSchemaObject) || databaseModel.AllObjects.ContainsKey(publicSchemaObject));
+
+					var objectIsValid = databaseModel.AllObjects.ContainsKey(currentSchemaObject) || databaseModel.AllObjects.ContainsKey(publicSchemaObject) ||
+						factoredQueryExists;
+
+					model.NodeValidity[objectNameNode] = objectIsValid;
 				}
 			}
 

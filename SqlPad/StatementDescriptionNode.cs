@@ -122,6 +122,19 @@ namespace SqlPad
 			return AllChildNodes.Where(t => descendantNodeIds == null || descendantNodeIds.Length == 0 || descendantNodeIds.Contains(t.Id));
 		}
 
+		/*public int? GetAncestorDistance(string ancestorNodeId)
+		{
+			return GetAncestorDistance(ancestorNodeId, 0);
+		}
+
+		private int? GetAncestorDistance(string ancestorNodeId, int level)
+		{
+			if (Id == ancestorNodeId)
+				return level;
+			
+			return ParentNode != null ? ParentNode.GetAncestorDistance(ancestorNodeId, level + 1) : null;
+		}*/
+
 		public StatementDescriptionNode GetAncestor(string ancestorNodeId, bool includeSelf = true)
 		{
 			if (includeSelf && Id == ancestorNodeId)

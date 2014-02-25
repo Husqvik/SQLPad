@@ -321,6 +321,8 @@ namespace SqlPad {
         
         private string commentField;
         
+        private string taqField;
+        
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
         public string Id {
@@ -362,6 +364,17 @@ namespace SqlPad {
             }
             set {
                 this.commentField = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string Taq {
+            get {
+                return this.taqField;
+            }
+            set {
+                this.taqField = value;
             }
         }
     }

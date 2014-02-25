@@ -15,7 +15,16 @@ namespace SqlPad
 
 		private static readonly IDatabaseObject[] AllObjectsInternal =
 		{
-			new OracleDatabaseObject { Name = "\"DUAL\"", Owner = "\"SYS\"", Type = "TABLE" },
+			new OracleDatabaseObject
+			{
+				Name = "\"DUAL\"",
+				Owner = "\"SYS\"",
+				Type = "TABLE",
+				Properties = new HashSet<IDatabaseObjectProperty>
+				             {
+					             new OracleColumn { Name = "\"DUMMY\"" }
+				             }
+			},
 			new OracleDatabaseObject { Name = "\"V_$SESSION\"", Owner = "\"SYS\"", Type = "VIEW" },
 			new OracleDatabaseObject { Name = "\"V$SESSION\"", Owner = SchemaPublic, Type = "SYNONYM" },
 			new OracleDatabaseObject { Name = "\"DUAL\"", Owner = SchemaPublic, Type = "SYNONYM" },
@@ -50,11 +59,16 @@ namespace SqlPad
 	[DebuggerDisplay("DebuggerDisplay (Owner={Owner}; Name={Name}; Type={Type})")]
 	public class OracleDatabaseObject : IDatabaseObject
 	{
+		public OracleDatabaseObject()
+		{
+			Properties = new List<IDatabaseObjectProperty>();
+		}
+
 		#region Implementation of IDatabaseObject
 		public string Name { get; set; }
 		public string Type { get; set; }
 		public string Owner { get; set; }
-		public ICollection<IDatabaseObjectProperty> Properties { get {return new IDatabaseObjectProperty[0];} }
+		public ICollection<IDatabaseObjectProperty> Properties { get; set; }
 		#endregion
 	}
 
@@ -66,6 +80,7 @@ namespace SqlPad
 		#endregion
 	}
 
+	[DebuggerDisplay("OracleObjectIdentifier (Owner={Owner,nq}.Name={Name,nq})")]
 	public struct OracleObjectIdentifier
 	{
 		public static readonly OracleObjectIdentifier Empty = new OracleObjectIdentifier();
