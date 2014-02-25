@@ -27,7 +27,6 @@ namespace SqlPad
 	{
 		private readonly OracleSqlParser _sqlParser = new OracleSqlParser();
 		private readonly ColorizeAvalonEdit _colorizeAvalonEdit = new ColorizeAvalonEdit();
-		private readonly IDatabaseModel _databaseModel = new DatabaseModelFake();
 
 		public static RoutedCommand CommandAddColumnAliases = new RoutedCommand();
 		public static RoutedCommand CommandWrapAsCommonTableExpression = new RoutedCommand();
@@ -88,6 +87,10 @@ namespace SqlPad
 	public class ColorizeAvalonEdit : DocumentColorizingTransformer
 	{
 		private ICollection<OracleStatement> _parsedStatements = new List<OracleStatement>();
+		private readonly OracleSemanticValidator _validator = new OracleSemanticValidator();
+		private readonly DatabaseModelFake _databaseModel = new DatabaseModelFake();
+		private static readonly SolidColorBrush ErrorBrush = new SolidColorBrush(Colors.Red);
+		private static readonly SolidColorBrush NormalTextBrush = new SolidColorBrush(Colors.Black);
 
 		public void SetStatementCollection(ICollection<OracleStatement> statements)
 		{
@@ -104,6 +107,19 @@ namespace SqlPad
 
 				var colorStartOffset = Math.Max(line.Offset, statement.SourcePosition.IndexStart);
 				var colorEndOffset = Math.Min(line.EndOffset, statement.SourcePosition.IndexEnd + 1);
+
+				foreach (var nodeValidity in _validator.Validate(statement, _databaseModel).NodeValidity)
+				{
+					var errorColorStartOffset = Math.Max(line.Offset, nodeValidity.Key.SourcePosition.IndexStart);
+					var errorColorEndOffset = Math.Min(line.EndOffset, nodeValidity.Key.SourcePosition.IndexEnd + 1);
+
+					ChangeLinePart(errorColorStartOffset, errorColorEndOffset,
+						element =>
+						{
+							element.TextRunProperties.SetForegroundBrush(nodeValidity.Value ? NormalTextBrush : ErrorBrush);
+							//element.TextRunProperties.SetBackgroundBrush(backgroundColor);
+						});
+				}
 
 				ChangeLinePart(
 					colorStartOffset,
