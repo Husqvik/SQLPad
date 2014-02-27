@@ -130,25 +130,37 @@ namespace SqlPad
 
 		private ProcessingResult ProceedNonTerminal(string nonTerminal, int level, int tokenStartOffset)
 		{
-			var tokens = new List<StatementDescriptionNode>();
+			var mandatoryTokens = new List<StatementDescriptionNode>();
+			var optionalTokens = new List<StatementDescriptionNode>();
 			var result = new ProcessingResult
 			             {
 				             Value = NonTerminalProcessingResult.Start,
-							 Tokens = tokens
+							 Tokens = mandatoryTokens
 			             };
 
 			foreach (var sequence in _startingNonTerminalSequences[nonTerminal])
 			{
-				tokens.Clear();
-				var localTokenIndex = 0;
+				mandatoryTokens.Clear();
+				optionalTokens.Clear();
+				var localMandatoryTokenIndex = 0;
+				var localOptionalTokenIndex = 0;
 
 				foreach (var item in sequence.Items)
 				{
-					var tokenOffset = tokenStartOffset + localTokenIndex;
+					var tokenOffset = tokenStartOffset + localMandatoryTokenIndex + localOptionalTokenIndex;
 					var nestedNonTerminal = item as SqlGrammarRuleSequenceNonTerminal;
 					if (nestedNonTerminal != null)
 					{
 						var nestedResult = ProceedNonTerminal(nestedNonTerminal.Id, level + 1, tokenOffset);
+						if (nestedResult.Value == NonTerminalProcessingResult.SequenceNotFound && localOptionalTokenIndex > 0)
+						{
+							nestedResult = ProceedNonTerminal(nestedNonTerminal.Id, level + 1, tokenOffset - localOptionalTokenIndex);
+							if (nestedResult.Value == NonTerminalProcessingResult.Success)
+							{
+								localOptionalTokenIndex = 0;
+								optionalTokens.Clear();
+							}
+						}
 
 						if (nestedNonTerminal.IsRequired || nestedResult.Value == NonTerminalProcessingResult.Success)
 						{
@@ -157,12 +169,20 @@ namespace SqlPad
 
 						if (nestedResult.Value == NonTerminalProcessingResult.Success && nestedResult.Tokens.Count > 0)
 						{
-							localTokenIndex += nestedResult.TerminalCount;
-
+							localOptionalTokenIndex += nestedResult.TerminalCount;
+							
 							var nestedNode = new StatementDescriptionNode(NodeType.NonTerminal) { Id = nestedNonTerminal.Id, Level = level };
 							nestedNode.AddChildNodes(nestedResult.Tokens);
+							optionalTokens.Add(nestedNode);
 
-							tokens.Add(nestedNode);
+							if (nestedNonTerminal.IsRequired)
+							{
+								localMandatoryTokenIndex += localOptionalTokenIndex;
+								localOptionalTokenIndex = 0;
+
+								mandatoryTokens.AddRange(optionalTokens);
+								optionalTokens.Clear();
+							}
 						}
 
 						if (result.Value == NonTerminalProcessingResult.SequenceNotFound)
@@ -200,17 +220,29 @@ namespace SqlPad
 						}
 
 						var node = new StatementDescriptionNode(NodeType.Terminal) { Token = currentToken, Id = terminalReference.Id, Level = level };
-						tokens.Add(node);
+						optionalTokens.Add(node);
 
 						//Trace.WriteLine(string.Format("newTokenFetched: {0}; nonTerminal: {1}; token: {2}", newTokenFetched, nonTerminal, sqlToken));
 
-						localTokenIndex++;
+						localOptionalTokenIndex++;
+
+						if (terminalReference.IsRequired)
+						{
+							localMandatoryTokenIndex += localOptionalTokenIndex;
+							localOptionalTokenIndex = 0;
+							mandatoryTokens.AddRange(optionalTokens);
+							optionalTokens.Clear();
+						}
+
 						result.Value = NonTerminalProcessingResult.Success;
 					}
 				}
 
 				if (result.Value == NonTerminalProcessingResult.Success)
+				{
+					mandatoryTokens.AddRange(optionalTokens);
 					break;
+				}
 			}
 
 			return result;

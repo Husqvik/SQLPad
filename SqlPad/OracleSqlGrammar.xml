@@ -540,13 +540,9 @@
           <NonTerminal Id="FromClauseChained" IsOptional="true" />
         </Sequence>
         
-        <!--<Sequence>
-          <NonTerminal Id="TableReference" />
-          <NonTerminal Id="JoinClause" IsOptional="true" />
-          <NonTerminal Id="FromClauseChained" IsOptional="true" />
-        </Sequence>-->
         <Sequence>
           <NonTerminal Id="TableReference" />
+          <!--<Terminal Id="Alias" IsOptional="true" />-->
           <NonTerminal Id="JoinClause" IsOptional="true" />
           <NonTerminal Id="FromClauseChained" IsOptional="true" />
         </Sequence>
@@ -777,11 +773,11 @@
     <Rule StartingNonTerminal="GroupingClause">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="RollupCubeClause" />
+          <NonTerminal Id="GroupingSetsClause" />
           <NonTerminal Id="GroupingClauseChained" IsOptional="true" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="GroupingSetsClause" />
+          <NonTerminal Id="RollupCubeClause" />
           <NonTerminal Id="GroupingClauseChained" IsOptional="true" />
         </Sequence>
         <Sequence>
@@ -819,7 +815,11 @@
           <NonTerminal Id="GroupingExpressionListOrRollupCubeClauseChained" IsOptional="true" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="GroupingExpressionList" />
+          <NonTerminal Id="ParenthesisEnclosedExpressionList" />
+          <NonTerminal Id="GroupingExpressionListOrRollupCubeClauseChained" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="Expression" />
           <NonTerminal Id="GroupingExpressionListOrRollupCubeClauseChained" IsOptional="true" />
         </Sequence>
       </Sequences>
@@ -1018,12 +1018,6 @@
     <Rule StartingNonTerminal="InnerJoinClause">
       <Sequences>
         <Sequence>
-          <Terminal Id="Inner" IsOptional="true" />
-          <Terminal Id="Join" />
-          <NonTerminal Id="TableReference" />
-          <NonTerminal Id="JoinColumnsOrCondition" />
-        </Sequence>
-        <Sequence>
           <Terminal Id="Cross" />
           <Terminal Id="Join" />
           <NonTerminal Id="TableReference" />
@@ -1033,6 +1027,12 @@
           <Terminal Id="Inner" IsOptional="true" />
           <Terminal Id="Join" />
           <NonTerminal Id="TableReference" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Inner" IsOptional="true" />
+          <Terminal Id="Join" />
+          <NonTerminal Id="TableReference" />
+          <NonTerminal Id="JoinColumnsOrCondition" />
         </Sequence>
       </Sequences>
     </Rule>

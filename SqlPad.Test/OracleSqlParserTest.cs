@@ -384,7 +384,8 @@ namespace SqlPad.Test
 		[Test(Description = @"Tests join clauses. "), Ignore]
 		public void Test24()
 		{
-			const string query1 = @"SELECT * FROM T1 CROSS JOIN T2 JOIN T3 ON 1 = 1 INNER JOIN T4 USING (ID) NATURAL JOIN T5 FULL OUTER JOIN T6 ON T5.ID = T6.ID, V$SESSION";
+			//const string query1 = @"SELECT * FROM T1 CROSS JOIN T2 ALIAS";
+			const string query1 = @"SELECT * FROM T1 CROSS JOIN T2 JOIN T3 ON 1 = 1 INNER JOIN T4 USING (ID) NATURAL JOIN T5 FULL OUTER JOIN T6 ALIAS ON T5.ID = T6.ID, V$SESSION"; // doesn't work because of join keyword recognized as table alias
 			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
 
 			result.Count.ShouldBe(1);
@@ -428,8 +429,7 @@ namespace SqlPad.Test
 
 			// TODO: Precise assertions
 
-			//const string query2 = @"SELECT 1 FROM DUAL GROUP BY GROUPING SETS (1, DUMMY, (1, DUMMY), ROLLUP(DUMMY), CUBE(DUMMY)), GROUPING SETS (1), CUBE(1), ROLLUP(1, DUMMY);"; // doesn't work yet
-			const string query2 = @"SELECT 1 FROM DUAL GROUP BY GROUPING SETS (ROLLUP(DUMMY), CUBE(DUMMY), 1, DUMMY, (1, DUMMY)), GROUPING SETS (1), CUBE(1), ROLLUP(1, DUMMY);";
+			const string query2 = @"SELECT 1 FROM DUAL GROUP BY GROUPING SETS (ROLLUP(DUMMY), 1, DUMMY, (1, DUMMY), ROLLUP(DUMMY), CUBE(DUMMY)), GROUPING SETS (1), CUBE(1), ROLLUP(1, DUMMY);";
 			result = _oracleSqlParser.Parse(CreateTokenReader(query2));
 
 			result.Count.ShouldBe(1);
