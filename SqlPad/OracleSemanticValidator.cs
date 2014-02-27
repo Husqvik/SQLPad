@@ -19,8 +19,8 @@ namespace SqlPad
 					owner = ownerNode.Token.Value;
 					var objectNameNode = node.GetDescendants(OracleGrammarDescription.Terminals.Identifier).Last();
 
-					model.NodeValidity.Add(ownerNode, databaseModel.Schemas.Any(s => s == owner.ToOracleIdentifier()));
-					model.NodeValidity.Add(objectNameNode, databaseModel.AllObjects.ContainsKey(OracleObjectIdentifier.Create(owner, objectNameNode.Token.Value)));
+					model.NodeValidity[ownerNode] = databaseModel.Schemas.Any(s => s == owner.ToOracleIdentifier());
+					model.NodeValidity[objectNameNode] = databaseModel.AllObjects.ContainsKey(OracleObjectIdentifier.Create(owner, objectNameNode.Token.Value));
 
 				}
 				else // TODO: Resolve if the identifier is a query name or an object name.
