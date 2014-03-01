@@ -121,7 +121,7 @@ namespace SqlPad
 				}
 
 				oracleSql.SourcePosition = new SourcePosition { IndexStart = indexStart, IndexEnd = indexEnd };
-				oracleSql.TokenCollection = result.Tokens;
+				oracleSql.NodeCollection = result.Nodes;
 				oracleSql.ProcessingResult = result.Value;
 				_oracleSqlCollection.Add(oracleSql);
 			}
@@ -130,35 +130,33 @@ namespace SqlPad
 
 		private ProcessingResult ProceedNonTerminal(string nonTerminal, int level, int tokenStartOffset)
 		{
-			var mandatoryTokens = new List<StatementDescriptionNode>();
-			var optionalTokens = new List<StatementDescriptionNode>();
+			var workingNodes = new List<StatementDescriptionNode>();
 			var result = new ProcessingResult
 			             {
 				             Value = NonTerminalProcessingResult.Start,
-							 Tokens = mandatoryTokens
+							 Nodes = workingNodes
 			             };
 
 			foreach (var sequence in _startingNonTerminalSequences[nonTerminal])
 			{
-				mandatoryTokens.Clear();
-				optionalTokens.Clear();
-				var localMandatoryTokenIndex = 0;
-				var localOptionalTokenIndex = 0;
+				workingNodes.Clear();
 
 				foreach (var item in sequence.Items)
 				{
-					var tokenOffset = tokenStartOffset + localMandatoryTokenIndex + localOptionalTokenIndex;
+					var tokenOffset = tokenStartOffset + workingNodes.SelectMany(t => t.Terminals).Count();
 					var nestedNonTerminal = item as SqlGrammarRuleSequenceNonTerminal;
 					if (nestedNonTerminal != null)
 					{
 						var nestedResult = ProceedNonTerminal(nestedNonTerminal.Id, level + 1, tokenOffset);
-						if (nestedResult.Value == NonTerminalProcessingResult.SequenceNotFound && localOptionalTokenIndex > 0)
+
+						if (nestedResult.Value == NonTerminalProcessingResult.SequenceNotFound &&
+							workingNodes.Count > 0 &&
+							!workingNodes[workingNodes.Count - 1].Terminals.Last().IsRequired)
 						{
-							nestedResult = ProceedNonTerminal(nestedNonTerminal.Id, level + 1, tokenOffset - localOptionalTokenIndex);
+							nestedResult = ProceedNonTerminal(nestedNonTerminal.Id, level + 1, tokenOffset - 1);
 							if (nestedResult.Value == NonTerminalProcessingResult.Success)
 							{
-								localOptionalTokenIndex = 0;
-								optionalTokens.Clear();
+								workingNodes.Last().RemoveLastChildNodeIfOptional();
 							}
 						}
 
@@ -167,22 +165,11 @@ namespace SqlPad
 							result.Value = nestedResult.Value;
 						}
 
-						if (nestedResult.Value == NonTerminalProcessingResult.Success && nestedResult.Tokens.Count > 0)
+						if (nestedResult.Value == NonTerminalProcessingResult.Success && nestedResult.Nodes.Count > 0)
 						{
-							localOptionalTokenIndex += nestedResult.TerminalCount;
-							
-							var nestedNode = new StatementDescriptionNode(NodeType.NonTerminal) { Id = nestedNonTerminal.Id, Level = level };
-							nestedNode.AddChildNodes(nestedResult.Tokens);
-							optionalTokens.Add(nestedNode);
-
-							if (nestedNonTerminal.IsRequired)
-							{
-								localMandatoryTokenIndex += localOptionalTokenIndex;
-								localOptionalTokenIndex = 0;
-
-								mandatoryTokens.AddRange(optionalTokens);
-								optionalTokens.Clear();
-							}
+							var nestedNode = new StatementDescriptionNode(NodeType.NonTerminal) { Id = nestedNonTerminal.Id, Level = level, IsRequired = nestedNonTerminal.IsRequired };
+							nestedNode.AddChildNodes(nestedResult.Nodes);
+							workingNodes.Add(nestedNode);
 						}
 
 						if (result.Value == NonTerminalProcessingResult.SequenceNotFound)
@@ -219,20 +206,10 @@ namespace SqlPad
 							break;
 						}
 
-						var node = new StatementDescriptionNode(NodeType.Terminal) { Token = currentToken, Id = terminalReference.Id, Level = level };
-						optionalTokens.Add(node);
+						var node = new StatementDescriptionNode(NodeType.Terminal) { Token = currentToken, Id = terminalReference.Id, Level = level, IsRequired = terminalReference.IsRequired };
+						workingNodes.Add(node);
 
 						//Trace.WriteLine(string.Format("newTokenFetched: {0}; nonTerminal: {1}; token: {2}", newTokenFetched, nonTerminal, sqlToken));
-
-						localOptionalTokenIndex++;
-
-						if (terminalReference.IsRequired)
-						{
-							localMandatoryTokenIndex += localOptionalTokenIndex;
-							localOptionalTokenIndex = 0;
-							mandatoryTokens.AddRange(optionalTokens);
-							optionalTokens.Clear();
-						}
 
 						result.Value = NonTerminalProcessingResult.Success;
 					}
@@ -240,7 +217,6 @@ namespace SqlPad
 
 				if (result.Value == NonTerminalProcessingResult.Success)
 				{
-					mandatoryTokens.AddRange(optionalTokens);
 					break;
 				}
 			}
@@ -253,21 +229,22 @@ namespace SqlPad
 	public struct ProcessingResult
 	{
 		public NonTerminalProcessingResult Value { get; set; }
-		public ICollection<StatementDescriptionNode> Tokens { get; set; }
+		
+		public IList<StatementDescriptionNode> Nodes { get; set; }
 
 		public IEnumerable<StatementDescriptionNode> Terminals
 		{
 			get
 			{
-				return Tokens == null
+				return Nodes == null
 					? Enumerable.Empty<StatementDescriptionNode>()
-					: Tokens.SelectMany(t => t.Terminals);
+					: Nodes.SelectMany(t => t.Terminals);
 			}
 		} 
 
 		public int TerminalCount
 		{
-			get { return Tokens == null ? 0 : Terminals.Count(); }
+			get { return Nodes == null ? 0 : Terminals.Count(); }
 		}
 	}
 

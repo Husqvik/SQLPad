@@ -38,6 +38,8 @@ namespace SqlPad
 		
 		public int Level { get; set; }
 
+		public bool IsRequired { get; set; }
+
 		public ICollection<StatementDescriptionNode> ChildNodes { get { return _childNodes.AsReadOnly(); } }
 
 		public SourcePosition SourcePosition
@@ -85,7 +87,7 @@ namespace SqlPad
 		#region Overrides of Object
 		public override string ToString()
 		{
-			return string.Format("StatementDescriptionNode (Id={0}; Type={1}; SourcePosition=({2}-{3}))", Id, Type, SourcePosition.IndexStart, SourcePosition.IndexEnd);
+			return string.Format("StatementDescriptionNode (Id={0}; Type={1}; IsRequired={2}; SourcePosition=({3}-{4}))", Id, Type, IsRequired, SourcePosition.IndexStart, SourcePosition.IndexEnd);
 		}
 		#endregion
 
@@ -172,5 +174,39 @@ namespace SqlPad
 				previousTerminal = terminal;
 			}
 		}*/
+
+		public int RemoveLastChildNodeIfOptional()
+		{
+			if (Type == NodeType.Terminal)
+				throw new InvalidOperationException("Terminal node has no child nodes. ");
+
+			var index = _childNodes.Count - 1;
+			var node = _childNodes[index];
+			if (node.Type == NodeType.Terminal)
+			{
+				if (node.IsRequired)
+					return 0;
+				
+				_childNodes.RemoveAt(index);
+				return 1;
+			}
+
+			var removedTerminalCount = node.RemoveLastChildNodeIfOptional();
+			if (removedTerminalCount != 0 || node.IsRequired)
+				return removedTerminalCount;
+			
+			removedTerminalCount = node.Terminals.Count();
+			_childNodes.RemoveAt(index);
+
+			return removedTerminalCount;
+		}
+
+		internal static StatementDescriptionNode FromChildNodes(IEnumerable<StatementDescriptionNode> childNodes)
+		{
+			var node = new StatementDescriptionNode(NodeType.NonTerminal);
+			node.AddChildNodes(childNodes);
+
+			return node;
+		}
 	}
 }

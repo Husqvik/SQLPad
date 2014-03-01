@@ -49,7 +49,6 @@
           <NonTerminal Id="HierarchicalQueryClause" IsOptional="true" />
           <NonTerminal Id="GroupByClause" IsOptional="true" />
           <!--<NonTerminal Id="ModelClause" IsOptional="true" />-->
-          <!-- TODO -->
         </Sequence>
       </Sequences>
     </Rule>
@@ -162,7 +161,10 @@
     <Rule StartingNonTerminal="ColumnAlias">
       <Sequences>
         <Sequence>
-          <Terminal Id="As" IsOptional="true" />
+          <Terminal Id="As" />
+          <Terminal Id="Alias" />
+        </Sequence>
+        <Sequence>
           <Terminal Id="Alias" />
         </Sequence>
       </Sequences>
@@ -895,7 +897,7 @@
         <Sequence>
           <Terminal Id="For" />
           <Terminal Id="Update" />
-          <!--<NonTerminal Id="ForUpdateOfColumnsClause" IsOptional="true" />-->
+          <NonTerminal Id="ForUpdateOfColumnsClause" IsOptional="true" />
           <NonTerminal Id="ForUpdateLockingClause" IsOptional="true" />
         </Sequence>
       </Sequences>
@@ -905,7 +907,32 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Of" />
-          <!--<NonTerminal Id="ColumnList" />--><!--TODO-->
+          <NonTerminal Id="ForUpdateColumn" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ForUpdateColumn">
+      <Sequences>
+        <Sequence Comment="(Schema.)Table/View.Column">
+          <Terminal Id="Identifier" />
+          <Terminal Id="Dot" />
+          <NonTerminal Id="SelectListSchemaItem" IsOptional="true" />
+          <Terminal Id="Identifier" />
+          <NonTerminal Id="ForUpdateColumnChained" IsOptional="true" />
+        </Sequence>
+        <Sequence Comment="Column">
+          <Terminal Id="Identifier" />
+          <NonTerminal Id="ForUpdateColumnChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ForUpdateColumnChained">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="ForUpdateColumn" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -1343,6 +1370,8 @@
     <Terminal Id="Partition" Value="PARTITION" />
     <Terminal Id="Subpartition" Value="SUBPARTITION" />
     <Terminal Id="Table" Value="TABLE" IsKeyword="true" />
+    <Terminal Id="Column" Value="COLUMN" IsKeyword="true" />
+    <Terminal Id="Row" Value="ROW" IsKeyword="true" />
     <Terminal Id="SequenceCurrentValue" Value="CURRVAL" />
     <Terminal Id="SequenceNextValue" Value="NEXTVAL" />
     <Terminal Id="RowNumberPseudoColumn" Value="ROWNUM" IsKeyword="true" />

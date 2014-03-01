@@ -4,26 +4,26 @@ using System.Linq;
 
 namespace SqlPad
 {
-	[DebuggerDisplay("OracleStatement (Count={TokenCollection.Count})")]
+	[DebuggerDisplay("OracleStatement (Count={NodeCollection.Count})")]
 	public class OracleStatement
 	{
 		public static readonly OracleStatement EmptyStatement =
 			new OracleStatement
 			{
 				ProcessingResult = NonTerminalProcessingResult.Success,
-				TokenCollection = new StatementDescriptionNode[0],
-				SourcePosition = new SourcePosition { IndexStart = 0, IndexEnd = 0 }
+				NodeCollection = new StatementDescriptionNode[0],
+				SourcePosition = new SourcePosition { IndexStart = -1, IndexEnd = -1 }
 			};
 
 		public NonTerminalProcessingResult ProcessingResult { get; set; }
 
-		public ICollection<StatementDescriptionNode> TokenCollection { get; set; }
+		public ICollection<StatementDescriptionNode> NodeCollection { get; set; }
 
 		public SourcePosition SourcePosition { get; set; }
 
 		public StatementDescriptionNode GetNodeAtPosition(int offset)
 		{
-			return TokenCollection.Select(n => n.GetNodeAtPosition(offset)).FirstOrDefault(n => n != null);
+			return NodeCollection.Select(n => n.GetNodeAtPosition(offset)).FirstOrDefault(n => n != null);
 		}
 	}
 

@@ -9,7 +9,7 @@ namespace SqlPad
 		{
 			var model = new SemanticModel();
 
-			var queryTableExpressions = statement.TokenCollection.SelectMany(t => t.GetDescendants(OracleGrammarDescription.NonTerminals.QueryTableExpression)).ToList();
+			var queryTableExpressions = statement.NodeCollection.SelectMany(t => t.GetDescendants(OracleGrammarDescription.NonTerminals.QueryTableExpression)).ToList();
 			foreach (var node in queryTableExpressions)
 			{
 				string owner;

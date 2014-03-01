@@ -35,19 +35,19 @@ namespace SqlPad.Test
 			
 			result.ShouldNotBe(null);
 			result.Count.ShouldBe(1);
-			var terminals = result.Single().TokenCollection.SelectMany(i => i.Terminals).ToList();
+			var terminals = result.Single().NodeCollection.SelectMany(i => i.Terminals).ToList();
 
 			terminals.Count.ShouldBe(4);
-			terminals[0].Id.ShouldBe("Select");
+			terminals[0].Id.ShouldBe(OracleGrammarDescription.Terminals.Select);
 			terminals[0].SourcePosition.IndexStart.ShouldBe(0);
 			terminals[0].SourcePosition.IndexEnd.ShouldBe(5);
-			terminals[1].Id.ShouldBe("Null");
+			terminals[1].Id.ShouldBe(OracleGrammarDescription.Terminals.Null);
 			terminals[1].SourcePosition.IndexStart.ShouldBe(7);
 			terminals[1].SourcePosition.IndexEnd.ShouldBe(10);
-			terminals[2].Id.ShouldBe("From");
+			terminals[2].Id.ShouldBe(OracleGrammarDescription.Terminals.From);
 			terminals[2].SourcePosition.IndexStart.ShouldBe(12);
 			terminals[2].SourcePosition.IndexEnd.ShouldBe(15);
-			terminals[3].Id.ShouldBe("Identifier");
+			terminals[3].Id.ShouldBe(OracleGrammarDescription.Terminals.Identifier);
 			terminals[3].Token.Value.ShouldBe("DUAL");
 			terminals[3].SourcePosition.IndexStart.ShouldBe(17);
 			terminals[3].SourcePosition.IndexEnd.ShouldBe(20);
@@ -61,29 +61,29 @@ namespace SqlPad.Test
 
 			result.ShouldNotBe(null);
 			result.Count.ShouldBe(1);
-			var rootToken = result.Single().TokenCollection.Single();
+			var rootToken = result.Single().NodeCollection.Single();
 			var terminals = rootToken.Terminals.ToList();
 
 			terminals.Count.ShouldBe(14);
-			terminals[0].Id.ShouldBe("Select");
-			terminals[1].Id.ShouldBe("Null");
-			terminals[2].Id.ShouldBe("As");
-			terminals[3].Id.ShouldBe("Alias");
+			terminals[0].Id.ShouldBe(OracleGrammarDescription.Terminals.Select);
+			terminals[1].Id.ShouldBe(OracleGrammarDescription.Terminals.Null);
+			terminals[2].Id.ShouldBe(OracleGrammarDescription.Terminals.As);
+			terminals[3].Id.ShouldBe(OracleGrammarDescription.Terminals.Alias);
 			terminals[3].Token.Value.ShouldBe("\">=;+Alias/*--^\"");
-			terminals[4].Id.ShouldBe("Comma");
-			terminals[5].Id.ShouldBe("Identifier");
+			terminals[4].Id.ShouldBe(OracleGrammarDescription.Terminals.Comma);
+			terminals[5].Id.ShouldBe(OracleGrammarDescription.Terminals.Identifier);
 			terminals[5].Token.Value.ShouldBe("SYS");
-			terminals[6].Id.ShouldBe("Dot");
-			terminals[7].Id.ShouldBe("Identifier");
+			terminals[6].Id.ShouldBe(OracleGrammarDescription.Terminals.Dot);
+			terminals[7].Id.ShouldBe(OracleGrammarDescription.Terminals.Identifier);
 			terminals[7].Token.Value.ShouldBe("DUAL");
-			terminals[8].Id.ShouldBe("Dot");
-			terminals[9].Id.ShouldBe("Identifier");
+			terminals[8].Id.ShouldBe(OracleGrammarDescription.Terminals.Dot);
+			terminals[9].Id.ShouldBe(OracleGrammarDescription.Terminals.Identifier);
 			terminals[9].Token.Value.ShouldBe("DUMMY");
-			terminals[10].Id.ShouldBe("From");
-			terminals[11].Id.ShouldBe("Identifier");
+			terminals[10].Id.ShouldBe(OracleGrammarDescription.Terminals.From);
+			terminals[11].Id.ShouldBe(OracleGrammarDescription.Terminals.Identifier);
 			terminals[11].Token.Value.ShouldBe("SYS");
-			terminals[12].Id.ShouldBe("Dot");
-			terminals[13].Id.ShouldBe("Identifier");
+			terminals[12].Id.ShouldBe(OracleGrammarDescription.Terminals.Dot);
+			terminals[13].Id.ShouldBe(OracleGrammarDescription.Terminals.Identifier);
 			terminals[13].Token.Value.ShouldBe("DUAL");
 		}
 
@@ -94,13 +94,13 @@ namespace SqlPad.Test
 			var result = _oracleSqlParser.Parse(CreateTokenReader(sqlText));
 
 			result.Count.ShouldBe(1);
-			var terminals = result.Single().TokenCollection.SelectMany(i => i.Terminals).ToList();
+			var terminals = result.Single().NodeCollection.SelectMany(i => i.Terminals).ToList();
 
 			terminals.Count.ShouldBe(26);
-			terminals[0].Id.ShouldBe("Select");
-			terminals[1].Id.ShouldBe("Case");
-			terminals[2].Id.ShouldBe("When");
-			terminals[3].Id.ShouldBe("NumberLiteral");
+			terminals[0].Id.ShouldBe(OracleGrammarDescription.Terminals.Select);
+			terminals[1].Id.ShouldBe(OracleGrammarDescription.Terminals.Case);
+			terminals[2].Id.ShouldBe(OracleGrammarDescription.Terminals.When);
+			terminals[3].Id.ShouldBe(OracleGrammarDescription.Terminals.NumberLiteral);
 			terminals[3].Token.Value.ShouldBe("1");
 
 			// TODO: Precise assertions
@@ -113,7 +113,7 @@ namespace SqlPad.Test
 			var result = _oracleSqlParser.Parse(CreateTokenReader(sqlText));
 
 			result.Count.ShouldBe(1);
-			var terminals = result.Single().TokenCollection.SelectMany(i => i.Terminals).ToList();
+			var terminals = result.Single().NodeCollection.SelectMany(i => i.Terminals).ToList();
 
 			terminals.Count.ShouldBe(34);
 
@@ -123,12 +123,20 @@ namespace SqlPad.Test
 		[Test(Description = @"Tests query. ")]
 		public void Test6()
 		{
-			const string sqlText = @"SELECT 1 1 FROM DUAL";
-			var result = _oracleSqlParser.Parse(CreateTokenReader(sqlText));
+			const string query1 = @"SELECT 1 1 FROM DUAL";
+			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
 
 			result.Count.ShouldBe(1);
-			result.Single().TokenCollection.Count.ShouldBe(0);
+			result.Single().NodeCollection.Count.ShouldBe(0);
 			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.SequenceNotFound);
+
+			// TODO: Precise assertions
+
+			const string query2 = @"SELECT 1 AS FROM T1";
+			result = _oracleSqlParser.Parse(CreateTokenReader(query2));
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
 
 			// TODO: Precise assertions
 		}
@@ -140,14 +148,14 @@ namespace SqlPad.Test
 			var result = _oracleSqlParser.Parse(CreateTokenReader(sqlText));
 
 			result.Count.ShouldBe(1);
-			result.Single().TokenCollection.Count.ShouldBe(0);
+			result.Single().NodeCollection.Count.ShouldBe(0);
 			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.SequenceNotFound);
 
 			sqlText = @"SELECT . FROM DUAL";
 			result = _oracleSqlParser.Parse(CreateTokenReader(sqlText));
 
 			result.Count.ShouldBe(1);
-			result.Single().TokenCollection.Count.ShouldBe(0);
+			result.Single().NodeCollection.Count.ShouldBe(0);
 			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.SequenceNotFound);
 
 			// TODO: Precise assertions
@@ -266,6 +274,14 @@ namespace SqlPad.Test
 			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.SequenceNotFound);
 
 			// TODO: Precise assertions
+
+			const string query5 = @"SELECT 1 FROM DUAL ALIAS FOR UPDATE OF SCHEMA.OBJECT.COLUMN1, COLUMN2, OBJECT.COLUMN3 WAIT 1";
+			result = _oracleSqlParser.Parse(CreateTokenReader(query5));
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+
+			// TODO: Precise assertions
 		}
 
 		[Test(Description = @"Tests simple queries with IS (NOT) <terminal> conditions. ")]
@@ -296,7 +312,7 @@ namespace SqlPad.Test
 
 			result.Count.ShouldBe(1);
 			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
-			result.Single().TokenCollection.Count.ShouldBe(0);
+			result.Single().NodeCollection.Count.ShouldBe(0);
 		}
 
 		[Test(Description = @"Tests correct recovery after invalid statement. ")]
@@ -307,12 +323,12 @@ namespace SqlPad.Test
 
 			result.Count.ShouldBe(2);
 			result.First().ProcessingResult.ShouldBe(NonTerminalProcessingResult.SequenceNotFound);
-			result.First().TokenCollection.Count.ShouldBe(1);
-			result.First().TokenCollection.Single().Terminals.Count().ShouldBe(4);
+			result.First().NodeCollection.Count.ShouldBe(1);
+			result.First().NodeCollection.Single().Terminals.Count().ShouldBe(4);
 
 			result.Last().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
-			result.Last().TokenCollection.Count.ShouldBe(1);
-			result.Last().TokenCollection.Single().Terminals.Count().ShouldBe(4);
+			result.Last().NodeCollection.Count.ShouldBe(1);
+			result.Last().NodeCollection.Single().Terminals.Count().ShouldBe(4);
 		}
 
 		[Test(Description = @"Tests EXISTS and NOT EXISTS. ")]
@@ -381,15 +397,35 @@ namespace SqlPad.Test
 			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
 		}
 
-		[Test(Description = @"Tests join clauses. "), Ignore]
+		[Test(Description = @"Tests join clauses. ")]
 		public void Test24()
 		{
 			//const string query1 = @"SELECT * FROM T1 CROSS JOIN T2 ALIAS";
-			const string query1 = @"SELECT * FROM T1 CROSS JOIN T2 JOIN T3 ON 1 = 1 INNER JOIN T4 USING (ID) NATURAL JOIN T5 FULL OUTER JOIN T6 ALIAS ON T5.ID = T6.ID, V$SESSION"; // doesn't work because of join keyword recognized as table alias
+			const string query1 = @"SELECT * FROM T1 CROSS JOIN T2 JOIN T3 ON 1 = 1 INNER JOIN T4 USING (ID) NATURAL JOIN T5 FULL OUTER JOIN T6 ALIAS ON T5.ID = T6.ID, V$SESSION";
 			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
 
 			result.Count.ShouldBe(1);
 			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+
+			var terminals = result.Single().NodeCollection.SelectMany(n => n.Terminals).ToArray();
+			terminals.Length.ShouldBe(38);
+			terminals[3].Id.ShouldBe(OracleGrammarDescription.Terminals.Identifier);
+			terminals[3].ParentNode.Id.ShouldBe(OracleGrammarDescription.NonTerminals.QueryTableExpression);
+			terminals[3].Token.Value.ShouldBe("T1");
+			terminals[4].Id.ShouldBe(OracleGrammarDescription.Terminals.Cross);
+			terminals[5].Id.ShouldBe(OracleGrammarDescription.Terminals.Join);
+			terminals[7].Id.ShouldBe(OracleGrammarDescription.Terminals.Join);
+			terminals[9].Id.ShouldBe(OracleGrammarDescription.Terminals.On);
+			terminals[13].Id.ShouldBe(OracleGrammarDescription.Terminals.Inner);
+			terminals[14].Id.ShouldBe(OracleGrammarDescription.Terminals.Join);
+			terminals[16].Id.ShouldBe(OracleGrammarDescription.Terminals.Using);
+			terminals[20].Id.ShouldBe(OracleGrammarDescription.Terminals.Natural);
+			terminals[21].Id.ShouldBe(OracleGrammarDescription.Terminals.Join);
+			terminals[23].Id.ShouldBe(OracleGrammarDescription.Terminals.Full);
+			terminals[24].Id.ShouldBe(OracleGrammarDescription.Terminals.Outer);
+			terminals[25].Id.ShouldBe(OracleGrammarDescription.Terminals.Join);
+			terminals[26].Id.ShouldBe(OracleGrammarDescription.Terminals.Identifier);
+			terminals[27].Id.ShouldBe(OracleGrammarDescription.Terminals.Alias);
 		}
 
 		[Test(Description = @"Tests order by clause. ")]
