@@ -20,6 +20,8 @@ namespace SqlPad
 		public ICollection<StatementDescriptionNode> NodeCollection { get; set; }
 
 		public SourcePosition SourcePosition { get; set; }
+		
+		public string Text { get; set; }
 
 		public StatementDescriptionNode GetNodeAtPosition(int offset)
 		{

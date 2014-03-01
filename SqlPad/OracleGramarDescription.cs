@@ -1,7 +1,13 @@
 ﻿namespace SqlPad
 {
+	/// <summary>
+	/// This class provides token constants for Oracle SQL grammar.
+	/// </summary>
 	public static class OracleGrammarDescription
 	{
+		/// <summary>
+		/// This class provides non-terminal constants.
+		/// </summary>
 		public static class NonTerminals
 		{
 			public const string AliasedExpression = "AliasedExpression";
@@ -14,6 +20,7 @@
 			public const string ColumnReference = "ColumnReference";
 			public const string ConcatenatedSubquery = "ConcatenatedSubquery";
 			public const string Condition = "Condition";
+			public const string DatabaseLink = "DatabaseLink";
 			public const string DistinctModifier = "DistinctModifier";
 			public const string EscapeClause = "EscapeClause";
 			public const string Expression = "Expression";
@@ -27,7 +34,10 @@
 			public const string FlashbackQueryClause = "FlashbackQueryClause";
 			public const string FlashbackVersionsClause = "FlashbackVersionsClause";
 			public const string ForUpdateClause = "ForUpdateClause";
+			public const string ForUpdateColumn = "ForUpdateColumn";
+			public const string ForUpdateColumnChained = "ForUpdateColumnChained";
 			public const string ForUpdateLockingClause = "ForUpdateLockingClause";
+			public const string ForUpdateOfColumnsClause = "ForUpdateOfColumnsClause";
 			public const string ForUpdateWaitClause = "ForUpdateWaitClause";
 			public const string FromClause = "FromClause";
 			public const string FromClauseChained = "FromClauseChained";
@@ -63,6 +73,7 @@
 			public const string OuterJoinPartitionClause = "OuterJoinPartitionClause";
 			public const string OuterJoinType = "OuterJoinType";
 			public const string OuterJoinTypeWithKeyword = "OuterJoinTypeWithKeyword";
+			public const string ParenthesisEnclosedColumnIdentifierList = "ParenthesisEnclosedColumnIdentifierList";
 			public const string ParenthesisEnclosedExpressionList = "ParenthesisEnclosedExpressionList";
 			public const string ParenthesisEnclosedGroupingExpressionList = "ParenthesisEnclosedGroupingExpressionList";
 			public const string PartitionOrDatabaseLink = "PartitionOrDatabaseLink";
@@ -93,6 +104,9 @@
 			public const string WhereClause = "WhereClause";
 		}
 
+		/// <summary>
+		/// This class provides non-terminal constants.
+		/// </summary>
 		public static class Terminals
 		{
 			public const string Alias = "Alias";
@@ -108,6 +122,7 @@
 			public const string By = "By";
 			public const string Case = "Case";
 			public const string Check = "Check";
+			public const string Column = "Column";
 			public const string Comma = "Comma";
 			public const string Connect = "Connect";
 			public const string Constraint = "Constraint";
@@ -185,6 +200,7 @@
 			public const string Right = "Right";
 			public const string RightParenthesis = "RightParenthesis";
 			public const string Rollup = "Rollup";
+			public const string Row = "Row";
 			public const string RowIdPseudoColumn = "RowIdPseudoColumn";
 			public const string RowNumberPseudoColumn = "RowNumberPseudoColumn";
 			public const string Sample = "Sample";

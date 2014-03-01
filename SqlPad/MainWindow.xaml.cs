@@ -13,7 +13,9 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;
+using ICSharpCode.AvalonEdit.Editing;
 using ICSharpCode.AvalonEdit.Highlighting;
 using ICSharpCode.AvalonEdit.Rendering;
 using SqlPad.Commands;
@@ -44,6 +46,9 @@ namespace SqlPad
 			//var sql = new OracleSqlParser().Parse(@"select 1 from dual versions between scn minvalue and maxvalue");
 
 			Editor.TextArea.TextView.LineTransformers.Add(_colorizeAvalonEdit);
+
+			Editor.TextArea.TextEntering += TextEnteringHandler;
+			Editor.TextArea.TextEntered += TextEnteredHandler;
 		}
 
 		private void EditorTextChangedHandler(object sender, EventArgs e)
@@ -81,6 +86,57 @@ namespace SqlPad
 		private void ToggleQuotedIdentifierCanExecuteHandler(object sender, CanExecuteRoutedEventArgs e)
 		{
 			e.CanExecute = true;
+		}
+
+		private CompletionWindow _completionWindow;
+
+		void TextEnteredHandler(object sender, TextCompositionEventArgs e)
+		{
+			if (e.Text != ".")
+				return;
+			
+			// Open code completion after the user has pressed dot:
+			_completionWindow = new CompletionWindow(Editor.TextArea);
+			var data = _completionWindow.CompletionList.CompletionData;
+			data.Add(new MyCompletionData("Item1"));
+			data.Add(new MyCompletionData("Item2"));
+			data.Add(new MyCompletionData("Item3"));
+			
+			_completionWindow.Show();
+			_completionWindow.Closed += delegate { _completionWindow = null; };
+		}
+
+		void TextEnteringHandler(object sender, TextCompositionEventArgs e)
+		{
+			if (e.Text.Length > 0 && _completionWindow != null)
+			{
+				if (!char.IsLetterOrDigit(e.Text[0]))
+				{
+					// Whenever a non-letter is typed while the completion window is open,
+					// insert the currently selected element.
+					_completionWindow.CompletionList.RequestInsertion(e);
+				}
+			}
+			// Do not set e.Handled=true.
+			// We still want to insert the character that was typed.
+		}
+
+		private readonly ToolTip _toolTip = new ToolTip();
+		void MouseHoverHandler(object sender, MouseEventArgs e)
+		{
+			var pos = Editor.GetPositionFromPoint(e.GetPosition(Editor));
+			if (pos == null)
+				return;
+			
+			_toolTip.PlacementTarget = this; // required for property inheritance
+			_toolTip.Content = pos.ToString();
+			_toolTip.IsOpen = true;
+			e.Handled = true;
+		}
+
+		void MouseHoverStoppedHandler(object sender, MouseEventArgs e)
+		{
+			_toolTip.IsOpen = false;
 		}
 	}
 
@@ -146,5 +202,37 @@ namespace SqlPad
 					});
 			}
 		}
+	}
+	public class MyCompletionData : ICompletionData
+	{
+		public MyCompletionData(string text)
+		{
+			Text = text;
+		}
+
+		public ImageSource Image
+		{
+			get { return null; }
+		}
+
+		public string Text { get; private set; }
+
+		// Use this property if you want to show a fancy UIElement in the list.
+		public object Content
+		{
+			get { return Text; }
+		}
+
+		public object Description
+		{
+			get { return "Description for " + Text; }
+		}
+
+		public void Complete(TextArea textArea, ISegment completionSegment, EventArgs insertionRequestEventArgs)
+		{
+			textArea.Document.Replace(completionSegment, Text);
+		}
+
+		public double Priority { get { return 0; } }
 	}
 }

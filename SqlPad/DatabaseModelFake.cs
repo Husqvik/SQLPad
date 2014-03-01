@@ -20,9 +20,9 @@ namespace SqlPad
 				Name = "\"DUAL\"",
 				Owner = "\"SYS\"",
 				Type = "TABLE",
-				Properties = new HashSet<IDatabaseObjectProperty>
+				Columns = new HashSet<IColumn>
 				             {
-					             new OracleColumn { Name = "\"DUMMY\"" }
+					             new OracleColumn { Name = "\"DUMMY\"", Type = "VARCHAR2", Precision = 1, Scale = 0 }
 				             }
 			},
 			new OracleDatabaseObject { Name = "\"V_$SESSION\"", Owner = "\"SYS\"", Type = "VIEW" },
@@ -62,6 +62,7 @@ namespace SqlPad
 		public OracleDatabaseObject()
 		{
 			Properties = new List<IDatabaseObjectProperty>();
+			Columns = new List<IColumn>();
 		}
 
 		#region Implementation of IDatabaseObject
@@ -69,14 +70,17 @@ namespace SqlPad
 		public string Type { get; set; }
 		public string Owner { get; set; }
 		public ICollection<IDatabaseObjectProperty> Properties { get; set; }
+		public ICollection<IColumn> Columns { get; set; }
 		#endregion
 	}
 
-	public class OracleColumn : IDatabaseObjectProperty
+	public class OracleColumn : IColumn
 	{
-		#region Implementation of IDatabaseObjectProperty
+		#region Implementation of IColumn
 		public string Name { get; set; }
-		public object Value { get; set; }
+		public string Type { get; set; }
+		public int Precision { get; set; }
+		public int Scale { get; set; }
 		#endregion
 	}
 

@@ -87,7 +87,8 @@ namespace SqlPad
 		#region Overrides of Object
 		public override string ToString()
 		{
-			return string.Format("StatementDescriptionNode (Id={0}; Type={1}; IsRequired={2}; SourcePosition=({3}-{4}))", Id, Type, IsRequired, SourcePosition.IndexStart, SourcePosition.IndexEnd);
+			var terminalValue = Type == NodeType.NonTerminal ? String.Empty : String.Format("; TokenValue={0}", Token.Value);
+			return String.Format("StatementDescriptionNode (Id={0}; Type={1}; IsRequired={2}; Level={3}; SourcePosition=({4}-{5}){6})", Id, Type, IsRequired, Level, SourcePosition.IndexStart, SourcePosition.IndexEnd, terminalValue);
 		}
 		#endregion
 
@@ -186,8 +187,12 @@ namespace SqlPad
 			{
 				if (node.IsRequired)
 					return 0;
+
+				if (_childNodes.Count == 1)
+					throw new InvalidOperationException("Last terminal cannot be removed. ");
 				
 				_childNodes.RemoveAt(index);
+				_lastTerminal = _childNodes[index - 1]._lastTerminal;
 				return 1;
 			}
 
@@ -197,6 +202,7 @@ namespace SqlPad
 			
 			removedTerminalCount = node.Terminals.Count();
 			_childNodes.RemoveAt(index);
+			_lastTerminal = _childNodes[index - 1]._lastTerminal;
 
 			return removedTerminalCount;
 		}

@@ -30,6 +30,12 @@ namespace SqlPad
 			}
 
 			_startingNonTerminalSequences = _sqlGrammar.Rules.ToDictionary(r => r.StartingNonTerminal, r => r.Sequences);
+			/*var containsSequenceWithAllOptionalMembers = _startingNonTerminalSequences.Values.SelectMany(s => s)
+				.Any(s => s.Items.All(i => (i as SqlGrammarRuleSequenceTerminal != null && !((SqlGrammarRuleSequenceTerminal)i).IsRequired) ||
+				                           (i as SqlGrammarRuleSequenceNonTerminal != null && !((SqlGrammarRuleSequenceNonTerminal)i).IsRequired)));
+			if (containsSequenceWithAllOptionalMembers)
+				throw new InvalidOperationException("Grammar sequence must have at least one mandatory item. ");*/
+
 			_terminals = _sqlGrammar.Terminals.ToDictionary(t => t.Id, t => t);
 			_keywords = new HashSet<string>(_sqlGrammar.Terminals.Where(t => t.IsKeyword).Select(t => t.Value));
 			_availableNonTerminals = _sqlGrammar.StartSymbols.Select(s => s.Id).ToList();
@@ -40,7 +46,11 @@ namespace SqlPad
 		{
 			using (var reader = new StringReader(sqlText))
 			{
-				return Parse(OracleTokenReader.Create(reader));
+				var statements = Parse(OracleTokenReader.Create(reader));
+				foreach (var statement in statements)
+					statement.Text = sqlText.Substring(statement.SourcePosition.IndexStart, statement.SourcePosition.IndexEnd - statement.SourcePosition.IndexStart + 1);
+
+				return statements;
 			}
 		}
 
@@ -156,7 +166,7 @@ namespace SqlPad
 							nestedResult = ProceedNonTerminal(nestedNonTerminal.Id, level + 1, tokenOffset - 1);
 							if (nestedResult.Value == NonTerminalProcessingResult.Success)
 							{
-								workingNodes.Last().RemoveLastChildNodeIfOptional();
+								workingNodes[workingNodes.Count - 1].RemoveLastChildNodeIfOptional();
 							}
 						}
 

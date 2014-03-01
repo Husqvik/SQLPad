@@ -406,7 +406,7 @@ namespace SqlPad.Test
 
 			result.Count.ShouldBe(1);
 			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
-
+			//return;
 			var terminals = result.Single().NodeCollection.SelectMany(n => n.Terminals).ToArray();
 			terminals.Length.ShouldBe(38);
 			terminals[3].Id.ShouldBe(OracleGrammarDescription.Terminals.Identifier);

@@ -23,7 +23,7 @@
             <ColumnDefinition />
             <ColumnDefinition Width="240" />
         </Grid.ColumnDefinitions>
-        <avalonedit:TextEditor x:Name="Editor" FontFamily="Consolas" ShowLineNumbers="True" TextChanged="EditorTextChangedHandler">
+        <avalonedit:TextEditor x:Name="Editor" FontFamily="Consolas" ShowLineNumbers="True" TextChanged="EditorTextChangedHandler" MouseHover="MouseHoverHandler" MouseHoverStopped="MouseHoverStoppedHandler">
             
         </avalonedit:TextEditor>
         <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="TextBlockToken" TextWrapping="WrapWithOverflow" />

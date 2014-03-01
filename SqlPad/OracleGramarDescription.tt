@@ -15,8 +15,14 @@
 #>
 namespace SqlPad
 {
+	/// <summary>
+	/// This class provides token constants for Oracle SQL grammar.
+	/// </summary>
 	public static class OracleGrammarDescription
 	{
+		/// <summary>
+		/// This class provides non-terminal constants.
+		/// </summary>
 		public static class NonTerminals
 		{
 <#
@@ -31,6 +37,9 @@ namespace SqlPad
 #>
 		}
 
+		/// <summary>
+		/// This class provides non-terminal constants.
+		/// </summary>
 		public static class Terminals
 		{
 <#
