@@ -51,20 +51,18 @@ namespace SqlPad
 			return model;
 		}
 
-		public void ResolveReferences(OracleStatement statement, DatabaseModelFake databaseModel)
+		public void ResolveReferences(string sqlText, OracleStatement statement, DatabaseModelFake databaseModel)
 		{
 			var factoredSubqueries = statement.NodeCollection.SelectMany(n => n.GetDescendants(OracleGrammarDescription.NonTerminals.SubqueryComponent))
 				.SelectMany(s => s.GetDescendants(OracleGrammarDescription.NonTerminals.Subquery)).Distinct().ToArray();
 			var nestedSubqueries = statement.NodeCollection.SelectMany(n => n.GetDescendants(OracleGrammarDescription.NonTerminals.NestedQuery)).ToArray();
+			var scalarSubqueries = nestedSubqueries.Where(n => n.HasAncestor(OracleGrammarDescription.NonTerminals.Expression)).ToArray();
 			var references = statement.NodeCollection.SelectMany(n => n.GetDescendants(OracleGrammarDescription.Terminals.Identifier, OracleGrammarDescription.Terminals.Alias)).ToArray();
-			var selectListIdentifiers = references.Where(r => r.GetAncestor(OracleGrammarDescription.NonTerminals.SelectList, false) != null).ToArray();
-			var tableReferences = references.Where(r => r.GetAncestor(OracleGrammarDescription.NonTerminals.TableReference, false) != null).ToArray();
+			var selectListIdentifiers = references.Where(r => r.HasAncestor(OracleGrammarDescription.NonTerminals.SelectList)).ToArray();
+			var tableReferences = references.Where(r => r.HasAncestor(OracleGrammarDescription.NonTerminals.TableReference)).ToArray();
 
-			if (!String.IsNullOrEmpty(statement.Text))
-			{
-				var fs = factoredSubqueries.ToDictionary(q => q, q => statement.Text.Substring(q.SourcePosition.IndexStart, q.SourcePosition.IndexEnd - q.SourcePosition.IndexStart + 1));
-				var ns = nestedSubqueries.ToDictionary(q => q, q => statement.Text.Substring(q.SourcePosition.IndexStart, q.SourcePosition.IndexEnd - q.SourcePosition.IndexStart + 1));
-			}
+			var fs = factoredSubqueries.ToDictionary(q => q, q => sqlText.Substring(q.SourcePosition.IndexStart, q.SourcePosition.IndexEnd - q.SourcePosition.IndexStart + 1));
+			var ns = nestedSubqueries.ToDictionary(q => q, q => sqlText.Substring(q.SourcePosition.IndexStart, q.SourcePosition.IndexEnd - q.SourcePosition.IndexStart + 1));
 		}
 	}
 

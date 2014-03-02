@@ -46,11 +46,7 @@ namespace SqlPad
 		{
 			using (var reader = new StringReader(sqlText))
 			{
-				var statements = Parse(OracleTokenReader.Create(reader));
-				foreach (var statement in statements)
-					statement.Text = sqlText.Substring(statement.SourcePosition.IndexStart, statement.SourcePosition.IndexEnd - statement.SourcePosition.IndexStart + 1);
-
-				return statements;
+				return Parse(OracleTokenReader.Create(reader));
 			}
 		}
 

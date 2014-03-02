@@ -138,6 +138,11 @@ namespace SqlPad
 			return ParentNode != null ? ParentNode.GetAncestorDistance(ancestorNodeId, level + 1) : null;
 		}*/
 
+		public bool HasAncestor(string ancestorNodeId)
+		{
+			return GetAncestor(ancestorNodeId, false) != null;
+		}
+
 		public StatementDescriptionNode GetAncestor(string ancestorNodeId, bool includeSelf = true)
 		{
 			if (includeSelf && Id == ancestorNodeId)

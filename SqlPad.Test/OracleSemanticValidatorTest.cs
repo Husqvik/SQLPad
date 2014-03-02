@@ -45,8 +45,9 @@ namespace SqlPad.Test
 		[Test(Description = @"")]
 		public void Test3()
 		{
-			var statement = _oracleSqlParser.Parse("WITH XXX AS (SELECT 3 COL FROM DUAL) SELECT VP1 COL1, (SELECT 1 FROM XXX) SCALARSUBQUERY FROM (WITH YYY AS (SELECT 1 FROM DUAL), ZZZ AS (SELECT 2 FROM DUAL) SELECT COL + 1 VP1 FROM (SELECT COL FROM XXX)) SUBQUERY").Single();
-			_semanticValidator.ResolveReferences(statement, _databaseModel);
+			const string sqlText = "WITH XXX AS (SELECT 3 COL FROM DUAL) SELECT VP1 COL1, (SELECT 1 FROM XXX) SCALARSUBQUERY FROM (WITH YYY AS (SELECT 1 FROM DUAL), ZZZ AS (SELECT 2 FROM DUAL), FFF AS (SELECT 4 FROM XXX) SELECT COL + 1 VP1 FROM (SELECT COL FROM XXX)) SUBQUERY";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			_semanticValidator.ResolveReferences(sqlText, statement, _databaseModel);
 		}
 	}
 }

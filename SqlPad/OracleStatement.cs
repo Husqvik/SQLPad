@@ -21,8 +21,6 @@ namespace SqlPad
 
 		public SourcePosition SourcePosition { get; set; }
 		
-		public string Text { get; set; }
-
 		public StatementDescriptionNode GetNodeAtPosition(int offset)
 		{
 			return NodeCollection.Select(n => n.GetNodeAtPosition(offset)).FirstOrDefault(n => n != null);
