@@ -76,12 +76,14 @@ namespace SqlPad
 
 		public IEnumerable<StatementDescriptionNode> AllChildNodes
 		{
-			get
-			{
-				return Type == NodeType.Terminal
-					? Enumerable.Empty<StatementDescriptionNode>()
-					: ChildNodes.Concat(ChildNodes.SelectMany(n => n.AllChildNodes));
-			}
+			get { return GetChildNodes(); }
+		}
+
+		private IEnumerable<StatementDescriptionNode> GetChildNodes(Func<StatementDescriptionNode, bool> filter = null)
+		{
+			return Type == NodeType.Terminal
+				? Enumerable.Empty<StatementDescriptionNode>()
+				: ChildNodes.Concat(ChildNodes.Where(n => filter == null || filter(n)).SelectMany(n => n.AllChildNodes));
 		}
 
 		#region Overrides of Object
@@ -120,9 +122,14 @@ namespace SqlPad
 			}
 		}
 
+		public IEnumerable<StatementDescriptionNode> GetPathFilterDescendants(Func<StatementDescriptionNode, bool> pathFilter, params string[] descendantNodeIds)
+		{
+			return GetChildNodes(pathFilter).Where(t => descendantNodeIds == null || descendantNodeIds.Length == 0 || descendantNodeIds.Contains(t.Id));
+		}
+
 		public IEnumerable<StatementDescriptionNode> GetDescendants(params string[] descendantNodeIds)
 		{
-			return AllChildNodes.Where(t => descendantNodeIds == null || descendantNodeIds.Length == 0 || descendantNodeIds.Contains(t.Id));
+			return GetPathFilterDescendants(null, descendantNodeIds);
 		}
 
 		/*public int? GetAncestorDistance(string ancestorNodeId)
@@ -162,7 +169,7 @@ namespace SqlPad
 				return null;
 
 			return AllChildNodes.Where(t => t.SourcePosition.IndexStart <= offset && t.SourcePosition.IndexEnd >= offset)
-				.OrderBy(n => n.SourcePosition.IndexEnd - n.SourcePosition.IndexStart).ThenByDescending(n => n.Level)
+				.OrderBy(n => n.SourcePosition.Length).ThenByDescending(n => n.Level)
 				.FirstOrDefault();
 		}
 

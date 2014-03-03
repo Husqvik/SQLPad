@@ -297,12 +297,14 @@
           <NonTerminal Id="Expression" />
           <NonTerminal Id="RelationalOperator" />
           <NonTerminal Id="Expression" />
+          <NonTerminal Id="OuterJoinOld" IsOptional="true" />
           <NonTerminal Id="ChainedCondition" IsOptional="true" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="Expression" />
           <NonTerminal Id="LikeOperator" />
           <NonTerminal Id="Expression" />
+          <NonTerminal Id="OuterJoinOld" IsOptional="true" />
           <NonTerminal Id="EscapeClause" IsOptional="true" />
           <NonTerminal Id="ChainedCondition" IsOptional="true" />
         </Sequence>
@@ -544,7 +546,6 @@
         
         <Sequence>
           <NonTerminal Id="TableReference" />
-          <!--<Terminal Id="Alias" IsOptional="true" />-->
           <NonTerminal Id="JoinClause" IsOptional="true" />
           <NonTerminal Id="FromClauseChained" IsOptional="true" />
         </Sequence>

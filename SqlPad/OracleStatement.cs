@@ -32,6 +32,7 @@ namespace SqlPad
 	{
 		public int IndexStart { get; set; }
 		public int IndexEnd { get; set; }
+		public int Length { get { return IndexEnd - IndexStart + 1; } }
 	}
 
 	public enum NodeType

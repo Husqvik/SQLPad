@@ -61,8 +61,58 @@ namespace SqlPad
 			var selectListIdentifiers = references.Where(r => r.HasAncestor(OracleGrammarDescription.NonTerminals.SelectList)).ToArray();
 			var tableReferences = references.Where(r => r.HasAncestor(OracleGrammarDescription.NonTerminals.TableReference)).ToArray();
 
-			var fs = factoredSubqueries.ToDictionary(q => q, q => sqlText.Substring(q.SourcePosition.IndexStart, q.SourcePosition.IndexEnd - q.SourcePosition.IndexStart + 1));
-			var ns = nestedSubqueries.ToDictionary(q => q, q => sqlText.Substring(q.SourcePosition.IndexStart, q.SourcePosition.IndexEnd - q.SourcePosition.IndexStart + 1));
+			var fs = factoredSubqueries.ToDictionary(q => q, q => sqlText.Substring(q.SourcePosition.IndexStart, q.SourcePosition.Length));
+			var ns = nestedSubqueries.ToDictionary(q => q, q => sqlText.Substring(q.SourcePosition.IndexStart, q.SourcePosition.Length));
+
+			var model = new OracleStatementSemanticModel(sqlText, statement);
+		}
+	}
+
+	public class OracleStatementSemanticModel
+	{
+		private readonly OracleStatement _statement;
+
+		public OracleStatementSemanticModel(string sqlText, OracleStatement statement)
+		{
+			if (statement == null)
+				throw new ArgumentNullException("statement");
+			
+			_statement = statement;
+
+			var queryBlocks = statement.NodeCollection.SelectMany(n => n.GetDescendants(OracleGrammarDescription.NonTerminals.QueryBlock))
+				.OrderByDescending(q => q.Level).ToArray();
+
+			var allScalarSubqueries = queryBlocks.Where(n => n.HasAncestor(OracleGrammarDescription.NonTerminals.Expression)).ToArray();
+
+			var queryBlockAliases = new Dictionary<StatementDescriptionNode, string>();
+			var queryBlockTableReferences = new Dictionary<StatementDescriptionNode, List<string>>();
+
+			foreach (var queryBlock in queryBlocks.Where(nq => !allScalarSubqueries.Contains(nq)))
+			{
+				var currentQueryTableReferences = new List<string>();
+				queryBlockTableReferences.Add(queryBlock, currentQueryTableReferences);
+
+				var selectList = queryBlock.GetPathFilterDescendants(n => n.Id != OracleGrammarDescription.NonTerminals.NestedQuery, OracleGrammarDescription.NonTerminals.SelectList).ToArray();
+				//var selectList = queryBlock.GetDescendants(OracleGrammarDescription.NonTerminals.SelectList).First();
+				var fromClause = queryBlock.GetPathFilterDescendants(n => n.Id != OracleGrammarDescription.NonTerminals.NestedQuery, OracleGrammarDescription.NonTerminals.FromClause).ToArray();
+				//var fromClause = queryBlock.GetDescendants(OracleGrammarDescription.NonTerminals.FromClause).First();
+				var tableReferences = fromClause.SelectMany(n => n.GetDescendants(OracleGrammarDescription.NonTerminals.TableReference)).ToArray();
+
+				var relatedScalarSubqueries = queryBlocks.Where(n => n.GetAncestor(OracleGrammarDescription.NonTerminals.Expression, false) == queryBlock).ToArray();
+
+				var tableReference = queryBlock.GetAncestor(OracleGrammarDescription.NonTerminals.TableReference, false);
+				if (tableReference != null)
+				{
+					var nestedSubqueryAlias = tableReference.ChildNodes.SingleOrDefault(n => n.Id == OracleGrammarDescription.Terminals.Alias);
+					if (nestedSubqueryAlias != null)
+					{
+						queryBlockAliases.Add(queryBlock, nestedSubqueryAlias.Token.Value);
+					}
+				}
+
+				var factoredSubqueries = queryBlock.GetDescendants(OracleGrammarDescription.NonTerminals.SubqueryComponent)
+					.SelectMany(s => s.GetDescendants(OracleGrammarDescription.NonTerminals.Subquery)).Distinct().ToArray();
+			}
 		}
 	}
 
