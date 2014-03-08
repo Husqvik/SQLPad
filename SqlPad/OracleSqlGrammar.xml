@@ -82,8 +82,7 @@
     <Rule StartingNonTerminal="AliasedExpressionOrAllTableColumns">
       <Sequences>
         <Sequence Comment="(Schema.)Object.*">
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <NonTerminal Id="ObjectPrefix" />
+          <NonTerminal Id="Prefix" />
           <Terminal Id="Asterisk" />
         </Sequence>
         <Sequence>
@@ -205,10 +204,10 @@
         <Sequence>
           <Terminal Id="Timestamp" />
           <Terminal Id="StringLiteral" />
+          <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <NonTerminal Id="ObjectPrefix" />
+          <NonTerminal Id="Prefix" />
           <NonTerminal Id="ColumnReference" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
@@ -219,6 +218,27 @@
         <Sequence>
           <Terminal Id="Date" />
           <Terminal Id="StringLiteral" />
+          <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <!--Function call -->
+    <Rule StartingNonTerminal="ParenthesisEnclosedFunctionParameters">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="FunctionParameters" IsOptional="true" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>    
+    
+    <Rule StartingNonTerminal="FunctionParameters">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="DistinctModifier" IsOptional="true" />
+          <NonTerminal Id="ExpressionList" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -238,6 +258,10 @@
         </Sequence>
         <Sequence>
           <Terminal Id="Identifier" />
+          <!-- Function call -->
+          <NonTerminal Id="DatabaseLink" IsOptional="true" />
+          <NonTerminal Id="ParenthesisEnclosedFunctionParameters" IsOptional="true" />
+          <!-- TODO: Add analytic clause -->
         </Sequence>
       </Sequences>
     </Rule>
@@ -611,6 +635,15 @@
         </Sequence>
       </Sequences>
     </Rule>
+
+    <Rule StartingNonTerminal="Prefix">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <NonTerminal Id="ObjectPrefix" />
+        </Sequence>
+      </Sequences>
+    </Rule>
   
     <Rule StartingNonTerminal="SchemaPrefix">
       <Sequences>
@@ -914,12 +947,7 @@
     <Rule StartingNonTerminal="ForUpdateColumn">
       <Sequences>
         <Sequence Comment="(Schema.)Table/View.Column">
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <NonTerminal Id="ObjectPrefix" />
-          <Terminal Id="Identifier" />
-          <NonTerminal Id="ForUpdateColumnChained" IsOptional="true" />
-        </Sequence>
-        <Sequence Comment="Column">
+          <NonTerminal Id="Prefix" IsOptional="true" />
           <Terminal Id="Identifier" />
           <NonTerminal Id="ForUpdateColumnChained" IsOptional="true" />
         </Sequence>

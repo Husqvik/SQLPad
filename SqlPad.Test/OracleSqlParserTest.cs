@@ -120,7 +120,7 @@ namespace SqlPad.Test
 			// TODO: Precise assertions
 		}
 
-		[Test(Description = @"Tests query. ")]
+		[Test(Description = @"Tests specific aliases. ")]
 		public void Test6()
 		{
 			const string query1 = @"SELECT 1 1 FROM DUAL";
@@ -352,7 +352,7 @@ namespace SqlPad.Test
 		[Test(Description = @"Tests flashback clauses. ")]
 		public void Test19()
 		{
-			const string query1 = @"SELECT 1 FROM T1 VERSIONS BETWEEN SCN MINVALUE AND MAXVALUE AS OF SCN 123";
+			const string query1 = @"SELECT DATE'2014-03-08' - DATE'2014-02-20' FROM T1 VERSIONS BETWEEN SCN MINVALUE AND MAXVALUE AS OF SCN 123";
 			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
 
 			result.Count.ShouldBe(1);
@@ -576,6 +576,19 @@ namespace SqlPad.Test
 			var terminals = statement.NodeCollection.Single().Terminals.ToArray();
 			terminals[1].Id.ShouldBe(OracleGrammarDescription.Terminals.SchemaIdentifier);
 			terminals[3].Id.ShouldBe(OracleGrammarDescription.Terminals.ObjectIdentifier);
+		}
+
+		[Test(Description = @"Tests query with function calls. ")]
+		public void Test35()
+		{
+			const string query1 = @"SELECT SCHEMA.PACKAGE.FUNCTION@DBLINK ALIAS, PACKAGE.FUNCTION(P1, P2, P3 + P4 * (P5 + P6)) + P7, AGGREGATE_FUNCTION1(DISTINCT PARAMETER), AGGREGATE_FUNCTION2@DBLINK(ALL PARAMETER), SYS_GUID() RANDOM_GUID FROM SYS.DUAL";
+			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
+
+			result.Count.ShouldBe(1);
+			var statement = result.Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			// TODO: Precise assertions
 		}
 
 		private static OracleTokenReader CreateTokenReader(string sqlText)
