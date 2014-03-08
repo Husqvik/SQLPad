@@ -64,6 +64,7 @@
 			public const string NestedQuery = "NestedQuery";
 			public const string NullNaNOrInfinite = "NullNaNOrInfinite";
 			public const string NullsClause = "NullsClause";
+			public const string ObjectPrefix = "ObjectPrefix";
 			public const string OrderByClause = "OrderByClause";
 			public const string OrderExpression = "OrderExpression";
 			public const string OrderExpressionChained = "OrderExpressionChained";
@@ -84,12 +85,11 @@
 			public const string RelationalOperator = "RelationalOperator";
 			public const string RollupCubeClause = "RollupCubeClause";
 			public const string SampleClause = "SampleClause";
-			public const string SchemaObject = "SchemaObject";
+			public const string SchemaPrefix = "SchemaPrefix";
 			public const string SearchedCaseExpressionBranch = "SearchedCaseExpressionBranch";
 			public const string SeedClause = "SeedClause";
 			public const string SelectExpressionExpressionChainedList = "SelectExpressionExpressionChainedList";
 			public const string SelectList = "SelectList";
-			public const string SelectListSchemaItem = "SelectListSchemaItem";
 			public const string SetOperation = "SetOperation";
 			public const string SetQualifier = "SetQualifier";
 			public const string SimpleCaseExpressionBranch = "SimpleCaseExpressionBranch";
@@ -185,6 +185,7 @@
 			public const string Null = "Null";
 			public const string Nulls = "Nulls";
 			public const string NumberLiteral = "NumberLiteral";
+			public const string ObjectIdentifier = "ObjectIdentifier";
 			public const string Of = "Of";
 			public const string On = "On";
 			public const string Only = "Only";
@@ -204,6 +205,7 @@
 			public const string RowIdPseudoColumn = "RowIdPseudoColumn";
 			public const string RowNumberPseudoColumn = "RowNumberPseudoColumn";
 			public const string Sample = "Sample";
+			public const string SchemaIdentifier = "SchemaIdentifier";
 			public const string Seed = "Seed";
 			public const string Select = "Select";
 			public const string Semicolon = "Semicolon";

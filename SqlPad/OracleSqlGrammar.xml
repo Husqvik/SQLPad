@@ -82,22 +82,12 @@
     <Rule StartingNonTerminal="AliasedExpressionOrAllTableColumns">
       <Sequences>
         <Sequence Comment="(Schema.)Object.*">
-          <Terminal Id="Identifier" Comment="Query name" />
-          <Terminal Id="Dot" />
-          <NonTerminal Id="SelectListSchemaItem" IsOptional="true" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <NonTerminal Id="ObjectPrefix" />
           <Terminal Id="Asterisk" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="AliasedExpression" />
-        </Sequence>
-      </Sequences>
-    </Rule>
-
-    <Rule StartingNonTerminal="SelectListSchemaItem">
-      <Sequences>
-        <Sequence>
-          <Terminal Id="Identifier" />
-          <Terminal Id="Dot" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -217,9 +207,8 @@
           <Terminal Id="StringLiteral" />
         </Sequence>
         <Sequence>
-          <Terminal Id="Identifier" />
-          <Terminal Id="Dot" />
-          <NonTerminal Id="SelectListSchemaItem" IsOptional="true" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <NonTerminal Id="ObjectPrefix" />
           <NonTerminal Id="ColumnReference" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
@@ -584,8 +573,8 @@
     <Rule StartingNonTerminal="QueryTableExpression">
       <Sequences>
         <Sequence>
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
           <Terminal Id="Identifier" />
-          <NonTerminal Id="SchemaObject" IsOptional="true" />
           <NonTerminal Id="PartitionOrDatabaseLink" IsOptional="true" />
           <NonTerminal Id="SampleClause" IsOptional="true" />
         </Sequence>
@@ -623,11 +612,20 @@
       </Sequences>
     </Rule>
   
-    <Rule StartingNonTerminal="SchemaObject">
+    <Rule StartingNonTerminal="SchemaPrefix">
       <Sequences>
         <Sequence>
+          <Terminal Id="SchemaIdentifier" />
           <Terminal Id="Dot" />
-          <Terminal Id="Identifier" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ObjectPrefix">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="ObjectIdentifier" />
+          <Terminal Id="Dot" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -916,9 +914,8 @@
     <Rule StartingNonTerminal="ForUpdateColumn">
       <Sequences>
         <Sequence Comment="(Schema.)Table/View.Column">
-          <Terminal Id="Identifier" />
-          <Terminal Id="Dot" />
-          <NonTerminal Id="SelectListSchemaItem" IsOptional="true" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <NonTerminal Id="ObjectPrefix" />
           <Terminal Id="Identifier" />
           <NonTerminal Id="ForUpdateColumnChained" IsOptional="true" />
         </Sequence>
@@ -1378,6 +1375,8 @@
     <Terminal Id="RowNumberPseudoColumn" Value="ROWNUM" IsKeyword="true" />
     <Terminal Id="RowIdPseudoColumn" Value="ROWID" IsKeyword="true" />
     <Terminal Id="Identifier" RegexValue="^((&quot;[^&quot;]{1,28}&quot;)|([a-zA-Z][\w\d$]{0,29}))$" />
+    <Terminal Id="SchemaIdentifier" RegexValue="^((&quot;[^&quot;]{1,28}&quot;)|([a-zA-Z][\w\d$]{0,29}))$" />
+    <Terminal Id="ObjectIdentifier" RegexValue="^((&quot;[^&quot;]{1,28}&quot;)|([a-zA-Z][\w\d$]{0,29}))$" />
     <Terminal Id="Alias" RegexValue="^((&quot;[^&quot;]{1,28}&quot;)|([a-zA-Z][\w\d$]{0,29}))$" />
     <Terminal Id="StringLiteral" RegexValue="^n?q?(&apos;([^&apos;]|(&apos;&apos;))*&apos;)$" />
     <Terminal Id="NumberLiteral" RegexValue="^((\d+\.?\d*)|(\d*\.?\d+))([eE][+-]?\d+)?[fFdD]?$" />

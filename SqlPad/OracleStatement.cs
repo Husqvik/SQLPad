@@ -10,12 +10,12 @@ namespace SqlPad
 		public static readonly OracleStatement EmptyStatement =
 			new OracleStatement
 			{
-				ProcessingResult = NonTerminalProcessingResult.Success,
+				ProcessingStatus = ProcessingStatus.Success,
 				NodeCollection = new StatementDescriptionNode[0],
 				SourcePosition = new SourcePosition { IndexStart = -1, IndexEnd = -1 }
 			};
 
-		public NonTerminalProcessingResult ProcessingResult { get; set; }
+		public ProcessingStatus ProcessingStatus { get; set; }
 
 		public ICollection<StatementDescriptionNode> NodeCollection { get; set; }
 

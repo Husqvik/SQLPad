@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using NonTerminals = SqlPad.OracleGrammarDescription.NonTerminals;
+using Terminals = SqlPad.OracleGrammarDescription.Terminals;
 
 namespace SqlPad
 {
@@ -10,15 +13,15 @@ namespace SqlPad
 		{
 			var model = new SemanticModel();
 
-			var queryTableExpressions = statement.NodeCollection.SelectMany(t => t.GetDescendants(OracleGrammarDescription.NonTerminals.QueryTableExpression)).ToList();
+			var queryTableExpressions = statement.NodeCollection.SelectMany(t => t.GetDescendants(NonTerminals.QueryTableExpression)).ToList();
 			foreach (var node in queryTableExpressions)
 			{
 				string owner;
 				if (node.ChildNodes.Count == 2)
 				{
-					var ownerNode = node.GetDescendants(OracleGrammarDescription.Terminals.Identifier).First();
+					var ownerNode = node.GetDescendants(Terminals.SchemaIdentifier).First();
 					owner = ownerNode.Token.Value;
-					var objectNameNode = node.GetDescendants(OracleGrammarDescription.Terminals.Identifier).Last();
+					var objectNameNode = node.GetDescendants(Terminals.Identifier).First();
 
 					model.NodeValidity[ownerNode] = databaseModel.Schemas.Any(s => s == owner.ToOracleIdentifier());
 					model.NodeValidity[objectNameNode] = databaseModel.AllObjects.ContainsKey(OracleObjectIdentifier.Create(owner, objectNameNode.Token.Value));
@@ -26,15 +29,15 @@ namespace SqlPad
 				}
 				else // TODO: Resolve if the identifier is a query name or an object name.
 				{
-					var objectNameNode = node.GetDescendants(OracleGrammarDescription.Terminals.Identifier).FirstOrDefault();
+					var objectNameNode = node.GetDescendants(Terminals.Identifier).FirstOrDefault();
 					if (objectNameNode == null)
 						continue;
 
-					var factoredSubquery = node.GetAncestor(OracleGrammarDescription.NonTerminals.SubqueryComponent);
+					var factoredSubquery = node.GetAncestor(NonTerminals.SubqueryComponent);
 					var factoredQueryExists = factoredSubquery == null &&
-					                          node.GetAncestor(OracleGrammarDescription.NonTerminals.NestedQuery)
-						                          .GetDescendants(OracleGrammarDescription.NonTerminals.SubqueryComponent)
-						                          .SelectMany(s => s.ChildNodes).Where(n => n.Id == OracleGrammarDescription.Terminals.Identifier)
+					                          node.GetAncestor(NonTerminals.NestedQuery)
+						                          .GetDescendants(NonTerminals.SubqueryComponent)
+						                          .SelectMany(s => s.ChildNodes).Where(n => n.Id == Terminals.Identifier)
 												  .Select(i => i.Token.Value.ToOracleIdentifier()).Contains(objectNameNode.Token.Value.ToOracleIdentifier());
 
 					owner = databaseModel.CurrentSchema;
@@ -53,19 +56,51 @@ namespace SqlPad
 
 		public void ResolveReferences(string sqlText, OracleStatement statement, DatabaseModelFake databaseModel)
 		{
-			var factoredSubqueries = statement.NodeCollection.SelectMany(n => n.GetDescendants(OracleGrammarDescription.NonTerminals.SubqueryComponent))
-				.SelectMany(s => s.GetDescendants(OracleGrammarDescription.NonTerminals.Subquery)).Distinct().ToArray();
-			var nestedSubqueries = statement.NodeCollection.SelectMany(n => n.GetDescendants(OracleGrammarDescription.NonTerminals.NestedQuery)).ToArray();
-			var scalarSubqueries = nestedSubqueries.Where(n => n.HasAncestor(OracleGrammarDescription.NonTerminals.Expression)).ToArray();
-			var references = statement.NodeCollection.SelectMany(n => n.GetDescendants(OracleGrammarDescription.Terminals.Identifier, OracleGrammarDescription.Terminals.Alias)).ToArray();
-			var selectListIdentifiers = references.Where(r => r.HasAncestor(OracleGrammarDescription.NonTerminals.SelectList)).ToArray();
-			var tableReferences = references.Where(r => r.HasAncestor(OracleGrammarDescription.NonTerminals.TableReference)).ToArray();
-
-			var fs = factoredSubqueries.ToDictionary(q => q, q => sqlText.Substring(q.SourcePosition.IndexStart, q.SourcePosition.Length));
-			var ns = nestedSubqueries.ToDictionary(q => q, q => sqlText.Substring(q.SourcePosition.IndexStart, q.SourcePosition.Length));
-
 			var model = new OracleStatementSemanticModel(sqlText, statement);
 		}
+	}
+
+	[DebuggerDisplay("OracleQueryBlock (Alias={Alias}; Type={Type}; RootNode={RootNode})")]
+	public class OracleQueryBlock
+	{
+		public string Alias { get; set; }
+
+		public QueryBlockType Type { get; set; }
+
+		public StatementDescriptionNode RootNode { get; set; }
+
+		public ICollection<OracleTableReference> TableReferences { get; set; }
+
+		public ICollection<OracleSelectListColumn> ColumnReferences { get; set; }
+	}
+
+	[DebuggerDisplay("OracleTableReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; Table={TableNameNode.Token.Value}; Type={Type})")]
+	public class OracleTableReference
+	{
+		public StatementDescriptionNode OwnerNode { get; set; }
+
+		public StatementDescriptionNode TableNameNode { get; set; }
+
+		public ICollection<StatementDescriptionNode> Nodes { get; set; }
+
+		public TableReferenceType Type { get; set; }
+	}
+
+	public class OracleSelectListColumn
+	{
+	}
+
+	public enum TableReferenceType
+	{
+		PhysicalTable,
+		Subquery
+	}
+
+	public enum QueryBlockType
+	{
+		Normal,
+		ScalarSubquery,
+		CommonTableExpression
 	}
 
 	public class OracleStatementSemanticModel
@@ -76,43 +111,106 @@ namespace SqlPad
 		{
 			if (statement == null)
 				throw new ArgumentNullException("statement");
-			
+
+			var queryBlockResults = new List<OracleQueryBlock>();
+
 			_statement = statement;
 
-			var queryBlocks = statement.NodeCollection.SelectMany(n => n.GetDescendants(OracleGrammarDescription.NonTerminals.QueryBlock))
+			var queryBlocks = statement.NodeCollection.SelectMany(n => n.GetDescendants(NonTerminals.QueryBlock))
 				.OrderByDescending(q => q.Level).ToArray();
 
-			var allScalarSubqueries = queryBlocks.Where(n => n.HasAncestor(OracleGrammarDescription.NonTerminals.Expression)).ToArray();
-
-			var queryBlockAliases = new Dictionary<StatementDescriptionNode, string>();
-			var queryBlockTableReferences = new Dictionary<StatementDescriptionNode, List<string>>();
-
-			foreach (var queryBlock in queryBlocks.Where(nq => !allScalarSubqueries.Contains(nq)))
+			foreach (var queryBlock in queryBlocks)
 			{
-				var currentQueryTableReferences = new List<string>();
-				queryBlockTableReferences.Add(queryBlock, currentQueryTableReferences);
+				var item = new OracleQueryBlock
+				           {
+					           TableReferences = new List<OracleTableReference>(),
+							   RootNode = queryBlock
+				           };
+				
+				queryBlockResults.Add(item);
 
-				var selectList = queryBlock.GetPathFilterDescendants(n => n.Id != OracleGrammarDescription.NonTerminals.NestedQuery, OracleGrammarDescription.NonTerminals.SelectList).ToArray();
-				//var selectList = queryBlock.GetDescendants(OracleGrammarDescription.NonTerminals.SelectList).First();
-				var fromClause = queryBlock.GetPathFilterDescendants(n => n.Id != OracleGrammarDescription.NonTerminals.NestedQuery, OracleGrammarDescription.NonTerminals.FromClause).ToArray();
+				var fromClause = queryBlock.GetPathFilterDescendants(n => n.Id != NonTerminals.NestedQuery, NonTerminals.FromClause).First();
 				//var fromClause = queryBlock.GetDescendants(OracleGrammarDescription.NonTerminals.FromClause).First();
-				var tableReferences = fromClause.SelectMany(n => n.GetDescendants(OracleGrammarDescription.NonTerminals.TableReference)).ToArray();
+				var tableReferenceNonterminals = fromClause.GetPathFilterDescendants(nq => nq.Id != NonTerminals.NestedQuery, NonTerminals.TableReference).ToArray();
 
-				var relatedScalarSubqueries = queryBlocks.Where(n => n.GetAncestor(OracleGrammarDescription.NonTerminals.Expression, false) == queryBlock).ToArray();
-
-				var tableReference = queryBlock.GetAncestor(OracleGrammarDescription.NonTerminals.TableReference, false);
-				if (tableReference != null)
+				var scalarSubqueryExpression = queryBlock.GetAncestor(NonTerminals.Expression, false);
+				if (scalarSubqueryExpression != null)
 				{
-					var nestedSubqueryAlias = tableReference.ChildNodes.SingleOrDefault(n => n.Id == OracleGrammarDescription.Terminals.Alias);
-					if (nestedSubqueryAlias != null)
+					item.Type = QueryBlockType.ScalarSubquery;
+				}
+
+				var factoredSubqueryReference = queryBlock.GetPathFilterAncestor(n => n.Id != NonTerminals.NestedQuery, NonTerminals.SubqueryComponent, false);
+				if (factoredSubqueryReference != null)
+				{
+					item.Alias = factoredSubqueryReference.ChildNodes.First().Token.Value.ToOracleIdentifier();
+					item.Type = QueryBlockType.CommonTableExpression;
+				}
+				else
+				{
+					var selfTableReference = queryBlock.GetAncestor(NonTerminals.TableReference, false);
+					if (selfTableReference != null)
 					{
-						queryBlockAliases.Add(queryBlock, nestedSubqueryAlias.Token.Value);
+						item.Type = QueryBlockType.Normal;
+
+						var nestedSubqueryAlias = selfTableReference.ChildNodes.SingleOrDefault(n => n.Id == Terminals.Alias);
+						if (nestedSubqueryAlias != null)
+						{
+							item.Alias = nestedSubqueryAlias.Token.Value.ToOracleIdentifier();
+						}
 					}
 				}
 
-				var factoredSubqueries = queryBlock.GetDescendants(OracleGrammarDescription.NonTerminals.SubqueryComponent)
-					.SelectMany(s => s.GetDescendants(OracleGrammarDescription.NonTerminals.Subquery)).Distinct().ToArray();
+				foreach (var tableReferenceNonterminal in tableReferenceNonterminals)
+				{
+					var tableReferenceAliases = tableReferenceNonterminal.GetPathFilterDescendants(n => n.Id != NonTerminals.NestedQuery, Terminals.Alias).ToArray();
+					if (tableReferenceAliases.Length > 0)
+					{
+						var tableReferenceAliasString = tableReferenceAliases[0].Token.Value.ToOracleIdentifier();
+					}
+					
+					var queryTableExpression = tableReferenceNonterminal.GetPathFilterDescendants(n => n.Id != NonTerminals.NestedQuery, NonTerminals.QueryTableExpression).Single();
+					var tableIdentifierNode = queryTableExpression.ChildNodes.FirstOrDefault(n => n.Id == Terminals.Identifier);
+
+					if (tableIdentifierNode == null)
+						continue;
+					
+					var schemaPrefixNode = queryTableExpression.ChildNodes.FirstOrDefault(n => n.Id == NonTerminals.SchemaPrefix);
+					if (schemaPrefixNode != null)
+					{
+						schemaPrefixNode = schemaPrefixNode.ChildNodes.First();
+					}
+
+					var tableName = tableIdentifierNode.Token.Value.ToOracleIdentifier();
+					var commonTableExpressions = GetCommonTableExpressionReferences(queryBlock, tableName, sqlText).ToArray();
+					var referenceType = commonTableExpressions.Length > 0 ? TableReferenceType.Subquery : TableReferenceType.PhysicalTable;
+
+					item.TableReferences.Add(new OracleTableReference { TableNameNode = tableIdentifierNode, OwnerNode = schemaPrefixNode, Type = referenceType, Nodes = commonTableExpressions });
+				}
+
+				var selectList = queryBlock.GetPathFilterDescendants(n => n.Id != NonTerminals.NestedQuery, NonTerminals.SelectList).Single();
+				var columnExpressions = selectList.GetPathFilterDescendants(n => n.Id != NonTerminals.NestedQuery, NonTerminals.AliasedExpressionOrAllTableColumns).ToArray();
+				foreach (var columnExpression in columnExpressions)
+				{
+					var identifiers = columnExpression.GetPathFilterDescendants(n => n.Id != NonTerminals.NestedQuery, Terminals.ObjectIdentifier).ToArray();
+				}
 			}
+		}
+
+		private IEnumerable<StatementDescriptionNode> GetNestedTableReferences(StatementDescriptionNode node, string normalizedReferenceName)
+		{
+			return null;
+		}
+
+		private IEnumerable<StatementDescriptionNode> GetCommonTableExpressionReferences(StatementDescriptionNode node, string normalizedReferenceName, string sqlText)
+		{
+			var nestedQueryRoot = node.GetAncestor(NonTerminals.NestedQuery, false);
+			if (nestedQueryRoot == null)
+				return Enumerable.Empty<StatementDescriptionNode>();
+
+			var commonTableExpressions = nestedQueryRoot
+				.GetPathFilterDescendants(n => n.Id != NonTerminals.QueryBlock, NonTerminals.SubqueryComponent)
+				.Where(cte => cte.ChildNodes.First().Token.Value.ToOracleIdentifier() == normalizedReferenceName);
+			return commonTableExpressions.Concat(GetCommonTableExpressionReferences(nestedQueryRoot, normalizedReferenceName, sqlText));
 		}
 	}
 

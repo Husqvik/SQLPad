@@ -88,19 +88,19 @@ namespace SqlPad
 				{
 					result = ProceedNonTerminal(nonTerminal, 0, 0);
 
-					if (result.Value != NonTerminalProcessingResult.Success)
+					if (result.Status != ProcessingStatus.Success)
 						continue;
 					
 					var lastTerminal = result.Terminals.Last();
 					if (!_terminators.Contains(lastTerminal.Token.Value) && _tokenBuffer.Count > result.TerminalCount)
-						result.Value = NonTerminalProcessingResult.SequenceNotFound;
+						result.Status = ProcessingStatus.SequenceNotFound;
 
 					break;
 				}
 
 				int indexStart;
 				int indexEnd;
-				if (result.Value != NonTerminalProcessingResult.Success)
+				if (result.Status != ProcessingStatus.Success)
 				{
 					indexStart = _tokenBuffer.First().Index;
 
@@ -128,7 +128,7 @@ namespace SqlPad
 
 				oracleSql.SourcePosition = new SourcePosition { IndexStart = indexStart, IndexEnd = indexEnd };
 				oracleSql.NodeCollection = result.Nodes;
-				oracleSql.ProcessingResult = result.Value;
+				oracleSql.ProcessingStatus = result.Status;
 				_oracleSqlCollection.Add(oracleSql);
 			}
 			while (_tokenBuffer.Count > 0);
@@ -139,7 +139,7 @@ namespace SqlPad
 			var workingNodes = new List<StatementDescriptionNode>();
 			var result = new ProcessingResult
 			             {
-				             Value = NonTerminalProcessingResult.Start,
+				             Status = ProcessingStatus.Start,
 							 Nodes = workingNodes
 			             };
 
@@ -155,86 +155,119 @@ namespace SqlPad
 					{
 						var nestedResult = ProceedNonTerminal(nestedNonTerminal.Id, level + 1, tokenOffset);
 
-						if (nestedResult.Value == NonTerminalProcessingResult.SequenceNotFound &&
-							workingNodes.Count > 0 &&
-							!workingNodes[workingNodes.Count - 1].Terminals.Last().IsRequired)
+						if (nestedResult.Status == ProcessingStatus.SequenceNotFound)
 						{
-							nestedResult = ProceedNonTerminal(nestedNonTerminal.Id, level + 1, tokenOffset - 1);
-							if (nestedResult.Value == NonTerminalProcessingResult.Success)
-							{
-								workingNodes[workingNodes.Count - 1].RemoveLastChildNodeIfOptional();
-							}
+							TryRevertOptionalToken(optionalTerminalCount => ProceedNonTerminal(nestedNonTerminal.Id, level + 1, tokenOffset - optionalTerminalCount), ref nestedResult, workingNodes);
 						}
 
-						if (nestedNonTerminal.IsRequired || nestedResult.Value == NonTerminalProcessingResult.Success)
+						if (nestedNonTerminal.IsRequired || nestedResult.Status == ProcessingStatus.Success)
 						{
-							result.Value = nestedResult.Value;
+							result.Status = nestedResult.Status;
 						}
 
-						if (nestedResult.Value == NonTerminalProcessingResult.Success && nestedResult.Nodes.Count > 0)
+						if (nestedResult.Status == ProcessingStatus.Success && nestedResult.Nodes.Count > 0)
 						{
 							var nestedNode = new StatementDescriptionNode(NodeType.NonTerminal) { Id = nestedNonTerminal.Id, Level = level, IsRequired = nestedNonTerminal.IsRequired };
 							nestedNode.AddChildNodes(nestedResult.Nodes);
 							workingNodes.Add(nestedNode);
 						}
 
-						if (result.Value == NonTerminalProcessingResult.SequenceNotFound)
+						if (result.Status == ProcessingStatus.SequenceNotFound)
 							break;
 					}
 					else
 					{
 						var terminalReference = (SqlGrammarRuleSequenceTerminal)item;
 
-						var tokenIsValid = false;
-						var currentToken = OracleToken.Empty;
+						var terminalResult = IsTokenValid(terminalReference, level, tokenOffset);
 
-						if (_tokenBuffer.Count > tokenOffset)
-						{
-							currentToken = _tokenBuffer[tokenOffset];
-
-							var terminal = _terminals[terminalReference.Id];
-							if (!String.IsNullOrEmpty(terminal.RegexValue))
-							{
-								tokenIsValid = new Regex(terminal.RegexValue).IsMatch(currentToken.Value) && !_keywords.Contains(currentToken.Value.ToUpperInvariant());
-							}
-							else
-							{
-								tokenIsValid = terminal.Value == currentToken.Value.ToUpperInvariant();
-							}
-						}
-
-						if (!tokenIsValid)
+						if (terminalResult.Status == ProcessingStatus.SequenceNotFound)
 						{
 							if (!terminalReference.IsRequired)
 								continue;
-							
-							result.Value = NonTerminalProcessingResult.SequenceNotFound;
-							break;
+
+							TryRevertOptionalToken(optionalTerminalCount => IsTokenValid(terminalReference, level, tokenOffset - optionalTerminalCount), ref terminalResult, workingNodes);
 						}
 
-						var node = new StatementDescriptionNode(NodeType.Terminal) { Token = currentToken, Id = terminalReference.Id, Level = level, IsRequired = terminalReference.IsRequired };
-						workingNodes.Add(node);
+						result.Status = terminalResult.Status;
+
+						if (terminalResult.Status == ProcessingStatus.SequenceNotFound)
+							break;
+
+						workingNodes.AddRange(terminalResult.Nodes);
 
 						//Trace.WriteLine(string.Format("newTokenFetched: {0}; nonTerminal: {1}; token: {2}", newTokenFetched, nonTerminal, sqlToken));
-
-						result.Value = NonTerminalProcessingResult.Success;
 					}
 				}
 
-				if (result.Value == NonTerminalProcessingResult.Success)
-				{
+				if (result.Status == ProcessingStatus.Success)
 					break;
-				}
 			}
 
 			return result;
 		}
+
+		private void TryRevertOptionalToken(Func<int, ProcessingResult> getAlternativeProcessingResultFunction, ref ProcessingResult currentResult, IList<StatementDescriptionNode> workingNodes)
+		{
+			var optionalNodeCandidate = workingNodes.Count > 0 ? workingNodes[workingNodes.Count - 1].Terminals.Last() : null;
+			optionalNodeCandidate = optionalNodeCandidate != null && optionalNodeCandidate.IsRequired ? optionalNodeCandidate.ParentNode : optionalNodeCandidate;
+
+			if (optionalNodeCandidate == null || optionalNodeCandidate.IsRequired)
+				return;
+
+			var newResult = getAlternativeProcessingResultFunction(optionalNodeCandidate.Terminals.Count());
+
+			if (newResult.Status != ProcessingStatus.Success)
+				return;
+
+			currentResult = newResult;
+			
+			if (optionalNodeCandidate.Type == NodeType.Terminal)
+			{
+				workingNodes[workingNodes.Count - 1].RemoveLastChildNodeIfOptional();
+			}
+			else
+			{
+				workingNodes.RemoveAt(workingNodes.Count - 1);
+			}
+		}
+
+		private ProcessingResult IsTokenValid(SqlGrammarRuleSequenceTerminal terminalReference, int level, int tokenOffset)
+		{
+			var tokenIsValid = false;
+			OracleToken currentToken;
+
+			if (_tokenBuffer.Count > tokenOffset)
+			{
+				currentToken = _tokenBuffer[tokenOffset];
+
+				var terminal = _terminals[terminalReference.Id];
+				if (!String.IsNullOrEmpty(terminal.RegexValue))
+				{
+					tokenIsValid = new Regex(terminal.RegexValue).IsMatch(currentToken.Value) && !_keywords.Contains(currentToken.Value.ToUpperInvariant());
+				}
+				else
+				{
+					tokenIsValid = terminal.Value == currentToken.Value.ToUpperInvariant();
+				}
+			}
+			else
+			{
+				currentToken = OracleToken.Empty;
+			}
+
+			return new ProcessingResult
+			       {
+				       Status = tokenIsValid ? ProcessingStatus.Success : ProcessingStatus.SequenceNotFound,
+					   Nodes = new []{ new StatementDescriptionNode(NodeType.Terminal) { Token = currentToken, Id = terminalReference.Id, Level = level, IsRequired = terminalReference.IsRequired } }
+			       };
+		}
 	}
 
-	[DebuggerDisplay("ProcessingResult (Value={Value}, TerminalCount={TerminalCount})")]
+	[DebuggerDisplay("ProcessingResult (Status={Status}, TerminalCount={TerminalCount})")]
 	public struct ProcessingResult
 	{
-		public NonTerminalProcessingResult Value { get; set; }
+		public ProcessingStatus Status { get; set; }
 		
 		public IList<StatementDescriptionNode> Nodes { get; set; }
 
@@ -254,7 +287,7 @@ namespace SqlPad
 		}
 	}
 
-	public enum NonTerminalProcessingResult
+	public enum ProcessingStatus
 	{
 		Start,
 		Success,

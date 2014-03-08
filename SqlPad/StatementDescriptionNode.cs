@@ -83,7 +83,7 @@ namespace SqlPad
 		{
 			return Type == NodeType.Terminal
 				? Enumerable.Empty<StatementDescriptionNode>()
-				: ChildNodes.Concat(ChildNodes.Where(n => filter == null || filter(n)).SelectMany(n => n.AllChildNodes));
+				: ChildNodes.Concat(ChildNodes.Where(n => filter == null || filter(n)).SelectMany(n => n.GetChildNodes(filter)));
 		}
 
 		#region Overrides of Object
@@ -122,6 +122,11 @@ namespace SqlPad
 			}
 		}
 
+		public string GetStatementSubString(string statementText)
+		{
+			return statementText.Substring(SourcePosition.IndexStart, SourcePosition.Length);
+		}
+
 		public IEnumerable<StatementDescriptionNode> GetPathFilterDescendants(Func<StatementDescriptionNode, bool> pathFilter, params string[] descendantNodeIds)
 		{
 			return GetChildNodes(pathFilter).Where(t => descendantNodeIds == null || descendantNodeIds.Length == 0 || descendantNodeIds.Contains(t.Id));
@@ -150,17 +155,22 @@ namespace SqlPad
 			return GetAncestor(ancestorNodeId, false) != null;
 		}
 
-		public StatementDescriptionNode GetAncestor(string ancestorNodeId, bool includeSelf = true)
+		public StatementDescriptionNode GetPathFilterAncestor(Func<StatementDescriptionNode, bool> pathFilter, string ancestorNodeId, bool includeSelf = true)
 		{
 			if (includeSelf && Id == ancestorNodeId)
 				return this;
 
-			if (ParentNode == null)
+			if (ParentNode == null || (pathFilter != null && !pathFilter(ParentNode)))
 				return null;
 
 			return ParentNode.Id == ancestorNodeId
 				? ParentNode
 				: ParentNode.GetAncestor(ancestorNodeId);
+		}
+
+		public StatementDescriptionNode GetAncestor(string ancestorNodeId, bool includeSelf = true)
+		{
+			return GetPathFilterAncestor(null, ancestorNodeId, includeSelf);
 		}
 
 		public StatementDescriptionNode GetNodeAtPosition(int offset)

@@ -22,7 +22,7 @@ namespace SqlPad.Test
 				var i = 0;
 				foreach (var statement in result)
 				{
-					Trace.WriteLine(++i + ". statement parse status: " + statement.ProcessingResult);
+					Trace.WriteLine(++i + ". statement parse status: " + statement.ProcessingStatus);
 				}
 			}
 		}
@@ -71,16 +71,16 @@ namespace SqlPad.Test
 			terminals[3].Id.ShouldBe(OracleGrammarDescription.Terminals.Alias);
 			terminals[3].Token.Value.ShouldBe("\">=;+Alias/*--^\"");
 			terminals[4].Id.ShouldBe(OracleGrammarDescription.Terminals.Comma);
-			terminals[5].Id.ShouldBe(OracleGrammarDescription.Terminals.Identifier);
+			terminals[5].Id.ShouldBe(OracleGrammarDescription.Terminals.SchemaIdentifier);
 			terminals[5].Token.Value.ShouldBe("SYS");
 			terminals[6].Id.ShouldBe(OracleGrammarDescription.Terminals.Dot);
-			terminals[7].Id.ShouldBe(OracleGrammarDescription.Terminals.Identifier);
+			terminals[7].Id.ShouldBe(OracleGrammarDescription.Terminals.ObjectIdentifier);
 			terminals[7].Token.Value.ShouldBe("DUAL");
 			terminals[8].Id.ShouldBe(OracleGrammarDescription.Terminals.Dot);
 			terminals[9].Id.ShouldBe(OracleGrammarDescription.Terminals.Identifier);
 			terminals[9].Token.Value.ShouldBe("DUMMY");
 			terminals[10].Id.ShouldBe(OracleGrammarDescription.Terminals.From);
-			terminals[11].Id.ShouldBe(OracleGrammarDescription.Terminals.Identifier);
+			terminals[11].Id.ShouldBe(OracleGrammarDescription.Terminals.SchemaIdentifier);
 			terminals[11].Token.Value.ShouldBe("SYS");
 			terminals[12].Id.ShouldBe(OracleGrammarDescription.Terminals.Dot);
 			terminals[13].Id.ShouldBe(OracleGrammarDescription.Terminals.Identifier);
@@ -128,7 +128,7 @@ namespace SqlPad.Test
 
 			result.Count.ShouldBe(1);
 			result.Single().NodeCollection.Count.ShouldBe(0);
-			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.SequenceNotFound);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
 
 			// TODO: Precise assertions
 
@@ -136,7 +136,7 @@ namespace SqlPad.Test
 			result = _oracleSqlParser.Parse(CreateTokenReader(query2));
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -149,14 +149,14 @@ namespace SqlPad.Test
 
 			result.Count.ShouldBe(1);
 			result.Single().NodeCollection.Count.ShouldBe(0);
-			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.SequenceNotFound);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
 
 			sqlText = @"SELECT . FROM DUAL";
 			result = _oracleSqlParser.Parse(CreateTokenReader(sqlText));
 
 			result.Count.ShouldBe(1);
 			result.Single().NodeCollection.Count.ShouldBe(0);
-			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.SequenceNotFound);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
 
 			// TODO: Precise assertions
 		}
@@ -179,7 +179,7 @@ namespace SqlPad.Test
 			var result = _oracleSqlParser.Parse(CreateTokenReader(sqlText));
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.SequenceNotFound);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
 
 			// TODO: Precise assertions
 		}
@@ -191,7 +191,7 @@ namespace SqlPad.Test
 			var result = _oracleSqlParser.Parse(CreateTokenReader(sqlText));
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -203,7 +203,7 @@ namespace SqlPad.Test
 			var result = _oracleSqlParser.Parse(CreateTokenReader(sqlText));
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -215,7 +215,7 @@ namespace SqlPad.Test
 			var result = _oracleSqlParser.Parse(CreateTokenReader(sqlText));
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -227,7 +227,7 @@ namespace SqlPad.Test
 			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 			// TODO: Precise assertions
 
@@ -235,7 +235,7 @@ namespace SqlPad.Test
 			result = _oracleSqlParser.Parse(CreateTokenReader(query2));
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.SequenceNotFound);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
 
 			// TODO: Precise assertions
 		}
@@ -247,7 +247,7 @@ namespace SqlPad.Test
 			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 			// TODO: Precise assertions
 
@@ -255,7 +255,7 @@ namespace SqlPad.Test
 			result = _oracleSqlParser.Parse(CreateTokenReader(query2));
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 			// TODO: Precise assertions
 
@@ -263,7 +263,7 @@ namespace SqlPad.Test
 			result = _oracleSqlParser.Parse(CreateTokenReader(query3));
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 			// TODO: Precise assertions
 
@@ -271,7 +271,7 @@ namespace SqlPad.Test
 			result = _oracleSqlParser.Parse(CreateTokenReader(query4));
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.SequenceNotFound);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
 
 			// TODO: Precise assertions
 
@@ -279,9 +279,17 @@ namespace SqlPad.Test
 			result = _oracleSqlParser.Parse(CreateTokenReader(query5));
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-			// TODO: Precise assertions
+			var terminals = result.Single().NodeCollection.SelectMany(n => n.Terminals).ToList();
+
+			terminals.Count.ShouldBe(21);
+			terminals[8].Id.ShouldBe(OracleGrammarDescription.Terminals.SchemaIdentifier);
+			terminals[10].Id.ShouldBe(OracleGrammarDescription.Terminals.ObjectIdentifier);
+			terminals[12].Id.ShouldBe(OracleGrammarDescription.Terminals.Identifier);
+			terminals[14].Id.ShouldBe(OracleGrammarDescription.Terminals.Identifier);
+			terminals[16].Id.ShouldBe(OracleGrammarDescription.Terminals.ObjectIdentifier);
+			terminals[18].Id.ShouldBe(OracleGrammarDescription.Terminals.Identifier);
 		}
 
 		[Test(Description = @"Tests simple queries with IS (NOT) <terminal> conditions. ")]
@@ -291,7 +299,7 @@ namespace SqlPad.Test
 			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 			// TODO: Precise assertions
 
@@ -299,7 +307,7 @@ namespace SqlPad.Test
 			result = _oracleSqlParser.Parse(CreateTokenReader(query2));
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -311,7 +319,7 @@ namespace SqlPad.Test
 			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 			result.Single().NodeCollection.Count.ShouldBe(0);
 		}
 
@@ -322,11 +330,11 @@ namespace SqlPad.Test
 			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
 
 			result.Count.ShouldBe(2);
-			result.First().ProcessingResult.ShouldBe(NonTerminalProcessingResult.SequenceNotFound);
+			result.First().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
 			result.First().NodeCollection.Count.ShouldBe(1);
 			result.First().NodeCollection.Single().Terminals.Count().ShouldBe(4);
 
-			result.Last().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+			result.Last().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 			result.Last().NodeCollection.Count.ShouldBe(1);
 			result.Last().NodeCollection.Single().Terminals.Count().ShouldBe(4);
 		}
@@ -338,7 +346,7 @@ namespace SqlPad.Test
 			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 		}
 
 		[Test(Description = @"Tests flashback clauses. ")]
@@ -348,13 +356,13 @@ namespace SqlPad.Test
 			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 			const string query2 = @"SELECT * FROM T1 VERSIONS BETWEEN TIMESTAMP TIMESTAMP'2014-02-20 00:00:00' AND DATE'2014-02-20'";
 			result = _oracleSqlParser.Parse(CreateTokenReader(query2));
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 		}
 
 		[Test(Description = @"Tests chained asterisk clause. ")]
@@ -364,7 +372,7 @@ namespace SqlPad.Test
 			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 		}
 
 		[Test(Description = @"Tests LIKE clause. ")]
@@ -374,7 +382,7 @@ namespace SqlPad.Test
 			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 		}
 
 		[Test(Description = @"Tests IN clause with subquery. ")]
@@ -384,7 +392,7 @@ namespace SqlPad.Test
 			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 		}
 
 		[Test(Description = @"Tests scalar subquery clause. ")]
@@ -394,7 +402,7 @@ namespace SqlPad.Test
 			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 		}
 
 		[Test(Description = @"Tests join clauses. ")]
@@ -405,7 +413,7 @@ namespace SqlPad.Test
 			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 			//return;
 			var terminals = result.Single().NodeCollection.SelectMany(n => n.Terminals).ToArray();
 			terminals.Length.ShouldBe(38);
@@ -432,10 +440,11 @@ namespace SqlPad.Test
 		public void Test25()
 		{
 			const string query1 = @"SELECT 1 FROM DUAL ORDER BY 1 DESC, DUMMY ASC NULLS LAST, (SELECT DBMS_RANDOM.VALUE FROM DUAL)";
+			//const string query1 = @"SELECT TAB.COL FROM DUAL";
 			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 		}
 
 		[Test(Description = @"Tests hierarchical query clauses. ")]
@@ -445,13 +454,13 @@ namespace SqlPad.Test
 			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 			const string query2 = @"SELECT LEVEL FROM DUAL START WITH 1 = 1 CONNECT BY NOCYCLE LEVEL <= 5 AND 1 = 1";
 			result = _oracleSqlParser.Parse(CreateTokenReader(query2));
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 		}
 
 		[Test(Description = @"Tests group by rollup, cube and grouping sets clauses. ")]
@@ -461,7 +470,7 @@ namespace SqlPad.Test
 			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 			// TODO: Precise assertions
 
@@ -469,7 +478,7 @@ namespace SqlPad.Test
 			result = _oracleSqlParser.Parse(CreateTokenReader(query2));
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -481,7 +490,7 @@ namespace SqlPad.Test
 			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 			// TODO: Precise assertions
 
@@ -489,7 +498,7 @@ namespace SqlPad.Test
 			result = _oracleSqlParser.Parse(CreateTokenReader(query2));
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -501,7 +510,7 @@ namespace SqlPad.Test
 			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -513,7 +522,7 @@ namespace SqlPad.Test
 			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -525,7 +534,7 @@ namespace SqlPad.Test
 			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.SequenceNotFound);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
 
 			// TODO: Precise assertions
 		}
@@ -537,7 +546,7 @@ namespace SqlPad.Test
 			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -549,9 +558,24 @@ namespace SqlPad.Test
 			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingResult.ShouldBe(NonTerminalProcessingResult.Success);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 			// TODO: Precise assertions
+		}
+
+		[Test(Description = @"Tests query with fully qualified object name with asterisk clause. ")]
+		public void Test34()
+		{
+			const string query1 = @"SELECT SYS.DUAL.* FROM SYS.DUAL";
+			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
+
+			result.Count.ShouldBe(1);
+			var statement = result.Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var terminals = statement.NodeCollection.Single().Terminals.ToArray();
+			terminals[1].Id.ShouldBe(OracleGrammarDescription.Terminals.SchemaIdentifier);
+			terminals[3].Id.ShouldBe(OracleGrammarDescription.Terminals.ObjectIdentifier);
 		}
 
 		private static OracleTokenReader CreateTokenReader(string sqlText)
