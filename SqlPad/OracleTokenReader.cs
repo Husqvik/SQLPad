@@ -197,7 +197,7 @@ namespace SqlPad
 							quotedIdentifierOrLiteralOrBindVariableEnabled = true;
 						}
 
-						if (characterCode == '.' && (inNumber || _builder.Length == 0) && !inDecimalNumber)
+						if (characterCode == '.' && (inNumber || (_builder.Length == 0 && nextCharacterCode >= 48 && nextCharacterCode <= 57)) && !inDecimalNumber)
 						{
 							inDecimalNumber = true;
 							isSingleCharacterSeparator = false;

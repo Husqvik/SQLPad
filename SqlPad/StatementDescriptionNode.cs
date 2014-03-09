@@ -132,12 +132,17 @@ namespace SqlPad
 			return GetChildNodes(pathFilter).Where(t => descendantNodeIds == null || descendantNodeIds.Length == 0 || descendantNodeIds.Contains(t.Id));
 		}
 
+		public StatementDescriptionNode GetSingleDescendant(params string[] descendantNodeIds)
+		{
+			return GetDescendants(descendantNodeIds).SingleOrDefault();
+		}
+
 		public IEnumerable<StatementDescriptionNode> GetDescendants(params string[] descendantNodeIds)
 		{
 			return GetPathFilterDescendants(null, descendantNodeIds);
 		}
 
-		/*public int? GetAncestorDistance(string ancestorNodeId)
+		public int? GetAncestorDistance(string ancestorNodeId)
 		{
 			return GetAncestorDistance(ancestorNodeId, 0);
 		}
@@ -148,7 +153,7 @@ namespace SqlPad
 				return level;
 			
 			return ParentNode != null ? ParentNode.GetAncestorDistance(ancestorNodeId, level + 1) : null;
-		}*/
+		}
 
 		public bool HasAncestor(string ancestorNodeId)
 		{

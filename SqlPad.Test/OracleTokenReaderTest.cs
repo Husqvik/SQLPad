@@ -157,6 +157,13 @@ namespace SqlPad.Test
 			Assert.Throws<ArgumentNullException>(() => OracleTokenReader.Create((TextReader)null));
 		}
 
+		[Test(Description = "Tests OracleTokenReader disposing and string input. ")]
+		public void TestUsingClauseWithStringParameter()
+		{
+			using(OracleTokenReader.Create(String.Empty))
+			{ }
+		}
+
 		[Test(Description = "Tests longer comments with comment leading characters. ")]
 		public void Test21()
 		{
@@ -266,6 +273,17 @@ namespace SqlPad.Test
 
 			var tokenIndexes = GetTokenIndexesFromOracleSql(testQuery);
 			tokenIndexes.ShouldBe(new[] { 0, 7, 11, 23, 25, 31, 43, 45, 55, 81, 86 });
+		}
+
+		[Test(Description = "Tests quoted schema name. ")]
+		public void Test30()
+		{
+			const string testQuery = @"SELECT NULL FROM ""SYS"".DUAL";
+			var tokens = GetTokenValuesFromOracleSql(testQuery);
+			tokens.ShouldBe(new[] { "SELECT", "NULL", "FROM", "\"SYS\"", ".", "DUAL" });
+
+			var tokenIndexes = GetTokenIndexesFromOracleSql(testQuery);
+			tokenIndexes.ShouldBe(new[] { 0, 7, 12, 17, 22, 23 });
 		}
 
 		private string[] GetTokenValuesFromOracleSql(string sqlText)

@@ -319,9 +319,9 @@ namespace SqlPad {
         
         private bool isOptionalFieldSpecified;
         
-        private string commentField;
+        private string tagField;
         
-        private string taqField;
+        private string commentField;
         
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
@@ -358,23 +358,23 @@ namespace SqlPad {
         
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string Tag {
+            get {
+                return this.tagField;
+            }
+            set {
+                this.tagField = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
         public string Comment {
             get {
                 return this.commentField;
             }
             set {
                 this.commentField = value;
-            }
-        }
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public string Taq {
-            get {
-                return this.taqField;
-            }
-            set {
-                this.taqField = value;
             }
         }
     }

@@ -41,6 +41,7 @@
 			public const string ForUpdateWaitClause = "ForUpdateWaitClause";
 			public const string FromClause = "FromClause";
 			public const string FromClauseChained = "FromClauseChained";
+			public const string FunctionParameters = "FunctionParameters";
 			public const string GroupByClause = "GroupByClause";
 			public const string GroupingClause = "GroupingClause";
 			public const string GroupingClauseChained = "GroupingClauseChained";
@@ -76,8 +77,11 @@
 			public const string OuterJoinTypeWithKeyword = "OuterJoinTypeWithKeyword";
 			public const string ParenthesisEnclosedColumnIdentifierList = "ParenthesisEnclosedColumnIdentifierList";
 			public const string ParenthesisEnclosedExpressionList = "ParenthesisEnclosedExpressionList";
+			public const string ParenthesisEnclosedFunctionParameters = "ParenthesisEnclosedFunctionParameters";
 			public const string ParenthesisEnclosedGroupingExpressionList = "ParenthesisEnclosedGroupingExpressionList";
 			public const string PartitionOrDatabaseLink = "PartitionOrDatabaseLink";
+			public const string Prefix = "Prefix";
+			public const string PrefixedColumnReference = "PrefixedColumnReference";
 			public const string QueryBlock = "QueryBlock";
 			public const string QueryTableExpression = "QueryTableExpression";
 			public const string RelationalEquiOperator = "RelationalEquiOperator";
@@ -128,6 +132,7 @@
 			public const string Constraint = "Constraint";
 			public const string Cross = "Cross";
 			public const string Cube = "Cube";
+			public const string DatabaseLinkIdentifier = "DatabaseLinkIdentifier";
 			public const string Date = "Date";
 			public const string Desc = "Desc";
 			public const string Distinct = "Distinct";

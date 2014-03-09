@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace SqlPad
@@ -16,6 +17,11 @@ namespace SqlPad
 				return String.Empty;
 
 			return identifier[0] == '"' ? identifier : "\"" + identifier.ToUpperInvariant() + "\"";
+		}
+
+		public static IEnumerable<StatementDescriptionNode> GetDescendantsWithinSameQuery(this StatementDescriptionNode node, params string[] descendantNodeIds)
+		{
+			return node.GetPathFilterDescendants(NodeFilters.BreakAtNestedQueryBoundary, descendantNodeIds);
 		}
 	}
 }

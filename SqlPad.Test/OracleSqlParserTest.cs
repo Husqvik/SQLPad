@@ -1,8 +1,11 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using Shouldly;
+using NonTerminals = SqlPad.OracleGrammarDescription.NonTerminals;
+using Terminals = SqlPad.OracleGrammarDescription.Terminals;
 
 namespace SqlPad.Test
 {
@@ -27,6 +30,12 @@ namespace SqlPad.Test
 			}
 		}
 
+		[Test(Description = @"Tests exception raise when null token reader is passed")]
+		public void TestNullTokenReader()
+		{
+			Assert.Throws<ArgumentNullException>(() => _oracleSqlParser.Parse((OracleTokenReader)null));
+		}
+
 		[Test(Description = @"Tests trivial query. ")]
 		public void TestTrivialQuery()
 		{
@@ -38,16 +47,16 @@ namespace SqlPad.Test
 			var terminals = result.Single().NodeCollection.SelectMany(i => i.Terminals).ToList();
 
 			terminals.Count.ShouldBe(4);
-			terminals[0].Id.ShouldBe(OracleGrammarDescription.Terminals.Select);
+			terminals[0].Id.ShouldBe(Terminals.Select);
 			terminals[0].SourcePosition.IndexStart.ShouldBe(0);
 			terminals[0].SourcePosition.IndexEnd.ShouldBe(5);
-			terminals[1].Id.ShouldBe(OracleGrammarDescription.Terminals.Null);
+			terminals[1].Id.ShouldBe(Terminals.Null);
 			terminals[1].SourcePosition.IndexStart.ShouldBe(7);
 			terminals[1].SourcePosition.IndexEnd.ShouldBe(10);
-			terminals[2].Id.ShouldBe(OracleGrammarDescription.Terminals.From);
+			terminals[2].Id.ShouldBe(Terminals.From);
 			terminals[2].SourcePosition.IndexStart.ShouldBe(12);
 			terminals[2].SourcePosition.IndexEnd.ShouldBe(15);
-			terminals[3].Id.ShouldBe(OracleGrammarDescription.Terminals.Identifier);
+			terminals[3].Id.ShouldBe(Terminals.Identifier);
 			terminals[3].Token.Value.ShouldBe("DUAL");
 			terminals[3].SourcePosition.IndexStart.ShouldBe(17);
 			terminals[3].SourcePosition.IndexEnd.ShouldBe(20);
@@ -65,25 +74,25 @@ namespace SqlPad.Test
 			var terminals = rootToken.Terminals.ToList();
 
 			terminals.Count.ShouldBe(14);
-			terminals[0].Id.ShouldBe(OracleGrammarDescription.Terminals.Select);
-			terminals[1].Id.ShouldBe(OracleGrammarDescription.Terminals.Null);
-			terminals[2].Id.ShouldBe(OracleGrammarDescription.Terminals.As);
-			terminals[3].Id.ShouldBe(OracleGrammarDescription.Terminals.Alias);
+			terminals[0].Id.ShouldBe(Terminals.Select);
+			terminals[1].Id.ShouldBe(Terminals.Null);
+			terminals[2].Id.ShouldBe(Terminals.As);
+			terminals[3].Id.ShouldBe(Terminals.Alias);
 			terminals[3].Token.Value.ShouldBe("\">=;+Alias/*--^\"");
-			terminals[4].Id.ShouldBe(OracleGrammarDescription.Terminals.Comma);
-			terminals[5].Id.ShouldBe(OracleGrammarDescription.Terminals.SchemaIdentifier);
+			terminals[4].Id.ShouldBe(Terminals.Comma);
+			terminals[5].Id.ShouldBe(Terminals.SchemaIdentifier);
 			terminals[5].Token.Value.ShouldBe("SYS");
-			terminals[6].Id.ShouldBe(OracleGrammarDescription.Terminals.Dot);
-			terminals[7].Id.ShouldBe(OracleGrammarDescription.Terminals.ObjectIdentifier);
+			terminals[6].Id.ShouldBe(Terminals.Dot);
+			terminals[7].Id.ShouldBe(Terminals.ObjectIdentifier);
 			terminals[7].Token.Value.ShouldBe("DUAL");
-			terminals[8].Id.ShouldBe(OracleGrammarDescription.Terminals.Dot);
-			terminals[9].Id.ShouldBe(OracleGrammarDescription.Terminals.Identifier);
+			terminals[8].Id.ShouldBe(Terminals.Dot);
+			terminals[9].Id.ShouldBe(Terminals.Identifier);
 			terminals[9].Token.Value.ShouldBe("DUMMY");
-			terminals[10].Id.ShouldBe(OracleGrammarDescription.Terminals.From);
-			terminals[11].Id.ShouldBe(OracleGrammarDescription.Terminals.SchemaIdentifier);
+			terminals[10].Id.ShouldBe(Terminals.From);
+			terminals[11].Id.ShouldBe(Terminals.SchemaIdentifier);
 			terminals[11].Token.Value.ShouldBe("SYS");
-			terminals[12].Id.ShouldBe(OracleGrammarDescription.Terminals.Dot);
-			terminals[13].Id.ShouldBe(OracleGrammarDescription.Terminals.Identifier);
+			terminals[12].Id.ShouldBe(Terminals.Dot);
+			terminals[13].Id.ShouldBe(Terminals.Identifier);
 			terminals[13].Token.Value.ShouldBe("DUAL");
 		}
 
@@ -97,10 +106,10 @@ namespace SqlPad.Test
 			var terminals = result.Single().NodeCollection.SelectMany(i => i.Terminals).ToList();
 
 			terminals.Count.ShouldBe(26);
-			terminals[0].Id.ShouldBe(OracleGrammarDescription.Terminals.Select);
-			terminals[1].Id.ShouldBe(OracleGrammarDescription.Terminals.Case);
-			terminals[2].Id.ShouldBe(OracleGrammarDescription.Terminals.When);
-			terminals[3].Id.ShouldBe(OracleGrammarDescription.Terminals.NumberLiteral);
+			terminals[0].Id.ShouldBe(Terminals.Select);
+			terminals[1].Id.ShouldBe(Terminals.Case);
+			terminals[2].Id.ShouldBe(Terminals.When);
+			terminals[3].Id.ShouldBe(Terminals.NumberLiteral);
 			terminals[3].Token.Value.ShouldBe("1");
 
 			// TODO: Precise assertions
@@ -284,12 +293,12 @@ namespace SqlPad.Test
 			var terminals = result.Single().NodeCollection.SelectMany(n => n.Terminals).ToList();
 
 			terminals.Count.ShouldBe(21);
-			terminals[8].Id.ShouldBe(OracleGrammarDescription.Terminals.SchemaIdentifier);
-			terminals[10].Id.ShouldBe(OracleGrammarDescription.Terminals.ObjectIdentifier);
-			terminals[12].Id.ShouldBe(OracleGrammarDescription.Terminals.Identifier);
-			terminals[14].Id.ShouldBe(OracleGrammarDescription.Terminals.Identifier);
-			terminals[16].Id.ShouldBe(OracleGrammarDescription.Terminals.ObjectIdentifier);
-			terminals[18].Id.ShouldBe(OracleGrammarDescription.Terminals.Identifier);
+			terminals[8].Id.ShouldBe(Terminals.SchemaIdentifier);
+			terminals[10].Id.ShouldBe(Terminals.ObjectIdentifier);
+			terminals[12].Id.ShouldBe(Terminals.Identifier);
+			terminals[14].Id.ShouldBe(Terminals.Identifier);
+			terminals[16].Id.ShouldBe(Terminals.ObjectIdentifier);
+			terminals[18].Id.ShouldBe(Terminals.Identifier);
 		}
 
 		[Test(Description = @"Tests simple queries with IS (NOT) <terminal> conditions. ")]
@@ -408,32 +417,31 @@ namespace SqlPad.Test
 		[Test(Description = @"Tests join clauses. ")]
 		public void Test24()
 		{
-			//const string query1 = @"SELECT * FROM T1 CROSS JOIN T2 ALIAS";
 			const string query1 = @"SELECT * FROM T1 CROSS JOIN T2 JOIN T3 ON 1 = 1 INNER JOIN T4 USING (ID) NATURAL JOIN T5 FULL OUTER JOIN T6 ALIAS ON T5.ID = T6.ID, V$SESSION";
 			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
 
 			result.Count.ShouldBe(1);
 			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-			//return;
+
 			var terminals = result.Single().NodeCollection.SelectMany(n => n.Terminals).ToArray();
 			terminals.Length.ShouldBe(38);
-			terminals[3].Id.ShouldBe(OracleGrammarDescription.Terminals.Identifier);
-			terminals[3].ParentNode.Id.ShouldBe(OracleGrammarDescription.NonTerminals.QueryTableExpression);
+			terminals[3].Id.ShouldBe(Terminals.Identifier);
+			terminals[3].ParentNode.Id.ShouldBe(NonTerminals.QueryTableExpression);
 			terminals[3].Token.Value.ShouldBe("T1");
-			terminals[4].Id.ShouldBe(OracleGrammarDescription.Terminals.Cross);
-			terminals[5].Id.ShouldBe(OracleGrammarDescription.Terminals.Join);
-			terminals[7].Id.ShouldBe(OracleGrammarDescription.Terminals.Join);
-			terminals[9].Id.ShouldBe(OracleGrammarDescription.Terminals.On);
-			terminals[13].Id.ShouldBe(OracleGrammarDescription.Terminals.Inner);
-			terminals[14].Id.ShouldBe(OracleGrammarDescription.Terminals.Join);
-			terminals[16].Id.ShouldBe(OracleGrammarDescription.Terminals.Using);
-			terminals[20].Id.ShouldBe(OracleGrammarDescription.Terminals.Natural);
-			terminals[21].Id.ShouldBe(OracleGrammarDescription.Terminals.Join);
-			terminals[23].Id.ShouldBe(OracleGrammarDescription.Terminals.Full);
-			terminals[24].Id.ShouldBe(OracleGrammarDescription.Terminals.Outer);
-			terminals[25].Id.ShouldBe(OracleGrammarDescription.Terminals.Join);
-			terminals[26].Id.ShouldBe(OracleGrammarDescription.Terminals.Identifier);
-			terminals[27].Id.ShouldBe(OracleGrammarDescription.Terminals.Alias);
+			terminals[4].Id.ShouldBe(Terminals.Cross);
+			terminals[5].Id.ShouldBe(Terminals.Join);
+			terminals[7].Id.ShouldBe(Terminals.Join);
+			terminals[9].Id.ShouldBe(Terminals.On);
+			terminals[13].Id.ShouldBe(Terminals.Inner);
+			terminals[14].Id.ShouldBe(Terminals.Join);
+			terminals[16].Id.ShouldBe(Terminals.Using);
+			terminals[20].Id.ShouldBe(Terminals.Natural);
+			terminals[21].Id.ShouldBe(Terminals.Join);
+			terminals[23].Id.ShouldBe(Terminals.Full);
+			terminals[24].Id.ShouldBe(Terminals.Outer);
+			terminals[25].Id.ShouldBe(Terminals.Join);
+			terminals[26].Id.ShouldBe(Terminals.Identifier);
+			terminals[27].Id.ShouldBe(Terminals.Alias);
 		}
 
 		[Test(Description = @"Tests order by clause. ")]
@@ -574,8 +582,8 @@ namespace SqlPad.Test
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 			var terminals = statement.NodeCollection.Single().Terminals.ToArray();
-			terminals[1].Id.ShouldBe(OracleGrammarDescription.Terminals.SchemaIdentifier);
-			terminals[3].Id.ShouldBe(OracleGrammarDescription.Terminals.ObjectIdentifier);
+			terminals[1].Id.ShouldBe(Terminals.SchemaIdentifier);
+			terminals[3].Id.ShouldBe(Terminals.ObjectIdentifier);
 		}
 
 		[Test(Description = @"Tests query with function calls. ")]
@@ -586,6 +594,51 @@ namespace SqlPad.Test
 
 			result.Count.ShouldBe(1);
 			var statement = result.Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var terminals = statement.NodeCollection.Single().Terminals.ToArray();
+			terminals[1].Id.ShouldBe(Terminals.SchemaIdentifier);
+			terminals[3].Id.ShouldBe(Terminals.ObjectIdentifier);
+			terminals[5].Id.ShouldBe(Terminals.Identifier);
+			terminals[7].Id.ShouldBe(Terminals.DatabaseLinkIdentifier);
+			terminals[8].Id.ShouldBe(Terminals.Alias);
+		}
+
+		[Test(Description = @"Tests query with analytic clause. ")]
+		public void Test36()
+		{
+			const string query1 = @"SELECT SUM(LENGTH(DUMMY)) OVER (PARTITION BY DUMMY ORDER BY DUMMY DESC ROWS BETWEEN DBMS_RANDOM.VALUE PRECEDING AND UNBOUNDED FOLLOWING) FROM DUAL";
+			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
+
+			result.Count.ShouldBe(1);
+			var statement = result.Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			// TODO: Precise assertions
+
+			const string query2 = @"SELECT SUM(LENGTH(DUMMY)) OVER (PARTITION BY DUMMY RANGE CURRENT ROW) FROM SYS.""DUAL""";
+			result = _oracleSqlParser.Parse(CreateTokenReader(query2));
+
+			result.Count.ShouldBe(1);
+			statement = result.Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			// TODO: Precise assertions
+
+			const string query3 = @"SELECT SUM(LENGTH(DUMMY) * (2)) OVER () FROM SYS.DUAL";
+			result = _oracleSqlParser.Parse(CreateTokenReader(query3));
+
+			result.Count.ShouldBe(1);
+			statement = result.Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			// TODO: Precise assertions
+
+			const string query4 = @"SELECT LAG(SYS.DUAL.DUMMY, 1) OVER (ORDER BY SYS.DUAL.DUMMY NULLS LAST) FROM SYS.DUAL";
+			result = _oracleSqlParser.Parse(CreateTokenReader(query4));
+
+			result.Count.ShouldBe(1);
+			statement = result.Single();
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 			// TODO: Precise assertions

@@ -215,9 +215,10 @@ namespace SqlPad
 			if (optionalNodeCandidate == null || optionalNodeCandidate.IsRequired)
 				return;
 
-			var newResult = getAlternativeProcessingResultFunction(optionalNodeCandidate.Terminals.Count());
+			var optionalTerminalCount = optionalNodeCandidate.Terminals.Count();
+			var newResult = getAlternativeProcessingResultFunction(optionalTerminalCount);
 
-			if (newResult.Status != ProcessingStatus.Success)
+			if (newResult.Status != ProcessingStatus.Success || newResult.TerminalCount < optionalTerminalCount)
 				return;
 
 			currentResult = newResult;

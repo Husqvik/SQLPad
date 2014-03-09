@@ -207,18 +207,22 @@
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="Prefix" />
-          <NonTerminal Id="ColumnReference" />
-          <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
-        </Sequence>
-        <Sequence>
-          <NonTerminal Id="ColumnReference" />
+          <NonTerminal Id="PrefixedColumnReference" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
           <Terminal Id="Date" />
           <Terminal Id="StringLiteral" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PrefixedColumnReference">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="Prefix" IsOptional="true" />
+          <NonTerminal Id="ColumnReference" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -261,7 +265,7 @@
           <!-- Function call -->
           <NonTerminal Id="DatabaseLink" IsOptional="true" />
           <NonTerminal Id="ParenthesisEnclosedFunctionParameters" IsOptional="true" />
-          <!-- TODO: Add analytic clause -->
+          <NonTerminal Id="AnalyticClause" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -679,7 +683,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="At" />
-          <Terminal Id="Identifier" />
+          <Terminal Id="DatabaseLinkIdentifier" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -697,7 +701,7 @@
     <Rule StartingNonTerminal="SubqueryComponent">
       <Sequences>
         <Sequence>
-          <Terminal Id="Identifier" Taq="SubQueryName" />
+          <Terminal Id="Identifier" Tag="SubQueryName" Comment="Sub query name" />
           <NonTerminal Id="ParenthesisEnclosedColumnIdentifierList" IsOptional="true" />
           <Terminal Id="As" />
           <Terminal Id="LeftParenthesis" />
@@ -1238,10 +1242,17 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Nulls" />
+          <NonTerminal Id="FirstOrLast" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="FirstOrLast">
+      <Sequences>
+        <Sequence>
           <Terminal Id="First" />
         </Sequence>
         <Sequence>
-          <Terminal Id="Nulls" />
           <Terminal Id="Last" />
         </Sequence>
       </Sequences>
@@ -1302,6 +1313,168 @@
           <Terminal Id="Seed" />
           <Terminal Id="LeftParenthesis" />
           <Terminal Id="NumberLiteral" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <!-- Analytic clause -->
+    <Rule StartingNonTerminal="AnalyticClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Over" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="QueryPartitionClause" IsOptional="true" />
+          <NonTerminal Id="OrderByClause" IsOptional="true" />
+          <NonTerminal Id="WindowingClause" IsOptional="true" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="QueryPartitionClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Partition" />
+          <Terminal Id="By" />
+          <NonTerminal Id="GroupingExpressionList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="WindowingClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="RowsOrRange" />
+          <NonTerminal Id="PrecedingOnlyOrBetweenPrecedingAndFollowing" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="RowsOrRange">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Rows" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Range" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PrecedingOnlyOrBetweenPrecedingAndFollowing">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="PrecedingOnlyClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="BetweenPrecedingAndFollowingClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="BetweenPrecedingAndFollowingClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Between" />
+          <NonTerminal Id="BetweenPrecedingClause" />
+          <Terminal Id="And" />
+          <NonTerminal Id="BetweenFollowingClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="BetweenPrecedingClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Unbounded" />
+          <Terminal Id="Preceding" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Current" />
+          <Terminal Id="Row" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="Expression" />
+          <NonTerminal Id="PrecedingOrFollowing" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="BetweenFollowingClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Unbounded" />
+          <Terminal Id="Following" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Current" />
+          <Terminal Id="Row" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="Expression" />
+          <NonTerminal Id="PrecedingOrFollowing" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PrecedingOnlyClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Unbounded" />
+          <Terminal Id="Preceding" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Current" />
+          <Terminal Id="Row" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="Expression" />
+          <Terminal Id="Preceding" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PrecedingOrFollowing">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Preceding" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Following" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="IgnoreNulls">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Ignore" />
+          <Terminal Id="Nulls" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="KeepClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Keep" />
+          <Terminal Id="LeftParenthesis" />
+          <Terminal Id="DenseRank" />
+          <NonTerminal Id="FirstOrLast" />
+          <NonTerminal Id="OrderByClause" />
+          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="OverQueryPartitionClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="OverQueryPartitionClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Over" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="QueryPartitionClause" />
           <Terminal Id="RightParenthesis" />
         </Sequence>
       </Sequences>
@@ -1379,7 +1552,6 @@
     </Terminal>
     <Terminal Id="From" Value="FROM" IsKeyword="true" />
     <Terminal Id="Null" Value="NULL" IsKeyword="true" />
-    <Terminal Id="Ignore" Value="IGNORE" />
     <Terminal Id="And" Value="AND" IsKeyword="true" />
     <Terminal Id="Or" Value="OR" IsKeyword="true" />
     <Terminal Id="Not" Value="NOT" IsKeyword="true" />
@@ -1387,7 +1559,6 @@
     <Terminal Id="Where" Value="WHERE" IsKeyword="true" />
     <Terminal Id="Between" Value="BETWEEN" IsKeyword="true" />
     <Terminal Id="Date" Value="DATE" IsKeyword="true" />
-    <Terminal Id="Over" Value="OVER" />
     <Terminal Id="Include" Value="INCLUDE" />
     <Terminal Id="Exclude" Value="EXCLUDE" />
     <Terminal Id="Pivot" Value="PIVOT" />
@@ -1396,13 +1567,14 @@
     <Terminal Id="Partition" Value="PARTITION" />
     <Terminal Id="Subpartition" Value="SUBPARTITION" />
     <Terminal Id="Table" Value="TABLE" IsKeyword="true" />
+    <Terminal Id="Public" Value="PUBLIC" IsKeyword="true" />
     <Terminal Id="Column" Value="COLUMN" IsKeyword="true" />
-    <Terminal Id="Row" Value="ROW" IsKeyword="true" />
     <Terminal Id="SequenceCurrentValue" Value="CURRVAL" />
     <Terminal Id="SequenceNextValue" Value="NEXTVAL" />
     <Terminal Id="RowNumberPseudoColumn" Value="ROWNUM" IsKeyword="true" />
     <Terminal Id="RowIdPseudoColumn" Value="ROWID" IsKeyword="true" />
     <Terminal Id="Identifier" RegexValue="^((&quot;[^&quot;]{1,28}&quot;)|([a-zA-Z][\w\d$]{0,29}))$" />
+    <Terminal Id="DatabaseLinkIdentifier" RegexValue="^((&quot;[^&quot;]{1,28}&quot;)|([a-zA-Z][\w\d$]{0,29}))$" />
     <Terminal Id="SchemaIdentifier" RegexValue="^((&quot;[^&quot;]{1,28}&quot;)|([a-zA-Z][\w\d$]{0,29}))$" />
     <Terminal Id="ObjectIdentifier" RegexValue="^((&quot;[^&quot;]{1,28}&quot;)|([a-zA-Z][\w\d$]{0,29}))$" />
     <Terminal Id="Alias" RegexValue="^((&quot;[^&quot;]{1,28}&quot;)|([a-zA-Z][\w\d$]{0,29}))$" />
@@ -1486,6 +1658,19 @@
     <Terminal Id="Connect" Value="CONNECT" IsKeyword="true" />
     <Terminal Id="Start" Value="START" IsKeyword="true" />
     <Terminal Id="NoCycle" Value="NOCYCLE" />
+
+    <!-- Analytic clause -->
+    <Terminal Id="Over" Value="OVER" />
+    <Terminal Id="Rows" Value="ROWS" IsKeyword="true" />
+    <Terminal Id="Range" Value="RANGE" />
+    <Terminal Id="Current" Value="CURRENT" IsKeyword="true" />
+    <Terminal Id="Unbounded" Value="UNBOUNDED" />
+    <Terminal Id="Preceding" Value="PRECEDING" />
+    <Terminal Id="Following" Value="FOLLOWING" />
+    <Terminal Id="Row" Value="ROW" IsKeyword="true" />
+    <Terminal Id="Ignore" Value="IGNORE" />
+    <Terminal Id="Keep" Value="KEEP" />
+    <Terminal Id="DenseRank" Value="DENSE_RANK" />
 
     <!-- Model clause -->
     <Terminal Id="Model" Value="MODEL" />
