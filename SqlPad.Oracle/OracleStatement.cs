@@ -2,10 +2,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace SqlPad
+namespace SqlPad.Oracle
 {
 	[DebuggerDisplay("OracleStatement (Count={NodeCollection.Count})")]
-	public class OracleStatement
+	public class OracleStatement : IStatement
 	{
 		public static readonly OracleStatement EmptyStatement =
 			new OracleStatement
@@ -25,19 +25,5 @@ namespace SqlPad
 		{
 			return NodeCollection.Select(n => n.GetNodeAtPosition(offset)).FirstOrDefault(n => n != null);
 		}
-	}
-
-	[DebuggerDisplay("SourcePosition (IndexStart={IndexStart}, IndexEnd={IndexEnd})")]
-	public struct SourcePosition
-	{
-		public int IndexStart { get; set; }
-		public int IndexEnd { get; set; }
-		public int Length { get { return IndexEnd - IndexStart + 1; } }
-	}
-
-	public enum NodeType
-	{
-		Terminal,
-		NonTerminal
 	}
 }

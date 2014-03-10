@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using NonTerminals = SqlPad.OracleGrammarDescription.NonTerminals;
-using Terminals = SqlPad.OracleGrammarDescription.Terminals;
+using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
+using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
-namespace SqlPad
+namespace SqlPad.Oracle
 {
 	public class OracleStatementSemanticModel
 	{

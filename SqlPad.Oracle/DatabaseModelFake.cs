@@ -3,7 +3,7 @@ using System.Configuration;
 using System.Diagnostics;
 using System.Linq;
 
-namespace SqlPad
+namespace SqlPad.Oracle
 {
 	public class DatabaseModelFake : IDatabaseModel
 	{
@@ -30,14 +30,14 @@ namespace SqlPad
 			new OracleDatabaseObject { Name = "\"DUAL\"", Owner = SchemaPublic, Type = "SYNONYM" },
 			new OracleDatabaseObject { Name = "\"COUNTRY\"", Owner = CurrentSchemaInternal, Type = "TABLE" },
 			new OracleDatabaseObject { Name = "\"ORDERS\"", Owner = CurrentSchemaInternal, Type = "TABLE" },
-			new OracleDatabaseObject { Name = "\"VIEW_INSTANTSEARCH\"", Owner = CurrentSchemaInternal, Type = "VIEW" },
+			new OracleDatabaseObject { Name = "\"VIEW_INSTANTSEARCH\"", Owner = CurrentSchemaInternal, Type = "VIEW" }
 		};
 
-		private static readonly IDictionary<OracleObjectIdentifier, IDatabaseObject> AllObjectDictionary = AllObjectsInternal.ToDictionary(o => OracleObjectIdentifier.Create(o.Owner, o.Name), o => o);
+		private static readonly IDictionary<IObjectIdentifier, IDatabaseObject> AllObjectDictionary = AllObjectsInternal.ToDictionary(o => (IObjectIdentifier)OracleObjectIdentifier.Create(o.Owner, o.Name), o => o);
 
-		private static readonly IDictionary<OracleObjectIdentifier, IDatabaseObject> ObjectsInternal = AllObjectDictionary
+		private static readonly IDictionary<IObjectIdentifier, IDatabaseObject> ObjectsInternal = AllObjectDictionary
 			.Values.Where(o => o.Owner == SchemaPublic || o.Owner == CurrentSchemaInternal)
-			.ToDictionary(o => OracleObjectIdentifier.Create(o.Owner, o.Name), o => o);
+			.ToDictionary(o => (IObjectIdentifier)OracleObjectIdentifier.Create(o.Owner, o.Name), o => o);
 		
 		#region Implementation of IDatabaseModel
 		public ConnectionStringSettings ConnectionString { get { return ConnectionStringInternal; } }
@@ -46,9 +46,9 @@ namespace SqlPad
 		
 		public ICollection<string> Schemas { get { return SchemasInternal; } }
 
-		public IDictionary<OracleObjectIdentifier, IDatabaseObject> Objects { get { return ObjectsInternal; } }
+		public IDictionary<IObjectIdentifier, IDatabaseObject> Objects { get { return ObjectsInternal; } }
 
-		public IDictionary<OracleObjectIdentifier, IDatabaseObject> AllObjects { get { return AllObjectDictionary; } }
+		public IDictionary<IObjectIdentifier, IDatabaseObject> AllObjects { get { return AllObjectDictionary; } }
 		
 		public void Refresh()
 		{
@@ -85,7 +85,7 @@ namespace SqlPad
 	}
 
 	[DebuggerDisplay("OracleObjectIdentifier (Owner={Owner,nq}.Name={Name,nq})")]
-	public struct OracleObjectIdentifier
+	public struct OracleObjectIdentifier : IObjectIdentifier
 	{
 		public static readonly OracleObjectIdentifier Empty = new OracleObjectIdentifier();
 

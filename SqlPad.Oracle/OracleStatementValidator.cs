@@ -1,13 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace SqlPad
+namespace SqlPad.Oracle
 {
-	public class OracleStatementValidator
+	public class OracleStatementValidator : IStatementValidator
 	{
-		public OracleValidationModel ResolveReferences(string sqlText, OracleStatement statement, DatabaseModelFake databaseModel)
+		public IValidationModel ResolveReferences(string sqlText, IStatement statement, IDatabaseModel databaseModel)
 		{
-			var semanticModel = new OracleStatementSemanticModel(sqlText, statement);
+			var semanticModel = new OracleStatementSemanticModel(sqlText, (OracleStatement)statement);
 
 			var validationModel = new OracleValidationModel();
 
@@ -41,8 +41,10 @@ namespace SqlPad
 		}
 	}
 
-	public class OracleValidationModel
+	public class OracleValidationModel : IValidationModel
 	{
-		public Dictionary<StatementDescriptionNode, bool> NodeValidity = new Dictionary<StatementDescriptionNode, bool>();
+		private readonly Dictionary<StatementDescriptionNode, bool> _nodeValidity = new Dictionary<StatementDescriptionNode, bool>();
+
+		public IDictionary<StatementDescriptionNode, bool> NodeValidity { get { return _nodeValidity; } }
 	}
 }

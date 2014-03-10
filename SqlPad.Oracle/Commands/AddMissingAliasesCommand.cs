@@ -1,9 +1,10 @@
 ﻿using System.Linq;
 using System.Text;
+using SqlPad.Commands;
 
-namespace SqlPad.Commands
+namespace SqlPad.Oracle.Commands
 {
-	public class AddMissingAliasesCommand
+	public class AddMissingAliasesCommand : IAddMissingAliasesCommand
 	{
 		private readonly OracleSqlParser _sqlParser = new OracleSqlParser();
 

@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace SqlPad
+namespace SqlPad.Oracle
 {
 	public partial class SqlGrammar
 	{

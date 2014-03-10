@@ -11,9 +11,9 @@ namespace SqlPad
 
 		ICollection<string> Schemas { get; }
 
-		IDictionary<OracleObjectIdentifier, IDatabaseObject> Objects { get; }
+		IDictionary<IObjectIdentifier, IDatabaseObject> Objects { get; }
 
-		IDictionary<OracleObjectIdentifier, IDatabaseObject> AllObjects { get; }
+		IDictionary<IObjectIdentifier, IDatabaseObject> AllObjects { get; }
 
 		void Refresh();
 	}

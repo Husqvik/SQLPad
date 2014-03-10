@@ -19,7 +19,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\Output\$(Configuration)\$(Platform)\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -39,12 +39,8 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
-    <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Xaml">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
     </Reference>
@@ -58,27 +54,31 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="ColorizeAvalonEdit.cs" />
-    <Compile Include="Commands\TogleQuotedIdentifierCommand.cs" />
-    <Compile Include="Commands\WrapAsCommonTableExpressionCommand.cs" />
-    <Compile Include="Commands\AddMissingAliasesCommand.cs" />
-    <Compile Include="DatabaseModelFake.cs" />
+    <Compile Include="Commands\IAddMissingAliasesCommand.cs" />
+    <Compile Include="Commands\ICommandFactory.cs" />
+    <Compile Include="Commands\IToggleQuotedIdentifierCommand.cs" />
+    <Compile Include="Commands\IWrapAsCommonTableExpressionCommand.cs" />
+    <Compile Include="ConfigurationProvider.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="IDatabaseModel.cs" />
+    <Compile Include="IInfrastructureFactory.cs" />
+    <Compile Include="IObjectIdentifier.cs" />
+    <Compile Include="ISqlParser.cs" />
+    <Compile Include="IStatement.cs" />
+    <Compile Include="IStatementValidator.cs" />
     <Compile Include="IToken.cs" />
     <Compile Include="ITokenReader.cs" />
     <Compile Include="CompletionData.cs" />
+    <Compile Include="IValidationModel.cs" />
+    <Compile Include="NodeType.cs" />
     <Compile Include="OracleGramarDescription.cs">
+      <DependentUpon>OracleGramarDescription.tt</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>OracleGramarDescription.tt</DependentUpon>
     </Compile>
-    <Compile Include="OracleStatementSemanticModel.cs" />
-    <Compile Include="OracleStatementValidator.cs" />
-    <Compile Include="OracleStatement.cs" />
-    <Compile Include="OracleSqlGrammar.cs">
-      <DependentUpon>OracleSqlGrammar.xsd</DependentUpon>
-    </Compile>
-    <Compile Include="OracleSqlParser.cs" />
+    <Compile Include="ProcessingResult.cs" />
+    <Compile Include="ProcessingStatus.cs" />
+    <Compile Include="SourcePosition.cs" />
     <Compile Include="StatementDescriptionNode.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -94,7 +94,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="OracleTokenReader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -112,14 +111,10 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <Compile Include="OracleSqlGrammar.Extension.cs" />
     <None Include="GenerateGrammarDescriptionClass.cmd" />
     <None Include="OracleGramarDescription.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>OracleGramarDescription.cs</LastGenOutput>
-    </None>
-    <None Include="OracleSqlGrammar.xsd">
-      <SubType>Designer</SubType>
     </None>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -129,12 +124,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="OracleSqlGrammar.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <SubType>Designer</SubType>
-    </Content>
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />

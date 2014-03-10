@@ -4,10 +4,10 @@ using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using Shouldly;
-using NonTerminals = SqlPad.OracleGrammarDescription.NonTerminals;
-using Terminals = SqlPad.OracleGrammarDescription.Terminals;
+using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
+using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
-namespace SqlPad.Test
+namespace SqlPad.Oracle.Test
 {
 	[TestFixture]
     public class OracleSqlParserTest

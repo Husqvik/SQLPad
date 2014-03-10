@@ -6,7 +6,7 @@ using System.Linq;
 using NUnit.Framework;
 using Shouldly;
 
-namespace SqlPad.Test
+namespace SqlPad.Oracle.Test
 {
 	[TestFixture]
     public class OracleTokenReaderTest

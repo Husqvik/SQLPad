@@ -1,9 +1,10 @@
 ﻿using System.Linq;
 using System.Text;
+using SqlPad.Commands;
 
-namespace SqlPad.Commands
+namespace SqlPad.Oracle.Commands
 {
-	public class TogleQuotedIdentifierCommand
+	public class ToggleQuotedIdentifierCommand : IToggleQuotedIdentifierCommand
 	{
 		private readonly OracleSqlParser _sqlParser = new OracleSqlParser();
 

@@ -22,8 +22,9 @@ namespace SqlPad
 	/// </summary>
 	public partial class MainWindow
 	{
-		private readonly OracleSqlParser _sqlParser = new OracleSqlParser();
 		private readonly ColorizeAvalonEdit _colorizeAvalonEdit = new ColorizeAvalonEdit();
+		private readonly ISqlParser _sqlParser;
+		private readonly IInfrastructureFactory _infrastructureFactory;
 
 		public static RoutedCommand CommandAddColumnAliases = new RoutedCommand();
 		public static RoutedCommand CommandWrapAsCommonTableExpression = new RoutedCommand();
@@ -32,6 +33,9 @@ namespace SqlPad
 		public MainWindow()
 		{
 			InitializeComponent();
+
+			_infrastructureFactory = ConfigurationProvider.InfrastructureFactory;
+			_sqlParser = _infrastructureFactory.CreateSqlParser();
 		}
 
 		private void WindowLoadedHandler(object sender, RoutedEventArgs e)
@@ -48,14 +52,14 @@ namespace SqlPad
 
 		private void EditorTextChangedHandler(object sender, EventArgs e)
 		{
-			TextBlockToken.Text = String.Join(", ", OracleTokenReader.Create(Editor.Text).GetTokens().Select(t => "{" + t.Value + "}"));
+			TextBlockToken.Text = String.Join(", ", _infrastructureFactory.CreateTokenReader(Editor.Text).GetTokens().Select(t => "{" + t.Value + "}"));
 			_colorizeAvalonEdit.SetStatementCollection(_sqlParser.Parse(Editor.Text));
 			Editor.TextArea.TextView.Redraw();
 		}
 
 		private void AddColumnAliasesExecutedHandler(object sender, ExecutedRoutedEventArgs e)
 		{
-			Editor.Text = new AddMissingAliasesCommand().Execute(Editor.Text, Editor.CaretOffset);
+			Editor.Text = _infrastructureFactory.CommandFactory.CreateAddMissingAliasesCommand().Execute(Editor.Text, Editor.CaretOffset);
 		}
 
 		private void AddColumnAliasesCanExecuteHandler(object sender, CanExecuteRoutedEventArgs e)
@@ -65,7 +69,7 @@ namespace SqlPad
 
 		private void WrapAsCommonTableExpressionExecutedHandler(object sender, ExecutedRoutedEventArgs e)
 		{
-			Editor.Text = new WrapAsCommonTableExpressionCommand().Execute(Editor.Text, Editor.CaretOffset, "WRAPPED_QUERY");
+			Editor.Text = _infrastructureFactory.CommandFactory.CreateWrapAsCommonTableExpressionCommand().Execute(Editor.Text, Editor.CaretOffset, "WRAPPED_QUERY");
 		}
 
 		private void WrapAsCommonTableExpressionCanExecuteHandler(object sender, CanExecuteRoutedEventArgs e)
@@ -75,7 +79,7 @@ namespace SqlPad
 
 		private void ToggleQuotedIdentifierExecutedHandler(object sender, ExecutedRoutedEventArgs e)
 		{
-			Editor.Text = new TogleQuotedIdentifierCommand().Execute(Editor.Text, Editor.CaretOffset);
+			Editor.Text = _infrastructureFactory.CommandFactory.CreateToggleQuotedIdentifierCommand().Execute(Editor.Text, Editor.CaretOffset);
 		}
 
 		private void ToggleQuotedIdentifierCanExecuteHandler(object sender, CanExecuteRoutedEventArgs e)

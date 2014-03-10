@@ -1,4 +1,4 @@
-﻿namespace SqlPad
+﻿namespace SqlPad.Oracle
 {
 	/// <summary>
 	/// This class provides token constants for Oracle SQL grammar.
@@ -12,6 +12,10 @@
 		{
 			public const string AliasedExpression = "AliasedExpression";
 			public const string AliasedExpressionOrAllTableColumns = "AliasedExpressionOrAllTableColumns";
+			public const string AnalyticClause = "AnalyticClause";
+			public const string BetweenFollowingClause = "BetweenFollowingClause";
+			public const string BetweenPrecedingAndFollowingClause = "BetweenPrecedingAndFollowingClause";
+			public const string BetweenPrecedingClause = "BetweenPrecedingClause";
 			public const string CaseExpression = "CaseExpression";
 			public const string CaseExpressionElseBranch = "CaseExpressionElseBranch";
 			public const string ChainedCondition = "ChainedCondition";
@@ -28,6 +32,7 @@
 			public const string ExpressionList = "ExpressionList";
 			public const string ExpressionListOrNestedQuery = "ExpressionListOrNestedQuery";
 			public const string ExpressionMathOperatorChainedList = "ExpressionMathOperatorChainedList";
+			public const string FirstOrLast = "FirstOrLast";
 			public const string FlashbackAsOfClause = "FlashbackAsOfClause";
 			public const string FlashbackMaximumValue = "FlashbackMaximumValue";
 			public const string FlashbackMinimumValue = "FlashbackMinimumValue";
@@ -75,19 +80,25 @@
 			public const string OuterJoinPartitionClause = "OuterJoinPartitionClause";
 			public const string OuterJoinType = "OuterJoinType";
 			public const string OuterJoinTypeWithKeyword = "OuterJoinTypeWithKeyword";
+			public const string OverQueryPartitionClause = "OverQueryPartitionClause";
 			public const string ParenthesisEnclosedColumnIdentifierList = "ParenthesisEnclosedColumnIdentifierList";
 			public const string ParenthesisEnclosedExpressionList = "ParenthesisEnclosedExpressionList";
 			public const string ParenthesisEnclosedFunctionParameters = "ParenthesisEnclosedFunctionParameters";
 			public const string ParenthesisEnclosedGroupingExpressionList = "ParenthesisEnclosedGroupingExpressionList";
 			public const string PartitionOrDatabaseLink = "PartitionOrDatabaseLink";
+			public const string PrecedingOnlyClause = "PrecedingOnlyClause";
+			public const string PrecedingOnlyOrBetweenPrecedingAndFollowing = "PrecedingOnlyOrBetweenPrecedingAndFollowing";
+			public const string PrecedingOrFollowing = "PrecedingOrFollowing";
 			public const string Prefix = "Prefix";
 			public const string PrefixedColumnReference = "PrefixedColumnReference";
 			public const string QueryBlock = "QueryBlock";
+			public const string QueryPartitionClause = "QueryPartitionClause";
 			public const string QueryTableExpression = "QueryTableExpression";
 			public const string RelationalEquiOperator = "RelationalEquiOperator";
 			public const string RelationalNonEquiOperator = "RelationalNonEquiOperator";
 			public const string RelationalOperator = "RelationalOperator";
 			public const string RollupCubeClause = "RollupCubeClause";
+			public const string RowsOrRange = "RowsOrRange";
 			public const string SampleClause = "SampleClause";
 			public const string SchemaPrefix = "SchemaPrefix";
 			public const string SearchedCaseExpressionBranch = "SearchedCaseExpressionBranch";
@@ -106,6 +117,7 @@
 			public const string TableCollectionExpression = "TableCollectionExpression";
 			public const string TableReference = "TableReference";
 			public const string WhereClause = "WhereClause";
+			public const string WindowingClause = "WindowingClause";
 		}
 
 		/// <summary>
@@ -132,8 +144,10 @@
 			public const string Constraint = "Constraint";
 			public const string Cross = "Cross";
 			public const string Cube = "Cube";
+			public const string Current = "Current";
 			public const string DatabaseLinkIdentifier = "DatabaseLinkIdentifier";
 			public const string Date = "Date";
+			public const string DenseRank = "DenseRank";
 			public const string Desc = "Desc";
 			public const string Distinct = "Distinct";
 			public const string Dot = "Dot";
@@ -143,6 +157,7 @@
 			public const string Exclude = "Exclude";
 			public const string Exists = "Exists";
 			public const string First = "First";
+			public const string Following = "Following";
 			public const string For = "For";
 			public const string From = "From";
 			public const string Full = "Full";
@@ -158,6 +173,7 @@
 			public const string Intersect = "Intersect";
 			public const string Is = "Is";
 			public const string Join = "Join";
+			public const string Keep = "Keep";
 			public const string Last = "Last";
 			public const string Left = "Left";
 			public const string LeftParenthesis = "LeftParenthesis";
@@ -202,6 +218,9 @@
 			public const string Over = "Over";
 			public const string Partition = "Partition";
 			public const string Pivot = "Pivot";
+			public const string Preceding = "Preceding";
+			public const string Public = "Public";
+			public const string Range = "Range";
 			public const string Read = "Read";
 			public const string Right = "Right";
 			public const string RightParenthesis = "RightParenthesis";
@@ -209,6 +228,7 @@
 			public const string Row = "Row";
 			public const string RowIdPseudoColumn = "RowIdPseudoColumn";
 			public const string RowNumberPseudoColumn = "RowNumberPseudoColumn";
+			public const string Rows = "Rows";
 			public const string Sample = "Sample";
 			public const string SchemaIdentifier = "SchemaIdentifier";
 			public const string Seed = "Seed";
@@ -230,6 +250,7 @@
 			public const string Table = "Table";
 			public const string Then = "Then";
 			public const string Timestamp = "Timestamp";
+			public const string Unbounded = "Unbounded";
 			public const string Union = "Union";
 			public const string Unique = "Unique";
 			public const string Unpivot = "Unpivot";

@@ -1,9 +1,9 @@
 ﻿using System.Diagnostics;
 using NUnit.Framework;
 using Shouldly;
-using SqlPad.Commands;
+using SqlPad.Oracle.Commands;
 
-namespace SqlPad.Test.Commands
+namespace SqlPad.Oracle.Test.Commands
 {
 	[TestFixture]
 	public class AddMissingAliasesCommandTest
@@ -58,7 +58,7 @@ namespace SqlPad.Test.Commands
 		public void Test5()
 		{
 			const string testQuery = "SELECT COLUMN1, COLUMN2, column3 FROM DUAL";
-			var result = new TogleQuotedIdentifierCommand().Execute(testQuery, 10);
+			var result = new ToggleQuotedIdentifierCommand().Execute(testQuery, 10);
 
 			const string expectedResult = "SELECT \"COLUMN1\", \"COLUMN2\", column3 FROM \"DUAL\"";
 			Trace.WriteLine(result);

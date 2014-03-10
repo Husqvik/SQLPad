@@ -13,7 +13,7 @@
 	var grammarDescriptionPath = Path.Combine(Path.GetDirectoryName(Host.TemplateFile), @"OracleSqlGrammar.xml");
 	var grammarXml = XDocument.Load(grammarDescriptionPath);
 #>
-namespace SqlPad
+namespace SqlPad.Oracle
 {
 	/// <summary>
 	/// This class provides token constants for Oracle SQL grammar.

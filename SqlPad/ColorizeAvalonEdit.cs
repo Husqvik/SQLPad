@@ -9,13 +9,13 @@ namespace SqlPad
 {
 	public class ColorizeAvalonEdit : DocumentColorizingTransformer
 	{
-		private ICollection<OracleStatement> _parsedStatements = new List<OracleStatement>();
-		private readonly OracleStatementValidator _validator = new OracleStatementValidator();
-		private readonly DatabaseModelFake _databaseModel = new DatabaseModelFake();
+		private ICollection<IStatement> _parsedStatements = new List<IStatement>();
+		private readonly IStatementValidator _validator = ConfigurationProvider.InfrastructureFactory.CreateStatementValidator();
+		private readonly IDatabaseModel _databaseModel = ConfigurationProvider.InfrastructureFactory.CreateDatabaseModel(null);
 		private static readonly SolidColorBrush ErrorBrush = new SolidColorBrush(Colors.Red);
 		private static readonly SolidColorBrush NormalTextBrush = new SolidColorBrush(Colors.Black);
 
-		public void SetStatementCollection(ICollection<OracleStatement> statements)
+		public void SetStatementCollection(ICollection<IStatement> statements)
 		{
 			_parsedStatements = statements;
 		}

@@ -1,21 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Serialization;
 
-namespace SqlPad
+namespace SqlPad.Oracle
 {
-	public class OracleSqlParser
+	public class OracleSqlParser : ISqlParser
 	{
 		private readonly SqlGrammar _sqlGrammar;
 		private readonly Dictionary<string, SqlGrammarRuleSequence[]> _startingNonTerminalSequences;
 		private readonly Dictionary<string, SqlGrammarTerminal> _terminals;
 		private static readonly XmlSerializer XmlSerializer = new XmlSerializer(typeof(SqlGrammar));
-		private readonly List<OracleStatement> _oracleSqlCollection = new List<OracleStatement>();
+		private readonly List<IStatement> _oracleSqlCollection = new List<IStatement>();
 		private readonly HashSet<string> _keywords;
 		private readonly HashSet<string> _terminators;
 		
@@ -42,7 +41,7 @@ namespace SqlPad
 			_terminators = new HashSet<string>(_sqlGrammar.Terminators.Select(t => t.Value));
 		}
 
-		public ICollection<OracleStatement> Parse(string sqlText)
+		public ICollection<IStatement> Parse(string sqlText)
 		{
 			using (var reader = new StringReader(sqlText))
 			{
@@ -50,7 +49,7 @@ namespace SqlPad
 			}
 		}
 
-		public ICollection<OracleStatement> Parse(OracleTokenReader tokenReader)
+		public ICollection<IStatement> Parse(OracleTokenReader tokenReader)
 		{
 			if (tokenReader == null)
 				throw new ArgumentNullException("tokenReader");
@@ -58,7 +57,7 @@ namespace SqlPad
 			return Parse(tokenReader.GetTokens().Cast<OracleToken>());
 		}
 
-		public ICollection<OracleStatement> Parse(IEnumerable<OracleToken> tokens)
+		public ICollection<IStatement> Parse(IEnumerable<OracleToken> tokens)
 		{
 			_tokenBuffer.Clear();
 			_tokenBuffer.AddRange(tokens);
@@ -263,35 +262,5 @@ namespace SqlPad
 					   Nodes = new []{ new StatementDescriptionNode(NodeType.Terminal) { Token = currentToken, Id = terminalReference.Id, Level = level, IsRequired = terminalReference.IsRequired } }
 			       };
 		}
-	}
-
-	[DebuggerDisplay("ProcessingResult (Status={Status}, TerminalCount={TerminalCount})")]
-	public struct ProcessingResult
-	{
-		public ProcessingStatus Status { get; set; }
-		
-		public IList<StatementDescriptionNode> Nodes { get; set; }
-
-		public IEnumerable<StatementDescriptionNode> Terminals
-		{
-			get
-			{
-				return Nodes == null
-					? Enumerable.Empty<StatementDescriptionNode>()
-					: Nodes.SelectMany(t => t.Terminals);
-			}
-		} 
-
-		public int TerminalCount
-		{
-			get { return Nodes == null ? 0 : Terminals.Count(); }
-		}
-	}
-
-	public enum ProcessingStatus
-	{
-		Start,
-		Success,
-		SequenceNotFound
 	}
 }

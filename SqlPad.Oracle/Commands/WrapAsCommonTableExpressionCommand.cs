@@ -1,9 +1,10 @@
 ﻿using System.Linq;
 using System.Text;
+using SqlPad.Commands;
 
-namespace SqlPad.Commands
+namespace SqlPad.Oracle.Commands
 {
-	public class WrapAsCommonTableExpressionCommand
+	public class WrapAsCommonTableExpressionCommand : IWrapAsCommonTableExpressionCommand
 	{
 		private readonly OracleSqlParser _sqlParser = new OracleSqlParser();
 		private readonly AddMissingAliasesCommand _addMissingAliasesCommand = new AddMissingAliasesCommand();

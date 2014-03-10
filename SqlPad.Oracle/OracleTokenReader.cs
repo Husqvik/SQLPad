@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace SqlPad
+namespace SqlPad.Oracle
 {
 	[DebuggerDisplay("OracleToken (Value={Value}, Index={Index})")]
 	public struct OracleToken : IToken
