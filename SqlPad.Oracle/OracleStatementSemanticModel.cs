@@ -9,12 +9,12 @@ namespace SqlPad.Oracle
 {
 	public class OracleStatementSemanticModel
 	{
-		private readonly List<OracleQueryBlock> _queryBlockResults = new List<OracleQueryBlock>();
+		private readonly Dictionary<StatementDescriptionNode, OracleQueryBlock> _queryBlockResults = new Dictionary<StatementDescriptionNode, OracleQueryBlock>();
 		//private readonly OracleStatement _statement;
 
 		public ICollection<OracleQueryBlock> QueryBlocks
 		{
-			get { return _queryBlockResults.AsReadOnly(); }
+			get { return _queryBlockResults.Values; }
 		}
 
 		public OracleStatementSemanticModel(string sqlText, OracleStatement statement)
@@ -35,8 +35,8 @@ namespace SqlPad.Oracle
 							   Columns = new List<OracleSelectListColumn>(),
 					           RootNode = queryBlock
 				           };
-				
-				_queryBlockResults.Add(item);
+
+				_queryBlockResults.Add(queryBlock, item);
 
 				var fromClause = queryBlock.GetDescendantsWithinSameQuery(NonTerminals.FromClause).First();
 				var tableReferenceNonterminals = fromClause.GetDescendantsWithinSameQuery(NonTerminals.TableReference).ToArray();
@@ -71,12 +71,31 @@ namespace SqlPad.Oracle
 				foreach (var tableReferenceNonterminal in tableReferenceNonterminals)
 				{
 					var queryTableExpression = tableReferenceNonterminal.GetDescendantsWithinSameQuery(NonTerminals.QueryTableExpression).Single();
-					var tableIdentifierNode = queryTableExpression.ChildNodes.FirstOrDefault(n => n.Id == Terminals.Identifier);
+
+					var tableReferenceAlias = tableReferenceNonterminal.GetDescendantsWithinSameQuery(Terminals.Alias).SingleOrDefault();
+					
+					var nestedQueryTableReference = queryTableExpression.GetPathFilterDescendants(f => f.Id != NonTerminals.Subquery, NonTerminals.NestedQuery).SingleOrDefault();
+					if (nestedQueryTableReference != null)
+					{
+						var nestedQueryTableReferenceQueryBlock = nestedQueryTableReference.GetPathFilterDescendants(n => n.Id != NonTerminals.NestedQuery && n.Id != NonTerminals.SubqueryFactoringClause, NonTerminals.QueryBlock).Single();
+
+						item.TableReferences.Add(new OracleTableReference
+						{
+							TableNode = nestedQueryTableReferenceQueryBlock,
+							Type = TableReferenceType.NestedQuery,
+							Nodes = new StatementDescriptionNode[0],
+							AliasNode = tableReferenceAlias
+						});
+
+						continue;
+					}
+
+					var tableIdentifierNode = queryTableExpression.ChildNodes.SingleOrDefault(n => n.Id == Terminals.Identifier);
 
 					if (tableIdentifierNode == null)
 						continue;
-					
-					var schemaPrefixNode = queryTableExpression.ChildNodes.FirstOrDefault(n => n.Id == NonTerminals.SchemaPrefix);
+
+					var schemaPrefixNode = queryTableExpression.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.SchemaPrefix);
 					if (schemaPrefixNode != null)
 					{
 						schemaPrefixNode = schemaPrefixNode.ChildNodes.First();
@@ -88,8 +107,6 @@ namespace SqlPad.Oracle
 						: GetCommonTableExpressionReferences(queryBlock, tableName, sqlText).ToArray();
 					
 					var referenceType = commonTableExpressions.Length > 0 ? TableReferenceType.CommonTableExpression : TableReferenceType.PhysicalTable;
-
-					var tableReferenceAlias = tableReferenceNonterminal.GetDescendantsWithinSameQuery(Terminals.Alias).SingleOrDefault();
 
 					item.TableReferences.Add(new OracleTableReference
 					                         {
@@ -195,7 +212,7 @@ namespace SqlPad.Oracle
 		public ICollection<OracleSelectListColumn> Columns { get; set; }
 	}
 
-	[DebuggerDisplay("OracleTableReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; Table={TableNode.Token.Value}; Alias={AliasNode == null ? null : AliasNode.Token.Value}; Type={Type})")]
+	[DebuggerDisplay("OracleTableReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; Table={Type != SqlPad.Oracle.TableReferenceType.NestedQuery ? TableNode.Token.Value : \"Nested subquery\"}; Alias={AliasNode == null ? null : AliasNode.Token.Value}; Type={Type})")]
 	public class OracleTableReference
 	{
 		public StatementDescriptionNode OwnerNode { get; set; }
@@ -238,7 +255,8 @@ namespace SqlPad.Oracle
 	public enum TableReferenceType
 	{
 		PhysicalTable,
-		CommonTableExpression
+		CommonTableExpression,
+		NestedQuery
 	}
 
 	public enum QueryBlockType

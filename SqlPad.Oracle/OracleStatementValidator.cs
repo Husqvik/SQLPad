@@ -11,7 +11,12 @@ namespace SqlPad.Oracle
 
 			var validationModel = new OracleValidationModel();
 
-			foreach (var tableReference in semanticModel.QueryBlocks.SelectMany(qb => qb.TableReferences))
+			foreach (var columnReference in semanticModel.QueryBlocks.SelectMany(qb => qb.Columns.SelectMany(c => c.ColumnReferences)))
+			{
+				//columnReference.
+			}
+
+			foreach (var tableReference in semanticModel.QueryBlocks.SelectMany(qb => qb.TableReferences).Where(tr => tr.Type != TableReferenceType.NestedQuery))
 			{
 				if (tableReference.Type == TableReferenceType.CommonTableExpression)
 				{
@@ -38,6 +43,11 @@ namespace SqlPad.Oracle
 			}
 
 			return validationModel;
+		}
+
+		private ICollection<OracleColumnReference> ResolveTableColumn(OracleTableReference tableReference)
+		{
+			return null;
 		}
 	}
 

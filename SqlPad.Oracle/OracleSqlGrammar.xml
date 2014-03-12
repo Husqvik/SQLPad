@@ -123,7 +123,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="LeftParenthesis" />
-          <NonTerminal Id="ExpressionList" />
+          <NonTerminal Id="ExpressionList" IsOptional="true" />
           <Terminal Id="RightParenthesis" />
         </Sequence>
       </Sequences>
@@ -359,7 +359,9 @@
           <NonTerminal Id="ChainedCondition" IsOptional="true" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="ParenthesisEnclosedExpressionList" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="ExpressionList" />
+          <Terminal Id="RightParenthesis" />
           <NonTerminal Id="RelationalEquiOperator" />
           <NonTerminal Id="SetQualifier" />
           <Terminal Id="LeftParenthesis" />
@@ -384,10 +386,42 @@
     <Rule StartingNonTerminal="GroupingExpressionListOrNestedQuery">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="GroupingExpressionList" />
+          <NonTerminal Id="GroupingExpressionListWithMandatoryExpressions" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="NestedQuery" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="GroupingExpressionListWithMandatoryExpressions">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ParenthesisEnclosedExpressionListWithMandatoryExpressions" />
+          <NonTerminal Id="GroupingExpressionListWithMandatoryExpressionsChained" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ExpressionList" />
+          <NonTerminal Id="GroupingExpressionListWithMandatoryExpressionsChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ParenthesisEnclosedExpressionListWithMandatoryExpressions">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="ExpressionList" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="GroupingExpressionListWithMandatoryExpressionsChained">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="GroupingExpressionListWithMandatoryExpressions" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -1150,12 +1184,7 @@
         <Sequence>
           <Terminal Id="Partition" />
           <Terminal Id="By" />
-          <NonTerminal Id="ParenthesisEnclosedExpressionList" />
-        </Sequence>
-        <Sequence>
-          <Terminal Id="Partition" />
-          <Terminal Id="By" />
-          <NonTerminal Id="ExpressionList" />
+          <NonTerminal Id="GroupingExpressionList" />
         </Sequence>
       </Sequences>
     </Rule>
