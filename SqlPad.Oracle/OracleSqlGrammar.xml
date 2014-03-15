@@ -741,6 +741,8 @@
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="Subquery" />
           <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="SubqueryFactoringSearchClause" IsOptional="true" />
+          <NonTerminal Id="SubqueryFactoringCycleClause" IsOptional="true" />
           <NonTerminal Id="SubqueryComponentChained" IsOptional="true" />
         </Sequence>
       </Sequences>
@@ -750,9 +752,17 @@
       <Sequences>
         <Sequence>
           <Terminal Id="LeftParenthesis" />
-          <Terminal Id="Identifier" />
-          <NonTerminal Id="ColumnChainedList" IsOptional="true" />
+          <NonTerminal Id="ColumnIdentifierList" />
           <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ColumnIdentifierList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Identifier" />
+          <NonTerminal Id="ColumnIdentifierChainedList" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -772,6 +782,7 @@
           <NonTerminal Id="QueryBlock" />
           <NonTerminal Id="ConcatenatedSubquery" IsOptional="true" />
           <NonTerminal Id="OrderByClause" IsOptional="true" />
+          <NonTerminal Id="RowLimitingClause" IsOptional="true" />
         </Sequence>
         <Sequence>
           <Terminal Id="LeftParenthesis" />
@@ -1136,20 +1147,17 @@
         </Sequence>
         <Sequence>
           <Terminal Id="Using" />
-          <Terminal Id="LeftParenthesis" />
-          <Terminal Id="Identifier" />
-          <NonTerminal Id="ColumnChainedList" IsOptional="true" />
-          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="ParenthesisEnclosedColumnIdentifierList" />
         </Sequence>
       </Sequences>
     </Rule>
     
-    <Rule StartingNonTerminal="ColumnChainedList">
+    <Rule StartingNonTerminal="ColumnIdentifierChainedList">
       <Sequences>
         <Sequence>
           <Terminal Id="Comma" />
           <Terminal Id="Identifier" />
-          <NonTerminal Id="ColumnChainedList" IsOptional="true" />
+          <NonTerminal Id="ColumnIdentifierChainedList" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -1508,6 +1516,143 @@
         </Sequence>
       </Sequences>
     </Rule>
+
+    <!-- Oracle 12c specific -->
+    <!-- Row limiting clause -->
+    <Rule StartingNonTerminal="RowLimitingClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="RowLimitingOffsetClause" />
+          <NonTerminal Id="RowLimitingFetchClause" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="RowLimitingFetchClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="RowLimitingOffsetClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Offset" />
+          <Terminal Id="NumberLiteral" />
+          <NonTerminal Id="RowOrRows" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="RowLimitingFetchClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Fetch" />
+          <NonTerminal Id="FirstOrNext" />
+          <Terminal Id="NumberLiteral" />
+          <Terminal Id="Percent" IsOptional="true" />
+          <NonTerminal Id="RowOrRows" />
+          <NonTerminal Id="OnlyOrWithTies" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="RowOrRows">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Row" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Rows" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="FirstOrNext">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="First" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Next" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="OnlyOrWithTies">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Only" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="With" />
+          <Terminal Id="Ties" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <!-- Flashback period for -->
+    <Rule StartingNonTerminal="FlashbackPeriodFor">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Period" />
+          <Terminal Id="For" />
+          <Terminal Id="Identifier" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <!-- Subquery factoring search clause -->
+    <Rule StartingNonTerminal="SubqueryFactoringSearchClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Search" />
+          <NonTerminal Id="DepthOrBreadth" />
+          <Terminal Id="First" />
+          <Terminal Id="By" />
+          <NonTerminal Id="OrderExpression" />
+          <Terminal Id="Set" />
+          <Terminal Id="Identifier" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DepthOrBreadth">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Depth" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Breadth" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <!-- Subquery factoring cycle clause -->
+    <Rule StartingNonTerminal="SubqueryFactoringCycleClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Cycle" />
+          <NonTerminal Id="ColumnIdentifierList" />
+          <Terminal Id="Set" />
+          <Terminal Id="Alias" />
+          <Terminal Id="To" />
+          <NonTerminal Id="StringOrIntegerLiteral" />
+          <Terminal Id="Default" />
+          <NonTerminal Id="StringOrIntegerLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="StringOrIntegerLiteral">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="StringLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <!-- TODO: Row pattern clause -->
   </Rules>
       
   <Terminals>
@@ -1602,11 +1747,11 @@
     <Terminal Id="SequenceNextValue" Value="NEXTVAL" />
     <Terminal Id="RowNumberPseudoColumn" Value="ROWNUM" IsKeyword="true" />
     <Terminal Id="RowIdPseudoColumn" Value="ROWID" IsKeyword="true" />
-    <Terminal Id="Identifier" RegexValue="^((&quot;[^&quot;]{1,28}&quot;)|([a-zA-Z][\w\d$]{0,29}))$" />
-    <Terminal Id="DatabaseLinkIdentifier" RegexValue="^((&quot;[^&quot;]{1,28}&quot;)|([a-zA-Z][\w\d$]{0,29}))$" />
-    <Terminal Id="SchemaIdentifier" RegexValue="^((&quot;[^&quot;]{1,28}&quot;)|([a-zA-Z][\w\d$]{0,29}))$" />
-    <Terminal Id="ObjectIdentifier" RegexValue="^((&quot;[^&quot;]{1,28}&quot;)|([a-zA-Z][\w\d$]{0,29}))$" />
-    <Terminal Id="Alias" RegexValue="^((&quot;[^&quot;]{1,28}&quot;)|([a-zA-Z][\w\d$]{0,29}))$" />
+    <Terminal Id="Identifier" RegexValue="^((&quot;[^&quot;]{1,28}&quot;)|([a-zA-Z][\w\d$#]{0,29}))$" />
+    <Terminal Id="DatabaseLinkIdentifier" RegexValue="^((&quot;[^&quot;]{1,28}&quot;)|([a-zA-Z][\w\d$#]{0,29}))$" />
+    <Terminal Id="SchemaIdentifier" RegexValue="^((&quot;[^&quot;]{1,28}&quot;)|([a-zA-Z][\w\d$#]{0,29}))$" />
+    <Terminal Id="ObjectIdentifier" RegexValue="^((&quot;[^&quot;]{1,28}&quot;)|([a-zA-Z][\w\d$#]{0,29}))$" />
+    <Terminal Id="Alias" RegexValue="^((&quot;[^&quot;]{1,28}&quot;)|([a-zA-Z][\w\d$#]{0,29}))$" />
     <Terminal Id="StringLiteral" RegexValue="^n?q?(&apos;([^&apos;]|(&apos;&apos;))*&apos;)$" />
     <Terminal Id="NumberLiteral" RegexValue="^((\d+\.?\d*)|(\d*\.?\d+))([eE][+-]?\d+)?[fFdD]?$" />
     <Terminal Id="IntegerLiteral" RegexValue="^\d+([eE]((\+?\d+)|(-0)))?$" />
@@ -1703,6 +1848,31 @@
 
     <!-- Model clause -->
     <Terminal Id="Model" Value="MODEL" />
+
+    <!-- Oracle 12c specific -->
+    <!-- Cross/outer apply clause -->
+    <Terminal Id="Apply" Value="APPLY" />
+
+    <!-- Lateral join -->
+    <Terminal Id="Lateral" Value="LATERAL" />
+
+    <!-- Flashback period for -->
+    <Terminal Id="Period" Value="PERIOD" />
+
+    <!-- Row limiting clause -->
+    <Terminal Id="Offset" Value="OFFSET" />
+    <Terminal Id="Ties" Value="TIES" />
+    <Terminal Id="Next" Value="NEXT" />
+    <Terminal Id="Fetch" Value="FETCH" />
+    <Terminal Id="Percent" Value="PERCENT" />
+
+    <!-- Subquery factoring search and cycle -->
+    <Terminal Id="Cycle" Value="CYCLE" />
+    <Terminal Id="Search" Value="SEARCH" />
+    <Terminal Id="Depth" Value="DEPTH" />
+    <Terminal Id="Breadth" Value="BREADTH" />
+    <Terminal Id="To" Value="TO" IsKeyword="true" />
+    <Terminal Id="Default" Value="DEFAULT" IsKeyword="true" />
   </Terminals>
   
   <SqlBuildinFunctions>

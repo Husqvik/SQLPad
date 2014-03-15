@@ -21,7 +21,7 @@ namespace SqlPad.Oracle
 	public static class OracleGrammarDescription
 	{
 		/// <summary>
-		/// This class provides non-terminal constants.
+		/// This class provides the non-terminal constants.
 		/// </summary>
 		public static class NonTerminals
 		{
@@ -38,7 +38,7 @@ namespace SqlPad.Oracle
 		}
 
 		/// <summary>
-		/// This class provides non-terminal constants.
+		/// This class provides the terminal constants.
 		/// </summary>
 		public static class Terminals
 		{

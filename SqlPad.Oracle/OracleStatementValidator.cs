@@ -11,9 +11,12 @@ namespace SqlPad.Oracle
 
 			var validationModel = new OracleValidationModel();
 
-			foreach (var columnReference in semanticModel.QueryBlocks.SelectMany(qb => qb.Columns.SelectMany(c => c.ColumnReferences)))
+			foreach (var queryBlock in semanticModel.QueryBlocks)
 			{
-				//columnReference.
+				foreach (var columnReference in queryBlock.Columns.SelectMany(c => c.ColumnReferences))
+				{
+					//columnReference.
+				}
 			}
 
 			foreach (var tableReference in semanticModel.QueryBlocks.SelectMany(qb => qb.TableReferences).Where(tr => tr.Type != TableReferenceType.NestedQuery))

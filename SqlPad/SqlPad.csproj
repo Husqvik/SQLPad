@@ -71,11 +71,6 @@
     <Compile Include="CompletionData.cs" />
     <Compile Include="IValidationModel.cs" />
     <Compile Include="NodeType.cs" />
-    <Compile Include="OracleGramarDescription.cs">
-      <DependentUpon>OracleGramarDescription.tt</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-    </Compile>
     <Compile Include="ProcessingResult.cs" />
     <Compile Include="ProcessingStatus.cs" />
     <Compile Include="SourcePosition.cs" />
@@ -112,10 +107,6 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <None Include="GenerateGrammarDescriptionClass.cmd" />
-    <None Include="OracleGramarDescription.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>OracleGramarDescription.cs</LastGenOutput>
-    </None>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

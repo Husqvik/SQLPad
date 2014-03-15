@@ -140,8 +140,8 @@ namespace SqlPad.Oracle
 						var identifiers = columnExpression.GetDescendantsWithinSameQuery(Terminals.Identifier).ToArray();
 						foreach (var identifier in identifiers)
 						{
-							column.IsPure = columnAliasNode == null && identifier.GetAncestor(NonTerminals.Expression).ChildNodes.Count == 1;
-							if (column.IsPure)
+							column.IsDirectReference = columnAliasNode == null && identifier.GetAncestor(NonTerminals.Expression).ChildNodes.Count == 1;
+							if (column.IsDirectReference)
 							{
 								column.AliasNode = identifier;
 							}
@@ -238,10 +238,10 @@ namespace SqlPad.Oracle
 		public ICollection<StatementDescriptionNode> QueryNodes { get; set; }
 	}
 
-	[DebuggerDisplay("OracleSelectListColumn (Alias={AliasNode == null ? null : AliasNode.Token.Value}; IsPure={IsPure})")]
+	[DebuggerDisplay("OracleSelectListColumn (Alias={AliasNode == null ? null : AliasNode.Token.Value}; IsDirectReference={IsDirectReference})")]
 	public class OracleSelectListColumn
 	{
-		public bool IsPure { get; set; }
+		public bool IsDirectReference { get; set; }
 
 		public StatementDescriptionNode AliasNode { get; set; }
 
