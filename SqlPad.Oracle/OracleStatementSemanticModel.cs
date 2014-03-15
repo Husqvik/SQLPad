@@ -212,7 +212,7 @@ namespace SqlPad.Oracle
 		public ICollection<OracleSelectListColumn> Columns { get; set; }
 	}
 
-	[DebuggerDisplay("OracleTableReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; Table={Type != SqlPad.Oracle.TableReferenceType.NestedQuery ? TableNode.Token.Value : \"Nested subquery\"}; Alias={AliasNode == null ? null : AliasNode.Token.Value}; Type={Type})")]
+	[DebuggerDisplay("OracleTableReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; Table={Type != SqlPad.Oracle.TableReferenceType.NestedQuery ? TableNode.Token.Value : \"<Nested subquery>\"}; Alias={AliasNode == null ? null : AliasNode.Token.Value}; Type={Type})")]
 	public class OracleTableReference
 	{
 		public StatementDescriptionNode OwnerNode { get; set; }

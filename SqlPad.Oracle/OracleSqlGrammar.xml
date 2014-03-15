@@ -625,8 +625,9 @@
         </Sequence>
         <Sequence>
           <NonTerminal Id="QueryTableExpression" />
-          <!-- TODO: Pivot and Unpivot clauses -->
           <NonTerminal Id="FlashbackQueryClause" IsOptional="true" />
+          <!-- TODO: Pivot and Unpivot clauses -->
+          <!-- TODO: Row pattern clause -->
           <Terminal Id="Alias" IsOptional="true" />
         </Sequence>
       </Sequences>
@@ -1051,7 +1052,7 @@
         <Sequence>
           <Terminal Id="As" />
           <Terminal Id="Of" />
-          <NonTerminal Id="SystemChangeNumberOrTimestamp" />
+          <NonTerminal Id="SystemChangeNumberOrTimestampOrPeriodFor" />
           <NonTerminal Id="Expression" />
         </Sequence>
       </Sequences>
@@ -1061,11 +1062,19 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Versions" />
-          <Terminal Id="Between" />
-          <NonTerminal Id="SystemChangeNumberOrTimestamp" />
+          <NonTerminal Id="BetweenSystemChangeNumberOrTimestampOrPeriodForBetween" />
           <NonTerminal Id="FlashbackMinimumValue" />
           <Terminal Id="And" />
           <NonTerminal Id="FlashbackMaximumValue" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="BetweenSystemChangeNumberOrTimestamp">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Between" />
+          <NonTerminal Id="SystemChangeNumberOrTimestamp" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -1112,6 +1121,10 @@
         </Sequence>
         <Sequence>
           <NonTerminal Id="OuterJoinClause" />
+          <NonTerminal Id="JoinClause" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="CrossOrOuterApplyClause" />
           <NonTerminal Id="JoinClause" IsOptional="true" />
         </Sequence>
       </Sequences>
@@ -1599,6 +1612,29 @@
       </Sequences>
     </Rule>
 
+    <Rule StartingNonTerminal="SystemChangeNumberOrTimestampOrPeriodFor">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="SystemChangeNumberOrTimestamp" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="FlashbackPeriodFor" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="BetweenSystemChangeNumberOrTimestampOrPeriodForBetween">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="BetweenSystemChangeNumberOrTimestamp" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="FlashbackPeriodFor" />
+          <Terminal Id="Between" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
     <!-- Subquery factoring search clause -->
     <Rule StartingNonTerminal="SubqueryFactoringSearchClause">
       <Sequences>
@@ -1648,6 +1684,28 @@
         </Sequence>
         <Sequence>
           <Terminal Id="IntegerLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <!-- Cross/outer apply clause -->
+    <Rule StartingNonTerminal="CrossOrOuterApplyClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="CrossOrOuter" />
+          <Terminal Id="Apply" />
+          <NonTerminal Id="TableReference" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="CrossOrOuter">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Cross" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Outer" />
         </Sequence>
       </Sequences>
     </Rule>
