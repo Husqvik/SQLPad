@@ -626,10 +626,24 @@
         <Sequence>
           <NonTerminal Id="QueryTableExpression" />
           <NonTerminal Id="FlashbackQueryClause" IsOptional="true" />
-          <!-- TODO: Pivot and Unpivot clauses -->
-          <!-- TODO: Row pattern clause -->
+          <NonTerminal Id="PivotClauseOrUnpivotClauseOrRowPatternClause" IsOptional="true" />
           <Terminal Id="Alias" IsOptional="true" />
         </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PivotClauseOrUnpivotClauseOrRowPatternClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="PivotClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="UnpivotClause" />
+        </Sequence>
+        <!-- TODO: Row pattern clause -->
+        <!--<Sequence>
+          <NonTerminal Id="RowPatternClause" />
+        </Sequence>-->
       </Sequences>
     </Rule>
 
@@ -642,6 +656,7 @@
           <NonTerminal Id="SampleClause" IsOptional="true" />
         </Sequence>
         <Sequence>
+          <Terminal Id="Lateral" IsOptional="true" />
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="NestedQuery" />
           <!--<NonTerminal Id="SubQueryRestrictionClause" IsOptional="true" />-->
@@ -1496,6 +1511,7 @@
       </Sequences>
     </Rule>
 
+    <!-- KEEP clause  -->
     <Rule StartingNonTerminal="IgnoreNulls">
       <Sequences>
         <Sequence>
@@ -1530,6 +1546,233 @@
       </Sequences>
     </Rule>
 
+    <!-- Pivot clause -->
+    <Rule StartingNonTerminal="PivotClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Pivot" />
+          <Terminal Id="Xml" IsOptional="true" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="PivotAliasedAggregationFunctionList" />
+          <NonTerminal Id="PivotForClause" />
+          <NonTerminal Id="PivotInClause" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PivotAliasedAggregationFunctionList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Identifier" /><!--TODO: Check possibility of user aggregation function usage (including database link) -->
+          <NonTerminal Id="ParenthesisEnclosedFunctionParameters" />
+          <NonTerminal Id="ColumnAlias" IsOptional="true" />
+          <NonTerminal Id="PivotAliasedAggregationFunctionListChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PivotAliasedAggregationFunctionListChained">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="ParenthesisEnclosedFunctionParameters" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PivotForClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="For" />
+          <NonTerminal Id="IdentifierOrParenthesisEnclosedColumnIdentifierList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="IdentifierOrParenthesisEnclosedColumnIdentifierList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Identifier" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ParenthesisEnclosedColumnIdentifierList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PivotInClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="In" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="PivotExpressionsOrAnyListOrNestedQuery" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PivotExpressionsOrAnyListOrNestedQuery">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="AliasedExpressionListOrAliasedGroupingExpressionList" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="NestedQuery" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Any" />
+          <NonTerminal Id="AnyChainedList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AliasedExpressionListOrAliasedGroupingExpressionList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="AliasedExpression" />
+          <NonTerminal Id="AliasedExpressionListOrAliasedGroupingExpressionListChained" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ParenthesisEnclosedExpressionListWithMandatoryExpressions" />
+          <NonTerminal Id="ColumnAlias" IsOptional="true" />
+          <NonTerminal Id="AliasedExpressionListOrAliasedGroupingExpressionListChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AliasedExpressionListOrAliasedGroupingExpressionListChained">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="AliasedExpressionListOrAliasedGroupingExpressionList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AnyChainedList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <Terminal Id="Any" />
+          <NonTerminal Id="AnyChainedList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <!-- Unpivot clause -->
+    <Rule StartingNonTerminal="UnpivotClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Unpivot" />
+          <NonTerminal Id="UnpivotNullsClause" IsOptional="true" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="IdentifierOrParenthesisEnclosedColumnIdentifierList" />
+          <NonTerminal Id="PivotForClause" />
+          <NonTerminal Id="UnpivotInClause" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="UnpivotNullsClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="IncludeOrExclude" />
+          <Terminal Id="Nulls" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="IncludeOrExclude">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Include" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Exclude" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="UnpivotInClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="In" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="UnpivotValueToColumnTransformationList" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="UnpivotValueToColumnTransformationList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="IdentifierOrParenthesisEnclosedColumnIdentifierList" />
+          <NonTerminal Id="UnpivotValueSelector" IsOptional="true" />
+          <NonTerminal Id="UnpivotValueToColumnTransformationListChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="UnpivotValueToColumnTransformationListChained">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="UnpivotValueToColumnTransformationList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="UnpivotValueSelector">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="As" />
+          <NonTerminal Id="StringOrIntegerLiteralOrParenthesisEnclosedStringOrIntegerLiteralList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="StringOrIntegerLiteralOrParenthesisEnclosedStringOrIntegerLiteralList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="StringOrIntegerLiteral" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ParenthesisEnclosedStringOrIntegerLiteralList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ParenthesisEnclosedStringOrIntegerLiteralList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="StringOrIntegerLiteralList" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="StringOrIntegerLiteralList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="StringOrIntegerLiteral"/>
+          <NonTerminal Id="StringOrIntegerLiteralListChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="StringOrIntegerLiteralListChained">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma"/>
+          <NonTerminal Id="StringOrIntegerLiteralList"/>
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
     <!-- Oracle 12c specific -->
     <!-- Row limiting clause -->
     <Rule StartingNonTerminal="RowLimitingClause">
@@ -1791,11 +2034,6 @@
     <Terminal Id="Where" Value="WHERE" IsKeyword="true" />
     <Terminal Id="Between" Value="BETWEEN" IsKeyword="true" />
     <Terminal Id="Date" Value="DATE" IsKeyword="true" />
-    <Terminal Id="Include" Value="INCLUDE" />
-    <Terminal Id="Exclude" Value="EXCLUDE" />
-    <Terminal Id="Pivot" Value="PIVOT" />
-    <Terminal Id="Unpivot" Value="UNPIVOT" />
-    <Terminal Id="Xml" Value="XML" />
     <Terminal Id="Partition" Value="PARTITION" />
     <Terminal Id="Subpartition" Value="SUBPARTITION" />
     <Terminal Id="Table" Value="TABLE" IsKeyword="true" />
@@ -1903,6 +2141,13 @@
     <Terminal Id="Ignore" Value="IGNORE" />
     <Terminal Id="Keep" Value="KEEP" />
     <Terminal Id="DenseRank" Value="DENSE_RANK" />
+
+    <!-- Pivot clause -->
+    <Terminal Id="Pivot" Value="PIVOT" />
+    <Terminal Id="Unpivot" Value="UNPIVOT" />
+    <Terminal Id="Xml" Value="XML" />
+    <Terminal Id="Include" Value="INCLUDE" />
+    <Terminal Id="Exclude" Value="EXCLUDE" />
 
     <!-- Model clause -->
     <Terminal Id="Model" Value="MODEL" />

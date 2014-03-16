@@ -13,7 +13,7 @@ namespace SqlPad.Oracle
 
 		private static readonly HashSet<string> SchemasInternal = new HashSet<string> { "\"SYS\"", "\"SYSTEM\"", CurrentSchemaInternal, SchemaPublic };
 
-		private static readonly IDatabaseObject[] AllObjectsInternal =
+		private static readonly OracleDatabaseObject[] AllObjectsInternal =
 		{
 			new OracleDatabaseObject
 			{
@@ -22,18 +22,46 @@ namespace SqlPad.Oracle
 				Type = "TABLE",
 				Columns = new HashSet<IColumn>
 				             {
-					             new OracleColumn { Name = "\"DUMMY\"", Type = "VARCHAR2", Precision = 1, Scale = 0 }
+					             new OracleColumn { Name = "\"DUMMY\"", Type = "VARCHAR2", Size = 1 }
 				             }
 			},
 			new OracleDatabaseObject { Name = "\"V_$SESSION\"", Owner = "\"SYS\"", Type = "VIEW" },
 			new OracleDatabaseObject { Name = "\"V$SESSION\"", Owner = SchemaPublic, Type = "SYNONYM" },
-			new OracleDatabaseObject { Name = "\"DUAL\"", Owner = SchemaPublic, Type = "SYNONYM" },
-			new OracleDatabaseObject { Name = "\"COUNTRY\"", Owner = CurrentSchemaInternal, Type = "TABLE" },
-			new OracleDatabaseObject { Name = "\"ORDERS\"", Owner = CurrentSchemaInternal, Type = "TABLE" },
+			new OracleDatabaseObject
+			{
+				Name = "\"DUAL\"",
+				Owner = SchemaPublic,
+				Type = "SYNONYM",
+				Columns = new HashSet<IColumn>
+				             {
+					             new OracleColumn { Name = "\"DUMMY\"", Type = "VARCHAR2", Size = 1 }
+				             }
+			},
+			new OracleDatabaseObject
+			{
+				Name = "\"COUNTRY\"",
+				Owner = CurrentSchemaInternal,
+				Type = "TABLE",
+				Columns = new HashSet<IColumn>
+				          {
+					          new OracleColumn { Name = "\"ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
+							  new OracleColumn { Name = "\"NAME\"", Type = "VARCHAR2", Size = 50 }
+				          }
+			},
+			new OracleDatabaseObject
+			{
+				Name = "\"ORDERS\"",
+				Owner = CurrentSchemaInternal,
+				Type = "TABLE",
+				Columns = new HashSet<IColumn>
+				          {
+					          new OracleColumn { Name = "\"ID\"", Type = "NUMBER", Precision = 9, Scale = 0 }
+				          }
+			},
 			new OracleDatabaseObject { Name = "\"VIEW_INSTANTSEARCH\"", Owner = CurrentSchemaInternal, Type = "VIEW" }
 		};
 
-		private static readonly IDictionary<IObjectIdentifier, IDatabaseObject> AllObjectDictionary = AllObjectsInternal.ToDictionary(o => (IObjectIdentifier)OracleObjectIdentifier.Create(o.Owner, o.Name), o => o);
+		private static readonly IDictionary<IObjectIdentifier, IDatabaseObject> AllObjectDictionary = AllObjectsInternal.ToDictionary(o => (IObjectIdentifier)OracleObjectIdentifier.Create(o.Owner, o.Name), o => (IDatabaseObject)o);
 
 		private static readonly IDictionary<IObjectIdentifier, IDatabaseObject> ObjectsInternal = AllObjectDictionary
 			.Values.Where(o => o.Owner == SchemaPublic || o.Owner == CurrentSchemaInternal)
@@ -54,6 +82,11 @@ namespace SqlPad.Oracle
 		{
 		}
 		#endregion
+
+		private OracleDatabaseObject GetObjectBehindSynonym(OracleDatabaseObject synonym)
+		{
+			return null;
+		}
 	}
 
 	[DebuggerDisplay("DebuggerDisplay (Owner={Owner}; Name={Name}; Type={Type})")]
@@ -81,27 +114,7 @@ namespace SqlPad.Oracle
 		public string Type { get; set; }
 		public int Precision { get; set; }
 		public int Scale { get; set; }
+		public int Size { get; set; }
 		#endregion
-	}
-
-	[DebuggerDisplay("OracleObjectIdentifier (Owner={Owner,nq}.Name={Name,nq})")]
-	public struct OracleObjectIdentifier : IObjectIdentifier
-	{
-		public static readonly OracleObjectIdentifier Empty = new OracleObjectIdentifier();
-
-		public string Owner { get; private set; }
-
-		public string Name { get; private set; }
-
-		public OracleObjectIdentifier(string owner, string name) : this()
-		{
-			Owner = owner.ToOracleIdentifier();
-			Name = name.ToOracleIdentifier();
-		}
-
-		public static OracleObjectIdentifier Create(string owner, string name)
-		{
-			return new OracleObjectIdentifier(owner, name);
-		}
 	}
 }

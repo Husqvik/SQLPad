@@ -31,7 +31,10 @@ namespace SqlPad
 				var colorStartOffset = Math.Max(line.Offset, statement.SourcePosition.IndexStart);
 				var colorEndOffset = Math.Min(line.EndOffset, statement.SourcePosition.IndexEnd + 1);
 
-				foreach (var nodeValidity in _validator.ResolveReferences(null, statement, _databaseModel).NodeValidity)
+				var validationModel = _validator.ResolveReferences(null, statement, _databaseModel);
+				var nodeValidities = validationModel.TableNodeValidity.Concat(validationModel.ColumnNodeValidity.Select(kvp => new KeyValuePair<StatementDescriptionNode, bool>(kvp.Key, kvp.Value.IsValid)));
+
+				foreach (var nodeValidity in nodeValidities)
 				{
 					if (line.Offset > nodeValidity.Key.SourcePosition.IndexEnd + 1 ||
 					    line.EndOffset < nodeValidity.Key.SourcePosition.IndexStart)

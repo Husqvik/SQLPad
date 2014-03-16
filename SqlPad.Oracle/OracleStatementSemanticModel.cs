@@ -24,19 +24,13 @@ namespace SqlPad.Oracle
 
 			//_statement = statement;
 
-			var queryBlocks = statement.NodeCollection.SelectMany(n => n.GetDescendants(NonTerminals.QueryBlock))
-				.OrderByDescending(q => q.Level).ToArray();
+			_queryBlockResults = statement.NodeCollection.SelectMany(n => n.GetDescendants(NonTerminals.QueryBlock))
+				.OrderByDescending(q => q.Level).ToDictionary(n => n, n => new OracleQueryBlock { RootNode = n });
 
-			foreach (var queryBlock in queryBlocks)
+			foreach (var queryBlockNode in _queryBlockResults)
 			{
-				var item = new OracleQueryBlock
-				           {
-					           TableReferences = new List<OracleTableReference>(),
-							   Columns = new List<OracleSelectListColumn>(),
-					           RootNode = queryBlock
-				           };
-
-				_queryBlockResults.Add(queryBlock, item);
+				var queryBlock = queryBlockNode.Key;
+				var item = queryBlockNode.Value;
 
 				var fromClause = queryBlock.GetDescendantsWithinSameQuery(NonTerminals.FromClause).First();
 				var tableReferenceNonterminals = fromClause.GetDescendantsWithinSameQuery(NonTerminals.TableReference).ToArray();
@@ -83,7 +77,6 @@ namespace SqlPad.Oracle
 						{
 							TableNode = nestedQueryTableReferenceQueryBlock,
 							Type = TableReferenceType.NestedQuery,
-							Nodes = new StatementDescriptionNode[0],
 							AliasNode = tableReferenceAlias
 						});
 
@@ -108,74 +101,132 @@ namespace SqlPad.Oracle
 					
 					var referenceType = commonTableExpressions.Length > 0 ? TableReferenceType.CommonTableExpression : TableReferenceType.PhysicalTable;
 
+					// TODO: Resolve physical table columns
+
 					item.TableReferences.Add(new OracleTableReference
 					                         {
 						                         OwnerNode = schemaPrefixNode,
 						                         TableNode = tableIdentifierNode,
-						                         Type = referenceType, Nodes = commonTableExpressions,
-												 AliasNode = tableReferenceAlias
+						                         Type = referenceType,
+												 Nodes = commonTableExpressions,
+												 AliasNode = tableReferenceAlias,
 					                         });
 				}
 
 				var selectList = queryBlock.GetDescendantsWithinSameQuery(NonTerminals.SelectList).Single();
 				if (selectList.ChildNodes.Count == 1 && selectList.ChildNodes.Single().Id == Terminals.Asterisk)
 				{
+					var asteriskNode = selectList.ChildNodes.Single();
+					var column = new OracleSelectListColumn
+					{
+						AliasNode = asteriskNode,
+						RootNode = asteriskNode,
+						Owner = item,
+					};
 
+					column.ColumnReferences.Add(CreateColumnReference(asteriskNode, null));
+
+					item.ExposedTableReferences = new List<OracleTableReference>(item.TableReferences);
+					item.Columns.Add(column);
 				}
 				else
 				{
 					var columnExpressions = selectList.GetDescendantsWithinSameQuery(NonTerminals.AliasedExpressionOrAllTableColumns).ToArray();
 					foreach (var columnExpression in columnExpressions)
 					{
-						var asteriskNode = columnExpression.GetDescendantsWithinSameQuery(Terminals.Asterisk).SingleOrDefault();
 						var columnAliasNode = columnExpression.GetDescendantsWithinSameQuery(Terminals.Alias).SingleOrDefault();
 
 						var column = new OracleSelectListColumn
 						             {
 										 AliasNode = columnAliasNode,
-										 ColumnReferences = new List<OracleColumnReference>(),
-										 RootNode = columnExpression
+										 RootNode = columnExpression,
+										 Owner = item
 						             };
 
-						var identifiers = columnExpression.GetDescendantsWithinSameQuery(Terminals.Identifier).ToArray();
-						foreach (var identifier in identifiers)
+						var asteriskNode = columnExpression.GetDescendantsWithinSameQuery(Terminals.Asterisk).SingleOrDefault();
+						if (asteriskNode != null)
 						{
-							column.IsDirectReference = columnAliasNode == null && identifier.GetAncestor(NonTerminals.Expression).ChildNodes.Count == 1;
-							if (column.IsDirectReference)
-							{
-								column.AliasNode = identifier;
-							}
-
-							var prefixNonTerminal = identifier.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference)
-								.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.Prefix);
-
-							var columnReference = new OracleColumnReference
-							{
-								ColumnNode = identifier,
-								QueryNodes = new List<StatementDescriptionNode>()
-							};
-
-							if (prefixNonTerminal == null)
-								continue;
-
-							var objectIdentifier = prefixNonTerminal.GetSingleDescendant(Terminals.ObjectIdentifier);
-							var schemaIdentifier = prefixNonTerminal.GetSingleDescendant(Terminals.SchemaIdentifier);
-
-							columnReference.OwnerNode = schemaIdentifier;
-							columnReference.TableNode = objectIdentifier;
-							
+							var prefixNonTerminal = asteriskNode.ParentNode.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.Prefix);
+							var columnReference = CreateColumnReference(asteriskNode, prefixNonTerminal);
 							column.ColumnReferences.Add(columnReference);
+
+							var tableReferences = item.TableReferences.Where(t => t.FullyQualifiedName == columnReference.FullyQualifiedObjectName || (!columnReference.HasTableReference && t.FullyQualifiedName.NormalizedName == columnReference.FullyQualifiedObjectName.NormalizedName)).ToArray();
+							item.ExposedTableReferences = new List<OracleTableReference>(tableReferences);
+						}
+						else
+						{
+							var identifiers = columnExpression.GetDescendantsWithinSameQuery(Terminals.Identifier).ToArray();
+							foreach (var identifier in identifiers)
+							{
+								column.IsDirectColumnReference = columnAliasNode == null && identifier.GetAncestor(NonTerminals.Expression).ChildNodes.Count == 1;
+								if (column.IsDirectColumnReference)
+								{
+									column.AliasNode = identifier;
+								}
+
+								var prefixNonTerminal = identifier.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference)
+									.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.Prefix);
+
+								var columnReference = CreateColumnReference(identifier, prefixNonTerminal);
+								column.ColumnReferences.Add(columnReference);
+							}
 						}
 
 						item.Columns.Add(column);
 					}
 				}
 			}
+
+			foreach (var queryBlock in _queryBlockResults.Values)
+			{
+				foreach (var nestedQueryReference in queryBlock.TableReferences.Where(t => t.Type != TableReferenceType.PhysicalTable))
+				{
+					if (nestedQueryReference.Type == TableReferenceType.NestedQuery)
+					{
+						nestedQueryReference.QueryBlocks.Add(_queryBlockResults[nestedQueryReference.TableNode]);
+					}
+					else
+					{
+						foreach (var cteNode in nestedQueryReference.Nodes)
+							nestedQueryReference.QueryBlocks.Add(_queryBlockResults[cteNode.GetDescendantsWithinSameQuery(NonTerminals.QueryBlock).Single()]);
+					}
+				}
+
+				foreach (var columnReference in queryBlock.Columns.SelectMany(c => c.ColumnReferences))
+				{
+					foreach (var queryNode in columnReference.QueryNodes)
+					{
+						columnReference.QueryBlocks.Add(_queryBlockResults[queryNode]);
+					}
+				}
+
+				foreach (var exposedTableReference in queryBlock.ExposedTableReferences.Where(t => t.Type != TableReferenceType.PhysicalTable))
+				{
+					foreach (var exposedColumn in exposedTableReference.Columns)
+					{
+						queryBlock.Columns.Add(exposedColumn);
+					}
+				}
+			}
 		}
 
-		private IEnumerable<StatementDescriptionNode> GetNestedTableReferences(StatementDescriptionNode node, string normalizedReferenceName, string sqlText)
+		private static OracleColumnReference CreateColumnReference(StatementDescriptionNode rootNode, StatementDescriptionNode prefixNonTerminal)
 		{
-			return null;
+			var columnReference = new OracleColumnReference
+			{
+				ColumnNode = rootNode
+			};
+
+			if (prefixNonTerminal != null)
+			{
+				var objectIdentifier = prefixNonTerminal.GetSingleDescendant(Terminals.ObjectIdentifier);
+				var schemaIdentifier = prefixNonTerminal.GetSingleDescendant(Terminals.SchemaIdentifier);
+
+				columnReference.OwnerNode = schemaIdentifier;
+				columnReference.TableNode = objectIdentifier;
+			}
+
+			return columnReference;
 		}
 
 		private IEnumerable<StatementDescriptionNode> GetCommonTableExpressionReferences(StatementDescriptionNode node, string normalizedReferenceName, string sqlText)
@@ -198,9 +249,26 @@ namespace SqlPad.Oracle
 		}
 	}
 
+	public interface IOracleTableReference
+	{
+		ICollection<OracleSelectListColumn> Columns { get; }
+	}
+
+	public interface IOracleSelectListColumn
+	{
+		
+	}
+
 	[DebuggerDisplay("OracleQueryBlock (Alias={Alias}; Type={Type}; RootNode={RootNode})")]
 	public class OracleQueryBlock
 	{
+		public OracleQueryBlock()
+		{
+			TableReferences = new List<OracleTableReference>();
+			Columns = new List<OracleSelectListColumn>();
+			ExposedTableReferences = new List<OracleTableReference>();
+		}
+
 		public string Alias { get; set; }
 
 		public QueryBlockType Type { get; set; }
@@ -209,12 +277,26 @@ namespace SqlPad.Oracle
 
 		public ICollection<OracleTableReference> TableReferences { get; set; }
 
+		public ICollection<OracleTableReference> ExposedTableReferences { get; set; }
+
 		public ICollection<OracleSelectListColumn> Columns { get; set; }
 	}
 
 	[DebuggerDisplay("OracleTableReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; Table={Type != SqlPad.Oracle.TableReferenceType.NestedQuery ? TableNode.Token.Value : \"<Nested subquery>\"}; Alias={AliasNode == null ? null : AliasNode.Token.Value}; Type={Type})")]
-	public class OracleTableReference
+	public class OracleTableReference : IOracleTableReference
 	{
+		public OracleTableReference()
+		{
+			Nodes = new StatementDescriptionNode[0];
+			QueryBlocks = new List<OracleQueryBlock>();
+			Columns = new List<OracleSelectListColumn>();
+		}
+
+		public OracleObjectIdentifier FullyQualifiedName
+		{
+			get { return OracleObjectIdentifier.Create(OwnerNode, Type == TableReferenceType.NestedQuery ? null : TableNode, AliasNode); }
+		}
+
 		public StatementDescriptionNode OwnerNode { get; set; }
 
 		public StatementDescriptionNode TableNode { get; set; }
@@ -222,6 +304,10 @@ namespace SqlPad.Oracle
 		public StatementDescriptionNode AliasNode { get; set; }
 
 		public ICollection<StatementDescriptionNode> Nodes { get; set; }
+		
+		public ICollection<OracleQueryBlock> QueryBlocks { get; set; }
+
+		public ICollection<OracleSelectListColumn> Columns { get; set; }
 
 		public TableReferenceType Type { get; set; }
 	}
@@ -229,6 +315,25 @@ namespace SqlPad.Oracle
 	[DebuggerDisplay("OracleColumnReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; Table={TableNode == null ? null : TableNode.Token.Value}; Column={ColumnNode.Token.Value})")]
 	public class OracleColumnReference
 	{
+		public OracleColumnReference()
+		{
+			QueryNodes = new List<StatementDescriptionNode>();
+			QueryBlocks = new List<OracleQueryBlock>();
+		}
+
+		public OracleObjectIdentifier FullyQualifiedObjectName
+		{
+			get { return OracleObjectIdentifier.Create(OwnerNode, TableNode, null); }
+		}
+
+		public string Name { get { return ColumnNode.Token.Value.ToOracleIdentifier(); } }
+
+		public string TableName { get { return TableNode == null ? null : TableNode.Token.Value.ToOracleIdentifier(); } }
+
+		public bool HasTableReference { get { return TableNode != null; } }
+
+		public bool ReferencesAllColumns { get { return ColumnNode.Token.Value == "*"; } }
+
 		public StatementDescriptionNode OwnerNode { get; set; }
 
 		public StatementDescriptionNode TableNode { get; set; }
@@ -236,19 +341,30 @@ namespace SqlPad.Oracle
 		public StatementDescriptionNode ColumnNode { get; set; }
 
 		public ICollection<StatementDescriptionNode> QueryNodes { get; set; }
+
+		public ICollection<OracleQueryBlock> QueryBlocks { get; set; }
 	}
 
-	[DebuggerDisplay("OracleSelectListColumn (Alias={AliasNode == null ? null : AliasNode.Token.Value}; IsDirectReference={IsDirectReference})")]
+	[DebuggerDisplay("OracleSelectListColumn (Alias={AliasNode == null ? null : AliasNode.Token.Value}; IsDirectColumnReference={IsDirectColumnReference})")]
 	public class OracleSelectListColumn
 	{
-		public bool IsDirectReference { get; set; }
+		public OracleSelectListColumn()
+		{
+			ColumnReferences = new List<OracleColumnReference>();
+		}
+
+		public bool IsDirectColumnReference { get; set; }
+
+		public string Name {  get { return AliasNode == null ? null : AliasNode.Token.Value.ToOracleIdentifier(); } }
 
 		public StatementDescriptionNode AliasNode { get; set; }
 
 		public StatementDescriptionNode RootNode { get; set; }
+		
+		public OracleQueryBlock Owner { get; set; }
 
 		public ICollection<OracleColumnReference> ColumnReferences { get; set; }
-
+		
 		public OracleColumn ColumnDescription { get; set; }
 	}
 

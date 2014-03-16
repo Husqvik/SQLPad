@@ -48,6 +48,7 @@
       <DesignTime>True</DesignTime>
     </Compile>
     <Compile Include="OracleInfrastructureFactory.cs" />
+    <Compile Include="OracleObjectIdentifier.cs" />
     <Compile Include="OracleSqlGrammar.cs">
       <DependentUpon>OracleSqlGrammar.xsd</DependentUpon>
     </Compile>

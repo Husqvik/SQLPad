@@ -11,11 +11,16 @@
 		public static class NonTerminals
 		{
 			public const string AliasedExpression = "AliasedExpression";
+			public const string AliasedExpressionListOrAliasedGroupingExpressionList = "AliasedExpressionListOrAliasedGroupingExpressionList";
+			public const string AliasedExpressionListOrAliasedGroupingExpressionListChained = "AliasedExpressionListOrAliasedGroupingExpressionListChained";
 			public const string AliasedExpressionOrAllTableColumns = "AliasedExpressionOrAllTableColumns";
 			public const string AnalyticClause = "AnalyticClause";
+			public const string AnyChainedList = "AnyChainedList";
 			public const string BetweenFollowingClause = "BetweenFollowingClause";
 			public const string BetweenPrecedingAndFollowingClause = "BetweenPrecedingAndFollowingClause";
 			public const string BetweenPrecedingClause = "BetweenPrecedingClause";
+			public const string BetweenSystemChangeNumberOrTimestamp = "BetweenSystemChangeNumberOrTimestamp";
+			public const string BetweenSystemChangeNumberOrTimestampOrPeriodForBetween = "BetweenSystemChangeNumberOrTimestampOrPeriodForBetween";
 			public const string CaseExpression = "CaseExpression";
 			public const string CaseExpressionElseBranch = "CaseExpressionElseBranch";
 			public const string ChainedCondition = "ChainedCondition";
@@ -25,6 +30,8 @@
 			public const string ColumnReference = "ColumnReference";
 			public const string ConcatenatedSubquery = "ConcatenatedSubquery";
 			public const string Condition = "Condition";
+			public const string CrossOrOuter = "CrossOrOuter";
+			public const string CrossOrOuterApplyClause = "CrossOrOuterApplyClause";
 			public const string DatabaseLink = "DatabaseLink";
 			public const string DepthOrBreadth = "DepthOrBreadth";
 			public const string DistinctModifier = "DistinctModifier";
@@ -39,6 +46,7 @@
 			public const string FlashbackAsOfClause = "FlashbackAsOfClause";
 			public const string FlashbackMaximumValue = "FlashbackMaximumValue";
 			public const string FlashbackMinimumValue = "FlashbackMinimumValue";
+			public const string FlashbackPeriodFor = "FlashbackPeriodFor";
 			public const string FlashbackQueryClause = "FlashbackQueryClause";
 			public const string FlashbackVersionsClause = "FlashbackVersionsClause";
 			public const string ForUpdateClause = "ForUpdateClause";
@@ -65,6 +73,8 @@
 			public const string HierarchicalQueryClause = "HierarchicalQueryClause";
 			public const string HierarchicalQueryConnectByClause = "HierarchicalQueryConnectByClause";
 			public const string HierarchicalQueryStartWithClause = "HierarchicalQueryStartWithClause";
+			public const string IdentifierOrParenthesisEnclosedColumnIdentifierList = "IdentifierOrParenthesisEnclosedColumnIdentifierList";
+			public const string IncludeOrExclude = "IncludeOrExclude";
 			public const string InnerJoinClause = "InnerJoinClause";
 			public const string JoinClause = "JoinClause";
 			public const string JoinColumnsOrCondition = "JoinColumnsOrCondition";
@@ -92,7 +102,15 @@
 			public const string ParenthesisEnclosedExpressionListWithMandatoryExpressions = "ParenthesisEnclosedExpressionListWithMandatoryExpressions";
 			public const string ParenthesisEnclosedFunctionParameters = "ParenthesisEnclosedFunctionParameters";
 			public const string ParenthesisEnclosedGroupingExpressionList = "ParenthesisEnclosedGroupingExpressionList";
+			public const string ParenthesisEnclosedStringOrIntegerLiteralList = "ParenthesisEnclosedStringOrIntegerLiteralList";
 			public const string PartitionOrDatabaseLink = "PartitionOrDatabaseLink";
+			public const string PivotAliasedAggregationFunctionList = "PivotAliasedAggregationFunctionList";
+			public const string PivotAliasedAggregationFunctionListChained = "PivotAliasedAggregationFunctionListChained";
+			public const string PivotClause = "PivotClause";
+			public const string PivotClauseOrUnpivotClauseOrRowPatternClause = "PivotClauseOrUnpivotClauseOrRowPatternClause";
+			public const string PivotExpressionsOrAnyListOrNestedQuery = "PivotExpressionsOrAnyListOrNestedQuery";
+			public const string PivotForClause = "PivotForClause";
+			public const string PivotInClause = "PivotInClause";
 			public const string PrecedingOnlyClause = "PrecedingOnlyClause";
 			public const string PrecedingOnlyOrBetweenPrecedingAndFollowing = "PrecedingOnlyOrBetweenPrecedingAndFollowing";
 			public const string PrecedingOrFollowing = "PrecedingOrFollowing";
@@ -121,6 +139,9 @@
 			public const string SimpleCaseExpressionBranch = "SimpleCaseExpressionBranch";
 			public const string SortOrder = "SortOrder";
 			public const string StringOrIntegerLiteral = "StringOrIntegerLiteral";
+			public const string StringOrIntegerLiteralList = "StringOrIntegerLiteralList";
+			public const string StringOrIntegerLiteralListChained = "StringOrIntegerLiteralListChained";
+			public const string StringOrIntegerLiteralOrParenthesisEnclosedStringOrIntegerLiteralList = "StringOrIntegerLiteralOrParenthesisEnclosedStringOrIntegerLiteralList";
 			public const string Subquery = "Subquery";
 			public const string SubqueryComponent = "SubqueryComponent";
 			public const string SubqueryComponentChained = "SubqueryComponentChained";
@@ -128,8 +149,15 @@
 			public const string SubqueryFactoringCycleClause = "SubqueryFactoringCycleClause";
 			public const string SubqueryFactoringSearchClause = "SubqueryFactoringSearchClause";
 			public const string SystemChangeNumberOrTimestamp = "SystemChangeNumberOrTimestamp";
+			public const string SystemChangeNumberOrTimestampOrPeriodFor = "SystemChangeNumberOrTimestampOrPeriodFor";
 			public const string TableCollectionExpression = "TableCollectionExpression";
 			public const string TableReference = "TableReference";
+			public const string UnpivotClause = "UnpivotClause";
+			public const string UnpivotInClause = "UnpivotInClause";
+			public const string UnpivotNullsClause = "UnpivotNullsClause";
+			public const string UnpivotValueSelector = "UnpivotValueSelector";
+			public const string UnpivotValueToColumnTransformationList = "UnpivotValueToColumnTransformationList";
+			public const string UnpivotValueToColumnTransformationListChained = "UnpivotValueToColumnTransformationListChained";
 			public const string WhereClause = "WhereClause";
 			public const string WindowingClause = "WindowingClause";
 		}

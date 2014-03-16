@@ -28,6 +28,17 @@ namespace SqlPad.Oracle
 				_sqlGrammar = (SqlGrammar)XmlSerializer.Deserialize(grammarReader);
 			}
 
+			/*var hashSet = new HashSet<string>();
+			foreach (var rule in _sqlGrammar.Rules)
+			{
+				if (hashSet.Contains(rule.StartingNonTerminal))
+				{
+					
+				}
+
+				hashSet.Add(rule.StartingNonTerminal);
+			}*/
+			
 			_startingNonTerminalSequences = _sqlGrammar.Rules.ToDictionary(r => r.StartingNonTerminal, r => r.Sequences);
 			/*var containsSequenceWithAllOptionalMembers = _startingNonTerminalSequences.Values.SelectMany(s => s)
 				.Any(s => s.Items.All(i => (i as SqlGrammarRuleSequenceTerminal != null && !((SqlGrammarRuleSequenceTerminal)i).IsRequired) ||
