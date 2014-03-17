@@ -585,22 +585,11 @@
   
     <Rule StartingNonTerminal="FromClause">
       <Sequences>
-        
-        <!-- Really not sure about this -->
-        <Sequence>
-          <Terminal Id="LeftParenthesis" />
-          <NonTerminal Id="QueryTableExpression" />
-          <Terminal Id="Alias" IsOptional="true" />
-          <Terminal Id="RightParenthesis" />
-          <NonTerminal Id="FromClauseChained" IsOptional="true" />
-        </Sequence>
-        
         <Sequence>
           <NonTerminal Id="TableReference" />
           <NonTerminal Id="JoinClause" IsOptional="true" />
           <NonTerminal Id="FromClauseChained" IsOptional="true" />
         </Sequence>
-        <!-- TODO -->
       </Sequences>
     </Rule>
 
@@ -616,18 +605,36 @@
     <Rule StartingNonTerminal="TableReference">
       <Sequences>
         <Sequence>
+          <NonTerminal Id="InnerTableReference" />
+          <Terminal Id="Alias" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="TableReference" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="InnerTableReference">
+      <Sequences>
+        <Sequence>
           <Terminal Id="Only" />
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="QueryTableExpression" />
           <Terminal Id="RightParenthesis" />
           <NonTerminal Id="FlashbackQueryClause" IsOptional="true" />
-          <Terminal Id="Alias" IsOptional="true" />
+          <NonTerminal Id="PivotClauseOrUnpivotClauseOrRowPatternClause" IsOptional="true" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="QueryTableExpression" />
           <NonTerminal Id="FlashbackQueryClause" IsOptional="true" />
           <NonTerminal Id="PivotClauseOrUnpivotClauseOrRowPatternClause" IsOptional="true" />
-          <Terminal Id="Alias" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="InnerTableReference" />
+          <Terminal Id="RightParenthesis" />
         </Sequence>
       </Sequences>
     </Rule>

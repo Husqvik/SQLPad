@@ -76,6 +76,7 @@
 			public const string IdentifierOrParenthesisEnclosedColumnIdentifierList = "IdentifierOrParenthesisEnclosedColumnIdentifierList";
 			public const string IncludeOrExclude = "IncludeOrExclude";
 			public const string InnerJoinClause = "InnerJoinClause";
+			public const string InnerTableReference = "InnerTableReference";
 			public const string JoinClause = "JoinClause";
 			public const string JoinColumnsOrCondition = "JoinColumnsOrCondition";
 			public const string LikeOperator = "LikeOperator";

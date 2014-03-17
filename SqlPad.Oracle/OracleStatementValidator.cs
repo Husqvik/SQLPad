@@ -8,7 +8,8 @@ namespace SqlPad.Oracle
 	{
 		public IValidationModel ResolveReferences(string sqlText, IStatement statement, IDatabaseModel databaseModel)
 		{
-			var semanticModel = new OracleStatementSemanticModel(sqlText, (OracleStatement)statement);
+			var oracleDatabaseModel = (DatabaseModelFake)databaseModel;
+			var semanticModel = new OracleStatementSemanticModel(sqlText, (OracleStatement)statement, oracleDatabaseModel);
 
 			var validationModel = new OracleValidationModel();
 
@@ -23,57 +24,32 @@ namespace SqlPad.Oracle
 				}
 
 				var objectName = tableReference.TableNode.Token.Value;
-				bool objectValid;
+				var owner = tableReference.OwnerNode == null ? null : tableReference.OwnerNode.Token.Value;
+
+				var result = oracleDatabaseModel.GetObject(OracleObjectIdentifier.Create(owner, objectName));
+				
 				if (tableReference.OwnerNode != null)
 				{
-					var owner = tableReference.OwnerNode.Token.Value;
-					validationModel.TableNodeValidity[tableReference.OwnerNode] = databaseModel.Schemas.Any(s => s == owner.ToOracleIdentifier());
-					objectValid = databaseModel.AllObjects.ContainsKey(OracleObjectIdentifier.Create(owner, objectName));
-					
-					if (objectValid)
-						physicalTables[tableReference] = databaseModel.AllObjects[OracleObjectIdentifier.Create(owner, objectName)];
-				}
-				else
-				{
-					var currentSchemaObject = OracleObjectIdentifier.Create(databaseModel.CurrentSchema, objectName);
-					var publicSchemaObject = OracleObjectIdentifier.Create(DatabaseModelFake.SchemaPublic, objectName);
-					objectValid = databaseModel.AllObjects.ContainsKey(currentSchemaObject) || databaseModel.AllObjects.ContainsKey(publicSchemaObject);
-
-					if (objectValid)
-					{
-						if (databaseModel.AllObjects.ContainsKey(currentSchemaObject))
-							physicalTables[tableReference] = databaseModel.AllObjects[currentSchemaObject];
-						else if (databaseModel.AllObjects.ContainsKey(publicSchemaObject))
-							physicalTables[tableReference] = databaseModel.AllObjects[publicSchemaObject];
-					}
+					validationModel.TableNodeValidity[tableReference.OwnerNode] = result.SchemaFound;
 				}
 
+				var objectValid = result.SchemaObject != null;
 				validationModel.TableNodeValidity[tableReference.TableNode] = objectValid;
+
+				if (objectValid)
+				{
+					physicalTables[tableReference] = result.SchemaObject;
+				}
 			}
 
 			foreach (var queryBlock in semanticModel.QueryBlocks)
 			{
 				foreach (var columnReference in queryBlock.Columns.SelectMany(c => c.ColumnReferences))
 				{
-					if (columnReference.ReferencesAllColumns)
-					{
-						foreach (var exposedTableReference in queryBlock.ExposedTableReferences)
-						{
-							if (exposedTableReference.Type == TableReferenceType.PhysicalTable)
-							{
-
-							}
-							else
-							{
-
-							}
-						}
-					}
-
 					var tableReferences = queryBlock.TableReferences.Where(tr => tr.FullyQualifiedName == columnReference.FullyQualifiedObjectName).ToArray();
 					if (tableReferences.Length == 0 && String.IsNullOrEmpty(columnReference.FullyQualifiedObjectName.Owner))
 					{
-						tableReferences = queryBlock.TableReferences.Where(tr => tr.Type == TableReferenceType.PhysicalTable && tr.FullyQualifiedName.NormalizedName == columnReference.FullyQualifiedObjectName.NormalizedName).ToArray();
+						tableReferences = queryBlock.TableReferences.Where(tr => tr.Type == TableReferenceType.PhysicalObject && tr.FullyQualifiedName.NormalizedName == columnReference.FullyQualifiedObjectName.NormalizedName).ToArray();
 					}
 
 					var tableReferenceValid = tableReferences.Length == 1;
@@ -85,34 +61,43 @@ namespace SqlPad.Oracle
 						validationModel.TableNodeValidity.Add(columnReference.OwnerNode, tableReferenceValid);
 
 					// Column names
+					
+
 					var columnReferences = 0;
 					var columnTableReferences = new List<OracleTableReference>();
 
-					foreach (var tableReference in queryBlock.TableReferences)
+					if (columnReference.Owner.IsAsterisk)
 					{
-						if (columnReference.HasTableReference && !tableReferenceValid)
-							continue;
-
-						int newTableReferences = 0;
-						if (tableReference.Type == TableReferenceType.PhysicalTable)
+						columnReferences = 1;
+					}
+					else
+					{
+						foreach (var tableReference in queryBlock.TableReferences)
 						{
-							if (!physicalTables.ContainsKey(tableReference))
+							if (columnReference.HasTableReference && !tableReferenceValid)
 								continue;
 
-							newTableReferences = physicalTables[tableReference].Columns
-								.Count(c => c.Name == columnReference.Name && (!columnReference.HasTableReference || columnReference.TableName == tableReference.FullyQualifiedName.NormalizedName));
+							int newTableReferences;
+							if (tableReference.Type == TableReferenceType.PhysicalObject)
+							{
+								if (!physicalTables.ContainsKey(tableReference))
+									continue;
 
-						}
-						else
-						{
-							newTableReferences = tableReference.QueryBlocks.Single().Columns
-								.Count(c => c.Name == columnReference.Name && (!columnReference.HasTableReference || columnReference.TableName == tableReference.FullyQualifiedName.NormalizedName));
-						}
+								newTableReferences = physicalTables[tableReference].Columns
+									.Count(c => c.Name == columnReference.Name && (!columnReference.HasTableReference || columnReference.TableName == tableReference.FullyQualifiedName.NormalizedName));
 
-						if (newTableReferences > 0)
-						{
-							columnTableReferences.Add(tableReference);
-							columnReferences += newTableReferences;
+							}
+							else
+							{
+								newTableReferences = tableReference.QueryBlocks.Single().Columns
+									.Count(c => c.NormalizedName == columnReference.Name && (!columnReference.HasTableReference || columnReference.TableName == tableReference.FullyQualifiedName.NormalizedName));
+							}
+
+							if (newTableReferences > 0)
+							{
+								columnTableReferences.Add(tableReference);
+								columnReferences += newTableReferences;
+							}
 						}
 					}
 

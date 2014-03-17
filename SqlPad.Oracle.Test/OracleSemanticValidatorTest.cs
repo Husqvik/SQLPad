@@ -164,7 +164,7 @@ namespace SqlPad.Oracle.Test
 			tableNames[1].ShouldBe("t2");
 		}
 
-		[Test(Description = @""), Ignore]
+		[Test(Description = @"")]
 		public void Test8()
 		{
 			const string sqlText = "SELECT ID, NAME, DUMMY FROM (SELECT * FROM COUNTRY)";
@@ -183,7 +183,7 @@ namespace SqlPad.Oracle.Test
 			nodeValidity[3].ShouldBe(true);
 		}
 
-		[Test(Description = @""), Ignore]
+		[Test(Description = @"")]
 		public void Test9()
 		{
 			const string sqlText = "SELECT ID, NAME, DUMMY FROM (SELECT COUNTRY.* FROM COUNTRY)";
@@ -202,7 +202,7 @@ namespace SqlPad.Oracle.Test
 			nodeValidity[3].ShouldBe(true);
 		}
 
-		[Test(Description = @""), Ignore]
+		[Test(Description = @"")]
 		public void Test10()
 		{
 			const string sqlText = "SELECT ID, NAME, DUMMY FROM (COUNTRY)";
@@ -214,7 +214,7 @@ namespace SqlPad.Oracle.Test
 
 			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
 			var nodeValidity = nodeValidityDictionary.Values.Select(c => c.IsValid).ToArray();
-			nodeValidity.Length.ShouldBe(4);
+			nodeValidity.Length.ShouldBe(3);
 			nodeValidity[0].ShouldBe(true);
 			nodeValidity[1].ShouldBe(true);
 			nodeValidity[2].ShouldBe(false);

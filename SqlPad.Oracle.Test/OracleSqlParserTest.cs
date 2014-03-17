@@ -780,6 +780,74 @@ namespace SqlPad.Oracle.Test
 			// TODO: Precise assertions
 		}
 
+		[Test(Description = @"Tests table reference parenthesis encapsulation. ")]
+		public void Test45()
+		{
+			const string query1 = @"SELECT * FROM ((SELECT * FROM DUAL)) D";
+			var result = _oracleSqlParser.Parse(CreateTokenReader(query1));
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			// TODO: Precise assertions
+
+			const string query2 = @"SELECT * FROM ((DUAL)) D";
+			result = _oracleSqlParser.Parse(CreateTokenReader(query2));
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			// TODO: Precise assertions
+
+			const string query3 = @"SELECT * FROM ((((DUAL)) D))";
+			result = _oracleSqlParser.Parse(CreateTokenReader(query3));
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			// TODO: Precise assertions
+			
+			const string query4 = @"SELECT * FROM ((DUAL)) AS OF SCN MAXVALUE D";
+			result = _oracleSqlParser.Parse(CreateTokenReader(query4));
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+
+			// TODO: Precise assertions
+
+			const string query5 = @"SELECT * FROM ((DUAL D))";
+			result = _oracleSqlParser.Parse(CreateTokenReader(query5));
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			// TODO: Precise assertions
+
+			const string query6 = @"SELECT * FROM ((DUAL D)) AS OF SCN MAXVALUE";
+			result = _oracleSqlParser.Parse(CreateTokenReader(query6));
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+
+			// TODO: Precise assertions
+
+			const string query7 = @"SELECT * FROM ((DUAL AS OF TIMESTAMP SYSDATE D))";
+			result = _oracleSqlParser.Parse(CreateTokenReader(query7));
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			// TODO: Precise assertions
+
+			const string query8 = @"SELECT * FROM ((DUAL AS OF TIMESTAMP SYSDATE)) D";
+			result = _oracleSqlParser.Parse(CreateTokenReader(query8));
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			// TODO: Precise assertions
+		}
+
 		private static OracleTokenReader CreateTokenReader(string sqlText)
 		{
 			Trace.WriteLine("SQL text: " + sqlText);

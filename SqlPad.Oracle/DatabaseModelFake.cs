@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
 using System.Linq;
@@ -13,7 +14,7 @@ namespace SqlPad.Oracle
 
 		private static readonly HashSet<string> SchemasInternal = new HashSet<string> { "\"SYS\"", "\"SYSTEM\"", CurrentSchemaInternal, SchemaPublic };
 
-		private static readonly OracleDatabaseObject[] AllObjectsInternal =
+		private static readonly HashSet<OracleDatabaseObject> AllObjectsInternal = new HashSet<OracleDatabaseObject>
 		{
 			new OracleDatabaseObject
 			{
@@ -87,6 +88,43 @@ namespace SqlPad.Oracle
 		{
 			return null;
 		}
+
+		public GetObjectResult GetObject(OracleObjectIdentifier objectIdentifier)
+		{
+			OracleDatabaseObject schemaObject = null;
+			var schemaFound = false;
+
+			if (String.IsNullOrEmpty(objectIdentifier.NormalizedOwner))
+			{
+				var currentSchemaObject = OracleObjectIdentifier.Create(CurrentSchema, objectIdentifier.NormalizedName);
+				var publicSchemaObject = OracleObjectIdentifier.Create(SchemaPublic, objectIdentifier.NormalizedName);
+
+				if (AllObjectDictionary.ContainsKey(currentSchemaObject))
+					schemaObject = (OracleDatabaseObject)AllObjectDictionary[currentSchemaObject];
+				else if (AllObjectDictionary.ContainsKey(publicSchemaObject))
+					schemaObject = (OracleDatabaseObject)AllObjectDictionary[publicSchemaObject];
+			}
+			else
+			{
+				schemaFound = Schemas.Contains(objectIdentifier.NormalizedOwner);
+
+				if (schemaFound && AllObjectDictionary.ContainsKey(objectIdentifier))
+					schemaObject = (OracleDatabaseObject)AllObjectDictionary[objectIdentifier];
+			}
+
+			return new GetObjectResult
+			       {
+					   SchemaFound = schemaFound,
+					   SchemaObject = schemaObject
+			       };
+		}
+	}
+
+	public struct GetObjectResult
+	{
+		public bool SchemaFound { get; set; }
+
+		public OracleDatabaseObject SchemaObject { get; set; }
 	}
 
 	[DebuggerDisplay("DebuggerDisplay (Owner={Owner}; Name={Name}; Type={Type})")]
