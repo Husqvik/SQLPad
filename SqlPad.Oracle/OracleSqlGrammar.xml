@@ -202,6 +202,27 @@
           <NonTerminal Id="Expression" />
         </Sequence>
         <Sequence>
+          <Terminal Id="Cast" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="ExpressionOrMultiset" />
+          <Terminal Id="As" />
+          <NonTerminal Id="DataType" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+        
+        <!-- TODO: Solve TREAT function -->
+        <!--<Sequence>
+          <Terminal Id="Treat" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="Expression" />
+          <Terminal Id="As" />
+          <Terminal Id="Ref" IsOptional="true" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="DataTypeName" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>-->
+        
+        <Sequence>
           <Terminal Id="Timestamp" />
           <Terminal Id="StringLiteral" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
@@ -217,6 +238,61 @@
         </Sequence>
       </Sequences>
     </Rule>
+    
+    <Rule StartingNonTerminal="ExpressionOrMultiset">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Multiset" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="NestedQuery" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="Expression" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DataType">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="DataTypeName" />
+          <NonTerminal Id="DataTypePrecisionAndScale" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DataTypePrecisionAndScale">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="IntegerOrAsterisk" />
+          <NonTerminal Id="Scale" IsOptional="true" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="IntegerOrAsterisk">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Asterisk" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="Scale">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
 
     <Rule StartingNonTerminal="PrefixedColumnReference">
       <Sequences>
@@ -228,7 +304,7 @@
     </Rule>
 
     <!--Function call -->
-    <Rule StartingNonTerminal="ParenthesisEnclosedFunctionParameters">
+    <Rule StartingNonTerminal="ParenthesisEnclosedAggregationFunctionParameters">
       <Sequences>
         <Sequence>
           <Terminal Id="LeftParenthesis" />
@@ -236,8 +312,18 @@
           <Terminal Id="RightParenthesis" />
         </Sequence>
       </Sequences>
-    </Rule>    
-    
+    </Rule>
+
+    <Rule StartingNonTerminal="ParenthesisEnclosedFunctionParameters">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="ExpressionList" IsOptional="true" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
     <Rule StartingNonTerminal="FunctionParameters">
       <Sequences>
         <Sequence>
@@ -264,7 +350,7 @@
           <Terminal Id="Identifier" />
           <!-- Function call -->
           <NonTerminal Id="DatabaseLink" IsOptional="true" />
-          <NonTerminal Id="ParenthesisEnclosedFunctionParameters" IsOptional="true" />
+          <NonTerminal Id="ParenthesisEnclosedAggregationFunctionParameters" IsOptional="true" />
           <NonTerminal Id="AnalyticClause" IsOptional="true" />
         </Sequence>
       </Sequences>
@@ -680,7 +766,10 @@
         <Sequence>
           <Terminal Id="Table" />
           <Terminal Id="LeftParenthesis" />
-           <!--TODO--><!--<NonTerminal Id="CollectionExpression" />-->
+          <NonTerminal Id="Prefix" IsOptional="true" />
+          <Terminal Id="Identifier" />
+          <NonTerminal Id="DatabaseLink" IsOptional="true" />
+          <NonTerminal Id="ParenthesisEnclosedAggregationFunctionParameters" IsOptional="true" />
           <Terminal Id="RightParenthesis" />
           <NonTerminal Id="OuterJoinOld" IsOptional="true" />
         </Sequence>
@@ -726,10 +815,9 @@
   
     <Rule StartingNonTerminal="PartitionOrDatabaseLink">
       <Sequences>
-        <!--TODO-->
-        <!--<Sequence>
-          <NonTerminal Id="PartitionClause" />
-        </Sequence>-->
+        <Sequence>
+          <NonTerminal Id="PartitionExtensionClause" />
+        </Sequence>
         <Sequence>
           <NonTerminal Id="DatabaseLink" />
         </Sequence>
@@ -741,6 +829,33 @@
         <Sequence>
           <Terminal Id="At" />
           <Terminal Id="DatabaseLinkIdentifier" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PartitionExtensionClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Partition" />
+          <NonTerminal Id="PartitionNameOrKeySet" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Subpartition" />
+          <NonTerminal Id="PartitionNameOrKeySet" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PartitionNameOrKeySet">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <Terminal Id="ObjectIdentifier" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="For" />
+          <NonTerminal Id="ParenthesisEnclosedExpressionListWithMandatoryExpressions" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -2058,6 +2173,15 @@
     <Terminal Id="StringLiteral" RegexValue="^n?q?(&apos;([^&apos;]|(&apos;&apos;))*&apos;)$" />
     <Terminal Id="NumberLiteral" RegexValue="^((\d+\.?\d*)|(\d*\.?\d+))([eE][+-]?\d+)?[fFdD]?$" />
     <Terminal Id="IntegerLiteral" RegexValue="^\d+([eE]((\+?\d+)|(-0)))?$" />
+
+    <!-- CAST function -->
+    <Terminal Id="Cast" Value="CAST" />
+    <Terminal Id="Multiset" Value="MULTISET" />
+    <Terminal Id="DataTypeName" RegexValue="^((&quot;[^&quot;]{1,28}&quot;)|([a-zA-Z][\w\d$#]{0,29}))$" />
+
+    <!-- TREAT function -->
+    <Terminal Id="Treat" Value="TREAT" />
+    <Terminal Id="Ref" Value="REF" />
 
     <!-- Sample clause -->
     <Terminal Id="Sample" Value="SAMPLE" />
