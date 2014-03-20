@@ -9,7 +9,7 @@ namespace SqlPad.Oracle.Test
 	{
 		private readonly OracleSqlParser _oracleSqlParser = new OracleSqlParser();
 		private readonly OracleStatementValidator _statementValidator = new OracleStatementValidator();
-		private readonly DatabaseModelFake _databaseModel = new DatabaseModelFake();
+		private readonly DatabaseModelFake _databaseModel = DatabaseModelFake.Instance;
 
 		[Test(Description = @"")]
 		public void Test1()

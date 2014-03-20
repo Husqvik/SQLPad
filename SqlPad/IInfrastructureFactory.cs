@@ -14,5 +14,7 @@ namespace SqlPad
 		IDatabaseModel CreateDatabaseModel(ConnectionStringSettings connectionString);
 
 		IStatementValidator CreateStatementValidator();
+
+		ICodeCompletionProvider CreateCodeCompletionProvider();
 	}
 }

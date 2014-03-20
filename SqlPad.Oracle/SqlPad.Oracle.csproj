@@ -41,6 +41,7 @@
     <Compile Include="Commands\ToggleQuotedIdentifierCommand.cs" />
     <Compile Include="Commands\WrapAsCommonTableExpressionCommand.cs" />
     <Compile Include="DatabaseModelFake.cs" />
+    <Compile Include="OracleCodeCompletionProvider.cs" />
     <Compile Include="OracleExtensions.cs" />
     <Compile Include="OracleGramarDescription.cs">
       <DependentUpon>OracleGramarDescription.tt</DependentUpon>

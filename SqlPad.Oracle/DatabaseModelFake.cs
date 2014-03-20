@@ -8,6 +8,8 @@ namespace SqlPad.Oracle
 {
 	public class DatabaseModelFake : IDatabaseModel
 	{
+		public static readonly DatabaseModelFake Instance = new DatabaseModelFake();
+
 		private const string CurrentSchemaInternal = "\"HUSQVIK\"";
 		private static readonly ConnectionStringSettings ConnectionStringInternal = new ConnectionStringSettings("ConnectionFake", "DATA SOURCE=HQ_PDB_TCP;PASSWORD=MMA_DEV;PERSIST SECURITY INFO=True;USER ID=HUSQVIK", "Oracle.DataAccess.Client");
 		public const string SchemaPublic = "\"PUBLIC\"";
@@ -59,7 +61,53 @@ namespace SqlPad.Oracle
 					          new OracleColumn { Name = "\"ID\"", Type = "NUMBER", Precision = 9, Scale = 0 }
 				          }
 			},
-			new OracleDatabaseObject { Name = "\"VIEW_INSTANTSEARCH\"", Owner = CurrentSchemaInternal, Type = "VIEW" }
+			new OracleDatabaseObject { Name = "\"VIEW_INSTANTSEARCH\"", Owner = CurrentSchemaInternal, Type = "VIEW" },
+			new OracleDatabaseObject
+			{
+				Name = "\"TARGETGROUP\"",
+				Owner = CurrentSchemaInternal,
+				Type = "TABLE",
+				Columns = new HashSet<IColumn>
+				          {
+					          new OracleColumn { Name = "\"TARGETGROUP_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
+					          new OracleColumn { Name = "\"PROJECT_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 }
+				          }
+			},
+			new OracleDatabaseObject
+			{
+				Name = "\"PROJECT\"",
+				Owner = CurrentSchemaInternal,
+				Type = "TABLE",
+				Columns = new HashSet<IColumn>
+				          {
+					          new OracleColumn { Name = "\"NAME\"", Type = "VARCHAR2", Size = 50 },
+					          new OracleColumn { Name = "\"PROJECT_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 }
+				          }
+			},
+			new OracleDatabaseObject
+			{
+				Name = "\"RESPONDENTBUCKET\"",
+				Owner = CurrentSchemaInternal,
+				Type = "TABLE",
+				Columns = new HashSet<IColumn>
+				          {
+							  new OracleColumn { Name = "\"RESPONDENTBUCKET_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
+					          new OracleColumn { Name = "\"TARGETGROUP_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
+					          new OracleColumn { Name = "\"PROJECT_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 }
+				          }
+			},
+			new OracleDatabaseObject
+			{
+				Name = "\"SELECTION\"",
+				Owner = CurrentSchemaInternal,
+				Type = "TABLE",
+				Columns = new HashSet<IColumn>
+				          {
+							  new OracleColumn { Name = "\"RESPONDENTBUCKET_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
+					          new OracleColumn { Name = "\"SELECTION_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
+					          new OracleColumn { Name = "\"PROJECT_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 }
+				          }
+			},
 		};
 
 		private static readonly IDictionary<IObjectIdentifier, IDatabaseObject> AllObjectDictionary = AllObjectsInternal.ToDictionary(o => (IObjectIdentifier)OracleObjectIdentifier.Create(o.Owner, o.Name), o => (IDatabaseObject)o);

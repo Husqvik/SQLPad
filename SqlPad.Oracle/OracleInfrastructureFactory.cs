@@ -28,7 +28,12 @@ namespace SqlPad.Oracle
 
 		public IDatabaseModel CreateDatabaseModel(ConnectionStringSettings connectionString)
 		{
-			return new DatabaseModelFake();
+			return DatabaseModelFake.Instance;
+		}
+
+		public ICodeCompletionProvider CreateCodeCompletionProvider()
+		{
+			return new OracleCodeCompletionProvider();
 		}
 		#endregion
 	}

@@ -25,6 +25,7 @@ namespace SqlPad
 		private readonly ColorizeAvalonEdit _colorizeAvalonEdit = new ColorizeAvalonEdit();
 		private readonly ISqlParser _sqlParser;
 		private readonly IInfrastructureFactory _infrastructureFactory;
+		private readonly ICodeCompletionProvider _codeCompletionProvider;
 
 		public static RoutedCommand CommandAddColumnAliases = new RoutedCommand();
 		public static RoutedCommand CommandWrapAsCommonTableExpression = new RoutedCommand();
@@ -36,6 +37,7 @@ namespace SqlPad
 
 			_infrastructureFactory = ConfigurationProvider.InfrastructureFactory;
 			_sqlParser = _infrastructureFactory.CreateSqlParser();
+			_codeCompletionProvider = _infrastructureFactory.CreateCodeCompletionProvider();
 		}
 
 		private void WindowLoadedHandler(object sender, RoutedEventArgs e)
@@ -95,21 +97,14 @@ namespace SqlPad
 				return;
 			
 			// Open code completion after the user has pressed dot:
-			_completionWindow = new CompletionWindow(Editor.TextArea);
-			var data = _completionWindow.CompletionList.CompletionData;
-			data.Add(new CompletionData("Item1"));
-			data.Add(new CompletionData("Item2"));
-			data.Add(new CompletionData("Item3"));
-			
-			_completionWindow.Show();
-			_completionWindow.Closed += delegate { _completionWindow = null; };
+			CreateCompletionWindow(true);
 		}
 
 		void TextEnteringHandler(object sender, TextCompositionEventArgs e)
 		{
-			if (e.Text.Length > 0 && _completionWindow != null)
+			if (e.Text.Length == 1 && _completionWindow != null)
 			{
-				if (!char.IsLetterOrDigit(e.Text[0]))
+				if (!Char.IsLetterOrDigit(e.Text[0]))
 				{
 					// Whenever a non-letter is typed while the completion window is open,
 					// insert the currently selected element.
@@ -118,6 +113,32 @@ namespace SqlPad
 			}
 			// Do not set e.Handled=true.
 			// We still want to insert the character that was typed.
+
+			if (e.Text == " " && Keyboard.Modifiers == ModifierKeys.Control)
+			{
+				e.Handled = true;
+				CreateCompletionWindow(true);
+			}
+		}
+
+		private void CreateCompletionWindow(bool show)
+		{
+			_completionWindow = new CompletionWindow(Editor.TextArea);
+			var data = _completionWindow.CompletionList.CompletionData;
+
+			foreach (var item in _codeCompletionProvider.ResolveItems(Editor.Text, Editor.CaretOffset))
+			{
+				
+			}
+
+			data.Add(new CompletionData("Item1"));
+			data.Add(new CompletionData("Item2"));
+			data.Add(new CompletionData("Item3"));
+
+			_completionWindow.Closed += delegate { _completionWindow = null; };
+
+			if (show)
+				_completionWindow.Show();
 		}
 
 		private readonly ToolTip _toolTip = new ToolTip();

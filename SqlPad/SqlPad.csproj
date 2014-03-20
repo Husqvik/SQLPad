@@ -60,6 +60,7 @@
     <Compile Include="Commands\IWrapAsCommonTableExpressionCommand.cs" />
     <Compile Include="ConfigurationProvider.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="ICodeCompletionProvider.cs" />
     <Compile Include="IDatabaseModel.cs" />
     <Compile Include="IInfrastructureFactory.cs" />
     <Compile Include="IObjectIdentifier.cs" />
