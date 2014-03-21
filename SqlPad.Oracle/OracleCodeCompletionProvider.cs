@@ -25,11 +25,33 @@ namespace SqlPad.Oracle
 				var selectList = currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.SelectList);
 				if (selectList != null)
 				{
-					//currentNode
+					var prefixedColumnReference = currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference);
+					if (prefixedColumnReference != null)
+					{
+						var objectIdentifier = prefixedColumnReference.GetSingleDescendant(Terminals.ObjectIdentifier);
+						if (objectIdentifier != null)
+						{
+							var queryBlock = semanticModel.GetQueryBlock(selectList);
+							var columnReferences = queryBlock.Columns.SelectMany(c => c.ColumnReferences).Where(c => c.TableNode == objectIdentifier).ToArray();
+							if (columnReferences.Length == 1 && columnReferences[0].TableNode != null)
+							{
+								var tableReferences = queryBlock.TableReferences.Where(t => t.TableNode == columnReferences[0].TableNode).ToArray();
+								if (tableReferences.Length == 1)
+								{
+									return tableReferences[0].Columns.Select(c => new OracleCodeCompletionItem { Name = c.NormalizedName }).ToArray();
+								}
+							}
+						}
+					}
 				}
 			}
 
 			return EmptyCollection;
 		}
+	}
+
+	public class OracleCodeCompletionItem : ICodeCompletionItem
+	{
+		public string Name { get; set; }
 	}
 }

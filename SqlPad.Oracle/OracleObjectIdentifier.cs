@@ -5,7 +5,7 @@ namespace SqlPad.Oracle
 	[DebuggerDisplay("OracleObjectIdentifier (Owner={Owner,nq}; Name={Name,nq})")]
 	public struct OracleObjectIdentifier : IObjectIdentifier
 	{
-		public static readonly OracleObjectIdentifier Empty = new OracleObjectIdentifier();
+		public static readonly OracleObjectIdentifier Empty = new OracleObjectIdentifier(null, null);
 
 		public string Owner { get; private set; }
 

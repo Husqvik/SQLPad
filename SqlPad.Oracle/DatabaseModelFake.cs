@@ -137,7 +137,7 @@ namespace SqlPad.Oracle
 			return null;
 		}
 
-		public GetObjectResult GetObject(OracleObjectIdentifier objectIdentifier)
+		public SchemaObjectResult GetObject(OracleObjectIdentifier objectIdentifier)
 		{
 			OracleDatabaseObject schemaObject = null;
 			var schemaFound = false;
@@ -160,7 +160,7 @@ namespace SqlPad.Oracle
 					schemaObject = (OracleDatabaseObject)AllObjectDictionary[objectIdentifier];
 			}
 
-			return new GetObjectResult
+			return new SchemaObjectResult
 			       {
 					   SchemaFound = schemaFound,
 					   SchemaObject = schemaObject
@@ -168,8 +168,10 @@ namespace SqlPad.Oracle
 		}
 	}
 
-	public struct GetObjectResult
+	public struct SchemaObjectResult
 	{
+		public static readonly SchemaObjectResult EmptyResult = new SchemaObjectResult();
+
 		public bool SchemaFound { get; set; }
 
 		public OracleDatabaseObject SchemaObject { get; set; }
@@ -193,6 +195,7 @@ namespace SqlPad.Oracle
 		#endregion
 	}
 
+	[DebuggerDisplay("OracleColumn (Name={Name}; Type={Type})")]
 	public class OracleColumn : IColumn
 	{
 		#region Implementation of IColumn

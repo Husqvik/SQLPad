@@ -219,5 +219,24 @@ namespace SqlPad.Oracle.Test
 			nodeValidity[1].ShouldBe(true);
 			nodeValidity[2].ShouldBe(false);
 		}
+
+		[Test(Description = @"")]
+		public void Test11()
+		{
+			const string sqlText = "SELECT SELECTION.DUMMY FROM SELECTION";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, _databaseModel);
+
+			var nodeValidityDictionary = validationModel.TableNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var nodeValidity = nodeValidityDictionary.Values.ToArray();
+			nodeValidity.Length.ShouldBe(2);
+			nodeValidity[0].ShouldBe(true);
+			nodeValidity[1].ShouldBe(true);
+		}
+
+		//WITH CTE AS (SELECT 1 A, 2 B, 3 C FROM DUAL) SELECT SELECTION.DUMMY, NQ.DUMMY, CTE.DUMMY FROM SELECTION, (SELECT 1 X, 2 Y, 3 Z FROM DUAL) NQ, CTE
 	}
 }
