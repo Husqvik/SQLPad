@@ -1,0 +1,1 @@
+xsd Snippet.xsd /c /n:SqlPad

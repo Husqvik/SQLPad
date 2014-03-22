@@ -35,6 +35,11 @@ namespace SqlPad.Oracle
 		{
 			return new OracleCodeCompletionProvider();
 		}
+
+		public ICodeSnippetProvider CreateSnippetProvider()
+		{
+			return new OracleSnippetProvider();
+		}
 		#endregion
 	}
 }

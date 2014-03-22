@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Snippet Name="Select" Description="" xmlns="http://husqvik.com/SqlPad/2014/02" Rdbms="Oracle" Version="*">
+  <Text>
+    <![CDATA[SELECT
+	{1}
+FROM
+	{0}]]></Text>
+  <Parameters>
+    <Parameter Index="0" DefaultValue="" />
+    <Parameter Index="1" DefaultValue="NULL" />
+  </Parameters>
+</Snippet>

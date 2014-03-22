@@ -26,6 +26,9 @@ namespace SqlPad
 		private readonly ISqlParser _sqlParser;
 		private readonly IInfrastructureFactory _infrastructureFactory;
 		private readonly ICodeCompletionProvider _codeCompletionProvider;
+		private readonly ICodeSnippetProvider _codeSnippetProvider;
+		
+		private readonly ToolTip _toolTip = new ToolTip();
 
 		public static RoutedCommand CommandAddColumnAliases = new RoutedCommand();
 		public static RoutedCommand CommandWrapAsCommonTableExpression = new RoutedCommand();
@@ -38,6 +41,7 @@ namespace SqlPad
 			_infrastructureFactory = ConfigurationProvider.InfrastructureFactory;
 			_sqlParser = _infrastructureFactory.CreateSqlParser();
 			_codeCompletionProvider = _infrastructureFactory.CreateCodeCompletionProvider();
+			_codeSnippetProvider = _infrastructureFactory.CreateSnippetProvider();
 		}
 
 		private void WindowLoadedHandler(object sender, RoutedEventArgs e)
@@ -55,8 +59,11 @@ namespace SqlPad
 		private void EditorTextChangedHandler(object sender, EventArgs e)
 		{
 			TextBlockToken.Text = String.Join(", ", _infrastructureFactory.CreateTokenReader(Editor.Text).GetTokens().Select(t => "{" + t.Value + "}"));
-			_colorizeAvalonEdit.SetStatementCollection(_sqlParser.Parse(Editor.Text));
+			var statements = _sqlParser.Parse(Editor.Text);
+			_colorizeAvalonEdit.SetStatementCollection(statements);
 			Editor.TextArea.TextView.Redraw();
+
+			_codeSnippetProvider.GetSnippets(Editor.Text, Editor.CaretOffset);
 		}
 
 		private void AddColumnAliasesExecutedHandler(object sender, ExecutedRoutedEventArgs e)
@@ -137,7 +144,6 @@ namespace SqlPad
 				_completionWindow.Show();
 		}
 
-		private readonly ToolTip _toolTip = new ToolTip();
 		void MouseHoverHandler(object sender, MouseEventArgs e)
 		{
 			var pos = Editor.GetPositionFromPoint(e.GetPosition(Editor));

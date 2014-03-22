@@ -16,5 +16,7 @@ namespace SqlPad
 		IStatementValidator CreateStatementValidator();
 
 		ICodeCompletionProvider CreateCodeCompletionProvider();
+
+		ICodeSnippetProvider CreateSnippetProvider();
 	}
 }

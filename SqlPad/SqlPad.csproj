@@ -61,6 +61,7 @@
     <Compile Include="ConfigurationProvider.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="ICodeCompletionProvider.cs" />
+    <Compile Include="ICodeSnippetProvider.cs" />
     <Compile Include="IDatabaseModel.cs" />
     <Compile Include="IInfrastructureFactory.cs" />
     <Compile Include="IObjectIdentifier.cs" />
@@ -74,6 +75,9 @@
     <Compile Include="NodeType.cs" />
     <Compile Include="ProcessingResult.cs" />
     <Compile Include="ProcessingStatus.cs" />
+    <Compile Include="Snippet.cs">
+      <DependentUpon>Snippet.xsd</DependentUpon>
+    </Compile>
     <Compile Include="SourcePosition.cs" />
     <Compile Include="StatementDescriptionNode.cs" />
     <Page Include="MainWindow.xaml">
@@ -107,12 +111,14 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <None Include="GenerateGrammarDescriptionClass.cmd" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
+    <None Include="Snippet.xsd">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
