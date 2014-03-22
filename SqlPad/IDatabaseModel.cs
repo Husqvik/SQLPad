@@ -27,14 +27,15 @@ namespace SqlPad
 		string Owner { get; }
 
 		ICollection<IDatabaseObjectProperty> Properties { get; }
-		ICollection<IColumn> Columns { get; }
+		
+		IEnumerable<IColumn> Columns { get; }
 	}
 
 	public interface IColumn
 	{
 		string Name { get; }
 
-		string Type { get; }
+		string FullTypeName { get; }
 	}
 
 	public interface IDatabaseObjectProperty

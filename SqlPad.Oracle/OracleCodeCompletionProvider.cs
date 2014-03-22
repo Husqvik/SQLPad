@@ -35,10 +35,9 @@ namespace SqlPad.Oracle
 							var columnReferences = queryBlock.Columns.SelectMany(c => c.ColumnReferences).Where(c => c.TableNode == objectIdentifier).ToArray();
 							if (columnReferences.Length == 1 && columnReferences[0].TableNode != null)
 							{
-								var tableReferences = queryBlock.TableReferences.Where(t => t.TableNode == columnReferences[0].TableNode).ToArray();
-								if (tableReferences.Length == 1)
+								if (columnReferences[0].TableNodeReferences.Count == 1)
 								{
-									return tableReferences[0].Columns.Select(c => new OracleCodeCompletionItem { Name = c.NormalizedName }).ToArray();
+									return columnReferences[0].TableNodeReferences.Single().Columns.Select(c => new OracleCodeCompletionItem { Name = c.Name.ToSimpleIdentifier() }).ToArray();
 								}
 							}
 						}

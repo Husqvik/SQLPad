@@ -42,6 +42,7 @@
     <Compile Include="Commands\WrapAsCommonTableExpressionCommand.cs" />
     <Compile Include="DatabaseModelFake.cs" />
     <Compile Include="OracleCodeCompletionProvider.cs" />
+    <Compile Include="OracleColumnReference.cs" />
     <Compile Include="OracleExtensions.cs" />
     <Compile Include="OracleGramarDescription.cs">
       <DependentUpon>OracleGramarDescription.tt</DependentUpon>
@@ -50,6 +51,8 @@
     </Compile>
     <Compile Include="OracleInfrastructureFactory.cs" />
     <Compile Include="OracleObjectIdentifier.cs" />
+    <Compile Include="OracleQueryBlock.cs" />
+    <Compile Include="OracleSelectListColumn.cs" />
     <Compile Include="OracleSqlGrammar.cs">
       <DependentUpon>OracleSqlGrammar.xsd</DependentUpon>
     </Compile>
@@ -58,6 +61,7 @@
     <Compile Include="OracleStatement.cs" />
     <Compile Include="OracleStatementSemanticModel.cs" />
     <Compile Include="OracleStatementValidator.cs" />
+    <Compile Include="OracleTableReference.cs" />
     <Compile Include="OracleTokenReader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

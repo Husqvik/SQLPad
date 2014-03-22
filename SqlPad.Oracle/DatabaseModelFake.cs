@@ -23,7 +23,7 @@ namespace SqlPad.Oracle
 				Name = "\"DUAL\"",
 				Owner = "\"SYS\"",
 				Type = "TABLE",
-				Columns = new HashSet<IColumn>
+				Columns = new HashSet<OracleColumn>
 				             {
 					             new OracleColumn { Name = "\"DUMMY\"", Type = "VARCHAR2", Size = 1 }
 				             }
@@ -35,7 +35,7 @@ namespace SqlPad.Oracle
 				Name = "\"DUAL\"",
 				Owner = SchemaPublic,
 				Type = "SYNONYM",
-				Columns = new HashSet<IColumn>
+				Columns = new HashSet<OracleColumn>
 				             {
 					             new OracleColumn { Name = "\"DUMMY\"", Type = "VARCHAR2", Size = 1 }
 				             }
@@ -45,7 +45,7 @@ namespace SqlPad.Oracle
 				Name = "\"COUNTRY\"",
 				Owner = CurrentSchemaInternal,
 				Type = "TABLE",
-				Columns = new HashSet<IColumn>
+				Columns = new HashSet<OracleColumn>
 				          {
 					          new OracleColumn { Name = "\"ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
 							  new OracleColumn { Name = "\"NAME\"", Type = "VARCHAR2", Size = 50 }
@@ -56,7 +56,7 @@ namespace SqlPad.Oracle
 				Name = "\"ORDERS\"",
 				Owner = CurrentSchemaInternal,
 				Type = "TABLE",
-				Columns = new HashSet<IColumn>
+				Columns = new HashSet<OracleColumn>
 				          {
 					          new OracleColumn { Name = "\"ID\"", Type = "NUMBER", Precision = 9, Scale = 0 }
 				          }
@@ -67,7 +67,7 @@ namespace SqlPad.Oracle
 				Name = "\"TARGETGROUP\"",
 				Owner = CurrentSchemaInternal,
 				Type = "TABLE",
-				Columns = new HashSet<IColumn>
+				Columns = new HashSet<OracleColumn>
 				          {
 					          new OracleColumn { Name = "\"TARGETGROUP_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
 					          new OracleColumn { Name = "\"PROJECT_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 }
@@ -78,7 +78,7 @@ namespace SqlPad.Oracle
 				Name = "\"PROJECT\"",
 				Owner = CurrentSchemaInternal,
 				Type = "TABLE",
-				Columns = new HashSet<IColumn>
+				Columns = new HashSet<OracleColumn>
 				          {
 					          new OracleColumn { Name = "\"NAME\"", Type = "VARCHAR2", Size = 50 },
 					          new OracleColumn { Name = "\"PROJECT_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 }
@@ -89,7 +89,7 @@ namespace SqlPad.Oracle
 				Name = "\"RESPONDENTBUCKET\"",
 				Owner = CurrentSchemaInternal,
 				Type = "TABLE",
-				Columns = new HashSet<IColumn>
+				Columns = new HashSet<OracleColumn>
 				          {
 							  new OracleColumn { Name = "\"RESPONDENTBUCKET_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
 					          new OracleColumn { Name = "\"TARGETGROUP_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
@@ -101,7 +101,7 @@ namespace SqlPad.Oracle
 				Name = "\"SELECTION\"",
 				Owner = CurrentSchemaInternal,
 				Type = "TABLE",
-				Columns = new HashSet<IColumn>
+				Columns = new HashSet<OracleColumn>
 				          {
 							  new OracleColumn { Name = "\"RESPONDENTBUCKET_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
 					          new OracleColumn { Name = "\"SELECTION_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
@@ -183,7 +183,7 @@ namespace SqlPad.Oracle
 		public OracleDatabaseObject()
 		{
 			Properties = new List<IDatabaseObjectProperty>();
-			Columns = new List<IColumn>();
+			Columns = new List<OracleColumn>();
 		}
 
 		#region Implementation of IDatabaseObject
@@ -191,8 +191,11 @@ namespace SqlPad.Oracle
 		public string Type { get; set; }
 		public string Owner { get; set; }
 		public ICollection<IDatabaseObjectProperty> Properties { get; set; }
-		public ICollection<IColumn> Columns { get; set; }
+
+		IEnumerable<IColumn> IDatabaseObject.Columns { get { return Columns; } }
 		#endregion
+
+		public ICollection<OracleColumn> Columns { get; set; }
 	}
 
 	[DebuggerDisplay("OracleColumn (Name={Name}; Type={Type})")]
@@ -200,10 +203,13 @@ namespace SqlPad.Oracle
 	{
 		#region Implementation of IColumn
 		public string Name { get; set; }
+		public string FullTypeName { get { return Type; } }
+		#endregion
+
 		public string Type { get; set; }
 		public int Precision { get; set; }
 		public int Scale { get; set; }
 		public int Size { get; set; }
-		#endregion
+		public bool Nullable { get; set; }
 	}
 }

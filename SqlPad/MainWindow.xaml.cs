@@ -128,16 +128,12 @@ namespace SqlPad
 
 			foreach (var item in _codeCompletionProvider.ResolveItems(Editor.Text, Editor.CaretOffset))
 			{
-				
+				data.Add(new CompletionData(item.Name));
 			}
-
-			data.Add(new CompletionData("Item1"));
-			data.Add(new CompletionData("Item2"));
-			data.Add(new CompletionData("Item3"));
 
 			_completionWindow.Closed += delegate { _completionWindow = null; };
 
-			if (show)
+			if (show && data.Count > 0)
 				_completionWindow.Show();
 		}
 

@@ -237,6 +237,27 @@ namespace SqlPad.Oracle.Test
 			nodeValidity[1].ShouldBe(true);
 		}
 
-		//WITH CTE AS (SELECT 1 A, 2 B, 3 C FROM DUAL) SELECT SELECTION.DUMMY, NQ.DUMMY, CTE.DUMMY FROM SELECTION, (SELECT 1 X, 2 Y, 3 Z FROM DUAL) NQ, CTE
+		[Test(Description = @"")]
+		public void Test12()
+		{
+			const string sqlText = "SELECT PROJECT_ID, SELECTION_ID, RESPONDENTBUCKET_ID, DUMMY FROM (SELECT * FROM (SELECT * FROM SELECTION))";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, _databaseModel);
+
+			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var nodeValidity = nodeValidityDictionary.Values.Select(v => v.IsValid).ToArray();
+			nodeValidity.Length.ShouldBe(6);
+			nodeValidity[0].ShouldBe(true);
+			nodeValidity[1].ShouldBe(true);
+			nodeValidity[2].ShouldBe(true);
+			nodeValidity[3].ShouldBe(false);
+			nodeValidity[4].ShouldBe(true);
+			nodeValidity[5].ShouldBe(true);
+		}
+
+		//WITH CTE AS (SELECT 1 A, 2 B, 3 C FROM DUAL) SELECT SELECTION.DUMMY, NQ.DUMMY, CTE.DUMMY, SYS.DUAL.DUMMY FROM SELECTION, (SELECT 1 X, 2 Y, 3 Z FROM DUAL) NQ, CTE, SYS.DUAL
 	}
 }
