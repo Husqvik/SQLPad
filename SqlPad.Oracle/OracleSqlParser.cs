@@ -155,6 +155,8 @@ namespace SqlPad.Oracle
 							 Nodes = workingNodes
 			             };
 
+			var bestCandidateNodes = new List<StatementDescriptionNode>();
+
 			foreach (var sequence in _startingNonTerminalSequences[nonTerminal])
 			{
 				workingNodes.Clear();
@@ -177,11 +179,19 @@ namespace SqlPad.Oracle
 							result.Status = nestedResult.Status;
 						}
 
-						if (nestedResult.Status == ProcessingStatus.Success && nestedResult.Nodes.Count > 0)
+						if (nestedResult.Nodes.Count > 0)
 						{
 							var nestedNode = new StatementDescriptionNode(NodeType.NonTerminal) { Id = nestedNonTerminal.Id, Level = level, IsRequired = nestedNonTerminal.IsRequired };
 							nestedNode.AddChildNodes(nestedResult.Nodes);
-							workingNodes.Add(nestedNode);
+
+							if (nestedResult.Status == ProcessingStatus.Success)
+							{
+								workingNodes.Add(nestedNode);
+							}
+							else if (nestedNode.Terminals.Count() > bestCandidateNodes.Sum(n => n.Terminals.Count()))
+							{
+								bestCandidateNodes = new List<StatementDescriptionNode>(workingNodes) { nestedNode };
+							}
 						}
 
 						if (result.Status == ProcessingStatus.SequenceNotFound)
@@ -207,13 +217,17 @@ namespace SqlPad.Oracle
 							break;
 
 						workingNodes.AddRange(terminalResult.Nodes);
-
-						//Trace.WriteLine(string.Format("newTokenFetched: {0}; nonTerminal: {1}; token: {2}", newTokenFetched, nonTerminal, sqlToken));
 					}
 				}
 
 				if (result.Status == ProcessingStatus.Success)
 					break;
+			}
+
+			if (result.Status == ProcessingStatus.SequenceNotFound &&
+				result.Nodes.Sum(n => n.Terminals.Count()) < bestCandidateNodes.Sum(n => n.Terminals.Count()))
+			{
+				result.Nodes = bestCandidateNodes;
 			}
 
 			return result;

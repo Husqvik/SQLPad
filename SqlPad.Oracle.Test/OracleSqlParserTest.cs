@@ -136,8 +136,13 @@ namespace SqlPad.Oracle.Test
 			var result = _oracleSqlParser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().NodeCollection.Count.ShouldBe(0);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			var statement = result.Single();
+			statement.NodeCollection.Count.ShouldBe(1);
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			var terminals = statement.NodeCollection.SelectMany(n => n.Terminals).ToArray();
+			terminals.Length.ShouldBe(2);
+			terminals[0].Id.ShouldBe(Terminals.Select);
+			terminals[1].Id.ShouldBe(Terminals.NumberLiteral);
 
 			// TODO: Precise assertions
 
@@ -145,7 +150,8 @@ namespace SqlPad.Oracle.Test
 			result = _oracleSqlParser.Parse(query2);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement = result.Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -157,17 +163,26 @@ namespace SqlPad.Oracle.Test
 			var result = _oracleSqlParser.Parse(sqlText);
 
 			result.Count.ShouldBe(1);
-			result.Single().NodeCollection.Count.ShouldBe(0);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			var statement = result.Single();
+			statement.NodeCollection.Count.ShouldBe(1);
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			var terminals = statement.NodeCollection.SelectMany(n => n.Terminals).ToArray();
+			terminals.Length.ShouldBe(3);
+			terminals[0].Id.ShouldBe(Terminals.Select);
+			terminals[1].Id.ShouldBe(Terminals.NumberLiteral);
+			terminals[2].Id.ShouldBe(Terminals.Alias);
 
 			sqlText = @"SELECT . FROM DUAL";
 			result = _oracleSqlParser.Parse(sqlText);
 
 			result.Count.ShouldBe(1);
-			result.Single().NodeCollection.Count.ShouldBe(0);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			statement = result.Single();
+			statement.NodeCollection.Count.ShouldBe(1);
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
 
-			// TODO: Precise assertions
+			terminals = statement.NodeCollection.SelectMany(n => n.Terminals).ToArray();
+			terminals.Length.ShouldBe(1);
+			terminals[0].Id.ShouldBe(Terminals.Select);
 		}
 
 		[Test(Description = @"Tests query. ")]
