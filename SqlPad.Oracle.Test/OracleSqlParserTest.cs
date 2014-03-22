@@ -918,6 +918,18 @@ namespace SqlPad.Oracle.Test
 			// TODO: Precise assertions
 		}
 
+		[Test(Description = @"Tests subquery restriction clause. ")]
+		public void Test50()
+		{
+			const string query1 = @"SELECT * FROM (SELECT * FROM COUNTRY WITH READ ONLY), (SELECT * FROM COUNTRY WITH CHECK OPTION)";
+			var result = _oracleSqlParser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			// TODO: Precise assertions
+		}
+
 		private static OracleTokenReader CreateTokenReader(string sqlText)
 		{
 			Trace.WriteLine("SQL text: " + sqlText);

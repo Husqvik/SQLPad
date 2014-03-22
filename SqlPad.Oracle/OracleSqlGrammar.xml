@@ -752,7 +752,7 @@
           <Terminal Id="Lateral" IsOptional="true" />
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="NestedQuery" />
-          <!--<NonTerminal Id="SubQueryRestrictionClause" IsOptional="true" />-->
+          <NonTerminal Id="SubQueryRestrictionClause" IsOptional="true" />
           <Terminal Id="RightParenthesis" />
         </Sequence>
         <Sequence>
@@ -775,7 +775,30 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
+    <Rule StartingNonTerminal="SubQueryRestrictionClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="With" />
+          <NonTerminal Id="ReadOnlyOrCheckOption" />
+          <!-- TODO: Check how the CONSTRAINT clause is used -->
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ReadOnlyOrCheckOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Read" />
+          <Terminal Id="Only" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Check" />
+          <Terminal Id="Option" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
     <Rule StartingNonTerminal="OuterJoinOld">
       <Sequences>
         <Sequence>
