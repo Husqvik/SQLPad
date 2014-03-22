@@ -23,7 +23,9 @@ namespace SqlPad.Oracle
 			if (currentNode.Id == Terminals.Identifier)
 			{
 				var selectList = currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.SelectList);
-				if (selectList != null)
+				var condition = currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.Condition);
+				var rootNode = selectList ?? condition;
+				if (selectList != null || condition != null)
 				{
 					var prefixedColumnReference = currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference);
 					if (prefixedColumnReference != null)
@@ -31,7 +33,7 @@ namespace SqlPad.Oracle
 						var objectIdentifier = prefixedColumnReference.GetSingleDescendant(Terminals.ObjectIdentifier);
 						if (objectIdentifier != null)
 						{
-							var queryBlock = semanticModel.GetQueryBlock(selectList);
+							var queryBlock = semanticModel.GetQueryBlock(rootNode);
 							var columnReferences = queryBlock.Columns.SelectMany(c => c.ColumnReferences).Where(c => c.TableNode == objectIdentifier).ToArray();
 							if (columnReferences.Length == 1 && columnReferences[0].TableNode != null)
 							{
@@ -53,7 +55,8 @@ namespace SqlPad.Oracle
 			if (currentNode.Id == Terminals.ObjectIdentifier)
 			{
 				var selectList = currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.SelectList);
-				if (selectList == null)
+				var condition = currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.Condition);
+				if (selectList == null && condition == null)
 				{
 					// TODO: Add option to search all/current/public schemas
 					var schemaIdentifier = currentNode.ParentNode.GetSingleDescendant(Terminals.SchemaIdentifier);

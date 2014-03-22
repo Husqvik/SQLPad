@@ -33,9 +33,6 @@ namespace SqlPad.Oracle
 				var queryBlock = queryBlockNode.Key;
 				var item = queryBlockNode.Value;
 
-				var fromClause = queryBlock.GetDescendantsWithinSameQuery(NonTerminals.FromClause).First();
-				var tableReferenceNonterminals = fromClause.GetDescendantsWithinSameQuery(NonTerminals.TableReference).ToArray();
-
 				var scalarSubqueryExpression = queryBlock.GetAncestor(NonTerminals.Expression, false);
 				if (scalarSubqueryExpression != null)
 				{
@@ -62,6 +59,11 @@ namespace SqlPad.Oracle
 						}
 					}
 				}
+
+				var fromClause = queryBlock.GetDescendantsWithinSameQuery(NonTerminals.FromClause).FirstOrDefault();
+				var tableReferenceNonterminals = fromClause == null
+					? Enumerable.Empty<StatementDescriptionNode>()
+					: fromClause.GetDescendantsWithinSameQuery(NonTerminals.TableReference).ToArray();
 
 				foreach (var tableReferenceNonterminal in tableReferenceNonterminals)
 				{
@@ -124,7 +126,10 @@ namespace SqlPad.Oracle
 					                         });
 				}
 
-				var selectList = queryBlock.GetDescendantsWithinSameQuery(NonTerminals.SelectList).Single();
+				var selectList = queryBlock.GetDescendantsWithinSameQuery(NonTerminals.SelectList).SingleOrDefault();
+				if (selectList == null)
+					continue;
+
 				if (selectList.ChildNodes.Count == 1 && selectList.ChildNodes.Single().Id == Terminals.Asterisk)
 				{
 					var asteriskNode = selectList.ChildNodes.Single();

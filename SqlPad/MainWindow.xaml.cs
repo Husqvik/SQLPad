@@ -127,10 +127,13 @@ namespace SqlPad
 			// Do not set e.Handled=true.
 			// We still want to insert the character that was typed.
 
-			if (e.Text == " " && Keyboard.Modifiers == ModifierKeys.Control)
+			if (e.Text == " ")
 			{
-				e.Handled = true;
-				CreateCodeCompletionWindow();
+				if (Keyboard.Modifiers == ModifierKeys.Control)
+				{
+					e.Handled = true;
+					CreateCodeCompletionWindow();
+				}
 			}
 		}
 
