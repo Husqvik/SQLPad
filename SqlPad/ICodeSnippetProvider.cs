@@ -15,6 +15,8 @@ namespace SqlPad
 	public interface ICodeSnippet
 	{
 		string Name { get; }
+
+		string BaseText { get; }
 	}
 
 	public static class Snippets

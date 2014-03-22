@@ -13,10 +13,18 @@ namespace SqlPad.Oracle
 			var statement = _oracleParser.Parse(statementText).FirstOrDefault(s => s.GetNodeAtPosition(cursorPosition) != null);
 			if (statement == null)
 			{
-				var snippets = Snippets.SnippetCollection;
+				return Snippets.SnippetCollection.Where(s => s.Name.ToUpperInvariant().Contains(statementText.ToUpperInvariant()))
+					.Select(s => new OracleCodeSnippet { Name = s.Name, BaseText = s.Text }).ToArray();
 			}
 
 			return EmptyCollection;
 		}
+	}
+
+	public class OracleCodeSnippet : ICodeSnippet
+	{
+		public string Name { get; set; }
+
+		public string BaseText { get; set; }
 	}
 }

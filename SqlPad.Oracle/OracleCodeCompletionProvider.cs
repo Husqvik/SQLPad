@@ -37,7 +37,12 @@ namespace SqlPad.Oracle
 							{
 								if (columnReferences[0].TableNodeReferences.Count == 1)
 								{
-									return columnReferences[0].TableNodeReferences.Single().Columns.Select(c => new OracleCodeCompletionItem { Name = c.Name.ToSimpleIdentifier() }).ToArray();
+									return columnReferences[0].TableNodeReferences.Single().Columns
+										.Select(c => new OracleCodeCompletionItem
+										             {
+											             Name = c.Name.ToSimpleIdentifier(),
+														 StatementNode = currentNode
+										             }).ToArray();
 								}
 							}
 						}
@@ -52,5 +57,7 @@ namespace SqlPad.Oracle
 	public class OracleCodeCompletionItem : ICodeCompletionItem
 	{
 		public string Name { get; set; }
+		
+		public StatementDescriptionNode StatementNode { get; set; }
 	}
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Windows.Input;
 using System.Windows.Media;
 using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;
@@ -8,9 +9,23 @@ namespace SqlPad
 {
 	public class CompletionData : ICompletionData
 	{
-		public CompletionData(string text)
+		private readonly string _completionText;
+		
+		private readonly StatementDescriptionNode _node;
+
+		public CompletionData(ICodeCompletionItem codeCompletion)
 		{
-			Text = text;
+			Text = codeCompletion.Name;
+			Content = Text;
+			_completionText = Text;
+			_node = codeCompletion.StatementNode;
+		}
+
+		public CompletionData(ICodeSnippet codeSnippet)
+		{
+			Text = codeSnippet.Name;
+			Content = Text;
+			_completionText = codeSnippet.BaseText;
 		}
 
 		public ImageSource Image
@@ -21,10 +36,7 @@ namespace SqlPad
 		public string Text { get; private set; }
 
 		// Use this property if you want to show a fancy UIElement in the list.
-		public object Content
-		{
-			get { return Text; }
-		}
+		public object Content { get; private set; }
 
 		public object Description
 		{
@@ -33,7 +45,16 @@ namespace SqlPad
 
 		public void Complete(TextArea textArea, ISegment completionSegment, EventArgs insertionRequestEventArgs)
 		{
-			textArea.Document.Replace(completionSegment, Text);
+			var keyEventArgs = insertionRequestEventArgs as KeyEventArgs;
+			if (keyEventArgs != null && keyEventArgs.Key == Key.Tab && _node != null)
+			{
+				// TODO: Fix offset while typing
+				textArea.Document.Replace(_node.SourcePosition.IndexStart, _node.SourcePosition.Length, _completionText.Trim());
+			}
+			else
+			{
+				textArea.Document.Replace(completionSegment, _completionText.Trim());
+			}
 		}
 
 		public double Priority { get { return 0; } }

@@ -10,5 +10,7 @@ namespace SqlPad
 	public interface ICodeCompletionItem
 	{
 		string Name { get; }
+
+		StatementDescriptionNode StatementNode { get; }
 	}
 }

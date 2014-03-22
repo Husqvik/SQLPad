@@ -70,7 +70,8 @@ namespace SqlPad.Oracle
 				Columns = new HashSet<OracleColumn>
 				          {
 					          new OracleColumn { Name = "\"TARGETGROUP_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
-					          new OracleColumn { Name = "\"PROJECT_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 }
+					          new OracleColumn { Name = "\"PROJECT_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
+							  new OracleColumn { Name = "\"NAME\"", Type = "VARCHAR2", Size = 50 }
 				          }
 			},
 			new OracleDatabaseObject
@@ -93,7 +94,8 @@ namespace SqlPad.Oracle
 				          {
 							  new OracleColumn { Name = "\"RESPONDENTBUCKET_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
 					          new OracleColumn { Name = "\"TARGETGROUP_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
-					          new OracleColumn { Name = "\"PROJECT_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 }
+					          new OracleColumn { Name = "\"PROJECT_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
+							  new OracleColumn { Name = "\"NAME\"", Type = "VARCHAR2", Size = 50 }
 				          }
 			},
 			new OracleDatabaseObject
@@ -105,7 +107,8 @@ namespace SqlPad.Oracle
 				          {
 							  new OracleColumn { Name = "\"RESPONDENTBUCKET_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
 					          new OracleColumn { Name = "\"SELECTION_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
-					          new OracleColumn { Name = "\"PROJECT_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 }
+					          new OracleColumn { Name = "\"PROJECT_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
+							  new OracleColumn { Name = "\"NAME\"", Type = "VARCHAR2", Size = 50 }
 				          }
 			},
 		};

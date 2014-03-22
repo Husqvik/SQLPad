@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -62,8 +63,6 @@ namespace SqlPad
 			var statements = _sqlParser.Parse(Editor.Text);
 			_colorizeAvalonEdit.SetStatementCollection(statements);
 			Editor.TextArea.TextView.Redraw();
-
-			_codeSnippetProvider.GetSnippets(Editor.Text, Editor.CaretOffset);
 		}
 
 		private void AddColumnAliasesExecutedHandler(object sender, ExecutedRoutedEventArgs e)
@@ -100,11 +99,18 @@ namespace SqlPad
 
 		void TextEnteredHandler(object sender, TextCompositionEventArgs e)
 		{
+			var snippets = _codeSnippetProvider.GetSnippets(Editor.Text, Editor.CaretOffset).Select(i => new CompletionData(i)).ToArray();
+			if (_completionWindow == null && snippets.Length > 0)
+			{
+				CreateSnippetCompletionWindow(snippets);
+				return;
+			}
+
 			if (e.Text != ".")
 				return;
 			
 			// Open code completion after the user has pressed dot:
-			CreateCompletionWindow(true);
+			CreateCodeCompletionWindow();
 		}
 
 		void TextEnteringHandler(object sender, TextCompositionEventArgs e)
@@ -124,24 +130,37 @@ namespace SqlPad
 			if (e.Text == " " && Keyboard.Modifiers == ModifierKeys.Control)
 			{
 				e.Handled = true;
-				CreateCompletionWindow(true);
+				CreateCodeCompletionWindow();
 			}
 		}
 
-		private void CreateCompletionWindow(bool show)
+		private void CreateCodeCompletionWindow()
+		{
+			CreateCompletionWindow(() => _codeCompletionProvider.ResolveItems(Editor.Text, Editor.CaretOffset).Select(i => new CompletionData(i)), true);
+		}
+
+		private void CreateSnippetCompletionWindow(IEnumerable<ICompletionData> items)
+		{
+			CreateCompletionWindow(() => items, true);
+		}
+
+		private void CreateCompletionWindow(Func<IEnumerable<ICompletionData>> getCompletionDataFunc, bool show)
 		{
 			_completionWindow = new CompletionWindow(Editor.TextArea);
 			var data = _completionWindow.CompletionList.CompletionData;
 
-			foreach (var item in _codeCompletionProvider.ResolveItems(Editor.Text, Editor.CaretOffset))
+			foreach (var item in getCompletionDataFunc())
 			{
-				data.Add(new CompletionData(item.Name));
+				data.Add(item);
 			}
 
 			_completionWindow.Closed += delegate { _completionWindow = null; };
 
 			if (show && data.Count > 0)
+			{
+				_completionWindow.Width += 4;
 				_completionWindow.Show();
+			}
 		}
 
 		void MouseHoverHandler(object sender, MouseEventArgs e)
