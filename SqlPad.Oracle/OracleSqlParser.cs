@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Serialization;
@@ -10,6 +11,7 @@ namespace SqlPad.Oracle
 {
 	public class OracleSqlParser : ISqlParser
 	{
+		private static readonly Assembly LocalAssembly = typeof(OracleSqlParser).Assembly;
 		private readonly SqlGrammar _sqlGrammar;
 		private readonly Dictionary<string, SqlGrammarRuleSequence[]> _startingNonTerminalSequences;
 		private readonly Dictionary<string, SqlGrammarTerminal> _terminals;
@@ -23,7 +25,7 @@ namespace SqlPad.Oracle
 
 		public OracleSqlParser()
 		{
-			using (var grammarReader = XmlReader.Create("OracleSqlGrammar.xml"))
+			using (var grammarReader = XmlReader.Create(LocalAssembly.GetManifestResourceStream("SqlPad.Oracle.OracleSqlGrammar.xml")))
 			{
 				_sqlGrammar = (SqlGrammar)XmlSerializer.Deserialize(grammarReader);
 			}

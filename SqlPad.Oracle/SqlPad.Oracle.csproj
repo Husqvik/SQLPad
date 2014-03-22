@@ -71,15 +71,14 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>OracleGramarDescription.cs</LastGenOutput>
     </None>
-    <None Include="OracleSqlGrammar.xsd">
+    <EmbeddedResource Include="OracleSqlGrammar.xsd">
       <SubType>Designer</SubType>
-    </None>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="OracleSqlGrammar.xml">
+    <EmbeddedResource Include="OracleSqlGrammar.xml">
       <SubType>Designer</SubType>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    </EmbeddedResource>
     <Content Include="Snippets\SnippetSelect.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

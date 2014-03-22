@@ -16,9 +16,9 @@ namespace SqlPad.Oracle
 
 		private static readonly HashSet<string> SchemasInternal = new HashSet<string> { "\"SYS\"", "\"SYSTEM\"", CurrentSchemaInternal, SchemaPublic };
 
-		private static readonly HashSet<OracleDatabaseObject> AllObjectsInternal = new HashSet<OracleDatabaseObject>
+		private static readonly HashSet<OracleDataObject> AllObjectsInternal = new HashSet<OracleDataObject>
 		{
-			new OracleDatabaseObject
+			new OracleDataObject
 			{
 				Name = "\"DUAL\"",
 				Owner = "\"SYS\"",
@@ -28,9 +28,9 @@ namespace SqlPad.Oracle
 					             new OracleColumn { Name = "\"DUMMY\"", Type = "VARCHAR2", Size = 1 }
 				             }
 			},
-			new OracleDatabaseObject { Name = "\"V_$SESSION\"", Owner = "\"SYS\"", Type = "VIEW" },
-			new OracleDatabaseObject { Name = "\"V$SESSION\"", Owner = SchemaPublic, Type = "SYNONYM" },
-			new OracleDatabaseObject
+			new OracleDataObject { Name = "\"V_$SESSION\"", Owner = "\"SYS\"", Type = "VIEW" },
+			new OracleDataObject { Name = "\"V$SESSION\"", Owner = SchemaPublic, Type = "SYNONYM" },
+			new OracleDataObject
 			{
 				Name = "\"DUAL\"",
 				Owner = SchemaPublic,
@@ -40,7 +40,7 @@ namespace SqlPad.Oracle
 					             new OracleColumn { Name = "\"DUMMY\"", Type = "VARCHAR2", Size = 1 }
 				             }
 			},
-			new OracleDatabaseObject
+			new OracleDataObject
 			{
 				Name = "\"COUNTRY\"",
 				Owner = CurrentSchemaInternal,
@@ -51,7 +51,7 @@ namespace SqlPad.Oracle
 							  new OracleColumn { Name = "\"NAME\"", Type = "VARCHAR2", Size = 50 }
 				          }
 			},
-			new OracleDatabaseObject
+			new OracleDataObject
 			{
 				Name = "\"ORDERS\"",
 				Owner = CurrentSchemaInternal,
@@ -61,8 +61,8 @@ namespace SqlPad.Oracle
 					          new OracleColumn { Name = "\"ID\"", Type = "NUMBER", Precision = 9, Scale = 0 }
 				          }
 			},
-			new OracleDatabaseObject { Name = "\"VIEW_INSTANTSEARCH\"", Owner = CurrentSchemaInternal, Type = "VIEW" },
-			new OracleDatabaseObject
+			new OracleDataObject { Name = "\"VIEW_INSTANTSEARCH\"", Owner = CurrentSchemaInternal, Type = "VIEW" },
+			new OracleDataObject
 			{
 				Name = "\"TARGETGROUP\"",
 				Owner = CurrentSchemaInternal,
@@ -72,9 +72,20 @@ namespace SqlPad.Oracle
 					          new OracleColumn { Name = "\"TARGETGROUP_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
 					          new OracleColumn { Name = "\"PROJECT_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
 							  new OracleColumn { Name = "\"NAME\"", Type = "VARCHAR2", Size = 50 }
-				          }
+				          },
+						  ForeignKeys = new List<OracleForeignKeyConstraint>
+				              {
+								  new OracleForeignKeyConstraint
+					              {
+						              Name = "\"FK_TARGETGROUP_PROJECT\"", Owner = CurrentSchemaInternal,
+									  SourceColumns = new []{ "\"PROJECT_ID\"" },
+									  TargetColumns = new []{ "\"PROJECT_ID\"" },
+									  TargetSchema = CurrentSchemaInternal,
+									  TargetTable = "\"PROJECT\""
+					              }
+				              }
 			},
-			new OracleDatabaseObject
+			new OracleDataObject
 			{
 				Name = "\"PROJECT\"",
 				Owner = CurrentSchemaInternal,
@@ -85,7 +96,7 @@ namespace SqlPad.Oracle
 					          new OracleColumn { Name = "\"PROJECT_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 }
 				          }
 			},
-			new OracleDatabaseObject
+			new OracleDataObject
 			{
 				Name = "\"RESPONDENTBUCKET\"",
 				Owner = CurrentSchemaInternal,
@@ -96,20 +107,58 @@ namespace SqlPad.Oracle
 					          new OracleColumn { Name = "\"TARGETGROUP_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
 					          new OracleColumn { Name = "\"PROJECT_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
 							  new OracleColumn { Name = "\"NAME\"", Type = "VARCHAR2", Size = 50 }
-				          }
+				          },
+						  ForeignKeys = new List<OracleForeignKeyConstraint>
+				              {
+					              new OracleForeignKeyConstraint
+					              {
+						              Name = "\"FK_RESPONDENTBUCKET_TARGETGROUP\"", Owner = CurrentSchemaInternal,
+									  SourceColumns = new []{ "\"TARGETGROUP_ID\"" },
+									  TargetColumns = new []{ "\"TARGETGROUP_ID\"" },
+									  TargetSchema = CurrentSchemaInternal,
+									  TargetTable = "\"TARGETGROUP\""
+					              },
+								  new OracleForeignKeyConstraint
+					              {
+						              Name = "\"FK_RESPONDENTBUCKET_PROJECT\"", Owner = CurrentSchemaInternal,
+									  SourceColumns = new []{ "\"PROJECT_ID\"" },
+									  TargetColumns = new []{ "\"PROJECT_ID\"" },
+									  TargetSchema = CurrentSchemaInternal,
+									  TargetTable = "\"PROJECT\""
+					              }
+				              }
 			},
-			new OracleDatabaseObject
+			new OracleDataObject
 			{
 				Name = "\"SELECTION\"",
 				Owner = CurrentSchemaInternal,
 				Type = "TABLE",
 				Columns = new HashSet<OracleColumn>
 				          {
-							  new OracleColumn { Name = "\"RESPONDENTBUCKET_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
-					          new OracleColumn { Name = "\"SELECTION_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
-					          new OracleColumn { Name = "\"PROJECT_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
-							  new OracleColumn { Name = "\"NAME\"", Type = "VARCHAR2", Size = 50 }
-				          }
+							  new OracleColumn { Name = "\"RESPONDENTBUCKET_ID\"", Type = "NUMBER", Precision = 9, Scale = 0, Nullable = true },
+					          new OracleColumn { Name = "\"SELECTION_ID\"", Type = "NUMBER", Precision = 9, Scale = 0, Nullable = false },
+					          new OracleColumn { Name = "\"PROJECT_ID\"", Type = "NUMBER", Precision = 9, Scale = 0, Nullable = false },
+							  new OracleColumn { Name = "\"NAME\"", Type = "VARCHAR2", Size = 50, Nullable = false }
+				          },
+				ForeignKeys = new List<OracleForeignKeyConstraint>
+				              {
+					              new OracleForeignKeyConstraint
+					              {
+						              Name = "\"FK_SELECTION_RESPONDENTBUCKET\"", Owner = CurrentSchemaInternal,
+									  SourceColumns = new []{ "\"RESPONDENTBUCKET_ID\"" },
+									  TargetColumns = new []{ "\"RESPONDENTBUCKET_ID\"" },
+									  TargetSchema = CurrentSchemaInternal,
+									  TargetTable = "\"RESPONDENTBUCKET\""
+					              },
+								  new OracleForeignKeyConstraint
+					              {
+						              Name = "\"FK_SELECTION_PROJECT\"", Owner = CurrentSchemaInternal,
+									  SourceColumns = new []{ "\"PROJECT_ID\"" },
+									  TargetColumns = new []{ "\"PROJECT_ID\"" },
+									  TargetSchema = CurrentSchemaInternal,
+									  TargetTable = "\"PROJECT\""
+					              }
+				              }
 			},
 		};
 
@@ -135,14 +184,14 @@ namespace SqlPad.Oracle
 		}
 		#endregion
 
-		private OracleDatabaseObject GetObjectBehindSynonym(OracleDatabaseObject synonym)
+		private OracleDataObject GetObjectBehindSynonym(OracleDataObject synonym)
 		{
 			return null;
 		}
 
 		public SchemaObjectResult GetObject(OracleObjectIdentifier objectIdentifier)
 		{
-			OracleDatabaseObject schemaObject = null;
+			OracleDataObject schemaObject = null;
 			var schemaFound = false;
 
 			if (String.IsNullOrEmpty(objectIdentifier.NormalizedOwner))
@@ -151,16 +200,16 @@ namespace SqlPad.Oracle
 				var publicSchemaObject = OracleObjectIdentifier.Create(SchemaPublic, objectIdentifier.NormalizedName);
 
 				if (AllObjectDictionary.ContainsKey(currentSchemaObject))
-					schemaObject = (OracleDatabaseObject)AllObjectDictionary[currentSchemaObject];
+					schemaObject = (OracleDataObject)AllObjectDictionary[currentSchemaObject];
 				else if (AllObjectDictionary.ContainsKey(publicSchemaObject))
-					schemaObject = (OracleDatabaseObject)AllObjectDictionary[publicSchemaObject];
+					schemaObject = (OracleDataObject)AllObjectDictionary[publicSchemaObject];
 			}
 			else
 			{
 				schemaFound = Schemas.Contains(objectIdentifier.NormalizedOwner);
 
 				if (schemaFound && AllObjectDictionary.ContainsKey(objectIdentifier))
-					schemaObject = (OracleDatabaseObject)AllObjectDictionary[objectIdentifier];
+					schemaObject = (OracleDataObject)AllObjectDictionary[objectIdentifier];
 			}
 
 			return new SchemaObjectResult
@@ -177,28 +226,28 @@ namespace SqlPad.Oracle
 
 		public bool SchemaFound { get; set; }
 
-		public OracleDatabaseObject SchemaObject { get; set; }
+		public OracleDataObject SchemaObject { get; set; }
 	}
 
 	[DebuggerDisplay("DebuggerDisplay (Owner={Owner}; Name={Name}; Type={Type})")]
-	public class OracleDatabaseObject : IDatabaseObject
+	public class OracleDataObject : OracleObject, IDatabaseObject
 	{
-		public OracleDatabaseObject()
+		public OracleDataObject()
 		{
 			Properties = new List<IDatabaseObjectProperty>();
 			Columns = new List<OracleColumn>();
+			ForeignKeys = new List<OracleForeignKeyConstraint>();
 		}
 
 		#region Implementation of IDatabaseObject
-		public string Name { get; set; }
-		public string Type { get; set; }
-		public string Owner { get; set; }
 		public ICollection<IDatabaseObjectProperty> Properties { get; set; }
 
 		IEnumerable<IColumn> IDatabaseObject.Columns { get { return Columns; } }
 		#endregion
 
 		public ICollection<OracleColumn> Columns { get; set; }
+
+		public ICollection<OracleForeignKeyConstraint> ForeignKeys { get; set; } 
 	}
 
 	[DebuggerDisplay("OracleColumn (Name={Name}; Type={Type})")]
@@ -214,5 +263,24 @@ namespace SqlPad.Oracle
 		public int Scale { get; set; }
 		public int Size { get; set; }
 		public bool Nullable { get; set; }
+	}
+
+	public abstract class OracleObject
+	{
+		public string Name { get; set; }
+		public string Type { get; set; }
+		public string Owner { get; set; }
+	}
+
+	[DebuggerDisplay("OracleForeignKeyConstraint (Name={Name}; Type={Type})")]
+	public class OracleForeignKeyConstraint : OracleObject
+	{
+		public string TargetSchema { get; set; }
+
+		public string TargetTable { get; set; }
+
+		public ICollection<string> SourceColumns { get; set; } 
+		
+		public ICollection<string> TargetColumns { get; set; } 
 	}
 }
