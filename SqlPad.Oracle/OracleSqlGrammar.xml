@@ -744,7 +744,7 @@
       <Sequences>
         <Sequence>
           <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="Identifier" />
+          <Terminal Id="ObjectIdentifier" />
           <NonTerminal Id="PartitionOrDatabaseLink" IsOptional="true" />
           <NonTerminal Id="SampleClause" IsOptional="true" />
         </Sequence>

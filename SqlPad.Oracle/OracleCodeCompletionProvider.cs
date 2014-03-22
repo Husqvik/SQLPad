@@ -50,6 +50,28 @@ namespace SqlPad.Oracle
 				}
 			}
 
+			if (currentNode.Id == Terminals.ObjectIdentifier)
+			{
+				var selectList = currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.SelectList);
+				if (selectList == null)
+				{
+					// TODO: Add option to search all/current/public schemas
+					var schemaIdentifier = currentNode.ParentNode.GetSingleDescendant(Terminals.SchemaIdentifier);
+
+					var schemaName = schemaIdentifier != null
+						? schemaIdentifier.Token.Value.ToOracleIdentifier()
+						: DatabaseModelFake.Instance.CurrentSchema;
+
+					return DatabaseModelFake.Instance.AllObjects.Values
+						.Where(o => o.Owner == schemaName)
+						.Select(o => new OracleCodeCompletionItem
+						             {
+							             Name = o.Name.ToSimpleIdentifier(),
+							             StatementNode = currentNode
+						             }).ToArray();
+				}
+			}
+
 			return EmptyCollection;
 		}
 	}

@@ -56,7 +56,7 @@ namespace SqlPad.Oracle.Test
 			terminals[2].Id.ShouldBe(Terminals.From);
 			terminals[2].SourcePosition.IndexStart.ShouldBe(12);
 			terminals[2].SourcePosition.IndexEnd.ShouldBe(15);
-			terminals[3].Id.ShouldBe(Terminals.Identifier);
+			terminals[3].Id.ShouldBe(Terminals.ObjectIdentifier);
 			terminals[3].Token.Value.ShouldBe("DUAL");
 			terminals[3].SourcePosition.IndexStart.ShouldBe(17);
 			terminals[3].SourcePosition.IndexEnd.ShouldBe(20);
@@ -92,7 +92,7 @@ namespace SqlPad.Oracle.Test
 			terminals[11].Id.ShouldBe(Terminals.SchemaIdentifier);
 			terminals[11].Token.Value.ShouldBe("SYS");
 			terminals[12].Id.ShouldBe(Terminals.Dot);
-			terminals[13].Id.ShouldBe(Terminals.Identifier);
+			terminals[13].Id.ShouldBe(Terminals.ObjectIdentifier);
 			terminals[13].Token.Value.ShouldBe("DUAL");
 		}
 
@@ -440,7 +440,7 @@ namespace SqlPad.Oracle.Test
 
 			var terminals = result.Single().NodeCollection.SelectMany(n => n.Terminals).ToArray();
 			terminals.Length.ShouldBe(38);
-			terminals[3].Id.ShouldBe(Terminals.Identifier);
+			terminals[3].Id.ShouldBe(Terminals.ObjectIdentifier);
 			terminals[3].ParentNode.Id.ShouldBe(NonTerminals.QueryTableExpression);
 			terminals[3].Token.Value.ShouldBe("T1");
 			terminals[4].Id.ShouldBe(Terminals.Cross);
@@ -455,7 +455,7 @@ namespace SqlPad.Oracle.Test
 			terminals[23].Id.ShouldBe(Terminals.Full);
 			terminals[24].Id.ShouldBe(Terminals.Outer);
 			terminals[25].Id.ShouldBe(Terminals.Join);
-			terminals[26].Id.ShouldBe(Terminals.Identifier);
+			terminals[26].Id.ShouldBe(Terminals.ObjectIdentifier);
 			terminals[27].Id.ShouldBe(Terminals.Alias);
 
 			const string query2 = @"SELECT 1 FROM DUAL T1 LEFT OUTER JOIN DUAL T2 PARTITION BY (T2.DUMMY, DUMMY) ON (T1.DUMMY = T2.DUMMY)";

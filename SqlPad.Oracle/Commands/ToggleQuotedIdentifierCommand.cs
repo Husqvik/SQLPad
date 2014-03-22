@@ -31,14 +31,14 @@ namespace SqlPad.Oracle.Commands
 			}
 			else
 			{
-				var firstAlias = queryBlockRoot.GetDescendants(OracleGrammarDescription.Terminals.Alias, OracleGrammarDescription.Terminals.Identifier).FirstOrDefault();
+				var firstAlias = queryBlockRoot.GetDescendants(OracleGrammarDescription.Terminals.Alias, OracleGrammarDescription.Terminals.Identifier, OracleGrammarDescription.Terminals.ObjectIdentifier).FirstOrDefault();
 				if (firstAlias == null)
 					return statementText;
 
 				enableQuoting = !firstAlias.Token.Value.StartsWith("\"");
 			}
 
-			var aliases = queryBlockRoot.GetDescendants(OracleGrammarDescription.Terminals.Alias, OracleGrammarDescription.Terminals.Identifier);
+			var aliases = queryBlockRoot.GetDescendants(OracleGrammarDescription.Terminals.Alias, OracleGrammarDescription.Terminals.Identifier, OracleGrammarDescription.Terminals.ObjectIdentifier);
 
 			foreach (var alias in aliases.OrderByDescending(a => a.SourcePosition.IndexEnd))
 			{

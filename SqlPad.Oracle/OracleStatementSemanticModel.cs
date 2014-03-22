@@ -84,7 +84,7 @@ namespace SqlPad.Oracle
 						continue;
 					}
 
-					var tableIdentifierNode = queryTableExpression.ChildNodes.SingleOrDefault(n => n.Id == Terminals.Identifier);
+					var tableIdentifierNode = queryTableExpression.ChildNodes.SingleOrDefault(n => n.Id == Terminals.ObjectIdentifier);
 
 					if (tableIdentifierNode == null)
 						continue;
