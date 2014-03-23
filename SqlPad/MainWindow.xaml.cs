@@ -106,7 +106,7 @@ namespace SqlPad
 				return;
 			}
 
-			if (e.Text != "." && e.Text != " ")
+			if (e.Text != "." && e.Text != " " && e.Text != "\n")
 				return;
 			
 			// Open code completion after the user has pressed dot:

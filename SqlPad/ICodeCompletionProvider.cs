@@ -9,8 +9,12 @@ namespace SqlPad
 
 	public interface ICodeCompletionItem
 	{
+		string Category { get; }
+		
 		string Name { get; }
 
 		StatementDescriptionNode StatementNode { get; }
+
+		int Priority { get; }
 	}
 }

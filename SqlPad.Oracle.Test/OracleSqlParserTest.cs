@@ -972,6 +972,15 @@ namespace SqlPad.Oracle.Test
 			terminals.Length.ShouldBe(5);
 			terminals[3].Id.ShouldBe(Terminals.ObjectIdentifier);
 			terminals[4].Id.ShouldBe(Terminals.Alias);
+
+			const string query4 = @"SELECT NULL FROM SELECTION S JOIN PROJECT";
+			result = _oracleSqlParser.Parse(query4);
+
+			result.Count.ShouldBe(1);
+			statement = result.Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			terminals = statement.NodeCollection.SelectMany(n => n.Terminals).ToArray();
+			terminals.Length.ShouldBe(7);
 		}
 
 		private static OracleTokenReader CreateTokenReader(string sqlText)

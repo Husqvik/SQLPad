@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 
 namespace SqlPad.Oracle
@@ -38,6 +39,20 @@ namespace SqlPad.Oracle
 				: aliasNode.Token.Value;
 
 			return Create(ownerName, tableName);
+		}
+
+		#region Overrides of ValueType
+		public override string ToString()
+		{
+			var ownerPrefix = String.IsNullOrEmpty(Owner) ? null : Owner.ToSimpleIdentifier() + ".";
+			return ownerPrefix + Name.ToSimpleIdentifier();
+		}
+		#endregion
+
+		public string ToNormalizedString()
+		{
+			var ownerPrefix = String.IsNullOrEmpty(NormalizedOwner) ? null : NormalizedOwner + ".";
+			return ownerPrefix + NormalizedName;
 		}
 
 		#region Equality members

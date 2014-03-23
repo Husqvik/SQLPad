@@ -239,6 +239,24 @@ namespace SqlPad
 			return removedTerminalCount;
 		}
 
+		public StatementDescriptionNode Clone()
+		{
+			var clonedNode = new StatementDescriptionNode(Type)
+			                               {
+				                               Id = Id,
+				                               IsRequired = IsRequired,
+				                               Level = Level,
+				                               Token = Token
+			                               };
+
+			if (Type == NodeType.NonTerminal)
+			{
+				clonedNode.AddChildNodes(_childNodes.Select(n => n.Clone()));
+			}
+
+			return clonedNode;
+		}
+
 		internal static StatementDescriptionNode FromChildNodes(IEnumerable<StatementDescriptionNode> childNodes)
 		{
 			var node = new StatementDescriptionNode(NodeType.NonTerminal);

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
@@ -18,37 +19,85 @@ namespace SqlPad.Oracle
 		{
 			//Trace.WriteLine("OracleCodeCompletionProvider.ResolveItems called. Cursor position: "+ cursorPosition);
 
+			OracleStatementSemanticModel semanticModel;
+			var databaseModel = DatabaseModelFake.Instance;
+
 			var statements = _oracleParser.Parse(statementText);
 			var statement = (OracleStatement)statements.SingleOrDefault(s => s.GetNodeAtPosition(cursorPosition) != null);
 			if (statement == null)
 			{
 				if (statements.Count > 0)
 				{
-					var lastPreviousTerminal = ((OracleStatement)statements.Last()).GetNearestTerminalToPosition(cursorPosition);
+					var lastStatement = (OracleStatement)statements.Last();
+					semanticModel = new OracleStatementSemanticModel(null, lastStatement, databaseModel);
+
+					var lastPreviousTerminal = lastStatement.GetNearestTerminalToPosition(cursorPosition);
 					if (lastPreviousTerminal != null)
 					{
+						var completionItems = Enumerable.Empty<ICodeCompletionItem>();
 						if (lastPreviousTerminal.Id == Terminals.From ||
 						    lastPreviousTerminal.Id == Terminals.ObjectIdentifier)
 						{
 							var currentName = lastPreviousTerminal.Id == Terminals.From ? null : statementText.Substring(lastPreviousTerminal.SourcePosition.IndexStart, cursorPosition - lastPreviousTerminal.SourcePosition.IndexStart);
-							return GenerateSchemaObjectItems(DatabaseModelFake.Instance.CurrentSchema, currentName, null);
+							completionItems = completionItems.Concat(GenerateSchemaObjectItems(databaseModel.CurrentSchema, currentName, null));
+						}
+
+						if (lastPreviousTerminal.Id == Terminals.Dot &&
+							lastPreviousTerminal.ParentNode.Id == NonTerminals.SchemaPrefix &&
+							!lastPreviousTerminal.IsWithinSelectClauseOrCondition())
+						{
+							var ownerName = lastPreviousTerminal.ParentNode.ChildNodes.Single(n => n.Id == Terminals.SchemaIdentifier).Token.Value;
+							completionItems = completionItems.Concat(GenerateSchemaObjectItems(ownerName, null, null));
+						}
+
+						if (lastPreviousTerminal.Id == Terminals.ObjectIdentifier ||
+						    lastPreviousTerminal.Id == Terminals.Alias)
+						{
+							var joinClause = lastPreviousTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.FromClause, NonTerminals.JoinClause);
+							if (joinClause != null)
+							{
+								var fromClause = joinClause.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.FromClause);
+								if (fromClause != null)
+								{
+									var parentTableReference = fromClause.ChildNodes.Single(n => n.Id == NonTerminals.TableReference);
+									var parentTable = parentTableReference.GetDescendantsWithinSameQuery(Terminals.ObjectIdentifier).SingleOrDefault();
+									if (parentTable != null)
+									{
+										var queryBlock = semanticModel.GetQueryBlock(lastPreviousTerminal);
+										var pTable = queryBlock.TableReferences.SingleOrDefault(t => t.Type == TableReferenceType.PhysicalObject && t.TableNode == parentTable);
+										var cTable = queryBlock.TableReferences.SingleOrDefault(t => t.Type == TableReferenceType.PhysicalObject && (t.TableNode == lastPreviousTerminal || t.AliasNode == lastPreviousTerminal));
+
+										var joinSuggestions = GenerateJoinConditionSuggestionItems(pTable, cTable);
+										completionItems = completionItems.Concat(joinSuggestions);
+									}
+								}
+							}
 						}
 
 						var tableReference = lastPreviousTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.NestedQuery, NonTerminals.TableReference);
 						if (tableReference != null)
 						{
 							var alias = tableReference.GetDescendantsWithinSameQuery(Terminals.Alias).SingleOrDefault();
-							var aliasValue = alias.Token.Value.ToUpperInvariant();
+							if (alias != null)
+							{
+								var aliasValue = alias.Token.Value.ToUpperInvariant();
 
-							return JoinClauses.Where(j => j.Contains(aliasValue))
-								.Select(j => new OracleCodeCompletionItem
-								             {
-									             Name = j,
-												 StatementNode = lastPreviousTerminal
-								             }).ToArray();
-
-							//if (tableReference.Terminals.Last().Token.Value.ToUpper() == )
+								completionItems = completionItems.Concat(
+									JoinClauses.Where(j => j.Contains(aliasValue))
+										.Select(j => new OracleCodeCompletionItem
+										             {
+											             Name = j,
+											             StatementNode = lastPreviousTerminal
+										             }));
+							}
 						}
+
+						if (lastPreviousTerminal.Id == Terminals.Join)
+						{
+							completionItems = completionItems.Concat(GenerateSchemaObjectItems(databaseModel.CurrentSchema, null, null));
+						}
+
+						return completionItems.ToArray();
 					}
 				}
 				
@@ -56,7 +105,7 @@ namespace SqlPad.Oracle
 			}
 
 			var currentNode = statement.GetNodeAtPosition(cursorPosition);
-			var semanticModel = new OracleStatementSemanticModel(statementText, statement, DatabaseModelFake.Instance);
+			semanticModel = new OracleStatementSemanticModel(statementText, statement, databaseModel);
 
 			if (currentNode.Id == Terminals.Identifier)
 			{
@@ -92,22 +141,18 @@ namespace SqlPad.Oracle
 				}
 			}
 
-			if (currentNode.Id == Terminals.ObjectIdentifier)
+			if (currentNode.Id == Terminals.ObjectIdentifier &&
+				!currentNode.IsWithinSelectClauseOrCondition())
 			{
-				var selectList = currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.SelectList);
-				var condition = currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.Condition);
-				if (selectList == null && condition == null)
-				{
-					// TODO: Add option to search all/current/public schemas
-					var schemaIdentifier = currentNode.ParentNode.GetSingleDescendant(Terminals.SchemaIdentifier);
+				// TODO: Add option to search all/current/public schemas
+				var schemaIdentifier = currentNode.ParentNode.GetSingleDescendant(Terminals.SchemaIdentifier);
 
-					var schemaName = schemaIdentifier != null
-						? schemaIdentifier.Token.Value
-						: DatabaseModelFake.Instance.CurrentSchema;
+				var schemaName = schemaIdentifier != null
+					? schemaIdentifier.Token.Value
+					: databaseModel.CurrentSchema;
 
-					var currentName = statementText.Substring(currentNode.SourcePosition.IndexStart, cursorPosition - currentNode.SourcePosition.IndexStart);
-					return GenerateSchemaObjectItems(schemaName, currentName, currentNode);
-				}
+				var currentName = statementText.Substring(currentNode.SourcePosition.IndexStart, cursorPosition - currentNode.SourcePosition.IndexStart);
+				return GenerateSchemaObjectItems(schemaName, currentName, currentNode);
 			}
 
 			return EmptyCollection;
@@ -123,12 +168,58 @@ namespace SqlPad.Oracle
 							StatementNode = node
 						}).ToArray();
 		}
+
+		private IEnumerable<ICodeCompletionItem> GenerateJoinConditionSuggestionItems(OracleTableReference parentTable, OracleTableReference joinedTable)
+		{
+			if (parentTable.Type != TableReferenceType.PhysicalObject || parentTable.SearchResult.SchemaObject == null ||
+				joinedTable.Type != TableReferenceType.PhysicalObject || joinedTable.SearchResult.SchemaObject == null)
+				return EmptyCollection;
+
+			var parentObject = parentTable.SearchResult.SchemaObject;
+			var joinedObject = joinedTable.SearchResult.SchemaObject;
+
+			var joinedToParentKeys = parentObject.ForeignKeys.Where(k => k.TargetObject == joinedObject.FullyQualifiedName)
+				.Select(k => GenerateJoinConditionSuggestionItem(joinedTable.FullyQualifiedName, parentTable.FullyQualifiedName, k));
+
+			var parentToJoinedKeys = joinedObject.ForeignKeys.Where(k => k.TargetObject == parentObject.FullyQualifiedName)
+				.Select(k => GenerateJoinConditionSuggestionItem(parentTable.FullyQualifiedName, joinedTable.FullyQualifiedName, k));
+
+			// TODO: Add suggestion based on column name
+
+			return joinedToParentKeys.Concat(parentToJoinedKeys);
+		}
+
+		private OracleCodeCompletionItem GenerateJoinConditionSuggestionItem(OracleObjectIdentifier sourceObject, OracleObjectIdentifier targetObject, OracleForeignKeyConstraint foreignKey)
+		{
+			var builder = new StringBuilder("ON ");
+			var op = String.Empty;
+
+			for (var i = 0; i < foreignKey.SourceColumns.Count; i++)
+			{
+				builder.Append(op);
+				builder.Append(sourceObject);
+				builder.Append('.');
+				builder.Append(foreignKey.SourceColumns[i].ToSimpleIdentifier());
+				builder.Append(" = ");
+				builder.Append(targetObject);
+				builder.Append('.');
+				builder.Append(foreignKey.TargetColumns[i].ToSimpleIdentifier());
+
+				op = " AND ";
+			}
+
+			return new OracleCodeCompletionItem { Name = builder.ToString() };
+		}
 	}
 
 	public class OracleCodeCompletionItem : ICodeCompletionItem
 	{
+		public string Category { get; set; }
+		
 		public string Name { get; set; }
 		
 		public StatementDescriptionNode StatementNode { get; set; }
+
+		public int Priority { get; set; }
 	}
 }

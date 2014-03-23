@@ -10,6 +10,8 @@ namespace SqlPad
 		public ProcessingStatus Status { get; set; }
 		
 		public IList<StatementDescriptionNode> Nodes { get; set; }
+		
+		public IList<StatementDescriptionNode> BestCandidates { get; set; }
 
 		public IEnumerable<StatementDescriptionNode> Terminals
 		{

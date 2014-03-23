@@ -105,7 +105,9 @@ namespace SqlPad.Oracle
 					
 					var lastTerminal = result.Terminals.Last();
 					if (!_terminators.Contains(lastTerminal.Token.Value) && _tokenBuffer.Count > result.Terminals.Count())
+					{
 						result.Status = ProcessingStatus.SequenceNotFound;
+					}
 
 					break;
 				}
@@ -114,6 +116,11 @@ namespace SqlPad.Oracle
 				int indexEnd;
 				if (result.Status != ProcessingStatus.Success)
 				{
+					if (result.BestCandidates.Sum(n => n.Terminals.Count()) > result.Nodes.Sum(n => n.Terminals.Count()))
+					{
+						result.Nodes = result.BestCandidates;
+					}
+
 					indexStart = _tokenBuffer.First().Index;
 
 					var index = _tokenBuffer.FindIndex(t => _terminators.Contains(t.Value));
@@ -148,14 +155,14 @@ namespace SqlPad.Oracle
 
 		private ProcessingResult ProceedNonTerminal(string nonTerminal, int level, int tokenStartOffset)
 		{
+			var bestCandidateNodes = new List<StatementDescriptionNode>();
 			var workingNodes = new List<StatementDescriptionNode>();
 			var result = new ProcessingResult
 			             {
 				             Status = ProcessingStatus.Start,
-							 Nodes = workingNodes
+							 Nodes = workingNodes,
+							 BestCandidates = new List<StatementDescriptionNode>()
 			             };
-
-			var bestCandidateNodes = new List<StatementDescriptionNode>();
 
 			foreach (var sequence in _startingNonTerminalSequences[nonTerminal])
 			{
@@ -180,19 +187,25 @@ namespace SqlPad.Oracle
 							result.Status = nestedResult.Status;
 						}
 
-						if (nestedResult.Nodes.Count > 0)
-						{
-							var nestedNode = new StatementDescriptionNode(NodeType.NonTerminal) { Id = nestedNonTerminal.Id, Level = level, IsRequired = nestedNonTerminal.IsRequired };
-							nestedNode.AddChildNodes(nestedResult.Nodes);
+						var nestedNode = new StatementDescriptionNode(NodeType.NonTerminal) { Id = nestedNonTerminal.Id, Level = level, IsRequired = nestedNonTerminal.IsRequired };
+						var alternativeNode = nestedNode.Clone();
 
-							if (nestedResult.Status == ProcessingStatus.Success)
-							{
-								workingNodes.Add(nestedNode);
-							}
-							else if (workingNodes.Sum(n => n.Terminals.Count()) + nestedNode.Terminals.Count() > bestCandidateNodes.Sum(n => n.Terminals.Count()))
-							{
-								bestCandidateNodes = new List<StatementDescriptionNode>(workingNodes) { nestedNode };
-							}
+						if (nestedResult.BestCandidates.Count > 0 &&
+							workingNodes.Sum(n => n.Terminals.Count()) + nestedResult.BestCandidates.Sum(n => n.Terminals.Count()) > bestCandidateNodes.Sum(n => n.Terminals.Count()))
+						{
+							var bestCandidatePosition = new Dictionary<SourcePosition, StatementDescriptionNode>();
+							// Candidate nodes can be multiplied, therefore we fetch always the last node.
+							foreach (var candidate in nestedResult.BestCandidates)
+								bestCandidatePosition[candidate.SourcePosition] = candidate.Clone();
+
+							alternativeNode.AddChildNodes(bestCandidatePosition.Values);
+							bestCandidateNodes = new List<StatementDescriptionNode>(workingNodes) { alternativeNode };
+						}
+
+						if (nestedResult.Nodes.Count > 0 && nestedResult.Status == ProcessingStatus.Success)
+						{
+							nestedNode.AddChildNodes(nestedResult.Nodes);
+							workingNodes.Add(nestedNode);
 						}
 
 						if (result.Status == ProcessingStatus.SequenceNotFound)
@@ -226,11 +239,7 @@ namespace SqlPad.Oracle
 					break;
 			}
 
-			if (result.Status == ProcessingStatus.SequenceNotFound &&
-				result.Nodes.Sum(n => n.Terminals.Count()) < bestCandidateNodes.Sum(n => n.Terminals.Count()))
-			{
-				result.Nodes = bestCandidateNodes;
-			}
+			result.BestCandidates = bestCandidateNodes;
 
 			return result;
 		}
@@ -246,14 +255,17 @@ namespace SqlPad.Oracle
 			var optionalTerminalCount = optionalNodeCandidate.Terminals.Count();
 			var newResult = getAlternativeProcessingResultFunction(optionalTerminalCount);
 
-			if (newResult.Terminals.Count() < optionalTerminalCount)
+			//if (newResult.Terminals.Count() < optionalTerminalCount)
+			var newResultTerminalCount = newResult.BestCandidates.Sum(n => n.Terminals.Count());
+			if (newResultTerminalCount < optionalTerminalCount)
 				return false;
 
 			var originalTerminalCount = currentResult.Terminals.Count();
 			currentResult = newResult;
 			
 			//if (newResult.Status == ProcessingStatus.Success)
-			var nodeReverted = newResult.Terminals.Count() > originalTerminalCount;
+			//var nodeReverted = newResult.Terminals.Count() > originalTerminalCount;
+			var nodeReverted = newResultTerminalCount > originalTerminalCount;
 			if (nodeReverted)
 				RevertLastOptionalNode(workingNodes, optionalNodeCandidate.Type);
 
@@ -296,10 +308,12 @@ namespace SqlPad.Oracle
 				currentToken = OracleToken.Empty;
 			}
 
+			var terminalNode = new StatementDescriptionNode(NodeType.Terminal) { Token = currentToken, Id = terminalReference.Id, Level = level, IsRequired = terminalReference.IsRequired };
 			return new ProcessingResult
 			       {
 				       Status = tokenIsValid ? ProcessingStatus.Success : ProcessingStatus.SequenceNotFound,
-					   Nodes = new []{ new StatementDescriptionNode(NodeType.Terminal) { Token = currentToken, Id = terminalReference.Id, Level = level, IsRequired = terminalReference.IsRequired } }
+					   Nodes = new []{ terminalNode },
+					   BestCandidates = new []{ terminalNode }
 			       };
 		}
 	}
