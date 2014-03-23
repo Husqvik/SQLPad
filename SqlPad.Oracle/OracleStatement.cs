@@ -25,5 +25,10 @@ namespace SqlPad.Oracle
 		{
 			return NodeCollection.Select(n => n.GetNodeAtPosition(offset)).FirstOrDefault(n => n != null);
 		}
+
+		public StatementDescriptionNode GetNearestTerminalToPosition(int offset)
+		{
+			return NodeCollection.Select(n => n.GetNearestTerminalToPosition(offset)).FirstOrDefault(n => n != null);
+		}
 	}
 }

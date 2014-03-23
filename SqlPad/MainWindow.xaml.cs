@@ -106,7 +106,7 @@ namespace SqlPad
 				return;
 			}
 
-			if (e.Text != ".")
+			if (e.Text != "." && e.Text != " ")
 				return;
 			
 			// Open code completion after the user has pressed dot:
@@ -127,13 +127,10 @@ namespace SqlPad
 			// Do not set e.Handled=true.
 			// We still want to insert the character that was typed.
 
-			if (e.Text == " ")
+			if (e.Text == " " && Keyboard.Modifiers == ModifierKeys.Control)
 			{
-				if (Keyboard.Modifiers == ModifierKeys.Control)
-				{
-					e.Handled = true;
-					CreateCodeCompletionWindow();
-				}
+				e.Handled = true;
+				CreateCodeCompletionWindow();
 			}
 		}
 

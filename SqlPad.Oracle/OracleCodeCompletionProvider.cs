@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
@@ -15,7 +16,21 @@ namespace SqlPad.Oracle
 			var statements = _oracleParser.Parse(statementText);
 			var statement = (OracleStatement)statements.SingleOrDefault(s => s.GetNodeAtPosition(cursorPosition) != null);
 			if (statement == null)
+			{
+				if (statements.Count > 0)
+				{
+					var lastPreviousTerminal = ((OracleStatement)statements.Last()).GetNearestTerminalToPosition(cursorPosition);
+					if (lastPreviousTerminal != null &&
+						(lastPreviousTerminal.Id == Terminals.From ||
+						 lastPreviousTerminal.Id == Terminals.ObjectIdentifier))
+					{
+						var currentName = lastPreviousTerminal.Id == Terminals.From ? null : statementText.Substring(lastPreviousTerminal.SourcePosition.IndexStart, cursorPosition - lastPreviousTerminal.SourcePosition.IndexStart);
+						return GenerateSchemaObjectItems(DatabaseModelFake.Instance.CurrentSchema, currentName, null);
+					}
+				}
+				
 				return EmptyCollection;
+			}
 
 			var currentNode = statement.GetNodeAtPosition(cursorPosition);
 			var semanticModel = new OracleStatementSemanticModel(statementText, statement, DatabaseModelFake.Instance);
@@ -39,7 +54,9 @@ namespace SqlPad.Oracle
 							{
 								if (columnReferences[0].TableNodeReferences.Count == 1)
 								{
+									var currentName = statementText.Substring(currentNode.SourcePosition.IndexStart, cursorPosition - currentNode.SourcePosition.IndexStart);
 									return columnReferences[0].TableNodeReferences.Single().Columns
+										.Where(c => String.IsNullOrEmpty(currentName) || c.Name.Contains(currentName.ToUpperInvariant()))
 										.Select(c => new OracleCodeCompletionItem
 										             {
 											             Name = c.Name.ToSimpleIdentifier(),
@@ -62,20 +79,26 @@ namespace SqlPad.Oracle
 					var schemaIdentifier = currentNode.ParentNode.GetSingleDescendant(Terminals.SchemaIdentifier);
 
 					var schemaName = schemaIdentifier != null
-						? schemaIdentifier.Token.Value.ToOracleIdentifier()
+						? schemaIdentifier.Token.Value
 						: DatabaseModelFake.Instance.CurrentSchema;
 
-					return DatabaseModelFake.Instance.AllObjects.Values
-						.Where(o => o.Owner == schemaName)
-						.Select(o => new OracleCodeCompletionItem
-						             {
-							             Name = o.Name.ToSimpleIdentifier(),
-							             StatementNode = currentNode
-						             }).ToArray();
+					var currentName = statementText.Substring(currentNode.SourcePosition.IndexStart, cursorPosition - currentNode.SourcePosition.IndexStart);
+					return GenerateSchemaObjectItems(schemaName, currentName, currentNode);
 				}
 			}
 
 			return EmptyCollection;
+		}
+
+		private ICollection<ICodeCompletionItem> GenerateSchemaObjectItems(string schemaName, string objectNamePart, StatementDescriptionNode node)
+		{
+			return DatabaseModelFake.Instance.AllObjects.Values
+						.Where(o => o.Owner == schemaName.ToOracleIdentifier() && (String.IsNullOrEmpty(objectNamePart) || o.Name.Contains(objectNamePart.ToUpperInvariant())))
+						.Select(o => new OracleCodeCompletionItem
+						{
+							Name = o.Name.ToSimpleIdentifier(),
+							StatementNode = node
+						}).ToArray();
 		}
 	}
 

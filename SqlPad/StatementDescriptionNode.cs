@@ -188,6 +188,11 @@ namespace SqlPad
 				.FirstOrDefault();
 		}
 
+		public StatementDescriptionNode GetNearestTerminalToPosition(int offset)
+		{
+			return Terminals.TakeWhile(t => t.SourcePosition.IndexStart <= offset).LastOrDefault();
+		}
+
 		/*private void ResolveLinks()
 		{
 			StatementDescriptionNode previousTerminal = null;
