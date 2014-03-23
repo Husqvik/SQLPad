@@ -218,6 +218,7 @@ namespace SqlPad.Oracle
 							break;
 
 						workingNodes.AddRange(terminalResult.Nodes);
+						bestCandidateNodes.AddRange(terminalResult.Nodes);
 					}
 				}
 

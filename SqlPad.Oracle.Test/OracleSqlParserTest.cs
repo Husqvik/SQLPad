@@ -946,7 +946,32 @@ namespace SqlPad.Oracle.Test
 			terminals[3].Id.ShouldBe(Terminals.ObjectIdentifier);
 			terminals[4].Id.ShouldBe(Terminals.Join);
 			terminals[5].Id.ShouldBe(Terminals.ObjectIdentifier);
-			// TODO: Precise assertions
+
+			const string query2 = @"SELECT NULL FROM SELECTION JOIN HUSQVIK.TARGETGROUP ON ";
+			result = _oracleSqlParser.Parse(query2);
+
+			result.Count.ShouldBe(1);
+			statement = result.Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			terminals = statement.NodeCollection.SelectMany(n => n.Terminals).ToArray();
+			terminals.Length.ShouldBe(9);
+			terminals[3].Id.ShouldBe(Terminals.ObjectIdentifier);
+			terminals[4].Id.ShouldBe(Terminals.Join);
+			terminals[5].Id.ShouldBe(Terminals.SchemaIdentifier);
+			terminals[6].Id.ShouldBe(Terminals.Dot);
+			terminals[7].Id.ShouldBe(Terminals.ObjectIdentifier);
+			terminals[8].Id.ShouldBe(Terminals.On);
+
+			const string query3 = @"SELECT NULL FROM SELECTION MY_SELECTION";
+			result = _oracleSqlParser.Parse(query3);
+
+			result.Count.ShouldBe(1);
+			statement = result.Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			terminals = statement.NodeCollection.SelectMany(n => n.Terminals).ToArray();
+			terminals.Length.ShouldBe(5);
+			terminals[3].Id.ShouldBe(Terminals.ObjectIdentifier);
+			terminals[4].Id.ShouldBe(Terminals.Alias);
 		}
 
 		private static OracleTokenReader CreateTokenReader(string sqlText)
