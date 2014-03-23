@@ -104,7 +104,7 @@ namespace SqlPad.Oracle
 						continue;
 					
 					var lastTerminal = result.Terminals.Last();
-					if (!_terminators.Contains(lastTerminal.Token.Value) && _tokenBuffer.Count > result.TerminalCount)
+					if (!_terminators.Contains(lastTerminal.Token.Value) && _tokenBuffer.Count > result.Terminals.Count())
 						result.Status = ProcessingStatus.SequenceNotFound;
 
 					break;
@@ -135,7 +135,7 @@ namespace SqlPad.Oracle
 					indexStart = result.Terminals.First().Token.Index;
 					indexEnd = lastTerminal.Index + lastTerminal.Value.Length - 1;
 
-					_tokenBuffer.RemoveRange(0, result.TerminalCount);
+					_tokenBuffer.RemoveRange(0, result.Terminals.Count());
 				}
 
 				oracleSql.SourcePosition = new SourcePosition { IndexStart = indexStart, IndexEnd = indexEnd };
@@ -188,7 +188,7 @@ namespace SqlPad.Oracle
 							{
 								workingNodes.Add(nestedNode);
 							}
-							else if (nestedNode.Terminals.Count() > bestCandidateNodes.Sum(n => n.Terminals.Count()))
+							else if (workingNodes.Sum(n => n.Terminals.Count()) + nestedNode.Terminals.Count() > bestCandidateNodes.Sum(n => n.Terminals.Count()))
 							{
 								bestCandidateNodes = new List<StatementDescriptionNode>(workingNodes) { nestedNode };
 							}
@@ -244,12 +244,17 @@ namespace SqlPad.Oracle
 			var optionalTerminalCount = optionalNodeCandidate.Terminals.Count();
 			var newResult = getAlternativeProcessingResultFunction(optionalTerminalCount);
 
-			if (newResult.Status != ProcessingStatus.Success || newResult.TerminalCount < optionalTerminalCount)
+			if (newResult.Status != ProcessingStatus.Success || newResult.Terminals.Count() < optionalTerminalCount)
 				return;
 
 			currentResult = newResult;
-			
-			if (optionalNodeCandidate.Type == NodeType.Terminal)
+
+			RemoveLastOptionalNode(workingNodes, optionalNodeCandidate.Type);
+		}
+
+		private void RemoveLastOptionalNode(IList<StatementDescriptionNode> workingNodes, NodeType nodeType)
+		{
+			if (nodeType == NodeType.Terminal)
 			{
 				workingNodes[workingNodes.Count - 1].RemoveLastChildNodeIfOptional();
 			}

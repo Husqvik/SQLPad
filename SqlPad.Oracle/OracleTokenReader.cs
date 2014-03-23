@@ -20,7 +20,7 @@ namespace SqlPad.Oracle
 			_index = index;
 
 #if DEBUG
-			Trace.Write("{" + value + "@" + index + "}");
+			//Trace.Write("{" + value + "@" + index + "}");
 #endif
 		}
 
@@ -277,7 +277,7 @@ namespace SqlPad.Oracle
 			if (TryNormalizeToken(out token))
 				yield return new OracleToken(token, _currentIndex - token.Length);
 
-			Trace.WriteLine(null);
+			//Trace.WriteLine(null);
 		}
 
 		private int GetNextCharacterCode()

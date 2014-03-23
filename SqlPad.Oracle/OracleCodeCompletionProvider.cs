@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
@@ -11,8 +12,12 @@ namespace SqlPad.Oracle
 		private readonly OracleSqlParser _oracleParser = new OracleSqlParser();
 		private static readonly ICodeCompletionItem[] EmptyCollection = new ICodeCompletionItem[0];
 
+		private static readonly string[] JoinClauses = { "JOIN", "LEFT JOIN", "RIGHT JOIN", "FULL JOIN" };
+
 		public ICollection<ICodeCompletionItem> ResolveItems(string statementText, int cursorPosition)
 		{
+			//Trace.WriteLine("OracleCodeCompletionProvider.ResolveItems called. Cursor position: "+ cursorPosition);
+
 			var statements = _oracleParser.Parse(statementText);
 			var statement = (OracleStatement)statements.SingleOrDefault(s => s.GetNodeAtPosition(cursorPosition) != null);
 			if (statement == null)
@@ -20,12 +25,30 @@ namespace SqlPad.Oracle
 				if (statements.Count > 0)
 				{
 					var lastPreviousTerminal = ((OracleStatement)statements.Last()).GetNearestTerminalToPosition(cursorPosition);
-					if (lastPreviousTerminal != null &&
-						(lastPreviousTerminal.Id == Terminals.From ||
-						 lastPreviousTerminal.Id == Terminals.ObjectIdentifier))
+					if (lastPreviousTerminal != null)
 					{
-						var currentName = lastPreviousTerminal.Id == Terminals.From ? null : statementText.Substring(lastPreviousTerminal.SourcePosition.IndexStart, cursorPosition - lastPreviousTerminal.SourcePosition.IndexStart);
-						return GenerateSchemaObjectItems(DatabaseModelFake.Instance.CurrentSchema, currentName, null);
+						if (lastPreviousTerminal.Id == Terminals.From ||
+						    lastPreviousTerminal.Id == Terminals.ObjectIdentifier)
+						{
+							var currentName = lastPreviousTerminal.Id == Terminals.From ? null : statementText.Substring(lastPreviousTerminal.SourcePosition.IndexStart, cursorPosition - lastPreviousTerminal.SourcePosition.IndexStart);
+							return GenerateSchemaObjectItems(DatabaseModelFake.Instance.CurrentSchema, currentName, null);
+						}
+
+						var tableReference = lastPreviousTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.NestedQuery, NonTerminals.TableReference);
+						if (tableReference != null)
+						{
+							var alias = tableReference.GetDescendantsWithinSameQuery(Terminals.Alias).SingleOrDefault();
+							var aliasValue = alias.Token.Value.ToUpperInvariant();
+
+							return JoinClauses.Where(j => j.Contains(aliasValue))
+								.Select(j => new OracleCodeCompletionItem
+								             {
+									             Name = j,
+												 StatementNode = lastPreviousTerminal
+								             }).ToArray();
+
+							//if (tableReference.Terminals.Last().Token.Value.ToUpper() == )
+						}
 					}
 				}
 				

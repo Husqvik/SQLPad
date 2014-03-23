@@ -930,6 +930,20 @@ namespace SqlPad.Oracle.Test
 			// TODO: Precise assertions
 		}
 
+		[Test(Description = @"Tests unfinished join clause. "), Ignore]
+		public void Test51()
+		{
+			const string query1 = @"SELECT NULL FROM SELECTION JOIN TARGETGROUP ";
+			var result = _oracleSqlParser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			var statement = result.Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			var terminals = statement.NodeCollection.SelectMany(n => n.Terminals).ToArray();
+			terminals.Length.ShouldBe(6);
+			// TODO: Precise assertions
+		}
+
 		private static OracleTokenReader CreateTokenReader(string sqlText)
 		{
 			Trace.WriteLine("SQL text: " + sqlText);

@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace SqlPad
 {
-	[DebuggerDisplay("ProcessingResult (Status={Status}, TerminalCount={TerminalCount})")]
+	[DebuggerDisplay("ProcessingResult (Status={Status}, TerminalCount={System.Linq.Enumerable.Count(Terminals)})")]
 	public struct ProcessingResult
 	{
 		public ProcessingStatus Status { get; set; }
@@ -20,10 +20,5 @@ namespace SqlPad
 					: Nodes.SelectMany(t => t.Terminals);
 			}
 		} 
-
-		public int TerminalCount
-		{
-			get { return Nodes == null ? 0 : Terminals.Count(); }
-		}
 	}
 }

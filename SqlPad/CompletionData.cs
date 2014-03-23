@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Windows.Input;
 using System.Windows.Media;
 using ICSharpCode.AvalonEdit.CodeCompletion;
@@ -25,7 +26,7 @@ namespace SqlPad
 		{
 			Text = codeSnippet.Name;
 			Content = Text;
-			_completionText = codeSnippet.BaseText;
+			_completionText = String.Format(codeSnippet.BaseText, codeSnippet.Parameters.OrderBy(p => p.Index).Select(p => p.DefaultValue).Cast<object>().ToArray());
 		}
 
 		public ImageSource Image
@@ -48,8 +49,7 @@ namespace SqlPad
 			var keyEventArgs = insertionRequestEventArgs as KeyEventArgs;
 			if (keyEventArgs != null && keyEventArgs.Key == Key.Tab && _node != null)
 			{
-				// TODO: Fix offset while typing
-				textArea.Document.Replace(_node.SourcePosition.IndexStart, _node.SourcePosition.Length, _completionText.Trim());
+				textArea.Document.Replace(_node.SourcePosition.IndexStart, _node.SourcePosition.Length + completionSegment.Length, _completionText.Trim());
 			}
 			else
 			{

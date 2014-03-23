@@ -14,7 +14,18 @@ namespace SqlPad.Oracle
 			if (statement == null)
 			{
 				return Snippets.SnippetCollection.Where(s => s.Name.ToUpperInvariant().Contains(statementText.ToUpperInvariant()))
-					.Select(s => new OracleCodeSnippet { Name = s.Name, BaseText = s.Text }).ToArray();
+					.Select(s => new OracleCodeSnippet
+					             {
+						             Name = s.Name,
+						             BaseText = s.Text,
+						             Parameters = new List<ICodeSnippetParameter>(
+							             s.Parameters.Select(p => new OracleCodeSnippetParameter
+							                                      {
+																	  Index = p.Index,
+																	  DefaultValue = p.DefaultValue
+							                                      }))
+							             .AsReadOnly()
+					             }).ToArray();
 			}
 
 			return EmptyCollection;
@@ -26,5 +37,16 @@ namespace SqlPad.Oracle
 		public string Name { get; set; }
 
 		public string BaseText { get; set; }
+
+		public ICollection<ICodeSnippetParameter> Parameters { get; set; }
+	}
+
+	public class OracleCodeSnippetParameter : ICodeSnippetParameter
+	{
+		public string Name { get; set; }
+
+		public int Index { get; set; }
+	
+		public string DefaultValue { get; set; }
 	}
 }
