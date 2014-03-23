@@ -169,12 +169,13 @@ namespace SqlPad.Oracle
 					{
 						var nestedResult = ProceedNonTerminal(nestedNonTerminal.Id, level + 1, tokenOffset);
 
+						var nodeReverted = false;
 						if (nestedResult.Status == ProcessingStatus.SequenceNotFound)
 						{
-							TryRevertOptionalToken(optionalTerminalCount => ProceedNonTerminal(nestedNonTerminal.Id, level + 1, tokenOffset - optionalTerminalCount), ref nestedResult, workingNodes);
+							nodeReverted = TryRevertOptionalToken(optionalTerminalCount => ProceedNonTerminal(nestedNonTerminal.Id, level + 1, tokenOffset - optionalTerminalCount), ref nestedResult, workingNodes);
 						}
 
-						if (nestedNonTerminal.IsRequired || nestedResult.Status == ProcessingStatus.Success)
+						if (nestedNonTerminal.IsRequired || nestedResult.Status == ProcessingStatus.Success || nodeReverted)
 						{
 							result.Status = nestedResult.Status;
 						}
@@ -233,26 +234,32 @@ namespace SqlPad.Oracle
 			return result;
 		}
 
-		private void TryRevertOptionalToken(Func<int, ProcessingResult> getAlternativeProcessingResultFunction, ref ProcessingResult currentResult, IList<StatementDescriptionNode> workingNodes)
+		private bool TryRevertOptionalToken(Func<int, ProcessingResult> getAlternativeProcessingResultFunction, ref ProcessingResult currentResult, IList<StatementDescriptionNode> workingNodes)
 		{
 			var optionalNodeCandidate = workingNodes.Count > 0 ? workingNodes[workingNodes.Count - 1].Terminals.Last() : null;
 			optionalNodeCandidate = optionalNodeCandidate != null && optionalNodeCandidate.IsRequired ? optionalNodeCandidate.ParentNode : optionalNodeCandidate;
 
 			if (optionalNodeCandidate == null || optionalNodeCandidate.IsRequired)
-				return;
+				return false;
 
 			var optionalTerminalCount = optionalNodeCandidate.Terminals.Count();
 			var newResult = getAlternativeProcessingResultFunction(optionalTerminalCount);
 
-			if (newResult.Status != ProcessingStatus.Success || newResult.Terminals.Count() < optionalTerminalCount)
-				return;
+			if (newResult.Terminals.Count() < optionalTerminalCount)
+				return false;
 
+			var originalTerminalCount = currentResult.Terminals.Count();
 			currentResult = newResult;
+			
+			//if (newResult.Status == ProcessingStatus.Success)
+			var nodeReverted = newResult.Terminals.Count() > originalTerminalCount;
+			if (nodeReverted)
+				RevertLastOptionalNode(workingNodes, optionalNodeCandidate.Type);
 
-			RemoveLastOptionalNode(workingNodes, optionalNodeCandidate.Type);
+			return nodeReverted;
 		}
 
-		private void RemoveLastOptionalNode(IList<StatementDescriptionNode> workingNodes, NodeType nodeType)
+		private void RevertLastOptionalNode(IList<StatementDescriptionNode> workingNodes, NodeType nodeType)
 		{
 			if (nodeType == NodeType.Terminal)
 			{

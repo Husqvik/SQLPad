@@ -170,7 +170,9 @@ namespace SqlPad.Oracle.Test
 			terminals.Length.ShouldBe(3);
 			terminals[0].Id.ShouldBe(Terminals.Select);
 			terminals[1].Id.ShouldBe(Terminals.NumberLiteral);
+			terminals[1].Token.Value.ShouldBe("1F");
 			terminals[2].Id.ShouldBe(Terminals.Alias);
+			terminals[2].Token.Value.ShouldBe("F");
 
 			sqlText = @"SELECT . FROM DUAL";
 			result = _oracleSqlParser.Parse(sqlText);
@@ -895,7 +897,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"Tests TREAT function. "), Ignore]
-		public void Test48()
+		public void TestThreatFunction()
 		{
 			const string query1 = @"SELECT NAME, TREAT(VALUE(PERSONS) AS EMPLOYEE_T).SALARY SALARY FROM PERSONS";
 			var result = _oracleSqlParser.Parse(query1);
@@ -930,7 +932,7 @@ namespace SqlPad.Oracle.Test
 			// TODO: Precise assertions
 		}
 
-		[Test(Description = @"Tests unfinished join clause. "), Ignore]
+		[Test(Description = @"Tests unfinished join clause. ")]
 		public void Test51()
 		{
 			const string query1 = @"SELECT NULL FROM SELECTION JOIN TARGETGROUP ";
@@ -941,6 +943,9 @@ namespace SqlPad.Oracle.Test
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
 			var terminals = statement.NodeCollection.SelectMany(n => n.Terminals).ToArray();
 			terminals.Length.ShouldBe(6);
+			terminals[3].Id.ShouldBe(Terminals.ObjectIdentifier);
+			terminals[4].Id.ShouldBe(Terminals.Join);
+			terminals[5].Id.ShouldBe(Terminals.ObjectIdentifier);
 			// TODO: Precise assertions
 		}
 
