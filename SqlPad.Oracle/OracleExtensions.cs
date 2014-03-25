@@ -20,7 +20,7 @@ namespace SqlPad.Oracle
 			return identifier[0] == '"' && identifier == identifier.ToUpperInvariant() ? identifier.Replace(QuoteCharacter, null) : identifier;
 		}
 
-		public static string ToOracleIdentifier(this string identifier)
+		public static string ToQuotedIdentifier(this string identifier)
 		{
 			if (String.IsNullOrWhiteSpace(identifier))
 				return String.Empty;

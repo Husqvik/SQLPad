@@ -67,6 +67,36 @@ namespace SqlPad.Oracle
 			},
 			new OracleDataObject
 			{
+				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"INVOICES\""),
+				Type = "TABLE",
+				Columns = new HashSet<OracleColumn>
+				          {
+					          new OracleColumn { Name = "\"ID\"", Type = "NUMBER", Precision = 9, Scale = 0 }
+				          }
+			},
+			new OracleDataObject
+			{
+				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"INVOICELINES\""),
+				Type = "TABLE",
+				Columns = new HashSet<OracleColumn>
+				          {
+					          new OracleColumn { Name = "\"ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
+					          new OracleColumn { Name = "\"INVOICE_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 }
+				          },
+						  ForeignKeys = new List<OracleForeignKeyConstraint>
+				              {
+								  new OracleForeignKeyConstraint
+					              {
+									  FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"FK_INVOICELINES_INVOICES\""),
+									  SourceColumns = new []{ "\"INVOICE_ID\"" },
+									  TargetColumns = new []{ "\"ID\"" },
+									  SourceObject = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"INVOICELINES\""),
+									  TargetObject = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"INVOICES\"")
+					              }
+				              }.AsReadOnly()
+			},
+			new OracleDataObject
+			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"VIEW_INSTANTSEARCH\""),
 				Type = "VIEW"
 			},
@@ -280,7 +310,7 @@ namespace SqlPad.Oracle
 		public string Type { get; set; }
 	}
 
-	[DebuggerDisplay("OracleForeignKeyConstraint (Name={Name}; Type={Type})")]
+	[DebuggerDisplay("OracleForeignKeyConstraint (Name={FullyQualifiedName.Name}; Type={Type})")]
 	public class OracleForeignKeyConstraint : OracleObject
 	{
 		public OracleObjectIdentifier TargetObject { get; set; }

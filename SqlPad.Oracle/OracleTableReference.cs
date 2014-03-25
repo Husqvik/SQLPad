@@ -17,7 +17,12 @@ namespace SqlPad.Oracle
 
 		public OracleObjectIdentifier FullyQualifiedName
 		{
-			get { return OracleObjectIdentifier.Create(OwnerNode, Type == TableReferenceType.NestedQuery ? null : TableNode, AliasNode); }
+			get
+			{
+				return OracleObjectIdentifier.Create(
+					AliasNode == null ? OwnerNode : null,
+					Type == TableReferenceType.NestedQuery ? null : TableNode, AliasNode);
+			}
 		}
 
 		public ICollection<OracleColumn> Columns

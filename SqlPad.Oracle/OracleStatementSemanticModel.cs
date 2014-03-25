@@ -42,7 +42,7 @@ namespace SqlPad.Oracle
 				var factoredSubqueryReference = queryBlock.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBoundary, NonTerminals.SubqueryComponent, false);
 				if (factoredSubqueryReference != null)
 				{
-					item.Alias = factoredSubqueryReference.ChildNodes.First().Token.Value.ToOracleIdentifier();
+					item.Alias = factoredSubqueryReference.ChildNodes.First().Token.Value.ToQuotedIdentifier();
 					item.Type = QueryBlockType.CommonTableExpression;
 				}
 				else
@@ -55,7 +55,7 @@ namespace SqlPad.Oracle
 						var nestedSubqueryAlias = selfTableReference.ChildNodes.SingleOrDefault(n => n.Id == Terminals.Alias);
 						if (nestedSubqueryAlias != null)
 						{
-							item.Alias = nestedSubqueryAlias.Token.Value.ToOracleIdentifier();
+							item.Alias = nestedSubqueryAlias.Token.Value.ToQuotedIdentifier();
 						}
 					}
 				}
@@ -97,7 +97,7 @@ namespace SqlPad.Oracle
 						schemaPrefixNode = schemaPrefixNode.ChildNodes.First();
 					}
 
-					var tableName = tableIdentifierNode.Token.Value.ToOracleIdentifier();
+					var tableName = tableIdentifierNode.Token.Value.ToQuotedIdentifier();
 					var commonTableExpressions = schemaPrefixNode != null
 						? new StatementDescriptionNode[0]
 						: GetCommonTableExpressionReferences(queryBlock, tableName, sqlText).ToArray();
@@ -335,7 +335,7 @@ namespace SqlPad.Oracle
 
 			var commonTableExpressions = queryRoot
 				.GetPathFilterDescendants(n => n.Id != NonTerminals.QueryBlock, NonTerminals.SubqueryComponent)
-				.Where(cte => cte.ChildNodes.First().Token.Value.ToOracleIdentifier() == normalizedReferenceName);
+				.Where(cte => cte.ChildNodes.First().Token.Value.ToQuotedIdentifier() == normalizedReferenceName);
 			return commonTableExpressions.Concat(GetCommonTableExpressionReferences(queryRoot, normalizedReferenceName, sqlText));
 		}
 	}

@@ -39,7 +39,7 @@ namespace SqlPad.Oracle
 						    lastPreviousTerminal.Id == Terminals.ObjectIdentifier)
 						{
 							var currentName = lastPreviousTerminal.Id == Terminals.From ? null : statementText.Substring(lastPreviousTerminal.SourcePosition.IndexStart, cursorPosition - lastPreviousTerminal.SourcePosition.IndexStart);
-							completionItems = completionItems.Concat(GenerateSchemaObjectItems(databaseModel.CurrentSchema, currentName, null));
+							completionItems = completionItems.Concat(GenerateSchemaObjectItems(databaseModel.CurrentSchema, currentName, lastPreviousTerminal));
 						}
 
 						if (lastPreviousTerminal.Id == Terminals.Dot &&
@@ -74,21 +74,22 @@ namespace SqlPad.Oracle
 							}
 						}
 
-						var tableReference = lastPreviousTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.NestedQuery, NonTerminals.TableReference);
-						if (tableReference != null)
+						if (lastPreviousTerminal.Id != Terminals.Dot)
 						{
-							var alias = tableReference.GetDescendantsWithinSameQuery(Terminals.Alias).SingleOrDefault();
-							if (alias != null)
+							var tableReference = lastPreviousTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.NestedQuery, NonTerminals.TableReference);
+							if (tableReference != null)
 							{
-								var aliasValue = alias.Token.Value.ToUpperInvariant();
-
-								completionItems = completionItems.Concat(
-									JoinClauses.Where(j => j.Contains(aliasValue))
-										.Select(j => new OracleCodeCompletionItem
-										             {
-											             Name = j,
-											             StatementNode = lastPreviousTerminal
-										             }));
+								var alias = tableReference.GetDescendantsWithinSameQuery(Terminals.Alias).SingleOrDefault();
+								if (alias == null || !String.Equals(alias.Token.Value, Terminals.Join, StringComparison.InvariantCultureIgnoreCase))
+								{
+									completionItems = completionItems.Concat(
+										JoinClauses.Where(j => alias == null || j.Contains(alias.Token.Value.ToUpperInvariant()))
+											.Select(j => new OracleCodeCompletionItem
+											             {
+												             Name = j,
+												             StatementNode = lastPreviousTerminal
+											             }));
+								}
 							}
 						}
 
@@ -97,7 +98,7 @@ namespace SqlPad.Oracle
 							completionItems = completionItems.Concat(GenerateSchemaObjectItems(databaseModel.CurrentSchema, null, null));
 						}
 
-						return completionItems.ToArray();
+						return completionItems.OrderBy(i => i.Category).ThenBy(i => i.Priority).ThenBy(i => i.Name).ToArray();
 					}
 				}
 				
@@ -152,21 +153,21 @@ namespace SqlPad.Oracle
 					: databaseModel.CurrentSchema;
 
 				var currentName = statementText.Substring(currentNode.SourcePosition.IndexStart, cursorPosition - currentNode.SourcePosition.IndexStart);
-				return GenerateSchemaObjectItems(schemaName, currentName, currentNode);
+				return GenerateSchemaObjectItems(schemaName, currentName, currentNode).OrderBy(i => i.Category).ThenBy(i => i.Priority).ThenBy(i => i.Name).ToArray();
 			}
 
 			return EmptyCollection;
 		}
 
-		private ICollection<ICodeCompletionItem> GenerateSchemaObjectItems(string schemaName, string objectNamePart, StatementDescriptionNode node)
+		private IEnumerable<ICodeCompletionItem> GenerateSchemaObjectItems(string schemaName, string objectNamePart, StatementDescriptionNode node)
 		{
 			return DatabaseModelFake.Instance.AllObjects.Values
-						.Where(o => o.Owner == schemaName.ToOracleIdentifier() && (String.IsNullOrEmpty(objectNamePart) || o.Name.Contains(objectNamePart.ToUpperInvariant())))
+						.Where(o => o.Owner == schemaName.ToQuotedIdentifier() && (String.IsNullOrEmpty(objectNamePart) || o.Name.Contains(objectNamePart.ToUpperInvariant())))
 						.Select(o => new OracleCodeCompletionItem
 						{
 							Name = o.Name.ToSimpleIdentifier(),
 							StatementNode = node
-						}).ToArray();
+						});
 		}
 
 		private IEnumerable<ICodeCompletionItem> GenerateJoinConditionSuggestionItems(OracleTableReference parentTable, OracleTableReference joinedTable)
@@ -179,17 +180,17 @@ namespace SqlPad.Oracle
 			var joinedObject = joinedTable.SearchResult.SchemaObject;
 
 			var joinedToParentKeys = parentObject.ForeignKeys.Where(k => k.TargetObject == joinedObject.FullyQualifiedName)
-				.Select(k => GenerateJoinConditionSuggestionItem(joinedTable.FullyQualifiedName, parentTable.FullyQualifiedName, k));
+				.Select(k => GenerateJoinConditionSuggestionItem(parentTable.FullyQualifiedName, joinedTable.FullyQualifiedName, k, false));
 
 			var parentToJoinedKeys = joinedObject.ForeignKeys.Where(k => k.TargetObject == parentObject.FullyQualifiedName)
-				.Select(k => GenerateJoinConditionSuggestionItem(parentTable.FullyQualifiedName, joinedTable.FullyQualifiedName, k));
+				.Select(k => GenerateJoinConditionSuggestionItem(joinedTable.FullyQualifiedName, parentTable.FullyQualifiedName, k, true));
 
 			// TODO: Add suggestion based on column name
 
 			return joinedToParentKeys.Concat(parentToJoinedKeys);
 		}
 
-		private OracleCodeCompletionItem GenerateJoinConditionSuggestionItem(OracleObjectIdentifier sourceObject, OracleObjectIdentifier targetObject, OracleForeignKeyConstraint foreignKey)
+		private OracleCodeCompletionItem GenerateJoinConditionSuggestionItem(OracleObjectIdentifier sourceObject, OracleObjectIdentifier targetObject, OracleForeignKeyConstraint foreignKey, bool swapSides)
 		{
 			var builder = new StringBuilder("ON ");
 			var op = String.Empty;
@@ -197,13 +198,13 @@ namespace SqlPad.Oracle
 			for (var i = 0; i < foreignKey.SourceColumns.Count; i++)
 			{
 				builder.Append(op);
-				builder.Append(sourceObject);
+				builder.Append(swapSides ? targetObject : sourceObject);
 				builder.Append('.');
-				builder.Append(foreignKey.SourceColumns[i].ToSimpleIdentifier());
+				builder.Append((swapSides ? foreignKey.TargetColumns[i] : foreignKey.SourceColumns[i]).ToSimpleIdentifier());
 				builder.Append(" = ");
-				builder.Append(targetObject);
+				builder.Append(swapSides ? sourceObject : targetObject);
 				builder.Append('.');
-				builder.Append(foreignKey.TargetColumns[i].ToSimpleIdentifier());
+				builder.Append((swapSides ? foreignKey.SourceColumns[i] : foreignKey.TargetColumns[i]).ToSimpleIdentifier());
 
 				op = " AND ";
 			}
@@ -212,6 +213,7 @@ namespace SqlPad.Oracle
 		}
 	}
 
+	[DebuggerDisplay("OracleCodeCompletionItem (Name={Name}; Category={Category}; Priority={Priority})")]
 	public class OracleCodeCompletionItem : ICodeCompletionItem
 	{
 		public string Category { get; set; }

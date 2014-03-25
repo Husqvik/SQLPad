@@ -24,7 +24,7 @@ namespace SqlPad.Oracle
 			get
 			{
 				if (AliasNode != null)
-					return AliasNode.Token.Value.ToOracleIdentifier();
+					return AliasNode.Token.Value.ToQuotedIdentifier();
 
 				return _columnDescription == null ? null : _columnDescription.Name;
 			}
@@ -46,7 +46,7 @@ namespace SqlPad.Oracle
 				       (_columnDescription =
 					       new OracleColumn
 					       {
-						       Name = AliasNode == null ? null : AliasNode.Token.Value.ToOracleIdentifier()
+						       Name = AliasNode == null ? null : AliasNode.Token.Value.ToQuotedIdentifier()
 						       // TODO: Fill other properties
 					       });
 			}

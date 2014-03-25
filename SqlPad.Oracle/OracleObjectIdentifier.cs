@@ -20,8 +20,8 @@ namespace SqlPad.Oracle
 		{
 			Owner = owner;
 			Name = name;
-			NormalizedOwner = owner.ToOracleIdentifier();
-			NormalizedName = name.ToOracleIdentifier();
+			NormalizedOwner = owner.ToQuotedIdentifier();
+			NormalizedName = name.ToQuotedIdentifier();
 		}
 
 		public static OracleObjectIdentifier Create(string owner, string name)

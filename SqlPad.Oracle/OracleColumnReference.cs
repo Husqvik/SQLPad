@@ -20,11 +20,11 @@ namespace SqlPad.Oracle
 
 		public string Name { get { return ColumnNode.Token.Value; } }
 
-		public string NormalizedName { get { return Name.ToOracleIdentifier(); } }
+		public string NormalizedName { get { return Name.ToQuotedIdentifier(); } }
 
 		public string TableName { get { return TableNode == null ? null : TableNode.Token.Value; } }
 
-		public string NormalizedTableName { get { return TableNode == null ? null : TableName.ToOracleIdentifier(); } }
+		public string NormalizedTableName { get { return TableNode == null ? null : TableName.ToQuotedIdentifier(); } }
 
 		public bool ReferencesAllColumns { get { return ColumnNode.Token.Value == "*"; } }
 
