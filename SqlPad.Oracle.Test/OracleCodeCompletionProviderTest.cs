@@ -26,8 +26,8 @@ namespace SqlPad.Oracle.Test
 			var items = _codeCompletionProvider.ResolveItems("SELECT I.*, INVOICES.ID FROM HUSQVIK.INVOICELINES I", 51).ToArray(); // TODO: Add suggestion when join clause is already in place
 			// TODO: Filter out outer types depending of nullable columns
 			items.Length.ShouldBe(4);
-			items[0].Name.ShouldBe("FULL JOIN");
-			items[3].Name.ShouldBe("RIGHT JOIN");
+			items[0].Name.ShouldBe("JOIN");
+			items[3].Name.ShouldBe("FULL JOIN");
 		}
 
 		[Test(Description = @"")]
@@ -36,6 +36,19 @@ namespace SqlPad.Oracle.Test
 			var items = _codeCompletionProvider.ResolveItems(TestQuery, 21).ToArray();
 			items.Length.ShouldBe(1);
 			items[0].Name.ShouldBe("ID");
+		}
+
+		[Test(Description = @"")]
+		public void Test4()
+		{
+			var items = _codeCompletionProvider.ResolveItems("SELECT * FROM INVOICES JOIN INVOICE;SELECT * FROM INVOICELINES JOIN INVOICE", 35).ToArray();
+			items.Length.ShouldBe(2);
+			items[0].Name.ShouldBe("INVOICELINES");
+			items[1].Name.ShouldBe("INVOICES");
+
+			items = _codeCompletionProvider.ResolveItems("SELECT * FROM INVOICES JOIN INVOICE;SELECT * FROM INVOICELINES JOIN INVOICE", 57).ToArray();
+			items[0].Name.ShouldBe("INVOICELINES");
+			items[1].Name.ShouldBe("INVOICES");
 		}
 	}
 }

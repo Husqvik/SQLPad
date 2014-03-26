@@ -16,5 +16,7 @@ namespace SqlPad
 		StatementDescriptionNode StatementNode { get; }
 
 		int Priority { get; }
+
+		int CategoryPriority { get; }
 	}
 }

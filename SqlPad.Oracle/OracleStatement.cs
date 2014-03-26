@@ -18,6 +18,8 @@ namespace SqlPad.Oracle
 		public ProcessingStatus ProcessingStatus { get; set; }
 
 		public ICollection<StatementDescriptionNode> NodeCollection { get; set; }
+		
+		public ICollection<string> TerminalCandidates { get; set; }
 
 		public SourcePosition SourcePosition { get; set; }
 		

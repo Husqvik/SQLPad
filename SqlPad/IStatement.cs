@@ -8,5 +8,6 @@ namespace SqlPad
 		ICollection<StatementDescriptionNode> NodeCollection { get; set; }
 		SourcePosition SourcePosition { get; set; }
 		StatementDescriptionNode GetNodeAtPosition(int offset);
+		StatementDescriptionNode GetNearestTerminalToPosition(int offset);
 	}
 }

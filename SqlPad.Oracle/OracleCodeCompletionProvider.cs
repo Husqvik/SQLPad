@@ -12,8 +12,15 @@ namespace SqlPad.Oracle
 	{
 		private readonly OracleSqlParser _oracleParser = new OracleSqlParser();
 		private static readonly ICodeCompletionItem[] EmptyCollection = new ICodeCompletionItem[0];
+		private const string CategoryJoinType = "Join Type";
 
-		private static readonly string[] JoinClauses = { "JOIN", "LEFT JOIN", "RIGHT JOIN", "FULL JOIN" };
+		private static readonly OracleCodeCompletionItem[] JoinClauses =
+		{
+			new OracleCodeCompletionItem { Name = "JOIN", Priority = 0, Category = CategoryJoinType, CategoryPriority = 1 },
+			new OracleCodeCompletionItem { Name = "LEFT JOIN", Priority = 1, Category = CategoryJoinType, CategoryPriority = 1 },
+			new OracleCodeCompletionItem { Name = "RIGHT JOIN", Priority = 2, Category = CategoryJoinType, CategoryPriority = 1 },
+			new OracleCodeCompletionItem { Name = "FULL JOIN", Priority = 3, Category = CategoryJoinType, CategoryPriority = 1 },
+		};
 
 		public ICollection<ICodeCompletionItem> ResolveItems(string statementText, int cursorPosition)
 		{
@@ -28,7 +35,7 @@ namespace SqlPad.Oracle
 			{
 				if (statements.Count > 0)
 				{
-					var lastStatement = (OracleStatement)statements.Last();
+					var lastStatement = (OracleStatement)statements.Last(s => s.GetNearestTerminalToPosition(cursorPosition) != null);
 					semanticModel = new OracleStatementSemanticModel(null, lastStatement, databaseModel);
 
 					var lastPreviousTerminal = lastStatement.GetNearestTerminalToPosition(cursorPosition);
@@ -74,19 +81,22 @@ namespace SqlPad.Oracle
 							}
 						}
 
-						if (lastPreviousTerminal.Id != Terminals.Dot)
+						if (lastPreviousTerminal.Id == Terminals.ObjectIdentifier || lastPreviousTerminal.Id == Terminals.Alias)
 						{
 							var tableReference = lastPreviousTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.NestedQuery, NonTerminals.TableReference);
-							if (tableReference != null)
+							if (tableReference != null && tableReference.ParentNode.Id == NonTerminals.FromClause && tableReference == tableReference.ParentNode.ChildNodes.First())
 							{
 								var alias = tableReference.GetDescendantsWithinSameQuery(Terminals.Alias).SingleOrDefault();
 								if (alias == null || !String.Equals(alias.Token.Value, Terminals.Join, StringComparison.InvariantCultureIgnoreCase))
 								{
 									completionItems = completionItems.Concat(
-										JoinClauses.Where(j => alias == null || j.Contains(alias.Token.Value.ToUpperInvariant()))
+										JoinClauses.Where(j => alias == null || j.Name.Contains(alias.Token.Value.ToUpperInvariant()))
 											.Select(j => new OracleCodeCompletionItem
 											             {
-												             Name = j,
+												             Name = j.Name,
+															 Category = j.Category,
+															 CategoryPriority = j.CategoryPriority,
+															 Priority = j.Priority,
 												             StatementNode = lastPreviousTerminal
 											             }));
 								}
@@ -98,7 +108,7 @@ namespace SqlPad.Oracle
 							completionItems = completionItems.Concat(GenerateSchemaObjectItems(databaseModel.CurrentSchema, null, null));
 						}
 
-						return completionItems.OrderBy(i => i.Category).ThenBy(i => i.Priority).ThenBy(i => i.Name).ToArray();
+						return completionItems.OrderBy(i => i.CategoryPriority).ThenBy(i => i.Priority).ThenBy(i => i.Name).ToArray();
 					}
 				}
 				
@@ -133,7 +143,8 @@ namespace SqlPad.Oracle
 										.Select(c => new OracleCodeCompletionItem
 										             {
 											             Name = c.Name.ToSimpleIdentifier(),
-														 StatementNode = currentNode
+														 StatementNode = currentNode,
+														 Category = "Column"
 										             }).ToArray();
 								}
 							}
@@ -153,7 +164,7 @@ namespace SqlPad.Oracle
 					: databaseModel.CurrentSchema;
 
 				var currentName = statementText.Substring(currentNode.SourcePosition.IndexStart, cursorPosition - currentNode.SourcePosition.IndexStart);
-				return GenerateSchemaObjectItems(schemaName, currentName, currentNode).OrderBy(i => i.Category).ThenBy(i => i.Priority).ThenBy(i => i.Name).ToArray();
+				return GenerateSchemaObjectItems(schemaName, currentName, currentNode).OrderBy(i => i.CategoryPriority).ThenBy(i => i.Priority).ThenBy(i => i.Name).ToArray();
 			}
 
 			return EmptyCollection;
@@ -166,7 +177,8 @@ namespace SqlPad.Oracle
 						.Select(o => new OracleCodeCompletionItem
 						{
 							Name = o.Name.ToSimpleIdentifier(),
-							StatementNode = node
+							StatementNode = node,
+							Category = "Schema Object"
 						});
 		}
 
@@ -223,5 +235,7 @@ namespace SqlPad.Oracle
 		public StatementDescriptionNode StatementNode { get; set; }
 
 		public int Priority { get; set; }
+
+		public int CategoryPriority { get; set; }
 	}
 }

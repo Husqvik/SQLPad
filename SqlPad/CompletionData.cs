@@ -20,6 +20,7 @@ namespace SqlPad
 			Content = Text;
 			_completionText = Text;
 			_node = codeCompletion.StatementNode;
+			Description = codeCompletion.Category;
 		}
 
 		public CompletionData(ICodeSnippet codeSnippet)
@@ -39,10 +40,7 @@ namespace SqlPad
 		// Use this property if you want to show a fancy UIElement in the list.
 		public object Content { get; private set; }
 
-		public object Description
-		{
-			get { return "Description for " + Text; }
-		}
+		public object Description { get; private set; }
 
 		public void Complete(TextArea textArea, ISegment completionSegment, EventArgs insertionRequestEventArgs)
 		{

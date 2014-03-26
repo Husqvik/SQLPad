@@ -116,6 +116,8 @@ namespace SqlPad.Oracle
 				int indexEnd;
 				if (result.Status != ProcessingStatus.Success)
 				{
+					oracleSql.TerminalCandidates = result.TerminalCandidates;
+
 					if (result.BestCandidates.Sum(n => n.Terminals.Count()) > result.Nodes.Sum(n => n.Terminals.Count()))
 					{
 						result.Nodes = result.BestCandidates;
@@ -157,11 +159,13 @@ namespace SqlPad.Oracle
 		{
 			var bestCandidateNodes = new List<StatementDescriptionNode>();
 			var workingNodes = new List<StatementDescriptionNode>();
+			var terminalCandidates = new HashSet<string>();
 			var result = new ProcessingResult
 			             {
 				             Status = ProcessingStatus.Start,
 							 Nodes = workingNodes,
-							 BestCandidates = new List<StatementDescriptionNode>()
+							 BestCandidates = new List<StatementDescriptionNode>(),
+							 TerminalCandidates = terminalCandidates
 			             };
 
 			foreach (var sequence in _startingNonTerminalSequences[nonTerminal])
@@ -209,7 +213,12 @@ namespace SqlPad.Oracle
 						}
 
 						if (result.Status == ProcessingStatus.SequenceNotFound)
+						{
+							foreach (var terminalCandidate in nestedResult.TerminalCandidates)
+								terminalCandidates.Add(terminalCandidate);
+
 							break;
+						}
 					}
 					else
 					{
@@ -220,7 +229,10 @@ namespace SqlPad.Oracle
 						if (terminalResult.Status == ProcessingStatus.SequenceNotFound)
 						{
 							if (!terminalReference.IsRequired)
+							{
+								terminalCandidates.Add(terminalReference.Id);
 								continue;
+							}
 
 							TryRevertOptionalToken(optionalTerminalCount => IsTokenValid(terminalReference, level, tokenOffset - optionalTerminalCount), ref terminalResult, workingNodes);
 						}
@@ -228,7 +240,10 @@ namespace SqlPad.Oracle
 						result.Status = terminalResult.Status;
 
 						if (terminalResult.Status == ProcessingStatus.SequenceNotFound)
+						{
+							terminalCandidates.Add(terminalReference.Id);
 							break;
+						}
 
 						workingNodes.AddRange(terminalResult.Nodes);
 						bestCandidateNodes.AddRange(terminalResult.Nodes);
@@ -236,10 +251,14 @@ namespace SqlPad.Oracle
 				}
 
 				if (result.Status == ProcessingStatus.Success)
+				{
+					terminalCandidates.Clear();
 					break;
+				}
 			}
 
 			result.BestCandidates = bestCandidateNodes;
+			result.TerminalCandidates = terminalCandidates;
 
 			return result;
 		}
