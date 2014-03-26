@@ -11,6 +11,7 @@ namespace SqlPad
 	public class CompletionData : ICompletionData
 	{
 		private readonly string _completionText;
+		private readonly int _offset;
 		
 		private readonly StatementDescriptionNode _node;
 
@@ -20,6 +21,7 @@ namespace SqlPad
 			Content = Text;
 			_completionText = Text;
 			_node = codeCompletion.StatementNode;
+			_offset = codeCompletion.Offset;
 			Description = codeCompletion.Category;
 		}
 
@@ -47,11 +49,11 @@ namespace SqlPad
 			var keyEventArgs = insertionRequestEventArgs as KeyEventArgs;
 			if (keyEventArgs != null && keyEventArgs.Key == Key.Tab && _node != null)
 			{
-				textArea.Document.Replace(_node.SourcePosition.IndexStart, _node.SourcePosition.Length + completionSegment.Length, _completionText.Trim());
+				textArea.Document.Replace(_node.SourcePosition.IndexStart, _node.SourcePosition.Length + completionSegment.Length, /*new String(' ', _offset) +*/ _completionText.Trim());
 			}
 			else
 			{
-				textArea.Document.Replace(completionSegment, _completionText.Trim());
+				textArea.Document.Replace(completionSegment, new String(' ', _offset) + _completionText.Trim());
 			}
 		}
 

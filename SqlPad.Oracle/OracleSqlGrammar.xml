@@ -1343,7 +1343,7 @@
           <Terminal Id="Join" />
           <NonTerminal Id="TableReference" />
           <NonTerminal Id="OuterJoinPartitionClause" IsOptional="true" />
-          <NonTerminal Id="JoinColumnsOrCondition" IsOptional="true" />
+          <NonTerminal Id="JoinColumnsOrCondition" />
         </Sequence>
       </Sequences>
     </Rule>

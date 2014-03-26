@@ -57,6 +57,8 @@ namespace SqlPad.Oracle
 		public StatementDescriptionNode TableNode { get; set; }
 		
 		public StatementDescriptionNode AliasNode { get; set; }
+		
+		public StatementDescriptionNode TableReferenceNode { get; set; }
 
 		public ICollection<StatementDescriptionNode> Nodes { get; set; }
 		

@@ -78,6 +78,7 @@ namespace SqlPad.Oracle
 
 						item.TableReferences.Add(new OracleTableReference
 						{
+							TableReferenceNode = tableReferenceNonterminal,
 							TableNode = nestedQueryTableReferenceQueryBlock,
 							Type = TableReferenceType.NestedQuery,
 							AliasNode = tableReferenceAlias
@@ -117,6 +118,7 @@ namespace SqlPad.Oracle
 
 					item.TableReferences.Add(new OracleTableReference
 					                         {
+												 TableReferenceNode = tableReferenceNonterminal,
 						                         OwnerNode = schemaPrefixNode,
 						                         TableNode = tableIdentifierNode,
 						                         Type = referenceType,
