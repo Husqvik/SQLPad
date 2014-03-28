@@ -25,11 +25,11 @@ namespace SqlPad.Oracle.Test
 		{
 			var items = _codeCompletionProvider.ResolveItems("SELECT I.*, INVOICES.ID FROM HUSQVIK.INVOICELINES I", 51).ToArray(); // TODO: Add suggestion when join clause is already in place
 			// TODO: Filter out outer types depending of nullable columns
-			items.Length.ShouldBe(4);
+			items.Length.ShouldBe(5);
 			items[0].Name.ShouldBe("JOIN");
 			items[0].Offset.ShouldBe(1);
-			items[3].Name.ShouldBe("FULL JOIN");
-			items[3].Offset.ShouldBe(1);
+			items[4].Name.ShouldBe("CROSS JOIN");
+			items[4].Offset.ShouldBe(1);
 		}
 
 		[Test(Description = @"")]
@@ -78,6 +78,24 @@ namespace SqlPad.Oracle.Test
 			items[0].Offset.ShouldBe(0);
 			items[1].Name.ShouldBe("ON S.RESPONDENTBUCKET_ID = B.RESPONDENTBUCKET_ID");
 			items[1].Offset.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
+		public void Test7()
+		{
+			const string query1 = @"WITH
+	CTE1 AS (SELECT '' NAME, '' DESCRIPTION, 1 ID FROM DUAL),
+	CTE2 AS (SELECT '' OTHER_NAME, '' OTHER_DESCRIPTION, 1 ID FROM DUAL)
+SELECT
+	*
+FROM
+	CTE1
+	JOIN CTE2 ";
+
+			var items = _codeCompletionProvider.ResolveItems(query1, 173).ToArray();
+			items.Length.ShouldBe(1);
+			items[0].Name.ShouldBe("ON CTE1.ID = CTE2.ID");
+			items[0].Offset.ShouldBe(0);
 		}
 	}
 }

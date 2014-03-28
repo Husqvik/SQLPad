@@ -217,7 +217,7 @@ namespace SqlPad.Oracle
 					{
 						foreach (var referencedQueryBlock in nestedQueryReference.Nodes
 							.SelectMany(cteNode => cteNode.GetDescendantsWithinSameQuery(NonTerminals.QueryBlock))
-							.Where(qb => OracleObjectIdentifier.Create(null, qb.GetAncestor(NonTerminals.SubqueryComponent, false).ChildNodes.Single(n => n.Id == Terminals.Identifier).Token.Value) == nestedQueryReference.FullyQualifiedName))
+							.Where(qb => OracleObjectIdentifier.Create(null, qb.GetAncestor(NonTerminals.SubqueryComponent, false).ChildNodes.Single(n => n.Id == Terminals.ObjectIdentifier).Token.Value) == nestedQueryReference.FullyQualifiedName))
 						{
 							nestedQueryReference.QueryBlocks.Add(_queryBlockResults[referencedQueryBlock]);
 						}

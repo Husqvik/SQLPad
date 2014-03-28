@@ -48,9 +48,6 @@ namespace SqlPad.Oracle
 <#
 		var terminalIds = grammarXml.Element(xmlNamespace + "SqlGrammar").Element(xmlNamespace + "Terminals").Elements().Select(e => e.Attribute("Id").Value).OrderBy(id => id);
 		var identifierTerminalIds = grammarXml.Element(xmlNamespace + "SqlGrammar").Element(xmlNamespace + "Terminals").Elements().Where(e => e.Attribute("Id").Value.Contains("Identifier")).Select(e => e.Attribute("Id").Value).OrderBy(id => id);
-#>
-			
-<#
 		foreach(var terminalId in terminalIds)
 		{
 #>

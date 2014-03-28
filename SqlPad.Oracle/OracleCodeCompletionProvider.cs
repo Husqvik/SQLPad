@@ -20,6 +20,7 @@ namespace SqlPad.Oracle
 			new OracleCodeCompletionItem { Name = "LEFT JOIN", Priority = 1, Category = CategoryJoinType, CategoryPriority = 1 },
 			new OracleCodeCompletionItem { Name = "RIGHT JOIN", Priority = 2, Category = CategoryJoinType, CategoryPriority = 1 },
 			new OracleCodeCompletionItem { Name = "FULL JOIN", Priority = 3, Category = CategoryJoinType, CategoryPriority = 1 },
+			new OracleCodeCompletionItem { Name = "CROSS JOIN", Priority = 4, Category = CategoryJoinType, CategoryPriority = 1 },
 		};
 
 		public ICollection<ICodeCompletionItem> ResolveItems(string statementText, int cursorPosition)
@@ -33,9 +34,9 @@ namespace SqlPad.Oracle
 			var statement = (OracleStatement)statements.SingleOrDefault(s => s.GetNodeAtPosition(cursorPosition) != null);
 			if (statement == null)
 			{
-				if (statements.Count > 0)
+				var lastStatement = (OracleStatement)statements.LastOrDefault(s => s.GetNearestTerminalToPosition(cursorPosition) != null);
+				if (lastStatement != null)
 				{
-					var lastStatement = (OracleStatement)statements.Last(s => s.GetNearestTerminalToPosition(cursorPosition) != null);
 					semanticModel = new OracleStatementSemanticModel(null, lastStatement, databaseModel);
 
 					var lastPreviousTerminal = lastStatement.GetNearestTerminalToPosition(cursorPosition);
@@ -88,16 +89,19 @@ namespace SqlPad.Oracle
 							}
 						}
 
-						if (lastPreviousTerminal.Id == Terminals.ObjectIdentifier || lastPreviousTerminal.Id == Terminals.Alias)
+						//if (lastPreviousTerminal.Id == Terminals.ObjectIdentifier || lastPreviousTerminal.Id == Terminals.Alias)
 						{
+							var joinColumnsOrConditionNode = lastPreviousTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.FromClause, NonTerminals.JoinColumnsOrCondition);
 							var tableReference = lastPreviousTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.NestedQuery, NonTerminals.TableReference);
-							if (tableReference != null && tableReference.ParentNode.Id == NonTerminals.FromClause && tableReference == tableReference.ParentNode.ChildNodes.First())
+							if ((tableReference != null && lastPreviousTerminal == tableReference.LastTerminalNode && tableReference.ParentNode.Id == NonTerminals.FromClause && tableReference == tableReference.ParentNode.ChildNodes.First()) ||
+								(joinColumnsOrConditionNode != null && lastPreviousTerminal == joinColumnsOrConditionNode.LastTerminalNode && lastStatement.ProcessingStatus == ProcessingStatus.Success))
 							{
-								var alias = tableReference.GetDescendantsWithinSameQuery(Terminals.Alias).SingleOrDefault();
-								if (alias == null || !String.Equals(alias.Token.Value, Terminals.Join, StringComparison.InvariantCultureIgnoreCase))
+								//var alias = tableReference.GetDescendantsWithinSameQuery(Terminals.Alias).SingleOrDefault();
+								//if (alias == null || !String.Equals(alias.Token.Value, Terminals.Join, StringComparison.InvariantCultureIgnoreCase))
 								{
 									completionItems = completionItems.Concat(
-										JoinClauses.Where(j => alias == null || j.Name.Contains(alias.Token.Value.ToUpperInvariant()))
+										//JoinClauses.Where(j => alias == null || j.Name.Contains(alias.Token.Value.ToUpperInvariant()))
+										JoinClauses
 											.Select(j => new OracleCodeCompletionItem
 											             {
 												             Name = j.Name,

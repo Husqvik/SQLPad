@@ -47,10 +47,6 @@ namespace SqlPad
 
 		private void WindowLoadedHandler(object sender, RoutedEventArgs e)
 		{
-			//var oracleTokens = OracleTokenReader.Create(File.OpenText(@"D:\testSql.sql")).GetTokens().ToList();
-
-			//var sql = new OracleSqlParser().Parse(@"select 1 from dual versions between scn minvalue and maxvalue");
-
 			Editor.TextArea.TextView.LineTransformers.Add(_colorizeAvalonEdit);
 
 			Editor.TextArea.TextEntering += TextEnteringHandler;
@@ -107,8 +103,13 @@ namespace SqlPad
 			}
 
 			if (e.Text != "." && e.Text != " " && e.Text != "\n")
+			{
+				if (_completionWindow != null && _completionWindow.CompletionList.ListBox.Items.Count == 0)
+					_completionWindow.Close();
+
 				return;
-			
+			}
+
 			// Open code completion after the user has pressed dot:
 			CreateCodeCompletionWindow();
 		}

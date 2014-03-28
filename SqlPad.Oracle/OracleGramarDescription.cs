@@ -181,7 +181,6 @@ namespace SqlPad.Oracle
 		/// </summary>
 		public static class Terminals
 		{
-			
 			public const string Alias = "Alias";
 			public const string All = "All";
 			public const string And = "And";

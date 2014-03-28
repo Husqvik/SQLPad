@@ -10,9 +10,6 @@ namespace SqlPad
 	{
 		private readonly List<StatementDescriptionNode> _childNodes = new List<StatementDescriptionNode>();
 
-		private StatementDescriptionNode _firstTerminal;
-		private StatementDescriptionNode _lastTerminal;
-
 		public StatementDescriptionNode(NodeType type)
 		{
 			Type = type;
@@ -20,8 +17,8 @@ namespace SqlPad
 			if (Type != NodeType.Terminal)
 				return;
 			
-			_firstTerminal = this;
-			_lastTerminal = this;
+			FirstTerminalNode = this;
+			LastTerminalNode = this;
 		}
 
 		public NodeType Type { get; private set; }
@@ -31,6 +28,10 @@ namespace SqlPad
 		//public StatementDescriptionNode PreviousTerminal { get; private set; }
 		
 		//public StatementDescriptionNode NextTerminal { get; private set; }
+
+		public StatementDescriptionNode FirstTerminalNode { get; private set; }
+
+		public StatementDescriptionNode LastTerminalNode { get; private set; }
 
 		public IToken Token { get; set; }
 		
@@ -108,13 +109,13 @@ namespace SqlPad
 			{
 				if (node.Type == NodeType.Terminal)
 				{
-					_firstTerminal = _firstTerminal ?? node;
-					_lastTerminal = node;
+					FirstTerminalNode = FirstTerminalNode ?? node;
+					LastTerminalNode = node;
 				}
 				else
 				{
-					_firstTerminal = _firstTerminal ?? node._firstTerminal;
-					_lastTerminal = node._lastTerminal;
+					FirstTerminalNode = FirstTerminalNode ?? node.FirstTerminalNode;
+					LastTerminalNode = node.LastTerminalNode;
 				}
 
 				_childNodes.Add(node);
@@ -224,7 +225,7 @@ namespace SqlPad
 					throw new InvalidOperationException("Last terminal cannot be removed. ");
 				
 				_childNodes.RemoveAt(index);
-				_lastTerminal = _childNodes[index - 1]._lastTerminal;
+				LastTerminalNode = _childNodes[index - 1].LastTerminalNode;
 				return 1;
 			}
 
@@ -234,7 +235,7 @@ namespace SqlPad
 			
 			removedTerminalCount = node.Terminals.Count();
 			_childNodes.RemoveAt(index);
-			_lastTerminal = _childNodes[index - 1]._lastTerminal;
+			LastTerminalNode = _childNodes[index - 1].LastTerminalNode;
 
 			return removedTerminalCount;
 		}
