@@ -215,8 +215,12 @@ namespace SqlPad.Oracle
 					}
 					else
 					{
-						foreach (var cteNode in nestedQueryReference.Nodes)
-							nestedQueryReference.QueryBlocks.Add(_queryBlockResults[cteNode.GetDescendantsWithinSameQuery(NonTerminals.QueryBlock).Single()]);
+						foreach (var referencedQueryBlock in nestedQueryReference.Nodes
+							.SelectMany(cteNode => cteNode.GetDescendantsWithinSameQuery(NonTerminals.QueryBlock))
+							.Where(qb => OracleObjectIdentifier.Create(null, qb.GetAncestor(NonTerminals.SubqueryComponent, false).ChildNodes.Single(n => n.Id == Terminals.Identifier).Token.Value) == nestedQueryReference.FullyQualifiedName))
+						{
+							nestedQueryReference.QueryBlocks.Add(_queryBlockResults[referencedQueryBlock]);
+						}
 					}
 				}
 			}
@@ -227,11 +231,10 @@ namespace SqlPad.Oracle
 				{
 					if (tableReference.Type == TableReferenceType.PhysicalObject)
 					{
-						var result = databaseModel.GetObject(tableReference.FullyQualifiedName);
-						if (result.SchemaObject == null)
+						if (tableReference.SearchResult.SchemaObject == null)
 							continue;
 
-						foreach (OracleColumn physicalColumn in result.SchemaObject.Columns)
+						foreach (OracleColumn physicalColumn in tableReference.SearchResult.SchemaObject.Columns)
 						{
 							var column = new OracleSelectListColumn
 							             {
@@ -280,7 +283,7 @@ namespace SqlPad.Oracle
 							}
 							else
 							{
-								newTableReferences = tableReference.QueryBlocks.Single().Columns
+								newTableReferences = tableReference.QueryBlocks.SelectMany(qb => qb.Columns)
 									.Count(c => c.NormalizedName == columnReference.NormalizedName && (columnReference.TableNode == null || columnReference.NormalizedTableName == tableReference.FullyQualifiedName.NormalizedName));
 							}
 						}

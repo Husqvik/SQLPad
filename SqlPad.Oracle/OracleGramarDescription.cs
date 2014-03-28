@@ -1,4 +1,7 @@
-﻿namespace SqlPad.Oracle
+﻿using System;
+using System.Collections.Generic;
+
+namespace SqlPad.Oracle
 {
 	/// <summary>
 	/// This class provides token constants for Oracle SQL grammar.
@@ -33,6 +36,8 @@
 			public const string CrossOrOuter = "CrossOrOuter";
 			public const string CrossOrOuterApplyClause = "CrossOrOuterApplyClause";
 			public const string DatabaseLink = "DatabaseLink";
+			public const string DataType = "DataType";
+			public const string DataTypePrecisionAndScale = "DataTypePrecisionAndScale";
 			public const string DepthOrBreadth = "DepthOrBreadth";
 			public const string DistinctModifier = "DistinctModifier";
 			public const string EscapeClause = "EscapeClause";
@@ -41,6 +46,7 @@
 			public const string ExpressionList = "ExpressionList";
 			public const string ExpressionListOrNestedQuery = "ExpressionListOrNestedQuery";
 			public const string ExpressionMathOperatorChainedList = "ExpressionMathOperatorChainedList";
+			public const string ExpressionOrMultiset = "ExpressionOrMultiset";
 			public const string FirstOrLast = "FirstOrLast";
 			public const string FirstOrNext = "FirstOrNext";
 			public const string FlashbackAsOfClause = "FlashbackAsOfClause";
@@ -77,6 +83,7 @@
 			public const string IncludeOrExclude = "IncludeOrExclude";
 			public const string InnerJoinClause = "InnerJoinClause";
 			public const string InnerTableReference = "InnerTableReference";
+			public const string IntegerOrAsterisk = "IntegerOrAsterisk";
 			public const string JoinClause = "JoinClause";
 			public const string JoinColumnsOrCondition = "JoinColumnsOrCondition";
 			public const string LikeOperator = "LikeOperator";
@@ -98,12 +105,15 @@
 			public const string OuterJoinType = "OuterJoinType";
 			public const string OuterJoinTypeWithKeyword = "OuterJoinTypeWithKeyword";
 			public const string OverQueryPartitionClause = "OverQueryPartitionClause";
+			public const string ParenthesisEnclosedAggregationFunctionParameters = "ParenthesisEnclosedAggregationFunctionParameters";
 			public const string ParenthesisEnclosedColumnIdentifierList = "ParenthesisEnclosedColumnIdentifierList";
 			public const string ParenthesisEnclosedExpressionList = "ParenthesisEnclosedExpressionList";
 			public const string ParenthesisEnclosedExpressionListWithMandatoryExpressions = "ParenthesisEnclosedExpressionListWithMandatoryExpressions";
 			public const string ParenthesisEnclosedFunctionParameters = "ParenthesisEnclosedFunctionParameters";
 			public const string ParenthesisEnclosedGroupingExpressionList = "ParenthesisEnclosedGroupingExpressionList";
 			public const string ParenthesisEnclosedStringOrIntegerLiteralList = "ParenthesisEnclosedStringOrIntegerLiteralList";
+			public const string PartitionExtensionClause = "PartitionExtensionClause";
+			public const string PartitionNameOrKeySet = "PartitionNameOrKeySet";
 			public const string PartitionOrDatabaseLink = "PartitionOrDatabaseLink";
 			public const string PivotAliasedAggregationFunctionList = "PivotAliasedAggregationFunctionList";
 			public const string PivotAliasedAggregationFunctionListChained = "PivotAliasedAggregationFunctionListChained";
@@ -120,6 +130,7 @@
 			public const string QueryBlock = "QueryBlock";
 			public const string QueryPartitionClause = "QueryPartitionClause";
 			public const string QueryTableExpression = "QueryTableExpression";
+			public const string ReadOnlyOrCheckOption = "ReadOnlyOrCheckOption";
 			public const string RelationalEquiOperator = "RelationalEquiOperator";
 			public const string RelationalNonEquiOperator = "RelationalNonEquiOperator";
 			public const string RelationalOperator = "RelationalOperator";
@@ -130,6 +141,7 @@
 			public const string RowOrRows = "RowOrRows";
 			public const string RowsOrRange = "RowsOrRange";
 			public const string SampleClause = "SampleClause";
+			public const string Scale = "Scale";
 			public const string SchemaPrefix = "SchemaPrefix";
 			public const string SearchedCaseExpressionBranch = "SearchedCaseExpressionBranch";
 			public const string SeedClause = "SeedClause";
@@ -149,6 +161,7 @@
 			public const string SubqueryFactoringClause = "SubqueryFactoringClause";
 			public const string SubqueryFactoringCycleClause = "SubqueryFactoringCycleClause";
 			public const string SubqueryFactoringSearchClause = "SubqueryFactoringSearchClause";
+			public const string SubQueryRestrictionClause = "SubQueryRestrictionClause";
 			public const string SystemChangeNumberOrTimestamp = "SystemChangeNumberOrTimestamp";
 			public const string SystemChangeNumberOrTimestampOrPeriodFor = "SystemChangeNumberOrTimestampOrPeriodFor";
 			public const string TableCollectionExpression = "TableCollectionExpression";
@@ -168,6 +181,7 @@
 		/// </summary>
 		public static class Terminals
 		{
+			
 			public const string Alias = "Alias";
 			public const string All = "All";
 			public const string And = "And";
@@ -182,6 +196,7 @@
 			public const string Breadth = "Breadth";
 			public const string By = "By";
 			public const string Case = "Case";
+			public const string Cast = "Cast";
 			public const string Check = "Check";
 			public const string Column = "Column";
 			public const string Comma = "Comma";
@@ -192,6 +207,7 @@
 			public const string Current = "Current";
 			public const string Cycle = "Cycle";
 			public const string DatabaseLinkIdentifier = "DatabaseLinkIdentifier";
+			public const string DataTypeName = "DataTypeName";
 			public const string Date = "Date";
 			public const string Default = "Default";
 			public const string DenseRank = "DenseRank";
@@ -249,6 +265,7 @@
 			public const string MaximumValue = "MaximumValue";
 			public const string MinimumValue = "MinimumValue";
 			public const string Model = "Model";
+			public const string Multiset = "Multiset";
 			public const string Natural = "Natural";
 			public const string Next = "Next";
 			public const string NoCycle = "NoCycle";
@@ -276,6 +293,7 @@
 			public const string Public = "Public";
 			public const string Range = "Range";
 			public const string Read = "Read";
+			public const string Ref = "Ref";
 			public const string Right = "Right";
 			public const string RightParenthesis = "RightParenthesis";
 			public const string Rollup = "Rollup";
@@ -307,6 +325,7 @@
 			public const string Ties = "Ties";
 			public const string Timestamp = "Timestamp";
 			public const string To = "To";
+			public const string Treat = "Treat";
 			public const string Unbounded = "Unbounded";
 			public const string Union = "Union";
 			public const string Unique = "Unique";
@@ -319,6 +338,25 @@
 			public const string Where = "Where";
 			public const string With = "With";
 			public const string Xml = "Xml";
+			
+			private static readonly HashSet<string> AllTerminalsInternal = new HashSet<string> { Alias, All, And, Any, Apply, As, Asc, Asterisk, At, Between, Block, Breadth, By, Case, Cast, Check, Column, Comma, Connect, Constraint, Cross, Cube, Current, Cycle, DatabaseLinkIdentifier, DataTypeName, Date, Default, DenseRank, Depth, Desc, Distinct, Dot, Else, End, Escape, Exclude, Exists, Fetch, First, Following, For, From, Full, Group, Grouping, Having, Identifier, Ignore, In, Include, Inner, IntegerLiteral, Intersect, Is, Join, Keep, Last, Lateral, Left, LeftParenthesis, Like, LikeUcs2, LikeUcs4, LikeUnicode, Locked, MathDivide, MathEquals, MathFactor, MathGreatherThan, MathGreatherThanOrEquals, MathInfinite, MathLessThan, MathLessThanOrEquals, MathMinus, MathNotANumber, MathNotEqualsC, MathNotEqualsCircumflex, MathNotEqualsSql, MathPlus, MaximumValue, MinimumValue, Model, Multiset, Natural, Next, NoCycle, Not, Nowait, Null, Nulls, NumberLiteral, ObjectIdentifier, Of, Offset, On, Only, OperatorConcatenation, Option, Or, Order, Outer, Over, Partition, Percent, Period, Pivot, Preceding, Public, Range, Read, Ref, Right, RightParenthesis, Rollup, Row, RowIdPseudoColumn, RowNumberPseudoColumn, Rows, Sample, SchemaIdentifier, Search, Seed, Select, Semicolon, SequenceCurrentValue, SequenceNextValue, Set, SetMinus, Sets, Siblings, Skip, Some, Space, Start, StringLiteral, Subpartition, SystemChangeNumber, Table, Then, Ties, Timestamp, To, Treat, Unbounded, Union, Unique, Unpivot, Update, Using, Versions, Wait, When, Where, With, Xml };
+			
+			private static readonly HashSet<string> Identifiers = new HashSet<string> { DatabaseLinkIdentifier, Identifier, ObjectIdentifier, SchemaIdentifier };
+
+			public static ICollection<string> AllTerminals
+			{
+				get { return AllTerminalsInternal; }
+			}
+
+			public static bool IsIdentifier(string terminalId)
+			{
+				if (!AllTerminalsInternal.Contains(terminalId))
+				{
+					throw new InvalidOperationException(String.Format("Terminal ID '{0}' not recognized. ", terminalId));
+				}
+
+				return Identifiers.Contains(terminalId);
+			}
 		}
 	}
 }

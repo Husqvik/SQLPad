@@ -13,6 +13,9 @@
 	var grammarDescriptionPath = Path.Combine(Path.GetDirectoryName(Host.TemplateFile), @"OracleSqlGrammar.xml");
 	var grammarXml = XDocument.Load(grammarDescriptionPath);
 #>
+using System;
+using System.Collections.Generic;
+
 namespace SqlPad.Oracle
 {
 	/// <summary>
@@ -44,13 +47,38 @@ namespace SqlPad.Oracle
 		{
 <#
 		var terminalIds = grammarXml.Element(xmlNamespace + "SqlGrammar").Element(xmlNamespace + "Terminals").Elements().Select(e => e.Attribute("Id").Value).OrderBy(id => id);
+		var identifierTerminalIds = grammarXml.Element(xmlNamespace + "SqlGrammar").Element(xmlNamespace + "Terminals").Elements().Where(e => e.Attribute("Id").Value.Contains("Identifier")).Select(e => e.Attribute("Id").Value).OrderBy(id => id);
+#>
+			
+<#
 		foreach(var terminalId in terminalIds)
 		{
 #>
 			public const string <#=terminalId#> = "<#=terminalId#>";
 <#
 		}
+
+
 #>
+			
+			private static readonly HashSet<string> AllTerminalsInternal = new HashSet<string> { <#= String.Join(", ", terminalIds) #> };
+			
+			private static readonly HashSet<string> Identifiers = new HashSet<string> { <#= String.Join(", ", identifierTerminalIds) #> };
+
+			public static ICollection<string> AllTerminals
+			{
+				get { return AllTerminalsInternal; }
+			}
+
+			public static bool IsIdentifier(string terminalId)
+			{
+				if (!AllTerminalsInternal.Contains(terminalId))
+				{
+					throw new InvalidOperationException(String.Format("Terminal ID '{0}' not recognized. ", terminalId));
+				}
+
+				return Identifiers.Contains(terminalId);
+			}
 		}
 	}
 }

@@ -263,7 +263,7 @@ namespace SqlPad.Oracle
 		public OracleDataObject SchemaObject { get; set; }
 	}
 
-	[DebuggerDisplay("DebuggerDisplay (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName}; Type={Type})")]
+	[DebuggerDisplay("OracleDataObject (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName}; Type={Type})")]
 	public class OracleDataObject : OracleObject, IDatabaseObject
 	{
 		public OracleDataObject()
