@@ -16,7 +16,8 @@ namespace SqlPad
 
 			if (Type != NodeType.Terminal)
 				return;
-			
+
+			IsGrammarValid = true;
 			FirstTerminalNode = this;
 			LastTerminalNode = this;
 		}
@@ -40,6 +41,8 @@ namespace SqlPad
 		public int Level { get; set; }
 
 		public bool IsRequired { get; set; }
+		
+		public bool IsGrammarValid { get; set; }
 
 		public ICollection<StatementDescriptionNode> ChildNodes { get { return _childNodes.AsReadOnly(); } }
 
@@ -107,6 +110,9 @@ namespace SqlPad
 
 			foreach (var node in nodes)
 			{
+				if (node.ParentNode != null)
+					throw new InvalidOperationException(String.Format("Node '{0}' has been already associated with another parent. ", node.Id));
+
 				if (node.Type == NodeType.Terminal)
 				{
 					FirstTerminalNode = FirstTerminalNode ?? node;
@@ -243,12 +249,13 @@ namespace SqlPad
 		public StatementDescriptionNode Clone()
 		{
 			var clonedNode = new StatementDescriptionNode(Type)
-			                               {
-				                               Id = Id,
-				                               IsRequired = IsRequired,
-				                               Level = Level,
-				                               Token = Token
-			                               };
+			                 {
+				                 Id = Id,
+				                 IsRequired = IsRequired,
+				                 Level = Level,
+				                 Token = Token,
+				                 IsGrammarValid = IsGrammarValid
+			                 };
 
 			if (Type == NodeType.NonTerminal)
 			{
