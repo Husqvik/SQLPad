@@ -621,6 +621,22 @@ namespace SqlPad.Oracle.Test
 			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 			// TODO: Precise assertions
+
+			const string query2 = @"SELECT * FROM DUAL T1, DUAL T2 WHERE T1.DUMMY(+) = (T2.DUMMY)";
+			result = _oracleSqlParser.Parse(query2);
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			// TODO: Precise assertions
+
+			const string query3 = @"SELECT * FROM DUAL T1, DUAL T2 WHERE (T1.DUMMY)(+) = T2.DUMMY";
+			result = _oracleSqlParser.Parse(query3);
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+
+			// TODO: Precise assertions
 		}
 
 		[Test(Description = @"Tests query with fully qualified object name with asterisk clause. ")]

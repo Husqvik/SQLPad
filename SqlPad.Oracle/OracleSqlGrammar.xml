@@ -299,6 +299,7 @@
         <Sequence>
           <NonTerminal Id="Prefix" IsOptional="true" />
           <NonTerminal Id="ColumnReference" />
+          <NonTerminal Id="OuterJoinOld" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -400,14 +401,12 @@
           <NonTerminal Id="Expression" />
           <NonTerminal Id="RelationalOperator" />
           <NonTerminal Id="Expression" />
-          <NonTerminal Id="OuterJoinOld" IsOptional="true" />
           <NonTerminal Id="ChainedCondition" IsOptional="true" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="Expression" />
           <NonTerminal Id="LikeOperator" />
           <NonTerminal Id="Expression" />
-          <NonTerminal Id="OuterJoinOld" IsOptional="true" />
           <NonTerminal Id="EscapeClause" IsOptional="true" />
           <NonTerminal Id="ChainedCondition" IsOptional="true" />
         </Sequence>
