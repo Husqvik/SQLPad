@@ -97,7 +97,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"Tests complex case expression with literals. ")]
-		public void Test4()
+		public void TestComplexCaseExpressionWithLiterals()
 		{
 			const string sqlText = @"SELECT CASE WHEN 1 = 2 THEN 'True1' WHEN 1 = 0 THEN 'True2' ELSE 'False' END - (1 + 2) XXX FROM DUAL";
 			var result = _oracleSqlParser.Parse(sqlText);
@@ -111,12 +111,10 @@ namespace SqlPad.Oracle.Test
 			terminals[2].Id.ShouldBe(Terminals.When);
 			terminals[3].Id.ShouldBe(Terminals.NumberLiteral);
 			terminals[3].Token.Value.ShouldBe("1");
-
-			// TODO: Precise assertions
 		}
 
 		[Test(Description = @"Tests complex mathematic expressions. ")]
-		public void Test5()
+		public void TestMathematicExpressions()
 		{
 			const string sqlText = @"SELECT CASE (1 * (0 + 0)) WHEN (2 + 0) THEN DUAL.DUMMY || 'xxx' ELSE 'a' || ('b' || 'c') END FROM DUAL";
 			var result = _oracleSqlParser.Parse(sqlText);
@@ -130,7 +128,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"Tests specific aliases. ")]
-		public void Test6()
+		public void TestInvalidAlias()
 		{
 			const string query1 = @"SELECT 1 1 FROM DUAL";
 			var result = _oracleSqlParser.Parse(query1);
@@ -143,21 +141,23 @@ namespace SqlPad.Oracle.Test
 			terminals.Length.ShouldBe(2);
 			terminals[0].Id.ShouldBe(Terminals.Select);
 			terminals[1].Id.ShouldBe(Terminals.NumberLiteral);
-
-			// TODO: Precise assertions
-
+		}
+		
+		[Test(Description = @"Tests 'AS' as alias. ")]
+		public void TestAsKeywordAsAliasValue()
+		{
 			const string query2 = @"SELECT 1 AS FROM T1";
-			result = _oracleSqlParser.Parse(query2);
+			var result = _oracleSqlParser.Parse(query2);
 
 			result.Count.ShouldBe(1);
-			statement = result.Single();
+			var statement = result.Single();
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 			// TODO: Precise assertions
 		}
 
 		[Test(Description = @"Tests query. ")]
-		public void Test7()
+		public void TestInvalidSelectExpressions()
 		{
 			var sqlText = @"SELECT 1FF F FROM DUAL";
 			var result = _oracleSqlParser.Parse(sqlText);
@@ -187,31 +187,29 @@ namespace SqlPad.Oracle.Test
 			terminals[0].Id.ShouldBe(Terminals.Select);
 		}
 
-		[Test(Description = @"Tests query. ")]
-		public void Test8()
+		[Test(Description = @"Tests multiple queries. ")]
+		public void TestMultipleQueries()
 		{
 			const string sqlText = @"SELECT 1 FROM T1;SELECT 2 FROM T2";
-			var result = _oracleSqlParser.Parse(sqlText);
+			var result = _oracleSqlParser.Parse(sqlText).ToArray();
 
-			result.Count.ShouldBe(2);
-
-			// TODO: Precise assertions
+			result.Length.ShouldBe(2);
+			result[0].ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result[1].ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 		}
 
 		[Test(Description = @"Tests query. ")]
-		public void Test9()
+		public void TestValidQueryWithExtraToken()
 		{
 			const string sqlText = @"SELECT 1 FROM DUAL,";
 			var result = _oracleSqlParser.Parse(sqlText);
 
 			result.Count.ShouldBe(1);
 			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
-
-			// TODO: Precise assertions
 		}
 
 		[Test(Description = @"Tests simple query with common table expression. ")]
-		public void Test10()
+		public void TestSimpleCommonTableExpressions()
 		{
 			const string sqlText = @"WITH X(A, B, C) AS (SELECT 1 FROM D) SELECT * FROM D;";
 			var result = _oracleSqlParser.Parse(sqlText);
@@ -223,7 +221,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"Tests simple query with IN and BETWEEN clauses. ")]
-		public void Test11()
+		public void TestInAndBetweenClauses()
 		{
 			const string sqlText = @"SELECT 1 FROM DUAL WHERE 1 IN (1, 2, 3) AND 4 NOT IN (5, 6, 7) AND (8 + 0) BETWEEN (0 * 0) AND (9 - 0);";
 			var result = _oracleSqlParser.Parse(sqlText);
@@ -234,8 +232,8 @@ namespace SqlPad.Oracle.Test
 			// TODO: Precise assertions
 		}
 
-		[Test(Description = @"Tests simple queries connected by set operations. ")]
-		public void Test12()
+		[Test(Description = @"Tests simple query blocks connected by set operations. ")]
+		public void TestSimpleQueryBlocksConnectedBySetOperations()
 		{
 			const string sqlText = @"SELECT 1 FROM DUAL UNION ALL SELECT 1 FROM DUAL UNION SELECT 1 FROM DUAL MINUS SELECT 1 FROM DUAL INTERSECT SELECT 1 FROM DUAL";
 			var result = _oracleSqlParser.Parse(sqlText);
@@ -247,7 +245,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"Tests simple queries with group by and having clauses. ")]
-		public void Test13()
+		public void TestSimpleQueriesWithGroupByAndHavingClauses()
 		{
 			const string query1 = @"SELECT 1 FROM DUAL GROUP BY 1, DUMMY HAVING 1 = 1";
 			var result = _oracleSqlParser.Parse(query1);
@@ -267,7 +265,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"Tests simple queries with for update clause. ")]
-		public void Test14()
+		public void TestForUpdateClause()
 		{
 			const string query1 = @"SELECT 1 FROM DUAL FOR UPDATE SKIP LOCKED";
 			var result = _oracleSqlParser.Parse(query1);
@@ -319,7 +317,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"Tests simple queries with IS (NOT) <terminal> conditions. ")]
-		public void Test15()
+		public void TestSimpleQueriesWithIsOperator()
 		{
 			const string query1 = @"SELECT 1 FROM DUAL WHERE NULL IS NULL AND 1 IS NOT NULL";
 			var result = _oracleSqlParser.Parse(query1);
@@ -339,7 +337,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"Tests empty token set. ")]
-		public void Test16()
+		public void TestParsingOfEmptyTokenSet()
 		{
 			const string query1 = @"--SELECT 1 FROM DUAL WHERE NULL IS NULL AND 1 IS NOT NULL";
 			var result = _oracleSqlParser.Parse(query1);
@@ -349,8 +347,8 @@ namespace SqlPad.Oracle.Test
 			result.Single().NodeCollection.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"Tests correct recovery after invalid statement. ")]
-		public void Test17()
+		[Test(Description = @"Tests parsing of valid statement after invalid statement. ")]
+		public void TestParsingOfValidStatementAfterInvalidStatement()
 		{
 			const string query1 = @"/*invalid statement */ SELECT 1 FROM DUAL+;/* valid statement */ SELECT 1 FROM DUAL";
 			var result = _oracleSqlParser.Parse(query1);
@@ -366,7 +364,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"Tests EXISTS and NOT EXISTS. ")]
-		public void Test18()
+		public void TestExistsAndNotExistsClauses()
 		{
 			const string query1 = @"SELECT CASE WHEN NOT EXISTS (SELECT 1 FROM DUAL) THEN 'FALSE' ELSE 'TRUE' END FROM DUAL WHERE EXISTS (SELECT 1 FROM DUAL) AND EXISTS (SELECT 2 FROM DUAL)";
 			var result = _oracleSqlParser.Parse(query1);
@@ -376,7 +374,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"Tests flashback clauses. ")]
-		public void Test19()
+		public void TestFlashbackClauses()
 		{
 			const string query1 = @"SELECT DATE'2014-03-08' - DATE'2014-02-20' FROM T1 VERSIONS BETWEEN SCN MINVALUE AND MAXVALUE AS OF SCN 123";
 			var result = _oracleSqlParser.Parse(query1);
@@ -392,7 +390,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"Tests chained asterisk clause. ")]
-		public void Test20()
+		public void TestAsteriskExpressions()
 		{
 			const string query1 = @"SELECT T1.*, 1, T1.*, 2, T1.*, 3 FROM T1";
 			var result = _oracleSqlParser.Parse(query1);
@@ -402,7 +400,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"Tests LIKE clause. ")]
-		public void Test21()
+		public void TestLikeClauses()
 		{
 			const string query1 = @"SELECT CASE WHEN 'abc' LIKE 'a%' OR '123' LIKEC '1%' OR '456' LIKE2 '4%' OR '789' LIKE4 '%7%' ESCAPE '\' THEN 'true' END FROM DUAL WHERE 'def' LIKE 'd%' ESCAPE '\'";
 			var result = _oracleSqlParser.Parse(query1);
@@ -412,7 +410,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"Tests IN clause with subquery. ")]
-		public void Test22()
+		public void TestInSubqueryClause()
 		{
 			const string query1 = @"SELECT 1 FROM DUAL WHERE 1 NOT IN (WITH XXX AS (SELECT 1 FROM DUAL) SELECT 1 FROM DUAL DD) AND EXISTS (WITH XXX AS (SELECT 1 FROM DUAL) SELECT 1 FROM DUAL DD)";
 			var result = _oracleSqlParser.Parse(query1);
@@ -422,7 +420,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"Tests scalar subquery clause. ")]
-		public void Test23()
+		public void TestScalarSubqueryClause()
 		{
 			const string query1 = @"SELECT 1 C1, (SELECT (SELECT 2 FROM DUAL) FROM DUAL) C2, (SELECT 3 FROM DUAL) C3 FROM DUAL";
 			var result = _oracleSqlParser.Parse(query1);
@@ -432,7 +430,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"Tests join clauses. ")]
-		public void Test24()
+		public void TestJoinClauses()
 		{
 			const string query1 = @"SELECT * FROM T1 CROSS JOIN T2 JOIN T3 ON 1 = 1 INNER JOIN T4 USING (ID) NATURAL JOIN T5 FULL OUTER JOIN T6 ALIAS ON T5.ID = T6.ID, V$SESSION";
 			var result = _oracleSqlParser.Parse(query1);
@@ -474,7 +472,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"Tests order by clause. ")]
-		public void Test25()
+		public void TestOrderByClause()
 		{
 			const string query1 = @"SELECT 1 FROM DUAL ORDER BY 1 DESC, DUMMY ASC NULLS LAST, (SELECT DBMS_RANDOM.VALUE FROM DUAL)";
 			var result = _oracleSqlParser.Parse(query1);
@@ -484,7 +482,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"Tests hierarchical query clauses. ")]
-		public void Test26()
+		public void TestHierarchicalQueryClauses()
 		{
 			const string query1 = @"SELECT LEVEL FROM DUAL CONNECT BY NOCYCLE LEVEL <= 5 AND 1 = 1 START WITH 1 = 1";
 			var result = _oracleSqlParser.Parse(query1);
@@ -500,7 +498,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"Tests group by rollup, cube and grouping sets clauses. ")]
-		public void Test27()
+		public void TestGroupByRollupCubeAndGroupingSetsClauses()
 		{
 			const string query1 = @"SELECT 1 FROM DUAL GROUP BY 1, 2, (3 || DUMMY), ROLLUP(1, (1, 2 || DUMMY)), CUBE(2, (3, 4 + 2))";
 			var result = _oracleSqlParser.Parse(query1);
@@ -528,7 +526,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"Tests ANY and ALL operators with expression list and subquery. ")]
-		public void Test28()
+		public void TestAnyAllAndSomeOperatorsWithExpressionListAndSubquery()
 		{
 			//const string query1 = @"SELECT 1 FROM DUAL WHERE 1 = ANY(())"; // Test
 			const string query1 = @"SELECT 1 FROM DUAL WHERE DUMMY = ANY(1, 2, 3) OR DUMMY = SOME(1, 2, 3) OR DUMMY = ALL(SELECT * FROM DUAL)";
@@ -565,7 +563,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"Tests sample clause. ")]
-		public void Test29()
+		public void TestSampleClause()
 		{
 			const string query1 = @"SELECT * FROM COUNTRY SAMPLE BLOCK (0.1) SEED (1)";
 			var result = _oracleSqlParser.Parse(query1);
@@ -577,7 +575,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"Tests nested subquery. ")]
-		public void Test30()
+		public void TestNestedSubquery()
 		{
 			const string query1 = @"SELECT * FROM (SELECT LEVEL ORDERED_COLUMN FROM DUAL CONNECT BY LEVEL <= 5 ORDER BY ORDERED_COLUMN DESC) WHERE ROWNUM <= 3";
 			var result = _oracleSqlParser.Parse(query1);
@@ -588,8 +586,8 @@ namespace SqlPad.Oracle.Test
 			// TODO: Precise assertions
 		}
 
-		[Test(Description = @"Tests incorrectly nested factored subquery. ")]
-		public void Test31()
+		[Test(Description = @"Tests incorrectly nested common table expression. ")]
+		public void TestIncorrectlyNestedCommonTableExpression()
 		{
 			const string query1 = @"WITH TEST AS (WITH T2 AS (SELECT 1 FROM DUAL) SELECT * FROM T2) SELECT * FROM TEST";
 			var result = _oracleSqlParser.Parse(query1);
@@ -601,7 +599,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"Tests query with multiple tables in from clause; also tests '$' character within standard identifier. ")]
-		public void Test32()
+		public void TestMultipleTablesInFromClauseAndDollarCharacterWithinIdentifier()
 		{
 			const string query1 = @"SELECT * FROM SYS.DUAL, HUSQVIK.COUNTRY, HUSQVIK.INVALID, INVALID.ORDERS, V$SESSION";
 			var result = _oracleSqlParser.Parse(query1);
@@ -613,7 +611,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"Tests query with old outer join clause. ")]
-		public void Test33()
+		public void TestOldOuterJoinClause()
 		{
 			const string query1 = @"SELECT * FROM T1, T2 WHERE T1.C1 = T2.C2(+) AND T1.C2 LIKE T2.C2 (+) ESCAPE '\'";
 			var result = _oracleSqlParser.Parse(query1);
@@ -640,8 +638,8 @@ namespace SqlPad.Oracle.Test
 			// TODO: Precise assertions
 		}
 
-		[Test(Description = @"Tests query with fully qualified object name with asterisk clause. ")]
-		public void Test34()
+		[Test(Description = @"Tests query with fully qualified object name with asterisk operator. ")]
+		public void TestFullyQualifiedObjectNameWithAsteriskOperator()
 		{
 			const string query1 = @"SELECT SYS.DUAL.* FROM SYS.DUAL";
 			var result = _oracleSqlParser.Parse(query1);
@@ -656,7 +654,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"Tests query with function calls. ")]
-		public void Test35()
+		public void TestQueryWithFunctionCalls()
 		{
 			const string query1 = @"SELECT SCHEMA.PACKAGE.FUNCTION@DBLINK ALIAS, PACKAGE.FUNCTION(P1, P2, P3 + P4 * (P5 + P6)) + P7, AGGREGATE_FUNCTION1(DISTINCT PARAMETER), AGGREGATE_FUNCTION2@DBLINK(ALL PARAMETER), SYS_GUID() RANDOM_GUID FROM SYS.DUAL";
 			var result = _oracleSqlParser.Parse(query1);
@@ -674,7 +672,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"Tests query with analytic clause. ")]
-		public void Test36()
+		public void TestQueryWithAnalyticClause()
 		{
 			const string query1 = @"SELECT SUM(LENGTH(DUMMY)) OVER (PARTITION BY DUMMY ORDER BY DUMMY DESC ROWS BETWEEN DBMS_RANDOM.VALUE PRECEDING AND UNBOUNDED FOLLOWING) FROM DUAL";
 			var result = _oracleSqlParser.Parse(query1);
@@ -714,7 +712,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"Tests query with Oracle 12c OFFSET and FETCH clauses. ")]
-		public void Test37()
+		public void TestOffsetAndFetchClauses()
 		{
 			const string query1 = @"SELECT 1 FROM DUAL OFFSET 1.1 ROW";
 			var result = _oracleSqlParser.Parse(query1);
@@ -742,7 +740,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"Tests common table expression with SEARCH and CYCLE clauses. ")]
-		public void Test38()
+		public void TestCommonTableExpressionWithSearchAndCycleClauses()
 		{
 			const string query1 = @"WITH T1(VAL1, VAL2) AS (SELECT 1, 2 FROM DUAL) CYCLE VAL1, VAL2 SET IS_CYCLE TO '-' DEFAULT 1, T2(VAL1, VAL2) AS (SELECT 1, 2 FROM DUAL) SEARCH DEPTH FIRST BY VAL1 DESC NULLS FIRST, VAL2 SET SEQ# SELECT 1 FROM DUAL";
 			var result = _oracleSqlParser.Parse(query1);
@@ -754,7 +752,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"Tests CROSS and OUTER APPLY clauses. ")]
-		public void Test39()
+		public void TestCrossAndOuterApplyClauses()
 		{
 			const string query1 = @"SELECT DUMMY T1_VAL, T2_VAL, T3_VAL FROM DUAL T1 CROSS APPLY (SELECT DUAL.DUMMY T2_VAL FROM DUAL WHERE T1.DUMMY = DUAL.DUMMY) T2 OUTER APPLY (SELECT DUAL.DUMMY T3_VAL FROM DUAL WHERE T1.DUMMY = DUAL.DUMMY) T3;";
 			var result = _oracleSqlParser.Parse(query1);
@@ -766,7 +764,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"Tests Flashback PERIOD FOR <identifier> clause. ")]
-		public void Test40()
+		public void TestFlashbackPeriodForClause()
 		{
 			const string query1 = @"SELECT DATE'2014-03-08' - DATE'2014-02-20' FROM T1 AS OF PERIOD FOR ""Column"" TO_DATE('2014-03-15', 'YYYY-MM-DD')";
 			var result = _oracleSqlParser.Parse(query1);
@@ -786,7 +784,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"Tests PIVOT and UNPIVOT clauses. ")]
-		public void Test44()
+		public void TestPivotAndUnpivotClauses()
 		{
 			const string query1 = @"SELECT * FROM (SELECT 1 DUMMY, 'X' LABEL FROM DUAL) PIVOT (SUM(DUMMY) AS SUM_DUMMY FOR (LABEL) IN ('X' || NULL AS X, ('Y') Y, 'Z'));";
 			var result = _oracleSqlParser.Parse(query1);
@@ -814,7 +812,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"Tests table reference parenthesis encapsulation. ")]
-		public void Test45()
+		public void TestTableReferenceParenthesisEncapsulation()
 		{
 			const string query1 = @"SELECT * FROM ((SELECT * FROM DUAL)) D";
 			var result = _oracleSqlParser.Parse(query1);
@@ -882,7 +880,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"Tests table collection expression. ")]
-		public void Test46()
+		public void TestTableCollectionExpression()
 		{
 			const string query1 = @"SELECT TABLE_EXPRESSION_ALIAS1.COLUMN_VALUE, TABLE_EXPRESSION_ALIAS2.COLUMN_VALUE FROM TABLE(SYS.ODCIVARCHAR2LIST('Value 1', 'Value 2', 'Value 3')) TABLE_EXPRESSION_ALIAS1, TABLE(SYS.ODCIVARCHAR2LIST('Value 1', 'Value 2', 'Value 3'))(+) TABLE_EXPRESSION_ALIAS2";
 			var result = _oracleSqlParser.Parse(query1);
@@ -894,7 +892,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"Tests CAST function. ")]
-		public void Test47()
+		public void TestCastFunction()
 		{
 			const string query1 = @"SELECT CAST(3 / (2 - 1) AS NUMBER(*, 1)) AS COLUMN_ALIAS1, CAST('X' || 'Y' AS VARCHAR2(30)) AS COLUMN_ALIAS2 FROM DUAL";
 			var result = _oracleSqlParser.Parse(query1);
@@ -926,7 +924,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"Tests FROM (SUB)PARTITION clause. ")]
-		public void Test49()
+		public void TestPartitionAndSubpartitionClauses()
 		{
 			const string query1 = @"SELECT * FROM IDX_TEST PARTITION FOR (10 + 1 + LENGTH(6), TO_DATE('2014-03-18', 'YYYY-MM-DD'), 'K1') P1, IDX_TEST SUBPARTITION (P_C3_10_SP_C4_V1) P2";
 			var result = _oracleSqlParser.Parse(query1);
@@ -938,7 +936,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"Tests subquery restriction clause. ")]
-		public void Test50()
+		public void TestSubqueryRestrictionClause()
 		{
 			const string query1 = @"SELECT * FROM (SELECT * FROM COUNTRY WITH READ ONLY), (SELECT * FROM COUNTRY WITH CHECK OPTION)";
 			var result = _oracleSqlParser.Parse(query1);
@@ -950,7 +948,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"Tests unfinished join clause. ")]
-		public void Test51()
+		public void TestUnfinishedJoinClause()
 		{
 			const string query1 = @"SELECT NULL FROM SELECTION JOIN TARGETGROUP ";
 			var result = _oracleSqlParser.Parse(query1);
@@ -1001,7 +999,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"Tests select list when entering new columns. ")]
-		public void Test52()
+		public void TestSelectListWhenEnteringNewColumns()
 		{
 			const string query1 = @"SELECT NAME, /* missing expression */, SELECTION_ID FROM SELECTION";
 			var result = _oracleSqlParser.Parse(query1);
@@ -1040,14 +1038,20 @@ namespace SqlPad.Oracle.Test
 			terminals[4].Id.ShouldBe(Terminals.Dot);
 			terminals[5].Id.ShouldBe(Terminals.Comma);
 			terminals[5].ParentNode.Id.ShouldBe(NonTerminals.SelectExpressionExpressionChainedList);
-			//terminals[5].ParentNode.IsGrammarValid.ShouldBe(false);
 			terminals[6].Id.ShouldBe(Terminals.Comma);
 			terminals[6].ParentNode.Id.ShouldBe(NonTerminals.SelectExpressionExpressionChainedList);
-			//terminals[6].ParentNode.IsGrammarValid.ShouldBe(false);
 			terminals[8].Id.ShouldBe(Terminals.ObjectIdentifier);
 			terminals[8].ParentNode.Id.ShouldBe(NonTerminals.ObjectPrefix);
 			terminals[8].ParentNode.ParentNode.Id.ShouldBe(NonTerminals.Prefix);
 			terminals[8].ParentNode.ParentNode.IsGrammarValid.ShouldBe(true);
+
+			var selectColumnNodes = rootNode.GetDescendants(NonTerminals.AliasedExpressionOrAllTableColumns).ToArray();
+			selectColumnNodes.Count().ShouldBe(5);
+			selectColumnNodes[0].IsGrammarValid.ShouldBe(true);
+			selectColumnNodes[1].IsGrammarValid.ShouldBe(false);
+			selectColumnNodes[2].IsGrammarValid.ShouldBe(false);
+			selectColumnNodes[3].IsGrammarValid.ShouldBe(false);
+			selectColumnNodes[4].IsGrammarValid.ShouldBe(true);
 		}
 
 		[Test(Description = @"")]

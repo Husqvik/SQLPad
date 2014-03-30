@@ -12,140 +12,140 @@ namespace SqlPad.Oracle.Test
     public class OracleTokenReaderTest
     {
 		[Test(Description = @"Tests '(' and '""' characters as tokens separators. ")]
-		public void Test1()
+		public void TestParenthesisAndQuotesAsTokenSeparators()
 		{
 			var tokens = GetTokenValuesFromOracleSql("select('x')as\"x\"from(dual\"d\")");
 			tokens.ShouldBe(new [] { "select", "(", "'x'", ")", "as", "\"x\"", "from", "(", "dual", "\"d\"", ")" });
 		}
 
 		[Test(Description = "Tests quoted string (q'?<string>?' where ? is character used for marking start and end of the string) literal. ")]
-		public void Test2()
+		public void TestQuotedString()
 		{
 			var tokens = GetTokenValuesFromOracleSql("select q'|x|'as\"x\"from(dual\"d\")");
 			tokens.ShouldBe(new [] { "select", "q'|x|'", "as", "\"x\"", "from", "(", "dual", "\"d\"", ")" });
 		}
 
 		[Test(Description = "Tests numeric literal and quoted identifiers for column name and table name. ")]
-		public void Test3()
+		public void TestNumericLiteralAndQuotedIdentifiersForColumnNameAndTableName()
 		{
 			var tokens = GetTokenValuesFromOracleSql("select(1)\"x\"from(dual\"d\")");
 			tokens.ShouldBe(new [] { "select", "(", "1", ")", "\"x\"", "from", "(", "dual", "\"d\"", ")" });
 		}
 
 		[Test(Description = "Tests string literal and quoted identifiers for column name (without as keyword) and table name. ")]
-		public void Test4()
+		public void TestStringLiteralAndQuotedIdentifiersForColumnNameAndTableName()
 		{
 			var tokens = GetTokenValuesFromOracleSql("select('x')\"x\"from(dual\"d\")");
 			tokens.ShouldBe(new [] { "select", "(", "'x'", ")", "\"x\"", "from", "(", "dual", "\"d\"", ")" });
 		}
 
 		[Test(Description = "Tests comment character starting combinations ('--', '/*') in string literal and quoted identifiers. ")]
-		public void Test5()
+		public void TestCommentBlocks()
 		{
 			var tokens = GetTokenValuesFromOracleSql("select '--' \"/*x\"from(dual)");
 			tokens.ShouldBe(new [] { "select", "'--'", "\"/*x\"", "from", "(", "dual", ")" });
 		}
 
 		[Test(Description = "Tests comment character combinations in string literal and quoted identifiers. ")]
-		public void Test6()
+		public void TestCommentClausesInStringLiteralAndQuotedIdentifier()
 		{
 			var tokens = GetTokenValuesFromOracleSql("select '/*--' \"--x*/\"from(dual)");
 			tokens.ShouldBe(new [] { "select", "'/*--'", "\"--x*/\"", "from", "(", "dual", ")" });
 		}
 
 		[Test(Description = "Tests starting and trailing white space. ")]
-		public void Test7()
+		public void TestStartingAndTrailingWhiteSpace()
 		{
 			var tokens = GetTokenValuesFromOracleSql("   \r\n  \t\t  \r\n   select 'x' \"x\"from dual     \r\n    \t\t     \t     ");
 			tokens.ShouldBe(new [] { "select", "'x'", "\"x\"", "from", "dual" });
 		}
 
 		[Test(Description = "Tests block comments. ")]
-		public void Test8()
+		public void TestBlockComments()
 		{
 			var tokens = GetTokenValuesFromOracleSql("select/**/1/**/from/**/dual");
 			tokens.ShouldBe(new [] { "select", "1", "from", "dual" });
 		}
 
 		[Test(Description = "Tests line comments. ")]
-		public void Test9()
+		public void TestLineComments()
 		{
 			var tokens = GetTokenValuesFromOracleSql("select--\r\n1--\r\nfrom--\r\ndual");
 			tokens.ShouldBe(new [] { "select", "1", "from", "dual" });
 		}
 
 		[Test(Description = "Tests line breaks in string literal. ")]
-		public void Test10()
+		public void TestLineBreaksInStringLiteral()
 		{
 			var tokens = GetTokenValuesFromOracleSql("select 'some\r\n--\r\n/*\r\n*/\r\nthing'\r\nfrom dual");
 			tokens.ShouldBe(new [] { "select", "'some\r\n--\r\n/*\r\n*/\r\nthing'", "from", "dual" });
 		}
 
 		[Test(Description = "Tests multiple statements separated by ';'. ")]
-		public void Test11()
+		public void TestMultipleStatementsSeparatedBySemicolon()
 		{
 			var tokens = GetTokenValuesFromOracleSql("select null c1 from dual       \t;\r\n\r\nselect null c2 from dual;   \t\r\n    select null c3 from dual");
 			tokens.ShouldBe(new[] { "select", "null", "c1", "from", "dual", ";", "select", "null", "c2", "from", "dual", ";", "select", "null", "c3", "from", "dual" });
 		}
 
-		[Test(Description = "Tests distinct and asterisk symbols. ")]
-		public void Test12()
+		[Test(Description = "Tests asterisk symbol. ")]
+		public void TestAsteriskSymbol()
 		{
 			var tokens = GetTokenValuesFromOracleSql("select d.*from dual d");
 			tokens.ShouldBe(new[] { "select", "d", ".", "*", "from", "dual", "d" });
 		}
 
-		[Test(Description = "Tests distinct and asterisk symbols. ")]
-		public void Test13()
+		[Test(Description = "Tests empty string literal. ")]
+		public void TestEmptyStringLiteral()
 		{
 			var tokens = GetTokenValuesFromOracleSql("select count(d.dummy),''from dual d");
 			tokens.ShouldBe(new[] { "select", "count", "(", "d", ".", "dummy", ")", ",", "''", "from", "dual", "d" });
 		}
 
 		[Test(Description = "Tests apostrophe in string literal and quoted identifier. ")]
-		public void Test14()
+		public void TestApostropheInStringLiteralAndQuotedIdentifier()
 		{
 			var tokens = GetTokenValuesFromOracleSql("select '''' \"''apostrophe''\"from dual");
 			tokens.ShouldBe(new[] { "select", "''''", "\"''apostrophe''\"", "from", "dual" });
 		}
 
 		[Test(Description = "Tests apostrophes in string literal in between of other keywords without spaces. ")]
-		public void Test15()
+		public void TestApostrophessInStringLiteralInBetweenOfOtherKeywordsWithoutSpaces()
 		{
 			var tokens = GetTokenValuesFromOracleSql("select''''from dual");
 			tokens.ShouldBe(new[] { "select", "''''", "from", "dual" });
 		}
 
 		[Test(Description = "Tests special cases of literals. ")]
-		public void Test16()
+		public void TestSpecialStringLiterals()
 		{
 			var tokens = GetTokenValuesFromOracleSql("select n'*', N'*', Nq'|*|', q'|*|' from dual");
 			tokens.ShouldBe(new[] { "select", "n'*'", ",", "N'*'", ",", "Nq'|*|'", ",", "q'|*|'", "from", "dual" });
 		}
 
 		[Test(Description = "Tests invalid special cases of literals. ")]
-		public void Test17()
+		public void TestInvalidCasesOfStringLiterals()
 		{
 			var tokens = GetTokenValuesFromOracleSql("select x'*', qn'|*|' from dual");
 			tokens.ShouldBe(new[] { "select", "x", "'*'", ",", "qn", "'|*|'", "from", "dual" });
 		}
 
 		[Test(Description = "Tests token index positions within the input. ")]
-		public void Test18()
+		public void TestBasicIndexPosition()
 		{
 			var tokenIndexes = GetTokenIndexesFromOracleSql("select x'*', qn'|*|' from dual");
 			tokenIndexes.ShouldBe(new[] { 0, 7, 8, 11, 13, 15, 21, 26 });
 		}
 
 		[Test(Description = "Tests token index positions within an input with the last remaining single character token. ")]
-		public void Test19()
+		public void TestTokenIndicesWithLastRemainingSingleCharacterToken()
 		{
 			var tokenIndexes = GetTokenIndexesFromOracleSql("select d.*from dual d");
 			tokenIndexes.ShouldBe(new[] { 0, 7, 8, 9, 10, 15, 20 });
 		}
 
 		[Test(Description = "Tests token index positions within an input with string literal and quoted identifier. ")]
-		public void Test20()
+		public void TestTokenIndicesOfLiteralsAndQuotedIdentifiers()
 		{
 			var tokenIndexes = GetTokenIndexesFromOracleSql(" \t select '/*--' \"--x*/\"from(dual)");
 			tokenIndexes.ShouldBe(new[] { 3, 10, 17, 24, 28, 29, 33 });
@@ -165,21 +165,21 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = "Tests longer comments with comment leading characters. ")]
-		public void Test21()
+		public void TestLongerCommentsWithCommentLeadingCharacters()
 		{
 			var tokens = GetTokenValuesFromOracleSql(" \r\n \t select*/*this*is/a--block/comment*/\r\n--this-is/*a-line*commment\r\nfrom(dual)");
 			tokens.ShouldBe(new[] { "select", "*", "from", "(", "dual", ")" });
 		}
 
 		[Test(Description = "Tests token index positions within an input with longer comments with comment leading characters. ")]
-		public void Test22()
+		public void TestTokenIndicesWithinLongerCommentsWithCommentLeadingCharacters()
 		{
 			var tokenIndexes = GetTokenIndexesFromOracleSql(" \r\n \t select*/*this*is/a--block/comment*/\r\n--this-is/*a-line*commment\r\nfrom(dual)");
 			tokenIndexes.ShouldBe(new[] { 6, 12, 71, 75, 76, 80 });
 		}
 
 		[Test(Description = "Tests unfinished comments. ")]
-		public void Test23()
+		public void TestUnfinishedComments()
 		{
 			var tokens = GetTokenValuesFromOracleSql("select*from dual/*this is a comment");
 			tokens.ShouldBe(new[] { "select", "*", "from", "dual" });
@@ -189,7 +189,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = "Tests simle CASE and WHERE clauses. ")]
-		public void Test24()
+		public void TestCaseAndWhereExpressions()
 		{
 			const string testQuery = "select case when 1=1then 999else-999end from dual where 1>=1or 1<=1";
 			var tokens = GetTokenValuesFromOracleSql(testQuery);
@@ -200,7 +200,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = "Tests special number literals. ")]
-		public void Test25()
+		public void TestSpecialNumberLiterals()
 		{
 			const string testQuery1 = "select 1DD, 1FF, 1., .1, 1.dd, .1ff, 999.888.777 from dual";
 			var tokens = GetTokenValuesFromOracleSql(testQuery1);
@@ -225,7 +225,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = "Tests bind variable placeholders. ")]
-		public void Test26()
+		public void TestBindVariablePlaceholders()
 		{
 			const string testQuery1 = "select:1,:2,:\"3\"from/*:fake*/dual--fake";
 			var tokens = GetTokenValuesFromOracleSql(testQuery1);
@@ -243,7 +243,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = "Tests IN clause and not equals operators. ")]
-		public void Test27()
+		public void TestNotEqualOperator()
 		{
 			const string testQuery = "select 1 from dual where 1 in (1, 2, 3) and 4 not in (5, 6, 7) and 8 != 9";
 			var tokens = GetTokenValuesFromOracleSql(testQuery);
@@ -254,7 +254,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = "Tests string literal as the last token. ")]
-		public void Test28()
+		public void TestStringLiteralAsLastToken()
 		{
 			const string testQuery = "SELECT 1 FROM DUAL WHERE 'def' LIKE 'd'";
 			var tokens = GetTokenValuesFromOracleSql(testQuery);
@@ -265,7 +265,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = "Tests ANSI DATE and TIMESTAMP literals. ")]
-		public void Test29()
+		public void TestAnsiDateAndTimestampLiterals()
 		{
 			const string testQuery = "SELECT DATE'2014-20-02', DATE		'2014-20-02', TIMESTAMP '2014-20-02 12:34:56.789' FROM DUAL";
 			var tokens = GetTokenValuesFromOracleSql(testQuery);
@@ -276,7 +276,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = "Tests quoted schema name. ")]
-		public void Test30()
+		public void TestQuotedSchemaName()
 		{
 			const string testQuery = @"SELECT NULL FROM ""SYS"".DUAL";
 			var tokens = GetTokenValuesFromOracleSql(testQuery);
