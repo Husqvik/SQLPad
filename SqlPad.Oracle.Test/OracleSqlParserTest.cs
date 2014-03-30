@@ -530,6 +530,7 @@ namespace SqlPad.Oracle.Test
 		[Test(Description = @"Tests ANY and ALL operators with expression list and subquery. ")]
 		public void Test28()
 		{
+			//const string query1 = @"SELECT 1 FROM DUAL WHERE 1 = ANY(())"; // Test
 			const string query1 = @"SELECT 1 FROM DUAL WHERE DUMMY = ANY(1, 2, 3) OR DUMMY = SOME(1, 2, 3) OR DUMMY = ALL(SELECT * FROM DUAL)";
 			var result = _oracleSqlParser.Parse(query1);
 
@@ -997,6 +998,50 @@ namespace SqlPad.Oracle.Test
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
 			terminals = statement.NodeCollection.SelectMany(n => n.Terminals).ToArray();
 			terminals.Length.ShouldBe(7);
+		}
+
+		[Test(Description = @"Tests select list when entering new columns. "), Ignore]
+		public void Test52()
+		{
+			/*const string query1 = @"SELECT NAME, /* missing expression, SELECTION_ID FROM SELECTION";
+			var result = _oracleSqlParser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			var statement = result.Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			var terminals = statement.NodeCollection.SelectMany(n => n.Terminals).ToArray();
+			terminals.Length.ShouldBe(7);*/
+
+			// TODO: Precise assertions
+
+			const string query2 = @"SELECT NAME, SELECTION./* missing column */, SELECTION_ID FROM SELECTION";
+			var result = _oracleSqlParser.Parse(query2);
+
+			result.Count.ShouldBe(1);
+			var statement = result.Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			var terminals = statement.NodeCollection.SelectMany(n => n.Terminals).ToArray();
+			terminals.Length.ShouldBe(9);
+
+			// TODO: Precise assertions
+		}
+
+		[Test(Description = @"")]
+		public void TestIsRuleValidSuccess()
+		{
+			var isRuleValid = _oracleSqlParser.IsRuleValid(NonTerminals.SelectList, "SELECTION.NAME, SELECTION.RESPONDENTBUCKET_ID, SELECTION.SELECTION_ID");
+			isRuleValid.ShouldBe(true);
+		}
+
+		[Test(Description = @"")]
+		public void TestIsRuleValidFailure()
+		{
+			var isRuleValid = _oracleSqlParser.IsRuleValid(NonTerminals.SelectList, "SELECTION.NAME, SELECTION./* missing column */, SELECTION.SELECTION_ID");
+			isRuleValid.ShouldBe(false);
+
+			isRuleValid = _oracleSqlParser.IsRuleValid(NonTerminals.SelectList, "SELECTION.NAME, SELECTION.RESPONDENTBUCKET_ID, /* missing expression */, SELECTION.SELECTION_ID");
+			//isRuleValid = _oracleSqlParser.IsRuleValid(NonTerminals.SelectList, "SELECTION.NAME, SELECTION./* missing column */, /* missing expression */, SELECTION.SELECTION_ID");
+			isRuleValid.ShouldBe(false);
 		}
 
 		private static OracleTokenReader CreateTokenReader(string sqlText)
