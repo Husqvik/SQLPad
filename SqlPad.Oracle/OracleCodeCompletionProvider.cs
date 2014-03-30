@@ -89,7 +89,7 @@ namespace SqlPad.Oracle
 							}
 						}
 
-						//if (lastPreviousTerminal.Id == Terminals.ObjectIdentifier || lastPreviousTerminal.Id == Terminals.Alias)
+						if (lastPreviousTerminal.Id == Terminals.ObjectIdentifier || lastPreviousTerminal.Id == Terminals.Alias)
 						{
 							var joinColumnsOrConditionNode = lastPreviousTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.FromClause, NonTerminals.JoinColumnsOrCondition);
 							var tableReference = lastPreviousTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.NestedQuery, NonTerminals.TableReference);
@@ -130,6 +130,11 @@ namespace SqlPad.Oracle
 			}
 
 			var currentNode = statement.GetNodeAtPosition(cursorPosition);
+			if (currentNode.Type == NodeType.NonTerminal)
+			{
+				currentNode = statement.GetNearestTerminalToPosition(cursorPosition);
+			}
+
 			semanticModel = new OracleStatementSemanticModel(statementText, statement, databaseModel);
 
 			if (currentNode.Id == Terminals.Identifier)
@@ -137,7 +142,7 @@ namespace SqlPad.Oracle
 				var selectList = currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.SelectList);
 				var condition = currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.Condition);
 				var rootNode = selectList ?? condition;
-				if (selectList != null || condition != null)
+				if (rootNode != null)
 				{
 					var prefixedColumnReference = currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference);
 					if (prefixedColumnReference != null)
@@ -158,7 +163,7 @@ namespace SqlPad.Oracle
 										             {
 											             Name = c.Name.ToSimpleIdentifier(),
 														 StatementNode = currentNode,
-														 Category = "Column"
+														 Category = OracleCodeCompletionCategory.Column
 										             }).ToArray();
 								}
 							}
@@ -187,12 +192,12 @@ namespace SqlPad.Oracle
 		private IEnumerable<ICodeCompletionItem> GenerateSchemaItems(string schemaNamePart, StatementDescriptionNode node, int insertOffset)
 		{
 			return DatabaseModelFake.Instance.Schemas
-				.Where(s => String.IsNullOrEmpty(schemaNamePart) || s.Contains(schemaNamePart.ToUpperInvariant()))
+				.Where(s => schemaNamePart.ToQuotedIdentifier() != s && (String.IsNullOrEmpty(schemaNamePart) || s.Contains(schemaNamePart.ToUpperInvariant())))
 				.Select(s => new OracleCodeCompletionItem
 				             {
 								 Name = s.ToSimpleIdentifier(),
 								 StatementNode = node,
-								 Category = "Database Schema",
+								 Category = OracleCodeCompletionCategory.DatabaseSchema,
 								 Offset = insertOffset,
 								 CategoryPriority = 1
 				             });
@@ -201,12 +206,12 @@ namespace SqlPad.Oracle
 		private IEnumerable<ICodeCompletionItem> GenerateSchemaObjectItems(string schemaName, string objectNamePart, StatementDescriptionNode node, int insertOffset)
 		{
 			return DatabaseModelFake.Instance.AllObjects.Values
-						.Where(o => o.Owner == schemaName.ToQuotedIdentifier() && (String.IsNullOrEmpty(objectNamePart) || o.Name.Contains(objectNamePart.ToUpperInvariant())))
+						.Where(o => o.Owner == schemaName.ToQuotedIdentifier() && objectNamePart.ToQuotedIdentifier() != o.Name && (String.IsNullOrEmpty(objectNamePart) || o.Name.Contains(objectNamePart.ToUpperInvariant())))
 						.Select(o => new OracleCodeCompletionItem
 						{
 							Name = o.Name.ToSimpleIdentifier(),
 							StatementNode = node,
-							Category = "Schema Object",
+							Category = OracleCodeCompletionCategory.SchemaObject,
 							Offset = insertOffset
 						});
 		}
@@ -214,12 +219,12 @@ namespace SqlPad.Oracle
 		private IEnumerable<ICodeCompletionItem> GenerateCommonTableExpressionReferenceItems(OracleStatementSemanticModel model, string referenceNamePart, StatementDescriptionNode node, int insertOffset)
 		{
 			return model.QueryBlocks
-						.Where(qb => qb.Type == QueryBlockType.CommonTableExpression && (String.IsNullOrEmpty(referenceNamePart) || qb.Alias.ToUpperInvariant().Contains(referenceNamePart.ToUpperInvariant())))
+						.Where(qb => qb.Type == QueryBlockType.CommonTableExpression && referenceNamePart.ToQuotedIdentifier() != qb.Alias && (String.IsNullOrEmpty(referenceNamePart) || qb.Alias.ToUpperInvariant().Contains(referenceNamePart.ToUpperInvariant())))
 						.Select(qb => new OracleCodeCompletionItem
 						{
 							Name = qb.Alias.ToSimpleIdentifier(),
 							StatementNode = node,
-							Category = "Common Table Expression",
+							Category = OracleCodeCompletionCategory.CommonTableExpression,
 							Offset = insertOffset,
 							CategoryPriority = -1
 						});
@@ -285,6 +290,14 @@ namespace SqlPad.Oracle
 
 			return new OracleCodeCompletionItem { Name = builder.ToString(), Offset = insertOffset };
 		}
+	}
+
+	public static class OracleCodeCompletionCategory
+	{
+		public const string DatabaseSchema = "Database Schema";
+		public const string SchemaObject = "Schema Object";
+		public const string CommonTableExpression = "Common Table Expression";
+		public const string Column = "Column";
 	}
 
 	[DebuggerDisplay("OracleCodeCompletionItem (Name={Name}; Category={Category}; Priority={Priority})")]

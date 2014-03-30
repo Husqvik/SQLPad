@@ -94,7 +94,7 @@ namespace SqlPad
 		public override string ToString()
 		{
 			var terminalValue = Type == NodeType.NonTerminal ? String.Empty : String.Format("; TokenValue={0}", Token.Value);
-			return String.Format("StatementDescriptionNode (Id={0}; Type={1}; IsRequired={2}; Level={3}; SourcePosition=({4}-{5}){6})", Id, Type, IsRequired, Level, SourcePosition.IndexStart, SourcePosition.IndexEnd, terminalValue);
+			return String.Format("StatementDescriptionNode (Id={0}; Type={1}; IsRequired={2}; IsGrammarValid={3}; Level={4}; SourcePosition=({5}-{6}){7})", Id, Type, IsRequired, IsGrammarValid, Level, SourcePosition.IndexStart, SourcePosition.IndexEnd, terminalValue);
 		}
 		#endregion
 

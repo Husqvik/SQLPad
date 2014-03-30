@@ -97,5 +97,53 @@ FROM
 			items[0].Name.ShouldBe("ON CTE1.ID = CTE2.ID");
 			items[0].Offset.ShouldBe(0);
 		}
+
+		[Test(Description = @"")]
+		public void Test8()
+		{
+			const string query1 = @"SELECT S.* FROM SELECTION S JOIN P";
+
+			var items = _codeCompletionProvider.ResolveItems(query1, 34).ToArray();
+			items.Length.ShouldBe(4);
+			items[0].Name.ShouldBe("PROJECT");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
+			items[1].Name.ShouldBe("RESPONDENTBUCKET");
+			items[2].Name.ShouldBe("TARGETGROUP");
+			items[3].Name.ShouldBe("PUBLIC");
+			items[3].Category.ShouldBe(OracleCodeCompletionCategory.DatabaseSchema);
+		}
+
+		[Test(Description = @"")]
+		public void Test9()
+		{
+			const string query1 = @"WITH
+	CTE1 AS (SELECT '' NAME, '' DESCRIPTION, 1 ID FROM DUAL),
+	CTE2 AS (SELECT '' OTHER_NAME, '' OTHER_DESCRIPTION, 1 ID FROM DUAL)
+SELECT
+	*
+FROM
+	CTE1
+	JOIN ";
+
+			var items = _codeCompletionProvider.ResolveItems(query1, 168).ToArray();
+			items.Length.ShouldBe(15);
+			items[0].Name.ShouldBe("CTE1");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.CommonTableExpression);
+			items[1].Name.ShouldBe("CTE2");
+			items[1].Category.ShouldBe(OracleCodeCompletionCategory.CommonTableExpression);
+		}
+
+		[Test(Description = @"")]
+		public void Test10()
+		{
+			const string query1 = @"SELECT * FROM SYS.";
+
+			var items = _codeCompletionProvider.ResolveItems(query1, 18).ToArray();
+			items.Length.ShouldBe(2);
+			items[0].Name.ShouldBe("DUAL");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
+			items[1].Name.ShouldBe("V_$SESSION");
+			items[1].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
+		}
 	}
 }

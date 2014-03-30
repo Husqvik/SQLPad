@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -99,6 +100,13 @@ namespace SqlPad
 			if (_completionWindow == null && snippets.Length > 0)
 			{
 				CreateSnippetCompletionWindow(snippets);
+				_completionWindow.Closed += (o, args) =>
+					// Workaround to display completion menu after the snippet is inserted
+					Task.Factory.StartNew(() =>
+					                      {
+						                      Thread.Sleep(20);
+						                      Dispatcher.Invoke(CreateCodeCompletionWindow);
+					                      });
 				return;
 			}
 
@@ -160,6 +168,12 @@ namespace SqlPad
 			if (show && data.Count > 0)
 			{
 				_completionWindow.Width += 4;
+
+				if (data.Count == 1)
+				{
+					_completionWindow.CompletionList.ListBox.SelectedIndex = 0;
+				}
+
 				_completionWindow.Show();
 			}
 		}

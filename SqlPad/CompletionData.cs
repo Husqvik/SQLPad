@@ -52,7 +52,7 @@ namespace SqlPad
 			{
 				var offsetToReplace = _snippet.SourceToReplace.Length - 1;
 				var startOffset = completionSegment.Offset - offsetToReplace;
-				textArea.Document.Replace(startOffset, startOffset + offsetToReplace + completionSegment.Length, _completionText.Trim());
+				textArea.Document.Replace(startOffset, startOffset + offsetToReplace + completionSegment.Length, _completionText);
 				return;
 			}
 
