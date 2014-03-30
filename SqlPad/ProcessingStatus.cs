@@ -2,7 +2,6 @@
 {
 	public enum ProcessingStatus
 	{
-		Start,
 		Success,
 		SequenceNotFound
 	}
