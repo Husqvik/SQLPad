@@ -1000,30 +1000,54 @@ namespace SqlPad.Oracle.Test
 			terminals.Length.ShouldBe(7);
 		}
 
-		[Test(Description = @"Tests select list when entering new columns. "), Ignore]
+		[Test(Description = @"Tests select list when entering new columns. ")]
 		public void Test52()
 		{
-			/*const string query1 = @"SELECT NAME, /* missing expression, SELECTION_ID FROM SELECTION";
+			const string query1 = @"SELECT NAME, /* missing expression */, SELECTION_ID FROM SELECTION";
 			var result = _oracleSqlParser.Parse(query1);
 
 			result.Count.ShouldBe(1);
 			var statement = result.Single();
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
 			var terminals = statement.NodeCollection.SelectMany(n => n.Terminals).ToArray();
-			terminals.Length.ShouldBe(7);*/
+			terminals.Length.ShouldBe(7);
 
 			// TODO: Precise assertions
 
 			const string query2 = @"SELECT NAME, SELECTION./* missing column */, SELECTION_ID FROM SELECTION";
-			var result = _oracleSqlParser.Parse(query2);
+			result = _oracleSqlParser.Parse(query2);
 
 			result.Count.ShouldBe(1);
-			var statement = result.Single();
+			statement = result.Single();
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
-			var terminals = statement.NodeCollection.SelectMany(n => n.Terminals).ToArray();
+			terminals = statement.NodeCollection.SelectMany(n => n.Terminals).ToArray();
 			terminals.Length.ShouldBe(9);
 
 			// TODO: Precise assertions
+
+			const string query3 = @"SELECT NAME, SELECTION./* missing column */, /* missing expression */, /* missing expression */, SELECTION.SELECTION_ID FROM SELECTION";
+			result = _oracleSqlParser.Parse(query3);
+
+			result.Count.ShouldBe(1);
+			statement = result.Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			statement.NodeCollection.Count.ShouldBe(1);
+			var rootNode = statement.NodeCollection.Single();
+			terminals = rootNode.Terminals.ToArray();
+			terminals.Length.ShouldBe(13);
+
+			terminals[3].Id.ShouldBe(Terminals.SchemaIdentifier); // TODO: Should be object identifier
+			terminals[4].Id.ShouldBe(Terminals.Dot);
+			terminals[5].Id.ShouldBe(Terminals.Comma);
+			terminals[5].ParentNode.Id.ShouldBe(NonTerminals.SelectExpressionExpressionChainedList);
+			//terminals[5].ParentNode.IsGrammarValid.ShouldBe(false);
+			terminals[6].Id.ShouldBe(Terminals.Comma);
+			terminals[6].ParentNode.Id.ShouldBe(NonTerminals.SelectExpressionExpressionChainedList);
+			//terminals[6].ParentNode.IsGrammarValid.ShouldBe(false);
+			terminals[8].Id.ShouldBe(Terminals.ObjectIdentifier);
+			terminals[8].ParentNode.Id.ShouldBe(NonTerminals.ObjectPrefix);
+			terminals[8].ParentNode.ParentNode.Id.ShouldBe(NonTerminals.Prefix);
+			terminals[8].ParentNode.ParentNode.IsGrammarValid.ShouldBe(true);
 		}
 
 		[Test(Description = @"")]
@@ -1040,8 +1064,16 @@ namespace SqlPad.Oracle.Test
 			isRuleValid.ShouldBe(false);
 
 			isRuleValid = _oracleSqlParser.IsRuleValid(NonTerminals.SelectList, "SELECTION.NAME, SELECTION.RESPONDENTBUCKET_ID, /* missing expression */, SELECTION.SELECTION_ID");
-			//isRuleValid = _oracleSqlParser.IsRuleValid(NonTerminals.SelectList, "SELECTION.NAME, SELECTION./* missing column */, /* missing expression */, SELECTION.SELECTION_ID");
 			isRuleValid.ShouldBe(false);
+
+			isRuleValid = _oracleSqlParser.IsRuleValid(NonTerminals.SelectList, "SELECTION.NAME, SELECTION./* missing column */, /* missing expression */, SELECTION.SELECTION_ID");
+			isRuleValid.ShouldBe(false);
+		}
+
+		[Test(Description = @"")]
+		public void TestTemp()
+		{
+			
 		}
 
 		private static OracleTokenReader CreateTokenReader(string sqlText)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -67,7 +68,8 @@ namespace SqlPad.Oracle
 		{
 			var result = ProceedNonTerminal(nonTerminalId, 0, 0, new List<OracleToken>(tokens));
 			return result.Status == ProcessingStatus.Success &&
-			       result.Terminals.Count() == result.BestCandidates.Sum(n => n.Terminals.Count());
+			       result.Nodes.All(n => n.AllChildNodes.All(c => c.IsGrammarValid))/* &&
+			       result.Terminals.Count() == result.BestCandidates.Sum(n => n.Terminals.Count())*/;
 		}
 
 		public ICollection<IStatement> Parse(string sqlText)
@@ -160,6 +162,12 @@ namespace SqlPad.Oracle
 					indexEnd = lastTerminal.Index + lastTerminal.Value.Length - 1;
 
 					tokenBuffer.RemoveRange(0, result.Terminals.Count());
+
+					if (result.Nodes.Any(n => n.AllChildNodes.Any(c => !c.IsGrammarValid)))
+					{
+						//var invalidNodes = result.Nodes.SelectMany(n => n.AllChildNodes).Where(n => !n.IsGrammarValid).ToArray();
+						result.Status = ProcessingStatus.SequenceNotFound;
+					}
 				}
 
 				oracleSql.SourcePosition = new SourcePosition { IndexStart = indexStart, IndexEnd = indexEnd };
@@ -206,7 +214,14 @@ namespace SqlPad.Oracle
 							result.Status = nestedResult.Status;
 						}
 
-						var nestedNode = new StatementDescriptionNode(NodeType.NonTerminal) { Id = nestedNonTerminal.Id, Level = level, IsRequired = nestedNonTerminal.IsRequired };
+						var nestedNode = new StatementDescriptionNode(NodeType.NonTerminal)
+						                 {
+							                 Id = nestedNonTerminal.Id,
+											 Level = level,
+											 IsRequired = nestedNonTerminal.IsRequired,
+											 IsGrammarValid = nestedResult.Status == ProcessingStatus.Success
+						                 };
+						
 						var alternativeNode = nestedNode.Clone();
 
 						if (nestedResult.BestCandidates.Count > 0 &&
@@ -232,7 +247,12 @@ namespace SqlPad.Oracle
 							foreach (var terminalCandidate in nestedResult.TerminalCandidates)
 								terminalCandidates.Add(terminalCandidate);
 
-							break;
+							if (workingNodes.Count > 0/* && workingNodes[0].FirstTerminalNode.Id == OracleGrammarDescription.Terminals.Comma*/)
+							{
+								workingNodes.Add(alternativeNode);
+							}
+							else
+								break;
 						}
 					}
 					else
@@ -274,7 +294,7 @@ namespace SqlPad.Oracle
 
 		private bool TryRevertOptionalToken(Func<int, ProcessingResult> getAlternativeProcessingResultFunction, ref ProcessingResult currentResult, IList<StatementDescriptionNode> workingNodes)
 		{
-			var optionalNodeCandidate = workingNodes.Count > 0 ? workingNodes[workingNodes.Count - 1].Terminals.Last() : null;
+			var optionalNodeCandidate = workingNodes.Count > 0 ? workingNodes[workingNodes.Count - 1].Terminals.LastOrDefault() : null;
 			optionalNodeCandidate = optionalNodeCandidate != null && optionalNodeCandidate.IsRequired ? optionalNodeCandidate.ParentNode : optionalNodeCandidate;
 
 			if (optionalNodeCandidate == null || optionalNodeCandidate.IsRequired)
