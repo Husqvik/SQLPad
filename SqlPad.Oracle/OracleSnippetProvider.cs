@@ -13,11 +13,14 @@ namespace SqlPad.Oracle
 			var statement = _oracleParser.Parse(statementText).FirstOrDefault(s => s.GetNodeAtPosition(cursorPosition) != null);
 			if (statement == null)
 			{
+				var offsetToReplace = statementText.Substring(0, cursorPosition).Reverse().TakeWhile(c => c != ' ' || c != '\n' || c != '\t').Count();
+
 				return Snippets.SnippetCollection.Where(s => s.Name.ToUpperInvariant().Contains(statementText.ToUpperInvariant()))
 					.Select(s => new OracleCodeSnippet
 					             {
 						             Name = s.Name,
 						             BaseText = s.Text,
+									 SourceToReplace = new SourcePosition { IndexStart = cursorPosition - offsetToReplace, IndexEnd = cursorPosition },
 						             Parameters = new List<ICodeSnippetParameter>(
 							             s.Parameters.Select(p => new OracleCodeSnippetParameter
 							                                      {
@@ -39,6 +42,8 @@ namespace SqlPad.Oracle
 		public string BaseText { get; set; }
 
 		public ICollection<ICodeSnippetParameter> Parameters { get; set; }
+
+		public SourcePosition SourceToReplace { get; set; }
 	}
 
 	public class OracleCodeSnippetParameter : ICodeSnippetParameter

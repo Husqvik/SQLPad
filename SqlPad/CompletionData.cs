@@ -14,6 +14,7 @@ namespace SqlPad
 		private readonly int _offset;
 		
 		private readonly StatementDescriptionNode _node;
+		private readonly ICodeSnippet _snippet;
 
 		public CompletionData(ICodeCompletionItem codeCompletion)
 		{
@@ -27,6 +28,7 @@ namespace SqlPad
 
 		public CompletionData(ICodeSnippet codeSnippet)
 		{
+			_snippet = codeSnippet;
 			Text = codeSnippet.Name;
 			Content = Text;
 			_completionText = String.Format(codeSnippet.BaseText, codeSnippet.Parameters.OrderBy(p => p.Index).Select(p => p.DefaultValue).Cast<object>().ToArray());
@@ -46,6 +48,14 @@ namespace SqlPad
 
 		public void Complete(TextArea textArea, ISegment completionSegment, EventArgs insertionRequestEventArgs)
 		{
+			if (_snippet != null)
+			{
+				var offsetToReplace = _snippet.SourceToReplace.Length - 1;
+				var startOffset = completionSegment.Offset - offsetToReplace;
+				textArea.Document.Replace(startOffset, startOffset + offsetToReplace + completionSegment.Length, _completionText.Trim());
+				return;
+			}
+
 			var keyEventArgs = insertionRequestEventArgs as KeyEventArgs;
 			if (keyEventArgs != null && keyEventArgs.Key == Key.Tab && _node != null)
 			{
