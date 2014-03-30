@@ -1031,10 +1031,11 @@ namespace SqlPad.Oracle.Test
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
 			statement.NodeCollection.Count.ShouldBe(1);
 			var rootNode = statement.NodeCollection.Single();
+			
 			terminals = rootNode.Terminals.ToArray();
 			terminals.Length.ShouldBe(13);
 
-			terminals[3].Id.ShouldBe(Terminals.SchemaIdentifier); // TODO: Should be object identifier
+			terminals[3].Id.ShouldBe(Terminals.ObjectIdentifier);
 			terminals[4].Id.ShouldBe(Terminals.Dot);
 			terminals[5].Id.ShouldBe(Terminals.Comma);
 			terminals[5].ParentNode.Id.ShouldBe(NonTerminals.SelectExpressionExpressionChainedList);
@@ -1052,6 +1053,33 @@ namespace SqlPad.Oracle.Test
 			selectColumnNodes[2].IsGrammarValid.ShouldBe(false);
 			selectColumnNodes[3].IsGrammarValid.ShouldBe(false);
 			selectColumnNodes[4].IsGrammarValid.ShouldBe(true);
+
+			var invalidNodes = rootNode.AllChildNodes.Where(n => !n.IsGrammarValid).ToArray();
+			invalidNodes.Length.ShouldBe(3);
+		}
+
+		[Test(Description = @"Tests select list when entering math expressions. ")]
+		public void TestSelectListWhenEnteringMathExpressions()
+		{
+			const string query1 = @"SELECT NAME, 1 + /* missing expression */, SELECTION_ID FROM SELECTION";
+			var result = _oracleSqlParser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			var statement = result.Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+
+			statement.NodeCollection.Count.ShouldBe(1);
+			var rootNode = statement.NodeCollection.Single();
+
+			var terminals = rootNode.Terminals.ToArray();
+			terminals.Length.ShouldBe(9);
+
+			terminals[4].Id.ShouldBe(Terminals.MathPlus);
+			terminals[4].ParentNode.ParentNode.Id.ShouldBe(NonTerminals.ExpressionMathOperatorChainedList);
+			terminals[4].ParentNode.ParentNode.IsGrammarValid.ShouldBe(false);
+
+			var invalidNodes = rootNode.AllChildNodes.Where(n => !n.IsGrammarValid).ToArray();
+			invalidNodes.Length.ShouldBe(1);
 		}
 
 		[Test(Description = @"")]
