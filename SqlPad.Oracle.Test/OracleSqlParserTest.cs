@@ -1083,6 +1083,40 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"")]
+		public void TestSelectListWhenEnteringNewColumnsBeforeFromTerminal()
+		{
+			const string query1 = @"SELECT NAME, /* missing expression 1 */, /* missing expression 2 */ FROM SELECTION";
+			var result = _oracleSqlParser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			var statement = result.Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+
+			statement.NodeCollection.Count.ShouldBe(1);
+			var rootNode = statement.NodeCollection.Single();
+
+			var terminals = rootNode.Terminals.ToArray();
+			terminals.Length.ShouldBe(6);
+		}
+
+		[Test(Description = @"")]
+		public void TestSelectListWhenEnteringMathExpressionsBeforeFromTerminal()
+		{
+			const string query1 = @"SELECT NAME, 1 + /* missing expression */ FROM SELECTION";
+			var result = _oracleSqlParser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			var statement = result.Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+
+			statement.NodeCollection.Count.ShouldBe(1);
+			var rootNode = statement.NodeCollection.Single();
+
+			var terminals = rootNode.Terminals.ToArray();
+			terminals.Length.ShouldBe(7);
+		}
+
+		[Test(Description = @"")]
 		public void TestIsRuleValidSuccess()
 		{
 			var isRuleValid = _oracleSqlParser.IsRuleValid(NonTerminals.SelectList, "SELECTION.NAME, SELECTION.RESPONDENTBUCKET_ID, SELECTION.SELECTION_ID");
@@ -1100,12 +1134,6 @@ namespace SqlPad.Oracle.Test
 
 			isRuleValid = _oracleSqlParser.IsRuleValid(NonTerminals.SelectList, "SELECTION.NAME, SELECTION./* missing column */, /* missing expression */, SELECTION.SELECTION_ID");
 			isRuleValid.ShouldBe(false);
-		}
-
-		[Test(Description = @"")]
-		public void TestTemp()
-		{
-			
 		}
 
 		private static OracleTokenReader CreateTokenReader(string sqlText)

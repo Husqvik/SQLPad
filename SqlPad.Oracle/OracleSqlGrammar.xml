@@ -299,7 +299,6 @@
         <Sequence>
           <NonTerminal Id="Prefix" IsOptional="true" />
           <NonTerminal Id="ColumnReference" />
-          <NonTerminal Id="OuterJoinOld" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -338,6 +337,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="RowIdPseudoColumn" />
+          <NonTerminal Id="OuterJoinOld" IsOptional="true" />
         </Sequence>
         <Sequence>
           <Terminal Id="SequenceCurrentValue" />
@@ -346,6 +346,10 @@
         <Sequence>
           <Terminal Id="SequenceNextValue" />
           <NonTerminal Id="DatabaseLink" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Identifier" />
+          <NonTerminal Id="OuterJoinOld" />
         </Sequence>
         <Sequence>
           <Terminal Id="Identifier" />

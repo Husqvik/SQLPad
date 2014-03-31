@@ -70,8 +70,8 @@ namespace SqlPad.Oracle
 							var joinClause = lastPreviousTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.FromClause, NonTerminals.JoinClause);
 							if (joinClause != null)
 							{
-								var fromClause = joinClause.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.FromClause);
-								if (fromClause != null)
+								var isInnerJoin = joinClause.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.InnerJoinClause) != null;
+								if (!isInnerJoin || (joinClause.FirstTerminalNode.Id != Terminals.Cross && joinClause.FirstTerminalNode.Id != Terminals.Natural))
 								{
 									var joinedTableReferenceNode = joinClause.GetPathFilterDescendants(n => n.Id != NonTerminals.JoinClause, NonTerminals.TableReference).SingleOrDefault();
 									if (joinedTableReferenceNode != null)
@@ -89,29 +89,26 @@ namespace SqlPad.Oracle
 							}
 						}
 
-						if (lastPreviousTerminal.Id == Terminals.ObjectIdentifier || lastPreviousTerminal.Id == Terminals.Alias)
+						var joinClauseNode = lastPreviousTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.FromClause, NonTerminals.JoinClause);
+						if (lastPreviousTerminal.Id == Terminals.ObjectIdentifier || lastPreviousTerminal.Id == Terminals.Alias ||
+							(joinClauseNode != null && joinClauseNode.IsGrammarValid))
 						{
-							var joinColumnsOrConditionNode = lastPreviousTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.FromClause, NonTerminals.JoinColumnsOrCondition);
 							var tableReference = lastPreviousTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.NestedQuery, NonTerminals.TableReference);
 							if ((tableReference != null && lastPreviousTerminal == tableReference.LastTerminalNode && tableReference.ParentNode.Id == NonTerminals.FromClause && tableReference == tableReference.ParentNode.ChildNodes.First()) ||
-								(joinColumnsOrConditionNode != null && lastPreviousTerminal == joinColumnsOrConditionNode.LastTerminalNode && lastStatement.ProcessingStatus == ProcessingStatus.Success))
+							    joinClauseNode.IsGrammarValid)
 							{
-								//var alias = tableReference.GetDescendantsWithinSameQuery(Terminals.Alias).SingleOrDefault();
-								//if (alias == null || !String.Equals(alias.Token.Value, Terminals.Join, StringComparison.InvariantCultureIgnoreCase))
-								{
-									completionItems = completionItems.Concat(
-										//JoinClauses.Where(j => alias == null || j.Name.Contains(alias.Token.Value.ToUpperInvariant()))
-										JoinClauses
-											.Select(j => new OracleCodeCompletionItem
-											             {
-												             Name = j.Name,
-															 Category = j.Category,
-															 CategoryPriority = j.CategoryPriority,
-															 Priority = j.Priority,
-												             StatementNode = lastPreviousTerminal,
-															 Offset = extraOffset
-											             }));
-								}
+								completionItems = completionItems.Concat(
+									//JoinClauses.Where(j => alias == null || j.Name.Contains(alias.Token.Value.ToUpperInvariant()))
+									JoinClauses
+										.Select(j => new OracleCodeCompletionItem
+										             {
+											             Name = j.Name,
+											             Category = j.Category,
+											             CategoryPriority = j.CategoryPriority,
+											             Priority = j.Priority,
+											             StatementNode = lastPreviousTerminal,
+											             Offset = extraOffset
+										             }));
 							}
 						}
 

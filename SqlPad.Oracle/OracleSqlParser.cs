@@ -66,7 +66,7 @@ namespace SqlPad.Oracle
 
 		private bool IsRuleValid(string nonTerminalId, IEnumerable<OracleToken> tokens)
 		{
-			var result = ProceedNonTerminal(nonTerminalId, 0, 0, new List<OracleToken>(tokens));
+			var result = ProceedNonTerminal(nonTerminalId, 0, 0, false, new List<OracleToken>(tokens));
 			return result.Status == ProcessingStatus.Success &&
 			       result.Nodes.All(n => n.AllChildNodes.All(c => c.IsGrammarValid))/* &&
 			       result.Terminals.Count() == result.BestCandidates.Sum(n => n.Terminals.Count())*/;
@@ -115,7 +115,7 @@ namespace SqlPad.Oracle
 
 				foreach (var nonTerminal in _availableNonTerminals)
 				{
-					result = ProceedNonTerminal(nonTerminal, 0, 0, tokenBuffer);
+					result = ProceedNonTerminal(nonTerminal, 0, 0, false, tokenBuffer);
 
 					if (result.Status != ProcessingStatus.Success)
 						continue;
@@ -178,7 +178,7 @@ namespace SqlPad.Oracle
 			while (tokenBuffer.Count > 0);
 		}
 
-		private ProcessingResult ProceedNonTerminal(string nonTerminal, int level, int tokenStartOffset, IList<OracleToken> tokenBuffer)
+		private ProcessingResult ProceedNonTerminal(string nonTerminal, int level, int tokenStartOffset, bool tokenReverted, IList<OracleToken> tokenBuffer)
 		{
 			var bestCandidateNodes = new List<StatementDescriptionNode>();
 			var workingNodes = new List<StatementDescriptionNode>();
@@ -201,28 +201,19 @@ namespace SqlPad.Oracle
 				{
 					var workingTerminalCount = workingNodes.Sum(t => t.Terminals.Count());
 					var tokenOffset = tokenStartOffset + workingTerminalCount;
+					
+					var bestCandidateTerminalCount = bestCandidateNodes.Sum(t => t.Terminals.Count());
+					var bestCandidateOffset = tokenStartOffset + bestCandidateTerminalCount;
+					var tryBestCandidates = bestCandidatesCompatible && !tokenReverted && bestCandidateTerminalCount > workingTerminalCount;
+					
 					var nestedNonTerminal = item as SqlGrammarRuleSequenceNonTerminal;
 					if (nestedNonTerminal != null)
 					{
-						var nestedResult = ProceedNonTerminal(nestedNonTerminal.Id, level + 1, tokenOffset, tokenBuffer);
+						var nestedResult = ProceedNonTerminal(nestedNonTerminal.Id, level + 1, tokenOffset, false, tokenBuffer);
 
-						if (nestedResult.Status == ProcessingStatus.SequenceNotFound)
-						{
-							TryRevertOptionalToken(optionalTerminalCount => ProceedNonTerminal(nestedNonTerminal.Id, level + 1, tokenOffset - optionalTerminalCount, tokenBuffer), ref nestedResult, workingNodes);
-						}
+						TryRevertOptionalToken(optionalTerminalCount => ProceedNonTerminal(nestedNonTerminal.Id, level + 1, tokenOffset - optionalTerminalCount, true, tokenBuffer), ref nestedResult, workingNodes);
 
-						var bestCandidateTerminalCount = bestCandidateNodes.Sum(t => t.Terminals.Count());
-						if (bestCandidatesCompatible && nestedResult.Status == ProcessingStatus.SequenceNotFound && bestCandidateTerminalCount > workingTerminalCount)
-						{
-							var bestCandidateOffset = tokenStartOffset + bestCandidateTerminalCount;
-							var bestCandidateResult = ProceedNonTerminal(nestedNonTerminal.Id, level + 1, bestCandidateOffset, tokenBuffer);
-							if (bestCandidateResult.Status == ProcessingStatus.Success)
-							{
-								workingNodes.Clear();
-								workingNodes.AddRange(bestCandidateNodes);
-								nestedResult = bestCandidateResult;
-							}
-						}
+						TryParseInvalidGrammar(tryBestCandidates, () => ProceedNonTerminal(nestedNonTerminal.Id, level + 1, bestCandidateOffset, false, tokenBuffer), ref nestedResult, workingNodes, bestCandidateNodes);
 
 						if (nestedNonTerminal.IsRequired || nestedResult.Status == ProcessingStatus.Success)
 						{
@@ -263,12 +254,10 @@ namespace SqlPad.Oracle
 							foreach (var terminalCandidate in nestedResult.TerminalCandidates)
 								terminalCandidates.Add(terminalCandidate);
 
-							if (workingNodes.Count > 0/* && workingNodes[0].FirstTerminalNode.Id == OracleGrammarDescription.Terminals.Comma*/)
-							{
-								workingNodes.Add(alternativeNode);
-							}
-							else
+							if (workingNodes.Count == 0/* && workingNodes[0].FirstTerminalNode.Id == OracleGrammarDescription.Terminals.Comma*/)
 								break;
+
+							workingNodes.Add(alternativeNode);
 						}
 					}
 					else
@@ -276,6 +265,8 @@ namespace SqlPad.Oracle
 						var terminalReference = (SqlGrammarRuleSequenceTerminal)item;
 
 						var terminalResult = IsTokenValid(terminalReference, level, tokenOffset, tokenBuffer);
+
+						TryParseInvalidGrammar(tryBestCandidates, () => IsTokenValid(terminalReference, level, bestCandidateOffset, tokenBuffer), ref terminalResult, workingNodes, bestCandidateNodes);
 
 						if (terminalResult.Status == ProcessingStatus.SequenceNotFound)
 						{
@@ -290,8 +281,9 @@ namespace SqlPad.Oracle
 							continue;
 						}
 
-						workingNodes.AddRange(terminalResult.Nodes);
-						bestCandidateNodes.AddRange(terminalResult.Nodes);
+						var terminalNode = terminalResult.Nodes.Single();
+						workingNodes.Add(terminalNode);
+						bestCandidateNodes.Add(terminalNode);
 					}
 				}
 
@@ -308,8 +300,25 @@ namespace SqlPad.Oracle
 			return result;
 		}
 
+		private void TryParseInvalidGrammar(bool preconditionsValid, Func<ProcessingResult> getForceParseProcessingResultFunction, ref ProcessingResult processingResult, List<StatementDescriptionNode> workingNodes, IEnumerable<StatementDescriptionNode> bestCandidateNodes)
+		{
+			if (!preconditionsValid || processingResult.Status == ProcessingStatus.Success)
+				return;
+
+			var bestCandidateResult = getForceParseProcessingResultFunction();
+			if (bestCandidateResult.Status == ProcessingStatus.SequenceNotFound)
+				return;
+			
+			workingNodes.Clear();
+			workingNodes.AddRange(bestCandidateNodes);
+			processingResult = bestCandidateResult;
+		}
+
 		private void TryRevertOptionalToken(Func<int, ProcessingResult> getAlternativeProcessingResultFunction, ref ProcessingResult currentResult, IList<StatementDescriptionNode> workingNodes)
 		{
+			if (currentResult.Status == ProcessingStatus.Success)
+				return;
+
 			var optionalNodeCandidate = workingNodes.Count > 0 ? workingNodes[workingNodes.Count - 1].Terminals.LastOrDefault() : null;
 			optionalNodeCandidate = optionalNodeCandidate != null && optionalNodeCandidate.IsRequired ? optionalNodeCandidate.ParentNode : optionalNodeCandidate;
 
