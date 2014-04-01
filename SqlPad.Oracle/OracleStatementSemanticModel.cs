@@ -129,10 +129,10 @@ namespace SqlPad.Oracle
 				}
 
 				var selectList = queryBlock.GetDescendantsWithinSameQuery(NonTerminals.SelectList).SingleOrDefault();
-				if (selectList == null)
+				if (selectList == null || selectList.FirstTerminalNode == null)
 					continue;
 
-				if (selectList.ChildNodes.Count == 1 && selectList.ChildNodes.Single().Id == Terminals.Asterisk)
+				if (selectList.FirstTerminalNode.Id == Terminals.Asterisk)
 				{
 					var asteriskNode = selectList.ChildNodes.Single();
 					var column = new OracleSelectListColumn

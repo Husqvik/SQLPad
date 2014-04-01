@@ -30,6 +30,7 @@ namespace SqlPad.Oracle
 			OracleStatementSemanticModel semanticModel;
 			var databaseModel = DatabaseModelFake.Instance;
 
+			var completionItems = Enumerable.Empty<ICodeCompletionItem>();
 			var statements = _oracleParser.Parse(statementText);
 			var statement = (OracleStatement)statements.SingleOrDefault(s => s.GetNodeAtPosition(cursorPosition) != null);
 			if (statement == null)
@@ -42,17 +43,17 @@ namespace SqlPad.Oracle
 					var lastPreviousTerminal = lastStatement.GetNearestTerminalToPosition(cursorPosition);
 					if (lastPreviousTerminal != null)
 					{
+						var terminalToReplace = cursorPosition > lastPreviousTerminal.SourcePosition.IndexEnd + 1 ? null : lastPreviousTerminal;
 						var queryBlock = semanticModel.GetQueryBlock(lastPreviousTerminal);
 						var extraOffset = lastPreviousTerminal.SourcePosition.IndexStart + lastPreviousTerminal.SourcePosition.Length == cursorPosition ? 1 : 0;
 
-						var completionItems = Enumerable.Empty<ICodeCompletionItem>();
 						if (lastPreviousTerminal.Id == Terminals.From ||
 						    lastPreviousTerminal.Id == Terminals.ObjectIdentifier)
 						{
 							var currentName = lastPreviousTerminal.Id == Terminals.From ? null : statementText.Substring(lastPreviousTerminal.SourcePosition.IndexStart, cursorPosition - lastPreviousTerminal.SourcePosition.IndexStart);
-							completionItems = completionItems.Concat(GenerateSchemaObjectItems(databaseModel.CurrentSchema, currentName, lastPreviousTerminal, extraOffset));
-							completionItems = completionItems.Concat(GenerateSchemaItems(currentName, lastPreviousTerminal, extraOffset));
-							completionItems = completionItems.Concat(GenerateCommonTableExpressionReferenceItems(semanticModel, currentName, lastPreviousTerminal, extraOffset));
+							completionItems = completionItems.Concat(GenerateSchemaObjectItems(databaseModel.CurrentSchema, currentName, terminalToReplace, extraOffset));
+							completionItems = completionItems.Concat(GenerateSchemaItems(currentName, terminalToReplace, extraOffset));
+							completionItems = completionItems.Concat(GenerateCommonTableExpressionReferenceItems(semanticModel, currentName, terminalToReplace, extraOffset));
 						}
 
 						if (lastPreviousTerminal.Id == Terminals.Dot &&
@@ -106,7 +107,7 @@ namespace SqlPad.Oracle
 											             Category = j.Category,
 											             CategoryPriority = j.CategoryPriority,
 											             Priority = j.Priority,
-											             StatementNode = lastPreviousTerminal,
+														 StatementNode = terminalToReplace,
 											             Offset = extraOffset
 										             }));
 							}
@@ -117,6 +118,11 @@ namespace SqlPad.Oracle
 							completionItems = completionItems.Concat(GenerateSchemaObjectItems(databaseModel.CurrentSchema, null, null, extraOffset));
 							completionItems = completionItems.Concat(GenerateSchemaItems(null, null, extraOffset));
 							completionItems = completionItems.Concat(GenerateCommonTableExpressionReferenceItems(semanticModel, null, null, extraOffset));
+						}
+
+						if (lastPreviousTerminal.IsWithinSelectClauseOrCondition() && (lastPreviousTerminal.Id == Terminals.ObjectIdentifier || lastPreviousTerminal.Id == Terminals.Identifier || lastPreviousTerminal.Id == Terminals.Comma))
+						{
+							
 						}
 
 						return completionItems.OrderBy(i => i.CategoryPriority).ThenBy(i => i.Priority).ThenBy(i => i.Name).ToArray();
@@ -134,39 +140,9 @@ namespace SqlPad.Oracle
 
 			semanticModel = new OracleStatementSemanticModel(statementText, statement, databaseModel);
 
-			if (currentNode.Id == Terminals.Identifier)
+			if (currentNode.IsWithinSelectClauseOrCondition() && (currentNode.Id == Terminals.Identifier || currentNode.Id == Terminals.Asterisk || currentNode.Id == Terminals.Comma))
 			{
-				var selectList = currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.SelectList);
-				var condition = currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.Condition);
-				var rootNode = selectList ?? condition;
-				if (rootNode != null)
-				{
-					var prefixedColumnReference = currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference);
-					if (prefixedColumnReference != null)
-					{
-						var objectIdentifier = prefixedColumnReference.GetSingleDescendant(Terminals.ObjectIdentifier);
-						if (objectIdentifier != null)
-						{
-							var queryBlock = semanticModel.GetQueryBlock(rootNode);
-							var columnReferences = queryBlock.Columns.SelectMany(c => c.ColumnReferences).Where(c => c.TableNode == objectIdentifier).ToArray();
-							if (columnReferences.Length == 1 && columnReferences[0].TableNode != null)
-							{
-								if (columnReferences[0].TableNodeReferences.Count == 1)
-								{
-									var currentName = statementText.Substring(currentNode.SourcePosition.IndexStart, cursorPosition - currentNode.SourcePosition.IndexStart);
-									return columnReferences[0].TableNodeReferences.Single().Columns
-										.Where(c => String.IsNullOrEmpty(currentName) || c.Name.Contains(currentName.ToUpperInvariant()))
-										.Select(c => new OracleCodeCompletionItem
-										             {
-											             Name = c.Name.ToSimpleIdentifier(),
-														 StatementNode = currentNode,
-														 Category = OracleCodeCompletionCategory.Column
-										             }).ToArray();
-								}
-							}
-						}
-					}
-				}
+				completionItems = completionItems.Concat(GenerateColumnItems(currentNode, semanticModel, cursorPosition));
 			}
 
 			if (currentNode.Id == Terminals.ObjectIdentifier &&
@@ -180,7 +156,50 @@ namespace SqlPad.Oracle
 					: databaseModel.CurrentSchema;
 
 				var currentName = statementText.Substring(currentNode.SourcePosition.IndexStart, cursorPosition - currentNode.SourcePosition.IndexStart);
-				return GenerateSchemaObjectItems(schemaName, currentName, currentNode, 0).OrderBy(i => i.CategoryPriority).ThenBy(i => i.Priority).ThenBy(i => i.Name).ToArray();
+				completionItems = completionItems.Concat(GenerateSchemaObjectItems(schemaName, currentName, currentNode, 0).OrderBy(i => i.CategoryPriority).ThenBy(i => i.Priority).ThenBy(i => i.Name));
+			}
+
+			return completionItems.ToArray();
+		}
+
+		private IEnumerable<ICodeCompletionItem> GenerateColumnItems(StatementDescriptionNode currentNode, OracleStatementSemanticModel semanticModel, int cursorPosition)
+		{
+			if (currentNode.IsWithinSelectClauseOrCondition())
+			{
+				var queryBlock = semanticModel.GetQueryBlock(currentNode);
+				var prefixedColumnReference = currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference);
+				if (prefixedColumnReference != null)
+				{
+					var objectIdentifier = prefixedColumnReference.GetSingleDescendant(Terminals.ObjectIdentifier);
+					if (objectIdentifier != null)
+					{
+						var columnReferences = queryBlock.Columns.SelectMany(c => c.ColumnReferences).Where(c => c.TableNode == objectIdentifier).ToArray();
+						if (columnReferences.Length == 1 && columnReferences[0].TableNode != null)
+						{
+							if (columnReferences[0].TableNodeReferences.Count == 1)
+							{
+								var currentName = currentNode.Token.Value.Substring(0, cursorPosition - currentNode.SourcePosition.IndexStart);
+								return columnReferences[0].TableNodeReferences.Single().Columns
+									.Where(c => c.Name != currentName.ToQuotedIdentifier() && (String.IsNullOrEmpty(currentName) || c.Name.Contains(currentName.ToUpperInvariant())))
+									.Select(c => new OracleCodeCompletionItem
+									             {
+										             Name = c.Name.ToSimpleIdentifier(),
+										             StatementNode = currentNode.Id == Terminals.Identifier ? currentNode : null,
+										             Category = OracleCodeCompletionCategory.Column
+									             });
+							}
+						}
+					}
+				}
+
+				return queryBlock.TableReferences
+					.SelectMany(t => t.Columns.Select(c => new { TableReference = t, Column = c }))
+					.Select(t => new OracleCodeCompletionItem
+					             {
+						             Name = t.TableReference.FullyQualifiedName.ToString() + "." + t.Column.Name.ToSimpleIdentifier(),
+						             StatementNode = currentNode.Id == Terminals.Identifier ? currentNode : null,
+						             Category = OracleCodeCompletionCategory.Column
+					             });
 			}
 
 			return EmptyCollection;

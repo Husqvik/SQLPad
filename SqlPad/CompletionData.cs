@@ -56,8 +56,8 @@ namespace SqlPad
 				return;
 			}
 
-			var keyEventArgs = insertionRequestEventArgs as KeyEventArgs;
-			if (keyEventArgs != null && keyEventArgs.Key == Key.Tab && _node != null)
+			//var keyEventArgs = insertionRequestEventArgs as KeyEventArgs;
+			if (/*keyEventArgs != null && keyEventArgs.Key == Key.Tab &&*/ _node != null)
 			{
 				textArea.Document.Replace(_node.SourcePosition.IndexStart, _node.SourcePosition.Length + completionSegment.Length, /*new String(' ', _offset) +*/ _completionText.Trim());
 			}
