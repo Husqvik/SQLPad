@@ -23,13 +23,13 @@ namespace SqlPad.Oracle.Test
 		[Test(Description = @"")]
 		public void Test2()
 		{
-			var items = _codeCompletionProvider.ResolveItems("SELECT I.*, INVOICES.ID FROM HUSQVIK.INVOICELINES I", 51).ToArray(); // TODO: Add suggestion when join clause is already in place
+			var items = _codeCompletionProvider.ResolveItems("SELECT I.*, INVOICES.ID FROM HUSQVIK.INVOICELINES I ", 52).ToArray(); // TODO: Add suggestion when join clause is already in place
 			// TODO: Filter out outer types depending of nullable columns
 			items.Length.ShouldBe(5);
 			items[0].Name.ShouldBe("JOIN");
-			items[0].Offset.ShouldBe(1);
+			items[0].Offset.ShouldBe(0);
 			items[4].Name.ShouldBe("CROSS JOIN");
-			items[4].Offset.ShouldBe(1);
+			items[4].Offset.ShouldBe(0);
 		}
 
 		[Test(Description = @"")]
@@ -144,6 +144,55 @@ FROM
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
 			items[1].Name.ShouldBe("V_$SESSION");
 			items[1].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
+		}
+
+		[Test(Description = @"")]
+		public void Test11()
+		{
+			const string query1 = @"SELECT 1,  FROM SELECTION S";
+
+			var items = _codeCompletionProvider.ResolveItems(query1, 10).ToArray();
+			items.Length.ShouldBe(4);
+			items[0].Name.ShouldBe("S.NAME");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.Column);
+			items[1].Name.ShouldBe("S.PROJECT_ID");
+			items[1].Category.ShouldBe(OracleCodeCompletionCategory.Column);
+			items[2].Name.ShouldBe("S.RESPONDENTBUCKET_ID");
+			items[2].Category.ShouldBe(OracleCodeCompletionCategory.Column);
+			items[3].Name.ShouldBe("S.SELECTION_ID");
+			items[3].Category.ShouldBe(OracleCodeCompletionCategory.Column);
+		}
+
+		[Test(Description = @"")]
+		public void Test12()
+		{
+			const string query1 = @"SELECT 1 FROM SYSTEM.C";
+
+			var items = _codeCompletionProvider.ResolveItems(query1, 22).ToArray();
+			items.Length.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
+		public void Test13()
+		{
+			const string query1 = @"SELECT SELECTION. FROM SELECTION, TARGETGROUP";
+
+			var items = _codeCompletionProvider.ResolveItems(query1, 17).ToArray();
+			items.Length.ShouldBe(4);
+			items[0].Name.ShouldBe("NAME");
+			items[3].Name.ShouldBe("SELECTION_ID");
+
+			const string query2 = @"SELECT SELECTION.NAME FROM SELECTION, TARGETGROUP";
+
+			items = _codeCompletionProvider.ResolveItems(query2, 18).ToArray();
+			items.Length.ShouldBe(2);
+			items[0].Name.ShouldBe("RESPONDENTBUCKET_ID");
+			items[1].Name.ShouldBe("SELECTION_ID");
+
+			const string query3 = @"SELECT SELECTION.NAME FROM SELECTION, TARGETGROUP";
+
+			items = _codeCompletionProvider.ResolveItems(query3, 19).ToArray();
+			items.Length.ShouldBe(0);
 		}
 	}
 }

@@ -155,7 +155,7 @@ namespace SqlPad
 
 		private void CreateCompletionWindow(Func<IEnumerable<ICompletionData>> getCompletionDataFunc, bool show)
 		{
-			_completionWindow = new CompletionWindow(Editor.TextArea);
+			_completionWindow = new CompletionWindow(Editor.TextArea) { SizeToContent = SizeToContent.WidthAndHeight };
 			var data = _completionWindow.CompletionList.CompletionData;
 
 			foreach (var item in getCompletionDataFunc())
@@ -167,8 +167,6 @@ namespace SqlPad
 
 			if (show && data.Count > 0)
 			{
-				_completionWindow.Width += 4;
-
 				if (data.Count == 1)
 				{
 					_completionWindow.CompletionList.ListBox.SelectedIndex = 0;
