@@ -23,21 +23,34 @@ namespace SqlPad.Oracle
 		
 	}
 
-	[DebuggerDisplay("SqlGrammarRuleSequenceTerminal (Id={Id})")]
-	public partial class SqlGrammarRuleSequenceTerminal
+	[DebuggerDisplay("SqlGrammarRuleSequenceTerminal (Id={Id}, IsOptional={IsOptional})")]
+	public partial class SqlGrammarRuleSequenceTerminal : ISqlGrammarRuleSequenceItem
 	{
-		internal bool IsRequired
+		public bool IsRequired
 		{
 			get { return !isOptionalFieldSpecified || (isOptionalFieldSpecified && !IsOptional); }
 		}
+
+		public NodeType Type { get { return NodeType.Terminal; } }
 	}
 
 	[DebuggerDisplay("SqlGrammarRuleSequenceNonTerminal (Id={Id}, IsOptional={IsOptional})")]
-	public partial class SqlGrammarRuleSequenceNonTerminal
+	public partial class SqlGrammarRuleSequenceNonTerminal : ISqlGrammarRuleSequenceItem
 	{
-		internal bool IsRequired
+		public bool IsRequired
 		{
 			get { return !isOptionalFieldSpecified || (isOptionalFieldSpecified && !IsOptional); }
 		}
+
+		public NodeType Type { get { return NodeType.NonTerminal; } }
+	}
+
+	public interface ISqlGrammarRuleSequenceItem
+	{
+		NodeType Type { get; }
+
+		string Id { get; }
+
+		bool IsRequired { get; }
 	}
 }

@@ -33,8 +33,11 @@ namespace SqlPad.Oracle
 			var completionItems = Enumerable.Empty<ICodeCompletionItem>();
 			var statements = _oracleParser.Parse(statementText);
 			var statement = (OracleStatement)statements.SingleOrDefault(s => s.GetNodeAtPosition(cursorPosition) != null);
+			var isCursorAtTerminal = true;
 			if (statement == null)
 			{
+				isCursorAtTerminal = false;
+
 				statement = (OracleStatement)statements.LastOrDefault(s => s.GetNearestTerminalToPosition(cursorPosition) != null);
 				if (statement == null)
 				{
@@ -54,6 +57,7 @@ namespace SqlPad.Oracle
 				currentNode = statement.GetNodeAtPosition(cursorPosition);
 				if (currentNode.Type == NodeType.NonTerminal)
 				{
+					isCursorAtTerminal = false;
 					currentNode = statement.GetNearestTerminalToPosition(cursorPosition);
 				}
 			}
@@ -64,6 +68,7 @@ namespace SqlPad.Oracle
 			}
 
 			var semanticModel = new OracleStatementSemanticModel(null, statement, databaseModel);
+			var terminalCandidates = new HashSet<string>(_oracleParser.GetTerminalCandidates(currentNode));
 
 			var cursorAtLastTerminal = cursorPosition <= currentNode.SourcePosition.IndexEnd + 1;
 			var terminalToReplace = cursorAtLastTerminal ? currentNode : null;
@@ -158,6 +163,7 @@ namespace SqlPad.Oracle
 			}
 
 			if (currentNode.IsWithinSelectClauseOrCondition() &&
+				//(isCursorAtTerminal || terminalCandidates.Contains(Terminals.Identifier)) &&
 				(currentNode.Id == Terminals.ObjectIdentifier || currentNode.Id == Terminals.Identifier || currentNode.Id == Terminals.Comma || currentNode.Id == Terminals.Dot))
 			{
 				completionItems = completionItems.Concat(GenerateColumnItems(currentNode, semanticModel, cursorPosition));

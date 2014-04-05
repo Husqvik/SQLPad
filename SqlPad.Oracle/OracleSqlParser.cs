@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Security.Permissions;
 using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Serialization;
@@ -93,6 +94,124 @@ namespace SqlPad.Oracle
 			ProceedGrammar(tokens);
 
 			return _oracleSqlCollection.AsReadOnly();
+		}
+
+		public ICollection<string> GetTerminalCandidates(StatementDescriptionNode node)
+		{
+			var startNode = node;
+			var visitedIds = new HashSet<string>();
+			var terminals = Enumerable.Empty<string>();
+
+			while (node.ParentNode != null)
+			{
+				var skipTerminalScan = !node.ParentNode.IsGrammarValid && !node.IsGrammarValid;
+				node = node.ParentNode;
+
+				if (skipTerminalScan)
+				{
+					continue;
+				}
+
+				var nextIds = new List<ISqlGrammarRuleSequenceItem>();
+
+				foreach (var sequence in _startingNonTerminalSequences[node.Id])
+				{
+					var grammarItemEnumerator = sequence.Items.Cast<ISqlGrammarRuleSequenceItem>().GetEnumerator();
+					var nodeEnumerator = node.ChildNodes.Where(n => n.SourcePosition.IndexStart <= startNode.SourcePosition.IndexStart).GetEnumerator();
+
+					if (!nodeEnumerator.MoveNext())
+					{
+						break;
+					}
+
+					var sequenceValid = true;
+					do
+					{
+						var grammarItemFound = false;
+						while (grammarItemEnumerator.MoveNext())
+						{
+							if (nodeEnumerator.Current.Id == grammarItemEnumerator.Current.Id)
+							{
+								grammarItemFound = true;
+								break;
+							}
+
+							if (grammarItemEnumerator.Current.IsRequired)
+							{
+								break;
+							}
+						}
+
+						if (!grammarItemFound)
+						{
+							sequenceValid = false;
+							break;
+						}
+					}
+					while (nodeEnumerator.MoveNext());
+
+					if (sequenceValid)
+					{
+						while (grammarItemEnumerator.MoveNext())
+						{
+							nextIds.Add(grammarItemEnumerator.Current);
+
+							if (grammarItemEnumerator.Current.IsRequired)
+							{
+								break;
+							}
+						}
+
+						//break;
+					}
+				}
+
+				terminals = terminals.Concat(GetTerminalCandidates(nextIds, visitedIds));
+			}
+
+			terminals = terminals.ToArray();
+
+			return terminals.ToArray();
+		}
+
+		private IEnumerable<string> GetTerminalCandidates(IEnumerable<ISqlGrammarRuleSequenceItem> nodes, ISet<string> visitedIds)
+		{
+			foreach (var childNode in nodes)
+			{
+				if (!visitedIds.Add(childNode.Id))
+					continue;
+
+				if (childNode.Type == NodeType.NonTerminal)
+				{
+					foreach (var terminalId in _startingNonTerminalSequences[childNode.Id]
+						.SelectMany(s => GetTerminalCandidates(GetSequenceItemCandidates(s), visitedIds)))
+					{
+						yield return terminalId;
+					}
+				}
+				else
+				{
+					yield return childNode.Id;
+
+					if (childNode.IsRequired)
+					{
+						break;
+					}
+				}
+			}
+		}
+
+		private IEnumerable<ISqlGrammarRuleSequenceItem> GetSequenceItemCandidates(SqlGrammarRuleSequence sequence)
+		{
+			foreach (ISqlGrammarRuleSequenceItem item in sequence.Items)
+			{
+				yield return item;
+
+				if (item.IsRequired)
+				{
+					break;
+				}
+			}
 		}
 
 		private void ProceedGrammar(IEnumerable<OracleToken> tokens)
@@ -197,7 +316,7 @@ namespace SqlPad.Oracle
 
 				var bestCandidatesCompatible = false;
 
-				foreach (var item in sequence.Items)
+				foreach (ISqlGrammarRuleSequenceItem item in sequence.Items)
 				{
 					var workingTerminalCount = workingNodes.Sum(t => t.Terminals.Count());
 					var tokenOffset = tokenStartOffset + workingTerminalCount;
@@ -206,25 +325,24 @@ namespace SqlPad.Oracle
 					var bestCandidateOffset = tokenStartOffset + bestCandidateTerminalCount;
 					var tryBestCandidates = bestCandidatesCompatible && !tokenReverted && bestCandidateTerminalCount > workingTerminalCount;
 					
-					var nestedNonTerminal = item as SqlGrammarRuleSequenceNonTerminal;
-					if (nestedNonTerminal != null)
+					if (item.Type == NodeType.NonTerminal)
 					{
-						var nestedResult = ProceedNonTerminal(nestedNonTerminal.Id, level + 1, tokenOffset, false, tokenBuffer);
+						var nestedResult = ProceedNonTerminal(item.Id, level + 1, tokenOffset, false, tokenBuffer);
 
-						TryRevertOptionalToken(optionalTerminalCount => ProceedNonTerminal(nestedNonTerminal.Id, level + 1, tokenOffset - optionalTerminalCount, true, tokenBuffer), ref nestedResult, workingNodes);
+						TryRevertOptionalToken(optionalTerminalCount => ProceedNonTerminal(item.Id, level + 1, tokenOffset - optionalTerminalCount, true, tokenBuffer), ref nestedResult, workingNodes);
 
-						TryParseInvalidGrammar(tryBestCandidates, () => ProceedNonTerminal(nestedNonTerminal.Id, level + 1, bestCandidateOffset, false, tokenBuffer), ref nestedResult, workingNodes, bestCandidateNodes);
+						TryParseInvalidGrammar(tryBestCandidates, () => ProceedNonTerminal(item.Id, level + 1, bestCandidateOffset, false, tokenBuffer), ref nestedResult, workingNodes, bestCandidateNodes);
 
-						if (nestedNonTerminal.IsRequired || nestedResult.Status == ProcessingStatus.Success)
+						if (item.IsRequired || nestedResult.Status == ProcessingStatus.Success)
 						{
 							result.Status = nestedResult.Status;
 						}
 
 						var nestedNode = new StatementDescriptionNode(NodeType.NonTerminal)
 						                 {
-							                 Id = nestedNonTerminal.Id,
+											 Id = item.Id,
 											 Level = level,
-											 IsRequired = nestedNonTerminal.IsRequired,
+											 IsRequired = item.IsRequired,
 											 IsGrammarValid = nestedResult.Status == ProcessingStatus.Success
 						                 };
 						

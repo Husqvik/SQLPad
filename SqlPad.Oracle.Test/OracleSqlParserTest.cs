@@ -528,7 +528,6 @@ namespace SqlPad.Oracle.Test
 		[Test(Description = @"Tests ANY and ALL operators with expression list and subquery. ")]
 		public void TestAnyAllAndSomeOperatorsWithExpressionListAndSubquery()
 		{
-			//const string query1 = @"SELECT 1 FROM DUAL WHERE 1 = ANY(())"; // Test
 			const string query1 = @"SELECT 1 FROM DUAL WHERE DUMMY = ANY(1, 2, 3) OR DUMMY = SOME(1, 2, 3) OR DUMMY = ALL(SELECT * FROM DUAL)";
 			var result = _oracleSqlParser.Parse(query1);
 
@@ -669,6 +668,19 @@ namespace SqlPad.Oracle.Test
 			terminals[5].Id.ShouldBe(Terminals.Identifier);
 			terminals[7].Id.ShouldBe(Terminals.DatabaseLinkIdentifier);
 			terminals[8].Id.ShouldBe(Terminals.Alias);
+		}
+
+		[Test(Description = @"Tests query with function calls in where clause. ")]
+		public void TestQueryWithFunctionCallsInWhereClause()
+		{
+			const string query1 = @"SELECT * FROM SYS.DUAL WHERE PACKAGE.FUNCTION(P1, P2, P3 + P4 * (P5 + P6)) + P7 >= SCHEMA.PACKAGE.FUNCTION@DBLINK AND FUNCTION(P1, P2) ^= 0";
+			var result = _oracleSqlParser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			var statement = result.Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			// TODO: Precise assertions
 		}
 
 		[Test(Description = @"Tests query with analytic clause. ")]
@@ -1134,6 +1146,52 @@ namespace SqlPad.Oracle.Test
 
 			isRuleValid = _oracleSqlParser.IsRuleValid(NonTerminals.SelectList, "SELECTION.NAME, SELECTION./* missing column */, /* missing expression */, SELECTION.SELECTION_ID");
 			isRuleValid.ShouldBe(false);
+		}
+
+		[Test(Description = @"")]
+		public void TestTerminalCandidatesAfterSelectColumnWithAlias()
+		{
+			const string statement1 = @"SELECT 1 A";
+			var node = _oracleSqlParser.Parse(statement1).Single().NodeCollection.Single().LastTerminalNode;
+			var terminalCandidates = _oracleSqlParser.GetTerminalCandidates(node).OrderBy(t => t).ToArray();
+			terminalCandidates.Length.ShouldBe(2);
+			terminalCandidates[0].ShouldBe("Comma");
+			terminalCandidates[1].ShouldBe("From");
+		}
+
+		[Test(Description = @"")]
+		public void TestTerminalCandidatesAfterSelectColumnWithLiteral()
+		{
+			const string statement2 = @"SELECT 1";
+			var node = _oracleSqlParser.Parse(statement2).Single().NodeCollection.Single().LastTerminalNode;
+			var terminalCandidates = _oracleSqlParser.GetTerminalCandidates(node).OrderBy(t => t).ToArray();
+			terminalCandidates.Length.ShouldBe(9);
+			terminalCandidates[0].ShouldBe("Alias");
+			terminalCandidates[4].ShouldBe("MathDivide");
+			terminalCandidates[8].ShouldBe("OperatorConcatenation");
+		}
+
+		[Test(Description = @"")]
+		public void TestTerminalCandidatesAfterSelectColumnWithObjectPrefix()
+		{
+			const string statement2 = @"SELECT OBJECT_PREFIX.";
+			var node = _oracleSqlParser.Parse(statement2).Single().NodeCollection.Single().LastTerminalNode;
+			var terminalCandidates = _oracleSqlParser.GetTerminalCandidates(node).OrderBy(t => t).ToArray();
+			terminalCandidates.Length.ShouldBe(1); // TODO: Fix
+			terminalCandidates[0].ShouldBe("Asterisk");
+		}
+
+		[Test(Description = @"")]
+		public void Temp()
+		{
+			const string statement1 = @"SELECT NULL FROM SELECTION S LEFT JOIN RESPONDENTBUCKET ON S.RESPONDENTBUCKET_ID = RESPONDENTBUCKET.RESPONDENTBUCKET_ID";
+			//const string statement1 = @"SELECT NULL FROM SELECTION S LEFT JOIN RESPONDENTBUCKET ON S.RESPONDENTBUCKET_ID = ";
+			//const string statement1 = @"SELECT NULL FROM SELECTION ";
+
+			//var node = _oracleSqlParser.Parse("SELECT").Single().NodeCollection.Single();
+			var node = _oracleSqlParser.Parse(statement1).Single().NodeCollection.Single().LastTerminalNode;
+			//var node = _oracleSqlParser.Parse(statement1).Single().NodeCollection.SelectMany(n => n.Terminals).Skip(3).First();
+			var terminalCandidates = _oracleSqlParser.GetTerminalCandidates(node);
 		}
 
 		private static OracleTokenReader CreateTokenReader(string sqlText)

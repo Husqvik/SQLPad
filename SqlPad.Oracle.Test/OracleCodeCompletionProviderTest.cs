@@ -194,5 +194,16 @@ FROM
 			items = _codeCompletionProvider.ResolveItems(query3, 19).ToArray();
 			items.Length.ShouldBe(0);
 		}
+
+		[Test(Description = @""), Ignore]
+		public void Test14()
+		{
+			const string query1 = @"SELECT NULL FROM SELECTION S LEFT JOIN RESPONDENTBUCKET ON S.RESPONDENTBUCKET_ID = RESPONDENTBUCKET.RESPONDENTBUCKET_ID ";
+
+			var items = _codeCompletionProvider.ResolveItems(query1, 120).ToArray();
+			items.Length.ShouldBe(5);
+			items[0].Name.ShouldBe("JOIN");
+			items[4].Name.ShouldBe("CROSS JOIN");
+		}
 	}
 }
