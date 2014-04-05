@@ -152,15 +152,17 @@ FROM
 			const string query1 = @"SELECT 1,  FROM SELECTION S";
 
 			var items = _codeCompletionProvider.ResolveItems(query1, 10).ToArray();
-			items.Length.ShouldBe(4);
-			items[0].Name.ShouldBe("S.NAME");
-			items[0].Category.ShouldBe(OracleCodeCompletionCategory.Column);
-			items[1].Name.ShouldBe("S.PROJECT_ID");
+			items.Length.ShouldBe(5);
+			items[0].Name.ShouldBe("S");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
+			items[1].Name.ShouldBe("S.NAME");
 			items[1].Category.ShouldBe(OracleCodeCompletionCategory.Column);
-			items[2].Name.ShouldBe("S.RESPONDENTBUCKET_ID");
+			items[2].Name.ShouldBe("S.PROJECT_ID");
 			items[2].Category.ShouldBe(OracleCodeCompletionCategory.Column);
-			items[3].Name.ShouldBe("S.SELECTION_ID");
+			items[3].Name.ShouldBe("S.RESPONDENTBUCKET_ID");
 			items[3].Category.ShouldBe(OracleCodeCompletionCategory.Column);
+			items[4].Name.ShouldBe("S.SELECTION_ID");
+			items[4].Category.ShouldBe(OracleCodeCompletionCategory.Column);
 		}
 
 		[Test(Description = @"")]
@@ -195,7 +197,7 @@ FROM
 			items.Length.ShouldBe(0);
 		}
 
-		[Test(Description = @""), Ignore]
+		[Test(Description = @"")]
 		public void Test14()
 		{
 			const string query1 = @"SELECT NULL FROM SELECTION S LEFT JOIN RESPONDENTBUCKET ON S.RESPONDENTBUCKET_ID = RESPONDENTBUCKET.RESPONDENTBUCKET_ID ";

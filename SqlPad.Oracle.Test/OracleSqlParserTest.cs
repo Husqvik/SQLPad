@@ -1155,8 +1155,8 @@ namespace SqlPad.Oracle.Test
 			var node = _oracleSqlParser.Parse(statement1).Single().NodeCollection.Single().LastTerminalNode;
 			var terminalCandidates = _oracleSqlParser.GetTerminalCandidates(node).OrderBy(t => t).ToArray();
 			terminalCandidates.Length.ShouldBe(2);
-			terminalCandidates[0].ShouldBe("Comma");
-			terminalCandidates[1].ShouldBe("From");
+			terminalCandidates[0].ShouldBe(Terminals.Comma);
+			terminalCandidates[1].ShouldBe(Terminals.From);
 		}
 
 		[Test(Description = @"")]
@@ -1166,9 +1166,9 @@ namespace SqlPad.Oracle.Test
 			var node = _oracleSqlParser.Parse(statement2).Single().NodeCollection.Single().LastTerminalNode;
 			var terminalCandidates = _oracleSqlParser.GetTerminalCandidates(node).OrderBy(t => t).ToArray();
 			terminalCandidates.Length.ShouldBe(9);
-			terminalCandidates[0].ShouldBe("Alias");
-			terminalCandidates[4].ShouldBe("MathDivide");
-			terminalCandidates[8].ShouldBe("OperatorConcatenation");
+			terminalCandidates[0].ShouldBe(Terminals.Alias);
+			terminalCandidates[4].ShouldBe(Terminals.MathDivide);
+			terminalCandidates[8].ShouldBe(Terminals.OperatorConcatenation);
 		}
 
 		[Test(Description = @"")]
@@ -1177,8 +1177,10 @@ namespace SqlPad.Oracle.Test
 			const string statement2 = @"SELECT OBJECT_PREFIX.";
 			var node = _oracleSqlParser.Parse(statement2).Single().NodeCollection.Single().LastTerminalNode;
 			var terminalCandidates = _oracleSqlParser.GetTerminalCandidates(node).OrderBy(t => t).ToArray();
-			terminalCandidates.Length.ShouldBe(1); // TODO: Fix
-			terminalCandidates[0].ShouldBe("Asterisk");
+			terminalCandidates.Length.ShouldBe(5);
+			terminalCandidates[0].ShouldBe(Terminals.Asterisk);
+			terminalCandidates[1].ShouldBe(Terminals.Identifier);
+			terminalCandidates[2].ShouldBe(Terminals.RowIdPseudoColumn);
 		}
 
 		[Test(Description = @"")]

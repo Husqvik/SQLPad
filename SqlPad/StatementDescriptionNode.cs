@@ -26,6 +26,16 @@ namespace SqlPad
 
 		public StatementDescriptionNode ParentNode { get; private set; }
 
+		public StatementDescriptionNode RootNode
+		{
+			get { return GetRootNode(); }
+		}
+
+		private StatementDescriptionNode GetRootNode()
+		{
+			return ParentNode == null ? this : ParentNode.GetRootNode();
+		}
+
 		//public StatementDescriptionNode PreviousTerminal { get; private set; }
 		
 		//public StatementDescriptionNode NextTerminal { get; private set; }

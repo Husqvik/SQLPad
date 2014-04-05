@@ -65,5 +65,20 @@ namespace SqlPad.Oracle
 			var condition = node.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.Condition);
 			return selectList != null || condition != null;
 		}
+
+		public static string ToCategoryLabel(this TableReferenceType type)
+		{
+			switch (type)
+			{
+				case TableReferenceType.CommonTableExpression:
+					return OracleCodeCompletionCategory.CommonTableExpression;
+				case TableReferenceType.PhysicalObject:
+					return OracleCodeCompletionCategory.SchemaObject;
+				case TableReferenceType.NestedQuery:
+					return OracleCodeCompletionCategory.Subquery;
+			}
+
+			throw new NotSupportedException(String.Format("Value '{0}' is not supported. ", type));
+		}
 	}
 }

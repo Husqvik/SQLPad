@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Security.Permissions;
 using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Serialization;
@@ -96,7 +95,7 @@ namespace SqlPad.Oracle
 			return _oracleSqlCollection.AsReadOnly();
 		}
 
-		public ICollection<string> GetTerminalCandidates(StatementDescriptionNode node)
+		/*public ICollection<string> GetTerminalCandidates(StatementDescriptionNode node)
 		{
 			var startNode = node;
 			var visitedIds = new HashSet<string>();
@@ -172,9 +171,79 @@ namespace SqlPad.Oracle
 			terminals = terminals.ToArray();
 
 			return terminals.ToArray();
+		}*/
+
+		public ICollection<string> GetTerminalCandidates(StatementDescriptionNode node)
+		{
+			var terminalsToMatch = node.RootNode.Terminals.TakeWhileInclusive(t => t != node.LastTerminalNode).ToArray();
+			var nextItems = new HashSet<ISqlGrammarRuleSequenceItem>();
+
+			MatchNonTerminal(terminalsToMatch, node.RootNode.Id, 0, nextItems);
+
+			return new HashSet<string>(nextItems.Select(i => i.Id)).ToArray();
 		}
 
-		private IEnumerable<string> GetTerminalCandidates(IEnumerable<ISqlGrammarRuleSequenceItem> nodes, ISet<string> visitedIds)
+		private int MatchNonTerminal(IList<StatementDescriptionNode> terminalSource, string nonTerminalId, int startIndex, ICollection<ISqlGrammarRuleSequenceItem> nextItems)
+		{
+			var matchedTerminals = 0;
+			var candidatesGathered = false;
+			foreach (var sequence in _startingNonTerminalSequences[nonTerminalId])
+			{
+				var nestedStartIndex = startIndex;
+				var sequenceMatched = true;
+
+				foreach (ISqlGrammarRuleSequenceItem item in sequence.Items)
+				{
+					if (item.Type == NodeType.NonTerminal)
+					{
+						var nestedMatchedTerminals = MatchNonTerminal(terminalSource, item.Id, nestedStartIndex, nextItems);
+						if (nestedMatchedTerminals == 0 && item.IsRequired)
+						{
+							sequenceMatched = false;
+							break;
+						}
+
+						nestedStartIndex += nestedMatchedTerminals;
+					}
+					else
+					{
+						if (terminalSource.Count == nestedStartIndex)
+						{
+							candidatesGathered = true;
+						}
+
+						if (candidatesGathered)
+						{
+							nextItems.Add(item);
+
+							if (item.IsRequired)
+							{
+								break;
+							}
+						}
+						else if (item.Id == terminalSource[nestedStartIndex].Id)
+						{
+							nestedStartIndex++;
+						}
+						else if (item.IsRequired)
+						{
+							sequenceMatched = false;
+							break;
+						}
+					}
+				}
+
+				if (sequenceMatched && !candidatesGathered)
+				{
+					matchedTerminals = nestedStartIndex - startIndex;
+					break;
+				}
+			}
+
+			return matchedTerminals;
+		}
+
+		/*private IEnumerable<string> GetTerminalCandidates(IEnumerable<ISqlGrammarRuleSequenceItem> nodes, ISet<string> visitedIds)
 		{
 			foreach (var childNode in nodes)
 			{
@@ -212,7 +281,7 @@ namespace SqlPad.Oracle
 					break;
 				}
 			}
-		}
+		}*/
 
 		private void ProceedGrammar(IEnumerable<OracleToken> tokens)
 		{

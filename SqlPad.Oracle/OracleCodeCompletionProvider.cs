@@ -155,15 +155,31 @@ namespace SqlPad.Oracle
 				}
 			}
 
-			if (currentNode.Id == Terminals.Join || (currentNode.Id == Terminals.Alias && currentNode.Token.Value.ToUpperInvariant() == Terminals.Join.ToUpperInvariant()))
+			if (currentNode.Id == Terminals.Join ||
+				(currentNode.Id == Terminals.Alias && currentNode.Token.Value.ToUpperInvariant() == Terminals.Join.ToUpperInvariant()))
 			{
 				completionItems = completionItems.Concat(GenerateSchemaObjectItems(databaseModel.CurrentSchema, null, null, extraOffset));
 				completionItems = completionItems.Concat(GenerateSchemaItems(null, null, extraOffset));
 				completionItems = completionItems.Concat(GenerateCommonTableExpressionReferenceItems(semanticModel, null, null, extraOffset));
 			}
 
+			//if (!isCursorAtTerminal && currentNode.Id == Terminals.Where)
+			if (!isCursorAtTerminal && joinClauseNode == null &&
+				(terminalCandidates.Contains(Terminals.ObjectIdentifier)))
+			{
+				var whereTableReferences = queryBlock.TableReferences
+					.Select(t => new OracleCodeCompletionItem
+					             {
+									 Name = t.FullyQualifiedName.ToString(),
+									 Category = t.Type.ToCategoryLabel(),
+									 Offset = extraOffset
+					             });
+
+				completionItems = completionItems.Concat(whereTableReferences);
+			}
+
 			if (currentNode.IsWithinSelectClauseOrCondition() &&
-				//(isCursorAtTerminal || terminalCandidates.Contains(Terminals.Identifier)) &&
+				(isCursorAtTerminal || terminalCandidates.Contains(Terminals.Identifier)) &&
 				(currentNode.Id == Terminals.ObjectIdentifier || currentNode.Id == Terminals.Identifier || currentNode.Id == Terminals.Comma || currentNode.Id == Terminals.Dot))
 			{
 				completionItems = completionItems.Concat(GenerateColumnItems(currentNode, semanticModel, cursorPosition));
@@ -188,7 +204,7 @@ namespace SqlPad.Oracle
 			return completionItems.OrderItems().ToArray();*/
 		}
 
-		private IEnumerable<ICodeCompletionItem> GenerateColumnItems(StatementDescriptionNode currentNode, OracleStatementSemanticModel semanticModel, int cursorPosition/*, bool addObjectPrefix*/)
+		private IEnumerable<ICodeCompletionItem> GenerateColumnItems(StatementDescriptionNode currentNode, OracleStatementSemanticModel semanticModel, int cursorPosition)
 		{
 			if (!currentNode.IsWithinSelectClauseOrCondition())
 			{
@@ -343,6 +359,7 @@ namespace SqlPad.Oracle
 	{
 		public const string DatabaseSchema = "Database Schema";
 		public const string SchemaObject = "Schema Object";
+		public const string Subquery = "Subquery";
 		public const string CommonTableExpression = "Common Table Expression";
 		public const string Column = "Column";
 	}
