@@ -66,6 +66,11 @@ namespace SqlPad.Oracle
 			return selectList != null || condition != null;
 		}
 
+		public static bool IsWithinHavingClause(this StatementDescriptionNode node)
+		{
+			return node.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.HavingClause) != null;
+		}
+
 		public static string ToCategoryLabel(this TableReferenceType type)
 		{
 			switch (type)

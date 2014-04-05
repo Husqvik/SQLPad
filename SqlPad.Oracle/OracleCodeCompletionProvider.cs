@@ -163,8 +163,7 @@ namespace SqlPad.Oracle
 				completionItems = completionItems.Concat(GenerateCommonTableExpressionReferenceItems(semanticModel, null, null, extraOffset));
 			}
 
-			//if (!isCursorAtTerminal && currentNode.Id == Terminals.Where)
-			if (!isCursorAtTerminal && joinClauseNode == null &&
+			if (!isCursorAtTerminal && joinClauseNode == null && !currentNode.IsWithinHavingClause() &&
 				(terminalCandidates.Contains(Terminals.ObjectIdentifier)))
 			{
 				var whereTableReferences = queryBlock.TableReferences

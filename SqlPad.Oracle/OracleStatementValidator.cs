@@ -30,22 +30,24 @@ namespace SqlPad.Oracle
 
 			foreach (var queryBlock in semanticModel.QueryBlocks)
 			{
-				foreach (var columnReference in queryBlock.Columns.SelectMany(c => c.ColumnReferences))
+				foreach (var cr in queryBlock.Columns
+					.SelectMany(c => c.ColumnReferences.Select(r => new { Column = c, ColumnReference = r }))
+					.Concat(queryBlock.ColumnReferences.Select(r => new { Column = (OracleSelectListColumn)null, ColumnReference = r })))
 				{
 					// Schema
-					if (columnReference.OwnerNode != null)
-						validationModel.TableNodeValidity.Add(columnReference.OwnerNode, columnReference.TableNodeReferences.Count == 1);
+					if (cr.ColumnReference.OwnerNode != null)
+						validationModel.TableNodeValidity[cr.ColumnReference.OwnerNode] = cr.ColumnReference.TableNodeReferences.Count == 1;
 
 					// Object
-					if (columnReference.TableNode != null)
-						validationModel.TableNodeValidity.Add(columnReference.TableNode, columnReference.TableNodeReferences.Count == 1);
+					if (cr.ColumnReference.TableNode != null)
+						validationModel.TableNodeValidity[cr.ColumnReference.TableNode] = cr.ColumnReference.TableNodeReferences.Count == 1;
 
 					// Column
-					var columnReferences = columnReference.Owner.IsAsterisk
+					var columnReferences = cr.Column != null && cr.Column.IsAsterisk
 						? 1
-						: columnReference.ColumnNodeReferences.Count;
+						: cr.ColumnReference.ColumnNodeReferences.Count;
 
-					validationModel.ColumnNodeValidity.Add(columnReference.ColumnNode, new ColumnValidationData(columnReference.ColumnNodeReferences) { IsValid = columnReferences == 1 });
+					validationModel.ColumnNodeValidity[cr.ColumnReference.ColumnNode] = new ColumnValidationData(cr.ColumnReference.ColumnNodeReferences) { IsValid = columnReferences == 1 };
 				}
 			}
 

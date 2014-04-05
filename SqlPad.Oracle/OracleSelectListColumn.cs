@@ -16,6 +16,8 @@ namespace SqlPad.Oracle
 		public bool IsDirectColumnReference { get; set; }
 		
 		public bool IsAsterisk { get; set; }
+		
+		public bool IsGrouped { get; set; }
 
 		public bool ExplicitDefinition { get; set; }
 

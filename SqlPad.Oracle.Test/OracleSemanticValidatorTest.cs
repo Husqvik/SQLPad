@@ -57,7 +57,6 @@ namespace SqlPad.Oracle.Test
 		[Test(Description = @"")]
 		public void Test3()
 		{
-			//const string sqlText = "WITH XXX AS (SELECT 3 COL FROM DUAL) SELECT VP1 COL1, (SELECT 1 FROM XXX) SCALARSUBQUERY FROM (WITH YYY AS (SELECT 1 FROM DUAL), ZZZ AS (SELECT 2 FROM DUAL), FFF AS (SELECT 4 FROM XXX) SELECT COL + 1 VP1 FROM (SELECT COL FROM XXX)) SUBQUERY";
 			const string sqlText = "WITH XXX AS (SELECT 3 COL FROM DUAL CTE_OUTER_ALIAS_1) SELECT VP1 COL1, (SELECT 1 FROM XXX SC_ALIAS_1) SCALARSUBQUERY FROM (WITH YYY AS (SELECT 1 FROM SYS.DUAL CTE_INNER_ALIAS_1), ZZZ AS (SELECT 2 FROM DUAL CTE_INNER_ALIAS_2), FFF AS (SELECT 4 FROM XXX CTE_INNER_ALIAS_3) SELECT COL + 1 VP1 FROM (SELECT TABLE_ALIAS_1.COL, TABLE_ALIAS_2.DUMMY || TABLE_ALIAS_2.DUMMY NOT_DUMMY FROM XXX TABLE_ALIAS_1, DUAL TABLE_ALIAS_2) TABLE_ALIAS_3) SUBQUERY";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 			
@@ -256,6 +255,26 @@ namespace SqlPad.Oracle.Test
 			nodeValidity[3].ShouldBe(false);
 			nodeValidity[4].ShouldBe(true);
 			nodeValidity[5].ShouldBe(true);
+		}
+
+		[Test(Description = @"")]
+		public void Test13()
+		{
+			const string sqlText = "SELECT NULL FROM DUAL WHERE HUSQVIK.COUNTRY.ID = SELECTION.ID AND SYS.DUAL.DUMMY = DUMMY";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, _databaseModel);
+
+			var nodeValidity = validationModel.TableNodeValidity.Values.ToArray();
+			nodeValidity.Length.ShouldBe(6);
+			nodeValidity[0].ShouldBe(true);
+			nodeValidity[1].ShouldBe(false);
+			nodeValidity[2].ShouldBe(false);
+			nodeValidity[3].ShouldBe(false);
+			nodeValidity[4].ShouldBe(false);
+			nodeValidity[5].ShouldBe(false);
 		}
 
 		//WITH CTE AS (SELECT 1 A, 2 B, 3 C FROM DUAL) SELECT SELECTION.DUMMY, NQ.DUMMY, CTE.DUMMY, SYS.DUAL.DUMMY FROM SELECTION, (SELECT 1 X, 2 Y, 3 Z FROM DUAL) NQ, CTE, SYS.DUAL

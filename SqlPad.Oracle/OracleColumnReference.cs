@@ -34,8 +34,6 @@ namespace SqlPad.Oracle
 
 		public StatementDescriptionNode ColumnNode { get; set; }
 
-		public OracleSelectListColumn Owner { get; set; }
-
 		public ICollection<OracleQueryBlock> QueryBlocks { get; set; }
 
 		public ICollection<OracleTableReference> TableNodeReferences { get; set; }
