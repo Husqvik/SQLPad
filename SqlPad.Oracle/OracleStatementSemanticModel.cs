@@ -132,6 +132,8 @@ namespace SqlPad.Oracle
 				ResolveSelectList(item);
 
 				ResolveWhereGroupByHavingReferences(item);
+
+				JoinColumnReferences(item);
 			}
 
 			foreach (var queryBlock in _queryBlockResults.Values)
@@ -234,16 +236,40 @@ namespace SqlPad.Oracle
 			return queryBlockNode == null ? null : _queryBlockResults[queryBlockNode];
 		}
 
+		private void JoinColumnReferences(OracleQueryBlock queryBlock)
+		{
+			var fromClauses = queryBlock.RootNode.GetDescendantsWithinSameQuery(NonTerminals.FromClause);
+			foreach (var fromClause in fromClauses)
+			{
+				var joinClauses = fromClause.GetDescendantsWithinSameQuery(NonTerminals.JoinClause);
+				foreach (var joinClause in joinClauses)
+				{
+					var joinCondition = joinClause.GetPathFilterDescendants(n => n.Id != NonTerminals.JoinClause, NonTerminals.JoinColumnsOrCondition).SingleOrDefault();
+					if (joinCondition == null)
+						continue;
+
+					var identifiers = joinCondition.GetDescendants(Terminals.Identifier);
+					var cokumnReferences = new List<OracleColumnReference>();
+					ResolveColumnReferenceFromIdentifiers(cokumnReferences, identifiers);
+				}
+			}
+		}
+
 		private void ResolveWhereGroupByHavingReferences(OracleQueryBlock queryBlock)
 		{
 			var identifiers = GetIdentifiersFromNodesWithinSameQuery(queryBlock, NonTerminals.WhereClause, NonTerminals.GroupByClause, NonTerminals.HavingClause).ToArray();
+			ResolveColumnReferenceFromIdentifiers(queryBlock.ColumnReferences, identifiers);
+		}
+
+		private void ResolveColumnReferenceFromIdentifiers(ICollection<OracleColumnReference> columnReferences, IEnumerable<StatementDescriptionNode> identifiers)
+		{
 			foreach (var identifier in identifiers)
 			{
 				var prefixNonTerminal = identifier.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference)
 					.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.Prefix);
 
 				var columnReference = CreateColumnReference(identifier, prefixNonTerminal);
-				queryBlock.ColumnReferences.Add(columnReference);
+				columnReferences.Add(columnReference);
 			}
 		}
 

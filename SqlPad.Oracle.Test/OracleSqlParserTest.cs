@@ -959,6 +959,18 @@ namespace SqlPad.Oracle.Test
 			// TODO: Precise assertions
 		}
 
+		[Test(Description = @"Tests query with bind variable expressions. ")]
+		public void TestBindVariableExpressions()
+		{
+			const string query1 = @"SELECT:1 FROM DUAL WHERE DUMMY = :BV1 OR DUMMY IN(:""bv2"", :        BV3)";
+			var result = Parser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			// TODO: Precise assertions
+		}
+
 		[Test(Description = @"Tests unfinished join clause. ")]
 		public void TestUnfinishedJoinClause()
 		{

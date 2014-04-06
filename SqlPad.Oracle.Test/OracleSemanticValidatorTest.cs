@@ -278,6 +278,21 @@ namespace SqlPad.Oracle.Test
 			nodeValidity[5].ShouldBe(false);
 		}
 
+		[Test(Description = @"")]
+		public void Temp()
+		{
+			const string sqlText = @"SELECT * FROM
+SELECTION S
+JOIN RESPONDENTBUCKET RB ON S.RESPONDENTBUCKET_ID = RB.RESPONDENTBUCKET_ID
+JOIN TARGETGROUP TG ON RB.TARGETGROUP_ID = TG.TARGETGROUP_ID
+JOIN HUSQVIK.PROJECT P ON S.PROJECT_ID = P.PROJECT_ID";
+			
+			var statement = (OracleStatement)_oracleSqlParser.Parse(sqlText).Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var semanticModel = new OracleStatementSemanticModel(sqlText, statement, _databaseModel);
+		}
+
 		//WITH CTE AS (SELECT 1 A, 2 B, 3 C FROM DUAL) SELECT SELECTION.DUMMY, NQ.DUMMY, CTE.DUMMY, SYS.DUAL.DUMMY FROM SELECTION, (SELECT 1 X, 2 Y, 3 Z FROM DUAL) NQ, CTE, SYS.DUAL
 	}
 }

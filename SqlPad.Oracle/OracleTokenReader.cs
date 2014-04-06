@@ -35,7 +35,7 @@ namespace SqlPad.Oracle
 		private readonly Queue<int> _buffer = new Queue<int>();
 		private readonly StringBuilder _builder = new StringBuilder();
 		private readonly HashSet<char> _singleCharacterTerminals =
-			new HashSet<char> { '(', ')', ',', ';', '.', '/', '+', '-', '*', ';', '@' };
+			new HashSet<char> { '(', ')', ',', ';', '.', '/', '+', '-', '*', ';', '@', ':' };
 
 		private int _currentIndex;
 
@@ -88,7 +88,7 @@ namespace SqlPad.Oracle
 				currentIndexOffset = 0;
 
 				var character = (char)characterCode;
-				var quotedIdentifierOrLiteralOrBindVariableEnabled = false;
+				var quotedIdentifierOrLiteralEnabled = false;
 
 				var isSpace = character == ' ' || character == '\t' || character == '\n' || character == '\r';
 				if (!inBlockComment && !inLineComment)
@@ -102,7 +102,7 @@ namespace SqlPad.Oracle
 					{
 						if (!inQuotedIdentifier && (_builder.Length != 1 || _builder[0] != ':'))
 						{
-							quotedIdentifierOrLiteralOrBindVariableEnabled = true;
+							quotedIdentifierOrLiteralEnabled = true;
 						}
 
 						inQuotedIdentifier = !inQuotedIdentifier;
@@ -118,7 +118,7 @@ namespace SqlPad.Oracle
 								!(_builder.Length == 1 && new[] { 'Q', 'N' }.Any(c => c == _builder.ToString(0, 1).ToUpperInvariant()[0]) ||
 								  _builder.Length == 2 && _builder.ToString(0, 2).ToUpperInvariant() == "NQ"))
 							{
-								quotedIdentifierOrLiteralOrBindVariableEnabled = true;
+								quotedIdentifierOrLiteralEnabled = true;
 							}
 
 							inString = !inString;
@@ -191,12 +191,6 @@ namespace SqlPad.Oracle
 						var nextCharacterCode = _sqlReader.Read();
 						var nextCharacter = (char)nextCharacterCode;
 
-						if (characterCode == ':' && _builder.Length > 0)
-						{
-							yieldToken = true;
-							quotedIdentifierOrLiteralOrBindVariableEnabled = true;
-						}
-
 						if (characterCode == '.' && (inNumber || (_builder.Length == 0 && nextCharacterCode >= 48 && nextCharacterCode <= 57)) && !inDecimalNumber)
 						{
 							inDecimalNumber = true;
@@ -218,7 +212,7 @@ namespace SqlPad.Oracle
 							if ((character != 'd' && character != 'D' && character != 'f' && character != 'F') || previousCharacterCode == 'f' || previousCharacterCode == 'F' || previousCharacterCode == 'd' || previousCharacterCode == 'D')
 							{
 								inNumber = false;
-								quotedIdentifierOrLiteralOrBindVariableEnabled = true;
+								quotedIdentifierOrLiteralEnabled = true;
 							}
 						}
 
@@ -226,7 +220,7 @@ namespace SqlPad.Oracle
 						{
 							if (nextCharacterCode != -1 && nextCharacterCode >= 48 && nextCharacterCode <= 57)
 							{
-								quotedIdentifierOrLiteralOrBindVariableEnabled = true;
+								quotedIdentifierOrLiteralEnabled = true;
 								isSingleCharacterSeparator = false;
 							}
 						}
@@ -241,7 +235,7 @@ namespace SqlPad.Oracle
 
 						if (_builder.Length == 1 && _builder[0] != '<' && _builder[0] != '>' && _builder[0] != '^' && _builder[0] != '!')
 						{
-							quotedIdentifierOrLiteralOrBindVariableEnabled = false;
+							quotedIdentifierOrLiteralEnabled = false;
 							isSingleCharacterSeparator = true;
 						}
 					}
@@ -249,12 +243,12 @@ namespace SqlPad.Oracle
 
 				yieldToken |= isSingleCharacterSeparator;
 
-				if (!isSingleCharacterSeparator && !inLineComment && !inBlockComment && !quotedIdentifierOrLiteralOrBindVariableEnabled)
+				if (!isSingleCharacterSeparator && !inLineComment && !inBlockComment && !quotedIdentifierOrLiteralEnabled)
 					_builder.Append(character);
 
-				if (yieldToken || quotedIdentifierOrLiteralOrBindVariableEnabled)
+				if (yieldToken || quotedIdentifierOrLiteralEnabled)
 				{
-					var indexOffset = _builder.Length + (quotedIdentifierOrLiteralOrBindVariableEnabled || isSingleCharacterSeparator || inLineComment || inBlockComment ? 1 : 0);
+					var indexOffset = _builder.Length + (quotedIdentifierOrLiteralEnabled || isSingleCharacterSeparator || inLineComment || inBlockComment ? 1 : 0);
 					if (TryNormalizeToken(out token))
 						yield return new OracleToken(token, _currentIndex - indexOffset);
 
@@ -269,7 +263,7 @@ namespace SqlPad.Oracle
 					if (isSingleCharacterSeparator)
 						yield return new OracleToken(new String(character, 1), _currentIndex - 1);
 
-					if (quotedIdentifierOrLiteralOrBindVariableEnabled && !isSpace)
+					if (quotedIdentifierOrLiteralEnabled && !isSpace)
 						_builder.Append(character);
 				}
 			}

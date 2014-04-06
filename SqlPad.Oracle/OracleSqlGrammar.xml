@@ -158,7 +158,16 @@
         </Sequence>
       </Sequences>
     </Rule>
-  
+
+    <Rule StartingNonTerminal="BindVariableExpression">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Colon" />
+          <Terminal Id="BindVariable" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
     <Rule StartingNonTerminal="Expression">
       <Sequences>
         <Sequence>
@@ -221,7 +230,11 @@
           <Terminal Id="DataTypeName" />
           <Terminal Id="RightParenthesis" />
         </Sequence>-->
-        
+
+        <Sequence>
+          <NonTerminal Id="BindVariableExpression" />
+          <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
+        </Sequence>
         <Sequence>
           <Terminal Id="Timestamp" />
           <Terminal Id="StringLiteral" />
@@ -2143,6 +2156,7 @@
     <Terminal Id="Dot" Value="." />
     <Terminal Id="Comma" Value="," />
     <Terminal Id="Semicolon" Value=";" />
+    <Terminal Id="Colon" Value=":" />
     <Terminal Id="Asterisk" Value="*" />
     <Terminal Id="At" Value="@" />
     <Terminal Id="Space" RegexValue="[:space:]+" />
@@ -2195,6 +2209,7 @@
     <Terminal Id="DatabaseLinkIdentifier" RegexValue="^((&quot;[^&quot;]{1,28}&quot;)|([a-zA-Z][\w\d$#]{0,29}))$" />
     <Terminal Id="SchemaIdentifier" RegexValue="^((&quot;[^&quot;]{1,28}&quot;)|([a-zA-Z][\w\d$#]{0,29}))$" />
     <Terminal Id="ObjectIdentifier" RegexValue="^((&quot;[^&quot;]{1,28}&quot;)|([a-zA-Z][\w\d$#]{0,29}))$" />
+    <Terminal Id="BindVariable" RegexValue="^((&quot;[^&quot;]{1,28}&quot;)|([a-zA-Z][\w\d$#]{0,29})|(\d{1,5}))$" />
     <Terminal Id="Alias" RegexValue="^((&quot;[^&quot;]{1,28}&quot;)|([a-zA-Z][\w\d$#]{0,29}))$" />
     <Terminal Id="StringLiteral" RegexValue="^n?q?(&apos;([^&apos;]|(&apos;&apos;))*&apos;)$" />
     <Terminal Id="NumberLiteral" RegexValue="^((\d+\.?\d*)|(\d*\.?\d+))([eE][+-]?\d+)?[fFdD]?$" />

@@ -232,5 +232,21 @@ FROM
 			var items = _codeCompletionProvider.ResolveItems(query1, 43).ToArray();
 			items.Length.ShouldBe(0);
 		}
+
+		[Test(Description = @"")]
+		public void Test17()
+		{
+			const string query1 = @"SELECT D FROM DUAL";
+
+			var items = _codeCompletionProvider.ResolveItems(query1, 8).ToArray();
+			items.Length.ShouldBe(1);
+			items[0].Name.ShouldBe("DUAL.DUMMY");
+
+			const string query2 = @"SELECT D FROM DUAL X";
+
+			items = _codeCompletionProvider.ResolveItems(query2, 8).ToArray();
+			items.Length.ShouldBe(1);
+			items[0].Name.ShouldBe("X.DUMMY");
+		}
 	}
 }
