@@ -1168,6 +1168,68 @@ namespace SqlPad.Oracle.Test
 			isRuleValid.ShouldBe(false);
 		}
 
+		public class Commit
+		{
+			[Test(Description = @"")]
+			public void TestCommitStatement()
+			{
+				const string statement1 = @"COMMIT COMMENT 'In-doubt transaction Code 36, Call (415) 555-2637' WRITE NOWAIT;";
+				var result = Parser.Parse(statement1);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+				var terminals = statement.NodeCollection.SelectMany(n => n.Terminals).ToArray();
+				terminals.Length.ShouldBe(6);
+
+				terminals[0].Id.ShouldBe(Terminals.Commit);
+				terminals[1].Id.ShouldBe(Terminals.Comment);
+				terminals[2].Id.ShouldBe(Terminals.StringLiteral);
+				terminals[3].Id.ShouldBe(Terminals.Write);
+				terminals[4].Id.ShouldBe(Terminals.Nowait);
+				terminals[5].Id.ShouldBe(Terminals.Semicolon);
+			}
+
+			[Test(Description = @"")]
+			public void TestCommitWriteBatchWithoutWait()
+			{
+				const string statement1 = @"COMMIT WRITE BATCH";
+				var result = Parser.Parse(statement1);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+				var terminals = statement.NodeCollection.SelectMany(n => n.Terminals).ToArray();
+				terminals.Length.ShouldBe(3);
+
+				terminals[0].Id.ShouldBe(Terminals.Commit);
+				terminals[1].Id.ShouldBe(Terminals.Write);
+				terminals[2].Id.ShouldBe(Terminals.Batch);
+			}
+
+			[Test(Description = @"")]
+			public void TestCommitForceDistributedTransaction()
+			{
+				const string statement1 = @"COMMIT FORCE '22.57.53', 1234 /* specific SCN */";
+				var result = Parser.Parse(statement1);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+				var terminals = statement.NodeCollection.SelectMany(n => n.Terminals).ToArray();
+				terminals.Length.ShouldBe(5);
+
+				terminals[0].Id.ShouldBe(Terminals.Commit);
+				terminals[1].Id.ShouldBe(Terminals.Force);
+				terminals[2].Id.ShouldBe(Terminals.StringLiteral);
+				terminals[3].Id.ShouldBe(Terminals.Comma);
+				terminals[4].Id.ShouldBe(Terminals.IntegerLiteral);
+			}
+		}
+
 		public class TerminalCandidates
 		{
 			[Test(Description = @"")]
@@ -1203,6 +1265,17 @@ namespace SqlPad.Oracle.Test
 				terminalCandidates[0].ShouldBe(Terminals.Asterisk);
 				terminalCandidates[1].ShouldBe(Terminals.Identifier);
 				terminalCandidates[2].ShouldBe(Terminals.RowIdPseudoColumn);
+			}
+
+			[Test(Description = @"")]
+			public void TestTerminalCandidatesWithNullNode()
+			{
+				var terminalCandidates = Parser.GetTerminalCandidates(null).OrderBy(t => t).ToArray();
+				terminalCandidates.Length.ShouldBe(4);
+				terminalCandidates[0].ShouldBe(Terminals.Commit);
+				terminalCandidates[1].ShouldBe(Terminals.LeftParenthesis);
+				terminalCandidates[2].ShouldBe(Terminals.Select);
+				terminalCandidates[3].ShouldBe(Terminals.With);
 			}
 
 			[Test(Description = @"")]

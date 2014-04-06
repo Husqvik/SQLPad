@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace SqlPad.Oracle
 {
-	[DebuggerDisplay("OracleQueryBlock (Alias={Alias}; Type={Type}; RootNode={RootNode})")]
+	[DebuggerDisplay("OracleQueryBlock (Alias={Alias}; Type={Type}; RootNode={RootNode}; Columns={Columns.Count})")]
 	public class OracleQueryBlock
 	{
 		public OracleQueryBlock()
@@ -20,12 +20,12 @@ namespace SqlPad.Oracle
 
 		public StatementDescriptionNode RootNode { get; set; }
 
-		public ICollection<OracleTableReference> TableReferences { get; set; }
+		public ICollection<OracleTableReference> TableReferences { get; private set; }
 
-		public ICollection<OracleSelectListColumn> Columns { get; set; }
+		public ICollection<OracleSelectListColumn> Columns { get; private set; }
 
-		public ICollection<OracleColumnReference> ColumnReferences { get; set; }
+		public ICollection<OracleColumnReference> ColumnReferences { get; private set; }
 
-		public ICollection<OracleQueryBlock> AccessibleQueryBlocks { get; set; }
+		public ICollection<OracleQueryBlock> AccessibleQueryBlocks { get; private set; }
 	}
 }

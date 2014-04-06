@@ -21,7 +21,7 @@ namespace SqlPad.Oracle
 		private readonly HashSet<string> _keywords;
 		private readonly HashSet<string> _terminators;
 		
-		private readonly List<string> _availableNonTerminals;
+		private readonly string[] _availableNonTerminals;
 
 		public OracleSqlParser()
 		{
@@ -50,7 +50,7 @@ namespace SqlPad.Oracle
 
 			_terminals = _sqlGrammar.Terminals.ToDictionary(t => t.Id, t => t);
 			_keywords = new HashSet<string>(_sqlGrammar.Terminals.Where(t => t.IsKeyword).Select(t => t.Value));
-			_availableNonTerminals = _sqlGrammar.StartSymbols.Select(s => s.Id).ToList();
+			_availableNonTerminals = _sqlGrammar.StartSymbols.Select(s => s.Id).ToArray();
 			_terminators = new HashSet<string>(_sqlGrammar.Terminators.Select(t => t.Value));
 		}
 
@@ -175,15 +175,29 @@ namespace SqlPad.Oracle
 
 		public ICollection<string> GetTerminalCandidates(StatementDescriptionNode node)
 		{
-			var terminalsToMatch = node.RootNode.Terminals.TakeWhileInclusive(t => t != node.LastTerminalNode).ToArray();
-			var nextItems = new HashSet<ISqlGrammarRuleSequenceItem>();
+			var terminalsToMatch = new List<StatementDescriptionNode>();
+			var nonTerminalIds = new List<string>();
+			if (node != null)
+			{
+				terminalsToMatch.AddRange(node.RootNode.Terminals.TakeWhileInclusive(t => t != node.LastTerminalNode));
+				nonTerminalIds.Add(node.RootNode.Id);
+			}
+			else
+			{
+				nonTerminalIds.AddRange(_availableNonTerminals);
+			}
 
-			MatchNonTerminal(terminalsToMatch, node.RootNode.Id, 0, nextItems);
+			var nextItems = new HashSet<string>();
 
-			return new HashSet<string>(nextItems.Select(i => i.Id)).ToArray();
+			foreach (var nonTerminalId in nonTerminalIds)
+			{
+				MatchNonTerminal(terminalsToMatch, nonTerminalId, 0, nextItems);				
+			}
+
+			return nextItems.ToArray();
 		}
 
-		private int MatchNonTerminal(IList<StatementDescriptionNode> terminalSource, string nonTerminalId, int startIndex, ICollection<ISqlGrammarRuleSequenceItem> nextItems)
+		private int MatchNonTerminal(IList<StatementDescriptionNode> terminalSource, string nonTerminalId, int startIndex, ICollection<string> nextItems)
 		{
 			var matchedTerminals = 0;
 			var candidatesGathered = false;
@@ -214,7 +228,7 @@ namespace SqlPad.Oracle
 
 						if (candidatesGathered)
 						{
-							nextItems.Add(item);
+							nextItems.Add(item.Id);
 
 							if (item.IsRequired)
 							{
@@ -303,11 +317,20 @@ namespace SqlPad.Oracle
 
 				foreach (var nonTerminal in _availableNonTerminals)
 				{
-					result = ProceedNonTerminal(nonTerminal, 0, 0, false, tokenBuffer);
+					var newResult = ProceedNonTerminal(nonTerminal, 0, 0, false, tokenBuffer);
 
-					if (result.Status != ProcessingStatus.Success)
+					if (newResult.Status != ProcessingStatus.Success)
+					{
+						if (result.BestCandidates == null || newResult.BestCandidates.Sum(n => n.Terminals.Count()) > result.BestCandidates.Sum(n => n.Terminals.Count()))
+						{
+							result = newResult;
+						}
+
 						continue;
-					
+					}
+
+					result = newResult;
+
 					var lastTerminal = result.Terminals.Last();
 					if (!_terminators.Contains(lastTerminal.Token.Value) && tokenBuffer.Count > result.Terminals.Count())
 					{

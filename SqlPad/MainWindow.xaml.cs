@@ -112,6 +112,13 @@ namespace SqlPad
 				return;
 			}
 
+			if (e.Text == "(" &&
+				(Editor.Text.Length == Editor.CaretOffset || Editor.Text[Editor.CaretOffset].In(' ', '\t', '\n')))
+			{
+				Editor.Document.Insert(Editor.CaretOffset, ")");
+				Editor.CaretOffset--;
+			}
+
 			if (e.Text != "." && e.Text != " " && e.Text != "\n")
 			{
 				if (_completionWindow != null && _completionWindow.CompletionList.ListBox.Items.Count == 0)

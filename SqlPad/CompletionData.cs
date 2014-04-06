@@ -31,6 +31,7 @@ namespace SqlPad
 			_snippet = codeSnippet;
 			Text = codeSnippet.Name;
 			Content = Text;
+			Description = "Code Snippet";
 			_completionText = String.Format(codeSnippet.BaseText, codeSnippet.Parameters.OrderBy(p => p.Index).Select(p => p.DefaultValue).Cast<object>().ToArray());
 		}
 
@@ -52,7 +53,7 @@ namespace SqlPad
 			{
 				var offsetToReplace = _snippet.SourceToReplace.Length - 1;
 				var startOffset = completionSegment.Offset - offsetToReplace;
-				textArea.Document.Replace(startOffset, startOffset + offsetToReplace + completionSegment.Length, _completionText);
+				textArea.Document.Replace(startOffset, offsetToReplace + completionSegment.Length, _completionText);
 				return;
 			}
 

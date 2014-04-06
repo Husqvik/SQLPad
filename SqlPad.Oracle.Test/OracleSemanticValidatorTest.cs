@@ -282,15 +282,28 @@ namespace SqlPad.Oracle.Test
 		public void Temp()
 		{
 			const string sqlText = @"SELECT * FROM
-SELECTION S
-JOIN RESPONDENTBUCKET RB ON S.RESPONDENTBUCKET_ID = RB.RESPONDENTBUCKET_ID
+PROJECT P,
+RESPONDENTBUCKET
 JOIN TARGETGROUP TG ON RB.TARGETGROUP_ID = TG.TARGETGROUP_ID
-JOIN HUSQVIK.PROJECT P ON S.PROJECT_ID = P.PROJECT_ID";
+JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			
 			var statement = (OracleStatement)_oracleSqlParser.Parse(sqlText).Single();
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-			var semanticModel = new OracleStatementSemanticModel(sqlText, statement, _databaseModel);
+			var tableNodeValidity = _statementValidator.ResolveReferences(sqlText, statement, _databaseModel)
+				.TableNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			
+			var nodeValidity = tableNodeValidity.Values.ToArray();
+			nodeValidity.Length.ShouldBe(9);
+			nodeValidity[0].ShouldBe(true); // PROJECT
+			nodeValidity[1].ShouldBe(true); // RESPONDENTBUCKET
+			nodeValidity[2].ShouldBe(true); // TARGETGROUP
+			nodeValidity[3].ShouldBe(false); // RB
+			nodeValidity[4].ShouldBe(true); // TG
+			nodeValidity[5].ShouldBe(true); // HUSQVIK
+			nodeValidity[6].ShouldBe(true); // SELECTION
+			nodeValidity[7].ShouldBe(false); // P
+			nodeValidity[8].ShouldBe(true); // S
 		}
 
 		//WITH CTE AS (SELECT 1 A, 2 B, 3 C FROM DUAL) SELECT SELECTION.DUMMY, NQ.DUMMY, CTE.DUMMY, SYS.DUAL.DUMMY FROM SELECTION, (SELECT 1 X, 2 Y, 3 Z FROM DUAL) NQ, CTE, SYS.DUAL

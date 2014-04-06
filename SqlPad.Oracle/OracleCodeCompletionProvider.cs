@@ -45,10 +45,14 @@ namespace SqlPad.Oracle
 
 				currentNode = statement.GetNearestTerminalToPosition(cursorPosition);
 
-				var substring = statementText.Substring(currentNode.SourcePosition.IndexEnd + 1, cursorPosition - currentNode.SourcePosition.IndexEnd - 1).Trim();
-				if (!String.IsNullOrEmpty(substring))
+				var extraLength = cursorPosition - currentNode.SourcePosition.IndexEnd - 1;
+				if (extraLength > 0)
 				{
-					return EmptyCollection;
+					var substring = statementText.Substring(currentNode.SourcePosition.IndexEnd + 1, extraLength).Trim();
+					if (!String.IsNullOrEmpty(substring))
+					{
+						return EmptyCollection;
+					}
 				}
 			}
 			else

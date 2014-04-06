@@ -36,7 +36,25 @@ namespace SqlPad
 			return ParentNode == null ? this : ParentNode.GetRootNode();
 		}
 
-		//public StatementDescriptionNode PreviousTerminal { get; private set; }
+		public StatementDescriptionNode PreviousTerminal
+		{
+			get
+			{
+				var previousNode = GetPreviousNode(this);
+				return previousNode == null ? null : previousNode.LastTerminalNode;
+			}
+		}
+
+		private StatementDescriptionNode GetPreviousNode(StatementDescriptionNode node)
+		{
+			if (node.ParentNode == null)
+				return null;
+
+			var index = node.ParentNode._childNodes.IndexOf(node) - 1;
+			return index >= 0
+				? node.ParentNode._childNodes[index]
+				: GetPreviousNode(node.ParentNode);
+		}
 		
 		//public StatementDescriptionNode NextTerminal { get; private set; }
 

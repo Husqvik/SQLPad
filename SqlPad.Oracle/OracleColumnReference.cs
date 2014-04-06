@@ -28,6 +28,10 @@ namespace SqlPad.Oracle
 
 		public bool ReferencesAllColumns { get { return ColumnNode.Token.Value == "*"; } }
 
+		public ColumnReferenceType Type { get; set; }
+		
+		public OracleQueryBlock Owner { get; set; }
+		
 		public StatementDescriptionNode OwnerNode { get; set; }
 
 		public StatementDescriptionNode TableNode { get; set; }
@@ -39,5 +43,12 @@ namespace SqlPad.Oracle
 		public ICollection<OracleTableReference> TableNodeReferences { get; set; }
 		
 		public ICollection<OracleTableReference> ColumnNodeReferences { get; set; }
+	}
+
+	public enum ColumnReferenceType
+	{
+		SelectList,
+		WhereGroupHavingOrder,
+		Join
 	}
 }

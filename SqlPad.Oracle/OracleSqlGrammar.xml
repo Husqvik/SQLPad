@@ -3,13 +3,15 @@
             Dbms="Oracle" Version="12.1.0.1.0">
   <StartSymbols>
     <StartSymbol Id="Query" />
+    <StartSymbol Id="CommitStatement" />
     <!--<StartSymbol Id="Insert" />
     <StartSymbol Id="Update" />
     <StartSymbol Id="Delete" />
     <StartSymbol Id="Create" />
     <StartSymbol Id="Drop" />
     <StartSymbol Id="Alter" />
-    <StartSymbol Id="Rename" />-->
+    <StartSymbol Id="Rename" />
+    <StartSymbol Id="Set" />-->
   </StartSymbols>
 
   <Terminators>
@@ -18,6 +20,86 @@
   </Terminators>
     
   <Rules>
+    <!-- Commit statement -->
+    <Rule StartingNonTerminal="CommitStatement">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Commit" />
+          <Terminal Id="Work" IsOptional="true" />
+          <NonTerminal Id="CommitCommentOrWriteOrForce" IsOptional="true" />
+          <Terminal Id="Semicolon" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="CommitCommentOrWriteOrForce">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Force" />
+          <Terminal Id="StringLiteral" />
+          <NonTerminal Id="CommitSetScn" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="CommitComment" />
+          <NonTerminal Id="CommitWriteClause" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="CommitWriteClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ImmediateOrBatch">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Immediate" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Batch" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="WaitOrNowait">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Nowait" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Wait" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="CommitWriteClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Write" />
+          <NonTerminal Id="ImmediateOrBatch" IsOptional="true" />
+          <NonTerminal Id="WaitOrNowait" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="CommitComment">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comment" />
+          <Terminal Id="StringLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="CommitSetScn">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <!-- SELECT statement -->
     <Rule StartingNonTerminal="Query">
       <Sequences>
         <Sequence>
@@ -2348,6 +2430,15 @@
     <Terminal Id="Breadth" Value="BREADTH" />
     <Terminal Id="To" Value="TO" IsKeyword="true" />
     <Terminal Id="Default" Value="DEFAULT" IsKeyword="true" />
+
+    <!-- Commit -->
+    <Terminal Id="Commit" Value="COMMIT" />
+    <Terminal Id="Work" Value="WORK" />
+    <Terminal Id="Comment" Value="COMMENT" IsKeyword="true" />
+    <Terminal Id="Force" Value="FORCE" />
+    <Terminal Id="Write" Value="WRITE" />
+    <Terminal Id="Immediate" Value="IMMEDIATE" IsKeyword="true" />
+    <Terminal Id="Batch" Value="BATCH" />
   </Terminals>
   
   <SqlBuildinFunctions>
