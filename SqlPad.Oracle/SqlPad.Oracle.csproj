@@ -63,6 +63,7 @@
     <Compile Include="OracleStatementSemanticModel.cs" />
     <Compile Include="OracleStatementValidator.cs" />
     <Compile Include="OracleTableReference.cs" />
+    <Compile Include="OracleToken.cs" />
     <Compile Include="OracleTokenReader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

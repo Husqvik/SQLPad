@@ -51,6 +51,8 @@ namespace SqlPad
 		public int Level { get; set; }
 
 		public bool IsRequired { get; set; }
+
+		public bool IsKeyword { get; set; }
 		
 		public bool IsGrammarValid { get; set; }
 
@@ -264,7 +266,8 @@ namespace SqlPad
 				                 IsRequired = IsRequired,
 				                 Level = Level,
 				                 Token = Token,
-				                 IsGrammarValid = IsGrammarValid
+				                 IsGrammarValid = IsGrammarValid,
+								 IsKeyword = IsKeyword
 			                 };
 
 			if (Type == NodeType.NonTerminal)

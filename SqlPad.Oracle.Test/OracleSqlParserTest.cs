@@ -50,16 +50,20 @@ namespace SqlPad.Oracle.Test
 			terminals[0].Id.ShouldBe(Terminals.Select);
 			terminals[0].SourcePosition.IndexStart.ShouldBe(0);
 			terminals[0].SourcePosition.IndexEnd.ShouldBe(5);
+			terminals[0].IsKeyword.ShouldBe(true);
 			terminals[1].Id.ShouldBe(Terminals.Null);
 			terminals[1].SourcePosition.IndexStart.ShouldBe(7);
 			terminals[1].SourcePosition.IndexEnd.ShouldBe(10);
+			terminals[1].IsKeyword.ShouldBe(true);
 			terminals[2].Id.ShouldBe(Terminals.From);
 			terminals[2].SourcePosition.IndexStart.ShouldBe(12);
 			terminals[2].SourcePosition.IndexEnd.ShouldBe(15);
+			terminals[2].IsKeyword.ShouldBe(true);
 			terminals[3].Id.ShouldBe(Terminals.ObjectIdentifier);
 			terminals[3].Token.Value.ShouldBe("DUAL");
 			terminals[3].SourcePosition.IndexStart.ShouldBe(17);
 			terminals[3].SourcePosition.IndexEnd.ShouldBe(20);
+			terminals[3].IsKeyword.ShouldBe(false);
 		}
 
 		[Test(Description = @"Tests query with fully qualified names and aliases. ")]
@@ -77,6 +81,7 @@ namespace SqlPad.Oracle.Test
 			terminals[0].Id.ShouldBe(Terminals.Select);
 			terminals[1].Id.ShouldBe(Terminals.Null);
 			terminals[2].Id.ShouldBe(Terminals.As);
+			terminals[2].IsKeyword.ShouldBe(false);
 			terminals[3].Id.ShouldBe(Terminals.Alias);
 			terminals[3].Token.Value.ShouldBe("\">=;+Alias/*--^\"");
 			terminals[4].Id.ShouldBe(Terminals.Comma);
@@ -108,7 +113,9 @@ namespace SqlPad.Oracle.Test
 			terminals.Count.ShouldBe(26);
 			terminals[0].Id.ShouldBe(Terminals.Select);
 			terminals[1].Id.ShouldBe(Terminals.Case);
+			terminals[1].IsKeyword.ShouldBe(false);
 			terminals[2].Id.ShouldBe(Terminals.When);
+			terminals[2].IsKeyword.ShouldBe(false);
 			terminals[3].Id.ShouldBe(Terminals.NumberLiteral);
 			terminals[3].Token.Value.ShouldBe("1");
 		}
@@ -1000,6 +1007,7 @@ namespace SqlPad.Oracle.Test
 			terminals[6].Id.ShouldBe(Terminals.Dot);
 			terminals[7].Id.ShouldBe(Terminals.ObjectIdentifier);
 			terminals[8].Id.ShouldBe(Terminals.On);
+			terminals[8].IsKeyword.ShouldBe(true);
 
 			const string query3 = @"SELECT NULL FROM SELECTION MY_SELECTION";
 			result = Parser.Parse(query3);

@@ -249,8 +249,8 @@ namespace SqlPad.Oracle
 						continue;
 
 					var identifiers = joinCondition.GetDescendants(Terminals.Identifier);
-					var cokumnReferences = new List<OracleColumnReference>();
-					ResolveColumnReferenceFromIdentifiers(cokumnReferences, identifiers);
+					var columnReferences = new List<OracleColumnReference>();
+					ResolveColumnReferenceFromIdentifiers(columnReferences, identifiers);
 				}
 			}
 		}

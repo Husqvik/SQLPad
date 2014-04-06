@@ -542,11 +542,16 @@ namespace SqlPad.Oracle
 		private ProcessingResult IsTokenValid(SqlGrammarRuleSequenceTerminal terminalReference, int level, int tokenOffset, IList<OracleToken> tokenBuffer)
 		{
 			var tokenIsValid = false;
-			OracleToken currentToken;
+			var terminalNode = new StatementDescriptionNode(NodeType.Terminal)
+			{
+				Id = terminalReference.Id,
+				Level = level,
+				IsRequired = terminalReference.IsRequired
+			};
 
 			if (tokenBuffer.Count > tokenOffset)
 			{
-				currentToken = tokenBuffer[tokenOffset];
+				var currentToken = tokenBuffer[tokenOffset];
 
 				var terminal = _terminals[terminalReference.Id];
 				if (!String.IsNullOrEmpty(terminal.RegexValue))
@@ -556,19 +561,17 @@ namespace SqlPad.Oracle
 				else
 				{
 					tokenIsValid = terminal.Value == currentToken.Value.ToUpperInvariant();
+					terminalNode.IsKeyword = tokenIsValid && terminal.IsKeyword;
 				}
-			}
-			else
-			{
-				currentToken = OracleToken.Empty;
-			}
 
-			var terminalNode = new StatementDescriptionNode(NodeType.Terminal) { Token = currentToken, Id = terminalReference.Id, Level = level, IsRequired = terminalReference.IsRequired };
+				terminalNode.Token = currentToken;
+			}
+			
 			return new ProcessingResult
 			       {
 				       Status = tokenIsValid ? ProcessingStatus.Success : ProcessingStatus.SequenceNotFound,
-					   Nodes = new []{ terminalNode },
-					   BestCandidates = new []{ terminalNode }
+					   Nodes = new [] { terminalNode },
+					   BestCandidates = new [] { terminalNode }
 			       };
 		}
 	}
