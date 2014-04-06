@@ -23,13 +23,15 @@ namespace SqlPad.Oracle.Test
 		[Test(Description = @"")]
 		public void Test2()
 		{
-			var items = _codeCompletionProvider.ResolveItems("SELECT I.*, INVOICES.ID FROM HUSQVIK.INVOICELINES I ", 52).ToArray(); // TODO: Add suggestion when join clause is already in place
+			var items = _codeCompletionProvider.ResolveItems("SELECT I.*, INVOICES.ID FROM HUSQVIK.INVOICELINES I ", 52).ToArray();
 			// TODO: Filter out outer types depending of nullable columns
 			items.Length.ShouldBe(5);
 			items[0].Name.ShouldBe("JOIN");
 			items[0].Offset.ShouldBe(0);
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.JoinMethod);
 			items[4].Name.ShouldBe("CROSS JOIN");
 			items[4].Offset.ShouldBe(0);
+			items[4].Category.ShouldBe(OracleCodeCompletionCategory.JoinMethod);
 		}
 
 		[Test(Description = @"")]

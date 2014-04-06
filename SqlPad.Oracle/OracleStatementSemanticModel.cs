@@ -66,7 +66,9 @@ namespace SqlPad.Oracle
 
 				foreach (var tableReferenceNonterminal in tableReferenceNonterminals)
 				{
-					var queryTableExpression = tableReferenceNonterminal.GetDescendantsWithinSameQuery(NonTerminals.QueryTableExpression).Single();
+					var queryTableExpression = tableReferenceNonterminal.GetDescendantsWithinSameQuery(NonTerminals.QueryTableExpression).SingleOrDefault();
+					if (queryTableExpression == null)
+						continue;
 
 					var tableReferenceAlias = tableReferenceNonterminal.GetDescendantsWithinSameQuery(Terminals.Alias).SingleOrDefault();
 					

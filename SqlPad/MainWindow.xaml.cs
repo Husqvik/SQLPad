@@ -48,6 +48,8 @@ namespace SqlPad
 
 		private void WindowLoadedHandler(object sender, RoutedEventArgs e)
 		{
+			SqlPad.Resources.Initialize(Resources);
+
 			Editor.TextArea.TextView.LineTransformers.Add(_colorizeAvalonEdit);
 
 			Editor.TextArea.TextEntering += TextEnteringHandler;

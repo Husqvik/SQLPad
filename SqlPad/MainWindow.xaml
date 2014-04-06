@@ -13,6 +13,23 @@
         <CommandBinding Command="{x:Static local:MainWindow.CommandToggleQuotedIdentifier}"
                     Executed="ToggleQuotedIdentifierExecutedHandler" CanExecute="ToggleQuotedIdentifierCanExecuteHandler" />
     </Window.CommandBindings>
+    
+    <Window.Resources>
+        <TextDecoration x:Key="WaveErrorUnderline">
+            <TextDecoration.Pen>
+                <Pen Thickness="6">
+                    <Pen.Brush>
+                        <VisualBrush TileMode="Tile" Viewbox="1,0,3,3" ViewboxUnits="Absolute" Viewport="0,-1,6,4" ViewportUnits="Absolute">
+                            <VisualBrush.Visual>
+                                <Path Data="M 0,1 L 1,0 2,2 3,1 4,0 5,2 6,1" Stroke="Red" StrokeThickness="0.75"/>
+                            </VisualBrush.Visual>
+                        </VisualBrush>
+                    </Pen.Brush>
+                </Pen>
+            </TextDecoration.Pen>
+        </TextDecoration>
+        
+    </Window.Resources>
 
     <Grid>
         <Grid.RowDefinitions>

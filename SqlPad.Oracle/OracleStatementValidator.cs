@@ -47,7 +47,7 @@ namespace SqlPad.Oracle
 						? 1
 						: cr.ColumnReference.ColumnNodeReferences.Count;
 
-					validationModel.ColumnNodeValidity[cr.ColumnReference.ColumnNode] = new ColumnValidationData(cr.ColumnReference.ColumnNodeReferences) { IsValid = columnReferences == 1 };
+					validationModel.ColumnNodeValidity[cr.ColumnReference.ColumnNode] = new ColumnValidationData(cr.ColumnReference.ColumnNodeReferences) { IsRecognized = columnReferences > 0 };
 				}
 			}
 
@@ -76,7 +76,12 @@ namespace SqlPad.Oracle
 
 		public StatementDescriptionNode ColumnNode { get; set; }
 		
-		public bool IsValid { get; set; }
+		public bool IsRecognized { get; set; }
+
+		public ColumnSemanticError SemanticError
+		{
+			get { return _tableReferences.Count >= 2 ? ColumnSemanticError.AmbiguousTableReference : ColumnSemanticError.None; }
+		}
 
 		public ICollection<OracleTableReference> TableReferences { get { return _tableReferences; } }
 

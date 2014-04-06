@@ -12,15 +12,14 @@ namespace SqlPad.Oracle
 	{
 		private readonly OracleSqlParser _oracleParser = new OracleSqlParser();
 		private static readonly ICodeCompletionItem[] EmptyCollection = new ICodeCompletionItem[0];
-		private const string CategoryJoinType = "Join Type";
 
 		private static readonly OracleCodeCompletionItem[] JoinClauses =
 		{
-			new OracleCodeCompletionItem { Name = "JOIN", Priority = 0, Category = CategoryJoinType, CategoryPriority = 1 },
-			new OracleCodeCompletionItem { Name = "LEFT JOIN", Priority = 1, Category = CategoryJoinType, CategoryPriority = 1 },
-			new OracleCodeCompletionItem { Name = "RIGHT JOIN", Priority = 2, Category = CategoryJoinType, CategoryPriority = 1 },
-			new OracleCodeCompletionItem { Name = "FULL JOIN", Priority = 3, Category = CategoryJoinType, CategoryPriority = 1 },
-			new OracleCodeCompletionItem { Name = "CROSS JOIN", Priority = 4, Category = CategoryJoinType, CategoryPriority = 1 },
+			new OracleCodeCompletionItem { Name = "JOIN", Priority = 0, Category = OracleCodeCompletionCategory.JoinMethod, CategoryPriority = 1 },
+			new OracleCodeCompletionItem { Name = "LEFT JOIN", Priority = 1, Category = OracleCodeCompletionCategory.JoinMethod, CategoryPriority = 1 },
+			new OracleCodeCompletionItem { Name = "RIGHT JOIN", Priority = 2, Category = OracleCodeCompletionCategory.JoinMethod, CategoryPriority = 1 },
+			new OracleCodeCompletionItem { Name = "FULL JOIN", Priority = 3, Category = OracleCodeCompletionCategory.JoinMethod, CategoryPriority = 1 },
+			new OracleCodeCompletionItem { Name = "CROSS JOIN", Priority = 4, Category = OracleCodeCompletionCategory.JoinMethod, CategoryPriority = 1 },
 		};
 
 		public ICollection<ICodeCompletionItem> ResolveItems(string statementText, int cursorPosition)
@@ -106,17 +105,18 @@ namespace SqlPad.Oracle
 				completionItems = completionItems.Concat(GenerateSchemaObjectItems(ownerName, null, null, 0));
 			}
 
+			var joinClauseNode = currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.FromClause, NonTerminals.JoinClause);
 			if (currentNode.Id == Terminals.ObjectIdentifier ||
 				currentNode.Id == Terminals.Alias ||
+				currentNode.Id == Terminals.RightParenthesis ||
 				currentNode.Id == Terminals.On)
 			{
-				var joinClause = currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.FromClause, NonTerminals.JoinClause);
-				if (joinClause != null)
+				if (joinClauseNode != null)
 				{
-					var isInnerJoin = joinClause.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.InnerJoinClause) != null;
-					if (!isInnerJoin || (joinClause.FirstTerminalNode.Id != Terminals.Cross && joinClause.FirstTerminalNode.Id != Terminals.Natural))
+					var isInnerJoin = joinClauseNode.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.InnerJoinClause) != null;
+					if (!isInnerJoin || (joinClauseNode.FirstTerminalNode.Id != Terminals.Cross && joinClauseNode.FirstTerminalNode.Id != Terminals.Natural))
 					{
-						var joinedTableReferenceNode = joinClause.GetPathFilterDescendants(n => n.Id != NonTerminals.JoinClause, NonTerminals.TableReference).SingleOrDefault();
+						var joinedTableReferenceNode = joinClauseNode.GetPathFilterDescendants(n => n.Id != NonTerminals.JoinClause, NonTerminals.TableReference).SingleOrDefault();
 						if (joinedTableReferenceNode != null)
 						{
 							var joinedTableReference = queryBlock.TableReferences.SingleOrDefault(t => t.TableReferenceNode == joinedTableReferenceNode);
@@ -132,7 +132,6 @@ namespace SqlPad.Oracle
 				}
 			}
 
-			var joinClauseNode = currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.FromClause, NonTerminals.JoinClause);
 			if (((currentNode.Id == Terminals.ObjectIdentifier || currentNode.Id == Terminals.Alias) && !cursorAtLastTerminal) ||
 			    (joinClauseNode != null && joinClauseNode.IsGrammarValid))
 			{
@@ -361,6 +360,7 @@ namespace SqlPad.Oracle
 		public const string Subquery = "Subquery";
 		public const string CommonTableExpression = "Common Table Expression";
 		public const string Column = "Column";
+		public const string JoinMethod = "Join Method";
 	}
 
 	[DebuggerDisplay("OracleCodeCompletionItem (Name={Name}; Category={Category}; Priority={Priority})")]

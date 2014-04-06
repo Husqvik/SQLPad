@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows;
 using System.Windows.Media;
+using System.Windows.Shapes;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Rendering;
 
@@ -32,22 +34,22 @@ namespace SqlPad
 				var colorEndOffset = Math.Min(line.EndOffset, statement.SourcePosition.IndexEnd + 1);
 
 				var validationModel = _validator.ResolveReferences(null, statement, _databaseModel);
-				var nodeValidities = validationModel.TableNodeValidity.Concat(validationModel.ColumnNodeValidity.Select(kvp => new KeyValuePair<StatementDescriptionNode, bool>(kvp.Key, kvp.Value.IsValid)));
+				var nodeRecognizeData = validationModel.TableNodeValidity.Concat(validationModel.ColumnNodeValidity.Select(kvp => new KeyValuePair<StatementDescriptionNode, bool>(kvp.Key, kvp.Value.IsRecognized)));
 
-				foreach (var nodeValidity in nodeValidities)
+				foreach (var nodeValidity in nodeRecognizeData)
 				{
-					if (line.Offset > nodeValidity.Key.SourcePosition.IndexEnd + 1 ||
-					    line.EndOffset < nodeValidity.Key.SourcePosition.IndexStart)
-						continue;
-
-					var errorColorStartOffset = Math.Max(line.Offset, nodeValidity.Key.SourcePosition.IndexStart);
-					var errorColorEndOffset = Math.Min(line.EndOffset, nodeValidity.Key.SourcePosition.IndexEnd + 1);
-
-					ChangeLinePart(errorColorStartOffset, errorColorEndOffset,
+					ProcessNodeAtLine(line, nodeValidity.Key.SourcePosition,
 						element =>
 						{
 							element.TextRunProperties.SetForegroundBrush(nodeValidity.Value ? NormalTextBrush : ErrorBrush);
 						});
+				}
+
+				var semanticErrors = validationModel.ColumnNodeValidity.Select(nv => new { ColumnNode = nv.Key, HasSemanticError = nv.Value.SemanticError != ColumnSemanticError.None });
+				foreach (var semanticError in semanticErrors.Where(e => e.HasSemanticError))
+				{
+					ProcessNodeAtLine(line, semanticError.ColumnNode.SourcePosition,
+						element => element.TextRunProperties.SetTextDecorations(Resources.WaveErrorUnderline));
 				}
 
 				ChangeLinePart(
@@ -71,6 +73,18 @@ namespace SqlPad
 						));*/
 					});
 			}
+		}
+
+		private void ProcessNodeAtLine(ISegment line, SourcePosition nodePosition, Action<VisualLineElement> action)
+		{
+			if (line.Offset > nodePosition.IndexEnd + 1 ||
+						line.EndOffset < nodePosition.IndexStart)
+				return;
+
+			var errorColorStartOffset = Math.Max(line.Offset, nodePosition.IndexStart);
+			var errorColorEndOffset = Math.Min(line.EndOffset, nodePosition.IndexEnd + 1);
+
+			ChangeLinePart(errorColorStartOffset, errorColorEndOffset, action);
 		}
 	}
 }

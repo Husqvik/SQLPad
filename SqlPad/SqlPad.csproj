@@ -75,6 +75,7 @@
     <Compile Include="NodeType.cs" />
     <Compile Include="ProcessingResult.cs" />
     <Compile Include="ProcessingStatus.cs" />
+    <Compile Include="Resources.cs" />
     <Compile Include="Snippet.cs">
       <DependentUpon>Snippet.xsd</DependentUpon>
     </Compile>
