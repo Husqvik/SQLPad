@@ -59,6 +59,15 @@ namespace SqlPad.Oracle
 					isCursorAtTerminal = false;
 					currentNode = statement.GetNearestTerminalToPosition(cursorPosition);
 				}
+				else if (currentNode.Id == Terminals.RightParenthesis)
+				{
+					var previousNode = statement.GetNearestTerminalToPosition(cursorPosition - 1);
+					if (previousNode != null)
+					{
+						currentNode = previousNode;
+						isCursorAtTerminal = false;
+					}
+				}
 			}
 
 			if (currentNode == null)
@@ -108,10 +117,9 @@ namespace SqlPad.Oracle
 			var joinClauseNode = currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.FromClause, NonTerminals.JoinClause);
 			if (currentNode.Id == Terminals.ObjectIdentifier ||
 				currentNode.Id == Terminals.Alias ||
-				currentNode.Id == Terminals.RightParenthesis ||
 				currentNode.Id == Terminals.On)
 			{
-				if (joinClauseNode != null)
+				if (joinClauseNode != null && !cursorAtLastTerminal)
 				{
 					var isInnerJoin = joinClauseNode.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.InnerJoinClause) != null;
 					if (!isInnerJoin || (joinClauseNode.FirstTerminalNode.Id != Terminals.Cross && joinClauseNode.FirstTerminalNode.Id != Terminals.Natural))
@@ -132,8 +140,9 @@ namespace SqlPad.Oracle
 				}
 			}
 
-			if (((currentNode.Id == Terminals.ObjectIdentifier || currentNode.Id == Terminals.Alias) && !cursorAtLastTerminal) ||
-			    (joinClauseNode != null && joinClauseNode.IsGrammarValid))
+			if ((currentNode.Id == Terminals.ObjectIdentifier || currentNode.Id == Terminals.Alias ||
+			    (joinClauseNode != null && joinClauseNode.IsGrammarValid)) &&
+				!cursorAtLastTerminal)
 			{
 				var tableReference = currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.NestedQuery, NonTerminals.TableReference);
 				if ((tableReference != null && currentNode == tableReference.LastTerminalNode && tableReference.ParentNode.Id == NonTerminals.FromClause && tableReference == tableReference.ParentNode.ChildNodes.First()) ||
@@ -267,7 +276,9 @@ namespace SqlPad.Oracle
 		private IEnumerable<ICodeCompletionItem> GenerateSchemaObjectItems(string schemaName, string objectNamePart, StatementDescriptionNode node, int insertOffset)
 		{
 			return DatabaseModelFake.Instance.AllObjects.Values
-						.Where(o => o.Owner == schemaName.ToQuotedIdentifier() && objectNamePart.ToQuotedIdentifier() != o.Name && (String.IsNullOrEmpty(objectNamePart) || o.Name.Contains(objectNamePart.ToUpperInvariant())))
+						.Where(o => o.Owner == schemaName.ToQuotedIdentifier() && objectNamePart.ToQuotedIdentifier() != o.Name &&
+							(node == null || node.Token.Value.ToQuotedIdentifier() != o.Name) &&
+							(String.IsNullOrEmpty(objectNamePart) || o.Name.Contains(objectNamePart.ToUpperInvariant())))
 						.Select(o => new OracleCodeCompletionItem
 						{
 							Name = o.Name.ToSimpleIdentifier(),

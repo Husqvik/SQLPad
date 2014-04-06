@@ -15,9 +15,9 @@ namespace SqlPad.Oracle.Test
 		public void Test1()
 		{
 			var items = _codeCompletionProvider.ResolveItems(TestQuery, 37).ToArray();
-			items.Length.ShouldBe(9);
+			items.Length.ShouldBe(8);
 			items[0].Name.ShouldBe("COUNTRY");
-			items[8].Name.ShouldBe("VIEW_INSTANTSEARCH");
+			items[7].Name.ShouldBe("VIEW_INSTANTSEARCH");
 		}
 
 		[Test(Description = @"")]
@@ -52,23 +52,28 @@ namespace SqlPad.Oracle.Test
 			items[1].Name.ShouldBe("INVOICES");
 
 			items = _codeCompletionProvider.ResolveItems("SELECT * FROM INVOICES JOIN INVOICE;SELECT * FROM INVOICELINES JOIN INVOICE", 57).ToArray();
-			items[0].Name.ShouldBe("INVOICELINES");
-			//items[0].Offset.ShouldBe(0);
-			items[1].Name.ShouldBe("INVOICES");
+			items.Length.ShouldBe(1);
+			items[0].Name.ShouldBe("INVOICES");
 		}
 
 		[Test(Description = @"")]
 		public void Test5()
 		{
 			var items = _codeCompletionProvider.ResolveItems("SELECT S.* FROM SELECTION S JOIN HUSQVIK.PROJECT P", 50).ToArray();
+			items.Length.ShouldBe(0);
+
+			items = _codeCompletionProvider.ResolveItems("SELECT S.* FROM SELECTION S JOIN HUSQVIK.PROJECT P ", 51).ToArray();
 			items.Length.ShouldBe(1);
 			items[0].Name.ShouldBe("ON S.PROJECT_ID = P.PROJECT_ID");
-			items[0].Offset.ShouldBe(1);
+			items[0].Offset.ShouldBe(0);
 
 			items = _codeCompletionProvider.ResolveItems("SELECT S.* FROM SELECTION S JOIN HUSQVIK.PROJECT P ON", 53).ToArray();
+			items.Length.ShouldBe(0);
+
+			items = _codeCompletionProvider.ResolveItems("SELECT S.* FROM SELECTION S JOIN HUSQVIK.PROJECT P ON ", 54).ToArray();
 			items.Length.ShouldBe(1);
 			items[0].Name.ShouldBe("S.PROJECT_ID = P.PROJECT_ID");
-			items[0].Offset.ShouldBe(1);
+			items[0].Offset.ShouldBe(0);
 		}
 
 		[Test(Description = @"")]
@@ -208,6 +213,24 @@ FROM
 			items.Length.ShouldBe(5);
 			items[0].Name.ShouldBe("JOIN");
 			items[4].Name.ShouldBe("CROSS JOIN");
+		}
+
+		[Test(Description = @"")]
+		public void Test15()
+		{
+			const string query1 = @"SELECT S.* FROM SELECTION S JOIN HUSQVIK.PROJECT P ON S.PROJECT_ID = P.PROJECT_ID";
+
+			var items = _codeCompletionProvider.ResolveItems(query1, 35).ToArray();
+			items.Length.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
+		public void Test16()
+		{
+			const string query1 = @"SELECT S.* FROM SELECTION S JOIN HUSQVIK.PROJECT P ON S.PROJECT_ID = P.PROJECT_ID";
+
+			var items = _codeCompletionProvider.ResolveItems(query1, 43).ToArray();
+			items.Length.ShouldBe(0);
 		}
 	}
 }
