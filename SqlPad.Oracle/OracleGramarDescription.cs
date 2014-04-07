@@ -153,6 +153,7 @@ namespace SqlPad.Oracle
 			public const string SeedClause = "SeedClause";
 			public const string SelectExpressionExpressionChainedList = "SelectExpressionExpressionChainedList";
 			public const string SelectList = "SelectList";
+			public const string SerializableOrReadCommitted = "SerializableOrReadCommitted";
 			public const string SetOperation = "SetOperation";
 			public const string SetQualifier = "SetQualifier";
 			public const string SimpleCaseExpressionBranch = "SimpleCaseExpressionBranch";
@@ -172,6 +173,9 @@ namespace SqlPad.Oracle
 			public const string SystemChangeNumberOrTimestampOrPeriodFor = "SystemChangeNumberOrTimestampOrPeriodFor";
 			public const string TableCollectionExpression = "TableCollectionExpression";
 			public const string TableReference = "TableReference";
+			public const string TransactionModeOrIsolationLevelOrRollbackSegment = "TransactionModeOrIsolationLevelOrRollbackSegment";
+			public const string TransactionNameClause = "TransactionNameClause";
+			public const string TransactionReadOnlyOrReadWrite = "TransactionReadOnlyOrReadWrite";
 			public const string UnpivotClause = "UnpivotClause";
 			public const string UnpivotInClause = "UnpivotInClause";
 			public const string UnpivotNullsClause = "UnpivotNullsClause";
@@ -211,6 +215,7 @@ namespace SqlPad.Oracle
 			public const string Comma = "Comma";
 			public const string Comment = "Comment";
 			public const string Commit = "Commit";
+			public const string Committed = "Committed";
 			public const string Connect = "Connect";
 			public const string Constraint = "Constraint";
 			public const string Cross = "Cross";
@@ -250,12 +255,14 @@ namespace SqlPad.Oracle
 			public const string IntegerLiteral = "IntegerLiteral";
 			public const string Intersect = "Intersect";
 			public const string Is = "Is";
+			public const string Isolation = "Isolation";
 			public const string Join = "Join";
 			public const string Keep = "Keep";
 			public const string Last = "Last";
 			public const string Lateral = "Lateral";
 			public const string Left = "Left";
 			public const string LeftParenthesis = "LeftParenthesis";
+			public const string Level = "Level";
 			public const string Like = "Like";
 			public const string LikeUcs2 = "LikeUcs2";
 			public const string LikeUcs4 = "LikeUcs4";
@@ -279,6 +286,7 @@ namespace SqlPad.Oracle
 			public const string MinimumValue = "MinimumValue";
 			public const string Model = "Model";
 			public const string Multiset = "Multiset";
+			public const string Name = "Name";
 			public const string Natural = "Natural";
 			public const string Next = "Next";
 			public const string NoCycle = "NoCycle";
@@ -309,6 +317,7 @@ namespace SqlPad.Oracle
 			public const string Ref = "Ref";
 			public const string Right = "Right";
 			public const string RightParenthesis = "RightParenthesis";
+			public const string Rollback = "Rollback";
 			public const string Rollup = "Rollup";
 			public const string Row = "Row";
 			public const string RowIdPseudoColumn = "RowIdPseudoColumn";
@@ -318,10 +327,12 @@ namespace SqlPad.Oracle
 			public const string SchemaIdentifier = "SchemaIdentifier";
 			public const string Search = "Search";
 			public const string Seed = "Seed";
+			public const string Segment = "Segment";
 			public const string Select = "Select";
 			public const string Semicolon = "Semicolon";
 			public const string SequenceCurrentValue = "SequenceCurrentValue";
 			public const string SequenceNextValue = "SequenceNextValue";
+			public const string Serializable = "Serializable";
 			public const string Set = "Set";
 			public const string SetMinus = "SetMinus";
 			public const string Sets = "Sets";
@@ -338,12 +349,14 @@ namespace SqlPad.Oracle
 			public const string Ties = "Ties";
 			public const string Timestamp = "Timestamp";
 			public const string To = "To";
+			public const string Transaction = "Transaction";
 			public const string Treat = "Treat";
 			public const string Unbounded = "Unbounded";
 			public const string Union = "Union";
 			public const string Unique = "Unique";
 			public const string Unpivot = "Unpivot";
 			public const string Update = "Update";
+			public const string Use = "Use";
 			public const string Using = "Using";
 			public const string Versions = "Versions";
 			public const string Wait = "Wait";
@@ -354,7 +367,7 @@ namespace SqlPad.Oracle
 			public const string Write = "Write";
 			public const string Xml = "Xml";
 			
-			private static readonly HashSet<string> AllTerminalsInternal = new HashSet<string> { Alias, All, And, Any, Apply, As, Asc, Asterisk, At, Batch, Between, BindVariable, Block, Breadth, By, Case, Cast, Check, Colon, Column, Comma, Comment, Commit, Connect, Constraint, Cross, Cube, Current, Cycle, DatabaseLinkIdentifier, DataTypeName, Date, Default, DenseRank, Depth, Desc, Distinct, Dot, Else, End, Escape, Exclude, Exists, Fetch, First, Following, For, Force, From, Full, Group, Grouping, Having, Identifier, Ignore, Immediate, In, Include, Inner, IntegerLiteral, Intersect, Is, Join, Keep, Last, Lateral, Left, LeftParenthesis, Like, LikeUcs2, LikeUcs4, LikeUnicode, Locked, MathDivide, MathEquals, MathFactor, MathGreatherThan, MathGreatherThanOrEquals, MathInfinite, MathLessThan, MathLessThanOrEquals, MathMinus, MathNotANumber, MathNotEqualsC, MathNotEqualsCircumflex, MathNotEqualsSql, MathPlus, MaximumValue, MinimumValue, Model, Multiset, Natural, Next, NoCycle, Not, Nowait, Null, Nulls, NumberLiteral, ObjectIdentifier, Of, Offset, On, Only, OperatorConcatenation, Option, Or, Order, Outer, Over, Partition, Percent, Period, Pivot, Preceding, Public, Range, Read, Ref, Right, RightParenthesis, Rollup, Row, RowIdPseudoColumn, RowNumberPseudoColumn, Rows, Sample, SchemaIdentifier, Search, Seed, Select, Semicolon, SequenceCurrentValue, SequenceNextValue, Set, SetMinus, Sets, Siblings, Skip, Some, Space, Start, StringLiteral, Subpartition, SystemChangeNumber, Table, Then, Ties, Timestamp, To, Treat, Unbounded, Union, Unique, Unpivot, Update, Using, Versions, Wait, When, Where, With, Work, Write, Xml };
+			private static readonly HashSet<string> AllTerminalsInternal = new HashSet<string> { Alias, All, And, Any, Apply, As, Asc, Asterisk, At, Batch, Between, BindVariable, Block, Breadth, By, Case, Cast, Check, Colon, Column, Comma, Comment, Commit, Committed, Connect, Constraint, Cross, Cube, Current, Cycle, DatabaseLinkIdentifier, DataTypeName, Date, Default, DenseRank, Depth, Desc, Distinct, Dot, Else, End, Escape, Exclude, Exists, Fetch, First, Following, For, Force, From, Full, Group, Grouping, Having, Identifier, Ignore, Immediate, In, Include, Inner, IntegerLiteral, Intersect, Is, Isolation, Join, Keep, Last, Lateral, Left, LeftParenthesis, Level, Like, LikeUcs2, LikeUcs4, LikeUnicode, Locked, MathDivide, MathEquals, MathFactor, MathGreatherThan, MathGreatherThanOrEquals, MathInfinite, MathLessThan, MathLessThanOrEquals, MathMinus, MathNotANumber, MathNotEqualsC, MathNotEqualsCircumflex, MathNotEqualsSql, MathPlus, MaximumValue, MinimumValue, Model, Multiset, Name, Natural, Next, NoCycle, Not, Nowait, Null, Nulls, NumberLiteral, ObjectIdentifier, Of, Offset, On, Only, OperatorConcatenation, Option, Or, Order, Outer, Over, Partition, Percent, Period, Pivot, Preceding, Public, Range, Read, Ref, Right, RightParenthesis, Rollback, Rollup, Row, RowIdPseudoColumn, RowNumberPseudoColumn, Rows, Sample, SchemaIdentifier, Search, Seed, Segment, Select, Semicolon, SequenceCurrentValue, SequenceNextValue, Serializable, Set, SetMinus, Sets, Siblings, Skip, Some, Space, Start, StringLiteral, Subpartition, SystemChangeNumber, Table, Then, Ties, Timestamp, To, Transaction, Treat, Unbounded, Union, Unique, Unpivot, Update, Use, Using, Versions, Wait, When, Where, With, Work, Write, Xml };
 			
 			private static readonly HashSet<string> Identifiers = new HashSet<string> { DatabaseLinkIdentifier, Identifier, ObjectIdentifier, SchemaIdentifier };
 

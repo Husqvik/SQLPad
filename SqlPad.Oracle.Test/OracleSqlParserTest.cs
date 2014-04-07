@@ -1149,6 +1149,28 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"")]
+		public void TestWithLevelAsColumnAlias()
+		{
+			const string query1 = @"SELECT 1 LEVEL FROM DUAL";
+			var result = Parser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			var statement = result.Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+		}
+
+		[Test(Description = @"")]
+		public void TestWithLevelAsTableAlias()
+		{
+			const string query1 = @"SELECT 1 FROM DUAL LEVEL";
+			var result = Parser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			var statement = result.Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+		}
+
+		[Test(Description = @"")]
 		public void TestIsRuleValidSuccess()
 		{
 			var isRuleValid = Parser.IsRuleValid(NonTerminals.SelectList, "SELECTION.NAME, SELECTION.RESPONDENTBUCKET_ID, SELECTION.SELECTION_ID");
@@ -1230,6 +1252,62 @@ namespace SqlPad.Oracle.Test
 			}
 		}
 
+		public class SetTransaction
+		{
+			[Test(Description = @"")]
+			public void TestSetReadOnlyTransactionWithName()
+			{
+				const string statement1 = @"SET TRANSACTION READ ONLY NAME 'Toronto'";
+				var statement = Parser.Parse(statement1).Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+				var terminalCandidates = statement.NodeCollection.SelectMany(n => n.Terminals).ToArray();
+				terminalCandidates.Length.ShouldBe(6);
+				terminalCandidates[0].Id.ShouldBe(Terminals.Set);
+				terminalCandidates[1].Id.ShouldBe(Terminals.Transaction);
+				terminalCandidates[2].Id.ShouldBe(Terminals.Read);
+				terminalCandidates[3].Id.ShouldBe(Terminals.Only);
+				terminalCandidates[4].Id.ShouldBe(Terminals.Name);
+				terminalCandidates[5].Id.ShouldBe(Terminals.StringLiteral);
+			}
+
+			[Test(Description = @"")]
+			public void TestSetTransactionWithReadCommittedIsolationLevel()
+			{
+				const string statement1 = @"SET TRANSACTION ISOLATION LEVEL READ COMMITTED";
+				var statement = Parser.Parse(statement1).Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+				var terminalCandidates = statement.NodeCollection.SelectMany(n => n.Terminals).ToArray();
+				terminalCandidates.Length.ShouldBe(6);
+				terminalCandidates[0].Id.ShouldBe(Terminals.Set);
+				terminalCandidates[1].Id.ShouldBe(Terminals.Transaction);
+				terminalCandidates[2].Id.ShouldBe(Terminals.Isolation);
+				terminalCandidates[3].Id.ShouldBe(Terminals.Level);
+				terminalCandidates[4].Id.ShouldBe(Terminals.Read);
+				terminalCandidates[5].Id.ShouldBe(Terminals.Committed);
+			}
+
+			[Test(Description = @"")]
+			public void TestSetTransactionWithRollbackSegment()
+			{
+				const string statement1 = @"SET TRANSACTION USE ROLLBACK SEGMENT ROLLBACK_SEGMENT NAME 'HQ Transaction'";
+				var statement = Parser.Parse(statement1).Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+				var terminalCandidates = statement.NodeCollection.SelectMany(n => n.Terminals).ToArray();
+				terminalCandidates.Length.ShouldBe(8);
+				terminalCandidates[0].Id.ShouldBe(Terminals.Set);
+				terminalCandidates[1].Id.ShouldBe(Terminals.Transaction);
+				terminalCandidates[2].Id.ShouldBe(Terminals.Use);
+				terminalCandidates[3].Id.ShouldBe(Terminals.Rollback);
+				terminalCandidates[4].Id.ShouldBe(Terminals.Segment);
+				terminalCandidates[5].Id.ShouldBe(Terminals.Identifier);
+				terminalCandidates[6].Id.ShouldBe(Terminals.Name);
+				terminalCandidates[7].Id.ShouldBe(Terminals.StringLiteral);
+			}
+		}
+
 		public class TerminalCandidates
 		{
 			[Test(Description = @"")]
@@ -1271,11 +1349,12 @@ namespace SqlPad.Oracle.Test
 			public void TestTerminalCandidatesWithNullNode()
 			{
 				var terminalCandidates = Parser.GetTerminalCandidates(null).OrderBy(t => t).ToArray();
-				terminalCandidates.Length.ShouldBe(4);
+				terminalCandidates.Length.ShouldBe(5);
 				terminalCandidates[0].ShouldBe(Terminals.Commit);
 				terminalCandidates[1].ShouldBe(Terminals.LeftParenthesis);
 				terminalCandidates[2].ShouldBe(Terminals.Select);
-				terminalCandidates[3].ShouldBe(Terminals.With);
+				terminalCandidates[3].ShouldBe(Terminals.Set);
+				terminalCandidates[4].ShouldBe(Terminals.With);
 			}
 
 			[Test(Description = @"")]

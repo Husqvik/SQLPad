@@ -48,6 +48,15 @@ namespace SqlPad.Oracle
 			if (containsSequenceWithAllOptionalMembers)
 				throw new InvalidOperationException("Grammar sequence must have at least one mandatory item. ");*/
 
+			/*var terminalIds = new HashSet<string>();
+			foreach (var terminal in _sqlGrammar.Terminals)
+			{
+				if (terminalIds.Contains(terminal.Id))
+					throw new InvalidOperationException(String.Format("Terminal '{0}' has been already defined. ", terminal.Id));
+
+				terminalIds.Add(terminal.Id);
+			}*/
+
 			_terminals = _sqlGrammar.Terminals.ToDictionary(t => t.Id, t => t);
 			_keywords = new HashSet<string>(_sqlGrammar.Terminals.Where(t => t.IsKeyword).Select(t => t.Value));
 			_availableNonTerminals = _sqlGrammar.StartSymbols.Select(s => s.Id).ToArray();

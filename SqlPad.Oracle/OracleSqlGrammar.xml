@@ -4,14 +4,14 @@
   <StartSymbols>
     <StartSymbol Id="Query" />
     <StartSymbol Id="CommitStatement" />
+    <StartSymbol Id="SetTransactionStatement" />
     <!--<StartSymbol Id="Insert" />
     <StartSymbol Id="Update" />
     <StartSymbol Id="Delete" />
     <StartSymbol Id="Create" />
     <StartSymbol Id="Drop" />
     <StartSymbol Id="Alter" />
-    <StartSymbol Id="Rename" />
-    <StartSymbol Id="Set" />-->
+    <StartSymbol Id="Rename" />-->
   </StartSymbols>
 
   <Terminators>
@@ -95,6 +95,70 @@
         <Sequence>
           <Terminal Id="Comma" />
           <Terminal Id="IntegerLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <!-- SET TRANSACTION statement -->
+    <Rule StartingNonTerminal="SetTransactionStatement">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Set" />
+          <Terminal Id="Transaction" />
+          <NonTerminal Id="TransactionModeOrIsolationLevelOrRollbackSegment" IsOptional="true" />
+          <NonTerminal Id="TransactionNameClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="TransactionNameClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Name" />
+          <Terminal Id="StringLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="TransactionModeOrIsolationLevelOrRollbackSegment">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Read" />
+          <NonTerminal Id="TransactionReadOnlyOrReadWrite" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Isolation" />
+          <Terminal Id="Level" />
+          <NonTerminal Id="SerializableOrReadCommitted" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Use" />
+          <Terminal Id="Rollback" />
+          <Terminal Id="Segment" />
+          <Terminal Id="Identifier" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="TransactionReadOnlyOrReadWrite">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Only" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Write" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SerializableOrReadCommitted">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Serializable" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Read" />
+          <Terminal Id="Committed" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -254,6 +318,10 @@
       <Sequences>
         <Sequence>
           <Terminal Id="RowNumberPseudoColumn" />
+          <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Level" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
@@ -2381,6 +2449,7 @@
     <!-- Hierarchical query -->
     <Terminal Id="Connect" Value="CONNECT" IsKeyword="true" />
     <Terminal Id="Start" Value="START" IsKeyword="true" />
+    <Terminal Id="Level" Value="LEVEL" IsKeyword="true" />
     <Terminal Id="NoCycle" Value="NOCYCLE" />
 
     <!-- Analytic clause -->
@@ -2439,6 +2508,16 @@
     <Terminal Id="Write" Value="WRITE" />
     <Terminal Id="Immediate" Value="IMMEDIATE" IsKeyword="true" />
     <Terminal Id="Batch" Value="BATCH" />
+
+    <!-- Set Transaction -->
+    <Terminal Id="Transaction" Value="TRANSACTION" />
+    <Terminal Id="Isolation" Value="ISOLATION" />
+    <Terminal Id="Serializable" Value="SERIALIZABLE" />
+    <Terminal Id="Committed" Value="COMMITTED" />
+    <Terminal Id="Rollback" Value="ROLLBACK" />
+    <Terminal Id="Segment" Value="SEGMENT" />
+    <Terminal Id="Name" Value="NAME" />
+    <Terminal Id="Use" Value="USE" />
   </Terminals>
   
   <SqlBuildinFunctions>
