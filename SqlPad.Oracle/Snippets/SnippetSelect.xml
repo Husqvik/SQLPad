@@ -8,4 +8,7 @@ FROM
     <Parameter Index="0" DefaultValue="" />
     <Parameter Index="1" DefaultValue="NULL" />
   </Parameters>
+  <AllowedTerminals>
+    <Terminal Id ="Select" />
+  </AllowedTerminals>
 </Snippet>

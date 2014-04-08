@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using NUnit.Framework;
 using Shouldly;
 
@@ -12,7 +13,7 @@ namespace SqlPad.Oracle.Test
 		private readonly DatabaseModelFake _databaseModel = DatabaseModelFake.Instance;
 
 		[Test(Description = @"")]
-		public void Test1()
+		public void TestTableNodeValidityWithFullyQualifiedAndNormalTableNames()
 		{
 			const string query = "SELECT * FROM SYS.DUAL, HUSQVIK.COUNTRY, HUSQVIK.INVALID, INVALID.ORDERS, V$SESSION";
 			var statement = _oracleSqlParser.Parse(query).Single();
@@ -34,7 +35,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"")]
-		public void Test2()
+		public void TestTableNodeValidityWithQuotedNotations()
 		{
 			const string query = "WITH XXX1 AS (SELECT 1 FROM XXX1) SELECT * FROM XXX1, SYS.XXX1, \"XXX1\", \"xXX1\", \"PUBLIC\".DUAL";
 			var statement = _oracleSqlParser.Parse(query).Single();
@@ -55,7 +56,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"")]
-		public void Test3()
+		public void TestNodeValidityForComplexQueryWithMultipleCommonTableExpressionsAtDifferentLevelAndScalarSubqueries()
 		{
 			const string sqlText = "WITH XXX AS (SELECT 3 COL FROM DUAL CTE_OUTER_ALIAS_1) SELECT VP1 COL1, (SELECT 1 FROM XXX SC_ALIAS_1) SCALARSUBQUERY FROM (WITH YYY AS (SELECT 1 FROM SYS.DUAL CTE_INNER_ALIAS_1), ZZZ AS (SELECT 2 FROM DUAL CTE_INNER_ALIAS_2), FFF AS (SELECT 4 FROM XXX CTE_INNER_ALIAS_3) SELECT COL + 1 VP1 FROM (SELECT TABLE_ALIAS_1.COL, TABLE_ALIAS_2.DUMMY || TABLE_ALIAS_2.DUMMY NOT_DUMMY FROM XXX TABLE_ALIAS_1, DUAL TABLE_ALIAS_2) TABLE_ALIAS_3) SUBQUERY";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
@@ -63,10 +64,14 @@ namespace SqlPad.Oracle.Test
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 			
 			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, _databaseModel);
+			var nodeValidityDictionary = validationModel.TableNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var nodeValidity = nodeValidityDictionary.Values.ToList();
+			nodeValidity.Count.ShouldBe(11);
+			nodeValidity.ForEach(n => n.ShouldBe(true));
 		}
 
 		[Test(Description = @"")]
-		public void Test4()
+		public void TestTableNodeValidityWhenUsingFullyQualifiedOrNormalNameOrCommonTableExpressionAlias()
 		{
 			const string sqlText = "WITH CTE AS (SELECT 1 FROM DUAL) SELECT CTE.*, SYS.DUAL.*, DUAL.*, HUSQVIK.CTE.* FROM DUAL CROSS JOIN CTE";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
@@ -89,7 +94,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"")]
-		public void Test5()
+		public void TestTableNodeValidityInQueryWithCommonTableExpression()
 		{
 			const string sqlText = "WITH CTE AS (SELECT 1 COLUMN1, VAL COLUMN2, DUMMY COLUMN3 FROM DUAL) SELECT COLUMN1, 'X' || CTE.COLUMN1, CTE.VAL, CTE.COLUMN2, SYS.DUAL.COLUMN1, DUAL.VAL, DUAL.DUMMY FROM CTE, INVALID_TABLE";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
@@ -113,7 +118,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"")]
-		public void Test6()
+		public void TestColumnNodeValidityInQueryWithCommonTableExpression()
 		{
 			const string sqlText = "WITH CTE AS (SELECT DUMMY VAL FROM DUAL) SELECT DUAL.VAL FROM CTE, DUAL";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
@@ -130,7 +135,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"")]
-		public void Test7()
+		public void TestAmbiguousColumnReferences()
 		{
 			const string query1 = "SELECT T2.DUMMY FROM (SELECT DUMMY FROM DUAL) T2, DUAL";
 			var statement = _oracleSqlParser.Parse(query1).Single();
@@ -165,7 +170,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"")]
-		public void Test8()
+		public void TestColumnNodeValidityWhenExposedFromSubqueryUsingAsterisk()
 		{
 			const string sqlText = "SELECT ID, NAME, DUMMY FROM (SELECT * FROM COUNTRY)";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
@@ -184,7 +189,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"")]
-		public void Test9()
+		public void TestColumnNodeValidityWhenExposedFromSubqueryUsingAsteriskOnSpecificObject()
 		{
 			const string sqlText = "SELECT ID, NAME, DUMMY FROM (SELECT COUNTRY.* FROM COUNTRY)";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
@@ -203,7 +208,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"")]
-		public void Test10()
+		public void TestColumnNodeValidityWhenTableAsInnerTableReference()
 		{
 			const string sqlText = "SELECT ID, NAME, DUMMY FROM (COUNTRY)";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
@@ -221,7 +226,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"")]
-		public void Test11()
+		public void TestTableNodeValidityInSimpleQuery()
 		{
 			const string sqlText = "SELECT SELECTION.DUMMY FROM SELECTION";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
@@ -238,7 +243,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"")]
-		public void Test12()
+		public void TestColumnNodeValidityWhenColumnsFromNestedSubqueries()
 		{
 			const string sqlText = "SELECT PROJECT_ID, SELECTION_ID, RESPONDENTBUCKET_ID, DUMMY FROM (SELECT * FROM (SELECT * FROM SELECTION))";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
@@ -259,7 +264,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"")]
-		public void Test13()
+		public void TestTableNodeValidityInConditions()
 		{
 			const string sqlText = "SELECT NULL FROM DUAL WHERE HUSQVIK.COUNTRY.ID = SELECTION.ID AND SYS.DUAL.DUMMY = DUMMY";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
@@ -279,7 +284,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"")]
-		public void Temp()
+		public void TestTableNodeValidityInMultiFromMultiJoinQuery()
 		{
 			const string sqlText = @"SELECT * FROM
 PROJECT P,
@@ -304,6 +309,30 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			nodeValidity[6].ShouldBe(true); // SELECTION
 			nodeValidity[7].ShouldBe(false); // P
 			nodeValidity[8].ShouldBe(true); // S
+		}
+
+		[TestCase("LEFT")]
+		[TestCase("RIGHT")]
+		[TestCase("FULL")]
+		[TestCase("LEFT OUTER")]
+		[TestCase("RIGHT OUTER")]
+		[TestCase("FULL OUTER")]
+		public void TestTableNodeValidyInLeftJoinClauseWithoutSourceTableAlias(string joinType)
+		{
+			var sqlText = String.Format(@"SELECT NULL FROM SELECTION {0} JOIN RESPONDENTBUCKET RB ON SELECTION.RESPONDENTBUCKET_ID = RB.RESPONDENTBUCKET_ID", joinType);
+			
+			var statement = (OracleStatement)_oracleSqlParser.Parse(sqlText).Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var tableNodeValidity = _statementValidator.ResolveReferences(sqlText, statement, _databaseModel)
+				.TableNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			
+			var nodeValidity = tableNodeValidity.Values.ToArray();
+			nodeValidity.Length.ShouldBe(4);
+			nodeValidity[0].ShouldBe(true); // SELECTION
+			nodeValidity[1].ShouldBe(true); // RESPONDENTBUCKET
+			nodeValidity[2].ShouldBe(true); // SELECTION
+			nodeValidity[3].ShouldBe(true); // RB
 		}
 
 		//WITH CTE AS (SELECT 1 A, 2 B, 3 C FROM DUAL) SELECT SELECTION.DUMMY, NQ.DUMMY, CTE.DUMMY, SYS.DUAL.DUMMY FROM SELECTION, (SELECT 1 X, 2 Y, 3 Z FROM DUAL) NQ, CTE, SYS.DUAL

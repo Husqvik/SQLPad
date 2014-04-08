@@ -74,10 +74,12 @@ namespace SqlPad.Oracle.Test
 
 			result.ShouldNotBe(null);
 			result.Count.ShouldBe(1);
-			var rootToken = result.Single().NodeCollection.Single();
-			var terminals = rootToken.Terminals.ToList();
+			var statement = result.Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			var rootToken = statement.NodeCollection.Single();
+			var terminals = rootToken.Terminals.ToArray();
 
-			terminals.Count.ShouldBe(14);
+			terminals.Length.ShouldBe(14);
 			terminals[0].Id.ShouldBe(Terminals.Select);
 			terminals[1].Id.ShouldBe(Terminals.Null);
 			terminals[2].Id.ShouldBe(Terminals.As);
@@ -1171,23 +1173,64 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"")]
-		public void TestIsRuleValidSuccess()
+		public void TestEnteringSecondStatement()
 		{
-			var isRuleValid = Parser.IsRuleValid(NonTerminals.SelectList, "SELECTION.NAME, SELECTION.RESPONDENTBUCKET_ID, SELECTION.SELECTION_ID");
-			isRuleValid.ShouldBe(true);
+			const string query1 = @"SELECT 1 FROM DUAL; S";
+			var result = Parser.Parse(query1);
+
+			result.Count.ShouldBe(2);
+			var statements = result.ToArray();
+			statements[0].ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statements[0].SourcePosition.IndexStart.ShouldBe(0);
+			statements[0].SourcePosition.IndexEnd.ShouldBe(18);
+			statements[0].SourcePosition.Length.ShouldBe(19);
+			
+			statements[1].ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			statements[1].SourcePosition.IndexStart.ShouldBe(20);
+			statements[1].SourcePosition.IndexEnd.ShouldBe(20);
+			statements[1].SourcePosition.Length.ShouldBe(1);
 		}
 
-		[Test(Description = @"")]
-		public void TestIsRuleValidFailure()
+		[TestCase("LEFT", Terminals.Left)]
+		[TestCase("RIGHT", Terminals.Right)]
+		[TestCase("FULL", Terminals.Full)]
+		public void TestLeftJoinClauseWhereLeftMustNotBeRecognizedAsAlias(string joinType, string terminalId)
 		{
-			var isRuleValid = Parser.IsRuleValid(NonTerminals.SelectList, "SELECTION.NAME, SELECTION./* missing column */, SELECTION.SELECTION_ID");
-			isRuleValid.ShouldBe(false);
+			var query1 = String.Format("SELECT NULL FROM SELECTION {0} JOIN RESPONDENTBUCKET RB ON SELECTION.RESPONDENTBUCKET_ID = RB.RESPONDENTBUCKET_ID", joinType);
+			var result = Parser.Parse(query1);
 
-			isRuleValid = Parser.IsRuleValid(NonTerminals.SelectList, "SELECTION.NAME, SELECTION.RESPONDENTBUCKET_ID, /* missing expression */, SELECTION.SELECTION_ID");
-			isRuleValid.ShouldBe(false);
+			result.Count.ShouldBe(1);
+			var statement = result.Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			var rootNode = statement.NodeCollection.Single();
 
-			isRuleValid = Parser.IsRuleValid(NonTerminals.SelectList, "SELECTION.NAME, SELECTION./* missing column */, /* missing expression */, SELECTION.SELECTION_ID");
-			isRuleValid.ShouldBe(false);
+			var terminals = rootNode.Terminals.ToArray();
+			terminals.Length.ShouldBe(16);
+			terminals[4].Token.Value.ShouldBe(joinType);
+			terminals[4].Id.ShouldBe(terminalId);
+		}
+
+		public class IsRuleValid
+		{
+			[Test(Description = @"")]
+			public void TestIsRuleValidSuccess()
+			{
+				var isRuleValid = Parser.IsRuleValid(NonTerminals.SelectList, "SELECTION.NAME, SELECTION.RESPONDENTBUCKET_ID, SELECTION.SELECTION_ID");
+				isRuleValid.ShouldBe(true);
+			}
+
+			[Test(Description = @"")]
+			public void TestIsRuleValidFailure()
+			{
+				var isRuleValid = Parser.IsRuleValid(NonTerminals.SelectList, "SELECTION.NAME, SELECTION./* missing column */, SELECTION.SELECTION_ID");
+				isRuleValid.ShouldBe(false);
+
+				isRuleValid = Parser.IsRuleValid(NonTerminals.SelectList, "SELECTION.NAME, SELECTION.RESPONDENTBUCKET_ID, /* missing expression */, SELECTION.SELECTION_ID");
+				isRuleValid.ShouldBe(false);
+
+				isRuleValid = Parser.IsRuleValid(NonTerminals.SelectList, "SELECTION.NAME, SELECTION./* missing column */, /* missing expression */, SELECTION.SELECTION_ID");
+				isRuleValid.ShouldBe(false);
+			}
 		}
 
 		public class Commit

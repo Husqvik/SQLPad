@@ -248,5 +248,43 @@ FROM
 			items.Length.ShouldBe(1);
 			items[0].Name.ShouldBe("X.DUMMY");
 		}
+
+		[Test(Description = @"")]
+		public void Test18()
+		{
+			const string query1 = @"SELECT NULL FROM DUAL WHERE DUMMY = (SELECT * FROM DUAL)";
+
+			var items = _codeCompletionProvider.ResolveItems(query1, 53).ToArray();
+			items.Length.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
+		public void Test19()
+		{
+			const string query1 = @"SELECT SELECTION.NAME FROM SELECTION";
+
+			var items = _codeCompletionProvider.ResolveItems(query1, 8).ToArray();
+			items.Length.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
+		public void Test20()
+		{
+			const string query1 = @"SELECT * FROM PROJECT P GROUP BY P.";
+
+			var items = _codeCompletionProvider.ResolveItems(query1, 35).ToArray();
+			items.Length.ShouldBe(2);
+			items[0].Name.ShouldBe("NAME");
+			items[1].Name.ShouldBe("PROJECT_ID");
+		}
+
+		[Test(Description = @"")]
+		public void Test21()
+		{
+			const string query1 = @"SELECT * FROM ";
+
+			var items = _codeCompletionProvider.ResolveItems(query1, 14).ToArray();
+			items.Length.ShouldBeGreaterThan(0);
+		}
 	}
 }

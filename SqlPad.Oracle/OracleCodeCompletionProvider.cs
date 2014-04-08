@@ -74,11 +74,6 @@ namespace SqlPad.Oracle
 				}
 			}
 
-			if (currentNode == null)
-			{
-				return EmptyCollection;
-			}
-
 			var semanticModel = new OracleStatementSemanticModel(null, statement, databaseModel);
 			var terminalCandidates = new HashSet<string>(_oracleParser.GetTerminalCandidates(currentNode));
 
@@ -87,19 +82,21 @@ namespace SqlPad.Oracle
 			var queryBlock = semanticModel.GetQueryBlock(currentNode);
 			var extraOffset = currentNode.SourcePosition.IndexStart + currentNode.SourcePosition.Length == cursorPosition ? 1 : 0;
 
+			var fromClause = currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.NestedQuery, NonTerminals.FromClause);
 			if (currentNode.Id == Terminals.From ||
-				currentNode.Id == Terminals.ObjectIdentifier)
+				(currentNode.Id == Terminals.ObjectIdentifier && fromClause != null))
 			{
 				var schemaName = databaseModel.CurrentSchema;
 				var schemaFound = false;
 				if (currentNode.Id == Terminals.ObjectIdentifier && currentNode.ParentNode.Id == NonTerminals.QueryTableExpression &&
-					currentNode.ParentNode.FirstTerminalNode.Id == Terminals.SchemaIdentifier)
+				    currentNode.ParentNode.FirstTerminalNode.Id == Terminals.SchemaIdentifier)
 				{
 					schemaFound = true;
 					schemaName = currentNode.ParentNode.FirstTerminalNode.Token.Value;
 				}
 
 				var currentName = currentNode.Id == Terminals.From ? null : statementText.Substring(currentNode.SourcePosition.IndexStart, cursorPosition - currentNode.SourcePosition.IndexStart);
+
 				completionItems = completionItems.Concat(GenerateSchemaObjectItems(schemaName, currentName, terminalToReplace, extraOffset));
 
 				if (!schemaFound)
@@ -112,7 +109,7 @@ namespace SqlPad.Oracle
 
 			if (currentNode.Id == Terminals.Dot &&
 				currentNode.ParentNode.Id == NonTerminals.SchemaPrefix &&
-				!currentNode.IsWithinSelectClauseOrCondition())
+				!currentNode.IsWithinSelectClauseOrExpression())
 			{
 				var ownerName = currentNode.ParentNode.ChildNodes.Single(n => n.Id == Terminals.SchemaIdentifier).Token.Value;
 				completionItems = completionItems.Concat(GenerateSchemaObjectItems(ownerName, null, null, 0));
@@ -189,7 +186,7 @@ namespace SqlPad.Oracle
 				completionItems = completionItems.Concat(whereTableReferences);
 			}
 
-			if (currentNode.IsWithinSelectClauseOrCondition() &&
+			if (currentNode.IsWithinSelectClauseOrExpression() &&
 				(isCursorAtTerminal || terminalCandidates.Contains(Terminals.Identifier)) &&
 				(currentNode.Id == Terminals.ObjectIdentifier || currentNode.Id == Terminals.Identifier || currentNode.Id == Terminals.Comma || currentNode.Id == Terminals.Dot))
 			{
@@ -199,7 +196,7 @@ namespace SqlPad.Oracle
 			return completionItems.OrderItems().ToArray();
 
 			/*if (currentNode.Id == Terminals.ObjectIdentifier &&
-			    !currentNode.IsWithinSelectClauseOrCondition())
+			    !currentNode.IsWithinSelectClauseOrExpression())
 			{
 				// TODO: Add option to search all/current/public schemas
 				var schemaIdentifier = currentNode.ParentNode.GetSingleDescendant(Terminals.SchemaIdentifier);
@@ -217,20 +214,18 @@ namespace SqlPad.Oracle
 
 		private IEnumerable<ICodeCompletionItem> GenerateColumnItems(StatementDescriptionNode currentNode, OracleStatementSemanticModel semanticModel, int cursorPosition)
 		{
-			if (!currentNode.IsWithinSelectClauseOrCondition())
+			var prefixedColumnReference = currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference);
+			var columnIdentifierFollowing = currentNode.Id != Terminals.Identifier && prefixedColumnReference != null && prefixedColumnReference.GetSingleDescendant(Terminals.Identifier) != null;
+			if (!currentNode.IsWithinSelectClauseOrExpression() || columnIdentifierFollowing)
 			{
 				return EmptyCollection;
 			}
 			
 			var queryBlock = semanticModel.GetQueryBlock(currentNode);
 			var objectIdentifier = currentNode.ParentNode.Id == NonTerminals.ObjectPrefix ? currentNode.ParentNode.GetSingleDescendant(Terminals.ObjectIdentifier) : null;
-			if (objectIdentifier == null)
+			if (objectIdentifier == null && prefixedColumnReference != null)
 			{
-				var prefixedColumnReference = currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference);
-				if (prefixedColumnReference != null)
-				{
-					objectIdentifier = prefixedColumnReference.GetSingleDescendant(Terminals.ObjectIdentifier);
-				}
+				objectIdentifier = prefixedColumnReference.GetSingleDescendant(Terminals.ObjectIdentifier);
 			}
 
 			var tableReferences = queryBlock.TableReferences.AsEnumerable();
@@ -294,6 +289,7 @@ namespace SqlPad.Oracle
 
 		private IEnumerable<ICodeCompletionItem> GenerateCommonTableExpressionReferenceItems(OracleStatementSemanticModel model, string referenceNamePart, StatementDescriptionNode node, int insertOffset)
 		{
+			// TODO: Make proper resolution of CTE accessibility
 			return model.QueryBlocks
 						.Where(qb => qb.Type == QueryBlockType.CommonTableExpression && referenceNamePart.ToQuotedIdentifier() != qb.Alias && (String.IsNullOrEmpty(referenceNamePart) || qb.Alias.ToUpperInvariant().Contains(referenceNamePart.ToUpperInvariant())))
 						.Select(qb => new OracleCodeCompletionItem

@@ -318,10 +318,9 @@ namespace SqlPad.Oracle
 				return;
 			}
 			
-			var result = new ProcessingResult();
-
 			do
 			{
+				var result = new ProcessingResult();
 				var oracleSql = new OracleStatement();
 
 				foreach (var nonTerminal in _availableNonTerminals)
@@ -535,9 +534,6 @@ namespace SqlPad.Oracle
 
 		private void TryRevertOptionalToken(Func<int, ProcessingResult> getAlternativeProcessingResultFunction, ref ProcessingResult currentResult, IList<StatementDescriptionNode> workingNodes)
 		{
-			if (currentResult.Status == ProcessingStatus.Success)
-				return;
-
 			var optionalNodeCandidate = workingNodes.Count > 0 ? workingNodes[workingNodes.Count - 1].Terminals.LastOrDefault() : null;
 			optionalNodeCandidate = optionalNodeCandidate != null && optionalNodeCandidate.IsRequired ? optionalNodeCandidate.ParentNode : optionalNodeCandidate;
 
@@ -548,15 +544,14 @@ namespace SqlPad.Oracle
 			var newResult = getAlternativeProcessingResultFunction(optionalTerminalCount);
 
 			var newResultTerminalCount = newResult.BestCandidates.Sum(n => n.Terminals.Count());
-			if (newResultTerminalCount < optionalTerminalCount)
-				return;
+			var revertNode = newResultTerminalCount >= optionalTerminalCount &&
+			                 newResultTerminalCount > currentResult.Terminals.Count();
 
-			var originalTerminalCount = currentResult.Terminals.Count();
-			currentResult = newResult;
+			if (!revertNode)
+				return;
 			
-			var nodeReverted = newResultTerminalCount > originalTerminalCount;
-			if (nodeReverted)
-				RevertLastOptionalNode(workingNodes, optionalNodeCandidate.Type);
+			currentResult = newResult;
+			RevertLastOptionalNode(workingNodes, optionalNodeCandidate.Type);
 		}
 
 		private void RevertLastOptionalNode(IList<StatementDescriptionNode> workingNodes, NodeType nodeType)

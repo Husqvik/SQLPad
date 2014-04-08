@@ -16,6 +16,17 @@
             </xs:sequence>
           </xs:complexType>
         </xs:element>
+        <xs:element name="AllowedTerminals">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element maxOccurs="unbounded" name="Terminal">
+                <xs:complexType>
+                  <xs:attribute name="Id" type="xs:string" use="required" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
       </xs:sequence>
       <xs:attribute name="Name" type="xs:string" use="required" />
       <xs:attribute name="Rdbms" type="xs:string" use="required" />

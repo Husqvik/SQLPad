@@ -28,6 +28,8 @@ namespace SqlPad {
         
         private SnippetParameter[] parametersField;
         
+        private SnippetTerminal[] allowedTerminalsField;
+        
         private string nameField;
         
         private string rdbmsField;
@@ -54,6 +56,17 @@ namespace SqlPad {
             }
             set {
                 this.parametersField = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlArrayItemAttribute("Terminal", IsNullable=false)]
+        public SnippetTerminal[] AllowedTerminals {
+            get {
+                return this.allowedTerminalsField;
+            }
+            set {
+                this.allowedTerminalsField = value;
             }
         }
         
@@ -133,6 +146,28 @@ namespace SqlPad {
             }
             set {
                 this.defaultValueField = value;
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.0.30319.18020")]
+    [System.SerializableAttribute()]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://husqvik.com/SqlPad/2014/02")]
+    public partial class SnippetTerminal {
+        
+        private string idField;
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string Id {
+            get {
+                return this.idField;
+            }
+            set {
+                this.idField = value;
             }
         }
     }

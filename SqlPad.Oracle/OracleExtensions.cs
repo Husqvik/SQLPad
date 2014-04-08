@@ -59,11 +59,12 @@ namespace SqlPad.Oracle
 			return OracleObjectIdentifier.Create(schemaPrefixNode, tableIdentifierNode, null);
 		}
 
-		public static bool IsWithinSelectClauseOrCondition(this StatementDescriptionNode node)
+		public static bool IsWithinSelectClauseOrExpression(this StatementDescriptionNode node)
 		{
-			var selectList = node.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.SelectList);
-			var condition = node.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.Condition);
-			return selectList != null || condition != null;
+			var filter = new Func<StatementDescriptionNode, bool>(n => n.Id != NonTerminals.QueryBlock);
+			var selectListNode = node.GetPathFilterAncestor(filter, NonTerminals.SelectList);
+			var expressionNode = node.GetPathFilterAncestor(filter, NonTerminals.Expression);
+			return selectListNode != null || expressionNode != null;
 		}
 
 		public static bool IsWithinHavingClause(this StatementDescriptionNode node)

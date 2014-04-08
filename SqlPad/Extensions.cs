@@ -6,9 +6,9 @@ namespace SqlPad
 {
 	public static class Extensions
 	{
-		public static bool In(this char character, params char[] characters)
+		public static bool In<T>(this T o, params T[] elements)
 		{
-			return characters != null && characters.Any(c => c == character);
+			return elements != null && elements.Any(e => e.Equals(o));
 		}
 
 		public static IEnumerable<ICodeCompletionItem> OrderItems(this IEnumerable<ICodeCompletionItem> codeCompletionItems)

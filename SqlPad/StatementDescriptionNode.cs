@@ -123,7 +123,7 @@ namespace SqlPad
 		#region Overrides of Object
 		public override string ToString()
 		{
-			var terminalValue = Type == NodeType.NonTerminal ? String.Empty : String.Format("; TokenValue={0}", Token.Value);
+			var terminalValue = Type == NodeType.NonTerminal || Token == null ? String.Empty : String.Format("; TokenValue={0}", Token.Value);
 			return String.Format("StatementDescriptionNode (Id={0}; Type={1}; IsRequired={2}; IsGrammarValid={3}; Level={4}; SourcePosition=({5}-{6}){7})", Id, Type, IsRequired, IsGrammarValid, Level, SourcePosition.IndexStart, SourcePosition.IndexEnd, terminalValue);
 		}
 		#endregion
@@ -207,7 +207,7 @@ namespace SqlPad
 
 			return ParentNode.Id == ancestorNodeId
 				? ParentNode
-				: ParentNode.GetAncestor(ancestorNodeId);
+				: ParentNode.GetPathFilterAncestor(pathFilter, ancestorNodeId);
 		}
 
 		public StatementDescriptionNode GetAncestor(string ancestorNodeId, bool includeSelf = true)
