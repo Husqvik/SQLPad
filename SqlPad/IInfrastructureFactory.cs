@@ -18,5 +18,7 @@ namespace SqlPad
 		ICodeCompletionProvider CreateCodeCompletionProvider();
 
 		ICodeSnippetProvider CreateSnippetProvider();
+
+		IContextActionProvider CreateContextActionProvider();
 	}
 }

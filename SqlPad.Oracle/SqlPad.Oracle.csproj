@@ -43,6 +43,7 @@
     <Compile Include="DatabaseModelFake.cs" />
     <Compile Include="OracleCodeCompletionProvider.cs" />
     <Compile Include="OracleColumnReference.cs" />
+    <Compile Include="OracleContextActionProvider.cs" />
     <Compile Include="OracleExtensions.cs" />
     <Compile Include="OracleGramarDescription.cs">
       <DependentUpon>OracleGramarDescription.tt</DependentUpon>

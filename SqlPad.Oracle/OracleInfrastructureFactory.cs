@@ -40,6 +40,12 @@ namespace SqlPad.Oracle
 		{
 			return new OracleSnippetProvider();
 		}
+
+		public IContextActionProvider CreateContextActionProvider()
+		{
+			return new OracleContextActionProvider();
+
+		}
 		#endregion
 	}
 }

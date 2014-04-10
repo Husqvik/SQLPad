@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -29,6 +30,7 @@ namespace SqlPad
 		private readonly IInfrastructureFactory _infrastructureFactory;
 		private readonly ICodeCompletionProvider _codeCompletionProvider;
 		private readonly ICodeSnippetProvider _codeSnippetProvider;
+		private readonly IContextActionProvider _contextActionProvider;
 		
 		private readonly ToolTip _toolTip = new ToolTip();
 
@@ -44,6 +46,7 @@ namespace SqlPad
 			_sqlParser = _infrastructureFactory.CreateSqlParser();
 			_codeCompletionProvider = _infrastructureFactory.CreateCodeCompletionProvider();
 			_codeSnippetProvider = _infrastructureFactory.CreateSnippetProvider();
+			_contextActionProvider = _infrastructureFactory.CreateContextActionProvider();
 		}
 
 		private void WindowLoadedHandler(object sender, RoutedEventArgs e)
@@ -59,9 +62,14 @@ namespace SqlPad
 		private void EditorTextChangedHandler(object sender, EventArgs e)
 		{
 			TextBlockToken.Text = String.Join(", ", _infrastructureFactory.CreateTokenReader(Editor.Text).GetTokens().Select(t => "{" + t.Value + "}"));
-			var statements = _sqlParser.Parse(Editor.Text);
+			var statements = ParseStatements();
 			_colorizeAvalonEdit.SetStatementCollection(statements);
 			Editor.TextArea.TextView.Redraw();
+		}
+
+		private ICollection<IStatement> ParseStatements()
+		{
+			return _sqlParser.Parse(Editor.Text);
 		}
 
 		private void AddColumnAliasesExecutedHandler(object sender, ExecutedRoutedEventArgs e)
@@ -200,6 +208,35 @@ namespace SqlPad
 		void MouseHoverStoppedHandler(object sender, MouseEventArgs e)
 		{
 			_toolTip.IsOpen = false;
+		}
+
+		private void ContextMenuOpeningHandler(object sender, ContextMenuEventArgs args)
+		{
+			if (!PopulateContextMenu())
+				args.Handled = true;
+		}
+
+		private bool PopulateContextMenu()
+		{
+			var menuItems = _contextActionProvider.GetContextActions(Editor.Text, Editor.CaretOffset)
+				.Select(a => new MenuItem { Header = a.Name, Command = CommandToggleQuotedIdentifier });
+
+			Editor.ContextMenu.Items.Clear();
+
+			foreach (var menuItem in menuItems)
+			{
+				Editor.ContextMenu.Items.Add(menuItem);
+			}
+
+			return Editor.ContextMenu.Items.Count > 0;
+		}
+
+		private void EditorKeyDownHandler(object sender, KeyEventArgs e)
+		{
+			if (e.SystemKey == Key.Return && Keyboard.Modifiers == ModifierKeys.Alt)
+			{
+				Editor.ContextMenu.IsOpen = PopulateContextMenu();
+			}
 		}
 	}
 }

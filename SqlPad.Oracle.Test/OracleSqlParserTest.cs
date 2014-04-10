@@ -1191,6 +1191,17 @@ namespace SqlPad.Oracle.Test
 			statements[1].SourcePosition.Length.ShouldBe(1);
 		}
 
+		[Test(Description = @""), Ignore]
+		public void TestCaseWhenIssue()
+		{
+			const string query1 = @"SELECT CASE WHEN FROM DUAL";
+			var result = Parser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			var statement = result.Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+		}
+
 		[TestCase("LEFT", Terminals.Left)]
 		[TestCase("RIGHT", Terminals.Right)]
 		[TestCase("FULL", Terminals.Full)]
