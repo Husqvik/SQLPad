@@ -286,5 +286,14 @@ FROM
 			var items = _codeCompletionProvider.ResolveItems(query1, 14).ToArray();
 			items.Length.ShouldBeGreaterThan(0);
 		}
+
+		[Test(Description = @"")]
+		public void Test22()
+		{
+			const string query1 = @"SELECT * FROM ";
+
+			var items = _codeCompletionProvider.ResolveItems(query1, 9).ToArray();
+			items.Length.ShouldBe(0);
+		}
 	}
 }

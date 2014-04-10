@@ -286,6 +286,17 @@ namespace SqlPad.Oracle.Test
 			tokenIndexes.ShouldBe(new[] { 0, 7, 12, 17, 22, 23 });
 		}
 
+		[Test(Description = "Tests block comment after string literal. ")]
+		public void TestBlockCommentAfterStringLiteral()
+		{
+			const string testQuery = @"SELECT 'text'/*comment*/ FROM DUAL";
+			var tokens = GetTokenValuesFromOracleSql(testQuery);
+			tokens.ShouldBe(new[] { "SELECT", "'text'", "FROM", "DUAL" });
+
+			var tokenIndexes = GetTokenIndexesFromOracleSql(testQuery);
+			tokenIndexes.ShouldBe(new[] { 0, 7, 25, 30 });
+		}
+
 		private string[] GetTokenValuesFromOracleSql(string sqlText)
 		{
 			return GetTokensFromOracleSql(sqlText).Select(t => t.Value).ToArray();

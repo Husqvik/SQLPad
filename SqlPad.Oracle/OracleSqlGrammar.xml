@@ -2,16 +2,16 @@
 <SqlGrammar xmlns="http://husqvik.com/SqlPad/2014/02"
             Dbms="Oracle" Version="12.1.0.1.0">
   <StartSymbols>
-    <StartSymbol Id="Query" />
+    <StartSymbol Id="SelectStatement" />
     <StartSymbol Id="CommitStatement" />
     <StartSymbol Id="SetTransactionStatement" />
-    <!--<StartSymbol Id="Insert" />
-    <StartSymbol Id="Update" />
-    <StartSymbol Id="Delete" />
-    <StartSymbol Id="Create" />
-    <StartSymbol Id="Drop" />
-    <StartSymbol Id="Alter" />
-    <StartSymbol Id="Rename" />-->
+    <!--<StartSymbol Id="InsertStatement" />
+    <StartSymbol Id="UpdateStatement" />
+    <StartSymbol Id="DeleteStatement" />
+    <StartSymbol Id="CreateStatement" />
+    <StartSymbol Id="DropStatement" />
+    <StartSymbol Id="AlterStatement" />
+    <StartSymbol Id="RenameStatement" />-->
   </StartSymbols>
 
   <Terminators>
@@ -164,7 +164,7 @@
     </Rule>
 
     <!-- SELECT statement -->
-    <Rule StartingNonTerminal="Query">
+    <Rule StartingNonTerminal="SelectStatement">
       <Sequences>
         <Sequence>
           <NonTerminal Id="NestedQuery" />
@@ -367,6 +367,14 @@
           <Terminal Id="As" />
           <NonTerminal Id="DataType" />
           <Terminal Id="RightParenthesis" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Count" />
+          <Terminal Id="LeftParenthesis" />
+          <Terminal Id="All" IsOptional="true" />
+          <Terminal Id="Asterisk" />
+          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="AnalyticClause" IsOptional="true" />
         </Sequence>
         
         <!-- TODO: Solve TREAT function -->
@@ -947,7 +955,15 @@
         <Sequence>
           <Terminal Id="With" />
           <NonTerminal Id="ReadOnlyOrCheckOption" />
-          <!-- TODO: Check how the CONSTRAINT clause is used -->
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ConstraintName">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Constraint" />
+          <Terminal Id="Identifier" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -961,6 +977,7 @@
         <Sequence>
           <Terminal Id="Check" />
           <Terminal Id="Option" />
+          <NonTerminal Id="ConstraintName" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -2453,6 +2470,7 @@
     <Terminal Id="NoCycle" Value="NOCYCLE" />
 
     <!-- Analytic clause -->
+    <Terminal Id="Count" Value="COUNT" />
     <Terminal Id="Over" Value="OVER" />
     <Terminal Id="Rows" Value="ROWS" IsKeyword="true" />
     <Terminal Id="Range" Value="RANGE" />
@@ -2518,6 +2536,19 @@
     <Terminal Id="Segment" Value="SEGMENT" />
     <Terminal Id="Name" Value="NAME" />
     <Terminal Id="Use" Value="USE" />
+
+    <!-- Update -->
+    <Terminal Id="Return" Value="RETURN" />
+    <Terminal Id="Returning" Value="RETURNING" />
+    <Terminal Id="Into" Value="INTO" IsKeyword="true" />
+    <Terminal Id="Log" Value="LOG" />
+    <Terminal Id="Errors" Value="ERRORS" />
+    <Terminal Id="Reject" Value="REJECT" />
+    <Terminal Id="Limit" Value="LIMIT" />
+    <Terminal Id="Unlimited" Value="UNLIMITED" />
+
+    <!-- Delete -->
+    <Terminal Id="Delete" Value="DELETE" IsKeyword="true" />
   </Terminals>
   
   <SqlBuildinFunctions>

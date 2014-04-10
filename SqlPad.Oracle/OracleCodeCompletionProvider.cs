@@ -83,7 +83,7 @@ namespace SqlPad.Oracle
 			var extraOffset = currentNode.SourcePosition.IndexStart + currentNode.SourcePosition.Length == cursorPosition ? 1 : 0;
 
 			var fromClause = currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.NestedQuery, NonTerminals.FromClause);
-			if (currentNode.Id == Terminals.From ||
+			if ((currentNode.Id == Terminals.From && !cursorAtLastTerminal) ||
 				(currentNode.Id == Terminals.ObjectIdentifier && fromClause != null))
 			{
 				var schemaName = databaseModel.CurrentSchema;

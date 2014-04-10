@@ -959,7 +959,7 @@ namespace SqlPad.Oracle.Test
 		[Test(Description = @"Tests subquery restriction clause. ")]
 		public void TestSubqueryRestrictionClause()
 		{
-			const string query1 = @"SELECT * FROM (SELECT * FROM COUNTRY WITH READ ONLY), (SELECT * FROM COUNTRY WITH CHECK OPTION)";
+			const string query1 = @"SELECT * FROM (SELECT * FROM COUNTRY WITH READ ONLY), (SELECT * FROM COUNTRY WITH CHECK OPTION), (SELECT * FROM COUNTRY WITH CHECK OPTION CONSTRAINT DUMMY_CONSTRAINT)";
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
@@ -1200,6 +1200,17 @@ namespace SqlPad.Oracle.Test
 			result.Count.ShouldBe(1);
 			var statement = result.Single();
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+		}
+
+		[Test(Description = @"")]
+		public void TestCountAsterisk()
+		{
+			const string query1 = @"SELECT COUNT(*), COUNT(ALL *) OVER (PARTITION BY 1 ORDER BY 1) FROM DUAL";
+			var result = Parser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			var statement = result.Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 		}
 
 		[TestCase("LEFT", Terminals.Left)]

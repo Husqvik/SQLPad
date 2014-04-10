@@ -165,7 +165,7 @@ namespace SqlPad.Oracle
 					}
 					else
 					{
-						var nextCharacterCode = _sqlReader.Read();
+						var nextCharacterCode = GetNextCharacterCode(false);
 						var nextCharacter = (char)nextCharacterCode;
 
 						if (characterCode == '.' && (inNumber || (_builder.Length == 0 && nextCharacterCode >= 48 && nextCharacterCode <= 57)) && !inDecimalNumber)
@@ -251,10 +251,10 @@ namespace SqlPad.Oracle
 			//Trace.WriteLine(null);
 		}
 
-		private int GetNextCharacterCode()
+		private int GetNextCharacterCode(bool incrementIndex = true)
 		{
 			var characterCode = _buffer.Count > 0 ? _buffer.Dequeue() : _sqlReader.Read();
-			if (characterCode != -1)
+			if (characterCode != -1 && incrementIndex)
 				_currentIndex++;
 
 			return characterCode;
