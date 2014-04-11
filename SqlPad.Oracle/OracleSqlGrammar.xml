@@ -163,6 +163,40 @@
       </Sequences>
     </Rule>
 
+    <!-- DELETE statement -->
+    <Rule StartingNonTerminal="ReturningClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ReturnOrReturning" />
+          <NonTerminal Id="ExpressionList" />
+          <Terminal Id="Into" />
+          <NonTerminal Id="BindVariableExpression" />
+          <NonTerminal Id="BindVariableExpressionCommaChainedList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="BindVariableExpressionCommaChainedList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="BindVariableExpression" />
+          <NonTerminal Id="BindVariableExpressionCommaChainedList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ReturnOrReturning">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Return" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Returning" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
     <!-- SELECT statement -->
     <Rule StartingNonTerminal="SelectStatement">
       <Sequences>

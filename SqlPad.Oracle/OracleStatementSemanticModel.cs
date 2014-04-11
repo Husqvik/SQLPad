@@ -11,7 +11,8 @@ namespace SqlPad.Oracle
 		private readonly Dictionary<StatementDescriptionNode, OracleQueryBlock> _queryBlockResults = new Dictionary<StatementDescriptionNode, OracleQueryBlock>();
 		private readonly Dictionary<OracleSelectListColumn, ICollection<OracleTableReference>> _asteriskTableReferences = new Dictionary<OracleSelectListColumn, ICollection<OracleTableReference>>();
 		private readonly List<ICollection<OracleColumnReference>> _joinClauseColumnReferences = new List<ICollection<OracleColumnReference>>();
-		//private readonly OracleStatement _statement;
+
+		public OracleStatement Statement { get; private set; }
 
 		public ICollection<OracleQueryBlock> QueryBlocks
 		{
@@ -23,7 +24,7 @@ namespace SqlPad.Oracle
 			if (statement == null)
 				throw new ArgumentNullException("statement");
 
-			//_statement = statement;
+			Statement = statement;
 
 			_queryBlockResults = statement.NodeCollection.SelectMany(n => n.GetDescendants(NonTerminals.QueryBlock))
 				.OrderByDescending(q => q.Level).ToDictionary(n => n, n => new OracleQueryBlock { RootNode = n });

@@ -20,5 +20,7 @@ namespace SqlPad
 		int CategoryPriority { get; }
 
 		int Offset { get; }
+
+		string Text { get; }
 	}
 }

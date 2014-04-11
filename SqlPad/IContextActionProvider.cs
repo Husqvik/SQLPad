@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Windows.Input;
 
 namespace SqlPad
 {
@@ -10,7 +11,7 @@ namespace SqlPad
 	public interface IContextAction
 	{
 		string Name { get; }
-		
-		void Execute();
+
+		ICommand Command { get; }
 	}
 }

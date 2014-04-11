@@ -20,7 +20,7 @@ namespace SqlPad
 		{
 			Text = codeCompletion.Name;
 			Content = Text;
-			_completionText = Text;
+			_completionText = codeCompletion.Text;
 			_node = codeCompletion.StatementNode;
 			_offset = codeCompletion.Offset;
 			Description = codeCompletion.Category;

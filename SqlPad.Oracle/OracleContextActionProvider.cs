@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Input;
+using SqlPad.Oracle.Commands;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
 namespace SqlPad.Oracle
@@ -26,7 +28,11 @@ namespace SqlPad.Oracle
 
 			if (currentNode.Id == Terminals.ObjectIdentifier)
 			{
-				actionList.Add(new OracleContextAction { Name = "Add Alias" });
+				var tables = semanticModel.QueryBlocks.SelectMany(b => b.TableReferences).Where(t => t.TableNode == currentNode).ToArray();
+				if (tables.Length == 1 && tables[0].AliasNode == null)
+				{
+					actionList.Add(new OracleContextAction("Add Alias", new AddAliasCommand()));
+				}
 			}
 
 			return actionList.AsReadOnly();
@@ -35,11 +41,14 @@ namespace SqlPad.Oracle
 
 	public class OracleContextAction : IContextAction
 	{
-		public string Name { get; set; }
-
-		public void Execute()
+		public OracleContextAction(string name, ICommand command)
 		{
-
+			Name = name;
+			Command = command;
 		}
+
+		public string Name { get; private set; }
+
+		public ICommand Command { get; private set; }
 	}
 }

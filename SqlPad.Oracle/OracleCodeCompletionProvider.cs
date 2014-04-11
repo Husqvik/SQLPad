@@ -13,13 +13,19 @@ namespace SqlPad.Oracle
 		private readonly OracleSqlParser _oracleParser = new OracleSqlParser();
 		private static readonly ICodeCompletionItem[] EmptyCollection = new ICodeCompletionItem[0];
 
+		private const string JoinTypeJoin = "JOIN";
+		private const string JoinTypeLeftJoin = "LEFT JOIN";
+		private const string JoinTypeRightJoin = "RIGHT JOIN";
+		private const string JoinTypeFullJoin = "FULL JOIN";
+		private const string JoinTypeCrossJoin = "CROSS JOIN";
+
 		private static readonly OracleCodeCompletionItem[] JoinClauses =
 		{
-			new OracleCodeCompletionItem { Name = "JOIN", Priority = 0, Category = OracleCodeCompletionCategory.JoinMethod, CategoryPriority = 1 },
-			new OracleCodeCompletionItem { Name = "LEFT JOIN", Priority = 1, Category = OracleCodeCompletionCategory.JoinMethod, CategoryPriority = 1 },
-			new OracleCodeCompletionItem { Name = "RIGHT JOIN", Priority = 2, Category = OracleCodeCompletionCategory.JoinMethod, CategoryPriority = 1 },
-			new OracleCodeCompletionItem { Name = "FULL JOIN", Priority = 3, Category = OracleCodeCompletionCategory.JoinMethod, CategoryPriority = 1 },
-			new OracleCodeCompletionItem { Name = "CROSS JOIN", Priority = 4, Category = OracleCodeCompletionCategory.JoinMethod, CategoryPriority = 1 },
+			new OracleCodeCompletionItem { Name = JoinTypeJoin, Text = JoinTypeJoin, Priority = 0, Category = OracleCodeCompletionCategory.JoinMethod, CategoryPriority = 1 },
+			new OracleCodeCompletionItem { Name = JoinTypeLeftJoin, Text = JoinTypeLeftJoin, Priority = 1, Category = OracleCodeCompletionCategory.JoinMethod, CategoryPriority = 1 },
+			new OracleCodeCompletionItem { Name = JoinTypeRightJoin, Text = JoinTypeRightJoin, Priority = 2, Category = OracleCodeCompletionCategory.JoinMethod, CategoryPriority = 1 },
+			new OracleCodeCompletionItem { Name = JoinTypeFullJoin, Text = JoinTypeFullJoin, Priority = 3, Category = OracleCodeCompletionCategory.JoinMethod, CategoryPriority = 1 },
+			new OracleCodeCompletionItem { Name = JoinTypeCrossJoin, Text = JoinTypeCrossJoin, Priority = 4, Category = OracleCodeCompletionCategory.JoinMethod, CategoryPriority = 1 },
 		};
 
 		public ICollection<ICodeCompletionItem> ResolveItems(string statementText, int cursorPosition)
@@ -84,7 +90,7 @@ namespace SqlPad.Oracle
 
 			var fromClause = currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.NestedQuery, NonTerminals.FromClause);
 			if ((currentNode.Id == Terminals.From && !cursorAtLastTerminal) ||
-				(currentNode.Id == Terminals.ObjectIdentifier && fromClause != null))
+				(currentNode.Id.In(Terminals.ObjectIdentifier, Terminals.Comma) && fromClause != null))
 			{
 				var schemaName = databaseModel.CurrentSchema;
 				var schemaFound = false;
@@ -95,7 +101,7 @@ namespace SqlPad.Oracle
 					schemaName = currentNode.ParentNode.FirstTerminalNode.Token.Value;
 				}
 
-				var currentName = currentNode.Id == Terminals.From ? null : statementText.Substring(currentNode.SourcePosition.IndexStart, cursorPosition - currentNode.SourcePosition.IndexStart);
+				var currentName = currentNode.Id.In(Terminals.From, Terminals.Comma) ? null : statementText.Substring(currentNode.SourcePosition.IndexStart, cursorPosition - currentNode.SourcePosition.IndexStart);
 
 				completionItems = completionItems.Concat(GenerateSchemaObjectItems(schemaName, currentName, terminalToReplace, extraOffset));
 
@@ -151,16 +157,7 @@ namespace SqlPad.Oracle
 				{
 					completionItems = completionItems.Concat(
 						//JoinClauses.Where(j => alias == null || j.Name.Contains(alias.Token.Value.ToUpperInvariant()))
-						JoinClauses
-							.Select(j => new OracleCodeCompletionItem
-							             {
-								             Name = j.Name,
-								             Category = j.Category,
-								             CategoryPriority = j.CategoryPriority,
-								             Priority = j.Priority,
-								             StatementNode = terminalToReplace,
-								             Offset = extraOffset
-							             }));
+						JoinClauses);
 				}
 			}
 
@@ -172,15 +169,16 @@ namespace SqlPad.Oracle
 				completionItems = completionItems.Concat(GenerateCommonTableExpressionReferenceItems(semanticModel, null, null, extraOffset));
 			}
 
-			if (!isCursorAtTerminal && joinClauseNode == null && !currentNode.IsWithinHavingClause() &&
-				(terminalCandidates.Contains(Terminals.ObjectIdentifier)))
+			if (!isCursorAtTerminal && joinClauseNode == null && fromClause == null && !currentNode.IsWithinHavingClause() &&
+				terminalCandidates.Contains(Terminals.ObjectIdentifier))
 			{
 				var whereTableReferences = queryBlock.TableReferences
 					.Select(t => new OracleCodeCompletionItem
 					             {
 									 Name = t.FullyQualifiedName.ToString(),
 									 Category = t.Type.ToCategoryLabel(),
-									 Offset = extraOffset
+									 Offset = extraOffset,
+									 Text = t.FullyQualifiedName.ToString()
 					             });
 
 				completionItems = completionItems.Concat(whereTableReferences);
@@ -237,13 +235,56 @@ namespace SqlPad.Oracle
 				tableReferences = tableReferences.Where(t => t.FullyQualifiedName == fullyQualifiedName || (String.IsNullOrEmpty(fullyQualifiedName.Owner) && fullyQualifiedName.NormalizedName == t.FullyQualifiedName.NormalizedName));
 			}
 
-			var currentName = currentNode.Id == Terminals.Identifier && cursorPosition <= currentNode.SourcePosition.IndexEnd + 1 ? currentNode.Token.Value.Substring(0, cursorPosition - currentNode.SourcePosition.IndexStart) : null;
+			var currentName = currentNode.Id == Terminals.Identifier && cursorPosition <= currentNode.SourcePosition.IndexEnd + 1
+				? currentNode.Token.Value.Substring(0, cursorPosition - currentNode.SourcePosition.IndexStart)
+				: null;
 
-			return tableReferences
+			var specificColumns = tableReferences
 				.SelectMany(t => t.Columns
 					.Where(c => objectIdentifier == null || String.IsNullOrEmpty(currentName) || (c.Name != currentName.ToQuotedIdentifier() && c.Name != currentNode.Token.Value.ToQuotedIdentifier() && c.Name.Contains(currentName.ToUpperInvariant())))
 					.Select(c => new { TableReference = t, Column = c }))
 				.Select(t => CreateColumnCodeCompletionItem(t.Column, objectIdentifier == null ? t.TableReference : null, currentNode));
+
+			//specificColumns = specificColumns.Concat(CreateAsteriskColumnCompletionItems(tableReferences, objectIdentifier != null, currentNode));
+
+			return specificColumns;
+		}
+
+		private IEnumerable<OracleCodeCompletionItem> CreateAsteriskColumnCompletionItems(IEnumerable<OracleTableReference> tables, bool skipFirstObjectIdentifier, StatementDescriptionNode currentNode)
+		{
+			var builder = new StringBuilder();
+			var isFirstColumn = true;
+			foreach (var table in tables)
+			{
+				builder.Clear();
+
+				foreach (var column in table.Columns)
+				{
+					if (!isFirstColumn)
+					{
+						builder.Append(", ");
+					}
+
+					if (!skipFirstObjectIdentifier)
+					{
+						builder.Append(table.FullyQualifiedName);
+						builder.Append(".");
+					}
+					
+					builder.Append(column.Name.ToSimpleIdentifier());
+
+					isFirstColumn = false;
+					skipFirstObjectIdentifier = false;
+				}
+
+				yield return new OracleCodeCompletionItem
+				             {
+					             Name = table.FullyQualifiedName + ".*",
+								 Text = builder.ToString(),
+								 StatementNode = currentNode.Id == Terminals.Identifier ? currentNode : null,
+								 CategoryPriority = -1
+				             };
+			}
 		}
 
 		private OracleCodeCompletionItem CreateColumnCodeCompletionItem(OracleColumn column, OracleTableReference tableReference, StatementDescriptionNode currentNode)
@@ -253,6 +294,7 @@ namespace SqlPad.Oracle
 			return new OracleCodeCompletionItem
 			       {
 					   Name = tablePrefix + column.Name.ToSimpleIdentifier(),
+					   Text = tablePrefix + column.Name.ToSimpleIdentifier(),
 				       StatementNode = currentNode.Id == Terminals.Identifier ? currentNode : null,
 				       Category = OracleCodeCompletionCategory.Column
 			       };
@@ -265,6 +307,7 @@ namespace SqlPad.Oracle
 				.Select(s => new OracleCodeCompletionItem
 				             {
 								 Name = s.ToSimpleIdentifier(),
+								 Text = s.ToSimpleIdentifier(),
 								 StatementNode = node,
 								 Category = OracleCodeCompletionCategory.DatabaseSchema,
 								 Offset = insertOffset,
@@ -281,6 +324,7 @@ namespace SqlPad.Oracle
 						.Select(o => new OracleCodeCompletionItem
 						{
 							Name = o.Name.ToSimpleIdentifier(),
+							Text = o.Name.ToSimpleIdentifier(),
 							StatementNode = node,
 							Category = OracleCodeCompletionCategory.SchemaObject,
 							Offset = insertOffset
@@ -295,6 +339,7 @@ namespace SqlPad.Oracle
 						.Select(qb => new OracleCodeCompletionItem
 						{
 							Name = qb.Alias.ToSimpleIdentifier(),
+							Text = qb.Alias.ToSimpleIdentifier(),
 							StatementNode = node,
 							Category = OracleCodeCompletionCategory.CommonTableExpression,
 							Offset = insertOffset,
@@ -360,7 +405,7 @@ namespace SqlPad.Oracle
 				logicalOperator = " AND ";
 			}
 
-			return new OracleCodeCompletionItem { Name = builder.ToString(), Offset = insertOffset };
+			return new OracleCodeCompletionItem { Name = builder.ToString(), Text = builder.ToString(), Offset = insertOffset };
 		}
 	}
 
@@ -388,5 +433,7 @@ namespace SqlPad.Oracle
 		public int CategoryPriority { get; set; }
 		
 		public int Offset { get; set; }
+
+		public string Text { get; set; }
 	}
 }

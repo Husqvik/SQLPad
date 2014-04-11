@@ -15,6 +15,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using ICSharpCode.AvalonEdit.CodeCompletion;
+using ICSharpCode.AvalonEdit.Editing;
 using ICSharpCode.AvalonEdit.Highlighting;
 using SqlPad.Commands;
 
@@ -219,7 +220,7 @@ namespace SqlPad
 		private bool PopulateContextMenu()
 		{
 			var menuItems = _contextActionProvider.GetContextActions(Editor.Text, Editor.CaretOffset)
-				.Select(a => new MenuItem { Header = a.Name, Command = CommandToggleQuotedIdentifier });
+				.Select(a => new MenuItem { Header = a.Name, Command = a.Command });
 
 			Editor.ContextMenu.Items.Clear();
 
@@ -227,6 +228,11 @@ namespace SqlPad
 			{
 				Editor.ContextMenu.Items.Add(menuItem);
 			}
+
+			Editor.ContextMenu.PlacementTarget = Editor;
+			var position = Editor.TextArea.Caret.CalculateCaretRectangle().TopRight;
+			Editor.ContextMenu.HorizontalOffset = position.X - 24;
+			Editor.ContextMenu.VerticalOffset = position.Y - 32;
 
 			return Editor.ContextMenu.Items.Count > 0;
 		}
