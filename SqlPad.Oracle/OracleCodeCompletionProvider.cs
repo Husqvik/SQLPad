@@ -122,9 +122,7 @@ namespace SqlPad.Oracle
 			}
 
 			var joinClauseNode = currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.FromClause, NonTerminals.JoinClause);
-			if (currentNode.Id == Terminals.ObjectIdentifier ||
-				currentNode.Id == Terminals.Alias ||
-				currentNode.Id == Terminals.On)
+			if (currentNode.Id.In(Terminals.ObjectIdentifier, Terminals.Alias, Terminals.On))
 			{
 				if (joinClauseNode != null && !cursorAtLastTerminal)
 				{
@@ -147,7 +145,7 @@ namespace SqlPad.Oracle
 				}
 			}
 
-			if ((currentNode.Id == Terminals.ObjectIdentifier || currentNode.Id == Terminals.Alias ||
+			if ((currentNode.Id.In(Terminals.ObjectIdentifier, Terminals.Alias) ||
 			    (joinClauseNode != null && joinClauseNode.IsGrammarValid)) &&
 				!cursorAtLastTerminal)
 			{
@@ -186,7 +184,7 @@ namespace SqlPad.Oracle
 
 			if (currentNode.IsWithinSelectClauseOrExpression() &&
 				(isCursorAtTerminal || terminalCandidates.Contains(Terminals.Identifier)) &&
-				(currentNode.Id == Terminals.ObjectIdentifier || currentNode.Id == Terminals.Identifier || currentNode.Id == Terminals.Comma || currentNode.Id == Terminals.Dot))
+				currentNode.Id.In(Terminals.ObjectIdentifier, Terminals.Identifier, Terminals.Comma, Terminals.Dot, Terminals.Select))
 			{
 				completionItems = completionItems.Concat(GenerateColumnItems(currentNode, semanticModel, cursorPosition));
 			}
@@ -282,7 +280,7 @@ namespace SqlPad.Oracle
 					             Name = table.FullyQualifiedName + ".*",
 								 Text = builder.ToString(),
 								 StatementNode = currentNode.Id == Terminals.Identifier ? currentNode : null,
-								 CategoryPriority = -1
+								 CategoryPriority = -2
 				             };
 			}
 		}
@@ -296,7 +294,8 @@ namespace SqlPad.Oracle
 					   Name = tablePrefix + column.Name.ToSimpleIdentifier(),
 					   Text = tablePrefix + column.Name.ToSimpleIdentifier(),
 				       StatementNode = currentNode.Id == Terminals.Identifier ? currentNode : null,
-				       Category = OracleCodeCompletionCategory.Column
+				       Category = OracleCodeCompletionCategory.Column,
+					   CategoryPriority = -1
 			       };
 		}
 

@@ -23,6 +23,11 @@ namespace SqlPad
 			}
 		}
 
+		public IEnumerable<StatementDescriptionNode> InvalidGrammarNodes
+		{
+			get { return AllNodes.Where(n => !n.IsGrammarValid); }
+		}
+
 		public IEnumerable<StatementDescriptionNode> AllTerminals
 		{
 			get

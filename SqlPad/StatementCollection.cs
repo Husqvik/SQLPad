@@ -25,7 +25,7 @@ namespace SqlPad
 		public StatementDescriptionNode GetTerminalAtPosition(int position)
 		{
 			var node = GetNodeAtPosition(position);
-			return node.Type == NodeType.Terminal ? node : null;
+			return node == null || node.Type == NodeType.NonTerminal ? null : node;
 		}
 	}
 }

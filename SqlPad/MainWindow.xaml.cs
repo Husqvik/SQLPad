@@ -241,8 +241,20 @@ namespace SqlPad
 		{
 			if (e.SystemKey == Key.Return && Keyboard.Modifiers == ModifierKeys.Alt)
 			{
+				Trace.WriteLine("ALT + ENTER");
 				Editor.ContextMenu.IsOpen = PopulateContextMenu();
 			}
+			else if (_multiNodeEditor == null && e.Key == Key.F6 && Keyboard.Modifiers == ModifierKeys.Shift)
+			{
+				Trace.WriteLine("SHIFT + F6");
+				//_multiNodeEditor = new MultiNodeEditor();
+			}
+			else if (e.Key == Key.F11 && Keyboard.Modifiers == (ModifierKeys.Alt | ModifierKeys.Shift))
+			{
+				Trace.WriteLine("ALT SHIFT + F11");
+			}
 		}
+
+		private MultiNodeEditor _multiNodeEditor;
 	}
 }

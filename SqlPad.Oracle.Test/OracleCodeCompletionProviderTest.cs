@@ -7,14 +7,14 @@ namespace SqlPad.Oracle.Test
 	[TestFixture]
 	public class OracleCodeCompletionProviderTest
 	{
-		private const string TestQuery = "SELECT I.*, INVOICES.ID FROM HUSQVIK.INVOICELINES I JOIN HUSQVIK.INVOICES";
-
 		private readonly OracleCodeCompletionProvider _codeCompletionProvider = new OracleCodeCompletionProvider();
 
 		[Test(Description = @"")]
 		public void Test1()
 		{
-			var items = _codeCompletionProvider.ResolveItems(TestQuery, 37).ToArray();
+			const string testQuery = "SELECT I.*, INVOICES.ID FROM HUSQVIK.INVOICELINES I JOIN HUSQVIK.INVOICES";
+
+			var items = _codeCompletionProvider.ResolveItems(testQuery, 37).ToArray();
 			items.Length.ShouldBe(8);
 			items[0].Name.ShouldBe("COUNTRY");
 			items[0].Text.ShouldBe("COUNTRY");
@@ -41,7 +41,9 @@ namespace SqlPad.Oracle.Test
 		[Test(Description = @"")]
 		public void Test3()
 		{
-			var items = _codeCompletionProvider.ResolveItems(TestQuery, 21).ToArray();
+			const string testQuery = "SELECT I.*, INVOICES.ID FROM HUSQVIK.INVOICELINES I JOIN HUSQVIK.INVOICES";
+
+			var items = _codeCompletionProvider.ResolveItems(testQuery, 21).ToArray();
 			items.Length.ShouldBe(1);
 			items[0].Name.ShouldBe("ID");
 			items[0].Text.ShouldBe("ID");
@@ -181,21 +183,21 @@ FROM
 
 			var items = _codeCompletionProvider.ResolveItems(query1, 10).ToArray();
 			items.Length.ShouldBe(5);
-			items[0].Name.ShouldBe("S");
-			items[0].Text.ShouldBe("S");
-			items[0].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
-			items[1].Name.ShouldBe("S.NAME");
-			items[1].Text.ShouldBe("S.NAME");
+			items[0].Name.ShouldBe("S.NAME");
+			items[0].Text.ShouldBe("S.NAME");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.Column);
+			items[1].Name.ShouldBe("S.PROJECT_ID");
+			items[1].Text.ShouldBe("S.PROJECT_ID");
 			items[1].Category.ShouldBe(OracleCodeCompletionCategory.Column);
-			items[2].Name.ShouldBe("S.PROJECT_ID");
-			items[2].Text.ShouldBe("S.PROJECT_ID");
+			items[2].Name.ShouldBe("S.RESPONDENTBUCKET_ID");
+			items[2].Text.ShouldBe("S.RESPONDENTBUCKET_ID");
 			items[2].Category.ShouldBe(OracleCodeCompletionCategory.Column);
-			items[3].Name.ShouldBe("S.RESPONDENTBUCKET_ID");
-			items[3].Text.ShouldBe("S.RESPONDENTBUCKET_ID");
+			items[3].Name.ShouldBe("S.SELECTION_ID");
+			items[3].Text.ShouldBe("S.SELECTION_ID");
 			items[3].Category.ShouldBe(OracleCodeCompletionCategory.Column);
-			items[4].Name.ShouldBe("S.SELECTION_ID");
-			items[4].Text.ShouldBe("S.SELECTION_ID");
-			items[4].Category.ShouldBe(OracleCodeCompletionCategory.Column);
+			items[4].Name.ShouldBe("S");
+			items[4].Text.ShouldBe("S");
+			items[4].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
 		}
 
 		[Test(Description = @"")]
@@ -341,6 +343,17 @@ FROM
 			var currentSchemaTableCount = DatabaseModelFake.Instance.AllObjects.Values.Count(o => o.Owner == DatabaseModelFake.Instance.CurrentSchema);
 			var schemaCount = DatabaseModelFake.Instance.Schemas.Count;
 			items.Length.ShouldBe(currentSchemaTableCount + schemaCount);
+		}
+
+		[Test(Description = @"")]
+		public void TestColumnSuggestionWhenTableWithAliasInFromClause()
+		{
+			const string query1 = @"SELECT  1 FROM SYS.DUAL";
+
+			var items = _codeCompletionProvider.ResolveItems(query1, 7).ToArray();
+			items.Length.ShouldBe(2);
+			items[0].Name.ShouldBe("SYS.DUAL.DUMMY");
+			items[1].Name.ShouldBe("SYS.DUAL");
 		}
 	}
 }

@@ -64,7 +64,7 @@ namespace SqlPad.Oracle
 			var filter = new Func<StatementDescriptionNode, bool>(n => n.Id != NonTerminals.QueryBlock);
 			var selectListNode = node.GetPathFilterAncestor(filter, NonTerminals.SelectList);
 			var expressionNode = node.GetPathFilterAncestor(filter, NonTerminals.Expression);
-			return selectListNode != null || expressionNode != null;
+			return node.Id == Terminals.Select || selectListNode != null || expressionNode != null;
 		}
 
 		public static bool IsWithinHavingClause(this StatementDescriptionNode node)

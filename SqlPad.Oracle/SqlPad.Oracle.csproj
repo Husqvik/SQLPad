@@ -36,6 +36,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Commands\ResolveAmbiguousColumnCommand.cs" />
     <Compile Include="Commands\AddAliasCommand.cs" />
     <Compile Include="Commands\AddMissingAliasesCommand.cs" />
     <Compile Include="Commands\OracleCommandFactory.cs" />

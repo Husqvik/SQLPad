@@ -54,6 +54,12 @@ namespace SqlPad
 						element => element.TextRunProperties.SetTextDecorations(Resources.BoxedText));*/
 				}
 
+				/*foreach (var invalidGrammarNode in statement.InvalidGrammarNodes)
+				{
+					ProcessNodeAtLine(line, invalidGrammarNode.SourcePosition,
+						element => element.TextRunProperties.SetTextDecorations(Resources.WaveErrorUnderline));
+				}*/
+
 				ChangeLinePart(
 					colorStartOffset,
 					colorEndOffset,

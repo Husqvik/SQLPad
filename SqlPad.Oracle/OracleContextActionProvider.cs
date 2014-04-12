@@ -31,6 +31,18 @@ namespace SqlPad.Oracle
 				}
 			}
 
+			if (currentTerminal.Id == Terminals.Identifier)
+			{
+				var columnReference = semanticModel.QueryBlocks.SelectMany(qb => qb.Columns).SelectMany(c => c.ColumnReferences).SingleOrDefault(c => c.ColumnNode == currentTerminal);
+				if (columnReference != null && columnReference.ColumnNodeReferences.Count > 1)
+				{
+					var actions = columnReference.ColumnNodeReferences.Select(
+						t => new OracleContextAction("Resolve as " + t.FullyQualifiedName + "." + columnReference.Name, new ResolveAmbiguousColumnCommand(semanticModel)));
+				
+					actionList.AddRange(actions);
+				}
+			}
+
 			return actionList.AsReadOnly();
 		}
 	}
