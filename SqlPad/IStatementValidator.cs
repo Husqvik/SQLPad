@@ -2,6 +2,6 @@
 {
 	public interface IStatementValidator
 	{
-		IValidationModel ResolveReferences(string sqlText, IStatement statement, IDatabaseModel databaseModel);
+		IValidationModel ResolveReferences(string sqlText, StatementBase statement, IDatabaseModel databaseModel);
 	}
 }

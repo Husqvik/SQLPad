@@ -5,9 +5,14 @@ namespace SqlPad.Oracle.Commands
 {
 	public class AddAliasCommand : ICommand
 	{
-		public AddAliasCommand()
+		private readonly OracleStatementSemanticModel _semanticModel;
+
+		public AddAliasCommand(OracleStatementSemanticModel semanticModel)
 		{
+			if (semanticModel == null)
+				throw new ArgumentNullException("semanticModel");
 			
+			_semanticModel = semanticModel;
 		}
 
 		public bool CanExecute(object parameter)

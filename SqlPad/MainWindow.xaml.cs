@@ -68,7 +68,7 @@ namespace SqlPad
 			Editor.TextArea.TextView.Redraw();
 		}
 
-		private ICollection<IStatement> ParseStatements()
+		private ICollection<StatementBase> ParseStatements()
 		{
 			return _sqlParser.Parse(Editor.Text);
 		}

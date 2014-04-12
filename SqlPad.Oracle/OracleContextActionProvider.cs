@@ -18,20 +18,20 @@ namespace SqlPad.Oracle
 			if (statement == null)
 				return EmptyCollection;
 
-			var currentNode = statement.GetNodeAtPosition(cursorPosition);
+			var currentTerminal = statement.GetNodeAtPosition(cursorPosition);
 
-			if (currentNode == null || currentNode.Type == NodeType.NonTerminal)
+			if (currentTerminal == null || currentTerminal.Type == NodeType.NonTerminal)
 				return EmptyCollection;
 
 			var semanticModel = new OracleStatementSemanticModel(statementText, statement, DatabaseModelFake.Instance);
 			var actionList = new List<IContextAction>();
 
-			if (currentNode.Id == Terminals.ObjectIdentifier)
+			if (currentTerminal.Id == Terminals.ObjectIdentifier)
 			{
-				var tables = semanticModel.QueryBlocks.SelectMany(b => b.TableReferences).Where(t => t.TableNode == currentNode).ToArray();
+				var tables = semanticModel.QueryBlocks.SelectMany(b => b.TableReferences).Where(t => t.TableNode == currentTerminal).ToArray();
 				if (tables.Length == 1 && tables[0].AliasNode == null)
 				{
-					actionList.Add(new OracleContextAction("Add Alias", new AddAliasCommand()));
+					actionList.Add(new OracleContextAction("Add Alias", new AddAliasCommand(semanticModel)));
 				}
 			}
 

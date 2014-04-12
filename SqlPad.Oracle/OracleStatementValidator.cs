@@ -5,7 +5,7 @@ namespace SqlPad.Oracle
 {
 	public class OracleStatementValidator : IStatementValidator
 	{
-		public IValidationModel ResolveReferences(string sqlText, IStatement statement, IDatabaseModel databaseModel)
+		public IValidationModel ResolveReferences(string sqlText, StatementBase statement, IDatabaseModel databaseModel)
 		{
 			var oracleDatabaseModel = (DatabaseModelFake)databaseModel;
 			var semanticModel = new OracleStatementSemanticModel(sqlText, (OracleStatement)statement, oracleDatabaseModel);

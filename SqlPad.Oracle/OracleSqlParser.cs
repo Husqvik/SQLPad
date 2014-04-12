@@ -17,7 +17,7 @@ namespace SqlPad.Oracle
 		private readonly Dictionary<string, SqlGrammarRuleSequence[]> _startingNonTerminalSequences;
 		private readonly Dictionary<string, SqlGrammarTerminal> _terminals;
 		private static readonly XmlSerializer XmlSerializer = new XmlSerializer(typeof(SqlGrammar));
-		private readonly List<IStatement> _oracleSqlCollection = new List<IStatement>();
+		private readonly List<StatementBase> _oracleSqlCollection = new List<StatementBase>();
 		private readonly HashSet<string> _keywords;
 		private readonly HashSet<string> _terminators;
 		
@@ -81,7 +81,7 @@ namespace SqlPad.Oracle
 			       result.Terminals.Count() == result.BestCandidates.Sum(n => n.Terminals.Count())*/;
 		}
 
-		public ICollection<IStatement> Parse(string sqlText)
+		public ICollection<StatementBase> Parse(string sqlText)
 		{
 			using (var reader = new StringReader(sqlText))
 			{
@@ -89,7 +89,7 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		public ICollection<IStatement> Parse(OracleTokenReader tokenReader)
+		public ICollection<StatementBase> Parse(OracleTokenReader tokenReader)
 		{
 			if (tokenReader == null)
 				throw new ArgumentNullException("tokenReader");
@@ -97,7 +97,7 @@ namespace SqlPad.Oracle
 			return Parse(tokenReader.GetTokens().Cast<OracleToken>());
 		}
 
-		public ICollection<IStatement> Parse(IEnumerable<OracleToken> tokens)
+		public ICollection<StatementBase> Parse(IEnumerable<OracleToken> tokens)
 		{
 			ProceedGrammar(tokens);
 

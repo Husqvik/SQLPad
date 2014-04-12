@@ -67,13 +67,14 @@
     <Compile Include="IInfrastructureFactory.cs" />
     <Compile Include="IObjectIdentifier.cs" />
     <Compile Include="ISqlParser.cs" />
-    <Compile Include="IStatement.cs" />
+    <Compile Include="StatementCollection.cs" />
     <Compile Include="IStatementValidator.cs" />
     <Compile Include="IToken.cs" />
     <Compile Include="ITokenReader.cs" />
     <Compile Include="CompletionData.cs" />
     <Compile Include="IValidationModel.cs" />
     <Compile Include="NodeType.cs" />
+    <Compile Include="StatementBase.cs" />
     <Compile Include="ProcessingResult.cs" />
     <Compile Include="ProcessingStatus.cs" />
     <Compile Include="Resources.cs" />
