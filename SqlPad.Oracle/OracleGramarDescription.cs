@@ -25,6 +25,7 @@ namespace SqlPad.Oracle
 			public const string BetweenSystemChangeNumberOrTimestamp = "BetweenSystemChangeNumberOrTimestamp";
 			public const string BetweenSystemChangeNumberOrTimestampOrPeriodForBetween = "BetweenSystemChangeNumberOrTimestampOrPeriodForBetween";
 			public const string BindVariableExpression = "BindVariableExpression";
+			public const string BindVariableExpressionCommaChainedList = "BindVariableExpressionCommaChainedList";
 			public const string CaseExpression = "CaseExpression";
 			public const string CaseExpressionElseBranch = "CaseExpressionElseBranch";
 			public const string ChainedCondition = "ChainedCondition";
@@ -141,6 +142,7 @@ namespace SqlPad.Oracle
 			public const string RelationalEquiOperator = "RelationalEquiOperator";
 			public const string RelationalNonEquiOperator = "RelationalNonEquiOperator";
 			public const string RelationalOperator = "RelationalOperator";
+			public const string ReturnOrReturning = "ReturnOrReturning";
 			public const string RollupCubeClause = "RollupCubeClause";
 			public const string RowLimitingClause = "RowLimitingClause";
 			public const string RowLimitingFetchClause = "RowLimitingFetchClause";

@@ -200,7 +200,7 @@ namespace SqlPad
 			return GetAncestor(ancestorNodeId, false) != null;
 		}
 
-		public StatementDescriptionNode GetPathFilterAncestor(Func<StatementDescriptionNode, bool> pathFilter, string ancestorNodeId, bool includeSelf = true)
+		public StatementDescriptionNode GetPathFilterAncestor(Func<StatementDescriptionNode, bool> pathFilter, string ancestorNodeId, bool includeSelf = false)
 		{
 			if (includeSelf && Id == ancestorNodeId)
 				return this;

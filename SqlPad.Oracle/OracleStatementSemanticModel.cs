@@ -40,7 +40,7 @@ namespace SqlPad.Oracle
 					item.Type = QueryBlockType.ScalarSubquery;
 				}
 
-				var factoredSubqueryReference = queryBlock.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBoundary, NonTerminals.SubqueryComponent, false);
+				var factoredSubqueryReference = queryBlock.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBoundary, NonTerminals.SubqueryComponent);
 				if (factoredSubqueryReference != null)
 				{
 					item.Alias = factoredSubqueryReference.ChildNodes.First().Token.Value.ToQuotedIdentifier();

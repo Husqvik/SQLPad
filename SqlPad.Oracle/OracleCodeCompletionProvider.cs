@@ -243,7 +243,10 @@ namespace SqlPad.Oracle
 					.Select(c => new { TableReference = t, Column = c }))
 				.Select(t => CreateColumnCodeCompletionItem(t.Column, objectIdentifier == null ? t.TableReference : null, currentNode));
 
-			//specificColumns = specificColumns.Concat(CreateAsteriskColumnCompletionItems(tableReferences, objectIdentifier != null, currentNode));
+			if (currentName == null && currentNode.IsWithinSelectClause() && currentNode.GetParentExpression().GetParentExpression() == null)
+			{
+				specificColumns = specificColumns.Concat(CreateAsteriskColumnCompletionItems(tableReferences, objectIdentifier != null, currentNode));
+			}
 
 			return specificColumns;
 		}
@@ -251,10 +254,15 @@ namespace SqlPad.Oracle
 		private IEnumerable<OracleCodeCompletionItem> CreateAsteriskColumnCompletionItems(IEnumerable<OracleTableReference> tables, bool skipFirstObjectIdentifier, StatementDescriptionNode currentNode)
 		{
 			var builder = new StringBuilder();
-			var isFirstColumn = true;
+			
 			foreach (var table in tables)
 			{
+				if (table.Columns.Count <= 1)
+					continue;
+
 				builder.Clear();
+				var isFirstColumn = true;
+				var skipTablePrefix = skipFirstObjectIdentifier;
 
 				foreach (var column in table.Columns)
 				{
@@ -263,7 +271,7 @@ namespace SqlPad.Oracle
 						builder.Append(", ");
 					}
 
-					if (!skipFirstObjectIdentifier)
+					if (!skipTablePrefix)
 					{
 						builder.Append(table.FullyQualifiedName);
 						builder.Append(".");
@@ -272,15 +280,16 @@ namespace SqlPad.Oracle
 					builder.Append(column.Name.ToSimpleIdentifier());
 
 					isFirstColumn = false;
-					skipFirstObjectIdentifier = false;
+					skipTablePrefix = false;
 				}
 
 				yield return new OracleCodeCompletionItem
 				             {
-					             Name = table.FullyQualifiedName + ".*",
+					             Name = (skipFirstObjectIdentifier ? String.Empty : table.FullyQualifiedName + ".") + "*",
 								 Text = builder.ToString(),
 								 StatementNode = currentNode.Id == Terminals.Identifier ? currentNode : null,
-								 CategoryPriority = -2
+								 CategoryPriority = -2,
+								 Category = OracleCodeCompletionCategory.AllColumns
 				             };
 			}
 		}
@@ -415,6 +424,7 @@ namespace SqlPad.Oracle
 		public const string Subquery = "Subquery";
 		public const string CommonTableExpression = "Common Table Expression";
 		public const string Column = "Column";
+		public const string AllColumns = "All Columns";
 		public const string JoinMethod = "Join Method";
 	}
 

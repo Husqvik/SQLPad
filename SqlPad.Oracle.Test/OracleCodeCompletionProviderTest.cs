@@ -10,7 +10,7 @@ namespace SqlPad.Oracle.Test
 		private readonly OracleCodeCompletionProvider _codeCompletionProvider = new OracleCodeCompletionProvider();
 
 		[Test(Description = @"")]
-		public void Test1()
+		public void TestObjectSuggestionWithSchema()
 		{
 			const string testQuery = "SELECT I.*, INVOICES.ID FROM HUSQVIK.INVOICELINES I JOIN HUSQVIK.INVOICES";
 
@@ -23,7 +23,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"")]
-		public void Test2()
+		public void TestJoinTypeSuggestion()
 		{
 			var items = _codeCompletionProvider.ResolveItems("SELECT I.*, INVOICES.ID FROM HUSQVIK.INVOICELINES I ", 52).ToArray();
 			// TODO: Filter out outer types depending of nullable columns
@@ -50,7 +50,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"")]
-		public void Test4()
+		public void TestObjectSuggestionInUnfinishedStatements()
 		{
 			var items = _codeCompletionProvider.ResolveItems("SELECT * FROM INVOICES JOIN INVOICE;SELECT * FROM INVOICELINES JOIN INVOICE", 35).ToArray();
 			items.Length.ShouldBe(2);
@@ -67,7 +67,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"")]
-		public void Test5()
+		public void TestJoinConditionSuggestions()
 		{
 			var items = _codeCompletionProvider.ResolveItems("SELECT S.* FROM SELECTION S JOIN HUSQVIK.PROJECT P", 50).ToArray();
 			items.Length.ShouldBe(0);
@@ -89,7 +89,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"")]
-		public void Test6()
+		public void TestJoinConditionSuggestionForTablesWithForeignKeys()
 		{
 			var items = _codeCompletionProvider.ResolveItems("SELECT S.* FROM SELECTION S JOIN HUSQVIK.PROJECT P ON S.PROJECT_ID = P.PROJECT_ID JOIN RESPONDENTBUCKET B ", 106).ToArray();
 			items.Length.ShouldBe(2);
@@ -102,7 +102,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"")]
-		public void Test7()
+		public void TestJoinConditionSuggestionForTablesWithoutForeignKeys()
 		{
 			const string query1 = @"WITH
 	CTE1 AS (SELECT '' NAME, '' DESCRIPTION, 1 ID FROM DUAL),
@@ -121,7 +121,7 @@ FROM
 		}
 
 		[Test(Description = @"")]
-		public void Test8()
+		public void TestObjectSuggestionInJoinClauseWithPartialName()
 		{
 			const string query1 = @"SELECT S.* FROM SELECTION S JOIN P";
 
@@ -140,7 +140,7 @@ FROM
 		}
 
 		[Test(Description = @"")]
-		public void Test9()
+		public void TestCommonTableExpressionSuggestion()
 		{
 			const string query1 = @"WITH
 	CTE1 AS (SELECT '' NAME, '' DESCRIPTION, 1 ID FROM DUAL),
@@ -162,7 +162,7 @@ FROM
 		}
 
 		[Test(Description = @"")]
-		public void Test10()
+		public void TestObjectSuggestionAfterEnteredSchema()
 		{
 			const string query1 = @"SELECT * FROM SYS.";
 
@@ -177,31 +177,34 @@ FROM
 		}
 
 		[Test(Description = @"")]
-		public void Test11()
+		public void TestColumnSuggestionWhenEnteringNewColumn()
 		{
 			const string query1 = @"SELECT 1,  FROM SELECTION S";
 
 			var items = _codeCompletionProvider.ResolveItems(query1, 10).ToArray();
-			items.Length.ShouldBe(5);
-			items[0].Name.ShouldBe("S.NAME");
-			items[0].Text.ShouldBe("S.NAME");
-			items[0].Category.ShouldBe(OracleCodeCompletionCategory.Column);
-			items[1].Name.ShouldBe("S.PROJECT_ID");
-			items[1].Text.ShouldBe("S.PROJECT_ID");
+			items.Length.ShouldBe(6);
+			items[0].Name.ShouldBe("S.*");
+			items[0].Text.ShouldBe("S.RESPONDENTBUCKET_ID, S.SELECTION_ID, S.PROJECT_ID, S.NAME");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.AllColumns);
+			items[1].Name.ShouldBe("S.NAME");
+			items[1].Text.ShouldBe("S.NAME");
 			items[1].Category.ShouldBe(OracleCodeCompletionCategory.Column);
-			items[2].Name.ShouldBe("S.RESPONDENTBUCKET_ID");
-			items[2].Text.ShouldBe("S.RESPONDENTBUCKET_ID");
+			items[2].Name.ShouldBe("S.PROJECT_ID");
+			items[2].Text.ShouldBe("S.PROJECT_ID");
 			items[2].Category.ShouldBe(OracleCodeCompletionCategory.Column);
-			items[3].Name.ShouldBe("S.SELECTION_ID");
-			items[3].Text.ShouldBe("S.SELECTION_ID");
+			items[3].Name.ShouldBe("S.RESPONDENTBUCKET_ID");
+			items[3].Text.ShouldBe("S.RESPONDENTBUCKET_ID");
 			items[3].Category.ShouldBe(OracleCodeCompletionCategory.Column);
-			items[4].Name.ShouldBe("S");
-			items[4].Text.ShouldBe("S");
-			items[4].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
+			items[4].Name.ShouldBe("S.SELECTION_ID");
+			items[4].Text.ShouldBe("S.SELECTION_ID");
+			items[4].Category.ShouldBe(OracleCodeCompletionCategory.Column);
+			items[5].Name.ShouldBe("S");
+			items[5].Text.ShouldBe("S");
+			items[5].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
 		}
 
 		[Test(Description = @"")]
-		public void Test12()
+		public void TestTableSuggestionWithPartialName()
 		{
 			const string query1 = @"SELECT 1 FROM SYSTEM.C";
 
@@ -210,16 +213,18 @@ FROM
 		}
 
 		[Test(Description = @"")]
-		public void Test13()
+		public void TestColumnSuggestionForMultipleTables()
 		{
 			const string query1 = @"SELECT SELECTION. FROM SELECTION, TARGETGROUP";
 
 			var items = _codeCompletionProvider.ResolveItems(query1, 17).ToArray();
-			items.Length.ShouldBe(4);
-			items[0].Name.ShouldBe("NAME");
-			items[0].Text.ShouldBe("NAME");
-			items[3].Name.ShouldBe("SELECTION_ID");
-			items[3].Text.ShouldBe("SELECTION_ID");
+			items.Length.ShouldBe(5);
+			items[0].Name.ShouldBe("*");
+			items[0].Text.ShouldBe("RESPONDENTBUCKET_ID, SELECTION.SELECTION_ID, SELECTION.PROJECT_ID, SELECTION.NAME");
+			items[1].Name.ShouldBe("NAME");
+			items[1].Text.ShouldBe("NAME");
+			items[4].Name.ShouldBe("SELECTION_ID");
+			items[4].Text.ShouldBe("SELECTION_ID");
 
 			const string query2 = @"SELECT SELECTION.NAME FROM SELECTION, TARGETGROUP";
 
@@ -237,7 +242,7 @@ FROM
 		}
 
 		[Test(Description = @"")]
-		public void Test14()
+		public void TestJoinTypeSuggestionInChainedJoinClause()
 		{
 			const string query1 = @"SELECT NULL FROM SELECTION S LEFT JOIN RESPONDENTBUCKET ON S.RESPONDENTBUCKET_ID = RESPONDENTBUCKET.RESPONDENTBUCKET_ID ";
 
@@ -268,7 +273,7 @@ FROM
 		}
 
 		[Test(Description = @"")]
-		public void Test17()
+		public void TestColumnSuggestionWithAlias()
 		{
 			const string query1 = @"SELECT D FROM DUAL";
 
@@ -286,7 +291,7 @@ FROM
 		}
 
 		[Test(Description = @"")]
-		public void Test18()
+		public void TestTableSuggestionWhenWithinScalarSubquery()
 		{
 			const string query1 = @"SELECT NULL FROM DUAL WHERE DUMMY = (SELECT * FROM DUAL)";
 
@@ -295,7 +300,7 @@ FROM
 		}
 
 		[Test(Description = @"")]
-		public void Test19()
+		public void TestNoColumnSuggestedWhenOnlyOneOptionExistsAndAlreadyInPlace()
 		{
 			const string query1 = @"SELECT SELECTION.NAME FROM SELECTION";
 
@@ -304,7 +309,7 @@ FROM
 		}
 
 		[Test(Description = @"")]
-		public void Test20()
+		public void TestColumnSuggestionAfterDotInGroupByClause()
 		{
 			const string query1 = @"SELECT * FROM PROJECT P GROUP BY P.";
 
@@ -317,7 +322,7 @@ FROM
 		}
 
 		[Test(Description = @"")]
-		public void Test21()
+		public void TestNothingIsSuggestedAfterFromTerminal()
 		{
 			const string query1 = @"SELECT * FROM ";
 
@@ -326,7 +331,7 @@ FROM
 		}
 
 		[Test(Description = @"")]
-		public void Test22()
+		public void TestNothingIsSuggestedWhenOnFromTerminal()
 		{
 			const string query1 = @"SELECT * FROM ";
 
@@ -335,7 +340,7 @@ FROM
 		}
 
 		[Test(Description = @"")]
-		public void Test23()
+		public void TestObjectSuggestionInChainedFromClause()
 		{
 			const string query1 = @"SELECT NULL FROM SELECTION, ";
 
@@ -354,6 +359,17 @@ FROM
 			items.Length.ShouldBe(2);
 			items[0].Name.ShouldBe("SYS.DUAL.DUMMY");
 			items[1].Name.ShouldBe("SYS.DUAL");
+		}
+
+		[Test(Description = @"")]
+		public void TestAsteriskIsNotSuggestedWithinNestedExpression()
+		{
+			const string query1 = @"SELECT CASE WHEN S. FROM SELECTION S";
+
+			var items = _codeCompletionProvider.ResolveItems(query1, 19).ToArray();
+			items.Length.ShouldBe(4);
+			items[0].Name.ShouldBe("NAME");
+			items[3].Name.ShouldBe("SELECTION_ID");
 		}
 	}
 }
