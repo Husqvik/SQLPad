@@ -461,17 +461,4 @@ namespace SqlPad.Oracle
 		ScalarSubquery,
 		CommonTableExpression
 	}
-
-	public static class NodeFilters
-	{
-		public static bool BreakAtNestedQueryBoundary(StatementDescriptionNode node)
-		{
-			return node.Id != NonTerminals.NestedQuery;
-		}
-
-		public static bool In(StatementDescriptionNode node, params string[] ids)
-		{
-			return node.Id.In(ids);
-		}
-	}
 }

@@ -15,6 +15,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using ICSharpCode.AvalonEdit.CodeCompletion;
+using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Editing;
 using ICSharpCode.AvalonEdit.Highlighting;
 using SqlPad.Commands;
@@ -68,7 +69,7 @@ namespace SqlPad
 			Editor.TextArea.TextView.Redraw();
 		}
 
-		private ICollection<StatementBase> ParseStatements()
+		private StatementCollection ParseStatements()
 		{
 			return _sqlParser.Parse(Editor.Text);
 		}
@@ -107,6 +108,11 @@ namespace SqlPad
 
 		void TextEnteredHandler(object sender, TextCompositionEventArgs e)
 		{
+			if (_multiNodeEditor != null)
+			{
+				Editor.Document.EndUpdate();
+			}
+
 			var snippets = _codeSnippetProvider.GetSnippets(Editor.Text, Editor.CaretOffset).Select(i => new CompletionData(i)).ToArray();
 			if (_completionWindow == null && snippets.Length > 0)
 			{
@@ -142,6 +148,19 @@ namespace SqlPad
 
 		void TextEnteringHandler(object sender, TextCompositionEventArgs e)
 		{
+			if (_multiNodeEditor != null)
+			{
+				Editor.Document.BeginUpdate();
+
+				_multiNodeEditor.InsertText(e.Text);
+
+				/*var nodeOffset = Editor.CaretOffset - _multiNodeEditor.CurrentNode.SourcePosition.IndexStart;
+				foreach (var node in _multiNodeEditor.Nodes)
+				{
+					Editor.Document.Insert(node.SourcePosition.IndexStart + nodeOffset, e.Text);
+				}*/
+			}
+
 			if (e.Text.Length == 1 && _completionWindow != null)
 			{
 				if (!Char.IsLetterOrDigit(e.Text[0]))
@@ -244,14 +263,28 @@ namespace SqlPad
 				Trace.WriteLine("ALT + ENTER");
 				Editor.ContextMenu.IsOpen = PopulateContextMenu();
 			}
+			else if (e.Key == Key.Return || e.Key == Key.Escape)
+			{
+				Trace.WriteLine(e.Key);
+				_multiNodeEditor = null;
+			}
 			else if (_multiNodeEditor == null && e.Key == Key.F6 && Keyboard.Modifiers == ModifierKeys.Shift)
 			{
 				Trace.WriteLine("SHIFT + F6");
-				//_multiNodeEditor = new MultiNodeEditor();
+
+				_multiNodeEditor = new MultiNodeEditor(Editor, _infrastructureFactory);
 			}
-			else if (e.Key == Key.F11 && Keyboard.Modifiers == (ModifierKeys.Alt | ModifierKeys.Shift))
+			else if (e.SystemKey == Key.F11 && Keyboard.Modifiers == (ModifierKeys.Alt | ModifierKeys.Shift))
 			{
 				Trace.WriteLine("ALT SHIFT + F11");
+			}
+		}
+
+		private void EditorKeyUpHandler(object sender, KeyEventArgs e)
+		{
+			if (e.Key == Key.Back && _multiNodeEditor != null)
+			{
+				_multiNodeEditor.RemoveCharacter();
 			}
 		}
 

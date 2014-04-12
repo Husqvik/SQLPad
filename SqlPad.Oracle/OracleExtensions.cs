@@ -103,4 +103,22 @@ namespace SqlPad.Oracle
 			throw new NotSupportedException(String.Format("Value '{0}' is not supported. ", type));
 		}
 	}
+
+	public static class NodeFilters
+	{
+		public static bool BreakAtNestedQueryBoundary(StatementDescriptionNode node)
+		{
+			return node.Id != NonTerminals.NestedQuery;
+		}
+
+		public static bool AnyIdentifier(StatementDescriptionNode node)
+		{
+			return Terminals.Identifiers.Contains(node.Id);
+		}
+
+		public static bool In(StatementDescriptionNode node, params string[] ids)
+		{
+			return node.Id.In(ids);
+		}
+	}
 }

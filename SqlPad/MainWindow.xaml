@@ -61,6 +61,7 @@
                                ContextMenuOpening="ContextMenuOpeningHandler"
                                MouseHover="MouseHoverHandler"
                                PreviewKeyDown="EditorKeyDownHandler"
+							   PreviewKeyUp="EditorKeyUpHandler"
                                MouseHoverStopped="MouseHoverStoppedHandler">
             <avalonedit:TextEditor.ContextMenu>
                 <ContextMenu x:Name="CommandMenu" Placement="RelativePoint"></ContextMenu>

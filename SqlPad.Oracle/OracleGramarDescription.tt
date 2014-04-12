@@ -60,11 +60,16 @@ namespace SqlPad.Oracle
 			
 			private static readonly HashSet<string> AllTerminalsInternal = new HashSet<string> { <#= String.Join(", ", terminalIds) #> };
 			
-			private static readonly HashSet<string> Identifiers = new HashSet<string> { <#= String.Join(", ", identifierTerminalIds) #> };
+			private static readonly HashSet<string> IdentifiersInternal = new HashSet<string> { <#= String.Join(", ", identifierTerminalIds) #> };
 
 			public static ICollection<string> AllTerminals
 			{
 				get { return AllTerminalsInternal; }
+			}
+
+			public static ICollection<string> Identifiers
+			{
+				get { return IdentifiersInternal; }
 			}
 
 			public static bool IsIdentifier(string terminalId)
@@ -74,7 +79,7 @@ namespace SqlPad.Oracle
 					throw new InvalidOperationException(String.Format("Terminal ID '{0}' not recognized. ", terminalId));
 				}
 
-				return Identifiers.Contains(terminalId);
+				return IdentifiersInternal.Contains(terminalId);
 			}
 		}
 	}

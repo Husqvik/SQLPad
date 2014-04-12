@@ -206,7 +206,7 @@ namespace SqlPad.Oracle
 			public const string At = "At";
 			public const string Batch = "Batch";
 			public const string Between = "Between";
-			public const string BindVariable = "BindVariable";
+			public const string BindVariableIdentifier = "BindVariableIdentifier";
 			public const string Block = "Block";
 			public const string Breadth = "Breadth";
 			public const string By = "By";
@@ -380,13 +380,18 @@ namespace SqlPad.Oracle
 			public const string Write = "Write";
 			public const string Xml = "Xml";
 			
-			private static readonly HashSet<string> AllTerminalsInternal = new HashSet<string> { Alias, All, And, Any, Apply, As, Asc, Asterisk, At, Batch, Between, BindVariable, Block, Breadth, By, Case, Cast, Check, Colon, Column, Comma, Comment, Commit, Committed, Connect, Constraint, Count, Cross, Cube, Current, Cycle, DatabaseLinkIdentifier, DataTypeName, Date, Default, Delete, DenseRank, Depth, Desc, Distinct, Dot, Else, End, Errors, Escape, Exclude, Exists, Fetch, First, Following, For, Force, From, Full, Group, Grouping, Having, Identifier, Ignore, Immediate, In, Include, Inner, IntegerLiteral, Intersect, Into, Is, Isolation, Join, Keep, Last, Lateral, Left, LeftParenthesis, Level, Like, LikeUcs2, LikeUcs4, LikeUnicode, Limit, Locked, Log, MathDivide, MathEquals, MathFactor, MathGreatherThan, MathGreatherThanOrEquals, MathInfinite, MathLessThan, MathLessThanOrEquals, MathMinus, MathNotANumber, MathNotEqualsC, MathNotEqualsCircumflex, MathNotEqualsSql, MathPlus, MaximumValue, MinimumValue, Model, Multiset, Name, Natural, Next, NoCycle, Not, Nowait, Null, Nulls, NumberLiteral, ObjectIdentifier, Of, Offset, On, Only, OperatorConcatenation, Option, Or, Order, Outer, Over, Partition, Percent, Period, Pivot, Preceding, Public, Range, Read, Ref, Reject, Return, Returning, Right, RightParenthesis, Rollback, Rollup, Row, RowIdPseudoColumn, RowNumberPseudoColumn, Rows, Sample, SchemaIdentifier, Search, Seed, Segment, Select, Semicolon, SequenceCurrentValue, SequenceNextValue, Serializable, Set, SetMinus, Sets, Siblings, Skip, Some, Space, Start, StringLiteral, Subpartition, SystemChangeNumber, Table, Then, Ties, Timestamp, To, Transaction, Treat, Unbounded, Union, Unique, Unlimited, Unpivot, Update, Use, Using, Versions, Wait, When, Where, With, Work, Write, Xml };
+			private static readonly HashSet<string> AllTerminalsInternal = new HashSet<string> { Alias, All, And, Any, Apply, As, Asc, Asterisk, At, Batch, Between, BindVariableIdentifier, Block, Breadth, By, Case, Cast, Check, Colon, Column, Comma, Comment, Commit, Committed, Connect, Constraint, Count, Cross, Cube, Current, Cycle, DatabaseLinkIdentifier, DataTypeName, Date, Default, Delete, DenseRank, Depth, Desc, Distinct, Dot, Else, End, Errors, Escape, Exclude, Exists, Fetch, First, Following, For, Force, From, Full, Group, Grouping, Having, Identifier, Ignore, Immediate, In, Include, Inner, IntegerLiteral, Intersect, Into, Is, Isolation, Join, Keep, Last, Lateral, Left, LeftParenthesis, Level, Like, LikeUcs2, LikeUcs4, LikeUnicode, Limit, Locked, Log, MathDivide, MathEquals, MathFactor, MathGreatherThan, MathGreatherThanOrEquals, MathInfinite, MathLessThan, MathLessThanOrEquals, MathMinus, MathNotANumber, MathNotEqualsC, MathNotEqualsCircumflex, MathNotEqualsSql, MathPlus, MaximumValue, MinimumValue, Model, Multiset, Name, Natural, Next, NoCycle, Not, Nowait, Null, Nulls, NumberLiteral, ObjectIdentifier, Of, Offset, On, Only, OperatorConcatenation, Option, Or, Order, Outer, Over, Partition, Percent, Period, Pivot, Preceding, Public, Range, Read, Ref, Reject, Return, Returning, Right, RightParenthesis, Rollback, Rollup, Row, RowIdPseudoColumn, RowNumberPseudoColumn, Rows, Sample, SchemaIdentifier, Search, Seed, Segment, Select, Semicolon, SequenceCurrentValue, SequenceNextValue, Serializable, Set, SetMinus, Sets, Siblings, Skip, Some, Space, Start, StringLiteral, Subpartition, SystemChangeNumber, Table, Then, Ties, Timestamp, To, Transaction, Treat, Unbounded, Union, Unique, Unlimited, Unpivot, Update, Use, Using, Versions, Wait, When, Where, With, Work, Write, Xml };
 			
-			private static readonly HashSet<string> Identifiers = new HashSet<string> { DatabaseLinkIdentifier, Identifier, ObjectIdentifier, SchemaIdentifier };
+			private static readonly HashSet<string> IdentifiersInternal = new HashSet<string> { BindVariableIdentifier, DatabaseLinkIdentifier, Identifier, ObjectIdentifier, SchemaIdentifier };
 
 			public static ICollection<string> AllTerminals
 			{
 				get { return AllTerminalsInternal; }
+			}
+
+			public static ICollection<string> Identifiers
+			{
+				get { return IdentifiersInternal; }
 			}
 
 			public static bool IsIdentifier(string terminalId)
@@ -396,7 +401,7 @@ namespace SqlPad.Oracle
 					throw new InvalidOperationException(String.Format("Terminal ID '{0}' not recognized. ", terminalId));
 				}
 
-				return Identifiers.Contains(terminalId);
+				return IdentifiersInternal.Contains(terminalId);
 			}
 		}
 	}

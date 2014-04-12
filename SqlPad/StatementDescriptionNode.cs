@@ -218,19 +218,20 @@ namespace SqlPad
 			return GetPathFilterAncestor(null, ancestorNodeId, includeSelf);
 		}
 
-		public StatementDescriptionNode GetNodeAtPosition(int offset)
+		public StatementDescriptionNode GetNodeAtPosition(int position, Func<StatementDescriptionNode, bool> filter = null)
 		{
-			if (SourcePosition.IndexEnd < offset || SourcePosition.IndexStart > offset)
+			if (SourcePosition.IndexEnd + 1 < position || SourcePosition.IndexStart > position)
 				return null;
 
-			return AllChildNodes.Where(t => t.SourcePosition.IndexStart <= offset && t.SourcePosition.IndexEnd >= offset)
-				.OrderBy(n => n.SourcePosition.Length).ThenByDescending(n => n.Level)
+			return AllChildNodes.Where(n => (filter == null || filter(n)) && n.SourcePosition.IndexStart <= position && n.SourcePosition.IndexEnd + 1 >= position)
+				.OrderBy(n => n.SourcePosition.IndexStart == position ? 0 : 1)
+				.ThenByDescending(n => n.Level)
 				.FirstOrDefault();
 		}
 
-		public StatementDescriptionNode GetNearestTerminalToPosition(int offset)
+		public StatementDescriptionNode GetNearestTerminalToPosition(int position)
 		{
-			return Terminals.TakeWhile(t => t.SourcePosition.IndexStart <= offset).LastOrDefault();
+			return Terminals.TakeWhile(t => t.SourcePosition.IndexStart <= position).LastOrDefault();
 		}
 
 		/*private void ResolveLinks()

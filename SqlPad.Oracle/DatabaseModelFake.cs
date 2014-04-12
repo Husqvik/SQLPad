@@ -71,7 +71,8 @@ namespace SqlPad.Oracle
 				Type = "TABLE",
 				Columns = new HashSet<OracleColumn>
 				          {
-					          new OracleColumn { Name = "\"ID\"", Type = "NUMBER", Precision = 9, Scale = 0 }
+					          new OracleColumn { Name = "\"ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
+					          new OracleColumn { Name = "\"DUEDATE\"", Type = "DATE" }
 				          }
 			},
 			new OracleDataObject

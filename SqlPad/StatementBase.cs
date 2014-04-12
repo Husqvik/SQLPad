@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -37,15 +38,15 @@ namespace SqlPad
 					: NodeCollection.SelectMany(n => n.Terminals);
 			}
 		}
-		
-		public StatementDescriptionNode GetNodeAtPosition(int offset)
+
+		public StatementDescriptionNode GetNodeAtPosition(int position, Func<StatementDescriptionNode, bool> filter = null)
 		{
-			return NodeCollection.Select(n => n.GetNodeAtPosition(offset)).FirstOrDefault(n => n != null);
+			return NodeCollection.Select(n => n.GetNodeAtPosition(position, filter)).FirstOrDefault(n => n != null);
 		}
 
-		public StatementDescriptionNode GetNearestTerminalToPosition(int offset)
+		public StatementDescriptionNode GetNearestTerminalToPosition(int position)
 		{
-			return NodeCollection.Select(n => n.GetNearestTerminalToPosition(offset)).FirstOrDefault(n => n != null);
+			return NodeCollection.Select(n => n.GetNearestTerminalToPosition(position)).FirstOrDefault(n => n != null);
 		}
 	}
 }

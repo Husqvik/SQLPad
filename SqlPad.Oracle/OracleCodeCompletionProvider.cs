@@ -239,7 +239,9 @@ namespace SqlPad.Oracle
 
 			var specificColumns = tableReferences
 				.SelectMany(t => t.Columns
-					.Where(c => objectIdentifier == null || String.IsNullOrEmpty(currentName) || (c.Name != currentName.ToQuotedIdentifier() && c.Name != currentNode.Token.Value.ToQuotedIdentifier() && c.Name.Contains(currentName.ToUpperInvariant())))
+					.Where(c =>
+						(currentNode.Id != Terminals.Identifier || c.Name != currentNode.Token.Value.ToQuotedIdentifier()) &&
+						(objectIdentifier == null || String.IsNullOrEmpty(currentName) || (c.Name != currentName.ToQuotedIdentifier() && c.Name.Contains(currentName.ToUpperInvariant()))))
 					.Select(c => new { TableReference = t, Column = c }))
 				.Select(t => CreateColumnCodeCompletionItem(t.Column, objectIdentifier == null ? t.TableReference : null, currentNode));
 

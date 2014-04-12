@@ -39,14 +39,14 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"")]
-		public void Test3()
+		public void TestColumnSuggestionAtTheBeginningOfColumnNameWhenAlreadyEntered()
 		{
 			const string testQuery = "SELECT I.*, INVOICES.ID FROM HUSQVIK.INVOICELINES I JOIN HUSQVIK.INVOICES";
 
 			var items = _codeCompletionProvider.ResolveItems(testQuery, 21).ToArray();
 			items.Length.ShouldBe(1);
-			items[0].Name.ShouldBe("ID");
-			items[0].Text.ShouldBe("ID");
+			items[0].Name.ShouldBe("DUEDATE");
+			items[0].Text.ShouldBe("DUEDATE");
 		}
 
 		[Test(Description = @"")]
@@ -255,7 +255,7 @@ FROM
 		}
 
 		[Test(Description = @"")]
-		public void Test15()
+		public void TestSchemaSuggestionInJoinConditionWhenAlreadyEnteredAndOnlyOneOptionRemains()
 		{
 			const string query1 = @"SELECT S.* FROM SELECTION S JOIN HUSQVIK.PROJECT P ON S.PROJECT_ID = P.PROJECT_ID";
 
@@ -264,7 +264,7 @@ FROM
 		}
 
 		[Test(Description = @"")]
-		public void Test16()
+		public void TestTableSuggestionInJoinConditionWhenAlreadyEnteredAndOnlyOneOptionRemains()
 		{
 			const string query1 = @"SELECT S.* FROM SELECTION S JOIN HUSQVIK.PROJECT P ON S.PROJECT_ID = P.PROJECT_ID";
 
