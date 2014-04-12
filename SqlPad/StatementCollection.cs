@@ -13,7 +13,7 @@ namespace SqlPad
 
 		public StatementBase GetStatementAtPosition(int position)
 		{
-			return Items.SingleOrDefault(s => s.SourcePosition.IndexStart <= position && s.SourcePosition.IndexEnd >= position);
+			return Items.SingleOrDefault(s => s.SourcePosition.IndexStart <= position && s.SourcePosition.IndexEnd + 1 >= position);
 		}
 
 		public StatementDescriptionNode GetNodeAtPosition(int position)

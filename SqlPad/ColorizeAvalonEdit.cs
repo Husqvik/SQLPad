@@ -50,6 +50,8 @@ namespace SqlPad
 				{
 					ProcessNodeAtLine(line, semanticError.ColumnNode.SourcePosition,
 						element => element.TextRunProperties.SetTextDecorations(Resources.WaveErrorUnderline));
+					/*ProcessNodeAtLine(line, semanticError.ColumnNode.SourcePosition,
+						element => element.TextRunProperties.SetTextDecorations(Resources.BoxedText));*/
 				}
 
 				ChangeLinePart(
