@@ -6,14 +6,14 @@ namespace SqlPad
 {
 	public class StatementCollection : ReadOnlyCollection<StatementBase>
 	{
-		internal StatementCollection(IEnumerable<StatementBase> statements)
+		public StatementCollection(IEnumerable<StatementBase> statements)
 			: base(new List<StatementBase>(statements))
 		{
 		}
 
 		public StatementBase GetStatementAtPosition(int position)
 		{
-			return Items.SingleOrDefault(s => s.SourcePosition.IndexStart <= position - 1 && s.SourcePosition.IndexEnd >= position - 1);
+			return Items.SingleOrDefault(s => s.SourcePosition.IndexStart <= position && s.SourcePosition.IndexEnd >= position);
 		}
 
 		public StatementDescriptionNode GetNodeAtPosition(int position)

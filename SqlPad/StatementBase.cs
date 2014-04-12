@@ -12,6 +12,26 @@ namespace SqlPad
 		public ICollection<string> TerminalCandidates { get; set; }
 
 		public SourcePosition SourcePosition { get; set; }
+
+		public IEnumerable<StatementDescriptionNode> AllNodes
+		{
+			get
+			{
+				return NodeCollection == null
+					? Enumerable.Empty<StatementDescriptionNode>()
+					: NodeCollection.SelectMany(n => n.AllChildNodes);
+			}
+		}
+
+		public IEnumerable<StatementDescriptionNode> AllTerminals
+		{
+			get
+			{
+				return NodeCollection == null
+					? Enumerable.Empty<StatementDescriptionNode>()
+					: NodeCollection.SelectMany(n => n.Terminals);
+			}
+		}
 		
 		public StatementDescriptionNode GetNodeAtPosition(int offset)
 		{

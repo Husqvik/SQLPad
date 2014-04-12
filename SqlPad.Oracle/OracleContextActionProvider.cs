@@ -14,16 +14,12 @@ namespace SqlPad.Oracle
 		public ICollection<IContextAction> GetContextActions(string statementText, int cursorPosition)
 		{
 			var statements = _oracleParser.Parse(statementText);
-			var statement = (OracleStatement)statements.SingleOrDefault(s => s.SourcePosition.IndexStart <= cursorPosition - 1 && s.SourcePosition.IndexEnd >= cursorPosition - 1);
-			if (statement == null)
+
+			var currentTerminal = statements.GetTerminalAtPosition(cursorPosition - 1);
+			if (currentTerminal == null)
 				return EmptyCollection;
 
-			var currentTerminal = statement.GetNodeAtPosition(cursorPosition);
-
-			if (currentTerminal == null || currentTerminal.Type == NodeType.NonTerminal)
-				return EmptyCollection;
-
-			var semanticModel = new OracleStatementSemanticModel(statementText, statement, DatabaseModelFake.Instance);
+			var semanticModel = new OracleStatementSemanticModel(statementText, (OracleStatement)currentTerminal.Statement, DatabaseModelFake.Instance);
 			var actionList = new List<IContextAction>();
 
 			if (currentTerminal.Id == Terminals.ObjectIdentifier)

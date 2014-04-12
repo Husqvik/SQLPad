@@ -10,9 +10,10 @@ namespace SqlPad
 	{
 		private readonly List<StatementDescriptionNode> _childNodes = new List<StatementDescriptionNode>();
 
-		public StatementDescriptionNode(NodeType type)
+		public StatementDescriptionNode(StatementBase statement, NodeType type)
 		{
 			Type = type;
+			Statement = statement;
 
 			if (Type != NodeType.Terminal)
 				return;
@@ -62,6 +63,8 @@ namespace SqlPad
 
 		public StatementDescriptionNode LastTerminalNode { get; private set; }
 
+		public StatementBase Statement { get; private set; }
+		
 		public IToken Token { get; set; }
 		
 		public string Id { get; set; }
@@ -278,7 +281,7 @@ namespace SqlPad
 
 		public StatementDescriptionNode Clone()
 		{
-			var clonedNode = new StatementDescriptionNode(Type)
+			var clonedNode = new StatementDescriptionNode(Statement, Type)
 			                 {
 				                 Id = Id,
 				                 IsRequired = IsRequired,
@@ -298,7 +301,7 @@ namespace SqlPad
 
 		internal static StatementDescriptionNode FromChildNodes(IEnumerable<StatementDescriptionNode> childNodes)
 		{
-			var node = new StatementDescriptionNode(NodeType.NonTerminal);
+			var node = new StatementDescriptionNode(null, NodeType.NonTerminal);
 			node.AddChildNodes(childNodes);
 
 			return node;

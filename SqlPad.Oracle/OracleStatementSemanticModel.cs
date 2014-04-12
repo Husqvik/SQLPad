@@ -468,5 +468,10 @@ namespace SqlPad.Oracle
 		{
 			return node.Id != NonTerminals.NestedQuery;
 		}
+
+		public static bool In(StatementDescriptionNode node, params string[] ids)
+		{
+			return node.Id.In(ids);
+		}
 	}
 }

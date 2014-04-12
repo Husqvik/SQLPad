@@ -44,7 +44,11 @@ namespace SqlPad.Oracle.Test
 			
 			result.ShouldNotBe(null);
 			result.Count.ShouldBe(1);
-			var terminals = result.Single().NodeCollection.SelectMany(i => i.Terminals).ToList();
+			var statement = result.Single();
+			statement.AllNodes.ToList()
+				.ForEach(n => n.Statement.ShouldBe(statement));
+
+			var terminals = statement.AllTerminals.ToList();
 
 			terminals.Count.ShouldBe(4);
 			terminals[0].Id.ShouldBe(Terminals.Select);
@@ -110,7 +114,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(sqlText);
 
 			result.Count.ShouldBe(1);
-			var terminals = result.Single().NodeCollection.SelectMany(i => i.Terminals).ToList();
+			var terminals = result.Single().AllTerminals.ToList();
 
 			terminals.Count.ShouldBe(26);
 			terminals[0].Id.ShouldBe(Terminals.Select);
@@ -129,7 +133,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(sqlText);
 
 			result.Count.ShouldBe(1);
-			var terminals = result.Single().NodeCollection.SelectMany(i => i.Terminals).ToList();
+			var terminals = result.Single().AllTerminals.ToList();
 
 			terminals.Count.ShouldBe(34);
 
@@ -146,7 +150,7 @@ namespace SqlPad.Oracle.Test
 			var statement = result.Single();
 			statement.NodeCollection.Count.ShouldBe(1);
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
-			var terminals = statement.NodeCollection.SelectMany(n => n.Terminals).ToArray();
+			var terminals = statement.AllTerminals.ToArray();
 			terminals.Length.ShouldBe(2);
 			terminals[0].Id.ShouldBe(Terminals.Select);
 			terminals[1].Id.ShouldBe(Terminals.NumberLiteral);
@@ -175,7 +179,7 @@ namespace SqlPad.Oracle.Test
 			var statement = result.Single();
 			statement.NodeCollection.Count.ShouldBe(1);
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
-			var terminals = statement.NodeCollection.SelectMany(n => n.Terminals).ToArray();
+			var terminals = statement.AllTerminals.ToArray();
 			terminals.Length.ShouldBe(3);
 			terminals[0].Id.ShouldBe(Terminals.Select);
 			terminals[1].Id.ShouldBe(Terminals.NumberLiteral);
@@ -191,7 +195,7 @@ namespace SqlPad.Oracle.Test
 			statement.NodeCollection.Count.ShouldBe(1);
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
 
-			terminals = statement.NodeCollection.SelectMany(n => n.Terminals).ToArray();
+			terminals = statement.AllTerminals.ToArray();
 			terminals.Length.ShouldBe(1);
 			terminals[0].Id.ShouldBe(Terminals.Select);
 		}
@@ -314,7 +318,7 @@ namespace SqlPad.Oracle.Test
 			result.Count.ShouldBe(1);
 			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-			var terminals = result.Single().NodeCollection.SelectMany(n => n.Terminals).ToList();
+			var terminals = result.Single().AllTerminals.ToList();
 
 			terminals.Count.ShouldBe(21);
 			terminals[8].Id.ShouldBe(Terminals.SchemaIdentifier);
@@ -365,11 +369,11 @@ namespace SqlPad.Oracle.Test
 			result.Count.ShouldBe(2);
 			result.First().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
 			result.First().NodeCollection.Count.ShouldBe(1);
-			result.First().NodeCollection.Single().Terminals.Count().ShouldBe(4);
+			result.First().AllTerminals.Count().ShouldBe(4);
 
 			result.Last().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 			result.Last().NodeCollection.Count.ShouldBe(1);
-			result.Last().NodeCollection.Single().Terminals.Count().ShouldBe(4);
+			result.Last().AllTerminals.Count().ShouldBe(4);
 		}
 
 		[Test(Description = @"Tests EXISTS and NOT EXISTS. ")]
@@ -447,7 +451,7 @@ namespace SqlPad.Oracle.Test
 			result.Count.ShouldBe(1);
 			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-			var terminals = result.Single().NodeCollection.SelectMany(n => n.Terminals).ToArray();
+			var terminals = result.Single().AllTerminals.ToArray();
 			terminals.Length.ShouldBe(38);
 			terminals[3].Id.ShouldBe(Terminals.ObjectIdentifier);
 			terminals[3].ParentNode.Id.ShouldBe(NonTerminals.QueryTableExpression);
@@ -656,7 +660,7 @@ namespace SqlPad.Oracle.Test
 			var statement = result.Single();
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-			var terminals = statement.NodeCollection.Single().Terminals.ToArray();
+			var terminals = statement.AllTerminals.ToArray();
 			terminals[1].Id.ShouldBe(Terminals.SchemaIdentifier);
 			terminals[3].Id.ShouldBe(Terminals.ObjectIdentifier);
 		}
@@ -671,7 +675,7 @@ namespace SqlPad.Oracle.Test
 			var statement = result.Single();
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-			var terminals = statement.NodeCollection.Single().Terminals.ToArray();
+			var terminals = statement.AllTerminals.ToArray();
 			terminals[1].Id.ShouldBe(Terminals.SchemaIdentifier);
 			terminals[3].Id.ShouldBe(Terminals.ObjectIdentifier);
 			terminals[5].Id.ShouldBe(Terminals.Identifier);
@@ -989,7 +993,7 @@ namespace SqlPad.Oracle.Test
 			result.Count.ShouldBe(1);
 			var statement = result.Single();
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
-			var terminals = statement.NodeCollection.SelectMany(n => n.Terminals).ToArray();
+			var terminals = statement.AllTerminals.ToArray();
 			terminals.Length.ShouldBe(6);
 			terminals[3].Id.ShouldBe(Terminals.ObjectIdentifier);
 			terminals[4].Id.ShouldBe(Terminals.Join);
@@ -1001,7 +1005,7 @@ namespace SqlPad.Oracle.Test
 			result.Count.ShouldBe(1);
 			statement = result.Single();
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
-			terminals = statement.NodeCollection.SelectMany(n => n.Terminals).ToArray();
+			terminals = statement.AllTerminals.ToArray();
 			terminals.Length.ShouldBe(9);
 			terminals[3].Id.ShouldBe(Terminals.ObjectIdentifier);
 			terminals[4].Id.ShouldBe(Terminals.Join);
@@ -1017,7 +1021,7 @@ namespace SqlPad.Oracle.Test
 			result.Count.ShouldBe(1);
 			statement = result.Single();
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-			terminals = statement.NodeCollection.SelectMany(n => n.Terminals).ToArray();
+			terminals = statement.AllTerminals.ToArray();
 			terminals.Length.ShouldBe(5);
 			terminals[3].Id.ShouldBe(Terminals.ObjectIdentifier);
 			terminals[4].Id.ShouldBe(Terminals.Alias);
@@ -1028,7 +1032,7 @@ namespace SqlPad.Oracle.Test
 			result.Count.ShouldBe(1);
 			statement = result.Single();
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
-			terminals = statement.NodeCollection.SelectMany(n => n.Terminals).ToArray();
+			terminals = statement.AllTerminals.ToArray();
 			terminals.Length.ShouldBe(7);
 		}
 
@@ -1041,7 +1045,7 @@ namespace SqlPad.Oracle.Test
 			result.Count.ShouldBe(1);
 			var statement = result.Single();
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
-			var terminals = statement.NodeCollection.SelectMany(n => n.Terminals).ToArray();
+			var terminals = statement.AllTerminals.ToArray();
 			terminals.Length.ShouldBe(7);
 
 			// TODO: Precise assertions
@@ -1052,7 +1056,7 @@ namespace SqlPad.Oracle.Test
 			result.Count.ShouldBe(1);
 			statement = result.Single();
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
-			terminals = statement.NodeCollection.SelectMany(n => n.Terminals).ToArray();
+			terminals = statement.AllTerminals.ToArray();
 			terminals.Length.ShouldBe(9);
 
 			// TODO: Precise assertions
@@ -1267,7 +1271,7 @@ namespace SqlPad.Oracle.Test
 				var statement = result.Single();
 				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-				var terminals = statement.NodeCollection.SelectMany(n => n.Terminals).ToArray();
+				var terminals = statement.AllTerminals.ToArray();
 				terminals.Length.ShouldBe(6);
 
 				terminals[0].Id.ShouldBe(Terminals.Commit);
@@ -1288,7 +1292,7 @@ namespace SqlPad.Oracle.Test
 				var statement = result.Single();
 				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-				var terminals = statement.NodeCollection.SelectMany(n => n.Terminals).ToArray();
+				var terminals = statement.AllTerminals.ToArray();
 				terminals.Length.ShouldBe(3);
 
 				terminals[0].Id.ShouldBe(Terminals.Commit);
@@ -1306,7 +1310,7 @@ namespace SqlPad.Oracle.Test
 				var statement = result.Single();
 				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-				var terminals = statement.NodeCollection.SelectMany(n => n.Terminals).ToArray();
+				var terminals = statement.AllTerminals.ToArray();
 				terminals.Length.ShouldBe(5);
 
 				terminals[0].Id.ShouldBe(Terminals.Commit);
@@ -1326,7 +1330,7 @@ namespace SqlPad.Oracle.Test
 				var statement = Parser.Parse(statement1).Single();
 				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-				var terminalCandidates = statement.NodeCollection.SelectMany(n => n.Terminals).ToArray();
+				var terminalCandidates = statement.AllTerminals.ToArray();
 				terminalCandidates.Length.ShouldBe(6);
 				terminalCandidates[0].Id.ShouldBe(Terminals.Set);
 				terminalCandidates[1].Id.ShouldBe(Terminals.Transaction);
@@ -1343,7 +1347,7 @@ namespace SqlPad.Oracle.Test
 				var statement = Parser.Parse(statement1).Single();
 				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-				var terminalCandidates = statement.NodeCollection.SelectMany(n => n.Terminals).ToArray();
+				var terminalCandidates = statement.AllTerminals.ToArray();
 				terminalCandidates.Length.ShouldBe(6);
 				terminalCandidates[0].Id.ShouldBe(Terminals.Set);
 				terminalCandidates[1].Id.ShouldBe(Terminals.Transaction);
@@ -1360,7 +1364,7 @@ namespace SqlPad.Oracle.Test
 				var statement = Parser.Parse(statement1).Single();
 				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-				var terminalCandidates = statement.NodeCollection.SelectMany(n => n.Terminals).ToArray();
+				var terminalCandidates = statement.AllTerminals.ToArray();
 				terminalCandidates.Length.ShouldBe(8);
 				terminalCandidates[0].Id.ShouldBe(Terminals.Set);
 				terminalCandidates[1].Id.ShouldBe(Terminals.Transaction);
@@ -1431,7 +1435,7 @@ namespace SqlPad.Oracle.Test
 
 				//var node = Parser.Parse("SELECT").Single().NodeCollection.Single();
 				var node = Parser.Parse(statement1).Single().NodeCollection.Single().LastTerminalNode;
-				//var node = Parser.Parse(statement1).Single().NodeCollection.SelectMany(n => n.Terminals).Skip(3).First();
+				//var node = Parser.Parse(statement1).Single().AllTerminals.Skip(3).First();
 				var terminalCandidates = Parser.GetTerminalCandidates(node);
 			}
 		}
