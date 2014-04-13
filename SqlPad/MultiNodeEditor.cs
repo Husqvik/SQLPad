@@ -39,7 +39,8 @@ namespace SqlPad
 			foreach (var node in data.SynchronizedNodes)
 			{
 				var selectionCharacter = reverse && _editor.SelectionLength == 0 ? 1 : 0;
-				_editor.Document.Remove(node.SourcePosition.IndexStart + data.OffsetFromNodeStartIndex - selectionCharacter, data.Characters);
+				var removedCharacters = _editor.SelectionLength == 0 ? 1 : _editor.SelectionLength;
+				_editor.Document.Remove(node.SourcePosition.IndexStart + data.OffsetFromNodeStartIndex - selectionCharacter, removedCharacters);
 			}
 		}
 
@@ -51,9 +52,7 @@ namespace SqlPad
 
 	public struct MultiNodeEditorData
 	{
-		public bool IsAllowed { get; set; }
 		public int OffsetFromNodeStartIndex { get; set; }
-		public int Characters { get; set; }
 		public StatementDescriptionNode CurrentNode { get; set; }
 		public IEnumerable<StatementDescriptionNode> SynchronizedNodes { get; set; }
 	}

@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using NUnit.Framework;
 using Shouldly;
 
@@ -8,6 +9,21 @@ namespace SqlPad.Oracle.Test
 	public class OracleStatementSemanticModelTest
 	{
 		private readonly OracleSqlParser _oracleSqlParser = new OracleSqlParser();
+
+		[Test(Description = @"")]
+		public void TestInitializationWithNullStatement()
+		{
+			var exception = Assert.Throws<ArgumentNullException>(() => new OracleStatementSemanticModel(null, null, null));
+			exception.ParamName.ShouldBe("statement");
+		}
+
+		[Test(Description = @"")]
+		public void TestInitializationWithNullDatabaseModel()
+		{
+			var statement = (OracleStatement)_oracleSqlParser.Parse("SELECT NULL FROM DUAL").Single();
+			var exception = Assert.Throws<ArgumentNullException>(() => new OracleStatementSemanticModel(null, statement, null));
+			exception.ParamName.ShouldBe("databaseModel");
+		}
 
 		[Test(Description = @"")]
 		public void Test1()

@@ -15,7 +15,7 @@ namespace SqlPad.Oracle
 		{
 			var statements = _oracleParser.Parse(statementText);
 
-			var currentTerminal = statements.GetTerminalAtPosition(cursorPosition - 1);
+			var currentTerminal = statements.GetTerminalAtPosition(cursorPosition, n => Terminals.AllTerminals.Contains(n.Id));
 			if (currentTerminal == null)
 				return EmptyCollection;
 

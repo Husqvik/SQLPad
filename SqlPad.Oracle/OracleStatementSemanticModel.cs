@@ -23,6 +23,9 @@ namespace SqlPad.Oracle
 		{
 			if (statement == null)
 				throw new ArgumentNullException("statement");
+			
+			if (databaseModel == null)
+				throw new ArgumentNullException("databaseModel");
 
 			Statement = statement;
 
