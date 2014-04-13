@@ -56,8 +56,6 @@ namespace SqlPad.Oracle.Commands
 			segmentsToReplace.Add(textSegment);
 		}
 
-		public override event EventHandler CanExecuteChanged = delegate { };
-
 		public string ResolvedName { get; private set; }
 	}
 }

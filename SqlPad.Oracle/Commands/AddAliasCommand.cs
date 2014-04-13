@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Windows;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
+using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 
 namespace SqlPad.Oracle.Commands
 {
@@ -18,16 +17,44 @@ namespace SqlPad.Oracle.Commands
 		{
 			if (CurrentTerminal.Id != Terminals.ObjectIdentifier)
 				return false;
-			
-			var tables = SemanticModel.QueryBlocks.SelectMany(b => b.TableReferences).Where(t => t.TableNode == CurrentTerminal).ToArray();
+
+			var tables = SemanticModel.GetQueryBlock(CurrentTerminal).TableReferences.Where(t => t.TableNode == CurrentTerminal).ToArray();
 			return tables.Length == 1 && tables[0].AliasNode == null;
 		}
 
 		protected override void ExecuteInternal(ICollection<TextSegment> segmentsToReplace)
 		{
-			MessageBox.Show("not implemented yet");
-		}
+			// TODO: Create dialog to enter alias
+			var alias = "ALIAS1";
 
-		public override event EventHandler CanExecuteChanged = delegate { };
+			var root = CurrentTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.NestedQuery, NonTerminals.QueryBlock);
+			var queryBlock = SemanticModel.QueryBlocks.Single(qb => qb.RootNode == root);
+
+			var table = queryBlock.TableReferences.Single(t => t.TableNode == CurrentTerminal);
+
+			var prefixedColumnReferences = queryBlock.Columns.SelectMany(c => c.ColumnReferences)
+				.Where(c => (c.OwnerNode != null || c.ObjectNode != null) && c.ColumnNodeReferences.Count == 1 && c.ColumnNodeReferences.Single() == table);
+			var asteriskColumnReferences = queryBlock.Columns.Where(c => c.IsAsterisk).SelectMany(c => c.ColumnReferences)
+				.Where(c => c.ObjectNodeReferences.Count == 1 && c.ObjectNodeReferences.Single() == table);
+
+			foreach (var columnReference in prefixedColumnReferences.Concat(asteriskColumnReferences))
+			{
+				var firstPrefixNode = columnReference.OwnerNode ?? columnReference.ObjectNode;
+
+				segmentsToReplace.Add(new TextSegment
+				                      {
+										  IndextStart = firstPrefixNode == null ? columnReference.ColumnNode.SourcePosition.IndexStart - 1 : firstPrefixNode.SourcePosition.IndexStart,
+										  Length = columnReference.ColumnNode.SourcePosition.IndexStart - firstPrefixNode.SourcePosition.IndexStart,
+										  Text = alias + "."
+				                      });
+			}
+
+			segmentsToReplace.Add(new TextSegment
+			                      {
+									  IndextStart = CurrentTerminal.SourcePosition.IndexEnd + 1,
+									  Length = 0,
+									  Text = " " + alias
+			                      });
+		}
 	}
 }

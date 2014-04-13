@@ -407,11 +407,11 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		private static OracleColumnReference CreateColumnReference(OracleQueryBlock queryBlock, ColumnReferenceType type, StatementDescriptionNode rootNode, StatementDescriptionNode prefixNonTerminal)
+		private static OracleColumnReference CreateColumnReference(OracleQueryBlock queryBlock, ColumnReferenceType type, StatementDescriptionNode identifierNode, StatementDescriptionNode prefixNonTerminal)
 		{
 			var columnReference = new OracleColumnReference
 			{
-				ColumnNode = rootNode,
+				ColumnNode = identifierNode,
 				Type = type,
 				Owner = queryBlock
 			};

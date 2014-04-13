@@ -289,6 +289,13 @@ namespace SqlPad
 			{
 				_multiNodeEditor.RemoveCharacter(e.Key == Key.Back);
 			}
+			else if (e.Key == Key.Back && Editor.Text.Length > Editor.CaretOffset)
+			{
+				if (Editor.Text[Editor.CaretOffset] == ')' && Editor.Text[Editor.CaretOffset - 1] == '(')
+				{
+					Editor.Document.Remove(Editor.CaretOffset, 1);
+				}
+			}
 		}
 
 		private void EditorKeyUpHandler(object sender, KeyEventArgs e)

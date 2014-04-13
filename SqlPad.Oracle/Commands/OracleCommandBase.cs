@@ -24,5 +24,7 @@ namespace SqlPad.Oracle.Commands
 			if (currentTerminal == null)
 				throw new ArgumentNullException("currentTerminal");
 		}
+
+		public override event EventHandler CanExecuteChanged = delegate { };
 	}
 }
