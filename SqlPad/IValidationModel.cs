@@ -4,14 +4,14 @@ namespace SqlPad
 {
 	public interface IValidationModel
 	{
-		IDictionary<StatementDescriptionNode, bool> TableNodeValidity { get; }
+		IDictionary<StatementDescriptionNode, INodeValidationData> TableNodeValidity { get; }
 
-		IDictionary<StatementDescriptionNode, IColumnValidationData> ColumnNodeValidity { get; }
+		IDictionary<StatementDescriptionNode, INodeValidationData> ColumnNodeValidity { get; }
 	}
 
-	public interface IColumnValidationData
+	public interface INodeValidationData
 	{
-		StatementDescriptionNode ColumnNode { get; }
+		StatementDescriptionNode Node { get; }
 		SemanticError SemanticError { get; }
 		bool IsRecognized { get; }
 		ICollection<string> TableNames { get; }
@@ -20,6 +20,6 @@ namespace SqlPad
 	public enum SemanticError
 	{
 		None,
-		AmbiguousTableReference
+		AmbiguousReference
 	}
 }

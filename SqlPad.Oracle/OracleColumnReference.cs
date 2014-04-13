@@ -9,8 +9,8 @@ namespace SqlPad.Oracle
 		public OracleColumnReference()
 		{
 			QueryBlocks = new HashSet<OracleQueryBlock>();
-			ObjectNodeReferences = new HashSet<OracleTableReference>();
-			ColumnNodeReferences = new HashSet<OracleTableReference>();
+			ObjectNodeReferences = new HashSet<OracleObjectReference>();
+			ColumnNodeReferences = new HashSet<OracleObjectReference>();
 		}
 
 		public OracleObjectIdentifier FullyQualifiedObjectName
@@ -40,9 +40,9 @@ namespace SqlPad.Oracle
 
 		public ICollection<OracleQueryBlock> QueryBlocks { get; set; }
 
-		public ICollection<OracleTableReference> ObjectNodeReferences { get; set; }
+		public ICollection<OracleObjectReference> ObjectNodeReferences { get; set; }
 		
-		public ICollection<OracleTableReference> ColumnNodeReferences { get; set; }
+		public ICollection<OracleObjectReference> ColumnNodeReferences { get; set; }
 	}
 
 	public enum ColumnReferenceType

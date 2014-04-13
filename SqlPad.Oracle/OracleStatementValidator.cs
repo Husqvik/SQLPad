@@ -16,16 +16,16 @@ namespace SqlPad.Oracle
 			{
 				if (tableReference.Type == TableReferenceType.CommonTableExpression)
 				{
-					validationModel.TableNodeValidity[tableReference.TableNode] = true;
+					validationModel.TableNodeValidity[tableReference.TableNode] = new NodeValidationData { IsRecognized = true };
 					continue;
 				}
 
 				if (tableReference.OwnerNode != null)
 				{
-					validationModel.TableNodeValidity[tableReference.OwnerNode] = tableReference.SearchResult.SchemaFound;
+					validationModel.TableNodeValidity[tableReference.OwnerNode] = new NodeValidationData { IsRecognized = tableReference.SearchResult.SchemaFound };
 				}
 
-				validationModel.TableNodeValidity[tableReference.TableNode] = tableReference.SearchResult.SchemaObject != null;
+				validationModel.TableNodeValidity[tableReference.TableNode] = new NodeValidationData { IsRecognized = tableReference.SearchResult.SchemaObject != null };
 			}
 
 			foreach (var queryBlock in semanticModel.QueryBlocks)
@@ -36,18 +36,18 @@ namespace SqlPad.Oracle
 				{
 					// Schema
 					if (cr.ColumnReference.OwnerNode != null)
-						validationModel.TableNodeValidity[cr.ColumnReference.OwnerNode] = cr.ColumnReference.ObjectNodeReferences.Count == 1;
+						validationModel.TableNodeValidity[cr.ColumnReference.OwnerNode] = new NodeValidationData(cr.ColumnReference.ObjectNodeReferences) { IsRecognized = cr.ColumnReference.ObjectNodeReferences.Count > 0 };
 
 					// Object
 					if (cr.ColumnReference.ObjectNode != null)
-						validationModel.TableNodeValidity[cr.ColumnReference.ObjectNode] = cr.ColumnReference.ObjectNodeReferences.Count == 1;
+						validationModel.TableNodeValidity[cr.ColumnReference.ObjectNode] = new NodeValidationData(cr.ColumnReference.ObjectNodeReferences) { IsRecognized = cr.ColumnReference.ObjectNodeReferences.Count > 0 };
 
 					// Column
 					var columnReferences = cr.Column != null && cr.Column.IsAsterisk
 						? 1
 						: cr.ColumnReference.ColumnNodeReferences.Count;
 
-					validationModel.ColumnNodeValidity[cr.ColumnReference.ColumnNode] = new ColumnValidationData(cr.ColumnReference.ColumnNodeReferences) { IsRecognized = columnReferences > 0 };
+					validationModel.ColumnNodeValidity[cr.ColumnReference.ColumnNode] = new NodeValidationData(cr.ColumnReference.ColumnNodeReferences) { IsRecognized = columnReferences > 0 };
 				}
 			}
 
@@ -57,34 +57,38 @@ namespace SqlPad.Oracle
 
 	public class OracleValidationModel : IValidationModel
 	{
-		private readonly Dictionary<StatementDescriptionNode, bool> _tableNodeValidity = new Dictionary<StatementDescriptionNode, bool>();
-		private readonly Dictionary<StatementDescriptionNode, IColumnValidationData> _columnNodeValidity = new Dictionary<StatementDescriptionNode, IColumnValidationData>();
+		private readonly Dictionary<StatementDescriptionNode, INodeValidationData> _tableNodeValidity = new Dictionary<StatementDescriptionNode, INodeValidationData>();
+		private readonly Dictionary<StatementDescriptionNode, INodeValidationData> _columnNodeValidity = new Dictionary<StatementDescriptionNode, INodeValidationData>();
 
-		public IDictionary<StatementDescriptionNode, bool> TableNodeValidity { get { return _tableNodeValidity; } }
+		public IDictionary<StatementDescriptionNode, INodeValidationData> TableNodeValidity { get { return _tableNodeValidity; } }
 
-		public IDictionary<StatementDescriptionNode, IColumnValidationData> ColumnNodeValidity { get { return _columnNodeValidity; } }
+		public IDictionary<StatementDescriptionNode, INodeValidationData> ColumnNodeValidity { get { return _columnNodeValidity; } }
 	}
 
-	public class ColumnValidationData : IColumnValidationData
+	public class NodeValidationData : INodeValidationData
 	{
-		private readonly HashSet<OracleTableReference> _tableReferences;
+		private readonly HashSet<OracleObjectReference> _objectReferences;
 
-		public ColumnValidationData(IEnumerable<OracleTableReference> tableReferences = null)
+		public NodeValidationData(OracleObjectReference objectReference) : this(Enumerable.Repeat(objectReference, 1))
 		{
-			_tableReferences = new HashSet<OracleTableReference>(tableReferences ?? Enumerable.Empty<OracleTableReference>());
 		}
 
-		public StatementDescriptionNode ColumnNode { get; set; }
-		
+		public NodeValidationData(IEnumerable<OracleObjectReference> objectReferences = null)
+		{
+			_objectReferences = new HashSet<OracleObjectReference>(objectReferences ?? Enumerable.Empty<OracleObjectReference>());
+		}
+
 		public bool IsRecognized { get; set; }
 
-		public SemanticError SemanticError
+		public virtual SemanticError SemanticError
 		{
-			get { return _tableReferences.Count >= 2 ? SemanticError.AmbiguousTableReference : SemanticError.None; }
+			get { return _objectReferences.Count >= 2 ? SemanticError.AmbiguousReference : SemanticError.None; }
 		}
 
-		public ICollection<OracleTableReference> TableReferences { get { return _tableReferences; } }
+		public ICollection<OracleObjectReference> ObjectReferences { get { return _objectReferences; } }
 
-		public ICollection<string> TableNames { get { return _tableReferences.Select(t => t.FullyQualifiedName.Name).OrderByDescending(n => n).ToArray(); } }
+		public ICollection<string> TableNames { get { return _objectReferences.Select(t => t.FullyQualifiedName.Name).OrderByDescending(n => n).ToArray(); } }	
+		
+		public StatementDescriptionNode Node { get; set; }
 	}
 }

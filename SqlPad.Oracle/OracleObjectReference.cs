@@ -4,12 +4,12 @@ using System.Linq;
 
 namespace SqlPad.Oracle
 {
-	[DebuggerDisplay("OracleTableReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; Table={Type != SqlPad.Oracle.TableReferenceType.NestedQuery ? TableNode.Token.Value : \"<Nested subquery>\"}; Alias={AliasNode == null ? null : AliasNode.Token.Value}; Type={Type})")]
-	public class OracleTableReference : IOracleTableReference
+	[DebuggerDisplay("OracleObjectReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; Table={Type != SqlPad.Oracle.TableReferenceType.NestedQuery ? TableNode.Token.Value : \"<Nested subquery>\"}; Alias={AliasNode == null ? null : AliasNode.Token.Value}; Type={Type})")]
+	public class OracleObjectReference : IOracleTableReference
 	{
 		private List<OracleColumn> _columns;
 
-		public OracleTableReference()
+		public OracleObjectReference()
 		{
 			Nodes = new StatementDescriptionNode[0];
 			QueryBlocks = new List<OracleQueryBlock>();

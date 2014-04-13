@@ -253,7 +253,7 @@ namespace SqlPad.Oracle
 			return specificColumns;
 		}
 
-		private IEnumerable<OracleCodeCompletionItem> CreateAsteriskColumnCompletionItems(IEnumerable<OracleTableReference> tables, bool skipFirstObjectIdentifier, StatementDescriptionNode currentNode)
+		private IEnumerable<OracleCodeCompletionItem> CreateAsteriskColumnCompletionItems(IEnumerable<OracleObjectReference> tables, bool skipFirstObjectIdentifier, StatementDescriptionNode currentNode)
 		{
 			var builder = new StringBuilder();
 			
@@ -296,9 +296,9 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		private OracleCodeCompletionItem CreateColumnCodeCompletionItem(OracleColumn column, OracleTableReference tableReference, StatementDescriptionNode currentNode)
+		private OracleCodeCompletionItem CreateColumnCodeCompletionItem(OracleColumn column, OracleObjectReference objectReference, StatementDescriptionNode currentNode)
 		{
-			var tablePrefix = tableReference == null ? null : tableReference.FullyQualifiedName + ".";
+			var tablePrefix = objectReference == null ? null : objectReference.FullyQualifiedName + ".";
 
 			return new OracleCodeCompletionItem
 			       {
@@ -357,32 +357,32 @@ namespace SqlPad.Oracle
 						});
 		}
 
-		private IEnumerable<ICodeCompletionItem> GenerateJoinConditionSuggestionItems(OracleTableReference parentTable, OracleTableReference joinedTable, bool skipOnTerminal, int insertOffset)
+		private IEnumerable<ICodeCompletionItem> GenerateJoinConditionSuggestionItems(OracleObjectReference parentSchemaObject, OracleObjectReference joinedSchemaObject, bool skipOnTerminal, int insertOffset)
 		{
 			var codeItems = Enumerable.Empty<ICodeCompletionItem>();
 
-			if (parentTable.Type == TableReferenceType.PhysicalObject && joinedTable.Type == TableReferenceType.PhysicalObject)
+			if (parentSchemaObject.Type == TableReferenceType.PhysicalObject && joinedSchemaObject.Type == TableReferenceType.PhysicalObject)
 			{
-				if (parentTable.SearchResult.SchemaObject == null || joinedTable.SearchResult.SchemaObject == null)
+				if (parentSchemaObject.SearchResult.SchemaObject == null || joinedSchemaObject.SearchResult.SchemaObject == null)
 					return EmptyCollection;
 
-				var parentObject = parentTable.SearchResult.SchemaObject;
-				var joinedObject = joinedTable.SearchResult.SchemaObject;
+				var parentObject = parentSchemaObject.SearchResult.SchemaObject;
+				var joinedObject = joinedSchemaObject.SearchResult.SchemaObject;
 
 				var joinedToParentKeys = parentObject.ForeignKeys.Where(k => k.TargetObject == joinedObject.FullyQualifiedName)
-					.Select(k => GenerateJoinConditionSuggestionItem(parentTable.FullyQualifiedName, joinedTable.FullyQualifiedName, k.SourceColumns, k.TargetColumns, false, skipOnTerminal, insertOffset));
+					.Select(k => GenerateJoinConditionSuggestionItem(parentSchemaObject.FullyQualifiedName, joinedSchemaObject.FullyQualifiedName, k.SourceColumns, k.TargetColumns, false, skipOnTerminal, insertOffset));
 
 				codeItems = codeItems.Concat(joinedToParentKeys);
 
 				var parentToJoinedKeys = joinedObject.ForeignKeys.Where(k => k.TargetObject == parentObject.FullyQualifiedName)
-					.Select(k => GenerateJoinConditionSuggestionItem(joinedTable.FullyQualifiedName, parentTable.FullyQualifiedName, k.SourceColumns, k.TargetColumns, true, skipOnTerminal, insertOffset));
+					.Select(k => GenerateJoinConditionSuggestionItem(joinedSchemaObject.FullyQualifiedName, parentSchemaObject.FullyQualifiedName, k.SourceColumns, k.TargetColumns, true, skipOnTerminal, insertOffset));
 
 				codeItems = codeItems.Concat(parentToJoinedKeys);
 			}
 			else
 			{
-				var columnNameJoinConditions = parentTable.Columns.Select(c => c.Name).Intersect(joinedTable.Columns.Select(c => c.Name))
-					.Select(c => GenerateJoinConditionSuggestionItem(parentTable.FullyQualifiedName, joinedTable.FullyQualifiedName, new[] { c }, new[] { c }, false, skipOnTerminal, insertOffset));
+				var columnNameJoinConditions = parentSchemaObject.Columns.Select(c => c.Name).Intersect(joinedSchemaObject.Columns.Select(c => c.Name))
+					.Select(c => GenerateJoinConditionSuggestionItem(parentSchemaObject.FullyQualifiedName, joinedSchemaObject.FullyQualifiedName, new[] { c }, new[] { c }, false, skipOnTerminal, insertOffset));
 
 				codeItems = codeItems.Concat(columnNameJoinConditions);
 			}

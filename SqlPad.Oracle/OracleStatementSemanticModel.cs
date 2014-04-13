@@ -9,7 +9,7 @@ namespace SqlPad.Oracle
 	public class OracleStatementSemanticModel
 	{
 		private readonly Dictionary<StatementDescriptionNode, OracleQueryBlock> _queryBlockResults = new Dictionary<StatementDescriptionNode, OracleQueryBlock>();
-		private readonly Dictionary<OracleSelectListColumn, ICollection<OracleTableReference>> _asteriskTableReferences = new Dictionary<OracleSelectListColumn, ICollection<OracleTableReference>>();
+		private readonly Dictionary<OracleSelectListColumn, ICollection<OracleObjectReference>> _asteriskTableReferences = new Dictionary<OracleSelectListColumn, ICollection<OracleObjectReference>>();
 		private readonly List<ICollection<OracleColumnReference>> _joinClauseColumnReferences = new List<ICollection<OracleColumnReference>>();
 
 		public OracleStatement Statement { get; private set; }
@@ -82,7 +82,7 @@ namespace SqlPad.Oracle
 					{
 						var nestedQueryTableReferenceQueryBlock = nestedQueryTableReference.GetPathFilterDescendants(n => n.Id != NonTerminals.NestedQuery && n.Id != NonTerminals.SubqueryFactoringClause, NonTerminals.QueryBlock).Single();
 
-						item.TableReferences.Add(new OracleTableReference
+						item.TableReferences.Add(new OracleObjectReference
 						{
 							TableReferenceNode = tableReferenceNonterminal,
 							TableNode = nestedQueryTableReferenceQueryBlock,
@@ -122,7 +122,7 @@ namespace SqlPad.Oracle
 						result = databaseModel.GetObject(OracleObjectIdentifier.Create(owner, objectName));
 					}
 
-					item.TableReferences.Add(new OracleTableReference
+					item.TableReferences.Add(new OracleObjectReference
 					                         {
 												 TableReferenceNode = tableReferenceNonterminal,
 						                         OwnerNode = schemaPrefixNode,
@@ -222,7 +222,7 @@ namespace SqlPad.Oracle
 			return queryBlockNode == null ? null : _queryBlockResults[queryBlockNode];
 		}
 
-		private void ResolveColumnTableReferences(IEnumerable<OracleColumnReference> columnReferences, ICollection<OracleTableReference> accessibleTableReferences)
+		private void ResolveColumnTableReferences(IEnumerable<OracleColumnReference> columnReferences, ICollection<OracleObjectReference> accessibleTableReferences)
 		{
 			foreach (var columnReference in columnReferences)
 			{
@@ -261,11 +261,11 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		private bool IsTableReferenceValid(OracleColumnReference column, OracleTableReference table)
+		private bool IsTableReferenceValid(OracleColumnReference column, OracleObjectReference schemaObject)
 		{
 			var objectName = column.FullyQualifiedObjectName;
-			return (String.IsNullOrEmpty(objectName.NormalizedName) || objectName.NormalizedName == table.FullyQualifiedName.NormalizedName) &&
-			       (String.IsNullOrEmpty(objectName.NormalizedOwner) || objectName.NormalizedOwner == table.FullyQualifiedName.NormalizedOwner);
+			return (String.IsNullOrEmpty(objectName.NormalizedName) || objectName.NormalizedName == schemaObject.FullyQualifiedName.NormalizedName) &&
+			       (String.IsNullOrEmpty(objectName.NormalizedOwner) || objectName.NormalizedOwner == schemaObject.FullyQualifiedName.NormalizedOwner);
 		}
 
 		private void ResolveJoinColumnReferences(OracleQueryBlock queryBlock)
@@ -347,7 +347,7 @@ namespace SqlPad.Oracle
 
 				column.ColumnReferences.Add(CreateColumnReference(item, ColumnReferenceType.SelectList, asteriskNode, null));
 
-				_asteriskTableReferences[column] = new HashSet<OracleTableReference>(item.TableReferences);
+				_asteriskTableReferences[column] = new HashSet<OracleObjectReference>(item.TableReferences);
 
 				item.Columns.Add(column);
 			}
@@ -366,7 +366,7 @@ namespace SqlPad.Oracle
 						ExplicitDefinition = true
 					};
 
-					_asteriskTableReferences.Add(column, new List<OracleTableReference>());
+					_asteriskTableReferences.Add(column, new List<OracleObjectReference>());
 
 					var asteriskNode = columnExpression.GetDescendantsWithinSameQuery(Terminals.Asterisk).SingleOrDefault();
 					if (asteriskNode != null)

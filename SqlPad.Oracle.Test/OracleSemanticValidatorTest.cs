@@ -21,7 +21,7 @@ namespace SqlPad.Oracle.Test
 			
 			var validationModel = _statementValidator.ResolveReferences(query, statement, _databaseModel);
 
-			var nodeValidity = validationModel.TableNodeValidity.Values.ToArray();
+			var nodeValidity = validationModel.TableNodeValidity.Values.Select(v => v.IsRecognized).ToArray();
 			nodeValidity.Length.ShouldBe(9);
 			nodeValidity[0].ShouldBe(true);
 			nodeValidity[1].ShouldBe(true);
@@ -43,7 +43,7 @@ namespace SqlPad.Oracle.Test
 			
 			var validationModel = _statementValidator.ResolveReferences(query, statement, _databaseModel);
 
-			var nodeValidity = validationModel.TableNodeValidity.Values.ToArray();
+			var nodeValidity = validationModel.TableNodeValidity.Values.Select(v => v.IsRecognized).ToArray();
 			nodeValidity.Length.ShouldBe(8);
 			nodeValidity[0].ShouldBe(false);
 			nodeValidity[1].ShouldBe(true);
@@ -65,7 +65,7 @@ namespace SqlPad.Oracle.Test
 			
 			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, _databaseModel);
 			var nodeValidityDictionary = validationModel.TableNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
-			var nodeValidity = nodeValidityDictionary.Values.ToList();
+			var nodeValidity = nodeValidityDictionary.Values.Select(v => v.IsRecognized).ToList();
 			nodeValidity.Count.ShouldBe(11);
 			nodeValidity.ForEach(n => n.ShouldBe(true));
 		}
@@ -80,7 +80,7 @@ namespace SqlPad.Oracle.Test
 			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, _databaseModel);
 			
 			var nodeValidityDictionary = validationModel.TableNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
-			var nodeValidity = nodeValidityDictionary.Values.ToArray();
+			var nodeValidity = nodeValidityDictionary.Values.Select(v => v.IsRecognized).ToArray();
 			nodeValidity.Length.ShouldBe(9);
 			nodeValidity[0].ShouldBe(true);
 			nodeValidity[1].ShouldBe(true);
@@ -151,6 +151,22 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"")]
+		public void TestAmbiguousColumnAndObjectNames()
+		{
+			const string sqlText = @"SELECT DUAL.DUMMY FROM SYS.DUAL, ""PUBLIC"".DUAL";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, _databaseModel);
+
+			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var nodeValidity = nodeValidityDictionary.Values.Select(c => c.SemanticError).ToArray();
+			nodeValidity.Length.ShouldBe(1);
+			nodeValidity[0].ShouldBe(SemanticError.AmbiguousReference);
+		}
+
+		[Test(Description = @"")]
 		public void TestAmbiguousColumnReferences()
 		{
 			const string query1 = "SELECT T2.DUMMY FROM (SELECT DUMMY FROM DUAL) T2, DUAL";
@@ -177,7 +193,7 @@ namespace SqlPad.Oracle.Test
 			nodeValidityDictionary.Count.ShouldBe(2);
 			var columnValidationData = nodeValidityDictionary.First().Value;
 			columnValidationData.IsRecognized.ShouldBe(true);
-			columnValidationData.SemanticError.ShouldBe(SemanticError.AmbiguousTableReference);
+			columnValidationData.SemanticError.ShouldBe(SemanticError.AmbiguousReference);
 			columnValidationData.TableNames.Count.ShouldBe(2);
 			
 			var tableNames = columnValidationData.TableNames.OrderBy(n => n).ToArray();
@@ -252,7 +268,7 @@ namespace SqlPad.Oracle.Test
 			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, _databaseModel);
 
 			var nodeValidityDictionary = validationModel.TableNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
-			var nodeValidity = nodeValidityDictionary.Values.ToArray();
+			var nodeValidity = nodeValidityDictionary.Values.Select(v => v.IsRecognized).ToArray();
 			nodeValidity.Length.ShouldBe(2);
 			nodeValidity[0].ShouldBe(true);
 			nodeValidity[1].ShouldBe(true);
@@ -289,7 +305,7 @@ namespace SqlPad.Oracle.Test
 
 			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, _databaseModel);
 
-			var nodeValidity = validationModel.TableNodeValidity.Values.ToArray();
+			var nodeValidity = validationModel.TableNodeValidity.Values.Select(v => v.IsRecognized).ToArray();
 			nodeValidity.Length.ShouldBe(6);
 			nodeValidity[0].ShouldBe(true);
 			nodeValidity[1].ShouldBe(false);
@@ -313,8 +329,8 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 
 			var tableNodeValidity = _statementValidator.ResolveReferences(sqlText, statement, _databaseModel)
 				.TableNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
-			
-			var nodeValidity = tableNodeValidity.Values.ToArray();
+
+			var nodeValidity = tableNodeValidity.Values.Select(v => v.IsRecognized).ToArray();
 			nodeValidity.Length.ShouldBe(9);
 			nodeValidity[0].ShouldBe(true); // PROJECT
 			nodeValidity[1].ShouldBe(true); // RESPONDENTBUCKET
@@ -342,8 +358,8 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 
 			var tableNodeValidity = _statementValidator.ResolveReferences(sqlText, statement, _databaseModel)
 				.TableNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
-			
-			var nodeValidity = tableNodeValidity.Values.ToArray();
+
+			var nodeValidity = tableNodeValidity.Values.Select(v => v.IsRecognized).ToArray();
 			nodeValidity.Length.ShouldBe(4);
 			nodeValidity[0].ShouldBe(true); // SELECTION
 			nodeValidity[1].ShouldBe(true); // RESPONDENTBUCKET

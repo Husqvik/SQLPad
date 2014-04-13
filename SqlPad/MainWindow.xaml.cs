@@ -249,6 +249,11 @@ namespace SqlPad
 				Editor.ContextMenu.Items.Add(menuItem);
 			}
 
+			if (Editor.ContextMenu.Items.Count == 1)
+			{
+				Editor.ContextMenu.Opened += (sender, args) => ((MenuItem)Editor.ContextMenu.Items[0]).Focus();
+			}
+
 			Editor.ContextMenu.PlacementTarget = Editor;
 			var position = Editor.TextArea.Caret.CalculateCaretRectangle().TopRight;
 			Editor.ContextMenu.HorizontalOffset = position.X - 24;
