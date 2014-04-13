@@ -1,22 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using ICSharpCode.AvalonEdit;
 
 namespace SqlPad
 {
 	public class MultiNodeEditor
 	{
-		private readonly ISqlParser _parser;
 		private readonly TextEditor _editor;
+		private readonly IMultiNodeEditorDataProvider _dataProvider;
 
 		public MultiNodeEditor(TextEditor editor, IInfrastructureFactory infrastructureFactory)
 		{
-			_parser = infrastructureFactory.CreateSqlParser();
+			_dataProvider = infrastructureFactory.CreateMultiNodeEditorDataProvider();
 			_editor = editor;
 		}
 
-		public void InsertText(string text)
+		/*public void InsertText(string text)
 		{
 			var data = GetSynchronizationData();
 
@@ -24,36 +22,39 @@ namespace SqlPad
 			{
 				_editor.Document.Insert(node.SourcePosition.IndexStart + data.OffsetFromNodeStartIndex, text);
 			}
-		}
+		}*/
 
-		public void RemoveCharacter()
+		public void Replace(string newText)
 		{
 			var data = GetSynchronizationData();
 			foreach (var node in data.SynchronizedNodes)
 			{
-				_editor.Document.Remove(node.SourcePosition.IndexStart + data.OffsetFromNodeStartIndex, 1);
+				_editor.Document.Replace(node.SourcePosition.IndexStart + data.OffsetFromNodeStartIndex, _editor.SelectionLength, newText);
 			}
 		}
 
-		private SynchronizationData GetSynchronizationData()
+		public void RemoveCharacter(bool reverse)
 		{
-			var statements = _parser.Parse(_editor.Text);
-			var currentNode = statements.GetTerminalAtPosition(_editor.CaretOffset, n => n.Id.In("Alias", "ObjectIdentifier", "SchemaIdentifier", "Identifier"));
-
-			// TODO: Handle by provider
-			var synchronizedNodes = currentNode.Statement.AllTerminals
-				.Where(t => t != currentNode && String.Equals(t.Token.Value, currentNode.Token.Value, StringComparison.InvariantCultureIgnoreCase))
-				.OrderByDescending(t => t.SourcePosition.IndexStart);
-
-			var offsetFromNodeStartIndex = _editor.CaretOffset - currentNode.SourcePosition.IndexStart;
-
-			return new SynchronizationData { OffsetFromNodeStartIndex = offsetFromNodeStartIndex, SynchronizedNodes = synchronizedNodes };
+			var data = GetSynchronizationData();
+			foreach (var node in data.SynchronizedNodes)
+			{
+				var selectionCharacter = reverse && _editor.SelectionLength == 0 ? 1 : 0;
+				_editor.Document.Remove(node.SourcePosition.IndexStart + data.OffsetFromNodeStartIndex - selectionCharacter, data.Characters);
+			}
 		}
 
-		private struct SynchronizationData
+		private MultiNodeEditorData GetSynchronizationData()
 		{
-			public int OffsetFromNodeStartIndex { get; set; }
-			public IEnumerable<StatementDescriptionNode> SynchronizedNodes { get; set; }
+			return _dataProvider.GetMultiNodeEditorData(_editor.Text, _editor.CaretOffset, _editor.SelectionStart, _editor.SelectionLength);
 		}
+	}
+
+	public struct MultiNodeEditorData
+	{
+		public bool IsAllowed { get; set; }
+		public int OffsetFromNodeStartIndex { get; set; }
+		public int Characters { get; set; }
+		public StatementDescriptionNode CurrentNode { get; set; }
+		public IEnumerable<StatementDescriptionNode> SynchronizedNodes { get; set; }
 	}
 }

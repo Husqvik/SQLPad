@@ -68,6 +68,7 @@
     <Compile Include="IObjectIdentifier.cs" />
     <Compile Include="ISqlParser.cs" />
     <Compile Include="MultiNodeEditor.cs" />
+    <Compile Include="Snippets.cs" />
     <Compile Include="StatementCollection.cs" />
     <Compile Include="IStatementValidator.cs" />
     <Compile Include="IToken.cs" />

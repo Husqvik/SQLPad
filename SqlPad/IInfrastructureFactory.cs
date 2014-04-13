@@ -20,5 +20,12 @@ namespace SqlPad
 		ICodeSnippetProvider CreateSnippetProvider();
 
 		IContextActionProvider CreateContextActionProvider();
+
+		IMultiNodeEditorDataProvider CreateMultiNodeEditorDataProvider();
+	}
+
+	public interface IMultiNodeEditorDataProvider
+	{
+		MultiNodeEditorData GetMultiNodeEditorData(string sqlText, int position, int selectionStart, int selectionLength);
 	}
 }

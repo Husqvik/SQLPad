@@ -14,6 +14,7 @@ using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Editing;
@@ -152,13 +153,13 @@ namespace SqlPad
 			{
 				Editor.Document.BeginUpdate();
 
-				_multiNodeEditor.InsertText(e.Text);
-
-				/*var nodeOffset = Editor.CaretOffset - _multiNodeEditor.CurrentNode.SourcePosition.IndexStart;
-				foreach (var node in _multiNodeEditor.Nodes)
+				/*if (Editor.SelectionLength > 0)
 				{
-					Editor.Document.Insert(node.SourcePosition.IndexStart + nodeOffset, e.Text);
-				}*/
+					_multiNodeEditor.RemoveCharacter(Editor.CaretOffset != Editor.SelectionStart);
+				}
+
+				_multiNodeEditor.InsertText(e.Text);*/
+				_multiNodeEditor.Replace(e.Text);
 			}
 
 			if (e.Text.Length == 1 && _completionWindow != null)
@@ -278,14 +279,16 @@ namespace SqlPad
 			{
 				Trace.WriteLine("ALT SHIFT + F11");
 			}
+
+			if ((e.Key == Key.Back || e.Key == Key.Delete) && _multiNodeEditor != null)
+			{
+				_multiNodeEditor.RemoveCharacter(e.Key == Key.Back);
+			}
 		}
 
 		private void EditorKeyUpHandler(object sender, KeyEventArgs e)
 		{
-			if (e.Key == Key.Back && _multiNodeEditor != null)
-			{
-				_multiNodeEditor.RemoveCharacter();
-			}
+			
 		}
 
 		private MultiNodeEditor _multiNodeEditor;
