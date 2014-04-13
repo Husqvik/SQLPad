@@ -287,6 +287,7 @@ namespace SqlPad
 
 			if ((e.Key == Key.Back || e.Key == Key.Delete) && _multiNodeEditor != null)
 			{
+				Editor.Document.BeginUpdate();
 				_multiNodeEditor.RemoveCharacter(e.Key == Key.Back);
 			}
 			else if (e.Key == Key.Back && Editor.Text.Length > Editor.CaretOffset)
@@ -300,7 +301,10 @@ namespace SqlPad
 
 		private void EditorKeyUpHandler(object sender, KeyEventArgs e)
 		{
-			
+			if (Editor.Document.IsInUpdate)
+			{
+				Editor.Document.EndUpdate();
+			}
 		}
 
 		private MultiNodeEditor _multiNodeEditor;

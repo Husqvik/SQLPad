@@ -3,11 +3,11 @@
             Dbms="Oracle" Version="12.1.0.1.0">
   <StartSymbols>
     <StartSymbol Id="SelectStatement" />
+    <StartSymbol Id="DeleteStatement" />
+    <StartSymbol Id="UpdateStatement" />
     <StartSymbol Id="CommitStatement" />
     <StartSymbol Id="SetTransactionStatement" />
     <!--<StartSymbol Id="InsertStatement" />
-    <StartSymbol Id="UpdateStatement" />
-    <StartSymbol Id="DeleteStatement" />
     <StartSymbol Id="CreateStatement" />
     <StartSymbol Id="DropStatement" />
     <StartSymbol Id="AlterStatement" />
@@ -107,6 +107,7 @@
           <Terminal Id="Transaction" />
           <NonTerminal Id="TransactionModeOrIsolationLevelOrRollbackSegment" IsOptional="true" />
           <NonTerminal Id="TransactionNameClause" IsOptional="true" />
+          <Terminal Id="Semicolon" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -164,6 +165,20 @@
     </Rule>
 
     <!-- DELETE statement -->
+    <Rule StartingNonTerminal="DeleteStatement">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Delete" />
+          <Terminal Id="From" IsOptional="true" />
+          <NonTerminal Id="TableReference" />
+          <NonTerminal Id="WhereClause" IsOptional="true" />
+          <NonTerminal Id="ReturningClause" IsOptional="true" />
+          <NonTerminal Id="ErrorLoggingClause" IsOptional="true" />
+          <Terminal Id="Semicolon" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
     <Rule StartingNonTerminal="ReturningClause">
       <Sequences>
         <Sequence>
@@ -193,6 +208,175 @@
         </Sequence>
         <Sequence>
           <Terminal Id="Returning" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ErrorLoggingClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Log" />
+          <Terminal Id="Errors" />
+          <NonTerminal Id="ErrorLoggingIntoObject" IsOptional="true" />
+          <NonTerminal Id="ParenthesisEnclosedExpression" IsOptional="true" />
+          <NonTerminal Id="ErrorLoggingRejectLimit" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ErrorLoggingIntoObject">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Into" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ErrorLoggingRejectLimit">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Reject" />
+          <Terminal Id="Limit" />
+          <NonTerminal Id="UnlimitedOrIntegerLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="UnlimitedOrIntegerLiteral">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Unlimited" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ParenthesisEnclosedExpression">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="Expression" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <!-- UPDATE statement -->
+    <Rule StartingNonTerminal="UpdateStatement">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Update" />
+          <NonTerminal Id="TableReference" />
+          <NonTerminal Id="UpdateSetClause" />
+          <NonTerminal Id="WhereClause" IsOptional="true" />
+          <NonTerminal Id="ReturningClause" IsOptional="true" />
+          <NonTerminal Id="ErrorLoggingClause" IsOptional="true" />
+          <Terminal Id="Semicolon" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="UpdateSetClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Set" />
+          <NonTerminal Id="UpdateSetColumnsOrObjectValue" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="UpdateSetColumnsOrObjectValue">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="UpdateSetColumnOrColumnList" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="SetObjectValueEqualsExpressionOrNestedQuery" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="UpdateSetColumnOrColumnList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="SetColumnEqualsExpressionOrNestedQueryOrDefaultValue" />
+          <NonTerminal Id="UpdateSetColumnOrColumnListChainedList" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="SetColumnListEqualsNestedQuery" />
+          <NonTerminal Id="UpdateSetColumnOrColumnListChainedList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="UpdateSetColumnOrColumnListChainedList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="UpdateSetColumnOrColumnList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="SetColumnListEqualsNestedQuery">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ParenthesisEnclosedColumnIdentifierList" />
+          <Terminal Id="MathEquals" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="NestedQuery" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SetColumnEqualsExpressionOrNestedQueryOrDefaultValue">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Identifier" />
+          <Terminal Id="MathEquals" />
+          <NonTerminal Id="ExpressionOrNestedQueryOrDefaultValue" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ExpressionOrNestedQuery">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="Expression" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="NestedQuery" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ExpressionOrNestedQueryOrDefaultValue">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ExpressionOrNestedQuery" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Default" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SetObjectValueEqualsExpressionOrNestedQuery">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Value" />
+          <Terminal Id="LeftParenthesis" />
+          <Terminal Id="Alias" />
+          <Terminal Id="RightParenthesis" />
+          <Terminal Id="MathEquals" />
+          <NonTerminal Id="ExpressionOrNestedQuery" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -2580,6 +2764,7 @@
     <Terminal Id="Reject" Value="REJECT" />
     <Terminal Id="Limit" Value="LIMIT" />
     <Terminal Id="Unlimited" Value="UNLIMITED" />
+    <Terminal Id="Value" Value="VALUE" />
 
     <!-- Delete -->
     <Terminal Id="Delete" Value="DELETE" IsKeyword="true" />

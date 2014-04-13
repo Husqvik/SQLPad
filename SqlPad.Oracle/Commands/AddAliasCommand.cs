@@ -24,6 +24,11 @@ namespace SqlPad.Oracle.Commands
 
 		protected override void ExecuteInternal(ICollection<TextSegment> segmentsToReplace)
 		{
+			var editDialog = new EditDialog();
+			var result = editDialog.ShowDialog();
+			if (!result.HasValue || !result.Value)
+				return;
+
 			// TODO: Create dialog to enter alias
 			var alias = "ALIAS1";
 

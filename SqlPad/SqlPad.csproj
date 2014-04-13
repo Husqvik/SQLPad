@@ -60,6 +60,9 @@
     <Compile Include="Commands\IToggleQuotedIdentifierCommand.cs" />
     <Compile Include="Commands\IWrapAsCommonTableExpressionCommand.cs" />
     <Compile Include="ConfigurationProvider.cs" />
+    <Compile Include="EditDialog.xaml.cs">
+      <DependentUpon>EditDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Extensions.cs" />
     <Compile Include="ICodeCompletionProvider.cs" />
     <Compile Include="ICodeSnippetProvider.cs" />
@@ -86,6 +89,10 @@
     </Compile>
     <Compile Include="SourcePosition.cs" />
     <Compile Include="StatementDescriptionNode.cs" />
+    <Page Include="EditDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

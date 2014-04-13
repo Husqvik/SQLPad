@@ -1418,12 +1418,14 @@ namespace SqlPad.Oracle.Test
 			public void TestTerminalCandidatesWithNullNode()
 			{
 				var terminalCandidates = Parser.GetTerminalCandidates(null).OrderBy(t => t).ToArray();
-				terminalCandidates.Length.ShouldBe(5);
+				terminalCandidates.Length.ShouldBe(7);
 				terminalCandidates[0].ShouldBe(Terminals.Commit);
-				terminalCandidates[1].ShouldBe(Terminals.LeftParenthesis);
-				terminalCandidates[2].ShouldBe(Terminals.Select);
-				terminalCandidates[3].ShouldBe(Terminals.Set);
-				terminalCandidates[4].ShouldBe(Terminals.With);
+				terminalCandidates[1].ShouldBe(Terminals.Delete);
+				terminalCandidates[2].ShouldBe(Terminals.LeftParenthesis);
+				terminalCandidates[3].ShouldBe(Terminals.Select);
+				terminalCandidates[4].ShouldBe(Terminals.Set);
+				terminalCandidates[5].ShouldBe(Terminals.Update);
+				terminalCandidates[6].ShouldBe(Terminals.With);
 			}
 
 			[Test(Description = @"")]
@@ -1437,6 +1439,51 @@ namespace SqlPad.Oracle.Test
 				var node = Parser.Parse(statement1).Single().NodeCollection.Single().LastTerminalNode;
 				//var node = Parser.Parse(statement1).Single().AllTerminals.Skip(3).First();
 				var terminalCandidates = Parser.GetTerminalCandidates(node);
+			}
+		}
+
+		public class Delete
+		{
+			[Test(Description = @"")]
+			public void TestDeleteWithReturningAndErrorLogging()
+			{
+				const string statement1 = @"DELETE FROM TEST_TABLE RETURNING COLUMN1, COLUMN2 INTO :C1, :C2 LOG ERRORS INTO SCHEMA.LOG_TABLE ('Delete statement') REJECT LIMIT 10";
+				var statements = Parser.Parse(statement1);
+				statements.Count.ShouldBe(1);
+				var statement = statements.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				
+				var terminals = statement.AllTerminals.ToArray();
+				terminals.Length.ShouldBe(25);
+			}
+		}
+
+		public class Update
+		{
+			[Test(Description = @"")]
+			public void TestUpdateWithExpressionAndScalarSubqueryAndReturningAndErrorLogging()
+			{
+				const string statement1 = @"UPDATE TEST_TABLE SET COLUMN1 = 2 / (COLUMN2 + 2), COLUMN2 = (SELECT 1 FROM DUAL), (COLUMN3, COLUMN4) = (SELECT X1, X2 FROM X3), COLUMN5 = DEFAULT RETURNING COLUMN1, COLUMN2 INTO :C1, :C2 LOG ERRORS INTO SCHEMA.LOG_TABLE ('Delete statement') REJECT LIMIT UNLIMITED";
+				var statements = Parser.Parse(statement1);
+				statements.Count.ShouldBe(1);
+				var statement = statements.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+				var terminals = statement.AllTerminals.ToArray();
+				terminals.Length.ShouldBe(62);
+			}
+
+			[Test(Description = @"")]
+			public void TestUpdateWithSetObjectValueFromSubquery()
+			{
+				const string statement1 = @"UPDATE PEOPLE_DEMO1 P SET VALUE(P) = (SELECT VALUE(Q) FROM PEOPLE_DEMO2 Q WHERE P.DEPARTMENT_ID = Q.DEPARTMENT_ID) WHERE P.DEPARTMENT_ID = 10;";
+				var statements = Parser.Parse(statement1);
+				statements.Count.ShouldBe(1);
+				var statement = statements.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+				var terminals = statement.AllTerminals.ToArray();
+				terminals.Length.ShouldBe(34);
 			}
 		}
 
