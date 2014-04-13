@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Windows;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
 namespace SqlPad.Oracle.Commands
@@ -21,9 +23,9 @@ namespace SqlPad.Oracle.Commands
 			return tables.Length == 1 && tables[0].AliasNode == null;
 		}
 
-		public override void Execute(object parameter)
+		protected override void ExecuteInternal(ICollection<TextSegment> segmentsToReplace)
 		{
-			
+			MessageBox.Show("not implemented yet");
 		}
 
 		public override event EventHandler CanExecuteChanged = delegate { };

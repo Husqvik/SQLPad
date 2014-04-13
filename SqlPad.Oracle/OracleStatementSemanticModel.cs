@@ -232,7 +232,7 @@ namespace SqlPad.Oracle
 						(tableReference.FullyQualifiedName == columnReference.FullyQualifiedObjectName ||
 						 (String.IsNullOrEmpty(columnReference.FullyQualifiedObjectName.Owner) &&
 						  tableReference.Type == TableReferenceType.PhysicalObject && tableReference.FullyQualifiedName.NormalizedName == columnReference.FullyQualifiedObjectName.NormalizedName)))
-						columnReference.TableNodeReferences.Add(tableReference);
+						columnReference.ObjectNodeReferences.Add(tableReference);
 
 					int newTableReferences;
 					{
@@ -242,23 +242,30 @@ namespace SqlPad.Oracle
 								continue;
 
 							newTableReferences = tableReference.SearchResult.SchemaObject.Columns
-								.Count(c => c.Name == columnReference.NormalizedName && (columnReference.TableNode == null || columnReference.NormalizedTableName == tableReference.FullyQualifiedName.NormalizedName));
+								.Count(c => c.Name == columnReference.NormalizedName && (columnReference.ObjectNode == null || IsTableReferenceValid(columnReference, tableReference)));
 						}
 						else
 						{
 							newTableReferences = tableReference.QueryBlocks.SelectMany(qb => qb.Columns)
-								.Count(c => c.NormalizedName == columnReference.NormalizedName && (columnReference.TableNode == null || columnReference.NormalizedTableName == tableReference.FullyQualifiedName.NormalizedName));
+								.Count(c => c.NormalizedName == columnReference.NormalizedName && (columnReference.ObjectNode == null || columnReference.ObjectTableName == tableReference.FullyQualifiedName.NormalizedName));
 						}
 					}
 
 					if (newTableReferences > 0 &&
 						(String.IsNullOrEmpty(columnReference.FullyQualifiedObjectName.NormalizedName) ||
-						 columnReference.TableNodeReferences.Count > 0))
+						 columnReference.ObjectNodeReferences.Count > 0))
 					{
 						columnReference.ColumnNodeReferences.Add(tableReference);
 					}
 				}
 			}
+		}
+
+		private bool IsTableReferenceValid(OracleColumnReference column, OracleTableReference table)
+		{
+			var objectName = column.FullyQualifiedObjectName;
+			return (String.IsNullOrEmpty(objectName.NormalizedName) || objectName.NormalizedName == table.FullyQualifiedName.NormalizedName) &&
+			       (String.IsNullOrEmpty(objectName.NormalizedOwner) || objectName.NormalizedOwner == table.FullyQualifiedName.NormalizedOwner);
 		}
 
 		private void ResolveJoinColumnReferences(OracleQueryBlock queryBlock)
@@ -370,7 +377,7 @@ namespace SqlPad.Oracle
 						var columnReference = CreateColumnReference(item, ColumnReferenceType.SelectList, asteriskNode, prefixNonTerminal);
 						column.ColumnReferences.Add(columnReference);
 
-						var tableReferences = item.TableReferences.Where(t => t.FullyQualifiedName == columnReference.FullyQualifiedObjectName || (columnReference.TableNode == null && t.FullyQualifiedName.NormalizedName == columnReference.FullyQualifiedObjectName.NormalizedName));
+						var tableReferences = item.TableReferences.Where(t => t.FullyQualifiedName == columnReference.FullyQualifiedObjectName || (columnReference.ObjectNode == null && t.FullyQualifiedName.NormalizedName == columnReference.FullyQualifiedObjectName.NormalizedName));
 						foreach (var tableReference in tableReferences)
 						{
 							_asteriskTableReferences[column].Add(tableReference);
@@ -415,7 +422,7 @@ namespace SqlPad.Oracle
 				var schemaIdentifier = prefixNonTerminal.GetSingleDescendant(Terminals.SchemaIdentifier);
 
 				columnReference.OwnerNode = schemaIdentifier;
-				columnReference.TableNode = objectIdentifier;
+				columnReference.ObjectNode = objectIdentifier;
 			}
 
 			return columnReference;

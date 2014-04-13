@@ -135,6 +135,22 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"")]
+		public void TestSameColumnNamesInSameObjectsInDifferentSchemas()
+		{
+			const string sqlText = @"SELECT SYS.DUAL.DUMMY FROM SYS.DUAL, ""PUBLIC"".DUAL";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			
+			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, _databaseModel);
+			
+			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var nodeValidity = nodeValidityDictionary.Values.Select(c => c.SemanticError).ToArray();
+			nodeValidity.Length.ShouldBe(1);
+			nodeValidity[0].ShouldBe(SemanticError.None);
+		}
+
+		[Test(Description = @"")]
 		public void TestAmbiguousColumnReferences()
 		{
 			const string query1 = "SELECT T2.DUMMY FROM (SELECT DUMMY FROM DUAL) T2, DUAL";

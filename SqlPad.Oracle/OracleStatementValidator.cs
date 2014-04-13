@@ -36,11 +36,11 @@ namespace SqlPad.Oracle
 				{
 					// Schema
 					if (cr.ColumnReference.OwnerNode != null)
-						validationModel.TableNodeValidity[cr.ColumnReference.OwnerNode] = cr.ColumnReference.TableNodeReferences.Count == 1;
+						validationModel.TableNodeValidity[cr.ColumnReference.OwnerNode] = cr.ColumnReference.ObjectNodeReferences.Count == 1;
 
 					// Object
-					if (cr.ColumnReference.TableNode != null)
-						validationModel.TableNodeValidity[cr.ColumnReference.TableNode] = cr.ColumnReference.TableNodeReferences.Count == 1;
+					if (cr.ColumnReference.ObjectNode != null)
+						validationModel.TableNodeValidity[cr.ColumnReference.ObjectNode] = cr.ColumnReference.ObjectNodeReferences.Count == 1;
 
 					// Column
 					var columnReferences = cr.Column != null && cr.Column.IsAsterisk

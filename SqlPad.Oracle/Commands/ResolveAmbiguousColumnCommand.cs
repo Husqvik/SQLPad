@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
+using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 
 namespace SqlPad.Oracle.Commands
 {
@@ -41,9 +42,18 @@ namespace SqlPad.Oracle.Commands
 			return true;
 		}
 
-		public override void Execute(object parameter)
+		protected override void ExecuteInternal(ICollection<TextSegment> segmentsToReplace)
 		{
-			// TODO
+			var prefixedColumnReference = CurrentTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference);
+
+			var textSegment = new TextSegment
+			                  {
+				                  IndextStart = prefixedColumnReference.SourcePosition.IndexStart,
+								  Length = prefixedColumnReference.SourcePosition.Length,
+								  Text = ResolvedName
+			                  };
+			
+			segmentsToReplace.Add(textSegment);
 		}
 
 		public override event EventHandler CanExecuteChanged = delegate { };

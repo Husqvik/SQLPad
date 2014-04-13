@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Windows.Input;
 
 namespace SqlPad.Oracle.Commands
 {
-	public abstract class OracleCommandBase : ICommand
+	public abstract class OracleCommandBase : CommandBase
 	{
 		protected OracleStatementSemanticModel SemanticModel { get; private set; }
 
@@ -16,11 +15,6 @@ namespace SqlPad.Oracle.Commands
 			SemanticModel = semanticModel;
 			CurrentTerminal = currentTerminal;
 		}
-
-		public abstract bool CanExecute(object parameter);
-		public abstract void Execute(object parameter);
-
-		public abstract event EventHandler CanExecuteChanged;
 
 		protected static void CheckParameters(OracleStatementSemanticModel semanticModel, StatementDescriptionNode currentTerminal)
 		{
