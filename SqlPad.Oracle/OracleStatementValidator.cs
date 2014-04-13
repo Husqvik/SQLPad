@@ -78,9 +78,9 @@ namespace SqlPad.Oracle
 		
 		public bool IsRecognized { get; set; }
 
-		public ColumnSemanticError SemanticError
+		public SemanticError SemanticError
 		{
-			get { return _tableReferences.Count >= 2 ? ColumnSemanticError.AmbiguousTableReference : ColumnSemanticError.None; }
+			get { return _tableReferences.Count >= 2 ? SemanticError.AmbiguousTableReference : SemanticError.None; }
 		}
 
 		public ICollection<OracleTableReference> TableReferences { get { return _tableReferences; } }

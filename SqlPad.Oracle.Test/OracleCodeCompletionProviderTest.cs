@@ -134,8 +134,8 @@ FROM
 			items[1].Text.ShouldBe("RESPONDENTBUCKET");
 			items[2].Name.ShouldBe("TARGETGROUP");
 			items[2].Text.ShouldBe("TARGETGROUP");
-			items[3].Name.ShouldBe("PUBLIC");
-			items[3].Text.ShouldBe("PUBLIC");
+			items[3].Name.ShouldBe("\"PUBLIC\"");
+			items[3].Text.ShouldBe("\"PUBLIC\"");
 			items[3].Category.ShouldBe(OracleCodeCompletionCategory.DatabaseSchema);
 		}
 

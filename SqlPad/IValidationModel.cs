@@ -12,12 +12,12 @@ namespace SqlPad
 	public interface IColumnValidationData
 	{
 		StatementDescriptionNode ColumnNode { get; }
-		ColumnSemanticError SemanticError { get; }
+		SemanticError SemanticError { get; }
 		bool IsRecognized { get; }
 		ICollection<string> TableNames { get; }
 	}
 
-	public enum ColumnSemanticError
+	public enum SemanticError
 	{
 		None,
 		AmbiguousTableReference

@@ -46,8 +46,10 @@ namespace SqlPad.Oracle
 		public static class Terminals
 		{
 <#
-		var terminalIds = grammarXml.Element(xmlNamespace + "SqlGrammar").Element(xmlNamespace + "Terminals").Elements().Select(e => e.Attribute("Id").Value).OrderBy(id => id);
-		var identifierTerminalIds = grammarXml.Element(xmlNamespace + "SqlGrammar").Element(xmlNamespace + "Terminals").Elements().Where(e => e.Attribute("Id").Value.Contains("Identifier")).Select(e => e.Attribute("Id").Value).OrderBy(id => id);
+		var terminalElements = grammarXml.Element(xmlNamespace + "SqlGrammar").Element(xmlNamespace + "Terminals").Elements().ToArray();
+		var terminalIds = terminalElements.Select(e => e.Attribute("Id").Value).OrderBy(id => id);
+		var identifierTerminalIds = terminalElements.Where(e => e.Attribute("Id").Value.Contains("Identifier")).Select(e => e.Attribute("Id").Value).OrderBy(id => id);
+		var keywords = terminalElements.Where(e => e.Attribute("IsKeyword") != null && e.Attribute("IsKeyword").Value.ToLowerInvariant() == "true").Select(e => "\"" + e.Attribute("Value").Value.ToUpperInvariant() + "\"").OrderBy(id => id);
 		foreach(var terminalId in terminalIds)
 		{
 #>
@@ -61,6 +63,8 @@ namespace SqlPad.Oracle
 			private static readonly HashSet<string> AllTerminalsInternal = new HashSet<string> { <#= String.Join(", ", terminalIds) #> };
 			
 			private static readonly HashSet<string> IdentifiersInternal = new HashSet<string> { <#= String.Join(", ", identifierTerminalIds) #> };
+
+			private static readonly HashSet<string> Keywords = new HashSet<string> { <#= String.Join(", ", keywords) #> };
 
 			public static ICollection<string> AllTerminals
 			{
@@ -80,6 +84,11 @@ namespace SqlPad.Oracle
 				}
 
 				return IdentifiersInternal.Contains(terminalId);
+			}
+
+			public static bool IsKeyword(string value)
+			{
+				return Keywords.Contains(value.ToUpperInvariant());
 			}
 		}
 	}

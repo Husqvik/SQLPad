@@ -161,7 +161,7 @@ namespace SqlPad.Oracle.Test
 			nodeValidityDictionary.Count.ShouldBe(2);
 			var columnValidationData = nodeValidityDictionary.First().Value;
 			columnValidationData.IsRecognized.ShouldBe(true);
-			columnValidationData.SemanticError.ShouldBe(ColumnSemanticError.AmbiguousTableReference);
+			columnValidationData.SemanticError.ShouldBe(SemanticError.AmbiguousTableReference);
 			columnValidationData.TableNames.Count.ShouldBe(2);
 			
 			var tableNames = columnValidationData.TableNames.OrderBy(n => n).ToArray();

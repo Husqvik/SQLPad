@@ -32,6 +32,17 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"")]
+		public void TestSuggestingAmbiguousColumnReferenceResolutionWithFullyQualifiedName()
+		{
+			const string query1 = @"SELECT DUAL.DUMMY FROM SYS.DUAL, ""PUBLIC"".DUAL";
+
+			var actions = _actionProvider.GetContextActions(query1, 12).ToArray();
+			actions.Length.ShouldBe(2);
+			actions[0].Name.ShouldBe("Resolve as SYS.DUAL.DUMMY");
+			actions[1].Name.ShouldBe("Resolve as \"PUBLIC\".DUAL.DUMMY");
+		}
+
+		[Test(Description = @"")]
 		public void TestSuggestingAddTableAlias()
 		{
 			const string query1 = @"SELECT DUMMY FROM (SELECT DUMMY FROM DUAL) t2, Dual";

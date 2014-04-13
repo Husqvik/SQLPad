@@ -22,27 +22,18 @@ namespace SqlPad.Oracle
 			var semanticModel = new OracleStatementSemanticModel(statementText, (OracleStatement)currentTerminal.Statement, DatabaseModelFake.Instance);
 			var actionList = new List<IContextAction>();
 
-			if (currentTerminal.Id == Terminals.ObjectIdentifier)
+			var addAliasCommand = new AddAliasCommand(semanticModel, currentTerminal);
+			if (addAliasCommand.CanExecute(null))
 			{
-				var tables = semanticModel.QueryBlocks.SelectMany(b => b.TableReferences).Where(t => t.TableNode == currentTerminal).ToArray();
-				if (tables.Length == 1 && tables[0].AliasNode == null)
-				{
-					actionList.Add(new OracleContextAction("Add Alias", new AddAliasCommand(semanticModel)));
-				}
+				actionList.Add(new OracleContextAction("Add Alias", addAliasCommand));
 			}
 
-			if (currentTerminal.Id == Terminals.Identifier)
-			{
-				var columnReference = semanticModel.QueryBlocks.SelectMany(qb => qb.Columns).SelectMany(c => c.ColumnReferences).SingleOrDefault(c => c.ColumnNode == currentTerminal);
-				if (columnReference != null && columnReference.ColumnNodeReferences.Count > 1)
-				{
-					var actions = columnReference.ColumnNodeReferences.Select(
-						t => new OracleContextAction("Resolve as " + t.FullyQualifiedName + "." + columnReference.Name, new ResolveAmbiguousColumnCommand(semanticModel)));
-				
-					actionList.AddRange(actions);
-				}
-			}
+			var actions = ResolveAmbiguousColumnCommand.ResolveCommands(semanticModel, currentTerminal)
+				.Select(c => new OracleContextAction("Resolve as " + c.ResolvedName, c));
 
+			actionList.AddRange(actions);
+
+			// TODO: Resolve command order
 			return actionList.AsReadOnly();
 		}
 	}

@@ -384,6 +384,8 @@ namespace SqlPad.Oracle
 			
 			private static readonly HashSet<string> IdentifiersInternal = new HashSet<string> { BindVariableIdentifier, DatabaseLinkIdentifier, Identifier, ObjectIdentifier, SchemaIdentifier };
 
+			private static readonly HashSet<string> Keywords = new HashSet<string> { "ALL", "AND", "ANY", "ASC", "BETWEEN", "BY", "CHECK", "COLUMN", "COMMENT", "CONNECT", "CURRENT", "DATE", "DEFAULT", "DELETE", "DESC", "DISTINCT", "ELSE", "EXISTS", "FOR", "FROM", "GROUP", "HAVING", "IMMEDIATE", "IN", "INTERSECT", "INTO", "IS", "LEVEL", "LIKE", "MINUS", "NOT", "NOWAIT", "NULL", "OF", "ON", "OPTION", "OR", "ORDER", "PUBLIC", "ROW", "ROWID", "ROWNUM", "ROWS", "SELECT", "SET", "SOME", "START", "TABLE", "THEN", "TO", "UNION", "UNIQUE", "UPDATE", "WHERE", "WITH" };
+
 			public static ICollection<string> AllTerminals
 			{
 				get { return AllTerminalsInternal; }
@@ -402,6 +404,11 @@ namespace SqlPad.Oracle
 				}
 
 				return IdentifiersInternal.Contains(terminalId);
+			}
+
+			public static bool IsKeyword(string value)
+			{
+				return Keywords.Contains(value.ToUpperInvariant());
 			}
 		}
 	}

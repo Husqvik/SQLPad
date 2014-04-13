@@ -17,7 +17,9 @@ namespace SqlPad.Oracle
 
 			CheckQuotedIdentifier(identifier);
 
-			return identifier[0] == '"' && identifier == identifier.ToUpperInvariant() ? identifier.Replace(QuoteCharacter, null) : identifier;
+			var isNotKeyword = !Terminals.IsKeyword(identifier.Replace(QuoteCharacter, null));
+
+			return isNotKeyword && identifier[0] == '"' && identifier == identifier.ToUpperInvariant() ? identifier.Replace(QuoteCharacter, null) : identifier;
 		}
 
 		public static string ToQuotedIdentifier(this string identifier)

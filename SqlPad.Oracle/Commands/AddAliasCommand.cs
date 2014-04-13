@@ -1,30 +1,31 @@
 ﻿using System;
-using System.Windows.Input;
+using System.Linq;
+using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
 namespace SqlPad.Oracle.Commands
 {
-	public class AddAliasCommand : ICommand
+	public class AddAliasCommand : OracleCommandBase
 	{
-		private readonly OracleStatementSemanticModel _semanticModel;
-
-		public AddAliasCommand(OracleStatementSemanticModel semanticModel)
+		public AddAliasCommand(OracleStatementSemanticModel semanticModel, StatementDescriptionNode currentTerminal)
+			: base(semanticModel, currentTerminal)
 		{
-			if (semanticModel == null)
-				throw new ArgumentNullException("semanticModel");
+
+		}
+
+		public override bool CanExecute(object parameter)
+		{
+			if (CurrentTerminal.Id != Terminals.ObjectIdentifier)
+				return false;
 			
-			_semanticModel = semanticModel;
+			var tables = SemanticModel.QueryBlocks.SelectMany(b => b.TableReferences).Where(t => t.TableNode == CurrentTerminal).ToArray();
+			return tables.Length == 1 && tables[0].AliasNode == null;
 		}
 
-		public bool CanExecute(object parameter)
-		{
-			return true;
-		}
-
-		public void Execute(object parameter)
+		public override void Execute(object parameter)
 		{
 			
 		}
 
-		public event EventHandler CanExecuteChanged = delegate { };
+		public override event EventHandler CanExecuteChanged = delegate { };
 	}
 }
