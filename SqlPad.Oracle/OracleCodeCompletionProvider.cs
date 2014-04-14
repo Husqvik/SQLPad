@@ -129,10 +129,10 @@ namespace SqlPad.Oracle
 					var isInnerJoin = joinClauseNode.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.InnerJoinClause) != null;
 					if (!isInnerJoin || (joinClauseNode.FirstTerminalNode.Id != Terminals.Cross && joinClauseNode.FirstTerminalNode.Id != Terminals.Natural))
 					{
-						var joinedTableReferenceNode = joinClauseNode.GetPathFilterDescendants(n => n.Id != NonTerminals.JoinClause, NonTerminals.TableReference).SingleOrDefault();
-						if (joinedTableReferenceNode != null)
+						var joinedTableReferenceNodes = joinClauseNode.GetPathFilterDescendants(n => n.Id != NonTerminals.JoinClause, NonTerminals.TableReference).ToArray();
+						if (joinedTableReferenceNodes.Length == 1)
 						{
-							var joinedTableReference = queryBlock.TableReferences.SingleOrDefault(t => t.TableReferenceNode == joinedTableReferenceNode);
+							var joinedTableReference = queryBlock.TableReferences.SingleOrDefault(t => t.TableReferenceNode == joinedTableReferenceNodes[0]);
 
 							foreach (var parentTableReference in queryBlock.TableReferences
 								.Where(t => t.TableReferenceNode.SourcePosition.IndexStart < joinedTableReference.TableReferenceNode.SourcePosition.IndexStart))
@@ -167,7 +167,7 @@ namespace SqlPad.Oracle
 				completionItems = completionItems.Concat(GenerateCommonTableExpressionReferenceItems(semanticModel, null, null, extraOffset));
 			}
 
-			if (!isCursorAtTerminal && joinClauseNode == null && fromClause == null && !currentNode.IsWithinHavingClause() &&
+			if (queryBlock != null && !isCursorAtTerminal && joinClauseNode == null && fromClause == null && !currentNode.IsWithinHavingClause() &&
 				terminalCandidates.Contains(Terminals.ObjectIdentifier))
 			{
 				var whereTableReferences = queryBlock.TableReferences
@@ -381,7 +381,11 @@ namespace SqlPad.Oracle
 			}
 			else
 			{
-				var columnNameJoinConditions = parentSchemaObject.Columns.Select(c => c.Name).Intersect(joinedSchemaObject.Columns.Select(c => c.Name))
+				var columnNameJoinConditions = parentSchemaObject.Columns
+					.Where(c => !String.IsNullOrEmpty(c.Name)).Select(c => c.Name)
+					.Intersect(
+						joinedSchemaObject.Columns
+						.Where(c => !String.IsNullOrEmpty(c.Name)).Select(c => c.Name))
 					.Select(c => GenerateJoinConditionSuggestionItem(parentSchemaObject.FullyQualifiedName, joinedSchemaObject.FullyQualifiedName, new[] { c }, new[] { c }, false, skipOnTerminal, insertOffset));
 
 				codeItems = codeItems.Concat(columnNameJoinConditions);

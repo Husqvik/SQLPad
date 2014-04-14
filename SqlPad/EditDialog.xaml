@@ -6,6 +6,7 @@
 		Width="400"
 		ResizeMode="NoResize"
 		WindowStartupLocation="CenterOwner"
+		Loaded="LoadedHandler"
         ShowInTaskbar="False">
 	<Grid Margin="8">
 		<Grid.RowDefinitions>
@@ -15,11 +16,25 @@
 		<StackPanel Margin="8">
 			<TextBlock x:Name="Heading" Margin="2" FontWeight="Bold">Heading</TextBlock>
 			<TextBlock x:Name="SubHeading" Margin="2">Sub-heading</TextBlock>
-			<TextBox x:Name="TextValue" Margin="2" Height="24" VerticalContentAlignment="Center">Enter value</TextBox>
+			<TextBox x:Name="TextValue" Margin="2" Height="24" VerticalContentAlignment="Center" Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}"></TextBox>
 			<TextBlock x:Name="Description" Margin="2">Description</TextBlock>
 		</StackPanel>
 		<StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right">
-			<Button Content="OK" Width="72" Margin="8" IsDefault="True"></Button>
+			<Button Content="OK" Width="72" Margin="8" IsDefault="True" Click="CloseClickHandler">
+				<Button.Style>
+					<Style>
+						<Setter Property="Button.IsEnabled" Value="False"/>
+						<Style.Triggers>
+							<MultiDataTrigger>
+								<MultiDataTrigger.Conditions>
+									<Condition Binding="{Binding Path=(Validation.HasError), ElementName=TextValue}" Value="False"/>
+								</MultiDataTrigger.Conditions>
+								<Setter Property="Button.IsEnabled" Value="True"/>
+							</MultiDataTrigger>
+						</Style.Triggers>
+					</Style>
+				</Button.Style>
+			</Button>
 			<Button Content="Cancel" Width="72" Margin="8" IsCancel="True"></Button>
 		</StackPanel>
 	</Grid>

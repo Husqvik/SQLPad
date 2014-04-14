@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows.Input;
 using SqlPad.Oracle.Commands;
@@ -38,6 +39,7 @@ namespace SqlPad.Oracle
 		}
 	}
 
+	[DebuggerDisplay("OracleContextAction (Name={Name})")]
 	public class OracleContextAction : IContextAction
 	{
 		public OracleContextAction(string name, ICommand command)

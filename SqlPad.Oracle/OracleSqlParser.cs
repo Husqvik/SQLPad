@@ -13,21 +13,20 @@ namespace SqlPad.Oracle
 	public class OracleSqlParser : ISqlParser
 	{
 		private static readonly Assembly LocalAssembly = typeof(OracleSqlParser).Assembly;
-		private readonly SqlGrammar _sqlGrammar;
-		private readonly Dictionary<string, SqlGrammarRuleSequence[]> _startingNonTerminalSequences;
-		private readonly Dictionary<string, SqlGrammarTerminal> _terminals;
+		private static readonly SqlGrammar OracleGrammar;
 		private static readonly XmlSerializer XmlSerializer = new XmlSerializer(typeof(SqlGrammar));
-		private readonly List<StatementBase> _oracleSqlCollection = new List<StatementBase>();
-		private readonly HashSet<string> _keywords;
-		private readonly HashSet<string> _terminators;
+		private static readonly Dictionary<string, SqlGrammarRuleSequence[]> StartingNonTerminalSequences;
+		private static readonly Dictionary<string, SqlGrammarTerminal> Terminals;
+		private static readonly HashSet<string> Terminators;
+		private static readonly string[] AvailableNonTerminals;
 		
-		private readonly string[] _availableNonTerminals;
+		private readonly List<StatementBase> _oracleSqlCollection = new List<StatementBase>();
 
-		public OracleSqlParser()
+		static OracleSqlParser()
 		{
 			using (var grammarReader = XmlReader.Create(LocalAssembly.GetManifestResourceStream("SqlPad.Oracle.OracleSqlGrammar.xml")))
 			{
-				_sqlGrammar = (SqlGrammar)XmlSerializer.Deserialize(grammarReader);
+				OracleGrammar = (SqlGrammar)XmlSerializer.Deserialize(grammarReader);
 			}
 
 			/*var hashSet = new HashSet<string>();
@@ -40,27 +39,31 @@ namespace SqlPad.Oracle
 
 				hashSet.Add(rule.StartingNonTerminal);
 			}*/
-			
-			_startingNonTerminalSequences = _sqlGrammar.Rules.ToDictionary(r => r.StartingNonTerminal, r => r.Sequences);
+
+			StartingNonTerminalSequences = OracleGrammar.Rules.ToDictionary(r => r.StartingNonTerminal, r => r.Sequences);
 			/*var containsSequenceWithAllOptionalMembers = _startingNonTerminalSequences.Values.SelectMany(s => s)
 				.Any(s => s.Items.All(i => (i as SqlGrammarRuleSequenceTerminal != null && !((SqlGrammarRuleSequenceTerminal)i).IsRequired) ||
 				                           (i as SqlGrammarRuleSequenceNonTerminal != null && !((SqlGrammarRuleSequenceNonTerminal)i).IsRequired)));
 			if (containsSequenceWithAllOptionalMembers)
 				throw new InvalidOperationException("Grammar sequence must have at least one mandatory item. ");*/
 
-			_terminals = new Dictionary<string, SqlGrammarTerminal>();
-			foreach (var terminal in _sqlGrammar.Terminals)
+			Terminals = new Dictionary<string, SqlGrammarTerminal>();
+			foreach (var terminal in OracleGrammar.Terminals)
 			{
-				if (_terminals.ContainsKey(terminal.Id))
+				if (Terminals.ContainsKey(terminal.Id))
 					throw new InvalidOperationException(String.Format("Terminal '{0}' has been already defined. ", terminal.Id));
 
-				_terminals.Add(terminal.Id, terminal);
+				Terminals.Add(terminal.Id, terminal);
 			}
 
-			//_terminals = _sqlGrammar.Terminals.ToDictionary(t => t.Id, t => t);
-			_keywords = new HashSet<string>(_sqlGrammar.Terminals.Where(t => t.IsKeyword).Select(t => t.Value));
-			_availableNonTerminals = _sqlGrammar.StartSymbols.Select(s => s.Id).ToArray();
-			_terminators = new HashSet<string>(_sqlGrammar.Terminators.Select(t => t.Value));
+			AvailableNonTerminals = OracleGrammar.StartSymbols.Select(s => s.Id).ToArray();
+			Terminators = new HashSet<string>(OracleGrammar.Terminators.Select(t => t.Value));
+		}
+
+		public static bool IsValidIdentifier(string identifier)
+		{
+			return Regex.IsMatch(identifier, Terminals[OracleGrammarDescription.Terminals.Identifier].RegexValue) &&
+			       !OracleGrammarDescription.Terminals.IsKeyword(identifier);
 		}
 
 		public bool IsRuleValid(string nonTerminalId, string text)
@@ -193,7 +196,7 @@ namespace SqlPad.Oracle
 			}
 			else
 			{
-				nonTerminalIds.AddRange(_availableNonTerminals);
+				nonTerminalIds.AddRange(AvailableNonTerminals);
 			}
 
 			var nextItems = new HashSet<string>();
@@ -210,7 +213,7 @@ namespace SqlPad.Oracle
 		{
 			var matchedTerminals = 0;
 			var candidatesGathered = false;
-			foreach (var sequence in _startingNonTerminalSequences[nonTerminalId])
+			foreach (var sequence in StartingNonTerminalSequences[nonTerminalId])
 			{
 				var nestedStartIndex = startIndex;
 				var sequenceMatched = true;
@@ -323,7 +326,7 @@ namespace SqlPad.Oracle
 				var result = new ProcessingResult();
 				var oracleStatement = new OracleStatement();
 
-				foreach (var nonTerminal in _availableNonTerminals)
+				foreach (var nonTerminal in AvailableNonTerminals)
 				{
 					var newResult = ProceedNonTerminal(oracleStatement, nonTerminal, 0, 0, false, tokenBuffer);
 
@@ -340,7 +343,7 @@ namespace SqlPad.Oracle
 					result = newResult;
 
 					var lastTerminal = result.Terminals.Last();
-					if (!_terminators.Contains(lastTerminal.Token.Value) && tokenBuffer.Count > result.Terminals.Count())
+					if (!Terminators.Contains(lastTerminal.Token.Value) && tokenBuffer.Count > result.Terminals.Count())
 					{
 						result.Status = ProcessingStatus.SequenceNotFound;
 					}
@@ -361,7 +364,7 @@ namespace SqlPad.Oracle
 
 					indexStart = tokenBuffer.First().Index;
 
-					var index = tokenBuffer.FindIndex(t => _terminators.Contains(t.Value));
+					var index = tokenBuffer.FindIndex(t => Terminators.Contains(t.Value));
 					if (index == -1)
 					{
 						var lastToken = tokenBuffer[tokenBuffer.Count - 1];
@@ -409,7 +412,7 @@ namespace SqlPad.Oracle
 							 TerminalCandidates = terminalCandidates
 			             };
 
-			foreach (var sequence in _startingNonTerminalSequences[nonTerminal])
+			foreach (var sequence in StartingNonTerminalSequences[nonTerminal])
 			{
 				result.Status = ProcessingStatus.Success;
 				workingNodes.Clear();
@@ -580,10 +583,10 @@ namespace SqlPad.Oracle
 			{
 				var currentToken = tokenBuffer[tokenOffset];
 
-				var terminal = _terminals[terminalReference.Id];
+				var terminal = Terminals[terminalReference.Id];
 				if (!String.IsNullOrEmpty(terminal.RegexValue))
 				{
-					tokenIsValid = new Regex(terminal.RegexValue).IsMatch(currentToken.Value) && !_keywords.Contains(currentToken.Value.ToUpperInvariant());
+					tokenIsValid = new Regex(terminal.RegexValue).IsMatch(currentToken.Value) && !OracleGrammarDescription.Terminals.IsKeyword(currentToken.Value);
 				}
 				else
 				{

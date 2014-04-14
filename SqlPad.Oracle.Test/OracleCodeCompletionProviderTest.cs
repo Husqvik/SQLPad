@@ -371,5 +371,14 @@ FROM
 			items[0].Name.ShouldBe("NAME");
 			items[3].Name.ShouldBe("SELECTION_ID");
 		}
+
+		[Test(Description = @"")]
+		public void TestJoinConditionNotSuggestedWhenCommonTableExpressionColumnsAreNotAliased()
+		{
+			const string query1 = @"WITH X AS (SELECT 1 FROM DUAL), Y AS (SELECT 1 FROM DUAL) SELECT * FROM X JOIN Y ";
+
+			var items = _codeCompletionProvider.ResolveItems(query1, 81).ToArray();
+			items.Length.ShouldBe(0);
+		}
 	}
 }

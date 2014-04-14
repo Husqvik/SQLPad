@@ -60,5 +60,25 @@ namespace SqlPad.Oracle.Test
 			var actions = _actionProvider.GetContextActions(query1, 44).ToArray();
 			actions.Length.ShouldBe(0);
 		}
+
+		[Test(Description = @"")]
+		public void TestResolveColumnIsNotsuggestedWhenTableIsNotAliased()
+		{
+			const string query1 = @"SELECT DUMMY FROM (SELECT 1 DUMMY FROM DUAL), SYS.DUAL";
+
+			var actions = _actionProvider.GetContextActions(query1, 7).ToArray();
+			actions.Length.ShouldBe(1);
+			actions[0].Name.ShouldBe("Resolve as SYS.DUAL.DUMMY");
+		}
+
+		[Test(Description = @"")]
+		public void TestResolveColumnIsNotsuggestedWhenTableAliasIsSameAsPhysicalTableName()
+		{
+			const string query1 = @"SELECT DUAL.DUMMY FROM (SELECT 1 DUMMY FROM DUAL) DUAL, SYS.DUAL";
+
+			var actions = _actionProvider.GetContextActions(query1, 14).ToArray();
+			actions.Length.ShouldBe(1);
+			actions[0].Name.ShouldBe("Resolve as SYS.DUAL.DUMMY");
+		}
 	}
 }

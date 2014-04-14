@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
@@ -19,9 +20,11 @@ namespace SqlPad.Oracle.Commands
 			var columnReference = semanticModel.QueryBlocks.SelectMany(qb => qb.Columns).SelectMany(c => c.ColumnReferences).SingleOrDefault(c => c.ColumnNode == currentTerminal);
 			if (columnReference == null || columnReference.ColumnNodeReferences.Count <= 1)
 				return commands.AsReadOnly();
-			
-			var actions = columnReference.ColumnNodeReferences.Select(
-				t => new ResolveAmbiguousColumnCommand(semanticModel, currentTerminal, t.FullyQualifiedName + "." + columnReference.Name));
+
+			var identifiers = OracleObjectIdentifier.GetUniqueReferences(columnReference.ColumnNodeReferences.Select(r => r.FullyQualifiedName).ToArray());
+			var actions = columnReference.ColumnNodeReferences
+				.Where(r => identifiers.Contains(r.FullyQualifiedName))
+				.Select(r => new ResolveAmbiguousColumnCommand(semanticModel, currentTerminal, r.FullyQualifiedName + "." + columnReference.Name));
 
 			commands.AddRange(actions);
 

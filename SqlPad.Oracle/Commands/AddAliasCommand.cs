@@ -24,13 +24,13 @@ namespace SqlPad.Oracle.Commands
 
 		protected override void ExecuteInternal(ICollection<TextSegment> segmentsToReplace)
 		{
-			var editDialog = new EditDialog();
+			var model = new EditDialogViewModel { Value = "Enter value", ValidationRule = new OracleIdentifierValidationRule() };
+			var editDialog = new EditDialog(model);
 			var result = editDialog.ShowDialog();
 			if (!result.HasValue || !result.Value)
 				return;
 
-			// TODO: Create dialog to enter alias
-			var alias = "ALIAS1";
+			var alias = model.Value;
 
 			var root = CurrentTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.NestedQuery, NonTerminals.QueryBlock);
 			var queryBlock = SemanticModel.QueryBlocks.Single(qb => qb.RootNode == root);

@@ -60,6 +60,8 @@ namespace SqlPad
 
 			Editor.TextArea.TextEntering += TextEnteringHandler;
 			Editor.TextArea.TextEntered += TextEnteredHandler;
+
+			Editor.Focus();
 		}
 
 		private void EditorTextChangedHandler(object sender, EventArgs e)
@@ -149,6 +151,13 @@ namespace SqlPad
 
 		void TextEnteringHandler(object sender, TextCompositionEventArgs e)
 		{
+			if (e.Text == ")" && Editor.Text.Length > Editor.CaretOffset && Editor.CaretOffset >= 1 && Editor.Text[Editor.CaretOffset] == ')' && Editor.Text[Editor.CaretOffset - 1] == '(')
+			{
+				Editor.CaretOffset++;
+				e.Handled = true;
+				return;
+			}
+
 			if (_multiNodeEditor != null)
 			{
 				Editor.Document.BeginUpdate();

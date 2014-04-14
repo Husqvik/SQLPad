@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace SqlPad.Oracle
 {
@@ -39,6 +41,28 @@ namespace SqlPad.Oracle
 				: aliasNode.Token.Value;
 
 			return Create(ownerName, tableName);
+		}
+
+		public static ICollection<OracleObjectIdentifier> GetUniqueReferences(ICollection<OracleObjectIdentifier> identifiers)
+		{
+			var sourceIdentifiers = new HashSet<OracleObjectIdentifier>(identifiers);
+			var uniqueIdentifiers = new HashSet<OracleObjectIdentifier>();
+
+			var references = identifiers.Where(i => !String.IsNullOrEmpty(i.NormalizedName))
+				.GroupBy(i => i.NormalizedName)
+				.ToDictionary(g => g.Key, g => g.GroupBy(o => o.NormalizedOwner).ToDictionary(go => go.Key, go => go.Count()));
+
+			foreach (var nameOwners in references)
+			{
+				var ownerSpecified = nameOwners.Value.Any(no => !String.IsNullOrEmpty(no.Key));
+				foreach (var ownerCounts in nameOwners.Value.Where(oc => oc.Value == 1))
+				{
+					if (!ownerSpecified || !String.IsNullOrEmpty(ownerCounts.Key))
+						uniqueIdentifiers.Add(sourceIdentifiers.Single(i => i == Create(ownerCounts.Key, nameOwners.Key)));
+				}
+			}
+
+			return uniqueIdentifiers;
 		}
 
 		#region Overrides of ValueType

@@ -1236,6 +1236,19 @@ namespace SqlPad.Oracle.Test
 			terminals[4].Id.ShouldBe(terminalId);
 		}
 
+		[Test(Description = @"")]
+		public void Temp()
+		{
+			const string statement1 = @"SELECT NULL FROM SELECTION S LEFT JOIN RESPONDENTBUCKET ON S.RESPONDENTBUCKET_ID = RESPONDENTBUCKET.RESPONDENTBUCKET_ID";
+			//const string statement1 = @"SELECT NULL FROM SELECTION S LEFT JOIN RESPONDENTBUCKET ON S.RESPONDENTBUCKET_ID = ";
+			//const string statement1 = @"SELECT NULL FROM SELECTION ";
+
+			//var node = Parser.Parse("SELECT").Single().NodeCollection.Single();
+			var node = Parser.Parse(statement1).Single().NodeCollection.Single().LastTerminalNode;
+			//var node = Parser.Parse(statement1).Single().AllTerminals.Skip(3).First();
+			var terminalCandidates = Parser.GetTerminalCandidates(node);
+		}
+
 		public class IsRuleValid
 		{
 			[Test(Description = @"")]
@@ -1426,19 +1439,6 @@ namespace SqlPad.Oracle.Test
 				terminalCandidates[4].ShouldBe(Terminals.Set);
 				terminalCandidates[5].ShouldBe(Terminals.Update);
 				terminalCandidates[6].ShouldBe(Terminals.With);
-			}
-
-			[Test(Description = @"")]
-			public void Temp()
-			{
-				const string statement1 = @"SELECT NULL FROM SELECTION S LEFT JOIN RESPONDENTBUCKET ON S.RESPONDENTBUCKET_ID = RESPONDENTBUCKET.RESPONDENTBUCKET_ID";
-				//const string statement1 = @"SELECT NULL FROM SELECTION S LEFT JOIN RESPONDENTBUCKET ON S.RESPONDENTBUCKET_ID = ";
-				//const string statement1 = @"SELECT NULL FROM SELECTION ";
-
-				//var node = Parser.Parse("SELECT").Single().NodeCollection.Single();
-				var node = Parser.Parse(statement1).Single().NodeCollection.Single().LastTerminalNode;
-				//var node = Parser.Parse(statement1).Single().AllTerminals.Skip(3).First();
-				var terminalCandidates = Parser.GetTerminalCandidates(node);
 			}
 		}
 
