@@ -381,6 +381,139 @@
       </Sequences>
     </Rule>
 
+    <!-- MERGE statement -->
+    <Rule StartingNonTerminal="MergeStatements">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Merge" />
+          <Terminal Id="Into" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+          <Terminal Id="Alias" IsOptional="true" />
+          <Terminal Id="Using" />
+          <!-- TODO: aliased table, view or subquery -->
+          <Terminal Id="On" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="Condition" />
+          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="MergeUpdateInsertClause" />
+          <NonTerminal Id="ErrorLoggingClause" />
+          <NonTerminal Id="Semicolon" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="MergeUpdateInsertClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="MergeUpdateClause" />
+          <NonTerminal Id="MergeInsertClause" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="MergeInsertClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="MergeUpdateClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="When" />
+          <Terminal Id="Matched" />
+          <Terminal Id="Then" />
+          <Terminal Id="Update" />
+          <Terminal Id="Set" />
+          <NonTerminal Id="MergeSetColumnEqualsExpressionOrOrDefaultValueList" />
+          <NonTerminal Id="WhereClause" IsOptional="true" />
+          <NonTerminal Id="MergeDeleteClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="MergeSetColumnEqualsExpressionOrOrDefaultValueList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Identifier" />
+          <Terminal Id="MathEquals" />
+          <NonTerminal Id="ExpressionOrOrDefaultValue" />
+          <NonTerminal Id="MergeSetColumnEqualsExpressionOrOrDefaultValueCommaChainedList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="MergeSetColumnEqualsExpressionOrOrDefaultValueCommaChainedList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="MergeSetColumnEqualsExpressionOrOrDefaultValueList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ExpressionOrOrDefaultValue">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="Expression" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Default" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="MergeDeleteClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Delete" />
+          <NonTerminal Id="WhereClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="MergeInsertClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="When" />
+          <Terminal Id="Not" />
+          <Terminal Id="Matched" />
+          <Terminal Id="Then" />
+          <Terminal Id="Insert" />
+          <NonTerminal Id="ParenthesisEnclosedColumnIdentifierList" IsOptional="true" />
+          <Terminal Id="Values" />
+          <NonTerminal Id="ParenthesisEnclosedMergeInsertValuesExpressionOrOrDefaultValueList" />
+          <NonTerminal Id="WhereClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ParenthesisEnclosedMergeInsertValuesExpressionOrOrDefaultValueList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="MergeInsertValuesExpressionOrOrDefaultValueList" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="MergeInsertValuesExpressionOrOrDefaultValueList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ExpressionOrOrDefaultValue" />
+          <NonTerminal Id="MergeSetColumnEqualsExpressionOrOrDefaultValueCommaChainedList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="MergeInsertValuesExpressionOrOrDefaultValueCommaChainedList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="MergeInsertValuesExpressionOrOrDefaultValueList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
     <!-- SELECT statement -->
     <Rule StartingNonTerminal="SelectStatement">
       <Sequences>

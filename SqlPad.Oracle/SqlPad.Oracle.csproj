@@ -40,13 +40,15 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Commands\WrapAsCommonTableExpressionCommand.cs" />
+    <Compile Include="Commands\WrapAsSubqueryCommand.cs" />
     <Compile Include="Commands\OracleCommandBase.cs" />
     <Compile Include="Commands\ResolveAmbiguousColumnCommand.cs" />
     <Compile Include="Commands\AddAliasCommand.cs" />
     <Compile Include="Commands\AddMissingAliasesCommand.cs" />
     <Compile Include="Commands\OracleCommandFactory.cs" />
     <Compile Include="Commands\ToggleQuotedIdentifierCommand.cs" />
-    <Compile Include="Commands\WrapAsCommonTableExpressionCommand.cs" />
+    <Compile Include="Commands\WrapAsCommonTableExpressionCommandOld.cs" />
     <Compile Include="DatabaseModelFake.cs" />
     <Compile Include="OracleCodeCompletionProvider.cs" />
     <Compile Include="OracleColumnReference.cs" />

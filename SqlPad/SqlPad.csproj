@@ -55,6 +55,7 @@
     </ApplicationDefinition>
     <Compile Include="ColorizeAvalonEdit.cs" />
     <Compile Include="CommandBase.cs" />
+    <Compile Include="CommandSettingsModel.cs" />
     <Compile Include="Commands\IAddMissingAliasesCommand.cs" />
     <Compile Include="Commands\ICommandFactory.cs" />
     <Compile Include="Commands\IToggleQuotedIdentifierCommand.cs" />
@@ -66,6 +67,7 @@
     <Compile Include="Extensions.cs" />
     <Compile Include="ICodeCompletionProvider.cs" />
     <Compile Include="ICodeSnippetProvider.cs" />
+    <Compile Include="ICommandSettings.cs" />
     <Compile Include="IContextActionProvider.cs" />
     <Compile Include="IDatabaseModel.cs" />
     <Compile Include="IInfrastructureFactory.cs" />

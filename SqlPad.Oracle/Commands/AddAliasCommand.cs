@@ -5,12 +5,11 @@ using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 
 namespace SqlPad.Oracle.Commands
 {
-	public class AddAliasCommand : OracleCommandBase
+	public class AddAliasCommand : OracleConfigurableCommandBase
 	{
-		public AddAliasCommand(OracleStatementSemanticModel semanticModel, StatementDescriptionNode currentTerminal)
-			: base(semanticModel, currentTerminal)
+		public AddAliasCommand(OracleStatementSemanticModel semanticModel, StatementDescriptionNode currentTerminal, ICommandSettingsProvider settingsProvider = null)
+			: base(semanticModel, currentTerminal, settingsProvider)
 		{
-
 		}
 
 		public override bool CanExecute(object parameter)
@@ -22,18 +21,14 @@ namespace SqlPad.Oracle.Commands
 			return tables.Length == 1 && tables[0].AliasNode == null;
 		}
 
-		protected override void ExecuteInternal(ICollection<TextSegment> segmentsToReplace)
+		protected override void ExecuteInternal(string statementText, ICollection<TextSegment> segmentsToReplace)
 		{
-			var model = new EditDialogViewModel { Value = "Enter value", ValidationRule = new OracleIdentifierValidationRule() };
-			var editDialog = new EditDialog(model);
-			var result = editDialog.ShowDialog();
-			if (!result.HasValue || !result.Value)
+			if (!SettingsProvider.GetSettings())
 				return;
 
-			var alias = model.Value;
+			var alias = SettingsProvider.Settings.Value;
 
-			var root = CurrentTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.NestedQuery, NonTerminals.QueryBlock);
-			var queryBlock = SemanticModel.QueryBlocks.Single(qb => qb.RootNode == root);
+			var queryBlock = SemanticModel.GetQueryBlock(CurrentTerminal);
 
 			var table = queryBlock.TableReferences.Single(t => t.TableNode == CurrentTerminal);
 

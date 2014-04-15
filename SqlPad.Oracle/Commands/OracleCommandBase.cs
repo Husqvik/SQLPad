@@ -27,4 +27,23 @@ namespace SqlPad.Oracle.Commands
 
 		public override event EventHandler CanExecuteChanged = delegate { };
 	}
+
+	public abstract class OracleConfigurableCommandBase : OracleCommandBase
+	{
+		protected readonly ICommandSettingsProvider SettingsProvider;
+
+		protected OracleConfigurableCommandBase(OracleStatementSemanticModel semanticModel, StatementDescriptionNode currentTerminal, ICommandSettingsProvider settingsProvider = null)
+			: base(semanticModel, currentTerminal)
+		{
+			if (settingsProvider != null)
+			{
+				SettingsProvider = settingsProvider;
+			}
+			else
+			{
+				var model = new CommandSettingsModel { Value = "Enter value", ValidationRule = new OracleIdentifierValidationRule() };
+				SettingsProvider = new EditDialog(model);
+			}
+		}
+	}
 }

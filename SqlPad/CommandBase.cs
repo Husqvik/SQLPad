@@ -14,7 +14,7 @@ namespace SqlPad
 		{
 			var editor = (TextEditor)parameter;
 			var textSegments = new List<TextSegment>();
-			ExecuteInternal(textSegments);
+			ExecuteInternal(editor.Text, textSegments);
 
 			editor.Document.BeginUpdate();
 
@@ -26,7 +26,7 @@ namespace SqlPad
 			editor.Document.EndUpdate();
 		}
 
-		protected abstract void ExecuteInternal(ICollection<TextSegment> segmentsToReplace);
+		protected abstract void ExecuteInternal(string statementText, ICollection<TextSegment> segmentsToReplace);
 
 		public abstract event EventHandler CanExecuteChanged;
 	}

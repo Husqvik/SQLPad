@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
@@ -45,7 +44,7 @@ namespace SqlPad.Oracle.Commands
 			return true;
 		}
 
-		protected override void ExecuteInternal(ICollection<TextSegment> segmentsToReplace)
+		protected override void ExecuteInternal(string statementText, ICollection<TextSegment> segmentsToReplace)
 		{
 			var prefixedColumnReference = CurrentTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference);
 

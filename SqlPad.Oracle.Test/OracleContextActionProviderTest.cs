@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using NUnit.Framework;
 using Shouldly;
 
@@ -9,7 +10,7 @@ namespace SqlPad.Oracle.Test
 	{
 		private readonly OracleContextActionProvider _actionProvider = new OracleContextActionProvider();
 
-		[Test(Description = @"")]
+		[Test(Description = @""), STAThread]
 		public void TestSuggestingAmbiguousColumnReferenceResolutionAtTheNameBeginning()
 		{
 			const string query1 = @"SELECT DUMMY FROM (SELECT DUMMY FROM DUAL) t2, Dual";
@@ -20,7 +21,7 @@ namespace SqlPad.Oracle.Test
 			actions[1].Name.ShouldBe("Resolve as Dual.DUMMY");
 		}
 
-		[Test(Description = @"")]
+		[Test(Description = @""), STAThread]
 		public void TestSuggestingAmbiguousColumnReferenceResolutionAtTheNameEnd()
 		{
 			const string query1 = @"SELECT DUMMY FROM (SELECT DUMMY FROM DUAL) t2, Dual";
@@ -31,7 +32,7 @@ namespace SqlPad.Oracle.Test
 			actions[1].Name.ShouldBe("Resolve as Dual.DUMMY");
 		}
 
-		[Test(Description = @"")]
+		[Test(Description = @""), STAThread]
 		public void TestSuggestingAmbiguousColumnReferenceResolutionWithFullyQualifiedName()
 		{
 			const string query1 = @"SELECT DUAL.DUMMY FROM SYS.DUAL, ""PUBLIC"".DUAL";
@@ -42,7 +43,7 @@ namespace SqlPad.Oracle.Test
 			actions[1].Name.ShouldBe("Resolve as \"PUBLIC\".DUAL.DUMMY");
 		}
 
-		[Test(Description = @"")]
+		[Test(Description = @""), STAThread]
 		public void TestSuggestingAddTableAlias()
 		{
 			const string query1 = @"SELECT DUMMY FROM (SELECT DUMMY FROM DUAL) t2, Dual";
@@ -52,7 +53,7 @@ namespace SqlPad.Oracle.Test
 			actions[0].Name.ShouldBe("Add Alias");
 		}
 
-		[Test(Description = @"")]
+		[Test(Description = @""), STAThread]
 		public void TestAliasNotSuggestedAtNestedTableAlias()
 		{
 			const string query1 = @"SELECT DUMMY FROM (SELECT DUMMY FROM DUAL) t2, Dual";
@@ -61,7 +62,7 @@ namespace SqlPad.Oracle.Test
 			actions.Length.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test(Description = @""), STAThread]
 		public void TestResolveColumnIsNotsuggestedWhenTableIsNotAliased()
 		{
 			const string query1 = @"SELECT DUMMY FROM (SELECT 1 DUMMY FROM DUAL), SYS.DUAL";
@@ -71,7 +72,7 @@ namespace SqlPad.Oracle.Test
 			actions[0].Name.ShouldBe("Resolve as SYS.DUAL.DUMMY");
 		}
 
-		[Test(Description = @"")]
+		[Test(Description = @""), STAThread]
 		public void TestResolveColumnIsNotsuggestedWhenTableAliasIsSameAsPhysicalTableName()
 		{
 			const string query1 = @"SELECT DUAL.DUMMY FROM (SELECT 1 DUMMY FROM DUAL) DUAL, SYS.DUAL";

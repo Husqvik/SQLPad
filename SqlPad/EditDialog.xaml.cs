@@ -1,6 +1,4 @@
 ﻿using System;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -10,11 +8,11 @@ namespace SqlPad
 	/// <summary>
 	/// Interaction logic for EditDialog.xaml
 	/// </summary>
-	public partial class EditDialog
+	public partial class EditDialog : ICommandSettingsProvider
 	{
-		private readonly EditDialogViewModel _model;
+		private readonly CommandSettingsModel _model;
 
-		public EditDialog(EditDialogViewModel model)
+		public EditDialog(CommandSettingsModel model)
 		{
 			if (model == null)
 				throw new ArgumentNullException("model");
@@ -36,39 +34,20 @@ namespace SqlPad
 			{
 				var binding = BindingOperations.GetBinding(TextValue, TextBox.TextProperty);
 				binding.ValidationRules.Add(_model.ValidationRule);
-				//BindingOperations.GetBindingExpression(TextValue, TextBox.TextProperty).UpdateSource();
+				var bindingExpression = BindingOperations.GetBindingExpression(TextValue, TextBox.TextProperty);
 			}
 
 			DataContext = _model;
 
 			TextValue.Focus();
 		}
-	}
 
-	public class EditDialogViewModel : INotifyPropertyChanged
-	{
-		public event PropertyChangedEventHandler PropertyChanged = delegate { };
-
-		private void RaisePropertyChanged([CallerMemberName] string propertyName = null)
+		public bool GetSettings()
 		{
-			PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+			var result = ShowDialog();
+			return result.HasValue && result.Value;
 		}
 
-		private string _value;
-
-		public string Value
-		{
-			get { return _value; }
-			set
-			{
-				if (_value == value)
-					return;
-
-				_value = value;
-				RaisePropertyChanged();
-			}
-		}
-
-		public ValidationRule ValidationRule { get; set; }
+		public CommandSettingsModel Settings { get { return _model; } }
 	}
 }

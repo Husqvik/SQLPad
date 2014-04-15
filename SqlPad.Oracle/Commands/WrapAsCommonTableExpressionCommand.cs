@@ -1,95 +1,68 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
-using SqlPad.Commands;
+using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
 namespace SqlPad.Oracle.Commands
 {
-	public class WrapAsCommonTableExpressionCommand : IWrapAsCommonTableExpressionCommand
+	public class WrapAsCommonTableExpressionCommand : OracleConfigurableCommandBase
 	{
-		private readonly OracleSqlParser _sqlParser = new OracleSqlParser();
-		private readonly AddMissingAliasesCommand _addMissingAliasesCommand = new AddMissingAliasesCommand();
-
-		public string Execute(string statementText, int offset, string queryName)
+		public WrapAsCommonTableExpressionCommand(OracleStatementSemanticModel semanticModel, StatementDescriptionNode currentTerminal, ICommandSettingsProvider settingsProvider = null)
+			: base(semanticModel, currentTerminal, settingsProvider)
 		{
-			statementText = _addMissingAliasesCommand.Execute(statementText, offset);
-
-			var statements = _sqlParser.Parse(statementText);
-			var statement = statements.FirstOrDefault(s => s.SourcePosition.IndexStart <= offset && s.SourcePosition.IndexEnd >= offset);
-
-			if (statement == null)
-				return statementText;
-
-			var selectedToken = statement.GetNodeAtPosition(offset);
-
-			var queryBlockRoot = selectedToken.GetAncestor(OracleGrammarDescription.NonTerminals.QueryBlock);
-			if (queryBlockRoot == null)
-				return statementText;
-
-			var columnAliases = queryBlockRoot
-				.GetDescendants(OracleGrammarDescription.NonTerminals.AliasedExpression)
-				.Select(e => e.Terminals.Last());
-			
-			var newStatementBuilder = new StringBuilder("SELECT ");
-			var isFirst = true;
-			foreach (var column in columnAliases)
-			{
-				if (!isFirst)
-					newStatementBuilder.Append(", ");
-
-				isFirst = false;
-
-				newStatementBuilder.Append(column.Token.Value);
-			}
-
-			newStatementBuilder.Append(" FROM ");
-			newStatementBuilder.Append(queryName);
-
-			var lastEffectiveNode = queryBlockRoot.Terminals.LastOrDefault(t => t.Id != OracleGrammarDescription.Terminals.Semicolon);
-			var indexEnd = lastEffectiveNode == null
-				? queryBlockRoot.SourcePosition.IndexEnd
-				: lastEffectiveNode.SourcePosition.IndexEnd;
-
-			var movedStatementLength = indexEnd - queryBlockRoot.SourcePosition.IndexStart + 1;
-			var movedStatement = statementText.Substring(queryBlockRoot.SourcePosition.IndexStart, movedStatementLength);
-
-			var builder = new StringBuilder(statementText);
-			var addedOffset = 0;
-
-			var nestedQueryRoot = queryBlockRoot.GetAncestor(OracleGrammarDescription.NonTerminals.NestedQuery);
-			var lastSubquery = nestedQueryRoot.GetDescendants(OracleGrammarDescription.NonTerminals.SubqueryComponent).LastOrDefault();
-			int whiteSpace;
-			int insertIndex;
-			string initialToken;
-			if (lastSubquery == null)
-			{
-				insertIndex = nestedQueryRoot.SourcePosition.IndexStart;
-				initialToken = "WITH ";
-				whiteSpace = 0;
-			}
-			else
-			{
-				insertIndex = lastSubquery.SourcePosition.IndexEnd + 1;
-				initialToken = ", ";
-				whiteSpace = queryBlockRoot.SourcePosition.IndexStart - lastSubquery.SourcePosition.IndexEnd - 1;
-			}
-
-			addedOffset += builder.InsertAt(insertIndex + addedOffset, initialToken + queryName + " AS (" + movedStatement + ") ");
-
-			var statementPosition = insertIndex + addedOffset;
-
-			builder.Insert(statementPosition, newStatementBuilder.ToString());
-			builder.Remove(statementPosition + newStatementBuilder.Length, movedStatementLength + whiteSpace);
-
-			return builder.ToString();
 		}
-	}
 
-	public static class Extensions
-	{
-		public static int InsertAt(this StringBuilder stringBuilder, int index, string text)
+		public override bool CanExecute(object parameter)
 		{
-			stringBuilder.Insert(index, text);
-			return text.Length;
+			if (CurrentTerminal.Id != Terminals.Select)
+				return false;
+
+			var queryBlock = SemanticModel.GetQueryBlock(CurrentTerminal);
+			if (queryBlock == null)
+				return false;
+
+			//TODO: Check column aliases
+			//var tables = .Columns.All(c => c.);
+			return true;
+		}
+
+		protected override void ExecuteInternal(string statementText, ICollection<TextSegment> segmentsToReplace)
+		{
+			if (!SettingsProvider.GetSettings())
+				return;
+
+			var tableAlias = SettingsProvider.Settings.Value;
+
+			var queryBlock = SemanticModel.GetQueryBlock(CurrentTerminal);
+
+			var firstQueryBlock = SemanticModel.QueryBlocks.OrderBy(qb => qb.RootNode.SourcePosition.IndexStart).First();
+			//var lastCte = firstQueryBlock.TableReferences.Where(t => t.c)
+
+			// TODO: Find proper location and resolve if first or not first CTE
+			var builder = new StringBuilder(tableAlias + " AS (");
+			builder.Append(statementText.Substring(queryBlock.RootNode.SourcePosition.IndexStart, queryBlock.RootNode.SourcePosition.Length));
+			builder.Append(") ");
+
+			segmentsToReplace.Add(new TextSegment
+			{
+				IndextStart = 0, // TODO
+				Length = 0,
+				Text = builder.ToString()
+			});
+			
+			builder = new StringBuilder("SELECT ");
+			var columnList = String.Join(", ", queryBlock.Columns.Where(c => !c.IsAsterisk && !String.IsNullOrEmpty(c.NormalizedName)).Select(c => c.NormalizedName.ToSimpleIdentifier()));
+			builder.Append(columnList);
+			builder.Append(" FROM ");
+			builder.Append(tableAlias);
+
+			segmentsToReplace.Add(new TextSegment
+			{
+				IndextStart = queryBlock.RootNode.SourcePosition.IndexStart,
+				Length = queryBlock.RootNode.SourcePosition.Length,
+				Text = builder.ToString()
+			});
 		}
 	}
 }

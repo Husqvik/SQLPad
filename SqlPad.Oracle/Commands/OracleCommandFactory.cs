@@ -12,7 +12,7 @@ namespace SqlPad.Oracle.Commands
 
 		public IWrapAsCommonTableExpressionCommand CreateWrapAsCommonTableExpressionCommand()
 		{
-			return new WrapAsCommonTableExpressionCommand();
+			return new WrapAsCommonTableExpressionCommandOld();
 		}
 
 		public IAddMissingAliasesCommand CreateAddMissingAliasesCommand()

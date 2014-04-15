@@ -7,7 +7,7 @@ namespace SqlPad.Oracle
 	{
 		public override ValidationResult Validate(object value, CultureInfo cultureInfo)
 		{
-			return new ValidationResult(OracleSqlParser.IsValidIdentifier((string)value), "Identifier contains characters that are not allowed, starts with number or has more than 30 characters");
+			return new ValidationResult(OracleSqlParser.IsValidIdentifier((string)value), "Identifier contains characters that are not allowed, starts with a number, has more than 30 characters or matches a keyword. ");
 		}
 	}
 }

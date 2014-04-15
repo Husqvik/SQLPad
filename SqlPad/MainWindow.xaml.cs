@@ -111,7 +111,7 @@ namespace SqlPad
 
 		void TextEnteredHandler(object sender, TextCompositionEventArgs e)
 		{
-			if (_multiNodeEditor != null)
+			if (Editor.Document.IsInUpdate)
 			{
 				Editor.Document.EndUpdate();
 			}
@@ -162,13 +162,8 @@ namespace SqlPad
 			{
 				Editor.Document.BeginUpdate();
 
-				/*if (Editor.SelectionLength > 0)
-				{
-					_multiNodeEditor.RemoveCharacter(Editor.CaretOffset != Editor.SelectionStart);
-				}
-
-				_multiNodeEditor.InsertText(e.Text);*/
-				_multiNodeEditor.Replace(e.Text);
+				if (!_multiNodeEditor.Replace(e.Text))
+					_multiNodeEditor = null;
 			}
 
 			if (e.Text.Length == 1 && _completionWindow != null)
@@ -287,7 +282,7 @@ namespace SqlPad
 			{
 				Trace.WriteLine("SHIFT + F6");
 
-				_multiNodeEditor = new MultiNodeEditor(Editor, _infrastructureFactory);
+				MultiNodeEditor.TryCreateMultiNodeEditor(Editor, _infrastructureFactory, out _multiNodeEditor);
 			}
 			else if (e.SystemKey == Key.F11 && Keyboard.Modifiers == (ModifierKeys.Alt | ModifierKeys.Shift))
 			{
@@ -297,7 +292,8 @@ namespace SqlPad
 			if ((e.Key == Key.Back || e.Key == Key.Delete) && _multiNodeEditor != null)
 			{
 				Editor.Document.BeginUpdate();
-				_multiNodeEditor.RemoveCharacter(e.Key == Key.Back);
+				if (!_multiNodeEditor.RemoveCharacter(e.Key == Key.Back))
+					_multiNodeEditor = null;
 			}
 			else if (e.Key == Key.Back && Editor.Text.Length > Editor.CaretOffset)
 			{

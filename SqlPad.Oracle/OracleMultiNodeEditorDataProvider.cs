@@ -12,6 +12,9 @@ namespace SqlPad.Oracle
 		{
 			var statements = _parser.Parse(sqlText);
 			var currentNode = statements.GetTerminalAtPosition(position, n => Terminals.AllTerminals.Contains(n.Id));
+			if (currentNode == null)
+				return new MultiNodeEditorData();
+				
 			var semanticModel = new OracleStatementSemanticModel(sqlText, (OracleStatement)currentNode.Statement, DatabaseModelFake.Instance);
 
 			// TODO: check if selection span the terminal
