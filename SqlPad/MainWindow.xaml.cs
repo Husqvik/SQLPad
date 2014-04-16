@@ -37,9 +37,9 @@ namespace SqlPad
 		
 		private readonly ToolTip _toolTip = new ToolTip();
 
-		public static RoutedCommand CommandAddColumnAliases = new RoutedCommand();
-		public static RoutedCommand CommandWrapAsCommonTableExpression = new RoutedCommand();
-		public static RoutedCommand CommandToggleQuotedIdentifier = new RoutedCommand();
+//		public static RoutedCommand CommandAddColumnAliases = new RoutedCommand();
+//		public static RoutedCommand CommandWrapAsCommonTableExpression = new RoutedCommand();
+//		public static RoutedCommand CommandToggleQuotedIdentifier = new RoutedCommand();
 
 		public MainWindow()
 		{
@@ -75,36 +75,6 @@ namespace SqlPad
 		private StatementCollection ParseStatements()
 		{
 			return _sqlParser.Parse(Editor.Text);
-		}
-
-		private void AddColumnAliasesExecutedHandler(object sender, ExecutedRoutedEventArgs e)
-		{
-			Editor.Text = _infrastructureFactory.CommandFactory.CreateAddMissingAliasesCommand().Execute(Editor.Text, Editor.CaretOffset);
-		}
-
-		private void AddColumnAliasesCanExecuteHandler(object sender, CanExecuteRoutedEventArgs e)
-		{
-			e.CanExecute = true;
-		}
-
-		private void WrapAsCommonTableExpressionExecutedHandler(object sender, ExecutedRoutedEventArgs e)
-		{
-			Editor.Text = _infrastructureFactory.CommandFactory.CreateWrapAsCommonTableExpressionCommand().Execute(Editor.Text, Editor.CaretOffset, "WRAPPED_QUERY");
-		}
-
-		private void WrapAsCommonTableExpressionCanExecuteHandler(object sender, CanExecuteRoutedEventArgs e)
-		{
-			e.CanExecute = true;
-		}
-
-		private void ToggleQuotedIdentifierExecutedHandler(object sender, ExecutedRoutedEventArgs e)
-		{
-			Editor.Text = _infrastructureFactory.CommandFactory.CreateToggleQuotedIdentifierCommand().Execute(Editor.Text, Editor.CaretOffset);
-		}
-
-		private void ToggleQuotedIdentifierCanExecuteHandler(object sender, CanExecuteRoutedEventArgs e)
-		{
-			e.CanExecute = true;
 		}
 
 		private CompletionWindow _completionWindow;

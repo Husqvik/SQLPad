@@ -50,7 +50,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands\CommandTest.cs" />
-    <Compile Include="Commands\AddMissingAliasesCommandTest.cs" />
     <Compile Include="OracleCodeCompletionProviderTest.cs" />
     <Compile Include="OracleSemanticValidatorTest.cs" />
     <Compile Include="OracleSqlParserTest.cs" />

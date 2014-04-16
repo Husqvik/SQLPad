@@ -74,6 +74,26 @@ namespace SqlPad.Oracle.Test.Commands
 			_editor.Text.ShouldBe(@"SELECT RESPONDENTBUCKET_ID, SELECTION_ID, PROJECT_ID, NAME FROM (SELECT S.RESPONDENTBUCKET_ID, S.SELECTION_ID, PROJECT_ID, NAME, 1 FROM SELECTION S) SUB");
 		}
 
+		[Test(Description = @""), STAThread]
+		public void TestBasicWrapAsCommonTableExpressionCommand()
+		{
+			_editor.Text = "SELECT 1, 1 + 1 MYCOLUMN, DUMMY || '3' COLUMN3 FROM DUAL";
+			var command = InitializeCommand<WrapAsCommonTableExpressionCommand>(_editor.Text, 0, "MYQUERY");
+			command.Execute(_editor);
+
+			_editor.Text.ShouldBe(@"WITH MYQUERY AS (SELECT 1, 1 + 1 MYCOLUMN, DUMMY || '3' COLUMN3 FROM DUAL) SELECT MYCOLUMN, COLUMN3 FROM MYQUERY");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestBasicWrapAsCommonTableExpressionCommandWithExistingCommonTableExpressionAndWhiteSpace()
+		{
+			_editor.Text = "\t\t            WITH OLDQUERY AS (SELECT OLD FROM OLD) SELECT 1, 1 + 1 MYCOLUMN, DUMMY || '3' COLUMN3 FROM DUAL";
+			var command = InitializeCommand<WrapAsCommonTableExpressionCommand>(_editor.Text, 55, "NEWQUERY");
+			command.Execute(_editor);
+
+			_editor.Text.ShouldBe("\t\t            WITH OLDQUERY AS (SELECT OLD FROM OLD), NEWQUERY AS (SELECT 1, 1 + 1 MYCOLUMN, DUMMY || '3' COLUMN3 FROM DUAL) SELECT MYCOLUMN, COLUMN3 FROM NEWQUERY");
+		}
+
 		private class TestCommandSettings : ICommandSettingsProvider
 		{
 			private readonly bool _isValueValid;

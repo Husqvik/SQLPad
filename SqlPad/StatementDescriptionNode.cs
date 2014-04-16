@@ -213,7 +213,7 @@ namespace SqlPad
 				: ParentNode.GetPathFilterAncestor(pathFilter, ancestorNodeId);
 		}
 
-		public StatementDescriptionNode GetAncestor(string ancestorNodeId, bool includeSelf = true)
+		public StatementDescriptionNode GetAncestor(string ancestorNodeId, bool includeSelf = false)
 		{
 			return GetPathFilterAncestor(null, ancestorNodeId, includeSelf);
 		}

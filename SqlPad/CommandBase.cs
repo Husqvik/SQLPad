@@ -18,7 +18,7 @@ namespace SqlPad
 
 			editor.Document.BeginUpdate();
 
-			foreach (var textSegment in textSegments.OrderByDescending(s => s.IndextStart))
+			foreach (var textSegment in textSegments.OrderByDescending(s => s.IndextStart).ThenByDescending(s => s.Length))
 			{
 				editor.Document.Replace(textSegment.IndextStart, textSegment.Length, textSegment.Text);
 			}

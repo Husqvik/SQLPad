@@ -35,11 +35,11 @@ namespace SqlPad.Oracle
 				actionList.Add(new OracleContextAction("Wrap as sub-query", wrapAsSubqueryCommand));
 			}
 
-			/*var wrapAsCommonTableExpressionCommand = new WrapAsCommonTableExpressionCommand(semanticModel, currentTerminal);
+			var wrapAsCommonTableExpressionCommand = new WrapAsCommonTableExpressionCommand(semanticModel, currentTerminal);
 			if (wrapAsCommonTableExpressionCommand.CanExecute(null))
 			{
 				actionList.Add(new OracleContextAction("Wrap as common table expression", wrapAsCommonTableExpressionCommand));
-			}*/
+			}
 
 			var actions = ResolveAmbiguousColumnCommand.ResolveCommands(semanticModel, currentTerminal)
 				.Select(c => new OracleContextAction("Resolve as " + c.ResolvedName, c));

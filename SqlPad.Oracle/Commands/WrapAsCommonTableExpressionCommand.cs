@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
+using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 
 namespace SqlPad.Oracle.Commands
 {
@@ -36,17 +37,35 @@ namespace SqlPad.Oracle.Commands
 
 			var queryBlock = SemanticModel.GetQueryBlock(CurrentTerminal);
 
-			var firstQueryBlock = SemanticModel.QueryBlocks.OrderBy(qb => qb.RootNode.SourcePosition.IndexStart).First();
-			//var lastCte = firstQueryBlock.TableReferences.Where(t => t.c)
+			var lastCte = SemanticModel.MainQueryBlock
+				.AccessibleQueryBlocks
+				.OrderByDescending(qb => qb.RootNode.SourcePosition.IndexStart)
+				.FirstOrDefault();
 
-			// TODO: Find proper location and resolve if first or not first CTE
-			var builder = new StringBuilder(tableAlias + " AS (");
+			var builder = new StringBuilder();
+			var startIndex = 0;
+			if (lastCte == null)
+			{
+				builder.Append("WITH ");
+			}
+			else
+			{
+				builder.Append(", ");
+				startIndex = lastCte.RootNode.GetAncestor(NonTerminals.SubqueryComponent).SourcePosition.IndexEnd + 1;
+			}
+
+			builder.Append(tableAlias + " AS (");
 			builder.Append(statementText.Substring(queryBlock.RootNode.SourcePosition.IndexStart, queryBlock.RootNode.SourcePosition.Length));
-			builder.Append(") ");
+			builder.Append(")");
+
+			if (lastCte == null)
+			{
+				builder.Append(" ");	
+			}
 
 			segmentsToReplace.Add(new TextSegment
 			{
-				IndextStart = 0, // TODO
+				IndextStart = startIndex,
 				Length = 0,
 				Text = builder.ToString()
 			});

@@ -6,12 +6,12 @@
         Title="SQL Pad 0.01 Alpha" Height="640" Width="960" Loaded="WindowLoadedHandler">
 
     <Window.CommandBindings>
-        <CommandBinding Command="{x:Static local:MainWindow.CommandAddColumnAliases}"
+        <!--<CommandBinding Command="{x:Static local:MainWindow.CommandAddColumnAliases}"
                     Executed="AddColumnAliasesExecutedHandler" CanExecute="AddColumnAliasesCanExecuteHandler" />
         <CommandBinding Command="{x:Static local:MainWindow.CommandWrapAsCommonTableExpression}"
                     Executed="WrapAsCommonTableExpressionExecutedHandler" CanExecute="WrapAsCommonTableExpressionCanExecuteHandler" />
         <CommandBinding Command="{x:Static local:MainWindow.CommandToggleQuotedIdentifier}"
-                    Executed="ToggleQuotedIdentifierExecutedHandler" CanExecute="ToggleQuotedIdentifierCanExecuteHandler" />
+                    Executed="ToggleQuotedIdentifierExecutedHandler" CanExecute="ToggleQuotedIdentifierCanExecuteHandler" />-->
     </Window.CommandBindings>
     
     <Window.Resources>
@@ -43,6 +43,13 @@
 			</TextDecoration.Pen>
 		</TextDecoration>
 
+		<!--<VisualBrush x:Key="OutlineBoxBrush" TileMode="None" Viewbox="0,0,1,1" ViewboxUnits="RelativeToBoundingBox" Viewport="0,0,1,1" ViewportUnits="RelativeToBoundingBox" Stretch="None">-->
+		<!--<VisualBrush x:Key="OutlineBoxBrush" TileMode="None" Viewbox="-3,-3,16,16" ViewboxUnits="Absolute" Viewport="-3,-3,16,16" ViewportUnits="Absolute" Stretch="None">
+			<VisualBrush.Visual>
+				<Rectangle Stroke="GreenYellow" Fill="Transparent" StrokeThickness="3"></Rectangle>
+			</VisualBrush.Visual>
+		</VisualBrush>-->
+
 	</Window.Resources>
 
     <Grid>
@@ -50,10 +57,6 @@
             <RowDefinition />
             <RowDefinition Height="72" />
         </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition />
-            <ColumnDefinition Width="240" />
-        </Grid.ColumnDefinitions>
         <avalonedit:TextEditor x:Name="Editor"
                                FontFamily="Consolas"
                                ShowLineNumbers="True"
@@ -67,15 +70,6 @@
                 <ContextMenu x:Name="CommandMenu" Placement="RelativePoint"></ContextMenu>
             </avalonedit:TextEditor.ContextMenu>
         </avalonedit:TextEditor>
-        <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="TextBlockToken" TextWrapping="WrapWithOverflow" />
-
-        <StackPanel Grid.Column="1" Grid.Row="0">
-            <Button Content="_Add column aliases" Command="{x:Static local:MainWindow.CommandAddColumnAliases}" />
-            <Button Content="_Wrap as common table expression" Command="{x:Static local:MainWindow.CommandWrapAsCommonTableExpression}" />
-            <Button Content="W_rap as subquery" IsEnabled="False" />
-            <Button Content="A_dd fully qualified names" IsEnabled="False" />
-            <Button Content="E_xpand columns" IsEnabled="False" />
-            <Button Content="Toggle quoted identifiers" Command="{x:Static local:MainWindow.CommandToggleQuotedIdentifier}" />
-        </StackPanel>
-    </Grid>
+        <TextBlock Grid.Row="1" Grid.Column="0" x:Name="TextBlockToken" TextWrapping="WrapWithOverflow" />
+	</Grid>
 </Window>
