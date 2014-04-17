@@ -64,6 +64,19 @@ namespace SqlPad.Oracle.Test.Commands
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestAddAliasCommandWithWhereGroupByAndHavingClauses()
+		{
+			_editor.Text = "SELECT SELECTION.RESPONDENTBUCKET_ID, PROJECT_ID FROM SELECTION WHERE SELECTION.NAME = NAME GROUP BY SELECTION.RESPONDENTBUCKET_ID, PROJECT_ID HAVING COUNT(SELECTION.SELECTION_ID) = COUNT(SELECTION_ID)";
+			var command = InitializeCommand<AddAliasCommand>(_editor.Text, 60, "S");
+			var canExecute = command.CanExecute(null);
+			canExecute.ShouldBe(true);
+
+			command.Execute(_editor);
+
+			_editor.Text.ShouldBe("SELECT S.RESPONDENTBUCKET_ID, PROJECT_ID FROM SELECTION S WHERE S.NAME = NAME GROUP BY S.RESPONDENTBUCKET_ID, PROJECT_ID HAVING COUNT(S.SELECTION_ID) = COUNT(SELECTION_ID)");
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestBasicWrapAsSubqueryCommand()
 		{
 			_editor.Text = @"SELECT S.RESPONDENTBUCKET_ID, S.SELECTION_ID, PROJECT_ID, NAME, 1 FROM SELECTION S";
@@ -92,6 +105,26 @@ namespace SqlPad.Oracle.Test.Commands
 			command.Execute(_editor);
 
 			_editor.Text.ShouldBe("\t\t            WITH OLDQUERY AS (SELECT OLD FROM OLD), NEWQUERY AS (SELECT 1, 1 + 1 MYCOLUMN, DUMMY || '3' COLUMN3 FROM DUAL) SELECT MYCOLUMN, COLUMN3 FROM NEWQUERY");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestBasicToggleQuotedNotationCommandOn()
+		{
+			_editor.Text = "SELECT \"PUBLIC\".DUAL.DUMMY, S.PROJECT_ID FROM SELECTION S, \"PUBLIC\".DUAL";
+			var command = InitializeCommand<ToggleQuotedNotationCommand>(_editor.Text, 0, null);
+			command.Execute(_editor);
+
+			_editor.Text.ShouldBe("SELECT \"PUBLIC\".\"DUAL\".\"DUMMY\", \"S\".\"PROJECT_ID\" FROM \"SELECTION\" \"S\", \"PUBLIC\".\"DUAL\"");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestBasicToggleQuotedNotationCommandOff()
+		{
+			_editor.Text = "SELECT \"PUBLIC\".\"DUAL\".\"DUMMY\", \"S\".\"PROJECT_ID\" FROM \"SELECTION\" \"S\", \"PUBLIC\".\"DUAL\"";
+			var command = InitializeCommand<ToggleQuotedNotationCommand>(_editor.Text, 0, null);
+			command.Execute(_editor);
+
+			_editor.Text.ShouldBe("SELECT \"PUBLIC\".DUAL.DUMMY, S.PROJECT_ID FROM SELECTION S, \"PUBLIC\".DUAL");
 		}
 
 		private class TestCommandSettings : ICommandSettingsProvider

@@ -148,6 +148,8 @@ namespace SqlPad.Oracle
 				ResolveWhereGroupByHavingReferences(item);
 
 				ResolveJoinColumnReferences(item);
+
+				ResolveOrderByReferences(item);
 			}
 
 			foreach (var queryBlock in _queryBlockResults.Values)
@@ -309,8 +311,13 @@ namespace SqlPad.Oracle
 
 		private void ResolveWhereGroupByHavingReferences(OracleQueryBlock queryBlock)
 		{
-			var identifiers = GetIdentifiersFromNodesWithinSameQuery(queryBlock, NonTerminals.WhereClause, NonTerminals.GroupByClause, NonTerminals.HavingClause).ToArray();
+			var identifiers = GetIdentifiersFromNodesWithinSameQuery(queryBlock, NonTerminals.WhereClause, NonTerminals.GroupByClause).ToArray();
 			ResolveColumnReferenceFromIdentifiers(queryBlock, queryBlock.ColumnReferences, identifiers, ColumnReferenceType.WhereGroupHavingOrder);
+		}
+
+		private void ResolveOrderByReferences(OracleQueryBlock queryBlock)
+		{
+			
 		}
 
 		private void ResolveColumnReferenceFromIdentifiers(OracleQueryBlock queryBlock, ICollection<OracleColumnReference> columnReferences, IEnumerable<StatementDescriptionNode> identifiers, ColumnReferenceType type)
@@ -330,11 +337,11 @@ namespace SqlPad.Oracle
 			var identifiers = Enumerable.Empty<StatementDescriptionNode>();
 			foreach (var nonTerminalId in nonTerminalIds)
 			{
-				var whereClause = queryBlock.RootNode.GetDescendantsWithinSameQuery(nonTerminalId).FirstOrDefault();
-				if (whereClause == null)
+				var clauseRootNode = queryBlock.RootNode.GetDescendantsWithinSameQuery(nonTerminalId).FirstOrDefault();
+				if (clauseRootNode == null)
 					continue;
 
-				var nodeIdentifiers = whereClause.GetDescendantsWithinSameQuery(Terminals.Identifier);
+				var nodeIdentifiers = clauseRootNode.GetDescendantsWithinSameQuery(Terminals.Identifier)	.ToArray();
 				identifiers = identifiers.Concat(nodeIdentifiers);
 			}
 

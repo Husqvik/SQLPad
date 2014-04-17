@@ -34,12 +34,14 @@ namespace SqlPad
 			{
 				var binding = BindingOperations.GetBinding(TextValue, TextBox.TextProperty);
 				binding.ValidationRules.Add(_model.ValidationRule);
+				// TODO: Add initial validation
 				var bindingExpression = BindingOperations.GetBindingExpression(TextValue, TextBox.TextProperty);
 			}
 
 			DataContext = _model;
 
 			TextValue.Focus();
+			TextValue.SelectAll();
 		}
 
 		public bool GetSettings()

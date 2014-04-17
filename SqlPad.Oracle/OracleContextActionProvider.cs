@@ -41,6 +41,12 @@ namespace SqlPad.Oracle
 				actionList.Add(new OracleContextAction("Wrap as common table expression", wrapAsCommonTableExpressionCommand));
 			}
 
+			var toggleQuotedNotationCommand = new ToggleQuotedNotationCommand(semanticModel, currentTerminal);
+			if (toggleQuotedNotationCommand.CanExecute(null))
+			{
+				actionList.Add(new OracleContextAction("Toggle quoted identifiers", toggleQuotedNotationCommand));
+			}
+
 			var actions = ResolveAmbiguousColumnCommand.ResolveCommands(semanticModel, currentTerminal)
 				.Select(c => new OracleContextAction("Resolve as " + c.ResolvedName, c));
 

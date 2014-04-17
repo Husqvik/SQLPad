@@ -1289,7 +1289,7 @@
     <Rule StartingNonTerminal="TableCollectionExpression">
       <Sequences>
         <Sequence>
-          <Terminal Id="Table" />
+          <Terminal Id="Table" /><!-- Oracle 8.0 introduced 'THE' terminal later superseeded by TABLE -->
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="Prefix" IsOptional="true" />
           <Terminal Id="Identifier" />

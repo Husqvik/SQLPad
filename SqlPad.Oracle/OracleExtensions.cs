@@ -15,11 +15,33 @@ namespace SqlPad.Oracle
 			if (String.IsNullOrWhiteSpace(identifier))
 				return String.Empty;
 
+			var isNotKeyword = !identifier.CollidesWithKeyword();
+
+			return isNotKeyword && identifier.IsQuotedWithoutCheck() && identifier == identifier.ToUpperInvariant() ? identifier.Replace(QuoteCharacter, null) : identifier;
+		}
+
+		public static bool CollidesWithKeyword(this string identifier)
+		{
+			if (String.IsNullOrEmpty(identifier))
+				return false;
+
 			CheckQuotedIdentifier(identifier);
 
-			var isNotKeyword = !Terminals.IsKeyword(identifier.Replace(QuoteCharacter, null));
+			return Terminals.IsKeyword(identifier.Replace(QuoteCharacter, null));
+		}
 
-			return isNotKeyword && identifier[0] == '"' && identifier == identifier.ToUpperInvariant() ? identifier.Replace(QuoteCharacter, null) : identifier;
+		public static bool IsQuoted(this string identifier)
+		{
+			if (String.IsNullOrEmpty(identifier))
+				return false;
+
+			CheckQuotedIdentifier(identifier);
+			return IsQuotedWithoutCheck(identifier);
+		}
+
+		private static bool IsQuotedWithoutCheck(this string identifier)
+		{
+			return identifier[0] == '"';
 		}
 
 		public static string ToQuotedIdentifier(this string identifier)
@@ -29,12 +51,12 @@ namespace SqlPad.Oracle
 
 			CheckQuotedIdentifier(identifier);
 
-			return identifier[0] == '"' ? identifier : QuoteCharacter + identifier.ToUpperInvariant() + QuoteCharacter;
+			return identifier.IsQuotedWithoutCheck() ? identifier : QuoteCharacter + identifier.ToUpperInvariant() + QuoteCharacter;
 		}
 
 		private static void CheckQuotedIdentifier(string identifier)
 		{
-			if (identifier[0] == '"' && (identifier.Length == 1 || identifier[identifier.Length - 1] != '"' || identifier.Substring(1, identifier.Length - 2).Contains(QuoteCharacter)))
+			if (identifier.IsQuotedWithoutCheck() && (identifier.Length == 1 || identifier[identifier.Length - 1] != '"' || identifier.Substring(1, identifier.Length - 2).Contains(QuoteCharacter)))
 				throw new ArgumentException("invalid quoted notation");
 		}
 

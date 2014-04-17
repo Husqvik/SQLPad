@@ -33,7 +33,9 @@ namespace SqlPad.Oracle.Commands
 			var table = queryBlock.TableReferences.Single(t => t.TableNode == CurrentTerminal);
 
 			var prefixedColumnReferences = queryBlock.Columns.SelectMany(c => c.ColumnReferences)
+				.Concat(queryBlock.ColumnReferences)
 				.Where(c => (c.OwnerNode != null || c.ObjectNode != null) && c.ColumnNodeReferences.Count == 1 && c.ColumnNodeReferences.Single() == table);
+			
 			var asteriskColumnReferences = queryBlock.Columns.Where(c => c.IsAsterisk).SelectMany(c => c.ColumnReferences)
 				.Where(c => c.ObjectNodeReferences.Count == 1 && c.ObjectNodeReferences.Single() == table);
 
