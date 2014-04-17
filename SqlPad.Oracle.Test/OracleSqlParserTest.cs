@@ -469,7 +469,7 @@ namespace SqlPad.Oracle.Test
 			terminals[24].Id.ShouldBe(Terminals.Outer);
 			terminals[25].Id.ShouldBe(Terminals.Join);
 			terminals[26].Id.ShouldBe(Terminals.ObjectIdentifier);
-			terminals[27].Id.ShouldBe(Terminals.Alias);
+			terminals[27].Id.ShouldBe(Terminals.ObjectAlias);
 
 			const string query2 = @"SELECT 1 FROM DUAL T1 LEFT OUTER JOIN DUAL T2 PARTITION BY (T2.DUMMY, DUMMY) ON (T1.DUMMY = T2.DUMMY)";
 			result = Parser.Parse(query2);
@@ -1024,7 +1024,7 @@ namespace SqlPad.Oracle.Test
 			terminals = statement.AllTerminals.ToArray();
 			terminals.Length.ShouldBe(5);
 			terminals[3].Id.ShouldBe(Terminals.ObjectIdentifier);
-			terminals[4].Id.ShouldBe(Terminals.Alias);
+			terminals[4].Id.ShouldBe(Terminals.ObjectAlias);
 
 			const string query4 = @"SELECT NULL FROM SELECTION S JOIN PROJECT";
 			result = Parser.Parse(query4);

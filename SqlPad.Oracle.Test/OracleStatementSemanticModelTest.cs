@@ -47,13 +47,13 @@ FROM
 
 			var queryBlocks = semanticModel.QueryBlocks.ToArray();
 			queryBlocks[0].Alias.ShouldBe("\"CTE2\"");
-			queryBlocks[0].TableReferences.Count.ShouldBe(1);
+			queryBlocks[0].ObjectReferences.Count.ShouldBe(1);
 			queryBlocks[0].Columns.Count.ShouldBe(3);
 			queryBlocks[1].Alias.ShouldBe("\"CTE1\"");
-			queryBlocks[1].TableReferences.Count.ShouldBe(1);
+			queryBlocks[1].ObjectReferences.Count.ShouldBe(1);
 			queryBlocks[1].Columns.Count.ShouldBe(3);
 			queryBlocks[2].Alias.ShouldBe(null);
-			queryBlocks[2].TableReferences.Count.ShouldBe(2);
+			queryBlocks[2].ObjectReferences.Count.ShouldBe(2);
 			queryBlocks[2].Columns.Count.ShouldBe(7);
 			var mainQueryBlockColumns = queryBlocks[2].Columns.ToArray();
 			mainQueryBlockColumns[0].IsAsterisk.ShouldBe(true);
@@ -74,7 +74,7 @@ FROM
 
 			var queryBlock = semanticModel.QueryBlocks.Single();
 			queryBlock.Alias.ShouldBe(null);
-			queryBlock.TableReferences.Count.ShouldBe(2);
+			queryBlock.ObjectReferences.Count.ShouldBe(2);
 			queryBlock.Columns.Count.ShouldBe(5);
 		}
 
@@ -93,7 +93,7 @@ FROM
 
 			var queryBlock = semanticModel.QueryBlocks.Single();
 			queryBlock.Alias.ShouldBe(null);
-			queryBlock.TableReferences.Count.ShouldBe(2);
+			queryBlock.ObjectReferences.Count.ShouldBe(2);
 			queryBlock.Columns.Count.ShouldBe(5);
 		}
 	}

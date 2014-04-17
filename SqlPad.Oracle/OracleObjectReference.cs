@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace SqlPad.Oracle
 {
-	[DebuggerDisplay("OracleObjectReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; Table={Type != SqlPad.Oracle.TableReferenceType.NestedQuery ? TableNode.Token.Value : \"<Nested subquery>\"}; Alias={AliasNode == null ? null : AliasNode.Token.Value}; Type={Type})")]
+	[DebuggerDisplay("OracleObjectReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; Table={Type != SqlPad.Oracle.TableReferenceType.NestedQuery ? ObjectNode.Token.Value : \"<Nested subquery>\"}; Alias={AliasNode == null ? null : AliasNode.Token.Value}; Type={Type})")]
 	public class OracleObjectReference
 	{
 		private List<OracleColumn> _columns;
@@ -21,7 +21,7 @@ namespace SqlPad.Oracle
 			{
 				return OracleObjectIdentifier.Create(
 					AliasNode == null ? OwnerNode : null,
-					Type == TableReferenceType.NestedQuery ? null : TableNode, AliasNode);
+					Type == TableReferenceType.NestedQuery ? null : ObjectNode, AliasNode);
 			}
 		}
 
@@ -54,7 +54,7 @@ namespace SqlPad.Oracle
 
 		public StatementDescriptionNode OwnerNode { get; set; }
 
-		public StatementDescriptionNode TableNode { get; set; }
+		public StatementDescriptionNode ObjectNode { get; set; }
 		
 		public StatementDescriptionNode AliasNode { get; set; }
 		

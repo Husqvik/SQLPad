@@ -122,7 +122,7 @@ namespace SqlPad.Oracle
 			}
 
 			var joinClauseNode = currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.FromClause, NonTerminals.JoinClause);
-			if (currentNode.Id.In(Terminals.ObjectIdentifier, Terminals.Alias, Terminals.On))
+			if (currentNode.Id.In(Terminals.ObjectIdentifier, Terminals.ObjectAlias, Terminals.On))
 			{
 				if (joinClauseNode != null && !cursorAtLastTerminal)
 				{
@@ -132,9 +132,9 @@ namespace SqlPad.Oracle
 						var joinedTableReferenceNodes = joinClauseNode.GetPathFilterDescendants(n => n.Id != NonTerminals.JoinClause, NonTerminals.TableReference).ToArray();
 						if (joinedTableReferenceNodes.Length == 1)
 						{
-							var joinedTableReference = queryBlock.TableReferences.SingleOrDefault(t => t.TableReferenceNode == joinedTableReferenceNodes[0]);
+							var joinedTableReference = queryBlock.ObjectReferences.SingleOrDefault(t => t.TableReferenceNode == joinedTableReferenceNodes[0]);
 
-							foreach (var parentTableReference in queryBlock.TableReferences
+							foreach (var parentTableReference in queryBlock.ObjectReferences
 								.Where(t => t.TableReferenceNode.SourcePosition.IndexStart < joinedTableReference.TableReferenceNode.SourcePosition.IndexStart))
 							{
 								var joinSuggestions = GenerateJoinConditionSuggestionItems(parentTableReference, joinedTableReference, currentNode.Id == Terminals.On, extraOffset);
@@ -145,7 +145,7 @@ namespace SqlPad.Oracle
 				}
 			}
 
-			if ((currentNode.Id.In(Terminals.ObjectIdentifier, Terminals.Alias) ||
+			if ((currentNode.Id.In(Terminals.ObjectIdentifier, Terminals.ObjectAlias) ||
 			    (joinClauseNode != null && joinClauseNode.IsGrammarValid)) &&
 				!cursorAtLastTerminal)
 			{
@@ -160,7 +160,7 @@ namespace SqlPad.Oracle
 			}
 
 			if (currentNode.Id == Terminals.Join ||
-				(currentNode.Id == Terminals.Alias && currentNode.Token.Value.ToUpperInvariant() == Terminals.Join.ToUpperInvariant()))
+				(currentNode.Id == Terminals.ObjectAlias && currentNode.Token.Value.ToUpperInvariant() == Terminals.Join.ToUpperInvariant()))
 			{
 				completionItems = completionItems.Concat(GenerateSchemaObjectItems(databaseModel.CurrentSchema, null, null, extraOffset));
 				completionItems = completionItems.Concat(GenerateSchemaItems(null, null, extraOffset));
@@ -170,7 +170,7 @@ namespace SqlPad.Oracle
 			if (queryBlock != null && !isCursorAtTerminal && joinClauseNode == null && fromClause == null && !currentNode.IsWithinHavingClause() &&
 				terminalCandidates.Contains(Terminals.ObjectIdentifier))
 			{
-				var whereTableReferences = queryBlock.TableReferences
+				var whereTableReferences = queryBlock.ObjectReferences
 					.Select(t => new OracleCodeCompletionItem
 					             {
 									 Name = t.FullyQualifiedName.ToString(),
@@ -224,7 +224,7 @@ namespace SqlPad.Oracle
 				objectIdentifier = prefixedColumnReference.GetSingleDescendant(Terminals.ObjectIdentifier);
 			}
 
-			var tableReferences = queryBlock.TableReferences.AsEnumerable();
+			var tableReferences = queryBlock.ObjectReferences.AsEnumerable();
 			if (objectIdentifier != null)
 			{
 				var schemaIdentifier = currentNode.ParentNode.GetSingleDescendant(Terminals.SchemaIdentifier);

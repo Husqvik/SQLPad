@@ -12,11 +12,11 @@ namespace SqlPad.Oracle
 
 			var validationModel = new OracleValidationModel();
 
-			foreach (var tableReference in semanticModel.QueryBlocks.SelectMany(qb => qb.TableReferences).Where(tr => tr.Type != TableReferenceType.NestedQuery))
+			foreach (var tableReference in semanticModel.QueryBlocks.SelectMany(qb => qb.ObjectReferences).Where(tr => tr.Type != TableReferenceType.NestedQuery))
 			{
 				if (tableReference.Type == TableReferenceType.CommonTableExpression)
 				{
-					validationModel.TableNodeValidity[tableReference.TableNode] = new NodeValidationData { IsRecognized = true };
+					validationModel.TableNodeValidity[tableReference.ObjectNode] = new NodeValidationData { IsRecognized = true };
 					continue;
 				}
 
@@ -25,7 +25,7 @@ namespace SqlPad.Oracle
 					validationModel.TableNodeValidity[tableReference.OwnerNode] = new NodeValidationData { IsRecognized = tableReference.SearchResult.SchemaFound };
 				}
 
-				validationModel.TableNodeValidity[tableReference.TableNode] = new NodeValidationData { IsRecognized = tableReference.SearchResult.SchemaObject != null };
+				validationModel.TableNodeValidity[tableReference.ObjectNode] = new NodeValidationData { IsRecognized = tableReference.SearchResult.SchemaObject != null };
 			}
 
 			foreach (var queryBlock in semanticModel.QueryBlocks)

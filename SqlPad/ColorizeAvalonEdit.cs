@@ -10,7 +10,7 @@ namespace SqlPad
 	public class ColorizeAvalonEdit : DocumentColorizingTransformer
 	{
 		private StatementCollection _parsedStatements;
-		private readonly HashSet<TextSegment> _highlightSegments = new HashSet<TextSegment>();
+		private readonly Stack<ICollection<TextSegment>> _highlightSegments = new Stack<ICollection<TextSegment>>();
 		private readonly IStatementValidator _validator = ConfigurationProvider.InfrastructureFactory.CreateStatementValidator();
 		private readonly IDatabaseModel _databaseModel = ConfigurationProvider.InfrastructureFactory.CreateDatabaseModel(null);
 		private static readonly SolidColorBrush ErrorBrush = new SolidColorBrush(Colors.Red);
@@ -26,11 +26,15 @@ namespace SqlPad
 		{
 			if (highlightSegments != null)
 			{
-				_highlightSegments.AddRange(highlightSegments);
+				if (highlightSegments.Count == 0 ||
+					_highlightSegments.SelectMany(c => c).Contains(highlightSegments.First()))
+					return;
+
+				_highlightSegments.Push(highlightSegments);
 			}
-			else
+			else if (_highlightSegments.Count > 0)
 			{
-				_highlightSegments.Clear();
+				_highlightSegments.Pop();
 			}
 		}
 
@@ -108,7 +112,7 @@ namespace SqlPad
 						));*/
 					});
 
-				foreach (var highlightSegment in _highlightSegments)
+				foreach (var highlightSegment in _highlightSegments.SelectMany(s => s))
 				{
 					ProcessNodeAtLine(line,
 						new SourcePosition { IndexStart = highlightSegment.IndextStart, IndexEnd = highlightSegment.IndextStart + highlightSegment.Length - 1 },

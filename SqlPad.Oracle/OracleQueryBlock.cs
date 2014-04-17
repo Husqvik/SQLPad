@@ -8,7 +8,7 @@ namespace SqlPad.Oracle
 	{
 		public OracleQueryBlock()
 		{
-			TableReferences = new List<OracleObjectReference>();
+			ObjectReferences = new List<OracleObjectReference>();
 			Columns = new List<OracleSelectListColumn>();
 			AccessibleQueryBlocks = new List<OracleQueryBlock>();
 			ColumnReferences = new List<OracleColumnReference>();
@@ -20,7 +20,7 @@ namespace SqlPad.Oracle
 
 		public StatementDescriptionNode RootNode { get; set; }
 
-		public ICollection<OracleObjectReference> TableReferences { get; private set; }
+		public ICollection<OracleObjectReference> ObjectReferences { get; private set; }
 
 		public ICollection<OracleSelectListColumn> Columns { get; private set; }
 

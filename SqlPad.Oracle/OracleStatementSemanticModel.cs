@@ -62,7 +62,7 @@ namespace SqlPad.Oracle
 					{
 						item.Type = QueryBlockType.Normal;
 
-						var nestedSubqueryAlias = selfTableReference.ChildNodes.SingleOrDefault(n => n.Id == Terminals.Alias);
+						var nestedSubqueryAlias = selfTableReference.ChildNodes.SingleOrDefault(n => n.Id == Terminals.ObjectAlias);
 						if (nestedSubqueryAlias != null)
 						{
 							item.Alias = nestedSubqueryAlias.Token.Value.ToQuotedIdentifier();
@@ -84,17 +84,17 @@ namespace SqlPad.Oracle
 					if (queryTableExpression == null)
 						continue;
 
-					var tableReferenceAlias = tableReferenceNonterminal.GetDescendantsWithinSameQuery(Terminals.Alias).SingleOrDefault();
+					var tableReferenceAlias = tableReferenceNonterminal.GetDescendantsWithinSameQuery(Terminals.ObjectAlias).SingleOrDefault();
 					
 					var nestedQueryTableReference = queryTableExpression.GetPathFilterDescendants(f => f.Id != NonTerminals.Subquery, NonTerminals.NestedQuery).SingleOrDefault();
 					if (nestedQueryTableReference != null)
 					{
 						var nestedQueryTableReferenceQueryBlock = nestedQueryTableReference.GetPathFilterDescendants(n => n.Id != NonTerminals.NestedQuery && n.Id != NonTerminals.SubqueryFactoringClause, NonTerminals.QueryBlock).Single();
 
-						item.TableReferences.Add(new OracleObjectReference
+						item.ObjectReferences.Add(new OracleObjectReference
 						{
 							TableReferenceNode = tableReferenceNonterminal,
-							TableNode = nestedQueryTableReferenceQueryBlock,
+							ObjectNode = nestedQueryTableReferenceQueryBlock,
 							Type = TableReferenceType.NestedQuery,
 							AliasNode = tableReferenceAlias
 						});
@@ -131,11 +131,11 @@ namespace SqlPad.Oracle
 						result = databaseModel.GetObject(OracleObjectIdentifier.Create(owner, objectName));
 					}
 
-					item.TableReferences.Add(new OracleObjectReference
+					item.ObjectReferences.Add(new OracleObjectReference
 					                         {
 												 TableReferenceNode = tableReferenceNonterminal,
 						                         OwnerNode = schemaPrefixNode,
-						                         TableNode = tableIdentifierNode,
+						                         ObjectNode = tableIdentifierNode,
 						                         Type = referenceType,
 												 Nodes = commonTableExpressions,
 												 AliasNode = tableReferenceAlias,
@@ -154,11 +154,11 @@ namespace SqlPad.Oracle
 
 			foreach (var queryBlock in _queryBlockResults.Values)
 			{
-				foreach (var nestedQueryReference in queryBlock.TableReferences.Where(t => t.Type != TableReferenceType.PhysicalObject))
+				foreach (var nestedQueryReference in queryBlock.ObjectReferences.Where(t => t.Type != TableReferenceType.PhysicalObject))
 				{
 					if (nestedQueryReference.Type == TableReferenceType.NestedQuery)
 					{
-						nestedQueryReference.QueryBlocks.Add(_queryBlockResults[nestedQueryReference.TableNode]);
+						nestedQueryReference.QueryBlocks.Add(_queryBlockResults[nestedQueryReference.ObjectNode]);
 					}
 					else
 					{
@@ -215,7 +215,7 @@ namespace SqlPad.Oracle
 			foreach (var queryBlock in _queryBlockResults.Values)
 			{
 				var columnReferencesExceptJoinClauses = queryBlock.Columns.SelectMany(c => c.ColumnReferences).Concat(queryBlock.ColumnReferences);
-				ResolveColumnTableReferences(columnReferencesExceptJoinClauses, queryBlock.TableReferences);
+				ResolveColumnTableReferences(columnReferencesExceptJoinClauses, queryBlock.ObjectReferences);
 			}
 
 			foreach (var joinClauseColumnReferences in _joinClauseColumnReferences)
@@ -224,7 +224,7 @@ namespace SqlPad.Oracle
 				foreach (var columnReference in joinClauseColumnReferences)
 				{
 					var fromClauseNode = columnReference.ColumnNode.GetAncestor(NonTerminals.FromClause);
-					var relatedTableReferences = queryBlock.TableReferences
+					var relatedTableReferences = queryBlock.ObjectReferences
 						.Where(t => t.TableReferenceNode.SourcePosition.IndexStart >= fromClauseNode.SourcePosition.IndexStart &&
 						            t.TableReferenceNode.SourcePosition.IndexEnd <= columnReference.ColumnNode.SourcePosition.IndexStart).ToArray();
 					ResolveColumnTableReferences(joinClauseColumnReferences, relatedTableReferences);
@@ -369,7 +369,7 @@ namespace SqlPad.Oracle
 
 				column.ColumnReferences.Add(CreateColumnReference(item, ColumnReferenceType.SelectList, asteriskNode, null));
 
-				_asteriskTableReferences[column] = new HashSet<OracleObjectReference>(item.TableReferences);
+				_asteriskTableReferences[column] = new HashSet<OracleObjectReference>(item.ObjectReferences);
 
 				item.Columns.Add(column);
 			}
@@ -399,7 +399,7 @@ namespace SqlPad.Oracle
 						var columnReference = CreateColumnReference(item, ColumnReferenceType.SelectList, asteriskNode, prefixNonTerminal);
 						column.ColumnReferences.Add(columnReference);
 
-						var tableReferences = item.TableReferences.Where(t => t.FullyQualifiedName == columnReference.FullyQualifiedObjectName || (columnReference.ObjectNode == null && t.FullyQualifiedName.NormalizedName == columnReference.FullyQualifiedObjectName.NormalizedName));
+						var tableReferences = item.ObjectReferences.Where(t => t.FullyQualifiedName == columnReference.FullyQualifiedObjectName || (columnReference.ObjectNode == null && t.FullyQualifiedName.NormalizedName == columnReference.FullyQualifiedObjectName.NormalizedName));
 						_asteriskTableReferences[column].AddRange(tableReferences);
 					}
 					else

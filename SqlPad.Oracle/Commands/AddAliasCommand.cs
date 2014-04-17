@@ -17,7 +17,7 @@ namespace SqlPad.Oracle.Commands
 			if (CurrentTerminal.Id != Terminals.ObjectIdentifier)
 				return false;
 
-			var tables = SemanticModel.GetQueryBlock(CurrentTerminal).TableReferences.Where(t => t.TableNode == CurrentTerminal).ToArray();
+			var tables = SemanticModel.GetQueryBlock(CurrentTerminal).ObjectReferences.Where(t => t.ObjectNode == CurrentTerminal).ToArray();
 			return tables.Length == 1 && tables[0].AliasNode == null;
 		}
 
@@ -30,7 +30,7 @@ namespace SqlPad.Oracle.Commands
 
 			var queryBlock = SemanticModel.GetQueryBlock(CurrentTerminal);
 
-			var table = queryBlock.TableReferences.Single(t => t.TableNode == CurrentTerminal);
+			var table = queryBlock.ObjectReferences.Single(t => t.ObjectNode == CurrentTerminal);
 
 			var prefixedColumnReferences = queryBlock.Columns.SelectMany(c => c.ColumnReferences)
 				.Concat(queryBlock.ColumnReferences)

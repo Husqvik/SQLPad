@@ -7,7 +7,6 @@ namespace SqlPad.Oracle
 	public class OracleInfrastructureFactory : IInfrastructureFactory
 	{
 		private readonly OracleCommandFactory _commandFactory = new OracleCommandFactory();
-		private readonly OracleSqlParser _parser = new OracleSqlParser();
 
 		#region Implementation of IInfrastructureFactory
 		public ICommandFactory CommandFactory { get { return _commandFactory; } }

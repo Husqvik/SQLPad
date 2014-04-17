@@ -389,7 +389,7 @@
           <Terminal Id="Into" />
           <NonTerminal Id="SchemaPrefix" IsOptional="true" />
           <Terminal Id="ObjectIdentifier" />
-          <Terminal Id="Alias" IsOptional="true" />
+          <Terminal Id="ObjectAlias" IsOptional="true" />
           <Terminal Id="Using" />
           <!-- TODO: aliased table, view or subquery -->
           <Terminal Id="On" />
@@ -1217,7 +1217,7 @@
       <Sequences>
         <Sequence>
           <NonTerminal Id="InnerTableReference" />
-          <Terminal Id="Alias" IsOptional="true" />
+          <Terminal Id="ObjectAlias" IsOptional="true" />
         </Sequence>
         <Sequence>
           <Terminal Id="LeftParenthesis" />
@@ -2729,6 +2729,7 @@
     <Terminal Id="ObjectIdentifier" RegexValue="^((&quot;[^&quot;]{1,28}&quot;)|([a-zA-Z][\w\d$#]{0,29}))$" />
     <Terminal Id="BindVariableIdentifier" RegexValue="^((&quot;[^&quot;]{1,28}&quot;)|([a-zA-Z][\w\d$#]{0,29})|(\d{1,5}))$" />
     <Terminal Id="Alias" RegexValue="^((&quot;[^&quot;]{1,28}&quot;)|([a-zA-Z][\w\d$#]{0,29}))$" />
+    <Terminal Id="ObjectAlias" RegexValue="^((&quot;[^&quot;]{1,28}&quot;)|([a-zA-Z][\w\d$#]{0,29}))$" />
     <Terminal Id="StringLiteral" RegexValue="^n?q?(&apos;([^&apos;]|(&apos;&apos;))*&apos;)$" />
     <Terminal Id="NumberLiteral" RegexValue="^((\d+\.?\d*)|(\d*\.?\d+))([eE][+-]?\d+)?[fFdD]?$" />
     <Terminal Id="IntegerLiteral" RegexValue="^\d+([eE]((\+?\d+)|(-0)))?$" />

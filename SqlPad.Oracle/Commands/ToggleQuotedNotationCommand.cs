@@ -27,7 +27,7 @@ namespace SqlPad.Oracle.Commands
 			var queryBlock = SemanticModel.GetQueryBlock(CurrentTerminal);
 
 			bool? enableQuotes = null;
-			foreach (var identifier in queryBlock.RootNode.Terminals.Where(t => (Terminals.Identifiers.Contains(t.Id) || t.Id == Terminals.Alias) && !t.Token.Value.CollidesWithKeyword()))
+			foreach (var identifier in queryBlock.RootNode.Terminals.Where(t => (Terminals.Identifiers.Contains(t.Id) || t.Id == Terminals.Alias || t.Id == Terminals.ObjectAlias) && !t.Token.Value.CollidesWithKeyword()))
 			{
 				if (!enableQuotes.HasValue)
 				{
