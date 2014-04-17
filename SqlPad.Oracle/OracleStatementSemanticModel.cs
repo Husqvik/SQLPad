@@ -341,7 +341,7 @@ namespace SqlPad.Oracle
 				if (clauseRootNode == null)
 					continue;
 
-				var nodeIdentifiers = clauseRootNode.GetDescendantsWithinSameQuery(Terminals.Identifier)	.ToArray();
+				var nodeIdentifiers = clauseRootNode.GetDescendantsWithinSameQuery(Terminals.Identifier);
 				identifiers = identifiers.Concat(nodeIdentifiers);
 			}
 
@@ -400,10 +400,7 @@ namespace SqlPad.Oracle
 						column.ColumnReferences.Add(columnReference);
 
 						var tableReferences = item.TableReferences.Where(t => t.FullyQualifiedName == columnReference.FullyQualifiedObjectName || (columnReference.ObjectNode == null && t.FullyQualifiedName.NormalizedName == columnReference.FullyQualifiedObjectName.NormalizedName));
-						foreach (var tableReference in tableReferences)
-						{
-							_asteriskTableReferences[column].Add(tableReference);
-						}
+						_asteriskTableReferences[column].AddRange(tableReferences);
 					}
 					else
 					{
@@ -475,11 +472,6 @@ namespace SqlPad.Oracle
 			var cteName = objectIdentifierNode == null ? null : objectIdentifierNode.Token.Value.ToQuotedIdentifier();
 			return new KeyValuePair<StatementDescriptionNode, string>(cteNode, cteName);
 		}
-	}
-
-	public interface IOracleTableReference
-	{
-		//ICollection<OracleSelectListColumn> Columns { get; }
 	}
 
 	public interface IOracleSelectListColumn

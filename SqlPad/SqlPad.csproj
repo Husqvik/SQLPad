@@ -54,7 +54,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="ColorizeAvalonEdit.cs" />
-    <Compile Include="CommandBase.cs" />
+    <Compile Include="EditCommandBase.cs" />
     <Compile Include="CommandSettingsModel.cs" />
     <Compile Include="Commands\IAddMissingAliasesCommand.cs" />
     <Compile Include="Commands\ICommandFactory.cs" />

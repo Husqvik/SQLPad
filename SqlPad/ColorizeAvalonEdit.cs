@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows;
 using System.Windows.Media;
-using System.Windows.Shapes;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Rendering;
 
@@ -11,19 +9,36 @@ namespace SqlPad
 {
 	public class ColorizeAvalonEdit : DocumentColorizingTransformer
 	{
-		private ICollection<StatementBase> _parsedStatements = new List<StatementBase>();
+		private StatementCollection _parsedStatements;
+		private readonly HashSet<TextSegment> _highlightSegments = new HashSet<TextSegment>();
 		private readonly IStatementValidator _validator = ConfigurationProvider.InfrastructureFactory.CreateStatementValidator();
 		private readonly IDatabaseModel _databaseModel = ConfigurationProvider.InfrastructureFactory.CreateDatabaseModel(null);
 		private static readonly SolidColorBrush ErrorBrush = new SolidColorBrush(Colors.Red);
 		private static readonly SolidColorBrush NormalTextBrush = new SolidColorBrush(Colors.Black);
+		private static readonly SolidColorBrush HighlightBrush = new SolidColorBrush(Colors.Turquoise);
 
-		public void SetStatementCollection(ICollection<StatementBase> statements)
+		public void SetStatementCollection(StatementCollection statements)
 		{
 			_parsedStatements = statements;
 		}
 
+		public void SetHighlightSegments(ICollection<TextSegment> highlightSegments)
+		{
+			if (highlightSegments != null)
+			{
+				_highlightSegments.AddRange(highlightSegments);
+			}
+			else
+			{
+				_highlightSegments.Clear();
+			}
+		}
+
 		protected override void ColorizeLine(DocumentLine line)
 		{
+			if (_parsedStatements == null)
+				return;
+
 			var statementsAtLine = _parsedStatements.Where(s => s.SourcePosition.IndexStart <= line.EndOffset && s.SourcePosition.IndexEnd >= line.Offset);
 
 			foreach (var statement in statementsAtLine)
@@ -34,7 +49,9 @@ namespace SqlPad
 				var colorEndOffset = Math.Min(line.EndOffset, statement.SourcePosition.IndexEnd + 1);
 
 				var validationModel = _validator.ResolveReferences(null, statement, _databaseModel);
-				var nodeRecognizeData = validationModel.TableNodeValidity.Concat(validationModel.ColumnNodeValidity.Select(kvp => new KeyValuePair<StatementDescriptionNode, bool>(kvp.Key, kvp.Value.IsRecognized)));
+				var nodeRecognizeData = validationModel.TableNodeValidity
+					.Select(kvp => new KeyValuePair<StatementDescriptionNode, bool>(kvp.Key, kvp.Value.IsRecognized))
+					.Concat(validationModel.ColumnNodeValidity.Select(kvp => new KeyValuePair<StatementDescriptionNode, bool>(kvp.Key, kvp.Value.IsRecognized)));
 
 				foreach (var nodeValidity in nodeRecognizeData)
 				{
@@ -45,20 +62,30 @@ namespace SqlPad
 						});
 				}
 
-				var semanticErrors = validationModel.ColumnNodeValidity.Select(nv => new { ColumnNode = nv.Key, HasSemanticError = nv.Value.SemanticError != ColumnSemanticError.None });
-				foreach (var semanticError in semanticErrors.Where(e => e.HasSemanticError))
-				{
-					ProcessNodeAtLine(line, semanticError.ColumnNode.SourcePosition,
-						element => element.TextRunProperties.SetTextDecorations(Resources.WaveErrorUnderline));
-					/*ProcessNodeAtLine(line, semanticError.ColumnNode.SourcePosition,
-						element => element.TextRunProperties.SetTextDecorations(Resources.BoxedText));*/
-				}
-
-				/*foreach (var invalidGrammarNode in statement.InvalidGrammarNodes)
+				foreach (var invalidGrammarNode in statement.InvalidGrammarNodes)
 				{
 					ProcessNodeAtLine(line, invalidGrammarNode.SourcePosition,
 						element => element.TextRunProperties.SetTextDecorations(Resources.WaveErrorUnderline));
-				}*/
+				}
+
+				var semanticErrors = validationModel.ColumnNodeValidity
+					.Concat(validationModel.TableNodeValidity)
+					.Select(nv => new { Node = nv.Key, HasSemanticError = nv.Value.SemanticError != SemanticError.None });
+				
+				foreach (var semanticError in semanticErrors.Where(e => e.HasSemanticError))
+				{
+					ProcessNodeAtLine(line, semanticError.Node.SourcePosition,
+						element => element.TextRunProperties.SetTextDecorations(Resources.WaveErrorUnderline));
+					//ProcessNodeAtLine(line, semanticError.Node.SourcePosition,
+					//	element => element.TextRunProperties.SetTextDecorations(Resources.BoxedText));
+
+					/*ProcessNodeAtLine(line, semanticError.Node.SourcePosition,
+						element =>
+						{
+							element.BackgroundBrush = Resources.OutlineBoxBrush;
+							var x = 1;
+						});*/
+				}
 
 				ChangeLinePart(
 					colorStartOffset,
@@ -80,6 +107,13 @@ namespace SqlPad
 							tf.Stretch
 						));*/
 					});
+
+				foreach (var highlightSegment in _highlightSegments)
+				{
+					ProcessNodeAtLine(line,
+						new SourcePosition { IndexStart = highlightSegment.IndextStart, IndexEnd = highlightSegment.IndextStart + highlightSegment.Length - 1 },
+						element => element.BackgroundBrush = HighlightBrush);
+				}
 			}
 		}
 

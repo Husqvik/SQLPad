@@ -2,7 +2,7 @@
 
 namespace SqlPad.Oracle.Commands
 {
-	public abstract class OracleCommandBase : CommandBase
+	public abstract class OracleCommandBase : EditCommandBase
 	{
 		protected OracleStatementSemanticModel SemanticModel { get; private set; }
 
@@ -24,8 +24,6 @@ namespace SqlPad.Oracle.Commands
 			if (currentTerminal == null)
 				throw new ArgumentNullException("currentTerminal");
 		}
-
-		public override event EventHandler CanExecuteChanged = delegate { };
 	}
 
 	public abstract class OracleConfigurableCommandBase : OracleCommandBase

@@ -5,7 +5,7 @@ using System.Linq;
 namespace SqlPad.Oracle
 {
 	[DebuggerDisplay("OracleObjectReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; Table={Type != SqlPad.Oracle.TableReferenceType.NestedQuery ? TableNode.Token.Value : \"<Nested subquery>\"}; Alias={AliasNode == null ? null : AliasNode.Token.Value}; Type={Type})")]
-	public class OracleObjectReference : IOracleTableReference
+	public class OracleObjectReference
 	{
 		private List<OracleColumn> _columns;
 

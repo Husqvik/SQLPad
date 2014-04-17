@@ -247,6 +247,12 @@ namespace SqlPad
 			{
 				Trace.WriteLine(e.Key);
 				_multiNodeEditor = null;
+
+				if (e.Key == Key.Escape)
+				{
+					_colorizeAvalonEdit.SetHighlightSegments(null);
+					Editor.TextArea.TextView.Redraw();
+				}
 			}
 			else if (_multiNodeEditor == null && e.Key == Key.F6 && Keyboard.Modifiers == ModifierKeys.Shift)
 			{
@@ -257,6 +263,15 @@ namespace SqlPad
 			else if (e.SystemKey == Key.F11 && Keyboard.Modifiers == (ModifierKeys.Alt | ModifierKeys.Shift))
 			{
 				Trace.WriteLine("ALT SHIFT + F11");
+
+				var findUsagesCommand = _infrastructureFactory.CommandFactory.CreateFindUsagesCommand(Editor.Text, Editor.CaretOffset, _infrastructureFactory.CreateDatabaseModel(null));
+				if (findUsagesCommand.CanExecute(null))
+				{
+					var highlightSegments = new List<TextSegment>();
+					findUsagesCommand.Execute(highlightSegments);
+					_colorizeAvalonEdit.SetHighlightSegments(highlightSegments);
+					Editor.TextArea.TextView.Redraw();
+				}
 			}
 
 			if ((e.Key == Key.Back || e.Key == Key.Delete) && _multiNodeEditor != null)

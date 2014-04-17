@@ -6,7 +6,22 @@ using ICSharpCode.AvalonEdit;
 
 namespace SqlPad
 {
-	public abstract class CommandBase : ICommand
+	public abstract class DisplayCommandBase : ICommand
+	{
+		public abstract bool CanExecute(object parameter);
+
+		public void Execute(object parameter)
+		{
+			var segments = (ICollection<TextSegment>)parameter;
+			ExecuteInternal(segments);
+		}
+
+		protected abstract void ExecuteInternal(ICollection<TextSegment> segments);
+
+		event EventHandler ICommand.CanExecuteChanged { add { } remove { } }
+	}
+
+	public abstract class EditCommandBase : ICommand
 	{
 		public abstract bool CanExecute(object parameter);
 
@@ -28,7 +43,7 @@ namespace SqlPad
 
 		protected abstract void ExecuteInternal(string statementText, ICollection<TextSegment> segmentsToReplace);
 
-		public abstract event EventHandler CanExecuteChanged;
+		event EventHandler ICommand.CanExecuteChanged { add { } remove { } }
 	}
 
 	public struct TextSegment
