@@ -395,9 +395,23 @@ FROM
 			items.Length.ShouldBe(0);
 		}
 
-		// TODO: To fix
-		// SELECT NULL FROM (SELECT NULL FROM ) - doesn't suggest
-		//SELECT NULL FROM (SELECT NULL FROM HUSQVIK.) - doesn't suggest
-		//SELECT  FROM (SELECT HUSQVIK.SELECTION.NAME FROM HUSQVIK.SELECTION), HUSQVIK.SELECTION - directly after first select empty suggestion
+		[Test(Description = @""), Ignore]
+		public void TestTableAndSchemaSuggestionWhenTypingSubquery()
+		{
+			const string query1 = @"SELECT NULL FROM (SELECT NULL FROM )";
+			//SELECT NULL FROM (SELECT NULL FROM HUSQVIK.) - doesn't suggest
+
+			var items = _codeCompletionProvider.ResolveItems(query1, 35).ToArray();
+			items.Length.ShouldBeGreaterThan(0);
+		}
+
+		[Test(Description = @"")]
+		public void TestColumnSuggestionWhenQueryContainsNonAliasedSubquery()
+		{
+			const string query1 = @"SELECT  FROM (SELECT HUSQVIK.SELECTION.NAME FROM HUSQVIK.SELECTION), HUSQVIK.SELECTION";
+
+			var items = _codeCompletionProvider.ResolveItems(query1, 7).Where(i => !i.Name.Contains("HUSQVIK.SELECTION")).ToArray();
+			items.Length.ShouldBe(0);
+		}
 	}
 }
