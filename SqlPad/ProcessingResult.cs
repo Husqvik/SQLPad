@@ -13,8 +13,6 @@ namespace SqlPad
 
 		public ICollection<StatementDescriptionNode> BestCandidates { get; set; }
 		
-		public ICollection<string> TerminalCandidates { get; set; }
-
 		public IEnumerable<StatementDescriptionNode> Terminals
 		{
 			get

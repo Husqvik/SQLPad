@@ -1239,14 +1239,9 @@ namespace SqlPad.Oracle.Test
 		[Test(Description = @"")]
 		public void Temp()
 		{
-			const string statement1 = @"SELECT NULL FROM SELECTION S LEFT JOIN RESPONDENTBUCKET ON S.RESPONDENTBUCKET_ID = RESPONDENTBUCKET.RESPONDENTBUCKET_ID";
-			//const string statement1 = @"SELECT NULL FROM SELECTION S LEFT JOIN RESPONDENTBUCKET ON S.RESPONDENTBUCKET_ID = ";
-			//const string statement1 = @"SELECT NULL FROM SELECTION ";
+			const string statement1 = @"SELECT NULL FROM (SELECT NULL FROM )";
 
-			//var node = Parser.Parse("SELECT").Single().NodeCollection.Single();
-			var node = Parser.Parse(statement1).Single().NodeCollection.Single().LastTerminalNode;
-			//var node = Parser.Parse(statement1).Single().AllTerminals.Skip(3).First();
-			var terminalCandidates = Parser.GetTerminalCandidates(node);
+			var statements = Parser.Parse(statement1);
 		}
 
 		public class IsRuleValid

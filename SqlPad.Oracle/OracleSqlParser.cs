@@ -107,84 +107,6 @@ namespace SqlPad.Oracle
 			return new StatementCollection(_oracleSqlCollection);
 		}
 
-		/*public ICollection<string> GetTerminalCandidates(StatementDescriptionNode node)
-		{
-			var startNode = node;
-			var visitedIds = new HashSet<string>();
-			var terminals = Enumerable.Empty<string>();
-
-			while (node.ParentNode != null)
-			{
-				var skipTerminalScan = !node.ParentNode.IsGrammarValid && !node.IsGrammarValid;
-				node = node.ParentNode;
-
-				if (skipTerminalScan)
-				{
-					continue;
-				}
-
-				var nextIds = new List<ISqlGrammarRuleSequenceItem>();
-
-				foreach (var sequence in _startingNonTerminalSequences[node.Id])
-				{
-					var grammarItemEnumerator = sequence.Items.Cast<ISqlGrammarRuleSequenceItem>().GetEnumerator();
-					var nodeEnumerator = node.ChildNodes.Where(n => n.SourcePosition.IndexStart <= startNode.SourcePosition.IndexStart).GetEnumerator();
-
-					if (!nodeEnumerator.MoveNext())
-					{
-						break;
-					}
-
-					var sequenceValid = true;
-					do
-					{
-						var grammarItemFound = false;
-						while (grammarItemEnumerator.MoveNext())
-						{
-							if (nodeEnumerator.Current.Id == grammarItemEnumerator.Current.Id)
-							{
-								grammarItemFound = true;
-								break;
-							}
-
-							if (grammarItemEnumerator.Current.IsRequired)
-							{
-								break;
-							}
-						}
-
-						if (!grammarItemFound)
-						{
-							sequenceValid = false;
-							break;
-						}
-					}
-					while (nodeEnumerator.MoveNext());
-
-					if (sequenceValid)
-					{
-						while (grammarItemEnumerator.MoveNext())
-						{
-							nextIds.Add(grammarItemEnumerator.Current);
-
-							if (grammarItemEnumerator.Current.IsRequired)
-							{
-								break;
-							}
-						}
-
-						//break;
-					}
-				}
-
-				terminals = terminals.Concat(GetTerminalCandidates(nextIds, visitedIds));
-			}
-
-			terminals = terminals.ToArray();
-
-			return terminals.ToArray();
-		}*/
-
 		public ICollection<string> GetTerminalCandidates(StatementDescriptionNode node)
 		{
 			var terminalsToMatch = new List<StatementDescriptionNode>();
@@ -269,46 +191,6 @@ namespace SqlPad.Oracle
 			return matchedTerminals;
 		}
 
-		/*private IEnumerable<string> GetTerminalCandidates(IEnumerable<ISqlGrammarRuleSequenceItem> nodes, ISet<string> visitedIds)
-		{
-			foreach (var childNode in nodes)
-			{
-				if (!visitedIds.Add(childNode.Id))
-					continue;
-
-				if (childNode.Type == NodeType.NonTerminal)
-				{
-					foreach (var terminalId in _startingNonTerminalSequences[childNode.Id]
-						.SelectMany(s => GetTerminalCandidates(GetSequenceItemCandidates(s), visitedIds)))
-					{
-						yield return terminalId;
-					}
-				}
-				else
-				{
-					yield return childNode.Id;
-
-					if (childNode.IsRequired)
-					{
-						break;
-					}
-				}
-			}
-		}
-
-		private IEnumerable<ISqlGrammarRuleSequenceItem> GetSequenceItemCandidates(SqlGrammarRuleSequence sequence)
-		{
-			foreach (ISqlGrammarRuleSequenceItem item in sequence.Items)
-			{
-				yield return item;
-
-				if (item.IsRequired)
-				{
-					break;
-				}
-			}
-		}*/
-
 		private void ProceedGrammar(IEnumerable<OracleToken> tokens)
 		{
 			var tokenBuffer = new List<OracleToken>(tokens);
@@ -355,8 +237,6 @@ namespace SqlPad.Oracle
 				int indexEnd;
 				if (result.Status != ProcessingStatus.Success)
 				{
-					oracleStatement.TerminalCandidates = result.TerminalCandidates;
-
 					if (result.BestCandidates.Sum(n => n.Terminals.Count()) > result.Nodes.Sum(n => n.Terminals.Count()))
 					{
 						result.Nodes = result.BestCandidates;
@@ -404,12 +284,10 @@ namespace SqlPad.Oracle
 		{
 			var bestCandidateNodes = new List<StatementDescriptionNode>();
 			var workingNodes = new List<StatementDescriptionNode>();
-			var terminalCandidates = new HashSet<string>();
 			var result = new ProcessingResult
 			             {
 							 Nodes = workingNodes,
 							 BestCandidates = new List<StatementDescriptionNode>(),
-							 TerminalCandidates = terminalCandidates
 			             };
 
 			foreach (var sequence in StartingNonTerminalSequences[nonTerminal])
@@ -472,9 +350,6 @@ namespace SqlPad.Oracle
 
 						if (result.Status == ProcessingStatus.SequenceNotFound)
 						{
-							foreach (var terminalCandidate in nestedResult.TerminalCandidates)
-								terminalCandidates.Add(terminalCandidate);
-
 							if (workingNodes.Count == 0)
 								break;
 
@@ -491,8 +366,6 @@ namespace SqlPad.Oracle
 
 						if (terminalResult.Status == ProcessingStatus.SequenceNotFound)
 						{
-							terminalCandidates.Add(terminalReference.Id);
-
 							if (terminalReference.IsRequired)
 							{
 								result.Status = ProcessingStatus.SequenceNotFound;
@@ -510,13 +383,11 @@ namespace SqlPad.Oracle
 
 				if (result.Status == ProcessingStatus.Success)
 				{
-					terminalCandidates.Clear();
 					break;
 				}
 			}
 
 			result.BestCandidates = bestCandidateNodes;
-			result.TerminalCandidates = terminalCandidates;
 
 			return result;
 		}
