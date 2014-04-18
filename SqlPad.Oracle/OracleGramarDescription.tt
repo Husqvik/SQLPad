@@ -13,7 +13,6 @@
 	var grammarDescriptionPath = Path.Combine(Path.GetDirectoryName(Host.TemplateFile), @"OracleSqlGrammar.xml");
 	var grammarXml = XDocument.Load(grammarDescriptionPath);
 #>
-using System;
 using System.Collections.Generic;
 
 namespace SqlPad.Oracle
@@ -85,25 +84,13 @@ namespace SqlPad.Oracle
 
 		private static readonly HashSet<string> Keywords = new HashSet<string> { <#= String.Join(", ", keywords) #> };
 
-		private static void CheckTerminalId(string terminalId)
-		{
-			if (!AllTerminalsInternal.Contains(terminalId))
-			{
-				throw new InvalidOperationException(String.Format("Terminal ID '{0}' not recognized. ", terminalId));
-			}
-		}
-		
 		public static bool IsIdentifier(this string terminalId)
 		{
-			CheckTerminalId(terminalId);
-
 			return IdentifiersInternal.Contains(terminalId);
 		}
 
 		public static bool IsAlias(this string terminalId)
 		{
-			CheckTerminalId(terminalId);
-
 			return <#= String.Join(" || ", aliasTerminalIds.Select(a => "terminalId == \"" + a + "\"")) #>;
 		}
 

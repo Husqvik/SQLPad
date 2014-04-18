@@ -12,7 +12,7 @@ namespace SqlPad.Oracle.Commands
 
 		public FindUsagesCommand(string statementText, int currentPosition, IDatabaseModel databaseModel)
 		{
-			_currentNode = new OracleSqlParser().Parse(statementText).GetTerminalAtPosition(currentPosition);
+			_currentNode = new OracleSqlParser().Parse(statementText).GetTerminalAtPosition(currentPosition, t => t.Id.IsIdentifierOrAlias());
 			if (_currentNode == null)
 				return;
 			
@@ -22,15 +22,22 @@ namespace SqlPad.Oracle.Commands
 
 		public override bool CanExecute(object parameter)
 		{
-			return _currentNode != null && _currentNode.Id.IsIdentifierOrAlias();
+			return _currentNode != null;
 		}
 
 		protected override void ExecuteInternal(ICollection<TextSegment> segments)
 		{
 			var nodes = Enumerable.Empty<StatementDescriptionNode>();
-			if (_currentNode.Id == Terminals.ObjectIdentifier || _currentNode.Id == Terminals.ObjectAlias)
+
+			switch (_currentNode.Id)
 			{
-				nodes = GetTableReferenceUsage();
+				case Terminals.ObjectAlias:
+				case Terminals.ObjectIdentifier:
+					nodes = GetTableReferenceUsage();
+					break;
+				case Terminals.SchemaIdentifier:
+					nodes = GetSchemaReferenceUsage();
+					break;
 			}
 
 			foreach (var node in nodes)
@@ -75,7 +82,7 @@ namespace SqlPad.Oracle.Commands
 
 		private IEnumerable<StatementDescriptionNode> GetSchemaReferenceUsage()
 		{
-			return null;
+			return _currentNode.Statement.AllTerminals.Where(t => t.Id == Terminals.SchemaIdentifier && t.Token.Value.ToQuotedIdentifier() == _currentNode.Token.Value.ToQuotedIdentifier());
 		}
 	}
 }

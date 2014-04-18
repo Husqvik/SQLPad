@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace SqlPad.Oracle
 {
@@ -430,25 +429,13 @@ namespace SqlPad.Oracle
 
 		private static readonly HashSet<string> Keywords = new HashSet<string> { "ALL", "AND", "ANY", "ASC", "BETWEEN", "BY", "CHECK", "COLUMN", "COMMENT", "CONNECT", "CURRENT", "DATE", "DEFAULT", "DELETE", "DESC", "DISTINCT", "ELSE", "EXISTS", "FOR", "FROM", "GROUP", "HAVING", "IMMEDIATE", "IN", "INTERSECT", "INTO", "IS", "LEVEL", "LIKE", "MINUS", "NOT", "NOWAIT", "NULL", "OF", "ON", "OPTION", "OR", "ORDER", "PUBLIC", "ROW", "ROWID", "ROWNUM", "ROWS", "SELECT", "SET", "SOME", "START", "TABLE", "THEN", "TO", "UNION", "UNIQUE", "UPDATE", "WHERE", "WITH" };
 
-		private static void CheckTerminalId(string terminalId)
-		{
-			if (!AllTerminalsInternal.Contains(terminalId))
-			{
-				throw new InvalidOperationException(String.Format("Terminal ID '{0}' not recognized. ", terminalId));
-			}
-		}
-		
 		public static bool IsIdentifier(this string terminalId)
 		{
-			CheckTerminalId(terminalId);
-
 			return IdentifiersInternal.Contains(terminalId);
 		}
 
 		public static bool IsAlias(this string terminalId)
 		{
-			CheckTerminalId(terminalId);
-
 			return terminalId == "ColumnAlias" || terminalId == "ObjectAlias";
 		}
 

@@ -77,14 +77,28 @@ namespace SqlPad.Oracle.Test
 			items[0].Name.ShouldBe("ON S.PROJECT_ID = P.PROJECT_ID");
 			items[0].Text.ShouldBe("ON S.PROJECT_ID = P.PROJECT_ID");
 			items[0].Offset.ShouldBe(0);
+		}
 
-			items = _codeCompletionProvider.ResolveItems("SELECT S.* FROM SELECTION S JOIN HUSQVIK.PROJECT P ON", 53).ToArray();
+		[Test(Description = @"")]
+		public void TestJoinConditionSuggestionsAfterOnKeyword()
+		{
+			var items = _codeCompletionProvider.ResolveItems("SELECT S.* FROM SELECTION S JOIN HUSQVIK.PROJECT P ON", 53).ToArray();
 			items.Length.ShouldBe(0);
 
 			items = _codeCompletionProvider.ResolveItems("SELECT S.* FROM SELECTION S JOIN HUSQVIK.PROJECT P ON ", 54).ToArray();
 			items.Length.ShouldBe(1);
 			items[0].Name.ShouldBe("S.PROJECT_ID = P.PROJECT_ID");
 			items[0].Text.ShouldBe("S.PROJECT_ID = P.PROJECT_ID");
+			items[0].Offset.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
+		public void TestJoinConditionSuggestionsWhenJoiningNestedSubquery()
+		{
+			var items = _codeCompletionProvider.ResolveItems("SELECT * FROM (SELECT 1 VAL FROM DUAL) T1 JOIN (SELECT 1 VAL FROM DUAL) T2 ", 75).ToArray();
+			items.Length.ShouldBe(1);
+			items[0].Name.ShouldBe("ON T1.VAL = T2.VAL");
+			items[0].Text.ShouldBe("ON T1.VAL = T2.VAL");
 			items[0].Offset.ShouldBe(0);
 		}
 
