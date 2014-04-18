@@ -36,7 +36,7 @@ namespace SqlPad.Oracle
 			Statement = statement;
 
 			_queryBlockResults = statement.NodeCollection.SelectMany(n => n.GetDescendants(NonTerminals.QueryBlock))
-				.OrderByDescending(q => q.Level).ToDictionary(n => n, n => new OracleQueryBlock { RootNode = n });
+				.OrderByDescending(q => q.Level).ToDictionary(n => n, n => new OracleQueryBlock { RootNode = n, Statement = statement });
 
 			foreach (var queryBlockNode in _queryBlockResults)
 			{
@@ -378,7 +378,7 @@ namespace SqlPad.Oracle
 				var columnExpressions = selectList.GetDescendantsWithinSameQuery(NonTerminals.AliasedExpressionOrAllTableColumns).ToArray();
 				foreach (var columnExpression in columnExpressions)
 				{
-					var columnAliasNode = columnExpression.GetDescendantsWithinSameQuery(Terminals.Alias).SingleOrDefault();
+					var columnAliasNode = columnExpression.GetDescendantsWithinSameQuery(Terminals.ColumnAlias).SingleOrDefault();
 
 					var column = new OracleSelectListColumn
 					{

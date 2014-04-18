@@ -40,16 +40,20 @@ namespace SqlPad.Oracle
 #>
 		}
 
+<#
+		var terminalElements = grammarXml.Element(xmlNamespace + "SqlGrammar").Element(xmlNamespace + "Terminals").Elements().ToArray();
+		var terminalIds = terminalElements.Select(e => e.Attribute("Id").Value).OrderBy(id => id);
+		var identifierTerminalIds = terminalElements.Where(e => e.Attribute("Id").Value.Contains("Identifier")).Select(e => e.Attribute("Id").Value).OrderBy(id => id);
+		var aliasTerminalIds = terminalElements.Where(e => e.Attribute("Id").Value.Contains("Alias")).Select(e => e.Attribute("Id").Value).OrderBy(id => id);
+		var keywords = terminalElements.Where(e => e.Attribute("IsKeyword") != null && e.Attribute("IsKeyword").Value.ToLowerInvariant() == "true").Select(e => "\"" + e.Attribute("Value").Value.ToUpperInvariant() + "\"").OrderBy(id => id);
+#>
+
 		/// <summary>
 		/// This class provides the terminal constants.
 		/// </summary>
 		public static class Terminals
 		{
 <#
-		var terminalElements = grammarXml.Element(xmlNamespace + "SqlGrammar").Element(xmlNamespace + "Terminals").Elements().ToArray();
-		var terminalIds = terminalElements.Select(e => e.Attribute("Id").Value).OrderBy(id => id);
-		var identifierTerminalIds = terminalElements.Where(e => e.Attribute("Id").Value.Contains("Identifier")).Select(e => e.Attribute("Id").Value).OrderBy(id => id);
-		var keywords = terminalElements.Where(e => e.Attribute("IsKeyword") != null && e.Attribute("IsKeyword").Value.ToLowerInvariant() == "true").Select(e => "\"" + e.Attribute("Value").Value.ToUpperInvariant() + "\"").OrderBy(id => id);
 		foreach(var terminalId in terminalIds)
 		{
 #>
@@ -57,15 +61,8 @@ namespace SqlPad.Oracle
 <#
 		}
 
-
 #>
 			
-			private static readonly HashSet<string> AllTerminalsInternal = new HashSet<string> { <#= String.Join(", ", terminalIds) #> };
-			
-			private static readonly HashSet<string> IdentifiersInternal = new HashSet<string> { <#= String.Join(", ", identifierTerminalIds) #> };
-
-			private static readonly HashSet<string> Keywords = new HashSet<string> { <#= String.Join(", ", keywords) #> };
-
 			public static ICollection<string> AllTerminals
 			{
 				get { return AllTerminalsInternal; }
@@ -76,20 +73,43 @@ namespace SqlPad.Oracle
 				get { return IdentifiersInternal; }
 			}
 
-			public static bool IsIdentifier(string terminalId)
-			{
-				if (!AllTerminalsInternal.Contains(terminalId))
-				{
-					throw new InvalidOperationException(String.Format("Terminal ID '{0}' not recognized. ", terminalId));
-				}
-
-				return IdentifiersInternal.Contains(terminalId);
-			}
-
 			public static bool IsKeyword(string value)
 			{
 				return Keywords.Contains(value.ToUpperInvariant());
 			}
+		}
+
+		private static readonly HashSet<string> AllTerminalsInternal = new HashSet<string> { <#= String.Join(", ", terminalIds.Select(id => "Terminals." + id)) #> };
+			
+		private static readonly HashSet<string> IdentifiersInternal = new HashSet<string> { <#= String.Join(", ", identifierTerminalIds.Select(id => "Terminals." + id)) #> };
+
+		private static readonly HashSet<string> Keywords = new HashSet<string> { <#= String.Join(", ", keywords) #> };
+
+		private static void CheckTerminalId(string terminalId)
+		{
+			if (!AllTerminalsInternal.Contains(terminalId))
+			{
+				throw new InvalidOperationException(String.Format("Terminal ID '{0}' not recognized. ", terminalId));
+			}
+		}
+		
+		public static bool IsIdentifier(this string terminalId)
+		{
+			CheckTerminalId(terminalId);
+
+			return IdentifiersInternal.Contains(terminalId);
+		}
+
+		public static bool IsAlias(this string terminalId)
+		{
+			CheckTerminalId(terminalId);
+
+			return <#= String.Join(" || ", aliasTerminalIds.Select(a => "terminalId == \"" + a + "\"")) #>;
+		}
+
+		public static bool IsIdentifierOrAlias(this string terminalId)
+		{
+			return terminalId.IsIdentifier() || terminalId.IsAlias();
 		}
 	}
 }

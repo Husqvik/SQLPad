@@ -22,7 +22,7 @@ namespace SqlPad.Oracle.Commands
 
 		public override bool CanExecute(object parameter)
 		{
-			return _currentNode != null && (Terminals.IsIdentifier(_currentNode.Id) || _currentNode.Id == Terminals.Alias || _currentNode.Id == Terminals.ObjectAlias);
+			return _currentNode != null && _currentNode.Id.IsIdentifierOrAlias();
 		}
 
 		protected override void ExecuteInternal(ICollection<TextSegment> segments)

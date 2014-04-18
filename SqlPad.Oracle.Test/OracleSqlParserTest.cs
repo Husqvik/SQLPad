@@ -88,7 +88,7 @@ namespace SqlPad.Oracle.Test
 			terminals[1].Id.ShouldBe(Terminals.Null);
 			terminals[2].Id.ShouldBe(Terminals.As);
 			terminals[2].IsKeyword.ShouldBe(false);
-			terminals[3].Id.ShouldBe(Terminals.Alias);
+			terminals[3].Id.ShouldBe(Terminals.ColumnAlias);
 			terminals[3].Token.Value.ShouldBe("\">=;+Alias/*--^\"");
 			terminals[4].Id.ShouldBe(Terminals.Comma);
 			terminals[5].Id.ShouldBe(Terminals.SchemaIdentifier);
@@ -184,7 +184,7 @@ namespace SqlPad.Oracle.Test
 			terminals[0].Id.ShouldBe(Terminals.Select);
 			terminals[1].Id.ShouldBe(Terminals.NumberLiteral);
 			terminals[1].Token.Value.ShouldBe("1F");
-			terminals[2].Id.ShouldBe(Terminals.Alias);
+			terminals[2].Id.ShouldBe(Terminals.ColumnAlias);
 			terminals[2].Token.Value.ShouldBe("F");
 
 			sqlText = @"SELECT . FROM DUAL";
@@ -680,7 +680,7 @@ namespace SqlPad.Oracle.Test
 			terminals[3].Id.ShouldBe(Terminals.ObjectIdentifier);
 			terminals[5].Id.ShouldBe(Terminals.Identifier);
 			terminals[7].Id.ShouldBe(Terminals.DatabaseLinkIdentifier);
-			terminals[8].Id.ShouldBe(Terminals.Alias);
+			terminals[8].Id.ShouldBe(Terminals.ColumnAlias);
 		}
 
 		[Test(Description = @"Tests query with function calls in where clause. ")]
@@ -1410,7 +1410,8 @@ namespace SqlPad.Oracle.Test
 				var node = Parser.Parse(statement2).Single().NodeCollection.Single().LastTerminalNode;
 				var terminalCandidates = Parser.GetTerminalCandidates(node).OrderBy(t => t).ToArray();
 				terminalCandidates.Length.ShouldBe(9);
-				terminalCandidates[0].ShouldBe(Terminals.Alias);
+				terminalCandidates[0].ShouldBe(Terminals.As);
+				terminalCandidates[1].ShouldBe(Terminals.ColumnAlias);
 				terminalCandidates[4].ShouldBe(Terminals.MathDivide);
 				terminalCandidates[8].ShouldBe(Terminals.OperatorConcatenation);
 			}

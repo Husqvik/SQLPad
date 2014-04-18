@@ -19,6 +19,8 @@ namespace SqlPad.Oracle
 		public QueryBlockType Type { get; set; }
 
 		public StatementDescriptionNode RootNode { get; set; }
+		
+		public OracleStatement Statement { get; set; }
 
 		public ICollection<OracleObjectReference> ObjectReferences { get; private set; }
 

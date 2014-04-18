@@ -373,7 +373,7 @@
         <Sequence>
           <Terminal Id="Value" />
           <Terminal Id="LeftParenthesis" />
-          <Terminal Id="Alias" />
+          <Terminal Id="ColumnAlias" />
           <Terminal Id="RightParenthesis" />
           <Terminal Id="MathEquals" />
           <NonTerminal Id="ExpressionOrNestedQuery" />
@@ -639,19 +639,19 @@
       <Sequences>
         <Sequence>
           <NonTerminal Id="Expression" />
-          <NonTerminal Id="ColumnAlias" IsOptional="true" />
+          <NonTerminal Id="ColumnAsAlias" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
     
-    <Rule StartingNonTerminal="ColumnAlias">
+    <Rule StartingNonTerminal="ColumnAsAlias">
       <Sequences>
         <Sequence>
           <Terminal Id="As" />
-          <Terminal Id="Alias" />
+          <Terminal Id="ColumnAlias" />
         </Sequence>
         <Sequence>
-          <Terminal Id="Alias" />
+          <Terminal Id="ColumnAlias" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -1966,7 +1966,7 @@
           <NonTerminal Id="Expression" />
         </Sequence>
         <Sequence>
-          <Terminal Id="Alias" />
+          <Terminal Id="ColumnAlias" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -2245,7 +2245,7 @@
         <Sequence>
           <Terminal Id="Identifier" /><!--TODO: Check possibility of user aggregation function usage (including database link) -->
           <NonTerminal Id="ParenthesisEnclosedFunctionParameters" />
-          <NonTerminal Id="ColumnAlias" IsOptional="true" />
+          <NonTerminal Id="ColumnAsAlias" IsOptional="true" />
           <NonTerminal Id="PivotAliasedAggregationFunctionListChained" IsOptional="true" />
         </Sequence>
       </Sequences>
@@ -2314,7 +2314,7 @@
         </Sequence>
         <Sequence>
           <NonTerminal Id="ParenthesisEnclosedExpressionListWithMandatoryExpressions" />
-          <NonTerminal Id="ColumnAlias" IsOptional="true" />
+          <NonTerminal Id="ColumnAsAlias" IsOptional="true" />
           <NonTerminal Id="AliasedExpressionListOrAliasedGroupingExpressionListChained" IsOptional="true" />
         </Sequence>
       </Sequences>
@@ -2590,7 +2590,7 @@
           <Terminal Id="Cycle" />
           <NonTerminal Id="ColumnIdentifierList" />
           <Terminal Id="Set" />
-          <Terminal Id="Alias" />
+          <Terminal Id="ColumnAlias" />
           <Terminal Id="To" />
           <NonTerminal Id="StringOrIntegerLiteral" />
           <Terminal Id="Default" />
@@ -2728,7 +2728,7 @@
     <Terminal Id="SchemaIdentifier" RegexValue="^((&quot;[^&quot;]{1,28}&quot;)|([a-zA-Z][\w\d$#]{0,29}))$" />
     <Terminal Id="ObjectIdentifier" RegexValue="^((&quot;[^&quot;]{1,28}&quot;)|([a-zA-Z][\w\d$#]{0,29}))$" />
     <Terminal Id="BindVariableIdentifier" RegexValue="^((&quot;[^&quot;]{1,28}&quot;)|([a-zA-Z][\w\d$#]{0,29})|(\d{1,5}))$" />
-    <Terminal Id="Alias" RegexValue="^((&quot;[^&quot;]{1,28}&quot;)|([a-zA-Z][\w\d$#]{0,29}))$" />
+    <Terminal Id="ColumnAlias" RegexValue="^((&quot;[^&quot;]{1,28}&quot;)|([a-zA-Z][\w\d$#]{0,29}))$" />
     <Terminal Id="ObjectAlias" RegexValue="^((&quot;[^&quot;]{1,28}&quot;)|([a-zA-Z][\w\d$#]{0,29}))$" />
     <Terminal Id="StringLiteral" RegexValue="^n?q?(&apos;([^&apos;]|(&apos;&apos;))*&apos;)$" />
     <Terminal Id="NumberLiteral" RegexValue="^((\d+\.?\d*)|(\d*\.?\d+))([eE][+-]?\d+)?[fFdD]?$" />
