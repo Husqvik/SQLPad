@@ -394,5 +394,10 @@ FROM
 			var items = _codeCompletionProvider.ResolveItems(query1, 81).ToArray();
 			items.Length.ShouldBe(0);
 		}
+
+		// TODO: To fix
+		// SELECT NULL FROM (SELECT NULL FROM ) - doesn't suggest
+		//SELECT NULL FROM (SELECT NULL FROM HUSQVIK.) - doesn't suggest
+		//SELECT  FROM (SELECT HUSQVIK.SELECTION.NAME FROM HUSQVIK.SELECTION), HUSQVIK.SELECTION - directly after first select empty suggestion
 	}
 }

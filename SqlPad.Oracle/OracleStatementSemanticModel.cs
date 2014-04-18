@@ -249,7 +249,7 @@ namespace SqlPad.Oracle
 						(tableReference.FullyQualifiedName == columnReference.FullyQualifiedObjectName ||
 						 (String.IsNullOrEmpty(columnReference.FullyQualifiedObjectName.Owner) &&
 						  tableReference.Type == TableReferenceType.PhysicalObject && tableReference.FullyQualifiedName.NormalizedName == columnReference.FullyQualifiedObjectName.NormalizedName)))
-						columnReference.ObjectNodeReferences.Add(tableReference);
+						columnReference.ObjectNodeObjectReferences.Add(tableReference);
 
 					int newTableReferences;
 					{
@@ -270,9 +270,9 @@ namespace SqlPad.Oracle
 
 					if (newTableReferences > 0 &&
 						(String.IsNullOrEmpty(columnReference.FullyQualifiedObjectName.NormalizedName) ||
-						 columnReference.ObjectNodeReferences.Count > 0))
+						 columnReference.ObjectNodeObjectReferences.Count > 0))
 					{
-						columnReference.ColumnNodeReferences.Add(tableReference);
+						columnReference.ColumnNodeObjectReferences.Add(tableReference);
 					}
 				}
 			}

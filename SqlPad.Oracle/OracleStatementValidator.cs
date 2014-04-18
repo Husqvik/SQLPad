@@ -36,18 +36,18 @@ namespace SqlPad.Oracle
 				{
 					// Schema
 					if (cr.ColumnReference.OwnerNode != null)
-						validationModel.TableNodeValidity[cr.ColumnReference.OwnerNode] = new NodeValidationData(cr.ColumnReference.ObjectNodeReferences) { IsRecognized = cr.ColumnReference.ObjectNodeReferences.Count > 0 };
+						validationModel.TableNodeValidity[cr.ColumnReference.OwnerNode] = new NodeValidationData(cr.ColumnReference.ObjectNodeObjectReferences) { IsRecognized = cr.ColumnReference.ObjectNodeObjectReferences.Count > 0 };
 
 					// Object
 					if (cr.ColumnReference.ObjectNode != null)
-						validationModel.TableNodeValidity[cr.ColumnReference.ObjectNode] = new NodeValidationData(cr.ColumnReference.ObjectNodeReferences) { IsRecognized = cr.ColumnReference.ObjectNodeReferences.Count > 0 };
+						validationModel.TableNodeValidity[cr.ColumnReference.ObjectNode] = new NodeValidationData(cr.ColumnReference.ObjectNodeObjectReferences) { IsRecognized = cr.ColumnReference.ObjectNodeObjectReferences.Count > 0 };
 
 					// Column
 					var columnReferences = cr.Column != null && cr.Column.IsAsterisk
 						? 1
-						: cr.ColumnReference.ColumnNodeReferences.Count;
+						: cr.ColumnReference.ColumnNodeObjectReferences.Count;
 
-					validationModel.ColumnNodeValidity[cr.ColumnReference.ColumnNode] = new NodeValidationData(cr.ColumnReference.ColumnNodeReferences) { IsRecognized = columnReferences > 0 };
+					validationModel.ColumnNodeValidity[cr.ColumnReference.ColumnNode] = new NodeValidationData(cr.ColumnReference.ColumnNodeObjectReferences) { IsRecognized = columnReferences > 0 };
 				}
 			}
 

@@ -38,6 +38,9 @@ namespace SqlPad.Oracle.Commands
 				case Terminals.SchemaIdentifier:
 					nodes = GetSchemaReferenceUsage();
 					break;
+				case Terminals.Identifier:
+					nodes = GetColumnReferenceUsage();
+					break;
 			}
 
 			foreach (var node in nodes)
@@ -53,11 +56,11 @@ namespace SqlPad.Oracle.Commands
 		private IEnumerable<StatementDescriptionNode> GetTableReferenceUsage()
 		{
 			var columnReferencedObject = _queryBlock.Columns.SelectMany(c => c.ColumnReferences).Concat(_queryBlock.ColumnReferences)
-				.SingleOrDefault(c => c.ObjectNode == _currentNode && c.ObjectNodeReferences.Count == 1);
+				.SingleOrDefault(c => c.ObjectNode == _currentNode && c.ObjectNodeObjectReferences.Count == 1);
 
 			var referencedObject = _queryBlock.ObjectReferences.SingleOrDefault(t => t.ObjectNode == _currentNode || t.AliasNode == _currentNode);
 			var objectReference = columnReferencedObject != null
-				? columnReferencedObject.ObjectNodeReferences.Single()
+				? columnReferencedObject.ObjectNodeObjectReferences.Single()
 				: referencedObject;
 
 			var objectReferenceNodes = Enumerable.Repeat(objectReference.ObjectNode, 1);
@@ -66,13 +69,17 @@ namespace SqlPad.Oracle.Commands
 				objectReferenceNodes = objectReferenceNodes.Concat(Enumerable.Repeat(objectReference.AliasNode, 1));
 			}
 
-			return _queryBlock.Columns.SelectMany(c => c.ColumnReferences).Concat(_queryBlock.ColumnReferences).Where(c => c.ObjectNode != null && c.ObjectNodeReferences.Count == 1 && c.ObjectNodeReferences.Single() == objectReference).Select(c => c.ObjectNode)
+			return _queryBlock.Columns.SelectMany(c => c.ColumnReferences).Concat(_queryBlock.ColumnReferences).Where(c => c.ObjectNode != null && c.ObjectNodeObjectReferences.Count == 1 && c.ObjectNodeObjectReferences.Single() == objectReference).Select(c => c.ObjectNode)
 				.Concat(objectReferenceNodes);
 		}
 
 		private IEnumerable<StatementDescriptionNode> GetColumnReferenceUsage()
 		{
-			return null;
+			var nodes = Enumerable.Empty<StatementDescriptionNode>();
+			var columnReferencedObject = _queryBlock.Columns.SelectMany(c => c.ColumnReferences).Concat(_queryBlock.ColumnReferences)
+				.SingleOrDefault(c => c.ColumnNode == _currentNode && c.ColumnNodeObjectReferences.Count == 1);
+
+			return nodes;
 		}
 
 		private IEnumerable<StatementDescriptionNode> GetColumnAliasUsage()

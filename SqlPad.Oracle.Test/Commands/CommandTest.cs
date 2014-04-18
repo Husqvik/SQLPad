@@ -127,6 +127,49 @@ namespace SqlPad.Oracle.Test.Commands
 			_editor.Text.ShouldBe("SELECT \"PUBLIC\".DUAL.DUMMY, S.PROJECT_ID FROM SELECTION S, \"PUBLIC\".DUAL");
 		}
 
+		[Test(Description = @""), STAThread]
+		public void TestFindObjectUsages()
+		{
+			const string statementText = "SELECT \"SELECTION\".RESPONDENTBUCKET_ID, PROJECT_ID FROM SELECTION WHERE SELECTION.NAME = NAME GROUP BY SELECTION.RESPONDENTBUCKET_ID, PROJECT_ID HAVING COUNT(SELECTION.SELECTION_ID) = COUNT(SELECTION_ID)";
+			var command = new FindUsagesCommand(statementText, 8, DatabaseModelFake.Instance);
+			var foundSegments = new List<TextSegment>();
+			command.Execute(foundSegments);
+
+			foundSegments = foundSegments.OrderBy(s => s.IndextStart).ToList();
+			foundSegments.Count.ShouldBe(5);
+			foundSegments[0].Length.ShouldBe("\"SELECTION\"".Length);
+			foundSegments[1].Length.ShouldBe("SELECTION".Length);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestFindObjectWithAliasUsages()
+		{
+			const string statementText = "SELECT S.RESPONDENTBUCKET_ID, PROJECT_ID FROM SELECTION \"S\" WHERE S.NAME = NAME GROUP BY S.RESPONDENTBUCKET_ID, PROJECT_ID HAVING COUNT(S.SELECTION_ID) = COUNT(SELECTION_ID)";
+			var command = new FindUsagesCommand(statementText, 56, DatabaseModelFake.Instance);
+			var foundSegments = new List<TextSegment>();
+			command.Execute(foundSegments);
+
+			foundSegments = foundSegments.OrderBy(s => s.IndextStart).ToList();
+			foundSegments.Count.ShouldBe(6);
+			foundSegments[0].Length.ShouldBe("S".Length);
+			foundSegments[1].Length.ShouldBe("SELECTION".Length);
+			foundSegments[2].Length.ShouldBe("\"S\"".Length);
+			foundSegments[3].Length.ShouldBe("S".Length);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestFindSchemaUsages()
+		{
+			const string statementText = "SELECT HUSQVIK.SELECTION.PROJECT_ID FROM (SELECT HUSQVIK.SELECTION.NAME FROM HUSQVIK.SELECTION), HUSQVIK.SELECTION";
+			var command = new FindUsagesCommand(statementText, 9, DatabaseModelFake.Instance);
+			var foundSegments = new List<TextSegment>();
+			command.Execute(foundSegments);
+
+			foundSegments = foundSegments.OrderBy(s => s.IndextStart).ToList();
+			foundSegments.Count.ShouldBe(4);
+			foundSegments.ForEach(s => s.Length.ShouldBe("HUSQVIK".Length));
+		}
+
 		private class TestCommandSettings : ICommandSettingsProvider
 		{
 			private readonly bool _isValueValid;

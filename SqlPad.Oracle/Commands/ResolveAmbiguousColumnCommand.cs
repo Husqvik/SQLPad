@@ -17,11 +17,11 @@ namespace SqlPad.Oracle.Commands
 				return commands.AsReadOnly();
 
 			var columnReference = semanticModel.QueryBlocks.SelectMany(qb => qb.Columns).SelectMany(c => c.ColumnReferences).SingleOrDefault(c => c.ColumnNode == currentTerminal);
-			if (columnReference == null || columnReference.ColumnNodeReferences.Count <= 1)
+			if (columnReference == null || columnReference.ColumnNodeObjectReferences.Count <= 1)
 				return commands.AsReadOnly();
 
-			var identifiers = OracleObjectIdentifier.GetUniqueReferences(columnReference.ColumnNodeReferences.Select(r => r.FullyQualifiedName).ToArray());
-			var actions = columnReference.ColumnNodeReferences
+			var identifiers = OracleObjectIdentifier.GetUniqueReferences(columnReference.ColumnNodeObjectReferences.Select(r => r.FullyQualifiedName).ToArray());
+			var actions = columnReference.ColumnNodeObjectReferences
 				.Where(r => identifiers.Contains(r.FullyQualifiedName))
 				.Select(r => new ResolveAmbiguousColumnCommand(semanticModel, currentTerminal, r.FullyQualifiedName + "." + columnReference.Name));
 
