@@ -31,6 +31,8 @@ namespace SqlPad.Oracle
 		public ColumnReferenceType Type { get; set; }
 		
 		public OracleQueryBlock Owner { get; set; }
+
+		public OracleSelectListColumn SelectListColumn { get; set; }
 		
 		public StatementDescriptionNode OwnerNode { get; set; }
 
@@ -43,12 +45,14 @@ namespace SqlPad.Oracle
 		public ICollection<OracleObjectReference> ObjectNodeObjectReferences { get; set; }
 		
 		public ICollection<OracleObjectReference> ColumnNodeObjectReferences { get; set; }
+
+		public int ColumnNodeColumnReferences { get; set; }
 	}
 
 	public enum ColumnReferenceType
 	{
 		SelectList,
-		WhereGroupHavingOrder,
+		WhereGroupHaving,
 		Join
 	}
 }

@@ -30,24 +30,22 @@ namespace SqlPad.Oracle
 
 			foreach (var queryBlock in semanticModel.QueryBlocks)
 			{
-				foreach (var cr in queryBlock.Columns
-					.SelectMany(c => c.ColumnReferences.Select(r => new { Column = c, ColumnReference = r }))
-					.Concat(queryBlock.ColumnReferences.Select(r => new { Column = (OracleSelectListColumn)null, ColumnReference = r })))
+				foreach (var columnReference in queryBlock.AllColumnReferences)
 				{
 					// Schema
-					if (cr.ColumnReference.OwnerNode != null)
-						validationModel.TableNodeValidity[cr.ColumnReference.OwnerNode] = new NodeValidationData(cr.ColumnReference.ObjectNodeObjectReferences) { IsRecognized = cr.ColumnReference.ObjectNodeObjectReferences.Count > 0 };
+					if (columnReference.OwnerNode != null)
+						validationModel.TableNodeValidity[columnReference.OwnerNode] = new NodeValidationData(columnReference.ObjectNodeObjectReferences) { IsRecognized = columnReference.ObjectNodeObjectReferences.Count > 0 };
 
 					// Object
-					if (cr.ColumnReference.ObjectNode != null)
-						validationModel.TableNodeValidity[cr.ColumnReference.ObjectNode] = new NodeValidationData(cr.ColumnReference.ObjectNodeObjectReferences) { IsRecognized = cr.ColumnReference.ObjectNodeObjectReferences.Count > 0 };
+					if (columnReference.ObjectNode != null)
+						validationModel.TableNodeValidity[columnReference.ObjectNode] = new NodeValidationData(columnReference.ObjectNodeObjectReferences) { IsRecognized = columnReference.ObjectNodeObjectReferences.Count > 0 };
 
 					// Column
-					var columnReferences = cr.Column != null && cr.Column.IsAsterisk
+					var columnReferences = columnReference.SelectListColumn != null && columnReference.SelectListColumn.IsAsterisk
 						? 1
-						: cr.ColumnReference.ColumnNodeObjectReferences.Count;
+						: columnReference.ColumnNodeObjectReferences.Count;
 
-					validationModel.ColumnNodeValidity[cr.ColumnReference.ColumnNode] = new NodeValidationData(cr.ColumnReference.ColumnNodeObjectReferences) { IsRecognized = columnReferences > 0 };
+					validationModel.ColumnNodeValidity[columnReference.ColumnNode] = new ColumnNodeValidationData(columnReference.ColumnNodeObjectReferences, columnReference.ColumnNodeColumnReferences) { IsRecognized = columnReferences > 0 };
 				}
 			}
 
@@ -90,5 +88,21 @@ namespace SqlPad.Oracle
 		public ICollection<string> TableNames { get { return _objectReferences.Select(t => t.FullyQualifiedName.Name).OrderByDescending(n => n).ToArray(); } }	
 		
 		public StatementDescriptionNode Node { get; set; }
+	}
+
+	public class ColumnNodeValidationData : NodeValidationData
+	{
+		public ColumnNodeValidationData(IEnumerable<OracleObjectReference> objectReferences, int columnNodeColumnReferences = 0)
+			:base(objectReferences)
+		{
+			ColumnNodeColumnReferences = columnNodeColumnReferences;
+		}
+
+		public int ColumnNodeColumnReferences { get; private set; }
+
+		public override SemanticError SemanticError
+		{
+			get { return ColumnNodeColumnReferences >= 2 ? SemanticError.AmbiguousReference : base.SemanticError; }
+		}
 	}
 }

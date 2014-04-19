@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace SqlPad.Oracle
 {
@@ -27,6 +28,8 @@ namespace SqlPad.Oracle
 		public ICollection<OracleSelectListColumn> Columns { get; private set; }
 
 		public ICollection<OracleColumnReference> ColumnReferences { get; private set; }
+
+		public IEnumerable<OracleColumnReference> AllColumnReferences { get { return Columns.SelectMany(c => c.ColumnReferences).Concat(ColumnReferences); } }
 
 		public ICollection<OracleQueryBlock> AccessibleQueryBlocks { get; private set; }
 	}

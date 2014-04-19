@@ -367,6 +367,25 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			nodeValidity[3].ShouldBe(true); // RB
 		}
 
+		[Test(Description = @"")]
+		public void TestAmbiguousColumnFromSubquery()
+		{
+			const string sqlText = "SELECT NAME FROM (SELECT S.NAME, RB.NAME FROM SELECTION S JOIN RESPONDENTBUCKET RB ON S.RESPONDENTBUCKET_ID = RB.RESPONDENTBUCKET_ID)";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, _databaseModel);
+
+			var nodeValidity = validationModel.ColumnNodeValidity.OrderBy(cv => cv.Key.SourcePosition.IndexStart).Select(cv => cv.Value.SemanticError).ToArray();
+			nodeValidity.Length.ShouldBe(5);
+			nodeValidity[0].ShouldBe(SemanticError.AmbiguousReference);
+			nodeValidity[1].ShouldBe(SemanticError.None);
+			nodeValidity[2].ShouldBe(SemanticError.None);
+			nodeValidity[3].ShouldBe(SemanticError.None);
+			nodeValidity[4].ShouldBe(SemanticError.None);
+		}
+
 		//WITH CTE AS (SELECT 1 A, 2 B, 3 C FROM DUAL) SELECT SELECTION.DUMMY, NQ.DUMMY, CTE.DUMMY, SYS.DUAL.DUMMY FROM SELECTION, (SELECT 1 X, 2 Y, 3 Z FROM DUAL) NQ, CTE, SYS.DUAL
 	}
 }

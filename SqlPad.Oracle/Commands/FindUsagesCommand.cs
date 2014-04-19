@@ -55,7 +55,7 @@ namespace SqlPad.Oracle.Commands
 
 		private IEnumerable<StatementDescriptionNode> GetTableReferenceUsage()
 		{
-			var columnReferencedObject = _queryBlock.Columns.SelectMany(c => c.ColumnReferences).Concat(_queryBlock.ColumnReferences)
+			var columnReferencedObject = _queryBlock.AllColumnReferences
 				.SingleOrDefault(c => c.ObjectNode == _currentNode && c.ObjectNodeObjectReferences.Count == 1);
 
 			var referencedObject = _queryBlock.ObjectReferences.SingleOrDefault(t => t.ObjectNode == _currentNode || t.AliasNode == _currentNode);
@@ -69,17 +69,37 @@ namespace SqlPad.Oracle.Commands
 				objectReferenceNodes = objectReferenceNodes.Concat(Enumerable.Repeat(objectReference.AliasNode, 1));
 			}
 
-			return _queryBlock.Columns.SelectMany(c => c.ColumnReferences).Concat(_queryBlock.ColumnReferences).Where(c => c.ObjectNode != null && c.ObjectNodeObjectReferences.Count == 1 && c.ObjectNodeObjectReferences.Single() == objectReference).Select(c => c.ObjectNode)
+			return _queryBlock.AllColumnReferences.Where(c => c.ObjectNode != null && c.ObjectNodeObjectReferences.Count == 1 && c.ObjectNodeObjectReferences.Single() == objectReference)
+				.Select(c => c.ObjectNode)
 				.Concat(objectReferenceNodes);
 		}
 
 		private IEnumerable<StatementDescriptionNode> GetColumnReferenceUsage()
 		{
 			var nodes = Enumerable.Empty<StatementDescriptionNode>();
-			var columnReferencedObject = _queryBlock.Columns.SelectMany(c => c.ColumnReferences).Concat(_queryBlock.ColumnReferences)
+			var columnReference = _queryBlock.AllColumnReferences
 				.SingleOrDefault(c => c.ColumnNode == _currentNode && c.ColumnNodeObjectReferences.Count == 1);
+			
+			if (columnReference == null)
+				return nodes;
+
+			var objectReference = columnReference.ColumnNodeObjectReferences.Single();
+			nodes = _queryBlock.AllColumnReferences.Where(c => c.ColumnNodeObjectReferences.Count == 1 && c.ColumnNodeObjectReferences.Single() == objectReference && c.NormalizedName == columnReference.NormalizedName)
+				.Select(c => c.ColumnNode);
+
+			if (objectReference.QueryBlocks.Count != 1 || !columnReference.SelectListColumn.IsDirectColumnReference)
+				return nodes;
+
+			nodes = nodes.Concat(objectReference.QueryBlocks.Single().Columns.SelectMany(c => c.ColumnReferences)
+				.Where(c => c.SelectListColumn.IsDirectColumnReference && c.ColumnNodeObjectReferences.Count == 1 && c.NormalizedName == columnReference.NormalizedName)
+				.Select(c => c.ColumnNode));
 
 			return nodes;
+		}
+
+		private bool FilterValidColumnReferences()
+		{
+			return false;
 		}
 
 		private IEnumerable<StatementDescriptionNode> GetColumnAliasUsage()
