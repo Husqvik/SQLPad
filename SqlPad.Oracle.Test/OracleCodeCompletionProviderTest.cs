@@ -413,5 +413,42 @@ FROM
 			var items = _codeCompletionProvider.ResolveItems(query1, 7).Where(i => !i.Name.Contains("HUSQVIK.SELECTION")).ToArray();
 			items.Length.ShouldBe(0);
 		}
+
+		[Test(Description = @"")]
+		public void TestColumnSuggestionAfterDotInTheMiddleOfSelectList()
+		{
+			const string query1 = @"SELECT S.NAME, S., 'My column2' FROM SELECTION S";
+
+			var items = _codeCompletionProvider.ResolveItems(query1, 17).ToArray();
+			items.Length.ShouldBe(5);
+			items[0].Name.ShouldBe("*");
+		}
+
+		[Test(Description = @"")]
+		public void TestJoinNotSuggestedAfterUnrecognizedToken()
+		{
+			const string query1 = @"SELECT NULL FROM SELECTION + ";
+
+			var items = _codeCompletionProvider.ResolveItems(query1, 29).ToArray();
+			items.Length.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
+		public void TestSuggestionWhenJustBeforeClosingParanthesis()
+		{
+			const string query1 = @"SELECT NULL FROM (SELECT NULL FROM DUAL,)";
+
+			var items = _codeCompletionProvider.ResolveItems(query1, 40).ToArray();
+			items.Length.ShouldBeGreaterThan(0);
+		}
+
+		[Test(Description = @"")]
+		public void TestSuggestionWhenJustAtCommaWhenPreviousTokenAlreadyEntered()
+		{
+			const string query1 = @"SELECT NULL FROM (SELECT NULL FROM DUAL,)";
+
+			var items = _codeCompletionProvider.ResolveItems(query1, 39).ToArray();
+			items.Length.ShouldBe(0);
+		}
 	}
 }

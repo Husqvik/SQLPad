@@ -227,7 +227,7 @@ namespace SqlPad.Oracle
 					var relatedTableReferences = queryBlock.ObjectReferences
 						.Where(t => t.TableReferenceNode.SourcePosition.IndexStart >= fromClauseNode.SourcePosition.IndexStart &&
 						            t.TableReferenceNode.SourcePosition.IndexEnd <= columnReference.ColumnNode.SourcePosition.IndexStart).ToArray();
-					ResolveColumnTableReferences(joinClauseColumnReferences, relatedTableReferences);
+					ResolveColumnTableReferences(new [] { columnReference }, relatedTableReferences);
 					queryBlock.ColumnReferences.Add(columnReference);
 				}
 			}
@@ -251,24 +251,26 @@ namespace SqlPad.Oracle
 						  tableReference.Type == TableReferenceType.PhysicalObject && tableReference.FullyQualifiedName.NormalizedName == columnReference.FullyQualifiedObjectName.NormalizedName)))
 						columnReference.ObjectNodeObjectReferences.Add(tableReference);
 
+					int columnNodeColumnReferences;
 					if (tableReference.Type == TableReferenceType.PhysicalObject)
 					{
 						if (tableReference.SearchResult.SchemaObject == null)
 							continue;
 
-						columnReference.ColumnNodeColumnReferences = tableReference.SearchResult.SchemaObject.Columns
+						columnNodeColumnReferences = tableReference.SearchResult.SchemaObject.Columns
 							.Count(c => c.Name == columnReference.NormalizedName && (columnReference.ObjectNode == null || IsTableReferenceValid(columnReference, tableReference)));
 					}
 					else
 					{
-						columnReference.ColumnNodeColumnReferences = tableReference.QueryBlocks.SelectMany(qb => qb.Columns)
+						columnNodeColumnReferences = tableReference.QueryBlocks.SelectMany(qb => qb.Columns)
 							.Count(c => c.NormalizedName == columnReference.NormalizedName && (columnReference.ObjectNode == null || columnReference.ObjectTableName == tableReference.FullyQualifiedName.NormalizedName));
 					}
 
-					if (columnReference.ColumnNodeColumnReferences > 0 &&
+					if (columnNodeColumnReferences > 0 &&
 						(String.IsNullOrEmpty(columnReference.FullyQualifiedObjectName.NormalizedName) ||
 						 columnReference.ObjectNodeObjectReferences.Count > 0))
 					{
+						columnReference.ColumnNodeColumnReferences += columnNodeColumnReferences;
 						columnReference.ColumnNodeObjectReferences.Add(tableReference);
 					}
 				}
@@ -404,8 +406,8 @@ namespace SqlPad.Oracle
 						var identifiers = columnExpression.GetDescendantsWithinSameQuery(Terminals.Identifier).ToArray();
 						foreach (var identifier in identifiers)
 						{
-							column.IsDirectColumnReference = columnAliasNode == null && identifier.GetAncestor(NonTerminals.Expression).ChildNodes.Count == 1;
-							if (column.IsDirectColumnReference)
+							column.IsDirectColumnReference = identifier.GetAncestor(NonTerminals.Expression).ChildNodes.Count == 1;
+							if (column.IsDirectColumnReference && columnAliasNode == null)
 							{
 								column.AliasNode = identifier;
 							}

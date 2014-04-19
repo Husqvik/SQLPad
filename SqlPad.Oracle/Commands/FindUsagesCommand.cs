@@ -78,7 +78,7 @@ namespace SqlPad.Oracle.Commands
 		{
 			var nodes = Enumerable.Empty<StatementDescriptionNode>();
 			var columnReference = _queryBlock.AllColumnReferences
-				.SingleOrDefault(c => c.ColumnNode == _currentNode && c.ColumnNodeObjectReferences.Count == 1);
+				.SingleOrDefault(c => c.ColumnNode == _currentNode && c.ColumnNodeObjectReferences.Count == 1 && c.ColumnNodeColumnReferences == 1);
 			
 			if (columnReference == null)
 				return nodes;
@@ -90,16 +90,16 @@ namespace SqlPad.Oracle.Commands
 			if (objectReference.QueryBlocks.Count != 1 || !columnReference.SelectListColumn.IsDirectColumnReference)
 				return nodes;
 
-			nodes = nodes.Concat(objectReference.QueryBlocks.Single().Columns.SelectMany(c => c.ColumnReferences)
-				.Where(c => c.SelectListColumn.IsDirectColumnReference && c.ColumnNodeObjectReferences.Count == 1 && c.NormalizedName == columnReference.NormalizedName)
-				.Select(c => c.ColumnNode));
+			nodes = nodes.Concat(GetChildQueryBlockColumnReferences(objectReference.QueryBlocks.Single(), columnReference));
 
 			return nodes;
 		}
 
-		private bool FilterValidColumnReferences()
+		private IEnumerable<StatementDescriptionNode> GetChildQueryBlockColumnReferences(OracleQueryBlock queryBlock, OracleColumnReference columnReference)
 		{
-			return false;
+			return queryBlock.Columns.SelectMany(c => c.ColumnReferences)
+				.Where(c => c.SelectListColumn.IsDirectColumnReference && c.ColumnNodeObjectReferences.Count == 1 && c.SelectListColumn.NormalizedName == columnReference.NormalizedName)
+				.Select(c => c.SelectListColumn.AliasNode ?? c.ColumnNode);
 		}
 
 		private IEnumerable<StatementDescriptionNode> GetColumnAliasUsage()

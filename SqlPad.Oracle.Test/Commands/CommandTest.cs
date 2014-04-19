@@ -170,6 +170,12 @@ namespace SqlPad.Oracle.Test.Commands
 			foundSegments.ForEach(s => s.Length.ShouldBe("HUSQVIK".Length));
 		}
 
+		[Test(Description = @""), STAThread, Ignore]
+		public void TestFindColumnUsages()
+		{
+			
+		}
+
 		private class TestCommandSettings : ICommandSettingsProvider
 		{
 			private readonly bool _isValueValid;
