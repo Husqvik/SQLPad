@@ -55,7 +55,7 @@ namespace SqlPad.Oracle
 				return EmptyCollection;*/
 
 			//
-			
+
 			var isCursorAtTerminal = true;
 			if (statement == null)
 			{
@@ -99,7 +99,7 @@ namespace SqlPad.Oracle
 			}
 
 			var semanticModel = new OracleStatementSemanticModel(null, (OracleStatement)currentNode.Statement, databaseModel);
-			var terminalCandidates = new HashSet<string>(_oracleParser.GetTerminalCandidates(currentNode));
+			var terminalCandidates = new HashSet<string>(_oracleParser.GetTerminalCandidates(isCursorAtTerminal && !currentNode.Id.IsSingleCharacterTerminal() ? currentNode.PreviousTerminal : currentNode));
 
 			var cursorAtLastTerminal = cursorPosition <= currentNode.SourcePosition.IndexEnd + 1;
 			var terminalToReplace = cursorAtLastTerminal ? currentNode : null;
@@ -202,7 +202,7 @@ namespace SqlPad.Oracle
 			}
 
 			if (currentNode.IsWithinSelectClauseOrExpression() &&
-				(isCursorAtTerminal || terminalCandidates.Contains(Terminals.Identifier)) &&
+				terminalCandidates.Contains(Terminals.Identifier) &&
 				currentNode.Id.In(Terminals.ObjectIdentifier, Terminals.Identifier, Terminals.Comma, Terminals.Dot, Terminals.Select))
 			{
 				completionItems = completionItems.Concat(GenerateColumnItems(currentNode, semanticModel, cursorPosition));
@@ -262,7 +262,7 @@ namespace SqlPad.Oracle
 						(currentNode.Id != Terminals.Identifier || c.Name != currentNode.Token.Value.ToQuotedIdentifier()) &&
 						(objectIdentifierNode == null || String.IsNullOrEmpty(currentName) || (c.Name != currentName.ToQuotedIdentifier() && c.Name.Contains(currentName.ToUpperInvariant()))))
 					.Select(c => new { TableReference = t, Column = c }))
-					.GroupBy(c => c.Column.Name).ToDictionary(g => g.Key, g => g.Select(o => o.TableReference.FullyQualifiedName).ToArray());
+					.GroupBy(c => c.Column.Name).ToDictionary(g => g.Key ?? String.Empty, g => g.Select(o => o.TableReference.FullyQualifiedName).ToArray());
 
 			var suggestedColumns = new List<Tuple<string, OracleObjectIdentifier>>();
 			foreach (var columnCandidate in columnCandidates)

@@ -12,7 +12,7 @@ namespace SqlPad.Oracle
 		private readonly Queue<int> _buffer = new Queue<int>();
 		private readonly StringBuilder _builder = new StringBuilder();
 		private readonly HashSet<char> _singleCharacterTerminals =
-			new HashSet<char> { '(', ')', ',', ';', '.', '/', '+', '-', '*', ';', '@', ':' };
+			new HashSet<char> { '(', ')', ',', ';', '.', '/', '+', '-', '*', '@', ':' };
 
 		private int _currentIndex;
 

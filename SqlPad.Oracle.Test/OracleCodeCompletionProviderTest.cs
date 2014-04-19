@@ -450,5 +450,14 @@ FROM
 			var items = _codeCompletionProvider.ResolveItems(query1, 39).ToArray();
 			items.Length.ShouldBe(0);
 		}
+
+		[Test(Description = @"")]
+		public void TestSuggestionWhenAtSelectKeyword()
+		{
+			const string query1 = @"SELECT NAME FROM SELECTION";
+
+			var items = _codeCompletionProvider.ResolveItems(query1, 0).ToArray();
+			items.Length.ShouldBe(0);
+		}
 	}
 }

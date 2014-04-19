@@ -39,6 +39,7 @@ namespace SqlPad.Oracle.Commands
 					nodes = GetSchemaReferenceUsage();
 					break;
 				case Terminals.Identifier:
+				case Terminals.ColumnAlias:
 					nodes = GetColumnReferenceUsage();
 					break;
 			}
@@ -78,28 +79,94 @@ namespace SqlPad.Oracle.Commands
 		{
 			var nodes = Enumerable.Empty<StatementDescriptionNode>();
 			var columnReference = _queryBlock.AllColumnReferences
-				.SingleOrDefault(c => c.ColumnNode == _currentNode && c.ColumnNodeObjectReferences.Count == 1 && c.ColumnNodeColumnReferences == 1);
+				.SingleOrDefault(c => (c.ColumnNode == _currentNode || (c.SelectListColumn != null && c.SelectListColumn.AliasNode == _currentNode)) && c.ColumnNodeObjectReferences.Count == 1 && c.ColumnNodeColumnReferences == 1);
 			
 			if (columnReference == null)
 				return nodes;
 
 			var objectReference = columnReference.ColumnNodeObjectReferences.Single();
-			nodes = _queryBlock.AllColumnReferences.Where(c => c.ColumnNodeObjectReferences.Count == 1 && c.ColumnNodeObjectReferences.Single() == objectReference && c.NormalizedName == columnReference.NormalizedName)
-				.Select(c => c.ColumnNode);
+			if (_currentNode.Id == Terminals.Identifier)
+			{
+				var columnReferences = _queryBlock.AllColumnReferences.Where(c => c.ColumnNodeObjectReferences.Count == 1 && c.ColumnNodeObjectReferences.Single() == objectReference && c.NormalizedName == columnReference.NormalizedName).ToArray();
+				if (columnReference.SelectListColumn == null)
+				{
+					var selectionListColumnReference = columnReferences.FirstOrDefault(c => c.SelectListColumn != null && c.SelectListColumn.IsDirectColumnReference);
+					if (selectionListColumnReference != null)
+					{
+						columnReference = selectionListColumnReference;
+					}
+				}
 
-			if (objectReference.QueryBlocks.Count != 1 || !columnReference.SelectListColumn.IsDirectColumnReference)
-				return nodes;
+				nodes = columnReferences.Select(c => c.ColumnNode);
+			}
+			else
+			{
+				nodes = _queryBlock.Columns.Where(c => c.AliasNode == _currentNode).Select(c => c.AliasNode);
+			}
 
-			nodes = nodes.Concat(GetChildQueryBlockColumnReferences(objectReference.QueryBlocks.Single(), columnReference));
+			nodes = nodes.Concat(GetParentQueryBlockReferences(columnReference));
+
+			nodes = nodes.Concat(GetChildQueryBlockColumnReferences(objectReference, columnReference));
 
 			return nodes;
 		}
 
-		private IEnumerable<StatementDescriptionNode> GetChildQueryBlockColumnReferences(OracleQueryBlock queryBlock, OracleColumnReference columnReference)
+		private IEnumerable<StatementDescriptionNode> GetChildQueryBlockColumnReferences(OracleObjectReference objectReference, OracleColumnReference columnReference)
 		{
-			return queryBlock.Columns.SelectMany(c => c.ColumnReferences)
-				.Where(c => c.SelectListColumn.IsDirectColumnReference && c.ColumnNodeObjectReferences.Count == 1 && c.SelectListColumn.NormalizedName == columnReference.NormalizedName)
-				.Select(c => c.SelectListColumn.AliasNode ?? c.ColumnNode);
+			var nodes = Enumerable.Empty<StatementDescriptionNode>();
+			if (objectReference.QueryBlocks.Count != 1/* || !columnReference.SelectListColumn.IsDirectColumnReference*/)
+				return nodes;
+
+			var childQueryBlock = objectReference.QueryBlocks.Single();
+			var childColumnReferences = childQueryBlock.Columns.SelectMany(c => c.ColumnReferences)
+				.Where(c => c.SelectListColumn.NormalizedName == columnReference.NormalizedName)
+				.ToArray();
+
+			var childSubqueryColumnReference = childColumnReferences.FirstOrDefault(c => c.SelectListColumn != null && c.SelectListColumn.IsDirectColumnReference && c.ColumnNodeObjectReferences.Count == 1 && c.ColumnNodeObjectReferences.Single().QueryBlocks.Count == 1);
+			nodes = childColumnReferences.Select(c => c.SelectListColumn.AliasNode ?? c.ColumnNode); 
+
+			var childColumnReference = childColumnReferences.FirstOrDefault(c => c.SelectListColumn != null && c.SelectListColumn.IsDirectColumnReference && c.ColumnNodeObjectReferences.Count == 1);
+			if (childColumnReference != null)
+			{
+				nodes = nodes.Concat(childQueryBlock.ColumnReferences.Where(c => c.ColumnNodeObjectReferences.Count == 1 && c.ColumnNodeObjectReferences.Single() == childColumnReference.ColumnNodeObjectReferences.Single() && c.NormalizedName == childColumnReference.NormalizedName).Select(c => c.ColumnNode));
+			}
+
+			if (childSubqueryColumnReference != null)
+			{
+				nodes = nodes.Concat(GetChildQueryBlockColumnReferences(childSubqueryColumnReference.ColumnNodeObjectReferences.Single(), childSubqueryColumnReference));
+			}
+
+			return nodes;
+		}
+
+		private IEnumerable<StatementDescriptionNode> GetParentQueryBlockReferences(OracleColumnReference columnReference)
+		{
+			var nodes = Enumerable.Empty<StatementDescriptionNode>();
+			if (columnReference.SelectListColumn == null || columnReference.SelectListColumn.AliasNode == null || !columnReference.SelectListColumn.IsDirectColumnReference)
+				return nodes;
+
+			var parentQueryBlocks = _semanticModel.QueryBlocks.Where(qb => qb.ObjectReferences.SelectMany(o => o.QueryBlocks).Contains(columnReference.Owner));
+			foreach (var parentQueryBlock in parentQueryBlocks)
+			{
+				var parentReferences = parentQueryBlock.AllColumnReferences
+					.Where(c => c.ColumnNodeColumnReferences == 1 && c.ColumnNodeObjectReferences.Count == 1 && c.ColumnNodeObjectReferences.Single().QueryBlocks.Count == 1
+								&& c.ColumnNodeObjectReferences.Single().QueryBlocks.Single() == columnReference.Owner && c.NormalizedName == columnReference.SelectListColumn.NormalizedName)
+					.ToArray();
+
+				if (parentReferences.Length == 0)
+					continue;
+
+				nodes = nodes.Concat(parentReferences.Select(c => c.ColumnNode));
+
+				var parentColumnReferences = parentReferences.Where(c => c.SelectListColumn != null && c.SelectListColumn.IsDirectColumnReference).ToArray();
+
+				if (parentColumnReferences.Length == 1)
+				{
+					nodes = nodes.Concat(GetParentQueryBlockReferences(parentColumnReferences[0]));
+				}
+			}
+
+			return nodes;
 		}
 
 		private IEnumerable<StatementDescriptionNode> GetColumnAliasUsage()

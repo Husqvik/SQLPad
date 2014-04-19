@@ -404,14 +404,14 @@ namespace SqlPad.Oracle
 					else
 					{
 						var identifiers = columnExpression.GetDescendantsWithinSameQuery(Terminals.Identifier).ToArray();
+						column.IsDirectColumnReference = identifiers.Length == 1 && identifiers[0].GetAncestor(NonTerminals.Expression).ChildNodes.Count == 1;
+						if (column.IsDirectColumnReference && columnAliasNode == null)
+						{
+							column.AliasNode = identifiers[0];
+						}
+
 						foreach (var identifier in identifiers)
 						{
-							column.IsDirectColumnReference = identifier.GetAncestor(NonTerminals.Expression).ChildNodes.Count == 1;
-							if (column.IsDirectColumnReference && columnAliasNode == null)
-							{
-								column.AliasNode = identifier;
-							}
-
 							var prefixNonTerminal = identifier.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference)
 								.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.Prefix);
 
