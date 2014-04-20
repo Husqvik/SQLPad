@@ -264,7 +264,7 @@ namespace SqlPad
 			{
 				Trace.WriteLine("ALT SHIFT + F11");
 
-				var findUsagesCommand = _infrastructureFactory.CommandFactory.CreateFindUsagesCommand(Editor.Text, Editor.CaretOffset, _infrastructureFactory.CreateDatabaseModel(null));
+				var findUsagesCommand = _infrastructureFactory.CommandFactory.CreateFindUsagesCommand(Editor.Text, Editor.CaretOffset, _infrastructureFactory.CreateDatabaseModel(ConfigurationProvider.ConnectionStrings["Default"]));
 				if (findUsagesCommand.CanExecute(null))
 				{
 					var highlightSegments = new List<TextSegment>();

@@ -7,6 +7,8 @@ namespace SqlPad.Oracle.Commands
 		protected OracleStatementSemanticModel SemanticModel { get; private set; }
 
 		protected StatementDescriptionNode CurrentTerminal { get; private set; }
+		
+		protected OracleQueryBlock CurrentQueryBlock { get; private set; }
 
 		protected OracleCommandBase(OracleStatementSemanticModel semanticModel, StatementDescriptionNode currentTerminal)
 		{
@@ -14,6 +16,7 @@ namespace SqlPad.Oracle.Commands
 
 			SemanticModel = semanticModel;
 			CurrentTerminal = currentTerminal;
+			CurrentQueryBlock = SemanticModel.GetQueryBlock(CurrentTerminal);
 		}
 
 		protected static void CheckParameters(OracleStatementSemanticModel semanticModel, StatementDescriptionNode currentTerminal)
