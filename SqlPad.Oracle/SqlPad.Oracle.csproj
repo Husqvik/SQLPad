@@ -72,6 +72,7 @@
     <Compile Include="Commands\OracleCommandFactory.cs" />
     <Compile Include="DatabaseModelFake.cs" />
     <Compile Include="OracleCodeCompletionProvider.cs" />
+    <Compile Include="OracleFunctionReference.cs" />
     <Compile Include="OracleColumnReference.cs" />
     <Compile Include="OracleContextActionProvider.cs" />
     <Compile Include="OracleDatabaseModel.cs" />

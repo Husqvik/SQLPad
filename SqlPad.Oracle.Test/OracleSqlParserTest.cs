@@ -736,6 +736,33 @@ namespace SqlPad.Oracle.Test
 			// TODO: Precise assertions
 		}
 
+		[Test(Description = @"Tests sequence pseudo columns. ")]
+		public void TestSequencePseudoColumns()
+		{
+			const string query1 = @"SELECT SEQ_TEST.CURRVAL, HUSQVIK.SEQ_TEST.NEXTVAL, SEQ_TEST.CURRVAL@HQ11G2 FROM DUAL";
+			var result = Parser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			var statement = result.Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var terminals = statement.AllTerminals.ToArray();
+			terminals[3].Id.ShouldBe(Terminals.SequenceCurrentValue);
+			terminals[9].Id.ShouldBe(Terminals.SequenceNextValue);
+
+			const string query2 = @"SELECT CURRVAL, NEXTVAL, CURRVAL@HQ11G2 FROM DUAL";
+			result = Parser.Parse(query2);
+
+			result.Count.ShouldBe(1);
+			statement = result.Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			terminals = statement.AllTerminals.ToArray();
+			terminals[1].Id.ShouldBe(Terminals.Identifier);
+			terminals[3].Id.ShouldBe(Terminals.Identifier);
+			terminals[5].Id.ShouldBe(Terminals.Identifier);
+		}
+
 		[Test(Description = @"Tests query with Oracle 12c OFFSET and FETCH clauses. ")]
 		public void TestOffsetAndFetchClauses()
 		{

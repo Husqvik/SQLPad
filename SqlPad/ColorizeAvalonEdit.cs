@@ -12,10 +12,12 @@ namespace SqlPad
 		private StatementCollection _parsedStatements;
 		private readonly Stack<ICollection<TextSegment>> _highlightSegments = new Stack<ICollection<TextSegment>>();
 		private readonly IStatementValidator _validator = ConfigurationProvider.InfrastructureFactory.CreateStatementValidator();
+		private readonly ISqlParser _parser = ConfigurationProvider.InfrastructureFactory.CreateSqlParser();
 		private readonly IDatabaseModel _databaseModel = ConfigurationProvider.InfrastructureFactory.CreateDatabaseModel(ConfigurationProvider.ConnectionStrings["Default"]);
 		private static readonly SolidColorBrush ErrorBrush = new SolidColorBrush(Colors.Red);
 		private static readonly SolidColorBrush NormalTextBrush = new SolidColorBrush(Colors.Black);
 		private static readonly SolidColorBrush HighlightBrush = new SolidColorBrush(Colors.Turquoise);
+		private static readonly SolidColorBrush KeywordBrush = new SolidColorBrush(Colors.Blue);
 
 		public void SetStatementCollection(StatementCollection statements)
 		{
@@ -64,6 +66,12 @@ namespace SqlPad
 						{
 							element.TextRunProperties.SetForegroundBrush(nodeValidity.Value ? NormalTextBrush : ErrorBrush);
 						});
+				}
+
+				foreach (var keyword in statement.AllTerminals.Where(t => _parser.IsKeyword(t.Token.Value)))
+				{
+					ProcessNodeAtLine(line, keyword.SourcePosition,
+						element => element.TextRunProperties.SetForegroundBrush(KeywordBrush));
 				}
 
 				foreach (var invalidGrammarNode in statement.InvalidGrammarNodes)

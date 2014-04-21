@@ -263,7 +263,7 @@ namespace SqlPad.Oracle
 					else
 					{
 						columnNodeColumnReferences = tableReference.QueryBlocks.SelectMany(qb => qb.Columns)
-							.Count(c => c.NormalizedName == columnReference.NormalizedName && (columnReference.ObjectNode == null || columnReference.ObjectTableName == tableReference.FullyQualifiedName.NormalizedName));
+							.Count(c => c.NormalizedName == columnReference.NormalizedName && (columnReference.ObjectNode == null || columnReference.ObjectNormalizedName == tableReference.FullyQualifiedName.NormalizedName));
 					}
 
 					if (columnNodeColumnReferences > 0 &&

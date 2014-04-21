@@ -750,6 +750,10 @@
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
+          <NonTerminal Id="PrefixedSequencePseudoColumn" />
+          <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
+        </Sequence>
+        <Sequence>
           <NonTerminal Id="PrefixedColumnReference" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
@@ -825,6 +829,27 @@
       </Sequences>
     </Rule>
 
+    <Rule StartingNonTerminal="PrefixedSequencePseudoColumn">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="Prefix" />
+          <NonTerminal Id="SequenceCurrentValueOrNextValue" />
+          <NonTerminal Id="DatabaseLink" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SequenceCurrentValueOrNextValue">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="SequenceCurrentValue" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="SequenceNextValue" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
     <!--Function call -->
     <Rule StartingNonTerminal="ParenthesisEnclosedAggregationFunctionParameters">
       <Sequences>
@@ -860,14 +885,6 @@
         <Sequence>
           <Terminal Id="RowIdPseudoColumn" />
           <NonTerminal Id="OuterJoinOld" IsOptional="true" />
-        </Sequence>
-        <Sequence>
-          <Terminal Id="SequenceCurrentValue" />
-          <NonTerminal Id="DatabaseLink" IsOptional="true" />
-        </Sequence>
-        <Sequence>
-          <Terminal Id="SequenceNextValue" />
-          <NonTerminal Id="DatabaseLink" IsOptional="true" />
         </Sequence>
         <Sequence>
           <Terminal Id="Identifier" />

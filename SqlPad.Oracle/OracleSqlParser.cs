@@ -66,6 +66,11 @@ namespace SqlPad.Oracle
 			       !OracleGrammarDescription.Terminals.IsKeyword(identifier);
 		}
 
+		public bool IsKeyword(string value)
+		{
+			return OracleGrammarDescription.Terminals.IsKeyword(value);
+		}
+
 		public bool IsRuleValid(string nonTerminalId, string text)
 		{
 			return IsRuleValid(nonTerminalId, OracleTokenReader.Create(text).GetTokens().Cast<OracleToken>());
