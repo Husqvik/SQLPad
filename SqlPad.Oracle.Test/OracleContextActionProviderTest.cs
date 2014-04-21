@@ -15,7 +15,7 @@ namespace SqlPad.Oracle.Test
 		{
 			const string query1 = @"SELECT DUMMY FROM (SELECT DUMMY FROM DUAL) t2, Dual";
 
-			var actions = _actionProvider.GetContextActions(query1, 7).ToArray();
+			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 7).ToArray();
 			actions.Length.ShouldBe(2);
 			actions[0].Name.ShouldBe("Resolve as t2.DUMMY");
 			actions[1].Name.ShouldBe("Resolve as Dual.DUMMY");
@@ -26,7 +26,7 @@ namespace SqlPad.Oracle.Test
 		{
 			const string query1 = @"SELECT DUMMY FROM (SELECT DUMMY FROM DUAL) t2, Dual";
 
-			var actions = _actionProvider.GetContextActions(query1, 12).ToArray();
+			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 12).ToArray();
 			actions.Length.ShouldBe(2);
 			actions[0].Name.ShouldBe("Resolve as t2.DUMMY");
 			actions[1].Name.ShouldBe("Resolve as Dual.DUMMY");
@@ -37,7 +37,7 @@ namespace SqlPad.Oracle.Test
 		{
 			const string query1 = @"SELECT DUAL.DUMMY FROM SYS.DUAL, ""PUBLIC"".DUAL";
 
-			var actions = _actionProvider.GetContextActions(query1, 12).ToArray();
+			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 12).ToArray();
 			actions.Length.ShouldBe(2);
 			actions[0].Name.ShouldBe("Resolve as SYS.DUAL.DUMMY");
 			actions[1].Name.ShouldBe("Resolve as \"PUBLIC\".DUAL.DUMMY");
@@ -48,7 +48,7 @@ namespace SqlPad.Oracle.Test
 		{
 			const string query1 = @"SELECT DUMMY FROM (SELECT DUMMY FROM DUAL) t2, Dual";
 
-			var actions = _actionProvider.GetContextActions(query1, 49).ToArray();
+			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 49).ToArray();
 			actions.Length.ShouldBe(1);
 			actions[0].Name.ShouldBe("Add Alias");
 		}
@@ -58,7 +58,7 @@ namespace SqlPad.Oracle.Test
 		{
 			const string query1 = @"SELECT DUMMY FROM (SELECT DUMMY FROM DUAL) t2, Dual";
 
-			var actions = _actionProvider.GetContextActions(query1, 44).ToArray();
+			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 44).ToArray();
 			actions.Length.ShouldBe(0);
 		}
 
@@ -67,7 +67,7 @@ namespace SqlPad.Oracle.Test
 		{
 			const string query1 = @"SELECT DUMMY FROM (SELECT 1 DUMMY FROM DUAL), SYS.DUAL";
 
-			var actions = _actionProvider.GetContextActions(query1, 7).ToArray();
+			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 7).ToArray();
 			actions.Length.ShouldBe(1);
 			actions[0].Name.ShouldBe("Resolve as SYS.DUAL.DUMMY");
 		}
@@ -77,7 +77,7 @@ namespace SqlPad.Oracle.Test
 		{
 			const string query1 = @"SELECT DUAL.DUMMY FROM (SELECT 1 DUMMY FROM DUAL) DUAL, SYS.DUAL";
 
-			var actions = _actionProvider.GetContextActions(query1, 14).ToArray();
+			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 14).ToArray();
 			actions.Length.ShouldBe(1);
 			actions[0].Name.ShouldBe("Resolve as SYS.DUAL.DUMMY");
 		}

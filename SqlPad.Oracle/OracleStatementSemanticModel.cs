@@ -25,7 +25,7 @@ namespace SqlPad.Oracle
 			get { return _queryBlockResults.Values.Where(qb => qb.Type == QueryBlockType.Normal).OrderBy(qb => qb.RootNode.SourcePosition.IndexStart).FirstOrDefault(); }
 		}
 
-		public OracleStatementSemanticModel(string sqlText, OracleStatement statement, DatabaseModelFake databaseModel)
+		public OracleStatementSemanticModel(string sqlText, OracleStatement statement, OracleDatabaseModel databaseModel)
 		{
 			if (statement == null)
 				throw new ArgumentNullException("statement");
@@ -43,7 +43,7 @@ namespace SqlPad.Oracle
 				var queryBlock = queryBlockNode.Key;
 				var item = queryBlockNode.Value;
 
-				var scalarSubqueryExpression = queryBlock.GetAncestor(NonTerminals.Expression, false);
+				var scalarSubqueryExpression = queryBlock.GetAncestor(NonTerminals.Expression);
 				if (scalarSubqueryExpression != null)
 				{
 					item.Type = QueryBlockType.ScalarSubquery;
@@ -57,7 +57,7 @@ namespace SqlPad.Oracle
 				}
 				else
 				{
-					var selfTableReference = queryBlock.GetAncestor(NonTerminals.TableReference, false);
+					var selfTableReference = queryBlock.GetAncestor(NonTerminals.TableReference);
 					if (selfTableReference != null)
 					{
 						item.Type = QueryBlockType.Normal;
@@ -164,7 +164,7 @@ namespace SqlPad.Oracle
 					{
 						foreach (var referencedQueryBlock in nestedQueryReference.Nodes
 							.SelectMany(cteNode => cteNode.GetDescendantsWithinSameQuery(NonTerminals.QueryBlock))
-							.Where(qb => OracleObjectIdentifier.Create(null, qb.GetAncestor(NonTerminals.SubqueryComponent, false).ChildNodes.Single(n => n.Id == Terminals.ObjectIdentifier).Token.Value) == nestedQueryReference.FullyQualifiedName))
+							.Where(qb => OracleObjectIdentifier.Create(null, qb.GetAncestor(NonTerminals.SubqueryComponent).ChildNodes.Single(n => n.Id == Terminals.ObjectIdentifier).Token.Value) == nestedQueryReference.FullyQualifiedName))
 						{
 							nestedQueryReference.QueryBlocks.Add(_queryBlockResults[referencedQueryBlock]);
 						}
@@ -235,7 +235,7 @@ namespace SqlPad.Oracle
 
 		public OracleQueryBlock GetQueryBlock(StatementDescriptionNode node)
 		{
-			var queryBlockNode = node.GetAncestor(NonTerminals.QueryBlock, false);
+			var queryBlockNode = node.GetAncestor(NonTerminals.QueryBlock);
 			return queryBlockNode == null ? null : _queryBlockResults[queryBlockNode];
 		}
 
@@ -449,12 +449,12 @@ namespace SqlPad.Oracle
 
 		private IEnumerable<KeyValuePair<StatementDescriptionNode, string>> GetCommonTableExpressionReferences(StatementDescriptionNode node)
 		{
-			var queryRoot = node.GetAncestor(NonTerminals.NestedQuery, false);
+			var queryRoot = node.GetAncestor(NonTerminals.NestedQuery);
 			var subQueryCompondentDistance = node.GetAncestorDistance(NonTerminals.SubqueryComponent);
 			if (subQueryCompondentDistance != null &&
 			    node.GetAncestorDistance(NonTerminals.NestedQuery) > subQueryCompondentDistance)
 			{
-				queryRoot = queryRoot.GetAncestor(NonTerminals.NestedQuery, false);
+				queryRoot = queryRoot.GetAncestor(NonTerminals.NestedQuery);
 			}
 
 			if (queryRoot == null)

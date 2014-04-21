@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
 using System.Linq;
@@ -11,10 +10,9 @@ namespace SqlPad.Oracle
 		public static readonly DatabaseModelFake Instance = new DatabaseModelFake();
 
 		private const string CurrentSchemaInternal = "\"HUSQVIK\"";
-		private static readonly ConnectionStringSettings ConnectionStringInternal = new ConnectionStringSettings("ConnectionFake", "DATA SOURCE=HQ_PDB_TCP;PASSWORD=MMA_DEV;PERSIST SECURITY INFO=True;USER ID=HUSQVIK", "Oracle.DataAccess.Client");
-		public const string SchemaPublic = "\"PUBLIC\"";
+		private static readonly ConnectionStringSettings ConnectionStringInternal = new ConnectionStringSettings("ConnectionFake", "DATA SOURCE=HQ_PDB_TCP;PASSWORD=oracle;USER ID=HUSQVIK", "Oracle.DataAccess.Client");
 
-		private static readonly HashSet<string> SchemasInternal = new HashSet<string> { "\"SYS\"", "\"SYSTEM\"", CurrentSchemaInternal, SchemaPublic };
+		private static readonly HashSet<string> SchemasInternal = new HashSet<string> { "\"SYS\"", "\"SYSTEM\"", CurrentSchemaInternal, OracleDatabaseModel.SchemaPublic };
 
 		private static readonly HashSet<OracleDataObject> AllObjectsInternal = new HashSet<OracleDataObject>
 		{
@@ -34,12 +32,12 @@ namespace SqlPad.Oracle
 			},
 			new OracleDataObject
 			{
-				FullyQualifiedName = OracleObjectIdentifier.Create(SchemaPublic, "\"V$SESSION\""),
+				FullyQualifiedName = OracleObjectIdentifier.Create(OracleDatabaseModel.SchemaPublic, "\"V$SESSION\""),
 				Type = "SYNONYM"
 			},
 			new OracleDataObject
 			{
-				FullyQualifiedName = OracleObjectIdentifier.Create(SchemaPublic, "\"DUAL\""),
+				FullyQualifiedName = OracleObjectIdentifier.Create(OracleDatabaseModel.SchemaPublic, "\"DUAL\""),
 				Type = "SYNONYM",
 				Columns = new HashSet<OracleColumn>
 				             {
@@ -200,7 +198,7 @@ namespace SqlPad.Oracle
 		private static readonly IDictionary<IObjectIdentifier, IDatabaseObject> AllObjectDictionary = AllObjectsInternal.ToDictionary(o => (IObjectIdentifier)o.FullyQualifiedName, o => (IDatabaseObject)o);
 
 		private static readonly IDictionary<IObjectIdentifier, IDatabaseObject> ObjectsInternal = AllObjectDictionary
-			.Values.Where(o => o.Owner == SchemaPublic || o.Owner == CurrentSchemaInternal)
+			.Values.Where(o => o.Owner == OracleDatabaseModel.SchemaPublic || o.Owner == CurrentSchemaInternal)
 			.ToDictionary(o => (IObjectIdentifier)OracleObjectIdentifier.Create(o.Owner, o.Name), o => o);
 		
 		#region Implementation of IDatabaseModel
@@ -222,36 +220,6 @@ namespace SqlPad.Oracle
 		private OracleDataObject GetObjectBehindSynonym(OracleDataObject synonym)
 		{
 			return null;
-		}
-
-		public SchemaObjectResult GetObject(OracleObjectIdentifier objectIdentifier)
-		{
-			OracleDataObject schemaObject = null;
-			var schemaFound = false;
-
-			if (String.IsNullOrEmpty(objectIdentifier.NormalizedOwner))
-			{
-				var currentSchemaObject = OracleObjectIdentifier.Create(CurrentSchema, objectIdentifier.NormalizedName);
-				var publicSchemaObject = OracleObjectIdentifier.Create(SchemaPublic, objectIdentifier.NormalizedName);
-
-				if (AllObjectDictionary.ContainsKey(currentSchemaObject))
-					schemaObject = (OracleDataObject)AllObjectDictionary[currentSchemaObject];
-				else if (AllObjectDictionary.ContainsKey(publicSchemaObject))
-					schemaObject = (OracleDataObject)AllObjectDictionary[publicSchemaObject];
-			}
-			else
-			{
-				schemaFound = Schemas.Contains(objectIdentifier.NormalizedOwner);
-
-				if (schemaFound && AllObjectDictionary.ContainsKey(objectIdentifier))
-					schemaObject = (OracleDataObject)AllObjectDictionary[objectIdentifier];
-			}
-
-			return new SchemaObjectResult
-			       {
-					   SchemaFound = schemaFound,
-					   SchemaObject = schemaObject
-			       };
 		}
 	}
 

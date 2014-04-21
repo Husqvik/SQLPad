@@ -40,7 +40,7 @@ FROM
 			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, DatabaseModelFake.Instance);
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.ShouldNotBe(null);
 			semanticModel.QueryBlocks.Count.ShouldBe(3);
@@ -67,7 +67,7 @@ FROM
 			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, DatabaseModelFake.Instance);
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.ShouldNotBe(null);
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
@@ -86,7 +86,7 @@ FROM
 			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, DatabaseModelFake.Instance);
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.ShouldNotBe(null);
 			semanticModel.QueryBlocks.Count.ShouldBe(1);

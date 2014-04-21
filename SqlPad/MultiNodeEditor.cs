@@ -7,22 +7,20 @@ namespace SqlPad
 	{
 		private readonly TextEditor _editor;
 		private readonly IMultiNodeEditorDataProvider _dataProvider;
-		private StatementDescriptionNode _currentNode;
+		private readonly IDatabaseModel _databaseModel;
 
-		private MultiNodeEditor(TextEditor editor, IMultiNodeEditorDataProvider dataProvider, StatementDescriptionNode currentNode)
+		private MultiNodeEditor(TextEditor editor, IMultiNodeEditorDataProvider dataProvider, IDatabaseModel databaseModel)
 		{
+			_databaseModel = databaseModel;
 			_dataProvider = dataProvider;
 			_editor = editor;
-			_currentNode = currentNode;
 		}
 
 		public bool Replace(string newText)
 		{
-			var data = GetSynchronizationData(_dataProvider, _editor);
+			var data = GetSynchronizationData(_dataProvider, _editor, _databaseModel);
 			if (!IsModificationValid(data))
 				return false;
-
-			_currentNode = data.CurrentNode;
 
 			foreach (var node in data.SynchronizedNodes)
 			{
@@ -34,11 +32,9 @@ namespace SqlPad
 
 		public bool RemoveCharacter(bool reverse)
 		{
-			var data = GetSynchronizationData(_dataProvider, _editor);
+			var data = GetSynchronizationData(_dataProvider, _editor, _databaseModel);
 			if (!IsModificationValid(data))
 				return false;
-
-			_currentNode = data.CurrentNode;
 
 			foreach (var node in data.SynchronizedNodes)
 			{
@@ -50,12 +46,11 @@ namespace SqlPad
 			return true;
 		}
 
-		public static bool TryCreateMultiNodeEditor(TextEditor editor, IInfrastructureFactory infrastructureFactory, out MultiNodeEditor multiNodeEditor)
+		public static bool TryCreateMultiNodeEditor(TextEditor editor, IMultiNodeEditorDataProvider dataProvider, IDatabaseModel databaseModel, out MultiNodeEditor multiNodeEditor)
 		{
-			var dataProvider = infrastructureFactory.CreateMultiNodeEditorDataProvider();
-			var data = GetSynchronizationData(dataProvider, editor);
+			var data = GetSynchronizationData(dataProvider, editor, databaseModel);
 
-			multiNodeEditor = data.CurrentNode != null ? new MultiNodeEditor(editor, dataProvider, data.CurrentNode) : null;
+			multiNodeEditor = data.CurrentNode != null ? new MultiNodeEditor(editor, dataProvider, databaseModel) : null;
 			return multiNodeEditor != null;
 		}
 
@@ -64,9 +59,9 @@ namespace SqlPad
 			return data.CurrentNode != null && data.CurrentNode.SourcePosition.IndexStart <= _editor.CaretOffset && data.CurrentNode.SourcePosition.IndexEnd + 1 >= _editor.CaretOffset;
 		}
 
-		private static MultiNodeEditorData GetSynchronizationData(IMultiNodeEditorDataProvider dataProvider, TextEditor editor)
+		private static MultiNodeEditorData GetSynchronizationData(IMultiNodeEditorDataProvider dataProvider, TextEditor editor, IDatabaseModel databaseModel)
 		{
-			return dataProvider.GetMultiNodeEditorData(editor.Text, editor.CaretOffset, editor.SelectionStart, editor.SelectionLength);
+			return dataProvider.GetMultiNodeEditorData(databaseModel, editor.Text, editor.CaretOffset, editor.SelectionStart, editor.SelectionLength);
 		}
 	}
 

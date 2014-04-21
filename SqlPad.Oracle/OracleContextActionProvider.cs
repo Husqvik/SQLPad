@@ -12,7 +12,7 @@ namespace SqlPad.Oracle
 		private static readonly IContextAction[] EmptyCollection = new IContextAction[0];
 		private readonly OracleSqlParser _oracleParser = new OracleSqlParser();
 
-		public ICollection<IContextAction> GetContextActions(string statementText, int cursorPosition)
+		public ICollection<IContextAction> GetContextActions(IDatabaseModel databaseModel, string statementText, int cursorPosition)
 		{
 			var statements = _oracleParser.Parse(statementText);
 
@@ -20,7 +20,7 @@ namespace SqlPad.Oracle
 			if (currentTerminal == null)
 				return EmptyCollection;
 
-			var semanticModel = new OracleStatementSemanticModel(statementText, (OracleStatement)currentTerminal.Statement, DatabaseModelFake.Instance);
+			var semanticModel = new OracleStatementSemanticModel(statementText, (OracleStatement)currentTerminal.Statement, (OracleDatabaseModel)databaseModel);
 			var actionList = new List<IContextAction>();
 
 			var addAliasCommand = new AddAliasCommand(semanticModel, currentTerminal);

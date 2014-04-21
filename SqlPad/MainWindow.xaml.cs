@@ -34,6 +34,7 @@ namespace SqlPad
 		private readonly ICodeCompletionProvider _codeCompletionProvider;
 		private readonly ICodeSnippetProvider _codeSnippetProvider;
 		private readonly IContextActionProvider _contextActionProvider;
+		private readonly IDatabaseModel _databaseModel;
 		
 		private readonly ToolTip _toolTip = new ToolTip();
 
@@ -50,6 +51,7 @@ namespace SqlPad
 			_codeCompletionProvider = _infrastructureFactory.CreateCodeCompletionProvider();
 			_codeSnippetProvider = _infrastructureFactory.CreateSnippetProvider();
 			_contextActionProvider = _infrastructureFactory.CreateContextActionProvider();
+			_databaseModel = _infrastructureFactory.CreateDatabaseModel(ConfigurationProvider.ConnectionStrings["Default"]);
 		}
 
 		private void WindowLoadedHandler(object sender, RoutedEventArgs e)
@@ -157,7 +159,7 @@ namespace SqlPad
 
 		private void CreateCodeCompletionWindow()
 		{
-			CreateCompletionWindow(() => _codeCompletionProvider.ResolveItems(Editor.Text, Editor.CaretOffset).Select(i => new CompletionData(i)), true);
+			CreateCompletionWindow(() => _codeCompletionProvider.ResolveItems(_databaseModel, Editor.Text, Editor.CaretOffset).Select(i => new CompletionData(i)), true);
 		}
 
 		private void CreateSnippetCompletionWindow(IEnumerable<ICompletionData> items)
@@ -213,7 +215,7 @@ namespace SqlPad
 
 		private bool PopulateContextMenu()
 		{
-			var menuItems = _contextActionProvider.GetContextActions(Editor.Text, Editor.CaretOffset)
+			var menuItems = _contextActionProvider.GetContextActions(_databaseModel, Editor.Text, Editor.CaretOffset)
 				.Select(a => new MenuItem { Header = a.Name, Command = a.Command, CommandParameter = Editor });
 
 			Editor.ContextMenu.Items.Clear();
@@ -258,13 +260,13 @@ namespace SqlPad
 			{
 				Trace.WriteLine("SHIFT + F6");
 
-				MultiNodeEditor.TryCreateMultiNodeEditor(Editor, _infrastructureFactory, out _multiNodeEditor);
+				MultiNodeEditor.TryCreateMultiNodeEditor(Editor, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), _databaseModel, out _multiNodeEditor);
 			}
 			else if (e.SystemKey == Key.F11 && Keyboard.Modifiers == (ModifierKeys.Alt | ModifierKeys.Shift))
 			{
 				Trace.WriteLine("ALT SHIFT + F11");
 
-				var findUsagesCommand = _infrastructureFactory.CommandFactory.CreateFindUsagesCommand(Editor.Text, Editor.CaretOffset, _infrastructureFactory.CreateDatabaseModel(ConfigurationProvider.ConnectionStrings["Default"]));
+				var findUsagesCommand = _infrastructureFactory.CommandFactory.CreateFindUsagesCommand(Editor.Text, Editor.CaretOffset, _databaseModel);
 				if (findUsagesCommand.CanExecute(null))
 				{
 					var highlightSegments = new List<TextSegment>();

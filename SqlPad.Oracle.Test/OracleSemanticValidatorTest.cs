@@ -10,7 +10,6 @@ namespace SqlPad.Oracle.Test
 	{
 		private readonly OracleSqlParser _oracleSqlParser = new OracleSqlParser();
 		private readonly OracleStatementValidator _statementValidator = new OracleStatementValidator();
-		private readonly DatabaseModelFake _databaseModel = DatabaseModelFake.Instance;
 
 		[Test(Description = @"")]
 		public void TestTableNodeValidityWithFullyQualifiedAndNormalTableNames()
@@ -19,7 +18,7 @@ namespace SqlPad.Oracle.Test
 			var statement = _oracleSqlParser.Parse(query).Single();
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 			
-			var validationModel = _statementValidator.ResolveReferences(query, statement, _databaseModel);
+			var validationModel = _statementValidator.ResolveReferences(query, statement, TestFixture.DatabaseModel);
 
 			var nodeValidity = validationModel.TableNodeValidity.Values.Select(v => v.IsRecognized).ToArray();
 			nodeValidity.Length.ShouldBe(9);
@@ -41,7 +40,7 @@ namespace SqlPad.Oracle.Test
 			var statement = _oracleSqlParser.Parse(query).Single();
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 			
-			var validationModel = _statementValidator.ResolveReferences(query, statement, _databaseModel);
+			var validationModel = _statementValidator.ResolveReferences(query, statement, TestFixture.DatabaseModel);
 
 			var nodeValidity = validationModel.TableNodeValidity.Values.Select(v => v.IsRecognized).ToArray();
 			nodeValidity.Length.ShouldBe(8);
@@ -63,7 +62,7 @@ namespace SqlPad.Oracle.Test
 			
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 			
-			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, _databaseModel);
+			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, TestFixture.DatabaseModel);
 			var nodeValidityDictionary = validationModel.TableNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
 			var nodeValidity = nodeValidityDictionary.Values.Select(v => v.IsRecognized).ToList();
 			nodeValidity.Count.ShouldBe(11);
@@ -77,7 +76,7 @@ namespace SqlPad.Oracle.Test
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 			
-			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, _databaseModel);
+			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, TestFixture.DatabaseModel);
 			
 			var nodeValidityDictionary = validationModel.TableNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
 			var nodeValidity = nodeValidityDictionary.Values.Select(v => v.IsRecognized).ToArray();
@@ -101,7 +100,7 @@ namespace SqlPad.Oracle.Test
 			
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 			
-			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, _databaseModel);
+			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, TestFixture.DatabaseModel);
 			
 			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
 			var nodeValidity = nodeValidityDictionary.Values.Select(c => c.IsRecognized).ToArray();
@@ -125,7 +124,7 @@ namespace SqlPad.Oracle.Test
 			
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 			
-			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, _databaseModel);
+			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, TestFixture.DatabaseModel);
 			
 			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
 			var nodeValidity = nodeValidityDictionary.Values.Select(c => c.IsRecognized).ToArray();
@@ -142,7 +141,7 @@ namespace SqlPad.Oracle.Test
 			
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 			
-			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, _databaseModel);
+			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, TestFixture.DatabaseModel);
 			
 			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
 			var nodeValidity = nodeValidityDictionary.Values.Select(c => c.SemanticError).ToArray();
@@ -158,7 +157,7 @@ namespace SqlPad.Oracle.Test
 
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, _databaseModel);
+			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, TestFixture.DatabaseModel);
 
 			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
 			var nodeValidity = nodeValidityDictionary.Values.Select(c => c.SemanticError).ToArray();
@@ -174,7 +173,7 @@ namespace SqlPad.Oracle.Test
 			
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 			
-			var validationModel = _statementValidator.ResolveReferences(query1, statement, _databaseModel);
+			var validationModel = _statementValidator.ResolveReferences(query1, statement, TestFixture.DatabaseModel);
 			
 			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
 			var nodeValidity = nodeValidityDictionary.Values.Select(c => c.IsRecognized).ToArray();
@@ -187,7 +186,7 @@ namespace SqlPad.Oracle.Test
 
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-			validationModel = _statementValidator.ResolveReferences(query2, statement, _databaseModel);
+			validationModel = _statementValidator.ResolveReferences(query2, statement, TestFixture.DatabaseModel);
 
 			nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
 			nodeValidityDictionary.Count.ShouldBe(2);
@@ -209,7 +208,7 @@ namespace SqlPad.Oracle.Test
 
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, _databaseModel);
+			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, TestFixture.DatabaseModel);
 
 			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
 			var nodeValidity = nodeValidityDictionary.Values.Select(c => c.IsRecognized).ToArray();
@@ -228,7 +227,7 @@ namespace SqlPad.Oracle.Test
 
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, _databaseModel);
+			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, TestFixture.DatabaseModel);
 
 			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
 			var nodeValidity = nodeValidityDictionary.Values.Select(c => c.IsRecognized).ToArray();
@@ -247,7 +246,7 @@ namespace SqlPad.Oracle.Test
 
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, _databaseModel);
+			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, TestFixture.DatabaseModel);
 
 			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
 			var nodeValidity = nodeValidityDictionary.Values.Select(c => c.IsRecognized).ToArray();
@@ -265,7 +264,7 @@ namespace SqlPad.Oracle.Test
 
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, _databaseModel);
+			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, TestFixture.DatabaseModel);
 
 			var nodeValidityDictionary = validationModel.TableNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
 			var nodeValidity = nodeValidityDictionary.Values.Select(v => v.IsRecognized).ToArray();
@@ -282,7 +281,7 @@ namespace SqlPad.Oracle.Test
 
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, _databaseModel);
+			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, TestFixture.DatabaseModel);
 
 			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
 			var nodeValidity = nodeValidityDictionary.Values.Select(v => v.IsRecognized).ToArray();
@@ -303,7 +302,7 @@ namespace SqlPad.Oracle.Test
 
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, _databaseModel);
+			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, TestFixture.DatabaseModel);
 
 			var nodeValidity = validationModel.TableNodeValidity.Values.Select(v => v.IsRecognized).ToArray();
 			nodeValidity.Length.ShouldBe(6);
@@ -327,7 +326,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			var statement = (OracleStatement)_oracleSqlParser.Parse(sqlText).Single();
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-			var tableNodeValidity = _statementValidator.ResolveReferences(sqlText, statement, _databaseModel)
+			var tableNodeValidity = _statementValidator.ResolveReferences(sqlText, statement, TestFixture.DatabaseModel)
 				.TableNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
 
 			var nodeValidity = tableNodeValidity.Values.Select(v => v.IsRecognized).ToArray();
@@ -356,7 +355,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			var statement = (OracleStatement)_oracleSqlParser.Parse(sqlText).Single();
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-			var tableNodeValidity = _statementValidator.ResolveReferences(sqlText, statement, _databaseModel)
+			var tableNodeValidity = _statementValidator.ResolveReferences(sqlText, statement, TestFixture.DatabaseModel)
 				.TableNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
 
 			var nodeValidity = tableNodeValidity.Values.Select(v => v.IsRecognized).ToArray();
@@ -375,7 +374,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, _databaseModel);
+			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, TestFixture.DatabaseModel);
 
 			var nodeValidity = validationModel.ColumnNodeValidity.OrderBy(cv => cv.Key.SourcePosition.IndexStart).Select(cv => cv.Value.SemanticError).ToArray();
 			nodeValidity.Length.ShouldBe(5);

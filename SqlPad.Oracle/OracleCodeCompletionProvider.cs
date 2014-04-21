@@ -28,11 +28,10 @@ namespace SqlPad.Oracle
 			new OracleCodeCompletionItem { Name = JoinTypeCrossJoin, Text = JoinTypeCrossJoin, Priority = 4, Category = OracleCodeCompletionCategory.JoinMethod, CategoryPriority = 1 },
 		};
 
-		public ICollection<ICodeCompletionItem> ResolveItems(string statementText, int cursorPosition)
+		public ICollection<ICodeCompletionItem> ResolveItems(IDatabaseModel databaseModel, string statementText, int cursorPosition)
 		{
 			//Trace.WriteLine("OracleCodeCompletionProvider.ResolveItems called. Cursor position: "+ cursorPosition);
 
-			var databaseModel = DatabaseModelFake.Instance;
 			StatementDescriptionNode currentNode;
 
 			var completionItems = Enumerable.Empty<ICodeCompletionItem>();
@@ -98,7 +97,7 @@ namespace SqlPad.Oracle
 				}
 			}
 
-			var semanticModel = new OracleStatementSemanticModel(null, (OracleStatement)currentNode.Statement, databaseModel);
+			var semanticModel = new OracleStatementSemanticModel(null, (OracleStatement)currentNode.Statement, (OracleDatabaseModel)databaseModel);
 			var terminalCandidates = new HashSet<string>(_oracleParser.GetTerminalCandidates(isCursorAtTerminal && !currentNode.Id.IsSingleCharacterTerminal() ? currentNode.PreviousTerminal : currentNode));
 
 			var cursorAtLastTerminal = cursorPosition <= currentNode.SourcePosition.IndexEnd + 1;

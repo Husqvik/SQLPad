@@ -28,10 +28,7 @@ namespace SqlPad.Oracle
 
 		public IDatabaseModel CreateDatabaseModel(ConnectionStringSettings connectionString)
 		{
-			// Temporary
-			var dataModel = new OracleDatabaseModel(connectionString);
-
-			return DatabaseModelFake.Instance;
+			return new OracleDatabaseModel(connectionString);
 		}
 
 		public ICodeCompletionProvider CreateCodeCompletionProvider()

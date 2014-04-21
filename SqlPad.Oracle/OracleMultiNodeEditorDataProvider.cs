@@ -8,14 +8,14 @@ namespace SqlPad.Oracle
 	{
 		private readonly OracleSqlParser _parser = new OracleSqlParser();
 
-		public MultiNodeEditorData GetMultiNodeEditorData(string sqlText, int position, int selectionStart, int selectionLength)
+		public MultiNodeEditorData GetMultiNodeEditorData(IDatabaseModel databaseModel, string sqlText, int position, int selectionStart, int selectionLength)
 		{
 			var statements = _parser.Parse(sqlText);
 			var currentNode = statements.GetTerminalAtPosition(position, n => Terminals.AllTerminals.Contains(n.Id));
 			if (currentNode == null)
 				return new MultiNodeEditorData();
-				
-			var semanticModel = new OracleStatementSemanticModel(sqlText, (OracleStatement)currentNode.Statement, DatabaseModelFake.Instance);
+
+			var semanticModel = new OracleStatementSemanticModel(sqlText, (OracleStatement)currentNode.Statement, (OracleDatabaseModel)databaseModel);
 
 			// TODO: check if selection span the terminal
 			var synchronizedNodes = currentNode.Statement.AllTerminals

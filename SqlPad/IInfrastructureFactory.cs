@@ -26,6 +26,6 @@ namespace SqlPad
 
 	public interface IMultiNodeEditorDataProvider
 	{
-		MultiNodeEditorData GetMultiNodeEditorData(string sqlText, int position, int selectionStart, int selectionLength);
+		MultiNodeEditorData GetMultiNodeEditorData(IDatabaseModel databaseModel, string sqlText, int position, int selectionStart, int selectionLength);
 	}
 }

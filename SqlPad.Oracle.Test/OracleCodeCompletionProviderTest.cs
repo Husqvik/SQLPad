@@ -14,7 +14,7 @@ namespace SqlPad.Oracle.Test
 		{
 			const string testQuery = "SELECT I.*, INVOICES.ID FROM HUSQVIK.INVOICELINES I JOIN HUSQVIK.INVOICES";
 
-			var items = _codeCompletionProvider.ResolveItems(testQuery, 37).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, testQuery, 37).ToArray();
 			items.Length.ShouldBe(8);
 			items[0].Name.ShouldBe("COUNTRY");
 			items[0].Text.ShouldBe("COUNTRY");
@@ -25,7 +25,7 @@ namespace SqlPad.Oracle.Test
 		[Test(Description = @"")]
 		public void TestJoinTypeSuggestion()
 		{
-			var items = _codeCompletionProvider.ResolveItems("SELECT I.*, INVOICES.ID FROM HUSQVIK.INVOICELINES I ", 52).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, "SELECT I.*, INVOICES.ID FROM HUSQVIK.INVOICELINES I ", 52).ToArray();
 			// TODO: Filter out outer types depending of nullable columns
 			items.Length.ShouldBe(5);
 			items[0].Name.ShouldBe("JOIN");
@@ -43,7 +43,7 @@ namespace SqlPad.Oracle.Test
 		{
 			const string testQuery = "SELECT I.*, INVOICES.ID FROM HUSQVIK.INVOICELINES I JOIN HUSQVIK.INVOICES";
 
-			var items = _codeCompletionProvider.ResolveItems(testQuery, 21).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, testQuery, 21).ToArray();
 			items.Length.ShouldBe(1);
 			items[0].Name.ShouldBe("DUEDATE");
 			items[0].Text.ShouldBe("DUEDATE");
@@ -52,7 +52,7 @@ namespace SqlPad.Oracle.Test
 		[Test(Description = @"")]
 		public void TestObjectSuggestionInUnfinishedStatements()
 		{
-			var items = _codeCompletionProvider.ResolveItems("SELECT * FROM INVOICES JOIN INVOICE;SELECT * FROM INVOICELINES JOIN INVOICE", 35).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, "SELECT * FROM INVOICES JOIN INVOICE;SELECT * FROM INVOICELINES JOIN INVOICE", 35).ToArray();
 			items.Length.ShouldBe(2);
 			items[0].Name.ShouldBe("INVOICELINES");
 			items[0].Text.ShouldBe("INVOICELINES");
@@ -60,7 +60,7 @@ namespace SqlPad.Oracle.Test
 			items[1].Name.ShouldBe("INVOICES");
 			items[1].Text.ShouldBe("INVOICES");
 
-			items = _codeCompletionProvider.ResolveItems("SELECT * FROM INVOICES JOIN INVOICE;SELECT * FROM INVOICELINES JOIN INVOICE", 57).ToArray();
+			items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, "SELECT * FROM INVOICES JOIN INVOICE;SELECT * FROM INVOICELINES JOIN INVOICE", 57).ToArray();
 			items.Length.ShouldBe(1);
 			items[0].Name.ShouldBe("INVOICES");
 			items[0].Text.ShouldBe("INVOICES");
@@ -69,10 +69,10 @@ namespace SqlPad.Oracle.Test
 		[Test(Description = @"")]
 		public void TestJoinConditionSuggestions()
 		{
-			var items = _codeCompletionProvider.ResolveItems("SELECT S.* FROM SELECTION S JOIN HUSQVIK.PROJECT P", 50).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, "SELECT S.* FROM SELECTION S JOIN HUSQVIK.PROJECT P", 50).ToArray();
 			items.Length.ShouldBe(0);
 
-			items = _codeCompletionProvider.ResolveItems("SELECT S.* FROM SELECTION S JOIN HUSQVIK.PROJECT P ", 51).ToArray();
+			items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, "SELECT S.* FROM SELECTION S JOIN HUSQVIK.PROJECT P ", 51).ToArray();
 			items.Length.ShouldBe(1);
 			items[0].Name.ShouldBe("ON S.PROJECT_ID = P.PROJECT_ID");
 			items[0].Text.ShouldBe("ON S.PROJECT_ID = P.PROJECT_ID");
@@ -82,10 +82,10 @@ namespace SqlPad.Oracle.Test
 		[Test(Description = @"")]
 		public void TestJoinConditionSuggestionsAfterOnKeyword()
 		{
-			var items = _codeCompletionProvider.ResolveItems("SELECT S.* FROM SELECTION S JOIN HUSQVIK.PROJECT P ON", 53).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, "SELECT S.* FROM SELECTION S JOIN HUSQVIK.PROJECT P ON", 53).ToArray();
 			items.Length.ShouldBe(0);
 
-			items = _codeCompletionProvider.ResolveItems("SELECT S.* FROM SELECTION S JOIN HUSQVIK.PROJECT P ON ", 54).ToArray();
+			items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, "SELECT S.* FROM SELECTION S JOIN HUSQVIK.PROJECT P ON ", 54).ToArray();
 			items.Length.ShouldBe(1);
 			items[0].Name.ShouldBe("S.PROJECT_ID = P.PROJECT_ID");
 			items[0].Text.ShouldBe("S.PROJECT_ID = P.PROJECT_ID");
@@ -95,7 +95,7 @@ namespace SqlPad.Oracle.Test
 		[Test(Description = @"")]
 		public void TestJoinConditionSuggestionsWhenJoiningNestedSubquery()
 		{
-			var items = _codeCompletionProvider.ResolveItems("SELECT * FROM (SELECT 1 VAL FROM DUAL) T1 JOIN (SELECT 1 VAL FROM DUAL) T2 ", 75).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, "SELECT * FROM (SELECT 1 VAL FROM DUAL) T1 JOIN (SELECT 1 VAL FROM DUAL) T2 ", 75).ToArray();
 			items.Length.ShouldBe(1);
 			items[0].Name.ShouldBe("ON T1.VAL = T2.VAL");
 			items[0].Text.ShouldBe("ON T1.VAL = T2.VAL");
@@ -105,7 +105,7 @@ namespace SqlPad.Oracle.Test
 		[Test(Description = @"")]
 		public void TestJoinConditionSuggestionForTablesWithForeignKeys()
 		{
-			var items = _codeCompletionProvider.ResolveItems("SELECT S.* FROM SELECTION S JOIN HUSQVIK.PROJECT P ON S.PROJECT_ID = P.PROJECT_ID JOIN RESPONDENTBUCKET B ", 106).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, "SELECT S.* FROM SELECTION S JOIN HUSQVIK.PROJECT P ON S.PROJECT_ID = P.PROJECT_ID JOIN RESPONDENTBUCKET B ", 106).ToArray();
 			items.Length.ShouldBe(2);
 			items[0].Name.ShouldBe("ON P.PROJECT_ID = B.PROJECT_ID");
 			items[0].Text.ShouldBe("ON P.PROJECT_ID = B.PROJECT_ID");
@@ -127,7 +127,7 @@ FROM
 	CTE1
 	JOIN CTE2 ";
 
-			var items = _codeCompletionProvider.ResolveItems(query1, 173).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 173).ToArray();
 			items.Length.ShouldBe(1);
 			items[0].Name.ShouldBe("ON CTE1.ID = CTE2.ID");
 			items[0].Text.ShouldBe("ON CTE1.ID = CTE2.ID");
@@ -139,7 +139,7 @@ FROM
 		{
 			const string query1 = @"SELECT S.* FROM SELECTION S JOIN P";
 
-			var items = _codeCompletionProvider.ResolveItems(query1, 34).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 34).ToArray();
 			items.Length.ShouldBe(4);
 			items[0].Name.ShouldBe("PROJECT");
 			items[0].Text.ShouldBe("PROJECT");
@@ -165,7 +165,7 @@ FROM
 	CTE1
 	JOIN ";
 
-			var items = _codeCompletionProvider.ResolveItems(query1, 168).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 168).ToArray();
 			items.Length.ShouldBe(15);
 			items[0].Name.ShouldBe("CTE1");
 			items[0].Text.ShouldBe("CTE1");
@@ -180,7 +180,7 @@ FROM
 		{
 			const string query1 = @"SELECT * FROM SYS.";
 
-			var items = _codeCompletionProvider.ResolveItems(query1, 18).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 18).ToArray();
 			items.Length.ShouldBe(2);
 			items[0].Name.ShouldBe("DUAL");
 			items[0].Text.ShouldBe("DUAL");
@@ -195,7 +195,7 @@ FROM
 		{
 			const string query1 = @"SELECT 1,  FROM SELECTION S";
 
-			var items = _codeCompletionProvider.ResolveItems(query1, 10).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 10).ToArray();
 			items.Length.ShouldBe(6);
 			items[0].Name.ShouldBe("S.*");
 			items[0].Text.ShouldBe("S.RESPONDENTBUCKET_ID, S.SELECTION_ID, S.PROJECT_ID, S.NAME");
@@ -222,7 +222,7 @@ FROM
 		{
 			const string query1 = @"SELECT 1 FROM SYSTEM.C";
 
-			var items = _codeCompletionProvider.ResolveItems(query1, 22).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 22).ToArray();
 			items.Length.ShouldBe(0);
 		}
 
@@ -231,7 +231,7 @@ FROM
 		{
 			const string query1 = @"SELECT SELECTION. FROM SELECTION, TARGETGROUP";
 
-			var items = _codeCompletionProvider.ResolveItems(query1, 17).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 17).ToArray();
 			items.Length.ShouldBe(5);
 			items[0].Name.ShouldBe("*");
 			items[0].Text.ShouldBe("RESPONDENTBUCKET_ID, SELECTION.SELECTION_ID, SELECTION.PROJECT_ID, SELECTION.NAME");
@@ -242,7 +242,7 @@ FROM
 
 			const string query2 = @"SELECT SELECTION.NAME FROM SELECTION, TARGETGROUP";
 
-			items = _codeCompletionProvider.ResolveItems(query2, 18).ToArray();
+			items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query2, 18).ToArray();
 			items.Length.ShouldBe(2);
 			items[0].Name.ShouldBe("RESPONDENTBUCKET_ID");
 			items[0].Text.ShouldBe("RESPONDENTBUCKET_ID");
@@ -251,7 +251,7 @@ FROM
 
 			const string query3 = @"SELECT SELECTION.NAME FROM SELECTION, TARGETGROUP";
 
-			items = _codeCompletionProvider.ResolveItems(query3, 19).ToArray();
+			items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query3, 19).ToArray();
 			items.Length.ShouldBe(0);
 		}
 
@@ -260,7 +260,7 @@ FROM
 		{
 			const string query1 = @"SELECT NULL FROM SELECTION S LEFT JOIN RESPONDENTBUCKET ON S.RESPONDENTBUCKET_ID = RESPONDENTBUCKET.RESPONDENTBUCKET_ID ";
 
-			var items = _codeCompletionProvider.ResolveItems(query1, 120).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 120).ToArray();
 			items.Length.ShouldBe(5);
 			items[0].Name.ShouldBe("JOIN");
 			items[0].Text.ShouldBe("JOIN");
@@ -273,7 +273,7 @@ FROM
 		{
 			const string query1 = @"SELECT S.* FROM SELECTION S JOIN HUSQVIK.PROJECT P ON S.PROJECT_ID = P.PROJECT_ID";
 
-			var items = _codeCompletionProvider.ResolveItems(query1, 35).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 35).ToArray();
 			items.Length.ShouldBe(0);
 		}
 
@@ -282,7 +282,7 @@ FROM
 		{
 			const string query1 = @"SELECT S.* FROM SELECTION S JOIN HUSQVIK.PROJECT P ON S.PROJECT_ID = P.PROJECT_ID";
 
-			var items = _codeCompletionProvider.ResolveItems(query1, 43).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 43).ToArray();
 			items.Length.ShouldBe(0);
 		}
 
@@ -291,14 +291,14 @@ FROM
 		{
 			const string query1 = @"SELECT D FROM DUAL";
 
-			var items = _codeCompletionProvider.ResolveItems(query1, 8).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 8).ToArray();
 			items.Length.ShouldBe(1);
 			items[0].Name.ShouldBe("DUAL.DUMMY");
 			items[0].Text.ShouldBe("DUAL.DUMMY");
 
 			const string query2 = @"SELECT D FROM DUAL X";
 
-			items = _codeCompletionProvider.ResolveItems(query2, 8).ToArray();
+			items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query2, 8).ToArray();
 			items.Length.ShouldBe(1);
 			items[0].Name.ShouldBe("X.DUMMY");
 			items[0].Text.ShouldBe("X.DUMMY");
@@ -309,7 +309,7 @@ FROM
 		{
 			const string query1 = @"SELECT NULL FROM DUAL WHERE DUMMY = (SELECT * FROM DUAL)";
 
-			var items = _codeCompletionProvider.ResolveItems(query1, 53).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 53).ToArray();
 			items.Length.ShouldBe(0);
 		}
 
@@ -318,7 +318,7 @@ FROM
 		{
 			const string query1 = @"SELECT SELECTION.NAME FROM SELECTION";
 
-			var items = _codeCompletionProvider.ResolveItems(query1, 8).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 8).ToArray();
 			items.Length.ShouldBe(0);
 		}
 
@@ -327,7 +327,7 @@ FROM
 		{
 			const string query1 = @"SELECT * FROM PROJECT P GROUP BY P.";
 
-			var items = _codeCompletionProvider.ResolveItems(query1, 35).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 35).ToArray();
 			items.Length.ShouldBe(2);
 			items[0].Name.ShouldBe("NAME");
 			items[0].Text.ShouldBe("NAME");
@@ -340,7 +340,7 @@ FROM
 		{
 			const string query1 = @"SELECT * FROM ";
 
-			var items = _codeCompletionProvider.ResolveItems(query1, 14).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 14).ToArray();
 			items.Length.ShouldBeGreaterThan(0);
 		}
 
@@ -349,7 +349,7 @@ FROM
 		{
 			const string query1 = @"SELECT * FROM ";
 
-			var items = _codeCompletionProvider.ResolveItems(query1, 9).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 9).ToArray();
 			items.Length.ShouldBe(0);
 		}
 
@@ -358,7 +358,7 @@ FROM
 		{
 			const string query1 = @"SELECT NULL FROM SELECTION, ";
 
-			var items = _codeCompletionProvider.ResolveItems(query1, 28).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 28).ToArray();
 			var currentSchemaTableCount = DatabaseModelFake.Instance.AllObjects.Values.Count(o => o.Owner == DatabaseModelFake.Instance.CurrentSchema);
 			var schemaCount = DatabaseModelFake.Instance.Schemas.Count;
 			items.Length.ShouldBe(currentSchemaTableCount + schemaCount);
@@ -369,7 +369,7 @@ FROM
 		{
 			const string query1 = @"SELECT  1 FROM SYS.DUAL";
 
-			var items = _codeCompletionProvider.ResolveItems(query1, 7).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 7).ToArray();
 			items.Length.ShouldBe(2);
 			items[0].Name.ShouldBe("SYS.DUAL.DUMMY");
 			items[1].Name.ShouldBe("SYS.DUAL");
@@ -380,7 +380,7 @@ FROM
 		{
 			const string query1 = @"SELECT CASE WHEN S. FROM SELECTION S";
 
-			var items = _codeCompletionProvider.ResolveItems(query1, 19).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 19).ToArray();
 			items.Length.ShouldBe(4);
 			items[0].Name.ShouldBe("NAME");
 			items[3].Name.ShouldBe("SELECTION_ID");
@@ -391,7 +391,7 @@ FROM
 		{
 			const string query1 = @"WITH X AS (SELECT 1 FROM DUAL), Y AS (SELECT 1 FROM DUAL) SELECT * FROM X JOIN Y ";
 
-			var items = _codeCompletionProvider.ResolveItems(query1, 81).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 81).ToArray();
 			items.Length.ShouldBe(0);
 		}
 
@@ -401,7 +401,7 @@ FROM
 			const string query1 = @"SELECT NULL FROM (SELECT NULL FROM )";
 			//SELECT NULL FROM (SELECT NULL FROM HUSQVIK.) - doesn't suggest
 
-			var items = _codeCompletionProvider.ResolveItems(query1, 35).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 35).ToArray();
 			items.Length.ShouldBeGreaterThan(0);
 		}
 
@@ -410,7 +410,7 @@ FROM
 		{
 			const string query1 = @"SELECT  FROM (SELECT HUSQVIK.SELECTION.NAME FROM HUSQVIK.SELECTION), HUSQVIK.SELECTION";
 
-			var items = _codeCompletionProvider.ResolveItems(query1, 7).Where(i => !i.Name.Contains("HUSQVIK.SELECTION")).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 7).Where(i => !i.Name.Contains("HUSQVIK.SELECTION")).ToArray();
 			items.Length.ShouldBe(0);
 		}
 
@@ -419,7 +419,7 @@ FROM
 		{
 			const string query1 = @"SELECT S.NAME, S., 'My column2' FROM SELECTION S";
 
-			var items = _codeCompletionProvider.ResolveItems(query1, 17).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 17).ToArray();
 			items.Length.ShouldBe(5);
 			items[0].Name.ShouldBe("*");
 		}
@@ -429,7 +429,7 @@ FROM
 		{
 			const string query1 = @"SELECT NULL FROM SELECTION + ";
 
-			var items = _codeCompletionProvider.ResolveItems(query1, 29).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 29).ToArray();
 			items.Length.ShouldBe(0);
 		}
 
@@ -438,7 +438,7 @@ FROM
 		{
 			const string query1 = @"SELECT NULL FROM (SELECT NULL FROM DUAL,)";
 
-			var items = _codeCompletionProvider.ResolveItems(query1, 40).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 40).ToArray();
 			items.Length.ShouldBeGreaterThan(0);
 		}
 
@@ -447,7 +447,7 @@ FROM
 		{
 			const string query1 = @"SELECT NULL FROM (SELECT NULL FROM DUAL,)";
 
-			var items = _codeCompletionProvider.ResolveItems(query1, 39).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 39).ToArray();
 			items.Length.ShouldBe(0);
 		}
 
@@ -456,7 +456,7 @@ FROM
 		{
 			const string query1 = @"SELECT NAME FROM SELECTION";
 
-			var items = _codeCompletionProvider.ResolveItems(query1, 0).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 0).ToArray();
 			items.Length.ShouldBe(0);
 		}
 	}

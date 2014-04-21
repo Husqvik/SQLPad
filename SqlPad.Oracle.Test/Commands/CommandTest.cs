@@ -25,7 +25,7 @@ namespace SqlPad.Oracle.Test.Commands
 		{
 			var statement = (OracleStatement)Parser.Parse(statementText).Single();
 			var currentNode = statement.GetNodeAtPosition(cursorPosition);
-			var semanticModel = new OracleStatementSemanticModel(statementText, statement, DatabaseModelFake.Instance);
+			var semanticModel = new OracleStatementSemanticModel(statementText, statement, TestFixture.DatabaseModel);
 
 			var settingsProvider = new TestCommandSettings(commandParameter, isValidParameter);
 			var commandType = typeof(TCommand);
@@ -131,7 +131,7 @@ namespace SqlPad.Oracle.Test.Commands
 		public void TestFindObjectUsages()
 		{
 			const string statementText = "SELECT \"SELECTION\".RESPONDENTBUCKET_ID, PROJECT_ID FROM SELECTION WHERE SELECTION.NAME = NAME GROUP BY SELECTION.RESPONDENTBUCKET_ID, PROJECT_ID HAVING COUNT(SELECTION.SELECTION_ID) = COUNT(SELECTION_ID)";
-			var command = new FindUsagesCommand(statementText, 8, DatabaseModelFake.Instance);
+			var command = new FindUsagesCommand(statementText, 8, TestFixture.DatabaseModel);
 			var foundSegments = new List<TextSegment>();
 			command.Execute(foundSegments);
 
@@ -145,7 +145,7 @@ namespace SqlPad.Oracle.Test.Commands
 		public void TestFindObjectWithAliasUsages()
 		{
 			const string statementText = "SELECT S.RESPONDENTBUCKET_ID, PROJECT_ID FROM SELECTION \"S\" WHERE S.NAME = NAME GROUP BY S.RESPONDENTBUCKET_ID, PROJECT_ID HAVING COUNT(S.SELECTION_ID) = COUNT(SELECTION_ID)";
-			var command = new FindUsagesCommand(statementText, 56, DatabaseModelFake.Instance);
+			var command = new FindUsagesCommand(statementText, 56, TestFixture.DatabaseModel);
 			var foundSegments = new List<TextSegment>();
 			command.Execute(foundSegments);
 
@@ -161,7 +161,7 @@ namespace SqlPad.Oracle.Test.Commands
 		public void TestFindSchemaUsages()
 		{
 			const string statementText = "SELECT HUSQVIK.SELECTION.PROJECT_ID FROM (SELECT HUSQVIK.SELECTION.NAME FROM HUSQVIK.SELECTION), HUSQVIK.SELECTION";
-			var command = new FindUsagesCommand(statementText, 9, DatabaseModelFake.Instance);
+			var command = new FindUsagesCommand(statementText, 9, TestFixture.DatabaseModel);
 			var foundSegments = new List<TextSegment>();
 			command.Execute(foundSegments);
 

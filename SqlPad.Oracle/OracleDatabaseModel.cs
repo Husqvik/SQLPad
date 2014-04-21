@@ -15,7 +15,8 @@ namespace SqlPad.Oracle
 		private readonly OracleConnectionStringBuilder _oracleConnectionString;
 		private const string SqlFuntionMetadataFileName = "OracleSqlFunctionMetadataCollection_12_1_0_1_0.xml";
 		private static readonly DataContractSerializer Serializer = new DataContractSerializer(typeof(OracleSqlFunctionMetadataCollection));
-		private OracleSqlFunctionMetadataCollection _sqlFunctionMetadata;
+
+		public const string SchemaPublic = "\"PUBLIC\"";
 
 		public OracleDatabaseModel(ConnectionStringSettings connectionString)
 		{
@@ -27,7 +28,7 @@ namespace SqlPad.Oracle
 			{
 				using (var reader = XmlReader.Create(new StringReader(metadata)))
 				{
-					_sqlFunctionMetadata = (OracleSqlFunctionMetadataCollection)Serializer.ReadObject(reader);
+					SqlFunctionMetadata = (OracleSqlFunctionMetadataCollection)Serializer.ReadObject(reader);
 				}
 			}
 			else
@@ -36,6 +37,8 @@ namespace SqlPad.Oracle
 			}
 		}
 
+		public OracleSqlFunctionMetadataCollection SqlFunctionMetadata { get; private set; }
+
 		public ConnectionStringSettings ConnectionString { get; private set; }
 
 		public string CurrentSchema
@@ -43,12 +46,42 @@ namespace SqlPad.Oracle
 			get { return _oracleConnectionString.UserID; }
 		}
 
-		public ICollection<string> Schemas { get; private set; }
-		public IDictionary<IObjectIdentifier, IDatabaseObject> Objects { get; private set; }
-		public IDictionary<IObjectIdentifier, IDatabaseObject> AllObjects { get; private set; }
+		public ICollection<string> Schemas { get { return DatabaseModelFake.Instance.Schemas; } }
+		public IDictionary<IObjectIdentifier, IDatabaseObject> Objects { get { return DatabaseModelFake.Instance.Objects; } }
+		public IDictionary<IObjectIdentifier, IDatabaseObject> AllObjects { get { return DatabaseModelFake.Instance.AllObjects; } }
 
 		public void Refresh()
 		{
+		}
+
+		public SchemaObjectResult GetObject(OracleObjectIdentifier objectIdentifier)
+		{
+			OracleDataObject schemaObject = null;
+			var schemaFound = false;
+
+			if (String.IsNullOrEmpty(objectIdentifier.NormalizedOwner))
+			{
+				var currentSchemaObject = OracleObjectIdentifier.Create(CurrentSchema, objectIdentifier.NormalizedName);
+				var publicSchemaObject = OracleObjectIdentifier.Create(SchemaPublic, objectIdentifier.NormalizedName);
+
+				if (AllObjects.ContainsKey(currentSchemaObject))
+					schemaObject = (OracleDataObject)AllObjects[currentSchemaObject];
+				else if (AllObjects.ContainsKey(publicSchemaObject))
+					schemaObject = (OracleDataObject)AllObjects[publicSchemaObject];
+			}
+			else
+			{
+				schemaFound = Schemas.Contains(objectIdentifier.NormalizedOwner);
+
+				if (schemaFound && AllObjects.ContainsKey(objectIdentifier))
+					schemaObject = (OracleDataObject)AllObjects[objectIdentifier];
+			}
+
+			return new SchemaObjectResult
+			{
+				SchemaFound = schemaFound,
+				SchemaObject = schemaObject
+			};
 		}
 
 		private void GenerateSqlFunctionMetadata()
@@ -89,11 +122,11 @@ namespace SqlPad.Oracle
 				}
 			}
 
-			_sqlFunctionMetadata = new OracleSqlFunctionMetadataCollection(sqlFunctionMetadata);
+			SqlFunctionMetadata = new OracleSqlFunctionMetadataCollection(sqlFunctionMetadata.AsReadOnly());
 
 			using (var writer = XmlWriter.Create(MetadataCache.GetFullFileName(SqlFuntionMetadataFileName)))
 			{
-				Serializer.WriteObject(writer, _sqlFunctionMetadata);
+				Serializer.WriteObject(writer, SqlFunctionMetadata);
 			}
 		}
 	}
