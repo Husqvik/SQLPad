@@ -83,6 +83,7 @@ namespace SqlPad
 
 				var semanticErrors = validationModel.ColumnNodeValidity
 					.Concat(validationModel.ObjectNodeValidity)
+					.Concat(validationModel.FunctionNodeValidity)
 					.Select(nv => new { Node = nv.Key, HasSemanticError = nv.Value.SemanticError != SemanticError.None });
 				
 				foreach (var semanticError in semanticErrors.Where(e => e.HasSemanticError))

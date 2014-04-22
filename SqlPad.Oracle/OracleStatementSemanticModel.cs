@@ -242,7 +242,7 @@ namespace SqlPad.Oracle
 			{
 				if (functionReference.FullyQualifiedObjectName == OracleObjectIdentifier.Empty)
 				{
-					functionReference.FunctionMetadata = databaseModel.SqlFunctionMetadata.SqlFunctions.FirstOrDefault(m => m.Name == functionReference.NormalizedName && m.IsAnalytic == functionReference.HasAnalyticClause);
+					functionReference.FunctionMetadata = databaseModel.SqlFunctionMetadata.SqlFunctions.FirstOrDefault(m => m.Name == functionReference.NormalizedName && m.IsAnalytic == (functionReference.AnalyticClauseNode != null));
 				}
 			}
 		}
@@ -342,8 +342,16 @@ namespace SqlPad.Oracle
 				var prefixNonTerminal = identifier.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference)
 					.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.Prefix);
 
-				var columnReference = CreateColumnReference(queryBlock, null, type, identifier, prefixNonTerminal);
-				columnReferences.Add(columnReference);
+				var functionCallNodes = GetFunctionCallNodes(identifier);
+				if (functionCallNodes.Length == 0)
+				{
+					var columnReference = CreateColumnReference(queryBlock, null, type, identifier, prefixNonTerminal);
+					columnReferences.Add(columnReference);
+				}
+				else
+				{
+					CreateFunctionReference(queryBlock, prefixNonTerminal, identifier, prefixNonTerminal, functionCallNodes);
+				}
 			}
 		}
 
@@ -426,22 +434,7 @@ namespace SqlPad.Oracle
 							column.AliasNode = identifiers[0];
 						}
 
-						foreach (var identifier in identifiers)
-						{
-							var prefixNonTerminal = identifier.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference)
-								.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.Prefix);
-
-							var functionCallNodes = GetFunctionCallNodes(identifier);
-							if (functionCallNodes.Length == 0)
-							{
-								var columnReference = CreateColumnReference(item, column, ColumnReferenceType.SelectList, identifier, prefixNonTerminal);
-								column.ColumnReferences.Add(columnReference);
-							}
-							else
-							{
-								CreateFunctionReference(item, prefixNonTerminal, identifier, prefixNonTerminal, functionCallNodes);
-							}
-						}
+						ResolveColumnReferenceFromIdentifiers(item, column.ColumnReferences, identifiers, ColumnReferenceType.SelectList);
 					}
 
 					item.Columns.Add(column);
@@ -456,7 +449,7 @@ namespace SqlPad.Oracle
 
 		private static OracleFunctionReference CreateFunctionReference(OracleQueryBlock queryBlock, StatementDescriptionNode rootNode,/*OracleSelectListColumn selectListColumn, ColumnReferenceType type,*/ StatementDescriptionNode identifierNode, StatementDescriptionNode prefixNonTerminal, ICollection<StatementDescriptionNode> functionCallNodes)
 		{
-			var hasAnalyticClause = functionCallNodes.Any(n => n.Id == NonTerminals.AnalyticClause);
+			var analyticClauseNode = functionCallNodes.SingleOrDefault(n => n.Id == NonTerminals.AnalyticClause);
 
 			var parameterList = functionCallNodes.SingleOrDefault(n => n.Id == NonTerminals.ParenthesisEnclosedAggregationFunctionParameters);
 			var parameterExpressionRootNodes = parameterList != null
@@ -469,7 +462,8 @@ namespace SqlPad.Oracle
 					FunctionIdentifierNode = identifierNode,
 					RootNode = rootNode,
 					Owner = queryBlock,
-					HasAnalyticClause = hasAnalyticClause,
+					AnalyticClauseNode = analyticClauseNode,
+					ParameterListNode = parameterList,
 					ParameterNodes = parameterExpressionRootNodes
 				};
 

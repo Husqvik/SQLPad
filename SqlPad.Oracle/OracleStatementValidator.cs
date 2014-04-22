@@ -50,7 +50,18 @@ namespace SqlPad.Oracle
 
 				foreach (var functionReference in queryBlock.FunctionReferences)
 				{
-					validationModel.FunctionNodeValidity[functionReference.FunctionIdentifierNode] = new NodeValidationData { IsRecognized = functionReference.FunctionMetadata != null };
+					var metadataFound = functionReference.FunctionMetadata != null;
+					validationModel.FunctionNodeValidity[functionReference.FunctionIdentifierNode] = new FunctionValidationData { IsRecognized = metadataFound };
+
+					if (metadataFound && functionReference.ParameterListNode != null)
+					{
+						// TODO: Handle optional parameters
+						if ((functionReference.FunctionMetadata.MinimumArguments > 0 && functionReference.ParameterNodes.Count < functionReference.FunctionMetadata.MinimumArguments) ||
+						    (functionReference.FunctionMetadata.MaximumArguments > 0 && functionReference.ParameterNodes.Count > functionReference.FunctionMetadata.MaximumArguments))
+						{
+							validationModel.FunctionNodeValidity[functionReference.ParameterListNode] = new FunctionValidationData(SemanticError.InvalidParameterCount) { IsRecognized = true };
+						}
+					}
 				}
 			}
 
@@ -96,6 +107,18 @@ namespace SqlPad.Oracle
 		public ICollection<string> ObjectNames { get { return _objectReferences.Select(t => t.FullyQualifiedName.Name).OrderByDescending(n => n).ToArray(); } }	
 		
 		public StatementDescriptionNode Node { get; set; }
+	}
+
+	public class FunctionValidationData : NodeValidationData
+	{
+		private readonly SemanticError _semanticError;
+
+		public FunctionValidationData(SemanticError semanticError = SemanticError.None)
+		{
+			_semanticError = semanticError;
+		}
+
+		public override SemanticError SemanticError { get { return _semanticError; } }
 	}
 
 	public class ColumnNodeValidationData : NodeValidationData

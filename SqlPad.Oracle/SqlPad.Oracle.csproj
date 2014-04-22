@@ -87,6 +87,7 @@
     <Compile Include="OracleMultiNodeEditorDataProvider.cs" />
     <Compile Include="OracleObjectIdentifier.cs" />
     <Compile Include="OracleQueryBlock.cs" />
+    <Compile Include="OracleReference.cs" />
     <Compile Include="OracleSelectListColumn.cs" />
     <Compile Include="OracleSnippetProvider.cs" />
     <Compile Include="OracleSqlGrammar.cs">

@@ -22,6 +22,7 @@ namespace SqlPad
 	public enum SemanticError
 	{
 		None,
-		AmbiguousReference
+		AmbiguousReference,
+		InvalidParameterCount
 	}
 }

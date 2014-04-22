@@ -396,10 +396,51 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 
 			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, TestFixture.DatabaseModel);
 
-			var nodeValidity = validationModel.FunctionNodeValidity.OrderBy(cv => cv.Key.SourcePosition.IndexStart).Select(cv => cv.Value.IsRecognized).ToArray();
+			var nodeValidity = validationModel.FunctionNodeValidity
+				.OrderBy(cv => cv.Key.SourcePosition.IndexStart)
+				.Select(cv => cv.Value.IsRecognized).ToArray();
+			
 			nodeValidity.Length.ShouldBe(2);
 			nodeValidity[0].ShouldBe(true);
 			nodeValidity[1].ShouldBe(false);
+		}
+
+		[Test(Description = @"")]
+		public void TestFunctionCallWithWrongParameterCount()
+		{
+			const string sqlText = "SELECT COUNT(1, 2) FROM DUAL";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, TestFixture.DatabaseModel);
+
+			var nodeValidity = validationModel.FunctionNodeValidity
+				.Where(f => f.Key.Type == NodeType.NonTerminal)
+				.Select(cv => cv.Value.SemanticError).ToArray();
+			
+			nodeValidity.Length.ShouldBe(1);
+			nodeValidity[0].ShouldBe(SemanticError.InvalidParameterCount);
+		}
+
+		[Test(Description = @""), Ignore]
+		public void TestNestedAnalyticFuctionCall()
+		{
+			const string sqlText = "SELECT NULLIF(COUNT(DUMMY) OVER (), 1) FROM DUAL";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, TestFixture.DatabaseModel);
+
+			var nodeValidity = validationModel.FunctionNodeValidity
+				.Where(f => f.Key.Type == NodeType.NonTerminal)
+				.OrderBy(cv => cv.Key.SourcePosition.IndexStart)
+				.Select(cv => cv.Value.SemanticError).ToArray();
+			
+			nodeValidity.Length.ShouldBe(2);
+			nodeValidity[0].ShouldBe(SemanticError.None);
+			nodeValidity[1].ShouldBe(SemanticError.None);
 		}
 
 		//WITH CTE AS (SELECT 1 A, 2 B, 3 C FROM DUAL) SELECT SELECTION.DUMMY, NQ.DUMMY, CTE.DUMMY, SYS.DUAL.DUMMY FROM SELECTION, (SELECT 1 X, 2 Y, 3 Z FROM DUAL) NQ, CTE, SYS.DUAL
