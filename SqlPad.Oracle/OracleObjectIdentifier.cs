@@ -31,13 +31,13 @@ namespace SqlPad.Oracle
 			return new OracleObjectIdentifier(owner, name);
 		}
 
-		public static OracleObjectIdentifier Create(StatementDescriptionNode ownerNode, StatementDescriptionNode tableNode, StatementDescriptionNode aliasNode)
+		public static OracleObjectIdentifier Create(StatementDescriptionNode ownerNode, StatementDescriptionNode objectNode, StatementDescriptionNode aliasNode)
 		{
 			var ownerName = ownerNode == null ? null : ownerNode.Token.Value;
 			var tableName = aliasNode == null
-				? tableNode == null
+				? objectNode == null
 					? null
-					: tableNode.Token.Value
+					: objectNode.Token.Value
 				: aliasNode.Token.Value;
 
 			return Create(ownerName, tableName);

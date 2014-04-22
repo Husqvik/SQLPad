@@ -16,16 +16,16 @@ namespace SqlPad.Oracle
 			{
 				if (tableReference.Type == TableReferenceType.CommonTableExpression)
 				{
-					validationModel.TableNodeValidity[tableReference.ObjectNode] = new NodeValidationData { IsRecognized = true };
+					validationModel.ObjectNodeValidity[tableReference.ObjectNode] = new NodeValidationData { IsRecognized = true };
 					continue;
 				}
 
 				if (tableReference.OwnerNode != null)
 				{
-					validationModel.TableNodeValidity[tableReference.OwnerNode] = new NodeValidationData { IsRecognized = tableReference.SearchResult.SchemaFound };
+					validationModel.ObjectNodeValidity[tableReference.OwnerNode] = new NodeValidationData { IsRecognized = tableReference.SearchResult.SchemaFound };
 				}
 
-				validationModel.TableNodeValidity[tableReference.ObjectNode] = new NodeValidationData { IsRecognized = tableReference.SearchResult.SchemaObject != null };
+				validationModel.ObjectNodeValidity[tableReference.ObjectNode] = new NodeValidationData { IsRecognized = tableReference.SearchResult.SchemaObject != null };
 			}
 
 			foreach (var queryBlock in semanticModel.QueryBlocks)
@@ -34,11 +34,11 @@ namespace SqlPad.Oracle
 				{
 					// Schema
 					if (columnReference.OwnerNode != null)
-						validationModel.TableNodeValidity[columnReference.OwnerNode] = new NodeValidationData(columnReference.ObjectNodeObjectReferences) { IsRecognized = columnReference.ObjectNodeObjectReferences.Count > 0 };
+						validationModel.ObjectNodeValidity[columnReference.OwnerNode] = new NodeValidationData(columnReference.ObjectNodeObjectReferences) { IsRecognized = columnReference.ObjectNodeObjectReferences.Count > 0 };
 
 					// Object
 					if (columnReference.ObjectNode != null)
-						validationModel.TableNodeValidity[columnReference.ObjectNode] = new NodeValidationData(columnReference.ObjectNodeObjectReferences) { IsRecognized = columnReference.ObjectNodeObjectReferences.Count > 0 };
+						validationModel.ObjectNodeValidity[columnReference.ObjectNode] = new NodeValidationData(columnReference.ObjectNodeObjectReferences) { IsRecognized = columnReference.ObjectNodeObjectReferences.Count > 0 };
 
 					// Column
 					var columnReferences = columnReference.SelectListColumn != null && columnReference.SelectListColumn.IsAsterisk
@@ -46,6 +46,11 @@ namespace SqlPad.Oracle
 						: columnReference.ColumnNodeObjectReferences.Count;
 
 					validationModel.ColumnNodeValidity[columnReference.ColumnNode] = new ColumnNodeValidationData(columnReference.ColumnNodeObjectReferences, columnReference.ColumnNodeColumnReferences) { IsRecognized = columnReferences > 0 };
+				}
+
+				foreach (var functionReference in queryBlock.FunctionReferences)
+				{
+					validationModel.FunctionNodeValidity[functionReference.FunctionIdentifierNode] = new NodeValidationData { IsRecognized = functionReference.FunctionMetadata != null };
 				}
 			}
 
@@ -55,12 +60,15 @@ namespace SqlPad.Oracle
 
 	public class OracleValidationModel : IValidationModel
 	{
-		private readonly Dictionary<StatementDescriptionNode, INodeValidationData> _tableNodeValidity = new Dictionary<StatementDescriptionNode, INodeValidationData>();
+		private readonly Dictionary<StatementDescriptionNode, INodeValidationData> _objectNodeValidity = new Dictionary<StatementDescriptionNode, INodeValidationData>();
 		private readonly Dictionary<StatementDescriptionNode, INodeValidationData> _columnNodeValidity = new Dictionary<StatementDescriptionNode, INodeValidationData>();
+		private readonly Dictionary<StatementDescriptionNode, INodeValidationData> _functionNodeValidity = new Dictionary<StatementDescriptionNode, INodeValidationData>();
 
-		public IDictionary<StatementDescriptionNode, INodeValidationData> TableNodeValidity { get { return _tableNodeValidity; } }
+		public IDictionary<StatementDescriptionNode, INodeValidationData> ObjectNodeValidity { get { return _objectNodeValidity; } }
 
 		public IDictionary<StatementDescriptionNode, INodeValidationData> ColumnNodeValidity { get { return _columnNodeValidity; } }
+
+		public IDictionary<StatementDescriptionNode, INodeValidationData> FunctionNodeValidity { get { return _functionNodeValidity; } }
 	}
 
 	public class NodeValidationData : INodeValidationData
@@ -85,7 +93,7 @@ namespace SqlPad.Oracle
 
 		public ICollection<OracleObjectReference> ObjectReferences { get { return _objectReferences; } }
 
-		public ICollection<string> TableNames { get { return _objectReferences.Select(t => t.FullyQualifiedName.Name).OrderByDescending(n => n).ToArray(); } }	
+		public ICollection<string> ObjectNames { get { return _objectReferences.Select(t => t.FullyQualifiedName.Name).OrderByDescending(n => n).ToArray(); } }	
 		
 		public StatementDescriptionNode Node { get; set; }
 	}

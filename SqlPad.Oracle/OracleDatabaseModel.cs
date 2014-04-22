@@ -12,9 +12,11 @@ namespace SqlPad.Oracle
 {
 	public class OracleDatabaseModel : IDatabaseModel
 	{
+		private static readonly object LockObject = new object();
 		private readonly OracleConnectionStringBuilder _oracleConnectionString;
 		private const string SqlFuntionMetadataFileName = "OracleSqlFunctionMetadataCollection_12_1_0_1_0.xml";
 		private static readonly DataContractSerializer Serializer = new DataContractSerializer(typeof(OracleSqlFunctionMetadataCollection));
+		private static bool _isRefreshing;
 
 		public const string SchemaPublic = "\"PUBLIC\"";
 
@@ -33,7 +35,18 @@ namespace SqlPad.Oracle
 			}
 			else
 			{
-				Task.Factory.StartNew(GenerateSqlFunctionMetadata);
+				if (_isRefreshing)
+					return;
+
+				lock (LockObject)
+				{
+					if (_isRefreshing)
+						return;
+
+					_isRefreshing = true;
+
+					Task.Factory.StartNew(GenerateSqlFunctionMetadata);
+				}
 			}
 		}
 
@@ -128,6 +141,8 @@ namespace SqlPad.Oracle
 			{
 				Serializer.WriteObject(writer, SqlFunctionMetadata);
 			}
+
+			_isRefreshing = false;
 		}
 	}
 
@@ -164,7 +179,7 @@ namespace SqlPad.Oracle
 		internal OracleSqlFunctionMetadata(IList<object> values)
 		{
 			FunctionId = Convert.ToInt32(values[0]);
-			Name = (string)values[1];
+			Name = ((string)values[1]).ToQuotedIdentifier();
 			DataType = values[2] == DBNull.Value ? null : (string)values[2];
 			Version = (string)values[3];
 			IsAnalytic = (string)values[4] == "YES";

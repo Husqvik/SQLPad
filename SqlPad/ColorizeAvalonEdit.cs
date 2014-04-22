@@ -55,8 +55,9 @@ namespace SqlPad
 				var colorEndOffset = Math.Min(line.EndOffset, statement.SourcePosition.IndexEnd + 1);
 
 				var validationModel = _validator.ResolveReferences(null, statement, _databaseModel);
-				var nodeRecognizeData = validationModel.TableNodeValidity
+				var nodeRecognizeData = validationModel.ObjectNodeValidity
 					.Select(kvp => new KeyValuePair<StatementDescriptionNode, bool>(kvp.Key, kvp.Value.IsRecognized))
+					.Concat(validationModel.FunctionNodeValidity.Select(kvp => new KeyValuePair<StatementDescriptionNode, bool>(kvp.Key, kvp.Value.IsRecognized)))
 					.Concat(validationModel.ColumnNodeValidity.Select(kvp => new KeyValuePair<StatementDescriptionNode, bool>(kvp.Key, kvp.Value.IsRecognized)));
 
 				foreach (var nodeValidity in nodeRecognizeData)
@@ -81,7 +82,7 @@ namespace SqlPad
 				}
 
 				var semanticErrors = validationModel.ColumnNodeValidity
-					.Concat(validationModel.TableNodeValidity)
+					.Concat(validationModel.ObjectNodeValidity)
 					.Select(nv => new { Node = nv.Key, HasSemanticError = nv.Value.SemanticError != SemanticError.None });
 				
 				foreach (var semanticError in semanticErrors.Where(e => e.HasSemanticError))

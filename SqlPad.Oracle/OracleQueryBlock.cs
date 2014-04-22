@@ -13,6 +13,7 @@ namespace SqlPad.Oracle
 			Columns = new List<OracleSelectListColumn>();
 			AccessibleQueryBlocks = new List<OracleQueryBlock>();
 			ColumnReferences = new List<OracleColumnReference>();
+			FunctionReferences = new List<OracleFunctionReference>();
 		}
 
 		public string Alias { get; set; }
@@ -28,6 +29,8 @@ namespace SqlPad.Oracle
 		public ICollection<OracleSelectListColumn> Columns { get; private set; }
 
 		public ICollection<OracleColumnReference> ColumnReferences { get; private set; }
+		
+		public ICollection<OracleFunctionReference> FunctionReferences { get; private set; }
 
 		public IEnumerable<OracleColumnReference> AllColumnReferences { get { return Columns.SelectMany(c => c.ColumnReferences).Concat(ColumnReferences); } }
 

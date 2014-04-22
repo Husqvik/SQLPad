@@ -861,16 +861,6 @@
       </Sequences>
     </Rule>
 
-    <Rule StartingNonTerminal="ParenthesisEnclosedFunctionParameters">
-      <Sequences>
-        <Sequence>
-          <Terminal Id="LeftParenthesis" />
-          <NonTerminal Id="ExpressionList" IsOptional="true" />
-          <Terminal Id="RightParenthesis" />
-        </Sequence>
-      </Sequences>
-    </Rule>
-
     <Rule StartingNonTerminal="FunctionParameters">
       <Sequences>
         <Sequence>
@@ -2261,7 +2251,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Identifier" /><!--TODO: Check possibility of user aggregation function usage (including database link) -->
-          <NonTerminal Id="ParenthesisEnclosedFunctionParameters" />
+          <NonTerminal Id="ParenthesisEnclosedExpressionList" />
           <NonTerminal Id="ColumnAsAlias" IsOptional="true" />
           <NonTerminal Id="PivotAliasedAggregationFunctionListChained" IsOptional="true" />
         </Sequence>
@@ -2272,7 +2262,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Comma" />
-          <NonTerminal Id="ParenthesisEnclosedFunctionParameters" />
+          <NonTerminal Id="ParenthesisEnclosedExpressionList" />
         </Sequence>
       </Sequences>
     </Rule>

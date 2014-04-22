@@ -4,9 +4,11 @@ namespace SqlPad
 {
 	public interface IValidationModel
 	{
-		IDictionary<StatementDescriptionNode, INodeValidationData> TableNodeValidity { get; }
+		IDictionary<StatementDescriptionNode, INodeValidationData> ObjectNodeValidity { get; }
 
 		IDictionary<StatementDescriptionNode, INodeValidationData> ColumnNodeValidity { get; }
+		
+		IDictionary<StatementDescriptionNode, INodeValidationData> FunctionNodeValidity { get; }
 	}
 
 	public interface INodeValidationData
@@ -14,7 +16,7 @@ namespace SqlPad
 		StatementDescriptionNode Node { get; }
 		SemanticError SemanticError { get; }
 		bool IsRecognized { get; }
-		ICollection<string> TableNames { get; }
+		ICollection<string> ObjectNames { get; }
 	}
 
 	public enum SemanticError

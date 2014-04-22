@@ -3,13 +3,11 @@ using System.Diagnostics;
 
 namespace SqlPad.Oracle
 {
-	[DebuggerDisplay("OracleFunctionReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; Object={ObjectNode == null ? null : ObjectNode.Token.Value}; Function={FunctionIdentifierNode.Token.Value})")]
-	public class OracleFunctionReference
+	public abstract class OracleReference
 	{
-		public OracleFunctionReference()
+		protected OracleReference()
 		{
 			ObjectNodeObjectReferences = new HashSet<OracleObjectReference>();
-			ColumnNodeObjectReferences = new HashSet<OracleObjectReference>();
 		}
 
 		public OracleObjectIdentifier FullyQualifiedObjectName
@@ -17,7 +15,7 @@ namespace SqlPad.Oracle
 			get { return OracleObjectIdentifier.Create(OwnerNode, ObjectNode, null); }
 		}
 
-		public string Name { get { return FunctionIdentifierNode.Token.Value; } }
+		public abstract string Name { get; }
 
 		public string NormalizedName { get { return Name.ToQuotedIdentifier(); } }
 
@@ -27,16 +25,31 @@ namespace SqlPad.Oracle
 
 		public OracleQueryBlock Owner { get; set; }
 
-		//public OracleSelectListColumn SelectListColumn { get; set; }
-		
 		public StatementDescriptionNode OwnerNode { get; set; }
 
 		public StatementDescriptionNode ObjectNode { get; set; }
 
-		public StatementDescriptionNode FunctionIdentifierNode { get; set; }
-
 		public ICollection<OracleObjectReference> ObjectNodeObjectReferences { get; set; }
+	}
+
+	[DebuggerDisplay("OracleFunctionReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; Object={ObjectNode == null ? null : ObjectNode.Token.Value}; Function={FunctionIdentifierNode.Token.Value})")]
+	public class OracleFunctionReference : OracleReference
+	{
+		public OracleFunctionReference()
+		{
+			ParameterNodes = new HashSet<StatementDescriptionNode>();
+		}
+
+		public override string Name { get { return FunctionIdentifierNode.Token.Value; } }
+
+		public StatementDescriptionNode FunctionIdentifierNode { get; set; }
 		
-		public ICollection<OracleObjectReference> ColumnNodeObjectReferences { get; set; }
+		public ICollection<StatementDescriptionNode> ParameterNodes { get; set; }
+
+		public OracleSqlFunctionMetadata FunctionMetadata { get; set; }
+		
+		public StatementDescriptionNode RootNode { get; set; }
+		
+		public bool HasAnalyticClause { get; set; }
 	}
 }

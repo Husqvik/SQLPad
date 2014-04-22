@@ -128,6 +128,7 @@ namespace SqlPad.Oracle
 						var objectName = tableIdentifierNode.Token.Value;
 						var owner = schemaPrefixNode == null ? null : schemaPrefixNode.Token.Value;
 
+						// TODO: Resolve package
 						result = databaseModel.GetObject(OracleObjectIdentifier.Create(owner, objectName));
 					}
 
@@ -216,6 +217,8 @@ namespace SqlPad.Oracle
 			{
 				var columnReferencesExceptJoinClauses = queryBlock.AllColumnReferences;
 				ResolveColumnTableReferences(columnReferencesExceptJoinClauses, queryBlock.ObjectReferences);
+
+				ResolveFunctionReferences(queryBlock, databaseModel);
 			}
 
 			foreach (var joinClauseColumnReferences in _joinClauseColumnReferences)
@@ -233,37 +236,50 @@ namespace SqlPad.Oracle
 			}
 		}
 
+		private void ResolveFunctionReferences(OracleQueryBlock queryBlock, OracleDatabaseModel databaseModel)
+		{
+			foreach (var functionReference in queryBlock.FunctionReferences)
+			{
+				if (functionReference.FullyQualifiedObjectName == OracleObjectIdentifier.Empty)
+				{
+					functionReference.FunctionMetadata = databaseModel.SqlFunctionMetadata.SqlFunctions.FirstOrDefault(m => m.Name == functionReference.NormalizedName && m.IsAnalytic == functionReference.HasAnalyticClause);
+				}
+			}
+		}
+
 		public OracleQueryBlock GetQueryBlock(StatementDescriptionNode node)
 		{
 			var queryBlockNode = node.GetAncestor(NonTerminals.QueryBlock);
 			return queryBlockNode == null ? null : _queryBlockResults[queryBlockNode];
 		}
 
-		private void ResolveColumnTableReferences(IEnumerable<OracleColumnReference> columnReferences, ICollection<OracleObjectReference> accessibleTableReferences)
+		private void ResolveColumnTableReferences(IEnumerable<OracleColumnReference> columnReferences, ICollection<OracleObjectReference> accessibleRowSourceReferences)
 		{
 			foreach (var columnReference in columnReferences)
 			{
-				foreach (var tableReference in accessibleTableReferences)
+				foreach (var rowSourceReference in accessibleRowSourceReferences)
 				{
+					// TODO: Resolve parameterless functions
+
 					if (!String.IsNullOrEmpty(columnReference.FullyQualifiedObjectName.NormalizedName) &&
-						(tableReference.FullyQualifiedName == columnReference.FullyQualifiedObjectName ||
+						(rowSourceReference.FullyQualifiedName == columnReference.FullyQualifiedObjectName ||
 						 (String.IsNullOrEmpty(columnReference.FullyQualifiedObjectName.Owner) &&
-						  tableReference.Type == TableReferenceType.PhysicalObject && tableReference.FullyQualifiedName.NormalizedName == columnReference.FullyQualifiedObjectName.NormalizedName)))
-						columnReference.ObjectNodeObjectReferences.Add(tableReference);
+						  rowSourceReference.Type == TableReferenceType.PhysicalObject && rowSourceReference.FullyQualifiedName.NormalizedName == columnReference.FullyQualifiedObjectName.NormalizedName)))
+						columnReference.ObjectNodeObjectReferences.Add(rowSourceReference);
 
 					int columnNodeColumnReferences;
-					if (tableReference.Type == TableReferenceType.PhysicalObject)
+					if (rowSourceReference.Type == TableReferenceType.PhysicalObject)
 					{
-						if (tableReference.SearchResult.SchemaObject == null)
+						if (rowSourceReference.SearchResult.SchemaObject == null)
 							continue;
 
-						columnNodeColumnReferences = tableReference.SearchResult.SchemaObject.Columns
-							.Count(c => c.Name == columnReference.NormalizedName && (columnReference.ObjectNode == null || IsTableReferenceValid(columnReference, tableReference)));
+						columnNodeColumnReferences = rowSourceReference.SearchResult.SchemaObject.Columns
+							.Count(c => c.Name == columnReference.NormalizedName && (columnReference.ObjectNode == null || IsTableReferenceValid(columnReference, rowSourceReference)));
 					}
 					else
 					{
-						columnNodeColumnReferences = tableReference.QueryBlocks.SelectMany(qb => qb.Columns)
-							.Count(c => c.NormalizedName == columnReference.NormalizedName && (columnReference.ObjectNode == null || columnReference.ObjectNormalizedName == tableReference.FullyQualifiedName.NormalizedName));
+						columnNodeColumnReferences = rowSourceReference.QueryBlocks.SelectMany(qb => qb.Columns)
+							.Count(c => c.NormalizedName == columnReference.NormalizedName && (columnReference.ObjectNode == null || columnReference.ObjectNormalizedName == rowSourceReference.FullyQualifiedName.NormalizedName));
 					}
 
 					if (columnNodeColumnReferences > 0 &&
@@ -271,7 +287,7 @@ namespace SqlPad.Oracle
 						 columnReference.ObjectNodeObjectReferences.Count > 0))
 					{
 						columnReference.ColumnNodeColumnReferences += columnNodeColumnReferences;
-						columnReference.ColumnNodeObjectReferences.Add(tableReference);
+						columnReference.ColumnNodeObjectReferences.Add(rowSourceReference);
 					}
 				}
 			}
@@ -415,8 +431,16 @@ namespace SqlPad.Oracle
 							var prefixNonTerminal = identifier.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference)
 								.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.Prefix);
 
-							var columnReference = CreateColumnReference(item, column, ColumnReferenceType.SelectList, identifier, prefixNonTerminal);
-							column.ColumnReferences.Add(columnReference);
+							var functionCallNodes = GetFunctionCallNodes(identifier);
+							if (functionCallNodes.Length == 0)
+							{
+								var columnReference = CreateColumnReference(item, column, ColumnReferenceType.SelectList, identifier, prefixNonTerminal);
+								column.ColumnReferences.Add(columnReference);
+							}
+							else
+							{
+								CreateFunctionReference(item, prefixNonTerminal, identifier, prefixNonTerminal, functionCallNodes);
+							}
 						}
 					}
 
@@ -425,26 +449,63 @@ namespace SqlPad.Oracle
 			}
 		}
 
+		private static StatementDescriptionNode[] GetFunctionCallNodes(StatementDescriptionNode identifier)
+		{
+			return identifier.ParentNode.ChildNodes.Where(n => n.Id.In(NonTerminals.DatabaseLink, NonTerminals.ParenthesisEnclosedAggregationFunctionParameters, NonTerminals.AnalyticClause)).ToArray();
+		}
+
+		private static OracleFunctionReference CreateFunctionReference(OracleQueryBlock queryBlock, StatementDescriptionNode rootNode,/*OracleSelectListColumn selectListColumn, ColumnReferenceType type,*/ StatementDescriptionNode identifierNode, StatementDescriptionNode prefixNonTerminal, ICollection<StatementDescriptionNode> functionCallNodes)
+		{
+			var hasAnalyticClause = functionCallNodes.Any(n => n.Id == NonTerminals.AnalyticClause);
+
+			var parameterList = functionCallNodes.SingleOrDefault(n => n.Id == NonTerminals.ParenthesisEnclosedAggregationFunctionParameters);
+			var parameterExpressionRootNodes = parameterList != null
+				? parameterList.GetDescendantsWithinSameQuery(NonTerminals.ExpressionList).Select(n => n.ChildNodes.FirstOrDefault()).ToArray()
+				: null;
+
+			var functionReference =
+				new OracleFunctionReference
+				{
+					FunctionIdentifierNode = identifierNode,
+					RootNode = rootNode,
+					Owner = queryBlock,
+					HasAnalyticClause = hasAnalyticClause,
+					ParameterNodes = parameterExpressionRootNodes
+				};
+
+			AddPrefixNodes(functionReference, prefixNonTerminal);
+
+			queryBlock.FunctionReferences.Add(functionReference);
+
+			return functionReference;
+		}
+
 		private static OracleColumnReference CreateColumnReference(OracleQueryBlock queryBlock, OracleSelectListColumn selectListColumn, ColumnReferenceType type, StatementDescriptionNode identifierNode, StatementDescriptionNode prefixNonTerminal)
 		{
-			var columnReference = new OracleColumnReference
-			{
-				ColumnNode = identifierNode,
-				Type = type,
-				Owner = queryBlock,
-				SelectListColumn = selectListColumn
-			};
+			var columnReference =
+				new OracleColumnReference
+				{
+					ColumnNode = identifierNode,
+					Type = type,
+					Owner = queryBlock,
+					SelectListColumn = selectListColumn
+				};
 
+			AddPrefixNodes(columnReference, prefixNonTerminal);
+
+			return columnReference;
+		}
+
+		private static void AddPrefixNodes(OracleReference reference, StatementDescriptionNode prefixNonTerminal)
+		{
 			if (prefixNonTerminal != null)
 			{
 				var objectIdentifier = prefixNonTerminal.GetSingleDescendant(Terminals.ObjectIdentifier);
 				var schemaIdentifier = prefixNonTerminal.GetSingleDescendant(Terminals.SchemaIdentifier);
 
-				columnReference.OwnerNode = schemaIdentifier;
-				columnReference.ObjectNode = objectIdentifier;
+				reference.OwnerNode = schemaIdentifier;
+				reference.ObjectNode = objectIdentifier;
 			}
-
-			return columnReference;
 		}
 
 		private IEnumerable<KeyValuePair<StatementDescriptionNode, string>> GetCommonTableExpressionReferences(StatementDescriptionNode node)

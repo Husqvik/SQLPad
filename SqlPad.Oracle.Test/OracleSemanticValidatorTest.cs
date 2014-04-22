@@ -20,7 +20,7 @@ namespace SqlPad.Oracle.Test
 			
 			var validationModel = _statementValidator.ResolveReferences(query, statement, TestFixture.DatabaseModel);
 
-			var nodeValidity = validationModel.TableNodeValidity.Values.Select(v => v.IsRecognized).ToArray();
+			var nodeValidity = validationModel.ObjectNodeValidity.Values.Select(v => v.IsRecognized).ToArray();
 			nodeValidity.Length.ShouldBe(9);
 			nodeValidity[0].ShouldBe(true);
 			nodeValidity[1].ShouldBe(true);
@@ -42,7 +42,7 @@ namespace SqlPad.Oracle.Test
 			
 			var validationModel = _statementValidator.ResolveReferences(query, statement, TestFixture.DatabaseModel);
 
-			var nodeValidity = validationModel.TableNodeValidity.Values.Select(v => v.IsRecognized).ToArray();
+			var nodeValidity = validationModel.ObjectNodeValidity.Values.Select(v => v.IsRecognized).ToArray();
 			nodeValidity.Length.ShouldBe(8);
 			nodeValidity[0].ShouldBe(false);
 			nodeValidity[1].ShouldBe(true);
@@ -63,7 +63,7 @@ namespace SqlPad.Oracle.Test
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 			
 			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, TestFixture.DatabaseModel);
-			var nodeValidityDictionary = validationModel.TableNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var nodeValidityDictionary = validationModel.ObjectNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
 			var nodeValidity = nodeValidityDictionary.Values.Select(v => v.IsRecognized).ToList();
 			nodeValidity.Count.ShouldBe(11);
 			nodeValidity.ForEach(n => n.ShouldBe(true));
@@ -78,7 +78,7 @@ namespace SqlPad.Oracle.Test
 			
 			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, TestFixture.DatabaseModel);
 			
-			var nodeValidityDictionary = validationModel.TableNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var nodeValidityDictionary = validationModel.ObjectNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
 			var nodeValidity = nodeValidityDictionary.Values.Select(v => v.IsRecognized).ToArray();
 			nodeValidity.Length.ShouldBe(9);
 			nodeValidity[0].ShouldBe(true);
@@ -193,9 +193,9 @@ namespace SqlPad.Oracle.Test
 			var columnValidationData = nodeValidityDictionary.First().Value;
 			columnValidationData.IsRecognized.ShouldBe(true);
 			columnValidationData.SemanticError.ShouldBe(SemanticError.AmbiguousReference);
-			columnValidationData.TableNames.Count.ShouldBe(2);
+			columnValidationData.ObjectNames.Count.ShouldBe(2);
 			
-			var tableNames = columnValidationData.TableNames.OrderBy(n => n).ToArray();
+			var tableNames = columnValidationData.ObjectNames.OrderBy(n => n).ToArray();
 			tableNames[0].ShouldBe("Dual");
 			tableNames[1].ShouldBe("t2");
 		}
@@ -266,7 +266,7 @@ namespace SqlPad.Oracle.Test
 
 			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, TestFixture.DatabaseModel);
 
-			var nodeValidityDictionary = validationModel.TableNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var nodeValidityDictionary = validationModel.ObjectNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
 			var nodeValidity = nodeValidityDictionary.Values.Select(v => v.IsRecognized).ToArray();
 			nodeValidity.Length.ShouldBe(2);
 			nodeValidity[0].ShouldBe(true);
@@ -304,7 +304,7 @@ namespace SqlPad.Oracle.Test
 
 			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, TestFixture.DatabaseModel);
 
-			var nodeValidity = validationModel.TableNodeValidity.Values.Select(v => v.IsRecognized).ToArray();
+			var nodeValidity = validationModel.ObjectNodeValidity.Values.Select(v => v.IsRecognized).ToArray();
 			nodeValidity.Length.ShouldBe(6);
 			nodeValidity[0].ShouldBe(true);
 			nodeValidity[1].ShouldBe(false);
@@ -327,7 +327,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 			var tableNodeValidity = _statementValidator.ResolveReferences(sqlText, statement, TestFixture.DatabaseModel)
-				.TableNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+				.ObjectNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
 
 			var nodeValidity = tableNodeValidity.Values.Select(v => v.IsRecognized).ToArray();
 			nodeValidity.Length.ShouldBe(9);
@@ -356,7 +356,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 			var tableNodeValidity = _statementValidator.ResolveReferences(sqlText, statement, TestFixture.DatabaseModel)
-				.TableNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+				.ObjectNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
 
 			var nodeValidity = tableNodeValidity.Values.Select(v => v.IsRecognized).ToArray();
 			nodeValidity.Length.ShouldBe(4);
@@ -385,7 +385,23 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			nodeValidity[4].ShouldBe(SemanticError.None);
 		}
 
-		//SELECT COUNT(COUNT) OVER (), COUNT, HUSQVIK.COUNT, HUSQVIK.COUNT() FROM FTEST
+		[Test(Description = @"")]
+		public void TestBasicFunctionCall()
+		{
+			// TODO: Update when parameterless functions are recognized
+			const string sqlText = "SELECT COUNT(COUNT) OVER (), COUNT, HUSQVIK.COUNT, HUSQVIK.COUNT() FROM FTEST";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, TestFixture.DatabaseModel);
+
+			var nodeValidity = validationModel.FunctionNodeValidity.OrderBy(cv => cv.Key.SourcePosition.IndexStart).Select(cv => cv.Value.IsRecognized).ToArray();
+			nodeValidity.Length.ShouldBe(2);
+			nodeValidity[0].ShouldBe(true);
+			nodeValidity[1].ShouldBe(false);
+		}
+
 		//WITH CTE AS (SELECT 1 A, 2 B, 3 C FROM DUAL) SELECT SELECTION.DUMMY, NQ.DUMMY, CTE.DUMMY, SYS.DUAL.DUMMY FROM SELECTION, (SELECT 1 X, 2 Y, 3 Z FROM DUAL) NQ, CTE, SYS.DUAL
 	}
 }
