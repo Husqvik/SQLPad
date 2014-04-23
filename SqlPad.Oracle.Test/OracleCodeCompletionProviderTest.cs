@@ -459,5 +459,18 @@ FROM
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 0).ToArray();
 			items.Length.ShouldBe(0);
 		}
+
+		[Test(Description = @"")]
+		public void TestColumnSuggestionUsingNestedQueryAndCountAsteriskFunction()
+		{
+			const string query1 = @"SELECT  DUMMY FROM (SELECT DUMMY, COUNT(*) OVER () ROW_COUNT FROM (SELECT DUMMY FROM DUAL))";
+
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 7).ToArray();
+			items.Length.ShouldBe(3);
+			items[0].Name.ShouldBe("*");
+			items[0].Text.ShouldBe("DUMMY, ROW_COUNT");
+			items[1].Name.ShouldBe("DUMMY");
+			items[2].Name.ShouldBe("ROW_COUNT");
+		}
 	}
 }

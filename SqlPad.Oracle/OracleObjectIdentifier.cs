@@ -52,6 +52,9 @@ namespace SqlPad.Oracle
 				.GroupBy(i => i.NormalizedName)
 				.ToDictionary(g => g.Key, g => g.GroupBy(o => o.NormalizedOwner).ToDictionary(go => go.Key, go => go.Count()));
 
+			if (references.Count == 0)
+				return identifiers;
+
 			foreach (var nameOwners in references)
 			{
 				var ownerSpecified = nameOwners.Value.Any(no => !String.IsNullOrEmpty(no.Key));

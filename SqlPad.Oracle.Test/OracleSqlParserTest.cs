@@ -946,7 +946,7 @@ namespace SqlPad.Oracle.Test
 		[Test(Description = @"Tests CAST function. ")]
 		public void TestCastFunction()
 		{
-			const string query1 = @"SELECT CAST(3 / (2 - 1) AS NUMBER(*, 1)) AS COLUMN_ALIAS1, CAST('X' || 'Y' AS VARCHAR2(30)) AS COLUMN_ALIAS2 FROM DUAL";
+			const string query1 = @"SELECT CAST(3 / (2 - 1) AS NUMBER(*, 1)) AS COLUMN_ALIAS1, CAST('X' || 'Y' AS VARCHAR2(30)) + 1 AS COLUMN_ALIAS2 FROM DUAL";
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
@@ -1007,6 +1007,42 @@ namespace SqlPad.Oracle.Test
 
 			result.Count.ShouldBe(1);
 			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			// TODO: Precise assertions
+		}
+
+		[Test(Description = @"Tests KEEP clause. ")]
+		public void TestKeepClause()
+		{
+			const string query1 = @"SELECT MAX(SELECTION_ID) KEEP (DENSE_RANK FIRST ORDER BY RESPONDENTBUCKET_ID) + 1 FROM SELECTION";
+			var result = Parser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			// TODO: Precise assertions
+		}
+
+		[Test(Description = @"Tests IGNORE NULLS clause. ")]
+		public void TestIgnoreNullsClause()
+		{
+			const string query1 = @"SELECT ""FIRST_VALUE""(SELECTION_ID IGNORE NULLS) OVER () + 1, LAST_VALUE(SELECTION_ID) IGNORE NULLS OVER () + 1 FROM SELECTION";
+			var result = Parser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			// TODO: Precise assertions
+		}
+
+		[Test(Description = @"Tests invalid IGNORE NULLS clause. ")]
+		public void TestInvalidIgnoreNullsClause()
+		{
+			const string query1 = @"SELECT FIRST_VALUE(SELECTION_ID IGNORE NULLS) IGNORE NULLS OVER () FROM SELECTION";
+			var result = Parser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
 
 			// TODO: Precise assertions
 		}

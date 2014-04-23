@@ -718,14 +718,16 @@
           <Terminal Id="As" />
           <NonTerminal Id="DataType" />
           <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
-          <Terminal Id="Count" />
-          <Terminal Id="LeftParenthesis" />
-          <Terminal Id="All" IsOptional="true" />
-          <Terminal Id="Asterisk" />
-          <Terminal Id="RightParenthesis" />
-          <NonTerminal Id="AnalyticClause" IsOptional="true" />
+          <NonTerminal Id="AggregateFunctionCall" />
+          <NonTerminal Id="AnalyticOrKeepClause" IsOptional="true" />
+          <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="FirstOrLastValueCall" />
+          <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         
         <!-- TODO: Solve TREAT function -->
@@ -750,6 +752,11 @@
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
+          <Terminal Id="Date" />
+          <Terminal Id="StringLiteral" />
+          <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
+        </Sequence>
+        <Sequence>
           <NonTerminal Id="PrefixedSequencePseudoColumn" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
@@ -757,10 +764,16 @@
           <NonTerminal Id="PrefixedColumnReference" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AnalyticOrKeepClause">
+      <Sequences>
         <Sequence>
-          <Terminal Id="Date" />
-          <Terminal Id="StringLiteral" />
-          <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
+          <NonTerminal Id="AnalyticClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="KeepClause" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -2197,7 +2210,39 @@
       </Sequences>
     </Rule>
 
-    <!-- KEEP clause  -->
+    <!-- Ignore Nulls clause -->
+    <Rule StartingNonTerminal="FirstOrLastValueCall">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="AnalyticFunctionFirstOrLastValue" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="Expression" />
+          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="IgnoreNulls" IsOptional="true" />
+          <NonTerminal Id="AnalyticClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="AnalyticFunctionFirstOrLastValue" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="Expression" />
+          <NonTerminal Id="IgnoreNulls" IsOptional="true" />
+          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="AnalyticClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+      
+    <Rule StartingNonTerminal="AnalyticFunctionFirstOrLastValue">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="FirstValue" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="LastValue" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+      
     <Rule StartingNonTerminal="IgnoreNulls">
       <Sequences>
         <Sequence>
@@ -2207,6 +2252,52 @@
       </Sequences>
     </Rule>
 
+    <Rule StartingNonTerminal="AggregateFunction">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Min" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Max" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Sum" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Avg" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Count" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Variance" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="StandardDeviation" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AggregateFunctionCall">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Count" />
+          <Terminal Id="LeftParenthesis" />
+          <Terminal Id="All" IsOptional="true" />
+          <Terminal Id="Asterisk" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="AggregateFunction" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="DistinctModifier" IsOptional="true" />
+          <NonTerminal Id="Expression" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <!-- KEEP clause -->
     <Rule StartingNonTerminal="KeepClause">
       <Sequences>
         <Sequence>
@@ -2827,9 +2918,19 @@
     <Terminal Id="Start" Value="START" IsKeyword="true" />
     <Terminal Id="Level" Value="LEVEL" IsKeyword="true" />
     <Terminal Id="NoCycle" Value="NOCYCLE" />
+    
+    <!-- Aggregate functions -->
+    <Terminal Id="Count" Value="COUNT" AllowQuotedNotation ="true" />
+    <Terminal Id="Min" Value="MIN" AllowQuotedNotation ="true" />
+    <Terminal Id="Max" Value="MAX" AllowQuotedNotation ="true" />
+    <Terminal Id="Sum" Value="SUM" AllowQuotedNotation ="true" />
+    <Terminal Id="Avg" Value="AVG" AllowQuotedNotation ="true" />
+    <Terminal Id="Variance" Value="VARIANCE" AllowQuotedNotation ="true" />
+    <Terminal Id="StandardDeviation" Value="STDDEV" AllowQuotedNotation ="true" />
 
     <!-- Analytic clause -->
-    <Terminal Id="Count" Value="COUNT" />
+    <Terminal Id="FirstValue" Value="FIRST_VALUE" AllowQuotedNotation ="true" />
+    <Terminal Id="LastValue" Value="LAST_VALUE" AllowQuotedNotation ="true" />
     <Terminal Id="Over" Value="OVER" />
     <Terminal Id="Rows" Value="ROWS" IsKeyword="true" />
     <Terminal Id="Range" Value="RANGE" />
@@ -2911,49 +3012,6 @@
     <Terminal Id="Delete" Value="DELETE" IsKeyword="true" />
   </Terminals>
   
-  <SqlBuildinFunctions>
-    <Function Type="Value" Name="NVL">
-      <Parameters>
-        <Parameter Id="p1" Liability="Mandatory">
-          <Types>
-            <Type Name="VARCHAR2" />
-            <Type Name="NUMBER" />
-            <Type Name="CLOB" />
-          </Types>
-        </Parameter>
-        <Parameter Liability="Mandatory">
-          <ParameterTypeReference Id="p1" />
-        </Parameter>
-      </Parameters>
-    </Function>
-    <Function Type="Value" Name="TO_CHAR">
-      <Parameters>
-        <Parameter Liability="Mandatory" />
-        <Parameter Liability="Optional" />
-      </Parameters>
-    </Function>
-    <Function Type="Value" Name="COALESCE">
-      <Parameters MinimumCount="2" MaximumCount="">
-      </Parameters>
-    </Function>
-    <Function Type="Value" Name="ROUND">
-      <Parameters>
-        <Parameter Liability="Mandatory" />
-        <Parameter Liability="Optional" />
-      </Parameters>
-    </Function>
-    <Function Type="Aggregate" Name="COUNT">
-      <Parameters>
-        <Parameter Liability="Mandatory" AllowAsterisk="true" AllowDistinct="true" />
-      </Parameters>
-    </Function>
-    <Function Type="Analytic" Name="COUNT">
-      <Parameters>
-        <Parameter Liability="Mandatory" AllowAsterisk="true" AllowDistinct="true" />
-      </Parameters>
-    </Function>
-  </SqlBuildinFunctions>
-
   <DatabaseTypes>
     <Type Name="CHAR" IsKeyword="true" />
     <Type Name="NCHAR" />

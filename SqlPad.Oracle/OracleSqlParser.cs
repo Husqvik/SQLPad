@@ -466,7 +466,8 @@ namespace SqlPad.Oracle
 				}
 				else
 				{
-					tokenIsValid = terminal.Value == currentToken.Value.ToUpperInvariant();
+					var tokenValue = currentToken.Value.ToUpperInvariant();
+					tokenIsValid = terminal.Value == tokenValue || (terminal.AllowQuotedNotation && tokenValue == "\"" + terminal.Value + "\"");
 					terminalNode.IsKeyword = tokenIsValid && terminal.IsKeyword;
 				}
 

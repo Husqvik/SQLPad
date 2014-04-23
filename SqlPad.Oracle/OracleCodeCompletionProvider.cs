@@ -300,7 +300,7 @@ namespace SqlPad.Oracle
 						builder.Append(", ");
 					}
 
-					if (!skipTablePrefix)
+					if (!skipTablePrefix && !String.IsNullOrEmpty(table.FullyQualifiedName.Name))
 					{
 						builder.Append(table.FullyQualifiedName);
 						builder.Append(".");
@@ -314,7 +314,7 @@ namespace SqlPad.Oracle
 
 				yield return new OracleCodeCompletionItem
 				             {
-					             Name = (skipFirstObjectIdentifier ? String.Empty : table.FullyQualifiedName + ".") + "*",
+								 Name = (skipFirstObjectIdentifier || String.IsNullOrEmpty(table.FullyQualifiedName.Name) ? String.Empty : table.FullyQualifiedName + ".") + "*",
 								 Text = builder.ToString(),
 								 StatementNode = currentNode.Id == Terminals.Identifier ? currentNode : null,
 								 CategoryPriority = -2,

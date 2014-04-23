@@ -413,7 +413,7 @@ namespace SqlPad.Oracle
 
 					_asteriskTableReferences.Add(column, new List<OracleObjectReference>());
 
-					var asteriskNode = columnExpression.GetDescendantsWithinSameQuery(Terminals.Asterisk).SingleOrDefault();
+					var asteriskNode = columnExpression.GetPathFilterDescendants(n => !n.Id.In(NonTerminals.NestedQuery, NonTerminals.AggregateFunctionCall), Terminals.Asterisk).SingleOrDefault();
 					if (asteriskNode != null)
 					{
 						column.IsAsterisk = true;
@@ -453,7 +453,7 @@ namespace SqlPad.Oracle
 
 			var parameterList = functionCallNodes.SingleOrDefault(n => n.Id == NonTerminals.ParenthesisEnclosedAggregationFunctionParameters);
 			var parameterExpressionRootNodes = parameterList != null
-				? parameterList.GetDescendantsWithinSameQuery(NonTerminals.ExpressionList).Select(n => n.ChildNodes.FirstOrDefault()).ToArray()
+				? parameterList.GetPathFilterDescendants(n => !n.Id.In(NonTerminals.NestedQuery, NonTerminals.ParenthesisEnclosedAggregationFunctionParameters), NonTerminals.ExpressionList).Select(n => n.ChildNodes.FirstOrDefault()).ToArray()
 				: null;
 
 			var functionReference =
