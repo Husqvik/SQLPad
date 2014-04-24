@@ -10,7 +10,7 @@ namespace SqlPad.Oracle
 			var oracleDatabaseModel = (OracleDatabaseModel)databaseModel;
 			var semanticModel = new OracleStatementSemanticModel(sqlText, (OracleStatement)statement, oracleDatabaseModel);
 
-			var validationModel = new OracleValidationModel();
+			var validationModel = new OracleValidationModel { Statement = statement };
 
 			foreach (var tableReference in semanticModel.QueryBlocks.SelectMany(qb => qb.ObjectReferences).Where(tr => tr.Type != TableReferenceType.NestedQuery))
 			{
@@ -74,6 +74,8 @@ namespace SqlPad.Oracle
 		private readonly Dictionary<StatementDescriptionNode, INodeValidationData> _objectNodeValidity = new Dictionary<StatementDescriptionNode, INodeValidationData>();
 		private readonly Dictionary<StatementDescriptionNode, INodeValidationData> _columnNodeValidity = new Dictionary<StatementDescriptionNode, INodeValidationData>();
 		private readonly Dictionary<StatementDescriptionNode, INodeValidationData> _functionNodeValidity = new Dictionary<StatementDescriptionNode, INodeValidationData>();
+
+		public StatementBase Statement { get; set; }
 
 		public IDictionary<StatementDescriptionNode, INodeValidationData> ObjectNodeValidity { get { return _objectNodeValidity; } }
 

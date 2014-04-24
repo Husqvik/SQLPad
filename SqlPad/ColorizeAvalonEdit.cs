@@ -18,10 +18,17 @@ namespace SqlPad
 		private static readonly SolidColorBrush NormalTextBrush = new SolidColorBrush(Colors.Black);
 		private static readonly SolidColorBrush HighlightBrush = new SolidColorBrush(Colors.Turquoise);
 		private static readonly SolidColorBrush KeywordBrush = new SolidColorBrush(Colors.Blue);
+		private Dictionary<StatementBase, IValidationModel> _validationModels;
 
 		public void SetStatementCollection(StatementCollection statements)
 		{
+			if (statements == null)
+				return;
+
 			_parsedStatements = statements;
+
+			_validationModels = _parsedStatements.Select(s => _validator.ResolveReferences(null, s, _databaseModel))
+				.ToDictionary(vm => vm.Statement, vm => vm);
 		}
 
 		public void SetHighlightSegments(ICollection<TextSegment> highlightSegments)
@@ -54,7 +61,7 @@ namespace SqlPad
 				var colorStartOffset = Math.Max(line.Offset, statement.SourcePosition.IndexStart);
 				var colorEndOffset = Math.Min(line.EndOffset, statement.SourcePosition.IndexEnd + 1);
 
-				var validationModel = _validator.ResolveReferences(null, statement, _databaseModel);
+				var validationModel = _validationModels[statement];
 				var nodeRecognizeData = validationModel.ObjectNodeValidity
 					.Select(kvp => new KeyValuePair<StatementDescriptionNode, bool>(kvp.Key, kvp.Value.IsRecognized))
 					.Concat(validationModel.FunctionNodeValidity.Select(kvp => new KeyValuePair<StatementDescriptionNode, bool>(kvp.Key, kvp.Value.IsRecognized)))

@@ -90,10 +90,10 @@ namespace SqlPad
 					indexStart = Token.Index;
 					indexEnd = Token.Index + Token.Value.Length - 1;
 				}
-				else if (Terminals.Any())
+				else if (LastTerminalNode != null)
 				{
-					indexStart = Terminals.First().Token.Index;
-					var lastTerminal = Terminals.Last().Token;
+					indexStart = FirstTerminalNode.Token.Index;
+					var lastTerminal = LastTerminalNode.Token;
 					indexEnd = lastTerminal.Index + lastTerminal.Value.Length - 1;
 				}
 

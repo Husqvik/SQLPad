@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 namespace SqlPad.Oracle
 {
@@ -20,7 +22,15 @@ namespace SqlPad.Oracle
 	[DebuggerDisplay("SqlGrammarTerminal (Id={Id}, Value={Value}, RegexValue={RegexValue})")]
 	public partial class SqlGrammarTerminal
 	{
-		
+		internal void Initialize()
+		{
+			if (!String.IsNullOrEmpty(RegexValue))
+			{
+				RegexMatcher = new Regex(RegexValue);
+			}
+		}
+
+		internal Regex RegexMatcher { get; private set; }
 	}
 
 	[DebuggerDisplay("SqlGrammarRuleSequenceTerminal (Id={Id}, IsOptional={IsOptional})")]

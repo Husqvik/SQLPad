@@ -4,6 +4,8 @@ namespace SqlPad
 {
 	public interface IValidationModel
 	{
+		StatementBase Statement { get; }
+
 		IDictionary<StatementDescriptionNode, INodeValidationData> ObjectNodeValidity { get; }
 
 		IDictionary<StatementDescriptionNode, INodeValidationData> ColumnNodeValidity { get; }

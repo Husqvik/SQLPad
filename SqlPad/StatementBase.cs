@@ -6,6 +6,9 @@ namespace SqlPad
 {
 	public abstract class StatementBase
 	{
+		private ICollection<StatementDescriptionNode> _allTerminals; 
+		private ICollection<StatementDescriptionNode> _invalidGrammarNodes; 
+
 		public ProcessingStatus ProcessingStatus { get; set; }
 
 		public ICollection<StatementDescriptionNode> NodeCollection { get; set; }
@@ -26,17 +29,25 @@ namespace SqlPad
 
 		public IEnumerable<StatementDescriptionNode> InvalidGrammarNodes
 		{
-			get { return AllNodes.Where(n => !n.IsGrammarValid); }
+			get
+			{
+				return _invalidGrammarNodes ?? (_invalidGrammarNodes = AllNodes.Where(n => !n.IsGrammarValid).ToArray());
+			}
 		}
 
 		public IEnumerable<StatementDescriptionNode> AllTerminals
 		{
 			get
 			{
-				return NodeCollection == null
-					? Enumerable.Empty<StatementDescriptionNode>()
-					: NodeCollection.SelectMany(n => n.Terminals);
+				return _allTerminals ?? (_allTerminals = BuildTerminalCollection());
 			}
+		}
+
+		private ICollection<StatementDescriptionNode> BuildTerminalCollection()
+		{
+			return NodeCollection == null
+				? new StatementDescriptionNode[0]
+				: NodeCollection.SelectMany(n => n.Terminals).ToArray();
 		}
 
 		public StatementDescriptionNode GetNodeAtPosition(int position, Func<StatementDescriptionNode, bool> filter = null)

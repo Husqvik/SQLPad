@@ -53,6 +53,7 @@ namespace SqlPad.Oracle
 				if (Terminals.ContainsKey(terminal.Id))
 					throw new InvalidOperationException(String.Format("Terminal '{0}' has been already defined. ", terminal.Id));
 
+				terminal.Initialize();
 				Terminals.Add(terminal.Id, terminal);
 			}
 
@@ -413,7 +414,7 @@ namespace SqlPad.Oracle
 
 		private void TryRevertOptionalToken(Func<int, ProcessingResult> getAlternativeProcessingResultFunction, ref ProcessingResult currentResult, IList<StatementDescriptionNode> workingNodes)
 		{
-			var optionalNodeCandidate = workingNodes.Count > 0 ? workingNodes[workingNodes.Count - 1].Terminals.LastOrDefault() : null;
+			var optionalNodeCandidate = workingNodes.Count > 0 ? workingNodes[workingNodes.Count - 1].LastTerminalNode : null;
 			optionalNodeCandidate = optionalNodeCandidate != null && optionalNodeCandidate.IsRequired ? optionalNodeCandidate.ParentNode : optionalNodeCandidate;
 
 			if (optionalNodeCandidate == null || optionalNodeCandidate.IsRequired)
@@ -462,7 +463,7 @@ namespace SqlPad.Oracle
 				var terminal = Terminals[terminalReference.Id];
 				if (!String.IsNullOrEmpty(terminal.RegexValue))
 				{
-					tokenIsValid = new Regex(terminal.RegexValue).IsMatch(currentToken.Value) && !OracleGrammarDescription.Terminals.IsKeyword(currentToken.Value);
+					tokenIsValid = terminal.RegexMatcher.IsMatch(currentToken.Value) && !OracleGrammarDescription.Terminals.IsKeyword(currentToken.Value);
 				}
 				else
 				{
