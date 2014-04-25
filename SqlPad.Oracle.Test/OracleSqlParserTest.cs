@@ -1047,6 +1047,30 @@ namespace SqlPad.Oracle.Test
 			// TODO: Precise assertions
 		}
 
+		[Test(Description = @"Tests SYSDATE keyword. ")]
+		public void TestSysDateKeyword()
+		{
+			const string query1 = @"SELECT SYSDATE + 1 FROM DUAL";
+			var result = Parser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			// TODO: Precise assertions
+		}
+
+		[Test(Description = @"Tests SYSDATE as invalid alias. ")]
+		public void TestSysDateAsInvalidAlias()
+		{
+			const string query1 = @"SELECT 1 SYSDATE FROM DUAL";
+			var result = Parser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+
+			// TODO: Precise assertions
+		}
+
 		[Test(Description = @"Tests unfinished join clause. ")]
 		public void TestUnfinishedJoinClause()
 		{

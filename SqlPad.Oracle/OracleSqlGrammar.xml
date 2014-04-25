@@ -757,6 +757,10 @@
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
+          <Terminal Id="SystemDate" />
+          <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
+        </Sequence>
+        <Sequence>
           <NonTerminal Id="PrefixedSequencePseudoColumn" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
@@ -2812,6 +2816,7 @@
     <Terminal Id="Where" Value="WHERE" IsKeyword="true" />
     <Terminal Id="Between" Value="BETWEEN" IsKeyword="true" />
     <Terminal Id="Date" Value="DATE" IsKeyword="true" />
+    <Terminal Id="SystemDate" Value="SYSDATE" IsKeyword="true" />
     <Terminal Id="Partition" Value="PARTITION" />
     <Terminal Id="Subpartition" Value="SUBPARTITION" />
     <Terminal Id="Table" Value="TABLE" IsKeyword="true" />
