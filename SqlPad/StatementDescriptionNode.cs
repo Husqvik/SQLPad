@@ -10,6 +10,8 @@ namespace SqlPad
 	{
 		private readonly List<StatementDescriptionNode> _childNodes = new List<StatementDescriptionNode>();
 
+		public int TerminalCount { get; private set; }
+
 		public StatementDescriptionNode(StatementBase statement, NodeType type)
 		{
 			Type = type;
@@ -21,6 +23,7 @@ namespace SqlPad
 			IsGrammarValid = true;
 			FirstTerminalNode = this;
 			LastTerminalNode = this;
+			TerminalCount = 1;
 		}
 
 		public NodeType Type { get; private set; }
@@ -141,6 +144,9 @@ namespace SqlPad
 			if (Type == NodeType.Terminal)
 				throw new InvalidOperationException("Terminal nodes cannot have child nodes. ");
 
+			if (ParentNode != null)
+				throw new InvalidOperationException("Child nodes cannot be added when the node is already associated with parent node. ");
+
 			foreach (var node in nodes)
 			{
 				if (node.ParentNode != null)
@@ -150,11 +156,13 @@ namespace SqlPad
 				{
 					FirstTerminalNode = FirstTerminalNode ?? node;
 					LastTerminalNode = node;
+					TerminalCount++;
 				}
 				else
 				{
 					FirstTerminalNode = FirstTerminalNode ?? node.FirstTerminalNode;
 					LastTerminalNode = node.LastTerminalNode;
+					TerminalCount += node.TerminalCount;
 				}
 
 				_childNodes.Add(node);
@@ -266,17 +274,18 @@ namespace SqlPad
 				
 				_childNodes.RemoveAt(index);
 				LastTerminalNode = _childNodes[index - 1].LastTerminalNode;
-				return 1;
+				return --TerminalCount;
 			}
 
 			var removedTerminalCount = node.RemoveLastChildNodeIfOptional();
-			if (removedTerminalCount != 0 || node.IsRequired)
-				return removedTerminalCount;
-			
-			removedTerminalCount = node.Terminals.Count();
-			_childNodes.RemoveAt(index);
-			LastTerminalNode = _childNodes[index - 1].LastTerminalNode;
+			if (removedTerminalCount == 0 && !node.IsRequired)
+			{
+				removedTerminalCount = node.TerminalCount;
+				_childNodes.RemoveAt(index);
+				LastTerminalNode = _childNodes[index - 1].LastTerminalNode;
+			}
 
+			TerminalCount -= removedTerminalCount;
 			return removedTerminalCount;
 		}
 

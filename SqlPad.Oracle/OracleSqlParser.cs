@@ -218,9 +218,12 @@ namespace SqlPad.Oracle
 				{
 					var newResult = ProceedNonTerminal(oracleStatement, nonTerminal, 0, 0, false, tokenBuffer);
 
+					//if (newResult.Nodes.SelectMany(n => n.AllChildNodes).Any(n => n.Terminals.Count() != n.TerminalCount))
+					//	throw new ApplicationException("StatementDescriptionNode TerminalCount value is invalid. ");
+
 					if (newResult.Status != ProcessingStatus.Success)
 					{
-						if (result.BestCandidates == null || newResult.BestCandidates.Sum(n => n.Terminals.Count()) > result.BestCandidates.Sum(n => n.Terminals.Count()))
+						if (result.BestCandidates == null || newResult.BestCandidates.Sum(n => n.TerminalCount) > result.BestCandidates.Sum(n => n.TerminalCount))
 						{
 							result = newResult;
 						}
@@ -243,7 +246,7 @@ namespace SqlPad.Oracle
 				int indexEnd;
 				if (result.Status != ProcessingStatus.Success)
 				{
-					if (result.BestCandidates.Sum(n => n.Terminals.Count()) > result.Nodes.Sum(n => n.Terminals.Count()))
+					if (result.BestCandidates.Sum(n => n.TerminalCount) > result.Nodes.Sum(n => n.TerminalCount))
 					{
 						result.Nodes = result.BestCandidates;
 					}
@@ -305,10 +308,10 @@ namespace SqlPad.Oracle
 
 				foreach (ISqlGrammarRuleSequenceItem item in sequence.Items)
 				{
-					var workingTerminalCount = workingNodes.Sum(t => t.Terminals.Count());
+					var workingTerminalCount = workingNodes.Sum(t => t.TerminalCount);
 					var tokenOffset = tokenStartOffset + workingTerminalCount;
-					
-					var bestCandidateTerminalCount = bestCandidateNodes.Sum(t => t.Terminals.Count());
+
+					var bestCandidateTerminalCount = bestCandidateNodes.Sum(t => t.TerminalCount);
 					var bestCandidateOffset = tokenStartOffset + bestCandidateTerminalCount;
 					var tryBestCandidates = bestCandidatesCompatible && !tokenReverted && bestCandidateTerminalCount > workingTerminalCount;
 					
@@ -336,7 +339,7 @@ namespace SqlPad.Oracle
 						var alternativeNode = nestedNode.Clone();
 
 						if (nestedResult.BestCandidates.Count > 0 &&
-							workingTerminalCount + nestedResult.BestCandidates.Sum(n => n.Terminals.Count()) > bestCandidateTerminalCount)
+							workingTerminalCount + nestedResult.BestCandidates.Sum(n => n.TerminalCount) > bestCandidateTerminalCount)
 						{
 							var bestCandidatePosition = new Dictionary<SourcePosition, StatementDescriptionNode>();
 							// Candidate nodes can be multiplied, therefore we fetch always the last node.
@@ -420,10 +423,10 @@ namespace SqlPad.Oracle
 			if (optionalNodeCandidate == null || optionalNodeCandidate.IsRequired)
 				return;
 
-			var optionalTerminalCount = optionalNodeCandidate.Terminals.Count();
+			var optionalTerminalCount = optionalNodeCandidate.TerminalCount;
 			var newResult = getAlternativeProcessingResultFunction(optionalTerminalCount);
 
-			var newResultTerminalCount = newResult.BestCandidates.Sum(n => n.Terminals.Count());
+			var newResultTerminalCount = newResult.BestCandidates.Sum(n => n.TerminalCount);
 			var revertNode = newResultTerminalCount >= optionalTerminalCount &&
 			                 newResultTerminalCount > currentResult.Terminals.Count();
 
