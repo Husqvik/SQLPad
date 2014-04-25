@@ -8,7 +8,6 @@ namespace SqlPad.Oracle
 	{
 		public OracleFunctionReference()
 		{
-			ParameterNodes = new HashSet<StatementDescriptionNode>();
 		}
 
 		public override string Name { get { return FunctionIdentifierNode.Token.Value; } }
@@ -21,7 +20,7 @@ namespace SqlPad.Oracle
 		
 		public ICollection<StatementDescriptionNode> ParameterNodes { get; set; }
 
-		public OracleSqlFunctionMetadata FunctionMetadata { get; set; }
+		public OracleSqlFunctionMetadata Metadata { get; set; }
 		
 		public StatementDescriptionNode RootNode { get; set; }
 	}

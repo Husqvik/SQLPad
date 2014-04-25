@@ -48,19 +48,38 @@ namespace SqlPad.Oracle
 					validationModel.ColumnNodeValidity[columnReference.ColumnNode] = new ColumnNodeValidationData(columnReference.ColumnNodeObjectReferences, columnReference.ColumnNodeColumnReferences) { IsRecognized = columnReferences > 0 };
 				}
 
-				foreach (var functionReference in queryBlock.FunctionReferences)
+				foreach (var functionReference in queryBlock.AllFunctionReferences)
 				{
-					var metadataFound = functionReference.FunctionMetadata != null;
-					validationModel.FunctionNodeValidity[functionReference.FunctionIdentifierNode] = new FunctionValidationData { IsRecognized = metadataFound };
-
-					if (metadataFound && functionReference.ParameterListNode != null)
+					var metadataFound = functionReference.Metadata != null;
+					var semanticError = SemanticError.None;
+					var isRecognized = false;
+					var node = functionReference.FunctionIdentifierNode;
+					if (metadataFound)
 					{
-						// TODO: Handle optional parameters
-						if ((functionReference.FunctionMetadata.MinimumArguments > 0 && functionReference.ParameterNodes.Count < functionReference.FunctionMetadata.MinimumArguments) ||
-						    (functionReference.FunctionMetadata.MaximumArguments > 0 && functionReference.ParameterNodes.Count > functionReference.FunctionMetadata.MaximumArguments))
+						isRecognized = true;
+						if (functionReference.ParameterListNode != null)
 						{
-							validationModel.FunctionNodeValidity[functionReference.ParameterListNode] = new FunctionValidationData(SemanticError.InvalidParameterCount) { IsRecognized = true };
+							// TODO: Handle optional parameters
+							if ((/*functionReference.Metadata.MinimumArguments > 0 && */functionReference.ParameterNodes.Count < functionReference.Metadata.MinimumArguments) ||
+							    (/*functionReference.Metadata.MaximumArguments > 0 && */functionReference.ParameterNodes.Count > functionReference.Metadata.MaximumArguments))
+							{
+								semanticError = SemanticError.InvalidParameterCount;
+								node = functionReference.ParameterListNode;
+							}
 						}
+						else if (functionReference.Metadata.MinimumArguments > 0)
+						{
+							semanticError = SemanticError.InvalidParameterCount;
+						}
+						else if (functionReference.Metadata.DisplayType == OracleSqlFunctionMetadata.DisplayTypeParenthesis)
+						{
+							semanticError = SemanticError.MissingParenthesis;
+						}
+					}
+
+					if (!isRecognized || semanticError != SemanticError.None)
+					{
+						validationModel.FunctionNodeValidity[node] = new FunctionValidationData(semanticError) { IsRecognized = isRecognized };
 					}
 				}
 			}

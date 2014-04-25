@@ -32,6 +32,8 @@ namespace SqlPad.Oracle
 		
 		public ICollection<OracleFunctionReference> FunctionReferences { get; private set; }
 
+		public IEnumerable<OracleFunctionReference> AllFunctionReferences { get { return Columns.SelectMany(c => c.FunctionReferences).Concat(FunctionReferences); } }
+
 		public IEnumerable<OracleColumnReference> AllColumnReferences { get { return Columns.SelectMany(c => c.ColumnReferences).Concat(ColumnReferences); } }
 
 		public ICollection<OracleQueryBlock> AccessibleQueryBlocks { get; private set; }

@@ -11,6 +11,7 @@ namespace SqlPad.Oracle
 		public OracleSelectListColumn()
 		{
 			ColumnReferences = new List<OracleColumnReference>();
+			FunctionReferences = new List<OracleFunctionReference>();
 		}
 
 		public bool IsDirectColumnReference { get; set; }
@@ -38,7 +39,9 @@ namespace SqlPad.Oracle
 		
 		public OracleQueryBlock Owner { get; set; }
 
-		public ICollection<OracleColumnReference> ColumnReferences { get; set; }
+		public ICollection<OracleColumnReference> ColumnReferences { get; private set; }
+
+		public ICollection<OracleFunctionReference> FunctionReferences { get; private set; }
 
 		public OracleColumn ColumnDescription
 		{

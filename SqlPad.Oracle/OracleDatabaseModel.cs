@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Xml;
@@ -170,12 +171,23 @@ namespace SqlPad.Oracle
 
 		[DataMember]
 		public DateTime Timestamp { get; private set; }
+
+		public OracleSqlFunctionMetadata GetSqlFunctionMetadata(string normalizedName, bool hasAnalyticClause)
+		{
+			var functionMetadataCollection = SqlFunctions.Where(m => m.Name == normalizedName).ToArray();
+			var functionMetadata = functionMetadataCollection.FirstOrDefault(m => m.IsAnalytic == hasAnalyticClause)
+			                       ?? functionMetadataCollection.FirstOrDefault();
+
+			return functionMetadata;
+		}
 	}
 
 	[DataContract]
 	[DebuggerDisplay("OracleSqlFunctionMetadata (Name={Name}; DataType={DataType}; IsAnalytic={IsAnalytic}; IsAggregate={IsAggregate}; MinimumArguments={MinimumArguments}; MaximumArguments={MaximumArguments})")]
 	public class OracleSqlFunctionMetadata
 	{
+		public const string DisplayTypeParenthesis = "PARENTHESIS";
+
 		internal OracleSqlFunctionMetadata(IList<object> values)
 		{
 			FunctionId = Convert.ToInt32(values[0]);

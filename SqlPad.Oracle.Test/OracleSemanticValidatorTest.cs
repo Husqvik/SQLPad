@@ -398,10 +398,16 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 
 			var nodeValidity = validationModel.FunctionNodeValidity
 				.OrderBy(cv => cv.Key.SourcePosition.IndexStart)
-				.Select(cv => cv.Value.IsRecognized).ToArray();
+				.Select(kvp => kvp.Value)
+				.ToArray();
 			
-			nodeValidity.Length.ShouldBe(1);
-			nodeValidity[0].ShouldBe(false);
+			nodeValidity.Length.ShouldBe(3);
+			nodeValidity[0].IsRecognized.ShouldBe(true);
+			nodeValidity[0].SemanticError.ShouldBe(SemanticError.InvalidParameterCount);
+			nodeValidity[1].IsRecognized.ShouldBe(true);
+			nodeValidity[1].SemanticError.ShouldBe(SemanticError.InvalidParameterCount);
+			nodeValidity[2].IsRecognized.ShouldBe(false);
+			nodeValidity[2].SemanticError.ShouldBe(SemanticError.None);
 		}
 
 		[Test(Description = @"")]
@@ -452,6 +458,30 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 
 			var firstNodeValidity = validationModel.ColumnNodeValidity.OrderBy(cv => cv.Key.SourcePosition.IndexStart).Select(cv => cv.Value.SemanticError).First();
 			firstNodeValidity.ShouldBe(SemanticError.None);
+		}
+
+		[Test(Description = @"")]
+		public void TestParameterlessFuctionWithParenthesisRequirement()
+		{
+			const string sqlText = "SELECT SYS_GUID(), SYS_GUID(123), SYS_GUID, SYSGUID() FROM DUAL";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, TestFixture.DatabaseModel);
+
+			var nodeValidity = validationModel.FunctionNodeValidity
+				.OrderBy(cv => cv.Key.SourcePosition.IndexStart)
+				.Select(kvp => kvp.Value)
+				.ToArray();
+
+			nodeValidity.Length.ShouldBe(3);
+			nodeValidity[0].IsRecognized.ShouldBe(true);
+			nodeValidity[0].SemanticError.ShouldBe(SemanticError.InvalidParameterCount);
+			nodeValidity[1].IsRecognized.ShouldBe(true);
+			nodeValidity[1].SemanticError.ShouldBe(SemanticError.MissingParenthesis);
+			nodeValidity[2].IsRecognized.ShouldBe(false);
+			nodeValidity[2].SemanticError.ShouldBe(SemanticError.None);
 		}
 
 		//WITH CTE AS (SELECT 1 A, 2 B, 3 C FROM DUAL) SELECT SELECTION.DUMMY, NQ.DUMMY, CTE.DUMMY, SYS.DUAL.DUMMY FROM SELECTION, (SELECT 1 X, 2 Y, 3 Z FROM DUAL) NQ, CTE, SYS.DUAL

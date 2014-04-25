@@ -25,6 +25,7 @@ namespace SqlPad
 	{
 		None,
 		AmbiguousReference,
-		InvalidParameterCount
+		InvalidParameterCount,
+		MissingParenthesis
 	}
 }
