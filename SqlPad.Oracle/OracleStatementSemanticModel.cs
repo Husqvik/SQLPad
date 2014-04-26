@@ -244,12 +244,10 @@ namespace SqlPad.Oracle
 
 		private void ResolveFunctionReferences(OracleQueryBlock queryBlock, OracleDatabaseModel databaseModel)
 		{
-			foreach (var functionReference in queryBlock.AllFunctionReferences)
+			foreach (var functionReference in queryBlock.AllFunctionReferences
+				.Where(functionReference => functionReference.FullyQualifiedObjectName == OracleObjectIdentifier.Empty))
 			{
-				if (functionReference.FullyQualifiedObjectName == OracleObjectIdentifier.Empty)
-				{
-					functionReference.Metadata = databaseModel.SqlFunctionMetadata.GetSqlFunctionMetadata(functionReference.NormalizedName, functionReference.AnalyticClauseNode != null);
-				}
+				functionReference.Metadata = databaseModel.SqlFunctionMetadata.GetSqlFunctionMetadata(functionReference.NormalizedName, functionReference.AnalyticClauseNode != null);
 			}
 		}
 
@@ -299,7 +297,7 @@ namespace SqlPad.Oracle
 				if (columnReference.ColumnNodeColumnReferences == 0 && columnReference.FullyQualifiedObjectName == OracleObjectIdentifier.Empty)
 				{
 					var sqlFunctionMetadata = databaseModel.SqlFunctionMetadata.GetSqlFunctionMetadata(columnReference.NormalizedName, false);
-					if (sqlFunctionMetadata != null/* && sqlFunctionMetadata.DisplayType != OracleSqlFunctionMetadata.DisplayTypeParenthesis*/)
+					if (sqlFunctionMetadata != null)
 					{
 						var functionReference =
 							new OracleFunctionReference

@@ -65,11 +65,10 @@ namespace SqlPad.Oracle
 								: functionReference.Metadata.MaximumArguments;
 
 							// TODO: Handle optional parameters
-							if ((/*functionReference.Metadata.MinimumArguments > 0 && */functionReference.ParameterNodes.Count < functionReference.Metadata.MinimumArguments) ||
-								(/*functionReference.Metadata.MaximumArguments > 0 && */functionReference.ParameterNodes.Count > maximumParameterCount))
+							if ((functionReference.ParameterNodes.Count < functionReference.Metadata.MinimumArguments) ||
+								(functionReference.ParameterNodes.Count > maximumParameterCount))
 							{
-								semanticError = SemanticError.InvalidParameterCount;
-								node = functionReference.ParameterListNode;
+								validationModel.FunctionNodeValidity[functionReference.ParameterListNode] = new FunctionValidationData(SemanticError.InvalidParameterCount) { IsRecognized = isRecognized };
 							}
 						}
 						else if (functionReference.Metadata.MinimumArguments > 0)
@@ -82,10 +81,7 @@ namespace SqlPad.Oracle
 						}
 					}
 
-					if (!isRecognized || semanticError != SemanticError.None)
-					{
-						validationModel.FunctionNodeValidity[node] = new FunctionValidationData(semanticError) { IsRecognized = isRecognized };
-					}
+					validationModel.FunctionNodeValidity[node] = new FunctionValidationData(semanticError) { IsRecognized = isRecognized };
 				}
 			}
 

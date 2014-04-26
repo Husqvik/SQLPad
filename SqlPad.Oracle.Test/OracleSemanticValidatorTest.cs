@@ -475,13 +475,17 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 				.Select(kvp => kvp.Value)
 				.ToArray();
 
-			nodeValidity.Length.ShouldBe(3);
+			nodeValidity.Length.ShouldBe(5);
 			nodeValidity[0].IsRecognized.ShouldBe(true);
-			nodeValidity[0].SemanticError.ShouldBe(SemanticError.InvalidParameterCount);
+			nodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
 			nodeValidity[1].IsRecognized.ShouldBe(true);
-			nodeValidity[1].SemanticError.ShouldBe(SemanticError.MissingParenthesis);
-			nodeValidity[2].IsRecognized.ShouldBe(false);
-			nodeValidity[2].SemanticError.ShouldBe(SemanticError.None);
+			nodeValidity[1].SemanticError.ShouldBe(SemanticError.None);
+			nodeValidity[2].IsRecognized.ShouldBe(true);
+			nodeValidity[2].SemanticError.ShouldBe(SemanticError.InvalidParameterCount);
+			nodeValidity[3].IsRecognized.ShouldBe(true);
+			nodeValidity[3].SemanticError.ShouldBe(SemanticError.MissingParenthesis);
+			nodeValidity[4].IsRecognized.ShouldBe(false);
+			nodeValidity[4].SemanticError.ShouldBe(SemanticError.None);
 		}
 
 		[Test(Description = @"")]
@@ -494,7 +498,10 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 
 			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, TestFixture.DatabaseModel);
 
-			validationModel.FunctionNodeValidity.Count.ShouldBe(0);
+			validationModel.FunctionNodeValidity.Count.ShouldBe(1);
+			var nodeValidationData = validationModel.FunctionNodeValidity.Single().Value;
+			nodeValidationData.IsRecognized.ShouldBe(true);
+			nodeValidationData.SemanticError.ShouldBe(SemanticError.None);
 		}
 
 		//WITH CTE AS (SELECT 1 A, 2 B, 3 C FROM DUAL) SELECT SELECTION.DUMMY, NQ.DUMMY, CTE.DUMMY, SYS.DUAL.DUMMY FROM SELECTION, (SELECT 1 X, 2 Y, 3 Z FROM DUAL) NQ, CTE, SYS.DUAL

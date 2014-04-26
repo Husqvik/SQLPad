@@ -18,7 +18,11 @@ namespace SqlPad
 		private static readonly SolidColorBrush HighlightBrush = new SolidColorBrush(Colors.Turquoise);
 		private static readonly SolidColorBrush KeywordBrush = new SolidColorBrush(Colors.Blue);
 		private static readonly SolidColorBrush LiteralBrush = new SolidColorBrush(Colors.SaddleBrown/*Color.FromRgb(214, 157, 133)*/);
-		private static readonly SolidColorBrush AliasBrush = new SolidColorBrush(Colors.DarkGreen);
+		private static readonly SolidColorBrush AliasBrush = new SolidColorBrush(Colors.Green);
+		private static readonly SolidColorBrush FunctionBrush = new SolidColorBrush(Colors.Magenta);
+		private static readonly Color ValidStatementBackground = Color.FromArgb(48, Colors.LightGreen.R, Colors.LightGreen.G, Colors.LightGreen.B);
+		private static readonly Color InvalidStatementBackground = Color.FromArgb(48, Colors.PaleVioletRed.R, Colors.PaleVioletRed.G, Colors.PaleVioletRed.B);
+		
 		private Dictionary<StatementBase, IValidationModel> _validationModels;
 
 		public void SetStatementCollection(StatementCollection statements)
@@ -57,7 +61,7 @@ namespace SqlPad
 
 			foreach (var statement in statementsAtLine)
 			{
-				var backgroundColor = new SolidColorBrush(statement.ProcessingStatus == ProcessingStatus.Success ? Colors.LightGreen : Colors.PaleVioletRed);
+				var backgroundColor = new SolidColorBrush(statement.ProcessingStatus == ProcessingStatus.Success ? ValidStatementBackground : InvalidStatementBackground);
 
 				var colorStartOffset = Math.Max(line.Offset, statement.SourcePosition.IndexStart);
 				var colorEndOffset = Math.Min(line.EndOffset, statement.SourcePosition.IndexEnd + 1);
@@ -91,6 +95,12 @@ namespace SqlPad
 
 					ProcessNodeAtLine(line, terminal.SourcePosition,
 						element => element.TextRunProperties.SetForegroundBrush(brush));
+				}
+
+				foreach (var terminal in validationModel.FunctionNodeValidity.Where(kvp => kvp.Value.IsRecognized && kvp.Key.Type == NodeType.Terminal).Select(kvp => kvp.Key))
+				{
+					ProcessNodeAtLine(line, terminal.SourcePosition,
+						   element => element.TextRunProperties.SetForegroundBrush(FunctionBrush));
 				}
 
 				foreach (var invalidGrammarNode in statement.InvalidGrammarNodes)

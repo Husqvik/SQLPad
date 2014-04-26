@@ -180,7 +180,7 @@ namespace SqlPad.Oracle.Commands
 		private IEnumerable<StatementDescriptionNode> GetParentQueryBlockReferences(OracleSelectListColumn selectListColumn)
 		{
 			var nodes = Enumerable.Empty<StatementDescriptionNode>();
-			if (selectListColumn == null || selectListColumn.AliasNode == null/* || !selectListColumn.IsDirectColumnReference*/)
+			if (selectListColumn == null || selectListColumn.AliasNode == null)
 				return nodes;
 
 			var parentQueryBlocks = _semanticModel.QueryBlocks.Where(qb => qb.ObjectReferences.SelectMany(o => o.QueryBlocks).Contains(selectListColumn.Owner));
