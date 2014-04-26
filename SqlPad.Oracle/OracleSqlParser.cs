@@ -64,12 +64,22 @@ namespace SqlPad.Oracle
 		public static bool IsValidIdentifier(string identifier)
 		{
 			return Regex.IsMatch(identifier, Terminals[OracleGrammarDescription.Terminals.Identifier].RegexValue) &&
-			       !OracleGrammarDescription.Terminals.IsKeyword(identifier);
+			       !identifier.IsKeyword();
 		}
 
 		public bool IsKeyword(string value)
 		{
-			return OracleGrammarDescription.Terminals.IsKeyword(value);
+			return value.IsKeyword();
+		}
+
+		public bool IsLiteral(string terminalId)
+		{
+			return terminalId.IsLiteral();
+		}
+
+		public bool IsAlias(string terminalId)
+		{
+			return terminalId.IsAlias();
 		}
 
 		public bool IsRuleValid(string nonTerminalId, string text)
@@ -466,7 +476,7 @@ namespace SqlPad.Oracle
 				var terminal = Terminals[terminalReference.Id];
 				if (!String.IsNullOrEmpty(terminal.RegexValue))
 				{
-					tokenIsValid = terminal.RegexMatcher.IsMatch(currentToken.Value) && !OracleGrammarDescription.Terminals.IsKeyword(currentToken.Value);
+					tokenIsValid = terminal.RegexMatcher.IsMatch(currentToken.Value) && !currentToken.Value.IsKeyword();
 				}
 				else
 				{

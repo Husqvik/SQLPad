@@ -42,7 +42,7 @@ namespace SqlPad.Oracle
 
 			CheckQuotedIdentifier(identifier);
 
-			return Terminals.IsKeyword(identifier.Replace(QuoteCharacter, null));
+			return identifier.Replace(QuoteCharacter, null).IsKeyword();
 		}
 
 		public static bool IsQuoted(this string identifier)
@@ -157,7 +157,7 @@ namespace SqlPad.Oracle
 
 		public static bool AnyIdentifier(StatementDescriptionNode node)
 		{
-			return Terminals.Identifiers.Contains(node.Id);
+			return node.Id.IsIdentifier();
 		}
 
 		public static bool In(StatementDescriptionNode node, params string[] ids)

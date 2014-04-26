@@ -15,9 +15,10 @@ namespace SqlPad
 		private readonly ISqlParser _parser = ConfigurationProvider.InfrastructureFactory.CreateSqlParser();
 		private readonly IDatabaseModel _databaseModel = ConfigurationProvider.InfrastructureFactory.CreateDatabaseModel(ConfigurationProvider.ConnectionStrings["Default"]);
 		private static readonly SolidColorBrush ErrorBrush = new SolidColorBrush(Colors.Red);
-		private static readonly SolidColorBrush NormalTextBrush = new SolidColorBrush(Colors.Black);
 		private static readonly SolidColorBrush HighlightBrush = new SolidColorBrush(Colors.Turquoise);
 		private static readonly SolidColorBrush KeywordBrush = new SolidColorBrush(Colors.Blue);
+		private static readonly SolidColorBrush LiteralBrush = new SolidColorBrush(Colors.SaddleBrown/*Color.FromRgb(214, 157, 133)*/);
+		private static readonly SolidColorBrush AliasBrush = new SolidColorBrush(Colors.DarkGreen);
 		private Dictionary<StatementBase, IValidationModel> _validationModels;
 
 		public void SetStatementCollection(StatementCollection statements)
@@ -67,19 +68,29 @@ namespace SqlPad
 					.Concat(validationModel.FunctionNodeValidity.Select(kvp => new KeyValuePair<StatementDescriptionNode, bool>(kvp.Key, kvp.Value.IsRecognized)))
 					.Concat(validationModel.ColumnNodeValidity.Select(kvp => new KeyValuePair<StatementDescriptionNode, bool>(kvp.Key, kvp.Value.IsRecognized)));
 
-				foreach (var nodeValidity in nodeRecognizeData)
+				foreach (var nodeValidity in nodeRecognizeData.Where(nv => !nv.Value))
 				{
 					ProcessNodeAtLine(line, nodeValidity.Key.SourcePosition,
-						element =>
-						{
-							element.TextRunProperties.SetForegroundBrush(nodeValidity.Value ? NormalTextBrush : ErrorBrush);
-						});
+						element => element.TextRunProperties.SetForegroundBrush(ErrorBrush));
 				}
 
-				foreach (var keyword in statement.AllTerminals.Where(t => _parser.IsKeyword(t.Token.Value)))
+				foreach (var terminal in statement.AllTerminals)
 				{
-					ProcessNodeAtLine(line, keyword.SourcePosition,
-						element => element.TextRunProperties.SetForegroundBrush(KeywordBrush));
+					SolidColorBrush brush = null;
+					if (_parser.IsKeyword(terminal.Token.Value))
+						brush = KeywordBrush;
+
+					if (_parser.IsLiteral(terminal.Id))
+						brush = LiteralBrush;
+
+					if (_parser.IsAlias(terminal.Id))
+						brush = AliasBrush;
+
+					if (brush == null)
+						continue;
+
+					ProcessNodeAtLine(line, terminal.SourcePosition,
+						element => element.TextRunProperties.SetForegroundBrush(brush));
 				}
 
 				foreach (var invalidGrammarNode in statement.InvalidGrammarNodes)
