@@ -18,12 +18,9 @@ namespace SqlPad.Oracle
 
 		public ColumnReferenceType Type { get; set; }
 		
-		public OracleSelectListColumn SelectListColumn { get; set; }
-		
 		public StatementDescriptionNode ColumnNode { get; set; }
 
 		public ICollection<OracleQueryBlock> QueryBlocks { get; set; }
-
 	
 		public ICollection<OracleObjectReference> ColumnNodeObjectReferences { get; set; }
 

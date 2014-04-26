@@ -29,5 +29,7 @@ namespace SqlPad.Oracle
 		public StatementDescriptionNode ObjectNode { get; set; }
 
 		public ICollection<OracleObjectReference> ObjectNodeObjectReferences { get; set; }
+
+		public OracleSelectListColumn SelectListColumn { get; set; }
 	}
 }

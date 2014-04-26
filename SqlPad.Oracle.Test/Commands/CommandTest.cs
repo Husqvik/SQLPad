@@ -13,6 +13,38 @@ namespace SqlPad.Oracle.Test.Commands
 	{
 		private static readonly OracleSqlParser Parser = new OracleSqlParser();
 
+		private const string FindUsagesStatementText =
+@"SELECT
+	NAME,
+	TARGETGROUP_NAME,
+	PNAME,
+	RESPONDENTBUCKET_NAME,
+	CONSTANT_COLUMN
+FROM
+	(SELECT
+		NAME,
+		TARGETGROUP_NAME || TARGETGROUP_NAME TARGETGROUP_NAME,
+		PROJECT_NAME PNAME,
+		RESPONDENTBUCKET_NAME,
+		CONSTANT_COLUMN
+	FROM
+		(SELECT
+			S.NAME,
+			TG.NAME TARGETGROUP_NAME,
+			P.NAME PROJECT_NAME,
+			RB.NAME RESPONDENTBUCKET_NAME,
+			'My column1' CONSTANT_COLUMN,
+			'My column2'
+		FROM
+			HUSQVIK.SELECTION S
+			LEFT JOIN RESPONDENTBUCKET RB ON S.RESPONDENTBUCKET_ID = RB.RESPONDENTBUCKET_ID
+			LEFT JOIN TARGETGROUP TG ON RB.TARGETGROUP_ID = TG.TARGETGROUP_ID AND RB.NAME = TG.NAME
+			JOIN PROJECT P ON S.PROJECT_ID = P.PROJECT_ID
+		WHERE
+			TG.NAME IN ('X1', 'X2') OR S.NAME IS NOT NULL OR P.NAME <> ''
+		)
+	)";
+
 		private TextEditor _editor;
 
 		[SetUp]
@@ -170,10 +202,111 @@ namespace SqlPad.Oracle.Test.Commands
 			foundSegments.ForEach(s => s.Length.ShouldBe("HUSQVIK".Length));
 		}
 
-		[Test(Description = @""), STAThread, Ignore]
-		public void TestFindColumnUsages()
+		[Test(Description = @""), STAThread]
+		public void TestBasicFindColumnUsages()
 		{
-			
+			var command = new FindUsagesCommand(FindUsagesStatementText, 11, TestFixture.DatabaseModel);
+			var foundSegments = new List<TextSegment>();
+			command.Execute(foundSegments);
+
+			foundSegments = foundSegments.OrderBy(s => s.IndextStart).ToList();
+			foundSegments.Count.ShouldBe(4);
+			foundSegments[0].IndextStart.ShouldBe(9);
+			foundSegments[1].IndextStart.ShouldBe(106);
+			foundSegments[2].IndextStart.ShouldBe(262);
+			foundSegments[3].IndextStart.ShouldBe(709);
+			foundSegments.ForEach(s => s.Length.ShouldBe(4));
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestFindColumnUsagesOfColumnAliases()
+		{
+			var command = new FindUsagesCommand(FindUsagesStatementText, 40, TestFixture.DatabaseModel);
+			var foundSegments = new List<TextSegment>();
+			command.Execute(foundSegments);
+
+			foundSegments = foundSegments.OrderBy(s => s.IndextStart).ToList();
+			foundSegments.Count.ShouldBe(6);
+			foundSegments[0].IndextStart.ShouldBe(37);
+			foundSegments[0].Length.ShouldBe(5);
+			foundSegments[1].IndextStart.ShouldBe(173);
+			foundSegments[1].Length.ShouldBe(12);
+			foundSegments[2].IndextStart.ShouldBe(186);
+			foundSegments[2].Length.ShouldBe(5);
+			foundSegments[3].IndextStart.ShouldBe(304);
+			foundSegments[3].Length.ShouldBe(4);
+			foundSegments[4].IndextStart.ShouldBe(309);
+			foundSegments[4].Length.ShouldBe(12);
+			foundSegments[5].IndextStart.ShouldBe(731);
+			foundSegments[5].Length.ShouldBe(4);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestFindColumnUsagesOfIndirectColumnReferenceAtAliasNode()
+		{
+			var command = new FindUsagesCommand(FindUsagesStatementText, 25, TestFixture.DatabaseModel);
+			var foundSegments = new List<TextSegment>();
+			command.Execute(foundSegments);
+
+			foundSegments = foundSegments.OrderBy(s => s.IndextStart).ToList();
+			foundSegments.Count.ShouldBe(2);
+			foundSegments[0].IndextStart.ShouldBe(17);
+			foundSegments[0].Length.ShouldBe(16);
+			foundSegments[1].IndextStart.ShouldBe(152);
+			foundSegments[1].Length.ShouldBe(16);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestFindColumnUsagesOfIndirectColumnReferenceAtColumnNode()
+		{
+			var command = new FindUsagesCommand(FindUsagesStatementText, 121, TestFixture.DatabaseModel);
+			var foundSegments = new List<TextSegment>();
+			command.Execute(foundSegments);
+
+			foundSegments = foundSegments.OrderBy(s => s.IndextStart).ToList();
+			foundSegments.Count.ShouldBe(6);
+			foundSegments[0].IndextStart.ShouldBe(115);
+			foundSegments[0].Length.ShouldBe(16);
+			foundSegments[1].IndextStart.ShouldBe(135);
+			foundSegments[1].Length.ShouldBe(16);
+			foundSegments[2].IndextStart.ShouldBe(275);
+			foundSegments[2].Length.ShouldBe(4);
+			foundSegments[3].IndextStart.ShouldBe(280);
+			foundSegments[3].Length.ShouldBe(16);
+			foundSegments[4].IndextStart.ShouldBe(612);
+			foundSegments[4].Length.ShouldBe(4);
+			foundSegments[5].IndextStart.ShouldBe(683);
+			foundSegments[5].Length.ShouldBe(4);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestFindColumnUsagesOfComputedColumnAtUsage()
+		{
+			var command = new FindUsagesCommand(FindUsagesStatementText, 80, TestFixture.DatabaseModel);
+			var foundSegments = new List<TextSegment>();
+			command.Execute(foundSegments);
+
+			foundSegments = foundSegments.OrderBy(s => s.IndextStart).ToList();
+			foundSegments.Count.ShouldBe(3);
+			foundSegments[0].IndextStart.ShouldBe(71);
+			foundSegments[1].IndextStart.ShouldBe(222);
+			foundSegments[2].IndextStart.ShouldBe(375);
+			foundSegments.ForEach(s => s.Length.ShouldBe(15));
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestFindColumnUsagesOfComputedColumnAtDefinition()
+		{
+			var command = new FindUsagesCommand(FindUsagesStatementText, 382, TestFixture.DatabaseModel);
+			var foundSegments = new List<TextSegment>();
+			command.Execute(foundSegments);
+
+			foundSegments = foundSegments.OrderBy(s => s.IndextStart).ToList();
+			foundSegments.Count.ShouldBe(3);
+			foundSegments[0].IndextStart.ShouldBe(71);
+			foundSegments[1].IndextStart.ShouldBe(222);
+			foundSegments[2].IndextStart.ShouldBe(375);
+			foundSegments.ForEach(s => s.Length.ShouldBe(15));
 		}
 
 		private class TestCommandSettings : ICommandSettingsProvider
