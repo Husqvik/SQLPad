@@ -14,6 +14,7 @@ namespace SqlPad.Oracle
 		{
 			public const string AggregateFunction = "AggregateFunction";
 			public const string AggregateFunctionCall = "AggregateFunctionCall";
+			public const string AggregateFunctionParameter = "AggregateFunctionParameter";
 			public const string AliasedExpression = "AliasedExpression";
 			public const string AliasedExpressionListOrAliasedGroupingExpressionList = "AliasedExpressionListOrAliasedGroupingExpressionList";
 			public const string AliasedExpressionListOrAliasedGroupingExpressionListChained = "AliasedExpressionListOrAliasedGroupingExpressionListChained";
@@ -43,6 +44,7 @@ namespace SqlPad.Oracle
 			public const string ConcatenatedSubquery = "ConcatenatedSubquery";
 			public const string Condition = "Condition";
 			public const string ConstraintName = "ConstraintName";
+			public const string CountAsteriskParameter = "CountAsteriskParameter";
 			public const string CrossOrOuter = "CrossOrOuter";
 			public const string CrossOrOuterApplyClause = "CrossOrOuterApplyClause";
 			public const string DatabaseLink = "DatabaseLink";
@@ -137,6 +139,7 @@ namespace SqlPad.Oracle
 			public const string ParenthesisEnclosedExpression = "ParenthesisEnclosedExpression";
 			public const string ParenthesisEnclosedExpressionList = "ParenthesisEnclosedExpressionList";
 			public const string ParenthesisEnclosedExpressionListWithMandatoryExpressions = "ParenthesisEnclosedExpressionListWithMandatoryExpressions";
+			public const string ParenthesisEnclosedExpressionWithIgnoreNulls = "ParenthesisEnclosedExpressionWithIgnoreNulls";
 			public const string ParenthesisEnclosedGroupingExpressionList = "ParenthesisEnclosedGroupingExpressionList";
 			public const string ParenthesisEnclosedMergeInsertValuesExpressionOrOrDefaultValueList = "ParenthesisEnclosedMergeInsertValuesExpressionOrOrDefaultValueList";
 			public const string ParenthesisEnclosedStringOrIntegerLiteralList = "ParenthesisEnclosedStringOrIntegerLiteralList";

@@ -354,6 +354,13 @@ namespace SqlPad.Oracle
 		{
 			var identifiers = GetIdentifiersFromNodesWithinSameQuery(queryBlock, NonTerminals.WhereClause, NonTerminals.GroupByClause).ToArray();
 			ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock.ColumnReferences, queryBlock.FunctionReferences, identifiers, ColumnReferenceType.WhereGroupHaving, null);
+
+			var havingRootNode = queryBlock.RootNode.GetDescendantsWithinSameQuery(NonTerminals.HavingClause).FirstOrDefault();
+			if (havingRootNode == null)
+				return;
+			
+			var grammarSpecificFunctions = havingRootNode.GetDescendantsWithinSameQuery(Terminals.Count, NonTerminals.AggregateFunction, NonTerminals.AnalyticFunctionFirstOrLastValue).ToArray();
+			CreateGrammarSpecificFunctionReferences(grammarSpecificFunctions, queryBlock, queryBlock.FunctionReferences, null);
 		}
 
 		private void ResolveOrderByReferences(OracleQueryBlock queryBlock)
@@ -462,10 +469,55 @@ namespace SqlPad.Oracle
 						}
 
 						ResolveColumnAndFunctionReferenceFromIdentifiers(item, column.ColumnReferences, column.FunctionReferences, identifiers, ColumnReferenceType.SelectList, column);
+
+						var grammarSpecificFunctions = columnExpression.GetDescendantsWithinSameQuery(Terminals.Count, NonTerminals.AggregateFunction, NonTerminals.AnalyticFunctionFirstOrLastValue).ToArray();
+						CreateGrammarSpecificFunctionReferences(grammarSpecificFunctions, item, column.FunctionReferences, column);
 					}
 
 					item.Columns.Add(column);
 				}
+			}
+		}
+
+		private static void CreateGrammarSpecificFunctionReferences(IEnumerable<StatementDescriptionNode> grammarSpecificFunctions, OracleQueryBlock queryBlock, ICollection<OracleFunctionReference> functionReferences, OracleSelectListColumn selectListColumn)
+		{
+			foreach (var functionNode in grammarSpecificFunctions)
+			{
+				var identifierNode = functionNode.FirstTerminalNode;
+
+				var rootNode = functionNode.GetAncestor(NonTerminals.FirstOrLastValueCall) ?? functionNode.GetAncestor(NonTerminals.AggregateFunctionCall);
+				var analyticClauseNode = rootNode.GetSingleDescendant(NonTerminals.AnalyticClause);
+
+				var parameterList = rootNode.ChildNodes.SingleOrDefault(n => n.Id.In(NonTerminals.ParenthesisEnclosedExpression, NonTerminals.CountAsteriskParameter, NonTerminals.AggregateFunctionParameter, NonTerminals.ParenthesisEnclosedExpressionWithIgnoreNulls));
+				StatementDescriptionNode parameter = null;
+				if (parameterList != null)
+				{
+					switch (parameterList.Id)
+					{
+						case NonTerminals.CountAsteriskParameter:
+							parameter = parameterList.ChildNodes.SingleOrDefault(n => n.Id == Terminals.Asterisk);
+							break;
+						case NonTerminals.ParenthesisEnclosedExpression:
+						case NonTerminals.AggregateFunctionParameter:
+						case NonTerminals.ParenthesisEnclosedExpressionWithIgnoreNulls:
+							parameter = parameterList.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.Expression);
+							break;
+					}
+				}
+
+				var functionReference =
+					new OracleFunctionReference
+					{
+						FunctionIdentifierNode = identifierNode,
+						RootNode = rootNode,
+						Owner = queryBlock,
+						AnalyticClauseNode = analyticClauseNode,
+						ParameterListNode = parameterList,
+						ParameterNodes = new [] { parameter },
+						SelectListColumn = selectListColumn
+					};
+
+				functionReferences.Add(functionReference);
 			}
 		}
 

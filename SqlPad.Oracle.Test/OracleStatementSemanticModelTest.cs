@@ -2,6 +2,7 @@
 using System.Linq;
 using NUnit.Framework;
 using Shouldly;
+using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
 namespace SqlPad.Oracle.Test
 {
@@ -26,7 +27,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"")]
-		public void Test1()
+		public void TestQueryBlockCommonTableExpressionReferences()
 		{
 			const string query1 =
 @"WITH
@@ -62,7 +63,7 @@ FROM
 		}
 
 		[Test(Description = @"")]
-		public void Test2()
+		public void TestMultiTableReferences()
 		{
 			const string query1 = @"SELECT SELECTION.* FROM SELECTION JOIN HUSQVIK.PROJECT P ON SELECTION.PROJECT_ID = P.PROJECT_ID";
 
@@ -81,7 +82,7 @@ FROM
 		}
 
 		[Test(Description = @"")]
-		public void Test3()
+		public void TestImplicitColumnReferences()
 		{
 			const string query1 = @"SELECT S.* FROM SELECTION S JOIN HUSQVIK.PROJECT P ON S.PROJECT_ID = P.PROJECT_ID";
 
@@ -97,6 +98,37 @@ FROM
 			queryBlock.Alias.ShouldBe(null);
 			queryBlock.ObjectReferences.Count.ShouldBe(2);
 			queryBlock.Columns.Count.ShouldBe(5);
+		}
+
+		[Test(Description = @"")]
+		public void TestGrammarSpecificAggregateFunctionRecognize()
+		{
+			const string query1 = @"SELECT COUNT(*) OVER (), AVG(1) OVER (), LAST_VALUE(DUMMY IGNORE NULLS) OVER () FROM DUAL";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.QueryBlocks.ShouldNotBe(null);
+			semanticModel.QueryBlocks.Count.ShouldBe(1);
+
+			var functionReferences = semanticModel.QueryBlocks.Single().AllFunctionReferences.ToArray();
+			functionReferences.Length.ShouldBe(3);
+			var countFunction = functionReferences[0];
+			countFunction.FunctionIdentifierNode.Id.ShouldBe(Terminals.Count);
+			countFunction.AnalyticClauseNode.ShouldNotBe(null);
+			countFunction.SelectListColumn.ShouldNotBe(null);
+
+			var avgFunction = functionReferences[1];
+			avgFunction.FunctionIdentifierNode.Id.ShouldBe(Terminals.Avg);
+			avgFunction.AnalyticClauseNode.ShouldNotBe(null);
+			avgFunction.SelectListColumn.ShouldNotBe(null);
+
+			var lastValueFunction = functionReferences[2];
+			lastValueFunction.FunctionIdentifierNode.Id.ShouldBe(Terminals.LastValue);
+			lastValueFunction.AnalyticClauseNode.ShouldNotBe(null);
+			lastValueFunction.SelectListColumn.ShouldNotBe(null);
 		}
 	}
 }

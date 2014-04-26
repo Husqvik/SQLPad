@@ -722,7 +722,6 @@
         </Sequence>
         <Sequence>
           <NonTerminal Id="AggregateFunctionCall" />
-          <NonTerminal Id="AnalyticOrKeepClause" IsOptional="true" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
@@ -2219,19 +2218,25 @@
       <Sequences>
         <Sequence>
           <NonTerminal Id="AnalyticFunctionFirstOrLastValue" />
-          <Terminal Id="LeftParenthesis" />
-          <NonTerminal Id="Expression" />
-          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="ParenthesisEnclosedExpression" />
           <NonTerminal Id="IgnoreNulls" IsOptional="true" />
           <NonTerminal Id="AnalyticClause" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="AnalyticFunctionFirstOrLastValue" />
+          <NonTerminal Id="ParenthesisEnclosedExpressionWithIgnoreNulls" />
+          <NonTerminal Id="AnalyticClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ParenthesisEnclosedExpressionWithIgnoreNulls">
+      <Sequences>
+        <Sequence>
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="Expression" />
           <NonTerminal Id="IgnoreNulls" IsOptional="true" />
           <Terminal Id="RightParenthesis" />
-          <NonTerminal Id="AnalyticClause" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -2286,13 +2291,31 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Count" />
+          <NonTerminal Id="CountAsteriskParameter" />
+          <NonTerminal Id="AnalyticOrKeepClause" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="AggregateFunction" />
+          <NonTerminal Id="AggregateFunctionParameter" />
+          <NonTerminal Id="AnalyticOrKeepClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="CountAsteriskParameter">
+      <Sequences>
+        <Sequence>
           <Terminal Id="LeftParenthesis" />
           <Terminal Id="All" IsOptional="true" />
           <Terminal Id="Asterisk" />
           <Terminal Id="RightParenthesis" />
         </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AggregateFunctionParameter">
+      <Sequences>
         <Sequence>
-          <NonTerminal Id="AggregateFunction" />
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="DistinctModifier" IsOptional="true" />
           <NonTerminal Id="Expression" />
