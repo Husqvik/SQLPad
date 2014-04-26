@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
@@ -19,6 +20,7 @@ namespace SqlPad.Oracle.Commands
 
 			_semanticModel = new OracleStatementSemanticModel(statementText, (OracleStatement)_currentNode.Statement, (OracleDatabaseModel)databaseModel);
 			_queryBlock = _semanticModel.GetQueryBlock(_currentNode);
+
 			//_currentPosition = currentPosition;
 		}
 
@@ -29,13 +31,13 @@ namespace SqlPad.Oracle.Commands
 
 		protected override void ExecuteInternal(ICollection<TextSegment> segments)
 		{
-			var nodes = Enumerable.Empty<StatementDescriptionNode>();
+			IEnumerable<StatementDescriptionNode> nodes;
 
 			switch (_currentNode.Id)
 			{
 				case Terminals.ObjectAlias:
 				case Terminals.ObjectIdentifier:
-					nodes = GetTableReferenceUsage();
+					nodes = GetObjectReferences().SelectMany(GetObjectReferenceUsage);
 					break;
 				case Terminals.SchemaIdentifier:
 					nodes = GetSchemaReferenceUsage();
@@ -44,6 +46,8 @@ namespace SqlPad.Oracle.Commands
 				case Terminals.ColumnAlias:
 					nodes = GetColumnReferenceUsage();
 					break;
+				default:
+					throw new NotSupportedException(String.Format("Terminal '{0}' is not supported. ", _currentNode.Id));
 			}
 
 			//MessageBox.Show(_currentPosition + Environment.NewLine + String.Join(Environment.NewLine, nodes.OrderBy(n => n.SourcePosition.IndexStart).Select(n => n.SourcePosition.IndexStart + " - " + n.SourcePosition.Length)));
@@ -58,8 +62,14 @@ namespace SqlPad.Oracle.Commands
 			}
 		}
 
-		private IEnumerable<StatementDescriptionNode> GetTableReferenceUsage()
+		private IEnumerable<OracleObjectReference> GetObjectReferences()
 		{
+			if (_queryBlock == null && _currentNode.Id == Terminals.ObjectAlias)
+			{
+				var cteQueryBlock = _semanticModel.QueryBlocks.SingleOrDefault(qb => qb.AliasNode == _currentNode);
+				return _semanticModel.QueryBlocks.SelectMany(qb => qb.ObjectReferences.Where(o => o.QueryBlocks.Count == 1 && o.QueryBlocks.Contains(cteQueryBlock)));
+			}
+
 			var columnReferencedObject = _queryBlock.AllColumnReferences
 				.SingleOrDefault(c => c.ObjectNode == _currentNode && c.ObjectNodeObjectReferences.Count == 1);
 
@@ -68,15 +78,30 @@ namespace SqlPad.Oracle.Commands
 				? columnReferencedObject.ObjectNodeObjectReferences.Single()
 				: referencedObject;
 
-			var objectReferenceNodes = Enumerable.Repeat(objectReference.ObjectNode, 1);
+			return Enumerable.Repeat(objectReference, 1);
+		}
+
+		private IEnumerable<StatementDescriptionNode> GetObjectReferenceUsage(OracleObjectReference objectReference)
+		{
+			var nodes = new List<StatementDescriptionNode>();
+			if (objectReference.Type != TableReferenceType.NestedQuery)
+			{
+				nodes.Add(objectReference.ObjectNode);
+			}
+			
 			if (objectReference.AliasNode != null)
 			{
-				objectReferenceNodes = objectReferenceNodes.Concat(Enumerable.Repeat(objectReference.AliasNode, 1));
+				nodes.Add(objectReference.AliasNode);
 			}
 
-			return _queryBlock.AllColumnReferences.Where(c => c.ObjectNode != null && c.ObjectNodeObjectReferences.Count == 1 && c.ObjectNodeObjectReferences.Single() == objectReference)
+			if (objectReference.QueryBlocks.Count == 1 && objectReference.Type == TableReferenceType.CommonTableExpression)
+			{
+				nodes.Add(objectReference.QueryBlocks.Single().AliasNode);
+			}
+
+			return objectReference.Owner.AllColumnReferences.Where(c => c.ObjectNode != null && c.ObjectNodeObjectReferences.Count == 1 && c.ObjectNodeObjectReferences.Single() == objectReference)
 				.Select(c => c.ObjectNode)
-				.Concat(objectReferenceNodes);
+				.Concat(nodes);
 		}
 
 		private IEnumerable<StatementDescriptionNode> GetColumnReferenceUsage()

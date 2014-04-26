@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using ICSharpCode.AvalonEdit;
 using NUnit.Framework;
@@ -308,6 +309,40 @@ FROM
 			foundSegments[2].IndextStart.ShouldBe(375);
 			foundSegments.ForEach(s => s.Length.ShouldBe(15));
 		}
+
+		[Test(Description = @""), STAThread]
+		public void TestFindObjectUsagesAtCommonTableExpressionDefinition()
+		{
+			const string statement = "WITH CTE AS (SELECT SELECTION.NAME FROM SELECTION) SELECT CTE.NAME FROM CTE";
+			var command = new FindUsagesCommand(statement, 6, TestFixture.DatabaseModel);
+			var foundSegments = new List<TextSegment>();
+			command.Execute(foundSegments);
+
+			foundSegments = foundSegments.OrderBy(s => s.IndextStart).ToList();
+			foundSegments.Count.ShouldBe(3);
+			foundSegments[0].IndextStart.ShouldBe(5);
+			foundSegments[1].IndextStart.ShouldBe(58);
+			foundSegments[2].IndextStart.ShouldBe(72);
+			foundSegments.ForEach(s => s.Length.ShouldBe(3));
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestFindObjectUsagesAtCommonTableExpressionUsage()
+		{
+			const string statement = "WITH CTE AS (SELECT SELECTION.NAME FROM SELECTION) SELECT CTE.NAME FROM CTE";
+			var command = new FindUsagesCommand(statement, 72, TestFixture.DatabaseModel);
+			var foundSegments = new List<TextSegment>();
+			command.Execute(foundSegments);
+
+			foundSegments = foundSegments.OrderBy(s => s.IndextStart).ToList();
+			foundSegments.Count.ShouldBe(3);
+			foundSegments[0].IndextStart.ShouldBe(5);
+			foundSegments[1].IndextStart.ShouldBe(58);
+			foundSegments[2].IndextStart.ShouldBe(72);
+			foundSegments.ForEach(s => s.Length.ShouldBe(3));
+		}
+
+		//WITH CTE AS (SELECT SELECTION.NAME FROM SELECTION) SELECT CTE.NAME FROM CTE
 
 		private class TestCommandSettings : ICommandSettingsProvider
 		{

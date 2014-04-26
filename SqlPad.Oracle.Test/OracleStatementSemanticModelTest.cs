@@ -46,10 +46,12 @@ FROM
 			semanticModel.QueryBlocks.Count.ShouldBe(3);
 
 			var queryBlocks = semanticModel.QueryBlocks.ToArray();
-			queryBlocks[0].Alias.ShouldBe("\"CTE2\"");
+			queryBlocks[0].Alias.ShouldBe("CTE2");
+			queryBlocks[0].NormalizedAlias.ShouldBe("\"CTE2\"");
 			queryBlocks[0].ObjectReferences.Count.ShouldBe(1);
 			queryBlocks[0].Columns.Count.ShouldBe(3);
-			queryBlocks[1].Alias.ShouldBe("\"CTE1\"");
+			queryBlocks[1].Alias.ShouldBe("CTE1");
+			queryBlocks[1].NormalizedAlias.ShouldBe("\"CTE1\"");
 			queryBlocks[1].ObjectReferences.Count.ShouldBe(1);
 			queryBlocks[1].Columns.Count.ShouldBe(3);
 			queryBlocks[2].Alias.ShouldBe(null);

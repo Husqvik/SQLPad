@@ -52,7 +52,7 @@ namespace SqlPad.Oracle
 				var commonTableExpression = queryBlock.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBoundary, NonTerminals.SubqueryComponent);
 				if (commonTableExpression != null)
 				{
-					item.Alias = commonTableExpression.ChildNodes.First().Token.Value.ToQuotedIdentifier();
+					item.AliasNode = commonTableExpression.ChildNodes.First();
 					item.Type = QueryBlockType.CommonTableExpression;
 				}
 				else
@@ -65,7 +65,7 @@ namespace SqlPad.Oracle
 						var nestedSubqueryAlias = selfTableReference.ChildNodes.SingleOrDefault(n => n.Id == Terminals.ObjectAlias);
 						if (nestedSubqueryAlias != null)
 						{
-							item.Alias = nestedSubqueryAlias.Token.Value.ToQuotedIdentifier();
+							item.AliasNode = nestedSubqueryAlias;
 						}
 					}
 				}
@@ -93,6 +93,7 @@ namespace SqlPad.Oracle
 
 						item.ObjectReferences.Add(new OracleObjectReference
 						{
+							Owner = item,
 							TableReferenceNode = tableReferenceNonterminal,
 							ObjectNode = nestedQueryTableReferenceQueryBlock,
 							Type = TableReferenceType.NestedQuery,
@@ -134,6 +135,7 @@ namespace SqlPad.Oracle
 
 					item.ObjectReferences.Add(new OracleObjectReference
 					                         {
+												 Owner = item,
 												 TableReferenceNode = tableReferenceNonterminal,
 						                         OwnerNode = schemaPrefixNode,
 						                         ObjectNode = tableIdentifierNode,
@@ -165,7 +167,7 @@ namespace SqlPad.Oracle
 					{
 						foreach (var referencedQueryBlock in nestedQueryReference.Nodes
 							.SelectMany(cteNode => cteNode.GetDescendantsWithinSameQuery(NonTerminals.QueryBlock))
-							.Where(qb => OracleObjectIdentifier.Create(null, qb.GetAncestor(NonTerminals.SubqueryComponent).ChildNodes.Single(n => n.Id == Terminals.ObjectIdentifier).Token.Value) == nestedQueryReference.FullyQualifiedName))
+							.Where(qb => OracleObjectIdentifier.Create(null, qb.GetAncestor(NonTerminals.SubqueryComponent).ChildNodes.Single(n => n.Id == Terminals.ObjectAlias).Token.Value) == nestedQueryReference.FullyQualifiedName))
 						{
 							nestedQueryReference.QueryBlocks.Add(_queryBlockResults[referencedQueryBlock]);
 						}
@@ -516,14 +518,14 @@ namespace SqlPad.Oracle
 
 		private static void AddPrefixNodes(OracleReference reference, StatementDescriptionNode prefixNonTerminal)
 		{
-			if (prefixNonTerminal != null)
-			{
-				var objectIdentifier = prefixNonTerminal.GetSingleDescendant(Terminals.ObjectIdentifier);
-				var schemaIdentifier = prefixNonTerminal.GetSingleDescendant(Terminals.SchemaIdentifier);
+			if (prefixNonTerminal == null)
+				return;
+			
+			var objectIdentifier = prefixNonTerminal.GetSingleDescendant(Terminals.ObjectIdentifier);
+			var schemaIdentifier = prefixNonTerminal.GetSingleDescendant(Terminals.SchemaIdentifier);
 
-				reference.OwnerNode = schemaIdentifier;
-				reference.ObjectNode = objectIdentifier;
-			}
+			reference.OwnerNode = schemaIdentifier;
+			reference.ObjectNode = objectIdentifier;
 		}
 
 		private IEnumerable<KeyValuePair<StatementDescriptionNode, string>> GetCommonTableExpressionReferences(StatementDescriptionNode node)

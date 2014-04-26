@@ -20,8 +20,8 @@ namespace SqlPad
 		private static readonly SolidColorBrush LiteralBrush = new SolidColorBrush(Colors.SaddleBrown/*Color.FromRgb(214, 157, 133)*/);
 		private static readonly SolidColorBrush AliasBrush = new SolidColorBrush(Colors.Green);
 		private static readonly SolidColorBrush FunctionBrush = new SolidColorBrush(Colors.Magenta);
-		private static readonly Color ValidStatementBackground = Color.FromArgb(48, Colors.LightGreen.R, Colors.LightGreen.G, Colors.LightGreen.B);
-		private static readonly Color InvalidStatementBackground = Color.FromArgb(48, Colors.PaleVioletRed.R, Colors.PaleVioletRed.G, Colors.PaleVioletRed.B);
+		private static readonly Color ValidStatementBackground = Color.FromArgb(32, Colors.LightGreen.R, Colors.LightGreen.G, Colors.LightGreen.B);
+		private static readonly Color InvalidStatementBackground = Color.FromArgb(32, Colors.PaleVioletRed.R, Colors.PaleVioletRed.G, Colors.PaleVioletRed.B);
 		
 		private Dictionary<StatementBase, IValidationModel> _validationModels;
 

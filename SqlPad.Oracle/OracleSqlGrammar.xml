@@ -1454,7 +1454,7 @@
     <Rule StartingNonTerminal="SubqueryComponent">
       <Sequences>
         <Sequence>
-          <Terminal Id="ObjectIdentifier" Tag="SubQueryName" Comment="Sub query name" />
+          <Terminal Id="ObjectAlias" Tag="SubQueryName" Comment="Sub query name" />
           <NonTerminal Id="ParenthesisEnclosedColumnIdentifierList" IsOptional="true" />
           <Terminal Id="As" />
           <Terminal Id="LeftParenthesis" />

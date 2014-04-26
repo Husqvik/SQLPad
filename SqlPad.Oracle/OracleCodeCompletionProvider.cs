@@ -375,11 +375,11 @@ namespace SqlPad.Oracle
 		{
 			// TODO: Make proper resolution of CTE accessibility
 			return model.QueryBlocks
-						.Where(qb => qb.Type == QueryBlockType.CommonTableExpression && referenceNamePart.ToQuotedIdentifier() != qb.Alias && (String.IsNullOrEmpty(referenceNamePart) || qb.Alias.ToUpperInvariant().Contains(referenceNamePart.ToUpperInvariant())))
+						.Where(qb => qb.Type == QueryBlockType.CommonTableExpression && referenceNamePart.ToQuotedIdentifier() != qb.NormalizedAlias && (String.IsNullOrEmpty(referenceNamePart) || qb.Alias.ToUpperInvariant().Contains(referenceNamePart.ToUpperInvariant())))
 						.Select(qb => new OracleCodeCompletionItem
 						{
-							Name = qb.Alias.ToSimpleIdentifier(),
-							Text = qb.Alias.ToSimpleIdentifier(),
+							Name = qb.Alias,
+							Text = qb.Alias,
 							StatementNode = node,
 							Category = OracleCodeCompletionCategory.CommonTableExpression,
 							Offset = insertOffset,

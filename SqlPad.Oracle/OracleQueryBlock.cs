@@ -16,7 +16,11 @@ namespace SqlPad.Oracle
 			FunctionReferences = new List<OracleFunctionReference>();
 		}
 
-		public string Alias { get; set; }
+		public string Alias { get { return AliasNode == null ? null : AliasNode.Token.Value; } }
+
+		public string NormalizedAlias { get { return Alias.ToQuotedIdentifier(); } }
+
+		public StatementDescriptionNode AliasNode { get; set; }
 
 		public QueryBlockType Type { get; set; }
 

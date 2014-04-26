@@ -51,6 +51,8 @@ namespace SqlPad.Oracle
 		}
 
 		public SchemaObjectResult SearchResult { get; set; }
+		
+		public OracleQueryBlock Owner { get; set; }
 
 		public StatementDescriptionNode OwnerNode { get; set; }
 
