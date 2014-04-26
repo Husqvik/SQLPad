@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace SqlPad.Oracle
@@ -59,9 +60,13 @@ namespace SqlPad.Oracle
 						isRecognized = true;
 						if (functionReference.ParameterListNode != null)
 						{
+							var maximumParameterCount = functionReference.Metadata.MinimumArguments > 0 && functionReference.Metadata.MaximumArguments == 0
+								? Int32.MaxValue
+								: functionReference.Metadata.MaximumArguments;
+
 							// TODO: Handle optional parameters
 							if ((/*functionReference.Metadata.MinimumArguments > 0 && */functionReference.ParameterNodes.Count < functionReference.Metadata.MinimumArguments) ||
-							    (/*functionReference.Metadata.MaximumArguments > 0 && */functionReference.ParameterNodes.Count > functionReference.Metadata.MaximumArguments))
+								(/*functionReference.Metadata.MaximumArguments > 0 && */functionReference.ParameterNodes.Count > maximumParameterCount))
 							{
 								semanticError = SemanticError.InvalidParameterCount;
 								node = functionReference.ParameterListNode;
