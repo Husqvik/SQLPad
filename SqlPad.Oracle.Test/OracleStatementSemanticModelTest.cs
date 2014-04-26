@@ -130,5 +130,28 @@ FROM
 			lastValueFunction.AnalyticClauseNode.ShouldNotBe(null);
 			lastValueFunction.SelectListColumn.ShouldNotBe(null);
 		}
+
+		[Test(Description = @"")]
+		public void TestGrammarSpecifiAnalyticFunctionRecognize()
+		{
+			const string query1 = @"SELECT LAG(DUMMY, 1, 'Replace') IGNORE NULLS OVER (ORDER BY NULL) FROM DUAL";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.QueryBlocks.ShouldNotBe(null);
+			semanticModel.QueryBlocks.Count.ShouldBe(1);
+
+			var functionReferences = semanticModel.QueryBlocks.Single().AllFunctionReferences.ToArray();
+			functionReferences.Length.ShouldBe(1);
+			var lagFunction = functionReferences[0];
+			lagFunction.FunctionIdentifierNode.Id.ShouldBe(Terminals.Lag);
+			lagFunction.AnalyticClauseNode.ShouldNotBe(null);
+			lagFunction.SelectListColumn.ShouldNotBe(null);
+			lagFunction.ParameterListNode.ShouldNotBe(null);
+			lagFunction.ParameterNodes.Count.ShouldBe(3);
+		}
 	}
 }

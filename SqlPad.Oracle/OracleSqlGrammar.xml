@@ -725,7 +725,7 @@
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="FirstOrLastValueCall" />
+          <NonTerminal Id="AnalyticFunctionCall" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         
@@ -799,8 +799,19 @@
       <Sequences>
         <Sequence>
           <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="DataTypeName" />
+          <NonTerminal Id="DataTypeInnerName" />
           <NonTerminal Id="DataTypePrecisionAndScale" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DataTypeInnerName">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="DataTypeName" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Date" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -944,6 +955,13 @@
         <Sequence>
           <Terminal Id="Not" />
           <NonTerminal Id="Condition" />
+          <NonTerminal Id="ChainedCondition" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="NegationOrNull" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="Condition" />
+          <Terminal Id="RightParenthesis" />
           <NonTerminal Id="ChainedCondition" IsOptional="true" />
         </Sequence>
         <Sequence>
@@ -2214,40 +2232,47 @@
     </Rule>
 
     <!-- Ignore Nulls clause -->
-    <Rule StartingNonTerminal="FirstOrLastValueCall">
+    <Rule StartingNonTerminal="AnalyticFunctionCall">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="AnalyticFunctionFirstOrLastValue" />
-          <NonTerminal Id="ParenthesisEnclosedExpression" />
+          <NonTerminal Id="AnalyticFunction" />
+          <NonTerminal Id="ParenthesisEnclosedExpressionListWithMandatoryExpressions" />
           <NonTerminal Id="IgnoreNulls" IsOptional="true" />
           <NonTerminal Id="AnalyticClause" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="AnalyticFunctionFirstOrLastValue" />
-          <NonTerminal Id="ParenthesisEnclosedExpressionWithIgnoreNulls" />
+          <NonTerminal Id="AnalyticFunction" />
+          <NonTerminal Id="ParenthesisEnclosedExpressionListWithIgnoreNulls" />
           <NonTerminal Id="AnalyticClause" />
         </Sequence>
       </Sequences>
     </Rule>
 
-    <Rule StartingNonTerminal="ParenthesisEnclosedExpressionWithIgnoreNulls">
+    <Rule StartingNonTerminal="ParenthesisEnclosedExpressionListWithIgnoreNulls">
       <Sequences>
         <Sequence>
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="Expression" />
           <NonTerminal Id="IgnoreNulls" IsOptional="true" />
+          <NonTerminal Id="ExpressionCommaChainedList" IsOptional="true" />
           <Terminal Id="RightParenthesis" />
         </Sequence>
       </Sequences>
     </Rule>
       
-    <Rule StartingNonTerminal="AnalyticFunctionFirstOrLastValue">
+    <Rule StartingNonTerminal="AnalyticFunction">
       <Sequences>
         <Sequence>
           <Terminal Id="FirstValue" />
         </Sequence>
         <Sequence>
           <Terminal Id="LastValue" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Lead" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Lag" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -2835,6 +2860,7 @@
     <Terminal Id="And" Value="AND" IsKeyword="true" />
     <Terminal Id="Or" Value="OR" IsKeyword="true" />
     <Terminal Id="Not" Value="NOT" IsKeyword="true" />
+    <Terminal Id="NegationOrNull" Value="LNNVL" />
     <Terminal Id="Exists" Value="EXISTS" IsKeyword="true" />
     <Terminal Id="Where" Value="WHERE" IsKeyword="true" />
     <Terminal Id="Between" Value="BETWEEN" IsKeyword="true" />
@@ -2959,6 +2985,8 @@
     <!-- Analytic clause -->
     <Terminal Id="FirstValue" Value="FIRST_VALUE" AllowQuotedNotation ="true" />
     <Terminal Id="LastValue" Value="LAST_VALUE" AllowQuotedNotation ="true" />
+    <Terminal Id="Lead" Value="LEAD" AllowQuotedNotation ="true" />
+    <Terminal Id="Lag" Value="LAG" AllowQuotedNotation ="true" />
     <Terminal Id="Over" Value="OVER" />
     <Terminal Id="Rows" Value="ROWS" IsKeyword="true" />
     <Terminal Id="Range" Value="RANGE" />

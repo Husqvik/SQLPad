@@ -506,6 +506,28 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			nodeValidationData.SemanticError.ShouldBe(SemanticError.None);
 		}
 
+		[Test(Description = @"")]
+		public void TestMultiParameterFunctionWithAnalyticFunctionAsOneParameter()
+		{
+			const string sqlText = "SELECT NVL(LAST_VALUE(DUMMY) OVER (), 'Replacement') FROM DUAL";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, TestFixture.DatabaseModel);
+
+			var nodeValidity = validationModel.FunctionNodeValidity
+				.OrderBy(cv => cv.Key.SourcePosition.IndexStart)
+				.Select(kvp => kvp.Value)
+				.ToArray();
+
+			nodeValidity.Length.ShouldBe(2);
+			nodeValidity[0].IsRecognized.ShouldBe(true);
+			nodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+			nodeValidity[1].IsRecognized.ShouldBe(true);
+			nodeValidity[1].SemanticError.ShouldBe(SemanticError.None);
+		}
+
 		//WITH CTE AS (SELECT 1 A, 2 B, 3 C FROM DUAL) SELECT SELECTION.DUMMY, NQ.DUMMY, CTE.DUMMY, SYS.DUAL.DUMMY FROM SELECTION, (SELECT 1 X, 2 Y, 3 Z FROM DUAL) NQ, CTE, SYS.DUAL
 	}
 }

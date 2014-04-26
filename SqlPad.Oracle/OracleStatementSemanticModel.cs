@@ -359,7 +359,7 @@ namespace SqlPad.Oracle
 			if (havingRootNode == null)
 				return;
 			
-			var grammarSpecificFunctions = havingRootNode.GetDescendantsWithinSameQuery(Terminals.Count, NonTerminals.AggregateFunction, NonTerminals.AnalyticFunctionFirstOrLastValue).ToArray();
+			var grammarSpecificFunctions = havingRootNode.GetDescendantsWithinSameQuery(Terminals.Count, NonTerminals.AggregateFunction, NonTerminals.AnalyticFunction).ToArray();
 			CreateGrammarSpecificFunctionReferences(grammarSpecificFunctions, queryBlock, queryBlock.FunctionReferences, null);
 		}
 
@@ -470,7 +470,7 @@ namespace SqlPad.Oracle
 
 						ResolveColumnAndFunctionReferenceFromIdentifiers(item, column.ColumnReferences, column.FunctionReferences, identifiers, ColumnReferenceType.SelectList, column);
 
-						var grammarSpecificFunctions = columnExpression.GetDescendantsWithinSameQuery(Terminals.Count, NonTerminals.AggregateFunction, NonTerminals.AnalyticFunctionFirstOrLastValue).ToArray();
+						var grammarSpecificFunctions = columnExpression.GetDescendantsWithinSameQuery(Terminals.Count, NonTerminals.AggregateFunction, NonTerminals.AnalyticFunction).ToArray();
 						CreateGrammarSpecificFunctionReferences(grammarSpecificFunctions, item, column.FunctionReferences, column);
 					}
 
@@ -481,26 +481,28 @@ namespace SqlPad.Oracle
 
 		private static void CreateGrammarSpecificFunctionReferences(IEnumerable<StatementDescriptionNode> grammarSpecificFunctions, OracleQueryBlock queryBlock, ICollection<OracleFunctionReference> functionReferences, OracleSelectListColumn selectListColumn)
 		{
-			foreach (var functionNode in grammarSpecificFunctions)
+			foreach (var identifierNode in grammarSpecificFunctions.Select(n => n.FirstTerminalNode).Distinct())
 			{
-				var identifierNode = functionNode.FirstTerminalNode;
-
-				var rootNode = functionNode.GetAncestor(NonTerminals.FirstOrLastValueCall) ?? functionNode.GetAncestor(NonTerminals.AggregateFunctionCall);
+				var rootNode = identifierNode.GetAncestor(NonTerminals.AnalyticFunctionCall) ?? identifierNode.GetAncestor(NonTerminals.AggregateFunctionCall);
 				var analyticClauseNode = rootNode.GetSingleDescendant(NonTerminals.AnalyticClause);
 
-				var parameterList = rootNode.ChildNodes.SingleOrDefault(n => n.Id.In(NonTerminals.ParenthesisEnclosedExpression, NonTerminals.CountAsteriskParameter, NonTerminals.AggregateFunctionParameter, NonTerminals.ParenthesisEnclosedExpressionWithIgnoreNulls));
-				StatementDescriptionNode parameter = null;
+				var parameterList = rootNode.ChildNodes.SingleOrDefault(n => n.Id.In(NonTerminals.ParenthesisEnclosedExpressionListWithMandatoryExpressions, NonTerminals.CountAsteriskParameter, NonTerminals.AggregateFunctionParameter, NonTerminals.ParenthesisEnclosedExpressionListWithIgnoreNulls));
+				var parameterNodes = new List<StatementDescriptionNode>();
 				if (parameterList != null)
 				{
 					switch (parameterList.Id)
 					{
 						case NonTerminals.CountAsteriskParameter:
-							parameter = parameterList.ChildNodes.SingleOrDefault(n => n.Id == Terminals.Asterisk);
+							parameterNodes.Add(parameterList.ChildNodes.SingleOrDefault(n => n.Id == Terminals.Asterisk));
 							break;
-						case NonTerminals.ParenthesisEnclosedExpression:
 						case NonTerminals.AggregateFunctionParameter:
-						case NonTerminals.ParenthesisEnclosedExpressionWithIgnoreNulls:
-							parameter = parameterList.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.Expression);
+						case NonTerminals.ParenthesisEnclosedExpressionListWithIgnoreNulls:
+							var expression = parameterList.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.Expression);
+							parameterNodes.Add(expression);
+							goto default;
+						default:
+							var nodes = parameterList.GetPathFilterDescendants(n => !n.Id.In(NonTerminals.NestedQuery, NonTerminals.ParenthesisEnclosedAggregationFunctionParameters), NonTerminals.ExpressionList).Select(n => n.ChildNodes.FirstOrDefault());
+							parameterNodes.AddRange(nodes);
 							break;
 					}
 				}
@@ -513,7 +515,7 @@ namespace SqlPad.Oracle
 						Owner = queryBlock,
 						AnalyticClauseNode = analyticClauseNode,
 						ParameterListNode = parameterList,
-						ParameterNodes = new [] { parameter },
+						ParameterNodes = parameterNodes.AsReadOnly(),
 						SelectListColumn = selectListColumn
 					};
 
@@ -532,7 +534,12 @@ namespace SqlPad.Oracle
 
 			var parameterList = functionCallNodes.SingleOrDefault(n => n.Id == NonTerminals.ParenthesisEnclosedAggregationFunctionParameters);
 			var parameterExpressionRootNodes = parameterList != null
-				? parameterList.GetPathFilterDescendants(n => !n.Id.In(NonTerminals.NestedQuery, NonTerminals.ParenthesisEnclosedAggregationFunctionParameters), NonTerminals.ExpressionList).Select(n => n.ChildNodes.FirstOrDefault()).ToArray()
+				? parameterList
+					.GetPathFilterDescendants(
+						n => !n.Id.In(NonTerminals.NestedQuery, NonTerminals.ParenthesisEnclosedAggregationFunctionParameters, NonTerminals.AggregateFunctionCall, NonTerminals.AnalyticFunctionCall),
+						NonTerminals.ExpressionList)
+					.Select(n => n.ChildNodes.FirstOrDefault())
+					.ToArray()
 				: null;
 
 			var functionReference =

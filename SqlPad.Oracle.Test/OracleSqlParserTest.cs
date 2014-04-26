@@ -963,6 +963,18 @@ namespace SqlPad.Oracle.Test
 			// TODO: Precise assertions
 		}
 
+		[Test(Description = @"Tests CAST function with target type of DATE (keyword). ")]
+		public void TestCastFunctionWithInnerFunctionCall()
+		{
+			const string query1 = @"SELECT CAST(SYS_EXTRACT_UTC(SYSTIMESTAMP) AS DATE) VALIDATIONTIMESTAMP FROM DUAL";
+			var result = Parser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			// TODO: Precise assertions
+		}
+
 		[Test(Description = @"Tests TREAT function. "), Ignore]
 		public void TestThreatFunction()
 		{
@@ -1067,6 +1079,18 @@ namespace SqlPad.Oracle.Test
 
 			result.Count.ShouldBe(1);
 			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+
+			// TODO: Precise assertions
+		}
+
+		[Test(Description = @"Tests LNNVL function. ")]
+		public void TestLnnvlFunction()
+		{
+			const string query1 = @"SELECT 1 FROM DUAL WHERE LNNVL(1 = 0) AND LNNVL(NULL = 0)";
+			var result = Parser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 			// TODO: Precise assertions
 		}
