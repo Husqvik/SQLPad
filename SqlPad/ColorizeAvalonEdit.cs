@@ -9,7 +9,7 @@ namespace SqlPad
 {
 	public class ColorizeAvalonEdit : DocumentColorizingTransformer
 	{
-		private StatementCollection _parsedStatements;
+		public StatementCollection Statements { get; private set; }
 		private readonly Stack<ICollection<TextSegment>> _highlightSegments = new Stack<ICollection<TextSegment>>();
 		private readonly IStatementValidator _validator = ConfigurationProvider.InfrastructureFactory.CreateStatementValidator();
 		private readonly ISqlParser _parser = ConfigurationProvider.InfrastructureFactory.CreateSqlParser();
@@ -22,17 +22,17 @@ namespace SqlPad
 		private static readonly SolidColorBrush FunctionBrush = new SolidColorBrush(Colors.Magenta);
 		private static readonly Color ValidStatementBackground = Color.FromArgb(32, Colors.LightGreen.R, Colors.LightGreen.G, Colors.LightGreen.B);
 		private static readonly Color InvalidStatementBackground = Color.FromArgb(32, Colors.PaleVioletRed.R, Colors.PaleVioletRed.G, Colors.PaleVioletRed.B);
-		
-		private Dictionary<StatementBase, IValidationModel> _validationModels;
+
+		public IDictionary<StatementBase, IValidationModel> ValidationModels { get; private set; }
 
 		public void SetStatementCollection(StatementCollection statements)
 		{
 			if (statements == null)
 				return;
 
-			_parsedStatements = statements;
+			Statements = statements;
 
-			_validationModels = _parsedStatements.Select(s => _validator.ResolveReferences(null, s, _databaseModel))
+			ValidationModels = Statements.Select(s => _validator.ResolveReferences(null, s, _databaseModel))
 				.ToDictionary(vm => vm.Statement, vm => vm);
 		}
 
@@ -54,10 +54,10 @@ namespace SqlPad
 
 		protected override void ColorizeLine(DocumentLine line)
 		{
-			if (_parsedStatements == null)
+			if (Statements == null)
 				return;
 
-			var statementsAtLine = _parsedStatements.Where(s => s.SourcePosition.IndexStart <= line.EndOffset && s.SourcePosition.IndexEnd >= line.Offset);
+			var statementsAtLine = Statements.Where(s => s.SourcePosition.IndexStart <= line.EndOffset && s.SourcePosition.IndexEnd >= line.Offset);
 
 			foreach (var statement in statementsAtLine)
 			{
@@ -66,7 +66,7 @@ namespace SqlPad
 				var colorStartOffset = Math.Max(line.Offset, statement.SourcePosition.IndexStart);
 				var colorEndOffset = Math.Min(line.EndOffset, statement.SourcePosition.IndexEnd + 1);
 
-				var validationModel = _validationModels[statement];
+				var validationModel = ValidationModels[statement];
 				var nodeRecognizeData = validationModel.ObjectNodeValidity
 					.Select(kvp => new KeyValuePair<StatementDescriptionNode, bool>(kvp.Key, kvp.Value.IsRecognized))
 					.Concat(validationModel.FunctionNodeValidity.Select(kvp => new KeyValuePair<StatementDescriptionNode, bool>(kvp.Key, kvp.Value.IsRecognized)))

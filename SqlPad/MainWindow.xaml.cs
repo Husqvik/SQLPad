@@ -19,6 +19,7 @@ using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Editing;
 using ICSharpCode.AvalonEdit.Highlighting;
+using ICSharpCode.AvalonEdit.Rendering;
 using SqlPad.Commands;
 
 namespace SqlPad
@@ -34,6 +35,7 @@ namespace SqlPad
 		private readonly ICodeCompletionProvider _codeCompletionProvider;
 		private readonly ICodeSnippetProvider _codeSnippetProvider;
 		private readonly IContextActionProvider _contextActionProvider;
+		private readonly IStatementFormatter _statementFormatter;
 		private readonly IDatabaseModel _databaseModel;
 		
 		private readonly ToolTip _toolTip = new ToolTip();
@@ -51,6 +53,7 @@ namespace SqlPad
 			_codeCompletionProvider = _infrastructureFactory.CreateCodeCompletionProvider();
 			_codeSnippetProvider = _infrastructureFactory.CreateSnippetProvider();
 			_contextActionProvider = _infrastructureFactory.CreateContextActionProvider();
+			_statementFormatter = _infrastructureFactory.CreateSqlFormatter(new SqlFormatterOptions());
 			_databaseModel = _infrastructureFactory.CreateDatabaseModel(ConfigurationProvider.ConnectionStrings["Default"]);
 		}
 
@@ -192,12 +195,19 @@ namespace SqlPad
 
 		void MouseHoverHandler(object sender, MouseEventArgs e)
 		{
-			var pos = Editor.GetPositionFromPoint(e.GetPosition(Editor));
-			if (pos == null)
+			var position = Editor.GetPositionFromPoint(e.GetPosition(Editor));
+			if (!position.HasValue || _colorizeAvalonEdit.Statements == null)
 				return;
-			
+
+			var offset = Editor.Document.GetOffset(position.Value.Line, position.Value.Column);
+			var lineByOffset = Editor.Document.GetLineByOffset(offset);
+
+			var terminal = _colorizeAvalonEdit.Statements.GetTerminalAtPosition(offset);
+			if (terminal == null)
+				return;
+
 			_toolTip.PlacementTarget = this; // required for property inheritance
-			_toolTip.Content = pos.ToString();
+			_toolTip.Content = terminal.Id;
 			_toolTip.IsOpen = true;
 			e.Handled = true;
 		}
@@ -274,6 +284,11 @@ namespace SqlPad
 					_colorizeAvalonEdit.SetHighlightSegments(highlightSegments);
 					Editor.TextArea.TextView.Redraw();
 				}
+			}
+			else if (e.Key == Key.F && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt))
+			{
+				Trace.WriteLine("CONTROL ALT + F");
+				var formattedStatement = _statementFormatter.FormatStatement(_colorizeAvalonEdit.Statements, 0, Editor.Text.Length - 1);
 			}
 
 			if ((e.Key == Key.Back || e.Key == Key.Delete) && _multiNodeEditor != null)

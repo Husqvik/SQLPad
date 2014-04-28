@@ -51,6 +51,11 @@ namespace SqlPad.Oracle
 		{
 			return new OracleMultiNodeEditorDataProvider();
 		}
+
+		public IStatementFormatter CreateSqlFormatter(SqlFormatterOptions options)
+		{
+			return new OracleStatementFormatter(options);
+		}
 		#endregion
 	}
 }
