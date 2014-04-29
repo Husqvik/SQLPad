@@ -10,21 +10,6 @@ namespace SqlPad.Oracle
 	{
 		private const string QuoteCharacter = "\"";
 
-		private static readonly HashSet<string> SingleCharacterTerminals =
-			new HashSet<string>
-			{
-				Terminals.LeftParenthesis,
-				Terminals.RightParenthesis,
-				Terminals.Comma,
-				Terminals.Semicolon,
-				Terminals.Dot,
-				Terminals.MathDivide,
-				Terminals.MathPlus,
-				Terminals.MathMinus,
-				Terminals.At,
-				Terminals.Colon
-			};
-
 		public static string ToSimpleIdentifier(this string identifier)
 		{
 			if (String.IsNullOrWhiteSpace(identifier))
@@ -157,7 +142,7 @@ namespace SqlPad.Oracle
 
 		public static bool IsSingleCharacterTerminal(this string terminalId)
 		{
-			return SingleCharacterTerminals.Contains(terminalId);
+			return OracleGrammarDescription.SingleCharacterTerminals.Contains(terminalId);
 		}
 	}
 

@@ -50,6 +50,7 @@ namespace SqlPad.Oracle
 			public const string CrossOrOuterApplyClause = "CrossOrOuterApplyClause";
 			public const string DatabaseLink = "DatabaseLink";
 			public const string DataType = "DataType";
+			public const string DataTypeInnerName = "DataTypeInnerName";
 			public const string DataTypePrecisionAndScale = "DataTypePrecisionAndScale";
 			public const string DepthOrBreadth = "DepthOrBreadth";
 			public const string DistinctModifier = "DistinctModifier";
@@ -443,6 +444,26 @@ namespace SqlPad.Oracle
 		private static readonly HashSet<string> Keywords = new HashSet<string> { "ALL", "AND", "ANY", "ASC", "BETWEEN", "BY", "CHECK", "COLUMN", "COMMENT", "CONNECT", "CURRENT", "DATE", "DEFAULT", "DELETE", "DESC", "DISTINCT", "ELSE", "EXISTS", "FOR", "FROM", "GROUP", "HAVING", "IMMEDIATE", "IN", "INTERSECT", "INTO", "IS", "LEVEL", "LIKE", "MINUS", "NOT", "NOWAIT", "NULL", "OF", "ON", "OPTION", "OR", "ORDER", "PUBLIC", "ROW", "ROWID", "ROWNUM", "ROWS", "SELECT", "SET", "SOME", "START", "SYSDATE", "TABLE", "THEN", "TO", "UNION", "UNIQUE", "UPDATE", "WHERE", "WITH" };
 		
 		private static readonly HashSet<string> LiteralsInternal = new HashSet<string> { Terminals.IntegerLiteral, Terminals.NumberLiteral, Terminals.StringLiteral };
+
+		private static readonly HashSet<string> SingleCharacterTerminalsInternal =
+			new HashSet<string>
+			{
+				Terminals.LeftParenthesis,
+				Terminals.RightParenthesis,
+				Terminals.Comma,
+				Terminals.Semicolon,
+				Terminals.Dot,
+				Terminals.MathDivide,
+				Terminals.MathPlus,
+				Terminals.MathMinus,
+				Terminals.At,
+				Terminals.Colon
+			};
+
+		public static ICollection<string> SingleCharacterTerminals
+		{
+			get { return SingleCharacterTerminalsInternal; }
+		}
 
 		public static ICollection<string> Identifiers
 		{
