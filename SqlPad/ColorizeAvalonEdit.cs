@@ -9,6 +9,8 @@ namespace SqlPad
 {
 	public class ColorizeAvalonEdit : DocumentColorizingTransformer
 	{
+		private static readonly object LockObject = new object();
+
 		public StatementCollection Statements { get; private set; }
 		private readonly Stack<ICollection<TextSegment>> _highlightSegments = new Stack<ICollection<TextSegment>>();
 		private readonly IStatementValidator _validator = ConfigurationProvider.InfrastructureFactory.CreateStatementValidator();
@@ -25,30 +27,73 @@ namespace SqlPad
 
 		public IDictionary<StatementBase, IValidationModel> ValidationModels { get; private set; }
 
+		private readonly Dictionary<DocumentLine, ICollection<StatementDescriptionNode>> _lineTerminals = new Dictionary<DocumentLine, ICollection<StatementDescriptionNode>>();
+
 		public void SetStatementCollection(StatementCollection statements)
 		{
 			if (statements == null)
 				return;
 
-			Statements = statements;
+			lock (LockObject)
+			{
+				Statements = statements;
 
-			ValidationModels = Statements.Select(s => _validator.ResolveReferences(null, s, _databaseModel))
-				.ToDictionary(vm => vm.Statement, vm => vm);
+				ValidationModels = Statements.Select(s => _validator.ResolveReferences(null, s, _databaseModel))
+					.ToDictionary(vm => vm.Statement, vm => vm);
+
+				_lineTerminals.Clear();
+			}
 		}
 
 		public void SetHighlightSegments(ICollection<TextSegment> highlightSegments)
 		{
-			if (highlightSegments != null)
+			lock (LockObject)
 			{
-				if (highlightSegments.Count == 0 ||
-					_highlightSegments.SelectMany(c => c).Contains(highlightSegments.First()))
+				if (highlightSegments != null)
+				{
+					if (highlightSegments.Count == 0 ||
+					    _highlightSegments.SelectMany(c => c).Contains(highlightSegments.First()))
+						return;
+
+					_highlightSegments.Push(highlightSegments);
+				}
+				else if (_highlightSegments.Count > 0)
+				{
+					_highlightSegments.Pop();
+				}
+			}
+		}
+
+		protected override void Colorize(ITextRunConstructionContext context)
+		{
+			lock (LockObject)
+			{
+				if (Statements == null)
 					return;
 
-				_highlightSegments.Push(highlightSegments);
-			}
-			else if (_highlightSegments.Count > 0)
-			{
-				_highlightSegments.Pop();
+				if (_lineTerminals.Count == 0)
+				{
+					var terminalEnumerator = Statements.SelectMany(s => s.AllTerminals).GetEnumerator();
+					if (terminalEnumerator.MoveNext())
+					{
+						foreach (var line in context.Document.Lines)
+						{
+							var singleLineTerminals = new List<StatementDescriptionNode>();
+							_lineTerminals.Add(line, singleLineTerminals);
+
+							do
+							{
+								if (line.EndOffset < terminalEnumerator.Current.SourcePosition.IndexStart)
+									break;
+
+								singleLineTerminals.Add(terminalEnumerator.Current);
+							}
+							while (terminalEnumerator.MoveNext());
+						}
+					}
+				}
+
+				base.Colorize(context);
 			}
 		}
 
@@ -56,6 +101,26 @@ namespace SqlPad
 		{
 			if (Statements == null)
 				return;
+
+			if (_lineTerminals.ContainsKey(line))
+			{
+				foreach (var terminal in _lineTerminals[line])
+				{
+					SolidColorBrush brush = null;
+					if (_parser.IsKeyword(terminal.Token.Value))
+						brush = KeywordBrush;
+					else if (_parser.IsLiteral(terminal.Id))
+						brush = LiteralBrush;
+					else if (_parser.IsAlias(terminal.Id))
+						brush = AliasBrush;
+
+					if (brush == null)
+						continue;
+
+					ProcessNodeAtLine(line, terminal.SourcePosition,
+						element => element.TextRunProperties.SetForegroundBrush(brush));
+				}
+			}
 
 			var statementsAtLine = Statements.Where(s => s.SourcePosition.IndexStart <= line.EndOffset && s.SourcePosition.IndexEnd >= line.Offset);
 
@@ -78,29 +143,10 @@ namespace SqlPad
 						element => element.TextRunProperties.SetForegroundBrush(ErrorBrush));
 				}
 
-				foreach (var terminal in statement.AllTerminals)
-				{
-					SolidColorBrush brush = null;
-					if (_parser.IsKeyword(terminal.Token.Value))
-						brush = KeywordBrush;
-
-					if (_parser.IsLiteral(terminal.Id))
-						brush = LiteralBrush;
-
-					if (_parser.IsAlias(terminal.Id))
-						brush = AliasBrush;
-
-					if (brush == null)
-						continue;
-
-					ProcessNodeAtLine(line, terminal.SourcePosition,
-						element => element.TextRunProperties.SetForegroundBrush(brush));
-				}
-
 				foreach (var terminal in validationModel.FunctionNodeValidity.Where(kvp => kvp.Value.IsRecognized && kvp.Key.Type == NodeType.Terminal).Select(kvp => kvp.Key))
 				{
 					ProcessNodeAtLine(line, terminal.SourcePosition,
-						   element => element.TextRunProperties.SetForegroundBrush(FunctionBrush));
+						element => element.TextRunProperties.SetForegroundBrush(FunctionBrush));
 				}
 
 				foreach (var invalidGrammarNode in statement.InvalidGrammarNodes)
@@ -113,7 +159,7 @@ namespace SqlPad
 					.Concat(validationModel.ObjectNodeValidity)
 					.Concat(validationModel.FunctionNodeValidity)
 					.Select(nv => new { Node = nv.Key, HasSemanticError = nv.Value.SemanticError != SemanticError.None });
-				
+
 				foreach (var semanticError in semanticErrors.Where(e => e.HasSemanticError))
 				{
 					ProcessNodeAtLine(line, semanticError.Node.SourcePosition,
@@ -162,7 +208,7 @@ namespace SqlPad
 		private void ProcessNodeAtLine(ISegment line, SourcePosition nodePosition, Action<VisualLineElement> action)
 		{
 			if (line.Offset > nodePosition.IndexEnd + 1 ||
-						line.EndOffset < nodePosition.IndexStart)
+			    line.EndOffset < nodePosition.IndexStart)
 				return;
 
 			var errorColorStartOffset = Math.Max(line.Offset, nodePosition.IndexStart);

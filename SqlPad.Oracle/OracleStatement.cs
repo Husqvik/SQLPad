@@ -2,7 +2,7 @@ using System.Diagnostics;
 
 namespace SqlPad.Oracle
 {
-	[DebuggerDisplay("OracleStatement (Count={RootNode.ChildNodes.Count})")]
+	[DebuggerDisplay("OracleStatement (Count={RootNode == null ? 0 : RootNode.ChildNodes.Count})")]
 	public class OracleStatement : StatementBase
 	{
 		public static readonly OracleStatement EmptyStatement =

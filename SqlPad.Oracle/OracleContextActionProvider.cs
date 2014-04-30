@@ -14,13 +14,19 @@ namespace SqlPad.Oracle
 
 		public ICollection<IContextAction> GetContextActions(IDatabaseModel databaseModel, string statementText, int cursorPosition)
 		{
-			var statements = _oracleParser.Parse(statementText);
+			return GetContextActions(databaseModel, _oracleParser.Parse(statementText), cursorPosition);
+		}
+
+		public ICollection<IContextAction> GetContextActions(IDatabaseModel databaseModel, StatementCollection statements, int cursorPosition)
+		{
+			if (statements == null)
+				return EmptyCollection;
 
 			var currentTerminal = statements.GetTerminalAtPosition(cursorPosition, n => Terminals.AllTerminals.Contains(n.Id));
 			if (currentTerminal == null)
 				return EmptyCollection;
 
-			var semanticModel = new OracleStatementSemanticModel(statementText, (OracleStatement)currentTerminal.Statement, (OracleDatabaseModel)databaseModel);
+			var semanticModel = new OracleStatementSemanticModel(null, (OracleStatement)currentTerminal.Statement, (OracleDatabaseModel)databaseModel);
 			var actionList = new List<IContextAction>();
 
 			var addAliasCommand = new AddAliasCommand(semanticModel, currentTerminal);

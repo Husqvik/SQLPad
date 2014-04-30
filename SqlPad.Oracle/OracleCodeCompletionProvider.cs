@@ -30,12 +30,19 @@ namespace SqlPad.Oracle
 
 		public ICollection<ICodeCompletionItem> ResolveItems(IDatabaseModel databaseModel, string statementText, int cursorPosition)
 		{
+			return ResolveItems(databaseModel, statementText, _oracleParser.Parse(statementText), cursorPosition);
+		}
+
+		public ICollection<ICodeCompletionItem> ResolveItems(IDatabaseModel databaseModel, string statementText, StatementCollection statements, int cursorPosition)
+		{
 			//Trace.WriteLine("OracleCodeCompletionProvider.ResolveItems called. Cursor position: "+ cursorPosition);
+
+			if (statements == null)
+				return EmptyCollection;
 
 			StatementDescriptionNode currentNode;
 
 			var completionItems = Enumerable.Empty<ICodeCompletionItem>();
-			var statements = _oracleParser.Parse(statementText);
 			var statement = (OracleStatement)statements.SingleOrDefault(s => s.GetNodeAtPosition(cursorPosition) != null);
 			//
 			/*currentNode = statements.GetTerminalAtPosition(cursorPosition);

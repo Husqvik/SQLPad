@@ -11,12 +11,22 @@ namespace SqlPad.Oracle
 
 		public ICollection<ICodeSnippet> GetSnippets(string statementText, int cursorPosition)
 		{
-			var statement = _oracleParser.Parse(statementText).SingleOrDefault(s => s.SourcePosition.IndexStart <= cursorPosition - 1 && s.SourcePosition.IndexEnd >= cursorPosition - 1);
-			if (statement == null)
+			return GetSnippets(_oracleParser.Parse(statementText), statementText, cursorPosition);
+		}
+
+		public ICollection<ICodeSnippet> GetSnippets(StatementCollection statements, string statementText, int cursorPosition)
+		{
+			if (statements == null)
 				return EmptyCollection;
 
-			var currentNode = statement.GetNodeAtPosition(cursorPosition)
-			                  ?? statement.GetNearestTerminalToPosition(cursorPosition);
+			var statement = statements.SingleOrDefault(s => s.SourcePosition.IndexStart <= cursorPosition - 1 && s.SourcePosition.IndexEnd >= cursorPosition - 1);
+
+			StatementDescriptionNode currentNode = null;
+			if (statement != null)
+			{
+				currentNode = statement.GetNodeAtPosition(cursorPosition)
+				                  ?? statement.GetNearestTerminalToPosition(cursorPosition);
+			}
 
 			if (currentNode != null && currentNode.Id == OracleGrammarDescription.Terminals.RightParenthesis &&
 				currentNode.PreviousTerminal != null && currentNode.PreviousTerminal.PreviousTerminal != null)

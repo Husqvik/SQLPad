@@ -42,12 +42,12 @@ namespace SqlPad
 
 		public StatementDescriptionNode GetNodeAtPosition(int position, Func<StatementDescriptionNode, bool> filter = null)
 		{
-			return RootNode.GetNodeAtPosition(position, filter);
+			return RootNode == null ? null : RootNode.GetNodeAtPosition(position, filter);
 		}
 
 		public StatementDescriptionNode GetNearestTerminalToPosition(int position)
 		{
-			return RootNode.GetNearestTerminalToPosition(position);
+			return RootNode == null ? null : RootNode.GetNearestTerminalToPosition(position);
 		}
 	}
 }

@@ -40,10 +40,6 @@ namespace SqlPad
 		
 		private readonly ToolTip _toolTip = new ToolTip();
 
-//		public static RoutedCommand CommandAddColumnAliases = new RoutedCommand();
-//		public static RoutedCommand CommandWrapAsCommonTableExpression = new RoutedCommand();
-//		public static RoutedCommand CommandToggleQuotedIdentifier = new RoutedCommand();
-
 		public MainWindow()
 		{
 			InitializeComponent();
@@ -69,17 +65,29 @@ namespace SqlPad
 			Editor.Focus();
 		}
 
+		private bool _isParsing;
+
 		private void EditorTextChangedHandler(object sender, EventArgs e)
 		{
-			TextBlockToken.Text = String.Join(", ", _infrastructureFactory.CreateTokenReader(Editor.Text).GetTokens().Select(t => "{" + t.Value + "}"));
-			var statements = ParseStatements();
-			_colorizeAvalonEdit.SetStatementCollection(statements);
-			Editor.TextArea.TextView.Redraw();
+			if (_isParsing)
+				return;
+
+			Task.Factory.StartNew(DoWork, Editor.Text);
 		}
 
-		private StatementCollection ParseStatements()
+		private void DoWork(object text)
 		{
-			return _sqlParser.Parse(Editor.Text);
+			_isParsing = true;
+
+			var statements = _sqlParser.Parse((string)text);
+			_colorizeAvalonEdit.SetStatementCollection(statements);
+
+			Dispatcher.Invoke(() =>
+			                  {
+				                  TextBlockToken.Text = String.Join(", ", statements.SelectMany(s => s.AllTerminals).Select(t => "{" + t.Token.Value + "}"));
+								  Editor.TextArea.TextView.Redraw();
+								  _isParsing = false;
+			                  });
 		}
 
 		private CompletionWindow _completionWindow;
@@ -91,7 +99,7 @@ namespace SqlPad
 				Editor.Document.EndUpdate();
 			}
 
-			var snippets = _codeSnippetProvider.GetSnippets(Editor.Text, Editor.CaretOffset).Select(i => new CompletionData(i)).ToArray();
+			var snippets = _codeSnippetProvider.GetSnippets(_colorizeAvalonEdit.Statements, Editor.Text, Editor.CaretOffset).Select(i => new CompletionData(i)).ToArray();
 			if (_completionWindow == null && snippets.Length > 0)
 			{
 				CreateSnippetCompletionWindow(snippets);
@@ -162,7 +170,7 @@ namespace SqlPad
 
 		private void CreateCodeCompletionWindow()
 		{
-			CreateCompletionWindow(() => _codeCompletionProvider.ResolveItems(_databaseModel, Editor.Text, Editor.CaretOffset).Select(i => new CompletionData(i)), true);
+			CreateCompletionWindow(() => _codeCompletionProvider.ResolveItems(_databaseModel, Editor.Text, _colorizeAvalonEdit.Statements, Editor.CaretOffset).Select(i => new CompletionData(i)), true);
 		}
 
 		private void CreateSnippetCompletionWindow(IEnumerable<ICompletionData> items)
@@ -225,7 +233,7 @@ namespace SqlPad
 
 		private bool PopulateContextMenu()
 		{
-			var menuItems = _contextActionProvider.GetContextActions(_databaseModel, Editor.Text, Editor.CaretOffset)
+			var menuItems = _contextActionProvider.GetContextActions(_databaseModel, _colorizeAvalonEdit.Statements, Editor.CaretOffset)
 				.Select(a => new MenuItem { Header = a.Name, Command = a.Command, CommandParameter = Editor });
 
 			Editor.ContextMenu.Items.Clear();

@@ -4,7 +4,7 @@ namespace SqlPad
 {
 	public interface ICodeSnippetProvider
 	{
-		ICollection<ICodeSnippet> GetSnippets(string statementText, int cursorPosition);
+		ICollection<ICodeSnippet> GetSnippets(StatementCollection statements, string statementText, int cursorPosition);
 	}
 
 	public interface ICodeSnippet
