@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ICSharpCode.AvalonEdit;
 
 namespace SqlPad
 {
@@ -35,6 +36,18 @@ namespace SqlPad
 		{
 			foreach (var item in items)
 				collection.Add(item);
+		}
+
+		public static void ReplaceTextSegments(this TextEditor editor, ICollection<TextSegment> textSegments)
+		{
+			editor.Document.BeginUpdate();
+
+			foreach (var textSegment in textSegments.OrderByDescending(s => s.IndextStart).ThenByDescending(s => s.Length))
+			{
+				editor.Document.Replace(textSegment.IndextStart, textSegment.Length, textSegment.Text);
+			}
+
+			editor.Document.EndUpdate();
 		}
 	}
 }

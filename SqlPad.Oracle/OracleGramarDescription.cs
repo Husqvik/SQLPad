@@ -41,6 +41,7 @@ namespace SqlPad.Oracle
 			public const string CommitComment = "CommitComment";
 			public const string CommitCommentOrWriteOrForce = "CommitCommentOrWriteOrForce";
 			public const string CommitSetScn = "CommitSetScn";
+			public const string CommitStatement = "CommitStatement";
 			public const string CommitWriteClause = "CommitWriteClause";
 			public const string ConcatenatedSubquery = "ConcatenatedSubquery";
 			public const string Condition = "Condition";
@@ -52,6 +53,7 @@ namespace SqlPad.Oracle
 			public const string DataType = "DataType";
 			public const string DataTypeInnerName = "DataTypeInnerName";
 			public const string DataTypePrecisionAndScale = "DataTypePrecisionAndScale";
+			public const string DeleteStatement = "DeleteStatement";
 			public const string DepthOrBreadth = "DepthOrBreadth";
 			public const string DistinctModifier = "DistinctModifier";
 			public const string ErrorLoggingClause = "ErrorLoggingClause";
@@ -182,6 +184,7 @@ namespace SqlPad.Oracle
 			public const string SeedClause = "SeedClause";
 			public const string SelectExpressionExpressionChainedList = "SelectExpressionExpressionChainedList";
 			public const string SelectList = "SelectList";
+			public const string SelectStatement = "SelectStatement";
 			public const string Semicolon = "Semicolon";
 			public const string SequenceCurrentValueOrNextValue = "SequenceCurrentValueOrNextValue";
 			public const string SerializableOrReadCommitted = "SerializableOrReadCommitted";
@@ -190,6 +193,7 @@ namespace SqlPad.Oracle
 			public const string SetObjectValueEqualsExpressionOrNestedQuery = "SetObjectValueEqualsExpressionOrNestedQuery";
 			public const string SetOperation = "SetOperation";
 			public const string SetQualifier = "SetQualifier";
+			public const string SetTransactionStatement = "SetTransactionStatement";
 			public const string SimpleCaseExpressionBranch = "SimpleCaseExpressionBranch";
 			public const string SortOrder = "SortOrder";
 			public const string StringOrIntegerLiteral = "StringOrIntegerLiteral";
@@ -221,6 +225,7 @@ namespace SqlPad.Oracle
 			public const string UpdateSetColumnOrColumnList = "UpdateSetColumnOrColumnList";
 			public const string UpdateSetColumnOrColumnListChainedList = "UpdateSetColumnOrColumnListChainedList";
 			public const string UpdateSetColumnsOrObjectValue = "UpdateSetColumnsOrObjectValue";
+			public const string UpdateStatement = "UpdateStatement";
 			public const string WaitOrNowait = "WaitOrNowait";
 			public const string WhereClause = "WhereClause";
 			public const string WindowingClause = "WindowingClause";

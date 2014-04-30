@@ -28,8 +28,14 @@ namespace SqlPad.Oracle
 		public static class NonTerminals
 		{
 <#
+		var startNonterminalIds = grammarXml.Element(xmlNamespace + "SqlGrammar").Element(xmlNamespace + "StartSymbols").Elements().Select(e => e.Attribute("Id").Value);
 		var nonTerminalIds = grammarXml.Element(xmlNamespace + "SqlGrammar").Element(xmlNamespace + "Rules").Elements().Select(r => r.Element(xmlNamespace + "Sequences"))
-			.SelectMany(s => s.Elements()).SelectMany(s => s.Elements(xmlNamespace + "NonTerminal")).Select(e => e.Attribute("Id").Value).Distinct().OrderBy(id => id);
+			.SelectMany(s => s.Elements())
+			.SelectMany(s => s.Elements(xmlNamespace + "NonTerminal"))
+			.Select(e => e.Attribute("Id").Value)
+			.Distinct()
+			.Concat(startNonterminalIds)
+			.OrderBy(id => id);
 		foreach(var nonTerminalId in nonTerminalIds)
 		{
 #>

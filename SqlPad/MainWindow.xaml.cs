@@ -288,7 +288,8 @@ namespace SqlPad
 			else if (e.Key == Key.F && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt))
 			{
 				Trace.WriteLine("CONTROL ALT + F");
-				var formattedStatement = _statementFormatter.FormatStatement(_colorizeAvalonEdit.Statements, 0, Editor.Text.Length - 1);
+				var textSegments = _statementFormatter.FormatStatement(_colorizeAvalonEdit.Statements, Editor.SelectionStart, Editor.SelectionLength);
+				Editor.ReplaceTextSegments(textSegments);
 			}
 
 			if ((e.Key == Key.Back || e.Key == Key.Delete) && _multiNodeEditor != null)

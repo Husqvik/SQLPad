@@ -49,6 +49,7 @@ namespace SqlPad.Oracle
 				new LineBreakSettings { NonTerminalId = NonTerminals.SubqueryFactoringClause, ChildNodeId = Terminals.With, BreakPosition = LineBreakPosition.AfterNode, GetIndentationAfter = n => 1 },
 				new LineBreakSettings { NonTerminalId = NonTerminals.SubqueryFactoringClause, BreakPosition = LineBreakPosition.AfterNode, GetIndentationAfter = n => -2 },
 				new LineBreakSettings { NonTerminalId = NonTerminals.SubqueryComponent, ChildNodeId = Terminals.As, BreakPosition = LineBreakPosition.AfterNode },
+				new LineBreakSettings { NonTerminalId = NonTerminals.SelectStatement, ChildNodeId = Terminals.Semicolon, BreakPosition = LineBreakPosition.AfterNode, GetIndentationAfter = n => -1 },
 			};
 
 		private static int GetAfterTableReferenceIndentation(StatementDescriptionNode node)
@@ -71,10 +72,17 @@ namespace SqlPad.Oracle
 			_options = options;
 		}
 
-		public string FormatStatement(StatementCollection statements, int selectionStart, int selectionLength)
+		public ICollection<TextSegment> FormatStatement(StatementCollection statements, int selectionStart, int selectionLength)
 		{
-			var formattedStatements = statements.Where(s => s.SourcePosition.IndexStart <= selectionStart + selectionLength && s.SourcePosition.IndexEnd >= selectionStart);
-			var stringBuilder = new StringBuilder(selectionLength - selectionStart);
+			var formattedStatements = statements.Where(s => s.SourcePosition.IndexStart <= selectionStart + selectionLength && s.SourcePosition.IndexEnd >= selectionStart)
+				.OrderBy(s => s.SourcePosition.IndexStart)
+				.ToArray();
+
+			if (formattedStatements.Length == 0)
+				return new TextSegment[0];
+
+			var stringBuilder = new StringBuilder();
+			var skipSpaceBeforeToken = false;
 
 			foreach (var statement in formattedStatements)
 			{
@@ -82,13 +90,19 @@ namespace SqlPad.Oracle
 					continue;
 
 				//var queryLevel = startNode.GetNestedQueryLevel();
-				var skipSpaceBeforeToken = false;
 				string indentation = null;
 
 				FormatNode(statement.RootNode, null, stringBuilder, ref skipSpaceBeforeToken, ref indentation);
 			}
 
-			return stringBuilder.ToString();
+			var indextStart = formattedStatements[0].RootNode.FirstTerminalNode.SourcePosition.IndexStart;
+			
+			return new [] { new TextSegment
+			                {
+				                Text = stringBuilder.ToString(),
+								IndextStart = indextStart,
+								Length = formattedStatements[formattedStatements.Length - 1].RootNode.LastTerminalNode.SourcePosition.IndexEnd - indextStart + 1,
+			                } };
 		}
 
 		private void FormatNode(StatementDescriptionNode startNode, StatementDescriptionNode endNode, StringBuilder stringBuilder, ref bool skipSpaceBeforeToken, ref string indentation)

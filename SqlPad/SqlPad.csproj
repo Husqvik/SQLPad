@@ -76,10 +76,7 @@
     <Compile Include="ColorizeAvalonEdit.cs" />
     <Compile Include="EditCommandBase.cs" />
     <Compile Include="CommandSettingsModel.cs" />
-    <Compile Include="Commands\IAddMissingAliasesCommand.cs" />
     <Compile Include="Commands\ICommandFactory.cs" />
-    <Compile Include="Commands\IToggleQuotedIdentifierCommand.cs" />
-    <Compile Include="Commands\IWrapAsCommonTableExpressionCommand.cs" />
     <Compile Include="ConfigurationProvider.cs" />
     <Compile Include="EditDialog.xaml.cs">
       <DependentUpon>EditDialog.xaml</DependentUpon>

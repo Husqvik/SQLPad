@@ -31,14 +31,7 @@ namespace SqlPad
 			var textSegments = new List<TextSegment>();
 			ExecuteInternal(editor.Text, textSegments);
 
-			editor.Document.BeginUpdate();
-
-			foreach (var textSegment in textSegments.OrderByDescending(s => s.IndextStart).ThenByDescending(s => s.Length))
-			{
-				editor.Document.Replace(textSegment.IndextStart, textSegment.Length, textSegment.Text);
-			}
-
-			editor.Document.EndUpdate();
+			editor.ReplaceTextSegments(textSegments);
 		}
 
 		protected abstract void ExecuteInternal(string statementText, ICollection<TextSegment> segmentsToReplace);
