@@ -460,9 +460,24 @@ namespace SqlPad.Oracle
 				Terminals.Colon
 			};
 
+		private static readonly HashSet<string> MathTerminalsInternal =
+			new HashSet<string>
+			{
+				Terminals.MathFactor,
+				Terminals.MathDivide,
+				Terminals.MathPlus,
+				Terminals.MathMinus,
+				Terminals.OperatorConcatenation
+			};
+
 		public static ICollection<string> SingleCharacterTerminals
 		{
 			get { return SingleCharacterTerminalsInternal; }
+		}
+
+		public static ICollection<string> MathTerminals
+		{
+			get { return MathTerminalsInternal; }
 		}
 
 		public static ICollection<string> Identifiers

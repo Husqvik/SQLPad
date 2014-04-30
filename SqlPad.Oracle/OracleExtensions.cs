@@ -112,7 +112,7 @@ namespace SqlPad.Oracle
 				: node.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBoundary, NonTerminals.Expression);
 		}
 
-		public static int GetNestedQueryLevel(this StatementDescriptionNode node)
+		/*public static int GetNestedQueryLevel(this StatementDescriptionNode node)
 		{
 			var level = 0;
 
@@ -123,7 +123,7 @@ namespace SqlPad.Oracle
 			}
 
 			return level - 1;
-		}
+		}*/
 
 		public static string ToCategoryLabel(this TableReferenceType type)
 		{
