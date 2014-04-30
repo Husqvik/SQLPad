@@ -11,27 +11,17 @@ namespace SqlPad
 
 		public ProcessingStatus ProcessingStatus { get; set; }
 
-		public ICollection<StatementDescriptionNode> NodeCollection { get; set; }
+		public StatementDescriptionNode RootNode { get; set; }
 		
 		public ICollection<string> TerminalCandidates { get; set; }
 
 		public SourcePosition SourcePosition { get; set; }
 
-		public IEnumerable<StatementDescriptionNode> AllNodes
-		{
-			get
-			{
-				return NodeCollection == null
-					? Enumerable.Empty<StatementDescriptionNode>()
-					: NodeCollection.SelectMany(n => n.AllChildNodes);
-			}
-		}
-
 		public IEnumerable<StatementDescriptionNode> InvalidGrammarNodes
 		{
 			get
 			{
-				return _invalidGrammarNodes ?? (_invalidGrammarNodes = AllNodes.Where(n => !n.IsGrammarValid).ToArray());
+				return _invalidGrammarNodes ?? (_invalidGrammarNodes = RootNode.AllChildNodes.Where(n => !n.IsGrammarValid).ToArray());
 			}
 		}
 
@@ -45,19 +35,19 @@ namespace SqlPad
 
 		private ICollection<StatementDescriptionNode> BuildTerminalCollection()
 		{
-			return NodeCollection == null
+			return RootNode == null
 				? new StatementDescriptionNode[0]
-				: NodeCollection.SelectMany(n => n.Terminals).ToArray();
+				: RootNode.Terminals.ToArray();
 		}
 
 		public StatementDescriptionNode GetNodeAtPosition(int position, Func<StatementDescriptionNode, bool> filter = null)
 		{
-			return NodeCollection.Select(n => n.GetNodeAtPosition(position, filter)).FirstOrDefault(n => n != null);
+			return RootNode.GetNodeAtPosition(position, filter);
 		}
 
 		public StatementDescriptionNode GetNearestTerminalToPosition(int position)
 		{
-			return NodeCollection.Select(n => n.GetNearestTerminalToPosition(position)).FirstOrDefault(n => n != null);
+			return RootNode.GetNearestTerminalToPosition(position);
 		}
 	}
 }

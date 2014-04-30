@@ -35,7 +35,10 @@ namespace SqlPad.Oracle
 
 			Statement = statement;
 
-			_queryBlockResults = statement.NodeCollection.SelectMany(n => n.GetDescendants(NonTerminals.QueryBlock))
+			if (statement.RootNode == null)
+				return;
+
+			_queryBlockResults = statement.RootNode.GetDescendants(NonTerminals.QueryBlock)
 				.OrderByDescending(q => q.Level).ToDictionary(n => n, n => new OracleQueryBlock { RootNode = n, Statement = statement });
 
 			foreach (var queryBlockNode in _queryBlockResults)

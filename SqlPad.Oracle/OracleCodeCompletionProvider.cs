@@ -86,7 +86,7 @@ namespace SqlPad.Oracle
 					currentNode = statement.GetNearestTerminalToPosition(cursorPosition);
 					isCursorAtTerminal = currentNode.SourcePosition.IndexEnd + 1 == cursorPosition;
 				}
-				else if (currentNode.Id.In(Terminals.RightParenthesis, Terminals.Comma))
+				else if (currentNode.Id.In(Terminals.RightParenthesis, Terminals.Comma, Terminals.Semicolon))
 				{
 					var previousNode = statement.GetNearestTerminalToPosition(cursorPosition - 1);
 					if (previousNode != null)

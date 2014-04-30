@@ -21,13 +21,14 @@ namespace SqlPad.Oracle.Test
 			var oracleStatement = result.Single();
 			oracleStatement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-			_rootNode = oracleStatement.NodeCollection.Single();
+			_rootNode = oracleStatement.RootNode;
 		}
 
 		[Test(Description = @"")]
 		public void TestGetPathFilterDescendants()
 		{
-			var commonTableExpressions = _rootNode.GetPathFilterDescendants(n => n.Id != OracleGrammarDescription.NonTerminals.NestedQuery, OracleGrammarDescription.NonTerminals.SubqueryComponent).ToArray();
+			var rootNestedQuery = _rootNode.ChildNodes.Single(n => n.Id == OracleGrammarDescription.NonTerminals.NestedQuery);
+			var commonTableExpressions = rootNestedQuery.GetPathFilterDescendants(n => n.Id != OracleGrammarDescription.NonTerminals.NestedQuery, OracleGrammarDescription.NonTerminals.SubqueryComponent).ToArray();
 			commonTableExpressions.Length.ShouldBe(1);
 
 			commonTableExpressions = _rootNode.GetDescendants(OracleGrammarDescription.NonTerminals.SubqueryComponent).ToArray();

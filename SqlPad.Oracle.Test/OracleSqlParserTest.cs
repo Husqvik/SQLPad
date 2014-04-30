@@ -45,7 +45,7 @@ namespace SqlPad.Oracle.Test
 			result.ShouldNotBe(null);
 			result.Count.ShouldBe(1);
 			var statement = result.Single();
-			statement.AllNodes.ToList()
+			statement.RootNode.AllChildNodes.ToList()
 				.ForEach(n => n.Statement.ShouldBe(statement));
 
 			var terminals = statement.AllTerminals.ToList();
@@ -80,7 +80,7 @@ namespace SqlPad.Oracle.Test
 			result.Count.ShouldBe(1);
 			var statement = result.Single();
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-			var rootToken = statement.NodeCollection.Single();
+			var rootToken = statement.RootNode;
 			var terminals = rootToken.Terminals.ToArray();
 
 			terminals.Length.ShouldBe(14);
@@ -148,7 +148,7 @@ namespace SqlPad.Oracle.Test
 
 			result.Count.ShouldBe(1);
 			var statement = result.Single();
-			statement.NodeCollection.Count.ShouldBe(1);
+			statement.RootNode.ChildNodes.Count.ShouldBe(1);
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
 			var terminals = statement.AllTerminals.ToArray();
 			terminals.Length.ShouldBe(2);
@@ -177,7 +177,7 @@ namespace SqlPad.Oracle.Test
 
 			result.Count.ShouldBe(1);
 			var statement = result.Single();
-			statement.NodeCollection.Count.ShouldBe(1);
+			statement.RootNode.ChildNodes.Count.ShouldBe(1);
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
 			var terminals = statement.AllTerminals.ToArray();
 			terminals.Length.ShouldBe(3);
@@ -192,7 +192,7 @@ namespace SqlPad.Oracle.Test
 
 			result.Count.ShouldBe(1);
 			statement = result.Single();
-			statement.NodeCollection.Count.ShouldBe(1);
+			statement.RootNode.ChildNodes.Count.ShouldBe(1);
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
 
 			terminals = statement.AllTerminals.ToArray();
@@ -357,7 +357,7 @@ namespace SqlPad.Oracle.Test
 
 			result.Count.ShouldBe(1);
 			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-			result.Single().NodeCollection.Count.ShouldBe(0);
+			result.Single().RootNode.ShouldBe(null);
 		}
 
 		[Test(Description = @"Tests parsing of valid statement after invalid statement. ")]
@@ -368,11 +368,11 @@ namespace SqlPad.Oracle.Test
 
 			result.Count.ShouldBe(2);
 			result.First().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
-			result.First().NodeCollection.Count.ShouldBe(1);
+			result.First().RootNode.ChildNodes.Count.ShouldBe(1);
 			result.First().AllTerminals.Count().ShouldBe(4);
 
 			result.Last().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-			result.Last().NodeCollection.Count.ShouldBe(1);
+			result.Last().RootNode.ChildNodes.Count.ShouldBe(1);
 			result.Last().AllTerminals.Count().ShouldBe(4);
 		}
 
@@ -1178,8 +1178,8 @@ namespace SqlPad.Oracle.Test
 			result.Count.ShouldBe(1);
 			statement = result.Single();
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
-			statement.NodeCollection.Count.ShouldBe(1);
-			var rootNode = statement.NodeCollection.Single();
+			statement.RootNode.ChildNodes.Count.ShouldBe(1);
+			var rootNode = statement.RootNode;
 			
 			terminals = rootNode.Terminals.ToArray();
 			terminals.Length.ShouldBe(13);
@@ -1217,8 +1217,8 @@ namespace SqlPad.Oracle.Test
 			var statement = result.Single();
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
 
-			statement.NodeCollection.Count.ShouldBe(1);
-			var rootNode = statement.NodeCollection.Single();
+			statement.RootNode.ChildNodes.Count.ShouldBe(1);
+			var rootNode = statement.RootNode;
 
 			var terminals = rootNode.Terminals.ToArray();
 			terminals.Length.ShouldBe(9);
@@ -1241,8 +1241,8 @@ namespace SqlPad.Oracle.Test
 			var statement = result.Single();
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
 
-			statement.NodeCollection.Count.ShouldBe(1);
-			var rootNode = statement.NodeCollection.Single();
+			statement.RootNode.ChildNodes.Count.ShouldBe(1);
+			var rootNode = statement.RootNode;
 
 			var terminals = rootNode.Terminals.ToArray();
 			terminals.Length.ShouldBe(6);
@@ -1258,8 +1258,8 @@ namespace SqlPad.Oracle.Test
 			var statement = result.Single();
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
 
-			statement.NodeCollection.Count.ShouldBe(1);
-			var rootNode = statement.NodeCollection.Single();
+			statement.RootNode.ChildNodes.Count.ShouldBe(1);
+			var rootNode = statement.RootNode;
 
 			var terminals = rootNode.Terminals.ToArray();
 			terminals.Length.ShouldBe(7);
@@ -1339,7 +1339,7 @@ namespace SqlPad.Oracle.Test
 			result.Count.ShouldBe(1);
 			var statement = result.Single();
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-			var rootNode = statement.NodeCollection.Single();
+			var rootNode = statement.RootNode;
 
 			var terminals = rootNode.Terminals.ToArray();
 			terminals.Length.ShouldBe(16);
@@ -1502,7 +1502,7 @@ namespace SqlPad.Oracle.Test
 			public void TestTerminalCandidatesAfterSelectColumnWithAlias()
 			{
 				const string statement1 = @"SELECT 1 A";
-				var node = Parser.Parse(statement1).Single().NodeCollection.Single().LastTerminalNode;
+				var node = Parser.Parse(statement1).Single().RootNode.LastTerminalNode;
 				var terminalCandidates = Parser.GetTerminalCandidates(node).OrderBy(t => t).ToArray();
 				terminalCandidates.Length.ShouldBe(2);
 				terminalCandidates[0].ShouldBe(Terminals.Comma);
@@ -1513,7 +1513,7 @@ namespace SqlPad.Oracle.Test
 			public void TestTerminalCandidatesAfterSelectColumnWithLiteral()
 			{
 				const string statement2 = @"SELECT 1";
-				var node = Parser.Parse(statement2).Single().NodeCollection.Single().LastTerminalNode;
+				var node = Parser.Parse(statement2).Single().RootNode.LastTerminalNode;
 				var terminalCandidates = Parser.GetTerminalCandidates(node).OrderBy(t => t).ToArray();
 				terminalCandidates.Length.ShouldBe(9);
 				terminalCandidates[0].ShouldBe(Terminals.As);
@@ -1526,7 +1526,7 @@ namespace SqlPad.Oracle.Test
 			public void TestTerminalCandidatesAfterSelectColumnWithObjectPrefix()
 			{
 				const string statement2 = @"SELECT OBJECT_PREFIX.";
-				var node = Parser.Parse(statement2).Single().NodeCollection.Single().LastTerminalNode;
+				var node = Parser.Parse(statement2).Single().RootNode.LastTerminalNode;
 				var terminalCandidates = Parser.GetTerminalCandidates(node).OrderBy(t => t).ToArray();
 				terminalCandidates.Length.ShouldBe(5);
 				terminalCandidates[0].ShouldBe(Terminals.Asterisk);

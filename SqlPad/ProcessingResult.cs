@@ -8,6 +8,8 @@ namespace SqlPad
 	public struct ProcessingResult
 	{
 		public ProcessingStatus Status { get; set; }
+
+		public string NodeId { get; set; }
 		
 		public ICollection<StatementDescriptionNode> Nodes { get; set; }
 

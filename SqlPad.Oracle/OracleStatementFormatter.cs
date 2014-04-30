@@ -78,16 +78,14 @@ namespace SqlPad.Oracle
 
 			foreach (var statement in formattedStatements)
 			{
-				var startNode = statement.NodeCollection.FirstOrDefault();
-
-				if (startNode == null)
+				if (statement.RootNode == null)
 					continue;
 
 				//var queryLevel = startNode.GetNestedQueryLevel();
 				var skipSpaceBeforeToken = false;
 				string indentation = null;
 
-				FormatNode(startNode, null, stringBuilder, ref skipSpaceBeforeToken, ref indentation);
+				FormatNode(statement.RootNode, null, stringBuilder, ref skipSpaceBeforeToken, ref indentation);
 			}
 
 			return stringBuilder.ToString();

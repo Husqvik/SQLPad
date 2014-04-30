@@ -27,6 +27,12 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"")]
+		public void TestInitializationWithStatementWithoutRootNode()
+		{
+			Assert.DoesNotThrow(() => new OracleStatementSemanticModel(null, new OracleStatement(), TestFixture.DatabaseModel));
+		}
+
+		[Test(Description = @"")]
 		public void TestQueryBlockCommonTableExpressionReferences()
 		{
 			const string query1 =

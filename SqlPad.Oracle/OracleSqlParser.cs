@@ -226,7 +226,7 @@ namespace SqlPad.Oracle
 
 				foreach (var nonTerminal in AvailableNonTerminals)
 				{
-					var newResult = ProceedNonTerminal(oracleStatement, nonTerminal, 0, 0, false, tokenBuffer);
+					var newResult = ProceedNonTerminal(oracleStatement, nonTerminal, 1, 0, false, tokenBuffer);
 
 					//if (newResult.Nodes.SelectMany(n => n.AllChildNodes).Any(n => n.Terminals.Count() != n.TerminalCount))
 					//	throw new ApplicationException("StatementDescriptionNode TerminalCount value is invalid. ");
@@ -292,7 +292,16 @@ namespace SqlPad.Oracle
 				}
 
 				oracleStatement.SourcePosition = new SourcePosition { IndexStart = indexStart, IndexEnd = indexEnd };
-				oracleStatement.NodeCollection = result.Nodes;
+				var rootNode = new StatementDescriptionNode(oracleStatement, NodeType.NonTerminal)
+				               {
+					               Id = result.NodeId,
+								   IsGrammarValid = result.Nodes.All(n => n.IsGrammarValid),
+								   IsRequired = true,
+				               };
+				
+				rootNode.AddChildNodes(result.Nodes);
+				
+				oracleStatement.RootNode = rootNode;
 				oracleStatement.ProcessingStatus = result.Status;
 				_oracleSqlCollection.Add(oracleStatement);
 			}
@@ -305,6 +314,7 @@ namespace SqlPad.Oracle
 			var workingNodes = new List<StatementDescriptionNode>();
 			var result = new ProcessingResult
 			             {
+							 NodeId = nonTerminal,
 							 Nodes = workingNodes,
 							 BestCandidates = new List<StatementDescriptionNode>(),
 			             };
@@ -490,6 +500,7 @@ namespace SqlPad.Oracle
 			
 			return new ProcessingResult
 			       {
+					   NodeId = terminalReference.Id,
 				       Status = tokenIsValid ? ProcessingStatus.Success : ProcessingStatus.SequenceNotFound,
 					   Nodes = new [] { terminalNode },
 					   BestCandidates = new [] { terminalNode }
