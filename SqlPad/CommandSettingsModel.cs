@@ -15,48 +15,19 @@ namespace SqlPad
 		}
 
 		private string _value = String.Empty;
-		private string _title = String.Empty;
-		private string _heading = String.Empty;
-		private string _description = String.Empty;
 
-		public string Title
+		public CommandSettingsModel()
 		{
-			get { return _title; }
-			set
-			{
-				if (_title == value)
-					return;
-
-				_title = value;
-				RaisePropertyChanged();
-			}
+			Description = String.Empty;
+			Heading = String.Empty;
+			Title = String.Empty;
 		}
 
-		public string Heading
-		{
-			get { return _heading; }
-			set
-			{
-				if (_heading == value)
-					return;
+		public string Title { get; set; }
 
-				_heading = value;
-				RaisePropertyChanged();
-			}
-		}
+		public string Heading { get; set; }
 
-		public string Description
-		{
-			get { return _description; }
-			set
-			{
-				if (_description == value)
-					return;
-
-				_description = value;
-				RaisePropertyChanged();
-			}
-		}
+		public string Description { get; set; }
 
 		public string Value
 		{

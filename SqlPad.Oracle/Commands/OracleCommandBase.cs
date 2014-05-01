@@ -43,9 +43,11 @@ namespace SqlPad.Oracle.Commands
 			}
 			else
 			{
-				SettingsModel = new CommandSettingsModel { Value = "Enter value", ValidationRule = new OracleIdentifierValidationRule() };
-				SettingsProvider = new EditDialog(SettingsModel);
+				var model = new CommandSettingsModel { Value = "Enter value", ValidationRule = new OracleIdentifierValidationRule() };
+				SettingsProvider = new EditDialog(model);
 			}
+
+			SettingsModel = SettingsProvider.Settings;
 		}
 	}
 }
