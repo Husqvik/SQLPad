@@ -11,15 +11,15 @@ namespace SqlPad.Oracle
 
 		public ICollection<ICodeSnippet> GetSnippets(string statementText, int cursorPosition)
 		{
-			return GetSnippets(_oracleParser.Parse(statementText), statementText, cursorPosition);
+			return GetSnippets(SqlDocument.FromStatementCollection(_oracleParser.Parse(statementText)), statementText, cursorPosition);
 		}
 
-		public ICollection<ICodeSnippet> GetSnippets(StatementCollection statements, string statementText, int cursorPosition)
+		public ICollection<ICodeSnippet> GetSnippets(SqlDocument sqlDocument, string statementText, int cursorPosition)
 		{
-			if (statements == null)
+			if (sqlDocument == null || sqlDocument.StatementCollection == null)
 				return EmptyCollection;
 
-			var statement = statements.SingleOrDefault(s => s.SourcePosition.IndexStart <= cursorPosition - 1 && s.SourcePosition.IndexEnd >= cursorPosition - 1);
+			var statement = sqlDocument.StatementCollection.SingleOrDefault(s => s.SourcePosition.IndexStart <= cursorPosition - 1 && s.SourcePosition.IndexEnd >= cursorPosition - 1);
 
 			StatementDescriptionNode currentNode = null;
 			if (statement != null)

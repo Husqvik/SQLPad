@@ -30,20 +30,20 @@ namespace SqlPad.Oracle
 
 		public ICollection<ICodeCompletionItem> ResolveItems(IDatabaseModel databaseModel, string statementText, int cursorPosition)
 		{
-			return ResolveItems(databaseModel, statementText, _oracleParser.Parse(statementText), cursorPosition);
+			return ResolveItems(SqlDocument.FromStatementCollection(_oracleParser.Parse(statementText)), databaseModel, statementText, cursorPosition);
 		}
 
-		public ICollection<ICodeCompletionItem> ResolveItems(IDatabaseModel databaseModel, string statementText, StatementCollection statements, int cursorPosition)
+		public ICollection<ICodeCompletionItem> ResolveItems(SqlDocument sqlDocument, IDatabaseModel databaseModel, string statementText, int cursorPosition)
 		{
 			//Trace.WriteLine("OracleCodeCompletionProvider.ResolveItems called. Cursor position: "+ cursorPosition);
 
-			if (statements == null)
+			if (sqlDocument == null || sqlDocument.StatementCollection == null)
 				return EmptyCollection;
 
 			StatementDescriptionNode currentNode;
 
 			var completionItems = Enumerable.Empty<ICodeCompletionItem>();
-			var statement = (OracleStatement)statements.SingleOrDefault(s => s.GetNodeAtPosition(cursorPosition) != null);
+			var statement = (OracleStatement)sqlDocument.StatementCollection.SingleOrDefault(s => s.GetNodeAtPosition(cursorPosition) != null);
 			//
 			/*currentNode = statements.GetTerminalAtPosition(cursorPosition);
 			var isCursorAtTerminal = true;
@@ -67,7 +67,7 @@ namespace SqlPad.Oracle
 			{
 				isCursorAtTerminal = false;
 
-				statement = (OracleStatement)statements.LastOrDefault(s => s.GetNearestTerminalToPosition(cursorPosition) != null);
+				statement = (OracleStatement)sqlDocument.StatementCollection.LastOrDefault(s => s.GetNearestTerminalToPosition(cursorPosition) != null);
 				if (statement == null)
 				{
 					return EmptyCollection;

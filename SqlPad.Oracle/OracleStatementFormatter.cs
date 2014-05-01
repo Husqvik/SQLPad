@@ -35,8 +35,13 @@ namespace SqlPad.Oracle
 				new LineBreakSettings { NonTerminalId = NonTerminals.QueryBlock, ChildNodeId = Terminals.From, BreakPosition = LineBreakPosition.BeforeNode | LineBreakPosition.AfterNode, GetIndentationBefore = n => -1, GetIndentationAfter = n => 1 },
 				new LineBreakSettings { NonTerminalId = NonTerminals.WhereClause, ChildNodeId = Terminals.Where, BreakPosition = LineBreakPosition.BeforeNode | LineBreakPosition.AfterNode, GetIndentationBefore = n => -1, GetIndentationAfter = n => 1 },
 				new LineBreakSettings { NonTerminalId = NonTerminals.SelectExpressionExpressionChainedList, ChildNodeId = Terminals.Comma, BreakPosition = LineBreakPosition.AfterNode },
-				new LineBreakSettings { NonTerminalId = NonTerminals.FromClauseChained, ChildNodeId = Terminals.Comma, BreakPosition = LineBreakPosition.AfterNode, GetIndentationAfter = GetAfterTableReferenceIndentation },
+				new LineBreakSettings { NonTerminalId = NonTerminals.FromClauseChained, ChildNodeId = Terminals.Comma, BreakPosition = LineBreakPosition.AfterNode/*, GetIndentationAfter = GetAfterTableReferenceIndentation*/ },
+				//new LineBreakSettings { NonTerminalId = NonTerminals.FromClause, GetIndentationAfter = GetAfterTableReferenceIndentation },
+				new LineBreakSettings { NonTerminalId = NonTerminals.TableReference, GetIndentationAfter = GetAfterTableReferenceIndentation },
+				
 				new LineBreakSettings { NonTerminalId = NonTerminals.JoinClause, ChildNodeId = null, BreakPosition = LineBreakPosition.BeforeNode },
+				new LineBreakSettings { NonTerminalId = NonTerminals.JoinColumnsOrCondition, ChildNodeId = Terminals.On, BreakPosition = LineBreakPosition.BeforeNode, GetIndentationBefore = n => 1 },
+				new LineBreakSettings { NonTerminalId = NonTerminals.JoinColumnsOrCondition, ChildNodeId = NonTerminals.Condition, GetIndentationAfter = n => -1 },
 				new LineBreakSettings { NonTerminalId = NonTerminals.ChainedCondition, ChildNodeId = NonTerminals.LogicalOperator, BreakPosition = LineBreakPosition.BeforeNode },
 				new LineBreakSettings { NonTerminalId = NonTerminals.GroupByClause, ChildNodeId = Terminals.Group, BreakPosition = LineBreakPosition.BeforeNode, GetIndentationBefore = n => -1 },
 				new LineBreakSettings { NonTerminalId = NonTerminals.GroupByClause, ChildNodeId = Terminals.By, BreakPosition = LineBreakPosition.AfterNode, GetIndentationAfter = n => 1 },
@@ -54,8 +59,8 @@ namespace SqlPad.Oracle
 
 		private static int GetAfterTableReferenceIndentation(StatementDescriptionNode node)
 		{
-			var fromClause = node.ParentNode.ParentNode;
-			return fromClause.GetDescendants(NonTerminals.NestedQuery).Any() ? -1 : 0;
+			var tableReferenceNode = node.ParentNode;//.ParentNode;
+			return tableReferenceNode.GetDescendants(NonTerminals.NestedQuery).Any() ? -1 : 0;
 		}
 
 		private static readonly HashSet<string> SkipSpaceTerminalIds =
@@ -119,7 +124,7 @@ namespace SqlPad.Oracle
 				var breakSettingsFound = !String.IsNullOrEmpty(lineBreakSettings.NonTerminalId);
 
 				var breakBefore = false;
-				if (breakSettingsFound)
+				if (breakSettingsFound && (!String.IsNullOrEmpty(lineBreakSettings.ChildNodeId) || childIndex == 0))
 				{
 					var indentationBefore = lineBreakSettings.GetIndentationBefore == null ? 0 : lineBreakSettings.GetIndentationBefore(childNode);
 					if (indentationBefore > 0)
@@ -147,7 +152,7 @@ namespace SqlPad.Oracle
 				if (childNode.Type == NodeType.Terminal)
 				{
 					if ((!breakSettingsFound || !breakBefore) &&
-						(!OracleGrammarDescription.SingleCharacterTerminals.Contains(childNode.Id) || OracleGrammarDescription.MathTerminals.Contains(childNode.Id)) &&
+						(!OracleGrammarDescription.SingleCharacterTerminals.Contains(childNode.Id) || OracleGrammarDescription.MathTerminals.Contains(childNode.Id) || childNode.Id == Terminals.Colon) &&
 						!skipSpaceBeforeToken && stringBuilder.Length > 0)
 					{
 						stringBuilder.Append(' ');
@@ -155,7 +160,7 @@ namespace SqlPad.Oracle
 					
 					stringBuilder.Append(childNode.Token.Value);
 
-					skipSpaceBeforeToken = SkipSpaceTerminalIds.Contains(childNode.Id) || childNode.Id.In(Terminals.Dot);
+					skipSpaceBeforeToken = SkipSpaceTerminalIds.Contains(childNode.Id) || childNode.Id.In(Terminals.Dot, Terminals.Colon);
 				}
 				else
 				{

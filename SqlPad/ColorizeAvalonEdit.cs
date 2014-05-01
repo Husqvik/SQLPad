@@ -9,7 +9,7 @@ namespace SqlPad
 {
 	public class ColorizeAvalonEdit : DocumentColorizingTransformer
 	{
-		private static readonly object LockObject = new object();
+		private readonly object _lockObject = new object();
 
 		public StatementCollection Statements { get; private set; }
 		private readonly Stack<ICollection<TextSegment>> _highlightSegments = new Stack<ICollection<TextSegment>>();
@@ -34,7 +34,7 @@ namespace SqlPad
 			if (statements == null)
 				return;
 
-			lock (LockObject)
+			lock (_lockObject)
 			{
 				Statements = statements;
 
@@ -47,7 +47,7 @@ namespace SqlPad
 
 		public void SetHighlightSegments(ICollection<TextSegment> highlightSegments)
 		{
-			lock (LockObject)
+			lock (_lockObject)
 			{
 				if (highlightSegments != null)
 				{
@@ -66,7 +66,7 @@ namespace SqlPad
 
 		protected override void Colorize(ITextRunConstructionContext context)
 		{
-			lock (LockObject)
+			lock (_lockObject)
 			{
 				if (Statements == null)
 					return;

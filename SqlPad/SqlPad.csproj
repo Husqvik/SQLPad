@@ -94,6 +94,7 @@
     <Compile Include="MetadataCache.cs" />
     <Compile Include="MultiNodeEditor.cs" />
     <Compile Include="Snippets.cs" />
+    <Compile Include="SqlDocument.cs" />
     <Compile Include="StatementCollection.cs" />
     <Compile Include="IStatementValidator.cs" />
     <Compile Include="IToken.cs" />

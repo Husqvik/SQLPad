@@ -4,7 +4,7 @@ namespace SqlPad
 {
 	public interface ICodeCompletionProvider
 	{
-		ICollection<ICodeCompletionItem> ResolveItems(IDatabaseModel databaseModel, string statementText, StatementCollection statements, int cursorPosition);
+		ICollection<ICodeCompletionItem> ResolveItems(SqlDocument sqlDocument, IDatabaseModel databaseModel, string statementText, int cursorPosition);
 	}
 
 	public interface ICodeCompletionItem

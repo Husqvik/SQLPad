@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -30,6 +31,7 @@ namespace SqlPad
 	public partial class MainWindow
 	{
 		private readonly ColorizeAvalonEdit _colorizeAvalonEdit = new ColorizeAvalonEdit();
+		private readonly SqlDocument _sqlDocument = new SqlDocument();
 		private readonly ISqlParser _sqlParser;
 		private readonly IInfrastructureFactory _infrastructureFactory;
 		private readonly ICodeCompletionProvider _codeCompletionProvider;
@@ -51,6 +53,17 @@ namespace SqlPad
 			_contextActionProvider = _infrastructureFactory.CreateContextActionProvider();
 			_statementFormatter = _infrastructureFactory.CreateSqlFormatter(new SqlFormatterOptions());
 			_databaseModel = _infrastructureFactory.CreateDatabaseModel(ConfigurationProvider.ConnectionStrings["Default"]);
+			_timer.Elapsed += TimerOnElapsed;
+		}
+
+		private void TimerOnElapsed(object sender, ElapsedEventArgs elapsedEventArgs)
+		{
+			if (_isParsing)
+				return;
+			
+			_timer.Stop();
+
+			Editor.Dispatcher.Invoke(() => Task.Factory.StartNew(DoWork, Editor.Text));
 		}
 
 		private void WindowLoadedHandler(object sender, RoutedEventArgs e)
@@ -66,11 +79,19 @@ namespace SqlPad
 		}
 
 		private bool _isParsing;
+		private readonly System.Timers.Timer _timer = new System.Timers.Timer(100);
 
 		private void EditorTextChangedHandler(object sender, EventArgs e)
 		{
 			if (_isParsing)
+			{
+				if (!_timer.Enabled)
+				{
+					_timer.Start();
+				}
+
 				return;
+			}
 
 			Task.Factory.StartNew(DoWork, Editor.Text);
 		}
@@ -80,6 +101,7 @@ namespace SqlPad
 			_isParsing = true;
 
 			var statements = _sqlParser.Parse((string)text);
+			_sqlDocument.UpdateStatements(statements);
 			_colorizeAvalonEdit.SetStatementCollection(statements);
 
 			Dispatcher.Invoke(() =>
@@ -99,7 +121,7 @@ namespace SqlPad
 				Editor.Document.EndUpdate();
 			}
 
-			var snippets = _codeSnippetProvider.GetSnippets(_colorizeAvalonEdit.Statements, Editor.Text, Editor.CaretOffset).Select(i => new CompletionData(i)).ToArray();
+			var snippets = _codeSnippetProvider.GetSnippets(_sqlDocument, Editor.Text, Editor.CaretOffset).Select(i => new CompletionData(i)).ToArray();
 			if (_completionWindow == null && snippets.Length > 0)
 			{
 				CreateSnippetCompletionWindow(snippets);
@@ -170,7 +192,7 @@ namespace SqlPad
 
 		private void CreateCodeCompletionWindow()
 		{
-			CreateCompletionWindow(() => _codeCompletionProvider.ResolveItems(_databaseModel, Editor.Text, _colorizeAvalonEdit.Statements, Editor.CaretOffset).Select(i => new CompletionData(i)), true);
+			CreateCompletionWindow(() => _codeCompletionProvider.ResolveItems(_sqlDocument, _databaseModel, Editor.Text, Editor.CaretOffset).Select(i => new CompletionData(i)), true);
 		}
 
 		private void CreateSnippetCompletionWindow(IEnumerable<ICompletionData> items)
