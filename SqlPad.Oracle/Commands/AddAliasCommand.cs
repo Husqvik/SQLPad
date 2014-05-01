@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
@@ -28,7 +29,7 @@ namespace SqlPad.Oracle.Commands
 				case Terminals.ObjectIdentifier:
 					SettingsModel.Title = "Add Object Alias";
 					SettingsModel.Heading = SettingsModel.Title;
-					SettingsModel.Description = "Enter an alias for the object";
+					SettingsModel.Description = String.Format("Enter an alias for the object '{0}'", CurrentTerminal.Token.Value);
 					break;
 			}
 

@@ -160,6 +160,19 @@ namespace SqlPad.Oracle
 
 			foreach (var queryBlock in _queryBlockResults.Values)
 			{
+				if (queryBlock.RootNode.ParentNode.ParentNode.Id == NonTerminals.ConcatenatedSubquery)
+				{
+					var parentSubquery = queryBlock.RootNode.ParentNode.GetAncestor(NonTerminals.Subquery);
+					if (parentSubquery != null)
+					{
+						var parentQueryBlockNode = parentSubquery.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.QueryBlock);
+						if (parentQueryBlockNode != null)
+						{
+							_queryBlockResults[parentQueryBlockNode].ConcatenatedQueryBlock = queryBlock;
+						}
+					}
+				}
+
 				foreach (var nestedQueryReference in queryBlock.ObjectReferences.Where(t => t.Type != TableReferenceType.PhysicalObject))
 				{
 					if (nestedQueryReference.Type == TableReferenceType.NestedQuery)
@@ -179,8 +192,11 @@ namespace SqlPad.Oracle
 
 				foreach (var accessibleQueryBlock in _commonTableExpressionReferences[queryBlock])
 				{
-					var accesibleQueryBlockRoot = accessibleQueryBlock.GetDescendants(NonTerminals.QueryBlock).First();
-					queryBlock.AccessibleQueryBlocks.Add(_queryBlockResults[accesibleQueryBlockRoot]);
+					var accesibleQueryBlockRoot = accessibleQueryBlock.GetDescendants(NonTerminals.QueryBlock).FirstOrDefault();
+					if (accesibleQueryBlockRoot != null)
+					{
+						queryBlock.AccessibleQueryBlocks.Add(_queryBlockResults[accesibleQueryBlockRoot]);
+					}
 				}
 			}
 
@@ -593,20 +609,32 @@ namespace SqlPad.Oracle
 		private IEnumerable<KeyValuePair<StatementDescriptionNode, string>> GetCommonTableExpressionReferences(StatementDescriptionNode node)
 		{
 			var queryRoot = node.GetAncestor(NonTerminals.NestedQuery);
-			var subQueryCompondentDistance = node.GetAncestorDistance(NonTerminals.SubqueryComponent);
-			if (subQueryCompondentDistance != null &&
-			    node.GetAncestorDistance(NonTerminals.NestedQuery) > subQueryCompondentDistance)
+			var subQueryCompondentNode = node.GetAncestor(NonTerminals.SubqueryComponent);
+			var cteReferencesWithinSameClause = new List<KeyValuePair<StatementDescriptionNode, string>>();
+			if (subQueryCompondentNode != null)
 			{
-				queryRoot = queryRoot.GetAncestor(NonTerminals.NestedQuery);
+				var cteNodeWithinSameClause = subQueryCompondentNode.GetAncestor(NonTerminals.SubqueryComponent);
+				while (cteNodeWithinSameClause != null)
+				{
+					cteReferencesWithinSameClause.Add(GetCteNameNode(cteNodeWithinSameClause));
+					cteNodeWithinSameClause = cteNodeWithinSameClause.GetAncestor(NonTerminals.SubqueryComponent);
+				}
+
+				if (node.Level - queryRoot.Level > node.Level - subQueryCompondentNode.Level)
+				{
+					queryRoot = queryRoot.GetAncestor(NonTerminals.NestedQuery);
+				}
 			}
 
 			if (queryRoot == null)
-				return Enumerable.Empty<KeyValuePair<StatementDescriptionNode, string>>();
+				return cteReferencesWithinSameClause;
 
 			var commonTableExpressions = queryRoot
 				.GetPathFilterDescendants(n => n.Id != NonTerminals.QueryBlock, NonTerminals.SubqueryComponent)
 				.Select(GetCteNameNode);
-			return commonTableExpressions.Concat(GetCommonTableExpressionReferences(queryRoot));
+			return commonTableExpressions
+				.Concat(cteReferencesWithinSameClause)
+				.Concat(GetCommonTableExpressionReferences(queryRoot));
 		}
 
 		private KeyValuePair<StatementDescriptionNode, string> GetCteNameNode(StatementDescriptionNode cteNode)

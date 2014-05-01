@@ -41,5 +41,21 @@ namespace SqlPad.Oracle
 		public IEnumerable<OracleColumnReference> AllColumnReferences { get { return Columns.SelectMany(c => c.ColumnReferences).Concat(ColumnReferences); } }
 
 		public ICollection<OracleQueryBlock> AccessibleQueryBlocks { get; private set; }
+
+		public OracleQueryBlock ConcatenatedQueryBlock { get; set; }
+
+		public IEnumerable<OracleQueryBlock> AllConcatenatedQueryBlocks
+		{
+			get
+			{
+				var concatenatedQueryBlock = ConcatenatedQueryBlock;
+				while (concatenatedQueryBlock != null)
+				{
+					yield return concatenatedQueryBlock;
+
+					concatenatedQueryBlock = concatenatedQueryBlock.ConcatenatedQueryBlock;
+				}
+			}
+		}
 	}
 }

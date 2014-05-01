@@ -81,5 +81,15 @@ namespace SqlPad.Oracle.Test
 			actions.Length.ShouldBe(1);
 			actions[0].Name.ShouldBe("Resolve as SYS.DUAL.DUMMY");
 		}
+
+		[Test(Description = @""), STAThread]
+		public void TestWrapCommandsNotAvailableWhenQueryBlockHasNoNamedColumn()
+		{
+			const string query1 = @"SELECT NULL FROM DUAL";
+
+			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 1).ToArray();
+			actions.Length.ShouldBe(1);
+			actions[0].Name.ShouldBe("Toggle quoted identifiers");
+		}
 	}
 }
