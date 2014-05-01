@@ -29,6 +29,10 @@ namespace SqlPad.Oracle.Commands
 
 		protected override void ExecuteInternal(string statementText, ICollection<TextSegment> segmentsToReplace)
 		{
+			SettingsModel.Title = "Wrap as sub-query";
+			SettingsModel.Heading = SettingsModel.Title;
+			SettingsModel.Description = "Enter an alias for the sub-query";
+
 			if (!SettingsProvider.GetSettings())
 				return;
 

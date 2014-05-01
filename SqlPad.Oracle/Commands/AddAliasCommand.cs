@@ -23,6 +23,15 @@ namespace SqlPad.Oracle.Commands
 
 		protected override void ExecuteInternal(string statementText, ICollection<TextSegment> segmentsToReplace)
 		{
+			switch (CurrentTerminal.Id)
+			{
+				case Terminals.ObjectIdentifier:
+					SettingsModel.Title = "Add Object Alias";
+					SettingsModel.Heading = SettingsModel.Title;
+					SettingsModel.Description = "Enter an alias for the object";
+					break;
+			}
+
 			if (!SettingsProvider.GetSettings())
 				return;
 

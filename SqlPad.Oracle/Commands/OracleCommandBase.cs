@@ -32,6 +32,7 @@ namespace SqlPad.Oracle.Commands
 	public abstract class OracleConfigurableCommandBase : OracleCommandBase
 	{
 		protected readonly ICommandSettingsProvider SettingsProvider;
+		protected readonly CommandSettingsModel SettingsModel;
 
 		protected OracleConfigurableCommandBase(OracleStatementSemanticModel semanticModel, StatementDescriptionNode currentTerminal, ICommandSettingsProvider settingsProvider = null)
 			: base(semanticModel, currentTerminal)
@@ -42,8 +43,8 @@ namespace SqlPad.Oracle.Commands
 			}
 			else
 			{
-				var model = new CommandSettingsModel { Value = "Enter value", ValidationRule = new OracleIdentifierValidationRule() };
-				SettingsProvider = new EditDialog(model);
+				SettingsModel = new CommandSettingsModel { Value = "Enter value", ValidationRule = new OracleIdentifierValidationRule() };
+				SettingsProvider = new EditDialog(SettingsModel);
 			}
 		}
 	}

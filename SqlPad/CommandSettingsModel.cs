@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Controls;
 
@@ -13,7 +14,49 @@ namespace SqlPad
 			PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
 		}
 
-		private string _value;
+		private string _value = String.Empty;
+		private string _title = String.Empty;
+		private string _heading = String.Empty;
+		private string _description = String.Empty;
+
+		public string Title
+		{
+			get { return _title; }
+			set
+			{
+				if (_title == value)
+					return;
+
+				_title = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public string Heading
+		{
+			get { return _heading; }
+			set
+			{
+				if (_heading == value)
+					return;
+
+				_heading = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public string Description
+		{
+			get { return _description; }
+			set
+			{
+				if (_description == value)
+					return;
+
+				_description = value;
+				RaisePropertyChanged();
+			}
+		}
 
 		public string Value
 		{

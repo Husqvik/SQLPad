@@ -30,6 +30,10 @@ namespace SqlPad.Oracle.Commands
 
 		protected override void ExecuteInternal(string statementText, ICollection<TextSegment> segmentsToReplace)
 		{
+			SettingsModel.Title = "Wrap as common table expression";
+			SettingsModel.Heading = SettingsModel.Title;
+			SettingsModel.Description = "Enter an alias for the common table expression";
+
 			if (!SettingsProvider.GetSettings())
 				return;
 
