@@ -10,6 +10,9 @@ namespace SqlPad
 	{
 		private readonly List<StatementDescriptionNode> _childNodes = new List<StatementDescriptionNode>();
 
+		private bool _isSourcePositionBuilt;
+		private SourcePosition _sourcePosition;
+
 		public int TerminalCount { get; private set; }
 
 		public StatementDescriptionNode(StatementBase statement, NodeType type)
@@ -84,24 +87,29 @@ namespace SqlPad
 
 		public SourcePosition SourcePosition
 		{
-			get
-			{
-				var indexStart = -1;
-				var indexEnd = -1;
-				if (Type == NodeType.Terminal)
-				{
-					indexStart = Token.Index;
-					indexEnd = Token.Index + Token.Value.Length - 1;
-				}
-				else if (LastTerminalNode != null)
-				{
-					indexStart = FirstTerminalNode.Token.Index;
-					var lastTerminal = LastTerminalNode.Token;
-					indexEnd = lastTerminal.Index + lastTerminal.Value.Length - 1;
-				}
+			get { return _isSourcePositionBuilt ? _sourcePosition : BuildSourcePosition(); }
+		}
 
-				return new SourcePosition { IndexStart = indexStart, IndexEnd = indexEnd };
+		private SourcePosition BuildSourcePosition()
+		{
+			var indexStart = -1;
+			var indexEnd = -1;
+			if (Type == NodeType.Terminal)
+			{
+				indexStart = Token.Index;
+				indexEnd = Token.Index + Token.Value.Length - 1;
 			}
+			else if (LastTerminalNode != null)
+			{
+				indexStart = FirstTerminalNode.Token.Index;
+				var lastTerminal = LastTerminalNode.Token;
+				indexEnd = lastTerminal.Index + lastTerminal.Value.Length - 1;
+			}
+
+			_sourcePosition = new SourcePosition { IndexStart = indexStart, IndexEnd = indexEnd };
+			_isSourcePositionBuilt = true;
+
+			return _sourcePosition;
 		}
 
 		public IEnumerable<StatementDescriptionNode> Terminals 
@@ -231,10 +239,38 @@ namespace SqlPad
 			if (SourcePosition.IndexEnd + 1 < position || SourcePosition.IndexStart > position)
 				return null;
 
-			return AllChildNodes.Where(n => (filter == null || filter(n)) && n.SourcePosition.IndexStart <= position && n.SourcePosition.IndexEnd + 1 >= position)
+			/*return AllChildNodes.Where(n => (filter == null || filter(n)) && n.SourcePosition.IndexStart <= position && n.SourcePosition.IndexEnd + 1 >= position)
+				.OrderBy(n => n.SourcePosition.IndexStart == position ? 0 : 1)
+				.ThenByDescending(n => n.Level)
+				.FirstOrDefault();*/
+
+			return GetChildNodesAtPosition(this, position)
+				.Where(n => filter == null || filter(n))
 				.OrderBy(n => n.SourcePosition.IndexStart == position ? 0 : 1)
 				.ThenByDescending(n => n.Level)
 				.FirstOrDefault();
+		}
+
+		private static IEnumerable<StatementDescriptionNode> GetChildNodesAtPosition(StatementDescriptionNode node, int position)
+		{
+			var returnedNodes = new List<StatementDescriptionNode>();
+			if (node == null)
+				return returnedNodes;
+
+			var childNodesAtPosition = node.ChildNodes.Where(n => n.SourcePosition.IndexStart <= position && n.SourcePosition.IndexEnd + 1 >= position);
+			foreach (var childNodeAtPosition in childNodesAtPosition)
+			{
+				if (childNodeAtPosition.Type == NodeType.Terminal)
+				{
+					returnedNodes.Add(childNodeAtPosition);
+				}
+				else
+				{
+					returnedNodes.AddRange(GetChildNodesAtPosition(childNodeAtPosition, position));
+				}
+			}
+
+			return returnedNodes;
 		}
 
 		public StatementDescriptionNode GetNearestTerminalToPosition(int position)

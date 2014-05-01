@@ -14,15 +14,15 @@ namespace SqlPad.Oracle
 
 		public ICollection<IContextAction> GetContextActions(IDatabaseModel databaseModel, string statementText, int cursorPosition)
 		{
-			return GetContextActions(databaseModel, _oracleParser.Parse(statementText), cursorPosition);
+			return GetContextActions(databaseModel, SqlDocument.FromStatementCollection(_oracleParser.Parse(statementText)), cursorPosition);
 		}
 
-		public ICollection<IContextAction> GetContextActions(IDatabaseModel databaseModel, StatementCollection statements, int cursorPosition)
+		public ICollection<IContextAction> GetContextActions(IDatabaseModel databaseModel, SqlDocument sqlDocument, int cursorPosition)
 		{
-			if (statements == null)
+			if (sqlDocument == null || sqlDocument.StatementCollection == null)
 				return EmptyCollection;
 
-			var currentTerminal = statements.GetTerminalAtPosition(cursorPosition, n => Terminals.AllTerminals.Contains(n.Id));
+			var currentTerminal = sqlDocument.StatementCollection.GetTerminalAtPosition(cursorPosition, n => Terminals.AllTerminals.Contains(n.Id));
 			if (currentTerminal == null)
 				return EmptyCollection;
 

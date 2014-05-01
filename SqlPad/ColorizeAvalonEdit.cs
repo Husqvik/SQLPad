@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows;
 using System.Windows.Media;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Rendering;
@@ -11,8 +12,9 @@ namespace SqlPad
 	{
 		private readonly object _lockObject = new object();
 
-		public StatementCollection Statements { get; private set; }
+		private StatementCollection _statements;
 		private readonly Stack<ICollection<TextSegment>> _highlightSegments = new Stack<ICollection<TextSegment>>();
+		private readonly List<StatementDescriptionNode> _highlightParenthesis = new List<StatementDescriptionNode>();
 		private readonly IStatementValidator _validator = ConfigurationProvider.InfrastructureFactory.CreateStatementValidator();
 		private readonly ISqlParser _parser = ConfigurationProvider.InfrastructureFactory.CreateSqlParser();
 		private readonly IDatabaseModel _databaseModel = ConfigurationProvider.InfrastructureFactory.CreateDatabaseModel(ConfigurationProvider.ConnectionStrings["Default"]);
@@ -25,7 +27,8 @@ namespace SqlPad
 		private static readonly Color ValidStatementBackground = Color.FromArgb(32, Colors.LightGreen.R, Colors.LightGreen.G, Colors.LightGreen.B);
 		private static readonly Color InvalidStatementBackground = Color.FromArgb(32, Colors.PaleVioletRed.R, Colors.PaleVioletRed.G, Colors.PaleVioletRed.B);
 
-		public IDictionary<StatementBase, IValidationModel> ValidationModels { get; private set; }
+		private IDictionary<StatementBase, IValidationModel> _validationModels;
+		public IList<StatementDescriptionNode> HighlightParenthesis { get { return _highlightParenthesis.AsReadOnly(); } }
 
 		private readonly Dictionary<DocumentLine, ICollection<StatementDescriptionNode>> _lineTerminals = new Dictionary<DocumentLine, ICollection<StatementDescriptionNode>>();
 
@@ -36,13 +39,19 @@ namespace SqlPad
 
 			lock (_lockObject)
 			{
-				Statements = statements;
+				_statements = statements;
 
-				ValidationModels = Statements.Select(s => _validator.ResolveReferences(null, s, _databaseModel))
+				_validationModels = _statements.Select(s => _validator.ResolveReferences(null, s, _databaseModel))
 					.ToDictionary(vm => vm.Statement, vm => vm);
 
 				_lineTerminals.Clear();
 			}
+		}
+
+		public void SetHighlightParenthesis(ICollection<StatementDescriptionNode> parenthesisNodes)
+		{
+			_highlightParenthesis.Clear();
+			_highlightParenthesis.AddRange(parenthesisNodes);
 		}
 
 		public void SetHighlightSegments(ICollection<TextSegment> highlightSegments)
@@ -68,12 +77,12 @@ namespace SqlPad
 		{
 			lock (_lockObject)
 			{
-				if (Statements == null)
+				if (_statements == null)
 					return;
 
 				if (_lineTerminals.Count == 0)
 				{
-					var terminalEnumerator = Statements.SelectMany(s => s.AllTerminals).GetEnumerator();
+					var terminalEnumerator = _statements.SelectMany(s => s.AllTerminals).GetEnumerator();
 					if (terminalEnumerator.MoveNext())
 					{
 						foreach (var line in context.Document.Lines)
@@ -99,7 +108,7 @@ namespace SqlPad
 
 		protected override void ColorizeLine(DocumentLine line)
 		{
-			if (Statements == null)
+			if (_statements == null)
 				return;
 
 			if (_lineTerminals.ContainsKey(line))
@@ -122,7 +131,12 @@ namespace SqlPad
 				}
 			}
 
-			var statementsAtLine = Statements.Where(s => s.SourcePosition.IndexStart <= line.EndOffset && s.SourcePosition.IndexEnd >= line.Offset);
+			foreach (var parenthesisNode in _highlightParenthesis)
+			{
+				ProcessNodeAtLine(line, parenthesisNode.SourcePosition, element => element.TextRunProperties.SetTextDecorations(TextDecorations.Underline));
+			}
+
+			var statementsAtLine = _statements.Where(s => s.SourcePosition.IndexStart <= line.EndOffset && s.SourcePosition.IndexEnd >= line.Offset);
 
 			foreach (var statement in statementsAtLine)
 			{
@@ -131,7 +145,7 @@ namespace SqlPad
 				var colorStartOffset = Math.Max(line.Offset, statement.SourcePosition.IndexStart);
 				var colorEndOffset = Math.Min(line.EndOffset, statement.SourcePosition.IndexEnd + 1);
 
-				var validationModel = ValidationModels[statement];
+				var validationModel = _validationModels[statement];
 				var nodeRecognizeData = validationModel.ObjectNodeValidity
 					.Select(kvp => new KeyValuePair<StatementDescriptionNode, bool>(kvp.Key, kvp.Value.IsRecognized))
 					.Concat(validationModel.FunctionNodeValidity.Select(kvp => new KeyValuePair<StatementDescriptionNode, bool>(kvp.Key, kvp.Value.IsRecognized)))

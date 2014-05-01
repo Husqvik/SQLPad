@@ -4,7 +4,7 @@ namespace SqlPad
 {
 	public interface IStatementFormatter
 	{
-		ICollection<TextSegment> FormatStatement(StatementCollection statements, int selectionStart, int selectionLength);
+		ICollection<TextSegment> FormatStatement(SqlDocument sqlDocument, int selectionStart, int selectionLength);
 	}
 
 	public class SqlFormatterOptions

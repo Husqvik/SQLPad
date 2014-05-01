@@ -53,6 +53,7 @@ namespace SqlPad
 			_contextActionProvider = _infrastructureFactory.CreateContextActionProvider();
 			_statementFormatter = _infrastructureFactory.CreateSqlFormatter(new SqlFormatterOptions());
 			_databaseModel = _infrastructureFactory.CreateDatabaseModel(ConfigurationProvider.ConnectionStrings["Default"]);
+			
 			_timer.Elapsed += TimerOnElapsed;
 		}
 
@@ -74,8 +75,55 @@ namespace SqlPad
 
 			Editor.TextArea.TextEntering += TextEnteringHandler;
 			Editor.TextArea.TextEntered += TextEnteredHandler;
+			
+			Editor.TextArea.Caret.PositionChanged += CaretOnPositionChanged;
 
 			Editor.Focus();
+		}
+
+		private void CaretOnPositionChanged(object sender, EventArgs eventArgs)
+		{
+			var parenthesisTerminal = _sqlDocument.StatementCollection == null
+				? null
+				: _sqlDocument.StatementCollection.GetTerminalAtPosition(Editor.CaretOffset, n => n.Token.Value.In("(", ")"));
+
+			var parenthesisNodes = new List<StatementDescriptionNode>();
+			if (parenthesisTerminal != null)
+			{
+				var childNodes = parenthesisTerminal.ParentNode.ChildNodes.ToList();
+				var index = childNodes.IndexOf(parenthesisTerminal);
+				var increment = parenthesisTerminal.Token.Value == "(" ? 1 : -1;
+				var otherParenthesis = parenthesisTerminal.Token.Value == "(" ? ")" : "(";
+
+				while (0 <= index && index < childNodes.Count)
+				{
+					index += increment;
+
+					if (index < 0 || index >= childNodes.Count)
+						break;
+
+					var otherParenthesisTerminal = childNodes[index];
+					if (otherParenthesisTerminal.Token != null && otherParenthesisTerminal.Token.Value == otherParenthesis)
+					{
+						parenthesisNodes.Add(parenthesisTerminal);
+						parenthesisNodes.Add(otherParenthesisTerminal);
+						break;
+					}
+				}
+			}
+
+			var oldNodes = _colorizeAvalonEdit.HighlightParenthesis.ToArray();
+			_colorizeAvalonEdit.SetHighlightParenthesis(parenthesisNodes);
+
+			RedrawNodes(oldNodes.Concat(parenthesisNodes));
+		}
+
+		private void RedrawNodes(IEnumerable<StatementDescriptionNode> nodes)
+		{
+			foreach (var node in nodes)
+			{
+				Editor.TextArea.TextView.Redraw(node.SourcePosition.IndexStart, node.SourcePosition.Length);
+			}
 		}
 
 		private bool _isParsing;
@@ -226,13 +274,13 @@ namespace SqlPad
 		void MouseHoverHandler(object sender, MouseEventArgs e)
 		{
 			var position = Editor.GetPositionFromPoint(e.GetPosition(Editor));
-			if (!position.HasValue || _colorizeAvalonEdit.Statements == null)
+			if (!position.HasValue || _sqlDocument.StatementCollection == null)
 				return;
 
 			var offset = Editor.Document.GetOffset(position.Value.Line, position.Value.Column);
-			var lineByOffset = Editor.Document.GetLineByOffset(offset);
+			//var lineByOffset = Editor.Document.GetLineByOffset(offset);
 
-			var terminal = _colorizeAvalonEdit.Statements.GetTerminalAtPosition(offset);
+			var terminal = _sqlDocument.StatementCollection.GetTerminalAtPosition(offset);
 			if (terminal == null)
 				return;
 
@@ -255,7 +303,7 @@ namespace SqlPad
 
 		private bool PopulateContextMenu()
 		{
-			var menuItems = _contextActionProvider.GetContextActions(_databaseModel, _colorizeAvalonEdit.Statements, Editor.CaretOffset)
+			var menuItems = _contextActionProvider.GetContextActions(_databaseModel, _sqlDocument, Editor.CaretOffset)
 				.Select(a => new MenuItem { Header = a.Name, Command = a.Command, CommandParameter = Editor });
 
 			Editor.ContextMenu.Items.Clear();
@@ -318,7 +366,7 @@ namespace SqlPad
 			else if (e.Key == Key.F && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt))
 			{
 				Trace.WriteLine("CONTROL ALT + F");
-				var textSegments = _statementFormatter.FormatStatement(_colorizeAvalonEdit.Statements, Editor.SelectionStart, Editor.SelectionLength);
+				var textSegments = _statementFormatter.FormatStatement(_sqlDocument, Editor.SelectionStart, Editor.SelectionLength);
 				Editor.ReplaceTextSegments(textSegments);
 			}
 
