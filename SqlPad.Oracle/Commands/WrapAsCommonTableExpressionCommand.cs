@@ -20,12 +20,7 @@ namespace SqlPad.Oracle.Commands
 				return false;
 
 			var queryBlock = SemanticModel.GetQueryBlock(CurrentTerminal);
-			if (queryBlock == null)
-				return false;
-
-			//TODO: Check column aliases
-			//var tables = .Columns.All(c => c.);
-			return true;
+			return queryBlock != null && queryBlock.Columns.Any(c => !String.IsNullOrEmpty(c.NormalizedName));
 		}
 
 		protected override void ExecuteInternal(string statementText, ICollection<TextSegment> segmentsToReplace)

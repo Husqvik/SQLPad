@@ -53,6 +53,7 @@ namespace SqlPad.Oracle
 				new LineBreakSettings { NonTerminalId = NonTerminals.SubqueryFactoringClause, BreakPosition = LineBreakPosition.AfterNode, GetIndentationAfter = n => -2 },
 				new LineBreakSettings { NonTerminalId = NonTerminals.SubqueryComponent, ChildNodeId = Terminals.As, BreakPosition = LineBreakPosition.AfterNode },
 				new LineBreakSettings { NonTerminalId = NonTerminals.SelectStatement, ChildNodeId = Terminals.Semicolon, BreakPosition = LineBreakPosition.AfterNode, GetIndentationAfter = n => -1 },
+				new LineBreakSettings { NonTerminalId = NonTerminals.ConcatenatedSubquery, ChildNodeId = NonTerminals.SetOperation, BreakPosition = LineBreakPosition.BeforeNode | LineBreakPosition.AfterNode, GetIndentationBefore = n => -1 },
 			};
 
 		private static int GetAfterTableReferenceIndentation(StatementDescriptionNode node)
