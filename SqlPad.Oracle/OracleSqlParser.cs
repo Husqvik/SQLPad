@@ -20,8 +20,6 @@ namespace SqlPad.Oracle
 		private static readonly HashSet<string> Terminators;
 		private static readonly string[] AvailableNonTerminals;
 		
-		private readonly List<StatementBase> _oracleSqlCollection = new List<StatementBase>();
-
 		static OracleSqlParser()
 		{
 			using (var grammarReader = XmlReader.Create(LocalAssembly.GetManifestResourceStream("SqlPad.Oracle.OracleSqlGrammar.xml")))
@@ -118,9 +116,7 @@ namespace SqlPad.Oracle
 
 		public StatementCollection Parse(IEnumerable<OracleToken> tokens)
 		{
-			ProceedGrammar(tokens);
-
-			return new StatementCollection(_oracleSqlCollection);
+			return ProceedGrammar(tokens);
 		}
 
 		public ICollection<string> GetTerminalCandidates(StatementDescriptionNode node)
@@ -207,16 +203,16 @@ namespace SqlPad.Oracle
 			return matchedTerminals;
 		}
 
-		private void ProceedGrammar(IEnumerable<OracleToken> tokens)
+		private StatementCollection ProceedGrammar(IEnumerable<OracleToken> tokens)
 		{
 			var tokenBuffer = new List<OracleToken>(tokens);
 
-			_oracleSqlCollection.Clear();
+			var oracleSqlCollection = new List<StatementBase>();
 
 			if (tokenBuffer.Count == 0)
 			{
-				_oracleSqlCollection.Add(OracleStatement.EmptyStatement);
-				return;
+				oracleSqlCollection.Add(OracleStatement.EmptyStatement);
+				return new StatementCollection(oracleSqlCollection);
 			}
 			
 			do
@@ -303,9 +299,11 @@ namespace SqlPad.Oracle
 				
 				oracleStatement.RootNode = rootNode;
 				oracleStatement.ProcessingStatus = result.Status;
-				_oracleSqlCollection.Add(oracleStatement);
+				oracleSqlCollection.Add(oracleStatement);
 			}
 			while (tokenBuffer.Count > 0);
+
+			return new StatementCollection(oracleSqlCollection);
 		}
 
 		private ProcessingResult ProceedNonTerminal(OracleStatement statement, string nonTerminal, int level, int tokenStartOffset, bool tokenReverted, IList<OracleToken> tokenBuffer)

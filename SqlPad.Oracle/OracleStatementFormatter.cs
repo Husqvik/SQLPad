@@ -71,6 +71,12 @@ namespace SqlPad.Oracle
 				NonTerminals.OrderByClause,
 			};
 
+		private static readonly HashSet<string> AddSpaceTerminalIds =
+			new HashSet<string>
+			{
+				Terminals.In
+			};
+
 		private static readonly TextSegment[] EmptyCollection = new TextSegment[0];
 
 		public OracleStatementFormatter(SqlFormatterOptions options)
@@ -157,13 +163,20 @@ namespace SqlPad.Oracle
 				if (childNode.Type == NodeType.Terminal)
 				{
 					if ((!breakSettingsFound || !breakBefore) &&
-						(!OracleGrammarDescription.SingleCharacterTerminals.Contains(childNode.Id) || OracleGrammarDescription.MathTerminals.Contains(childNode.Id) || childNode.Id == Terminals.Colon) &&
-						!skipSpaceBeforeToken && stringBuilder.Length > 0)
+					    (!OracleGrammarDescription.SingleCharacterTerminals.Contains(childNode.Id) ||
+					     OracleGrammarDescription.MathTerminals.Contains(childNode.Id) ||
+						 childNode.Id == Terminals.Colon) &&
+					    !skipSpaceBeforeToken && stringBuilder.Length > 0)
 					{
 						stringBuilder.Append(' ');
 					}
-					
+
 					stringBuilder.Append(childNode.Token.Value);
+
+					if (AddSpaceTerminalIds.Contains(childNode.Id))
+					{
+						stringBuilder.Append(' ');
+					}
 
 					skipSpaceBeforeToken = SkipSpaceTerminalIds.Contains(childNode.Id) || childNode.Id.In(Terminals.Dot, Terminals.Colon);
 				}

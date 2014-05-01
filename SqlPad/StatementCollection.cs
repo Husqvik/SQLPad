@@ -7,8 +7,8 @@ namespace SqlPad
 {
 	public class StatementCollection : ReadOnlyCollection<StatementBase>
 	{
-		public StatementCollection(IEnumerable<StatementBase> statements)
-			: base(new List<StatementBase>(statements))
+		public StatementCollection(IList<StatementBase> statements)
+			: base(statements)
 		{
 		}
 

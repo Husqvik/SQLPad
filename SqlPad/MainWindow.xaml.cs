@@ -83,31 +83,35 @@ namespace SqlPad
 
 		private void CaretOnPositionChanged(object sender, EventArgs eventArgs)
 		{
-			var parenthesisTerminal = _sqlDocument.StatementCollection == null
-				? null
-				: _sqlDocument.StatementCollection.GetTerminalAtPosition(Editor.CaretOffset, n => n.Token.Value.In("(", ")"));
-
 			var parenthesisNodes = new List<StatementDescriptionNode>();
-			if (parenthesisTerminal != null)
+
+			if (!_isParsing)
 			{
-				var childNodes = parenthesisTerminal.ParentNode.ChildNodes.ToList();
-				var index = childNodes.IndexOf(parenthesisTerminal);
-				var increment = parenthesisTerminal.Token.Value == "(" ? 1 : -1;
-				var otherParenthesis = parenthesisTerminal.Token.Value == "(" ? ")" : "(";
+				var parenthesisTerminal = _sqlDocument.StatementCollection == null
+					? null
+					: _sqlDocument.ExecuteStatementAction(s => s.GetTerminalAtPosition(Editor.CaretOffset, n => n.Token.Value.In("(", ")")));
 
-				while (0 <= index && index < childNodes.Count)
+				if (parenthesisTerminal != null)
 				{
-					index += increment;
+					var childNodes = parenthesisTerminal.ParentNode.ChildNodes.ToList();
+					var index = childNodes.IndexOf(parenthesisTerminal);
+					var increment = parenthesisTerminal.Token.Value == "(" ? 1 : -1;
+					var otherParenthesis = parenthesisTerminal.Token.Value == "(" ? ")" : "(";
 
-					if (index < 0 || index >= childNodes.Count)
-						break;
-
-					var otherParenthesisTerminal = childNodes[index];
-					if (otherParenthesisTerminal.Token != null && otherParenthesisTerminal.Token.Value == otherParenthesis)
+					while (0 <= index && index < childNodes.Count)
 					{
-						parenthesisNodes.Add(parenthesisTerminal);
-						parenthesisNodes.Add(otherParenthesisTerminal);
-						break;
+						index += increment;
+
+						if (index < 0 || index >= childNodes.Count)
+							break;
+
+						var otherParenthesisTerminal = childNodes[index];
+						if (otherParenthesisTerminal.Token != null && otherParenthesisTerminal.Token.Value == otherParenthesis)
+						{
+							parenthesisNodes.Add(parenthesisTerminal);
+							parenthesisNodes.Add(otherParenthesisTerminal);
+							break;
+						}
 					}
 				}
 			}
@@ -141,13 +145,13 @@ namespace SqlPad
 				return;
 			}
 
+			_isParsing = true;
+
 			Task.Factory.StartNew(DoWork, Editor.Text);
 		}
 
 		private void DoWork(object text)
 		{
-			_isParsing = true;
-
 			var statements = _sqlParser.Parse((string)text);
 			_sqlDocument.UpdateStatements(statements);
 			_colorizeAvalonEdit.SetStatementCollection(statements);

@@ -28,5 +28,13 @@ namespace SqlPad
 				action(StatementCollection);
 			}
 		}
+
+		public T ExecuteStatementAction<T>(Func<StatementCollection, T> function)
+		{
+			lock (_lockObject)
+			{
+				return function(StatementCollection);
+			}
+		}
 	}
 }
