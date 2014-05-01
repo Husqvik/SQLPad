@@ -34,19 +34,25 @@ namespace SqlPad.Oracle.Commands
 					enableQuotes = !identifier.Token.Value.IsQuoted();
 				}
 
+				if ((enableQuotes.Value && identifier.Token.Value.IsQuoted()) ||
+				    !enableQuotes.Value && !identifier.Token.Value.IsQuoted())
+					continue;
+
 				var replacedLength = enableQuotes.Value ? 0 : 1;
+				var newText = enableQuotes.Value ? "\"" : String.Empty;
+
 				segmentsToReplace.Add(new TextSegment
 				{
 					IndextStart = identifier.SourcePosition.IndexStart,
 					Length = replacedLength,
-					Text = enableQuotes.Value ? "\"" : String.Empty
+					Text = newText
 				});
 
 				segmentsToReplace.Add(new TextSegment
 				{
 					IndextStart = identifier.SourcePosition.IndexEnd + 1 - replacedLength,
 					Length = replacedLength,
-					Text = enableQuotes.Value ? "\"" : String.Empty
+					Text = newText
 				});
 			}
 		}

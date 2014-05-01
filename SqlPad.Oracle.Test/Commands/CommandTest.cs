@@ -161,6 +161,16 @@ FROM
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestBasicToggleQuotedNotationCommandWithSubqueryWithQuotedNotation()
+		{
+			_editor.Text = "SELECT DUMMY FROM (SELECT \"DUMMY\" FROM \"DUAL\")";
+			var command = InitializeCommand<ToggleQuotedNotationCommand>(_editor.Text, 0, null);
+			command.Execute(_editor);
+
+			_editor.Text.ShouldBe("SELECT \"DUMMY\" FROM (SELECT \"DUMMY\" FROM \"DUAL\")");
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestFindObjectUsages()
 		{
 			const string statementText = "SELECT \"SELECTION\".RESPONDENTBUCKET_ID, PROJECT_ID FROM SELECTION WHERE SELECTION.NAME = NAME GROUP BY SELECTION.RESPONDENTBUCKET_ID, PROJECT_ID HAVING COUNT(SELECTION.SELECTION_ID) = COUNT(SELECTION_ID)";
