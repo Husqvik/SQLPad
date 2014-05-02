@@ -154,8 +154,6 @@ namespace SqlPad.Oracle
 				ResolveWhereGroupByHavingReferences(item);
 
 				ResolveJoinColumnReferences(item);
-
-				ResolveOrderByReferences(item);
 			}
 
 			foreach (var queryBlock in _queryBlockResults.Values)
@@ -168,7 +166,9 @@ namespace SqlPad.Oracle
 						var parentQueryBlockNode = parentSubquery.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.QueryBlock);
 						if (parentQueryBlockNode != null)
 						{
-							_queryBlockResults[parentQueryBlockNode].ConcatenatedQueryBlock = queryBlock;
+							var precedingQueryBlock = _queryBlockResults[parentQueryBlockNode];
+							precedingQueryBlock.FollowingConcatenatedQueryBlock = queryBlock;
+							queryBlock.PrecedingConcatenatedQueryBlock = precedingQueryBlock;
 						}
 					}
 				}
@@ -236,6 +236,8 @@ namespace SqlPad.Oracle
 
 			foreach (var queryBlock in _queryBlockResults.Values)
 			{
+				ResolveOrderByReferences(queryBlock);
+
 				foreach (var selectColumm in queryBlock.Columns)
 				{
 					ResolveColumnTableReferences(selectColumm.ColumnReferences, selectColumm.FunctionReferences, queryBlock.ObjectReferences, databaseModel);
@@ -384,7 +386,8 @@ namespace SqlPad.Oracle
 
 		private void ResolveOrderByReferences(OracleQueryBlock queryBlock)
 		{
-			
+			if (queryBlock.PrecedingConcatenatedQueryBlock != null)
+				return;
 		}
 
 		private void ResolveColumnAndFunctionReferenceFromIdentifiers(OracleQueryBlock queryBlock, ICollection<OracleColumnReference> columnReferences, ICollection<OracleFunctionReference> functionReferences, IEnumerable<StatementDescriptionNode> identifiers, ColumnReferenceType type, OracleSelectListColumn selectListColumn)

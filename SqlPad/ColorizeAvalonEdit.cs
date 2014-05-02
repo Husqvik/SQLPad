@@ -37,12 +37,14 @@ namespace SqlPad
 			if (statements == null)
 				return;
 
+			var validationModels = statements.Select(s => _validator.ResolveReferences(null, s, _databaseModel))
+					.ToDictionary(vm => vm.Statement, vm => vm);
+
 			lock (_lockObject)
 			{
 				_statements = statements;
 
-				_validationModels = _statements.Select(s => _validator.ResolveReferences(null, s, _databaseModel))
-					.ToDictionary(vm => vm.Statement, vm => vm);
+				_validationModels = validationModels;
 
 				_lineTerminals.Clear();
 			}

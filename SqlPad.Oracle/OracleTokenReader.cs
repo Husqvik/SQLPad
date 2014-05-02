@@ -185,8 +185,8 @@ namespace SqlPad.Oracle
 						}
 						else if (inNumber && !isSingleCharacterSeparator)
 						{
-							var previousCharacterCode = (int)_builder[_builder.Length - 1];
-							if ((character != 'd' && character != 'D' && character != 'f' && character != 'F') || previousCharacterCode == 'f' || previousCharacterCode == 'F' || previousCharacterCode == 'd' || previousCharacterCode == 'D')
+							var precedingCharacterCode = (int)_builder[_builder.Length - 1];
+							if ((character != 'd' && character != 'D' && character != 'f' && character != 'F') || precedingCharacterCode == 'f' || precedingCharacterCode == 'F' || precedingCharacterCode == 'd' || precedingCharacterCode == 'D')
 							{
 								inNumber = false;
 								quotedIdentifierOrLiteralEnabled = true;

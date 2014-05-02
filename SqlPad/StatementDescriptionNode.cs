@@ -43,16 +43,16 @@ namespace SqlPad
 			return ParentNode == null ? this : ParentNode.GetRootNode();
 		}
 
-		public StatementDescriptionNode PreviousTerminal
+		public StatementDescriptionNode PrecedingTerminal
 		{
 			get
 			{
-				var previousNode = GetPreviousNode(this);
+				var previousNode = GetPrecedingNode(this);
 				return previousNode == null ? null : previousNode.LastTerminalNode;
 			}
 		}
 
-		private StatementDescriptionNode GetPreviousNode(StatementDescriptionNode node)
+		private StatementDescriptionNode GetPrecedingNode(StatementDescriptionNode node)
 		{
 			if (node.ParentNode == null)
 				return null;
@@ -60,7 +60,7 @@ namespace SqlPad
 			var index = node.ParentNode._childNodes.IndexOf(node) - 1;
 			return index >= 0
 				? node.ParentNode._childNodes[index]
-				: GetPreviousNode(node.ParentNode);
+				: GetPrecedingNode(node.ParentNode);
 		}
 		
 		//public StatementDescriptionNode NextTerminal { get; private set; }
@@ -285,7 +285,7 @@ namespace SqlPad
 			{
 				if (previousTerminal != null)
 				{
-					terminal.PreviousTerminal = previousTerminal;
+					terminal.PrecedingTerminal = previousTerminal;
 					previousTerminal.NextTerminal = terminal;
 				}
 

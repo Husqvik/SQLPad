@@ -362,10 +362,15 @@ namespace SqlPad.Oracle
 							var bestCandidatePosition = new Dictionary<SourcePosition, StatementDescriptionNode>();
 							// Candidate nodes can be multiplied, therefore we fetch always the last node.
 							foreach (var candidate in nestedResult.BestCandidates)
-								bestCandidatePosition[candidate.SourcePosition] = candidate.Clone();
+								bestCandidatePosition[candidate.SourcePosition] = candidate;
 
 							alternativeNode.AddChildNodes(bestCandidatePosition.Values);
-							bestCandidateNodes = new List<StatementDescriptionNode>(workingNodes) { alternativeNode };
+
+							if (workingNodes.Count != bestCandidateNodes.Count || nestedResult.Status == ProcessingStatus.SequenceNotFound)
+								bestCandidateNodes = new List<StatementDescriptionNode>(workingNodes.Select(n => n.Clone()));
+
+							bestCandidateNodes.Add(alternativeNode);
+							
 							bestCandidatesCompatible = true;
 						}
 
@@ -380,7 +385,7 @@ namespace SqlPad.Oracle
 							if (workingNodes.Count == 0)
 								break;
 
-							workingNodes.Add(alternativeNode);
+							workingNodes.Add(alternativeNode.Clone());
 						}
 					}
 					else
@@ -404,7 +409,7 @@ namespace SqlPad.Oracle
 
 						var terminalNode = terminalResult.Nodes.Single();
 						workingNodes.Add(terminalNode);
-						bestCandidateNodes.Add(terminalNode);
+						bestCandidateNodes.Add(terminalNode.Clone());
 					}
 				}
 
@@ -429,7 +434,7 @@ namespace SqlPad.Oracle
 				return;
 			
 			workingNodes.Clear();
-			workingNodes.AddRange(bestCandidateNodes);
+			workingNodes.AddRange(bestCandidateNodes.Select(n => n.Clone()));
 			processingResult = bestCandidateResult;
 		}
 
@@ -446,7 +451,7 @@ namespace SqlPad.Oracle
 
 			var newResultTerminalCount = newResult.BestCandidates.Sum(n => n.TerminalCount);
 			var revertNode = newResultTerminalCount >= optionalTerminalCount &&
-			                 newResultTerminalCount > currentResult.Terminals.Count();
+			                 newResultTerminalCount > currentResult.Nodes.Sum(n => n.TerminalCount);
 
 			if (!revertNode)
 				return;
@@ -470,18 +475,14 @@ namespace SqlPad.Oracle
 		private ProcessingResult IsTokenValid(StatementBase statement, ISqlGrammarRuleSequenceItem terminalReference, int level, int tokenOffset, IList<OracleToken> tokenBuffer)
 		{
 			var tokenIsValid = false;
-			var terminalNode = new StatementDescriptionNode(statement, NodeType.Terminal)
-			{
-				Id = terminalReference.Id,
-				Level = level,
-				IsRequired = terminalReference.IsRequired
-			};
+			ICollection<StatementDescriptionNode> nodes = null;
 
 			if (tokenBuffer.Count > tokenOffset)
 			{
 				var currentToken = tokenBuffer[tokenOffset];
 
 				var terminal = Terminals[terminalReference.Id];
+				var isKeyword = false;
 				if (!String.IsNullOrEmpty(terminal.RegexValue))
 				{
 					tokenIsValid = terminal.RegexMatcher.IsMatch(currentToken.Value) && !currentToken.Value.IsKeyword();
@@ -490,18 +491,29 @@ namespace SqlPad.Oracle
 				{
 					var tokenValue = currentToken.Value.ToUpperInvariant();
 					tokenIsValid = terminal.Value == tokenValue || (terminal.AllowQuotedNotation && tokenValue == "\"" + terminal.Value + "\"");
-					terminalNode.IsKeyword = tokenIsValid && terminal.IsKeyword;
+					isKeyword = tokenIsValid && terminal.IsKeyword;
 				}
 
-				terminalNode.Token = currentToken;
+				if (tokenIsValid)
+				{
+					var terminalNode = new StatementDescriptionNode(statement, NodeType.Terminal)
+					               {
+						               Id = terminalReference.Id,
+						               Level = level,
+						               IsRequired = terminalReference.IsRequired,
+						               Token = currentToken,
+									   IsKeyword = isKeyword
+					               };
+
+					nodes = new[] { terminalNode };
+				}
 			}
 			
 			return new ProcessingResult
 			       {
 					   NodeId = terminalReference.Id,
 				       Status = tokenIsValid ? ProcessingStatus.Success : ProcessingStatus.SequenceNotFound,
-					   Nodes = new [] { terminalNode },
-					   BestCandidates = new [] { terminalNode }
+					   Nodes = nodes
 			       };
 		}
 	}

@@ -95,17 +95,17 @@ namespace SqlPad.Oracle
 				}
 				else if (currentNode.Id.In(Terminals.RightParenthesis, Terminals.Comma, Terminals.Semicolon))
 				{
-					var previousNode = statement.GetNearestTerminalToPosition(cursorPosition - 1);
-					if (previousNode != null)
+					var precedingNode = statement.GetNearestTerminalToPosition(cursorPosition - 1);
+					if (precedingNode != null)
 					{
-						currentNode = previousNode;
+						currentNode = precedingNode;
 						isCursorAtTerminal = false;
 					}
 				}
 			}
 
 			var semanticModel = new OracleStatementSemanticModel(null, (OracleStatement)currentNode.Statement, (OracleDatabaseModel)databaseModel);
-			var terminalCandidates = new HashSet<string>(_oracleParser.GetTerminalCandidates(isCursorAtTerminal && !currentNode.Id.IsSingleCharacterTerminal() ? currentNode.PreviousTerminal : currentNode));
+			var terminalCandidates = new HashSet<string>(_oracleParser.GetTerminalCandidates(isCursorAtTerminal && !currentNode.Id.IsSingleCharacterTerminal() ? currentNode.PrecedingTerminal : currentNode));
 
 			var cursorAtLastTerminal = cursorPosition <= currentNode.SourcePosition.IndexEnd + 1;
 			var terminalToReplace = cursorAtLastTerminal ? currentNode : null;

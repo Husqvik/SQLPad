@@ -443,7 +443,7 @@ FROM
 		}
 
 		[Test(Description = @"")]
-		public void TestSuggestionWhenJustAtCommaWhenPreviousTokenAlreadyEntered()
+		public void TestSuggestionWhenJustAtCommaWhenPrecedingTokenAlreadyEntered()
 		{
 			const string query1 = @"SELECT NULL FROM (SELECT NULL FROM DUAL,)";
 

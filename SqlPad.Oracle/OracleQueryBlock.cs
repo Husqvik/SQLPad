@@ -42,18 +42,20 @@ namespace SqlPad.Oracle
 
 		public ICollection<OracleQueryBlock> AccessibleQueryBlocks { get; private set; }
 
-		public OracleQueryBlock ConcatenatedQueryBlock { get; set; }
+		public OracleQueryBlock FollowingConcatenatedQueryBlock { get; set; }
+		
+		public OracleQueryBlock PrecedingConcatenatedQueryBlock { get; set; }
 
-		public IEnumerable<OracleQueryBlock> AllConcatenatedQueryBlocks
+		public IEnumerable<OracleQueryBlock> AllFollowingConcatenatedQueryBlocks
 		{
 			get
 			{
-				var concatenatedQueryBlock = ConcatenatedQueryBlock;
+				var concatenatedQueryBlock = FollowingConcatenatedQueryBlock;
 				while (concatenatedQueryBlock != null)
 				{
 					yield return concatenatedQueryBlock;
 
-					concatenatedQueryBlock = concatenatedQueryBlock.ConcatenatedQueryBlock;
+					concatenatedQueryBlock = concatenatedQueryBlock.FollowingConcatenatedQueryBlock;
 				}
 			}
 		}

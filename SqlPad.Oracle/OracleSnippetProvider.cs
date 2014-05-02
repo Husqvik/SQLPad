@@ -29,9 +29,9 @@ namespace SqlPad.Oracle
 			}
 
 			if (currentNode != null && currentNode.Id == OracleGrammarDescription.Terminals.RightParenthesis &&
-				currentNode.PreviousTerminal != null && currentNode.PreviousTerminal.PreviousTerminal != null)
+				currentNode.PrecedingTerminal != null && currentNode.PrecedingTerminal.PrecedingTerminal != null)
 			{
-				currentNode = currentNode.PreviousTerminal.PreviousTerminal;
+				currentNode = currentNode.PrecedingTerminal.PrecedingTerminal;
 			}
 
 			var textToReplace = new String(statementText.Substring(0, cursorPosition).Reverse().TakeWhile(c => c != ' ' && c != '\n' && c != '\t' && c!= '(').Reverse().ToArray());
