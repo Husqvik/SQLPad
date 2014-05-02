@@ -564,7 +564,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			objectNodeValidity[2].ShouldBe(true);
 		}
 
-		[Test(Description = @""), Ignore]
+		[Test(Description = @"")]
 		public void TestNodeValidityInOrderByClause()
 		{
 			const string sqlText = "SELECT * FROM HUSQVIK.SELECTION ORDER BY HUSQVIK.SELECTION.NAME, SELECTION.NAME, DUAL.DUMMY, SELECTION_ID, UNDEFINED_COLUMN, UPPER(''), UNDEFINED_FUNCTION()";
@@ -584,13 +584,46 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			objectNodeValidity[5].ShouldBe(false);
 
 			nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
-			var columnNodeValidity = nodeValidityDictionary.Values.Select(v => v.IsRecognized).ToList();
-			columnNodeValidity.Count.ShouldBe(5);
-			columnNodeValidity[0].ShouldBe(true);
-			columnNodeValidity[1].ShouldBe(true);
-			columnNodeValidity[2].ShouldBe(false);
-			columnNodeValidity[3].ShouldBe(true);
-			columnNodeValidity[4].ShouldBe(false);
+			var columnNodeValidity = nodeValidityDictionary.Values.ToList();
+			columnNodeValidity.Count.ShouldBe(6);
+			columnNodeValidity[0].IsRecognized.ShouldBe(true);
+			columnNodeValidity[0].Node.Token.Value.ShouldBe("*");
+			columnNodeValidity[1].IsRecognized.ShouldBe(true);
+			columnNodeValidity[1].Node.Token.Value.ShouldBe("NAME");
+			columnNodeValidity[2].IsRecognized.ShouldBe(true);
+			columnNodeValidity[2].Node.Token.Value.ShouldBe("NAME");
+			columnNodeValidity[3].IsRecognized.ShouldBe(false);
+			columnNodeValidity[3].Node.Token.Value.ShouldBe("DUMMY");
+			columnNodeValidity[4].IsRecognized.ShouldBe(true);
+			columnNodeValidity[4].Node.Token.Value.ShouldBe("SELECTION_ID");
+			columnNodeValidity[5].IsRecognized.ShouldBe(false);
+			columnNodeValidity[5].Node.Token.Value.ShouldBe("UNDEFINED_COLUMN");
+
+			nodeValidityDictionary = validationModel.FunctionNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var functionNodeValidity = nodeValidityDictionary.Values.ToList();
+			functionNodeValidity.Count.ShouldBe(2);
+			functionNodeValidity[0].IsRecognized.ShouldBe(true);
+			functionNodeValidity[0].Node.Token.Value.ShouldBe("UPPER");
+			functionNodeValidity[1].IsRecognized.ShouldBe(false);
+			functionNodeValidity[1].Node.Token.Value.ShouldBe("UNDEFINED_FUNCTION");
+		}
+
+		[Test(Description = @""), Ignore]
+		public void TestAliasReferenceNodeValidityInOrderByClause()
+		{
+			const string sqlText = "SELECT DUMMY NOT_DUMMY FROM DUAL ORDER BY NOT_DUMMY";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, TestFixture.DatabaseModel);
+			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var columnNodeValidity = nodeValidityDictionary.Values.ToList();
+			columnNodeValidity.Count.ShouldBe(2);
+			columnNodeValidity[0].IsRecognized.ShouldBe(true);
+			columnNodeValidity[0].Node.Token.Value.ShouldBe("DUMMY");
+			columnNodeValidity[1].IsRecognized.ShouldBe(true);
+			columnNodeValidity[1].Node.Token.Value.ShouldBe("NOT_DUMMY");
 		}
 
 		//WITH CTE AS (SELECT 1 A, 2 B, 3 C FROM DUAL) SELECT SELECTION.DUMMY, NQ.DUMMY, CTE.DUMMY, SYS.DUAL.DUMMY FROM SELECTION, (SELECT 1 X, 2 Y, 3 Z FROM DUAL) NQ, CTE, SYS.DUAL

@@ -388,6 +388,16 @@ namespace SqlPad.Oracle
 		{
 			if (queryBlock.PrecedingConcatenatedQueryBlock != null)
 				return;
+
+			if (queryBlock.FollowingConcatenatedQueryBlock != null)
+				return;
+
+			var orderByNode = queryBlock.RootNode.ParentNode.GetDescendantsWithinSameQuery(NonTerminals.OrderByClause).FirstOrDefault();
+			if (orderByNode == null)
+				return;
+
+			var identifiers = orderByNode.GetDescendantsWithinSameQuery(Terminals.Identifier);
+			ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock.ColumnReferences, queryBlock.FunctionReferences, identifiers, ColumnReferenceType.OrderBy, null);
 		}
 
 		private void ResolveColumnAndFunctionReferenceFromIdentifiers(OracleQueryBlock queryBlock, ICollection<OracleColumnReference> columnReferences, ICollection<OracleFunctionReference> functionReferences, IEnumerable<StatementDescriptionNode> identifiers, ColumnReferenceType type, OracleSelectListColumn selectListColumn)

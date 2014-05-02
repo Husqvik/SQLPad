@@ -31,6 +31,7 @@ namespace SqlPad.Oracle
 	{
 		SelectList,
 		WhereGroupHaving,
-		Join
+		Join,
+		OrderBy
 	}
 }

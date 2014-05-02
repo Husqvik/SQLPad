@@ -35,18 +35,18 @@ namespace SqlPad.Oracle
 				{
 					// Schema
 					if (columnReference.OwnerNode != null)
-						validationModel.ObjectNodeValidity[columnReference.OwnerNode] = new NodeValidationData(columnReference.ObjectNodeObjectReferences) { IsRecognized = columnReference.ObjectNodeObjectReferences.Count > 0 };
+						validationModel.ObjectNodeValidity[columnReference.OwnerNode] = new NodeValidationData(columnReference.ObjectNodeObjectReferences) { IsRecognized = columnReference.ObjectNodeObjectReferences.Count > 0, Node = columnReference.OwnerNode };
 
 					// Object
 					if (columnReference.ObjectNode != null)
-						validationModel.ObjectNodeValidity[columnReference.ObjectNode] = new NodeValidationData(columnReference.ObjectNodeObjectReferences) { IsRecognized = columnReference.ObjectNodeObjectReferences.Count > 0 };
+						validationModel.ObjectNodeValidity[columnReference.ObjectNode] = new NodeValidationData(columnReference.ObjectNodeObjectReferences) { IsRecognized = columnReference.ObjectNodeObjectReferences.Count > 0, Node = columnReference.ObjectNode };
 
 					// Column
 					var columnReferences = columnReference.SelectListColumn != null && columnReference.SelectListColumn.IsAsterisk
 						? 1
 						: columnReference.ColumnNodeObjectReferences.Count;
 
-					validationModel.ColumnNodeValidity[columnReference.ColumnNode] = new ColumnNodeValidationData(columnReference.ColumnNodeObjectReferences, columnReference.ColumnNodeColumnReferences) { IsRecognized = columnReferences > 0 };
+					validationModel.ColumnNodeValidity[columnReference.ColumnNode] = new ColumnNodeValidationData(columnReference.ColumnNodeObjectReferences, columnReference.ColumnNodeColumnReferences) { IsRecognized = columnReferences > 0, Node = columnReference.ColumnNode };
 				}
 
 				foreach (var functionReference in queryBlock.AllFunctionReferences)
@@ -54,7 +54,6 @@ namespace SqlPad.Oracle
 					var metadataFound = functionReference.Metadata != null;
 					var semanticError = SemanticError.None;
 					var isRecognized = false;
-					var node = functionReference.FunctionIdentifierNode;
 					if (metadataFound)
 					{
 						isRecognized = true;
@@ -81,7 +80,7 @@ namespace SqlPad.Oracle
 						}
 					}
 
-					validationModel.FunctionNodeValidity[node] = new FunctionValidationData(semanticError) { IsRecognized = isRecognized };
+					validationModel.FunctionNodeValidity[functionReference.FunctionIdentifierNode] = new FunctionValidationData(semanticError) { IsRecognized = isRecognized, Node = functionReference.FunctionIdentifierNode };
 				}
 			}
 
