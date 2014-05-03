@@ -30,8 +30,8 @@ namespace SqlPad.Oracle.Commands
 			return commands.AsReadOnly();
 		}
 
-		private ResolveAmbiguousColumnCommand(OracleStatementSemanticModel semanticModel, StatementDescriptionNode currentTerminal, string resolvedName)
-			: base(semanticModel, currentTerminal)
+		private ResolveAmbiguousColumnCommand(OracleStatementSemanticModel semanticModel, StatementDescriptionNode currentNode, string resolvedName)
+			: base(semanticModel, currentNode)
 		{	
 			if (String.IsNullOrWhiteSpace(resolvedName))
 				throw new ArgumentException("resolvedName");
@@ -46,7 +46,7 @@ namespace SqlPad.Oracle.Commands
 
 		protected override void ExecuteInternal(string statementText, ICollection<TextSegment> segmentsToReplace)
 		{
-			var prefixedColumnReference = CurrentTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference);
+			var prefixedColumnReference = CurrentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference);
 
 			var textSegment = new TextSegment
 			                  {

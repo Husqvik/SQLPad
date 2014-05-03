@@ -307,7 +307,7 @@ namespace SqlPad
 
 		private bool PopulateContextMenu()
 		{
-			var menuItems = _contextActionProvider.GetContextActions(_databaseModel, _sqlDocument, Editor.CaretOffset)
+			var menuItems = _contextActionProvider.GetContextActions(_databaseModel, _sqlDocument, Editor.SelectionStart, Editor.SelectionLength)
 				.Select(a => new MenuItem { Header = a.Name, Command = a.Command, CommandParameter = Editor });
 
 			Editor.ContextMenu.Items.Clear();

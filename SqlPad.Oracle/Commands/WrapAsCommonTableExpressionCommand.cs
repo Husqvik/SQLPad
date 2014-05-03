@@ -9,15 +9,15 @@ namespace SqlPad.Oracle.Commands
 {
 	public class WrapAsCommonTableExpressionCommand : OracleConfigurableCommandBase
 	{
-		public WrapAsCommonTableExpressionCommand(OracleStatementSemanticModel semanticModel, StatementDescriptionNode currentTerminal, ICommandSettingsProvider settingsProvider = null)
-			: base(semanticModel, currentTerminal, settingsProvider)
+		public WrapAsCommonTableExpressionCommand(OracleStatementSemanticModel semanticModel, StatementDescriptionNode currentNode, ICommandSettingsProvider settingsProvider = null)
+			: base(semanticModel, currentNode, settingsProvider)
 		{
 		}
 
 		public override bool CanExecute(object parameter)
 		{
-			return CurrentTerminal != null && CurrentQueryBlock != null &&
-			       CurrentTerminal.Id == Terminals.Select &&
+			return CurrentNode != null && CurrentQueryBlock != null &&
+			       CurrentNode.Id == Terminals.Select &&
 			       CurrentQueryBlock.Columns.Any(c => !String.IsNullOrEmpty(c.NormalizedName));
 		}
 
@@ -32,7 +32,7 @@ namespace SqlPad.Oracle.Commands
 
 			var tableAlias = SettingsProvider.Settings.Value;
 
-			var queryBlock = SemanticModel.GetQueryBlock(CurrentTerminal);
+			var queryBlock = SemanticModel.GetQueryBlock(CurrentNode);
 
 			var lastCte = SemanticModel.MainQueryBlock
 				.AccessibleQueryBlocks
@@ -40,10 +40,14 @@ namespace SqlPad.Oracle.Commands
 				.FirstOrDefault();
 
 			var builder = new StringBuilder();
-			var startIndex = 0;
+			var startIndex = SemanticModel.Statement.RootNode.SourcePosition.IndexStart;
 			if (lastCte == null)
 			{
 				builder.Append("WITH ");
+			}
+			else if (CurrentQueryBlock.Type == QueryBlockType.CommonTableExpression)
+			{
+				startIndex = CurrentQueryBlock.RootNode.GetAncestor(NonTerminals.SubqueryComponent).SourcePosition.IndexStart;
 			}
 			else
 			{
@@ -52,8 +56,13 @@ namespace SqlPad.Oracle.Commands
 			}
 
 			builder.Append(tableAlias + " AS (");
-			builder.Append(statementText.Substring(queryBlock.RootNode.SourcePosition.IndexStart, queryBlock.RootNode.SourcePosition.Length));
+			builder.Append(queryBlock.RootNode.GetStatementSubstring(statementText));
 			builder.Append(")");
+
+			if (CurrentQueryBlock.Type == QueryBlockType.CommonTableExpression)
+			{
+				builder.Append(", ");
+			}
 
 			if (lastCte == null)
 			{

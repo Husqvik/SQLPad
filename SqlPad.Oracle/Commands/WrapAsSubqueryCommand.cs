@@ -8,15 +8,15 @@ namespace SqlPad.Oracle.Commands
 {
 	public class WrapAsSubqueryCommand : OracleConfigurableCommandBase
 	{
-		public WrapAsSubqueryCommand(OracleStatementSemanticModel semanticModel, StatementDescriptionNode currentTerminal, ICommandSettingsProvider settingsProvider = null)
-			: base(semanticModel, currentTerminal, settingsProvider)
+		public WrapAsSubqueryCommand(OracleStatementSemanticModel semanticModel, StatementDescriptionNode currentNode, ICommandSettingsProvider settingsProvider = null)
+			: base(semanticModel, currentNode, settingsProvider)
 		{
 		}
 
 		public override bool CanExecute(object parameter)
 		{
-			return CurrentTerminal != null && CurrentQueryBlock != null &&
-				   CurrentTerminal.Id == Terminals.Select &&
+			return CurrentNode != null && CurrentQueryBlock != null &&
+				   CurrentNode.Id == Terminals.Select &&
 				   CurrentQueryBlock.Columns.Any(c => !String.IsNullOrEmpty(c.NormalizedName));
 		}
 
@@ -31,7 +31,7 @@ namespace SqlPad.Oracle.Commands
 
 			var tableAlias = SettingsProvider.Settings.Value;
 
-			var queryBlock = SemanticModel.GetQueryBlock(CurrentTerminal);
+			var queryBlock = SemanticModel.GetQueryBlock(CurrentNode);
 
 			var builder = new StringBuilder("SELECT ");
 			var columnList = String.Join(", ", queryBlock.Columns.Where(c => !c.IsAsterisk && !String.IsNullOrEmpty(c.NormalizedName)).Select(c => c.NormalizedName.ToSimpleIdentifier()));

@@ -5,7 +5,7 @@ namespace SqlPad
 {
 	public interface IContextActionProvider
 	{
-		ICollection<IContextAction> GetContextActions(IDatabaseModel databaseModel, SqlDocument sqlDocument, int cursorPosition);
+		ICollection<IContextAction> GetContextActions(IDatabaseModel databaseModel, SqlDocument sqlDocument, int cursorPosition, int selectionLength);
 	}
 
 	public interface IContextAction

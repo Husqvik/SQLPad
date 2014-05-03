@@ -178,7 +178,7 @@ namespace SqlPad
 			}
 		}
 
-		public string GetStatementSubString(string statementText)
+		public string GetStatementSubstring(string statementText)
 		{
 			return statementText.Substring(SourcePosition.IndexStart, SourcePosition.Length);
 		}
@@ -232,6 +232,18 @@ namespace SqlPad
 		public StatementDescriptionNode GetAncestor(string ancestorNodeId, bool includeSelf = false)
 		{
 			return GetPathFilterAncestor(null, ancestorNodeId, includeSelf);
+		}
+
+		public StatementDescriptionNode GetTopAncestor(string ancestorNodeId, Func<StatementDescriptionNode, bool> pathFilter = null)
+		{
+			var node = this;
+			StatementDescriptionNode ancestorNode;
+			while ((ancestorNode = node.GetPathFilterAncestor(pathFilter, ancestorNodeId)) != null)
+			{
+				node = ancestorNode;
+			}
+
+			return node;
 		}
 
 		public StatementDescriptionNode GetNodeAtPosition(int position, Func<StatementDescriptionNode, bool> filter = null)

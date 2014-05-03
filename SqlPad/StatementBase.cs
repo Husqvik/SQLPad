@@ -43,6 +43,12 @@ namespace SqlPad
 			return RootNode == null ? null : RootNode.GetNodeAtPosition(position, filter);
 		}
 
+		public StatementDescriptionNode GetTerminalAtPosition(int position, Func<StatementDescriptionNode, bool> filter = null)
+		{
+			var node = GetNodeAtPosition(position, filter);
+			return node == null || node.Type == NodeType.NonTerminal ? null : node;
+		}
+
 		public StatementDescriptionNode GetNearestTerminalToPosition(int position)
 		{
 			return RootNode == null ? null : RootNode.GetNearestTerminalToPosition(position);

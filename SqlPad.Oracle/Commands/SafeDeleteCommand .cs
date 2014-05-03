@@ -10,15 +10,15 @@ namespace SqlPad.Oracle.Commands
 	{
 		private readonly OracleQueryBlock _queryBlock;
 
-		public SafeDeleteCommand(OracleStatementSemanticModel semanticModel, StatementDescriptionNode currentTerminal)
-			: base(semanticModel, currentTerminal)
+		public SafeDeleteCommand(OracleStatementSemanticModel semanticModel, StatementDescriptionNode currentNode)
+			: base(semanticModel, currentNode)
 		{
-			_queryBlock = SemanticModel.GetQueryBlock(CurrentTerminal);
+			_queryBlock = SemanticModel.GetQueryBlock(CurrentNode);
 		}
 
 		public override bool CanExecute(object parameter)
 		{
-			if (!CurrentTerminal.Id.In(Terminals.ColumnAlias, Terminals.ObjectAlias))
+			if (!CurrentNode.Id.In(Terminals.ColumnAlias, Terminals.ObjectAlias))
 				return false;
 
 			return _queryBlock != null;
@@ -26,7 +26,7 @@ namespace SqlPad.Oracle.Commands
 
 		protected override void ExecuteInternal(string statementText, ICollection<TextSegment> segmentsToReplace)
 		{
-			switch (CurrentTerminal.Id)
+			switch (CurrentNode.Id)
 			{
 				case Terminals.ObjectAlias:
 					AddObjectAliasNodesToRemove(segmentsToReplace);
@@ -38,7 +38,7 @@ namespace SqlPad.Oracle.Commands
 
 		private void AddObjectAliasNodesToRemove(ICollection<TextSegment> segmentsToReplace)
 		{
-			var objectReference = _queryBlock.ObjectReferences.Single(o => o.AliasNode == CurrentTerminal);
+			var objectReference = _queryBlock.ObjectReferences.Single(o => o.AliasNode == CurrentNode);
 			if (objectReference.Type == TableReferenceType.NestedQuery)
 				return;
 
@@ -56,8 +56,8 @@ namespace SqlPad.Oracle.Commands
 
 			segmentsToReplace.Add(new TextSegment
 			{
-				IndextStart = CurrentTerminal.SourcePosition.IndexStart,
-				Length = CurrentTerminal.SourcePosition.Length,
+				IndextStart = CurrentNode.SourcePosition.IndexStart,
+				Length = CurrentNode.SourcePosition.Length,
 				Text = String.Empty
 			});
 		}

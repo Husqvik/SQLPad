@@ -6,30 +6,30 @@ namespace SqlPad.Oracle.Commands
 	{
 		protected OracleStatementSemanticModel SemanticModel { get; private set; }
 
-		protected StatementDescriptionNode CurrentTerminal { get; private set; }
+		protected StatementDescriptionNode CurrentNode { get; private set; }
 		
 		protected OracleQueryBlock CurrentQueryBlock { get; private set; }
 
-		protected OracleCommandBase(OracleStatementSemanticModel semanticModel, StatementDescriptionNode currentTerminal)
+		protected OracleCommandBase(OracleStatementSemanticModel semanticModel, StatementDescriptionNode currentNode)
 		{
-			//CheckParameters(semanticModel, currentTerminal);
+			//CheckParameters(semanticModel, CurrentNode);
 
 			SemanticModel = semanticModel;
-			CurrentTerminal = currentTerminal;
+			CurrentNode = currentNode;
 
-			if (SemanticModel != null && CurrentTerminal != null)
+			if (SemanticModel != null && CurrentNode != null)
 			{
-				CurrentQueryBlock = SemanticModel.GetQueryBlock(CurrentTerminal);
+				CurrentQueryBlock = SemanticModel.GetQueryBlock(CurrentNode);
 			}
 		}
 
-		protected static void CheckParameters(OracleStatementSemanticModel semanticModel, StatementDescriptionNode currentTerminal)
+		protected static void CheckParameters(OracleStatementSemanticModel semanticModel, StatementDescriptionNode currentNode)
 		{
 			if (semanticModel == null)
 				throw new InvalidOperationException("semanticModel");
 
-			if (currentTerminal == null)
-				throw new InvalidOperationException("currentTerminal");
+			if (currentNode == null)
+				throw new InvalidOperationException("currentNode");
 		}
 	}
 
@@ -38,8 +38,8 @@ namespace SqlPad.Oracle.Commands
 		protected readonly ICommandSettingsProvider SettingsProvider;
 		protected readonly CommandSettingsModel SettingsModel;
 
-		protected OracleConfigurableCommandBase(OracleStatementSemanticModel semanticModel, StatementDescriptionNode currentTerminal, ICommandSettingsProvider settingsProvider = null)
-			: base(semanticModel, currentTerminal)
+		protected OracleConfigurableCommandBase(OracleStatementSemanticModel semanticModel, StatementDescriptionNode currentNode, ICommandSettingsProvider settingsProvider = null)
+			: base(semanticModel, currentNode)
 		{
 			if (settingsProvider != null)
 			{

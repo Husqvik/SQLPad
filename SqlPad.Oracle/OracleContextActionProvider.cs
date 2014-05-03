@@ -12,12 +12,12 @@ namespace SqlPad.Oracle
 		private static readonly IContextAction[] EmptyCollection = new IContextAction[0];
 		private readonly OracleSqlParser _oracleParser = new OracleSqlParser();
 
-		public ICollection<IContextAction> GetContextActions(IDatabaseModel databaseModel, string statementText, int cursorPosition)
+		public ICollection<IContextAction> GetContextActions(IDatabaseModel databaseModel, string statementText, int cursorPosition, int selectionLength = 0)
 		{
-			return GetContextActions(databaseModel, SqlDocument.FromStatementCollection(_oracleParser.Parse(statementText)), cursorPosition);
+			return GetContextActions(databaseModel, SqlDocument.FromStatementCollection(_oracleParser.Parse(statementText)), cursorPosition, selectionLength);
 		}
 
-		public ICollection<IContextAction> GetContextActions(IDatabaseModel databaseModel, SqlDocument sqlDocument, int cursorPosition)
+		public ICollection<IContextAction> GetContextActions(IDatabaseModel databaseModel, SqlDocument sqlDocument, int cursorPosition, int selectionLength = 0)
 		{
 			if (sqlDocument == null || sqlDocument.StatementCollection == null)
 				return EmptyCollection;
@@ -51,6 +51,18 @@ namespace SqlPad.Oracle
 			if (toggleQuotedNotationCommand.CanExecute(null))
 			{
 				actionList.Add(new OracleContextAction("Toggle quoted identifiers", toggleQuotedNotationCommand));
+			}
+
+			var addToGroupByCommand = new AddToGroupByCommand(semanticModel, cursorPosition, selectionLength);
+			if (addToGroupByCommand.CanExecute(null))
+			{
+				//actionList.Add(new OracleContextAction("Add to GROUP BY clause", addToGroupByCommand));
+			}
+
+			var unnestCommonTableExpressionCommand = new UnnestCommonTableExpressionCommand(semanticModel, currentTerminal);
+			if (unnestCommonTableExpressionCommand.CanExecute(null))
+			{
+				actionList.Add(new OracleContextAction("Unnest", unnestCommonTableExpressionCommand));
 			}
 
 			var actions = ResolveAmbiguousColumnCommand.ResolveCommands(semanticModel, currentTerminal)

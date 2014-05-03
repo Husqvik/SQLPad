@@ -61,6 +61,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Commands\UnnestCommonTableExpressionCommand.cs" />
     <Compile Include="Commands\FindUsagesCommand.cs" />
     <Compile Include="Commands\AddToGroupByCommand.cs" />
     <Compile Include="Commands\SafeDeleteCommand .cs" />

@@ -8,14 +8,14 @@ namespace SqlPad.Oracle.Commands
 {
 	public class ToggleQuotedNotationCommand : OracleCommandBase
 	{
-		public ToggleQuotedNotationCommand(OracleStatementSemanticModel semanticModel, StatementDescriptionNode currentTerminal)
-			: base(semanticModel, currentTerminal)
+		public ToggleQuotedNotationCommand(OracleStatementSemanticModel semanticModel, StatementDescriptionNode currentNode)
+			: base(semanticModel, currentNode)
 		{
 		}
 
 		public override bool CanExecute(object parameter)
 		{
-			return CurrentTerminal != null && CurrentQueryBlock != null && CurrentTerminal.Id == Terminals.Select;
+			return CurrentNode != null && CurrentQueryBlock != null && CurrentNode.Id == Terminals.Select;
 		}
 
 		protected override void ExecuteInternal(string statementText, ICollection<TextSegment> segmentsToReplace)

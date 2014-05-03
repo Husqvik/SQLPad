@@ -8,28 +8,28 @@ namespace SqlPad.Oracle.Commands
 {
 	public class AddAliasCommand : OracleConfigurableCommandBase
 	{
-		public AddAliasCommand(OracleStatementSemanticModel semanticModel, StatementDescriptionNode currentTerminal, ICommandSettingsProvider settingsProvider = null)
-			: base(semanticModel, currentTerminal, settingsProvider)
+		public AddAliasCommand(OracleStatementSemanticModel semanticModel, StatementDescriptionNode currentNode, ICommandSettingsProvider settingsProvider = null)
+			: base(semanticModel, currentNode, settingsProvider)
 		{
 		}
 
 		public override bool CanExecute(object parameter)
 		{
-			if (CurrentTerminal.Id != Terminals.ObjectIdentifier)
+			if (CurrentNode.Id != Terminals.ObjectIdentifier)
 				return false;
 
-			var tables = SemanticModel.GetQueryBlock(CurrentTerminal).ObjectReferences.Where(t => t.ObjectNode == CurrentTerminal).ToArray();
+			var tables = SemanticModel.GetQueryBlock(CurrentNode).ObjectReferences.Where(t => t.ObjectNode == CurrentNode).ToArray();
 			return tables.Length == 1 && tables[0].AliasNode == null;
 		}
 
 		protected override void ExecuteInternal(string statementText, ICollection<TextSegment> segmentsToReplace)
 		{
-			switch (CurrentTerminal.Id)
+			switch (CurrentNode.Id)
 			{
 				case Terminals.ObjectIdentifier:
 					SettingsModel.Title = "Add Object Alias";
 					SettingsModel.Heading = SettingsModel.Title;
-					SettingsModel.Description = String.Format("Enter an alias for the object '{0}'", CurrentTerminal.Token.Value);
+					SettingsModel.Description = String.Format("Enter an alias for the object '{0}'", CurrentNode.Token.Value);
 					break;
 			}
 
@@ -38,9 +38,9 @@ namespace SqlPad.Oracle.Commands
 
 			var alias = SettingsProvider.Settings.Value;
 
-			var queryBlock = SemanticModel.GetQueryBlock(CurrentTerminal);
+			var queryBlock = SemanticModel.GetQueryBlock(CurrentNode);
 
-			var table = queryBlock.ObjectReferences.Single(t => t.ObjectNode == CurrentTerminal);
+			var table = queryBlock.ObjectReferences.Single(t => t.ObjectNode == CurrentNode);
 
 			var prefixedColumnReferences = queryBlock.AllColumnReferences
 				.Where(c => (c.OwnerNode != null || c.ObjectNode != null) && c.ColumnNodeObjectReferences.Count == 1 && c.ColumnNodeObjectReferences.Single() == table);
@@ -62,7 +62,7 @@ namespace SqlPad.Oracle.Commands
 
 			segmentsToReplace.Add(new TextSegment
 			                      {
-									  IndextStart = CurrentTerminal.SourcePosition.IndexEnd + 1,
+									  IndextStart = CurrentNode.SourcePosition.IndexEnd + 1,
 									  Length = 0,
 									  Text = " " + alias
 			                      });
