@@ -317,6 +317,7 @@ namespace SqlPad.Oracle
 							 BestCandidates = new List<StatementDescriptionNode>(),
 			             };
 
+			var workingTerminalMaxCount = 0;
 			foreach (var sequence in StartingNonTerminalSequences[nonTerminal])
 			{
 				result.Status = ProcessingStatus.Success;
@@ -415,6 +416,20 @@ namespace SqlPad.Oracle
 
 				if (result.Status == ProcessingStatus.Success)
 				{
+					#region CASE WHEN issue
+					if (bestCandidateNodes.Count > 0)
+					{
+						var currentTerminalCount = bestCandidateNodes.SelectMany(n => n.Terminals).TakeWhile(t => !t.Id.IsIdentifierOrAlias() && !t.Id.IsLiteral()).Count();
+						workingTerminalMaxCount = Math.Max(workingTerminalMaxCount, currentTerminalCount);
+
+						var workingTerminalCount = workingNodes.Sum(t => t.TerminalCount);
+						if (workingTerminalMaxCount > workingTerminalCount)
+						{
+							workingNodes.ForEach(n => n.IsGrammarValid = false);
+						}
+					}
+					#endregion
+
 					break;
 				}
 			}

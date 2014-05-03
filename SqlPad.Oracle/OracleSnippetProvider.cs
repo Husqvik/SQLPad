@@ -19,7 +19,7 @@ namespace SqlPad.Oracle
 			if (sqlDocument == null || sqlDocument.StatementCollection == null)
 				return EmptyCollection;
 
-			var statement = sqlDocument.StatementCollection.TakeWhile(s => s.SourcePosition.IndexStart <= cursorPosition - 1).FirstOrDefault();
+			var statement = sqlDocument.StatementCollection.TakeWhile(s => s.SourcePosition.IndexStart <= cursorPosition - 1).LastOrDefault();
 
 			StatementDescriptionNode currentNode = null;
 			if (statement != null)

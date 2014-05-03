@@ -1306,7 +1306,7 @@ namespace SqlPad.Oracle.Test
 			statements[1].SourcePosition.Length.ShouldBe(1);
 		}
 
-		[Test(Description = @""), Ignore]
+		[Test(Description = @"")]
 		public void TestCaseWhenIssue()
 		{
 			const string query1 = @"SELECT CASE WHEN FROM DUAL";
