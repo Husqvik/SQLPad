@@ -73,6 +73,7 @@
     <Compile Include="OracleSemanticValidatorTest.cs" />
     <Compile Include="OracleSqlParserTest.cs" />
     <Compile Include="OracleContextActionProviderTest.cs" />
+    <Compile Include="OracleStatementFormatterTest.cs" />
     <Compile Include="OracleStatementSemanticModelTest.cs" />
     <Compile Include="OracleTokenReaderTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

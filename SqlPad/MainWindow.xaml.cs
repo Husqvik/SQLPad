@@ -370,7 +370,7 @@ namespace SqlPad
 			else if (e.Key == Key.F && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt))
 			{
 				Trace.WriteLine("CONTROL ALT + F");
-				var textSegments = _statementFormatter.FormatStatement(_sqlDocument, Editor.SelectionStart, Editor.SelectionLength);
+				var textSegments = _statementFormatter.FormatStatement(_sqlDocument.StatementCollection, Editor.SelectionStart, Editor.SelectionLength);
 				Editor.ReplaceTextSegments(textSegments);
 			}
 			else if (e.SystemKey == Key.Delete && Keyboard.Modifiers == ModifierKeys.Alt)
