@@ -16,11 +16,9 @@ namespace SqlPad.Oracle.Commands
 
 		public override bool CanExecute(object parameter)
 		{
-			if (CurrentTerminal.Id != Terminals.Select)
-				return false;
-
-			var queryBlock = SemanticModel.GetQueryBlock(CurrentTerminal);
-			return queryBlock != null && queryBlock.Columns.Any(c => !String.IsNullOrEmpty(c.NormalizedName));
+			return CurrentTerminal != null && CurrentQueryBlock != null &&
+			       CurrentTerminal.Id == Terminals.Select &&
+			       CurrentQueryBlock.Columns.Any(c => !String.IsNullOrEmpty(c.NormalizedName));
 		}
 
 		protected override void ExecuteInternal(string statementText, ICollection<TextSegment> segmentsToReplace)

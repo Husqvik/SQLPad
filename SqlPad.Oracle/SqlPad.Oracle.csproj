@@ -63,6 +63,7 @@
   <ItemGroup>
     <Compile Include="Commands\FindUsagesCommand.cs" />
     <Compile Include="Commands\AddToGroupByCommand.cs" />
+    <Compile Include="Commands\SafeDeleteCommand .cs" />
     <Compile Include="Commands\ToggleQuotedNotationCommand.cs" />
     <Compile Include="Commands\WrapAsCommonTableExpressionCommand.cs" />
     <Compile Include="Commands\WrapAsSubqueryCommand.cs" />

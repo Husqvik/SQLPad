@@ -15,19 +15,13 @@ namespace SqlPad.Oracle.Commands
 
 		public override bool CanExecute(object parameter)
 		{
-			if (CurrentTerminal.Id != Terminals.Select)
-				return false;
-
-			var queryBlock = SemanticModel.GetQueryBlock(CurrentTerminal);
-			return queryBlock != null;
+			return CurrentTerminal != null && CurrentQueryBlock != null && CurrentTerminal.Id == Terminals.Select;
 		}
 
 		protected override void ExecuteInternal(string statementText, ICollection<TextSegment> segmentsToReplace)
 		{
-			var queryBlock = SemanticModel.GetQueryBlock(CurrentTerminal);
-
 			bool? enableQuotes = null;
-			foreach (var identifier in queryBlock.RootNode.Terminals.Where(t => (OracleGrammarDescription.Identifiers.Contains(t.Id) || t.Id == Terminals.ColumnAlias || t.Id == Terminals.ObjectAlias) && !t.Token.Value.CollidesWithKeyword()))
+			foreach (var identifier in CurrentQueryBlock.RootNode.Terminals.Where(t => (OracleGrammarDescription.Identifiers.Contains(t.Id) || t.Id == Terminals.ColumnAlias || t.Id == Terminals.ObjectAlias) && !t.Token.Value.CollidesWithKeyword()))
 			{
 				if (!enableQuotes.HasValue)
 				{

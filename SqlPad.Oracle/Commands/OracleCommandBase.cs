@@ -12,20 +12,24 @@ namespace SqlPad.Oracle.Commands
 
 		protected OracleCommandBase(OracleStatementSemanticModel semanticModel, StatementDescriptionNode currentTerminal)
 		{
-			CheckParameters(semanticModel, currentTerminal);
+			//CheckParameters(semanticModel, currentTerminal);
 
 			SemanticModel = semanticModel;
 			CurrentTerminal = currentTerminal;
-			CurrentQueryBlock = SemanticModel.GetQueryBlock(CurrentTerminal);
+
+			if (SemanticModel != null && CurrentTerminal != null)
+			{
+				CurrentQueryBlock = SemanticModel.GetQueryBlock(CurrentTerminal);
+			}
 		}
 
 		protected static void CheckParameters(OracleStatementSemanticModel semanticModel, StatementDescriptionNode currentTerminal)
 		{
 			if (semanticModel == null)
-				throw new ArgumentNullException("semanticModel");
+				throw new InvalidOperationException("semanticModel");
 
 			if (currentTerminal == null)
-				throw new ArgumentNullException("currentTerminal");
+				throw new InvalidOperationException("currentTerminal");
 		}
 	}
 

@@ -12,7 +12,7 @@ namespace SqlPad.Oracle
 		private readonly Dictionary<OracleSelectListColumn, ICollection<OracleObjectReference>> _asteriskTableReferences = new Dictionary<OracleSelectListColumn, ICollection<OracleObjectReference>>();
 		private readonly List<ICollection<OracleColumnReference>> _joinClauseColumnReferences = new List<ICollection<OracleColumnReference>>();
 		private readonly Dictionary<OracleQueryBlock, ICollection<StatementDescriptionNode>> _accessibleQueryBlockRoot = new Dictionary<OracleQueryBlock, ICollection<StatementDescriptionNode>>();
-		private readonly Dictionary<OracleObjectReference, ICollection<StatementDescriptionNode>> _objectReferenceCteRootNodes = new Dictionary<OracleObjectReference, ICollection<StatementDescriptionNode>>();
+		private readonly Dictionary<OracleObjectReference, ICollection<KeyValuePair<StatementDescriptionNode, string>>> _objectReferenceCteRootNodes = new Dictionary<OracleObjectReference, ICollection<KeyValuePair<StatementDescriptionNode, string>>>();
 		private readonly OracleDatabaseModel _databaseModel;
 
 		public OracleStatement Statement { get; private set; }
@@ -123,13 +123,13 @@ namespace SqlPad.Oracle
 
 					var tableName = tableIdentifierNode.Token.Value.ToQuotedIdentifier();
 					var commonTableExpressions = schemaPrefixNode != null
-						? new StatementDescriptionNode[0]
-						: cteReferences.Where(n => n.Value == tableName).Select(r => r.Key).ToArray();
+						? (ICollection<KeyValuePair<StatementDescriptionNode, string>>)new Dictionary<StatementDescriptionNode, string>()
+						: cteReferences.Where(n => n.Value == tableName).ToArray();
 
 					var referenceType = TableReferenceType.CommonTableExpression;
 
 					var result = SchemaObjectResult.EmptyResult;
-					if (commonTableExpressions.Length == 0)
+					if (commonTableExpressions.Count == 0)
 					{
 						referenceType = TableReferenceType.PhysicalObject;
 
@@ -153,7 +153,7 @@ namespace SqlPad.Oracle
 					
 					item.ObjectReferences.Add(objectReference);
 
-					if (commonTableExpressions.Length > 0)
+					if (commonTableExpressions.Count > 0)
 					{
 						_objectReferenceCteRootNodes[objectReference] = commonTableExpressions;
 					}
@@ -191,11 +191,12 @@ namespace SqlPad.Oracle
 					}
 					else if (_objectReferenceCteRootNodes.ContainsKey(nestedQueryReference))
 					{
-						foreach (var referencedQueryBlock in _objectReferenceCteRootNodes[nestedQueryReference]
-							.SelectMany(cteNode => cteNode.GetDescendantsWithinSameQuery(NonTerminals.QueryBlock))
-							.Where(qb => OracleObjectIdentifier.Create(null, qb.GetAncestor(NonTerminals.SubqueryComponent).ChildNodes.Single(n => n.Id == Terminals.ObjectAlias).Token.Value) == nestedQueryReference.FullyQualifiedName))
+						var commonTableExpressionNode = _objectReferenceCteRootNodes[nestedQueryReference];
+						foreach (var referencedQueryBlock in commonTableExpressionNode
+							.Where(nodeName => OracleObjectIdentifier.Create(null, nodeName.Value) == OracleObjectIdentifier.Create(null, nestedQueryReference.ObjectNode.Token.Value)))
 						{
-							nestedQueryReference.QueryBlocks.Add(_queryBlockResults[referencedQueryBlock]);
+							var cteQueryBlockNode = referencedQueryBlock.Key.GetDescendants(NonTerminals.QueryBlock).First();
+							nestedQueryReference.QueryBlocks.Add(_queryBlockResults[cteQueryBlockNode]);
 						}
 					}
 				}

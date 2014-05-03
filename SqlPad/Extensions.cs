@@ -9,7 +9,7 @@ namespace SqlPad
 	{
 		public static bool In<T>(this T o, params T[] elements)
 		{
-			return elements != null && elements.Any(e => e.Equals(o));
+			return elements.Any(e => e.Equals(o));
 		}
 
 		public static IEnumerable<ICodeCompletionItem> OrderItems(this IEnumerable<ICodeCompletionItem> codeCompletionItems)

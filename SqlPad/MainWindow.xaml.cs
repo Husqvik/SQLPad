@@ -373,6 +373,15 @@ namespace SqlPad
 				var textSegments = _statementFormatter.FormatStatement(_sqlDocument, Editor.SelectionStart, Editor.SelectionLength);
 				Editor.ReplaceTextSegments(textSegments);
 			}
+			else if (e.SystemKey == Key.Delete && Keyboard.Modifiers == ModifierKeys.Alt)
+			{
+				Trace.WriteLine("ALT + DELETE");
+				var safeDeleteCommand = _infrastructureFactory.CommandFactory.CreateSafeDeleteCommand(_sqlDocument.StatementCollection, Editor.CaretOffset, _databaseModel);
+				if (safeDeleteCommand.CanExecute(null))
+				{
+					safeDeleteCommand.Execute(Editor);
+				}
+			}
 
 			if ((e.Key == Key.Back || e.Key == Key.Delete) && _multiNodeEditor != null)
 			{

@@ -61,7 +61,7 @@ namespace SqlPad.Oracle
 		
 		public StatementDescriptionNode TableReferenceNode { get; set; }
 
-		public ICollection<OracleQueryBlock> QueryBlocks { get; set; }
+		public ICollection<OracleQueryBlock> QueryBlocks { get; private set; }
 
 		public TableReferenceType Type { get; set; }
 	}
