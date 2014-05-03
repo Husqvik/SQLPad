@@ -7,6 +7,8 @@ namespace SqlPad.Oracle
 	[DebuggerDisplay("OracleQueryBlock (Alias={Alias}; Type={Type}; RootNode={RootNode}; Columns={Columns.Count})")]
 	public class OracleQueryBlock
 	{
+		private OracleObjectReference _selfObjectReference;
+
 		public OracleQueryBlock()
 		{
 			ObjectReferences = new List<OracleObjectReference>();
@@ -14,6 +16,25 @@ namespace SqlPad.Oracle
 			AccessibleQueryBlocks = new List<OracleQueryBlock>();
 			ColumnReferences = new List<OracleColumnReference>();
 			FunctionReferences = new List<OracleFunctionReference>();
+		}
+
+		public OracleObjectReference SelfObjectReference
+		{
+			get { return _selfObjectReference ?? BuildSelfObjectReference(); }
+		}
+
+		private OracleObjectReference BuildSelfObjectReference()
+		{
+			_selfObjectReference = new OracleObjectReference
+			                       {
+									   AliasNode = AliasNode,
+									   Owner = this,
+									   Type = TableReferenceType.NestedQuery
+			                       };
+
+			_selfObjectReference.QueryBlocks.Add(this);
+
+			return _selfObjectReference;
 		}
 
 		public string Alias { get { return AliasNode == null ? null : AliasNode.Token.Value; } }

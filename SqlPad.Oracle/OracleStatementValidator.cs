@@ -154,7 +154,7 @@ namespace SqlPad.Oracle
 
 		public override SemanticError SemanticError
 		{
-			get { return ColumnNodeColumnReferences >= 2 ? SemanticError.AmbiguousReference : base.SemanticError; }
+			get { return ColumnNodeColumnReferences > 1 ? SemanticError.AmbiguousReference : base.SemanticError; }
 		}
 	}
 }

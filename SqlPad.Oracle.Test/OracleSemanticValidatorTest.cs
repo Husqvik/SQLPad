@@ -608,7 +608,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			functionNodeValidity[1].Node.Token.Value.ShouldBe("UNDEFINED_FUNCTION");
 		}
 
-		[Test(Description = @""), Ignore]
+		[Test(Description = @"")]
 		public void TestAliasReferenceNodeValidityInOrderByClause()
 		{
 			const string sqlText = "SELECT DUMMY NOT_DUMMY FROM DUAL ORDER BY NOT_DUMMY";
@@ -622,8 +622,131 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			columnNodeValidity.Count.ShouldBe(2);
 			columnNodeValidity[0].IsRecognized.ShouldBe(true);
 			columnNodeValidity[0].Node.Token.Value.ShouldBe("DUMMY");
+			columnNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
 			columnNodeValidity[1].IsRecognized.ShouldBe(true);
 			columnNodeValidity[1].Node.Token.Value.ShouldBe("NOT_DUMMY");
+			columnNodeValidity[1].SemanticError.ShouldBe(SemanticError.None);
+		}
+
+		[Test(Description = @"")]
+		public void TestColumnReferenceNodeValidityInOrderByClause()
+		{
+			const string sqlText = "SELECT DUMMY NOT_DUMMY, DUMMY FROM DUAL ORDER BY DUMMY";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, TestFixture.DatabaseModel);
+			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var columnNodeValidity = nodeValidityDictionary.Values.ToList();
+			columnNodeValidity.Count.ShouldBe(3);
+			columnNodeValidity[0].IsRecognized.ShouldBe(true);
+			columnNodeValidity[0].Node.Token.Value.ShouldBe("DUMMY");
+			columnNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+			columnNodeValidity[1].IsRecognized.ShouldBe(true);
+			columnNodeValidity[1].Node.Token.Value.ShouldBe("DUMMY");
+			columnNodeValidity[1].SemanticError.ShouldBe(SemanticError.None);
+			columnNodeValidity[2].IsRecognized.ShouldBe(true);
+			columnNodeValidity[2].Node.Token.Value.ShouldBe("DUMMY");
+			columnNodeValidity[2].SemanticError.ShouldBe(SemanticError.None);
+		}
+
+		[Test(Description = @"")]
+		public void TestAmbiguousAliasReferenceNodeValidityInOrderByClause()
+		{
+			const string sqlText = "SELECT NAME, SELECTION_ID NAME FROM SELECTION ORDER BY NAME";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, TestFixture.DatabaseModel);
+			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var columnNodeValidity = nodeValidityDictionary.Values.ToList();
+			columnNodeValidity.Count.ShouldBe(3);
+			columnNodeValidity[0].IsRecognized.ShouldBe(true);
+			columnNodeValidity[0].Node.Token.Value.ShouldBe("NAME");
+			columnNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+			columnNodeValidity[1].IsRecognized.ShouldBe(true);
+			columnNodeValidity[1].Node.Token.Value.ShouldBe("SELECTION_ID");
+			columnNodeValidity[1].SemanticError.ShouldBe(SemanticError.None);
+			columnNodeValidity[2].IsRecognized.ShouldBe(true);
+			columnNodeValidity[2].Node.Token.Value.ShouldBe("NAME");
+			columnNodeValidity[2].SemanticError.ShouldBe(SemanticError.AmbiguousReference);
+		}
+
+		[Test(Description = @"")]
+		public void TestInvalidAliasReferenceNodeValidityInOrderByClause()
+		{
+			const string sqlText = "SELECT NAME X FROM SELECTION UNION ALL SELECT NAME FROM SELECTION ORDER BY NAME";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, TestFixture.DatabaseModel);
+			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var columnNodeValidity = nodeValidityDictionary.Values.ToList();
+			columnNodeValidity.Count.ShouldBe(3);
+			columnNodeValidity[0].IsRecognized.ShouldBe(true);
+			columnNodeValidity[0].Node.Token.Value.ShouldBe("NAME");
+			columnNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+			columnNodeValidity[1].IsRecognized.ShouldBe(true);
+			columnNodeValidity[1].Node.Token.Value.ShouldBe("NAME");
+			columnNodeValidity[1].SemanticError.ShouldBe(SemanticError.None);
+			columnNodeValidity[2].IsRecognized.ShouldBe(false);
+			columnNodeValidity[2].Node.Token.Value.ShouldBe("NAME");
+			columnNodeValidity[2].SemanticError.ShouldBe(SemanticError.None);
+		}
+
+		[Test(Description = @"")]
+		public void TestValidAliasReferenceNodeValidityInOrderByClauseUsingConcatenatedSubqueriesWithMissingAliasInLastQuery()
+		{
+			const string sqlText = "SELECT RESPONDENTBUCKET_ID ID FROM RESPONDENTBUCKET UNION ALL SELECT TARGETGROUP_ID ID FROM TARGETGROUP UNION ALL SELECT PROJECT_ID FROM PROJECT ORDER BY ID";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, TestFixture.DatabaseModel);
+			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var columnNodeValidity = nodeValidityDictionary.Values.ToList();
+			columnNodeValidity.Count.ShouldBe(4);
+			columnNodeValidity[0].IsRecognized.ShouldBe(true);
+			columnNodeValidity[0].Node.Token.Value.ShouldBe("RESPONDENTBUCKET_ID");
+			columnNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+			columnNodeValidity[1].IsRecognized.ShouldBe(true);
+			columnNodeValidity[1].Node.Token.Value.ShouldBe("TARGETGROUP_ID");
+			columnNodeValidity[1].SemanticError.ShouldBe(SemanticError.None);
+			columnNodeValidity[2].IsRecognized.ShouldBe(true);
+			columnNodeValidity[2].Node.Token.Value.ShouldBe("PROJECT_ID");
+			columnNodeValidity[2].SemanticError.ShouldBe(SemanticError.None);
+			columnNodeValidity[3].IsRecognized.ShouldBe(true);
+			columnNodeValidity[3].Node.Token.Value.ShouldBe("ID");
+			columnNodeValidity[3].SemanticError.ShouldBe(SemanticError.None);
+		}
+
+		[Test(Description = @"")]
+		public void TestInvalidAliasReferenceNodeValidityInOrderByClauseUsingConcatenatedSubqueriesWithMissingAliasInLastQuery()
+		{
+			const string sqlText = "SELECT RESPONDENTBUCKET_ID ID FROM RESPONDENTBUCKET UNION ALL SELECT TARGETGROUP_ID FROM TARGETGROUP UNION ALL SELECT PROJECT_ID FROM PROJECT ORDER BY ID";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, TestFixture.DatabaseModel);
+			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var columnNodeValidity = nodeValidityDictionary.Values.ToList();
+			columnNodeValidity.Count.ShouldBe(4);
+			columnNodeValidity[0].IsRecognized.ShouldBe(true);
+			columnNodeValidity[0].Node.Token.Value.ShouldBe("RESPONDENTBUCKET_ID");
+			columnNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+			columnNodeValidity[1].IsRecognized.ShouldBe(true);
+			columnNodeValidity[1].Node.Token.Value.ShouldBe("TARGETGROUP_ID");
+			columnNodeValidity[1].SemanticError.ShouldBe(SemanticError.None);
+			columnNodeValidity[2].IsRecognized.ShouldBe(true);
+			columnNodeValidity[2].Node.Token.Value.ShouldBe("PROJECT_ID");
+			columnNodeValidity[2].SemanticError.ShouldBe(SemanticError.None);
+			columnNodeValidity[3].IsRecognized.ShouldBe(false);
+			columnNodeValidity[3].Node.Token.Value.ShouldBe("ID");
+			columnNodeValidity[3].SemanticError.ShouldBe(SemanticError.None);
 		}
 
 		//WITH CTE AS (SELECT 1 A, 2 B, 3 C FROM DUAL) SELECT SELECTION.DUMMY, NQ.DUMMY, CTE.DUMMY, SYS.DUAL.DUMMY FROM SELECTION, (SELECT 1 X, 2 Y, 3 Z FROM DUAL) NQ, CTE, SYS.DUAL

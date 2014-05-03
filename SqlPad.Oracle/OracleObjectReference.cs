@@ -11,7 +11,6 @@ namespace SqlPad.Oracle
 
 		public OracleObjectReference()
 		{
-			Nodes = new StatementDescriptionNode[0];
 			QueryBlocks = new List<OracleQueryBlock>();
 		}
 
@@ -62,8 +61,6 @@ namespace SqlPad.Oracle
 		
 		public StatementDescriptionNode TableReferenceNode { get; set; }
 
-		public ICollection<StatementDescriptionNode> Nodes { get; set; }
-		
 		public ICollection<OracleQueryBlock> QueryBlocks { get; set; }
 
 		public TableReferenceType Type { get; set; }
