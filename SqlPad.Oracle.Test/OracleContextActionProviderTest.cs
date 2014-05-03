@@ -91,5 +91,24 @@ namespace SqlPad.Oracle.Test
 			actions.Length.ShouldBe(1);
 			actions[0].Name.ShouldBe("Toggle quoted identifiers");
 		}
+
+		[Test(Description = @""), STAThread]
+		public void TestUnnestCommand()
+		{
+			const string query1 = @"WITH CTE1 AS (SELECT NAME FROM SELECTION) SELECT NAME FROM CTE1";
+
+			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 6).ToArray();
+			actions.Length.ShouldBe(1);
+			actions[0].Name.ShouldBe("Unnest");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestUnnestCommandNotAvailableAtObjectAliasWhichIsNotCommonTableExpressionAlias()
+		{
+			const string query1 = @"SELECT 1 FROM DUAL ALIAS";
+
+			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 20).ToArray();
+			actions.Length.ShouldBe(0);
+		}
 	}
 }

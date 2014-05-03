@@ -352,7 +352,15 @@ FROM
 			foundSegments.ForEach(s => s.Length.ShouldBe(3));
 		}
 
-		//WITH CTE AS (SELECT SELECTION.NAME FROM SELECTION) SELECT CTE.NAME FROM CTE
+		[Test(Description = @""), STAThread]
+		public void TestWrapCommonTableExpressionIntoAnotherCommonTableExpression()
+		{
+			_editor.Text = "WITH CTE1 AS (SELECT NAME FROM SELECTION) SELECT NAME FROM CTE1";
+			var command = InitializeCommand<WrapAsCommonTableExpressionCommand>(_editor.Text, 15, "CTE2");
+			command.Execute(_editor);
+
+			_editor.Text.ShouldBe(@"WITH CTE2 AS (SELECT NAME FROM SELECTION), CTE1 AS (SELECT NAME FROM CTE2) SELECT NAME FROM CTE1");
+		}
 
 		private class TestCommandSettings : ICommandSettingsProvider
 		{
