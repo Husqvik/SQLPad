@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
 using ICSharpCode.AvalonEdit;
 using NUnit.Framework;
@@ -45,6 +44,19 @@ FROM
 			TG.NAME IN ('X1', 'X2') OR S.NAME IS NOT NULL OR P.NAME <> ''
 		)
 	)";
+
+		private const string FindFunctionUsagesStatementText =
+@"SELECT
+	COUNT(*) OVER () CNT1,
+	COUNT(1) OVER () CNT2,
+	FIRST_VALUE(DUMMY) IGNORE NULLS OVER () FIRST_VAL1,
+	FIRST_VALUE(DUMMY) OVER () FIRST_VAL2,
+	COALESCE(DUMMY, 1) COALESCE1,
+	COALESCE(DUMMY, 1) COALESCE2,
+	TO_CHAR(0) C1,
+	TO_CHAR(0) C2
+FROM
+	DUAL";
 
 		private TextEditor _editor;
 
@@ -360,6 +372,34 @@ FROM
 			command.Execute(_editor);
 
 			_editor.Text.ShouldBe(@"WITH CTE2 AS (SELECT NAME FROM SELECTION), CTE1 AS (SELECT NAME FROM CTE2) SELECT NAME FROM CTE1");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestFindGrammarSpecificFunctionUsages()
+		{
+			var command = new FindUsagesCommand(FindFunctionUsagesStatementText, 9, TestFixture.DatabaseModel);
+			var foundSegments = new List<TextSegment>();
+			command.Execute(foundSegments);
+
+			foundSegments = foundSegments.OrderBy(s => s.IndextStart).ToList();
+			foundSegments.Count.ShouldBe(2);
+			foundSegments[0].IndextStart.ShouldBe(9);
+			foundSegments[1].IndextStart.ShouldBe(34);
+			foundSegments.ForEach(s => s.Length.ShouldBe(5));
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestFindGenericSqlFunctionUsages()
+		{
+			var command = new FindUsagesCommand(FindFunctionUsagesStatementText, 154, TestFixture.DatabaseModel);
+			var foundSegments = new List<TextSegment>();
+			command.Execute(foundSegments);
+
+			foundSegments = foundSegments.OrderBy(s => s.IndextStart).ToList();
+			foundSegments.Count.ShouldBe(2);
+			foundSegments[0].IndextStart.ShouldBe(154);
+			foundSegments[1].IndextStart.ShouldBe(186);
+			foundSegments.ForEach(s => s.Length.ShouldBe(8));
 		}
 
 		private class TestCommandSettings : ICommandSettingsProvider

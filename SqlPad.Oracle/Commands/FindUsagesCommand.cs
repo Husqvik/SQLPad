@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
+using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 
 namespace SqlPad.Oracle.Commands
 {
@@ -14,7 +15,9 @@ namespace SqlPad.Oracle.Commands
 
 		public FindUsagesCommand(string statementText, int currentPosition, IDatabaseModel databaseModel)
 		{
-			_currentNode = new OracleSqlParser().Parse(statementText).GetTerminalAtPosition(currentPosition, t => t.Id.IsIdentifierOrAlias());
+			_currentNode = new OracleSqlParser().Parse(statementText)
+				.GetTerminalAtPosition(currentPosition, t => t.Id.IsIdentifierOrAlias() || t.Id == Terminals.Count || t.ParentNode.Id.In(NonTerminals.AnalyticFunction, NonTerminals.AggregateFunction));
+			
 			if (_currentNode == null)
 				return;
 
@@ -42,7 +45,26 @@ namespace SqlPad.Oracle.Commands
 				case Terminals.SchemaIdentifier:
 					nodes = GetSchemaReferenceUsage();
 					break;
+				case Terminals.Min:
+				case Terminals.Max:
+				case Terminals.Sum:
+				case Terminals.Avg:
+				case Terminals.FirstValue:
+				case Terminals.Count:
+				case Terminals.Variance:
+				case Terminals.StandardDeviation:
+				case Terminals.LastValue:
+				case Terminals.Lead:
+				case Terminals.Lag:
 				case Terminals.Identifier:
+					var functionUsages = GetFunctionReferenceUsage();
+					if (functionUsages.Count > 0)
+					{
+						nodes = functionUsages;
+						break;
+					}
+
+					goto case Terminals.ColumnAlias;
 				case Terminals.ColumnAlias:
 					nodes = GetColumnReferenceUsage();
 					break;
@@ -60,6 +82,21 @@ namespace SqlPad.Oracle.Commands
 										  Length = node.SourcePosition.Length
 				                      });
 			}
+		}
+
+		private ICollection<StatementDescriptionNode> GetFunctionReferenceUsage()
+		{
+			var functionReference = _queryBlock.AllFunctionReferences
+				.FirstOrDefault(f => f.FunctionIdentifierNode == _currentNode && f.Metadata != null);
+
+			if (functionReference == null)
+				return new StatementDescriptionNode[0];
+
+			return _semanticModel.QueryBlocks
+				.SelectMany(qb => qb.AllFunctionReferences)
+				.Where(f => f.Metadata == functionReference.Metadata)
+				.Select(f => f.FunctionIdentifierNode)
+				.ToArray();
 		}
 
 		private IEnumerable<OracleObjectReference> GetObjectReferences()
