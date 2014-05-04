@@ -58,6 +58,24 @@ FROM
 FROM
 	DUAL";
 
+		private const string FindLiteralUsagesStatementText =
+@"SELECT
+	:BV,
+	'123',
+	'456',
+	'123',
+	'456',
+	123,
+	456,
+	123,
+	456,
+	:BV
+FROM
+	SELECTION
+WHERE
+	'456' != '123'
+	AND 1 = :BV";
+
 		private TextEditor _editor;
 
 		[SetUp]
@@ -400,6 +418,38 @@ FROM
 			foundSegments[0].IndextStart.ShouldBe(154);
 			foundSegments[1].IndextStart.ShouldBe(186);
 			foundSegments.ForEach(s => s.Length.ShouldBe(8));
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestFindLiteralUsages()
+		{
+			var command = new FindUsagesCommand(FindLiteralUsagesStatementText, 17, TestFixture.DatabaseModel);
+			command.CanExecute(null).ShouldBe(true);
+			var foundSegments = new List<TextSegment>();
+			command.Execute(foundSegments);
+
+			foundSegments = foundSegments.OrderBy(s => s.IndextStart).ToList();
+			foundSegments.Count.ShouldBe(3);
+			foundSegments[0].IndextStart.ShouldBe(16);
+			foundSegments[1].IndextStart.ShouldBe(34);
+			foundSegments[2].IndextStart.ShouldBe(120);
+			foundSegments.ForEach(s => s.Length.ShouldBe(5));
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestFindBindVariableUsages()
+		{
+			var command = new FindUsagesCommand(FindLiteralUsagesStatementText, 10, TestFixture.DatabaseModel);
+			command.CanExecute(null).ShouldBe(true);
+			var foundSegments = new List<TextSegment>();
+			command.Execute(foundSegments);
+
+			foundSegments = foundSegments.OrderBy(s => s.IndextStart).ToList();
+			foundSegments.Count.ShouldBe(3);
+			foundSegments[0].IndextStart.ShouldBe(10);
+			foundSegments[1].IndextStart.ShouldBe(81);
+			foundSegments[2].IndextStart.ShouldBe(137);
+			foundSegments.ForEach(s => s.Length.ShouldBe(2));
 		}
 
 		private class TestCommandSettings : ICommandSettingsProvider

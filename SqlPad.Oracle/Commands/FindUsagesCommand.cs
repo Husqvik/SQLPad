@@ -16,7 +16,7 @@ namespace SqlPad.Oracle.Commands
 		public FindUsagesCommand(string statementText, int currentPosition, IDatabaseModel databaseModel)
 		{
 			_currentNode = new OracleSqlParser().Parse(statementText)
-				.GetTerminalAtPosition(currentPosition, t => t.Id.IsIdentifierOrAlias() || t.Id == Terminals.Count || t.ParentNode.Id.In(NonTerminals.AnalyticFunction, NonTerminals.AggregateFunction));
+				.GetTerminalAtPosition(currentPosition, t => t.Id.IsIdentifierOrAlias() || t.Id == Terminals.Count || t.Id.IsLiteral() || t.ParentNode.Id.In(NonTerminals.AnalyticFunction, NonTerminals.AggregateFunction));
 			
 			if (_currentNode == null)
 				return;
@@ -38,6 +38,14 @@ namespace SqlPad.Oracle.Commands
 
 			switch (_currentNode.Id)
 			{
+				case Terminals.IntegerLiteral:
+				case Terminals.StringLiteral:
+				case Terminals.NumberLiteral:
+					nodes = GetLiteralUsage();
+					break;
+				case Terminals.BindVariableIdentifier:
+					nodes = GetBindVariableUsage();
+					break;
 				case Terminals.ObjectAlias:
 				case Terminals.ObjectIdentifier:
 					nodes = GetObjectReferences().SelectMany(GetObjectReferenceUsage);
@@ -82,6 +90,16 @@ namespace SqlPad.Oracle.Commands
 										  Length = node.SourcePosition.Length
 				                      });
 			}
+		}
+
+		private IEnumerable<StatementDescriptionNode> GetBindVariableUsage()
+		{
+			return _semanticModel.Statement.RootNode.Terminals.Where(t => t.Id == _currentNode.Id && t.Token.Value.ToQuotedIdentifier() == _currentNode.Token.Value.ToQuotedIdentifier());
+		}
+
+		private IEnumerable<StatementDescriptionNode> GetLiteralUsage()
+		{
+			return _semanticModel.Statement.RootNode.Terminals.Where(t => t.Id == _currentNode.Id && t.Token.Value == _currentNode.Token.Value);
 		}
 
 		private ICollection<StatementDescriptionNode> GetFunctionReferenceUsage()
