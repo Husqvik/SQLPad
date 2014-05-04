@@ -147,7 +147,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			var statement = result.Single();
+			var statement = result.Single().Validate();
 			statement.RootNode.ChildNodes.Count.ShouldBe(1);
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
 			var terminals = statement.AllTerminals.ToArray();
@@ -176,7 +176,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(sqlText);
 
 			result.Count.ShouldBe(1);
-			var statement = result.Single();
+			var statement = result.Single().Validate();
 			statement.RootNode.ChildNodes.Count.ShouldBe(1);
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
 			var terminals = statement.AllTerminals.ToArray();
@@ -191,7 +191,7 @@ namespace SqlPad.Oracle.Test
 			result = Parser.Parse(sqlText);
 
 			result.Count.ShouldBe(1);
-			statement = result.Single();
+			statement = result.Single().Validate();
 			statement.RootNode.ChildNodes.Count.ShouldBe(1);
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
 
@@ -367,7 +367,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(2);
-			result.First().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			result.First().Validate().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
 			result.First().RootNode.ChildNodes.Count.ShouldBe(1);
 			result.First().AllTerminals.Count().ShouldBe(4);
 
@@ -419,7 +419,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().Validate().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 		}
 
 		[Test(Description = @"Tests IN clause with subquery. ")]
@@ -672,7 +672,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			var statement = result.Single();
+			var statement = result.Single().Validate();
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 			var terminals = statement.AllTerminals.ToArray();
@@ -798,7 +798,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().Validate().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -938,7 +938,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().Validate().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -1006,7 +1006,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().Validate().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -1054,7 +1054,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			result.Single().Validate().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
 
 			// TODO: Precise assertions
 		}
@@ -1078,7 +1078,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			result.Single().Validate().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
 
 			// TODO: Precise assertions
 		}
@@ -1102,7 +1102,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			var statement = result.Single();
+			var statement = result.Single().Validate();
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
 			var terminals = statement.AllTerminals.ToArray();
 			terminals.Length.ShouldBe(6);
@@ -1114,7 +1114,7 @@ namespace SqlPad.Oracle.Test
 			result = Parser.Parse(query2);
 
 			result.Count.ShouldBe(1);
-			statement = result.Single();
+			statement = result.Single().Validate();
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
 			terminals = statement.AllTerminals.ToArray();
 			terminals.Length.ShouldBe(9);
@@ -1130,7 +1130,7 @@ namespace SqlPad.Oracle.Test
 			result = Parser.Parse(query3);
 
 			result.Count.ShouldBe(1);
-			statement = result.Single();
+			statement = result.Single().Validate();
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 			terminals = statement.AllTerminals.ToArray();
 			terminals.Length.ShouldBe(5);
@@ -1141,7 +1141,7 @@ namespace SqlPad.Oracle.Test
 			result = Parser.Parse(query4);
 
 			result.Count.ShouldBe(1);
-			statement = result.Single();
+			statement = result.Single().Validate();
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
 			terminals = statement.AllTerminals.ToArray();
 			terminals.Length.ShouldBe(7);
@@ -1345,6 +1345,22 @@ namespace SqlPad.Oracle.Test
 			terminals.Length.ShouldBe(16);
 			terminals[4].Token.Value.ShouldBe(joinType);
 			terminals[4].Id.ShouldBe(terminalId);
+		}
+
+		[Test(Description = @"")]
+		public void TestUnfinishedNestedJoinClause()
+		{
+			const string query1 = @"SELECT NULL FROM SELECTION LEFT JOIN RESPONDENTBUCKET ON SELECTION.RESPONDENTBUCKET_ID = RESPONDENTBUCKET.RESPONDENTBUCKET_ID JOIN";
+			var result = Parser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			var statement = result.Single().Validate();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+
+			var terminals = statement.RootNode.Terminals.ToArray();
+			terminals.Length.ShouldBe(16);
+			terminals[4].Token.Value.ShouldBe("LEFT");
+			terminals[4].Id.ShouldBe(Terminals.Left);
 		}
 
 		[Test(Description = @"")]

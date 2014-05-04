@@ -322,7 +322,8 @@ namespace SqlPad
 				
 				_childNodes.RemoveAt(index);
 				LastTerminalNode = _childNodes[index - 1].LastTerminalNode;
-				return --TerminalCount;
+				TerminalCount--;
+				return 1;
 			}
 
 			var removedTerminalCount = node.RemoveLastChildNodeIfOptional();

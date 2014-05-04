@@ -338,7 +338,7 @@ namespace SqlPad.Oracle
 					{
 						var nestedResult = ProceedNonTerminal(statement, item.Id, level + 1, tokenOffset, false, tokenBuffer);
 
-						TryRevertOptionalToken(optionalTerminalCount => ProceedNonTerminal(statement, item.Id, level + 1, tokenOffset - optionalTerminalCount, true, tokenBuffer), ref nestedResult, workingNodes);
+						var optionalTokenReverted = TryRevertOptionalToken(optionalTerminalCount => ProceedNonTerminal(statement, item.Id, level + 1, tokenOffset - optionalTerminalCount, true, tokenBuffer), ref nestedResult, workingNodes);
 
 						TryParseInvalidGrammar(tryBestCandidates, () => ProceedNonTerminal(statement, item.Id, level + 1, bestCandidateOffset, false, tokenBuffer), ref nestedResult, workingNodes, bestCandidateNodes);
 
@@ -367,7 +367,7 @@ namespace SqlPad.Oracle
 
 							alternativeNode.AddChildNodes(bestCandidatePosition.Values);
 
-							if (workingNodes.Count != bestCandidateNodes.Count || nestedResult.Status == ProcessingStatus.SequenceNotFound)
+							if (workingNodes.Count != bestCandidateNodes.Count || optionalTokenReverted || nestedResult.Status == ProcessingStatus.SequenceNotFound)
 								bestCandidateNodes = new List<StatementDescriptionNode>(workingNodes.Select(n => n.Clone()));
 
 							bestCandidateNodes.Add(alternativeNode);
@@ -453,13 +453,13 @@ namespace SqlPad.Oracle
 			processingResult = bestCandidateResult;
 		}
 
-		private void TryRevertOptionalToken(Func<int, ProcessingResult> getAlternativeProcessingResultFunction, ref ProcessingResult currentResult, IList<StatementDescriptionNode> workingNodes)
+		private bool TryRevertOptionalToken(Func<int, ProcessingResult> getAlternativeProcessingResultFunction, ref ProcessingResult currentResult, IList<StatementDescriptionNode> workingNodes)
 		{
 			var optionalNodeCandidate = workingNodes.Count > 0 ? workingNodes[workingNodes.Count - 1].LastTerminalNode : null;
 			optionalNodeCandidate = optionalNodeCandidate != null && optionalNodeCandidate.IsRequired ? optionalNodeCandidate.ParentNode : optionalNodeCandidate;
 
 			if (optionalNodeCandidate == null || optionalNodeCandidate.IsRequired)
-				return;
+				return false;
 
 			var optionalTerminalCount = optionalNodeCandidate.TerminalCount;
 			var newResult = getAlternativeProcessingResultFunction(optionalTerminalCount);
@@ -469,10 +469,11 @@ namespace SqlPad.Oracle
 			                 newResultTerminalCount > currentResult.Nodes.Sum(n => n.TerminalCount);
 
 			if (!revertNode)
-				return;
+				return false;
 			
 			currentResult = newResult;
 			RevertLastOptionalNode(workingNodes, optionalNodeCandidate.Type);
+			return true;
 		}
 
 		private void RevertLastOptionalNode(IList<StatementDescriptionNode> workingNodes, NodeType nodeType)
