@@ -360,10 +360,15 @@ namespace SqlPad.Oracle
 						if (nestedResult.BestCandidates.Count > 0 &&
 							workingTerminalCount + nestedResult.BestCandidates.Sum(n => n.TerminalCount) > bestCandidateTerminalCount)
 						{
-							var bestCandidatePosition = new Dictionary<SourcePosition, StatementDescriptionNode>();
-							// Candidate nodes can be multiplied, therefore we fetch always the last node.
+							var bestCandidatePosition = new Dictionary<int, StatementDescriptionNode>();
+							// Candidate nodes can be multiplied or terminals can be spread among different nonterminals,
+							// therefore we fetch the node with most terminals or the later (when nodes contain same terminals).
 							foreach (var candidate in nestedResult.BestCandidates)
-								bestCandidatePosition[candidate.SourcePosition] = candidate;
+							{
+								if (!bestCandidatePosition.ContainsKey(candidate.SourcePosition.IndexStart) ||
+									bestCandidatePosition[candidate.SourcePosition.IndexStart].SourcePosition.IndexEnd <= candidate.SourcePosition.IndexEnd)
+									bestCandidatePosition[candidate.SourcePosition.IndexStart] = candidate;
+							}
 
 							alternativeNode.AddChildNodes(bestCandidatePosition.Values);
 

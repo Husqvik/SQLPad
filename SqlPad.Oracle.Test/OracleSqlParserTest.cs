@@ -894,7 +894,7 @@ namespace SqlPad.Oracle.Test
 			result = Parser.Parse(query4);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			result.Single().Validate().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
 
 			// TODO: Precise assertions
 
@@ -910,7 +910,7 @@ namespace SqlPad.Oracle.Test
 			result = Parser.Parse(query6);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			result.Single().Validate().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
 
 			// TODO: Precise assertions
 
@@ -929,6 +929,16 @@ namespace SqlPad.Oracle.Test
 			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 			// TODO: Precise assertions
+		}
+
+		[Test(Description = @"")]
+		public void TestDoubleTableAlias()
+		{
+			const string statement1 = @"SELECT NULL FROM (DUAL D) D";
+
+			var statements = Parser.Parse(statement1);
+			var statement = statements.Single().Validate();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
 		}
 
 		[Test(Description = @"Tests table collection expression. ")]
@@ -1364,11 +1374,13 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"")]
-		public void Temp()
+		public void TestUnfinishedNestedQuery()
 		{
 			const string statement1 = @"SELECT NULL FROM (SELECT NULL FROM )";
 
 			var statements = Parser.Parse(statement1);
+			var statement = statements.Single().Validate();
+			statement.AllTerminals.Count.ShouldBe(8);
 		}
 
 		public class IsRuleValid
