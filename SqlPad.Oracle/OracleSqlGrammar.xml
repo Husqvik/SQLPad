@@ -966,6 +966,7 @@
         </Sequence>
         <Sequence>
           <NonTerminal Id="Expression" />
+          <Terminal Id="Not" IsOptional="true" />
           <NonTerminal Id="LikeOperator" />
           <NonTerminal Id="Expression" />
           <NonTerminal Id="EscapeClause" IsOptional="true" />

@@ -422,6 +422,16 @@ namespace SqlPad.Oracle.Test
 			result.Single().Validate().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 		}
 
+		[Test(Description = @"Tests NOT LIKE clause. ")]
+		public void TestNotLikeClauses()
+		{
+			const string query1 = @"SELECT 1 FROM DUAL WHERE DUMMY NOT LIKE 'X'";
+			var result = Parser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			result.Single().Validate().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+		}
+
 		[Test(Description = @"Tests IN clause with subquery. ")]
 		public void TestInSubqueryClause()
 		{
