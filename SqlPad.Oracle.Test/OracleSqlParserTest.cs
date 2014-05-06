@@ -983,10 +983,10 @@ namespace SqlPad.Oracle.Test
 			// TODO: Precise assertions
 		}
 
-		[Test(Description = @"Tests CAST function with target type of DATE (keyword). ")]
-		public void TestCastFunctionWithInnerFunctionCall()
+		[Test(Description = @"Tests CAST function with target type names reserved as keyword. ")]
+		public void TestCastFunctionWithKeywords()
 		{
-			const string query1 = @"SELECT CAST(SYS_EXTRACT_UTC(SYSTIMESTAMP) AS DATE) VALIDATIONTIMESTAMP FROM DUAL";
+			const string query1 = @"SELECT CAST(SYS_EXTRACT_UTC(SYSTIMESTAMP) AS DATE) VALIDATIONTIMESTAMP, CAST(1 AS FLOAT), CAST(1 AS INTEGER), CAST(1 AS INTEGER), CAST(1 AS LONG), CAST(1 AS CHAR), CAST(1 AS VARCHAR), CAST(1 AS VARCHAR2), CAST(1 AS SMALLINT), CAST(1 AS DECIMAL), CAST(1 AS NUMBER), CAST(1 AS RAW) FROM DUAL";
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);

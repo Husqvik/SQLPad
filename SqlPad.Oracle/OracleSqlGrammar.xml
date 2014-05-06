@@ -811,7 +811,37 @@
           <Terminal Id="DataTypeName" />
         </Sequence>
         <Sequence>
+          <Terminal Id="Raw" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Char" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Varchar" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Varchar2" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Float" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Decimal" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Smallint" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Number" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Integer" />
+        </Sequence>
+        <Sequence>
           <Terminal Id="Date" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Long" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -3067,7 +3097,41 @@
 
     <!-- Delete -->
     <Terminal Id="Delete" Value="DELETE" IsKeyword="true" />
-  </Terminals>
+    
+    <!-- Other -->
+    <Terminal Id="Float" Value="FLOAT" IsKeyword="true" />
+    <Terminal Id="Compress" Value="COMPRESS" IsKeyword="true" />
+    <Terminal Id="Drop" Value="DROP" IsKeyword="true" />
+    <Terminal Id="Char" Value="CHAR" IsKeyword="true" />
+    <Terminal Id="Pctfree" Value="PCTFREE" IsKeyword="true" />
+    <Terminal Id="Revoke" Value="REVOKE" IsKeyword="true" />
+    <Terminal Id="Identified" Value="IDENTIFIED" IsKeyword="true" />
+    <Terminal Id="Resource" Value="RESOURCE" IsKeyword="true" />
+    <Terminal Id="Rename" Value="RENAME" IsKeyword="true" />
+    <Terminal Id="Integer" Value="INTEGER" IsKeyword="true" />
+    <Terminal Id="Mode" Value="MODE" IsKeyword="true" />
+    <Terminal Id="View" Value="VIEW" IsKeyword="true" />
+    <Terminal Id="Cluster" Value="CLUSTER" IsKeyword="true" />
+    <Terminal Id="Lock" Value="LOCK" IsKeyword="true" />
+    <Terminal Id="Share" Value="SHARE" IsKeyword="true" />
+    <Terminal Id="Long" Value="LONG" IsKeyword="true" />
+    <Terminal Id="Synonym" Value="SYNONYM" IsKeyword="true" />
+    <Terminal Id="Alter" Value="ALTER" IsKeyword="true" />
+    <Terminal Id="Size" Value="SIZE" IsKeyword="true" />
+    <Terminal Id="Grant" Value="GRANT" IsKeyword="true" />
+    <Terminal Id="Number" Value="NUMBER" IsKeyword="true" />
+    <Terminal Id="Trigger" Value="TRIGGER" IsKeyword="true" />
+    <Terminal Id="Smallint" Value="SMALLINT" IsKeyword="true" />
+    <Terminal Id="Values" Value="VALUES" IsKeyword="true" />
+    <Terminal Id="Varchar2" Value="VARCHAR2" IsKeyword="true" />
+    <Terminal Id="Index" Value="INDEX" IsKeyword="true" />
+    <Terminal Id="Create" Value="CREATE" IsKeyword="true" />
+    <Terminal Id="Decimal" Value="DECIMAL" IsKeyword="true" />
+    <Terminal Id="Raw" Value="RAW" IsKeyword="true" />
+    <Terminal Id="Varchar" Value="VARCHAR" IsKeyword="true" />
+    <Terminal Id="Exclusive" Value="EXCLUSIVE" IsKeyword="true" />
+    <Terminal Id="Nocompress" Value="NOCOMPRESS" IsKeyword="true" />
+ </Terminals>
   
   <DatabaseTypes>
     <Type Name="CHAR" IsKeyword="true" />
