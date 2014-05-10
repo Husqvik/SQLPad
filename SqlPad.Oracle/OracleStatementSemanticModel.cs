@@ -281,7 +281,7 @@ namespace SqlPad.Oracle
 			foreach (var functionReference in queryBlock.AllFunctionReferences
 				.Where(functionReference => functionReference.FullyQualifiedObjectName == OracleObjectIdentifier.Empty))
 			{
-				functionReference.Metadata = _databaseModel.SqlFunctionMetadata.GetSqlFunctionMetadata(functionReference.NormalizedName, functionReference.AnalyticClauseNode != null);
+				functionReference.Metadata = _databaseModel.BuiltInFunctionMetadata.GetSqlFunctionMetadata(functionReference.NormalizedName);
 			}
 		}
 
@@ -349,7 +349,7 @@ namespace SqlPad.Oracle
 				// TODO: Resolve schema and package functions
 				if (columnReference.ColumnNodeColumnReferences == 0 && columnReference.FullyQualifiedObjectName == OracleObjectIdentifier.Empty)
 				{
-					var sqlFunctionMetadata = _databaseModel.SqlFunctionMetadata.GetSqlFunctionMetadata(columnReference.NormalizedName, false);
+					var sqlFunctionMetadata = _databaseModel.BuiltInFunctionMetadata.GetSqlFunctionMetadata(columnReference.NormalizedName);
 					if (sqlFunctionMetadata != null)
 					{
 						var functionReference =

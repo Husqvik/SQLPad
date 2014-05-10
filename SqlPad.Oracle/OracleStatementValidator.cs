@@ -74,7 +74,7 @@ namespace SqlPad.Oracle
 						{
 							semanticError = SemanticError.InvalidParameterCount;
 						}
-						else if (functionReference.Metadata.DisplayType == OracleSqlFunctionMetadata.DisplayTypeParenthesis)
+						else if (functionReference.Metadata.DisplayType == OracleFunctionMetadata.DisplayTypeParenthesis)
 						{
 							semanticError = SemanticError.MissingParenthesis;
 						}

@@ -20,7 +20,7 @@ namespace SqlPad.Oracle
 		
 		public ICollection<StatementDescriptionNode> ParameterNodes { get; set; }
 
-		public OracleSqlFunctionMetadata Metadata { get; set; }
+		public OracleFunctionMetadata Metadata { get; set; }
 		
 		public StatementDescriptionNode RootNode { get; set; }
 	}
