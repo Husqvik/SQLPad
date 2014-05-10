@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -54,7 +53,7 @@ namespace SqlPad.Oracle
 
 		public OracleFunctionMetadataCollection BuiltInFunctionMetadata { get; private set; }
 
-		public OracleFunctionMetadataCollection AllFunctionMetadata { get; private set; }
+		public OracleFunctionMetadataCollection AllFunctionMetadata { get { return DatabaseModelFake.Instance.AllFunctionMetadata; } }
 
 		public ConnectionStringSettings ConnectionString { get; private set; }
 
@@ -134,7 +133,17 @@ FROM
         ALL_PROCEDURES
     WHERE
         NOT (OWNER = 'SYS' AND OBJECT_NAME = 'STANDARD') AND
-        (ALL_PROCEDURES.OBJECT_TYPE = 'FUNCTION' OR (ALL_PROCEDURES.OBJECT_TYPE = 'PACKAGE' AND ALL_PROCEDURES.PROCEDURE_NAME IS NOT NULL)))
+        (ALL_PROCEDURES.OBJECT_TYPE = 'FUNCTION' OR (ALL_PROCEDURES.OBJECT_TYPE = 'PACKAGE' AND ALL_PROCEDURES.PROCEDURE_NAME IS NOT NULL))
+	AND EXISTS
+        (SELECT
+            NULL
+        FROM
+            ALL_ARGUMENTS
+        WHERE
+            ALL_PROCEDURES.OBJECT_ID = OBJECT_ID AND NVL(ALL_PROCEDURES.PROCEDURE_NAME, ALL_PROCEDURES.OBJECT_NAME) = OBJECT_NAME AND NVL(OVERLOAD, 0) = NVL(ALL_PROCEDURES.OVERLOAD, 0) AND
+            POSITION = 0 AND ARGUMENT_NAME IS NULL
+        )
+	)
 ORDER BY
 	OWNER,
     PACKAGE_NAME,
@@ -220,8 +229,8 @@ ORDER BY
 
 			const string getParameterMetadataCommandText =
 @"SELECT
-	NULL OWNER,
-    NULL PACKAGE_NAME,
+	OWNER,
+    PACKAGE_NAME,
 	OBJECT_NAME FUNCTION_NAME,
 	NVL(OVERLOAD, 0) OVERLOAD,
 	ARGUMENT_NAME,
@@ -246,7 +255,13 @@ ORDER BY
 				Serializer.WriteObject(writer, BuiltInFunctionMetadata);
 			}
 
-			AllFunctionMetadata = GetAllFunctionMetadata();
+			var allFunctionMetadata = GetAllFunctionMetadata();
+
+			var test = new OracleFunctionMetadataCollection(allFunctionMetadata.SqlFunctions.Where(f => f.Identifier.Owner == "husqvik".ToQuotedIdentifier()).ToArray());
+			using (var writer = XmlWriter.Create(@"D:\TestFunctionCollection.xml"))
+			{
+				Serializer.WriteObject(writer, test);
+			}
 
 			_isRefreshing = false;
 		}
@@ -321,7 +336,7 @@ ORDER BY
 		}
 	}
 
-	[DataContract]
+	[DataContract(Namespace = Namespaces.SqlPadBaseNamespace)]
 	[DebuggerDisplay("OracleFunctionMetadataCollection (Count={SqlFunctions.Count})")]
 	public class OracleFunctionMetadataCollection
 	{
@@ -358,7 +373,7 @@ ORDER BY
 		}
 	}
 
-	[DataContract]
+	[DataContract(Namespace = Namespaces.SqlPadBaseNamespace)]
 	[DebuggerDisplay("OracleFunctionIdentifier (FullyQualifiedIdentifier={FullyQualifiedIdentifier}; Overload={Overload})")]
 	public struct OracleFunctionIdentifier
 	{
@@ -441,8 +456,8 @@ ORDER BY
 		#endregion
 	}
 
-	[DataContract]
-	[DebuggerDisplay("OracleFunctionMetadata (Identifier={Identifier.FullyQualifiedIdentifier}; DataType={DataType}; IsAnalytic={IsAnalytic}; IsAggregate={IsAggregate}; MinimumArguments={MinimumArguments}; MaximumArguments={MaximumArguments})")]
+	[DataContract(Namespace = Namespaces.SqlPadBaseNamespace)]
+	[DebuggerDisplay("OracleFunctionMetadata (Identifier={Identifier.FullyQualifiedIdentifier}; Overload={Identifier.Overload}; DataType={DataType}; IsAnalytic={IsAnalytic}; IsAggregate={IsAggregate}; MinimumArguments={MinimumArguments}; MaximumArguments={MaximumArguments})")]
 	public class OracleFunctionMetadata
 	{
 		public const string DisplayTypeParenthesis = "PARENTHESIS";
@@ -509,11 +524,13 @@ ORDER BY
 
 	public enum AuthId
 	{
+		[EnumMember]
 		CurrentUser,
+		[EnumMember]
 		Definer
 	}
 
-	[DataContract]
+	[DataContract(Namespace = Namespaces.SqlPadBaseNamespace)]
 	[DebuggerDisplay("OracleFunctionParameterMetadata (Name={Name}; Position={Position}; DataType={DataType}; Direction={Direction}; IsOptional={IsOptional})")]
 	public class OracleFunctionParameterMetadata
 	{
@@ -526,14 +543,31 @@ ORDER BY
 			IsOptional = isOptional;
 		}
 
+		[DataMember]
 		public string Name { get; private set; }
 
+		[DataMember]
 		public int Position { get; private set; }
 
+		[DataMember]
 		public string DataType { get; private set; }
 
+		[DataMember]
 		public ParameterDirection Direction { get; private set; }
 
+		[DataMember]
 		public bool IsOptional { get; private set; }
+	}
+
+	public enum ParameterDirection
+	{
+		[EnumMember]
+		Input,
+		[EnumMember]
+		Output,
+		[EnumMember]
+		InputOutput,
+		[EnumMember]
+		ReturnValue,
 	}
 }

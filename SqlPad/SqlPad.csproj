@@ -93,6 +93,7 @@
     <Compile Include="ISqlParser.cs" />
     <Compile Include="MetadataCache.cs" />
     <Compile Include="MultiNodeEditor.cs" />
+    <Compile Include="Namespaces.cs" />
     <Compile Include="Snippets.cs" />
     <Compile Include="SqlDocument.cs" />
     <Compile Include="StatementCollection.cs" />

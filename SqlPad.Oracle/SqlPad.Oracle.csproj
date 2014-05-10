@@ -118,6 +118,10 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="TestFunctionCollection.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
+    </Content>
     <EmbeddedResource Include="OracleSqlGrammar.xml">
       <SubType>Designer</SubType>
     </EmbeddedResource>

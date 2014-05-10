@@ -1,18 +1,33 @@
 ﻿using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
+using System.Xml;
 
 namespace SqlPad.Oracle
 {
 	public class DatabaseModelFake : IDatabaseModel
 	{
 		public static readonly DatabaseModelFake Instance = new DatabaseModelFake();
+		private static readonly DataContractSerializer Serializer = new DataContractSerializer(typeof(OracleFunctionMetadataCollection));
 
 		private const string CurrentSchemaInternal = "\"HUSQVIK\"";
 		private static readonly ConnectionStringSettings ConnectionStringInternal = new ConnectionStringSettings("ConnectionFake", "DATA SOURCE=HQ_PDB_TCP;PASSWORD=oracle;USER ID=HUSQVIK", "Oracle.DataAccess.Client");
 
 		private static readonly HashSet<string> SchemasInternal = new HashSet<string> { "\"SYS\"", "\"SYSTEM\"", CurrentSchemaInternal, OracleDatabaseModel.SchemaPublic };
+		private static readonly OracleFunctionMetadataCollection AllFunctionMetadataInterval;
+
+		static DatabaseModelFake()
+		{
+			using (var reader = XmlReader.Create(Path.Combine(App.FolderNameApplication, "TestFunctionCollection.xml")))
+			{
+				AllFunctionMetadataInterval = (OracleFunctionMetadataCollection)Serializer.ReadObject(reader);
+			}
+		}
+
+		public OracleFunctionMetadataCollection AllFunctionMetadata { get { return AllFunctionMetadataInterval; } }
 
 		private static readonly HashSet<OracleDataObject> AllObjectsInternal = new HashSet<OracleDataObject>
 		{

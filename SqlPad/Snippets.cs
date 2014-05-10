@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 using System.Xml;
 using System.Xml.Serialization;
 
@@ -10,7 +8,7 @@ namespace SqlPad
 	public static class Snippets
 	{
 		private static readonly XmlSerializer XmlSerializer = new XmlSerializer(typeof(Snippet));
-		private static readonly string SnippetDirectory = Path.Combine(new Uri(Path.GetDirectoryName(Assembly.GetAssembly(typeof(Snippets)).CodeBase)).LocalPath, "Snippets");
+		private static readonly string SnippetDirectory = Path.Combine(App.FolderNameApplication, "Snippets");
 		private static readonly List<Snippet> SnippetCollectionInternal = new List<Snippet>(); 
 
 		public static void ReloadSnippets()
