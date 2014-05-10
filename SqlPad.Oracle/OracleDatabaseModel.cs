@@ -167,8 +167,8 @@ ORDER BY
 		{
 			const string getFunctionMetadataCommandText =
 @"SELECT
-    NULL OWNER,
-    NULL PACKAGE_NAME,
+    OWNER,
+    PACKAGE_NAME,
     NVL(SQL_FUNCTION_METADATA.FUNCTION_NAME, PROCEDURES.FUNCTION_NAME) FUNCTION_NAME,
 	NVL(OVERLOAD, 0) OVERLOAD,
     NVL(ANALYTIC, PROCEDURES.AGGREGATE) ANALYTIC,
@@ -183,6 +183,8 @@ ORDER BY
     NVL(DISP_TYPE, 'NORMAL') DISP_TYPE
 FROM
     (SELECT DISTINCT
+		OWNER,
+        OBJECT_NAME PACKAGE_NAME,
         PROCEDURE_NAME FUNCTION_NAME,
 		OVERLOAD,
         AGGREGATE,
@@ -323,6 +325,9 @@ ORDER BY
 	[DebuggerDisplay("OracleFunctionMetadataCollection (Count={SqlFunctions.Count})")]
 	public class OracleFunctionMetadataCollection
 	{
+		private const string OwnerBuiltInFunction = "\"SYS\"";
+		private const string PackageBuiltInFunction = "\"STANDARD\"";
+
 		internal OracleFunctionMetadataCollection(ICollection<OracleFunctionMetadata> metadata)
 		{
 			SqlFunctions = metadata;
@@ -347,8 +352,9 @@ ORDER BY
 
 		public OracleFunctionMetadata GetSqlFunctionMetadata(string normalizedName)
 		{
-			var identifier = new OracleFunctionIdentifier { Name = normalizedName, Package = String.Empty, Owner = String.Empty };
-			return SqlFunctions.FirstOrDefault(m => identifier.EqualsWithAnyOverload(m.Identifier));
+			var pureIdentifier = new OracleFunctionIdentifier { Name = normalizedName, Package = String.Empty, Owner = String.Empty };
+			var builtInPackageIdentifier = new OracleFunctionIdentifier { Name = normalizedName, Package = PackageBuiltInFunction, Owner = OwnerBuiltInFunction };
+			return SqlFunctions.FirstOrDefault(m => pureIdentifier.EqualsWithAnyOverload(m.Identifier) | builtInPackageIdentifier.EqualsWithAnyOverload(m.Identifier));
 		}
 	}
 

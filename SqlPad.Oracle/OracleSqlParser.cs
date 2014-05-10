@@ -483,9 +483,10 @@ namespace SqlPad.Oracle
 
 		private void RevertLastOptionalNode(IList<StatementDescriptionNode> workingNodes, NodeType nodeType)
 		{
-			if (nodeType == NodeType.Terminal)
+			var nodeToRemove = workingNodes[workingNodes.Count - 1];
+			if (nodeType == NodeType.Terminal && nodeToRemove.Type == NodeType.NonTerminal)
 			{
-				workingNodes[workingNodes.Count - 1].RemoveLastChildNodeIfOptional();
+				nodeToRemove.RemoveLastChildNodeIfOptional();
 			}
 			else
 			{

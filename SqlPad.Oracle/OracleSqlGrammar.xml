@@ -5,6 +5,7 @@
     <StartSymbol Id="SelectStatement" />
     <StartSymbol Id="DeleteStatement" />
     <StartSymbol Id="UpdateStatement" />
+    <StartSymbol Id="MergeStatement" />
     <StartSymbol Id="CommitStatement" />
     <StartSymbol Id="SetTransactionStatement" />
     <!--<StartSymbol Id="InsertStatement" />
@@ -382,7 +383,7 @@
     </Rule>
 
     <!-- MERGE statement -->
-    <Rule StartingNonTerminal="MergeStatements">
+    <Rule StartingNonTerminal="MergeStatement">
       <Sequences>
         <Sequence>
           <Terminal Id="Merge" />
@@ -390,15 +391,25 @@
           <NonTerminal Id="SchemaPrefix" IsOptional="true" />
           <Terminal Id="ObjectIdentifier" />
           <Terminal Id="ObjectAlias" IsOptional="true" />
-          <Terminal Id="Using" />
-          <!-- TODO: aliased table, view or subquery -->
+          <NonTerminal Id="MergeSource" />
           <Terminal Id="On" />
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="Condition" />
           <Terminal Id="RightParenthesis" />
           <NonTerminal Id="MergeUpdateInsertClause" />
-          <NonTerminal Id="ErrorLoggingClause" />
-          <NonTerminal Id="Semicolon" />
+          <NonTerminal Id="ErrorLoggingClause" IsOptional="true" />
+          <Terminal Id="Semicolon" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="MergeSource">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Using" />
+          <NonTerminal Id="QueryTableExpression" />
+          <NonTerminal Id="FlashbackQueryClause" IsOptional="true" />
+          <Terminal Id="ObjectAlias" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -1340,17 +1351,17 @@
     <Rule StartingNonTerminal="QueryTableExpression">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
-          <NonTerminal Id="PartitionOrDatabaseLink" IsOptional="true" />
-          <NonTerminal Id="SampleClause" IsOptional="true" />
-        </Sequence>
-        <Sequence>
           <Terminal Id="Lateral" IsOptional="true" />
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="NestedQuery" />
           <NonTerminal Id="SubQueryRestrictionClause" IsOptional="true" />
           <Terminal Id="RightParenthesis" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="PartitionOrDatabaseLink" IsOptional="true" />
+          <NonTerminal Id="SampleClause" IsOptional="true" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="TableCollectionExpression" />
@@ -1363,12 +1374,27 @@
         <Sequence>
           <Terminal Id="Table" /><!-- Oracle 8.0 introduced 'THE' terminal later superseeded by TABLE -->
           <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="TableCollectionInnerExpression" />
+          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="OuterJoinOld" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="TableCollectionInnerExpression">
+      <Sequences>
+        <!-- TODO: Add support for subqueries -->
+        <Sequence>
           <NonTerminal Id="Prefix" IsOptional="true" />
           <Terminal Id="Identifier" />
           <NonTerminal Id="DatabaseLink" IsOptional="true" />
           <NonTerminal Id="ParenthesisEnclosedAggregationFunctionParameters" IsOptional="true" />
-          <Terminal Id="RightParenthesis" />
           <NonTerminal Id="OuterJoinOld" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="TableCollectionInnerExpression" />
+          <Terminal Id="RightParenthesis" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -3097,6 +3123,13 @@
 
     <!-- Delete -->
     <Terminal Id="Delete" Value="DELETE" IsKeyword="true" />
+
+    <!-- Merge -->
+    <Terminal Id="Merge" Value="MERGE" />
+    <Terminal Id="Matched" Value="MATCHED" />
+    
+    <!-- Insert -->
+    <Terminal Id="Insert" Value="INSERT" />
     
     <!-- Other -->
     <Terminal Id="Float" Value="FLOAT" IsKeyword="true" />

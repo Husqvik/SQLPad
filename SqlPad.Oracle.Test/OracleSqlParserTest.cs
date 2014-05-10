@@ -963,6 +963,54 @@ namespace SqlPad.Oracle.Test
 			// TODO: Precise assertions
 		}
 
+		[Test(Description = @"Tests table collection expression with nested parenthesis. ")]
+		public void TestTableCollectionExpressionWithNestedParenthesis()
+		{
+			const string query1 = @"SELECT * FROM TABLE(((DATABASE_ALERTS(+))))(+) VALID_ALIAS";
+			var result = Parser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			result.Single().Validate().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			// TODO: Precise assertions
+		}
+
+		[Test(Description = @"Tests nested subquery as lateral table reference. ")]
+		public void TestLateralTableReference()
+		{
+			const string query1 = @"SELECT * FROM LATERAL (SELECT * FROM DUAL)";
+			var result = Parser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			result.Single().Validate().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			// TODO: Precise assertions
+		}
+
+		[Test(Description = @"Tests table collection expression with nested parenthesis and invalid alias position. ")]
+		public void TestTableCollectionExpressionWithNestedParenthesisAndInvalidAliasPosition()
+		{
+			const string query1 = @"SELECT * FROM TABLE(((DATABASE_ALERTS INVALID_ALIAS)))";
+			var result = Parser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			result.Single().Validate().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+
+			// TODO: Precise assertions
+		}
+
+		[Test(Description = @"Tests table collection expression with invalid outer join position. ")]
+		public void TestTableCollectionExpressionWithInvalidOuterJoinPosition()
+		{
+			const string query1 = @"SELECT * FROM TABLE(((DATABASE_ALERTS)(+))) INVALID_OUTER_JOIN";
+			var result = Parser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			result.Single().Validate().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+
+			// TODO: Precise assertions
+		}
+
 		[Test(Description = @"Tests CAST function. ")]
 		public void TestCastFunction()
 		{
@@ -1576,14 +1624,15 @@ namespace SqlPad.Oracle.Test
 			public void TestTerminalCandidatesWithNullNode()
 			{
 				var terminalCandidates = Parser.GetTerminalCandidates(null).OrderBy(t => t).ToArray();
-				terminalCandidates.Length.ShouldBe(7);
+				terminalCandidates.Length.ShouldBe(8);
 				terminalCandidates[0].ShouldBe(Terminals.Commit);
 				terminalCandidates[1].ShouldBe(Terminals.Delete);
 				terminalCandidates[2].ShouldBe(Terminals.LeftParenthesis);
-				terminalCandidates[3].ShouldBe(Terminals.Select);
-				terminalCandidates[4].ShouldBe(Terminals.Set);
-				terminalCandidates[5].ShouldBe(Terminals.Update);
-				terminalCandidates[6].ShouldBe(Terminals.With);
+				terminalCandidates[3].ShouldBe(Terminals.Merge);
+				terminalCandidates[4].ShouldBe(Terminals.Select);
+				terminalCandidates[5].ShouldBe(Terminals.Set);
+				terminalCandidates[6].ShouldBe(Terminals.Update);
+				terminalCandidates[7].ShouldBe(Terminals.With);
 			}
 		}
 
@@ -1629,6 +1678,48 @@ namespace SqlPad.Oracle.Test
 
 				var terminals = statement.AllTerminals.ToArray();
 				terminals.Length.ShouldBe(34);
+			}
+		}
+
+		public class Merge
+		{
+			[Test(Description = @"")]
+			public void TestMergeWithTableReferenceAndErrorLogging()
+			{
+				const string statement1 = @"MERGE INTO IDX_TEST TARGET USING IDX_TEST PARTITION (P_C3_10) AS OF TIMESTAMP SYSDATE - 0.01 SOURCE ON (1 = 1) WHEN NOT MATCHED THEN INSERT (C1) VALUES (1) LOG ERRORS INTO SCHEMA.LOG_TABLE ('Merge statement') REJECT LIMIT UNLIMITED;";
+				var statements = Parser.Parse(statement1);
+				statements.Count.ShouldBe(1);
+				var statement = statements.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+				var terminals = statement.AllTerminals.ToArray();
+				terminals.Length.ShouldBe(48);
+			}
+
+			[Test(Description = @"")]
+			public void TestMergeWithSubqueryAndAllUpdateDeleteInsertClauses()
+			{
+				const string statement1 = @"MERGE INTO IDX_TEST USING LATERAL (SELECT * FROM DUAL WITH CHECK OPTION) ON (1 = 1) WHEN MATCHED THEN UPDATE SET C10 = C10 DELETE WHERE C1 IS NULL WHEN NOT MATCHED THEN INSERT (C1) VALUES (1) WHERE 1 = 1";
+				var statements = Parser.Parse(statement1);
+				statements.Count.ShouldBe(1);
+				var statement = statements.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+				var terminals = statement.AllTerminals.ToArray();
+				terminals.Length.ShouldBe(49);
+			}
+
+			[Test(Description = @"")]
+			public void TestMergeWithTableCollectionExpression()
+			{
+				const string statement1 = @"MERGE INTO IDX_TEST USING TABLE((DATABASE_ALERTS)) ON (1 = 1) WHEN NOT MATCHED THEN INSERT (C1) VALUES (1)";
+				var statements = Parser.Parse(statement1);
+				statements.Count.ShouldBe(1);
+				var statement = statements.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+				var terminals = statement.AllTerminals.ToArray();
+				terminals.Length.ShouldBe(28);
 			}
 		}
 
