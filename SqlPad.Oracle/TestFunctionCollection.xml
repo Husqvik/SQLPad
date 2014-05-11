@@ -17,8 +17,6 @@
       <IsDeterministic>false</IsDeterministic>
       <IsOffloadable>false</IsOffloadable>
       <IsPipelined>false</IsPipelined>
-      <MaximumArguments>0</MaximumArguments>
-      <MinimumArguments>0</MinimumArguments>
       <ParallelSupport>false</ParallelSupport>
       <Parameters>
         <OracleFunctionParameterMetadata>
@@ -43,6 +41,8 @@
           <Position>2</Position>
         </OracleFunctionParameterMetadata>
       </Parameters>
+      <_metadataMaximumArguments i:nil="true" />
+      <_metadataMinimumArguments i:nil="true" />
     </OracleFunctionMetadata>
     <OracleFunctionMetadata>
       <AuthId>Definer</AuthId>
@@ -60,8 +60,6 @@
       <IsDeterministic>false</IsDeterministic>
       <IsOffloadable>false</IsOffloadable>
       <IsPipelined>false</IsPipelined>
-      <MaximumArguments>0</MaximumArguments>
-      <MinimumArguments>0</MinimumArguments>
       <ParallelSupport>false</ParallelSupport>
       <Parameters>
         <OracleFunctionParameterMetadata>
@@ -86,6 +84,8 @@
           <Position>2</Position>
         </OracleFunctionParameterMetadata>
       </Parameters>
+      <_metadataMaximumArguments i:nil="true" />
+      <_metadataMinimumArguments i:nil="true" />
     </OracleFunctionMetadata>
     <OracleFunctionMetadata>
       <AuthId>Definer</AuthId>
@@ -103,8 +103,6 @@
       <IsDeterministic>false</IsDeterministic>
       <IsOffloadable>false</IsOffloadable>
       <IsPipelined>false</IsPipelined>
-      <MaximumArguments>0</MaximumArguments>
-      <MinimumArguments>0</MinimumArguments>
       <ParallelSupport>false</ParallelSupport>
       <Parameters>
         <OracleFunctionParameterMetadata>
@@ -122,6 +120,8 @@
           <Position>1</Position>
         </OracleFunctionParameterMetadata>
       </Parameters>
+      <_metadataMaximumArguments i:nil="true" />
+      <_metadataMinimumArguments i:nil="true" />
     </OracleFunctionMetadata>
     <OracleFunctionMetadata>
       <AuthId>Definer</AuthId>
@@ -139,8 +139,6 @@
       <IsDeterministic>false</IsDeterministic>
       <IsOffloadable>false</IsOffloadable>
       <IsPipelined>false</IsPipelined>
-      <MaximumArguments>0</MaximumArguments>
-      <MinimumArguments>0</MinimumArguments>
       <ParallelSupport>false</ParallelSupport>
       <Parameters>
         <OracleFunctionParameterMetadata>
@@ -151,70 +149,8 @@
           <Position>0</Position>
         </OracleFunctionParameterMetadata>
       </Parameters>
-    </OracleFunctionMetadata>
-    <OracleFunctionMetadata>
-      <AuthId>Definer</AuthId>
-      <DataType i:nil="true" />
-      <DisplayType>NORMAL</DisplayType>
-      <Identifier>
-        <Name>"LOAD_TTF_FONT"</Name>
-        <Overload>3</Overload>
-        <Owner>"HUSQVIK"</Owner>
-        <Package>"AS_PDF3"</Package>
-      </Identifier>
-      <IsAggregate>false</IsAggregate>
-      <IsAnalytic>false</IsAnalytic>
-      <IsBuiltIn>true</IsBuiltIn>
-      <IsDeterministic>false</IsDeterministic>
-      <IsOffloadable>false</IsOffloadable>
-      <IsPipelined>false</IsPipelined>
-      <MaximumArguments>0</MaximumArguments>
-      <MinimumArguments>0</MinimumArguments>
-      <ParallelSupport>false</ParallelSupport>
-      <Parameters>
-        <OracleFunctionParameterMetadata>
-          <DataType>BINARY_INTEGER</DataType>
-          <Direction>ReturnValue</Direction>
-          <IsOptional>false</IsOptional>
-          <Name i:nil="true" />
-          <Position>0</Position>
-        </OracleFunctionParameterMetadata>
-        <OracleFunctionParameterMetadata>
-          <DataType>VARCHAR2</DataType>
-          <Direction>Input</Direction>
-          <IsOptional>true</IsOptional>
-          <Name>P_DIR</Name>
-          <Position>1</Position>
-        </OracleFunctionParameterMetadata>
-        <OracleFunctionParameterMetadata>
-          <DataType>VARCHAR2</DataType>
-          <Direction>Input</Direction>
-          <IsOptional>true</IsOptional>
-          <Name>P_FILENAME</Name>
-          <Position>2</Position>
-        </OracleFunctionParameterMetadata>
-        <OracleFunctionParameterMetadata>
-          <DataType>VARCHAR2</DataType>
-          <Direction>Input</Direction>
-          <IsOptional>true</IsOptional>
-          <Name>P_ENCODING</Name>
-          <Position>3</Position>
-        </OracleFunctionParameterMetadata>
-        <OracleFunctionParameterMetadata>
-          <DataType>PL/SQL BOOLEAN</DataType>
-          <Direction>Input</Direction>
-          <IsOptional>true</IsOptional>
-          <Name>P_EMBED</Name>
-          <Position>4</Position>
-        </OracleFunctionParameterMetadata>
-        <OracleFunctionParameterMetadata>
-          <DataType>PL/SQL BOOLEAN</DataType>
-          <Direction>Input</Direction>
-          <IsOptional>true</IsOptional>
-          <Name>P_COMPRESS</Name>
-          <Position>5</Position>
-        </OracleFunctionParameterMetadata>
-      </Parameters>
+      <_metadataMaximumArguments i:nil="true" />
+      <_metadataMinimumArguments i:nil="true" />
     </OracleFunctionMetadata>
     <OracleFunctionMetadata>
       <AuthId>Definer</AuthId>
@@ -232,8 +168,6 @@
       <IsDeterministic>false</IsDeterministic>
       <IsOffloadable>false</IsOffloadable>
       <IsPipelined>false</IsPipelined>
-      <MaximumArguments>0</MaximumArguments>
-      <MinimumArguments>0</MinimumArguments>
       <ParallelSupport>false</ParallelSupport>
       <Parameters>
         <OracleFunctionParameterMetadata>
@@ -279,14 +213,16 @@
           <Position>5</Position>
         </OracleFunctionParameterMetadata>
       </Parameters>
+      <_metadataMaximumArguments i:nil="true" />
+      <_metadataMinimumArguments i:nil="true" />
     </OracleFunctionMetadata>
     <OracleFunctionMetadata>
       <AuthId>Definer</AuthId>
       <DataType i:nil="true" />
       <DisplayType>NORMAL</DisplayType>
       <Identifier>
-        <Name>"SET_FONT"</Name>
-        <Overload>2</Overload>
+        <Name>"LOAD_TTF_FONT"</Name>
+        <Overload>3</Overload>
         <Owner>"HUSQVIK"</Owner>
         <Package>"AS_PDF3"</Package>
       </Identifier>
@@ -296,8 +232,6 @@
       <IsDeterministic>false</IsDeterministic>
       <IsOffloadable>false</IsOffloadable>
       <IsPipelined>false</IsPipelined>
-      <MaximumArguments>0</MaximumArguments>
-      <MinimumArguments>0</MinimumArguments>
       <ParallelSupport>false</ParallelSupport>
       <Parameters>
         <OracleFunctionParameterMetadata>
@@ -310,25 +244,41 @@
         <OracleFunctionParameterMetadata>
           <DataType>VARCHAR2</DataType>
           <Direction>Input</Direction>
-          <IsOptional>false</IsOptional>
-          <Name>P_FONTNAME</Name>
+          <IsOptional>true</IsOptional>
+          <Name>P_DIR</Name>
           <Position>1</Position>
         </OracleFunctionParameterMetadata>
         <OracleFunctionParameterMetadata>
-          <DataType>NUMBER</DataType>
+          <DataType>VARCHAR2</DataType>
           <Direction>Input</Direction>
-          <IsOptional>false</IsOptional>
-          <Name>P_FONTSIZE_PT</Name>
+          <IsOptional>true</IsOptional>
+          <Name>P_FILENAME</Name>
           <Position>2</Position>
+        </OracleFunctionParameterMetadata>
+        <OracleFunctionParameterMetadata>
+          <DataType>VARCHAR2</DataType>
+          <Direction>Input</Direction>
+          <IsOptional>true</IsOptional>
+          <Name>P_ENCODING</Name>
+          <Position>3</Position>
         </OracleFunctionParameterMetadata>
         <OracleFunctionParameterMetadata>
           <DataType>PL/SQL BOOLEAN</DataType>
           <Direction>Input</Direction>
           <IsOptional>true</IsOptional>
-          <Name>P_OUTPUT_TO_DOC</Name>
-          <Position>3</Position>
+          <Name>P_EMBED</Name>
+          <Position>4</Position>
+        </OracleFunctionParameterMetadata>
+        <OracleFunctionParameterMetadata>
+          <DataType>PL/SQL BOOLEAN</DataType>
+          <Direction>Input</Direction>
+          <IsOptional>true</IsOptional>
+          <Name>P_COMPRESS</Name>
+          <Position>5</Position>
         </OracleFunctionParameterMetadata>
       </Parameters>
+      <_metadataMaximumArguments i:nil="true" />
+      <_metadataMinimumArguments i:nil="true" />
     </OracleFunctionMetadata>
     <OracleFunctionMetadata>
       <AuthId>Definer</AuthId>
@@ -346,8 +296,6 @@
       <IsDeterministic>false</IsDeterministic>
       <IsOffloadable>false</IsOffloadable>
       <IsPipelined>false</IsPipelined>
-      <MaximumArguments>0</MaximumArguments>
-      <MinimumArguments>0</MinimumArguments>
       <ParallelSupport>false</ParallelSupport>
       <Parameters>
         <OracleFunctionParameterMetadata>
@@ -386,6 +334,58 @@
           <Position>4</Position>
         </OracleFunctionParameterMetadata>
       </Parameters>
+      <_metadataMaximumArguments i:nil="true" />
+      <_metadataMinimumArguments i:nil="true" />
+    </OracleFunctionMetadata>
+    <OracleFunctionMetadata>
+      <AuthId>Definer</AuthId>
+      <DataType i:nil="true" />
+      <DisplayType>NORMAL</DisplayType>
+      <Identifier>
+        <Name>"SET_FONT"</Name>
+        <Overload>2</Overload>
+        <Owner>"HUSQVIK"</Owner>
+        <Package>"AS_PDF3"</Package>
+      </Identifier>
+      <IsAggregate>false</IsAggregate>
+      <IsAnalytic>false</IsAnalytic>
+      <IsBuiltIn>true</IsBuiltIn>
+      <IsDeterministic>false</IsDeterministic>
+      <IsOffloadable>false</IsOffloadable>
+      <IsPipelined>false</IsPipelined>
+      <ParallelSupport>false</ParallelSupport>
+      <Parameters>
+        <OracleFunctionParameterMetadata>
+          <DataType>BINARY_INTEGER</DataType>
+          <Direction>ReturnValue</Direction>
+          <IsOptional>false</IsOptional>
+          <Name i:nil="true" />
+          <Position>0</Position>
+        </OracleFunctionParameterMetadata>
+        <OracleFunctionParameterMetadata>
+          <DataType>VARCHAR2</DataType>
+          <Direction>Input</Direction>
+          <IsOptional>false</IsOptional>
+          <Name>P_FONTNAME</Name>
+          <Position>1</Position>
+        </OracleFunctionParameterMetadata>
+        <OracleFunctionParameterMetadata>
+          <DataType>NUMBER</DataType>
+          <Direction>Input</Direction>
+          <IsOptional>false</IsOptional>
+          <Name>P_FONTSIZE_PT</Name>
+          <Position>2</Position>
+        </OracleFunctionParameterMetadata>
+        <OracleFunctionParameterMetadata>
+          <DataType>PL/SQL BOOLEAN</DataType>
+          <Direction>Input</Direction>
+          <IsOptional>true</IsOptional>
+          <Name>P_OUTPUT_TO_DOC</Name>
+          <Position>3</Position>
+        </OracleFunctionParameterMetadata>
+      </Parameters>
+      <_metadataMaximumArguments i:nil="true" />
+      <_metadataMinimumArguments i:nil="true" />
     </OracleFunctionMetadata>
     <OracleFunctionMetadata>
       <AuthId>Definer</AuthId>
@@ -403,8 +403,6 @@
       <IsDeterministic>false</IsDeterministic>
       <IsOffloadable>false</IsOffloadable>
       <IsPipelined>false</IsPipelined>
-      <MaximumArguments>0</MaximumArguments>
-      <MinimumArguments>0</MinimumArguments>
       <ParallelSupport>false</ParallelSupport>
       <Parameters>
         <OracleFunctionParameterMetadata>
@@ -422,6 +420,8 @@
           <Position>1</Position>
         </OracleFunctionParameterMetadata>
       </Parameters>
+      <_metadataMaximumArguments i:nil="true" />
+      <_metadataMinimumArguments i:nil="true" />
     </OracleFunctionMetadata>
     <OracleFunctionMetadata>
       <AuthId>Definer</AuthId>
@@ -439,8 +439,6 @@
       <IsDeterministic>false</IsDeterministic>
       <IsOffloadable>false</IsOffloadable>
       <IsPipelined>false</IsPipelined>
-      <MaximumArguments>0</MaximumArguments>
-      <MinimumArguments>0</MinimumArguments>
       <ParallelSupport>false</ParallelSupport>
       <Parameters>
         <OracleFunctionParameterMetadata>
@@ -458,6 +456,8 @@
           <Position>1</Position>
         </OracleFunctionParameterMetadata>
       </Parameters>
+      <_metadataMaximumArguments i:nil="true" />
+      <_metadataMinimumArguments i:nil="true" />
     </OracleFunctionMetadata>
     <OracleFunctionMetadata>
       <AuthId>Definer</AuthId>
@@ -475,8 +475,6 @@
       <IsDeterministic>false</IsDeterministic>
       <IsOffloadable>false</IsOffloadable>
       <IsPipelined>false</IsPipelined>
-      <MaximumArguments>0</MaximumArguments>
-      <MinimumArguments>0</MinimumArguments>
       <ParallelSupport>false</ParallelSupport>
       <Parameters>
         <OracleFunctionParameterMetadata>
@@ -487,6 +485,8 @@
           <Position>0</Position>
         </OracleFunctionParameterMetadata>
       </Parameters>
+      <_metadataMaximumArguments i:nil="true" />
+      <_metadataMinimumArguments i:nil="true" />
     </OracleFunctionMetadata>
     <OracleFunctionMetadata>
       <AuthId>Definer</AuthId>
@@ -504,8 +504,6 @@
       <IsDeterministic>false</IsDeterministic>
       <IsOffloadable>false</IsOffloadable>
       <IsPipelined>true</IsPipelined>
-      <MaximumArguments>0</MaximumArguments>
-      <MinimumArguments>0</MinimumArguments>
       <ParallelSupport>false</ParallelSupport>
       <Parameters>
         <OracleFunctionParameterMetadata>
@@ -544,6 +542,8 @@
           <Position>2</Position>
         </OracleFunctionParameterMetadata>
       </Parameters>
+      <_metadataMaximumArguments i:nil="true" />
+      <_metadataMinimumArguments i:nil="true" />
     </OracleFunctionMetadata>
     <OracleFunctionMetadata>
       <AuthId>Definer</AuthId>
@@ -561,8 +561,6 @@
       <IsDeterministic>false</IsDeterministic>
       <IsOffloadable>false</IsOffloadable>
       <IsPipelined>false</IsPipelined>
-      <MaximumArguments>0</MaximumArguments>
-      <MinimumArguments>0</MinimumArguments>
       <ParallelSupport>false</ParallelSupport>
       <Parameters>
         <OracleFunctionParameterMetadata>
@@ -573,6 +571,8 @@
           <Position>0</Position>
         </OracleFunctionParameterMetadata>
       </Parameters>
+      <_metadataMaximumArguments i:nil="true" />
+      <_metadataMinimumArguments i:nil="true" />
     </OracleFunctionMetadata>
     <OracleFunctionMetadata>
       <AuthId>Definer</AuthId>
@@ -590,8 +590,6 @@
       <IsDeterministic>false</IsDeterministic>
       <IsOffloadable>false</IsOffloadable>
       <IsPipelined>true</IsPipelined>
-      <MaximumArguments>0</MaximumArguments>
-      <MinimumArguments>0</MinimumArguments>
       <ParallelSupport>false</ParallelSupport>
       <Parameters>
         <OracleFunctionParameterMetadata>
@@ -616,6 +614,8 @@
           <Position>1</Position>
         </OracleFunctionParameterMetadata>
       </Parameters>
+      <_metadataMaximumArguments i:nil="true" />
+      <_metadataMinimumArguments i:nil="true" />
     </OracleFunctionMetadata>
     <OracleFunctionMetadata>
       <AuthId>Definer</AuthId>
@@ -633,8 +633,6 @@
       <IsDeterministic>false</IsDeterministic>
       <IsOffloadable>false</IsOffloadable>
       <IsPipelined>false</IsPipelined>
-      <MaximumArguments>0</MaximumArguments>
-      <MinimumArguments>0</MinimumArguments>
       <ParallelSupport>false</ParallelSupport>
       <Parameters>
         <OracleFunctionParameterMetadata>
@@ -645,6 +643,8 @@
           <Position>0</Position>
         </OracleFunctionParameterMetadata>
       </Parameters>
+      <_metadataMaximumArguments i:nil="true" />
+      <_metadataMinimumArguments i:nil="true" />
     </OracleFunctionMetadata>
     <OracleFunctionMetadata>
       <AuthId>Definer</AuthId>
@@ -662,8 +662,6 @@
       <IsDeterministic>false</IsDeterministic>
       <IsOffloadable>false</IsOffloadable>
       <IsPipelined>false</IsPipelined>
-      <MaximumArguments>0</MaximumArguments>
-      <MinimumArguments>0</MinimumArguments>
       <ParallelSupport>false</ParallelSupport>
       <Parameters>
         <OracleFunctionParameterMetadata>
@@ -681,6 +679,8 @@
           <Position>1</Position>
         </OracleFunctionParameterMetadata>
       </Parameters>
+      <_metadataMaximumArguments i:nil="true" />
+      <_metadataMinimumArguments i:nil="true" />
     </OracleFunctionMetadata>
     <OracleFunctionMetadata>
       <AuthId>Definer</AuthId>
@@ -698,8 +698,6 @@
       <IsDeterministic>false</IsDeterministic>
       <IsOffloadable>false</IsOffloadable>
       <IsPipelined>false</IsPipelined>
-      <MaximumArguments>0</MaximumArguments>
-      <MinimumArguments>0</MinimumArguments>
       <ParallelSupport>false</ParallelSupport>
       <Parameters>
         <OracleFunctionParameterMetadata>
@@ -710,6 +708,8 @@
           <Position>0</Position>
         </OracleFunctionParameterMetadata>
       </Parameters>
+      <_metadataMaximumArguments i:nil="true" />
+      <_metadataMinimumArguments i:nil="true" />
     </OracleFunctionMetadata>
     <OracleFunctionMetadata>
       <AuthId>Definer</AuthId>
@@ -727,8 +727,6 @@
       <IsDeterministic>false</IsDeterministic>
       <IsOffloadable>false</IsOffloadable>
       <IsPipelined>false</IsPipelined>
-      <MaximumArguments>0</MaximumArguments>
-      <MinimumArguments>0</MinimumArguments>
       <ParallelSupport>false</ParallelSupport>
       <Parameters>
         <OracleFunctionParameterMetadata>
@@ -746,7 +744,9 @@
           <Position>1</Position>
         </OracleFunctionParameterMetadata>
       </Parameters>
+      <_metadataMaximumArguments i:nil="true" />
+      <_metadataMinimumArguments i:nil="true" />
     </OracleFunctionMetadata>
   </SqlFunctions>
-  <Timestamp>2014-05-10T19:15:44.108915Z</Timestamp>
+  <Timestamp>2014-05-11T14:02:56.8837878Z</Timestamp>
 </OracleFunctionMetadataCollection>

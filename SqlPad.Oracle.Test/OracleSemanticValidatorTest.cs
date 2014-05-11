@@ -388,7 +388,6 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		[Test(Description = @"")]
 		public void TestBasicFunctionCall()
 		{
-			// TODO: Update when parameterless functions are recognized
 			const string sqlText = "SELECT COUNT(COUNT) OVER (), COUNT, HUSQVIK.COUNT, HUSQVIK.COUNT() FROM FTEST";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
@@ -411,6 +410,26 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			// HUSQVIK.COUNT()
 			nodeValidity[3].IsRecognized.ShouldBe(true);
 			nodeValidity[3].SemanticError.ShouldBe(SemanticError.None);
+		}
+
+		[Test(Description = @"")]
+		public void TestToCharFunctionCallWithMissingOptionalParameters()
+		{
+			const string sqlText = "SELECT TO_CHAR(1) FROM DUAL";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = _statementValidator.ResolveReferences(sqlText, statement, TestFixture.DatabaseModel);
+
+			var nodeValidity = validationModel.FunctionNodeValidity
+				.OrderBy(cv => cv.Key.SourcePosition.IndexStart)
+				.Select(kvp => kvp.Value)
+				.ToArray();
+
+			nodeValidity.Length.ShouldBe(1);
+			nodeValidity[0].IsRecognized.ShouldBe(true);
+			nodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
 		}
 
 		[Test(Description = @"")]

@@ -280,19 +280,20 @@ namespace SqlPad.Oracle
 		{
 			foreach (var functionReference in queryBlock.AllFunctionReferences)
 			{
-				var functionIdentifier = OracleFunctionIdentifier.CreateFromValues(functionReference.FullyQualifiedObjectName.NormalizedOwner, functionReference.FullyQualifiedObjectName.NormalizedName, functionReference.NormalizedName);
-				functionReference.Metadata = GetFunctionMetadata(functionIdentifier);
+				functionReference.Metadata = GetFunctionMetadata(functionReference);
 			}
 		}
 
-		private OracleFunctionMetadata GetFunctionMetadata(OracleFunctionIdentifier baseIdentifier)
+		private OracleFunctionMetadata GetFunctionMetadata(OracleFunctionReference functionReference)
 		{
-			var metadata = _databaseModel.AllFunctionMetadata.GetSqlFunctionMetadata(baseIdentifier);
+			var functionIdentifier = OracleFunctionIdentifier.CreateFromValues(functionReference.FullyQualifiedObjectName.NormalizedOwner, functionReference.FullyQualifiedObjectName.NormalizedName, functionReference.NormalizedName);
+			var parameterCount = functionReference.ParameterNodes == null ? 0 : functionReference.ParameterNodes.Count;
+			var metadata = _databaseModel.AllFunctionMetadata.GetSqlFunctionMetadata(functionIdentifier, parameterCount);
 
-			if (metadata == null && !String.IsNullOrEmpty(baseIdentifier.Package) && String.IsNullOrEmpty(baseIdentifier.Owner))
+			if (metadata == null && !String.IsNullOrEmpty(functionIdentifier.Package) && String.IsNullOrEmpty(functionIdentifier.Owner))
 			{
-				var identifier = OracleFunctionIdentifier.CreateFromValues(baseIdentifier.Package, null, baseIdentifier.Name);
-				metadata = _databaseModel.AllFunctionMetadata.GetSqlFunctionMetadata(identifier);
+				var identifier = OracleFunctionIdentifier.CreateFromValues(functionIdentifier.Package, null, functionIdentifier.Name);
+				metadata = _databaseModel.AllFunctionMetadata.GetSqlFunctionMetadata(identifier, parameterCount);
 			}
 
 			return metadata;
@@ -362,7 +363,7 @@ namespace SqlPad.Oracle
 				if (columnReference.ColumnNodeColumnReferences == 0)
 				{
 					var functionIdentifier = OracleFunctionIdentifier.CreateFromValues(columnReference.FullyQualifiedObjectName.NormalizedOwner, columnReference.FullyQualifiedObjectName.NormalizedName, columnReference.NormalizedName);
-					var sqlFunctionMetadata = _databaseModel.BuiltInFunctionMetadata.GetSqlFunctionMetadata(functionIdentifier);
+					var sqlFunctionMetadata = _databaseModel.BuiltInFunctionMetadata.GetSqlFunctionMetadata(functionIdentifier, 0);
 					if (sqlFunctionMetadata != null)
 					{
 						var functionReference =
