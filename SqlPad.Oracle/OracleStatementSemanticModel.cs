@@ -278,11 +278,24 @@ namespace SqlPad.Oracle
 
 		private void ResolveFunctionReferences(OracleQueryBlock queryBlock)
 		{
-			foreach (var functionReference in queryBlock.AllFunctionReferences
-				.Where(functionReference => functionReference.FullyQualifiedObjectName == OracleObjectIdentifier.Empty))
+			foreach (var functionReference in queryBlock.AllFunctionReferences)
 			{
-				functionReference.Metadata = _databaseModel.BuiltInFunctionMetadata.GetSqlFunctionMetadata(functionReference.NormalizedName);
+				var functionIdentifier = OracleFunctionIdentifier.CreateFromValues(functionReference.FullyQualifiedObjectName.NormalizedOwner, functionReference.FullyQualifiedObjectName.NormalizedName, functionReference.NormalizedName);
+				functionReference.Metadata = GetFunctionMetadata(functionIdentifier);
 			}
+		}
+
+		private OracleFunctionMetadata GetFunctionMetadata(OracleFunctionIdentifier baseIdentifier)
+		{
+			var metadata = _databaseModel.AllFunctionMetadata.GetSqlFunctionMetadata(baseIdentifier);
+
+			if (metadata == null && !String.IsNullOrEmpty(baseIdentifier.Package) && String.IsNullOrEmpty(baseIdentifier.Owner))
+			{
+				var identifier = OracleFunctionIdentifier.CreateFromValues(baseIdentifier.Package, null, baseIdentifier.Name);
+				metadata = _databaseModel.AllFunctionMetadata.GetSqlFunctionMetadata(identifier);
+			}
+
+			return metadata;
 		}
 
 		public OracleQueryBlock GetQueryBlock(StatementDescriptionNode node)
@@ -346,10 +359,10 @@ namespace SqlPad.Oracle
 					}
 				}
 
-				// TODO: Resolve schema and package functions
-				if (columnReference.ColumnNodeColumnReferences == 0 && columnReference.FullyQualifiedObjectName == OracleObjectIdentifier.Empty)
+				if (columnReference.ColumnNodeColumnReferences == 0)
 				{
-					var sqlFunctionMetadata = _databaseModel.BuiltInFunctionMetadata.GetSqlFunctionMetadata(columnReference.NormalizedName);
+					var functionIdentifier = OracleFunctionIdentifier.CreateFromValues(columnReference.FullyQualifiedObjectName.NormalizedOwner, columnReference.FullyQualifiedObjectName.NormalizedName, columnReference.NormalizedName);
+					var sqlFunctionMetadata = _databaseModel.BuiltInFunctionMetadata.GetSqlFunctionMetadata(functionIdentifier);
 					if (sqlFunctionMetadata != null)
 					{
 						var functionReference =
@@ -384,7 +397,7 @@ namespace SqlPad.Oracle
 			else
 			{
 				columnNodeColumnReferences = rowSourceReference.QueryBlocks.SelectMany(qb => qb.Columns)
-					.Count(c => c.NormalizedName == columnReference.NormalizedName && (columnReference.ObjectNode == null || columnReference.ObjectNormalizedName == rowSourceReference.FullyQualifiedName.NormalizedName));
+					.Count(c => c.NormalizedName == columnReference.NormalizedName && (columnReference.ObjectNode == null || columnReference.FullyQualifiedObjectName.NormalizedName == rowSourceReference.FullyQualifiedName.NormalizedName));
 			}
 
 			return columnNodeColumnReferences;
@@ -465,7 +478,7 @@ namespace SqlPad.Oracle
 				}
 				else
 				{
-					var functionReference = CreateFunctionReference(queryBlock, prefixNonTerminal /* TODO: Get proper root*/, selectListColumn, identifier, prefixNonTerminal, functionCallNodes);
+					var functionReference = CreateFunctionReference(queryBlock, selectListColumn, identifier, prefixNonTerminal, functionCallNodes);
 					functionReferences.Add(functionReference);
 				}
 			}
@@ -610,7 +623,7 @@ namespace SqlPad.Oracle
 			return identifier.ParentNode.ChildNodes.Where(n => n.Id.In(NonTerminals.DatabaseLink, NonTerminals.ParenthesisEnclosedAggregationFunctionParameters, NonTerminals.AnalyticClause)).ToArray();
 		}
 
-		private static OracleFunctionReference CreateFunctionReference(OracleQueryBlock queryBlock, StatementDescriptionNode rootNode, OracleSelectListColumn selectListColumn, /*ColumnReferenceType type,*/ StatementDescriptionNode identifierNode, StatementDescriptionNode prefixNonTerminal, ICollection<StatementDescriptionNode> functionCallNodes)
+		private static OracleFunctionReference CreateFunctionReference(OracleQueryBlock queryBlock, OracleSelectListColumn selectListColumn, /*ColumnReferenceType type,*/ StatementDescriptionNode identifierNode, StatementDescriptionNode prefixNonTerminal, ICollection<StatementDescriptionNode> functionCallNodes)
 		{
 			var analyticClauseNode = functionCallNodes.SingleOrDefault(n => n.Id == NonTerminals.AnalyticClause);
 
@@ -628,7 +641,7 @@ namespace SqlPad.Oracle
 				new OracleFunctionReference
 				{
 					FunctionIdentifierNode = identifierNode,
-					RootNode = rootNode,
+					RootNode = identifierNode.GetAncestor(NonTerminals.Expression),
 					Owner = queryBlock,
 					AnalyticClauseNode = analyticClauseNode,
 					ParameterListNode = parameterList,

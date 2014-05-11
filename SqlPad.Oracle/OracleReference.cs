@@ -18,10 +18,6 @@ namespace SqlPad.Oracle
 
 		public string NormalizedName { get { return Name.ToQuotedIdentifier(); } }
 
-		public string ObjectName { get { return ObjectNode == null ? null : ObjectNode.Token.Value; } }
-
-		public string ObjectNormalizedName { get { return ObjectNode == null ? null : ObjectName.ToQuotedIdentifier(); } }
-
 		public OracleQueryBlock Owner { get; set; }
 
 		public StatementDescriptionNode OwnerNode { get; set; }

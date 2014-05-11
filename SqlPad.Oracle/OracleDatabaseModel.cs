@@ -33,6 +33,8 @@ namespace SqlPad.Oracle
 				{
 					BuiltInFunctionMetadata = (OracleFunctionMetadataCollection)Serializer.ReadObject(reader);
 				}
+
+				AllFunctionMetadata = new OracleFunctionMetadataCollection(BuiltInFunctionMetadata.SqlFunctions.Concat(DatabaseModelFake.Instance.AllFunctionMetadata.SqlFunctions).ToArray());
 			}
 			else
 			{
@@ -53,7 +55,7 @@ namespace SqlPad.Oracle
 
 		public OracleFunctionMetadataCollection BuiltInFunctionMetadata { get; private set; }
 
-		public OracleFunctionMetadataCollection AllFunctionMetadata { get { return DatabaseModelFake.Instance.AllFunctionMetadata; } }
+		public OracleFunctionMetadataCollection AllFunctionMetadata { get; private set; }
 
 		public ConnectionStringSettings ConnectionString { get; private set; }
 
@@ -365,11 +367,16 @@ ORDER BY
 		[DataMember]
 		public DateTime Timestamp { get; private set; }
 
-		public OracleFunctionMetadata GetSqlFunctionMetadata(string normalizedName)
+		public OracleFunctionMetadata GetSqlFunctionMetadata(OracleFunctionIdentifier identifier)
 		{
-			var pureIdentifier = new OracleFunctionIdentifier { Name = normalizedName, Package = String.Empty, Owner = String.Empty };
-			var builtInPackageIdentifier = new OracleFunctionIdentifier { Name = normalizedName, Package = PackageBuiltInFunction, Owner = OwnerBuiltInFunction };
-			return SqlFunctions.FirstOrDefault(m => pureIdentifier.EqualsWithAnyOverload(m.Identifier) | builtInPackageIdentifier.EqualsWithAnyOverload(m.Identifier));
+			var metadata = SqlFunctions.FirstOrDefault(m => identifier.EqualsWithAnyOverload(m.Identifier));
+			if (metadata == null && String.IsNullOrEmpty(identifier.Package) && String.IsNullOrEmpty(identifier.Owner))
+			{
+				var builtInPackageIdentifier = new OracleFunctionIdentifier { Name = identifier.Name, Package = PackageBuiltInFunction, Owner = OwnerBuiltInFunction };
+				metadata = SqlFunctions.FirstOrDefault(m => builtInPackageIdentifier.EqualsWithAnyOverload(m.Identifier));
+			}
+
+			return metadata;
 		}
 	}
 
@@ -399,7 +406,7 @@ ORDER BY
 			}
 		}
 
-		public static OracleFunctionIdentifier CreateFromValues(string owner, string package, string name, int overload)
+		public static OracleFunctionIdentifier CreateFromValues(string owner, string package, string name, int overload = 0)
 		{
 			return new OracleFunctionIdentifier
 			       {

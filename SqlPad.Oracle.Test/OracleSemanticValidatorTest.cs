@@ -408,7 +408,8 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			nodeValidity[1].SemanticError.ShouldBe(SemanticError.InvalidParameterCount);
 			nodeValidity[2].IsRecognized.ShouldBe(true);
 			nodeValidity[2].SemanticError.ShouldBe(SemanticError.InvalidParameterCount);
-			nodeValidity[3].IsRecognized.ShouldBe(false);
+			// HUSQVIK.COUNT()
+			nodeValidity[3].IsRecognized.ShouldBe(true);
 			nodeValidity[3].SemanticError.ShouldBe(SemanticError.None);
 		}
 
