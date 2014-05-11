@@ -159,5 +159,93 @@ FROM
 			lagFunction.ParameterListNode.ShouldNotBe(null);
 			lagFunction.ParameterNodes.Count.ShouldBe(3);
 		}
+
+		[Test(Description = @"")]
+		public void TestBasicColumnTypes()
+		{
+			const string query1 = @"SELECT RESPONDENTBUCKET_ID, SELECTION_NAME, MY_NUMBER_COLUMN FROM (SELECT RESPONDENTBUCKET_ID, NAME SELECTION_NAME, 1 MY_NUMBER_COLUMN FROM SELECTION)";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var queryBlocks = semanticModel.QueryBlocks.ToArray();
+			queryBlocks.Length.ShouldBe(2);
+
+			var innerBlock = queryBlocks[0];
+			innerBlock.ObjectReferences.Count.ShouldBe(1);
+			var selectionTableReference = innerBlock.ObjectReferences.Single();
+			selectionTableReference.Type.ShouldBe(TableReferenceType.PhysicalObject);
+			innerBlock.Columns.Count.ShouldBe(3);
+			var columns = innerBlock.Columns.ToArray();
+			columns[0].NormalizedName.ShouldBe("\"RESPONDENTBUCKET_ID\"");
+			columns[0].ExplicitDefinition.ShouldBe(true);
+			columns[0].IsDirectColumnReference.ShouldBe(true);
+			columns[0].ColumnDescription.Type.ShouldBe("NUMBER");
+			columns[1].NormalizedName.ShouldBe("\"SELECTION_NAME\"");
+			columns[1].ExplicitDefinition.ShouldBe(true);
+			columns[1].IsDirectColumnReference.ShouldBe(true);
+			columns[1].ColumnDescription.Type.ShouldBe("VARCHAR2");
+			columns[2].NormalizedName.ShouldBe("\"MY_NUMBER_COLUMN\"");
+			columns[2].ExplicitDefinition.ShouldBe(true);
+			columns[2].IsDirectColumnReference.ShouldBe(false);
+			columns[2].ColumnDescription.Type.ShouldBe(null); // TODO: Add column expression type resolving
+
+			var outerBlock = queryBlocks[1];
+			outerBlock.ObjectReferences.Count.ShouldBe(1);
+			var innerTableReference = outerBlock.ObjectReferences.Single();
+			innerTableReference.Type.ShouldBe(TableReferenceType.NestedQuery);
+			outerBlock.Columns.Count.ShouldBe(3);
+			columns = outerBlock.Columns.ToArray();
+			columns[0].NormalizedName.ShouldBe("\"RESPONDENTBUCKET_ID\"");
+			columns[0].ExplicitDefinition.ShouldBe(true);
+			columns[0].IsDirectColumnReference.ShouldBe(true);
+			columns[0].ColumnDescription.Type.ShouldBe("NUMBER");
+			columns[1].NormalizedName.ShouldBe("\"SELECTION_NAME\"");
+			columns[1].ExplicitDefinition.ShouldBe(true);
+			columns[1].IsDirectColumnReference.ShouldBe(true);
+			columns[1].ColumnDescription.Type.ShouldBe("VARCHAR2");
+			columns[2].NormalizedName.ShouldBe("\"MY_NUMBER_COLUMN\"");
+			columns[2].ExplicitDefinition.ShouldBe(true);
+			columns[2].IsDirectColumnReference.ShouldBe(true);
+			columns[2].ColumnDescription.Type.ShouldBe(null); // TODO: Add column expression type resolving
+		}
+
+		[Test(Description = @"")]
+		public void TestAsteriskExposedColumnTypes()
+		{
+			const string query1 = @"SELECT * FROM (SELECT * FROM SELECTION)";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var queryBlocks = semanticModel.QueryBlocks.ToArray();
+			queryBlocks.Length.ShouldBe(2);
+
+			var innerBlock = queryBlocks[0];
+			innerBlock.ObjectReferences.Count.ShouldBe(1);
+			var selectionTableReference = innerBlock.ObjectReferences.Single();
+			selectionTableReference.Type.ShouldBe(TableReferenceType.PhysicalObject);
+			innerBlock.Columns.Count.ShouldBe(5);
+			var columns = innerBlock.Columns.ToArray();
+			columns[0].IsAsterisk.ShouldBe(true);
+			columns[0].ExplicitDefinition.ShouldBe(true);
+			columns[1].NormalizedName.ShouldBe("\"RESPONDENTBUCKET_ID\"");
+			columns[1].ExplicitDefinition.ShouldBe(false);
+			columns[1].ColumnDescription.Type.ShouldBe("NUMBER");
+
+			var outerBlock = queryBlocks[1];
+			outerBlock.ObjectReferences.Count.ShouldBe(1);
+			var innerTableReference = outerBlock.ObjectReferences.Single();
+			innerTableReference.Type.ShouldBe(TableReferenceType.NestedQuery);
+			outerBlock.Columns.Count.ShouldBe(5);
+			columns = outerBlock.Columns.ToArray();
+			columns[0].IsAsterisk.ShouldBe(true);
+			columns[0].ExplicitDefinition.ShouldBe(true);
+			columns[1].NormalizedName.ShouldBe("\"RESPONDENTBUCKET_ID\"");
+			columns[1].ExplicitDefinition.ShouldBe(false);
+			columns[1].ColumnDescription.Type.ShouldBe("NUMBER");
+		}
 	}
 }

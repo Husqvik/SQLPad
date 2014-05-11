@@ -1624,15 +1624,16 @@ namespace SqlPad.Oracle.Test
 			public void TestTerminalCandidatesWithNullNode()
 			{
 				var terminalCandidates = Parser.GetTerminalCandidates(null).OrderBy(t => t).ToArray();
-				terminalCandidates.Length.ShouldBe(8);
+				terminalCandidates.Length.ShouldBe(9);
 				terminalCandidates[0].ShouldBe(Terminals.Commit);
 				terminalCandidates[1].ShouldBe(Terminals.Delete);
-				terminalCandidates[2].ShouldBe(Terminals.LeftParenthesis);
-				terminalCandidates[3].ShouldBe(Terminals.Merge);
-				terminalCandidates[4].ShouldBe(Terminals.Select);
-				terminalCandidates[5].ShouldBe(Terminals.Set);
-				terminalCandidates[6].ShouldBe(Terminals.Update);
-				terminalCandidates[7].ShouldBe(Terminals.With);
+				terminalCandidates[2].ShouldBe(Terminals.Insert);
+				terminalCandidates[3].ShouldBe(Terminals.LeftParenthesis);
+				terminalCandidates[4].ShouldBe(Terminals.Merge);
+				terminalCandidates[5].ShouldBe(Terminals.Select);
+				terminalCandidates[6].ShouldBe(Terminals.Set);
+				terminalCandidates[7].ShouldBe(Terminals.Update);
+				terminalCandidates[8].ShouldBe(Terminals.With);
 			}
 		}
 
@@ -1720,6 +1721,70 @@ namespace SqlPad.Oracle.Test
 
 				var terminals = statement.AllTerminals.ToArray();
 				terminals.Length.ShouldBe(28);
+			}
+		}
+
+		public class Insert
+		{
+			[Test(Description = @"")]
+			public void TestSingleTableInsertWithErrorLogging()
+			{
+				const string statement1 =
+@"INSERT INTO ERRORLOGTEST(ID, PARENT_ID, VAL1, VAL2, VAL3)
+SELECT * FROM
+    (SELECT 1 ID, NULL PARENT_ID, 'Row 1 Column 1' VAL1, 'A' VAL2, 'Row 1 Column 3' VAL3 FROM DUAL UNION ALL
+    SELECT 2 ID, 999 PARENT_ID, 'Row 2 Column 1' VAL1, 'B' VAL2, 'Row 2 Column 3' VAL3 FROM DUAL) TESTDATA
+LOG ERRORS INTO ERR$_ERRORLOGTEST ('COMMAND TAG 1') REJECT LIMIT UNLIMITED;";
+
+				var statements = Parser.Parse(statement1);
+				statements.Count.ShouldBe(1);
+				var statement = statements.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+				var terminals = statement.AllTerminals.ToArray();
+				terminals.Length.ShouldBe(67);
+			}
+
+			[Test(Description = @"")]
+			public void TestMultiTableInsertAll()
+			{
+				const string statement1 =
+@"INSERT ALL
+    INTO TT VALUES (C1, NULL, NULL)
+    INTO TT VALUES (NULL, C2, NULL)
+    INTO TT VALUES (NULL, NULL, C3)
+SELECT (ROWNUM - 1) * 3 + 1 C1, (ROWNUM - 1) * 3 + 2 C2, (ROWNUM - 1) * 3 + 3 C3
+FROM DUAL CONNECT BY LEVEL <= 3";
+
+				var statements = Parser.Parse(statement1);
+				statements.Count.ShouldBe(1);
+				var statement = statements.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+				var terminals = statement.AllTerminals.ToArray();
+				terminals.Length.ShouldBe(72);
+			}
+
+			[Test(Description = @"")]
+			public void TestMultiTableInsertConditional()
+			{
+				const string statement1 =
+@"INSERT ALL
+    WHEN 1 = 1 THEN
+        INTO INSERT1
+    WHEN VAL > 5 THEN
+        INTO INSERT2
+    WHEN VAL IN (5, 6) THEN
+        INTO INSERT3
+SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
+
+				var statements = Parser.Parse(statement1);
+				statements.Count.ShouldBe(1);
+				var statement = statements.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+				var terminals = statement.AllTerminals.ToArray();
+				terminals.Length.ShouldBe(37);
 			}
 		}
 

@@ -8,8 +8,8 @@
     <StartSymbol Id="MergeStatement" />
     <StartSymbol Id="CommitStatement" />
     <StartSymbol Id="SetTransactionStatement" />
-    <!--<StartSymbol Id="InsertStatement" />
-    <StartSymbol Id="CreateStatement" />
+    <StartSymbol Id="InsertStatement" />
+    <!--<StartSymbol Id="CreateStatement" />
     <StartSymbol Id="DropStatement" />
     <StartSymbol Id="AlterStatement" />
     <StartSymbol Id="RenameStatement" />-->
@@ -161,6 +161,173 @@
         <Sequence>
           <Terminal Id="Read" />
           <Terminal Id="Committed" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <!-- INSERT statement -->
+    <Rule StartingNonTerminal="InsertStatement">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Insert" />
+          <NonTerminal Id="SingleTableInsertOrMultiTableInsert" />
+          <Terminal Id="Semicolon" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SingleTableInsertOrMultiTableInsert">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="SingleTableInsert" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="MultiTableInsert" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SingleTableInsert">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="InsertIntoClause" />
+          <NonTerminal Id="InsertValuesOrSubquery" />
+          <NonTerminal Id="ErrorLoggingClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="InsertIntoClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Into" />
+          <NonTerminal Id="DmlTableExpressionClause" />
+          <NonTerminal Id="ParenthesisEnclosedColumnIdentifierList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DmlTableExpressionClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="QueryTableExpression" />
+          <Terminal Id="ObjectAlias" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="InsertValuesOrSubquery">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="InsertValuesClause" />
+          <NonTerminal Id="ReturningClause" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="NestedQuery" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="InsertValuesClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Values" />
+          <NonTerminal Id="ParenthesisEnclosedExpressionOrOrDefaultValueList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ParenthesisEnclosedExpressionOrOrDefaultValueList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="ExpressionOrOrDefaultValueList" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ExpressionOrOrDefaultValueList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ExpressionOrOrDefaultValue" />
+          <NonTerminal Id="ExpressionOrOrDefaultValueListChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ExpressionOrOrDefaultValueListChained">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="ExpressionOrOrDefaultValueList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="MultiTableInsert">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="All" />
+          <NonTerminal Id="InsertIntoValuesChainedList" />
+          <NonTerminal Id="NestedQuery" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ConditionalInsertClause" />
+          <NonTerminal Id="NestedQuery" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ConditionalInsertClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="FirstOrAll" IsOptional="true" />
+          <NonTerminal Id="ConditionalInsertConditionBranch" />
+          <NonTerminal Id="ConditionalInsertElseBranch" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="FirstOrAll">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="First" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="All" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ConditionalInsertConditionBranch">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="When" />
+          <NonTerminal Id="Condition" />
+          <Terminal Id="Then" />
+          <NonTerminal Id="InsertIntoValuesChainedList" />
+          <NonTerminal Id="ConditionalInsertConditionBranch" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ConditionalInsertElseBranch">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Else" />
+          <NonTerminal Id="InsertIntoValuesChainedList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="InsertIntoValuesChainedList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="InsertIntoClause" />
+          <NonTerminal Id="InsertValuesClause" IsOptional="true" />
+          <NonTerminal Id="ErrorLoggingClause" IsOptional="true" />
+          <NonTerminal Id="InsertIntoValuesChainedList" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
