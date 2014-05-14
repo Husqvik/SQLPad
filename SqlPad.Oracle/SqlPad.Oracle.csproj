@@ -107,7 +107,11 @@
     <Compile Include="OracleObjectReference.cs" />
     <Compile Include="OracleToken.cs" />
     <Compile Include="OracleTokenReader.cs" />
+    <Compile Include="OracleToolTipProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ToolTips\ToolTipColumn.xaml.cs">
+      <DependentUpon>ToolTipColumn.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="OracleGramarDescription.tt">
@@ -138,6 +142,13 @@
       <Project>{a899ecdc-34cf-4b97-a25f-774cfcdbfdac}</Project>
       <Name>SqlPad</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <Page Include="ToolTips\ToolTipColumn.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

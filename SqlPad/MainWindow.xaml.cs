@@ -39,6 +39,7 @@ namespace SqlPad
 		private readonly IContextActionProvider _contextActionProvider;
 		private readonly IStatementFormatter _statementFormatter;
 		private readonly IDatabaseModel _databaseModel;
+		private readonly IToolTipProvider _toolTipProvider;
 		
 		private readonly ToolTip _toolTip = new ToolTip();
 
@@ -52,6 +53,7 @@ namespace SqlPad
 			_codeSnippetProvider = _infrastructureFactory.CreateSnippetProvider();
 			_contextActionProvider = _infrastructureFactory.CreateContextActionProvider();
 			_statementFormatter = _infrastructureFactory.CreateSqlFormatter(new SqlFormatterOptions());
+			_toolTipProvider = _infrastructureFactory.CreateToolTipProvider();
 			_databaseModel = _infrastructureFactory.CreateDatabaseModel(ConfigurationProvider.ConnectionStrings["Default"]);
 			
 			_timer.Elapsed += TimerOnElapsed;
@@ -284,12 +286,12 @@ namespace SqlPad
 			var offset = Editor.Document.GetOffset(position.Value.Line, position.Value.Column);
 			//var lineByOffset = Editor.Document.GetLineByOffset(offset);
 
-			var terminal = _sqlDocument.StatementCollection.GetTerminalAtPosition(offset);
-			if (terminal == null)
+			var toolTip = _toolTipProvider.GetToolTip(_databaseModel, _sqlDocument, offset);
+			if (toolTip == null)
 				return;
-
+			
 			_toolTip.PlacementTarget = this; // required for property inheritance
-			_toolTip.Content = terminal.Id;
+			_toolTip.Content = toolTip;
 			_toolTip.IsOpen = true;
 			e.Handled = true;
 		}

@@ -464,7 +464,7 @@ namespace SqlPad.Oracle
 	{
 		public const string DatabaseSchema = "Database Schema";
 		public const string SchemaObject = "Schema Object";
-		public const string Subquery = "Subquery";
+		public const string InlineView = "Inline View";
 		public const string CommonTableExpression = "Common Table Expression";
 		public const string Column = "Column";
 		public const string AllColumns = "All Columns";

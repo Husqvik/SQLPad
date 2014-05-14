@@ -91,6 +91,7 @@
     <Compile Include="IObjectIdentifier.cs" />
     <Compile Include="IStatementFormatter.cs" />
     <Compile Include="ISqlParser.cs" />
+    <Compile Include="IToolTipProvider.cs" />
     <Compile Include="MetadataCache.cs" />
     <Compile Include="MultiNodeEditor.cs" />
     <Compile Include="Namespaces.cs" />

@@ -56,6 +56,11 @@ namespace SqlPad.Oracle
 		{
 			return new OracleStatementFormatter(options);
 		}
+
+		public IToolTipProvider CreateToolTipProvider()
+		{
+			return new OracleToolTipProvider();
+		}
 		#endregion
 	}
 }

@@ -134,7 +134,7 @@ namespace SqlPad.Oracle
 				case TableReferenceType.PhysicalObject:
 					return OracleCodeCompletionCategory.SchemaObject;
 				case TableReferenceType.NestedQuery:
-					return OracleCodeCompletionCategory.Subquery;
+					return OracleCodeCompletionCategory.InlineView;
 			}
 
 			throw new NotSupportedException(String.Format("Value '{0}' is not supported. ", type));
