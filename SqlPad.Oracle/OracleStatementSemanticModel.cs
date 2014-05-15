@@ -195,8 +195,11 @@ namespace SqlPad.Oracle
 						foreach (var referencedQueryBlock in commonTableExpressionNode
 							.Where(nodeName => OracleObjectIdentifier.Create(null, nodeName.Value) == OracleObjectIdentifier.Create(null, nestedQueryReference.ObjectNode.Token.Value)))
 						{
-							var cteQueryBlockNode = referencedQueryBlock.Key.GetDescendants(NonTerminals.QueryBlock).First();
-							nestedQueryReference.QueryBlocks.Add(_queryBlockResults[cteQueryBlockNode]);
+							var cteQueryBlockNode = referencedQueryBlock.Key.GetDescendants(NonTerminals.QueryBlock).FirstOrDefault();
+							if (cteQueryBlockNode != null)
+							{
+								nestedQueryReference.QueryBlocks.Add(_queryBlockResults[cteQueryBlockNode]);
+							}
 						}
 					}
 				}
@@ -341,6 +344,7 @@ namespace SqlPad.Oracle
 					}
 				}
 
+				OracleColumn columnDescription = null;
 				foreach (var rowSourceReference in accessibleRowSourceReferences)
 				{
 					if (!String.IsNullOrEmpty(columnReference.FullyQualifiedObjectName.NormalizedName) &&
@@ -351,13 +355,20 @@ namespace SqlPad.Oracle
 
 					var columnNodeColumnReferences = GetColumnNodeObjectReferences(rowSourceReference, columnReference);
 
-					if (columnNodeColumnReferences > 0 &&
+					if (columnNodeColumnReferences.Count > 0 &&
 						(String.IsNullOrEmpty(columnReference.FullyQualifiedObjectName.NormalizedName) ||
 						 columnReference.ObjectNodeObjectReferences.Count > 0))
 					{
-						columnReference.ColumnNodeColumnReferences += columnNodeColumnReferences;
+						columnReference.ColumnNodeColumnReferences += columnNodeColumnReferences.Count;
 						columnReference.ColumnNodeObjectReferences.Add(rowSourceReference);
+						columnDescription = columnNodeColumnReferences.First();
 					}
+				}
+
+				if (columnDescription != null &&
+					columnReference.ColumnNodeObjectReferences.Count == 1)
+				{
+					columnReference.ColumnDescription = columnDescription;
 				}
 
 				if (columnReference.ColumnNodeColumnReferences == 0)
@@ -384,21 +395,24 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		private int GetColumnNodeObjectReferences(OracleObjectReference rowSourceReference, OracleColumnReference columnReference)
+		private ICollection<OracleColumn> GetColumnNodeObjectReferences(OracleObjectReference rowSourceReference, OracleColumnReference columnReference)
 		{
-			int columnNodeColumnReferences;
+			OracleColumn[] columnNodeColumnReferences;
 			if (rowSourceReference.Type == TableReferenceType.PhysicalObject)
 			{
 				if (rowSourceReference.SearchResult.SchemaObject == null)
-					return 0;
+					return new OracleColumn[0];
 
 				columnNodeColumnReferences = rowSourceReference.SearchResult.SchemaObject.Columns
-					.Count(c => c.Name == columnReference.NormalizedName && (columnReference.ObjectNode == null || IsTableReferenceValid(columnReference, rowSourceReference)));
+					.Where(c => c.Name == columnReference.NormalizedName && (columnReference.ObjectNode == null || IsTableReferenceValid(columnReference, rowSourceReference)))
+					.ToArray();
 			}
 			else
 			{
 				columnNodeColumnReferences = rowSourceReference.QueryBlocks.SelectMany(qb => qb.Columns)
-					.Count(c => c.NormalizedName == columnReference.NormalizedName && (columnReference.ObjectNode == null || columnReference.FullyQualifiedObjectName.NormalizedName == rowSourceReference.FullyQualifiedName.NormalizedName));
+					.Where(c => c.NormalizedName == columnReference.NormalizedName && (columnReference.ObjectNode == null || columnReference.FullyQualifiedObjectName.NormalizedName == rowSourceReference.FullyQualifiedName.NormalizedName))
+					.Select(c => c.ColumnDescription)
+					.ToArray();
 			}
 
 			return columnNodeColumnReferences;
@@ -452,9 +466,6 @@ namespace SqlPad.Oracle
 		{
 			if (queryBlock.PrecedingConcatenatedQueryBlock != null)
 				return;
-
-			//if (queryBlock.FollowingConcatenatedQueryBlock != null)
-			//	return;
 
 			var orderByNode = queryBlock.RootNode.ParentNode.GetPathFilterDescendants(n => n.Id != NonTerminals.QueryBlock, NonTerminals.OrderByClause).FirstOrDefault();
 			if (orderByNode == null)

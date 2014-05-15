@@ -56,9 +56,13 @@ namespace SqlPad.Oracle
 
 		private OracleColumn BuildColumnDescription()
 		{
-			OracleColumnReference columnReference;
+			/*OracleColumnReference columnReference;
 			var columnDescription = IsDirectColumnReference && (columnReference = ColumnReferences.Single()).ColumnNodeObjectReferences.Count == 1 && columnReference.ColumnNodeColumnReferences == 1
 				? columnReference.ColumnNodeObjectReferences.Single().Columns.Single(c => c.Name == columnReference.NormalizedName)
+				: null;*/
+
+			var columnDescription = IsDirectColumnReference
+				? ColumnReferences.First().ColumnDescription
 				: null;
 
 			_columnDescription =

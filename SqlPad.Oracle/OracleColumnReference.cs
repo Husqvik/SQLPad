@@ -25,6 +25,8 @@ namespace SqlPad.Oracle
 		public ICollection<OracleObjectReference> ColumnNodeObjectReferences { get; set; }
 
 		public int ColumnNodeColumnReferences { get; set; }
+		
+		public OracleColumn ColumnDescription { get; set; }
 	}
 
 	public enum ColumnReferenceType

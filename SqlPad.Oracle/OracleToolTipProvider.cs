@@ -29,9 +29,24 @@ namespace SqlPad.Oracle
 						: objectReference.FullyQualifiedName;
 					tip = objectName + " (" + objectReference.Type.ToCategoryLabel() + ")";
 					break;
+				case Terminals.Identifier:
+					var columnDescription = GetColumnDescription(queryBlock, terminal);
+					if (columnDescription == null)
+						return null;
+
+					tip = columnDescription.Type + " (" + (columnDescription.Nullable ? String.Empty : "NOT ") + "NULL)";
+					break;
 			}
 
 			return new ToolTipObject { DataContext = tip };
+		}
+
+		private OracleColumn GetColumnDescription(OracleQueryBlock queryBlock, StatementDescriptionNode terminal)
+		{
+			return queryBlock.AllColumnReferences
+				.Where(c => c.ColumnNode == terminal)
+				.Select(c => c.ColumnDescription)
+				.FirstOrDefault();
 		}
 
 		private OracleObjectReference GetOracleObjectReference(OracleQueryBlock queryBlock, StatementDescriptionNode terminal)
