@@ -472,5 +472,14 @@ FROM
 			items[1].Name.ShouldBe("DUMMY");
 			items[2].Name.ShouldBe("ROW_COUNT");
 		}
+
+		[Test(Description = @"")]
+		public void TestJoinConditionNotSuggestedForNonAliasedSubquery()
+		{
+			const string query1 = @"SELECT * FROM (SELECT PROJECT_ID FROM PROJECT) JOIN PROJECT ";
+
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 60).ToArray();
+			items.Length.ShouldBe(0);
+		}
 	}
 }
