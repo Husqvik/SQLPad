@@ -24,11 +24,14 @@ namespace SqlPad.Oracle
 					if (objectReference == null)
 						return null;
 
-					tip = objectReference.Type.ToCategoryLabel();
+					var objectName = objectReference.Type == TableReferenceType.PhysicalObject
+						? objectReference.SearchResult.SchemaObject.FullyQualifiedName
+						: objectReference.FullyQualifiedName;
+					tip = objectName + " (" + objectReference.Type.ToCategoryLabel() + ")";
 					break;
 			}
 
-			return new ToolTipColumn { DataContext = tip };
+			return new ToolTipObject { DataContext = tip };
 		}
 
 		private OracleObjectReference GetOracleObjectReference(OracleQueryBlock queryBlock, StatementDescriptionNode terminal)

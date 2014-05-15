@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Windows.Input;
 using ICSharpCode.AvalonEdit;
 
@@ -33,6 +32,8 @@ namespace SqlPad
 
 			editor.ReplaceTextSegments(textSegments);
 		}
+
+		public abstract string Title { get; }
 
 		protected abstract void ExecuteInternal(string statementText, ICollection<TextSegment> segmentsToReplace);
 

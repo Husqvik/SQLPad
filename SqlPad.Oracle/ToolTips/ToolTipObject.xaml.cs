@@ -3,11 +3,11 @@
 namespace SqlPad.Oracle.ToolTips
 {
 	/// <summary>
-	/// Interaction logic for ToolTipColumn.xaml
+	/// Interaction logic for ToolTipObject.xaml
 	/// </summary>
-	public partial class ToolTipColumn : IToolTip
+	public partial class ToolTipObject : IToolTip
 	{
-		public ToolTipColumn()
+		public ToolTipObject()
 		{
 			InitializeComponent();
 		}

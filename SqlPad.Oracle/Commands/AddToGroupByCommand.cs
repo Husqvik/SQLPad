@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
@@ -25,6 +26,11 @@ namespace SqlPad.Oracle.Commands
 		{
 			// TODO: Check ambiguous references
 			return CurrentNode != null && _fromClause != null && _fromClause.IsGrammarValid;
+		}
+
+		public override string Title
+		{
+			get { return "Add to GROUP BY clause"; }
 		}
 
 		protected override void ExecuteInternal(string statementText, ICollection<TextSegment> segmentsToReplace)

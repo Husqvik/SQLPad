@@ -32,41 +32,41 @@ namespace SqlPad.Oracle
 			var addAliasCommand = new AddAliasCommand(semanticModel, currentTerminal);
 			if (addAliasCommand.CanExecute(null))
 			{
-				actionList.Add(new OracleContextAction("Add Alias", addAliasCommand));
+				actionList.Add(new OracleContextAction(addAliasCommand.Title, addAliasCommand));
 			}
 
-			var wrapAsSubqueryCommand = new WrapAsSubqueryCommand(semanticModel, currentTerminal);
-			if (wrapAsSubqueryCommand.CanExecute(null))
+			var wrapAsInlineViewCommand = new WrapAsInlineViewCommand(semanticModel, currentTerminal);
+			if (wrapAsInlineViewCommand.CanExecute(null))
 			{
-				actionList.Add(new OracleContextAction("Wrap as sub-query", wrapAsSubqueryCommand));
+				actionList.Add(new OracleContextAction(wrapAsInlineViewCommand.Title, wrapAsInlineViewCommand));
 			}
 
 			var wrapAsCommonTableExpressionCommand = new WrapAsCommonTableExpressionCommand(semanticModel, currentTerminal);
 			if (wrapAsCommonTableExpressionCommand.CanExecute(null))
 			{
-				actionList.Add(new OracleContextAction("Wrap as common table expression", wrapAsCommonTableExpressionCommand));
+				actionList.Add(new OracleContextAction(wrapAsCommonTableExpressionCommand.Title, wrapAsCommonTableExpressionCommand));
 			}
 
 			var toggleQuotedNotationCommand = new ToggleQuotedNotationCommand(semanticModel, currentTerminal);
 			if (toggleQuotedNotationCommand.CanExecute(null))
 			{
-				actionList.Add(new OracleContextAction("Toggle quoted identifiers", toggleQuotedNotationCommand));
+				actionList.Add(new OracleContextAction(toggleQuotedNotationCommand.Title, toggleQuotedNotationCommand));
 			}
 
 			var addToGroupByCommand = new AddToGroupByCommand(semanticModel, cursorPosition, selectionLength);
 			if (addToGroupByCommand.CanExecute(null))
 			{
-				//actionList.Add(new OracleContextAction("Add to GROUP BY clause", addToGroupByCommand));
+				//actionList.Add(new OracleContextAction(addToGroupByCommand.Title, addToGroupByCommand));
 			}
 
 			var unnestCommonTableExpressionCommand = new UnnestCommonTableExpressionCommand(semanticModel, currentTerminal);
 			if (unnestCommonTableExpressionCommand.CanExecute(null))
 			{
-				actionList.Add(new OracleContextAction("Unnest", unnestCommonTableExpressionCommand));
+				actionList.Add(new OracleContextAction(unnestCommonTableExpressionCommand.Title, unnestCommonTableExpressionCommand));
 			}
 
 			var actions = ResolveAmbiguousColumnCommand.ResolveCommands(semanticModel, currentTerminal)
-				.Select(c => new OracleContextAction("Resolve as " + c.ResolvedName, c));
+				.Select(c => new OracleContextAction("Resolve as " + c.Title, c));
 
 			actionList.AddRange(actions);
 

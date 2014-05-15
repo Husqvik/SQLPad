@@ -6,9 +6,9 @@ using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
 namespace SqlPad.Oracle.Commands
 {
-	public class WrapAsSubqueryCommand : OracleConfigurableCommandBase
+	public class WrapAsInlineViewCommand : OracleConfigurableCommandBase
 	{
-		public WrapAsSubqueryCommand(OracleStatementSemanticModel semanticModel, StatementDescriptionNode currentNode, ICommandSettingsProvider settingsProvider = null)
+		public WrapAsInlineViewCommand(OracleStatementSemanticModel semanticModel, StatementDescriptionNode currentNode, ICommandSettingsProvider settingsProvider = null)
 			: base(semanticModel, currentNode, settingsProvider)
 		{
 		}
@@ -20,11 +20,16 @@ namespace SqlPad.Oracle.Commands
 				   CurrentQueryBlock.Columns.Any(c => !String.IsNullOrEmpty(c.NormalizedName));
 		}
 
+		public override string Title
+		{
+			get { return "Wrap as inline view"; }
+		}
+
 		protected override void ExecuteInternal(string statementText, ICollection<TextSegment> segmentsToReplace)
 		{
-			SettingsModel.Title = "Wrap as sub-query";
+			SettingsModel.Title = Title;
 			SettingsModel.Heading = SettingsModel.Title;
-			SettingsModel.Description = "Enter an alias for the sub-query";
+			SettingsModel.Description = "Enter an alias for the inline view";
 
 			if (!SettingsProvider.GetSettings())
 				return;

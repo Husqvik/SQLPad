@@ -69,7 +69,7 @@
     <Compile Include="Commands\SafeDeleteCommand .cs" />
     <Compile Include="Commands\ToggleQuotedNotationCommand.cs" />
     <Compile Include="Commands\WrapAsCommonTableExpressionCommand.cs" />
-    <Compile Include="Commands\WrapAsSubqueryCommand.cs" />
+    <Compile Include="Commands\WrapAsInlineViewCommand.cs" />
     <Compile Include="Commands\OracleCommandBase.cs" />
     <Compile Include="Commands\ResolveAmbiguousColumnCommand.cs" />
     <Compile Include="Commands\AddAliasCommand.cs" />
@@ -109,8 +109,8 @@
     <Compile Include="OracleTokenReader.cs" />
     <Compile Include="OracleToolTipProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ToolTips\ToolTipColumn.xaml.cs">
-      <DependentUpon>ToolTipColumn.xaml</DependentUpon>
+    <Compile Include="ToolTips\ToolTipObject.xaml.cs">
+      <DependentUpon>ToolTipObject.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -145,7 +145,7 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
-    <Page Include="ToolTips\ToolTipColumn.xaml">
+    <Page Include="ToolTips\ToolTipObject.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -8,6 +8,8 @@ namespace SqlPad.Oracle.Commands
 {
 	public class ResolveAmbiguousColumnCommand : OracleCommandBase
 	{
+		private readonly string _resolvedName;
+
 		public static ICollection<ResolveAmbiguousColumnCommand> ResolveCommands(OracleStatementSemanticModel semanticModel, StatementDescriptionNode currentTerminal)
 		{
 			CheckParameters(semanticModel, currentTerminal);
@@ -36,7 +38,7 @@ namespace SqlPad.Oracle.Commands
 			if (String.IsNullOrWhiteSpace(resolvedName))
 				throw new ArgumentException("resolvedName");
 
-			ResolvedName = resolvedName;
+			_resolvedName = resolvedName;
 		}
 
 		public override bool CanExecute(object parameter)
@@ -52,12 +54,15 @@ namespace SqlPad.Oracle.Commands
 			                  {
 				                  IndextStart = prefixedColumnReference.SourcePosition.IndexStart,
 								  Length = prefixedColumnReference.SourcePosition.Length,
-								  Text = ResolvedName
+								  Text = _resolvedName
 			                  };
 			
 			segmentsToReplace.Add(textSegment);
 		}
 
-		public string ResolvedName { get; private set; }
+		public override string Title
+		{
+			get { return _resolvedName; }
+		}
 	}
 }

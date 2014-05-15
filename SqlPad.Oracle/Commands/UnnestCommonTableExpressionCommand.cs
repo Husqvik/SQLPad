@@ -31,6 +31,11 @@ namespace SqlPad.Oracle.Commands
 			       _commonTableExpressionReferences != null && _commonTableExpressionReferences.Count > 0;
 		}
 
+		public override string Title
+		{
+			get { return "Unnest"; }
+		}
+
 		protected override void ExecuteInternal(string statementText, ICollection<TextSegment> segmentsToReplace)
 		{
 			var cteText = _commonTableExpressionQueryBlock.RootNode.GetStatementSubstring(statementText);

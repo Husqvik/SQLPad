@@ -21,9 +21,14 @@ namespace SqlPad.Oracle.Commands
 			       CurrentQueryBlock.Columns.Any(c => !String.IsNullOrEmpty(c.NormalizedName));
 		}
 
+		public override string Title
+		{
+			get { return "Wrap as common table expression"; }
+		}
+
 		protected override void ExecuteInternal(string statementText, ICollection<TextSegment> segmentsToReplace)
 		{
-			SettingsModel.Title = "Wrap as common table expression";
+			SettingsModel.Title = Title;
 			SettingsModel.Heading = SettingsModel.Title;
 			SettingsModel.Description = "Enter an alias for the common table expression";
 

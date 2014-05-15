@@ -36,6 +36,11 @@ namespace SqlPad.Oracle.Commands
 			}
 		}
 
+		public override string Title
+		{
+			get { return String.Empty; }
+		}
+
 		private void AddObjectAliasNodesToRemove(ICollection<TextSegment> segmentsToReplace)
 		{
 			var objectReference = _queryBlock.ObjectReferences.Single(o => o.AliasNode == CurrentNode);

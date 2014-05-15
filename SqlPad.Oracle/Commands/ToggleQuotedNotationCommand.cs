@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
-using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 
 namespace SqlPad.Oracle.Commands
 {
@@ -16,6 +15,11 @@ namespace SqlPad.Oracle.Commands
 		public override bool CanExecute(object parameter)
 		{
 			return CurrentNode != null && CurrentQueryBlock != null && CurrentNode.Id == Terminals.Select;
+		}
+
+		public override string Title
+		{
+			get { return "Toggle quoted identifiers"; }
 		}
 
 		protected override void ExecuteInternal(string statementText, ICollection<TextSegment> segmentsToReplace)

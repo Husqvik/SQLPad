@@ -144,7 +144,7 @@ WHERE
 		{
 			_editor.Text = @"SELECT S.RESPONDENTBUCKET_ID, S.SELECTION_ID, PROJECT_ID, NAME, 1 FROM SELECTION S";
 
-			var command = InitializeCommand<WrapAsSubqueryCommand>(_editor.Text, 0, "SUB");
+			var command = InitializeCommand<WrapAsInlineViewCommand>(_editor.Text, 0, "SUB");
 			command.Execute(_editor);
 
 			_editor.Text.ShouldBe(@"SELECT RESPONDENTBUCKET_ID, SELECTION_ID, PROJECT_ID, NAME FROM (SELECT S.RESPONDENTBUCKET_ID, S.SELECTION_ID, PROJECT_ID, NAME, 1 FROM SELECTION S) SUB");

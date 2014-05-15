@@ -22,12 +22,17 @@ namespace SqlPad.Oracle.Commands
 			return tables.Length == 1 && tables[0].AliasNode == null;
 		}
 
+		public override string Title
+		{
+			get { return "Add Alias"; }
+		}
+
 		protected override void ExecuteInternal(string statementText, ICollection<TextSegment> segmentsToReplace)
 		{
 			switch (CurrentNode.Id)
 			{
 				case Terminals.ObjectIdentifier:
-					SettingsModel.Title = "Add Object Alias";
+					SettingsModel.Title = Title;
 					SettingsModel.Heading = SettingsModel.Title;
 					SettingsModel.Description = String.Format("Enter an alias for the object '{0}'", CurrentNode.Token.Value);
 					break;
