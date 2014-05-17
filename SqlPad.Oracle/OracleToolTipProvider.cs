@@ -22,7 +22,7 @@ namespace SqlPad.Oracle
 			var nodeSemanticError = validationModel.GetNodesWithSemanticErrors().FirstOrDefault(n => node.HasAncestor(n.Key, true));
 			if (nodeSemanticError.Key != null)
 			{
-				tip = nodeSemanticError.Value.ToToolTipText();
+				tip = nodeSemanticError.Value.ToolTipText;
 			}
 			else
 			{

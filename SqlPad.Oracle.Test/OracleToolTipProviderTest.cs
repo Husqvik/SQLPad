@@ -37,7 +37,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @""), STAThread]
-		public void TestSemanticErrorToolTip()
+		public void TestObjectSemanticErrorToolTip()
 		{
 			const string query = "SELECT NAME FROM SELECTION, RESPONDENTBUCKET";
 			_document.UpdateStatements(_oracleSqlParser.Parse(query));
@@ -45,7 +45,19 @@ namespace SqlPad.Oracle.Test
 			var toolTip = _toolTipProvider.GetToolTip(TestFixture.DatabaseModel, _document, 8);
 
 			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
-			toolTip.Control.DataContext.ShouldBe("Ambiguous reference");
+			toolTip.Control.DataContext.ShouldBe("Ambiguous reference (SELECTION, RESPONDENTBUCKET)");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestFunctionSemanticErrorToolTip()
+		{
+			const string query = "SELECT COUNT FROM SELECTION";
+			_document.UpdateStatements(_oracleSqlParser.Parse(query));
+
+			var toolTip = _toolTipProvider.GetToolTip(TestFixture.DatabaseModel, _document, 8);
+
+			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.DataContext.ShouldBe("Invalid parameter count");
 		}
 	}
 }

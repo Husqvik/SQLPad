@@ -375,6 +375,11 @@ namespace SqlPad
 				var textSegments = _statementFormatter.FormatStatement(_sqlDocument.StatementCollection, Editor.SelectionStart, Editor.SelectionLength);
 				Editor.ReplaceTextSegments(textSegments);
 			}
+			else if (e.Key == Key.Space && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift))
+			{
+				Trace.WriteLine("CONTROL SHIFT + SPACE");
+				// TODO: Add show parameter list tool tip
+			}
 			else if (e.SystemKey == Key.Delete && Keyboard.Modifiers == ModifierKeys.Alt)
 			{
 				Trace.WriteLine("ALT + DELETE");

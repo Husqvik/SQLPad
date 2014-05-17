@@ -104,13 +104,13 @@ namespace SqlPad.Oracle
 
 		public IDictionary<StatementDescriptionNode, INodeValidationData> FunctionNodeValidity { get { return _functionNodeValidity; } }
 
-		public IEnumerable<KeyValuePair<StatementDescriptionNode, SemanticError>> GetNodesWithSemanticErrors()
+		public IEnumerable<KeyValuePair<StatementDescriptionNode, INodeValidationData>> GetNodesWithSemanticErrors()
 		{
 			return ColumnNodeValidity
 				.Concat(ObjectNodeValidity)
 				.Concat(FunctionNodeValidity)
 				.Where(nv => nv.Value.SemanticError != SemanticError.None)
-				.Select(nv => new KeyValuePair<StatementDescriptionNode, SemanticError>(nv.Key, nv.Value.SemanticError));
+				.Select(nv => new KeyValuePair<StatementDescriptionNode, INodeValidationData>(nv.Key, nv.Value));
 		}
 	}
 
@@ -136,9 +136,21 @@ namespace SqlPad.Oracle
 
 		public ICollection<OracleObjectReference> ObjectReferences { get { return _objectReferences; } }
 
-		public ICollection<string> ObjectNames { get { return _objectReferences.Select(t => t.FullyQualifiedName.Name).OrderByDescending(n => n).ToArray(); } }	
+		public ICollection<string> ObjectNames { get { return _objectReferences.Select(t => t.FullyQualifiedName.ToString()).OrderByDescending(n => n).ToArray(); } }	
 		
 		public StatementDescriptionNode Node { get; set; }
+
+		public virtual string ToolTipText
+		{
+			get
+			{
+				return SemanticError == SemanticError.None
+					? Node.Type == NodeType.NonTerminal
+						? null
+						: Node.Id
+					: SemanticError.ToToolTipText() + String.Format(" ({0})", String.Join(", ", ObjectNames));
+			}
+		}
 	}
 
 	public class FunctionValidationData : NodeValidationData
@@ -151,6 +163,11 @@ namespace SqlPad.Oracle
 		}
 
 		public override SemanticError SemanticError { get { return _semanticError; } }
+
+		public override string ToolTipText
+		{
+			get { return _semanticError.ToToolTipText(); }
+		}
 	}
 
 	public class ColumnNodeValidationData : NodeValidationData

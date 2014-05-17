@@ -12,7 +12,7 @@ namespace SqlPad
 		
 		IDictionary<StatementDescriptionNode, INodeValidationData> FunctionNodeValidity { get; }
 
-		IEnumerable<KeyValuePair<StatementDescriptionNode, SemanticError>> GetNodesWithSemanticErrors();
+		IEnumerable<KeyValuePair<StatementDescriptionNode, INodeValidationData>> GetNodesWithSemanticErrors();
 	}
 
 	public interface INodeValidationData
@@ -21,6 +21,8 @@ namespace SqlPad
 		SemanticError SemanticError { get; }
 		bool IsRecognized { get; }
 		ICollection<string> ObjectNames { get; }
+
+		string ToolTipText { get; }
 	}
 
 	public enum SemanticError
