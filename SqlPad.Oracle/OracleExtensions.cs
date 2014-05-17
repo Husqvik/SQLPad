@@ -51,7 +51,7 @@ namespace SqlPad.Oracle
 
 			CheckQuotedIdentifier(identifier);
 
-			return identifier.IsQuotedWithoutCheck() ? identifier : QuoteCharacter + identifier.ToUpperInvariant() + QuoteCharacter;
+			return identifier.IsQuotedWithoutCheck() ? identifier : String.Format("{0}{1}{0}", QuoteCharacter, identifier.ToUpperInvariant());
 		}
 
 		private static void CheckQuotedIdentifier(string identifier)
@@ -111,19 +111,6 @@ namespace SqlPad.Oracle
 				? null
 				: node.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBoundary, NonTerminals.Expression);
 		}
-
-		/*public static int GetNestedQueryLevel(this StatementDescriptionNode node)
-		{
-			var level = 0;
-
-			while (node != null) 
-			{
-				node = node.GetAncestor(NonTerminals.NestedQuery);
-				level++;
-			}
-
-			return level - 1;
-		}*/
 
 		public static string ToCategoryLabel(this TableReferenceType type)
 		{

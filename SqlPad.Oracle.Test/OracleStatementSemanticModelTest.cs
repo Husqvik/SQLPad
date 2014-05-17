@@ -107,6 +107,34 @@ FROM
 		}
 
 		[Test(Description = @"")]
+		public void TestAllImplicitColumnReferences()
+		{
+			const string query1 = @"SELECT * FROM PROJECT";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.QueryBlocks.ShouldNotBe(null);
+			semanticModel.QueryBlocks.Count.ShouldBe(1);
+
+			var queryBlock = semanticModel.QueryBlocks.Single();
+			queryBlock.ObjectReferences.Count.ShouldBe(1);
+			var objectReference = queryBlock.ObjectReferences.Single();
+			queryBlock.Columns.Count.ShouldBe(3);
+			var columns = queryBlock.Columns.ToArray();
+			columns[0].ColumnReferences.Count.ShouldBe(1);
+			columns[0].ExplicitDefinition.ShouldBe(true);
+			columns[0].IsAsterisk.ShouldBe(true);
+			columns[1].ColumnReferences.Count.ShouldBe(1);
+			columns[1].ExplicitDefinition.ShouldBe(false);
+			columns[1].ColumnReferences.Count.ShouldBe(1);
+			columns[1].ColumnReferences.First().ColumnNodeObjectReferences.Count.ShouldBe(1);
+			columns[1].ColumnReferences.First().ColumnNodeObjectReferences.Single().ShouldBe(objectReference);
+		}
+
+		[Test(Description = @"")]
 		public void TestGrammarSpecificAggregateFunctionRecognize()
 		{
 			const string query1 = @"SELECT COUNT(*) OVER (), AVG(1) OVER (), LAST_VALUE(DUMMY IGNORE NULLS) OVER () FROM DUAL";

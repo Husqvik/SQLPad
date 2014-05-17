@@ -216,34 +216,37 @@ namespace SqlPad.Oracle
 
 			foreach (var asteriskTableReference in _asteriskTableReferences)
 			{
-				foreach (var tableReference in asteriskTableReference.Value)
+				foreach (var objectReference in asteriskTableReference.Value)
 				{
-					if (tableReference.Type == TableReferenceType.PhysicalObject)
+					IEnumerable<OracleSelectListColumn> exposedColumns;
+					if (objectReference.Type == TableReferenceType.PhysicalObject)
 					{
-						if (tableReference.SearchResult.SchemaObject == null)
+						if (objectReference.SearchResult.SchemaObject == null)
 							continue;
 
-						foreach (OracleColumn physicalColumn in tableReference.SearchResult.SchemaObject.Columns)
-						{
-							var column = new OracleSelectListColumn
-							             {
-											 Owner = asteriskTableReference.Key.Owner,
-											 ExplicitDefinition = false,
-											 IsDirectColumnReference = true,
-											 ColumnDescription = physicalColumn
-							             };
-
-							asteriskTableReference.Key.Owner.Columns.Add(column);
-						}
+						exposedColumns = objectReference.SearchResult.SchemaObject.Columns
+							.Select(c => new OracleSelectListColumn
+							        {
+								        ExplicitDefinition = false,
+								        IsDirectColumnReference = true,
+								        ColumnDescription = c
+							        });
 					}
 					else
 					{
-						foreach (var exposedColumn in tableReference.QueryBlocks.SelectMany(qb => qb.Columns).Where(c => !c.IsAsterisk))
-						{
-							var implicitColumn = exposedColumn.AsImplicit();
-							implicitColumn.Owner = asteriskTableReference.Key.Owner;
-							asteriskTableReference.Key.Owner.Columns.Add(implicitColumn);
-						}
+						exposedColumns = objectReference.QueryBlocks.SelectMany(qb => qb.Columns)
+							.Where(c => !c.IsAsterisk)
+							.Select(c => c.AsImplicit());
+					}
+
+					foreach (var exposedColumn in exposedColumns)
+					{
+						exposedColumn.Owner = asteriskTableReference.Key.Owner;
+						var columnReference = CreateColumnReference(exposedColumn.Owner, exposedColumn, ColumnReferenceType.SelectList, asteriskTableReference.Key.RootNode.LastTerminalNode, null);
+						columnReference.ColumnNodeObjectReferences.Add(objectReference);
+						exposedColumn.ColumnReferences.Add(columnReference);
+
+						asteriskTableReference.Key.Owner.Columns.Add(exposedColumn);
 					}
 				}
 			}
@@ -252,7 +255,7 @@ namespace SqlPad.Oracle
 			{
 				ResolveOrderByReferences(queryBlock);
 
-				foreach (var selectColumm in queryBlock.Columns)
+				foreach (var selectColumm in queryBlock.Columns.Where(c => c.ExplicitDefinition))
 				{
 					ResolveColumnObjectReferences(selectColumm.ColumnReferences, selectColumm.FunctionReferences, queryBlock.ObjectReferences);
 				}

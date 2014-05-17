@@ -393,6 +393,26 @@ WHERE
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestExpandAsteriskCommandWithObjectReference()
+		{
+			_editor.Text = "SELECT SELECTION.*, PROJECT.* FROM SELECTION, PROJECT";
+			var command = InitializeCommand<ExpandAsteriskCommand>(_editor.Text, 28, null);
+			command.Execute(_editor);
+
+			_editor.Text.ShouldBe("SELECT SELECTION.*, PROJECT.NAME, PROJECT.PROJECT_ID FROM SELECTION, PROJECT");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestExpandAsteriskCommandWithAllColumns()
+		{
+			_editor.Text = "SELECT * FROM PROJECT, PROJECT P";
+			var command = InitializeCommand<ExpandAsteriskCommand>(_editor.Text, 7, null);
+			command.Execute(_editor);
+
+			_editor.Text.ShouldBe("SELECT PROJECT.NAME, PROJECT.PROJECT_ID, P.NAME, P.PROJECT_ID FROM PROJECT, PROJECT P");
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestFindGrammarSpecificFunctionUsages()
 		{
 			var command = new FindUsagesCommand(FindFunctionUsagesStatementText, 9, TestFixture.DatabaseModel);

@@ -8,7 +8,6 @@ namespace SqlPad.Oracle
 	{
 		public OracleColumnReference()
 		{
-			QueryBlocks = new HashSet<OracleQueryBlock>();
 			ColumnNodeObjectReferences = new HashSet<OracleObjectReference>();
 		}
 
@@ -20,9 +19,7 @@ namespace SqlPad.Oracle
 		
 		public StatementDescriptionNode ColumnNode { get; set; }
 
-		public ICollection<OracleQueryBlock> QueryBlocks { get; set; }
-	
-		public ICollection<OracleObjectReference> ColumnNodeObjectReferences { get; set; }
+		public ICollection<OracleObjectReference> ColumnNodeObjectReferences { get; private set; }
 
 		public int ColumnNodeColumnReferences { get; set; }
 		

@@ -22,7 +22,7 @@ namespace SqlPad.Oracle
 			if (sqlDocument == null || sqlDocument.StatementCollection == null)
 				return EmptyCollection;
 
-			var currentTerminal = sqlDocument.StatementCollection.GetTerminalAtPosition(cursorPosition, n => Terminals.AllTerminals.Contains(n.Id));
+			var currentTerminal = sqlDocument.StatementCollection.GetTerminalAtPosition(cursorPosition);
 			if (currentTerminal == null)
 				return EmptyCollection;
 
@@ -57,6 +57,13 @@ namespace SqlPad.Oracle
 			if (addToGroupByCommand.CanExecute(null))
 			{
 				//actionList.Add(new OracleContextAction(addToGroupByCommand.Title, addToGroupByCommand));
+			}
+
+			var asteriskTerminal = currentTerminal.Statement.GetTerminalAtPosition(cursorPosition, n => n.Id == Terminals.Asterisk);
+			var expandAsteriskCommand = new ExpandAsteriskCommand(semanticModel, asteriskTerminal);
+			if (expandAsteriskCommand.CanExecute(null))
+			{
+				actionList.Add(new OracleContextAction(expandAsteriskCommand.Title, expandAsteriskCommand));
 			}
 
 			var unnestCommonTableExpressionCommand = new UnnestCommonTableExpressionCommand(semanticModel, currentTerminal);
