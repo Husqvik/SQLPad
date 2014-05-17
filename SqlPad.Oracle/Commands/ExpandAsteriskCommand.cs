@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
-using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 
 namespace SqlPad.Oracle.Commands
 {
@@ -15,7 +13,9 @@ namespace SqlPad.Oracle.Commands
 
 		public override bool CanExecute(object parameter)
 		{
-			return CurrentNode != null && CurrentQueryBlock != null && CurrentNode.Type == NodeType.Terminal && CurrentNode.Token.Value == "*";
+			return CurrentNode != null && CurrentQueryBlock != null &&
+			       CurrentNode.Type == NodeType.Terminal && CurrentNode.Token.Value == "*" &&
+			       !GetSegmentToReplace().Equals(TextSegment.Empty);
 		}
 
 		public override string Title
@@ -25,7 +25,12 @@ namespace SqlPad.Oracle.Commands
 
 		protected override void ExecuteInternal(string statementText, ICollection<TextSegment> segmentsToReplace)
 		{
-			IEnumerable<string> columnNames = null;
+			segmentsToReplace.Add(GetSegmentToReplace());
+		}
+
+		private TextSegment GetSegmentToReplace()
+		{
+			var columnNames = new string[0];
 			var segmentToReplace = SourcePosition.Empty;
 			var asteriskReference = CurrentQueryBlock.Columns.FirstOrDefault(c => c.RootNode == CurrentNode);
 			if (asteriskReference == null)
@@ -36,28 +41,32 @@ namespace SqlPad.Oracle.Commands
 					segmentToReplace = columnReference.SelectListColumn.RootNode.SourcePosition;
 					var objectReference = columnReference.ObjectNodeObjectReferences.First();
 
-					columnNames = objectReference.Columns.Select(c => GetFullyQualifiedColumnName(objectReference, c.Name));
+					columnNames = objectReference.Columns
+						.Where(c => !String.IsNullOrEmpty(c.Name))
+						.Select(c => GetFullyQualifiedColumnName(objectReference, c.Name))
+						.ToArray();
 				}
 			}
 			else
 			{
 				segmentToReplace = asteriskReference.RootNode.SourcePosition;
 				columnNames = CurrentQueryBlock.Columns
-					.Where(c => !c.IsAsterisk)
-					.Select(c => GetFullyQualifiedColumnName(GetObjectReference(c), c.NormalizedName));
+					.Where(c => !c.IsAsterisk && !String.IsNullOrEmpty(c.NormalizedName))
+					.Select(c => GetFullyQualifiedColumnName(GetObjectReference(c), c.NormalizedName))
+					.ToArray();
 			}
 
-			if (columnNames == null)
-				return;
+			if (columnNames.Length == 0)
+				return TextSegment.Empty;
 
 			var textSegment = new TextSegment
 			                  {
-								  IndextStart = segmentToReplace.IndexStart,
-								  Length = segmentToReplace.Length,
-								  Text = String.Join(", ", columnNames)
+				                  IndextStart = segmentToReplace.IndexStart,
+				                  Length = segmentToReplace.Length,
+				                  Text = String.Join(", ", columnNames)
 			                  };
 
-			segmentsToReplace.Add(textSegment);
+			return textSegment;
 		}
 
 		private static OracleObjectReference GetObjectReference(OracleSelectListColumn column)

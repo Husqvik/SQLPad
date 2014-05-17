@@ -110,5 +110,17 @@ namespace SqlPad.Oracle.Test
 			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 20).ToArray();
 			actions.Length.ShouldBe(0);
 		}
+
+		[Test(Description = @""), STAThread]
+		public void TestExpandAsteriskCommandNotAvailableWithSourceWithoutNamedColumn()
+		{
+			const string query1 = "SELECT * FROM (SELECT 1 FROM SELECTION)";
+			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 7).ToArray();
+			actions.Length.ShouldBe(0);
+
+			const string query2 = "SELECT S.* FROM (SELECT 1 FROM SELECTION) S";
+			actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query2, 9).ToArray();
+			actions.Length.ShouldBe(0);
+		}
 	}
 }

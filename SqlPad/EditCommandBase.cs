@@ -42,6 +42,8 @@ namespace SqlPad
 
 	public struct TextSegment
 	{
+		public static readonly TextSegment Empty = new TextSegment();
+
 		public int IndextStart { get; set; }
 		public int Length { get; set; }
 		public string Text { get; set; }
