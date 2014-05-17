@@ -120,7 +120,7 @@ namespace SqlPad.Oracle
 					return OracleCodeCompletionCategory.CommonTableExpression;
 				case TableReferenceType.PhysicalObject:
 					return OracleCodeCompletionCategory.SchemaObject;
-				case TableReferenceType.NestedQuery:
+				case TableReferenceType.InlineView:
 					return OracleCodeCompletionCategory.InlineView;
 			}
 

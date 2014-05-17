@@ -103,7 +103,7 @@ namespace SqlPad.Oracle
 							Owner = item,
 							TableReferenceNode = tableReferenceNonterminal,
 							ObjectNode = nestedQueryTableReferenceQueryBlock,
-							Type = TableReferenceType.NestedQuery,
+							Type = TableReferenceType.InlineView,
 							AliasNode = tableReferenceAlias
 						});
 
@@ -185,7 +185,7 @@ namespace SqlPad.Oracle
 
 				foreach (var nestedQueryReference in queryBlock.ObjectReferences.Where(t => t.Type != TableReferenceType.PhysicalObject))
 				{
-					if (nestedQueryReference.Type == TableReferenceType.NestedQuery)
+					if (nestedQueryReference.Type == TableReferenceType.InlineView)
 					{
 						nestedQueryReference.QueryBlocks.Add(_queryBlockResults[nestedQueryReference.ObjectNode]);
 					}
@@ -508,6 +508,16 @@ namespace SqlPad.Oracle
 				if (clauseRootNode == null)
 					continue;
 
+				switch (nonTerminalId)
+				{
+					case NonTerminals.WhereClause:
+						queryBlock.WhereClause = clauseRootNode;
+						break;
+					case NonTerminals.GroupByClause:
+						queryBlock.GroupByClause = clauseRootNode;
+						break;
+				}
+
 				var nodeIdentifiers = clauseRootNode.GetDescendantsWithinSameQuery(Terminals.Identifier);
 				identifiers = identifiers.Concat(nodeIdentifiers);
 			}
@@ -520,7 +530,13 @@ namespace SqlPad.Oracle
 			var queryBlockRoot = queryBlock.RootNode;
 
 			var selectList = queryBlockRoot.GetDescendantsWithinSameQuery(NonTerminals.SelectList).SingleOrDefault();
-			if (selectList == null || selectList.FirstTerminalNode == null)
+			if (selectList == null)
+				return;
+
+			var distinctModifierNode = selectList.ParentNode.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.DistinctModifier);
+			queryBlock.HasDistinctResultSet = distinctModifierNode != null && distinctModifierNode.ChildNodes[0].Id.In(Terminals.Distinct, Terminals.Unique);
+
+			if (selectList.FirstTerminalNode == null)
 				return;
 
 			if (selectList.FirstTerminalNode.Id == Terminals.Asterisk)
@@ -742,7 +758,7 @@ namespace SqlPad.Oracle
 	{
 		PhysicalObject,
 		CommonTableExpression,
-		NestedQuery
+		InlineView
 	}
 
 	public enum QueryBlockType

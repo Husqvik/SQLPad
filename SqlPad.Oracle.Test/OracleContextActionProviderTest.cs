@@ -93,13 +93,31 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @""), STAThread]
-		public void TestUnnestCommand()
+		public void TestUnnestCommandSuggestion()
 		{
-			const string query1 = @"WITH CTE1 AS (SELECT NAME FROM SELECTION) SELECT NAME FROM CTE1";
+			const string query1 = @"SELECT IV.TEST_COLUMN || ' ADDED' FROM (SELECT SELECTION.NAME || ' FROM CTE ' TEST_COLUMN FROM SELECTION) IV";
 
-			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 6).ToArray();
-			actions.Length.ShouldBe(1);
-			actions[0].Name.ShouldBe("Unnest");
+			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 41).ToArray();
+			actions.Length.ShouldBe(4);
+			actions[3].Name.ShouldBe("Unnest");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestUnnestCommandIsNotSuggestedWhenInlineViewContainsGroupByClause()
+		{
+			const string query1 = @"SELECT * FROM (SELECT NAME FROM SELECTION GROUP BY NAME)";
+
+			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 18).ToArray();
+			actions.Length.ShouldBe(3);
+		}
+		
+		[Test(Description = @""), STAThread]
+		public void TestUnnestCommandIsNotSuggestedWhenInlineViewContainsDistinctClause()
+		{
+			const string query1 = @"SELECT * FROM (SELECT DISTINCT NAME FROM SELECTION)";
+
+			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 18).ToArray();
+			actions.Length.ShouldBe(3);
 		}
 
 		[Test(Description = @""), STAThread]

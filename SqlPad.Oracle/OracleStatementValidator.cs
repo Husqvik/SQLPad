@@ -13,7 +13,7 @@ namespace SqlPad.Oracle
 
 			var validationModel = new OracleValidationModel { SemanticModel = semanticModel };
 
-			foreach (var tableReference in semanticModel.QueryBlocks.SelectMany(qb => qb.ObjectReferences).Where(tr => tr.Type != TableReferenceType.NestedQuery))
+			foreach (var tableReference in semanticModel.QueryBlocks.SelectMany(qb => qb.ObjectReferences).Where(tr => tr.Type != TableReferenceType.InlineView))
 			{
 				if (tableReference.Type == TableReferenceType.CommonTableExpression)
 				{

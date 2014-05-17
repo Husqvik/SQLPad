@@ -472,6 +472,32 @@ WHERE
 			foundSegments.ForEach(s => s.Length.ShouldBe(2));
 		}
 
+		[Test(Description = @""), STAThread]
+		public void TestUnnestCommand()
+		{
+			_editor.Text = @"SELECT IV.TEST_COLUMN || ' ADDED' FROM PROJECT, (SELECT SELECTION.NAME || ' FROM INLINE_VIEW ' TEST_COLUMN FROM SELECTION) IV, RESPONDENTBUCKET";
+
+			var command = InitializeCommand<UnnestInlineViewCommand>(_editor.Text, 50, null);
+			command.CanExecute(null).ShouldBe(true);
+
+			command.Execute(_editor);
+
+			_editor.Text.ShouldBe("SELECT SELECTION.NAME || ' FROM INLINE_VIEW ' || ' ADDED' FROM PROJECT, SELECTION, RESPONDENTBUCKET");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestUnnestCommandWithWhereClause()
+		{
+			_editor.Text = @"SELECT IV.TEST_COLUMN || ' ADDED' FROM PROJECT, (SELECT SELECTION.NAME || ' FROM INLINE_VIEW ' TEST_COLUMN FROM SELECTION WHERE SELECTION_ID = 123) IV, RESPONDENTBUCKET";
+
+			var command = InitializeCommand<UnnestInlineViewCommand>(_editor.Text, 50, null);
+			command.CanExecute(null).ShouldBe(true);
+			
+			command.Execute(_editor);
+
+			_editor.Text.ShouldBe("SELECT SELECTION.NAME || ' FROM INLINE_VIEW ' || ' ADDED' FROM PROJECT, SELECTION, RESPONDENTBUCKET WHERE SELECTION_ID = 123");
+		}
+
 		private class TestCommandSettings : ICommandSettingsProvider
 		{
 			private readonly bool _isValueValid;

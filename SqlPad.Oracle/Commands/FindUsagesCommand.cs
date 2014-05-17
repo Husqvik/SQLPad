@@ -139,7 +139,7 @@ namespace SqlPad.Oracle.Commands
 		private IEnumerable<StatementDescriptionNode> GetObjectReferenceUsage(OracleObjectReference objectReference)
 		{
 			var nodes = new List<StatementDescriptionNode>();
-			if (objectReference.Type != TableReferenceType.NestedQuery)
+			if (objectReference.Type != TableReferenceType.InlineView)
 			{
 				nodes.Add(objectReference.ObjectNode);
 			}

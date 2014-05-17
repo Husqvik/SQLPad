@@ -66,7 +66,7 @@ namespace SqlPad.Oracle
 				actionList.Add(new OracleContextAction(expandAsteriskCommand.Title, expandAsteriskCommand));
 			}
 
-			var unnestCommonTableExpressionCommand = new UnnestCommonTableExpressionCommand(semanticModel, currentTerminal);
+			var unnestCommonTableExpressionCommand = new UnnestInlineViewCommand(semanticModel, currentTerminal);
 			if (unnestCommonTableExpressionCommand.CanExecute(null))
 			{
 				actionList.Add(new OracleContextAction(unnestCommonTableExpressionCommand.Title, unnestCommonTableExpressionCommand));

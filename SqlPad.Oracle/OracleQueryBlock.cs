@@ -29,7 +29,7 @@ namespace SqlPad.Oracle
 			                       {
 									   AliasNode = AliasNode,
 									   Owner = this,
-									   Type = TableReferenceType.NestedQuery
+									   Type = TableReferenceType.InlineView
 			                       };
 
 			_selfObjectReference.QueryBlocks.Add(this);
@@ -48,6 +48,12 @@ namespace SqlPad.Oracle
 		public bool HasAsteriskClause { get; set; }
 
 		public StatementDescriptionNode RootNode { get; set; }
+
+		public StatementDescriptionNode WhereClause { get; set; }
+
+		public bool HasDistinctResultSet { get; set; }
+
+		public StatementDescriptionNode GroupByClause { get; set; }
 		
 		public OracleStatement Statement { get; set; }
 

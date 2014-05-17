@@ -160,7 +160,7 @@ namespace SqlPad.Oracle
 
 							foreach (var parentTableReference in queryBlock.ObjectReferences
 								.Where(t => t.TableReferenceNode.SourcePosition.IndexStart < joinedTableReference.TableReferenceNode.SourcePosition.IndexStart &&
-								            (t.Type != TableReferenceType.NestedQuery || t.AliasNode != null)))
+								            (t.Type != TableReferenceType.InlineView || t.AliasNode != null)))
 							{
 								var joinSuggestions = GenerateJoinConditionSuggestionItems(parentTableReference, joinedTableReference, currentNode.Id == Terminals.On, extraOffset);
 								completionItems = completionItems.Concat(joinSuggestions);

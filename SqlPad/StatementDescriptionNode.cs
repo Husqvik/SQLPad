@@ -83,7 +83,7 @@ namespace SqlPad
 		
 		public bool IsGrammarValid { get; set; }
 
-		public ICollection<StatementDescriptionNode> ChildNodes { get { return _childNodes.AsReadOnly(); } }
+		public IList<StatementDescriptionNode> ChildNodes { get { return _childNodes.AsReadOnly(); } }
 
 		public SourcePosition SourcePosition
 		{
