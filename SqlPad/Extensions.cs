@@ -49,5 +49,22 @@ namespace SqlPad
 
 			editor.Document.EndUpdate();
 		}
+
+		public static string ToToolTipText(this SemanticError error)
+		{
+			switch (error)
+			{
+				case SemanticError.None:
+					return null;
+				case SemanticError.AmbiguousReference:
+					return "Ambiguous reference";
+				case SemanticError.InvalidParameterCount:
+					return "Invalid parameter count";
+				case SemanticError.MissingParenthesis:
+					return "Missing parenthesis";
+			}
+
+			throw new NotSupportedException(String.Format("Value '{0}' is not supported. ", error));
+		}
 	}
 }

@@ -211,9 +211,19 @@ namespace SqlPad
 			return ParentNode != null ? ParentNode.GetAncestorDistance(ancestorNodeId, level + 1) : null;
 		}
 
-		public bool HasAncestor(string ancestorNodeId)
+		public bool HasAncestor(StatementDescriptionNode node, bool includeSelf = false)
 		{
-			return GetAncestor(ancestorNodeId, false) != null;
+			if (includeSelf && this == node)
+				return true;
+
+			var ancestorNode = this;
+			do
+			{
+				ancestorNode = ancestorNode.ParentNode;
+			}
+			while (ancestorNode != null && ancestorNode != node);
+
+			return ancestorNode != null;
 		}
 
 		public StatementDescriptionNode GetPathFilterAncestor(Func<StatementDescriptionNode, bool> pathFilter, string ancestorNodeId, bool includeSelf = false)

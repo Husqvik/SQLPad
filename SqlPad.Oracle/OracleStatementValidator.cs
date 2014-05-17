@@ -6,12 +6,12 @@ namespace SqlPad.Oracle
 {
 	public class OracleStatementValidator : IStatementValidator
 	{
-		public IValidationModel ResolveReferences(string sqlText, StatementBase statement, IDatabaseModel databaseModel)
+		public IValidationModel BuildValidationModel(string sqlText, StatementBase statement, IDatabaseModel databaseModel)
 		{
 			var oracleDatabaseModel = (OracleDatabaseModel)databaseModel;
 			var semanticModel = new OracleStatementSemanticModel(sqlText, (OracleStatement)statement, oracleDatabaseModel);
 
-			var validationModel = new OracleValidationModel { Statement = statement };
+			var validationModel = new OracleValidationModel { SemanticModel = semanticModel };
 
 			foreach (var tableReference in semanticModel.QueryBlocks.SelectMany(qb => qb.ObjectReferences).Where(tr => tr.Type != TableReferenceType.NestedQuery))
 			{
@@ -94,13 +94,24 @@ namespace SqlPad.Oracle
 		private readonly Dictionary<StatementDescriptionNode, INodeValidationData> _columnNodeValidity = new Dictionary<StatementDescriptionNode, INodeValidationData>();
 		private readonly Dictionary<StatementDescriptionNode, INodeValidationData> _functionNodeValidity = new Dictionary<StatementDescriptionNode, INodeValidationData>();
 
-		public StatementBase Statement { get; set; }
+		public OracleStatementSemanticModel SemanticModel { get; set; }
+
+		public StatementBase Statement { get { return SemanticModel.Statement; } }
 
 		public IDictionary<StatementDescriptionNode, INodeValidationData> ObjectNodeValidity { get { return _objectNodeValidity; } }
 
 		public IDictionary<StatementDescriptionNode, INodeValidationData> ColumnNodeValidity { get { return _columnNodeValidity; } }
 
 		public IDictionary<StatementDescriptionNode, INodeValidationData> FunctionNodeValidity { get { return _functionNodeValidity; } }
+
+		public IEnumerable<KeyValuePair<StatementDescriptionNode, SemanticError>> GetNodesWithSemanticErrors()
+		{
+			return ColumnNodeValidity
+				.Concat(ObjectNodeValidity)
+				.Concat(FunctionNodeValidity)
+				.Where(nv => nv.Value.SemanticError != SemanticError.None)
+				.Select(nv => new KeyValuePair<StatementDescriptionNode, SemanticError>(nv.Key, nv.Value.SemanticError));
+		}
 	}
 
 	public class NodeValidationData : INodeValidationData

@@ -37,7 +37,7 @@ namespace SqlPad
 			if (statements == null)
 				return;
 
-			var validationModels = statements.Select(s => _validator.ResolveReferences(null, s, _databaseModel))
+			var validationModels = statements.Select(s => _validator.BuildValidationModel(null, s, _databaseModel))
 					.ToDictionary(vm => vm.Statement, vm => vm);
 
 			lock (_lockObject)
@@ -171,14 +171,9 @@ namespace SqlPad
 						element => element.TextRunProperties.SetTextDecorations(Resources.WaveErrorUnderline));
 				}
 
-				var semanticErrors = validationModel.ColumnNodeValidity
-					.Concat(validationModel.ObjectNodeValidity)
-					.Concat(validationModel.FunctionNodeValidity)
-					.Select(nv => new { Node = nv.Key, HasSemanticError = nv.Value.SemanticError != SemanticError.None });
-
-				foreach (var semanticError in semanticErrors.Where(e => e.HasSemanticError))
+				foreach (var nodeSemanticError in validationModel.GetNodesWithSemanticErrors())
 				{
-					ProcessNodeAtLine(line, semanticError.Node.SourcePosition,
+					ProcessNodeAtLine(line, nodeSemanticError.Key.SourcePosition,
 						element => element.TextRunProperties.SetTextDecorations(Resources.WaveErrorUnderline));
 					//ProcessNodeAtLine(line, semanticError.Node.SourcePosition,
 					//	element => element.TextRunProperties.SetTextDecorations(Resources.BoxedText));

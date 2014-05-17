@@ -515,11 +515,11 @@ namespace SqlPad.Oracle
 			return identifiers;
 		}
 
-		private void ResolveSelectList(OracleQueryBlock item)
+		private void ResolveSelectList(OracleQueryBlock queryBlock)
 		{
-			var queryBlock = item.RootNode;
+			var queryBlockRoot = queryBlock.RootNode;
 
-			var selectList = queryBlock.GetDescendantsWithinSameQuery(NonTerminals.SelectList).SingleOrDefault();
+			var selectList = queryBlockRoot.GetDescendantsWithinSameQuery(NonTerminals.SelectList).SingleOrDefault();
 			if (selectList == null || selectList.FirstTerminalNode == null)
 				return;
 
@@ -529,16 +529,18 @@ namespace SqlPad.Oracle
 				var column = new OracleSelectListColumn
 				{
 					RootNode = asteriskNode,
-					Owner = item,
+					Owner = queryBlock,
 					ExplicitDefinition = true,
 					IsAsterisk = true
 				};
 
-				column.ColumnReferences.Add(CreateColumnReference(item, column, ColumnReferenceType.SelectList, asteriskNode, null));
+				queryBlock.HasAsteriskClause = true;
 
-				_asteriskTableReferences[column] = new HashSet<OracleObjectReference>(item.ObjectReferences);
+				column.ColumnReferences.Add(CreateColumnReference(queryBlock, column, ColumnReferenceType.SelectList, asteriskNode, null));
 
-				item.Columns.Add(column);
+				_asteriskTableReferences[column] = new HashSet<OracleObjectReference>(queryBlock.ObjectReferences);
+
+				queryBlock.Columns.Add(column);
 			}
 			else
 			{
@@ -551,7 +553,7 @@ namespace SqlPad.Oracle
 					{
 						AliasNode = columnAliasNode,
 						RootNode = columnExpression,
-						Owner = item,
+						Owner = queryBlock,
 						ExplicitDefinition = true
 					};
 
@@ -563,10 +565,10 @@ namespace SqlPad.Oracle
 						column.IsAsterisk = true;
 
 						var prefixNonTerminal = asteriskNode.ParentNode.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.Prefix);
-						var columnReference = CreateColumnReference(item, column, ColumnReferenceType.SelectList, asteriskNode, prefixNonTerminal);
+						var columnReference = CreateColumnReference(queryBlock, column, ColumnReferenceType.SelectList, asteriskNode, prefixNonTerminal);
 						column.ColumnReferences.Add(columnReference);
 
-						var tableReferences = item.ObjectReferences.Where(t => t.FullyQualifiedName == columnReference.FullyQualifiedObjectName || (columnReference.ObjectNode == null && t.FullyQualifiedName.NormalizedName == columnReference.FullyQualifiedObjectName.NormalizedName));
+						var tableReferences = queryBlock.ObjectReferences.Where(t => t.FullyQualifiedName == columnReference.FullyQualifiedObjectName || (columnReference.ObjectNode == null && t.FullyQualifiedName.NormalizedName == columnReference.FullyQualifiedObjectName.NormalizedName));
 						_asteriskTableReferences[column].AddRange(tableReferences);
 					}
 					else
@@ -578,13 +580,13 @@ namespace SqlPad.Oracle
 							column.AliasNode = identifiers[0];
 						}
 
-						ResolveColumnAndFunctionReferenceFromIdentifiers(item, column.ColumnReferences, column.FunctionReferences, identifiers, ColumnReferenceType.SelectList, column);
+						ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, column.ColumnReferences, column.FunctionReferences, identifiers, ColumnReferenceType.SelectList, column);
 
 						var grammarSpecificFunctions = columnExpression.GetDescendantsWithinSameQuery(Terminals.Count, NonTerminals.AggregateFunction, NonTerminals.AnalyticFunction).ToArray();
-						CreateGrammarSpecificFunctionReferences(grammarSpecificFunctions, item, column.FunctionReferences, column);
+						CreateGrammarSpecificFunctionReferences(grammarSpecificFunctions, queryBlock, column.FunctionReferences, column);
 					}
 
-					item.Columns.Add(column);
+					queryBlock.Columns.Add(column);
 				}
 			}
 		}

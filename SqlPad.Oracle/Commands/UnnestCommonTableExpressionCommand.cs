@@ -18,17 +18,19 @@ namespace SqlPad.Oracle.Commands
 
 		public override bool CanExecute(object parameter)
 		{
-			if (SemanticModel != null)
-			{
-				_commonTableExpressionQueryBlock = SemanticModel.QueryBlocks.SingleOrDefault(qb => qb.AliasNode == CurrentNode);
-				_commonTableExpressionReferences = SemanticModel.QueryBlocks
-					.SelectMany(qb => qb.ObjectReferences)
-					.Where(o => o.Type == TableReferenceType.CommonTableExpression && o.QueryBlocks.Count == 1 && o.QueryBlocks.Single() == _commonTableExpressionQueryBlock)
-					.ToArray();
-			}
+			if (SemanticModel == null)
+				return false;
+
+			_commonTableExpressionQueryBlock = SemanticModel.QueryBlocks.SingleOrDefault(qb => qb.AliasNode == CurrentNode);
+			_commonTableExpressionReferences = SemanticModel.QueryBlocks
+				.SelectMany(qb => qb.ObjectReferences)
+				.Where(o => o.Type == TableReferenceType.CommonTableExpression && o.QueryBlocks.Count == 1 && o.QueryBlocks.First() == _commonTableExpressionQueryBlock)
+				.ToArray();
+
+			// TODO: Add check for analytic clauses and other features preventing from unnesting.
 
 			return CurrentNode != null && CurrentNode.Id == Terminals.ObjectAlias && _commonTableExpressionQueryBlock != null &&
-			       _commonTableExpressionReferences != null && _commonTableExpressionReferences.Count > 0;
+			       _commonTableExpressionReferences.Count > 0;
 		}
 
 		public override string Title
@@ -38,16 +40,33 @@ namespace SqlPad.Oracle.Commands
 
 		protected override void ExecuteInternal(string statementText, ICollection<TextSegment> segmentsToReplace)
 		{
-			var cteText = _commonTableExpressionQueryBlock.RootNode.GetStatementSubstring(statementText);
+			//var cteText = _commonTableExpressionQueryBlock.RootNode.GetStatementSubstring(statementText);
 
-			foreach (var cteReference in _commonTableExpressionReferences)
+			foreach (var cteReference in _commonTableExpressionReferences.Where(r => !r.Owner.HasAsteriskClause))
 			{
-				segmentsToReplace.Add(new TextSegment
+				var columnExpressions = cteReference.QueryBlocks.First().Columns
+					.Where(c => !c.IsAsterisk && !String.IsNullOrEmpty(c.NormalizedName))
+					.ToDictionary(c => c.NormalizedName, c => c.RootNode.GetDescendantsWithinSameQuery(NonTerminals.Expression).First().GetStatementSubstring(statementText));
+
+				foreach (var columnReference in cteReference.Owner.AllColumnReferences
+					.Where(c => c.ColumnNodeObjectReferences.Count == 1 && (c.SelectListColumn == null || (!c.SelectListColumn.IsAsterisk && c.SelectListColumn.ExplicitDefinition)) && c.ColumnNodeObjectReferences.First() == cteReference))
+				{
+					var indextStart = (columnReference.OwnerNode ?? columnReference.ObjectNode ?? columnReference.ColumnNode).SourcePosition.IndexStart;
+					var segmentToReplace = new TextSegment
+					                  {
+										  IndextStart = indextStart,
+										  Length = columnReference.ColumnNode.SourcePosition.IndexEnd - indextStart + 1,
+										  Text = columnExpressions[columnReference.NormalizedName]
+					                  };
+
+					segmentsToReplace.Add(segmentToReplace);
+				}
+				/*segmentsToReplace.Add(new TextSegment
 				                      {
 					                      IndextStart = cteReference.TableReferenceNode.SourcePosition.IndexStart,
 										  Length = cteReference.TableReferenceNode.SourcePosition.Length,
 										  Text = "(" + cteText + ")"
-				                      });
+				                      });*/
 			}
 
 			var subqueryFactoringNode = _commonTableExpressionQueryBlock.RootNode.GetAncestor(NonTerminals.SubqueryFactoringClause);

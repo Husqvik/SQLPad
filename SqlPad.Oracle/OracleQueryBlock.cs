@@ -44,6 +44,8 @@ namespace SqlPad.Oracle
 		public StatementDescriptionNode AliasNode { get; set; }
 
 		public QueryBlockType Type { get; set; }
+		
+		public bool HasAsteriskClause { get; set; }
 
 		public StatementDescriptionNode RootNode { get; set; }
 		

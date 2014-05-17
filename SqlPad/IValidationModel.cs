@@ -11,6 +11,8 @@ namespace SqlPad
 		IDictionary<StatementDescriptionNode, INodeValidationData> ColumnNodeValidity { get; }
 		
 		IDictionary<StatementDescriptionNode, INodeValidationData> FunctionNodeValidity { get; }
+
+		IEnumerable<KeyValuePair<StatementDescriptionNode, SemanticError>> GetNodesWithSemanticErrors();
 	}
 
 	public interface INodeValidationData
