@@ -529,19 +529,19 @@ namespace SqlPad.Oracle
 		{
 			var queryBlockRoot = queryBlock.RootNode;
 
-			var selectList = queryBlockRoot.GetDescendantsWithinSameQuery(NonTerminals.SelectList).SingleOrDefault();
-			if (selectList == null)
+			queryBlock.SelectList = queryBlockRoot.GetDescendantsWithinSameQuery(NonTerminals.SelectList).SingleOrDefault();
+			if (queryBlock.SelectList == null)
 				return;
 
-			var distinctModifierNode = selectList.ParentNode.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.DistinctModifier);
+			var distinctModifierNode = queryBlock.SelectList.ParentNode.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.DistinctModifier);
 			queryBlock.HasDistinctResultSet = distinctModifierNode != null && distinctModifierNode.ChildNodes[0].Id.In(Terminals.Distinct, Terminals.Unique);
 
-			if (selectList.FirstTerminalNode == null)
+			if (queryBlock.SelectList.FirstTerminalNode == null)
 				return;
 
-			if (selectList.FirstTerminalNode.Id == Terminals.Asterisk)
+			if (queryBlock.SelectList.FirstTerminalNode.Id == Terminals.Asterisk)
 			{
-				var asteriskNode = selectList.ChildNodes.Single();
+				var asteriskNode = queryBlock.SelectList.ChildNodes[0];
 				var column = new OracleSelectListColumn
 				{
 					RootNode = asteriskNode,
@@ -560,7 +560,7 @@ namespace SqlPad.Oracle
 			}
 			else
 			{
-				var columnExpressions = selectList.GetDescendantsWithinSameQuery(NonTerminals.AliasedExpressionOrAllTableColumns).ToArray();
+				var columnExpressions = queryBlock.SelectList.GetDescendantsWithinSameQuery(NonTerminals.AliasedExpressionOrAllTableColumns).ToArray();
 				foreach (var columnExpression in columnExpressions)
 				{
 					var columnAliasNode = columnExpression.GetDescendantsWithinSameQuery(Terminals.ColumnAlias).SingleOrDefault();

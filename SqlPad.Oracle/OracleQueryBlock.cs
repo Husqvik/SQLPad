@@ -51,6 +51,8 @@ namespace SqlPad.Oracle
 
 		public StatementDescriptionNode WhereClause { get; set; }
 
+		public StatementDescriptionNode SelectList { get; set; }
+
 		public bool HasDistinctResultSet { get; set; }
 
 		public StatementDescriptionNode GroupByClause { get; set; }

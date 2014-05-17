@@ -380,6 +380,11 @@ namespace SqlPad
 				Trace.WriteLine("CONTROL SHIFT + SPACE");
 				// TODO: Add show parameter list tool tip
 			}
+			else if (e.Key.In(Key.Left, Key.Right) && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt | ModifierKeys.Shift))
+			{
+				Trace.WriteLine("CONTROL ALT SHIFT + " + (e.Key == Key.Left ? "Left" : "Right"));
+				// TODO: Add show parameter list tool tip
+			}
 			else if (e.SystemKey == Key.Delete && Keyboard.Modifiers == ModifierKeys.Alt)
 			{
 				Trace.WriteLine("ALT + DELETE");

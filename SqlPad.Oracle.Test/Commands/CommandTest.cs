@@ -511,6 +511,32 @@ WHERE
 			_editor.Text.ShouldBe("SELECT * FROM SELECTION, RESPONDENTBUCKET RB WHERE RESPONDENTBUCKET_ID = 456 AND SELECTION_ID = 123");
 		}
 
+		[Test(Description = @""), STAThread]
+		public void TestUnnestCommandWithAsterisk()
+		{
+			_editor.Text = @"SELECT IV.* FROM (SELECT * FROM SELECTION, RESPONDENTBUCKET) IV";
+
+			var command = InitializeCommand<UnnestInlineViewCommand>(_editor.Text, 18, null);
+			command.CanExecute(null).ShouldBe(true);
+
+			command.Execute(_editor);
+
+			_editor.Text.ShouldBe("SELECT * FROM SELECTION, RESPONDENTBUCKET");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestUnnestCommandWithObjectAsteriskCombinedWithOtherColumn()
+		{
+			_editor.Text = @"SELECT IV.*, TARGETGROUP_ID FROM (SELECT 1 C1, SELECTION.*, 3 C3 FROM SELECTION) IV, RESPONDENTBUCKET";
+
+			var command = InitializeCommand<UnnestInlineViewCommand>(_editor.Text, 40, null);
+			command.CanExecute(null).ShouldBe(true);
+
+			command.Execute(_editor);
+
+			_editor.Text.ShouldBe("SELECT 1 C1, SELECTION.*, 3 C3, TARGETGROUP_ID FROM SELECTION, RESPONDENTBUCKET");
+		}
+
 		private class TestCommandSettings : ICommandSettingsProvider
 		{
 			private readonly bool _isValueValid;

@@ -38,22 +38,19 @@ namespace SqlPad.Oracle.Commands
 
 		protected override void ExecuteInternal(string statementText, ICollection<TextSegment> segmentsToReplace)
 		{
-			var columnExpressions = CurrentQueryBlock.Columns
-				.Where(c => !c.IsAsterisk && !String.IsNullOrEmpty(c.NormalizedName))
-				.ToDictionary(c => c.NormalizedName,
-					c => c.ExplicitDefinition
-						? c.RootNode.GetDescendantsWithinSameQuery(NonTerminals.Expression).First().GetStatementSubstring(statementText)
-						: c.NormalizedName.ToSimpleIdentifier());
-
 			foreach (var columnReference in _parentQueryBlock.AllColumnReferences
 				.Where(c => c.ColumnNodeObjectReferences.Count == 1 && (c.SelectListColumn == null || (!c.SelectListColumn.IsAsterisk && c.SelectListColumn.ExplicitDefinition))))
 			{
 				var indextStart = (columnReference.OwnerNode ?? columnReference.ObjectNode ?? columnReference.ColumnNode).SourcePosition.IndexStart;
+				var columnExpression = GetUnnestedColumnExpression(columnReference, statementText);
+				if (String.IsNullOrEmpty(columnExpression))
+					continue;
+
 				var segmentToReplace = new TextSegment
 				                       {
 					                       IndextStart = indextStart,
 					                       Length = columnReference.ColumnNode.SourcePosition.IndexEnd - indextStart + 1,
-					                       Text = columnExpressions[columnReference.NormalizedName]
+										   Text = columnExpression
 				                       };
 
 				segmentsToReplace.Add(segmentToReplace);
@@ -67,13 +64,29 @@ namespace SqlPad.Oracle.Commands
 				Text = String.Empty
 			};
 
-			var sourceFromClause = CurrentQueryBlock.RootNode.GetDescendantsWithinSameQuery(NonTerminals.FromClause).SingleOrDefault();
+			var sourceFromClause = CurrentQueryBlock.RootNode.GetDescendantsWithinSameQuery(NonTerminals.FromClause).FirstOrDefault();
 			if (sourceFromClause != null)
 			{
 				segmentToRemove.Text = sourceFromClause.GetStatementSubstring(statementText);
 			}
 
 			segmentsToReplace.Add(segmentToRemove);
+
+			var objectPrefixAsteriskColumns = _parentQueryBlock.Columns.Where(c => c.IsAsterisk && c.ColumnReferences.Count == 1 && c.ColumnReferences.First().ObjectNode != null &&
+			                                                                          c.ColumnReferences.First().ObjectNodeObjectReferences.Count == 1 && c.ColumnReferences.First().ObjectNodeObjectReferences.First().QueryBlocks.Count == 1 &&
+			                                                                          c.ColumnReferences.First().ObjectNodeObjectReferences.First().QueryBlocks.First() == CurrentQueryBlock);
+
+			foreach (var objectPrefixAsteriskColumn in objectPrefixAsteriskColumns)
+			{
+				var asteriskToReplace = new TextSegment
+				                        {
+					                        IndextStart = objectPrefixAsteriskColumn.RootNode.SourcePosition.IndexStart,
+											Length = objectPrefixAsteriskColumn.RootNode.SourcePosition.Length,
+											Text = CurrentQueryBlock.SelectList.GetStatementSubstring(statementText)
+				                        };
+
+				segmentsToReplace.Add(asteriskToReplace);
+			}
 
 			var whereCondition = String.Empty;
 			if (CurrentQueryBlock.WhereClause != null)
@@ -104,6 +117,16 @@ namespace SqlPad.Oracle.Commands
 
 			whereConditionSegment.Text = whereCondition;
 			segmentsToReplace.Add(whereConditionSegment);
+		}
+
+		private string GetUnnestedColumnExpression(OracleColumnReference columnReference, string statementText)
+		{
+			return CurrentQueryBlock.Columns
+				.Where(c => !c.IsAsterisk && c.NormalizedName == columnReference.NormalizedName)
+				.Select(c => c.ExplicitDefinition
+					? c.RootNode.GetDescendantsWithinSameQuery(NonTerminals.Expression).First().GetStatementSubstring(statementText)
+					: c.NormalizedName.ToSimpleIdentifier())
+				.FirstOrDefault();
 		}
 	}
 }
