@@ -140,14 +140,14 @@ WHERE
 		}
 
 		[Test(Description = @""), STAThread]
-		public void TestBasicWrapAsSubqueryCommand()
+		public void TestBasicWrapAsInlineViewCommand()
 		{
 			_editor.Text = @"SELECT S.RESPONDENTBUCKET_ID, S.SELECTION_ID, PROJECT_ID, NAME, 1 FROM SELECTION S";
 
-			var command = InitializeCommand<WrapAsInlineViewCommand>(_editor.Text, 0, "SUB");
+			var command = InitializeCommand<WrapAsInlineViewCommand>(_editor.Text, 0, "IV");
 			command.Execute(_editor);
 
-			_editor.Text.ShouldBe(@"SELECT RESPONDENTBUCKET_ID, SELECTION_ID, PROJECT_ID, NAME FROM (SELECT S.RESPONDENTBUCKET_ID, S.SELECTION_ID, PROJECT_ID, NAME, 1 FROM SELECTION S) SUB");
+			_editor.Text.ShouldBe(@"SELECT IV.RESPONDENTBUCKET_ID, IV.SELECTION_ID, IV.PROJECT_ID, IV.NAME FROM (SELECT S.RESPONDENTBUCKET_ID, S.SELECTION_ID, PROJECT_ID, NAME, 1 FROM SELECTION S) IV");
 		}
 
 		[Test(Description = @""), STAThread]
@@ -157,7 +157,7 @@ WHERE
 			var command = InitializeCommand<WrapAsCommonTableExpressionCommand>(_editor.Text, 0, "MYQUERY");
 			command.Execute(_editor);
 
-			_editor.Text.ShouldBe(@"WITH MYQUERY AS (SELECT 1, 1 + 1 MYCOLUMN, DUMMY || '3' COLUMN3 FROM DUAL) SELECT MYCOLUMN, COLUMN3 FROM MYQUERY");
+			_editor.Text.ShouldBe(@"WITH MYQUERY AS (SELECT 1, 1 + 1 MYCOLUMN, DUMMY || '3' COLUMN3 FROM DUAL) SELECT MYQUERY.MYCOLUMN, MYQUERY.COLUMN3 FROM MYQUERY");
 		}
 
 		[Test(Description = @""), STAThread]
@@ -167,7 +167,7 @@ WHERE
 			var command = InitializeCommand<WrapAsCommonTableExpressionCommand>(_editor.Text, 55, "NEWQUERY");
 			command.Execute(_editor);
 
-			_editor.Text.ShouldBe("\t\t            WITH OLDQUERY AS (SELECT OLD FROM OLD), NEWQUERY AS (SELECT 1, 1 + 1 MYCOLUMN, DUMMY || '3' COLUMN3 FROM DUAL) SELECT MYCOLUMN, COLUMN3 FROM NEWQUERY");
+			_editor.Text.ShouldBe("\t\t            WITH OLDQUERY AS (SELECT OLD FROM OLD), NEWQUERY AS (SELECT 1, 1 + 1 MYCOLUMN, DUMMY || '3' COLUMN3 FROM DUAL) SELECT NEWQUERY.MYCOLUMN, NEWQUERY.COLUMN3 FROM NEWQUERY");
 		}
 
 		[Test(Description = @""), STAThread]
@@ -389,7 +389,7 @@ WHERE
 			var command = InitializeCommand<WrapAsCommonTableExpressionCommand>(_editor.Text, 15, "CTE2");
 			command.Execute(_editor);
 
-			_editor.Text.ShouldBe(@"WITH CTE2 AS (SELECT NAME FROM SELECTION), CTE1 AS (SELECT NAME FROM CTE2) SELECT NAME FROM CTE1");
+			_editor.Text.ShouldBe(@"WITH CTE2 AS (SELECT NAME FROM SELECTION), CTE1 AS (SELECT CTE2.NAME FROM CTE2) SELECT NAME FROM CTE1");
 		}
 
 		[Test(Description = @""), STAThread]

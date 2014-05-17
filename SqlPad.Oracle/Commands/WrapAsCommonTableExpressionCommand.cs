@@ -82,7 +82,11 @@ namespace SqlPad.Oracle.Commands
 			});
 			
 			builder = new StringBuilder("SELECT ");
-			var columnList = String.Join(", ", queryBlock.Columns.Where(c => !c.IsAsterisk && !String.IsNullOrEmpty(c.NormalizedName)).Select(c => c.NormalizedName.ToSimpleIdentifier()));
+			var columnList = String.Join(", ", queryBlock.Columns
+				.Where(c => !c.IsAsterisk && !String.IsNullOrEmpty(c.NormalizedName))
+				.Select(c => String.Format("{0}.{1}", tableAlias, c.NormalizedName.ToSimpleIdentifier()))
+				);
+			
 			builder.Append(columnList);
 			builder.Append(" FROM ");
 			builder.Append(tableAlias);
