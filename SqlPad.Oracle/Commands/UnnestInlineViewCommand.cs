@@ -40,7 +40,10 @@ namespace SqlPad.Oracle.Commands
 		{
 			var columnExpressions = CurrentQueryBlock.Columns
 				.Where(c => !c.IsAsterisk && !String.IsNullOrEmpty(c.NormalizedName))
-				.ToDictionary(c => c.NormalizedName, c => c.RootNode.GetDescendantsWithinSameQuery(NonTerminals.Expression).First().GetStatementSubstring(statementText));
+				.ToDictionary(c => c.NormalizedName,
+					c => c.ExplicitDefinition
+						? c.RootNode.GetDescendantsWithinSameQuery(NonTerminals.Expression).First().GetStatementSubstring(statementText)
+						: c.NormalizedName.ToSimpleIdentifier());
 
 			foreach (var columnReference in _parentQueryBlock.AllColumnReferences
 				.Where(c => c.ColumnNodeObjectReferences.Count == 1 && (c.SelectListColumn == null || (!c.SelectListColumn.IsAsterisk && c.SelectListColumn.ExplicitDefinition))))
@@ -89,7 +92,7 @@ namespace SqlPad.Oracle.Commands
 
 			if (_parentQueryBlock.WhereClause != null)
 			{
-				whereCondition = " " + whereCondition;
+				whereCondition = " AND " + whereCondition;
 				whereConditionSegment.IndextStart = _parentQueryBlock.WhereClause.SourcePosition.IndexEnd + 1;
 			}
 			else

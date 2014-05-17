@@ -498,6 +498,19 @@ WHERE
 			_editor.Text.ShouldBe("SELECT SELECTION.NAME || ' FROM INLINE_VIEW ' || ' ADDED' FROM PROJECT, SELECTION, RESPONDENTBUCKET WHERE SELECTION_ID = 123");
 		}
 
+		[Test(Description = @""), STAThread]
+		public void TestUnnestCommandWithCombinedWhereClause()
+		{
+			_editor.Text = @"SELECT * FROM (SELECT * FROM SELECTION WHERE SELECTION_ID = 123) IV, RESPONDENTBUCKET RB WHERE RB.RESPONDENTBUCKET_ID = 456";
+
+			var command = InitializeCommand<UnnestInlineViewCommand>(_editor.Text, 17, null);
+			command.CanExecute(null).ShouldBe(true);
+
+			command.Execute(_editor);
+
+			_editor.Text.ShouldBe("SELECT * FROM SELECTION, RESPONDENTBUCKET RB WHERE RESPONDENTBUCKET_ID = 456 AND SELECTION_ID = 123");
+		}
+
 		private class TestCommandSettings : ICommandSettingsProvider
 		{
 			private readonly bool _isValueValid;
