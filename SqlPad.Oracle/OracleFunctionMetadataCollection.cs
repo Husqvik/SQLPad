@@ -204,7 +204,7 @@ namespace SqlPad.Oracle
 
 		public int MaximumArguments
 		{
-			get { return Parameters.Count > 1 ? Parameters.Count - 1 : (_metadataMaximumArguments ?? 0); }
+			get { return Parameters.Count > 1 && _metadataMaximumArguments == null ? Parameters.Count - 1 : (_metadataMaximumArguments ?? 0); }
 		}
 
 		[DataMember]

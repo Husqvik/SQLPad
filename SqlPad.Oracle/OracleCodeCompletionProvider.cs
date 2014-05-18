@@ -28,6 +28,38 @@ namespace SqlPad.Oracle
 			new OracleCodeCompletionItem { Name = JoinTypeCrossJoin, Text = JoinTypeCrossJoin, Priority = 4, Category = OracleCodeCompletionCategory.JoinMethod, CategoryPriority = 1 },
 		};
 
+		public ICollection<FunctionOverloadDescription> ResolveFunctionOverloads(StatementCollection statementCollection, IDatabaseModel databaseModel, int cursorPosition)
+		{
+			var emptyCollection = new FunctionOverloadDescription[0];
+			var node = statementCollection.GetNodeAtPosition(cursorPosition, n => n.Id != Terminals.Comma);
+			if (node == null)
+				return emptyCollection;
+
+			var oracleDatabaseModel = (OracleDatabaseModel)databaseModel;
+			var semanticModel = new OracleStatementSemanticModel(null, (OracleStatement)node.Statement, oracleDatabaseModel);
+			var queryBlock = semanticModel.GetQueryBlock(node);
+			var functionReference = queryBlock.AllFunctionReferences.FirstOrDefault(f => node.HasAncestor(f.RootNode));
+			if (functionReference == null || functionReference.Metadata == null)
+				return emptyCollection;
+
+			var currentParameterIndex = -1;
+			if (functionReference.ParameterNodes != null && functionReference.ParameterNodes.Count > 0)
+			{
+				var parameterNode = functionReference.ParameterNodes.FirstOrDefault(f => node.HasAncestor(f));
+				currentParameterIndex = functionReference.ParameterNodes.ToList().IndexOf(parameterNode);
+			}
+
+			var functionOverloads = oracleDatabaseModel.AllFunctionMetadata.SqlFunctions.Where(m => functionReference.Metadata.Identifier.EqualsWithAnyOverload(m.Identifier)).ToArray();
+
+			return functionOverloads.Select(o =>
+				new FunctionOverloadDescription
+				{
+					Name = functionReference.Metadata.Identifier.FullyQualifiedIdentifier,
+					Parameters = o.Parameters.Skip(1).Select(p => p.Name + ": " + p.DataType).ToArray(),
+					CurrentParameterIndex = currentParameterIndex
+				}).ToArray();
+		}
+
 		public ICollection<ICodeCompletionItem> ResolveItems(IDatabaseModel databaseModel, string statementText, int cursorPosition)
 		{
 			return ResolveItems(SqlDocument.FromStatementCollection(_oracleParser.Parse(statementText)), databaseModel, statementText, cursorPosition);

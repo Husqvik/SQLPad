@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
@@ -42,6 +43,7 @@ namespace SqlPad
 		private readonly IToolTipProvider _toolTipProvider;
 		
 		private readonly ToolTip _toolTip = new ToolTip();
+		private bool _isToolTipOpenByShortCut;
 
 		public MainWindow()
 		{
@@ -279,6 +281,9 @@ namespace SqlPad
 
 		void MouseHoverHandler(object sender, MouseEventArgs e)
 		{
+			if (_isToolTipOpenByShortCut)
+				return;
+
 			var position = Editor.GetPositionFromPoint(e.GetPosition(Editor));
 			if (!position.HasValue || _sqlDocument.StatementCollection == null)
 				return;
@@ -289,7 +294,8 @@ namespace SqlPad
 			var toolTip = _toolTipProvider.GetToolTip(_databaseModel, _sqlDocument, offset);
 			if (toolTip == null)
 				return;
-			
+
+			_toolTip.Placement = PlacementMode.Mouse;
 			_toolTip.PlacementTarget = this; // required for property inheritance
 			_toolTip.Content = toolTip;
 			_toolTip.IsOpen = true;
@@ -298,7 +304,8 @@ namespace SqlPad
 
 		void MouseHoverStoppedHandler(object sender, MouseEventArgs e)
 		{
-			_toolTip.IsOpen = false;
+			if (!_isToolTipOpenByShortCut)
+				_toolTip.IsOpen = false;
 		}
 
 		private void ContextMenuOpeningHandler(object sender, ContextMenuEventArgs args)
@@ -334,6 +341,13 @@ namespace SqlPad
 
 		private void EditorKeyDownHandler(object sender, KeyEventArgs e)
 		{
+			_isToolTipOpenByShortCut = false;
+
+			if (_toolTip != null)
+			{
+				_toolTip.IsOpen = false;
+			}
+
 			if (e.SystemKey == Key.Return && Keyboard.Modifiers == ModifierKeys.Alt)
 			{
 				Trace.WriteLine("ALT + ENTER");
@@ -379,11 +393,25 @@ namespace SqlPad
 			{
 				Trace.WriteLine("CONTROL SHIFT + SPACE");
 				// TODO: Add show parameter list tool tip
+				var functionOverloads = _codeCompletionProvider.ResolveFunctionOverloads(_sqlDocument.StatementCollection, _databaseModel, Editor.CaretOffset);
+				if (functionOverloads.Count > 0)
+				{
+					_toolTip.Content = new FunctionOverloadList { FunctionOverloads = functionOverloads };
+					_isToolTipOpenByShortCut = true;
+
+					var rectangle = Editor.TextArea.Caret.CalculateCaretRectangle();
+					_toolTip.PlacementTarget = this;
+					_toolTip.Placement = PlacementMode.Relative;
+					_toolTip.HorizontalOffset = rectangle.Left;
+					_toolTip.VerticalOffset = rectangle.Top + Editor.TextArea.TextView.DefaultLineHeight;
+
+					_toolTip.IsOpen = true;
+				}
 			}
 			else if (e.Key.In(Key.Left, Key.Right) && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt | ModifierKeys.Shift))
 			{
 				Trace.WriteLine("CONTROL ALT SHIFT + " + (e.Key == Key.Left ? "Left" : "Right"));
-				// TODO: Add show parameter list tool tip
+				// TODO: move element to right/left/up/down
 			}
 			else if (e.SystemKey == Key.Delete && Keyboard.Modifiers == ModifierKeys.Alt)
 			{
