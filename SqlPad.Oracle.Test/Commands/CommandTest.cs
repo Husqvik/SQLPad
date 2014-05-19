@@ -508,7 +508,7 @@ WHERE
 
 			command.Execute(_editor);
 
-			_editor.Text.ShouldBe("SELECT * FROM SELECTION, RESPONDENTBUCKET RB WHERE RESPONDENTBUCKET_ID = 456 AND SELECTION_ID = 123");
+			_editor.Text.ShouldBe("SELECT * FROM SELECTION, RESPONDENTBUCKET RB WHERE RB.RESPONDENTBUCKET_ID = 456 AND SELECTION_ID = 123");
 		}
 
 		[Test(Description = @""), STAThread]
@@ -535,6 +535,45 @@ WHERE
 			command.Execute(_editor);
 
 			_editor.Text.ShouldBe("SELECT 1 C1, SELECTION.*, 3 C3, TARGETGROUP_ID FROM SELECTION, RESPONDENTBUCKET");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestUnnestCommandWithWithInlineViewWithoutSpace()
+		{
+			_editor.Text = @"SELECT * FROM SELECTION JOIN(SELECT NAME FROM PROJECT) S ON SELECTION.NAME = S.NAME";
+
+			var command = InitializeCommand<UnnestInlineViewCommand>(_editor.Text, 30, null);
+			command.CanExecute(null).ShouldBe(true);
+
+			command.Execute(_editor);
+
+			_editor.Text.ShouldBe("SELECT * FROM SELECTION JOIN PROJECT ON SELECTION.NAME = PROJECT.NAME");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestUnnestCommandWithWithInlineViewWithObjectNamePrefix()
+		{
+			_editor.Text = @"SELECT * FROM SELECTION JOIN(SELECT PROJECT.NAME FROM PROJECT) S ON SELECTION.NAME = S.NAME";
+
+			var command = InitializeCommand<UnnestInlineViewCommand>(_editor.Text, 30, null);
+			command.CanExecute(null).ShouldBe(true);
+
+			command.Execute(_editor);
+
+			_editor.Text.ShouldBe("SELECT * FROM SELECTION JOIN PROJECT ON SELECTION.NAME = PROJECT.NAME");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestUnnestCommandWithColumnExpressions()
+		{
+			_editor.Text = @"SELECT 'OuterPrefix' || IV.VAL || 'OuterPostfix' FROM (SELECT 'InnerPrefix' || (DUMMY || 'InnerPostfix') VAL FROM DUAL) IV";
+
+			var command = InitializeCommand<UnnestInlineViewCommand>(_editor.Text, 60, null);
+			command.CanExecute(null).ShouldBe(true);
+
+			command.Execute(_editor);
+
+			_editor.Text.ShouldBe("SELECT 'OuterPrefix' || 'InnerPrefix' || (DUAL.DUMMY || 'InnerPostfix') || 'OuterPostfix' FROM DUAL");
 		}
 
 		private class TestCommandSettings : ICommandSettingsProvider

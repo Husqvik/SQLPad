@@ -55,6 +55,17 @@ namespace SqlPad.Oracle
 
 		public bool HasDistinctResultSet { get; set; }
 
+		public bool ContainsSchemaQualifiers
+		{
+			get
+			{
+				return ObjectReferences.Select(o => o.OwnerNode)
+					.Concat(AllColumnReferences.Select(c => c.OwnerNode))
+					.Concat(AllFunctionReferences.Select(f => f.OwnerNode))
+					.Any(n => n != null);
+			}
+		}
+
 		public StatementDescriptionNode GroupByClause { get; set; }
 		
 		public OracleStatement Statement { get; set; }
