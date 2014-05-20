@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
 namespace SqlPad.Oracle
 {
@@ -46,7 +47,7 @@ namespace SqlPad.Oracle
 						? 1
 						: columnReference.ColumnNodeObjectReferences.Count;
 
-					validationModel.ColumnNodeValidity[columnReference.ColumnNode] = new ColumnNodeValidationData(columnReference.ColumnNodeObjectReferences, columnReference.ColumnNodeColumnReferences) { IsRecognized = columnReferences > 0, Node = columnReference.ColumnNode };
+					validationModel.ColumnNodeValidity[columnReference.ColumnNode] = new ColumnNodeValidationData(columnReference) { IsRecognized = columnReferences > 0, Node = columnReference.ColumnNode };
 				}
 
 				foreach (var functionReference in queryBlock.AllFunctionReferences)
@@ -172,17 +173,39 @@ namespace SqlPad.Oracle
 
 	public class ColumnNodeValidationData : NodeValidationData
 	{
-		public ColumnNodeValidationData(IEnumerable<OracleObjectReference> objectReferences, int columnNodeColumnReferences = 0)
-			:base(objectReferences)
+		private readonly OracleColumnReference _columnReference;
+
+		public ColumnNodeValidationData(OracleColumnReference columnReference)
+			: base(columnReference.ColumnNodeObjectReferences)
 		{
-			ColumnNodeColumnReferences = columnNodeColumnReferences;
+			if (columnReference == null)
+			{
+				throw new ArgumentNullException("columnReference");
+			}
+			
+			_columnReference = columnReference;
 		}
 
-		public int ColumnNodeColumnReferences { get; private set; }
+		public int ColumnNodeColumnReferences { get { return _columnReference.ColumnNodeColumnReferences; } }
 
 		public override SemanticError SemanticError
 		{
-			get { return ColumnNodeColumnReferences > 1 ? SemanticError.AmbiguousReference : base.SemanticError; }
+			get
+			{
+				return ColumnNodeColumnReferences > 1
+					? SemanticError.AmbiguousReference
+					: base.SemanticError;
+			}
+		}
+
+		public override string ToolTipText
+		{
+			get
+			{
+				return ColumnNodeColumnReferences > 1 && ObjectReferences.Count <= 1
+					? SemanticError.AmbiguousReference.ToToolTipText() + (Node.Id == Terminals.Asterisk ? String.Format(" ({0})", _columnReference.Name) : null)
+					: base.ToolTipText;
+			}
 		}
 	}
 }

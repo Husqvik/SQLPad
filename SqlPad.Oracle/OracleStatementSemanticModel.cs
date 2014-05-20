@@ -239,11 +239,26 @@ namespace SqlPad.Oracle
 							.Select(c => c.AsImplicit());
 					}
 
+					var exposedColumnDictionary = new Dictionary<string, OracleColumnReference>();
 					foreach (var exposedColumn in exposedColumns)
 					{
 						exposedColumn.Owner = asteriskTableReference.Key.Owner;
-						var columnReference = CreateColumnReference(exposedColumn.Owner, exposedColumn, ColumnReferenceType.SelectList, asteriskTableReference.Key.RootNode.LastTerminalNode, null);
-						columnReference.ColumnNodeObjectReferences.Add(objectReference);
+
+						OracleColumnReference columnReference;
+						if (String.IsNullOrEmpty(exposedColumn.NormalizedName) || !exposedColumnDictionary.TryGetValue(exposedColumn.NormalizedName, out columnReference))
+						{
+							columnReference = CreateColumnReference(exposedColumn.Owner, exposedColumn, ColumnReferenceType.SelectList, asteriskTableReference.Key.RootNode.LastTerminalNode, null);
+
+							if (!String.IsNullOrEmpty(exposedColumn.NormalizedName))
+							{
+								exposedColumnDictionary.Add(exposedColumn.NormalizedName, columnReference);
+							}
+							
+							columnReference.ColumnNodeObjectReferences.Add(objectReference);
+						}
+
+						columnReference.ColumnNodeColumnReferences++;
+
 						exposedColumn.ColumnReferences.Add(columnReference);
 
 						asteriskTableReference.Key.Owner.Columns.Add(exposedColumn);
