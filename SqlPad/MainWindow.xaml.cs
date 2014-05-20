@@ -212,6 +212,11 @@ namespace SqlPad
 
 		void TextEnteringHandler(object sender, TextCompositionEventArgs e)
 		{
+			if (Keyboard.IsKeyDown(Key.Oem2) && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt))
+			{
+				e.Handled = true;
+			}
+
 			if (e.Text == ")" && Editor.Text.Length > Editor.CaretOffset && Editor.CaretOffset >= 1 && Editor.Text[Editor.CaretOffset] == ')' && Editor.Text[Editor.CaretOffset - 1] == '(')
 			{
 				Editor.CaretOffset++;
@@ -412,6 +417,61 @@ namespace SqlPad
 			{
 				Trace.WriteLine("CONTROL ALT SHIFT + " + (e.Key == Key.Left ? "Left" : "Right"));
 				// TODO: move element to right/left/up/down
+			}
+			else if (e.Key == Key.Oem2 && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift))
+			{
+				Trace.WriteLine("CONTROL SHIFT + /");
+				// TODO: add block comment
+				Editor.BeginChange();
+
+				int caretOffset;
+				if (Editor.TryRemoveBlockComment())
+				{
+					caretOffset = Editor.CaretOffset;
+				}
+				else
+				{
+					Editor.Document.Insert(Editor.SelectionStart, "/*");
+					caretOffset = Editor.CaretOffset;
+					Editor.Document.Insert(Editor.SelectionStart + Editor.SelectionLength, "*/");
+				}
+
+				Editor.SelectionLength = 0;
+				Editor.CaretOffset = caretOffset;
+				Editor.EndChange();
+			}
+			else if (e.Key == Key.Oem2 && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt))
+			{
+				Trace.WriteLine("CONTROL ALT + /");
+				// TODO: add line comment
+				var startLine = Editor.Document.GetLineByOffset(Editor.SelectionStart);
+				var endLine = Editor.Document.GetLineByOffset(Editor.SelectionStart + Editor.SelectionLength);
+
+				var lines = Enumerable.Range(startLine.LineNumber, endLine.LineNumber - startLine.LineNumber + 1)
+					.Select(l => Editor.Document.GetLineByNumber(l)).ToArray();
+				
+				var allLinesCommented = lines
+					.All(l => Editor.Text.Substring(startLine.Offset, startLine.Length).TrimStart().StartsWith("//"));
+
+				Editor.BeginChange();
+
+				foreach (var line in lines)
+				{
+					if (allLinesCommented)
+					{
+						Editor.Document.Remove(line.Offset + Editor.Text.Substring(line.Offset, line.Length).IndexOf("//", StringComparison.InvariantCulture), 2);
+					}
+					else
+					{
+						Editor.Document.Insert(line.Offset, "//");
+					}
+				}
+
+				var caretOffset = Editor.CaretOffset;
+				Editor.SelectionLength = 0;
+				Editor.CaretOffset = caretOffset;
+
+				Editor.EndChange();
 			}
 			else if (e.SystemKey == Key.Delete && Keyboard.Modifiers == ModifierKeys.Alt)
 			{
