@@ -61,7 +61,7 @@ namespace SqlPad.Oracle
 				? columnReference.ColumnNodeObjectReferences.Single().Columns.Single(c => c.Name == columnReference.NormalizedName)
 				: null;*/
 
-			var columnDescription = IsDirectColumnReference
+			var columnDescription = IsDirectColumnReference && ColumnReferences.Count == 1
 				? ColumnReferences.First().ColumnDescription
 				: null;
 

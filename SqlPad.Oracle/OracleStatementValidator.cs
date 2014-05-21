@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
 namespace SqlPad.Oracle
 {
@@ -32,23 +31,12 @@ namespace SqlPad.Oracle
 
 			foreach (var queryBlock in semanticModel.QueryBlocks)
 			{
-				foreach (var columnReference in queryBlock.AllColumnReferences)
+				foreach (var column in queryBlock.Columns.Where(c => c.ExplicitDefinition))
 				{
-					// Schema
-					if (columnReference.OwnerNode != null)
-						validationModel.ObjectNodeValidity[columnReference.OwnerNode] = new NodeValidationData(columnReference.ObjectNodeObjectReferences) { IsRecognized = columnReference.ObjectNodeObjectReferences.Count > 0, Node = columnReference.OwnerNode };
-
-					// Object
-					if (columnReference.ObjectNode != null)
-						validationModel.ObjectNodeValidity[columnReference.ObjectNode] = new NodeValidationData(columnReference.ObjectNodeObjectReferences) { IsRecognized = columnReference.ObjectNodeObjectReferences.Count > 0, Node = columnReference.ObjectNode };
-
-					// Column
-					var columnReferences = columnReference.SelectListColumn != null && columnReference.SelectListColumn.IsAsterisk
-						? 1
-						: columnReference.ColumnNodeObjectReferences.Count;
-
-					validationModel.ColumnNodeValidity[columnReference.ColumnNode] = new ColumnNodeValidationData(columnReference) { IsRecognized = columnReferences > 0, Node = columnReference.ColumnNode };
+					ResolveColumnNodeValidities(validationModel, column, column.ColumnReferences);
 				}
+
+				ResolveColumnNodeValidities(validationModel, null, queryBlock.ColumnReferences);
 
 				foreach (var functionReference in queryBlock.AllFunctionReferences)
 				{
@@ -86,6 +74,38 @@ namespace SqlPad.Oracle
 			}
 
 			return validationModel;
+		}
+
+		private void ResolveColumnNodeValidities(OracleValidationModel validationModel, OracleSelectListColumn column, IEnumerable<OracleColumnReference> columnReferences)
+		{
+			foreach (var columnReference in columnReferences)
+			{
+				// Schema
+				if (columnReference.OwnerNode != null)
+					validationModel.ObjectNodeValidity[columnReference.OwnerNode] =
+						new NodeValidationData(columnReference.ObjectNodeObjectReferences)
+						{
+							IsRecognized = columnReference.ObjectNodeObjectReferences.Count > 0,
+							Node = columnReference.OwnerNode
+						};
+
+				// Object
+				if (columnReference.ObjectNode != null)
+					validationModel.ObjectNodeValidity[columnReference.ObjectNode] =
+						new NodeValidationData(columnReference.ObjectNodeObjectReferences)
+						{
+							IsRecognized = columnReference.ObjectNodeObjectReferences.Count > 0,
+							Node = columnReference.ObjectNode
+						};
+
+				// Column
+				validationModel.ColumnNodeValidity[columnReference.ColumnNode] =
+					new ColumnNodeValidationData(columnReference)
+					{
+						IsRecognized = column != null && column.IsAsterisk || columnReference.ColumnNodeObjectReferences.Count > 0,
+						Node = columnReference.ColumnNode
+					};
+			}
 		}
 	}
 
@@ -174,6 +194,7 @@ namespace SqlPad.Oracle
 	public class ColumnNodeValidationData : NodeValidationData
 	{
 		private readonly OracleColumnReference _columnReference;
+		private readonly string[] _ambiguousColumnNames;
 
 		public ColumnNodeValidationData(OracleColumnReference columnReference)
 			: base(columnReference.ColumnNodeObjectReferences)
@@ -184,15 +205,32 @@ namespace SqlPad.Oracle
 			}
 			
 			_columnReference = columnReference;
+
+			if (_columnReference.SelectListColumn != null && _columnReference.SelectListColumn.IsAsterisk)
+			{
+				_ambiguousColumnNames = _columnReference.Owner
+					.Columns.Where(c => !c.ExplicitDefinition)
+					.SelectMany(c => c.ColumnReferences)
+					.Where(c => c.ColumnNodeColumnReferences.Count > 1)
+					.SelectMany(c => c.ColumnNodeColumnReferences)
+					.Where(c => !String.IsNullOrEmpty(c.Name))
+					.Select(c => c.Name.ToSimpleIdentifier())
+					.Distinct()
+					.ToArray();
+			}
+			else
+			{
+				_ambiguousColumnNames = new string[0];
+			}
 		}
 
-		public int ColumnNodeColumnReferences { get { return _columnReference.ColumnNodeColumnReferences; } }
+		public ICollection<OracleColumn> ColumnNodeColumnReferences { get { return _columnReference.ColumnNodeColumnReferences; } }
 
 		public override SemanticError SemanticError
 		{
 			get
 			{
-				return ColumnNodeColumnReferences > 1
+				return _ambiguousColumnNames.Length > 0 || ColumnNodeColumnReferences.Count >= 2
 					? SemanticError.AmbiguousReference
 					: base.SemanticError;
 			}
@@ -202,8 +240,12 @@ namespace SqlPad.Oracle
 		{
 			get
 			{
-				return ColumnNodeColumnReferences > 1 && ObjectReferences.Count <= 1
-					? SemanticError.AmbiguousReference.ToToolTipText() + (Node.Id == Terminals.Asterisk ? String.Format(" ({0})", _columnReference.Name) : null)
+				var additionalInformation = _ambiguousColumnNames.Length > 0
+					? String.Format(" ({0})", String.Join(", ", _ambiguousColumnNames))
+					: String.Empty;
+
+				return _ambiguousColumnNames.Length > 0 && ObjectReferences.Count <= 1
+					? SemanticError.AmbiguousReference.ToToolTipText() + additionalInformation
 					: base.ToolTipText;
 			}
 		}

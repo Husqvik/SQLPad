@@ -9,6 +9,7 @@ namespace SqlPad.Oracle
 		public OracleColumnReference()
 		{
 			ColumnNodeObjectReferences = new HashSet<OracleObjectReference>();
+			ColumnNodeColumnReferences = new HashSet<OracleColumn>();
 		}
 
 		public override string Name { get { return ColumnNode.Token.Value; } }
@@ -21,7 +22,7 @@ namespace SqlPad.Oracle
 
 		public ICollection<OracleObjectReference> ColumnNodeObjectReferences { get; private set; }
 
-		public int ColumnNodeColumnReferences { get; set; }
+		public ICollection<OracleColumn> ColumnNodeColumnReferences { get; set; }
 		
 		public OracleColumn ColumnDescription { get; set; }
 	}

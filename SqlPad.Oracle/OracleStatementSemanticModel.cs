@@ -257,10 +257,10 @@ namespace SqlPad.Oracle
 							columnReference.ColumnNodeObjectReferences.Add(objectReference);
 						}
 
-						columnReference.ColumnNodeColumnReferences++;
+						columnReference.ColumnNodeColumnReferences.Add(exposedColumn.ColumnDescription);
 
 						exposedColumn.ColumnReferences.Add(columnReference);
-
+						
 						asteriskTableReference.Key.Owner.Columns.Add(exposedColumn);
 					}
 				}
@@ -335,28 +335,40 @@ namespace SqlPad.Oracle
 					if (columnReference.Owner.FollowingConcatenatedQueryBlock != null)
 					{
 						var isRecognized = true;
-						var maximumReferences = 0;
+						var maximumReferences = new OracleColumn[0];
 						var concatenatedQueryBlocks = new List<OracleQueryBlock> { columnReference.Owner };
 						concatenatedQueryBlocks.AddRange(columnReference.Owner.AllFollowingConcatenatedQueryBlocks);
 						for(var i = 0; i < concatenatedQueryBlocks.Count; i++)
 						{
-							var queryBlockColumnAliasReferences = concatenatedQueryBlocks[i].Columns.Count(c => columnReference.ObjectNode == null && c.NormalizedName == columnReference.NormalizedName);
-							isRecognized = isRecognized && (queryBlockColumnAliasReferences > 0 || i == concatenatedQueryBlocks.Count - 1);
-							maximumReferences = Math.Min(maximumReferences, queryBlockColumnAliasReferences);
+							var queryBlockColumnAliasReferences = concatenatedQueryBlocks[i].Columns
+								.Where(c => columnReference.ObjectNode == null && c.NormalizedName == columnReference.NormalizedName)
+								.Select(c => c.ColumnDescription)
+								.ToArray();
+							
+							isRecognized = isRecognized && (queryBlockColumnAliasReferences.Length > 0 || i == concatenatedQueryBlocks.Count - 1);
+
+							if (queryBlockColumnAliasReferences.Length > maximumReferences.Length)
+							{
+								maximumReferences = queryBlockColumnAliasReferences;
+							}
 						}
 
 						if (isRecognized)
 						{
 							columnReference.ColumnNodeObjectReferences.Add(columnReference.Owner.SelfObjectReference);
-							columnReference.ColumnNodeColumnReferences += maximumReferences;
+							columnReference.ColumnNodeColumnReferences.AddRange(maximumReferences);
 						}
 
 						continue;
 					}
 
-					var orderByColumnAliasReferences = columnReference.Owner.Columns.Count(c => columnReference.ObjectNode == null && c.NormalizedName == columnReference.NormalizedName && (!c.IsDirectColumnReference || (c.ColumnReferences.Count > 0 && c.ColumnReferences.First().NormalizedName != c.NormalizedName)));
-					columnReference.ColumnNodeColumnReferences += orderByColumnAliasReferences;
-					if (orderByColumnAliasReferences > 0)
+					var orderByColumnAliasReferences = columnReference.Owner.Columns
+						.Where(c => columnReference.ObjectNode == null && c.NormalizedName == columnReference.NormalizedName && (!c.IsDirectColumnReference || (c.ColumnReferences.Count > 0 && c.ColumnReferences.First().NormalizedName != c.NormalizedName)))
+						.Select(c => c.ColumnDescription);
+					
+					columnReference.ColumnNodeColumnReferences.AddRange(orderByColumnAliasReferences);
+					
+					if (columnReference.ColumnNodeColumnReferences.Count > 0)
 					{
 						columnReference.ColumnNodeObjectReferences.Add(columnReference.Owner.SelfObjectReference);
 					}
@@ -377,7 +389,7 @@ namespace SqlPad.Oracle
 						(String.IsNullOrEmpty(columnReference.FullyQualifiedObjectName.NormalizedName) ||
 						 columnReference.ObjectNodeObjectReferences.Count > 0))
 					{
-						columnReference.ColumnNodeColumnReferences += columnNodeColumnReferences.Count;
+						columnReference.ColumnNodeColumnReferences.AddRange(columnNodeColumnReferences);
 						columnReference.ColumnNodeObjectReferences.Add(rowSourceReference);
 						columnDescription = columnNodeColumnReferences.First();
 					}
@@ -389,7 +401,7 @@ namespace SqlPad.Oracle
 					columnReference.ColumnDescription = columnDescription;
 				}
 
-				if (columnReference.ColumnNodeColumnReferences == 0)
+				if (columnReference.ColumnNodeColumnReferences.Count == 0)
 				{
 					var functionIdentifier = OracleFunctionIdentifier.CreateFromValues(columnReference.FullyQualifiedObjectName.NormalizedOwner, columnReference.FullyQualifiedObjectName.NormalizedName, columnReference.NormalizedName);
 					var sqlFunctionMetadata = _databaseModel.BuiltInFunctionMetadata.GetSqlFunctionMetadata(functionIdentifier, 0);
@@ -569,7 +581,7 @@ namespace SqlPad.Oracle
 
 				column.ColumnReferences.Add(CreateColumnReference(queryBlock, column, ColumnReferenceType.SelectList, asteriskNode, null));
 
-				_asteriskTableReferences[column] = new HashSet<OracleObjectReference>(queryBlock.ObjectReferences);
+				_asteriskTableReferences[column] = new List<OracleObjectReference>(queryBlock.ObjectReferences);
 
 				queryBlock.Columns.Add(column);
 			}
@@ -588,8 +600,6 @@ namespace SqlPad.Oracle
 						ExplicitDefinition = true
 					};
 
-					_asteriskTableReferences.Add(column, new List<OracleObjectReference>());
-
 					var asteriskNode = columnExpression.GetPathFilterDescendants(n => !n.Id.In(NonTerminals.NestedQuery, NonTerminals.AggregateFunctionCall), Terminals.Asterisk).SingleOrDefault();
 					if (asteriskNode != null)
 					{
@@ -600,7 +610,7 @@ namespace SqlPad.Oracle
 						column.ColumnReferences.Add(columnReference);
 
 						var tableReferences = queryBlock.ObjectReferences.Where(t => t.FullyQualifiedName == columnReference.FullyQualifiedObjectName || (columnReference.ObjectNode == null && t.FullyQualifiedName.NormalizedName == columnReference.FullyQualifiedObjectName.NormalizedName));
-						_asteriskTableReferences[column].AddRange(tableReferences);
+						_asteriskTableReferences[column] = new List<OracleObjectReference>(tableReferences);
 					}
 					else
 					{

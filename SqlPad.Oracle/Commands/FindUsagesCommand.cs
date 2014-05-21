@@ -163,7 +163,7 @@ namespace SqlPad.Oracle.Commands
 		{
 			IEnumerable<StatementDescriptionNode> nodes;
 			var columnReference = _queryBlock.AllColumnReferences
-				.FirstOrDefault(c => (c.ColumnNode == _currentNode || (c.SelectListColumn != null && c.SelectListColumn.AliasNode == _currentNode)) && c.ColumnNodeObjectReferences.Count == 1 && c.ColumnNodeColumnReferences == 1);
+				.FirstOrDefault(c => (c.ColumnNode == _currentNode || (c.SelectListColumn != null && c.SelectListColumn.AliasNode == _currentNode)) && c.ColumnNodeObjectReferences.Count == 1 && c.ColumnNodeColumnReferences.Count == 1);
 
 			OracleSelectListColumn selectListColumn;
 			if (columnReference != null)
@@ -230,7 +230,7 @@ namespace SqlPad.Oracle.Commands
 
 			var childQueryBlock = objectReference.QueryBlocks.Single();
 			var childColumn = childQueryBlock.Columns
-				.SingleOrDefault(c => c.NormalizedName == columnReference.NormalizedName && c.ColumnReferences.All(cr => cr.ColumnNodeColumnReferences == 1));
+				.SingleOrDefault(c => c.NormalizedName == columnReference.NormalizedName && c.ColumnReferences.All(cr => cr.ColumnNodeColumnReferences.Count == 1));
 			
 			if (childColumn == null)
 				return nodes;
@@ -267,7 +267,7 @@ namespace SqlPad.Oracle.Commands
 			foreach (var parentQueryBlock in parentQueryBlocks)
 			{
 				var parentReferences = parentQueryBlock.AllColumnReferences
-					.Where(c => c.ColumnNodeColumnReferences == 1 && c.ColumnNodeObjectReferences.Count == 1 && c.ColumnNodeObjectReferences.Single().QueryBlocks.Count == 1
+					.Where(c => c.ColumnNodeColumnReferences.Count == 1 && c.ColumnNodeObjectReferences.Count == 1 && c.ColumnNodeObjectReferences.Single().QueryBlocks.Count == 1
 								&& c.ColumnNodeObjectReferences.Single().QueryBlocks.Single() == selectListColumn.Owner && c.NormalizedName == selectListColumn.NormalizedName)
 					.ToArray();
 
