@@ -211,7 +211,7 @@ namespace SqlPad.Oracle
 				_ambiguousColumnNames = _columnReference.Owner
 					.Columns.Where(c => !c.ExplicitDefinition)
 					.SelectMany(c => c.ColumnReferences)
-					.Where(c => c.ColumnNodeColumnReferences.Count > 1)
+					.Where(c => c.ColumnNodeColumnReferences.Count > 1 && ObjectReferencesEqual(_columnReference, c))
 					.SelectMany(c => c.ColumnNodeColumnReferences)
 					.Where(c => !String.IsNullOrEmpty(c.Name))
 					.Select(c => c.Name.ToSimpleIdentifier())
@@ -222,6 +222,12 @@ namespace SqlPad.Oracle
 			{
 				_ambiguousColumnNames = new string[0];
 			}
+		}
+
+		private static bool ObjectReferencesEqual(OracleReference asteriskColumnReference, OracleColumnReference implicitColumnReference)
+		{
+			return asteriskColumnReference.ObjectNodeObjectReferences.Count != 1 || implicitColumnReference.ColumnNodeObjectReferences.Count != 1 ||
+				   asteriskColumnReference.ObjectNodeObjectReferences.First() == implicitColumnReference.ColumnNodeObjectReferences.First();
 		}
 
 		public ICollection<OracleColumn> ColumnNodeColumnReferences { get { return _columnReference.ColumnNodeColumnReferences; } }

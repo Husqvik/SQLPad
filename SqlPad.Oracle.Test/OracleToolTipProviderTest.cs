@@ -73,6 +73,23 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestAmbiguousColumnNameInMultipleObjectAsteriskReferences()
+		{
+			const string query = "SELECT T1.*, T2.* FROM (SELECT 1 C1, 2 C1 FROM DUAL) T1, (SELECT 1 D1, 2 D1 FROM DUAL) T2";
+			_document.UpdateStatements(_oracleSqlParser.Parse(query));
+
+			var toolTip = _toolTipProvider.GetToolTip(TestFixture.DatabaseModel, _document, 10);
+
+			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.DataContext.ShouldBe("Ambiguous reference (C1)");
+
+			toolTip = _toolTipProvider.GetToolTip(TestFixture.DatabaseModel, _document, 17);
+
+			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.DataContext.ShouldBe("Ambiguous reference (D1)");
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestFunctionNameToolTip()
 		{
 			const string query = "SELECT COALESCE(NULL, 1) FROM DUAL";
