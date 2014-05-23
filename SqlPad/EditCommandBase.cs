@@ -47,5 +47,13 @@ namespace SqlPad
 		public int IndextStart { get; set; }
 		public int Length { get; set; }
 		public string Text { get; set; }
+		public DisplayOptions DisplayOptions { get; set; }
+	}
+
+	public enum DisplayOptions
+	{
+		None,
+		Definition,
+		Usage
 	}
 }

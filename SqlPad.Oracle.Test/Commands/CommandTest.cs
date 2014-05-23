@@ -473,6 +473,26 @@ WHERE
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestFindColumnUsagesWithAliasedColumnWithInvalidReference()
+		{
+			var command = new FindUsagesCommand("SELECT CPU_SECONDS X FROM (SELECT CPU_TIME / 1000000 CPU_SECONDS FROM V$SESSION)", 10, TestFixture.DatabaseModel);
+			command.CanExecute(null).ShouldBe(true);
+			var foundSegments = new List<TextSegment>();
+			command.Execute(foundSegments);
+
+			foundSegments = foundSegments.OrderBy(s => s.IndextStart).ToList();
+			foundSegments.Count.ShouldBe(3);
+			foundSegments[0].IndextStart.ShouldBe(7);
+			foundSegments[0].Length.ShouldBe(11);
+			foundSegments[0].DisplayOptions.ShouldBe(DisplayOptions.Usage);
+			foundSegments[1].IndextStart.ShouldBe(19);
+			foundSegments[1].Length.ShouldBe(1);
+			foundSegments[1].DisplayOptions.ShouldBe(DisplayOptions.Definition);
+			foundSegments[2].IndextStart.ShouldBe(53);
+			foundSegments[2].DisplayOptions.ShouldBe(DisplayOptions.Definition);
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestUnnestCommand()
 		{
 			_editor.Text = @"SELECT IV.TEST_COLUMN || ' ADDED' FROM PROJECT, (SELECT SELECTION.NAME || ' FROM INLINE_VIEW ' TEST_COLUMN FROM SELECTION) IV, RESPONDENTBUCKET";

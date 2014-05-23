@@ -71,5 +71,17 @@ namespace SqlPad.Oracle.Test
 			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
 			toolTip.Control.DataContext.ShouldBe("Ambiguous reference (NAME, VAL)");
 		}
+
+		[Test(Description = @""), STAThread]
+		public void TestFunctionNameToolTip()
+		{
+			const string query = "SELECT COALESCE(NULL, 1) FROM DUAL";
+			_document.UpdateStatements(_oracleSqlParser.Parse(query));
+
+			var toolTip = _toolTipProvider.GetToolTip(TestFixture.DatabaseModel, _document, 8);
+
+			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.DataContext.ShouldBe("SYS.STANDARD.COALESCE");
+		}
 	}
 }

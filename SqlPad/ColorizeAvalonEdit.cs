@@ -19,7 +19,8 @@ namespace SqlPad
 		private readonly ISqlParser _parser = ConfigurationProvider.InfrastructureFactory.CreateSqlParser();
 		private readonly IDatabaseModel _databaseModel = ConfigurationProvider.InfrastructureFactory.CreateDatabaseModel(ConfigurationProvider.ConnectionStrings["Default"]);
 		private static readonly SolidColorBrush ErrorBrush = new SolidColorBrush(Colors.Red);
-		private static readonly SolidColorBrush HighlightBrush = new SolidColorBrush(Colors.Turquoise);
+		private static readonly SolidColorBrush HighlightUsageBrush = new SolidColorBrush(Colors.Turquoise);
+		private static readonly SolidColorBrush HighlightDefinitionBrush = new SolidColorBrush(Colors.SandyBrown);
 		private static readonly SolidColorBrush KeywordBrush = new SolidColorBrush(Colors.Blue);
 		private static readonly SolidColorBrush LiteralBrush = new SolidColorBrush(Colors.SaddleBrown/*Color.FromRgb(214, 157, 133)*/);
 		private static readonly SolidColorBrush AliasBrush = new SolidColorBrush(Colors.Green);
@@ -211,7 +212,7 @@ namespace SqlPad
 				{
 					ProcessNodeAtLine(line,
 						new SourcePosition { IndexStart = highlightSegment.IndextStart, IndexEnd = highlightSegment.IndextStart + highlightSegment.Length - 1 },
-						element => element.BackgroundBrush = HighlightBrush);
+						element => element.BackgroundBrush = highlightSegment.DisplayOptions == DisplayOptions.Usage ? HighlightUsageBrush : HighlightDefinitionBrush);
 				}
 			}
 		}

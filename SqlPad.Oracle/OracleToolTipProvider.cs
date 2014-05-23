@@ -40,17 +40,45 @@ namespace SqlPad.Oracle
 							: objectReference.FullyQualifiedName;
 						tip = objectName + " (" + objectReference.Type.ToCategoryLabel() + ")";
 						break;
+					case Terminals.Min:
+					case Terminals.Max:
+					case Terminals.Sum:
+					case Terminals.Avg:
+					case Terminals.FirstValue:
+					case Terminals.Count:
+					case Terminals.Variance:
+					case Terminals.StandardDeviation:
+					case Terminals.LastValue:
+					case Terminals.Lead:
+					case Terminals.Lag:
 					case Terminals.Identifier:
 						var columnDescription = GetColumnDescription(queryBlock, node);
 						if (columnDescription == null)
-							return null;
+						{
+							var functionName = GetFunctionName(queryBlock, node);
+							if (functionName == null)
+							{
+								return null;
+							}
 
-						tip = columnDescription.Type + " (" + (columnDescription.Nullable ? String.Empty : "NOT ") + "NULL)";
+							tip = functionName;
+						}
+						else
+						{
+							tip = columnDescription.Type + " (" + (columnDescription.Nullable ? String.Empty : "NOT ") + "NULL)";
+						}
+						
 						break;
 				}
 			}
 
 			return new ToolTipObject { DataContext = tip };
+		}
+
+		private string GetFunctionName(OracleQueryBlock queryBlock, StatementDescriptionNode terminal)
+		{
+			var functionReference = queryBlock.AllFunctionReferences.SingleOrDefault(f => f.FunctionIdentifierNode == terminal);
+			return functionReference == null ? null : functionReference.Metadata.Identifier.FullyQualifiedIdentifier;
 		}
 
 		private OracleColumn GetColumnDescription(OracleQueryBlock queryBlock, StatementDescriptionNode terminal)

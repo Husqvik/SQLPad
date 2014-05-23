@@ -31,7 +31,7 @@ namespace SqlPad.Oracle
 		public ICollection<FunctionOverloadDescription> ResolveFunctionOverloads(StatementCollection statementCollection, IDatabaseModel databaseModel, int cursorPosition)
 		{
 			var emptyCollection = new FunctionOverloadDescription[0];
-			var node = statementCollection.GetNodeAtPosition(cursorPosition, n => n.Id != Terminals.Comma);
+			var node = statementCollection.GetNodeAtPosition(cursorPosition, n => !n.Id.In(Terminals.Comma, Terminals.RightParenthesis));
 			if (node == null)
 				return emptyCollection;
 
@@ -49,7 +49,7 @@ namespace SqlPad.Oracle
 				currentParameterIndex = functionReference.ParameterNodes.ToList().IndexOf(parameterNode);
 			}
 
-			var functionOverloads = oracleDatabaseModel.AllFunctionMetadata.SqlFunctions.Where(m => functionReference.Metadata.Identifier.EqualsWithAnyOverload(m.Identifier)).ToArray();
+			var functionOverloads = oracleDatabaseModel.AllFunctionMetadata.SqlFunctions.Where(m => functionReference.Metadata.Identifier.EqualsWithAnyOverload(m.Identifier) && (m.Parameters.Count == 0 || currentParameterIndex < m.Parameters.Count - 1)).ToArray();
 
 			return functionOverloads.Select(o =>
 				new FunctionOverloadDescription

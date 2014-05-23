@@ -87,7 +87,8 @@ namespace SqlPad.Oracle.Commands
 				segments.Add(new TextSegment
 				                      {
 					                      IndextStart = node.SourcePosition.IndexStart,
-										  Length = node.SourcePosition.Length
+										  Length = node.SourcePosition.Length,
+										  DisplayOptions = node.Id.IsAlias() ? DisplayOptions.Definition : DisplayOptions.Usage
 				                      });
 			}
 		}
@@ -230,14 +231,14 @@ namespace SqlPad.Oracle.Commands
 
 			var childQueryBlock = objectReference.QueryBlocks.Single();
 			var childColumn = childQueryBlock.Columns
-				.SingleOrDefault(c => c.NormalizedName == columnReference.NormalizedName && c.ColumnReferences.All(cr => cr.ColumnNodeColumnReferences.Count == 1));
+				.SingleOrDefault(c => c.NormalizedName == columnReference.NormalizedName);
 			
 			if (childColumn == null)
 				return nodes;
 
 			nodes = new List<StatementDescriptionNode>{ childColumn.AliasNode };
-			
-			if (childColumn.IsDirectColumnReference)
+
+			if (childColumn.IsDirectColumnReference && childColumn.ColumnReferences.All(cr => cr.ColumnNodeColumnReferences.Count == 1))
 			{
 				var childSelectColumnReferences = childQueryBlock.Columns.SelectMany(c => c.ColumnReferences)
 					.Where(c => c.ColumnNodeObjectReferences.Count == 1 && c.SelectListColumn.NormalizedName == columnReference.NormalizedName && c.ColumnNode != childColumn.AliasNode)
