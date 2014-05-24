@@ -70,6 +70,7 @@
   <ItemGroup>
     <Compile Include="Commands\CommandTest.cs" />
     <Compile Include="OracleCodeCompletionProviderTest.cs" />
+    <Compile Include="OracleNavigationServiceTest.cs" />
     <Compile Include="OracleToolTipProviderTest.cs" />
     <Compile Include="OracleSemanticValidatorTest.cs" />
     <Compile Include="OracleSqlParserTest.cs" />
