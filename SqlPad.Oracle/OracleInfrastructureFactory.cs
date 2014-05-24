@@ -61,6 +61,11 @@ namespace SqlPad.Oracle
 		{
 			return new OracleToolTipProvider();
 		}
+
+		public INavigationService CreateNavigationService()
+		{
+			return new OracleNavigationService();
+		}
 		#endregion
 	}
 }

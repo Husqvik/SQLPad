@@ -26,10 +26,17 @@ namespace SqlPad
 		IStatementFormatter CreateSqlFormatter(SqlFormatterOptions options);
 
 		IToolTipProvider CreateToolTipProvider();
+
+		INavigationService CreateNavigationService();
+	}
+
+	public interface INavigationService
+	{
+		int? NavigateToQueryBlockRoot(StatementCollection statementCollection, int currentPosition);
 	}
 
 	public interface IMultiNodeEditorDataProvider
 	{
-		MultiNodeEditorData GetMultiNodeEditorData(IDatabaseModel databaseModel, string sqlText, int position, int selectionStart, int selectionLength);
+		MultiNodeEditorData GetMultiNodeEditorData(IDatabaseModel databaseModel, string sqlText, int currentPosition, int selectionStart, int selectionLength);
 	}
 }

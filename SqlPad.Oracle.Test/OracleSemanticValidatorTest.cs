@@ -400,16 +400,20 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 				.Select(kvp => kvp.Value)
 				.ToArray();
 			
-			nodeValidity.Length.ShouldBe(4);
+			nodeValidity.Length.ShouldBe(5);
 			nodeValidity[0].IsRecognized.ShouldBe(true);
 			nodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
 			nodeValidity[1].IsRecognized.ShouldBe(true);
 			nodeValidity[1].SemanticError.ShouldBe(SemanticError.InvalidParameterCount);
+			// COUNT
 			nodeValidity[2].IsRecognized.ShouldBe(true);
 			nodeValidity[2].SemanticError.ShouldBe(SemanticError.InvalidParameterCount);
-			// HUSQVIK.COUNT()
+			// HUSQVIK.COUNT
 			nodeValidity[3].IsRecognized.ShouldBe(true);
 			nodeValidity[3].SemanticError.ShouldBe(SemanticError.None);
+			// HUSQVIK.COUNT()
+			nodeValidity[4].IsRecognized.ShouldBe(true);
+			nodeValidity[4].SemanticError.ShouldBe(SemanticError.None);
 		}
 
 		[Test(Description = @"")]

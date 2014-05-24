@@ -258,19 +258,16 @@ namespace SqlPad
 
 		public StatementDescriptionNode GetNodeAtPosition(int position, Func<StatementDescriptionNode, bool> filter = null)
 		{
-			if (SourcePosition.IndexEnd + 1 < position || SourcePosition.IndexStart > position)
+			if (!SourcePosition.ContainsIndex(position))
 				return null;
 
-			/*return AllChildNodes.Where(n => (filter == null || filter(n)) && n.SourcePosition.IndexStart <= position && n.SourcePosition.IndexEnd + 1 >= position)
-				.OrderBy(n => n.SourcePosition.IndexStart == position ? 0 : 1)
-				.ThenByDescending(n => n.Level)
-				.FirstOrDefault();*/
-
-			return GetChildNodesAtPosition(this, position)
+			var node = GetChildNodesAtPosition(this, position)
 				.Where(n => filter == null || filter(n))
 				.OrderBy(n => n.SourcePosition.IndexStart == position ? 0 : 1)
 				.ThenByDescending(n => n.Level)
 				.FirstOrDefault();
+
+			return node ?? this;
 		}
 
 		private static IEnumerable<StatementDescriptionNode> GetChildNodesAtPosition(StatementDescriptionNode node, int position)
@@ -279,7 +276,7 @@ namespace SqlPad
 			if (node == null)
 				return returnedNodes;
 
-			var childNodesAtPosition = node.ChildNodes.Where(n => n.SourcePosition.IndexStart <= position && n.SourcePosition.IndexEnd + 1 >= position);
+			var childNodesAtPosition = node.ChildNodes.Where(n => n.SourcePosition.ContainsIndex(position));
 			foreach (var childNodeAtPosition in childNodesAtPosition)
 			{
 				if (childNodeAtPosition.Type == NodeType.Terminal)

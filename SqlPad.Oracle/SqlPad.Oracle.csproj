@@ -91,6 +91,7 @@
     <Compile Include="OracleIdentifierValidationRule.cs" />
     <Compile Include="OracleInfrastructureFactory.cs" />
     <Compile Include="OracleMultiNodeEditorDataProvider.cs" />
+    <Compile Include="OracleNavigationService.cs" />
     <Compile Include="OracleObjectIdentifier.cs" />
     <Compile Include="OracleQueryBlock.cs" />
     <Compile Include="OracleReference.cs" />

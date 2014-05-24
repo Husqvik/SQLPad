@@ -41,6 +41,7 @@ namespace SqlPad
 		private readonly IStatementFormatter _statementFormatter;
 		private readonly IDatabaseModel _databaseModel;
 		private readonly IToolTipProvider _toolTipProvider;
+		private readonly INavigationService _navigationService;
 		
 		private readonly ToolTip _toolTip = new ToolTip();
 		private bool _isToolTipOpenByShortCut;
@@ -56,6 +57,7 @@ namespace SqlPad
 			_contextActionProvider = _infrastructureFactory.CreateContextActionProvider();
 			_statementFormatter = _infrastructureFactory.CreateSqlFormatter(new SqlFormatterOptions());
 			_toolTipProvider = _infrastructureFactory.CreateToolTipProvider();
+			_navigationService = _infrastructureFactory.CreateNavigationService();
 			_databaseModel = _infrastructureFactory.CreateDatabaseModel(ConfigurationProvider.ConnectionStrings["Default"]);
 			
 			_timer.Elapsed += TimerOnElapsed;
@@ -212,7 +214,8 @@ namespace SqlPad
 
 		void TextEnteringHandler(object sender, TextCompositionEventArgs e)
 		{
-			if (Keyboard.IsKeyDown(Key.Oem2) && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt))
+			if ((Keyboard.IsKeyDown(Key.Oem2) && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt))/* ||
+				(Keyboard.IsKeyDown(Key.D) && Keyboard.Modifiers == ModifierKeys.Control)*/)
 			{
 				e.Handled = true;
 			}
@@ -315,11 +318,11 @@ namespace SqlPad
 
 		private void ContextMenuOpeningHandler(object sender, ContextMenuEventArgs args)
 		{
-			if (!PopulateContextMenu())
+			if (!PopulateContextActionMenu())
 				args.Handled = true;
 		}
 
-		private bool PopulateContextMenu()
+		private bool PopulateContextActionMenu()
 		{
 			var menuItems = _contextActionProvider.GetContextActions(_databaseModel, _sqlDocument, Editor.SelectionStart, Editor.SelectionLength)
 				.Select(a => new MenuItem { Header = a.Name, Command = a.Command, CommandParameter = Editor });
@@ -356,7 +359,7 @@ namespace SqlPad
 			if (e.SystemKey == Key.Return && Keyboard.Modifiers == ModifierKeys.Alt)
 			{
 				Trace.WriteLine("ALT + ENTER");
-				Editor.ContextMenu.IsOpen = PopulateContextMenu();
+				Editor.ContextMenu.IsOpen = PopulateContextActionMenu();
 			}
 			else if (e.Key == Key.Return || e.Key == Key.Escape)
 			{
@@ -379,14 +382,7 @@ namespace SqlPad
 			{
 				Trace.WriteLine("ALT SHIFT + F11");
 
-				var findUsagesCommand = _infrastructureFactory.CommandFactory.CreateFindUsagesCommand(Editor.Text, Editor.CaretOffset, _databaseModel);
-				if (findUsagesCommand.CanExecute(null))
-				{
-					var highlightSegments = new List<TextSegment>();
-					findUsagesCommand.Execute(highlightSegments);
-					_colorizeAvalonEdit.SetHighlightSegments(highlightSegments);
-					Editor.TextArea.TextView.Redraw();
-				}
+				FindUsages();
 			}
 			else if (e.Key == Key.F && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt))
 			{
@@ -394,24 +390,26 @@ namespace SqlPad
 				var textSegments = _statementFormatter.FormatStatement(_sqlDocument.StatementCollection, Editor.SelectionStart, Editor.SelectionLength);
 				Editor.ReplaceTextSegments(textSegments);
 			}
+			else if (e.Key == Key.D && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt))
+			{
+				Trace.WriteLine("CONTROL ALT + D");
+				// TODO: Duplicate line/block
+			}
+			else if (e.Key == Key.Home && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt))
+			{
+				Trace.WriteLine("CONTROL ALT + HOME");
+				// TODO: Goto Query Block Root
+				var queryBlockRootIndex = _navigationService.NavigateToQueryBlockRoot(_sqlDocument.StatementCollection, Editor.CaretOffset);
+				if (queryBlockRootIndex.HasValue)
+				{
+					Editor.CaretOffset = queryBlockRootIndex.Value;
+				}
+			}
 			else if (e.Key == Key.Space && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift))
 			{
 				Trace.WriteLine("CONTROL SHIFT + SPACE");
-				// TODO: Add show parameter list tool tip
-				var functionOverloads = _codeCompletionProvider.ResolveFunctionOverloads(_sqlDocument.StatementCollection, _databaseModel, Editor.CaretOffset);
-				if (functionOverloads.Count > 0)
-				{
-					_toolTip.Content = new FunctionOverloadList { FunctionOverloads = functionOverloads };
-					_isToolTipOpenByShortCut = true;
 
-					var rectangle = Editor.TextArea.Caret.CalculateCaretRectangle();
-					_toolTip.PlacementTarget = this;
-					_toolTip.Placement = PlacementMode.Relative;
-					_toolTip.HorizontalOffset = rectangle.Left;
-					_toolTip.VerticalOffset = rectangle.Top + Editor.TextArea.TextView.DefaultLineHeight;
-
-					_toolTip.IsOpen = true;
-				}
+				ShowFunctionOverloads();
 			}
 			else if (e.Key.In(Key.Left, Key.Right) && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt | ModifierKeys.Shift))
 			{
@@ -421,57 +419,14 @@ namespace SqlPad
 			else if (e.Key == Key.Oem2 && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift))
 			{
 				Trace.WriteLine("CONTROL SHIFT + /");
-				// TODO: add block comment
-				Editor.BeginChange();
 
-				int caretOffset;
-				if (Editor.TryRemoveBlockComment())
-				{
-					caretOffset = Editor.CaretOffset;
-				}
-				else
-				{
-					Editor.Document.Insert(Editor.SelectionStart, "/*");
-					caretOffset = Editor.CaretOffset;
-					Editor.Document.Insert(Editor.SelectionStart + Editor.SelectionLength, "*/");
-				}
-
-				Editor.SelectionLength = 0;
-				Editor.CaretOffset = caretOffset;
-				Editor.EndChange();
+				HandleBlockComments();
 			}
 			else if (e.Key == Key.Oem2 && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt))
 			{
 				Trace.WriteLine("CONTROL ALT + /");
-				// TODO: add line comment
-				var startLine = Editor.Document.GetLineByOffset(Editor.SelectionStart);
-				var endLine = Editor.Document.GetLineByOffset(Editor.SelectionStart + Editor.SelectionLength);
 
-				var lines = Enumerable.Range(startLine.LineNumber, endLine.LineNumber - startLine.LineNumber + 1)
-					.Select(l => Editor.Document.GetLineByNumber(l)).ToArray();
-				
-				var allLinesCommented = lines
-					.All(l => Editor.Text.Substring(startLine.Offset, startLine.Length).TrimStart().StartsWith("//"));
-
-				Editor.BeginChange();
-
-				foreach (var line in lines)
-				{
-					if (allLinesCommented)
-					{
-						Editor.Document.Remove(line.Offset + Editor.Text.Substring(line.Offset, line.Length).IndexOf("//", StringComparison.InvariantCulture), 2);
-					}
-					else
-					{
-						Editor.Document.Insert(line.Offset, "//");
-					}
-				}
-
-				var caretOffset = Editor.CaretOffset;
-				Editor.SelectionLength = 0;
-				Editor.CaretOffset = caretOffset;
-
-				Editor.EndChange();
+				HandleLineComments();
 			}
 			else if (e.SystemKey == Key.Delete && Keyboard.Modifiers == ModifierKeys.Alt)
 			{
@@ -496,6 +451,89 @@ namespace SqlPad
 					Editor.Document.Remove(Editor.CaretOffset, 1);
 				}
 			}
+		}
+
+		private void FindUsages()
+		{
+			var findUsagesCommand = _infrastructureFactory.CommandFactory.CreateFindUsagesCommand(Editor.Text, Editor.CaretOffset, _databaseModel);
+			if (!findUsagesCommand.CanExecute(null))
+				return;
+			
+			var highlightSegments = new List<TextSegment>();
+			findUsagesCommand.Execute(highlightSegments);
+			_colorizeAvalonEdit.SetHighlightSegments(highlightSegments);
+			Editor.TextArea.TextView.Redraw();
+		}
+
+		private void ShowFunctionOverloads()
+		{
+			var functionOverloads = _codeCompletionProvider.ResolveFunctionOverloads(_sqlDocument.StatementCollection, _databaseModel, Editor.CaretOffset);
+			if (functionOverloads.Count <= 0)
+				return;
+			
+			_toolTip.Content = new FunctionOverloadList { FunctionOverloads = functionOverloads };
+			_isToolTipOpenByShortCut = true;
+
+			var rectangle = Editor.TextArea.Caret.CalculateCaretRectangle();
+			_toolTip.PlacementTarget = this;
+			_toolTip.Placement = PlacementMode.Relative;
+			_toolTip.HorizontalOffset = rectangle.Left;
+			_toolTip.VerticalOffset = rectangle.Top + Editor.TextArea.TextView.DefaultLineHeight;
+
+			_toolTip.IsOpen = true;
+		}
+
+		private void HandleBlockComments()
+		{
+			Editor.BeginChange();
+
+			int caretOffset;
+			if (Editor.TryRemoveBlockComment())
+			{
+				caretOffset = Editor.CaretOffset;
+			}
+			else
+			{
+				Editor.Document.Insert(Editor.SelectionStart, "/*");
+				caretOffset = Editor.CaretOffset;
+				Editor.Document.Insert(Editor.SelectionStart + Editor.SelectionLength, "*/");
+			}
+
+			Editor.SelectionLength = 0;
+			Editor.CaretOffset = caretOffset;
+			Editor.EndChange();
+		}
+
+		private void HandleLineComments()
+		{
+			var startLine = Editor.Document.GetLineByOffset(Editor.SelectionStart);
+			var endLine = Editor.Document.GetLineByOffset(Editor.SelectionStart + Editor.SelectionLength);
+
+			var lines = Enumerable.Range(startLine.LineNumber, endLine.LineNumber - startLine.LineNumber + 1)
+				.Select(l => Editor.Document.GetLineByNumber(l)).ToArray();
+
+			var allLinesCommented = lines
+				.All(l => Editor.Text.Substring(startLine.Offset, startLine.Length).TrimStart().StartsWith("//"));
+
+			Editor.BeginChange();
+
+			foreach (var line in lines)
+			{
+				if (allLinesCommented)
+				{
+					Editor.Document.Remove(line.Offset + Editor.Text.Substring(line.Offset, line.Length).IndexOf("//", StringComparison.InvariantCulture), 2);
+				}
+				else
+				{
+					Editor.Document.Insert(line.Offset, "//");
+				}
+			}
+
+			var caretOffset = Editor.CaretOffset;
+			Editor.SelectionLength = 0;
+			Editor.CaretOffset = caretOffset;
+
+			Editor.EndChange();
 		}
 
 		private void EditorKeyUpHandler(object sender, KeyEventArgs e)

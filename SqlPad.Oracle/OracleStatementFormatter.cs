@@ -110,7 +110,7 @@ namespace SqlPad.Oracle
 			if (statements == null)
 				return EmptyCollection;
 
-			var formattedStatements = statements.Where(s => s.SourcePosition.IndexStart <= selectionStart + selectionLength && s.SourcePosition.IndexEnd >= selectionStart)
+			var formattedStatements = statements.Where(s => s.SourcePosition.IndexStart <= selectionStart + selectionLength && s.SourcePosition.IndexEnd + 1 >= selectionStart)
 				.OrderBy(s => s.SourcePosition.IndexStart)
 				.ToArray();
 
@@ -125,7 +125,6 @@ namespace SqlPad.Oracle
 				if (statement.RootNode == null)
 					continue;
 
-				//var queryLevel = startNode.GetNestedQueryLevel();
 				string indentation = null;
 
 				FormatNode(statement.RootNode, stringBuilder, ref skipSpaceBeforeToken, ref indentation);

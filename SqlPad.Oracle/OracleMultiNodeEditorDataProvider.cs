@@ -8,10 +8,10 @@ namespace SqlPad.Oracle
 	{
 		private readonly OracleSqlParser _parser = new OracleSqlParser();
 
-		public MultiNodeEditorData GetMultiNodeEditorData(IDatabaseModel databaseModel, string sqlText, int position, int selectionStart, int selectionLength)
+		public MultiNodeEditorData GetMultiNodeEditorData(IDatabaseModel databaseModel, string sqlText, int currentPosition, int selectionStart, int selectionLength)
 		{
 			var statements = _parser.Parse(sqlText);
-			var currentNode = statements.GetTerminalAtPosition(position, n => n.Id.IsIdentifierOrAlias());
+			var currentNode = statements.GetTerminalAtPosition(currentPosition, n => n.Id.IsIdentifierOrAlias());
 			if (currentNode == null)
 				return new MultiNodeEditorData();
 
@@ -22,7 +22,7 @@ namespace SqlPad.Oracle
 				.Where(t => t != currentNode && String.Equals(t.Token.Value, currentNode.Token.Value, StringComparison.InvariantCultureIgnoreCase))
 				.OrderByDescending(t => t.SourcePosition.IndexStart);
 
-			var offsetFromNodeStartIndex = Math.Min(selectionStart, position) - currentNode.SourcePosition.IndexStart;
+			var offsetFromNodeStartIndex = Math.Min(selectionStart, currentPosition) - currentNode.SourcePosition.IndexStart;
 
 			return new MultiNodeEditorData
 			       {

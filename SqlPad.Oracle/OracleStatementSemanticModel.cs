@@ -16,6 +16,10 @@ namespace SqlPad.Oracle
 		private readonly OracleDatabaseModel _databaseModel;
 
 		public OracleStatement Statement { get; private set; }
+		
+		public string StatementText { get; private set; }
+		
+		public bool IsSimpleModel { get { return _databaseModel == null; } }
 
 		public ICollection<OracleQueryBlock> QueryBlocks
 		{
@@ -24,20 +28,35 @@ namespace SqlPad.Oracle
 
 		public OracleQueryBlock MainQueryBlock
 		{
-			get { return _queryBlockResults.Values.Where(qb => qb.Type == QueryBlockType.Normal).OrderBy(qb => qb.RootNode.SourcePosition.IndexStart).FirstOrDefault(); }
+			get
+			{
+				return _queryBlockResults.Values
+					.Where(qb => qb.Type == QueryBlockType.Normal)
+					.OrderBy(qb => qb.RootNode.SourcePosition.IndexStart)
+					.FirstOrDefault();
+			}
 		}
 
-		public OracleStatementSemanticModel(string sqlText, OracleStatement statement, OracleDatabaseModel databaseModel)
+		public OracleStatementSemanticModel(string statementText, OracleStatement statement) : this(statement, null)
+		{
+			StatementText = statementText;
+		}
+
+		public OracleStatementSemanticModel(string statementText, OracleStatement statement, OracleDatabaseModel databaseModel) : this(statement, databaseModel)
+		{
+			if (databaseModel == null)
+				throw new ArgumentNullException("databaseModel");
+
+			StatementText = statementText;
+		}
+
+		private OracleStatementSemanticModel(OracleStatement statement, OracleDatabaseModel databaseModel)
 		{
 			if (statement == null)
 				throw new ArgumentNullException("statement");
 
-			if (databaseModel == null)
-				throw new ArgumentNullException("databaseModel");
-
-			_databaseModel = databaseModel;
-
 			Statement = statement;
+			_databaseModel = databaseModel;
 
 			if (statement.RootNode == null)
 				return;
@@ -136,8 +155,11 @@ namespace SqlPad.Oracle
 						var objectName = tableIdentifierNode.Token.Value;
 						var owner = schemaPrefixNode == null ? null : schemaPrefixNode.Token.Value;
 
-						// TODO: Resolve package
-						result = _databaseModel.GetObject(OracleObjectIdentifier.Create(owner, objectName));
+						if (_databaseModel != null)
+						{
+							// TODO: Resolve package
+							result = _databaseModel.GetObject(OracleObjectIdentifier.Create(owner, objectName));
+						}
 					}
 
 					var objectReference = new OracleObjectReference
@@ -307,6 +329,9 @@ namespace SqlPad.Oracle
 
 		private OracleFunctionMetadata GetFunctionMetadata(OracleFunctionReference functionReference)
 		{
+			if (_databaseModel == null)
+				return null;
+
 			var functionIdentifier = OracleFunctionIdentifier.CreateFromValues(functionReference.FullyQualifiedObjectName.NormalizedOwner, functionReference.FullyQualifiedObjectName.NormalizedName, functionReference.NormalizedName);
 			var parameterCount = functionReference.ParameterNodes == null ? 0 : functionReference.ParameterNodes.Count;
 			var metadata = _databaseModel.AllFunctionMetadata.GetSqlFunctionMetadata(functionIdentifier, parameterCount);
@@ -318,6 +343,14 @@ namespace SqlPad.Oracle
 			}
 
 			return metadata;
+		}
+
+		public OracleQueryBlock GetQueryBlock(int position)
+		{
+			return _queryBlockResults.Values
+				.Where(qb => qb.RootNode.SourcePosition.ContainsIndex(position))
+				.OrderByDescending(qb => qb.RootNode.Level)
+				.FirstOrDefault();
 		}
 
 		public OracleQueryBlock GetQueryBlock(StatementDescriptionNode node)
@@ -403,21 +436,23 @@ namespace SqlPad.Oracle
 
 				if (columnReference.ColumnNodeColumnReferences.Count == 0)
 				{
-					var functionIdentifier = OracleFunctionIdentifier.CreateFromValues(columnReference.FullyQualifiedObjectName.NormalizedOwner, columnReference.FullyQualifiedObjectName.NormalizedName, columnReference.NormalizedName);
-					var sqlFunctionMetadata = _databaseModel.BuiltInFunctionMetadata.GetSqlFunctionMetadata(functionIdentifier, 0);
-					if (sqlFunctionMetadata != null)
-					{
-						var functionReference =
-							new OracleFunctionReference
-							{
-								FunctionIdentifierNode = columnReference.ColumnNode,
-								RootNode = columnReference.ColumnNode,
-								Owner = columnReference.Owner,
-								AnalyticClauseNode = null,
-								ParameterListNode = null,
-								ParameterNodes = null
-							};
+					var functionReference =
+						new OracleFunctionReference
+						{
+							FunctionIdentifierNode = columnReference.ColumnNode,
+							ObjectNode = columnReference.ObjectNode,
+							OwnerNode = columnReference.OwnerNode,
+							RootNode = columnReference.ColumnNode,
+							Owner = columnReference.Owner,
+							SelectListColumn = columnReference.SelectListColumn,
+							AnalyticClauseNode = null,
+							ParameterListNode = null,
+							ParameterNodes = null
+						};
 
+					var functionMetadata = GetFunctionMetadata(functionReference);
+					if (functionMetadata != null)
+					{
 						functionReferences.Add(functionReference);
 						columnReferences.Remove(columnReference);
 					}

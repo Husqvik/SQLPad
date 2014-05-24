@@ -27,6 +27,14 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"")]
+		public void TestInitializationSimpleModel()
+		{
+			var statement = (OracleStatement)_oracleSqlParser.Parse("SELECT NULL FROM DUAL").Single();
+			var semanticModel = new OracleStatementSemanticModel(null, statement);
+			semanticModel.IsSimpleModel.ShouldBe(true);
+		}
+
+		[Test(Description = @"")]
 		public void TestInitializationWithStatementWithoutRootNode()
 		{
 			Assert.DoesNotThrow(() => new OracleStatementSemanticModel(null, new OracleStatement(), TestFixture.DatabaseModel));
@@ -49,6 +57,7 @@ FROM
 
 			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
 
+			semanticModel.IsSimpleModel.ShouldBe(false);
 			semanticModel.QueryBlocks.ShouldNotBe(null);
 			semanticModel.QueryBlocks.Count.ShouldBe(3);
 
