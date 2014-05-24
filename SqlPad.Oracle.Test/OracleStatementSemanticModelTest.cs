@@ -284,5 +284,29 @@ FROM
 			columns[1].ExplicitDefinition.ShouldBe(false);
 			columns[1].ColumnDescription.Type.ShouldBe("NUMBER");
 		}
+
+		[Test(Description = @"")]
+		public void TestFunctionParameterListForComplexExpressionParameter()
+		{
+			const string query1 = @"SELECT MAX(CASE WHEN 'Option' IN ('Value1', 'Value2') THEN 1 END) FROM DUAL";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.QueryBlocks.ShouldNotBe(null);
+			semanticModel.QueryBlocks.Count.ShouldBe(1);
+
+			var functionReferences = semanticModel.QueryBlocks.Single().AllFunctionReferences.ToArray();
+			functionReferences.Length.ShouldBe(1);
+			var maxFunction = functionReferences[0];
+			maxFunction.FunctionIdentifierNode.Id.ShouldBe(Terminals.Max);
+			maxFunction.AnalyticClauseNode.ShouldBe(null);
+			maxFunction.SelectListColumn.ShouldNotBe(null);
+			maxFunction.ParameterListNode.ShouldNotBe(null);
+			maxFunction.ParameterNodes.ShouldNotBe(null);
+			maxFunction.ParameterNodes.Count.ShouldBe(1);
+		}
 	}
 }

@@ -398,7 +398,7 @@ namespace SqlPad
 			else if (e.Key == Key.Home && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt))
 			{
 				Trace.WriteLine("CONTROL ALT + HOME");
-				// TODO: Goto Query Block Root
+
 				var queryBlockRootIndex = _navigationService.NavigateToQueryBlockRoot(_sqlDocument.StatementCollection, Editor.CaretOffset);
 				if (queryBlockRootIndex.HasValue)
 				{

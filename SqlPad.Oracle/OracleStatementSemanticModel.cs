@@ -676,6 +676,7 @@ namespace SqlPad.Oracle
 
 				var parameterList = rootNode.ChildNodes.SingleOrDefault(n => n.Id.In(NonTerminals.ParenthesisEnclosedExpressionListWithMandatoryExpressions, NonTerminals.CountAsteriskParameter, NonTerminals.AggregateFunctionParameter, NonTerminals.ParenthesisEnclosedExpressionListWithIgnoreNulls));
 				var parameterNodes = new List<StatementDescriptionNode>();
+				StatementDescriptionNode firstParameterExpression = null;
 				if (parameterList != null)
 				{
 					switch (parameterList.Id)
@@ -685,11 +686,11 @@ namespace SqlPad.Oracle
 							break;
 						case NonTerminals.AggregateFunctionParameter:
 						case NonTerminals.ParenthesisEnclosedExpressionListWithIgnoreNulls:
-							var expression = parameterList.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.Expression);
-							parameterNodes.Add(expression);
+							firstParameterExpression = parameterList.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.Expression);
+							parameterNodes.Add(firstParameterExpression);
 							goto default;
 						default:
-							var nodes = parameterList.GetPathFilterDescendants(n => !n.Id.In(NonTerminals.NestedQuery, NonTerminals.ParenthesisEnclosedAggregationFunctionParameters), NonTerminals.ExpressionList).Select(n => n.ChildNodes.FirstOrDefault());
+							var nodes = parameterList.GetPathFilterDescendants(n => n != firstParameterExpression && !n.Id.In(NonTerminals.NestedQuery, NonTerminals.ParenthesisEnclosedAggregationFunctionParameters), NonTerminals.ExpressionList).Select(n => n.ChildNodes.FirstOrDefault());
 							parameterNodes.AddRange(nodes);
 							break;
 					}
