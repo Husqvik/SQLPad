@@ -141,7 +141,7 @@ FROM
 			const string query1 = @"SELECT S.* FROM SELECTION S JOIN P";
 
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 34).ToArray();
-			items.Length.ShouldBe(4);
+			items.Length.ShouldBe(3);
 			items[0].Name.ShouldBe("PROJECT");
 			items[0].Text.ShouldBe("PROJECT");
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
@@ -149,9 +149,6 @@ FROM
 			items[1].Text.ShouldBe("RESPONDENTBUCKET");
 			items[2].Name.ShouldBe("TARGETGROUP");
 			items[2].Text.ShouldBe("TARGETGROUP");
-			items[3].Name.ShouldBe("\"PUBLIC\"");
-			items[3].Text.ShouldBe("\"PUBLIC\"");
-			items[3].Category.ShouldBe(OracleCodeCompletionCategory.DatabaseSchema);
 		}
 
 		[Test(Description = @"")]
@@ -167,7 +164,7 @@ FROM
 	JOIN ";
 
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 168).ToArray();
-			items.Length.ShouldBe(15);
+			items.Length.ShouldBe(14);
 			items[0].Name.ShouldBe("CTE1");
 			items[0].Text.ShouldBe("CTE1");
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.CommonTableExpression);
@@ -192,12 +189,12 @@ FROM
 		}
 
 		[Test(Description = @"")]
-		public void TestColumnSuggestionWhenEnteringNewColumn()
+		public void TestSuggestionWhenEnteringNewColumn()
 		{
 			const string query1 = @"SELECT 1,  FROM SELECTION S";
 
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 10).ToArray();
-			items.Length.ShouldBe(6);
+			items.Length.ShouldBe(9);
 			items[0].Name.ShouldBe("S.*");
 			items[0].Text.ShouldBe("S.RESPONDENTBUCKET_ID, S.SELECTION_ID, S.PROJECT_ID, S.NAME");
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.AllColumns);
@@ -213,9 +210,20 @@ FROM
 			items[4].Name.ShouldBe("S.SELECTION_ID");
 			items[4].Text.ShouldBe("S.SELECTION_ID");
 			items[4].Category.ShouldBe(OracleCodeCompletionCategory.Column);
+			// Objects
 			items[5].Name.ShouldBe("S");
 			items[5].Text.ShouldBe("S");
 			items[5].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
+			// Schemas
+			items[6].Name.ShouldBe("HUSQVIK");
+			items[6].Text.ShouldBe("HUSQVIK");
+			items[6].Category.ShouldBe(OracleCodeCompletionCategory.DatabaseSchema);
+			items[7].Name.ShouldBe("SYS");
+			items[7].Text.ShouldBe("SYS");
+			items[7].Category.ShouldBe(OracleCodeCompletionCategory.DatabaseSchema);
+			items[8].Name.ShouldBe("SYSTEM");
+			items[8].Text.ShouldBe("SYSTEM");
+			items[8].Category.ShouldBe(OracleCodeCompletionCategory.DatabaseSchema);
 		}
 
 		[Test(Description = @"")]
@@ -361,7 +369,7 @@ FROM
 
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 28).ToArray();
 			var currentSchemaTableCount = DatabaseModelFake.Instance.AllObjects.Values.Count(o => o.Owner == DatabaseModelFake.Instance.CurrentSchema);
-			var schemaCount = DatabaseModelFake.Instance.Schemas.Count;
+			var schemaCount = DatabaseModelFake.Instance.Schemas.Count - 1; // minus PUBLIC
 			items.Length.ShouldBe(currentSchemaTableCount + schemaCount);
 		}
 
@@ -370,7 +378,7 @@ FROM
 		{
 			const string query1 = @"SELECT  1 FROM SYS.DUAL";
 
-			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 7).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 7, OracleCodeCompletionCategory.SchemaObject, OracleCodeCompletionCategory.Column).ToArray();
 			items.Length.ShouldBe(2);
 			items[0].Name.ShouldBe("SYS.DUAL.DUMMY");
 			items[1].Name.ShouldBe("SYS.DUAL");
@@ -396,7 +404,7 @@ FROM
 			items.Length.ShouldBe(0);
 		}
 
-		[Test(Description = @""), Ignore]
+		[Test(Description = @"")]
 		public void TestTableAndSchemaSuggestionWhenTypingSubquery()
 		{
 			const string query1 = @"SELECT NULL FROM (SELECT NULL FROM )";
@@ -411,7 +419,7 @@ FROM
 		{
 			const string query1 = @"SELECT  FROM (SELECT HUSQVIK.SELECTION.NAME FROM HUSQVIK.SELECTION), HUSQVIK.SELECTION";
 
-			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 7).Where(i => !i.Name.Contains("HUSQVIK.SELECTION")).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 7).Where(i => !i.Name.Contains("HUSQVIK.SELECTION") && i.Category != OracleCodeCompletionCategory.DatabaseSchema).ToArray();
 			items.Length.ShouldBe(0);
 		}
 
@@ -466,7 +474,7 @@ FROM
 		{
 			const string query1 = @"SELECT  DUMMY FROM (SELECT DUMMY, COUNT(*) OVER () ROW_COUNT FROM (SELECT DUMMY FROM DUAL))";
 
-			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 7).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 7, OracleCodeCompletionCategory.Column, OracleCodeCompletionCategory.AllColumns).ToArray();
 			items.Length.ShouldBe(3);
 			items[0].Name.ShouldBe("*");
 			items[0].Text.ShouldBe("DUMMY, ROW_COUNT");

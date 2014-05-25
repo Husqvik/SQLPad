@@ -32,6 +32,8 @@ namespace SqlPad
 
 		int Offset { get; }
 
+		int CaretOffset { get; }
+
 		string Text { get; }
 	}
 }
