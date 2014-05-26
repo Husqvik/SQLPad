@@ -405,12 +405,21 @@ FROM
 		}
 
 		[Test(Description = @"")]
-		public void TestTableAndSchemaSuggestionWhenTypingSubquery()
+		public void TestObjectAndSchemaSuggestionWhenTypingSubquery()
 		{
 			const string query1 = @"SELECT NULL FROM (SELECT NULL FROM )";
 			//SELECT NULL FROM (SELECT NULL FROM HUSQVIK.) - doesn't suggest
 
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 35).ToArray();
+			items.Length.ShouldBeGreaterThan(0);
+		}
+
+		[Test(Description = @"")]
+		public void TestSchemaObjectSuggestionWhenTypingSubqueryAfterDotAfterSchema()
+		{
+			const string query1 = @"SELECT NULL FROM (SELECT NULL FROM HUSQVIK.)";
+
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 43).ToArray();
 			items.Length.ShouldBeGreaterThan(0);
 		}
 
