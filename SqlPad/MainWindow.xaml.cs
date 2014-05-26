@@ -411,6 +411,12 @@ namespace SqlPad
 
 				ShowFunctionOverloads();
 			}
+			else if (e.Key == Key.U && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift))
+			{
+				Trace.WriteLine("CONTROL SHIFT + U");
+
+				// TODO: Add to upper implementation
+			}
 			else if (e.Key.In(Key.Left, Key.Right) && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt | ModifierKeys.Shift))
 			{
 				Trace.WriteLine("CONTROL ALT SHIFT + " + (e.Key == Key.Left ? "Left" : "Right"));

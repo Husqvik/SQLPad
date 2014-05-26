@@ -257,13 +257,13 @@ ORDER BY
 				Serializer.WriteObject(writer, BuiltInFunctionMetadata);
 			}
 
-			var allFunctionMetadata = GetAllFunctionMetadata();
+			/*var allFunctionMetadata = GetAllFunctionMetadata();
 
 			var test = new OracleFunctionMetadataCollection(allFunctionMetadata.SqlFunctions.Where(f => f.Identifier.Owner == "husqvik".ToQuotedIdentifier()).ToArray());
 			using (var writer = XmlWriter.Create(@"D:\TestFunctionCollection.xml"))
 			{
 				Serializer.WriteObject(writer, test);
-			}
+			}*/
 
 			_isRefreshing = false;
 		}

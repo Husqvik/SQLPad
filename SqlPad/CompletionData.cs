@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Windows.Input;
 using System.Windows.Media;
 using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;
@@ -12,6 +11,7 @@ namespace SqlPad
 	{
 		private readonly string _completionText;
 		private readonly int _offset;
+		private readonly int _caretOffset;
 		
 		private readonly StatementDescriptionNode _node;
 		private readonly ICodeSnippet _snippet;
@@ -23,6 +23,7 @@ namespace SqlPad
 			_completionText = codeCompletion.Text;
 			_node = codeCompletion.StatementNode;
 			_offset = codeCompletion.Offset;
+			_caretOffset = codeCompletion.CaretOffset;
 			Description = codeCompletion.Category;
 		}
 
@@ -57,14 +58,18 @@ namespace SqlPad
 				return;
 			}
 
-			//var keyEventArgs = insertionRequestEventArgs as KeyEventArgs;
-			if (/*keyEventArgs != null && keyEventArgs.Key == Key.Tab &&*/ _node != null)
+			if (_node != null)
 			{
-				textArea.Document.Replace(_node.SourcePosition.IndexStart, _node.SourcePosition.Length + completionSegment.Length, /*new String(' ', _offset) +*/ _completionText.Trim());
+				textArea.Document.Replace(_node.SourcePosition.IndexStart, _node.SourcePosition.Length + completionSegment.Length, _completionText.Trim());
 			}
 			else
 			{
 				textArea.Document.Replace(completionSegment, new String(' ', _offset) + _completionText.Trim());
+			}
+
+			if (_caretOffset != 0)
+			{
+				textArea.Caret.Offset += _caretOffset;
 			}
 		}
 
