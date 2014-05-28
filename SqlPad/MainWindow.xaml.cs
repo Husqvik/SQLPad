@@ -61,6 +61,17 @@ namespace SqlPad
 			_databaseModel = _infrastructureFactory.CreateDatabaseModel(ConfigurationProvider.ConnectionStrings["Default"]);
 			
 			_timer.Elapsed += TimerOnElapsed;
+
+			SetDeleteLineCommand();
+		}
+
+		private void SetDeleteLineCommand()
+		{
+			var deleteLineCommand = (RoutedCommand)Editor.TextArea.DefaultInputHandler.Editing.CommandBindings
+				.Single(b => b.Command == AvalonEditCommands.DeleteLine)
+				.Command;
+
+			deleteLineCommand.InputGestures[0] = new KeyGesture(Key.L, ModifierKeys.Control);
 		}
 
 		private void TimerOnElapsed(object sender, ElapsedEventArgs elapsedEventArgs)
@@ -214,8 +225,7 @@ namespace SqlPad
 
 		void TextEnteringHandler(object sender, TextCompositionEventArgs e)
 		{
-			if ((Keyboard.IsKeyDown(Key.Oem2) && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt))/* ||
-				(Keyboard.IsKeyDown(Key.D) && Keyboard.Modifiers == ModifierKeys.Control)*/)
+			if ((Keyboard.IsKeyDown(Key.Oem2) || Keyboard.IsKeyDown(Key.D)) && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt))
 			{
 				e.Handled = true;
 			}
@@ -351,6 +361,8 @@ namespace SqlPad
 		{
 			_isToolTipOpenByShortCut = false;
 
+			//Console.WriteLine(e.Key);
+
 			if (_toolTip != null)
 			{
 				_toolTip.IsOpen = false;
@@ -390,10 +402,26 @@ namespace SqlPad
 				var textSegments = _statementFormatter.FormatStatement(_sqlDocument.StatementCollection, Editor.SelectionStart, Editor.SelectionLength);
 				Editor.ReplaceTextSegments(textSegments);
 			}
-			else if (e.Key == Key.D && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt))
+			else if (e.Key == Key.D && Keyboard.Modifiers == ModifierKeys.Control)
 			{
-				Trace.WriteLine("CONTROL ALT + D");
-				// TODO: Duplicate line/block
+				Trace.WriteLine("CONTROL + D");
+
+				int caretOffset;
+				if (Editor.SelectionLength > 0)
+				{
+					caretOffset = Editor.SelectionStart + Editor.SelectionLength + Editor.SelectedText.Length;
+					Editor.Document.Insert(Editor.SelectionStart + Editor.SelectionLength, Editor.SelectedText);
+				}
+				else
+				{
+					var currentLine = Editor.Document.GetLineByOffset(Editor.CaretOffset);
+					var currentLineText = Editor.Document.GetText(currentLine) + "\n";
+					Editor.Document.Insert(currentLine.EndOffset + 1, currentLineText);
+					caretOffset = Editor.SelectionStart + Editor.SelectionLength + currentLineText.Length;
+				}
+
+				Editor.SelectionLength = 0;
+				Editor.CaretOffset = caretOffset;
 			}
 			else if (e.Key == Key.Home && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt))
 			{
