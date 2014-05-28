@@ -491,6 +491,62 @@ FROM
 		}
 
 		[Test(Description = @"")]
+		public void TestPackageAndFunctionSuggestion()
+		{
+			const string query1 = @"SELECT HUSQVIK. FROM DUAL";
+
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 15).ToArray();
+			items.Length.ShouldBe(10);
+			items[0].Name.ShouldBe("AS_PDF3");
+			items[0].Text.ShouldBe("AS_PDF3.");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.Package);
+			items[0].CaretOffset.ShouldBe(0);
+			items[9].Name.ShouldBe("TESTFUNC");
+			items[9].Text.ShouldBe("TESTFUNC()");
+			items[9].Category.ShouldBe(OracleCodeCompletionCategory.SchemaFunction);
+			items[9].CaretOffset.ShouldBe(-1);
+		}
+
+		[Test(Description = @"")]
+		public void TestPackageOrFunctionNotSuggestedWhenAtSchemaToken()
+		{
+			const string query1 = @"SELECT HUSQVIK. FROM DUAL";
+
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 14).ToArray();
+			items.Length.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
+		public void TestPackageFunctionSuggestionWhenAlreadyEntered()
+		{
+			const string query1 = @"SELECT HUSQVIK.SQLPAD FROM DUAL";
+
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 16).ToArray();
+			items.Length.ShouldBe(2);
+			items[0].Name.ShouldBe("SQLPAD");
+			items[0].Text.ShouldBe("SQLPAD.");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.Package);
+			items[0].CaretOffset.ShouldBe(0);
+			items[1].Name.ShouldBe("SQLPAD_FUNCTION");
+			items[1].Text.ShouldBe("SQLPAD_FUNCTION()");
+			items[1].Category.ShouldBe(OracleCodeCompletionCategory.SchemaFunction);
+			items[1].CaretOffset.ShouldBe(-1);
+		}
+
+		[Test(Description = @"")]
+		public void TestPackageFunctionSuggestion()
+		{
+			const string query1 = @"SELECT HUSQVIK.SQLPAD. FROM DUAL";
+
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 22).ToArray();
+			items.Length.ShouldBe(1);
+			items[0].Name.ShouldBe("SQLPAD_FUNCTION");
+			items[0].Text.ShouldBe("SQLPAD_FUNCTION()");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.PackageFunction);
+			items[0].CaretOffset.ShouldBe(-1);
+		}
+
+		[Test(Description = @"")]
 		public void TestJoinConditionNotSuggestedForNonAliasedSubquery()
 		{
 			const string query1 = @"SELECT * FROM (SELECT PROJECT_ID FROM PROJECT) JOIN PROJECT ";

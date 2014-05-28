@@ -290,13 +290,13 @@ namespace SqlPad.Oracle
 					.Where(t => t.FullyQualifiedName == fullyQualifiedName || (String.IsNullOrEmpty(fullyQualifiedName.Owner) && fullyQualifiedName.NormalizedName == t.FullyQualifiedName.NormalizedName))
 					.ToArray();
 
-				if (tableReferences.Count == 0)
+				if (tableReferences.Count == 0 && (currentName != null || currentNode.SourcePosition.IndexEnd < cursorPosition))
 				{
 					if (String.IsNullOrEmpty(schemaName))
 					{
 						var matcher = new OracleFunctionMatcher(
 							new FunctionMatchElement(objectName).SelectOwner(),
-							new FunctionMatchElement(currentName) { AllowPartialMatch = true, RequirePartialMatch = !String.IsNullOrEmpty(currentName) }.SelectPackage(),
+							new FunctionMatchElement(currentName) { AllowStartWithMatch = true, DenyEqualMatch = !String.IsNullOrEmpty(currentName) }.SelectPackage(),
 							null);
 
 						suggestedFunctions = GenerateCodeItems(m => m.Identifier.Package.ToSimpleIdentifier(), OracleCodeCompletionCategory.Package, String.IsNullOrEmpty(currentName) ? null : currentNode, 0, databaseModel, matcher);
@@ -304,13 +304,13 @@ namespace SqlPad.Oracle
 						matcher = new OracleFunctionMatcher(
 							new FunctionMatchElement(databaseModel.CurrentSchema).SelectOwner(), 
 							new FunctionMatchElement(objectName).SelectPackage(),
-							new FunctionMatchElement(currentName) { AllowPartialMatch = true, RequirePartialMatch = !String.IsNullOrEmpty(currentName) }.SelectName());
+							new FunctionMatchElement(currentName) { AllowStartWithMatch = true, DenyEqualMatch = !String.IsNullOrEmpty(currentName) }.SelectName());
 						suggestedFunctions = suggestedFunctions.Concat(GenerateCodeItems(m => m.Identifier.Name.ToSimpleIdentifier(), OracleCodeCompletionCategory.PackageFunction, String.IsNullOrEmpty(currentName) ? null : currentNode, 0, databaseModel, matcher));
 
 						matcher = new OracleFunctionMatcher(
 							new FunctionMatchElement(objectName).SelectOwner(),
 							new FunctionMatchElement(null).SelectPackage(),
-							new FunctionMatchElement(currentName) { AllowPartialMatch = true, RequirePartialMatch = !String.IsNullOrEmpty(currentName) }.SelectName());
+							new FunctionMatchElement(currentName) { AllowStartWithMatch = true, DenyEqualMatch = !String.IsNullOrEmpty(currentName) }.SelectName());
 
 						suggestedFunctions = suggestedFunctions.Concat(GenerateCodeItems(m => m.Identifier.Name.ToSimpleIdentifier(), OracleCodeCompletionCategory.SchemaFunction, String.IsNullOrEmpty(currentName) ? null : currentNode, 0, databaseModel, matcher));
 					}
@@ -319,7 +319,7 @@ namespace SqlPad.Oracle
 						var matcher = new OracleFunctionMatcher(
 							new FunctionMatchElement(schemaName).SelectOwner(),
 							new FunctionMatchElement(objectName).SelectPackage(),
-							new FunctionMatchElement(currentName) { AllowPartialMatch = true, RequirePartialMatch = !String.IsNullOrEmpty(currentName) }.SelectName());
+							new FunctionMatchElement(currentName) { AllowStartWithMatch = true, DenyEqualMatch = !String.IsNullOrEmpty(currentName) }.SelectName());
 
 						suggestedFunctions = GenerateCodeItems(m => m.Identifier.Name.ToSimpleIdentifier(), OracleCodeCompletionCategory.PackageFunction, String.IsNullOrEmpty(currentName) ? null : currentNode, 0, databaseModel, matcher);
 					}

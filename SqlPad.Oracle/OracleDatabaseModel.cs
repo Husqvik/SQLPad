@@ -207,7 +207,17 @@ FROM
         ALL_PROCEDURES
     WHERE
         OWNER = 'SYS' AND OBJECT_NAME = 'STANDARD' AND PROCEDURE_NAME NOT LIKE '%SYS$%' AND
-        (ALL_PROCEDURES.OBJECT_TYPE = 'FUNCTION' OR (ALL_PROCEDURES.OBJECT_TYPE = 'PACKAGE' AND ALL_PROCEDURES.PROCEDURE_NAME IS NOT NULL))) PROCEDURES
+        (ALL_PROCEDURES.OBJECT_TYPE = 'FUNCTION' OR (ALL_PROCEDURES.OBJECT_TYPE = 'PACKAGE' AND ALL_PROCEDURES.PROCEDURE_NAME IS NOT NULL))
+		AND EXISTS
+			(SELECT
+				NULL
+			FROM
+				ALL_ARGUMENTS
+			WHERE
+				ALL_PROCEDURES.OBJECT_ID = ALL_ARGUMENTS.OBJECT_ID AND ALL_PROCEDURES.PROCEDURE_NAME = ALL_ARGUMENTS.OBJECT_NAME AND NVL(ALL_ARGUMENTS.OVERLOAD, 0) = NVL(ALL_PROCEDURES.OVERLOAD, 0) AND
+				POSITION = 0 AND ARGUMENT_NAME IS NULL
+			)
+	) PROCEDURES
 FULL JOIN
     (SELECT
         NAME FUNCTION_NAME,
@@ -257,13 +267,13 @@ ORDER BY
 				Serializer.WriteObject(writer, BuiltInFunctionMetadata);
 			}
 
-			/*var allFunctionMetadata = GetAllFunctionMetadata();
+			var allFunctionMetadata = GetAllFunctionMetadata();
 
 			var test = new OracleFunctionMetadataCollection(allFunctionMetadata.SqlFunctions.Where(f => f.Identifier.Owner == "husqvik".ToQuotedIdentifier()).ToArray());
 			using (var writer = XmlWriter.Create(@"D:\TestFunctionCollection.xml"))
 			{
 				Serializer.WriteObject(writer, test);
-			}*/
+			}
 
 			_isRefreshing = false;
 		}

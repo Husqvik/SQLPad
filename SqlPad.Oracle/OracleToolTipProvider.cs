@@ -78,7 +78,7 @@ namespace SqlPad.Oracle
 		private string GetFunctionName(OracleQueryBlock queryBlock, StatementDescriptionNode terminal)
 		{
 			var functionReference = queryBlock.AllFunctionReferences.SingleOrDefault(f => f.FunctionIdentifierNode == terminal);
-			return functionReference == null ? null : functionReference.Metadata.Identifier.FullyQualifiedIdentifier;
+			return functionReference == null || functionReference.Metadata == null ? null : functionReference.Metadata.Identifier.FullyQualifiedIdentifier;
 		}
 
 		private OracleColumn GetColumnDescription(OracleQueryBlock queryBlock, StatementDescriptionNode terminal)

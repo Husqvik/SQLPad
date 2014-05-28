@@ -17,7 +17,9 @@ namespace SqlPad.Oracle
 
 		public bool IsMatch(OracleFunctionMetadata functionMetadata, string currentSchema)
 		{
-			var result = _ownerMatch == null || functionMetadata.Identifier.Owner == currentSchema.ToQuotedIdentifier() || _ownerMatch.IsMatch(functionMetadata.Identifier);
+			var result = _ownerMatch == null || (String.IsNullOrEmpty(_ownerMatch.Value) && functionMetadata.Identifier.Owner == currentSchema.ToQuotedIdentifier()) ||
+			             _ownerMatch.IsMatch(functionMetadata.Identifier);
+			
 			result &= _packageMatch == null || _packageMatch.IsMatch(functionMetadata.Identifier);
 			return result && (_identifierMatch == null || _identifierMatch.IsMatch(functionMetadata.Identifier));
 		}
@@ -58,14 +60,16 @@ namespace SqlPad.Oracle
 
 		public bool AllowPartialMatch { get; set; }
 
-		public bool RequirePartialMatch { get; set; }
+		public bool AllowStartWithMatch { get; set; }
+
+		public bool DenyEqualMatch { get; set; }
 
 		public bool IsMatch(OracleFunctionIdentifier functionIdentifier)
 		{
 			var elementValue = Selector(functionIdentifier);
-			var normalizeValue = Value.ToQuotedIdentifier();
-			return (!RequirePartialMatch && elementValue == normalizeValue) ||
-				   (AllowPartialMatch && elementValue.ToUpperInvariant().Contains(normalizeValue.ToUpperInvariant()));
+			return (!DenyEqualMatch && elementValue == Value.ToQuotedIdentifier()) ||
+				   (AllowStartWithMatch && elementValue.ToUpperInvariant().Replace("\"", null).StartsWith(Value.ToSimpleIdentifier().Replace("\"", null))) ||
+			       (AllowPartialMatch && elementValue.ToUpperInvariant().Contains(Value.ToSimpleIdentifier().Replace("\"", null)));
 		}
 	}
 }
