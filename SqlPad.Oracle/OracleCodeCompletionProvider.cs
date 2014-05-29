@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
@@ -72,6 +71,8 @@ namespace SqlPad.Oracle
 
 			if (sqlDocument == null || sqlDocument.StatementCollection == null)
 				return EmptyCollection;
+
+			var e = new OracleCodeCompletionEnvironment(sqlDocument.StatementCollection, cursorPosition);
 
 			StatementDescriptionNode currentNode;
 
@@ -328,16 +329,21 @@ namespace SqlPad.Oracle
 						(objectIdentifierNode == null && String.IsNullOrEmpty(currentName) ||
 						(c.Name != currentName.ToQuotedIdentifier() && c.Name.ToRawUpperInvariant().Contains(currentName.ToRawUpperInvariant()))))
 					.Select(c => new { TableReference = t, Column = c }))
-					.GroupBy(c => c.Column.Name).ToDictionary(g => g.Key ?? String.Empty, g => g.Select(o => o.TableReference.FullyQualifiedName).ToArray());
+					.GroupBy(c => c.Column.Name).ToDictionary(g => g.Key ?? String.Empty, g => g.Select(o => o.TableReference).ToArray());
 
 			var suggestedColumns = new List<Tuple<string, OracleObjectIdentifier>>();
 			foreach (var columnCandidate in columnCandidates)
 			{
-				suggestedColumns.AddRange(OracleObjectIdentifier.GetUniqueReferences(columnCandidate.Value)
+				suggestedColumns.AddRange(OracleObjectIdentifier.GetUniqueReferences(columnCandidate.Value.Select(t => t.FullyQualifiedName).ToArray())
 					.Select(objectIdentifier => new Tuple<string, OracleObjectIdentifier>(columnCandidate.Key, objectIdentifier)));
 			}
 
-			var suggestedItems = suggestedColumns.Select(t => CreateColumnCodeCompletionItem(t.Item1, objectIdentifierNode == null ? t.Item2.ToString() : null, currentNode));
+			var rowIdItems = columnCandidates.Values.SelectMany(v => v)
+				.Distinct()
+				.Where(o => o.Type == TableReferenceType.PhysicalObject && o.SearchResult.SchemaObject != null && o.SearchResult.SchemaObject.Type == OracleDatabaseModel.DataObjectTypeTable && suggestedColumns.Select(t => t.Item2).Contains(o.FullyQualifiedName))
+				.Select(o => CreateColumnCodeCompletionItem("ROWID", objectIdentifierNode == null ? o.FullyQualifiedName.ToString() : null, currentNode, OracleCodeCompletionCategory.PseudoColumn));
+
+			var suggestedItems = rowIdItems.Concat(suggestedColumns.Select(t => CreateColumnCodeCompletionItem(t.Item1, objectIdentifierNode == null ? t.Item2.ToString() : null, currentNode)));
 
 			if (currentName == null && currentNode.IsWithinSelectClause() && currentNode.GetParentExpression().GetParentExpression() == null)
 			{
@@ -395,7 +401,7 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		private ICodeCompletionItem CreateColumnCodeCompletionItem(string columnName, string objectPrefix, StatementDescriptionNode currentNode)
+		private ICodeCompletionItem CreateColumnCodeCompletionItem(string columnName, string objectPrefix, StatementDescriptionNode currentNode, string category = OracleCodeCompletionCategory.Column)
 		{
 			if (!String.IsNullOrEmpty(objectPrefix))
 				objectPrefix += ".";
@@ -407,7 +413,7 @@ namespace SqlPad.Oracle
 					   Name = text,
 					   Text = text,
 				       StatementNode = currentNode.Id == Terminals.Identifier ? currentNode : null,
-				       Category = OracleCodeCompletionCategory.Column,
+				       Category = category,
 					   CategoryPriority = -1
 			       };
 		}
@@ -543,37 +549,42 @@ namespace SqlPad.Oracle
 		}
 	}
 
-	public static class OracleCodeCompletionCategory
+	internal class OracleCodeCompletionEnvironment
 	{
-		public const string DatabaseSchema = "Database Schema";
-		public const string SchemaObject = "Schema Object";
-		public const string InlineView = "Inline View";
-		public const string CommonTableExpression = "Common Table Expression";
-		public const string Column = "Column";
-		public const string AllColumns = "All Columns";
-		public const string JoinMethod = "Join Method";
-		public const string PackageFunction = "Package function";
-		public const string SchemaFunction = "Schema function";
-		public const string Package = "Package";
-	}
+		private StatementBase _statement;
+		private readonly StatementDescriptionNode _terminal;
+		private readonly int _cursorPosition;
+		private readonly StatementDescriptionNode _prefixedColumnReference;
 
-	[DebuggerDisplay("OracleCodeCompletionItem (Name={Name}; Category={Category}; Priority={Priority})")]
-	public class OracleCodeCompletionItem : ICodeCompletionItem
-	{
-		public string Category { get; set; }
-		
-		public string Name { get; set; }
-		
-		public StatementDescriptionNode StatementNode { get; set; }
+		public OracleCodeCompletionEnvironment(StatementCollection statementCollection, int cursorPosition)
+		{
+			_cursorPosition = cursorPosition;
+			_statement = statementCollection.GetStatementAtPosition(_cursorPosition);
+			if (_statement == null)
+				return;
 
-		public int Priority { get; set; }
+			_terminal = _statement.GetNearestTerminalToPosition(_cursorPosition);
+			_prefixedColumnReference = _terminal.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference);
+		}
 
-		public int CategoryPriority { get; set; }
-		
-		public int Offset { get; set; }
-		
-		public int CaretOffset { get; set; }
+		public bool IsCursorAtLastTerminal 
+		{
+			get { return _terminal.SourcePosition.ContainsIndex(_cursorPosition); }
+		}
 
-		public string Text { get; set; }
+		public bool IsAtColumnOrFunctionReference
+		{
+			get { return _prefixedColumnReference != null; }
+		}
+
+		public bool IsAtObjectReference
+		{
+			get { return _terminal.Id == Terminals.ObjectIdentifier || (_terminal.Id == Terminals.Dot && true); }
+		}
+
+		public bool IsAtSchemaReference
+		{
+			get { return _terminal.Id == Terminals.SchemaIdentifier; }
+		}
 	}
 }

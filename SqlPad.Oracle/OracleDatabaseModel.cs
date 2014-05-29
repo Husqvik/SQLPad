@@ -20,6 +20,7 @@ namespace SqlPad.Oracle
 		private static bool _isRefreshing;
 
 		public const string SchemaPublic = "\"PUBLIC\"";
+		public const string DataObjectTypeTable = "TABLE";
 
 		public OracleDatabaseModel(ConnectionStringSettings connectionString)
 		{

@@ -76,6 +76,7 @@
     <Compile Include="Commands\AddAliasCommand.cs" />
     <Compile Include="Commands\OracleCommandFactory.cs" />
     <Compile Include="DatabaseModelFake.cs" />
+    <Compile Include="OracleCodeCompletionItem.cs" />
     <Compile Include="OracleCodeCompletionProvider.cs" />
     <Compile Include="OracleFunctionMatcher.cs" />
     <Compile Include="OracleFunctionMetadataCollection.cs" />

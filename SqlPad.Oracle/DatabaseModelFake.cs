@@ -34,7 +34,7 @@ namespace SqlPad.Oracle
 			new OracleDataObject
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create("\"SYS\"", "\"DUAL\""),
-				Type = "TABLE",
+				Type = OracleDatabaseModel.DataObjectTypeTable,
 				Columns = new HashSet<OracleColumn>
 				             {
 					             new OracleColumn { Name = "\"DUMMY\"", Type = "VARCHAR2", Size = 1 }
@@ -62,7 +62,7 @@ namespace SqlPad.Oracle
 			new OracleDataObject
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"COUNTRY\""),
-				Type = "TABLE",
+				Type = OracleDatabaseModel.DataObjectTypeTable,
 				Columns = new HashSet<OracleColumn>
 				          {
 					          new OracleColumn { Name = "\"ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
@@ -72,7 +72,7 @@ namespace SqlPad.Oracle
 			new OracleDataObject
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"ORDERS\""),
-				Type = "TABLE",
+				Type = OracleDatabaseModel.DataObjectTypeTable,
 				Columns = new HashSet<OracleColumn>
 				          {
 					          new OracleColumn { Name = "\"ID\"", Type = "NUMBER", Precision = 9, Scale = 0 }
@@ -81,7 +81,7 @@ namespace SqlPad.Oracle
 			new OracleDataObject
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"INVOICES\""),
-				Type = "TABLE",
+				Type = OracleDatabaseModel.DataObjectTypeTable,
 				Columns = new HashSet<OracleColumn>
 				          {
 					          new OracleColumn { Name = "\"ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
@@ -91,7 +91,7 @@ namespace SqlPad.Oracle
 			new OracleDataObject
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"INVOICELINES\""),
-				Type = "TABLE",
+				Type = OracleDatabaseModel.DataObjectTypeTable,
 				Columns = new HashSet<OracleColumn>
 				          {
 					          new OracleColumn { Name = "\"ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
@@ -117,7 +117,7 @@ namespace SqlPad.Oracle
 			new OracleDataObject
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"TARGETGROUP\""),
-				Type = "TABLE",
+				Type = OracleDatabaseModel.DataObjectTypeTable,
 				Columns = new HashSet<OracleColumn>
 				          {
 					          new OracleColumn { Name = "\"TARGETGROUP_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
@@ -139,7 +139,7 @@ namespace SqlPad.Oracle
 			new OracleDataObject
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"PROJECT\""),
-				Type = "TABLE",
+				Type = OracleDatabaseModel.DataObjectTypeTable,
 				Columns = new HashSet<OracleColumn>
 				          {
 					          new OracleColumn { Name = "\"NAME\"", Type = "VARCHAR2", Size = 50 },
@@ -149,7 +149,7 @@ namespace SqlPad.Oracle
 			new OracleDataObject
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"RESPONDENTBUCKET\""),
-				Type = "TABLE",
+				Type = OracleDatabaseModel.DataObjectTypeTable,
 				Columns = new HashSet<OracleColumn>
 				          {
 							  new OracleColumn { Name = "\"RESPONDENTBUCKET_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
@@ -180,7 +180,7 @@ namespace SqlPad.Oracle
 			new OracleDataObject
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"SELECTION\""),
-				Type = "TABLE",
+				Type = OracleDatabaseModel.DataObjectTypeTable,
 				Columns = new HashSet<OracleColumn>
 				          {
 							  new OracleColumn { Name = "\"RESPONDENTBUCKET_ID\"", Type = "NUMBER", Precision = 9, Scale = 0, Nullable = true },

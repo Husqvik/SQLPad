@@ -25,15 +25,40 @@ namespace SqlPad.Oracle
 		}
 	}
 
-	internal class FunctionMatchElement
+	internal class MatchElement<TElement>
+	{
+		public MatchElement(string value)
+		{
+			Value = value;
+		}
+
+		public string Value { get; private set; }
+
+		public bool AllowPartialMatch { get; set; }
+
+		public bool AllowStartWithMatch { get; set; }
+
+		public bool DenyEqualMatch { get; set; }
+
+		public Func<TElement, string> Selector { get; protected set; }
+
+		public bool IsMatch(TElement elementIdentifier)
+		{
+			var elementValue = Selector(elementIdentifier);
+			return (!DenyEqualMatch && elementValue == Value.ToQuotedIdentifier()) ||
+				   (AllowStartWithMatch && elementValue.ToRawUpperInvariant().StartsWith(Value.ToRawUpperInvariant())) ||
+				   (AllowPartialMatch && elementValue.ToRawUpperInvariant().Contains(Value.ToRawUpperInvariant()));
+		}
+	}
+
+	internal class FunctionMatchElement : MatchElement<OracleFunctionIdentifier>
 	{
 		private static readonly Func<OracleFunctionIdentifier, string> OwnerSelector = identifier => identifier.Owner;
 		private static readonly Func<OracleFunctionIdentifier, string> PackageSelector = identifier => identifier.Package;
 		private static readonly Func<OracleFunctionIdentifier, string> NameSelector = identifier => identifier.Name;
 
-		public FunctionMatchElement(string value)
+		public FunctionMatchElement(string value) : base(value)
 		{
-			Value = value;
 		}
 
 		public FunctionMatchElement SelectOwner()
@@ -52,24 +77,6 @@ namespace SqlPad.Oracle
 		{
 			Selector = NameSelector;
 			return this;
-		}
-
-		public string Value { get; private set; }
-
-		public Func<OracleFunctionIdentifier, string> Selector { get; private set; }
-
-		public bool AllowPartialMatch { get; set; }
-
-		public bool AllowStartWithMatch { get; set; }
-
-		public bool DenyEqualMatch { get; set; }
-
-		public bool IsMatch(OracleFunctionIdentifier functionIdentifier)
-		{
-			var elementValue = Selector(functionIdentifier);
-			return (!DenyEqualMatch && elementValue == Value.ToQuotedIdentifier()) ||
-				   (AllowStartWithMatch && elementValue.ToRawUpperInvariant().StartsWith(Value.ToRawUpperInvariant())) ||
-				   (AllowPartialMatch && elementValue.ToRawUpperInvariant().Contains(Value.ToRawUpperInvariant()));
 		}
 	}
 }
