@@ -20,6 +20,11 @@ namespace SqlPad.Oracle
 			return isNotKeyword && identifier.IsQuotedWithoutCheck() && identifier == identifier.ToUpperInvariant() ? identifier.Replace(QuoteCharacter, null) : identifier;
 		}
 
+		public static string ToRawUpperInvariant(this string identifier)
+		{
+			return identifier.ToSimpleIdentifier().Replace("\"", null).ToUpperInvariant();
+		}
+
 		public static bool CollidesWithKeyword(this string identifier)
 		{
 			if (String.IsNullOrEmpty(identifier))

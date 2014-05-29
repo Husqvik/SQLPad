@@ -68,8 +68,8 @@ namespace SqlPad.Oracle
 		{
 			var elementValue = Selector(functionIdentifier);
 			return (!DenyEqualMatch && elementValue == Value.ToQuotedIdentifier()) ||
-				   (AllowStartWithMatch && elementValue.ToUpperInvariant().Replace("\"", null).StartsWith(Value.ToSimpleIdentifier().Replace("\"", null))) ||
-			       (AllowPartialMatch && elementValue.ToUpperInvariant().Contains(Value.ToSimpleIdentifier().Replace("\"", null)));
+				   (AllowStartWithMatch && elementValue.ToRawUpperInvariant().StartsWith(Value.ToRawUpperInvariant())) ||
+				   (AllowPartialMatch && elementValue.ToRawUpperInvariant().Contains(Value.ToRawUpperInvariant()));
 		}
 	}
 }

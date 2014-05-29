@@ -245,12 +245,7 @@ namespace SqlPad.Oracle
 				terminalCandidates.Contains(Terminals.Identifier) &&
 				currentNode.Id.In(Terminals.ObjectIdentifier, Terminals.Identifier, Terminals.Comma, Terminals.Dot, Terminals.Select))
 			{
-				completionItems = completionItems.Concat(GenerateColumnItems(currentNode, semanticModel, cursorPosition, (OracleDatabaseModel)databaseModel));
-
-				if (!currentNode.Id.In(Terminals.ObjectIdentifier, Terminals.Identifier, Terminals.Dot))
-				{
-					completionItems = completionItems.Concat(GenerateSchemaItems(null, null, extraOffset, (OracleDatabaseModel)databaseModel, 1));
-				}
+				completionItems = completionItems.Concat(GenerateSelectListItems(currentNode, semanticModel, cursorPosition, (OracleDatabaseModel)databaseModel));
 			}
 
 			return completionItems.OrderItems().ToArray();
@@ -258,7 +253,7 @@ namespace SqlPad.Oracle
 			// TODO: Add option to search all/current/public schemas
 		}
 
-		private IEnumerable<ICodeCompletionItem> GenerateColumnItems(StatementDescriptionNode currentNode, OracleStatementSemanticModel semanticModel, int cursorPosition, OracleDatabaseModel databaseModel)
+		private IEnumerable<ICodeCompletionItem> GenerateSelectListItems(StatementDescriptionNode currentNode, OracleStatementSemanticModel semanticModel, int cursorPosition, OracleDatabaseModel databaseModel)
 		{
 			var prefixedColumnReference = currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference);
 			var columnIdentifierFollowing = currentNode.Id != Terminals.Identifier && prefixedColumnReference != null && prefixedColumnReference.GetDescendants(Terminals.Identifier).FirstOrDefault() != null;
@@ -330,7 +325,8 @@ namespace SqlPad.Oracle
 				.SelectMany(t => t.Columns
 					.Where(c =>
 						(currentNode.Id != Terminals.Identifier || c.Name != currentNode.Token.Value.ToQuotedIdentifier()) &&
-						(objectIdentifierNode == null || String.IsNullOrEmpty(currentName) || (c.Name != currentName.ToQuotedIdentifier() && c.Name.ToUpperInvariant().Contains(currentName.ToUpperInvariant()))))
+						(objectIdentifierNode == null && String.IsNullOrEmpty(currentName) ||
+						(c.Name != currentName.ToQuotedIdentifier() && c.Name.ToRawUpperInvariant().Contains(currentName.ToRawUpperInvariant()))))
 					.Select(c => new { TableReference = t, Column = c }))
 					.GroupBy(c => c.Column.Name).ToDictionary(g => g.Key ?? String.Empty, g => g.Select(o => o.TableReference.FullyQualifiedName).ToArray());
 
@@ -341,14 +337,19 @@ namespace SqlPad.Oracle
 					.Select(objectIdentifier => new Tuple<string, OracleObjectIdentifier>(columnCandidate.Key, objectIdentifier)));
 			}
 
-			var suggestedColumnItems = suggestedColumns.Select(t => CreateColumnCodeCompletionItem(t.Item1, objectIdentifierNode == null ? t.Item2.ToString() : null, currentNode));
+			var suggestedItems = suggestedColumns.Select(t => CreateColumnCodeCompletionItem(t.Item1, objectIdentifierNode == null ? t.Item2.ToString() : null, currentNode));
 
 			if (currentName == null && currentNode.IsWithinSelectClause() && currentNode.GetParentExpression().GetParentExpression() == null)
 			{
-				suggestedColumnItems = suggestedColumnItems.Concat(CreateAsteriskColumnCompletionItems(tableReferences, objectIdentifierNode != null, currentNode));
+				suggestedItems = suggestedItems.Concat(CreateAsteriskColumnCompletionItems(tableReferences, objectIdentifierNode != null, currentNode));
 			}
 
-			return suggestedColumnItems.Concat(suggestedFunctions);
+			if (objectIdentifierNode == null)
+			{
+				suggestedItems = suggestedItems.Concat(GenerateSchemaItems(currentName, currentNode, 0, databaseModel, 1));
+			}
+
+			return suggestedItems.Concat(suggestedFunctions);
 		}
 
 		private IEnumerable<OracleCodeCompletionItem> CreateAsteriskColumnCompletionItems(IEnumerable<OracleObjectReference> tables, bool skipFirstObjectIdentifier, StatementDescriptionNode currentNode)
@@ -394,7 +395,7 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		private OracleCodeCompletionItem CreateColumnCodeCompletionItem(string columnName, string objectPrefix, StatementDescriptionNode currentNode)
+		private ICodeCompletionItem CreateColumnCodeCompletionItem(string columnName, string objectPrefix, StatementDescriptionNode currentNode)
 		{
 			if (!String.IsNullOrEmpty(objectPrefix))
 				objectPrefix += ".";
