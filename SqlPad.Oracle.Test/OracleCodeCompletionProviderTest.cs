@@ -227,6 +227,18 @@ FROM
 		}
 
 		[Test(Description = @"")]
+		public void TestSchemaSuggestionInSelectListWhenPartiallyEntered()
+		{
+			const string query1 = @"SELECT HU FROM DUAL";
+
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 9).ToArray();
+			items.Length.ShouldBe(1);
+			items[0].Name.ShouldBe("HUSQVIK");
+			items[0].Text.ShouldBe("HUSQVIK");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.DatabaseSchema);
+		}
+
+		[Test(Description = @"")]
 		public void TestTableSuggestionWithPartialName()
 		{
 			const string query1 = @"SELECT 1 FROM SYSTEM.C";

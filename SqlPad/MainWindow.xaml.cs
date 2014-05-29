@@ -406,22 +406,7 @@ namespace SqlPad
 			{
 				Trace.WriteLine("CONTROL + D");
 
-				int caretOffset;
-				if (Editor.SelectionLength > 0)
-				{
-					caretOffset = Editor.SelectionStart + Editor.SelectionLength + Editor.SelectedText.Length;
-					Editor.Document.Insert(Editor.SelectionStart + Editor.SelectionLength, Editor.SelectedText);
-				}
-				else
-				{
-					var currentLine = Editor.Document.GetLineByOffset(Editor.CaretOffset);
-					var currentLineText = Editor.Document.GetText(currentLine) + "\n";
-					Editor.Document.Insert(currentLine.EndOffset + 1, currentLineText);
-					caretOffset = Editor.SelectionStart + Editor.SelectionLength + currentLineText.Length;
-				}
-
-				Editor.SelectionLength = 0;
-				Editor.CaretOffset = caretOffset;
+				DuplicateText();
 			}
 			else if (e.Key == Key.Home && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt))
 			{
@@ -485,6 +470,26 @@ namespace SqlPad
 					Editor.Document.Remove(Editor.CaretOffset, 1);
 				}
 			}
+		}
+
+		private void DuplicateText()
+		{
+			int caretOffset;
+			if (Editor.SelectionLength > 0)
+			{
+				caretOffset = Editor.SelectionStart + Editor.SelectionLength + Editor.SelectedText.Length;
+				Editor.Document.Insert(Editor.SelectionStart + Editor.SelectionLength, Editor.SelectedText);
+			}
+			else
+			{
+				var currentLine = Editor.Document.GetLineByOffset(Editor.CaretOffset);
+				var currentLineText = Editor.Document.GetText(currentLine) + "\n";
+				Editor.Document.Insert(currentLine.EndOffset + 1, currentLineText);
+				caretOffset = Editor.SelectionStart + Editor.SelectionLength + currentLineText.Length;
+			}
+
+			Editor.SelectionLength = 0;
+			Editor.CaretOffset = caretOffset;
 		}
 
 		private void FindUsages()
