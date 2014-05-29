@@ -16,7 +16,7 @@ namespace SqlPad.Oracle
 
 		public bool ReferencesAllColumns { get { return ColumnNode.Token.Value == "*"; } }
 
-		public ColumnReferenceType Type { get; set; }
+		public QueryBlockPlacement Placement { get; set; }
 		
 		public StatementDescriptionNode ColumnNode { get; set; }
 
@@ -27,10 +27,12 @@ namespace SqlPad.Oracle
 		public OracleColumn ColumnDescription { get; set; }
 	}
 
-	public enum ColumnReferenceType
+	public enum QueryBlockPlacement
 	{
 		SelectList,
-		WhereGroupHaving,
+		Where,
+		GroupBy,
+		Having,
 		Join,
 		OrderBy
 	}

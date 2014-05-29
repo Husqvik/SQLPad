@@ -269,7 +269,7 @@ namespace SqlPad.Oracle
 						OracleColumnReference columnReference;
 						if (String.IsNullOrEmpty(exposedColumn.NormalizedName) || !exposedColumnDictionary.TryGetValue(exposedColumn.NormalizedName, out columnReference))
 						{
-							columnReference = CreateColumnReference(exposedColumn.Owner, exposedColumn, ColumnReferenceType.SelectList, asteriskTableReference.Key.RootNode.LastTerminalNode, null);
+							columnReference = CreateColumnReference(exposedColumn.Owner, exposedColumn, QueryBlockPlacement.SelectList, asteriskTableReference.Key.RootNode.LastTerminalNode, null);
 
 							if (!String.IsNullOrEmpty(exposedColumn.NormalizedName))
 							{
@@ -363,7 +363,7 @@ namespace SqlPad.Oracle
 		{
 			foreach (var columnReference in columnReferences.ToArray())
 			{
-				if (columnReference.Type == ColumnReferenceType.OrderBy)
+				if (columnReference.Placement == QueryBlockPlacement.OrderBy)
 				{
 					if (columnReference.Owner.FollowingConcatenatedQueryBlock != null)
 					{
@@ -504,7 +504,7 @@ namespace SqlPad.Oracle
 
 					var identifiers = joinCondition.GetDescendants(Terminals.Identifier);
 					var columnReferences = new List<OracleColumnReference>();
-					ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, columnReferences, queryBlock.FunctionReferences, identifiers, ColumnReferenceType.Join, null);
+					ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, columnReferences, queryBlock.FunctionReferences, identifiers, QueryBlockPlacement.Join, null);
 
 					if (columnReferences.Count > 0)
 					{
@@ -516,14 +516,35 @@ namespace SqlPad.Oracle
 
 		private void ResolveWhereGroupByHavingReferences(OracleQueryBlock queryBlock)
 		{
-			var identifiers = GetIdentifiersFromNodesWithinSameQuery(queryBlock, NonTerminals.WhereClause, NonTerminals.GroupByClause).ToArray();
-			ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock.ColumnReferences, queryBlock.FunctionReferences, identifiers, ColumnReferenceType.WhereGroupHaving, null);
+			var whereClauseRootNode = queryBlock.RootNode.GetDescendantsWithinSameQuery(NonTerminals.WhereClause).FirstOrDefault();
+			if (whereClauseRootNode != null)
+			{
+				queryBlock.WhereClause = whereClauseRootNode;
+				var whereClauseIdentifiers = whereClauseRootNode.GetDescendantsWithinSameQuery(Terminals.Identifier);
+				ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock.ColumnReferences, queryBlock.FunctionReferences, whereClauseIdentifiers, QueryBlockPlacement.Where, null);
+			}
 
-			var havingRootNode = queryBlock.RootNode.GetDescendantsWithinSameQuery(NonTerminals.HavingClause).FirstOrDefault();
-			if (havingRootNode == null)
+			var groupByClauseRootNode = queryBlock.RootNode.GetDescendantsWithinSameQuery(NonTerminals.GroupByClause).FirstOrDefault();
+			if (groupByClauseRootNode == null)
+			{
 				return;
+			}
 			
-			var grammarSpecificFunctions = havingRootNode.GetDescendantsWithinSameQuery(Terminals.Count, NonTerminals.AggregateFunction, NonTerminals.AnalyticFunction).ToArray();
+			queryBlock.GroupByClause = groupByClauseRootNode;
+			var identifiers = groupByClauseRootNode.GetPathFilterDescendants(n => !n.Id.In(NonTerminals.NestedQuery, NonTerminals.HavingClause), Terminals.Identifier);
+			ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock.ColumnReferences, queryBlock.FunctionReferences, identifiers, QueryBlockPlacement.GroupBy, null);
+
+			var havingClauseRootNode = groupByClauseRootNode.GetDescendantsWithinSameQuery(NonTerminals.HavingClause).FirstOrDefault();
+			if (havingClauseRootNode == null)
+			{
+				return;
+			}
+
+			queryBlock.HavingClause = havingClauseRootNode;
+			identifiers = havingClauseRootNode.GetDescendantsWithinSameQuery(Terminals.Identifier);
+			ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock.ColumnReferences, queryBlock.FunctionReferences, identifiers, QueryBlockPlacement.Having, null);
+
+			var grammarSpecificFunctions = havingClauseRootNode.GetDescendantsWithinSameQuery(Terminals.Count, NonTerminals.AggregateFunction, NonTerminals.AnalyticFunction).ToArray();
 			CreateGrammarSpecificFunctionReferences(grammarSpecificFunctions, queryBlock, queryBlock.FunctionReferences, null);
 		}
 
@@ -537,10 +558,10 @@ namespace SqlPad.Oracle
 				return;
 
 			var identifiers = orderByNode.GetDescendantsWithinSameQuery(Terminals.Identifier);
-			ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock.ColumnReferences, queryBlock.FunctionReferences, identifiers, ColumnReferenceType.OrderBy, null);
+			ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock.ColumnReferences, queryBlock.FunctionReferences, identifiers, QueryBlockPlacement.OrderBy, null);
 		}
 
-		private void ResolveColumnAndFunctionReferenceFromIdentifiers(OracleQueryBlock queryBlock, ICollection<OracleColumnReference> columnReferences, ICollection<OracleFunctionReference> functionReferences, IEnumerable<StatementDescriptionNode> identifiers, ColumnReferenceType type, OracleSelectListColumn selectListColumn)
+		private void ResolveColumnAndFunctionReferenceFromIdentifiers(OracleQueryBlock queryBlock, ICollection<OracleColumnReference> columnReferences, ICollection<OracleFunctionReference> functionReferences, IEnumerable<StatementDescriptionNode> identifiers, QueryBlockPlacement type, OracleSelectListColumn selectListColumn)
 		{
 			foreach (var identifier in identifiers)
 			{
@@ -559,32 +580,6 @@ namespace SqlPad.Oracle
 					functionReferences.Add(functionReference);
 				}
 			}
-		}
-
-		private IEnumerable<StatementDescriptionNode> GetIdentifiersFromNodesWithinSameQuery(OracleQueryBlock queryBlock, params string[] nonTerminalIds)
-		{
-			var identifiers = Enumerable.Empty<StatementDescriptionNode>();
-			foreach (var nonTerminalId in nonTerminalIds)
-			{
-				var clauseRootNode = queryBlock.RootNode.GetDescendantsWithinSameQuery(nonTerminalId).FirstOrDefault();
-				if (clauseRootNode == null)
-					continue;
-
-				switch (nonTerminalId)
-				{
-					case NonTerminals.WhereClause:
-						queryBlock.WhereClause = clauseRootNode;
-						break;
-					case NonTerminals.GroupByClause:
-						queryBlock.GroupByClause = clauseRootNode;
-						break;
-				}
-
-				var nodeIdentifiers = clauseRootNode.GetDescendantsWithinSameQuery(Terminals.Identifier);
-				identifiers = identifiers.Concat(nodeIdentifiers);
-			}
-
-			return identifiers;
 		}
 
 		private void ResolveSelectList(OracleQueryBlock queryBlock)
@@ -614,7 +609,7 @@ namespace SqlPad.Oracle
 
 				queryBlock.HasAsteriskClause = true;
 
-				column.ColumnReferences.Add(CreateColumnReference(queryBlock, column, ColumnReferenceType.SelectList, asteriskNode, null));
+				column.ColumnReferences.Add(CreateColumnReference(queryBlock, column, QueryBlockPlacement.SelectList, asteriskNode, null));
 
 				_asteriskTableReferences[column] = new List<OracleObjectReference>(queryBlock.ObjectReferences);
 
@@ -641,7 +636,7 @@ namespace SqlPad.Oracle
 						column.IsAsterisk = true;
 
 						var prefixNonTerminal = asteriskNode.ParentNode.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.Prefix);
-						var columnReference = CreateColumnReference(queryBlock, column, ColumnReferenceType.SelectList, asteriskNode, prefixNonTerminal);
+						var columnReference = CreateColumnReference(queryBlock, column, QueryBlockPlacement.SelectList, asteriskNode, prefixNonTerminal);
 						column.ColumnReferences.Add(columnReference);
 
 						var tableReferences = queryBlock.ObjectReferences.Where(t => t.FullyQualifiedName == columnReference.FullyQualifiedObjectName || (columnReference.ObjectNode == null && t.FullyQualifiedName.NormalizedName == columnReference.FullyQualifiedObjectName.NormalizedName));
@@ -656,7 +651,7 @@ namespace SqlPad.Oracle
 							column.AliasNode = identifiers[0];
 						}
 
-						ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, column.ColumnReferences, column.FunctionReferences, identifiers, ColumnReferenceType.SelectList, column);
+						ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, column.ColumnReferences, column.FunctionReferences, identifiers, QueryBlockPlacement.SelectList, column);
 
 						var grammarSpecificFunctions = columnExpression.GetDescendantsWithinSameQuery(Terminals.Count, NonTerminals.AggregateFunction, NonTerminals.AnalyticFunction).ToArray();
 						CreateGrammarSpecificFunctionReferences(grammarSpecificFunctions, queryBlock, column.FunctionReferences, column);
@@ -717,7 +712,7 @@ namespace SqlPad.Oracle
 			return identifier.ParentNode.ChildNodes.Where(n => n.Id.In(NonTerminals.DatabaseLink, NonTerminals.ParenthesisEnclosedAggregationFunctionParameters, NonTerminals.AnalyticClause)).ToArray();
 		}
 
-		private static OracleFunctionReference CreateFunctionReference(OracleQueryBlock queryBlock, OracleSelectListColumn selectListColumn, /*ColumnReferenceType type,*/ StatementDescriptionNode identifierNode, StatementDescriptionNode prefixNonTerminal, ICollection<StatementDescriptionNode> functionCallNodes)
+		private static OracleFunctionReference CreateFunctionReference(OracleQueryBlock queryBlock, OracleSelectListColumn selectListColumn, StatementDescriptionNode identifierNode, StatementDescriptionNode prefixNonTerminal, ICollection<StatementDescriptionNode> functionCallNodes)
 		{
 			var analyticClauseNode = functionCallNodes.SingleOrDefault(n => n.Id == NonTerminals.AnalyticClause);
 
@@ -748,13 +743,13 @@ namespace SqlPad.Oracle
 			return functionReference;
 		}
 
-		private static OracleColumnReference CreateColumnReference(OracleQueryBlock queryBlock, OracleSelectListColumn selectListColumn, ColumnReferenceType type, StatementDescriptionNode identifierNode, StatementDescriptionNode prefixNonTerminal)
+		private static OracleColumnReference CreateColumnReference(OracleQueryBlock queryBlock, OracleSelectListColumn selectListColumn, QueryBlockPlacement type, StatementDescriptionNode identifierNode, StatementDescriptionNode prefixNonTerminal)
 		{
 			var columnReference =
 				new OracleColumnReference
 				{
 					ColumnNode = identifierNode,
-					Type = type,
+					Placement = type,
 					Owner = queryBlock,
 					SelectListColumn = selectListColumn
 				};

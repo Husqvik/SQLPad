@@ -67,6 +67,8 @@ namespace SqlPad.Oracle
 		}
 
 		public StatementDescriptionNode GroupByClause { get; set; }
+
+		public StatementDescriptionNode HavingClause { get; set; }
 		
 		public OracleStatement Statement { get; set; }
 
