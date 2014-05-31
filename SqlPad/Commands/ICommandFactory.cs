@@ -10,8 +10,6 @@ namespace SqlPad.Commands
 		ICollection<CommandExecutionHandler> CommandHandlers { get; }
 			
 		DisplayCommandBase CreateFindUsagesCommand(string statementText, int currentPosition, IDatabaseModel databaseModel);
-
-		EditCommandBase CreateSafeDeleteCommand(StatementCollection statements, int currentPosition, IDatabaseModel databaseModel);
 	}
 
 	public class CommandExecutionHandler
@@ -28,16 +26,20 @@ namespace SqlPad.Commands
 		public string StatementText { get; private set; }
 		public StatementCollection Statements { get; private set; }
 		public int SelectionStart { get; private set; }
+		public int CaretOffset { get; private set; }
 		public int SelectionLength { get; private set; }
+		public IDatabaseModel DatabaseModel { get; private set; }
 
-		public static CommandExecutionContext Create(TextEditor editor, StatementCollection statements)
+		public static CommandExecutionContext Create(TextEditor editor, StatementCollection statements, IDatabaseModel databaseModel)
 		{
 			return new CommandExecutionContext
 			       {
+				       CaretOffset = editor.CaretOffset,
 				       SelectionStart = editor.SelectionStart,
 					   SelectionLength = editor.SelectionLength,
 					   StatementText = editor.Text,
-					   Statements = statements
+					   Statements = statements,
+					   DatabaseModel = databaseModel
 			       };
 		}
 	}

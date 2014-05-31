@@ -1,53 +1,52 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Input;
+using SqlPad.Commands;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
-using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 
 namespace SqlPad.Oracle.Commands
 {
-	public class SafeDeleteCommand  : OracleCommandBase
+	internal static class SafeDeleteCommand
 	{
-		private readonly OracleQueryBlock _queryBlock;
-
-		public SafeDeleteCommand(OracleStatementSemanticModel semanticModel, StatementDescriptionNode currentNode)
-			: base(semanticModel, currentNode)
+		public static CommandExecutionHandler ExecutionHandler = new CommandExecutionHandler
 		{
-			_queryBlock = SemanticModel.GetQueryBlock(CurrentNode);
-		}
+			Name = "SafeDelete",
+			DefaultGestures = new InputGestureCollection { new KeyGesture(Key.Delete, ModifierKeys.Alt) },
+			ExecuteHandler = ExecutionHandlerImplementation
+		};
 
-		public override bool CanExecute(object parameter)
+		private static void ExecutionHandlerImplementation(CommandExecutionContext executionContext)
 		{
-			if (!CurrentNode.Id.In(Terminals.ColumnAlias, Terminals.ObjectAlias))
-				return false;
+			if (executionContext.Statements == null)
+				return;
 
-			return _queryBlock != null;
-		}
+			var currentNode = executionContext.Statements.GetTerminalAtPosition(executionContext.CaretOffset, n => n.Id.IsAlias());
+			if (currentNode == null)
+				return;
 
-		protected override void ExecuteInternal(string statementText, ICollection<TextSegment> segmentsToReplace)
-		{
-			switch (CurrentNode.Id)
+			var semanticModel = new OracleStatementSemanticModel(executionContext.StatementText, (OracleStatement)currentNode.Statement, (OracleDatabaseModel)executionContext.DatabaseModel);
+			var queryBlock = semanticModel.GetQueryBlock(currentNode);
+			if (queryBlock == null)
+				return;
+
+			switch (currentNode.Id)
 			{
 				case Terminals.ObjectAlias:
-					AddObjectAliasNodesToRemove(segmentsToReplace);
+					AddObjectAliasNodesToRemove(executionContext.SegmentsToReplace, queryBlock, currentNode);
 					break;
 				case Terminals.ColumnAlias:
 					break;
 			}
 		}
 
-		public override string Title
+		private static void AddObjectAliasNodesToRemove(ICollection<TextSegment> segmentsToReplace, OracleQueryBlock queryBlock, StatementDescriptionNode currentNode)
 		{
-			get { return String.Empty; }
-		}
-
-		private void AddObjectAliasNodesToRemove(ICollection<TextSegment> segmentsToReplace)
-		{
-			var objectReference = _queryBlock.ObjectReferences.Single(o => o.AliasNode == CurrentNode);
+			var objectReference = queryBlock.ObjectReferences.Single(o => o.AliasNode == currentNode);
 			if (objectReference.Type == TableReferenceType.InlineView)
 				return;
 
-			foreach (var columnReference in _queryBlock.AllColumnReferences
+			foreach (var columnReference in queryBlock.AllColumnReferences
 				.Where(c => c.ColumnNodeObjectReferences.Count == 1 && c.ColumnNodeObjectReferences.Single() == objectReference &&
 				            c.ObjectNode != null))
 			{
@@ -61,8 +60,8 @@ namespace SqlPad.Oracle.Commands
 
 			segmentsToReplace.Add(new TextSegment
 			{
-				IndextStart = CurrentNode.SourcePosition.IndexStart,
-				Length = CurrentNode.SourcePosition.Length,
+				IndextStart = currentNode.SourcePosition.IndexStart,
+				Length = currentNode.SourcePosition.Length,
 				Text = String.Empty
 			});
 		}

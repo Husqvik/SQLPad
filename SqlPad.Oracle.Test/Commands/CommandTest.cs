@@ -4,6 +4,7 @@ using System.Linq;
 using ICSharpCode.AvalonEdit;
 using NUnit.Framework;
 using Shouldly;
+using SqlPad.Commands;
 using SqlPad.Oracle.Commands;
 
 namespace SqlPad.Oracle.Test.Commands
@@ -82,6 +83,19 @@ WHERE
 		public void SetUp()
 		{
 			_editor = new TextEditor();
+		}
+
+		private CommandExecutionContext CreateExecutionContext()
+		{
+			var statements = Parser.Parse(_editor.Text);
+			return CommandExecutionContext.Create(_editor, statements, TestFixture.DatabaseModel);
+		}
+
+		private void ExecuteCommand(CommandExecutionHandler commandExecutionHandler)
+		{
+			var executionContext = CreateExecutionContext();
+			commandExecutionHandler.ExecuteHandler(executionContext);
+			_editor.ReplaceTextSegments(executionContext.SegmentsToReplace);
 		}
 
 		private OracleCommandBase InitializeCommand<TCommand>(string statementText, int cursorPosition, string commandParameter, bool isValidParameter = true) where TCommand : OracleCommandBase
@@ -594,6 +608,29 @@ WHERE
 			command.Execute(_editor);
 
 			_editor.Text.ShouldBe("SELECT 'OuterPrefix' || 'InnerPrefix' || (DUAL.DUMMY || 'InnerPostfix') || 'OuterPostfix' FROM DUAL");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestSafeDeleteCommandAtObjectAlias()
+		{
+			_editor.Text = @"SELECT S.RESPONDENTBUCKET_ID, S.SELECTION_ID, S.PROJECT_ID, S.NAME FROM SELECTION S";
+			_editor.CaretOffset = 82;
+
+			ExecuteCommand(SafeDeleteCommand.ExecutionHandler);
+
+			_editor.Text.ShouldBe("SELECT SELECTION.RESPONDENTBUCKET_ID, SELECTION.SELECTION_ID, SELECTION.PROJECT_ID, SELECTION.NAME FROM SELECTION ");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestMakeUpperCaseCommandWithMultipleTerminalsSelected()
+		{
+			_editor.Text = @"select null, 'null' from selection";
+			_editor.CaretOffset = 3;
+			_editor.SelectionLength = 28;
+
+			ExecuteCommand(MakeUpperCaseCommand.ExecutionHandler);
+
+			_editor.Text.ShouldBe("selECT NULL, 'null' FROM SELECTion");
 		}
 
 		private class TestCommandSettings : ICommandSettingsProvider

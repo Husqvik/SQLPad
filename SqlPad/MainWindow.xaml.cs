@@ -66,11 +66,11 @@ namespace SqlPad
 
 			foreach (var handler in _infrastructureFactory.CommandFactory.CommandHandlers)
 			{
-				var command = new RoutedCommand(handler.Name, typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.U, ModifierKeys.Control | ModifierKeys.Shift) });
+				var command = new RoutedCommand(handler.Name, typeof(TextEditor), handler.DefaultGestures);
 				ExecutedRoutedEventHandler handlerMethod =
 					(sender, args) =>
 					{
-						var executionContext = CommandExecutionContext.Create(Editor, _sqlDocument.StatementCollection);
+						var executionContext = CommandExecutionContext.Create(Editor, _sqlDocument.StatementCollection, _databaseModel);
 						handler.ExecuteHandler(executionContext);
 						Editor.ReplaceTextSegments(executionContext.SegmentsToReplace);
 					};
@@ -438,12 +438,6 @@ namespace SqlPad
 
 				ShowFunctionOverloads();
 			}
-			else if (e.Key == Key.U && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift))
-			{
-				Trace.WriteLine("CONTROL SHIFT + U");
-
-				// TODO: Add to upper implementation
-			}
 			else if (e.Key.In(Key.Left, Key.Right) && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt | ModifierKeys.Shift))
 			{
 				Trace.WriteLine("CONTROL ALT SHIFT + " + (e.Key == Key.Left ? "Left" : "Right"));
@@ -460,15 +454,6 @@ namespace SqlPad
 				Trace.WriteLine("CONTROL ALT + /");
 
 				HandleLineComments();
-			}
-			else if (e.SystemKey == Key.Delete && Keyboard.Modifiers == ModifierKeys.Alt)
-			{
-				Trace.WriteLine("ALT + DELETE");
-				var safeDeleteCommand = _infrastructureFactory.CommandFactory.CreateSafeDeleteCommand(_sqlDocument.StatementCollection, Editor.CaretOffset, _databaseModel);
-				if (safeDeleteCommand.CanExecute(null))
-				{
-					safeDeleteCommand.Execute(Editor);
-				}
 			}
 
 			if ((e.Key == Key.Back || e.Key == Key.Delete) && _multiNodeEditor != null)

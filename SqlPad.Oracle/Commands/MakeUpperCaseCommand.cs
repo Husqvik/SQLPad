@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Windows.Input;
 using SqlPad.Commands;
+using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
 namespace SqlPad.Oracle.Commands
 {
@@ -10,7 +11,7 @@ namespace SqlPad.Oracle.Commands
 		public static CommandExecutionHandler ExecutionHandler = new CommandExecutionHandler
 		{
 			Name = "MakeUpperCase",
-			DefaultGestures = new InputGestureCollection { new KeyGesture(Key.D, ModifierKeys.Control) },
+			DefaultGestures = new InputGestureCollection { new KeyGesture(Key.U, ModifierKeys.Control | ModifierKeys.Shift) },
 			ExecuteHandler = ExecutionHandlerImplementation
 		};
 
@@ -23,7 +24,7 @@ namespace SqlPad.Oracle.Commands
 
 			foreach (var terminal in executionContext.Statements.SelectMany(s => s.AllTerminals)
 				.Where(t => t.SourcePosition.IndexEnd >= selectionStart && t.SourcePosition.IndexStart < selectionStart + selectionLength &&
-				            t.Id != OracleGrammarDescription.Terminals.StringLiteral && (!t.Id.IsIdentifier() || !t.Token.Value.StartsWith("\""))))
+				            t.Id != Terminals.StringLiteral && (!t.Id.IsIdentifier() || !t.Token.Value.StartsWith("\""))))
 			{
 				var startOffset = selectionStart > terminal.SourcePosition.IndexStart ? selectionStart - terminal.SourcePosition.IndexStart : 0;
 				var indextStart = Math.Max(terminal.SourcePosition.IndexStart, selectionStart);
