@@ -67,7 +67,7 @@ namespace SqlPad
 			foreach (var handler in _infrastructureFactory.CommandFactory.CommandHandlers)
 			{
 				var command = new RoutedCommand(handler.Name, typeof(TextEditor), handler.DefaultGestures);
-				var routedHandlerMethod = GenericCommandHandler.CreateRoutedEditCommandHandler(handler, _sqlDocument.StatementCollection, _databaseModel);
+				var routedHandlerMethod = GenericCommandHandler.CreateRoutedEditCommandHandler(handler, () => _sqlDocument.StatementCollection, _databaseModel);
 				Editor.TextArea.DefaultInputHandler.Editing.CommandBindings.Add(new CommandBinding(command, routedHandlerMethod));
 			}
 		}
@@ -88,6 +88,18 @@ namespace SqlPad
 
 			var lineCommentCommand = new RoutedCommand("LineComment", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.Oem2, ModifierKeys.Control | ModifierKeys.Alt) });
 			commandBindings.Add(new CommandBinding(lineCommentCommand, GenericCommandHandler.HandleLineComments));
+
+			var listContextActionCommand = new RoutedCommand("ListContextActions", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.Enter, ModifierKeys.Alt) });
+			commandBindings.Add(new CommandBinding(listContextActionCommand, (sender, args) => Editor.ContextMenu.IsOpen = PopulateContextActionMenu()));
+
+			var multiNodeEditCommand = new RoutedCommand("EditMultipleNodes", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.F6, ModifierKeys.Shift) });
+			commandBindings.Add(new CommandBinding(multiNodeEditCommand, EditMultipleNodes));
+
+			var navigateToPreviousUsageCommand = new RoutedCommand("NavigateToPreviousUsage", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.PageUp, ModifierKeys.Control | ModifierKeys.Alt) });
+			commandBindings.Add(new CommandBinding(navigateToPreviousUsageCommand, NavigateToPreviousUsage));
+
+			var navigateToNextUsageCommand = new RoutedCommand("NavigateToNextUsage", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.PageDown, ModifierKeys.Control | ModifierKeys.Alt) });
+			commandBindings.Add(new CommandBinding(navigateToNextUsageCommand, NavigateToNextUsage));
 
 			var formatStatementCommand = new RoutedCommand(_statementFormatter.ExecutionHandler.Name, typeof(TextEditor), _statementFormatter.ExecutionHandler.DefaultGestures);
 			ExecutedRoutedEventHandler formatStatementRoutedHandlerMethod =
@@ -441,12 +453,7 @@ namespace SqlPad
 				_toolTip.IsOpen = false;
 			}
 
-			if (e.SystemKey == Key.Return && Keyboard.Modifiers == ModifierKeys.Alt)
-			{
-				Trace.WriteLine("ALT + ENTER");
-				Editor.ContextMenu.IsOpen = PopulateContextActionMenu();
-			}
-			else if (e.Key == Key.Return || e.Key == Key.Escape)
+			if (e.Key == Key.Return || e.Key == Key.Escape)
 			{
 				Trace.WriteLine(e.Key);
 				_multiNodeEditor = null;
@@ -457,12 +464,6 @@ namespace SqlPad
 					Editor.TextArea.TextView.Redraw();
 				}
 			}
-			else if (_multiNodeEditor == null && e.Key == Key.F6 && Keyboard.Modifiers == ModifierKeys.Shift)
-			{
-				Trace.WriteLine("SHIFT + F6");
-
-				MultiNodeEditor.TryCreateMultiNodeEditor(Editor, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), _databaseModel, out _multiNodeEditor);
-			}
 			else if (e.Key == Key.Home && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt))
 			{
 				Trace.WriteLine("CONTROL ALT + HOME");
@@ -471,6 +472,7 @@ namespace SqlPad
 				if (queryBlockRootIndex.HasValue)
 				{
 					Editor.CaretOffset = queryBlockRootIndex.Value;
+					Editor.ScrollToCaret();
 				}
 			}
 			else if (e.Key.In(Key.Left, Key.Right) && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt | ModifierKeys.Shift))
@@ -491,6 +493,45 @@ namespace SqlPad
 				{
 					Editor.Document.Remove(Editor.CaretOffset, 1);
 				}
+			}
+		}
+
+		private void NavigateToPreviousUsage(object sender, ExecutedRoutedEventArgs args)
+		{
+			var nextSegments = _colorizeAvalonEdit.HighlightSegments
+						.Where(s => s.IndextStart < Editor.CaretOffset)
+						.OrderByDescending(s => s.IndextStart);
+
+			NavigateToUsage(nextSegments);
+		}
+
+		private void NavigateToNextUsage(object sender, ExecutedRoutedEventArgs args)
+		{
+			var nextSegments = _colorizeAvalonEdit.HighlightSegments
+						.Where(s => s.IndextStart > Editor.CaretOffset)
+						.OrderBy(s => s.IndextStart);
+
+			NavigateToUsage(nextSegments);
+		}
+
+		private void NavigateToUsage(IEnumerable<TextSegment> nextSegments)
+		{
+			if (!_colorizeAvalonEdit.HighlightSegments.Any())
+				return;
+			
+			var nextSegment = nextSegments.FirstOrDefault();
+			if (!nextSegment.Equals(TextSegment.Empty))
+			{
+				Editor.CaretOffset = nextSegment.IndextStart;
+				Editor.ScrollToCaret();
+			}
+		}
+
+		private void EditMultipleNodes(object sender, ExecutedRoutedEventArgs args)
+		{
+			if (_multiNodeEditor == null)
+			{
+				MultiNodeEditor.TryCreateMultiNodeEditor(Editor, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), _databaseModel, out _multiNodeEditor);
 			}
 		}
 

@@ -28,10 +28,13 @@ namespace SqlPad
 		private static readonly Color ValidStatementBackground = Color.FromArgb(32, Colors.LightGreen.R, Colors.LightGreen.G, Colors.LightGreen.B);
 		private static readonly Color InvalidStatementBackground = Color.FromArgb(32, Colors.PaleVioletRed.R, Colors.PaleVioletRed.G, Colors.PaleVioletRed.B);
 
-		private IDictionary<StatementBase, IValidationModel> _validationModels;
-		public IList<StatementDescriptionNode> HighlightParenthesis { get { return _highlightParenthesis.AsReadOnly(); } }
-
 		private readonly Dictionary<DocumentLine, ICollection<StatementDescriptionNode>> _lineTerminals = new Dictionary<DocumentLine, ICollection<StatementDescriptionNode>>();
+
+		private IDictionary<StatementBase, IValidationModel> _validationModels;
+		
+		public IList<StatementDescriptionNode> HighlightParenthesis { get { return _highlightParenthesis.AsReadOnly(); } }
+		
+		public IEnumerable<TextSegment> HighlightSegments { get { return _highlightSegments.SelectMany(c => c); } }
 
 		public void SetStatementCollection(StatementCollection statements)
 		{

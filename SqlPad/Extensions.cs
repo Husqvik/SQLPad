@@ -83,6 +83,11 @@ namespace SqlPad
 			editor.Document.EndUpdate();
 		}
 
+		public static void ScrollToCaret(this TextEditor editor)
+		{
+			editor.ScrollToLine(editor.Document.GetLineByOffset(editor.CaretOffset).LineNumber);
+		}
+
 		public static string ToToolTipText(this SemanticError error)
 		{
 			switch (error)
