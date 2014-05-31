@@ -62,21 +62,35 @@ namespace SqlPad
 			
 			_timer.Elapsed += TimerOnElapsed;
 
-			ChangeDeleteLineCommandInputGesture();
+			InitializeGenericCommands();
 
 			foreach (var handler in _infrastructureFactory.CommandFactory.CommandHandlers)
 			{
 				var command = new RoutedCommand(handler.Name, typeof(TextEditor), handler.DefaultGestures);
-				ExecutedRoutedEventHandler handlerMethod =
-					(sender, args) =>
-					{
-						var executionContext = CommandExecutionContext.Create(Editor, _sqlDocument.StatementCollection, _databaseModel);
-						handler.ExecuteHandler(executionContext);
-						Editor.ReplaceTextSegments(executionContext.SegmentsToReplace);
-					};
-
-				Editor.TextArea.DefaultInputHandler.Editing.CommandBindings.Add(new CommandBinding(command, handlerMethod));
+				var routedHandlerMethod = GenericCommandHandler.CreateRoutedCommandHandler(handler, _sqlDocument.StatementCollection, _databaseModel);
+				Editor.TextArea.DefaultInputHandler.Editing.CommandBindings.Add(new CommandBinding(command, routedHandlerMethod));
 			}
+		}
+
+		private void InitializeGenericCommands()
+		{
+			ChangeDeleteLineCommandInputGesture();
+
+			var showFunctionOverloadCommand = new RoutedCommand("ShowFunctionOverloads", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.Space, ModifierKeys.Control | ModifierKeys.Shift) });
+			Editor.TextArea.DefaultInputHandler.Editing.CommandBindings.Add(new CommandBinding(showFunctionOverloadCommand, ShowFunctionOverloads));
+
+			var duplicateTextCommand = new RoutedCommand("DuplicateText", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.D, ModifierKeys.Control) });
+			Editor.TextArea.DefaultInputHandler.Editing.CommandBindings.Add(new CommandBinding(duplicateTextCommand, GenericCommandHandler.DuplicateText));
+
+			var blockCommentCommand = new RoutedCommand("BlockComment", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.Oem2, ModifierKeys.Control | ModifierKeys.Shift) });
+			Editor.TextArea.DefaultInputHandler.Editing.CommandBindings.Add(new CommandBinding(blockCommentCommand, GenericCommandHandler.HandleBlockComments));
+
+			var lineCommentCommand = new RoutedCommand("LineComment", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.Oem2, ModifierKeys.Control | ModifierKeys.Alt) });
+			Editor.TextArea.DefaultInputHandler.Editing.CommandBindings.Add(new CommandBinding(lineCommentCommand, GenericCommandHandler.HandleLineComments));
+
+			var formatStatementCommand = new RoutedCommand(_statementFormatter.ExecutionHandler.Name, typeof(TextEditor), _statementFormatter.ExecutionHandler.DefaultGestures);
+			var routedHandlerMethod = GenericCommandHandler.CreateRoutedCommandHandler(_statementFormatter.ExecutionHandler, _sqlDocument.StatementCollection, _databaseModel);
+			Editor.TextArea.DefaultInputHandler.Editing.CommandBindings.Add(new CommandBinding(formatStatementCommand, routedHandlerMethod));
 		}
 
 		private void ChangeDeleteLineCommandInputGesture()
@@ -410,18 +424,6 @@ namespace SqlPad
 
 				FindUsages();
 			}
-			else if (e.Key == Key.F && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt))
-			{
-				Trace.WriteLine("CONTROL ALT + F");
-				var textSegments = _statementFormatter.FormatStatement(_sqlDocument.StatementCollection, Editor.SelectionStart, Editor.SelectionLength);
-				Editor.ReplaceTextSegments(textSegments);
-			}
-			else if (e.Key == Key.D && Keyboard.Modifiers == ModifierKeys.Control)
-			{
-				Trace.WriteLine("CONTROL + D");
-
-				DuplicateText();
-			}
 			else if (e.Key == Key.Home && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt))
 			{
 				Trace.WriteLine("CONTROL ALT + HOME");
@@ -432,28 +434,10 @@ namespace SqlPad
 					Editor.CaretOffset = queryBlockRootIndex.Value;
 				}
 			}
-			else if (e.Key == Key.Space && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift))
-			{
-				Trace.WriteLine("CONTROL SHIFT + SPACE");
-
-				ShowFunctionOverloads();
-			}
 			else if (e.Key.In(Key.Left, Key.Right) && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt | ModifierKeys.Shift))
 			{
 				Trace.WriteLine("CONTROL ALT SHIFT + " + (e.Key == Key.Left ? "Left" : "Right"));
 				// TODO: move element to right/left/up/down
-			}
-			else if (e.Key == Key.Oem2 && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift))
-			{
-				Trace.WriteLine("CONTROL SHIFT + /");
-
-				HandleBlockComments();
-			}
-			else if (e.Key == Key.Oem2 && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt))
-			{
-				Trace.WriteLine("CONTROL ALT + /");
-
-				HandleLineComments();
 			}
 
 			if ((e.Key == Key.Back || e.Key == Key.Delete) && _multiNodeEditor != null)
@@ -471,26 +455,6 @@ namespace SqlPad
 			}
 		}
 
-		private void DuplicateText()
-		{
-			int caretOffset;
-			if (Editor.SelectionLength > 0)
-			{
-				caretOffset = Editor.SelectionStart + Editor.SelectionLength + Editor.SelectedText.Length;
-				Editor.Document.Insert(Editor.SelectionStart + Editor.SelectionLength, Editor.SelectedText);
-			}
-			else
-			{
-				var currentLine = Editor.Document.GetLineByOffset(Editor.CaretOffset);
-				var currentLineText = Editor.Document.GetText(currentLine) + "\n";
-				Editor.Document.Insert(currentLine.EndOffset + 1, currentLineText);
-				caretOffset = Editor.SelectionStart + Editor.SelectionLength + currentLineText.Length;
-			}
-
-			Editor.SelectionLength = 0;
-			Editor.CaretOffset = caretOffset;
-		}
-
 		private void FindUsages()
 		{
 			var findUsagesCommand = _infrastructureFactory.CommandFactory.CreateFindUsagesCommand(Editor.Text, Editor.CaretOffset, _databaseModel);
@@ -503,7 +467,7 @@ namespace SqlPad
 			Editor.TextArea.TextView.Redraw();
 		}
 
-		private void ShowFunctionOverloads()
+		private void ShowFunctionOverloads(object sender, ExecutedRoutedEventArgs args)
 		{
 			var functionOverloads = _codeCompletionProvider.ResolveFunctionOverloads(_sqlDocument.StatementCollection, _databaseModel, Editor.CaretOffset);
 			if (functionOverloads.Count <= 0)
@@ -519,59 +483,6 @@ namespace SqlPad
 			_toolTip.VerticalOffset = rectangle.Top + Editor.TextArea.TextView.DefaultLineHeight;
 
 			_toolTip.IsOpen = true;
-		}
-
-		private void HandleBlockComments()
-		{
-			Editor.BeginChange();
-
-			int caretOffset;
-			if (Editor.TryRemoveBlockComment())
-			{
-				caretOffset = Editor.CaretOffset;
-			}
-			else
-			{
-				Editor.Document.Insert(Editor.SelectionStart, "/*");
-				caretOffset = Editor.CaretOffset;
-				Editor.Document.Insert(Editor.SelectionStart + Editor.SelectionLength, "*/");
-			}
-
-			Editor.SelectionLength = 0;
-			Editor.CaretOffset = caretOffset;
-			Editor.EndChange();
-		}
-
-		private void HandleLineComments()
-		{
-			var startLine = Editor.Document.GetLineByOffset(Editor.SelectionStart);
-			var endLine = Editor.Document.GetLineByOffset(Editor.SelectionStart + Editor.SelectionLength);
-
-			var lines = Enumerable.Range(startLine.LineNumber, endLine.LineNumber - startLine.LineNumber + 1)
-				.Select(l => Editor.Document.GetLineByNumber(l)).ToArray();
-
-			var allLinesCommented = lines
-				.All(l => Editor.Text.Substring(startLine.Offset, startLine.Length).TrimStart().StartsWith("//"));
-
-			Editor.BeginChange();
-
-			foreach (var line in lines)
-			{
-				if (allLinesCommented)
-				{
-					Editor.Document.Remove(line.Offset + Editor.Text.Substring(line.Offset, line.Length).IndexOf("//", StringComparison.InvariantCulture), 2);
-				}
-				else
-				{
-					Editor.Document.Insert(line.Offset, "//");
-				}
-			}
-
-			var caretOffset = Editor.CaretOffset;
-			Editor.SelectionLength = 0;
-			Editor.CaretOffset = caretOffset;
-
-			Editor.EndChange();
 		}
 
 		private void EditorKeyUpHandler(object sender, KeyEventArgs e)

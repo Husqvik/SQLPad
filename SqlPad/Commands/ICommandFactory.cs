@@ -30,16 +30,21 @@ namespace SqlPad.Commands
 		public int SelectionLength { get; private set; }
 		public IDatabaseModel DatabaseModel { get; private set; }
 
+		public CommandExecutionContext(string statementText, int caretOffset, StatementCollection statements, IDatabaseModel databaseModel)
+		{
+			StatementText = statementText;
+			CaretOffset = caretOffset;
+			SelectionStart = caretOffset;
+			Statements = statements;
+			DatabaseModel = databaseModel;
+		}
+
 		public static CommandExecutionContext Create(TextEditor editor, StatementCollection statements, IDatabaseModel databaseModel)
 		{
-			return new CommandExecutionContext
+			return new CommandExecutionContext(editor.Text, editor.CaretOffset, statements, databaseModel)
 			       {
-				       CaretOffset = editor.CaretOffset,
 				       SelectionStart = editor.SelectionStart,
 					   SelectionLength = editor.SelectionLength,
-					   StatementText = editor.Text,
-					   Statements = statements,
-					   DatabaseModel = databaseModel
 			       };
 		}
 	}

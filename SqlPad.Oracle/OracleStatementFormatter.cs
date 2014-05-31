@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Windows.Input;
+using SqlPad.Commands;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
@@ -27,6 +29,7 @@ namespace SqlPad.Oracle
 		}
 
 		private readonly SqlFormatterOptions _options;
+		public CommandExecutionHandler ExecutionHandler { get; private set; }
 
 		private static readonly HashSet<LineBreakSettings> LineBreaks =
 			new HashSet<LineBreakSettings>
@@ -98,24 +101,30 @@ namespace SqlPad.Oracle
 				Terminals.Keep
 			};
 
-		private static readonly TextSegment[] EmptyCollection = new TextSegment[0];
-
 		public OracleStatementFormatter(SqlFormatterOptions options)
 		{
 			_options = options;
+
+			ExecutionHandler =
+				new CommandExecutionHandler
+				{
+					Name = "FormatStatement",
+					DefaultGestures = new InputGestureCollection { new KeyGesture(Key.F, ModifierKeys.Control | ModifierKeys.Alt) },
+					ExecuteHandler = ExecutionHandlerImplementation
+				};
 		}
 
-		public ICollection<TextSegment> FormatStatement(StatementCollection statements, int selectionStart, int selectionLength)
+		private void ExecutionHandlerImplementation(CommandExecutionContext executionContext)
 		{
-			if (statements == null)
-				return EmptyCollection;
+			if (executionContext.Statements == null)
+				return;
 
-			var formattedStatements = statements.Where(s => s.SourcePosition.IndexStart <= selectionStart + selectionLength && s.SourcePosition.IndexEnd + 1 >= selectionStart)
+			var formattedStatements = executionContext.Statements.Where(s => s.SourcePosition.IndexStart <= executionContext.SelectionStart + executionContext.SelectionLength && s.SourcePosition.IndexEnd + 1 >= executionContext.SelectionStart)
 				.OrderBy(s => s.SourcePosition.IndexStart)
 				.ToArray();
 
 			if (formattedStatements.Length == 0)
-				return EmptyCollection;
+				return;
 
 			var stringBuilder = new StringBuilder();
 			var skipSpaceBeforeToken = false;
@@ -131,13 +140,16 @@ namespace SqlPad.Oracle
 			}
 
 			var indextStart = formattedStatements[0].RootNode.FirstTerminalNode.SourcePosition.IndexStart;
-			
-			return new [] { new TextSegment
-			                {
-				                Text = stringBuilder.ToString(),
-								IndextStart = indextStart,
-								Length = formattedStatements[formattedStatements.Length - 1].RootNode.LastTerminalNode.SourcePosition.IndexEnd - indextStart + 1,
-			                } };
+
+			var formattedStatement =
+				new TextSegment
+				{
+					Text = stringBuilder.ToString(),
+					IndextStart = indextStart,
+					Length = formattedStatements[formattedStatements.Length - 1].RootNode.LastTerminalNode.SourcePosition.IndexEnd - indextStart + 1,
+				};
+
+			executionContext.SegmentsToReplace.Add(formattedStatement);
 		}
 
 		private void FormatNode(StatementDescriptionNode startNode, StringBuilder stringBuilder, ref bool skipSpaceBeforeToken, ref string indentation)

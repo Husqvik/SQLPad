@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using SqlPad.Commands;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 

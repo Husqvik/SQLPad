@@ -1,4 +1,4 @@
-﻿namespace SqlPad
+﻿namespace SqlPad.Commands
 {
 	public interface ICommandSettingsProvider
 	{

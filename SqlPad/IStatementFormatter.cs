@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using SqlPad.Commands;
 
 namespace SqlPad
 {
 	public interface IStatementFormatter
 	{
-		ICollection<TextSegment> FormatStatement(StatementCollection statements, int selectionStart, int selectionLength);
+		CommandExecutionHandler ExecutionHandler { get; }
 	}
 
 	public class SqlFormatterOptions
