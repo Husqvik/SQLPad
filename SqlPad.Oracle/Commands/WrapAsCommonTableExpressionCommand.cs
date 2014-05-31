@@ -11,40 +11,21 @@ namespace SqlPad.Oracle.Commands
 	{
 		public const string Title = "Wrap as common table expression";
 
-		public static CommandExecutionHandler ExecutionHandler = new CommandExecutionHandler
-		{
-			Name = "WrapAsCommonTableExpression",
-			ExecutionHandler = ExecutionHandlerImplementation,
-			CanExecuteHandler = CanExecuteHandlerImplementation
-		};
-
-		private static void ExecutionHandlerImplementation(CommandExecutionContext executionContext)
-		{
-			var commandInstance = new WrapAsCommonTableExpressionCommand((OracleCommandExecutionContext)executionContext);
-			if (commandInstance.CanExecute())
-			{
-				commandInstance.Execute();
-			}
-		}
-
-		private static bool CanExecuteHandlerImplementation(CommandExecutionContext executionContext)
-		{
-			return new WrapAsCommonTableExpressionCommand((OracleCommandExecutionContext)executionContext).CanExecute();
-		}
+		public static CommandExecutionHandler ExecutionHandler = CreateStandardExecutionHandler<WrapAsCommonTableExpressionCommand>("WrapAsCommonTableExpression");
 
 		private WrapAsCommonTableExpressionCommand(OracleCommandExecutionContext executionContext)
 			: base(executionContext)
 		{
 		}
 
-		private bool CanExecute()
+		protected override bool CanExecute()
 		{
 			return CurrentNode != null && CurrentQueryBlock != null &&
 			       CurrentNode.Id == Terminals.Select &&
 			       CurrentQueryBlock.Columns.Any(c => !String.IsNullOrEmpty(c.NormalizedName));
 		}
 
-		private void Execute()
+		protected override void Execute()
 		{
 			ExecutionContext.EnsureSettingsProviderAvailable();
 

@@ -9,33 +9,14 @@ namespace SqlPad.Oracle.Commands
 	{
 		public const string Title = "Add Alias";
 
-		public static CommandExecutionHandler ExecutionHandler = new CommandExecutionHandler
-		{
-			Name = "AddAlias",
-			ExecutionHandler = ExecutionHandlerImplementation,
-			CanExecuteHandler = CanExecuteHandlerImplementation
-		};
-
-		private static void ExecutionHandlerImplementation(CommandExecutionContext executionContext)
-		{
-			var commandInstance = new AddAliasCommand((OracleCommandExecutionContext)executionContext);
-			if (commandInstance.CanExecute())
-			{
-				commandInstance.Execute();
-			}
-		}
-
-		private static bool CanExecuteHandlerImplementation(CommandExecutionContext executionContext)
-		{
-			return new AddAliasCommand((OracleCommandExecutionContext)executionContext).CanExecute();
-		}
+		public static CommandExecutionHandler ExecutionHandler = CreateStandardExecutionHandler<AddAliasCommand>("AddAlias");
 
 		private AddAliasCommand(OracleCommandExecutionContext executionContext)
 			: base(executionContext)
 		{
 		}
 
-		private bool CanExecute()
+		protected override bool CanExecute()
 		{
 			if (CurrentNode.Id != Terminals.ObjectIdentifier)
 				return false;
@@ -44,7 +25,7 @@ namespace SqlPad.Oracle.Commands
 			return tables.Length == 1 && tables[0].AliasNode == null;
 		}
 
-		private void Execute()
+		protected override void Execute()
 		{
 			ExecutionContext.EnsureSettingsProviderAvailable();
 

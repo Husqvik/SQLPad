@@ -52,7 +52,7 @@ namespace SqlPad.Oracle.Commands
 			_resolvedName = resolvedName;
 		}
 
-		private void Execute()
+		protected override void Execute()
 		{
 			var prefixedColumnReference = CurrentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference);
 

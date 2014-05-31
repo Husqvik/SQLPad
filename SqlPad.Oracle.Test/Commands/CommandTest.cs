@@ -85,6 +85,24 @@ WHERE
 			_editor = new TextEditor();
 		}
 
+		private class TestCommandSettings : ICommandSettingsProvider
+		{
+			private readonly bool _isValueValid;
+
+			public TestCommandSettings(string value, bool isValueValid = true)
+			{
+				Settings = new CommandSettingsModel { Value = value };
+				_isValueValid = isValueValid;
+			}
+
+			public bool GetSettings()
+			{
+				return _isValueValid;
+			}
+
+			public CommandSettingsModel Settings { get; private set; }
+		}
+
 		private CommandExecutionContext CreateGenericExecutionContext()
 		{
 			var statements = Parser.Parse(_editor.Text);
@@ -594,22 +612,15 @@ WHERE
 			_editor.Text.ShouldBe("selECT NULL, 'null' FROM SELECTion");
 		}
 
-		private class TestCommandSettings : ICommandSettingsProvider
+		[Test(Description = @""), STAThread]
+		public void TestAddToGroupByCommandWithoutExistingGroupByClause()
 		{
-			private readonly bool _isValueValid;
+			_editor.Text = @"SELECT SELECTION.PROJECT_ID, COUNT(*) PROJECT_SELECTIONS FROM SELECTION";
+			_editor.SelectionLength = 18;
 
-			public TestCommandSettings(string value, bool isValueValid = true)
-			{
-				Settings = new CommandSettingsModel { Value = value };
-				_isValueValid = isValueValid;
-			}
+			ExecuteOracleCommand(AddToGroupByCommand.ExecutionHandler);
 
-			public bool GetSettings()
-			{
-				return _isValueValid;
-			}
-
-			public CommandSettingsModel Settings { get; private set; }
+			_editor.Text.ShouldBe("SELECT SELECTION.PROJECT_ID, COUNT(*) PROJECT_SELECTIONS FROM SELECTION GROUP BY PROJECT_ID");
 		}
 	}
 }

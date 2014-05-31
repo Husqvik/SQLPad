@@ -8,40 +8,21 @@ namespace SqlPad.Oracle.Commands
 	{
 		public const string Title = "Expand";
 
-		public static CommandExecutionHandler ExecutionHandler = new CommandExecutionHandler
-		{
-			Name = "ExpandAsterisk",
-			ExecutionHandler = ExecutionHandlerImplementation,
-			CanExecuteHandler = CanExecuteHandlerImplementation
-		};
-
-		private static void ExecutionHandlerImplementation(CommandExecutionContext executionContext)
-		{
-			var commandInstance = new ExpandAsteriskCommand((OracleCommandExecutionContext)executionContext);
-			if (commandInstance.CanExecute())
-			{
-				commandInstance.Execute();
-			}
-		}
-
-		private static bool CanExecuteHandlerImplementation(CommandExecutionContext executionContext)
-		{
-			return new ExpandAsteriskCommand((OracleCommandExecutionContext)executionContext).CanExecute();
-		}
+		public static CommandExecutionHandler ExecutionHandler = CreateStandardExecutionHandler<ExpandAsteriskCommand>("ExpandAsterisk");
 
 		private ExpandAsteriskCommand(OracleCommandExecutionContext executionContext)
 			: base(executionContext)
 		{
 		}
 
-		private bool CanExecute()
+		protected override bool CanExecute()
 		{
 			return CurrentNode != null && CurrentQueryBlock != null &&
 			       CurrentNode.Id == OracleGrammarDescription.Terminals.Asterisk &&
 			       !GetSegmentToReplace().Equals(TextSegment.Empty);
 		}
 
-		private void Execute()
+		protected override void Execute()
 		{
 			ExecutionContext.SegmentsToReplace.Add(GetSegmentToReplace());
 		}

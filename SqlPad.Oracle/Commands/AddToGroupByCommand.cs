@@ -10,27 +10,8 @@ namespace SqlPad.Oracle.Commands
 
 		public const string Title = "Add to GROUP BY clause";
 
-		public static CommandExecutionHandler ExecutionHandler = new CommandExecutionHandler
-		{
-			Name = "AddToGroupByClause",
-			ExecutionHandler = ExecutionHandlerImplementation,
-			CanExecuteHandler = CanExecuteHandlerImplementation
-		};
-
-		private static void ExecutionHandlerImplementation(CommandExecutionContext executionContext)
-		{
-			var commandInstance = new AddToGroupByCommand((OracleCommandExecutionContext)executionContext);
-			if (commandInstance.CanExecute())
-			{
-				commandInstance.Execute();
-			}
-		}
-
-		private static bool CanExecuteHandlerImplementation(CommandExecutionContext executionContext)
-		{
-			return new AddToGroupByCommand((OracleCommandExecutionContext)executionContext).CanExecute();
-		}
-
+		public static CommandExecutionHandler ExecutionHandler = CreateStandardExecutionHandler<AddToGroupByCommand>("AddToGroupByClause");
+		
 		private AddToGroupByCommand(OracleCommandExecutionContext executionContext)
 			: base(executionContext)
 		{
@@ -39,16 +20,24 @@ namespace SqlPad.Oracle.Commands
 				: CurrentQueryBlock.RootNode.GetDescendantsWithinSameQuery(NonTerminals.FromClause).FirstOrDefault();
 		}
 
-		private bool CanExecute()
+		protected override bool CanExecute()
 		{
-			// TODO: Check ambiguous references
+			// TODO: Check ambiguous references, span over clauses, etc.
 			return CurrentNode != null && _fromClause != null && _fromClause.IsGrammarValid;
 		}
 
-		private void Execute()
+		protected override void Execute()
 		{
 			var selectedTerminals = CurrentQueryBlock.RootNode.Terminals.Where(t => t.SourcePosition.IndexEnd >= ExecutionContext.SelectionStart && t.SourcePosition.IndexStart <= ExecutionContext.SelectionStart + ExecutionContext.SelectionLength).ToArray();
 			var expressions = selectedTerminals.Select(t => t.GetTopAncestor(NonTerminals.Expression)).Distinct().ToArray();
+
+			var columnReferences = CurrentQueryBlock.AllColumnReferences
+				.Where(c => selectedTerminals.Contains(c.ColumnNode))
+				.ToDictionary(c => c.ColumnNode, c => c);
+
+			var functionReferences = CurrentQueryBlock.AllFunctionReferences
+				.Where(c => selectedTerminals.Contains(c.FunctionIdentifierNode))
+				.ToDictionary(c => c.FunctionIdentifierNode, c => c);
 
 			var firstTerminalStartIndex = selectedTerminals[0].SourcePosition.IndexStart;
 			

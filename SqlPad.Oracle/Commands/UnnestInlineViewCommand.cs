@@ -12,28 +12,9 @@ namespace SqlPad.Oracle.Commands
 
 		public const string Title = "Unnest";
 
-		public static CommandExecutionHandler ExecutionHandler = new CommandExecutionHandler
-		{
-			Name = "Unnest",
-			ExecutionHandler = ExecutionHandlerImplementation,
-			CanExecuteHandler = CanExecuteHandlerImplementation
-		};
+		public static CommandExecutionHandler ExecutionHandler = CreateStandardExecutionHandler<UnnestInlineViewCommand>(Title);
 
-		private static void ExecutionHandlerImplementation(CommandExecutionContext executionContext)
-		{
-			var commandInstance = new UnnestInlineViewCommand((OracleCommandExecutionContext)executionContext);
-			if (commandInstance.CanExecute())
-			{
-				commandInstance.Execute();
-			}
-		}
-
-		private static bool CanExecuteHandlerImplementation(CommandExecutionContext executionContext)
-		{
-			return new UnnestInlineViewCommand((OracleCommandExecutionContext)executionContext).CanExecute();
-		}
-
-		public UnnestInlineViewCommand(OracleCommandExecutionContext executionContext)
+		private UnnestInlineViewCommand(OracleCommandExecutionContext executionContext)
 			: base(executionContext)
 		{
 			_parentQueryBlock = SemanticModel == null
@@ -44,7 +25,7 @@ namespace SqlPad.Oracle.Commands
 					.FirstOrDefault();
 		}
 
-		private bool CanExecute()
+		protected override bool CanExecute()
 		{
 			var canExecute = CurrentNode != null && CurrentNode.Id == Terminals.Select && _parentQueryBlock != null &&
 				!CurrentQueryBlock.HasDistinctResultSet && CurrentQueryBlock.GroupByClause == null;
@@ -54,7 +35,7 @@ namespace SqlPad.Oracle.Commands
 			return canExecute;
 		}
 
-		private void Execute()
+		protected override void Execute()
 		{
 			foreach (var columnReference in _parentQueryBlock.AllColumnReferences
 				.Where(c => c.ColumnNodeObjectReferences.Count == 1 && c.ColumnNodeObjectReferences.First().QueryBlocks.Count == 1 && c.ColumnNodeObjectReferences.First().QueryBlocks.First() == CurrentQueryBlock &&

@@ -9,34 +9,19 @@ namespace SqlPad.Oracle.Commands
 	{
 		public const string Title = "Toggle quoted notation";
 
-		public static CommandExecutionHandler ExecutionHandler = new CommandExecutionHandler
-		{
-			Name = "ToggleQuotedNotation",
-			ExecutionHandler = ExecutionHandlerImplementation,
-			CanExecuteHandler = CanExecuteHandlerImplementation
-		};
-
-		private static void ExecutionHandlerImplementation(CommandExecutionContext executionContext)
-		{
-			new ToggleQuotedNotationCommand((OracleCommandExecutionContext)executionContext).Execute();
-		}
-
-		private static bool CanExecuteHandlerImplementation(CommandExecutionContext executionContext)
-		{
-			return new ToggleQuotedNotationCommand((OracleCommandExecutionContext)executionContext).CanExecute();
-		}
-
+		public static CommandExecutionHandler ExecutionHandler = CreateStandardExecutionHandler<ToggleQuotedNotationCommand>("ToggleQuotedNotation");
+		
 		private ToggleQuotedNotationCommand(OracleCommandExecutionContext executionContext)
 			: base(executionContext)
 		{
 		}
 
-		private bool CanExecute()
+		protected override bool CanExecute()
 		{
 			return CurrentNode != null && CurrentQueryBlock != null && CurrentNode.Id == Terminals.Select;
 		}
 
-		private void Execute()
+		protected override void Execute()
 		{
 			bool? enableQuotes = null;
 			foreach (var identifier in CurrentQueryBlock.RootNode.Terminals.Where(t => (OracleGrammarDescription.Identifiers.Contains(t.Id) || t.Id == Terminals.ColumnAlias || t.Id == Terminals.ObjectAlias) && !t.Token.Value.CollidesWithKeyword()))
