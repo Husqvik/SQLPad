@@ -65,6 +65,7 @@
   <ItemGroup>
     <Compile Include="Commands\MakeUpperCaseCommand.cs" />
     <Compile Include="Commands\ExpandAsteriskCommand.cs" />
+    <Compile Include="Commands\OracleCommandExecutionContext.cs" />
     <Compile Include="Commands\UnnestInlineViewCommand.cs" />
     <Compile Include="Commands\FindUsagesCommand.cs" />
     <Compile Include="Commands\AddToGroupByCommand.cs" />

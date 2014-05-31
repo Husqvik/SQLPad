@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using SqlPad.Commands;
@@ -7,35 +6,56 @@ using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
 namespace SqlPad.Oracle.Commands
 {
-	public class WrapAsInlineViewCommand : OracleConfigurableCommandBase
+	internal class WrapAsInlineViewCommand : OracleCommandBase
 	{
-		public WrapAsInlineViewCommand(OracleStatementSemanticModel semanticModel, StatementDescriptionNode currentNode, ICommandSettingsProvider settingsProvider = null)
-			: base(semanticModel, currentNode, settingsProvider)
+		public const string Title = "Wrap as inline view";
+
+		public static CommandExecutionHandler ExecutionHandler = new CommandExecutionHandler
+		{
+			Name = "WrapAsInlineView",
+			ExecutionHandler = ExecutionHandlerImplementation,
+			CanExecuteHandler = CanExecuteHandlerImplementation
+		};
+
+		private static void ExecutionHandlerImplementation(CommandExecutionContext executionContext)
+		{
+			var commandInstance = new WrapAsInlineViewCommand((OracleCommandExecutionContext)executionContext);
+			if (commandInstance.CanExecute())
+			{
+				commandInstance.Execute();
+			}
+		}
+
+		private static bool CanExecuteHandlerImplementation(CommandExecutionContext executionContext)
+		{
+			return new WrapAsInlineViewCommand((OracleCommandExecutionContext)executionContext).CanExecute();
+		}
+
+		private WrapAsInlineViewCommand(OracleCommandExecutionContext executionContext)
+			: base(executionContext)
 		{
 		}
 
-		public override bool CanExecute(object parameter)
+		private bool CanExecute()
 		{
 			return CurrentNode != null && CurrentQueryBlock != null &&
 				   CurrentNode.Id == Terminals.Select &&
 				   CurrentQueryBlock.Columns.Any(c => !String.IsNullOrEmpty(c.NormalizedName));
 		}
 
-		public override string Title
+		private void Execute()
 		{
-			get { return "Wrap as inline view"; }
-		}
+			ExecutionContext.EnsureSettingsProviderAvailable();
 
-		protected override void ExecuteInternal(string statementText, ICollection<TextSegment> segmentsToReplace)
-		{
-			SettingsModel.Title = Title;
-			SettingsModel.Heading = SettingsModel.Title;
-			SettingsModel.Description = "Enter an alias for the inline view";
+			var settingsModel = ExecutionContext.SettingsProvider.Settings;
+			settingsModel.Title = Title;
+			settingsModel.Heading = settingsModel.Title;
+			settingsModel.Description = "Enter an alias for the inline view";
 
-			if (!SettingsProvider.GetSettings())
+			if (!ExecutionContext.SettingsProvider.GetSettings())
 				return;
 
-			var tableAlias = SettingsProvider.Settings.Value;
+			var tableAlias = settingsModel.Value;
 
 			var queryBlock = SemanticModel.GetQueryBlock(CurrentNode);
 
@@ -48,14 +68,14 @@ namespace SqlPad.Oracle.Commands
 			builder.Append(columnList);
 			builder.Append(" FROM (");
 
-			segmentsToReplace.Add(new TextSegment
+			ExecutionContext.SegmentsToReplace.Add(new TextSegment
 			{
 				IndextStart = queryBlock.RootNode.SourcePosition.IndexStart,
 				Length = 0,
 				Text = builder.ToString()
 			});
 
-			segmentsToReplace.Add(new TextSegment
+			ExecutionContext.SegmentsToReplace.Add(new TextSegment
 			{
 				IndextStart = queryBlock.RootNode.SourcePosition.IndexEnd + 1,
 				Length = 0,

@@ -6,18 +6,20 @@ namespace SqlPad
 	{
 		private readonly object _lockObject = new object();
 
-		public static SqlDocument FromStatementCollection(StatementCollection statements)
+		public static SqlDocument FromStatementCollection(StatementCollection statements, string statementText)
 		{
-			return new SqlDocument { StatementCollection = statements };
+			return new SqlDocument { StatementCollection = statements, StatementText = statementText };
 		}
 
 		public StatementCollection StatementCollection { get; private set; }
+		public string StatementText { get; private set; }
 
-		public void UpdateStatements(StatementCollection statements)
+		public void UpdateStatements(StatementCollection statements, string statementText)
 		{
 			lock (_lockObject)
 			{
 				StatementCollection = statements;
+				StatementText = statementText;
 			}
 		}
 

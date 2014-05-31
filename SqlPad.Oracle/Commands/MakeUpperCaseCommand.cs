@@ -12,7 +12,7 @@ namespace SqlPad.Oracle.Commands
 		{
 			Name = "MakeUpperCase",
 			DefaultGestures = new InputGestureCollection { new KeyGesture(Key.U, ModifierKeys.Control | ModifierKeys.Shift) },
-			ExecuteHandler = ExecutionHandlerImplementation
+			ExecutionHandler = ExecutionHandlerImplementation
 		};
 
 		private static void ExecutionHandlerImplementation(CommandExecutionContext executionContext)

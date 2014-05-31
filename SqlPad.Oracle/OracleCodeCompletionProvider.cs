@@ -59,9 +59,9 @@ namespace SqlPad.Oracle
 				}).ToArray();
 		}
 
-		public ICollection<ICodeCompletionItem> ResolveItems(IDatabaseModel databaseModel, string statementText, int cursorPosition, params string[] categories)
+		internal ICollection<ICodeCompletionItem> ResolveItems(IDatabaseModel databaseModel, string statementText, int cursorPosition, params string[] categories)
 		{
-			var sourceItems = ResolveItems(SqlDocument.FromStatementCollection(_parser.Parse(statementText)), databaseModel, statementText, cursorPosition);
+			var sourceItems = ResolveItems(SqlDocument.FromStatementCollection(_parser.Parse(statementText), statementText), databaseModel, statementText, cursorPosition);
 			return sourceItems.Where(i => categories.Length == 0 || categories.Contains(i.Category)).ToArray();
 		}
 

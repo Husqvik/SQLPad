@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using SqlPad.Commands;
@@ -8,35 +7,57 @@ using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 
 namespace SqlPad.Oracle.Commands
 {
-	public class WrapAsCommonTableExpressionCommand : OracleConfigurableCommandBase
+	internal class WrapAsCommonTableExpressionCommand : OracleCommandBase
 	{
-		public WrapAsCommonTableExpressionCommand(OracleStatementSemanticModel semanticModel, StatementDescriptionNode currentNode, ICommandSettingsProvider settingsProvider = null)
-			: base(semanticModel, currentNode, settingsProvider)
+		public const string Title = "Wrap as common table expression";
+
+		public static CommandExecutionHandler ExecutionHandler = new CommandExecutionHandler
+		{
+			Name = "WrapAsCommonTableExpression",
+			ExecutionHandler = ExecutionHandlerImplementation,
+			CanExecuteHandler = CanExecuteHandlerImplementation
+		};
+
+		private static void ExecutionHandlerImplementation(CommandExecutionContext executionContext)
+		{
+			var commandInstance = new WrapAsCommonTableExpressionCommand((OracleCommandExecutionContext)executionContext);
+			if (commandInstance.CanExecute())
+			{
+				commandInstance.Execute();
+			}
+		}
+
+		private static bool CanExecuteHandlerImplementation(CommandExecutionContext executionContext)
+		{
+			return new WrapAsCommonTableExpressionCommand((OracleCommandExecutionContext)executionContext).CanExecute();
+		}
+
+		private WrapAsCommonTableExpressionCommand(OracleCommandExecutionContext executionContext)
+			: base(executionContext)
 		{
 		}
 
-		public override bool CanExecute(object parameter)
+		private bool CanExecute()
 		{
 			return CurrentNode != null && CurrentQueryBlock != null &&
 			       CurrentNode.Id == Terminals.Select &&
 			       CurrentQueryBlock.Columns.Any(c => !String.IsNullOrEmpty(c.NormalizedName));
 		}
 
-		public override string Title
+		private void Execute()
 		{
-			get { return "Wrap as common table expression"; }
-		}
+			ExecutionContext.EnsureSettingsProviderAvailable();
 
-		protected override void ExecuteInternal(string statementText, ICollection<TextSegment> segmentsToReplace)
-		{
-			SettingsModel.Title = Title;
-			SettingsModel.Heading = SettingsModel.Title;
-			SettingsModel.Description = "Enter an alias for the common table expression";
+			var settingsModel = ExecutionContext.SettingsProvider.Settings;
 
-			if (!SettingsProvider.GetSettings())
+			settingsModel.Title = Title;
+			settingsModel.Heading = settingsModel.Title;
+			settingsModel.Description = "Enter an alias for the common table expression";
+
+			if (!ExecutionContext.SettingsProvider.GetSettings())
 				return;
 
-			var tableAlias = SettingsProvider.Settings.Value;
+			var tableAlias = settingsModel.Value;
 
 			var queryBlock = SemanticModel.GetQueryBlock(CurrentNode);
 
@@ -62,7 +83,7 @@ namespace SqlPad.Oracle.Commands
 			}
 
 			builder.Append(tableAlias + " AS (");
-			builder.Append(queryBlock.RootNode.GetStatementSubstring(statementText));
+			builder.Append(queryBlock.RootNode.GetStatementSubstring(ExecutionContext.StatementText));
 			builder.Append(")");
 
 			if (CurrentQueryBlock.Type == QueryBlockType.CommonTableExpression)
@@ -75,7 +96,7 @@ namespace SqlPad.Oracle.Commands
 				builder.Append(" ");	
 			}
 
-			segmentsToReplace.Add(new TextSegment
+			ExecutionContext.SegmentsToReplace.Add(new TextSegment
 			{
 				IndextStart = startIndex,
 				Length = 0,
@@ -92,7 +113,7 @@ namespace SqlPad.Oracle.Commands
 			builder.Append(" FROM ");
 			builder.Append(tableAlias);
 
-			segmentsToReplace.Add(new TextSegment
+			ExecutionContext.SegmentsToReplace.Add(new TextSegment
 			{
 				IndextStart = queryBlock.RootNode.SourcePosition.IndexStart,
 				Length = queryBlock.RootNode.SourcePosition.Length,

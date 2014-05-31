@@ -1,39 +1,50 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using SqlPad.Commands;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 
 namespace SqlPad.Oracle.Commands
 {
-	public class ResolveAmbiguousColumnCommand : OracleCommandBase
+	internal class ResolveAmbiguousColumnCommand : OracleCommandBase
 	{
 		private readonly string _resolvedName;
+		private static readonly ICollection<CommandExecutionHandler> EmptyCollection = new CommandExecutionHandler[0];
 
-		public static ICollection<ResolveAmbiguousColumnCommand> ResolveCommands(OracleStatementSemanticModel semanticModel, StatementDescriptionNode currentTerminal)
+		public static ICollection<CommandExecutionHandler> ResolveCommandHandlers(OracleStatementSemanticModel semanticModel, StatementDescriptionNode currentTerminal)
 		{
-			CheckParameters(semanticModel, currentTerminal);
+			if (semanticModel == null)
+				throw new InvalidOperationException("semanticModel");
 
-			var commands = new List<ResolveAmbiguousColumnCommand>();
+			if (currentTerminal == null)
+				throw new InvalidOperationException("currentTerminal");
+
+			var commands = new List<CommandExecutionHandler>();
 			if (currentTerminal.Id != Terminals.Identifier)
-				return commands.AsReadOnly();
+				return EmptyCollection;
 
 			var columnReference = semanticModel.QueryBlocks.SelectMany(qb => qb.Columns).SelectMany(c => c.ColumnReferences).SingleOrDefault(c => c.ColumnNode == currentTerminal);
 			if (columnReference == null || columnReference.ColumnNodeObjectReferences.Count <= 1)
-				return commands.AsReadOnly();
+				return EmptyCollection;
 
 			var identifiers = OracleObjectIdentifier.GetUniqueReferences(columnReference.ColumnNodeObjectReferences.Select(r => r.FullyQualifiedName).ToArray());
 			var actions = columnReference.ColumnNodeObjectReferences
 				.Where(r => identifiers.Contains(r.FullyQualifiedName))
-				.Select(r => new ResolveAmbiguousColumnCommand(semanticModel, currentTerminal, r.FullyQualifiedName + "." + columnReference.Name));
+				.Select(r => new CommandExecutionHandler
+				             {
+								 Name = r.FullyQualifiedName + "." + columnReference.Name,
+								 ExecutionHandler = c => new ResolveAmbiguousColumnCommand((OracleCommandExecutionContext)c, r.FullyQualifiedName + "." + columnReference.Name)
+									 .Execute()
+				             });
 
 			commands.AddRange(actions);
 
 			return commands.AsReadOnly();
 		}
 
-		private ResolveAmbiguousColumnCommand(OracleStatementSemanticModel semanticModel, StatementDescriptionNode currentNode, string resolvedName)
-			: base(semanticModel, currentNode)
+		private ResolveAmbiguousColumnCommand(OracleCommandExecutionContext executionContext, string resolvedName)
+			: base(executionContext)
 		{	
 			if (String.IsNullOrWhiteSpace(resolvedName))
 				throw new ArgumentException("resolvedName");
@@ -41,12 +52,7 @@ namespace SqlPad.Oracle.Commands
 			_resolvedName = resolvedName;
 		}
 
-		public override bool CanExecute(object parameter)
-		{
-			return true;
-		}
-
-		protected override void ExecuteInternal(string statementText, ICollection<TextSegment> segmentsToReplace)
+		private void Execute()
 		{
 			var prefixedColumnReference = CurrentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference);
 
@@ -57,12 +63,7 @@ namespace SqlPad.Oracle.Commands
 								  Text = _resolvedName
 			                  };
 			
-			segmentsToReplace.Add(textSegment);
-		}
-
-		public override string Title
-		{
-			get { return _resolvedName; }
+			ExecutionContext.SegmentsToReplace.Add(textSegment);
 		}
 	}
 }

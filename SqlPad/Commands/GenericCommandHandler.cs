@@ -3,9 +3,8 @@ using System.Linq;
 using System.Windows.Input;
 using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.Editing;
-using SqlPad.Commands;
 
-namespace SqlPad
+namespace SqlPad.Commands
 {
 	internal class GenericCommandHandler
 	{
@@ -22,7 +21,7 @@ namespace SqlPad
 					{
 						var editor = GetEditorFromSender(sender);
 						var executionContext = CommandExecutionContext.Create(editor, statements, databaseModel);
-						handler.ExecuteHandler(executionContext);
+						handler.ExecutionHandler(executionContext);
 						editor.ReplaceTextSegments(executionContext.SegmentsToReplace);
 					};
 		}

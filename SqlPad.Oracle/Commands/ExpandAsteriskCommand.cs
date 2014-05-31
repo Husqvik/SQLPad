@@ -1,31 +1,49 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
+using SqlPad.Commands;
 
 namespace SqlPad.Oracle.Commands
 {
-	public class ExpandAsteriskCommand : OracleCommandBase
+	internal class ExpandAsteriskCommand : OracleCommandBase
 	{
-		public ExpandAsteriskCommand(OracleStatementSemanticModel semanticModel, StatementDescriptionNode asteriskTerminal)
-			: base(semanticModel, asteriskTerminal)
+		public const string Title = "Expand";
+
+		public static CommandExecutionHandler ExecutionHandler = new CommandExecutionHandler
+		{
+			Name = "ExpandAsterisk",
+			ExecutionHandler = ExecutionHandlerImplementation,
+			CanExecuteHandler = CanExecuteHandlerImplementation
+		};
+
+		private static void ExecutionHandlerImplementation(CommandExecutionContext executionContext)
+		{
+			var commandInstance = new ExpandAsteriskCommand((OracleCommandExecutionContext)executionContext);
+			if (commandInstance.CanExecute())
+			{
+				commandInstance.Execute();
+			}
+		}
+
+		private static bool CanExecuteHandlerImplementation(CommandExecutionContext executionContext)
+		{
+			return new ExpandAsteriskCommand((OracleCommandExecutionContext)executionContext).CanExecute();
+		}
+
+		private ExpandAsteriskCommand(OracleCommandExecutionContext executionContext)
+			: base(executionContext)
 		{
 		}
 
-		public override bool CanExecute(object parameter)
+		private bool CanExecute()
 		{
 			return CurrentNode != null && CurrentQueryBlock != null &&
-			       CurrentNode.Type == NodeType.Terminal && CurrentNode.Token.Value == "*" &&
+			       CurrentNode.Id == OracleGrammarDescription.Terminals.Asterisk &&
 			       !GetSegmentToReplace().Equals(TextSegment.Empty);
 		}
 
-		public override string Title
+		private void Execute()
 		{
-			get { return "Expand"; }
-		}
-
-		protected override void ExecuteInternal(string statementText, ICollection<TextSegment> segmentsToReplace)
-		{
-			segmentsToReplace.Add(GetSegmentToReplace());
+			ExecutionContext.SegmentsToReplace.Add(GetSegmentToReplace());
 		}
 
 		private TextSegment GetSegmentToReplace()

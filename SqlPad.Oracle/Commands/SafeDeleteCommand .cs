@@ -13,7 +13,7 @@ namespace SqlPad.Oracle.Commands
 		{
 			Name = "SafeDelete",
 			DefaultGestures = new InputGestureCollection { new KeyGesture(Key.Delete, ModifierKeys.Alt) },
-			ExecuteHandler = ExecutionHandlerImplementation
+			ExecutionHandler = ExecutionHandlerImplementation
 		};
 
 		private static void ExecutionHandlerImplementation(CommandExecutionContext executionContext)

@@ -16,7 +16,7 @@ namespace SqlPad.Oracle.Test
 		public void TestColumnTypeToolTip()
 		{
 			const string query = "SELECT NAME FROM SELECTION";
-			_document.UpdateStatements(_oracleSqlParser.Parse(query));
+			_document.UpdateStatements(_oracleSqlParser.Parse(query), query);
 
 			var toolTip = _toolTipProvider.GetToolTip(TestFixture.DatabaseModel, _document, 8);
 
@@ -28,7 +28,7 @@ namespace SqlPad.Oracle.Test
 		public void TestTableObjectToolTip()
 		{
 			const string query = "SELECT NAME FROM SELECTION";
-			_document.UpdateStatements(_oracleSqlParser.Parse(query));
+			_document.UpdateStatements(_oracleSqlParser.Parse(query), query);
 
 			var toolTip = _toolTipProvider.GetToolTip(TestFixture.DatabaseModel, _document, 20);
 
@@ -40,7 +40,7 @@ namespace SqlPad.Oracle.Test
 		public void TestObjectSemanticErrorToolTip()
 		{
 			const string query = "SELECT NAME FROM SELECTION, RESPONDENTBUCKET";
-			_document.UpdateStatements(_oracleSqlParser.Parse(query));
+			_document.UpdateStatements(_oracleSqlParser.Parse(query), query);
 
 			var toolTip = _toolTipProvider.GetToolTip(TestFixture.DatabaseModel, _document, 8);
 
@@ -52,7 +52,7 @@ namespace SqlPad.Oracle.Test
 		public void TestFunctionSemanticErrorToolTip()
 		{
 			const string query = "SELECT COUNT FROM SELECTION";
-			_document.UpdateStatements(_oracleSqlParser.Parse(query));
+			_document.UpdateStatements(_oracleSqlParser.Parse(query), query);
 
 			var toolTip = _toolTipProvider.GetToolTip(TestFixture.DatabaseModel, _document, 8);
 
@@ -64,7 +64,7 @@ namespace SqlPad.Oracle.Test
 		public void TestAmbiguousColumnNameFromSingleObjectToolTip()
 		{
 			const string query = "SELECT * FROM (SELECT 1 NAME, 2 NAME, 3 VAL, 4 VAL FROM DUAL)";
-			_document.UpdateStatements(_oracleSqlParser.Parse(query));
+			_document.UpdateStatements(_oracleSqlParser.Parse(query), query);
 
 			var toolTip = _toolTipProvider.GetToolTip(TestFixture.DatabaseModel, _document, 7);
 
@@ -76,7 +76,7 @@ namespace SqlPad.Oracle.Test
 		public void TestAmbiguousColumnNameInMultipleObjectAsteriskReferences()
 		{
 			const string query = "SELECT T1.*, T2.* FROM (SELECT 1 C1, 2 C1 FROM DUAL) T1, (SELECT 1 D1, 2 D1 FROM DUAL) T2";
-			_document.UpdateStatements(_oracleSqlParser.Parse(query));
+			_document.UpdateStatements(_oracleSqlParser.Parse(query), query);
 
 			var toolTip = _toolTipProvider.GetToolTip(TestFixture.DatabaseModel, _document, 10);
 
@@ -93,7 +93,7 @@ namespace SqlPad.Oracle.Test
 		public void TestFunctionNameToolTip()
 		{
 			const string query = "SELECT COALESCE(NULL, 1) FROM DUAL";
-			_document.UpdateStatements(_oracleSqlParser.Parse(query));
+			_document.UpdateStatements(_oracleSqlParser.Parse(query), query);
 
 			var toolTip = _toolTipProvider.GetToolTip(TestFixture.DatabaseModel, _document, 8);
 

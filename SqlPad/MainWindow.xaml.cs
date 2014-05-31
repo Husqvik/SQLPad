@@ -90,7 +90,14 @@ namespace SqlPad
 			commandBindings.Add(new CommandBinding(lineCommentCommand, GenericCommandHandler.HandleLineComments));
 
 			var formatStatementCommand = new RoutedCommand(_statementFormatter.ExecutionHandler.Name, typeof(TextEditor), _statementFormatter.ExecutionHandler.DefaultGestures);
-			var formatStatementRoutedHandlerMethod = GenericCommandHandler.CreateRoutedEditCommandHandler(_statementFormatter.ExecutionHandler, _sqlDocument.StatementCollection, _databaseModel);
+			ExecutedRoutedEventHandler formatStatementRoutedHandlerMethod =
+				(sender, args) =>
+				{
+					var executionContext = CommandExecutionContext.Create(Editor, _sqlDocument.StatementCollection, _databaseModel);
+					_statementFormatter.ExecutionHandler.ExecutionHandler(executionContext);
+					Editor.ReplaceTextSegments(executionContext.SegmentsToReplace);
+				};
+
 			commandBindings.Add(new CommandBinding(formatStatementCommand, formatStatementRoutedHandlerMethod));
 
 			var findUsagesCommandHandler = _infrastructureFactory.CommandFactory.FindUsagesCommandHandler;
@@ -99,7 +106,7 @@ namespace SqlPad
 				(sender, args) =>
 				{
 					var executionContext = CommandExecutionContext.Create(Editor, _sqlDocument.StatementCollection, _databaseModel);
-					findUsagesCommandHandler.ExecuteHandler(executionContext);
+					findUsagesCommandHandler.ExecutionHandler(executionContext);
 					_colorizeAvalonEdit.SetHighlightSegments(executionContext.SegmentsToReplace);
 					Editor.TextArea.TextView.Redraw();
 				};
@@ -211,8 +218,9 @@ namespace SqlPad
 
 		private void DoWork(object text)
 		{
-			var statements = _sqlParser.Parse((string)text);
-			_sqlDocument.UpdateStatements(statements);
+			var statementText = (string)text;
+			var statements = _sqlParser.Parse(statementText);
+			_sqlDocument.UpdateStatements(statements, statementText);
 			_colorizeAvalonEdit.SetStatementCollection(statements);
 
 			Dispatcher.Invoke(() =>
@@ -374,10 +382,33 @@ namespace SqlPad
 				args.Handled = true;
 		}
 
+		private MenuItem BuildContextMenuItem(IContextAction action)
+		{
+			var item =
+				new MenuItem
+				{
+					Header = action.Name,
+					Command = new RoutedCommand(action.ExecutionHandler.Name, typeof(MenuItem))
+				};
+
+			ExecutedRoutedEventHandler routedHandler =
+				(sender, args) =>
+				{
+					action.ExecutionHandler.ExecutionHandler(action.ExecutionContext);
+					Editor.ReplaceTextSegments(action.ExecutionContext.SegmentsToReplace);
+				};
+
+			var commandBinding = new CommandBinding(item.Command, routedHandler);
+
+			item.CommandBindings.Add(commandBinding);
+
+			return item;
+		}
+
 		private bool PopulateContextActionMenu()
 		{
 			var menuItems = _contextActionProvider.GetContextActions(_databaseModel, _sqlDocument, Editor.SelectionStart, Editor.SelectionLength)
-				.Select(a => new MenuItem { Header = a.Name, Command = a.Command, CommandParameter = Editor });
+				.Select(BuildContextMenuItem);
 
 			Editor.ContextMenu.Items.Clear();
 

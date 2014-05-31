@@ -110,7 +110,7 @@ namespace SqlPad.Oracle
 				{
 					Name = "FormatStatement",
 					DefaultGestures = new InputGestureCollection { new KeyGesture(Key.F, ModifierKeys.Control | ModifierKeys.Alt) },
-					ExecuteHandler = ExecutionHandlerImplementation
+					ExecutionHandler = ExecutionHandlerImplementation
 				};
 		}
 

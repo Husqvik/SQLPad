@@ -9,9 +9,9 @@ namespace SqlPad.Oracle
 		private readonly OracleSqlParser _oracleParser = new OracleSqlParser();
 		private static readonly ICodeSnippet[] EmptyCollection = new ICodeSnippet[0];
 
-		public ICollection<ICodeSnippet> GetSnippets(string statementText, int cursorPosition)
+		internal ICollection<ICodeSnippet> GetSnippets(string statementText, int cursorPosition)
 		{
-			return GetSnippets(SqlDocument.FromStatementCollection(_oracleParser.Parse(statementText)), statementText, cursorPosition);
+			return GetSnippets(SqlDocument.FromStatementCollection(_oracleParser.Parse(statementText), statementText), statementText, cursorPosition);
 		}
 
 		public ICollection<ICodeSnippet> GetSnippets(SqlDocument sqlDocument, string statementText, int cursorPosition)

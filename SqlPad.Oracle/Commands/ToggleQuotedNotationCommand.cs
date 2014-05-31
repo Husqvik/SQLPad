@@ -1,28 +1,42 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
+using SqlPad.Commands;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
 namespace SqlPad.Oracle.Commands
 {
-	public class ToggleQuotedNotationCommand : OracleCommandBase
+	internal class ToggleQuotedNotationCommand : OracleCommandBase
 	{
-		public ToggleQuotedNotationCommand(OracleStatementSemanticModel semanticModel, StatementDescriptionNode currentNode)
-			: base(semanticModel, currentNode)
+		public const string Title = "Toggle quoted notation";
+
+		public static CommandExecutionHandler ExecutionHandler = new CommandExecutionHandler
+		{
+			Name = "ToggleQuotedNotation",
+			ExecutionHandler = ExecutionHandlerImplementation,
+			CanExecuteHandler = CanExecuteHandlerImplementation
+		};
+
+		private static void ExecutionHandlerImplementation(CommandExecutionContext executionContext)
+		{
+			new ToggleQuotedNotationCommand((OracleCommandExecutionContext)executionContext).Execute();
+		}
+
+		private static bool CanExecuteHandlerImplementation(CommandExecutionContext executionContext)
+		{
+			return new ToggleQuotedNotationCommand((OracleCommandExecutionContext)executionContext).CanExecute();
+		}
+
+		private ToggleQuotedNotationCommand(OracleCommandExecutionContext executionContext)
+			: base(executionContext)
 		{
 		}
 
-		public override bool CanExecute(object parameter)
+		private bool CanExecute()
 		{
 			return CurrentNode != null && CurrentQueryBlock != null && CurrentNode.Id == Terminals.Select;
 		}
 
-		public override string Title
-		{
-			get { return "Toggle quoted identifiers"; }
-		}
-
-		protected override void ExecuteInternal(string statementText, ICollection<TextSegment> segmentsToReplace)
+		private void Execute()
 		{
 			bool? enableQuotes = null;
 			foreach (var identifier in CurrentQueryBlock.RootNode.Terminals.Where(t => (OracleGrammarDescription.Identifiers.Contains(t.Id) || t.Id == Terminals.ColumnAlias || t.Id == Terminals.ObjectAlias) && !t.Token.Value.CollidesWithKeyword()))
@@ -39,14 +53,14 @@ namespace SqlPad.Oracle.Commands
 				var replacedLength = enableQuotes.Value ? 0 : 1;
 				var newText = enableQuotes.Value ? "\"" : String.Empty;
 
-				segmentsToReplace.Add(new TextSegment
+				ExecutionContext.SegmentsToReplace.Add(new TextSegment
 				{
 					IndextStart = identifier.SourcePosition.IndexStart,
 					Length = replacedLength,
 					Text = newText
 				});
 
-				segmentsToReplace.Add(new TextSegment
+				ExecutionContext.SegmentsToReplace.Add(new TextSegment
 				{
 					IndextStart = identifier.SourcePosition.IndexEnd + 1 - replacedLength,
 					Length = replacedLength,

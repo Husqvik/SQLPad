@@ -16,7 +16,8 @@ namespace SqlPad.Commands
 	{
 		public string Name { get; set; }
 		public InputGestureCollection DefaultGestures { get; set; }
-		public Action<CommandExecutionContext> ExecuteHandler { get; set; }
+		public Action<CommandExecutionContext> ExecutionHandler { get; set; }
+		public Func<CommandExecutionContext, bool> CanExecuteHandler { get; set; }
 	}
 
 	public class CommandExecutionContext
@@ -29,6 +30,13 @@ namespace SqlPad.Commands
 		public int CaretOffset { get; private set; }
 		public int SelectionLength { get; private set; }
 		public IDatabaseModel DatabaseModel { get; private set; }
+		public ICommandSettingsProvider SettingsProvider { get; set; }
+
+		public void EnsureSettingsProviderAvailable()
+		{
+			if (SettingsProvider == null)
+				throw new InvalidOperationException(String.Format("Settings provider is mandatory. "));
+		}
 
 		public CommandExecutionContext(string statementText, int caretOffset, StatementCollection statements, IDatabaseModel databaseModel)
 		{

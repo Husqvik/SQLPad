@@ -86,7 +86,7 @@
     <Compile Include="FunctionOverloadList.xaml.cs">
       <DependentUpon>FunctionOverloadList.xaml</DependentUpon>
     </Compile>
-    <Compile Include="GenericCommandHandler.cs" />
+    <Compile Include="Commands\GenericCommandHandler.cs" />
     <Compile Include="ICodeCompletionProvider.cs" />
     <Compile Include="ICodeSnippetProvider.cs" />
     <Compile Include="Commands\ICommandSettings.cs" />

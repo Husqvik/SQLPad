@@ -19,7 +19,7 @@ namespace SqlPad.Oracle.Commands
 		{
 			Name = "FindUsages",
 			DefaultGestures = new InputGestureCollection { new KeyGesture(Key.F11, ModifierKeys.Alt | ModifierKeys.Shift) },
-			ExecuteHandler = ExecutionHandlerImplementation
+			ExecutionHandler = ExecutionHandlerImplementation
 		};
 
 		private static void ExecutionHandlerImplementation(CommandExecutionContext executionContext)

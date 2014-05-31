@@ -1,58 +1,28 @@
 ﻿using System;
-using SqlPad.Commands;
 
 namespace SqlPad.Oracle.Commands
 {
-	public abstract class OracleCommandBase : EditCommandBase
+	internal abstract class OracleCommandBase
 	{
-		protected OracleStatementSemanticModel SemanticModel { get; private set; }
+		protected readonly OracleCommandExecutionContext ExecutionContext;
 
-		protected StatementDescriptionNode CurrentNode { get; private set; }
-		
+		protected OracleStatementSemanticModel SemanticModel { get { return ExecutionContext.SemanticModel; } }
+
+		protected StatementDescriptionNode CurrentNode { get { return ExecutionContext.CurrentNode; } }
+
 		protected OracleQueryBlock CurrentQueryBlock { get; private set; }
 
-		protected OracleCommandBase(OracleStatementSemanticModel semanticModel, StatementDescriptionNode currentNode)
+		protected OracleCommandBase(OracleCommandExecutionContext executionContext)
 		{
-			//CheckParameters(semanticModel, CurrentNode);
+			if (executionContext == null)
+				throw new ArgumentNullException("executionContext");
 
-			SemanticModel = semanticModel;
-			CurrentNode = currentNode;
+			ExecutionContext = executionContext;
 
 			if (SemanticModel != null && CurrentNode != null)
 			{
 				CurrentQueryBlock = SemanticModel.GetQueryBlock(CurrentNode);
 			}
-		}
-
-		protected static void CheckParameters(OracleStatementSemanticModel semanticModel, StatementDescriptionNode currentNode)
-		{
-			if (semanticModel == null)
-				throw new InvalidOperationException("semanticModel");
-
-			if (currentNode == null)
-				throw new InvalidOperationException("currentNode");
-		}
-	}
-
-	public abstract class OracleConfigurableCommandBase : OracleCommandBase
-	{
-		protected readonly ICommandSettingsProvider SettingsProvider;
-		protected readonly CommandSettingsModel SettingsModel;
-
-		protected OracleConfigurableCommandBase(OracleStatementSemanticModel semanticModel, StatementDescriptionNode currentNode, ICommandSettingsProvider settingsProvider = null)
-			: base(semanticModel, currentNode)
-		{
-			if (settingsProvider != null)
-			{
-				SettingsProvider = settingsProvider;
-			}
-			else
-			{
-				var model = new CommandSettingsModel { Value = "Enter value", ValidationRule = new OracleIdentifierValidationRule() };
-				SettingsProvider = new EditDialog(model);
-			}
-
-			SettingsModel = SettingsProvider.Settings;
 		}
 	}
 }

@@ -1,41 +1,53 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
+﻿using System.Linq;
+using SqlPad.Commands;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 
 namespace SqlPad.Oracle.Commands
 {
-	public class AddToGroupByCommand : OracleCommandBase
+	internal class AddToGroupByCommand : OracleCommandBase
 	{
 		private readonly StatementDescriptionNode _fromClause;
-		private readonly int _selectionStart;
-		private readonly int _selectionLength;
 
-		public AddToGroupByCommand(OracleStatementSemanticModel semanticModel, int selectionStart, int selectionLength)
-			: base(semanticModel, semanticModel.Statement.GetNodeAtPosition(selectionStart))
+		public const string Title = "Add to GROUP BY clause";
+
+		public static CommandExecutionHandler ExecutionHandler = new CommandExecutionHandler
 		{
-			_selectionLength = selectionLength;
-			_selectionStart = selectionStart;
+			Name = "AddToGroupByClause",
+			ExecutionHandler = ExecutionHandlerImplementation,
+			CanExecuteHandler = CanExecuteHandlerImplementation
+		};
+
+		private static void ExecutionHandlerImplementation(CommandExecutionContext executionContext)
+		{
+			var commandInstance = new AddToGroupByCommand((OracleCommandExecutionContext)executionContext);
+			if (commandInstance.CanExecute())
+			{
+				commandInstance.Execute();
+			}
+		}
+
+		private static bool CanExecuteHandlerImplementation(CommandExecutionContext executionContext)
+		{
+			return new AddToGroupByCommand((OracleCommandExecutionContext)executionContext).CanExecute();
+		}
+
+		private AddToGroupByCommand(OracleCommandExecutionContext executionContext)
+			: base(executionContext)
+		{
 			_fromClause = CurrentQueryBlock == null
 				? null
 				: CurrentQueryBlock.RootNode.GetDescendantsWithinSameQuery(NonTerminals.FromClause).FirstOrDefault();
 		}
 
-		public override bool CanExecute(object parameter)
+		private bool CanExecute()
 		{
 			// TODO: Check ambiguous references
 			return CurrentNode != null && _fromClause != null && _fromClause.IsGrammarValid;
 		}
 
-		public override string Title
+		private void Execute()
 		{
-			get { return "Add to GROUP BY clause"; }
-		}
-
-		protected override void ExecuteInternal(string statementText, ICollection<TextSegment> segmentsToReplace)
-		{
-			var selectedTerminals = CurrentQueryBlock.RootNode.Terminals.Where(t => t.SourcePosition.IndexEnd >= _selectionStart && t.SourcePosition.IndexStart <= _selectionStart + _selectionLength).ToArray();
+			var selectedTerminals = CurrentQueryBlock.RootNode.Terminals.Where(t => t.SourcePosition.IndexEnd >= ExecutionContext.SelectionStart && t.SourcePosition.IndexStart <= ExecutionContext.SelectionStart + ExecutionContext.SelectionLength).ToArray();
 			var expressions = selectedTerminals.Select(t => t.GetTopAncestor(NonTerminals.Expression)).Distinct().ToArray();
 
 			var firstTerminalStartIndex = selectedTerminals[0].SourcePosition.IndexStart;
@@ -43,11 +55,11 @@ namespace SqlPad.Oracle.Commands
 			var groupByClause = CurrentQueryBlock.RootNode.GetDescendantsWithinSameQuery(NonTerminals.GroupByClause).SingleOrDefault();
 			if (groupByClause == null)
 			{
-				segmentsToReplace.Add(new TextSegment
+				ExecutionContext.SegmentsToReplace.Add(new TextSegment
 				                      {
 					                      IndextStart = _fromClause.LastTerminalNode.SourcePosition.IndexEnd + 1,
 					                      Length = 0,
-										  Text = " GROUP BY " + statementText.Substring(firstTerminalStartIndex, selectedTerminals[selectedTerminals.Length - 1].SourcePosition.IndexEnd - firstTerminalStartIndex + 1)
+										  Text = " GROUP BY " + ExecutionContext.StatementText.Substring(firstTerminalStartIndex, selectedTerminals[selectedTerminals.Length - 1].SourcePosition.IndexEnd - firstTerminalStartIndex + 1)
 				                      });
 			}
 			else

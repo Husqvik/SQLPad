@@ -89,7 +89,7 @@ namespace SqlPad.Oracle.Test
 
 			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 1).ToArray();
 			actions.Length.ShouldBe(1);
-			actions[0].Name.ShouldBe("Toggle quoted identifiers");
+			actions[0].Name.ShouldBe("Toggle quoted notation");
 		}
 
 		[Test(Description = @""), STAThread]

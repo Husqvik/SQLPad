@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Windows.Input;
+using SqlPad.Commands;
 using SqlPad.Oracle.Commands;
-using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
 namespace SqlPad.Oracle
 {
@@ -12,9 +11,9 @@ namespace SqlPad.Oracle
 		private static readonly IContextAction[] EmptyCollection = new IContextAction[0];
 		private readonly OracleSqlParser _oracleParser = new OracleSqlParser();
 
-		public ICollection<IContextAction> GetContextActions(IDatabaseModel databaseModel, string statementText, int cursorPosition, int selectionLength = 0)
+		internal ICollection<IContextAction> GetContextActions(IDatabaseModel databaseModel, string statementText, int cursorPosition, int selectionLength = 0)
 		{
-			return GetContextActions(databaseModel, SqlDocument.FromStatementCollection(_oracleParser.Parse(statementText)), cursorPosition, selectionLength);
+			return GetContextActions(databaseModel, SqlDocument.FromStatementCollection(_oracleParser.Parse(statementText), statementText), cursorPosition, selectionLength);
 		}
 
 		public ICollection<IContextAction> GetContextActions(IDatabaseModel databaseModel, SqlDocument sqlDocument, int cursorPosition, int selectionLength = 0)
@@ -27,53 +26,50 @@ namespace SqlPad.Oracle
 				return EmptyCollection;
 
 			var semanticModel = new OracleStatementSemanticModel(null, (OracleStatement)currentTerminal.Statement, (OracleDatabaseModel)databaseModel);
+			var executionContext = OracleCommandExecutionContext.Create(sqlDocument.StatementText, cursorPosition, semanticModel);
+			var model = new CommandSettingsModel { Value = "Enter value", ValidationRule = new OracleIdentifierValidationRule() };
+			executionContext.SettingsProvider = new EditDialog(model);
+			
 			var actionList = new List<IContextAction>();
 
-			var addAliasCommand = new AddAliasCommand(semanticModel, currentTerminal);
-			if (addAliasCommand.CanExecute(null))
+			if (AddAliasCommand.ExecutionHandler.CanExecuteHandler(executionContext))
 			{
-				actionList.Add(new OracleContextAction(addAliasCommand.Title, addAliasCommand));
+				actionList.Add(new OracleContextAction(AddAliasCommand.Title, AddAliasCommand.ExecutionHandler, executionContext));
 			}
 
-			var wrapAsInlineViewCommand = new WrapAsInlineViewCommand(semanticModel, currentTerminal);
-			if (wrapAsInlineViewCommand.CanExecute(null))
+			if (WrapAsInlineViewCommand.ExecutionHandler.CanExecuteHandler(executionContext))
 			{
-				actionList.Add(new OracleContextAction(wrapAsInlineViewCommand.Title, wrapAsInlineViewCommand));
+				actionList.Add(new OracleContextAction(WrapAsInlineViewCommand.Title, WrapAsInlineViewCommand.ExecutionHandler, executionContext));
 			}
 
-			var wrapAsCommonTableExpressionCommand = new WrapAsCommonTableExpressionCommand(semanticModel, currentTerminal);
-			if (wrapAsCommonTableExpressionCommand.CanExecute(null))
+			if (WrapAsCommonTableExpressionCommand.ExecutionHandler.CanExecuteHandler(executionContext))
 			{
-				actionList.Add(new OracleContextAction(wrapAsCommonTableExpressionCommand.Title, wrapAsCommonTableExpressionCommand));
+				actionList.Add(new OracleContextAction(WrapAsCommonTableExpressionCommand.Title, WrapAsCommonTableExpressionCommand.ExecutionHandler, executionContext));
 			}
 
-			var toggleQuotedNotationCommand = new ToggleQuotedNotationCommand(semanticModel, currentTerminal);
-			if (toggleQuotedNotationCommand.CanExecute(null))
+			if (ToggleQuotedNotationCommand.ExecutionHandler.CanExecuteHandler(executionContext))
 			{
-				actionList.Add(new OracleContextAction(toggleQuotedNotationCommand.Title, toggleQuotedNotationCommand));
+				actionList.Add(new OracleContextAction(ToggleQuotedNotationCommand.Title, ToggleQuotedNotationCommand.ExecutionHandler, executionContext));
 			}
 
-			var addToGroupByCommand = new AddToGroupByCommand(semanticModel, cursorPosition, selectionLength);
-			if (addToGroupByCommand.CanExecute(null))
+			if (AddToGroupByCommand.ExecutionHandler.CanExecuteHandler(executionContext))
 			{
-				//actionList.Add(new OracleContextAction(addToGroupByCommand.Title, addToGroupByCommand));
+				// TODO
+				//actionList.Add(new OracleContextAction(AddToGroupByCommand.Title, AddToGroupByCommand.ExecutionHandler, executionContext));
 			}
 
-			var asteriskTerminal = currentTerminal.Statement.GetTerminalAtPosition(cursorPosition, n => n.Id == Terminals.Asterisk);
-			var expandAsteriskCommand = new ExpandAsteriskCommand(semanticModel, asteriskTerminal);
-			if (expandAsteriskCommand.CanExecute(null))
+			if (ExpandAsteriskCommand.ExecutionHandler.CanExecuteHandler(executionContext))
 			{
-				actionList.Add(new OracleContextAction(expandAsteriskCommand.Title, expandAsteriskCommand));
+				actionList.Add(new OracleContextAction(ExpandAsteriskCommand.Title, ExpandAsteriskCommand.ExecutionHandler, executionContext));
 			}
 
-			var unnestCommonTableExpressionCommand = new UnnestInlineViewCommand(semanticModel, currentTerminal);
-			if (unnestCommonTableExpressionCommand.CanExecute(null))
+			if (UnnestInlineViewCommand.ExecutionHandler.CanExecuteHandler(executionContext))
 			{
-				actionList.Add(new OracleContextAction(unnestCommonTableExpressionCommand.Title, unnestCommonTableExpressionCommand));
+				actionList.Add(new OracleContextAction(UnnestInlineViewCommand.Title, UnnestInlineViewCommand.ExecutionHandler, executionContext));
 			}
 
-			var actions = ResolveAmbiguousColumnCommand.ResolveCommands(semanticModel, currentTerminal)
-				.Select(c => new OracleContextAction("Resolve as " + c.Title, c));
+			var actions = ResolveAmbiguousColumnCommand.ResolveCommandHandlers(semanticModel, currentTerminal)
+				.Select(c => new OracleContextAction("Resolve as " + c.Name, c, executionContext));
 
 			actionList.AddRange(actions);
 
@@ -83,16 +79,19 @@ namespace SqlPad.Oracle
 	}
 
 	[DebuggerDisplay("OracleContextAction (Name={Name})")]
-	public class OracleContextAction : IContextAction
+	internal class OracleContextAction : IContextAction
 	{
-		public OracleContextAction(string name, ICommand command)
+		public OracleContextAction(string name, CommandExecutionHandler executionHandler, CommandExecutionContext executionContext)
 		{
 			Name = name;
-			Command = command;
+			ExecutionHandler = executionHandler;
+			ExecutionContext = executionContext;
 		}
 
 		public string Name { get; private set; }
 
-		public ICommand Command { get; private set; }
+		public CommandExecutionHandler ExecutionHandler { get; private set; }
+
+		public CommandExecutionContext ExecutionContext { get; private set; }
 	}
 }

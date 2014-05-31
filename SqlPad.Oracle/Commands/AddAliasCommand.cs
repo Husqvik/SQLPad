@@ -1,20 +1,41 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using SqlPad.Commands;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
-using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 
 namespace SqlPad.Oracle.Commands
 {
-	public class AddAliasCommand : OracleConfigurableCommandBase
+	internal class AddAliasCommand : OracleCommandBase
 	{
-		public AddAliasCommand(OracleStatementSemanticModel semanticModel, StatementDescriptionNode currentNode, ICommandSettingsProvider settingsProvider = null)
-			: base(semanticModel, currentNode, settingsProvider)
+		public const string Title = "Add Alias";
+
+		public static CommandExecutionHandler ExecutionHandler = new CommandExecutionHandler
+		{
+			Name = "AddAlias",
+			ExecutionHandler = ExecutionHandlerImplementation,
+			CanExecuteHandler = CanExecuteHandlerImplementation
+		};
+
+		private static void ExecutionHandlerImplementation(CommandExecutionContext executionContext)
+		{
+			var commandInstance = new AddAliasCommand((OracleCommandExecutionContext)executionContext);
+			if (commandInstance.CanExecute())
+			{
+				commandInstance.Execute();
+			}
+		}
+
+		private static bool CanExecuteHandlerImplementation(CommandExecutionContext executionContext)
+		{
+			return new AddAliasCommand((OracleCommandExecutionContext)executionContext).CanExecute();
+		}
+
+		private AddAliasCommand(OracleCommandExecutionContext executionContext)
+			: base(executionContext)
 		{
 		}
 
-		public override bool CanExecute(object parameter)
+		private bool CanExecute()
 		{
 			if (CurrentNode.Id != Terminals.ObjectIdentifier)
 				return false;
@@ -23,26 +44,25 @@ namespace SqlPad.Oracle.Commands
 			return tables.Length == 1 && tables[0].AliasNode == null;
 		}
 
-		public override string Title
+		private void Execute()
 		{
-			get { return "Add Alias"; }
-		}
+			ExecutionContext.EnsureSettingsProviderAvailable();
 
-		protected override void ExecuteInternal(string statementText, ICollection<TextSegment> segmentsToReplace)
-		{
+			var settingsModel = ExecutionContext.SettingsProvider.Settings;
+
 			switch (CurrentNode.Id)
 			{
 				case Terminals.ObjectIdentifier:
-					SettingsModel.Title = Title;
-					SettingsModel.Heading = SettingsModel.Title;
-					SettingsModel.Description = String.Format("Enter an alias for the object '{0}'", CurrentNode.Token.Value);
+					settingsModel.Title = Title;
+					settingsModel.Heading = settingsModel.Title;
+					settingsModel.Description = String.Format("Enter an alias for the object '{0}'", CurrentNode.Token.Value);
 					break;
 			}
 
-			if (!SettingsProvider.GetSettings())
+			if (!ExecutionContext.SettingsProvider.GetSettings())
 				return;
 
-			var alias = SettingsProvider.Settings.Value;
+			var alias = settingsModel.Value;
 
 			var queryBlock = SemanticModel.GetQueryBlock(CurrentNode);
 
@@ -58,7 +78,7 @@ namespace SqlPad.Oracle.Commands
 			{
 				var firstPrefixNode = columnReference.OwnerNode ?? columnReference.ObjectNode;
 
-				segmentsToReplace.Add(new TextSegment
+				ExecutionContext.SegmentsToReplace.Add(new TextSegment
 				                      {
 										  IndextStart = firstPrefixNode == null ? columnReference.ColumnNode.SourcePosition.IndexStart - 1 : firstPrefixNode.SourcePosition.IndexStart,
 										  Length = columnReference.ColumnNode.SourcePosition.IndexStart - firstPrefixNode.SourcePosition.IndexStart,
@@ -66,7 +86,7 @@ namespace SqlPad.Oracle.Commands
 				                      });
 			}
 
-			segmentsToReplace.Add(new TextSegment
+			ExecutionContext.SegmentsToReplace.Add(new TextSegment
 			                      {
 									  IndextStart = CurrentNode.SourcePosition.IndexEnd + 1,
 									  Length = 0,

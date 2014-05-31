@@ -13,13 +13,14 @@ namespace SqlPad.Oracle
 		private readonly List<ICollection<OracleColumnReference>> _joinClauseColumnReferences = new List<ICollection<OracleColumnReference>>();
 		private readonly Dictionary<OracleQueryBlock, ICollection<StatementDescriptionNode>> _accessibleQueryBlockRoot = new Dictionary<OracleQueryBlock, ICollection<StatementDescriptionNode>>();
 		private readonly Dictionary<OracleObjectReference, ICollection<KeyValuePair<StatementDescriptionNode, string>>> _objectReferenceCteRootNodes = new Dictionary<OracleObjectReference, ICollection<KeyValuePair<StatementDescriptionNode, string>>>();
-		private readonly OracleDatabaseModel _databaseModel;
+		
+		public OracleDatabaseModel DatabaseModel { get; private set; }
 
 		public OracleStatement Statement { get; private set; }
 		
 		public string StatementText { get; private set; }
 		
-		public bool IsSimpleModel { get { return _databaseModel == null; } }
+		public bool IsSimpleModel { get { return DatabaseModel == null; } }
 
 		public ICollection<OracleQueryBlock> QueryBlocks
 		{
@@ -56,7 +57,7 @@ namespace SqlPad.Oracle
 				throw new ArgumentNullException("statement");
 
 			Statement = statement;
-			_databaseModel = databaseModel;
+			DatabaseModel = databaseModel;
 
 			if (statement.RootNode == null)
 				return;
@@ -155,10 +156,10 @@ namespace SqlPad.Oracle
 						var objectName = tableIdentifierNode.Token.Value;
 						var owner = schemaPrefixNode == null ? null : schemaPrefixNode.Token.Value;
 
-						if (_databaseModel != null)
+						if (DatabaseModel != null)
 						{
 							// TODO: Resolve package
-							result = _databaseModel.GetObject(OracleObjectIdentifier.Create(owner, objectName));
+							result = DatabaseModel.GetObject(OracleObjectIdentifier.Create(owner, objectName));
 						}
 					}
 
@@ -329,17 +330,17 @@ namespace SqlPad.Oracle
 
 		private OracleFunctionMetadata GetFunctionMetadata(OracleFunctionReference functionReference)
 		{
-			if (_databaseModel == null)
+			if (DatabaseModel == null)
 				return null;
 
 			var functionIdentifier = OracleFunctionIdentifier.CreateFromValues(functionReference.FullyQualifiedObjectName.NormalizedOwner, functionReference.FullyQualifiedObjectName.NormalizedName, functionReference.NormalizedName);
 			var parameterCount = functionReference.ParameterNodes == null ? 0 : functionReference.ParameterNodes.Count;
-			var metadata = _databaseModel.AllFunctionMetadata.GetSqlFunctionMetadata(functionIdentifier, parameterCount);
+			var metadata = DatabaseModel.AllFunctionMetadata.GetSqlFunctionMetadata(functionIdentifier, parameterCount);
 
 			if (metadata == null && !String.IsNullOrEmpty(functionIdentifier.Package) && String.IsNullOrEmpty(functionIdentifier.Owner))
 			{
 				var identifier = OracleFunctionIdentifier.CreateFromValues(functionIdentifier.Package, null, functionIdentifier.Name);
-				metadata = _databaseModel.AllFunctionMetadata.GetSqlFunctionMetadata(identifier, parameterCount);
+				metadata = DatabaseModel.AllFunctionMetadata.GetSqlFunctionMetadata(identifier, parameterCount);
 			}
 
 			return metadata;
