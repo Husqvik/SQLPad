@@ -18,9 +18,9 @@ namespace SqlPad.Oracle.Commands
 			get { return CommandHandlerCollection; }
 		}
 
-		public DisplayCommandBase CreateFindUsagesCommand(string statementText, int currentPosition, IDatabaseModel databaseModel)
+		public CommandExecutionHandler FindUsagesCommandHandler
 		{
-			return new FindUsagesCommand(statementText, currentPosition, databaseModel);
+			get { return FindUsagesCommand.ExecutionHandler; }
 		}
 	}
 }

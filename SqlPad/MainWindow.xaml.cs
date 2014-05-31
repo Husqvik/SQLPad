@@ -67,7 +67,7 @@ namespace SqlPad
 			foreach (var handler in _infrastructureFactory.CommandFactory.CommandHandlers)
 			{
 				var command = new RoutedCommand(handler.Name, typeof(TextEditor), handler.DefaultGestures);
-				var routedHandlerMethod = GenericCommandHandler.CreateRoutedCommandHandler(handler, _sqlDocument.StatementCollection, _databaseModel);
+				var routedHandlerMethod = GenericCommandHandler.CreateRoutedEditCommandHandler(handler, _sqlDocument.StatementCollection, _databaseModel);
 				Editor.TextArea.DefaultInputHandler.Editing.CommandBindings.Add(new CommandBinding(command, routedHandlerMethod));
 			}
 		}
@@ -76,21 +76,35 @@ namespace SqlPad
 		{
 			ChangeDeleteLineCommandInputGesture();
 
+			var commandBindings = Editor.TextArea.DefaultInputHandler.Editing.CommandBindings;
 			var showFunctionOverloadCommand = new RoutedCommand("ShowFunctionOverloads", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.Space, ModifierKeys.Control | ModifierKeys.Shift) });
-			Editor.TextArea.DefaultInputHandler.Editing.CommandBindings.Add(new CommandBinding(showFunctionOverloadCommand, ShowFunctionOverloads));
+			commandBindings.Add(new CommandBinding(showFunctionOverloadCommand, ShowFunctionOverloads));
 
 			var duplicateTextCommand = new RoutedCommand("DuplicateText", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.D, ModifierKeys.Control) });
-			Editor.TextArea.DefaultInputHandler.Editing.CommandBindings.Add(new CommandBinding(duplicateTextCommand, GenericCommandHandler.DuplicateText));
+			commandBindings.Add(new CommandBinding(duplicateTextCommand, GenericCommandHandler.DuplicateText));
 
 			var blockCommentCommand = new RoutedCommand("BlockComment", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.Oem2, ModifierKeys.Control | ModifierKeys.Shift) });
-			Editor.TextArea.DefaultInputHandler.Editing.CommandBindings.Add(new CommandBinding(blockCommentCommand, GenericCommandHandler.HandleBlockComments));
+			commandBindings.Add(new CommandBinding(blockCommentCommand, GenericCommandHandler.HandleBlockComments));
 
 			var lineCommentCommand = new RoutedCommand("LineComment", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.Oem2, ModifierKeys.Control | ModifierKeys.Alt) });
-			Editor.TextArea.DefaultInputHandler.Editing.CommandBindings.Add(new CommandBinding(lineCommentCommand, GenericCommandHandler.HandleLineComments));
+			commandBindings.Add(new CommandBinding(lineCommentCommand, GenericCommandHandler.HandleLineComments));
 
 			var formatStatementCommand = new RoutedCommand(_statementFormatter.ExecutionHandler.Name, typeof(TextEditor), _statementFormatter.ExecutionHandler.DefaultGestures);
-			var routedHandlerMethod = GenericCommandHandler.CreateRoutedCommandHandler(_statementFormatter.ExecutionHandler, _sqlDocument.StatementCollection, _databaseModel);
-			Editor.TextArea.DefaultInputHandler.Editing.CommandBindings.Add(new CommandBinding(formatStatementCommand, routedHandlerMethod));
+			var formatStatementRoutedHandlerMethod = GenericCommandHandler.CreateRoutedEditCommandHandler(_statementFormatter.ExecutionHandler, _sqlDocument.StatementCollection, _databaseModel);
+			commandBindings.Add(new CommandBinding(formatStatementCommand, formatStatementRoutedHandlerMethod));
+
+			var findUsagesCommandHandler = _infrastructureFactory.CommandFactory.FindUsagesCommandHandler;
+			var findUsagesCommand = new RoutedCommand(findUsagesCommandHandler.Name, typeof(TextEditor), findUsagesCommandHandler.DefaultGestures);
+			ExecutedRoutedEventHandler findUsagesRoutedHandlerMethod =
+				(sender, args) =>
+				{
+					var executionContext = CommandExecutionContext.Create(Editor, _sqlDocument.StatementCollection, _databaseModel);
+					findUsagesCommandHandler.ExecuteHandler(executionContext);
+					_colorizeAvalonEdit.SetHighlightSegments(executionContext.SegmentsToReplace);
+					Editor.TextArea.TextView.Redraw();
+				};
+
+			commandBindings.Add(new CommandBinding(findUsagesCommand, findUsagesRoutedHandlerMethod));
 		}
 
 		private void ChangeDeleteLineCommandInputGesture()
@@ -418,12 +432,6 @@ namespace SqlPad
 
 				MultiNodeEditor.TryCreateMultiNodeEditor(Editor, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), _databaseModel, out _multiNodeEditor);
 			}
-			else if (e.SystemKey == Key.F11 && Keyboard.Modifiers == (ModifierKeys.Alt | ModifierKeys.Shift))
-			{
-				Trace.WriteLine("ALT SHIFT + F11");
-
-				FindUsages();
-			}
 			else if (e.Key == Key.Home && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt))
 			{
 				Trace.WriteLine("CONTROL ALT + HOME");
@@ -453,18 +461,6 @@ namespace SqlPad
 					Editor.Document.Remove(Editor.CaretOffset, 1);
 				}
 			}
-		}
-
-		private void FindUsages()
-		{
-			var findUsagesCommand = _infrastructureFactory.CommandFactory.CreateFindUsagesCommand(Editor.Text, Editor.CaretOffset, _databaseModel);
-			if (!findUsagesCommand.CanExecute(null))
-				return;
-			
-			var highlightSegments = new List<TextSegment>();
-			findUsagesCommand.Execute(highlightSegments);
-			_colorizeAvalonEdit.SetHighlightSegments(highlightSegments);
-			Editor.TextArea.TextView.Redraw();
 		}
 
 		private void ShowFunctionOverloads(object sender, ExecutedRoutedEventArgs args)

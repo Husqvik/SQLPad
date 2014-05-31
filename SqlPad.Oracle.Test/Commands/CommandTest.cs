@@ -214,15 +214,19 @@ WHERE
 			_editor.Text.ShouldBe("SELECT \"DUMMY\" FROM (SELECT \"DUMMY\" FROM \"DUAL\")");
 		}
 
+		private List<TextSegment> FindUsagesOrdered(string statementText, int currentPosition)
+		{
+			var executionContext = new CommandExecutionContext(statementText, currentPosition, Parser.Parse(statementText), TestFixture.DatabaseModel);
+			FindUsagesCommand.ExecutionHandler.ExecuteHandler(executionContext);
+			return executionContext.SegmentsToReplace.OrderBy(s => s.IndextStart).ToList();
+		}
+			
 		[Test(Description = @""), STAThread]
 		public void TestFindObjectUsages()
 		{
 			const string statementText = "SELECT \"SELECTION\".RESPONDENTBUCKET_ID, PROJECT_ID FROM SELECTION WHERE SELECTION.NAME = NAME GROUP BY SELECTION.RESPONDENTBUCKET_ID, PROJECT_ID HAVING COUNT(SELECTION.SELECTION_ID) = COUNT(SELECTION_ID)";
-			var command = new FindUsagesCommand(statementText, 8, TestFixture.DatabaseModel);
-			var foundSegments = new List<TextSegment>();
-			command.Execute(foundSegments);
 
-			foundSegments = foundSegments.OrderBy(s => s.IndextStart).ToList();
+			var foundSegments = FindUsagesOrdered(statementText, 8);
 			foundSegments.Count.ShouldBe(5);
 			foundSegments[0].Length.ShouldBe("\"SELECTION\"".Length);
 			foundSegments[1].Length.ShouldBe("SELECTION".Length);
@@ -232,11 +236,8 @@ WHERE
 		public void TestFindObjectWithAliasUsages()
 		{
 			const string statementText = "SELECT S.RESPONDENTBUCKET_ID, PROJECT_ID FROM SELECTION \"S\" WHERE S.NAME = NAME GROUP BY S.RESPONDENTBUCKET_ID, PROJECT_ID HAVING COUNT(S.SELECTION_ID) = COUNT(SELECTION_ID)";
-			var command = new FindUsagesCommand(statementText, 56, TestFixture.DatabaseModel);
-			var foundSegments = new List<TextSegment>();
-			command.Execute(foundSegments);
 
-			foundSegments = foundSegments.OrderBy(s => s.IndextStart).ToList();
+			var foundSegments = FindUsagesOrdered(statementText, 56);
 			foundSegments.Count.ShouldBe(6);
 			foundSegments[0].Length.ShouldBe("S".Length);
 			foundSegments[1].Length.ShouldBe("SELECTION".Length);
@@ -248,11 +249,8 @@ WHERE
 		public void TestFindSchemaUsages()
 		{
 			const string statementText = "SELECT HUSQVIK.SELECTION.PROJECT_ID FROM (SELECT HUSQVIK.SELECTION.NAME FROM HUSQVIK.SELECTION), HUSQVIK.SELECTION";
-			var command = new FindUsagesCommand(statementText, 9, TestFixture.DatabaseModel);
-			var foundSegments = new List<TextSegment>();
-			command.Execute(foundSegments);
 
-			foundSegments = foundSegments.OrderBy(s => s.IndextStart).ToList();
+			var foundSegments = FindUsagesOrdered(statementText, 9);
 			foundSegments.Count.ShouldBe(4);
 			foundSegments.ForEach(s => s.Length.ShouldBe("HUSQVIK".Length));
 		}
@@ -260,11 +258,7 @@ WHERE
 		[Test(Description = @""), STAThread]
 		public void TestBasicFindColumnUsages()
 		{
-			var command = new FindUsagesCommand(FindUsagesStatementText, 11, TestFixture.DatabaseModel);
-			var foundSegments = new List<TextSegment>();
-			command.Execute(foundSegments);
-
-			foundSegments = foundSegments.OrderBy(s => s.IndextStart).ToList();
+			var foundSegments = FindUsagesOrdered(FindUsagesStatementText, 11);
 			foundSegments.Count.ShouldBe(4);
 			foundSegments[0].IndextStart.ShouldBe(9);
 			foundSegments[1].IndextStart.ShouldBe(106);
@@ -276,11 +270,7 @@ WHERE
 		[Test(Description = @""), STAThread]
 		public void TestFindColumnUsagesOfColumnAliases()
 		{
-			var command = new FindUsagesCommand(FindUsagesStatementText, 40, TestFixture.DatabaseModel);
-			var foundSegments = new List<TextSegment>();
-			command.Execute(foundSegments);
-
-			foundSegments = foundSegments.OrderBy(s => s.IndextStart).ToList();
+			var foundSegments = FindUsagesOrdered(FindUsagesStatementText, 40);
 			foundSegments.Count.ShouldBe(6);
 			foundSegments[0].IndextStart.ShouldBe(37);
 			foundSegments[0].Length.ShouldBe(5);
@@ -299,11 +289,7 @@ WHERE
 		[Test(Description = @""), STAThread]
 		public void TestFindColumnUsagesOfIndirectColumnReferenceAtAliasNode()
 		{
-			var command = new FindUsagesCommand(FindUsagesStatementText, 25, TestFixture.DatabaseModel);
-			var foundSegments = new List<TextSegment>();
-			command.Execute(foundSegments);
-
-			foundSegments = foundSegments.OrderBy(s => s.IndextStart).ToList();
+			var foundSegments = FindUsagesOrdered(FindUsagesStatementText, 25);
 			foundSegments.Count.ShouldBe(2);
 			foundSegments[0].IndextStart.ShouldBe(17);
 			foundSegments[0].Length.ShouldBe(16);
@@ -314,11 +300,7 @@ WHERE
 		[Test(Description = @""), STAThread]
 		public void TestFindColumnUsagesOfIndirectColumnReferenceAtColumnNode()
 		{
-			var command = new FindUsagesCommand(FindUsagesStatementText, 121, TestFixture.DatabaseModel);
-			var foundSegments = new List<TextSegment>();
-			command.Execute(foundSegments);
-
-			foundSegments = foundSegments.OrderBy(s => s.IndextStart).ToList();
+			var foundSegments = FindUsagesOrdered(FindUsagesStatementText, 121);
 			foundSegments.Count.ShouldBe(6);
 			foundSegments[0].IndextStart.ShouldBe(115);
 			foundSegments[0].Length.ShouldBe(16);
@@ -337,11 +319,7 @@ WHERE
 		[Test(Description = @""), STAThread]
 		public void TestFindColumnUsagesOfComputedColumnAtUsage()
 		{
-			var command = new FindUsagesCommand(FindUsagesStatementText, 80, TestFixture.DatabaseModel);
-			var foundSegments = new List<TextSegment>();
-			command.Execute(foundSegments);
-
-			foundSegments = foundSegments.OrderBy(s => s.IndextStart).ToList();
+			var foundSegments = FindUsagesOrdered(FindUsagesStatementText, 80);
 			foundSegments.Count.ShouldBe(3);
 			foundSegments[0].IndextStart.ShouldBe(71);
 			foundSegments[1].IndextStart.ShouldBe(222);
@@ -352,11 +330,7 @@ WHERE
 		[Test(Description = @""), STAThread]
 		public void TestFindColumnUsagesOfComputedColumnAtDefinition()
 		{
-			var command = new FindUsagesCommand(FindUsagesStatementText, 382, TestFixture.DatabaseModel);
-			var foundSegments = new List<TextSegment>();
-			command.Execute(foundSegments);
-
-			foundSegments = foundSegments.OrderBy(s => s.IndextStart).ToList();
+			var foundSegments = FindUsagesOrdered(FindUsagesStatementText, 382);
 			foundSegments.Count.ShouldBe(3);
 			foundSegments[0].IndextStart.ShouldBe(71);
 			foundSegments[1].IndextStart.ShouldBe(222);
@@ -368,11 +342,8 @@ WHERE
 		public void TestFindObjectUsagesAtCommonTableExpressionDefinition()
 		{
 			const string statement = "WITH CTE AS (SELECT SELECTION.NAME FROM SELECTION) SELECT CTE.NAME FROM CTE";
-			var command = new FindUsagesCommand(statement, 6, TestFixture.DatabaseModel);
-			var foundSegments = new List<TextSegment>();
-			command.Execute(foundSegments);
 
-			foundSegments = foundSegments.OrderBy(s => s.IndextStart).ToList();
+			var foundSegments = FindUsagesOrdered(statement, 6);
 			foundSegments.Count.ShouldBe(3);
 			foundSegments[0].IndextStart.ShouldBe(5);
 			foundSegments[1].IndextStart.ShouldBe(58);
@@ -384,11 +355,8 @@ WHERE
 		public void TestFindObjectUsagesAtCommonTableExpressionUsage()
 		{
 			const string statement = "WITH CTE AS (SELECT SELECTION.NAME FROM SELECTION) SELECT CTE.NAME FROM CTE";
-			var command = new FindUsagesCommand(statement, 72, TestFixture.DatabaseModel);
-			var foundSegments = new List<TextSegment>();
-			command.Execute(foundSegments);
-
-			foundSegments = foundSegments.OrderBy(s => s.IndextStart).ToList();
+			
+			var foundSegments = FindUsagesOrdered(statement, 72);
 			foundSegments.Count.ShouldBe(3);
 			foundSegments[0].IndextStart.ShouldBe(5);
 			foundSegments[1].IndextStart.ShouldBe(58);
@@ -429,11 +397,7 @@ WHERE
 		[Test(Description = @""), STAThread]
 		public void TestFindGrammarSpecificFunctionUsages()
 		{
-			var command = new FindUsagesCommand(FindFunctionUsagesStatementText, 9, TestFixture.DatabaseModel);
-			var foundSegments = new List<TextSegment>();
-			command.Execute(foundSegments);
-
-			foundSegments = foundSegments.OrderBy(s => s.IndextStart).ToList();
+			var foundSegments = FindUsagesOrdered(FindFunctionUsagesStatementText, 9);
 			foundSegments.Count.ShouldBe(2);
 			foundSegments[0].IndextStart.ShouldBe(9);
 			foundSegments[1].IndextStart.ShouldBe(34);
@@ -443,11 +407,7 @@ WHERE
 		[Test(Description = @""), STAThread]
 		public void TestFindGenericSqlFunctionUsages()
 		{
-			var command = new FindUsagesCommand(FindFunctionUsagesStatementText, 154, TestFixture.DatabaseModel);
-			var foundSegments = new List<TextSegment>();
-			command.Execute(foundSegments);
-
-			foundSegments = foundSegments.OrderBy(s => s.IndextStart).ToList();
+			var foundSegments = FindUsagesOrdered(FindFunctionUsagesStatementText, 154);
 			foundSegments.Count.ShouldBe(2);
 			foundSegments[0].IndextStart.ShouldBe(154);
 			foundSegments[1].IndextStart.ShouldBe(186);
@@ -457,12 +417,7 @@ WHERE
 		[Test(Description = @""), STAThread]
 		public void TestFindLiteralUsages()
 		{
-			var command = new FindUsagesCommand(FindLiteralUsagesStatementText, 17, TestFixture.DatabaseModel);
-			command.CanExecute(null).ShouldBe(true);
-			var foundSegments = new List<TextSegment>();
-			command.Execute(foundSegments);
-
-			foundSegments = foundSegments.OrderBy(s => s.IndextStart).ToList();
+			var foundSegments = FindUsagesOrdered(FindLiteralUsagesStatementText, 17);
 			foundSegments.Count.ShouldBe(3);
 			foundSegments[0].IndextStart.ShouldBe(16);
 			foundSegments[1].IndextStart.ShouldBe(34);
@@ -473,12 +428,7 @@ WHERE
 		[Test(Description = @""), STAThread]
 		public void TestFindBindVariableUsages()
 		{
-			var command = new FindUsagesCommand(FindLiteralUsagesStatementText, 10, TestFixture.DatabaseModel);
-			command.CanExecute(null).ShouldBe(true);
-			var foundSegments = new List<TextSegment>();
-			command.Execute(foundSegments);
-
-			foundSegments = foundSegments.OrderBy(s => s.IndextStart).ToList();
+			var foundSegments = FindUsagesOrdered(FindLiteralUsagesStatementText, 10);
 			foundSegments.Count.ShouldBe(3);
 			foundSegments[0].IndextStart.ShouldBe(10);
 			foundSegments[1].IndextStart.ShouldBe(81);
@@ -489,12 +439,9 @@ WHERE
 		[Test(Description = @""), STAThread]
 		public void TestFindColumnUsagesWithAliasedColumnWithInvalidReference()
 		{
-			var command = new FindUsagesCommand("SELECT CPU_SECONDS X FROM (SELECT CPU_TIME / 1000000 CPU_SECONDS FROM V$SESSION)", 10, TestFixture.DatabaseModel);
-			command.CanExecute(null).ShouldBe(true);
-			var foundSegments = new List<TextSegment>();
-			command.Execute(foundSegments);
+			const string statement = "SELECT CPU_SECONDS X FROM (SELECT CPU_TIME / 1000000 CPU_SECONDS FROM V$SESSION)";
 
-			foundSegments = foundSegments.OrderBy(s => s.IndextStart).ToList();
+			var foundSegments = FindUsagesOrdered(statement, 10);
 			foundSegments.Count.ShouldBe(3);
 			foundSegments[0].IndextStart.ShouldBe(7);
 			foundSegments[0].Length.ShouldBe(11);

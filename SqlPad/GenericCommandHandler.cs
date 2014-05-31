@@ -16,7 +16,7 @@ namespace SqlPad
 			return (TextEditor)((TextArea)sender).TextView.Services.GetService(typeof(TextEditor));
 		}
 
-		public static ExecutedRoutedEventHandler CreateRoutedCommandHandler(CommandExecutionHandler handler, StatementCollection statements, IDatabaseModel databaseModel)
+		public static ExecutedRoutedEventHandler CreateRoutedEditCommandHandler(CommandExecutionHandler handler, StatementCollection statements, IDatabaseModel databaseModel)
 		{
 			return (sender, args) =>
 					{

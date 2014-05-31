@@ -9,7 +9,7 @@ namespace SqlPad.Commands
 	{
 		ICollection<CommandExecutionHandler> CommandHandlers { get; }
 			
-		DisplayCommandBase CreateFindUsagesCommand(string statementText, int currentPosition, IDatabaseModel databaseModel);
+		CommandExecutionHandler FindUsagesCommandHandler { get; }
 	}
 
 	public class CommandExecutionHandler

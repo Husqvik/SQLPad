@@ -1,38 +1,58 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Input;
+using SqlPad.Commands;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 
 namespace SqlPad.Oracle.Commands
 {
-	public class FindUsagesCommand : DisplayCommandBase
+	public class FindUsagesCommand
 	{
 		private readonly StatementDescriptionNode _currentNode;
 		private readonly OracleStatementSemanticModel _semanticModel;
 		private readonly OracleQueryBlock _queryBlock;
-		//private readonly int _currentPosition;
+		private readonly CommandExecutionContext _executionContext;
 
-		public FindUsagesCommand(string statementText, int currentPosition, IDatabaseModel databaseModel)
+		public static CommandExecutionHandler ExecutionHandler = new CommandExecutionHandler
 		{
-			_currentNode = new OracleSqlParser().Parse(statementText)
-				.GetTerminalAtPosition(currentPosition, t => t.Id.IsIdentifierOrAlias() || t.Id == Terminals.Count || t.Id.IsLiteral() || t.ParentNode.Id.In(NonTerminals.AnalyticFunction, NonTerminals.AggregateFunction));
-			
+			Name = "FindUsages",
+			DefaultGestures = new InputGestureCollection { new KeyGesture(Key.F11, ModifierKeys.Alt | ModifierKeys.Shift) },
+			ExecuteHandler = ExecutionHandlerImplementation
+		};
+
+		private static void ExecutionHandlerImplementation(CommandExecutionContext executionContext)
+		{
+			var commandInstance = new FindUsagesCommand(executionContext);
+			if (commandInstance.CanExecute())
+			{
+				commandInstance.FindUsages();
+			}
+		}
+
+		private FindUsagesCommand(CommandExecutionContext executionContext)
+		{
+			_currentNode = GetFindUsagesCompatibleTerminal(executionContext.Statements, executionContext.CaretOffset);
 			if (_currentNode == null)
 				return;
 
-			_semanticModel = new OracleStatementSemanticModel(statementText, (OracleStatement)_currentNode.Statement, (OracleDatabaseModel)databaseModel);
+			_semanticModel = new OracleStatementSemanticModel(executionContext.StatementText, (OracleStatement)_currentNode.Statement, (OracleDatabaseModel)executionContext.DatabaseModel);
 			_queryBlock = _semanticModel.GetQueryBlock(_currentNode);
-
-			//_currentPosition = currentPosition;
+			_executionContext = executionContext;
 		}
 
-		public override bool CanExecute(object parameter)
+		private static StatementDescriptionNode GetFindUsagesCompatibleTerminal(StatementCollection statements, int currentPosition)
+		{
+			return statements.GetTerminalAtPosition(currentPosition, t => t.Id.IsIdentifierOrAlias() || t.Id == Terminals.Count || t.Id.IsLiteral() || t.ParentNode.Id.In(NonTerminals.AnalyticFunction, NonTerminals.AggregateFunction));
+		}
+
+		private bool CanExecute()
 		{
 			return _currentNode != null;
 		}
 
-		protected override void ExecuteInternal(ICollection<TextSegment> segments)
+		private void FindUsages()
 		{
 			IEnumerable<StatementDescriptionNode> nodes;
 
@@ -80,17 +100,14 @@ namespace SqlPad.Oracle.Commands
 					throw new NotSupportedException(String.Format("Terminal '{0}' is not supported. ", _currentNode.Id));
 			}
 
-			//MessageBox.Show(_currentPosition + Environment.NewLine + String.Join(Environment.NewLine, nodes.OrderBy(n => n.SourcePosition.IndexStart).Select(n => n.SourcePosition.IndexStart + " - " + n.SourcePosition.Length)));
-
-			foreach (var node in nodes)
-			{
-				segments.Add(new TextSegment
-				                      {
-					                      IndextStart = node.SourcePosition.IndexStart,
-										  Length = node.SourcePosition.Length,
-										  DisplayOptions = node.Id.IsAlias() ? DisplayOptions.Definition : DisplayOptions.Usage
-				                      });
-			}
+			_executionContext.SegmentsToReplace.AddRange(
+				nodes.Select(n =>
+					new TextSegment
+					{
+						IndextStart = n.SourcePosition.IndexStart,
+						Length = n.SourcePosition.Length,
+						DisplayOptions = n.Id.IsAlias() ? DisplayOptions.Definition : DisplayOptions.Usage
+					}));
 		}
 
 		private IEnumerable<StatementDescriptionNode> GetBindVariableUsage()
