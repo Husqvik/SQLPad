@@ -62,10 +62,24 @@ namespace SqlPad
 			
 			_timer.Elapsed += TimerOnElapsed;
 
-			SetDeleteLineCommand();
+			ChangeDeleteLineCommandInputGesture();
+
+			foreach (var handler in _infrastructureFactory.CommandFactory.CommandHandlers)
+			{
+				var command = new RoutedCommand(handler.Name, typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.U, ModifierKeys.Control | ModifierKeys.Shift) });
+				ExecutedRoutedEventHandler handlerMethod =
+					(sender, args) =>
+					{
+						var executionContext = CommandExecutionContext.Create(Editor, _sqlDocument.StatementCollection);
+						handler.ExecuteHandler(executionContext);
+						Editor.ReplaceTextSegments(executionContext.SegmentsToReplace);
+					};
+
+				Editor.TextArea.DefaultInputHandler.Editing.CommandBindings.Add(new CommandBinding(command, handlerMethod));
+			}
 		}
 
-		private void SetDeleteLineCommand()
+		private void ChangeDeleteLineCommandInputGesture()
 		{
 			var deleteLineCommand = (RoutedCommand)Editor.TextArea.DefaultInputHandler.Editing.CommandBindings
 				.Single(b => b.Command == AvalonEditCommands.DeleteLine)

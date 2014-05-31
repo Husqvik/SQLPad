@@ -63,6 +63,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Commands\MakeUpperCaseCommand.cs" />
     <Compile Include="Commands\ExpandAsteriskCommand.cs" />
     <Compile Include="Commands\UnnestInlineViewCommand.cs" />
     <Compile Include="Commands\FindUsagesCommand.cs" />

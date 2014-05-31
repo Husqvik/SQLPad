@@ -9,7 +9,7 @@ namespace SqlPad.Oracle
 {
 	public class OracleCodeCompletionProvider : ICodeCompletionProvider
 	{
-		private readonly OracleSqlParser _oracleParser = new OracleSqlParser();
+		private readonly OracleSqlParser _parser = new OracleSqlParser();
 		private static readonly ICodeCompletionItem[] EmptyCollection = new ICodeCompletionItem[0];
 
 		private const string JoinTypeJoin = "JOIN";
@@ -61,7 +61,7 @@ namespace SqlPad.Oracle
 
 		public ICollection<ICodeCompletionItem> ResolveItems(IDatabaseModel databaseModel, string statementText, int cursorPosition, params string[] categories)
 		{
-			var sourceItems = ResolveItems(SqlDocument.FromStatementCollection(_oracleParser.Parse(statementText)), databaseModel, statementText, cursorPosition);
+			var sourceItems = ResolveItems(SqlDocument.FromStatementCollection(_parser.Parse(statementText)), databaseModel, statementText, cursorPosition);
 			return sourceItems.Where(i => categories.Length == 0 || categories.Contains(i.Category)).ToArray();
 		}
 
@@ -139,7 +139,7 @@ namespace SqlPad.Oracle
 			}
 
 			var semanticModel = new OracleStatementSemanticModel(null, (OracleStatement)currentNode.Statement, (OracleDatabaseModel)databaseModel);
-			var terminalCandidates = new HashSet<string>(_oracleParser.GetTerminalCandidates(isCursorAtTerminal && !currentNode.Id.IsSingleCharacterTerminal() ? currentNode.PrecedingTerminal : currentNode));
+			var terminalCandidates = new HashSet<string>(_parser.GetTerminalCandidates(isCursorAtTerminal && !currentNode.Id.IsSingleCharacterTerminal() ? currentNode.PrecedingTerminal : currentNode));
 
 			var cursorAtLastTerminal = cursorPosition <= currentNode.SourcePosition.IndexEnd + 1;
 			var terminalToReplace = cursorAtLastTerminal ? currentNode : null;
@@ -551,26 +551,45 @@ namespace SqlPad.Oracle
 
 	internal class OracleCodeCompletionEnvironment
 	{
+		private readonly OracleSqlParser _parser = new OracleSqlParser();
+
 		private StatementBase _statement;
-		private readonly StatementDescriptionNode _terminal;
+		private readonly StatementDescriptionNode _currentTerminal;
+		private readonly StatementDescriptionNode _precedingTerminal;
 		private readonly int _cursorPosition;
 		private readonly StatementDescriptionNode _prefixedColumnReference;
+		private readonly HashSet<string> _terminalCandidates;
 
 		public OracleCodeCompletionEnvironment(StatementCollection statementCollection, int cursorPosition)
 		{
 			_cursorPosition = cursorPosition;
-			_statement = statementCollection.GetStatementAtPosition(_cursorPosition);
+			_statement = statementCollection.GetStatementAtPosition(cursorPosition);
 			if (_statement == null)
 				return;
 
-			_terminal = _statement.GetNearestTerminalToPosition(_cursorPosition);
-			_prefixedColumnReference = _terminal.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference);
+			_currentTerminal = _statement.GetNearestTerminalToPosition(cursorPosition);
+			if (_currentTerminal == null)
+				return;
+
+			_precedingTerminal = _currentTerminal.PrecedingTerminal;
+
+			IsCurrentTerminalEntirelyBeforeCursor = _currentTerminal.SourcePosition.IndexEnd < cursorPosition;
+			IsCursorBetweenTerminals = _precedingTerminal != null && _precedingTerminal.SourcePosition.IndexEnd + 1 == cursorPosition &&
+			                           _currentTerminal.SourcePosition.IndexStart == cursorPosition;
+
+			_terminalCandidates = new HashSet<string>(_parser.GetTerminalCandidates(IsCurrentTerminalEntirelyBeforeCursor ? _currentTerminal : _precedingTerminal));
+
+			_prefixedColumnReference = _currentTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference);
+
+			if (_prefixedColumnReference == null && IsCursorBetweenTerminals && _precedingTerminal != null)
+			{
+				_prefixedColumnReference = _precedingTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference);
+			}
 		}
 
-		public bool IsCursorAtLastTerminal 
-		{
-			get { return _terminal.SourcePosition.ContainsIndex(_cursorPosition); }
-		}
+		public bool IsCurrentTerminalEntirelyBeforeCursor { get; private set; }
+		
+		public bool IsCursorBetweenTerminals { get; private set; }
 
 		public bool IsAtColumnOrFunctionReference
 		{
@@ -579,12 +598,12 @@ namespace SqlPad.Oracle
 
 		public bool IsAtObjectReference
 		{
-			get { return _terminal.Id == Terminals.ObjectIdentifier || (_terminal.Id == Terminals.Dot && true); }
+			get { return _currentTerminal.Id == Terminals.ObjectIdentifier || (_currentTerminal.Id == Terminals.Dot && true); }
 		}
 
 		public bool IsAtSchemaReference
 		{
-			get { return _terminal.Id == Terminals.SchemaIdentifier; }
+			get { return _currentTerminal.Id == Terminals.SchemaIdentifier; }
 		}
 	}
 }
