@@ -31,15 +31,13 @@ namespace SqlPad
 
 		private void LoadedHandler(object sender, RoutedEventArgs e)
 		{
+			DataContext = _model;
+
 			if (_model.ValidationRule != null)
 			{
-				var binding = BindingOperations.GetBinding(TextValue, TextBox.TextProperty);
-				binding.ValidationRules.Add(_model.ValidationRule);
-				// TODO: Add initial validation
-				var bindingExpression = BindingOperations.GetBindingExpression(TextValue, TextBox.TextProperty);
+				BindingOperations.GetBinding(TextValue, TextBox.TextProperty).ValidationRules.Add(_model.ValidationRule);
+				BindingOperations.GetBindingExpression(TextValue, TextBox.TextProperty).UpdateSource();
 			}
-
-			DataContext = _model;
 
 			TextValue.Focus();
 			TextValue.SelectAll();

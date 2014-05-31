@@ -394,44 +394,41 @@ namespace SqlPad
 				args.Handled = true;
 		}
 
-		private MenuItem BuildContextMenuItem(IContextAction action)
+		private void BuildContextMenuItem(IContextAction action)
 		{
-			var item =
+			var menuItem =
 				new MenuItem
 				{
 					Header = action.Name,
-					Command = new RoutedCommand(action.ExecutionHandler.Name, typeof(MenuItem))
+					Command = new RoutedCommand()
 				};
 
-			ExecutedRoutedEventHandler routedHandler =
+			ExecutedRoutedEventHandler routedExecutingHandler =
 				(sender, args) =>
 				{
 					action.ExecutionHandler.ExecutionHandler(action.ExecutionContext);
 					Editor.ReplaceTextSegments(action.ExecutionContext.SegmentsToReplace);
 				};
 
-			var commandBinding = new CommandBinding(item.Command, routedHandler);
-
-			item.CommandBindings.Add(commandBinding);
-
-			return item;
+			var commandBinding = new CommandBinding(menuItem.Command, routedExecutingHandler, (sender, args) => args.CanExecute = true);
+			
+			menuItem.CommandTarget = Editor.ContextMenu;
+			Editor.ContextMenu.CommandBindings.Add(commandBinding);
+			Editor.ContextMenu.Items.Add(menuItem);
 		}
 
 		private bool PopulateContextActionMenu()
 		{
-			var menuItems = _contextActionProvider.GetContextActions(_databaseModel, _sqlDocument, Editor.SelectionStart, Editor.SelectionLength)
-				.Select(BuildContextMenuItem);
-
 			Editor.ContextMenu.Items.Clear();
+			Editor.ContextMenu.CommandBindings.Clear();
 
-			foreach (var menuItem in menuItems)
-			{
-				Editor.ContextMenu.Items.Add(menuItem);
-			}
+			_contextActionProvider.GetContextActions(_databaseModel, _sqlDocument, Editor.SelectionStart, Editor.SelectionLength)
+				.ToList()
+				.ForEach(BuildContextMenuItem);
 
 			if (Editor.ContextMenu.Items.Count == 1)
 			{
-				Editor.ContextMenu.Opened += (sender, args) => ((MenuItem)Editor.ContextMenu.Items[0]).Focus();
+				Editor.ContextMenu.Opened += (sender, args) => ((MenuItem)Editor.ContextMenu.Items[0]).Focus(); // TODO: Solve preselection when only single action is suggested
 			}
 
 			Editor.ContextMenu.PlacementTarget = Editor;
