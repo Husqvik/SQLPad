@@ -293,14 +293,14 @@ namespace SqlPad.Oracle
 			{
 				ResolveOrderByReferences(queryBlock);
 
+				ResolveFunctionReferences(queryBlock);
+
 				foreach (var selectColumm in queryBlock.Columns.Where(c => c.ExplicitDefinition))
 				{
 					ResolveColumnObjectReferences(selectColumm.ColumnReferences, selectColumm.FunctionReferences, queryBlock.ObjectReferences);
 				}
 
 				ResolveColumnObjectReferences(queryBlock.ColumnReferences, queryBlock.FunctionReferences, queryBlock.ObjectReferences);
-
-				ResolveFunctionReferences(queryBlock);
 			}
 
 			foreach (var joinClauseColumnReferences in _joinClauseColumnReferences)
@@ -324,26 +324,37 @@ namespace SqlPad.Oracle
 		{
 			foreach (var functionReference in queryBlock.AllFunctionReferences)
 			{
-				functionReference.Metadata = GetFunctionMetadata(functionReference);
+				UpdateFunctionReferenceWithMetadata(functionReference);
 			}
 		}
 
-		private OracleFunctionMetadata GetFunctionMetadata(OracleFunctionReference functionReference)
+		private OracleFunctionMetadata UpdateFunctionReferenceWithMetadata(OracleFunctionReference functionReference)
 		{
 			if (DatabaseModel == null)
 				return null;
 
-			var functionIdentifier = OracleFunctionIdentifier.CreateFromValues(functionReference.FullyQualifiedObjectName.NormalizedOwner, functionReference.FullyQualifiedObjectName.NormalizedName, functionReference.NormalizedName);
-			var parameterCount = functionReference.ParameterNodes == null ? 0 : functionReference.ParameterNodes.Count;
-			var metadata = DatabaseModel.AllFunctionMetadata.GetSqlFunctionMetadata(functionIdentifier, parameterCount);
+			var owner = String.IsNullOrEmpty(functionReference.FullyQualifiedObjectName.NormalizedOwner)
+				? DatabaseModel.CurrentSchema
+				: functionReference.FullyQualifiedObjectName.NormalizedOwner;
 
-			if (metadata == null && !String.IsNullOrEmpty(functionIdentifier.Package) && String.IsNullOrEmpty(functionIdentifier.Owner))
+			var functionIdentifier = OracleFunctionIdentifier.CreateFromValues(owner, functionReference.FullyQualifiedObjectName.NormalizedName, functionReference.NormalizedName);
+			var parameterCount = functionReference.ParameterNodes == null ? 0 : functionReference.ParameterNodes.Count;
+			var metadata = DatabaseModel.AllFunctionMetadata.GetSqlFunctionMetadata(functionIdentifier, parameterCount, true);
+
+			if (metadata == null && !String.IsNullOrEmpty(functionIdentifier.Package) && String.IsNullOrEmpty(functionReference.FullyQualifiedObjectName.NormalizedOwner))
 			{
 				var identifier = OracleFunctionIdentifier.CreateFromValues(functionIdentifier.Package, null, functionIdentifier.Name);
-				metadata = DatabaseModel.AllFunctionMetadata.GetSqlFunctionMetadata(identifier, parameterCount);
+				metadata = DatabaseModel.AllFunctionMetadata.GetSqlFunctionMetadata(identifier, parameterCount, false);
 			}
 
-			return metadata;
+			if (metadata != null && String.IsNullOrEmpty(metadata.Identifier.Package) &&
+				functionReference.ObjectNode != null)
+			{
+				functionReference.OwnerNode = functionReference.ObjectNode;
+				functionReference.ObjectNode = null;
+			}
+
+			return functionReference.Metadata = metadata;
 		}
 
 		public OracleQueryBlock GetQueryBlock(int position)
@@ -451,7 +462,7 @@ namespace SqlPad.Oracle
 							ParameterNodes = null
 						};
 
-					var functionMetadata = GetFunctionMetadata(functionReference);
+					var functionMetadata = UpdateFunctionReferenceWithMetadata(functionReference);
 					if (functionMetadata != null)
 					{
 						functionReferences.Add(functionReference);

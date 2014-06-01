@@ -49,7 +49,7 @@ namespace SqlPad.Oracle
 
 					_isRefreshing = true;
 
-					Task.Factory.StartNew(GenerateSqlFunctionMetadata);
+					Task.Factory.StartNew(GenerateBuiltInFunctionMetadata);
 				}
 			}
 		}
@@ -103,9 +103,9 @@ namespace SqlPad.Oracle
 			};
 		}
 
-		private OracleFunctionMetadataCollection GetAllFunctionMetadata()
+		private OracleFunctionMetadataCollection GetUserFunctionMetadata()
 		{
-			const string getFunctionMetadataCommandText =
+			const string getUserFunctionMetadataCommandText =
 @"SELECT
     OWNER,
     PACKAGE_NAME,
@@ -152,7 +152,7 @@ ORDER BY
     PACKAGE_NAME,
     FUNCTION_NAME";
 
-			const string getParameterMetadataCommandText =
+			const string getUserFunctionParameterMetadataCommandText =
 @"SELECT
     OWNER,
     PACKAGE_NAME,
@@ -172,12 +172,12 @@ ORDER BY
     PACKAGE_NAME,
     POSITION";
 
-			return GetFunctionMetadataCollection(getFunctionMetadataCommandText, getParameterMetadataCommandText);
+			return GetFunctionMetadataCollection(getUserFunctionMetadataCommandText, getUserFunctionParameterMetadataCommandText, false);
 		}
 
-		private void GenerateSqlFunctionMetadata()
+		private void GenerateBuiltInFunctionMetadata()
 		{
-			const string getFunctionMetadataCommandText =
+			const string getBuiltInFunctionMetadataCommandText =
 @"SELECT
     OWNER,
     PACKAGE_NAME,
@@ -240,7 +240,7 @@ ON PROCEDURES.FUNCTION_NAME = SQL_FUNCTION_METADATA.FUNCTION_NAME
 ORDER BY
     FUNCTION_NAME";
 
-			const string getParameterMetadataCommandText =
+			const string getBuiltInFunctionParameterMetadataCommandText =
 @"SELECT
 	OWNER,
     PACKAGE_NAME,
@@ -261,14 +261,14 @@ WHERE
 ORDER BY
     POSITION";
 
-			BuiltInFunctionMetadata = GetFunctionMetadataCollection(getFunctionMetadataCommandText, getParameterMetadataCommandText);
+			BuiltInFunctionMetadata = GetFunctionMetadataCollection(getBuiltInFunctionMetadataCommandText, getBuiltInFunctionParameterMetadataCommandText, true);
 
 			using (var writer = XmlWriter.Create(MetadataCache.GetFullFileName(SqlFuntionMetadataFileName)))
 			{
 				Serializer.WriteObject(writer, BuiltInFunctionMetadata);
 			}
 
-			var allFunctionMetadata = GetAllFunctionMetadata();
+			var allFunctionMetadata = GetUserFunctionMetadata();
 
 			var test = new OracleFunctionMetadataCollection(allFunctionMetadata.SqlFunctions.Where(f => f.Identifier.Owner == "husqvik".ToQuotedIdentifier()).ToArray());
 			using (var writer = XmlWriter.Create(@"D:\TestFunctionCollection.xml"))
@@ -279,7 +279,7 @@ ORDER BY
 			_isRefreshing = false;
 		}
 
-		private OracleFunctionMetadataCollection GetFunctionMetadataCollection(string getFunctionMetadataCommandText, string getParameterMetadataCommandText)
+		private OracleFunctionMetadataCollection GetFunctionMetadataCollection(string getFunctionMetadataCommandText, string getParameterMetadataCommandText, bool isBuiltIn)
 		{
 			var functionMetadataDictionary = new Dictionary<OracleFunctionIdentifier, OracleFunctionMetadata>();
 
@@ -297,7 +297,7 @@ ORDER BY
 						while (reader.Read())
 						{
 							reader.GetValues(values);
-							var functionMetadata = new OracleFunctionMetadata(values, true);
+							var functionMetadata = new OracleFunctionMetadata(values, isBuiltIn);
 							functionMetadataDictionary.Add(functionMetadata.Identifier, functionMetadata);
 						}
 					}

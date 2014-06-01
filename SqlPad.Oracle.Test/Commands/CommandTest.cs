@@ -402,6 +402,17 @@ WHERE
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestAsteriskNotHighlightedWhenFindUsages()
+		{
+			const string statement = "SELECT NAME FROM (SELECT * FROM (SELECT NAME FROM SELECTION))";
+
+			var foundSegments = FindUsagesOrdered(statement, 7);
+			foundSegments.Count.ShouldBe(2);
+			foundSegments[0].IndextStart.ShouldBe(7);
+			foundSegments[1].IndextStart.ShouldBe(40);
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestWrapCommonTableExpressionIntoAnotherCommonTableExpression()
 		{
 			_editor.Text = "WITH CTE1 AS (SELECT NAME FROM SELECTION) SELECT NAME FROM CTE1";
@@ -621,6 +632,27 @@ WHERE
 			ExecuteOracleCommand(AddToGroupByCommand.ExecutionHandler);
 
 			_editor.Text.ShouldBe("SELECT SELECTION.PROJECT_ID, COUNT(*) PROJECT_SELECTIONS FROM SELECTION GROUP BY PROJECT_ID");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestToggleFullyQualifiedReferencesOn()
+		{
+			_editor.Text = @"SELECT SQLPAD_FUNCTION, RESPONDENTBUCKET_ID, SELECTION_ID, PROJECT_ID, NAME, SQLPAD.SQLPAD_FUNCTION(0), TO_CHAR('') FROM SELECTION";
+			_editor.SelectionLength = 0;
+
+			ExecuteOracleCommand(ToggleFullyQualifiedReferencesCommand.ExecutionHandler);
+
+			_editor.Text.ShouldBe("SELECT HUSQVIK.SQLPAD_FUNCTION, HUSQVIK.SELECTION.RESPONDENTBUCKET_ID, HUSQVIK.SELECTION.SELECTION_ID, HUSQVIK.SELECTION.PROJECT_ID, HUSQVIK.SELECTION.NAME, HUSQVIK.SQLPAD.SQLPAD_FUNCTION(0), TO_CHAR('') FROM HUSQVIK.SELECTION");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestToggleFullyQualifiedReferencesOnFullyQualifiedSchemaFunction()
+		{
+			_editor.Text = @"SELECT HUSQVIK.SQLPAD_FUNCTION FROM SYS.DUAL";
+			_editor.SelectionLength = 0;
+
+			// TODO: Update when toogle off is implemented
+			CanExecuteOracleCommand(ToggleFullyQualifiedReferencesCommand.ExecutionHandler).ShouldBe(false);
 		}
 	}
 }

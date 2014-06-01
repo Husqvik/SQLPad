@@ -352,7 +352,7 @@ namespace SqlPad.Oracle
 
 			if (objectIdentifierNode == null)
 			{
-				suggestedItems = suggestedItems.Concat(GenerateSchemaItems(currentName, currentNode, 0, databaseModel, 1));
+				suggestedItems = suggestedItems.Concat(GenerateSchemaItems(currentName, currentNode.Id == Terminals.Select ? null : currentNode, 0, databaseModel, 1));
 			}
 
 			return suggestedItems.Concat(suggestedFunctions);

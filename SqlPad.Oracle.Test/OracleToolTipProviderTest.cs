@@ -51,7 +51,7 @@ namespace SqlPad.Oracle.Test
 		[Test(Description = @""), STAThread]
 		public void TestFunctionSemanticErrorToolTip()
 		{
-			const string query = "SELECT COUNT FROM SELECTION";
+			const string query = "SELECT TO_CHAR FROM SELECTION";
 			_document.UpdateStatements(_oracleSqlParser.Parse(query), query);
 
 			var toolTip = _toolTipProvider.GetToolTip(TestFixture.DatabaseModel, _document, 8);

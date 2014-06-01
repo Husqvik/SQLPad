@@ -6,10 +6,6 @@ namespace SqlPad.Oracle
 	[DebuggerDisplay("OracleFunctionReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; Object={ObjectNode == null ? null : ObjectNode.Token.Value}; Function={FunctionIdentifierNode.Token.Value})")]
 	public class OracleFunctionReference : OracleReference
 	{
-		public OracleFunctionReference()
-		{
-		}
-
 		public override string Name { get { return FunctionIdentifierNode.Token.Value; } }
 
 		public StatementDescriptionNode FunctionIdentifierNode { get; set; }

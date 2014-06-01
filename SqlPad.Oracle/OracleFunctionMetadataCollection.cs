@@ -35,21 +35,22 @@ namespace SqlPad.Oracle
 		[DataMember]
 		public DateTime Timestamp { get; private set; }
 
-		public OracleFunctionMetadata GetSqlFunctionMetadata(OracleFunctionIdentifier identifier, int parameterCount)
+		public OracleFunctionMetadata GetSqlFunctionMetadata(OracleFunctionIdentifier identifier, int parameterCount, bool forceBuiltInFunction)
 		{
-			var metadata = TryFindFunctionOverload(identifier, parameterCount);
-			if (metadata == null && String.IsNullOrEmpty(identifier.Package) && String.IsNullOrEmpty(identifier.Owner))
+			OracleFunctionMetadata metadata = null;
+			if (String.IsNullOrEmpty(identifier.Package) && (forceBuiltInFunction || String.IsNullOrEmpty(identifier.Owner)))
 			{
 				var builtInPackageIdentifier = new OracleFunctionIdentifier { Name = identifier.Name, Package = PackageBuiltInFunction, Owner = OwnerBuiltInFunction };
-				metadata = TryFindFunctionOverload(builtInPackageIdentifier, parameterCount);
+				var nonPackageBuiltInIdentifier = new OracleFunctionIdentifier { Name = identifier.Name, Package = String.Empty, Owner = String.Empty };
+				metadata = TryFindFunctionOverload(parameterCount, builtInPackageIdentifier, nonPackageBuiltInIdentifier);
 			}
 
-			return metadata;
+			return metadata ?? TryFindFunctionOverload(parameterCount, identifier);
 		}
 
-		private OracleFunctionMetadata TryFindFunctionOverload(OracleFunctionIdentifier identifier, int parameterCount)
+		private OracleFunctionMetadata TryFindFunctionOverload(int parameterCount, params OracleFunctionIdentifier[] identifiers)
 		{
-			return SqlFunctions.Where(m => identifier.EqualsWithAnyOverload(m.Identifier))
+			return SqlFunctions.Where(m => identifiers.Any(i => i.EqualsWithAnyOverload(m.Identifier)))
 				.OrderBy(m => Math.Abs(parameterCount - m.Parameters.Count + 1))
 				.FirstOrDefault();
 		}
