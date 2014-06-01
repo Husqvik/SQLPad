@@ -68,6 +68,11 @@ namespace SqlPad.Oracle
 				actionList.Add(new OracleContextAction(UnnestInlineViewCommand.Title, UnnestInlineViewCommand.ExecutionHandler, executionContext));
 			}
 
+			if (ToggleFullyQualifiedReferencesCommand.ExecutionHandler.CanExecuteHandler(executionContext))
+			{
+				actionList.Add(new OracleContextAction(ToggleFullyQualifiedReferencesCommand.Title, ToggleFullyQualifiedReferencesCommand.ExecutionHandler, executionContext));
+			}
+
 			var actions = ResolveAmbiguousColumnCommand.ResolveCommandHandlers(semanticModel, currentTerminal)
 				.Select(c => new OracleContextAction("Resolve as " + c.Name, c, executionContext));
 

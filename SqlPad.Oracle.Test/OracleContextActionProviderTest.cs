@@ -2,6 +2,7 @@
 using System.Linq;
 using NUnit.Framework;
 using Shouldly;
+using SqlPad.Oracle.Commands;
 
 namespace SqlPad.Oracle.Test
 {
@@ -87,9 +88,10 @@ namespace SqlPad.Oracle.Test
 		{
 			const string query1 = @"SELECT NULL FROM DUAL";
 
-			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 1).ToArray();
-			actions.Length.ShouldBe(1);
-			actions[0].Name.ShouldBe("Toggle quoted notation");
+			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 1)
+				.Count(a => a.Name.In(WrapAsCommonTableExpressionCommand.Title, WrapAsInlineViewCommand.Title));
+			
+			actions.ShouldBe(0);
 		}
 
 		[Test(Description = @""), STAThread]
@@ -97,9 +99,9 @@ namespace SqlPad.Oracle.Test
 		{
 			const string query1 = @"SELECT IV.TEST_COLUMN || ' ADDED' FROM (SELECT SELECTION.NAME || ' FROM CTE ' TEST_COLUMN FROM SELECTION) IV";
 
-			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 41).ToArray();
-			actions.Length.ShouldBe(4);
-			actions[3].Name.ShouldBe("Unnest");
+			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 41).SingleOrDefault(a => a.Name == UnnestInlineViewCommand.Title);
+			action.ShouldNotBe(null);
+			action.Name.ShouldBe("Unnest");
 		}
 
 		[Test(Description = @""), STAThread]
@@ -107,8 +109,8 @@ namespace SqlPad.Oracle.Test
 		{
 			const string query1 = @"SELECT * FROM (SELECT NAME FROM SELECTION GROUP BY NAME)";
 
-			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 18).ToArray();
-			actions.Length.ShouldBe(3);
+			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 18).Count(a => a.Name == UnnestInlineViewCommand.Title);
+			actions.ShouldBe(0);
 		}
 		
 		[Test(Description = @""), STAThread]
@@ -116,8 +118,8 @@ namespace SqlPad.Oracle.Test
 		{
 			const string query1 = @"SELECT * FROM (SELECT DISTINCT NAME FROM SELECTION)";
 
-			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 18).ToArray();
-			actions.Length.ShouldBe(3);
+			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 18).Count(a => a.Name == UnnestInlineViewCommand.Title);
+			actions.ShouldBe(0);
 		}
 
 		[Test(Description = @""), STAThread]
@@ -139,6 +141,16 @@ namespace SqlPad.Oracle.Test
 			const string query2 = "SELECT S.* FROM (SELECT 1 FROM SELECTION) S";
 			actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query2, 9).ToArray();
 			actions.Length.ShouldBe(0);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestToggleFullyQualifiedReferencesSuggested()
+		{
+			const string query1 = @"SELECT DUMMY FROM DUAL";
+
+			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 0).SingleOrDefault(a => a.Name == ToggleFullyQualifiedReferencesCommand.Title);
+			action.ShouldNotBe(null);
+			action.Name.ShouldBe("Toggle fully qualified references");
 		}
 	}
 }
