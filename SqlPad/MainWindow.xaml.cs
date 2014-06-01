@@ -95,11 +95,17 @@ namespace SqlPad
 			var multiNodeEditCommand = new RoutedCommand("EditMultipleNodes", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.F6, ModifierKeys.Shift) });
 			commandBindings.Add(new CommandBinding(multiNodeEditCommand, EditMultipleNodes));
 
-			var navigateToPreviousUsageCommand = new RoutedCommand("NavigateToPreviousUsage", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.PageUp, ModifierKeys.Control | ModifierKeys.Alt) });
-			commandBindings.Add(new CommandBinding(navigateToPreviousUsageCommand, NavigateToPreviousUsage));
+			var navigateToPreviousUsageCommand = new RoutedCommand("NavigateToPreviousHighlightedUsage", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.PageUp, ModifierKeys.Control | ModifierKeys.Alt) });
+			commandBindings.Add(new CommandBinding(navigateToPreviousUsageCommand, NavigateToPreviousHighlightedUsage));
 
-			var navigateToNextUsageCommand = new RoutedCommand("NavigateToNextUsage", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.PageDown, ModifierKeys.Control | ModifierKeys.Alt) });
-			commandBindings.Add(new CommandBinding(navigateToNextUsageCommand, NavigateToNextUsage));
+			var navigateToNextUsageCommand = new RoutedCommand("NavigateToNextHighlightedUsage", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.PageDown, ModifierKeys.Control | ModifierKeys.Alt) });
+			commandBindings.Add(new CommandBinding(navigateToNextUsageCommand, NavigateToNextHighlightedUsage));
+
+			var navigateToQueryBlockRootCommand = new RoutedCommand("NavigateToQueryBlockRoot", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.Home, ModifierKeys.Control | ModifierKeys.Alt) });
+			commandBindings.Add(new CommandBinding(navigateToQueryBlockRootCommand, NavigateToQueryBlockRoot));
+
+			var moveContentToLeftCommand = new RoutedCommand("MoveContentToLeft", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.Left, ModifierKeys.Control | ModifierKeys.Alt | ModifierKeys.Shift) });
+			var moveContentToRightCommand = new RoutedCommand("MoveContentToRight", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.Right, ModifierKeys.Control | ModifierKeys.Alt | ModifierKeys.Shift) });
 
 			var formatStatementCommand = new RoutedCommand(_statementFormatter.ExecutionHandler.Name, typeof(TextEditor), _statementFormatter.ExecutionHandler.DefaultGestures);
 			ExecutedRoutedEventHandler formatStatementRoutedHandlerMethod =
@@ -400,38 +406,28 @@ namespace SqlPad
 				new MenuItem
 				{
 					Header = action.Name,
-					Command = new RoutedCommand()
+					Command = new ContextActionCommand(action.ExecutionHandler, action.ExecutionContext),
+					CommandParameter = Editor
 				};
 
-			ExecutedRoutedEventHandler routedExecutingHandler =
-				(sender, args) =>
-				{
-					action.ExecutionHandler.ExecutionHandler(action.ExecutionContext);
-					Editor.ReplaceTextSegments(action.ExecutionContext.SegmentsToReplace);
-				};
-
-			var commandBinding = new CommandBinding(menuItem.Command, routedExecutingHandler, (sender, args) => args.CanExecute = true);
-			
-			menuItem.CommandTarget = Editor.ContextMenu;
-			Editor.ContextMenu.CommandBindings.Add(commandBinding);
 			Editor.ContextMenu.Items.Add(menuItem);
 		}
 
 		private bool PopulateContextActionMenu()
 		{
-			Editor.ContextMenu.Items.Clear();
-			Editor.ContextMenu.CommandBindings.Clear();
-
 			_contextActionProvider.GetContextActions(_databaseModel, _sqlDocument, Editor.SelectionStart, Editor.SelectionLength)
 				.ToList()
 				.ForEach(BuildContextMenuItem);
 
 			if (Editor.ContextMenu.Items.Count == 1)
 			{
-				Editor.ContextMenu.Opened += (sender, args) => ((MenuItem)Editor.ContextMenu.Items[0]).Focus(); // TODO: Solve preselection when only single action is suggested
+				Editor.ContextMenu.Opened += (sender, args) => ((MenuItem)Editor.ContextMenu.Items[0]).Focus();
 			}
 
+			Editor.ContextMenu.Closed += (sender, args) => Editor.ContextMenu.Items.Clear();
+			
 			Editor.ContextMenu.PlacementTarget = Editor;
+			
 			var position = Editor.TextArea.Caret.CalculateCaretRectangle().TopRight;
 			Editor.ContextMenu.HorizontalOffset = position.X - 24;
 			Editor.ContextMenu.VerticalOffset = position.Y - 32;
@@ -461,22 +457,6 @@ namespace SqlPad
 					Editor.TextArea.TextView.Redraw();
 				}
 			}
-			else if (e.Key == Key.Home && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt))
-			{
-				Trace.WriteLine("CONTROL ALT + HOME");
-
-				var queryBlockRootIndex = _navigationService.NavigateToQueryBlockRoot(_sqlDocument.StatementCollection, Editor.CaretOffset);
-				if (queryBlockRootIndex.HasValue)
-				{
-					Editor.CaretOffset = queryBlockRootIndex.Value;
-					Editor.ScrollToCaret();
-				}
-			}
-			else if (e.Key.In(Key.Left, Key.Right) && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt | ModifierKeys.Shift))
-			{
-				Trace.WriteLine("CONTROL ALT SHIFT + " + (e.Key == Key.Left ? "Left" : "Right"));
-				// TODO: move element to right/left/up/down
-			}
 
 			if ((e.Key == Key.Back || e.Key == Key.Delete) && _multiNodeEditor != null)
 			{
@@ -493,7 +473,17 @@ namespace SqlPad
 			}
 		}
 
-		private void NavigateToPreviousUsage(object sender, ExecutedRoutedEventArgs args)
+		private void NavigateToQueryBlockRoot(object sender, ExecutedRoutedEventArgs args)
+		{
+			var queryBlockRootIndex = _navigationService.NavigateToQueryBlockRoot(_sqlDocument.StatementCollection, Editor.CaretOffset);
+			if (queryBlockRootIndex.HasValue)
+			{
+				Editor.CaretOffset = queryBlockRootIndex.Value;
+				Editor.ScrollToCaret();
+			}
+		}
+
+		private void NavigateToPreviousHighlightedUsage(object sender, ExecutedRoutedEventArgs args)
 		{
 			var nextSegments = _colorizeAvalonEdit.HighlightSegments
 						.Where(s => s.IndextStart < Editor.CaretOffset)
@@ -502,7 +492,7 @@ namespace SqlPad
 			NavigateToUsage(nextSegments);
 		}
 
-		private void NavigateToNextUsage(object sender, ExecutedRoutedEventArgs args)
+		private void NavigateToNextHighlightedUsage(object sender, ExecutedRoutedEventArgs args)
 		{
 			var nextSegments = _colorizeAvalonEdit.HighlightSegments
 						.Where(s => s.IndextStart > Editor.CaretOffset)

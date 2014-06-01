@@ -75,6 +75,8 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="ColorizeAvalonEdit.cs" />
+    <Compile Include="Commands\CommandExecutionHandler.cs" />
+    <Compile Include="Commands\ContextActionCommand.cs" />
     <Compile Include="EditCommandBase.cs" />
     <Compile Include="CommandSettingsModel.cs" />
     <Compile Include="Commands\ICommandFactory.cs" />
