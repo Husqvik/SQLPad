@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Linq;
-using SqlPad.Commands;
 
 namespace SqlPad.Oracle.Commands
 {
 	internal class ExpandAsteriskCommand : OracleCommandBase
 	{
 		public const string Title = "Expand";
-
-		public static CommandExecutionHandler ExecutionHandler = CreateStandardExecutionHandler<ExpandAsteriskCommand>("ExpandAsterisk");
 
 		private ExpandAsteriskCommand(OracleCommandExecutionContext executionContext)
 			: base(executionContext)

@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using SqlPad.Commands;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
 namespace SqlPad.Oracle.Commands
@@ -9,8 +8,6 @@ namespace SqlPad.Oracle.Commands
 	internal class ToggleFullyQualifiedReferencesCommand : OracleCommandBase
 	{
 		public const string Title = "Toggle fully qualified references";
-
-		public static CommandExecutionHandler ExecutionHandler = CreateStandardExecutionHandler<ToggleFullyQualifiedReferencesCommand>("ToggleFullyQualifiedReferences");
 
 		private ToggleFullyQualifiedReferencesCommand(OracleCommandExecutionContext executionContext)
 			: base(executionContext)

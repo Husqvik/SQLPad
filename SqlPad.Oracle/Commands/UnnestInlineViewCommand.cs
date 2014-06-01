@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using SqlPad.Commands;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 
@@ -11,8 +10,6 @@ namespace SqlPad.Oracle.Commands
 		private readonly OracleQueryBlock _parentQueryBlock;
 
 		public const string Title = "Unnest";
-
-		public static CommandExecutionHandler ExecutionHandler = CreateStandardExecutionHandler<UnnestInlineViewCommand>(Title);
 
 		private UnnestInlineViewCommand(OracleCommandExecutionContext executionContext)
 			: base(executionContext)

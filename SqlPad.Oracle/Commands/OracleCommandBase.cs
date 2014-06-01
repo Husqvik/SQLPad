@@ -34,7 +34,7 @@ namespace SqlPad.Oracle.Commands
 
 		protected abstract void Execute();
 
-		protected static CommandExecutionHandler CreateStandardExecutionHandler<TCommand>(string commandName) where TCommand : OracleCommandBase
+		public static CommandExecutionHandler CreateStandardExecutionHandler<TCommand>(string commandName) where TCommand : OracleCommandBase
 		{
 			return new CommandExecutionHandler
 			{

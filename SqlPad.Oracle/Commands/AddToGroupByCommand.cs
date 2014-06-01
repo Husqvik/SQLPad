@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using SqlPad.Commands;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 
 namespace SqlPad.Oracle.Commands
@@ -10,8 +9,6 @@ namespace SqlPad.Oracle.Commands
 
 		public const string Title = "Add to GROUP BY clause";
 
-		public static CommandExecutionHandler ExecutionHandler = CreateStandardExecutionHandler<AddToGroupByCommand>("AddToGroupByClause");
-		
 		private AddToGroupByCommand(OracleCommandExecutionContext executionContext)
 			: base(executionContext)
 		{

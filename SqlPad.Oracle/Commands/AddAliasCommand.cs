@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using SqlPad.Commands;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
 namespace SqlPad.Oracle.Commands
@@ -8,8 +7,6 @@ namespace SqlPad.Oracle.Commands
 	internal class AddAliasCommand : OracleCommandBase
 	{
 		public const string Title = "Add Alias";
-
-		public static CommandExecutionHandler ExecutionHandler = CreateStandardExecutionHandler<AddAliasCommand>("AddAlias");
 
 		private AddAliasCommand(OracleCommandExecutionContext executionContext)
 			: base(executionContext)

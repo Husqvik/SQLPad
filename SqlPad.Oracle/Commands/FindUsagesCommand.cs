@@ -15,7 +15,7 @@ namespace SqlPad.Oracle.Commands
 		private readonly OracleQueryBlock _queryBlock;
 		private readonly CommandExecutionContext _executionContext;
 
-		public static CommandExecutionHandler ExecutionHandler = new CommandExecutionHandler
+		public static readonly CommandExecutionHandler ExecutionHandler = new CommandExecutionHandler
 		{
 			Name = "FindUsages",
 			DefaultGestures = new InputGestureCollection { new KeyGesture(Key.F11, ModifierKeys.Alt | ModifierKeys.Shift) },

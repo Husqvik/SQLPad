@@ -8,7 +8,7 @@ namespace SqlPad.Oracle.Commands
 {
 	internal static class MakeUpperCaseCommand
 	{
-		public static CommandExecutionHandler ExecutionHandler = new CommandExecutionHandler
+		public static readonly CommandExecutionHandler ExecutionHandler = new CommandExecutionHandler
 		{
 			Name = "MakeUpperCase",
 			DefaultGestures = new InputGestureCollection { new KeyGesture(Key.U, ModifierKeys.Control | ModifierKeys.Shift) },

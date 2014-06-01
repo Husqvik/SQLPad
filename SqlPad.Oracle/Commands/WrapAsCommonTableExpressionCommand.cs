@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
-using SqlPad.Commands;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 
@@ -10,8 +9,6 @@ namespace SqlPad.Oracle.Commands
 	internal class WrapAsCommonTableExpressionCommand : OracleCommandBase
 	{
 		public const string Title = "Wrap as common table expression";
-
-		public static CommandExecutionHandler ExecutionHandler = CreateStandardExecutionHandler<WrapAsCommonTableExpressionCommand>("WrapAsCommonTableExpression");
 
 		private WrapAsCommonTableExpressionCommand(OracleCommandExecutionContext executionContext)
 			: base(executionContext)

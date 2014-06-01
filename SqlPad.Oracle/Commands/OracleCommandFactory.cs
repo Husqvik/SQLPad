@@ -23,4 +23,16 @@ namespace SqlPad.Oracle.Commands
 			get { return FindUsagesCommand.ExecutionHandler; }
 		}
 	}
+
+	public static class OracleCommands
+	{
+		public static readonly CommandExecutionHandler AddAlias = OracleCommandBase.CreateStandardExecutionHandler<AddAliasCommand>("AddAlias");
+		public static readonly CommandExecutionHandler AddToGroupByClause = OracleCommandBase.CreateStandardExecutionHandler<AddToGroupByCommand>("AddToGroupByClause");
+		public static readonly CommandExecutionHandler ExpandAsterisk = OracleCommandBase.CreateStandardExecutionHandler<ExpandAsteriskCommand>("ExpandAsterisk");
+		public static readonly CommandExecutionHandler ToggleFullyQualifiedReferences = OracleCommandBase.CreateStandardExecutionHandler<ToggleFullyQualifiedReferencesCommand>("ToggleFullyQualifiedReferences");
+		public static readonly CommandExecutionHandler ToggleQuotedNotation = OracleCommandBase.CreateStandardExecutionHandler<ToggleQuotedNotationCommand>("ToggleQuotedNotation");
+		public static readonly CommandExecutionHandler UnnestInlineView = OracleCommandBase.CreateStandardExecutionHandler<UnnestInlineViewCommand>(UnnestInlineViewCommand.Title);
+		public static readonly CommandExecutionHandler WrapAsCommonTableExpression = OracleCommandBase.CreateStandardExecutionHandler<WrapAsCommonTableExpressionCommand>("WrapAsCommonTableExpression");
+		public static readonly CommandExecutionHandler WrapAsInlineView = OracleCommandBase.CreateStandardExecutionHandler<WrapAsInlineViewCommand>("WrapAsInlineView");
+	}
 }
