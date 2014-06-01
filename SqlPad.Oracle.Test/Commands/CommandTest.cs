@@ -646,6 +646,17 @@ WHERE
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestToggleFullyQualifiedReferencesWithAliasedTable()
+		{
+			_editor.Text = @"SELECT DUMMY, NAME FROM DUAL D, SELECTION S";
+			_editor.SelectionLength = 0;
+
+			ExecuteOracleCommand(ToggleFullyQualifiedReferencesCommand.ExecutionHandler);
+
+			_editor.Text.ShouldBe("SELECT D.DUMMY, S.NAME FROM DUAL D, HUSQVIK.SELECTION S");
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestToggleFullyQualifiedReferencesOnFullyQualifiedSchemaFunction()
 		{
 			_editor.Text = @"SELECT HUSQVIK.SQLPAD_FUNCTION FROM SYS.DUAL";
