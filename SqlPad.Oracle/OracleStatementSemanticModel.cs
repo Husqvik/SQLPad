@@ -480,9 +480,16 @@ namespace SqlPad.Oracle
 				if (rowSourceReference.SearchResult.SchemaObject == null)
 					return new OracleColumn[0];
 
-				columnNodeColumnReferences = rowSourceReference.SearchResult.SchemaObject.Columns
-					.Where(c => c.Name == columnReference.NormalizedName && (columnReference.ObjectNode == null || IsTableReferenceValid(columnReference, rowSourceReference)))
-					.ToArray();
+				if (columnReference.ColumnNode.Id == Terminals.RowIdPseudoColumn)
+				{
+					columnNodeColumnReferences = new[] { rowSourceReference.CreateRowIdPseudoColumn() };
+				}
+				else
+				{
+					columnNodeColumnReferences = rowSourceReference.SearchResult.SchemaObject.Columns
+						.Where(c => c.Name == columnReference.NormalizedName && (columnReference.ObjectNode == null || IsTableReferenceValid(columnReference, rowSourceReference)))
+						.ToArray();
+				}
 			}
 			else
 			{
@@ -532,7 +539,7 @@ namespace SqlPad.Oracle
 			if (whereClauseRootNode != null)
 			{
 				queryBlock.WhereClause = whereClauseRootNode;
-				var whereClauseIdentifiers = whereClauseRootNode.GetDescendantsWithinSameQuery(Terminals.Identifier);
+				var whereClauseIdentifiers = whereClauseRootNode.GetDescendantsWithinSameQuery(Terminals.Identifier, Terminals.RowIdPseudoColumn);
 				ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock.ColumnReferences, queryBlock.FunctionReferences, whereClauseIdentifiers, QueryBlockPlacement.Where, null);
 			}
 
@@ -543,7 +550,7 @@ namespace SqlPad.Oracle
 			}
 			
 			queryBlock.GroupByClause = groupByClauseRootNode;
-			var identifiers = groupByClauseRootNode.GetPathFilterDescendants(n => !n.Id.In(NonTerminals.NestedQuery, NonTerminals.HavingClause), Terminals.Identifier);
+			var identifiers = groupByClauseRootNode.GetPathFilterDescendants(n => !n.Id.In(NonTerminals.NestedQuery, NonTerminals.HavingClause), Terminals.Identifier, Terminals.RowIdPseudoColumn);
 			ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock.ColumnReferences, queryBlock.FunctionReferences, identifiers, QueryBlockPlacement.GroupBy, null);
 
 			var havingClauseRootNode = groupByClauseRootNode.GetDescendantsWithinSameQuery(NonTerminals.HavingClause).FirstOrDefault();
@@ -553,7 +560,7 @@ namespace SqlPad.Oracle
 			}
 
 			queryBlock.HavingClause = havingClauseRootNode;
-			identifiers = havingClauseRootNode.GetDescendantsWithinSameQuery(Terminals.Identifier);
+			identifiers = havingClauseRootNode.GetDescendantsWithinSameQuery(Terminals.Identifier, Terminals.RowIdPseudoColumn);
 			ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock.ColumnReferences, queryBlock.FunctionReferences, identifiers, QueryBlockPlacement.Having, null);
 
 			var grammarSpecificFunctions = havingClauseRootNode.GetDescendantsWithinSameQuery(Terminals.Count, NonTerminals.AggregateFunction, NonTerminals.AnalyticFunction).ToArray();
@@ -569,7 +576,7 @@ namespace SqlPad.Oracle
 			if (orderByNode == null)
 				return;
 
-			var identifiers = orderByNode.GetDescendantsWithinSameQuery(Terminals.Identifier);
+			var identifiers = orderByNode.GetDescendantsWithinSameQuery(Terminals.Identifier, Terminals.RowIdPseudoColumn);
 			ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock.ColumnReferences, queryBlock.FunctionReferences, identifiers, QueryBlockPlacement.OrderBy, null);
 		}
 
@@ -656,7 +663,7 @@ namespace SqlPad.Oracle
 					}
 					else
 					{
-						var identifiers = columnExpression.GetDescendantsWithinSameQuery(Terminals.Identifier).ToArray();
+						var identifiers = columnExpression.GetDescendantsWithinSameQuery(Terminals.Identifier, Terminals.RowIdPseudoColumn).ToArray();
 						column.IsDirectColumnReference = identifiers.Length == 1 && identifiers[0].GetAncestor(NonTerminals.Expression).ChildNodes.Count == 1;
 						if (column.IsDirectColumnReference && columnAliasNode == null)
 						{

@@ -657,6 +657,17 @@ WHERE
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestToggleFullyQualifiedReferencesWithRowIdPseudoColumn()
+		{
+			_editor.Text = @"SELECT ROWID FROM DUAL";
+			_editor.SelectionLength = 0;
+
+			ExecuteOracleCommand(OracleCommands.ToggleFullyQualifiedReferences);
+
+			_editor.Text.ShouldBe("SELECT DUAL.ROWID FROM DUAL");
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestToggleFullyQualifiedReferencesOnFullyQualifiedSchemaFunction()
 		{
 			_editor.Text = @"SELECT HUSQVIK.SQLPAD_FUNCTION FROM SYS.DUAL";
