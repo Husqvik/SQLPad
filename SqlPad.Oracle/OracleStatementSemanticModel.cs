@@ -474,7 +474,7 @@ namespace SqlPad.Oracle
 
 		private ICollection<OracleColumn> GetColumnNodeObjectReferences(OracleObjectReference rowSourceReference, OracleColumnReference columnReference)
 		{
-			OracleColumn[] columnNodeColumnReferences;
+			var columnNodeColumnReferences = new List<OracleColumn>();
 			if (rowSourceReference.Type == TableReferenceType.PhysicalObject)
 			{
 				if (rowSourceReference.SearchResult.SchemaObject == null)
@@ -482,21 +482,23 @@ namespace SqlPad.Oracle
 
 				if (columnReference.ColumnNode.Id == Terminals.RowIdPseudoColumn)
 				{
-					columnNodeColumnReferences = new[] { rowSourceReference.CreateRowIdPseudoColumn() };
+					var rowId = rowSourceReference.SearchResult.SchemaObject.RowIdPseudoColumn;
+					if (rowId != null)
+					{
+						columnNodeColumnReferences.Add(rowId);
+					}
 				}
 				else
 				{
-					columnNodeColumnReferences = rowSourceReference.SearchResult.SchemaObject.Columns
-						.Where(c => c.Name == columnReference.NormalizedName && (columnReference.ObjectNode == null || IsTableReferenceValid(columnReference, rowSourceReference)))
-						.ToArray();
+					columnNodeColumnReferences.AddRange(rowSourceReference.SearchResult.SchemaObject.Columns
+						.Where(c => c.Name == columnReference.NormalizedName && (columnReference.ObjectNode == null || IsTableReferenceValid(columnReference, rowSourceReference))));
 				}
 			}
 			else
 			{
-				columnNodeColumnReferences = rowSourceReference.QueryBlocks.SelectMany(qb => qb.Columns)
+				columnNodeColumnReferences.AddRange(rowSourceReference.QueryBlocks.SelectMany(qb => qb.Columns)
 					.Where(c => c.NormalizedName == columnReference.NormalizedName && (columnReference.ObjectNode == null || columnReference.FullyQualifiedObjectName.NormalizedName == rowSourceReference.FullyQualifiedName.NormalizedName))
-					.Select(c => c.ColumnDescription)
-					.ToArray();
+					.Select(c => c.ColumnDescription));
 			}
 
 			return columnNodeColumnReferences;

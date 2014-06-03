@@ -340,7 +340,8 @@ namespace SqlPad.Oracle
 
 			var rowIdItems = columnCandidates.Values.SelectMany(v => v)
 				.Distinct()
-				.Where(o => o.Type == TableReferenceType.PhysicalObject && o.SearchResult.SchemaObject != null && o.SearchResult.SchemaObject.Type == OracleDatabaseModel.DataObjectTypeTable && suggestedColumns.Select(t => t.Item2).Contains(o.FullyQualifiedName))
+				.Where(o => o.SearchResult.SchemaObject != null && o.SearchResult.SchemaObject.Organization.In(OrganizationType.Heap, OrganizationType.Index) &&
+				            o.SearchResult.SchemaObject.Type == OracleDatabaseModel.DataObjectTypeTable && suggestedColumns.Select(t => t.Item2).Contains(o.FullyQualifiedName))
 				.Select(o => CreateColumnCodeCompletionItem("ROWID", objectIdentifierNode == null ? o.FullyQualifiedName.ToString() : null, currentNode, OracleCodeCompletionCategory.PseudoColumn));
 
 			var suggestedItems = rowIdItems.Concat(suggestedColumns.Select(t => CreateColumnCodeCompletionItem(t.Item1, objectIdentifierNode == null ? t.Item2.ToString() : null, currentNode)));

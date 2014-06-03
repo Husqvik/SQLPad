@@ -35,7 +35,7 @@ namespace SqlPad.Oracle
 						if (objectReference == null)
 							return null;
 
-						var objectName = objectReference.Type == TableReferenceType.PhysicalObject
+						var objectName = objectReference.Type == TableReferenceType.PhysicalObject && objectReference.SearchResult.SchemaObject != null
 							? objectReference.SearchResult.SchemaObject.FullyQualifiedName
 							: objectReference.FullyQualifiedName;
 						tip = objectName + " (" + objectReference.Type.ToCategoryLabel() + ")";
@@ -51,6 +51,7 @@ namespace SqlPad.Oracle
 					case Terminals.LastValue:
 					case Terminals.Lead:
 					case Terminals.Lag:
+					case Terminals.RowIdPseudoColumn:
 					case Terminals.Identifier:
 						var columnDescription = GetColumnDescription(queryBlock, node);
 						if (columnDescription == null)
@@ -65,7 +66,7 @@ namespace SqlPad.Oracle
 						}
 						else
 						{
-							tip = columnDescription.Type + " (" + (columnDescription.Nullable ? String.Empty : "NOT ") + "NULL)";
+							tip = String.Format("{0} {1}{2}", columnDescription.FullTypeName, columnDescription.Nullable ? null : "NOT ", "NULL");
 						}
 						
 						break;

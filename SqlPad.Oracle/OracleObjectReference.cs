@@ -24,15 +24,6 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		public OracleColumn CreateRowIdPseudoColumn()
-		{
-			return new OracleColumn
-			{
-				Name = "ROWID".ToQuotedIdentifier(),
-				Type = IsIndexOrganized ? "UROWID" : "ROWID"
-			};
-		}
-
 		public ICollection<OracleColumn> Columns
 		{
 			get
@@ -57,8 +48,6 @@ namespace SqlPad.Oracle
 				return _columns;
 			}
 		}
-
-		public bool IsIndexOrganized { get; set; }
 
 		public SchemaObjectResult SearchResult { get; set; }
 		

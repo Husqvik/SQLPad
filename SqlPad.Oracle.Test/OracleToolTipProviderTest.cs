@@ -21,7 +21,31 @@ namespace SqlPad.Oracle.Test
 			var toolTip = _toolTipProvider.GetToolTip(TestFixture.DatabaseModel, _document, 8);
 
 			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
-			toolTip.Control.DataContext.ShouldBe("VARCHAR2 (NOT NULL)");
+			toolTip.Control.DataContext.ShouldBe("VARCHAR2(50 BYTE) NOT NULL");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestRowIdPsedoColumnTypeToolTip()
+		{
+			const string query = "SELECT ROWID FROM SELECTION";
+			_document.UpdateStatements(_oracleSqlParser.Parse(query), query);
+
+			var toolTip = _toolTipProvider.GetToolTip(TestFixture.DatabaseModel, _document, 8);
+
+			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.DataContext.ShouldBe("ROWID NOT NULL");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestDecimalColumnTypeToolTip()
+		{
+			const string query = "SELECT AMOUNT FROM INVOICELINES";
+			_document.UpdateStatements(_oracleSqlParser.Parse(query), query);
+
+			var toolTip = _toolTipProvider.GetToolTip(TestFixture.DatabaseModel, _document, 8);
+
+			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.DataContext.ShouldBe("NUMBER(20, 2) NOT NULL");
 		}
 
 		[Test(Description = @""), STAThread]

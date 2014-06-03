@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
@@ -35,44 +36,50 @@ namespace SqlPad.Oracle
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create("\"SYS\"", "\"DUAL\""),
 				Type = OracleDatabaseModel.DataObjectTypeTable,
+				Organization = OrganizationType.Heap,
 				Columns = new HashSet<OracleColumn>
 				             {
-					             new OracleColumn { Name = "\"DUMMY\"", Type = "VARCHAR2", Size = 1 }
+					             new OracleColumn { Name = "\"DUMMY\"", Type = "VARCHAR2", Size = 1, Unit = DataUnit.Byte }
 				             }
 			},
 			new OracleDataObject
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create("\"SYS\"", "\"V_$SESSION\""),
+				Organization = OrganizationType.NotApplicable,
 				Type = "VIEW"
 			},
 			new OracleDataObject
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(OracleDatabaseModel.SchemaPublic, "\"V$SESSION\""),
+				Organization = OrganizationType.NotApplicable,
 				Type = "SYNONYM"
 			},
 			new OracleDataObject
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(OracleDatabaseModel.SchemaPublic, "\"DUAL\""),
+				Organization = OrganizationType.Heap,
 				Type = "SYNONYM",
 				Columns = new HashSet<OracleColumn>
 				             {
-					             new OracleColumn { Name = "\"DUMMY\"", Type = "VARCHAR2", Size = 1 }
+					             new OracleColumn { Name = "\"DUMMY\"", Type = "VARCHAR2", Size = 1, Unit = DataUnit.Byte }
 				             }
 			},
 			new OracleDataObject
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"COUNTRY\""),
 				Type = OracleDatabaseModel.DataObjectTypeTable,
+				Organization = OrganizationType.Heap,
 				Columns = new HashSet<OracleColumn>
 				          {
 					          new OracleColumn { Name = "\"ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
-							  new OracleColumn { Name = "\"NAME\"", Type = "VARCHAR2", Size = 50 }
+							  new OracleColumn { Name = "\"NAME\"", Type = "VARCHAR2", Size = 50, Unit = DataUnit.Byte }
 				          }
 			},
 			new OracleDataObject
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"ORDERS\""),
 				Type = OracleDatabaseModel.DataObjectTypeTable,
+				Organization = OrganizationType.Heap,
 				Columns = new HashSet<OracleColumn>
 				          {
 					          new OracleColumn { Name = "\"ID\"", Type = "NUMBER", Precision = 9, Scale = 0 }
@@ -82,6 +89,7 @@ namespace SqlPad.Oracle
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"INVOICES\""),
 				Type = OracleDatabaseModel.DataObjectTypeTable,
+				Organization = OrganizationType.Heap,
 				Columns = new HashSet<OracleColumn>
 				          {
 					          new OracleColumn { Name = "\"ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
@@ -92,10 +100,12 @@ namespace SqlPad.Oracle
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"INVOICELINES\""),
 				Type = OracleDatabaseModel.DataObjectTypeTable,
+				Organization = OrganizationType.Heap,
 				Columns = new HashSet<OracleColumn>
 				          {
 					          new OracleColumn { Name = "\"ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
-					          new OracleColumn { Name = "\"INVOICE_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 }
+					          new OracleColumn { Name = "\"INVOICE_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
+							  new OracleColumn { Name = "\"AMOUNT\"", Type = "NUMBER", Precision = 20, Scale = 2 }
 				          },
 						  ForeignKeys = new List<OracleForeignKeyConstraint>
 				              {
@@ -112,17 +122,19 @@ namespace SqlPad.Oracle
 			new OracleDataObject
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"VIEW_INSTANTSEARCH\""),
+				Organization = OrganizationType.NotApplicable,
 				Type = "VIEW"
 			},
 			new OracleDataObject
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"TARGETGROUP\""),
 				Type = OracleDatabaseModel.DataObjectTypeTable,
+				Organization = OrganizationType.Heap,
 				Columns = new HashSet<OracleColumn>
 				          {
 					          new OracleColumn { Name = "\"TARGETGROUP_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
 					          new OracleColumn { Name = "\"PROJECT_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
-							  new OracleColumn { Name = "\"NAME\"", Type = "VARCHAR2", Size = 50 }
+							  new OracleColumn { Name = "\"NAME\"", Type = "VARCHAR2", Size = 50, Unit = DataUnit.Byte }
 				          },
 						  ForeignKeys = new List<OracleForeignKeyConstraint>
 				              {
@@ -140,9 +152,10 @@ namespace SqlPad.Oracle
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"PROJECT\""),
 				Type = OracleDatabaseModel.DataObjectTypeTable,
+				Organization = OrganizationType.Heap,
 				Columns = new HashSet<OracleColumn>
 				          {
-					          new OracleColumn { Name = "\"NAME\"", Type = "VARCHAR2", Size = 50 },
+					          new OracleColumn { Name = "\"NAME\"", Type = "VARCHAR2", Size = 50, Unit = DataUnit.Byte },
 					          new OracleColumn { Name = "\"PROJECT_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 }
 				          }
 			},
@@ -150,12 +163,13 @@ namespace SqlPad.Oracle
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"RESPONDENTBUCKET\""),
 				Type = OracleDatabaseModel.DataObjectTypeTable,
+				Organization = OrganizationType.Heap,
 				Columns = new HashSet<OracleColumn>
 				          {
 							  new OracleColumn { Name = "\"RESPONDENTBUCKET_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
 					          new OracleColumn { Name = "\"TARGETGROUP_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
 					          new OracleColumn { Name = "\"PROJECT_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
-							  new OracleColumn { Name = "\"NAME\"", Type = "VARCHAR2", Size = 50 }
+							  new OracleColumn { Name = "\"NAME\"", Type = "VARCHAR2", Size = 50, Unit = DataUnit.Byte }
 				          },
 						  ForeignKeys = new List<OracleForeignKeyConstraint>
 				              {
@@ -181,12 +195,13 @@ namespace SqlPad.Oracle
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"SELECTION\""),
 				Type = OracleDatabaseModel.DataObjectTypeTable,
+				Organization = OrganizationType.Heap,
 				Columns = new HashSet<OracleColumn>
 				          {
 							  new OracleColumn { Name = "\"RESPONDENTBUCKET_ID\"", Type = "NUMBER", Precision = 9, Scale = 0, Nullable = true },
 					          new OracleColumn { Name = "\"SELECTION_ID\"", Type = "NUMBER", Precision = 9, Scale = 0, Nullable = false },
 					          new OracleColumn { Name = "\"PROJECT_ID\"", Type = "NUMBER", Precision = 9, Scale = 0, Nullable = false },
-							  new OracleColumn { Name = "\"NAME\"", Type = "VARCHAR2", Size = 50, Nullable = false }
+							  new OracleColumn { Name = "\"NAME\"", Type = "VARCHAR2", Size = 50, Nullable = false, Unit = DataUnit.Byte }
 				          },
 				ForeignKeys = new List<OracleForeignKeyConstraint>
 				              {
@@ -257,20 +272,35 @@ namespace SqlPad.Oracle
 			ForeignKeys = new List<OracleForeignKeyConstraint>();
 		}
 
-		#region Implementation of IDatabaseObject
 		public string Name { get { return FullyQualifiedName.NormalizedName; } }
-		public string Owner { get { return FullyQualifiedName.NormalizedOwner; } }
-		#endregion
 
-		#region Implementation of IDatabaseObject
+		public string Owner { get { return FullyQualifiedName.NormalizedOwner; } }
+
 		public ICollection<IDatabaseObjectProperty> Properties { get; set; }
 
 		IEnumerable<IColumn> IDatabaseObject.Columns { get { return Columns; } }
-		#endregion
 
 		public ICollection<OracleColumn> Columns { get; set; }
 
-		public ICollection<OracleForeignKeyConstraint> ForeignKeys { get; set; } 
+		public ICollection<OracleForeignKeyConstraint> ForeignKeys { get; set; }
+
+		public OrganizationType Organization { get; set; }
+
+		public bool IsInternal { get; set; }
+
+		public OracleColumn RowIdPseudoColumn
+		{
+			get
+			{
+				return Organization.In(OrganizationType.Heap, OrganizationType.Index)
+					? new OracleColumn
+					  {
+						  Name = "ROWID".ToQuotedIdentifier(),
+						  Type = Organization == OrganizationType.Index ? "UROWID" : "ROWID"
+					  }
+					: null;
+			}
+		}
 	}
 
 	[DebuggerDisplay("OracleColumn (Name={Name}; Type={Type})")]
@@ -278,14 +308,37 @@ namespace SqlPad.Oracle
 	{
 		#region Implementation of IColumn
 		public string Name { get; set; }
-		public string FullTypeName { get { return Type; } }
+
+		public string FullTypeName
+		{
+			get
+			{
+				var name = Type;
+				if (Unit != DataUnit.NotApplicable)
+				{
+					var unit = Unit == DataUnit.Byte ? "BYTE" : "CHAR";
+					name = String.Format("{0}({1} {2})", name, Size, unit);
+				}
+				else
+				{
+					var decimalScale = Scale > 0 ? String.Format(", {0}", Scale) : null;
+					if (Precision > 0)
+					{
+						name = String.Format("{0}({1}{2})", name, Precision, decimalScale);
+					}
+				}
+
+				return name;
+			}
+		}
 		#endregion
 
 		public string Type { get; set; }
-		public int Precision { get; set; }
-		public int Scale { get; set; }
+		public int? Precision { get; set; }
+		public int? Scale { get; set; }
 		public int Size { get; set; }
 		public bool Nullable { get; set; }
+		public DataUnit Unit { get; set; }
 	}
 
 	public abstract class OracleObject
@@ -304,5 +357,20 @@ namespace SqlPad.Oracle
 		public IList<string> SourceColumns { get; set; }
 
 		public IList<string> TargetColumns { get; set; }
+	}
+
+	public enum OrganizationType
+	{
+		NotApplicable,
+		Heap,
+		Index,
+		External
+	}
+
+	public enum DataUnit
+	{
+		NotApplicable,
+		Byte,
+		Character
 	}
 }
