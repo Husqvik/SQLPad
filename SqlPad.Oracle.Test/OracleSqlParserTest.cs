@@ -1163,6 +1163,30 @@ namespace SqlPad.Oracle.Test
 			// TODO: Precise assertions
 		}
 
+		[Test(Description = @"Tests LISTAGG aggregation function. ")]
+		public void TestListaggAggregationFunction()
+		{
+			const string query1 = @"SELECT LISTAGG(NAME || '*') WITHIN GROUP (ORDER BY NULL) || 'Postfix' FROM SELECTION";
+			var result = Parser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			// TODO: Precise assertions
+		}
+
+		[Test(Description = @"Tests LISTAGG analytic function. ")]
+		public void TestListaggAnalyticFunction()
+		{
+			const string query1 = @"SELECT LISTAGG(NAME, SQLPAD_FUNCTION(SELECTION_ID) || '()') WITHIN GROUP (ORDER BY NULL) OVER () FROM SELECTION";
+			var result = Parser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			// TODO: Precise assertions
+		}
+
 		[Test(Description = @"Tests unfinished join clause. ")]
 		public void TestUnfinishedJoinClause()
 		{

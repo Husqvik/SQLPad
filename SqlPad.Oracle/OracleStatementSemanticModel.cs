@@ -483,7 +483,7 @@ namespace SqlPad.Oracle
 				if (columnReference.ColumnNode.Id == Terminals.RowIdPseudoColumn)
 				{
 					var rowId = rowSourceReference.SearchResult.SchemaObject.RowIdPseudoColumn;
-					if (rowId != null)
+					if (rowId != null && (columnReference.ObjectNode == null || IsTableReferenceValid(columnReference, rowSourceReference)))
 					{
 						columnNodeColumnReferences.Add(rowId);
 					}

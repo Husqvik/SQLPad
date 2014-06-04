@@ -2548,6 +2548,9 @@
           <NonTerminal Id="AggregateFunctionParameter" />
           <NonTerminal Id="AnalyticOrKeepClause" IsOptional="true" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="ListAggregationClause" />
+        </Sequence>
       </Sequences>
     </Rule>
 
@@ -2558,6 +2561,33 @@
           <Terminal Id="All" IsOptional="true" />
           <Terminal Id="Asterisk" />
           <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ListAggregationClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="ListAggregation" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="Expression" />
+          <NonTerminal Id="ListAggregationDelimiter" IsOptional="true" />
+          <Terminal Id="RightParenthesis" />
+          <Terminal Id="Within" />
+          <Terminal Id="Group" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="OrderByClause" />
+          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="OverQueryPartitionClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ListAggregationDelimiter">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="Expression" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -2593,7 +2623,7 @@
         <Sequence>
           <Terminal Id="Over" />
           <Terminal Id="LeftParenthesis" />
-          <NonTerminal Id="QueryPartitionClause" />
+          <NonTerminal Id="QueryPartitionClause" IsOptional="true" />
           <Terminal Id="RightParenthesis" />
         </Sequence>
       </Sequences>
@@ -3119,6 +3149,10 @@
     <Terminal Id="Treat" Value="TREAT" />
     <Terminal Id="Ref" Value="REF" />
 
+    <!-- LISTAGG function -->
+    <Terminal Id="ListAggregation" Value="LISTAGG" />
+    <Terminal Id="Within" Value="WITHIN" />
+    
     <!-- Sample clause -->
     <Terminal Id="Sample" Value="SAMPLE" />
     <Terminal Id="Block" Value="BLOCK" />

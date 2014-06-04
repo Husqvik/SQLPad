@@ -839,6 +839,22 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			functionNodeValidity[1].SemanticError.ShouldBe(SemanticError.None);
 		}
 
+		[Test(Description = @"")]
+		public void TestNotAmbiguousRowIdReference()
+		{
+			const string sqlText = "SELECT SELECTION.ROWID FROM SELECTION, PROJECT";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = _statementValidator.BuildValidationModel(sqlText, statement, TestFixture.DatabaseModel);
+			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var columnNodeValidity = nodeValidityDictionary.Values.ToList();
+			columnNodeValidity.Count.ShouldBe(1);
+			columnNodeValidity[0].IsRecognized.ShouldBe(true);
+			columnNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+		}
+
 		[Test(Description = @""), Ignore]
 		public void TestSemanticErrorWhenUserNonAggregateFunctionHasAnalyticClause()
 		{

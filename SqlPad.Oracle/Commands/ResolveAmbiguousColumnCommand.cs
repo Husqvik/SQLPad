@@ -21,7 +21,7 @@ namespace SqlPad.Oracle.Commands
 				throw new InvalidOperationException("currentTerminal");
 
 			var commands = new List<CommandExecutionHandler>();
-			if (currentTerminal.Id != Terminals.Identifier)
+			if (currentTerminal.Id != Terminals.Identifier && currentTerminal.Id != Terminals.RowIdPseudoColumn)
 				return EmptyCollection;
 
 			var columnReference = semanticModel.QueryBlocks.SelectMany(qb => qb.Columns).SelectMany(c => c.ColumnReferences).SingleOrDefault(c => c.ColumnNode == currentTerminal);
@@ -33,9 +33,10 @@ namespace SqlPad.Oracle.Commands
 				.Where(r => identifiers.Contains(r.FullyQualifiedName))
 				.Select(r => new CommandExecutionHandler
 				             {
-								 Name = r.FullyQualifiedName + "." + columnReference.Name,
-								 ExecutionHandler = c => new ResolveAmbiguousColumnCommand((OracleCommandExecutionContext)c, r.FullyQualifiedName + "." + columnReference.Name)
-									 .Execute()
+					             Name = r.FullyQualifiedName + "." + columnReference.Name,
+					             ExecutionHandler = c => new ResolveAmbiguousColumnCommand((OracleCommandExecutionContext)c, r.FullyQualifiedName + "." + columnReference.Name)
+						             .Execute(),
+					             CanExecuteHandler = c => true
 				             });
 
 			commands.AddRange(actions);
