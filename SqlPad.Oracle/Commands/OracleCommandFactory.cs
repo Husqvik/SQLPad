@@ -9,8 +9,9 @@ namespace SqlPad.Oracle.Commands
 
 		static OracleCommandFactory()
 		{
-			CommandHandlerCollection.Add(MakeUpperCaseCommand.ExecutionHandler);
-			CommandHandlerCollection.Add(SafeDeleteCommand.ExecutionHandler);
+			CommandHandlerCollection.Add(ModifyCaseCommand.MakeUpperCase);
+			CommandHandlerCollection.Add(ModifyCaseCommand.MakeLowerCase);
+			CommandHandlerCollection.Add(SafeDeleteCommand.SafeDelete);
 		}
 
 		public ICollection<CommandExecutionHandler> CommandHandlers

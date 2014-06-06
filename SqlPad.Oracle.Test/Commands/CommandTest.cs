@@ -606,21 +606,25 @@ WHERE
 			_editor.Text = @"SELECT S.RESPONDENTBUCKET_ID, S.SELECTION_ID, S.PROJECT_ID, S.NAME FROM SELECTION S";
 			_editor.CaretOffset = 82;
 
-			ExecuteGenericCommand(SafeDeleteCommand.ExecutionHandler);
+			ExecuteGenericCommand(SafeDeleteCommand.SafeDelete);
 
 			_editor.Text.ShouldBe("SELECT SELECTION.RESPONDENTBUCKET_ID, SELECTION.SELECTION_ID, SELECTION.PROJECT_ID, SELECTION.NAME FROM SELECTION ");
 		}
 
 		[Test(Description = @""), STAThread]
-		public void TestMakeUpperCaseCommandWithMultipleTerminalsSelected()
+		public void TestModifyCaseCommandWithMultipleTerminalsSelected()
 		{
 			_editor.Text = @"select null, 'null' from selection";
 			_editor.CaretOffset = 3;
 			_editor.SelectionLength = 28;
 
-			ExecuteGenericCommand(MakeUpperCaseCommand.ExecutionHandler);
+			ExecuteGenericCommand(ModifyCaseCommand.MakeUpperCase);
 
 			_editor.Text.ShouldBe("selECT NULL, 'null' FROM SELECTion");
+
+			ExecuteGenericCommand(ModifyCaseCommand.MakeLowerCase);
+
+			_editor.Text.ShouldBe("select null, 'null' from selection");
 		}
 
 		[Test(Description = @""), STAThread]
@@ -630,7 +634,7 @@ WHERE
 			_editor.CaretOffset = 0;
 			_editor.SelectionLength = _editor.Text.Length;
 
-			ExecuteGenericCommand(MakeUpperCaseCommand.ExecutionHandler);
+			ExecuteGenericCommand(ModifyCaseCommand.MakeUpperCase);
 
 			_editor.Text.ShouldBe("LOT OF INVALID TOKENS PRECEDING; SELECT 'null' AS \"null\" FROM DUAL AND LOT OF INVALID TOKENS FOLLOWING");
 		}
@@ -642,7 +646,7 @@ WHERE
 			_editor.CaretOffset = 7;
 			_editor.SelectionLength = 6;
 
-			ExecuteGenericCommand(MakeUpperCaseCommand.ExecutionHandler);
+			ExecuteGenericCommand(ModifyCaseCommand.MakeUpperCase);
 
 			_editor.Text.ShouldBe("SELECT 'NULL' FROM DUAL");
 		}

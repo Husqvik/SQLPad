@@ -64,7 +64,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands\ToggleFullyQualifiedReferencesCommand.cs" />
-    <Compile Include="Commands\MakeUpperCaseCommand.cs" />
+    <Compile Include="Commands\ModifyCaseCommand.cs" />
     <Compile Include="Commands\ExpandAsteriskCommand.cs" />
     <Compile Include="Commands\OracleCommandExecutionContext.cs" />
     <Compile Include="Commands\UnnestInlineViewCommand.cs" />

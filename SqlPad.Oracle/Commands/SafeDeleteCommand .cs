@@ -9,7 +9,7 @@ namespace SqlPad.Oracle.Commands
 {
 	internal static class SafeDeleteCommand
 	{
-		public static readonly CommandExecutionHandler ExecutionHandler = new CommandExecutionHandler
+		public static readonly CommandExecutionHandler SafeDelete = new CommandExecutionHandler
 		{
 			Name = "SafeDelete",
 			DefaultGestures = new InputGestureCollection { new KeyGesture(Key.Delete, ModifierKeys.Alt) },
