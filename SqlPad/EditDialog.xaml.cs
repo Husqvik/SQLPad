@@ -45,6 +45,9 @@ namespace SqlPad
 
 		public bool GetSettings()
 		{
+			if (_model.UseDefaultSettings != null && _model.UseDefaultSettings())
+				return true;
+
 			var result = ShowDialog();
 			return result.HasValue && result.Value;
 		}

@@ -6,6 +6,7 @@
 		Width="400"
 		ResizeMode="NoResize"
 		WindowStartupLocation="CenterOwner"
+		Topmost="True"
 		Loaded="LoadedHandler"
 		Icon="EmptyIcon.ico"
         ShowInTaskbar="False">
@@ -16,19 +17,33 @@
 		</Grid.RowDefinitions>
 		<StackPanel Margin="8">
 			<TextBlock x:Name="Heading" Margin="2" FontWeight="Bold" Text="{Binding Path=Heading, Mode=OneWay}" />
-			<TextBlock x:Name="Description" TextWrapping="Wrap" Margin="2" Text="{Binding Path=Description, Mode=OneWay}" />
-			<TextBox x:Name="TextValue" Margin="2" Height="24" VerticalContentAlignment="Center" Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
-				<Validation.ErrorTemplate>
-					<ControlTemplate>
-						<StackPanel Width="348">
-							<AdornedElementPlaceholder x:Name="adorner" />
-							<Border x:Name="errorBorder" Background="Red" Margin="0,4,0,4" IsHitTestVisible="False">
-								<TextBlock Text="{Binding Path=ErrorContent}" Foreground="White" FontFamily="Segoe UI" Margin="8,2,8,3" TextWrapping="Wrap" VerticalAlignment="Center"/>
-							</Border>
-						</StackPanel>
-					</ControlTemplate>
-				</Validation.ErrorTemplate>
-			</TextBox>
+			<StackPanel Visibility="{Binding Path=TextInputVisibility, Mode=OneWay}">
+				<TextBlock x:Name="Description" TextWrapping="Wrap" Margin="2" Text="{Binding Path=Description, Mode=OneWay}" />
+				<TextBox x:Name="TextValue" Margin="2" Height="24" VerticalContentAlignment="Center" Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
+					<Validation.ErrorTemplate>
+						<ControlTemplate>
+							<StackPanel Width="348">
+								<AdornedElementPlaceholder x:Name="adorner" />
+								<Border x:Name="errorBorder" Background="Red" Margin="0,4,0,4" IsHitTestVisible="False">
+									<TextBlock Text="{Binding Path=ErrorContent}" Foreground="White" FontFamily="Segoe UI" Margin="8,2,8,3" TextWrapping="Wrap" VerticalAlignment="Center"/>
+								</Border>
+							</StackPanel>
+						</ControlTemplate>
+					</Validation.ErrorTemplate>
+				</TextBox>
+			</StackPanel>
+			<StackPanel Visibility="{Binding Path=BooleanOptionsVisibility, Mode=OneWay}">
+				<ItemsControl Margin="2" ItemsSource="{Binding Path=BooleanOptions.Values}" BorderBrush="Transparent">
+					<ItemsControl.ItemTemplate>
+						<DataTemplate>
+							<StackPanel Orientation="Horizontal">
+								<CheckBox IsChecked="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Margin="0, 0, 8, 0"></CheckBox>
+								<TextBlock Text="{Binding Path=Description, Mode=OneWay}" VerticalAlignment="Center"></TextBlock>
+							</StackPanel>
+						</DataTemplate>
+					</ItemsControl.ItemTemplate>
+				</ItemsControl>
+			</StackPanel>
 		</StackPanel>
 		<StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right">
 			<Button Content="OK" Width="72" Margin="8" IsDefault="True" Click="CloseClickHandler">

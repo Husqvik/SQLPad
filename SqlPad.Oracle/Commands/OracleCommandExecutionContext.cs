@@ -32,5 +32,10 @@ namespace SqlPad.Oracle.Commands
 				       CurrentNode = semanticModel.Statement.GetNodeAtPosition(currentPosition)
 			       };
 		}
+
+		public OracleCommandExecutionContext Clone()
+		{
+			return Create(StatementText, CaretOffset, SemanticModel);
+		}
 	}
 }

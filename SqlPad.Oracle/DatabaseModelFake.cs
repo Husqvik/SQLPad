@@ -295,8 +295,8 @@ namespace SqlPad.Oracle
 				return Organization.In(OrganizationType.Heap, OrganizationType.Index)
 					? new OracleColumn
 					  {
-						  Name = "ROWID".ToQuotedIdentifier(),
-						  Type = Organization == OrganizationType.Index ? "UROWID" : "ROWID"
+						  Name = OracleColumn.RowId.ToQuotedIdentifier(),
+						  Type = Organization == OrganizationType.Index ? "UROWID" : OracleColumn.RowId
 					  }
 					: null;
 			}
@@ -306,6 +306,8 @@ namespace SqlPad.Oracle
 	[DebuggerDisplay("OracleColumn (Name={Name}; Type={Type})")]
 	public class OracleColumn : IColumn
 	{
+		public const string RowId = "ROWID";
+
 		#region Implementation of IColumn
 		public string Name { get; set; }
 

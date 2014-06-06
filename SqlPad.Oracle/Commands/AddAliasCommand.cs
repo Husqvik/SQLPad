@@ -22,20 +22,28 @@ namespace SqlPad.Oracle.Commands
 			return tables.Length == 1 && tables[0].AliasNode == null;
 		}
 
-		protected override void Execute()
+		private CommandSettingsModel ConfigureSettings()
 		{
 			ExecutionContext.EnsureSettingsProviderAvailable();
 
 			var settingsModel = ExecutionContext.SettingsProvider.Settings;
+			settingsModel.ValidationRule = new OracleIdentifierValidationRule();
 
 			switch (CurrentNode.Id)
 			{
 				case Terminals.ObjectIdentifier:
-					settingsModel.Title = Title;
+					settingsModel.Title = "Add Object Alias";
 					settingsModel.Heading = settingsModel.Title;
 					settingsModel.Description = String.Format("Enter an alias for the object '{0}'", CurrentNode.Token.Value);
 					break;
 			}
+
+			return settingsModel;
+		}
+
+		protected override void Execute()
+		{
+			var settingsModel = ConfigureSettings();
 
 			if (!ExecutionContext.SettingsProvider.GetSettings())
 				return;

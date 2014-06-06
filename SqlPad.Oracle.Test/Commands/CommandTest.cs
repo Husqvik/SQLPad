@@ -429,7 +429,7 @@ WHERE
 			_editor.Text = "SELECT SELECTION.*, PROJECT.* FROM SELECTION, PROJECT";
 			_editor.CaretOffset = 28;
 			
-			ExecuteOracleCommand(OracleCommands.ExpandAsterisk);
+			ExecuteOracleCommand(OracleCommands.ExpandAsterisk, String.Empty);
 
 			_editor.Text.ShouldBe("SELECT SELECTION.*, PROJECT.NAME, PROJECT.PROJECT_ID FROM SELECTION, PROJECT");
 		}
@@ -440,7 +440,7 @@ WHERE
 			_editor.Text = "SELECT * FROM PROJECT, PROJECT P";
 			_editor.CaretOffset = 7;
 
-			ExecuteOracleCommand(OracleCommands.ExpandAsterisk);
+			ExecuteOracleCommand(OracleCommands.ExpandAsterisk, String.Empty);
 
 			_editor.Text.ShouldBe("SELECT PROJECT.NAME, PROJECT.PROJECT_ID, P.NAME, P.PROJECT_ID FROM PROJECT, PROJECT P");
 		}

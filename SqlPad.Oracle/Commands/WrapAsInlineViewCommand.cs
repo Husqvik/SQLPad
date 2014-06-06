@@ -21,14 +21,23 @@ namespace SqlPad.Oracle.Commands
 				   CurrentQueryBlock.Columns.Any(c => !String.IsNullOrEmpty(c.NormalizedName));
 		}
 
-		protected override void Execute()
+		private CommandSettingsModel ConfigureSettings()
 		{
 			ExecutionContext.EnsureSettingsProviderAvailable();
 
 			var settingsModel = ExecutionContext.SettingsProvider.Settings;
+			settingsModel.ValidationRule = new OracleIdentifierValidationRule();
+			
 			settingsModel.Title = Title;
 			settingsModel.Heading = settingsModel.Title;
 			settingsModel.Description = "Enter an alias for the inline view";
+
+			return settingsModel;
+		}
+
+		protected override void Execute()
+		{
+			var settingsModel = ConfigureSettings();
 
 			if (!ExecutionContext.SettingsProvider.GetSettings())
 				return;

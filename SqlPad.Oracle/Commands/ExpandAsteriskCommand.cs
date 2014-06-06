@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Windows;
 
 namespace SqlPad.Oracle.Commands
 {
 	internal class ExpandAsteriskCommand : OracleCommandBase
 	{
+		internal const string OptionIdentifierIncludeRowId = "IncludeRowId";
 		public const string Title = "Expand";
 
 		private ExpandAsteriskCommand(OracleCommandExecutionContext executionContext)
@@ -16,17 +19,37 @@ namespace SqlPad.Oracle.Commands
 		{
 			return CurrentNode != null && CurrentQueryBlock != null &&
 			       CurrentNode.Id == OracleGrammarDescription.Terminals.Asterisk &&
-			       !GetSegmentToReplace().Equals(TextSegment.Empty);
+			       !GetSegmentToReplace(true).Equals(TextSegment.Empty);
+		}
+
+		private CommandSettingsModel ConfigureSettings()
+		{
+			ExecutionContext.EnsureSettingsProviderAvailable();
+
+			var settingsModel = ExecutionContext.SettingsProvider.Settings;
+
+			settingsModel.TextInputVisibility = Visibility.Collapsed;
+			settingsModel.BooleanOptionsVisibility = Visibility.Visible;
+			settingsModel.AddBooleanOption(new BooleanOption { OptionIdentifier = OptionIdentifierIncludeRowId, Description = "Include ROWID", Value = false });
+			settingsModel.Title = "Expand Asterisk";
+			settingsModel.Heading = settingsModel.Title;
+
+			return settingsModel;
 		}
 
 		protected override void Execute()
 		{
-			ExecutionContext.SegmentsToReplace.Add(GetSegmentToReplace());
+			var settingsModel = ConfigureSettings();
+
+			if (!ExecutionContext.SettingsProvider.GetSettings())
+				return;
+
+			ExecutionContext.SegmentsToReplace.Add(GetSegmentToReplace(settingsModel.BooleanOptions[OptionIdentifierIncludeRowId].Value));
 		}
 
-		private TextSegment GetSegmentToReplace()
+		private TextSegment GetSegmentToReplace(bool includeRowId)
 		{
-			var columnNames = new string[0];
+			var columnNames = new List<string>();
 			var segmentToReplace = SourcePosition.Empty;
 			var asteriskReference = CurrentQueryBlock.Columns.FirstOrDefault(c => c.RootNode == CurrentNode);
 			if (asteriskReference == null)
@@ -40,7 +63,13 @@ namespace SqlPad.Oracle.Commands
 					columnNames = objectReference.Columns
 						.Where(c => !String.IsNullOrEmpty(c.Name))
 						.Select(c => GetFullyQualifiedColumnName(objectReference, c.Name))
-						.ToArray();
+						.ToList();
+
+					if (includeRowId && objectReference.SearchResult.SchemaObject != null &&
+					    objectReference.SearchResult.SchemaObject.Organization.In(OrganizationType.Heap, OrganizationType.Index))
+					{
+						columnNames.Insert(0, GetFullyQualifiedColumnName(objectReference, OracleColumn.RowId));
+					}
 				}
 			}
 			else
@@ -49,10 +78,19 @@ namespace SqlPad.Oracle.Commands
 				columnNames = CurrentQueryBlock.Columns
 					.Where(c => !c.IsAsterisk && !String.IsNullOrEmpty(c.NormalizedName))
 					.Select(c => GetFullyQualifiedColumnName(GetObjectReference(c), c.NormalizedName))
-					.ToArray();
+					.ToList();
+
+				if (includeRowId)
+				{
+					var rowIdColumns = CurrentQueryBlock.ObjectReferences
+						.Where(o => o.SearchResult.SchemaObject != null && o.SearchResult.SchemaObject.Organization.In(OrganizationType.Heap, OrganizationType.Index))
+						.Select(o => GetFullyQualifiedColumnName(o, OracleColumn.RowId));
+
+					columnNames.InsertRange(0, rowIdColumns);
+				}
 			}
 
-			if (columnNames.Length == 0)
+			if (columnNames.Count == 0)
 				return TextSegment.Empty;
 
 			var textSegment = new TextSegment

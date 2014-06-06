@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Windows.Input;
 using SqlPad.Commands;
 using SqlPad.Oracle.Commands;
 
@@ -27,8 +28,8 @@ namespace SqlPad.Oracle
 
 			var semanticModel = new OracleStatementSemanticModel(null, (OracleStatement)currentTerminal.Statement, (OracleDatabaseModel)databaseModel);
 			var executionContext = OracleCommandExecutionContext.Create(sqlDocument.StatementText, cursorPosition, semanticModel);
-			var model = new CommandSettingsModel { Value = "Enter value", ValidationRule = new OracleIdentifierValidationRule() };
-			executionContext.SettingsProvider = new EditDialog(model);
+			var enterIdentifierModel = new CommandSettingsModel { Value = "Enter value" };
+			executionContext.SettingsProvider = new EditDialog(enterIdentifierModel);
 			
 			var actionList = new List<IContextAction>();
 
@@ -60,7 +61,10 @@ namespace SqlPad.Oracle
 
 			if (OracleCommands.ExpandAsterisk.CanExecuteHandler(executionContext))
 			{
-				actionList.Add(new OracleContextAction(ExpandAsteriskCommand.Title, OracleCommands.ExpandAsterisk, executionContext));
+				var expandAsteriskExecutionContext = executionContext.Clone();
+				expandAsteriskExecutionContext.SettingsProvider = new EditDialog(new CommandSettingsModel { UseDefaultSettings = () => !Keyboard.IsKeyDown(Key.LeftShift) } );
+
+				actionList.Add(new OracleContextAction(ExpandAsteriskCommand.Title, OracleCommands.ExpandAsterisk, expandAsteriskExecutionContext));
 			}
 
 			if (OracleCommands.UnnestInlineView.CanExecuteHandler(executionContext))
