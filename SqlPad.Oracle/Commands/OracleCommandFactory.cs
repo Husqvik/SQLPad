@@ -20,7 +20,7 @@ namespace SqlPad.Oracle.Commands
 
 		public CommandExecutionHandler FindUsagesCommandHandler
 		{
-			get { return FindUsagesCommand.ExecutionHandler; }
+			get { return FindUsagesCommand.FindUsages; }
 		}
 	}
 

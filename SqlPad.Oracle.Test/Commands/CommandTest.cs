@@ -254,7 +254,7 @@ WHERE
 		private List<TextSegment> FindUsagesOrdered(string statementText, int currentPosition)
 		{
 			var executionContext = new CommandExecutionContext(statementText, currentPosition, Parser.Parse(statementText), TestFixture.DatabaseModel);
-			FindUsagesCommand.ExecutionHandler.ExecutionHandler(executionContext);
+			FindUsagesCommand.FindUsages.ExecutionHandler(executionContext);
 			return executionContext.SegmentsToReplace.OrderBy(s => s.IndextStart).ToList();
 		}
 			

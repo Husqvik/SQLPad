@@ -15,7 +15,7 @@ namespace SqlPad.Oracle.Commands
 		private readonly OracleQueryBlock _queryBlock;
 		private readonly CommandExecutionContext _executionContext;
 
-		public static readonly CommandExecutionHandler ExecutionHandler = new CommandExecutionHandler
+		public static readonly CommandExecutionHandler FindUsages = new CommandExecutionHandler
 		{
 			Name = "FindUsages",
 			DefaultGestures = new InputGestureCollection { new KeyGesture(Key.F11, ModifierKeys.Alt | ModifierKeys.Shift) },
@@ -27,7 +27,7 @@ namespace SqlPad.Oracle.Commands
 			var commandInstance = new FindUsagesCommand(executionContext);
 			if (commandInstance.CanExecute())
 			{
-				commandInstance.FindUsages();
+				commandInstance.ExecuteFindUsages();
 			}
 		}
 
@@ -52,7 +52,7 @@ namespace SqlPad.Oracle.Commands
 			return _currentNode != null;
 		}
 
-		private void FindUsages()
+		private void ExecuteFindUsages()
 		{
 			IEnumerable<StatementDescriptionNode> nodes;
 

@@ -107,29 +107,15 @@ namespace SqlPad
 			var moveContentToLeftCommand = new RoutedCommand("MoveContentToLeft", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.Left, ModifierKeys.Control | ModifierKeys.Alt | ModifierKeys.Shift) });
 			var moveContentToRightCommand = new RoutedCommand("MoveContentToRight", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.Right, ModifierKeys.Control | ModifierKeys.Alt | ModifierKeys.Shift) });
 
-			var formatStatementCommand = new RoutedCommand(_statementFormatter.ExecutionHandler.Name, typeof(TextEditor), _statementFormatter.ExecutionHandler.DefaultGestures);
-			ExecutedRoutedEventHandler formatStatementRoutedHandlerMethod =
-				(sender, args) =>
-				{
-					var executionContext = CommandExecutionContext.Create(Editor, _sqlDocument.StatementCollection, _databaseModel);
-					_statementFormatter.ExecutionHandler.ExecutionHandler(executionContext);
-					Editor.ReplaceTextSegments(executionContext.SegmentsToReplace);
-				};
+			var executeDatabaseCommandCommand = new RoutedCommand("ExecuteDatabaseCommand", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.F9) });
 
+			var formatStatementCommand = new RoutedCommand(_statementFormatter.ExecutionHandler.Name, typeof(TextEditor), _statementFormatter.ExecutionHandler.DefaultGestures);
+			var formatStatementRoutedHandlerMethod = GenericCommandHandler.CreateRoutedEditCommandHandler(_statementFormatter.ExecutionHandler, () => _sqlDocument.StatementCollection, _databaseModel);
 			commandBindings.Add(new CommandBinding(formatStatementCommand, formatStatementRoutedHandlerMethod));
 
 			var findUsagesCommandHandler = _infrastructureFactory.CommandFactory.FindUsagesCommandHandler;
 			var findUsagesCommand = new RoutedCommand(findUsagesCommandHandler.Name, typeof(TextEditor), findUsagesCommandHandler.DefaultGestures);
-			ExecutedRoutedEventHandler findUsagesRoutedHandlerMethod =
-				(sender, args) =>
-				{
-					var executionContext = CommandExecutionContext.Create(Editor, _sqlDocument.StatementCollection, _databaseModel);
-					findUsagesCommandHandler.ExecutionHandler(executionContext);
-					_colorizeAvalonEdit.SetHighlightSegments(executionContext.SegmentsToReplace);
-					Editor.TextArea.TextView.Redraw();
-				};
-
-			commandBindings.Add(new CommandBinding(findUsagesCommand, findUsagesRoutedHandlerMethod));
+			commandBindings.Add(new CommandBinding(findUsagesCommand, FindUsages));
 		}
 
 		private void ChangeDeleteLineCommandInputGesture()
@@ -499,6 +485,15 @@ namespace SqlPad
 						.OrderBy(s => s.IndextStart);
 
 			NavigateToUsage(nextSegments);
+		}
+
+		private void FindUsages(object sender, ExecutedRoutedEventArgs args)
+		{
+			var findUsagesCommandHandler = _infrastructureFactory.CommandFactory.FindUsagesCommandHandler;
+			var executionContext = CommandExecutionContext.Create(Editor, _sqlDocument.StatementCollection, _databaseModel);
+			findUsagesCommandHandler.ExecutionHandler(executionContext);
+			_colorizeAvalonEdit.SetHighlightSegments(executionContext.SegmentsToReplace);
+			Editor.TextArea.TextView.Redraw();
 		}
 
 		private void NavigateToUsage(IEnumerable<TextSegment> nextSegments)
