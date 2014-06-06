@@ -1290,6 +1290,18 @@ FROM DUAL";
 			// TODO: Precise assertions
 		}
 
+		[Test(Description = @"Tests XMLAGG function. ")]
+		public void TestXmlAggregateunction()
+		{
+			const string query1 = @"SELECT XMLAGG(XMLELEMENT(""Country"", XMLATTRIBUTES(NAME AS ""Name"", CODE AS ""Code"", ID AS ""Id"")) ORDER BY ID) FROM COUNTRY";
+			var result = Parser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			// TODO: Precise assertions
+		}
+
 		[Test(Description = @"Tests unfinished join clause. ")]
 		public void TestUnfinishedJoinClause()
 		{

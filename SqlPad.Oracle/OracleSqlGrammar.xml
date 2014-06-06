@@ -878,6 +878,10 @@
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
+          <NonTerminal Id="XmlAggregateClause" />
+          <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
+        </Sequence>
+        <Sequence>
           <NonTerminal Id="XmlSimpleFunctionClause" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
@@ -3474,6 +3478,18 @@
       </Sequences>
     </Rule>
 
+    <Rule StartingNonTerminal="XmlAggregateClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="XmlAggregate" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="Expression" />
+          <NonTerminal Id="OrderByClause" IsOptional="true" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
     <Rule StartingNonTerminal="XmlSimpleFunction">
       <Sequences>
         <Sequence>
@@ -3747,6 +3763,7 @@
 	  <Terminal Id="Content" Value="CONTENT" />
     <Terminal Id="XmlForest" Value="XMLFOREST" />
     <Terminal Id="XmlColumnValue" Value="XMLCOLATTVAL" />
+    <Terminal Id="XmlAggregate" Value="XMLAGG" />
 
     <!-- Model clause -->
     <Terminal Id="Model" Value="MODEL" />
