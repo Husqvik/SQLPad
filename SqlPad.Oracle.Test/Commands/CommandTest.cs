@@ -624,6 +624,30 @@ WHERE
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestMakeUpperCaseCommandWithUnrecognizedGrammar()
+		{
+			_editor.Text = @"lot of invalid tokens preceding; select 'null' as ""null"" from dual and lot of invalid tokens following";
+			_editor.CaretOffset = 0;
+			_editor.SelectionLength = _editor.Text.Length;
+
+			ExecuteGenericCommand(MakeUpperCaseCommand.ExecutionHandler);
+
+			_editor.Text.ShouldBe("LOT OF INVALID TOKENS PRECEDING; SELECT 'null' AS \"null\" FROM DUAL AND LOT OF INVALID TOKENS FOLLOWING");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestMakeUpperCaseCommandWithSingleCaseUnsafeToken()
+		{
+			_editor.Text = @"SELECT 'null' FROM DUAL";
+			_editor.CaretOffset = 7;
+			_editor.SelectionLength = 6;
+
+			ExecuteGenericCommand(MakeUpperCaseCommand.ExecutionHandler);
+
+			_editor.Text.ShouldBe("SELECT 'NULL' FROM DUAL");
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestAddToGroupByCommandWithoutExistingGroupByClause()
 		{
 			_editor.Text = @"SELECT SELECTION.PROJECT_ID, COUNT(*) PROJECT_SELECTIONS FROM SELECTION";
