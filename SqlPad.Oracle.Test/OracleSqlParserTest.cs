@@ -1240,6 +1240,32 @@ FROM
 			// TODO: Precise assertions
 		}
 
+		[Test(Description = @"Tests XMLQUERY function. ")]
+		public void TestXmlQueryFunction()
+		{
+			const string query1 =
+@"SELECT
+    'Prefix' ||
+	XMLQUERY('for $i in ora:view(""CUSTOMER""),
+                  $j in ora:view(""COMPANY"")
+              where
+                $i/ROW/COMPANY_ID = $j/ROW/ID
+                and $i/ROW/CODE = ""3550680""
+              return <Result>
+                        <Customer>{$i}</Customer>
+                        <Company>{$j}</Company>
+                     </Result>'   
+    RETURNING CONTENT) || 'Postfix' AS RESULT
+FROM DUAL";
+
+			var result = Parser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			// TODO: Precise assertions
+		}
+
 		[Test(Description = @"Tests unfinished join clause. ")]
 		public void TestUnfinishedJoinClause()
 		{

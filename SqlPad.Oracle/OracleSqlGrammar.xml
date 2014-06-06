@@ -869,8 +869,12 @@
           <Terminal Id="Null" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
-		<Sequence>
+        <Sequence>
           <NonTerminal Id="XmlElementClause" />
+          <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="XmlQueryClause" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
@@ -3397,6 +3401,20 @@
       </Sequences>
     </Rule>
 
+    <Rule StartingNonTerminal="XmlQueryClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="XmlQuery" />
+          <Terminal Id="LeftParenthesis" />
+          <Terminal Id="StringLiteral" />
+          <NonTerminal Id="XmlPassingClause" IsOptional="true" />
+          <Terminal Id="Returning" />
+          <Terminal Id="Content" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
     <!-- TODO: Row pattern clause -->
   </Rules>
       
@@ -3642,6 +3660,8 @@
 	  <Terminal Id="XmlType" Value="XMLTYPE" />
 	  <Terminal Id="Ordinality" Value="ORDINALITY" />
 	  <Terminal Id="Columns" Value="COLUMNS" />
+    <Terminal Id="XmlQuery" Value="XMLQUERY" />
+	  <Terminal Id="Content" Value="CONTENT" />
 
     <!-- Model clause -->
     <Terminal Id="Model" Value="MODEL" />
