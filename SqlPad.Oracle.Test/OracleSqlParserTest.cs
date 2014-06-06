@@ -1278,6 +1278,18 @@ FROM DUAL";
 			// TODO: Precise assertions
 		}
 
+		[Test(Description = @"Tests XMLFOREST function. ")]
+		public void TestXmlForestFunction()
+		{
+			const string query1 = @"SELECT XMLFOREST(NAME AS ""Name"", CODE AS ""Code"", 'string' AS ""str"", ID) FROM COUNTRY";
+			var result = Parser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			// TODO: Precise assertions
+		}
+
 		[Test(Description = @"Tests unfinished join clause. ")]
 		public void TestUnfinishedJoinClause()
 		{
