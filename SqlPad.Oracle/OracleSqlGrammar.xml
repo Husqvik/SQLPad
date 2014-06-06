@@ -1529,6 +1529,9 @@
           <Terminal Id="RightParenthesis" />
         </Sequence>
         <Sequence>
+          <NonTerminal Id="XmlTableClause" />
+        </Sequence>
+        <Sequence>
           <NonTerminal Id="SchemaPrefix" IsOptional="true" />
           <Terminal Id="ObjectIdentifier" />
           <NonTerminal Id="PartitionOrDatabaseLink" IsOptional="true" />
@@ -3040,8 +3043,8 @@
       </Sequences>
     </Rule>
 
-	<!-- XML functions -->
-	<Rule StartingNonTerminal="XmlElementClause">
+	  <!-- XML functions -->
+    <Rule StartingNonTerminal="XmlElementClause">
       <Sequences>
         <Sequence>
           <Terminal Id="XmlElement" />
@@ -3050,23 +3053,40 @@
           <NonTerminal Id="XmlNameOrEvaluatedName" />
           <NonTerminal Id="CommaPrefixedXmlAttributesClause" IsOptional="true" />
           <NonTerminal Id="CommaChainedExpressionWithAlias" IsOptional="true" />
-		  <Terminal Id="RightParenthesis" />
+          <Terminal Id="RightParenthesis" />
         </Sequence>
       </Sequences>
     </Rule>
 
-	<Rule StartingNonTerminal="CommaChainedExpressionWithAlias">
+    <Rule StartingNonTerminal="CommaChainedExpressionWithAlias">
       <Sequences>
         <Sequence>
           <Terminal Id="Comma" />
-          <NonTerminal Id="Expression" />
-          <NonTerminal Id="XmlExpressionAsAlias" IsOptional="true" />
-          <NonTerminal Id="CommaChainedExpressionWithAlias" IsOptional="true" />
+          <NonTerminal Id="ExpressionAsXmlAliasList" />
         </Sequence>
       </Sequences>
     </Rule>
 
-	<Rule StartingNonTerminal="CommaPrefixedXmlAttributesClause">
+    <Rule StartingNonTerminal="ExpressionAsXmlAliasList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="Expression" />
+          <NonTerminal Id="AsXmlAlias" IsOptional="true" />
+          <NonTerminal Id="ExpressionAsXmlAliasListChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ExpressionAsXmlAliasListChained">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="ExpressionAsXmlAliasList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="CommaPrefixedXmlAttributesClause">
       <Sequences>
         <Sequence>
           <Terminal Id="Comma" />
@@ -3075,12 +3095,12 @@
           <NonTerminal Id="EntityEscapingOrNoEntityEscaping" IsOptional="true" />
           <NonTerminal Id="SchemaCheckOrNoSchemaCheck" IsOptional="true" />
           <NonTerminal Id="NamedExpressionOrEvaluatedNameExpression" />
-		  <Terminal Id="RightParenthesis" />
+          <Terminal Id="RightParenthesis" />
         </Sequence>
       </Sequences>
     </Rule>
 
-	<Rule StartingNonTerminal="NamedExpressionOrEvaluatedNameExpression">
+    <Rule StartingNonTerminal="NamedExpressionOrEvaluatedNameExpression">
       <Sequences>
         <Sequence>
           <NonTerminal Id="Expression" />
@@ -3089,8 +3109,8 @@
         </Sequence>
       </Sequences>
     </Rule>
-	
-	<Rule StartingNonTerminal="NamedExpressionOrEvaluatedNameExpressionChained">
+
+    <Rule StartingNonTerminal="NamedExpressionOrEvaluatedNameExpressionChained">
       <Sequences>
         <Sequence>
           <Terminal Id="Comma" />
@@ -3099,20 +3119,20 @@
       </Sequences>
     </Rule>
 
-	<Rule StartingNonTerminal="AsAliasOrEvaluatedNameExpression">
+    <Rule StartingNonTerminal="AsAliasOrEvaluatedNameExpression">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="XmlExpressionAsAlias" />
+          <NonTerminal Id="AsXmlAlias" />
         </Sequence>
-		<Sequence>
+        <Sequence>
           <Terminal Id="As" />
           <Terminal Id="EvaluatedName" />
-		  <NonTerminal Id="Expression" />
+          <NonTerminal Id="Expression" />
         </Sequence>
       </Sequences>
     </Rule>
 
-	<Rule StartingNonTerminal="XmlExpressionAsAlias">
+    <Rule StartingNonTerminal="AsXmlAlias">
       <Sequences>
         <Sequence>
           <Terminal Id="As" />
@@ -3124,7 +3144,7 @@
       </Sequences>
     </Rule>
 
-	<Rule StartingNonTerminal="SchemaCheckOrNoSchemaCheck">
+    <Rule StartingNonTerminal="SchemaCheckOrNoSchemaCheck">
       <Sequences>
         <Sequence>
           <Terminal Id="SchemaCheck" />
@@ -3135,7 +3155,7 @@
       </Sequences>
     </Rule>
 
-	<Rule StartingNonTerminal="EntityEscapingOrNoEntityEscaping">
+    <Rule StartingNonTerminal="EntityEscapingOrNoEntityEscaping">
       <Sequences>
         <Sequence>
           <Terminal Id="EntityEscaping" />
@@ -3146,7 +3166,7 @@
       </Sequences>
     </Rule>
 
-	<Rule StartingNonTerminal="XmlNameOrEvaluatedName">
+    <Rule StartingNonTerminal="XmlNameOrEvaluatedName">
       <Sequences>
         <Sequence>
           <Terminal Id="Name" IsOptional="true" />
@@ -3154,6 +3174,224 @@
         </Sequence>
         <Sequence>
           <Terminal Id="EvaluatedName" />
+          <NonTerminal Id="Expression" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+	  <Rule StartingNonTerminal="XmlTableClause">
+		  <Sequences>
+			  <Sequence>
+				  <Terminal Id="XmlTable" />
+				  <Terminal Id="LeftParenthesis" />
+				  <NonTerminal Id="XmlNamespacesClause" IsOptional="true" />
+          <Terminal Id="StringLiteral" />
+          <NonTerminal Id="XmlTableOptions" />
+				  <Terminal Id="RightParenthesis" />
+			  </Sequence>
+		  </Sequences>
+	  </Rule>
+
+    <Rule StartingNonTerminal="XmlNamespacesClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="XmlNamespaces" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="XmlNamespaceOrDefaultNamespace" />
+          <Terminal Id="RightParenthesis" />
+          <Terminal Id="Comma" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="XmlNamespaceOrDefaultNamespace">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="XmlNamespaceDefinition" />
+          <NonTerminal Id="XmlNamespaceOrDefaultNamespaceChained" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="DefaultNamespace" />
+          <NonTerminal Id="XmlNamespaceOrDefaultNamespaceChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="XmlNamespaceOrDefaultNamespaceChained">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="XmlNamespaceOrDefaultNamespace" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="XmlNamespaceDefinition">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="StringLiteral" />
+          <Terminal Id="As" />
+          <Terminal Id="XmlAlias" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DefaultNamespace">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Default" />
+          <Terminal Id="StringLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="XmlTableOptions">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="XmlPassingClause" />
+          <NonTerminal Id="ReturningSequenceByRef" IsOptional="true" />
+          <Terminal Id="Columns" />
+          <NonTerminal Id="XmlTableColumnList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="XmlPassingClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Passing" />
+          <NonTerminal Id="ByValue" IsOptional="true" />
+          <NonTerminal Id="ExpressionAsXmlAliasWithMandatoryAsList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ExpressionAsXmlAliasWithMandatoryAsList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="Expression" />
+          <NonTerminal Id="MandatoryAsXmlAlias" IsOptional="true" />
+          <NonTerminal Id="ExpressionAsXmlAliasWithMandatoryAsListChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ExpressionAsXmlAliasWithMandatoryAsListChained">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="ExpressionAsXmlAliasWithMandatoryAsList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="MandatoryAsXmlAlias">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="As" />
+          <Terminal Id="XmlAlias" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ByValue">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="By" />
+          <Terminal Id="Value" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ReturningSequenceByRef">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Returning" />
+          <Terminal Id="Sequence" />
+          <Terminal Id="By" />
+          <Terminal Id="Ref" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="XmlTableColumnList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="XmlTableColumn" />
+          <NonTerminal Id="XmlTableColumnListChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="XmlTableColumnListChained">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="XmlTableColumnList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="XmlTableColumn">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="XmlAlias" />
+          <NonTerminal Id="XmlTableColumnDefinition" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="XmlTableColumnDefinition">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="For" />
+          <Terminal Id="Ordinality" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="DataTypeOrXmlType" />
+          <NonTerminal Id="XmlTableColumnPathClause" IsOptional="true" />
+          <NonTerminal Id="XmlTableColumnDefaultClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DataTypeOrXmlType">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="DataType" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="XmlType" />
+          <NonTerminal Id="XmlTypeSequenceByRef" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="XmlTypeSequenceByRef">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <Terminal Id="Sequence" />
+          <Terminal Id="RightParenthesis" />
+          <Terminal Id="By" />
+          <Terminal Id="Ref" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="XmlTableColumnPathClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Path" />
+          <Terminal Id="StringLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="XmlTableColumnDefaultClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Default" />
           <NonTerminal Id="Expression" />
         </Sequence>
       </Sequences>
@@ -3389,13 +3627,21 @@
     <Terminal Id="Exclude" Value="EXCLUDE" />
 
 	<!-- XML functions -->
-	<Terminal Id="XmlElement" Value="XMLELEMENT" />
-	<Terminal Id="XmlAttributes" Value="XMLATTRIBUTES" />
-	<Terminal Id="SchemaCheck" Value="SCHEMACHECK" />
-	<Terminal Id="NoSchemaCheck" Value="NOSCHEMACHECK" />
-	<Terminal Id="EvaluatedName" Value="EVALNAME" />
-	<Terminal Id="EntityEscaping" Value="ENTITYESCAPING" />
-	<Terminal Id="NoEntityEscaping" Value="NOENTITYESCAPING" />
+	  <Terminal Id="XmlElement" Value="XMLELEMENT" />
+	  <Terminal Id="XmlAttributes" Value="XMLATTRIBUTES" />
+	  <Terminal Id="SchemaCheck" Value="SCHEMACHECK" />
+	  <Terminal Id="NoSchemaCheck" Value="NOSCHEMACHECK" />
+	  <Terminal Id="EvaluatedName" Value="EVALNAME" />
+	  <Terminal Id="EntityEscaping" Value="ENTITYESCAPING" />
+	  <Terminal Id="NoEntityEscaping" Value="NOENTITYESCAPING" />
+	  <Terminal Id="XmlTable" Value="XMLTABLE" />
+	  <Terminal Id="XmlNamespaces" Value="XMLNAMESPACES" />
+	  <Terminal Id="Sequence" Value="SEQUENCE" />
+	  <Terminal Id="Passing" Value="PASSING" />
+	  <Terminal Id="Path" Value="PATH" />
+	  <Terminal Id="XmlType" Value="XMLTYPE" />
+	  <Terminal Id="Ordinality" Value="ORDINALITY" />
+	  <Terminal Id="Columns" Value="COLUMNS" />
 
     <!-- Model clause -->
     <Terminal Id="Model" Value="MODEL" />

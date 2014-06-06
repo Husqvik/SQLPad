@@ -319,6 +319,17 @@ namespace SqlPad.Oracle.Test
 			tokenIndexes.ShouldBe(new[] { 0, 7, 12, 14, 20, 25 });
 		}
 
+		[Test(Description = "Tests XML as string literal. ")]
+		public void TestXmlAsStringLiteral()
+		{
+			const string testQuery = @"SELECT '<A><B x=""x""/></A>' FROM DUAL";
+			var tokens = GetTokenValuesFromOracleSql(testQuery);
+			tokens.ShouldBe(new[] { "SELECT", "'<A><B x=\"x\"/></A>'", "FROM", "DUAL" });
+
+			var tokenIndexes = GetTokenIndexesFromOracleSql(testQuery);
+			tokenIndexes.ShouldBe(new[] { 0, 7, 27, 32 });
+		}
+
 		private string[] GetTokenValuesFromOracleSql(string sqlText)
 		{
 			return GetTokensFromOracleSql(sqlText).Select(t => t.Value).ToArray();

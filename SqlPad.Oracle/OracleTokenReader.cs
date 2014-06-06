@@ -75,7 +75,7 @@ namespace SqlPad.Oracle
 						yieldToken = true;
 					}
 
-					if (character == '"')
+					if (character == '"' && !inString)
 					{
 						if (!inQuotedIdentifier && (_builder.Length != 1 || _builder[0] != ':'))
 						{

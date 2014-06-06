@@ -1193,11 +1193,12 @@ namespace SqlPad.Oracle.Test
 			const string query1 =
 @"SELECT
     XMLELEMENT(""Emp"",
-        XMLELEMENT(""Name"", E.JOB_ID || ' ' || E.LAST_NAME),
+        XMLELEMENT(NAME ""Name"", E.JOB_ID || ' ' || E.LAST_NAME),
         XMLELEMENT(""Hiredate"", E.HIRE_DATE),
         XMLELEMENT(""Dept"",
             XMLATTRIBUTES(E.DEPARTMENT_ID,
-                (SELECT D.DEPARTMENT_NAME FROM DEPARTMENTS D WHERE D.DEPARTMENT_ID = E.DEPARTMENT_ID) as ""Dept_name""
+                (SELECT D.DEPARTMENT_NAME FROM DEPARTMENTS D WHERE D.DEPARTMENT_ID = E.DEPARTMENT_ID) AS ""Dept_name"",
+				'data' ""CustomData""
             )
         )
     ) || 'PostFix' AS ""Result""
@@ -1206,6 +1207,31 @@ FROM
 WHERE
 	EMPLOYEE_ID > 200";
 			
+			var result = Parser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			// TODO: Precise assertions
+		}
+
+		[Test(Description = @"Tests XMLTABLE function. ")]
+		public void TestXmlTableFunction()
+		{
+			const string query1 =
+@"SELECT
+    XML_FILES.*
+FROM
+    XMLTABLE(
+        XMLNAMESPACES('http://sqlpad.com/test1' AS test1, DEFAULT '', 'http://sqlpad.com/test2' AS ""test2""),
+        '//Root/Item'
+        PASSING XMLTYPE('<Root><Item Attribute=""A1"">Item11</Item><Item Attribute=""B2"">Item2</Item><Item Attribute=""C3"">Item3</Item></Root>')
+        COLUMNS
+            ELEMENT VARCHAR2(4000) PATH '.' DEFAULT '(' || (2) || ')',
+            ATTRIBUTE VARCHAR2(4000) PATH './@Attribute',
+            ORD FOR ORDINALITY
+    ) XML_FILES";
+
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
