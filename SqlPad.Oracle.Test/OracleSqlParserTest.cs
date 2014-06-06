@@ -1266,6 +1266,18 @@ FROM DUAL";
 			// TODO: Precise assertions
 		}
 
+		[Test(Description = @"Tests EXTRACT function. ")]
+		public void TestExtractFunction()
+		{
+			const string query1 = @"SELECT EXTRACT(MONTH FROM SYSDATE + 1) + 1, EXTRACT(TIMEZONE_REGION FROM SYSTIMESTAMP) || 'P', EXTRACT(TIMEZONE_ABBR FROM CURRENT_TIMESTAMP) FROM DUAL";
+			var result = Parser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			// TODO: Precise assertions
+		}
+
 		[Test(Description = @"Tests unfinished join clause. ")]
 		public void TestUnfinishedJoinClause()
 		{

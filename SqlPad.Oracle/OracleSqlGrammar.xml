@@ -946,12 +946,56 @@
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
+          <Terminal Id="Extract" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="ExtractElement" />
+          <Terminal Id="From" />
+          <NonTerminal Id="Expression" />
+          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
+        </Sequence>
+        <Sequence>
           <NonTerminal Id="PrefixedSequencePseudoColumn" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="PrefixedColumnReference" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ExtractElement">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Year" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Month" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Day" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Hour" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Minute" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Second" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="TimezoneHour" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="TimezoneMinute" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="TimezoneRegion" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="TimezoneAbbreviation" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -3532,6 +3576,19 @@
     <!-- LISTAGG function -->
     <Terminal Id="ListAggregation" Value="LISTAGG" />
     <Terminal Id="Within" Value="WITHIN" />
+
+    <!-- EXTRACT function -->
+    <Terminal Id="Extract" Value="EXTRACT" />
+    <Terminal Id="Year" Value="YEAR" />
+    <Terminal Id="Month" Value="MONTH" />
+    <Terminal Id="Day" Value="DAY" />
+    <Terminal Id="Hour" Value="HOUR" />
+    <Terminal Id="Minute" Value="MINUTE" />
+    <Terminal Id="Second" Value="SECOND" />
+    <Terminal Id="TimezoneHour" Value="TIMEZONE_HOUR" />
+    <Terminal Id="TimezoneMinute" Value="TIMEZONE_MINUTE" />
+    <Terminal Id="TimezoneRegion" Value="TIMEZONE_REGION" />
+    <Terminal Id="TimezoneAbbreviation" Value="TIMEZONE_ABBR" />
     
     <!-- Sample clause -->
     <Terminal Id="Sample" Value="SAMPLE" />
