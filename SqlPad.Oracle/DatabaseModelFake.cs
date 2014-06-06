@@ -105,7 +105,8 @@ namespace SqlPad.Oracle
 				          {
 					          new OracleColumn { Name = "\"ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
 					          new OracleColumn { Name = "\"INVOICE_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
-							  new OracleColumn { Name = "\"AMOUNT\"", Type = "NUMBER", Precision = 20, Scale = 2 }
+							  new OracleColumn { Name = "\"AMOUNT\"", Type = "NUMBER", Precision = 20, Scale = 2 },
+							  new OracleColumn { Name = "\"CORRELATION_VALUE\"", Type = "NUMBER", Scale = 5 }
 				          },
 						  ForeignKeys = new List<OracleForeignKeyConstraint>
 				              {
@@ -324,9 +325,9 @@ namespace SqlPad.Oracle
 				else
 				{
 					var decimalScale = Scale > 0 ? String.Format(", {0}", Scale) : null;
-					if (Precision > 0)
+					if (Precision > 0 || Scale > 0)
 					{
-						name = String.Format("{0}({1}{2})", name, Precision, decimalScale);
+						name = String.Format("{0}({1}{2})", name, Precision == null ? "*" : Convert.ToString(Precision), decimalScale);
 					}
 				}
 

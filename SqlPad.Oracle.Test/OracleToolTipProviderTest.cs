@@ -49,6 +49,18 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestScaleWithoutPrecisionColumnTypeToolTip()
+		{
+			const string query = "SELECT CORRELATION_VALUE FROM INVOICELINES";
+			_document.UpdateStatements(_oracleSqlParser.Parse(query), query);
+
+			var toolTip = _toolTipProvider.GetToolTip(TestFixture.DatabaseModel, _document, 8);
+
+			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.DataContext.ShouldBe("NUMBER(*, 5) NOT NULL");
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestTableObjectToolTip()
 		{
 			const string query = "SELECT NAME FROM SELECTION";
