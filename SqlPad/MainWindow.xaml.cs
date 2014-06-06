@@ -18,10 +18,6 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.CodeCompletion;
-using ICSharpCode.AvalonEdit.Document;
-using ICSharpCode.AvalonEdit.Editing;
-using ICSharpCode.AvalonEdit.Highlighting;
-using ICSharpCode.AvalonEdit.Rendering;
 using SqlPad.Commands;
 
 namespace SqlPad
@@ -108,6 +104,7 @@ namespace SqlPad
 			var moveContentToRightCommand = new RoutedCommand("MoveContentToRight", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.Right, ModifierKeys.Control | ModifierKeys.Alt | ModifierKeys.Shift) });
 
 			var executeDatabaseCommandCommand = new RoutedCommand("ExecuteDatabaseCommand", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.F9) });
+			commandBindings.Add(new CommandBinding(executeDatabaseCommandCommand, ExecuteDatabaseCommand));
 
 			var formatStatementCommand = new RoutedCommand(_statementFormatter.ExecutionHandler.Name, typeof(TextEditor), _statementFormatter.ExecutionHandler.DefaultGestures);
 			var formatStatementRoutedHandlerMethod = GenericCommandHandler.CreateRoutedEditCommandHandler(_statementFormatter.ExecutionHandler, () => _sqlDocument.StatementCollection, _databaseModel);
@@ -487,6 +484,16 @@ namespace SqlPad
 			NavigateToUsage(nextSegments);
 		}
 
+		private void ExecuteDatabaseCommand(object sender, ExecutedRoutedEventArgs args)
+		{
+			if (_sqlDocument.StatementCollection == null)
+				return;
+
+			var statement = _sqlDocument.StatementCollection.GetStatementAtPosition(Editor.CaretOffset);
+			if (statement == null)
+				return;
+		}
+
 		private void FindUsages(object sender, ExecutedRoutedEventArgs args)
 		{
 			var findUsagesCommandHandler = _infrastructureFactory.CommandFactory.FindUsagesCommandHandler;
@@ -544,5 +551,14 @@ namespace SqlPad
 		}
 
 		private MultiNodeEditor _multiNodeEditor;
+
+		private void DropObjectHandler(object sender, DragEventArgs e)
+		{
+			if (!e.Data.GetDataPresent(DataFormats.FileDrop))
+				return;
+
+			var files = (string[])e.Data.GetData(DataFormats.FileDrop);
+			Editor.Text = File.ReadAllText(files[0]);
+		}
 	}
 }

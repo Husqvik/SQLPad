@@ -1187,6 +1187,33 @@ namespace SqlPad.Oracle.Test
 			// TODO: Precise assertions
 		}
 
+		[Test(Description = @"Tests XMLELEMENT function. ")]
+		public void TestXmlElementFunction()
+		{
+			const string query1 =
+@"SELECT
+    XMLELEMENT(""Emp"",
+        XMLELEMENT(""Name"", E.JOB_ID || ' ' || E.LAST_NAME),
+        XMLELEMENT(""Hiredate"", E.HIRE_DATE),
+        XMLELEMENT(""Dept"",
+            XMLATTRIBUTES(E.DEPARTMENT_ID,
+                (SELECT D.DEPARTMENT_NAME FROM DEPARTMENTS D WHERE D.DEPARTMENT_ID = E.DEPARTMENT_ID) as ""Dept_name""
+            )
+        )
+    ) || 'PostFix' AS ""Result""
+FROM
+	EMPLOYEES E
+WHERE
+	EMPLOYEE_ID > 200";
+			
+			var result = Parser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			// TODO: Precise assertions
+		}
+
 		[Test(Description = @"Tests unfinished join clause. ")]
 		public void TestUnfinishedJoinClause()
 		{

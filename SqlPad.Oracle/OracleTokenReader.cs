@@ -216,6 +216,17 @@ namespace SqlPad.Oracle
 							isSingleCharacterSeparator = true;
 						}
 					}
+
+					if (character == '|' && _builder.Length > 0)
+					{
+						var previousCharacter = _builder[_builder.Length - 1];
+						if (previousCharacter != '|')
+						{
+							quotedIdentifierOrLiteralEnabled = true;
+						}
+
+						yieldToken = true;
+					}
 				}
 
 				yieldToken |= isSingleCharacterSeparator;

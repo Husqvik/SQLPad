@@ -297,6 +297,28 @@ namespace SqlPad.Oracle.Test
 			tokenIndexes.ShouldBe(new[] { 0, 7, 25, 30 });
 		}
 
+		[Test(Description = "Tests concatenation operator without spaces between literal operands. ")]
+		public void TestConcatenationOperatorWithoutSpacesBetweenLiteralOperands()
+		{
+			const string testQuery = @"SELECT 1||1 FROM DUAL";
+			var tokens = GetTokenValuesFromOracleSql(testQuery);
+			tokens.ShouldBe(new[] { "SELECT", "1", "||", "1", "FROM", "DUAL" });
+
+			var tokenIndexes = GetTokenIndexesFromOracleSql(testQuery);
+			tokenIndexes.ShouldBe(new[] { 0, 7, 8, 10, 12, 17 });
+		}
+
+		[Test(Description = "Tests concatenation operator without spaces between column operands. ")]
+		public void TestConcatenationOperatorWithoutSpacesBetweenColumnOperands()
+		{
+			const string testQuery = @"SELECT DUMMY||DUMMY FROM DUAL";
+			var tokens = GetTokenValuesFromOracleSql(testQuery);
+			tokens.ShouldBe(new[] { "SELECT", "DUMMY", "||", "DUMMY", "FROM", "DUAL" });
+
+			var tokenIndexes = GetTokenIndexesFromOracleSql(testQuery);
+			tokenIndexes.ShouldBe(new[] { 0, 7, 12, 14, 20, 25 });
+		}
+
 		private string[] GetTokenValuesFromOracleSql(string sqlText)
 		{
 			return GetTokensFromOracleSql(sqlText).Select(t => t.Value).ToArray();

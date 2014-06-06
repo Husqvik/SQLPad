@@ -3,7 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
         xmlns:local="clr-namespace:SqlPad"
-        Title="SQL Pad 0.01 Alpha" Height="640" Width="960" Loaded="WindowLoadedHandler">
+        Title="SQL Pad 0.01 Alpha" Height="640" Width="960" Loaded="WindowLoadedHandler"
+		Drop="DropObjectHandler">
 
     <Window.CommandBindings>
         <!--<CommandBinding Command="{x:Static local:MainWindow.CommandAddColumnAliases}"
