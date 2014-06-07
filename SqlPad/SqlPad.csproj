@@ -77,7 +77,7 @@
     <Compile Include="ColorizeAvalonEdit.cs" />
     <Compile Include="Commands\CommandExecutionHandler.cs" />
     <Compile Include="Commands\ContextActionCommand.cs" />
-    <Compile Include="EditCommandBase.cs" />
+    <Compile Include="TextSegment.cs" />
     <Compile Include="CommandSettingsModel.cs" />
     <Compile Include="Commands\ICommandFactory.cs" />
     <Compile Include="ConfigurationProvider.cs" />

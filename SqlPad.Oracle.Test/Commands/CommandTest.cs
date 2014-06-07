@@ -44,7 +44,9 @@ FROM
 		WHERE
 			TG.NAME IN ('X1', 'X2') OR S.NAME IS NOT NULL OR P.NAME <> ''
 		)
-	)";
+	)
+ORDER BY
+	RESPONDENTBUCKET_NAME";
 
 		private const string FindFunctionUsagesStatementText =
 @"SELECT
@@ -357,17 +359,18 @@ WHERE
 		public void TestFindColumnUsagesOfComputedColumnAtUsage()
 		{
 			var foundSegments = FindUsagesOrdered(FindUsagesStatementText, 80);
-			foundSegments.Count.ShouldBe(3);
-			foundSegments[0].IndextStart.ShouldBe(71);
-			foundSegments[1].IndextStart.ShouldBe(222);
-			foundSegments[2].IndextStart.ShouldBe(375);
-			foundSegments.ForEach(s => s.Length.ShouldBe(15));
+			ValidateCommonResults3(foundSegments);
 		}
 
 		[Test(Description = @""), STAThread]
 		public void TestFindColumnUsagesOfComputedColumnAtDefinition()
 		{
 			var foundSegments = FindUsagesOrdered(FindUsagesStatementText, 382);
+			ValidateCommonResults3(foundSegments);
+		}
+
+		private void ValidateCommonResults3(List<TextSegment> foundSegments)
+		{
 			foundSegments.Count.ShouldBe(3);
 			foundSegments[0].IndextStart.ShouldBe(71);
 			foundSegments[1].IndextStart.ShouldBe(222);
@@ -381,11 +384,7 @@ WHERE
 			const string statement = "WITH CTE AS (SELECT SELECTION.NAME FROM SELECTION) SELECT CTE.NAME FROM CTE";
 
 			var foundSegments = FindUsagesOrdered(statement, 6);
-			foundSegments.Count.ShouldBe(3);
-			foundSegments[0].IndextStart.ShouldBe(5);
-			foundSegments[1].IndextStart.ShouldBe(58);
-			foundSegments[2].IndextStart.ShouldBe(72);
-			foundSegments.ForEach(s => s.Length.ShouldBe(3));
+			ValidateCommonResults2(foundSegments);
 		}
 
 		[Test(Description = @""), STAThread]
@@ -394,11 +393,60 @@ WHERE
 			const string statement = "WITH CTE AS (SELECT SELECTION.NAME FROM SELECTION) SELECT CTE.NAME FROM CTE";
 			
 			var foundSegments = FindUsagesOrdered(statement, 72);
+			ValidateCommonResults2(foundSegments);
+		}
+
+		private void ValidateCommonResults2(List<TextSegment> foundSegments)
+		{
 			foundSegments.Count.ShouldBe(3);
 			foundSegments[0].IndextStart.ShouldBe(5);
 			foundSegments[1].IndextStart.ShouldBe(58);
 			foundSegments[2].IndextStart.ShouldBe(72);
 			foundSegments.ForEach(s => s.Length.ShouldBe(3));
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestFindColumnUsagesAtJoinCondition()
+		{
+			var foundSegments = FindUsagesOrdered(FindUsagesStatementText, 602);
+			ValidateCommonResults1(foundSegments);
+		}
+
+		[Test(Description = @""), STAThread, Ignore]
+		public void TestFindColumnUsagesInOrderByClause()
+		{
+			var foundSegments = FindUsagesOrdered(FindUsagesStatementText, 763);
+			ValidateCommonResults1(foundSegments);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestFindColumnUsagesAtAliasDefinition()
+		{
+			var foundSegments = FindUsagesOrdered(FindUsagesStatementText, 350);
+			ValidateCommonResults1(foundSegments);
+		}
+
+		private void ValidateCommonResults1(IList<TextSegment> foundSegments)
+		{
+			foundSegments.Count.ShouldBe(6);
+			foundSegments[0].IndextStart.ShouldBe(46);
+			foundSegments[0].Length.ShouldBe(21);
+			foundSegments[0].DisplayOptions.ShouldBe(DisplayOptions.Usage);
+			foundSegments[1].IndextStart.ShouldBe(196);
+			foundSegments[1].Length.ShouldBe(21);
+			foundSegments[1].DisplayOptions.ShouldBe(DisplayOptions.Usage);
+			foundSegments[2].IndextStart.ShouldBe(330);
+			foundSegments[2].Length.ShouldBe(4);
+			foundSegments[2].DisplayOptions.ShouldBe(DisplayOptions.Usage);
+			foundSegments[3].IndextStart.ShouldBe(335);
+			foundSegments[3].Length.ShouldBe(21);
+			foundSegments[3].DisplayOptions.ShouldBe(DisplayOptions.Definition);
+			foundSegments[4].IndextStart.ShouldBe(602);
+			foundSegments[4].Length.ShouldBe(4);
+			foundSegments[4].DisplayOptions.ShouldBe(DisplayOptions.Usage);
+			foundSegments[5].IndextStart.ShouldBe(763);
+			foundSegments[5].Length.ShouldBe(21);
+			foundSegments[5].DisplayOptions.ShouldBe(DisplayOptions.Usage);
 		}
 
 		[Test(Description = @""), STAThread]
@@ -703,6 +751,22 @@ WHERE
 
 			// TODO: Update when toogle off is implemented
 			CanExecuteOracleCommand(OracleCommands.ToggleFullyQualifiedReferences).ShouldBe(false);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestResolveAmbiguousColumnCommand()
+		{
+			_editor.Text = @"SELECT DUAL.DUMMY FROM SYS.DUAL, ""PUBLIC"".DUAL";
+			_editor.CaretOffset = 12;
+
+			var actions = new OracleContextActionProvider().GetContextActions(TestFixture.DatabaseModel, _editor.Text, _editor.CaretOffset).ToArray();
+
+			actions.Length.ShouldBe(2);
+			CanExecuteOracleCommand(actions[0].ExecutionHandler).ShouldBe(true);
+			ExecuteOracleCommand(actions[0].ExecutionHandler);
+			CanExecuteOracleCommand(actions[1].ExecutionHandler).ShouldBe(true);
+
+			_editor.Text.ShouldBe(@"SELECT SYS.DUAL.DUMMY FROM SYS.DUAL, ""PUBLIC"".DUAL");
 		}
 	}
 }

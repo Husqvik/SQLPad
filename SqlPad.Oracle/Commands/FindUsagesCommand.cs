@@ -220,9 +220,6 @@ namespace SqlPad.Oracle.Commands
 					var nodeList = new List<StatementDescriptionNode> { selectListColumn.AliasNode };
 					searchChildren = selectListColumn.IsDirectColumnReference;
 
-					if (selectListColumn.IsDirectColumnReference && selectListColumn.RootNode.TerminalCount > 1)
-						nodeList.Add(selectListColumn.ColumnReferences.Single().ColumnNode);
-
 					nodes = searchChildren ? nodes.Concat(nodeList) : nodeList;
 				}
 
