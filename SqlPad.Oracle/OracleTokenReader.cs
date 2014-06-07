@@ -161,7 +161,9 @@ namespace SqlPad.Oracle
 					if (characterCode >= 48 && characterCode <= 57)
 					{
 						if (_builder.Length == 0 || (_builder.Length == 1 && _builder[0] == '.'))
+						{
 							inNumber = true;
+						}
 					}
 					else
 					{
@@ -202,19 +204,34 @@ namespace SqlPad.Oracle
 							}
 						}
 
+						if (character == '<' || character == '>')
+						{
+							if (_builder.Length > 0)
+							{
+								yieldToken = true;
+							}
+							
+							if (nextCharacter != '=' && (_builder.Length == 0 || (character == '>' && _builder[_builder.Length - 1] != '=' )))
+							{
+								isSingleCharacterSeparator = true;
+								quotedIdentifierOrLiteralEnabled = false;
+							}
+						}
+						else if (character == '=')
+						{
+							var isOptionalParameterSymbol = nextCharacter == '>';
+							yieldToken |= !isOptionalParameterSymbol;
+
+							if (_builder.Length > 0 && _builder[0] != '<' && _builder[0] != '>' && _builder[0] != '^' && _builder[0] != '!')
+							{
+								yieldToken = true;
+								quotedIdentifierOrLiteralEnabled = isOptionalParameterSymbol;
+								isSingleCharacterSeparator = !isOptionalParameterSymbol;
+							}
+						}
+
 						if (nextCharacterCode != -1)
 							_buffer.Enqueue(nextCharacter);
-					}
-
-					if (character == '=')
-					{
-						yieldToken = true;
-
-						if (_builder.Length == 1 && _builder[0] != '<' && _builder[0] != '>' && _builder[0] != '^' && _builder[0] != '!')
-						{
-							quotedIdentifierOrLiteralEnabled = false;
-							isSingleCharacterSeparator = true;
-						}
 					}
 
 					if (character == '|' && _builder.Length > 0)

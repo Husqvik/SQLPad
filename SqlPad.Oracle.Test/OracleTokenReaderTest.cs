@@ -320,7 +320,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = "Tests XML as string literal. ")]
-		public void TestXmlAsStringLiteral()
+		public void TestQuotationWithinStringLiteral()
 		{
 			const string testQuery = @"SELECT '<A><B x=""x""/></A>' FROM DUAL";
 			var tokens = GetTokenValuesFromOracleSql(testQuery);
@@ -328,6 +328,28 @@ namespace SqlPad.Oracle.Test
 
 			var tokenIndexes = GetTokenIndexesFromOracleSql(testQuery);
 			tokenIndexes.ShouldBe(new[] { 0, 7, 27, 32 });
+		}
+
+		[Test(Description = "Tests optional parameter syntax. ")]
+		public void TestOptionalParameterSyntax()
+		{
+			const string testQuery = @"SELECT SQLPAD_FUNCTION(P1 => 6, P2=>NULL) FROM DUAL";
+			var tokens = GetTokenValuesFromOracleSql(testQuery);
+			tokens.ShouldBe(new[] { "SELECT", "SQLPAD_FUNCTION", "(", "P1", "=>", "6", ",", "P2", "=>", "NULL", ")", "FROM", "DUAL" });
+
+			var tokenIndexes = GetTokenIndexesFromOracleSql(testQuery);
+			tokenIndexes.ShouldBe(new[] { 0, 7, 22, 23, 26, 29, 30, 32, 34, 36, 40, 42, 47 });
+		}
+
+		[Test(Description = "Tests relational operators without spaces. ")]
+		public void TestRelationalOperatorWithoutSpaces()
+		{
+			const string testQuery = @"SELECT 1 FROM DUAL WHERE 1>0OR 0<=1";
+			var tokens = GetTokenValuesFromOracleSql(testQuery);
+			tokens.ShouldBe(new[] { "SELECT", "1", "FROM", "DUAL", "WHERE", "1", ">", "0", "OR", "0", "<=", "1" });
+
+			var tokenIndexes = GetTokenIndexesFromOracleSql(testQuery);
+			tokenIndexes.ShouldBe(new[] { 0, 7, 9, 14, 19, 25, 26, 27, 28, 31, 32, 34 });
 		}
 
 		private string[] GetTokenValuesFromOracleSql(string sqlText)
