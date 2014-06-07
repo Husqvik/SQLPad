@@ -589,5 +589,14 @@ FROM
 			items.ForEach(i => i.Parameters.Count.ShouldBe(2));
 			items.ForEach(i => i.CurrentParameterIndex.ShouldBe(1));
 		}
+
+		[Test(Description = @"")]
+		public void TestResolveFunctionOverloadsOutsideTerminal()
+		{
+			const string query1 = @"SELECT ROUND(1.23, 1) FROM DUAL";
+
+			var items = _codeCompletionProvider.ResolveFunctionOverloads(_parser.Parse(query1), TestFixture.DatabaseModel, 18).ToList();
+			items.Count.ShouldBe(0);
+		}
 	}
 }

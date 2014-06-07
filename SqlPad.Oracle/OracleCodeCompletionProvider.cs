@@ -36,7 +36,7 @@ namespace SqlPad.Oracle
 
 			var oracleDatabaseModel = (OracleDatabaseModel)databaseModel;
 			var semanticModel = new OracleStatementSemanticModel(null, (OracleStatement)node.Statement, oracleDatabaseModel);
-			var queryBlock = semanticModel.GetQueryBlock(node);
+			var queryBlock = semanticModel.GetQueryBlock(cursorPosition);
 			var functionReference = queryBlock.AllFunctionReferences.FirstOrDefault(f => node.HasAncestor(f.RootNode));
 			if (functionReference == null || functionReference.Metadata == null)
 				return emptyCollection;
