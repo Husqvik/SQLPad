@@ -1302,6 +1302,18 @@ FROM DUAL";
 			// TODO: Precise assertions
 		}
 
+		[Test(Description = @"Tests function call with optional parameters. ")]
+		public void TestFunctionCallWithOptionalParameters()
+		{
+			const string query1 = @"SELECT SQLPAD_FUNCTION(1, P2 => 2, P3 => 3) + 1, SYS.STANDARD.ROUND(2.123456, RIGHT => 2) FROM DUAL";
+			var result = Parser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			// TODO: Precise assertions
+		}
+
 		[Test(Description = @"Tests unfinished join clause. ")]
 		public void TestUnfinishedJoinClause()
 		{

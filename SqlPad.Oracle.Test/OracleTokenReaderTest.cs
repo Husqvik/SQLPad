@@ -352,6 +352,17 @@ namespace SqlPad.Oracle.Test
 			tokenIndexes.ShouldBe(new[] { 0, 7, 9, 14, 19, 25, 26, 27, 28, 31, 32, 34 });
 		}
 
+		[Test(Description = "Tests relational operators without spaces. ")]
+		public void TestNotEqualsRelationalOperators()
+		{
+			const string testQuery = @"SELECT 1 FROM DUAL WHERE 1<>0OR 1^=0OR 1!=0OR 1 <> 0";
+			var tokens = GetTokenValuesFromOracleSql(testQuery);
+			tokens.ShouldBe(new[] { "SELECT", "1", "FROM", "DUAL", "WHERE", "1", "<>", "0", "OR", "1", "^=", "0", "OR", "1", "!=", "0", "OR", "1", "<>", "0" });
+
+			var tokenIndexes = GetTokenIndexesFromOracleSql(testQuery);
+			tokenIndexes.ShouldBe(new[] { 0, 7, 9, 14, 19, 25, 26, 28, 29, 32, 33, 35, 36, 39, 40, 42, 43, 46, 48, 51 });
+		}
+
 		private string[] GetTokenValuesFromOracleSql(string sqlText)
 		{
 			return GetTokensFromOracleSql(sqlText).Select(t => t.Value).ToArray();

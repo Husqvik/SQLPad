@@ -1159,8 +1159,39 @@
     <Rule StartingNonTerminal="FunctionParameters">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="DistinctModifier" IsOptional="true" />
+          <NonTerminal Id="DistinctModifier" />
           <NonTerminal Id="ExpressionList" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="OptionalParameterExpressionList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="OptionalParameterExpressionCommaChainedList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="OptionalParameterExpressionList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="OptionalParameterExpressionList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="OptionalParameter" IsOptional="true" />
+          <NonTerminal Id="Expression" />
+          <NonTerminal Id="OptionalParameterExpressionCommaChainedList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="OptionalParameter">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="ParameterIdentifier" />
+          <Terminal Id="OptionalParameterOperator" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -3540,6 +3571,7 @@
     <Terminal Id="MathNotANumber" Value="NAN" />
     <Terminal Id="MathInfinite" Value="INFINITE" />
     <Terminal Id="OperatorConcatenation" Value="||" />
+    <Terminal Id="OptionalParameterOperator" Value="=&gt;" />
     <Terminal Id="Dot" Value="." />
     <Terminal Id="Comma" Value="," />
     <Terminal Id="Semicolon" Value=";" />
@@ -3598,6 +3630,7 @@
     <Terminal Id="DatabaseLinkIdentifier" RegexValue="^((&quot;[^&quot;]{1,28}&quot;)|([a-zA-Z][\w\d$#]{0,29}))$" />
     <Terminal Id="SchemaIdentifier" RegexValue="^((&quot;[^&quot;]{1,28}&quot;)|([a-zA-Z][\w\d$#]{0,29}))$" />
     <Terminal Id="ObjectIdentifier" RegexValue="^((&quot;[^&quot;]{1,28}&quot;)|([a-zA-Z][\w\d$#]{0,29}))$" />
+    <Terminal Id="ParameterIdentifier" RegexValue="^((&quot;[^&quot;]{1,28}&quot;)|([a-zA-Z][\w\d$#]{0,29}))$" />
     <Terminal Id="BindVariableIdentifier" RegexValue="^((&quot;[^&quot;]{1,28}&quot;)|([a-zA-Z][\w\d$#]{0,29})|(\d{1,5}))$" />
     <Terminal Id="ColumnAlias" RegexValue="^((&quot;[^&quot;]{1,28}&quot;)|([a-zA-Z][\w\d$#]{0,29}))$" />
     <Terminal Id="ObjectAlias" RegexValue="^((&quot;[^&quot;]{1,28}&quot;)|([a-zA-Z][\w\d$#]{0,29}))$" />

@@ -210,8 +210,11 @@ namespace SqlPad.Oracle
 							{
 								yieldToken = true;
 							}
-							
-							if (nextCharacter != '=' && (_builder.Length == 0 || (character == '>' && _builder[_builder.Length - 1] != '=' )))
+
+							var isTwin = nextCharacter == '=' || (character == '<' && nextCharacter == '>');
+
+							char previousCharacter;
+							if (!isTwin && (_builder.Length == 0 || (character == '>' && (previousCharacter = _builder[_builder.Length - 1]) != '=' && previousCharacter != '<')))
 							{
 								isSingleCharacterSeparator = true;
 								quotedIdentifierOrLiteralEnabled = false;

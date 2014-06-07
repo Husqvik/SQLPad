@@ -102,7 +102,8 @@ namespace SqlPad.Oracle
 					? Enumerable.Empty<StatementDescriptionNode>()
 					: fromClause.GetDescendantsWithinSameQuery(NonTerminals.TableReference).ToArray();
 
-				var cteReferences = GetCommonTableExpressionReferences(queryBlock).ToDictionary(qb => qb.Key, qb => qb.Value);
+				// TODO: Check possible issue within GetCommonTableExpressionReferences to remove the Distinct.
+				var cteReferences = GetCommonTableExpressionReferences(queryBlock).Distinct().ToDictionary(qb => qb.Key, qb => qb.Value);
 				_accessibleQueryBlockRoot.Add(item, cteReferences.Keys);
 
 				foreach (var tableReferenceNonterminal in tableReferenceNonterminals)
@@ -706,7 +707,8 @@ namespace SqlPad.Oracle
 							parameterNodes.Add(firstParameterExpression);
 							goto default;
 						default:
-							var nodes = parameterList.GetPathFilterDescendants(n => n != firstParameterExpression && !n.Id.In(NonTerminals.NestedQuery, NonTerminals.ParenthesisEnclosedAggregationFunctionParameters), NonTerminals.ExpressionList).Select(n => n.ChildNodes.FirstOrDefault());
+							var nodes = parameterList.GetPathFilterDescendants(n => n != firstParameterExpression && !n.Id.In(NonTerminals.NestedQuery, NonTerminals.ParenthesisEnclosedAggregationFunctionParameters), NonTerminals.ExpressionList, NonTerminals.OptionalParameterExpressionList)
+								.Select(n => n.ChildNodes.FirstOrDefault());
 							parameterNodes.AddRange(nodes);
 							break;
 					}
@@ -742,7 +744,7 @@ namespace SqlPad.Oracle
 				? parameterList
 					.GetPathFilterDescendants(
 						n => !n.Id.In(NonTerminals.NestedQuery, NonTerminals.ParenthesisEnclosedAggregationFunctionParameters, NonTerminals.AggregateFunctionCall, NonTerminals.AnalyticFunctionCall),
-						NonTerminals.ExpressionList)
+						NonTerminals.ExpressionList, NonTerminals.OptionalParameterExpressionList)
 					.Select(n => n.ChildNodes.FirstOrDefault())
 					.ToArray()
 				: null;
