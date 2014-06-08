@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using ICSharpCode.AvalonEdit;
@@ -23,6 +24,7 @@ namespace SqlPad.FindReplace
 				{
 					_dialog = new FindReplaceDialog(this);
 					_dialog.Closed += delegate { _dialog = null; };
+					_dialog.tabMain.SelectionChanged += TabMainOnSelectionChanged;
 
 					if (OwnerWindow != null)
 						_dialog.Owner = OwnerWindow;
@@ -32,9 +34,14 @@ namespace SqlPad.FindReplace
 			}
 		}
 
+		private void TabMainOnSelectionChanged(object sender, SelectionChangedEventArgs selectionChangedEventArgs)
+		{
+			dialog.Title = dialog.tabMain.SelectedIndex == 0 ? "Find" : "Find And Replace";
+		}
+
 		public FindReplaceManager()
 		{
-			ReplacementText = "";
+			ReplacementText = String.Empty;
 
 			SearchIn = SearchScope.CurrentDocument;
 			ShowSearchIn = true;
@@ -259,12 +266,12 @@ namespace SqlPad.FindReplace
 			if (!ShowSearchIn || SearchIn == SearchScope.CurrentDocument || Editors == null)
 				return GetCurrentEditor();
 
-			var l = new List<object>(Editors.Cast<object>());
-			var i = l.IndexOf(CurrentEditor);
+			var editors = new List<object>(Editors.Cast<object>());
+			var i = editors.IndexOf(CurrentEditor);
 			if (i >= 0)
 			{
-				i = (i + (previous ? l.Count - 1 : +1)) % l.Count;
-				CurrentEditor = l[i];
+				i = (i + (previous ? editors.Count - 1 : +1)) % editors.Count;
+				CurrentEditor = editors[i];
 			}
 
 			return GetCurrentEditor();
@@ -277,54 +284,63 @@ namespace SqlPad.FindReplace
 		/// <returns>The regular expression.</returns>
 		public Regex GetRegularExpression(bool forceLeftToRight = false)
 		{
-			Regex r;
-			var o = RegexOptions.None;
+			Regex regularExpression;
+			var options = RegexOptions.None;
 			if (SearchUp && !forceLeftToRight)
-				o = o | RegexOptions.RightToLeft;
+			{
+				options = options | RegexOptions.RightToLeft;
+			}
 			if (!CaseSensitive)
-				o = o | RegexOptions.IgnoreCase;
+			{
+				options = options | RegexOptions.IgnoreCase;
+			}
 
 			if (UseRegEx)
-				r = new Regex(TextToFind, o);
+			{
+				regularExpression = new Regex(TextToFind, options);
+			}
 			else
 			{
-				var s = Regex.Escape(TextToFind);
+				var pattern = Regex.Escape(TextToFind);
 				if (UseWildcards)
-					s = s.Replace("\\*", ".*").Replace("\\?", ".");
+				{
+					pattern = pattern.Replace("\\*", ".*").Replace("\\?", ".");
+				}
+				
 				if (WholeWord)
-					s = "\\b" + s + "\\b";
-				r = new Regex(s, o);
+				{
+					pattern = "\\b" + pattern + "\\b";
+				}
+				
+				regularExpression = new Regex(pattern, options);
 			}
 
-			return r;
+			return regularExpression;
 		}
 
-		public void ReplaceAll(bool askBefore = true)
+		public void ReplaceAll()
 		{
 			var currentEditor = GetCurrentEditor();
-			if (currentEditor == null) return;
+			if (currentEditor == null)
+				return;
 
-			if (!askBefore || MessageBox.Show("Do you really want to replace all occurences of '" + TextToFind + "' with '" + ReplacementText + "'?",
-				"Replace all", MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) == MessageBoxResult.Yes)
+			var initialEditor = CurrentEditor;
+			// loop through all editors, until we are back at the starting editor                
+			do
 			{
-				var initialEditor = CurrentEditor;
-				// loop through all editors, until we are back at the starting editor                
-				do
+				var r = GetRegularExpression(true); // force left to right, otherwise indices are screwed up
+				var offset = 0;
+				currentEditor.BeginChange();
+				foreach (Match m in r.Matches(currentEditor.Text))
 				{
-					var r = GetRegularExpression(true); // force left to right, otherwise indices are screwed up
-					var offset = 0;
-					currentEditor.BeginChange();
-					foreach (Match m in r.Matches(currentEditor.Text))
-					{
-						currentEditor.Replace(offset + m.Index, m.Length, ReplacementText);
-						offset += ReplacementText.Length - m.Length;
-					}
-
-					currentEditor.EndChange();
-					currentEditor = GetNextEditor();
+					currentEditor.Replace(offset + m.Index, m.Length, ReplacementText);
+					offset += ReplacementText.Length - m.Length;
 				}
-				while (CurrentEditor != initialEditor);
+
+				currentEditor.EndChange();
+				currentEditor = GetNextEditor();
 			}
+			while (CurrentEditor != initialEditor);
 		}
 
 		/// <summary>
@@ -375,20 +391,22 @@ namespace SqlPad.FindReplace
 			if (currentEditor == null)
 				return;
 
-			Regex r;
+			Regex regularExpression;
 			if (invertLeftRight)
 			{
 				SearchUp = !SearchUp;
-				r = GetRegularExpression();
+				regularExpression = GetRegularExpression();
 				SearchUp = !SearchUp;
 			}
 			else
-				r = GetRegularExpression();
-
-			var m = r.Match(currentEditor.Text, r.Options.HasFlag(RegexOptions.RightToLeft) ? currentEditor.SelectionStart : currentEditor.SelectionStart + currentEditor.SelectionLength);
-			if (m.Success)
 			{
-				currentEditor.Select(m.Index, m.Length);
+				regularExpression = GetRegularExpression();
+			}
+
+			var match = regularExpression.Match(currentEditor.Text, regularExpression.Options.HasFlag(RegexOptions.RightToLeft) ? currentEditor.SelectionStart : currentEditor.SelectionStart + currentEditor.SelectionLength);
+			if (match.Success)
+			{
+				currentEditor.Select(match.Index, match.Length);
 			}
 			else
 			{
@@ -399,15 +417,15 @@ namespace SqlPad.FindReplace
 				{
 					if (ShowSearchIn)
 					{
-						currentEditor = GetNextEditor(r.Options.HasFlag(RegexOptions.RightToLeft));
+						currentEditor = GetNextEditor(regularExpression.Options.HasFlag(RegexOptions.RightToLeft));
 						if (currentEditor == null) return;
 					}
 
-					m = r.Match(currentEditor.Text, r.Options.HasFlag(RegexOptions.RightToLeft) ? currentEditor.Text.Length : 0);
+					match = regularExpression.Match(currentEditor.Text, regularExpression.Options.HasFlag(RegexOptions.RightToLeft) ? currentEditor.Text.Length : 0);
 
-					if (m.Success)
+					if (match.Success)
 					{
-						currentEditor.Select(m.Index, m.Length);
+						currentEditor.Select(match.Index, match.Length);
 						break;
 					}
 					else
@@ -431,10 +449,10 @@ namespace SqlPad.FindReplace
 			if (currentEditor == null) return;
 
 			// if currently selected text matches -> replace; anyways, find the next match
-			var r = GetRegularExpression();
-			var s = currentEditor.Text.Substring(currentEditor.SelectionStart, currentEditor.SelectionLength);
-			var m = r.Match(s);
-			if (m.Success && m.Index == 0 && m.Length == s.Length)
+			var regularExpression = GetRegularExpression();
+			var substring = currentEditor.Text.Substring(currentEditor.SelectionStart, currentEditor.SelectionLength);
+			var match = regularExpression.Match(substring);
+			if (match.Success && match.Index == 0 && match.Length == substring.Length)
 			{
 				currentEditor.Replace(currentEditor.SelectionStart, currentEditor.SelectionLength, ReplacementText);
 			}
