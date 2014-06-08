@@ -19,6 +19,7 @@ using System.Windows.Shapes;
 using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.CodeCompletion;
 using SqlPad.Commands;
+using SqlPad.FindReplace;
 
 namespace SqlPad
 {
@@ -42,6 +43,9 @@ namespace SqlPad
 		private readonly ToolTip _toolTip = new ToolTip();
 		private bool _isToolTipOpenByShortCut;
 
+		private MultiNodeEditor _multiNodeEditor;
+		private FindReplaceManager _findReplaceManager;
+
 		public MainWindow()
 		{
 			InitializeComponent();
@@ -55,6 +59,10 @@ namespace SqlPad
 			_toolTipProvider = _infrastructureFactory.CreateToolTipProvider();
 			_navigationService = _infrastructureFactory.CreateNavigationService();
 			_databaseModel = _infrastructureFactory.CreateDatabaseModel(ConfigurationProvider.ConnectionStrings["Default"]);
+
+			_findReplaceManager = (FindReplaceManager)Resources["FindReplaceManager"];
+			_findReplaceManager.OwnerWindow = this;
+			_findReplaceManager.CurrentEditor = new TextEditorAdapter(Editor);
 			
 			_timer.Elapsed += TimerOnElapsed;
 
@@ -549,8 +557,6 @@ namespace SqlPad
 				Editor.Document.EndUpdate();
 			}
 		}
-
-		private MultiNodeEditor _multiNodeEditor;
 
 		private void DropObjectHandler(object sender, DragEventArgs e)
 		{

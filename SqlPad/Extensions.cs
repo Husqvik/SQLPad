@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows;
+using System.Windows.Data;
 using ICSharpCode.AvalonEdit;
 
 namespace SqlPad
@@ -105,6 +107,30 @@ namespace SqlPad
 			}
 
 			throw new NotSupportedException(String.Format("Value '{0}' is not supported. ", error));
+		}
+	}
+
+	public class StaticResourceBindingExtension : StaticResourceExtension
+	{
+		public PropertyPath Path { get; set; }
+		
+		public override object ProvideValue(IServiceProvider serviceProvider)
+		{
+			var value = base.ProvideValue(serviceProvider);
+			return (Path == null ? value : PathEvaluator.Eval(value, Path));
+		}
+
+		class PathEvaluator : DependencyObject
+		{
+			private static readonly DependencyProperty DummyProperty =
+				DependencyProperty.Register("Dummy", typeof(object), typeof(PathEvaluator), new UIPropertyMetadata(null));
+
+			public static object Eval(object source, PropertyPath path)
+			{
+				var pathEvaluator = new PathEvaluator();
+				BindingOperations.SetBinding(pathEvaluator, DummyProperty, new Binding(path.Path) { Source = source });
+				return pathEvaluator.GetValue(DummyProperty);
+			}
 		}
 	}
 }

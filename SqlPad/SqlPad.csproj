@@ -77,6 +77,12 @@
     <Compile Include="ColorizeAvalonEdit.cs" />
     <Compile Include="Commands\CommandExecutionHandler.cs" />
     <Compile Include="Commands\ContextActionCommand.cs" />
+    <Compile Include="FindReplace\Adapters.cs" />
+    <Compile Include="FindReplace\FindReplace.cs" />
+    <Compile Include="FindReplace\FindReplaceDialog.xaml.cs">
+      <DependentUpon>FindReplaceDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="FindReplace\IEditor.cs" />
     <Compile Include="TextSegment.cs" />
     <Compile Include="CommandSettingsModel.cs" />
     <Compile Include="Commands\ICommandFactory.cs" />
@@ -123,6 +129,10 @@
     <Page Include="EditDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="FindReplace\FindReplaceDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="FunctionOverloadList.xaml">
       <SubType>Designer</SubType>
@@ -177,6 +187,7 @@
   <ItemGroup>
     <Resource Include="EmptyIcon.ico" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

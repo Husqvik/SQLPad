@@ -3,19 +3,11 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
         xmlns:local="clr-namespace:SqlPad"
+        xmlns:findReplace="clr-namespace:SqlPad.FindReplace"
         Title="SQL Pad 0.01 Alpha" Height="640" Width="960" Loaded="WindowLoadedHandler"
 		Drop="DropObjectHandler">
 
-    <Window.CommandBindings>
-        <!--<CommandBinding Command="{x:Static local:MainWindow.CommandAddColumnAliases}"
-                    Executed="AddColumnAliasesExecutedHandler" CanExecute="AddColumnAliasesCanExecuteHandler" />
-        <CommandBinding Command="{x:Static local:MainWindow.CommandWrapAsCommonTableExpression}"
-                    Executed="WrapAsCommonTableExpressionExecutedHandler" CanExecute="WrapAsCommonTableExpressionCanExecuteHandler" />
-        <CommandBinding Command="{x:Static local:MainWindow.CommandToggleQuotedIdentifier}"
-                    Executed="ToggleQuotedIdentifierExecutedHandler" CanExecute="ToggleQuotedIdentifierCanExecuteHandler" />-->
-    </Window.CommandBindings>
-    
-    <Window.Resources>
+	<Window.Resources>
         <TextDecoration x:Key="WaveErrorUnderline" PenOffset="0.5">
             <TextDecoration.Pen>
                 <Pen Thickness="6">
@@ -50,10 +42,22 @@
 				<Rectangle Stroke="GreenYellow" Fill="Transparent" StrokeThickness="3"></Rectangle>
 			</VisualBrush.Visual>
 		</VisualBrush>-->
-
+	    <findReplace:FindReplaceManager
+		    x:Key="FindReplaceManager"
+		    AllowReplace="True" />
 	</Window.Resources>
 
-    <Grid>
+	<Window.InputBindings>
+		<KeyBinding Key="F3" Modifiers="Shift" Command="Search" CommandParameter="something" />
+	</Window.InputBindings>
+
+	<Window.CommandBindings>
+		<local:StaticResourceBinding ResourceKey="FindReplaceManager" Path="FindBinding" />
+		<local:StaticResourceBinding ResourceKey="FindReplaceManager" Path="ReplaceBinding" />
+		<local:StaticResourceBinding ResourceKey="FindReplaceManager" Path="FindNextBinding" />
+	</Window.CommandBindings>
+
+	<Grid>
         <Grid.RowDefinitions>
             <RowDefinition />
             <RowDefinition Height="72" />
