@@ -198,10 +198,10 @@ namespace SqlPad.Oracle.Commands
 					selectListColumn = columnReference.SelectListColumn;
 					if (selectListColumn == null)
 					{
-						var selectionListColumnReference = columnReferences.FirstOrDefault(c => c.SelectListColumn != null && c.SelectListColumn.IsDirectColumnReference);
-						if (selectionListColumnReference != null)
+						var selectListColumnReference = columnReferences.FirstOrDefault(c => c.SelectListColumn != null && c.SelectListColumn.IsDirectColumnReference);
+						if (selectListColumnReference != null && selectListColumnReference.SelectListColumn.AliasNode != selectListColumnReference.ColumnNode)
 						{
-							selectListColumn = selectionListColumnReference.SelectListColumn;
+							selectListColumn = selectListColumnReference.SelectListColumn;
 						}
 					}
 					else if (!selectListColumn.IsDirectColumnReference)

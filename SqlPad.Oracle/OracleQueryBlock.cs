@@ -70,6 +70,8 @@ namespace SqlPad.Oracle
 
 		public StatementDescriptionNode HavingClause { get; set; }
 		
+		public StatementDescriptionNode OrderByClause { get; set; }
+		
 		public OracleStatement Statement { get; set; }
 
 		public ICollection<OracleObjectReference> ObjectReferences { get; private set; }

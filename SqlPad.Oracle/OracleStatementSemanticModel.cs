@@ -369,6 +369,19 @@ namespace SqlPad.Oracle
 		public OracleQueryBlock GetQueryBlock(StatementDescriptionNode node)
 		{
 			var queryBlockNode = node.GetAncestor(NonTerminals.QueryBlock);
+			if (queryBlockNode == null)
+			{
+				var orderByClauseNode = node.GetPathFilterAncestor(n => n.Id != NonTerminals.NestedQuery, NonTerminals.OrderByClause, true);
+				if (orderByClauseNode == null)
+					return null;
+				
+				var queryBlock = _queryBlockResults.Values.SingleOrDefault(qb => qb.OrderByClause == orderByClauseNode);
+				if (queryBlock == null)
+					return null;
+
+				queryBlockNode = queryBlock.RootNode;
+			}
+
 			return queryBlockNode == null ? null : _queryBlockResults[queryBlockNode];
 		}
 
@@ -575,11 +588,11 @@ namespace SqlPad.Oracle
 			if (queryBlock.PrecedingConcatenatedQueryBlock != null)
 				return;
 
-			var orderByNode = queryBlock.RootNode.ParentNode.GetPathFilterDescendants(n => n.Id != NonTerminals.QueryBlock, NonTerminals.OrderByClause).FirstOrDefault();
-			if (orderByNode == null)
+			queryBlock.OrderByClause = queryBlock.RootNode.ParentNode.GetPathFilterDescendants(n => n.Id != NonTerminals.QueryBlock, NonTerminals.OrderByClause).FirstOrDefault();
+			if (queryBlock.OrderByClause == null)
 				return;
 
-			var identifiers = orderByNode.GetDescendantsWithinSameQuery(Terminals.Identifier, Terminals.RowIdPseudoColumn);
+			var identifiers = queryBlock.OrderByClause.GetDescendantsWithinSameQuery(Terminals.Identifier, Terminals.RowIdPseudoColumn);
 			ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock.ColumnReferences, queryBlock.FunctionReferences, identifiers, QueryBlockPlacement.OrderBy, null);
 		}
 

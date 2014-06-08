@@ -44,9 +44,9 @@ FROM
 		WHERE
 			TG.NAME IN ('X1', 'X2') OR S.NAME IS NOT NULL OR P.NAME <> ''
 		)
-	)
+	) TMP
 ORDER BY
-	RESPONDENTBUCKET_NAME";
+	TMP.RESPONDENTBUCKET_NAME";
 
 		private const string FindFunctionUsagesStatementText =
 @"SELECT
@@ -412,10 +412,10 @@ WHERE
 			ValidateCommonResults1(foundSegments);
 		}
 
-		[Test(Description = @""), STAThread, Ignore]
+		[Test(Description = @""), STAThread]
 		public void TestFindColumnUsagesInOrderByClause()
 		{
-			var foundSegments = FindUsagesOrdered(FindUsagesStatementText, 763);
+			var foundSegments = FindUsagesOrdered(FindUsagesStatementText, 771);
 			ValidateCommonResults1(foundSegments);
 		}
 
@@ -424,6 +424,19 @@ WHERE
 		{
 			var foundSegments = FindUsagesOrdered(FindUsagesStatementText, 350);
 			ValidateCommonResults1(foundSegments);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestFindObjectUsageInOrderByClause()
+		{
+			var foundSegments = FindUsagesOrdered(FindUsagesStatementText, 767);
+			foundSegments.Count.ShouldBe(2);
+			foundSegments[0].IndextStart.ShouldBe(751);
+			foundSegments[0].Length.ShouldBe(3);
+			foundSegments[0].DisplayOptions.ShouldBe(DisplayOptions.Definition);
+			foundSegments[1].IndextStart.ShouldBe(767);
+			foundSegments[1].Length.ShouldBe(3);
+			foundSegments[1].DisplayOptions.ShouldBe(DisplayOptions.Usage);
 		}
 
 		private void ValidateCommonResults1(IList<TextSegment> foundSegments)
@@ -444,7 +457,7 @@ WHERE
 			foundSegments[4].IndextStart.ShouldBe(602);
 			foundSegments[4].Length.ShouldBe(4);
 			foundSegments[4].DisplayOptions.ShouldBe(DisplayOptions.Usage);
-			foundSegments[5].IndextStart.ShouldBe(763);
+			foundSegments[5].IndextStart.ShouldBe(771);
 			foundSegments[5].Length.ShouldBe(21);
 			foundSegments[5].DisplayOptions.ShouldBe(DisplayOptions.Usage);
 		}
