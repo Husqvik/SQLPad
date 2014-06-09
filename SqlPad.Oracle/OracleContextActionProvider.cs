@@ -77,6 +77,11 @@ namespace SqlPad.Oracle
 				actionList.Add(new OracleContextAction(ToggleFullyQualifiedReferencesCommand.Title, OracleCommands.ToggleFullyQualifiedReferences, executionContext));
 			}
 
+			if (OracleCommands.GenerateMissingColumns.CanExecuteHandler(executionContext))
+			{
+				actionList.Add(new OracleContextAction(GenerateMissingColumnsCommand.Title, OracleCommands.GenerateMissingColumns, executionContext));
+			}
+
 			var actions = ResolveAmbiguousColumnCommand.ResolveCommandHandlers(semanticModel, currentTerminal)
 				.Select(c => new OracleContextAction("Resolve as " + c.Name, c, executionContext));
 

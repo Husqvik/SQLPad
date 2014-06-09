@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Snippet Name="Sela" Description="" xmlns="http://husqvik.com/SqlPad/2014/02" Rdbms="Oracle" Version="*">
+  <Text><![CDATA[SELECT COUNT(*) FROM	{0}]]></Text>
+  <Parameters>
+    <Parameter Index="0" DefaultValue="" />
+  </Parameters>
+  <AllowedTerminals>
+    <Terminal Id ="Select" />
+  </AllowedTerminals>
+</Snippet>

@@ -781,5 +781,17 @@ WHERE
 
 			_editor.Text.ShouldBe(@"SELECT SYS.DUAL.DUMMY FROM SYS.DUAL, ""PUBLIC"".DUAL");
 		}
+
+		[Test(Description = @""), STAThread]
+		public void TestGenerateMissingColumnsCommand()
+		{
+			_editor.Text = @"SELECT C1, C2, NAME, C3 FROM SELECTION";
+			_editor.CaretOffset = 0;
+
+			CanExecuteOracleCommand(OracleCommands.GenerateMissingColumns).ShouldBe(true);
+			ExecuteOracleCommand(OracleCommands.GenerateMissingColumns);
+
+			_editor.Text.ShouldBe("SELECT C1, C2, NAME, C3 FROM SELECTION\r\n\r\nALTER TABLE HUSQVIK.SELECTION ADD\r\n(\r\n\tC1 VARCHAR2(100) NULL,\r\n\tC2 VARCHAR2(100) NULL,\r\n\tC3 VARCHAR2(100) NULL);\r\n");
+		}
 	}
 }
