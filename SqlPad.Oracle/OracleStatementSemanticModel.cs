@@ -149,7 +149,7 @@ namespace SqlPad.Oracle
 
 					var referenceType = TableReferenceType.CommonTableExpression;
 
-					var result = SchemaObjectResult<OracleRowSourceObject>.EmptyResult;
+					var result = SchemaObjectResult<OracleDataObject>.EmptyResult;
 					if (commonTableExpressions.Count == 0)
 					{
 						referenceType = TableReferenceType.PhysicalObject;
@@ -160,7 +160,7 @@ namespace SqlPad.Oracle
 						if (DatabaseModel != null)
 						{
 							// TODO: Resolve package
-							result = DatabaseModel.GetObject<OracleRowSourceObject>(OracleObjectIdentifier.Create(owner, objectName));
+							result = DatabaseModel.GetObject<OracleDataObject>(OracleObjectIdentifier.Create(owner, objectName));
 						}
 					}
 

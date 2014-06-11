@@ -31,14 +31,12 @@ namespace SqlPad.Oracle
 			AllObjectsInternal.Add(new OracleSynonym
 			                       {
 				                       FullyQualifiedName = OracleObjectIdentifier.Create(OracleDatabaseModel.SchemaPublic, tableNameDual),
-				                       Type = OracleDatabaseModel.DataObjectTypeSynonym,
 									   SchemaObject = AllObjectsInternal.Single(o => o.Name == tableNameDual && o.Owner == OwnerNameSys)
 			                       });
 
 			AllObjectsInternal.Add(new OracleSynonym
 			                       {
 				                       FullyQualifiedName = OracleObjectIdentifier.Create(OracleDatabaseModel.SchemaPublic, "\"V$SESSION\""),
-				                       Type = OracleDatabaseModel.DataObjectTypeSynonym,
 									   SchemaObject = AllObjectsInternal.Single(o => o.Name == "\"V_$SESSION\"" && o.Owner == OwnerNameSys)
 			                       });
 
@@ -51,12 +49,11 @@ namespace SqlPad.Oracle
 
 		public OracleFunctionMetadataCollection AllFunctionMetadata { get { return AllFunctionMetadataInterval; } }
 
-		private static readonly HashSet<OracleObject> AllObjectsInternal = new HashSet<OracleObject>
+		private static readonly HashSet<OracleSchemaObject> AllObjectsInternal = new HashSet<OracleSchemaObject>
 		{
 			new OracleTable
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(OwnerNameSys, "\"DUAL\""),
-				Type = OracleDatabaseModel.DataObjectTypeTable,
 				Organization = OrganizationType.Heap,
 				Columns = new HashSet<OracleColumn>
 				             {
@@ -67,12 +64,10 @@ namespace SqlPad.Oracle
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(OwnerNameSys, "\"V_$SESSION\""),
 				Organization = OrganizationType.NotApplicable,
-				Type = "VIEW"
 			},
 			new OracleTable
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"COUNTRY\""),
-				Type = OracleDatabaseModel.DataObjectTypeTable,
 				Organization = OrganizationType.Heap,
 				Columns = new HashSet<OracleColumn>
 				          {
@@ -83,7 +78,6 @@ namespace SqlPad.Oracle
 			new OracleTable
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"ORDERS\""),
-				Type = OracleDatabaseModel.DataObjectTypeTable,
 				Organization = OrganizationType.Heap,
 				Columns = new HashSet<OracleColumn>
 				          {
@@ -93,7 +87,6 @@ namespace SqlPad.Oracle
 			new OracleTable
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"INVOICES\""),
-				Type = OracleDatabaseModel.DataObjectTypeTable,
 				Organization = OrganizationType.Heap,
 				Columns = new HashSet<OracleColumn>
 				          {
@@ -104,7 +97,6 @@ namespace SqlPad.Oracle
 			new OracleTable
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"INVOICELINES\""),
-				Type = OracleDatabaseModel.DataObjectTypeTable,
 				Organization = OrganizationType.Heap,
 				Columns = new HashSet<OracleColumn>
 				          {
@@ -129,12 +121,10 @@ namespace SqlPad.Oracle
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"VIEW_INSTANTSEARCH\""),
 				Organization = OrganizationType.NotApplicable,
-				Type = "VIEW"
 			},
 			new OracleTable
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"TARGETGROUP\""),
-				Type = OracleDatabaseModel.DataObjectTypeTable,
 				Organization = OrganizationType.Heap,
 				Columns = new HashSet<OracleColumn>
 				          {
@@ -157,7 +147,6 @@ namespace SqlPad.Oracle
 			new OracleTable
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"PROJECT\""),
-				Type = OracleDatabaseModel.DataObjectTypeTable,
 				Organization = OrganizationType.Heap,
 				Columns = new HashSet<OracleColumn>
 				          {
@@ -168,7 +157,6 @@ namespace SqlPad.Oracle
 			new OracleTable
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"RESPONDENTBUCKET\""),
-				Type = OracleDatabaseModel.DataObjectTypeTable,
 				Organization = OrganizationType.Heap,
 				Columns = new HashSet<OracleColumn>
 				          {
@@ -200,7 +188,6 @@ namespace SqlPad.Oracle
 			new OracleTable
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"SELECTION\""),
-				Type = OracleDatabaseModel.DataObjectTypeTable,
 				Organization = OrganizationType.Heap,
 				Columns = new HashSet<OracleColumn>
 				          {
@@ -231,9 +218,9 @@ namespace SqlPad.Oracle
 			},
 		};
 
-		private static readonly IDictionary<OracleObjectIdentifier, OracleObject> AllObjectDictionary;
+		private static readonly IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjectDictionary;
 
-		private static readonly IDictionary<OracleObjectIdentifier, OracleObject> ObjectsInternal;
+		private static readonly IDictionary<OracleObjectIdentifier, OracleSchemaObject> ObjectsInternal;
 		
 		#region Implementation of IDatabaseModel
 		public ConnectionStringSettings ConnectionString { get { return ConnectionStringInternal; } }
@@ -242,9 +229,9 @@ namespace SqlPad.Oracle
 		
 		public ICollection<string> Schemas { get { return SchemasInternal; } }
 
-		public IDictionary<OracleObjectIdentifier, OracleObject> Objects { get { return ObjectsInternal; } }
+		public IDictionary<OracleObjectIdentifier, OracleSchemaObject> Objects { get { return ObjectsInternal; } }
 
-		public IDictionary<OracleObjectIdentifier, OracleObject> AllObjects { get { return AllObjectDictionary; } }
+		public IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjects { get { return AllObjectDictionary; } }
 		
 		public void Refresh()
 		{

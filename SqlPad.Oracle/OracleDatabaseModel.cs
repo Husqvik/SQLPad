@@ -30,6 +30,8 @@ namespace SqlPad.Oracle
 			ConnectionString = connectionString;
 			_oracleConnectionString = new OracleConnectionStringBuilder(connectionString.ConnectionString);
 
+			//LoadSchemaObjectMetadata();
+
 			string metadata;
 			if (MetadataCache.TryLoadMetadata(SqlFuntionMetadataFileName, out metadata))
 			{
@@ -69,16 +71,17 @@ namespace SqlPad.Oracle
 		}
 
 		public ICollection<string> Schemas { get { return DatabaseModelFake.Instance.Schemas; } }
-		public IDictionary<OracleObjectIdentifier, OracleObject> Objects { get { return DatabaseModelFake.Instance.Objects; } }
-		public IDictionary<OracleObjectIdentifier, OracleObject> AllObjects { get { return DatabaseModelFake.Instance.AllObjects; } }
+		public IDictionary<OracleObjectIdentifier, OracleSchemaObject> Objects { get { return DatabaseModelFake.Instance.Objects; } }
+		public IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjects { get { return DatabaseModelFake.Instance.AllObjects; } }
+		//public IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjects { get; set; }
 
 		public void Refresh()
 		{
 		}
 
-		public SchemaObjectResult<TObject> GetObject<TObject>(OracleObjectIdentifier objectIdentifier) where TObject : OracleObject
+		public SchemaObjectResult<TObject> GetObject<TObject>(OracleObjectIdentifier objectIdentifier) where TObject : OracleSchemaObject
 		{
-			OracleObject schemaObject = null;
+			OracleSchemaObject schemaObject = null;
 			var schemaFound = false;
 
 			if (String.IsNullOrEmpty(objectIdentifier.NormalizedOwner))
@@ -102,7 +105,7 @@ namespace SqlPad.Oracle
 			}
 
 			var synonym = schemaObject as OracleSynonym;
-			OracleObjectIdentifier fullyQualifiedName = OracleObjectIdentifier.Empty;
+			var fullyQualifiedName = OracleObjectIdentifier.Empty;
 			if (synonym != null)
 			{
 				schemaObject = synonym.SchemaObject;
@@ -391,15 +394,104 @@ ORDER BY
 
 		private void LoadSchemaObjectMetadata()
 		{
-			const string selectAllObjectsCommandText = "SELECT OWNER, OBJECT_NAME, SUBOBJECT_NAME, OBJECT_ID, DATA_OBJECT_ID, OBJECT_TYPE, CREATED, LAST_DDL_TIME, STATUS, TEMPORARY, EDITIONABLE, EDITION_NAME FROM ALL_OBJECTS";
-			/*ExecuteReader(
+			const string selectAllObjectsCommandText = "SELECT OWNER, OBJECT_NAME, SUBOBJECT_NAME, OBJECT_ID, DATA_OBJECT_ID, OBJECT_TYPE, CREATED, LAST_DDL_TIME, STATUS, TEMPORARY, EDITIONABLE, EDITION_NAME FROM ALL_OBJECTS WHERE OBJECT_TYPE IN ('SYNONYM', 'VIEW', 'TABLE')";
+			var dataObjectMetadataSource = ExecuteReader(
 				selectAllObjectsCommandText,
-				r => new);*/
+				r => OracleObjectFactory.CreateDataObjectMetadata((string)r["OBJECT_TYPE"], (string)r["OWNER"], (string)r["OBJECT_NAME"], (string)r["STATUS"] == "VALID", (DateTime)r["CREATED"], (DateTime)r["LAST_DDL_TIME"], (string)r["TEMPORARY"] == "Y"));
+
+			var dataObjectMetadata = dataObjectMetadataSource.ToDictionary(m => m.FullyQualifiedName, m => m);
+
+			const string selectTablesCommandText =
+@"SELECT OWNER, TABLE_NAME, TABLESPACE_NAME, CLUSTER_NAME, STATUS, LOGGING, NUM_ROWS, BLOCKS, AVG_ROW_LEN, DEGREE, CACHE, SAMPLE_SIZE, LAST_ANALYZED, TEMPORARY, NESTED, ROW_MOVEMENT, COMPRESS_FOR,
+CASE
+	WHEN TEMPORARY = 'N' AND TABLESPACE_NAME IS NULL AND PARTITIONED = 'NO' AND IOT_TYPE IS NULL AND PCT_FREE = 0 THEN 'External'
+	WHEN IOT_TYPE = 'IOT' THEN 'Index'
+	ELSE 'Heap'
+END ORGANIZATION
+FROM ALL_TABLES";
+			ExecuteReader(
+				selectTablesCommandText,
+				r =>
+				{
+					var tableFullyQualifiedName = OracleObjectIdentifier.Create((string)r["OWNER"], (string)r["TABLE_NAME"]);
+					OracleSchemaObject schemaObject;
+					if (!dataObjectMetadata.TryGetValue(tableFullyQualifiedName, out schemaObject))
+					{
+						return null;
+					}
+
+					var table = (OracleTable)schemaObject;
+					table.Organization = (OrganizationType)Enum.Parse(typeof(OrganizationType), (string)r["ORGANIZATION"]);
+					return table;
+				})
+				.ToArray();
+
+			const string selectTableColumnsCommandText = "SELECT OWNER, TABLE_NAME, COLUMN_NAME, DATA_TYPE, DATA_LENGTH, DATA_PRECISION, DATA_SCALE, CHAR_USED, NULLABLE, COLUMN_ID, NUM_DISTINCT, LOW_VALUE, HIGH_VALUE, NUM_NULLS, NUM_BUCKETS, LAST_ANALYZED, SAMPLE_SIZE, AVG_COL_LEN, HISTOGRAM FROM ALL_TAB_COLUMNS ORDER BY OWNER, TABLE_NAME, COLUMN_ID";
+			var columnMetadataSource = ExecuteReader(
+				selectTableColumnsCommandText,
+				r =>
+				{
+					var type = (string)r["DATA_TYPE"];
+					var precisionRaw = r["DATA_PRECISION"];
+					var scaleRaw = r["DATA_SCALE"];
+					return new KeyValuePair<OracleObjectIdentifier, OracleColumn>(
+						OracleObjectIdentifier.Create((string)r["OWNER"], (string)r["TABLE_NAME"]),
+						new OracleColumn
+						{
+							Name = ((string)r["COLUMN_NAME"]).ToQuotedIdentifier(),
+							Nullable = (string)r["NULLABLE"] == "Y",
+							Type = type,
+							Size = Convert.ToInt32(r["DATA_LENGTH"]),
+							Precision = precisionRaw == DBNull.Value ? null : (int?)Convert.ToInt32(precisionRaw),
+							Scale = scaleRaw == DBNull.Value ? null : (int?)Convert.ToInt32(scaleRaw),
+							Unit = type.In("VARCHAR", "VARCHAR2")
+								? (string)r["CHAR_USED"] == "C" ? DataUnit.Character : DataUnit.Byte
+								: DataUnit.NotApplicable
+						});
+				});
+
+			foreach (var columnMetadata in columnMetadataSource)
+			{
+				OracleSchemaObject schemaObject;
+				if (!dataObjectMetadata.TryGetValue(columnMetadata.Key, out schemaObject))
+					continue;
+
+				var dataObject = (OracleDataObject)schemaObject;
+				dataObject.Columns.Add(columnMetadata.Value);
+			}
+
+			//AllObjects = dataObjectMetadata;
+			var tmp = dataObjectMetadata.Values.Where(o => o.FullyQualifiedName.NormalizedOwner == "\"HUSQVIK\"").ToArray();
 		}
 
-		private class OracleObjectFactory
+		private static class OracleObjectFactory
 		{
-			
+			public static OracleSchemaObject CreateDataObjectMetadata(string objectType, string owner, string name, bool isValid, DateTime created, DateTime lastDdl, bool isTemporary)
+			{
+				var dataObject = CreateObjectMetadata(objectType);
+				dataObject.FullyQualifiedName = OracleObjectIdentifier.Create(owner, name);
+				dataObject.IsValid = isValid;
+				dataObject.Created = created;
+				dataObject.LastDdl = lastDdl;
+				dataObject.IsTemporary = isTemporary;
+
+				return dataObject;
+			}
+
+			private static OracleSchemaObject CreateObjectMetadata(string objectType)
+			{
+				switch (objectType)
+				{
+					case "TABLE":
+						return new OracleTable();
+					case "VIEW":
+						return new OracleView();
+					case "SYNONYM":
+						return new OracleSynonym();
+					default:
+						throw new InvalidOperationException(String.Format("Object type '{0}' not supported. ", objectType));
+				}
+			}
 		}
 	}
 }

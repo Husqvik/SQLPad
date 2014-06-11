@@ -138,7 +138,8 @@ namespace SqlPad.Oracle
 				}
 			}
 
-			var semanticModel = new OracleStatementSemanticModel(null, (OracleStatement)currentNode.Statement, (OracleDatabaseModel)databaseModel);
+			var oracleDatabaseModel = (OracleDatabaseModel)databaseModel;
+			var semanticModel = new OracleStatementSemanticModel(null, (OracleStatement)currentNode.Statement, oracleDatabaseModel);
 			var terminalCandidates = new HashSet<string>(_parser.GetTerminalCandidates(isCursorAtTerminal && !currentNode.Id.IsSingleCharacterTerminal() ? currentNode.PrecedingTerminal : currentNode));
 
 			var cursorAtLastTerminal = cursorPosition <= currentNode.SourcePosition.IndexEnd + 1;
@@ -161,11 +162,11 @@ namespace SqlPad.Oracle
 
 				var currentName = currentNode.Id.In(Terminals.From, Terminals.Comma) ? null : statementText.Substring(currentNode.SourcePosition.IndexStart, cursorPosition - currentNode.SourcePosition.IndexStart);
 
-				completionItems = completionItems.Concat(GenerateSchemaObjectItems(schemaName, currentName, terminalToReplace, extraOffset));
+				completionItems = completionItems.Concat(GenerateSchemaObjectItems(oracleDatabaseModel, schemaName, currentName, terminalToReplace, extraOffset));
 
 				if (!schemaFound)
 				{
-					completionItems = completionItems.Concat(GenerateSchemaItems(currentName, terminalToReplace, extraOffset, (OracleDatabaseModel)databaseModel));
+					completionItems = completionItems.Concat(GenerateSchemaItems(currentName, terminalToReplace, extraOffset, oracleDatabaseModel));
 				}
 
 				completionItems = completionItems.Concat(GenerateCommonTableExpressionReferenceItems(semanticModel, currentName, terminalToReplace, extraOffset));
@@ -176,7 +177,7 @@ namespace SqlPad.Oracle
 				!currentNode.IsWithinSelectClauseOrExpression())
 			{
 				var ownerName = currentNode.ParentNode.ChildNodes.Single(n => n.Id == Terminals.SchemaIdentifier).Token.Value;
-				completionItems = completionItems.Concat(GenerateSchemaObjectItems(ownerName, null, null, 0));
+				completionItems = completionItems.Concat(GenerateSchemaObjectItems(oracleDatabaseModel, ownerName, null, null, 0));
 			}
 
 			var joinClauseNode = currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.FromClause, NonTerminals.JoinClause);
@@ -221,8 +222,8 @@ namespace SqlPad.Oracle
 			if (currentNode.Id == Terminals.Join ||
 				(currentNode.Id == Terminals.ObjectAlias && currentNode.Token.Value.ToUpperInvariant() == Terminals.Join.ToUpperInvariant()))
 			{
-				completionItems = completionItems.Concat(GenerateSchemaObjectItems(databaseModel.CurrentSchema, null, null, extraOffset));
-				completionItems = completionItems.Concat(GenerateSchemaItems(null, null, extraOffset, (OracleDatabaseModel)databaseModel));
+				completionItems = completionItems.Concat(GenerateSchemaObjectItems(oracleDatabaseModel, databaseModel.CurrentSchema, null, null, extraOffset));
+				completionItems = completionItems.Concat(GenerateSchemaItems(null, null, extraOffset, oracleDatabaseModel));
 				completionItems = completionItems.Concat(GenerateCommonTableExpressionReferenceItems(semanticModel, null, null, extraOffset));
 			}
 
@@ -246,7 +247,7 @@ namespace SqlPad.Oracle
 				terminalCandidates.Contains(Terminals.Identifier) &&
 				currentNode.Id.In(Terminals.ObjectIdentifier, Terminals.Identifier, Terminals.Comma, Terminals.Dot, Terminals.Select))
 			{
-				completionItems = completionItems.Concat(GenerateSelectListItems(currentNode, semanticModel, cursorPosition, (OracleDatabaseModel)databaseModel));
+				completionItems = completionItems.Concat(GenerateSelectListItems(currentNode, semanticModel, cursorPosition, oracleDatabaseModel));
 			}
 
 			return completionItems.OrderItems().ToArray();
@@ -452,9 +453,9 @@ namespace SqlPad.Oracle
 				             });
 		}
 
-		private IEnumerable<ICodeCompletionItem> GenerateSchemaObjectItems(string schemaName, string objectNamePart, StatementDescriptionNode node, int insertOffset)
+		private IEnumerable<ICodeCompletionItem> GenerateSchemaObjectItems(OracleDatabaseModel databaseModel, string schemaName, string objectNamePart, StatementDescriptionNode node, int insertOffset)
 		{
-			return DatabaseModelFake.Instance.AllObjects.Values
+			return databaseModel.AllObjects.Values
 						.Where(o => o.Owner == schemaName.ToQuotedIdentifier() && objectNamePart.ToQuotedIdentifier() != o.Name &&
 							(node == null || node.Token.Value.ToQuotedIdentifier() != o.Name) &&
 							(String.IsNullOrEmpty(objectNamePart) || o.Name.ToUpperInvariant().Contains(objectNamePart.ToUpperInvariant())))

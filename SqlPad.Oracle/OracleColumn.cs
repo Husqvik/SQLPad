@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace SqlPad.Oracle
 {
-	[DebuggerDisplay("OracleColumn (Name={Name}; Type={Type})")]
+	[DebuggerDisplay("OracleColumn (Name={Name}; Type={FullTypeName})")]
 	public class OracleColumn : IColumn
 	{
 		public const string RowId = "ROWID";
