@@ -29,10 +29,12 @@ namespace SqlPad
 
 		public CompletionData(ICodeSnippet codeSnippet)
 		{
+			var description = String.IsNullOrEmpty(codeSnippet.Description) ? null : (Environment.NewLine + codeSnippet.Description);
+
 			_snippet = codeSnippet;
 			Text = codeSnippet.Name;
 			Content = Text;
-			Description = "Code Snippet";
+			Description = "Code Snippet" + description;
 			_completionText = String.Format(codeSnippet.BaseText, codeSnippet.Parameters.OrderBy(p => p.Index).Select(p => p.DefaultValue).Cast<object>().ToArray());
 		}
 

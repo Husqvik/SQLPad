@@ -4,9 +4,10 @@
 	{1}
 FROM
 	{0}]]></Text>
+  <Description><![CDATA[SELECT * FROM ...]]></Description>
   <Parameters>
     <Parameter Index="0" DefaultValue="" />
-    <Parameter Index="1" DefaultValue="NULL" />
+    <Parameter Index="1" DefaultValue="*" />
   </Parameters>
   <AllowedTerminals>
     <Terminal Id ="Select" />

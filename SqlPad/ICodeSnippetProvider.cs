@@ -11,6 +11,8 @@ namespace SqlPad
 	{
 		string Name { get; }
 
+		string Description { get; }
+
 		string BaseText { get; }
 
 		ICollection<ICodeSnippetParameter> Parameters { get; }
