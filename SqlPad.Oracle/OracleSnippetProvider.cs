@@ -47,6 +47,7 @@ namespace SqlPad.Oracle
 				             {
 					             Name = s.Name,
 					             BaseText = s.Text,
+								 Description = s.Description,
 					             SourceToReplace = new SourcePosition { IndexStart = cursorPosition - textToReplace.Length, IndexEnd = cursorPosition },
 					             Parameters = new List<ICodeSnippetParameter>(
 						             s.Parameters.Select(p => new OracleCodeSnippetParameter
@@ -62,6 +63,8 @@ namespace SqlPad.Oracle
 	public class OracleCodeSnippet : ICodeSnippet
 	{
 		public string Name { get; set; }
+		
+		public string Description { get; set; }
 
 		public string BaseText { get; set; }
 

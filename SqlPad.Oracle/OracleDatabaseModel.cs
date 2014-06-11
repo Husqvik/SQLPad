@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -21,6 +22,8 @@ namespace SqlPad.Oracle
 
 		public const string SchemaPublic = "\"PUBLIC\"";
 		public const string DataObjectTypeTable = "TABLE";
+		public const string DataObjectTypeView = "VIEW";
+		public const string DataObjectTypeSynonym = "SYNONYM";
 
 		public OracleDatabaseModel(ConnectionStringSettings connectionString)
 		{
@@ -66,16 +69,16 @@ namespace SqlPad.Oracle
 		}
 
 		public ICollection<string> Schemas { get { return DatabaseModelFake.Instance.Schemas; } }
-		public IDictionary<IObjectIdentifier, IDatabaseObject> Objects { get { return DatabaseModelFake.Instance.Objects; } }
-		public IDictionary<IObjectIdentifier, IDatabaseObject> AllObjects { get { return DatabaseModelFake.Instance.AllObjects; } }
+		public IDictionary<OracleObjectIdentifier, OracleObject> Objects { get { return DatabaseModelFake.Instance.Objects; } }
+		public IDictionary<OracleObjectIdentifier, OracleObject> AllObjects { get { return DatabaseModelFake.Instance.AllObjects; } }
 
 		public void Refresh()
 		{
 		}
 
-		public SchemaObjectResult GetObject(OracleObjectIdentifier objectIdentifier)
+		public SchemaObjectResult<TObject> GetObject<TObject>(OracleObjectIdentifier objectIdentifier) where TObject : OracleObject
 		{
-			OracleDataObject schemaObject = null;
+			OracleObject schemaObject = null;
 			var schemaFound = false;
 
 			if (String.IsNullOrEmpty(objectIdentifier.NormalizedOwner))
@@ -83,23 +86,40 @@ namespace SqlPad.Oracle
 				var currentSchemaObject = OracleObjectIdentifier.Create(CurrentSchema, objectIdentifier.NormalizedName);
 				var publicSchemaObject = OracleObjectIdentifier.Create(SchemaPublic, objectIdentifier.NormalizedName);
 
-				if (AllObjects.ContainsKey(currentSchemaObject))
-					schemaObject = (OracleDataObject)AllObjects[currentSchemaObject];
-				else if (AllObjects.ContainsKey(publicSchemaObject))
-					schemaObject = (OracleDataObject)AllObjects[publicSchemaObject];
+				if (!AllObjects.TryGetValue(currentSchemaObject, out schemaObject))
+				{
+					AllObjects.TryGetValue(publicSchemaObject, out schemaObject);
+				}
 			}
 			else
 			{
 				schemaFound = Schemas.Contains(objectIdentifier.NormalizedOwner);
 
-				if (schemaFound && AllObjects.ContainsKey(objectIdentifier))
-					schemaObject = (OracleDataObject)AllObjects[objectIdentifier];
+				if (schemaFound)
+				{
+					AllObjects.TryGetValue(objectIdentifier, out schemaObject);
+				}
 			}
 
-			return new SchemaObjectResult
+			var synonym = schemaObject as OracleSynonym;
+			OracleObjectIdentifier fullyQualifiedName = OracleObjectIdentifier.Empty;
+			if (synonym != null)
+			{
+				schemaObject = synonym.SchemaObject;
+				fullyQualifiedName = synonym.FullyQualifiedName;
+			}
+			else if (schemaObject != null)
+			{
+				fullyQualifiedName = schemaObject.FullyQualifiedName;
+			}
+
+			var typedObject = schemaObject as TObject;
+			return new SchemaObjectResult<TObject>
 			{
 				SchemaFound = schemaFound,
-				SchemaObject = schemaObject
+				SchemaObject = typedObject,
+				Synonym = typedObject == null ? null : synonym,
+				FullyQualifiedName = fullyQualifiedName
 			};
 		}
 
@@ -304,7 +324,7 @@ ORDER BY
 
 					command.CommandText = getParameterMetadataCommandText;
 
-					using (var reader = command.ExecuteReader())
+					using (var reader = command.ExecuteReader(CommandBehavior.CloseConnection))
 					{
 						while (reader.Read())
 						{
@@ -346,6 +366,40 @@ ORDER BY
 			}
 
 			return new OracleFunctionMetadataCollection(functionMetadataDictionary.Values);
+		}
+
+		private IEnumerable<T> ExecuteReader<T>(string commandText, Func<OracleDataReader, T> formatFunction)
+		{
+			using (var connection = new OracleConnection(_oracleConnectionString.ConnectionString))
+			{
+				using (var command = connection.CreateCommand())
+				{
+					command.CommandText = commandText;
+
+					connection.Open();
+
+					using (var reader = command.ExecuteReader(CommandBehavior.CloseConnection))
+					{
+						while (reader.Read())
+						{
+							yield return formatFunction(reader);
+						}
+					}
+				}
+			}
+		}
+
+		private void LoadSchemaObjectMetadata()
+		{
+			const string selectAllObjectsCommandText = "SELECT OWNER, OBJECT_NAME, SUBOBJECT_NAME, OBJECT_ID, DATA_OBJECT_ID, OBJECT_TYPE, CREATED, LAST_DDL_TIME, STATUS, TEMPORARY, EDITIONABLE, EDITION_NAME FROM ALL_OBJECTS";
+			/*ExecuteReader(
+				selectAllObjectsCommandText,
+				r => new);*/
+		}
+
+		private class OracleObjectFactory
+		{
+			
 		}
 	}
 }

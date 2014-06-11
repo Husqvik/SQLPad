@@ -49,7 +49,7 @@ namespace SqlPad.Oracle.Commands
 		private IEnumerable<TextSegment> GetMissingObjectReferenceQualifications()
 		{
 			return CurrentQueryBlock.ObjectReferences
-				.Where(o => o.OwnerNode == null && o.Type == TableReferenceType.PhysicalObject && o.SearchResult.SchemaObject != null && o.SearchResult.SchemaObject.Owner != OracleDatabaseModel.SchemaPublic)
+				.Where(o => o.OwnerNode == null && o.Type == TableReferenceType.PhysicalObject && o.SearchResult.SchemaObject != null && o.SearchResult.FullyQualifiedName.Owner != OracleDatabaseModel.SchemaPublic)
 				.Select(o =>
 					new TextSegment
 					{
@@ -71,7 +71,7 @@ namespace SqlPad.Oracle.Commands
 
 				if (column.OwnerNode == null && column.ValidObjectReference.Type == TableReferenceType.PhysicalObject &&
 					column.ValidObjectReference.AliasNode == null &&
-					column.ValidObjectReference.SearchResult.SchemaObject.Owner != OracleDatabaseModel.SchemaPublic)
+					column.ValidObjectReference.SearchResult.FullyQualifiedName.Owner != OracleDatabaseModel.SchemaPublic)
 				{
 					qualificationBuilder.Append(column.ValidObjectReference.SearchResult.SchemaObject.Owner.ToSimpleIdentifier());
 					qualificationBuilder.Append(".");

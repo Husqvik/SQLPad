@@ -149,7 +149,7 @@ namespace SqlPad.Oracle
 
 					var referenceType = TableReferenceType.CommonTableExpression;
 
-					var result = SchemaObjectResult.EmptyResult;
+					var result = SchemaObjectResult<OracleRowSourceObject>.EmptyResult;
 					if (commonTableExpressions.Count == 0)
 					{
 						referenceType = TableReferenceType.PhysicalObject;
@@ -160,7 +160,7 @@ namespace SqlPad.Oracle
 						if (DatabaseModel != null)
 						{
 							// TODO: Resolve package
-							result = DatabaseModel.GetObject(OracleObjectIdentifier.Create(owner, objectName));
+							result = DatabaseModel.GetObject<OracleRowSourceObject>(OracleObjectIdentifier.Create(owner, objectName));
 						}
 					}
 
@@ -494,12 +494,13 @@ namespace SqlPad.Oracle
 				if (rowSourceReference.SearchResult.SchemaObject == null)
 					return new OracleColumn[0];
 
+				var oracleTable = rowSourceReference.SearchResult.SchemaObject as OracleTable;
 				if (columnReference.ColumnNode.Id == Terminals.RowIdPseudoColumn)
 				{
-					var rowId = rowSourceReference.SearchResult.SchemaObject.RowIdPseudoColumn;
-					if (rowId != null && (columnReference.ObjectNode == null || IsTableReferenceValid(columnReference, rowSourceReference)))
+					if (oracleTable != null && oracleTable.RowIdPseudoColumn != null &&
+						(columnReference.ObjectNode == null || IsTableReferenceValid(columnReference, rowSourceReference)))
 					{
-						columnNodeColumnReferences.Add(rowId);
+						columnNodeColumnReferences.Add(oracleTable.RowIdPseudoColumn);
 					}
 				}
 				else

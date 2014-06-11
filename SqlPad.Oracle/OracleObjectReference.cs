@@ -49,7 +49,7 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		public SchemaObjectResult SearchResult { get; set; }
+		public SchemaObjectResult<OracleRowSourceObject> SearchResult { get; set; }
 		
 		public OracleQueryBlock Owner { get; set; }
 

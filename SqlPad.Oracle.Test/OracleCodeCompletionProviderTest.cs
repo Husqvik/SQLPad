@@ -317,14 +317,14 @@ FROM
 		{
 			const string query1 = @"SELECT D FROM DUAL";
 
-			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 8).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 8, OracleCodeCompletionCategory.Column).ToArray();
 			items.Length.ShouldBe(1);
 			items[0].Name.ShouldBe("DUAL.DUMMY");
 			items[0].Text.ShouldBe("DUAL.DUMMY");
 
 			const string query2 = @"SELECT D FROM DUAL X";
 
-			items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query2, 8).ToArray();
+			items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query2, 8, OracleCodeCompletionCategory.Column).ToArray();
 			items.Length.ShouldBe(1);
 			items[0].Name.ShouldBe("X.DUMMY");
 			items[0].Text.ShouldBe("X.DUMMY");

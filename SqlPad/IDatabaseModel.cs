@@ -11,10 +11,6 @@ namespace SqlPad
 
 		ICollection<string> Schemas { get; }
 
-		IDictionary<IObjectIdentifier, IDatabaseObject> Objects { get; }
-
-		IDictionary<IObjectIdentifier, IDatabaseObject> AllObjects { get; }
-
 		void Refresh();
 	}
 
@@ -25,10 +21,6 @@ namespace SqlPad
 		string Type { get; }
 
 		string Owner { get; }
-
-		ICollection<IDatabaseObjectProperty> Properties { get; }
-		
-		IEnumerable<IColumn> Columns { get; }
 	}
 
 	public interface IColumn
@@ -36,12 +28,5 @@ namespace SqlPad
 		string Name { get; }
 
 		string FullTypeName { get; }
-	}
-
-	public interface IDatabaseObjectProperty
-	{
-		string Name { get; }
-
-		object Value { get; }
 	}
 }
