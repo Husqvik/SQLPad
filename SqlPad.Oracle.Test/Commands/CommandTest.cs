@@ -114,7 +114,7 @@ WHERE
 		private OracleCommandExecutionContext CreateOracleExecutionContext()
 		{
 			var childContext = CreateGenericExecutionContext();
-			var semanticModel = new OracleStatementSemanticModel(childContext.StatementText, (OracleStatement)childContext.Statements.Single(), (OracleDatabaseModel)childContext.DatabaseModel);
+			var semanticModel = new OracleStatementSemanticModel(childContext.StatementText, (OracleStatement)childContext.Statements.Single(), (OracleDatabaseModelBase)childContext.DatabaseModel);
 			return OracleCommandExecutionContext.Create(childContext, semanticModel);
 		}
 

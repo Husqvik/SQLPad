@@ -37,7 +37,7 @@ namespace SqlPad.Oracle.Commands
 			if (_currentNode == null)
 				return;
 
-			_semanticModel = new OracleStatementSemanticModel(executionContext.StatementText, (OracleStatement)_currentNode.Statement, (OracleDatabaseModel)executionContext.DatabaseModel);
+			_semanticModel = new OracleStatementSemanticModel(executionContext.StatementText, (OracleStatement)_currentNode.Statement, (OracleDatabaseModelBase)executionContext.DatabaseModel);
 			_queryBlock = _semanticModel.GetQueryBlock(_currentNode);
 			_executionContext = executionContext;
 		}

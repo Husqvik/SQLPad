@@ -26,7 +26,7 @@ namespace SqlPad.Oracle
 			if (currentTerminal == null)
 				return EmptyCollection;
 
-			var semanticModel = new OracleStatementSemanticModel(null, (OracleStatement)currentTerminal.Statement, (OracleDatabaseModel)databaseModel);
+			var semanticModel = new OracleStatementSemanticModel(null, (OracleStatement)currentTerminal.Statement, (OracleDatabaseModelBase)databaseModel);
 			var executionContext = OracleCommandExecutionContext.Create(sqlDocument.StatementText, cursorPosition, semanticModel);
 			var enterIdentifierModel = new CommandSettingsModel { Value = "Enter value" };
 			executionContext.SettingsProvider = new EditDialog(enterIdentifierModel);

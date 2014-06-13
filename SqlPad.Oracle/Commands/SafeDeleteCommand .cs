@@ -25,7 +25,7 @@ namespace SqlPad.Oracle.Commands
 			if (currentNode == null)
 				return;
 
-			var semanticModel = new OracleStatementSemanticModel(executionContext.StatementText, (OracleStatement)currentNode.Statement, (OracleDatabaseModel)executionContext.DatabaseModel);
+			var semanticModel = new OracleStatementSemanticModel(executionContext.StatementText, (OracleStatement)currentNode.Statement, (OracleDatabaseModelBase)executionContext.DatabaseModel);
 			var queryBlock = semanticModel.GetQueryBlock(currentNode);
 			if (queryBlock == null)
 				return;

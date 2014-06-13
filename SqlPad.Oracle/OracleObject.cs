@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace SqlPad.Oracle
 {
@@ -32,14 +33,16 @@ namespace SqlPad.Oracle
 		protected OracleDataObject()
 		{
 			Columns = new Dictionary<string, OracleColumn>();
-			ForeignKeys = new List<OracleForeignKeyConstraint>();
+			Constraints = new List<OracleConstraint>();
 		}
 
 		public IDictionary<string, OracleColumn> Columns { get; set; }
 
 		public OrganizationType Organization { get; set; }
+
+		public ICollection<OracleConstraint> Constraints { get; set; }
 		
-		public ICollection<OracleForeignKeyConstraint> ForeignKeys { get; set; }
+		public IEnumerable<OracleForeignKeyConstraint> ForeignKeys { get { return Constraints.OfType<OracleForeignKeyConstraint>(); } }
 	}
 
 	[DebuggerDisplay("OracleView (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]

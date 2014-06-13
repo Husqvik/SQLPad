@@ -28,7 +28,7 @@ namespace SqlPad
 	/// </summary>
 	public partial class MainWindow
 	{
-		private readonly ColorizeAvalonEdit _colorizeAvalonEdit = new ColorizeAvalonEdit();
+		private readonly ColorizeAvalonEdit _colorizeAvalonEdit;
 		private readonly SqlDocument _sqlDocument = new SqlDocument();
 		private readonly ISqlParser _sqlParser;
 		private readonly IInfrastructureFactory _infrastructureFactory;
@@ -59,6 +59,7 @@ namespace SqlPad
 			_toolTipProvider = _infrastructureFactory.CreateToolTipProvider();
 			_navigationService = _infrastructureFactory.CreateNavigationService();
 			_databaseModel = _infrastructureFactory.CreateDatabaseModel(ConfigurationProvider.ConnectionStrings["Default"]);
+			_colorizeAvalonEdit = new ColorizeAvalonEdit(_databaseModel);
 
 			_findReplaceManager = (FindReplaceManager)Resources["FindReplaceManager"];
 			_findReplaceManager.OwnerWindow = this;

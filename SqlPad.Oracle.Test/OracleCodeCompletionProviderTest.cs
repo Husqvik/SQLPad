@@ -387,8 +387,8 @@ FROM
 			const string query1 = @"SELECT NULL FROM SELECTION, ";
 
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 28).ToArray();
-			var currentSchemaTableCount = DatabaseModelFake.Instance.AllObjects.Values.Count(o => o.Owner == DatabaseModelFake.Instance.CurrentSchema);
-			var schemaCount = DatabaseModelFake.Instance.Schemas.Count - 1; // minus PUBLIC
+			var currentSchemaTableCount = OracleTestDatabaseModel.Instance.AllObjects.Values.Count(o => o.Owner == OracleTestDatabaseModel.Instance.CurrentSchema);
+			var schemaCount = OracleTestDatabaseModel.Instance.Schemas.Count - 1; // minus PUBLIC
 			items.Length.ShouldBe(currentSchemaTableCount + schemaCount);
 		}
 

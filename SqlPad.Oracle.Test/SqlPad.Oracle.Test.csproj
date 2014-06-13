@@ -64,13 +64,16 @@
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xaml" />
+    <Reference Include="System.Xml" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands\CommandTest.cs" />
     <Compile Include="OracleCodeCompletionProviderTest.cs" />
     <Compile Include="OracleNavigationServiceTest.cs" />
+    <Compile Include="OracleTestDatabaseModel.cs" />
     <Compile Include="OracleToolTipProviderTest.cs" />
     <Compile Include="OracleSemanticValidatorTest.cs" />
     <Compile Include="OracleSqlParserTest.cs" />
@@ -93,7 +96,14 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="TestFiles\OracleSqlFunctionMetadataCollection_12_1_0_1_0.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="TestFiles\SqlStatements1.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestFiles\TestFunctionCollection.xml">
+      <SubType>Designer</SubType>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

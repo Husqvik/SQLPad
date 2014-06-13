@@ -34,7 +34,7 @@ namespace SqlPad.Oracle
 			if (node == null)
 				return emptyCollection;
 
-			var oracleDatabaseModel = (OracleDatabaseModel)databaseModel;
+			var oracleDatabaseModel = (OracleDatabaseModelBase)databaseModel;
 			var semanticModel = new OracleStatementSemanticModel(null, (OracleStatement)node.Statement, oracleDatabaseModel);
 			var queryBlock = semanticModel.GetQueryBlock(cursorPosition);
 			var functionReference = queryBlock.AllFunctionReferences.FirstOrDefault(f => node.HasAncestor(f.RootNode));
@@ -138,7 +138,7 @@ namespace SqlPad.Oracle
 				}
 			}
 
-			var oracleDatabaseModel = (OracleDatabaseModel)databaseModel;
+			var oracleDatabaseModel = (OracleDatabaseModelBase)databaseModel;
 			var semanticModel = new OracleStatementSemanticModel(null, (OracleStatement)currentNode.Statement, oracleDatabaseModel);
 			var terminalCandidates = new HashSet<string>(_parser.GetTerminalCandidates(isCursorAtTerminal && !currentNode.Id.IsSingleCharacterTerminal() ? currentNode.PrecedingTerminal : currentNode));
 
@@ -255,7 +255,7 @@ namespace SqlPad.Oracle
 			// TODO: Add option to search all/current/public schemas
 		}
 
-		private IEnumerable<ICodeCompletionItem> GenerateSelectListItems(StatementDescriptionNode currentNode, OracleStatementSemanticModel semanticModel, int cursorPosition, OracleDatabaseModel databaseModel)
+		private IEnumerable<ICodeCompletionItem> GenerateSelectListItems(StatementDescriptionNode currentNode, OracleStatementSemanticModel semanticModel, int cursorPosition, OracleDatabaseModelBase databaseModel)
 		{
 			var prefixedColumnReference = currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference);
 			var columnIdentifierFollowing = currentNode.Id != Terminals.Identifier && prefixedColumnReference != null && prefixedColumnReference.GetDescendants(Terminals.Identifier).FirstOrDefault() != null;
@@ -420,7 +420,7 @@ namespace SqlPad.Oracle
 			       };
 		}
 
-		private IEnumerable<ICodeCompletionItem> GenerateSchemaItems(string schemaNamePart, StatementDescriptionNode node, int insertOffset, OracleDatabaseModel databaseModel, int priorityOffset = 0)
+		private IEnumerable<ICodeCompletionItem> GenerateSchemaItems(string schemaNamePart, StatementDescriptionNode node, int insertOffset, OracleDatabaseModelBase databaseModel, int priorityOffset = 0)
 		{
 			return databaseModel.Schemas
 				.Where(s => s != OracleDatabaseModel.SchemaPublic && (schemaNamePart.ToQuotedIdentifier() != s && (String.IsNullOrEmpty(schemaNamePart) || s.ToUpperInvariant().Contains(schemaNamePart.ToUpperInvariant()))))
@@ -435,7 +435,7 @@ namespace SqlPad.Oracle
 				             });
 		}
 
-		private IEnumerable<ICodeCompletionItem> GenerateCodeItems(Func<OracleFunctionMetadata, string> identifierSelector, string category, StatementDescriptionNode node, int insertOffset, OracleDatabaseModel databaseModel, params OracleFunctionMatcher[] matchers)
+		private IEnumerable<ICodeCompletionItem> GenerateCodeItems(Func<OracleFunctionMetadata, string> identifierSelector, string category, StatementDescriptionNode node, int insertOffset, OracleDatabaseModelBase databaseModel, params OracleFunctionMatcher[] matchers)
 		{
 			return databaseModel.AllFunctionMetadata.SqlFunctions
 				.Where(f => matchers.Any(m => m.IsMatch(f, databaseModel.CurrentSchema)) && !String.IsNullOrEmpty(identifierSelector(f)))
@@ -453,7 +453,7 @@ namespace SqlPad.Oracle
 				             });
 		}
 
-		private IEnumerable<ICodeCompletionItem> GenerateSchemaObjectItems(OracleDatabaseModel databaseModel, string schemaName, string objectNamePart, StatementDescriptionNode node, int insertOffset)
+		private IEnumerable<ICodeCompletionItem> GenerateSchemaObjectItems(OracleDatabaseModelBase databaseModel, string schemaName, string objectNamePart, StatementDescriptionNode node, int insertOffset)
 		{
 			return databaseModel.AllObjects.Values
 						.Where(o => o.Owner == schemaName.ToQuotedIdentifier() && objectNamePart.ToQuotedIdentifier() != o.Name &&
@@ -498,12 +498,12 @@ namespace SqlPad.Oracle
 				var joinedObject = joinedSchemaObject.SearchResult.SchemaObject;
 
 				var joinedToParentKeys = parentObject.ForeignKeys.Where(k => k.TargetObject == joinedObject)
-					.Select(k => GenerateJoinConditionSuggestionItem(parentSchemaObject.FullyQualifiedName, joinedSchemaObject.FullyQualifiedName, k.SourceColumns, k.TargetColumns, false, skipOnTerminal, insertOffset));
+					.Select(k => GenerateJoinConditionSuggestionItem(parentSchemaObject.FullyQualifiedName, joinedSchemaObject.FullyQualifiedName, k.Columns, k.TargetColumns, false, skipOnTerminal, insertOffset));
 
 				codeItems = codeItems.Concat(joinedToParentKeys);
 
 				var parentToJoinedKeys = joinedObject.ForeignKeys.Where(k => k.TargetObject == parentObject)
-					.Select(k => GenerateJoinConditionSuggestionItem(joinedSchemaObject.FullyQualifiedName, parentSchemaObject.FullyQualifiedName, k.SourceColumns, k.TargetColumns, true, skipOnTerminal, insertOffset));
+					.Select(k => GenerateJoinConditionSuggestionItem(joinedSchemaObject.FullyQualifiedName, parentSchemaObject.FullyQualifiedName, k.Columns, k.TargetColumns, true, skipOnTerminal, insertOffset));
 
 				codeItems = codeItems.Concat(parentToJoinedKeys);
 			}

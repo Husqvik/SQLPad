@@ -17,7 +17,7 @@ namespace SqlPad
 		private readonly List<StatementDescriptionNode> _highlightParenthesis = new List<StatementDescriptionNode>();
 		private readonly IStatementValidator _validator = ConfigurationProvider.InfrastructureFactory.CreateStatementValidator();
 		private readonly ISqlParser _parser = ConfigurationProvider.InfrastructureFactory.CreateSqlParser();
-		private readonly IDatabaseModel _databaseModel = ConfigurationProvider.InfrastructureFactory.CreateDatabaseModel(ConfigurationProvider.ConnectionStrings["Default"]);
+		private readonly IDatabaseModel _databaseModel;
 		private static readonly SolidColorBrush ErrorBrush = new SolidColorBrush(Colors.Red);
 		private static readonly SolidColorBrush HighlightUsageBrush = new SolidColorBrush(Colors.Turquoise);
 		private static readonly SolidColorBrush HighlightDefinitionBrush = new SolidColorBrush(Colors.SandyBrown);
@@ -35,6 +35,16 @@ namespace SqlPad
 		public IList<StatementDescriptionNode> HighlightParenthesis { get { return _highlightParenthesis.AsReadOnly(); } }
 		
 		public IEnumerable<TextSegment> HighlightSegments { get { return _highlightSegments.SelectMany(c => c); } }
+
+		public ColorizeAvalonEdit(IDatabaseModel databaseModel)
+		{
+			if (databaseModel == null)
+			{
+				throw new ArgumentNullException("databaseModel");
+			}
+			
+			_databaseModel = databaseModel;
+		}
 
 		public void SetStatementCollection(StatementCollection statements)
 		{

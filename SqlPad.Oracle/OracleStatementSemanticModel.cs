@@ -13,8 +13,8 @@ namespace SqlPad.Oracle
 		private readonly List<ICollection<OracleColumnReference>> _joinClauseColumnReferences = new List<ICollection<OracleColumnReference>>();
 		private readonly Dictionary<OracleQueryBlock, ICollection<StatementDescriptionNode>> _accessibleQueryBlockRoot = new Dictionary<OracleQueryBlock, ICollection<StatementDescriptionNode>>();
 		private readonly Dictionary<OracleObjectReference, ICollection<KeyValuePair<StatementDescriptionNode, string>>> _objectReferenceCteRootNodes = new Dictionary<OracleObjectReference, ICollection<KeyValuePair<StatementDescriptionNode, string>>>();
-		
-		public OracleDatabaseModel DatabaseModel { get; private set; }
+
+		public OracleDatabaseModelBase DatabaseModel { get; private set; }
 
 		public OracleStatement Statement { get; private set; }
 		
@@ -43,7 +43,8 @@ namespace SqlPad.Oracle
 			StatementText = statementText;
 		}
 
-		public OracleStatementSemanticModel(string statementText, OracleStatement statement, OracleDatabaseModel databaseModel) : this(statement, databaseModel)
+		public OracleStatementSemanticModel(string statementText, OracleStatement statement, OracleDatabaseModelBase databaseModel)
+			: this(statement, databaseModel)
 		{
 			if (databaseModel == null)
 				throw new ArgumentNullException("databaseModel");
@@ -51,7 +52,7 @@ namespace SqlPad.Oracle
 			StatementText = statementText;
 		}
 
-		private OracleStatementSemanticModel(OracleStatement statement, OracleDatabaseModel databaseModel)
+		private OracleStatementSemanticModel(OracleStatement statement, OracleDatabaseModelBase databaseModel)
 		{
 			if (statement == null)
 				throw new ArgumentNullException("statement");

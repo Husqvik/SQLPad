@@ -8,7 +8,7 @@ namespace SqlPad.Oracle
 	{
 		public IValidationModel BuildValidationModel(string sqlText, StatementBase statement, IDatabaseModel databaseModel)
 		{
-			var oracleDatabaseModel = (OracleDatabaseModel)databaseModel;
+			var oracleDatabaseModel = (OracleDatabaseModelBase)databaseModel;
 			var semanticModel = new OracleStatementSemanticModel(sqlText, (OracleStatement)statement, oracleDatabaseModel);
 
 			var validationModel = new OracleValidationModel { SemanticModel = semanticModel };

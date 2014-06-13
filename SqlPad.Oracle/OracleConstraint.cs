@@ -7,6 +7,10 @@ namespace SqlPad.Oracle
 	{
 		public abstract ConstraintType Type { get; }
 
+		public OracleSchemaObject Owner { get; set; }
+
+		public IList<string> Columns { get; set; }
+
 		public bool IsEnabled { get; set; }
 
 		public bool IsDeferrable { get; set; }
@@ -36,13 +40,11 @@ namespace SqlPad.Oracle
 	{
 		public OracleSchemaObject TargetObject { get; set; }
 
-		public OracleSchemaObject SourceObject { get; set; }
-
-		public IList<string> SourceColumns { get; set; }
+		public OracleUniqueConstraint ReferenceConstraint { get; set; }
 
 		public IList<string> TargetColumns { get; set; }
 
-		public CascadeAction CascadeAction { get; set; }
+		public DeleteRule DeleteRule { get; set; }
 
 		public override ConstraintType Type { get { return ConstraintType.ForeignKey; } }
 	}
@@ -55,10 +57,10 @@ namespace SqlPad.Oracle
 		ForeignKey,
 	}
 
-	public enum CascadeAction
+	public enum DeleteRule
 	{
 		None,
 		SetNull,
-		Delete
+		Cascade
 	}
 }

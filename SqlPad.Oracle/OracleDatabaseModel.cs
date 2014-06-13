@@ -12,26 +12,24 @@ using Oracle.DataAccess.Client;
 
 namespace SqlPad.Oracle
 {
-	public class OracleDatabaseModel : IDatabaseModel
+	public class OracleDatabaseModel : OracleDatabaseModelBase
 	{
 		private static readonly object LockObject = new object();
 		private readonly OracleConnectionStringBuilder _oracleConnectionString;
 		private const string SqlFuntionMetadataFileName = "OracleSqlFunctionMetadataCollection_12_1_0_1_0.xml";
 		private static readonly DataContractSerializer Serializer = new DataContractSerializer(typeof(OracleFunctionMetadataCollection));
 		private static bool _isRefreshing;
-
-		public const string SchemaPublic = "\"PUBLIC\"";
-		public const string DataObjectTypeTable = "TABLE";
-		public const string DataObjectTypeView = "VIEW";
-		public const string DataObjectTypeSynonym = "SYNONYM";
+		private OracleFunctionMetadataCollection _allFunctionMetadata = new OracleFunctionMetadataCollection(Enumerable.Empty<OracleFunctionMetadata>());
+		private readonly ConnectionStringSettings _connectionString;
+		private HashSet<string> _schemas = new HashSet<string>();
+		private Dictionary<OracleObjectIdentifier, OracleSchemaObject> _allObjects = new Dictionary<OracleObjectIdentifier, OracleSchemaObject>();
 
 		public OracleDatabaseModel(ConnectionStringSettings connectionString)
 		{
-			ConnectionString = connectionString;
+			_connectionString = connectionString;
 			_oracleConnectionString = new OracleConnectionStringBuilder(connectionString.ConnectionString);
 
-			//LoadSchemaObjectMetadata();
-
+			Task backgroundTask = null;
 			string metadata;
 			if (MetadataCache.TryLoadMetadata(SqlFuntionMetadataFileName, out metadata))
 			{
@@ -39,8 +37,6 @@ namespace SqlPad.Oracle
 				{
 					BuiltInFunctionMetadata = (OracleFunctionMetadataCollection)Serializer.ReadObject(reader);
 				}
-
-				AllFunctionMetadata = new OracleFunctionMetadataCollection(BuiltInFunctionMetadata.SqlFunctions.Concat(DatabaseModelFake.Instance.AllFunctionMetadata.SqlFunctions).ToArray());
 			}
 			else
 			{
@@ -54,76 +50,41 @@ namespace SqlPad.Oracle
 
 					_isRefreshing = true;
 
-					Task.Factory.StartNew(GenerateBuiltInFunctionMetadata);
+					backgroundTask = Task.Factory.StartNew(GenerateBuiltInFunctionMetadata);
 				}
+			}
+
+			if (backgroundTask == null)
+			{
+				Task.Factory.StartNew(LoadSchemaObjectMetadata);
+			}
+			else
+			{
+				Task.Factory.StartNew(() =>
+				                      {
+					                      backgroundTask.Wait();
+					                      LoadSchemaObjectMetadata();
+				                      });
 			}
 		}
 
 		public OracleFunctionMetadataCollection BuiltInFunctionMetadata { get; private set; }
 
-		public OracleFunctionMetadataCollection AllFunctionMetadata { get; private set; }
+		public override OracleFunctionMetadataCollection AllFunctionMetadata { get { return _allFunctionMetadata; } }
 
-		public ConnectionStringSettings ConnectionString { get; private set; }
+		public override ConnectionStringSettings ConnectionString { get { return _connectionString; } }
 
-		public string CurrentSchema
+		public override string CurrentSchema
 		{
 			get { return _oracleConnectionString.UserID; }
 		}
 
-		public ICollection<string> Schemas { get { return DatabaseModelFake.Instance.Schemas; } }
-		public IDictionary<OracleObjectIdentifier, OracleSchemaObject> Objects { get { return DatabaseModelFake.Instance.Objects; } }
-		public IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjects { get { return DatabaseModelFake.Instance.AllObjects; } }
-		//public IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjects { get; set; }
+		public override ICollection<string> Schemas { get { return _schemas; } }
+		//public IDictionary<OracleObjectIdentifier, OracleSchemaObject> Objects { get { return OracleTestDatabaseModel.Instance.Objects; } }
+		public override IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjects { get { return _allObjects; } }
 
-		public void Refresh()
+		public override void Refresh()
 		{
-		}
-
-		public SchemaObjectResult<TObject> GetObject<TObject>(OracleObjectIdentifier objectIdentifier) where TObject : OracleSchemaObject
-		{
-			OracleSchemaObject schemaObject = null;
-			var schemaFound = false;
-
-			if (String.IsNullOrEmpty(objectIdentifier.NormalizedOwner))
-			{
-				var currentSchemaObject = OracleObjectIdentifier.Create(CurrentSchema, objectIdentifier.NormalizedName);
-				var publicSchemaObject = OracleObjectIdentifier.Create(SchemaPublic, objectIdentifier.NormalizedName);
-
-				if (!AllObjects.TryGetValue(currentSchemaObject, out schemaObject))
-				{
-					AllObjects.TryGetValue(publicSchemaObject, out schemaObject);
-				}
-			}
-			else
-			{
-				schemaFound = Schemas.Contains(objectIdentifier.NormalizedOwner);
-
-				if (schemaFound)
-				{
-					AllObjects.TryGetValue(objectIdentifier, out schemaObject);
-				}
-			}
-
-			var synonym = schemaObject as OracleSynonym;
-			var fullyQualifiedName = OracleObjectIdentifier.Empty;
-			if (synonym != null)
-			{
-				schemaObject = synonym.SchemaObject;
-				fullyQualifiedName = synonym.FullyQualifiedName;
-			}
-			else if (schemaObject != null)
-			{
-				fullyQualifiedName = schemaObject.FullyQualifiedName;
-			}
-
-			var typedObject = schemaObject as TObject;
-			return new SchemaObjectResult<TObject>
-			{
-				SchemaFound = schemaFound,
-				SchemaObject = typedObject,
-				Synonym = typedObject == null ? null : synonym,
-				FullyQualifiedName = fullyQualifiedName
-			};
 		}
 
 		private OracleFunctionMetadataCollection GetUserFunctionMetadata()
@@ -291,13 +252,13 @@ ORDER BY
 				Serializer.WriteObject(writer, BuiltInFunctionMetadata);
 			}
 
-			var allFunctionMetadata = GetUserFunctionMetadata();
+			/*var allFunctionMetadata = GetUserFunctionMetadata();
 
 			var test = new OracleFunctionMetadataCollection(allFunctionMetadata.SqlFunctions.Where(f => f.Identifier.Owner == "husqvik".ToQuotedIdentifier()).ToArray());
 			using (var writer = XmlWriter.Create(@"D:\TestFunctionCollection.xml"))
 			{
 				Serializer.WriteObject(writer, test);
-			}
+			}*/
 
 			_isRefreshing = false;
 		}
@@ -394,6 +355,13 @@ ORDER BY
 
 		private void LoadSchemaObjectMetadata()
 		{
+			const string selectAllSchemasCommandText = "SELECT USERNAME FROM ALL_USERS";
+			var schemaSource = ExecuteReader(
+				selectAllSchemasCommandText,
+				r => (string)r["USERNAME"]);
+
+			_schemas = new HashSet<string>(schemaSource);
+
 			const string selectAllObjectsCommandText = "SELECT OWNER, OBJECT_NAME, SUBOBJECT_NAME, OBJECT_ID, DATA_OBJECT_ID, OBJECT_TYPE, CREATED, LAST_DDL_TIME, STATUS, TEMPORARY, EDITIONABLE, EDITION_NAME FROM ALL_OBJECTS WHERE OBJECT_TYPE IN ('SYNONYM', 'VIEW', 'TABLE')";
 			var dataObjectMetadataSource = ExecuteReader(
 				selectAllObjectsCommandText,
@@ -426,12 +394,14 @@ FROM ALL_TABLES";
 				})
 				.ToArray();
 
-			const string selectTableColumnsCommandText = "SELECT OWNER, TABLE_NAME, COLUMN_NAME, DATA_TYPE, DATA_LENGTH, DATA_PRECISION, DATA_SCALE, CHAR_USED, NULLABLE, COLUMN_ID, NUM_DISTINCT, LOW_VALUE, HIGH_VALUE, NUM_NULLS, NUM_BUCKETS, LAST_ANALYZED, SAMPLE_SIZE, AVG_COL_LEN, HISTOGRAM FROM ALL_TAB_COLUMNS ORDER BY OWNER, TABLE_NAME, COLUMN_ID";
+			const string selectTableColumnsCommandText = "SELECT OWNER, TABLE_NAME, COLUMN_NAME, DATA_TYPE, DATA_TYPE_OWNER, DATA_LENGTH, CHAR_LENGTH, DATA_PRECISION, DATA_SCALE, CHAR_USED, NULLABLE, COLUMN_ID, NUM_DISTINCT, LOW_VALUE, HIGH_VALUE, NUM_NULLS, NUM_BUCKETS, LAST_ANALYZED, SAMPLE_SIZE, AVG_COL_LEN, HISTOGRAM FROM ALL_TAB_COLUMNS ORDER BY OWNER, TABLE_NAME, COLUMN_ID";
 			var columnMetadataSource = ExecuteReader(
 				selectTableColumnsCommandText,
 				r =>
 				{
-					var type = (string)r["DATA_TYPE"];
+					var dataTypeOwnerRaw = r["DATA_TYPE_OWNER"];
+					var dataTypeOwner = dataTypeOwnerRaw == DBNull.Value ? null : String.Format("{0}.", dataTypeOwnerRaw);
+					var type = String.Format("{0}{1}", dataTypeOwner, r["DATA_TYPE"]);
 					var precisionRaw = r["DATA_PRECISION"];
 					var scaleRaw = r["DATA_SCALE"];
 					return new KeyValuePair<OracleObjectIdentifier, OracleColumn>(
@@ -442,6 +412,7 @@ FROM ALL_TABLES";
 							Nullable = (string)r["NULLABLE"] == "Y",
 							Type = type,
 							Size = Convert.ToInt32(r["DATA_LENGTH"]),
+							CharacterSize = Convert.ToInt32(r["CHAR_LENGTH"]),
 							Precision = precisionRaw == DBNull.Value ? null : (int?)Convert.ToInt32(precisionRaw),
 							Scale = scaleRaw == DBNull.Value ? null : (int?)Convert.ToInt32(scaleRaw),
 							Unit = type.In("VARCHAR", "VARCHAR2")
@@ -461,52 +432,90 @@ FROM ALL_TABLES";
 			}
 
 			const string selectConstraintsCommandText = "SELECT OWNER, CONSTRAINT_NAME, CONSTRAINT_TYPE, TABLE_NAME, SEARCH_CONDITION, R_OWNER, R_CONSTRAINT_NAME, DELETE_RULE, STATUS, DEFERRABLE, VALIDATED, RELY, INDEX_OWNER, INDEX_NAME FROM ALL_CONSTRAINTS WHERE CONSTRAINT_TYPE IN ('C', 'R', 'P', 'U')";
-			var constraintSouce = ExecuteReader(
+			var constraintSource = ExecuteReader(
 				selectConstraintsCommandText,
 				r =>
 				{
-					var relyRaw = r["RELY"];
-					var constraint = OracleObjectFactory.CreateConstraint((string)r["CONSTRAINT_TYPE"], (string)r["OWNER"], (string)r["CONSTRAINT_NAME"], (string)r["STATUS"] == "ENABLED", (string)r["VALIDATED"] == "VALIDATED", (string)r["DEFERRABLE"] == "DEFERRABLE", relyRaw != DBNull.Value && (string)relyRaw == "RELY");
+					var remoteConstraintIdentifier = OracleObjectIdentifier.Empty;
+					var owner = (string)r["OWNER"];
+					var ownerObjectFullyQualifiedName = OracleObjectIdentifier.Create(owner, (string)r["TABLE_NAME"]);
+					OracleSchemaObject ownerObject;
+					if (!dataObjectMetadata.TryGetValue(ownerObjectFullyQualifiedName, out ownerObject))
+						return new KeyValuePair<OracleConstraint, OracleObjectIdentifier>(null, remoteConstraintIdentifier); ;
 
-					if (constraint.Type == ConstraintType.ForeignKey)
+					var relyRaw = r["RELY"];
+					var constraint = OracleObjectFactory.CreateConstraint((string)r["CONSTRAINT_TYPE"], owner, (string)r["CONSTRAINT_NAME"], (string)r["STATUS"] == "ENABLED", (string)r["VALIDATED"] == "VALIDATED", (string)r["DEFERRABLE"] == "DEFERRABLE", relyRaw != DBNull.Value && (string)relyRaw == "RELY");
+					constraint.Owner = ownerObject;
+					((OracleDataObject)ownerObject).Constraints.Add(constraint);
+
+					var foreignKeyConstraint = constraint as OracleForeignKeyConstraint;
+					if (foreignKeyConstraint != null)
 					{
-						var tableFullyQualifiedName = OracleObjectIdentifier.Create((string)r["OWNER"], (string)r["TABLE_NAME"]);
-						var table = (OracleTable)dataObjectMetadata[tableFullyQualifiedName];
-						var foreignKeyConstraint = (OracleForeignKeyConstraint)constraint;
-						//foreignKeyConstraint.
-						table.ForeignKeys.Add(foreignKeyConstraint);
+						var cascadeAction = DeleteRule.None;
+						switch ((string)r["DELETE_RULE"])
+						{
+							case "CASCADE":
+								cascadeAction = DeleteRule.Cascade;
+								break;
+							case "SET NULL":
+								cascadeAction = DeleteRule.SetNull;
+								break;
+							case "NO ACTION":
+								break;
+						}
+
+						foreignKeyConstraint.DeleteRule = cascadeAction;
+						remoteConstraintIdentifier = OracleObjectIdentifier.Create((string)r["R_OWNER"], (string)r["R_CONSTRAINT_NAME"]);
 					}
 					
-					return constraint;
-				});
+					return new KeyValuePair<OracleConstraint, OracleObjectIdentifier>(constraint, remoteConstraintIdentifier);
+				})
+				.Where(c => c.Key != null)
+				.ToArray();
 
 			var constraints = new Dictionary<OracleObjectIdentifier, OracleConstraint>();
-			foreach (var constraint in constraintSouce)
+			foreach (var constraintPair in constraintSource)
 			{
-				constraints[constraint.FullyQualifiedName] = constraint;
+				constraints[constraintPair.Key.FullyQualifiedName] = constraintPair.Key;
 			}
 
-			foreach (var constraint in constraints.Values)
-			{
-				
-			}
-
-			const string selectConstraintColumnsCommandText = "SELECT OWNER, CONSTRAINT_NAME, TABLE_NAME, COLUMN_NAME, POSITION FROM ALL_CONS_COLUMNS";
-			ExecuteReader(
+			const string selectConstraintColumnsCommandText = "SELECT OWNER, CONSTRAINT_NAME, COLUMN_NAME, POSITION FROM ALL_CONS_COLUMNS ORDER BY OWNER, CONSTRAINT_NAME, POSITION";
+			var constraintColumns = ExecuteReader(
 				selectConstraintColumnsCommandText,
 				r =>
 				{
-					var constraintFullyQualifiedName = OracleObjectIdentifier.Create((string)r["OWNER"], (string)r["CONSTRAINT_NAME"]);
-					OracleConstraint constraint;
-					if (!constraints.TryGetValue(constraintFullyQualifiedName, out constraint))
-						return null;
-
-					return constraint;
+					var column = (string)r["COLUMN_NAME"];
+					return new KeyValuePair<OracleObjectIdentifier, string>(OracleObjectIdentifier.Create((string)r["OWNER"], (string)r["CONSTRAINT_NAME"]), column[0] == '"' ? column : column.ToQuotedIdentifier());
 				})
-				.ToArray();
+				.GroupBy(c => c.Key)
+				.ToDictionary(g => g.Key, g => g.Select(kvp => kvp.Value).ToList());
 
-			//AllObjects = dataObjectMetadata;
-			var tmp = dataObjectMetadata.Values.Where(o => o.FullyQualifiedName.NormalizedOwner == "\"HUSQVIK\"").ToArray();
+			foreach (var constraintPair in constraintSource)
+			{
+				OracleConstraint constraint;
+				if (!constraints.TryGetValue(constraintPair.Key.FullyQualifiedName, out constraint))
+					continue;
+
+				List<string> columns;
+				if (constraintColumns.TryGetValue(constraintPair.Key.FullyQualifiedName, out columns))
+				{
+					constraint.Columns = columns.AsReadOnly();
+				}
+
+				var foreignKeyConstraint = constraintPair.Key as OracleForeignKeyConstraint;
+				if (foreignKeyConstraint == null)
+					continue;
+
+				var referenceConstraint = (OracleUniqueConstraint)constraints[constraintPair.Value];
+				foreignKeyConstraint.TargetObject = referenceConstraint.Owner;
+				foreignKeyConstraint.ReferenceConstraint = referenceConstraint;
+			}
+
+			_allFunctionMetadata = new OracleFunctionMetadataCollection(BuiltInFunctionMetadata.SqlFunctions.Concat(GetUserFunctionMetadata().SqlFunctions));
+
+			_allObjects = dataObjectMetadata;
+			//var tmp = dataObjectMetadata.Values.Where(o => o.FullyQualifiedName.NormalizedOwner == "\"HUSQVIK\"").ToArray();
+			//var types = tmp.OfType<OracleDataObject>().SelectMany(o => o.Columns.Values).Select(c => c.FullTypeName).Distinct().ToArray();
 		}
 
 		private static class OracleObjectFactory
@@ -567,5 +576,18 @@ FROM ALL_TABLES";
 				}
 			}
 		}
+	}
+
+	public struct SchemaObjectResult<TObject> where TObject : OracleObject
+	{
+		public static readonly SchemaObjectResult<TObject> EmptyResult = new SchemaObjectResult<TObject>();
+
+		public bool SchemaFound { get; set; }
+
+		public TObject SchemaObject { get; set; }
+
+		public OracleSynonym Synonym { get; set; }
+
+		public OracleObjectIdentifier FullyQualifiedName { get; set; }
 	}
 }

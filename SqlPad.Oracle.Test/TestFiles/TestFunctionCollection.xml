@@ -1,0 +1,752 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<OracleFunctionMetadataCollection xmlns:i="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://husqvik.com/SqlPad/2014/02">
+  <SqlFunctions>
+    <OracleFunctionMetadata>
+      <AuthId>Definer</AuthId>
+      <DataType i:nil="true" />
+      <DisplayType>NORMAL</DisplayType>
+      <Identifier>
+        <Name>"CONV2UU"</Name>
+        <Overload>0</Overload>
+        <Owner>"HUSQVIK"</Owner>
+        <Package>"AS_PDF3"</Package>
+      </Identifier>
+      <IsAggregate>false</IsAggregate>
+      <IsAnalytic>false</IsAnalytic>
+      <IsBuiltIn>false</IsBuiltIn>
+      <IsDeterministic>false</IsDeterministic>
+      <IsOffloadable>false</IsOffloadable>
+      <IsPipelined>false</IsPipelined>
+      <ParallelSupport>false</ParallelSupport>
+      <Parameters>
+        <OracleFunctionParameterMetadata>
+          <DataType>NUMBER</DataType>
+          <Direction>ReturnValue</Direction>
+          <IsOptional>false</IsOptional>
+          <Name i:nil="true" />
+          <Position>0</Position>
+        </OracleFunctionParameterMetadata>
+        <OracleFunctionParameterMetadata>
+          <DataType>NUMBER</DataType>
+          <Direction>Input</Direction>
+          <IsOptional>false</IsOptional>
+          <Name>P_VALUE</Name>
+          <Position>1</Position>
+        </OracleFunctionParameterMetadata>
+        <OracleFunctionParameterMetadata>
+          <DataType>VARCHAR2</DataType>
+          <Direction>Input</Direction>
+          <IsOptional>false</IsOptional>
+          <Name>P_UNIT</Name>
+          <Position>2</Position>
+        </OracleFunctionParameterMetadata>
+      </Parameters>
+      <_metadataMaximumArguments i:nil="true" />
+      <_metadataMinimumArguments i:nil="true" />
+    </OracleFunctionMetadata>
+    <OracleFunctionMetadata>
+      <AuthId>Definer</AuthId>
+      <DataType i:nil="true" />
+      <DisplayType>NORMAL</DisplayType>
+      <Identifier>
+        <Name>"FILE2BLOB"</Name>
+        <Overload>0</Overload>
+        <Owner>"HUSQVIK"</Owner>
+        <Package>"AS_PDF3"</Package>
+      </Identifier>
+      <IsAggregate>false</IsAggregate>
+      <IsAnalytic>false</IsAnalytic>
+      <IsBuiltIn>false</IsBuiltIn>
+      <IsDeterministic>false</IsDeterministic>
+      <IsOffloadable>false</IsOffloadable>
+      <IsPipelined>false</IsPipelined>
+      <ParallelSupport>false</ParallelSupport>
+      <Parameters>
+        <OracleFunctionParameterMetadata>
+          <DataType>BLOB</DataType>
+          <Direction>ReturnValue</Direction>
+          <IsOptional>false</IsOptional>
+          <Name i:nil="true" />
+          <Position>0</Position>
+        </OracleFunctionParameterMetadata>
+        <OracleFunctionParameterMetadata>
+          <DataType>VARCHAR2</DataType>
+          <Direction>Input</Direction>
+          <IsOptional>false</IsOptional>
+          <Name>P_DIR</Name>
+          <Position>1</Position>
+        </OracleFunctionParameterMetadata>
+        <OracleFunctionParameterMetadata>
+          <DataType>VARCHAR2</DataType>
+          <Direction>Input</Direction>
+          <IsOptional>false</IsOptional>
+          <Name>P_FILE_NAME</Name>
+          <Position>2</Position>
+        </OracleFunctionParameterMetadata>
+      </Parameters>
+      <_metadataMaximumArguments i:nil="true" />
+      <_metadataMinimumArguments i:nil="true" />
+    </OracleFunctionMetadata>
+    <OracleFunctionMetadata>
+      <AuthId>Definer</AuthId>
+      <DataType i:nil="true" />
+      <DisplayType>NORMAL</DisplayType>
+      <Identifier>
+        <Name>"GET"</Name>
+        <Overload>0</Overload>
+        <Owner>"HUSQVIK"</Owner>
+        <Package>"AS_PDF3"</Package>
+      </Identifier>
+      <IsAggregate>false</IsAggregate>
+      <IsAnalytic>false</IsAnalytic>
+      <IsBuiltIn>false</IsBuiltIn>
+      <IsDeterministic>false</IsDeterministic>
+      <IsOffloadable>false</IsOffloadable>
+      <IsPipelined>false</IsPipelined>
+      <ParallelSupport>false</ParallelSupport>
+      <Parameters>
+        <OracleFunctionParameterMetadata>
+          <DataType>NUMBER</DataType>
+          <Direction>ReturnValue</Direction>
+          <IsOptional>false</IsOptional>
+          <Name i:nil="true" />
+          <Position>0</Position>
+        </OracleFunctionParameterMetadata>
+        <OracleFunctionParameterMetadata>
+          <DataType>BINARY_INTEGER</DataType>
+          <Direction>Input</Direction>
+          <IsOptional>false</IsOptional>
+          <Name>P_WHAT</Name>
+          <Position>1</Position>
+        </OracleFunctionParameterMetadata>
+      </Parameters>
+      <_metadataMaximumArguments i:nil="true" />
+      <_metadataMinimumArguments i:nil="true" />
+    </OracleFunctionMetadata>
+    <OracleFunctionMetadata>
+      <AuthId>Definer</AuthId>
+      <DataType i:nil="true" />
+      <DisplayType>NORMAL</DisplayType>
+      <Identifier>
+        <Name>"GET_PDF"</Name>
+        <Overload>0</Overload>
+        <Owner>"HUSQVIK"</Owner>
+        <Package>"AS_PDF3"</Package>
+      </Identifier>
+      <IsAggregate>false</IsAggregate>
+      <IsAnalytic>false</IsAnalytic>
+      <IsBuiltIn>false</IsBuiltIn>
+      <IsDeterministic>false</IsDeterministic>
+      <IsOffloadable>false</IsOffloadable>
+      <IsPipelined>false</IsPipelined>
+      <ParallelSupport>false</ParallelSupport>
+      <Parameters>
+        <OracleFunctionParameterMetadata>
+          <DataType>BLOB</DataType>
+          <Direction>ReturnValue</Direction>
+          <IsOptional>false</IsOptional>
+          <Name i:nil="true" />
+          <Position>0</Position>
+        </OracleFunctionParameterMetadata>
+      </Parameters>
+      <_metadataMaximumArguments i:nil="true" />
+      <_metadataMinimumArguments i:nil="true" />
+    </OracleFunctionMetadata>
+    <OracleFunctionMetadata>
+      <AuthId>Definer</AuthId>
+      <DataType i:nil="true" />
+      <DisplayType>NORMAL</DisplayType>
+      <Identifier>
+        <Name>"LOAD_TTF_FONT"</Name>
+        <Overload>1</Overload>
+        <Owner>"HUSQVIK"</Owner>
+        <Package>"AS_PDF3"</Package>
+      </Identifier>
+      <IsAggregate>false</IsAggregate>
+      <IsAnalytic>false</IsAnalytic>
+      <IsBuiltIn>false</IsBuiltIn>
+      <IsDeterministic>false</IsDeterministic>
+      <IsOffloadable>false</IsOffloadable>
+      <IsPipelined>false</IsPipelined>
+      <ParallelSupport>false</ParallelSupport>
+      <Parameters>
+        <OracleFunctionParameterMetadata>
+          <DataType>BINARY_INTEGER</DataType>
+          <Direction>ReturnValue</Direction>
+          <IsOptional>false</IsOptional>
+          <Name i:nil="true" />
+          <Position>0</Position>
+        </OracleFunctionParameterMetadata>
+        <OracleFunctionParameterMetadata>
+          <DataType>BLOB</DataType>
+          <Direction>Input</Direction>
+          <IsOptional>false</IsOptional>
+          <Name>P_FONT</Name>
+          <Position>1</Position>
+        </OracleFunctionParameterMetadata>
+        <OracleFunctionParameterMetadata>
+          <DataType>VARCHAR2</DataType>
+          <Direction>Input</Direction>
+          <IsOptional>true</IsOptional>
+          <Name>P_ENCODING</Name>
+          <Position>2</Position>
+        </OracleFunctionParameterMetadata>
+        <OracleFunctionParameterMetadata>
+          <DataType>PL/SQL BOOLEAN</DataType>
+          <Direction>Input</Direction>
+          <IsOptional>true</IsOptional>
+          <Name>P_EMBED</Name>
+          <Position>3</Position>
+        </OracleFunctionParameterMetadata>
+        <OracleFunctionParameterMetadata>
+          <DataType>PL/SQL BOOLEAN</DataType>
+          <Direction>Input</Direction>
+          <IsOptional>true</IsOptional>
+          <Name>P_COMPRESS</Name>
+          <Position>4</Position>
+        </OracleFunctionParameterMetadata>
+        <OracleFunctionParameterMetadata>
+          <DataType>NUMBER</DataType>
+          <Direction>Input</Direction>
+          <IsOptional>true</IsOptional>
+          <Name>P_OFFSET</Name>
+          <Position>5</Position>
+        </OracleFunctionParameterMetadata>
+      </Parameters>
+      <_metadataMaximumArguments i:nil="true" />
+      <_metadataMinimumArguments i:nil="true" />
+    </OracleFunctionMetadata>
+    <OracleFunctionMetadata>
+      <AuthId>Definer</AuthId>
+      <DataType i:nil="true" />
+      <DisplayType>NORMAL</DisplayType>
+      <Identifier>
+        <Name>"LOAD_TTF_FONT"</Name>
+        <Overload>3</Overload>
+        <Owner>"HUSQVIK"</Owner>
+        <Package>"AS_PDF3"</Package>
+      </Identifier>
+      <IsAggregate>false</IsAggregate>
+      <IsAnalytic>false</IsAnalytic>
+      <IsBuiltIn>false</IsBuiltIn>
+      <IsDeterministic>false</IsDeterministic>
+      <IsOffloadable>false</IsOffloadable>
+      <IsPipelined>false</IsPipelined>
+      <ParallelSupport>false</ParallelSupport>
+      <Parameters>
+        <OracleFunctionParameterMetadata>
+          <DataType>BINARY_INTEGER</DataType>
+          <Direction>ReturnValue</Direction>
+          <IsOptional>false</IsOptional>
+          <Name i:nil="true" />
+          <Position>0</Position>
+        </OracleFunctionParameterMetadata>
+        <OracleFunctionParameterMetadata>
+          <DataType>VARCHAR2</DataType>
+          <Direction>Input</Direction>
+          <IsOptional>true</IsOptional>
+          <Name>P_DIR</Name>
+          <Position>1</Position>
+        </OracleFunctionParameterMetadata>
+        <OracleFunctionParameterMetadata>
+          <DataType>VARCHAR2</DataType>
+          <Direction>Input</Direction>
+          <IsOptional>true</IsOptional>
+          <Name>P_FILENAME</Name>
+          <Position>2</Position>
+        </OracleFunctionParameterMetadata>
+        <OracleFunctionParameterMetadata>
+          <DataType>VARCHAR2</DataType>
+          <Direction>Input</Direction>
+          <IsOptional>true</IsOptional>
+          <Name>P_ENCODING</Name>
+          <Position>3</Position>
+        </OracleFunctionParameterMetadata>
+        <OracleFunctionParameterMetadata>
+          <DataType>PL/SQL BOOLEAN</DataType>
+          <Direction>Input</Direction>
+          <IsOptional>true</IsOptional>
+          <Name>P_EMBED</Name>
+          <Position>4</Position>
+        </OracleFunctionParameterMetadata>
+        <OracleFunctionParameterMetadata>
+          <DataType>PL/SQL BOOLEAN</DataType>
+          <Direction>Input</Direction>
+          <IsOptional>true</IsOptional>
+          <Name>P_COMPRESS</Name>
+          <Position>5</Position>
+        </OracleFunctionParameterMetadata>
+      </Parameters>
+      <_metadataMaximumArguments i:nil="true" />
+      <_metadataMinimumArguments i:nil="true" />
+    </OracleFunctionMetadata>
+    <OracleFunctionMetadata>
+      <AuthId>Definer</AuthId>
+      <DataType i:nil="true" />
+      <DisplayType>NORMAL</DisplayType>
+      <Identifier>
+        <Name>"SET_FONT"</Name>
+        <Overload>4</Overload>
+        <Owner>"HUSQVIK"</Owner>
+        <Package>"AS_PDF3"</Package>
+      </Identifier>
+      <IsAggregate>false</IsAggregate>
+      <IsAnalytic>false</IsAnalytic>
+      <IsBuiltIn>false</IsBuiltIn>
+      <IsDeterministic>false</IsDeterministic>
+      <IsOffloadable>false</IsOffloadable>
+      <IsPipelined>false</IsPipelined>
+      <ParallelSupport>false</ParallelSupport>
+      <Parameters>
+        <OracleFunctionParameterMetadata>
+          <DataType>BINARY_INTEGER</DataType>
+          <Direction>ReturnValue</Direction>
+          <IsOptional>false</IsOptional>
+          <Name i:nil="true" />
+          <Position>0</Position>
+        </OracleFunctionParameterMetadata>
+        <OracleFunctionParameterMetadata>
+          <DataType>VARCHAR2</DataType>
+          <Direction>Input</Direction>
+          <IsOptional>false</IsOptional>
+          <Name>P_FAMILY</Name>
+          <Position>1</Position>
+        </OracleFunctionParameterMetadata>
+        <OracleFunctionParameterMetadata>
+          <DataType>VARCHAR2</DataType>
+          <Direction>Input</Direction>
+          <IsOptional>true</IsOptional>
+          <Name>P_STYLE</Name>
+          <Position>2</Position>
+        </OracleFunctionParameterMetadata>
+        <OracleFunctionParameterMetadata>
+          <DataType>NUMBER</DataType>
+          <Direction>Input</Direction>
+          <IsOptional>true</IsOptional>
+          <Name>P_FONTSIZE_PT</Name>
+          <Position>3</Position>
+        </OracleFunctionParameterMetadata>
+        <OracleFunctionParameterMetadata>
+          <DataType>PL/SQL BOOLEAN</DataType>
+          <Direction>Input</Direction>
+          <IsOptional>true</IsOptional>
+          <Name>P_OUTPUT_TO_DOC</Name>
+          <Position>4</Position>
+        </OracleFunctionParameterMetadata>
+      </Parameters>
+      <_metadataMaximumArguments i:nil="true" />
+      <_metadataMinimumArguments i:nil="true" />
+    </OracleFunctionMetadata>
+    <OracleFunctionMetadata>
+      <AuthId>Definer</AuthId>
+      <DataType i:nil="true" />
+      <DisplayType>NORMAL</DisplayType>
+      <Identifier>
+        <Name>"SET_FONT"</Name>
+        <Overload>2</Overload>
+        <Owner>"HUSQVIK"</Owner>
+        <Package>"AS_PDF3"</Package>
+      </Identifier>
+      <IsAggregate>false</IsAggregate>
+      <IsAnalytic>false</IsAnalytic>
+      <IsBuiltIn>false</IsBuiltIn>
+      <IsDeterministic>false</IsDeterministic>
+      <IsOffloadable>false</IsOffloadable>
+      <IsPipelined>false</IsPipelined>
+      <ParallelSupport>false</ParallelSupport>
+      <Parameters>
+        <OracleFunctionParameterMetadata>
+          <DataType>BINARY_INTEGER</DataType>
+          <Direction>ReturnValue</Direction>
+          <IsOptional>false</IsOptional>
+          <Name i:nil="true" />
+          <Position>0</Position>
+        </OracleFunctionParameterMetadata>
+        <OracleFunctionParameterMetadata>
+          <DataType>VARCHAR2</DataType>
+          <Direction>Input</Direction>
+          <IsOptional>false</IsOptional>
+          <Name>P_FONTNAME</Name>
+          <Position>1</Position>
+        </OracleFunctionParameterMetadata>
+        <OracleFunctionParameterMetadata>
+          <DataType>NUMBER</DataType>
+          <Direction>Input</Direction>
+          <IsOptional>false</IsOptional>
+          <Name>P_FONTSIZE_PT</Name>
+          <Position>2</Position>
+        </OracleFunctionParameterMetadata>
+        <OracleFunctionParameterMetadata>
+          <DataType>PL/SQL BOOLEAN</DataType>
+          <Direction>Input</Direction>
+          <IsOptional>true</IsOptional>
+          <Name>P_OUTPUT_TO_DOC</Name>
+          <Position>3</Position>
+        </OracleFunctionParameterMetadata>
+      </Parameters>
+      <_metadataMaximumArguments i:nil="true" />
+      <_metadataMinimumArguments i:nil="true" />
+    </OracleFunctionMetadata>
+    <OracleFunctionMetadata>
+      <AuthId>Definer</AuthId>
+      <DataType i:nil="true" />
+      <DisplayType>NORMAL</DisplayType>
+      <Identifier>
+        <Name>"STR_LEN"</Name>
+        <Overload>0</Overload>
+        <Owner>"HUSQVIK"</Owner>
+        <Package>"AS_PDF3"</Package>
+      </Identifier>
+      <IsAggregate>false</IsAggregate>
+      <IsAnalytic>false</IsAnalytic>
+      <IsBuiltIn>false</IsBuiltIn>
+      <IsDeterministic>false</IsDeterministic>
+      <IsOffloadable>false</IsOffloadable>
+      <IsPipelined>false</IsPipelined>
+      <ParallelSupport>false</ParallelSupport>
+      <Parameters>
+        <OracleFunctionParameterMetadata>
+          <DataType>NUMBER</DataType>
+          <Direction>ReturnValue</Direction>
+          <IsOptional>false</IsOptional>
+          <Name i:nil="true" />
+          <Position>0</Position>
+        </OracleFunctionParameterMetadata>
+        <OracleFunctionParameterMetadata>
+          <DataType>VARCHAR2</DataType>
+          <Direction>Input</Direction>
+          <IsOptional>false</IsOptional>
+          <Name>P_TXT</Name>
+          <Position>1</Position>
+        </OracleFunctionParameterMetadata>
+      </Parameters>
+      <_metadataMaximumArguments i:nil="true" />
+      <_metadataMinimumArguments i:nil="true" />
+    </OracleFunctionMetadata>
+    <OracleFunctionMetadata>
+      <AuthId>Definer</AuthId>
+      <DataType i:nil="true" />
+      <DisplayType>NORMAL</DisplayType>
+      <Identifier>
+        <Name>"SQLPAD_FUNCTION"</Name>
+        <Overload>0</Overload>
+        <Owner>"HUSQVIK"</Owner>
+        <Package>"SQLPAD"</Package>
+      </Identifier>
+      <IsAggregate>false</IsAggregate>
+      <IsAnalytic>false</IsAnalytic>
+      <IsBuiltIn>false</IsBuiltIn>
+      <IsDeterministic>false</IsDeterministic>
+      <IsOffloadable>false</IsOffloadable>
+      <IsPipelined>false</IsPipelined>
+      <ParallelSupport>false</ParallelSupport>
+      <Parameters>
+        <OracleFunctionParameterMetadata>
+          <DataType>NUMBER</DataType>
+          <Direction>ReturnValue</Direction>
+          <IsOptional>false</IsOptional>
+          <Name i:nil="true" />
+          <Position>0</Position>
+        </OracleFunctionParameterMetadata>
+        <OracleFunctionParameterMetadata>
+          <DataType>NUMBER</DataType>
+          <Direction>Input</Direction>
+          <IsOptional>false</IsOptional>
+          <Name>P</Name>
+          <Position>1</Position>
+        </OracleFunctionParameterMetadata>
+      </Parameters>
+      <_metadataMaximumArguments i:nil="true" />
+      <_metadataMinimumArguments i:nil="true" />
+    </OracleFunctionMetadata>
+    <OracleFunctionMetadata>
+      <AuthId>Definer</AuthId>
+      <DataType i:nil="true" />
+      <DisplayType>NORMAL</DisplayType>
+      <Identifier>
+        <Name>"COUNT"</Name>
+        <Overload>0</Overload>
+        <Owner>"HUSQVIK"</Owner>
+        <Package></Package>
+      </Identifier>
+      <IsAggregate>false</IsAggregate>
+      <IsAnalytic>false</IsAnalytic>
+      <IsBuiltIn>false</IsBuiltIn>
+      <IsDeterministic>false</IsDeterministic>
+      <IsOffloadable>false</IsOffloadable>
+      <IsPipelined>false</IsPipelined>
+      <ParallelSupport>false</ParallelSupport>
+      <Parameters>
+        <OracleFunctionParameterMetadata>
+          <DataType>NUMBER</DataType>
+          <Direction>ReturnValue</Direction>
+          <IsOptional>false</IsOptional>
+          <Name i:nil="true" />
+          <Position>0</Position>
+        </OracleFunctionParameterMetadata>
+      </Parameters>
+      <_metadataMaximumArguments i:nil="true" />
+      <_metadataMinimumArguments i:nil="true" />
+    </OracleFunctionMetadata>
+    <OracleFunctionMetadata>
+      <AuthId>Definer</AuthId>
+      <DataType i:nil="true" />
+      <DisplayType>NORMAL</DisplayType>
+      <Identifier>
+        <Name>"DATABASE_ALERTS"</Name>
+        <Overload>0</Overload>
+        <Owner>"HUSQVIK"</Owner>
+        <Package></Package>
+      </Identifier>
+      <IsAggregate>false</IsAggregate>
+      <IsAnalytic>false</IsAnalytic>
+      <IsBuiltIn>false</IsBuiltIn>
+      <IsDeterministic>false</IsDeterministic>
+      <IsOffloadable>false</IsOffloadable>
+      <IsPipelined>true</IsPipelined>
+      <ParallelSupport>false</ParallelSupport>
+      <Parameters>
+        <OracleFunctionParameterMetadata>
+          <DataType>TABLE</DataType>
+          <Direction>ReturnValue</Direction>
+          <IsOptional>false</IsOptional>
+          <Name i:nil="true" />
+          <Position>0</Position>
+        </OracleFunctionParameterMetadata>
+        <OracleFunctionParameterMetadata>
+          <DataType>OBJECT</DataType>
+          <Direction>ReturnValue</Direction>
+          <IsOptional>false</IsOptional>
+          <Name i:nil="true" />
+          <Position>1</Position>
+        </OracleFunctionParameterMetadata>
+        <OracleFunctionParameterMetadata>
+          <DataType>VARCHAR2</DataType>
+          <Direction>Input</Direction>
+          <IsOptional>true</IsOptional>
+          <Name>LOG_DIRECTORY</Name>
+          <Position>1</Position>
+        </OracleFunctionParameterMetadata>
+        <OracleFunctionParameterMetadata>
+          <DataType>VARCHAR2</DataType>
+          <Direction>Input</Direction>
+          <IsOptional>true</IsOptional>
+          <Name i:nil="true" />
+          <Position>1</Position>
+        </OracleFunctionParameterMetadata>
+        <OracleFunctionParameterMetadata>
+          <DataType>VARRAY</DataType>
+          <Direction>Input</Direction>
+          <IsOptional>true</IsOptional>
+          <Name>FILES</Name>
+          <Position>2</Position>
+        </OracleFunctionParameterMetadata>
+      </Parameters>
+      <_metadataMaximumArguments i:nil="true" />
+      <_metadataMinimumArguments i:nil="true" />
+    </OracleFunctionMetadata>
+    <OracleFunctionMetadata>
+      <AuthId>Definer</AuthId>
+      <DataType i:nil="true" />
+      <DisplayType>NORMAL</DisplayType>
+      <Identifier>
+        <Name>"FFUNCTION"</Name>
+        <Overload>0</Overload>
+        <Owner>"HUSQVIK"</Owner>
+        <Package></Package>
+      </Identifier>
+      <IsAggregate>false</IsAggregate>
+      <IsAnalytic>false</IsAnalytic>
+      <IsBuiltIn>false</IsBuiltIn>
+      <IsDeterministic>false</IsDeterministic>
+      <IsOffloadable>false</IsOffloadable>
+      <IsPipelined>false</IsPipelined>
+      <ParallelSupport>false</ParallelSupport>
+      <Parameters>
+        <OracleFunctionParameterMetadata>
+          <DataType>NUMBER</DataType>
+          <Direction>ReturnValue</Direction>
+          <IsOptional>false</IsOptional>
+          <Name i:nil="true" />
+          <Position>0</Position>
+        </OracleFunctionParameterMetadata>
+      </Parameters>
+      <_metadataMaximumArguments i:nil="true" />
+      <_metadataMinimumArguments i:nil="true" />
+    </OracleFunctionMetadata>
+    <OracleFunctionMetadata>
+      <AuthId>Definer</AuthId>
+      <DataType i:nil="true" />
+      <DisplayType>NORMAL</DisplayType>
+      <Identifier>
+        <Name>"GENERATEFIBONACCI"</Name>
+        <Overload>0</Overload>
+        <Owner>"HUSQVIK"</Owner>
+        <Package></Package>
+      </Identifier>
+      <IsAggregate>false</IsAggregate>
+      <IsAnalytic>false</IsAnalytic>
+      <IsBuiltIn>false</IsBuiltIn>
+      <IsDeterministic>false</IsDeterministic>
+      <IsOffloadable>false</IsOffloadable>
+      <IsPipelined>true</IsPipelined>
+      <ParallelSupport>false</ParallelSupport>
+      <Parameters>
+        <OracleFunctionParameterMetadata>
+          <DataType>VARRAY</DataType>
+          <Direction>ReturnValue</Direction>
+          <IsOptional>false</IsOptional>
+          <Name i:nil="true" />
+          <Position>0</Position>
+        </OracleFunctionParameterMetadata>
+        <OracleFunctionParameterMetadata>
+          <DataType>NUMBER</DataType>
+          <Direction>ReturnValue</Direction>
+          <IsOptional>false</IsOptional>
+          <Name i:nil="true" />
+          <Position>1</Position>
+        </OracleFunctionParameterMetadata>
+        <OracleFunctionParameterMetadata>
+          <DataType>NUMBER</DataType>
+          <Direction>Input</Direction>
+          <IsOptional>true</IsOptional>
+          <Name>ROW_COUNT</Name>
+          <Position>1</Position>
+        </OracleFunctionParameterMetadata>
+      </Parameters>
+      <_metadataMaximumArguments i:nil="true" />
+      <_metadataMinimumArguments i:nil="true" />
+    </OracleFunctionMetadata>
+    <OracleFunctionMetadata>
+      <AuthId>Definer</AuthId>
+      <DataType i:nil="true" />
+      <DisplayType>NORMAL</DisplayType>
+      <Identifier>
+        <Name>"GETTIME"</Name>
+        <Overload>0</Overload>
+        <Owner>"HUSQVIK"</Owner>
+        <Package></Package>
+      </Identifier>
+      <IsAggregate>false</IsAggregate>
+      <IsAnalytic>false</IsAnalytic>
+      <IsBuiltIn>false</IsBuiltIn>
+      <IsDeterministic>false</IsDeterministic>
+      <IsOffloadable>false</IsOffloadable>
+      <IsPipelined>false</IsPipelined>
+      <ParallelSupport>false</ParallelSupport>
+      <Parameters>
+        <OracleFunctionParameterMetadata>
+          <DataType>TIMESTAMP</DataType>
+          <Direction>ReturnValue</Direction>
+          <IsOptional>false</IsOptional>
+          <Name i:nil="true" />
+          <Position>0</Position>
+        </OracleFunctionParameterMetadata>
+      </Parameters>
+      <_metadataMaximumArguments i:nil="true" />
+      <_metadataMinimumArguments i:nil="true" />
+    </OracleFunctionMetadata>
+    <OracleFunctionMetadata>
+      <AuthId>Definer</AuthId>
+      <DataType i:nil="true" />
+      <DisplayType>NORMAL</DisplayType>
+      <Identifier>
+        <Name>"GET_WIKI"</Name>
+        <Overload>0</Overload>
+        <Owner>"HUSQVIK"</Owner>
+        <Package></Package>
+      </Identifier>
+      <IsAggregate>false</IsAggregate>
+      <IsAnalytic>false</IsAnalytic>
+      <IsBuiltIn>false</IsBuiltIn>
+      <IsDeterministic>false</IsDeterministic>
+      <IsOffloadable>false</IsOffloadable>
+      <IsPipelined>false</IsPipelined>
+      <ParallelSupport>false</ParallelSupport>
+      <Parameters>
+        <OracleFunctionParameterMetadata>
+          <DataType>CLOB</DataType>
+          <Direction>ReturnValue</Direction>
+          <IsOptional>false</IsOptional>
+          <Name i:nil="true" />
+          <Position>0</Position>
+        </OracleFunctionParameterMetadata>
+        <OracleFunctionParameterMetadata>
+          <DataType>VARCHAR2</DataType>
+          <Direction>Input</Direction>
+          <IsOptional>false</IsOptional>
+          <Name>WIKI_TOKEN</Name>
+          <Position>1</Position>
+        </OracleFunctionParameterMetadata>
+      </Parameters>
+      <_metadataMaximumArguments i:nil="true" />
+      <_metadataMinimumArguments i:nil="true" />
+    </OracleFunctionMetadata>
+    <OracleFunctionMetadata>
+      <AuthId>Definer</AuthId>
+      <DataType i:nil="true" />
+      <DisplayType>NORMAL</DisplayType>
+      <Identifier>
+        <Name>"SQLPAD_FUNCTION"</Name>
+        <Overload>0</Overload>
+        <Owner>"HUSQVIK"</Owner>
+        <Package></Package>
+      </Identifier>
+      <IsAggregate>false</IsAggregate>
+      <IsAnalytic>false</IsAnalytic>
+      <IsBuiltIn>false</IsBuiltIn>
+      <IsDeterministic>false</IsDeterministic>
+      <IsOffloadable>false</IsOffloadable>
+      <IsPipelined>false</IsPipelined>
+      <ParallelSupport>false</ParallelSupport>
+      <Parameters>
+        <OracleFunctionParameterMetadata>
+          <DataType>VARCHAR2</DataType>
+          <Direction>ReturnValue</Direction>
+          <IsOptional>false</IsOptional>
+          <Name i:nil="true" />
+          <Position>0</Position>
+        </OracleFunctionParameterMetadata>
+      </Parameters>
+      <_metadataMaximumArguments i:nil="true" />
+      <_metadataMinimumArguments i:nil="true" />
+    </OracleFunctionMetadata>
+    <OracleFunctionMetadata>
+      <AuthId>Definer</AuthId>
+      <DataType i:nil="true" />
+      <DisplayType>NORMAL</DisplayType>
+      <Identifier>
+        <Name>"TESTFUNC"</Name>
+        <Overload>0</Overload>
+        <Owner>"HUSQVIK"</Owner>
+        <Package></Package>
+      </Identifier>
+      <IsAggregate>false</IsAggregate>
+      <IsAnalytic>false</IsAnalytic>
+      <IsBuiltIn>false</IsBuiltIn>
+      <IsDeterministic>false</IsDeterministic>
+      <IsOffloadable>false</IsOffloadable>
+      <IsPipelined>false</IsPipelined>
+      <ParallelSupport>false</ParallelSupport>
+      <Parameters>
+        <OracleFunctionParameterMetadata>
+          <DataType>NUMBER</DataType>
+          <Direction>ReturnValue</Direction>
+          <IsOptional>false</IsOptional>
+          <Name i:nil="true" />
+          <Position>0</Position>
+        </OracleFunctionParameterMetadata>
+        <OracleFunctionParameterMetadata>
+          <DataType>NUMBER</DataType>
+          <Direction>Input</Direction>
+          <IsOptional>false</IsOptional>
+          <Name>PARAM</Name>
+          <Position>1</Position>
+        </OracleFunctionParameterMetadata>
+      </Parameters>
+      <_metadataMaximumArguments i:nil="true" />
+      <_metadataMinimumArguments i:nil="true" />
+    </OracleFunctionMetadata>
+  </SqlFunctions>
+  <Timestamp>2014-05-11T14:02:56.8837878Z</Timestamp>
+</OracleFunctionMetadataCollection>

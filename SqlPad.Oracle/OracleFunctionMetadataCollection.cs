@@ -13,9 +13,9 @@ namespace SqlPad.Oracle
 		private const string OwnerBuiltInFunction = "\"SYS\"";
 		private const string PackageBuiltInFunction = "\"STANDARD\"";
 
-		internal OracleFunctionMetadataCollection(ICollection<OracleFunctionMetadata> metadata)
+		internal OracleFunctionMetadataCollection(IEnumerable<OracleFunctionMetadata> metadata)
 		{
-			SqlFunctions = metadata;
+			SqlFunctions = metadata.ToArray();
 			Timestamp = DateTime.UtcNow;
 		}
 
