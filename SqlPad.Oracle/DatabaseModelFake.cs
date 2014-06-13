@@ -45,6 +45,82 @@ namespace SqlPad.Oracle
 			ObjectsInternal = AllObjectDictionary
 				.Values.Where(o => o.Owner == OracleDatabaseModel.SchemaPublic || o.Owner == CurrentSchemaInternal)
 				.ToDictionary(o => OracleObjectIdentifier.Create(o.Owner, o.Name), o => o);
+
+			AddConstraints();
+		}
+
+		private static void AddConstraints()
+		{
+			var sourceObject = (OracleTable)AllObjectDictionary[OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"TARGETGROUP\"")];
+			sourceObject.ForeignKeys =
+				new List<OracleForeignKeyConstraint>
+				{
+					new OracleForeignKeyConstraint
+					{
+						FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"FK_TARGETGROUP_PROJECT\""),
+						SourceColumns = new[] { "\"PROJECT_ID\"" },
+						TargetColumns = new[] { "\"PROJECT_ID\"" },
+						SourceObject = sourceObject,
+						TargetObject = AllObjectDictionary[OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"PROJECT\"")]
+					}
+				}.AsReadOnly();
+
+			sourceObject = (OracleTable)AllObjectDictionary[OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"INVOICELINES\"")];
+			sourceObject.ForeignKeys =
+				new List<OracleForeignKeyConstraint>
+				{
+					new OracleForeignKeyConstraint
+					{
+						FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"FK_INVOICELINES_INVOICES\""),
+						SourceColumns = new[] { "\"INVOICE_ID\"" },
+						TargetColumns = new[] { "\"ID\"" },
+						SourceObject = sourceObject,
+						TargetObject = AllObjectDictionary[OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"INVOICES\"")]
+					}
+				}.AsReadOnly();
+
+			sourceObject = (OracleTable)AllObjectDictionary[OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"RESPONDENTBUCKET\"")];
+			sourceObject.ForeignKeys
+				= new List<OracleForeignKeyConstraint>
+				  {
+					  new OracleForeignKeyConstraint
+					  {
+						  FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"FK_RESPONDENTBUCKET_TARGETGROUP\""),
+						  SourceColumns = new[] { "\"TARGETGROUP_ID\"" },
+						  TargetColumns = new[] { "\"TARGETGROUP_ID\"" },
+						  SourceObject = sourceObject,
+						  TargetObject = AllObjectDictionary[OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"TARGETGROUP\"")]
+					  },
+					  new OracleForeignKeyConstraint
+					  {
+						  FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"FK_RESPONDENTBUCKET_PROJECT\""),
+						  SourceColumns = new[] { "\"PROJECT_ID\"" },
+						  TargetColumns = new[] { "\"PROJECT_ID\"" },
+						  SourceObject = sourceObject,
+						  TargetObject = AllObjectDictionary[OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"PROJECT\"")]
+					  }
+				  }.AsReadOnly();
+
+			sourceObject = (OracleTable)AllObjectDictionary[OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"SELECTION\"")];
+			sourceObject.ForeignKeys = new List<OracleForeignKeyConstraint>
+			                           {
+				                           new OracleForeignKeyConstraint
+				                           {
+					                           FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"FK_SELECTION_RESPONDENTBUCKET\""),
+					                           SourceColumns = new[] { "\"RESPONDENTBUCKET_ID\"" },
+					                           TargetColumns = new[] { "\"RESPONDENTBUCKET_ID\"" },
+					                           SourceObject = sourceObject,
+					                           TargetObject = AllObjectDictionary[OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"RESPONDENTBUCKET\"")]
+				                           },
+				                           new OracleForeignKeyConstraint
+				                           {
+					                           FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"FK_SELECTION_PROJECT\""),
+					                           SourceColumns = new[] { "\"PROJECT_ID\"" },
+					                           TargetColumns = new[] { "\"PROJECT_ID\"" },
+					                           SourceObject = sourceObject,
+					                           TargetObject = AllObjectDictionary[OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"PROJECT\"")]
+				                           }
+			                           }.AsReadOnly();
 		}
 
 		public OracleFunctionMetadataCollection AllFunctionMetadata { get { return AllFunctionMetadataInterval; } }
@@ -55,9 +131,9 @@ namespace SqlPad.Oracle
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(OwnerNameSys, "\"DUAL\""),
 				Organization = OrganizationType.Heap,
-				Columns = new HashSet<OracleColumn>
+				Columns = new Dictionary<string, OracleColumn>
 				             {
-					             new OracleColumn { Name = "\"DUMMY\"", Type = "VARCHAR2", Size = 1, Unit = DataUnit.Byte }
+					             { "\"DUMMY\"", new OracleColumn { Name = "\"DUMMY\"", Type = "VARCHAR2", Size = 1, Unit = DataUnit.Byte } }
 				             }
 			},
 			new OracleView
@@ -69,53 +145,42 @@ namespace SqlPad.Oracle
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"COUNTRY\""),
 				Organization = OrganizationType.Heap,
-				Columns = new HashSet<OracleColumn>
+				Columns = new Dictionary<string, OracleColumn>
 				          {
-					          new OracleColumn { Name = "\"ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
-							  new OracleColumn { Name = "\"NAME\"", Type = "VARCHAR2", Size = 50, Unit = DataUnit.Byte }
+					          { "\"ID\"", new OracleColumn { Name = "\"ID\"", Type = "NUMBER", Precision = 9, Scale = 0 } },
+							  { "\"NAME\"", new OracleColumn { Name = "\"NAME\"", Type = "VARCHAR2", Size = 50, Unit = DataUnit.Byte } }
 				          }
 			},
 			new OracleTable
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"ORDERS\""),
 				Organization = OrganizationType.Heap,
-				Columns = new HashSet<OracleColumn>
+				Columns = new Dictionary<string, OracleColumn>
 				          {
-					          new OracleColumn { Name = "\"ID\"", Type = "NUMBER", Precision = 9, Scale = 0 }
+					          { "\"ID\"", new OracleColumn { Name = "\"ID\"", Type = "NUMBER", Precision = 9, Scale = 0 } }
 				          }
 			},
 			new OracleTable
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"INVOICES\""),
 				Organization = OrganizationType.Heap,
-				Columns = new HashSet<OracleColumn>
+				Columns = new Dictionary<string, OracleColumn>
 				          {
-					          new OracleColumn { Name = "\"ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
-					          new OracleColumn { Name = "\"DUEDATE\"", Type = "DATE" }
+					          { "\"ID\"", new OracleColumn { Name = "\"ID\"", Type = "NUMBER", Precision = 9, Scale = 0 } },
+					          { "\"DUEDATE\"", new OracleColumn { Name = "\"DUEDATE\"", Type = "DATE" } }
 				          }
 			},
 			new OracleTable
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"INVOICELINES\""),
 				Organization = OrganizationType.Heap,
-				Columns = new HashSet<OracleColumn>
+				Columns = new Dictionary<string, OracleColumn>
 				          {
-					          new OracleColumn { Name = "\"ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
-					          new OracleColumn { Name = "\"INVOICE_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
-							  new OracleColumn { Name = "\"AMOUNT\"", Type = "NUMBER", Precision = 20, Scale = 2 },
-							  new OracleColumn { Name = "\"CORRELATION_VALUE\"", Type = "NUMBER", Scale = 5 }
-				          },
-						  ForeignKeys = new List<OracleForeignKeyConstraint>
-				              {
-								  new OracleForeignKeyConstraint
-					              {
-									  FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"FK_INVOICELINES_INVOICES\""),
-									  SourceColumns = new []{ "\"INVOICE_ID\"" },
-									  TargetColumns = new []{ "\"ID\"" },
-									  SourceObject = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"INVOICELINES\""),
-									  TargetObject = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"INVOICES\"")
-					              }
-				              }.AsReadOnly()
+					          { "\"ID\"", new OracleColumn { Name = "\"ID\"", Type = "NUMBER", Precision = 9, Scale = 0 } },
+					          { "\"INVOICE_ID\"", new OracleColumn { Name = "\"INVOICE_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 } },
+							  { "\"AMOUNT\"", new OracleColumn { Name = "\"AMOUNT\"", Type = "NUMBER", Precision = 20, Scale = 2 } },
+							  { "\"CORRELATION_VALUE\"", new OracleColumn { Name = "\"CORRELATION_VALUE\"", Type = "NUMBER", Scale = 5 } }
+				          }
 			},
 			new OracleView
 			{
@@ -126,95 +191,46 @@ namespace SqlPad.Oracle
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"TARGETGROUP\""),
 				Organization = OrganizationType.Heap,
-				Columns = new HashSet<OracleColumn>
+				Columns = new Dictionary<string, OracleColumn>
 				          {
-					          new OracleColumn { Name = "\"TARGETGROUP_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
-					          new OracleColumn { Name = "\"PROJECT_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
-							  new OracleColumn { Name = "\"NAME\"", Type = "VARCHAR2", Size = 50, Unit = DataUnit.Byte }
-				          },
-						  ForeignKeys = new List<OracleForeignKeyConstraint>
-				              {
-								  new OracleForeignKeyConstraint
-					              {
-									  FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"FK_TARGETGROUP_PROJECT\""),
-									  SourceColumns = new []{ "\"PROJECT_ID\"" },
-									  TargetColumns = new []{ "\"PROJECT_ID\"" },
-									  SourceObject = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"TARGETGROUP\""),
-									  TargetObject = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"PROJECT\"")
-					              }
-				              }.AsReadOnly()
+					          { "\"TARGETGROUP_ID\"", new OracleColumn { Name = "\"TARGETGROUP_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 } },
+					          { "\"PROJECT_ID\"", new OracleColumn { Name = "\"PROJECT_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 } },
+							  { "\"NAME\"", new OracleColumn { Name = "\"NAME\"", Type = "VARCHAR2", Size = 50, Unit = DataUnit.Byte } }
+				          }
 			},
 			new OracleTable
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"PROJECT\""),
 				Organization = OrganizationType.Heap,
-				Columns = new HashSet<OracleColumn>
+				Columns = new Dictionary<string, OracleColumn>
 				          {
-					          new OracleColumn { Name = "\"NAME\"", Type = "VARCHAR2", Size = 50, Unit = DataUnit.Byte },
-					          new OracleColumn { Name = "\"PROJECT_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 }
+					          { "\"NAME\"", new OracleColumn { Name = "\"NAME\"", Type = "VARCHAR2", Size = 50, Unit = DataUnit.Byte } },
+					          { "\"PROJECT_ID\"", new OracleColumn { Name = "\"PROJECT_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 } }
 				          }
 			},
 			new OracleTable
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"RESPONDENTBUCKET\""),
 				Organization = OrganizationType.Heap,
-				Columns = new HashSet<OracleColumn>
+				Columns = new Dictionary<string, OracleColumn>
 				          {
-							  new OracleColumn { Name = "\"RESPONDENTBUCKET_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
-					          new OracleColumn { Name = "\"TARGETGROUP_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
-					          new OracleColumn { Name = "\"PROJECT_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 },
-							  new OracleColumn { Name = "\"NAME\"", Type = "VARCHAR2", Size = 50, Unit = DataUnit.Byte }
-				          },
-						  ForeignKeys = new List<OracleForeignKeyConstraint>
-				              {
-					              new OracleForeignKeyConstraint
-					              {
-									  FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"FK_RESPONDENTBUCKET_TARGETGROUP\""),
-									  SourceColumns = new []{ "\"TARGETGROUP_ID\"" },
-									  TargetColumns = new []{ "\"TARGETGROUP_ID\"" },
-									  SourceObject = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"RESPONDENTBUCKET\""),
-									  TargetObject = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"TARGETGROUP\"")
-					              },
-								  new OracleForeignKeyConstraint
-					              {
-									  FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"FK_RESPONDENTBUCKET_PROJECT\""),
-									  SourceColumns = new []{ "\"PROJECT_ID\"" },
-									  TargetColumns = new []{ "\"PROJECT_ID\"" },
-									  SourceObject = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"RESPONDENTBUCKET\""),
-									  TargetObject = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"PROJECT\"")
-					              }
-				              }.AsReadOnly()
+							  { "\"RESPONDENTBUCKET_ID\"", new OracleColumn { Name = "\"RESPONDENTBUCKET_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 } },
+					          { "\"TARGETGROUP_ID\"", new OracleColumn { Name = "\"TARGETGROUP_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 } },
+					          { "\"PROJECT_ID\"", new OracleColumn { Name = "\"PROJECT_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 } },
+							  { "\"NAME\"", new OracleColumn { Name = "\"NAME\"", Type = "VARCHAR2", Size = 50, Unit = DataUnit.Byte } }
+				          }
 			},
 			new OracleTable
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"SELECTION\""),
 				Organization = OrganizationType.Heap,
-				Columns = new HashSet<OracleColumn>
+				Columns = new Dictionary<string, OracleColumn>
 				          {
-							  new OracleColumn { Name = "\"RESPONDENTBUCKET_ID\"", Type = "NUMBER", Precision = 9, Scale = 0, Nullable = true },
-					          new OracleColumn { Name = "\"SELECTION_ID\"", Type = "NUMBER", Precision = 9, Scale = 0, Nullable = false },
-					          new OracleColumn { Name = "\"PROJECT_ID\"", Type = "NUMBER", Precision = 9, Scale = 0, Nullable = false },
-							  new OracleColumn { Name = "\"NAME\"", Type = "VARCHAR2", Size = 50, Nullable = false, Unit = DataUnit.Byte }
-				          },
-				ForeignKeys = new List<OracleForeignKeyConstraint>
-				              {
-					              new OracleForeignKeyConstraint
-					              {
-									  FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"FK_SELECTION_RESPONDENTBUCKET\""),
-									  SourceColumns = new []{ "\"RESPONDENTBUCKET_ID\"" },
-									  TargetColumns = new []{ "\"RESPONDENTBUCKET_ID\"" },
-									  SourceObject = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"SELECTION\""),
-									  TargetObject = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"RESPONDENTBUCKET\"")
-					              },
-								  new OracleForeignKeyConstraint
-					              {
-									  FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"FK_SELECTION_PROJECT\""),
-									  SourceColumns = new []{ "\"PROJECT_ID\"" },
-									  TargetColumns = new []{ "\"PROJECT_ID\"" },
-									  SourceObject = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"SELECTION\""),
-									  TargetObject = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"PROJECT\"")
-					              }
-				              }.AsReadOnly()
+							  { "\"RESPONDENTBUCKET_ID\"", new OracleColumn { Name = "\"RESPONDENTBUCKET_ID\"", Type = "NUMBER", Precision = 9, Scale = 0, Nullable = true } },
+					          { "\"SELECTION_ID\"", new OracleColumn { Name = "\"SELECTION_ID\"", Type = "NUMBER", Precision = 9, Scale = 0, Nullable = false } },
+					          { "\"PROJECT_ID\"", new OracleColumn { Name = "\"PROJECT_ID\"", Type = "NUMBER", Precision = 9, Scale = 0, Nullable = false } },
+							  { "\"NAME\"", new OracleColumn { Name = "\"NAME\"", Type = "VARCHAR2", Size = 50, Nullable = false, Unit = DataUnit.Byte } }
+				          }
 			},
 		};
 
@@ -250,32 +266,5 @@ namespace SqlPad.Oracle
 		public OracleSynonym Synonym { get; set; }
 		
 		public OracleObjectIdentifier FullyQualifiedName { get; set; }
-	}
-
-	[DebuggerDisplay("OracleForeignKeyConstraint (Name={FullyQualifiedName.Name}; Type={Type})")]
-	public class OracleForeignKeyConstraint : OracleObject
-	{
-		public OracleObjectIdentifier TargetObject { get; set; }
-
-		public OracleObjectIdentifier SourceObject { get; set; }
-		
-		public IList<string> SourceColumns { get; set; }
-
-		public IList<string> TargetColumns { get; set; }
-	}
-
-	public enum OrganizationType
-	{
-		NotApplicable,
-		Heap,
-		Index,
-		External
-	}
-
-	public enum DataUnit
-	{
-		NotApplicable,
-		Byte,
-		Character
 	}
 }

@@ -457,8 +457,53 @@ FROM ALL_TABLES";
 					continue;
 
 				var dataObject = (OracleDataObject)schemaObject;
-				dataObject.Columns.Add(columnMetadata.Value);
+				dataObject.Columns.Add(columnMetadata.Value.Name, columnMetadata.Value);
 			}
+
+			const string selectConstraintsCommandText = "SELECT OWNER, CONSTRAINT_NAME, CONSTRAINT_TYPE, TABLE_NAME, SEARCH_CONDITION, R_OWNER, R_CONSTRAINT_NAME, DELETE_RULE, STATUS, DEFERRABLE, VALIDATED, RELY, INDEX_OWNER, INDEX_NAME FROM ALL_CONSTRAINTS WHERE CONSTRAINT_TYPE IN ('C', 'R', 'P', 'U')";
+			var constraintSouce = ExecuteReader(
+				selectConstraintsCommandText,
+				r =>
+				{
+					var relyRaw = r["RELY"];
+					var constraint = OracleObjectFactory.CreateConstraint((string)r["CONSTRAINT_TYPE"], (string)r["OWNER"], (string)r["CONSTRAINT_NAME"], (string)r["STATUS"] == "ENABLED", (string)r["VALIDATED"] == "VALIDATED", (string)r["DEFERRABLE"] == "DEFERRABLE", relyRaw != DBNull.Value && (string)relyRaw == "RELY");
+
+					if (constraint.Type == ConstraintType.ForeignKey)
+					{
+						var tableFullyQualifiedName = OracleObjectIdentifier.Create((string)r["OWNER"], (string)r["TABLE_NAME"]);
+						var table = (OracleTable)dataObjectMetadata[tableFullyQualifiedName];
+						var foreignKeyConstraint = (OracleForeignKeyConstraint)constraint;
+						//foreignKeyConstraint.
+						table.ForeignKeys.Add(foreignKeyConstraint);
+					}
+					
+					return constraint;
+				});
+
+			var constraints = new Dictionary<OracleObjectIdentifier, OracleConstraint>();
+			foreach (var constraint in constraintSouce)
+			{
+				constraints[constraint.FullyQualifiedName] = constraint;
+			}
+
+			foreach (var constraint in constraints.Values)
+			{
+				
+			}
+
+			const string selectConstraintColumnsCommandText = "SELECT OWNER, CONSTRAINT_NAME, TABLE_NAME, COLUMN_NAME, POSITION FROM ALL_CONS_COLUMNS";
+			ExecuteReader(
+				selectConstraintColumnsCommandText,
+				r =>
+				{
+					var constraintFullyQualifiedName = OracleObjectIdentifier.Create((string)r["OWNER"], (string)r["CONSTRAINT_NAME"]);
+					OracleConstraint constraint;
+					if (!constraints.TryGetValue(constraintFullyQualifiedName, out constraint))
+						return null;
+
+					return constraint;
+				})
+				.ToArray();
 
 			//AllObjects = dataObjectMetadata;
 			var tmp = dataObjectMetadata.Values.Where(o => o.FullyQualifiedName.NormalizedOwner == "\"HUSQVIK\"").ToArray();
@@ -476,6 +521,35 @@ FROM ALL_TABLES";
 				dataObject.IsTemporary = isTemporary;
 
 				return dataObject;
+			}
+
+			public static OracleConstraint CreateConstraint(string constraintType, string owner, string name, bool isEnabled, bool isValidated, bool isDeferrable, bool isRelied)
+			{
+				var constraint = CreateConstraint(constraintType);
+				constraint.FullyQualifiedName = OracleObjectIdentifier.Create(owner, name);
+				constraint.IsEnabled = isEnabled;
+				constraint.IsValidated = isValidated;
+				constraint.IsDeferrable = isDeferrable;
+				constraint.IsRelied = isRelied;
+
+				return constraint;
+			}
+
+			private static OracleConstraint CreateConstraint(string constraintType)
+			{
+				switch (constraintType)
+				{
+					case "P":
+						return new OraclePrimaryKeyConstraint();
+					case "U":
+						return new OracleUniqueConstraint();
+					case "R":
+						return new OracleForeignKeyConstraint();
+					case "C":
+						return new OracleCheckConstraint();
+					default:
+						throw new InvalidOperationException(String.Format("Constraint type '{0}' not supported. ", constraintType));
+				}
 			}
 
 			private static OracleSchemaObject CreateObjectMetadata(string objectType)

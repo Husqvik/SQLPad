@@ -83,6 +83,7 @@
     <Compile Include="OracleCodeCompletionItem.cs" />
     <Compile Include="OracleCodeCompletionProvider.cs" />
     <Compile Include="OracleColumn.cs" />
+    <Compile Include="OracleConstraint.cs" />
     <Compile Include="OracleFunctionMatcher.cs" />
     <Compile Include="OracleFunctionMetadataCollection.cs" />
     <Compile Include="OracleFunctionReference.cs" />

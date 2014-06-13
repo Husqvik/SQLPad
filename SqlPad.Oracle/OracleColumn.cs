@@ -42,4 +42,11 @@ namespace SqlPad.Oracle
 		public bool Nullable { get; set; }
 		public DataUnit Unit { get; set; }
 	}
+
+	public enum DataUnit
+	{
+		NotApplicable,
+		Byte,
+		Character
+	}
 }

@@ -35,7 +35,7 @@ namespace SqlPad.Oracle
 					{
 						if (SearchResult.SchemaObject != null)
 						{
-							_columns.AddRange(SearchResult.SchemaObject.Columns);
+							_columns.AddRange(SearchResult.SchemaObject.Columns.Values);
 						}
 					}
 					else

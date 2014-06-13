@@ -31,11 +31,11 @@ namespace SqlPad.Oracle
 	{
 		protected OracleDataObject()
 		{
-			Columns = new List<OracleColumn>();
+			Columns = new Dictionary<string, OracleColumn>();
 			ForeignKeys = new List<OracleForeignKeyConstraint>();
 		}
 
-		public ICollection<OracleColumn> Columns { get; set; }
+		public IDictionary<string, OracleColumn> Columns { get; set; }
 
 		public OrganizationType Organization { get; set; }
 		
@@ -87,5 +87,13 @@ namespace SqlPad.Oracle
 		}
 
 		public override string Type { get { return "TABLE"; } }
+	}
+
+	public enum OrganizationType
+	{
+		NotApplicable,
+		Heap,
+		Index,
+		External
 	}
 }

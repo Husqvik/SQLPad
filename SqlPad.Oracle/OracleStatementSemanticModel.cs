@@ -248,7 +248,7 @@ namespace SqlPad.Oracle
 						if (objectReference.SearchResult.SchemaObject == null)
 							continue;
 
-						exposedColumns = objectReference.SearchResult.SchemaObject.Columns
+						exposedColumns = objectReference.SearchResult.SchemaObject.Columns.Values
 							.Select(c => new OracleSelectListColumn
 							        {
 								        ExplicitDefinition = false,
@@ -505,7 +505,7 @@ namespace SqlPad.Oracle
 				}
 				else
 				{
-					columnNodeColumnReferences.AddRange(rowSourceReference.SearchResult.SchemaObject.Columns
+					columnNodeColumnReferences.AddRange(rowSourceReference.SearchResult.SchemaObject.Columns.Values
 						.Where(c => c.Name == columnReference.NormalizedName && (columnReference.ObjectNode == null || IsTableReferenceValid(columnReference, rowSourceReference))));
 				}
 			}
