@@ -497,12 +497,12 @@ namespace SqlPad.Oracle
 				var parentObject = parentSchemaObject.SearchResult.SchemaObject;
 				var joinedObject = joinedSchemaObject.SearchResult.SchemaObject;
 
-				var joinedToParentKeys = parentObject.ForeignKeys.Where(k => k.TargetObject == joinedObject.FullyQualifiedName)
+				var joinedToParentKeys = parentObject.ForeignKeys.Where(k => k.TargetObject == joinedObject)
 					.Select(k => GenerateJoinConditionSuggestionItem(parentSchemaObject.FullyQualifiedName, joinedSchemaObject.FullyQualifiedName, k.SourceColumns, k.TargetColumns, false, skipOnTerminal, insertOffset));
 
 				codeItems = codeItems.Concat(joinedToParentKeys);
 
-				var parentToJoinedKeys = joinedObject.ForeignKeys.Where(k => k.TargetObject == parentObject.FullyQualifiedName)
+				var parentToJoinedKeys = joinedObject.ForeignKeys.Where(k => k.TargetObject == parentObject)
 					.Select(k => GenerateJoinConditionSuggestionItem(joinedSchemaObject.FullyQualifiedName, parentSchemaObject.FullyQualifiedName, k.SourceColumns, k.TargetColumns, true, skipOnTerminal, insertOffset));
 
 				codeItems = codeItems.Concat(parentToJoinedKeys);
