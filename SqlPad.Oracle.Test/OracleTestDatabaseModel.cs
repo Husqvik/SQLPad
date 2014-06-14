@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
@@ -244,8 +245,12 @@ namespace SqlPad.Oracle.Test
 		private static readonly IDictionary<OracleObjectIdentifier, OracleSchemaObject> ObjectsInternal;
 		
 		public override ConnectionStringSettings ConnectionString { get { return ConnectionStringInternal; } }
-		
-		public override string CurrentSchema { get { return CurrentSchemaInternal; } }
+
+		public override string CurrentSchema
+		{
+			get { return CurrentSchemaInternal; }
+			set { throw new NotSupportedException("Test model schema cannot be changed. "); }
+		}
 		
 		public override ICollection<string> Schemas { get { return SchemasInternal; } }
 
@@ -254,5 +259,9 @@ namespace SqlPad.Oracle.Test
 		public override IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjects { get { return AllObjectDictionary; } }
 		
 		public override void Refresh() { }
+
+		public override event EventHandler RefreshStarted = delegate { };
+
+		public override event EventHandler RefreshFinished = delegate { };
 	}
 }

@@ -58,23 +58,9 @@
 	</Window.CommandBindings>
 
 	<Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition />
-            <RowDefinition Height="72" />
-        </Grid.RowDefinitions>
-        <avalonedit:TextEditor x:Name="Editor"
-                               FontFamily="Consolas"
-                               ShowLineNumbers="True"
-                               TextChanged="EditorTextChangedHandler"
-                               ContextMenuOpening="ContextMenuOpeningHandler"
-                               MouseHover="MouseHoverHandler"
-                               PreviewKeyDown="EditorKeyDownHandler"
-							   PreviewKeyUp="EditorKeyUpHandler"
-                               MouseHoverStopped="MouseHoverStoppedHandler">
-            <avalonedit:TextEditor.ContextMenu>
-                <ContextMenu x:Name="CommandMenu" Placement="RelativePoint"></ContextMenu>
-            </avalonedit:TextEditor.ContextMenu>
-        </avalonedit:TextEditor>
-        <TextBlock Grid.Row="1" Grid.Column="0" x:Name="TextBlockToken" TextWrapping="WrapWithOverflow" />
+		<TabControl x:Name="DocumentTabControl">
+			<TabItem Header="+" x:Name="NewTabItem">
+			</TabItem>
+		</TabControl>
 	</Grid>
 </Window>

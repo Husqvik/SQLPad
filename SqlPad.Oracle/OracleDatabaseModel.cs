@@ -19,17 +19,19 @@ namespace SqlPad.Oracle
 		private const string SqlFuntionMetadataFileName = "OracleSqlFunctionMetadataCollection_12_1_0_1_0.xml";
 		private static readonly DataContractSerializer Serializer = new DataContractSerializer(typeof(OracleFunctionMetadataCollection));
 		private static bool _isRefreshing;
+		private static Task _backgroundTask;
 		private OracleFunctionMetadataCollection _allFunctionMetadata = new OracleFunctionMetadataCollection(Enumerable.Empty<OracleFunctionMetadata>());
 		private readonly ConnectionStringSettings _connectionString;
 		private HashSet<string> _schemas = new HashSet<string>();
+		private string _currentSchema;
 		private Dictionary<OracleObjectIdentifier, OracleSchemaObject> _allObjects = new Dictionary<OracleObjectIdentifier, OracleSchemaObject>();
 
 		public OracleDatabaseModel(ConnectionStringSettings connectionString)
 		{
 			_connectionString = connectionString;
 			_oracleConnectionString = new OracleConnectionStringBuilder(connectionString.ConnectionString);
+			_currentSchema = _oracleConnectionString.UserID;
 
-			Task backgroundTask = null;
 			string metadata;
 			if (MetadataCache.TryLoadMetadata(SqlFuntionMetadataFileName, out metadata))
 			{
@@ -40,31 +42,23 @@ namespace SqlPad.Oracle
 			}
 			else
 			{
+				ExecuteSynchronizedAction(GenerateBuiltInFunctionMetadata);
+			}
+		}
+
+		private static void ExecuteSynchronizedAction(Action action)
+		{
+			if (_isRefreshing)
+				return;
+
+			lock (LockObject)
+			{
 				if (_isRefreshing)
 					return;
 
-				lock (LockObject)
-				{
-					if (_isRefreshing)
-						return;
+				_isRefreshing = true;
 
-					_isRefreshing = true;
-
-					backgroundTask = Task.Factory.StartNew(GenerateBuiltInFunctionMetadata);
-				}
-			}
-
-			if (backgroundTask == null)
-			{
-				Task.Factory.StartNew(LoadSchemaObjectMetadata);
-			}
-			else
-			{
-				Task.Factory.StartNew(() =>
-				                      {
-					                      backgroundTask.Wait();
-					                      LoadSchemaObjectMetadata();
-				                      });
+				_backgroundTask = Task.Factory.StartNew(action);
 			}
 		}
 
@@ -76,7 +70,12 @@ namespace SqlPad.Oracle
 
 		public override string CurrentSchema
 		{
-			get { return _oracleConnectionString.UserID; }
+			get { return _currentSchema; }
+			set
+			{
+			
+				_currentSchema = value;
+			}
 		}
 
 		public override ICollection<string> Schemas { get { return _schemas; } }
@@ -85,7 +84,24 @@ namespace SqlPad.Oracle
 
 		public override void Refresh()
 		{
+			if (_backgroundTask == null)
+			{
+				ExecuteSynchronizedAction(LoadSchemaObjectMetadata);
+			}
+			else
+			{
+				var currentTask = _backgroundTask;
+				_backgroundTask = Task.Factory.StartNew(() =>
+				{
+					currentTask.Wait();
+					LoadSchemaObjectMetadata();
+				});
+			}
 		}
+
+		public override event EventHandler RefreshStarted = delegate { };
+
+		public override event EventHandler RefreshFinished = delegate { };
 
 		private OracleFunctionMetadataCollection GetUserFunctionMetadata()
 		{
@@ -355,12 +371,14 @@ ORDER BY
 
 		private void LoadSchemaObjectMetadata()
 		{
+			RefreshStarted(this, EventArgs.Empty);
+
 			const string selectAllSchemasCommandText = "SELECT USERNAME FROM ALL_USERS";
 			var schemaSource = ExecuteReader(
 				selectAllSchemasCommandText,
-				r => (string)r["USERNAME"]);
+				r => ((string)r["USERNAME"]).ToQuotedIdentifier());
 
-			_schemas = new HashSet<string>(schemaSource);
+			_schemas = new HashSet<string>(schemaSource) { SchemaPublic };
 
 			const string selectAllObjectsCommandText = "SELECT OWNER, OBJECT_NAME, SUBOBJECT_NAME, OBJECT_ID, DATA_OBJECT_ID, OBJECT_TYPE, CREATED, LAST_DDL_TIME, STATUS, TEMPORARY, EDITIONABLE, EDITION_NAME FROM ALL_OBJECTS WHERE OBJECT_TYPE IN ('SYNONYM', 'VIEW', 'TABLE')";
 			var dataObjectMetadataSource = ExecuteReader(
@@ -393,6 +411,24 @@ FROM ALL_TABLES";
 					return table;
 				})
 				.ToArray();
+
+			const string selectSynonymTargetsCommandText = "SELECT OWNER, SYNONYM_NAME, TABLE_OWNER, TABLE_NAME FROM ALL_SYNONYMS";
+			ExecuteReader(
+				selectSynonymTargetsCommandText,
+				r =>
+				{
+					var synonymFullyQualifiedName = OracleObjectIdentifier.Create((string)r["OWNER"], (string)r["SYNONYM_NAME"]);
+					OracleSchemaObject synonym;
+					dataObjectMetadata.TryGetValue(synonymFullyQualifiedName, out synonym);
+
+					var objectFullyQualifiedName = OracleObjectIdentifier.Create((string)r["TABLE_OWNER"], (string)r["TABLE_NAME"]);
+					OracleSchemaObject schemaObject;
+					dataObjectMetadata.TryGetValue(objectFullyQualifiedName, out schemaObject);
+
+					((OracleSynonym)synonym).SchemaObject = schemaObject;
+					return synonym;
+				}
+				).ToArray();
 
 			const string selectTableColumnsCommandText = "SELECT OWNER, TABLE_NAME, COLUMN_NAME, DATA_TYPE, DATA_TYPE_OWNER, DATA_LENGTH, CHAR_LENGTH, DATA_PRECISION, DATA_SCALE, CHAR_USED, NULLABLE, COLUMN_ID, NUM_DISTINCT, LOW_VALUE, HIGH_VALUE, NUM_NULLS, NUM_BUCKETS, LAST_ANALYZED, SAMPLE_SIZE, AVG_COL_LEN, HISTOGRAM FROM ALL_TAB_COLUMNS ORDER BY OWNER, TABLE_NAME, COLUMN_ID";
 			var columnMetadataSource = ExecuteReader(
@@ -516,6 +552,8 @@ FROM ALL_TABLES";
 			_allObjects = dataObjectMetadata;
 			//var tmp = dataObjectMetadata.Values.Where(o => o.FullyQualifiedName.NormalizedOwner == "\"HUSQVIK\"").ToArray();
 			//var types = tmp.OfType<OracleDataObject>().SelectMany(o => o.Columns.Values).Select(c => c.FullTypeName).Distinct().ToArray();
+
+			RefreshFinished(this, EventArgs.Empty);
 		}
 
 		private static class OracleObjectFactory

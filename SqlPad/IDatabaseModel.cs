@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 
 namespace SqlPad
@@ -7,11 +8,15 @@ namespace SqlPad
 	{
 		ConnectionStringSettings ConnectionString { get; }
 
-		string CurrentSchema { get; }
+		string CurrentSchema { get; set; }
 
 		ICollection<string> Schemas { get; }
 
 		void Refresh();
+
+		event EventHandler RefreshStarted;
+
+		event EventHandler RefreshFinished;
 	}
 
 	public interface IDatabaseObject

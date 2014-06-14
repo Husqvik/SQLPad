@@ -1,0 +1,49 @@
+﻿<UserControl x:Class="SqlPad.DocumentPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
+			 Loaded="PageLoadedHandler"
+             mc:Ignorable="d" 
+             d:DesignHeight="400" d:DesignWidth="800">
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="24" />
+			<RowDefinition />
+			<RowDefinition Height="24" />
+		</Grid.RowDefinitions>
+		<StackPanel HorizontalAlignment="Right">
+			<ComboBox x:Name="ComboBoxConnection"></ComboBox>
+			<ComboBox x:Name="ComboBoxSchema"></ComboBox>
+		</StackPanel>
+		<avalonedit:TextEditor x:Name="Editor"
+										   Grid.Row="1" Grid.Column="0"
+										   FontFamily="Consolas"
+										   ShowLineNumbers="True"
+										   TextChanged="EditorTextChangedHandler"
+										   ContextMenuOpening="ContextMenuOpeningHandler"
+										   MouseHover="MouseHoverHandler"
+										   PreviewKeyDown="EditorKeyDownHandler"
+										   PreviewKeyUp="EditorKeyUpHandler"
+										   MouseHoverStopped="MouseHoverStoppedHandler">
+			<avalonedit:TextEditor.ContextMenu>
+				<ContextMenu x:Name="CommandMenu" Placement="RelativePoint"></ContextMenu>
+			</avalonedit:TextEditor.ContextMenu>
+		</avalonedit:TextEditor>
+		<StatusBar x:Name="StatusBar" Grid.Row="2" Grid.Column="0">
+			<StatusBarItem>
+				<StackPanel Orientation="Horizontal">
+					<TextBlock Text="0" x:Name="TextCurrentRow"/>
+					<TextBlock Text="; " />
+					<TextBlock Text="0" x:Name="TextCurrentColumn"/>
+					<TextBlock Text="; " />
+					<TextBlock x:Name="TextCurrentSelectionLength"/>
+				</StackPanel>
+			</StatusBarItem>
+			<StatusBarItem VerticalContentAlignment="Stretch">
+				<ProgressBar x:Name="ProgressBar" Minimum="0" Maximum="100" Width="220" />
+			</StatusBarItem>
+		</StatusBar>
+	</Grid>
+</UserControl>

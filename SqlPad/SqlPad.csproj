@@ -77,6 +77,9 @@
     <Compile Include="ColorizeAvalonEdit.cs" />
     <Compile Include="Commands\CommandExecutionHandler.cs" />
     <Compile Include="Commands\ContextActionCommand.cs" />
+    <Compile Include="DocumentPage.xaml.cs">
+      <DependentUpon>DocumentPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="FindReplace\Adapters.cs" />
     <Compile Include="FindReplace\FindReplace.cs" />
     <Compile Include="FindReplace\FindReplaceDialog.xaml.cs">
@@ -126,6 +129,10 @@
     </Compile>
     <Compile Include="SourcePosition.cs" />
     <Compile Include="StatementDescriptionNode.cs" />
+    <Page Include="DocumentPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="EditDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

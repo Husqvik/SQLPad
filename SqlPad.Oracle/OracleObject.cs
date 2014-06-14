@@ -60,7 +60,7 @@ namespace SqlPad.Oracle
 
 		public bool IsPublic
 		{
-			get { return FullyQualifiedName.NormalizedOwner == OracleDatabaseModel.SchemaPublic; }
+			get { return FullyQualifiedName.NormalizedOwner == OracleDatabaseModelBase.SchemaPublic; }
 		}
 
 		public override string Type { get { return "SYNONYM"; } }

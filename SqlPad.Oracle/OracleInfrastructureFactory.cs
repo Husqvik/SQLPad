@@ -1,4 +1,5 @@
-﻿using System.Configuration;
+﻿using System.Collections.Generic;
+using System.Configuration;
 using SqlPad.Commands;
 using SqlPad.Oracle.Commands;
 
@@ -7,6 +8,7 @@ namespace SqlPad.Oracle
 	public class OracleInfrastructureFactory : IInfrastructureFactory
 	{
 		private readonly OracleCommandFactory _commandFactory = new OracleCommandFactory();
+		private readonly Dictionary<string, OracleDatabaseModel> _databaseModels = new Dictionary<string, OracleDatabaseModel>();
 
 		#region Implementation of IInfrastructureFactory
 		public ICommandFactory CommandFactory { get { return _commandFactory; } }
@@ -28,7 +30,13 @@ namespace SqlPad.Oracle
 
 		public IDatabaseModel CreateDatabaseModel(ConnectionStringSettings connectionString)
 		{
-			return new OracleDatabaseModel(connectionString);
+			OracleDatabaseModel databaseModel;
+			if (!_databaseModels.TryGetValue(connectionString.ConnectionString, out databaseModel))
+			{
+				_databaseModels[connectionString.ConnectionString] = databaseModel = new OracleDatabaseModel(connectionString);
+			}
+
+			return databaseModel;
 		}
 
 		public ICodeCompletionProvider CreateCodeCompletionProvider()

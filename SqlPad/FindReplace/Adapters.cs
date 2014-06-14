@@ -64,6 +64,5 @@ namespace SqlPad.FindReplace
 		{
 			throw new NotImplementedException();
 		}
-
 	}
 }

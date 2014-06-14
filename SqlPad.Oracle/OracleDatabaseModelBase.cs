@@ -13,11 +13,15 @@ namespace SqlPad.Oracle
 
 		public abstract ConnectionStringSettings ConnectionString { get; }
 		
-		public abstract string CurrentSchema { get; }
+		public abstract string CurrentSchema { get; set; }
 		
 		public abstract ICollection<string> Schemas { get; }
 		
 		public abstract void Refresh();
+
+		public abstract event EventHandler RefreshStarted;
+
+		public abstract event EventHandler RefreshFinished;
 
 		public abstract OracleFunctionMetadataCollection AllFunctionMetadata { get; }
 
