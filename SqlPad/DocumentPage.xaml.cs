@@ -58,7 +58,7 @@ namespace SqlPad
 			EditorAdapter = new TextEditorAdapter(Editor);
 
 			_databaseModel.RefreshStarted += (sender, args) => Dispatcher.Invoke(() => ProgressBar.IsIndeterminate = true);
-			_databaseModel.RefreshFinished += (sender, args) => Dispatcher.Invoke(() => ProgressBar.IsIndeterminate = false);
+			_databaseModel.RefreshFinished += DatabaseModelRefreshFinishedHandler;
 			_databaseModel.Refresh();
 
 			InitializeGenericCommands();
@@ -69,6 +69,16 @@ namespace SqlPad
 				var routedHandlerMethod = GenericCommandHandler.CreateRoutedEditCommandHandler(handler, () => _sqlDocument.StatementCollection, _databaseModel);
 				Editor.TextArea.DefaultInputHandler.Editing.CommandBindings.Add(new CommandBinding(command, routedHandlerMethod));
 			}
+		}
+
+		private void DatabaseModelRefreshFinishedHandler(object sender, EventArgs eventArgs)
+		{
+			Dispatcher.Invoke(() =>
+			                  {
+				                  ProgressBar.IsIndeterminate = false;
+								  ComboBoxSchema.ItemsSource = _databaseModel.Schemas.OrderBy(s => s);
+				                  ComboBoxSchema.SelectedItem = _databaseModel.CurrentSchema;
+			                  });
 		}
 
 		public TextEditorAdapter EditorAdapter { get; private set; }

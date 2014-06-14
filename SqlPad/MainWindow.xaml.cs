@@ -2,7 +2,6 @@
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
-using ICSharpCode.AvalonEdit;
 using SqlPad.FindReplace;
 
 namespace SqlPad
@@ -63,6 +62,9 @@ namespace SqlPad
 		private DocumentPage CreateNewDocumentPage()
 		{
 			var newDocumentPage = new DocumentPage(_infrastructureFactory);
+			newDocumentPage.ComboBoxConnection.ItemsSource = ConfigurationProvider.ConnectionStrings;
+			newDocumentPage.ComboBoxConnection.SelectedIndex = 0;
+			
 			_editorAdapters.Add(newDocumentPage.EditorAdapter);
 			
 			var newTab = new TabItem { Content = newDocumentPage, Header = "New" };

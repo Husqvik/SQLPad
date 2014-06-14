@@ -16,6 +16,8 @@ namespace SqlPad.Oracle
 		public abstract string CurrentSchema { get; set; }
 		
 		public abstract ICollection<string> Schemas { get; }
+
+		public abstract ICollection<string> AllSchemas { get; }
 		
 		public abstract void Refresh();
 
@@ -44,7 +46,7 @@ namespace SqlPad.Oracle
 			}
 			else
 			{
-				schemaFound = Schemas.Contains(objectIdentifier.NormalizedOwner);
+				schemaFound = AllSchemas.Contains(objectIdentifier.NormalizedOwner);
 
 				if (schemaFound)
 				{

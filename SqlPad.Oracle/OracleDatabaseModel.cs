@@ -23,6 +23,7 @@ namespace SqlPad.Oracle
 		private OracleFunctionMetadataCollection _allFunctionMetadata = new OracleFunctionMetadataCollection(Enumerable.Empty<OracleFunctionMetadata>());
 		private readonly ConnectionStringSettings _connectionString;
 		private HashSet<string> _schemas = new HashSet<string>();
+		private HashSet<string> _allSchemas = new HashSet<string>();
 		private string _currentSchema;
 		private Dictionary<OracleObjectIdentifier, OracleSchemaObject> _allObjects = new Dictionary<OracleObjectIdentifier, OracleSchemaObject>();
 
@@ -79,6 +80,8 @@ namespace SqlPad.Oracle
 		}
 
 		public override ICollection<string> Schemas { get { return _schemas; } }
+		
+		public override ICollection<string> AllSchemas { get { return _allSchemas; } }
 		//public IDictionary<OracleObjectIdentifier, OracleSchemaObject> Objects { get { return OracleTestDatabaseModel.Instance.Objects; } }
 		public override IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjects { get { return _allObjects; } }
 
@@ -376,9 +379,11 @@ ORDER BY
 			const string selectAllSchemasCommandText = "SELECT USERNAME FROM ALL_USERS";
 			var schemaSource = ExecuteReader(
 				selectAllSchemasCommandText,
-				r => ((string)r["USERNAME"]).ToQuotedIdentifier());
+				r => ((string)r["USERNAME"]))
+				.ToArray();
 
-			_schemas = new HashSet<string>(schemaSource) { SchemaPublic };
+			_schemas = new HashSet<string>(schemaSource);
+			_allSchemas = new HashSet<string>(schemaSource.Select(s => s.ToQuotedIdentifier())) { SchemaPublic };
 
 			const string selectAllObjectsCommandText = "SELECT OWNER, OBJECT_NAME, SUBOBJECT_NAME, OBJECT_ID, DATA_OBJECT_ID, OBJECT_TYPE, CREATED, LAST_DDL_TIME, STATUS, TEMPORARY, EDITIONABLE, EDITION_NAME FROM ALL_OBJECTS WHERE OBJECT_TYPE IN ('SYNONYM', 'VIEW', 'TABLE')";
 			var dataObjectMetadataSource = ExecuteReader(

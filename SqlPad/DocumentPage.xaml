@@ -13,9 +13,23 @@
 			<RowDefinition />
 			<RowDefinition Height="24" />
 		</Grid.RowDefinitions>
-		<StackPanel HorizontalAlignment="Right">
-			<ComboBox x:Name="ComboBoxConnection"></ComboBox>
-			<ComboBox x:Name="ComboBoxSchema"></ComboBox>
+		<StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+			<TextBlock Text="Connection: " VerticalAlignment="Center"></TextBlock>
+			<ComboBox x:Name="ComboBoxConnection">
+				<ComboBox.ItemTemplate>
+					<DataTemplate>
+						<TextBlock Text="{Binding Path=Name}"></TextBlock>
+					</DataTemplate>
+				</ComboBox.ItemTemplate>
+			</ComboBox>
+			<TextBlock Text="Schema: " VerticalAlignment="Center"></TextBlock>
+			<ComboBox x:Name="ComboBoxSchema">
+				<ComboBox.ItemTemplate>
+					<DataTemplate>
+						<TextBlock Text="{Binding}"></TextBlock>
+					</DataTemplate>
+				</ComboBox.ItemTemplate>
+			</ComboBox>
 		</StackPanel>
 		<avalonedit:TextEditor x:Name="Editor"
 										   Grid.Row="1" Grid.Column="0"

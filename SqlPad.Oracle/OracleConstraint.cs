@@ -42,8 +42,6 @@ namespace SqlPad.Oracle
 
 		public OracleUniqueConstraint ReferenceConstraint { get; set; }
 
-		public IList<string> TargetColumns { get; set; }
-
 		public DeleteRule DeleteRule { get; set; }
 
 		public override ConstraintType Type { get { return ConstraintType.ForeignKey; } }

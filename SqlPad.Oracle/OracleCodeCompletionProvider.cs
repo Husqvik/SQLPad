@@ -24,7 +24,7 @@ namespace SqlPad.Oracle
 			new OracleCodeCompletionItem { Name = JoinTypeLeftJoin, Text = JoinTypeLeftJoin, Priority = 1, Category = OracleCodeCompletionCategory.JoinMethod, CategoryPriority = 1 },
 			new OracleCodeCompletionItem { Name = JoinTypeRightJoin, Text = JoinTypeRightJoin, Priority = 2, Category = OracleCodeCompletionCategory.JoinMethod, CategoryPriority = 1 },
 			new OracleCodeCompletionItem { Name = JoinTypeFullJoin, Text = JoinTypeFullJoin, Priority = 3, Category = OracleCodeCompletionCategory.JoinMethod, CategoryPriority = 1 },
-			new OracleCodeCompletionItem { Name = JoinTypeCrossJoin, Text = JoinTypeCrossJoin, Priority = 4, Category = OracleCodeCompletionCategory.JoinMethod, CategoryPriority = 1 },
+			new OracleCodeCompletionItem { Name = JoinTypeCrossJoin, Text = JoinTypeCrossJoin, Priority = 4, Category = OracleCodeCompletionCategory.JoinMethod, CategoryPriority = 1 }
 		};
 
 		public ICollection<FunctionOverloadDescription> ResolveFunctionOverloads(StatementCollection statementCollection, IDatabaseModel databaseModel, int cursorPosition)
@@ -342,7 +342,7 @@ namespace SqlPad.Oracle
 			var rowIdItems = columnCandidates.Values.SelectMany(v => v)
 				.Distinct()
 				.Where(o => o.SearchResult.SchemaObject != null && o.SearchResult.SchemaObject.Organization.In(OrganizationType.Heap, OrganizationType.Index) &&
-				            o.SearchResult.SchemaObject.Type == OracleDatabaseModel.DataObjectTypeTable && suggestedColumns.Select(t => t.Item2).Contains(o.FullyQualifiedName))
+				            o.SearchResult.SchemaObject.Type == OracleDatabaseModelBase.DataObjectTypeTable && suggestedColumns.Select(t => t.Item2).Contains(o.FullyQualifiedName))
 				.Select(o => CreateColumnCodeCompletionItem(OracleColumn.RowId, objectIdentifierNode == null ? o.FullyQualifiedName.ToString() : null, currentNode, OracleCodeCompletionCategory.PseudoColumn));
 
 			var suggestedItems = rowIdItems.Concat(suggestedColumns.Select(t => CreateColumnCodeCompletionItem(t.Item1, objectIdentifierNode == null ? t.Item2.ToString() : null, currentNode)));
@@ -422,8 +422,8 @@ namespace SqlPad.Oracle
 
 		private IEnumerable<ICodeCompletionItem> GenerateSchemaItems(string schemaNamePart, StatementDescriptionNode node, int insertOffset, OracleDatabaseModelBase databaseModel, int priorityOffset = 0)
 		{
-			return databaseModel.Schemas
-				.Where(s => s != OracleDatabaseModel.SchemaPublic && (schemaNamePart.ToQuotedIdentifier() != s && (String.IsNullOrEmpty(schemaNamePart) || s.ToUpperInvariant().Contains(schemaNamePart.ToUpperInvariant()))))
+			return databaseModel.AllSchemas
+				.Where(s => s != OracleDatabaseModelBase.SchemaPublic && (schemaNamePart.ToQuotedIdentifier() != s && (String.IsNullOrEmpty(schemaNamePart) || s.ToUpperInvariant().Contains(schemaNamePart.ToUpperInvariant()))))
 				.Select(s => new OracleCodeCompletionItem
 				             {
 								 Name = s.ToSimpleIdentifier(),
@@ -498,12 +498,12 @@ namespace SqlPad.Oracle
 				var joinedObject = joinedSchemaObject.SearchResult.SchemaObject;
 
 				var joinedToParentKeys = parentObject.ForeignKeys.Where(k => k.TargetObject == joinedObject)
-					.Select(k => GenerateJoinConditionSuggestionItem(parentSchemaObject.FullyQualifiedName, joinedSchemaObject.FullyQualifiedName, k.Columns, k.TargetColumns, false, skipOnTerminal, insertOffset));
+					.Select(k => GenerateJoinConditionSuggestionItem(parentSchemaObject.FullyQualifiedName, joinedSchemaObject.FullyQualifiedName, k.Columns, k.ReferenceConstraint.Columns, false, skipOnTerminal, insertOffset));
 
 				codeItems = codeItems.Concat(joinedToParentKeys);
 
 				var parentToJoinedKeys = joinedObject.ForeignKeys.Where(k => k.TargetObject == parentObject)
-					.Select(k => GenerateJoinConditionSuggestionItem(joinedSchemaObject.FullyQualifiedName, parentSchemaObject.FullyQualifiedName, k.Columns, k.TargetColumns, true, skipOnTerminal, insertOffset));
+					.Select(k => GenerateJoinConditionSuggestionItem(joinedSchemaObject.FullyQualifiedName, parentSchemaObject.FullyQualifiedName, k.Columns, k.ReferenceConstraint.Columns, true, skipOnTerminal, insertOffset));
 
 				codeItems = codeItems.Concat(parentToJoinedKeys);
 			}
