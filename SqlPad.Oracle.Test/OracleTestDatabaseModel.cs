@@ -15,6 +15,7 @@ namespace SqlPad.Oracle.Test
 
 		private const string CurrentSchemaInternal = "\"HUSQVIK\"";
 		private const string OwnerNameSys = "\"SYS\"";
+		private const string NotSupported = "not supported";
 		private static readonly ConnectionStringSettings ConnectionStringInternal = new ConnectionStringSettings("ConnectionFake", "DATA SOURCE=HQ_PDB_TCP;PASSWORD=oracle;USER ID=HUSQVIK", "Oracle.DataAccess.Client");
 
 		private static readonly HashSet<string> SchemasInternal = new HashSet<string> { OwnerNameSys, "\"SYSTEM\"", CurrentSchemaInternal };
@@ -307,9 +308,24 @@ namespace SqlPad.Oracle.Test
 
 		public override event EventHandler RefreshFinished = delegate { };
 
-		public override void ExecuteStatement(string commandText) { }
+		public override void ExecuteStatement(string commandText)
+		{
+			throw new NotSupportedException(NotSupported);
+		}
+
+		public override IEnumerable<object[]> FetchRecords(int rowCount)
+		{
+			throw new NotSupportedException(NotSupported);
+		}
+
+		public override ICollection<ColumnHeader> GetColumnHeaders()
+		{
+			throw new NotSupportedException(NotSupported);
+		}
 
 		public override bool CanExecute { get { return false; } }
+
+		public override bool CanFetch { get { return false; } }
 		
 		public override bool IsExecuting { get { return false; } }
 	}

@@ -29,7 +29,13 @@ namespace SqlPad.Oracle
 
 		public abstract void ExecuteStatement(string commandText);
 
+		public abstract IEnumerable<object[]> FetchRecords(int rowCount);
+
+		public abstract ICollection<ColumnHeader> GetColumnHeaders();
+
 		public abstract bool CanExecute { get; }
+		
+		public abstract bool CanFetch { get; }
 
 		public abstract bool IsExecuting { get; }
 

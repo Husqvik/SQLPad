@@ -128,7 +128,7 @@ namespace SqlPad.Oracle
 		
 		public override bool IsExecuting { get { return _isExecuting; } }
 		
-		public bool CanFetch { get { return _dataReader != null && !_dataReader.IsClosed; } }
+		public override bool CanFetch { get { return _dataReader != null && !_dataReader.IsClosed; } }
 
 		public override void Dispose()
 		{
@@ -448,12 +448,62 @@ ORDER BY
 			if (!CanExecute)
 				throw new InvalidOperationException("Another statement is executing right now. ");
 
+			if (CanFetch)
+			{
+				_dataReader.Dispose();
+			}
+
 			_dataReader = ExecuteUserStatement(commandText, c => c.ExecuteReader(CommandBehavior.CloseConnection));
 		}
 
 		public Task ExecuteStatementAsync(string commandText)
 		{
 			return _statementExecutionTask = Task.Factory.StartNew(c => ExecuteStatement((string)c), commandText);
+		}
+
+		public override ICollection<ColumnHeader> GetColumnHeaders()
+		{
+			CheckCanFetch();
+
+			var columnTypes = new ColumnHeader[_dataReader.FieldCount];
+			for (var i = 0; i < _dataReader.FieldCount; i++)
+			{
+				columnTypes[i] =
+					new ColumnHeader
+					{
+						ColumnIndex = i,
+						Name = _dataReader.GetName(i),
+						DataType = _dataReader.GetFieldType(i),
+						DatabaseDataType = _dataReader.GetDataTypeName(i)
+					};
+			}
+
+			return columnTypes;
+		}
+
+		public override IEnumerable<object[]> FetchRecords(int rowCount)
+		{
+			CheckCanFetch();
+
+			for (var i = 0; i < rowCount; i++)
+			{
+				if (_dataReader.Read())
+				{
+					var columnData = new object[_dataReader.FieldCount];
+					_dataReader.GetValues(columnData);
+					yield return columnData;
+				}
+				else
+				{
+					break;
+				}
+			}
+		}
+
+		private void CheckCanFetch()
+		{
+			if (!CanFetch)
+				throw new InvalidOperationException("No data reader available. ");
 		}
 
 		private IEnumerable<T> ExecuteReader<T>(string commandText, Func<OracleDataReader, T> formatFunction)

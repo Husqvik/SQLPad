@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Data;
 using System.Windows.Input;
 using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.CodeCompletion;
@@ -88,7 +89,11 @@ namespace SqlPad
 
 		private void DatabaseModelRefreshFinishedHandler(object sender, EventArgs eventArgs)
 		{
-			Dispatcher.Invoke(() => ProgressBar.IsIndeterminate = false);
+			Dispatcher.Invoke(() =>
+			                  {
+				                  ProgressBar.IsIndeterminate = false;
+								  ReParse();
+			                  });
 		}
 
 		private void InitializeGenericCommands()
@@ -176,6 +181,31 @@ namespace SqlPad
 				return;
 
 			_databaseModel.ExecuteStatement(statement.RootNode.GetStatementSubstring(Editor.Text));
+
+			if (_databaseModel.CanFetch)
+			{
+				InitializeResultGrid();
+				var itemsSource = _databaseModel.FetchRecords(25).ToArray();
+				ResultGrid.ItemsSource = itemsSource;
+			}
+		}
+
+		private void InitializeResultGrid()
+		{
+			ResultGrid.ItemsSource = null;
+			ResultGrid.Columns.Clear();
+
+			foreach (var columnHeader in _databaseModel.GetColumnHeaders())
+			{
+				var columnTemplate =
+					new DataGridTextColumn
+					{
+						Header = columnHeader.Name.Replace("_", "__"),
+						Binding = new Binding(String.Format("[{0}]", columnHeader.ColumnIndex))
+					};
+
+				ResultGrid.Columns.Add(columnTemplate);
+			}
 		}
 
 		private void FindUsages(object sender, ExecutedRoutedEventArgs args)

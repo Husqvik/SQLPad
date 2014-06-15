@@ -14,6 +14,8 @@ namespace SqlPad
 
 		bool CanExecute { get; }
 
+		bool CanFetch { get; }
+
 		bool IsExecuting { get; }
 
 		void Refresh();
@@ -23,6 +25,10 @@ namespace SqlPad
 		event EventHandler RefreshFinished;
 
 		void ExecuteStatement(string commandText);
+
+		IEnumerable<object[]> FetchRecords(int rowCount);
+
+		ICollection<ColumnHeader> GetColumnHeaders();
 	}
 
 	public interface IDatabaseObject
@@ -32,6 +38,17 @@ namespace SqlPad
 		string Type { get; }
 
 		string Owner { get; }
+	}
+
+	public struct ColumnHeader
+	{
+		public int ColumnIndex { get; set; }
+
+		public string Name { get; set; }
+
+		public string DatabaseDataType { get; set; }
+
+		public Type DataType { get; set; }
 	}
 
 	public interface IColumn

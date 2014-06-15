@@ -11,7 +11,9 @@
 	<Grid>
 		<Grid.RowDefinitions>
 			<RowDefinition Height="24" />
-			<RowDefinition />
+			<RowDefinition Height="*" />
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="*" />
 			<RowDefinition Height="24" />
 		</Grid.RowDefinitions>
 		<StackPanel HorizontalAlignment="Right" Orientation="Horizontal" sqlPad:MarginSetter.Margin="4,1,4,1">
@@ -46,7 +48,10 @@
 				<ContextMenu x:Name="CommandMenu" Placement="RelativePoint"></ContextMenu>
 			</avalonedit:TextEditor.ContextMenu>
 		</avalonedit:TextEditor>
-		<StatusBar x:Name="StatusBar" Grid.Row="2" Grid.Column="0">
+		<GridSplitter Grid.Row="2" Height="5" HorizontalAlignment="Stretch"  ShowsPreview="True" VerticalAlignment="Center" Background="DimGray" />
+		<DataGrid x:Name="ResultGrid" Grid.Row="3" AutoGenerateColumns="False">
+		</DataGrid>
+		<StatusBar x:Name="StatusBar" Grid.Row="4" Grid.Column="0">
 			<StatusBarItem>
 				<StackPanel Orientation="Horizontal">
 					<TextBlock Text="0" x:Name="TextCurrentRow"/>
