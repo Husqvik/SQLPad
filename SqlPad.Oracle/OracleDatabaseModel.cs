@@ -19,7 +19,10 @@ namespace SqlPad.Oracle
 		private const string SqlFuntionMetadataFileName = "OracleSqlFunctionMetadataCollection_12_1_0_1_0.xml";
 		private static readonly DataContractSerializer Serializer = new DataContractSerializer(typeof(OracleFunctionMetadataCollection));
 		private static bool _isRefreshing;
+		private static bool _canExecute = true;
+		private static bool _isExecuting;
 		private static Task _backgroundTask;
+		private static Task _statementExecutionTask;
 		private OracleFunctionMetadataCollection _allFunctionMetadata = new OracleFunctionMetadataCollection(Enumerable.Empty<OracleFunctionMetadata>());
 		private readonly ConnectionStringSettings _connectionString;
 		private HashSet<string> _schemas = new HashSet<string>();
@@ -27,6 +30,7 @@ namespace SqlPad.Oracle
 		private string _currentSchema;
 		private Dictionary<OracleObjectIdentifier, OracleSchemaObject> _allObjects = new Dictionary<OracleObjectIdentifier, OracleSchemaObject>();
 		private OracleConnection _userConnection;
+		private OracleDataReader _dataReader;
 
 		public OracleDatabaseModel(ConnectionStringSettings connectionString)
 		{
@@ -120,12 +124,29 @@ namespace SqlPad.Oracle
 
 		public override event EventHandler RefreshFinished = delegate { };
 
+		public override bool CanExecute { get { return _canExecute; } }
+		
+		public override bool IsExecuting { get { return _isExecuting; } }
+		
+		public bool CanFetch { get { return _dataReader != null && !_dataReader.IsClosed; } }
+
 		public override void Dispose()
 		{
-			_userConnection.Dispose();
+			if (_dataReader != null)
+				_dataReader.Dispose();
+
+			if (_statementExecutionTask != null)
+				_statementExecutionTask.Dispose();
 
 			if (_backgroundTask != null)
 				_backgroundTask.Dispose();
+			
+			_userConnection.Dispose();
+		}
+
+		public OracleDatabaseModel Clone()
+		{
+			throw new NotImplementedException();
 		}
 
 		private OracleFunctionMetadataCollection GetUserFunctionMetadata()
@@ -390,22 +411,49 @@ ORDER BY
 			return OracleFunctionIdentifier.CreateFromValues(owner == DBNull.Value ? null : QualifyStringObject(owner), package == DBNull.Value ? null : QualifyStringObject(package), QualifyStringObject(name), Convert.ToInt32(overload));
 		}
 
-		private void ExecuteUserNonQuery(string commandText)
+		private int ExecuteUserNonQuery(string commandText)
+		{
+			return ExecuteUserStatement(commandText, c => c.ExecuteNonQuery(), true);
+		}
+
+		private T ExecuteUserStatement<T>(string commandText, Func<OracleCommand, T> executeFunction, bool closeConnection = false)
 		{
 			using (var command = _userConnection.CreateCommand())
 			{
 				command.CommandText = commandText;
 
-				try
+				lock (LockObject)
 				{
-					_userConnection.Open();
-					command.ExecuteNonQuery();
-				}
-				finally
-				{
-					_userConnection.Close();
+					try
+					{
+						_isExecuting = true;
+						_userConnection.Open();
+						return executeFunction(command);
+					}
+					finally
+					{
+						if (closeConnection)
+						{
+							_userConnection.Close();
+						}
+
+						_isExecuting = true;
+					}
 				}
 			}
+		}
+
+		public override void ExecuteStatement(string commandText)
+		{
+			if (!CanExecute)
+				throw new InvalidOperationException("Another statement is executing right now. ");
+
+			_dataReader = ExecuteUserStatement(commandText, c => c.ExecuteReader(CommandBehavior.CloseConnection));
+		}
+
+		public Task ExecuteStatementAsync(string commandText)
+		{
+			return _statementExecutionTask = Task.Factory.StartNew(c => ExecuteStatement((string)c), commandText);
 		}
 
 		private IEnumerable<T> ExecuteReader<T>(string commandText, Func<OracleDataReader, T> formatFunction)

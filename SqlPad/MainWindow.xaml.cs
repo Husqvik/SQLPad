@@ -4,6 +4,8 @@ using System.ComponentModel;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
+using System.Windows.Input;
 using SqlPad.FindReplace;
 
 namespace SqlPad
@@ -44,7 +46,14 @@ namespace SqlPad
 				return;
 
 			var files = (string[])e.Data.GetData(DataFormats.FileDrop);
-			CreateNewDocumentPage().Editor.Text = File.ReadAllText(files[0]);
+			foreach (var file in files)
+			{
+				var fileInfo = new FileInfo(file);
+				if (!fileInfo.Exists)
+					continue;
+
+				CreateNewDocumentPage(fileInfo.Name).Editor.Text = File.ReadAllText(file);
+			}
 		}
 
 		private void TabControlSelectionChangedHandler(object sender, SelectionChangedEventArgs e)
@@ -61,7 +70,7 @@ namespace SqlPad
 			CreateNewDocumentPage();
 		}
 
-		private DocumentPage CreateNewDocumentPage()
+		private DocumentPage CreateNewDocumentPage(string header = "New")
 		{
 			var newDocumentPage = new DocumentPage(_infrastructureFactory);
 			newDocumentPage.ComboBoxConnection.IsEnabled = ConfigurationProvider.ConnectionStrings.Count > 1;
@@ -69,14 +78,22 @@ namespace SqlPad
 			newDocumentPage.ComboBoxConnection.SelectedIndex = 0;
 			
 			_editorAdapters.Add(newDocumentPage.EditorAdapter);
-			
-			var newTab = new TabItem { Content = newDocumentPage, Header = "New" };
+
+			var newTab = new TabItem { Content = newDocumentPage, Header = new ContentControl { Content = header, ContextMenu = CreateTabItemHeaderContextMenu() } };
 			DocumentTabControl.Items.Insert(DocumentTabControl.Items.Count - 1, newTab);
 			DocumentTabControl.SelectedItem = newTab;
 
 			_findReplaceManager.CurrentEditor = newDocumentPage.EditorAdapter;
 
 			return newDocumentPage;
+		}
+
+		private ContextMenu CreateTabItemHeaderContextMenu()
+		{
+			var contextMenu = new ContextMenu();
+			contextMenu.Items.Add(new MenuItem { Header = "Close" });
+
+			return contextMenu;
 		}
 
 		private void WindowClosingHandler(object sender, CancelEventArgs e)

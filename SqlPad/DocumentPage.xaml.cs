@@ -59,6 +59,13 @@ namespace SqlPad
 
 			InitializeComponent();
 
+			Editor.TextArea.TextView.LineTransformers.Add(_colorizeAvalonEdit);
+
+			Editor.TextArea.TextEntering += TextEnteringHandler;
+			Editor.TextArea.TextEntered += TextEnteredHandler;
+
+			Editor.TextArea.Caret.PositionChanged += CaretOnPositionChanged;
+
 			ComboBoxSchema.ItemsSource = _databaseModel.Schemas.OrderBy(s => s);
 
 			EditorAdapter = new TextEditorAdapter(Editor);
@@ -167,6 +174,8 @@ namespace SqlPad
 			var statement = _sqlDocument.StatementCollection.GetStatementAtPosition(Editor.CaretOffset);
 			if (statement == null)
 				return;
+
+			_databaseModel.ExecuteStatement(statement.RootNode.GetStatementSubstring(Editor.Text));
 		}
 
 		private void FindUsages(object sender, ExecutedRoutedEventArgs args)
@@ -230,13 +239,6 @@ namespace SqlPad
 
 		private void PageLoadedHandler(object sender, RoutedEventArgs e)
 		{
-			Editor.TextArea.TextView.LineTransformers.Add(_colorizeAvalonEdit);
-
-			Editor.TextArea.TextEntering += TextEnteringHandler;
-			Editor.TextArea.TextEntered += TextEnteredHandler;
-
-			Editor.TextArea.Caret.PositionChanged += CaretOnPositionChanged;
-
 			Editor.Focus();
 		}
 

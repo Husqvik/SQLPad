@@ -71,9 +71,11 @@ namespace SqlPad.Oracle
 					Name = AliasNode == null ? null : AliasNode.Token.Value.ToQuotedIdentifier(),
 					Nullable = columnDescription == null || columnDescription.Nullable,
 					Type = columnDescription == null ? null : columnDescription.Type,
-					Precision = columnDescription == null ? Int32.MinValue : columnDescription.Precision,
-					Scale = columnDescription == null ? Int32.MinValue : columnDescription.Scale,
-					Size = columnDescription == null ? Int32.MinValue : columnDescription.Size
+					Precision = columnDescription == null ? null : columnDescription.Precision,
+					Scale = columnDescription == null ? null : columnDescription.Scale,
+					Size = columnDescription == null ? Int32.MinValue : columnDescription.Size,
+					CharacterSize = columnDescription == null ? Int32.MinValue : columnDescription.CharacterSize,
+					Unit = columnDescription == null ? DataUnit.NotApplicable : columnDescription.Unit
 				};
 
 			return _columnDescription;

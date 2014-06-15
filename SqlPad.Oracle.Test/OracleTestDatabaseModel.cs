@@ -306,5 +306,11 @@ namespace SqlPad.Oracle.Test
 		public override event EventHandler RefreshStarted = delegate { };
 
 		public override event EventHandler RefreshFinished = delegate { };
+
+		public override void ExecuteStatement(string commandText) { }
+
+		public override bool CanExecute { get { return false; } }
+		
+		public override bool IsExecuting { get { return false; } }
 	}
 }

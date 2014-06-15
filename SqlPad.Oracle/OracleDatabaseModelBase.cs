@@ -27,6 +27,12 @@ namespace SqlPad.Oracle
 
 		public abstract event EventHandler RefreshFinished;
 
+		public abstract void ExecuteStatement(string commandText);
+
+		public abstract bool CanExecute { get; }
+
+		public abstract bool IsExecuting { get; }
+
 		public abstract OracleFunctionMetadataCollection AllFunctionMetadata { get; }
 
 		public abstract IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjects { get; }

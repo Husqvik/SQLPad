@@ -12,11 +12,17 @@ namespace SqlPad
 
 		ICollection<string> Schemas { get; }
 
+		bool CanExecute { get; }
+
+		bool IsExecuting { get; }
+
 		void Refresh();
 
 		event EventHandler RefreshStarted;
 
 		event EventHandler RefreshFinished;
+
+		void ExecuteStatement(string commandText);
 	}
 
 	public interface IDatabaseObject
