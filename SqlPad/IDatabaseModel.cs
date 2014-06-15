@@ -4,7 +4,7 @@ using System.Configuration;
 
 namespace SqlPad
 {
-	public interface IDatabaseModel
+	public interface IDatabaseModel : IDisposable
 	{
 		ConnectionStringSettings ConnectionString { get; }
 

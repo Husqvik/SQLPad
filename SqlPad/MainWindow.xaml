@@ -5,7 +5,9 @@
         xmlns:local="clr-namespace:SqlPad"
         xmlns:findReplace="clr-namespace:SqlPad.FindReplace"
         Title="SQL Pad 0.01 Alpha" Height="640" Width="960" Loaded="WindowLoadedHandler"
-		Drop="DropObjectHandler">
+		Drop="DropObjectHandler"
+		Closing="WindowClosingHandler"
+		Closed="WindowClosedHandler">
 
 	<Window.Resources>
         <TextDecoration x:Key="WaveErrorUnderline" PenOffset="0.5">

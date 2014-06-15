@@ -93,11 +93,6 @@ namespace SqlPad.Oracle
 			};
 		}
 
-		internal static OracleFunctionIdentifier CreateFromReaderValues(object owner, object package, object name, object overload)
-		{
-			return CreateFromValues(owner == DBNull.Value ? null : (string)owner, package == DBNull.Value ? null : (string)package, (string)name, Convert.ToInt32(overload));
-		}
-
 		public bool EqualsWithAnyOverload(OracleFunctionIdentifier other)
 		{
 			return string.Equals(Owner, other.Owner) && string.Equals(Name, other.Name) && string.Equals(Package, other.Package);
@@ -151,19 +146,19 @@ namespace SqlPad.Oracle
 		[DataMember]
 		private int? _metadataMaximumArguments;
 
-		internal OracleFunctionMetadata(IList<object> values, bool isBuiltIn)
+		internal OracleFunctionMetadata(OracleFunctionIdentifier identifier, bool isAnalytic, bool isAggregate, bool isPipelined, bool isOffloadable, bool parallelSupport, bool isDeterministic, int? metadataMinimumArguments, int? metadataMaximumArguments, AuthId authId, string displayType, bool isBuiltIn)
 		{
-			Identifier = OracleFunctionIdentifier.CreateFromReaderValues(values[0], values[1], values[2], values[3]);
-			IsAnalytic = (string)values[4] == "YES";
-			IsAggregate = (string)values[5] == "YES";
-			IsPipelined = (string)values[6] == "YES";
-			IsOffloadable = (string)values[7] == "YES";
-			ParallelSupport = (string)values[8] == "YES";
-			IsDeterministic = (string)values[9] == "YES";
-			_metadataMinimumArguments = values[10] == DBNull.Value ? null : (int?)Convert.ToInt32(values[10]);
-			_metadataMaximumArguments = values[11] == DBNull.Value ? null : (int?)Convert.ToInt32(values[11]);
-			AuthId = (string)values[12] == "CURRENT_USER" ? AuthId.CurrentUser : AuthId.Definer;
-			DisplayType = (string)values[13];
+			Identifier = identifier;
+			IsAnalytic = isAnalytic;
+			IsAggregate = isAggregate;
+			IsPipelined = isPipelined;
+			IsOffloadable = isOffloadable;
+			ParallelSupport = parallelSupport;
+			IsDeterministic = isDeterministic;
+			_metadataMinimumArguments = metadataMinimumArguments;
+			_metadataMaximumArguments = metadataMaximumArguments;
+			AuthId = authId;
+			DisplayType = displayType;
 			IsBuiltIn = isBuiltIn;
 			Parameters = new List<OracleFunctionParameterMetadata>();
 		}

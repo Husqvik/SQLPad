@@ -19,7 +19,7 @@ namespace SqlPad.Oracle.Commands
 		{
 			return CurrentNode != null && CurrentQueryBlock != null &&
 			       CurrentNode.Id == OracleGrammarDescription.Terminals.Asterisk &&
-			       !GetSegmentToReplace(true).Equals(TextSegment.Empty);
+			       !GetSegmentToReplace(false).Equals(TextSegment.Empty);
 		}
 
 		private CommandSettingsModel ConfigureSettings()

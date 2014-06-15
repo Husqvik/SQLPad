@@ -37,6 +37,8 @@ namespace SqlPad
 		private readonly ToolTip _toolTip = new ToolTip();
 		private bool _isToolTipOpenByShortCut;
 
+		public TextEditorAdapter EditorAdapter { get; private set; }
+		
 		public DocumentPage(IInfrastructureFactory infrastructureFactory)
 		{
 			if (infrastructureFactory == null)
@@ -53,9 +55,15 @@ namespace SqlPad
 			_databaseModel = _infrastructureFactory.CreateDatabaseModel(ConfigurationProvider.ConnectionStrings["Default"]);
 			_colorizeAvalonEdit = new ColorizeAvalonEdit(_databaseModel);
 
+			_timer.Elapsed += (sender, args) => Dispatcher.Invoke(ReParse);
+
 			InitializeComponent();
 
+			ComboBoxSchema.ItemsSource = _databaseModel.Schemas.OrderBy(s => s);
+
 			EditorAdapter = new TextEditorAdapter(Editor);
+
+			DataContext = new PageModel(_databaseModel, ReParse);
 
 			_databaseModel.RefreshStarted += (sender, args) => Dispatcher.Invoke(() => ProgressBar.IsIndeterminate = true);
 			_databaseModel.RefreshFinished += DatabaseModelRefreshFinishedHandler;
@@ -73,15 +81,8 @@ namespace SqlPad
 
 		private void DatabaseModelRefreshFinishedHandler(object sender, EventArgs eventArgs)
 		{
-			Dispatcher.Invoke(() =>
-			                  {
-				                  ProgressBar.IsIndeterminate = false;
-								  ComboBoxSchema.ItemsSource = _databaseModel.Schemas.OrderBy(s => s);
-				                  ComboBoxSchema.SelectedItem = _databaseModel.CurrentSchema;
-			                  });
+			Dispatcher.Invoke(() => ProgressBar.IsIndeterminate = false);
 		}
-
-		public TextEditorAdapter EditorAdapter { get; private set; }
 
 		private void InitializeGenericCommands()
 		{
@@ -402,6 +403,11 @@ namespace SqlPad
 			}
 		}
 
+		public void ReParse()
+		{
+			EditorTextChangedHandler(this, EventArgs.Empty);
+		}
+
 		private void EditorTextChangedHandler(object sender, EventArgs e)
 		{
 			if (_isParsing)
@@ -549,6 +555,28 @@ namespace SqlPad
 				{
 					Editor.Document.Remove(Editor.CaretOffset, 1);
 				}
+			}
+		}
+	}
+
+	public class PageModel
+	{
+		private readonly IDatabaseModel _databaseModel;
+		private readonly Action _reParseAction;
+
+		public PageModel(IDatabaseModel databaseModel, Action reParseAction)
+		{
+			_reParseAction = reParseAction;
+			_databaseModel = databaseModel;
+		}
+
+		public string CurrentSchema
+		{
+			get { return _databaseModel.CurrentSchema; }
+			set
+			{
+				_databaseModel.CurrentSchema = value;
+				_reParseAction();
 			}
 		}
 	}

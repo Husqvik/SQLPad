@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -62,6 +64,7 @@ namespace SqlPad
 		private DocumentPage CreateNewDocumentPage()
 		{
 			var newDocumentPage = new DocumentPage(_infrastructureFactory);
+			newDocumentPage.ComboBoxConnection.IsEnabled = ConfigurationProvider.ConnectionStrings.Count > 1;
 			newDocumentPage.ComboBoxConnection.ItemsSource = ConfigurationProvider.ConnectionStrings;
 			newDocumentPage.ComboBoxConnection.SelectedIndex = 0;
 			
@@ -74,6 +77,16 @@ namespace SqlPad
 			_findReplaceManager.CurrentEditor = newDocumentPage.EditorAdapter;
 
 			return newDocumentPage;
+		}
+
+		private void WindowClosingHandler(object sender, CancelEventArgs e)
+		{
+			
+		}
+
+		private void WindowClosedHandler(object sender, EventArgs e)
+		{
+			
 		}
 	}
 }

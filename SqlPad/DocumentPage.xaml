@@ -4,16 +4,17 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
-			 Loaded="PageLoadedHandler"
+             xmlns:sqlPad="clr-namespace:SqlPad"
+             Loaded="PageLoadedHandler"
              mc:Ignorable="d" 
-             d:DesignHeight="400" d:DesignWidth="800">
+             d:DesignHeight="320" d:DesignWidth="440">
 	<Grid>
 		<Grid.RowDefinitions>
 			<RowDefinition Height="24" />
 			<RowDefinition />
 			<RowDefinition Height="24" />
 		</Grid.RowDefinitions>
-		<StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+		<StackPanel HorizontalAlignment="Right" Orientation="Horizontal" sqlPad:MarginSetter.Margin="4,1,4,1">
 			<TextBlock Text="Connection: " VerticalAlignment="Center"></TextBlock>
 			<ComboBox x:Name="ComboBoxConnection">
 				<ComboBox.ItemTemplate>
@@ -23,7 +24,7 @@
 				</ComboBox.ItemTemplate>
 			</ComboBox>
 			<TextBlock Text="Schema: " VerticalAlignment="Center"></TextBlock>
-			<ComboBox x:Name="ComboBoxSchema">
+			<ComboBox x:Name="ComboBoxSchema" SelectedItem="{Binding Path=CurrentSchema}">
 				<ComboBox.ItemTemplate>
 					<DataTemplate>
 						<TextBlock Text="{Binding}"></TextBlock>
