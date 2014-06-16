@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -190,6 +191,8 @@ namespace SqlPad
 			}
 		}
 
+		private static readonly NullValueConverter NullValueConverter = new NullValueConverter();
+
 		private void InitializeResultGrid()
 		{
 			ResultGrid.ItemsSource = null;
@@ -201,7 +204,7 @@ namespace SqlPad
 					new DataGridTextColumn
 					{
 						Header = columnHeader.Name.Replace("_", "__"),
-						Binding = new Binding(String.Format("[{0}]", columnHeader.ColumnIndex))
+						Binding = new Binding(String.Format("[{0}]", columnHeader.ColumnIndex)) { Converter = NullValueConverter }
 					};
 
 				ResultGrid.Columns.Add(columnTemplate);
@@ -610,6 +613,19 @@ namespace SqlPad
 				_databaseModel.CurrentSchema = value;
 				_reParseAction();
 			}
+		}
+	}
+
+	public class NullValueConverter : IValueConverter
+	{
+		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			return value == DBNull.Value ? "(null)" : value;
+		}
+
+		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			throw new NotImplementedException();
 		}
 	}
 }

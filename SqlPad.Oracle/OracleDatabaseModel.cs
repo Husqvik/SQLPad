@@ -81,20 +81,7 @@ namespace SqlPad.Oracle
 		public override string CurrentSchema
 		{
 			get { return _currentSchema; }
-			set
-			{
-				SwitchDefaultSchema(value.ToQuotedIdentifier());
-
-				_currentSchema = value;
-			}
-		}
-
-		private void SwitchDefaultSchema(string newSchema)
-		{
-			if (_currentSchema == newSchema)
-				return;
-
-			ExecuteUserNonQuery(String.Format("ALTER SESSION SET CURRENT_SCHEMA = {0}", newSchema));
+			set { _currentSchema = value; }
 		}
 
 		public override ICollection<string> Schemas { get { return _schemas; } }
@@ -420,7 +407,7 @@ ORDER BY
 		{
 			using (var command = _userConnection.CreateCommand())
 			{
-				command.CommandText = commandText;
+				command.CommandText = String.Format("ALTER SESSION SET CURRENT_SCHEMA = {0}", _currentSchema);
 
 				lock (LockObject)
 				{
@@ -428,6 +415,11 @@ ORDER BY
 					{
 						_isExecuting = true;
 						_userConnection.Open();
+
+						command.ExecuteNonQuery();
+
+						command.CommandText = commandText;
+
 						return executeFunction(command);
 					}
 					finally

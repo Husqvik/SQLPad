@@ -60,7 +60,7 @@ namespace SqlPad.Oracle.Commands
 			                                      selectedTerminals[0].SourcePosition.IndexStart <= selectionStart &&
 			                                      selectedTerminals[0].SourcePosition.IndexEnd + 1 >= selectionStart + selectionLength;
 
-			foreach (var terminal in selectedTerminals.Where(t => IsCaseModificationSafe(t) || isSelectionWithinSingleTerminal))
+			foreach (var terminal in selectedTerminals)
 			{
 				var startOffset = selectionStart > terminal.SourcePosition.IndexStart ? selectionStart - terminal.SourcePosition.IndexStart : 0;
 				var indextStart = Math.Max(terminal.SourcePosition.IndexStart, selectionStart);
@@ -68,21 +68,24 @@ namespace SqlPad.Oracle.Commands
 				var indexEnd = Math.Min(terminal.SourcePosition.IndexEnd + 1, selectionStart + selectionLength);
 				grammarRecognizedEnd = Math.Max(grammarRecognizedEnd, indexEnd);
 
-				AddUppercaseSegment(terminal.Token.Value, startOffset, indextStart, indexEnd - indextStart);
+				if (IsCaseModificationSafe(terminal) || isSelectionWithinSingleTerminal)
+				{
+					AddModifiedCaseSegment(terminal.Token.Value, startOffset, indextStart, indexEnd - indextStart);
+				}
 			}
 
 			if (grammarRecognizedStart > selectionStart)
 			{
-				AddUppercaseSegment(_executionContext.StatementText, selectionStart, selectionStart, grammarRecognizedStart - selectionStart);
+				AddModifiedCaseSegment(_executionContext.StatementText, selectionStart, selectionStart, grammarRecognizedStart - selectionStart);
 			}
 
 			if (grammarRecognizedEnd < selectionStart + selectionLength)
 			{
-				AddUppercaseSegment(_executionContext.StatementText, grammarRecognizedEnd, grammarRecognizedEnd, selectionStart + selectionLength - grammarRecognizedEnd);
+				AddModifiedCaseSegment(_executionContext.StatementText, grammarRecognizedEnd, grammarRecognizedEnd, selectionStart + selectionLength - grammarRecognizedEnd);
 			}
 		}
 
-		private void AddUppercaseSegment(string text, int textIndextStart, int globalIndextStart, int length)
+		private void AddModifiedCaseSegment(string text, int textIndextStart, int globalIndextStart, int length)
 		{
 			var substring = text.Substring(textIndextStart, length);
 			var modifiedCaseString = _changeCaseFunction(substring);

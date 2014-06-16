@@ -713,6 +713,17 @@ WHERE
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestMakeUpperCaseCommandWithCaseUnsafeTokenAsLastToken()
+		{
+			_editor.Text = @"select * from ""Accounts""";
+			_editor.SelectAll();
+
+			ExecuteGenericCommand(ModifyCaseCommand.MakeUpperCase);
+
+			_editor.Text.ShouldBe("SELECT * FROM \"Accounts\"");
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestAddToGroupByCommandWithoutExistingGroupByClause()
 		{
 			_editor.Text = @"SELECT SELECTION.PROJECT_ID, COUNT(*) PROJECT_SELECTIONS FROM SELECTION";
