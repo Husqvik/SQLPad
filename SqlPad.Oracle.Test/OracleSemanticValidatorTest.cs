@@ -874,6 +874,28 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			nodeValidity[0].SemanticError.ShouldNotBe(SemanticError.None);
 		}
 
+		[Test(Description = @""), Ignore]
+		public void TestColumnNodeValidityInCorrelatedSubquery()
+		{
+			const string sqlText = "SELECT * FROM DUAL D WHERE EXISTS (SELECT NULL FROM DUAL WHERE DUMMY = D.DUMMY)";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = _statementValidator.BuildValidationModel(sqlText, statement, TestFixture.DatabaseModel);
+			var nodeValidityDictionary = validationModel.ObjectNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var objectNodeValidity = nodeValidityDictionary.Values.ToList();
+			objectNodeValidity.Count.ShouldBe(3);
+			objectNodeValidity.ForEach(v => v.IsRecognized.ShouldBe(true));
+
+			nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var columnNodeValidity = nodeValidityDictionary.Values.ToList();
+			columnNodeValidity.Count.ShouldBe(3);
+			columnNodeValidity[2].IsRecognized.ShouldBe(true);
+			columnNodeValidity[2].Node.Token.Value.ShouldBe("DUMMY");
+			columnNodeValidity[2].SemanticError.ShouldBe(SemanticError.None);
+		}
+
 		//WITH CTE AS (SELECT 1 A, 2 B, 3 C FROM DUAL) SELECT SELECTION.DUMMY, NQ.DUMMY, CTE.DUMMY, SYS.DUAL.DUMMY FROM SELECTION, (SELECT 1 X, 2 Y, 3 Z FROM DUAL) NQ, CTE, SYS.DUAL
 	}
 }

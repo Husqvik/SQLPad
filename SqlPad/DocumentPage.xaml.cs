@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,6 +22,7 @@ namespace SqlPad
 	/// </summary>
 	public partial class DocumentPage
 	{
+		private const int RowBatchSize = 100;
 		private readonly SqlDocument _sqlDocument = new SqlDocument();
 		private readonly ISqlParser _sqlParser;
 		private readonly IInfrastructureFactory _infrastructureFactory;
@@ -38,6 +39,8 @@ namespace SqlPad
 
 		private readonly ToolTip _toolTip = new ToolTip();
 		private bool _isToolTipOpenByShortCut;
+		private CompletionWindow _completionWindow;
+		private readonly PageModel _pageModel;
 
 		public TextEditorAdapter EditorAdapter { get; private set; }
 		
@@ -67,12 +70,14 @@ namespace SqlPad
 			Editor.TextArea.TextEntered += TextEnteredHandler;
 
 			Editor.TextArea.Caret.PositionChanged += CaretOnPositionChanged;
+			Editor.TextArea.SelectionChanged += SelectionChangedHandler;
 
 			ComboBoxSchema.ItemsSource = _databaseModel.Schemas.OrderBy(s => s);
 
 			EditorAdapter = new TextEditorAdapter(Editor);
 
-			DataContext = new PageModel(_databaseModel, ReParse);
+			_pageModel = new PageModel(_databaseModel, ReParse);
+			DataContext = _pageModel;
 
 			_databaseModel.RefreshStarted += (sender, args) => Dispatcher.Invoke(() => ProgressBar.IsIndeterminate = true);
 			_databaseModel.RefreshFinished += DatabaseModelRefreshFinishedHandler;
@@ -86,6 +91,11 @@ namespace SqlPad
 				var routedHandlerMethod = GenericCommandHandler.CreateRoutedEditCommandHandler(handler, () => _sqlDocument.StatementCollection, _databaseModel);
 				Editor.TextArea.DefaultInputHandler.Editing.CommandBindings.Add(new CommandBinding(command, routedHandlerMethod));
 			}
+		}
+
+		private void SelectionChangedHandler(object sender, EventArgs eventArgs)
+		{
+			_pageModel.SelectionLength = Editor.SelectionLength == 0 ? null : (int?)Editor.SelectionLength;
 		}
 
 		private void DatabaseModelRefreshFinishedHandler(object sender, EventArgs eventArgs)
@@ -142,6 +152,23 @@ namespace SqlPad
 			var findUsagesCommandHandler = _infrastructureFactory.CommandFactory.FindUsagesCommandHandler;
 			var findUsagesCommand = new RoutedCommand(findUsagesCommandHandler.Name, typeof(TextEditor), findUsagesCommandHandler.DefaultGestures);
 			commandBindings.Add(new CommandBinding(findUsagesCommand, FindUsages));
+
+			var fetchNextRowsCommand = new RoutedCommand("FetchNextRows", typeof(DataGrid), new InputGestureCollection { new KeyGesture(Key.PageDown), new KeyGesture(Key.Down) });
+			ResultGrid.CommandBindings.Add(new CommandBinding(fetchNextRowsCommand, FetchNextRows, CanFetchNextRows));
+		}
+
+		private void CanFetchNextRows(object sender, CanExecuteRoutedEventArgs canExecuteRoutedEventArgs)
+		{
+			canExecuteRoutedEventArgs.ContinueRouting = ResultGrid.SelectedIndex < ResultGrid.Items.Count - 1 || !_databaseModel.CanFetch;
+			canExecuteRoutedEventArgs.CanExecute = !canExecuteRoutedEventArgs.ContinueRouting;
+		}
+
+		private void FetchNextRows(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
+		{
+			var nextRowBatch = _databaseModel.FetchRecords(RowBatchSize);
+			SaveAction(() => _pageModel.ResultRowItems.AddRange(nextRowBatch));
+
+			TextMoreRowsExist.Visibility = _databaseModel.CanFetch ? Visibility.Visible : Visibility.Collapsed;
 		}
 
 		private void NavigateToQueryBlockRoot(object sender, ExecutedRoutedEventArgs args)
@@ -181,21 +208,41 @@ namespace SqlPad
 			if (statement == null)
 				return;
 
-			_databaseModel.ExecuteStatement(statement.RootNode.GetStatementSubstring(Editor.Text));
+			_pageModel.ResultRowItems.Clear();
+			GridLabel.Visibility = Visibility.Collapsed;
+			TextMoreRowsExist.Visibility = Visibility.Collapsed;
+
+			SaveAction(() => _databaseModel.ExecuteStatement(statement.RootNode.GetStatementSubstring(Editor.Text)));
 
 			if (_databaseModel.CanFetch)
 			{
+				GridLabel.Visibility = Visibility.Visible;
 				InitializeResultGrid();
-				var itemsSource = _databaseModel.FetchRecords(25).ToArray();
-				ResultGrid.ItemsSource = itemsSource;
+				FetchNextRows(null, null);
+
+				if (ResultGrid.Items.Count > 0)
+				{
+					ResultGrid.SelectedIndex = 0;
+				}
 			}
 		}
 
-		private static readonly NullValueConverter NullValueConverter = new NullValueConverter();
+		private void SaveAction(Action action)
+		{
+			try
+			{
+				action();
+			}
+			catch (Exception e)
+			{
+				MessageBox.Show(e.Message, "Error");
+			}
+		}
+
+		private static readonly CellValueConverter CellValueConverter = new CellValueConverter();
 
 		private void InitializeResultGrid()
 		{
-			ResultGrid.ItemsSource = null;
 			ResultGrid.Columns.Clear();
 
 			foreach (var columnHeader in _databaseModel.GetColumnHeaders())
@@ -204,7 +251,7 @@ namespace SqlPad
 					new DataGridTextColumn
 					{
 						Header = columnHeader.Name.Replace("_", "__"),
-						Binding = new Binding(String.Format("[{0}]", columnHeader.ColumnIndex)) { Converter = NullValueConverter }
+						Binding = new Binding(String.Format("[{0}]", columnHeader.ColumnIndex)) { Converter = CellValueConverter }
 					};
 
 				ResultGrid.Columns.Add(columnTemplate);
@@ -278,6 +325,10 @@ namespace SqlPad
 		private void CaretOnPositionChanged(object sender, EventArgs eventArgs)
 		{
 			var parenthesisNodes = new List<StatementDescriptionNode>();
+
+			var location = Editor.Document.GetLocation(Editor.CaretOffset);
+			_pageModel.CurrentLine = location.Line;
+			_pageModel.CurrentColumn = location.Column;
 
 			if (!_isParsing)
 			{
@@ -475,8 +526,6 @@ namespace SqlPad
 			});
 		}
 
-		private CompletionWindow _completionWindow;
-
 		void MouseHoverHandler(object sender, MouseEventArgs e)
 		{
 			if (_isToolTipOpenByShortCut)
@@ -594,16 +643,61 @@ namespace SqlPad
 		}
 	}
 
-	public class PageModel
+	public class PageModel : ModelBase
 	{
 		private readonly IDatabaseModel _databaseModel;
 		private readonly Action _reParseAction;
+		private readonly ObservableCollection<object[]> _resultRowItems = new ObservableCollection<object[]>();
+		private int _currentLine;
+		private int _currentColumn;
+		private int? _selectionLength;
 
 		public PageModel(IDatabaseModel databaseModel, Action reParseAction)
 		{
 			_reParseAction = reParseAction;
 			_databaseModel = databaseModel;
 		}
+
+		public int CurrentLine
+		{
+			get { return _currentLine; }
+			set
+			{
+				if (_currentLine == value)
+					return;
+
+				_currentLine = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public int CurrentColumn
+		{
+			get { return _currentColumn; }
+			set
+			{
+				if (_currentColumn == value)
+					return;
+
+				_currentColumn = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public int? SelectionLength
+		{
+			get { return _selectionLength; }
+			set
+			{
+				if (_selectionLength == value)
+					return;
+
+				_selectionLength = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public ObservableCollection<object[]> ResultRowItems { get { return _resultRowItems; } }
 
 		public string CurrentSchema
 		{
@@ -613,19 +707,6 @@ namespace SqlPad
 				_databaseModel.CurrentSchema = value;
 				_reParseAction();
 			}
-		}
-	}
-
-	public class NullValueConverter : IValueConverter
-	{
-		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-		{
-			return value == DBNull.Value ? "(null)" : value;
-		}
-
-		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-		{
-			throw new NotImplementedException();
 		}
 	}
 }

@@ -8,6 +8,9 @@
              Loaded="PageLoadedHandler"
              mc:Ignorable="d" 
              d:DesignHeight="320" d:DesignWidth="440">
+	<UserControl.Resources>
+		<sqlPad:SelectedIndexConverter x:Key="SelectedIndexConverter" />
+	</UserControl.Resources>
 	<Grid>
 		<Grid.RowDefinitions>
 			<RowDefinition Height="24" />
@@ -49,17 +52,28 @@
 			</avalonedit:TextEditor.ContextMenu>
 		</avalonedit:TextEditor>
 		<GridSplitter Grid.Row="2" Height="5" HorizontalAlignment="Stretch"  ShowsPreview="True" VerticalAlignment="Center" Background="DimGray" />
-		<DataGrid x:Name="ResultGrid" Grid.Row="3" AutoGenerateColumns="False">
+		<DataGrid x:Name="ResultGrid" Grid.Row="3" AutoGenerateColumns="False" ItemsSource="{Binding ResultRowItems}">
 		</DataGrid>
 		<StatusBar x:Name="StatusBar" Grid.Row="4" Grid.Column="0">
-			<StatusBarItem>
-				<StackPanel Orientation="Horizontal">
-					<TextBlock Text="0" x:Name="TextCurrentRow"/>
-					<TextBlock Text="; " />
-					<TextBlock Text="0" x:Name="TextCurrentColumn"/>
-					<TextBlock Text="; " />
-					<TextBlock x:Name="TextCurrentSelectionLength"/>
+			<StatusBarItem >
+				<StackPanel Orientation="Horizontal" sqlPad:MarginSetter.Margin="2,0,2,0">
+					<TextBlock>
+						<Run Text="Line: "/>
+						<Run Text="{Binding CurrentLine}" />
+						<Run Text=" Column: "/>
+						<Run Text="{Binding CurrentColumn}" />
+						<Run Text=" Selection: "/>
+						<Run Text="{Binding SelectionLength}" />
+					</TextBlock>
+					<TextBlock x:Name="GridLabel" Visibility="Collapsed">
+						<Run Text="Row "/>
+						<Run Text="{Binding ElementName=ResultGrid, Path=SelectedIndex, Mode=OneWay, Converter={StaticResource SelectedIndexConverter}}" />
+						<Run Text=" of "/>
+						<Run Text="{Binding ElementName=ResultGrid, Path=Items.Count, Mode=OneWay}" />
+					</TextBlock>
+					<TextBlock Text=" (more rows exist)" x:Name="TextMoreRowsExist" Visibility="Collapsed" />
 				</StackPanel>
+				
 			</StatusBarItem>
 			<StatusBarItem VerticalContentAlignment="Stretch">
 				<ProgressBar x:Name="ProgressBar" Minimum="0" Maximum="100" Width="220" />

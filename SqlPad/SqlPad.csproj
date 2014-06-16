@@ -74,6 +74,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="CellValueConverter.cs" />
     <Compile Include="ColorizeAvalonEdit.cs" />
     <Compile Include="Commands\CommandExecutionHandler.cs" />
     <Compile Include="Commands\ContextActionCommand.cs" />

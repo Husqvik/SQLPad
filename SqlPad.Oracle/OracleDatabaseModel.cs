@@ -20,6 +20,7 @@ namespace SqlPad.Oracle
 		private static readonly DataContractSerializer Serializer = new DataContractSerializer(typeof(OracleFunctionMetadataCollection));
 		private static bool _isRefreshing;
 		private static bool _canExecute = true;
+		private static bool _canFetch = true;
 		private static bool _isExecuting;
 		private static Task _backgroundTask;
 		private static Task _statementExecutionTask;
@@ -114,8 +115,11 @@ namespace SqlPad.Oracle
 		public override bool CanExecute { get { return _canExecute; } }
 		
 		public override bool IsExecuting { get { return _isExecuting; } }
-		
-		public override bool CanFetch { get { return _dataReader != null && !_dataReader.IsClosed; } }
+
+		public override bool CanFetch
+		{
+			get { return _canFetch; }
+		}
 
 		public override void Dispose()
 		{
@@ -420,16 +424,32 @@ ORDER BY
 
 						command.CommandText = commandText;
 
-						return executeFunction(command);
+						var result = executeFunction(command);
+
+						_canFetch = true;
+
+						return result;
+					}
+					catch
+					{
+						_canFetch = false;
+						
+						try
+						{
+							_userConnection.Close();
+						}
+						catch { }
+						
+						throw;
 					}
 					finally
 					{
-						if (closeConnection)
+						if (closeConnection && _userConnection.State != ConnectionState.Closed)
 						{
 							_userConnection.Close();
 						}
 
-						_isExecuting = true;
+						_isExecuting = false;
 					}
 				}
 			}
@@ -440,7 +460,7 @@ ORDER BY
 			if (!CanExecute)
 				throw new InvalidOperationException("Another statement is executing right now. ");
 
-			if (CanFetch)
+			if (_dataReader != null)
 			{
 				_dataReader.Dispose();
 			}
@@ -487,6 +507,7 @@ ORDER BY
 				}
 				else
 				{
+					_canFetch = false;
 					break;
 				}
 			}
@@ -494,7 +515,7 @@ ORDER BY
 
 		private void CheckCanFetch()
 		{
-			if (!CanFetch)
+			if (_dataReader == null || _dataReader.IsClosed)
 				throw new InvalidOperationException("No data reader available. ");
 		}
 
