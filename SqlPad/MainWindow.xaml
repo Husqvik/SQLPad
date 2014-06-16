@@ -5,6 +5,7 @@
         xmlns:local="clr-namespace:SqlPad"
         xmlns:findReplace="clr-namespace:SqlPad.FindReplace"
         Title="SQL Pad 0.01 Alpha" Height="640" Width="960" Loaded="WindowLoadedHandler"
+		ResizeMode="CanResizeWithGrip"
 		Drop="DropObjectHandler"
 		Closing="WindowClosingHandler"
 		Closed="WindowClosedHandler">

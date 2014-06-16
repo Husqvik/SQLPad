@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -37,6 +36,7 @@ namespace SqlPad
 		private MultiNodeEditor _multiNodeEditor;
 		private readonly ColorizeAvalonEdit _colorizeAvalonEdit;
 
+		private static readonly CellValueConverter CellValueConverter = new CellValueConverter();
 		private readonly ToolTip _toolTip = new ToolTip();
 		private bool _isToolTipOpenByShortCut;
 		private CompletionWindow _completionWindow;
@@ -212,7 +212,7 @@ namespace SqlPad
 			GridLabel.Visibility = Visibility.Collapsed;
 			TextMoreRowsExist.Visibility = Visibility.Collapsed;
 
-			SaveAction(() => _databaseModel.ExecuteStatement(statement.RootNode.GetStatementSubstring(Editor.Text)));
+			SaveAction(() => _databaseModel.ExecuteStatement(statement.RootNode.GetStatementSubstring(Editor.Text)), true);
 
 			if (_databaseModel.CanFetch)
 			{
@@ -227,11 +227,20 @@ namespace SqlPad
 			}
 		}
 
-		private void SaveAction(Action action)
+		private void SaveAction(Action action, bool showExecutionTime = false)
 		{
 			try
 			{
+				var stopwatch = Stopwatch.StartNew();
+				
 				action();
+				
+				stopwatch.Stop();
+
+				if (showExecutionTime)
+				{
+					TextExecutionTime.Text = FormatElapsedMilliseconds(stopwatch.ElapsedMilliseconds);
+				}
 			}
 			catch (Exception e)
 			{
@@ -239,7 +248,23 @@ namespace SqlPad
 			}
 		}
 
-		private static readonly CellValueConverter CellValueConverter = new CellValueConverter();
+		private static string FormatElapsedMilliseconds(long milliseconds)
+		{
+			string unit;
+			decimal value;
+			if (milliseconds > 1000)
+			{
+				unit = "s";
+				value = Math.Round((decimal)milliseconds / 1000, 1);
+			}
+			else
+			{
+				unit = "ms";
+				value = milliseconds;
+			}
+
+			return String.Format("{0} {1}", value, unit);
+		}
 
 		private void InitializeResultGrid()
 		{
@@ -639,73 +664,6 @@ namespace SqlPad
 				{
 					Editor.Document.Remove(Editor.CaretOffset, 1);
 				}
-			}
-		}
-	}
-
-	public class PageModel : ModelBase
-	{
-		private readonly IDatabaseModel _databaseModel;
-		private readonly Action _reParseAction;
-		private readonly ObservableCollection<object[]> _resultRowItems = new ObservableCollection<object[]>();
-		private int _currentLine;
-		private int _currentColumn;
-		private int? _selectionLength;
-
-		public PageModel(IDatabaseModel databaseModel, Action reParseAction)
-		{
-			_reParseAction = reParseAction;
-			_databaseModel = databaseModel;
-		}
-
-		public int CurrentLine
-		{
-			get { return _currentLine; }
-			set
-			{
-				if (_currentLine == value)
-					return;
-
-				_currentLine = value;
-				RaisePropertyChanged();
-			}
-		}
-
-		public int CurrentColumn
-		{
-			get { return _currentColumn; }
-			set
-			{
-				if (_currentColumn == value)
-					return;
-
-				_currentColumn = value;
-				RaisePropertyChanged();
-			}
-		}
-
-		public int? SelectionLength
-		{
-			get { return _selectionLength; }
-			set
-			{
-				if (_selectionLength == value)
-					return;
-
-				_selectionLength = value;
-				RaisePropertyChanged();
-			}
-		}
-
-		public ObservableCollection<object[]> ResultRowItems { get { return _resultRowItems; } }
-
-		public string CurrentSchema
-		{
-			get { return _databaseModel.CurrentSchema; }
-			set
-			{
-				_databaseModel.CurrentSchema = value;
-				_reParseAction();
 			}
 		}
 	}

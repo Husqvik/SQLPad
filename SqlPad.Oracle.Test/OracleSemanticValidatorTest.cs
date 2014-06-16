@@ -896,6 +896,22 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			columnNodeValidity[2].SemanticError.ShouldBe(SemanticError.None);
 		}
 
+		[Test(Description = @""), Ignore]
+		public void TestFunctionIdentifierNodeValidDefinedBySynonym()
+		{
+			const string sqlText = "SELECT DBMS_RANDOM.STRING('X', 16) FROM DUAL";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = _statementValidator.BuildValidationModel(sqlText, statement, TestFixture.DatabaseModel);
+			var nodeValidityDictionary = validationModel.FunctionNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var functionNodeValidity = nodeValidityDictionary.Values.ToList();
+			functionNodeValidity.Count.ShouldBe(1);
+			functionNodeValidity[0].IsRecognized.ShouldBe(true);
+			functionNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+		}
+
 		//WITH CTE AS (SELECT 1 A, 2 B, 3 C FROM DUAL) SELECT SELECTION.DUMMY, NQ.DUMMY, CTE.DUMMY, SYS.DUAL.DUMMY FROM SELECTION, (SELECT 1 X, 2 Y, 3 Z FROM DUAL) NQ, CTE, SYS.DUAL
 	}
 }

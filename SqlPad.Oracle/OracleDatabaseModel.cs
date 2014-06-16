@@ -20,7 +20,6 @@ namespace SqlPad.Oracle
 		private static readonly DataContractSerializer Serializer = new DataContractSerializer(typeof(OracleFunctionMetadataCollection));
 		private static bool _isRefreshing;
 		private static bool _canExecute = true;
-		private static bool _canFetch = true;
 		private static bool _isExecuting;
 		private static Task _backgroundTask;
 		private static Task _statementExecutionTask;
@@ -118,7 +117,7 @@ namespace SqlPad.Oracle
 
 		public override bool CanFetch
 		{
-			get { return _canFetch; }
+			get { return _dataReader != null && !_dataReader.IsClosed; }
 		}
 
 		public override void Dispose()
@@ -424,16 +423,10 @@ ORDER BY
 
 						command.CommandText = commandText;
 
-						var result = executeFunction(command);
-
-						_canFetch = true;
-
-						return result;
+						return executeFunction(command);
 					}
 					catch
 					{
-						_canFetch = false;
-						
 						try
 						{
 							_userConnection.Close();
@@ -507,7 +500,7 @@ ORDER BY
 				}
 				else
 				{
-					_canFetch = false;
+					_dataReader.Close();
 					break;
 				}
 			}
