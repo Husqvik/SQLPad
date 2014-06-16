@@ -778,6 +778,16 @@ WHERE
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestToggleFullyQualifiedReferencesOnNonAliasedTableReference()
+		{
+			_editor.Text = @"SELECT DUMMY FROM (SELECT DUMMY FROM DUAL)";
+			_editor.SelectionLength = 0;
+
+			// TODO: Update when toogle off is implemented
+			CanExecuteOracleCommand(OracleCommands.ToggleFullyQualifiedReferences).ShouldBe(false);
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestResolveAmbiguousColumnCommand()
 		{
 			_editor.Text = @"SELECT DUAL.DUMMY FROM SYS.DUAL, ""PUBLIC"".DUAL";

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
@@ -49,7 +50,7 @@ namespace SqlPad.Oracle.Commands
 		private IEnumerable<TextSegment> GetMissingObjectReferenceQualifications()
 		{
 			return CurrentQueryBlock.ObjectReferences
-				.Where(o => o.OwnerNode == null && o.Type == TableReferenceType.PhysicalObject && o.SearchResult.SchemaObject != null && o.SearchResult.FullyQualifiedName.Owner != OracleDatabaseModel.SchemaPublic)
+				.Where(o => o.OwnerNode == null && o.Type == TableReferenceType.PhysicalObject && o.SearchResult.SchemaObject != null && o.SearchResult.FullyQualifiedName.Owner != OracleDatabaseModelBase.SchemaPublic)
 				.Select(o =>
 					new TextSegment
 					{
@@ -71,7 +72,7 @@ namespace SqlPad.Oracle.Commands
 
 				if (column.OwnerNode == null && column.ValidObjectReference.Type == TableReferenceType.PhysicalObject &&
 					column.ValidObjectReference.AliasNode == null &&
-					column.ValidObjectReference.SearchResult.FullyQualifiedName.Owner != OracleDatabaseModel.SchemaPublic)
+					column.ValidObjectReference.SearchResult.FullyQualifiedName.Owner != OracleDatabaseModelBase.SchemaPublic)
 				{
 					qualificationBuilder.Append(column.ValidObjectReference.SearchResult.SchemaObject.Owner.ToSimpleIdentifier());
 					qualificationBuilder.Append(".");
@@ -80,8 +81,12 @@ namespace SqlPad.Oracle.Commands
 				int indexStart;
 				if (column.ObjectNode == null)
 				{
-					qualificationBuilder.Append(column.ValidObjectReference.FullyQualifiedName.Name);
-					qualificationBuilder.Append(".");
+					if (!String.IsNullOrEmpty(column.ValidObjectReference.FullyQualifiedName.Name))
+					{
+						qualificationBuilder.Append(column.ValidObjectReference.FullyQualifiedName.Name);
+						qualificationBuilder.Append(".");
+					}
+					
 					indexStart = column.ColumnNode.SourcePosition.IndexStart;
 				}
 				else
