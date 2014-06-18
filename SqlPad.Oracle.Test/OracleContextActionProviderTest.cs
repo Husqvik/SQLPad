@@ -162,5 +162,14 @@ namespace SqlPad.Oracle.Test
 			action.ShouldNotBe(null);
 			action.Name.ShouldBe("Generate missing columns");
 		}
+
+		[Test(Description = @""), STAThread]
+		public void TestToggleQuotedNotationNotSuggestedWhenNoConvertibleIdentifierOrAliasAvailable()
+		{
+			const string query1 = @"SELECT ""Balance"" FROM ""Accounts""";
+
+			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 0).SingleOrDefault(a => a.Name == ToggleQuotedNotationCommand.Title);
+			action.ShouldBe(null);
+		}
 	}
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
@@ -15,13 +16,19 @@ namespace SqlPad.Oracle.Commands
 
 		protected override bool CanExecute()
 		{
-			return CurrentNode != null && CurrentQueryBlock != null && CurrentNode.Id == Terminals.Select;
+			return CurrentNode != null && CurrentQueryBlock != null && CurrentNode.Id == Terminals.Select &&
+			       GetReplacedSegments().Any();
 		}
 
 		protected override void Execute()
 		{
+			ExecutionContext.SegmentsToReplace.AddRange(GetReplacedSegments());
+		}
+
+		private IEnumerable<TextSegment> GetReplacedSegments()
+		{
 			bool? enableQuotes = null;
-			foreach (var identifier in CurrentQueryBlock.RootNode.Terminals.Where(t => (OracleGrammarDescription.Identifiers.Contains(t.Id) || t.Id == Terminals.ColumnAlias || t.Id == Terminals.ObjectAlias) && !t.Token.Value.CollidesWithKeyword()))
+			foreach (var identifier in CurrentQueryBlock.RootNode.Terminals.Where(t => t.Id.IsIdentifierOrAlias() && t.Token.Value.ToQuotedIdentifier() != t.Token.Value.ToSimpleIdentifier() && !t.Token.Value.CollidesWithKeyword()))
 			{
 				if (!enableQuotes.HasValue)
 				{
@@ -35,19 +42,19 @@ namespace SqlPad.Oracle.Commands
 				var replacedLength = enableQuotes.Value ? 0 : 1;
 				var newText = enableQuotes.Value ? "\"" : String.Empty;
 
-				ExecutionContext.SegmentsToReplace.Add(new TextSegment
+				yield return new TextSegment
 				{
 					IndextStart = identifier.SourcePosition.IndexStart,
 					Length = replacedLength,
 					Text = newText
-				});
+				};
 
-				ExecutionContext.SegmentsToReplace.Add(new TextSegment
+				yield return new TextSegment
 				{
 					IndextStart = identifier.SourcePosition.IndexEnd + 1 - replacedLength,
 					Length = replacedLength,
 					Text = newText
-				});
+				};
 			}
 		}
 	}
