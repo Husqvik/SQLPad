@@ -10,16 +10,16 @@ namespace SqlPad.Oracle.Test
 {
 	public class OracleTestDatabaseModel : OracleDatabaseModelBase
 	{
-		public static readonly OracleTestDatabaseModel Instance = new OracleTestDatabaseModel();
+		public static readonly OracleTestDatabaseModel Instance = new OracleTestDatabaseModel { CurrentSchema = InitialSchema };
 		private static readonly DataContractSerializer Serializer = new DataContractSerializer(typeof(OracleFunctionMetadataCollection));
 
-		private const string CurrentSchemaInternal = "\"HUSQVIK\"";
+		private const string InitialSchema = "\"HUSQVIK\"";
 		private const string OwnerNameSys = "\"SYS\"";
 		private const string NotSupported = "not supported";
 		private static readonly ConnectionStringSettings ConnectionStringInternal = new ConnectionStringSettings("ConnectionFake", "DATA SOURCE=HQ_PDB_TCP;PASSWORD=oracle;USER ID=HUSQVIK", "Oracle.DataAccess.Client");
 
-		private static readonly HashSet<string> SchemasInternal = new HashSet<string> { OwnerNameSys, "\"SYSTEM\"", CurrentSchemaInternal };
-		private static readonly HashSet<string> AllSchemasInternal = new HashSet<string>(SchemasInternal) { SchemaPublic };
+		private static readonly HashSet<string> SchemasInternal = new HashSet<string> { OwnerNameSys, "\"SYSTEM\"", InitialSchema };
+		private static readonly HashSet<string> AllSchemasInternal = new HashSet<string>(SchemasInternal) { OwnerNameSys, "\"SYSTEM\"", InitialSchema, SchemaPublic };
 		private static readonly OracleFunctionMetadataCollection AllFunctionMetadataInterval;
 
 		static OracleTestDatabaseModel()
@@ -50,7 +50,7 @@ namespace SqlPad.Oracle.Test
 			AllObjectDictionary = AllObjectsInternal.ToDictionary(o => o.FullyQualifiedName, o => o);
 
 			ObjectsInternal = AllObjectDictionary
-				.Values.Where(o => o.Owner == SchemaPublic || o.Owner == CurrentSchemaInternal)
+				.Values.Where(o => o.Owner == SchemaPublic || o.Owner == InitialSchema)
 				.ToDictionary(o => OracleObjectIdentifier.Create(o.Owner, o.Name), o => o);
 
 			AddConstraints();
@@ -58,46 +58,46 @@ namespace SqlPad.Oracle.Test
 
 		private static void AddConstraints()
 		{
-			var projectTable = (OracleDataObject)AllObjectDictionary[OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"PROJECT\"")];
+			var projectTable = (OracleDataObject)AllObjectDictionary[OracleObjectIdentifier.Create(InitialSchema, "\"PROJECT\"")];
 			var projectPrimaryKey = new OraclePrimaryKeyConstraint
 			                                 {
-				                                 FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"PK_PROJECT\""),
+				                                 FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"PK_PROJECT\""),
 				                                 Columns = new[] { "\"PROJECT_ID\"" },
 				                                 Owner = projectTable
 			                                 };
 			
 			projectTable.Constraints = new List<OracleConstraint>{ projectPrimaryKey }.AsReadOnly();
 
-			var sourceObject = (OracleTable)AllObjectDictionary[OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"TARGETGROUP\"")];
+			var sourceObject = (OracleTable)AllObjectDictionary[OracleObjectIdentifier.Create(InitialSchema, "\"TARGETGROUP\"")];
 			sourceObject.Constraints =
 				new List<OracleConstraint>
 				{
 					new OracleForeignKeyConstraint
 					{
-						FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"FK_TARGETGROUP_PROJECT\""),
+						FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"FK_TARGETGROUP_PROJECT\""),
 						Columns = new[] { "\"PROJECT_ID\"" },
 						ReferenceConstraint = projectPrimaryKey,
 						Owner = sourceObject
 					}
 				};
 
-			var invoiceTable = (OracleDataObject)AllObjectDictionary[OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"INVOICES\"")];
+			var invoiceTable = (OracleDataObject)AllObjectDictionary[OracleObjectIdentifier.Create(InitialSchema, "\"INVOICES\"")];
 			var invoicePrimaryKey = new OraclePrimaryKeyConstraint
 			{
-				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"PK_INVOICES\""),
+				FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"PK_INVOICES\""),
 				Columns = new[] { "\"ID\"" },
 				Owner = invoiceTable
 			};
 
 			invoiceTable.Constraints = new List<OracleConstraint> { invoicePrimaryKey }.AsReadOnly();
 
-			sourceObject = (OracleTable)AllObjectDictionary[OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"INVOICELINES\"")];
+			sourceObject = (OracleTable)AllObjectDictionary[OracleObjectIdentifier.Create(InitialSchema, "\"INVOICELINES\"")];
 			sourceObject.Constraints =
 				new List<OracleConstraint>
 				{
 					new OracleForeignKeyConstraint
 					{
-						FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"FK_INVOICELINES_INVOICES\""),
+						FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"FK_INVOICELINES_INVOICES\""),
 						Columns = new[] { "\"INVOICE_ID\"" },
 						ReferenceConstraint = invoicePrimaryKey,
 						Owner = sourceObject,
@@ -105,23 +105,23 @@ namespace SqlPad.Oracle.Test
 					}
 				}.AsReadOnly();
 
-			var targetGroupTable = (OracleDataObject)AllObjectDictionary[OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"TARGETGROUP\"")];
+			var targetGroupTable = (OracleDataObject)AllObjectDictionary[OracleObjectIdentifier.Create(InitialSchema, "\"TARGETGROUP\"")];
 			var targetGroupPrimaryKey = new OraclePrimaryKeyConstraint
 			{
-				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"PK_TARGETGROUP\""),
+				FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"PK_TARGETGROUP\""),
 				Columns = new[] { "\"TARGETGROUP_ID\"" },
 				Owner = targetGroupTable
 			};
 
 			targetGroupTable.Constraints.Add(targetGroupPrimaryKey);
 
-			sourceObject = (OracleTable)AllObjectDictionary[OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"RESPONDENTBUCKET\"")];
+			sourceObject = (OracleTable)AllObjectDictionary[OracleObjectIdentifier.Create(InitialSchema, "\"RESPONDENTBUCKET\"")];
 			sourceObject.Constraints =
 				new List<OracleConstraint>
 				{
 					new OracleForeignKeyConstraint
 					{
-						FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"FK_RESPONDENTBUCKET_TARGETGROUP\""),
+						FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"FK_RESPONDENTBUCKET_TARGETGROUP\""),
 						Columns = new[] { "\"TARGETGROUP_ID\"" },
 						ReferenceConstraint = targetGroupPrimaryKey,
 						Owner = sourceObject,
@@ -129,7 +129,7 @@ namespace SqlPad.Oracle.Test
 					},
 					new OracleForeignKeyConstraint
 					{
-						FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"FK_RESPONDENTBUCKET_PROJECT\""),
+						FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"FK_RESPONDENTBUCKET_PROJECT\""),
 						Columns = new[] { "\"PROJECT_ID\"" },
 						ReferenceConstraint = projectPrimaryKey,
 						Owner = sourceObject,
@@ -137,23 +137,23 @@ namespace SqlPad.Oracle.Test
 					}
 				};
 
-			var respondentBucketTable = (OracleDataObject)AllObjectDictionary[OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"RESPONDENTBUCKET\"")];
+			var respondentBucketTable = (OracleDataObject)AllObjectDictionary[OracleObjectIdentifier.Create(InitialSchema, "\"RESPONDENTBUCKET\"")];
 			var respondentBucketPrimaryKey = new OraclePrimaryKeyConstraint
 			{
-				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"PK_RESPONDENTBUCKET\""),
+				FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"PK_RESPONDENTBUCKET\""),
 				Columns = new[] { "\"RESPONDENTBUCKET_ID\"" },
 				Owner = respondentBucketTable
 			};
 
 			respondentBucketTable.Constraints.Add(respondentBucketPrimaryKey);
 
-			sourceObject = (OracleTable)AllObjectDictionary[OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"SELECTION\"")];
+			sourceObject = (OracleTable)AllObjectDictionary[OracleObjectIdentifier.Create(InitialSchema, "\"SELECTION\"")];
 			sourceObject.Constraints =
 				new List<OracleConstraint>
 				{
 					new OracleForeignKeyConstraint
 					{
-						FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"FK_SELECTION_RESPONDENTBUCKET\""),
+						FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"FK_SELECTION_RESPONDENTBUCKET\""),
 						Columns = new[] { "\"RESPONDENTBUCKET_ID\"" },
 						ReferenceConstraint = respondentBucketPrimaryKey,
 						Owner = sourceObject,
@@ -161,7 +161,7 @@ namespace SqlPad.Oracle.Test
 					},
 					new OracleForeignKeyConstraint
 					{
-						FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"FK_SELECTION_PROJECT\""),
+						FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"FK_SELECTION_PROJECT\""),
 						Columns = new[] { "\"PROJECT_ID\"" },
 						ReferenceConstraint = projectPrimaryKey,
 						Owner = sourceObject,
@@ -190,7 +190,7 @@ namespace SqlPad.Oracle.Test
 			},
 			new OracleTable
 			{
-				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"COUNTRY\""),
+				FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"COUNTRY\""),
 				Organization = OrganizationType.Heap,
 				Columns = new Dictionary<string, OracleColumn>
 				          {
@@ -200,7 +200,7 @@ namespace SqlPad.Oracle.Test
 			},
 			new OracleTable
 			{
-				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"ORDERS\""),
+				FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"ORDERS\""),
 				Organization = OrganizationType.Heap,
 				Columns = new Dictionary<string, OracleColumn>
 				          {
@@ -209,7 +209,7 @@ namespace SqlPad.Oracle.Test
 			},
 			new OracleTable
 			{
-				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"INVOICES\""),
+				FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"INVOICES\""),
 				Organization = OrganizationType.Heap,
 				Columns = new Dictionary<string, OracleColumn>
 				          {
@@ -219,7 +219,7 @@ namespace SqlPad.Oracle.Test
 			},
 			new OracleTable
 			{
-				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"INVOICELINES\""),
+				FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"INVOICELINES\""),
 				Organization = OrganizationType.Heap,
 				Columns = new Dictionary<string, OracleColumn>
 				          {
@@ -232,12 +232,12 @@ namespace SqlPad.Oracle.Test
 			},
 			new OracleView
 			{
-				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"VIEW_INSTANTSEARCH\""),
+				FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"VIEW_INSTANTSEARCH\""),
 				Organization = OrganizationType.NotApplicable,
 			},
 			new OracleTable
 			{
-				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"TARGETGROUP\""),
+				FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"TARGETGROUP\""),
 				Organization = OrganizationType.Heap,
 				Columns = new Dictionary<string, OracleColumn>
 				          {
@@ -248,7 +248,7 @@ namespace SqlPad.Oracle.Test
 			},
 			new OracleTable
 			{
-				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"PROJECT\""),
+				FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"PROJECT\""),
 				Organization = OrganizationType.Heap,
 				Columns = new Dictionary<string, OracleColumn>
 				          {
@@ -258,7 +258,7 @@ namespace SqlPad.Oracle.Test
 			},
 			new OracleTable
 			{
-				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"RESPONDENTBUCKET\""),
+				FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"RESPONDENTBUCKET\""),
 				Organization = OrganizationType.Heap,
 				Columns = new Dictionary<string, OracleColumn>
 				          {
@@ -270,7 +270,7 @@ namespace SqlPad.Oracle.Test
 			},
 			new OracleTable
 			{
-				FullyQualifiedName = OracleObjectIdentifier.Create(CurrentSchemaInternal, "\"SELECTION\""),
+				FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"SELECTION\""),
 				Organization = OrganizationType.Heap,
 				Columns = new Dictionary<string, OracleColumn>
 				          {
@@ -288,11 +288,7 @@ namespace SqlPad.Oracle.Test
 		
 		public override ConnectionStringSettings ConnectionString { get { return ConnectionStringInternal; } }
 
-		public override string CurrentSchema
-		{
-			get { return CurrentSchemaInternal; }
-			set { throw new NotSupportedException("Test model schema cannot be changed. "); }
-		}
+		public override string CurrentSchema { get; set; }
 		
 		public override ICollection<string> Schemas { get { return SchemasInternal; } }
 		

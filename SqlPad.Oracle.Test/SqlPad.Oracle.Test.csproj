@@ -74,6 +74,7 @@
     <Compile Include="OracleCodeCompletionProviderTest.cs" />
     <Compile Include="OracleNavigationServiceTest.cs" />
     <Compile Include="OracleTestDatabaseModel.cs" />
+    <Compile Include="OracleTestInfrastructureFactory.cs" />
     <Compile Include="OracleToolTipProviderTest.cs" />
     <Compile Include="OracleSemanticValidatorTest.cs" />
     <Compile Include="OracleSqlParserTest.cs" />

@@ -87,6 +87,7 @@
       <DependentUpon>FindReplaceDialog.xaml</DependentUpon>
     </Compile>
     <Compile Include="FindReplace\IEditor.cs" />
+    <Compile Include="InfrastructureConfigurationSection.cs" />
     <Compile Include="MarginSetter.cs" />
     <Compile Include="PageModel.cs" />
     <Compile Include="TextSegment.cs" />
