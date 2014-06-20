@@ -25,9 +25,10 @@ namespace SqlPad.Oracle
 		public string Name { get { return FullyQualifiedName.NormalizedName; } }
 
 		public string Owner { get { return FullyQualifiedName.NormalizedOwner; } }
+
+		public OracleSynonym Synonym { get; set; }
 	}
 
-	[DebuggerDisplay("OracleDataObject (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName}; Type={Type})")]
 	public abstract class OracleDataObject : OracleSchemaObject
 	{
 		protected OracleDataObject()
@@ -90,6 +91,18 @@ namespace SqlPad.Oracle
 		}
 
 		public override string Type { get { return "TABLE"; } }
+	}
+
+	public class OraclePackage : OracleSchemaObject
+	{
+		public override string Type { get { return "PACKAGE"; } }
+	}
+
+	public class OracleFunction : OracleSchemaObject
+	{
+		public OracleFunctionMetadata Metadata { get; set; }
+
+		public override string Type { get { return "FUNCTION"; } }
 	}
 
 	public enum OrganizationType

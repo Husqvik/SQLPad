@@ -17,7 +17,8 @@ namespace SqlPad.Oracle
 		private static readonly XmlSerializer XmlSerializer = new XmlSerializer(typeof(SqlGrammar));
 		private static readonly Dictionary<string, SqlGrammarRuleSequence[]> StartingNonTerminalSequences;
 		private static readonly Dictionary<string, SqlGrammarTerminal> Terminals;
-		private static readonly HashSet<string> Terminators;
+		private static readonly HashSet<string> TerminatorIds;
+		private static readonly HashSet<string> TerminatorValues;
 		private static readonly string[] AvailableNonTerminals;
 		
 		static OracleSqlParser()
@@ -56,7 +57,8 @@ namespace SqlPad.Oracle
 			}
 
 			AvailableNonTerminals = OracleGrammar.StartSymbols.Select(s => s.Id).ToArray();
-			Terminators = new HashSet<string>(OracleGrammar.Terminators.Select(t => t.Value));
+			TerminatorIds = new HashSet<string>(OracleGrammar.Terminators.Select(t => t.Id));
+			TerminatorValues = new HashSet<string>(TerminatorIds.Select(id => Terminals[id].Value));
 		}
 
 		public static bool IsValidIdentifier(string identifier)
@@ -239,8 +241,7 @@ namespace SqlPad.Oracle
 
 					result = newResult;
 
-					var lastTerminal = result.Terminals.Last();
-					if (!Terminators.Contains(lastTerminal.Token.Value) && tokenBuffer.Count > result.Terminals.Count())
+					if (!TerminatorIds.Contains(result.Nodes.Last().Id) && tokenBuffer.Count > result.Terminals.Count())
 					{
 						result.Status = ProcessingStatus.SequenceNotFound;
 					}
@@ -259,7 +260,7 @@ namespace SqlPad.Oracle
 
 					indexStart = tokenBuffer.First().Index;
 
-					var index = tokenBuffer.FindIndex(t => Terminators.Contains(t.Value));
+					var index = tokenBuffer.FindIndex(t => TerminatorValues.Contains(t.Value));
 					if (index == -1)
 					{
 						var lastToken = tokenBuffer[tokenBuffer.Count - 1];
@@ -285,6 +286,12 @@ namespace SqlPad.Oracle
 						//var invalidNodes = result.Nodes.SelectMany(n => n.AllChildNodes).Where(n => !n.IsGrammarValid).ToArray();
 						result.Status = ProcessingStatus.SequenceNotFound;
 					}
+				}
+
+				var lastNode = result.Nodes.LastOrDefault();
+				if (lastNode != null && TerminatorIds.Contains(lastNode.Id))
+				{
+					result.Nodes.Remove(lastNode);
 				}
 
 				oracleStatement.SourcePosition = new SourcePosition { IndexStart = indexStart, IndexEnd = indexEnd };

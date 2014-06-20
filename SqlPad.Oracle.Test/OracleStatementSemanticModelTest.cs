@@ -212,7 +212,7 @@ FROM
 			var innerBlock = queryBlocks[0];
 			innerBlock.ObjectReferences.Count.ShouldBe(1);
 			var selectionTableReference = innerBlock.ObjectReferences.Single();
-			selectionTableReference.Type.ShouldBe(TableReferenceType.PhysicalObject);
+			selectionTableReference.Type.ShouldBe(TableReferenceType.SchemaObject);
 			innerBlock.Columns.Count.ShouldBe(3);
 			var columns = innerBlock.Columns.ToArray();
 			columns[0].NormalizedName.ShouldBe("\"RESPONDENTBUCKET_ID\"");
@@ -263,7 +263,7 @@ FROM
 			var innerBlock = queryBlocks[0];
 			innerBlock.ObjectReferences.Count.ShouldBe(1);
 			var selectionTableReference = innerBlock.ObjectReferences.Single();
-			selectionTableReference.Type.ShouldBe(TableReferenceType.PhysicalObject);
+			selectionTableReference.Type.ShouldBe(TableReferenceType.SchemaObject);
 			innerBlock.Columns.Count.ShouldBe(5);
 			var columns = innerBlock.Columns.ToArray();
 			columns[0].IsAsterisk.ShouldBe(true);

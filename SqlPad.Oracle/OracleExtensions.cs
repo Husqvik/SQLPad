@@ -123,7 +123,7 @@ namespace SqlPad.Oracle
 			{
 				case TableReferenceType.CommonTableExpression:
 					return OracleCodeCompletionCategory.CommonTableExpression;
-				case TableReferenceType.PhysicalObject:
+				case TableReferenceType.SchemaObject:
 					return OracleCodeCompletionCategory.SchemaObject;
 				case TableReferenceType.InlineView:
 					return OracleCodeCompletionCategory.InlineView;

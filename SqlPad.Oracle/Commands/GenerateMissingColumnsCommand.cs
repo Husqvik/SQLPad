@@ -38,7 +38,7 @@ namespace SqlPad.Oracle.Commands
 			                                         dataObject.Type == OracleDatabaseModel.DataObjectTypeTable;
 
 			var schemaObjectReference = column.ValidObjectReference;
-			var hasValidObjectReference = schemaObjectReference != null && schemaObjectReference.Type == TableReferenceType.PhysicalObject &&
+			var hasValidObjectReference = schemaObjectReference != null && schemaObjectReference.Type == TableReferenceType.SchemaObject &&
 			                              schemaObjectReference.SearchResult.SchemaObject != null && schemaObjectReference.SearchResult.SchemaObject.Type == OracleDatabaseModel.DataObjectTypeTable;
 
 			return queryBlockHasSingleObjectReference || hasValidObjectReference

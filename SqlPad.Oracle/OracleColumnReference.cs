@@ -10,7 +10,7 @@ namespace SqlPad.Oracle
 		public OracleColumnReference()
 		{
 			ColumnNodeObjectReferences = new HashSet<OracleObjectReference>();
-			ColumnNodeColumnReferences = new HashSet<OracleColumn>();
+			ColumnNodeColumnReferences = new List<OracleColumn>();
 		}
 
 		public override string Name { get { return ColumnNode.Token.Value; } }

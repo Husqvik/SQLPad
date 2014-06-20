@@ -17,6 +17,8 @@ namespace SqlPad
 
 		public SourcePosition SourcePosition { get; set; }
 
+		public abstract bool ReturnDataset { get; }
+
 		public ICollection<StatementDescriptionNode> InvalidGrammarNodes
 		{
 			get

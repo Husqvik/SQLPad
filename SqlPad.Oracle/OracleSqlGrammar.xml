@@ -16,8 +16,8 @@
   </StartSymbols>
 
   <Terminators>
-    <Terminator Value =";" />
-    <!--<Terminator RegexValue="TODO" />-->
+    <Terminator Id = "Semicolon" />
+    <!--<Terminator Id = "NewLineSlashNewLine" />-->
   </Terminators>
     
   <Rules>

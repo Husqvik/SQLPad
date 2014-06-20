@@ -1628,14 +1628,13 @@ FROM DUAL";
 				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 				var terminals = statement.AllTerminals.ToArray();
-				terminals.Length.ShouldBe(6);
+				terminals.Length.ShouldBe(5);
 
 				terminals[0].Id.ShouldBe(Terminals.Commit);
 				terminals[1].Id.ShouldBe(Terminals.Comment);
 				terminals[2].Id.ShouldBe(Terminals.StringLiteral);
 				terminals[3].Id.ShouldBe(Terminals.Write);
 				terminals[4].Id.ShouldBe(Terminals.Nowait);
-				terminals[5].Id.ShouldBe(Terminals.Semicolon);
 			}
 
 			[Test(Description = @"")]
@@ -1829,7 +1828,7 @@ FROM DUAL";
 				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 				var terminals = statement.AllTerminals.ToArray();
-				terminals.Length.ShouldBe(34);
+				terminals.Length.ShouldBe(33);
 			}
 		}
 
@@ -1845,7 +1844,7 @@ FROM DUAL";
 				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 				var terminals = statement.AllTerminals.ToArray();
-				terminals.Length.ShouldBe(48);
+				terminals.Length.ShouldBe(47);
 			}
 
 			[Test(Description = @"")]
@@ -1893,7 +1892,7 @@ LOG ERRORS INTO ERR$_ERRORLOGTEST ('COMMAND TAG 1') REJECT LIMIT UNLIMITED;";
 				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 				var terminals = statement.AllTerminals.ToArray();
-				terminals.Length.ShouldBe(67);
+				terminals.Length.ShouldBe(66);
 			}
 
 			[Test(Description = @"")]

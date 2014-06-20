@@ -157,8 +157,17 @@ namespace SqlPad.Oracle
 
 		public ICollection<OracleObjectReference> ObjectReferences { get { return _objectReferences; } }
 
-		public ICollection<string> ObjectNames { get { return _objectReferences.Select(t => t.FullyQualifiedName.ToString()).OrderByDescending(n => n).ToArray(); } }	
-		
+		public ICollection<string> ObjectNames
+		{
+			get
+			{
+				return _objectReferences.Select(t => t.FullyQualifiedName.ToString())
+					.Where(n => !String.IsNullOrEmpty(n))
+					.OrderByDescending(n => n)
+					.ToArray();
+			}
+		}
+
 		public StatementDescriptionNode Node { get; set; }
 
 		public virtual string ToolTipText
@@ -169,8 +178,14 @@ namespace SqlPad.Oracle
 					? Node.Type == NodeType.NonTerminal
 						? null
 						: Node.Id
-					: SemanticError.ToToolTipText() + String.Format(" ({0})", String.Join(", ", ObjectNames));
+					: FormatToolTipWithObjectNames();
 			}
+		}
+
+		private string FormatToolTipWithObjectNames()
+		{
+			var objectNames = ObjectNames;
+			return String.Format("{0}{1}", SemanticError.ToToolTipText(), objectNames.Count == 0 ? null : String.Format(" ({0})", String.Join(", ", ObjectNames)));
 		}
 	}
 

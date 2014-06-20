@@ -212,7 +212,11 @@ namespace SqlPad
 			GridLabel.Visibility = Visibility.Collapsed;
 			TextMoreRowsExist.Visibility = Visibility.Collapsed;
 
-			SaveAction(() => _databaseModel.ExecuteStatement(statement.RootNode.GetStatementSubstring(Editor.Text)), true);
+			var actionSuccess = SaveAction(() => _databaseModel.ExecuteStatement(Editor.SelectionLength > 0 ? Editor.SelectedText : statement.RootNode.GetStatementSubstring(Editor.Text), statement.ReturnDataset), true);
+			if (!actionSuccess)
+				return;
+
+			ResultGrid.Columns.Clear();
 
 			if (_databaseModel.CanFetch)
 			{
@@ -227,7 +231,7 @@ namespace SqlPad
 			}
 		}
 
-		private void SaveAction(Action action, bool showExecutionTime = false)
+		private bool SaveAction(Action action, bool showExecutionTime = false)
 		{
 			try
 			{
@@ -241,10 +245,13 @@ namespace SqlPad
 				{
 					TextExecutionTime.Text = FormatElapsedMilliseconds(stopwatch.ElapsedMilliseconds);
 				}
+
+				return true;
 			}
 			catch (Exception e)
 			{
 				MessageBox.Show(e.Message, "Error");
+				return false;
 			}
 		}
 
@@ -268,8 +275,6 @@ namespace SqlPad
 
 		private void InitializeResultGrid()
 		{
-			ResultGrid.Columns.Clear();
-
 			foreach (var columnHeader in _databaseModel.GetColumnHeaders())
 			{
 				var columnTemplate =

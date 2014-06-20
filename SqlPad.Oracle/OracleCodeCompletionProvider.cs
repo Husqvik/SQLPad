@@ -491,7 +491,7 @@ namespace SqlPad.Oracle
 		{
 			var codeItems = Enumerable.Empty<ICodeCompletionItem>();
 
-			if (parentSchemaObject.Type == TableReferenceType.PhysicalObject && joinedSchemaObject.Type == TableReferenceType.PhysicalObject)
+			if (parentSchemaObject.Type == TableReferenceType.SchemaObject && joinedSchemaObject.Type == TableReferenceType.SchemaObject)
 			{
 				if (parentSchemaObject.SearchResult.SchemaObject == null || joinedSchemaObject.SearchResult.SchemaObject == null)
 					return EmptyCollection;

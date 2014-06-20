@@ -31,6 +31,7 @@ namespace SqlPad.Oracle
 		private Dictionary<OracleObjectIdentifier, OracleSchemaObject> _allObjects = new Dictionary<OracleObjectIdentifier, OracleSchemaObject>();
 		private OracleConnection _userConnection;
 		private OracleDataReader _dataReader;
+		private OracleSqlParser _parser = new OracleSqlParser();
 
 		public OracleDatabaseModel(ConnectionStringSettings connectionString)
 		{
@@ -448,7 +449,7 @@ ORDER BY
 			}
 		}
 
-		public override void ExecuteStatement(string commandText)
+		public override int ExecuteStatement(string statementText, bool returnDataset)
 		{
 			if (!CanExecute)
 				throw new InvalidOperationException("Another statement is executing right now. ");
@@ -458,13 +459,17 @@ ORDER BY
 				_dataReader.Dispose();
 			}
 
-			_dataReader = ExecuteUserStatement(commandText, c => c.ExecuteReader(CommandBehavior.CloseConnection));
+			if (!returnDataset)
+				return ExecuteUserStatement(statementText, c => c.ExecuteNonQuery());
+			
+			_dataReader = ExecuteUserStatement(statementText, c => c.ExecuteReader(CommandBehavior.CloseConnection));
+			return 0;
 		}
 
-		public Task ExecuteStatementAsync(string commandText)
+		/*public Task ExecuteStatementAsync(string statementText)
 		{
-			return _statementExecutionTask = Task.Factory.StartNew(c => ExecuteStatement((string)c), commandText);
-		}
+			return _statementExecutionTask = Task.Factory.StartNew(c => ExecuteStatement((string)c), statementText);
+		}*/
 
 		public override ICollection<ColumnHeader> GetColumnHeaders()
 		{
@@ -537,7 +542,7 @@ ORDER BY
 		{
 			RefreshStarted(this, EventArgs.Empty);
 
-			const string selectAllObjectsCommandText = "SELECT OWNER, OBJECT_NAME, SUBOBJECT_NAME, OBJECT_ID, DATA_OBJECT_ID, OBJECT_TYPE, CREATED, LAST_DDL_TIME, STATUS, TEMPORARY, EDITIONABLE, EDITION_NAME FROM ALL_OBJECTS WHERE OBJECT_TYPE IN ('SYNONYM', 'VIEW', 'TABLE')";
+			const string selectAllObjectsCommandText = "SELECT OWNER, OBJECT_NAME, SUBOBJECT_NAME, OBJECT_ID, DATA_OBJECT_ID, OBJECT_TYPE, CREATED, LAST_DDL_TIME, STATUS, TEMPORARY/*, EDITIONABLE, EDITION_NAME*/ FROM ALL_OBJECTS WHERE OBJECT_TYPE IN ('SYNONYM', 'VIEW', 'TABLE')";
 			var dataObjectMetadataSource = ExecuteReader(
 				selectAllObjectsCommandText,
 				r => OracleObjectFactory.CreateDataObjectMetadata((string)r["OBJECT_TYPE"], QualifyStringObject(r["OWNER"]), QualifyStringObject(r["OBJECT_NAME"]), (string)r["STATUS"] == "VALID", (DateTime)r["CREATED"], (DateTime)r["LAST_DDL_TIME"], (string)r["TEMPORARY"] == "Y"));
@@ -575,15 +580,22 @@ FROM ALL_TABLES";
 				r =>
 				{
 					var synonymFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(r["OWNER"]), QualifyStringObject(r["SYNONYM_NAME"]));
-					OracleSchemaObject synonym;
-					dataObjectMetadata.TryGetValue(synonymFullyQualifiedName, out synonym);
+					OracleSchemaObject synonymObject;
+					dataObjectMetadata.TryGetValue(synonymFullyQualifiedName, out synonymObject);
 
 					var objectFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(r["TABLE_OWNER"]), QualifyStringObject(r["TABLE_NAME"]));
 					OracleSchemaObject schemaObject;
 					dataObjectMetadata.TryGetValue(objectFullyQualifiedName, out schemaObject);
 
-					((OracleSynonym)synonym).SchemaObject = schemaObject;
-					return synonym;
+					var synonym = (OracleSynonym)synonymObject;
+					synonym.SchemaObject = schemaObject;
+
+					if (schemaObject != null)
+					{
+						schemaObject.Synonym = synonym;
+					}
+
+					return synonymObject;
 				}
 				).ToArray();
 

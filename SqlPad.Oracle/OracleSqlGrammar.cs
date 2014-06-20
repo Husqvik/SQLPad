@@ -146,29 +146,16 @@ namespace SqlPad.Oracle {
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://husqvik.com/SqlPad/2014/02")]
     public partial class SqlGrammarTerminator {
         
-        private string valueField;
-        
-        private string regexValueField;
+        private string idField;
         
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
-        public string Value {
+        public string Id {
             get {
-                return this.valueField;
+                return this.idField;
             }
             set {
-                this.valueField = value;
-            }
-        }
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public string RegexValue {
-            get {
-                return this.regexValueField;
-            }
-            set {
-                this.regexValueField = value;
+                this.idField = value;
             }
         }
     }

@@ -153,7 +153,7 @@ namespace SqlPad.Oracle
 					var result = SchemaObjectResult<OracleDataObject>.EmptyResult;
 					if (commonTableExpressions.Count == 0)
 					{
-						referenceType = TableReferenceType.PhysicalObject;
+						referenceType = TableReferenceType.SchemaObject;
 
 						var objectName = tableIdentifierNode.Token.Value;
 						var owner = schemaPrefixNode == null ? null : schemaPrefixNode.Token.Value;
@@ -165,16 +165,17 @@ namespace SqlPad.Oracle
 						}
 					}
 
-					var objectReference = new OracleObjectReference
-					                            {
-						                            Owner = item,
-						                            TableReferenceNode = tableReferenceNonterminal,
-						                            OwnerNode = schemaPrefixNode,
-						                            ObjectNode = tableIdentifierNode,
-						                            Type = referenceType,
-						                            AliasNode = tableReferenceAlias,
-						                            SearchResult = result
-					                            };
+					var objectReference =
+						new OracleObjectReference
+						{
+							Owner = item,
+							TableReferenceNode = tableReferenceNonterminal,
+							OwnerNode = schemaPrefixNode,
+							ObjectNode = tableIdentifierNode,
+							Type = referenceType,
+							AliasNode = tableReferenceAlias,
+							SearchResult = result
+						};
 					
 					item.ObjectReferences.Add(objectReference);
 
@@ -184,11 +185,11 @@ namespace SqlPad.Oracle
 					}
 				}
 
-				ResolveSelectList(item);
+				FindSelectListReferences(item);
 
-				ResolveWhereGroupByHavingReferences(item);
+				FindWhereGroupByHavingReferences(item);
 
-				ResolveJoinColumnReferences(item);
+				FindJoinColumnReferences(item);
 			}
 
 			foreach (var queryBlock in _queryBlockResults.Values)
@@ -208,7 +209,7 @@ namespace SqlPad.Oracle
 					}
 				}
 
-				foreach (var nestedQueryReference in queryBlock.ObjectReferences.Where(t => t.Type != TableReferenceType.PhysicalObject))
+				foreach (var nestedQueryReference in queryBlock.ObjectReferences.Where(t => t.Type != TableReferenceType.SchemaObject))
 				{
 					if (nestedQueryReference.Type == TableReferenceType.InlineView)
 					{
@@ -239,23 +240,68 @@ namespace SqlPad.Oracle
 				}
 			}
 
+			ExposeAsteriskColumns();
+
+			ResolveReferences();
+		}
+
+		private void ResolveJoinReferences()
+		{
+			foreach (var joinClauseColumnReferences in _joinClauseColumnReferences)
+			{
+				var queryBlock = joinClauseColumnReferences.First().Owner;
+				foreach (var columnReference in joinClauseColumnReferences)
+				{
+					var fromClauseNode = columnReference.ColumnNode.GetAncestor(NonTerminals.FromClause);
+					var relatedTableReferences = queryBlock.ObjectReferences
+						.Where(t => t.TableReferenceNode.SourcePosition.IndexStart >= fromClauseNode.SourcePosition.IndexStart &&
+						            t.TableReferenceNode.SourcePosition.IndexEnd <= columnReference.ColumnNode.SourcePosition.IndexStart).ToArray();
+
+					var columnReferences = new List<OracleColumnReference> {columnReference};
+					ResolveColumnObjectReferences(columnReferences, queryBlock.FunctionReferences, relatedTableReferences);
+					queryBlock.ColumnReferences.AddRange(columnReferences);
+				}
+			}
+		}
+
+		private void ResolveReferences()
+		{
+			foreach (var queryBlock in _queryBlockResults.Values)
+			{
+				ResolveOrderByReferences(queryBlock);
+
+				ResolveFunctionReferences(queryBlock);
+
+				foreach (var selectColumm in queryBlock.Columns.Where(c => c.ExplicitDefinition))
+				{
+					ResolveColumnObjectReferences(selectColumm.ColumnReferences, selectColumm.FunctionReferences, queryBlock.ObjectReferences);
+				}
+
+				ResolveColumnObjectReferences(queryBlock.ColumnReferences, queryBlock.FunctionReferences, queryBlock.ObjectReferences);
+			}
+
+			ResolveJoinReferences();
+		}
+
+		private void ExposeAsteriskColumns()
+		{
 			foreach (var asteriskTableReference in _asteriskTableReferences)
 			{
 				foreach (var objectReference in asteriskTableReference.Value)
 				{
 					IEnumerable<OracleSelectListColumn> exposedColumns;
-					if (objectReference.Type == TableReferenceType.PhysicalObject)
+					if (objectReference.Type == TableReferenceType.SchemaObject)
 					{
 						if (objectReference.SearchResult.SchemaObject == null)
 							continue;
 
 						exposedColumns = objectReference.SearchResult.SchemaObject.Columns.Values
 							.Select(c => new OracleSelectListColumn
-							        {
-								        ExplicitDefinition = false,
-								        IsDirectColumnReference = true,
-								        ColumnDescription = c
-							        });
+							{
+								ExplicitDefinition = false,
+								IsDirectColumnReference = true,
+								ColumnDescription = c
+							});
 					}
 					else
 					{
@@ -278,46 +324,16 @@ namespace SqlPad.Oracle
 							{
 								exposedColumnDictionary.Add(exposedColumn.NormalizedName, columnReference);
 							}
-							
+
 							columnReference.ColumnNodeObjectReferences.Add(objectReference);
 						}
 
 						columnReference.ColumnNodeColumnReferences.Add(exposedColumn.ColumnDescription);
 
 						exposedColumn.ColumnReferences.Add(columnReference);
-						
+
 						asteriskTableReference.Key.Owner.Columns.Add(exposedColumn);
 					}
-				}
-			}
-
-			foreach (var queryBlock in _queryBlockResults.Values)
-			{
-				ResolveOrderByReferences(queryBlock);
-
-				ResolveFunctionReferences(queryBlock);
-
-				foreach (var selectColumm in queryBlock.Columns.Where(c => c.ExplicitDefinition))
-				{
-					ResolveColumnObjectReferences(selectColumm.ColumnReferences, selectColumm.FunctionReferences, queryBlock.ObjectReferences);
-				}
-
-				ResolveColumnObjectReferences(queryBlock.ColumnReferences, queryBlock.FunctionReferences, queryBlock.ObjectReferences);
-			}
-
-			foreach (var joinClauseColumnReferences in _joinClauseColumnReferences)
-			{
-				var queryBlock = joinClauseColumnReferences.First().Owner;
-				foreach (var columnReference in joinClauseColumnReferences)
-				{
-					var fromClauseNode = columnReference.ColumnNode.GetAncestor(NonTerminals.FromClause);
-					var relatedTableReferences = queryBlock.ObjectReferences
-						.Where(t => t.TableReferenceNode.SourcePosition.IndexStart >= fromClauseNode.SourcePosition.IndexStart &&
-						            t.TableReferenceNode.SourcePosition.IndexEnd <= columnReference.ColumnNode.SourcePosition.IndexStart).ToArray();
-
-					var columnReferences = new List<OracleColumnReference> { columnReference };
-					ResolveColumnObjectReferences(columnReferences, queryBlock.FunctionReferences, relatedTableReferences);
-					queryBlock.ColumnReferences.AddRange(columnReferences);
 				}
 			}
 		}
@@ -440,7 +456,7 @@ namespace SqlPad.Oracle
 					if (!String.IsNullOrEmpty(columnReference.FullyQualifiedObjectName.NormalizedName) &&
 						(rowSourceReference.FullyQualifiedName == columnReference.FullyQualifiedObjectName ||
 						 (String.IsNullOrEmpty(columnReference.FullyQualifiedObjectName.Owner) &&
-						  rowSourceReference.Type == TableReferenceType.PhysicalObject && rowSourceReference.FullyQualifiedName.NormalizedName == columnReference.FullyQualifiedObjectName.NormalizedName)))
+						  rowSourceReference.Type == TableReferenceType.SchemaObject && rowSourceReference.FullyQualifiedName.NormalizedName == columnReference.FullyQualifiedObjectName.NormalizedName)))
 						columnReference.ObjectNodeObjectReferences.Add(rowSourceReference);
 
 					var columnNodeColumnReferences = GetColumnNodeObjectReferences(rowSourceReference, columnReference);
@@ -490,7 +506,7 @@ namespace SqlPad.Oracle
 		private ICollection<OracleColumn> GetColumnNodeObjectReferences(OracleObjectReference rowSourceReference, OracleColumnReference columnReference)
 		{
 			var columnNodeColumnReferences = new List<OracleColumn>();
-			if (rowSourceReference.Type == TableReferenceType.PhysicalObject)
+			if (rowSourceReference.Type == TableReferenceType.SchemaObject)
 			{
 				if (rowSourceReference.SearchResult.SchemaObject == null)
 					return new OracleColumn[0];
@@ -527,7 +543,7 @@ namespace SqlPad.Oracle
 			       (String.IsNullOrEmpty(objectName.NormalizedOwner) || objectName.NormalizedOwner == schemaObject.FullyQualifiedName.NormalizedOwner);
 		}
 
-		private void ResolveJoinColumnReferences(OracleQueryBlock queryBlock)
+		private void FindJoinColumnReferences(OracleQueryBlock queryBlock)
 		{
 			var fromClauses = queryBlock.RootNode.GetDescendantsWithinSameQuery(NonTerminals.FromClause);
 			foreach (var fromClause in fromClauses)
@@ -551,7 +567,7 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		private void ResolveWhereGroupByHavingReferences(OracleQueryBlock queryBlock)
+		private void FindWhereGroupByHavingReferences(OracleQueryBlock queryBlock)
 		{
 			var whereClauseRootNode = queryBlock.RootNode.GetDescendantsWithinSameQuery(NonTerminals.WhereClause).FirstOrDefault();
 			if (whereClauseRootNode != null)
@@ -619,7 +635,7 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		private void ResolveSelectList(OracleQueryBlock queryBlock)
+		private void FindSelectListReferences(OracleQueryBlock queryBlock)
 		{
 			var queryBlockRoot = queryBlock.RootNode;
 
@@ -850,7 +866,7 @@ namespace SqlPad.Oracle
 
 	public enum TableReferenceType
 	{
-		PhysicalObject,
+		SchemaObject,
 		CommonTableExpression,
 		InlineView
 	}

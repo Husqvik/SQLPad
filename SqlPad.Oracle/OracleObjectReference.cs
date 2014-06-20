@@ -31,7 +31,7 @@ namespace SqlPad.Oracle
 				if (_columns == null)
 				{
 					_columns = new List<OracleColumn>();
-					if (Type == TableReferenceType.PhysicalObject)
+					if (Type == TableReferenceType.SchemaObject)
 					{
 						if (SearchResult.SchemaObject != null)
 						{

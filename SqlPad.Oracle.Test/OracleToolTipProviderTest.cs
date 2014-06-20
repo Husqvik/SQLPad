@@ -126,6 +126,18 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestAmbiguousColumnNameFromSingleObjectWithoutAliasToolTip()
+		{
+			const string query = "SELECT DUMMY FROM (SELECT DUAL.DUMMY, X.DUMMY FROM DUAL, DUAL X)";
+			_document.UpdateStatements(_oracleSqlParser.Parse(query), query);
+
+			var toolTip = _toolTipProvider.GetToolTip(TestFixture.DatabaseModel, _document, 7);
+
+			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.DataContext.ShouldBe("Ambiguous reference");
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestFunctionNameToolTip()
 		{
 			const string query = "SELECT COALESCE(NULL, 1) FROM DUAL";

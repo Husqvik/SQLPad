@@ -11,5 +11,10 @@ namespace SqlPad.Oracle
 				ProcessingStatus = ProcessingStatus.Success,
 				SourcePosition = new SourcePosition { IndexStart = -1, IndexEnd = -1 }
 			};
+
+		public override bool ReturnDataset
+		{
+			get { return RootNode != null && RootNode.FirstTerminalNode.Id == OracleGrammarDescription.Terminals.Select; }
+		}
 	}
 }

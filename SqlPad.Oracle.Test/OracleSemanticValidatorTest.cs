@@ -912,6 +912,24 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			functionNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
 		}
 
+		[Test(Description = @"")]
+		public void TestAmbiguousColumnReferenceUsingAsteriskReferingAnotherAsterisk()
+		{
+			const string sqlText = "SELECT * FROM (SELECT * FROM DUAL, DUAL X)";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = _statementValidator.BuildValidationModel(sqlText, statement, TestFixture.DatabaseModel);
+			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var columnNodeValidity = nodeValidityDictionary.Values.ToList();
+			columnNodeValidity.Count.ShouldBe(2);
+			columnNodeValidity[0].IsRecognized.ShouldBe(true);
+			columnNodeValidity[0].SemanticError.ShouldBe(SemanticError.AmbiguousReference);
+			columnNodeValidity[1].IsRecognized.ShouldBe(true);
+			columnNodeValidity[1].SemanticError.ShouldBe(SemanticError.None);
+		}
+
 		//WITH CTE AS (SELECT 1 A, 2 B, 3 C FROM DUAL) SELECT SELECTION.DUMMY, NQ.DUMMY, CTE.DUMMY, SYS.DUAL.DUMMY FROM SELECTION, (SELECT 1 X, 2 Y, 3 Z FROM DUAL) NQ, CTE, SYS.DUAL
 	}
 }

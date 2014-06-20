@@ -35,7 +35,7 @@ namespace SqlPad.Oracle
 						if (objectReference == null)
 							return null;
 
-						var objectName = objectReference.Type == TableReferenceType.PhysicalObject && objectReference.SearchResult.SchemaObject != null
+						var objectName = objectReference.Type == TableReferenceType.SchemaObject && objectReference.SearchResult.SchemaObject != null
 							? objectReference.SearchResult.SchemaObject.FullyQualifiedName
 							: objectReference.FullyQualifiedName;
 						tip = objectName + " (" + objectReference.Type.ToCategoryLabel() + ")";

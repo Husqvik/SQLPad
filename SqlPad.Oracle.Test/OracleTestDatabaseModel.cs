@@ -28,7 +28,8 @@ namespace SqlPad.Oracle.Test
 			{
 				var builtInFunctionMetadata = (OracleFunctionMetadataCollection)Serializer.ReadObject(builtInFunctionReader);
 
-				using (var reader = XmlReader.Create(Path.Combine(App.FolderNameApplication, @"TestFiles\TestFunctionCollection.xml")))
+				var testFolder = Path.GetDirectoryName(typeof(OracleTestDatabaseModel).Assembly.CodeBase);
+				using (var reader = XmlReader.Create(Path.Combine(testFolder, @"TestFiles\TestFunctionCollection.xml")))
 				{
 					AllFunctionMetadataInterval = new OracleFunctionMetadataCollection(builtInFunctionMetadata.SqlFunctions.Concat(((OracleFunctionMetadataCollection)Serializer.ReadObject(reader)).SqlFunctions));
 				}
@@ -304,7 +305,7 @@ namespace SqlPad.Oracle.Test
 
 		public override event EventHandler RefreshFinished = delegate { };
 
-		public override void ExecuteStatement(string commandText)
+		public override int ExecuteStatement(string statementText, bool returnDataset)
 		{
 			throw new NotSupportedException(NotSupported);
 		}

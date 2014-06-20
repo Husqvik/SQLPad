@@ -24,7 +24,7 @@ namespace SqlPad
 
 		event EventHandler RefreshFinished;
 
-		void ExecuteStatement(string commandText);
+		int ExecuteStatement(string statementText, bool returnDataset);
 
 		IEnumerable<object[]> FetchRecords(int rowCount);
 

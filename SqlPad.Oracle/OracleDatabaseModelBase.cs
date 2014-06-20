@@ -27,7 +27,7 @@ namespace SqlPad.Oracle
 
 		public abstract event EventHandler RefreshFinished;
 
-		public abstract void ExecuteStatement(string commandText);
+		public abstract int ExecuteStatement(string statementText, bool returnDataset);
 
 		public abstract IEnumerable<object[]> FetchRecords(int rowCount);
 
