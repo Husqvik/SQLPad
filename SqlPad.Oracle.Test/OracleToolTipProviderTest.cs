@@ -69,7 +69,31 @@ namespace SqlPad.Oracle.Test
 			var toolTip = _toolTipProvider.GetToolTip(TestFixture.DatabaseModel, _document, 20);
 
 			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
-			toolTip.Control.DataContext.ShouldBe("HUSQVIK.SELECTION (Schema Object)");
+			toolTip.Control.DataContext.ShouldBe("HUSQVIK.SELECTION (Table)");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestTableObjectToolTipInSelectListWithInvalidColumn()
+		{
+			const string query = "SELECT SELECTION.INVALID FROM SELECTION";
+			_document.UpdateStatements(_oracleSqlParser.Parse(query), query);
+
+			var toolTip = _toolTipProvider.GetToolTip(TestFixture.DatabaseModel, _document, 10);
+
+			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.DataContext.ShouldBe("HUSQVIK.SELECTION (Table)");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestSynonymReferencedObjectToolTip()
+		{
+			const string query = "SELECT * FROM V$SESSION";
+			_document.UpdateStatements(_oracleSqlParser.Parse(query), query);
+
+			var toolTip = _toolTipProvider.GetToolTip(TestFixture.DatabaseModel, _document, 20);
+
+			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.DataContext.ShouldBe("\"PUBLIC\".V$SESSION (Synonym) => SYS.V_$SESSION (View)");
 		}
 
 		[Test(Description = @""), STAThread]

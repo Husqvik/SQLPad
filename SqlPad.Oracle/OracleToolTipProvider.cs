@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Linq;
 using SqlPad.Oracle.ToolTips;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
@@ -35,10 +36,22 @@ namespace SqlPad.Oracle
 						if (objectReference == null)
 							return null;
 
-						var objectName = objectReference.Type == TableReferenceType.SchemaObject && objectReference.SearchResult.SchemaObject != null
-							? objectReference.SearchResult.SchemaObject.FullyQualifiedName
-							: objectReference.FullyQualifiedName;
-						tip = objectName + " (" + objectReference.Type.ToCategoryLabel() + ")";
+						if (objectReference.Type == TableReferenceType.SchemaObject && objectReference.SearchResult.SchemaObject != null)
+						{
+							tip = null;
+
+							if (objectReference.SearchResult.Synonym != null)
+							{
+								tip = GetSchemaObjectToolTip(objectReference.SearchResult.Synonym) + " => ";
+							}
+
+							tip += GetSchemaObjectToolTip(objectReference.SearchResult.SchemaObject);
+						}
+						else
+						{
+							tip = objectReference.FullyQualifiedName + " (" + objectReference.Type.ToCategoryLabel() + ")";
+						}
+
 						break;
 					case Terminals.Min:
 					case Terminals.Max:
@@ -76,6 +89,11 @@ namespace SqlPad.Oracle
 			return new ToolTipObject { DataContext = tip };
 		}
 
+		private static string GetSchemaObjectToolTip(OracleSchemaObject schemaObject)
+		{
+			return schemaObject.FullyQualifiedName + " (" + CultureInfo.InvariantCulture.TextInfo.ToTitleCase(schemaObject.Type.ToLower()) + ")";
+		}
+
 		private string GetFunctionName(OracleQueryBlock queryBlock, StatementDescriptionNode terminal)
 		{
 			var functionReference = queryBlock.AllFunctionReferences.SingleOrDefault(f => f.FunctionIdentifierNode == terminal);
@@ -93,8 +111,8 @@ namespace SqlPad.Oracle
 		private OracleObjectReference GetOracleObjectReference(OracleQueryBlock queryBlock, StatementDescriptionNode terminal)
 		{
 			var objectReference = queryBlock.AllColumnReferences
-				.Where(c => c.ObjectNode == terminal && c.ColumnNodeObjectReferences.Count == 1)
-				.Select(c => c.ColumnNodeObjectReferences.Single())
+				.Where(c => c.ObjectNode == terminal && c.ObjectNodeObjectReferences.Count == 1)
+				.Select(c => c.ObjectNodeObjectReferences.First())
 				.FirstOrDefault();
 
 			if (objectReference != null)

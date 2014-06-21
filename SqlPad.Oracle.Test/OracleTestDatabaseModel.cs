@@ -4,6 +4,7 @@ using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Text;
 using System.Xml;
 
 namespace SqlPad.Oracle.Test
@@ -308,7 +309,12 @@ namespace SqlPad.Oracle.Test
 
 		public override int ExecuteStatement(string statementText, bool returnDataset)
 		{
-			throw new NotSupportedException(NotSupported);
+			var messageBuilder = new StringBuilder(NotSupported);
+			messageBuilder.AppendLine();
+			messageBuilder.AppendLine();
+			messageBuilder.AppendLine("Statement: ");
+			messageBuilder.AppendLine(statementText);
+			throw new NotSupportedException(messageBuilder.ToString());
 		}
 
 		public override IEnumerable<object[]> FetchRecords(int rowCount)
