@@ -78,7 +78,8 @@ namespace SqlPad.Oracle.Test
 						FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"FK_TARGETGROUP_PROJECT\""),
 						Columns = new[] { "\"PROJECT_ID\"" },
 						ReferenceConstraint = projectPrimaryKey,
-						Owner = sourceObject
+						Owner = sourceObject,
+						TargetObject = projectTable
 					}
 				};
 

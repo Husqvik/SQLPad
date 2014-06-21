@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ using System.Windows.Data;
 using System.Windows.Input;
 using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.CodeCompletion;
+using Microsoft.Win32;
 using SqlPad.Commands;
 using SqlPad.FindReplace;
 
@@ -44,7 +46,13 @@ namespace SqlPad
 
 		public TextEditorAdapter EditorAdapter { get; private set; }
 		
-		public DocumentPage(IInfrastructureFactory infrastructureFactory)
+		public FileInfo File { get; private set; }
+
+		public string DocumentHeader { get { return File == null ? "New*" : File.Name + (IsDirty ? "*" : null); } }
+
+		public bool IsDirty { get { return Editor.IsModified; } }
+		
+		public DocumentPage(IInfrastructureFactory infrastructureFactory, FileInfo file)
 		{
 			if (infrastructureFactory == null)
 				throw new ArgumentNullException("infrastructureFactory");
@@ -77,6 +85,15 @@ namespace SqlPad
 			EditorAdapter = new TextEditorAdapter(Editor);
 
 			_pageModel = new PageModel(_databaseModel, ReParse);
+
+			if (file != null)
+			{
+				File = file;
+				Editor.Load(file.FullName);
+			}
+
+			_pageModel.DocumentHeader = DocumentHeader;
+
 			DataContext = _pageModel;
 
 			_databaseModel.RefreshStarted += (sender, args) => Dispatcher.Invoke(() => ProgressBar.IsIndeterminate = true);
@@ -91,6 +108,38 @@ namespace SqlPad
 				var routedHandlerMethod = GenericCommandHandler.CreateRoutedEditCommandHandler(handler, () => _sqlDocument.StatementCollection, _databaseModel);
 				Editor.TextArea.DefaultInputHandler.Editing.CommandBindings.Add(new CommandBinding(command, routedHandlerMethod));
 			}
+		}
+
+		public void SaveCommandExecutedHandler(object sender, ExecutedRoutedEventArgs args)
+		{
+			Save();
+		}
+
+		public bool Save()
+		{
+			if (File == null)
+				return SaveAs();
+
+			if (!IsDirty)
+				return true;
+
+			Editor.Save(File.FullName);
+			_pageModel.DocumentHeader = File.Name;
+			return true;
+		}
+
+		public bool SaveAs()
+		{
+			var dialog = new SaveFileDialog { Filter = "SQL Files (*.sql)|*.sql|All (*.*)|*" };
+			if (dialog.ShowDialog() != true)
+			{
+				return false;
+			}
+
+			File = new FileInfo(dialog.FileName);
+			Editor.Save(File.FullName);
+			_pageModel.DocumentHeader = File.Name;
+			return true;
 		}
 
 		private void SelectionChangedHandler(object sender, EventArgs eventArgs)
@@ -144,6 +193,9 @@ namespace SqlPad
 
 			var executeDatabaseCommandCommand = new RoutedCommand("ExecuteDatabaseCommand", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.F9) });
 			commandBindings.Add(new CommandBinding(executeDatabaseCommandCommand, ExecuteDatabaseCommand));
+
+			var saveCommand = new RoutedCommand("Save", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.S, ModifierKeys.Control) });
+			commandBindings.Add(new CommandBinding(saveCommand, SaveCommandExecutedHandler));
 
 			var formatStatementCommand = new RoutedCommand(_statementFormatter.ExecutionHandler.Name, typeof(TextEditor), _statementFormatter.ExecutionHandler.DefaultGestures);
 			var formatStatementRoutedHandlerMethod = GenericCommandHandler.CreateRoutedEditCommandHandler(_statementFormatter.ExecutionHandler, () => _sqlDocument.StatementCollection, _databaseModel);
@@ -411,6 +463,8 @@ namespace SqlPad
 			{
 				Editor.Document.EndUpdate();
 			}
+
+			_pageModel.DocumentHeader = DocumentHeader;
 
 			var snippets = _codeSnippetProvider.GetSnippets(_sqlDocument, Editor.Text, Editor.CaretOffset).Select(i => new CompletionData(i)).ToArray();
 			if (_completionWindow == null && snippets.Length > 0)

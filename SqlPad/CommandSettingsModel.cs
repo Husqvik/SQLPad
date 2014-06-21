@@ -12,9 +12,14 @@ namespace SqlPad
 	{
 		public event PropertyChangedEventHandler PropertyChanged = delegate { };
 
-		protected void RaisePropertyChanged([CallerMemberName] string propertyName = null)
+		protected bool UpdateValueAndRaisePropertyChanged<T>(ref T value, T newValue, [CallerMemberName] string propertyName = null)
 		{
+			if (Equals(value, newValue))
+				return false;
+
+			value = newValue;
 			PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+			return true;
 		}
 	}
 
@@ -45,14 +50,7 @@ namespace SqlPad
 		public string Value
 		{
 			get { return _value; }
-			set
-			{
-				if (_value == value)
-					return;
-
-				_value = value;
-				RaisePropertyChanged();
-			}
+			set { UpdateValueAndRaisePropertyChanged(ref _value, value); }
 		}
 
 		public Visibility BooleanOptionsVisibility { get; set; }
@@ -75,14 +73,7 @@ namespace SqlPad
 		public bool Value
 		{
 			get { return _value; }
-			set
-			{
-				if (_value == value)
-					return;
-
-				_value = value;
-				RaisePropertyChanged();
-			}
+			set { UpdateValueAndRaisePropertyChanged(ref _value, value); }
 		}
 
 		public string OptionIdentifier { get; set; }
