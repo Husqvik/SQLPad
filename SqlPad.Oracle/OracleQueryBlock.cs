@@ -92,6 +92,8 @@ namespace SqlPad.Oracle
 		
 		public OracleQueryBlock PrecedingConcatenatedQueryBlock { get; set; }
 
+		public OracleQueryBlock ParentCorrelatedQueryBlock { get; set; }
+
 		public IEnumerable<OracleQueryBlock> AllFollowingConcatenatedQueryBlocks
 		{
 			get
