@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
+using System.Timers;
 using System.Xml;
 using Oracle.DataAccess.Client;
 
@@ -16,6 +17,8 @@ namespace SqlPad.Oracle
 	{
 		private static readonly object LockObject = new object();
 		private readonly OracleConnectionStringBuilder _oracleConnectionString;
+		private const int RefreshInterval = 10;
+		private readonly Timer _timer = new Timer(RefreshInterval * 60000);
 		private const string SqlFuntionMetadataFileName = "OracleSqlFunctionMetadataCollection_12_1_0_1_0.xml";
 		private static readonly DataContractSerializer Serializer = new DataContractSerializer(typeof(OracleFunctionMetadataCollection));
 		private static bool _isRefreshing;
@@ -32,7 +35,6 @@ namespace SqlPad.Oracle
 		private OracleConnection _userConnection;
 		private OracleDataReader _dataReader;
 		private DateTime _lastRefresh;
-		private const int RefreshPeriod = 10;
 
 		public OracleDatabaseModel(ConnectionStringSettings connectionString)
 		{
@@ -56,6 +58,9 @@ namespace SqlPad.Oracle
 			LoadSchemaNames();
 
 			_userConnection = new OracleConnection(connectionString.ConnectionString);
+
+			_timer.Elapsed += (sender, args) => RefreshIfNeeded();
+			_timer.Start();
 		}
 
 		private static void ExecuteSynchronizedAction(Action action)
@@ -92,6 +97,14 @@ namespace SqlPad.Oracle
 		//public IDictionary<OracleObjectIdentifier, OracleSchemaObject> Objects { get { return OracleTestDatabaseModel.Instance.Objects; } }
 		public override IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjects { get { return _allObjects; } }
 
+		public override void RefreshIfNeeded()
+		{
+			if (_lastRefresh.AddMinutes(RefreshInterval) < DateTime.Now)
+			{
+				Refresh();
+			}
+		}
+
 		public override void Refresh()
 		{
 			if (_backgroundTask == null)
@@ -124,6 +137,8 @@ namespace SqlPad.Oracle
 
 		public override void Dispose()
 		{
+			_timer.Dispose();
+
 			if (_dataReader != null)
 				_dataReader.Dispose();
 
@@ -138,7 +153,16 @@ namespace SqlPad.Oracle
 
 		public OracleDatabaseModel Clone()
 		{
-			throw new NotImplementedException();
+			var clone =
+				new OracleDatabaseModel(ConnectionString)
+				{
+					_currentSchema = _currentSchema,
+					_lastRefresh = _lastRefresh,
+					_allObjects = _allObjects,
+					_allFunctionMetadata = _allFunctionMetadata
+				};
+
+			return clone;
 		}
 
 		private OracleFunctionMetadataCollection GetUserFunctionMetadata()
@@ -502,11 +526,19 @@ ORDER BY
 						ColumnIndex = i,
 						Name = _dataReader.GetName(i),
 						DataType = _dataReader.GetFieldType(i),
-						DatabaseDataType = _dataReader.GetDataTypeName(i)
+						DatabaseDataType = _dataReader.GetDataTypeName(i),
+						ValueConverterFunction = ValueConverterFunction
 					};
 			}
 
 			return columnTypes;
+		}
+
+		private static object ValueConverterFunction(ColumnHeader columnHeader, object value)
+		{
+			return columnHeader.DatabaseDataType == "Raw"
+				? ((byte[])value).ToHexString()
+				: value;
 		}
 
 		public override IEnumerable<object[]> FetchRecords(int rowCount)
@@ -747,11 +779,11 @@ FROM ALL_TABLES";
 						return null;
 
 					var sequence = (OracleSequence) sequenceObject;
-					sequence.CurrentValue = Convert.ToInt64(r["LAST_NUMBER"]);
-					sequence.MinimumValue = Convert.ToInt64(r["MIN_VALUE"]);
-					sequence.MaximumValue = Convert.ToInt64(r["MAX_VALUE"]);
-					sequence.Increment = Convert.ToInt64(r["INCREMENT_BY"]);
-					sequence.CacheSize = Convert.ToInt64(r["CACHE_SIZE"]);
+					sequence.CurrentValue = Convert.ToDecimal(r["LAST_NUMBER"]);
+					sequence.MinimumValue = Convert.ToDecimal(r["MIN_VALUE"]);
+					sequence.MaximumValue = Convert.ToDecimal(r["MAX_VALUE"]);
+					sequence.Increment = Convert.ToDecimal(r["INCREMENT_BY"]);
+					sequence.CacheSize = Convert.ToDecimal(r["CACHE_SIZE"]);
 					sequence.CanCycle = (string)r["CYCLE_FLAG"] == "Y";
 					sequence.IsOrdered = (string)r["ORDER_FLAG"] == "Y";
 

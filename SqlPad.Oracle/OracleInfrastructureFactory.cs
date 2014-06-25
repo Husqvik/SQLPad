@@ -35,6 +35,10 @@ namespace SqlPad.Oracle
 			{
 				_databaseModels[connectionString.ConnectionString] = databaseModel = new OracleDatabaseModel(connectionString);
 			}
+			else
+			{
+				databaseModel = databaseModel.Clone();
+			}
 
 			return databaseModel;
 		}

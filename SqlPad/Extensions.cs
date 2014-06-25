@@ -108,6 +108,21 @@ namespace SqlPad
 
 			throw new NotSupportedException(String.Format("Value '{0}' is not supported. ", error));
 		}
+
+		public static string ToHexString(this byte[] byteArray)
+		{
+			var characters = new char[byteArray.Length * 2];
+
+			for (int y = 0, x = 0; y < byteArray.Length; ++y, ++x)
+			{
+				var b = ((byte)(byteArray[y] >> 4));
+				characters[x] = (char)(b > 9 ? b + 0x37 : b + 0x30);
+				b = ((byte)(byteArray[y] & 0xF));
+				characters[++x] = (char)(b > 9 ? b + 0x37 : b + 0x30);
+			}
+
+			return new string(characters);
+		}
 	}
 
 	public class StaticResourceBindingExtension : StaticResourceExtension

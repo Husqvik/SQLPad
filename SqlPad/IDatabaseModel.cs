@@ -18,6 +18,8 @@ namespace SqlPad
 
 		bool IsExecuting { get; }
 
+		void RefreshIfNeeded();
+		
 		void Refresh();
 
 		event EventHandler RefreshStarted;
@@ -40,7 +42,7 @@ namespace SqlPad
 		string Owner { get; }
 	}
 
-	public struct ColumnHeader
+	public class ColumnHeader
 	{
 		public int ColumnIndex { get; set; }
 
@@ -49,6 +51,8 @@ namespace SqlPad
 		public string DatabaseDataType { get; set; }
 
 		public Type DataType { get; set; }
+
+		public Func<ColumnHeader, object, object> ValueConverterFunction { get; set; }
 	}
 
 	public interface IColumn

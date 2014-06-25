@@ -95,15 +95,15 @@ namespace SqlPad.Oracle
 
 	public class OracleSequence : OracleSchemaObject
 	{
-		public long CurrentValue { get; set; }
-		
-		public long Increment { get; set; }
+		public decimal CurrentValue { get; set; }
 
-		public long MinimumValue { get; set; }
-		
-		public long MaximumValue { get; set; }
+		public decimal Increment { get; set; }
 
-		public long CacheSize { get; set; }
+		public decimal MinimumValue { get; set; }
+
+		public decimal MaximumValue { get; set; }
+
+		public decimal CacheSize { get; set; }
 
 		public bool IsOrdered { get; set; }
 

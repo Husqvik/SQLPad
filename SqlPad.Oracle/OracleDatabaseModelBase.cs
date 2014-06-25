@@ -20,6 +20,8 @@ namespace SqlPad.Oracle
 		public abstract ICollection<string> AllSchemas { get; }
 
 		public virtual void Dispose() { }
+
+		public abstract void RefreshIfNeeded();
 		
 		public abstract void Refresh();
 

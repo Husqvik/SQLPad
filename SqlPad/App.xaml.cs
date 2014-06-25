@@ -10,6 +10,7 @@ namespace SqlPad
 	public partial class App
 	{
 		public static readonly string FolderNameCommonData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "SQL Pad");
+		public static readonly string FolderNameCommonDataErrorLog = Path.Combine(FolderNameCommonData, "ErrorLog");
 		public static readonly string FolderNameApplication = Path.GetDirectoryName(typeof(App).Assembly.Location);
 
 		static App()
@@ -19,6 +20,11 @@ namespace SqlPad
 
 		private static void UnhandledExceptionHandler(object sender, UnhandledExceptionEventArgs unhandledExceptionEventArgs)
 		{
+			if (!Directory.Exists(FolderNameCommonDataErrorLog))
+			{
+				Directory.CreateDirectory(FolderNameCommonDataErrorLog);
+			}
+
 			var page = ((MainWindow)Current.MainWindow).CurrentPage;
 			var logBuilder = new StringBuilder("Unhandled exception occured at ");
 			logBuilder.Append(DateTime.Now.ToLongTimeString());
@@ -44,7 +50,7 @@ namespace SqlPad
 				}
 			}
 
-			File.WriteAllText(Path.Combine(FolderNameCommonData, String.Format("Error_{0}.Log", DateTime.Now.Ticks)), logBuilder.ToString());
+			File.WriteAllText(Path.Combine(FolderNameCommonDataErrorLog, String.Format("Error_{0}.Log", DateTime.Now.Ticks)), logBuilder.ToString());
 		}
 
 		public App()

@@ -310,7 +310,9 @@ namespace SqlPad.Oracle.Test
 		public IDictionary<OracleObjectIdentifier, OracleSchemaObject> Objects { get { return ObjectsInternal; } }
 
 		public override IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjects { get { return AllObjectDictionary; } }
-		
+
+		public override void RefreshIfNeeded() { }
+
 		public override void Refresh() { }
 
 		public override event EventHandler RefreshStarted = delegate { };

@@ -131,7 +131,7 @@ namespace SqlPad
 		{
 			return Type == NodeType.Terminal
 				? Enumerable.Empty<StatementDescriptionNode>()
-				: ChildNodes.Concat(ChildNodes.Where(n => filter == null || filter(n)).SelectMany(n => n.GetChildNodes(filter)));
+				: ChildNodes.Where(n => filter == null || filter(n)).SelectMany(n => Enumerable.Repeat(n, 1).Concat(n.GetChildNodes(filter)));
 		}
 
 		#region Overrides of Object

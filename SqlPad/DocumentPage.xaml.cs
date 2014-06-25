@@ -10,6 +10,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Media;
 using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.CodeCompletion;
 using Microsoft.Win32;
@@ -98,7 +99,7 @@ namespace SqlPad
 
 			_databaseModel.RefreshStarted += (sender, args) => Dispatcher.Invoke(() => ProgressBar.IsIndeterminate = true);
 			_databaseModel.RefreshFinished += DatabaseModelRefreshFinishedHandler;
-			_databaseModel.Refresh();
+			_databaseModel.RefreshIfNeeded();
 
 			InitializeGenericCommands();
 
@@ -108,6 +109,15 @@ namespace SqlPad
 				var routedHandlerMethod = GenericCommandHandler.CreateRoutedEditCommandHandler(handler, () => _sqlDocument.StatementCollection, _databaseModel);
 				Editor.TextArea.DefaultInputHandler.Editing.CommandBindings.Add(new CommandBinding(command, routedHandlerMethod));
 			}
+		}
+
+		private ScrollViewer GetResultGridScrollViewer()
+		{
+			var border = VisualTreeHelper.GetChild(ResultGrid, 0) as Decorator;
+			if (border == null)
+				return null;
+
+			return border.Child as ScrollViewer;
 		}
 
 		public void SaveCommandExecutedHandler(object sender, ExecutedRoutedEventArgs args)
@@ -188,8 +198,8 @@ namespace SqlPad
 			var navigateToQueryBlockRootCommand = new RoutedCommand("NavigateToQueryBlockRoot", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.Home, ModifierKeys.Control | ModifierKeys.Alt) });
 			commandBindings.Add(new CommandBinding(navigateToQueryBlockRootCommand, NavigateToQueryBlockRoot));
 
-			var moveContentToLeftCommand = new RoutedCommand("MoveContentToLeft", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.Left, ModifierKeys.Control | ModifierKeys.Alt | ModifierKeys.Shift) });
-			var moveContentToRightCommand = new RoutedCommand("MoveContentToRight", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.Right, ModifierKeys.Control | ModifierKeys.Alt | ModifierKeys.Shift) });
+			//var moveContentToLeftCommand = new RoutedCommand("MoveContentToLeft", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.Left, ModifierKeys.Control | ModifierKeys.Alt | ModifierKeys.Shift) });
+			//var moveContentToRightCommand = new RoutedCommand("MoveContentToRight", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.Right, ModifierKeys.Control | ModifierKeys.Alt | ModifierKeys.Shift) });
 
 			var executeDatabaseCommandCommand = new RoutedCommand("ExecuteDatabaseCommand", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.F9) });
 			commandBindings.Add(new CommandBinding(executeDatabaseCommandCommand, ExecuteDatabaseCommand));
@@ -333,7 +343,7 @@ namespace SqlPad
 					new DataGridTextColumn
 					{
 						Header = columnHeader.Name.Replace("_", "__"),
-						Binding = new Binding(String.Format("[{0}]", columnHeader.ColumnIndex)) { Converter = CellValueConverter }
+						Binding = new Binding(String.Format("[{0}]", columnHeader.ColumnIndex)) { Converter = CellValueConverter, ConverterParameter = columnHeader }
 					};
 
 				ResultGrid.Columns.Add(columnTemplate);
@@ -746,6 +756,23 @@ namespace SqlPad
 		private bool AreConsencutive(char previousCharacter, char currentCharacter)
 		{
 			return Editor.Text[Editor.CaretOffset] == currentCharacter && Editor.Text[Editor.CaretOffset - 1] == previousCharacter;
+		}
+
+		private void ResultGridPreviewMouseWheelHandler(object sender, MouseWheelEventArgs e)
+		{
+			var scrollViewer = GetResultGridScrollViewer();
+			if (e.Delta >= 0 || scrollViewer == null)
+				return;
+
+			if (scrollViewer.ScrollableHeight == scrollViewer.VerticalOffset)
+			{
+				FetchNextRows(sender, null);
+			}
+		}
+
+		private void ResultGridPreviewMouseDownHandler(object sender, MouseButtonEventArgs e)
+		{
+			
 		}
 	}
 }

@@ -51,8 +51,9 @@
 				<ContextMenu x:Name="CommandMenu" Placement="RelativePoint"></ContextMenu>
 			</avalonedit:TextEditor.ContextMenu>
 		</avalonedit:TextEditor>
-		<GridSplitter Grid.Row="2" Height="5" HorizontalAlignment="Stretch"  ShowsPreview="True" VerticalAlignment="Center" Background="DimGray" />
-		<DataGrid x:Name="ResultGrid" Grid.Row="3" AutoGenerateColumns="False" ItemsSource="{Binding ResultRowItems}">
+		<GridSplitter Grid.Row="2" Height="5" HorizontalAlignment="Stretch" ShowsPreview="True" VerticalAlignment="Center" Background="DimGray" />
+		<DataGrid x:Name="ResultGrid" Grid.Row="3" AutoGenerateColumns="False" ItemsSource="{Binding ResultRowItems}"
+		          HorizontalGridLinesBrush="LightGray" VerticalGridLinesBrush="LightGray" PreviewMouseWheel="ResultGridPreviewMouseWheelHandler" PreviewMouseDown="ResultGridPreviewMouseDownHandler">
 		</DataGrid>
 		<StatusBar x:Name="StatusBar" Grid.Row="4" Grid.Column="0">
 			<StatusBar.ItemsPanel>

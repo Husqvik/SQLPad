@@ -8,7 +8,10 @@ namespace SqlPad
 	{
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			return value == DBNull.Value ? "(null)" : value;
+			var columnHeader = (ColumnHeader)parameter;
+			return value == DBNull.Value
+				? "(null)"
+				: columnHeader.ValueConverterFunction(columnHeader, value);
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
