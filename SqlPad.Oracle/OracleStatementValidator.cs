@@ -73,7 +73,46 @@ namespace SqlPad.Oracle
 				}
 			}
 
+			var invalidIdentifiers = semanticModel.Statement.AllTerminals
+				.Select(GetInvalidIdentifierValidationData)
+				.Where(nv => nv != null);
+
+			foreach (var nodeValidity in invalidIdentifiers)
+			{
+				validationModel.IdentifierNodeValidity[nodeValidity.Node] = nodeValidity;
+			}
+
 			return validationModel;
+		}
+
+		private INodeValidationData GetInvalidIdentifierValidationData(StatementDescriptionNode node)
+		{
+			if (!node.Id.IsIdentifierOrAlias())
+				return null;
+
+			var trimmedIdentifier = node.Token.Value.Trim('"');
+
+			var errorMessage = String.Empty;
+			if (node.Id == OracleGrammarDescription.Terminals.BindVariableIdentifier && trimmedIdentifier == node.Token.Value)
+			{
+				int bindVariableNumberIdentifier;
+				if (Int32.TryParse(trimmedIdentifier.Substring(0, trimmedIdentifier.Length > 5 ? 5 : trimmedIdentifier.Length), out bindVariableNumberIdentifier) && bindVariableNumberIdentifier > 65535)
+				{
+					errorMessage = "Numeric bind variable identifier must be between 0 and 65535. ";
+				}
+			}
+
+			if (String.IsNullOrEmpty(errorMessage) && trimmedIdentifier.Length > 0 && trimmedIdentifier.Length <= 30)
+			{
+				return null;
+			}
+
+			if (String.IsNullOrEmpty(errorMessage))
+			{
+				errorMessage = "Identifier length must be between one and 30 characters excluding quotes. ";
+			}
+
+			return new InvalidIdentifierNodeValidationData(errorMessage) { IsRecognized = true, Node = node };
 		}
 
 		private void ResolveColumnNodeValidities(OracleValidationModel validationModel, OracleSelectListColumn column, IEnumerable<OracleColumnReference> columnReferences)
@@ -114,6 +153,7 @@ namespace SqlPad.Oracle
 		private readonly Dictionary<StatementDescriptionNode, INodeValidationData> _objectNodeValidity = new Dictionary<StatementDescriptionNode, INodeValidationData>();
 		private readonly Dictionary<StatementDescriptionNode, INodeValidationData> _columnNodeValidity = new Dictionary<StatementDescriptionNode, INodeValidationData>();
 		private readonly Dictionary<StatementDescriptionNode, INodeValidationData> _functionNodeValidity = new Dictionary<StatementDescriptionNode, INodeValidationData>();
+		private readonly Dictionary<StatementDescriptionNode, INodeValidationData> _identifierNodeValidity = new Dictionary<StatementDescriptionNode, INodeValidationData>();
 
 		public OracleStatementSemanticModel SemanticModel { get; set; }
 
@@ -125,11 +165,14 @@ namespace SqlPad.Oracle
 
 		public IDictionary<StatementDescriptionNode, INodeValidationData> FunctionNodeValidity { get { return _functionNodeValidity; } }
 
+		public IDictionary<StatementDescriptionNode, INodeValidationData> IdentifierNodeValidity { get { return _identifierNodeValidity; } }
+
 		public IEnumerable<KeyValuePair<StatementDescriptionNode, INodeValidationData>> GetNodesWithSemanticErrors()
 		{
 			return ColumnNodeValidity
 				.Concat(ObjectNodeValidity)
 				.Concat(FunctionNodeValidity)
+				.Concat(IdentifierNodeValidity)
 				.Where(nv => nv.Value.SemanticError != SemanticError.None)
 				.Select(nv => new KeyValuePair<StatementDescriptionNode, INodeValidationData>(nv.Key, nv.Value));
 		}
@@ -269,6 +312,23 @@ namespace SqlPad.Oracle
 					? SemanticError.AmbiguousReference.ToToolTipText() + additionalInformation
 					: base.ToolTipText;
 			}
+		}
+	}
+
+	public class InvalidIdentifierNodeValidationData : NodeValidationData
+	{
+		private string _toolTipText;
+
+		public InvalidIdentifierNodeValidationData(string toolTipText)
+		{
+			_toolTipText = toolTipText;
+		}
+
+ 		public override SemanticError SemanticError { get { return SemanticError.InvalidIdentifier; } }
+
+		public override string ToolTipText
+		{
+			get { return _toolTipText; }
 		}
 	}
 }

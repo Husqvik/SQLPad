@@ -598,5 +598,15 @@ FROM
 			var items = _codeCompletionProvider.ResolveFunctionOverloads(_parser.Parse(query1), TestFixture.DatabaseModel, 18).ToList();
 			items.Count.ShouldBe(0);
 		}
+
+		[Test(Description = @"")]
+		public void TestColumnSuggestionWhenIdentifierWithQuotedNotation()
+		{
+			const string query1 = @"SELECT IL."""" FROM INVOICELINES IL";
+
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 11).ToList();
+			items.Count.ShouldBe(6);
+			items[0].Text.ShouldBe("\"CaseSensitiveColumn\"");
+		}
 	}
 }

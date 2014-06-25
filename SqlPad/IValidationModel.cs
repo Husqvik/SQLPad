@@ -11,6 +11,8 @@ namespace SqlPad
 		IDictionary<StatementDescriptionNode, INodeValidationData> ColumnNodeValidity { get; }
 		
 		IDictionary<StatementDescriptionNode, INodeValidationData> FunctionNodeValidity { get; }
+		
+		IDictionary<StatementDescriptionNode, INodeValidationData> IdentifierNodeValidity { get; }
 
 		IEnumerable<KeyValuePair<StatementDescriptionNode, INodeValidationData>> GetNodesWithSemanticErrors();
 	}
@@ -30,6 +32,7 @@ namespace SqlPad
 		None,
 		AmbiguousReference,
 		InvalidParameterCount,
-		MissingParenthesis
+		MissingParenthesis,
+		InvalidIdentifier
 	}
 }

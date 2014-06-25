@@ -931,7 +931,7 @@
           <Terminal Id="As" />
           <Terminal Id="Ref" IsOptional="true" />
           <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="DataTypeName" />
+          <Terminal Id="DataTypeIdentifier" />
           <Terminal Id="RightParenthesis" />
         </Sequence>-->
 
@@ -1046,7 +1046,7 @@
     <Rule StartingNonTerminal="DataTypeInnerName">
       <Sequences>
         <Sequence>
-          <Terminal Id="DataTypeName" />
+          <Terminal Id="DataTypeIdentifier" />
         </Sequence>
         <Sequence>
           <Terminal Id="Raw" />
@@ -3626,15 +3626,15 @@
     <Terminal Id="SequenceNextValue" Value="NEXTVAL" />
     <Terminal Id="RowNumberPseudoColumn" Value="ROWNUM" IsKeyword="true" />
     <Terminal Id="RowIdPseudoColumn" Value="ROWID" IsKeyword="true" />
-    <Terminal Id="Identifier" RegexValue="^((&quot;[^&quot;]{1,30}&quot;)|([a-zA-Z][\w\d$#]{0,29}))$" />
-    <Terminal Id="DatabaseLinkIdentifier" RegexValue="^((&quot;[^&quot;]{1,30}&quot;)|([a-zA-Z][\w\d$#]{0,29}))$" />
-    <Terminal Id="SchemaIdentifier" RegexValue="^((&quot;[^&quot;]{1,30}&quot;)|([a-zA-Z][\w\d$#]{0,29}))$" />
-    <Terminal Id="ObjectIdentifier" RegexValue="^((&quot;[^&quot;]{1,30}&quot;)|([a-zA-Z][\w\d$#]{0,29}))$" />
-    <Terminal Id="ParameterIdentifier" RegexValue="^((&quot;[^&quot;]{1,30}&quot;)|([a-zA-Z][\w\d$#]{0,29}))$" />
-    <Terminal Id="BindVariableIdentifier" RegexValue="^((&quot;[^&quot;]{1,30}&quot;)|([a-zA-Z][\w\d$#]{0,29})|(\d{1,5}))$" />
-    <Terminal Id="ColumnAlias" RegexValue="^((&quot;[^&quot;]{1,30}&quot;)|([a-zA-Z][\w\d$#]{0,29}))$" />
-    <Terminal Id="ObjectAlias" RegexValue="^((&quot;[^&quot;]{1,30}&quot;)|([a-zA-Z][\w\d$#]{0,29}))$" />
-    <Terminal Id="XmlAlias" RegexValue="^((&quot;[^&quot;]{1,30}&quot;)|([a-zA-Z][\w\d$#]{0,29}))$" />
+    <Terminal Id="Identifier" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
+    <Terminal Id="DatabaseLinkIdentifier" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
+    <Terminal Id="SchemaIdentifier" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
+    <Terminal Id="ObjectIdentifier" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
+    <Terminal Id="ParameterIdentifier" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
+    <Terminal Id="BindVariableIdentifier" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*)|(\d+))$" />
+    <Terminal Id="ColumnAlias" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
+    <Terminal Id="ObjectAlias" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
+    <Terminal Id="XmlAlias" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
     <Terminal Id="StringLiteral" RegexValue="^n?q?(&apos;([^&apos;]|(&apos;&apos;))*&apos;)$" />
     <Terminal Id="NumberLiteral" RegexValue="^((\d+\.?\d*)|(\d*\.?\d+))([eE][+-]?\d+)?[fFdD]?$" />
     <Terminal Id="IntegerLiteral" RegexValue="^\d+([eE]((\+?\d+)|(-0)))?$" />
@@ -3642,7 +3642,7 @@
     <!-- CAST function -->
     <Terminal Id="Cast" Value="CAST" />
     <Terminal Id="Multiset" Value="MULTISET" />
-    <Terminal Id="DataTypeName" RegexValue="^((&quot;[^&quot;]{1,30}&quot;)|([a-zA-Z][\w\d$#]{0,29}))$" />
+    <Terminal Id="DataTypeIdentifier" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
 
     <!-- TREAT function -->
     <Terminal Id="Treat" Value="TREAT" />

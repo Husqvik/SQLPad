@@ -913,6 +913,40 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		}
 
 		[Test(Description = @"")]
+		public void TestInvalidIdentifier()
+		{
+			const string sqlText = "SELECT \"\" FROM DUAL";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = _statementValidator.BuildValidationModel(sqlText, statement, TestFixture.DatabaseModel);
+			var nodeValidityDictionary = validationModel.IdentifierNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var identifierNodeValidity = nodeValidityDictionary.Values.ToList();
+			identifierNodeValidity.Count.ShouldBe(1);
+			identifierNodeValidity[0].IsRecognized.ShouldBe(true);
+			identifierNodeValidity[0].SemanticError.ShouldBe(SemanticError.InvalidIdentifier);
+			identifierNodeValidity[0].ToolTipText.ShouldBe("Identifier length must be between one and 30 characters excluding quotes. ");
+		}
+
+		[Test(Description = @"")]
+		public void TestInvalidBindVariableIdentifier()
+		{
+			const string sqlText = "SELECT :999999, :9 FROM DUAL";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = _statementValidator.BuildValidationModel(sqlText, statement, TestFixture.DatabaseModel);
+			var nodeValidityDictionary = validationModel.IdentifierNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var identifierNodeValidity = nodeValidityDictionary.Values.ToList();
+			identifierNodeValidity.Count.ShouldBe(1);
+			identifierNodeValidity[0].IsRecognized.ShouldBe(true);
+			identifierNodeValidity[0].SemanticError.ShouldBe(SemanticError.InvalidIdentifier);
+			identifierNodeValidity[0].ToolTipText.ShouldBe("Numeric bind variable identifier must be between 0 and 65535. ");
+		}
+
+		[Test(Description = @"")]
 		public void TestAmbiguousColumnReferenceUsingAsteriskReferingAnotherAsterisk()
 		{
 			const string sqlText = "SELECT * FROM (SELECT * FROM DUAL, DUAL X)";
