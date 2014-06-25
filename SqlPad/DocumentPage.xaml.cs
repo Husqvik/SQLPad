@@ -480,11 +480,20 @@ namespace SqlPad
 				return;
 			}
 
-			if (e.Text == "(" &&
-				(Editor.Text.Length == Editor.CaretOffset || Editor.Text[Editor.CaretOffset].In(' ', '\t', '\n')))
+			if (Editor.Text.Length == Editor.CaretOffset || Editor.Text[Editor.CaretOffset].In(' ', '\t', '\r', '\n'))
 			{
-				Editor.Document.Insert(Editor.CaretOffset, ")");
-				Editor.CaretOffset--;
+				switch (e.Text)
+				{
+					case "(":
+						InsertPairCharacter(")");
+						break;
+					case "\"":
+						InsertPairCharacter("\"");
+						break;
+					case "'":
+						InsertPairCharacter("'");
+						break;
+				}
 			}
 
 			if (e.Text != "." && e.Text != " " && e.Text != "\n")
@@ -499,7 +508,13 @@ namespace SqlPad
 			CreateCodeCompletionWindow();
 		}
 
-		void TextEnteringHandler(object sender, TextCompositionEventArgs e)
+		private void InsertPairCharacter(string pairCharacter)
+		{
+			Editor.Document.Insert(Editor.CaretOffset, pairCharacter);
+			Editor.CaretOffset--;
+		}
+
+		private void TextEnteringHandler(object sender, TextCompositionEventArgs e)
 		{
 			if ((Keyboard.IsKeyDown(Key.Oem2) || Keyboard.IsKeyDown(Key.D)) && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt))
 			{
@@ -719,11 +734,18 @@ namespace SqlPad
 			}
 			else if (e.Key == Key.Back && Editor.Text.Length > Editor.CaretOffset)
 			{
-				if (Editor.Text[Editor.CaretOffset] == ')' && Editor.Text[Editor.CaretOffset - 1] == '(')
+				if (AreConsencutive('(', ')') ||
+				    AreConsencutive('"', '"') ||
+				    AreConsencutive('\'', '\''))
 				{
 					Editor.Document.Remove(Editor.CaretOffset, 1);
 				}
 			}
+		}
+
+		private bool AreConsencutive(char previousCharacter, char currentCharacter)
+		{
+			return Editor.Text[Editor.CaretOffset] == currentCharacter && Editor.Text[Editor.CaretOffset - 1] == previousCharacter;
 		}
 	}
 }
