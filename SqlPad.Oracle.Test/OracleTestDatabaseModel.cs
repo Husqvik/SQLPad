@@ -49,6 +49,12 @@ namespace SqlPad.Oracle.Test
 									   SchemaObject = AllObjectsInternal.Single(o => o.Name == "\"V_$SESSION\"" && o.Owner == OwnerNameSys)
 			                       });
 
+			AllObjectsInternal.Add(new OracleSynonym
+			{
+				FullyQualifiedName = OracleObjectIdentifier.Create(SchemaPublic, "\"DBMS_RANDOM\""),
+				SchemaObject = AllObjectsInternal.Single(o => o.Name == "\"DBMS_RANDOM\"" && o.Owner == OwnerNameSys)
+			});
+
 			AllObjectDictionary = AllObjectsInternal.ToDictionary(o => o.FullyQualifiedName, o => o);
 
 			ObjectsInternal = AllObjectDictionary
@@ -283,6 +289,10 @@ namespace SqlPad.Oracle.Test
 							  { "\"NAME\"", new OracleColumn { Name = "\"NAME\"", Type = "VARCHAR2", Size = 50, CharacterSize = 50, Nullable = false, Unit = DataUnit.Byte } }
 				          }
 			},
+			new OraclePackage
+			{
+				FullyQualifiedName = OracleObjectIdentifier.Create(OwnerNameSys, "\"DBMS_RANDOM\"")
+			}
 		};
 
 		private static readonly IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjectDictionary;

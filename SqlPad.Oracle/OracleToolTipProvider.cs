@@ -86,7 +86,7 @@ namespace SqlPad.Oracle
 				}
 			}
 
-			return new ToolTipObject { DataContext = tip };
+			return String.IsNullOrEmpty(tip) ? null : new ToolTipObject { DataContext = tip };
 		}
 
 		private static string GetSchemaObjectToolTip(OracleSchemaObject schemaObject)

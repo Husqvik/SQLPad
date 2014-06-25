@@ -203,6 +203,11 @@ namespace SqlPad.Oracle
 			get { return Parameters.Count > 1 && _metadataMaximumArguments == null ? Parameters.Count - 1 : (_metadataMaximumArguments ?? 0); }
 		}
 
+		public bool IsPackageFunction
+		{
+			get { return !String.IsNullOrEmpty(Identifier.Package); }
+		}
+
 		[DataMember]
 		public AuthId AuthId { get; private set; }
 

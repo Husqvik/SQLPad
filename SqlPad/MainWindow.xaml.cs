@@ -31,6 +31,11 @@ namespace SqlPad
 			_findReplaceManager.Editors = _editorAdapters;
 		}
 
+		internal DocumentPage CurrentPage
+		{
+			get { return ((TabItem)DocumentTabControl.SelectedItem).Content as DocumentPage; }
+		}
+
 		private void WindowLoadedHandler(object sender, RoutedEventArgs e)
 		{
 			SqlPad.Resources.Initialize(Resources);
@@ -93,8 +98,6 @@ namespace SqlPad
 			DocumentTabControl.SelectedItem = newTab;
 
 			_findReplaceManager.CurrentEditor = newDocumentPage.EditorAdapter;
-
-			return;
 		}
 
 		private ContextMenu CreateTabItemHeaderContextMenu(DocumentPage documentPage)

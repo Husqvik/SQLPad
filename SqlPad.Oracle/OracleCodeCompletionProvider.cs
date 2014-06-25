@@ -163,7 +163,7 @@ namespace SqlPad.Oracle
 				var currentName = currentNode.Id.In(Terminals.From, Terminals.Comma) ? null : statementText.Substring(currentNode.SourcePosition.IndexStart, cursorPosition - currentNode.SourcePosition.IndexStart);
 				if (String.IsNullOrEmpty(currentName) || currentName == currentName.Trim())
 				{
-					completionItems = completionItems.Concat(GenerateSchemaObjectItems(oracleDatabaseModel, schemaName, currentName, terminalToReplace, extraOffset));
+					completionItems = completionItems.Concat(GenerateSchemaObjectItems(oracleDatabaseModel, schemaName, currentName, terminalToReplace, extraOffset, true));
 
 					if (!schemaFound)
 					{
@@ -179,7 +179,7 @@ namespace SqlPad.Oracle
 				!currentNode.IsWithinSelectClauseOrExpression())
 			{
 				var ownerName = currentNode.ParentNode.ChildNodes.Single(n => n.Id == Terminals.SchemaIdentifier).Token.Value;
-				completionItems = completionItems.Concat(GenerateSchemaObjectItems(oracleDatabaseModel, ownerName, null, null, 0));
+				completionItems = completionItems.Concat(GenerateSchemaObjectItems(oracleDatabaseModel, ownerName, null, null, 0, true));
 			}
 
 			var joinClauseNode = currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.FromClause, NonTerminals.JoinClause);
@@ -224,7 +224,7 @@ namespace SqlPad.Oracle
 			if (currentNode.Id == Terminals.Join ||
 				(currentNode.Id == Terminals.ObjectAlias && currentNode.Token.Value.ToUpperInvariant() == Terminals.Join.ToUpperInvariant()))
 			{
-				completionItems = completionItems.Concat(GenerateSchemaObjectItems(oracleDatabaseModel, databaseModel.CurrentSchema, null, null, extraOffset));
+				completionItems = completionItems.Concat(GenerateSchemaObjectItems(oracleDatabaseModel, databaseModel.CurrentSchema, null, null, extraOffset, true));
 				completionItems = completionItems.Concat(GenerateSchemaItems(null, null, extraOffset, oracleDatabaseModel));
 				completionItems = completionItems.Concat(GenerateCommonTableExpressionReferenceItems(semanticModel, null, null, extraOffset));
 			}
@@ -270,11 +270,11 @@ namespace SqlPad.Oracle
 			var objectIdentifierNode = currentNode.ParentNode.Id == NonTerminals.ObjectPrefix ? currentNode.ParentNode.GetSingleDescendant(Terminals.ObjectIdentifier) : null;
 			if (objectIdentifierNode == null && prefixedColumnReference != null)
 			{
-				objectIdentifierNode = prefixedColumnReference.GetSingleDescendant(Terminals.ObjectIdentifier);
+				objectIdentifierNode = prefixedColumnReference.ChildNodes[0].GetSingleDescendant(Terminals.ObjectIdentifier);
 			}
 
 			var currentName = currentNode.Id == Terminals.Identifier && cursorPosition <= currentNode.SourcePosition.IndexEnd + 1
-				? currentNode.Token.Value.Substring(0, cursorPosition - currentNode.SourcePosition.IndexStart)
+				? currentNode.Token.Value.Substring(0, cursorPosition - currentNode.SourcePosition.IndexStart).Trim('"')
 				: null;
 
 			var tableReferences = queryBlock.ObjectReferences;
@@ -455,10 +455,11 @@ namespace SqlPad.Oracle
 				             });
 		}
 
-		private IEnumerable<ICodeCompletionItem> GenerateSchemaObjectItems(OracleDatabaseModelBase databaseModel, string schemaName, string objectNamePart, StatementDescriptionNode node, int insertOffset)
+		private IEnumerable<ICodeCompletionItem> GenerateSchemaObjectItems(OracleDatabaseModelBase databaseModel, string schemaName, string objectNamePart, StatementDescriptionNode node, int insertOffset, bool dataObjectsOnly)
 		{
 			return databaseModel.AllObjects.Values
-						.Where(o => o.Owner == schemaName.ToQuotedIdentifier() && objectNamePart.ToQuotedIdentifier() != o.Name &&
+						.Where(o => (!dataObjectsOnly || IsDataObject(o)) &&
+							o.Owner == schemaName.ToQuotedIdentifier() && objectNamePart.ToQuotedIdentifier() != o.Name &&
 							(node == null || node.Token.Value.ToQuotedIdentifier() != o.Name) &&
 							(String.IsNullOrEmpty(objectNamePart) || o.Name.ToUpperInvariant().Contains(objectNamePart.ToUpperInvariant())))
 						.Select(o => new OracleCodeCompletionItem
@@ -469,6 +470,12 @@ namespace SqlPad.Oracle
 							Category = OracleCodeCompletionCategory.SchemaObject,
 							Offset = insertOffset
 						});
+		}
+
+		private bool IsDataObject(OracleSchemaObject schemaObject)
+		{
+			var synonym = schemaObject as OracleSynonym;
+			return schemaObject is OracleDataObject || (synonym != null && synonym.SchemaObject is OracleDataObject);
 		}
 
 		private IEnumerable<ICodeCompletionItem> GenerateCommonTableExpressionReferenceItems(OracleStatementSemanticModel model, string referenceNamePart, StatementDescriptionNode node, int insertOffset)

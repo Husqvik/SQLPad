@@ -93,8 +93,34 @@ namespace SqlPad.Oracle
 		public override string Type { get { return "TABLE"; } }
 	}
 
+	public class OracleSequence : OracleSchemaObject
+	{
+		public long CurrentValue { get; set; }
+		
+		public long Increment { get; set; }
+
+		public long MinimumValue { get; set; }
+		
+		public long MaximumValue { get; set; }
+
+		public long CacheSize { get; set; }
+
+		public bool IsOrdered { get; set; }
+
+		public bool CanCycle { get; set; }
+
+		public override string Type { get { return "SEQUENCE"; } }
+	}
+
 	public class OraclePackage : OracleSchemaObject
 	{
+		public OraclePackage()
+		{
+			Functions = new HashSet<OracleFunctionMetadata>();
+		}
+
+		public ICollection<OracleFunctionMetadata> Functions { get; private set; } 
+
 		public override string Type { get { return "PACKAGE"; } }
 	}
 

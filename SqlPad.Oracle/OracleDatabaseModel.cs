@@ -31,7 +31,8 @@ namespace SqlPad.Oracle
 		private Dictionary<OracleObjectIdentifier, OracleSchemaObject> _allObjects = new Dictionary<OracleObjectIdentifier, OracleSchemaObject>();
 		private OracleConnection _userConnection;
 		private OracleDataReader _dataReader;
-		private OracleSqlParser _parser = new OracleSqlParser();
+		private DateTime _lastRefresh;
+		private const int RefreshPeriod = 10;
 
 		public OracleDatabaseModel(ConnectionStringSettings connectionString)
 		{
@@ -347,6 +348,23 @@ ORDER BY
 							var displayType = (string)reader["DISP_TYPE"];
 
 							var functionMetadata = new OracleFunctionMetadata(identifier, isAnalytic, isAggregate, isPipelined, isOffloadable, parallelSupport, isDeterministic, metadataMinimumArguments, metadataMaximumArguments, authId, displayType, isBuiltIn);
+							if (functionMetadata.IsPackageFunction)
+							{
+								OracleSchemaObject packageObject;
+								if (AllObjects.TryGetValue(OracleObjectIdentifier.Create(functionMetadata.Identifier.Owner, functionMetadata.Identifier.Package), out packageObject))
+								{
+									((OraclePackage)packageObject).Functions.Add(functionMetadata);
+								}
+							}
+							else
+							{
+								OracleSchemaObject functionObject;
+								if (AllObjects.TryGetValue(OracleObjectIdentifier.Create(functionMetadata.Identifier.Owner, functionMetadata.Identifier.Name), out functionObject))
+								{
+									((OracleFunction) functionObject).Metadata = functionMetadata;
+								}
+							}
+
 							functionMetadataDictionary.Add(functionMetadata.Identifier, functionMetadata);
 						}
 					}
@@ -542,10 +560,10 @@ ORDER BY
 		{
 			RefreshStarted(this, EventArgs.Empty);
 
-			const string selectAllObjectsCommandText = "SELECT OWNER, OBJECT_NAME, SUBOBJECT_NAME, OBJECT_ID, DATA_OBJECT_ID, OBJECT_TYPE, CREATED, LAST_DDL_TIME, STATUS, TEMPORARY/*, EDITIONABLE, EDITION_NAME*/ FROM ALL_OBJECTS WHERE OBJECT_TYPE IN ('SYNONYM', 'VIEW', 'TABLE')";
+			const string selectAllObjectsCommandText = "SELECT OWNER, OBJECT_NAME, SUBOBJECT_NAME, OBJECT_ID, DATA_OBJECT_ID, OBJECT_TYPE, CREATED, LAST_DDL_TIME, STATUS, TEMPORARY/*, EDITIONABLE, EDITION_NAME*/ FROM ALL_OBJECTS WHERE OBJECT_TYPE IN ('SYNONYM', 'VIEW', 'TABLE', 'SEQUENCE', 'FUNCTION')";
 			var dataObjectMetadataSource = ExecuteReader(
 				selectAllObjectsCommandText,
-				r => OracleObjectFactory.CreateDataObjectMetadata((string)r["OBJECT_TYPE"], QualifyStringObject(r["OWNER"]), QualifyStringObject(r["OBJECT_NAME"]), (string)r["STATUS"] == "VALID", (DateTime)r["CREATED"], (DateTime)r["LAST_DDL_TIME"], (string)r["TEMPORARY"] == "Y"));
+				r => OracleObjectFactory.CreateSchemaObjectMetadata((string)r["OBJECT_TYPE"], QualifyStringObject(r["OWNER"]), QualifyStringObject(r["OBJECT_NAME"]), (string)r["STATUS"] == "VALID", (DateTime)r["CREATED"], (DateTime)r["LAST_DDL_TIME"], (string)r["TEMPORARY"] == "Y"));
 
 			var dataObjectMetadata = dataObjectMetadataSource.ToDictionary(m => m.FullyQualifiedName, m => m);
 
@@ -581,19 +599,21 @@ FROM ALL_TABLES";
 				{
 					var synonymFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(r["OWNER"]), QualifyStringObject(r["SYNONYM_NAME"]));
 					OracleSchemaObject synonymObject;
-					dataObjectMetadata.TryGetValue(synonymFullyQualifiedName, out synonymObject);
+					if (!dataObjectMetadata.TryGetValue(synonymFullyQualifiedName, out synonymObject))
+					{
+						return null;
+					}
 
 					var objectFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(r["TABLE_OWNER"]), QualifyStringObject(r["TABLE_NAME"]));
 					OracleSchemaObject schemaObject;
-					dataObjectMetadata.TryGetValue(objectFullyQualifiedName, out schemaObject);
+					if (!dataObjectMetadata.TryGetValue(objectFullyQualifiedName, out schemaObject))
+					{
+						return null;
+					}
 
 					var synonym = (OracleSynonym)synonymObject;
 					synonym.SchemaObject = schemaObject;
-
-					if (schemaObject != null)
-					{
-						schemaObject.Synonym = synonym;
-					}
+					schemaObject.Synonym = synonym;
 
 					return synonymObject;
 				}
@@ -716,6 +736,29 @@ FROM ALL_TABLES";
 				foreignKeyConstraint.ReferenceConstraint = referenceConstraint;
 			}
 
+			const string selectSequencesCommandText = "SELECT SEQUENCE_OWNER, SEQUENCE_NAME, MIN_VALUE, MAX_VALUE, INCREMENT_BY, CYCLE_FLAG, ORDER_FLAG, CACHE_SIZE, LAST_NUMBER FROM ALL_SEQUENCES";
+			ExecuteReader(
+				selectSequencesCommandText,
+				r =>
+				{
+					var sequenceFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(r["SEQUENCE_OWNER"]), QualifyStringObject(r["SEQUENCE_NAME"]));
+					OracleSchemaObject sequenceObject;
+					if (!AllObjects.TryGetValue(sequenceFullyQualifiedName, out sequenceObject))
+						return null;
+
+					var sequence = (OracleSequence) sequenceObject;
+					sequence.CurrentValue = Convert.ToInt64(r["LAST_NUMBER"]);
+					sequence.MinimumValue = Convert.ToInt64(r["MIN_VALUE"]);
+					sequence.MaximumValue = Convert.ToInt64(r["MAX_VALUE"]);
+					sequence.Increment = Convert.ToInt64(r["INCREMENT_BY"]);
+					sequence.CacheSize = Convert.ToInt64(r["CACHE_SIZE"]);
+					sequence.CanCycle = (string)r["CYCLE_FLAG"] == "Y";
+					sequence.IsOrdered = (string)r["ORDER_FLAG"] == "Y";
+
+					return sequence;
+				})
+				.ToArray();
+
 			_allFunctionMetadata = new OracleFunctionMetadataCollection(BuiltInFunctionMetadata.SqlFunctions.Concat(GetUserFunctionMetadata().SqlFunctions));
 
 			_allObjects = dataObjectMetadata;
@@ -724,6 +767,8 @@ FROM ALL_TABLES";
 			//var types = tmp.OfType<OracleDataObject>().SelectMany(o => o.Columns.Values).Select(c => c.FullTypeName).Distinct().ToArray();
 
 			//var accs = tmp.Where(o => o.Name.Contains("Accounts")).ToArray();
+
+			_lastRefresh = DateTime.Now;
 
 			RefreshFinished(this, EventArgs.Empty);
 		}
@@ -747,16 +792,16 @@ FROM ALL_TABLES";
 
 		private static class OracleObjectFactory
 		{
-			public static OracleSchemaObject CreateDataObjectMetadata(string objectType, string owner, string name, bool isValid, DateTime created, DateTime lastDdl, bool isTemporary)
+			public static OracleSchemaObject CreateSchemaObjectMetadata(string objectType, string owner, string name, bool isValid, DateTime created, DateTime lastDdl, bool isTemporary)
 			{
-				var dataObject = CreateObjectMetadata(objectType);
-				dataObject.FullyQualifiedName = OracleObjectIdentifier.Create(owner, name);
-				dataObject.IsValid = isValid;
-				dataObject.Created = created;
-				dataObject.LastDdl = lastDdl;
-				dataObject.IsTemporary = isTemporary;
+				var schemaObject = CreateObjectMetadata(objectType);
+				schemaObject.FullyQualifiedName = OracleObjectIdentifier.Create(owner, name);
+				schemaObject.IsValid = isValid;
+				schemaObject.Created = created;
+				schemaObject.LastDdl = lastDdl;
+				schemaObject.IsTemporary = isTemporary;
 
-				return dataObject;
+				return schemaObject;
 			}
 
 			public static OracleConstraint CreateConstraint(string constraintType, string owner, string name, bool isEnabled, bool isValidated, bool isDeferrable, bool isRelied)
@@ -798,6 +843,10 @@ FROM ALL_TABLES";
 						return new OracleView();
 					case "SYNONYM":
 						return new OracleSynonym();
+					case "FUNCTION":
+						return new OracleFunction();
+					case "SEQUENCE":
+						return new OracleSequence();
 					default:
 						throw new InvalidOperationException(String.Format("Object type '{0}' not supported. ", objectType));
 				}
