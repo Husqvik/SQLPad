@@ -63,7 +63,8 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Commands\GenerateMissingColumnsCommand.cs" />
+    <Compile Include="Commands\GenerateMissingColumnCommand.cs" />
+    <Compile Include="Commands\MoveContentCommand.cs" />
     <Compile Include="Commands\ToggleFullyQualifiedReferencesCommand.cs" />
     <Compile Include="Commands\ModifyCaseCommand.cs" />
     <Compile Include="Commands\ExpandAsteriskCommand.cs" />

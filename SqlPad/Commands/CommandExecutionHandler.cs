@@ -18,11 +18,21 @@ namespace SqlPad.Commands
 		public readonly ICollection<TextSegment> SegmentsToReplace = new List<TextSegment>();
 
 		public string StatementText { get; private set; }
+		
 		public StatementCollection Statements { get; private set; }
+		
 		public int SelectionStart { get; private set; }
+		
 		public int CaretOffset { get; private set; }
+
+		public int Line { get; set; }
+		
+		public int Column { get; set; }
+		
 		public int SelectionLength { get; private set; }
+		
 		public IDatabaseModel DatabaseModel { get; private set; }
+		
 		public ICommandSettingsProvider SettingsProvider { get; set; }
 
 		public void EnsureSettingsProviderAvailable()
@@ -46,6 +56,8 @@ namespace SqlPad.Commands
 			{
 				SelectionStart = editor.SelectionStart,
 				SelectionLength = editor.SelectionLength,
+				Line = editor.TextArea.Caret.Line,
+				Column = editor.TextArea.Caret.Column
 			};
 		}
 	}

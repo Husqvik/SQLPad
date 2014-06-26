@@ -673,7 +673,7 @@ namespace SqlPad.Oracle
 				return;
 
 			var distinctModifierNode = queryBlock.SelectList.ParentNode.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.DistinctModifier);
-			queryBlock.HasDistinctResultSet = distinctModifierNode != null && distinctModifierNode.ChildNodes[0].Id.In(Terminals.Distinct, Terminals.Unique);
+			queryBlock.HasDistinctResultSet = distinctModifierNode != null && distinctModifierNode.FirstTerminalNode.Id.In(Terminals.Distinct, Terminals.Unique);
 
 			if (queryBlock.SelectList.FirstTerminalNode == null)
 				return;

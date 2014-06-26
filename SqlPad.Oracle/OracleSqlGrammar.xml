@@ -731,13 +731,21 @@
     <Rule StartingNonTerminal="DistinctModifier">
       <Sequences>
         <Sequence>
+          <NonTerminal Id="AllOrDistinct" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Unique" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AllOrDistinct">
+      <Sequences>
+        <Sequence>
           <Terminal Id="All" />
         </Sequence>
         <Sequence>
           <Terminal Id="Distinct" />
-        </Sequence>
-        <Sequence>
-          <Terminal Id="Unique" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -968,7 +976,33 @@
         </Sequence>
         <Sequence>
           <NonTerminal Id="PrefixedColumnReference" />
+          <NonTerminal Id="MultisetOperatorClause" IsOptional="true" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="MultisetOperatorClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Multiset" />
+          <NonTerminal Id="MultisetOperator" />
+          <NonTerminal Id="AllOrDistinct" IsOptional="true" />
+          <NonTerminal Id="PrefixedColumnReference" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="MultisetOperator">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Except" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Intersect" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Union" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -1319,6 +1353,37 @@
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="GroupingExpressionListOrNestedQuery" />
           <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="ChainedCondition" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="PrefixedColumnReference" />
+          <Terminal Id="Is" />
+          <Terminal Id="Not" IsOptional="true" />
+          <Terminal Id="Empty" />
+          <NonTerminal Id="ChainedCondition" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="PrefixedColumnReference" />
+          <Terminal Id="Is" />
+          <Terminal Id="Not" IsOptional="true" />
+          <Terminal Id="A" />
+          <Terminal Id="Set" />
+          <NonTerminal Id="ChainedCondition" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="PrefixedColumnReference" />
+          <Terminal Id="Not" IsOptional="true" />
+          <Terminal Id="SubMultiset" />
+          <Terminal Id="Of" IsOptional="true" />
+          <NonTerminal Id="PrefixedColumnReference" />
+          <NonTerminal Id="ChainedCondition" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="Expression" />
+          <Terminal Id="Not" IsOptional="true" />
+          <Terminal Id="Member" />
+          <Terminal Id="Of" IsOptional="true" />
+          <NonTerminal Id="PrefixedColumnReference" />
           <NonTerminal Id="ChainedCondition" IsOptional="true" />
         </Sequence>
       </Sequences>
@@ -3648,6 +3713,13 @@
     <Terminal Id="Treat" Value="TREAT" />
     <Terminal Id="Ref" Value="REF" />
 
+    <!-- Multiset terminals -->
+    <Terminal Id="Member" Value="MEMBER" />
+    <Terminal Id="A" Value="A" />
+    <Terminal Id="Empty" Value="EMPTY" />
+    <Terminal Id="Except" Value="EXCEPT" />
+    <Terminal Id="SubMultiset" Value="SUBMULTISET" />
+
     <!-- LISTAGG function -->
     <Terminal Id="ListAggregation" Value="LISTAGG" />
     <Terminal Id="Within" Value="WITHIN" />
@@ -3776,7 +3848,7 @@
     <Terminal Id="Include" Value="INCLUDE" />
     <Terminal Id="Exclude" Value="EXCLUDE" />
 
-	<!-- XML functions -->
+    <!-- XML functions -->
 	  <Terminal Id="XmlElement" Value="XMLELEMENT" />
 	  <Terminal Id="XmlAttributes" Value="XMLATTRIBUTES" />
 	  <Terminal Id="SchemaCheck" Value="SCHEMACHECK" />

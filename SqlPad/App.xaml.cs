@@ -50,7 +50,7 @@ namespace SqlPad
 				}
 			}
 
-			File.WriteAllText(Path.Combine(FolderNameCommonDataErrorLog, String.Format("Error_{0}.Log", DateTime.Now.Ticks)), logBuilder.ToString());
+			File.WriteAllText(Path.Combine(FolderNameCommonDataErrorLog, String.Format("Error_{0}.log", DateTime.Now.Ticks)), logBuilder.ToString());
 		}
 
 		public App()

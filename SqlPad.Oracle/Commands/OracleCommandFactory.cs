@@ -12,6 +12,8 @@ namespace SqlPad.Oracle.Commands
 			CommandHandlerCollection.Add(ModifyCaseCommand.MakeUpperCase);
 			CommandHandlerCollection.Add(ModifyCaseCommand.MakeLowerCase);
 			CommandHandlerCollection.Add(SafeDeleteCommand.SafeDelete);
+			CommandHandlerCollection.Add(MoveContentCommand.MoveContentUp);
+			CommandHandlerCollection.Add(MoveContentCommand.MoveContentDown);
 		}
 
 		public ICollection<CommandExecutionHandler> CommandHandlers

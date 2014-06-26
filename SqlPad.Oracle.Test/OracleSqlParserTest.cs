@@ -1314,6 +1314,30 @@ FROM DUAL";
 			// TODO: Precise assertions
 		}
 
+		[Test(Description = @"Tests MULTISET expressions. ")]
+		public void TestMultisetExpressions()
+		{
+			const string query1 = @"SELECT COL MULTISET EXCEPT DISTINCT COL MULTISET_EXCEPT, COL MULTISET INTERSECT ALL COL MULTISET_INTERSECT, COL MULTISET UNION COL MULTISET_UNION FROM OBJECT_TABLE";
+			var result = Parser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			// TODO: Precise assertions
+		}
+
+		[Test(Description = @"Tests MULTISET conditions. "), Ignore]
+		public void TestMultisetConditions()
+		{
+			const string query1 = @"SELECT * FROM HUSQVIK.OBJECT_TABLE, OBJECT_TABLE OT WHERE HUSQVIK.OBJECT_TABLE.COL IS NOT A SET OR OT.COL IS EMPTY OR TEST_TYPE('Val') MEMBER OF OT.COL OR OT.COL SUBMULTISET OT.COL";
+			var result = Parser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			// TODO: Precise assertions
+		}
+
 		[Test(Description = @"Tests unfinished join clause. ")]
 		public void TestUnfinishedJoinClause()
 		{
