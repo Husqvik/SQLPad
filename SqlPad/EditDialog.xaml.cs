@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Input;
 using SqlPad.Commands;
 
 namespace SqlPad
@@ -53,5 +54,24 @@ namespace SqlPad
 		}
 
 		public CommandSettingsModel Settings { get { return _model; } }
+
+		private void SelectItemCommandCanExecuteHandler(object sender, CanExecuteRoutedEventArgs e)
+		{
+			e.CanExecute = true;
+		}
+
+		private void SelectItemCommandExecutedHandler(object sender, ExecutedRoutedEventArgs e)
+		{
+			bool? newValue = null;
+			foreach (BooleanOption option in ((ListView)sender).SelectedItems)
+			{
+				if (!newValue.HasValue)
+				{
+					newValue = !option.Value;
+				}
+
+				option.Value = newValue.Value;
+			}
+		}
 	}
 }

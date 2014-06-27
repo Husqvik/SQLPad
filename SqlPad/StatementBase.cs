@@ -12,6 +12,8 @@ namespace SqlPad
 		public ProcessingStatus ProcessingStatus { get; set; }
 
 		public StatementDescriptionNode RootNode { get; set; }
+
+		public StatementDescriptionNode TerminatorNode { get; set; }
 		
 		public ICollection<string> TerminalCandidates { get; set; }
 

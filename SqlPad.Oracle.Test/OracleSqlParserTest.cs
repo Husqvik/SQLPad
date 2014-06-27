@@ -68,6 +68,23 @@ namespace SqlPad.Oracle.Test
 			terminals[3].SourcePosition.IndexStart.ShouldBe(17);
 			terminals[3].SourcePosition.IndexEnd.ShouldBe(20);
 			terminals[3].IsKeyword.ShouldBe(false);
+
+			statement.TerminatorNode.ShouldBe(null);
+		}
+
+		[Test(Description = @"Tests trivial query. ")]
+		public void TestTrivialQueryWithTerminator()
+		{
+			const string sqlText = @"SELECT NULL FROM DUAL ;";
+			var result = Parser.Parse(CreateTokenReader(sqlText));
+
+			result.ShouldNotBe(null);
+			result.Count.ShouldBe(1);
+			var statement = result.Single();
+			statement.TerminatorNode.ShouldNotBe(null);
+			statement.TerminatorNode.Id.ShouldBe(Terminals.Semicolon);
+			statement.TerminatorNode.Token.Value.ShouldBe(";");
+			statement.TerminatorNode.Token.Index.ShouldBe(22);
 		}
 
 		[Test(Description = @"Tests query with fully qualified names and aliases. ")]
@@ -1326,7 +1343,7 @@ FROM DUAL";
 			// TODO: Precise assertions
 		}
 
-		[Test(Description = @"Tests MULTISET conditions. "), Ignore]
+		[Test(Description = @"Tests MULTISET conditions. ")]
 		public void TestMultisetConditions()
 		{
 			const string query1 = @"SELECT * FROM HUSQVIK.OBJECT_TABLE, OBJECT_TABLE OT WHERE HUSQVIK.OBJECT_TABLE.COL IS NOT A SET OR OT.COL IS EMPTY OR TEST_TYPE('Val') MEMBER OF OT.COL OR OT.COL SUBMULTISET OT.COL";

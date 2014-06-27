@@ -7,7 +7,8 @@ namespace SqlPad.Oracle.Commands
 {
 	internal class ExpandAsteriskCommand : OracleCommandBase
 	{
-		internal const string OptionIdentifierIncludeRowId = "IncludeRowId";
+		private CommandSettingsModel _settingsModel;
+		private SourcePosition _sourcePosition;
 		public const string Title = "Expand";
 
 		private ExpandAsteriskCommand(OracleCommandExecutionContext executionContext)
@@ -19,88 +20,123 @@ namespace SqlPad.Oracle.Commands
 		{
 			return CurrentNode != null && CurrentQueryBlock != null &&
 			       CurrentNode.Id == OracleGrammarDescription.Terminals.Asterisk &&
-			       !GetSegmentToReplace(false).Equals(TextSegment.Empty);
+				   ExistExpandableColumns();
 		}
 
-		private CommandSettingsModel ConfigureSettings()
+		private bool ExistExpandableColumns()
+		{
+			var expandedColumns = new List<ExpandedColumn>();
+			FillColumnNames(expandedColumns, false);
+			return expandedColumns.Count > 0;
+		}
+
+		private void ConfigureSettings()
 		{
 			ExecutionContext.EnsureSettingsProviderAvailable();
 
-			var settingsModel = ExecutionContext.SettingsProvider.Settings;
+			_settingsModel = ExecutionContext.SettingsProvider.Settings;
 
-			settingsModel.TextInputVisibility = Visibility.Collapsed;
-			settingsModel.BooleanOptionsVisibility = Visibility.Visible;
-			settingsModel.AddBooleanOption(new BooleanOption { OptionIdentifier = OptionIdentifierIncludeRowId, Description = "Include ROWID", Value = false });
-			settingsModel.Title = "Expand Asterisk";
-			settingsModel.Heading = settingsModel.Title;
+			_settingsModel.TextInputVisibility = Visibility.Collapsed;
+			_settingsModel.BooleanOptionsVisibility = Visibility.Visible;
 
-			return settingsModel;
+			var expandedColumns = new List<ExpandedColumn>();
+			_sourcePosition = FillColumnNames(expandedColumns, true);
+
+			var initialValue = _settingsModel.UseDefaultSettings == null || _settingsModel.UseDefaultSettings();
+
+			foreach (var expandedColumn in expandedColumns)
+			{
+				_settingsModel.AddBooleanOption(
+					new BooleanOption
+					{
+						OptionIdentifier = expandedColumn.ColumnName,
+						Description = expandedColumn.ColumnName,
+						Value = !expandedColumn.IsRowId && initialValue,
+						Tag = expandedColumn
+					});
+			}
+
+			_settingsModel.Title = "Expand Asterisk";
+			_settingsModel.Heading = _settingsModel.Title;
 		}
 
 		protected override void Execute()
 		{
-			var settingsModel = ConfigureSettings();
+			ConfigureSettings();
 
 			if (!ExecutionContext.SettingsProvider.GetSettings())
 				return;
 
-			ExecutionContext.SegmentsToReplace.Add(GetSegmentToReplace(settingsModel.BooleanOptions[OptionIdentifierIncludeRowId].Value));
+			var segmentToReplace = GetSegmentToReplace();
+			if (!segmentToReplace.Equals(TextSegment.Empty))
+			{
+				ExecutionContext.SegmentsToReplace.Add(segmentToReplace);
+			}
 		}
 
-		private TextSegment GetSegmentToReplace(bool includeRowId)
+		private TextSegment GetSegmentToReplace()
 		{
-			var columnNames = new List<string>();
+			var columnNames = _settingsModel.BooleanOptions.Values
+				.Where(v => v.Value)
+				.Select(v => v.OptionIdentifier)
+				.ToArray();
+
+			if (columnNames.Length == 0)
+				return TextSegment.Empty;
+
+			var textSegment =
+				new TextSegment
+				{
+					IndextStart = _sourcePosition.IndexStart,
+					Length = _sourcePosition.Length,
+					Text = String.Join(", ", columnNames)
+				};
+
+			return textSegment;
+		}
+
+		private SourcePosition FillColumnNames(List<ExpandedColumn> columnNames, bool includeRowId)
+		{
 			var segmentToReplace = SourcePosition.Empty;
 			var asteriskReference = CurrentQueryBlock.Columns.FirstOrDefault(c => c.RootNode == CurrentNode);
 			if (asteriskReference == null)
 			{
 				var columnReference = CurrentQueryBlock.Columns.SelectMany(c => c.ColumnReferences).FirstOrDefault(c => c.ColumnNode == CurrentNode);
-				if (columnReference != null && columnReference.ObjectNodeObjectReferences.Count == 1)
+				if (columnReference == null || columnReference.ObjectNodeObjectReferences.Count != 1)
+					return segmentToReplace;
+				
+				segmentToReplace = columnReference.SelectListColumn.RootNode.SourcePosition;
+				var objectReference = columnReference.ObjectNodeObjectReferences.First();
+
+				columnNames.AddRange(objectReference.Columns
+					.Where(c => !String.IsNullOrEmpty(c.Name))
+					.Select(c => GetExpandedColumn(objectReference, c.Name, false)));
+
+				if (includeRowId && objectReference.SearchResult.SchemaObject != null &&
+				    objectReference.SearchResult.SchemaObject.Organization.In(OrganizationType.Heap, OrganizationType.Index))
 				{
-					segmentToReplace = columnReference.SelectListColumn.RootNode.SourcePosition;
-					var objectReference = columnReference.ObjectNodeObjectReferences.First();
-
-					columnNames = objectReference.Columns
-						.Where(c => !String.IsNullOrEmpty(c.Name))
-						.Select(c => GetFullyQualifiedColumnName(objectReference, c.Name))
-						.ToList();
-
-					if (includeRowId && objectReference.SearchResult.SchemaObject != null &&
-					    objectReference.SearchResult.SchemaObject.Organization.In(OrganizationType.Heap, OrganizationType.Index))
-					{
-						columnNames.Insert(0, GetFullyQualifiedColumnName(objectReference, OracleColumn.RowId));
-					}
+					columnNames.Insert(0, GetExpandedColumn(objectReference, OracleColumn.RowId, true));
 				}
 			}
 			else
 			{
-				segmentToReplace = asteriskReference.RootNode.SourcePosition;
-				columnNames = CurrentQueryBlock.Columns
+				columnNames.AddRange(CurrentQueryBlock.Columns
 					.Where(c => !c.IsAsterisk && !String.IsNullOrEmpty(c.NormalizedName))
-					.Select(c => GetFullyQualifiedColumnName(GetObjectReference(c), c.NormalizedName))
-					.ToList();
+					.Select(c => GetExpandedColumn(GetObjectReference(c), c.NormalizedName, false)));
 
-				if (includeRowId)
-				{
-					var rowIdColumns = CurrentQueryBlock.ObjectReferences
-						.Where(o => o.SearchResult.SchemaObject != null && o.SearchResult.SchemaObject.Organization.In(OrganizationType.Heap, OrganizationType.Index))
-						.Select(o => GetFullyQualifiedColumnName(o, OracleColumn.RowId));
+				if (!includeRowId)
+					return segmentToReplace;
+				
+				var rowIdColumns = CurrentQueryBlock.ObjectReferences
+					.Where(o => o.SearchResult.SchemaObject != null && o.SearchResult.SchemaObject.Organization.In(OrganizationType.Heap, OrganizationType.Index))
+					.Select(o => GetExpandedColumn(o, OracleColumn.RowId, true));
 
-					columnNames.InsertRange(0, rowIdColumns);
-				}
+				columnNames.InsertRange(0, rowIdColumns);
+
+				segmentToReplace = asteriskReference.RootNode.SourcePosition;
 			}
 
-			if (columnNames.Count == 0)
-				return TextSegment.Empty;
-
-			var textSegment = new TextSegment
-			                  {
-				                  IndextStart = segmentToReplace.IndexStart,
-				                  Length = segmentToReplace.Length,
-				                  Text = String.Join(", ", columnNames)
-			                  };
-
-			return textSegment;
+			return segmentToReplace;
 		}
 
 		private static OracleObjectReference GetObjectReference(OracleSelectListColumn column)
@@ -111,7 +147,12 @@ namespace SqlPad.Oracle.Commands
 				: null;
 		}
 
-		private static string GetFullyQualifiedColumnName(OracleObjectReference objectReference, string columnName)
+		private static ExpandedColumn GetExpandedColumn(OracleObjectReference objectReference, string columnName, bool isRowId)
+		{
+			return new ExpandedColumn { ColumnName = GetColumnName(objectReference, columnName), IsRowId = isRowId };
+		}
+
+		private static string GetColumnName(OracleObjectReference objectReference, string columnName)
 		{
 			var simpleColumnName = columnName.ToSimpleIdentifier();
 			if (objectReference == null)
@@ -123,6 +164,12 @@ namespace SqlPad.Oracle.Commands
 				: String.Format("{0}.", objectPrefix);
 
 			return String.Format("{0}{1}", usedObjectPrefix, simpleColumnName);
+		}
+
+		private struct ExpandedColumn
+		{
+			public string ColumnName { get; set; }
+			public bool IsRowId { get; set; }
 		}
 	}
 }

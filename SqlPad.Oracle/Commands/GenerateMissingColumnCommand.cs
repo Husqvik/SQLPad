@@ -3,43 +3,41 @@ using System.Text;
 
 namespace SqlPad.Oracle.Commands
 {
-	internal class GenerateMissingColumnsCommand : OracleCommandBase
+	internal class AddMissingColumnCommand : OracleCommandBase
 	{
-		private OracleColumnReference[] _missingColumns;
+		private OracleDataObject _table;
+		private OracleColumnReference _missingColumn;
 		
-		internal const string OptionIdentifierIncludeRowId = "IncludeRowId";
-		
-		public const string Title = "Generate missing columns";
+		public const string Title = "Add missing column";
 
-		private GenerateMissingColumnsCommand(OracleCommandExecutionContext executionContext)
+		private AddMissingColumnCommand(OracleCommandExecutionContext executionContext)
 			: base(executionContext)
 		{
 		}
 
 		protected override bool CanExecute()
 		{
-			if (CurrentNode == null || CurrentQueryBlock == null)
+			if (CurrentNode == null || CurrentQueryBlock == null || CurrentNode.Id != OracleGrammarDescription.Terminals.Identifier)
 				return false;
 
-			var canExecute = CurrentNode.Id == OracleGrammarDescription.Terminals.Select &&
-			                 CurrentQueryBlock.AllColumnReferences.All(c => c.ObjectNodeObjectReferences.Count == 0 || c.ObjectNodeObjectReferences.Count == 1);
+			_missingColumn = CurrentQueryBlock.AllColumnReferences.SingleOrDefault(c => c.ColumnNode == CurrentNode);
+			if (_missingColumn == null)
+				return false;
 
-			_missingColumns = CurrentQueryBlock.AllColumnReferences
-				.Where(c => c.ColumnNodeObjectReferences.Count == 0)
-				.ToArray();
-
-			return canExecute && _missingColumns.Length > 0 && _missingColumns.All(c => GetSingleObjectReference(c) != null);
+			_table = GetSingleObjectReference(_missingColumn);
+			return (_missingColumn.ObjectNodeObjectReferences.Count == 0 || _missingColumn.ObjectNodeObjectReferences.Count == 1) &&
+			       _table != null && _table.Type == OracleDatabaseModelBase.DataObjectTypeTable;
 		}
 
 		private static OracleDataObject GetSingleObjectReference(OracleColumnReference column)
 		{
 			OracleDataObject dataObject = null;
 			var queryBlockHasSingleObjectReference = column.Owner.ObjectReferences.Count == 1 && (dataObject = column.Owner.ObjectReferences.First().SearchResult.SchemaObject) != null &&
-			                                         dataObject.Type == OracleDatabaseModel.DataObjectTypeTable;
+			                                         dataObject.Type == OracleDatabaseModelBase.DataObjectTypeTable;
 
 			var schemaObjectReference = column.ValidObjectReference;
 			var hasValidObjectReference = schemaObjectReference != null && schemaObjectReference.Type == TableReferenceType.SchemaObject &&
-			                              schemaObjectReference.SearchResult.SchemaObject != null && schemaObjectReference.SearchResult.SchemaObject.Type == OracleDatabaseModel.DataObjectTypeTable;
+			                              schemaObjectReference.SearchResult.SchemaObject != null && schemaObjectReference.SearchResult.SchemaObject.Type == OracleDatabaseModelBase.DataObjectTypeTable;
 
 			return queryBlockHasSingleObjectReference || hasValidObjectReference
 				? dataObject ?? schemaObjectReference.SearchResult.SchemaObject
@@ -48,40 +46,39 @@ namespace SqlPad.Oracle.Commands
 
 		protected override void Execute()
 		{
+			var indextStart = CurrentQueryBlock.Statement.RootNode.LastTerminalNode.SourcePosition.IndexEnd + 1;
+
 			var builder = new StringBuilder();
+			if (CurrentQueryBlock.Statement.TerminatorNode == null)
+			{
+				builder.Append(';');
+			}
+
 			builder.AppendLine();
 			builder.AppendLine();
 			builder.Append("ALTER TABLE ");
 
-			var missingColumns = CurrentQueryBlock.AllColumnReferences.Where(c => c.ColumnNodeObjectReferences.Count == 0).ToArray();
-			var table = GetSingleObjectReference(missingColumns[0]);
-			builder.Append(table.FullyQualifiedName);
+			builder.Append(_table.FullyQualifiedName);
 			builder.AppendLine(" ADD");
 			builder.AppendLine("(");
+			builder.Append('\t');
+			builder.Append(_missingColumn.Name.ToSimpleIdentifier());
+			var newCaretOffset = builder.Length + indextStart + 1;
 
-			var addComma = false;
-			foreach (var column in missingColumns)
-			{
-				if (addComma)
-				{
-					builder.AppendLine(",");
-				}
+			builder.Append(" VARCHAR2(100) NULL");
 
-				builder.Append("\t");
-				builder.Append(column.Name.ToSimpleIdentifier());
-				builder.Append(" VARCHAR2(100) NULL");
-
-				addComma = true;
-			}
-
+			builder.AppendLine();
 			builder.AppendLine(");");
 
-			ExecutionContext.SegmentsToReplace.Add(
-				new TextSegment
-				{
-					IndextStart = CurrentQueryBlock.Statement.RootNode.LastTerminalNode.SourcePosition.IndexEnd + 1,
-					Text = builder.ToString()
-				});
+			var addedSegment = new TextSegment
+			                  {
+				                  IndextStart = indextStart,
+				                  Text = builder.ToString()
+			                  };
+			
+			ExecutionContext.SegmentsToReplace.Add(addedSegment);
+
+			ExecutionContext.CaretOffset = newCaretOffset;
 		}
 	}
 }

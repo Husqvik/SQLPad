@@ -79,7 +79,7 @@ namespace SqlPad.Oracle
 
 			if (OracleCommands.GenerateMissingColumns.CanExecuteHandler(executionContext))
 			{
-				actionList.Add(new OracleContextAction(GenerateMissingColumnsCommand.Title, OracleCommands.GenerateMissingColumns, executionContext));
+				actionList.Add(new OracleContextAction(AddMissingColumnCommand.Title, OracleCommands.GenerateMissingColumns, executionContext));
 			}
 
 			var actions = ResolveAmbiguousColumnCommand.ResolveCommandHandlers(semanticModel, currentTerminal)

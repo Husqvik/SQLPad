@@ -151,7 +151,7 @@ WHERE
 		private void ExecuteCommand(CommandExecutionHandler executionHandler, CommandExecutionContext executionContext)
 		{
 			executionHandler.ExecutionHandler(executionContext);
-			_editor.ReplaceTextSegments(executionContext.SegmentsToReplace);
+			GenericCommandHandler.UpdateDocument(_editor, executionContext);
 		}
 
 		[Test(Description = @""), STAThread]
@@ -806,13 +806,14 @@ WHERE
 		[Test(Description = @""), STAThread]
 		public void TestGenerateMissingColumnsCommand()
 		{
-			_editor.Text = @"SELECT C1, C2, NAME, C3 FROM SELECTION";
-			_editor.CaretOffset = 0;
+			_editor.Text = @"SELECT NOT_EXISTING_COLUMN FROM SELECTION";
+			_editor.CaretOffset = 7;
 
 			CanExecuteOracleCommand(OracleCommands.GenerateMissingColumns).ShouldBe(true);
 			ExecuteOracleCommand(OracleCommands.GenerateMissingColumns);
 
-			_editor.Text.ShouldBe("SELECT C1, C2, NAME, C3 FROM SELECTION\r\n\r\nALTER TABLE HUSQVIK.SELECTION ADD\r\n(\r\n\tC1 VARCHAR2(100) NULL,\r\n\tC2 VARCHAR2(100) NULL,\r\n\tC3 VARCHAR2(100) NULL);\r\n");
+			_editor.Text.ShouldBe("SELECT NOT_EXISTING_COLUMN FROM SELECTION;\r\n\r\nALTER TABLE HUSQVIK.SELECTION ADD\r\n(\r\n\tNOT_EXISTING_COLUMN VARCHAR2(100) NULL\r\n);\r\n");
+			_editor.CaretOffset.ShouldBe(105);
 		}
 	}
 }

@@ -23,7 +23,7 @@ namespace SqlPad.Commands
 		
 		public int SelectionStart { get; private set; }
 		
-		public int CaretOffset { get; private set; }
+		public int CaretOffset { get; set; }
 
 		public int Line { get; set; }
 		

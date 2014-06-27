@@ -26,14 +26,25 @@ namespace SqlPad.Commands
 
 						var executionContext = CommandExecutionContext.Create(editor, sqlDocument.StatementCollection, databaseModel);
 						handler.ExecutionHandler(executionContext);
-						editor.ReplaceTextSegments(executionContext.SegmentsToReplace);
-
-						if (executionContext.Column != editor.TextArea.Caret.Column)
-							editor.TextArea.Caret.Column = executionContext.Column;
-
-						if (executionContext.Line != editor.TextArea.Caret.Line)
-							editor.TextArea.Caret.Line = executionContext.Line;
+						UpdateDocument(editor, executionContext);
 					};
+		}
+
+		public static void UpdateDocument(TextEditor editor, CommandExecutionContext executionContext)
+		{
+			var line = editor.TextArea.Caret.Line;
+			var column = editor.TextArea.Caret.Column;
+			var caretOffset = editor.CaretOffset;
+			editor.ReplaceTextSegments(executionContext.SegmentsToReplace);
+
+			if (executionContext.Line != line)
+				editor.TextArea.Caret.Line = executionContext.Line;
+
+			if (executionContext.Column != column)
+				editor.TextArea.Caret.Column = executionContext.Column;
+
+			if (executionContext.CaretOffset != caretOffset)
+				editor.CaretOffset = executionContext.CaretOffset;
 		}
 
 		public static void DuplicateText(object sender, ExecutedRoutedEventArgs args)

@@ -154,13 +154,13 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @""), STAThread]
-		public void TestGenerateMissingColumnsCommand()
+		public void TestAddMissingColumnCommand()
 		{
-			const string query1 = @"SELECT C1, C2, NAME, C3 FROM SELECTION";
+			const string query1 = @"SELECT NOT_EXISTING_COLUMN FROM SELECTION";
 
-			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 0).SingleOrDefault(a => a.Name == GenerateMissingColumnsCommand.Title);
+			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 7).SingleOrDefault(a => a.Name == AddMissingColumnCommand.Title);
 			action.ShouldNotBe(null);
-			action.Name.ShouldBe("Generate missing columns");
+			action.Name.ShouldBe("Add missing column");
 		}
 
 		[Test(Description = @""), STAThread]

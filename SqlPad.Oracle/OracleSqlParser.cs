@@ -291,6 +291,7 @@ namespace SqlPad.Oracle
 				var lastNode = result.Nodes.LastOrDefault();
 				if (lastNode != null && TerminatorIds.Contains(lastNode.Id))
 				{
+					oracleStatement.TerminatorNode = lastNode;
 					result.Nodes.Remove(lastNode);
 				}
 
@@ -331,6 +332,7 @@ namespace SqlPad.Oracle
 				workingNodes.Clear();
 
 				var bestCandidatesCompatible = false;
+				var isSequenceValid = true;
 
 				foreach (ISqlGrammarRuleSequenceItem item in sequence.Items)
 				{
@@ -398,6 +400,7 @@ namespace SqlPad.Oracle
 							if (workingNodes.Count == 0)
 								break;
 
+							isSequenceValid = false;
 							workingNodes.Add(alternativeNode.Clone());
 						}
 					}
@@ -442,7 +445,8 @@ namespace SqlPad.Oracle
 					}
 					#endregion
 
-					break;
+					if (isSequenceValid)
+						break;
 				}
 			}
 

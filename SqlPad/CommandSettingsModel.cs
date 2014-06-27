@@ -79,5 +79,7 @@ namespace SqlPad
 		public string OptionIdentifier { get; set; }
 
 		public string Description { get; set; }
+
+		public object Tag { get; set; }
 	}
 }

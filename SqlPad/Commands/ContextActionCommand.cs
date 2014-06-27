@@ -30,7 +30,7 @@ namespace SqlPad.Commands
 		public void Execute(object parameter)
 		{
 			ExecutionHandler.ExecutionHandler(ExecutionContext);
-			((TextEditor)parameter).ReplaceTextSegments(ExecutionContext.SegmentsToReplace);
+			GenericCommandHandler.UpdateDocument((TextEditor)parameter, ExecutionContext);
 		}
 
 		public event EventHandler CanExecuteChanged = delegate {};
