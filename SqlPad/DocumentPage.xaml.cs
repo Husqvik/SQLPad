@@ -44,7 +44,13 @@ namespace SqlPad
 		private bool _isToolTipOpenByShortCut;
 		private CompletionWindow _completionWindow;
 		private readonly PageModel _pageModel;
+		private bool _isParsing;
+		private readonly System.Timers.Timer _timer = new System.Timers.Timer(100);
 
+		public EventHandler ParseFinished = delegate { };
+
+		internal bool IsParsingSynchronous { get; set; }
+		
 		public TextEditorAdapter EditorAdapter { get; private set; }
 		
 		public FileInfo File { get; private set; }
@@ -406,9 +412,6 @@ namespace SqlPad
 			deleteLineCommand.InputGestures[0] = new KeyGesture(Key.L, ModifierKeys.Control);
 		}
 
-		private bool _isParsing;
-		private readonly System.Timers.Timer _timer = new System.Timers.Timer(100);
-
 		private void PageLoadedHandler(object sender, RoutedEventArgs e)
 		{
 			Editor.Focus();
@@ -617,10 +620,17 @@ namespace SqlPad
 
 			_isParsing = true;
 
-			Task.Factory.StartNew(DoWork, Editor.Text);
+			if (IsParsingSynchronous)
+			{
+				ExecuteParse(Editor.Text);
+			}
+			else
+			{
+				Task.Factory.StartNew(ExecuteParse, Editor.Text);
+			}
 		}
 
-		private void DoWork(object text)
+		private void ExecuteParse(object text)
 		{
 			var statementText = (string)text;
 			var statements = _sqlParser.Parse(statementText);
@@ -632,6 +642,7 @@ namespace SqlPad
 				//TextBlockToken.Text = String.Join(", ", statements.SelectMany(s => s.AllTerminals).Select(t => "{" + t.Token.Value + "}"));
 				Editor.TextArea.TextView.Redraw();
 				_isParsing = false;
+				ParseFinished(this, EventArgs.Empty);
 			});
 
 			_timer.Stop();

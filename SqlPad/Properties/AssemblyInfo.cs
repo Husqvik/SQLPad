@@ -21,6 +21,7 @@ using System.Windows;
 // COM, set the ComVisible attribute to true on that type.
 [assembly: ComVisible(false)]
 
+[assembly: InternalsVisibleTo("SqlPad.Test")]
 [assembly: InternalsVisibleTo("SqlPad.Oracle.Test")]
 
 //In order to begin building localizable applications, set 
