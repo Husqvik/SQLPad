@@ -93,6 +93,7 @@ namespace SqlPad.Oracle
 		public override string Type { get { return OracleObjectType.Table; } }
 	}
 
+	[DebuggerDisplay("OracleSequence (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
 	public class OracleSequence : OracleSchemaObject
 	{
 		public decimal CurrentValue { get; set; }
@@ -112,7 +113,13 @@ namespace SqlPad.Oracle
 		public override string Type { get { return OracleObjectType.Sequence; } }
 	}
 
-	public class OraclePackage : OracleSchemaObject
+	public interface IFunctionCollection
+	{
+		ICollection<OracleFunctionMetadata> Functions { get; }
+	}
+
+	[DebuggerDisplay("OraclePackage (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
+	public class OraclePackage : OracleSchemaObject, IFunctionCollection
 	{
 		public OraclePackage()
 		{
@@ -124,9 +131,18 @@ namespace SqlPad.Oracle
 		public override string Type { get { return OracleObjectType.Package; } }
 	}
 
-	public class OracleFunction : OracleSchemaObject
+	[DebuggerDisplay("OracleFunction (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
+	public class OracleFunction : OracleSchemaObject, IFunctionCollection
 	{
-		public OracleFunctionMetadata Metadata { get; set; }
+		private readonly OracleFunctionMetadata[] _metadata = new OracleFunctionMetadata[1];
+
+		public OracleFunctionMetadata Metadata
+		{
+			get { return _metadata[0]; }
+			set { _metadata[0] = value; }
+		}
+
+		public ICollection<OracleFunctionMetadata> Functions { get { return _metadata; } }
 
 		public override string Type { get { return OracleObjectType.Function; } }
 	}

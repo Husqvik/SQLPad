@@ -86,6 +86,7 @@
     <Compile Include="OracleConstraint.cs" />
     <Compile Include="OracleDatabaseModelBase.cs" />
     <Compile Include="OracleFunctionMatcher.cs" />
+    <Compile Include="OracleFunctionMetadata.cs" />
     <Compile Include="OracleFunctionMetadataCollection.cs" />
     <Compile Include="OracleFunctionReference.cs" />
     <Compile Include="OracleColumnReference.cs" />

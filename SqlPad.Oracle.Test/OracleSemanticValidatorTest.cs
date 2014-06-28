@@ -896,7 +896,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			columnNodeValidity[2].SemanticError.ShouldBe(SemanticError.None);
 		}
 
-		[Test(Description = @""), Ignore]
+		[Test(Description = @"")]
 		public void TestFunctionIdentifierNodeValidDefinedBySynonym()
 		{
 			const string sqlText = "SELECT DBMS_RANDOM.STRING('X', 16) FROM DUAL";

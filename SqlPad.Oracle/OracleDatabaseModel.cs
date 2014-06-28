@@ -27,6 +27,8 @@ namespace SqlPad.Oracle
 		private static Task _backgroundTask;
 		private static Task _statementExecutionTask;
 		private OracleFunctionMetadataCollection _allFunctionMetadata = new OracleFunctionMetadataCollection(Enumerable.Empty<OracleFunctionMetadata>());
+		private OracleFunctionMetadataCollection _builtInFunctionMetadata = new OracleFunctionMetadataCollection(Enumerable.Empty<OracleFunctionMetadata>());
+		private OracleFunctionMetadataCollection _nonPackageBuiltInFunctionMetadata = new OracleFunctionMetadataCollection(Enumerable.Empty<OracleFunctionMetadata>());
 		private readonly ConnectionStringSettings _connectionString;
 		private HashSet<string> _schemas = new HashSet<string>();
 		private HashSet<string> _allSchemas = new HashSet<string>();
@@ -79,9 +81,19 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		public OracleFunctionMetadataCollection BuiltInFunctionMetadata { get; private set; }
+		public OracleFunctionMetadataCollection BuiltInFunctionMetadata
+		{
+			get { return _builtInFunctionMetadata; }
+			private set
+			{
+				_builtInFunctionMetadata = value;
+				_nonPackageBuiltInFunctionMetadata = new OracleFunctionMetadataCollection(value.SqlFunctions.Where(f => String.IsNullOrEmpty(f.Identifier.Owner)));
+			}
+		}
 
 		public override OracleFunctionMetadataCollection AllFunctionMetadata { get { return _allFunctionMetadata; } }
+
+		protected override OracleFunctionMetadataCollection NonPackageBuiltInFunctionMetadata { get { return _nonPackageBuiltInFunctionMetadata; } }
 
 		public override ConnectionStringSettings ConnectionString { get { return _connectionString; } }
 
@@ -159,7 +171,9 @@ namespace SqlPad.Oracle
 					_currentSchema = _currentSchema,
 					_lastRefresh = _lastRefresh,
 					_allObjects = _allObjects,
-					_allFunctionMetadata = _allFunctionMetadata
+					_allFunctionMetadata = _allFunctionMetadata,
+					_builtInFunctionMetadata = _builtInFunctionMetadata,
+					_nonPackageBuiltInFunctionMetadata = _nonPackageBuiltInFunctionMetadata
 				};
 
 			return clone;
@@ -822,69 +836,69 @@ FROM ALL_TABLES";
 			_schemas = new HashSet<string>(schemaSource);
 			_allSchemas = new HashSet<string>(schemaSource.Select(QualifyStringObject)) { SchemaPublic };
 		}
+	}
 
-		private static class OracleObjectFactory
+	internal static class OracleObjectFactory
+	{
+		public static OracleSchemaObject CreateSchemaObjectMetadata(string objectType, string owner, string name, bool isValid, DateTime created, DateTime lastDdl, bool isTemporary)
 		{
-			public static OracleSchemaObject CreateSchemaObjectMetadata(string objectType, string owner, string name, bool isValid, DateTime created, DateTime lastDdl, bool isTemporary)
-			{
-				var schemaObject = CreateObjectMetadata(objectType);
-				schemaObject.FullyQualifiedName = OracleObjectIdentifier.Create(owner, name);
-				schemaObject.IsValid = isValid;
-				schemaObject.Created = created;
-				schemaObject.LastDdl = lastDdl;
-				schemaObject.IsTemporary = isTemporary;
+			var schemaObject = CreateObjectMetadata(objectType);
+			schemaObject.FullyQualifiedName = OracleObjectIdentifier.Create(owner, name);
+			schemaObject.IsValid = isValid;
+			schemaObject.Created = created;
+			schemaObject.LastDdl = lastDdl;
+			schemaObject.IsTemporary = isTemporary;
 
-				return schemaObject;
+			return schemaObject;
+		}
+
+		public static OracleConstraint CreateConstraint(string constraintType, string owner, string name, bool isEnabled, bool isValidated, bool isDeferrable, bool isRelied)
+		{
+			var constraint = CreateConstraint(constraintType);
+			constraint.FullyQualifiedName = OracleObjectIdentifier.Create(owner, name);
+			constraint.IsEnabled = isEnabled;
+			constraint.IsValidated = isValidated;
+			constraint.IsDeferrable = isDeferrable;
+			constraint.IsRelied = isRelied;
+
+			return constraint;
+		}
+
+		private static OracleConstraint CreateConstraint(string constraintType)
+		{
+			switch (constraintType)
+			{
+				case "P":
+					return new OraclePrimaryKeyConstraint();
+				case "U":
+					return new OracleUniqueConstraint();
+				case "R":
+					return new OracleForeignKeyConstraint();
+				case "C":
+					return new OracleCheckConstraint();
+				default:
+					throw new InvalidOperationException(String.Format("Constraint type '{0}' not supported. ", constraintType));
 			}
+		}
 
-			public static OracleConstraint CreateConstraint(string constraintType, string owner, string name, bool isEnabled, bool isValidated, bool isDeferrable, bool isRelied)
+		private static OracleSchemaObject CreateObjectMetadata(string objectType)
+		{
+			switch (objectType)
 			{
-				var constraint = CreateConstraint(constraintType);
-				constraint.FullyQualifiedName = OracleObjectIdentifier.Create(owner, name);
-				constraint.IsEnabled = isEnabled;
-				constraint.IsValidated = isValidated;
-				constraint.IsDeferrable = isDeferrable;
-				constraint.IsRelied = isRelied;
-
-				return constraint;
-			}
-
-			private static OracleConstraint CreateConstraint(string constraintType)
-			{
-				switch (constraintType)
-				{
-					case "P":
-						return new OraclePrimaryKeyConstraint();
-					case "U":
-						return new OracleUniqueConstraint();
-					case "R":
-						return new OracleForeignKeyConstraint();
-					case "C":
-						return new OracleCheckConstraint();
-					default:
-						throw new InvalidOperationException(String.Format("Constraint type '{0}' not supported. ", constraintType));
-				}
-			}
-
-			private static OracleSchemaObject CreateObjectMetadata(string objectType)
-			{
-				switch (objectType)
-				{
-					case OracleObjectType.Table:
-						return new OracleTable();
-					case OracleObjectType.View:
-						return new OracleView();
-					case OracleObjectType.Synonym:
-						return new OracleSynonym();
-					case OracleObjectType.Function:
-						return new OracleFunction();
-					case OracleObjectType.Sequence:
-						return new OracleSequence();
-					case OracleObjectType.Package:
-						return new OraclePackage();
-					default:
-						throw new InvalidOperationException(String.Format("Object type '{0}' not supported. ", objectType));
-				}
+				case OracleObjectType.Table:
+					return new OracleTable();
+				case OracleObjectType.View:
+					return new OracleView();
+				case OracleObjectType.Synonym:
+					return new OracleSynonym();
+				case OracleObjectType.Function:
+					return new OracleFunction();
+				case OracleObjectType.Sequence:
+					return new OracleSequence();
+				case OracleObjectType.Package:
+					return new OraclePackage();
+				default:
+					throw new InvalidOperationException(String.Format("Object type '{0}' not supported. ", objectType));
 			}
 		}
 	}

@@ -375,14 +375,19 @@ namespace SqlPad.Oracle
 				? DatabaseModel.CurrentSchema
 				: functionReference.FullyQualifiedObjectName.NormalizedOwner;
 
-			var functionIdentifier = OracleFunctionIdentifier.CreateFromValues(owner, functionReference.FullyQualifiedObjectName.NormalizedName, functionReference.NormalizedName);
+			var originalIdentifier = OracleFunctionIdentifier.CreateFromValues(owner, functionReference.FullyQualifiedObjectName.NormalizedName, functionReference.NormalizedName);
 			var parameterCount = functionReference.ParameterNodes == null ? 0 : functionReference.ParameterNodes.Count;
-			var metadata = DatabaseModel.AllFunctionMetadata.GetSqlFunctionMetadata(functionIdentifier, parameterCount, true);
-
-			if (metadata == null && !String.IsNullOrEmpty(functionIdentifier.Package) && String.IsNullOrEmpty(functionReference.FullyQualifiedObjectName.NormalizedOwner))
+			var metadata = DatabaseModel.GetFunctionMetadata(originalIdentifier, parameterCount, true);
+			if (metadata == null && !String.IsNullOrEmpty(originalIdentifier.Package) && String.IsNullOrEmpty(functionReference.FullyQualifiedObjectName.NormalizedOwner))
 			{
-				var identifier = OracleFunctionIdentifier.CreateFromValues(functionIdentifier.Package, null, functionIdentifier.Name);
-				metadata = DatabaseModel.AllFunctionMetadata.GetSqlFunctionMetadata(identifier, parameterCount, false);
+				var identifier = OracleFunctionIdentifier.CreateFromValues(originalIdentifier.Package, null, originalIdentifier.Name);
+				metadata = DatabaseModel.GetFunctionMetadata(identifier, parameterCount, false);
+			}
+
+			if (metadata == null && String.IsNullOrEmpty(functionReference.FullyQualifiedObjectName.NormalizedOwner))
+			{
+				var identifier = OracleFunctionIdentifier.CreateFromValues(OracleDatabaseModelBase.SchemaPublic, originalIdentifier.Package, originalIdentifier.Name);
+				metadata = DatabaseModel.GetFunctionMetadata(identifier, parameterCount, false);
 			}
 
 			if (metadata != null && String.IsNullOrEmpty(metadata.Identifier.Package) &&

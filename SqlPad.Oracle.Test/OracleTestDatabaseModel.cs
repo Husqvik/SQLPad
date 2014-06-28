@@ -21,18 +21,42 @@ namespace SqlPad.Oracle.Test
 
 		private static readonly HashSet<string> SchemasInternal = new HashSet<string> { OwnerNameSys, "\"SYSTEM\"", InitialSchema };
 		private static readonly HashSet<string> AllSchemasInternal = new HashSet<string>(SchemasInternal) { OwnerNameSys, "\"SYSTEM\"", InitialSchema, SchemaPublic };
-		private static readonly OracleFunctionMetadataCollection AllFunctionMetadataInterval;
+		private static readonly OracleFunctionMetadataCollection AllFunctionMetadataInternal;
+		private static readonly OracleFunctionMetadataCollection NonPackageBuiltInFunctionMetadataInternal;
 
 		static OracleTestDatabaseModel()
 		{
 			using (var builtInFunctionReader = XmlReader.Create(File.OpenRead(@"TestFiles\OracleSqlFunctionMetadataCollection_12_1_0_1_0.xml")))
 			{
 				var builtInFunctionMetadata = (OracleFunctionMetadataCollection)Serializer.ReadObject(builtInFunctionReader);
+				NonPackageBuiltInFunctionMetadataInternal = new OracleFunctionMetadataCollection(builtInFunctionMetadata.SqlFunctions.Where(f => String.IsNullOrEmpty(f.Identifier.Owner)));
 
 				var testFolder = Path.GetDirectoryName(typeof(OracleTestDatabaseModel).Assembly.CodeBase);
 				using (var reader = XmlReader.Create(Path.Combine(testFolder, @"TestFiles\TestFunctionCollection.xml")))
 				{
-					AllFunctionMetadataInterval = new OracleFunctionMetadataCollection(builtInFunctionMetadata.SqlFunctions.Concat(((OracleFunctionMetadataCollection)Serializer.ReadObject(reader)).SqlFunctions));
+					AllFunctionMetadataInternal = new OracleFunctionMetadataCollection(builtInFunctionMetadata.SqlFunctions.Concat(((OracleFunctionMetadataCollection)Serializer.ReadObject(reader)).SqlFunctions));
+				}
+			}
+
+			foreach (var function in AllFunctionMetadataInternal.SqlFunctions.Where(f => !String.IsNullOrEmpty(f.Identifier.Owner)))
+			{
+				var objectName = function.IsPackageFunction ? function.Identifier.Package : function.Identifier.Name;
+				var schemaObject = AllObjectsInternal.SingleOrDefault(o => o.Owner == function.Identifier.Owner && o.Name == objectName);
+
+				if (schemaObject == null)
+				{
+					var objectType = function.IsPackageFunction ? OracleObjectType.Package : OracleObjectType.Function;
+					schemaObject = OracleObjectFactory.CreateSchemaObjectMetadata(objectType, function.Identifier.Owner, objectName, true, DateTime.Now, DateTime.Now, false);
+					AllObjectsInternal.Add(schemaObject);
+				}
+
+				if (function.IsPackageFunction)
+				{
+					((OraclePackage)schemaObject).Functions.Add(function);
+				}
+				else
+				{
+					((OracleFunction)schemaObject).Metadata = function;
 				}
 			}
 
@@ -49,10 +73,17 @@ namespace SqlPad.Oracle.Test
 									   SchemaObject = AllObjectsInternal.Single(o => o.Name == "\"V_$SESSION\"" && o.Owner == OwnerNameSys)
 			                       });
 
+			var dbmsRandom = (OraclePackage)AllObjectsInternal.Single(o => o.Name == "\"DBMS_RANDOM\"" && o.Owner == OwnerNameSys);
+			var randomStringFunctionMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues("SYS", "DBMS_RANDOM", "STRING"), false, false, false, false, true, false, null, null, AuthId.Definer, OracleFunctionMetadata.DisplayTypeNormal, false);
+			randomStringFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "VARCHAR2", false));
+			randomStringFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("OPT", 1, ParameterDirection.Input, "CHAR", false));
+			randomStringFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("LEN", 2, ParameterDirection.Input, "NUMBER", false));
+			dbmsRandom.Functions.Add(randomStringFunctionMetadata);
+
 			AllObjectsInternal.Add(new OracleSynonym
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(SchemaPublic, "\"DBMS_RANDOM\""),
-				SchemaObject = AllObjectsInternal.Single(o => o.Name == "\"DBMS_RANDOM\"" && o.Owner == OwnerNameSys)
+				SchemaObject = dbmsRandom
 			});
 
 			AllObjectDictionary = AllObjectsInternal.ToDictionary(o => o.FullyQualifiedName, o => o);
@@ -179,7 +210,9 @@ namespace SqlPad.Oracle.Test
 				}.AsReadOnly();
 		}
 
-		public override OracleFunctionMetadataCollection AllFunctionMetadata { get { return AllFunctionMetadataInterval; } }
+		public override OracleFunctionMetadataCollection AllFunctionMetadata { get { return AllFunctionMetadataInternal; } }
+
+		protected override OracleFunctionMetadataCollection NonPackageBuiltInFunctionMetadata { get { return NonPackageBuiltInFunctionMetadataInternal; } }
 
 		private static readonly HashSet<OracleSchemaObject> AllObjectsInternal = new HashSet<OracleSchemaObject>
 		{

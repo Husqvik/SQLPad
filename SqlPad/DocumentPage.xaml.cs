@@ -633,6 +633,8 @@ namespace SqlPad
 				Editor.TextArea.TextView.Redraw();
 				_isParsing = false;
 			});
+
+			_timer.Stop();
 		}
 
 		void MouseHoverHandler(object sender, MouseEventArgs e)

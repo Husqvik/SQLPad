@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Linq;
 
 namespace SqlPad.Oracle
 {
 	public abstract class OracleDatabaseModelBase : IDatabaseModel
 	{
 		public const string SchemaPublic = "\"PUBLIC\"";
+		public const string SchemaSys = "\"SYS\"";
+		public const string SchemaSystem = "\"SYSTEM\"";
 
 		public abstract ConnectionStringSettings ConnectionString { get; }
 		
@@ -40,6 +43,8 @@ namespace SqlPad.Oracle
 
 		public abstract OracleFunctionMetadataCollection AllFunctionMetadata { get; }
 
+		protected abstract OracleFunctionMetadataCollection NonPackageBuiltInFunctionMetadata { get; }
+
 		public abstract IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjects { get; }
 
 		public SchemaObjectResult<TObject> GetObject<TObject>(OracleObjectIdentifier objectIdentifier) where TObject : OracleSchemaObject
@@ -69,6 +74,7 @@ namespace SqlPad.Oracle
 
 			var synonym = schemaObject as OracleSynonym;
 			var fullyQualifiedName = OracleObjectIdentifier.Empty;
+			
 			if (synonym != null)
 			{
 				schemaObject = synonym.SchemaObject;
@@ -80,6 +86,7 @@ namespace SqlPad.Oracle
 			}
 
 			var typedObject = schemaObject as TObject;
+			
 			return new SchemaObjectResult<TObject>
 			{
 				SchemaFound = schemaFound,
@@ -87,6 +94,58 @@ namespace SqlPad.Oracle
 				Synonym = typedObject == null ? null : synonym,
 				FullyQualifiedName = fullyQualifiedName
 			};
+		}
+
+		public OracleFunctionMetadata GetFunctionMetadata(OracleFunctionIdentifier identifier, int parameterCount, bool forceBuiltInFunction)
+		{
+			OracleSchemaObject schemaObject;
+			ICollection<OracleFunctionMetadata> functionMetadataSource = new List<OracleFunctionMetadata>();
+			if (String.IsNullOrEmpty(identifier.Package) && (forceBuiltInFunction || String.IsNullOrEmpty(identifier.Owner)))
+			{
+				if (AllObjects.TryGetValue(OracleObjectIdentifier.Create(SchemaSys, OracleFunctionMetadataCollection.PackageBuiltInFunction), out schemaObject))
+				{
+					TryGetSchemaObjectFunctionMetadata(schemaObject, out functionMetadataSource);
+				}
+				
+				functionMetadataSource.AddRange(NonPackageBuiltInFunctionMetadata.SqlFunctions);
+
+				var metadata = TryFindFunctionOverload(functionMetadataSource, identifier.Name, parameterCount);
+				if (metadata != null)
+					return metadata;
+			}
+
+			var schemaObjectFound = (String.IsNullOrWhiteSpace(identifier.Package) && AllObjects.TryGetValue(OracleObjectIdentifier.Create(identifier.Owner, identifier.Name), out schemaObject)) ||
+			                        AllObjects.TryGetValue(OracleObjectIdentifier.Create(identifier.Owner, identifier.Package), out schemaObject);
+			if (!schemaObjectFound || !TryGetSchemaObjectFunctionMetadata(schemaObject, out functionMetadataSource))
+				return null;
+
+			return TryFindFunctionOverload(functionMetadataSource, identifier.Name, parameterCount);
+		}
+
+		private static bool TryGetSchemaObjectFunctionMetadata(OracleSchemaObject schemaObject, out ICollection<OracleFunctionMetadata> functionMetadata)
+		{
+			var functions = schemaObject as IFunctionCollection;
+			if (functions != null)
+			{
+				functionMetadata = functions.Functions;
+				return true;
+			}
+
+			var synonym = schemaObject as OracleSynonym;
+			if (synonym != null)
+			{
+				return TryGetSchemaObjectFunctionMetadata(synonym.SchemaObject, out functionMetadata);
+			}
+
+			functionMetadata = new OracleFunctionMetadata[0];
+			return false;
+		}
+
+		private static OracleFunctionMetadata TryFindFunctionOverload(IEnumerable<OracleFunctionMetadata> functionMetadataCollection, string normalizedName, int parameterCount)
+		{
+			return functionMetadataCollection.Where(m => m.Identifier.Name == normalizedName)
+				.OrderBy(m => Math.Abs(parameterCount - m.Parameters.Count + 1))
+				.FirstOrDefault();
 		}
 	}
 }
