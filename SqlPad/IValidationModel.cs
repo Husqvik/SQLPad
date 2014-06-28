@@ -33,6 +33,7 @@ namespace SqlPad
 		AmbiguousReference,
 		InvalidParameterCount,
 		MissingParenthesis,
-		InvalidIdentifier
+		InvalidIdentifier,
+		AnalyticClauseNotSupported
 	}
 }

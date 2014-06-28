@@ -855,7 +855,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			columnNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
 		}
 
-		[Test(Description = @""), Ignore]
+		[Test(Description = @"")]
 		public void TestSemanticErrorWhenUserNonAggregateFunctionHasAnalyticClause()
 		{
 			const string sqlText = "SELECT HUSQVIK.COUNT() OVER () FROM DUAL";
@@ -869,9 +869,9 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 				.OrderBy(cv => cv.Key.SourcePosition.IndexStart)
 				.Select(cv => cv.Value).ToArray();
 
-			nodeValidity.Length.ShouldBe(1);
-			nodeValidity[0].IsRecognized.ShouldBe(true);
-			nodeValidity[0].SemanticError.ShouldNotBe(SemanticError.None);
+			nodeValidity.Length.ShouldBe(2);
+			nodeValidity[1].IsRecognized.ShouldBe(true);
+			nodeValidity[1].SemanticError.ShouldBe(SemanticError.AnalyticClauseNotSupported);
 		}
 
 		[Test(Description = @"")]

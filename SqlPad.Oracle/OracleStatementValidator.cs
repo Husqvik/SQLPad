@@ -56,7 +56,7 @@ namespace SqlPad.Oracle
 							if ((functionReference.ParameterNodes.Count < functionReference.Metadata.MinimumArguments) ||
 								(functionReference.ParameterNodes.Count > maximumParameterCount))
 							{
-								validationModel.FunctionNodeValidity[functionReference.ParameterListNode] = new FunctionValidationData(SemanticError.InvalidParameterCount) { IsRecognized = isRecognized };
+								validationModel.FunctionNodeValidity[functionReference.ParameterListNode] = new FunctionValidationData(SemanticError.InvalidParameterCount) { IsRecognized = true };
 							}
 						}
 						else if (functionReference.Metadata.MinimumArguments > 0)
@@ -66,6 +66,11 @@ namespace SqlPad.Oracle
 						else if (functionReference.Metadata.DisplayType == OracleFunctionMetadata.DisplayTypeParenthesis)
 						{
 							semanticError = SemanticError.MissingParenthesis;
+						}
+
+						if (functionReference.AnalyticClauseNode != null && !functionReference.Metadata.IsAnalytic)
+						{
+							validationModel.FunctionNodeValidity[functionReference.AnalyticClauseNode] = new FunctionValidationData(SemanticError.AnalyticClauseNotSupported) { IsRecognized = true, Node = functionReference.AnalyticClauseNode };
 						}
 					}
 
