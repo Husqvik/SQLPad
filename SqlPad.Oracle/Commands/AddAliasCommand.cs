@@ -87,8 +87,6 @@ namespace SqlPad.Oracle.Commands
 
 		private void AddColumnAlias(string alias)
 		{
-			//throw new NotImplementedException("not implemented yet");
-
 			ExecutionContext.SegmentsToReplace.Add(
 				new TextSegment
 				{

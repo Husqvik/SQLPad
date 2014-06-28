@@ -545,15 +545,33 @@ FROM
 			const string query1 = @"SELECT HUSQVIK.SQLPAD FROM DUAL";
 
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 16).ToArray();
+			items.Length.ShouldBe(1);
+			items[0].Name.ShouldBe("SQLPAD_FUNCTION");
+			items[0].Text.ShouldBe("SQLPAD_FUNCTION()");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.SchemaFunction);
+			items[0].CaretOffset.ShouldBe(-1);
+		}
+
+		[Test(Description = @"")]
+		public void TestPackageFunctionSuggestionDoesNotContaintParameterListWhenAlreadyEnteredWithParameterList()
+		{
+			const string query1 = @"SELECT HUSQVIK.SFUNCTION('PARAMETER') FROM DUAL";
+
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 16).ToArray();
 			items.Length.ShouldBe(2);
-			items[0].Name.ShouldBe("SQLPAD");
-			items[0].Text.ShouldBe("SQLPAD.");
-			items[0].Category.ShouldBe(OracleCodeCompletionCategory.Package);
-			items[0].CaretOffset.ShouldBe(0);
 			items[1].Name.ShouldBe("SQLPAD_FUNCTION");
-			items[1].Text.ShouldBe("SQLPAD_FUNCTION()");
+			items[1].Text.ShouldBe("SQLPAD_FUNCTION");
 			items[1].Category.ShouldBe(OracleCodeCompletionCategory.SchemaFunction);
 			items[1].CaretOffset.ShouldBe(-1);
+		}
+
+		[Test(Description = @"")]
+		public void TestPackageFunctionNotSuggestedWhenSameFunctionAlreadyEntered()
+		{
+			const string query1 = @"SELECT HUSQVIK.SQLPAD.SQLPAD_FUNCTION('') FROM DUAL";
+
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 23).ToArray();
+			items.Length.ShouldBe(0);
 		}
 
 		[Test(Description = @"")]
@@ -588,6 +606,7 @@ FROM
 			items.ForEach(i => i.Name.ShouldBe("SYS.STANDARD.ROUND"));
 			items.ForEach(i => i.Parameters.Count.ShouldBe(2));
 			items.ForEach(i => i.CurrentParameterIndex.ShouldBe(1));
+			items.ForEach(i => i.ReturnedDatatype.ShouldNotBe(null));
 		}
 
 		[Test(Description = @"")]

@@ -43,7 +43,9 @@ namespace SqlPad
 						i++;
 					}
 
-					textBlock.Inlines.Add(")");
+					textBlock.Inlines.Add(") RETURN: ");
+					textBlock.Inlines.Add(overloadDescription.ReturnedDatatype);
+					
 					ViewOverloads.Items.Add(textBlock);
 				}
 			}

@@ -16,6 +16,8 @@ namespace SqlPad
 		public ICollection<string> Parameters { get; set; }
 
 		public int CurrentParameterIndex { get; set; }
+		
+		public string ReturnedDatatype { get; set; }
 	}
 
 	public interface ICodeCompletionItem

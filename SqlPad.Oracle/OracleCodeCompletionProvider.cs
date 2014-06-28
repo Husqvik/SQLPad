@@ -55,7 +55,8 @@ namespace SqlPad.Oracle
 				{
 					Name = functionReference.Metadata.Identifier.FullyQualifiedIdentifier,
 					Parameters = o.Parameters.Skip(1).Select(p => p.Name + ": " + p.DataType).ToArray(),
-					CurrentParameterIndex = currentParameterIndex
+					CurrentParameterIndex = currentParameterIndex,
+					ReturnedDatatype = o.Parameters.First().DataType
 				}).ToArray();
 		}
 
@@ -273,7 +274,7 @@ namespace SqlPad.Oracle
 				objectIdentifierNode = prefixedColumnReference.ChildNodes[0].GetSingleDescendant(Terminals.ObjectIdentifier);
 			}
 
-			var currentName = currentNode.Id == Terminals.Identifier && cursorPosition <= currentNode.SourcePosition.IndexEnd + 1
+			var partialName = currentNode.Id == Terminals.Identifier && cursorPosition <= currentNode.SourcePosition.IndexEnd + 1
 				? currentNode.Token.Value.Substring(0, cursorPosition - currentNode.SourcePosition.IndexStart).Trim('"')
 				: null;
 
@@ -289,38 +290,42 @@ namespace SqlPad.Oracle
 					.Where(t => t.FullyQualifiedName == fullyQualifiedName || (String.IsNullOrEmpty(fullyQualifiedName.Owner) && fullyQualifiedName.NormalizedName == t.FullyQualifiedName.NormalizedName))
 					.ToArray();
 
-				if (tableReferences.Count == 0 && (currentName != null || currentNode.SourcePosition.IndexEnd < cursorPosition))
+				if (tableReferences.Count == 0 && (partialName != null || currentNode.SourcePosition.IndexEnd < cursorPosition))
 				{
+					var functionReference = semanticModel.GetQueryBlock(currentNode).AllFunctionReferences.SingleOrDefault(f => f.FunctionIdentifierNode == currentNode);
+					var addParameterList = functionReference == null;
+					var currentName = partialName == null ? null : currentNode.Token.Value;
+
 					if (String.IsNullOrEmpty(schemaName))
 					{
 						var matcher = new OracleFunctionMatcher(
 							new FunctionMatchElement(objectName).SelectOwner(),
-							new FunctionMatchElement(currentName) { AllowStartWithMatch = true, DenyEqualMatch = !String.IsNullOrEmpty(currentName) }.SelectPackage(),
+							new FunctionMatchElement(partialName) { AllowStartWithMatch = true, DeniedValue = currentName }.SelectPackage(),
 							null);
 
-						suggestedFunctions = GenerateCodeItems(m => m.Identifier.Package.ToSimpleIdentifier(), OracleCodeCompletionCategory.Package, String.IsNullOrEmpty(currentName) ? null : currentNode, 0, databaseModel, matcher);
+						suggestedFunctions = GenerateCodeItems(m => m.Identifier.Package.ToSimpleIdentifier(), OracleCodeCompletionCategory.Package, String.IsNullOrEmpty(partialName) ? null : currentNode, 0, addParameterList, databaseModel, matcher);
 
 						matcher = new OracleFunctionMatcher(
 							new FunctionMatchElement(databaseModel.CurrentSchema).SelectOwner(), 
 							new FunctionMatchElement(objectName).SelectPackage(),
-							new FunctionMatchElement(currentName) { AllowStartWithMatch = true, DenyEqualMatch = !String.IsNullOrEmpty(currentName) }.SelectName());
-						suggestedFunctions = suggestedFunctions.Concat(GenerateCodeItems(m => m.Identifier.Name.ToSimpleIdentifier(), OracleCodeCompletionCategory.PackageFunction, String.IsNullOrEmpty(currentName) ? null : currentNode, 0, databaseModel, matcher));
+							new FunctionMatchElement(partialName) { AllowStartWithMatch = true, DeniedValue = currentName }.SelectName());
+						suggestedFunctions = suggestedFunctions.Concat(GenerateCodeItems(m => m.Identifier.Name.ToSimpleIdentifier(), OracleCodeCompletionCategory.PackageFunction, String.IsNullOrEmpty(partialName) ? null : currentNode, 0, addParameterList, databaseModel, matcher));
 
 						matcher = new OracleFunctionMatcher(
 							new FunctionMatchElement(objectName).SelectOwner(),
 							new FunctionMatchElement(null).SelectPackage(),
-							new FunctionMatchElement(currentName) { AllowStartWithMatch = true, DenyEqualMatch = !String.IsNullOrEmpty(currentName) }.SelectName());
+							new FunctionMatchElement(partialName) { AllowStartWithMatch = true, DeniedValue = currentName }.SelectName());
 
-						suggestedFunctions = suggestedFunctions.Concat(GenerateCodeItems(m => m.Identifier.Name.ToSimpleIdentifier(), OracleCodeCompletionCategory.SchemaFunction, String.IsNullOrEmpty(currentName) ? null : currentNode, 0, databaseModel, matcher));
+						suggestedFunctions = suggestedFunctions.Concat(GenerateCodeItems(m => m.Identifier.Name.ToSimpleIdentifier(), OracleCodeCompletionCategory.SchemaFunction, String.IsNullOrEmpty(partialName) ? null : currentNode, 0, addParameterList, databaseModel, matcher));
 					}
 					else
 					{
 						var matcher = new OracleFunctionMatcher(
 							new FunctionMatchElement(schemaName).SelectOwner(),
 							new FunctionMatchElement(objectName).SelectPackage(),
-							new FunctionMatchElement(currentName) { AllowStartWithMatch = true, DenyEqualMatch = !String.IsNullOrEmpty(currentName) }.SelectName());
+							new FunctionMatchElement(partialName) { AllowStartWithMatch = true, DeniedValue = currentName }.SelectName());
 
-						suggestedFunctions = GenerateCodeItems(m => m.Identifier.Name.ToSimpleIdentifier(), OracleCodeCompletionCategory.PackageFunction, String.IsNullOrEmpty(currentName) ? null : currentNode, 0, databaseModel, matcher);
+						suggestedFunctions = GenerateCodeItems(m => m.Identifier.Name.ToSimpleIdentifier(), OracleCodeCompletionCategory.PackageFunction, String.IsNullOrEmpty(partialName) ? null : currentNode, 0, addParameterList, databaseModel, matcher);
 					}
 				}
 			}
@@ -329,8 +334,8 @@ namespace SqlPad.Oracle
 				.SelectMany(t => t.Columns
 					.Where(c =>
 						(currentNode.Id != Terminals.Identifier || c.Name != currentNode.Token.Value.ToQuotedIdentifier()) &&
-						(objectIdentifierNode == null && String.IsNullOrEmpty(currentName) ||
-						(c.Name != currentName.ToQuotedIdentifier() && c.Name.ToRawUpperInvariant().Contains(currentName.ToRawUpperInvariant()))))
+						(objectIdentifierNode == null && String.IsNullOrEmpty(partialName) ||
+						(c.Name != partialName.ToQuotedIdentifier() && c.Name.ToRawUpperInvariant().Contains(partialName.ToRawUpperInvariant()))))
 					.Select(c => new { TableReference = t, Column = c }))
 					.GroupBy(c => c.Column.Name).ToDictionary(g => g.Key ?? String.Empty, g => g.Select(o => o.TableReference).ToArray());
 
@@ -349,14 +354,14 @@ namespace SqlPad.Oracle
 
 			var suggestedItems = rowIdItems.Concat(suggestedColumns.Select(t => CreateColumnCodeCompletionItem(t.Item1, objectIdentifierNode == null ? t.Item2.ToString() : null, currentNode)));
 
-			if (currentName == null && currentNode.IsWithinSelectClause() && currentNode.GetParentExpression().GetParentExpression() == null)
+			if (partialName == null && currentNode.IsWithinSelectClause() && currentNode.GetParentExpression().GetParentExpression() == null)
 			{
 				suggestedItems = suggestedItems.Concat(CreateAsteriskColumnCompletionItems(tableReferences, objectIdentifierNode != null, currentNode));
 			}
 
 			if (objectIdentifierNode == null)
 			{
-				suggestedItems = suggestedItems.Concat(GenerateSchemaItems(currentName, currentNode.Id == Terminals.Select ? null : currentNode, 0, databaseModel, 1));
+				suggestedItems = suggestedItems.Concat(GenerateSchemaItems(partialName, currentNode.Id == Terminals.Select ? null : currentNode, 0, databaseModel, 1));
 			}
 
 			return suggestedItems.Concat(suggestedFunctions);
@@ -437,8 +442,9 @@ namespace SqlPad.Oracle
 				             });
 		}
 
-		private IEnumerable<ICodeCompletionItem> GenerateCodeItems(Func<OracleFunctionMetadata, string> identifierSelector, string category, StatementDescriptionNode node, int insertOffset, OracleDatabaseModelBase databaseModel, params OracleFunctionMatcher[] matchers)
+		private IEnumerable<ICodeCompletionItem> GenerateCodeItems(Func<OracleFunctionMetadata, string> identifierSelector, string category, StatementDescriptionNode node, int insertOffset, bool addParameterList, OracleDatabaseModelBase databaseModel, params OracleFunctionMatcher[] matchers)
 		{
+			var parameterList = addParameterList ? "()" : null;
 			return databaseModel.AllFunctionMetadata.SqlFunctions
 				.Where(f => matchers.Any(m => m.IsMatch(f, databaseModel.CurrentSchema)) && !String.IsNullOrEmpty(identifierSelector(f)))
 				.Select(f => identifierSelector(f).ToSimpleIdentifier())
@@ -446,7 +452,7 @@ namespace SqlPad.Oracle
 				.Select(i => new OracleCodeCompletionItem
 				             {
 					             Name = i,
-					             Text = i + (category == OracleCodeCompletionCategory.Package ? "." : "()"),
+								 Text = i + (category == OracleCodeCompletionCategory.Package ? "." : parameterList),
 					             StatementNode = node,
 					             Category = category,
 					             Offset = insertOffset,

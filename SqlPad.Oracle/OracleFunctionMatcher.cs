@@ -40,14 +40,18 @@ namespace SqlPad.Oracle
 
 		public bool DenyEqualMatch { get; set; }
 
+		public string DeniedValue { get; set; }
+
 		public Func<TElement, string> Selector { get; protected set; }
 
 		public bool IsMatch(TElement elementIdentifier)
 		{
 			var elementValue = Selector(elementIdentifier);
-			return (!DenyEqualMatch && elementValue == Value.ToQuotedIdentifier()) ||
-				   (AllowStartWithMatch && elementValue.ToRawUpperInvariant().StartsWith(Value.ToRawUpperInvariant())) ||
-				   (AllowPartialMatch && elementValue.ToRawUpperInvariant().Contains(Value.ToRawUpperInvariant()));
+			var valueMatches = (elementValue == Value.ToQuotedIdentifier()) ||
+			                   (AllowStartWithMatch && elementValue.ToRawUpperInvariant().StartsWith(Value.ToRawUpperInvariant())) ||
+			                   (AllowPartialMatch && elementValue.ToRawUpperInvariant().Contains(Value.ToRawUpperInvariant()));
+
+			return valueMatches && (String.IsNullOrEmpty(DeniedValue) || elementValue != DeniedValue.ToQuotedIdentifier());
 		}
 	}
 
