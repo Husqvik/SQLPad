@@ -7,9 +7,6 @@ namespace SqlPad.Oracle
 	public abstract class OracleDatabaseModelBase : IDatabaseModel
 	{
 		public const string SchemaPublic = "\"PUBLIC\"";
-		public const string DataObjectTypeTable = "TABLE";
-		public const string DataObjectTypeView = "VIEW";
-		public const string DataObjectTypeSynonym = "SYNONYM";
 
 		public abstract ConnectionStringSettings ConnectionString { get; }
 		

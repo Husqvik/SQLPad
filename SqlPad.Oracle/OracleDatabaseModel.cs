@@ -372,23 +372,6 @@ ORDER BY
 							var displayType = (string)reader["DISP_TYPE"];
 
 							var functionMetadata = new OracleFunctionMetadata(identifier, isAnalytic, isAggregate, isPipelined, isOffloadable, parallelSupport, isDeterministic, metadataMinimumArguments, metadataMaximumArguments, authId, displayType, isBuiltIn);
-							if (functionMetadata.IsPackageFunction)
-							{
-								OracleSchemaObject packageObject;
-								if (AllObjects.TryGetValue(OracleObjectIdentifier.Create(functionMetadata.Identifier.Owner, functionMetadata.Identifier.Package), out packageObject))
-								{
-									((OraclePackage)packageObject).Functions.Add(functionMetadata);
-								}
-							}
-							else
-							{
-								OracleSchemaObject functionObject;
-								if (AllObjects.TryGetValue(OracleObjectIdentifier.Create(functionMetadata.Identifier.Owner, functionMetadata.Identifier.Name), out functionObject))
-								{
-									((OracleFunction) functionObject).Metadata = functionMetadata;
-								}
-							}
-
 							functionMetadataDictionary.Add(functionMetadata.Identifier, functionMetadata);
 						}
 					}
@@ -592,7 +575,7 @@ ORDER BY
 		{
 			RefreshStarted(this, EventArgs.Empty);
 
-			const string selectAllObjectsCommandText = "SELECT OWNER, OBJECT_NAME, SUBOBJECT_NAME, OBJECT_ID, DATA_OBJECT_ID, OBJECT_TYPE, CREATED, LAST_DDL_TIME, STATUS, TEMPORARY/*, EDITIONABLE, EDITION_NAME*/ FROM ALL_OBJECTS WHERE OBJECT_TYPE IN ('SYNONYM', 'VIEW', 'TABLE', 'SEQUENCE', 'FUNCTION')";
+			const string selectAllObjectsCommandText = "SELECT OWNER, OBJECT_NAME, SUBOBJECT_NAME, OBJECT_ID, DATA_OBJECT_ID, OBJECT_TYPE, CREATED, LAST_DDL_TIME, STATUS, TEMPORARY/*, EDITIONABLE, EDITION_NAME*/ FROM ALL_OBJECTS WHERE OBJECT_TYPE IN ('SYNONYM', 'VIEW', 'TABLE', 'SEQUENCE', 'FUNCTION', 'PACKAGE')";
 			var dataObjectMetadataSource = ExecuteReader(
 				selectAllObjectsCommandText,
 				r => OracleObjectFactory.CreateSchemaObjectMetadata((string)r["OBJECT_TYPE"], QualifyStringObject(r["OWNER"]), QualifyStringObject(r["OBJECT_NAME"]), (string)r["STATUS"] == "VALID", (DateTime)r["CREATED"], (DateTime)r["LAST_DDL_TIME"], (string)r["TEMPORARY"] == "Y"));
@@ -793,12 +776,30 @@ FROM ALL_TABLES";
 
 			_allFunctionMetadata = new OracleFunctionMetadataCollection(BuiltInFunctionMetadata.SqlFunctions.Concat(GetUserFunctionMetadata().SqlFunctions));
 
-			_allObjects = dataObjectMetadata;
-			//var tmp = dataObjectMetadata.Values.Where(o => o.FullyQualifiedName.NormalizedOwner == "\"CA_DEV\"").ToArray();
-			var ftmp = _allFunctionMetadata.SqlFunctions.Where(f => f.Identifier.Owner.Contains("CA_DEV")).ToArray();
-			//var types = tmp.OfType<OracleDataObject>().SelectMany(o => o.Columns.Values).Select(c => c.FullTypeName).Distinct().ToArray();
+			foreach (var functionMetadata in _allFunctionMetadata.SqlFunctions)
+			{
+				if (functionMetadata.IsPackageFunction)
+				{
+					OracleSchemaObject packageObject;
+					if (dataObjectMetadata.TryGetValue(OracleObjectIdentifier.Create(functionMetadata.Identifier.Owner, functionMetadata.Identifier.Package), out packageObject))
+					{
+						((OraclePackage)packageObject).Functions.Add(functionMetadata);
+					}
+				}
+				else
+				{
+					OracleSchemaObject functionObject;
+					if (dataObjectMetadata.TryGetValue(OracleObjectIdentifier.Create(functionMetadata.Identifier.Owner, functionMetadata.Identifier.Name), out functionObject))
+					{
+						((OracleFunction)functionObject).Metadata = functionMetadata;
+					}
+				}
+			}
 
-			//var accs = tmp.Where(o => o.Name.Contains("Accounts")).ToArray();
+			_allObjects = dataObjectMetadata;
+			//var ftmp = _allFunctionMetadata.SqlFunctions.Where(f => f.Identifier.Owner.Contains("CA_DEV")).ToArray();
+			var ftmp = _allFunctionMetadata.SqlFunctions.Where(f => f.Identifier.Package.Contains("DBMS_RANDOM")).ToArray();
+			var otmp = dataObjectMetadata.Where(o => o.Key.NormalizedName.Contains("DBMS_RANDOM")).ToArray();
 
 			_lastRefresh = DateTime.Now;
 
@@ -869,16 +870,18 @@ FROM ALL_TABLES";
 			{
 				switch (objectType)
 				{
-					case "TABLE":
+					case OracleObjectType.Table:
 						return new OracleTable();
-					case "VIEW":
+					case OracleObjectType.View:
 						return new OracleView();
-					case "SYNONYM":
+					case OracleObjectType.Synonym:
 						return new OracleSynonym();
-					case "FUNCTION":
+					case OracleObjectType.Function:
 						return new OracleFunction();
-					case "SEQUENCE":
+					case OracleObjectType.Sequence:
 						return new OracleSequence();
+					case OracleObjectType.Package:
+						return new OraclePackage();
 					default:
 						throw new InvalidOperationException(String.Format("Object type '{0}' not supported. ", objectType));
 				}

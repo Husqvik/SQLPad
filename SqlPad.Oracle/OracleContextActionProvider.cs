@@ -12,78 +12,80 @@ namespace SqlPad.Oracle
 		private static readonly IContextAction[] EmptyCollection = new IContextAction[0];
 		private readonly OracleSqlParser _oracleParser = new OracleSqlParser();
 
-		internal ICollection<IContextAction> GetContextActions(IDatabaseModel databaseModel, string statementText, int cursorPosition, int selectionLength = 0)
+		internal ICollection<IContextAction> GetContextActions(OracleDatabaseModelBase databaseModel, string statementText, int cursorPosition)
 		{
-			return GetContextActions(databaseModel, SqlDocument.FromStatementCollection(_oracleParser.Parse(statementText), statementText), cursorPosition, selectionLength);
+			var statements = _oracleParser.Parse(statementText);
+			var executionContext = new CommandExecutionContext(statementText, 0, 0, cursorPosition, statements, databaseModel);
+			return GetContextActions(SqlDocument.FromStatementCollection(statements, statementText), executionContext);
 		}
 
-		public ICollection<IContextAction> GetContextActions(IDatabaseModel databaseModel, SqlDocument sqlDocument, int cursorPosition, int selectionLength = 0)
+		public ICollection<IContextAction> GetContextActions(SqlDocument sqlDocument, CommandExecutionContext executionContext)
 		{
 			if (sqlDocument == null || sqlDocument.StatementCollection == null)
 				return EmptyCollection;
 
-			var currentTerminal = sqlDocument.StatementCollection.GetTerminalAtPosition(cursorPosition);
+			var currentTerminal = sqlDocument.StatementCollection.GetTerminalAtPosition(executionContext.CaretOffset);
 			if (currentTerminal == null)
 				return EmptyCollection;
 
-			var semanticModel = new OracleStatementSemanticModel(null, (OracleStatement)currentTerminal.Statement, (OracleDatabaseModelBase)databaseModel);
-			var executionContext = OracleCommandExecutionContext.Create(sqlDocument.StatementText, cursorPosition, semanticModel);
+			var semanticModel = new OracleStatementSemanticModel(null, (OracleStatement)currentTerminal.Statement, (OracleDatabaseModelBase)executionContext.DatabaseModel);
+			var oracleExecutionContext = OracleCommandExecutionContext.Create(sqlDocument.StatementText, executionContext.Line, executionContext.Column, executionContext.CaretOffset, semanticModel);
 			var enterIdentifierModel = new CommandSettingsModel { Value = "Enter value" };
-			executionContext.SettingsProvider = new EditDialog(enterIdentifierModel);
+			oracleExecutionContext.SettingsProvider = new EditDialog(enterIdentifierModel);
 			
 			var actionList = new List<IContextAction>();
 
-			if (OracleCommands.AddAlias.CanExecuteHandler(executionContext))
+			if (OracleCommands.AddAlias.CanExecuteHandler(oracleExecutionContext))
 			{
-				actionList.Add(new OracleContextAction(AddAliasCommand.Title, OracleCommands.AddAlias, executionContext));
+				actionList.Add(new OracleContextAction(AddAliasCommand.Title, OracleCommands.AddAlias, oracleExecutionContext));
 			}
 
-			if (OracleCommands.WrapAsInlineView.CanExecuteHandler(executionContext))
+			if (OracleCommands.WrapAsInlineView.CanExecuteHandler(oracleExecutionContext))
 			{
-				actionList.Add(new OracleContextAction(WrapAsInlineViewCommand.Title, OracleCommands.WrapAsInlineView, executionContext));
+				actionList.Add(new OracleContextAction(WrapAsInlineViewCommand.Title, OracleCommands.WrapAsInlineView, oracleExecutionContext));
 			}
 
-			if (OracleCommands.WrapAsCommonTableExpression.CanExecuteHandler(executionContext))
+			if (OracleCommands.WrapAsCommonTableExpression.CanExecuteHandler(oracleExecutionContext))
 			{
-				actionList.Add(new OracleContextAction(WrapAsCommonTableExpressionCommand.Title, OracleCommands.WrapAsCommonTableExpression, executionContext));
+				actionList.Add(new OracleContextAction(WrapAsCommonTableExpressionCommand.Title, OracleCommands.WrapAsCommonTableExpression, oracleExecutionContext));
 			}
 
-			if (OracleCommands.ToggleQuotedNotation.CanExecuteHandler(executionContext))
+			if (OracleCommands.ToggleQuotedNotation.CanExecuteHandler(oracleExecutionContext))
 			{
-				actionList.Add(new OracleContextAction(ToggleQuotedNotationCommand.Title, OracleCommands.ToggleQuotedNotation, executionContext));
+				actionList.Add(new OracleContextAction(ToggleQuotedNotationCommand.Title, OracleCommands.ToggleQuotedNotation, oracleExecutionContext));
 			}
 
-			if (OracleCommands.AddToGroupByClause.CanExecuteHandler(executionContext))
+			if (OracleCommands.AddToGroupByClause.CanExecuteHandler(oracleExecutionContext))
 			{
 				// TODO
 				//actionList.Add(new OracleContextAction(AddToGroupByCommand.Title, OracleCommands.AddToGroupByClause, executionContext));
 			}
 
-			if (OracleCommands.ExpandAsterisk.CanExecuteHandler(executionContext))
+			if (OracleCommands.ExpandAsterisk.CanExecuteHandler(oracleExecutionContext))
 			{
-				var expandAsteriskExecutionContext = executionContext.Clone();
+				var expandAsteriskExecutionContext = oracleExecutionContext.Clone();
 				expandAsteriskExecutionContext.SettingsProvider = new EditDialog(new CommandSettingsModel { UseDefaultSettings = () => !Keyboard.IsKeyDown(Key.LeftShift) } );
 
 				actionList.Add(new OracleContextAction(ExpandAsteriskCommand.Title, OracleCommands.ExpandAsterisk, expandAsteriskExecutionContext));
 			}
 
-			if (OracleCommands.UnnestInlineView.CanExecuteHandler(executionContext))
+			if (OracleCommands.UnnestInlineView.CanExecuteHandler(oracleExecutionContext))
 			{
-				actionList.Add(new OracleContextAction(UnnestInlineViewCommand.Title, OracleCommands.UnnestInlineView, executionContext));
+				actionList.Add(new OracleContextAction(UnnestInlineViewCommand.Title, OracleCommands.UnnestInlineView, oracleExecutionContext));
 			}
 
-			if (OracleCommands.ToggleFullyQualifiedReferences.CanExecuteHandler(executionContext))
+			if (OracleCommands.ToggleFullyQualifiedReferences.CanExecuteHandler(oracleExecutionContext))
 			{
-				actionList.Add(new OracleContextAction(ToggleFullyQualifiedReferencesCommand.Title, OracleCommands.ToggleFullyQualifiedReferences, executionContext));
+				actionList.Add(new OracleContextAction(ToggleFullyQualifiedReferencesCommand.Title, OracleCommands.ToggleFullyQualifiedReferences, oracleExecutionContext));
 			}
 
-			if (OracleCommands.GenerateMissingColumns.CanExecuteHandler(executionContext))
+			if (OracleCommands.GenerateMissingColumns.CanExecuteHandler(oracleExecutionContext))
 			{
-				actionList.Add(new OracleContextAction(AddMissingColumnCommand.Title, OracleCommands.GenerateMissingColumns, executionContext));
+				actionList.Add(new OracleContextAction(AddMissingColumnCommand.Title, OracleCommands.GenerateMissingColumns, oracleExecutionContext));
 			}
 
 			var actions = ResolveAmbiguousColumnCommand.ResolveCommandHandlers(semanticModel, currentTerminal)
-				.Select(c => new OracleContextAction("Resolve as " + c.Name, c, executionContext));
+				.Select(c => new OracleContextAction("Resolve as " + c.Name, c, oracleExecutionContext));
 
 			actionList.AddRange(actions);
 

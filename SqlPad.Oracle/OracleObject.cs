@@ -51,11 +51,11 @@ namespace SqlPad.Oracle
 	{
 		public string StatementText { get; set; }
 
-		public override string Type { get { return "VIEW"; } }
+		public override string Type { get { return OracleObjectType.View; } }
 	}
 
 	[DebuggerDisplay("OracleSynonym (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
-	public class OracleSynonym : OracleDataObject
+	public class OracleSynonym : OracleSchemaObject
 	{
 		public OracleSchemaObject SchemaObject { get; set; }
 
@@ -64,7 +64,7 @@ namespace SqlPad.Oracle
 			get { return FullyQualifiedName.NormalizedOwner == OracleDatabaseModelBase.SchemaPublic; }
 		}
 
-		public override string Type { get { return "SYNONYM"; } }
+		public override string Type { get { return OracleObjectType.Synonym; } }
 	}
 
 	[DebuggerDisplay("OracleTable (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
@@ -90,7 +90,7 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		public override string Type { get { return "TABLE"; } }
+		public override string Type { get { return OracleObjectType.Table; } }
 	}
 
 	public class OracleSequence : OracleSchemaObject
@@ -109,7 +109,7 @@ namespace SqlPad.Oracle
 
 		public bool CanCycle { get; set; }
 
-		public override string Type { get { return "SEQUENCE"; } }
+		public override string Type { get { return OracleObjectType.Sequence; } }
 	}
 
 	public class OraclePackage : OracleSchemaObject
@@ -121,14 +121,14 @@ namespace SqlPad.Oracle
 
 		public ICollection<OracleFunctionMetadata> Functions { get; private set; } 
 
-		public override string Type { get { return "PACKAGE"; } }
+		public override string Type { get { return OracleObjectType.Package; } }
 	}
 
 	public class OracleFunction : OracleSchemaObject
 	{
 		public OracleFunctionMetadata Metadata { get; set; }
 
-		public override string Type { get { return "FUNCTION"; } }
+		public override string Type { get { return OracleObjectType.Function; } }
 	}
 
 	public enum OrganizationType
@@ -137,5 +137,15 @@ namespace SqlPad.Oracle
 		Heap,
 		Index,
 		External
+	}
+
+	public static class OracleObjectType
+	{
+		public const string Table = "TABLE";
+		public const string View = "VIEW";
+		public const string Synonym = "SYNONYM";
+		public const string Sequence = "SEQUENCE";
+		public const string Function = "FUNCTION";
+		public const string Package = "PACKAGE";
 	}
 }

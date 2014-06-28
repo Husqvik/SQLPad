@@ -685,7 +685,8 @@ namespace SqlPad
 
 		private bool PopulateContextActionMenu()
 		{
-			_contextActionProvider.GetContextActions(_databaseModel, _sqlDocument, Editor.SelectionStart, Editor.SelectionLength)
+			var executionContext = CommandExecutionContext.Create(Editor, _sqlDocument.StatementCollection, _databaseModel);
+			_contextActionProvider.GetContextActions(_sqlDocument, executionContext)
 				.ToList()
 				.ForEach(BuildContextMenuItem);
 

@@ -41,9 +41,11 @@ namespace SqlPad.Commands
 				throw new InvalidOperationException(String.Format("Settings provider is mandatory. "));
 		}
 
-		public CommandExecutionContext(string statementText, int caretOffset, StatementCollection statements, IDatabaseModel databaseModel)
+		public CommandExecutionContext(string statementText, int line, int column, int caretOffset, StatementCollection statements, IDatabaseModel databaseModel)
 		{
 			StatementText = statementText;
+			Line = line;
+			Column = column;
 			CaretOffset = caretOffset;
 			SelectionStart = caretOffset;
 			Statements = statements;
@@ -52,7 +54,7 @@ namespace SqlPad.Commands
 
 		public static CommandExecutionContext Create(TextEditor editor, StatementCollection statements, IDatabaseModel databaseModel)
 		{
-			return new CommandExecutionContext(editor.Text, editor.CaretOffset, statements, databaseModel)
+			return new CommandExecutionContext(editor.Text, editor.TextArea.Caret.Line, editor.TextArea.Caret.Column, editor.CaretOffset, statements, databaseModel)
 			{
 				SelectionStart = editor.SelectionStart,
 				SelectionLength = editor.SelectionLength,
