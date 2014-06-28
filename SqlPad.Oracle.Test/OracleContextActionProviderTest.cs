@@ -16,7 +16,7 @@ namespace SqlPad.Oracle.Test
 		{
 			const string query1 = @"SELECT DUMMY FROM (SELECT DUMMY FROM DUAL) t2, Dual";
 
-			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 7).ToArray();
+			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 7).Where(a => a.Name.StartsWith("Resolve as")).ToArray();
 			actions.Length.ShouldBe(2);
 			actions[0].Name.ShouldBe("Resolve as t2.DUMMY");
 			actions[1].Name.ShouldBe("Resolve as Dual.DUMMY");
@@ -27,7 +27,7 @@ namespace SqlPad.Oracle.Test
 		{
 			const string query1 = @"SELECT DUMMY FROM (SELECT DUMMY FROM DUAL) t2, Dual";
 
-			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 12).ToArray();
+			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 12).Where(a => a.Name.StartsWith("Resolve as")).ToArray();
 			actions.Length.ShouldBe(2);
 			actions[0].Name.ShouldBe("Resolve as t2.DUMMY");
 			actions[1].Name.ShouldBe("Resolve as Dual.DUMMY");
@@ -38,7 +38,7 @@ namespace SqlPad.Oracle.Test
 		{
 			const string query1 = @"SELECT DUAL.DUMMY FROM SYS.DUAL, ""PUBLIC"".DUAL";
 
-			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 12).ToArray();
+			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 12).Where(a => a.Name.StartsWith("Resolve as")).ToArray();
 			actions.Length.ShouldBe(2);
 			actions[0].Name.ShouldBe("Resolve as SYS.DUAL.DUMMY");
 			actions[1].Name.ShouldBe("Resolve as \"PUBLIC\".DUAL.DUMMY");
@@ -68,7 +68,7 @@ namespace SqlPad.Oracle.Test
 		{
 			const string query1 = @"SELECT DUMMY FROM (SELECT 1 DUMMY FROM DUAL), SYS.DUAL";
 
-			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 7).ToArray();
+			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 7).Where(a => a.Name.StartsWith("Resolve as")).ToArray();
 			actions.Length.ShouldBe(1);
 			actions[0].Name.ShouldBe("Resolve as SYS.DUAL.DUMMY");
 		}
@@ -78,7 +78,7 @@ namespace SqlPad.Oracle.Test
 		{
 			const string query1 = @"SELECT DUAL.DUMMY FROM (SELECT 1 DUMMY FROM DUAL) DUAL, SYS.DUAL";
 
-			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 14).ToArray();
+			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 14).Where(a => a.Name.StartsWith("Resolve as")).ToArray();
 			actions.Length.ShouldBe(1);
 			actions[0].Name.ShouldBe("Resolve as SYS.DUAL.DUMMY");
 		}
@@ -154,7 +154,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @""), STAThread]
-		public void TestAddMissingColumnCommand()
+		public void TestAddMissingColumnCommandSuggestion()
 		{
 			const string query1 = @"SELECT NOT_EXISTING_COLUMN FROM SELECTION";
 
@@ -164,11 +164,47 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @""), STAThread]
-		public void TestToggleQuotedNotationNotSuggestedWhenNoConvertibleIdentifierOrAliasAvailable()
+		public void TestAddMissingColumnCommandNotSuggestedWhenAlreadyExists()
+		{
+			const string query1 = @"SELECT DUMMY FROM DUAL";
+
+			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 7).SingleOrDefault(a => a.Name == AddMissingColumnCommand.Title);
+			action.ShouldBe(null);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestToggleQuotedNotationNotSuggestedWhenNotConvertibleIdentifierOrAliasAvailable()
 		{
 			const string query1 = @"SELECT ""Balance"" FROM ""Accounts""";
 
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 0).SingleOrDefault(a => a.Name == ToggleQuotedNotationCommand.Title);
+			action.ShouldBe(null);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestAddColumnAliasSuggestion()
+		{
+			const string query1 = @"SELECT DUMMY FROM DUAL";
+
+			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 10).SingleOrDefault(a => a.Name == AddAliasCommand.Title);
+			action.ShouldNotBe(null);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestAddColumnAliasNotSuggestedWhenAliasExists()
+		{
+			const string query1 = @"SELECT DUMMY NOT_DUMMY FROM DUAL";
+
+			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 10).SingleOrDefault(a => a.Name == AddAliasCommand.Title);
+			action.ShouldBe(null);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestAddColumnAliasNotSuggestedWhenNotDirectReference()
+		{
+			const string query1 = @"SELECT DUMMY + 1 FROM DUAL";
+
+			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 10).SingleOrDefault(a => a.Name == AddAliasCommand.Title);
 			action.ShouldBe(null);
 		}
 	}

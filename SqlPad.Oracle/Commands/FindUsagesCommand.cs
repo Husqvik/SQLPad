@@ -44,7 +44,9 @@ namespace SqlPad.Oracle.Commands
 
 		private static StatementDescriptionNode GetFindUsagesCompatibleTerminal(StatementCollection statements, int currentPosition)
 		{
-			return statements.GetTerminalAtPosition(currentPosition, t => t.Id.IsIdentifierOrAlias() || t.Id == Terminals.Count || t.Id.IsLiteral() || t.ParentNode.Id.In(NonTerminals.AnalyticFunction, NonTerminals.AggregateFunction));
+			return statements.GetTerminalAtPosition(currentPosition,
+				t => t.Id.In(Terminals.Identifier, Terminals.ObjectIdentifier, Terminals.SchemaIdentifier, Terminals.BindVariableIdentifier, Terminals.ColumnAlias, Terminals.ObjectAlias, Terminals.Count) ||
+				     t.Id.IsLiteral() || t.ParentNode.Id.In(NonTerminals.AnalyticFunction, NonTerminals.AggregateFunction));
 		}
 
 		private bool CanExecute()
@@ -198,13 +200,13 @@ namespace SqlPad.Oracle.Commands
 					selectListColumn = columnReference.SelectListColumn;
 					if (selectListColumn == null)
 					{
-						var selectListColumnReference = columnReferences.FirstOrDefault(c => c.SelectListColumn != null && c.SelectListColumn.IsDirectColumnReference);
+						var selectListColumnReference = columnReferences.FirstOrDefault(c => c.SelectListColumn != null && c.SelectListColumn.IsDirectReference);
 						if (selectListColumnReference != null && selectListColumnReference.SelectListColumn.AliasNode != selectListColumnReference.ColumnNode)
 						{
 							selectListColumn = selectListColumnReference.SelectListColumn;
 						}
 					}
-					else if (!selectListColumn.IsDirectColumnReference)
+					else if (!selectListColumn.IsDirectReference)
 					{
 						selectListColumn = null;
 					}
@@ -218,7 +220,7 @@ namespace SqlPad.Oracle.Commands
 				{
 					selectListColumn = _queryBlock.Columns.Single(c => c.AliasNode == _currentNode);
 					var nodeList = new List<StatementDescriptionNode> { selectListColumn.AliasNode };
-					searchChildren = selectListColumn.IsDirectColumnReference;
+					searchChildren = selectListColumn.IsDirectReference;
 
 					nodes = searchChildren ? nodes.Concat(nodeList) : nodeList;
 				}
@@ -252,7 +254,7 @@ namespace SqlPad.Oracle.Commands
 
 			nodes = new List<StatementDescriptionNode>{ childColumn.AliasNode };
 
-			if (childColumn.IsDirectColumnReference && childColumn.ColumnReferences.All(cr => cr.ColumnNodeColumnReferences.Count == 1))
+			if (childColumn.IsDirectReference && childColumn.ColumnReferences.All(cr => cr.ColumnNodeColumnReferences.Count == 1))
 			{
 				var childSelectColumnReferences = childQueryBlock.Columns.SelectMany(c => c.ColumnReferences)
 					.Where(c => !c.ReferencesAllColumns && c.ColumnNodeObjectReferences.Count == 1 && c.SelectListColumn.NormalizedName == columnReference.NormalizedName && c.ColumnNode != childColumn.AliasNode)
@@ -291,7 +293,7 @@ namespace SqlPad.Oracle.Commands
 
 				nodes = parentReferences.Select(c => c.ColumnNode);
 
-				var parentColumnReferences = parentReferences.Where(c => c.SelectListColumn != null && c.SelectListColumn.IsDirectColumnReference).ToArray();
+				var parentColumnReferences = parentReferences.Where(c => c.SelectListColumn != null && c.SelectListColumn.IsDirectReference).ToArray();
 
 				if (parentColumnReferences.Length == 1)
 				{

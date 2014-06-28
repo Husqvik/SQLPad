@@ -217,15 +217,15 @@ FROM
 			var columns = innerBlock.Columns.ToArray();
 			columns[0].NormalizedName.ShouldBe("\"RESPONDENTBUCKET_ID\"");
 			columns[0].ExplicitDefinition.ShouldBe(true);
-			columns[0].IsDirectColumnReference.ShouldBe(true);
+			columns[0].IsDirectReference.ShouldBe(true);
 			columns[0].ColumnDescription.Type.ShouldBe("NUMBER");
 			columns[1].NormalizedName.ShouldBe("\"SELECTION_NAME\"");
 			columns[1].ExplicitDefinition.ShouldBe(true);
-			columns[1].IsDirectColumnReference.ShouldBe(true);
+			columns[1].IsDirectReference.ShouldBe(true);
 			columns[1].ColumnDescription.Type.ShouldBe("VARCHAR2");
 			columns[2].NormalizedName.ShouldBe("\"MY_NUMBER_COLUMN\"");
 			columns[2].ExplicitDefinition.ShouldBe(true);
-			columns[2].IsDirectColumnReference.ShouldBe(false);
+			columns[2].IsDirectReference.ShouldBe(false);
 			columns[2].ColumnDescription.Type.ShouldBe(null); // TODO: Add column expression type resolving
 
 			var outerBlock = queryBlocks[1];
@@ -236,15 +236,15 @@ FROM
 			columns = outerBlock.Columns.ToArray();
 			columns[0].NormalizedName.ShouldBe("\"RESPONDENTBUCKET_ID\"");
 			columns[0].ExplicitDefinition.ShouldBe(true);
-			columns[0].IsDirectColumnReference.ShouldBe(true);
+			columns[0].IsDirectReference.ShouldBe(true);
 			columns[0].ColumnDescription.Type.ShouldBe("NUMBER");
 			columns[1].NormalizedName.ShouldBe("\"SELECTION_NAME\"");
 			columns[1].ExplicitDefinition.ShouldBe(true);
-			columns[1].IsDirectColumnReference.ShouldBe(true);
+			columns[1].IsDirectReference.ShouldBe(true);
 			columns[1].ColumnDescription.Type.ShouldBe("VARCHAR2");
 			columns[2].NormalizedName.ShouldBe("\"MY_NUMBER_COLUMN\"");
 			columns[2].ExplicitDefinition.ShouldBe(true);
-			columns[2].IsDirectColumnReference.ShouldBe(true);
+			columns[2].IsDirectReference.ShouldBe(true);
 			columns[2].ColumnDescription.Type.ShouldBe(null); // TODO: Add column expression type resolving
 		}
 

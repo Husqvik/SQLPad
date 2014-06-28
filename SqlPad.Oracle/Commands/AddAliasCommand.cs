@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
@@ -7,6 +8,9 @@ namespace SqlPad.Oracle.Commands
 	internal class AddAliasCommand : OracleCommandBase
 	{
 		public const string Title = "Add Alias";
+		private OracleQueryBlock _currentQueryBlock;
+		private OracleObjectReference _currentObjectReference;
+		private OracleColumnReference _currentColumnReference;
 
 		private AddAliasCommand(OracleCommandExecutionContext executionContext)
 			: base(executionContext)
@@ -15,11 +19,28 @@ namespace SqlPad.Oracle.Commands
 
 		protected override bool CanExecute()
 		{
-			if (CurrentNode.Id != Terminals.ObjectIdentifier)
-				return false;
+			_currentQueryBlock = SemanticModel.GetQueryBlock(CurrentNode);
+			
+			if (CurrentNode.Id == Terminals.ObjectIdentifier)
+			{
+				var objectReferences = _currentQueryBlock.ObjectReferences.Where(t => t.ObjectNode == CurrentNode).ToArray();
+				return objectReferences.Length == 1 && (_currentObjectReference = objectReferences[0]).AliasNode == null;
+			}
 
-			var tables = SemanticModel.GetQueryBlock(CurrentNode).ObjectReferences.Where(t => t.ObjectNode == CurrentNode).ToArray();
-			return tables.Length == 1 && tables[0].AliasNode == null;
+			if (CurrentNode.Id == Terminals.Identifier)
+			{
+				return GetCurrentColumnReference() != null;
+			}
+
+			return false;
+		}
+
+		private OracleColumnReference GetCurrentColumnReference()
+		{
+			return _currentColumnReference = _currentQueryBlock.Columns
+				.Where(c => c.IsDirectReference)
+				.SelectMany(c => c.ColumnReferences)
+				.FirstOrDefault(c => c.ColumnNode == CurrentNode && c.SelectListColumn.AliasNode == CurrentNode && c.ColumnNodeColumnReferences.Count == 1);
 		}
 
 		private CommandSettingsModel ConfigureSettings()
@@ -33,10 +54,15 @@ namespace SqlPad.Oracle.Commands
 			{
 				case Terminals.ObjectIdentifier:
 					settingsModel.Title = "Add Object Alias";
-					settingsModel.Heading = settingsModel.Title;
 					settingsModel.Description = String.Format("Enter an alias for the object '{0}'", CurrentNode.Token.Value);
 					break;
+				case Terminals.Identifier:
+					settingsModel.Title = "Add Column Alias";
+					settingsModel.Description = String.Format("Enter an alias for the column '{0}'", CurrentNode.Token.Value);
+					break;
 			}
+
+			settingsModel.Heading = settingsModel.Title;
 
 			return settingsModel;
 		}
@@ -48,36 +74,97 @@ namespace SqlPad.Oracle.Commands
 			if (!ExecutionContext.SettingsProvider.GetSettings())
 				return;
 
-			var alias = settingsModel.Value;
+			switch (CurrentNode.Id)
+			{
+				case Terminals.ObjectIdentifier:
+					AddObjectAlias(settingsModel.Value);
+					break;
+				case Terminals.Identifier:
+					AddColumnAlias(settingsModel.Value);
+					break;
+			}
+		}
 
-			var queryBlock = SemanticModel.GetQueryBlock(CurrentNode);
+		private void AddColumnAlias(string alias)
+		{
+			//throw new NotImplementedException("not implemented yet");
 
-			var table = queryBlock.ObjectReferences.Single(t => t.ObjectNode == CurrentNode);
+			ExecutionContext.SegmentsToReplace.Add(
+				new TextSegment
+				{
+					IndextStart = _currentColumnReference.ColumnNode.SourcePosition.IndexEnd + 1,
+					Text = " " + alias
+				});
 
-			var prefixedColumnReferences = queryBlock.AllColumnReferences
-				.Where(c => (c.OwnerNode != null || c.ObjectNode != null) && c.ColumnNodeObjectReferences.Count == 1 && c.ColumnNodeObjectReferences.Single() == table);
-			
-			var asteriskColumnReferences = queryBlock.Columns.Where(c => c.IsAsterisk).SelectMany(c => c.ColumnReferences)
-				.Where(c => c.ObjectNodeObjectReferences.Count == 1 && c.ObjectNodeObjectReferences.Single() == table);
+			var parentObjectReferences = GetParentObjectReferences(_currentColumnReference.Owner);
+			foreach (var objectReference in parentObjectReferences)
+			{
+				AddColumnAliasToQueryBlock(_currentColumnReference.NormalizedName, alias, objectReference);
+			}
+		}
+
+		private IEnumerable<OracleObjectReference> GetParentObjectReferences(OracleQueryBlock referredQueryBlock)
+		{
+			return SemanticModel.QueryBlocks
+				.SelectMany(qb => qb.ObjectReferences)
+				.Where(o => o.QueryBlocks.Count == 1 && o.QueryBlocks.First() == referredQueryBlock);
+		}
+
+		private void AddColumnAliasToQueryBlock(string columnName, string alias, OracleObjectReference objectReference)
+		{
+			var parentObjectReferences = new HashSet<OracleObjectReference>();
+			var columnReferences = objectReference.Owner.AllColumnReferences.Where(c => c.ValidObjectReference == objectReference && c.NormalizedName == columnName);
+			foreach (var columnReference in columnReferences)
+			{
+				ExecutionContext.SegmentsToReplace.Add(
+					new TextSegment
+					{
+						IndextStart = columnReference.ColumnNode.SourcePosition.IndexStart,
+						Length = columnReference.ColumnNode.SourcePosition.Length,
+						Text = alias
+					});
+
+				if (columnReference.SelectListColumn != null &&
+				    columnReference.SelectListColumn.IsDirectReference && columnReference.SelectListColumn.AliasNode == columnReference.ColumnNode)
+				{
+					parentObjectReferences.AddRange(GetParentObjectReferences(objectReference.Owner));
+				}
+			}
+
+			foreach (var parentReference in parentObjectReferences)
+			{
+				AddColumnAliasToQueryBlock(columnName, alias, parentReference);
+			}
+		}
+
+		private void AddObjectAlias(string alias)
+		{
+			var prefixedColumnReferences = _currentQueryBlock.AllColumnReferences
+				.Where(c => (c.OwnerNode != null || c.ObjectNode != null) && c.ColumnNodeObjectReferences.Count == 1 && c.ColumnNodeObjectReferences.Single() == _currentObjectReference);
+
+			var asteriskColumnReferences = _currentQueryBlock.Columns.Where(c => c.IsAsterisk).SelectMany(c => c.ColumnReferences)
+				.Where(c => c.ObjectNodeObjectReferences.Count == 1 && c.ObjectNodeObjectReferences.Single() == _currentObjectReference);
 
 			foreach (var columnReference in prefixedColumnReferences.Concat(asteriskColumnReferences))
 			{
 				var firstPrefixNode = columnReference.OwnerNode ?? columnReference.ObjectNode;
 
-				ExecutionContext.SegmentsToReplace.Add(new TextSegment
-				                      {
-										  IndextStart = firstPrefixNode == null ? columnReference.ColumnNode.SourcePosition.IndexStart - 1 : firstPrefixNode.SourcePosition.IndexStart,
-										  Length = columnReference.ColumnNode.SourcePosition.IndexStart - firstPrefixNode.SourcePosition.IndexStart,
-										  Text = alias + "."
-				                      });
+				ExecutionContext.SegmentsToReplace.Add(
+					new TextSegment
+					{
+						IndextStart = firstPrefixNode == null ? columnReference.ColumnNode.SourcePosition.IndexStart - 1 : firstPrefixNode.SourcePosition.IndexStart,
+						Length = columnReference.ColumnNode.SourcePosition.IndexStart - firstPrefixNode.SourcePosition.IndexStart,
+						Text = alias + "."
+					});
 			}
 
-			ExecutionContext.SegmentsToReplace.Add(new TextSegment
-			                      {
-									  IndextStart = CurrentNode.SourcePosition.IndexEnd + 1,
-									  Length = 0,
-									  Text = " " + alias
-			                      });
+			ExecutionContext.SegmentsToReplace.Add(
+				new TextSegment
+				{
+					IndextStart = CurrentNode.SourcePosition.IndexEnd + 1,
+					Length = 0,
+					Text = " " + alias
+				});
 		}
 	}
 }

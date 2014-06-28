@@ -36,16 +36,16 @@ namespace SqlPad
 			{
 				logBuilder.AppendLine("Statement: ");
 				logBuilder.AppendLine(page.Editor.Text);
-				logBuilder.AppendLine("Caret offset: ");
+				logBuilder.Append("Caret offset: ");
 				logBuilder.AppendLine(Convert.ToString(page.Editor.CaretOffset));
-				logBuilder.AppendLine("Selection start: ");
+				logBuilder.Append("Selection start: ");
 				logBuilder.AppendLine(Convert.ToString(page.Editor.SelectionStart));
-				logBuilder.AppendLine("Selection length: ");
+				logBuilder.Append("Selection length: ");
 				logBuilder.AppendLine(Convert.ToString(page.Editor.SelectionLength));
 
 				if (page.File != null)
 				{
-					logBuilder.AppendLine("Document name: ");
+					logBuilder.Append("Document name: ");
 					logBuilder.AppendLine(page.File.FullName);
 				}
 			}

@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace SqlPad.Oracle
 {
-	[DebuggerDisplay("OracleSelectListColumn (Alias={AliasNode == null ? null : AliasNode.Token.Value}; IsDirectColumnReference={IsDirectColumnReference})")]
+	[DebuggerDisplay("OracleSelectListColumn (Alias={AliasNode == null ? null : AliasNode.Token.Value}; IsDirectReference={IsDirectReference})")]
 	public class OracleSelectListColumn
 	{
 		private OracleColumn _columnDescription;
@@ -16,7 +16,7 @@ namespace SqlPad.Oracle
 			FunctionReferences = new List<OracleFunctionReference>();
 		}
 
-		public bool IsDirectColumnReference { get; set; }
+		public bool IsDirectReference { get; set; }
 		
 		public bool IsAsterisk { get; set; }
 		
@@ -57,11 +57,11 @@ namespace SqlPad.Oracle
 		private OracleColumn BuildColumnDescription()
 		{
 			/*OracleColumnReference columnReference;
-			var columnDescription = IsDirectColumnReference && (columnReference = ColumnReferences.Single()).ColumnNodeObjectReferences.Count == 1 && columnReference.ColumnNodeColumnReferences == 1
+			var columnDescription = IsDirectReference && (columnReference = ColumnReferences.Single()).ColumnNodeObjectReferences.Count == 1 && columnReference.ColumnNodeColumnReferences == 1
 				? columnReference.ColumnNodeObjectReferences.Single().Columns.Single(c => c.Name == columnReference.NormalizedName)
 				: null;*/
 
-			var columnDescription = IsDirectColumnReference && ColumnReferences.Count == 1
+			var columnDescription = IsDirectReference && ColumnReferences.Count == 1
 				? ColumnReferences.First().ColumnDescription
 				: null;
 
@@ -88,7 +88,7 @@ namespace SqlPad.Oracle
 				       ExplicitDefinition = false,
 				       AliasNode = AliasNode,
 				       RootNode = RootNode,
-				       IsDirectColumnReference = true,
+				       IsDirectReference = true,
 					   _columnDescription = _columnDescription
 			       };
 		}

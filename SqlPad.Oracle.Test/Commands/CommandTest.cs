@@ -155,7 +155,7 @@ WHERE
 		}
 
 		[Test(Description = @""), STAThread]
-		public void TestBasicAddAliasCommand()
+		public void TestAddObjectAliasCommand()
 		{
 			_editor.Text = @"SELECT SELECTION.RESPONDENTBUCKET_ID, SELECTION.SELECTION_ID, PROJECT_ID, NAME FROM SELECTION";
 			_editor.CaretOffset = 87;
@@ -164,6 +164,18 @@ WHERE
 			ExecuteOracleCommand(OracleCommands.AddAlias, "S");
 
 			_editor.Text.ShouldBe(@"SELECT S.RESPONDENTBUCKET_ID, S.SELECTION_ID, PROJECT_ID, NAME FROM SELECTION S");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestAddColumnAliasCommand()
+		{
+			_editor.Text = @"SELECT 'Prefix' || TBL.RESPONDENTBUCKET_ID || 'Postfix', NAME FROM (SELECT RESPONDENTBUCKET_ID, NAME FROM (SELECT RESPONDENTBUCKET_ID, NAME FROM SELECTION) WHERE RESPONDENTBUCKET_ID > 0) TBL";
+			_editor.CaretOffset = 114;
+
+			CanExecuteOracleCommand(OracleCommands.AddAlias).ShouldBe(true);
+			ExecuteOracleCommand(OracleCommands.AddAlias, "RBID");
+
+			_editor.Text.ShouldBe(@"SELECT 'Prefix' || TBL.RBID || 'Postfix', NAME FROM (SELECT RBID, NAME FROM (SELECT RESPONDENTBUCKET_ID RBID, NAME FROM SELECTION) WHERE RBID > 0) TBL");
 		}
 
 		[Test(Description = @""), STAThread]
@@ -793,7 +805,7 @@ WHERE
 			_editor.Text = @"SELECT DUAL.DUMMY FROM SYS.DUAL, ""PUBLIC"".DUAL";
 			_editor.CaretOffset = 12;
 
-			var actions = new OracleContextActionProvider().GetContextActions(TestFixture.DatabaseModel, _editor.Text, _editor.CaretOffset).ToArray();
+			var actions = new OracleContextActionProvider().GetContextActions(TestFixture.DatabaseModel, _editor.Text, _editor.CaretOffset).Where(a => a.Name.StartsWith("Resolve as")).ToArray();
 
 			actions.Length.ShouldBe(2);
 			CanExecuteOracleCommand(actions[0].ExecutionHandler).ShouldBe(true);

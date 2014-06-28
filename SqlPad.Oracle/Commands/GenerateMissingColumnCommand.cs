@@ -25,7 +25,7 @@ namespace SqlPad.Oracle.Commands
 				return false;
 
 			_table = GetSingleObjectReference(_missingColumn);
-			return (_missingColumn.ObjectNodeObjectReferences.Count == 0 || _missingColumn.ObjectNodeObjectReferences.Count == 1) &&
+			return _missingColumn.ColumnNodeColumnReferences.Count == 0 && _missingColumn.ColumnNodeObjectReferences.Count <= 1 &&
 			       _table != null && _table.Type == OracleObjectType.Table;
 		}
 

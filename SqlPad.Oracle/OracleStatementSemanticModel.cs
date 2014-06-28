@@ -319,7 +319,7 @@ namespace SqlPad.Oracle
 							.Select(c => new OracleSelectListColumn
 							{
 								ExplicitDefinition = false,
-								IsDirectColumnReference = true,
+								IsDirectReference = true,
 								ColumnDescription = c
 							});
 					}
@@ -464,7 +464,7 @@ namespace SqlPad.Oracle
 					}
 
 					var orderByColumnAliasReferences = columnReference.Owner.Columns
-						.Where(c => columnReference.ObjectNode == null && c.NormalizedName == columnReference.NormalizedName && (!c.IsDirectColumnReference || (c.ColumnReferences.Count > 0 && c.ColumnReferences.First().NormalizedName != c.NormalizedName)))
+						.Where(c => columnReference.ObjectNode == null && c.NormalizedName == columnReference.NormalizedName && (!c.IsDirectReference || (c.ColumnReferences.Count > 0 && c.ColumnReferences.First().NormalizedName != c.NormalizedName)))
 						.Select(c => c.ColumnDescription);
 					
 					columnReference.ColumnNodeColumnReferences.AddRange(orderByColumnAliasReferences);
@@ -732,8 +732,8 @@ namespace SqlPad.Oracle
 					else
 					{
 						var identifiers = columnExpression.GetDescendantsWithinSameQuery(Terminals.Identifier, Terminals.RowIdPseudoColumn).ToArray();
-						column.IsDirectColumnReference = identifiers.Length == 1 && identifiers[0].GetAncestor(NonTerminals.Expression).ChildNodes.Count == 1;
-						if (column.IsDirectColumnReference && columnAliasNode == null)
+						column.IsDirectReference = identifiers.Length == 1 && identifiers[0].GetAncestor(NonTerminals.Expression).ChildNodes.Count == 1;
+						if (column.IsDirectReference && columnAliasNode == null)
 						{
 							column.AliasNode = identifiers[0];
 						}
