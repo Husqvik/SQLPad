@@ -967,6 +967,25 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		}
 
 		[Test(Description = @"")]
+		public void TestBuildInFunctionValidityWithoutLoadedSchemaObjects()
+		{
+			const string sqlText = "SELECT NVL2(DUMMY, 'X', 'NOT DUMMY') FROM DUAL";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var databaseModel = new OracleTestDatabaseModel();
+			databaseModel.AllObjects.Clear();
+
+			var validationModel = _statementValidator.BuildValidationModel(sqlText, statement, databaseModel);
+			var nodeValidityDictionary = validationModel.FunctionNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var functionNodeValidity = nodeValidityDictionary.Values.ToList();
+			functionNodeValidity.Count.ShouldBe(1);
+			functionNodeValidity[0].IsRecognized.ShouldBe(true);
+			functionNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+		}
+
+		[Test(Description = @"")]
 		public void TestInvalidIdentifier()
 		{
 			const string sqlText = "SELECT \"\" FROM DUAL";

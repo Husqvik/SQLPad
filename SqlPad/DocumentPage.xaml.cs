@@ -558,9 +558,9 @@ namespace SqlPad
 					_completionWindow.CompletionList.RequestInsertion(e);
 				}
 			}
+
 			// Do not set e.Handled=true.
 			// We still want to insert the character that was typed.
-
 			if (e.Text == " " && Keyboard.Modifiers == ModifierKeys.Control)
 			{
 				e.Handled = true;
@@ -731,8 +731,6 @@ namespace SqlPad
 		{
 			_isToolTipOpenByShortCut = false;
 
-			//Console.WriteLine(e.Key);
-
 			if (_toolTip != null)
 			{
 				_toolTip.IsOpen = false;
@@ -740,7 +738,6 @@ namespace SqlPad
 
 			if (e.Key == Key.Return || e.Key == Key.Escape)
 			{
-				Trace.WriteLine(e.Key);
 				_multiNodeEditor = null;
 
 				if (e.Key == Key.Escape)

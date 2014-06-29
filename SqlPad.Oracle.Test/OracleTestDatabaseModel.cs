@@ -11,7 +11,7 @@ namespace SqlPad.Oracle.Test
 {
 	public class OracleTestDatabaseModel : OracleDatabaseModelBase
 	{
-		public static readonly OracleTestDatabaseModel Instance = new OracleTestDatabaseModel { CurrentSchema = InitialSchema };
+		public static readonly OracleTestDatabaseModel Instance;
 		private static readonly DataContractSerializer Serializer = new DataContractSerializer(typeof(OracleFunctionMetadataCollection));
 
 		private const string InitialSchema = "\"HUSQVIK\"";
@@ -23,6 +23,8 @@ namespace SqlPad.Oracle.Test
 		private static readonly HashSet<string> AllSchemasInternal = new HashSet<string>(SchemasInternal) { OwnerNameSys, "\"SYSTEM\"", InitialSchema, SchemaPublic };
 		private static readonly OracleFunctionMetadataCollection AllFunctionMetadataInternal;
 		private static readonly OracleFunctionMetadataCollection NonPackageBuiltInFunctionMetadataInternal;
+
+		private readonly IDictionary<OracleObjectIdentifier, OracleSchemaObject> _allObjects;
 
 		static OracleTestDatabaseModel()
 		{
@@ -103,6 +105,13 @@ namespace SqlPad.Oracle.Test
 				.ToDictionary(o => OracleObjectIdentifier.Create(o.Owner, o.Name), o => o);
 
 			AddConstraints();
+
+			Instance = new OracleTestDatabaseModel { CurrentSchema = InitialSchema };
+		}
+
+		public OracleTestDatabaseModel()
+		{
+			_allObjects = new Dictionary<OracleObjectIdentifier, OracleSchemaObject>(AllObjectDictionary);
 		}
 
 		private static void AddConstraints()
@@ -361,7 +370,7 @@ namespace SqlPad.Oracle.Test
 
 		public IDictionary<OracleObjectIdentifier, OracleSchemaObject> Objects { get { return ObjectsInternal; } }
 
-		public override IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjects { get { return AllObjectDictionary; } }
+		public override IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjects { get { return _allObjects; } }
 
 		public override void RefreshIfNeeded() { }
 

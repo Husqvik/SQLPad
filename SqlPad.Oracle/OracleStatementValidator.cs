@@ -83,7 +83,7 @@ namespace SqlPad.Oracle
 						validationModel.FunctionNodeValidity[functionReference.ObjectNode] = new FunctionValidationData(packageSemanticError) { IsRecognized = functionReference.SchemaObject != null, Node = functionReference.ObjectNode };
 					}
 
-					if (semanticError == SemanticError.None && isRecognized && !functionReference.Metadata.IsPackageFunction && !functionReference.SchemaObject.IsValid)
+					if (semanticError == SemanticError.None && isRecognized && !functionReference.Metadata.IsPackageFunction && functionReference.SchemaObject != null && !functionReference.SchemaObject.IsValid)
 					{
 						semanticError = SemanticError.ObjectStatusInvalid;
 					}
