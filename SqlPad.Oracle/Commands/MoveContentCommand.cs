@@ -76,7 +76,11 @@ namespace SqlPad.Oracle.Commands
 						 Text = movedNode.GetStatementSubstring(_executionContext.StatementText)
 				     });
 
-			_executionContext.Line += _direction == Direction.Up ? -1 : 1;
+			var carretOffset = _direction == Direction.Up
+				? -nodeToExchange.SourcePosition.Length - movedNode.SourcePosition.IndexStart + nodeToExchange.SourcePosition.IndexEnd + 1
+				: nodeToExchange.SourcePosition.Length + nodeToExchange.SourcePosition.IndexStart - movedNode.SourcePosition.IndexEnd - 1;
+
+			_executionContext.CaretOffset += carretOffset;
 		}
 
 		private StatementDescriptionNode GetNodeToExchange(StatementDescriptionNode movedNode)

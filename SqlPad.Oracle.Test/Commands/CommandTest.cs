@@ -701,7 +701,7 @@ WHERE
 		}
 
 		[Test(Description = @""), STAThread]
-		public void TestMakeUpperCaseCommandWithUnrecognizedGrammar()
+		public void TestModifyCaseCommandWithUnrecognizedGrammar()
 		{
 			_editor.Text = @"lot of invalid tokens preceding; select 'null' as ""null"" from dual and lot of invalid tokens following";
 			_editor.CaretOffset = 0;
@@ -713,7 +713,7 @@ WHERE
 		}
 
 		[Test(Description = @""), STAThread]
-		public void TestMakeUpperCaseCommandWithSingleCaseUnsafeToken()
+		public void TestModifyCaseCommandWithSingleCaseUnsafeToken()
 		{
 			_editor.Text = @"SELECT 'null' FROM DUAL";
 			_editor.CaretOffset = 7;
@@ -725,7 +725,7 @@ WHERE
 		}
 
 		[Test(Description = @""), STAThread]
-		public void TestMakeUpperCaseCommandWithCaseUnsafeTokenAsLastToken()
+		public void TestModifyCaseCommandWithCaseUnsafeTokenAsLastToken()
 		{
 			_editor.Text = @"select * from ""Accounts""";
 			_editor.SelectAll();
@@ -733,6 +733,42 @@ WHERE
 			ExecuteGenericCommand(ModifyCaseCommand.MakeUpperCase);
 
 			_editor.Text.ShouldBe("SELECT * FROM \"Accounts\"");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestMoveContentCommandUp()
+		{
+			_editor.Text = @"SELECT 'NamePrefix' || NAME || 'NamePostfix', 'IdPrefix' || PROJECT_ID || 'IdPostfix' FROM PROJECT";
+			_editor.CaretOffset = 66;
+
+			ExecuteGenericCommand(MoveContentCommand.MoveContentUp);
+
+			_editor.Text.ShouldBe("SELECT 'IdPrefix' || PROJECT_ID || 'IdPostfix', 'NamePrefix' || NAME || 'NamePostfix' FROM PROJECT");
+			_editor.CaretOffset.ShouldBe(27);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestMoveContentCommandDown()
+		{
+			_editor.Text = @"SELECT 'NamePrefix' || NAME || 'NamePostfix', 'IdPrefix' || PROJECT_ID || 'IdPostfix' FROM PROJECT";
+			_editor.CaretOffset = 24;
+
+			ExecuteGenericCommand(MoveContentCommand.MoveContentDown);
+
+			_editor.Text.ShouldBe("SELECT 'IdPrefix' || PROJECT_ID || 'IdPostfix', 'NamePrefix' || NAME || 'NamePostfix' FROM PROJECT");
+			_editor.CaretOffset.ShouldBe(65);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestMoveContentCommandDownAtLastColumn()
+		{
+			_editor.Text = @"SELECT 'NamePrefix' || NAME || 'NamePostfix', 'IdPrefix' || PROJECT_ID || 'IdPostfix' FROM PROJECT";
+			_editor.CaretOffset = 66;
+
+			ExecuteGenericCommand(MoveContentCommand.MoveContentDown);
+
+			_editor.Text.ShouldBe("SELECT 'NamePrefix' || NAME || 'NamePostfix', 'IdPrefix' || PROJECT_ID || 'IdPostfix' FROM PROJECT");
+			_editor.CaretOffset.ShouldBe(66);
 		}
 
 		[Test(Description = @""), STAThread]
