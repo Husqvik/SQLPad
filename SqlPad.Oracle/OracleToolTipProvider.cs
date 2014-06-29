@@ -32,24 +32,19 @@ namespace SqlPad.Oracle
 				switch (node.Id)
 				{
 					case Terminals.ObjectIdentifier:
-						var objectReference = GetOracleObjectReference(queryBlock, node);
-						if (objectReference == null)
-							return null;
-
-						if (objectReference.Type == TableReferenceType.SchemaObject && objectReference.SearchResult.SchemaObject != null)
+						var objectReference = GetObjectReference(queryBlock, node);
+						var packageReference = GetPackageReference(queryBlock, node);
+						if (objectReference != null)
 						{
-							tip = null;
-
-							if (objectReference.SearchResult.Synonym != null)
-							{
-								tip = GetSchemaObjectToolTip(objectReference.SearchResult.Synonym) + " => ";
-							}
-
-							tip += GetSchemaObjectToolTip(objectReference.SearchResult.SchemaObject);
+							tip = GetObjectToolTip(objectReference);
+						}
+						else if (packageReference != null)
+						{
+							tip = GetFullSchemaObjectToolTip(packageReference);
 						}
 						else
 						{
-							tip = objectReference.FullyQualifiedName + " (" + objectReference.Type.ToCategoryLabel() + ")";
+							return null;
 						}
 
 						break;
@@ -89,6 +84,30 @@ namespace SqlPad.Oracle
 			return String.IsNullOrEmpty(tip) ? null : new ToolTipObject { DataContext = tip };
 		}
 
+		private static string GetObjectToolTip(OracleObjectReference objectReference)
+		{
+			if (objectReference.Type == TableReferenceType.SchemaObject && objectReference.SearchResult.SchemaObject != null)
+			{
+				var schemaObject = (OracleSchemaObject)objectReference.SearchResult.Synonym ?? objectReference.SearchResult.SchemaObject;
+				return GetFullSchemaObjectToolTip(schemaObject);
+			}
+			
+			return objectReference.FullyQualifiedName + " (" + objectReference.Type.ToCategoryLabel() + ")";
+		}
+
+		private static string GetFullSchemaObjectToolTip(OracleSchemaObject schemaObject)
+		{
+			string tip = null;
+			var synonym = schemaObject as OracleSynonym;
+			if (synonym != null)
+			{
+				tip = GetSchemaObjectToolTip(synonym) + " => ";
+				schemaObject = synonym.SchemaObject;
+			}
+
+			return tip + GetSchemaObjectToolTip(schemaObject);
+		}
+
 		private static string GetSchemaObjectToolTip(OracleSchemaObject schemaObject)
 		{
 			return schemaObject.FullyQualifiedName + " (" + CultureInfo.InvariantCulture.TextInfo.ToTitleCase(schemaObject.Type.ToLower()) + ")";
@@ -108,18 +127,22 @@ namespace SqlPad.Oracle
 				.FirstOrDefault();
 		}
 
-		private OracleObjectReference GetOracleObjectReference(OracleQueryBlock queryBlock, StatementDescriptionNode terminal)
+		private OracleSchemaObject GetPackageReference(OracleQueryBlock queryBlock, StatementDescriptionNode terminal)
+		{
+			return queryBlock.AllFunctionReferences
+				.Where(f => f.ObjectNode == terminal)
+				.Select(f => f.SchemaObject)
+				.FirstOrDefault();
+		}
+
+		private OracleObjectReference GetObjectReference(OracleQueryBlock queryBlock, StatementDescriptionNode terminal)
 		{
 			var objectReference = queryBlock.AllColumnReferences
 				.Where(c => c.ObjectNode == terminal && c.ObjectNodeObjectReferences.Count == 1)
 				.Select(c => c.ObjectNodeObjectReferences.First())
 				.FirstOrDefault();
 
-			if (objectReference != null)
-				return objectReference;
-
-			return queryBlock.ObjectReferences
-				.FirstOrDefault(o => o.ObjectNode == terminal);
+			return objectReference ?? queryBlock.ObjectReferences.FirstOrDefault(o => o.ObjectNode == terminal);
 		}
 	}
 }

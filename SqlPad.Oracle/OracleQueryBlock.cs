@@ -15,7 +15,7 @@ namespace SqlPad.Oracle
 			Columns = new List<OracleSelectListColumn>();
 			AccessibleQueryBlocks = new List<OracleQueryBlock>();
 			ColumnReferences = new List<OracleColumnReference>();
-			FunctionReferences = new List<OracleFunctionReference>();
+			FunctionReferences = new List<OracleProgramReference>();
 		}
 
 		public OracleObjectReference SelfObjectReference
@@ -80,9 +80,9 @@ namespace SqlPad.Oracle
 
 		public ICollection<OracleColumnReference> ColumnReferences { get; private set; }
 		
-		public ICollection<OracleFunctionReference> FunctionReferences { get; private set; }
+		public ICollection<OracleProgramReference> FunctionReferences { get; private set; }
 
-		public IEnumerable<OracleFunctionReference> AllFunctionReferences { get { return Columns.SelectMany(c => c.FunctionReferences).Concat(FunctionReferences); } }
+		public IEnumerable<OracleProgramReference> AllFunctionReferences { get { return Columns.SelectMany(c => c.FunctionReferences).Concat(FunctionReferences); } }
 
 		public IEnumerable<OracleColumnReference> AllColumnReferences { get { return Columns.SelectMany(c => c.ColumnReferences).Concat(ColumnReferences); } }
 

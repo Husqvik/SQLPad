@@ -96,7 +96,7 @@ namespace SqlPad.Oracle
 			};
 		}
 
-		public OracleFunctionMetadata GetFunctionMetadata(OracleFunctionIdentifier identifier, int parameterCount, bool forceBuiltInFunction)
+		public FunctionMetadataResult GetFunctionMetadata(OracleFunctionIdentifier identifier, int parameterCount, bool forceBuiltInFunction)
 		{
 			OracleSchemaObject schemaObject;
 			ICollection<OracleFunctionMetadata> functionMetadataSource = new List<OracleFunctionMetadata>();
@@ -111,15 +111,19 @@ namespace SqlPad.Oracle
 
 				var metadata = TryFindFunctionOverload(functionMetadataSource, identifier.Name, parameterCount);
 				if (metadata != null)
-					return metadata;
+					return new FunctionMetadataResult { Metadata = metadata, SchemaObject = schemaObject };
 			}
 
+			var result = new FunctionMetadataResult();
 			var schemaObjectFound = (String.IsNullOrWhiteSpace(identifier.Package) && AllObjects.TryGetValue(OracleObjectIdentifier.Create(identifier.Owner, identifier.Name), out schemaObject)) ||
 			                        AllObjects.TryGetValue(OracleObjectIdentifier.Create(identifier.Owner, identifier.Package), out schemaObject);
 			if (!schemaObjectFound || !TryGetSchemaObjectFunctionMetadata(schemaObject, out functionMetadataSource))
-				return null;
+				return result;
 
-			return TryFindFunctionOverload(functionMetadataSource, identifier.Name, parameterCount);
+			result.SchemaObject = schemaObject;
+			result.Metadata = TryFindFunctionOverload(functionMetadataSource, identifier.Name, parameterCount);
+
+			return result;
 		}
 
 		private static bool TryGetSchemaObjectFunctionMetadata(OracleSchemaObject schemaObject, out ICollection<OracleFunctionMetadata> functionMetadata)
@@ -147,5 +151,25 @@ namespace SqlPad.Oracle
 				.OrderBy(m => Math.Abs(parameterCount - m.Parameters.Count + 1))
 				.FirstOrDefault();
 		}
+	}
+
+	public struct SchemaObjectResult<TObject> where TObject : OracleObject
+	{
+		public static readonly SchemaObjectResult<TObject> EmptyResult = new SchemaObjectResult<TObject>();
+
+		public bool SchemaFound { get; set; }
+
+		public TObject SchemaObject { get; set; }
+
+		public OracleSynonym Synonym { get; set; }
+
+		public OracleObjectIdentifier FullyQualifiedName { get; set; }
+	}
+
+	public struct FunctionMetadataResult
+	{
+		public OracleFunctionMetadata Metadata { get; set; }
+
+		public OracleSchemaObject SchemaObject { get; set; }
 	}
 }

@@ -3,8 +3,8 @@ using System.Diagnostics;
 
 namespace SqlPad.Oracle
 {
-	[DebuggerDisplay("OracleFunctionReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; Object={ObjectNode == null ? null : ObjectNode.Token.Value}; Function={FunctionIdentifierNode.Token.Value})")]
-	public class OracleFunctionReference : OracleReference
+	[DebuggerDisplay("OracleProgramReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; Object={ObjectNode == null ? null : ObjectNode.Token.Value}; Function={FunctionIdentifierNode.Token.Value})")]
+	public class OracleProgramReference : OracleReference
 	{
 		public override string Name { get { return FunctionIdentifierNode.Token.Value; } }
 
@@ -19,5 +19,7 @@ namespace SqlPad.Oracle
 		public OracleFunctionMetadata Metadata { get; set; }
 		
 		public StatementDescriptionNode RootNode { get; set; }
+
+		public OracleSchemaObject SchemaObject { get; set; }
 	}
 }

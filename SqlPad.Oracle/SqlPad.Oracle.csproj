@@ -88,7 +88,7 @@
     <Compile Include="OracleFunctionMatcher.cs" />
     <Compile Include="OracleFunctionMetadata.cs" />
     <Compile Include="OracleFunctionMetadataCollection.cs" />
-    <Compile Include="OracleFunctionReference.cs" />
+    <Compile Include="OracleProgramReference.cs" />
     <Compile Include="OracleColumnReference.cs" />
     <Compile Include="OracleContextActionProvider.cs" />
     <Compile Include="OracleDatabaseModel.cs" />

@@ -70,10 +70,6 @@ namespace SqlPad.Oracle
 	[DebuggerDisplay("OracleTable (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
 	public class OracleTable : OracleDataObject
 	{
-		public OracleTable()
-		{
-		}
-
 		public bool IsInternal { get; set; }
 
 		public OracleColumn RowIdPseudoColumn
@@ -82,10 +78,10 @@ namespace SqlPad.Oracle
 			{
 				return Organization.In(OrganizationType.Heap, OrganizationType.Index)
 					? new OracleColumn
-					{
-						Name = OracleColumn.RowId.ToQuotedIdentifier(),
-						Type = Organization == OrganizationType.Index ? "UROWID" : OracleColumn.RowId
-					}
+					  {
+						  Name = OracleColumn.RowId.ToQuotedIdentifier(),
+						  Type = Organization == OrganizationType.Index ? "UROWID" : OracleColumn.RowId
+					  }
 					: null;
 			}
 		}
@@ -142,7 +138,7 @@ namespace SqlPad.Oracle
 			set { _metadata[0] = value; }
 		}
 
-		public ICollection<OracleFunctionMetadata> Functions { get { return _metadata; } }
+		ICollection<OracleFunctionMetadata> IFunctionCollection.Functions { get { return _metadata; } }
 
 		public override string Type { get { return OracleObjectType.Function; } }
 	}

@@ -162,7 +162,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @""), STAThread]
-		public void TestFunctionNameToolTip()
+		public void TestFunctionIdentifierToolTip()
 		{
 			const string query = "SELECT COALESCE(NULL, 1) FROM DUAL";
 			_document.UpdateStatements(_oracleSqlParser.Parse(query), query);
@@ -171,6 +171,18 @@ namespace SqlPad.Oracle.Test
 
 			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
 			toolTip.Control.DataContext.ShouldBe("SYS.STANDARD.COALESCE");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestPackageIdentifierToolTip()
+		{
+			const string query = "SELECT DBMS_RANDOM.STRING('X', 16) FROM DUAL";
+			_document.UpdateStatements(_oracleSqlParser.Parse(query), query);
+
+			var toolTip = _toolTipProvider.GetToolTip(TestFixture.DatabaseModel, _document, 10);
+
+			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.DataContext.ShouldBe("\"PUBLIC\".DBMS_RANDOM (Synonym) => SYS.DBMS_RANDOM (Package)");
 		}
 	}
 }

@@ -13,7 +13,7 @@ namespace SqlPad.Oracle
 		public OracleSelectListColumn()
 		{
 			ColumnReferences = new List<OracleColumnReference>();
-			FunctionReferences = new List<OracleFunctionReference>();
+			FunctionReferences = new List<OracleProgramReference>();
 		}
 
 		public bool IsDirectReference { get; set; }
@@ -43,7 +43,7 @@ namespace SqlPad.Oracle
 
 		public ICollection<OracleColumnReference> ColumnReferences { get; private set; }
 
-		public ICollection<OracleFunctionReference> FunctionReferences { get; private set; }
+		public ICollection<OracleProgramReference> FunctionReferences { get; private set; }
 
 		public OracleColumn ColumnDescription
 		{

@@ -902,17 +902,4 @@ FROM ALL_TABLES";
 			}
 		}
 	}
-
-	public struct SchemaObjectResult<TObject> where TObject : OracleObject
-	{
-		public static readonly SchemaObjectResult<TObject> EmptyResult = new SchemaObjectResult<TObject>();
-
-		public bool SchemaFound { get; set; }
-
-		public TObject SchemaObject { get; set; }
-
-		public OracleSynonym Synonym { get; set; }
-
-		public OracleObjectIdentifier FullyQualifiedName { get; set; }
-	}
 }
