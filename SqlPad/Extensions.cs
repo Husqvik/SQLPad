@@ -104,6 +104,8 @@ namespace SqlPad
 					return "Invalid parameter count";
 				case SemanticError.MissingParenthesis:
 					return "Missing parenthesis";
+				case SemanticError.ObjectStatusInvalid:
+					return "Object is invalid or unusable";
 			}
 
 			throw new NotSupportedException(String.Format("Value '{0}' is not supported. ", error));

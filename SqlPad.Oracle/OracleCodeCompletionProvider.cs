@@ -303,20 +303,20 @@ namespace SqlPad.Oracle
 							new FunctionMatchElement(partialName) { AllowStartWithMatch = true, DeniedValue = currentName }.SelectPackage(),
 							null);
 
-						suggestedFunctions = GenerateCodeItems(m => m.Identifier.Package.ToSimpleIdentifier(), OracleCodeCompletionCategory.Package, String.IsNullOrEmpty(partialName) ? null : currentNode, 0, addParameterList, databaseModel, matcher);
+						suggestedFunctions = GenerateCodeItems(m => m.Identifier.Package.ToSimpleIdentifier(), OracleCodeCompletionCategory.Package, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, matcher);
 
 						matcher = new OracleFunctionMatcher(
 							new FunctionMatchElement(databaseModel.CurrentSchema).SelectOwner(), 
 							new FunctionMatchElement(objectName).SelectPackage(),
 							new FunctionMatchElement(partialName) { AllowStartWithMatch = true, DeniedValue = currentName }.SelectName());
-						suggestedFunctions = suggestedFunctions.Concat(GenerateCodeItems(m => m.Identifier.Name.ToSimpleIdentifier(), OracleCodeCompletionCategory.PackageFunction, String.IsNullOrEmpty(partialName) ? null : currentNode, 0, addParameterList, databaseModel, matcher));
+						suggestedFunctions = suggestedFunctions.Concat(GenerateCodeItems(m => m.Identifier.Name.ToSimpleIdentifier(), OracleCodeCompletionCategory.PackageFunction, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, matcher));
 
 						matcher = new OracleFunctionMatcher(
 							new FunctionMatchElement(objectName).SelectOwner(),
 							new FunctionMatchElement(null).SelectPackage(),
 							new FunctionMatchElement(partialName) { AllowStartWithMatch = true, DeniedValue = currentName }.SelectName());
 
-						suggestedFunctions = suggestedFunctions.Concat(GenerateCodeItems(m => m.Identifier.Name.ToSimpleIdentifier(), OracleCodeCompletionCategory.SchemaFunction, String.IsNullOrEmpty(partialName) ? null : currentNode, 0, addParameterList, databaseModel, matcher));
+						suggestedFunctions = suggestedFunctions.Concat(GenerateCodeItems(m => m.Identifier.Name.ToSimpleIdentifier(), OracleCodeCompletionCategory.SchemaFunction, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, matcher));
 					}
 					else
 					{
@@ -325,7 +325,7 @@ namespace SqlPad.Oracle
 							new FunctionMatchElement(objectName).SelectPackage(),
 							new FunctionMatchElement(partialName) { AllowStartWithMatch = true, DeniedValue = currentName }.SelectName());
 
-						suggestedFunctions = GenerateCodeItems(m => m.Identifier.Name.ToSimpleIdentifier(), OracleCodeCompletionCategory.PackageFunction, String.IsNullOrEmpty(partialName) ? null : currentNode, 0, addParameterList, databaseModel, matcher);
+						suggestedFunctions = GenerateCodeItems(m => m.Identifier.Name.ToSimpleIdentifier(), OracleCodeCompletionCategory.PackageFunction, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, matcher);
 					}
 				}
 			}
@@ -444,7 +444,14 @@ namespace SqlPad.Oracle
 
 		private IEnumerable<ICodeCompletionItem> GenerateCodeItems(Func<OracleFunctionMetadata, string> identifierSelector, string category, StatementDescriptionNode node, int insertOffset, bool addParameterList, OracleDatabaseModelBase databaseModel, params OracleFunctionMatcher[] matchers)
 		{
-			var parameterList = addParameterList ? "()" : null;
+			string parameterList = null;
+			var parameterListCaretOffset = 0;
+			if (addParameterList)
+			{
+				parameterList = "()";
+				parameterListCaretOffset = -1;
+			}
+			
 			return databaseModel.AllFunctionMetadata.SqlFunctions
 				.Where(f => matchers.Any(m => m.IsMatch(f, databaseModel.CurrentSchema)) && !String.IsNullOrEmpty(identifierSelector(f)))
 				.Select(f => identifierSelector(f).ToSimpleIdentifier())
@@ -456,7 +463,7 @@ namespace SqlPad.Oracle
 					             StatementNode = node,
 					             Category = category,
 					             Offset = insertOffset,
-								 CaretOffset = category == OracleCodeCompletionCategory.Package ? 0 : -1,
+								 CaretOffset = category == OracleCodeCompletionCategory.Package ? 0 : parameterListCaretOffset,
 					             CategoryPriority = 2
 				             });
 		}

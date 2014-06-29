@@ -54,7 +54,7 @@ namespace SqlPad.Oracle
 
 							// TODO: Handle optional parameters
 							if ((functionReference.ParameterNodes.Count < functionReference.Metadata.MinimumArguments) ||
-								(functionReference.ParameterNodes.Count > maximumParameterCount))
+							    (functionReference.ParameterNodes.Count > maximumParameterCount))
 							{
 								validationModel.FunctionNodeValidity[functionReference.ParameterListNode] = new FunctionValidationData(SemanticError.InvalidParameterCount) { IsRecognized = true };
 							}
@@ -72,6 +72,20 @@ namespace SqlPad.Oracle
 						{
 							validationModel.FunctionNodeValidity[functionReference.AnalyticClauseNode] = new FunctionValidationData(SemanticError.AnalyticClauseNotSupported) { IsRecognized = true, Node = functionReference.AnalyticClauseNode };
 						}
+					}
+					
+					if (functionReference.ObjectNode != null)
+					{
+						var packageSemanticError = functionReference.SchemaObject == null || functionReference.SchemaObject.IsValid
+							? SemanticError.None
+							: SemanticError.ObjectStatusInvalid;
+
+						validationModel.FunctionNodeValidity[functionReference.ObjectNode] = new FunctionValidationData(packageSemanticError) { IsRecognized = functionReference.SchemaObject != null, Node = functionReference.ObjectNode };
+					}
+
+					if (semanticError == SemanticError.None && isRecognized && !functionReference.Metadata.IsPackageFunction && !functionReference.SchemaObject.IsValid)
+					{
+						semanticError = SemanticError.ObjectStatusInvalid;
 					}
 
 					validationModel.FunctionNodeValidity[functionReference.FunctionIdentifierNode] = new FunctionValidationData(semanticError) { IsRecognized = isRecognized, Node = functionReference.FunctionIdentifierNode };
@@ -322,7 +336,7 @@ namespace SqlPad.Oracle
 
 	public class InvalidIdentifierNodeValidationData : NodeValidationData
 	{
-		private string _toolTipText;
+		private readonly string _toolTipText;
 
 		public InvalidIdentifierNodeValidationData(string toolTipText)
 		{

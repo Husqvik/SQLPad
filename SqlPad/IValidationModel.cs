@@ -34,6 +34,7 @@ namespace SqlPad
 		InvalidParameterCount,
 		MissingParenthesis,
 		InvalidIdentifier,
-		AnalyticClauseNotSupported
+		AnalyticClauseNotSupported,
+		ObjectStatusInvalid
 	}
 }

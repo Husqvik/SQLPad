@@ -907,9 +907,63 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			var validationModel = _statementValidator.BuildValidationModel(sqlText, statement, TestFixture.DatabaseModel);
 			var nodeValidityDictionary = validationModel.FunctionNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
 			var functionNodeValidity = nodeValidityDictionary.Values.ToList();
-			functionNodeValidity.Count.ShouldBe(1);
+			functionNodeValidity.Count.ShouldBe(2);
 			functionNodeValidity[0].IsRecognized.ShouldBe(true);
 			functionNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+			functionNodeValidity[1].IsRecognized.ShouldBe(true);
+			functionNodeValidity[1].SemanticError.ShouldBe(SemanticError.None);
+		}
+
+		[Test(Description = @"")]
+		public void TestMissingFunctionInExistingPackage()
+		{
+			const string sqlText = "SELECT DBMS_RANDOM.UNDEFINED_FUNCTION() FROM DUAL";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = _statementValidator.BuildValidationModel(sqlText, statement, TestFixture.DatabaseModel);
+			var nodeValidityDictionary = validationModel.FunctionNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var functionNodeValidity = nodeValidityDictionary.Values.ToList();
+			functionNodeValidity.Count.ShouldBe(2);
+			functionNodeValidity[0].IsRecognized.ShouldBe(true);
+			functionNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+			functionNodeValidity[1].IsRecognized.ShouldBe(false);
+			functionNodeValidity[1].SemanticError.ShouldBe(SemanticError.None);
+		}
+
+		[Test(Description = @"")]
+		public void TestSchemaFunctionWithCompilationErrors()
+		{
+			const string sqlText = "SELECT UNCOMPILABLE_FUNCTION() FROM DUAL";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = _statementValidator.BuildValidationModel(sqlText, statement, TestFixture.DatabaseModel);
+			var nodeValidityDictionary = validationModel.FunctionNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var functionNodeValidity = nodeValidityDictionary.Values.ToList();
+			functionNodeValidity.Count.ShouldBe(1);
+			functionNodeValidity[0].IsRecognized.ShouldBe(true);
+			functionNodeValidity[0].SemanticError.ShouldBe(SemanticError.ObjectStatusInvalid);
+		}
+
+		[Test(Description = @"")]
+		public void TestPackageFunctionWithCompilationErrors()
+		{
+			const string sqlText = "SELECT UNCOMPILABLE_PACKAGE.FUNCTION() FROM DUAL";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = _statementValidator.BuildValidationModel(sqlText, statement, TestFixture.DatabaseModel);
+			var nodeValidityDictionary = validationModel.FunctionNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var functionNodeValidity = nodeValidityDictionary.Values.ToList();
+			functionNodeValidity.Count.ShouldBe(2);
+			functionNodeValidity[0].IsRecognized.ShouldBe(true);
+			functionNodeValidity[0].SemanticError.ShouldBe(SemanticError.ObjectStatusInvalid);
+			functionNodeValidity[1].IsRecognized.ShouldBe(true);
+			functionNodeValidity[1].SemanticError.ShouldBe(SemanticError.None);
 		}
 
 		[Test(Description = @"")]
