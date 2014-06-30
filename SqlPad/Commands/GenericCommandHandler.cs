@@ -60,9 +60,9 @@ namespace SqlPad.Commands
 			else
 			{
 				var currentLine = editor.Document.GetLineByOffset(editor.CaretOffset);
-				var currentLineText = editor.Document.GetText(currentLine) + "\n";
-				editor.Document.Insert(currentLine.EndOffset + 1, currentLineText);
-				caretOffset = editor.SelectionStart + editor.SelectionLength + currentLineText.Length;
+				var currentLineText = "\n" + editor.Document.GetText(currentLine);
+				caretOffset = editor.SelectionStart + currentLineText.Length;
+				editor.Document.Insert(currentLine.EndOffset, currentLineText);
 			}
 
 			editor.SelectionLength = 0;
