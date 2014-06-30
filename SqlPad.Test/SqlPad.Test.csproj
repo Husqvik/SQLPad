@@ -59,7 +59,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DocumentPageTest.cs" />
+    <Compile Include="VisualComponentTest.cs" />
     <Compile Include="EditorTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
