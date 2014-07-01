@@ -61,7 +61,7 @@ namespace SqlPad
 
 		public bool IsDirty { get { return Editor.IsModified; } }
 		
-		public DocumentPage(IInfrastructureFactory infrastructureFactory, FileInfo file)
+		public DocumentPage(IInfrastructureFactory infrastructureFactory, FileInfo file, bool makeDirty = false)
 		{
 			if (infrastructureFactory == null)
 				throw new ArgumentNullException("infrastructureFactory");
@@ -99,6 +99,7 @@ namespace SqlPad
 			{
 				File = file;
 				Editor.Load(file.FullName);
+				Editor.IsModified = makeDirty;
 			}
 
 			_pageModel.DocumentHeader = DocumentHeader;

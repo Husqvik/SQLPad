@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -36,11 +37,27 @@ namespace SqlPad
 			get { return ((TabItem)DocumentTabControl.SelectedItem).Content as DocumentPage; }
 		}
 
+		internal IEnumerable<DocumentPage> AllPages
+		{
+			get { return DocumentTabControl.Items.Cast<TabItem>().Take(DocumentTabControl.Items.Count - 1).Select(t => (DocumentPage)t.Content); }
+		}
+
 		private void WindowLoadedHandler(object sender, RoutedEventArgs e)
 		{
 			SqlPad.Resources.Initialize(Resources);
 
-			CreateNewDocumentPage();
+			var filesToRecover = App.GetRecoverableDocuments().Select(f => new FileInfo(f)).Where(f => f.Exists).ToList();
+			if (filesToRecover.Count == 0)
+			{
+				filesToRecover.Add(null);
+			}
+
+			foreach (var fileInfo in filesToRecover)
+			{
+				CreateNewDocumentPage(fileInfo, true);
+			}
+
+			App.PurgeRecoveryFiles();
 
 			DocumentTabControl.SelectionChanged += TabControlSelectionChangedHandler;
 		}
@@ -75,9 +92,9 @@ namespace SqlPad
 			CreateNewDocumentPage();
 		}
 
-		private void CreateNewDocumentPage(FileInfo file = null)
+		private void CreateNewDocumentPage(FileInfo file = null, bool makeDirty = false)
 		{
-			var newDocumentPage = new DocumentPage(_infrastructureFactory, file);
+			var newDocumentPage = new DocumentPage(_infrastructureFactory, file, makeDirty);
 			newDocumentPage.ComboBoxConnection.IsEnabled = ConfigurationProvider.ConnectionStrings.Count > 1;
 			newDocumentPage.ComboBoxConnection.ItemsSource = ConfigurationProvider.ConnectionStrings;
 			newDocumentPage.ComboBoxConnection.SelectedIndex = 0;
