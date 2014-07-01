@@ -25,6 +25,8 @@ namespace SqlPad
 	public partial class DocumentPage
 	{
 		private const int RowBatchSize = 100;
+		internal const string ExecuteDatabaseCommandName = "ExecuteDatabaseCommand";
+		
 		private readonly SqlDocument _sqlDocument = new SqlDocument();
 		private readonly ISqlParser _sqlParser;
 		private readonly IInfrastructureFactory _infrastructureFactory;
@@ -207,7 +209,7 @@ namespace SqlPad
 			//var moveContentToLeftCommand = new RoutedCommand("MoveContentToLeft", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.Left, ModifierKeys.Control | ModifierKeys.Alt | ModifierKeys.Shift) });
 			//var moveContentToRightCommand = new RoutedCommand("MoveContentToRight", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.Right, ModifierKeys.Control | ModifierKeys.Alt | ModifierKeys.Shift) });
 
-			var executeDatabaseCommandCommand = new RoutedCommand("ExecuteDatabaseCommand", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.F9) });
+			var executeDatabaseCommandCommand = new RoutedCommand(ExecuteDatabaseCommandName, typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.F9), new KeyGesture(Key.Enter, ModifierKeys.Control) });
 			commandBindings.Add(new CommandBinding(executeDatabaseCommandCommand, ExecuteDatabaseCommand));
 
 			var saveCommand = new RoutedCommand("Save", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.S, ModifierKeys.Control) });
@@ -470,7 +472,7 @@ namespace SqlPad
 			}
 		}
 
-		void TextEnteredHandler(object sender, TextCompositionEventArgs e)
+		private void TextEnteredHandler(object sender, TextCompositionEventArgs e)
 		{
 			if (Editor.Document.IsInUpdate)
 			{

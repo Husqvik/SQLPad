@@ -531,13 +531,6 @@ ORDER BY
 			return columnTypes;
 		}
 
-		private static object ValueConverterFunction(ColumnHeader columnHeader, object value)
-		{
-			return columnHeader.DatabaseDataType == "Raw"
-				? ((byte[])value).ToHexString()
-				: value;
-		}
-
 		public override IEnumerable<object[]> FetchRecords(int rowCount)
 		{
 			CheckCanFetch();

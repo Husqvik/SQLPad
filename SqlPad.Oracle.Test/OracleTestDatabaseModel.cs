@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
 using System.Xml;
 
 namespace SqlPad.Oracle.Test
@@ -16,8 +16,20 @@ namespace SqlPad.Oracle.Test
 
 		private const string InitialSchema = "\"HUSQVIK\"";
 		private const string OwnerNameSys = "\"SYS\"";
-		private const string NotSupported = "not supported";
 		private static readonly ConnectionStringSettings ConnectionStringInternal = new ConnectionStringSettings("ConnectionFake", "DATA SOURCE=HQ_PDB_TCP;PASSWORD=oracle;USER ID=HUSQVIK", "Oracle.DataAccess.Client");
+
+		private static readonly List<ColumnHeader> ColumnHeaders =
+			new List<ColumnHeader>
+			{
+				new ColumnHeader
+				{
+					ColumnIndex = 0,
+					DataType = typeof(String),
+					DatabaseDataType = "VARCHAR2",
+					Name = "DUMMY",
+					ValueConverterFunction = ValueConverterFunction
+				}
+			};
 
 		private static readonly HashSet<string> SchemasInternal = new HashSet<string> { OwnerNameSys, "\"SYSTEM\"", InitialSchema };
 		private static readonly HashSet<string> AllSchemasInternal = new HashSet<string>(SchemasInternal) { OwnerNameSys, "\"SYSTEM\"", InitialSchema, SchemaPublic };
@@ -25,6 +37,7 @@ namespace SqlPad.Oracle.Test
 		private static readonly OracleFunctionMetadataCollection NonPackageBuiltInFunctionMetadataInternal;
 
 		private readonly IDictionary<OracleObjectIdentifier, OracleSchemaObject> _allObjects;
+		private int _generatedRowCount;
 
 		static OracleTestDatabaseModel()
 		{
@@ -291,6 +304,15 @@ namespace SqlPad.Oracle.Test
 							  { "\"CaseSensitiveColumn\"", new OracleColumn { Name = "\"CaseSensitiveColumn\"", Type = "NVARCHAR2", CharacterSize = 30 } }
 				          }
 			},
+			new OracleTable
+			{
+				FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"CaseSensitiveTable\""),
+				Organization = OrganizationType.Heap,
+				Columns = new Dictionary<string, OracleColumn>
+				          {
+					          { "\"CaseSensitiveColumn\"", new OracleColumn { Name = "\"CaseSensitiveColumn\"", Type = "RAW", Size = 4000 } }
+				          }
+			},
 			new OracleView
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"VIEW_INSTANTSEARCH\""),
@@ -382,27 +404,22 @@ namespace SqlPad.Oracle.Test
 
 		public override int ExecuteStatement(string statementText, bool returnDataset)
 		{
-			var messageBuilder = new StringBuilder(NotSupported);
-			messageBuilder.AppendLine();
-			messageBuilder.AppendLine();
-			messageBuilder.AppendLine("Statement: ");
-			messageBuilder.AppendLine(statementText);
-			throw new NotSupportedException(messageBuilder.ToString());
+			return 0;
 		}
 
 		public override IEnumerable<object[]> FetchRecords(int rowCount)
 		{
-			throw new NotSupportedException(NotSupported);
+			yield return new object[] { "Dummy Value " + ++_generatedRowCount};
 		}
 
 		public override ICollection<ColumnHeader> GetColumnHeaders()
 		{
-			throw new NotSupportedException(NotSupported);
+			return ColumnHeaders;
 		}
 
-		public override bool CanExecute { get { return false; } }
+		public override bool CanExecute { get { return true; } }
 
-		public override bool CanFetch { get { return false; } }
+		public override bool CanFetch { get { return true; } }
 		
 		public override bool IsExecuting { get { return false; } }
 	}

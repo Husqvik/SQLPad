@@ -16,11 +16,11 @@ namespace SqlPad.Oracle.Test
 			const string testQuery = "SELECT I.*, INVOICES.ID FROM HUSQVIK.INVOICELINES I JOIN HUSQVIK.INVOICES";
 
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, testQuery, 37).ToArray();
-			items.Length.ShouldBe(8);
-			items[0].Name.ShouldBe("COUNTRY");
-			items[0].Text.ShouldBe("COUNTRY");
-			items[7].Name.ShouldBe("VIEW_INSTANTSEARCH");
-			items[7].Text.ShouldBe("VIEW_INSTANTSEARCH");
+			items.Length.ShouldBe(9);
+			items[0].Name.ShouldBe("\"CaseSensitiveTable\"");
+			items[0].Text.ShouldBe("\"CaseSensitiveTable\"");
+			items[8].Name.ShouldBe("VIEW_INSTANTSEARCH");
+			items[8].Text.ShouldBe("VIEW_INSTANTSEARCH");
 		}
 
 		[Test(Description = @"")]
@@ -164,14 +164,12 @@ FROM
 	CTE1
 	JOIN ";
 
-			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 168).ToArray();
-			items.Length.ShouldBe(14);
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 168).Where(i => i.Category == OracleCodeCompletionCategory.CommonTableExpression).ToArray();
+			items.Length.ShouldBe(2);
 			items[0].Name.ShouldBe("CTE1");
 			items[0].Text.ShouldBe("CTE1");
-			items[0].Category.ShouldBe(OracleCodeCompletionCategory.CommonTableExpression);
 			items[1].Name.ShouldBe("CTE2");
 			items[1].Text.ShouldBe("CTE2");
-			items[1].Category.ShouldBe(OracleCodeCompletionCategory.CommonTableExpression);
 		}
 
 		[Test(Description = @"")]
@@ -642,6 +640,26 @@ FROM
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 11).ToList();
 			items.Count.ShouldBe(6);
 			items[0].Text.ShouldBe("\"CaseSensitiveColumn\"");
+		}
+
+		[Test(Description = @"")]
+		public void TestTableSuggestionInTheMiddleOfQuotedNotation()
+		{
+			const string query1 = @"SELECT * FROM ""CaseUnknownTable""";
+
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 19).ToList();
+			items.Count.ShouldBe(1);
+			items[0].Text.ShouldBe("\"CaseSensitiveTable\"");
+		}
+
+		[Test(Description = @"")]
+		public void TestTableSuggestionAfterQuoteCharacter()
+		{
+			const string query1 = @"SELECT * FROM ""CaseUnknownTable""";
+
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 15).ToList();
+			items.Count.ShouldBe(13);
+			items[0].Text.ShouldBe("\"CaseSensitiveTable\"");
 		}
 	}
 }

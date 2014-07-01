@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
@@ -73,7 +74,8 @@ namespace SqlPad.Oracle
 			if (sqlDocument == null || sqlDocument.StatementCollection == null)
 				return EmptyCollection;
 
-			var e = new OracleCodeCompletionEnvironment(sqlDocument.StatementCollection, cursorPosition);
+			//var e = new OracleCodeCompletionType(sqlDocument.StatementCollection, statementText, cursorPosition);
+			//e.PrintSupportedCompletions();
 
 			StatementDescriptionNode currentNode;
 
@@ -430,7 +432,7 @@ namespace SqlPad.Oracle
 		private IEnumerable<ICodeCompletionItem> GenerateSchemaItems(string schemaNamePart, StatementDescriptionNode node, int insertOffset, OracleDatabaseModelBase databaseModel, int priorityOffset = 0)
 		{
 			return databaseModel.AllSchemas
-				.Where(s => s != OracleDatabaseModelBase.SchemaPublic && (schemaNamePart.ToQuotedIdentifier() != s && (String.IsNullOrEmpty(schemaNamePart) || s.ToUpperInvariant().Contains(schemaNamePart.ToUpperInvariant()))))
+				.Where(s => s != OracleDatabaseModelBase.SchemaPublic && (MakeSaveQuotedIdentifier(schemaNamePart) != s && (String.IsNullOrEmpty(schemaNamePart) || s.ToUpperInvariant().Contains(schemaNamePart.Trim('"').ToUpperInvariant()))))
 				.Select(s => new OracleCodeCompletionItem
 				             {
 								 Name = s.ToSimpleIdentifier(),
@@ -472,7 +474,7 @@ namespace SqlPad.Oracle
 		{
 			return databaseModel.AllObjects.Values
 						.Where(o => (!dataObjectsOnly || IsDataObject(o)) &&
-							o.Owner == schemaName.ToQuotedIdentifier() && objectNamePart.ToQuotedIdentifier() != o.Name &&
+							o.Owner == MakeSaveQuotedIdentifier(schemaName) && MakeSaveQuotedIdentifier(objectNamePart) != o.Name &&
 							(node == null || node.Token.Value.ToQuotedIdentifier() != o.Name) &&
 							(String.IsNullOrEmpty(objectNamePart) || o.Name.ToUpperInvariant().Contains(objectNamePart.ToUpperInvariant())))
 						.Select(o => new OracleCodeCompletionItem
@@ -483,6 +485,16 @@ namespace SqlPad.Oracle
 							Category = OracleCodeCompletionCategory.SchemaObject,
 							Offset = insertOffset
 						});
+		}
+
+		private string MakeSaveQuotedIdentifier(string identifierPart)
+		{
+			if (String.IsNullOrEmpty(identifierPart) || identifierPart.All(c => c == '"'))
+				return null;
+
+			var preFix = identifierPart[0] != '"' && identifierPart[identifierPart.Length - 1] == '"' ? "\"" : null;
+			var postFix = identifierPart[0] == '"' && identifierPart[identifierPart.Length - 1] != '"' ? "\"" : null;
+			return String.Format("{0}{1}{2}", preFix, identifierPart, postFix).ToQuotedIdentifier();
 		}
 
 		private bool IsDataObject(OracleSchemaObject schemaObject)
@@ -573,61 +585,114 @@ namespace SqlPad.Oracle
 		}
 	}
 
-	internal class OracleCodeCompletionEnvironment
+	internal class OracleCodeCompletionType
 	{
 		private readonly OracleSqlParser _parser = new OracleSqlParser();
 
-		private StatementBase _statement;
-		private readonly StatementDescriptionNode _currentTerminal;
-		private readonly StatementDescriptionNode _precedingTerminal;
-		private readonly int _cursorPosition;
-		private readonly StatementDescriptionNode _prefixedColumnReference;
-		private readonly HashSet<string> _terminalCandidates;
-
-		public OracleCodeCompletionEnvironment(StatementCollection statementCollection, int cursorPosition)
-		{
-			_cursorPosition = cursorPosition;
-			_statement = statementCollection.GetStatementAtPosition(cursorPosition);
-			if (_statement == null)
-				return;
-
-			_currentTerminal = _statement.GetNearestTerminalToPosition(cursorPosition);
-			if (_currentTerminal == null)
-				return;
-
-			_precedingTerminal = _currentTerminal.PrecedingTerminal;
-
-			IsCurrentTerminalEntirelyBeforeCursor = _currentTerminal.SourcePosition.IndexEnd < cursorPosition;
-			IsCursorBetweenTerminals = _precedingTerminal != null && _precedingTerminal.SourcePosition.IndexEnd + 1 == cursorPosition &&
-			                           _currentTerminal.SourcePosition.IndexStart == cursorPosition;
-
-			_terminalCandidates = new HashSet<string>(_parser.GetTerminalCandidates(IsCurrentTerminalEntirelyBeforeCursor ? _currentTerminal : _precedingTerminal));
-
-			_prefixedColumnReference = _currentTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference);
-
-			if (_prefixedColumnReference == null && IsCursorBetweenTerminals && _precedingTerminal != null)
+		private static readonly HashSet<string> ZeroOffsetTerminalIds =
+			new HashSet<string>
 			{
-				_prefixedColumnReference = _precedingTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference);
-			}
-		}
+				Terminals.Dot,
+				Terminals.Comma,
+				Terminals.OperatorConcatenation,
+				Terminals.LeftParenthesis,
+				Terminals.RightParenthesis,
+				Terminals.MathDivide,
+				Terminals.MathEquals,
+				Terminals.MathFactor,
+				Terminals.MathGreatherThan,
+				Terminals.MathGreatherThanOrEquals,
+				Terminals.MathLessThan,
+				Terminals.MathLessThanOrEquals,
+				Terminals.MathMinus,
+				Terminals.MathNotEqualsC,
+				Terminals.MathNotEqualsCircumflex,
+				Terminals.MathNotEqualsSql,
+				Terminals.MathPlus
+			};
 
-		public bool IsCurrentTerminalEntirelyBeforeCursor { get; private set; }
+		public bool Schema { get; private set; }
+
+		public bool SchemaDataObject { get; private set; }
 		
-		public bool IsCursorBetweenTerminals { get; private set; }
+		public bool PipelinedFunction { get; private set; }
+		
+		public bool SchemaDataObjectReference { get; private set; }
+		
+		public bool Column { get; private set; }
 
-		public bool IsAtColumnOrFunctionReference
+		public bool AllColumns { get; private set; }
+		
+		public bool JoinType { get; private set; }
+		
+		public bool JoinCondition { get; private set; }
+		
+		public bool Program { get; private set; }
+
+		public OracleCodeCompletionType(StatementCollection statementCollection, string statementText, int cursorPosition)
 		{
-			get { return _prefixedColumnReference != null; }
+			var statement = (OracleStatement)(statementCollection.GetStatementAtPosition(cursorPosition) ?? statementCollection.LastOrDefault());
+			if (statement == null)
+				return;
+
+			var nearestTerminal = statement.GetNearestTerminalToPosition(cursorPosition);
+			if (nearestTerminal == null)
+				return;
+
+			var requiredOffsetAfterToken = ZeroOffsetTerminalIds.Contains(nearestTerminal.Id) ? 0 : 1;
+			var isCursorAfterToken = nearestTerminal.SourcePosition.IndexEnd + requiredOffsetAfterToken < cursorPosition;
+			if (isCursorAfterToken)
+			{
+				var unparsedTextBetweenTokenAndCursor = statementText.Substring(nearestTerminal.SourcePosition.IndexEnd + 1, cursorPosition - nearestTerminal.SourcePosition.IndexEnd - 1).Trim();
+				if (!String.IsNullOrEmpty(unparsedTextBetweenTokenAndCursor))
+					return;
+			}
+
+			var terminalCandidates = new HashSet<string>(_parser.GetTerminalCandidates(isCursorAfterToken ? nearestTerminal : nearestTerminal.PrecedingTerminal));
+			Schema = terminalCandidates.Contains(Terminals.SchemaIdentifier);
+			Program = Column = terminalCandidates.Contains(Terminals.Identifier);
+			JoinType = terminalCandidates.Contains(Terminals.Join);
+
+			var isWithinFromClause = nearestTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.FromClause) != null || (isCursorAfterToken && nearestTerminal.Id == Terminals.From);
+			SchemaDataObject = isWithinFromClause && terminalCandidates.Contains(Terminals.ObjectIdentifier);
+
+			var isWithinJoinClause = nearestTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.FromClause, NonTerminals.JoinClause) != null;
+			JoinCondition = isWithinJoinClause && (terminalCandidates.Contains(Terminals.On) || nearestTerminal.Id == Terminals.On);
+
+			var isWithinSelectList = (nearestTerminal.Id == Terminals.Select && isCursorAfterToken) || nearestTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.SelectList) != null;
+			AllColumns = isWithinSelectList && terminalCandidates.Contains(Terminals.Asterisk);
+
+			SchemaDataObjectReference = !isWithinFromClause && terminalCandidates.Contains(Terminals.ObjectIdentifier);
 		}
 
-		public bool IsAtObjectReference
+		public void PrintSupportedCompletions()
 		{
-			get { return _currentTerminal.Id == Terminals.ObjectIdentifier || (_currentTerminal.Id == Terminals.Dot && true); }
-		}
+			var builder = new StringBuilder(255);
+			builder.Append("Schema: ");
+			builder.Append(Schema);
+			builder.Append("; ");
+			builder.Append("SchemaDataObject: ");
+			builder.Append(SchemaDataObject);
+			builder.Append("; ");
+			builder.Append("SchemaDataObjectReference: ");
+			builder.Append(SchemaDataObjectReference);
+			builder.Append("; ");
+			builder.Append("Column: ");
+			builder.Append(Column);
+			builder.Append("; ");
+			builder.Append("AllColumns: ");
+			builder.Append(AllColumns);
+			builder.Append("; ");
+			builder.Append("JoinType: ");
+			builder.Append(JoinType);
+			builder.Append("; ");
+			builder.Append("JoinCondition: ");
+			builder.Append(JoinCondition);
+			builder.Append("; ");
+			builder.Append("Program: ");
+			builder.Append(Program);
 
-		public bool IsAtSchemaReference
-		{
-			get { return _currentTerminal.Id == Terminals.SchemaIdentifier; }
+			Trace.WriteLine(builder.ToString());
 		}
 	}
 }

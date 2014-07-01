@@ -126,6 +126,13 @@ namespace SqlPad.Oracle
 			return result;
 		}
 
+		internal static object ValueConverterFunction(ColumnHeader columnHeader, object value)
+		{
+			return columnHeader.DatabaseDataType == "Raw"
+				? ((byte[])value).ToHexString()
+				: value;
+		}
+
 		private static bool TryGetSchemaObjectFunctionMetadata(OracleSchemaObject schemaObject, out ICollection<OracleFunctionMetadata> functionMetadata)
 		{
 			var functions = schemaObject as IFunctionCollection;
