@@ -123,6 +123,142 @@ namespace SqlPad.Oracle
 
 		public ICollection<string> GetTerminalCandidates(StatementDescriptionNode node)
 		{
+			var candidates = new HashSet<string>();
+
+			var nonTerminalIds = new List<string>();
+			if (node != null)
+			{
+				if (node.Type != NodeType.Terminal)
+				{
+					throw new ArgumentException("Node must be a terminal node. ", "node");
+				}
+
+				MatchNode(node, candidates);
+			}
+			else
+			{
+				nonTerminalIds.AddRange(AvailableNonTerminals);
+			}
+
+			foreach (var nonTerminalId in nonTerminalIds)
+			{
+				GatherCandidatesFromNonterminal(nonTerminalId, candidates);
+			}
+
+			return candidates;
+		}
+
+		private void MatchNode(StatementDescriptionNode node, ICollection<string> candidates)
+		{
+			var parent = node.ParentNode;
+			if (parent == null)
+				return;
+
+			var matchParent = false;
+			var compatibleSequences = StartingNonTerminalSequences[parent.Id].SelectMany(s => GetCompatibleSequences(s, parent));
+
+			if (parent.ParentNode != null)
+			{
+				compatibleSequences = compatibleSequences.Union(StartingNonTerminalSequences[parent.ParentNode.Id].SelectMany(s => GetCompatibleSequences(s, parent)));
+			}
+
+			var childNodeIndex = parent.ChildNodes.IndexOf(node);
+
+			foreach (var sequence in compatibleSequences)
+			{
+				var index = 0;
+				var sequenceCompatible = true;
+				var gatherCandidates = false;
+
+				foreach (ISqlGrammarRuleSequenceItem item in sequence.Items)
+				{
+					if (gatherCandidates)
+					{
+						GatherCandidatesFromGrammarItem(item, candidates);
+
+						if (item.IsRequired)
+						{
+							sequenceCompatible = false;
+							break;
+						}
+
+						continue;
+					}
+
+					if (item.Id == parent.ChildNodes[index].Id)
+					{
+						if (index == childNodeIndex)
+						{
+							gatherCandidates = true;
+						}
+
+						index++;
+					}
+					else if (item.IsRequired)
+					{
+						sequenceCompatible = false;
+						break;
+					}
+				}
+
+				if (sequenceCompatible)
+				{
+					matchParent = true;
+				}
+			}
+
+			if (matchParent)
+			{
+				MatchNode(parent, candidates);
+			}
+		}
+
+		private IEnumerable<SqlGrammarRuleSequence> GetCompatibleSequences(SqlGrammarRuleSequence sequence, StatementDescriptionNode parentNode)
+		{
+			var inputItems = sequence.Items
+				.Cast<ISqlGrammarRuleSequenceItem>()
+				.TakeWhileInclusive(i => !i.IsRequired);
+
+			var isInputSequence = inputItems.Any(i => i.Id == parentNode.ChildNodes[0].Id);
+
+			return isInputSequence
+				? Enumerable.Repeat(sequence, 1)
+				: inputItems.Where(i => i.Type == NodeType.NonTerminal)
+					.SelectMany(i => StartingNonTerminalSequences[i.Id])
+					.SelectMany(s => GetCompatibleSequences(s, parentNode));
+		}
+
+		private void GatherCandidatesFromNonterminal(string nonTerminalId, ICollection<string> candidates)
+		{
+			foreach (var sequence in StartingNonTerminalSequences[nonTerminalId])
+			{
+				foreach (ISqlGrammarRuleSequenceItem item in sequence.Items)
+				{
+					GatherCandidatesFromGrammarItem(item, candidates);
+
+					if (item.IsRequired)
+					{
+						break;
+					}
+				}
+			}
+		}
+
+		private void GatherCandidatesFromGrammarItem(ISqlGrammarRuleSequenceItem item, ICollection<string> candidates)
+		{
+			if (item.Type == NodeType.NonTerminal)
+			{
+				GatherCandidatesFromNonterminal(item.Id, candidates);
+			}
+			else
+			{
+				candidates.Add(item.Id);
+			}
+		}
+
+		#region not used - just for reference
+		public ICollection<string> GetTerminalCandidatesOld(StatementDescriptionNode node)
+		{
 			var terminalsToMatch = new List<StatementDescriptionNode>();
 			var nonTerminalIds = new List<string>();
 			if (node != null)
@@ -139,44 +275,56 @@ namespace SqlPad.Oracle
 
 			foreach (var nonTerminalId in nonTerminalIds)
 			{
-				MatchNonTerminal(terminalsToMatch, nonTerminalId, 0, nextItems);				
+				MatchNonTerminal(terminalsToMatch, nonTerminalId, 0, nextItems);
 			}
 
 			return nextItems.ToArray();
 		}
 
-		private int MatchNonTerminal(IList<StatementDescriptionNode> terminalSource, string nonTerminalId, int startIndex, ICollection<string> nextItems)
+		private struct MatchResult
+		{
+			public int TerminalCount { get; set; }
+
+			public int CandidatesGathered { get; set; } 
+		}
+
+		private MatchResult MatchNonTerminal(IList<StatementDescriptionNode> terminalSource, string nonTerminalId, int startIndex, ICollection<string> nextItems)
 		{
 			var matchedTerminals = 0;
-			var candidatesGathered = false;
+			var candidatesGatherEnabled = false;
+			var candidatesGathered = 0;
+			var sequenceMatched = true;
 			foreach (var sequence in StartingNonTerminalSequences[nonTerminalId])
 			{
 				var nestedStartIndex = startIndex;
-				var sequenceMatched = true;
+				candidatesGathered = 0;
+				sequenceMatched = true;
 
 				foreach (ISqlGrammarRuleSequenceItem item in sequence.Items)
 				{
 					if (item.Type == NodeType.NonTerminal)
 					{
-						var nestedMatchedTerminals = MatchNonTerminal(terminalSource, item.Id, nestedStartIndex, nextItems);
-						if (nestedMatchedTerminals == 0 && item.IsRequired)
+						var result = MatchNonTerminal(terminalSource, item.Id, nestedStartIndex, nextItems);
+						if (result.TerminalCount == 0 && item.IsRequired)
 						{
 							sequenceMatched = false;
 							break;
 						}
 
-						nestedStartIndex += nestedMatchedTerminals;
+						nestedStartIndex += result.TerminalCount;
+						matchedTerminals += result.TerminalCount + result.CandidatesGathered;
 					}
 					else
 					{
 						if (terminalSource.Count == nestedStartIndex)
 						{
-							candidatesGathered = true;
+							candidatesGatherEnabled = true;
 						}
 
-						if (candidatesGathered)
+						if (candidatesGatherEnabled)
 						{
 							nextItems.Add(item.Id);
+							candidatesGathered++;
 
 							if (item.IsRequired)
 							{
@@ -195,15 +343,16 @@ namespace SqlPad.Oracle
 					}
 				}
 
-				if (sequenceMatched && !candidatesGathered)
+				if (sequenceMatched && !candidatesGatherEnabled)
 				{
 					matchedTerminals = nestedStartIndex - startIndex;
 					break;
 				}
 			}
 
-			return matchedTerminals;
+			return new MatchResult { TerminalCount = sequenceMatched ? matchedTerminals : 0, CandidatesGathered = candidatesGathered };
 		}
+		#endregion
 
 		private StatementCollection ProceedGrammar(IEnumerable<OracleToken> tokens)
 		{

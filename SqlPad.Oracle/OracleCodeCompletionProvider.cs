@@ -144,6 +144,7 @@ namespace SqlPad.Oracle
 			var oracleDatabaseModel = (OracleDatabaseModelBase)databaseModel;
 			var semanticModel = new OracleStatementSemanticModel(null, (OracleStatement)currentNode.Statement, oracleDatabaseModel);
 			var terminalCandidates = new HashSet<string>(_parser.GetTerminalCandidates(isCursorAtTerminal && !currentNode.Id.IsSingleCharacterTerminal() ? currentNode.PrecedingTerminal : currentNode));
+			//var terminalCandidatesNew = new HashSet<string>(_parser.GetTerminalCandidatesNew(isCursorAtTerminal && !currentNode.Id.IsSingleCharacterTerminal() ? currentNode.PrecedingTerminal : currentNode));
 
 			var cursorAtLastTerminal = cursorPosition <= currentNode.SourcePosition.IndexEnd + 1;
 			var terminalToReplace = cursorAtLastTerminal ? currentNode : null;
@@ -654,10 +655,11 @@ namespace SqlPad.Oracle
 			JoinType = terminalCandidates.Contains(Terminals.Join);
 
 			var isWithinFromClause = nearestTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.FromClause) != null || (isCursorAfterToken && nearestTerminal.Id == Terminals.From);
-			SchemaDataObject = isWithinFromClause && terminalCandidates.Contains(Terminals.ObjectIdentifier);
+			var isWithinJoinCondition = nearestTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.JoinClause, NonTerminals.JoinColumnsOrCondition) != null;
+			SchemaDataObject = isWithinFromClause && !isWithinJoinCondition && terminalCandidates.Contains(Terminals.ObjectIdentifier);
 
 			var isWithinJoinClause = nearestTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.FromClause, NonTerminals.JoinClause) != null;
-			JoinCondition = isWithinJoinClause && (terminalCandidates.Contains(Terminals.On) || nearestTerminal.Id == Terminals.On);
+			JoinCondition = isWithinJoinClause && isCursorAfterToken && (terminalCandidates.Contains(Terminals.On) || nearestTerminal.Id == Terminals.On);
 
 			var isWithinSelectList = (nearestTerminal.Id == Terminals.Select && isCursorAfterToken) || nearestTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.SelectList) != null;
 			AllColumns = isWithinSelectList && terminalCandidates.Contains(Terminals.Asterisk);

@@ -1781,9 +1781,9 @@ FROM DUAL";
 				const string statement1 = @"SELECT 1 A";
 				var node = Parser.Parse(statement1).Single().RootNode.LastTerminalNode;
 				var terminalCandidates = Parser.GetTerminalCandidates(node).OrderBy(t => t).ToArray();
-				terminalCandidates.Length.ShouldBe(2);
-				terminalCandidates[0].ShouldBe(Terminals.Comma);
-				terminalCandidates[1].ShouldBe(Terminals.From);
+
+				var expectedTerminals = new[] { Terminals.Comma, Terminals.From };
+				terminalCandidates.ShouldBe(expectedTerminals);
 			}
 
 			[Test(Description = @"")]
@@ -1792,11 +1792,9 @@ FROM DUAL";
 				const string statement2 = @"SELECT 1";
 				var node = Parser.Parse(statement2).Single().RootNode.LastTerminalNode;
 				var terminalCandidates = Parser.GetTerminalCandidates(node).OrderBy(t => t).ToArray();
-				terminalCandidates.Length.ShouldBe(9);
-				terminalCandidates[0].ShouldBe(Terminals.As);
-				terminalCandidates[1].ShouldBe(Terminals.ColumnAlias);
-				terminalCandidates[4].ShouldBe(Terminals.MathDivide);
-				terminalCandidates[8].ShouldBe(Terminals.OperatorConcatenation);
+				
+				var expectedTerminals = new[] { Terminals.As, Terminals.ColumnAlias, Terminals.Comma, Terminals.From, Terminals.MathDivide, Terminals.MathFactor, Terminals.MathMinus, Terminals.MathPlus, Terminals.OperatorConcatenation };
+				terminalCandidates.ShouldBe(expectedTerminals);
 			}
 
 			[Test(Description = @"")]
@@ -1805,26 +1803,139 @@ FROM DUAL";
 				const string statement2 = @"SELECT OBJECT_PREFIX.";
 				var node = Parser.Parse(statement2).Single().RootNode.LastTerminalNode;
 				var terminalCandidates = Parser.GetTerminalCandidates(node).OrderBy(t => t).ToArray();
-				terminalCandidates.Length.ShouldBe(5);
-				terminalCandidates[0].ShouldBe(Terminals.Asterisk);
-				terminalCandidates[1].ShouldBe(Terminals.Identifier);
-				terminalCandidates[2].ShouldBe(Terminals.RowIdPseudoColumn);
+
+				// TODO: Wrong, at least ObjectIdentifier should be available in addition
+				var expectedTerminals = new[] { Terminals.Asterisk, Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.SequenceCurrentValue, Terminals.SequenceNextValue };
+				terminalCandidates.ShouldBe(expectedTerminals);
 			}
 
 			[Test(Description = @"")]
 			public void TestTerminalCandidatesWithNullNode()
 			{
 				var terminalCandidates = Parser.GetTerminalCandidates(null).OrderBy(t => t).ToArray();
-				terminalCandidates.Length.ShouldBe(9);
-				terminalCandidates[0].ShouldBe(Terminals.Commit);
-				terminalCandidates[1].ShouldBe(Terminals.Delete);
-				terminalCandidates[2].ShouldBe(Terminals.Insert);
-				terminalCandidates[3].ShouldBe(Terminals.LeftParenthesis);
-				terminalCandidates[4].ShouldBe(Terminals.Merge);
-				terminalCandidates[5].ShouldBe(Terminals.Select);
-				terminalCandidates[6].ShouldBe(Terminals.Set);
-				terminalCandidates[7].ShouldBe(Terminals.Update);
-				terminalCandidates[8].ShouldBe(Terminals.With);
+
+				var expectedTerminals = new[] { Terminals.Commit, Terminals.Delete, Terminals.Insert, Terminals.LeftParenthesis, Terminals.Merge, Terminals.Select, Terminals.Set, Terminals.Update, Terminals.With };
+				terminalCandidates.ShouldBe(expectedTerminals);
+			}
+
+			[Test(Description = @"")]
+			public void TestTerminalCandidatesAfterValidStatementWhenStartingAdditionalJoinClause()
+			{
+				const string statement1 = @"SELECT * FROM SELECTION S FULL";
+				var node = Parser.Parse(statement1).Single().RootNode.LastTerminalNode;
+				var terminalCandidates = Parser.GetTerminalCandidates(node).OrderBy(t => t).ToArray();
+				var expectedTerminals = new[] { Terminals.Join, Terminals.Outer };
+				terminalCandidates.ShouldBe(expectedTerminals);
+			}
+
+			[Test(Description = @"")]
+			public void TestTerminalCandidatesAfterObjectIdentifierInFromClause()
+			{
+				const string statement1 = @"SELECT * FROM SELECTION";
+				var node = Parser.Parse(statement1).Single().RootNode.LastTerminalNode;
+				var terminalCandidates = Parser.GetTerminalCandidates(node).OrderBy(t => t).ToArray();
+
+				var expectedTerminals =
+					new[]
+					{
+						Terminals.As,
+						Terminals.At,
+						Terminals.Comma,
+						Terminals.Connect,
+						Terminals.Cross,
+						Terminals.Fetch,
+						Terminals.For,
+						Terminals.Full,
+						Terminals.Group,
+						Terminals.Inner,
+						Terminals.Intersect,
+						Terminals.Join,
+						Terminals.Left,
+						Terminals.Natural,
+						Terminals.ObjectAlias,
+						Terminals.Offset,
+						Terminals.Order,
+						Terminals.Outer,
+						Terminals.Partition,
+						Terminals.Pivot,
+						Terminals.Right,
+						Terminals.Sample,
+						Terminals.Semicolon,
+						Terminals.SetMinus,
+						Terminals.Start,
+						Terminals.Subpartition,
+						Terminals.Union,
+						Terminals.Unpivot,
+						Terminals.Versions,
+						Terminals.Where
+					};
+				
+				terminalCandidates.ShouldBe(expectedTerminals);
+			}
+
+			[Test(Description = @"")]
+			public void TestTerminalCandidatesAfterDotWithinNestedExpression()
+			{
+				const string statement1 = @"SELECT CASE WHEN S.";
+				var node = Parser.Parse(statement1).Single().RootNode.LastTerminalNode;
+				var terminalCandidates = Parser.GetTerminalCandidates(node).OrderBy(t => t).ToArray();
+				var expectedTerminals = new[] { Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.SequenceCurrentValue, Terminals.SequenceNextValue };
+				terminalCandidates.ShouldBe(expectedTerminals);
+			}
+
+			[Test(Description = @"")]
+			public void TestTerminalCandidatesAtNotLastNodeInTheParsedTree()
+			{
+				const string statement1 = @"SELECT D FROM DUAL";
+				var node = Parser.Parse(statement1).Single().RootNode.FirstTerminalNode;
+				var terminalCandidates = Parser.GetTerminalCandidates(node).OrderBy(t => t).ToArray();
+
+				var expectedTerminals =
+					new[]
+					{
+						Terminals.All,
+						Terminals.Asterisk,
+						Terminals.Avg,
+						Terminals.Case,
+						Terminals.Cast,
+						Terminals.Colon,
+						Terminals.Count,
+						Terminals.Date,
+						Terminals.Distinct,
+						Terminals.Extract,
+						Terminals.FirstValue,
+						Terminals.Identifier,
+						Terminals.Lag,
+						Terminals.LastValue,
+						Terminals.Lead,
+						Terminals.LeftParenthesis,
+						Terminals.Level,
+						Terminals.ListAggregation,
+						Terminals.MathMinus,
+						Terminals.MathPlus,
+						Terminals.Max,
+						Terminals.Min,
+						Terminals.Null,
+						Terminals.NumberLiteral,
+						Terminals.ObjectIdentifier,
+						Terminals.RowIdPseudoColumn,
+						Terminals.RowNumberPseudoColumn,
+						Terminals.SchemaIdentifier,
+						Terminals.StandardDeviation,
+						Terminals.StringLiteral,
+						Terminals.Sum,
+						Terminals.SystemDate,
+						Terminals.Timestamp,
+						Terminals.Unique,
+						Terminals.Variance,
+						Terminals.XmlAggregate,
+						Terminals.XmlColumnValue,
+						Terminals.XmlElement,
+						Terminals.XmlForest,
+						Terminals.XmlQuery
+					};
+				
+				terminalCandidates.ShouldBe(expectedTerminals);
 			}
 		}
 

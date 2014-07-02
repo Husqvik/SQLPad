@@ -8,7 +8,7 @@ namespace SqlPad.Oracle.Test
 	public class OracleCodeCompletionProviderTest
 	{
 		private readonly OracleCodeCompletionProvider _codeCompletionProvider = new OracleCodeCompletionProvider();
-		private readonly OracleSqlParser _parser = new OracleSqlParser();
+		private static readonly OracleSqlParser Parser = new OracleSqlParser();
 
 		[Test(Description = @"")]
 		public void TestObjectSuggestionWithSchema()
@@ -615,7 +615,7 @@ FROM
 		{
 			const string query1 = @"SELECT ROUND(1.23, 1) FROM DUAL";
 
-			var items = _codeCompletionProvider.ResolveFunctionOverloads(_parser.Parse(query1), TestFixture.DatabaseModel, 19).ToList();
+			var items = _codeCompletionProvider.ResolveFunctionOverloads(Parser.Parse(query1), TestFixture.DatabaseModel, 19).ToList();
 			items.Count.ShouldBe(3);
 			items.ForEach(i => i.Name.ShouldBe("SYS.STANDARD.ROUND"));
 			items.ForEach(i => i.Parameters.Count.ShouldBe(2));
@@ -628,7 +628,7 @@ FROM
 		{
 			const string query1 = @"SELECT ROUND(1.23, 1) FROM DUAL";
 
-			var items = _codeCompletionProvider.ResolveFunctionOverloads(_parser.Parse(query1), TestFixture.DatabaseModel, 18).ToList();
+			var items = _codeCompletionProvider.ResolveFunctionOverloads(Parser.Parse(query1), TestFixture.DatabaseModel, 18).ToList();
 			items.Count.ShouldBe(0);
 		}
 
@@ -660,6 +660,44 @@ FROM
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 15).ToList();
 			items.Count.ShouldBe(13);
 			items[0].Text.ShouldBe("\"CaseSensitiveTable\"");
+		}
+
+		public class OracleCodeCompletionTypeTest
+		{
+			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)
+			{
+				return new OracleCodeCompletionType(Parser.Parse(statementText), statementText, cursorPosition);
+			}
+
+			[Test(Description = @"")]
+			public void TestCodeCompletionTypeAfterOnTerminalWithinJoinCondition()
+			{
+				const string statement = @"SELECT CUSTOMER. FROM CUSTOMER JOIN COMPANY ON ";
+				var completionType = InitializeCodeCompletionType(statement, statement.Length);
+				completionType.JoinCondition.ShouldBe(true);
+				completionType.SchemaDataObject.ShouldBe(false);
+			}
+
+			[Test(Description = @"")]
+			public void TestCodeCompletionTypeAtTheEndOnTerminalWithinJoinCondition()
+			{
+				const string statement = @"SELECT CUSTOMER. FROM CUSTOMER JOIN COMPANY ON ";
+				var completionType = InitializeCodeCompletionType(statement, statement.Length - 1);
+				completionType.JoinCondition.ShouldBe(false);
+			}
+
+			[Test(Description = @"")]
+			public void TestCodeCompletionTypeAfterSchemaOrObjectIdentifierCandidate()
+			{
+				const string statement = @"SELECT CUSTOMER. FROM CUSTOMER JOIN COMPANY ON ";
+				var completionType = InitializeCodeCompletionType(statement, 16);
+				completionType.Schema.ShouldBe(false);
+				completionType.Column.ShouldBe(true);
+				completionType.AllColumns.ShouldBe(true);
+				completionType.Program.ShouldBe(true);
+				completionType.SchemaDataObject.ShouldBe(false);
+				//completionType.SchemaDataObjectReference.ShouldBe(true);
+			}
 		}
 	}
 }
