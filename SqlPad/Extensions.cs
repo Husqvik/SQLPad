@@ -34,6 +34,18 @@ namespace SqlPad
 			}
 		}
 
+		public static bool TryGetFirstValue<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, out TValue value, params TKey[] keys)
+		{
+			foreach (var key in keys)
+			{
+				if (dictionary.TryGetValue(key, out value))
+					return true;
+			}
+
+			value = default(TValue);
+			return false;
+		}
+
 		public static ICollection<T> AddRange<T>(this ICollection<T> collection, IEnumerable<T> items)
 		{
 			foreach (var item in items)

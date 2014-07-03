@@ -354,7 +354,7 @@ namespace SqlPad.Oracle
 			var rowIdItems = columnCandidates.Values.SelectMany(v => v)
 				.Distinct()
 				.Where(o => o.SearchResult.SchemaObject != null && o.SearchResult.SchemaObject.Organization.In(OrganizationType.Heap, OrganizationType.Index) &&
-							o.SearchResult.SchemaObject.Type == OracleObjectType.Table && suggestedColumns.Select(t => t.Item2).Contains(o.FullyQualifiedName))
+							o.SearchResult.SchemaObject.Type == OracleSchemaObjectType.Table && suggestedColumns.Select(t => t.Item2).Contains(o.FullyQualifiedName))
 				.Select(o => CreateColumnCodeCompletionItem(OracleColumn.RowId, objectIdentifierNode == null ? o.FullyQualifiedName.ToString() : null, currentNode, OracleCodeCompletionCategory.PseudoColumn));
 
 			var suggestedItems = rowIdItems.Concat(suggestedColumns.Select(t => CreateColumnCodeCompletionItem(t.Item1, objectIdentifierNode == null ? t.Item2.ToString() : null, currentNode)));
@@ -502,8 +502,7 @@ namespace SqlPad.Oracle
 
 		private bool IsDataObject(OracleSchemaObject schemaObject)
 		{
-			var synonym = schemaObject as OracleSynonym;
-			return schemaObject is OracleDataObject || (synonym != null && synonym.SchemaObject is OracleDataObject);
+			return schemaObject.GetTargetSchemaObject() is OracleDataObject;
 		}
 
 		private IEnumerable<ICodeCompletionItem> GenerateCommonTableExpressionReferenceItems(OracleStatementSemanticModel model, string referenceNamePart, StatementDescriptionNode node, int insertOffset)

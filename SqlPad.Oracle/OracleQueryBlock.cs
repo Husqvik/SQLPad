@@ -13,6 +13,7 @@ namespace SqlPad.Oracle
 		{
 			ObjectReferences = new List<OracleObjectReference>();
 			Columns = new List<OracleSelectListColumn>();
+			TypeReferences = new List<OracleTypeReference>();
 			AccessibleQueryBlocks = new List<OracleQueryBlock>();
 			ColumnReferences = new List<OracleColumnReference>();
 			FunctionReferences = new List<OracleProgramReference>();
@@ -77,6 +78,8 @@ namespace SqlPad.Oracle
 		public ICollection<OracleObjectReference> ObjectReferences { get; private set; }
 
 		public ICollection<OracleSelectListColumn> Columns { get; private set; }
+		
+		public ICollection<OracleTypeReference> TypeReferences { get; private set; }
 
 		public ICollection<OracleColumnReference> ColumnReferences { get; private set; }
 		

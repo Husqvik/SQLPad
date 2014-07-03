@@ -57,10 +57,7 @@ namespace SqlPad.Oracle
 				var currentSchemaObject = OracleObjectIdentifier.Create(CurrentSchema, objectIdentifier.NormalizedName);
 				var publicSchemaObject = OracleObjectIdentifier.Create(SchemaPublic, objectIdentifier.NormalizedName);
 
-				if (!AllObjects.TryGetValue(currentSchemaObject, out schemaObject))
-				{
-					AllObjects.TryGetValue(publicSchemaObject, out schemaObject);
-				}
+				AllObjects.TryGetFirstValue(out schemaObject, currentSchemaObject, publicSchemaObject);
 			}
 			else
 			{

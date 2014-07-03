@@ -393,7 +393,7 @@ FROM
 			const string query1 = @"SELECT NULL FROM SELECTION, ";
 
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 28).ToArray();
-			var currentSchemaTableCount = OracleTestDatabaseModel.Instance.AllObjects.Values.Count(o => o.Owner == OracleTestDatabaseModel.Instance.CurrentSchema && o.Type.In(OracleObjectType.Table, OracleObjectType.View));
+			var currentSchemaTableCount = OracleTestDatabaseModel.Instance.AllObjects.Values.Count(o => o.Owner == OracleTestDatabaseModel.Instance.CurrentSchema && o.Type.In(OracleSchemaObjectType.Table, OracleSchemaObjectType.View));
 			var schemaCount = OracleTestDatabaseModel.Instance.Schemas.Count; // PUBLIC excluded
 			items.Length.ShouldBe(currentSchemaTableCount + schemaCount);
 		}

@@ -395,7 +395,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 
 			var validationModel = _statementValidator.BuildValidationModel(sqlText, statement, TestFixture.DatabaseModel);
 
-			var nodeValidity = validationModel.FunctionNodeValidity
+			var nodeValidity = validationModel.ProgramNodeValidity
 				.OrderBy(cv => cv.Key.SourcePosition.IndexStart)
 				.Select(kvp => kvp.Value)
 				.ToArray();
@@ -426,7 +426,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 
 			var validationModel = _statementValidator.BuildValidationModel(sqlText, statement, TestFixture.DatabaseModel);
 
-			var nodeValidity = validationModel.FunctionNodeValidity
+			var nodeValidity = validationModel.ProgramNodeValidity
 				.OrderBy(cv => cv.Key.SourcePosition.IndexStart)
 				.Select(kvp => kvp.Value)
 				.ToArray();
@@ -446,7 +446,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 
 			var validationModel = _statementValidator.BuildValidationModel(sqlText, statement, TestFixture.DatabaseModel);
 
-			var nodeValidity = validationModel.FunctionNodeValidity
+			var nodeValidity = validationModel.ProgramNodeValidity
 				.Where(f => f.Key.Type == NodeType.NonTerminal)
 				.Select(cv => cv.Value.SemanticError).ToArray();
 			
@@ -464,7 +464,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 
 			var validationModel = _statementValidator.BuildValidationModel(sqlText, statement, TestFixture.DatabaseModel);
 
-			var nodeValidity = validationModel.FunctionNodeValidity
+			var nodeValidity = validationModel.ProgramNodeValidity
 				.Where(f => f.Key.Type == NodeType.NonTerminal)
 				.OrderBy(cv => cv.Key.SourcePosition.IndexStart)
 				.Select(cv => cv.Value.SemanticError).ToArray();
@@ -496,7 +496,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 
 			var validationModel = _statementValidator.BuildValidationModel(sqlText, statement, TestFixture.DatabaseModel);
 
-			var nodeValidity = validationModel.FunctionNodeValidity
+			var nodeValidity = validationModel.ProgramNodeValidity
 				.OrderBy(cv => cv.Key.SourcePosition.IndexStart)
 				.Select(kvp => kvp.Value)
 				.ToArray();
@@ -524,8 +524,8 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 
 			var validationModel = _statementValidator.BuildValidationModel(sqlText, statement, TestFixture.DatabaseModel);
 
-			validationModel.FunctionNodeValidity.Count.ShouldBe(1);
-			var nodeValidationData = validationModel.FunctionNodeValidity.Single().Value;
+			validationModel.ProgramNodeValidity.Count.ShouldBe(1);
+			var nodeValidationData = validationModel.ProgramNodeValidity.Single().Value;
 			nodeValidationData.IsRecognized.ShouldBe(true);
 			nodeValidationData.SemanticError.ShouldBe(SemanticError.None);
 		}
@@ -540,7 +540,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 
 			var validationModel = _statementValidator.BuildValidationModel(sqlText, statement, TestFixture.DatabaseModel);
 
-			var nodeValidity = validationModel.FunctionNodeValidity
+			var nodeValidity = validationModel.ProgramNodeValidity
 				.OrderBy(cv => cv.Key.SourcePosition.IndexStart)
 				.Select(kvp => kvp.Value)
 				.ToArray();
@@ -623,7 +623,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			columnNodeValidity[5].IsRecognized.ShouldBe(false);
 			columnNodeValidity[5].Node.Token.Value.ShouldBe("UNDEFINED_COLUMN");
 
-			nodeValidityDictionary = validationModel.FunctionNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			nodeValidityDictionary = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
 			var functionNodeValidity = nodeValidityDictionary.Values.ToList();
 			functionNodeValidity.Count.ShouldBe(2);
 			functionNodeValidity[0].IsRecognized.ShouldBe(true);
@@ -798,7 +798,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 			var validationModel = _statementValidator.BuildValidationModel(sqlText, statement, TestFixture.DatabaseModel);
-			var nodeValidityDictionary = validationModel.FunctionNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var nodeValidityDictionary = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
 			var functionNodeValidity = nodeValidityDictionary.Values.ToList();
 			functionNodeValidity.Count.ShouldBe(1);
 			functionNodeValidity[0].IsRecognized.ShouldBe(true);
@@ -830,7 +830,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 			var validationModel = _statementValidator.BuildValidationModel(sqlText, statement, TestFixture.DatabaseModel);
-			var nodeValidityDictionary = validationModel.FunctionNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var nodeValidityDictionary = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
 			var functionNodeValidity = nodeValidityDictionary.Values.ToList();
 			functionNodeValidity.Count.ShouldBe(2);
 			functionNodeValidity[0].IsRecognized.ShouldBe(true);
@@ -865,7 +865,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 
 			var validationModel = _statementValidator.BuildValidationModel(sqlText, statement, TestFixture.DatabaseModel);
 
-			var nodeValidity = validationModel.FunctionNodeValidity
+			var nodeValidity = validationModel.ProgramNodeValidity
 				.OrderBy(cv => cv.Key.SourcePosition.IndexStart)
 				.Select(cv => cv.Value).ToArray();
 
@@ -905,7 +905,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 			var validationModel = _statementValidator.BuildValidationModel(sqlText, statement, TestFixture.DatabaseModel);
-			var nodeValidityDictionary = validationModel.FunctionNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var nodeValidityDictionary = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
 			var functionNodeValidity = nodeValidityDictionary.Values.ToList();
 			functionNodeValidity.Count.ShouldBe(2);
 			functionNodeValidity[0].IsRecognized.ShouldBe(true);
@@ -923,7 +923,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 			var validationModel = _statementValidator.BuildValidationModel(sqlText, statement, TestFixture.DatabaseModel);
-			var nodeValidityDictionary = validationModel.FunctionNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var nodeValidityDictionary = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
 			var functionNodeValidity = nodeValidityDictionary.Values.ToList();
 			functionNodeValidity.Count.ShouldBe(2);
 			functionNodeValidity[0].IsRecognized.ShouldBe(true);
@@ -941,7 +941,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 			var validationModel = _statementValidator.BuildValidationModel(sqlText, statement, TestFixture.DatabaseModel);
-			var nodeValidityDictionary = validationModel.FunctionNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var nodeValidityDictionary = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
 			var functionNodeValidity = nodeValidityDictionary.Values.ToList();
 			functionNodeValidity.Count.ShouldBe(1);
 			functionNodeValidity[0].IsRecognized.ShouldBe(true);
@@ -957,7 +957,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 			var validationModel = _statementValidator.BuildValidationModel(sqlText, statement, TestFixture.DatabaseModel);
-			var nodeValidityDictionary = validationModel.FunctionNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var nodeValidityDictionary = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
 			var functionNodeValidity = nodeValidityDictionary.Values.ToList();
 			functionNodeValidity.Count.ShouldBe(2);
 			functionNodeValidity[0].IsRecognized.ShouldBe(true);
@@ -978,11 +978,31 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			databaseModel.AllObjects.Clear();
 
 			var validationModel = _statementValidator.BuildValidationModel(sqlText, statement, databaseModel);
-			var nodeValidityDictionary = validationModel.FunctionNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var nodeValidityDictionary = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
 			var functionNodeValidity = nodeValidityDictionary.Values.ToList();
 			functionNodeValidity.Count.ShouldBe(1);
 			functionNodeValidity[0].IsRecognized.ShouldBe(true);
 			functionNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+		}
+
+		[Test(Description = @"")]
+		public void TestProgramValidityNodesWithObjectTypes()
+		{
+			const string sqlText = "SELECT XMLTYPE('<Root/>'), SYS.XMLTYPE('<Root/>') FROM DUAL WHERE XMLTYPE('<Root/>') IS NOT NULL";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = _statementValidator.BuildValidationModel(sqlText, statement, TestFixture.DatabaseModel);
+			var nodeValidityDictionary = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var functionNodeValidity = nodeValidityDictionary.Values.ToList();
+			functionNodeValidity.Count.ShouldBe(3);
+			functionNodeValidity[0].IsRecognized.ShouldBe(true);
+			functionNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+			functionNodeValidity[1].IsRecognized.ShouldBe(true);
+			functionNodeValidity[1].SemanticError.ShouldBe(SemanticError.None);
+			functionNodeValidity[2].IsRecognized.ShouldBe(true);
+			functionNodeValidity[2].SemanticError.ShouldBe(SemanticError.None);
 		}
 
 		[Test(Description = @"")]

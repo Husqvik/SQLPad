@@ -164,7 +164,7 @@ namespace SqlPad
 				var validationModel = _validationModels[statement];
 				var nodeRecognizeData = validationModel.ObjectNodeValidity
 					.Select(kvp => new KeyValuePair<StatementDescriptionNode, bool>(kvp.Key, kvp.Value.IsRecognized))
-					.Concat(validationModel.FunctionNodeValidity.Select(kvp => new KeyValuePair<StatementDescriptionNode, bool>(kvp.Key, kvp.Value.IsRecognized)))
+					.Concat(validationModel.ProgramNodeValidity.Select(kvp => new KeyValuePair<StatementDescriptionNode, bool>(kvp.Key, kvp.Value.IsRecognized)))
 					.Concat(validationModel.ColumnNodeValidity.Select(kvp => new KeyValuePair<StatementDescriptionNode, bool>(kvp.Key, kvp.Value.IsRecognized)));
 
 				foreach (var nodeValidity in nodeRecognizeData.Where(nv => !nv.Value))
@@ -173,7 +173,7 @@ namespace SqlPad
 						element => element.TextRunProperties.SetForegroundBrush(ErrorBrush));
 				}
 
-				foreach (var terminal in validationModel.FunctionNodeValidity.Where(kvp => kvp.Value.IsRecognized && kvp.Key.Type == NodeType.Terminal).Select(kvp => kvp.Key))
+				foreach (var terminal in validationModel.ProgramNodeValidity.Where(kvp => kvp.Value.IsRecognized && kvp.Key.Type == NodeType.Terminal).Select(kvp => kvp.Key))
 				{
 					ProcessNodeAtLine(line, terminal.SourcePosition,
 						element => element.TextRunProperties.SetForegroundBrush(FunctionBrush));

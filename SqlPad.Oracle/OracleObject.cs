@@ -51,7 +51,7 @@ namespace SqlPad.Oracle
 	{
 		public string StatementText { get; set; }
 
-		public override string Type { get { return OracleObjectType.View; } }
+		public override string Type { get { return OracleSchemaObjectType.View; } }
 	}
 
 	[DebuggerDisplay("OracleSynonym (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
@@ -64,7 +64,7 @@ namespace SqlPad.Oracle
 			get { return FullyQualifiedName.NormalizedOwner == OracleDatabaseModelBase.SchemaPublic; }
 		}
 
-		public override string Type { get { return OracleObjectType.Synonym; } }
+		public override string Type { get { return OracleSchemaObjectType.Synonym; } }
 	}
 
 	[DebuggerDisplay("OracleTable (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
@@ -86,7 +86,7 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		public override string Type { get { return OracleObjectType.Table; } }
+		public override string Type { get { return OracleSchemaObjectType.Table; } }
 	}
 
 	[DebuggerDisplay("OracleSequence (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
@@ -106,7 +106,7 @@ namespace SqlPad.Oracle
 
 		public bool CanCycle { get; set; }
 
-		public override string Type { get { return OracleObjectType.Sequence; } }
+		public override string Type { get { return OracleSchemaObjectType.Sequence; } }
 	}
 
 	public interface IFunctionCollection
@@ -124,7 +124,7 @@ namespace SqlPad.Oracle
 
 		public ICollection<OracleFunctionMetadata> Functions { get; private set; } 
 
-		public override string Type { get { return OracleObjectType.Package; } }
+		public override string Type { get { return OracleSchemaObjectType.Package; } }
 	}
 
 	[DebuggerDisplay("OracleFunction (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
@@ -140,7 +140,29 @@ namespace SqlPad.Oracle
 
 		ICollection<OracleFunctionMetadata> IFunctionCollection.Functions { get { return _metadata; } }
 
-		public override string Type { get { return OracleObjectType.Function; } }
+		public override string Type { get { return OracleSchemaObjectType.Function; } }
+	}
+
+	public abstract class OracleTypeBase : OracleSchemaObject
+	{
+		public const string ObjectType = "OBJECT";
+		public const string XmlType = "XMLTYPE";
+		public const string CollectionType = "COLLECTION";
+		public override string Type { get { return OracleSchemaObjectType.Type; } }
+
+		public abstract string TypeCode { get; }
+	}
+
+	[DebuggerDisplay("OracleObjectType (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
+	public class OracleObjectType : OracleTypeBase
+	{
+		public override string TypeCode { get { return ObjectType; } }
+	}
+
+	[DebuggerDisplay("OracleCollectionType (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
+	public class OracleCollectionType : OracleTypeBase
+	{
+		public override string TypeCode { get { return CollectionType; } }
 	}
 
 	public enum OrganizationType
@@ -151,7 +173,7 @@ namespace SqlPad.Oracle
 		External
 	}
 
-	public static class OracleObjectType
+	public static class OracleSchemaObjectType
 	{
 		public const string Table = "TABLE";
 		public const string View = "VIEW";
@@ -159,5 +181,6 @@ namespace SqlPad.Oracle
 		public const string Sequence = "SEQUENCE";
 		public const string Function = "FUNCTION";
 		public const string Package = "PACKAGE";
+		public const string Type = "TYPE";
 	}
 }

@@ -184,5 +184,17 @@ namespace SqlPad.Oracle.Test
 			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
 			toolTip.Control.DataContext.ShouldBe("\"PUBLIC\".DBMS_RANDOM (Synonym) => SYS.DBMS_RANDOM (Package)");
 		}
+
+		[Test(Description = @""), STAThread]
+		public void TestTypeIdentifierToolTip()
+		{
+			const string query = "SELECT XMLTYPE('<Root/>') FROM DUAL";
+			_document.UpdateStatements(_oracleSqlParser.Parse(query), query);
+
+			var toolTip = _toolTipProvider.GetToolTip(TestFixture.DatabaseModel, _document, 10);
+
+			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.DataContext.ShouldBe("\"PUBLIC\".XMLTYPE (Synonym) => SYS.XMLTYPE (Type)");
+		}
 	}
 }

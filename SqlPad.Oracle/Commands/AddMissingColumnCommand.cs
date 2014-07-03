@@ -26,18 +26,18 @@ namespace SqlPad.Oracle.Commands
 
 			_table = GetSingleObjectReference(_missingColumn);
 			return _missingColumn.ColumnNodeColumnReferences.Count == 0 && _missingColumn.ColumnNodeObjectReferences.Count <= 1 &&
-			       _table != null && _table.Type == OracleObjectType.Table;
+			       _table != null && _table.Type == OracleSchemaObjectType.Table;
 		}
 
 		private static OracleDataObject GetSingleObjectReference(OracleColumnReference column)
 		{
 			OracleDataObject dataObject = null;
 			var queryBlockHasSingleObjectReference = column.Owner.ObjectReferences.Count == 1 && (dataObject = column.Owner.ObjectReferences.First().SearchResult.SchemaObject) != null &&
-													 dataObject.Type == OracleObjectType.Table;
+													 dataObject.Type == OracleSchemaObjectType.Table;
 
 			var schemaObjectReference = column.ValidObjectReference;
 			var hasValidObjectReference = schemaObjectReference != null && schemaObjectReference.Type == TableReferenceType.SchemaObject &&
-										  schemaObjectReference.SearchResult.SchemaObject != null && schemaObjectReference.SearchResult.SchemaObject.Type == OracleObjectType.Table;
+										  schemaObjectReference.SearchResult.SchemaObject != null && schemaObjectReference.SearchResult.SchemaObject.Type == OracleSchemaObjectType.Table;
 
 			return queryBlockHasSingleObjectReference || hasValidObjectReference
 				? dataObject ?? schemaObjectReference.SearchResult.SchemaObject

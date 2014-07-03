@@ -56,7 +56,7 @@ namespace SqlPad.Oracle
 							if ((functionReference.ParameterNodes.Count < functionReference.Metadata.MinimumArguments) ||
 							    (functionReference.ParameterNodes.Count > maximumParameterCount))
 							{
-								validationModel.FunctionNodeValidity[functionReference.ParameterListNode] = new FunctionValidationData(SemanticError.InvalidParameterCount) { IsRecognized = true };
+								validationModel.ProgramNodeValidity[functionReference.ParameterListNode] = new ProgramValidationData(SemanticError.InvalidParameterCount) { IsRecognized = true };
 							}
 						}
 						else if (functionReference.Metadata.MinimumArguments > 0)
@@ -70,7 +70,7 @@ namespace SqlPad.Oracle
 
 						if (functionReference.AnalyticClauseNode != null && !functionReference.Metadata.IsAnalytic)
 						{
-							validationModel.FunctionNodeValidity[functionReference.AnalyticClauseNode] = new FunctionValidationData(SemanticError.AnalyticClauseNotSupported) { IsRecognized = true, Node = functionReference.AnalyticClauseNode };
+							validationModel.ProgramNodeValidity[functionReference.AnalyticClauseNode] = new ProgramValidationData(SemanticError.AnalyticClauseNotSupported) { IsRecognized = true, Node = functionReference.AnalyticClauseNode };
 						}
 					}
 					
@@ -80,7 +80,7 @@ namespace SqlPad.Oracle
 							? SemanticError.None
 							: SemanticError.ObjectStatusInvalid;
 
-						validationModel.FunctionNodeValidity[functionReference.ObjectNode] = new FunctionValidationData(packageSemanticError) { IsRecognized = functionReference.SchemaObject != null, Node = functionReference.ObjectNode };
+						validationModel.ProgramNodeValidity[functionReference.ObjectNode] = new ProgramValidationData(packageSemanticError) { IsRecognized = functionReference.SchemaObject != null, Node = functionReference.ObjectNode };
 					}
 
 					if (semanticError == SemanticError.None && isRecognized && !functionReference.Metadata.IsPackageFunction && functionReference.SchemaObject != null && !functionReference.SchemaObject.IsValid)
@@ -88,7 +88,12 @@ namespace SqlPad.Oracle
 						semanticError = SemanticError.ObjectStatusInvalid;
 					}
 
-					validationModel.FunctionNodeValidity[functionReference.FunctionIdentifierNode] = new FunctionValidationData(semanticError) { IsRecognized = isRecognized, Node = functionReference.FunctionIdentifierNode };
+					validationModel.ProgramNodeValidity[functionReference.FunctionIdentifierNode] = new ProgramValidationData(semanticError) { IsRecognized = isRecognized, Node = functionReference.FunctionIdentifierNode };
+				}
+
+				foreach (var typeReference in queryBlock.TypeReferences)
+				{
+					validationModel.ProgramNodeValidity[typeReference.ObjectNode] = new ProgramValidationData { IsRecognized = true, Node = typeReference.ObjectNode };
 				}
 			}
 
@@ -171,7 +176,7 @@ namespace SqlPad.Oracle
 	{
 		private readonly Dictionary<StatementDescriptionNode, INodeValidationData> _objectNodeValidity = new Dictionary<StatementDescriptionNode, INodeValidationData>();
 		private readonly Dictionary<StatementDescriptionNode, INodeValidationData> _columnNodeValidity = new Dictionary<StatementDescriptionNode, INodeValidationData>();
-		private readonly Dictionary<StatementDescriptionNode, INodeValidationData> _functionNodeValidity = new Dictionary<StatementDescriptionNode, INodeValidationData>();
+		private readonly Dictionary<StatementDescriptionNode, INodeValidationData> _programNodeValidity = new Dictionary<StatementDescriptionNode, INodeValidationData>();
 		private readonly Dictionary<StatementDescriptionNode, INodeValidationData> _identifierNodeValidity = new Dictionary<StatementDescriptionNode, INodeValidationData>();
 
 		public OracleStatementSemanticModel SemanticModel { get; set; }
@@ -182,7 +187,7 @@ namespace SqlPad.Oracle
 
 		public IDictionary<StatementDescriptionNode, INodeValidationData> ColumnNodeValidity { get { return _columnNodeValidity; } }
 
-		public IDictionary<StatementDescriptionNode, INodeValidationData> FunctionNodeValidity { get { return _functionNodeValidity; } }
+		public IDictionary<StatementDescriptionNode, INodeValidationData> ProgramNodeValidity { get { return _programNodeValidity; } }
 
 		public IDictionary<StatementDescriptionNode, INodeValidationData> IdentifierNodeValidity { get { return _identifierNodeValidity; } }
 
@@ -190,7 +195,7 @@ namespace SqlPad.Oracle
 		{
 			return ColumnNodeValidity
 				.Concat(ObjectNodeValidity)
-				.Concat(FunctionNodeValidity)
+				.Concat(ProgramNodeValidity)
 				.Concat(IdentifierNodeValidity)
 				.Where(nv => nv.Value.SemanticError != SemanticError.None)
 				.Select(nv => new KeyValuePair<StatementDescriptionNode, INodeValidationData>(nv.Key, nv.Value));
@@ -251,11 +256,11 @@ namespace SqlPad.Oracle
 		}
 	}
 
-	public class FunctionValidationData : NodeValidationData
+	public class ProgramValidationData : NodeValidationData
 	{
 		private readonly SemanticError _semanticError;
 
-		public FunctionValidationData(SemanticError semanticError = SemanticError.None)
+		public ProgramValidationData(SemanticError semanticError = SemanticError.None)
 		{
 			_semanticError = semanticError;
 		}

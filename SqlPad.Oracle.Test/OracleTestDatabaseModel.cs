@@ -60,7 +60,7 @@ namespace SqlPad.Oracle.Test
 
 				if (schemaObject == null)
 				{
-					var objectType = function.IsPackageFunction ? OracleObjectType.Package : OracleObjectType.Function;
+					var objectType = function.IsPackageFunction ? OracleSchemaObjectType.Package : OracleSchemaObjectType.Function;
 					schemaObject = OracleObjectFactory.CreateSchemaObjectMetadata(objectType, function.Identifier.Owner, objectName, true, DateTime.Now, DateTime.Now, false);
 					AllObjectsInternal.Add(schemaObject);
 				}
@@ -76,17 +76,35 @@ namespace SqlPad.Oracle.Test
 			}
 
 			const string tableNameDual = "\"DUAL\"";
-			AllObjectsInternal.Add(new OracleSynonym
-			                       {
-				                       FullyQualifiedName = OracleObjectIdentifier.Create(SchemaPublic, tableNameDual),
-									   SchemaObject = AllObjectsInternal.Single(o => o.Name == tableNameDual && o.Owner == OwnerNameSys)
-			                       });
+			var synonym =
+				new OracleSynonym
+				{
+					FullyQualifiedName = OracleObjectIdentifier.Create(SchemaPublic, tableNameDual),
+					SchemaObject = AllObjectsInternal.Single(o => o.Name == tableNameDual && o.Owner == OwnerNameSys)
+				};
+			synonym.SchemaObject.Synonym = synonym;
+			
+			AllObjectsInternal.Add(synonym);
 
-			AllObjectsInternal.Add(new OracleSynonym
-			                       {
-				                       FullyQualifiedName = OracleObjectIdentifier.Create(SchemaPublic, "\"V$SESSION\""),
-									   SchemaObject = AllObjectsInternal.Single(o => o.Name == "\"V_$SESSION\"" && o.Owner == OwnerNameSys)
-			                       });
+			synonym =
+				new OracleSynonym
+				{
+					FullyQualifiedName = OracleObjectIdentifier.Create(SchemaPublic, "\"V$SESSION\""),
+					SchemaObject = AllObjectsInternal.Single(o => o.Name == "\"V_$SESSION\"" && o.Owner == OwnerNameSys)
+				};
+			synonym.SchemaObject.Synonym = synonym;
+
+			AllObjectsInternal.Add(synonym);
+
+			synonym =
+				new OracleSynonym
+				{
+					FullyQualifiedName = OracleObjectIdentifier.Create(SchemaPublic, "\"XMLTYPE\""),
+					SchemaObject = AllObjectsInternal.Single(o => o.Name == "\"XMLTYPE\"" && o.Owner == OwnerNameSys)
+				};
+			synonym.SchemaObject.Synonym = synonym;
+
+			AllObjectsInternal.Add(synonym);
 
 			var dbmsRandom = (OraclePackage)AllObjectsInternal.Single(o => o.Name == "\"DBMS_RANDOM\"" && o.Owner == OwnerNameSys);
 			var randomStringFunctionMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues("SYS", "DBMS_RANDOM", "STRING"), false, false, false, false, true, false, null, null, AuthId.Definer, OracleFunctionMetadata.DisplayTypeNormal, false);
@@ -95,12 +113,16 @@ namespace SqlPad.Oracle.Test
 			randomStringFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("LEN", 2, ParameterDirection.Input, "NUMBER", false));
 			dbmsRandom.Functions.Add(randomStringFunctionMetadata);
 
-			AllObjectsInternal.Add(new OracleSynonym
-			{
-				FullyQualifiedName = OracleObjectIdentifier.Create(SchemaPublic, "\"DBMS_RANDOM\""),
-				SchemaObject = dbmsRandom,
-				IsValid = true
-			});
+			synonym =
+				new OracleSynonym
+				{
+					FullyQualifiedName = OracleObjectIdentifier.Create(SchemaPublic, "\"DBMS_RANDOM\""),
+					SchemaObject = dbmsRandom,
+					IsValid = true
+				};
+			synonym.SchemaObject.Synonym = synonym;
+
+			AllObjectsInternal.Add(synonym);
 
 			var uncompilableFunction = (OracleFunction)AllObjectsInternal.Single(o => o.Name == "\"UNCOMPILABLE_FUNCTION\"" && o.Owner == InitialSchema);
 			uncompilableFunction.Metadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), null, "UNCOMPILABLE_FUNCTION"), false, false, false, false, true, false, null, null, AuthId.Definer, OracleFunctionMetadata.DisplayTypeNormal, false);
@@ -375,6 +397,10 @@ namespace SqlPad.Oracle.Test
 			new OraclePackage
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"UNCOMPILABLE_PACKAGE\"")
+			},
+			new OracleObjectType
+			{
+				FullyQualifiedName = OracleObjectIdentifier.Create(OwnerNameSys, "\"XMLTYPE\"")
 			}
 		};
 

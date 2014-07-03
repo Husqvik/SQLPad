@@ -63,7 +63,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Commands\GenerateMissingColumnCommand.cs" />
+    <Compile Include="Commands\AddMissingColumnCommand.cs" />
     <Compile Include="Commands\MoveContentCommand.cs" />
     <Compile Include="Commands\ToggleFullyQualifiedReferencesCommand.cs" />
     <Compile Include="Commands\ModifyCaseCommand.cs" />
@@ -88,6 +88,7 @@
     <Compile Include="OracleFunctionMatcher.cs" />
     <Compile Include="OracleFunctionMetadata.cs" />
     <Compile Include="OracleFunctionMetadataCollection.cs" />
+    <Compile Include="OracleObjectFactory.cs" />
     <Compile Include="OracleProgramReference.cs" />
     <Compile Include="OracleColumnReference.cs" />
     <Compile Include="OracleContextActionProvider.cs" />

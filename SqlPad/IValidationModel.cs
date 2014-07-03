@@ -10,7 +10,7 @@ namespace SqlPad
 
 		IDictionary<StatementDescriptionNode, INodeValidationData> ColumnNodeValidity { get; }
 		
-		IDictionary<StatementDescriptionNode, INodeValidationData> FunctionNodeValidity { get; }
+		IDictionary<StatementDescriptionNode, INodeValidationData> ProgramNodeValidity { get; }
 		
 		IDictionary<StatementDescriptionNode, INodeValidationData> IdentifierNodeValidity { get; }
 

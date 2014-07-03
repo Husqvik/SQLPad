@@ -360,10 +360,71 @@ namespace SqlPad.Oracle
 
 		private void ResolveFunctionReferences(OracleQueryBlock queryBlock)
 		{
+			var functionsTransferredToTypes = new List<OracleProgramReference>();
 			foreach (var functionReference in queryBlock.AllFunctionReferences)
 			{
-				UpdateFunctionReferenceWithMetadata(functionReference);
+				if (UpdateFunctionReferenceWithMetadata(functionReference) != null)
+					continue;
+
+				var typeReference = ResolveTypeReference(functionReference);
+				if (typeReference == null)
+					continue;
+
+				functionsTransferredToTypes.Add(functionReference);
+				queryBlock.TypeReferences.Add(typeReference);
 			}
+
+			foreach (var transferredFunction in functionsTransferredToTypes)
+			{
+				if (transferredFunction.SelectListColumn == null)
+				{
+					queryBlock.FunctionReferences.Remove(transferredFunction);
+				}
+				else
+				{
+					transferredFunction.SelectListColumn.FunctionReferences.Remove(transferredFunction);
+				}
+			}
+		}
+
+		private OracleTypeReference ResolveTypeReference(OracleProgramReference functionReference)
+		{
+			if (functionReference.ParameterListNode == null || functionReference.OwnerNode != null)
+				return null;
+
+			OracleObjectIdentifier[] identifierCandidates;
+			if (functionReference.ObjectNode == null)
+			{
+				identifierCandidates =
+					new[]
+					{
+						OracleObjectIdentifier.Create(DatabaseModel.CurrentSchema, functionReference.NormalizedName),
+						OracleObjectIdentifier.Create(OracleDatabaseModelBase.SchemaPublic, functionReference.NormalizedName)
+					};
+			}
+			else
+			{
+				identifierCandidates = new[] { OracleObjectIdentifier.Create(functionReference.FullyQualifiedObjectName.NormalizedName, functionReference.NormalizedName) };
+			}
+
+			OracleSchemaObject schemaObject;
+			DatabaseModel.AllObjects.TryGetFirstValue(out schemaObject, identifierCandidates);
+			var type = schemaObject.GetTargetSchemaObject() as OracleTypeBase;
+			if (type == null)
+				return null;
+
+			return
+				new OracleTypeReference
+				{
+					OwnerNode = functionReference.ObjectNode,
+					Owner = functionReference.Owner,
+					ParameterNodes = functionReference.ParameterNodes,
+					ParameterListNode = functionReference.ParameterListNode,
+					RootNode = functionReference.RootNode,
+					SchemaObject = schemaObject,
+					SelectListColumn = functionReference.SelectListColumn,
+					ObjectNode = functionReference.FunctionIdentifierNode
+				};
 		}
 
 		private OracleFunctionMetadata UpdateFunctionReferenceWithMetadata(OracleProgramReference programReference)

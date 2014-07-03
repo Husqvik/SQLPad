@@ -582,12 +582,78 @@ ORDER BY
 		{
 			RefreshStarted(this, EventArgs.Empty);
 
-			const string selectAllObjectsCommandText = "SELECT OWNER, OBJECT_NAME, SUBOBJECT_NAME, OBJECT_ID, DATA_OBJECT_ID, OBJECT_TYPE, CREATED, LAST_DDL_TIME, STATUS, TEMPORARY/*, EDITIONABLE, EDITION_NAME*/ FROM ALL_OBJECTS WHERE OBJECT_TYPE IN ('SYNONYM', 'VIEW', 'TABLE', 'SEQUENCE', 'FUNCTION', 'PACKAGE')";
-			var dataObjectMetadataSource = ExecuteReader(
-				selectAllObjectsCommandText,
-				r => OracleObjectFactory.CreateSchemaObjectMetadata((string)r["OBJECT_TYPE"], QualifyStringObject(r["OWNER"]), QualifyStringObject(r["OBJECT_NAME"]), (string)r["STATUS"] == "VALID", (DateTime)r["CREATED"], (DateTime)r["LAST_DDL_TIME"], (string)r["TEMPORARY"] == "Y"));
+			var allObjects = new Dictionary<OracleObjectIdentifier, OracleSchemaObject>();
 
-			var dataObjectMetadata = dataObjectMetadataSource.ToDictionary(m => m.FullyQualifiedName, m => m);
+			var selectTypesCommandText = String.Format("SELECT OWNER, TYPE_NAME, TYPECODE, PREDEFINED, INCOMPLETE, FINAL, INSTANTIABLE, SUPERTYPE_OWNER, SUPERTYPE_NAME FROM ALL_TYPES WHERE TYPECODE IN ('{0}', '{1}', '{2}')", OracleTypeBase.ObjectType, OracleTypeBase.CollectionType, OracleTypeBase.XmlType);
+			var schemaTypeMetadataSource = ExecuteReader(
+				selectTypesCommandText,
+				r =>
+				{
+					OracleTypeBase schemaType = null;
+					var typeType = (string)r["TYPECODE"];
+					switch (typeType)
+					{
+						case OracleTypeBase.XmlType:
+						case OracleTypeBase.ObjectType:
+							schemaType =
+								new OracleObjectType
+								{
+
+								};
+							break;
+						case OracleTypeBase.CollectionType:
+							schemaType =
+								new OracleCollectionType
+								{
+
+								};
+							break;
+					}
+
+					schemaType.FullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(r["OWNER"]), QualifyStringObject(r["TYPE_NAME"]));
+
+					return schemaType;
+				});
+
+			foreach (var schemaType in schemaTypeMetadataSource)
+			{
+				AddSchemaObjectToDictionary(allObjects, schemaType);
+			}
+
+			const string selectAllObjectsCommandText = "SELECT OWNER, OBJECT_NAME, SUBOBJECT_NAME, OBJECT_ID, DATA_OBJECT_ID, OBJECT_TYPE, CREATED, LAST_DDL_TIME, STATUS, TEMPORARY/*, EDITIONABLE, EDITION_NAME*/ FROM ALL_OBJECTS WHERE OBJECT_TYPE IN ('SYNONYM', 'VIEW', 'TABLE', 'SEQUENCE', 'FUNCTION', 'PACKAGE', 'TYPE')";
+			ExecuteReader(
+				selectAllObjectsCommandText,
+				r =>
+				{
+					var objectTypeIdentifer = OracleObjectIdentifier.Create(QualifyStringObject(r["OWNER"]), QualifyStringObject(r["OBJECT_NAME"]));
+					var objectType = (string)r["OBJECT_TYPE"];
+					var created = (DateTime)r["CREATED"];
+					var isValid = (string)r["STATUS"] == "VALID";
+					var lastDdl = (DateTime)r["LAST_DDL_TIME"];
+					var isTemporary = (string)r["TEMPORARY"] == "Y";
+					
+					OracleSchemaObject schemaObject;
+					if (objectType == OracleSchemaObjectType.Type)
+					{
+						if (allObjects.TryGetValue(objectTypeIdentifer, out schemaObject))
+						{
+							schemaObject.Created = created;
+							schemaObject.IsTemporary = isTemporary;
+							schemaObject.IsValid = isValid;
+							schemaObject.LastDdl = lastDdl;
+						}
+					}
+					else
+					{
+						schemaObject = OracleObjectFactory.CreateSchemaObjectMetadata(objectType, objectTypeIdentifer.NormalizedOwner, objectTypeIdentifer.NormalizedName, isValid, created, lastDdl, isTemporary);
+						AddSchemaObjectToDictionary(allObjects, schemaObject);
+					}
+
+					return schemaObject;
+				})
+				.ToArray();
+
+			//var allObjects = dataObjectMetadataSource.ToDictionary(m => m.FullyQualifiedName, m => m);
 
 			const string selectTablesCommandText =
 @"SELECT OWNER, TABLE_NAME, TABLESPACE_NAME, CLUSTER_NAME, STATUS, LOGGING, NUM_ROWS, BLOCKS, AVG_ROW_LEN, DEGREE, CACHE, SAMPLE_SIZE, LAST_ANALYZED, TEMPORARY, NESTED, ROW_MOVEMENT, COMPRESS_FOR,
@@ -603,7 +669,7 @@ FROM ALL_TABLES";
 				{
 					var tableFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(r["OWNER"]), QualifyStringObject(r["TABLE_NAME"]));
 					OracleSchemaObject schemaObject;
-					if (!dataObjectMetadata.TryGetValue(tableFullyQualifiedName, out schemaObject))
+					if (!allObjects.TryGetValue(tableFullyQualifiedName, out schemaObject))
 					{
 						return null;
 					}
@@ -621,14 +687,14 @@ FROM ALL_TABLES";
 				{
 					var synonymFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(r["OWNER"]), QualifyStringObject(r["SYNONYM_NAME"]));
 					OracleSchemaObject synonymObject;
-					if (!dataObjectMetadata.TryGetValue(synonymFullyQualifiedName, out synonymObject))
+					if (!allObjects.TryGetValue(synonymFullyQualifiedName, out synonymObject))
 					{
 						return null;
 					}
 
 					var objectFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(r["TABLE_OWNER"]), QualifyStringObject(r["TABLE_NAME"]));
 					OracleSchemaObject schemaObject;
-					if (!dataObjectMetadata.TryGetValue(objectFullyQualifiedName, out schemaObject))
+					if (!allObjects.TryGetValue(objectFullyQualifiedName, out schemaObject))
 					{
 						return null;
 					}
@@ -671,7 +737,7 @@ FROM ALL_TABLES";
 			foreach (var columnMetadata in columnMetadataSource)
 			{
 				OracleSchemaObject schemaObject;
-				if (!dataObjectMetadata.TryGetValue(columnMetadata.Key, out schemaObject))
+				if (!allObjects.TryGetValue(columnMetadata.Key, out schemaObject))
 					continue;
 
 				var dataObject = (OracleDataObject)schemaObject;
@@ -687,7 +753,7 @@ FROM ALL_TABLES";
 					var owner = QualifyStringObject(r["OWNER"]);
 					var ownerObjectFullyQualifiedName = OracleObjectIdentifier.Create(owner, QualifyStringObject(r["TABLE_NAME"]));
 					OracleSchemaObject ownerObject;
-					if (!dataObjectMetadata.TryGetValue(ownerObjectFullyQualifiedName, out ownerObject))
+					if (!allObjects.TryGetValue(ownerObjectFullyQualifiedName, out ownerObject))
 						return new KeyValuePair<OracleConstraint, OracleObjectIdentifier>(null, remoteConstraintIdentifier); ;
 
 					var relyRaw = r["RELY"];
@@ -781,6 +847,22 @@ FROM ALL_TABLES";
 				})
 				.ToArray();
 
+			const string selectTypeAttributesCommandText = "SELECT OWNER, TYPE_NAME, ATTR_NAME, ATTR_TYPE_MOD, ATTR_TYPE_OWNER, ATTR_TYPE_NAME, LENGTH, PRECISION, SCALE, ATTR_NO, CHAR_USED FROM ALL_TYPE_ATTRS ORDER BY OWNER, TYPE_NAME, ATTR_NO";
+			ExecuteReader(
+				selectTypeAttributesCommandText,
+				r =>
+				{
+					var typeFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(r["OWNER"]), QualifyStringObject(r["TYPE_NAME"]));
+					OracleSchemaObject typeObject;
+					if (!AllObjects.TryGetValue(typeFullyQualifiedName, out typeObject))
+						return null;
+
+					var type = (OracleTypeBase)typeObject;
+					// TODO:
+					return type;
+				})
+				.ToArray();
+
 			_allFunctionMetadata = new OracleFunctionMetadataCollection(BuiltInFunctionMetadata.SqlFunctions.Concat(GetUserFunctionMetadata().SqlFunctions));
 
 			foreach (var functionMetadata in _allFunctionMetadata.SqlFunctions)
@@ -788,7 +870,7 @@ FROM ALL_TABLES";
 				if (functionMetadata.IsPackageFunction)
 				{
 					OracleSchemaObject packageObject;
-					if (dataObjectMetadata.TryGetValue(OracleObjectIdentifier.Create(functionMetadata.Identifier.Owner, functionMetadata.Identifier.Package), out packageObject))
+					if (allObjects.TryGetValue(OracleObjectIdentifier.Create(functionMetadata.Identifier.Owner, functionMetadata.Identifier.Package), out packageObject))
 					{
 						((OraclePackage)packageObject).Functions.Add(functionMetadata);
 					}
@@ -796,21 +878,34 @@ FROM ALL_TABLES";
 				else
 				{
 					OracleSchemaObject functionObject;
-					if (dataObjectMetadata.TryGetValue(OracleObjectIdentifier.Create(functionMetadata.Identifier.Owner, functionMetadata.Identifier.Name), out functionObject))
+					if (allObjects.TryGetValue(OracleObjectIdentifier.Create(functionMetadata.Identifier.Owner, functionMetadata.Identifier.Name), out functionObject))
 					{
 						((OracleFunction)functionObject).Metadata = functionMetadata;
 					}
 				}
 			}
 
-			_allObjects = dataObjectMetadata;
+			_allObjects = allObjects;
 			//var ftmp = _allFunctionMetadata.SqlFunctions.Where(f => f.Identifier.Owner.Contains("CA_DEV")).ToArray();
-			var ftmp = _allFunctionMetadata.SqlFunctions.Where(f => f.Identifier.Package.Contains("DBMS_RANDOM")).ToArray();
-			var otmp = dataObjectMetadata.Where(o => o.Key.NormalizedName.Contains("DBMS_RANDOM")).ToArray();
+			//var ftmp = _allFunctionMetadata.SqlFunctions.Where(f => f.Identifier.Package.Contains("DBMS_RANDOM")).ToArray();
+			//var otmp = dataObjectMetadata.Where(o => o.Key.NormalizedName.Contains("DBMS_RANDOM")).ToArray();
+			var otmp = allObjects.Where(o => o.Key.NormalizedName.Contains("XMLTYPE")).ToArray();
 
 			_lastRefresh = DateTime.Now;
 
 			RefreshFinished(this, EventArgs.Empty);
+		}
+
+		private static void AddSchemaObjectToDictionary(Dictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects, OracleSchemaObject schemaObject)
+		{
+			if (allObjects.ContainsKey(schemaObject.FullyQualifiedName))
+			{
+				Trace.WriteLine(string.Format("Object '{0}' ({1}) is already in the dictionary. ", schemaObject.FullyQualifiedName, schemaObject.Type));
+			}
+			else
+			{
+				allObjects.Add(schemaObject.FullyQualifiedName, schemaObject);
+			}
 		}
 
 		private static string QualifyStringObject(object stringValue)
@@ -828,71 +923,6 @@ FROM ALL_TABLES";
 
 			_schemas = new HashSet<string>(schemaSource);
 			_allSchemas = new HashSet<string>(schemaSource.Select(QualifyStringObject)) { SchemaPublic };
-		}
-	}
-
-	internal static class OracleObjectFactory
-	{
-		public static OracleSchemaObject CreateSchemaObjectMetadata(string objectType, string owner, string name, bool isValid, DateTime created, DateTime lastDdl, bool isTemporary)
-		{
-			var schemaObject = CreateObjectMetadata(objectType);
-			schemaObject.FullyQualifiedName = OracleObjectIdentifier.Create(owner, name);
-			schemaObject.IsValid = isValid;
-			schemaObject.Created = created;
-			schemaObject.LastDdl = lastDdl;
-			schemaObject.IsTemporary = isTemporary;
-
-			return schemaObject;
-		}
-
-		public static OracleConstraint CreateConstraint(string constraintType, string owner, string name, bool isEnabled, bool isValidated, bool isDeferrable, bool isRelied)
-		{
-			var constraint = CreateConstraint(constraintType);
-			constraint.FullyQualifiedName = OracleObjectIdentifier.Create(owner, name);
-			constraint.IsEnabled = isEnabled;
-			constraint.IsValidated = isValidated;
-			constraint.IsDeferrable = isDeferrable;
-			constraint.IsRelied = isRelied;
-
-			return constraint;
-		}
-
-		private static OracleConstraint CreateConstraint(string constraintType)
-		{
-			switch (constraintType)
-			{
-				case "P":
-					return new OraclePrimaryKeyConstraint();
-				case "U":
-					return new OracleUniqueConstraint();
-				case "R":
-					return new OracleForeignKeyConstraint();
-				case "C":
-					return new OracleCheckConstraint();
-				default:
-					throw new InvalidOperationException(String.Format("Constraint type '{0}' not supported. ", constraintType));
-			}
-		}
-
-		private static OracleSchemaObject CreateObjectMetadata(string objectType)
-		{
-			switch (objectType)
-			{
-				case OracleObjectType.Table:
-					return new OracleTable();
-				case OracleObjectType.View:
-					return new OracleView();
-				case OracleObjectType.Synonym:
-					return new OracleSynonym();
-				case OracleObjectType.Function:
-					return new OracleFunction();
-				case OracleObjectType.Sequence:
-					return new OracleSequence();
-				case OracleObjectType.Package:
-					return new OraclePackage();
-				default:
-					throw new InvalidOperationException(String.Format("Object type '{0}' not supported. ", objectType));
-			}
 		}
 	}
 }

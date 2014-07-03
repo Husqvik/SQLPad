@@ -136,6 +136,12 @@ namespace SqlPad.Oracle
 		{
 			return OracleGrammarDescription.SingleCharacterTerminals.Contains(terminalId);
 		}
+
+		public static OracleSchemaObject GetTargetSchemaObject(this OracleSchemaObject schemaObject)
+		{
+			var synonym = schemaObject as OracleSynonym;
+			return synonym == null ? schemaObject : synonym.SchemaObject;
+		}
 	}
 
 	public static class NodeFilters

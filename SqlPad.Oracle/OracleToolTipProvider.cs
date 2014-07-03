@@ -64,13 +64,20 @@ namespace SqlPad.Oracle
 						var columnDescription = GetColumnDescription(queryBlock, node);
 						if (columnDescription == null)
 						{
-							var functionName = GetFunctionName(queryBlock, node);
-							if (functionName == null)
+							var functionToolTip = GetFunctionToolTip(queryBlock, node);
+							var typeToolTip = GetTypeToolTip(queryBlock, node);
+							if (functionToolTip != null)
+							{
+								tip = functionToolTip;
+							}
+							else if (typeToolTip != null)
+							{
+								tip = typeToolTip;
+							}
+							else
 							{
 								return null;
 							}
-
-							tip = functionName;
 						}
 						else
 						{
@@ -82,6 +89,12 @@ namespace SqlPad.Oracle
 			}
 
 			return String.IsNullOrEmpty(tip) ? null : new ToolTipObject { DataContext = tip };
+		}
+
+		private static string GetTypeToolTip(OracleQueryBlock queryBlock, StatementDescriptionNode node)
+		{
+			var typeReference = queryBlock.TypeReferences.SingleOrDefault(t => t.ObjectNode == node);
+			return typeReference == null ? null : GetFullSchemaObjectToolTip(typeReference.SchemaObject);
 		}
 
 		private static string GetObjectToolTip(OracleObjectReference objectReference)
@@ -113,7 +126,7 @@ namespace SqlPad.Oracle
 			return schemaObject.FullyQualifiedName + " (" + CultureInfo.InvariantCulture.TextInfo.ToTitleCase(schemaObject.Type.ToLower()) + ")";
 		}
 
-		private string GetFunctionName(OracleQueryBlock queryBlock, StatementDescriptionNode terminal)
+		private string GetFunctionToolTip(OracleQueryBlock queryBlock, StatementDescriptionNode terminal)
 		{
 			var functionReference = queryBlock.AllFunctionReferences.SingleOrDefault(f => f.FunctionIdentifierNode == terminal);
 			return functionReference == null || functionReference.Metadata == null ? null : functionReference.Metadata.Identifier.FullyQualifiedIdentifier;
