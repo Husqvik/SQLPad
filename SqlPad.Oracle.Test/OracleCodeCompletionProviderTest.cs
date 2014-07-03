@@ -118,6 +118,14 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"")]
+		public void TestJoinConditionSuggestionAfterTableFunctionClause()
+		{
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, "SELECT  FROM SELECTION JOIN TABLE(PIPELINED_FUNCTION) T ON ", 59).ToArray();
+			items.Length.ShouldBe(0);
+			// TODO: Add proper implementation
+		}
+
+		[Test(Description = @"")]
 		public void TestJoinConditionSuggestionForTablesWithoutForeignKeys()
 		{
 			const string query1 = @"WITH

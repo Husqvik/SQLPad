@@ -198,13 +198,15 @@ namespace SqlPad.Oracle
 						if (joinedTableReferenceNodes.Length == 1)
 						{
 							var joinedTableReference = queryBlock.ObjectReferences.SingleOrDefault(t => t.TableReferenceNode == joinedTableReferenceNodes[0]);
-
-							foreach (var parentTableReference in queryBlock.ObjectReferences
-								.Where(t => t.TableReferenceNode.SourcePosition.IndexStart < joinedTableReference.TableReferenceNode.SourcePosition.IndexStart &&
-								            (t.Type != TableReferenceType.InlineView || t.AliasNode != null)))
+							if (joinedTableReference != null)
 							{
-								var joinSuggestions = GenerateJoinConditionSuggestionItems(parentTableReference, joinedTableReference, currentNode.Id == Terminals.On, extraOffset);
-								completionItems = completionItems.Concat(joinSuggestions);
+								foreach (var parentTableReference in queryBlock.ObjectReferences
+									.Where(t => t.TableReferenceNode.SourcePosition.IndexStart < joinedTableReference.TableReferenceNode.SourcePosition.IndexStart &&
+									            (t.Type != TableReferenceType.InlineView || t.AliasNode != null)))
+								{
+									var joinSuggestions = GenerateJoinConditionSuggestionItems(parentTableReference, joinedTableReference, currentNode.Id == Terminals.On, extraOffset);
+									completionItems = completionItems.Concat(joinSuggestions);
+								}
 							}
 						}
 					}
