@@ -7,15 +7,22 @@ namespace SqlPad
 {
 	public static class Snippets
 	{
+		public const string SnippetDirectoryName = "Snippets";
+
 		private static readonly XmlSerializer XmlSerializer = new XmlSerializer(typeof(Snippet));
-		private static readonly string SnippetDirectory = Path.Combine(App.FolderNameApplication, "Snippets");
-		private static readonly List<Snippet> SnippetCollectionInternal = new List<Snippet>(); 
+		private static string _snippetDirectory = Path.Combine(App.FolderNameApplication, SnippetDirectoryName);
+		private static readonly List<Snippet> SnippetCollectionInternal = new List<Snippet>();
+
+		public static void SelectSnippetDirectory(string directory)
+		{
+			_snippetDirectory = directory;
+		}
 
 		public static void ReloadSnippets()
 		{
 			SnippetCollectionInternal.Clear();
 
-			foreach (var snippetFile in Directory.GetFiles(SnippetDirectory, "*.xml"))
+			foreach (var snippetFile in Directory.GetFiles(_snippetDirectory, "*.xml"))
 			{
 				using (var reader = XmlReader.Create(snippetFile))
 				{

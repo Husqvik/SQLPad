@@ -24,7 +24,7 @@ namespace SqlPad.Oracle
 			StatementDescriptionNode currentNode = null;
 			if (statement != null)
 			{
-				currentNode = statement.GetNodeAtPosition(cursorPosition)
+				currentNode = statement.GetTerminalAtPosition(cursorPosition)
 				                  ?? statement.GetNearestTerminalToPosition(cursorPosition);
 			}
 
@@ -34,7 +34,7 @@ namespace SqlPad.Oracle
 				currentNode = currentNode.PrecedingTerminal.PrecedingTerminal;
 			}
 
-			var textToReplace = new String(statementText.Substring(0, cursorPosition).Reverse().TakeWhile(c => c != ' ' && c != '\n' && c != '\t' && c!= '(').Reverse().ToArray());
+			var textToReplace = new String(statementText.Substring(0, cursorPosition).Reverse().TakeWhile(c => !c.In(' ', '\n', '\t', '(', '\r')).Reverse().ToArray());
 
 			if (String.IsNullOrWhiteSpace(textToReplace))
 				return EmptyCollection;

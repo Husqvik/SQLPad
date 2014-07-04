@@ -65,6 +65,9 @@
     <Compile Include="Commands\CommandTest.cs" />
     <Compile Include="OracleCodeCompletionProviderTest.cs" />
     <Compile Include="OracleNavigationServiceTest.cs" />
+    <Compile Include="OracleSnippetProviderTest.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="OracleTestDatabaseModel.cs" />
     <Compile Include="OracleTestInfrastructureFactory.cs" />
     <Compile Include="OracleToolTipProviderTest.cs" />
