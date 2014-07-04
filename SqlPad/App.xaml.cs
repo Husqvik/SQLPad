@@ -47,7 +47,7 @@ namespace SqlPad
 					BuildErrorLog(unhandledExceptionEventArgs.ExceptionObject, page);
 				}
 
-				File.WriteAllText(Path.Combine(FolderNameCommonDataErrorLog, String.Format("RecoveredDocument.{0}.sql.tmp", counter)), page.Editor.Text);
+				File.WriteAllText(Path.Combine(FolderNameCommonDataRecoveryFiles, String.Format("RecoveredDocument.{0}.sql.tmp", counter)), page.Editor.Text);
 				counter++;
 			}
 		}
