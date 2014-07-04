@@ -574,7 +574,7 @@ namespace SqlPad.Oracle
 					columnReference.ColumnDescription = columnDescription;
 				}
 
-				if (columnReference.ColumnNodeColumnReferences.Count == 0)
+				if (columnReference.ColumnNodeColumnReferences.Count == 0 && !columnReference.ReferencesAllColumns)
 				{
 					var functionReference =
 						new OracleProgramReference
