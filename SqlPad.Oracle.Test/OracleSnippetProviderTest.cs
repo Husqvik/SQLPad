@@ -19,8 +19,8 @@ namespace SqlPad.Oracle.Test
 		[Test(Description = @"")]
 		public void TestSnippetSuggestionWithinStatementWhileTyping()
 		{
-			const string statementText = "SELECT DUMMY FROM D DUAL";
-			var snippets = SnippetProvider.GetSnippets(statementText, 19);
+			const string statementText = "SELECT DUMMY FROM\r\nD\r\nDUAL";
+			var snippets = SnippetProvider.GetSnippets(statementText, 21);
 			snippets.Count.ShouldBe(0);
 		}
 	}
