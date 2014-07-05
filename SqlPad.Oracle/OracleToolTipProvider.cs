@@ -93,11 +93,11 @@ namespace SqlPad.Oracle
 
 		private static string GetTypeToolTip(OracleQueryBlock queryBlock, StatementDescriptionNode node)
 		{
-			var typeReference = queryBlock.TypeReferences.SingleOrDefault(t => t.ObjectNode == node);
+			var typeReference = queryBlock.AllTypeReferences.SingleOrDefault(t => t.ObjectNode == node);
 			return typeReference == null ? null : GetFullSchemaObjectToolTip(typeReference.SchemaObject);
 		}
 
-		private static string GetObjectToolTip(OracleObjectReference objectReference)
+		private static string GetObjectToolTip(OracleDataObjectReference objectReference)
 		{
 			if (objectReference.Type == TableReferenceType.SchemaObject && objectReference.SearchResult.SchemaObject != null)
 			{
@@ -148,7 +148,7 @@ namespace SqlPad.Oracle
 				.FirstOrDefault();
 		}
 
-		private OracleObjectReference GetObjectReference(OracleQueryBlock queryBlock, StatementDescriptionNode terminal)
+		private OracleDataObjectReference GetObjectReference(OracleQueryBlock queryBlock, StatementDescriptionNode terminal)
 		{
 			var objectReference = queryBlock.AllColumnReferences
 				.Where(c => c.ObjectNode == terminal && c.ObjectNodeObjectReferences.Count == 1)

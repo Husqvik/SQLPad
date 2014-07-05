@@ -1,18 +1,21 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
 namespace SqlPad.Oracle
 {
-	[DebuggerDisplay("OracleObjectReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; Table={Type != SqlPad.Oracle.TableReferenceType.InlineView ? ObjectNode.Token.Value : \"<Nested subquery>\"}; Alias={AliasNode == null ? null : AliasNode.Token.Value}; Type={Type})")]
-	public class OracleObjectReference
+	[DebuggerDisplay("OracleDataObjectReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; Table={Type != SqlPad.Oracle.TableReferenceType.InlineView ? ObjectNode.Token.Value : \"<Nested subquery>\"}; Alias={AliasNode == null ? null : AliasNode.Token.Value}; Type={Type})")]
+	public class OracleDataObjectReference : OracleReference
 	{
 		private List<OracleColumn> _columns;
 
-		public OracleObjectReference()
+		public OracleDataObjectReference()
 		{
 			QueryBlocks = new List<OracleQueryBlock>();
 		}
+
+		public override string Name { get { throw new NotImplementedException(); } }
 
 		public OracleObjectIdentifier FullyQualifiedName
 		{
@@ -51,16 +54,8 @@ namespace SqlPad.Oracle
 
 		public SchemaObjectResult<OracleDataObject> SearchResult { get; set; }
 		
-		public OracleQueryBlock Owner { get; set; }
-
-		public StatementDescriptionNode OwnerNode { get; set; }
-
-		public StatementDescriptionNode ObjectNode { get; set; }
-		
 		public StatementDescriptionNode AliasNode { get; set; }
 		
-		public StatementDescriptionNode TableReferenceNode { get; set; }
-
 		public ICollection<OracleQueryBlock> QueryBlocks { get; private set; }
 
 		public TableReferenceType Type { get; set; }

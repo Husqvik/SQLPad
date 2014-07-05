@@ -9,7 +9,7 @@ namespace SqlPad.Oracle.Commands
 	{
 		public const string Title = "Add Alias";
 		private OracleQueryBlock _currentQueryBlock;
-		private OracleObjectReference _currentObjectReference;
+		private OracleDataObjectReference _currentObjectReference;
 		private OracleColumnReference _currentColumnReference;
 
 		private AddAliasCommand(OracleCommandExecutionContext executionContext)
@@ -101,16 +101,16 @@ namespace SqlPad.Oracle.Commands
 			}
 		}
 
-		private IEnumerable<OracleObjectReference> GetParentObjectReferences(OracleQueryBlock referredQueryBlock)
+		private IEnumerable<OracleDataObjectReference> GetParentObjectReferences(OracleQueryBlock referredQueryBlock)
 		{
 			return SemanticModel.QueryBlocks
 				.SelectMany(qb => qb.ObjectReferences)
 				.Where(o => o.QueryBlocks.Count == 1 && o.QueryBlocks.First() == referredQueryBlock);
 		}
 
-		private void AddColumnAliasToQueryBlock(string columnName, string alias, OracleObjectReference objectReference)
+		private void AddColumnAliasToQueryBlock(string columnName, string alias, OracleDataObjectReference objectReference)
 		{
-			var parentObjectReferences = new HashSet<OracleObjectReference>();
+			var parentObjectReferences = new HashSet<OracleDataObjectReference>();
 			var columnReferences = objectReference.Owner.AllColumnReferences.Where(c => c.ValidObjectReference == objectReference && c.NormalizedName == columnName);
 			foreach (var columnReference in columnReferences)
 			{

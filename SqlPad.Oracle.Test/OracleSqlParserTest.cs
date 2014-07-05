@@ -774,8 +774,8 @@ namespace SqlPad.Oracle.Test
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 			var terminals = statement.AllTerminals.ToArray();
-			terminals[3].Id.ShouldBe(Terminals.SequenceCurrentValue);
-			terminals[9].Id.ShouldBe(Terminals.SequenceNextValue);
+			terminals[3].Id.ShouldBe(Terminals.Identifier);
+			terminals[9].Id.ShouldBe(Terminals.Identifier);
 
 			const string query2 = @"SELECT CURRVAL, NEXTVAL, CURRVAL@HQ11G2 FROM DUAL";
 			result = Parser.Parse(query2);
@@ -1805,7 +1805,7 @@ FROM DUAL";
 				var terminalCandidates = Parser.GetTerminalCandidates(node).OrderBy(t => t).ToArray();
 
 				// TODO: Wrong, at least ObjectIdentifier should be available in addition
-				var expectedTerminals = new[] { Terminals.Asterisk, Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.SequenceCurrentValue, Terminals.SequenceNextValue };
+				var expectedTerminals = new[] { Terminals.Asterisk, Terminals.Identifier, Terminals.RowIdPseudoColumn };
 				terminalCandidates.ShouldBe(expectedTerminals);
 			}
 
@@ -1879,7 +1879,7 @@ FROM DUAL";
 				const string statement1 = @"SELECT CASE WHEN S.";
 				var node = Parser.Parse(statement1).Single().RootNode.LastTerminalNode;
 				var terminalCandidates = Parser.GetTerminalCandidates(node).OrderBy(t => t).ToArray();
-				var expectedTerminals = new[] { Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.SequenceCurrentValue, Terminals.SequenceNextValue };
+				var expectedTerminals = new[] { Terminals.Identifier, Terminals.RowIdPseudoColumn };
 				terminalCandidates.ShouldBe(expectedTerminals);
 			}
 

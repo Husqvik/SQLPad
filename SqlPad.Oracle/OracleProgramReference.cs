@@ -21,10 +21,14 @@ namespace SqlPad.Oracle
 		public override string Name { get { return ObjectNode.Token.Value; } }
 	}
 
+	[DebuggerDisplay("OracleSequenceReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; Sequence={ObjectNode.Token.Value})")]
+	public class OracleSequenceReference : OracleReference
+	{
+		public override string Name { get { return ObjectNode.Token.Value; } }
+	}
+
 	public abstract class OracleProgramReferenceBase : OracleReference
 	{
-		public StatementDescriptionNode RootNode { get; set; }
-
 		public OracleSchemaObject SchemaObject { get; set; }
 
 		public StatementDescriptionNode ParameterListNode { get; set; }

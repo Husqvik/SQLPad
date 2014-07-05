@@ -6,7 +6,7 @@ namespace SqlPad.Oracle
 	{
 		protected OracleReference()
 		{
-			ObjectNodeObjectReferences = new HashSet<OracleObjectReference>();
+			ObjectNodeObjectReferences = new HashSet<OracleDataObjectReference>();
 		}
 
 		public OracleObjectIdentifier FullyQualifiedObjectName
@@ -20,12 +20,19 @@ namespace SqlPad.Oracle
 
 		public OracleQueryBlock Owner { get; set; }
 
+		public StatementDescriptionNode RootNode { get; set; }
+
 		public StatementDescriptionNode OwnerNode { get; set; }
 
 		public StatementDescriptionNode ObjectNode { get; set; }
 
-		public ICollection<OracleObjectReference> ObjectNodeObjectReferences { get; set; }
+		public ICollection<OracleDataObjectReference> ObjectNodeObjectReferences { get; set; }
 
 		public OracleSelectListColumn SelectListColumn { get; set; }
+
+		public OracleReferenceContainer Container
+		{
+			get { return SelectListColumn ?? (OracleReferenceContainer)Owner; }
+		}
 	}
 }

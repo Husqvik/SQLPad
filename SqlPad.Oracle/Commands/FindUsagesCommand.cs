@@ -137,7 +137,7 @@ namespace SqlPad.Oracle.Commands
 				.ToArray();
 		}
 
-		private IEnumerable<OracleObjectReference> GetObjectReferences()
+		private IEnumerable<OracleDataObjectReference> GetObjectReferences()
 		{
 			if (_queryBlock == null && _currentNode.Id == Terminals.ObjectAlias)
 			{
@@ -156,7 +156,7 @@ namespace SqlPad.Oracle.Commands
 			return Enumerable.Repeat(objectReference, 1);
 		}
 
-		private IEnumerable<StatementDescriptionNode> GetObjectReferenceUsage(OracleObjectReference objectReference)
+		private IEnumerable<StatementDescriptionNode> GetObjectReferenceUsage(OracleDataObjectReference objectReference)
 		{
 			var nodes = new List<StatementDescriptionNode>();
 			if (objectReference.Type != TableReferenceType.InlineView)
@@ -239,7 +239,7 @@ namespace SqlPad.Oracle.Commands
 			return nodes;
 		}
 
-		private IEnumerable<StatementDescriptionNode> GetChildQueryBlockColumnReferences(OracleObjectReference objectReference, OracleColumnReference columnReference)
+		private IEnumerable<StatementDescriptionNode> GetChildQueryBlockColumnReferences(OracleDataObjectReference objectReference, OracleColumnReference columnReference)
 		{
 			var nodes = Enumerable.Empty<StatementDescriptionNode>();
 			if (objectReference.QueryBlocks.Count != 1)

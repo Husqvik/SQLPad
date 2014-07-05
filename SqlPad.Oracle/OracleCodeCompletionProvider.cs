@@ -197,11 +197,11 @@ namespace SqlPad.Oracle
 						var joinedTableReferenceNodes = joinClauseNode.GetPathFilterDescendants(n => !n.Id.In(NonTerminals.JoinClause, NonTerminals.NestedQuery), NonTerminals.TableReference).ToArray();
 						if (joinedTableReferenceNodes.Length == 1)
 						{
-							var joinedTableReference = queryBlock.ObjectReferences.SingleOrDefault(t => t.TableReferenceNode == joinedTableReferenceNodes[0]);
+							var joinedTableReference = queryBlock.ObjectReferences.SingleOrDefault(t => t.RootNode == joinedTableReferenceNodes[0]);
 							if (joinedTableReference != null)
 							{
 								foreach (var parentTableReference in queryBlock.ObjectReferences
-									.Where(t => t.TableReferenceNode.SourcePosition.IndexStart < joinedTableReference.TableReferenceNode.SourcePosition.IndexStart &&
+									.Where(t => t.RootNode.SourcePosition.IndexStart < joinedTableReference.RootNode.SourcePosition.IndexStart &&
 									            (t.Type != TableReferenceType.InlineView || t.AliasNode != null)))
 								{
 									var joinSuggestions = GenerateJoinConditionSuggestionItems(parentTableReference, joinedTableReference, currentNode.Id == Terminals.On, extraOffset);
@@ -372,7 +372,7 @@ namespace SqlPad.Oracle
 			return suggestedItems.Concat(suggestedFunctions);
 		}
 
-		private IEnumerable<OracleCodeCompletionItem> CreateAsteriskColumnCompletionItems(IEnumerable<OracleObjectReference> tables, bool skipFirstObjectIdentifier, StatementDescriptionNode currentNode)
+		private IEnumerable<OracleCodeCompletionItem> CreateAsteriskColumnCompletionItems(IEnumerable<OracleDataObjectReference> tables, bool skipFirstObjectIdentifier, StatementDescriptionNode currentNode)
 		{
 			var builder = new StringBuilder();
 			
@@ -521,7 +521,7 @@ namespace SqlPad.Oracle
 						});
 		}
 
-		private IEnumerable<ICodeCompletionItem> GenerateJoinConditionSuggestionItems(OracleObjectReference parentSchemaObject, OracleObjectReference joinedSchemaObject, bool skipOnTerminal, int insertOffset)
+		private IEnumerable<ICodeCompletionItem> GenerateJoinConditionSuggestionItems(OracleDataObjectReference parentSchemaObject, OracleDataObjectReference joinedSchemaObject, bool skipOnTerminal, int insertOffset)
 		{
 			var codeItems = Enumerable.Empty<ICodeCompletionItem>();
 

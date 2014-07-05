@@ -971,10 +971,6 @@
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="PrefixedSequencePseudoColumn" />
-          <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
-        </Sequence>
-        <Sequence>
           <NonTerminal Id="PrefixedColumnReference" />
           <NonTerminal Id="MultisetOperatorClause" IsOptional="true" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
@@ -1158,27 +1154,6 @@
       </Sequences>
     </Rule>
 
-    <Rule StartingNonTerminal="PrefixedSequencePseudoColumn">
-      <Sequences>
-        <Sequence>
-          <NonTerminal Id="Prefix" />
-          <NonTerminal Id="SequenceCurrentValueOrNextValue" />
-          <NonTerminal Id="DatabaseLink" IsOptional="true" />
-        </Sequence>
-      </Sequences>
-    </Rule>
-
-    <Rule StartingNonTerminal="SequenceCurrentValueOrNextValue">
-      <Sequences>
-        <Sequence>
-          <Terminal Id="SequenceCurrentValue" />
-        </Sequence>
-        <Sequence>
-          <Terminal Id="SequenceNextValue" />
-        </Sequence>
-      </Sequences>
-    </Rule>
-    
     <!--Function call -->
     <Rule StartingNonTerminal="ParenthesisEnclosedAggregationFunctionParameters">
       <Sequences>
@@ -3687,8 +3662,6 @@
     <Terminal Id="Table" Value="TABLE" IsKeyword="true" />
     <Terminal Id="Public" Value="PUBLIC" IsKeyword="true" />
     <Terminal Id="Column" Value="COLUMN" IsKeyword="true" />
-    <Terminal Id="SequenceCurrentValue" Value="CURRVAL" />
-    <Terminal Id="SequenceNextValue" Value="NEXTVAL" />
     <Terminal Id="RowNumberPseudoColumn" Value="ROWNUM" IsKeyword="true" />
     <Terminal Id="RowIdPseudoColumn" Value="ROWID" IsKeyword="true" />
     <Terminal Id="Identifier" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />

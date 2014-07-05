@@ -92,6 +92,9 @@ namespace SqlPad.Oracle
 	[DebuggerDisplay("OracleSequence (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
 	public class OracleSequence : OracleSchemaObject
 	{
+		public const string NormalizedColumnNameCurrentValue = "\"CURRVAL\"";
+		public const string NormalizedColumnNameNextValue = "\"NEXTVAL\"";
+
 		public decimal CurrentValue { get; set; }
 
 		public decimal Increment { get; set; }

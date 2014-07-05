@@ -4,29 +4,46 @@ using System.Linq;
 
 namespace SqlPad.Oracle
 {
-	[DebuggerDisplay("OracleQueryBlock (Alias={Alias}; Type={Type}; RootNode={RootNode}; Columns={Columns.Count})")]
-	public class OracleQueryBlock
+	public abstract class OracleReferenceContainer
 	{
-		private OracleObjectReference _selfObjectReference;
+		protected OracleReferenceContainer()
+		{
+			TypeReferences = new List<OracleTypeReference>();
+			ColumnReferences = new List<OracleColumnReference>();
+			FunctionReferences = new List<OracleProgramReference>();
+			SequenceReferences = new List<OracleSequenceReference>();
+		}
+
+		public ICollection<OracleTypeReference> TypeReferences { get; private set; }
+
+		public ICollection<OracleSequenceReference> SequenceReferences { get; private set; }
+
+		public ICollection<OracleColumnReference> ColumnReferences { get; private set; }
+
+		public ICollection<OracleProgramReference> FunctionReferences { get; private set; }
+
+	}
+
+	[DebuggerDisplay("OracleQueryBlock (Alias={Alias}; Type={Type}; RootNode={RootNode}; Columns={Columns.Count})")]
+	public class OracleQueryBlock : OracleReferenceContainer
+	{
+		private OracleDataObjectReference _selfObjectReference;
 
 		public OracleQueryBlock()
 		{
-			ObjectReferences = new List<OracleObjectReference>();
+			ObjectReferences = new List<OracleDataObjectReference>();
 			Columns = new List<OracleSelectListColumn>();
-			TypeReferences = new List<OracleTypeReference>();
 			AccessibleQueryBlocks = new List<OracleQueryBlock>();
-			ColumnReferences = new List<OracleColumnReference>();
-			FunctionReferences = new List<OracleProgramReference>();
 		}
 
-		public OracleObjectReference SelfObjectReference
+		public OracleDataObjectReference SelfObjectReference
 		{
 			get { return _selfObjectReference ?? BuildSelfObjectReference(); }
 		}
 
-		private OracleObjectReference BuildSelfObjectReference()
+		private OracleDataObjectReference BuildSelfObjectReference()
 		{
-			_selfObjectReference = new OracleObjectReference
+			_selfObjectReference = new OracleDataObjectReference
 			                       {
 									   AliasNode = AliasNode,
 									   Owner = this,
@@ -75,19 +92,17 @@ namespace SqlPad.Oracle
 		
 		public OracleStatement Statement { get; set; }
 
-		public ICollection<OracleObjectReference> ObjectReferences { get; private set; }
+		public ICollection<OracleDataObjectReference> ObjectReferences { get; private set; }
 
 		public ICollection<OracleSelectListColumn> Columns { get; private set; }
 		
-		public ICollection<OracleTypeReference> TypeReferences { get; private set; }
-
-		public ICollection<OracleColumnReference> ColumnReferences { get; private set; }
-		
-		public ICollection<OracleProgramReference> FunctionReferences { get; private set; }
-
 		public IEnumerable<OracleProgramReference> AllFunctionReferences { get { return Columns.SelectMany(c => c.FunctionReferences).Concat(FunctionReferences); } }
 
 		public IEnumerable<OracleColumnReference> AllColumnReferences { get { return Columns.SelectMany(c => c.ColumnReferences).Concat(ColumnReferences); } }
+
+		public IEnumerable<OracleTypeReference> AllTypeReferences { get { return Columns.SelectMany(c => c.TypeReferences).Concat(TypeReferences); } }
+
+		public IEnumerable<OracleSequenceReference> AllSequenceReferences { get { return Columns.SelectMany(c => c.SequenceReferences).Concat(SequenceReferences); } }
 
 		public ICollection<OracleQueryBlock> AccessibleQueryBlocks { get; private set; }
 

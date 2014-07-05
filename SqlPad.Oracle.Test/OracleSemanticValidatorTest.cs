@@ -799,10 +799,10 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 
 			var validationModel = _statementValidator.BuildValidationModel(sqlText, statement, TestFixture.DatabaseModel);
 			var nodeValidityDictionary = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
-			var functionNodeValidity = nodeValidityDictionary.Values.ToList();
-			functionNodeValidity.Count.ShouldBe(1);
-			functionNodeValidity[0].IsRecognized.ShouldBe(true);
-			functionNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+			var programNodeValidity = nodeValidityDictionary.Values.ToList();
+			programNodeValidity.Count.ShouldBe(1);
+			programNodeValidity[0].IsRecognized.ShouldBe(true);
+			programNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
 		}
 
 		[Test(Description = @"")]
@@ -831,12 +831,12 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 
 			var validationModel = _statementValidator.BuildValidationModel(sqlText, statement, TestFixture.DatabaseModel);
 			var nodeValidityDictionary = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
-			var functionNodeValidity = nodeValidityDictionary.Values.ToList();
-			functionNodeValidity.Count.ShouldBe(2);
-			functionNodeValidity[0].IsRecognized.ShouldBe(true);
-			functionNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
-			functionNodeValidity[1].IsRecognized.ShouldBe(true);
-			functionNodeValidity[1].SemanticError.ShouldBe(SemanticError.None);
+			var programNodeValidity = nodeValidityDictionary.Values.ToList();
+			programNodeValidity.Count.ShouldBe(2);
+			programNodeValidity[0].IsRecognized.ShouldBe(true);
+			programNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+			programNodeValidity[1].IsRecognized.ShouldBe(true);
+			programNodeValidity[1].SemanticError.ShouldBe(SemanticError.None);
 		}
 
 		[Test(Description = @"")]
@@ -906,12 +906,12 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 
 			var validationModel = _statementValidator.BuildValidationModel(sqlText, statement, TestFixture.DatabaseModel);
 			var nodeValidityDictionary = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
-			var functionNodeValidity = nodeValidityDictionary.Values.ToList();
-			functionNodeValidity.Count.ShouldBe(2);
-			functionNodeValidity[0].IsRecognized.ShouldBe(true);
-			functionNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
-			functionNodeValidity[1].IsRecognized.ShouldBe(true);
-			functionNodeValidity[1].SemanticError.ShouldBe(SemanticError.None);
+			var programNodeValidity = nodeValidityDictionary.Values.ToList();
+			programNodeValidity.Count.ShouldBe(2);
+			programNodeValidity[0].IsRecognized.ShouldBe(true);
+			programNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+			programNodeValidity[1].IsRecognized.ShouldBe(true);
+			programNodeValidity[1].SemanticError.ShouldBe(SemanticError.None);
 		}
 
 		[Test(Description = @"")]
@@ -924,12 +924,12 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 
 			var validationModel = _statementValidator.BuildValidationModel(sqlText, statement, TestFixture.DatabaseModel);
 			var nodeValidityDictionary = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
-			var functionNodeValidity = nodeValidityDictionary.Values.ToList();
-			functionNodeValidity.Count.ShouldBe(2);
-			functionNodeValidity[0].IsRecognized.ShouldBe(true);
-			functionNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
-			functionNodeValidity[1].IsRecognized.ShouldBe(false);
-			functionNodeValidity[1].SemanticError.ShouldBe(SemanticError.None);
+			var programNodeValidity = nodeValidityDictionary.Values.ToList();
+			programNodeValidity.Count.ShouldBe(2);
+			programNodeValidity[0].IsRecognized.ShouldBe(true);
+			programNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+			programNodeValidity[1].IsRecognized.ShouldBe(false);
+			programNodeValidity[1].SemanticError.ShouldBe(SemanticError.None);
 		}
 
 		[Test(Description = @"")]
@@ -958,12 +958,12 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 
 			var validationModel = _statementValidator.BuildValidationModel(sqlText, statement, TestFixture.DatabaseModel);
 			var nodeValidityDictionary = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
-			var functionNodeValidity = nodeValidityDictionary.Values.ToList();
-			functionNodeValidity.Count.ShouldBe(2);
-			functionNodeValidity[0].IsRecognized.ShouldBe(true);
-			functionNodeValidity[0].SemanticError.ShouldBe(SemanticError.ObjectStatusInvalid);
-			functionNodeValidity[1].IsRecognized.ShouldBe(true);
-			functionNodeValidity[1].SemanticError.ShouldBe(SemanticError.None);
+			var programNodeValidity = nodeValidityDictionary.Values.ToList();
+			programNodeValidity.Count.ShouldBe(2);
+			programNodeValidity[0].IsRecognized.ShouldBe(true);
+			programNodeValidity[0].SemanticError.ShouldBe(SemanticError.ObjectStatusInvalid);
+			programNodeValidity[1].IsRecognized.ShouldBe(true);
+			programNodeValidity[1].SemanticError.ShouldBe(SemanticError.None);
 		}
 
 		[Test(Description = @"")]
@@ -979,10 +979,10 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 
 			var validationModel = _statementValidator.BuildValidationModel(sqlText, statement, databaseModel);
 			var nodeValidityDictionary = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
-			var functionNodeValidity = nodeValidityDictionary.Values.ToList();
-			functionNodeValidity.Count.ShouldBe(1);
-			functionNodeValidity[0].IsRecognized.ShouldBe(true);
-			functionNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+			var programNodeValidity = nodeValidityDictionary.Values.ToList();
+			programNodeValidity.Count.ShouldBe(1);
+			programNodeValidity[0].IsRecognized.ShouldBe(true);
+			programNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
 		}
 
 		[Test(Description = @"")]
@@ -995,14 +995,38 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 
 			var validationModel = _statementValidator.BuildValidationModel(sqlText, statement, TestFixture.DatabaseModel);
 			var nodeValidityDictionary = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
-			var functionNodeValidity = nodeValidityDictionary.Values.ToList();
-			functionNodeValidity.Count.ShouldBe(3);
-			functionNodeValidity[0].IsRecognized.ShouldBe(true);
-			functionNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
-			functionNodeValidity[1].IsRecognized.ShouldBe(true);
-			functionNodeValidity[1].SemanticError.ShouldBe(SemanticError.None);
-			functionNodeValidity[2].IsRecognized.ShouldBe(true);
-			functionNodeValidity[2].SemanticError.ShouldBe(SemanticError.None);
+			var programNodeValidity = nodeValidityDictionary.Values.ToList();
+			programNodeValidity.Count.ShouldBe(3);
+			programNodeValidity[0].IsRecognized.ShouldBe(true);
+			programNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+			programNodeValidity[1].IsRecognized.ShouldBe(true);
+			programNodeValidity[1].SemanticError.ShouldBe(SemanticError.None);
+			programNodeValidity[2].IsRecognized.ShouldBe(true);
+			programNodeValidity[2].SemanticError.ShouldBe(SemanticError.None);
+		}
+
+		[Test(Description = @""), Ignore]
+		public void TestColumnValidityNodesWithSequence()
+		{
+			const string sqlText = "SELECT TEST_SEQ.NEXTVAL, HUSQVIK.TEST_SEQ.\"NEXTVAL\", SYNONYM_TO_TEST_SEQ.CURRVAL FROM DUAL WHERE SYNONYM_TO_TEST_SEQ.\"CURRVAL\" < SYNONYM_TO_TEST_SEQ.NEXTVAL";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = _statementValidator.BuildValidationModel(sqlText, statement, TestFixture.DatabaseModel);
+			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var nodeValidity = nodeValidityDictionary.Values.ToList();
+			nodeValidity.Count.ShouldBe(3);
+			nodeValidity[0].IsRecognized.ShouldBe(true);
+			nodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+			nodeValidity[1].IsRecognized.ShouldBe(true);
+			nodeValidity[1].SemanticError.ShouldBe(SemanticError.None);
+			nodeValidity[2].IsRecognized.ShouldBe(true);
+			nodeValidity[2].SemanticError.ShouldBe(SemanticError.None);
+			nodeValidity[3].IsRecognized.ShouldBe(true);
+			//nodeValidity[3].SemanticError.ShouldBe();
+			nodeValidity[4].IsRecognized.ShouldBe(true);
+			//nodeValidity[4].SemanticError.ShouldBe();
 		}
 
 		[Test(Description = @"")]

@@ -118,7 +118,7 @@
     <Compile Include="OracleStatement.cs" />
     <Compile Include="OracleStatementSemanticModel.cs" />
     <Compile Include="OracleStatementValidator.cs" />
-    <Compile Include="OracleObjectReference.cs" />
+    <Compile Include="OracleDataObjectReference.cs" />
     <Compile Include="OracleToken.cs" />
     <Compile Include="OracleTokenReader.cs" />
     <Compile Include="OracleToolTipProvider.cs" />

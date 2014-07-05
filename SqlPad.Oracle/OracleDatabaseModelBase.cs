@@ -123,6 +123,16 @@ namespace SqlPad.Oracle
 			return result;
 		}
 
+		public OracleSchemaObject GetFirstSchemaObject<T>(params OracleObjectIdentifier[] identifiers) where T : OracleSchemaObject
+		{
+			OracleSchemaObject schemaObject;
+			AllObjects.TryGetFirstValue(out schemaObject, identifiers);
+			var type = schemaObject.GetTargetSchemaObject() as T;
+			return type == null
+				? null
+				: schemaObject;
+		}
+
 		internal static object ValueConverterFunction(ColumnHeader columnHeader, object value)
 		{
 			return columnHeader.DatabaseDataType == "Raw"

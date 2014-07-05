@@ -1,20 +1,13 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
 namespace SqlPad.Oracle
 {
 	[DebuggerDisplay("OracleSelectListColumn (Alias={AliasNode == null ? null : AliasNode.Token.Value}; IsDirectReference={IsDirectReference})")]
-	public class OracleSelectListColumn
+	public class OracleSelectListColumn : OracleReferenceContainer
 	{
 		private OracleColumn _columnDescription;
-
-		public OracleSelectListColumn()
-		{
-			ColumnReferences = new List<OracleColumnReference>();
-			FunctionReferences = new List<OracleProgramReference>();
-		}
 
 		public bool IsDirectReference { get; set; }
 		
@@ -40,10 +33,6 @@ namespace SqlPad.Oracle
 		public StatementDescriptionNode RootNode { get; set; }
 		
 		public OracleQueryBlock Owner { get; set; }
-
-		public ICollection<OracleColumnReference> ColumnReferences { get; private set; }
-
-		public ICollection<OracleProgramReference> FunctionReferences { get; private set; }
 
 		public OracleColumn ColumnDescription
 		{

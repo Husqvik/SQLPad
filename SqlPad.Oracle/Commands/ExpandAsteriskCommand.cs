@@ -139,7 +139,7 @@ namespace SqlPad.Oracle.Commands
 			return segmentToReplace;
 		}
 
-		private static OracleObjectReference GetObjectReference(OracleSelectListColumn column)
+		private static OracleDataObjectReference GetObjectReference(OracleSelectListColumn column)
 		{
 			var columnReference = column.ColumnReferences.FirstOrDefault();
 			return columnReference != null && columnReference.ColumnNodeObjectReferences.Count == 1
@@ -147,12 +147,12 @@ namespace SqlPad.Oracle.Commands
 				: null;
 		}
 
-		private static ExpandedColumn GetExpandedColumn(OracleObjectReference objectReference, string columnName, bool isRowId)
+		private static ExpandedColumn GetExpandedColumn(OracleDataObjectReference objectReference, string columnName, bool isRowId)
 		{
 			return new ExpandedColumn { ColumnName = GetColumnName(objectReference, columnName), IsRowId = isRowId };
 		}
 
-		private static string GetColumnName(OracleObjectReference objectReference, string columnName)
+		private static string GetColumnName(OracleDataObjectReference objectReference, string columnName)
 		{
 			var simpleColumnName = columnName.ToSimpleIdentifier();
 			if (objectReference == null)

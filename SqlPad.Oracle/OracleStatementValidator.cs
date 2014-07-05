@@ -88,10 +88,16 @@ namespace SqlPad.Oracle
 					validationModel.ProgramNodeValidity[functionReference.FunctionIdentifierNode] = new ProgramValidationData(semanticError) { IsRecognized = isRecognized, Node = functionReference.FunctionIdentifierNode };
 				}
 
-				foreach (var typeReference in queryBlock.TypeReferences)
+				foreach (var typeReference in queryBlock.AllTypeReferences)
 				{
 					var semanticError = GetCompilationEror(typeReference);
 					validationModel.ProgramNodeValidity[typeReference.ObjectNode] = new ProgramValidationData(semanticError) { IsRecognized = true, Node = typeReference.ObjectNode };
+				}
+
+				foreach (var sequenceReference in queryBlock.AllSequenceReferences)
+				{
+					//validationModel.ColumnNodeValidity[sequenceReference.] = new ProgramValidationData { IsRecognized = true, Node = sequenceReference.ObjectNode };
+					//validationModel.ObjectNodeValidity[sequenceReference.ObjectNode] = new ProgramValidationData { IsRecognized = true, Node = sequenceReference.ObjectNode };
 				}
 			}
 
@@ -209,15 +215,15 @@ namespace SqlPad.Oracle
 
 	public class NodeValidationData : INodeValidationData
 	{
-		private readonly HashSet<OracleObjectReference> _objectReferences;
+		private readonly HashSet<OracleDataObjectReference> _objectReferences;
 
-		public NodeValidationData(OracleObjectReference objectReference) : this(Enumerable.Repeat(objectReference, 1))
+		public NodeValidationData(OracleDataObjectReference objectReference) : this(Enumerable.Repeat(objectReference, 1))
 		{
 		}
 
-		public NodeValidationData(IEnumerable<OracleObjectReference> objectReferences = null)
+		public NodeValidationData(IEnumerable<OracleDataObjectReference> objectReferences = null)
 		{
-			_objectReferences = new HashSet<OracleObjectReference>(objectReferences ?? Enumerable.Empty<OracleObjectReference>());
+			_objectReferences = new HashSet<OracleDataObjectReference>(objectReferences ?? Enumerable.Empty<OracleDataObjectReference>());
 		}
 
 		public bool IsRecognized { get; set; }
@@ -227,7 +233,7 @@ namespace SqlPad.Oracle
 			get { return _objectReferences.Count >= 2 ? SemanticError.AmbiguousReference : SemanticError.None; }
 		}
 
-		public ICollection<OracleObjectReference> ObjectReferences { get { return _objectReferences; } }
+		public ICollection<OracleDataObjectReference> ObjectReferences { get { return _objectReferences; } }
 
 		public ICollection<string> ObjectNames
 		{
