@@ -33,14 +33,14 @@ namespace SqlPad.Oracle
 				{
 					case Terminals.ObjectIdentifier:
 						var objectReference = GetObjectReference(queryBlock, node);
-						var packageReference = GetPackageReference(queryBlock, node);
+						var schemaObjectReference = GetSchemaObjectReference(queryBlock, node);
 						if (objectReference != null)
 						{
 							tip = GetObjectToolTip(objectReference);
 						}
-						else if (packageReference != null)
+						else if (schemaObjectReference != null)
 						{
-							tip = GetFullSchemaObjectToolTip(packageReference);
+							tip = GetFullSchemaObjectToolTip(schemaObjectReference);
 						}
 						else
 						{
@@ -140,9 +140,11 @@ namespace SqlPad.Oracle
 				.FirstOrDefault();
 		}
 
-		private OracleSchemaObject GetPackageReference(OracleQueryBlock queryBlock, StatementDescriptionNode terminal)
+		private OracleSchemaObject GetSchemaObjectReference(OracleQueryBlock queryBlock, StatementDescriptionNode terminal)
 		{
 			return queryBlock.AllFunctionReferences
+				.Cast<OracleReference>()
+				.Concat(queryBlock.AllSequenceReferences)
 				.Where(f => f.ObjectNode == terminal)
 				.Select(f => f.SchemaObject)
 				.FirstOrDefault();

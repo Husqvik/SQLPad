@@ -198,6 +198,18 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestSequenceIdentifierToolTip()
+		{
+			const string query = "SELECT SYNONYM_TO_TEST_SEQ.CURRVAL FROM DUAL";
+			_document.UpdateStatements(_oracleSqlParser.Parse(query), query);
+
+			var toolTip = _toolTipProvider.GetToolTip(TestFixture.DatabaseModel, _document, 10);
+
+			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.DataContext.ShouldBe("HUSQVIK.SYNONYM_TO_TEST_SEQ (Synonym) => HUSQVIK.TEST_SEQ (Sequence)");
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestTypeWithCompilationErrorToolTip()
 		{
 			const string query = "SELECT INVALID_OBJECT_TYPE(DUMMY) FROM DUAL";

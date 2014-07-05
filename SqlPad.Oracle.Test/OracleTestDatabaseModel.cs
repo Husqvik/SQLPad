@@ -112,8 +112,8 @@ namespace SqlPad.Oracle.Test
 			synonym =
 				new OracleSynonym
 				{
-					FullyQualifiedName = OracleObjectIdentifier.Create(SchemaPublic, "\"SYNONYM_TO_TEST_SEQ\""),
-					SchemaObject = AllObjectsInternal.Single(o => o.Name == "\"TEST_SEQ\"" && o.Owner == OwnerNameSys),
+					FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"SYNONYM_TO_TEST_SEQ\""),
+					SchemaObject = AllObjectsInternal.Single(o => o.Name == "\"TEST_SEQ\"" && o.Owner == InitialSchema),
 					IsValid = true
 				};
 			synonym.SchemaObject.Synonym = synonym;
@@ -423,7 +423,7 @@ namespace SqlPad.Oracle.Test
 			},
 			new OracleSequence
 			{
-				FullyQualifiedName = OracleObjectIdentifier.Create(OwnerNameSys, "\"TEST_SEQ\""),
+				FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"TEST_SEQ\""),
 				IsValid = true,
 				CacheSize = 20, CurrentValue = 1234, MinimumValue = 1, MaximumValue = Decimal.MaxValue, CanCycle = true
 			}

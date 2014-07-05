@@ -29,8 +29,6 @@ namespace SqlPad.Oracle
 
 	public abstract class OracleProgramReferenceBase : OracleReference
 	{
-		public OracleSchemaObject SchemaObject { get; set; }
-
 		public StatementDescriptionNode ParameterListNode { get; set; }
 
 		public ICollection<StatementDescriptionNode> ParameterNodes { get; set; }

@@ -97,7 +97,8 @@ namespace SqlPad.Oracle
 				foreach (var sequenceReference in queryBlock.AllSequenceReferences)
 				{
 					//validationModel.ColumnNodeValidity[sequenceReference.] = new ProgramValidationData { IsRecognized = true, Node = sequenceReference.ObjectNode };
-					//validationModel.ObjectNodeValidity[sequenceReference.ObjectNode] = new ProgramValidationData { IsRecognized = true, Node = sequenceReference.ObjectNode };
+					var semanticError = sequenceReference.SelectListColumn == null ? SemanticError.ObjectCannotBeUsed : SemanticError.None;
+					validationModel.ObjectNodeValidity[sequenceReference.ObjectNode] = new ProgramValidationData(semanticError) { IsRecognized = true, Node = sequenceReference.ObjectNode };
 				}
 			}
 

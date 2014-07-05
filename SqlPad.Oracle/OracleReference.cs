@@ -28,6 +28,8 @@ namespace SqlPad.Oracle
 
 		public ICollection<OracleDataObjectReference> ObjectNodeObjectReferences { get; set; }
 
+		public OracleSchemaObject SchemaObject { get; set; }
+
 		public OracleSelectListColumn SelectListColumn { get; set; }
 
 		public OracleReferenceContainer Container

@@ -1008,25 +1008,29 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		[Test(Description = @""), Ignore]
 		public void TestColumnValidityNodesWithSequence()
 		{
-			const string sqlText = "SELECT TEST_SEQ.NEXTVAL, HUSQVIK.TEST_SEQ.\"NEXTVAL\", SYNONYM_TO_TEST_SEQ.CURRVAL FROM DUAL WHERE SYNONYM_TO_TEST_SEQ.\"CURRVAL\" < SYNONYM_TO_TEST_SEQ.NEXTVAL";
+			const string sqlText = "SELECT TEST_SEQ.NEXTVAL, HUSQVIK.TEST_SEQ.\"NEXTVAL\", SYNONYM_TO_TEST_SEQ.CURRVAL FROM DUAL WHERE TEST_SEQ.\"CURRVAL\" < TEST_SEQ.NEXTVAL";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 			var validationModel = _statementValidator.BuildValidationModel(sqlText, statement, TestFixture.DatabaseModel);
-			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
-			var nodeValidity = nodeValidityDictionary.Values.ToList();
-			nodeValidity.Count.ShouldBe(3);
-			nodeValidity[0].IsRecognized.ShouldBe(true);
-			nodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
-			nodeValidity[1].IsRecognized.ShouldBe(true);
-			nodeValidity[1].SemanticError.ShouldBe(SemanticError.None);
-			nodeValidity[2].IsRecognized.ShouldBe(true);
-			nodeValidity[2].SemanticError.ShouldBe(SemanticError.None);
-			nodeValidity[3].IsRecognized.ShouldBe(true);
-			//nodeValidity[3].SemanticError.ShouldBe();
-			nodeValidity[4].IsRecognized.ShouldBe(true);
-			//nodeValidity[4].SemanticError.ShouldBe();
+			var nodeValidityDictionary = validationModel.ObjectNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var objectNodeValidity = nodeValidityDictionary.Values.ToList();
+			objectNodeValidity.Count.ShouldBe(7);
+			objectNodeValidity.ForEach(n => n.IsRecognized.ShouldBe(true));
+			objectNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+			objectNodeValidity[1].SemanticError.ShouldBe(SemanticError.None);
+			objectNodeValidity[2].SemanticError.ShouldBe(SemanticError.None);
+			objectNodeValidity[3].SemanticError.ShouldBe(SemanticError.None);
+			objectNodeValidity[4].SemanticError.ShouldBe(SemanticError.None);
+			objectNodeValidity[5].SemanticError.ShouldBe(SemanticError.ObjectCannotBeUsed);
+			objectNodeValidity[6].SemanticError.ShouldBe(SemanticError.ObjectCannotBeUsed);
+
+			nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var columnNodeValidity = nodeValidityDictionary.Values.ToList();
+			columnNodeValidity.Count.ShouldBe(5);
+			columnNodeValidity.ForEach(n => n.IsRecognized.ShouldBe(true));
+			columnNodeValidity.ForEach(n => n.SemanticError.ShouldBe(SemanticError.None));
 		}
 
 		[Test(Description = @"")]

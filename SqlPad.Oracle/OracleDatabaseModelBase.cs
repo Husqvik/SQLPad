@@ -47,27 +47,35 @@ namespace SqlPad.Oracle
 
 		public abstract IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjects { get; }
 
+		public OracleObjectIdentifier[] GetPotentialSchemaObjectIdentifiers(OracleObjectIdentifier identifier)
+		{
+			return String.IsNullOrEmpty(identifier.Owner)
+				? GetCurrentAndPublicSchemaIdentifiers(identifier.NormalizedName)
+				: new[] { identifier };
+		}
+
+		public OracleObjectIdentifier[] GetPotentialSchemaObjectIdentifiers(string owner, string name)
+		{
+			return String.IsNullOrEmpty(owner)
+				? GetCurrentAndPublicSchemaIdentifiers(name)
+				: new[] { OracleObjectIdentifier.Create(owner, name) };
+		}
+
+		private OracleObjectIdentifier[] GetCurrentAndPublicSchemaIdentifiers(string name)
+		{
+			return
+				new[]
+				{
+					OracleObjectIdentifier.Create(CurrentSchema, name),
+					OracleObjectIdentifier.Create(SchemaPublic, name)
+				};
+		}
+
 		public SchemaObjectResult<TObject> GetObject<TObject>(OracleObjectIdentifier objectIdentifier) where TObject : OracleSchemaObject
 		{
-			OracleSchemaObject schemaObject = null;
-			var schemaFound = false;
-
-			if (String.IsNullOrEmpty(objectIdentifier.NormalizedOwner))
-			{
-				var currentSchemaObject = OracleObjectIdentifier.Create(CurrentSchema, objectIdentifier.NormalizedName);
-				var publicSchemaObject = OracleObjectIdentifier.Create(SchemaPublic, objectIdentifier.NormalizedName);
-
-				AllObjects.TryGetFirstValue(out schemaObject, currentSchemaObject, publicSchemaObject);
-			}
-			else
-			{
-				schemaFound = AllSchemas.Contains(objectIdentifier.NormalizedOwner);
-
-				if (schemaFound)
-				{
-					AllObjects.TryGetValue(objectIdentifier, out schemaObject);
-				}
-			}
+			var identifiers = GetPotentialSchemaObjectIdentifiers(objectIdentifier);
+			var schemaObject = GetFirstSchemaObject<TObject>(identifiers);
+			var schemaFound = schemaObject != null || AllSchemas.Contains(objectIdentifier.NormalizedOwner);
 
 			var synonym = schemaObject as OracleSynonym;
 			var fullyQualifiedName = OracleObjectIdentifier.Empty;

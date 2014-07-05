@@ -372,27 +372,12 @@ namespace SqlPad.Oracle
 			functionsTransferredToTypes.ForEach(f => f.Container.FunctionReferences.Remove(f));
 		}
 
-		private OracleObjectIdentifier[] GetPotentialSchemaObjectIdentifiers(string normalizedOwner, string normalizedName)
-		{
-			if (String.IsNullOrEmpty(normalizedOwner))
-			{
-				return
-					new[]
-					{
-						OracleObjectIdentifier.Create(DatabaseModel.CurrentSchema, normalizedName),
-						OracleObjectIdentifier.Create(OracleDatabaseModelBase.SchemaPublic, normalizedName)
-					};
-			}
-
-			return new[] { OracleObjectIdentifier.Create(normalizedOwner, normalizedName) };
-		}
-
 		private OracleTypeReference ResolveTypeReference(OracleProgramReference functionReference)
 		{
 			if (functionReference.ParameterListNode == null || functionReference.OwnerNode != null)
 				return null;
 
-			var identifierCandidates = GetPotentialSchemaObjectIdentifiers(functionReference.FullyQualifiedObjectName.NormalizedName, functionReference.NormalizedName);
+			var identifierCandidates = DatabaseModel.GetPotentialSchemaObjectIdentifiers(functionReference.FullyQualifiedObjectName.NormalizedName, functionReference.NormalizedName);
 
 			var schemaObject = DatabaseModel.GetFirstSchemaObject<OracleTypeBase>(identifierCandidates);
 			if (schemaObject == null)
@@ -596,25 +581,27 @@ namespace SqlPad.Oracle
 			    !columnReference.NormalizedName.In(OracleSequence.NormalizedColumnNameNextValue, OracleSequence.NormalizedColumnNameCurrentValue))
 				return;
 
-			var identifierCandidates = GetPotentialSchemaObjectIdentifiers(columnReference.FullyQualifiedObjectName.NormalizedName, columnReference.NormalizedName);	
+			var identifierCandidates = DatabaseModel.GetPotentialSchemaObjectIdentifiers(columnReference.FullyQualifiedObjectName);	
 			var schemaObject = DatabaseModel.GetFirstSchemaObject<OracleSequence>(identifierCandidates);
 			if (schemaObject == null)
 				return;
 			
-			// TODO: Add sequence object and sequence column references
+			// TODO: Handle sequence column references
 
-			/*var sequenceReference =
+			var sequenceReference =
 				new OracleSequenceReference
 				{
 					ObjectNode = columnReference.ObjectNode,
 					Owner = columnReference.Owner,
 					OwnerNode = columnReference.OwnerNode,
 					RootNode = columnReference.RootNode,
-					SelectListColumn = columnReference.SelectListColumn
+					SelectListColumn = columnReference.SelectListColumn,
+					SchemaObject = schemaObject
 				};
 
 			columnReference.Container.SequenceReferences.Add(sequenceReference);
-			columnReference.Container.ColumnReferences.Remove(columnReference);*/
+			
+			//columnReference.Container.ColumnReferences.Remove(columnReference);
 		}
 
 		private ICollection<OracleColumn> GetColumnNodeObjectReferences(OracleDataObjectReference rowSourceReference, OracleColumnReference columnReference)
