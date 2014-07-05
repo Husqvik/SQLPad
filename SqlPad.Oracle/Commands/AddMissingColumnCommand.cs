@@ -53,7 +53,7 @@ namespace SqlPad.Oracle.Commands
 
 		protected override void Execute()
 		{
-			var indextStart = CurrentQueryBlock.Statement.RootNode.LastTerminalNode.SourcePosition.IndexEnd + 1;
+			var indextStart = CurrentQueryBlock.Statement.LastTerminalNode.SourcePosition.IndexEnd + 1;
 
 			var builder = new StringBuilder();
 			if (CurrentQueryBlock.Statement.TerminatorNode == null)

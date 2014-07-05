@@ -134,6 +134,19 @@ namespace SqlPad.Oracle
 			}
 		}
 
+		private const string GetObjectScriptCommand = "SELECT SYS.DBMS_METADATA.GET_DDL(OBJECT_TYPE => :OBJECT_TYPE, NAME => :NAME, SCHEMA => :SCHEMA) SCRIPT FROM SYS.DUAL";
+
+		public override string GetObjectScript(OracleSchemaObject schemaObject)
+		{
+			return ExecuteReader(
+				GetObjectScriptCommand,
+				c => c.AddSimpleParameter("OBJECT_TYPE", schemaObject.Type.ToUpperInvariant())
+					.AddSimpleParameter("NAME", schemaObject.FullyQualifiedName.Name.Trim('"'))
+					.AddSimpleParameter("SCHEMA", schemaObject.FullyQualifiedName.Owner == SchemaPublic ? null : schemaObject.FullyQualifiedName.Owner.Trim('"')),
+				r => (string)r[0])
+				.FirstOrDefault();
+		}
+
 		public override event EventHandler RefreshStarted = delegate { };
 
 		public override event EventHandler RefreshFinished = delegate { };
@@ -557,13 +570,19 @@ ORDER BY
 				throw new InvalidOperationException("No data reader available. ");
 		}
 
-		private IEnumerable<T> ExecuteReader<T>(string commandText, Func<OracleDataReader, T> formatFunction)
+		private IEnumerable<T> ExecuteReader<T>(string commandText, Action<OracleCommand> configureCommandFunction, Func<OracleDataReader, T> formatFunction)
 		{
 			using (var connection = new OracleConnection(_oracleConnectionString.ConnectionString))
 			{
 				using (var command = connection.CreateCommand())
 				{
 					command.CommandText = commandText;
+					command.BindByName = true;
+
+					if (configureCommandFunction != null)
+					{
+						configureCommandFunction(command);
+					}
 
 					connection.Open();
 
@@ -584,9 +603,9 @@ ORDER BY
 
 			var allObjects = new Dictionary<OracleObjectIdentifier, OracleSchemaObject>();
 
-			var selectTypesCommandText = String.Format("SELECT OWNER, TYPE_NAME, TYPECODE, PREDEFINED, INCOMPLETE, FINAL, INSTANTIABLE, SUPERTYPE_OWNER, SUPERTYPE_NAME FROM ALL_TYPES WHERE TYPECODE IN ('{0}', '{1}', '{2}')", OracleTypeBase.ObjectType, OracleTypeBase.CollectionType, OracleTypeBase.XmlType);
+			var selectTypesCommandText = String.Format("SELECT OWNER, TYPE_NAME, TYPECODE, PREDEFINED, INCOMPLETE, FINAL, INSTANTIABLE, SUPERTYPE_OWNER, SUPERTYPE_NAME FROM SYS.ALL_TYPES WHERE TYPECODE IN ('{0}', '{1}', '{2}')", OracleTypeBase.ObjectType, OracleTypeBase.CollectionType, OracleTypeBase.XmlType);
 			var schemaTypeMetadataSource = ExecuteReader(
-				selectTypesCommandText,
+				selectTypesCommandText, null,
 				r =>
 				{
 					OracleTypeBase schemaType = null;
@@ -620,9 +639,9 @@ ORDER BY
 				AddSchemaObjectToDictionary(allObjects, schemaType);
 			}
 
-			const string selectAllObjectsCommandText = "SELECT OWNER, OBJECT_NAME, SUBOBJECT_NAME, OBJECT_ID, DATA_OBJECT_ID, OBJECT_TYPE, CREATED, LAST_DDL_TIME, STATUS, TEMPORARY/*, EDITIONABLE, EDITION_NAME*/ FROM ALL_OBJECTS WHERE OBJECT_TYPE IN ('SYNONYM', 'VIEW', 'TABLE', 'SEQUENCE', 'FUNCTION', 'PACKAGE', 'TYPE')";
+			const string selectAllObjectsCommandText = "SELECT OWNER, OBJECT_NAME, SUBOBJECT_NAME, OBJECT_ID, DATA_OBJECT_ID, OBJECT_TYPE, CREATED, LAST_DDL_TIME, STATUS, TEMPORARY/*, EDITIONABLE, EDITION_NAME*/ FROM SYS.ALL_OBJECTS WHERE OBJECT_TYPE IN ('SYNONYM', 'VIEW', 'TABLE', 'SEQUENCE', 'FUNCTION', 'PACKAGE', 'TYPE')";
 			ExecuteReader(
-				selectAllObjectsCommandText,
+				selectAllObjectsCommandText, null,
 				r =>
 				{
 					var objectTypeIdentifer = OracleObjectIdentifier.Create(QualifyStringObject(r["OWNER"]), QualifyStringObject(r["OBJECT_NAME"]));
@@ -664,7 +683,7 @@ CASE
 END ORGANIZATION
 FROM ALL_TABLES";
 			ExecuteReader(
-				selectTablesCommandText,
+				selectTablesCommandText, null,
 				r =>
 				{
 					var tableFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(r["OWNER"]), QualifyStringObject(r["TABLE_NAME"]));
@@ -680,9 +699,9 @@ FROM ALL_TABLES";
 				})
 				.ToArray();
 
-			const string selectSynonymTargetsCommandText = "SELECT OWNER, SYNONYM_NAME, TABLE_OWNER, TABLE_NAME FROM ALL_SYNONYMS";
+			const string selectSynonymTargetsCommandText = "SELECT OWNER, SYNONYM_NAME, TABLE_OWNER, TABLE_NAME FROM SYS.ALL_SYNONYMS";
 			ExecuteReader(
-				selectSynonymTargetsCommandText,
+				selectSynonymTargetsCommandText, null,
 				r =>
 				{
 					var synonymFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(r["OWNER"]), QualifyStringObject(r["SYNONYM_NAME"]));
@@ -707,9 +726,9 @@ FROM ALL_TABLES";
 				}
 				).ToArray();
 
-			const string selectTableColumnsCommandText = "SELECT OWNER, TABLE_NAME, COLUMN_NAME, DATA_TYPE, DATA_TYPE_OWNER, DATA_LENGTH, CHAR_LENGTH, DATA_PRECISION, DATA_SCALE, CHAR_USED, NULLABLE, COLUMN_ID, NUM_DISTINCT, LOW_VALUE, HIGH_VALUE, NUM_NULLS, NUM_BUCKETS, LAST_ANALYZED, SAMPLE_SIZE, AVG_COL_LEN, HISTOGRAM FROM ALL_TAB_COLUMNS ORDER BY OWNER, TABLE_NAME, COLUMN_ID";
+			const string selectTableColumnsCommandText = "SELECT OWNER, TABLE_NAME, COLUMN_NAME, DATA_TYPE, DATA_TYPE_OWNER, DATA_LENGTH, CHAR_LENGTH, DATA_PRECISION, DATA_SCALE, CHAR_USED, NULLABLE, COLUMN_ID, NUM_DISTINCT, LOW_VALUE, HIGH_VALUE, NUM_NULLS, NUM_BUCKETS, LAST_ANALYZED, SAMPLE_SIZE, AVG_COL_LEN, HISTOGRAM FROM SYS.ALL_TAB_COLUMNS ORDER BY OWNER, TABLE_NAME, COLUMN_ID";
 			var columnMetadataSource = ExecuteReader(
-				selectTableColumnsCommandText,
+				selectTableColumnsCommandText, null,
 				r =>
 				{
 					var dataTypeOwnerRaw = r["DATA_TYPE_OWNER"];
@@ -744,9 +763,9 @@ FROM ALL_TABLES";
 				dataObject.Columns.Add(columnMetadata.Value.Name, columnMetadata.Value);
 			}
 
-			const string selectConstraintsCommandText = "SELECT OWNER, CONSTRAINT_NAME, CONSTRAINT_TYPE, TABLE_NAME, SEARCH_CONDITION, R_OWNER, R_CONSTRAINT_NAME, DELETE_RULE, STATUS, DEFERRABLE, VALIDATED, RELY, INDEX_OWNER, INDEX_NAME FROM ALL_CONSTRAINTS WHERE CONSTRAINT_TYPE IN ('C', 'R', 'P', 'U')";
+			const string selectConstraintsCommandText = "SELECT OWNER, CONSTRAINT_NAME, CONSTRAINT_TYPE, TABLE_NAME, SEARCH_CONDITION, R_OWNER, R_CONSTRAINT_NAME, DELETE_RULE, STATUS, DEFERRABLE, VALIDATED, RELY, INDEX_OWNER, INDEX_NAME FROM SYS.ALL_CONSTRAINTS WHERE CONSTRAINT_TYPE IN ('C', 'R', 'P', 'U')";
 			var constraintSource = ExecuteReader(
-				selectConstraintsCommandText,
+				selectConstraintsCommandText, null,
 				r =>
 				{
 					var remoteConstraintIdentifier = OracleObjectIdentifier.Empty;
@@ -792,9 +811,9 @@ FROM ALL_TABLES";
 				constraints[constraintPair.Key.FullyQualifiedName] = constraintPair.Key;
 			}
 
-			const string selectConstraintColumnsCommandText = "SELECT OWNER, CONSTRAINT_NAME, COLUMN_NAME, POSITION FROM ALL_CONS_COLUMNS ORDER BY OWNER, CONSTRAINT_NAME, POSITION";
+			const string selectConstraintColumnsCommandText = "SELECT OWNER, CONSTRAINT_NAME, COLUMN_NAME, POSITION FROM SYS.ALL_CONS_COLUMNS ORDER BY OWNER, CONSTRAINT_NAME, POSITION";
 			var constraintColumns = ExecuteReader(
-				selectConstraintColumnsCommandText,
+				selectConstraintColumnsCommandText, null,
 				r =>
 				{
 					var column = (string)r["COLUMN_NAME"];
@@ -824,9 +843,9 @@ FROM ALL_TABLES";
 				foreignKeyConstraint.ReferenceConstraint = referenceConstraint;
 			}
 
-			const string selectSequencesCommandText = "SELECT SEQUENCE_OWNER, SEQUENCE_NAME, MIN_VALUE, MAX_VALUE, INCREMENT_BY, CYCLE_FLAG, ORDER_FLAG, CACHE_SIZE, LAST_NUMBER FROM ALL_SEQUENCES";
+			const string selectSequencesCommandText = "SELECT SEQUENCE_OWNER, SEQUENCE_NAME, MIN_VALUE, MAX_VALUE, INCREMENT_BY, CYCLE_FLAG, ORDER_FLAG, CACHE_SIZE, LAST_NUMBER FROM SYS.ALL_SEQUENCES";
 			ExecuteReader(
-				selectSequencesCommandText,
+				selectSequencesCommandText, null,
 				r =>
 				{
 					var sequenceFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(r["SEQUENCE_OWNER"]), QualifyStringObject(r["SEQUENCE_NAME"]));
@@ -847,9 +866,9 @@ FROM ALL_TABLES";
 				})
 				.ToArray();
 
-			const string selectTypeAttributesCommandText = "SELECT OWNER, TYPE_NAME, ATTR_NAME, ATTR_TYPE_MOD, ATTR_TYPE_OWNER, ATTR_TYPE_NAME, LENGTH, PRECISION, SCALE, ATTR_NO, CHAR_USED FROM ALL_TYPE_ATTRS ORDER BY OWNER, TYPE_NAME, ATTR_NO";
+			const string selectTypeAttributesCommandText = "SELECT OWNER, TYPE_NAME, ATTR_NAME, ATTR_TYPE_MOD, ATTR_TYPE_OWNER, ATTR_TYPE_NAME, LENGTH, PRECISION, SCALE, ATTR_NO, CHAR_USED FROM SYS.ALL_TYPE_ATTRS ORDER BY OWNER, TYPE_NAME, ATTR_NO";
 			ExecuteReader(
-				selectTypeAttributesCommandText,
+				selectTypeAttributesCommandText, null,
 				r =>
 				{
 					var typeFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(r["OWNER"]), QualifyStringObject(r["TYPE_NAME"]));
@@ -915,9 +934,9 @@ FROM ALL_TABLES";
 
 		private void LoadSchemaNames()
 		{
-			const string selectAllSchemasCommandText = "SELECT USERNAME FROM ALL_USERS";
+			const string selectAllSchemasCommandText = "SELECT USERNAME FROM SYS.ALL_USERS";
 			var schemaSource = ExecuteReader(
-				selectAllSchemasCommandText,
+				selectAllSchemasCommandText, null,
 				r => ((string)r["USERNAME"]))
 				.ToArray();
 

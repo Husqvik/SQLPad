@@ -48,6 +48,7 @@ namespace SqlPad
 		private readonly PageModel _pageModel;
 		private bool _isParsing;
 		private readonly System.Timers.Timer _timer = new System.Timers.Timer(100);
+		private readonly string _initialDocumentHeader = "New*";
 
 		public EventHandler ParseFinished = delegate { };
 
@@ -57,11 +58,11 @@ namespace SqlPad
 		
 		public FileInfo File { get; private set; }
 
-		public string DocumentHeader { get { return File == null ? "New*" : File.Name + (IsDirty ? "*" : null); } }
+		public string DocumentHeader { get { return File == null ? _initialDocumentHeader : File.Name + (IsDirty ? "*" : null); } }
 
 		public bool IsDirty { get { return Editor.IsModified; } }
 		
-		public DocumentPage(IInfrastructureFactory infrastructureFactory, FileInfo file, bool makeDirty = false)
+		public DocumentPage(IInfrastructureFactory infrastructureFactory, FileInfo file, bool recoveryMode = false)
 		{
 			if (infrastructureFactory == null)
 				throw new ArgumentNullException("infrastructureFactory");
@@ -99,7 +100,13 @@ namespace SqlPad
 			{
 				File = file;
 				Editor.Load(file.FullName);
-				Editor.IsModified = makeDirty;
+			}
+
+			if (recoveryMode)
+			{
+				_initialDocumentHeader = "RecoveredDocument*";
+				File = null;
+				Editor.IsModified = true;
 			}
 
 			_pageModel.DocumentHeader = DocumentHeader;

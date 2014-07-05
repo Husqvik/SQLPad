@@ -232,5 +232,18 @@ namespace SqlPad.Oracle.Test
 			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
 			toolTip.Control.DataContext.ShouldBe("Object is invalid or unusable");
 		}
+
+		[Test(Description = @""), STAThread]
+		public void TestToolTipBeforeDatabaseModelLoaded()
+		{
+			const string query = "SELECT S.* FROM SELECTION S";
+			_document.UpdateStatements(_oracleSqlParser.Parse(query), query);
+
+			var databaseModel = new OracleTestDatabaseModel();
+			databaseModel.AllObjects.Clear();
+			var toolTip = _toolTipProvider.GetToolTip(databaseModel, _document, 7);
+
+			toolTip.ShouldBe(null);
+		}
 	}
 }

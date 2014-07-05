@@ -84,6 +84,11 @@ namespace SqlPad.Oracle
 				actionList.Add(new OracleContextAction(AddMissingColumnCommand.Title, OracleCommands.GenerateMissingColumns, oracleExecutionContext));
 			}
 
+			if (OracleCommands.CreateScript.CanExecuteHandler(oracleExecutionContext))
+			{
+				actionList.Add(new OracleContextAction(CreateScriptCommand.Title, OracleCommands.CreateScript, oracleExecutionContext));
+			}
+
 			var actions = ResolveAmbiguousColumnCommand.ResolveCommandHandlers(semanticModel, currentTerminal)
 				.Select(c => new OracleContextAction("Resolve as " + c.Name, c, oracleExecutionContext));
 

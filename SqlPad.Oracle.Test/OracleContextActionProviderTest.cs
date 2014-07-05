@@ -207,5 +207,14 @@ namespace SqlPad.Oracle.Test
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 10).SingleOrDefault(a => a.Name == AddAliasCommand.Title);
 			action.ShouldBe(null);
 		}
+
+		[Test(Description = @""), STAThread]
+		public void TestCreateScriptSuggestion()
+		{
+			const string query1 = @"SELECT S.* FROM SELECTION S";
+
+			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 7).SingleOrDefault(a => a.Name == CreateScriptCommand.Title);
+			action.ShouldNotBe(null);
+		}
 	}
 }

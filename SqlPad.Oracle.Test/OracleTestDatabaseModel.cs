@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -466,6 +465,11 @@ namespace SqlPad.Oracle.Test
 		public override ICollection<ColumnHeader> GetColumnHeaders()
 		{
 			return ColumnHeaders;
+		}
+
+		public override string GetObjectScript(OracleSchemaObject schemaObject)
+		{
+			throw new NotImplementedException();
 		}
 
 		public override bool CanExecute { get { return true; } }

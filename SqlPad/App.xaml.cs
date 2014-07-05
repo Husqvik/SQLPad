@@ -13,6 +13,7 @@ namespace SqlPad
 		public static readonly string FolderNameCommonDataErrorLog = Path.Combine(FolderNameCommonData, "ErrorLog");
 		public static readonly string FolderNameCommonDataRecoveryFiles = Path.Combine(FolderNameCommonData, "Recovery");
 		public static readonly string FolderNameApplication = Path.GetDirectoryName(typeof(App).Assembly.Location);
+		public const string RecoveredDocumentFileNameTemplate = "RecoveredDocument.{0}.sql.tmp";
 
 		static App()
 		{
@@ -21,7 +22,7 @@ namespace SqlPad
 
 		public static string[] GetRecoverableDocuments()
 		{
-			return Directory.GetFiles(FolderNameCommonDataRecoveryFiles, "RecoveredDocument.*.sql.tmp");
+			return Directory.GetFiles(FolderNameCommonDataRecoveryFiles, String.Format(RecoveredDocumentFileNameTemplate, "*"));
 		}
 
 		public static void PurgeRecoveryFiles()
@@ -47,7 +48,7 @@ namespace SqlPad
 					BuildErrorLog(unhandledExceptionEventArgs.ExceptionObject, page);
 				}
 
-				File.WriteAllText(Path.Combine(FolderNameCommonDataRecoveryFiles, String.Format("RecoveredDocument.{0}.sql.tmp", counter)), page.Editor.Text);
+				File.WriteAllText(Path.Combine(FolderNameCommonDataRecoveryFiles, String.Format(RecoveredDocumentFileNameTemplate, counter)), page.Editor.Text);
 				counter++;
 			}
 		}

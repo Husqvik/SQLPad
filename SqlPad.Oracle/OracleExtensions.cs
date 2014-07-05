@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Oracle.DataAccess.Client;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
@@ -141,6 +142,17 @@ namespace SqlPad.Oracle
 		{
 			var synonym = schemaObject as OracleSynonym;
 			return synonym == null ? schemaObject : synonym.SchemaObject;
+		}
+
+		internal static OracleCommand AddSimpleParameter(this OracleCommand command, string parameterName, object value)
+		{
+			var parameter = command.CreateParameter();
+			parameter.ParameterName = parameterName;
+			parameter.Value = value;
+
+			command.Parameters.Add(parameter);
+
+			return command;
 		}
 	}
 

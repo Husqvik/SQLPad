@@ -122,6 +122,9 @@ namespace SqlPad.Oracle
 
 		private static string GetSchemaObjectToolTip(OracleSchemaObject schemaObject)
 		{
+			if (schemaObject == null)
+				return null;
+
 			return schemaObject.FullyQualifiedName + " (" + CultureInfo.InvariantCulture.TextInfo.ToTitleCase(schemaObject.Type.ToLower()) + ")";
 		}
 

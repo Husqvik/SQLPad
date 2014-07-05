@@ -54,7 +54,7 @@ namespace SqlPad
 
 			foreach (var fileInfo in filesToRecover)
 			{
-				CreateNewDocumentPage(fileInfo, true);
+				CreateNewDocumentPage(fileInfo, fileInfo != null);
 			}
 
 			App.PurgeRecoveryFiles();
@@ -92,9 +92,9 @@ namespace SqlPad
 			CreateNewDocumentPage();
 		}
 
-		private void CreateNewDocumentPage(FileInfo file = null, bool makeDirty = false)
+		private void CreateNewDocumentPage(FileInfo file = null, bool recoveryMode = false)
 		{
-			var newDocumentPage = new DocumentPage(_infrastructureFactory, file, makeDirty);
+			var newDocumentPage = new DocumentPage(_infrastructureFactory, file, recoveryMode);
 			newDocumentPage.ComboBoxConnection.IsEnabled = ConfigurationProvider.ConnectionStrings.Count > 1;
 			newDocumentPage.ComboBoxConnection.ItemsSource = ConfigurationProvider.ConnectionStrings;
 			newDocumentPage.ComboBoxConnection.SelectedIndex = 0;

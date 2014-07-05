@@ -23,18 +23,16 @@ namespace SqlPad
 
 		public ICollection<StatementDescriptionNode> InvalidGrammarNodes
 		{
-			get
-			{
-				return _invalidGrammarNodes ?? (_invalidGrammarNodes = RootNode.AllChildNodes.Where(n => !n.IsGrammarValid).ToArray());
-			}
+			get { return _invalidGrammarNodes ?? (_invalidGrammarNodes = RootNode.AllChildNodes.Where(n => !n.IsGrammarValid).ToArray()); }
 		}
 
 		public ICollection<StatementDescriptionNode> AllTerminals
 		{
-			get
-			{
-				return _allTerminals ?? (_allTerminals = BuildTerminalCollection());
-			}
+			get { return _allTerminals ?? (_allTerminals = BuildTerminalCollection()); }
+		}
+		public StatementDescriptionNode LastTerminalNode
+		{
+			get { return RootNode == null ? null : (TerminatorNode ?? RootNode.LastTerminalNode); }
 		}
 
 		private ICollection<StatementDescriptionNode> BuildTerminalCollection()
