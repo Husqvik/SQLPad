@@ -37,11 +37,11 @@ namespace SqlPad.Oracle
 			Constraints = new List<OracleConstraint>();
 		}
 
-		public IDictionary<string, OracleColumn> Columns { get; set; }
-
 		public OrganizationType Organization { get; set; }
 
 		public ICollection<OracleConstraint> Constraints { get; set; }
+
+		public IDictionary<string, OracleColumn> Columns { get; set; }
 		
 		public IEnumerable<OracleForeignKeyConstraint> ForeignKeys { get { return Constraints.OfType<OracleForeignKeyConstraint>(); } }
 	}
@@ -94,6 +94,23 @@ namespace SqlPad.Oracle
 	{
 		public const string NormalizedColumnNameCurrentValue = "\"CURRVAL\"";
 		public const string NormalizedColumnNameNextValue = "\"NEXTVAL\"";
+		private readonly Dictionary<string, OracleColumn> _columns = new Dictionary<string, OracleColumn>();
+
+		public OracleSequence()
+		{
+			var nextValueColumn =
+				new OracleColumn
+				{
+					Name = NormalizedColumnNameNextValue,
+					Type = "INTEGER",
+					Scale = 0
+				};
+
+			_columns.Add(NormalizedColumnNameNextValue, nextValueColumn);
+			_columns.Add(NormalizedColumnNameCurrentValue, nextValueColumn.Clone(NormalizedColumnNameCurrentValue));
+		}
+
+		public ICollection<OracleColumn> Columns { get { return _columns.Values; } }
 
 		public decimal CurrentValue { get; set; }
 

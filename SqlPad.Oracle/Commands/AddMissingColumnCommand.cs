@@ -31,16 +31,23 @@ namespace SqlPad.Oracle.Commands
 
 		private static OracleDataObject GetSingleObjectReference(OracleColumnReference column)
 		{
-			OracleDataObject dataObject = null;
-			var queryBlockHasSingleObjectReference = column.Owner.ObjectReferences.Count == 1 && (dataObject = column.Owner.ObjectReferences.First().SearchResult.SchemaObject) != null &&
-													 dataObject.Type == OracleSchemaObjectType.Table;
+			OracleSchemaObject dataObject = null;
+			if (column.Owner.ObjectReferences.Count == 1)
+			{
+				dataObject = column.Owner.ObjectReferences.First().SchemaObject.GetTargetSchemaObject();
+			}
 
-			var schemaObjectReference = column.ValidObjectReference;
-			var hasValidObjectReference = schemaObjectReference != null && schemaObjectReference.Type == TableReferenceType.SchemaObject &&
-										  schemaObjectReference.SearchResult.SchemaObject != null && schemaObjectReference.SearchResult.SchemaObject.Type == OracleSchemaObjectType.Table;
+			if (dataObject == null)
+			{
+				var schemaObjectReference = column.ValidObjectReference;
+				if (schemaObjectReference != null)
+				{
+					dataObject = schemaObjectReference.SchemaObject.GetTargetSchemaObject();
+				}
+			}
 
-			return queryBlockHasSingleObjectReference || hasValidObjectReference
-				? dataObject ?? schemaObjectReference.SearchResult.SchemaObject
+			return dataObject != null && dataObject.Type == OracleSchemaObjectType.Table
+				? (OracleDataObject)dataObject
 				: null;
 		}
 

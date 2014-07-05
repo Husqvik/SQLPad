@@ -28,13 +28,13 @@ namespace SqlPad.Oracle.Commands
 			if (columnReference == null || columnReference.ColumnNodeObjectReferences.Count <= 1)
 				return EmptyCollection;
 
-			var identifiers = OracleObjectIdentifier.GetUniqueReferences(columnReference.ColumnNodeObjectReferences.Select(r => r.FullyQualifiedName).ToArray());
+			var identifiers = OracleObjectIdentifier.GetUniqueReferences(columnReference.ColumnNodeObjectReferences.Select(r => r.FullyQualifiedObjectName).ToArray());
 			var actions = columnReference.ColumnNodeObjectReferences
-				.Where(r => identifiers.Contains(r.FullyQualifiedName))
+				.Where(r => identifiers.Contains(r.FullyQualifiedObjectName))
 				.Select(r => new CommandExecutionHandler
 				             {
-					             Name = r.FullyQualifiedName + "." + columnReference.Name,
-					             ExecutionHandler = c => new ResolveAmbiguousColumnCommand((OracleCommandExecutionContext)c, r.FullyQualifiedName + "." + columnReference.Name)
+					             Name = r.FullyQualifiedObjectName + "." + columnReference.Name,
+					             ExecutionHandler = c => new ResolveAmbiguousColumnCommand((OracleCommandExecutionContext)c, r.FullyQualifiedObjectName + "." + columnReference.Name)
 						             .Execute(),
 					             CanExecuteHandler = c => true
 				             });

@@ -97,15 +97,14 @@ namespace SqlPad.Oracle
 			return typeReference == null ? null : GetFullSchemaObjectToolTip(typeReference.SchemaObject);
 		}
 
-		private static string GetObjectToolTip(OracleDataObjectReference objectReference)
+		private static string GetObjectToolTip(OracleObjectWithColumnsReference objectReference)
 		{
-			if (objectReference.Type == TableReferenceType.SchemaObject && objectReference.SearchResult.SchemaObject != null)
+			if (objectReference.Type == ReferenceType.SchemaObject)
 			{
-				var schemaObject = (OracleSchemaObject)objectReference.SearchResult.Synonym ?? objectReference.SearchResult.SchemaObject;
-				return GetFullSchemaObjectToolTip(schemaObject);
+				return GetFullSchemaObjectToolTip(objectReference.SchemaObject);
 			}
 			
-			return objectReference.FullyQualifiedName + " (" + objectReference.Type.ToCategoryLabel() + ")";
+			return objectReference.FullyQualifiedObjectName + " (" + objectReference.Type.ToCategoryLabel() + ")";
 		}
 
 		private static string GetFullSchemaObjectToolTip(OracleSchemaObject schemaObject)
@@ -150,7 +149,7 @@ namespace SqlPad.Oracle
 				.FirstOrDefault();
 		}
 
-		private OracleDataObjectReference GetObjectReference(OracleQueryBlock queryBlock, StatementDescriptionNode terminal)
+		private OracleObjectWithColumnsReference GetObjectReference(OracleQueryBlock queryBlock, StatementDescriptionNode terminal)
 		{
 			var objectReference = queryBlock.AllColumnReferences
 				.Where(c => c.ObjectNode == terminal && c.ObjectNodeObjectReferences.Count == 1)

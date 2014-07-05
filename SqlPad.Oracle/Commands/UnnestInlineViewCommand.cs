@@ -16,7 +16,7 @@ namespace SqlPad.Oracle.Commands
 		{
 			_parentQueryBlock = SemanticModel == null
 				? null
-				: SemanticModel.QueryBlocks.Select(qb => qb.ObjectReferences.FirstOrDefault(o => o.Type == TableReferenceType.InlineView && o.QueryBlocks.Count == 1 && o.QueryBlocks.First() == CurrentQueryBlock))
+				: SemanticModel.QueryBlocks.Select(qb => qb.ObjectReferences.FirstOrDefault(o => o.Type == ReferenceType.InlineView && o.QueryBlocks.Count == 1 && o.QueryBlocks.First() == CurrentQueryBlock))
 					.Where(o => o != null)
 					.Select(o => o.Owner)
 					.FirstOrDefault();
@@ -143,7 +143,7 @@ namespace SqlPad.Oracle.Commands
 					.Where(c => c.ColumnNodeObjectReferences.Count == 1 && c.ObjectNode == null)
 					.OrderByDescending(c => c.ColumnNode.SourcePosition.IndexStart))
 				{
-					var prefix = columnReference.ColumnNodeObjectReferences.First().FullyQualifiedName.ToString();
+					var prefix = columnReference.ColumnNodeObjectReferences.First().FullyQualifiedObjectName.ToString();
 					if (!String.IsNullOrEmpty(prefix))
 					{
 						prefix += ".";
@@ -156,7 +156,7 @@ namespace SqlPad.Oracle.Commands
 			}
 
 			var objectName = column.ColumnReferences.Count == 1 && column.ColumnReferences.First().ColumnNodeObjectReferences.Count == 1
-				? column.ColumnReferences.First().ColumnNodeObjectReferences.First().FullyQualifiedName + "."
+				? column.ColumnReferences.First().ColumnNodeObjectReferences.First().FullyQualifiedObjectName + "."
 				: null;
 
 			return objectName + column.NormalizedName.ToSimpleIdentifier();

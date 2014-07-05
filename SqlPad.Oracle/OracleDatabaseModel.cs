@@ -653,7 +653,7 @@ ORDER BY
 				})
 				.ToArray();
 
-			//var allObjects = dataObjectMetadataSource.ToDictionary(m => m.FullyQualifiedName, m => m);
+			//var allObjects = dataObjectMetadataSource.ToDictionary(m => m.FullyQualifiedObjectName, m => m);
 
 			const string selectTablesCommandText =
 @"SELECT OWNER, TABLE_NAME, TABLESPACE_NAME, CLUSTER_NAME, STATUS, LOGGING, NUM_ROWS, BLOCKS, AVG_ROW_LEN, DEGREE, CACHE, SAMPLE_SIZE, LAST_ANALYZED, TEMPORARY, NESTED, ROW_MOVEMENT, COMPRESS_FOR,

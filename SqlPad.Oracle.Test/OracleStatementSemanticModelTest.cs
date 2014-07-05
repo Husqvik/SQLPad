@@ -212,7 +212,7 @@ FROM
 			var innerBlock = queryBlocks[0];
 			innerBlock.ObjectReferences.Count.ShouldBe(1);
 			var selectionTableReference = innerBlock.ObjectReferences.Single();
-			selectionTableReference.Type.ShouldBe(TableReferenceType.SchemaObject);
+			selectionTableReference.Type.ShouldBe(ReferenceType.SchemaObject);
 			innerBlock.Columns.Count.ShouldBe(3);
 			var columns = innerBlock.Columns.ToArray();
 			columns[0].NormalizedName.ShouldBe("\"RESPONDENTBUCKET_ID\"");
@@ -231,7 +231,7 @@ FROM
 			var outerBlock = queryBlocks[1];
 			outerBlock.ObjectReferences.Count.ShouldBe(1);
 			var innerTableReference = outerBlock.ObjectReferences.Single();
-			innerTableReference.Type.ShouldBe(TableReferenceType.InlineView);
+			innerTableReference.Type.ShouldBe(ReferenceType.InlineView);
 			outerBlock.Columns.Count.ShouldBe(3);
 			columns = outerBlock.Columns.ToArray();
 			columns[0].NormalizedName.ShouldBe("\"RESPONDENTBUCKET_ID\"");
@@ -263,7 +263,7 @@ FROM
 			var innerBlock = queryBlocks[0];
 			innerBlock.ObjectReferences.Count.ShouldBe(1);
 			var selectionTableReference = innerBlock.ObjectReferences.Single();
-			selectionTableReference.Type.ShouldBe(TableReferenceType.SchemaObject);
+			selectionTableReference.Type.ShouldBe(ReferenceType.SchemaObject);
 			innerBlock.Columns.Count.ShouldBe(5);
 			var columns = innerBlock.Columns.ToArray();
 			columns[0].IsAsterisk.ShouldBe(true);
@@ -275,7 +275,7 @@ FROM
 			var outerBlock = queryBlocks[1];
 			outerBlock.ObjectReferences.Count.ShouldBe(1);
 			var innerTableReference = outerBlock.ObjectReferences.Single();
-			innerTableReference.Type.ShouldBe(TableReferenceType.InlineView);
+			innerTableReference.Type.ShouldBe(ReferenceType.InlineView);
 			outerBlock.Columns.Count.ShouldBe(5);
 			columns = outerBlock.Columns.ToArray();
 			columns[0].IsAsterisk.ShouldBe(true);

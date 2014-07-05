@@ -117,15 +117,15 @@ namespace SqlPad.Oracle
 				: node.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBoundary, NonTerminals.Expression);
 		}
 
-		public static string ToCategoryLabel(this TableReferenceType type)
+		public static string ToCategoryLabel(this ReferenceType type)
 		{
 			switch (type)
 			{
-				case TableReferenceType.CommonTableExpression:
+				case ReferenceType.CommonTableExpression:
 					return OracleCodeCompletionCategory.CommonTableExpression;
-				case TableReferenceType.SchemaObject:
+				case ReferenceType.SchemaObject:
 					return OracleCodeCompletionCategory.SchemaObject;
-				case TableReferenceType.InlineView:
+				case ReferenceType.InlineView:
 					return OracleCodeCompletionCategory.InlineView;
 			}
 

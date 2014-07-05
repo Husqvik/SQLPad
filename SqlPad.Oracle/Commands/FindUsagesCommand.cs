@@ -137,7 +137,7 @@ namespace SqlPad.Oracle.Commands
 				.ToArray();
 		}
 
-		private IEnumerable<OracleDataObjectReference> GetObjectReferences()
+		private IEnumerable<OracleObjectWithColumnsReference> GetObjectReferences()
 		{
 			if (_queryBlock == null && _currentNode.Id == Terminals.ObjectAlias)
 			{
@@ -156,20 +156,21 @@ namespace SqlPad.Oracle.Commands
 			return Enumerable.Repeat(objectReference, 1);
 		}
 
-		private IEnumerable<StatementDescriptionNode> GetObjectReferenceUsage(OracleDataObjectReference objectReference)
+		private IEnumerable<StatementDescriptionNode> GetObjectReferenceUsage(OracleObjectWithColumnsReference objectReference)
 		{
 			var nodes = new List<StatementDescriptionNode>();
-			if (objectReference.Type != TableReferenceType.InlineView)
+			if (objectReference.Type != ReferenceType.InlineView)
 			{
 				nodes.Add(objectReference.ObjectNode);
 			}
-			
-			if (objectReference.AliasNode != null)
+
+			var dataObjectReference = objectReference as OracleDataObjectReference;
+			if (dataObjectReference != null && dataObjectReference.AliasNode != null)
 			{
-				nodes.Add(objectReference.AliasNode);
+				nodes.Add(dataObjectReference.AliasNode);
 			}
 
-			if (objectReference.QueryBlocks.Count == 1 && objectReference.Type == TableReferenceType.CommonTableExpression)
+			if (objectReference.QueryBlocks.Count == 1 && objectReference.Type == ReferenceType.CommonTableExpression)
 			{
 				nodes.Add(objectReference.QueryBlocks.Single().AliasNode);
 			}
@@ -239,7 +240,7 @@ namespace SqlPad.Oracle.Commands
 			return nodes;
 		}
 
-		private IEnumerable<StatementDescriptionNode> GetChildQueryBlockColumnReferences(OracleDataObjectReference objectReference, OracleColumnReference columnReference)
+		private IEnumerable<StatementDescriptionNode> GetChildQueryBlockColumnReferences(OracleObjectWithColumnsReference objectReference, OracleColumnReference columnReference)
 		{
 			var nodes = Enumerable.Empty<StatementDescriptionNode>();
 			if (objectReference.QueryBlocks.Count != 1)

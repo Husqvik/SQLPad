@@ -71,34 +71,9 @@ namespace SqlPad.Oracle
 				};
 		}
 
-		public SchemaObjectResult<TObject> GetObject<TObject>(OracleObjectIdentifier objectIdentifier) where TObject : OracleSchemaObject
+		public bool ExistsSchema(string schemaName)
 		{
-			var identifiers = GetPotentialSchemaObjectIdentifiers(objectIdentifier);
-			var schemaObject = GetFirstSchemaObject<TObject>(identifiers);
-			var schemaFound = schemaObject != null || AllSchemas.Contains(objectIdentifier.NormalizedOwner);
-
-			var synonym = schemaObject as OracleSynonym;
-			var fullyQualifiedName = OracleObjectIdentifier.Empty;
-			
-			if (synonym != null)
-			{
-				schemaObject = synonym.SchemaObject;
-				fullyQualifiedName = synonym.FullyQualifiedName;
-			}
-			else if (schemaObject != null)
-			{
-				fullyQualifiedName = schemaObject.FullyQualifiedName;
-			}
-
-			var typedObject = schemaObject as TObject;
-			
-			return new SchemaObjectResult<TObject>
-			{
-				SchemaFound = schemaFound,
-				SchemaObject = typedObject,
-				Synonym = typedObject == null ? null : synonym,
-				FullyQualifiedName = fullyQualifiedName
-			};
+			return AllSchemas.Contains(schemaName.ToQuotedIdentifier());
 		}
 
 		public FunctionMetadataResult GetFunctionMetadata(OracleFunctionIdentifier identifier, int parameterCount, bool forceBuiltInFunction)
@@ -173,19 +148,6 @@ namespace SqlPad.Oracle
 				.OrderBy(m => Math.Abs(parameterCount - m.Parameters.Count + 1))
 				.FirstOrDefault();
 		}
-	}
-
-	public struct SchemaObjectResult<TObject> where TObject : OracleObject
-	{
-		public static readonly SchemaObjectResult<TObject> EmptyResult = new SchemaObjectResult<TObject>();
-
-		public bool SchemaFound { get; set; }
-
-		public TObject SchemaObject { get; set; }
-
-		public OracleSynonym Synonym { get; set; }
-
-		public OracleObjectIdentifier FullyQualifiedName { get; set; }
 	}
 
 	public struct FunctionMetadataResult

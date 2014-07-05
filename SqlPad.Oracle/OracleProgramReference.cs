@@ -22,9 +22,19 @@ namespace SqlPad.Oracle
 	}
 
 	[DebuggerDisplay("OracleSequenceReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; Sequence={ObjectNode.Token.Value})")]
-	public class OracleSequenceReference : OracleReference
+	public class OracleSequenceReference : OracleObjectWithColumnsReference
 	{
 		public override string Name { get { return ObjectNode.Token.Value; } }
+
+		public override ICollection<OracleColumn> Columns
+		{
+			get { return ((OracleSequence)SchemaObject).Columns; }
+		}
+
+		public override ReferenceType Type
+		{
+			get { return ReferenceType.SchemaObject; }
+		}
 	}
 
 	public abstract class OracleProgramReferenceBase : OracleReference

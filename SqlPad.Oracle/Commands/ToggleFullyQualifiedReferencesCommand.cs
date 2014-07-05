@@ -50,13 +50,13 @@ namespace SqlPad.Oracle.Commands
 		private IEnumerable<TextSegment> GetMissingObjectReferenceQualifications()
 		{
 			return CurrentQueryBlock.ObjectReferences
-				.Where(o => o.OwnerNode == null && o.Type == TableReferenceType.SchemaObject && o.SearchResult.SchemaObject != null && o.SearchResult.FullyQualifiedName.Owner != OracleDatabaseModelBase.SchemaPublic)
+				.Where(o => o.OwnerNode == null && o.Type == ReferenceType.SchemaObject && o.SchemaObject != null && o.SchemaObject.FullyQualifiedName.Owner != OracleDatabaseModelBase.SchemaPublic)
 				.Select(o =>
 					new TextSegment
 					{
 						IndextStart = o.ObjectNode.SourcePosition.IndexStart,
 						Length = 0,
-						Text = o.SearchResult.SchemaObject.Owner.ToSimpleIdentifier() + "."
+						Text = o.SchemaObject.Owner.ToSimpleIdentifier() + "."
 					});
 		}
 
@@ -70,20 +70,21 @@ namespace SqlPad.Oracle.Commands
 			{
 				qualificationBuilder.Clear();
 
-				if (column.OwnerNode == null && column.ValidObjectReference.Type == TableReferenceType.SchemaObject &&
-					column.ValidObjectReference.AliasNode == null &&
-					column.ValidObjectReference.SearchResult.FullyQualifiedName.Owner != OracleDatabaseModelBase.SchemaPublic)
+				var tableReference = column.ValidObjectReference as OracleDataObjectReference;
+				if (column.OwnerNode == null && column.ValidObjectReference.Type == ReferenceType.SchemaObject &&
+					(tableReference == null || tableReference.AliasNode == null) &&
+					column.ValidObjectReference.SchemaObject.FullyQualifiedName.Owner != OracleDatabaseModelBase.SchemaPublic)
 				{
-					qualificationBuilder.Append(column.ValidObjectReference.SearchResult.SchemaObject.Owner.ToSimpleIdentifier());
+					qualificationBuilder.Append(column.ValidObjectReference.SchemaObject.Owner.ToSimpleIdentifier());
 					qualificationBuilder.Append(".");
 				}
 
 				int indexStart;
 				if (column.ObjectNode == null)
 				{
-					if (!String.IsNullOrEmpty(column.ValidObjectReference.FullyQualifiedName.Name))
+					if (!String.IsNullOrEmpty(column.ValidObjectReference.FullyQualifiedObjectName.Name))
 					{
-						qualificationBuilder.Append(column.ValidObjectReference.FullyQualifiedName.Name);
+						qualificationBuilder.Append(column.ValidObjectReference.FullyQualifiedObjectName.Name);
 						qualificationBuilder.Append(".");
 					}
 					

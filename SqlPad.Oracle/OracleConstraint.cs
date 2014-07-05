@@ -35,7 +35,7 @@ namespace SqlPad.Oracle
 		public override ConstraintType Type { get { return ConstraintType.Check; } }
 	}
 
-	[DebuggerDisplay("OracleForeignKeyConstraint (Name={FullyQualifiedName.Name}; IsEnabled={IsEnabled}; IsDeferrable={IsDeferrable}; IsValidated={IsValidated}; IsRelied={IsRelied})")]
+	[DebuggerDisplay("OracleForeignKeyConstraint (Name={FullyQualifiedObjectName.Name}; IsEnabled={IsEnabled}; IsDeferrable={IsDeferrable}; IsValidated={IsValidated}; IsRelied={IsRelied})")]
 	public class OracleForeignKeyConstraint : OracleConstraint
 	{
 		public OracleSchemaObject TargetObject { get; set; }

@@ -9,7 +9,7 @@ namespace SqlPad.Oracle
 	{
 		public OracleColumnReference()
 		{
-			ColumnNodeObjectReferences = new HashSet<OracleDataObjectReference>();
+			ColumnNodeObjectReferences = new HashSet<OracleObjectWithColumnsReference>();
 			ColumnNodeColumnReferences = new List<OracleColumn>();
 		}
 
@@ -21,13 +21,13 @@ namespace SqlPad.Oracle
 		
 		public StatementDescriptionNode ColumnNode { get; set; }
 
-		public ICollection<OracleDataObjectReference> ColumnNodeObjectReferences { get; private set; }
+		public ICollection<OracleObjectWithColumnsReference> ColumnNodeObjectReferences { get; private set; }
 
 		public ICollection<OracleColumn> ColumnNodeColumnReferences { get; set; }
 		
 		public OracleColumn ColumnDescription { get; set; }
 
-		public OracleDataObjectReference ValidObjectReference
+		public OracleObjectWithColumnsReference ValidObjectReference
 		{
 			get
 			{

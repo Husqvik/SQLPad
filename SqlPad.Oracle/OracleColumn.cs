@@ -52,6 +52,21 @@ namespace SqlPad.Oracle
 		public int CharacterSize { get; set; }
 		public bool Nullable { get; set; }
 		public DataUnit Unit { get; set; }
+
+		public OracleColumn Clone(string newName)
+		{
+			return new OracleColumn
+			       {
+					   Name = newName,
+					   Nullable = Nullable,
+					   Type = Type,
+					   Size = Size,
+					   CharacterSize = CharacterSize,
+					   Precision = Precision,
+					   Scale = Scale,
+					   Unit = Unit
+			       };
+		}
 	}
 
 	public enum DataUnit

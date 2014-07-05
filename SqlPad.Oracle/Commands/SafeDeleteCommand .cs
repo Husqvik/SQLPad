@@ -43,7 +43,7 @@ namespace SqlPad.Oracle.Commands
 		private static void AddObjectAliasNodesToRemove(ICollection<TextSegment> segmentsToReplace, OracleQueryBlock queryBlock, StatementDescriptionNode currentNode)
 		{
 			var objectReference = queryBlock.ObjectReferences.Single(o => o.AliasNode == currentNode);
-			if (objectReference.Type == TableReferenceType.InlineView)
+			if (objectReference.Type == ReferenceType.InlineView)
 				return;
 
 			foreach (var columnReference in queryBlock.AllColumnReferences

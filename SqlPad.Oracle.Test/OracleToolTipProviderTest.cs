@@ -210,6 +210,18 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestSequenceColumnIdentifierToolTip()
+		{
+			const string query = "SELECT TEST_SEQ.CURRVAL FROM DUAL";
+			_document.UpdateStatements(_oracleSqlParser.Parse(query), query);
+
+			var toolTip = _toolTipProvider.GetToolTip(TestFixture.DatabaseModel, _document, 17);
+
+			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.DataContext.ShouldBe("INTEGER NOT NULL");
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestTypeWithCompilationErrorToolTip()
 		{
 			const string query = "SELECT INVALID_OBJECT_TYPE(DUMMY) FROM DUAL";

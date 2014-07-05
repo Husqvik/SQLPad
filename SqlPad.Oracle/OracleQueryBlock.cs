@@ -43,11 +43,10 @@ namespace SqlPad.Oracle
 
 		private OracleDataObjectReference BuildSelfObjectReference()
 		{
-			_selfObjectReference = new OracleDataObjectReference
+			_selfObjectReference = new OracleDataObjectReference(ReferenceType.InlineView)
 			                       {
 									   AliasNode = AliasNode,
-									   Owner = this,
-									   Type = TableReferenceType.InlineView
+									   Owner = this
 			                       };
 
 			_selfObjectReference.QueryBlocks.Add(this);

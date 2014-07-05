@@ -120,12 +120,11 @@ namespace SqlPad.Oracle
 					{
 						var nestedQueryTableReferenceQueryBlock = nestedQueryTableReference.GetPathFilterDescendants(n => n.Id != NonTerminals.NestedQuery && n.Id != NonTerminals.SubqueryFactoringClause, NonTerminals.QueryBlock).First();
 
-						item.ObjectReferences.Add(new OracleDataObjectReference
+						item.ObjectReferences.Add(new OracleDataObjectReference(ReferenceType.InlineView)
 						{
 							Owner = item,
 							RootNode = tableReferenceNonterminal,
 							ObjectNode = nestedQueryTableReferenceQueryBlock,
-							Type = TableReferenceType.InlineView,
 							AliasNode = tableReferenceAlias
 						});
 
@@ -148,33 +147,31 @@ namespace SqlPad.Oracle
 						? (ICollection<KeyValuePair<StatementDescriptionNode, string>>)new Dictionary<StatementDescriptionNode, string>()
 						: cteReferences.Where(n => n.Value == tableName).ToArray();
 
-					var referenceType = TableReferenceType.CommonTableExpression;
+					var referenceType = ReferenceType.CommonTableExpression;
 
-					var result = SchemaObjectResult<OracleDataObject>.EmptyResult;
+					OracleSchemaObject schemaObject = null;
 					if (commonTableExpressions.Count == 0)
 					{
-						referenceType = TableReferenceType.SchemaObject;
+						referenceType = ReferenceType.SchemaObject;
 
 						var objectName = tableIdentifierNode.Token.Value;
 						var owner = schemaPrefixNode == null ? null : schemaPrefixNode.Token.Value;
 
 						if (DatabaseModel != null)
 						{
-							// TODO: Resolve package
-							result = DatabaseModel.GetObject<OracleDataObject>(OracleObjectIdentifier.Create(owner, objectName));
+							schemaObject = DatabaseModel.GetFirstSchemaObject<OracleDataObject>(databaseModel.GetPotentialSchemaObjectIdentifiers(owner, objectName));
 						}
 					}
 
 					var objectReference =
-						new OracleDataObjectReference
+						new OracleDataObjectReference(referenceType)
 						{
 							Owner = item,
 							RootNode = tableReferenceNonterminal,
 							OwnerNode = schemaPrefixNode,
 							ObjectNode = tableIdentifierNode,
-							Type = referenceType,
 							AliasNode = tableReferenceAlias,
-							SearchResult = result
+							SchemaObject = schemaObject
 						};
 					
 					item.ObjectReferences.Add(objectReference);
@@ -198,9 +195,9 @@ namespace SqlPad.Oracle
 
 				ResolveParentCorrelatedQueryBlock(queryBlock);
 
-				foreach (var nestedQueryReference in queryBlock.ObjectReferences.Where(t => t.Type != TableReferenceType.SchemaObject))
+				foreach (var nestedQueryReference in queryBlock.ObjectReferences.Where(t => t.Type != ReferenceType.SchemaObject))
 				{
-					if (nestedQueryReference.Type == TableReferenceType.InlineView)
+					if (nestedQueryReference.Type == ReferenceType.InlineView)
 					{
 						nestedQueryReference.QueryBlocks.Add(_queryBlockResults[nestedQueryReference.ObjectNode]);
 					}
@@ -305,12 +302,13 @@ namespace SqlPad.Oracle
 				foreach (var objectReference in asteriskTableReference.Value)
 				{
 					IEnumerable<OracleSelectListColumn> exposedColumns;
-					if (objectReference.Type == TableReferenceType.SchemaObject)
+					if (objectReference.Type == ReferenceType.SchemaObject)
 					{
-						if (objectReference.SearchResult.SchemaObject == null)
+						var dataObject = objectReference.SchemaObject.GetTargetSchemaObject() as OracleDataObject;
+						if (dataObject == null)
 							continue;
 
-						exposedColumns = objectReference.SearchResult.SchemaObject.Columns.Values
+						exposedColumns = dataObject.Columns.Values
 							.Select(c => new OracleSelectListColumn
 							{
 								ExplicitDefinition = false,
@@ -516,9 +514,9 @@ namespace SqlPad.Oracle
 				{
 					var objectNodeReferenceAdded = false;
 					if (columnReference.ObjectNode != null &&
-					    (rowSourceReference.RowSource.FullyQualifiedName == columnReference.FullyQualifiedObjectName ||
+					    (rowSourceReference.RowSource.FullyQualifiedObjectName == columnReference.FullyQualifiedObjectName ||
 					     (columnReference.OwnerNode == null &&
-					      rowSourceReference.RowSource.Type == TableReferenceType.SchemaObject && rowSourceReference.RowSource.FullyQualifiedName.NormalizedName == columnReference.FullyQualifiedObjectName.NormalizedName)))
+					      rowSourceReference.RowSource.Type == ReferenceType.SchemaObject && rowSourceReference.RowSource.FullyQualifiedObjectName.NormalizedName == columnReference.FullyQualifiedObjectName.NormalizedName)))
 					{
 						columnReference.ObjectNodeObjectReferences.Add(rowSourceReference.RowSource);
 						objectNodeReferenceAdded = true;
@@ -577,8 +575,8 @@ namespace SqlPad.Oracle
 		private void ResolveSequenceReference(OracleColumnReference columnReference)
 		{
 			if (columnReference.ObjectNode == null ||
-				columnReference.ObjectNodeObjectReferences.Count > 0 ||
-			    !columnReference.NormalizedName.In(OracleSequence.NormalizedColumnNameNextValue, OracleSequence.NormalizedColumnNameCurrentValue))
+				columnReference.ObjectNodeObjectReferences.Count > 0 /*||
+			    !columnReference.NormalizedName.In(OracleSequence.NormalizedColumnNameNextValue, OracleSequence.NormalizedColumnNameCurrentValue)*/)
 				return;
 
 			var identifierCandidates = DatabaseModel.GetPotentialSchemaObjectIdentifiers(columnReference.FullyQualifiedObjectName);	
@@ -599,20 +597,32 @@ namespace SqlPad.Oracle
 					SchemaObject = schemaObject
 				};
 
+			var sequence = (OracleSequence)schemaObject.GetTargetSchemaObject();
 			columnReference.Container.SequenceReferences.Add(sequenceReference);
-			
-			//columnReference.Container.ColumnReferences.Remove(columnReference);
+			var pseudoColumn = sequence.Columns.SingleOrDefault(c => c.Name == columnReference.NormalizedName);
+			if (pseudoColumn != null)
+			{
+				columnReference.ColumnNodeObjectReferences.Add(sequenceReference);
+				columnReference.ColumnNodeColumnReferences.Add(pseudoColumn);
+				columnReference.ColumnDescription = pseudoColumn;
+			}
+
+			if (columnReference.ObjectNode != null)
+			{
+				columnReference.ObjectNodeObjectReferences.Add(sequenceReference);
+			}
 		}
 
 		private ICollection<OracleColumn> GetColumnNodeObjectReferences(OracleDataObjectReference rowSourceReference, OracleColumnReference columnReference)
 		{
 			var columnNodeColumnReferences = new List<OracleColumn>();
-			if (rowSourceReference.Type == TableReferenceType.SchemaObject)
+			if (rowSourceReference.Type == ReferenceType.SchemaObject)
 			{
-				if (rowSourceReference.SearchResult.SchemaObject == null)
+				if (rowSourceReference.SchemaObject == null)
 					return new OracleColumn[0];
 
-				var oracleTable = rowSourceReference.SearchResult.SchemaObject as OracleTable;
+				var dataObject = (OracleDataObject)rowSourceReference.SchemaObject.GetTargetSchemaObject();
+				var oracleTable = dataObject as OracleTable;
 				if (columnReference.ColumnNode.Id == Terminals.RowIdPseudoColumn)
 				{
 					if (oracleTable != null && oracleTable.RowIdPseudoColumn != null &&
@@ -623,14 +633,14 @@ namespace SqlPad.Oracle
 				}
 				else
 				{
-					columnNodeColumnReferences.AddRange(rowSourceReference.SearchResult.SchemaObject.Columns.Values
+					columnNodeColumnReferences.AddRange(dataObject.Columns.Values
 						.Where(c => c.Name == columnReference.NormalizedName && (columnReference.ObjectNode == null || IsTableReferenceValid(columnReference, rowSourceReference))));
 				}
 			}
 			else
 			{
 				columnNodeColumnReferences.AddRange(rowSourceReference.QueryBlocks.SelectMany(qb => qb.Columns)
-					.Where(c => c.NormalizedName == columnReference.NormalizedName && (columnReference.ObjectNode == null || columnReference.FullyQualifiedObjectName.NormalizedName == rowSourceReference.FullyQualifiedName.NormalizedName))
+					.Where(c => c.NormalizedName == columnReference.NormalizedName && (columnReference.ObjectNode == null || columnReference.FullyQualifiedObjectName.NormalizedName == rowSourceReference.FullyQualifiedObjectName.NormalizedName))
 					.Select(c => c.ColumnDescription));
 			}
 
@@ -640,8 +650,8 @@ namespace SqlPad.Oracle
 		private bool IsTableReferenceValid(OracleColumnReference column, OracleDataObjectReference schemaObject)
 		{
 			var objectName = column.FullyQualifiedObjectName;
-			return (String.IsNullOrEmpty(objectName.NormalizedName) || objectName.NormalizedName == schemaObject.FullyQualifiedName.NormalizedName) &&
-			       (String.IsNullOrEmpty(objectName.NormalizedOwner) || objectName.NormalizedOwner == schemaObject.FullyQualifiedName.NormalizedOwner);
+			return (String.IsNullOrEmpty(objectName.NormalizedName) || objectName.NormalizedName == schemaObject.FullyQualifiedObjectName.NormalizedName) &&
+			       (String.IsNullOrEmpty(objectName.NormalizedOwner) || objectName.NormalizedOwner == schemaObject.FullyQualifiedObjectName.NormalizedOwner);
 		}
 
 		private void FindJoinColumnReferences(OracleQueryBlock queryBlock)
@@ -793,7 +803,7 @@ namespace SqlPad.Oracle
 						var columnReference = CreateColumnReference(queryBlock, column, QueryBlockPlacement.SelectList, asteriskNode, prefixNonTerminal);
 						column.ColumnReferences.Add(columnReference);
 
-						var tableReferences = queryBlock.ObjectReferences.Where(t => t.FullyQualifiedName == columnReference.FullyQualifiedObjectName || (columnReference.ObjectNode == null && t.FullyQualifiedName.NormalizedName == columnReference.FullyQualifiedObjectName.NormalizedName));
+						var tableReferences = queryBlock.ObjectReferences.Where(t => t.FullyQualifiedObjectName == columnReference.FullyQualifiedObjectName || (columnReference.ObjectNode == null && t.FullyQualifiedObjectName.NormalizedName == columnReference.FullyQualifiedObjectName.NormalizedName));
 						_asteriskTableReferences[column] = new List<OracleDataObjectReference>(tableReferences);
 					}
 					else
@@ -965,7 +975,7 @@ namespace SqlPad.Oracle
 		}
 	}
 
-	public enum TableReferenceType
+	public enum ReferenceType
 	{
 		SchemaObject,
 		CommonTableExpression,

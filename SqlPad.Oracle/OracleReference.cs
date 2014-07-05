@@ -6,10 +6,10 @@ namespace SqlPad.Oracle
 	{
 		protected OracleReference()
 		{
-			ObjectNodeObjectReferences = new HashSet<OracleDataObjectReference>();
+			ObjectNodeObjectReferences = new HashSet<OracleObjectWithColumnsReference>();
 		}
 
-		public OracleObjectIdentifier FullyQualifiedObjectName
+		public virtual OracleObjectIdentifier FullyQualifiedObjectName
 		{
 			get { return OracleObjectIdentifier.Create(OwnerNode, ObjectNode, null); }
 		}
@@ -26,7 +26,7 @@ namespace SqlPad.Oracle
 
 		public StatementDescriptionNode ObjectNode { get; set; }
 
-		public ICollection<OracleDataObjectReference> ObjectNodeObjectReferences { get; set; }
+		public ICollection<OracleObjectWithColumnsReference> ObjectNodeObjectReferences { get; set; }
 
 		public OracleSchemaObject SchemaObject { get; set; }
 

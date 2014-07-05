@@ -112,8 +112,9 @@ namespace SqlPad.Oracle.Commands
 					.Where(c => !String.IsNullOrEmpty(c.Name))
 					.Select(c => GetExpandedColumn(objectReference, c.Name, false)));
 
-				if (includeRowId && objectReference.SearchResult.SchemaObject != null &&
-				    objectReference.SearchResult.SchemaObject.Organization.In(OrganizationType.Heap, OrganizationType.Index))
+				var dataObject = objectReference.SchemaObject as OracleTable;
+				if (includeRowId && dataObject != null &&
+					dataObject.Organization.In(OrganizationType.Heap, OrganizationType.Index))
 				{
 					columnNames.Insert(0, GetExpandedColumn(objectReference, OracleColumn.RowId, true));
 				}
@@ -128,8 +129,9 @@ namespace SqlPad.Oracle.Commands
 					return segmentToReplace;
 				
 				var rowIdColumns = CurrentQueryBlock.ObjectReferences
-					.Where(o => o.SearchResult.SchemaObject != null && o.SearchResult.SchemaObject.Organization.In(OrganizationType.Heap, OrganizationType.Index))
-					.Select(o => GetExpandedColumn(o, OracleColumn.RowId, true));
+					.Select(o => new { ObjectReference = o, DataObject = o.SchemaObject.GetTargetSchemaObject() as OracleTable })
+					.Where(o => o.DataObject != null && o.DataObject.Organization.In(OrganizationType.Heap, OrganizationType.Index))
+					.Select(o => GetExpandedColumn(o.ObjectReference, OracleColumn.RowId, true));
 
 				columnNames.InsertRange(0, rowIdColumns);
 
@@ -143,22 +145,22 @@ namespace SqlPad.Oracle.Commands
 		{
 			var columnReference = column.ColumnReferences.FirstOrDefault();
 			return columnReference != null && columnReference.ColumnNodeObjectReferences.Count == 1
-				? columnReference.ColumnNodeObjectReferences.First()
+				? columnReference.ColumnNodeObjectReferences.First() as OracleDataObjectReference
 				: null;
 		}
 
-		private static ExpandedColumn GetExpandedColumn(OracleDataObjectReference objectReference, string columnName, bool isRowId)
+		private static ExpandedColumn GetExpandedColumn(OracleObjectWithColumnsReference objectReference, string columnName, bool isRowId)
 		{
 			return new ExpandedColumn { ColumnName = GetColumnName(objectReference, columnName), IsRowId = isRowId };
 		}
 
-		private static string GetColumnName(OracleDataObjectReference objectReference, string columnName)
+		private static string GetColumnName(OracleObjectWithColumnsReference objectReference, string columnName)
 		{
 			var simpleColumnName = columnName.ToSimpleIdentifier();
 			if (objectReference == null)
 				return simpleColumnName;
 
-			var objectPrefix = objectReference.FullyQualifiedName.ToString();
+			var objectPrefix = objectReference.FullyQualifiedObjectName.ToString();
 			var usedObjectPrefix = String.IsNullOrEmpty(objectPrefix)
 				? null
 				: String.Format("{0}.", objectPrefix);

@@ -1005,7 +1005,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			programNodeValidity[2].SemanticError.ShouldBe(SemanticError.None);
 		}
 
-		[Test(Description = @""), Ignore]
+		[Test(Description = @"")]
 		public void TestColumnValidityNodesWithSequence()
 		{
 			const string sqlText = "SELECT TEST_SEQ.NEXTVAL, HUSQVIK.TEST_SEQ.\"NEXTVAL\", SYNONYM_TO_TEST_SEQ.CURRVAL FROM DUAL WHERE TEST_SEQ.\"CURRVAL\" < TEST_SEQ.NEXTVAL";
@@ -1031,6 +1031,22 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			columnNodeValidity.Count.ShouldBe(5);
 			columnNodeValidity.ForEach(n => n.IsRecognized.ShouldBe(true));
 			columnNodeValidity.ForEach(n => n.SemanticError.ShouldBe(SemanticError.None));
+		}
+
+		[Test(Description = @"")]
+		public void TestSequenceInvalidColumnValidity()
+		{
+			const string sqlText = "SELECT TEST_SEQ.UNDEFINED_COLUMN FROM DUAL";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = _statementValidator.BuildValidationModel(sqlText, statement, TestFixture.DatabaseModel);
+			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var columnNodeValidity = nodeValidityDictionary.Values.ToList();
+			columnNodeValidity.Count.ShouldBe(1);
+			columnNodeValidity[0].IsRecognized.ShouldBe(false);
+			columnNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
 		}
 
 		[Test(Description = @"")]

@@ -13,9 +13,9 @@ namespace SqlPad.Oracle
 
 			var validationModel = new OracleValidationModel { SemanticModel = semanticModel };
 
-			foreach (var tableReference in semanticModel.QueryBlocks.SelectMany(qb => qb.ObjectReferences).Where(tr => tr.Type != TableReferenceType.InlineView))
+			foreach (var tableReference in semanticModel.QueryBlocks.SelectMany(qb => qb.ObjectReferences).Where(tr => tr.Type != ReferenceType.InlineView))
 			{
-				if (tableReference.Type == TableReferenceType.CommonTableExpression)
+				if (tableReference.Type == ReferenceType.CommonTableExpression)
 				{
 					validationModel.ObjectNodeValidity[tableReference.ObjectNode] = new NodeValidationData { IsRecognized = true };
 					continue;
@@ -23,10 +23,10 @@ namespace SqlPad.Oracle
 
 				if (tableReference.OwnerNode != null)
 				{
-					validationModel.ObjectNodeValidity[tableReference.OwnerNode] = new NodeValidationData { IsRecognized = tableReference.SearchResult.SchemaFound };
+					validationModel.ObjectNodeValidity[tableReference.OwnerNode] = new NodeValidationData { IsRecognized = oracleDatabaseModel.ExistsSchema(tableReference.OwnerNode.Token.Value) };
 				}
 
-				validationModel.ObjectNodeValidity[tableReference.ObjectNode] = new NodeValidationData { IsRecognized = tableReference.SearchResult.SchemaObject != null };
+				validationModel.ObjectNodeValidity[tableReference.ObjectNode] = new NodeValidationData { IsRecognized = tableReference.SchemaObject != null };
 			}
 
 			foreach (var queryBlock in semanticModel.QueryBlocks)
@@ -216,15 +216,15 @@ namespace SqlPad.Oracle
 
 	public class NodeValidationData : INodeValidationData
 	{
-		private readonly HashSet<OracleDataObjectReference> _objectReferences;
+		private readonly HashSet<OracleObjectWithColumnsReference> _objectReferences;
 
 		public NodeValidationData(OracleDataObjectReference objectReference) : this(Enumerable.Repeat(objectReference, 1))
 		{
 		}
 
-		public NodeValidationData(IEnumerable<OracleDataObjectReference> objectReferences = null)
+		public NodeValidationData(IEnumerable<OracleObjectWithColumnsReference> objectReferences = null)
 		{
-			_objectReferences = new HashSet<OracleDataObjectReference>(objectReferences ?? Enumerable.Empty<OracleDataObjectReference>());
+			_objectReferences = new HashSet<OracleObjectWithColumnsReference>(objectReferences ?? Enumerable.Empty<OracleObjectWithColumnsReference>());
 		}
 
 		public bool IsRecognized { get; set; }
@@ -234,13 +234,13 @@ namespace SqlPad.Oracle
 			get { return _objectReferences.Count >= 2 ? SemanticError.AmbiguousReference : SemanticError.None; }
 		}
 
-		public ICollection<OracleDataObjectReference> ObjectReferences { get { return _objectReferences; } }
+		public ICollection<OracleObjectWithColumnsReference> ObjectReferences { get { return _objectReferences; } }
 
 		public ICollection<string> ObjectNames
 		{
 			get
 			{
-				return _objectReferences.Select(t => t.FullyQualifiedName.ToString())
+				return _objectReferences.Select(t => t.FullyQualifiedObjectName.ToString())
 					.Where(n => !String.IsNullOrEmpty(n))
 					.OrderByDescending(n => n)
 					.ToArray();
