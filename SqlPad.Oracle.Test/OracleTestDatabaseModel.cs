@@ -80,7 +80,8 @@ namespace SqlPad.Oracle.Test
 				new OracleSynonym
 				{
 					FullyQualifiedName = OracleObjectIdentifier.Create(SchemaPublic, tableNameDual),
-					SchemaObject = AllObjectsInternal.Single(o => o.Name == tableNameDual && o.Owner == OwnerNameSys)
+					SchemaObject = AllObjectsInternal.Single(o => o.Name == tableNameDual && o.Owner == OwnerNameSys),
+					IsValid = true
 				};
 			synonym.SchemaObject.Synonym = synonym;
 			
@@ -90,7 +91,8 @@ namespace SqlPad.Oracle.Test
 				new OracleSynonym
 				{
 					FullyQualifiedName = OracleObjectIdentifier.Create(SchemaPublic, "\"V$SESSION\""),
-					SchemaObject = AllObjectsInternal.Single(o => o.Name == "\"V_$SESSION\"" && o.Owner == OwnerNameSys)
+					SchemaObject = AllObjectsInternal.Single(o => o.Name == "\"V_$SESSION\"" && o.Owner == OwnerNameSys),
+					IsValid = true
 				};
 			synonym.SchemaObject.Synonym = synonym;
 
@@ -100,7 +102,19 @@ namespace SqlPad.Oracle.Test
 				new OracleSynonym
 				{
 					FullyQualifiedName = OracleObjectIdentifier.Create(SchemaPublic, "\"XMLTYPE\""),
-					SchemaObject = AllObjectsInternal.Single(o => o.Name == "\"XMLTYPE\"" && o.Owner == OwnerNameSys)
+					SchemaObject = AllObjectsInternal.Single(o => o.Name == "\"XMLTYPE\"" && o.Owner == OwnerNameSys),
+					IsValid = true
+				};
+			synonym.SchemaObject.Synonym = synonym;
+
+			AllObjectsInternal.Add(synonym);
+
+			synonym =
+				new OracleSynonym
+				{
+					FullyQualifiedName = OracleObjectIdentifier.Create(SchemaPublic, "\"SYNONYM_TO_TEST_SEQ\""),
+					SchemaObject = AllObjectsInternal.Single(o => o.Name == "\"TEST_SEQ\"" && o.Owner == OwnerNameSys),
+					IsValid = true
 				};
 			synonym.SchemaObject.Synonym = synonym;
 
@@ -400,7 +414,18 @@ namespace SqlPad.Oracle.Test
 			},
 			new OracleObjectType
 			{
-				FullyQualifiedName = OracleObjectIdentifier.Create(OwnerNameSys, "\"XMLTYPE\"")
+				FullyQualifiedName = OracleObjectIdentifier.Create(OwnerNameSys, "\"XMLTYPE\""),
+				IsValid = true
+			},
+			new OracleObjectType
+			{
+				FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"INVALID_OBJECT_TYPE\"")
+			},
+			new OracleSequence
+			{
+				FullyQualifiedName = OracleObjectIdentifier.Create(OwnerNameSys, "\"TEST_SEQ\""),
+				IsValid = true,
+				CacheSize = 20, CurrentValue = 1234, MinimumValue = 1, MaximumValue = Decimal.MaxValue, CanCycle = true
 			}
 		};
 

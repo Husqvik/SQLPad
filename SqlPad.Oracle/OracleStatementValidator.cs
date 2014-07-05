@@ -76,10 +76,7 @@ namespace SqlPad.Oracle
 					
 					if (functionReference.ObjectNode != null)
 					{
-						var packageSemanticError = functionReference.SchemaObject == null || functionReference.SchemaObject.IsValid
-							? SemanticError.None
-							: SemanticError.ObjectStatusInvalid;
-
+						var packageSemanticError = GetCompilationEror(functionReference);
 						validationModel.ProgramNodeValidity[functionReference.ObjectNode] = new ProgramValidationData(packageSemanticError) { IsRecognized = functionReference.SchemaObject != null, Node = functionReference.ObjectNode };
 					}
 
@@ -93,7 +90,8 @@ namespace SqlPad.Oracle
 
 				foreach (var typeReference in queryBlock.TypeReferences)
 				{
-					validationModel.ProgramNodeValidity[typeReference.ObjectNode] = new ProgramValidationData { IsRecognized = true, Node = typeReference.ObjectNode };
+					var semanticError = GetCompilationEror(typeReference);
+					validationModel.ProgramNodeValidity[typeReference.ObjectNode] = new ProgramValidationData(semanticError) { IsRecognized = true, Node = typeReference.ObjectNode };
 				}
 			}
 
@@ -107,6 +105,13 @@ namespace SqlPad.Oracle
 			}
 
 			return validationModel;
+		}
+
+		private SemanticError GetCompilationEror(OracleProgramReferenceBase reference)
+		{
+			return reference.SchemaObject != null && reference.SchemaObject.IsValid
+				? SemanticError.None
+				: SemanticError.ObjectStatusInvalid;
 		}
 
 		private INodeValidationData GetInvalidIdentifierValidationData(StatementDescriptionNode node)

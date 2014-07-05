@@ -196,5 +196,17 @@ namespace SqlPad.Oracle.Test
 			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
 			toolTip.Control.DataContext.ShouldBe("\"PUBLIC\".XMLTYPE (Synonym) => SYS.XMLTYPE (Type)");
 		}
+
+		[Test(Description = @""), STAThread]
+		public void TestTypeWithCompilationErrorToolTip()
+		{
+			const string query = "SELECT INVALID_OBJECT_TYPE(DUMMY) FROM DUAL";
+			_document.UpdateStatements(_oracleSqlParser.Parse(query), query);
+
+			var toolTip = _toolTipProvider.GetToolTip(TestFixture.DatabaseModel, _document, 10);
+
+			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.DataContext.ShouldBe("Object is invalid or unusable");
+		}
 	}
 }
