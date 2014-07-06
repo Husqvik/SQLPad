@@ -308,5 +308,45 @@ FROM
 			maxFunction.ParameterNodes.ShouldNotBe(null);
 			maxFunction.ParameterNodes.Count.ShouldBe(1);
 		}
+
+		[Test(Description = @"")]
+		public void TestColumnNotAmbiguousInOrderByClauseWhenSelectContainsAsterisk()
+		{
+			const string query1 = @"SELECT * FROM SELECTION ORDER BY NAME";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.QueryBlocks.ShouldNotBe(null);
+			semanticModel.QueryBlocks.Count.ShouldBe(1);
+
+			var columnReferences = semanticModel.QueryBlocks.Single().AllColumnReferences.ToArray();
+			columnReferences.Length.ShouldBe(6);
+			var orderByName = columnReferences[5];
+			orderByName.Placement.ShouldBe(QueryBlockPlacement.OrderBy);
+			orderByName.ColumnNodeColumnReferences.Count.ShouldBe(1);
+		}
+
+		[Test(Description = @"")]
+		public void TestColumnResolvedAmbiguousInOrderByClauseWhenSelectContainsAsteriskForRowSourcesWithSameColumnName()
+		{
+			const string query1 = @"SELECT SELECTION.*, SELECTION.* FROM SELECTION ORDER BY NAME";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.QueryBlocks.ShouldNotBe(null);
+			semanticModel.QueryBlocks.Count.ShouldBe(1);
+
+			var columnReferences = semanticModel.QueryBlocks.Single().AllColumnReferences.ToArray();
+			columnReferences.Length.ShouldBe(11);
+			var orderByName = columnReferences[10];
+			orderByName.Placement.ShouldBe(QueryBlockPlacement.OrderBy);
+			orderByName.ColumnNodeColumnReferences.Count.ShouldBe(2);
+		}
 	}
 }
