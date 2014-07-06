@@ -36,7 +36,7 @@ namespace SqlPad.Commands
 			}
 			catch (Exception exception)
 			{
-				MessageBox.Show("Action failed: " + exception.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+				MessageBox.Show("Action failed: "+ Environment.NewLine + exception.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
 			}
 
 			GenericCommandHandler.UpdateDocument((TextEditor)parameter, ExecutionContext);

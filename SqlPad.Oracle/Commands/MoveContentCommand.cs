@@ -40,7 +40,11 @@ namespace SqlPad.Oracle.Commands
 			_direction = direction;
 		}
 
-		private static readonly string[] SupportedNodeIds = { NonTerminals.AliasedExpressionOrAllTableColumns };
+		private static readonly string[] SupportedNodeIds =
+		{
+			NonTerminals.AliasedExpressionOrAllTableColumns,
+			NonTerminals.OrderExpression
+		};
 
 		private void MoveContent()
 		{
@@ -56,38 +60,74 @@ namespace SqlPad.Oracle.Commands
 			if (movedNode == null)
 				return;
 
-			var nodeToExchange = GetNodeToExchange(movedNode);
-			if (nodeToExchange == null)
+			var positionToExchange = GetPositionToExchange(movedNode);
+			if (positionToExchange == SourcePosition.Empty)
 				return;
+
+			var movedContextIndexEnd = GetLastNonChainingNodePosition(movedNode, movedNode.ParentNode.Id);
+			var movedContentLength = movedContextIndexEnd - movedNode.SourcePosition.IndexStart + 1;
 
 			_executionContext.SegmentsToReplace
 				.Add(new TextSegment
 				     {
 					     IndextStart = movedNode.SourcePosition.IndexStart,
-					     Length = movedNode.SourcePosition.Length,
-					     Text = nodeToExchange.GetStatementSubstring(_executionContext.StatementText)
+						 Length = movedContentLength,
+					     Text = _executionContext.StatementText.Substring(positionToExchange.IndexStart, positionToExchange.Length)
 				     });
 
 			_executionContext.SegmentsToReplace
 				.Add(new TextSegment
 				     {
-						 IndextStart = nodeToExchange.SourcePosition.IndexStart,
-						 Length = nodeToExchange.SourcePosition.Length,
-						 Text = movedNode.GetStatementSubstring(_executionContext.StatementText)
+						 IndextStart = positionToExchange.IndexStart,
+						 Length = positionToExchange.Length,
+						 Text = _executionContext.StatementText.Substring(movedNode.SourcePosition.IndexStart, movedContentLength)
 				     });
 
 			var caretOffset = _direction == Direction.Up
-				? -nodeToExchange.SourcePosition.Length - movedNode.SourcePosition.IndexStart + nodeToExchange.SourcePosition.IndexEnd + 1
-				: nodeToExchange.SourcePosition.Length + nodeToExchange.SourcePosition.IndexStart - movedNode.SourcePosition.IndexEnd - 1;
+				? -positionToExchange.Length - movedNode.SourcePosition.IndexStart + positionToExchange.IndexEnd + 1
+				: positionToExchange.Length + positionToExchange.IndexStart - movedContextIndexEnd - 1;
 
 			_executionContext.CaretOffset += caretOffset;
 		}
 
-		private StatementDescriptionNode GetNodeToExchange(StatementDescriptionNode movedNode)
+		private SourcePosition GetPositionToExchange(StatementDescriptionNode movedNode)
 		{
 			return _direction == Direction.Up
-				? movedNode.ParentNode.ParentNode.ChildNodes.FirstOrDefault(n => n.Id == movedNode.Id)
-				: movedNode.ParentNode.GetPathFilterDescendants(n => n != movedNode && NodeFilters.BreakAtNestedQueryBoundary(n), movedNode.Id).FirstOrDefault();
+				? FindAncestorPositionToExchange(movedNode)
+				: FindDescendantPositionToExchange(movedNode);
+		}
+
+		private SourcePosition FindDescendantPositionToExchange(StatementDescriptionNode movedNode)
+		{
+			var nodeToExchange = movedNode.ParentNode.GetPathFilterDescendants(NodeFilters.BreakAtNestedQueryBoundary, movedNode.Id)
+				.FirstOrDefault(n => n != movedNode);
+
+			return CreateNodePosition(movedNode, nodeToExchange);
+		}
+
+		private SourcePosition FindAncestorPositionToExchange(StatementDescriptionNode movedNode)
+		{
+			var parentCandidate = movedNode.ParentNode.ParentNode;
+			StatementDescriptionNode nodeToExchange = null;
+			while (parentCandidate != null && nodeToExchange == null)
+			{
+				nodeToExchange = parentCandidate.ChildNodes.FirstOrDefault(n => n.Id == movedNode.Id);
+				parentCandidate = parentCandidate.ParentNode;
+			}
+
+			return CreateNodePosition(movedNode, nodeToExchange);
+		}
+
+		private SourcePosition CreateNodePosition(StatementDescriptionNode movedNode, StatementDescriptionNode nodeToExchange)
+		{
+			return nodeToExchange == null
+				? SourcePosition.Empty
+				: SourcePosition.Create(nodeToExchange.SourcePosition.IndexStart, GetLastNonChainingNodePosition(nodeToExchange, movedNode.ParentNode.Id));
+		}
+
+		private int GetLastNonChainingNodePosition(StatementDescriptionNode nodeToExchange, string chainingNodeId)
+		{
+			return nodeToExchange.ChildNodes.TakeWhile(n => n.Id != chainingNodeId || n != nodeToExchange.ChildNodes[nodeToExchange.ChildNodes.Count - 1]).First().SourcePosition.IndexEnd;
 		}
 
 		private enum Direction

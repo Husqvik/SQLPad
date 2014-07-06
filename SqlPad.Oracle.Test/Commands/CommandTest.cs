@@ -748,6 +748,30 @@ WHERE
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestMoveOrderByExpressionCommandUp()
+		{
+			_editor.Text = @"SELECT * FROM SELECTION ORDER BY 'NamePrefix' || NAME || 'NamePostfix', 'IdPrefix' || SELECTION_ID || 'IdPostfix', 'IdPrefix' || PROJECT_ID || 'IdPostfix'";
+			_editor.CaretOffset = 86;
+
+			ExecuteGenericCommand(MoveContentCommand.MoveContentUp);
+
+			_editor.Text.ShouldBe("SELECT * FROM SELECTION ORDER BY 'IdPrefix' || SELECTION_ID || 'IdPostfix', 'NamePrefix' || NAME || 'NamePostfix', 'IdPrefix' || PROJECT_ID || 'IdPostfix'");
+			_editor.CaretOffset.ShouldBe(47);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestMoveOrderByExpressionCommandDown()
+		{
+			_editor.Text = @"SELECT * FROM SELECTION ORDER BY 'NamePrefix' || NAME || 'NamePostfix', 'IdPrefix' || SELECTION_ID || 'IdPostfix', 'IdPrefix' || PROJECT_ID || 'IdPostfix'";
+			_editor.CaretOffset = 33;
+
+			ExecuteGenericCommand(MoveContentCommand.MoveContentDown);
+
+			_editor.Text.ShouldBe("SELECT * FROM SELECTION ORDER BY 'IdPrefix' || SELECTION_ID || 'IdPostfix', 'NamePrefix' || NAME || 'NamePostfix', 'IdPrefix' || PROJECT_ID || 'IdPostfix'");
+			_editor.CaretOffset.ShouldBe(76);
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestMoveContentCommandDown()
 		{
 			_editor.Text = @"SELECT 'NamePrefix' || NAME || 'NamePostfix', 'IdPrefix' || PROJECT_ID || 'IdPostfix' FROM PROJECT";
