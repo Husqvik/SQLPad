@@ -61,8 +61,8 @@ namespace SqlPad.Oracle
 					case Terminals.Lag:
 					case Terminals.RowIdPseudoColumn:
 					case Terminals.Identifier:
-						var columnDescription = GetColumnDescription(queryBlock, node);
-						if (columnDescription == null)
+						var columnReference = GetColumnDescription(queryBlock, node);
+						if (columnReference == null)
 						{
 							var functionToolTip = GetFunctionToolTip(queryBlock, node);
 							var typeToolTip = GetTypeToolTip(queryBlock, node);
@@ -79,9 +79,13 @@ namespace SqlPad.Oracle
 								return null;
 							}
 						}
-						else
+						else if (columnReference.ColumnDescription != null)
 						{
-							tip = String.Format("{0} {1}{2}", columnDescription.FullTypeName, columnDescription.Nullable ? null : "NOT ", "NULL");
+							var objectPrefix = columnReference.ObjectNode == null
+								? String.Format("{0}.{1} ", columnReference.ValidObjectReference.FullyQualifiedObjectName, columnReference.Name.ToSimpleIdentifier())
+								: null;
+							
+							tip = String.Format("{0}{1} {2}{3}", objectPrefix, columnReference.ColumnDescription.FullTypeName, columnReference.ColumnDescription.Nullable ? null : "NOT ", "NULL");
 						}
 						
 						break;
@@ -134,12 +138,10 @@ namespace SqlPad.Oracle
 			return functionReference == null || functionReference.Metadata == null ? null : functionReference.Metadata.Identifier.FullyQualifiedIdentifier;
 		}
 
-		private OracleColumn GetColumnDescription(OracleQueryBlock queryBlock, StatementDescriptionNode terminal)
+		private OracleColumnReference GetColumnDescription(OracleQueryBlock queryBlock, StatementDescriptionNode terminal)
 		{
 			return queryBlock.AllColumnReferences
-				.Where(c => c.ColumnNode == terminal)
-				.Select(c => c.ColumnDescription)
-				.FirstOrDefault();
+				.FirstOrDefault(c => c.ColumnNode == terminal);
 		}
 
 		private OracleSchemaObject GetSchemaObjectReference(OracleQueryBlock queryBlock, StatementDescriptionNode terminal)

@@ -21,7 +21,7 @@ namespace SqlPad.Oracle.Test
 			var toolTip = _toolTipProvider.GetToolTip(TestFixture.DatabaseModel, _document, 8);
 
 			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
-			toolTip.Control.DataContext.ShouldBe("VARCHAR2(50 BYTE) NOT NULL");
+			toolTip.Control.DataContext.ShouldBe("SELECTION.NAME VARCHAR2(50 BYTE) NOT NULL");
 		}
 
 		[Test(Description = @""), STAThread]
@@ -33,7 +33,7 @@ namespace SqlPad.Oracle.Test
 			var toolTip = _toolTipProvider.GetToolTip(TestFixture.DatabaseModel, _document, 8);
 
 			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
-			toolTip.Control.DataContext.ShouldBe("ROWID NOT NULL");
+			toolTip.Control.DataContext.ShouldBe("SELECTION.ROWID ROWID NOT NULL");
 		}
 
 		[Test(Description = @""), STAThread]
@@ -45,7 +45,7 @@ namespace SqlPad.Oracle.Test
 			var toolTip = _toolTipProvider.GetToolTip(TestFixture.DatabaseModel, _document, 8);
 
 			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
-			toolTip.Control.DataContext.ShouldBe("NUMBER(20, 2) NOT NULL");
+			toolTip.Control.DataContext.ShouldBe("INVOICELINES.AMOUNT NUMBER(20, 2) NOT NULL");
 		}
 
 		[Test(Description = @""), STAThread]
@@ -57,7 +57,7 @@ namespace SqlPad.Oracle.Test
 			var toolTip = _toolTipProvider.GetToolTip(TestFixture.DatabaseModel, _document, 8);
 
 			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
-			toolTip.Control.DataContext.ShouldBe("NUMBER(*, 5) NOT NULL");
+			toolTip.Control.DataContext.ShouldBe("INVOICELINES.CORRELATION_VALUE NUMBER(*, 5) NOT NULL");
 		}
 
 		[Test(Description = @""), STAThread]

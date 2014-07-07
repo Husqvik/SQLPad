@@ -34,6 +34,17 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestSuggestingAmbiguousColumnReferenceResolutionInWhereClause()
+		{
+			const string query1 = @"SELECT * FROM SELECTION, PROJECT WHERE NAME = 'Name'";
+
+			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 39).Where(a => a.Name.StartsWith("Resolve as")).ToArray();
+			actions.Length.ShouldBe(2);
+			actions[0].Name.ShouldBe("Resolve as SELECTION.NAME");
+			actions[1].Name.ShouldBe("Resolve as PROJECT.NAME");
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestSuggestingAmbiguousColumnReferenceResolutionWithFullyQualifiedName()
 		{
 			const string query1 = @"SELECT DUAL.DUMMY FROM SYS.DUAL, ""PUBLIC"".DUAL";

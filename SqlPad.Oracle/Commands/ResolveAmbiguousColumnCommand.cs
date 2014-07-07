@@ -24,7 +24,7 @@ namespace SqlPad.Oracle.Commands
 			if (currentTerminal.Id != Terminals.Identifier && currentTerminal.Id != Terminals.RowIdPseudoColumn)
 				return EmptyCollection;
 
-			var columnReference = semanticModel.QueryBlocks.SelectMany(qb => qb.Columns).SelectMany(c => c.ColumnReferences).SingleOrDefault(c => c.ColumnNode == currentTerminal);
+			var columnReference = semanticModel.QueryBlocks.SelectMany(qb => qb.AllColumnReferences).SingleOrDefault(c => c.ColumnNode == currentTerminal);
 			if (columnReference == null || columnReference.ColumnNodeObjectReferences.Count <= 1)
 				return EmptyCollection;
 
