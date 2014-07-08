@@ -6,7 +6,7 @@ namespace SqlPad
 	{
 		ICollection<FunctionOverloadDescription> ResolveFunctionOverloads(StatementCollection statementCollection, IDatabaseModel databaseModel, int cursorPosition);
 
-		ICollection<ICodeCompletionItem> ResolveItems(SqlDocument sqlDocument, IDatabaseModel databaseModel, string statementText, int cursorPosition);
+		ICollection<ICodeCompletionItem> ResolveItems(SqlDocumentStore sqlDocumentStore, IDatabaseModel databaseModel, string statementText, int cursorPosition);
 	}
 
 	public class FunctionOverloadDescription

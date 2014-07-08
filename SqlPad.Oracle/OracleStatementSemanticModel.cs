@@ -6,7 +6,7 @@ using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
 namespace SqlPad.Oracle
 {
-	public class OracleStatementSemanticModel
+	public class OracleStatementSemanticModel : IStatementSemanticModel
 	{
 		private readonly Dictionary<StatementDescriptionNode, OracleQueryBlock> _queryBlockResults = new Dictionary<StatementDescriptionNode, OracleQueryBlock>();
 		private readonly Dictionary<OracleSelectListColumn, ICollection<OracleDataObjectReference>> _asteriskTableReferences = new Dictionary<OracleSelectListColumn, ICollection<OracleDataObjectReference>>();
@@ -16,7 +16,11 @@ namespace SqlPad.Oracle
 
 		public OracleDatabaseModelBase DatabaseModel { get; private set; }
 
+		IDatabaseModel IStatementSemanticModel.DatabaseModel { get { return DatabaseModel; } }
+
 		public OracleStatement Statement { get; private set; }
+
+		StatementBase IStatementSemanticModel.Statement { get { return Statement; } }
 		
 		public string StatementText { get; private set; }
 		

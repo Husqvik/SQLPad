@@ -15,21 +15,22 @@ namespace SqlPad.Oracle
 		internal ICollection<IContextAction> GetContextActions(OracleDatabaseModelBase databaseModel, string statementText, int cursorPosition)
 		{
 			var statements = _oracleParser.Parse(statementText);
+			var documentStore = new SqlDocumentStore(_oracleParser, new OracleStatementValidator(), databaseModel, statementText);
 			var executionContext = new CommandExecutionContext(statementText, 0, 0, cursorPosition, statements, databaseModel);
-			return GetContextActions(SqlDocument.FromStatementCollection(statements, statementText), executionContext);
+			return GetContextActions(documentStore, executionContext);
 		}
 
-		public ICollection<IContextAction> GetContextActions(SqlDocument sqlDocument, CommandExecutionContext executionContext)
+		public ICollection<IContextAction> GetContextActions(SqlDocumentStore sqlDocumentStore, CommandExecutionContext executionContext)
 		{
-			if (sqlDocument == null || sqlDocument.StatementCollection == null)
+			if (sqlDocumentStore == null || sqlDocumentStore.StatementCollection == null)
 				return EmptyCollection;
 
-			var currentTerminal = sqlDocument.StatementCollection.GetTerminalAtPosition(executionContext.CaretOffset);
+			var currentTerminal = sqlDocumentStore.StatementCollection.GetTerminalAtPosition(executionContext.CaretOffset);
 			if (currentTerminal == null)
 				return EmptyCollection;
 
 			var semanticModel = new OracleStatementSemanticModel(null, (OracleStatement)currentTerminal.Statement, (OracleDatabaseModelBase)executionContext.DatabaseModel);
-			var oracleExecutionContext = OracleCommandExecutionContext.Create(sqlDocument.StatementText, executionContext.Line, executionContext.Column, executionContext.CaretOffset, semanticModel);
+			var oracleExecutionContext = OracleCommandExecutionContext.Create(sqlDocumentStore.StatementText, executionContext.Line, executionContext.Column, executionContext.CaretOffset, semanticModel);
 			var enterIdentifierModel = new CommandSettingsModel { Value = "Enter value" };
 			oracleExecutionContext.SettingsProvider = new EditDialog(enterIdentifierModel);
 			

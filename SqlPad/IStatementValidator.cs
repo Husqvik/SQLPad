@@ -2,6 +2,16 @@
 {
 	public interface IStatementValidator
 	{
-		IValidationModel BuildValidationModel(string sqlText, StatementBase statement, IDatabaseModel databaseModel);
+		IStatementSemanticModel BuildSemanticModel(string statementText, StatementBase statementBase, IDatabaseModel databaseModel);
+
+		IValidationModel BuildValidationModel(IStatementSemanticModel semanticModel);
+	}
+
+	public interface IStatementSemanticModel
+	{
+		IDatabaseModel DatabaseModel { get; }
+		StatementBase Statement { get; }
+		string StatementText { get; }
+		bool IsSimpleModel { get; }
 	}
 }

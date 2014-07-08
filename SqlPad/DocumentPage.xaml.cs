@@ -27,8 +27,7 @@ namespace SqlPad
 		private const int RowBatchSize = 100;
 		internal const string ExecuteDatabaseCommandName = "ExecuteDatabaseCommand";
 		
-		private readonly SqlDocument _sqlDocument = new SqlDocument();
-		private readonly ISqlParser _sqlParser;
+		private readonly SqlDocumentStore _sqlDocumentStore;
 		private readonly IInfrastructureFactory _infrastructureFactory;
 		private readonly ICodeCompletionProvider _codeCompletionProvider;
 		private readonly ICodeSnippetProvider _codeSnippetProvider;
@@ -68,7 +67,6 @@ namespace SqlPad
 				throw new ArgumentNullException("infrastructureFactory");
 
 			_infrastructureFactory = infrastructureFactory;
-			_sqlParser = _infrastructureFactory.CreateSqlParser();
 			_codeCompletionProvider = _infrastructureFactory.CreateCodeCompletionProvider();
 			_codeSnippetProvider = _infrastructureFactory.CreateSnippetProvider();
 			_contextActionProvider = _infrastructureFactory.CreateContextActionProvider();
@@ -76,7 +74,8 @@ namespace SqlPad
 			_toolTipProvider = _infrastructureFactory.CreateToolTipProvider();
 			_navigationService = _infrastructureFactory.CreateNavigationService();
 			_databaseModel = _infrastructureFactory.CreateDatabaseModel(ConfigurationProvider.ConnectionStrings["Default"]);
-			_colorizeAvalonEdit = new ColorizeAvalonEdit(_databaseModel);
+			_sqlDocumentStore = new SqlDocumentStore(_infrastructureFactory.CreateSqlParser(), _infrastructureFactory.CreateStatementValidator(), _databaseModel);
+			_colorizeAvalonEdit = new ColorizeAvalonEdit();
 
 			_timer.Elapsed += (sender, args) => Dispatcher.Invoke(ReParse);
 
@@ -122,7 +121,7 @@ namespace SqlPad
 			foreach (var handler in _infrastructureFactory.CommandFactory.CommandHandlers)
 			{
 				var command = new RoutedCommand(handler.Name, typeof(TextEditor), handler.DefaultGestures);
-				var routedHandlerMethod = GenericCommandHandler.CreateRoutedEditCommandHandler(handler, () => _sqlDocument, _databaseModel);
+				var routedHandlerMethod = GenericCommandHandler.CreateRoutedEditCommandHandler(handler, () => _sqlDocumentStore, _databaseModel);
 				Editor.TextArea.DefaultInputHandler.Editing.CommandBindings.Add(new CommandBinding(command, routedHandlerMethod));
 			}
 		}
@@ -224,7 +223,7 @@ namespace SqlPad
 			commandBindings.Add(new CommandBinding(saveCommand, SaveCommandExecutedHandler));
 
 			var formatStatementCommand = new RoutedCommand(_statementFormatter.ExecutionHandler.Name, typeof(TextEditor), _statementFormatter.ExecutionHandler.DefaultGestures);
-			var formatStatementRoutedHandlerMethod = GenericCommandHandler.CreateRoutedEditCommandHandler(_statementFormatter.ExecutionHandler, () => _sqlDocument, _databaseModel);
+			var formatStatementRoutedHandlerMethod = GenericCommandHandler.CreateRoutedEditCommandHandler(_statementFormatter.ExecutionHandler, () => _sqlDocumentStore, _databaseModel);
 			commandBindings.Add(new CommandBinding(formatStatementCommand, formatStatementRoutedHandlerMethod));
 
 			var findUsagesCommandHandler = _infrastructureFactory.CommandFactory.FindUsagesCommandHandler;
@@ -251,7 +250,7 @@ namespace SqlPad
 
 		private void NavigateToQueryBlockRoot(object sender, ExecutedRoutedEventArgs args)
 		{
-			var queryBlockRootIndex = _navigationService.NavigateToQueryBlockRoot(_sqlDocument.StatementCollection, Editor.CaretOffset);
+			var queryBlockRootIndex = _navigationService.NavigateToQueryBlockRoot(_sqlDocumentStore.StatementCollection, Editor.CaretOffset);
 			if (queryBlockRootIndex.HasValue)
 			{
 				Editor.CaretOffset = queryBlockRootIndex.Value;
@@ -261,7 +260,7 @@ namespace SqlPad
 
 		private void ShowFunctionOverloads(object sender, ExecutedRoutedEventArgs args)
 		{
-			var functionOverloads = _codeCompletionProvider.ResolveFunctionOverloads(_sqlDocument.StatementCollection, _databaseModel, Editor.CaretOffset);
+			var functionOverloads = _codeCompletionProvider.ResolveFunctionOverloads(_sqlDocumentStore.StatementCollection, _databaseModel, Editor.CaretOffset);
 			if (functionOverloads.Count <= 0)
 				return;
 
@@ -279,10 +278,10 @@ namespace SqlPad
 
 		private void ExecuteDatabaseCommand(object sender, ExecutedRoutedEventArgs args)
 		{
-			if (_sqlDocument.StatementCollection == null)
+			if (_sqlDocumentStore.StatementCollection == null)
 				return;
 
-			var statement = _sqlDocument.StatementCollection.GetStatementAtPosition(Editor.CaretOffset);
+			var statement = _sqlDocumentStore.StatementCollection.GetStatementAtPosition(Editor.CaretOffset);
 			if (statement == null)
 				return;
 
@@ -369,7 +368,7 @@ namespace SqlPad
 		private void FindUsages(object sender, ExecutedRoutedEventArgs args)
 		{
 			var findUsagesCommandHandler = _infrastructureFactory.CommandFactory.FindUsagesCommandHandler;
-			var executionContext = CommandExecutionContext.Create(Editor, _sqlDocument.StatementCollection, _databaseModel);
+			var executionContext = CommandExecutionContext.Create(Editor, _sqlDocumentStore.StatementCollection, _databaseModel);
 			findUsagesCommandHandler.ExecutionHandler(executionContext);
 			_colorizeAvalonEdit.SetHighlightSegments(executionContext.SegmentsToReplace);
 			Editor.TextArea.TextView.Redraw();
@@ -437,9 +436,9 @@ namespace SqlPad
 
 			if (!_isParsing)
 			{
-				var parenthesisTerminal = _sqlDocument.StatementCollection == null
+				var parenthesisTerminal = _sqlDocumentStore.StatementCollection == null
 					? null
-					: _sqlDocument.ExecuteStatementAction(s => s.GetTerminalAtPosition(Editor.CaretOffset, n => n.Token.Value.In("(", ")")));
+					: _sqlDocumentStore.ExecuteStatementAction(s => s.GetTerminalAtPosition(Editor.CaretOffset, n => n.Token.Value.In("(", ")")));
 
 				if (parenthesisTerminal != null)
 				{
@@ -489,7 +488,7 @@ namespace SqlPad
 
 			_pageModel.DocumentHeader = DocumentHeader;
 
-			var snippets = _codeSnippetProvider.GetSnippets(_sqlDocument, Editor.Text, Editor.CaretOffset).Select(i => new CompletionData(i)).ToArray();
+			var snippets = _codeSnippetProvider.GetSnippets(_sqlDocumentStore, Editor.Text, Editor.CaretOffset).Select(i => new CompletionData(i)).ToArray();
 			if (_completionWindow == null && snippets.Length > 0)
 			{
 				CreateSnippetCompletionWindow(snippets);
@@ -580,7 +579,7 @@ namespace SqlPad
 
 		private void CreateCodeCompletionWindow()
 		{
-			CreateCompletionWindow(() => _codeCompletionProvider.ResolveItems(_sqlDocument, _databaseModel, Editor.Text, Editor.CaretOffset).Select(i => new CompletionData(i)), true);
+			CreateCompletionWindow(() => _codeCompletionProvider.ResolveItems(_sqlDocumentStore, _databaseModel, Editor.Text, Editor.CaretOffset).Select(i => new CompletionData(i)), true);
 		}
 
 		private void CreateSnippetCompletionWindow(IEnumerable<ICompletionData> items)
@@ -642,10 +641,8 @@ namespace SqlPad
 
 		private void ExecuteParse(object text)
 		{
-			var statementText = (string)text;
-			var statements = _sqlParser.Parse(statementText);
-			_sqlDocument.UpdateStatements(statements, statementText);
-			_colorizeAvalonEdit.SetStatementCollection(statements);
+			_sqlDocumentStore.UpdateStatements((string)text);
+			_colorizeAvalonEdit.SetStatementCollection(_sqlDocumentStore);
 
 			Dispatcher.Invoke(() =>
 			{
@@ -664,13 +661,13 @@ namespace SqlPad
 				return;
 
 			var position = Editor.GetPositionFromPoint(e.GetPosition(Editor));
-			if (!position.HasValue || _sqlDocument.StatementCollection == null)
+			if (!position.HasValue || _sqlDocumentStore.StatementCollection == null)
 				return;
 
 			var offset = Editor.Document.GetOffset(position.Value.Line, position.Value.Column);
 			//var lineByOffset = Editor.Document.GetLineByOffset(offset);
 
-			var toolTip = _toolTipProvider.GetToolTip(_databaseModel, _sqlDocument, offset);
+			var toolTip = _toolTipProvider.GetToolTip(_sqlDocumentStore, offset);
 			if (toolTip == null)
 				return;
 
@@ -708,8 +705,8 @@ namespace SqlPad
 
 		private bool PopulateContextActionMenu()
 		{
-			var executionContext = CommandExecutionContext.Create(Editor, _sqlDocument.StatementCollection, _databaseModel);
-			_contextActionProvider.GetContextActions(_sqlDocument, executionContext)
+			var executionContext = CommandExecutionContext.Create(Editor, _sqlDocumentStore.StatementCollection, _databaseModel);
+			_contextActionProvider.GetContextActions(_sqlDocumentStore, executionContext)
 				.ToList()
 				.ForEach(BuildContextMenuItem);
 

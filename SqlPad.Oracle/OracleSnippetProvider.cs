@@ -9,17 +9,18 @@ namespace SqlPad.Oracle
 		private readonly OracleSqlParser _oracleParser = new OracleSqlParser();
 		private static readonly ICodeSnippet[] EmptyCollection = new ICodeSnippet[0];
 
-		internal ICollection<ICodeSnippet> GetSnippets(string statementText, int cursorPosition)
+		internal ICollection<ICodeSnippet> GetSnippets(string statementText, int cursorPosition, IDatabaseModel databaseModel)
 		{
-			return GetSnippets(SqlDocument.FromStatementCollection(_oracleParser.Parse(statementText), statementText), statementText, cursorPosition);
+			var documentStore = new SqlDocumentStore(_oracleParser, new OracleStatementValidator(), databaseModel, statementText);
+			return GetSnippets(documentStore, statementText, cursorPosition);
 		}
 
-		public ICollection<ICodeSnippet> GetSnippets(SqlDocument sqlDocument, string statementText, int cursorPosition)
+		public ICollection<ICodeSnippet> GetSnippets(SqlDocumentStore sqlDocumentStore, string statementText, int cursorPosition)
 		{
-			if (sqlDocument == null || sqlDocument.StatementCollection == null)
+			if (sqlDocumentStore == null || sqlDocumentStore.StatementCollection == null)
 				return EmptyCollection;
 
-			var statement = sqlDocument.StatementCollection.TakeWhile(s => s.SourcePosition.IndexStart <= cursorPosition - 1).LastOrDefault();
+			var statement = sqlDocumentStore.StatementCollection.TakeWhile(s => s.SourcePosition.IndexStart <= cursorPosition - 1).LastOrDefault();
 
 			StatementDescriptionNode currentNode = null;
 			if (statement != null)

@@ -6,14 +6,22 @@ namespace SqlPad.Oracle
 {
 	public class OracleStatementValidator : IStatementValidator
 	{
-		public IValidationModel BuildValidationModel(string sqlText, StatementBase statement, IDatabaseModel databaseModel)
+		public IStatementSemanticModel BuildSemanticModel(string statementText, StatementBase statementBase, IDatabaseModel databaseModel)
 		{
-			var oracleDatabaseModel = (OracleDatabaseModelBase)databaseModel;
-			var semanticModel = new OracleStatementSemanticModel(sqlText, (OracleStatement)statement, oracleDatabaseModel);
+			return new OracleStatementSemanticModel(statementText, (OracleStatement)statementBase, (OracleDatabaseModelBase)databaseModel);
+		}
 
-			var validationModel = new OracleValidationModel { SemanticModel = semanticModel };
+		public IValidationModel BuildValidationModel(IStatementSemanticModel semanticModel)
+		{
+			if (semanticModel == null)
+				throw new ArgumentNullException("semanticModel");
 
-			foreach (var tableReference in semanticModel.QueryBlocks.SelectMany(qb => qb.ObjectReferences).Where(tr => tr.Type != ReferenceType.InlineView))
+			var oracleDatabaseModel = (OracleDatabaseModelBase)semanticModel.DatabaseModel;
+			var oracleSemanticModel = (OracleStatementSemanticModel)semanticModel;
+
+			var validationModel = new OracleValidationModel { SemanticModel = oracleSemanticModel };
+
+			foreach (var tableReference in oracleSemanticModel.QueryBlocks.SelectMany(qb => qb.ObjectReferences).Where(tr => tr.Type != ReferenceType.InlineView))
 			{
 				if (tableReference.Type == ReferenceType.CommonTableExpression)
 				{
@@ -29,7 +37,7 @@ namespace SqlPad.Oracle
 				validationModel.ObjectNodeValidity[tableReference.ObjectNode] = new NodeValidationData { IsRecognized = tableReference.SchemaObject != null };
 			}
 
-			foreach (var queryBlock in semanticModel.QueryBlocks)
+			foreach (var queryBlock in oracleSemanticModel.QueryBlocks)
 			{
 				foreach (var column in queryBlock.Columns.Where(c => c.ExplicitDefinition))
 				{
@@ -102,7 +110,7 @@ namespace SqlPad.Oracle
 				}
 			}
 
-			var invalidIdentifiers = semanticModel.Statement.AllTerminals
+			var invalidIdentifiers = oracleSemanticModel.Statement.AllTerminals
 				.Select(GetInvalidIdentifierValidationData)
 				.Where(nv => nv != null);
 

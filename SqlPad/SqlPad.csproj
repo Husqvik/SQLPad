@@ -114,7 +114,7 @@
     <Compile Include="MultiNodeEditor.cs" />
     <Compile Include="Namespaces.cs" />
     <Compile Include="Snippets.cs" />
-    <Compile Include="SqlDocument.cs" />
+    <Compile Include="SqlDocumentStore.cs" />
     <Compile Include="StatementCollection.cs" />
     <Compile Include="IStatementValidator.cs" />
     <Compile Include="IToken.cs" />

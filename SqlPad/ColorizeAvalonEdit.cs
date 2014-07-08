@@ -15,9 +15,7 @@ namespace SqlPad
 		private StatementCollection _statements;
 		private readonly Stack<ICollection<TextSegment>> _highlightSegments = new Stack<ICollection<TextSegment>>();
 		private readonly List<StatementDescriptionNode> _highlightParenthesis = new List<StatementDescriptionNode>();
-		private readonly IStatementValidator _validator = ConfigurationProvider.InfrastructureFactory.CreateStatementValidator();
 		private readonly ISqlParser _parser = ConfigurationProvider.InfrastructureFactory.CreateSqlParser();
-		private readonly IDatabaseModel _databaseModel;
 		private static readonly SolidColorBrush ErrorBrush = new SolidColorBrush(Colors.Red);
 		private static readonly SolidColorBrush HighlightUsageBrush = new SolidColorBrush(Colors.Turquoise);
 		private static readonly SolidColorBrush HighlightDefinitionBrush = new SolidColorBrush(Colors.SandyBrown);
@@ -36,29 +34,16 @@ namespace SqlPad
 		
 		public IEnumerable<TextSegment> HighlightSegments { get { return _highlightSegments.SelectMany(c => c); } }
 
-		public ColorizeAvalonEdit(IDatabaseModel databaseModel)
+		public void SetStatementCollection(SqlDocumentStore documentStore)
 		{
-			if (databaseModel == null)
-			{
-				throw new ArgumentNullException("databaseModel");
-			}
-			
-			_databaseModel = databaseModel;
-		}
-
-		public void SetStatementCollection(StatementCollection statements)
-		{
-			if (statements == null)
+			if (documentStore == null)
 				return;
-
-			var validationModels = statements.Select(s => _validator.BuildValidationModel(null, s, _databaseModel))
-					.ToDictionary(vm => vm.Statement, vm => vm);
 
 			lock (_lockObject)
 			{
-				_statements = statements;
+				_statements = documentStore.StatementCollection;
 
-				_validationModels = validationModels;
+				_validationModels = documentStore.ValidationModels;
 
 				_lineTerminals.Clear();
 			}

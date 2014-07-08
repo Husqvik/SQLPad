@@ -5,7 +5,7 @@ namespace SqlPad
 {
 	public interface IContextActionProvider
 	{
-		ICollection<IContextAction> GetContextActions(SqlDocument sqlDocument, CommandExecutionContext executionContext);
+		ICollection<IContextAction> GetContextActions(SqlDocumentStore sqlDocumentStore, CommandExecutionContext executionContext);
 	}
 
 	public interface IContextAction
