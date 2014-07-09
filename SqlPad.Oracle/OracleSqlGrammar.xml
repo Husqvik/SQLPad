@@ -879,6 +879,7 @@
         </Sequence>
         <Sequence>
           <NonTerminal Id="XmlElementClause" />
+          <NonTerminal Id="ObjectTypeNestedFunctionCallChained" IsOptional="true" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
@@ -930,9 +931,7 @@
           <NonTerminal Id="AnalyticFunctionCall" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
-        
-        <!-- TODO: Solve TREAT function -->
-        <!--<Sequence>
+        <Sequence>
           <Terminal Id="Treat" />
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="Expression" />
@@ -941,8 +940,9 @@
           <NonTerminal Id="SchemaPrefix" IsOptional="true" />
           <Terminal Id="DataTypeIdentifier" />
           <Terminal Id="RightParenthesis" />
-        </Sequence>-->
-
+          <NonTerminal Id="ObjectTypeNestedFunctionCallChained" IsOptional="true" />
+          <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
+        </Sequence>
         <Sequence>
           <NonTerminal Id="BindVariableExpression" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
@@ -1159,13 +1159,23 @@
       <Sequences>
         <Sequence>
           <Terminal Id="LeftParenthesis" />
-          <NonTerminal Id="FunctionParameters" IsOptional="true" />
+          <NonTerminal Id="AggregationFunctionParameters" IsOptional="true" />
           <Terminal Id="RightParenthesis" />
         </Sequence>
       </Sequences>
     </Rule>
 
-    <Rule StartingNonTerminal="FunctionParameters">
+    <Rule StartingNonTerminal="ParenthesisEnclosedFunctionParameters">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="OptionalParameterExpressionList" IsOptional="true" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AggregationFunctionParameters">
       <Sequences>
         <Sequence>
           <NonTerminal Id="DistinctModifier" />
@@ -1220,7 +1230,19 @@
           <!-- Function call -->
           <NonTerminal Id="DatabaseLink" IsOptional="true" />
           <NonTerminal Id="ParenthesisEnclosedAggregationFunctionParameters" IsOptional="true" />
+          <NonTerminal Id="ObjectTypeNestedFunctionCallChained" IsOptional="true" />
           <NonTerminal Id="AnalyticClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ObjectTypeNestedFunctionCallChained">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Dot" />
+          <Terminal Id="MemberFunctionIdentifier" />
+          <NonTerminal Id="ParenthesisEnclosedFunctionParameters" IsOptional="true" />
+          <NonTerminal Id="ObjectTypeNestedFunctionCallChained" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -3665,6 +3687,7 @@
     <Terminal Id="RowNumberPseudoColumn" Value="ROWNUM" IsKeyword="true" />
     <Terminal Id="RowIdPseudoColumn" Value="ROWID" IsKeyword="true" />
     <Terminal Id="Identifier" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
+    <Terminal Id="MemberFunctionIdentifier" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
     <Terminal Id="DatabaseLinkIdentifier" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
     <Terminal Id="SchemaIdentifier" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
     <Terminal Id="ObjectIdentifier" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />

@@ -6,6 +6,8 @@ namespace SqlPad
 	{
 		StatementBase Statement { get; }
 
+		IStatementSemanticModel SemanticModel { get; }
+
 		IDictionary<StatementDescriptionNode, INodeValidationData> ObjectNodeValidity { get; }
 
 		IDictionary<StatementDescriptionNode, INodeValidationData> ColumnNodeValidity { get; }

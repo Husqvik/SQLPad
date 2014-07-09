@@ -1060,10 +1060,22 @@ namespace SqlPad.Oracle.Test
 			// TODO: Precise assertions
 		}
 
-		[Test(Description = @"Tests TREAT function. "), Ignore]
+		[Test(Description = @"Tests TREAT function. ")]
 		public void TestThreatFunction()
 		{
 			const string query1 = @"SELECT NAME, TREAT(VALUE(PERSONS) AS EMPLOYEE_T).SALARY SALARY FROM PERSONS";
+			var result = Parser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			// TODO: Precise assertions
+		}
+
+		[Test(Description = @"Tests object type nested function calling. ")]
+		public void TestTreatFunctionWithObjectTypeNestedFunctionCalling()
+		{
+			const string query1 = @"SELECT OBJECT_VALUE, TREAT(OBJECT_VALUE AS TYPE_PARENT).PARENT_TEST_METHOD(name => 'x', value => 1).TEST_METHOD(DUMMY).NESTED_TEST_METHOD(DUMMY) FROM (SELECT TYPE_PARENT('Name1', TYPE_ITEM('ChildName1', 11)).PARENT_TEST_METHOD('x').TEST_METHOD('y') OBJECT_VALUE, DUMMY FROM DUAL)";
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
@@ -1926,6 +1938,7 @@ FROM DUAL";
 						Terminals.Sum,
 						Terminals.SystemDate,
 						Terminals.Timestamp,
+						Terminals.Treat,
 						Terminals.Unique,
 						Terminals.Variance,
 						Terminals.XmlAggregate,

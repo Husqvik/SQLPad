@@ -28,7 +28,7 @@ namespace SqlPad.Oracle
 			}
 			else
 			{
-				var queryBlock = validationModel.SemanticModel.GetQueryBlock(node);
+				var queryBlock = ((OracleStatementSemanticModel)validationModel.SemanticModel).GetQueryBlock(node);
 
 				switch (node.Id)
 				{

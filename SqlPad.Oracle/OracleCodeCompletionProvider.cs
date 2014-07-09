@@ -28,15 +28,15 @@ namespace SqlPad.Oracle
 			new OracleCodeCompletionItem { Name = JoinTypeCrossJoin, Text = JoinTypeCrossJoin, Priority = 4, Category = OracleCodeCompletionCategory.JoinMethod, CategoryPriority = 1 }
 		};
 
-		public ICollection<FunctionOverloadDescription> ResolveFunctionOverloads(StatementCollection statementCollection, IDatabaseModel databaseModel, int cursorPosition)
+		public ICollection<FunctionOverloadDescription> ResolveFunctionOverloads(SqlDocumentStore sqlDocumentStore, int cursorPosition)
 		{
 			var emptyCollection = new FunctionOverloadDescription[0];
-			var node = statementCollection.GetNodeAtPosition(cursorPosition, n => !n.Id.In(Terminals.Comma, Terminals.RightParenthesis));
+			var node = sqlDocumentStore.StatementCollection.GetNodeAtPosition(cursorPosition, n => !n.Id.In(Terminals.Comma, Terminals.RightParenthesis));
 			if (node == null)
 				return emptyCollection;
 
-			var oracleDatabaseModel = (OracleDatabaseModelBase)databaseModel;
-			var semanticModel = new OracleStatementSemanticModel(null, (OracleStatement)node.Statement, oracleDatabaseModel);
+			var semanticModel = (OracleStatementSemanticModel)sqlDocumentStore.ValidationModels[node.Statement].SemanticModel;
+			var oracleDatabaseModel = semanticModel.DatabaseModel;
 			var queryBlock = semanticModel.GetQueryBlock(cursorPosition);
 			var functionReference = queryBlock.AllFunctionReferences.FirstOrDefault(f => node.HasAncestor(f.RootNode));
 			if (functionReference == null || functionReference.Metadata == null)

@@ -199,7 +199,7 @@ namespace SqlPad.Oracle
 		private readonly Dictionary<StatementDescriptionNode, INodeValidationData> _programNodeValidity = new Dictionary<StatementDescriptionNode, INodeValidationData>();
 		private readonly Dictionary<StatementDescriptionNode, INodeValidationData> _identifierNodeValidity = new Dictionary<StatementDescriptionNode, INodeValidationData>();
 
-		public OracleStatementSemanticModel SemanticModel { get; set; }
+		public IStatementSemanticModel SemanticModel { get; set; }
 
 		public StatementBase Statement { get { return SemanticModel.Statement; } }
 
