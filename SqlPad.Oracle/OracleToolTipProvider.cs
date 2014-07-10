@@ -8,18 +8,18 @@ namespace SqlPad.Oracle
 {
 	public class OracleToolTipProvider : IToolTipProvider
 	{
-		public IToolTip GetToolTip(SqlDocumentStore sqlDocumentStore, int cursorPosition)
+		public IToolTip GetToolTip(SqlDocumentRepository sqlDocumentRepository, int cursorPosition)
 		{
-			if (sqlDocumentStore == null)
-				throw new ArgumentNullException("sqlDocumentStore");
+			if (sqlDocumentRepository == null)
+				throw new ArgumentNullException("sqlDocumentRepository");
 
-			var node = sqlDocumentStore.StatementCollection.GetNodeAtPosition(cursorPosition);
+			var node = sqlDocumentRepository.StatementCollection.GetNodeAtPosition(cursorPosition);
 			if (node == null)
 				return null;
 
 			var tip = node.Type == NodeType.Terminal ? node.Id : null;
 
-			var validationModel = (OracleValidationModel)sqlDocumentStore.ValidationModels[node.Statement];
+			var validationModel = (OracleValidationModel)sqlDocumentRepository.ValidationModels[node.Statement];
 
 			var nodeSemanticError = validationModel.GetNodesWithSemanticErrors().FirstOrDefault(n => node.HasAncestor(n.Key, true));
 			if (nodeSemanticError.Key != null)

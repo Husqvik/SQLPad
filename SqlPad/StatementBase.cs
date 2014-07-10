@@ -23,7 +23,32 @@ namespace SqlPad
 
 		public ICollection<StatementDescriptionNode> InvalidGrammarNodes
 		{
-			get { return _invalidGrammarNodes ?? (_invalidGrammarNodes = RootNode.AllChildNodes.Where(n => !n.IsGrammarValid).ToArray()); }
+			get { return _invalidGrammarNodes ?? (_invalidGrammarNodes = BuildInvalidGrammarNodeCollection()); }
+		}
+
+		private ICollection<StatementDescriptionNode> BuildInvalidGrammarNodeCollection()
+		{
+			return RootNode == null
+				? new StatementDescriptionNode[0]
+				: GetInvalidGrammerNodes(RootNode).ToArray();
+		}
+
+		private static IEnumerable<StatementDescriptionNode> GetInvalidGrammerNodes(StatementDescriptionNode node)
+		{
+			foreach (var childNode in node.ChildNodes.Where(n => n.Type == NodeType.NonTerminal))
+			{
+				if (childNode.IsGrammarValid)
+				{
+					foreach (var nestedChildMode in GetInvalidGrammerNodes(childNode))
+					{
+						yield return nestedChildMode;
+					}
+				}
+				else
+				{
+					yield return childNode;
+				}
+			}
 		}
 
 		public ICollection<StatementDescriptionNode> AllTerminals

@@ -39,12 +39,12 @@ namespace SqlPad.Oracle.Commands
 			return new CommandExecutionHandler
 			{
 				Name = commandName,
-				ExecutionHandler = CreatExecutionHandler<TCommand>(),
+				ExecutionHandler = CreateExecutionHandler<TCommand>(),
 				CanExecuteHandler = context => CreateCommandInstance<TCommand>((OracleCommandExecutionContext)context).CanExecute()
 			};			
 		}
 
-		private static Action<CommandExecutionContext> CreatExecutionHandler<TCommand>() where TCommand : OracleCommandBase
+		private static Action<CommandExecutionContext> CreateExecutionHandler<TCommand>() where TCommand : OracleCommandBase
 		{
 			return context =>
 			       {

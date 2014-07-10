@@ -28,14 +28,14 @@ namespace SqlPad.Oracle
 			new OracleCodeCompletionItem { Name = JoinTypeCrossJoin, Text = JoinTypeCrossJoin, Priority = 4, Category = OracleCodeCompletionCategory.JoinMethod, CategoryPriority = 1 }
 		};
 
-		public ICollection<FunctionOverloadDescription> ResolveFunctionOverloads(SqlDocumentStore sqlDocumentStore, int cursorPosition)
+		public ICollection<FunctionOverloadDescription> ResolveFunctionOverloads(SqlDocumentRepository sqlDocumentRepository, int cursorPosition)
 		{
 			var emptyCollection = new FunctionOverloadDescription[0];
-			var node = sqlDocumentStore.StatementCollection.GetNodeAtPosition(cursorPosition, n => !n.Id.In(Terminals.Comma, Terminals.RightParenthesis));
+			var node = sqlDocumentRepository.StatementCollection.GetNodeAtPosition(cursorPosition, n => !n.Id.In(Terminals.Comma, Terminals.RightParenthesis));
 			if (node == null)
 				return emptyCollection;
 
-			var semanticModel = (OracleStatementSemanticModel)sqlDocumentStore.ValidationModels[node.Statement].SemanticModel;
+			var semanticModel = (OracleStatementSemanticModel)sqlDocumentRepository.ValidationModels[node.Statement].SemanticModel;
 			var oracleDatabaseModel = semanticModel.DatabaseModel;
 			var queryBlock = semanticModel.GetQueryBlock(cursorPosition);
 			var functionReference = queryBlock.AllFunctionReferences.FirstOrDefault(f => node.HasAncestor(f.RootNode));
@@ -67,25 +67,25 @@ namespace SqlPad.Oracle
 
 		internal ICollection<ICodeCompletionItem> ResolveItems(IDatabaseModel databaseModel, string statementText, int cursorPosition, params string[] categories)
 		{
-			var documentStore = new SqlDocumentStore(_parser, new OracleStatementValidator(), databaseModel, statementText);
+			var documentStore = new SqlDocumentRepository(_parser, new OracleStatementValidator(), databaseModel, statementText);
 			var sourceItems = ResolveItems(documentStore, databaseModel, statementText, cursorPosition);
 			return sourceItems.Where(i => categories.Length == 0 || categories.Contains(i.Category)).ToArray();
 		}
 
-		public ICollection<ICodeCompletionItem> ResolveItems(SqlDocumentStore sqlDocumentStore, IDatabaseModel databaseModel, string statementText, int cursorPosition)
+		public ICollection<ICodeCompletionItem> ResolveItems(SqlDocumentRepository sqlDocumentRepository, IDatabaseModel databaseModel, string statementText, int cursorPosition)
 		{
 			//Trace.WriteLine("OracleCodeCompletionProvider.ResolveItems called. Cursor position: "+ cursorPosition);
 
-			if (sqlDocumentStore == null || sqlDocumentStore.StatementCollection == null)
+			if (sqlDocumentRepository == null || sqlDocumentRepository.StatementCollection == null)
 				return EmptyCollection;
 
-			var e = new OracleCodeCompletionType(sqlDocumentStore.StatementCollection, statementText, cursorPosition);
+			var e = new OracleCodeCompletionType(sqlDocumentRepository.StatementCollection, statementText, cursorPosition);
 			e.PrintSupportedCompletions();
 
 			StatementDescriptionNode currentNode;
 
 			var completionItems = Enumerable.Empty<ICodeCompletionItem>();
-			var statement = (OracleStatement)sqlDocumentStore.StatementCollection.SingleOrDefault(s => s.GetNodeAtPosition(cursorPosition) != null);
+			var statement = (OracleStatement)sqlDocumentRepository.StatementCollection.SingleOrDefault(s => s.GetNodeAtPosition(cursorPosition) != null);
 			//
 			/*currentNode = statements.GetTerminalAtPosition(cursorPosition);
 			var isCursorAtTerminal = true;
@@ -109,7 +109,7 @@ namespace SqlPad.Oracle
 			{
 				isCursorAtTerminal = false;
 
-				statement = (OracleStatement)sqlDocumentStore.StatementCollection.LastOrDefault(s => s.GetNearestTerminalToPosition(cursorPosition) != null);
+				statement = (OracleStatement)sqlDocumentRepository.StatementCollection.LastOrDefault(s => s.GetNearestTerminalToPosition(cursorPosition) != null);
 				if (statement == null)
 				{
 					return EmptyCollection;

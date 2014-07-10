@@ -4,7 +4,7 @@ namespace SqlPad
 {
 	public interface IToolTipProvider
 	{
-		IToolTip GetToolTip(SqlDocumentStore sqlDocumentStore, int cursorPosition);
+		IToolTip GetToolTip(SqlDocumentRepository sqlDocumentRepository, int cursorPosition);
 	}
 
 	public interface IToolTip

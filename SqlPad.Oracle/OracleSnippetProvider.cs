@@ -11,16 +11,16 @@ namespace SqlPad.Oracle
 
 		internal ICollection<ICodeSnippet> GetSnippets(string statementText, int cursorPosition, IDatabaseModel databaseModel)
 		{
-			var documentStore = new SqlDocumentStore(_oracleParser, new OracleStatementValidator(), databaseModel, statementText);
+			var documentStore = new SqlDocumentRepository(_oracleParser, new OracleStatementValidator(), databaseModel, statementText);
 			return GetSnippets(documentStore, statementText, cursorPosition);
 		}
 
-		public ICollection<ICodeSnippet> GetSnippets(SqlDocumentStore sqlDocumentStore, string statementText, int cursorPosition)
+		public ICollection<ICodeSnippet> GetSnippets(SqlDocumentRepository sqlDocumentRepository, string statementText, int cursorPosition)
 		{
-			if (sqlDocumentStore == null || sqlDocumentStore.StatementCollection == null)
+			if (sqlDocumentRepository == null || sqlDocumentRepository.StatementCollection == null)
 				return EmptyCollection;
 
-			var statement = sqlDocumentStore.StatementCollection.TakeWhile(s => s.SourcePosition.IndexStart <= cursorPosition - 1).LastOrDefault();
+			var statement = sqlDocumentRepository.StatementCollection.TakeWhile(s => s.SourcePosition.IndexStart <= cursorPosition - 1).LastOrDefault();
 
 			StatementDescriptionNode currentNode = null;
 			if (statement != null)

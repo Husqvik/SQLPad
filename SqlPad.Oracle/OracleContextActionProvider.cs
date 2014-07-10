@@ -15,22 +15,22 @@ namespace SqlPad.Oracle
 		internal ICollection<IContextAction> GetContextActions(OracleDatabaseModelBase databaseModel, string statementText, int cursorPosition)
 		{
 			var statements = _oracleParser.Parse(statementText);
-			var documentStore = new SqlDocumentStore(_oracleParser, new OracleStatementValidator(), databaseModel, statementText);
+			var documentStore = new SqlDocumentRepository(_oracleParser, new OracleStatementValidator(), databaseModel, statementText);
 			var executionContext = new CommandExecutionContext(statementText, 0, 0, cursorPosition, statements, databaseModel);
 			return GetContextActions(documentStore, executionContext);
 		}
 
-		public ICollection<IContextAction> GetContextActions(SqlDocumentStore sqlDocumentStore, CommandExecutionContext executionContext)
+		public ICollection<IContextAction> GetContextActions(SqlDocumentRepository sqlDocumentRepository, CommandExecutionContext executionContext)
 		{
-			if (sqlDocumentStore == null || sqlDocumentStore.StatementCollection == null)
+			if (sqlDocumentRepository == null || sqlDocumentRepository.StatementCollection == null || executionContext.StatementText != sqlDocumentRepository.StatementText)
 				return EmptyCollection;
 
-			var currentTerminal = sqlDocumentStore.StatementCollection.GetTerminalAtPosition(executionContext.CaretOffset);
+			var currentTerminal = sqlDocumentRepository.StatementCollection.GetTerminalAtPosition(executionContext.CaretOffset);
 			if (currentTerminal == null)
 				return EmptyCollection;
 
-			var semanticModel = new OracleStatementSemanticModel(null, (OracleStatement)currentTerminal.Statement, (OracleDatabaseModelBase)executionContext.DatabaseModel);
-			var oracleExecutionContext = OracleCommandExecutionContext.Create(sqlDocumentStore.StatementText, executionContext.Line, executionContext.Column, executionContext.CaretOffset, semanticModel);
+			var semanticModel = (OracleStatementSemanticModel)sqlDocumentRepository.ValidationModels[currentTerminal.Statement].SemanticModel;
+			var oracleExecutionContext = OracleCommandExecutionContext.Create(sqlDocumentRepository.StatementText, executionContext.Line, executionContext.Column, executionContext.CaretOffset, semanticModel);
 			var enterIdentifierModel = new CommandSettingsModel { Value = "Enter value" };
 			oracleExecutionContext.SettingsProvider = new EditDialog(enterIdentifierModel);
 			
@@ -56,11 +56,11 @@ namespace SqlPad.Oracle
 				actionList.Add(new OracleContextAction(ToggleQuotedNotationCommand.Title, OracleCommands.ToggleQuotedNotation, oracleExecutionContext));
 			}
 
-			if (OracleCommands.AddToGroupByClause.CanExecuteHandler(oracleExecutionContext))
+			// TODO
+			/*if (OracleCommands.AddToGroupByClause.CanExecuteHandler(oracleExecutionContext))
 			{
-				// TODO
-				//actionList.Add(new OracleContextAction(AddToGroupByCommand.Title, OracleCommands.AddToGroupByClause, executionContext));
-			}
+				actionList.Add(new OracleContextAction(AddToGroupByCommand.Title, OracleCommands.AddToGroupByClause, executionContext));
+			}*/
 
 			if (OracleCommands.ExpandAsterisk.CanExecuteHandler(oracleExecutionContext))
 			{

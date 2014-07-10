@@ -22,11 +22,14 @@ namespace SqlPad
 		private static readonly SolidColorBrush KeywordBrush = new SolidColorBrush(Colors.Blue);
 		private static readonly SolidColorBrush LiteralBrush = new SolidColorBrush(Colors.SaddleBrown/*Color.FromRgb(214, 157, 133)*/);
 		private static readonly SolidColorBrush AliasBrush = new SolidColorBrush(Colors.Green);
-		private static readonly SolidColorBrush FunctionBrush = new SolidColorBrush(Colors.Magenta);
-		private static readonly Color ValidStatementBackground = Color.FromArgb(32, Colors.LightGreen.R, Colors.LightGreen.G, Colors.LightGreen.B);
-		private static readonly Color InvalidStatementBackground = Color.FromArgb(32, Colors.PaleVioletRed.R, Colors.PaleVioletRed.G, Colors.PaleVioletRed.B);
+		private static readonly SolidColorBrush ProgramBrush = new SolidColorBrush(Colors.Magenta);
+		private static readonly SolidColorBrush ValidStatementBackgroundBrush = new SolidColorBrush(Color.FromArgb(32, Colors.LightGreen.R, Colors.LightGreen.G, Colors.LightGreen.B));
+		private static readonly SolidColorBrush InvalidStatementBackgroundBrush = new SolidColorBrush(Color.FromArgb(32, Colors.PaleVioletRed.R, Colors.PaleVioletRed.G, Colors.PaleVioletRed.B));
 
 		private readonly Dictionary<DocumentLine, ICollection<StatementDescriptionNode>> _lineTerminals = new Dictionary<DocumentLine, ICollection<StatementDescriptionNode>>();
+		private readonly Dictionary<DocumentLine, ICollection<StatementDescriptionNode>> _lineNodesWithSemanticErrorsOrInvalidGrammar = new Dictionary<DocumentLine, ICollection<StatementDescriptionNode>>();
+		private readonly HashSet<StatementDescriptionNode> _recognizedProgramTerminals = new HashSet<StatementDescriptionNode>();
+		private readonly HashSet<StatementDescriptionNode> _unrecognizedTerminals = new HashSet<StatementDescriptionNode>();
 
 		private IDictionary<StatementBase, IValidationModel> _validationModels;
 		
@@ -34,19 +37,27 @@ namespace SqlPad
 		
 		public IEnumerable<TextSegment> HighlightSegments { get { return _highlightSegments.SelectMany(c => c); } }
 
-		public void SetStatementCollection(SqlDocumentStore documentStore)
+		public void SetStatementCollection(SqlDocumentRepository documentRepository)
 		{
-			if (documentStore == null)
+			if (documentRepository == null)
 				return;
 
 			lock (_lockObject)
 			{
-				_statements = documentStore.StatementCollection;
+				_statements = documentRepository.StatementCollection;
 
-				_validationModels = documentStore.ValidationModels;
+				_validationModels = documentRepository.ValidationModels;
 
-				_lineTerminals.Clear();
+				ClearNodeIndexes();
 			}
+		}
+
+		private void ClearNodeIndexes()
+		{
+			_lineTerminals.Clear();
+			_recognizedProgramTerminals.Clear();
+			_unrecognizedTerminals.Clear();
+			_lineNodesWithSemanticErrorsOrInvalidGrammar.Clear();
 		}
 
 		public void SetHighlightParenthesis(ICollection<StatementDescriptionNode> parenthesisNodes)
@@ -81,29 +92,83 @@ namespace SqlPad
 				if (_statements == null)
 					return;
 
-				if (_lineTerminals.Count == 0)
-				{
-					var terminalEnumerator = _statements.SelectMany(s => s.AllTerminals).GetEnumerator();
-					if (terminalEnumerator.MoveNext())
-					{
-						foreach (var line in context.Document.Lines)
-						{
-							var singleLineTerminals = new List<StatementDescriptionNode>();
-							_lineTerminals.Add(line, singleLineTerminals);
-
-							do
-							{
-								if (line.EndOffset < terminalEnumerator.Current.SourcePosition.IndexStart)
-									break;
-
-								singleLineTerminals.Add(terminalEnumerator.Current);
-							}
-							while (terminalEnumerator.MoveNext());
-						}
-					}
-				}
+				BuildNodeIndexes(context);
 
 				base.Colorize(context);
+			}
+		}
+
+		private void BuildNodeIndexes(ITextRunConstructionContext context)
+		{
+			if (_lineTerminals.Count > 0)
+				return;
+			
+			BuildLineTerminalDictionary(context);
+
+			BuildProgramTerminalHashset();
+
+			BuildUnrecognizedTerminalHashset();
+
+			BuildLineNodeWithSemanticErrorOrInvalidGrammarDictionary(context);
+		
+		}
+
+		private void BuildLineNodeWithSemanticErrorOrInvalidGrammarDictionary(ITextRunConstructionContext context)
+		{
+			var semanticErrorOrInvalidGrammarNodeEnumerator = _validationModels.Values
+				.SelectMany(vm => vm.GetNodesWithSemanticErrors())
+				.Select(kvp => kvp.Key)
+				.Concat(_statements.SelectMany(s => s.InvalidGrammarNodes))
+				.OrderBy(n => n.SourcePosition.IndexStart)
+				.GetEnumerator();
+
+			BuildLineNodeDictionary(semanticErrorOrInvalidGrammarNodeEnumerator, context, _lineNodesWithSemanticErrorsOrInvalidGrammar);
+		}
+
+		private void BuildUnrecognizedTerminalHashset()
+		{
+			var notRecognizedTerminals = _validationModels.Values
+				.SelectMany(vm => vm.ObjectNodeValidity.Concat(vm.ProgramNodeValidity).Concat(vm.ColumnNodeValidity))
+				.Where(kvp => !kvp.Value.IsRecognized)
+				.Select(kvp => kvp.Key);
+
+			_unrecognizedTerminals.AddRange(notRecognizedTerminals);
+		}
+
+		private void BuildProgramTerminalHashset()
+		{
+			var recognizedProgramTerminalEnumerator = _validationModels.Values
+				.SelectMany(vm => vm.ProgramNodeValidity)
+				.Where(kvp => kvp.Value.IsRecognized && kvp.Key.Type == NodeType.Terminal)
+				.Select(kvp => kvp.Key);
+
+			_recognizedProgramTerminals.AddRange(recognizedProgramTerminalEnumerator);
+		}
+
+		private void BuildLineTerminalDictionary(ITextRunConstructionContext context)
+		{
+			var terminalEnumerator = _statements.SelectMany(s => s.AllTerminals).GetEnumerator();
+			BuildLineNodeDictionary(terminalEnumerator, context, _lineTerminals);
+		}
+
+		private static void BuildLineNodeDictionary(IEnumerator<StatementDescriptionNode> nodeEnumerator, ITextRunConstructionContext context, Dictionary<DocumentLine, ICollection<StatementDescriptionNode>> dictionary)
+		{
+			if (!nodeEnumerator.MoveNext())
+				return;
+
+			foreach (var line in context.Document.Lines)
+			{
+				var singleLineTerminals = new List<StatementDescriptionNode>();
+				dictionary.Add(line, singleLineTerminals);
+
+				do
+				{
+					if (line.EndOffset < nodeEnumerator.Current.SourcePosition.IndexStart)
+						break;
+
+					singleLineTerminals.Add(nodeEnumerator.Current);
+				}
+				while (nodeEnumerator.MoveNext());
 			}
 		}
 
@@ -112,9 +177,10 @@ namespace SqlPad
 			if (_statements == null)
 				return;
 
-			if (_lineTerminals.ContainsKey(line))
+			ICollection<StatementDescriptionNode> lineTerminals;
+			if (_lineTerminals.TryGetValue(line, out lineTerminals))
 			{
-				foreach (var terminal in _lineTerminals[line])
+				foreach (var terminal in lineTerminals)
 				{
 					SolidColorBrush brush = null;
 					if (_parser.IsKeyword(terminal.Token.Value))
@@ -123,6 +189,10 @@ namespace SqlPad
 						brush = LiteralBrush;
 					else if (_parser.IsAlias(terminal.Id))
 						brush = AliasBrush;
+					else if (_recognizedProgramTerminals.Contains(terminal))
+						brush = ProgramBrush;
+					else if (_unrecognizedTerminals.Contains(terminal))
+						brush = ErrorBrush;
 
 					if (brush == null)
 						continue;
@@ -131,6 +201,9 @@ namespace SqlPad
 						element => element.TextRunProperties.SetForegroundBrush(brush));
 				}
 			}
+
+			ProcessNodeCollectionAtLine(line, _lineNodesWithSemanticErrorsOrInvalidGrammar,
+				element => element.TextRunProperties.SetTextDecorations(Resources.WaveErrorUnderline));
 
 			foreach (var parenthesisNode in _highlightParenthesis)
 			{
@@ -141,49 +214,10 @@ namespace SqlPad
 
 			foreach (var statement in statementsAtLine)
 			{
-				var backgroundColor = new SolidColorBrush(statement.ProcessingStatus == ProcessingStatus.Success ? ValidStatementBackground : InvalidStatementBackground);
+				var backgroundColor = statement.ProcessingStatus == ProcessingStatus.Success ? ValidStatementBackgroundBrush : InvalidStatementBackgroundBrush;
 
 				var colorStartOffset = Math.Max(line.Offset, statement.SourcePosition.IndexStart);
 				var colorEndOffset = Math.Min(line.EndOffset, statement.SourcePosition.IndexEnd + 1);
-
-				var validationModel = _validationModels[statement];
-				var nodeRecognizeData = validationModel.ObjectNodeValidity
-					.Select(kvp => new KeyValuePair<StatementDescriptionNode, bool>(kvp.Key, kvp.Value.IsRecognized))
-					.Concat(validationModel.ProgramNodeValidity.Select(kvp => new KeyValuePair<StatementDescriptionNode, bool>(kvp.Key, kvp.Value.IsRecognized)))
-					.Concat(validationModel.ColumnNodeValidity.Select(kvp => new KeyValuePair<StatementDescriptionNode, bool>(kvp.Key, kvp.Value.IsRecognized)));
-
-				foreach (var nodeValidity in nodeRecognizeData.Where(nv => !nv.Value))
-				{
-					ProcessNodeAtLine(line, nodeValidity.Key.SourcePosition,
-						element => element.TextRunProperties.SetForegroundBrush(ErrorBrush));
-				}
-
-				foreach (var terminal in validationModel.ProgramNodeValidity.Where(kvp => kvp.Value.IsRecognized && kvp.Key.Type == NodeType.Terminal).Select(kvp => kvp.Key))
-				{
-					ProcessNodeAtLine(line, terminal.SourcePosition,
-						element => element.TextRunProperties.SetForegroundBrush(FunctionBrush));
-				}
-
-				foreach (var invalidGrammarNode in statement.InvalidGrammarNodes)
-				{
-					ProcessNodeAtLine(line, invalidGrammarNode.SourcePosition,
-						element => element.TextRunProperties.SetTextDecorations(Resources.WaveErrorUnderline));
-				}
-
-				foreach (var nodeSemanticError in validationModel.GetNodesWithSemanticErrors())
-				{
-					ProcessNodeAtLine(line, nodeSemanticError.Key.SourcePosition,
-						element => element.TextRunProperties.SetTextDecorations(Resources.WaveErrorUnderline));
-					//ProcessNodeAtLine(line, semanticError.Node.SourcePosition,
-					//	element => element.TextRunProperties.SetTextDecorations(Resources.BoxedText));
-
-					/*ProcessNodeAtLine(line, semanticError.Node.SourcePosition,
-						element =>
-						{
-							element.BackgroundBrush = Resources.OutlineBoxBrush;
-							var x = 1;
-						});*/
-				}
 
 				ChangeLinePart(
 					colorStartOffset,
@@ -191,6 +225,16 @@ namespace SqlPad
 					element =>
 					{
 						element.BackgroundBrush = backgroundColor;
+
+						//ProcessNodeAtLine(line, semanticError.Node.SourcePosition,
+						//	element => element.TextRunProperties.SetTextDecorations(Resources.BoxedText));
+
+						/*ProcessNodeAtLine(line, nodeSemanticError.Key.SourcePosition,
+							element =>
+							{
+								element.BackgroundBrush = Resources.OutlineBoxBrush;
+								var x = 1;
+							});*/
 
 						/*
 						// This lambda gets called once for every VisualLineElement
@@ -215,7 +259,19 @@ namespace SqlPad
 			}
 		}
 
-		private void ProcessNodeAtLine(ISegment line, SourcePosition nodePosition, Action<VisualLineElement> action)
+		private void ProcessNodeCollectionAtLine(DocumentLine line, IReadOnlyDictionary<DocumentLine, ICollection<StatementDescriptionNode>> lineNodeDictionary, Action<VisualLineElement> visualElementAction)
+		{
+			ICollection<StatementDescriptionNode> nodes;
+			if (!lineNodeDictionary.TryGetValue(line, out nodes))
+				return;
+			
+			foreach (var node in nodes)
+			{
+				ProcessNodeAtLine(line, node.SourcePosition, visualElementAction);
+			}
+		}
+
+		private void ProcessNodeAtLine(ISegment line, SourcePosition nodePosition, Action<VisualLineElement> visualElementAction)
 		{
 			if (line.Offset > nodePosition.IndexEnd + 1 ||
 			    line.EndOffset < nodePosition.IndexStart)
@@ -224,7 +280,7 @@ namespace SqlPad
 			var errorColorStartOffset = Math.Max(line.Offset, nodePosition.IndexStart);
 			var errorColorEndOffset = Math.Min(line.EndOffset, nodePosition.IndexEnd + 1);
 
-			ChangeLinePart(errorColorStartOffset, errorColorEndOffset, action);
+			ChangeLinePart(errorColorStartOffset, errorColorEndOffset, visualElementAction);
 		}
 	}
 }

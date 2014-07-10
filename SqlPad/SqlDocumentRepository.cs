@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace SqlPad
 {
-	public class SqlDocumentStore
+	public class SqlDocumentRepository
 	{
 		private readonly object _lockObject = new object();
 		private IDictionary<StatementBase, IValidationModel> _validationModels = new Dictionary<StatementBase, IValidationModel>();
@@ -23,7 +23,7 @@ namespace SqlPad
 
 		public IDictionary<StatementBase, IValidationModel> ValidationModels { get { return _validationModels; } }
 
-		public SqlDocumentStore(ISqlParser parser, IStatementValidator validator, IDatabaseModel databaseModel, string statementText = null)
+		public SqlDocumentRepository(ISqlParser parser, IStatementValidator validator, IDatabaseModel databaseModel, string statementText = null)
 		{
 			if (parser == null)
 				throw new ArgumentNullException("parser");

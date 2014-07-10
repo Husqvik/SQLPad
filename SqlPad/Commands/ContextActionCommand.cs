@@ -7,39 +7,34 @@ namespace SqlPad.Commands
 {
 	internal class ContextActionCommand : ICommand
 	{
-		public CommandExecutionHandler ExecutionHandler { get; private set; }
+		public IContextAction ContextAction { get; private set; }
 
-		public CommandExecutionContext ExecutionContext { get; private set; }
 
-		public ContextActionCommand(CommandExecutionHandler executionHandler, CommandExecutionContext executionContext)
+		public ContextActionCommand(IContextAction contextAction)
 		{
-			if (executionHandler == null)
-				throw new ArgumentNullException("executionHandler");
+			if (contextAction == null)
+				throw new ArgumentNullException("contextAction");
 			
-			if (executionContext == null)
-				throw new ArgumentNullException("executionContext");
-
-			ExecutionHandler = executionHandler;
-			ExecutionContext = executionContext;
+			ContextAction = contextAction;
 		}
 
 		public bool CanExecute(object parameter)
 		{
-			return ExecutionHandler.CanExecuteHandler(ExecutionContext);
+			return ContextAction.ExecutionHandler.CanExecuteHandler(ContextAction.ExecutionContext);
 		}
 
 		public void Execute(object parameter)
 		{
 			try
 			{
-				ExecutionHandler.ExecutionHandler(ExecutionContext);
+				ContextAction.ExecutionHandler.ExecutionHandler(ContextAction.ExecutionContext);
 			}
 			catch (Exception exception)
 			{
 				MessageBox.Show("Action failed: "+ Environment.NewLine + exception.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
 			}
 
-			GenericCommandHandler.UpdateDocument((TextEditor)parameter, ExecutionContext);
+			GenericCommandHandler.UpdateDocument((TextEditor)parameter, ContextAction.ExecutionContext);
 		}
 
 		public event EventHandler CanExecuteChanged = delegate {};

@@ -9,7 +9,7 @@ namespace SqlPad.Oracle.Test
 	{
 		private readonly OracleCodeCompletionProvider _codeCompletionProvider = new OracleCodeCompletionProvider();
 		private static readonly OracleSqlParser Parser = new OracleSqlParser();
-		private readonly SqlDocumentStore _documentStore = new SqlDocumentStore(new OracleSqlParser(), new OracleStatementValidator(), TestFixture.DatabaseModel);
+		private readonly SqlDocumentRepository _documentRepository = new SqlDocumentRepository(new OracleSqlParser(), new OracleStatementValidator(), TestFixture.DatabaseModel);
 
 		[Test(Description = @"")]
 		public void TestObjectSuggestionWithSchema()
@@ -624,8 +624,8 @@ FROM
 		{
 			const string query1 = @"SELECT ROUND(1.23, 1) FROM DUAL";
 
-			_documentStore.UpdateStatements(query1);
-			var items = _codeCompletionProvider.ResolveFunctionOverloads(_documentStore, 19).ToList();
+			_documentRepository.UpdateStatements(query1);
+			var items = _codeCompletionProvider.ResolveFunctionOverloads(_documentRepository, 19).ToList();
 			items.Count.ShouldBe(3);
 			items.ForEach(i => i.Name.ShouldBe("SYS.STANDARD.ROUND"));
 			items.ForEach(i => i.Parameters.Count.ShouldBe(2));
@@ -638,7 +638,8 @@ FROM
 		{
 			const string query1 = @"SELECT ROUND(1.23, 1) FROM DUAL";
 
-			var items = _codeCompletionProvider.ResolveFunctionOverloads(_documentStore, 18).ToList();
+			_documentRepository.UpdateStatements(query1);
+			var items = _codeCompletionProvider.ResolveFunctionOverloads(_documentRepository, 18).ToList();
 			items.Count.ShouldBe(0);
 		}
 
