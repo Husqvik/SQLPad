@@ -32,7 +32,9 @@ namespace SqlPad
 
 	public interface INavigationService
 	{
-		int? NavigateToQueryBlockRoot(StatementCollection statementCollection, int currentPosition);
+		int? NavigateToQueryBlockRoot(SqlDocumentRepository documentRepository, int currentPosition);
+
+		int? NavigateToDefinition(SqlDocumentRepository documentRepository, int currentPosition);
 	}
 
 	public interface IMultiNodeEditorDataProvider

@@ -98,6 +98,28 @@ namespace SqlPad.Oracle
 				Terminals.Colon
 			};
 
+		private static readonly HashSet<string> ZeroOffsetTerminalIdsInternal =
+			new HashSet<string>
+			{
+				Terminals.Dot,
+				Terminals.Comma,
+				Terminals.OperatorConcatenation,
+				Terminals.LeftParenthesis,
+				Terminals.RightParenthesis,
+				Terminals.MathDivide,
+				Terminals.MathEquals,
+				Terminals.MathFactor,
+				Terminals.MathGreatherThan,
+				Terminals.MathGreatherThanOrEquals,
+				Terminals.MathLessThan,
+				Terminals.MathLessThanOrEquals,
+				Terminals.MathMinus,
+				Terminals.MathNotEqualsC,
+				Terminals.MathNotEqualsCircumflex,
+				Terminals.MathNotEqualsSql,
+				Terminals.MathPlus
+			};
+
 		private static readonly HashSet<string> MathTerminalsInternal =
 			new HashSet<string>
 			{
@@ -131,6 +153,11 @@ namespace SqlPad.Oracle
 		public static bool IsIdentifier(this string terminalId)
 		{
 			return IdentifiersInternal.Contains(terminalId);
+		}
+
+		public static bool IsZeroOffsetTerminalId(this string terminalId)
+		{
+			return ZeroOffsetTerminalIdsInternal.Contains(terminalId);
 		}
 
 		public static bool IsAlias(this string terminalId)

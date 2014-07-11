@@ -213,6 +213,9 @@ namespace SqlPad
 			var navigateToQueryBlockRootCommand = new RoutedCommand("NavigateToQueryBlockRoot", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.Home, ModifierKeys.Control | ModifierKeys.Alt) });
 			commandBindings.Add(new CommandBinding(navigateToQueryBlockRootCommand, NavigateToQueryBlockRoot));
 
+			var navigateToDefinitionRootCommand = new RoutedCommand("NavigateToDefinition", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.F12) });
+			commandBindings.Add(new CommandBinding(navigateToDefinitionRootCommand, NavigateToDefinition));
+
 			var executeDatabaseCommandCommand = new RoutedCommand(ExecuteDatabaseCommandName, typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.F9), new KeyGesture(Key.Enter, ModifierKeys.Control) });
 			commandBindings.Add(new CommandBinding(executeDatabaseCommandCommand, ExecuteDatabaseCommand));
 
@@ -247,12 +250,22 @@ namespace SqlPad
 
 		private void NavigateToQueryBlockRoot(object sender, ExecutedRoutedEventArgs args)
 		{
-			var queryBlockRootIndex = _navigationService.NavigateToQueryBlockRoot(_sqlDocumentRepository.StatementCollection, Editor.CaretOffset);
-			if (queryBlockRootIndex.HasValue)
-			{
-				Editor.CaretOffset = queryBlockRootIndex.Value;
-				Editor.ScrollToCaret();
-			}
+			var queryBlockRootIndex = _navigationService.NavigateToQueryBlockRoot(_sqlDocumentRepository, Editor.CaretOffset);
+			NavigateToOffset(queryBlockRootIndex);
+		}
+		private void NavigateToDefinition(object sender, ExecutedRoutedEventArgs args)
+		{
+			var queryBlockRootIndex = _navigationService.NavigateToDefinition(_sqlDocumentRepository, Editor.CaretOffset);
+			NavigateToOffset(queryBlockRootIndex);
+		}
+
+		private void NavigateToOffset(int? offset)
+		{
+			if (!offset.HasValue)
+				return;
+			
+			Editor.CaretOffset = offset.Value;
+			Editor.ScrollToCaret();
 		}
 
 		private void ShowFunctionOverloads(object sender, ExecutedRoutedEventArgs args)
