@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using SqlPad.Commands;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
 namespace SqlPad.Oracle.Commands
@@ -12,7 +13,7 @@ namespace SqlPad.Oracle.Commands
 		private OracleDataObjectReference _currentObjectReference;
 		private OracleColumnReference _currentColumnReference;
 
-		private AddAliasCommand(OracleCommandExecutionContext executionContext)
+		private AddAliasCommand(CommandExecutionContext executionContext)
 			: base(executionContext)
 		{
 		}

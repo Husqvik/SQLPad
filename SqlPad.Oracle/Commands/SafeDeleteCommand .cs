@@ -18,14 +18,14 @@ namespace SqlPad.Oracle.Commands
 
 		private static void ExecutionHandlerImplementation(CommandExecutionContext executionContext)
 		{
-			if (executionContext.Statements == null)
+			if (executionContext.DocumentRepository == null)
 				return;
 
-			var currentNode = executionContext.Statements.GetTerminalAtPosition(executionContext.CaretOffset, n => n.Id.IsAlias());
+			var currentNode = executionContext.DocumentRepository.Statements.GetTerminalAtPosition(executionContext.CaretOffset, n => n.Id.IsAlias());
 			if (currentNode == null)
 				return;
 
-			var semanticModel = new OracleStatementSemanticModel(executionContext.StatementText, (OracleStatement)currentNode.Statement, (OracleDatabaseModelBase)executionContext.DatabaseModel);
+			var semanticModel = (OracleStatementSemanticModel)executionContext.DocumentRepository.ValidationModels[currentNode.Statement].SemanticModel;
 			var queryBlock = semanticModel.GetQueryBlock(currentNode);
 			if (queryBlock == null)
 				return;

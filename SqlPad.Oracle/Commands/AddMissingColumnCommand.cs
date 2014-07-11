@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using System.Text;
+using SqlPad.Commands;
 
 namespace SqlPad.Oracle.Commands
 {
@@ -10,7 +11,7 @@ namespace SqlPad.Oracle.Commands
 		
 		public const string Title = "Add missing column";
 
-		private AddMissingColumnCommand(OracleCommandExecutionContext executionContext)
+		private AddMissingColumnCommand(CommandExecutionContext executionContext)
 			: base(executionContext)
 		{
 		}

@@ -13,7 +13,7 @@ namespace SqlPad.Oracle
 			if (sqlDocumentRepository == null)
 				throw new ArgumentNullException("sqlDocumentRepository");
 
-			var node = sqlDocumentRepository.StatementCollection.GetNodeAtPosition(cursorPosition);
+			var node = sqlDocumentRepository.Statements.GetNodeAtPosition(cursorPosition);
 			if (node == null)
 				return null;
 

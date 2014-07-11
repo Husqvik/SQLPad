@@ -48,10 +48,10 @@ namespace SqlPad.Oracle.Commands
 
 		private void MoveContent()
 		{
-			if (_executionContext.Statements == null)
+			if (_executionContext.DocumentRepository == null)
 				return;
 
-			var currentNode = _executionContext.Statements.GetTerminalAtPosition(_executionContext.CaretOffset);
+			var currentNode = _executionContext.DocumentRepository.Statements.GetTerminalAtPosition(_executionContext.CaretOffset);
 			if (currentNode == null)
 				return;
 

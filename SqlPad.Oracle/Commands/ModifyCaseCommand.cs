@@ -51,7 +51,7 @@ namespace SqlPad.Oracle.Commands
 			var grammarRecognizedStart = selectionStart + selectionLength;
 			var grammarRecognizedEnd = selectionStart;
 
-			var selectedTerminals = _executionContext.Statements
+			var selectedTerminals = _executionContext.DocumentRepository.Statements
 				.SelectMany(s => s.AllTerminals)
 				.Where(t => t.SourcePosition.IndexEnd >= selectionStart && t.SourcePosition.IndexStart < selectionStart + selectionLength)
 				.ToArray();

@@ -33,11 +33,14 @@ namespace SqlPad.Oracle.Commands
 
 		private FindUsagesCommand(CommandExecutionContext executionContext)
 		{
-			_currentNode = GetFindUsagesCompatibleTerminal(executionContext.Statements, executionContext.CaretOffset);
+			if (executionContext.DocumentRepository == null || executionContext.DocumentRepository.StatementText != executionContext.StatementText)
+				return;
+
+			_currentNode = GetFindUsagesCompatibleTerminal(executionContext.DocumentRepository.Statements, executionContext.CaretOffset);
 			if (_currentNode == null)
 				return;
 
-			_semanticModel = new OracleStatementSemanticModel(executionContext.StatementText, (OracleStatement)_currentNode.Statement, (OracleDatabaseModelBase)executionContext.DatabaseModel);
+			_semanticModel = (OracleStatementSemanticModel)executionContext.DocumentRepository.ValidationModels[_currentNode.Statement].SemanticModel;
 			_queryBlock = _semanticModel.GetQueryBlock(_currentNode);
 			_executionContext = executionContext;
 		}
@@ -156,7 +159,7 @@ namespace SqlPad.Oracle.Commands
 			return Enumerable.Repeat(objectReference, 1);
 		}
 
-		private IEnumerable<StatementDescriptionNode> GetObjectReferenceUsage(OracleObjectWithColumnsReference objectReference)
+		private static IEnumerable<StatementDescriptionNode> GetObjectReferenceUsage(OracleObjectWithColumnsReference objectReference)
 		{
 			var nodes = new List<StatementDescriptionNode>();
 			if (objectReference.Type != ReferenceType.InlineView)

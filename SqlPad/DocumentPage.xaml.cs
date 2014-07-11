@@ -288,10 +288,10 @@ namespace SqlPad
 
 		private void ExecuteDatabaseCommand(object sender, ExecutedRoutedEventArgs args)
 		{
-			if (_sqlDocumentRepository.StatementCollection == null)
+			if (_sqlDocumentRepository.Statements == null)
 				return;
 
-			var statement = _sqlDocumentRepository.StatementCollection.GetStatementAtPosition(Editor.CaretOffset);
+			var statement = _sqlDocumentRepository.Statements.GetStatementAtPosition(Editor.CaretOffset);
 			if (statement == null)
 				return;
 
@@ -378,7 +378,7 @@ namespace SqlPad
 		private void FindUsages(object sender, ExecutedRoutedEventArgs args)
 		{
 			var findUsagesCommandHandler = _infrastructureFactory.CommandFactory.FindUsagesCommandHandler;
-			var executionContext = CommandExecutionContext.Create(Editor, _sqlDocumentRepository.StatementCollection, _databaseModel);
+			var executionContext = CommandExecutionContext.Create(Editor, _sqlDocumentRepository);
 			findUsagesCommandHandler.ExecutionHandler(executionContext);
 			_colorizeAvalonEdit.SetHighlightSegments(executionContext.SegmentsToReplace);
 			Editor.TextArea.TextView.Redraw();
@@ -446,7 +446,7 @@ namespace SqlPad
 
 			if (!_isParsing)
 			{
-				var parenthesisTerminal = _sqlDocumentRepository.StatementCollection == null
+				var parenthesisTerminal = _sqlDocumentRepository.Statements == null
 					? null
 					: _sqlDocumentRepository.ExecuteStatementAction(s => s.GetTerminalAtPosition(Editor.CaretOffset, n => n.Token.Value.In("(", ")")));
 
@@ -673,7 +673,7 @@ namespace SqlPad
 				return;
 
 			var position = Editor.GetPositionFromPoint(e.GetPosition(Editor));
-			if (!position.HasValue || _sqlDocumentRepository.StatementCollection == null)
+			if (!position.HasValue || _sqlDocumentRepository.Statements == null)
 				return;
 
 			var offset = Editor.Document.GetOffset(position.Value.Line, position.Value.Column);
@@ -717,7 +717,7 @@ namespace SqlPad
 
 		private bool PopulateContextActionMenu()
 		{
-			var executionContext = CommandExecutionContext.Create(Editor, _sqlDocumentRepository.StatementCollection, _databaseModel);
+			var executionContext = CommandExecutionContext.Create(Editor, _sqlDocumentRepository);
 			_contextActionProvider.GetContextActions(_sqlDocumentRepository, executionContext)
 				.ToList()
 				.ForEach(BuildContextMenuItem);

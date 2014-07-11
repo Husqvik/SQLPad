@@ -117,10 +117,10 @@ namespace SqlPad.Oracle
 
 		private void ExecutionHandlerImplementation(CommandExecutionContext executionContext)
 		{
-			if (executionContext.Statements == null)
+			if (executionContext.DocumentRepository == null)
 				return;
 
-			var formattedStatements = executionContext.Statements.Where(s => s.SourcePosition.IndexStart <= executionContext.SelectionStart + executionContext.SelectionLength && s.SourcePosition.IndexEnd + 1 >= executionContext.SelectionStart)
+			var formattedStatements = executionContext.DocumentRepository.Statements.Where(s => s.SourcePosition.IndexStart <= executionContext.SelectionStart + executionContext.SelectionLength && s.SourcePosition.IndexEnd + 1 >= executionContext.SelectionStart)
 				.OrderBy(s => s.SourcePosition.IndexStart)
 				.ToArray();
 

@@ -15,16 +15,16 @@ namespace SqlPad.Commands
 			return (TextEditor)((TextArea)sender).TextView.Services.GetService(typeof(TextEditor));
 		}
 
-		public static ExecutedRoutedEventHandler CreateRoutedEditCommandHandler(CommandExecutionHandler handler, Func<SqlDocumentRepository> getSqlDocumentFunction, IDatabaseModel databaseModel)
+		public static ExecutedRoutedEventHandler CreateRoutedEditCommandHandler(CommandExecutionHandler handler, Func<SqlDocumentRepository> getDocumentRepositoryFunction, IDatabaseModel databaseModel)
 		{
 			return (sender, args) =>
 					{
 						var editor = GetEditorFromSender(sender);
-						var sqlDocument = getSqlDocumentFunction();
-						if (sqlDocument.StatementText != editor.Text)
+						var documentRepository = getDocumentRepositoryFunction();
+						if (documentRepository.StatementText != editor.Text)
 							return;
 
-						var executionContext = CommandExecutionContext.Create(editor, sqlDocument.StatementCollection, databaseModel);
+						var executionContext = CommandExecutionContext.Create(editor, documentRepository);
 						handler.ExecutionHandler(executionContext);
 						UpdateDocument(editor, executionContext);
 					};

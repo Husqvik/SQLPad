@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using SqlPad.Commands;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
 namespace SqlPad.Oracle.Commands
@@ -9,7 +10,7 @@ namespace SqlPad.Oracle.Commands
 	{
 		public const string Title = "Toggle quoted notation";
 
-		private ToggleQuotedNotationCommand(OracleCommandExecutionContext executionContext)
+		private ToggleQuotedNotationCommand(CommandExecutionContext executionContext)
 			: base(executionContext)
 		{
 		}

@@ -31,7 +31,7 @@ namespace SqlPad.Oracle
 		public ICollection<FunctionOverloadDescription> ResolveFunctionOverloads(SqlDocumentRepository sqlDocumentRepository, int cursorPosition)
 		{
 			var emptyCollection = new FunctionOverloadDescription[0];
-			var node = sqlDocumentRepository.StatementCollection.GetNodeAtPosition(cursorPosition, n => !n.Id.In(Terminals.Comma, Terminals.RightParenthesis));
+			var node = sqlDocumentRepository.Statements.GetNodeAtPosition(cursorPosition, n => !n.Id.In(Terminals.Comma, Terminals.RightParenthesis));
 			if (node == null)
 				return emptyCollection;
 
@@ -76,16 +76,16 @@ namespace SqlPad.Oracle
 		{
 			//Trace.WriteLine("OracleCodeCompletionProvider.ResolveItems called. Cursor position: "+ cursorPosition);
 
-			if (sqlDocumentRepository == null || sqlDocumentRepository.StatementCollection == null)
+			if (sqlDocumentRepository == null || sqlDocumentRepository.Statements == null)
 				return EmptyCollection;
 
-			var e = new OracleCodeCompletionType(sqlDocumentRepository.StatementCollection, statementText, cursorPosition);
+			var e = new OracleCodeCompletionType(sqlDocumentRepository.Statements, statementText, cursorPosition);
 			e.PrintSupportedCompletions();
 
 			StatementDescriptionNode currentNode;
 
 			var completionItems = Enumerable.Empty<ICodeCompletionItem>();
-			var statement = (OracleStatement)sqlDocumentRepository.StatementCollection.SingleOrDefault(s => s.GetNodeAtPosition(cursorPosition) != null);
+			var statement = (OracleStatement)sqlDocumentRepository.Statements.SingleOrDefault(s => s.GetNodeAtPosition(cursorPosition) != null);
 			//
 			/*currentNode = statements.GetTerminalAtPosition(cursorPosition);
 			var isCursorAtTerminal = true;
@@ -109,7 +109,7 @@ namespace SqlPad.Oracle
 			{
 				isCursorAtTerminal = false;
 
-				statement = (OracleStatement)sqlDocumentRepository.StatementCollection.LastOrDefault(s => s.GetNearestTerminalToPosition(cursorPosition) != null);
+				statement = (OracleStatement)sqlDocumentRepository.Statements.LastOrDefault(s => s.GetNearestTerminalToPosition(cursorPosition) != null);
 				if (statement == null)
 				{
 					return EmptyCollection;
@@ -597,28 +597,6 @@ namespace SqlPad.Oracle
 	{
 		private readonly OracleSqlParser _parser = new OracleSqlParser();
 
-		private static readonly HashSet<string> ZeroOffsetTerminalIds =
-			new HashSet<string>
-			{
-				Terminals.Dot,
-				Terminals.Comma,
-				Terminals.OperatorConcatenation,
-				Terminals.LeftParenthesis,
-				Terminals.RightParenthesis,
-				Terminals.MathDivide,
-				Terminals.MathEquals,
-				Terminals.MathFactor,
-				Terminals.MathGreatherThan,
-				Terminals.MathGreatherThanOrEquals,
-				Terminals.MathLessThan,
-				Terminals.MathLessThanOrEquals,
-				Terminals.MathMinus,
-				Terminals.MathNotEqualsC,
-				Terminals.MathNotEqualsCircumflex,
-				Terminals.MathNotEqualsSql,
-				Terminals.MathPlus
-			};
-
 		public bool Schema { get; private set; }
 
 		public bool SchemaDataObject { get; private set; }
@@ -651,7 +629,7 @@ namespace SqlPad.Oracle
 			if (nearestTerminal == null)
 				return;
 
-			var requiredOffsetAfterToken = ZeroOffsetTerminalIds.Contains(nearestTerminal.Id) ? 0 : 1;
+			var requiredOffsetAfterToken = nearestTerminal.Id.IsZeroOffsetTerminalId() ? 0 : 1;
 			var isCursorAfterToken = nearestTerminal.SourcePosition.IndexEnd + requiredOffsetAfterToken < cursorPosition;
 			if (isCursorAfterToken)
 			{

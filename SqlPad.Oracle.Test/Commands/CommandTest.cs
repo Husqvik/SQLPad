@@ -12,7 +12,8 @@ namespace SqlPad.Oracle.Test.Commands
 	[TestFixture]
 	public class CommandTest
 	{
-		private static readonly OracleSqlParser Parser = new OracleSqlParser();
+		private SqlDocumentRepository _documentRepository;
+		private TextEditor _editor;
 
 		private const string FindUsagesStatementText =
 @"SELECT
@@ -79,12 +80,11 @@ WHERE
 	'456' != '123'
 	AND 1 = :BV";
 
-		private TextEditor _editor;
-
 		[SetUp]
 		public void SetUp()
 		{
 			_editor = new TextEditor();
+			_documentRepository = new SqlDocumentRepository(new OracleSqlParser(), new OracleStatementValidator(), TestFixture.DatabaseModel);
 		}
 
 		private class TestCommandSettings : ICommandSettingsProvider
@@ -105,36 +105,21 @@ WHERE
 			public CommandSettingsModel Settings { get; private set; }
 		}
 
-		private CommandExecutionContext CreateGenericExecutionContext()
+		private CommandExecutionContext CreateExecutionContext()
 		{
-			var statements = Parser.Parse(_editor.Text);
-			return CommandExecutionContext.Create(_editor, statements, TestFixture.DatabaseModel);
+			_documentRepository.UpdateStatements(_editor.Text);
+			return CommandExecutionContext.Create(_editor, _documentRepository);
 		}
 
-		private OracleCommandExecutionContext CreateOracleExecutionContext()
+		private bool CanExecuteCommand(CommandExecutionHandler executionHandler)
 		{
-			var childContext = CreateGenericExecutionContext();
-			var semanticModel = new OracleStatementSemanticModel(childContext.StatementText, (OracleStatement)childContext.Statements.Single(), (OracleDatabaseModelBase)childContext.DatabaseModel);
-			return OracleCommandExecutionContext.Create(childContext, semanticModel);
-		}
-
-		private bool CanExecuteOracleCommand(CommandExecutionHandler executionHandler)
-		{
-			var executionContext = CreateOracleExecutionContext();
+			var executionContext = CreateExecutionContext();
 			return executionHandler.CanExecuteHandler(executionContext);
 		}
 
-		private void ExecuteOracleCommand(CommandExecutionHandler executionHandler, string commandParameter = null, bool isValidParameter = true)
+		private void ExecuteCommand(CommandExecutionHandler executionHandler, string commandParameter = null, bool isValidParameter = true)
 		{
-			var executionContext = CreateOracleExecutionContext();
-			AddSettingsProvider(executionContext, commandParameter, isValidParameter);
-
-			ExecuteCommand(executionHandler, executionContext);
-		}
-
-		private void ExecuteGenericCommand(CommandExecutionHandler executionHandler, string commandParameter = null, bool isValidParameter = true)
-		{
-			var executionContext = CreateGenericExecutionContext();
+			var executionContext = CreateExecutionContext();
 			AddSettingsProvider(executionContext, commandParameter, isValidParameter);
 
 			ExecuteCommand(executionHandler, executionContext);
@@ -160,8 +145,8 @@ WHERE
 			_editor.Text = @"SELECT SELECTION.RESPONDENTBUCKET_ID, SELECTION.SELECTION_ID, PROJECT_ID, NAME FROM SELECTION";
 			_editor.CaretOffset = 87;
 
-			CanExecuteOracleCommand(OracleCommands.AddAlias).ShouldBe(true);
-			ExecuteOracleCommand(OracleCommands.AddAlias, "S");
+			CanExecuteCommand(OracleCommands.AddAlias).ShouldBe(true);
+			ExecuteCommand(OracleCommands.AddAlias, "S");
 
 			_editor.Text.ShouldBe(@"SELECT S.RESPONDENTBUCKET_ID, S.SELECTION_ID, PROJECT_ID, NAME FROM SELECTION S");
 		}
@@ -172,8 +157,8 @@ WHERE
 			_editor.Text = @"SELECT 'Prefix' || TBL.RESPONDENTBUCKET_ID || 'Postfix', NAME FROM (SELECT RESPONDENTBUCKET_ID, NAME FROM (SELECT RESPONDENTBUCKET_ID, NAME FROM SELECTION) WHERE RESPONDENTBUCKET_ID > 0) TBL";
 			_editor.CaretOffset = 114;
 
-			CanExecuteOracleCommand(OracleCommands.AddAlias).ShouldBe(true);
-			ExecuteOracleCommand(OracleCommands.AddAlias, "RBID");
+			CanExecuteCommand(OracleCommands.AddAlias).ShouldBe(true);
+			ExecuteCommand(OracleCommands.AddAlias, "RBID");
 
 			_editor.Text.ShouldBe(@"SELECT 'Prefix' || TBL.RBID || 'Postfix', NAME FROM (SELECT RBID, NAME FROM (SELECT RESPONDENTBUCKET_ID RBID, NAME FROM SELECTION) WHERE RBID > 0) TBL");
 		}
@@ -184,7 +169,7 @@ WHERE
 			_editor.Text = @"SELECT S.RESPONDENTBUCKET_ID, S.SELECTION_ID, PROJECT_ID, NAME FROM SELECTION S";
 			_editor.CaretOffset = 70;
 
-			CanExecuteOracleCommand(OracleCommands.AddAlias).ShouldBe(false);
+			CanExecuteCommand(OracleCommands.AddAlias).ShouldBe(false);
 		}
 
 		[Test(Description = @""), STAThread]
@@ -193,8 +178,8 @@ WHERE
 			_editor.Text = "SELECT SELECTION.RESPONDENTBUCKET_ID, PROJECT_ID FROM SELECTION WHERE SELECTION.NAME = NAME GROUP BY SELECTION.RESPONDENTBUCKET_ID, PROJECT_ID HAVING COUNT(SELECTION.SELECTION_ID) = COUNT(SELECTION_ID)";
 			_editor.CaretOffset = 60;
 
-			CanExecuteOracleCommand(OracleCommands.AddAlias).ShouldBe(true);
-			ExecuteOracleCommand(OracleCommands.AddAlias, "S");
+			CanExecuteCommand(OracleCommands.AddAlias).ShouldBe(true);
+			ExecuteCommand(OracleCommands.AddAlias, "S");
 
 			_editor.Text.ShouldBe("SELECT S.RESPONDENTBUCKET_ID, PROJECT_ID FROM SELECTION S WHERE S.NAME = NAME GROUP BY S.RESPONDENTBUCKET_ID, PROJECT_ID HAVING COUNT(S.SELECTION_ID) = COUNT(SELECTION_ID)");
 		}
@@ -205,7 +190,7 @@ WHERE
 			_editor.Text = @"SELECT S.RESPONDENTBUCKET_ID, S.SELECTION_ID, PROJECT_ID, NAME, 1 FROM SELECTION S";
 			_editor.CaretOffset = 0;
 
-			ExecuteOracleCommand(OracleCommands.WrapAsInlineView, "IV");
+			ExecuteCommand(OracleCommands.WrapAsInlineView, "IV");
 
 			_editor.Text.ShouldBe(@"SELECT IV.RESPONDENTBUCKET_ID, IV.SELECTION_ID, IV.PROJECT_ID, IV.NAME FROM (SELECT S.RESPONDENTBUCKET_ID, S.SELECTION_ID, PROJECT_ID, NAME, 1 FROM SELECTION S) IV");
 		}
@@ -216,7 +201,7 @@ WHERE
 			_editor.Text = "SELECT 1, 1 + 1 MYCOLUMN, DUMMY || '3' COLUMN3 FROM DUAL";
 			_editor.CaretOffset = 0;
 
-			ExecuteOracleCommand(OracleCommands.WrapAsCommonTableExpression, "MYQUERY");
+			ExecuteCommand(OracleCommands.WrapAsCommonTableExpression, "MYQUERY");
 
 			_editor.Text.ShouldBe(@"WITH MYQUERY AS (SELECT 1, 1 + 1 MYCOLUMN, DUMMY || '3' COLUMN3 FROM DUAL) SELECT MYQUERY.MYCOLUMN, MYQUERY.COLUMN3 FROM MYQUERY");
 		}
@@ -227,7 +212,7 @@ WHERE
 			_editor.Text = "\t\t            WITH OLDQUERY AS (SELECT OLD FROM OLD) SELECT 1, 1 + 1 MYCOLUMN, DUMMY || '3' COLUMN3 FROM DUAL";
 			_editor.CaretOffset = 55;
 
-			ExecuteOracleCommand(OracleCommands.WrapAsCommonTableExpression, "NEWQUERY");
+			ExecuteCommand(OracleCommands.WrapAsCommonTableExpression, "NEWQUERY");
 
 			_editor.Text.ShouldBe("\t\t            WITH OLDQUERY AS (SELECT OLD FROM OLD), NEWQUERY AS (SELECT 1, 1 + 1 MYCOLUMN, DUMMY || '3' COLUMN3 FROM DUAL) SELECT NEWQUERY.MYCOLUMN, NEWQUERY.COLUMN3 FROM NEWQUERY");
 		}
@@ -238,7 +223,7 @@ WHERE
 			_editor.Text = "SELECT \"PUBLIC\".DUAL.DUMMY, S.PROJECT_ID FROM SELECTION S, \"PUBLIC\".DUAL";
 			_editor.CaretOffset = 0;
 
-			ExecuteOracleCommand(OracleCommands.ToggleQuotedNotation);
+			ExecuteCommand(OracleCommands.ToggleQuotedNotation);
 
 			_editor.Text.ShouldBe("SELECT \"PUBLIC\".\"DUAL\".\"DUMMY\", \"S\".\"PROJECT_ID\" FROM \"SELECTION\" \"S\", \"PUBLIC\".\"DUAL\"");
 		}
@@ -249,7 +234,7 @@ WHERE
 			_editor.Text = "SELECT \"PUBLIC\".\"DUAL\".\"DUMMY\", \"S\".\"PROJECT_ID\" FROM \"SELECTION\" \"S\", \"PUBLIC\".\"DUAL\"";
 			_editor.CaretOffset = 0;
 
-			ExecuteOracleCommand(OracleCommands.ToggleQuotedNotation);
+			ExecuteCommand(OracleCommands.ToggleQuotedNotation);
 
 			_editor.Text.ShouldBe("SELECT \"PUBLIC\".DUAL.DUMMY, S.PROJECT_ID FROM SELECTION S, \"PUBLIC\".DUAL");
 		}
@@ -260,14 +245,15 @@ WHERE
 			_editor.Text = "SELECT DUMMY FROM (SELECT \"DUMMY\" FROM \"DUAL\")";
 			_editor.CaretOffset = 0;
 
-			ExecuteOracleCommand(OracleCommands.ToggleQuotedNotation);
+			ExecuteCommand(OracleCommands.ToggleQuotedNotation);
 
 			_editor.Text.ShouldBe("SELECT \"DUMMY\" FROM (SELECT \"DUMMY\" FROM \"DUAL\")");
 		}
 
 		private List<TextSegment> FindUsagesOrdered(string statementText, int currentPosition)
 		{
-			var executionContext = new CommandExecutionContext(statementText, 0, 0, currentPosition, Parser.Parse(statementText), TestFixture.DatabaseModel);
+			_documentRepository.UpdateStatements(statementText);
+			var executionContext = new CommandExecutionContext(statementText, 0, 0, currentPosition, _documentRepository);
 			FindUsagesCommand.FindUsages.ExecutionHandler(executionContext);
 			return executionContext.SegmentsToReplace.OrderBy(s => s.IndextStart).ToList();
 		}
@@ -491,7 +477,7 @@ WHERE
 			_editor.Text = "WITH CTE1 AS (SELECT NAME FROM SELECTION) SELECT NAME FROM CTE1";
 			_editor.CaretOffset = 15;
 
-			ExecuteOracleCommand(OracleCommands.WrapAsCommonTableExpression, "CTE2");
+			ExecuteCommand(OracleCommands.WrapAsCommonTableExpression, "CTE2");
 
 			_editor.Text.ShouldBe(@"WITH CTE2 AS (SELECT NAME FROM SELECTION), CTE1 AS (SELECT CTE2.NAME FROM CTE2) SELECT NAME FROM CTE1");
 		}
@@ -502,7 +488,7 @@ WHERE
 			_editor.Text = "SELECT SELECTION.*, PROJECT.* FROM SELECTION, PROJECT";
 			_editor.CaretOffset = 28;
 			
-			ExecuteOracleCommand(OracleCommands.ExpandAsterisk, String.Empty);
+			ExecuteCommand(OracleCommands.ExpandAsterisk, String.Empty);
 
 			_editor.Text.ShouldBe("SELECT SELECTION.*, PROJECT.NAME, PROJECT.PROJECT_ID FROM SELECTION, PROJECT");
 		}
@@ -513,7 +499,7 @@ WHERE
 			_editor.Text = "SELECT * FROM PROJECT, PROJECT P";
 			_editor.CaretOffset = 7;
 
-			ExecuteOracleCommand(OracleCommands.ExpandAsterisk, String.Empty);
+			ExecuteCommand(OracleCommands.ExpandAsterisk, String.Empty);
 
 			_editor.Text.ShouldBe("SELECT PROJECT.NAME, PROJECT.PROJECT_ID, P.NAME, P.PROJECT_ID FROM PROJECT, PROJECT P");
 		}
@@ -583,8 +569,8 @@ WHERE
 			_editor.Text = @"SELECT IV.TEST_COLUMN || ' ADDED' FROM PROJECT, (SELECT SELECTION.NAME || ' FROM INLINE_VIEW ' TEST_COLUMN FROM SELECTION) IV, RESPONDENTBUCKET";
 			_editor.CaretOffset = 50;
 
-			CanExecuteOracleCommand(OracleCommands.UnnestInlineView).ShouldBe(true);
-			ExecuteOracleCommand(OracleCommands.UnnestInlineView);
+			CanExecuteCommand(OracleCommands.UnnestInlineView).ShouldBe(true);
+			ExecuteCommand(OracleCommands.UnnestInlineView);
 
 			_editor.Text.ShouldBe("SELECT SELECTION.NAME || ' FROM INLINE_VIEW ' || ' ADDED' FROM PROJECT, SELECTION, RESPONDENTBUCKET");
 		}
@@ -595,8 +581,8 @@ WHERE
 			_editor.Text = @"SELECT IV.TEST_COLUMN || ' ADDED' FROM PROJECT, (SELECT SELECTION.NAME || ' FROM INLINE_VIEW ' TEST_COLUMN FROM SELECTION WHERE SELECTION_ID = 123) IV, RESPONDENTBUCKET";
 			_editor.CaretOffset = 50;
 
-			CanExecuteOracleCommand(OracleCommands.UnnestInlineView).ShouldBe(true);
-			ExecuteOracleCommand(OracleCommands.UnnestInlineView);
+			CanExecuteCommand(OracleCommands.UnnestInlineView).ShouldBe(true);
+			ExecuteCommand(OracleCommands.UnnestInlineView);
 
 			_editor.Text.ShouldBe("SELECT SELECTION.NAME || ' FROM INLINE_VIEW ' || ' ADDED' FROM PROJECT, SELECTION, RESPONDENTBUCKET WHERE SELECTION_ID = 123");
 		}
@@ -607,8 +593,8 @@ WHERE
 			_editor.Text = @"SELECT * FROM (SELECT * FROM SELECTION WHERE SELECTION_ID = 123) IV, RESPONDENTBUCKET RB WHERE RB.RESPONDENTBUCKET_ID = 456";
 			_editor.CaretOffset = 17;
 
-			CanExecuteOracleCommand(OracleCommands.UnnestInlineView).ShouldBe(true);
-			ExecuteOracleCommand(OracleCommands.UnnestInlineView);
+			CanExecuteCommand(OracleCommands.UnnestInlineView).ShouldBe(true);
+			ExecuteCommand(OracleCommands.UnnestInlineView);
 
 			_editor.Text.ShouldBe("SELECT * FROM SELECTION, RESPONDENTBUCKET RB WHERE RB.RESPONDENTBUCKET_ID = 456 AND SELECTION_ID = 123");
 		}
@@ -619,8 +605,8 @@ WHERE
 			_editor.Text = @"SELECT IV.* FROM (SELECT * FROM SELECTION, RESPONDENTBUCKET) IV";
 			_editor.CaretOffset = 18;
 
-			CanExecuteOracleCommand(OracleCommands.UnnestInlineView).ShouldBe(true);
-			ExecuteOracleCommand(OracleCommands.UnnestInlineView);
+			CanExecuteCommand(OracleCommands.UnnestInlineView).ShouldBe(true);
+			ExecuteCommand(OracleCommands.UnnestInlineView);
 
 			_editor.Text.ShouldBe("SELECT * FROM SELECTION, RESPONDENTBUCKET");
 		}
@@ -631,8 +617,8 @@ WHERE
 			_editor.Text = @"SELECT IV.*, TARGETGROUP_ID FROM (SELECT 1 C1, SELECTION.*, 3 C3 FROM SELECTION) IV, RESPONDENTBUCKET";
 			_editor.CaretOffset = 40;
 
-			CanExecuteOracleCommand(OracleCommands.UnnestInlineView).ShouldBe(true);
-			ExecuteOracleCommand(OracleCommands.UnnestInlineView);
+			CanExecuteCommand(OracleCommands.UnnestInlineView).ShouldBe(true);
+			ExecuteCommand(OracleCommands.UnnestInlineView);
 
 			_editor.Text.ShouldBe("SELECT 1 C1, SELECTION.*, 3 C3, TARGETGROUP_ID FROM SELECTION, RESPONDENTBUCKET");
 		}
@@ -643,8 +629,8 @@ WHERE
 			_editor.Text = @"SELECT * FROM SELECTION JOIN(SELECT NAME FROM PROJECT) S ON SELECTION.NAME = S.NAME";
 			_editor.CaretOffset = 30;
 
-			CanExecuteOracleCommand(OracleCommands.UnnestInlineView).ShouldBe(true);
-			ExecuteOracleCommand(OracleCommands.UnnestInlineView);
+			CanExecuteCommand(OracleCommands.UnnestInlineView).ShouldBe(true);
+			ExecuteCommand(OracleCommands.UnnestInlineView);
 
 			_editor.Text.ShouldBe("SELECT * FROM SELECTION JOIN PROJECT ON SELECTION.NAME = PROJECT.NAME");
 		}
@@ -655,8 +641,8 @@ WHERE
 			_editor.Text = @"SELECT * FROM SELECTION JOIN(SELECT PROJECT.NAME FROM PROJECT) S ON SELECTION.NAME = S.NAME";
 			_editor.CaretOffset = 30;
 
-			CanExecuteOracleCommand(OracleCommands.UnnestInlineView).ShouldBe(true);
-			ExecuteOracleCommand(OracleCommands.UnnestInlineView);
+			CanExecuteCommand(OracleCommands.UnnestInlineView).ShouldBe(true);
+			ExecuteCommand(OracleCommands.UnnestInlineView);
 
 			_editor.Text.ShouldBe("SELECT * FROM SELECTION JOIN PROJECT ON SELECTION.NAME = PROJECT.NAME");
 		}
@@ -667,8 +653,8 @@ WHERE
 			_editor.Text = @"SELECT 'OuterPrefix' || IV.VAL || 'OuterPostfix' FROM (SELECT 'InnerPrefix' || (DUMMY || 'InnerPostfix') VAL FROM DUAL) IV";
 			_editor.CaretOffset = 60;
 
-			CanExecuteOracleCommand(OracleCommands.UnnestInlineView).ShouldBe(true);
-			ExecuteOracleCommand(OracleCommands.UnnestInlineView);
+			CanExecuteCommand(OracleCommands.UnnestInlineView).ShouldBe(true);
+			ExecuteCommand(OracleCommands.UnnestInlineView);
 
 			_editor.Text.ShouldBe("SELECT 'OuterPrefix' || 'InnerPrefix' || (DUAL.DUMMY || 'InnerPostfix') || 'OuterPostfix' FROM DUAL");
 		}
@@ -679,7 +665,7 @@ WHERE
 			_editor.Text = @"SELECT S.RESPONDENTBUCKET_ID, S.SELECTION_ID, S.PROJECT_ID, S.NAME FROM SELECTION S";
 			_editor.CaretOffset = 82;
 
-			ExecuteGenericCommand(SafeDeleteCommand.SafeDelete);
+			ExecuteCommand(SafeDeleteCommand.SafeDelete);
 
 			_editor.Text.ShouldBe("SELECT SELECTION.RESPONDENTBUCKET_ID, SELECTION.SELECTION_ID, SELECTION.PROJECT_ID, SELECTION.NAME FROM SELECTION ");
 		}
@@ -691,11 +677,11 @@ WHERE
 			_editor.CaretOffset = 3;
 			_editor.SelectionLength = 28;
 
-			ExecuteGenericCommand(ModifyCaseCommand.MakeUpperCase);
+			ExecuteCommand(ModifyCaseCommand.MakeUpperCase);
 
 			_editor.Text.ShouldBe("selECT NULL, 'null' FROM SELECTion");
 
-			ExecuteGenericCommand(ModifyCaseCommand.MakeLowerCase);
+			ExecuteCommand(ModifyCaseCommand.MakeLowerCase);
 
 			_editor.Text.ShouldBe("select null, 'null' from selection");
 		}
@@ -707,7 +693,7 @@ WHERE
 			_editor.CaretOffset = 0;
 			_editor.SelectionLength = _editor.Text.Length;
 
-			ExecuteGenericCommand(ModifyCaseCommand.MakeUpperCase);
+			ExecuteCommand(ModifyCaseCommand.MakeUpperCase);
 
 			_editor.Text.ShouldBe("LOT OF INVALID TOKENS PRECEDING; SELECT 'null' AS \"null\" FROM DUAL AND LOT OF INVALID TOKENS FOLLOWING");
 		}
@@ -719,7 +705,7 @@ WHERE
 			_editor.CaretOffset = 7;
 			_editor.SelectionLength = 6;
 
-			ExecuteGenericCommand(ModifyCaseCommand.MakeUpperCase);
+			ExecuteCommand(ModifyCaseCommand.MakeUpperCase);
 
 			_editor.Text.ShouldBe("SELECT 'NULL' FROM DUAL");
 		}
@@ -730,7 +716,7 @@ WHERE
 			_editor.Text = @"select * from ""Accounts""";
 			_editor.SelectAll();
 
-			ExecuteGenericCommand(ModifyCaseCommand.MakeUpperCase);
+			ExecuteCommand(ModifyCaseCommand.MakeUpperCase);
 
 			_editor.Text.ShouldBe("SELECT * FROM \"Accounts\"");
 		}
@@ -741,7 +727,7 @@ WHERE
 			_editor.Text = @"SELECT 'NamePrefix' || NAME || 'NamePostfix', 'IdPrefix' || PROJECT_ID || 'IdPostfix' FROM PROJECT";
 			_editor.CaretOffset = 66;
 
-			ExecuteGenericCommand(MoveContentCommand.MoveContentUp);
+			ExecuteCommand(MoveContentCommand.MoveContentUp);
 
 			_editor.Text.ShouldBe("SELECT 'IdPrefix' || PROJECT_ID || 'IdPostfix', 'NamePrefix' || NAME || 'NamePostfix' FROM PROJECT");
 			_editor.CaretOffset.ShouldBe(27);
@@ -753,7 +739,7 @@ WHERE
 			_editor.Text = @"SELECT * FROM SELECTION ORDER BY 'NamePrefix' || NAME || 'NamePostfix', 'IdPrefix' || SELECTION_ID || 'IdPostfix', 'IdPrefix' || PROJECT_ID || 'IdPostfix'";
 			_editor.CaretOffset = 86;
 
-			ExecuteGenericCommand(MoveContentCommand.MoveContentUp);
+			ExecuteCommand(MoveContentCommand.MoveContentUp);
 
 			_editor.Text.ShouldBe("SELECT * FROM SELECTION ORDER BY 'IdPrefix' || SELECTION_ID || 'IdPostfix', 'NamePrefix' || NAME || 'NamePostfix', 'IdPrefix' || PROJECT_ID || 'IdPostfix'");
 			_editor.CaretOffset.ShouldBe(47);
@@ -765,7 +751,7 @@ WHERE
 			_editor.Text = @"SELECT * FROM SELECTION ORDER BY 'NamePrefix' || NAME || 'NamePostfix', 'IdPrefix' || SELECTION_ID || 'IdPostfix', 'IdPrefix' || PROJECT_ID || 'IdPostfix'";
 			_editor.CaretOffset = 33;
 
-			ExecuteGenericCommand(MoveContentCommand.MoveContentDown);
+			ExecuteCommand(MoveContentCommand.MoveContentDown);
 
 			_editor.Text.ShouldBe("SELECT * FROM SELECTION ORDER BY 'IdPrefix' || SELECTION_ID || 'IdPostfix', 'NamePrefix' || NAME || 'NamePostfix', 'IdPrefix' || PROJECT_ID || 'IdPostfix'");
 			_editor.CaretOffset.ShouldBe(76);
@@ -777,7 +763,7 @@ WHERE
 			_editor.Text = @"SELECT 'NamePrefix' || NAME || 'NamePostfix', 'IdPrefix' || PROJECT_ID || 'IdPostfix' FROM PROJECT";
 			_editor.CaretOffset = 24;
 
-			ExecuteGenericCommand(MoveContentCommand.MoveContentDown);
+			ExecuteCommand(MoveContentCommand.MoveContentDown);
 
 			_editor.Text.ShouldBe("SELECT 'IdPrefix' || PROJECT_ID || 'IdPostfix', 'NamePrefix' || NAME || 'NamePostfix' FROM PROJECT");
 			_editor.CaretOffset.ShouldBe(65);
@@ -789,7 +775,7 @@ WHERE
 			_editor.Text = @"SELECT 'NamePrefix' || NAME || 'NamePostfix', 'IdPrefix' || PROJECT_ID || 'IdPostfix' FROM PROJECT";
 			_editor.CaretOffset = 66;
 
-			ExecuteGenericCommand(MoveContentCommand.MoveContentDown);
+			ExecuteCommand(MoveContentCommand.MoveContentDown);
 
 			_editor.Text.ShouldBe("SELECT 'NamePrefix' || NAME || 'NamePostfix', 'IdPrefix' || PROJECT_ID || 'IdPostfix' FROM PROJECT");
 			_editor.CaretOffset.ShouldBe(66);
@@ -799,9 +785,9 @@ WHERE
 		public void TestAddToGroupByCommandWithoutExistingGroupByClause()
 		{
 			_editor.Text = @"SELECT SELECTION.PROJECT_ID, COUNT(*) PROJECT_SELECTIONS FROM SELECTION";
-			_editor.SelectionLength = 18;
+			_editor.CaretOffset = 18;
 
-			ExecuteOracleCommand(OracleCommands.AddToGroupByClause);
+			ExecuteCommand(OracleCommands.AddToGroupByClause);
 
 			_editor.Text.ShouldBe("SELECT SELECTION.PROJECT_ID, COUNT(*) PROJECT_SELECTIONS FROM SELECTION GROUP BY PROJECT_ID");
 		}
@@ -812,7 +798,7 @@ WHERE
 			_editor.Text = @"SELECT SQLPAD_FUNCTION, RESPONDENTBUCKET_ID, SELECTION_ID, PROJECT_ID, NAME, SQLPAD.SQLPAD_FUNCTION(0), TO_CHAR('') FROM SELECTION";
 			_editor.SelectionLength = 0;
 
-			ExecuteOracleCommand(OracleCommands.ToggleFullyQualifiedReferences);
+			ExecuteCommand(OracleCommands.ToggleFullyQualifiedReferences);
 
 			_editor.Text.ShouldBe("SELECT HUSQVIK.SQLPAD_FUNCTION, HUSQVIK.SELECTION.RESPONDENTBUCKET_ID, HUSQVIK.SELECTION.SELECTION_ID, HUSQVIK.SELECTION.PROJECT_ID, HUSQVIK.SELECTION.NAME, HUSQVIK.SQLPAD.SQLPAD_FUNCTION(0), TO_CHAR('') FROM HUSQVIK.SELECTION");
 		}
@@ -823,7 +809,7 @@ WHERE
 			_editor.Text = @"SELECT DUMMY, NAME FROM DUAL D, SELECTION S";
 			_editor.SelectionLength = 0;
 
-			ExecuteOracleCommand(OracleCommands.ToggleFullyQualifiedReferences);
+			ExecuteCommand(OracleCommands.ToggleFullyQualifiedReferences);
 
 			_editor.Text.ShouldBe("SELECT D.DUMMY, S.NAME FROM DUAL D, HUSQVIK.SELECTION S");
 		}
@@ -834,7 +820,7 @@ WHERE
 			_editor.Text = @"SELECT ROWID FROM DUAL";
 			_editor.SelectionLength = 0;
 
-			ExecuteOracleCommand(OracleCommands.ToggleFullyQualifiedReferences);
+			ExecuteCommand(OracleCommands.ToggleFullyQualifiedReferences);
 
 			_editor.Text.ShouldBe("SELECT DUAL.ROWID FROM DUAL");
 		}
@@ -846,7 +832,7 @@ WHERE
 			_editor.SelectionLength = 0;
 
 			// TODO: Update when toogle off is implemented
-			CanExecuteOracleCommand(OracleCommands.ToggleFullyQualifiedReferences).ShouldBe(false);
+			CanExecuteCommand(OracleCommands.ToggleFullyQualifiedReferences).ShouldBe(false);
 		}
 
 		[Test(Description = @""), STAThread]
@@ -856,7 +842,7 @@ WHERE
 			_editor.SelectionLength = 0;
 
 			// TODO: Update when toogle off is implemented
-			CanExecuteOracleCommand(OracleCommands.ToggleFullyQualifiedReferences).ShouldBe(false);
+			CanExecuteCommand(OracleCommands.ToggleFullyQualifiedReferences).ShouldBe(false);
 		}
 
 		[Test(Description = @""), STAThread]
@@ -868,9 +854,9 @@ WHERE
 			var actions = new OracleContextActionProvider().GetContextActions(TestFixture.DatabaseModel, _editor.Text, _editor.CaretOffset).Where(a => a.Name.StartsWith("Resolve as")).ToArray();
 
 			actions.Length.ShouldBe(2);
-			CanExecuteOracleCommand(actions[0].ExecutionHandler).ShouldBe(true);
-			ExecuteOracleCommand(actions[0].ExecutionHandler);
-			CanExecuteOracleCommand(actions[1].ExecutionHandler).ShouldBe(true);
+			CanExecuteCommand(actions[0].ExecutionHandler).ShouldBe(true);
+			ExecuteCommand(actions[0].ExecutionHandler);
+			CanExecuteCommand(actions[1].ExecutionHandler).ShouldBe(true);
 
 			_editor.Text.ShouldBe(@"SELECT SYS.DUAL.DUMMY FROM SYS.DUAL, ""PUBLIC"".DUAL");
 		}
@@ -881,8 +867,8 @@ WHERE
 			_editor.Text = @"SELECT NOT_EXISTING_COLUMN FROM SELECTION";
 			_editor.CaretOffset = 7;
 
-			CanExecuteOracleCommand(OracleCommands.GenerateMissingColumns).ShouldBe(true);
-			ExecuteOracleCommand(OracleCommands.GenerateMissingColumns);
+			CanExecuteCommand(OracleCommands.GenerateMissingColumns).ShouldBe(true);
+			ExecuteCommand(OracleCommands.GenerateMissingColumns);
 
 			_editor.Text.ShouldBe("SELECT NOT_EXISTING_COLUMN FROM SELECTION;\r\n\r\nALTER TABLE HUSQVIK.SELECTION ADD\r\n(\r\n\tNOT_EXISTING_COLUMN VARCHAR2(100) NULL\r\n);\r\n");
 			_editor.CaretOffset.ShouldBe(105);

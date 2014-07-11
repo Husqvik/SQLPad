@@ -8,15 +8,15 @@ namespace SqlPad.Oracle.Test
 	[TestFixture]
 	public class OracleStatementFormatterTest
 	{
-		private static readonly OracleSqlParser Parser = new OracleSqlParser();
+		private readonly SqlDocumentRepository _documentRepository = new SqlDocumentRepository(new OracleSqlParser(), new OracleStatementValidator(), TestFixture.DatabaseModel);
 		private static readonly OracleStatementFormatter Formatter = new OracleStatementFormatter(new SqlFormatterOptions());
 
 		[Test(Description = @"")]
 		public void TestBasicFormat()
 		{
 			const string sourceFormat = "SELECT SELECTION.NAME, COUNT(*) OVER (PARTITION BY NAME ORDER BY RESPONDENTBUCKET_ID, SELECTION_ID) DUMMY_COUNT, MAX(RESPONDENTBUCKET_ID) KEEP (DENSE_RANK FIRST ORDER BY PROJECT_ID, SELECTION_ID) FROM SELECTION LEFT JOIN RESPONDENTBUCKET ON SELECTION.RESPONDENTBUCKET_ID = RESPONDENTBUCKET.RESPONDENTBUCKET_ID LEFT JOIN TARGETGROUP ON RESPONDENTBUCKET.TARGETGROUP_ID = TARGETGROUP.TARGETGROUP_ID ORDER BY NAME, SELECTION_ID";
-			var statements = Parser.Parse(sourceFormat);
-			var executionContext = new CommandExecutionContext(sourceFormat, 0, 0, 0, statements, null);
+			_documentRepository.UpdateStatements(sourceFormat);
+			var executionContext = new CommandExecutionContext(sourceFormat, 0, 0, 0, _documentRepository);
 			Formatter.ExecutionHandler.ExecutionHandler(executionContext);
 
 			const string expectedFormat =

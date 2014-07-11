@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
+using SqlPad.Commands;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
 namespace SqlPad.Oracle.Commands
@@ -9,7 +10,7 @@ namespace SqlPad.Oracle.Commands
 	{
 		public const string Title = "Wrap as inline view";
 
-		private WrapAsInlineViewCommand(OracleCommandExecutionContext executionContext)
+		private WrapAsInlineViewCommand(CommandExecutionContext executionContext)
 			: base(executionContext)
 		{
 		}

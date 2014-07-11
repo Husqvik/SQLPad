@@ -17,10 +17,10 @@ namespace SqlPad.Oracle
 
 		public ICollection<ICodeSnippet> GetSnippets(SqlDocumentRepository sqlDocumentRepository, string statementText, int cursorPosition)
 		{
-			if (sqlDocumentRepository == null || sqlDocumentRepository.StatementCollection == null)
+			if (sqlDocumentRepository == null || sqlDocumentRepository.Statements == null)
 				return EmptyCollection;
 
-			var statement = sqlDocumentRepository.StatementCollection.TakeWhile(s => s.SourcePosition.IndexStart <= cursorPosition - 1).LastOrDefault();
+			var statement = sqlDocumentRepository.Statements.TakeWhile(s => s.SourcePosition.IndexStart <= cursorPosition - 1).LastOrDefault();
 
 			StatementDescriptionNode currentNode = null;
 			if (statement != null)

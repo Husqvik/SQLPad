@@ -12,11 +12,11 @@ namespace SqlPad
 		private readonly ISqlParser _parser;
 		private readonly IStatementValidator _validator;
 		private readonly IDatabaseModel _databaseModel;
-		private StatementCollection _statementCollection = new StatementCollection(new StatementBase[0]);
+		private StatementCollection _statements = new StatementCollection(new StatementBase[0]);
 
-		public StatementCollection StatementCollection
+		public StatementCollection Statements
 		{
-			get { return _statementCollection; }
+			get { return _statements; }
 		}
 
 		public string StatementText { get; private set; }
@@ -48,7 +48,7 @@ namespace SqlPad
 
 			lock (_lockObject)
 			{
-				_statementCollection = statements;
+				_statements = statements;
 				_validationModels = validationModels;
 				StatementText = statementText;
 			}
@@ -58,7 +58,7 @@ namespace SqlPad
 		{
 			lock (_lockObject)
 			{
-				action(StatementCollection);
+				action(Statements);
 			}
 		}
 
@@ -66,7 +66,7 @@ namespace SqlPad
 		{
 			lock (_lockObject)
 			{
-				return function(StatementCollection);
+				return function(Statements);
 			}
 		}
 	}

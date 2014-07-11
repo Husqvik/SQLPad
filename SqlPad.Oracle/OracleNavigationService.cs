@@ -8,7 +8,7 @@ namespace SqlPad.Oracle
 	{
 		public int? NavigateToQueryBlockRoot(SqlDocumentRepository documentRepository, int currentPosition)
 		{
-			var statement = documentRepository.StatementCollection.GetStatementAtPosition(currentPosition);
+			var statement = documentRepository.Statements.GetStatementAtPosition(currentPosition);
 			if (statement == null)
 				return null;
 
@@ -19,7 +19,7 @@ namespace SqlPad.Oracle
 
 		public int? NavigateToDefinition(SqlDocumentRepository documentRepository, int currentPosition)
 		{
-			var terminal = documentRepository.StatementCollection.GetTerminalAtPosition(currentPosition, n => !n.Id.IsZeroOffsetTerminalId());
+			var terminal = documentRepository.Statements.GetTerminalAtPosition(currentPosition, n => !n.Id.IsZeroOffsetTerminalId());
 			if (terminal == null || !terminal.Id.In(Terminals.Identifier, Terminals.ObjectIdentifier))
 				return null;
 

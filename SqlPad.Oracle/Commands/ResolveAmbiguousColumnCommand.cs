@@ -34,7 +34,7 @@ namespace SqlPad.Oracle.Commands
 				.Select(r => new CommandExecutionHandler
 				             {
 					             Name = r.FullyQualifiedObjectName + "." + columnReference.Name,
-					             ExecutionHandler = c => new ResolveAmbiguousColumnCommand((OracleCommandExecutionContext)c, r.FullyQualifiedObjectName + "." + columnReference.Name)
+					             ExecutionHandler = c => new ResolveAmbiguousColumnCommand(c, r.FullyQualifiedObjectName + "." + columnReference.Name)
 						             .Execute(),
 					             CanExecuteHandler = c => true
 				             });
@@ -44,7 +44,7 @@ namespace SqlPad.Oracle.Commands
 			return commands.AsReadOnly();
 		}
 
-		private ResolveAmbiguousColumnCommand(OracleCommandExecutionContext executionContext, string resolvedName)
+		private ResolveAmbiguousColumnCommand(CommandExecutionContext executionContext, string resolvedName)
 			: base(executionContext)
 		{	
 			if (String.IsNullOrWhiteSpace(resolvedName))

@@ -19,7 +19,7 @@ namespace SqlPad.Commands
 
 		public string StatementText { get; private set; }
 		
-		public StatementCollection Statements { get; private set; }
+		public SqlDocumentRepository DocumentRepository { get; private set; }
 		
 		public int SelectionStart { get; private set; }
 		
@@ -31,8 +31,6 @@ namespace SqlPad.Commands
 		
 		public int SelectionLength { get; private set; }
 		
-		public IDatabaseModel DatabaseModel { get; private set; }
-		
 		public ICommandSettingsProvider SettingsProvider { get; set; }
 
 		public void EnsureSettingsProviderAvailable()
@@ -41,26 +39,30 @@ namespace SqlPad.Commands
 				throw new InvalidOperationException(String.Format("Settings provider is mandatory. "));
 		}
 
-		public CommandExecutionContext(string statementText, int line, int column, int caretOffset, StatementCollection statements, IDatabaseModel databaseModel)
+		public CommandExecutionContext(string statementText, int line, int column, int caretOffset, SqlDocumentRepository documentRepository)
 		{
 			StatementText = statementText;
 			Line = line;
 			Column = column;
 			CaretOffset = caretOffset;
 			SelectionStart = caretOffset;
-			Statements = statements;
-			DatabaseModel = databaseModel;
+			DocumentRepository = documentRepository;
 		}
 
-		public static CommandExecutionContext Create(TextEditor editor, StatementCollection statements, IDatabaseModel databaseModel)
+		public static CommandExecutionContext Create(TextEditor editor, SqlDocumentRepository documentRepository)
 		{
-			return new CommandExecutionContext(editor.Text, editor.TextArea.Caret.Line, editor.TextArea.Caret.Column, editor.CaretOffset, statements, databaseModel)
+			return new CommandExecutionContext(editor.Text, editor.TextArea.Caret.Line, editor.TextArea.Caret.Column, editor.CaretOffset, documentRepository)
 			{
 				SelectionStart = editor.SelectionStart,
 				SelectionLength = editor.SelectionLength,
 				Line = editor.TextArea.Caret.Line,
 				Column = editor.TextArea.Caret.Column
 			};
+		}
+
+		public CommandExecutionContext Clone()
+		{
+			return (CommandExecutionContext)MemberwiseClone();
 		}
 	}
 }

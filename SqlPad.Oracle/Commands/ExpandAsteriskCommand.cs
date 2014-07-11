@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
+using SqlPad.Commands;
 
 namespace SqlPad.Oracle.Commands
 {
@@ -11,7 +12,7 @@ namespace SqlPad.Oracle.Commands
 		private SourcePosition _sourcePosition;
 		public const string Title = "Expand";
 
-		private ExpandAsteriskCommand(OracleCommandExecutionContext executionContext)
+		private ExpandAsteriskCommand(CommandExecutionContext executionContext)
 			: base(executionContext)
 		{
 		}

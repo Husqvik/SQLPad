@@ -6,25 +6,28 @@ namespace SqlPad.Oracle.Commands
 {
 	internal abstract class OracleCommandBase
 	{
-		protected readonly OracleCommandExecutionContext ExecutionContext;
+		protected readonly CommandExecutionContext ExecutionContext;
 
-		protected OracleStatementSemanticModel SemanticModel { get { return ExecutionContext.SemanticModel; } }
-
-		protected StatementDescriptionNode CurrentNode { get { return ExecutionContext.CurrentNode; } }
+		protected StatementDescriptionNode CurrentNode { get; private set; }
+		
+		protected OracleStatementSemanticModel SemanticModel { get; private set; }
 
 		protected OracleQueryBlock CurrentQueryBlock { get; private set; }
 
-		protected OracleCommandBase(OracleCommandExecutionContext executionContext)
+		protected OracleCommandBase(CommandExecutionContext executionContext)
 		{
 			if (executionContext == null)
 				throw new ArgumentNullException("executionContext");
 
 			ExecutionContext = executionContext;
 
-			if (SemanticModel != null && CurrentNode != null)
-			{
-				CurrentQueryBlock = SemanticModel.GetQueryBlock(CurrentNode);
-			}
+			CurrentNode = executionContext.DocumentRepository.Statements.GetNodeAtPosition(executionContext.CaretOffset);
+
+			if (CurrentNode == null)
+				return;
+
+			SemanticModel = (OracleStatementSemanticModel)executionContext.DocumentRepository.ValidationModels[CurrentNode.Statement].SemanticModel;
+			CurrentQueryBlock = SemanticModel.GetQueryBlock(CurrentNode);
 		}
 
 		protected virtual bool CanExecute()
@@ -40,7 +43,7 @@ namespace SqlPad.Oracle.Commands
 			{
 				Name = commandName,
 				ExecutionHandler = CreateExecutionHandler<TCommand>(),
-				CanExecuteHandler = context => CreateCommandInstance<TCommand>((OracleCommandExecutionContext)context).CanExecute()
+				CanExecuteHandler = context => CreateCommandInstance<TCommand>(context).CanExecute()
 			};			
 		}
 
@@ -48,13 +51,7 @@ namespace SqlPad.Oracle.Commands
 		{
 			return context =>
 			       {
-				       var executionContext = context as OracleCommandExecutionContext;
-				       if (executionContext == null)
-				       {
-						   throw new ArgumentException(String.Format("Execution context of type '{0}' is incompatible with type '{1}' ", context.GetType().FullName, typeof(OracleCommandExecutionContext).FullName), "context");
-				       }
-
-					   var commandInstance = CreateCommandInstance<TCommand>(executionContext);
+					   var commandInstance = CreateCommandInstance<TCommand>(context);
 				       if (commandInstance.CanExecute())
 				       {
 					       commandInstance.Execute();
@@ -62,7 +59,7 @@ namespace SqlPad.Oracle.Commands
 			       };
 		}
 
-		private static TCommand CreateCommandInstance<TCommand>(OracleCommandExecutionContext executionContext)
+		private static TCommand CreateCommandInstance<TCommand>(CommandExecutionContext executionContext)
 		{
 			var constructorInfo = typeof(TCommand).GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance)[0];
 			return (TCommand)constructorInfo.Invoke(new object[] { executionContext });

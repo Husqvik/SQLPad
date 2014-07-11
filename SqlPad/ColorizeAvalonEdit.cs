@@ -44,7 +44,7 @@ namespace SqlPad
 
 			lock (_lockObject)
 			{
-				_statements = documentRepository.StatementCollection;
+				_statements = documentRepository.Statements;
 
 				_validationModels = documentRepository.ValidationModels;
 

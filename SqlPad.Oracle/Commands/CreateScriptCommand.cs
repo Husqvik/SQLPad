@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using System.Text;
+using SqlPad.Commands;
 
 namespace SqlPad.Oracle.Commands
 {
@@ -9,10 +10,9 @@ namespace SqlPad.Oracle.Commands
 		
 		public const string Title = "Create Script";
 
-		private CreateScriptCommand(OracleCommandExecutionContext executionContext)
+		private CreateScriptCommand(CommandExecutionContext executionContext)
 			: base(executionContext)
 		{
-			
 		}
 
 		protected override bool CanExecute()
@@ -38,7 +38,8 @@ namespace SqlPad.Oracle.Commands
 
 		protected override void Execute()
 		{
-			var script = ((OracleDatabaseModel)ExecutionContext.DatabaseModel).GetObjectScript(_objectReference);
+			var databaseModel = (OracleDatabaseModel)ExecutionContext.DocumentRepository.ValidationModels[CurrentNode.Statement].SemanticModel.DatabaseModel;
+			var script = databaseModel.GetObjectScript(_objectReference);
 
 			var indextStart = CurrentQueryBlock.Statement.LastTerminalNode.SourcePosition.IndexEnd + 1;
 

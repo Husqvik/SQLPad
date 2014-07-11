@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
+using SqlPad.Commands;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 
@@ -10,7 +11,7 @@ namespace SqlPad.Oracle.Commands
 	{
 		public const string Title = "Wrap as common table expression";
 
-		private WrapAsCommonTableExpressionCommand(OracleCommandExecutionContext executionContext)
+		private WrapAsCommonTableExpressionCommand(CommandExecutionContext executionContext)
 			: base(executionContext)
 		{
 		}
