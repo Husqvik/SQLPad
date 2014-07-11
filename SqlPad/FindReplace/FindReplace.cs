@@ -349,10 +349,22 @@ namespace SqlPad.FindReplace
 		public void ShowAsFind()
 		{
 			dialog.tabMain.SelectedIndex = 0;
+
+			SetDefaultSearchedText(dialog.txtFind);
+
 			dialog.Show();
 			dialog.Activate();
 			dialog.txtFind.Focus();
 			dialog.txtFind.SelectAll();
+		}
+
+		private void SetDefaultSearchedText(TextBox textBox)
+		{
+			var currentEditor = GetCurrentEditor();
+			if (currentEditor != null)
+			{
+				textBox.Text = currentEditor.SelectedText;
+			}
 		}
 
 		public void ShowAsFind(TextEditor target)
@@ -367,6 +379,9 @@ namespace SqlPad.FindReplace
 		public void ShowAsReplace()
 		{
 			dialog.tabMain.SelectedIndex = 1;
+
+			SetDefaultSearchedText(dialog.txtFind2);
+
 			dialog.Show();
 			dialog.Activate();
 			dialog.txtFind2.Focus();

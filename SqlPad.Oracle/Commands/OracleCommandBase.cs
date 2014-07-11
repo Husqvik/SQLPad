@@ -14,6 +14,8 @@ namespace SqlPad.Oracle.Commands
 
 		protected OracleQueryBlock CurrentQueryBlock { get; private set; }
 
+		protected virtual Func<StatementDescriptionNode, bool> CurrentNodeFilterFunction { get { return null; } }
+
 		protected OracleCommandBase(CommandExecutionContext executionContext)
 		{
 			if (executionContext == null)
@@ -21,7 +23,7 @@ namespace SqlPad.Oracle.Commands
 
 			ExecutionContext = executionContext;
 
-			CurrentNode = executionContext.DocumentRepository.Statements.GetNodeAtPosition(executionContext.CaretOffset);
+			CurrentNode = executionContext.DocumentRepository.Statements.GetNodeAtPosition(executionContext.CaretOffset, CurrentNodeFilterFunction);
 
 			if (CurrentNode == null)
 				return;

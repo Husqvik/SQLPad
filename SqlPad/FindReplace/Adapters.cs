@@ -14,22 +14,15 @@ namespace SqlPad.FindReplace
 
 		private readonly TextEditor _textEditor;
 
-		public string Text
-		{
-			get { return _textEditor.Text; }
-		}
+		public string Text { get { return _textEditor.Text; } }
 
-		public int SelectionStart
-		{
-			get { return _textEditor.SelectionStart; }
-		}
+		public int SelectionStart { get { return _textEditor.SelectionStart; } }
 
-		public int SelectionLength
-		{
-			get { return _textEditor.SelectionLength; }
-		}
+		public int SelectionLength { get { return _textEditor.SelectionLength; } }
 
-		public void BeginChange()
+		public string SelectedText { get { return _textEditor.SelectedText; } }
+
+		public void BeginChange() 
 		{
 			_textEditor.BeginChange();
 		}
@@ -53,7 +46,7 @@ namespace SqlPad.FindReplace
 
 	}
 
-	public class IEditorConverter : IValueConverter
+	public class EditorConverter : IValueConverter
 	{
 		object IValueConverter.Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{

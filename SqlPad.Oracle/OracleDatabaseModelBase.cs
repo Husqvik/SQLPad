@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Globalization;
 using System.Linq;
 
 namespace SqlPad.Oracle
@@ -10,6 +11,8 @@ namespace SqlPad.Oracle
 		public const string SchemaPublic = "\"PUBLIC\"";
 		public const string SchemaSys = "\"SYS\"";
 		public const string SchemaSystem = "\"SYSTEM\"";
+
+		private static readonly Type TypeDateTime = typeof(DateTime);
 
 		public abstract ConnectionStringSettings ConnectionString { get; }
 		
@@ -120,9 +123,17 @@ namespace SqlPad.Oracle
 
 		internal static object ValueConverterFunction(ColumnHeader columnHeader, object value)
 		{
-			return columnHeader.DatabaseDataType == "Raw"
-				? ((byte[])value).ToHexString()
-				: value;
+			if (columnHeader.DatabaseDataType == "Raw")
+			{
+				return ((byte[])value).ToHexString();
+			}
+			
+			if (columnHeader.DataType == TypeDateTime)
+			{
+				return ((DateTime)value).ToString(CultureInfo.CurrentUICulture);
+			}
+			
+			return value;
 		}
 
 		private static bool TryGetSchemaObjectFunctionMetadata(OracleSchemaObject schemaObject, out ICollection<OracleFunctionMetadata> functionMetadata)

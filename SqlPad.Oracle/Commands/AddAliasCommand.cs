@@ -18,8 +18,16 @@ namespace SqlPad.Oracle.Commands
 		{
 		}
 
+		protected override Func<StatementDescriptionNode, bool> CurrentNodeFilterFunction
+		{
+			get { return n => n.Id.In(Terminals.ObjectIdentifier, Terminals.Identifier); }
+		}
+
 		protected override bool CanExecute()
 		{
+			if (CurrentNode == null)
+				return false;
+
 			_currentQueryBlock = SemanticModel.GetQueryBlock(CurrentNode);
 			
 			if (CurrentNode.Id == Terminals.ObjectIdentifier)

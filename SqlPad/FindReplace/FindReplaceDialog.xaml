@@ -27,7 +27,7 @@
                     <StackPanel>
                         <CheckBox Margin="1" Name="chkCaseSensitive" IsChecked="{Binding CaseSensitive, Mode=TwoWay}">Case sensitive</CheckBox>
                         <CheckBox Margin="1" Name="chkSearchUp" IsChecked="{Binding SearchUp, Mode=TwoWay}">Search up</CheckBox>
-                        <CheckBox Margin="1" Name="chkWholeWord" IsChecked="{Binding WholeWord, Mode=TwoWay}">Match whole Word</CheckBox>
+                        <CheckBox Margin="1" Name="chkWholeWord" IsChecked="{Binding WholeWord, Mode=TwoWay}">Match whole word</CheckBox>
                         <CheckBox Margin="1" Name="chkRegex" IsChecked="{Binding UseRegEx, Mode=TwoWay}">Regular expression</CheckBox>
                         <CheckBox Margin="1" Name="chkWildcards" IsChecked="{Binding UseWildcards, Mode=TwoWay}">Wildcards</CheckBox>
                     </StackPanel>

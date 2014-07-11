@@ -3,8 +3,12 @@ namespace SqlPad.FindReplace
 	public interface IEditor
 	{
 		string Text { get; }
+		
 		int SelectionStart { get; }
+		
 		int SelectionLength { get; }
+		
+		string SelectedText { get; }
 
 		/// <summary>
 		/// Selects the specified portion of Text and scrolls that part into view.

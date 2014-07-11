@@ -48,7 +48,8 @@ namespace SqlPad
 		private bool _isParsing;
 		private readonly System.Timers.Timer _timer = new System.Timers.Timer(100);
 		private readonly string _initialDocumentHeader = "New*";
-
+		private static readonly Style CellStyleRightAlign = new Style(typeof(DataGridCell));
+		
 		public EventHandler ParseFinished = delegate { };
 
 		internal bool IsParsingSynchronous { get; set; }
@@ -60,6 +61,11 @@ namespace SqlPad
 		public string DocumentHeader { get { return File == null ? _initialDocumentHeader : File.Name + (IsDirty ? "*" : null); } }
 
 		public bool IsDirty { get { return Editor.IsModified; } }
+
+		static DocumentPage()
+		{
+			CellStyleRightAlign.Setters.Add(new Setter(HorizontalAlignmentProperty, HorizontalAlignment.Right));
+		}
 		
 		public DocumentPage(IInfrastructureFactory infrastructureFactory, FileInfo file, bool recoveryMode = false)
 		{
@@ -370,6 +376,11 @@ namespace SqlPad
 						Header = columnHeader.Name.Replace("_", "__"),
 						Binding = new Binding(String.Format("[{0}]", columnHeader.ColumnIndex)) { Converter = CellValueConverter, ConverterParameter = columnHeader }
 					};
+
+				if (columnHeader.DataType.In(typeof(Decimal), typeof(Int16), typeof(Int32), typeof(Int64), typeof(Byte)))
+				{
+					columnTemplate.CellStyle = CellStyleRightAlign;
+				}
 
 				ResultGrid.Columns.Add(columnTemplate);
 			}
