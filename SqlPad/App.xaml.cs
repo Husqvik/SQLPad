@@ -9,11 +9,14 @@ namespace SqlPad
 	/// </summary>
 	public partial class App
 	{
-		public static readonly string FolderNameCommonData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "SQL Pad");
-		public static readonly string FolderNameCommonDataErrorLog = Path.Combine(FolderNameCommonData, "ErrorLog");
-		public static readonly string FolderNameCommonDataRecoveryFiles = Path.Combine(FolderNameCommonData, "Recovery");
-		public static readonly string FolderNameApplication = Path.GetDirectoryName(typeof(App).Assembly.Location);
 		public const string RecoveredDocumentFileNameTemplate = "RecoveredDocument.{0}.sql.tmp";
+		private const string FolderNameSqlPad = "SQL Pad";
+
+		public static readonly string FolderNameCommonData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), FolderNameSqlPad);
+		public static readonly string FolderNameUserData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), FolderNameSqlPad);
+		public static readonly string FolderNameCommonDataErrorLog = Path.Combine(FolderNameCommonData, "ErrorLog");
+		public static readonly string FolderNameCommonDataRecoveryFiles = Path.Combine(FolderNameUserData, "Recovery");
+		public static readonly string FolderNameApplication = Path.GetDirectoryName(typeof(App).Assembly.Location);
 
 		static App()
 		{
