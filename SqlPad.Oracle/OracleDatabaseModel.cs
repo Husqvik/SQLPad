@@ -28,13 +28,13 @@ namespace SqlPad.Oracle
 		private static Task _statementExecutionTask;
 		private OracleFunctionMetadataCollection _allFunctionMetadata = new OracleFunctionMetadataCollection(Enumerable.Empty<OracleFunctionMetadata>());
 		private OracleFunctionMetadataCollection _builtInFunctionMetadata = new OracleFunctionMetadataCollection(Enumerable.Empty<OracleFunctionMetadata>());
-		private OracleFunctionMetadataCollection _nonPackageBuiltInFunctionMetadata = new OracleFunctionMetadataCollection(Enumerable.Empty<OracleFunctionMetadata>());
+		private ILookup<string, OracleFunctionMetadata> _nonPackageBuiltInFunctionMetadata = Enumerable.Empty<OracleFunctionMetadata>().ToLookup(m => m.Identifier.Name, m => m);
 		private readonly ConnectionStringSettings _connectionString;
 		private HashSet<string> _schemas = new HashSet<string>();
 		private HashSet<string> _allSchemas = new HashSet<string>();
 		private string _currentSchema;
 		private Dictionary<OracleObjectIdentifier, OracleSchemaObject> _allObjects = new Dictionary<OracleObjectIdentifier, OracleSchemaObject>();
-		private OracleConnection _userConnection;
+		private readonly OracleConnection _userConnection;
 		private OracleDataReader _dataReader;
 		private DateTime _lastRefresh;
 
@@ -87,13 +87,13 @@ namespace SqlPad.Oracle
 			private set
 			{
 				_builtInFunctionMetadata = value;
-				_nonPackageBuiltInFunctionMetadata = new OracleFunctionMetadataCollection(value.SqlFunctions.Where(f => String.IsNullOrEmpty(f.Identifier.Owner)));
+				_nonPackageBuiltInFunctionMetadata = value.SqlFunctions.Where(f => String.IsNullOrEmpty(f.Identifier.Owner)).ToLookup(f => f.Identifier.Name, f => f);
 			}
 		}
 
 		public override OracleFunctionMetadataCollection AllFunctionMetadata { get { return _allFunctionMetadata; } }
 
-		protected override OracleFunctionMetadataCollection NonPackageBuiltInFunctionMetadata { get { return _nonPackageBuiltInFunctionMetadata; } }
+		protected override ILookup<string, OracleFunctionMetadata> NonPackageBuiltInFunctionMetadata { get { return _nonPackageBuiltInFunctionMetadata; } }
 
 		public override ConnectionStringSettings ConnectionString { get { return _connectionString; } }
 
@@ -106,7 +106,7 @@ namespace SqlPad.Oracle
 		public override ICollection<string> Schemas { get { return _schemas; } }
 		
 		public override ICollection<string> AllSchemas { get { return _allSchemas; } }
-		//public IDictionary<OracleObjectIdentifier, OracleSchemaObject> Objects { get { return OracleTestDatabaseModel.Instance.Objects; } }
+
 		public override IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjects { get { return _allObjects; } }
 
 		public override void RefreshIfNeeded()

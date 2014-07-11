@@ -33,7 +33,7 @@ namespace SqlPad.Oracle.Test
 		private static readonly HashSet<string> SchemasInternal = new HashSet<string> { OwnerNameSys, "\"SYSTEM\"", InitialSchema };
 		private static readonly HashSet<string> AllSchemasInternal = new HashSet<string>(SchemasInternal) { OwnerNameSys, "\"SYSTEM\"", InitialSchema, SchemaPublic };
 		private static readonly OracleFunctionMetadataCollection AllFunctionMetadataInternal;
-		private static readonly OracleFunctionMetadataCollection NonPackageBuiltInFunctionMetadataInternal;
+		private static readonly ILookup<string, OracleFunctionMetadata> NonPackageBuiltInFunctionMetadataInternal;
 
 		private readonly IDictionary<OracleObjectIdentifier, OracleSchemaObject> _allObjects;
 		private int _generatedRowCount;
@@ -43,7 +43,9 @@ namespace SqlPad.Oracle.Test
 			using (var builtInFunctionReader = XmlReader.Create(File.OpenRead(@"TestFiles\OracleSqlFunctionMetadataCollection_12_1_0_1_0.xml")))
 			{
 				var builtInFunctionMetadata = (OracleFunctionMetadataCollection)Serializer.ReadObject(builtInFunctionReader);
-				NonPackageBuiltInFunctionMetadataInternal = new OracleFunctionMetadataCollection(builtInFunctionMetadata.SqlFunctions.Where(f => String.IsNullOrEmpty(f.Identifier.Owner)));
+				NonPackageBuiltInFunctionMetadataInternal = builtInFunctionMetadata.SqlFunctions
+					.Where(f => String.IsNullOrEmpty(f.Identifier.Owner))
+					.ToLookup(f => f.Identifier.Name, f => f);
 
 				var testFolder = Path.GetDirectoryName(typeof(OracleTestDatabaseModel).Assembly.CodeBase);
 				using (var reader = XmlReader.Create(Path.Combine(testFolder, @"TestFiles\TestFunctionCollection.xml")))
@@ -279,7 +281,7 @@ namespace SqlPad.Oracle.Test
 
 		public override OracleFunctionMetadataCollection AllFunctionMetadata { get { return AllFunctionMetadataInternal; } }
 
-		protected override OracleFunctionMetadataCollection NonPackageBuiltInFunctionMetadata { get { return NonPackageBuiltInFunctionMetadataInternal; } }
+		protected override ILookup<string, OracleFunctionMetadata> NonPackageBuiltInFunctionMetadata { get { return NonPackageBuiltInFunctionMetadataInternal; } }
 
 		private static readonly HashSet<OracleSchemaObject> AllObjectsInternal = new HashSet<OracleSchemaObject>
 		{
