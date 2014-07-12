@@ -20,25 +20,25 @@ namespace SqlPad.Oracle
 		public bool IsRelied { get; set; }
 	}
 
-	[DebuggerDisplay("OraclePrimaryKeyConstraint (Name={FullyQualifiedObjectName.Name}; IsEnabled={IsEnabled}; IsDeferrable={IsDeferrable}; IsValidated={IsValidated}; IsRelied={IsRelied})")]
+	[DebuggerDisplay("OraclePrimaryKeyConstraint (Name={FullyQualifiedName.Name}; IsEnabled={IsEnabled}; IsDeferrable={IsDeferrable}; IsValidated={IsValidated}; IsRelied={IsRelied})")]
 	public class OraclePrimaryKeyConstraint : OracleUniqueConstraint
 	{
 		public override ConstraintType Type { get { return ConstraintType.PrimaryKey; } }
 	}
 
-	[DebuggerDisplay("OracleUniqueConstraint (Name={FullyQualifiedObjectName.Name}; IsEnabled={IsEnabled}; IsDeferrable={IsDeferrable}; IsValidated={IsValidated}; IsRelied={IsRelied})")]
+	[DebuggerDisplay("OracleUniqueConstraint (Name={FullyQualifiedName.Name}; IsEnabled={IsEnabled}; IsDeferrable={IsDeferrable}; IsValidated={IsValidated}; IsRelied={IsRelied})")]
 	public class OracleUniqueConstraint : OracleConstraint
 	{
 		public override ConstraintType Type { get { return ConstraintType.Unique; } }
 	}
 
-	[DebuggerDisplay("OracleCheckConstraint (Name={FullyQualifiedObjectName.Name}; IsEnabled={IsEnabled}; IsDeferrable={IsDeferrable}; IsValidated={IsValidated}; IsRelied={IsRelied})")]
+	[DebuggerDisplay("OracleCheckConstraint (Name={FullyQualifiedName.Name}; IsEnabled={IsEnabled}; IsDeferrable={IsDeferrable}; IsValidated={IsValidated}; IsRelied={IsRelied})")]
 	public class OracleCheckConstraint : OracleConstraint
 	{
 		public override ConstraintType Type { get { return ConstraintType.Check; } }
 	}
 
-	[DebuggerDisplay("OracleForeignKeyConstraint (Name={FullyQualifiedObjectName.Name}; IsEnabled={IsEnabled}; IsDeferrable={IsDeferrable}; IsValidated={IsValidated}; IsRelied={IsRelied})")]
+	[DebuggerDisplay("OracleForeignKeyConstraint (Name={FullyQualifiedName.Name}; IsEnabled={IsEnabled}; IsDeferrable={IsDeferrable}; IsValidated={IsValidated}; IsRelied={IsRelied})")]
 	public class OracleForeignKeyConstraint : OracleConstraint
 	{
 		public OracleSchemaObject TargetObject { get; set; }

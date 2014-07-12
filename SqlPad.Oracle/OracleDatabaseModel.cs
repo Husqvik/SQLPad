@@ -22,6 +22,7 @@ namespace SqlPad.Oracle
 		private const string SqlFuntionMetadataFileName = "OracleSqlFunctionMetadataCollection_12_1_0_1_0.xml";
 		private static readonly DataContractSerializer Serializer = new DataContractSerializer(typeof(OracleFunctionMetadataCollection));
 		private bool _isRefreshing;
+		private bool _cacheLoaded;
 		private bool _canExecute = true;
 		private bool _isExecuting;
 		private Task _backgroundTask;
@@ -33,10 +34,9 @@ namespace SqlPad.Oracle
 		private HashSet<string> _schemas = new HashSet<string>();
 		private HashSet<string> _allSchemas = new HashSet<string>();
 		private string _currentSchema;
-		private Dictionary<OracleObjectIdentifier, OracleSchemaObject> _allObjects = new Dictionary<OracleObjectIdentifier, OracleSchemaObject>();
+		private OracleDataDictionary _dataDictionary = new OracleDataDictionary(Enumerable.Empty<KeyValuePair<OracleObjectIdentifier, OracleSchemaObject>>(), DateTime.MinValue);
 		private readonly OracleConnection _userConnection;
 		private OracleDataReader _dataReader;
-		private DateTime _lastRefresh;
 
 		internal static readonly Dictionary<string, OracleDatabaseModel> DatabaseModels = new Dictionary<string, OracleDatabaseModel>();
 
@@ -56,7 +56,7 @@ namespace SqlPad.Oracle
 			}
 			else
 			{
-				ExecuteSynchronizedAction(GenerateBuiltInFunctionMetadata);
+				ExecuteActionAsync(GenerateBuiltInFunctionMetadata);
 			}
 
 			LoadSchemaNames();
@@ -82,7 +82,7 @@ namespace SqlPad.Oracle
 			return databaseModel;
 		}
 
-		private void ExecuteSynchronizedAction(Action action)
+		private void ExecuteActionAsync(Action action)
 		{
 			if (_isRefreshing)
 				return;
@@ -124,30 +124,30 @@ namespace SqlPad.Oracle
 		
 		public override ICollection<string> AllSchemas { get { return _allSchemas; } }
 
-		public override IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjects { get { return _allObjects; } }
+		public override IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjects { get { return _dataDictionary.AllObjects; } }
 
 		public override void RefreshIfNeeded()
 		{
-			if (_lastRefresh.AddMinutes(RefreshInterval) < DateTime.Now)
+			if (IsRefreshNeeded)
 			{
 				Refresh();
 			}
+		}
+
+		private bool IsRefreshNeeded
+		{
+			get { return _dataDictionary.Timestamp.AddMinutes(RefreshInterval) < DateTime.Now; }
 		}
 
 		public override void Refresh()
 		{
 			if (_backgroundTask == null)
 			{
-				ExecuteSynchronizedAction(LoadSchemaObjectMetadata);
+				ExecuteActionAsync(LoadSchemaObjectMetadata);
 			}
 			else
 			{
-				var currentTask = _backgroundTask;
-				_backgroundTask = Task.Factory.StartNew(() =>
-				{
-					currentTask.Wait();
-					LoadSchemaObjectMetadata();
-				});
+				_backgroundTask = _backgroundTask.ContinueWith(t => LoadSchemaObjectMetadata());
 			}
 		}
 
@@ -218,8 +218,7 @@ namespace SqlPad.Oracle
 				new OracleDatabaseModel(ConnectionString)
 				{
 					_currentSchema = _currentSchema,
-					_lastRefresh = _lastRefresh,
-					_allObjects = _allObjects,
+					_dataDictionary = _dataDictionary,
 					_allFunctionMetadata = _allFunctionMetadata,
 					_builtInFunctionMetadata = _builtInFunctionMetadata,
 					_nonPackageBuiltInFunctionMetadata = _nonPackageBuiltInFunctionMetadata
@@ -635,7 +634,16 @@ ORDER BY
 
 		private void LoadSchemaObjectMetadata()
 		{
+			TryLoadSchemaObjectMetadataFromCache();
+
+			//var otmp = _dataDictionary.AllObjects.Where(o => o.Key.NormalizedName.Contains("XMLTYPE")).ToArray();
+			//var customer = _dataDictionary.AllObjects.Where(o => o.Key.NormalizedName.Contains("CUSTOMER\"")).ToArray();
+
+			if (!IsRefreshNeeded)
+				return;
+
 			RaiseEvent(RefreshStarted);
+			var lastRefresh = DateTime.Now;
 			_isRefreshing = true;
 
 			var allObjects = new Dictionary<OracleObjectIdentifier, OracleSchemaObject>();
@@ -941,16 +949,43 @@ FROM ALL_TABLES";
 				}
 			}
 
-			_allObjects = allObjects;
 			//var ftmp = _allFunctionMetadata.SqlFunctions.Where(f => f.Identifier.Owner.Contains("CA_DEV")).ToArray();
 			//var ftmp = _allFunctionMetadata.SqlFunctions.Where(f => f.Identifier.Package.Contains("DBMS_RANDOM")).ToArray();
 			//var otmp = dataObjectMetadata.Where(o => o.Key.NormalizedName.Contains("DBMS_RANDOM")).ToArray();
-			//var otmp = allObjects.Where(o => o.Key.NormalizedName.Contains("XMLTYPE")).ToArray();
 
-			_lastRefresh = DateTime.Now;
+			_dataDictionary = new OracleDataDictionary(allObjects, lastRefresh);
+
+			var writeWatch = Stopwatch.StartNew();
+			MetadataCache.StoreDatabaseModelCache(_connectionString.ConnectionString, stream => _dataDictionary.Serialize(stream));
+			Trace.WriteLine(string.Format("Cache for '{0}' stored in {1}", _connectionString.ConnectionString, writeWatch.Elapsed));
 
 			_isRefreshing = false;
 			RaiseEvent(RefreshFinished);
+		}
+
+		private void TryLoadSchemaObjectMetadataFromCache()
+		{
+			if (_cacheLoaded)
+				return;
+			
+			Stream stream;
+			if (MetadataCache.TryLoadDatabaseModelCache(_connectionString.ConnectionString, out stream))
+			{
+				try
+				{
+					RaiseEvent(RefreshStarted);
+					var readWatch = Stopwatch.StartNew();
+					_dataDictionary = OracleDataDictionary.Deserialize(stream);
+					Trace.WriteLine(string.Format("Cache for '{0}' loaded in {1}", _connectionString.ConnectionString, readWatch.Elapsed));
+				}
+				finally
+				{
+					stream.Dispose();
+					RaiseEvent(RefreshFinished);
+				}
+			}
+
+			_cacheLoaded = true;
 		}
 
 		private void RaiseEvent(EventHandler eventHandler)
@@ -961,7 +996,7 @@ FROM ALL_TABLES";
 			}
 		}
 
-		private static void AddSchemaObjectToDictionary(Dictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects, OracleSchemaObject schemaObject)
+		private static void AddSchemaObjectToDictionary(IDictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects, OracleSchemaObject schemaObject)
 		{
 			if (allObjects.ContainsKey(schemaObject.FullyQualifiedName))
 			{
