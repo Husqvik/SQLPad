@@ -52,7 +52,7 @@
 			</avalonedit:TextEditor.ContextMenu>
 		</avalonedit:TextEditor>
 		<GridSplitter Grid.Row="2" Height="5" HorizontalAlignment="Stretch" ShowsPreview="True" VerticalAlignment="Center" Background="DimGray" />
-		<DataGrid x:Name="ResultGrid" Grid.Row="3" AutoGenerateColumns="False" ItemsSource="{Binding ResultRowItems}"
+		<DataGrid x:Name="ResultGrid" Grid.Row="3" AutoGenerateColumns="False" ItemsSource="{Binding ResultRowItems}" VirtualizingStackPanel.VirtualizationMode="Recycling" EnableColumnVirtualization="True"
 		          HorizontalGridLinesBrush="LightGray" VerticalGridLinesBrush="LightGray" PreviewMouseWheel="ResultGridPreviewMouseWheelHandler" PreviewMouseDown="ResultGridPreviewMouseDownHandler">
 		</DataGrid>
 		<StatusBar x:Name="StatusBar" Grid.Row="4" Grid.Column="0">

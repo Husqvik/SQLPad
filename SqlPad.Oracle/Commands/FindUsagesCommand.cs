@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows.Input;
 using SqlPad.Commands;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
@@ -18,7 +17,7 @@ namespace SqlPad.Oracle.Commands
 		public static readonly CommandExecutionHandler FindUsages = new CommandExecutionHandler
 		{
 			Name = "FindUsages",
-			DefaultGestures = new InputGestureCollection { new KeyGesture(Key.F11, ModifierKeys.Alt | ModifierKeys.Shift) },
+			DefaultGestures = GenericCommands.FindUsagesCommand.InputGestures,
 			ExecutionHandler = ExecutionHandlerImplementation
 		};
 

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Windows.Input;
 using SqlPad.Commands;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
@@ -110,7 +109,7 @@ namespace SqlPad.Oracle
 				new CommandExecutionHandler
 				{
 					Name = "FormatStatement",
-					DefaultGestures = new InputGestureCollection { new KeyGesture(Key.F, ModifierKeys.Control | ModifierKeys.Alt) },
+					DefaultGestures = GenericCommands.FormatStatementCommand.InputGestures,
 					ExecutionHandler = ExecutionHandlerImplementation
 				};
 		}

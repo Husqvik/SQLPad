@@ -16,8 +16,6 @@ namespace SqlPad
 	/// </summary>
 	public partial class MainWindow
 	{
-		private readonly IInfrastructureFactory _infrastructureFactory;
-
 		private readonly FindReplaceManager _findReplaceManager;
 		private readonly List<TextEditorAdapter> _editorAdapters = new List<TextEditorAdapter>();
 
@@ -25,11 +23,36 @@ namespace SqlPad
 		{
 			InitializeComponent();
 
-			_infrastructureFactory = ConfigurationProvider.InfrastructureFactory;
+			if (!EnsureValidConfiguration())
+				return;
 
 			_findReplaceManager = (FindReplaceManager)Resources["FindReplaceManager"];
 			_findReplaceManager.OwnerWindow = this;
 			_findReplaceManager.Editors = _editorAdapters;
+		}
+
+		private static bool EnsureValidConfiguration()
+		{
+			try
+			{
+				if (ConfigurationProvider.ConnectionStrings.Count == 0)
+				{
+					ShowStartingErrorMessage();
+					return false;
+				}
+			}
+			catch (Exception)
+			{
+				ShowStartingErrorMessage();
+				return false;
+			}
+			
+			return true;
+		}
+
+		private static void ShowStartingErrorMessage()
+		{
+			MessageBox.Show("At least one connection string and infrastructure factory must be defined", "Configuration Error", MessageBoxButton.OK, MessageBoxImage.Error);
 		}
 
 		internal DocumentPage CurrentPage
@@ -94,10 +117,7 @@ namespace SqlPad
 
 		private void CreateNewDocumentPage(FileInfo file = null, bool recoveryMode = false)
 		{
-			var newDocumentPage = new DocumentPage(_infrastructureFactory, file, recoveryMode);
-			newDocumentPage.ComboBoxConnection.IsEnabled = ConfigurationProvider.ConnectionStrings.Count > 1;
-			newDocumentPage.ComboBoxConnection.ItemsSource = ConfigurationProvider.ConnectionStrings;
-			newDocumentPage.ComboBoxConnection.SelectedIndex = 0;
+			var newDocumentPage = new DocumentPage(file, recoveryMode);
 			
 			_editorAdapters.Add(newDocumentPage.EditorAdapter);
 

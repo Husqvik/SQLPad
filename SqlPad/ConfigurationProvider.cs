@@ -1,30 +1,48 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
+using System.Linq;
 
 namespace SqlPad
 {
 	public class ConfigurationProvider
 	{
-		private static readonly IInfrastructureFactory InternalInfrastructureFactory;
+		private static readonly Dictionary<string, IInfrastructureFactory> InternalInfrastructureFactories;
 
 		static ConfigurationProvider()
 		{
-			var infrastructureConfigurationSection = (InfrastructureConfigurationSection)ConfigurationManager.GetSection(InfrastructureConfigurationSection.SectionName);
-			if (infrastructureConfigurationSection == null)
+			var databaseConfiguration = (DatabaseConnectionConfigurationSection)ConfigurationManager.GetSection(DatabaseConnectionConfigurationSection.SectionName);
+			if (databaseConfiguration == null)
 			{
-				throw new ConfigurationErrorsException("'infrastructureConfiguration' configuration section is missing. ");
+				throw new ConfigurationErrorsException("'databaseConfiguration' configuration section is missing. ");
 			}
 
-			var infrastructureFactoryType = Type.GetType(infrastructureConfigurationSection.InfrastructureFactory);
-			if (infrastructureFactoryType == null)
-			{
-				throw new ConfigurationErrorsException(String.Format("Infrastructure factory type '{0}' has not been found. ", infrastructureConfigurationSection.InfrastructureFactory));
-			}
-			
-			InternalInfrastructureFactory = (IInfrastructureFactory)Activator.CreateInstance(infrastructureFactoryType);
+			InternalInfrastructureFactories = databaseConfiguration.Infrastructures
+				.Cast<InfrastructureConfigurationSection>()
+				.ToDictionary(s => s.ConnectionStringName, s => (IInfrastructureFactory)Activator.CreateInstance(GetInfrastuctureFactoryType(s.InfrastructureFactory)));
 		}
 
-		public static IInfrastructureFactory InfrastructureFactory { get { return InternalInfrastructureFactory; } }
+		private static Type GetInfrastuctureFactoryType(string typeName)
+		{
+			var infrastructureFactoryType = Type.GetType(typeName);
+			if (infrastructureFactoryType == null)
+			{
+				throw new ConfigurationErrorsException(String.Format("Infrastructure factory type '{0}' has not been found. ", typeName));
+			}
+
+			return infrastructureFactoryType;
+		}
+
+		public static IInfrastructureFactory GetInfrastructureFactory(string connectionStringName)
+		{
+			IInfrastructureFactory infrastructureFactory;
+			if (InternalInfrastructureFactories.TryGetValue(connectionStringName, out infrastructureFactory))
+			{
+				return infrastructureFactory;
+			}
+
+			throw new ArgumentException(String.Format("Connection string '{0}' doesn't exist. ", connectionStringName), "connectionStringName");
+		}
 
 		public static ConnectionStringSettingsCollection ConnectionStrings { get { return ConfigurationManager.ConnectionStrings; } }
 	}

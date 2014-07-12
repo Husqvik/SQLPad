@@ -25,20 +25,19 @@ namespace SqlPad
 	public partial class DocumentPage
 	{
 		private const int RowBatchSize = 100;
-		internal const string ExecuteDatabaseCommandName = "ExecuteDatabaseCommand";
 		
-		private readonly SqlDocumentRepository _sqlDocumentRepository;
+		private SqlDocumentRepository _sqlDocumentRepository;
 		private readonly IInfrastructureFactory _infrastructureFactory;
-		private readonly ICodeCompletionProvider _codeCompletionProvider;
-		private readonly ICodeSnippetProvider _codeSnippetProvider;
-		private readonly IContextActionProvider _contextActionProvider;
-		private readonly IStatementFormatter _statementFormatter;
-		private readonly IDatabaseModel _databaseModel;
-		private readonly IToolTipProvider _toolTipProvider;
-		private readonly INavigationService _navigationService;
+		private ICodeCompletionProvider _codeCompletionProvider;
+		private ICodeSnippetProvider _codeSnippetProvider;
+		private IContextActionProvider _contextActionProvider;
+		private IStatementFormatter _statementFormatter;
+		private IDatabaseModel _databaseModel;
+		private IToolTipProvider _toolTipProvider;
+		private INavigationService _navigationService;
 
 		private MultiNodeEditor _multiNodeEditor;
-		private readonly ColorizeAvalonEdit _colorizeAvalonEdit;
+		private ColorizeAvalonEdit _colorizeAvalonEdit;
 
 		private static readonly CellValueConverter CellValueConverter = new CellValueConverter();
 		private readonly ToolTip _toolTip = new ToolTip();
@@ -67,25 +66,20 @@ namespace SqlPad
 			CellStyleRightAlign.Setters.Add(new Setter(HorizontalAlignmentProperty, HorizontalAlignment.Right));
 		}
 		
-		public DocumentPage(IInfrastructureFactory infrastructureFactory, FileInfo file, bool recoveryMode = false)
+		public DocumentPage(FileInfo file, bool recoveryMode = false)
 		{
-			if (infrastructureFactory == null)
-				throw new ArgumentNullException("infrastructureFactory");
+			InitializeComponent();
 
-			_infrastructureFactory = infrastructureFactory;
-			_codeCompletionProvider = _infrastructureFactory.CreateCodeCompletionProvider();
-			_codeSnippetProvider = _infrastructureFactory.CreateSnippetProvider();
-			_contextActionProvider = _infrastructureFactory.CreateContextActionProvider();
-			_statementFormatter = _infrastructureFactory.CreateSqlFormatter(new SqlFormatterOptions());
-			_toolTipProvider = _infrastructureFactory.CreateToolTipProvider();
-			_navigationService = _infrastructureFactory.CreateNavigationService();
-			_databaseModel = _infrastructureFactory.CreateDatabaseModel(ConfigurationProvider.ConnectionStrings["Default"]);
-			_sqlDocumentRepository = new SqlDocumentRepository(_infrastructureFactory.CreateSqlParser(), _infrastructureFactory.CreateStatementValidator(), _databaseModel);
-			_colorizeAvalonEdit = new ColorizeAvalonEdit();
+			var defaultConnectionString = ConfigurationProvider.ConnectionStrings[0];
+			_infrastructureFactory = ConfigurationProvider.GetInfrastructureFactory(defaultConnectionString.Name);
+
+			InitializeInfrastructureComponents();
 
 			_timer.Elapsed += (sender, args) => Dispatcher.Invoke(ReParse);
 
-			InitializeComponent();
+			ComboBoxConnection.IsEnabled = ConfigurationProvider.ConnectionStrings.Count == 1;
+			ComboBoxConnection.ItemsSource = ConfigurationProvider.ConnectionStrings;
+			ComboBoxConnection.SelectedIndex = 0;
 
 			Editor.TextArea.TextView.LineTransformers.Add(_colorizeAvalonEdit);
 
@@ -94,8 +88,6 @@ namespace SqlPad
 
 			Editor.TextArea.Caret.PositionChanged += CaretOnPositionChanged;
 			Editor.TextArea.SelectionChanged += SelectionChangedHandler;
-
-			ComboBoxSchema.ItemsSource = _databaseModel.Schemas.OrderBy(s => s);
 
 			EditorAdapter = new TextEditorAdapter(Editor);
 
@@ -118,7 +110,7 @@ namespace SqlPad
 
 			DataContext = _pageModel;
 
-			_databaseModel.RefreshStarted += (sender, args) => Dispatcher.Invoke(() => ProgressBar.IsIndeterminate = true);
+			_databaseModel.RefreshStarted += DatabaseModelRefreshStartedHandler;
 			_databaseModel.RefreshFinished += DatabaseModelRefreshFinishedHandler;
 			_databaseModel.RefreshIfNeeded();
 
@@ -127,9 +119,24 @@ namespace SqlPad
 			foreach (var handler in _infrastructureFactory.CommandFactory.CommandHandlers)
 			{
 				var command = new RoutedCommand(handler.Name, typeof(TextEditor), handler.DefaultGestures);
-				var routedHandlerMethod = GenericCommandHandler.CreateRoutedEditCommandHandler(handler, () => _sqlDocumentRepository, _databaseModel);
+				var routedHandlerMethod = GenericCommandHandler.CreateRoutedEditCommandHandler(handler, () => _sqlDocumentRepository);
 				Editor.TextArea.DefaultInputHandler.Editing.CommandBindings.Add(new CommandBinding(command, routedHandlerMethod));
 			}
+		}
+
+		private void InitializeInfrastructureComponents()
+		{
+			_codeCompletionProvider = _infrastructureFactory.CreateCodeCompletionProvider();
+			_codeSnippetProvider = _infrastructureFactory.CreateSnippetProvider();
+			_contextActionProvider = _infrastructureFactory.CreateContextActionProvider();
+			_statementFormatter = _infrastructureFactory.CreateSqlFormatter(new SqlFormatterOptions());
+			_toolTipProvider = _infrastructureFactory.CreateToolTipProvider();
+			_navigationService = _infrastructureFactory.CreateNavigationService();
+			_databaseModel = _infrastructureFactory.CreateDatabaseModel(ConfigurationProvider.ConnectionStrings["Default"]);
+			_sqlDocumentRepository = new SqlDocumentRepository(_infrastructureFactory.CreateSqlParser(), _infrastructureFactory.CreateStatementValidator(), _databaseModel);
+			_colorizeAvalonEdit = new ColorizeAvalonEdit(_infrastructureFactory);
+
+			ComboBoxSchema.ItemsSource = _databaseModel.Schemas.OrderBy(s => s);
 		}
 
 		private ScrollViewer GetResultGridScrollViewer()
@@ -178,6 +185,11 @@ namespace SqlPad
 			_pageModel.SelectionLength = Editor.SelectionLength == 0 ? null : (int?)Editor.SelectionLength;
 		}
 
+		private void DatabaseModelRefreshStartedHandler(object sender, EventArgs args)
+		{
+			Dispatcher.Invoke(() => ProgressBar.IsIndeterminate = true);
+		}
+
 		private void DatabaseModelRefreshFinishedHandler(object sender, EventArgs eventArgs)
 		{
 			Dispatcher.Invoke(() =>
@@ -192,52 +204,27 @@ namespace SqlPad
 			ChangeDeleteLineCommandInputGesture();
 
 			var commandBindings = Editor.TextArea.DefaultInputHandler.Editing.CommandBindings;
-			var showFunctionOverloadCommand = new RoutedCommand("ShowFunctionOverloads", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.Space, ModifierKeys.Control | ModifierKeys.Shift) });
-			commandBindings.Add(new CommandBinding(showFunctionOverloadCommand, ShowFunctionOverloads));
+			commandBindings.Add(new CommandBinding(GenericCommands.ShowFunctionOverloadCommand, ShowFunctionOverloads));
+			commandBindings.Add(new CommandBinding(GenericCommands.DuplicateTextCommand, GenericCommandHandler.DuplicateText));
+			commandBindings.Add(new CommandBinding(GenericCommands.BlockCommentCommand, GenericCommandHandler.HandleBlockComments));
+			commandBindings.Add(new CommandBinding(GenericCommands.LineCommentCommand, GenericCommandHandler.HandleLineComments));
+			commandBindings.Add(new CommandBinding(GenericCommands.ListContextActionCommand, (sender, args) => Editor.ContextMenu.IsOpen = PopulateContextActionMenu()));
+			commandBindings.Add(new CommandBinding(GenericCommands.MultiNodeEditCommand, EditMultipleNodes));
+			commandBindings.Add(new CommandBinding(GenericCommands.NavigateToPreviousUsageCommand, NavigateToPreviousHighlightedUsage));
+			commandBindings.Add(new CommandBinding(GenericCommands.NavigateToNextUsageCommand, NavigateToNextHighlightedUsage));
+			commandBindings.Add(new CommandBinding(GenericCommands.NavigateToQueryBlockRootCommand, NavigateToQueryBlockRoot));
+			commandBindings.Add(new CommandBinding(GenericCommands.NavigateToDefinitionRootCommand, NavigateToDefinition));
+			commandBindings.Add(new CommandBinding(GenericCommands.ExecuteDatabaseCommandCommand, ExecuteDatabaseCommand));
+			commandBindings.Add(new CommandBinding(GenericCommands.SaveCommand, SaveCommandExecutedHandler));
+			commandBindings.Add(new CommandBinding(GenericCommands.FormatStatementCommand, FormatStatement));
+			commandBindings.Add(new CommandBinding(GenericCommands.FindUsagesCommand, FindUsages));
 
-			var duplicateTextCommand = new RoutedCommand("DuplicateText", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.D, ModifierKeys.Control) });
-			commandBindings.Add(new CommandBinding(duplicateTextCommand, GenericCommandHandler.DuplicateText));
+			ResultGrid.CommandBindings.Add(new CommandBinding(GenericCommands.FetchNextRowsCommand, FetchNextRows, CanFetchNextRows));
+		}
 
-			var blockCommentCommand = new RoutedCommand("BlockComment", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.Oem2, ModifierKeys.Control | ModifierKeys.Shift) });
-			commandBindings.Add(new CommandBinding(blockCommentCommand, GenericCommandHandler.HandleBlockComments));
-
-			var lineCommentCommand = new RoutedCommand("LineComment", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.Oem2, ModifierKeys.Control | ModifierKeys.Alt) });
-			commandBindings.Add(new CommandBinding(lineCommentCommand, GenericCommandHandler.HandleLineComments));
-
-			var listContextActionCommand = new RoutedCommand("ListContextActions", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.Enter, ModifierKeys.Alt) });
-			commandBindings.Add(new CommandBinding(listContextActionCommand, (sender, args) => Editor.ContextMenu.IsOpen = PopulateContextActionMenu()));
-
-			var multiNodeEditCommand = new RoutedCommand("EditMultipleNodes", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.F6, ModifierKeys.Shift) });
-			commandBindings.Add(new CommandBinding(multiNodeEditCommand, EditMultipleNodes));
-
-			var navigateToPreviousUsageCommand = new RoutedCommand("NavigateToPreviousHighlightedUsage", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.PageUp, ModifierKeys.Control | ModifierKeys.Alt) });
-			commandBindings.Add(new CommandBinding(navigateToPreviousUsageCommand, NavigateToPreviousHighlightedUsage));
-
-			var navigateToNextUsageCommand = new RoutedCommand("NavigateToNextHighlightedUsage", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.PageDown, ModifierKeys.Control | ModifierKeys.Alt) });
-			commandBindings.Add(new CommandBinding(navigateToNextUsageCommand, NavigateToNextHighlightedUsage));
-
-			var navigateToQueryBlockRootCommand = new RoutedCommand("NavigateToQueryBlockRoot", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.Home, ModifierKeys.Control | ModifierKeys.Alt) });
-			commandBindings.Add(new CommandBinding(navigateToQueryBlockRootCommand, NavigateToQueryBlockRoot));
-
-			var navigateToDefinitionRootCommand = new RoutedCommand("NavigateToDefinition", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.F12) });
-			commandBindings.Add(new CommandBinding(navigateToDefinitionRootCommand, NavigateToDefinition));
-
-			var executeDatabaseCommandCommand = new RoutedCommand(ExecuteDatabaseCommandName, typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.F9), new KeyGesture(Key.Enter, ModifierKeys.Control) });
-			commandBindings.Add(new CommandBinding(executeDatabaseCommandCommand, ExecuteDatabaseCommand));
-
-			var saveCommand = new RoutedCommand("Save", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.S, ModifierKeys.Control) });
-			commandBindings.Add(new CommandBinding(saveCommand, SaveCommandExecutedHandler));
-
-			var formatStatementCommand = new RoutedCommand(_statementFormatter.ExecutionHandler.Name, typeof(TextEditor), _statementFormatter.ExecutionHandler.DefaultGestures);
-			var formatStatementRoutedHandlerMethod = GenericCommandHandler.CreateRoutedEditCommandHandler(_statementFormatter.ExecutionHandler, () => _sqlDocumentRepository, _databaseModel);
-			commandBindings.Add(new CommandBinding(formatStatementCommand, formatStatementRoutedHandlerMethod));
-
-			var findUsagesCommandHandler = _infrastructureFactory.CommandFactory.FindUsagesCommandHandler;
-			var findUsagesCommand = new RoutedCommand(findUsagesCommandHandler.Name, typeof(TextEditor), findUsagesCommandHandler.DefaultGestures);
-			commandBindings.Add(new CommandBinding(findUsagesCommand, FindUsages));
-
-			var fetchNextRowsCommand = new RoutedCommand("FetchNextRows", typeof(DataGrid), new InputGestureCollection { new KeyGesture(Key.PageDown), new KeyGesture(Key.Down) });
-			ResultGrid.CommandBindings.Add(new CommandBinding(fetchNextRowsCommand, FetchNextRows, CanFetchNextRows));
+		private void FormatStatement(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
+		{
+			GenericCommandHandler.ExecuteEditCommand(_sqlDocumentRepository, Editor, _statementFormatter.ExecutionHandler.ExecutionHandler);
 		}
 
 		private void CanFetchNextRows(object sender, CanExecuteRoutedEventArgs canExecuteRoutedEventArgs)

@@ -664,12 +664,12 @@ namespace SqlPad.Oracle
 		public void PrintSupportedCompletions()
 		{
 			var builder = new StringBuilder(255);
-			builder.Append("TerminalValueUnderCursor: ");
+			builder.Append("TerminalValueUnderCursor: '");
 			builder.Append(TerminalValueUnderCursor);
-			builder.Append("; ");
-			builder.Append("TerminalValuePartUntilCaret: ");
+			builder.Append("'; ");
+			builder.Append("TerminalValuePartUntilCaret: '");
 			builder.Append(TerminalValuePartUntilCaret);
-			builder.Append("; ");
+			builder.Append("'; ");
 			builder.Append("Schema: ");
 			builder.Append(Schema);
 			builder.Append("; ");

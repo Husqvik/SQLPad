@@ -12,10 +12,6 @@ namespace SqlPad
 	{
 		private readonly object _lockObject = new object();
 
-		private StatementCollection _statements;
-		private readonly Stack<ICollection<TextSegment>> _highlightSegments = new Stack<ICollection<TextSegment>>();
-		private readonly List<StatementDescriptionNode> _highlightParenthesis = new List<StatementDescriptionNode>();
-		private readonly ISqlParser _parser = ConfigurationProvider.InfrastructureFactory.CreateSqlParser();
 		private static readonly SolidColorBrush ErrorBrush = new SolidColorBrush(Colors.Red);
 		private static readonly SolidColorBrush HighlightUsageBrush = new SolidColorBrush(Colors.Turquoise);
 		private static readonly SolidColorBrush HighlightDefinitionBrush = new SolidColorBrush(Colors.SandyBrown);
@@ -26,13 +22,25 @@ namespace SqlPad
 		private static readonly SolidColorBrush ValidStatementBackgroundBrush = new SolidColorBrush(Color.FromArgb(32, Colors.LightGreen.R, Colors.LightGreen.G, Colors.LightGreen.B));
 		private static readonly SolidColorBrush InvalidStatementBackgroundBrush = new SolidColorBrush(Color.FromArgb(32, Colors.PaleVioletRed.R, Colors.PaleVioletRed.G, Colors.PaleVioletRed.B));
 
+		private readonly Stack<ICollection<TextSegment>> _highlightSegments = new Stack<ICollection<TextSegment>>();
+		private readonly List<StatementDescriptionNode> _highlightParenthesis = new List<StatementDescriptionNode>();
 		private readonly Dictionary<DocumentLine, ICollection<StatementDescriptionNode>> _lineTerminals = new Dictionary<DocumentLine, ICollection<StatementDescriptionNode>>();
 		private readonly Dictionary<DocumentLine, ICollection<StatementDescriptionNode>> _lineNodesWithSemanticErrorsOrInvalidGrammar = new Dictionary<DocumentLine, ICollection<StatementDescriptionNode>>();
 		private readonly HashSet<StatementDescriptionNode> _recognizedProgramTerminals = new HashSet<StatementDescriptionNode>();
 		private readonly HashSet<StatementDescriptionNode> _unrecognizedTerminals = new HashSet<StatementDescriptionNode>();
 
+		private readonly ISqlParser _parser;
+		private StatementCollection _statements;
 		private IDictionary<StatementBase, IValidationModel> _validationModels;
-		
+
+		public ColorizeAvalonEdit(IInfrastructureFactory infrastructureFactory)
+		{
+			if (infrastructureFactory == null)
+				throw new ArgumentNullException("infrastructureFactory");
+
+			_parser = infrastructureFactory.CreateSqlParser();
+		}
+
 		public IList<StatementDescriptionNode> HighlightParenthesis { get { return _highlightParenthesis.AsReadOnly(); } }
 		
 		public IEnumerable<TextSegment> HighlightSegments { get { return _highlightSegments.SelectMany(c => c); } }

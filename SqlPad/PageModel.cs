@@ -68,5 +68,14 @@ namespace SqlPad
 				_reParseAction();
 			}
 		}
+
+		public string CurrentConnection
+		{
+			get { return null; }
+			set
+			{
+				
+			}
+		}
 	}
 }

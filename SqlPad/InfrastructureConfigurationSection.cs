@@ -1,23 +1,93 @@
-﻿using System.Configuration;
+﻿using System;
+using System.Configuration;
+using System.Diagnostics;
 
 namespace SqlPad
 {
+	public class DatabaseConnectionConfigurationSection : ConfigurationSection
+	{
+		public const string SectionName = "databaseConnectionConfiguration";
+		private const string ElementInfrastructureConfigurations = "infrastructureConfigurations";
+
+		[ConfigurationProperty(ElementInfrastructureConfigurations)]
+		public InfrastructureConfigurationElementCollection Infrastructures
+		{
+			get { return base[ElementInfrastructureConfigurations] as InfrastructureConfigurationElementCollection; }
+		}
+	}
+
+	[DebuggerDisplay("InfrastructureConfigurationSection (ConnectionStringName={ConnectionStringName}, InfrastructureFactory={InfrastructureFactory})")]
 	public class InfrastructureConfigurationSection : ConfigurationSection
 	{
+		private const string AttributeConnectionStringName = "ConnectionStringName";
+		private const string AttributeInfrastructureFactory = "InfrastructureFactory";
 		public const string SectionName = "infrastructureConfiguration";
 
-		[ConfigurationProperty("ConnectionStringName", IsRequired = true)]
+		[ConfigurationProperty(AttributeConnectionStringName, IsRequired = true)]
 		public string ConnectionStringName 
 		{
-			get { return (string)this["ConnectionStringName"]; }
-			set { this["ConnectionStringName"] = value; }
+			get { return (string)this[AttributeConnectionStringName]; }
+			set { this[AttributeConnectionStringName] = value; }
 		}
 
-		[ConfigurationProperty("InfrastructureFactory", IsRequired = true)]
+		[ConfigurationProperty(AttributeInfrastructureFactory, IsRequired = true)]
 		public string InfrastructureFactory
 		{
-			get { return (string)this["InfrastructureFactory"]; }
-			set { this["InfrastructureFactory"] = value; }
+			get { return (string)this[AttributeInfrastructureFactory]; }
+			set { this[AttributeInfrastructureFactory] = value; }
+		}
+	}
+
+	[ConfigurationCollection(typeof(InfrastructureConfigurationSection), AddItemName = "infrastructure", CollectionType = ConfigurationElementCollectionType.BasicMap)]
+	public class InfrastructureConfigurationElementCollection : ConfigurationElementCollection
+	{
+		public InfrastructureConfigurationSection this[int index]
+		{
+			get { return (InfrastructureConfigurationSection)BaseGet(index); }
+			set
+			{
+				if (BaseGet(index) != null)
+				{
+					BaseRemoveAt(index);
+				}
+				
+				BaseAdd(index, value);
+			}
+		}
+
+		public void Add(InfrastructureConfigurationSection serviceConfig)
+		{
+			BaseAdd(serviceConfig);
+		}
+
+		public void Clear()
+		{
+			BaseClear();
+		}
+
+		protected override ConfigurationElement CreateNewElement()
+		{
+			return new InfrastructureConfigurationSection();
+		}
+
+		protected override object GetElementKey(ConfigurationElement element)
+		{
+			return ((InfrastructureConfigurationSection)element).ConnectionStringName;
+		}
+
+		public void Remove(InfrastructureConfigurationSection serviceConfig)
+		{
+			BaseRemove(serviceConfig.ConnectionStringName);
+		}
+
+		public void RemoveAt(int index)
+		{
+			BaseRemoveAt(index);
+		}
+
+		public void Remove(String name)
+		{
+			BaseRemove(name);
 		}
 	}
 }

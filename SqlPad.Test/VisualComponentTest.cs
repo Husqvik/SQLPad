@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Controls;
-using System.Windows.Input;
 using System.Windows.Threading;
 using NUnit.Framework;
+using SqlPad.Commands;
 
 namespace SqlPad.Test
 {
@@ -15,7 +13,6 @@ namespace SqlPad.Test
 	{
 		private MainWindow _mainWindow;
 		private DocumentPage _page;
-		private ICollection<CommandBinding> _commandBindings;
 
 		private void InitializeApplicationWindow()
 		{
@@ -24,12 +21,6 @@ namespace SqlPad.Test
 			_page = (DocumentPage)((TabItem)_mainWindow.DocumentTabControl.SelectedItem).Content;
 			_page.IsParsingSynchronous = true;
 			_mainWindow.Show();
-			_commandBindings = _page.Editor.TextArea.DefaultInputHandler.Editing.CommandBindings;
-		}
-
-		private RoutedCommand GetCommand(string commandName)
-		{
-			return _commandBindings.Select(b => (RoutedCommand)b.Command).Single(c => c.Name == commandName);
 		}
 
 		private static void Wait(double seconds)
@@ -57,9 +48,8 @@ namespace SqlPad.Test
 
 			_page.Editor.CaretOffset = 108;
 
-			var findUsagesCommandName = ConfigurationProvider.InfrastructureFactory.CommandFactory.FindUsagesCommandHandler.Name;
-			GetCommand(findUsagesCommandName).Execute(null, _page.Editor.TextArea);
-			GetCommand(DocumentPage.ExecuteDatabaseCommandName).Execute(null, _page.Editor.TextArea);
+			GenericCommands.FindUsagesCommand.Execute(null, _page.Editor.TextArea);
+			GenericCommands.ExecuteDatabaseCommandCommand.Execute(null, _page.Editor.TextArea);
 
 			Wait(0.2);
 
