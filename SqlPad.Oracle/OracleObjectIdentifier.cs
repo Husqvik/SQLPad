@@ -6,7 +6,7 @@ using System.Linq;
 namespace SqlPad.Oracle
 {
 	[DebuggerDisplay("OracleObjectIdentifier (Owner={Owner,nq}; Name={Name,nq})")]
-	public struct OracleObjectIdentifier : IObjectIdentifier
+	public struct OracleObjectIdentifier
 	{
 		public static readonly OracleObjectIdentifier Empty = new OracleObjectIdentifier(null, null);
 

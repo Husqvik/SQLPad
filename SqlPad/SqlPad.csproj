@@ -107,7 +107,6 @@
     <Compile Include="IContextActionProvider.cs" />
     <Compile Include="IDatabaseModel.cs" />
     <Compile Include="IInfrastructureFactory.cs" />
-    <Compile Include="IObjectIdentifier.cs" />
     <Compile Include="IStatementFormatter.cs" />
     <Compile Include="ISqlParser.cs" />
     <Compile Include="IToolTipProvider.cs" />

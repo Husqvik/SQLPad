@@ -12,10 +12,9 @@ namespace SqlPad
 		public const string RecoveredDocumentFileNameTemplate = "RecoveredDocument.{0}.sql.tmp";
 		private const string FolderNameSqlPad = "SQL Pad";
 
-		public static readonly string FolderNameCommonData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), FolderNameSqlPad);
 		public static readonly string FolderNameUserData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), FolderNameSqlPad);
-		public static readonly string FolderNameCommonDataErrorLog = Path.Combine(FolderNameCommonData, "ErrorLog");
-		public static readonly string FolderNameCommonDataRecoveryFiles = Path.Combine(FolderNameUserData, "Recovery");
+		public static readonly string FolderNameErrorLog = Path.Combine(FolderNameUserData, "ErrorLog");
+		public static readonly string FolderNameRecoveryFiles = Path.Combine(FolderNameUserData, "Recovery");
 		public static readonly string FolderNameApplication = Path.GetDirectoryName(typeof(App).Assembly.Location);
 
 		static App()
@@ -25,12 +24,12 @@ namespace SqlPad
 
 		public static string[] GetRecoverableDocuments()
 		{
-			return Directory.GetFiles(FolderNameCommonDataRecoveryFiles, String.Format(RecoveredDocumentFileNameTemplate, "*"));
+			return Directory.GetFiles(FolderNameRecoveryFiles, String.Format(RecoveredDocumentFileNameTemplate, "*"));
 		}
 
 		public static void PurgeRecoveryFiles()
 		{
-			var files = new DirectoryInfo(FolderNameCommonDataRecoveryFiles).EnumerateFiles();
+			var files = new DirectoryInfo(FolderNameRecoveryFiles).EnumerateFiles();
 			foreach (var file in files)
 			{
 				file.Delete();
@@ -39,7 +38,7 @@ namespace SqlPad
 
 		private static void UnhandledExceptionHandler(object sender, UnhandledExceptionEventArgs unhandledExceptionEventArgs)
 		{
-			CreateDirectoryIfNotExists(FolderNameCommonDataErrorLog);
+			CreateDirectoryIfNotExists(FolderNameErrorLog);
 
 			var mainWindow = (MainWindow)Current.MainWindow;
 
@@ -51,7 +50,7 @@ namespace SqlPad
 					BuildErrorLog(unhandledExceptionEventArgs.ExceptionObject, page);
 				}
 
-				File.WriteAllText(Path.Combine(FolderNameCommonDataRecoveryFiles, String.Format(RecoveredDocumentFileNameTemplate, counter)), page.Editor.Text);
+				File.WriteAllText(Path.Combine(FolderNameRecoveryFiles, String.Format(RecoveredDocumentFileNameTemplate, counter)), page.Editor.Text);
 				counter++;
 			}
 		}
@@ -82,7 +81,7 @@ namespace SqlPad
 				}
 			}
 
-			File.WriteAllText(Path.Combine(FolderNameCommonDataErrorLog, String.Format("Error_{0}.log", DateTime.Now.Ticks)), logBuilder.ToString());
+			File.WriteAllText(Path.Combine(FolderNameErrorLog, String.Format("Error_{0}.log", DateTime.Now.Ticks)), logBuilder.ToString());
 		}
 
 		private static void CreateDirectoryIfNotExists(params string[] directoryNames)
@@ -98,7 +97,7 @@ namespace SqlPad
 
 		public App()
 		{
-			CreateDirectoryIfNotExists(FolderNameCommonData, FolderNameCommonDataRecoveryFiles);
+			CreateDirectoryIfNotExists(FolderNameUserData, FolderNameRecoveryFiles);
 		}
 	}
 }

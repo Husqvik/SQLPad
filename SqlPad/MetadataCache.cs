@@ -4,7 +4,7 @@ namespace SqlPad
 {
 	public static class MetadataCache
 	{
-		public static readonly string CacheDirectory = Path.Combine(App.FolderNameCommonData, "MetadataCache");
+		public static readonly string CacheDirectory = Path.Combine(App.FolderNameUserData, "MetadataCache");
 
 		static MetadataCache()
 		{
