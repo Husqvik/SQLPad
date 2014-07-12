@@ -132,6 +132,8 @@ namespace SqlPad.Oracle
 	public interface IFunctionCollection
 	{
 		ICollection<OracleFunctionMetadata> Functions { get; }
+
+		OracleObjectIdentifier FullyQualifiedName { get; }
 	}
 
 	[DebuggerDisplay("OraclePackage (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]

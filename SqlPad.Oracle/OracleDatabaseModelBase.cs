@@ -13,6 +13,7 @@ namespace SqlPad.Oracle
 		public const string SchemaSystem = "\"SYSTEM\"";
 
 		private static readonly Type TypeDateTime = typeof(DateTime);
+		protected static readonly OracleObjectIdentifier BuiltInFunctionPackageIdentifier = OracleObjectIdentifier.Create(SchemaSys, OracleFunctionMetadataCollection.PackageBuiltInFunction);
 
 		public abstract ConnectionStringSettings ConnectionString { get; }
 		
@@ -87,7 +88,7 @@ namespace SqlPad.Oracle
 			ICollection<OracleFunctionMetadata> functionMetadataSource = new List<OracleFunctionMetadata>();
 			if (String.IsNullOrEmpty(identifier.Package) && (forceBuiltInFunction || String.IsNullOrEmpty(identifier.Owner)))
 			{
-				if (AllObjects.TryGetValue(OracleObjectIdentifier.Create(SchemaSys, OracleFunctionMetadataCollection.PackageBuiltInFunction), out schemaObject))
+				if (AllObjects.TryGetValue(BuiltInFunctionPackageIdentifier, out schemaObject))
 				{
 					TryGetSchemaObjectFunctionMetadata(schemaObject, out functionMetadataSource);
 				}

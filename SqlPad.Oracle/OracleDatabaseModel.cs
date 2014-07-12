@@ -977,6 +977,13 @@ FROM ALL_TABLES";
 					var readWatch = Stopwatch.StartNew();
 					_dataDictionary = OracleDataDictionary.Deserialize(stream);
 					Trace.WriteLine(string.Format("Cache for '{0}' loaded in {1}", _connectionString.ConnectionString, readWatch.Elapsed));
+
+					var functionMetadata = _dataDictionary.AllObjects.Values
+						.OfType<IFunctionCollection>()
+						.Where(o => o.FullyQualifiedName != BuiltInFunctionPackageIdentifier)
+						.SelectMany(o => o.Functions);
+
+					_allFunctionMetadata = new OracleFunctionMetadataCollection(BuiltInFunctionMetadata.SqlFunctions.Concat(functionMetadata));
 				}
 				finally
 				{
