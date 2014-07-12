@@ -21,6 +21,11 @@ namespace SqlPad
 			PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
 			return true;
 		}
+
+		protected void RaisePropertyChanged(string propertyName)
+		{
+			PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+		}
 	}
 
 	public class CommandSettingsModel : ModelBase

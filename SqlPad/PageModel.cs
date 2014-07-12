@@ -1,24 +1,26 @@
-using System;
 using System.Collections.ObjectModel;
+using System.Configuration;
+using System.Linq;
 using System.Windows;
 
 namespace SqlPad
 {
 	public class PageModel : ModelBase
 	{
-		private readonly IDatabaseModel _databaseModel;
-		private readonly Action _reParseAction;
+		private readonly DocumentPage _documentPage;
 		private readonly ObservableCollection<object[]> _resultRowItems = new ObservableCollection<object[]>();
+		private readonly ObservableCollection<string> _schemas = new ObservableCollection<string>();
 		private string _documentHeader;
 		private int _currentLine;
 		private int _currentColumn;
 		private int? _selectionLength;
 		private Visibility _selectionTextVisibility = Visibility.Collapsed;
+		private ConnectionStringSettings _currentConnection;
+		private string _currentSchema;
 
-		public PageModel(IDatabaseModel databaseModel, Action reParseAction)
+		public PageModel(DocumentPage documentPage)
 		{
-			_reParseAction = reParseAction;
-			_databaseModel = databaseModel;
+			_documentPage = documentPage;
 		}
 
 		public string DocumentHeader
@@ -59,23 +61,44 @@ namespace SqlPad
 
 		public ObservableCollection<object[]> ResultRowItems { get { return _resultRowItems; } }
 
+		public ObservableCollection<string> Schemas { get { return _schemas; } }
+
 		public string CurrentSchema
 		{
-			get { return _databaseModel.CurrentSchema; }
+			get { return _currentSchema; }
 			set
 			{
-				_databaseModel.CurrentSchema = value;
-				_reParseAction();
+				if (value == null)
+					return;
+
+				if (!UpdateValueAndRaisePropertyChanged(ref _currentSchema, value))
+					return;
+
+				_documentPage.DatabaseModel.CurrentSchema = value;
+				_documentPage.ReParse();
 			}
 		}
 
-		public string CurrentConnection
+		public ConnectionStringSettings CurrentConnection
 		{
-			get { return null; }
+			get { return _currentConnection; }
 			set
 			{
-				
+				_documentPage.InitializeInfrastructureComponents(value);
+				_currentConnection = value;
+
+				SetSchemas();
+
+				CurrentSchema = _documentPage.DatabaseModel.CurrentSchema;
 			}
+		}
+
+		private void SetSchemas()
+		{
+			var schemas = _documentPage.DatabaseModel.Schemas.OrderBy(s => s);
+			_schemas.Clear();
+			_schemas.AddRange(schemas);
+			_currentSchema = null;
 		}
 	}
 }

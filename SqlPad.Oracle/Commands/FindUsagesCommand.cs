@@ -257,7 +257,7 @@ namespace SqlPad.Oracle.Commands
 
 			nodes = new List<StatementDescriptionNode>{ childColumn.AliasNode };
 
-			if (childColumn.IsDirectReference && childColumn.ColumnReferences.All(cr => cr.ColumnNodeColumnReferences.Count == 1))
+			if (childColumn.IsDirectReference && childColumn.ColumnReferences.Count > 0 && childColumn.ColumnReferences.All(cr => cr.ColumnNodeColumnReferences.Count == 1))
 			{
 				var childSelectColumnReferences = childQueryBlock.Columns.SelectMany(c => c.ColumnReferences)
 					.Where(c => !c.ReferencesAllColumns && c.ColumnNodeObjectReferences.Count == 1 && c.SelectListColumn.NormalizedName == columnReference.NormalizedName && c.ColumnNode != childColumn.AliasNode)

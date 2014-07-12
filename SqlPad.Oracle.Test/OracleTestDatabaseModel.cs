@@ -446,9 +446,16 @@ namespace SqlPad.Oracle.Test
 
 		public override IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjects { get { return _allObjects; } }
 
-		public override void RefreshIfNeeded() { }
+		public override void RefreshIfNeeded()
+		{
+			Refresh();
+		}
 
-		public override void Refresh() { }
+		public override void Refresh()
+		{
+			RefreshStarted(this, EventArgs.Empty);
+			RefreshFinished(this, EventArgs.Empty);
+		}
 
 		public override event EventHandler RefreshStarted = delegate { };
 

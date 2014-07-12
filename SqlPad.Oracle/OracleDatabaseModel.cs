@@ -15,17 +15,17 @@ namespace SqlPad.Oracle
 {
 	public class OracleDatabaseModel : OracleDatabaseModelBase
 	{
-		private static readonly object LockObject = new object();
+		private readonly object _lockObject = new object();
 		private readonly OracleConnectionStringBuilder _oracleConnectionString;
 		private const int RefreshInterval = 10;
 		private readonly Timer _timer = new Timer(RefreshInterval * 60000);
 		private const string SqlFuntionMetadataFileName = "OracleSqlFunctionMetadataCollection_12_1_0_1_0.xml";
 		private static readonly DataContractSerializer Serializer = new DataContractSerializer(typeof(OracleFunctionMetadataCollection));
-		private static bool _isRefreshing;
-		private static bool _canExecute = true;
-		private static bool _isExecuting;
-		private static Task _backgroundTask;
-		private static Task _statementExecutionTask;
+		private bool _isRefreshing;
+		private bool _canExecute = true;
+		private bool _isExecuting;
+		private Task _backgroundTask;
+		private Task _statementExecutionTask;
 		private OracleFunctionMetadataCollection _allFunctionMetadata = new OracleFunctionMetadataCollection(Enumerable.Empty<OracleFunctionMetadata>());
 		private OracleFunctionMetadataCollection _builtInFunctionMetadata = new OracleFunctionMetadataCollection(Enumerable.Empty<OracleFunctionMetadata>());
 		private ILookup<string, OracleFunctionMetadata> _nonPackageBuiltInFunctionMetadata = Enumerable.Empty<OracleFunctionMetadata>().ToLookup(m => m.Identifier.Name, m => m);
@@ -38,7 +38,9 @@ namespace SqlPad.Oracle
 		private OracleDataReader _dataReader;
 		private DateTime _lastRefresh;
 
-		public OracleDatabaseModel(ConnectionStringSettings connectionString)
+		internal static readonly Dictionary<string, OracleDatabaseModel> DatabaseModels = new Dictionary<string, OracleDatabaseModel>();
+
+		private OracleDatabaseModel(ConnectionStringSettings connectionString)
 		{
 			_connectionString = connectionString;
 			_oracleConnectionString = new OracleConnectionStringBuilder(connectionString.ConnectionString);
@@ -65,12 +67,27 @@ namespace SqlPad.Oracle
 			_timer.Start();
 		}
 
-		private static void ExecuteSynchronizedAction(Action action)
+		public static OracleDatabaseModel GetDatabaseModel(ConnectionStringSettings connectionString)
+		{
+			OracleDatabaseModel databaseModel;
+			if (!DatabaseModels.TryGetValue(connectionString.ConnectionString, out databaseModel))
+			{
+				DatabaseModels[connectionString.ConnectionString] = databaseModel = new OracleDatabaseModel(connectionString);
+			}
+			else
+			{
+				databaseModel = databaseModel.Clone();
+			}
+
+			return databaseModel;
+		}
+
+		private void ExecuteSynchronizedAction(Action action)
 		{
 			if (_isRefreshing)
 				return;
 
-			lock (LockObject)
+			lock (_lockObject)
 			{
 				if (_isRefreshing)
 					return;
@@ -147,9 +164,9 @@ namespace SqlPad.Oracle
 				.FirstOrDefault();
 		}
 
-		public override event EventHandler RefreshStarted = delegate { };
+		public override event EventHandler RefreshStarted;
 
-		public override event EventHandler RefreshFinished = delegate { };
+		public override event EventHandler RefreshFinished;
 
 		public override bool CanExecute { get { return _canExecute; } }
 		
@@ -171,9 +188,28 @@ namespace SqlPad.Oracle
 				_statementExecutionTask.Dispose();
 
 			if (_backgroundTask != null)
-				_backgroundTask.Dispose();
+			{
+				if (_isRefreshing)
+				{
+					RaiseEvent(RefreshFinished);
+				}
+
+				if (_backgroundTask.Status == TaskStatus.Running)
+				{
+					_backgroundTask.ContinueWith(t => t.Dispose());
+				}
+				else
+				{
+					_backgroundTask.Dispose();
+				}
+			}
+
+			RefreshStarted = null;
+			RefreshFinished = null;
 			
 			_userConnection.Dispose();
+
+			DatabaseModels.Remove(_connectionString.ConnectionString);
 		}
 
 		public OracleDatabaseModel Clone()
@@ -465,7 +501,7 @@ ORDER BY
 			{
 				command.CommandText = String.Format("ALTER SESSION SET CURRENT_SCHEMA = {0}", _currentSchema);
 
-				lock (LockObject)
+				lock (_lockObject)
 				{
 					try
 					{
@@ -599,7 +635,8 @@ ORDER BY
 
 		private void LoadSchemaObjectMetadata()
 		{
-			RefreshStarted(this, EventArgs.Empty);
+			RaiseEvent(RefreshStarted);
+			_isRefreshing = true;
 
 			var allObjects = new Dictionary<OracleObjectIdentifier, OracleSchemaObject>();
 
@@ -908,11 +945,20 @@ FROM ALL_TABLES";
 			//var ftmp = _allFunctionMetadata.SqlFunctions.Where(f => f.Identifier.Owner.Contains("CA_DEV")).ToArray();
 			//var ftmp = _allFunctionMetadata.SqlFunctions.Where(f => f.Identifier.Package.Contains("DBMS_RANDOM")).ToArray();
 			//var otmp = dataObjectMetadata.Where(o => o.Key.NormalizedName.Contains("DBMS_RANDOM")).ToArray();
-			var otmp = allObjects.Where(o => o.Key.NormalizedName.Contains("XMLTYPE")).ToArray();
+			//var otmp = allObjects.Where(o => o.Key.NormalizedName.Contains("XMLTYPE")).ToArray();
 
 			_lastRefresh = DateTime.Now;
 
-			RefreshFinished(this, EventArgs.Empty);
+			_isRefreshing = false;
+			RaiseEvent(RefreshFinished);
+		}
+
+		private void RaiseEvent(EventHandler eventHandler)
+		{
+			if (eventHandler != null)
+			{
+				eventHandler(this, EventArgs.Empty);
+			}
 		}
 
 		private static void AddSchemaObjectToDictionary(Dictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects, OracleSchemaObject schemaObject)

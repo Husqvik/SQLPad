@@ -29,26 +29,33 @@ namespace SqlPad
 		private readonly HashSet<StatementDescriptionNode> _recognizedProgramTerminals = new HashSet<StatementDescriptionNode>();
 		private readonly HashSet<StatementDescriptionNode> _unrecognizedTerminals = new HashSet<StatementDescriptionNode>();
 
-		private readonly ISqlParser _parser;
+		private ISqlParser _parser;
 		private StatementCollection _statements;
 		private IDictionary<StatementBase, IValidationModel> _validationModels;
-
-		public ColorizeAvalonEdit(IInfrastructureFactory infrastructureFactory)
-		{
-			if (infrastructureFactory == null)
-				throw new ArgumentNullException("infrastructureFactory");
-
-			_parser = infrastructureFactory.CreateSqlParser();
-		}
 
 		public IList<StatementDescriptionNode> HighlightParenthesis { get { return _highlightParenthesis.AsReadOnly(); } }
 		
 		public IEnumerable<TextSegment> HighlightSegments { get { return _highlightSegments.SelectMany(c => c); } }
 
-		public void SetStatementCollection(SqlDocumentRepository documentRepository)
+		public void SetParser(ISqlParser parser)
+		{
+			_parser = parser;
+		}
+
+		private void EnsureParserSet()
+		{
+			if (_parser == null)
+			{
+				throw new InvalidOperationException("Parser hasn't been set. ");
+			}
+		}
+
+		public void SetDocumentRepository(SqlDocumentRepository documentRepository)
 		{
 			if (documentRepository == null)
 				return;
+
+			EnsureParserSet();
 
 			lock (_lockObject)
 			{

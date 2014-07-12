@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -27,7 +28,7 @@ namespace SqlPad
 		private const int RowBatchSize = 100;
 		
 		private SqlDocumentRepository _sqlDocumentRepository;
-		private readonly IInfrastructureFactory _infrastructureFactory;
+		private IInfrastructureFactory _infrastructureFactory;
 		private ICodeCompletionProvider _codeCompletionProvider;
 		private ICodeSnippetProvider _codeSnippetProvider;
 		private IContextActionProvider _contextActionProvider;
@@ -37,9 +38,10 @@ namespace SqlPad
 		private INavigationService _navigationService;
 
 		private MultiNodeEditor _multiNodeEditor;
-		private ColorizeAvalonEdit _colorizeAvalonEdit;
+		private readonly ColorizeAvalonEdit _colorizeAvalonEdit = new ColorizeAvalonEdit();
 
 		private static readonly CellValueConverter CellValueConverter = new CellValueConverter();
+		private static readonly Style CellStyleRightAlign = new Style(typeof(DataGridCell));
 		private readonly ToolTip _toolTip = new ToolTip();
 		private bool _isToolTipOpenByShortCut;
 		private CompletionWindow _completionWindow;
@@ -47,7 +49,7 @@ namespace SqlPad
 		private bool _isParsing;
 		private readonly System.Timers.Timer _timer = new System.Timers.Timer(100);
 		private readonly string _initialDocumentHeader = "New*";
-		private static readonly Style CellStyleRightAlign = new Style(typeof(DataGridCell));
+		private readonly List<CommandBinding> _specificCommandBindings = new List<CommandBinding>(); 
 		
 		public EventHandler ParseFinished = delegate { };
 
@@ -60,6 +62,8 @@ namespace SqlPad
 		public string DocumentHeader { get { return File == null ? _initialDocumentHeader : File.Name + (IsDirty ? "*" : null); } }
 
 		public bool IsDirty { get { return Editor.IsModified; } }
+		
+		public IDatabaseModel DatabaseModel { get { return _databaseModel; } }
 
 		static DocumentPage()
 		{
@@ -70,28 +74,17 @@ namespace SqlPad
 		{
 			InitializeComponent();
 
-			var defaultConnectionString = ConfigurationProvider.ConnectionStrings[0];
-			_infrastructureFactory = ConfigurationProvider.GetInfrastructureFactory(defaultConnectionString.Name);
-
-			InitializeInfrastructureComponents();
-
-			_timer.Elapsed += (sender, args) => Dispatcher.Invoke(ReParse);
-
-			ComboBoxConnection.IsEnabled = ConfigurationProvider.ConnectionStrings.Count == 1;
+			ComboBoxConnection.IsEnabled = ConfigurationProvider.ConnectionStrings.Count > 1;
 			ComboBoxConnection.ItemsSource = ConfigurationProvider.ConnectionStrings;
 			ComboBoxConnection.SelectedIndex = 0;
 
-			Editor.TextArea.TextView.LineTransformers.Add(_colorizeAvalonEdit);
+			InitializeGenericCommandBindings();
 
-			Editor.TextArea.TextEntering += TextEnteringHandler;
-			Editor.TextArea.TextEntered += TextEnteredHandler;
+			_timer.Elapsed += (sender, args) => Dispatcher.Invoke(ReParse);
 
-			Editor.TextArea.Caret.PositionChanged += CaretOnPositionChanged;
-			Editor.TextArea.SelectionChanged += SelectionChangedHandler;
+			_pageModel = new PageModel(this) { CurrentConnection = ConfigurationProvider.ConnectionStrings[0] };
 
-			EditorAdapter = new TextEditorAdapter(Editor);
-
-			_pageModel = new PageModel(_databaseModel, ReParse);
+			ConfigureEditor();
 
 			if (file != null)
 			{
@@ -109,34 +102,64 @@ namespace SqlPad
 			_pageModel.DocumentHeader = DocumentHeader;
 
 			DataContext = _pageModel;
+		}
 
-			_databaseModel.RefreshStarted += DatabaseModelRefreshStartedHandler;
-			_databaseModel.RefreshFinished += DatabaseModelRefreshFinishedHandler;
-			_databaseModel.RefreshIfNeeded();
+		private void ConfigureEditor()
+		{
+			Editor.TextArea.TextView.LineTransformers.Add(_colorizeAvalonEdit);
 
-			InitializeGenericCommands();
+			Editor.TextArea.TextEntering += TextEnteringHandler;
+			Editor.TextArea.TextEntered += TextEnteredHandler;
+
+			Editor.TextArea.Caret.PositionChanged += CaretOnPositionChanged;
+			Editor.TextArea.SelectionChanged += SelectionChangedHandler;
+
+			EditorAdapter = new TextEditorAdapter(Editor);
+		}
+
+		private void InitializeSpecificCommandBindings()
+		{
+			foreach (var existingBinding in _specificCommandBindings)
+			{
+				Editor.TextArea.DefaultInputHandler.Editing.CommandBindings.Remove(existingBinding);
+			}
+
+			_specificCommandBindings.Clear();
 
 			foreach (var handler in _infrastructureFactory.CommandFactory.CommandHandlers)
 			{
 				var command = new RoutedCommand(handler.Name, typeof(TextEditor), handler.DefaultGestures);
 				var routedHandlerMethod = GenericCommandHandler.CreateRoutedEditCommandHandler(handler, () => _sqlDocumentRepository);
-				Editor.TextArea.DefaultInputHandler.Editing.CommandBindings.Add(new CommandBinding(command, routedHandlerMethod));
+				var commandBinding = new CommandBinding(command, routedHandlerMethod);
+				_specificCommandBindings.Add(commandBinding);
+				Editor.TextArea.DefaultInputHandler.Editing.CommandBindings.Add(commandBinding);
 			}
 		}
 
-		private void InitializeInfrastructureComponents()
+		internal void InitializeInfrastructureComponents(ConnectionStringSettings connectionString)
 		{
+			if (_databaseModel != null)
+			{
+				_databaseModel.Dispose();
+			}
+
+			_infrastructureFactory = ConfigurationProvider.GetInfrastructureFactory(connectionString.Name);
 			_codeCompletionProvider = _infrastructureFactory.CreateCodeCompletionProvider();
 			_codeSnippetProvider = _infrastructureFactory.CreateSnippetProvider();
 			_contextActionProvider = _infrastructureFactory.CreateContextActionProvider();
 			_statementFormatter = _infrastructureFactory.CreateSqlFormatter(new SqlFormatterOptions());
 			_toolTipProvider = _infrastructureFactory.CreateToolTipProvider();
 			_navigationService = _infrastructureFactory.CreateNavigationService();
-			_databaseModel = _infrastructureFactory.CreateDatabaseModel(ConfigurationProvider.ConnectionStrings["Default"]);
+			_databaseModel = _infrastructureFactory.CreateDatabaseModel(ConfigurationProvider.ConnectionStrings[connectionString.Name]);
 			_sqlDocumentRepository = new SqlDocumentRepository(_infrastructureFactory.CreateSqlParser(), _infrastructureFactory.CreateStatementValidator(), _databaseModel);
-			_colorizeAvalonEdit = new ColorizeAvalonEdit(_infrastructureFactory);
 
-			ComboBoxSchema.ItemsSource = _databaseModel.Schemas.OrderBy(s => s);
+			_colorizeAvalonEdit.SetParser(_infrastructureFactory.CreateSqlParser());
+
+			InitializeSpecificCommandBindings();
+
+			_databaseModel.RefreshStarted += DatabaseModelRefreshStartedHandler;
+			_databaseModel.RefreshFinished += DatabaseModelRefreshFinishedHandler;
+			_databaseModel.RefreshIfNeeded();
 		}
 
 		private ScrollViewer GetResultGridScrollViewer()
@@ -199,7 +222,7 @@ namespace SqlPad
 			                  });
 		}
 
-		private void InitializeGenericCommands()
+		private void InitializeGenericCommandBindings()
 		{
 			ChangeDeleteLineCommandInputGesture();
 
@@ -652,7 +675,7 @@ namespace SqlPad
 		private void ExecuteParse(object text)
 		{
 			_sqlDocumentRepository.UpdateStatements((string)text);
-			_colorizeAvalonEdit.SetStatementCollection(_sqlDocumentRepository);
+			_colorizeAvalonEdit.SetDocumentRepository(_sqlDocumentRepository);
 
 			Dispatcher.Invoke(() =>
 			{
