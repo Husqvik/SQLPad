@@ -86,9 +86,12 @@ namespace SqlPad
 			
 			writeWatch.Stop();
 
-			using (var stream = File.OpenWrite(CacheConfigrationFileName))
+			lock (DatabaseModelCacheConfiguration)
 			{
-				Serializer.Serialize(stream, DatabaseModelCacheConfiguration);
+				using (var stream = File.OpenWrite(CacheConfigrationFileName))
+				{
+					Serializer.Serialize(stream, DatabaseModelCacheConfiguration);
+				}
 			}
 		}
 

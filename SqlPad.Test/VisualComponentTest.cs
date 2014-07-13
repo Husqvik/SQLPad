@@ -53,6 +53,8 @@ namespace SqlPad.Test
 
 			Wait(0.2);
 
+			_page.Editor.IsModified = false;
+
 			_mainWindow.Close();
 			Dispatcher.CurrentDispatcher.InvokeShutdown();
 		}

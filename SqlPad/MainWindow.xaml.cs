@@ -156,11 +156,16 @@ namespace SqlPad
 
 		private void CloseTabExecutedHandler(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
 		{
-			var page = (DocumentPage) executedRoutedEventArgs.Parameter;
+			var page = (DocumentPage)executedRoutedEventArgs.Parameter;
 
+			ClosePage(page);
+		}
+
+		private void ClosePage(DocumentPage page)
+		{
 			if (page.IsDirty && !ConfirmPageSave(page))
 				return;
-			
+
 			SelectNewTabItem();
 			DocumentTabControl.Items.Remove(page.Parent);
 		}
@@ -180,9 +185,9 @@ namespace SqlPad
 					return true;
 				case MessageBoxResult.Cancel:
 					return false;
+				default:
+					throw new NotSupportedException(String.Format("'{0}' result is not supported. ", dialogResult));
 			}
-
-			throw new NotSupportedException(string.Format("'{0}' result is not supported. ", dialogResult));
 		}
 
 		private void SelectNewTabItem()
@@ -203,7 +208,17 @@ namespace SqlPad
 
 		private void WindowClosingHandler(object sender, CancelEventArgs e)
 		{
+			var pages = DocumentTabControl.Items
+				.Cast<TabItem>()
+				.Select(t => t.Content)
+				.OfType<DocumentPage>()
+				.ToArray();
 			
+			foreach (var page in pages)
+			{
+				ClosePage(page);
+				page.Dispose();
+			}
 		}
 
 		private void WindowClosedHandler(object sender, EventArgs e)

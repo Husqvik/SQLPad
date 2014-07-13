@@ -139,6 +139,11 @@ namespace SqlPad.Oracle
 			get { return _dataDictionary.Timestamp.AddMinutes(RefreshInterval) < DateTime.Now; }
 		}
 
+		private string CachedConnectionStringName
+		{
+			get { return _oracleConnectionString.DataSource + "_" + _oracleConnectionString.UserID; }
+		}
+
 		public override void Refresh()
 		{
 			if (_backgroundTask == null)
@@ -956,7 +961,7 @@ FROM ALL_TABLES";
 			_dataDictionary = new OracleDataDictionary(allObjects, lastRefresh);
 
 			var writeWatch = Stopwatch.StartNew();
-			MetadataCache.StoreDatabaseModelCache(_connectionString.ConnectionString, stream => _dataDictionary.Serialize(stream));
+			MetadataCache.StoreDatabaseModelCache(CachedConnectionStringName, stream => _dataDictionary.Serialize(stream));
 			Trace.WriteLine(string.Format("Cache for '{0}' stored in {1}", _connectionString.ConnectionString, writeWatch.Elapsed));
 
 			_isRefreshing = false;
@@ -969,7 +974,7 @@ FROM ALL_TABLES";
 				return;
 			
 			Stream stream;
-			if (MetadataCache.TryLoadDatabaseModelCache(_connectionString.ConnectionString, out stream))
+			if (MetadataCache.TryLoadDatabaseModelCache(CachedConnectionStringName, out stream))
 			{
 				try
 				{

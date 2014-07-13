@@ -10,6 +10,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
+using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using ICSharpCode.AvalonEdit;
@@ -23,7 +24,7 @@ namespace SqlPad
 	/// <summary>
 	/// Interaction logic for DocumentPage.xaml
 	/// </summary>
-	public partial class DocumentPage
+	public partial class DocumentPage : IDisposable
 	{
 		private const int RowBatchSize = 100;
 		
@@ -42,6 +43,8 @@ namespace SqlPad
 
 		private static readonly CellValueConverter CellValueConverter = new CellValueConverter();
 		private static readonly Style CellStyleRightAlign = new Style(typeof(DataGridCell));
+		private static readonly Style HeaderStyleRightAlign = new Style(typeof(DataGridColumnHeader));
+		
 		private readonly ToolTip _toolTip = new ToolTip();
 		private bool _isToolTipOpenByShortCut;
 		private CompletionWindow _completionWindow;
@@ -67,7 +70,8 @@ namespace SqlPad
 
 		static DocumentPage()
 		{
-			CellStyleRightAlign.Setters.Add(new Setter(HorizontalAlignmentProperty, HorizontalAlignment.Right));
+			CellStyleRightAlign.Setters.Add(new Setter(Block.TextAlignmentProperty, TextAlignment.Right));
+			HeaderStyleRightAlign.Setters.Add(new Setter(HorizontalContentAlignmentProperty, HorizontalAlignment.Right));
 		}
 		
 		public DocumentPage(FileInfo file, bool recoveryMode = false)
@@ -389,11 +393,18 @@ namespace SqlPad
 
 				if (columnHeader.DataType.In(typeof(Decimal), typeof(Int16), typeof(Int32), typeof(Int64), typeof(Byte)))
 				{
+					columnTemplate.HeaderStyle = HeaderStyleRightAlign;
 					columnTemplate.CellStyle = CellStyleRightAlign;
 				}
 
 				ResultGrid.Columns.Add(columnTemplate);
 			}
+		}
+
+		public void Dispose()
+		{
+			_timer.Dispose();
+			_databaseModel.Dispose();
 		}
 
 		private void FindUsages(object sender, ExecutedRoutedEventArgs args)
@@ -455,6 +466,11 @@ namespace SqlPad
 		private void PageLoadedHandler(object sender, RoutedEventArgs e)
 		{
 			Editor.Focus();
+			
+			if (!String.IsNullOrEmpty(Editor.Text))
+			{
+				ReParse();
+			}
 		}
 
 		private void CaretOnPositionChanged(object sender, EventArgs eventArgs)
