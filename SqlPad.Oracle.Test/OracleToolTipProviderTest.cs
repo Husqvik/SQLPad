@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Linq;
+using System.Windows.Controls;
+using System.Windows.Documents;
 using NUnit.Framework;
 using Shouldly;
 using SqlPad.Oracle.ToolTips;
@@ -9,6 +12,7 @@ namespace SqlPad.Oracle.Test
 	public class OracleToolTipProviderTest
 	{
 		private readonly OracleToolTipProvider _toolTipProvider = new OracleToolTipProvider();
+		private readonly OracleCodeCompletionProvider _codeCompletionProvider = new OracleCodeCompletionProvider();
 		private readonly SqlDocumentRepository _documentRepository = new SqlDocumentRepository(new OracleSqlParser(), new OracleStatementValidator(), TestFixture.DatabaseModel);
 
 		[Test(Description = @""), STAThread]
@@ -244,6 +248,38 @@ namespace SqlPad.Oracle.Test
 			var toolTip = _toolTipProvider.GetToolTip(documentStore, 7);
 
 			toolTip.ShouldBe(null);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestFunctionOverloadsToolTip()
+		{
+			const string query = "SELECT SQLPAD.SQLPAD_FUNCTION() FROM DUAL";
+			_documentRepository.UpdateStatements(query);
+
+			var functionOverloads = _codeCompletionProvider.ResolveFunctionOverloads(_documentRepository, 30);
+			var toolTip = new FunctionOverloadList { FunctionOverloads = functionOverloads };
+			toolTip.ViewOverloads.Items.Count.ShouldBe(1);
+			toolTip.ViewOverloads.Items[0].ShouldBeTypeOf(typeof(TextBlock));
+
+			var itemText = GetTextFromTextBlock((TextBlock)toolTip.ViewOverloads.Items[0]);
+			itemText.ShouldBe("HUSQVIK.SQLPAD.SQLPAD_FUNCTION(P: NUMBER) RETURN: NUMBER");
+		}
+
+		private static string GetTextFromTextBlock(TextBlock textBlock)
+		{
+			var inlines = textBlock.Inlines.Select(i => ((Run)i).Text);
+			return String.Join(null, inlines);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestFunctionOverloadsToolTipNotShowForNonSchemaFunctions()
+		{
+			const string query = "SELECT MAX(DUMMY) FROM DUAL";
+			_documentRepository.UpdateStatements(query);
+
+			var functionOverloads = _codeCompletionProvider.ResolveFunctionOverloads(_documentRepository, 9);
+			var toolTip = new FunctionOverloadList { FunctionOverloads = functionOverloads };
+			toolTip.ViewOverloads.Items.Count.ShouldBe(0);
 		}
 	}
 }

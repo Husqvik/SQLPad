@@ -631,6 +631,7 @@ FROM
 			items.ForEach(i => i.Parameters.Count.ShouldBe(2));
 			items.ForEach(i => i.CurrentParameterIndex.ShouldBe(1));
 			items.ForEach(i => i.ReturnedDatatype.ShouldNotBe(null));
+			items.ForEach(i => i.HasSchemaDefinition.ShouldBe(true));
 		}
 
 		[Test(Description = @"")]
@@ -641,6 +642,17 @@ FROM
 			_documentRepository.UpdateStatements(query1);
 			var items = _codeCompletionProvider.ResolveFunctionOverloads(_documentRepository, 18).ToList();
 			items.Count.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
+		public void TestResolveFunctionOverloadsWithNonSchemaFunction()
+		{
+			const string query1 = @"SELECT MAX(DUMMY) FROM DUAL";
+
+			_documentRepository.UpdateStatements(query1);
+			var items = _codeCompletionProvider.ResolveFunctionOverloads(_documentRepository, 8).ToList();
+			items.Count.ShouldBe(1);
+			items[0].HasSchemaDefinition.ShouldBe(false);
 		}
 
 		[Test(Description = @"")]

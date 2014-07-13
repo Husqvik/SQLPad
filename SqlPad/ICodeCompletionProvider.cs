@@ -18,6 +18,8 @@ namespace SqlPad
 		public int CurrentParameterIndex { get; set; }
 		
 		public string ReturnedDatatype { get; set; }
+		
+		public bool HasSchemaDefinition { get; set; }
 	}
 
 	public interface ICodeCompletionItem

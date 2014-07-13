@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Controls;
 using System.Windows.Documents;
 
@@ -19,10 +21,11 @@ namespace SqlPad
 		{
 			set
 			{
-				foreach (var overloadDescription in value)
+				foreach (var overloadDescription in value.Where(o => o.HasSchemaDefinition))
 				{
 					var textBlock = new TextBlock();
 					textBlock.Inlines.Add(overloadDescription.Name);
+
 					textBlock.Inlines.Add("(");
 
 					var i = 0;
@@ -43,9 +46,14 @@ namespace SqlPad
 						i++;
 					}
 
-					textBlock.Inlines.Add(") RETURN: ");
-					textBlock.Inlines.Add(overloadDescription.ReturnedDatatype);
-					
+					textBlock.Inlines.Add(")");
+
+					if (!String.IsNullOrEmpty(overloadDescription.ReturnedDatatype))
+					{
+						textBlock.Inlines.Add(" RETURN: ");
+						textBlock.Inlines.Add(overloadDescription.ReturnedDatatype);
+					}
+
 					ViewOverloads.Items.Add(textBlock);
 				}
 			}

@@ -49,7 +49,7 @@ namespace SqlPad.Oracle
 				currentParameterIndex = functionReference.ParameterNodes.ToList().IndexOf(parameterNode);
 			}
 
-			var functionOverloads = oracleDatabaseModel.AllFunctionMetadata.SqlFunctions.Where(m => functionReference.Metadata.Identifier.EqualsWithAnyOverload(m.Identifier) && (m.Parameters.Count == 0 || currentParameterIndex < m.Parameters.Count - 1)).ToArray();
+			var functionOverloads = oracleDatabaseModel.AllFunctionMetadata.SqlFunctions.Where(m => functionReference.Metadata.Identifier.EqualsWithAnyOverload(m.Identifier) && (m.Parameters.Count == 0 || currentParameterIndex < m.Parameters.Count - 1));
 
 			return functionOverloads.Select(
 				o =>
@@ -60,7 +60,8 @@ namespace SqlPad.Oracle
 						       Name = functionReference.Metadata.Identifier.FullyQualifiedIdentifier,
 						       Parameters = o.Parameters.Skip(1).Select(p => p.Name + ": " + p.DataType).ToArray(),
 						       CurrentParameterIndex = currentParameterIndex,
-							   ReturnedDatatype = returnParameter == null ? null : returnParameter.DataType
+							   ReturnedDatatype = returnParameter == null ? null : returnParameter.DataType,
+							   HasSchemaDefinition = !String.IsNullOrEmpty(o.Identifier.Owner)
 					       };
 				}).ToArray();
 		}

@@ -902,6 +902,28 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		}
 
 		[Test(Description = @"")]
+		public void TestColumnNodeValidityInCorrelatedSubqueryWithoutObjectQualifierAndInSelectList()
+		{
+			const string sqlText = "SELECT (SELECT ID FROM INVOICES WHERE ID = S.SELECTION_ID) FROM SELECTION S WHERE EXISTS (SELECT NULL FROM INVOICES WHERE ID = SELECTION_ID)";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var nodeValidityDictionary = validationModel.ObjectNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var objectNodeValidity = nodeValidityDictionary.Values.ToList();
+			objectNodeValidity.Count.ShouldBe(4);
+			objectNodeValidity.ForEach(v => v.IsRecognized.ShouldBe(true));
+			objectNodeValidity.ForEach(v => v.SemanticError.ShouldBe(SemanticError.None));
+
+			nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var columnNodeValidity = nodeValidityDictionary.Values.ToList();
+			columnNodeValidity.Count.ShouldBe(5);
+			columnNodeValidity.ForEach(v => v.IsRecognized.ShouldBe(true));
+			columnNodeValidity.ForEach(v => v.SemanticError.ShouldBe(SemanticError.None));
+		}
+
+		[Test(Description = @"")]
 		public void TestFunctionIdentifierNodeValidDefinedBySynonym()
 		{
 			const string sqlText = "SELECT DBMS_RANDOM.STRING('X', 16) FROM DUAL";
