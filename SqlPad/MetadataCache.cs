@@ -65,42 +65,44 @@ namespace SqlPad
 			return true;
 		}
 
-		public static void StoreDatabaseModelCache(string connectionString, Action<Stream> storeAction)
+		public static void StoreDatabaseModelCache(string cacheKey, Action<Stream> storeAction)
 		{
 			if (DatabaseModelCacheConfiguration == null)
 				return;
 
 			CacheFile cacheFile;
-			if (!DatabaseModelCacheConfiguration.Files.TryGetValue(connectionString, out cacheFile))
+			if (!DatabaseModelCacheConfiguration.Files.TryGetValue(cacheKey, out cacheFile))
 			{
-				DatabaseModelCacheConfiguration.Files[connectionString] =
+				DatabaseModelCacheConfiguration.Files[cacheKey] =
 					cacheFile = new CacheFile { FileName = Thread.CurrentThread.ManagedThreadId + DateTime.Now.Ticks.ToString(CultureInfo.CurrentUICulture) + ".dat" };
 			}
 
-			var writeWatch = Stopwatch.StartNew();
+			var timer = Stopwatch.StartNew();
 			
-			using (var stream = File.OpenWrite(GetFullFileName(cacheFile.FileName)))
+			using (var stream = File.Create(GetFullFileName(cacheFile.FileName)))
 			{
 				storeAction(stream);
 			}
-			
-			writeWatch.Stop();
 
+			timer.Stop();
+
+			Trace.WriteLine(String.Format("{0} - Cache for '{1}' stored in {2}", DateTime.Now, cacheKey, timer.Elapsed));
+			
 			lock (DatabaseModelCacheConfiguration)
 			{
-				using (var stream = File.OpenWrite(CacheConfigrationFileName))
+				using (var stream = File.Create(CacheConfigrationFileName))
 				{
 					Serializer.Serialize(stream, DatabaseModelCacheConfiguration);
 				}
 			}
 		}
 
-		public static bool TryLoadDatabaseModelCache(string connectionString, out Stream stream)
+		public static bool TryLoadDatabaseModelCache(string cacheKey, out Stream stream)
 		{
 			stream = null;
 			CacheFile cacheFile;
 			if (DatabaseModelCacheConfiguration == null ||
-			    !DatabaseModelCacheConfiguration.Files.TryGetValue(connectionString, out cacheFile))
+			    !DatabaseModelCacheConfiguration.Files.TryGetValue(cacheKey, out cacheFile))
 			{
 				return false;
 			}

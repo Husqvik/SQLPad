@@ -49,7 +49,7 @@ namespace SqlPad.Oracle
 
 		public abstract OracleFunctionMetadataCollection AllFunctionMetadata { get; }
 
-		protected abstract ILookup<string, OracleFunctionMetadata> NonPackageBuiltInFunctionMetadata { get; }
+		protected abstract ILookup<string, OracleFunctionMetadata> NonSchemaBuiltInFunctionMetadata { get; }
 
 		public abstract IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjects { get; }
 
@@ -93,7 +93,7 @@ namespace SqlPad.Oracle
 					TryGetSchemaObjectFunctionMetadata(schemaObject, out functionMetadataSource);
 				}
 
-				functionMetadataSource.AddRange(NonPackageBuiltInFunctionMetadata[identifier.Name]);
+				functionMetadataSource.AddRange(NonSchemaBuiltInFunctionMetadata[identifier.Name]);
 
 				var metadata = TryFindFunctionOverload(functionMetadataSource, identifier.Name, parameterCount);
 				if (metadata != null)
@@ -128,13 +128,30 @@ namespace SqlPad.Oracle
 			{
 				return ((byte[])value).ToHexString();
 			}
-			
+
+			if (columnHeader.DatabaseDataType.In("Blob", "LongRaw"))
+			{
+				var dataTypeLabel = columnHeader.DatabaseDataType == "Blob" ? "BLOB" : "LONG RAW";
+				return CreateLargeBinaryValue(value, dataTypeLabel);
+			}
+
+			if (columnHeader.DatabaseDataType.In("Clob", "Long"))
+			{
+				var text = (string)value;
+				return new LargeTextValue { Value = text, Preview = text.Length > 1020 ? String.Format("{0}{1}", text.Substring(0, 1020), "...") : text };
+			}
+
 			if (columnHeader.DataType == TypeDateTime)
 			{
 				return ((DateTime)value).ToString(CultureInfo.CurrentUICulture);
 			}
 			
 			return value;
+		}
+
+		private static object CreateLargeBinaryValue(object value, string dataType)
+		{
+			return new LargeBinaryValue { Data = (byte[])value, Preview = String.Format("({0})", dataType.ToUpperInvariant()) };
 		}
 
 		private static bool TryGetSchemaObjectFunctionMetadata(OracleSchemaObject schemaObject, out ICollection<OracleFunctionMetadata> functionMetadata)

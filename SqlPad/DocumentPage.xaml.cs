@@ -842,4 +842,28 @@ namespace SqlPad
 			
 		}
 	}
+
+	public struct LargeBinaryValue
+	{
+		public string Preview { get; set; }
+		
+		public byte[] Data { get; set; }
+
+		public override string ToString()
+		{
+			return Preview;
+		}
+	}
+
+	public struct LargeTextValue
+	{
+		public string Preview { get; set; }
+		
+		public string Value { get; set; }
+
+		public override string ToString()
+		{
+			return Preview;
+		}
+	}
 }

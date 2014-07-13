@@ -6,16 +6,18 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Threading;
 using System.Threading.Tasks;
-using System.Timers;
 using System.Xml;
 using Oracle.DataAccess.Client;
+using Timer = System.Timers.Timer;
 
 namespace SqlPad.Oracle
 {
 	public class OracleDatabaseModel : OracleDatabaseModelBase
 	{
 		private readonly object _lockObject = new object();
+		private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 		private readonly OracleConnectionStringBuilder _oracleConnectionString;
 		private const int RefreshInterval = 10;
 		private readonly Timer _timer = new Timer(RefreshInterval * 60000);
@@ -29,7 +31,7 @@ namespace SqlPad.Oracle
 		private Task _statementExecutionTask;
 		private OracleFunctionMetadataCollection _allFunctionMetadata = new OracleFunctionMetadataCollection(Enumerable.Empty<OracleFunctionMetadata>());
 		private OracleFunctionMetadataCollection _builtInFunctionMetadata = new OracleFunctionMetadataCollection(Enumerable.Empty<OracleFunctionMetadata>());
-		private ILookup<string, OracleFunctionMetadata> _nonPackageBuiltInFunctionMetadata = Enumerable.Empty<OracleFunctionMetadata>().ToLookup(m => m.Identifier.Name, m => m);
+		private ILookup<string, OracleFunctionMetadata> _nonSchemaBuiltInFunctionMetadata = Enumerable.Empty<OracleFunctionMetadata>().ToLookup(m => m.Identifier.Name, m => m);
 		private readonly ConnectionStringSettings _connectionString;
 		private HashSet<string> _schemas = new HashSet<string>();
 		private HashSet<string> _allSchemas = new HashSet<string>();
@@ -104,13 +106,13 @@ namespace SqlPad.Oracle
 			private set
 			{
 				_builtInFunctionMetadata = value;
-				_nonPackageBuiltInFunctionMetadata = value.SqlFunctions.Where(f => String.IsNullOrEmpty(f.Identifier.Owner)).ToLookup(f => f.Identifier.Name, f => f);
+				_nonSchemaBuiltInFunctionMetadata = value.SqlFunctions.Where(f => String.IsNullOrEmpty(f.Identifier.Owner)).ToLookup(f => f.Identifier.Name, f => f);
 			}
 		}
 
 		public override OracleFunctionMetadataCollection AllFunctionMetadata { get { return _allFunctionMetadata; } }
 
-		protected override ILookup<string, OracleFunctionMetadata> NonPackageBuiltInFunctionMetadata { get { return _nonPackageBuiltInFunctionMetadata; } }
+		protected override ILookup<string, OracleFunctionMetadata> NonSchemaBuiltInFunctionMetadata { get { return _nonSchemaBuiltInFunctionMetadata; } }
 
 		public override ConnectionStringSettings ConnectionString { get { return _connectionString; } }
 
@@ -152,16 +154,19 @@ namespace SqlPad.Oracle
 			}
 			else
 			{
-				_backgroundTask = _backgroundTask.ContinueWith(t => LoadSchemaObjectMetadata());
+				_backgroundTask = _backgroundTask.ContinueWith(
+					t =>
+					{
+						t.Dispose();
+						LoadSchemaObjectMetadata();
+					});
 			}
 		}
-
-		private const string GetObjectScriptCommand = "SELECT SYS.DBMS_METADATA.GET_DDL(OBJECT_TYPE => :OBJECT_TYPE, NAME => :NAME, SCHEMA => :SCHEMA) SCRIPT FROM SYS.DUAL";
 
 		public override string GetObjectScript(OracleSchemaObject schemaObject)
 		{
 			return ExecuteReader(
-				GetObjectScriptCommand,
+				DatabaseCommands.GetObjectScriptCommand,
 				c => c.AddSimpleParameter("OBJECT_TYPE", schemaObject.Type.ToUpperInvariant())
 					.AddSimpleParameter("NAME", schemaObject.FullyQualifiedName.Name.Trim('"'))
 					.AddSimpleParameter("SCHEMA", schemaObject.FullyQualifiedName.Owner == SchemaPublic ? null : schemaObject.FullyQualifiedName.Owner.Trim('"')),
@@ -226,7 +231,7 @@ namespace SqlPad.Oracle
 					_dataDictionary = _dataDictionary,
 					_allFunctionMetadata = _allFunctionMetadata,
 					_builtInFunctionMetadata = _builtInFunctionMetadata,
-					_nonPackageBuiltInFunctionMetadata = _nonPackageBuiltInFunctionMetadata
+					_nonSchemaBuiltInFunctionMetadata = _nonSchemaBuiltInFunctionMetadata
 				};
 
 			return clone;
@@ -234,163 +239,12 @@ namespace SqlPad.Oracle
 
 		private OracleFunctionMetadataCollection GetUserFunctionMetadata()
 		{
-			const string getUserFunctionMetadataCommandText =
-@"SELECT
-    OWNER,
-    PACKAGE_NAME,
-    FUNCTION_NAME,
-	NVL(OVERLOAD, 0) OVERLOAD,
-    AGGREGATE ANALYTIC,
-    AGGREGATE,
-    PIPELINED,
-    'NO' OFFLOADABLE,
-    PARALLEL,
-    DETERMINISTIC,
-    NULL MINARGS,
-    NULL MAXARGS,
-    AUTHID,
-    'NORMAL' DISP_TYPE
-FROM
-    (SELECT DISTINCT
-        OWNER,
-        CASE WHEN OBJECT_TYPE = 'PACKAGE' THEN OBJECT_NAME END PACKAGE_NAME,
-        CASE WHEN OBJECT_TYPE = 'FUNCTION' THEN OBJECT_NAME ELSE PROCEDURE_NAME END FUNCTION_NAME,
-		OVERLOAD,
-        AGGREGATE,
-        PIPELINED,
-        PARALLEL,
-        DETERMINISTIC,
-        AUTHID
-    FROM
-        ALL_PROCEDURES
-    WHERE
-        NOT (OWNER = 'SYS' AND OBJECT_NAME = 'STANDARD') AND
-        (ALL_PROCEDURES.OBJECT_TYPE = 'FUNCTION' OR (ALL_PROCEDURES.OBJECT_TYPE = 'PACKAGE' AND ALL_PROCEDURES.PROCEDURE_NAME IS NOT NULL))
-	AND EXISTS
-        (SELECT
-            NULL
-        FROM
-            ALL_ARGUMENTS
-        WHERE
-            ALL_PROCEDURES.OBJECT_ID = OBJECT_ID AND NVL(ALL_PROCEDURES.PROCEDURE_NAME, ALL_PROCEDURES.OBJECT_NAME) = OBJECT_NAME AND NVL(OVERLOAD, 0) = NVL(ALL_PROCEDURES.OVERLOAD, 0) AND
-            POSITION = 0 AND ARGUMENT_NAME IS NULL
-        )
-	)
-ORDER BY
-	OWNER,
-    PACKAGE_NAME,
-    FUNCTION_NAME";
-
-			const string getUserFunctionParameterMetadataCommandText =
-@"SELECT
-    OWNER,
-    PACKAGE_NAME,
-    OBJECT_NAME FUNCTION_NAME,
-    NVL(OVERLOAD, 0) OVERLOAD,
-    ARGUMENT_NAME,
-    POSITION,
-    DATA_TYPE,
-    DEFAULTED,
-    IN_OUT
-FROM
-    ALL_ARGUMENTS
-WHERE
-    NOT (OWNER = 'SYS' AND OBJECT_NAME = 'STANDARD')
-ORDER BY
-    OWNER,
-    PACKAGE_NAME,
-    POSITION";
-
-			return GetFunctionMetadataCollection(getUserFunctionMetadataCommandText, getUserFunctionParameterMetadataCommandText, false);
+			return GetFunctionMetadataCollection(DatabaseCommands.UserFunctionMetadataCommandText, DatabaseCommands.UserFunctionParameterMetadataCommandText, false);
 		}
 
 		private void GenerateBuiltInFunctionMetadata()
 		{
-			const string getBuiltInFunctionMetadataCommandText =
-@"SELECT
-    OWNER,
-    PACKAGE_NAME,
-    NVL(SQL_FUNCTION_METADATA.FUNCTION_NAME, PROCEDURES.FUNCTION_NAME) FUNCTION_NAME,
-	NVL(OVERLOAD, 0) OVERLOAD,
-    NVL(ANALYTIC, PROCEDURES.AGGREGATE) ANALYTIC,
-    NVL(SQL_FUNCTION_METADATA.AGGREGATE, PROCEDURES.AGGREGATE) AGGREGATE,
-    NVL(PIPELINED, 'NO') PIPELINED,
-    NVL(OFFLOADABLE, 'NO') OFFLOADABLE,
-    NVL(PARALLEL, 'NO') PARALLEL,
-    NVL(DETERMINISTIC, 'NO') DETERMINISTIC,
-    MINARGS,
-    MAXARGS,
-    NVL(AUTHID, 'CURRENT_USER') AUTHID,
-    NVL(DISP_TYPE, 'NORMAL') DISP_TYPE
-FROM
-    (SELECT DISTINCT
-		OWNER,
-        OBJECT_NAME PACKAGE_NAME,
-        PROCEDURE_NAME FUNCTION_NAME,
-		OVERLOAD,
-        AGGREGATE,
-        PIPELINED,
-        PARALLEL,
-        DETERMINISTIC,
-        AUTHID
-    FROM
-        ALL_PROCEDURES
-    WHERE
-        OWNER = 'SYS' AND OBJECT_NAME = 'STANDARD' AND PROCEDURE_NAME NOT LIKE '%SYS$%' AND
-        (ALL_PROCEDURES.OBJECT_TYPE = 'FUNCTION' OR (ALL_PROCEDURES.OBJECT_TYPE = 'PACKAGE' AND ALL_PROCEDURES.PROCEDURE_NAME IS NOT NULL))
-		AND EXISTS
-			(SELECT
-				NULL
-			FROM
-				ALL_ARGUMENTS
-			WHERE
-				ALL_PROCEDURES.OBJECT_ID = ALL_ARGUMENTS.OBJECT_ID AND ALL_PROCEDURES.PROCEDURE_NAME = ALL_ARGUMENTS.OBJECT_NAME AND NVL(ALL_ARGUMENTS.OVERLOAD, 0) = NVL(ALL_PROCEDURES.OVERLOAD, 0) AND
-				POSITION = 0 AND ARGUMENT_NAME IS NULL
-			)
-	) PROCEDURES
-FULL JOIN
-    (SELECT
-        NAME FUNCTION_NAME,
-        NVL(MAX(NULLIF(ANALYTIC, 'NO')), 'NO') ANALYTIC,
-        NVL(MAX(NULLIF(AGGREGATE, 'NO')), 'NO') AGGREGATE,
-        OFFLOADABLE,
-        MIN(MINARGS) MINARGS,
-        MAX(MAXARGS) MAXARGS,
-        DISP_TYPE
-    FROM
-        V$SQLFN_METADATA
-    WHERE
-        DISP_TYPE NOT IN ('REL-OP', 'ARITHMATIC')
-    GROUP BY
-        NAME,
-        OFFLOADABLE,
-        DISP_TYPE) SQL_FUNCTION_METADATA
-ON PROCEDURES.FUNCTION_NAME = SQL_FUNCTION_METADATA.FUNCTION_NAME
-ORDER BY
-    FUNCTION_NAME";
-
-			const string getBuiltInFunctionParameterMetadataCommandText =
-@"SELECT
-	OWNER,
-    PACKAGE_NAME,
-	OBJECT_NAME FUNCTION_NAME,
-	NVL(OVERLOAD, 0) OVERLOAD,
-	ARGUMENT_NAME,
-	POSITION,
-	DATA_TYPE,
-	DEFAULTED,
-	IN_OUT
-FROM
-	ALL_ARGUMENTS
-WHERE
-	OWNER = 'SYS'
-	AND PACKAGE_NAME = 'STANDARD'
-	AND OBJECT_NAME NOT LIKE '%SYS$%'
-	AND DATA_TYPE IS NOT NULL
-ORDER BY
-    POSITION";
-
-			BuiltInFunctionMetadata = GetFunctionMetadataCollection(getBuiltInFunctionMetadataCommandText, getBuiltInFunctionParameterMetadataCommandText, true);
+			BuiltInFunctionMetadata = GetFunctionMetadataCollection(DatabaseCommands.BuiltInFunctionMetadataCommandText, DatabaseCommands.BuiltInFunctionParameterMetadataCommandText, true);
 
 			using (var writer = XmlWriter.Create(MetadataCache.GetFullFileName(SqlFuntionMetadataFileName)))
 			{
@@ -653,9 +507,8 @@ ORDER BY
 
 			var allObjects = new Dictionary<OracleObjectIdentifier, OracleSchemaObject>();
 
-			var selectTypesCommandText = String.Format("SELECT OWNER, TYPE_NAME, TYPECODE, PREDEFINED, INCOMPLETE, FINAL, INSTANTIABLE, SUPERTYPE_OWNER, SUPERTYPE_NAME FROM SYS.ALL_TYPES WHERE TYPECODE IN ('{0}', '{1}', '{2}')", OracleTypeBase.ObjectType, OracleTypeBase.CollectionType, OracleTypeBase.XmlType);
 			var schemaTypeMetadataSource = ExecuteReader(
-				selectTypesCommandText, null,
+				DatabaseCommands.SelectTypesCommandText, null,
 				r =>
 				{
 					OracleTypeBase schemaType = null;
@@ -689,9 +542,8 @@ ORDER BY
 				AddSchemaObjectToDictionary(allObjects, schemaType);
 			}
 
-			const string selectAllObjectsCommandText = "SELECT OWNER, OBJECT_NAME, SUBOBJECT_NAME, OBJECT_ID, DATA_OBJECT_ID, OBJECT_TYPE, CREATED, LAST_DDL_TIME, STATUS, TEMPORARY/*, EDITIONABLE, EDITION_NAME*/ FROM SYS.ALL_OBJECTS WHERE OBJECT_TYPE IN ('SYNONYM', 'VIEW', 'TABLE', 'SEQUENCE', 'FUNCTION', 'PACKAGE', 'TYPE')";
 			ExecuteReader(
-				selectAllObjectsCommandText, null,
+				DatabaseCommands.SelectAllObjectsCommandText, null,
 				r =>
 				{
 					var objectTypeIdentifer = OracleObjectIdentifier.Create(QualifyStringObject(r["OWNER"]), QualifyStringObject(r["OBJECT_NAME"]));
@@ -722,18 +574,8 @@ ORDER BY
 				})
 				.ToArray();
 
-			//var allObjects = dataObjectMetadataSource.ToDictionary(m => m.FullyQualifiedObjectName, m => m);
-
-			const string selectTablesCommandText =
-@"SELECT OWNER, TABLE_NAME, TABLESPACE_NAME, CLUSTER_NAME, STATUS, LOGGING, NUM_ROWS, BLOCKS, AVG_ROW_LEN, DEGREE, CACHE, SAMPLE_SIZE, LAST_ANALYZED, TEMPORARY, NESTED, ROW_MOVEMENT, COMPRESS_FOR,
-CASE
-	WHEN TEMPORARY = 'N' AND TABLESPACE_NAME IS NULL AND PARTITIONED = 'NO' AND IOT_TYPE IS NULL AND PCT_FREE = 0 THEN 'External'
-	WHEN IOT_TYPE = 'IOT' THEN 'Index'
-	ELSE 'Heap'
-END ORGANIZATION
-FROM ALL_TABLES";
 			ExecuteReader(
-				selectTablesCommandText, null,
+				DatabaseCommands.SelectTablesCommandText, null,
 				r =>
 				{
 					var tableFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(r["OWNER"]), QualifyStringObject(r["TABLE_NAME"]));
@@ -749,9 +591,8 @@ FROM ALL_TABLES";
 				})
 				.ToArray();
 
-			const string selectSynonymTargetsCommandText = "SELECT OWNER, SYNONYM_NAME, TABLE_OWNER, TABLE_NAME FROM SYS.ALL_SYNONYMS";
 			ExecuteReader(
-				selectSynonymTargetsCommandText, null,
+				DatabaseCommands.SelectSynonymTargetsCommandText, null,
 				r =>
 				{
 					var synonymFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(r["OWNER"]), QualifyStringObject(r["SYNONYM_NAME"]));
@@ -776,9 +617,8 @@ FROM ALL_TABLES";
 				}
 				).ToArray();
 
-			const string selectTableColumnsCommandText = "SELECT OWNER, TABLE_NAME, COLUMN_NAME, DATA_TYPE, DATA_TYPE_OWNER, DATA_LENGTH, CHAR_LENGTH, DATA_PRECISION, DATA_SCALE, CHAR_USED, NULLABLE, COLUMN_ID, NUM_DISTINCT, LOW_VALUE, HIGH_VALUE, NUM_NULLS, NUM_BUCKETS, LAST_ANALYZED, SAMPLE_SIZE, AVG_COL_LEN, HISTOGRAM FROM SYS.ALL_TAB_COLUMNS ORDER BY OWNER, TABLE_NAME, COLUMN_ID";
 			var columnMetadataSource = ExecuteReader(
-				selectTableColumnsCommandText, null,
+				DatabaseCommands.SelectTableColumnsCommandText, null,
 				r =>
 				{
 					var dataTypeOwnerRaw = r["DATA_TYPE_OWNER"];
@@ -813,9 +653,8 @@ FROM ALL_TABLES";
 				dataObject.Columns.Add(columnMetadata.Value.Name, columnMetadata.Value);
 			}
 
-			const string selectConstraintsCommandText = "SELECT OWNER, CONSTRAINT_NAME, CONSTRAINT_TYPE, TABLE_NAME, SEARCH_CONDITION, R_OWNER, R_CONSTRAINT_NAME, DELETE_RULE, STATUS, DEFERRABLE, VALIDATED, RELY, INDEX_OWNER, INDEX_NAME FROM SYS.ALL_CONSTRAINTS WHERE CONSTRAINT_TYPE IN ('C', 'R', 'P', 'U')";
 			var constraintSource = ExecuteReader(
-				selectConstraintsCommandText, null,
+				DatabaseCommands.SelectConstraintsCommandText, null,
 				r =>
 				{
 					var remoteConstraintIdentifier = OracleObjectIdentifier.Empty;
@@ -861,9 +700,8 @@ FROM ALL_TABLES";
 				constraints[constraintPair.Key.FullyQualifiedName] = constraintPair.Key;
 			}
 
-			const string selectConstraintColumnsCommandText = "SELECT OWNER, CONSTRAINT_NAME, COLUMN_NAME, POSITION FROM SYS.ALL_CONS_COLUMNS ORDER BY OWNER, CONSTRAINT_NAME, POSITION";
 			var constraintColumns = ExecuteReader(
-				selectConstraintColumnsCommandText, null,
+				DatabaseCommands.SelectConstraintColumnsCommandText, null,
 				r =>
 				{
 					var column = (string)r["COLUMN_NAME"];
@@ -893,9 +731,8 @@ FROM ALL_TABLES";
 				foreignKeyConstraint.ReferenceConstraint = referenceConstraint;
 			}
 
-			const string selectSequencesCommandText = "SELECT SEQUENCE_OWNER, SEQUENCE_NAME, MIN_VALUE, MAX_VALUE, INCREMENT_BY, CYCLE_FLAG, ORDER_FLAG, CACHE_SIZE, LAST_NUMBER FROM SYS.ALL_SEQUENCES";
 			ExecuteReader(
-				selectSequencesCommandText, null,
+				DatabaseCommands.SelectSequencesCommandText, null,
 				r =>
 				{
 					var sequenceFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(r["SEQUENCE_OWNER"]), QualifyStringObject(r["SEQUENCE_NAME"]));
@@ -916,9 +753,8 @@ FROM ALL_TABLES";
 				})
 				.ToArray();
 
-			const string selectTypeAttributesCommandText = "SELECT OWNER, TYPE_NAME, ATTR_NAME, ATTR_TYPE_MOD, ATTR_TYPE_OWNER, ATTR_TYPE_NAME, LENGTH, PRECISION, SCALE, ATTR_NO, CHAR_USED FROM SYS.ALL_TYPE_ATTRS ORDER BY OWNER, TYPE_NAME, ATTR_NO";
 			ExecuteReader(
-				selectTypeAttributesCommandText, null,
+				DatabaseCommands.SelectTypeAttributesCommandText, null,
 				r =>
 				{
 					var typeFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(r["OWNER"]), QualifyStringObject(r["TYPE_NAME"]));
@@ -960,9 +796,7 @@ FROM ALL_TABLES";
 
 			_dataDictionary = new OracleDataDictionary(allObjects, lastRefresh);
 
-			var writeWatch = Stopwatch.StartNew();
 			MetadataCache.StoreDatabaseModelCache(CachedConnectionStringName, stream => _dataDictionary.Serialize(stream));
-			Trace.WriteLine(string.Format("Cache for '{0}' stored in {1}", _connectionString.ConnectionString, writeWatch.Elapsed));
 
 			_isRefreshing = false;
 			RaiseEvent(RefreshFinished);
@@ -981,7 +815,7 @@ FROM ALL_TABLES";
 					RaiseEvent(RefreshStarted);
 					var readWatch = Stopwatch.StartNew();
 					_dataDictionary = OracleDataDictionary.Deserialize(stream);
-					Trace.WriteLine(string.Format("Cache for '{0}' loaded in {1}", _connectionString.ConnectionString, readWatch.Elapsed));
+					Trace.WriteLine(String.Format("{0} - Cache for '{1}' loaded in {2}", DateTime.Now, CachedConnectionStringName, readWatch.Elapsed));
 
 					var functionMetadata = _dataDictionary.AllObjects.Values
 						.OfType<IFunctionCollection>()
@@ -1027,9 +861,8 @@ FROM ALL_TABLES";
 
 		private void LoadSchemaNames()
 		{
-			const string selectAllSchemasCommandText = "SELECT USERNAME FROM SYS.ALL_USERS";
 			var schemaSource = ExecuteReader(
-				selectAllSchemasCommandText, null,
+				DatabaseCommands.SelectAllSchemasCommandText, null,
 				r => ((string)r["USERNAME"]))
 				.ToArray();
 

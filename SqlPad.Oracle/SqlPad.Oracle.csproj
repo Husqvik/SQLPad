@@ -81,6 +81,7 @@
     <Compile Include="Commands\ResolveAmbiguousColumnCommand.cs" />
     <Compile Include="Commands\AddAliasCommand.cs" />
     <Compile Include="Commands\OracleCommandFactory.cs" />
+    <Compile Include="DatabaseCommands.cs" />
     <Compile Include="OracleCodeCompletionItem.cs" />
     <Compile Include="OracleCodeCompletionProvider.cs" />
     <Compile Include="OracleColumn.cs" />
