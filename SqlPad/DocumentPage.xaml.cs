@@ -831,7 +831,7 @@ namespace SqlPad
 			if (e.Delta >= 0 || scrollViewer == null)
 				return;
 
-			if (scrollViewer.ScrollableHeight == scrollViewer.VerticalOffset)
+			if (scrollViewer.ScrollableHeight == scrollViewer.VerticalOffset && _databaseModel.CanFetch)
 			{
 				FetchNextRows(sender, null);
 			}

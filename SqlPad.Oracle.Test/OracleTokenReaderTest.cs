@@ -363,24 +363,57 @@ namespace SqlPad.Oracle.Test
 			tokenIndexes.ShouldBe(new[] { 0, 7, 9, 14, 19, 25, 26, 28, 29, 32, 33, 35, 36, 39, 40, 42, 43, 46, 48, 51 });
 		}
 
-		private string[] GetTokenValuesFromOracleSql(string sqlText)
+		[Test(Description = "Tests including comment blocks in tokens. "), Ignore]
+		public void TestIncludingCommentBlocks()
 		{
-			return GetTokensFromOracleSql(sqlText).Select(t => t.Value).ToArray();
+			const string testQuery = @"SELECT /* block comment */ 1 FROM --line comment\n DUAL";
+			var tokens = GetTokenValuesFromOracleSql(testQuery, true);
+			tokens.ShouldBe(new[] { "SELECT", "/* block comment */", "1", "FROM", "--line comment", "DUAL" });
+
+			var tokenIndexes = GetTokenIndexesFromOracleSql(testQuery, true);
+			tokenIndexes.ShouldBe(new[] { 0, 7, 27, 29, 34, 53 });
 		}
 
-		private int[] GetTokenIndexesFromOracleSql(string sqlText)
+		[Test(Description = "Tests quote character in string literal. "), Ignore]
+		public void TestQuoteCharacterInStringLiteral()
 		{
-			return GetTokensFromOracleSql(sqlText).Select(t => t.Index).ToArray();
+			const string testQuery = @"SELECT 'begin''middle''end' FROM DUAL";
+			var tokens = GetTokenValuesFromOracleSql(testQuery, true);
+			tokens.ShouldBe(new[] { "SELECT", "'begin''middle''end'", "FROM", "DUAL" });
+
+			var tokenIndexes = GetTokenIndexesFromOracleSql(testQuery, true);
+			tokenIndexes.ShouldBe(new[] { 0, 7, 28, 33 });
 		}
 
-		private static IEnumerable<OracleToken> GetTokensFromOracleSql(string sqlText)
+		[Test(Description = "Tests quote character in quoted string literal. "), Ignore]
+		public void TestQuoteCharacterInQuotedStringLiteral()
+		{
+			const string testQuery = @"SELECT q'|begin'''middle'''end|' FROM DUAL";
+			var tokens = GetTokenValuesFromOracleSql(testQuery, true);
+			tokens.ShouldBe(new[] { "SELECT", "q'|begin'''middle'''end|'", "FROM", "DUAL" });
+
+			var tokenIndexes = GetTokenIndexesFromOracleSql(testQuery, true);
+			tokenIndexes.ShouldBe(new[] { 0, 7, 33, 38 });
+		}
+
+		private string[] GetTokenValuesFromOracleSql(string sqlText, bool includeCommentBlocks = false)
+		{
+			return GetTokensFromOracleSql(sqlText, includeCommentBlocks).Select(t => t.Value).ToArray();
+		}
+
+		private int[] GetTokenIndexesFromOracleSql(string sqlText, bool includeCommentBlocks = false)
+		{
+			return GetTokensFromOracleSql(sqlText, includeCommentBlocks).Select(t => t.Index).ToArray();
+		}
+
+		private static IEnumerable<OracleToken> GetTokensFromOracleSql(string sqlText, bool includeCommentBlocks)
 		{
 			Trace.WriteLine("SQL text: " + sqlText);
 
 			using (var reader = new StringReader(sqlText))
 			{
 				var tokenReader = OracleTokenReader.Create(reader);
-				return tokenReader.GetTokens().Cast<OracleToken>().ToArray();
+				return tokenReader.GetTokens(includeCommentBlocks).Cast<OracleToken>().ToArray();
 			}
 		}
     }
