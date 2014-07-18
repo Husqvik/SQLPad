@@ -7,10 +7,13 @@ namespace SqlPad
 {
 	public class StatementCollection : ReadOnlyCollection<StatementBase>
 	{
-		public StatementCollection(IList<StatementBase> statements)
+		public StatementCollection(IList<StatementBase> statements, IEnumerable<StatementCommentNode> comments)
 			: base(statements)
 		{
+			Comments = comments.ToList().AsReadOnly();
 		}
+
+		public ICollection<StatementCommentNode> Comments { get; private set; }
 
 		public StatementBase GetStatementAtPosition(int position)
 		{

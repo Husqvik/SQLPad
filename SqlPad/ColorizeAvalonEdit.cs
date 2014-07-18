@@ -17,7 +17,8 @@ namespace SqlPad
 		private static readonly SolidColorBrush HighlightDefinitionBrush = new SolidColorBrush(Colors.SandyBrown);
 		private static readonly SolidColorBrush KeywordBrush = new SolidColorBrush(Colors.Blue);
 		private static readonly SolidColorBrush LiteralBrush = new SolidColorBrush(Colors.SaddleBrown/*Color.FromRgb(214, 157, 133)*/);
-		private static readonly SolidColorBrush AliasBrush = new SolidColorBrush(Colors.Green);
+		private static readonly SolidColorBrush AliasBrush = new SolidColorBrush(Colors.MidnightBlue);
+		private static readonly SolidColorBrush CommentBrush = new SolidColorBrush(Colors.Green);
 		private static readonly SolidColorBrush ProgramBrush = new SolidColorBrush(Colors.Magenta);
 		private static readonly SolidColorBrush ValidStatementBackgroundBrush = new SolidColorBrush(Color.FromArgb(32, Colors.LightGreen.R, Colors.LightGreen.G, Colors.LightGreen.B));
 		private static readonly SolidColorBrush InvalidStatementBackgroundBrush = new SolidColorBrush(Color.FromArgb(32, Colors.PaleVioletRed.R, Colors.PaleVioletRed.G, Colors.PaleVioletRed.B));
@@ -26,6 +27,7 @@ namespace SqlPad
 		private readonly List<StatementDescriptionNode> _highlightParenthesis = new List<StatementDescriptionNode>();
 		private readonly Dictionary<DocumentLine, ICollection<StatementDescriptionNode>> _lineTerminals = new Dictionary<DocumentLine, ICollection<StatementDescriptionNode>>();
 		private readonly Dictionary<DocumentLine, ICollection<StatementDescriptionNode>> _lineNodesWithSemanticErrorsOrInvalidGrammar = new Dictionary<DocumentLine, ICollection<StatementDescriptionNode>>();
+		private readonly Dictionary<DocumentLine, ICollection<StatementCommentNode>> _lineComments = new Dictionary<DocumentLine, ICollection<StatementCommentNode>>();
 		private readonly HashSet<StatementDescriptionNode> _recognizedProgramTerminals = new HashSet<StatementDescriptionNode>();
 		private readonly HashSet<StatementDescriptionNode> _unrecognizedTerminals = new HashSet<StatementDescriptionNode>();
 
@@ -73,6 +75,7 @@ namespace SqlPad
 			_recognizedProgramTerminals.Clear();
 			_unrecognizedTerminals.Clear();
 			_lineNodesWithSemanticErrorsOrInvalidGrammar.Clear();
+			_lineComments.Clear();
 		}
 
 		public void SetHighlightParenthesis(ICollection<StatementDescriptionNode> parenthesisNodes)
@@ -125,7 +128,14 @@ namespace SqlPad
 			BuildUnrecognizedTerminalHashset();
 
 			BuildLineNodeWithSemanticErrorOrInvalidGrammarDictionary(context);
-		
+
+			//BuildLineCommentDictionary(context);
+		}
+
+		private void BuildLineCommentDictionary(ITextRunConstructionContext context)
+		{
+			var commentEnumerator = _statements.Comments.GetEnumerator();
+			BuildLineNodeDictionary(commentEnumerator, context, _lineComments);
 		}
 
 		private void BuildLineNodeWithSemanticErrorOrInvalidGrammarDictionary(ITextRunConstructionContext context)
@@ -166,14 +176,17 @@ namespace SqlPad
 			BuildLineNodeDictionary(terminalEnumerator, context, _lineTerminals);
 		}
 
-		private static void BuildLineNodeDictionary(IEnumerator<StatementDescriptionNode> nodeEnumerator, ITextRunConstructionContext context, Dictionary<DocumentLine, ICollection<StatementDescriptionNode>> dictionary)
+		private static void BuildLineNodeDictionary<TNode>(IEnumerator<TNode> nodeEnumerator, ITextRunConstructionContext context, IDictionary<DocumentLine, ICollection<TNode>> dictionary) where TNode : StatementNode
 		{
 			if (!nodeEnumerator.MoveNext())
 				return;
 
 			foreach (var line in context.Document.Lines)
 			{
-				var singleLineTerminals = new List<StatementDescriptionNode>();
+				if (nodeEnumerator.Current == null)
+					break;
+
+				var singleLineTerminals = new List<TNode>();
 				dictionary.Add(line, singleLineTerminals);
 
 				do
@@ -219,6 +232,9 @@ namespace SqlPad
 
 			ProcessNodeCollectionAtLine(line, _lineNodesWithSemanticErrorsOrInvalidGrammar,
 				element => element.TextRunProperties.SetTextDecorations(Resources.WaveErrorUnderline));
+
+			ProcessNodeCollectionAtLine(line, _lineComments,
+				element => element.TextRunProperties.SetForegroundBrush(CommentBrush));
 
 			foreach (var parenthesisNode in _highlightParenthesis)
 			{
@@ -274,9 +290,9 @@ namespace SqlPad
 			}
 		}
 
-		private void ProcessNodeCollectionAtLine(DocumentLine line, IReadOnlyDictionary<DocumentLine, ICollection<StatementDescriptionNode>> lineNodeDictionary, Action<VisualLineElement> visualElementAction)
+		private void ProcessNodeCollectionAtLine<TNode>(DocumentLine line, IReadOnlyDictionary<DocumentLine, ICollection<TNode>> lineNodeDictionary, Action<VisualLineElement> visualElementAction) where TNode : StatementNode
 		{
-			ICollection<StatementDescriptionNode> nodes;
+			ICollection<TNode> nodes;
 			if (!lineNodeDictionary.TryGetValue(line, out nodes))
 				return;
 			

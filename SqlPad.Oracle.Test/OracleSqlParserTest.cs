@@ -373,8 +373,9 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-			result.Single().RootNode.ShouldBe(null);
+			var statement = result.Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.RootNode.ShouldBe(null);
 		}
 
 		[Test(Description = @"Tests parsing of valid statement after invalid statement. ")]
@@ -384,13 +385,15 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(2);
-			result.First().Validate().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
-			result.First().RootNode.ChildNodes.Count.ShouldBe(1);
-			result.First().AllTerminals.Count().ShouldBe(4);
+			var firstStatement = result.First();
+			firstStatement.Validate().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			firstStatement.RootNode.ChildNodes.Count.ShouldBe(1);
+			firstStatement.AllTerminals.Count().ShouldBe(4);
 
-			result.Last().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-			result.Last().RootNode.ChildNodes.Count.ShouldBe(1);
-			result.Last().AllTerminals.Count().ShouldBe(4);
+			var secondStatement = result.Last();
+			secondStatement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			secondStatement.RootNode.ChildNodes.Count.ShouldBe(1);
+			secondStatement.AllTerminals.Count().ShouldBe(4);
 		}
 
 		[Test(Description = @"Tests EXISTS and NOT EXISTS. ")]
@@ -1501,6 +1504,9 @@ FROM DUAL";
 
 			var invalidNodes = rootNode.AllChildNodes.Where(n => !n.IsGrammarValid).ToArray();
 			invalidNodes.Length.ShouldBe(1);
+
+			statement.Comments.Count.ShouldBe(1);
+			statement.Comments.First().Token.Value.ShouldBe("/* missing expression */");
 		}
 
 		[Test(Description = @"")]

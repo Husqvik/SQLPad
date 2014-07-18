@@ -263,7 +263,7 @@ namespace SqlPad
 		private void FetchNextRows(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
 		{
 			var nextRowBatch = _databaseModel.FetchRecords(RowBatchSize);
-			SaveAction(() => _pageModel.ResultRowItems.AddRange(nextRowBatch));
+			SafeAction(() => _pageModel.ResultRowItems.AddRange(nextRowBatch));
 
 			TextMoreRowsExist.Visibility = _databaseModel.CanFetch ? Visibility.Visible : Visibility.Collapsed;
 		}
@@ -319,7 +319,7 @@ namespace SqlPad
 			GridLabel.Visibility = Visibility.Collapsed;
 			TextMoreRowsExist.Visibility = Visibility.Collapsed;
 
-			var actionSuccess = SaveAction(() => _databaseModel.ExecuteStatement(Editor.SelectionLength > 0 ? Editor.SelectedText : statement.RootNode.GetStatementSubstring(Editor.Text), statement.ReturnDataset), true);
+			var actionSuccess = SafeAction(() => _databaseModel.ExecuteStatement(Editor.SelectionLength > 0 ? Editor.SelectedText : statement.RootNode.GetStatementSubstring(Editor.Text), statement.ReturnDataset), true);
 			if (!actionSuccess)
 				return;
 
@@ -338,7 +338,7 @@ namespace SqlPad
 			}
 		}
 
-		private bool SaveAction(Action action, bool showExecutionTime = false)
+		internal bool SafeAction(Action action, bool showExecutionTime = false)
 		{
 			try
 			{
@@ -357,7 +357,7 @@ namespace SqlPad
 			}
 			catch (Exception e)
 			{
-				MessageBox.Show(e.Message, "Error");
+				MessageBox.Show(e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
 				return false;
 			}
 		}

@@ -12,7 +12,7 @@ namespace SqlPad
 		private readonly ISqlParser _parser;
 		private readonly IStatementValidator _validator;
 		private readonly IDatabaseModel _databaseModel;
-		private StatementCollection _statements = new StatementCollection(new StatementBase[0]);
+		private StatementCollection _statements = new StatementCollection(new StatementBase[0], new StatementCommentNode[0]);
 
 		public StatementCollection Statements
 		{

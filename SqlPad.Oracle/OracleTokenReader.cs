@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Text;
 
 namespace SqlPad.Oracle
@@ -9,12 +10,9 @@ namespace SqlPad.Oracle
 	public class OracleTokenReader : IDisposable, ITokenReader
 	{
 		private readonly TextReader _sqlReader;
-		private readonly Queue<int> _buffer = new Queue<int>();
-		private readonly StringBuilder _builder = new StringBuilder();
-		private readonly HashSet<char> _singleCharacterTerminals =
-			new HashSet<char> { '(', ')', ',', ';', '.', '/', '+', '-', '*', '@', ':' };
 
-		private int _currentIndex;
+		private readonly HashSet<char> _singleCharacterTerminalsNew =
+			new HashSet<char> { '(', ')', ',', ';', '+', '@', ':' };
 
 		private OracleTokenReader(TextReader sqlReader)
 		{
@@ -43,258 +41,556 @@ namespace SqlPad.Oracle
 
 		public IEnumerable<IToken> GetTokens(bool includeCommentBlocks = false)
 		{
-			_builder.Clear();
-			_currentIndex = 0;
+			var builder = new StringBuilder();
 
-			var inString = false;
-			var inLineComment = false;
-			var inBlockComment = false;
-			var inQuotedIdentifier = false;
-			var inNumber = false;
-			var inDecimalNumber = false;
-			var inExponent = false;
-			var inExponentWithOperator = false;
-			var yieldToken = false;
-			var currentIndexOffset = 0;
-			string token;
+			var index = 0;
+
+			var inQuotedString = false;
+			char? candidateCharacter = null;
+			char? quotedInitializer = null;
+
+			var specialMode = new SpecialModeFlags();
+			var flags = new RecognizedFlags();
 
 			int characterCode;
-			while ((characterCode = GetNextCharacterCode()) != -1)
+			while ((characterCode = _sqlReader.Read()) != -1)
 			{
-				_currentIndex += currentIndexOffset;
-				currentIndexOffset = 0;
-
+				index++;
 				var character = (char)characterCode;
-				var quotedIdentifierOrLiteralEnabled = false;
+				var isNumericCharacter = characterCode >= 48 && characterCode <= 57;
+				var isNumericPostfix = character == 'f' || character == 'F' || character == 'd' || character == 'D';
+				var isSign = character == '+' || character == '-';
 
-				var isSpace = character == ' ' || character == '\t' || character == '\n' || character == '\r';
-				if (!inBlockComment && !inLineComment)
+				var previousFlags = flags;
+				FindFlags(specialMode, character, out flags);
+
+				var isBlank = flags.IsSpace || flags.IsLineTerminator;
+				var isSingleCharacterTerminal = _singleCharacterTerminalsNew.Contains(character);
+				var characterYielded = false;
+
+				if (flags.QuotedStringCandidate && (builder.Length > 1 || (builder.Length == 1 && character != 'q' && character != 'Q' && previousFlags.Character != 'n' && previousFlags.Character != 'N')))
 				{
-					if (isSpace && !inString && !inQuotedIdentifier)
-					{
-						yieldToken = true;
-					}
-
-					if (character == '"' && !inString)
-					{
-						if (!inQuotedIdentifier && (_builder.Length != 1 || _builder[0] != ':'))
-						{
-							quotedIdentifierOrLiteralEnabled = true;
-						}
-
-						inQuotedIdentifier = !inQuotedIdentifier;
-						yieldToken |= !inQuotedIdentifier;
-					}
-					else if (character == '\'' && !inQuotedIdentifier)
-					{
-						var nextCharacterCode = _sqlReader.Read();
-						var nextCharacter = (char)nextCharacterCode;
-						if (nextCharacter != '\'' || !inString)
-						{
-							if (!inString &&
-								!(_builder.Length == 1 && new[] { 'Q', 'N' }.Any(c => c == _builder.ToString(0, 1).ToUpperInvariant()[0]) ||
-								  _builder.Length == 2 && _builder.ToString(0, 2).ToUpperInvariant() == "NQ"))
-							{
-								quotedIdentifierOrLiteralEnabled = true;
-							}
-
-							inString = !inString;
-							yieldToken |= !inString;
-						}
-
-						if (nextCharacterCode != -1)
-							_buffer.Enqueue(nextCharacter);
-					}
+					flags.QuotedStringCandidate = false;
 				}
 
-				if (!inString && !inQuotedIdentifier && (inBlockComment || inLineComment))
+				if (inQuotedString && quotedInitializer == null)
 				{
-					var nextCharacterCode = _sqlReader.Read();
-					if (nextCharacterCode == -1)
-						continue;
-
-					var nextCharacter = (char)nextCharacterCode;
-					if (inLineComment &&
-						character == Environment.NewLine[0] &&
-						(Environment.NewLine.Length == 1 || nextCharacter == Environment.NewLine[1]))
-					{
-						inLineComment = false;
-					}
-
-					if (inBlockComment && character == '*' && nextCharacter == '/')
-					{
-						inBlockComment = false;
-					}
-
-					if (!inLineComment && !inBlockComment)
-					{
-						currentIndexOffset = 1;
-						continue;
-					}
-
-					_buffer.Enqueue(nextCharacter);
+					quotedInitializer = character;
 				}
 
-				if (!inString && !inQuotedIdentifier && !inBlockComment && !inLineComment && (character == '-' || character == '/'))
+				if (specialMode.InString)
 				{
-					var nextCharacterCode = _sqlReader.Read();
-					var nextCharacter = (char)nextCharacterCode;
-					if (character == '-' && nextCharacter == '-' && !inLineComment)
-						inLineComment = true;
+					var isSimpleStringTerminator = previousFlags.StringEndCandidate && character != '\'' && !inQuotedString;
+					var isQuotedStringTerminator = previousFlags.Character == quotedInitializer && character == '\'' && inQuotedString;
 
-					if (character == '/' && nextCharacter == '*' && !inBlockComment)
-						inBlockComment = true;
-
-					if (inLineComment || inBlockComment)
+					if (isSimpleStringTerminator || isQuotedStringTerminator)
 					{
-						currentIndexOffset = 1;
-						yieldToken = true;
+						AppendCandidateCharacter(builder, ref candidateCharacter);
+
+						var indexOffset = isQuotedStringTerminator ? 0 : 1;
+						var addedCharacter = isQuotedStringTerminator ? (char?)character : null;
+						yield return BuildToken(builder, index - indexOffset, addedCharacter);
+
+						specialMode.InString = false;
+						inQuotedString = false;
+						quotedInitializer = null;
+						characterYielded = isQuotedStringTerminator;
 					}
-					else if (nextCharacterCode != -1)
-						_buffer.Enqueue(nextCharacter);
+					else if (previousFlags.StringEndCandidate && flags.StringEndCandidate && character == '\'')
+					{
+						flags.StringEndCandidate = false;
+					}
+				}
+				else if (!specialMode.IsEnabled && character == '\'')
+				{
+					AppendCandidateCharacter(builder, ref candidateCharacter);
+
+					if (builder.Length > 0 && !previousFlags.QuotedStringCandidate)
+					{
+						yield return BuildToken(builder, index - 1, null);
+					}
+
+					inQuotedString = previousFlags.QuotedStringCandidate;
+
+					specialMode.InString = true;
 				}
 
-				var isSingleCharacterSeparator = _singleCharacterTerminals.Contains(character) && !inString && !inQuotedIdentifier && !inLineComment && !inBlockComment;
-
-				if (!inString && !inQuotedIdentifier && !inBlockComment && !inLineComment)
+				if (previousFlags.BlockCommentBeginCandidate && !specialMode.IsEnabled)
 				{
-					if (characterCode >= 48 && characterCode <= 57)
+					if (builder.Length > 0)
 					{
-						if (_builder.Length == 0 || (_builder.Length == 1 && _builder[0] == '.'))
-						{
-							inNumber = true;
-						}
+						yield return BuildToken(builder, index - 2, null);
+					}
+
+					if (character == '*')
+					{
+						specialMode.InBlockComment = true;
+						AppendCandidateCharacter(builder, ref candidateCharacter);
 					}
 					else
 					{
-						var nextCharacterCode = GetNextCharacterCode(false);
-						var nextCharacter = (char)nextCharacterCode;
-
-						if (characterCode == '.' && (inNumber || (_builder.Length == 0 && nextCharacterCode >= 48 && nextCharacterCode <= 57)) && !inDecimalNumber)
-						{
-							inDecimalNumber = true;
-							isSingleCharacterSeparator = false;
-						}
-						else if (inNumber && !inExponent && (character == 'e' || character == 'E') &&
-							(nextCharacter == '+' || nextCharacter == '-' || (nextCharacterCode >= 48 && nextCharacterCode <= 57)))
-						{
-							inExponent = true;
-						}
-						else if (inExponent && !inExponentWithOperator && (character == '+' || character == '-'))
-						{
-							inExponentWithOperator = true;
-							isSingleCharacterSeparator = false;
-						}
-						else if (inNumber && !isSingleCharacterSeparator)
-						{
-							var precedingCharacterCode = (int)_builder[_builder.Length - 1];
-							if ((character != 'd' && character != 'D' && character != 'f' && character != 'F') || precedingCharacterCode == 'f' || precedingCharacterCode == 'F' || precedingCharacterCode == 'd' || precedingCharacterCode == 'D')
-							{
-								inNumber = false;
-								quotedIdentifierOrLiteralEnabled = true;
-							}
-						}
-
-						if (character == '.' && !inNumber && _builder.Length > 0)
-						{
-							if (nextCharacterCode != -1 && nextCharacterCode >= 48 && nextCharacterCode <= 57)
-							{
-								quotedIdentifierOrLiteralEnabled = true;
-								isSingleCharacterSeparator = false;
-							}
-						}
-
-						if (character == '<' || character == '>')
-						{
-							if (_builder.Length > 0)
-							{
-								yieldToken = true;
-							}
-
-							var isTwin = nextCharacter == '=' || (character == '<' && nextCharacter == '>');
-
-							char previousCharacter;
-							if (!isTwin && (_builder.Length == 0 || (character == '>' && (previousCharacter = _builder[_builder.Length - 1]) != '=' && previousCharacter != '<')))
-							{
-								isSingleCharacterSeparator = true;
-								quotedIdentifierOrLiteralEnabled = false;
-							}
-						}
-						else if (character == '=')
-						{
-							var isOptionalParameterSymbol = nextCharacter == '>';
-							yieldToken |= !isOptionalParameterSymbol;
-
-							if (_builder.Length > 0 && _builder[0] != '<' && _builder[0] != '>' && _builder[0] != '^' && _builder[0] != '!')
-							{
-								yieldToken = true;
-								quotedIdentifierOrLiteralEnabled = isOptionalParameterSymbol;
-								isSingleCharacterSeparator = !isOptionalParameterSymbol;
-							}
-						}
-
-						if (nextCharacterCode != -1)
-							_buffer.Enqueue(nextCharacter);
+						builder.Append(candidateCharacter);
 					}
 
-					if (character == '|' && _builder.Length > 0)
-					{
-						var previousCharacter = _builder[_builder.Length - 1];
-						if (previousCharacter != '|')
-						{
-							quotedIdentifierOrLiteralEnabled = true;
-						}
+					candidateCharacter = null;
 
-						yieldToken = true;
+					flags.BlockCommentEndCandidate = false;
+				}
+
+				if (previousFlags.LineCommentCandidate && !specialMode.IsEnabled)
+				{
+					if (builder.Length > 0)
+					{
+						yield return BuildToken(builder, index - 2, null);
+					}
+
+					AppendCandidateCharacter(builder, ref candidateCharacter);
+
+					if (character == '-')
+					{
+						specialMode.InLineComment = true;
+					}
+					else
+					{
+						yield return BuildToken(builder, index - 1, null);
 					}
 				}
 
-				yieldToken |= isSingleCharacterSeparator;
-
-				if (!isSingleCharacterSeparator && !inLineComment && !inBlockComment && !quotedIdentifierOrLiteralEnabled)
-					_builder.Append(character);
-
-				if (yieldToken || quotedIdentifierOrLiteralEnabled)
+				if (!specialMode.IsEnabled && specialMode.InNumber && !specialMode.InExponent && previousFlags.ExponentCandidate)
 				{
-					var indexOffset = _builder.Length + (quotedIdentifierOrLiteralEnabled || isSingleCharacterSeparator || inLineComment || inBlockComment ? 1 : 0);
-					if (TryNormalizeToken(out token))
-						yield return new OracleToken(token, _currentIndex - indexOffset);
+					if (isNumericCharacter || isSign)
+					{
+						specialMode.InExponent = true;
 
-					_builder.Clear();
+						isSingleCharacterTerminal = false;
+						flags.LineCommentCandidate = false;
+					}
+					else
+					{
+						if (builder.Length > 0)
+						{
+							yield return BuildToken(builder, index - 2, null);
+						}
+
+						specialMode.InNumber = false;
+					}
+
+					AppendCandidateCharacter(builder, ref candidateCharacter);
+				}
+				else if (!specialMode.IsEnabled && specialMode.InNumber && (specialMode.InExponent || !flags.ExponentCandidate) && ((flags.IsDecimalCandidate && specialMode.InDecimalNumber) || !isNumericCharacter))
+				{
+					if (flags.IsDecimalCandidate && !specialMode.InDecimalNumber)
+					{
+						specialMode.InDecimalNumber = true;
+						flags.IsDecimalCandidate = false;
+					}
+					else if (specialMode.InPostfixedNumber || !isNumericPostfix)
+					{
+						AppendCandidateCharacter(builder, ref candidateCharacter);
+
+						if (builder.Length > 0)
+						{
+							yield return BuildToken(builder, index - 1, null);
+						}
+
+						specialMode.InNumber = false;
+					}
+					else if (!specialMode.InPostfixedNumber && isNumericPostfix)
+					{
+						specialMode.InPostfixedNumber = true;
+					}
+				}
+
+				if (!specialMode.IsEnabled && previousFlags.IsDecimalCandidate)
+				{
+					if (specialMode.InNumber)
+					{
+						if (specialMode.InDecimalNumber)
+						{
+							if (builder.Length > 0)
+							{
+								yield return BuildToken(builder, index - 2, null);
+							}
+
+							yield return BuildToken(previousFlags.Character, index - 1);
+							specialMode.InNumber = false;
+						}
+						else
+						{
+							AppendCandidateCharacter(builder, ref candidateCharacter);
+							specialMode.InDecimalNumber = true;
+						}
+					}
+					else if (isNumericCharacter)
+					{
+						if (builder.Length > 0)
+						{
+							yield return BuildToken(builder, index - 2, null);
+						}
+
+						AppendCandidateCharacter(builder, ref candidateCharacter);
+						specialMode.InNumber = true;
+					}
+					else
+					{
+						if (builder.Length > 0)
+						{
+							yield return BuildToken(builder, index - 2, null);
+						}
+
+						yield return BuildToken(previousFlags.Character, index - 1);
+						specialMode.InNumber = false;
+					}
+
+					candidateCharacter = null;
+				}
+
+				if (specialMode.InQuotedIdentifier && character == '"')
+				{
+					AppendCandidateCharacter(builder, ref candidateCharacter);
+
+					if (builder.Length > 0)
+					{
+						yield return BuildToken(builder, index, character);
+					}
+
+					characterYielded = true;
+					specialMode.InQuotedIdentifier = false;
+				}
+				else if (!specialMode.IsEnabled && character == '"')
+				{
+					AppendCandidateCharacter(builder, ref candidateCharacter);
+
+					if (builder.Length > 0)
+					{
+						yield return BuildToken(builder, index - 1, null);
+					}
+
+					specialMode.InQuotedIdentifier = true;
+				}
+
+				if (!specialMode.IsEnabled && (isBlank || isSingleCharacterTerminal || character == '*'))
+				{
+					specialMode.InNumber = false;
+
+					AppendCandidateCharacter(builder, ref candidateCharacter);
 					
-					yieldToken = false;
-					inNumber = false;
-					inDecimalNumber = false;
-					inExponent = false;
-					inExponentWithOperator = false;
+					if (builder.Length > 0)
+					{
+						yield return BuildToken(builder, index - 1, null);
+					}
 
-					if (isSingleCharacterSeparator)
-						yield return new OracleToken(new String(character, 1), _currentIndex - 1);
+					if (!isBlank)
+					{
+						characterYielded = true;
+						yield return BuildToken(character, index);
+					}
 
-					if (quotedIdentifierOrLiteralEnabled && !isSpace)
-						_builder.Append(character);
+					previousFlags.Reset();
+				}
+				
+				if (flags.IsLineTerminator && specialMode.InLineComment)
+				{
+					if (includeCommentBlocks)
+					{
+						yield return BuildToken(builder, index, character, true);
+					}
+					else
+					{
+						builder.Clear();
+					}
+
+					characterYielded = true;
+					specialMode.InLineComment = false;
+					candidateCharacter = null;
+				}
+
+				if (previousFlags.BlockCommentEndCandidate && specialMode.InBlockComment)
+				{
+					if (character == '/')
+					{
+						specialMode.InBlockComment = false;
+
+						if (includeCommentBlocks)
+						{
+							yield return BuildToken(builder, index, character, true);
+						}
+						else
+						{
+							builder.Clear();
+						}
+
+						characterYielded = true;
+					}
+
+					candidateCharacter = null;
+					flags.BlockCommentBeginCandidate = false;
+				}
+
+				if (previousFlags.OptionalParameterCandidate)
+				{
+					if (builder.Length > 0)
+					{
+						yield return BuildToken(builder, index - 2, null);
+					}
+
+					builder.Append(previousFlags.Character);
+					var indexOffset = 1;
+					if (character == '>')
+					{
+						builder.Append(character);
+						indexOffset = 0;
+						characterYielded = true;
+						flags.RelationalOperatorCandidate = false;
+					}
+
+					yield return BuildToken(builder, index - indexOffset, null);
+
+					candidateCharacter = null;
+				}
+
+				if (previousFlags.RelationalOperatorCandidate)
+				{
+					if (builder.Length > 0)
+					{
+						yield return BuildToken(builder, index - 2, null);
+					}
+
+					if (character == '=' || (character == '>' && previousFlags.Character == '<'))
+					{
+						builder.Append(previousFlags.Character);
+						yield return BuildToken(builder, index, character);
+						characterYielded = true;
+					}
+					else
+					{
+						yield return BuildToken(previousFlags.Character, index - 1);
+					}
+
+					candidateCharacter = null;
+
+					flags.RelationalOperatorCandidate = false;
+					flags.OptionalParameterCandidate = false;
+				}
+
+				if (previousFlags.ConcatenationCandidate)
+				{
+					if (builder.Length > 0)
+					{
+						yield return BuildToken(builder, index - 2, null);
+					}
+
+					builder.Append(previousFlags.Character);
+					var indexOffset = 1;
+					if (candidateCharacter == '|')
+					{
+						builder.Append(candidateCharacter.Value);
+						indexOffset = 0;
+						characterYielded = true;
+					}
+
+					yield return BuildToken(builder, index - indexOffset, null);
+
+					if (characterYielded)
+					{
+						flags.ConcatenationCandidate = false;
+					}
+
+					candidateCharacter = null;
+				}
+
+				var candidateMode = flags.ConcatenationCandidate || flags.OptionalParameterCandidate || flags.LineCommentCandidate || flags.BlockCommentBeginCandidate ||
+				                    flags.RelationalOperatorCandidate || flags.IsDecimalCandidate || flags.ExponentCandidate;
+
+				if (!characterYielded)
+				{
+					if (!specialMode.IsEnabled && !specialMode.InNumber && isNumericCharacter && builder.Length == 0 && !candidateCharacter.HasValue)
+					{
+						specialMode.InNumber = true;
+					}
+
+					if (candidateMode && !specialMode.IsEnabled)
+					{
+						candidateCharacter = character;
+					}
+					else if (!isBlank || specialMode.IsEnabled)
+					{
+						builder.Append(character);
+					}
 				}
 			}
 
-			if (TryNormalizeToken(out token))
-				yield return new OracleToken(token, _currentIndex - token.Length);
+			if (!specialMode.InComment || includeCommentBlocks)
+			{
+				var indexOffset = candidateCharacter.HasValue ? 1 : 0;
+				if (builder.Length > 0)
+				{
+					yield return new OracleToken(builder.ToString(), index - builder.Length - indexOffset, specialMode.InComment);
+				}
 
-			//Trace.WriteLine(null);
+				if (candidateCharacter.HasValue)
+				{
+					yield return new OracleToken(new String(candidateCharacter.Value, 1), index - indexOffset, specialMode.InComment);
+				}
+			}
 		}
 
-		private int GetNextCharacterCode(bool incrementIndex = true)
+		private static void AppendCandidateCharacter(StringBuilder builder, ref char? candidateCharacter)
 		{
-			var characterCode = _buffer.Count > 0 ? _buffer.Dequeue() : _sqlReader.Read();
-			if (characterCode != -1 && incrementIndex)
-				_currentIndex++;
+			if (!candidateCharacter.HasValue)
+				return;
 
-			return characterCode;
+			builder.Append(candidateCharacter.Value);
+			candidateCharacter = null;
 		}
 
-		private bool TryNormalizeToken(out string token)
+		private static OracleToken BuildToken(char character, int index)
 		{
-			token = _builder.ToString().Trim();
-			return !String.IsNullOrEmpty(token);
+			return new OracleToken(character.ToString(CultureInfo.InvariantCulture), index - 1);	
+		}
+
+		private static OracleToken BuildToken(StringBuilder builder, int index, char? currentCharacter, bool isComment = false)
+		{
+			if (currentCharacter.HasValue)
+			{
+				builder.Append(currentCharacter);
+			}
+
+			var token = new OracleToken(builder.ToString(), index - builder.Length, isComment);
+
+			builder.Clear();
+			
+			return token;
+		}
+
+		private static void FindFlags(SpecialModeFlags specialMode, char character, out RecognizedFlags flags)
+		{
+			flags = new RecognizedFlags { Character = character };
+
+			switch (character)
+			{
+				case '/':
+					flags.BlockCommentBeginCandidate = !specialMode.InComment;
+					break;
+				case '*':
+					flags.BlockCommentEndCandidate = specialMode.InBlockComment;
+					break;
+				case '-':
+					flags.LineCommentCandidate = !specialMode.InComment;
+					break;
+				case '|':
+					flags.ConcatenationCandidate = !specialMode.IsEnabled;
+					break;
+				case '=':
+					flags.OptionalParameterCandidate = !specialMode.IsEnabled;
+					break;
+				case '>':
+				case '<':
+				case '^':
+				case '!':
+					flags.RelationalOperatorCandidate = !specialMode.IsEnabled;
+					break;
+				case 'e':
+				case 'E':
+					flags.ExponentCandidate = specialMode.InNumber && !specialMode.IsEnabled;
+					break;
+				case 'n':
+				case 'N':
+				case 'q':
+				case 'Q':
+					flags.QuotedStringCandidate = !specialMode.InString;
+					break;
+				case '\'':
+					flags.StringEndCandidate = specialMode.InString;
+					break;
+				case '.':
+					flags.IsDecimalCandidate = !specialMode.IsEnabled;
+					break;
+				case ' ':
+				case '\t':
+					flags.IsSpace = true;
+					break;
+				case '\r':
+				case '\n':
+					flags.IsLineTerminator = true;//!specialMode.InBlockComment && !specialMode.InString && !specialMode.InQuotedIdentifier;
+					break;
+			}
+		}
+
+		[DebuggerDisplay("RecognizedFlags (IsSpace={IsSpace}; IsLineTerminator={IsLineTerminator}; LineCommentCandidate={LineCommentCandidate}; BlockCommentBeginCandidate={BlockCommentBeginCandidate}; BlockCommentEndCandidate={BlockCommentEndCandidate}; ConcatenationCandidate={ConcatenationCandidate}; OptionalParameterCandidate={OptionalParameterCandidate}; RelationalOperatorCandidate={RelationalOperatorCandidate})")]
+		private struct RecognizedFlags
+		{
+			public char Character;
+
+			public bool IsSpace;
+			public bool IsLineTerminator;
+			public bool IsDecimalCandidate;
+			public bool LineCommentCandidate;
+			public bool BlockCommentBeginCandidate;
+			public bool BlockCommentEndCandidate;
+			public bool ConcatenationCandidate;
+			public bool OptionalParameterCandidate;
+			public bool RelationalOperatorCandidate;
+			public bool QuotedStringCandidate;
+			public bool StringEndCandidate;
+			public bool ExponentCandidate;
+
+			public void Reset()
+			{
+				IsSpace = false;
+				IsLineTerminator = false;
+				IsDecimalCandidate = false;
+				LineCommentCandidate = false;
+				BlockCommentBeginCandidate = false;
+				BlockCommentEndCandidate = false;
+				ConcatenationCandidate = false;
+				OptionalParameterCandidate = false;
+				RelationalOperatorCandidate = false;
+				QuotedStringCandidate = false;
+				StringEndCandidate = false;
+				ExponentCandidate = false;
+			}
+		}
+
+		[DebuggerDisplay("SpecialModeFlags (InString={InString}; InBlockComment={InBlockComment}; InLineComment={InLineComment}; InQuotedIdentifier={InQuotedIdentifier}")]
+		private struct SpecialModeFlags
+		{
+			private bool _inNumber;
+
+			public bool InString;
+			public bool InBlockComment;
+			public bool InLineComment;
+			public bool InQuotedIdentifier;
+
+			public bool InPostfixedNumber;
+			public bool InDecimalNumber;
+			public bool InExponent;
+
+			public bool InComment
+			{
+				get { return InLineComment || InBlockComment; }
+			}
+
+			public bool IsEnabled
+			{
+				get { return InString || InBlockComment || InLineComment || InQuotedIdentifier; }
+			}
+
+			public bool InNumber
+			{
+				get { return _inNumber; }
+				set
+				{
+					_inNumber = value;
+
+					if (value)
+						return;
+
+					InPostfixedNumber = false;
+					InDecimalNumber = false;
+					InExponent = false;
+				}
+			}
 		}
 	}
 }

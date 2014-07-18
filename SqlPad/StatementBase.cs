@@ -9,13 +9,18 @@ namespace SqlPad
 		private ICollection<StatementDescriptionNode> _allTerminals;
 		private ICollection<StatementDescriptionNode> _invalidGrammarNodes;
 
+		protected StatementBase()
+		{
+			Comments = new List<StatementCommentNode>();
+		}
+
 		public ProcessingStatus ProcessingStatus { get; set; }
 
 		public StatementDescriptionNode RootNode { get; set; }
 
 		public StatementDescriptionNode TerminatorNode { get; set; }
 		
-		public ICollection<string> TerminalCandidates { get; set; }
+		public ICollection<StatementCommentNode> Comments { get; private set; }
 
 		public SourcePosition SourcePosition { get; set; }
 

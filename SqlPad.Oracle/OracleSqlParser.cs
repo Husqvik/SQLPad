@@ -113,7 +113,7 @@ namespace SqlPad.Oracle
 			if (tokenReader == null)
 				throw new ArgumentNullException("tokenReader");
 
-			return Parse(tokenReader.GetTokens().Cast<OracleToken>());
+			return Parse(tokenReader.GetTokens(true).Cast<OracleToken>());
 		}
 
 		public StatementCollection Parse(IEnumerable<OracleToken> tokens)
@@ -356,24 +356,37 @@ namespace SqlPad.Oracle
 
 		private StatementCollection ProceedGrammar(IEnumerable<OracleToken> tokens)
 		{
-			var tokenBuffer = new List<OracleToken>(tokens);
+			var tokenBuffer = new List<OracleToken>();
+			var commentBuffer = new HashSet<OracleToken>();
+
+			foreach (var token in tokens)
+			{
+				if (token.IsComment)
+				{
+					commentBuffer.Add(token);
+				}
+				else
+				{
+					tokenBuffer.Add(token);
+				}
+			}
 
 			var oracleSqlCollection = new List<StatementBase>();
 
 			if (tokenBuffer.Count == 0)
 			{
 				oracleSqlCollection.Add(OracleStatement.EmptyStatement);
-				return new StatementCollection(oracleSqlCollection);
+				return new StatementCollection(oracleSqlCollection, commentBuffer.Select(c => new StatementCommentNode(null, c)));
 			}
 			
 			do
 			{
 				var result = new ProcessingResult();
-				var oracleStatement = new OracleStatement();
+				var statement = new OracleStatement();
 
 				foreach (var nonTerminal in AvailableNonTerminals)
 				{
-					var newResult = ProceedNonTerminal(oracleStatement, nonTerminal, 1, 0, false, tokenBuffer);
+					var newResult = ProceedNonTerminal(statement, nonTerminal, 1, 0, false, tokenBuffer);
 
 					//if (newResult.Nodes.SelectMany(n => n.AllChildNodes).Any(n => n.Terminals.Count() != n.TerminalCount))
 					//	throw new ApplicationException("StatementDescriptionNode TerminalCount value is invalid. ");
@@ -440,12 +453,12 @@ namespace SqlPad.Oracle
 				var lastNode = result.Nodes.LastOrDefault();
 				if (lastNode != null && TerminatorIds.Contains(lastNode.Id))
 				{
-					oracleStatement.TerminatorNode = lastNode;
+					statement.TerminatorNode = lastNode;
 					result.Nodes.Remove(lastNode);
 				}
 
-				oracleStatement.SourcePosition = new SourcePosition { IndexStart = indexStart, IndexEnd = indexEnd };
-				var rootNode = new StatementDescriptionNode(oracleStatement, NodeType.NonTerminal)
+				statement.SourcePosition = new SourcePosition { IndexStart = indexStart, IndexEnd = indexEnd };
+				var rootNode = new StatementDescriptionNode(NodeType.NonTerminal, statement, null)
 				               {
 					               Id = result.NodeId,
 								   IsGrammarValid = result.Nodes.All(n => n.IsGrammarValid),
@@ -454,13 +467,21 @@ namespace SqlPad.Oracle
 				
 				rootNode.AddChildNodes(result.Nodes);
 				
-				oracleStatement.RootNode = rootNode;
-				oracleStatement.ProcessingStatus = result.Status;
-				oracleSqlCollection.Add(oracleStatement);
+				statement.RootNode = rootNode;
+				statement.ProcessingStatus = result.Status;
+
+				foreach (var comment in commentBuffer.Where(c => statement.SourcePosition.ContainsIndex(c.Index, false)).ToArray())
+				{
+					statement.Comments.Add(new StatementCommentNode(statement, comment));
+					commentBuffer.Remove(comment);
+				}
+
+				oracleSqlCollection.Add(statement);
 			}
 			while (tokenBuffer.Count > 0);
 
-			return new StatementCollection(oracleSqlCollection);
+			var commentNodes = oracleSqlCollection.SelectMany(s => s.Comments).Concat(commentBuffer.Select(c => new StatementCommentNode(null, c))).OrderBy(c => c.SourcePosition.IndexStart);
+			return new StatementCollection(oracleSqlCollection, commentNodes);
 		}
 
 		private ProcessingResult ProceedNonTerminal(OracleStatement statement, string nonTerminal, int level, int tokenStartOffset, bool tokenReverted, IList<OracleToken> tokenBuffer)
@@ -505,7 +526,7 @@ namespace SqlPad.Oracle
 							result.Status = nestedResult.Status;
 						}
 
-						var nestedNode = new StatementDescriptionNode(statement, NodeType.NonTerminal)
+						var nestedNode = new StatementDescriptionNode(NodeType.NonTerminal, statement, null)
 						                 {
 											 Id = item.Id,
 											 Level = level,
@@ -678,12 +699,11 @@ namespace SqlPad.Oracle
 
 				if (tokenIsValid)
 				{
-					var terminalNode = new StatementDescriptionNode(statement, NodeType.Terminal)
+					var terminalNode = new StatementDescriptionNode(NodeType.Terminal, statement, currentToken)
 					               {
 						               Id = terminalReference.Id,
 						               Level = level,
 						               IsRequired = terminalReference.IsRequired,
-						               Token = currentToken,
 									   IsKeyword = isKeyword
 					               };
 

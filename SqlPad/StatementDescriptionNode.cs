@@ -6,22 +6,21 @@ using System.Linq;
 namespace SqlPad
 {
 	[DebuggerDisplay("{ToString()}")]
-	public class StatementDescriptionNode
+	public class StatementDescriptionNode : StatementNode
 	{
 		private readonly List<StatementDescriptionNode> _childNodes = new List<StatementDescriptionNode>();
 
-		private bool _isSourcePositionBuilt;
-		private SourcePosition _sourcePosition;
-
 		public int TerminalCount { get; private set; }
 
-		public StatementDescriptionNode(StatementBase statement, NodeType type)
+		public StatementDescriptionNode(NodeType type, StatementBase statement, IToken token) : base(statement, token)
 		{
 			Type = type;
-			Statement = statement;
 
 			if (Type != NodeType.Terminal)
 				return;
+
+			if (token == null)
+				throw new ArgumentNullException("token");
 
 			IsGrammarValid = true;
 			FirstTerminalNode = this;
@@ -69,10 +68,6 @@ namespace SqlPad
 
 		public StatementDescriptionNode LastTerminalNode { get; private set; }
 
-		public StatementBase Statement { get; private set; }
-		
-		public IToken Token { get; set; }
-		
 		public string Id { get; set; }
 		
 		public int Level { get; set; }
@@ -85,12 +80,7 @@ namespace SqlPad
 
 		public IList<StatementDescriptionNode> ChildNodes { get { return _childNodes.AsReadOnly(); } }
 
-		public SourcePosition SourcePosition
-		{
-			get { return _isSourcePositionBuilt ? _sourcePosition : BuildSourcePosition(); }
-		}
-
-		private SourcePosition BuildSourcePosition()
+		protected override SourcePosition BuildSourcePosition()
 		{
 			var indexStart = -1;
 			var indexEnd = -1;
@@ -106,10 +96,7 @@ namespace SqlPad
 				indexEnd = lastTerminal.Index + lastTerminal.Value.Length - 1;
 			}
 
-			_sourcePosition = new SourcePosition { IndexStart = indexStart, IndexEnd = indexEnd };
-			_isSourcePositionBuilt = true;
-
-			return _sourcePosition;
+			return new SourcePosition { IndexStart = indexStart, IndexEnd = indexEnd };
 		}
 
 		public IEnumerable<StatementDescriptionNode> Terminals 
@@ -347,12 +334,11 @@ namespace SqlPad
 
 		public StatementDescriptionNode Clone()
 		{
-			var clonedNode = new StatementDescriptionNode(Statement, Type)
+			var clonedNode = new StatementDescriptionNode(Type, Statement, Token)
 			                 {
 				                 Id = Id,
 				                 IsRequired = IsRequired,
 				                 Level = Level,
-				                 Token = Token,
 				                 IsGrammarValid = IsGrammarValid,
 								 IsKeyword = IsKeyword
 			                 };
@@ -363,14 +349,6 @@ namespace SqlPad
 			}
 
 			return clonedNode;
-		}
-
-		internal static StatementDescriptionNode FromChildNodes(IEnumerable<StatementDescriptionNode> childNodes)
-		{
-			var node = new StatementDescriptionNode(null, NodeType.NonTerminal);
-			node.AddChildNodes(childNodes);
-
-			return node;
 		}
 	}
 }
