@@ -616,6 +616,11 @@ namespace SqlPad.Oracle
 		
 		public bool Program { get; private set; }
 
+		private bool Any
+		{
+			get { return Schema || SchemaDataObject || PipelinedFunction || SchemaDataObjectReference || Column || AllColumns || JoinType || JoinCondition || Program; }
+		}
+
 		public string TerminalValuePartUntilCaret { get; private set; }
 		
 		public string TerminalValueUnderCursor { get; private set; }
@@ -664,6 +669,12 @@ namespace SqlPad.Oracle
 
 		public void PrintSupportedCompletions()
 		{
+			if (!Any)
+			{
+				Trace.WriteLine("No completions available");
+				return;
+			}
+
 			var builder = new StringBuilder(255);
 			builder.Append("TerminalValueUnderCursor: '");
 			builder.Append(TerminalValueUnderCursor);

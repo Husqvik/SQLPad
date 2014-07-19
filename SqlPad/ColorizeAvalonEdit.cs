@@ -110,16 +110,18 @@ namespace SqlPad
 				if (_statements == null)
 					return;
 
-				BuildNodeIndexes(context);
+				BuildLineNodeIndexes(context);
 
 				base.Colorize(context);
 			}
 		}
 
-		private void BuildNodeIndexes(ITextRunConstructionContext context)
+		private void BuildLineNodeIndexes(ITextRunConstructionContext context)
 		{
 			if (_lineTerminals.Count > 0)
 				return;
+
+			ClearNodeIndexes();
 			
 			BuildLineTerminalDictionary(context);
 
@@ -129,7 +131,7 @@ namespace SqlPad
 
 			BuildLineNodeWithSemanticErrorOrInvalidGrammarDictionary(context);
 
-			//BuildLineCommentDictionary(context);
+			BuildLineCommentDictionary(context);
 		}
 
 		private void BuildLineCommentDictionary(ITextRunConstructionContext context)
@@ -195,6 +197,9 @@ namespace SqlPad
 						break;
 
 					singleLineTerminals.Add(nodeEnumerator.Current);
+
+					if (line.EndOffset < nodeEnumerator.Current.SourcePosition.IndexEnd)
+						break;
 				}
 				while (nodeEnumerator.MoveNext());
 			}
@@ -232,9 +237,6 @@ namespace SqlPad
 
 			ProcessNodeCollectionAtLine(line, _lineNodesWithSemanticErrorsOrInvalidGrammar,
 				element => element.TextRunProperties.SetTextDecorations(Resources.WaveErrorUnderline));
-
-			ProcessNodeCollectionAtLine(line, _lineComments,
-				element => element.TextRunProperties.SetForegroundBrush(CommentBrush));
 
 			foreach (var parenthesisNode in _highlightParenthesis)
 			{
@@ -288,6 +290,13 @@ namespace SqlPad
 						element => element.BackgroundBrush = highlightSegment.DisplayOptions == DisplayOptions.Usage ? HighlightUsageBrush : HighlightDefinitionBrush);
 				}
 			}
+
+			ProcessNodeCollectionAtLine(line, _lineComments,
+				element =>
+				{
+					element.TextRunProperties.SetForegroundBrush(CommentBrush);
+					element.BackgroundBrush = null;
+				});
 		}
 
 		private void ProcessNodeCollectionAtLine<TNode>(DocumentLine line, IReadOnlyDictionary<DocumentLine, ICollection<TNode>> lineNodeDictionary, Action<VisualLineElement> visualElementAction) where TNode : StatementNode

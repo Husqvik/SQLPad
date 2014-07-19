@@ -76,6 +76,7 @@
     <Compile Include="ColorizeAvalonEdit.cs" />
     <Compile Include="Commands\CommandExecutionHandler.cs" />
     <Compile Include="Commands\ContextActionCommand.cs" />
+    <Compile Include="Commands\DiagnosticCommands.cs" />
     <Compile Include="Commands\GenericCommands.cs" />
     <Compile Include="DocumentPage.xaml.cs">
       <DependentUpon>DocumentPage.xaml</DependentUpon>

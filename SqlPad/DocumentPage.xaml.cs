@@ -246,7 +246,16 @@ namespace SqlPad
 			commandBindings.Add(new CommandBinding(GenericCommands.FormatStatementCommand, FormatStatement));
 			commandBindings.Add(new CommandBinding(GenericCommands.FindUsagesCommand, FindUsages));
 
+			commandBindings.Add(new CommandBinding(DiagnosticCommands.ShowTokenCommand, ShowTokenCommandExecutionHandler));
+
 			ResultGrid.CommandBindings.Add(new CommandBinding(GenericCommands.FetchNextRowsCommand, FetchNextRows, CanFetchNextRows));
+		}
+
+		private void ShowTokenCommandExecutionHandler(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
+		{
+			var message = "Parsed: " + String.Join(", ", _sqlDocumentRepository.Statements.SelectMany(s => s.AllTerminals).Select(t => "{" + t.Token.Value + "}"));
+			message += Environment.NewLine + "Comments: " + String.Join(", ", _sqlDocumentRepository.Statements.Comments.Select(c => "{" + c.Token.Value + "}"));
+			MessageBox.Show(message, "Tokens", MessageBoxButton.OK, MessageBoxImage.Information);
 		}
 
 		private void FormatStatement(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
@@ -695,7 +704,6 @@ namespace SqlPad
 
 			Dispatcher.Invoke(() =>
 			{
-				//TextBlockToken.Text = String.Join(", ", statements.SelectMany(s => s.AllTerminals).Select(t => "{" + t.Token.Value + "}"));
 				Editor.TextArea.TextView.Redraw();
 				_isParsing = false;
 				ParseFinished(this, EventArgs.Empty);
