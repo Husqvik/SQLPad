@@ -485,7 +485,7 @@ namespace SqlPad
 
 		private void CaretOnPositionChanged(object sender, EventArgs eventArgs)
 		{
-			var parenthesisNodes = new List<StatementDescriptionNode>();
+			var parenthesisNodes = new List<StatementGrammarNode>();
 
 			var location = Editor.Document.GetLocation(Editor.CaretOffset);
 			_pageModel.CurrentLine = location.Line;
@@ -528,7 +528,7 @@ namespace SqlPad
 			RedrawNodes(oldNodes.Concat(parenthesisNodes));
 		}
 
-		private void RedrawNodes(IEnumerable<StatementDescriptionNode> nodes)
+		private void RedrawNodes(IEnumerable<StatementGrammarNode> nodes)
 		{
 			foreach (var node in nodes)
 			{

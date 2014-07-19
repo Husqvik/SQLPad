@@ -12,7 +12,7 @@ namespace SqlPad.Oracle.Commands
 		private readonly string _resolvedName;
 		private static readonly ICollection<CommandExecutionHandler> EmptyCollection = new CommandExecutionHandler[0];
 
-		public static ICollection<CommandExecutionHandler> ResolveCommandHandlers(OracleStatementSemanticModel semanticModel, StatementDescriptionNode currentTerminal)
+		public static ICollection<CommandExecutionHandler> ResolveCommandHandlers(OracleStatementSemanticModel semanticModel, StatementGrammarNode currentTerminal)
 		{
 			if (semanticModel == null)
 				throw new InvalidOperationException("semanticModel");

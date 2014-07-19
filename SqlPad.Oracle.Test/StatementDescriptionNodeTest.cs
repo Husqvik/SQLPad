@@ -8,7 +8,7 @@ namespace SqlPad.Oracle.Test
 	public class StatementDescriptionNodeTest
     {
 		private readonly OracleSqlParser _parser = new OracleSqlParser();
-		private StatementDescriptionNode _rootNode;
+		private StatementGrammarNode _rootNode;
 
 		[SetUp]
 		public void SetUp()

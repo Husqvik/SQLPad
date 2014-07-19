@@ -68,7 +68,7 @@ namespace SqlPad
 	public struct MultiNodeEditorData
 	{
 		public int OffsetFromNodeStartIndex { get; set; }
-		public StatementDescriptionNode CurrentNode { get; set; }
-		public IEnumerable<StatementDescriptionNode> SynchronizedNodes { get; set; }
+		public StatementGrammarNode CurrentNode { get; set; }
+		public IEnumerable<StatementGrammarNode> SynchronizedNodes { get; set; }
 	}
 }

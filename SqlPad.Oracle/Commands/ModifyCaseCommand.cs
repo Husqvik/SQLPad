@@ -101,7 +101,7 @@ namespace SqlPad.Oracle.Commands
 				});
 		}
 
-		private static bool IsCaseModificationSafe(StatementDescriptionNode terminal)
+		private static bool IsCaseModificationSafe(StatementGrammarNode terminal)
 		{
 			return terminal.Id != Terminals.StringLiteral &&
 			       (!terminal.Id.IsIdentifierOrAlias() || !terminal.Token.Value.StartsWith("\""));

@@ -8,9 +8,9 @@ namespace SqlPad.Oracle
 	{
 		public override string Name { get { return FunctionIdentifierNode.Token.Value; } }
 
-		public StatementDescriptionNode FunctionIdentifierNode { get; set; }
+		public StatementGrammarNode FunctionIdentifierNode { get; set; }
 		
-		public StatementDescriptionNode AnalyticClauseNode { get; set; }
+		public StatementGrammarNode AnalyticClauseNode { get; set; }
 
 		public OracleFunctionMetadata Metadata { get; set; }
 	}
@@ -39,8 +39,8 @@ namespace SqlPad.Oracle
 
 	public abstract class OracleProgramReferenceBase : OracleReference
 	{
-		public StatementDescriptionNode ParameterListNode { get; set; }
+		public StatementGrammarNode ParameterListNode { get; set; }
 
-		public ICollection<StatementDescriptionNode> ParameterNodes { get; set; }
+		public ICollection<StatementGrammarNode> ParameterNodes { get; set; }
 	}
 }

@@ -68,7 +68,7 @@ namespace SqlPad.Oracle
 			}
 		}
 		
-		public StatementDescriptionNode AliasNode { get; set; }
+		public StatementGrammarNode AliasNode { get; set; }
 		
 		public override ICollection<OracleQueryBlock> QueryBlocks { get { return _queryBlocks; } }
 

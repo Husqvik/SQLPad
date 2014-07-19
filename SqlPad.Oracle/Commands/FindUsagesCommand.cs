@@ -9,7 +9,7 @@ namespace SqlPad.Oracle.Commands
 {
 	public class FindUsagesCommand
 	{
-		private readonly StatementDescriptionNode _currentNode;
+		private readonly StatementGrammarNode _currentNode;
 		private readonly OracleStatementSemanticModel _semanticModel;
 		private readonly OracleQueryBlock _queryBlock;
 		private readonly CommandExecutionContext _executionContext;
@@ -44,7 +44,7 @@ namespace SqlPad.Oracle.Commands
 			_executionContext = executionContext;
 		}
 
-		private static StatementDescriptionNode GetFindUsagesCompatibleTerminal(StatementCollection statements, int currentPosition)
+		private static StatementGrammarNode GetFindUsagesCompatibleTerminal(StatementCollection statements, int currentPosition)
 		{
 			return statements.GetTerminalAtPosition(currentPosition,
 				t => t.Id.In(Terminals.Identifier, Terminals.ObjectIdentifier, Terminals.SchemaIdentifier, Terminals.BindVariableIdentifier, Terminals.ColumnAlias, Terminals.ObjectAlias, Terminals.Count) ||
@@ -58,7 +58,7 @@ namespace SqlPad.Oracle.Commands
 
 		private void ExecuteFindUsages()
 		{
-			IEnumerable<StatementDescriptionNode> nodes;
+			IEnumerable<StatementGrammarNode> nodes;
 
 			switch (_currentNode.Id)
 			{
@@ -114,23 +114,23 @@ namespace SqlPad.Oracle.Commands
 					}));
 		}
 
-		private IEnumerable<StatementDescriptionNode> GetBindVariableUsage()
+		private IEnumerable<StatementGrammarNode> GetBindVariableUsage()
 		{
 			return _semanticModel.Statement.RootNode.Terminals.Where(t => t.Id == _currentNode.Id && t.Token.Value.ToQuotedIdentifier() == _currentNode.Token.Value.ToQuotedIdentifier());
 		}
 
-		private IEnumerable<StatementDescriptionNode> GetLiteralUsage()
+		private IEnumerable<StatementGrammarNode> GetLiteralUsage()
 		{
 			return _semanticModel.Statement.RootNode.Terminals.Where(t => t.Id == _currentNode.Id && t.Token.Value == _currentNode.Token.Value);
 		}
 
-		private ICollection<StatementDescriptionNode> GetFunctionReferenceUsage()
+		private ICollection<StatementGrammarNode> GetFunctionReferenceUsage()
 		{
 			var functionReference = _queryBlock.AllFunctionReferences
 				.FirstOrDefault(f => f.FunctionIdentifierNode == _currentNode && f.Metadata != null);
 
 			if (functionReference == null)
-				return new StatementDescriptionNode[0];
+				return new StatementGrammarNode[0];
 
 			return _semanticModel.QueryBlocks
 				.SelectMany(qb => qb.AllFunctionReferences)
@@ -158,9 +158,9 @@ namespace SqlPad.Oracle.Commands
 			return Enumerable.Repeat(objectReference, 1);
 		}
 
-		private static IEnumerable<StatementDescriptionNode> GetObjectReferenceUsage(OracleObjectWithColumnsReference objectReference)
+		private static IEnumerable<StatementGrammarNode> GetObjectReferenceUsage(OracleObjectWithColumnsReference objectReference)
 		{
-			var nodes = new List<StatementDescriptionNode>();
+			var nodes = new List<StatementGrammarNode>();
 			if (objectReference.Type != ReferenceType.InlineView)
 			{
 				nodes.Add(objectReference.ObjectNode);
@@ -182,9 +182,9 @@ namespace SqlPad.Oracle.Commands
 				.Concat(nodes);
 		}
 
-		private IEnumerable<StatementDescriptionNode> GetColumnReferenceUsage()
+		private IEnumerable<StatementGrammarNode> GetColumnReferenceUsage()
 		{
-			IEnumerable<StatementDescriptionNode> nodes;
+			IEnumerable<StatementGrammarNode> nodes;
 			var columnReference = _queryBlock.AllColumnReferences
 				.FirstOrDefault(c => (c.ColumnNode == _currentNode || (c.SelectListColumn != null && c.SelectListColumn.AliasNode == _currentNode)) && c.ColumnNodeObjectReferences.Count == 1 && c.ColumnNodeColumnReferences.Count == 1);
 
@@ -222,7 +222,7 @@ namespace SqlPad.Oracle.Commands
 				else
 				{
 					selectListColumn = _queryBlock.Columns.Single(c => c.AliasNode == _currentNode);
-					var nodeList = new List<StatementDescriptionNode> { selectListColumn.AliasNode };
+					var nodeList = new List<StatementGrammarNode> { selectListColumn.AliasNode };
 					searchChildren = selectListColumn.IsDirectReference;
 
 					nodes = searchChildren ? nodes.Concat(nodeList) : nodeList;
@@ -242,9 +242,9 @@ namespace SqlPad.Oracle.Commands
 			return nodes;
 		}
 
-		private IEnumerable<StatementDescriptionNode> GetChildQueryBlockColumnReferences(OracleObjectWithColumnsReference objectReference, OracleColumnReference columnReference)
+		private IEnumerable<StatementGrammarNode> GetChildQueryBlockColumnReferences(OracleObjectWithColumnsReference objectReference, OracleColumnReference columnReference)
 		{
-			var nodes = Enumerable.Empty<StatementDescriptionNode>();
+			var nodes = Enumerable.Empty<StatementGrammarNode>();
 			if (objectReference.QueryBlocks.Count != 1)
 				return nodes;
 
@@ -255,7 +255,7 @@ namespace SqlPad.Oracle.Commands
 			if (childColumn == null)
 				return nodes;
 
-			nodes = new List<StatementDescriptionNode>{ childColumn.AliasNode };
+			nodes = new List<StatementGrammarNode>{ childColumn.AliasNode };
 
 			if (childColumn.IsDirectReference && childColumn.ColumnReferences.Count > 0 && childColumn.ColumnReferences.All(cr => cr.ColumnNodeColumnReferences.Count == 1))
 			{
@@ -277,9 +277,9 @@ namespace SqlPad.Oracle.Commands
 			return nodes;
 		}
 
-		private IEnumerable<StatementDescriptionNode> GetParentQueryBlockReferences(OracleSelectListColumn selectListColumn)
+		private IEnumerable<StatementGrammarNode> GetParentQueryBlockReferences(OracleSelectListColumn selectListColumn)
 		{
-			var nodes = Enumerable.Empty<StatementDescriptionNode>();
+			var nodes = Enumerable.Empty<StatementGrammarNode>();
 			if (selectListColumn == null || selectListColumn.AliasNode == null)
 				return nodes;
 
@@ -309,7 +309,7 @@ namespace SqlPad.Oracle.Commands
 			return nodes;
 		}
 
-		private IEnumerable<StatementDescriptionNode> GetSchemaReferenceUsage()
+		private IEnumerable<StatementGrammarNode> GetSchemaReferenceUsage()
 		{
 			return _currentNode.Statement.AllTerminals.Where(t => t.Id == Terminals.SchemaIdentifier && t.Token.Value.ToQuotedIdentifier() == _currentNode.Token.Value.ToQuotedIdentifier());
 		}

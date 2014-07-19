@@ -19,7 +19,7 @@ namespace SqlPad.Oracle
 
 		public QueryBlockPlacement Placement { get; set; }
 		
-		public StatementDescriptionNode ColumnNode { get; set; }
+		public StatementGrammarNode ColumnNode { get; set; }
 
 		public ICollection<OracleObjectWithColumnsReference> ColumnNodeObjectReferences { get; private set; }
 

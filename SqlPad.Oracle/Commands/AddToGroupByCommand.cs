@@ -6,7 +6,7 @@ namespace SqlPad.Oracle.Commands
 {
 	internal class AddToGroupByCommand : OracleCommandBase
 	{
-		private readonly StatementDescriptionNode _fromClause;
+		private readonly StatementGrammarNode _fromClause;
 
 		public const string Title = "Add to GROUP BY clause";
 

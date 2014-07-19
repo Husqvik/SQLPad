@@ -22,7 +22,7 @@ namespace SqlPad.Oracle
 
 			var statement = sqlDocumentRepository.Statements.TakeWhile(s => s.SourcePosition.IndexStart <= cursorPosition - 1).LastOrDefault();
 
-			StatementDescriptionNode currentNode = null;
+			StatementGrammarNode currentNode = null;
 			if (statement != null)
 			{
 				currentNode = statement.GetTerminalAtPosition(cursorPosition)

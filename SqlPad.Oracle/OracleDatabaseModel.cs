@@ -815,7 +815,12 @@ namespace SqlPad.Oracle
 				return;
 
 			Stream stream;
-			if (!CachedDataDictionaries.TryGetValue(CachedConnectionStringName, out _dataDictionary) && MetadataCache.TryLoadDatabaseModelCache(CachedConnectionStringName, out stream))
+			OracleDataDictionary dataDictionary;
+			if (CachedDataDictionaries.TryGetValue(CachedConnectionStringName, out dataDictionary))
+			{
+				_dataDictionary = dataDictionary;
+			}
+			else if (MetadataCache.TryLoadDatabaseModelCache(CachedConnectionStringName, out stream))
 			{
 				try
 				{

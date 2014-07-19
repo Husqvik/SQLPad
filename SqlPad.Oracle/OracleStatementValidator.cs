@@ -129,7 +129,7 @@ namespace SqlPad.Oracle
 				: SemanticError.ObjectStatusInvalid;
 		}
 
-		private INodeValidationData GetInvalidIdentifierValidationData(StatementDescriptionNode node)
+		private INodeValidationData GetInvalidIdentifierValidationData(StatementGrammarNode node)
 		{
 			if (!node.Id.IsIdentifierOrAlias())
 				return null;
@@ -194,31 +194,31 @@ namespace SqlPad.Oracle
 
 	public class OracleValidationModel : IValidationModel
 	{
-		private readonly Dictionary<StatementDescriptionNode, INodeValidationData> _objectNodeValidity = new Dictionary<StatementDescriptionNode, INodeValidationData>();
-		private readonly Dictionary<StatementDescriptionNode, INodeValidationData> _columnNodeValidity = new Dictionary<StatementDescriptionNode, INodeValidationData>();
-		private readonly Dictionary<StatementDescriptionNode, INodeValidationData> _programNodeValidity = new Dictionary<StatementDescriptionNode, INodeValidationData>();
-		private readonly Dictionary<StatementDescriptionNode, INodeValidationData> _identifierNodeValidity = new Dictionary<StatementDescriptionNode, INodeValidationData>();
+		private readonly Dictionary<StatementGrammarNode, INodeValidationData> _objectNodeValidity = new Dictionary<StatementGrammarNode, INodeValidationData>();
+		private readonly Dictionary<StatementGrammarNode, INodeValidationData> _columnNodeValidity = new Dictionary<StatementGrammarNode, INodeValidationData>();
+		private readonly Dictionary<StatementGrammarNode, INodeValidationData> _programNodeValidity = new Dictionary<StatementGrammarNode, INodeValidationData>();
+		private readonly Dictionary<StatementGrammarNode, INodeValidationData> _identifierNodeValidity = new Dictionary<StatementGrammarNode, INodeValidationData>();
 
 		public IStatementSemanticModel SemanticModel { get; set; }
 
 		public StatementBase Statement { get { return SemanticModel.Statement; } }
 
-		public IDictionary<StatementDescriptionNode, INodeValidationData> ObjectNodeValidity { get { return _objectNodeValidity; } }
+		public IDictionary<StatementGrammarNode, INodeValidationData> ObjectNodeValidity { get { return _objectNodeValidity; } }
 
-		public IDictionary<StatementDescriptionNode, INodeValidationData> ColumnNodeValidity { get { return _columnNodeValidity; } }
+		public IDictionary<StatementGrammarNode, INodeValidationData> ColumnNodeValidity { get { return _columnNodeValidity; } }
 
-		public IDictionary<StatementDescriptionNode, INodeValidationData> ProgramNodeValidity { get { return _programNodeValidity; } }
+		public IDictionary<StatementGrammarNode, INodeValidationData> ProgramNodeValidity { get { return _programNodeValidity; } }
 
-		public IDictionary<StatementDescriptionNode, INodeValidationData> IdentifierNodeValidity { get { return _identifierNodeValidity; } }
+		public IDictionary<StatementGrammarNode, INodeValidationData> IdentifierNodeValidity { get { return _identifierNodeValidity; } }
 
-		public IEnumerable<KeyValuePair<StatementDescriptionNode, INodeValidationData>> GetNodesWithSemanticErrors()
+		public IEnumerable<KeyValuePair<StatementGrammarNode, INodeValidationData>> GetNodesWithSemanticErrors()
 		{
 			return ColumnNodeValidity
 				.Concat(ObjectNodeValidity)
 				.Concat(ProgramNodeValidity)
 				.Concat(IdentifierNodeValidity)
 				.Where(nv => nv.Value.SemanticError != SemanticError.None)
-				.Select(nv => new KeyValuePair<StatementDescriptionNode, INodeValidationData>(nv.Key, nv.Value));
+				.Select(nv => new KeyValuePair<StatementGrammarNode, INodeValidationData>(nv.Key, nv.Value));
 		}
 	}
 
@@ -255,7 +255,7 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		public StatementDescriptionNode Node { get; set; }
+		public StatementGrammarNode Node { get; set; }
 
 		public virtual string ToolTipText
 		{

@@ -83,7 +83,7 @@ namespace SqlPad.Oracle
 			var e = new OracleCodeCompletionType(sqlDocumentRepository.Statements, statementText, cursorPosition);
 			e.PrintSupportedCompletions();
 
-			StatementDescriptionNode currentNode;
+			StatementGrammarNode currentNode;
 
 			var completionItems = Enumerable.Empty<ICodeCompletionItem>();
 			var statement = (OracleStatement)sqlDocumentRepository.Statements.SingleOrDefault(s => s.GetNodeAtPosition(cursorPosition) != null);
@@ -269,7 +269,7 @@ namespace SqlPad.Oracle
 			// TODO: Add option to search all/current/public schemas
 		}
 
-		private IEnumerable<ICodeCompletionItem> GenerateSelectListItems(StatementDescriptionNode currentNode, OracleStatementSemanticModel semanticModel, int cursorPosition, OracleDatabaseModelBase databaseModel)
+		private IEnumerable<ICodeCompletionItem> GenerateSelectListItems(StatementGrammarNode currentNode, OracleStatementSemanticModel semanticModel, int cursorPosition, OracleDatabaseModelBase databaseModel)
 		{
 			var prefixedColumnReference = currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference);
 			var columnIdentifierFollowing = currentNode.Id != Terminals.Identifier && prefixedColumnReference != null && prefixedColumnReference.GetDescendants(Terminals.Identifier).FirstOrDefault() != null;
@@ -379,7 +379,7 @@ namespace SqlPad.Oracle
 			return suggestedItems.Concat(suggestedFunctions);
 		}
 
-		private IEnumerable<OracleCodeCompletionItem> CreateAsteriskColumnCompletionItems(IEnumerable<OracleDataObjectReference> tables, bool skipFirstObjectIdentifier, StatementDescriptionNode currentNode)
+		private IEnumerable<OracleCodeCompletionItem> CreateAsteriskColumnCompletionItems(IEnumerable<OracleDataObjectReference> tables, bool skipFirstObjectIdentifier, StatementGrammarNode currentNode)
 		{
 			var builder = new StringBuilder();
 			
@@ -422,7 +422,7 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		private ICodeCompletionItem CreateColumnCodeCompletionItem(string columnName, string objectPrefix, StatementDescriptionNode currentNode, string category = OracleCodeCompletionCategory.Column)
+		private ICodeCompletionItem CreateColumnCodeCompletionItem(string columnName, string objectPrefix, StatementGrammarNode currentNode, string category = OracleCodeCompletionCategory.Column)
 		{
 			if (!String.IsNullOrEmpty(objectPrefix))
 				objectPrefix += ".";
@@ -439,7 +439,7 @@ namespace SqlPad.Oracle
 			       };
 		}
 
-		private IEnumerable<ICodeCompletionItem> GenerateSchemaItems(string schemaNamePart, StatementDescriptionNode node, int insertOffset, OracleDatabaseModelBase databaseModel, int priorityOffset = 0)
+		private IEnumerable<ICodeCompletionItem> GenerateSchemaItems(string schemaNamePart, StatementGrammarNode node, int insertOffset, OracleDatabaseModelBase databaseModel, int priorityOffset = 0)
 		{
 			return databaseModel.AllSchemas
 				.Where(s => s != OracleDatabaseModelBase.SchemaPublic && (MakeSaveQuotedIdentifier(schemaNamePart) != s && (String.IsNullOrEmpty(schemaNamePart) || s.ToUpperInvariant().Contains(schemaNamePart.Trim('"').ToUpperInvariant()))))
@@ -454,7 +454,7 @@ namespace SqlPad.Oracle
 				             });
 		}
 
-		private IEnumerable<ICodeCompletionItem> GenerateCodeItems(Func<OracleFunctionMetadata, string> identifierSelector, string category, StatementDescriptionNode node, int insertOffset, bool addParameterList, OracleDatabaseModelBase databaseModel, params OracleFunctionMatcher[] matchers)
+		private IEnumerable<ICodeCompletionItem> GenerateCodeItems(Func<OracleFunctionMetadata, string> identifierSelector, string category, StatementGrammarNode node, int insertOffset, bool addParameterList, OracleDatabaseModelBase databaseModel, params OracleFunctionMatcher[] matchers)
 		{
 			string parameterList = null;
 			var parameterListCaretOffset = 0;
@@ -480,7 +480,7 @@ namespace SqlPad.Oracle
 				             });
 		}
 
-		private IEnumerable<ICodeCompletionItem> GenerateSchemaObjectItems(OracleDatabaseModelBase databaseModel, string schemaName, string objectNamePart, StatementDescriptionNode node, int insertOffset, bool dataObjectsOnly)
+		private IEnumerable<ICodeCompletionItem> GenerateSchemaObjectItems(OracleDatabaseModelBase databaseModel, string schemaName, string objectNamePart, StatementGrammarNode node, int insertOffset, bool dataObjectsOnly)
 		{
 			return databaseModel.AllObjects.Values
 						.Where(o => (!dataObjectsOnly || IsDataObject(o)) &&
@@ -512,7 +512,7 @@ namespace SqlPad.Oracle
 			return schemaObject.GetTargetSchemaObject() is OracleDataObject;
 		}
 
-		private IEnumerable<ICodeCompletionItem> GenerateCommonTableExpressionReferenceItems(OracleStatementSemanticModel model, string referenceNamePart, StatementDescriptionNode node, int insertOffset)
+		private IEnumerable<ICodeCompletionItem> GenerateCommonTableExpressionReferenceItems(OracleStatementSemanticModel model, string referenceNamePart, StatementGrammarNode node, int insertOffset)
 		{
 			// TODO: Make proper resolution of CTE accessibility
 			return model.QueryBlocks

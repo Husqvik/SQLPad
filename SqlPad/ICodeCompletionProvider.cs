@@ -28,7 +28,7 @@ namespace SqlPad
 		
 		string Name { get; }
 
-		StatementDescriptionNode StatementNode { get; }
+		StatementGrammarNode StatementNode { get; }
 
 		int Priority { get; }
 

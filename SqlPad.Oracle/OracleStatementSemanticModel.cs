@@ -8,11 +8,11 @@ namespace SqlPad.Oracle
 {
 	public class OracleStatementSemanticModel : IStatementSemanticModel
 	{
-		private readonly Dictionary<StatementDescriptionNode, OracleQueryBlock> _queryBlockResults = new Dictionary<StatementDescriptionNode, OracleQueryBlock>();
+		private readonly Dictionary<StatementGrammarNode, OracleQueryBlock> _queryBlockResults = new Dictionary<StatementGrammarNode, OracleQueryBlock>();
 		private readonly Dictionary<OracleSelectListColumn, ICollection<OracleDataObjectReference>> _asteriskTableReferences = new Dictionary<OracleSelectListColumn, ICollection<OracleDataObjectReference>>();
 		private readonly List<ICollection<OracleColumnReference>> _joinClauseColumnReferences = new List<ICollection<OracleColumnReference>>();
-		private readonly Dictionary<OracleQueryBlock, ICollection<StatementDescriptionNode>> _accessibleQueryBlockRoot = new Dictionary<OracleQueryBlock, ICollection<StatementDescriptionNode>>();
-		private readonly Dictionary<OracleDataObjectReference, ICollection<KeyValuePair<StatementDescriptionNode, string>>> _objectReferenceCteRootNodes = new Dictionary<OracleDataObjectReference, ICollection<KeyValuePair<StatementDescriptionNode, string>>>();
+		private readonly Dictionary<OracleQueryBlock, ICollection<StatementGrammarNode>> _accessibleQueryBlockRoot = new Dictionary<OracleQueryBlock, ICollection<StatementGrammarNode>>();
+		private readonly Dictionary<OracleDataObjectReference, ICollection<KeyValuePair<StatementGrammarNode, string>>> _objectReferenceCteRootNodes = new Dictionary<OracleDataObjectReference, ICollection<KeyValuePair<StatementGrammarNode, string>>>();
 
 		public OracleDatabaseModelBase DatabaseModel { get; private set; }
 
@@ -104,7 +104,7 @@ namespace SqlPad.Oracle
 
 				var fromClause = queryBlock.GetDescendantsWithinSameQuery(NonTerminals.FromClause).FirstOrDefault();
 				var tableReferenceNonterminals = fromClause == null
-					? Enumerable.Empty<StatementDescriptionNode>()
+					? Enumerable.Empty<StatementGrammarNode>()
 					: fromClause.GetDescendantsWithinSameQuery(NonTerminals.TableReference).ToArray();
 
 				// TODO: Check possible issue within GetCommonTableExpressionReferences to remove the Distinct.
@@ -148,7 +148,7 @@ namespace SqlPad.Oracle
 
 					var tableName = tableIdentifierNode.Token.Value.ToQuotedIdentifier();
 					var commonTableExpressions = schemaPrefixNode != null
-						? (ICollection<KeyValuePair<StatementDescriptionNode, string>>)new Dictionary<StatementDescriptionNode, string>()
+						? (ICollection<KeyValuePair<StatementGrammarNode, string>>)new Dictionary<StatementGrammarNode, string>()
 						: cteReferences.Where(n => n.Value == tableName).ToArray();
 
 					var referenceType = ReferenceType.CommonTableExpression;
@@ -449,7 +449,7 @@ namespace SqlPad.Oracle
 				.FirstOrDefault();
 		}
 
-		public OracleQueryBlock GetQueryBlock(StatementDescriptionNode node)
+		public OracleQueryBlock GetQueryBlock(StatementGrammarNode node)
 		{
 			var queryBlockNode = node.GetAncestor(NonTerminals.QueryBlock);
 			if (queryBlockNode == null)
@@ -762,7 +762,7 @@ namespace SqlPad.Oracle
 			ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock.ColumnReferences, identifiers, QueryBlockPlacement.OrderBy, null);
 		}
 
-		private void ResolveColumnAndFunctionReferenceFromIdentifiers(OracleQueryBlock queryBlock, ICollection<OracleColumnReference> columnReferences, IEnumerable<StatementDescriptionNode> identifiers, QueryBlockPlacement type, OracleSelectListColumn selectListColumn)
+		private void ResolveColumnAndFunctionReferenceFromIdentifiers(OracleQueryBlock queryBlock, ICollection<OracleColumnReference> columnReferences, IEnumerable<StatementGrammarNode> identifiers, QueryBlockPlacement type, OracleSelectListColumn selectListColumn)
 		{
 			foreach (var identifier in identifiers)
 			{
@@ -863,7 +863,7 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		private static void CreateGrammarSpecificFunctionReferences(IEnumerable<StatementDescriptionNode> grammarSpecificFunctions, OracleQueryBlock queryBlock, ICollection<OracleProgramReference> functionReferences, OracleSelectListColumn selectListColumn)
+		private static void CreateGrammarSpecificFunctionReferences(IEnumerable<StatementGrammarNode> grammarSpecificFunctions, OracleQueryBlock queryBlock, ICollection<OracleProgramReference> functionReferences, OracleSelectListColumn selectListColumn)
 		{
 			foreach (var identifierNode in grammarSpecificFunctions.Select(n => n.FirstTerminalNode).Distinct())
 			{
@@ -871,8 +871,8 @@ namespace SqlPad.Oracle
 				var analyticClauseNode = rootNode.GetSingleDescendant(NonTerminals.AnalyticClause);
 
 				var parameterList = rootNode.ChildNodes.SingleOrDefault(n => n.Id.In(NonTerminals.ParenthesisEnclosedExpressionListWithMandatoryExpressions, NonTerminals.CountAsteriskParameter, NonTerminals.AggregateFunctionParameter, NonTerminals.ParenthesisEnclosedExpressionListWithIgnoreNulls));
-				var parameterNodes = new List<StatementDescriptionNode>();
-				StatementDescriptionNode firstParameterExpression = null;
+				var parameterNodes = new List<StatementGrammarNode>();
+				StatementGrammarNode firstParameterExpression = null;
 				if (parameterList != null)
 				{
 					switch (parameterList.Id)
@@ -909,12 +909,12 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		private static StatementDescriptionNode[] GetFunctionCallNodes(StatementDescriptionNode identifier)
+		private static StatementGrammarNode[] GetFunctionCallNodes(StatementGrammarNode identifier)
 		{
 			return identifier.ParentNode.ChildNodes.Where(n => n.Id.In(NonTerminals.DatabaseLink, NonTerminals.ParenthesisEnclosedAggregationFunctionParameters, NonTerminals.AnalyticClause)).ToArray();
 		}
 
-		private static OracleProgramReference CreateFunctionReference(OracleQueryBlock queryBlock, OracleSelectListColumn selectListColumn, StatementDescriptionNode identifierNode, StatementDescriptionNode prefixNonTerminal, ICollection<StatementDescriptionNode> functionCallNodes)
+		private static OracleProgramReference CreateFunctionReference(OracleQueryBlock queryBlock, OracleSelectListColumn selectListColumn, StatementGrammarNode identifierNode, StatementGrammarNode prefixNonTerminal, ICollection<StatementGrammarNode> functionCallNodes)
 		{
 			var analyticClauseNode = functionCallNodes.SingleOrDefault(n => n.Id == NonTerminals.AnalyticClause);
 
@@ -945,7 +945,7 @@ namespace SqlPad.Oracle
 			return functionReference;
 		}
 
-		private static OracleColumnReference CreateColumnReference(OracleQueryBlock queryBlock, OracleSelectListColumn selectListColumn, QueryBlockPlacement type, StatementDescriptionNode identifierNode, StatementDescriptionNode prefixNonTerminal)
+		private static OracleColumnReference CreateColumnReference(OracleQueryBlock queryBlock, OracleSelectListColumn selectListColumn, QueryBlockPlacement type, StatementGrammarNode identifierNode, StatementGrammarNode prefixNonTerminal)
 		{
 			var columnReference =
 				new OracleColumnReference
@@ -961,7 +961,7 @@ namespace SqlPad.Oracle
 			return columnReference;
 		}
 
-		private static void AddPrefixNodes(OracleReference reference, StatementDescriptionNode prefixNonTerminal)
+		private static void AddPrefixNodes(OracleReference reference, StatementGrammarNode prefixNonTerminal)
 		{
 			if (prefixNonTerminal == null)
 				return;
@@ -973,11 +973,11 @@ namespace SqlPad.Oracle
 			reference.ObjectNode = objectIdentifier;
 		}
 
-		private IEnumerable<KeyValuePair<StatementDescriptionNode, string>> GetCommonTableExpressionReferences(StatementDescriptionNode node)
+		private IEnumerable<KeyValuePair<StatementGrammarNode, string>> GetCommonTableExpressionReferences(StatementGrammarNode node)
 		{
 			var queryRoot = node.GetAncestor(NonTerminals.NestedQuery);
 			var subQueryCompondentNode = node.GetAncestor(NonTerminals.SubqueryComponent);
-			var cteReferencesWithinSameClause = new List<KeyValuePair<StatementDescriptionNode, string>>();
+			var cteReferencesWithinSameClause = new List<KeyValuePair<StatementGrammarNode, string>>();
 			if (subQueryCompondentNode != null)
 			{
 				var cteNodeWithinSameClause = subQueryCompondentNode.GetAncestor(NonTerminals.SubqueryComponent);
@@ -1004,11 +1004,11 @@ namespace SqlPad.Oracle
 				.Concat(GetCommonTableExpressionReferences(queryRoot));
 		}
 
-		private KeyValuePair<StatementDescriptionNode, string> GetCteNameNode(StatementDescriptionNode cteNode)
+		private KeyValuePair<StatementGrammarNode, string> GetCteNameNode(StatementGrammarNode cteNode)
 		{
 			var objectIdentifierNode = cteNode.ChildNodes.FirstOrDefault();
 			var cteName = objectIdentifierNode == null ? null : objectIdentifierNode.Token.Value.ToQuotedIdentifier();
-			return new KeyValuePair<StatementDescriptionNode, string>(cteNode, cteName);
+			return new KeyValuePair<StatementGrammarNode, string>(cteNode, cteName);
 		}
 	}
 

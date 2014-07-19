@@ -20,13 +20,13 @@ namespace SqlPad
 			return Items.LastOrDefault(s => s.SourcePosition.IndexStart <= position && s.SourcePosition.IndexEnd + 1 >= position);
 		}
 
-		public StatementDescriptionNode GetNodeAtPosition(int position, Func<StatementDescriptionNode, bool> filter = null)
+		public StatementGrammarNode GetNodeAtPosition(int position, Func<StatementGrammarNode, bool> filter = null)
 		{
 			var statement = GetStatementAtPosition(position);
 			return statement == null ? null : statement.GetNodeAtPosition(position, filter);
 		}
 
-		public StatementDescriptionNode GetTerminalAtPosition(int position, Func<StatementDescriptionNode, bool> filter = null)
+		public StatementGrammarNode GetTerminalAtPosition(int position, Func<StatementGrammarNode, bool> filter = null)
 		{
 			var node = GetNodeAtPosition(position, filter);
 			return node == null || node.Type == NodeType.NonTerminal ? null : node;

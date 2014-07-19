@@ -9,7 +9,7 @@ namespace SqlPad.Oracle
 		
 		public string Name { get; set; }
 		
-		public StatementDescriptionNode StatementNode { get; set; }
+		public StatementGrammarNode StatementNode { get; set; }
 
 		public int Priority { get; set; }
 

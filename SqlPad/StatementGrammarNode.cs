@@ -6,14 +6,14 @@ using System.Linq;
 namespace SqlPad
 {
 	[DebuggerDisplay("{ToString()}")]
-	public class StatementDescriptionNode : StatementNode
+	public class StatementGrammarNode : StatementNode
 	{
-		private readonly List<StatementDescriptionNode> _childNodes = new List<StatementDescriptionNode>();
+		private readonly List<StatementGrammarNode> _childNodes = new List<StatementGrammarNode>();
 		private List<StatementCommentNode> _commentNodes;
 
 		public int TerminalCount { get; private set; }
 
-		public StatementDescriptionNode(NodeType type, StatementBase statement, IToken token) : base(statement, token)
+		public StatementGrammarNode(NodeType type, StatementBase statement, IToken token) : base(statement, token)
 		{
 			Type = type;
 
@@ -31,17 +31,17 @@ namespace SqlPad
 
 		public NodeType Type { get; private set; }
 
-		public StatementDescriptionNode RootNode
+		public StatementGrammarNode RootNode
 		{
 			get { return GetRootNode(); }
 		}
 
-		private StatementDescriptionNode GetRootNode()
+		private StatementGrammarNode GetRootNode()
 		{
 			return ParentNode == null ? this : ParentNode.GetRootNode();
 		}
 
-		public StatementDescriptionNode PrecedingTerminal
+		public StatementGrammarNode PrecedingTerminal
 		{
 			get
 			{
@@ -50,7 +50,7 @@ namespace SqlPad
 			}
 		}
 
-		private StatementDescriptionNode GetPrecedingNode(StatementDescriptionNode node)
+		private StatementGrammarNode GetPrecedingNode(StatementGrammarNode node)
 		{
 			if (node.ParentNode == null)
 				return null;
@@ -61,11 +61,11 @@ namespace SqlPad
 				: GetPrecedingNode(node.ParentNode);
 		}
 		
-		//public StatementDescriptionNode NextTerminal { get; private set; }
+		//public StatementGrammarNode NextTerminal { get; private set; }
 
-		public StatementDescriptionNode FirstTerminalNode { get; private set; }
+		public StatementGrammarNode FirstTerminalNode { get; private set; }
 
-		public StatementDescriptionNode LastTerminalNode { get; private set; }
+		public StatementGrammarNode LastTerminalNode { get; private set; }
 
 		public string Id { get; set; }
 		
@@ -77,7 +77,7 @@ namespace SqlPad
 		
 		public bool IsGrammarValid { get; set; }
 
-		public IList<StatementDescriptionNode> ChildNodes { get { return _childNodes.AsReadOnly(); } }
+		public IList<StatementGrammarNode> ChildNodes { get { return _childNodes.AsReadOnly(); } }
 
 		public ICollection<StatementCommentNode> Comments { get { return _commentNodes ?? (_commentNodes = new List<StatementCommentNode>()); } }
 
@@ -100,7 +100,7 @@ namespace SqlPad
 			return new SourcePosition { IndexStart = indexStart, IndexEnd = indexEnd };
 		}
 
-		public IEnumerable<StatementDescriptionNode> Terminals 
+		public IEnumerable<StatementGrammarNode> Terminals 
 		{
 			get
 			{
@@ -110,15 +110,15 @@ namespace SqlPad
 			}
 		}
 
-		public IEnumerable<StatementDescriptionNode> AllChildNodes
+		public IEnumerable<StatementGrammarNode> AllChildNodes
 		{
 			get { return GetChildNodes(); }
 		}
 
-		private IEnumerable<StatementDescriptionNode> GetChildNodes(Func<StatementDescriptionNode, bool> filter = null)
+		private IEnumerable<StatementGrammarNode> GetChildNodes(Func<StatementGrammarNode, bool> filter = null)
 		{
 			return Type == NodeType.Terminal
-				? Enumerable.Empty<StatementDescriptionNode>()
+				? Enumerable.Empty<StatementGrammarNode>()
 				: ChildNodes.Where(n => filter == null || filter(n)).SelectMany(n => Enumerable.Repeat(n, 1).Concat(n.GetChildNodes(filter)));
 		}
 
@@ -126,16 +126,16 @@ namespace SqlPad
 		public override string ToString()
 		{
 			var terminalValue = Type == NodeType.NonTerminal || Token == null ? String.Empty : String.Format("; TokenValue={0}", Token.Value);
-			return String.Format("StatementDescriptionNode (Id={0}; Type={1}; IsRequired={2}; IsGrammarValid={3}; Level={4}; SourcePosition=({5}-{6}){7})", Id, Type, IsRequired, IsGrammarValid, Level, SourcePosition.IndexStart, SourcePosition.IndexEnd, terminalValue);
+			return String.Format("StatementGrammarNode (Id={0}; Type={1}; IsRequired={2}; IsGrammarValid={3}; Level={4}; SourcePosition=({5}-{6}){7})", Id, Type, IsRequired, IsGrammarValid, Level, SourcePosition.IndexStart, SourcePosition.IndexEnd, terminalValue);
 		}
 		#endregion
 
-		public void AddChildNodes(params StatementDescriptionNode[] nodes)
+		public void AddChildNodes(params StatementGrammarNode[] nodes)
 		{
-			AddChildNodes((IEnumerable<StatementDescriptionNode>)nodes);
+			AddChildNodes((IEnumerable<StatementGrammarNode>)nodes);
 		}
 
-		public void AddChildNodes(IEnumerable<StatementDescriptionNode> nodes)
+		public void AddChildNodes(IEnumerable<StatementGrammarNode> nodes)
 		{
 			if (Type == NodeType.Terminal)
 				throw new InvalidOperationException("Terminal nodes cannot have child nodes. ");
@@ -171,17 +171,17 @@ namespace SqlPad
 			return statementText.Substring(SourcePosition.IndexStart, SourcePosition.Length);
 		}
 
-		public IEnumerable<StatementDescriptionNode> GetPathFilterDescendants(Func<StatementDescriptionNode, bool> pathFilter, params string[] descendantNodeIds)
+		public IEnumerable<StatementGrammarNode> GetPathFilterDescendants(Func<StatementGrammarNode, bool> pathFilter, params string[] descendantNodeIds)
 		{
 			return GetChildNodes(pathFilter).Where(t => descendantNodeIds == null || descendantNodeIds.Length == 0 || descendantNodeIds.Contains(t.Id));
 		}
 
-		public StatementDescriptionNode GetSingleDescendant(params string[] descendantNodeIds)
+		public StatementGrammarNode GetSingleDescendant(params string[] descendantNodeIds)
 		{
 			return GetDescendants(descendantNodeIds).SingleOrDefault();
 		}
 
-		public IEnumerable<StatementDescriptionNode> GetDescendants(params string[] descendantNodeIds)
+		public IEnumerable<StatementGrammarNode> GetDescendants(params string[] descendantNodeIds)
 		{
 			return GetPathFilterDescendants(null, descendantNodeIds);
 		}
@@ -199,7 +199,7 @@ namespace SqlPad
 			return ParentNode != null ? ParentNode.GetAncestorDistance(ancestorNodeId, level + 1) : null;
 		}
 
-		public bool HasAncestor(StatementDescriptionNode node, bool includeSelf = false)
+		public bool HasAncestor(StatementGrammarNode node, bool includeSelf = false)
 		{
 			if (includeSelf && this == node)
 				return true;
@@ -214,7 +214,7 @@ namespace SqlPad
 			return ancestorNode != null;
 		}
 
-		public StatementDescriptionNode GetPathFilterAncestor(Func<StatementDescriptionNode, bool> pathFilter, string ancestorNodeId, bool includeSelf = false)
+		public StatementGrammarNode GetPathFilterAncestor(Func<StatementGrammarNode, bool> pathFilter, string ancestorNodeId, bool includeSelf = false)
 		{
 			if (includeSelf && Id == ancestorNodeId)
 				return this;
@@ -227,15 +227,15 @@ namespace SqlPad
 				: ParentNode.GetPathFilterAncestor(pathFilter, ancestorNodeId);
 		}
 
-		public StatementDescriptionNode GetAncestor(string ancestorNodeId, bool includeSelf = false)
+		public StatementGrammarNode GetAncestor(string ancestorNodeId, bool includeSelf = false)
 		{
 			return GetPathFilterAncestor(null, ancestorNodeId, includeSelf);
 		}
 
-		public StatementDescriptionNode GetTopAncestor(string ancestorNodeId, Func<StatementDescriptionNode, bool> pathFilter = null)
+		public StatementGrammarNode GetTopAncestor(string ancestorNodeId, Func<StatementGrammarNode, bool> pathFilter = null)
 		{
 			var node = this;
-			StatementDescriptionNode ancestorNode;
+			StatementGrammarNode ancestorNode;
 			while ((ancestorNode = node.GetPathFilterAncestor(pathFilter, ancestorNodeId)) != null)
 			{
 				node = ancestorNode;
@@ -244,7 +244,7 @@ namespace SqlPad
 			return node;
 		}
 
-		public StatementDescriptionNode GetNodeAtPosition(int position, Func<StatementDescriptionNode, bool> filter = null)
+		public StatementGrammarNode GetNodeAtPosition(int position, Func<StatementGrammarNode, bool> filter = null)
 		{
 			if (!SourcePosition.ContainsIndex(position))
 				return null;
@@ -258,9 +258,9 @@ namespace SqlPad
 			return node ?? this;
 		}
 
-		private static IEnumerable<StatementDescriptionNode> GetChildNodesAtPosition(StatementDescriptionNode node, int position)
+		private static IEnumerable<StatementGrammarNode> GetChildNodesAtPosition(StatementGrammarNode node, int position)
 		{
-			var returnedNodes = new List<StatementDescriptionNode>();
+			var returnedNodes = new List<StatementGrammarNode>();
 			if (node == null)
 				return returnedNodes;
 
@@ -280,14 +280,14 @@ namespace SqlPad
 			return returnedNodes;
 		}
 
-		public StatementDescriptionNode GetNearestTerminalToPosition(int position)
+		public StatementGrammarNode GetNearestTerminalToPosition(int position)
 		{
 			return Terminals.TakeWhile(t => t.SourcePosition.IndexStart <= position).LastOrDefault();
 		}
 
 		/*private void ResolveLinks()
 		{
-			StatementDescriptionNode previousTerminal = null;
+			StatementGrammarNode previousTerminal = null;
 			foreach (var terminal in Terminals)
 			{
 				if (previousTerminal != null)
@@ -333,9 +333,9 @@ namespace SqlPad
 			return removedTerminalCount;
 		}
 
-		public StatementDescriptionNode Clone()
+		public StatementGrammarNode Clone()
 		{
-			var clonedNode = new StatementDescriptionNode(Type, Statement, Token)
+			var clonedNode = new StatementGrammarNode(Type, Statement, Token)
 			                 {
 				                 Id = Id,
 				                 IsRequired = IsRequired,

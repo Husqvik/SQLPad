@@ -8,13 +8,13 @@ namespace SqlPad.Oracle.Commands
 	{
 		protected readonly CommandExecutionContext ExecutionContext;
 
-		protected StatementDescriptionNode CurrentNode { get; private set; }
+		protected StatementGrammarNode CurrentNode { get; private set; }
 		
 		protected OracleStatementSemanticModel SemanticModel { get; private set; }
 
 		protected OracleQueryBlock CurrentQueryBlock { get; private set; }
 
-		protected virtual Func<StatementDescriptionNode, bool> CurrentNodeFilterFunction { get { return null; } }
+		protected virtual Func<StatementGrammarNode, bool> CurrentNodeFilterFunction { get { return null; } }
 
 		protected OracleCommandBase(CommandExecutionContext executionContext)
 		{

@@ -96,7 +96,7 @@ namespace SqlPad.Oracle
 			return String.IsNullOrEmpty(tip) ? null : new ToolTipObject { DataContext = tip };
 		}
 
-		private static string GetTypeToolTip(OracleQueryBlock queryBlock, StatementDescriptionNode node)
+		private static string GetTypeToolTip(OracleQueryBlock queryBlock, StatementGrammarNode node)
 		{
 			var typeReference = queryBlock.AllTypeReferences.SingleOrDefault(t => t.ObjectNode == node);
 			return typeReference == null ? null : GetFullSchemaObjectToolTip(typeReference.SchemaObject);
@@ -133,19 +133,19 @@ namespace SqlPad.Oracle
 			return schemaObject.FullyQualifiedName + " (" + CultureInfo.InvariantCulture.TextInfo.ToTitleCase(schemaObject.Type.ToLower()) + ")";
 		}
 
-		private string GetFunctionToolTip(OracleQueryBlock queryBlock, StatementDescriptionNode terminal)
+		private string GetFunctionToolTip(OracleQueryBlock queryBlock, StatementGrammarNode terminal)
 		{
 			var functionReference = queryBlock.AllFunctionReferences.SingleOrDefault(f => f.FunctionIdentifierNode == terminal);
 			return functionReference == null || functionReference.Metadata == null ? null : functionReference.Metadata.Identifier.FullyQualifiedIdentifier;
 		}
 
-		private OracleColumnReference GetColumnDescription(OracleQueryBlock queryBlock, StatementDescriptionNode terminal)
+		private OracleColumnReference GetColumnDescription(OracleQueryBlock queryBlock, StatementGrammarNode terminal)
 		{
 			return queryBlock.AllColumnReferences
 				.FirstOrDefault(c => c.ColumnNode == terminal);
 		}
 
-		private OracleSchemaObject GetSchemaObjectReference(OracleQueryBlock queryBlock, StatementDescriptionNode terminal)
+		private OracleSchemaObject GetSchemaObjectReference(OracleQueryBlock queryBlock, StatementGrammarNode terminal)
 		{
 			return queryBlock.AllFunctionReferences
 				.Cast<OracleReference>()
@@ -155,7 +155,7 @@ namespace SqlPad.Oracle
 				.FirstOrDefault();
 		}
 
-		private OracleObjectWithColumnsReference GetObjectReference(OracleQueryBlock queryBlock, StatementDescriptionNode terminal)
+		private OracleObjectWithColumnsReference GetObjectReference(OracleQueryBlock queryBlock, StatementGrammarNode terminal)
 		{
 			var objectReference = queryBlock.AllColumnReferences
 				.Where(c => c.ObjectNode == terminal && c.ObjectNodeObjectReferences.Count == 1)

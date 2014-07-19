@@ -28,9 +28,9 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		public StatementDescriptionNode AliasNode { get; set; }
+		public StatementGrammarNode AliasNode { get; set; }
 
-		public StatementDescriptionNode RootNode { get; set; }
+		public StatementGrammarNode RootNode { get; set; }
 		
 		public OracleQueryBlock Owner { get; set; }
 

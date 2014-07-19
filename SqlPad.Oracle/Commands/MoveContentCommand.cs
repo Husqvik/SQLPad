@@ -90,14 +90,14 @@ namespace SqlPad.Oracle.Commands
 			_executionContext.CaretOffset += caretOffset;
 		}
 
-		private SourcePosition GetPositionToExchange(StatementDescriptionNode movedNode)
+		private SourcePosition GetPositionToExchange(StatementGrammarNode movedNode)
 		{
 			return _direction == Direction.Up
 				? FindAncestorPositionToExchange(movedNode)
 				: FindDescendantPositionToExchange(movedNode);
 		}
 
-		private SourcePosition FindDescendantPositionToExchange(StatementDescriptionNode movedNode)
+		private SourcePosition FindDescendantPositionToExchange(StatementGrammarNode movedNode)
 		{
 			var nodeToExchange = movedNode.ParentNode.GetPathFilterDescendants(NodeFilters.BreakAtNestedQueryBoundary, movedNode.Id)
 				.FirstOrDefault(n => n != movedNode);
@@ -105,10 +105,10 @@ namespace SqlPad.Oracle.Commands
 			return CreateNodePosition(movedNode, nodeToExchange);
 		}
 
-		private SourcePosition FindAncestorPositionToExchange(StatementDescriptionNode movedNode)
+		private SourcePosition FindAncestorPositionToExchange(StatementGrammarNode movedNode)
 		{
 			var parentCandidate = movedNode.ParentNode.ParentNode;
-			StatementDescriptionNode nodeToExchange = null;
+			StatementGrammarNode nodeToExchange = null;
 			while (parentCandidate != null && nodeToExchange == null)
 			{
 				nodeToExchange = parentCandidate.ChildNodes.FirstOrDefault(n => n.Id == movedNode.Id);
@@ -118,14 +118,14 @@ namespace SqlPad.Oracle.Commands
 			return CreateNodePosition(movedNode, nodeToExchange);
 		}
 
-		private SourcePosition CreateNodePosition(StatementDescriptionNode movedNode, StatementDescriptionNode nodeToExchange)
+		private SourcePosition CreateNodePosition(StatementGrammarNode movedNode, StatementGrammarNode nodeToExchange)
 		{
 			return nodeToExchange == null
 				? SourcePosition.Empty
 				: SourcePosition.Create(nodeToExchange.SourcePosition.IndexStart, GetLastNonChainingNodePosition(nodeToExchange, movedNode.ParentNode.Id));
 		}
 
-		private int GetLastNonChainingNodePosition(StatementDescriptionNode nodeToExchange, string chainingNodeId)
+		private int GetLastNonChainingNodePosition(StatementGrammarNode nodeToExchange, string chainingNodeId)
 		{
 			return nodeToExchange.ChildNodes.TakeWhile(n => n.Id != chainingNodeId || n != nodeToExchange.ChildNodes[nodeToExchange.ChildNodes.Count - 1]).First().SourcePosition.IndexEnd;
 		}

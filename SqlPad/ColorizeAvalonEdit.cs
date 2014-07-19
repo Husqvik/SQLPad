@@ -24,18 +24,18 @@ namespace SqlPad
 		private static readonly SolidColorBrush InvalidStatementBackgroundBrush = new SolidColorBrush(Color.FromArgb(32, Colors.PaleVioletRed.R, Colors.PaleVioletRed.G, Colors.PaleVioletRed.B));
 
 		private readonly Stack<ICollection<TextSegment>> _highlightSegments = new Stack<ICollection<TextSegment>>();
-		private readonly List<StatementDescriptionNode> _highlightParenthesis = new List<StatementDescriptionNode>();
-		private readonly Dictionary<DocumentLine, ICollection<StatementDescriptionNode>> _lineTerminals = new Dictionary<DocumentLine, ICollection<StatementDescriptionNode>>();
-		private readonly Dictionary<DocumentLine, ICollection<StatementDescriptionNode>> _lineNodesWithSemanticErrorsOrInvalidGrammar = new Dictionary<DocumentLine, ICollection<StatementDescriptionNode>>();
+		private readonly List<StatementGrammarNode> _highlightParenthesis = new List<StatementGrammarNode>();
+		private readonly Dictionary<DocumentLine, ICollection<StatementGrammarNode>> _lineTerminals = new Dictionary<DocumentLine, ICollection<StatementGrammarNode>>();
+		private readonly Dictionary<DocumentLine, ICollection<StatementGrammarNode>> _lineNodesWithSemanticErrorsOrInvalidGrammar = new Dictionary<DocumentLine, ICollection<StatementGrammarNode>>();
 		private readonly Dictionary<DocumentLine, ICollection<StatementCommentNode>> _lineComments = new Dictionary<DocumentLine, ICollection<StatementCommentNode>>();
-		private readonly HashSet<StatementDescriptionNode> _recognizedProgramTerminals = new HashSet<StatementDescriptionNode>();
-		private readonly HashSet<StatementDescriptionNode> _unrecognizedTerminals = new HashSet<StatementDescriptionNode>();
+		private readonly HashSet<StatementGrammarNode> _recognizedProgramTerminals = new HashSet<StatementGrammarNode>();
+		private readonly HashSet<StatementGrammarNode> _unrecognizedTerminals = new HashSet<StatementGrammarNode>();
 
 		private ISqlParser _parser;
 		private StatementCollection _statements;
 		private IDictionary<StatementBase, IValidationModel> _validationModels;
 
-		public IList<StatementDescriptionNode> HighlightParenthesis { get { return _highlightParenthesis.AsReadOnly(); } }
+		public IList<StatementGrammarNode> HighlightParenthesis { get { return _highlightParenthesis.AsReadOnly(); } }
 		
 		public IEnumerable<TextSegment> HighlightSegments { get { return _highlightSegments.SelectMany(c => c); } }
 
@@ -78,7 +78,7 @@ namespace SqlPad
 			_lineComments.Clear();
 		}
 
-		public void SetHighlightParenthesis(ICollection<StatementDescriptionNode> parenthesisNodes)
+		public void SetHighlightParenthesis(ICollection<StatementGrammarNode> parenthesisNodes)
 		{
 			_highlightParenthesis.Clear();
 			_highlightParenthesis.AddRange(parenthesisNodes);
@@ -210,7 +210,7 @@ namespace SqlPad
 			if (_statements == null)
 				return;
 
-			ICollection<StatementDescriptionNode> lineTerminals;
+			ICollection<StatementGrammarNode> lineTerminals;
 			if (_lineTerminals.TryGetValue(line, out lineTerminals))
 			{
 				foreach (var terminal in lineTerminals)

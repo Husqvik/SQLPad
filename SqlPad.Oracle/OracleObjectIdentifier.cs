@@ -31,7 +31,7 @@ namespace SqlPad.Oracle
 			return new OracleObjectIdentifier(owner, name);
 		}
 
-		public static OracleObjectIdentifier Create(StatementDescriptionNode ownerNode, StatementDescriptionNode objectNode, StatementDescriptionNode aliasNode)
+		public static OracleObjectIdentifier Create(StatementGrammarNode ownerNode, StatementGrammarNode objectNode, StatementGrammarNode aliasNode)
 		{
 			var ownerName = ownerNode == null ? null : ownerNode.Token.Value;
 			var tableName = aliasNode == null

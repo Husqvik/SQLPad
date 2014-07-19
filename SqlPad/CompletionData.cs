@@ -13,7 +13,7 @@ namespace SqlPad
 		private readonly int _offset;
 		private readonly int _caretOffset;
 		
-		private readonly StatementDescriptionNode _node;
+		private readonly StatementGrammarNode _node;
 		private readonly ICodeSnippet _snippet;
 
 		public CompletionData(ICodeCompletionItem codeCompletion)

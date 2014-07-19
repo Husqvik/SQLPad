@@ -8,20 +8,20 @@ namespace SqlPad
 
 		IStatementSemanticModel SemanticModel { get; }
 
-		IDictionary<StatementDescriptionNode, INodeValidationData> ObjectNodeValidity { get; }
+		IDictionary<StatementGrammarNode, INodeValidationData> ObjectNodeValidity { get; }
 
-		IDictionary<StatementDescriptionNode, INodeValidationData> ColumnNodeValidity { get; }
+		IDictionary<StatementGrammarNode, INodeValidationData> ColumnNodeValidity { get; }
 		
-		IDictionary<StatementDescriptionNode, INodeValidationData> ProgramNodeValidity { get; }
+		IDictionary<StatementGrammarNode, INodeValidationData> ProgramNodeValidity { get; }
 		
-		IDictionary<StatementDescriptionNode, INodeValidationData> IdentifierNodeValidity { get; }
+		IDictionary<StatementGrammarNode, INodeValidationData> IdentifierNodeValidity { get; }
 
-		IEnumerable<KeyValuePair<StatementDescriptionNode, INodeValidationData>> GetNodesWithSemanticErrors();
+		IEnumerable<KeyValuePair<StatementGrammarNode, INodeValidationData>> GetNodesWithSemanticErrors();
 	}
 
 	public interface INodeValidationData
 	{
-		StatementDescriptionNode Node { get; }
+		StatementGrammarNode Node { get; }
 		SemanticError SemanticError { get; }
 		bool IsRecognized { get; }
 		ICollection<string> ObjectNames { get; }

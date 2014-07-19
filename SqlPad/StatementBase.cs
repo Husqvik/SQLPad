@@ -6,14 +6,14 @@ namespace SqlPad
 {
 	public abstract class StatementBase
 	{
-		private ICollection<StatementDescriptionNode> _allTerminals;
-		private ICollection<StatementDescriptionNode> _invalidGrammarNodes;
+		private ICollection<StatementGrammarNode> _allTerminals;
+		private ICollection<StatementGrammarNode> _invalidGrammarNodes;
 
 		public ProcessingStatus ProcessingStatus { get; set; }
 
-		public StatementDescriptionNode RootNode { get; set; }
+		public StatementGrammarNode RootNode { get; set; }
 
-		public StatementDescriptionNode TerminatorNode { get; set; }
+		public StatementGrammarNode TerminatorNode { get; set; }
 
 		public IEnumerable<StatementCommentNode> Comments
 		{
@@ -32,19 +32,19 @@ namespace SqlPad
 
 		public abstract bool ReturnDataset { get; }
 
-		public ICollection<StatementDescriptionNode> InvalidGrammarNodes
+		public ICollection<StatementGrammarNode> InvalidGrammarNodes
 		{
 			get { return _invalidGrammarNodes ?? (_invalidGrammarNodes = BuildInvalidGrammarNodeCollection()); }
 		}
 
-		private ICollection<StatementDescriptionNode> BuildInvalidGrammarNodeCollection()
+		private ICollection<StatementGrammarNode> BuildInvalidGrammarNodeCollection()
 		{
 			return RootNode == null
-				? new StatementDescriptionNode[0]
+				? new StatementGrammarNode[0]
 				: GetInvalidGrammerNodes(RootNode).ToArray();
 		}
 
-		private static IEnumerable<StatementDescriptionNode> GetInvalidGrammerNodes(StatementDescriptionNode node)
+		private static IEnumerable<StatementGrammarNode> GetInvalidGrammerNodes(StatementGrammarNode node)
 		{
 			foreach (var childNode in node.ChildNodes.Where(n => n.Type == NodeType.NonTerminal))
 			{
@@ -62,32 +62,32 @@ namespace SqlPad
 			}
 		}
 
-		public ICollection<StatementDescriptionNode> AllTerminals
+		public ICollection<StatementGrammarNode> AllTerminals
 		{
 			get { return _allTerminals ?? (_allTerminals = BuildTerminalCollection()); }
 		}
-		public StatementDescriptionNode LastTerminalNode
+		public StatementGrammarNode LastTerminalNode
 		{
 			get { return RootNode == null ? null : (TerminatorNode ?? RootNode.LastTerminalNode); }
 		}
 
-		private ICollection<StatementDescriptionNode> BuildTerminalCollection()
+		private ICollection<StatementGrammarNode> BuildTerminalCollection()
 		{
-			return new HashSet<StatementDescriptionNode>(RootNode == null ? Enumerable.Empty<StatementDescriptionNode>() : RootNode.Terminals);
+			return new HashSet<StatementGrammarNode>(RootNode == null ? Enumerable.Empty<StatementGrammarNode>() : RootNode.Terminals);
 		}
 
-		public StatementDescriptionNode GetNodeAtPosition(int position, Func<StatementDescriptionNode, bool> filter = null)
+		public StatementGrammarNode GetNodeAtPosition(int position, Func<StatementGrammarNode, bool> filter = null)
 		{
 			return RootNode == null ? null : RootNode.GetNodeAtPosition(position, filter);
 		}
 
-		public StatementDescriptionNode GetTerminalAtPosition(int position, Func<StatementDescriptionNode, bool> filter = null)
+		public StatementGrammarNode GetTerminalAtPosition(int position, Func<StatementGrammarNode, bool> filter = null)
 		{
 			var node = GetNodeAtPosition(position, filter);
 			return node == null || node.Type == NodeType.NonTerminal ? null : node;
 		}
 
-		public StatementDescriptionNode GetNearestTerminalToPosition(int position)
+		public StatementGrammarNode GetNearestTerminalToPosition(int position)
 		{
 			return RootNode == null ? null : RootNode.GetNearestTerminalToPosition(position);
 		}

@@ -20,11 +20,11 @@ namespace SqlPad.Oracle
 
 		public OracleQueryBlock Owner { get; set; }
 
-		public StatementDescriptionNode RootNode { get; set; }
+		public StatementGrammarNode RootNode { get; set; }
 
-		public StatementDescriptionNode OwnerNode { get; set; }
+		public StatementGrammarNode OwnerNode { get; set; }
 
-		public StatementDescriptionNode ObjectNode { get; set; }
+		public StatementGrammarNode ObjectNode { get; set; }
 
 		public ICollection<OracleObjectWithColumnsReference> ObjectNodeObjectReferences { get; set; }
 

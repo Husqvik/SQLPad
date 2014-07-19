@@ -66,12 +66,12 @@ namespace SqlPad.Oracle
 				throw new ArgumentException("invalid quoted notation");
 		}
 
-		public static IEnumerable<StatementDescriptionNode> GetDescendantsWithinSameQuery(this StatementDescriptionNode node, params string[] descendantNodeIds)
+		public static IEnumerable<StatementGrammarNode> GetDescendantsWithinSameQuery(this StatementGrammarNode node, params string[] descendantNodeIds)
 		{
 			return node.GetPathFilterDescendants(NodeFilters.BreakAtNestedQueryBoundary, descendantNodeIds);
 		}
 
-		public static OracleObjectIdentifier ExtractObjectIdentifier(this StatementDescriptionNode node)
+		public static OracleObjectIdentifier ExtractObjectIdentifier(this StatementGrammarNode node)
 		{
 			var queryTableExpression = node.GetPathFilterAncestor(n => n.Id != NonTerminals.FromClause, NonTerminals.QueryTableExpression);
 
@@ -89,29 +89,29 @@ namespace SqlPad.Oracle
 			return OracleObjectIdentifier.Create(schemaPrefixNode, tableIdentifierNode, null);
 		}
 
-		public static bool IsWithinSelectClauseOrExpression(this StatementDescriptionNode node)
+		public static bool IsWithinSelectClauseOrExpression(this StatementGrammarNode node)
 		{
 			return node.IsWithinSelectClause() ||
 			       node.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.Expression) != null;
 		}
 
-		public static bool IsWithinSelectClause(this StatementDescriptionNode node)
+		public static bool IsWithinSelectClause(this StatementGrammarNode node)
 		{
 			var selectListNode = node.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.SelectList);
 			return node.Id == Terminals.Select || selectListNode != null;
 		}
 
-		public static bool IsWithinGroupByClause(this StatementDescriptionNode node)
+		public static bool IsWithinGroupByClause(this StatementGrammarNode node)
 		{
 			return node.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.GroupByClause) != null;
 		}
 
-		public static bool IsWithinHavingClause(this StatementDescriptionNode node)
+		public static bool IsWithinHavingClause(this StatementGrammarNode node)
 		{
 			return node.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.HavingClause) != null;
 		}
 
-		public static StatementDescriptionNode GetParentExpression(this StatementDescriptionNode node)
+		public static StatementGrammarNode GetParentExpression(this StatementGrammarNode node)
 		{
 			return node == null
 				? null
@@ -158,17 +158,17 @@ namespace SqlPad.Oracle
 
 	public static class NodeFilters
 	{
-		public static bool BreakAtNestedQueryBoundary(StatementDescriptionNode node)
+		public static bool BreakAtNestedQueryBoundary(StatementGrammarNode node)
 		{
 			return node.Id != NonTerminals.NestedQuery;
 		}
 
-		public static bool AnyIdentifier(StatementDescriptionNode node)
+		public static bool AnyIdentifier(StatementGrammarNode node)
 		{
 			return node.Id.IsIdentifier();
 		}
 
-		public static bool In(StatementDescriptionNode node, params string[] ids)
+		public static bool In(StatementGrammarNode node, params string[] ids)
 		{
 			return node.Id.In(ids);
 		}

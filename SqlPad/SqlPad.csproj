@@ -133,7 +133,7 @@
       <DependentUpon>Snippet.xsd</DependentUpon>
     </Compile>
     <Compile Include="SourcePosition.cs" />
-    <Compile Include="StatementDescriptionNode.cs" />
+    <Compile Include="StatementGrammarNode.cs" />
     <Page Include="DocumentPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

@@ -15,7 +15,7 @@ namespace SqlPad
 
 		public IToken Token { get; private set; }
 
-		public StatementDescriptionNode ParentNode { get; protected set; }
+		public StatementGrammarNode ParentNode { get; protected set; }
 
 		public SourcePosition SourcePosition
 		{

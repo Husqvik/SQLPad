@@ -58,17 +58,17 @@ namespace SqlPad.Oracle
 
 		public string NormalizedAlias { get { return Alias.ToQuotedIdentifier(); } }
 
-		public StatementDescriptionNode AliasNode { get; set; }
+		public StatementGrammarNode AliasNode { get; set; }
 
 		public QueryBlockType Type { get; set; }
 		
 		public bool HasAsteriskClause { get; set; }
 
-		public StatementDescriptionNode RootNode { get; set; }
+		public StatementGrammarNode RootNode { get; set; }
 
-		public StatementDescriptionNode WhereClause { get; set; }
+		public StatementGrammarNode WhereClause { get; set; }
 
-		public StatementDescriptionNode SelectList { get; set; }
+		public StatementGrammarNode SelectList { get; set; }
 
 		public bool HasDistinctResultSet { get; set; }
 
@@ -83,11 +83,11 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		public StatementDescriptionNode GroupByClause { get; set; }
+		public StatementGrammarNode GroupByClause { get; set; }
 
-		public StatementDescriptionNode HavingClause { get; set; }
+		public StatementGrammarNode HavingClause { get; set; }
 		
-		public StatementDescriptionNode OrderByClause { get; set; }
+		public StatementGrammarNode OrderByClause { get; set; }
 		
 		public OracleStatement Statement { get; set; }
 

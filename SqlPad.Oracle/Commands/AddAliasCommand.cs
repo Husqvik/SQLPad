@@ -18,7 +18,7 @@ namespace SqlPad.Oracle.Commands
 		{
 		}
 
-		protected override Func<StatementDescriptionNode, bool> CurrentNodeFilterFunction
+		protected override Func<StatementGrammarNode, bool> CurrentNodeFilterFunction
 		{
 			get { return n => n.Id.In(Terminals.ObjectIdentifier, Terminals.Identifier); }
 		}

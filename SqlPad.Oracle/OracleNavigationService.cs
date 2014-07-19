@@ -37,7 +37,7 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		private static int? NavigateToObjectDefinition(OracleQueryBlock queryBlock, StatementDescriptionNode terminal)
+		private static int? NavigateToObjectDefinition(OracleQueryBlock queryBlock, StatementGrammarNode terminal)
 		{
 			var column = queryBlock.AllColumnReferences.SingleOrDefault(c => c.ObjectNode == terminal);
 
@@ -52,7 +52,7 @@ namespace SqlPad.Oracle
 			return destinationNode.SourcePosition.IndexStart;
 		}
 
-		private static int? NavigateToColumnDefinition(OracleQueryBlock queryBlock, StatementDescriptionNode terminal)
+		private static int? NavigateToColumnDefinition(OracleQueryBlock queryBlock, StatementGrammarNode terminal)
 		{
 			var column = queryBlock.AllColumnReferences.SingleOrDefault(c => c.ColumnNode == terminal);
 			if (column == null || column.ValidObjectReference == null || column.ValidObjectReference.QueryBlocks.Count != 1)

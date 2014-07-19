@@ -10,8 +10,8 @@ namespace SqlPad
 
 		public string NodeId { get; set; }
 		
-		public IList<StatementDescriptionNode> Nodes { get; set; }
+		public IList<StatementGrammarNode> Nodes { get; set; }
 
-		public IList<StatementDescriptionNode> BestCandidates { get; set; }
+		public IList<StatementGrammarNode> BestCandidates { get; set; }
 	}
 }
