@@ -22,11 +22,7 @@ namespace SqlPad.Oracle.Test
 				var result = Parser.Parse(OracleTokenReader.Create(reader));
 				result.ShouldNotBe(null);
 
-				var i = 0;
-				foreach (var statement in result)
-				{
-					Trace.WriteLine(++i + ". statement parse status: " + statement.ProcessingStatus);
-				}
+				result.ToList().ForEach(s => s.ProcessingStatus.ShouldBe(ProcessingStatus.Success));
 			}
 		}
 
