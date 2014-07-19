@@ -40,6 +40,7 @@ namespace SqlPad.Oracle
 		private readonly OracleConnection _userConnection;
 		private OracleDataReader _dataReader;
 
+		private static readonly Dictionary<string, OracleDataDictionary> CachedDataDictionaries = new Dictionary<string, OracleDataDictionary>();
 		internal static readonly Dictionary<string, OracleDatabaseModel> DatabaseModels = new Dictionary<string, OracleDatabaseModel>();
 
 		private OracleDatabaseModel(ConnectionStringSettings connectionString)
@@ -499,7 +500,12 @@ namespace SqlPad.Oracle
 			//var customer = _dataDictionary.AllObjects.Where(o => o.Key.NormalizedName.Contains("CUSTOMER\"")).ToArray();
 
 			if (!IsRefreshNeeded)
+			{
 				return;
+			}
+
+			var reason = _dataDictionary.Timestamp > DateTime.MinValue ? "has expired" : "does not exist";
+			Trace.WriteLine(String.Format("{0} - Cache for '{1}' {2}. Cache refresh started. ", DateTime.Now, CachedConnectionStringName, reason));
 
 			RaiseEvent(RefreshStarted);
 			var lastRefresh = DateTime.Now;
@@ -795,6 +801,7 @@ namespace SqlPad.Oracle
 			//var otmp = dataObjectMetadata.Where(o => o.Key.NormalizedName.Contains("DBMS_RANDOM")).ToArray();
 
 			_dataDictionary = new OracleDataDictionary(allObjects, lastRefresh);
+			CachedDataDictionaries[CachedConnectionStringName] = _dataDictionary;
 
 			MetadataCache.StoreDatabaseModelCache(CachedConnectionStringName, stream => _dataDictionary.Serialize(stream));
 
@@ -806,29 +813,32 @@ namespace SqlPad.Oracle
 		{
 			if (_cacheLoaded)
 				return;
-			
+
 			Stream stream;
-			if (MetadataCache.TryLoadDatabaseModelCache(CachedConnectionStringName, out stream))
+			if (!CachedDataDictionaries.TryGetValue(CachedConnectionStringName, out _dataDictionary) && MetadataCache.TryLoadDatabaseModelCache(CachedConnectionStringName, out stream))
 			{
 				try
 				{
 					RaiseEvent(RefreshStarted);
-					var readWatch = Stopwatch.StartNew();
-					_dataDictionary = OracleDataDictionary.Deserialize(stream);
-					Trace.WriteLine(String.Format("{0} - Cache for '{1}' loaded in {2}", DateTime.Now, CachedConnectionStringName, readWatch.Elapsed));
-
-					var functionMetadata = _dataDictionary.AllObjects.Values
-						.OfType<IFunctionCollection>()
-						.Where(o => o.FullyQualifiedName != BuiltInFunctionPackageIdentifier)
-						.SelectMany(o => o.Functions);
-
-					_allFunctionMetadata = new OracleFunctionMetadataCollection(BuiltInFunctionMetadata.SqlFunctions.Concat(functionMetadata));
+					var stopwatch = Stopwatch.StartNew();
+					_dataDictionary = CachedDataDictionaries[CachedConnectionStringName] = OracleDataDictionary.Deserialize(stream);
+					Trace.WriteLine(String.Format("{0} - Cache for '{1}' loaded in {2}", DateTime.Now, CachedConnectionStringName, stopwatch.Elapsed));
 				}
 				finally
 				{
 					stream.Dispose();
 					RaiseEvent(RefreshFinished);
 				}
+			}
+
+			if (_dataDictionary != null)
+			{
+				var functionMetadata = _dataDictionary.AllObjects.Values
+					.OfType<IFunctionCollection>()
+					.Where(o => o.FullyQualifiedName != BuiltInFunctionPackageIdentifier)
+					.SelectMany(o => o.Functions);
+
+				_allFunctionMetadata = new OracleFunctionMetadataCollection(BuiltInFunctionMetadata.SqlFunctions.Concat(functionMetadata));
 			}
 
 			_cacheLoaded = true;
