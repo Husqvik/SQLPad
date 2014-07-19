@@ -2,7 +2,7 @@ using System.Diagnostics;
 
 namespace SqlPad
 {
-	[DebuggerDisplay("SourcePosition (IndexStart={IndexStart}, IndexEnd={IndexEnd})")]
+	[DebuggerDisplay("SourcePosition (IndexStart={IndexStart}, IndexEnd={IndexEnd}, Length={Length})")]
 	public struct SourcePosition
 	{
 		public static SourcePosition Empty = new SourcePosition { IndexStart = -1, IndexEnd = -1 };

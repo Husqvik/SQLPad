@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 
 namespace SqlPad
 {
@@ -11,18 +10,8 @@ namespace SqlPad
 
 		public string NodeId { get; set; }
 		
-		public ICollection<StatementDescriptionNode> Nodes { get; set; }
+		public IList<StatementDescriptionNode> Nodes { get; set; }
 
-		public ICollection<StatementDescriptionNode> BestCandidates { get; set; }
-		
-		public IEnumerable<StatementDescriptionNode> Terminals
-		{
-			get
-			{
-				return Nodes == null
-					? Enumerable.Empty<StatementDescriptionNode>()
-					: Nodes.SelectMany(t => t.Terminals);
-			}
-		} 
+		public IList<StatementDescriptionNode> BestCandidates { get; set; }
 	}
 }

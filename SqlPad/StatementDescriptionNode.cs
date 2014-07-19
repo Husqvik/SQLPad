@@ -9,6 +9,7 @@ namespace SqlPad
 	public class StatementDescriptionNode : StatementNode
 	{
 		private readonly List<StatementDescriptionNode> _childNodes = new List<StatementDescriptionNode>();
+		private List<StatementCommentNode> _commentNodes;
 
 		public int TerminalCount { get; private set; }
 
@@ -29,8 +30,6 @@ namespace SqlPad
 		}
 
 		public NodeType Type { get; private set; }
-
-		public StatementDescriptionNode ParentNode { get; private set; }
 
 		public StatementDescriptionNode RootNode
 		{
@@ -79,6 +78,8 @@ namespace SqlPad
 		public bool IsGrammarValid { get; set; }
 
 		public IList<StatementDescriptionNode> ChildNodes { get { return _childNodes.AsReadOnly(); } }
+
+		public ICollection<StatementCommentNode> Comments { get { return _commentNodes ?? (_commentNodes = new List<StatementCommentNode>()); } }
 
 		protected override SourcePosition BuildSourcePosition()
 		{

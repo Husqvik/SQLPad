@@ -1505,8 +1505,24 @@ FROM DUAL";
 			var invalidNodes = rootNode.AllChildNodes.Where(n => !n.IsGrammarValid).ToArray();
 			invalidNodes.Length.ShouldBe(1);
 
-			statement.Comments.Count.ShouldBe(1);
-			statement.Comments.First().Token.Value.ShouldBe("/* missing expression */");
+			var commentNodes = result.Comments.ToArray();
+			commentNodes.Length.ShouldBe(1);
+			commentNodes[0].Token.Value.ShouldBe("/* missing expression */");
+			commentNodes[0].ParentNode.ShouldNotBe(null);
+		}
+
+		[Test(Description = @"Tests global and statement level comments. ")]
+		public void TestGlobalAndStatementLevelComments()
+		{
+			const string query1 = "-- Statement title\nSELECT /*+ gather_plan_statistics */ 1 FROM DUAL";
+			var result = Parser.Parse(query1);
+
+			var commentNodes = result.Comments.ToArray();
+			commentNodes.Length.ShouldBe(2);
+			commentNodes[0].Token.Value.ShouldBe("-- Statement title\n");
+			commentNodes[0].ParentNode.ShouldBe(null);
+			commentNodes[1].Token.Value.ShouldBe("/*+ gather_plan_statistics */");
+			commentNodes[1].ParentNode.ShouldNotBe(null);
 		}
 
 		[Test(Description = @"")]
@@ -1524,6 +1540,13 @@ FROM DUAL";
 
 			var terminals = rootNode.Terminals.ToArray();
 			terminals.Length.ShouldBe(6);
+
+			var commentNodes = result.Comments.ToArray();
+			commentNodes.Length.ShouldBe(2);
+			commentNodes[0].Token.Value.ShouldBe("/* missing expression 1 */");
+			commentNodes[0].ParentNode.ShouldNotBe(null);
+			commentNodes[1].Token.Value.ShouldBe("/* missing expression 2 */");
+			commentNodes[1].ParentNode.ShouldNotBe(null);
 		}
 
 		[Test(Description = @"")]

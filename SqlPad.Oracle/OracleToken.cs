@@ -15,10 +15,6 @@ namespace SqlPad.Oracle
 			_value = value;
 			_index = index;
 			_isComment = isComment;
-
-#if DEBUG
-			//Trace.Write("{" + value + "@" + index + "}");
-#endif
 		}
 
 		public string Value { get { return _value; } }

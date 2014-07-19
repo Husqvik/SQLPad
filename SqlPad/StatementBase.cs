@@ -9,18 +9,24 @@ namespace SqlPad
 		private ICollection<StatementDescriptionNode> _allTerminals;
 		private ICollection<StatementDescriptionNode> _invalidGrammarNodes;
 
-		protected StatementBase()
-		{
-			Comments = new List<StatementCommentNode>();
-		}
-
 		public ProcessingStatus ProcessingStatus { get; set; }
 
 		public StatementDescriptionNode RootNode { get; set; }
 
 		public StatementDescriptionNode TerminatorNode { get; set; }
-		
-		public ICollection<StatementCommentNode> Comments { get; private set; }
+
+		public IEnumerable<StatementCommentNode> Comments
+		{
+			get
+			{
+				if (RootNode == null)
+					return Enumerable.Empty<StatementCommentNode>();
+
+				return RootNode.AllChildNodes
+					.Where(n => n.Type == NodeType.NonTerminal)
+					.SelectMany(n => n.Comments);
+			}
+		}
 
 		public SourcePosition SourcePosition { get; set; }
 
