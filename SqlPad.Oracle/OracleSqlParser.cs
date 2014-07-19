@@ -443,9 +443,9 @@ namespace SqlPad.Oracle
 
 					tokenBuffer.RemoveRange(0, result.Nodes.Sum(n => n.TerminalCount));
 
-					if (result.Nodes.Any(n => n.AllChildNodes.Any(c => !c.IsGrammarValid)))
+					var hasInvalidGrammarNodes = result.Nodes.Any(HasInvalidGrammarNodes);
+					if (hasInvalidGrammarNodes)
 					{
-						//var invalidNodes = result.Nodes.SelectMany(n => n.AllChildNodes).Where(n => !n.IsGrammarValid).ToArray();
 						result.Status = ProcessingStatus.SequenceNotFound;
 					}
 				}
@@ -770,6 +770,11 @@ namespace SqlPad.Oracle
 			}
 			
 			return FindCommentTargetNode(candidateNode, index);
+		}
+
+		private bool HasInvalidGrammarNodes(StatementDescriptionNode node)
+		{
+			return !node.IsGrammarValid || node.ChildNodes.Where(n => n.Type == NodeType.NonTerminal).Any(HasInvalidGrammarNodes);
 		}
 	}
 }
