@@ -129,7 +129,7 @@ namespace SqlPad.Oracle
 					}
 					else
 					{
-						builder.Append(candidateCharacter);
+						yield return BuildToken(candidateCharacter.Value, index - 1);
 					}
 
 					candidateCharacter = null;

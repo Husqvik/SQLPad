@@ -394,10 +394,10 @@ namespace SqlPad.Oracle.Test
 		public void TestQuoteCharacterInStringLiteral()
 		{
 			const string testQuery = @"SELECT 'begin''middle''end' FROM DUAL";
-			var tokens = GetTokenValuesFromOracleSql(testQuery, true);
+			var tokens = GetTokenValuesFromOracleSql(testQuery);
 			tokens.ShouldBe(new[] { "SELECT", "'begin''middle''end'", "FROM", "DUAL" });
 
-			var tokenIndexes = GetTokenIndexesFromOracleSql(testQuery, true);
+			var tokenIndexes = GetTokenIndexesFromOracleSql(testQuery);
 			tokenIndexes.ShouldBe(new[] { 0, 7, 28, 33 });
 		}
 
@@ -405,10 +405,10 @@ namespace SqlPad.Oracle.Test
 		public void TestQuoteCharacterInQuotedStringLiteral()
 		{
 			const string testQuery = @"SELECT q'|begin'''||middle'''end|' FROM DUAL";
-			var tokens = GetTokenValuesFromOracleSql(testQuery, true);
+			var tokens = GetTokenValuesFromOracleSql(testQuery);
 			tokens.ShouldBe(new[] { "SELECT", "q'|begin'''||middle'''end|'", "FROM", "DUAL" });
 
-			var tokenIndexes = GetTokenIndexesFromOracleSql(testQuery, true);
+			var tokenIndexes = GetTokenIndexesFromOracleSql(testQuery);
 			tokenIndexes.ShouldBe(new[] { 0, 7, 35, 40 });
 		}
 
@@ -416,7 +416,7 @@ namespace SqlPad.Oracle.Test
 		public void TestSingleEqualsOperator()
 		{
 			const string testQuery = @"SELECT * FROM DUAL WHERE 1 = 1";
-			var tokens = GetTokenValuesFromOracleSql(testQuery, true);
+			var tokens = GetTokenValuesFromOracleSql(testQuery);
 			tokens.ShouldBe(new[] { "SELECT", "*", "FROM", "DUAL", "WHERE", "1", "=", "1" });
 		}
 
@@ -424,7 +424,7 @@ namespace SqlPad.Oracle.Test
 		public void TestDotAsObjectSeparatorWithQuotedIdentifier()
 		{
 			const string testQuery = @"SELECT DUAL.""DUMMY"" FROM DUAL";
-			var tokens = GetTokenValuesFromOracleSql(testQuery, true);
+			var tokens = GetTokenValuesFromOracleSql(testQuery);
 			tokens.ShouldBe(new[] { "SELECT", "DUAL", ".", "\"DUMMY\"", "FROM", "DUAL" });
 		}
 
@@ -432,7 +432,7 @@ namespace SqlPad.Oracle.Test
 		public void TestUnfinishedDecimalPointCandidate()
 		{
 			const string testQuery = "SELECT P.";
-			var tokens = GetTokenValuesFromOracleSql(testQuery, true);
+			var tokens = GetTokenValuesFromOracleSql(testQuery);
 			tokens.ShouldBe(new[] { "SELECT", "P", "." });
 		}
 
@@ -440,7 +440,7 @@ namespace SqlPad.Oracle.Test
 		public void TestExponentialNumberAsLastToken()
 		{
 			const string testQuery = "SELECT 1 FROM DUAL FOR UPDATE WAIT 10E-0";
-			var tokens = GetTokenValuesFromOracleSql(testQuery, true);
+			var tokens = GetTokenValuesFromOracleSql(testQuery);
 			tokens.ShouldBe(new[] { "SELECT", "1", "FROM", "DUAL", "FOR", "UPDATE", "WAIT", "10E-0" });
 		}
 
@@ -448,8 +448,16 @@ namespace SqlPad.Oracle.Test
 		public void TestDivisionCharacterSurroundedBySpace()
 		{
 			const string testQuery = "SELECT CASE WHEN (SELECTION.ID / 1) >= 0 THEN 1 END FROM SELECTION";
-			var tokens = GetTokenValuesFromOracleSql(testQuery, true);
+			var tokens = GetTokenValuesFromOracleSql(testQuery);
 			tokens.ShouldBe(new[] { "SELECT", "CASE", "WHEN", "(", "SELECTION", ".", "ID", "/", "1", ")", ">=", "0", "THEN", "1", "END", "FROM", "SELECTION" });
+		}
+
+		[Test(Description = "Tests division character without space. ")]
+		public void TestDivisionCharacterWithoutSpace()
+		{
+			const string testQuery = "SELECT 1/1 FROM DUAL";
+			var tokens = GetTokenValuesFromOracleSql(testQuery);
+			tokens.ShouldBe(new[] { "SELECT", "1", "/", "1", "FROM", "DUAL" });
 		}
 
 		private string[] GetTokenValuesFromOracleSql(string sqlText, bool includeCommentBlocks = false)
