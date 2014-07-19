@@ -155,9 +155,9 @@ namespace SqlPad
 			_toolTipProvider = _infrastructureFactory.CreateToolTipProvider();
 			_navigationService = _infrastructureFactory.CreateNavigationService();
 			_databaseModel = _infrastructureFactory.CreateDatabaseModel(ConfigurationProvider.ConnectionStrings[connectionString.Name]);
-			_sqlDocumentRepository = new SqlDocumentRepository(_infrastructureFactory.CreateSqlParser(), _infrastructureFactory.CreateStatementValidator(), _databaseModel);
+			_sqlDocumentRepository = new SqlDocumentRepository(_infrastructureFactory.CreateParser(), _infrastructureFactory.CreateStatementValidator(), _databaseModel);
 
-			_colorizeAvalonEdit.SetParser(_infrastructureFactory.CreateSqlParser());
+			_colorizeAvalonEdit.SetParser(_infrastructureFactory.CreateParser());
 
 			InitializeSpecificCommandBindings();
 
@@ -253,8 +253,9 @@ namespace SqlPad
 
 		private void ShowTokenCommandExecutionHandler(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
 		{
-			var message = "Parsed: " + String.Join(", ", _sqlDocumentRepository.Statements.SelectMany(s => s.AllTerminals).Select(t => "{" + t.Token.Value + "}"));
-			message += Environment.NewLine + "Comments: " + String.Join(", ", _sqlDocumentRepository.Statements.Comments.Select(c => "{" + c.Token.Value + "}"));
+			var tokens = _infrastructureFactory.CreateTokenReader(_sqlDocumentRepository.StatementText).GetTokens(true).ToArray();
+			var message = "Parsed: " + String.Join(", ", tokens.Where(t => !t.IsComment).Select(t => "{" + t.Value + "}"));
+			message += Environment.NewLine + "Comments: " + String.Join(", ", tokens.Where(t => t.IsComment).Select(t => "{" + t.Value + "}"));
 			MessageBox.Show(message, "Tokens", MessageBoxButton.OK, MessageBoxImage.Information);
 		}
 

@@ -3696,7 +3696,7 @@
     <Terminal Id="ColumnAlias" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
     <Terminal Id="ObjectAlias" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
     <Terminal Id="XmlAlias" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
-    <Terminal Id="StringLiteral" RegexValue="^n?q?(&apos;([^&apos;]|(&apos;&apos;))*&apos;)$" />
+    <Terminal Id="StringLiteral" RegexValue="^[nN]?[qQ]?(&apos;([^&apos;]|(&apos;&apos;))*&apos;)$" />
     <Terminal Id="NumberLiteral" RegexValue="^((\d+\.?\d*)|(\d*\.?\d+))([eE][+-]?\d+)?[fFdD]?$" />
     <Terminal Id="IntegerLiteral" RegexValue="^\d+([eE]((\+?\d+)|(-0)))?$" />
 

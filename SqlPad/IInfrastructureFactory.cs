@@ -9,7 +9,7 @@ namespace SqlPad
 
 		ITokenReader CreateTokenReader(string sqlText);
 
-		ISqlParser CreateSqlParser();
+		ISqlParser CreateParser();
 
 		IDatabaseModel CreateDatabaseModel(ConnectionStringSettings connectionString);
 

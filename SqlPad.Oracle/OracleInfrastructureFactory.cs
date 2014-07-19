@@ -16,7 +16,7 @@ namespace SqlPad.Oracle
 			return OracleTokenReader.Create(sqlText);
 		}
 
-		public ISqlParser CreateSqlParser()
+		public ISqlParser CreateParser()
 		{
 			return new OracleSqlParser();
 		}

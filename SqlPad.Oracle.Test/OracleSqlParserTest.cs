@@ -1521,6 +1521,22 @@ FROM DUAL";
 			commentNodes[1].ParentNode.ShouldNotBe(null);
 		}
 
+		[Test(Description = @"Tests quoted notation values. ")]
+		public void TestQuotedNotationValues()
+		{
+			const string query1 = "SELECT NQ'|Value|', Q'_Value_' FROM DUAL";
+			var result = Parser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			var statement = result.Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var terminals = statement.AllTerminals.ToArray();
+			terminals.Length.ShouldBe(6);
+			terminals[1].Token.Value.ShouldBe("NQ'|Value|'");
+			terminals[3].Token.Value.ShouldBe("Q'_Value_'");
+		}
+
 		[Test(Description = @"")]
 		public void TestSelectListWhenEnteringNewColumnsBeforeFromTerminal()
 		{

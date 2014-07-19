@@ -26,7 +26,7 @@ namespace SqlPad.Oracle
 		{
 			if (!String.IsNullOrEmpty(RegexValue))
 			{
-				RegexMatcher = new Regex(RegexValue);
+				RegexMatcher = new Regex(RegexValue, RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 			}
 		}
 
