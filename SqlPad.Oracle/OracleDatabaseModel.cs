@@ -16,15 +16,16 @@ namespace SqlPad.Oracle
 {
 	public class OracleDatabaseModel : OracleDatabaseModelBase
 	{
+		private const int RefreshInterval = 10;
+		private const string SqlFuntionMetadataFileName = "OracleSqlFunctionMetadataCollection_12_1_0_1_0.xml";
+		private const int OracleErrorCodeUserInvokedCancellation = 1013;
+
 		private readonly object _lockObject = new object();
 		private readonly OracleConnectionStringBuilder _oracleConnectionString;
-		private const int RefreshInterval = 10;
 		private readonly Timer _timer = new Timer(RefreshInterval * 60000);
-		private const string SqlFuntionMetadataFileName = "OracleSqlFunctionMetadataCollection_12_1_0_1_0.xml";
 		private static readonly DataContractSerializer Serializer = new DataContractSerializer(typeof(OracleFunctionMetadataCollection));
 		private bool _isRefreshing;
 		private bool _cacheLoaded;
-		private bool _canExecute = true;
 		private bool _isExecuting;
 		private Task _backgroundTask;
 		private Task _statementExecutionTask;
@@ -37,7 +38,8 @@ namespace SqlPad.Oracle
 		private string _currentSchema;
 		private OracleDataDictionary _dataDictionary = new OracleDataDictionary(Enumerable.Empty<KeyValuePair<OracleObjectIdentifier, OracleSchemaObject>>(), DateTime.MinValue);
 		private readonly OracleConnection _userConnection;
-		private OracleDataReader _dataReader;
+		private OracleDataReader _userDataReader;
+		private OracleCommand _userCommand;
 
 		private static readonly Dictionary<string, OracleDataDictionary> CachedDataDictionaries = new Dictionary<string, OracleDataDictionary>();
 		internal static readonly Dictionary<string, OracleDatabaseModel> DatabaseModels = new Dictionary<string, OracleDatabaseModel>();
@@ -178,21 +180,18 @@ namespace SqlPad.Oracle
 
 		public override event EventHandler RefreshFinished;
 
-		public override bool CanExecute { get { return _canExecute; } }
-		
 		public override bool IsExecuting { get { return _isExecuting; } }
 
 		public override bool CanFetch
 		{
-			get { return _dataReader != null && !_dataReader.IsClosed; }
+			get { return _userDataReader != null && !_userDataReader.IsClosed; }
 		}
 
 		public override void Dispose()
 		{
 			_timer.Dispose();
 
-			if (_dataReader != null)
-				_dataReader.Dispose();
+			DisposeCommandAndReader();
 
 			if (_statementExecutionTask != null)
 				_statementExecutionTask.Dispose();
@@ -220,6 +219,19 @@ namespace SqlPad.Oracle
 			_userConnection.Dispose();
 
 			DatabaseModels.Remove(_connectionString.ConnectionString);
+		}
+
+		private void DisposeCommandAndReader()
+		{
+			if (_userDataReader != null)
+			{
+				_userDataReader.Dispose();
+			}
+
+			if (_userCommand != null)
+			{
+				_userCommand.Dispose();
+			}
 		}
 
 		public OracleDatabaseModel Clone()
@@ -355,44 +367,27 @@ namespace SqlPad.Oracle
 
 		private T ExecuteUserStatement<T>(string commandText, Func<OracleCommand, T> executeFunction, bool closeConnection = false)
 		{
-			using (var command = _userConnection.CreateCommand())
+			_userCommand = _userConnection.CreateCommand();
+			_userCommand.CommandText = String.Format("ALTER SESSION SET CURRENT_SCHEMA = {0}", _currentSchema);
+
+			lock (_lockObject)
 			{
-				command.CommandText = String.Format("ALTER SESSION SET CURRENT_SCHEMA = {0}", _currentSchema);
-
-				lock (_lockObject)
+				try
 				{
-					try
+					_isExecuting = true;
+					_userConnection.Open();
+
+					_userCommand.ExecuteNonQuery();
+
+					_userCommand.CommandText = commandText;
+
+					return executeFunction(_userCommand);
+				}
+				finally
+				{
+					if (closeConnection && _userConnection.State != ConnectionState.Closed)
 					{
-						_isExecuting = true;
-						_userConnection.Open();
-
-						command.ExecuteNonQuery();
-
-						command.CommandText = commandText;
-
-						return executeFunction(command);
-					}
-					catch
-					{
-						try
-						{
-							if (_userConnection.State != ConnectionState.Closed)
-							{
-								_userConnection.Close();
-							}
-						}
-						catch { }
-						
-						throw;
-					}
-					finally
-					{
-						if (closeConnection && _userConnection.State != ConnectionState.Closed)
-						{
-							_userConnection.Close();
-						}
-
-						_isExecuting = false;
+						_userConnection.Close();
 					}
 				}
 			}
@@ -400,24 +395,10 @@ namespace SqlPad.Oracle
 
 		public override int ExecuteStatement(string statementText, bool returnDataset)
 		{
-			/*var executionTask = ExecuteStatementAsync(statementText, returnDataset, CancellationToken.None);
+			var executionTask = ExecuteStatementAsync(statementText, returnDataset, CancellationToken.None);
 			executionTask.Wait();
 			
-			return executionTask.Result;*/
-
-			PreInitialize();
-
-			var affectedRowCount = 0;
-			if (returnDataset)
-			{
-				_dataReader = ExecuteUserStatement(statementText, c => c.ExecuteReader(CommandBehavior.CloseConnection));
-			}
-			else
-			{
-				affectedRowCount = ExecuteUserStatement(statementText, c => c.ExecuteNonQuery());
-			}
-
-			return affectedRowCount;
+			return executionTask.Result;
 		}
 
 		public override async Task<int> ExecuteStatementAsync(string statementText, bool returnDataset, CancellationToken cancellationToken)
@@ -425,43 +406,72 @@ namespace SqlPad.Oracle
 			PreInitialize();
 
 			var affectedRowCount = 0;
-			if (returnDataset)
+
+			try
 			{
-				_dataReader = await ExecuteUserStatement(statementText, c => c.ExecuteReaderAsynchronous(CommandBehavior.CloseConnection, cancellationToken));
+				if (returnDataset)
+				{
+					_userDataReader = await ExecuteUserStatement(statementText, c => c.ExecuteReaderAsynchronous(CommandBehavior.CloseConnection, cancellationToken));
+				}
+				else
+				{
+					affectedRowCount = await ExecuteUserStatement(statementText, c => c.ExecuteNonQueryAsync(cancellationToken));
+				}
 			}
-			else
+			catch (Exception exception)
 			{
-				affectedRowCount = await ExecuteUserStatement(statementText, c => c.ExecuteNonQueryAsync(cancellationToken));
+				SafeCloseUserConnection();
+
+				var oracleException = exception as OracleException;
+				if (oracleException == null || oracleException.Number != OracleErrorCodeUserInvokedCancellation)
+				{
+					throw;
+				}
+			}
+			finally
+			{
+				_isExecuting = false;
 			}
 
 			return affectedRowCount;
 		}
 
+		private void SafeCloseUserConnection()
+		{
+			try
+			{
+				if (_userConnection.State != ConnectionState.Closed)
+				{
+					_userConnection.Close();
+				}
+			}
+			catch
+			{
+			}
+		}
+
 		private void PreInitialize()
 		{
-			if (!CanExecute)
+			if (_isExecuting)
 				throw new InvalidOperationException("Another statement is executing right now. ");
 
-			if (_dataReader != null)
-			{
-				_dataReader.Dispose();
-			}
+			DisposeCommandAndReader();
 		}
 
 		public override ICollection<ColumnHeader> GetColumnHeaders()
 		{
 			CheckCanFetch();
 
-			var columnTypes = new ColumnHeader[_dataReader.FieldCount];
-			for (var i = 0; i < _dataReader.FieldCount; i++)
+			var columnTypes = new ColumnHeader[_userDataReader.FieldCount];
+			for (var i = 0; i < _userDataReader.FieldCount; i++)
 			{
 				columnTypes[i] =
 					new ColumnHeader
 					{
 						ColumnIndex = i,
-						Name = _dataReader.GetName(i),
-						DataType = _dataReader.GetFieldType(i),
-						DatabaseDataType = _dataReader.GetDataTypeName(i),
+						Name = _userDataReader.GetName(i),
+						DataType = _userDataReader.GetFieldType(i),
+						DatabaseDataType = _userDataReader.GetDataTypeName(i),
 						ValueConverterFunction = ValueConverterFunction
 					};
 			}
@@ -473,9 +483,9 @@ namespace SqlPad.Oracle
 		{
 			CheckCanFetch();
 
-			for (var i = 0; i < _dataReader.FieldCount; i++)
+			for (var i = 0; i < _userDataReader.FieldCount; i++)
 			{
-				var fieldType = _dataReader.GetDataTypeName(i);
+				var fieldType = _userDataReader.GetDataTypeName(i);
 				Trace.Write(i + ". " + fieldType + "; ");
 			}
 
@@ -483,15 +493,15 @@ namespace SqlPad.Oracle
 
 			for (var i = 0; i < rowCount; i++)
 			{
-				if (_dataReader.Read())
+				if (_userDataReader.Read())
 				{
-					var columnData = new object[_dataReader.FieldCount];
-					_dataReader.GetValues(columnData);
+					var columnData = new object[_userDataReader.FieldCount];
+					_userDataReader.GetValues(columnData);
 					yield return columnData;
 				}
 				else
 				{
-					_dataReader.Close();
+					_userDataReader.Close();
 					break;
 				}
 			}
@@ -499,7 +509,7 @@ namespace SqlPad.Oracle
 
 		private void CheckCanFetch()
 		{
-			if (_dataReader == null || _dataReader.IsClosed)
+			if (_userDataReader == null || _userDataReader.IsClosed)
 				throw new InvalidOperationException("No data reader available. ");
 		}
 

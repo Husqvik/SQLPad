@@ -14,8 +14,6 @@ namespace SqlPad
 
 		ICollection<string> Schemas { get; }
 
-		bool CanExecute { get; }
-
 		bool CanFetch { get; }
 
 		bool IsExecuting { get; }

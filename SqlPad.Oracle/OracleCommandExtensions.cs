@@ -8,6 +8,17 @@ namespace SqlPad.Oracle
 {
 	public static class OracleCommandExtensions
 	{
+		internal static OracleCommand AddSimpleParameter(this OracleCommand command, string parameterName, object value)
+		{
+			var parameter = command.CreateParameter();
+			parameter.ParameterName = parameterName;
+			parameter.Value = value;
+
+			command.Parameters.Add(parameter);
+
+			return command;
+		}
+
 		public static Task<OracleDataReader> ExecuteReaderAsynchronous(this OracleCommand command, CommandBehavior behavior, CancellationToken cancellationToken)
 		{
 			var source = new TaskCompletionSource<OracleDataReader>();

@@ -488,8 +488,6 @@ namespace SqlPad.Oracle.Test
 			throw new NotImplementedException();
 		}
 
-		public override bool CanExecute { get { return true; } }
-
 		public override bool CanFetch { get { return true; } }
 		
 		public override bool IsExecuting { get { return false; } }

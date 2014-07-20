@@ -19,6 +19,8 @@ using Microsoft.Win32;
 using SqlPad.Commands;
 using SqlPad.FindReplace;
 
+using Timer = System.Timers.Timer;
+
 namespace SqlPad
 {
 	/// <summary>
@@ -40,7 +42,7 @@ namespace SqlPad
 
 		private MultiNodeEditor _multiNodeEditor;
 		private readonly SqlDocumentColorizingTransformer _colorizingTransformer = new SqlDocumentColorizingTransformer();
-		private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+		private CancellationTokenSource _cancellationTokenSource;
 
 		private static readonly CellValueConverter CellValueConverter = new CellValueConverter();
 		private static readonly Style CellStyleRightAlign = new Style(typeof(DataGridCell));
@@ -51,7 +53,9 @@ namespace SqlPad
 		private CompletionWindow _completionWindow;
 		private readonly PageModel _pageModel;
 		private bool _isParsing;
-		private readonly System.Timers.Timer _timer = new System.Timers.Timer(100);
+		private readonly Timer _timerReParse = new Timer(100);
+		private readonly Timer _timerExecutionMonitor = new Timer(100);
+		private readonly Stopwatch _stopWatch = new Stopwatch();
 		private readonly string _initialDocumentHeader = "New*";
 		private readonly List<CommandBinding> _specificCommandBindings = new List<CommandBinding>(); 
 		
@@ -85,7 +89,8 @@ namespace SqlPad
 
 			InitializeGenericCommandBindings();
 
-			_timer.Elapsed += (sender, args) => Dispatcher.Invoke(ReParse);
+			_timerReParse.Elapsed += (sender, args) => Dispatcher.Invoke(ReParse);
+			_timerExecutionMonitor.Elapsed += (sender, args) => Dispatcher.Invoke(() => TextExecutionTime.Text = FormatElapsedMilliseconds(_stopWatch.Elapsed));
 
 			_pageModel = new PageModel(this) { CurrentConnection = ConfigurationProvider.ConnectionStrings[0] };
 
@@ -242,11 +247,11 @@ namespace SqlPad
 			commandBindings.Add(new CommandBinding(GenericCommands.NavigateToNextUsageCommand, NavigateToNextHighlightedUsage));
 			commandBindings.Add(new CommandBinding(GenericCommands.NavigateToQueryBlockRootCommand, NavigateToQueryBlockRoot));
 			commandBindings.Add(new CommandBinding(GenericCommands.NavigateToDefinitionRootCommand, NavigateToDefinition));
-			commandBindings.Add(new CommandBinding(GenericCommands.ExecuteDatabaseCommandCommand, ExecuteDatabaseCommand));
+			commandBindings.Add(new CommandBinding(GenericCommands.ExecuteDatabaseCommandCommand, ExecuteDatabaseCommand, (sender, args) => args.CanExecute = !_databaseModel.IsExecuting));
 			commandBindings.Add(new CommandBinding(GenericCommands.SaveCommand, SaveCommandExecutedHandler));
 			commandBindings.Add(new CommandBinding(GenericCommands.FormatStatementCommand, FormatStatement));
 			commandBindings.Add(new CommandBinding(GenericCommands.FindUsagesCommand, FindUsages));
-			commandBindings.Add(new CommandBinding(GenericCommands.CancelStatementCommand, CancelStatementHandler));
+			commandBindings.Add(new CommandBinding(GenericCommands.CancelStatementCommand, CancelStatementHandler, (sender, args) => args.CanExecute = _databaseModel.IsExecuting));
 
 			commandBindings.Add(new CommandBinding(DiagnosticCommands.ShowTokenCommand, ShowTokenCommandExecutionHandler));
 
@@ -278,10 +283,10 @@ namespace SqlPad
 			canExecuteRoutedEventArgs.CanExecute = !canExecuteRoutedEventArgs.ContinueRouting;
 		}
 
-		private void FetchNextRows(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
+		private async void FetchNextRows(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
 		{
 			var nextRowBatch = _databaseModel.FetchRecords(RowBatchSize);
-			SafeAction(() => _pageModel.ResultRowItems.AddRange(nextRowBatch));
+			await SafeActionAsync(() => Task.Factory.StartNew(() => Dispatcher.Invoke(() => _pageModel.ResultRowItems.AddRange(nextRowBatch))));
 
 			TextMoreRowsExist.Visibility = _databaseModel.CanFetch ? Visibility.Visible : Visibility.Collapsed;
 		}
@@ -325,7 +330,7 @@ namespace SqlPad
 			_toolTip.IsOpen = true;
 		}
 
-		private /*async*/ void ExecuteDatabaseCommand(object sender, ExecutedRoutedEventArgs args)
+		private async void ExecuteDatabaseCommand(object sender, ExecutedRoutedEventArgs args)
 		{
 			if (_sqlDocumentRepository.StatementText != Editor.Text)
 				return;
@@ -339,8 +344,9 @@ namespace SqlPad
 			TextMoreRowsExist.Visibility = Visibility.Collapsed;
 
 			var commandText = Editor.SelectionLength > 0 ? Editor.SelectedText : statement.RootNode.GetStatementSubstring(Editor.Text);
-			//var actionResult = await SafeActionAsync(() => _databaseModel.ExecuteStatementAsync(commandText, statement.ReturnDataset, _cancellationTokenSource.Token));
-			var actionResult = SafeAction(() => _databaseModel.ExecuteStatement(commandText, statement.ReturnDataset));
+			_cancellationTokenSource = new CancellationTokenSource();
+			var actionResult = await SafeTimedActionAsync(() => _databaseModel.ExecuteStatementAsync(commandText, statement.ReturnDataset, _cancellationTokenSource.Token));
+
 			if (!actionResult.IsSuccessful)
 				return;
 
@@ -361,59 +367,35 @@ namespace SqlPad
 			}
 		}
 
-		private async Task<ActionResult> SafeActionAsync<T>(Func<Task<T>> action)
+		private async Task<ActionResult> SafeTimedActionAsync(Func<Task> action)
 		{
-			var result = new ActionResult();
+			var actionResult = new ActionResult();
 
-			//return SafeAction(async () => await action());
+			_stopWatch.Restart();
+			_timerExecutionMonitor.Start();
 
+			actionResult.IsSuccessful = await SafeActionAsync(action);
+			actionResult.Elapsed = _stopWatch.Elapsed;
+			
+			_timerExecutionMonitor.Stop();
+			_stopWatch.Stop();
+			
+			return actionResult;
+		}
+
+		private async Task<bool> SafeActionAsync(Func<Task> action)
+		{
 			try
 			{
-				var stopwatch = Stopwatch.StartNew();
-
 				await action();
 
-				stopwatch.Stop();
-
-				result.Elapsed = stopwatch.Elapsed;
-				result.IsSuccessful = true;
+				return true;
 			}
 			catch (Exception e)
 			{
 				MessageBox.Show(e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+				return false;
 			}
-
-			return result;
-		}
-
-		internal ActionResult SafeAction(Action action)
-		{
-			var result = new ActionResult();
-
-			try
-			{
-				var timeSpan = TimedAction(action);
-
-				result.Elapsed = timeSpan;
-				result.IsSuccessful = true;
-			}
-			catch (Exception e)
-			{
-				MessageBox.Show(e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-			}
-
-			return result;
-		}
-
-		private TimeSpan TimedAction(Action action)
-		{
-			var stopwatch = Stopwatch.StartNew();
-
-			action();
-
-			stopwatch.Stop();
-
-			return stopwatch.Elapsed;
 		}
 
 		private static string FormatElapsedMilliseconds(TimeSpan timeSpan)
@@ -425,7 +407,7 @@ namespace SqlPad
 			}
 			else if (timeSpan.TotalMilliseconds < 60000)
 			{
-				formattedValue = String.Format("{0} {1}", Math.Round(timeSpan.TotalMilliseconds / 1000, 1), "s");
+				formattedValue = String.Format("{0} {1}", Math.Round(timeSpan.TotalMilliseconds / 1000, 2), "s");
 			}
 			else
 			{
@@ -458,7 +440,8 @@ namespace SqlPad
 
 		public void Dispose()
 		{
-			_timer.Dispose();
+			_timerReParse.Dispose();
+			_timerExecutionMonitor.Dispose();
 			_databaseModel.Dispose();
 		}
 
@@ -723,9 +706,9 @@ namespace SqlPad
 		{
 			if (_isParsing)
 			{
-				if (!_timer.Enabled)
+				if (!_timerReParse.Enabled)
 				{
-					_timer.Start();
+					_timerReParse.Start();
 				}
 
 				return;
@@ -755,7 +738,7 @@ namespace SqlPad
 				ParseFinished(this, EventArgs.Empty);
 			});
 
-			_timer.Stop();
+			_timerReParse.Stop();
 		}
 
 		void MouseHoverHandler(object sender, MouseEventArgs e)
