@@ -1,0 +1,13 @@
+﻿<Window x:Class="SqlPad.WindowOperationMonitor"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:sqlPad="clr-namespace:SqlPad"
+        Title="Operation Monitor"
+		WindowStyle="None"
+		SizeToContent="Height" Width="220" WindowStartupLocation="CenterOwner" Topmost="True" ResizeMode="NoResize">
+	<StackPanel sqlPad:MarginSetter.Margin="8,4,8,4">
+		<TextBlock>Please wait... </TextBlock>
+		<ProgressBar IsIndeterminate="True" Height="16" />
+		<Button Content="Cancel" IsCancel="True" Width="60" Height="24" HorizontalAlignment="Center" Click="ButtonCancelOperationClickHandler" />
+	</StackPanel>
+</Window>

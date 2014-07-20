@@ -19,9 +19,19 @@ namespace SqlPad.Oracle
 			return command;
 		}
 
+		public static Task<object> ExecuteScalarAsynchronous(this OracleCommand command, CancellationToken cancellationToken)
+		{
+			return ExecuteCommandAsynchronous(command, command.ExecuteScalar, cancellationToken);
+		}
+
 		public static Task<OracleDataReader> ExecuteReaderAsynchronous(this OracleCommand command, CommandBehavior behavior, CancellationToken cancellationToken)
 		{
-			var source = new TaskCompletionSource<OracleDataReader>();
+			return ExecuteCommandAsynchronous(command, () => command.ExecuteReader(behavior), cancellationToken);
+		}
+
+		private static Task<T> ExecuteCommandAsynchronous<T>(OracleCommand command, Func<T> synchronousOperation, CancellationToken cancellationToken)
+		{
+			var source = new TaskCompletionSource<T>();
 			var registration = new CancellationTokenRegistration();
 
 			if (cancellationToken.CanBeCanceled)
@@ -31,15 +41,15 @@ namespace SqlPad.Oracle
 					source.SetCanceled();
 					return source.Task;
 				}
-				
+
 				registration = cancellationToken.Register(command.CancelIgnoreFailure);
 			}
-			
+
 			var mainTask = source.Task;
 
 			try
 			{
-				Task.Factory.StartNew(() => command.ExecuteReader(behavior), cancellationToken)
+				Task.Factory.StartNew(synchronousOperation, cancellationToken)
 					.ContinueWith(t => AfterExecutionHandler(t, source, registration), CancellationToken.None);
 			}
 			catch (Exception exception)
@@ -50,7 +60,7 @@ namespace SqlPad.Oracle
 			return mainTask;
 		}
 
-		private static void AfterExecutionHandler(Task<OracleDataReader> executionTask, TaskCompletionSource<OracleDataReader> source, CancellationTokenRegistration registration)
+		private static void AfterExecutionHandler<T>(Task<T> executionTask, TaskCompletionSource<T> source, CancellationTokenRegistration registration)
 		{
 			registration.Dispose();
 

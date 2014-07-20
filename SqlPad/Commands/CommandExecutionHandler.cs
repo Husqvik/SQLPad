@@ -8,8 +8,11 @@ namespace SqlPad.Commands
 	public class CommandExecutionHandler
 	{
 		public string Name { get; set; }
+		
 		public InputGestureCollection DefaultGestures { get; set; }
+		
 		public Action<CommandExecutionContext> ExecutionHandler { get; set; }
+		
 		public Func<CommandExecutionContext, bool> CanExecuteHandler { get; set; }
 	}
 
