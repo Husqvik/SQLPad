@@ -4,6 +4,8 @@ using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Xml;
 
 namespace SqlPad.Oracle.Test
@@ -466,6 +468,11 @@ namespace SqlPad.Oracle.Test
 			return 0;
 		}
 
+		public override Task<int> ExecuteStatementAsync(string statementText, bool returnDataset, CancellationToken cancellationToken)
+		{
+			return Task.Factory.StartNew(() => 0, cancellationToken);
+		}
+		
 		public override IEnumerable<object[]> FetchRecords(int rowCount)
 		{
 			yield return new object[] { "Dummy Value " + ++_generatedRowCount};

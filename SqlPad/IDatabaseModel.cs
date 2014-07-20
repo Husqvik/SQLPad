@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SqlPad
 {
@@ -27,6 +29,8 @@ namespace SqlPad
 		event EventHandler RefreshFinished;
 
 		int ExecuteStatement(string statementText, bool returnDataset);
+
+		Task<int> ExecuteStatementAsync(string statementText, bool returnDataset, CancellationToken cancellationToken);
 
 		IEnumerable<object[]> FetchRecords(int rowCount);
 

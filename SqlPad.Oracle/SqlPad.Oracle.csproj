@@ -48,9 +48,7 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Oracle.DataAccess, processorArchitecture=x86">
-      <Private>True</Private>
-    </Reference>
+    <Reference Include="Oracle.DataAccess" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="protobuf-net" />
@@ -85,6 +83,7 @@
     <Compile Include="OracleCodeCompletionItem.cs" />
     <Compile Include="OracleCodeCompletionProvider.cs" />
     <Compile Include="OracleColumn.cs" />
+    <Compile Include="OracleCommandExtensions.cs" />
     <Compile Include="OracleConstraint.cs" />
     <Compile Include="OracleDatabaseModelBase.cs" />
     <Compile Include="OracleDataDictionary.cs" />

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SqlPad.Oracle
 {
@@ -34,6 +36,8 @@ namespace SqlPad.Oracle
 		public abstract event EventHandler RefreshFinished;
 
 		public abstract int ExecuteStatement(string statementText, bool returnDataset);
+
+		public abstract Task<int> ExecuteStatementAsync(string statementText, bool returnDataset, CancellationToken cancellationToken);
 
 		public abstract IEnumerable<object[]> FetchRecords(int rowCount);
 

@@ -8,7 +8,7 @@ using ICSharpCode.AvalonEdit.Rendering;
 
 namespace SqlPad
 {
-	public class ColorizeAvalonEdit : DocumentColorizingTransformer
+	public class SqlDocumentColorizingTransformer : DocumentColorizingTransformer
 	{
 		private readonly object _lockObject = new object();
 

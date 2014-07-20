@@ -84,8 +84,8 @@ namespace SqlPad
 			get { return _currentConnection; }
 			set
 			{
-				var isSuccessful = _documentPage.SafeAction(() => _documentPage.InitializeInfrastructureComponents(value));
-				if (!isSuccessful)
+				var actionResult = _documentPage.SafeAction(() => _documentPage.InitializeInfrastructureComponents(value));
+				if (!actionResult.IsSuccessful)
 				{
 					try
 					{

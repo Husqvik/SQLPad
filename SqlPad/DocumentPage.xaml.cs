@@ -39,7 +39,8 @@ namespace SqlPad
 		private INavigationService _navigationService;
 
 		private MultiNodeEditor _multiNodeEditor;
-		private readonly ColorizeAvalonEdit _colorizeAvalonEdit = new ColorizeAvalonEdit();
+		private readonly SqlDocumentColorizingTransformer _colorizingTransformer = new SqlDocumentColorizingTransformer();
+		private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
 		private static readonly CellValueConverter CellValueConverter = new CellValueConverter();
 		private static readonly Style CellStyleRightAlign = new Style(typeof(DataGridCell));
@@ -110,7 +111,7 @@ namespace SqlPad
 
 		private void ConfigureEditor()
 		{
-			Editor.TextArea.TextView.LineTransformers.Add(_colorizeAvalonEdit);
+			Editor.TextArea.TextView.LineTransformers.Add(_colorizingTransformer);
 
 			Editor.TextArea.TextEntering += TextEnteringHandler;
 			Editor.TextArea.TextEntered += TextEnteredHandler;
@@ -157,7 +158,7 @@ namespace SqlPad
 			_databaseModel = _infrastructureFactory.CreateDatabaseModel(ConfigurationProvider.ConnectionStrings[connectionString.Name]);
 			_sqlDocumentRepository = new SqlDocumentRepository(_infrastructureFactory.CreateParser(), _infrastructureFactory.CreateStatementValidator(), _databaseModel);
 
-			_colorizeAvalonEdit.SetParser(_infrastructureFactory.CreateParser());
+			_colorizingTransformer.SetParser(_infrastructureFactory.CreateParser());
 
 			InitializeSpecificCommandBindings();
 
@@ -245,10 +246,17 @@ namespace SqlPad
 			commandBindings.Add(new CommandBinding(GenericCommands.SaveCommand, SaveCommandExecutedHandler));
 			commandBindings.Add(new CommandBinding(GenericCommands.FormatStatementCommand, FormatStatement));
 			commandBindings.Add(new CommandBinding(GenericCommands.FindUsagesCommand, FindUsages));
+			commandBindings.Add(new CommandBinding(GenericCommands.CancelStatementCommand, CancelStatementHandler));
 
 			commandBindings.Add(new CommandBinding(DiagnosticCommands.ShowTokenCommand, ShowTokenCommandExecutionHandler));
 
 			ResultGrid.CommandBindings.Add(new CommandBinding(GenericCommands.FetchNextRowsCommand, FetchNextRows, CanFetchNextRows));
+		}
+
+		private void CancelStatementHandler(object sender, ExecutedRoutedEventArgs args)
+		{
+			Trace.WriteLine("Command is about to cancel. ");
+			_cancellationTokenSource.Cancel();
 		}
 
 		private void ShowTokenCommandExecutionHandler(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
@@ -283,6 +291,7 @@ namespace SqlPad
 			var queryBlockRootIndex = _navigationService.NavigateToQueryBlockRoot(_sqlDocumentRepository, Editor.CaretOffset);
 			NavigateToOffset(queryBlockRootIndex);
 		}
+		
 		private void NavigateToDefinition(object sender, ExecutedRoutedEventArgs args)
 		{
 			var queryBlockRootIndex = _navigationService.NavigateToDefinition(_sqlDocumentRepository, Editor.CaretOffset);
@@ -316,9 +325,9 @@ namespace SqlPad
 			_toolTip.IsOpen = true;
 		}
 
-		private void ExecuteDatabaseCommand(object sender, ExecutedRoutedEventArgs args)
+		private /*async*/ void ExecuteDatabaseCommand(object sender, ExecutedRoutedEventArgs args)
 		{
-			if (_sqlDocumentRepository.Statements == null)
+			if (_sqlDocumentRepository.StatementText != Editor.Text)
 				return;
 
 			var statement = _sqlDocumentRepository.Statements.GetStatementAtPosition(Editor.CaretOffset);
@@ -329,9 +338,13 @@ namespace SqlPad
 			GridLabel.Visibility = Visibility.Collapsed;
 			TextMoreRowsExist.Visibility = Visibility.Collapsed;
 
-			var actionSuccess = SafeAction(() => _databaseModel.ExecuteStatement(Editor.SelectionLength > 0 ? Editor.SelectedText : statement.RootNode.GetStatementSubstring(Editor.Text), statement.ReturnDataset), true);
-			if (!actionSuccess)
+			var commandText = Editor.SelectionLength > 0 ? Editor.SelectedText : statement.RootNode.GetStatementSubstring(Editor.Text);
+			//var actionResult = await SafeActionAsync(() => _databaseModel.ExecuteStatementAsync(commandText, statement.ReturnDataset, _cancellationTokenSource.Token));
+			var actionResult = SafeAction(() => _databaseModel.ExecuteStatement(commandText, statement.ReturnDataset));
+			if (!actionResult.IsSuccessful)
 				return;
+
+			TextExecutionTime.Text = FormatElapsedMilliseconds(actionResult.Elapsed);
 
 			ResultGrid.Columns.Clear();
 
@@ -348,46 +361,78 @@ namespace SqlPad
 			}
 		}
 
-		internal bool SafeAction(Action action, bool showExecutionTime = false)
+		private async Task<ActionResult> SafeActionAsync<T>(Func<Task<T>> action)
 		{
+			var result = new ActionResult();
+
+			//return SafeAction(async () => await action());
+
 			try
 			{
 				var stopwatch = Stopwatch.StartNew();
-				
-				action();
-				
+
+				await action();
+
 				stopwatch.Stop();
 
-				if (showExecutionTime)
-				{
-					TextExecutionTime.Text = FormatElapsedMilliseconds(stopwatch.ElapsedMilliseconds);
-				}
-
-				return true;
+				result.Elapsed = stopwatch.Elapsed;
+				result.IsSuccessful = true;
 			}
 			catch (Exception e)
 			{
 				MessageBox.Show(e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-				return false;
 			}
+
+			return result;
 		}
 
-		private static string FormatElapsedMilliseconds(long milliseconds)
+		internal ActionResult SafeAction(Action action)
 		{
-			string unit;
-			decimal value;
-			if (milliseconds > 1000)
+			var result = new ActionResult();
+
+			try
 			{
-				unit = "s";
-				value = Math.Round((decimal)milliseconds / 1000, 1);
+				var timeSpan = TimedAction(action);
+
+				result.Elapsed = timeSpan;
+				result.IsSuccessful = true;
+			}
+			catch (Exception e)
+			{
+				MessageBox.Show(e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+			}
+
+			return result;
+		}
+
+		private TimeSpan TimedAction(Action action)
+		{
+			var stopwatch = Stopwatch.StartNew();
+
+			action();
+
+			stopwatch.Stop();
+
+			return stopwatch.Elapsed;
+		}
+
+		private static string FormatElapsedMilliseconds(TimeSpan timeSpan)
+		{
+			string formattedValue;
+			if (timeSpan.TotalMilliseconds < 1000)
+			{
+				formattedValue = String.Format("{0} {1}", (int)timeSpan.TotalMilliseconds, "ms");
+			}
+			else if (timeSpan.TotalMilliseconds < 60000)
+			{
+				formattedValue = String.Format("{0} {1}", Math.Round(timeSpan.TotalMilliseconds / 1000, 1), "s");
 			}
 			else
 			{
-				unit = "ms";
-				value = milliseconds;
+				formattedValue = String.Format("{0:00}:{1:00}", (int)timeSpan.TotalMinutes, timeSpan.Seconds);
 			}
 
-			return String.Format("{0} {1}", value, unit);
+			return formattedValue;
 		}
 
 		private void InitializeResultGrid()
@@ -422,12 +467,12 @@ namespace SqlPad
 			var findUsagesCommandHandler = _infrastructureFactory.CommandFactory.FindUsagesCommandHandler;
 			var executionContext = CommandExecutionContext.Create(Editor, _sqlDocumentRepository);
 			findUsagesCommandHandler.ExecutionHandler(executionContext);
-			_colorizeAvalonEdit.SetHighlightSegments(executionContext.SegmentsToReplace);
+			_colorizingTransformer.SetHighlightSegments(executionContext.SegmentsToReplace);
 			Editor.TextArea.TextView.Redraw();
 		}
 		private void NavigateToPreviousHighlightedUsage(object sender, ExecutedRoutedEventArgs args)
 		{
-			var nextSegments = _colorizeAvalonEdit.HighlightSegments
+			var nextSegments = _colorizingTransformer.HighlightSegments
 						.Where(s => s.IndextStart < Editor.CaretOffset)
 						.OrderByDescending(s => s.IndextStart);
 
@@ -436,7 +481,7 @@ namespace SqlPad
 
 		private void NavigateToNextHighlightedUsage(object sender, ExecutedRoutedEventArgs args)
 		{
-			var nextSegments = _colorizeAvalonEdit.HighlightSegments
+			var nextSegments = _colorizingTransformer.HighlightSegments
 						.Where(s => s.IndextStart > Editor.CaretOffset)
 						.OrderBy(s => s.IndextStart);
 
@@ -445,7 +490,7 @@ namespace SqlPad
 
 		private void NavigateToUsage(IEnumerable<TextSegment> nextSegments)
 		{
-			if (!_colorizeAvalonEdit.HighlightSegments.Any())
+			if (!_colorizingTransformer.HighlightSegments.Any())
 				return;
 
 			var nextSegment = nextSegments.FirstOrDefault();
@@ -522,8 +567,8 @@ namespace SqlPad
 				}
 			}
 
-			var oldNodes = _colorizeAvalonEdit.HighlightParenthesis.ToArray();
-			_colorizeAvalonEdit.SetHighlightParenthesis(parenthesisNodes);
+			var oldNodes = _colorizingTransformer.HighlightParenthesis.ToArray();
+			_colorizingTransformer.SetHighlightParenthesis(parenthesisNodes);
 
 			RedrawNodes(oldNodes.Concat(parenthesisNodes));
 		}
@@ -701,7 +746,7 @@ namespace SqlPad
 		private void ExecuteParse(object text)
 		{
 			_sqlDocumentRepository.UpdateStatements((string)text);
-			_colorizeAvalonEdit.SetDocumentRepository(_sqlDocumentRepository);
+			_colorizingTransformer.SetDocumentRepository(_sqlDocumentRepository);
 
 			Dispatcher.Invoke(() =>
 			{
@@ -807,7 +852,7 @@ namespace SqlPad
 
 				if (e.Key == Key.Escape)
 				{
-					_colorizeAvalonEdit.SetHighlightSegments(null);
+					_colorizingTransformer.SetHighlightSegments(null);
 					Editor.TextArea.TextView.Redraw();
 				}
 			}
@@ -874,5 +919,12 @@ namespace SqlPad
 		{
 			return Preview;
 		}
+	}
+
+	internal struct ActionResult
+	{
+		public bool IsSuccessful { get; set; }
+
+		public TimeSpan Elapsed { get; set; }
 	}
 }
