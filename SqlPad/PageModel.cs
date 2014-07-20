@@ -1,3 +1,4 @@
+using System;
 using System.Collections.ObjectModel;
 using System.Configuration;
 using System.Linq;
@@ -88,8 +89,10 @@ namespace SqlPad
 				{
 					_documentPage.InitializeInfrastructureComponents(value);
 				}
-				catch
+				catch(Exception e)
 				{
+					Messages.ShowError(e.Message);
+
 					try
 					{
 						_documentPage.InitializeInfrastructureComponents(_currentConnection);

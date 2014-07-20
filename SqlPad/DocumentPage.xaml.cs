@@ -348,7 +348,10 @@ namespace SqlPad
 			var actionResult = await SafeTimedActionAsync(() => _databaseModel.ExecuteStatementAsync(commandText, statement.ReturnDataset, _cancellationTokenSource.Token));
 
 			if (!actionResult.IsSuccessful)
+			{
+				Messages.ShowError(actionResult.Exception.Message);
 				return;
+			}
 
 			TextExecutionTime.Text = FormatElapsedMilliseconds(actionResult.Elapsed);
 
@@ -374,7 +377,7 @@ namespace SqlPad
 			_stopWatch.Restart();
 			_timerExecutionMonitor.Start();
 
-			actionResult.IsSuccessful = await SafeActionAsync(action);
+			actionResult.Exception = await SafeActionAsync(action);
 			actionResult.Elapsed = _stopWatch.Elapsed;
 			
 			_timerExecutionMonitor.Stop();
@@ -383,18 +386,17 @@ namespace SqlPad
 			return actionResult;
 		}
 
-		private async Task<bool> SafeActionAsync(Func<Task> action)
+		private async Task<Exception> SafeActionAsync(Func<Task> action)
 		{
 			try
 			{
 				await action();
 
-				return true;
+				return null;
 			}
-			catch (Exception e)
+			catch (Exception exception)
 			{
-				MessageBox.Show(e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-				return false;
+				return exception;
 			}
 		}
 
@@ -906,7 +908,9 @@ namespace SqlPad
 
 	internal struct ActionResult
 	{
-		public bool IsSuccessful { get; set; }
+		public bool IsSuccessful { get { return Exception == null; } }
+		
+		public Exception Exception { get; set; }
 
 		public TimeSpan Elapsed { get; set; }
 	}

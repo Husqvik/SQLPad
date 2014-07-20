@@ -52,7 +52,7 @@ namespace SqlPad
 
 		private static void ShowStartingErrorMessage()
 		{
-			MessageBox.Show("At least one connection string and infrastructure factory must be defined", "Configuration Error", MessageBoxButton.OK, MessageBoxImage.Error);
+			Messages.ShowError("At least one connection string and infrastructure factory must be defined", "Configuration Error");
 		}
 
 		internal DocumentPage CurrentPage

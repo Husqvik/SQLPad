@@ -73,6 +73,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="CellValueConverter.cs" />
+    <Compile Include="Messages.cs" />
     <Compile Include="SqlDocumentColorizingTransformer.cs" />
     <Compile Include="Commands\CommandExecutionHandler.cs" />
     <Compile Include="Commands\ContextActionCommand.cs" />

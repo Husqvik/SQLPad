@@ -1,5 +1,4 @@
 using System;
-using System.Windows;
 using System.Windows.Input;
 using ICSharpCode.AvalonEdit;
 
@@ -28,13 +27,12 @@ namespace SqlPad.Commands
 			try
 			{
 				ContextAction.ExecutionHandler.ExecutionHandler(ContextAction.ExecutionContext);
+				GenericCommandHandler.UpdateDocument((TextEditor)parameter, ContextAction.ExecutionContext);
 			}
 			catch (Exception exception)
 			{
-				MessageBox.Show("Action failed: "+ Environment.NewLine + exception.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+				Messages.ShowError("Action failed: " + Environment.NewLine + exception.Message);
 			}
-
-			GenericCommandHandler.UpdateDocument((TextEditor)parameter, ContextAction.ExecutionContext);
 		}
 
 		public event EventHandler CanExecuteChanged = delegate {};
