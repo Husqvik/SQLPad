@@ -51,6 +51,8 @@ namespace SqlPad.Commands
 		{
 			using (var cancellationTokenSource = new CancellationTokenSource())
 			{
+				textEditor.IsEnabled = false;
+
 				var operationMonitor = new WindowOperationMonitor(cancellationTokenSource) { Owner = Application.Current.MainWindow };
 				operationMonitor.Show();
 
@@ -62,6 +64,8 @@ namespace SqlPad.Commands
 				{
 					ShowErrorMessage(exception);
 				}
+
+				textEditor.IsEnabled = true;
 
 				operationMonitor.Close();
 			}

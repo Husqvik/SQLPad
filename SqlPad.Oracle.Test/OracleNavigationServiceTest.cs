@@ -101,5 +101,15 @@ namespace SqlPad.Oracle.Test
 			var targetIndex = _navigationService.NavigateToDefinition(GetDocumentRepository(query), 7);
 			targetIndex.ShouldBe(42);
 		}
+
+		[Test(Description = @""), STAThread]
+		public void TestNavigateToCommonTableExpressionDefinition()
+		{
+			const string query = @"WITH CTE AS (SELECT RESPONDENTBUCKET_ID, SELECTION_ID, PROJECT_ID, NAME FROM SELECTION)
+SELECT CTE.RESPONDENTBUCKET_ID, CTE.SELECTION_ID, CTE.PROJECT_ID, CTE.NAME FROM CTE";
+
+			var targetIndex = _navigationService.NavigateToDefinition(GetDocumentRepository(query), 155);
+			targetIndex.ShouldBe(5);
+		}
 	}
 }

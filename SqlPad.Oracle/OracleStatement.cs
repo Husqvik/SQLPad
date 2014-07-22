@@ -14,7 +14,7 @@ namespace SqlPad.Oracle
 
 		public override bool ReturnDataset
 		{
-			get { return RootNode != null && RootNode.FirstTerminalNode.Id == OracleGrammarDescription.Terminals.Select; }
+			get { return RootNode != null && RootNode.Id == OracleGrammarDescription.NonTerminals.SelectStatement; }
 		}
 	}
 }

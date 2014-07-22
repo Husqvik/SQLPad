@@ -432,6 +432,23 @@ namespace SqlPad.Oracle.Test
 			}
 		};
 
+		internal const string SelectionTableCreateScript =
+@"CREATE TABLE ""HUSQVIK"".""SELECTION"" 
+(""SELECTION_ID"" NUMBER, 
+	""CURRENTSTARTED"" NUMBER, 
+	""CURRENTCOMPLETES"" NUMBER, 
+	""STATUS"" NUMBER, 
+	""RESPONDENTBUCKET_ID"" NUMBER, 
+	""PROJECT_ID"" NUMBER, 
+	""NAME"" VARCHAR2(100)
+   ) SEGMENT CREATION IMMEDIATE 
+PCTFREE 10 PCTUSED 40 INITRANS 1 MAXTRANS 255 
+NOCOMPRESS LOGGING
+STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1
+BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+TABLESPACE ""TBS_HQ_PDB""";
+
 		private static readonly IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjectDictionary;
 
 		private static readonly IDictionary<OracleObjectIdentifier, OracleSchemaObject> ObjectsInternal;
@@ -485,7 +502,9 @@ namespace SqlPad.Oracle.Test
 
 		public override Task<string> GetObjectScriptAsync(OracleSchemaObject schemaObject, CancellationToken cancellationToken)
 		{
-			throw new NotImplementedException();
+			var source = new TaskCompletionSource<string>();
+			source.SetResult(SelectionTableCreateScript);
+			return source.Task;
 		}
 
 		public override bool CanFetch { get { return true; } }

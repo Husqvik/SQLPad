@@ -873,5 +873,20 @@ WHERE
 			_editor.Text.ShouldBe("SELECT NOT_EXISTING_COLUMN FROM SELECTION;\r\n\r\nALTER TABLE HUSQVIK.SELECTION ADD\r\n(\r\n\tNOT_EXISTING_COLUMN VARCHAR2(100) NULL\r\n);\r\n");
 			_editor.CaretOffset.ShouldBe(105);
 		}
+
+		[Test(Description = @""), STAThread]
+		public void TestCreateScriptCommand()
+		{
+			const string statementText = @"SELECT * FROM SELECTION";
+			_editor.Text = statementText;
+			_editor.CaretOffset = 17;
+
+			CanExecuteCommand(OracleCommands.CreateScript).ShouldBe(true);
+			ExecuteCommand(OracleCommands.CreateScript);
+
+			var expectedResult = statementText + ";" + Environment.NewLine + Environment.NewLine + OracleTestDatabaseModel.SelectionTableCreateScript;
+			_editor.Text.ShouldBe(expectedResult);
+			_editor.CaretOffset.ShouldBe(17);
+		}
 	}
 }

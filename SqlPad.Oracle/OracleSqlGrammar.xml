@@ -1067,40 +1067,55 @@
       <Sequences>
         <Sequence>
           <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <NonTerminal Id="DataTypeInnerName" />
-          <NonTerminal Id="DataTypePrecisionAndScale" IsOptional="true" />
+          <NonTerminal Id="DataTypeDefinition" />
         </Sequence>
       </Sequences>
     </Rule>
 
-    <Rule StartingNonTerminal="DataTypeInnerName">
+    <Rule StartingNonTerminal="DataTypeDefinition">
       <Sequences>
         <Sequence>
-          <Terminal Id="DataTypeIdentifier" />
-        </Sequence>
-        <Sequence>
           <Terminal Id="Raw" />
+          <NonTerminal Id="DataTypeSimplePrecision"/>
         </Sequence>
         <Sequence>
           <Terminal Id="Char" />
+          <NonTerminal Id="DataTypeVarcharSimplePrecision" IsOptional="true" />
         </Sequence>
         <Sequence>
           <Terminal Id="Varchar" />
+          <NonTerminal Id="DataTypeVarcharSimplePrecision"/>
         </Sequence>
         <Sequence>
           <Terminal Id="Varchar2" />
+          <NonTerminal Id="DataTypeVarcharSimplePrecision"/>
+        </Sequence>
+        <Sequence>
+          <Terminal Id="NChar" />
+          <NonTerminal Id="DataTypeSimplePrecision" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="NVarchar" />
+          <NonTerminal Id="DataTypeSimplePrecision"/>
+        </Sequence>
+        <Sequence>
+          <Terminal Id="NVarchar2" />
+          <NonTerminal Id="DataTypeSimplePrecision"/>
         </Sequence>
         <Sequence>
           <Terminal Id="Float" />
+          <NonTerminal Id="DataTypeSimplePrecision" IsOptional="true" />
         </Sequence>
         <Sequence>
           <Terminal Id="Decimal" />
+          <NonTerminal Id="DataTypePrecisionAndScale" IsOptional="true" />
         </Sequence>
         <Sequence>
           <Terminal Id="Smallint" />
         </Sequence>
         <Sequence>
           <Terminal Id="Number" />
+          <NonTerminal Id="DataTypePrecisionAndScale" IsOptional="true" />
         </Sequence>
         <Sequence>
           <Terminal Id="Integer" />
@@ -1109,7 +1124,58 @@
           <Terminal Id="Date" />
         </Sequence>
         <Sequence>
+          <Terminal Id="Timestamp" />
+          <NonTerminal Id="DataTypeSimplePrecision" IsOptional="true" />
+          <NonTerminal Id="WithTimeZone" IsOptional="true" />
+        </Sequence>
+        <Sequence>
           <Terminal Id="Long" />
+          <Terminal Id="Raw" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="DataTypeIdentifier" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DataTypeSimplePrecision">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <Terminal Id="IntegerLiteral" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DataTypeVarcharSimplePrecision">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <Terminal Id="IntegerLiteral" />
+          <NonTerminal Id="ByteOrChar" IsOptional="true" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ByteOrChar">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Byte" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Char" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="WithTimeZone">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="With" />
+          <Terminal Id="Time" />
+          <Terminal Id="Zone" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -3702,6 +3768,7 @@
 
     <!-- CAST function -->
     <Terminal Id="Cast" Value="CAST" />
+    <Terminal Id="Byte" Value="BYTE" />
     <Terminal Id="Multiset" Value="MULTISET" />
     <Terminal Id="DataTypeIdentifier" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
 
@@ -3939,6 +4006,7 @@
     <Terminal Id="Compress" Value="COMPRESS" IsKeyword="true" />
     <Terminal Id="Drop" Value="DROP" IsKeyword="true" />
     <Terminal Id="Char" Value="CHAR" IsKeyword="true" />
+    <Terminal Id="NChar" Value="CHAR" />
     <Terminal Id="Pctfree" Value="PCTFREE" IsKeyword="true" />
     <Terminal Id="Revoke" Value="REVOKE" IsKeyword="true" />
     <Terminal Id="Identified" Value="IDENTIFIED" IsKeyword="true" />
@@ -3960,11 +4028,15 @@
     <Terminal Id="Smallint" Value="SMALLINT" IsKeyword="true" />
     <Terminal Id="Values" Value="VALUES" IsKeyword="true" />
     <Terminal Id="Varchar2" Value="VARCHAR2" IsKeyword="true" />
+    <Terminal Id="NVarchar2" Value="NVARCHAR2" />
     <Terminal Id="Index" Value="INDEX" IsKeyword="true" />
     <Terminal Id="Create" Value="CREATE" IsKeyword="true" />
     <Terminal Id="Decimal" Value="DECIMAL" IsKeyword="true" />
     <Terminal Id="Raw" Value="RAW" IsKeyword="true" />
     <Terminal Id="Varchar" Value="VARCHAR" IsKeyword="true" />
+    <Terminal Id="NVarchar" Value="NVARCHAR" />
+    <Terminal Id="Time" Value="TIME" />
+    <Terminal Id="Zone" Value="ZONE" />
     <Terminal Id="Exclusive" Value="EXCLUSIVE" IsKeyword="true" />
     <Terminal Id="Nocompress" Value="NOCOMPRESS" IsKeyword="true" />
  </Terminals>

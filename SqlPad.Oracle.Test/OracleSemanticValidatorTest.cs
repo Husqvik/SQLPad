@@ -945,11 +945,23 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestMissingFunctionInExistingPackage()
 		{
 			const string sqlText = "SELECT DBMS_RANDOM.UNDEFINED_FUNCTION() FROM DUAL";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			TestMissingFunctionInExistingPackageInternal(sqlText);
+		}
+
+		[Test(Description = @"")]
+		public void TestMissingFunctionInExistingPackageWithoutInvokationParentheses()
+		{
+			const string sqlText = "SELECT DBMS_RANDOM.UNDEFINED_FUNCTION FROM DUAL";
+			TestMissingFunctionInExistingPackageInternal(sqlText);
+		}
+
+		private void TestMissingFunctionInExistingPackageInternal(string statementText)
+		{
+			var statement = _oracleSqlParser.Parse(statementText).Single();
 
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-			var validationModel = BuildValidationModel(sqlText, statement);
+			var validationModel = BuildValidationModel(statementText, statement);
 			var nodeValidityDictionary = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
 			var programNodeValidity = nodeValidityDictionary.Values.ToList();
 			programNodeValidity.Count.ShouldBe(2);

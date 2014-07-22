@@ -43,7 +43,7 @@ namespace SqlPad.Oracle.Commands
 
 		protected virtual Task ExecuteAsync(CancellationToken cancellationToken)
 		{
-			throw new NotImplementedException();
+			throw new NotSupportedException(String.Format("Task '{0}' does not support asynchronous execution. ", GetType().FullName));
 		}
 
 		public static CommandExecutionHandler CreateStandardExecutionHandler<TCommand>(string commandName) where TCommand : OracleCommandBase

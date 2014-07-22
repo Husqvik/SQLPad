@@ -19,6 +19,11 @@ namespace SqlPad.Oracle
 			return command;
 		}
 
+		public static Task<int> ExecuteNonQueryAsynchronous(this OracleCommand command, CancellationToken cancellationToken)
+		{
+			return ExecuteCommandAsynchronous(command, command.ExecuteNonQuery, cancellationToken);
+		}
+
 		public static Task<object> ExecuteScalarAsynchronous(this OracleCommand command, CancellationToken cancellationToken)
 		{
 			return ExecuteCommandAsynchronous(command, command.ExecuteScalar, cancellationToken);

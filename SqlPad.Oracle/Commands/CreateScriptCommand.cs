@@ -51,7 +51,7 @@ namespace SqlPad.Oracle.Commands
 
 		private async Task ExecuteInternal(CancellationToken cancellationToken)
 		{
-			var databaseModel = (OracleDatabaseModel)ExecutionContext.DocumentRepository.ValidationModels[CurrentNode.Statement].SemanticModel.DatabaseModel;
+			var databaseModel = (OracleDatabaseModelBase)ExecutionContext.DocumentRepository.ValidationModels[CurrentNode.Statement].SemanticModel.DatabaseModel;
 
 			string script;
 

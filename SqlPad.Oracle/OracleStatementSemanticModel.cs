@@ -525,7 +525,7 @@ namespace SqlPad.Oracle
 					columnReference.ColumnDescription = columnDescription;
 				}
 
-				TryColumnReferenceAsFunctionOrSequenceReference(columnReference);
+				TryColumnReferenceAsProgramOrSequenceReference(columnReference);
 			}
 		}
 
@@ -553,12 +553,12 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		private void TryColumnReferenceAsFunctionOrSequenceReference(OracleColumnReference columnReference)
+		private void TryColumnReferenceAsProgramOrSequenceReference(OracleColumnReference columnReference)
 		{
 			if (columnReference.ColumnNodeColumnReferences.Count != 0 || columnReference.ReferencesAllColumns)
 				return;
 			
-			var functionReference =
+			var programReference =
 				new OracleProgramReference
 				{
 					FunctionIdentifierNode = columnReference.ColumnNode,
@@ -572,10 +572,10 @@ namespace SqlPad.Oracle
 					ParameterNodes = null
 				};
 
-			var functionMetadata = UpdateFunctionReferenceWithMetadata(functionReference);
-			if (functionMetadata != null)
+			UpdateFunctionReferenceWithMetadata(programReference);
+			if (programReference.SchemaObject != null)
 			{
-				columnReference.Container.FunctionReferences.Add(functionReference);
+				columnReference.Container.FunctionReferences.Add(programReference);
 				columnReference.Container.ColumnReferences.Remove(columnReference);
 			}
 			else

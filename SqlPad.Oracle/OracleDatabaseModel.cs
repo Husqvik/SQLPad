@@ -424,7 +424,7 @@ namespace SqlPad.Oracle
 				}
 				else
 				{
-					affectedRowCount = await ExecuteUserStatement(statementText, c => c.ExecuteNonQueryAsync(cancellationToken));
+					affectedRowCount = await ExecuteUserStatement(statementText, c => c.ExecuteNonQueryAsynchronous(cancellationToken));
 				}
 			}
 			catch (Exception exception)

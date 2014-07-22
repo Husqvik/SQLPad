@@ -48,8 +48,15 @@ namespace SqlPad.Oracle
 			if (dataObjectReference == null)
 				return null;
 
-			var destinationNode = dataObjectReference.AliasNode ?? dataObjectReference.ObjectNode;
+			var destinationNode = dataObjectReference.AliasNode ?? GetObjectNode(dataObjectReference);
 			return destinationNode.SourcePosition.IndexStart;
+		}
+
+		private static StatementGrammarNode GetObjectNode(OracleObjectWithColumnsReference dataObjectReference)
+		{
+			return dataObjectReference.Type == ReferenceType.CommonTableExpression && dataObjectReference.QueryBlocks.Count == 1
+				? dataObjectReference.QueryBlocks.First().AliasNode
+				: dataObjectReference.ObjectNode;
 		}
 
 		private static int? NavigateToColumnDefinition(OracleQueryBlock queryBlock, StatementGrammarNode terminal)
