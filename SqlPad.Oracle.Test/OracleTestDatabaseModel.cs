@@ -483,7 +483,7 @@ namespace SqlPad.Oracle.Test
 			return ColumnHeaders;
 		}
 
-		public override string GetObjectScript(OracleSchemaObject schemaObject)
+		public override Task<string> GetObjectScriptAsync(OracleSchemaObject schemaObject, CancellationToken cancellationToken)
 		{
 			throw new NotImplementedException();
 		}

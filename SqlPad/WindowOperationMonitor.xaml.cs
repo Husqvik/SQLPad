@@ -17,7 +17,6 @@ namespace SqlPad
 		private void ButtonCancelOperationClickHandler(object sender, RoutedEventArgs e)
 		{
 			_cancellationTokenSource.Cancel();
-			Close();
 		}
 	}
 }

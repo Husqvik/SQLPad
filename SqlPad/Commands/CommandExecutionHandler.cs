@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using ICSharpCode.AvalonEdit;
 
@@ -12,6 +14,8 @@ namespace SqlPad.Commands
 		public InputGestureCollection DefaultGestures { get; set; }
 		
 		public Action<CommandExecutionContext> ExecutionHandler { get; set; }
+		
+		public Func<CommandExecutionContext, CancellationToken, Task> ExecutionHandlerAsync { get; set; }
 		
 		public Func<CommandExecutionContext, bool> CanExecuteHandler { get; set; }
 	}

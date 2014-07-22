@@ -11,8 +11,9 @@ namespace SqlPad
 	public interface IContextAction
 	{
 		string Name { get; }
+		
+		bool IsLongOperation { get; }
 
-		//ICommand Command { get; }
 		CommandExecutionHandler ExecutionHandler { get; }
 		
 		CommandExecutionContext ExecutionContext { get; }

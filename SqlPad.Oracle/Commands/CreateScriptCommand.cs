@@ -1,5 +1,8 @@
 ﻿using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using Oracle.DataAccess.Client;
 using SqlPad.Commands;
 
 namespace SqlPad.Oracle.Commands
@@ -36,10 +39,35 @@ namespace SqlPad.Oracle.Commands
 			return _objectReference != null;
 		}
 
+		protected override Task ExecuteAsync(CancellationToken cancellationToken)
+		{
+			return ExecuteInternal(cancellationToken);
+		}
+
 		protected override void Execute()
 		{
+			ExecuteInternal(CancellationToken.None).Wait();
+		}
+
+		private async Task ExecuteInternal(CancellationToken cancellationToken)
+		{
 			var databaseModel = (OracleDatabaseModel)ExecutionContext.DocumentRepository.ValidationModels[CurrentNode.Statement].SemanticModel.DatabaseModel;
-			var script = databaseModel.GetObjectScript(_objectReference);
+
+			string script;
+
+			try
+			{
+				script = await databaseModel.GetObjectScriptAsync(_objectReference, cancellationToken);
+			}
+			catch (OracleException e)
+			{
+				if (e.Number == OracleDatabaseModel.OracleErrorCodeUserInvokedCancellation)
+				{
+					return;
+				}
+				
+				throw;
+			}
 
 			var indextStart = CurrentQueryBlock.Statement.LastTerminalNode.SourcePosition.IndexEnd + 1;
 

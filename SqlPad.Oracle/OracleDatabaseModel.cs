@@ -18,7 +18,7 @@ namespace SqlPad.Oracle
 	{
 		private const int RefreshInterval = 10;
 		private const string SqlFuntionMetadataFileName = "OracleSqlFunctionMetadataCollection_12_1_0_1_0.xml";
-		private const int OracleErrorCodeUserInvokedCancellation = 1013;
+		internal const int OracleErrorCodeUserInvokedCancellation = 1013;
 
 		private readonly object _lockObject = new object();
 		private readonly OracleConnectionStringBuilder _oracleConnectionString;
@@ -165,15 +165,24 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		public override string GetObjectScript(OracleSchemaObject schemaObject)
+		public async override Task<string> GetObjectScriptAsync(OracleSchemaObject schemaObject, CancellationToken cancellationToken)
 		{
-			return ExecuteReader(
-				DatabaseCommands.GetObjectScriptCommand,
-				c => c.AddSimpleParameter("OBJECT_TYPE", schemaObject.Type.ToUpperInvariant())
-					.AddSimpleParameter("NAME", schemaObject.FullyQualifiedName.Name.Trim('"'))
-					.AddSimpleParameter("SCHEMA", schemaObject.FullyQualifiedName.Owner == SchemaPublic ? null : schemaObject.FullyQualifiedName.Owner.Trim('"')),
-				r => (string)r[0])
-				.FirstOrDefault();
+			using (var connection = new OracleConnection(_oracleConnectionString.ConnectionString))
+			{
+				using (var command = connection.CreateCommand())
+				{
+					command.CommandText = DatabaseCommands.GetObjectScriptCommand;
+					command.BindByName = true;
+
+					command.AddSimpleParameter("OBJECT_TYPE", schemaObject.Type.ToUpperInvariant())
+						.AddSimpleParameter("NAME", schemaObject.FullyQualifiedName.Name.Trim('"'))
+						.AddSimpleParameter("SCHEMA", schemaObject.FullyQualifiedName.Owner == SchemaPublic ? null : schemaObject.FullyQualifiedName.Owner.Trim('"'));
+
+					connection.Open();
+
+					return (string)await command.ExecuteScalarAsynchronous(cancellationToken);
+				}
+			}
 		}
 
 		public override event EventHandler RefreshStarted;

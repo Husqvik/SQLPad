@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using SqlPad.Commands;
 
 namespace SqlPad.Oracle.Commands
@@ -39,13 +41,19 @@ namespace SqlPad.Oracle.Commands
 
 		protected abstract void Execute();
 
+		protected virtual Task ExecuteAsync(CancellationToken cancellationToken)
+		{
+			throw new NotImplementedException();
+		}
+
 		public static CommandExecutionHandler CreateStandardExecutionHandler<TCommand>(string commandName) where TCommand : OracleCommandBase
 		{
 			return new CommandExecutionHandler
 			{
 				Name = commandName,
+				CanExecuteHandler = context => CreateCommandInstance<TCommand>(context).CanExecute(),
 				ExecutionHandler = CreateExecutionHandler<TCommand>(),
-				CanExecuteHandler = context => CreateCommandInstance<TCommand>(context).CanExecute()
+				ExecutionHandlerAsync = CreateAsynchronousExecutionHandler<TCommand>()
 			};			
 		}
 
@@ -59,6 +67,28 @@ namespace SqlPad.Oracle.Commands
 					       commandInstance.Execute();
 				       }
 			       };
+		}
+
+		private static Func<CommandExecutionContext, CancellationToken, Task> CreateAsynchronousExecutionHandler<TCommand>() where TCommand : OracleCommandBase
+		{
+			return (context, cancellationToken) =>
+			{
+				var commandInstance = CreateCommandInstance<TCommand>(context);
+
+				Task task;
+				if (commandInstance.CanExecute())
+				{
+					task = commandInstance.ExecuteAsync(cancellationToken);
+				}
+				else
+				{
+					var source = new TaskCompletionSource<object>();
+					source.SetResult(null);
+					task = source.Task;
+				}
+
+				return task;
+			};
 		}
 
 		private static TCommand CreateCommandInstance<TCommand>(CommandExecutionContext executionContext)

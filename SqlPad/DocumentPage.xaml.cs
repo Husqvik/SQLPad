@@ -343,9 +343,12 @@ namespace SqlPad
 			GridLabel.Visibility = Visibility.Collapsed;
 			TextMoreRowsExist.Visibility = Visibility.Collapsed;
 
+			ActionResult actionResult;
 			var commandText = Editor.SelectionLength > 0 ? Editor.SelectedText : statement.RootNode.GetStatementSubstring(Editor.Text);
-			_cancellationTokenSource = new CancellationTokenSource();
-			var actionResult = await SafeTimedActionAsync(() => _databaseModel.ExecuteStatementAsync(commandText, statement.ReturnDataset, _cancellationTokenSource.Token));
+			using (_cancellationTokenSource = new CancellationTokenSource())
+			{
+				actionResult = await SafeTimedActionAsync(() => _databaseModel.ExecuteStatementAsync(commandText, statement.ReturnDataset, _cancellationTokenSource.Token));
+			}
 
 			if (!actionResult.IsSuccessful)
 			{

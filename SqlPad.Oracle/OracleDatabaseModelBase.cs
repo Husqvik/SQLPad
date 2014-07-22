@@ -43,7 +43,7 @@ namespace SqlPad.Oracle
 
 		public abstract ICollection<ColumnHeader> GetColumnHeaders();
 
-		public abstract string GetObjectScript(OracleSchemaObject schemaObject);
+		public abstract Task<string> GetObjectScriptAsync(OracleSchemaObject schemaObject, CancellationToken cancellationToken);
 
 		public abstract bool CanFetch { get; }
 

@@ -85,7 +85,7 @@ namespace SqlPad.Oracle
 
 			if (OracleCommands.CreateScript.CanExecuteHandler(executionContext))
 			{
-				actionList.Add(new OracleContextAction(CreateScriptCommand.Title, OracleCommands.CreateScript, executionContext));
+				actionList.Add(new OracleContextAction(CreateScriptCommand.Title, OracleCommands.CreateScript, executionContext, true));
 			}
 
 			var actions = ResolveAmbiguousColumnCommand.ResolveCommandHandlers(semanticModel, currentTerminal)
@@ -101,14 +101,17 @@ namespace SqlPad.Oracle
 	[DebuggerDisplay("OracleContextAction (Name={Name})")]
 	internal class OracleContextAction : IContextAction
 	{
-		public OracleContextAction(string name, CommandExecutionHandler executionHandler, CommandExecutionContext executionContext)
+		public OracleContextAction(string name, CommandExecutionHandler executionHandler, CommandExecutionContext executionContext, bool isLongOperation = false)
 		{
 			Name = name;
 			ExecutionHandler = executionHandler;
 			ExecutionContext = executionContext;
+			IsLongOperation = isLongOperation;
 		}
 
 		public string Name { get; private set; }
+
+		public bool IsLongOperation { get; private set; }
 
 		public CommandExecutionHandler ExecutionHandler { get; private set; }
 
