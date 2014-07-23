@@ -247,7 +247,7 @@ namespace SqlPad
 			commandBindings.Add(new CommandBinding(GenericCommands.NavigateToNextUsageCommand, NavigateToNextHighlightedUsage));
 			commandBindings.Add(new CommandBinding(GenericCommands.NavigateToQueryBlockRootCommand, NavigateToQueryBlockRoot));
 			commandBindings.Add(new CommandBinding(GenericCommands.NavigateToDefinitionRootCommand, NavigateToDefinition));
-			commandBindings.Add(new CommandBinding(GenericCommands.ExecuteDatabaseCommandCommand, ExecuteDatabaseCommand, (sender, args) => args.CanExecute = !_databaseModel.IsExecuting));
+			commandBindings.Add(new CommandBinding(GenericCommands.ExecuteDatabaseCommandCommand, ExecuteDatabaseCommandHandler, CanExecuteDatabaseCommandHandler));
 			commandBindings.Add(new CommandBinding(GenericCommands.SaveCommand, SaveCommandExecutedHandler));
 			commandBindings.Add(new CommandBinding(GenericCommands.FormatStatementCommand, FormatStatement));
 			commandBindings.Add(new CommandBinding(GenericCommands.FindUsagesCommand, FindUsages));
@@ -330,14 +330,18 @@ namespace SqlPad
 			_toolTip.IsOpen = true;
 		}
 
-		private async void ExecuteDatabaseCommand(object sender, ExecutedRoutedEventArgs args)
+		private void CanExecuteDatabaseCommandHandler(object sender, CanExecuteRoutedEventArgs args)
 		{
-			if (_sqlDocumentRepository.StatementText != Editor.Text)
+			if (_databaseModel.IsExecuting || _sqlDocumentRepository.StatementText != Editor.Text)
 				return;
 
 			var statement = _sqlDocumentRepository.Statements.GetStatementAtPosition(Editor.CaretOffset);
-			if (statement == null)
-				return;
+			args.CanExecute = (Editor.SelectionLength > 0 && statement.RootNode != null) || statement != null;
+		}
+
+		private async void ExecuteDatabaseCommandHandler(object sender, ExecutedRoutedEventArgs args)
+		{
+			var statement = _sqlDocumentRepository.Statements.GetStatementAtPosition(Editor.CaretOffset);
 
 			_pageModel.ResultRowItems.Clear();
 			GridLabel.Visibility = Visibility.Collapsed;
@@ -445,7 +449,9 @@ namespace SqlPad
 
 		public void Dispose()
 		{
+			_timerReParse.Stop();
 			_timerReParse.Dispose();
+			_timerExecutionMonitor.Stop();
 			_timerExecutionMonitor.Dispose();
 			_databaseModel.Dispose();
 		}

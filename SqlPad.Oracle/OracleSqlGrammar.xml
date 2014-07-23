@@ -895,6 +895,14 @@
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
+          <NonTerminal Id="XmlParseFunction" />
+          <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="XmlRootFunction" />
+          <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
+        </Sequence>
+        <Sequence>
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="Expression" />
           <Terminal Id="RightParenthesis" />
@@ -3660,6 +3668,87 @@
       </Sequences>
     </Rule>
 
+    <Rule StartingNonTerminal="XmlParseFunction">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="XmlParse" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="DocumentOrContent" />
+          <NonTerminal Id="Expression" />
+          <Terminal Id="WellFormed" IsOptional="true" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DocumentOrContent">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Document" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Content" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="XmlRootFunction">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="XmlRoot" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="Expression" />
+          <Terminal Id="Comma" />
+          <Terminal Id="Version" />
+          <NonTerminal Id="XmlRootFunctionExpressionOrNoValue" />
+          <NonTerminal Id="XmlRootFunctionStandaloneClause" IsOptional="true" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="XmlRootFunctionExpressionOrNoValue">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="XmlRootFunctionNoValue" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="Expression" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="XmlRootFunctionNoValue">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="No" />
+          <Terminal Id="Value" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="XmlRootFunctionStandaloneClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <Terminal Id="Standalone" />
+          <NonTerminal Id="XmlRootFunctionStandaloneClauseYesOrNoOrNoValue" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="XmlRootFunctionStandaloneClauseYesOrNoOrNoValue">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Yes" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="No" />
+          <Terminal Id="Value" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
     <!-- TODO: Row pattern clause -->
   </Rules>
       
@@ -3929,6 +4018,14 @@
 	  <Terminal Id="Columns" Value="COLUMNS" />
     <Terminal Id="XmlQuery" Value="XMLQUERY" />
 	  <Terminal Id="Content" Value="CONTENT" />
+	  <Terminal Id="Document" Value="DOCUMENT" />
+	  <Terminal Id="Version" Value="VERSION" />
+	  <Terminal Id="Yes" Value="YES" />
+	  <Terminal Id="No" Value="NO" />
+	  <Terminal Id="Standalone" Value="STANDALONE" />
+	  <Terminal Id="WellFormed" Value="WELLFORMED" />
+    <Terminal Id="XmlRoot" Value="XMLROOT" />
+    <Terminal Id="XmlParse" Value="XMLPARSE" />
     <Terminal Id="XmlForest" Value="XMLFOREST" />
     <Terminal Id="XmlColumnValue" Value="XMLCOLATTVAL" />
     <Terminal Id="XmlAggregate" Value="XMLAGG" />

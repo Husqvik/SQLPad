@@ -1319,9 +1319,33 @@ FROM DUAL";
 		}
 
 		[Test(Description = @"Tests XMLAGG function. ")]
-		public void TestXmlAggregateunction()
+		public void TestXmlAggregateFunction()
 		{
 			const string query1 = @"SELECT XMLAGG(XMLELEMENT(""Country"", XMLATTRIBUTES(NAME AS ""Name"", CODE AS ""Code"", ID AS ""Id"")) ORDER BY ID) FROM COUNTRY";
+			var result = Parser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			// TODO: Precise assertions
+		}
+
+		[Test(Description = @"Tests XMLPARSE function. ")]
+		public void TestXmlParseFunction()
+		{
+			const string query1 = @"SELECT XMLPARSE(CONTENT '124 <purchaseOrder poNo=""12435""><customerName>Acme Enterprises</customerName><itemNo>32987457</itemNo></purchaseOrder>' WELLFORMED) || 'PostFix' AS PO FROM DUAL";
+			var result = Parser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			// TODO: Precise assertions
+		}
+
+		[Test(Description = @"Tests XMLROOT function. ")]
+		public void TestXmlRootFunction()
+		{
+			const string query1 = @"SELECT XMLROOT(XMLTYPE('<poid>143598</poid>'), VERSION '1.0', STANDALONE YES) AS ""XMLROOT1"", XMLROOT(XMLTYPE('<poid>143598</poid>'), VERSION NO VALUE, STANDALONE NO VALUE) || 'PostFix' XML2 FROM DUAL";
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
@@ -1986,7 +2010,9 @@ FROM DUAL";
 						Terminals.XmlColumnValue,
 						Terminals.XmlElement,
 						Terminals.XmlForest,
-						Terminals.XmlQuery
+						Terminals.XmlParse,
+						Terminals.XmlQuery,
+						Terminals.XmlRoot
 					};
 				
 				terminalCandidates.ShouldBe(expectedTerminals);

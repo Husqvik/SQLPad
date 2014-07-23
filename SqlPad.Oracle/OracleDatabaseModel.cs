@@ -198,6 +198,7 @@ namespace SqlPad.Oracle
 
 		public override void Dispose()
 		{
+			_timer.Stop();
 			_timer.Dispose();
 
 			DisposeCommandAndReader();
