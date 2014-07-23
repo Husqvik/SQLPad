@@ -82,6 +82,7 @@
     <Compile Include="DatabaseCommands.cs" />
     <Compile Include="OracleCodeCompletionItem.cs" />
     <Compile Include="OracleCodeCompletionProvider.cs" />
+    <Compile Include="OracleCodeCompletionType.cs" />
     <Compile Include="OracleColumn.cs" />
     <Compile Include="OracleCommandExtensions.cs" />
     <Compile Include="OracleConstraint.cs" />

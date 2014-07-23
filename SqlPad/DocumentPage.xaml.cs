@@ -53,6 +53,7 @@ namespace SqlPad
 		private CompletionWindow _completionWindow;
 		private readonly PageModel _pageModel;
 		private bool _isParsing;
+		private bool _enableCodeComplete = true;
 		private readonly Timer _timerReParse = new Timer(100);
 		private readonly Timer _timerExecutionMonitor = new Timer(100);
 		private readonly Stopwatch _stopWatch = new Stopwatch();
@@ -588,13 +589,6 @@ namespace SqlPad
 			if (_completionWindow == null && snippets.Length > 0)
 			{
 				CreateSnippetCompletionWindow(snippets);
-				_completionWindow.Closed += (o, args) =>
-					// Workaround to display completion menu after the snippet is inserted
-					Task.Factory.StartNew(() =>
-					{
-						Thread.Sleep(20);
-						Dispatcher.Invoke(CreateCodeCompletionWindow);
-					});
 				return;
 			}
 
@@ -620,12 +614,9 @@ namespace SqlPad
 				{
 					_completionWindow.Close();
 				}
-
-				return;
 			}
 
-			// Open code completion after the user has pressed dot:
-			CreateCodeCompletionWindow();
+			_enableCodeComplete = _completionWindow == null && e.Text.Length <= 2;
 		}
 
 		private void InsertPairCharacter(string pairCharacter)
@@ -658,7 +649,7 @@ namespace SqlPad
 
 			if (e.Text.Length == 1 && _completionWindow != null)
 			{
-				if (!Char.IsLetterOrDigit(e.Text[0]))
+				if (e.Text == " " || e.Text == "\t")
 				{
 					// Whenever a non-letter is typed while the completion window is open,
 					// insert the currently selected element.
@@ -671,13 +662,16 @@ namespace SqlPad
 			if (e.Text == " " && Keyboard.Modifiers == ModifierKeys.Control)
 			{
 				e.Handled = true;
-				CreateCodeCompletionWindow();
+				CreateCodeCompletionWindow(true);
 			}
 		}
 
-		private void CreateCodeCompletionWindow()
+		private void CreateCodeCompletionWindow(bool forcedInvokation)
 		{
-			CreateCompletionWindow(() => _codeCompletionProvider.ResolveItems(_sqlDocumentRepository, _databaseModel, Editor.Text, Editor.CaretOffset).Select(i => new CompletionData(i)), true);
+			CreateCompletionWindow(
+				() => _codeCompletionProvider.ResolveItems(_sqlDocumentRepository, _databaseModel, Editor.Text, Editor.CaretOffset, forcedInvokation)
+					.Select(i => new CompletionData(i)),
+				true);
 		}
 
 		private void CreateSnippetCompletionWindow(IEnumerable<ICompletionData> items)
@@ -687,22 +681,25 @@ namespace SqlPad
 
 		private void CreateCompletionWindow(Func<IEnumerable<ICompletionData>> getCompletionDataFunc, bool show)
 		{
-			_completionWindow = new CompletionWindow(Editor.TextArea) { SizeToContent = SizeToContent.WidthAndHeight };
-			var data = _completionWindow.CompletionList.CompletionData;
+			var completionWindow = new CompletionWindow(Editor.TextArea) { SizeToContent = SizeToContent.WidthAndHeight };
+			var data = completionWindow.CompletionList.CompletionData;
 
 			foreach (var item in getCompletionDataFunc())
 			{
 				data.Add(item);
 			}
 
-			_completionWindow.Closed += delegate { _completionWindow = null; };
-
 			if (show && data.Count > 0)
 			{
+				_completionWindow = completionWindow;
+				_completionWindow.Closed += delegate { _completionWindow = null; };
+
 				if (data.Count == 1)
 				{
 					_completionWindow.CompletionList.ListBox.SelectedIndex = 0;
 				}
+
+				_enableCodeComplete = false;
 
 				_completionWindow.Show();
 			}
@@ -747,6 +744,11 @@ namespace SqlPad
 				Editor.TextArea.TextView.Redraw();
 				_isParsing = false;
 				ParseFinished(this, EventArgs.Empty);
+
+				if (_enableCodeComplete && _completionWindow == null)
+				{
+					CreateCodeCompletionWindow(false);
+				}
 			});
 
 			_timerReParse.Stop();
@@ -842,6 +844,8 @@ namespace SqlPad
 
 			if (e.Key == Key.Return || e.Key == Key.Escape)
 			{
+				_enableCodeComplete = false;
+
 				_multiNodeEditor = null;
 
 				if (e.Key == Key.Escape)
@@ -849,6 +853,11 @@ namespace SqlPad
 					_colorizingTransformer.SetHighlightSegments(null);
 					Editor.TextArea.TextView.Redraw();
 				}
+			}
+
+			if (e.Key == Key.Back || e.Key == Key.Delete)
+			{
+				_enableCodeComplete = false;
 			}
 
 			if ((e.Key == Key.Back || e.Key == Key.Delete) && _multiNodeEditor != null)

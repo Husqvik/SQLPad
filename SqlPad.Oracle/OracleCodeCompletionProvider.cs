@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
@@ -14,18 +13,19 @@ namespace SqlPad.Oracle
 		private static readonly ICodeCompletionItem[] EmptyCollection = new ICodeCompletionItem[0];
 
 		private const string JoinTypeJoin = "JOIN";
+		private const string JoinTypeInnerJoin = "INNER JOIN";
 		private const string JoinTypeLeftJoin = "LEFT JOIN";
 		private const string JoinTypeRightJoin = "RIGHT JOIN";
 		private const string JoinTypeFullJoin = "FULL JOIN";
 		private const string JoinTypeCrossJoin = "CROSS JOIN";
 
-		private static readonly OracleCodeCompletionItem[] JoinClauses =
+		private static readonly OracleCodeCompletionItem[] JoinClauseTemplates =
 		{
-			new OracleCodeCompletionItem { Name = JoinTypeJoin, Text = JoinTypeJoin, Priority = 0, Category = OracleCodeCompletionCategory.JoinMethod, CategoryPriority = 1 },
-			new OracleCodeCompletionItem { Name = JoinTypeLeftJoin, Text = JoinTypeLeftJoin, Priority = 1, Category = OracleCodeCompletionCategory.JoinMethod, CategoryPriority = 1 },
-			new OracleCodeCompletionItem { Name = JoinTypeRightJoin, Text = JoinTypeRightJoin, Priority = 2, Category = OracleCodeCompletionCategory.JoinMethod, CategoryPriority = 1 },
-			new OracleCodeCompletionItem { Name = JoinTypeFullJoin, Text = JoinTypeFullJoin, Priority = 3, Category = OracleCodeCompletionCategory.JoinMethod, CategoryPriority = 1 },
-			new OracleCodeCompletionItem { Name = JoinTypeCrossJoin, Text = JoinTypeCrossJoin, Priority = 4, Category = OracleCodeCompletionCategory.JoinMethod, CategoryPriority = 1 }
+			new OracleCodeCompletionItem { Name = JoinTypeJoin, Priority = 0 },
+			new OracleCodeCompletionItem { Name = JoinTypeLeftJoin, Priority = 1 },
+			new OracleCodeCompletionItem { Name = JoinTypeRightJoin, Priority = 2 },
+			new OracleCodeCompletionItem { Name = JoinTypeFullJoin, Priority = 3 },
+			new OracleCodeCompletionItem { Name = JoinTypeCrossJoin, Priority = 4 }
 		};
 
 		public ICollection<FunctionOverloadDescription> ResolveFunctionOverloads(SqlDocumentRepository sqlDocumentRepository, int cursorPosition)
@@ -69,19 +69,21 @@ namespace SqlPad.Oracle
 		internal ICollection<ICodeCompletionItem> ResolveItems(IDatabaseModel databaseModel, string statementText, int cursorPosition, params string[] categories)
 		{
 			var documentStore = new SqlDocumentRepository(_parser, new OracleStatementValidator(), databaseModel, statementText);
-			var sourceItems = ResolveItems(documentStore, databaseModel, statementText, cursorPosition);
+			var sourceItems = ResolveItems(documentStore, databaseModel, statementText, cursorPosition, true);
 			return sourceItems.Where(i => categories.Length == 0 || categories.Contains(i.Category)).ToArray();
 		}
 
-		public ICollection<ICodeCompletionItem> ResolveItems(SqlDocumentRepository sqlDocumentRepository, IDatabaseModel databaseModel, string statementText, int cursorPosition)
+		public ICollection<ICodeCompletionItem> ResolveItems(SqlDocumentRepository sqlDocumentRepository, IDatabaseModel databaseModel, string statementText, int cursorPosition, bool forcedInvokation)
 		{
 			//Trace.WriteLine("OracleCodeCompletionProvider.ResolveItems called. Cursor position: "+ cursorPosition);
 
 			if (sqlDocumentRepository == null || sqlDocumentRepository.Statements == null)
 				return EmptyCollection;
 
-			var e = new OracleCodeCompletionType(sqlDocumentRepository.Statements, statementText, cursorPosition);
-			e.PrintSupportedCompletions();
+			var completionType = new OracleCodeCompletionType(sqlDocumentRepository.Statements, statementText, cursorPosition);
+			completionType.PrintSupportedCompletions();
+			if (!forcedInvokation && !completionType.JoinCondition && String.IsNullOrEmpty(completionType.TerminalValuePartUntilCaret))
+				return EmptyCollection;
 
 			StatementGrammarNode currentNode;
 
@@ -118,7 +120,7 @@ namespace SqlPad.Oracle
 
 				currentNode = statement.GetNearestTerminalToPosition(cursorPosition);
 
-				var extraLength = cursorPosition - currentNode.SourcePosition.IndexEnd - 1;
+				/*var extraLength = cursorPosition - currentNode.SourcePosition.IndexEnd - 1;
 				if (extraLength > 0)
 				{
 					var substring = statementText.Substring(currentNode.SourcePosition.IndexEnd + 1, extraLength).Trim();
@@ -126,7 +128,10 @@ namespace SqlPad.Oracle
 					{
 						return EmptyCollection;
 					}
-				}
+				}*/
+
+				if (completionType.InUnparsedData)
+					return EmptyCollection;
 			}
 			else
 			{
@@ -219,7 +224,7 @@ namespace SqlPad.Oracle
 				}
 			}
 
-			if ((currentNode.Id.In(Terminals.ObjectIdentifier, Terminals.ObjectAlias) ||
+			/*if ((currentNode.Id.In(Terminals.ObjectIdentifier, Terminals.ObjectAlias) ||
 			    (joinClauseNode != null && joinClauseNode.IsGrammarValid)) &&
 				!cursorAtLastTerminal)
 			{
@@ -228,9 +233,14 @@ namespace SqlPad.Oracle
 					(joinClauseNode != null && joinClauseNode.IsGrammarValid))
 				{
 					completionItems = completionItems.Concat(
-						//JoinClauses.Where(j => alias == null || j.Name.Contains(alias.Token.Value.ToUpperInvariant()))
-						JoinClauses);
+						//JoinClauseTemplates.Where(j => alias == null || j.Name.Contains(alias.Token.Value.ToUpperInvariant()))
+						JoinClauseTemplates);
 				}
+			}*/
+
+			if (completionType.JoinType)
+			{
+				completionItems = completionItems.Concat(CreateJoinTypeCompletionItems(completionType));
 			}
 
 			if (currentNode.Id == Terminals.Join ||
@@ -378,6 +388,22 @@ namespace SqlPad.Oracle
 
 			return suggestedItems.Concat(suggestedFunctions);
 		}
+
+		private IEnumerable<OracleCodeCompletionItem> CreateJoinTypeCompletionItems(OracleCodeCompletionType completionType)
+		{
+			return JoinClauseTemplates
+				.Where(c => !completionType.ExistsTerminalValue || c.Name.StartsWith(completionType.TerminalValueUnderCursor.ToUpperInvariant()))
+				.Select(j =>
+					new OracleCodeCompletionItem
+					{
+						Name = j.Name,
+						Text = j.Name,
+						Priority = j.Priority,
+						Category = OracleCodeCompletionCategory.JoinMethod,
+						CategoryPriority = 1,
+						StatementNode = completionType.CurrentTerminal
+					});
+		} 
 
 		private IEnumerable<OracleCodeCompletionItem> CreateAsteriskColumnCompletionItems(IEnumerable<OracleDataObjectReference> tables, bool skipFirstObjectIdentifier, StatementGrammarNode currentNode)
 		{
@@ -591,122 +617,6 @@ namespace SqlPad.Oracle
 			}
 
 			return new OracleCodeCompletionItem { Name = builder.ToString(), Text = builder.ToString(), Offset = insertOffset };
-		}
-	}
-
-	internal class OracleCodeCompletionType
-	{
-		private readonly OracleSqlParser _parser = new OracleSqlParser();
-
-		public bool Schema { get; private set; }
-
-		public bool SchemaDataObject { get; private set; }
-		
-		public bool PipelinedFunction { get; private set; }
-		
-		public bool SchemaDataObjectReference { get; private set; }
-		
-		public bool Column { get; private set; }
-
-		public bool AllColumns { get; private set; }
-		
-		public bool JoinType { get; private set; }
-		
-		public bool JoinCondition { get; private set; }
-		
-		public bool Program { get; private set; }
-
-		private bool Any
-		{
-			get { return Schema || SchemaDataObject || PipelinedFunction || SchemaDataObjectReference || Column || AllColumns || JoinType || JoinCondition || Program; }
-		}
-
-		public string TerminalValuePartUntilCaret { get; private set; }
-		
-		public string TerminalValueUnderCursor { get; private set; }
-
-		public OracleCodeCompletionType(StatementCollection statementCollection, string statementText, int cursorPosition)
-		{
-			var statement = (OracleStatement)(statementCollection.GetStatementAtPosition(cursorPosition) ?? statementCollection.LastOrDefault());
-			if (statement == null)
-				return;
-
-			var nearestTerminal = statement.GetNearestTerminalToPosition(cursorPosition);
-			if (nearestTerminal == null)
-				return;
-
-			var requiredOffsetAfterToken = nearestTerminal.Id.IsZeroOffsetTerminalId() ? 0 : 1;
-			var isCursorAfterToken = nearestTerminal.SourcePosition.IndexEnd + requiredOffsetAfterToken < cursorPosition;
-			if (isCursorAfterToken)
-			{
-				var unparsedTextBetweenTokenAndCursor = statementText.Substring(nearestTerminal.SourcePosition.IndexEnd + 1, cursorPosition - nearestTerminal.SourcePosition.IndexEnd - 1).Trim();
-				if (!String.IsNullOrEmpty(unparsedTextBetweenTokenAndCursor))
-					return;
-			}
-			else if (nearestTerminal.Id.IsIdentifier())
-			{
-				TerminalValueUnderCursor = nearestTerminal.Token.Value;
-				TerminalValuePartUntilCaret = nearestTerminal.Token.Value.Substring(0, cursorPosition - nearestTerminal.SourcePosition.IndexStart).Trim('"');
-			}
-
-			var terminalCandidates = new HashSet<string>(_parser.GetTerminalCandidates(isCursorAfterToken ? nearestTerminal : nearestTerminal.PrecedingTerminal));
-			Schema = terminalCandidates.Contains(Terminals.SchemaIdentifier);
-			Program = Column = terminalCandidates.Contains(Terminals.Identifier);
-			JoinType = terminalCandidates.Contains(Terminals.Join);
-
-			var isWithinFromClause = nearestTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.FromClause) != null || (isCursorAfterToken && nearestTerminal.Id == Terminals.From);
-			var isWithinJoinCondition = nearestTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.JoinClause, NonTerminals.JoinColumnsOrCondition) != null;
-			SchemaDataObject = isWithinFromClause && !isWithinJoinCondition && terminalCandidates.Contains(Terminals.ObjectIdentifier);
-
-			var isWithinJoinClause = nearestTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.FromClause, NonTerminals.JoinClause) != null;
-			JoinCondition = isWithinJoinClause && isCursorAfterToken && (terminalCandidates.Contains(Terminals.On) || nearestTerminal.Id == Terminals.On);
-
-			var isWithinSelectList = (nearestTerminal.Id == Terminals.Select && isCursorAfterToken) || nearestTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.SelectList) != null;
-			AllColumns = isWithinSelectList && terminalCandidates.Contains(Terminals.Asterisk);
-
-			SchemaDataObjectReference = !isWithinFromClause && terminalCandidates.Contains(Terminals.ObjectIdentifier);
-		}
-
-		public void PrintSupportedCompletions()
-		{
-			if (!Any)
-			{
-				Trace.WriteLine("No completions available");
-				return;
-			}
-
-			var builder = new StringBuilder(255);
-			builder.Append("TerminalValueUnderCursor: '");
-			builder.Append(TerminalValueUnderCursor);
-			builder.Append("'; ");
-			builder.Append("TerminalValuePartUntilCaret: '");
-			builder.Append(TerminalValuePartUntilCaret);
-			builder.Append("'; ");
-			builder.Append("Schema: ");
-			builder.Append(Schema);
-			builder.Append("; ");
-			builder.Append("SchemaDataObject: ");
-			builder.Append(SchemaDataObject);
-			builder.Append("; ");
-			builder.Append("SchemaDataObjectReference: ");
-			builder.Append(SchemaDataObjectReference);
-			builder.Append("; ");
-			builder.Append("Column: ");
-			builder.Append(Column);
-			builder.Append("; ");
-			builder.Append("AllColumns: ");
-			builder.Append(AllColumns);
-			builder.Append("; ");
-			builder.Append("JoinType: ");
-			builder.Append(JoinType);
-			builder.Append("; ");
-			builder.Append("JoinCondition: ");
-			builder.Append(JoinCondition);
-			builder.Append("; ");
-			builder.Append("Program: ");
-			builder.Append(Program);
-
-			Trace.WriteLine(builder.ToString());
 		}
 	}
 }
