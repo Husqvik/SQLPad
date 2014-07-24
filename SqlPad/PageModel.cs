@@ -93,6 +93,9 @@ namespace SqlPad
 				{
 					Messages.ShowError(e.Message);
 
+					if (_currentConnection == null)
+						return;
+
 					try
 					{
 						_documentPage.InitializeInfrastructureComponents(_currentConnection);

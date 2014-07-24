@@ -77,19 +77,19 @@ namespace SqlPad
 					cacheFile = new CacheFile { FileName = Thread.CurrentThread.ManagedThreadId + DateTime.Now.Ticks.ToString(CultureInfo.CurrentUICulture) + ".dat" };
 			}
 
-			var timer = Stopwatch.StartNew();
-			
-			using (var stream = File.Create(GetFullFileName(cacheFile.FileName)))
-			{
-				storeAction(stream);
-			}
-
-			timer.Stop();
-
-			Trace.WriteLine(String.Format("{0} - Cache for '{1}' stored in {2}", DateTime.Now, cacheKey, timer.Elapsed));
-			
 			lock (DatabaseModelCacheConfiguration)
 			{
+				var timer = Stopwatch.StartNew();
+
+				using (var stream = File.Create(GetFullFileName(cacheFile.FileName)))
+				{
+					storeAction(stream);
+				}
+
+				timer.Stop();
+
+				Trace.WriteLine(String.Format("{0} - Cache for '{1}' stored in {2}", DateTime.Now, cacheKey, timer.Elapsed));
+
 				using (var stream = File.Create(CacheConfigrationFileName))
 				{
 					Serializer.Serialize(stream, DatabaseModelCacheConfiguration);

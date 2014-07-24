@@ -11,8 +11,10 @@ namespace SqlPad.Oracle
 	{
 		private static readonly RuntimeTypeModel Serializer;
 
-		private readonly Dictionary<OracleObjectIdentifier, OracleSchemaObject> _allObjects = new Dictionary<OracleObjectIdentifier, OracleSchemaObject>();
-		private IDictionary<OracleObjectIdentifier, OracleSchemaObject> _allObjectsReadOnly;
+		private static readonly IDictionary<OracleObjectIdentifier, OracleSchemaObject> InitialDictionary =
+			new ReadOnlyDictionary<OracleObjectIdentifier, OracleSchemaObject>(new Dictionary<OracleObjectIdentifier, OracleSchemaObject>());
+
+		private readonly IDictionary<OracleObjectIdentifier, OracleSchemaObject> _allObjects;
 		
 		public DateTime Timestamp { get; private set; }
 
@@ -20,8 +22,7 @@ namespace SqlPad.Oracle
 		{
 			get
 			{
-				return _allObjectsReadOnly
-				       ?? (_allObjectsReadOnly = new ReadOnlyDictionary<OracleObjectIdentifier, OracleSchemaObject>(_allObjects));
+				return _allObjects ?? InitialDictionary;
 			}
 		}
 
@@ -126,7 +127,7 @@ namespace SqlPad.Oracle
 
 		public OracleDataDictionary(IEnumerable<KeyValuePair<OracleObjectIdentifier, OracleSchemaObject>> schemaObjects, DateTime timestamp)
 		{
-			_allObjects = schemaObjects.ToDictionary(schemaObject => schemaObject.Key, schemaObject => schemaObject.Value);
+			_allObjects = new ReadOnlyDictionary<OracleObjectIdentifier, OracleSchemaObject>(schemaObjects.ToDictionary(schemaObject => schemaObject.Key, schemaObject => schemaObject.Value));
 
 			Timestamp = timestamp;
 		}

@@ -53,7 +53,7 @@ namespace SqlPad
 		private CompletionWindow _completionWindow;
 		private readonly PageModel _pageModel;
 		private bool _isParsing;
-		private bool _enableCodeComplete = true;
+		private bool _enableCodeComplete;
 		private readonly Timer _timerReParse = new Timer(100);
 		private readonly Timer _timerExecutionMonitor = new Timer(100);
 		private readonly Stopwatch _stopWatch = new Stopwatch();
@@ -63,6 +63,8 @@ namespace SqlPad
 		public EventHandler ParseFinished = delegate { };
 
 		internal bool IsParsingSynchronous { get; set; }
+
+		internal bool IsSelectedPage { get; set; }
 		
 		public TextEditorAdapter EditorAdapter { get; private set; }
 		
@@ -337,7 +339,7 @@ namespace SqlPad
 				return;
 
 			var statement = _sqlDocumentRepository.Statements.GetStatementAtPosition(Editor.CaretOffset);
-			args.CanExecute = (Editor.SelectionLength > 0 && statement.RootNode != null) || statement != null;
+			args.CanExecute = statement != null && statement.RootNode != null && statement.RootNode.FirstTerminalNode != null;
 		}
 
 		private async void ExecuteDatabaseCommandHandler(object sender, ExecutedRoutedEventArgs args)
@@ -627,7 +629,47 @@ namespace SqlPad
 
 		private bool PreviousPairCharacterExists(string text, char matchCharacter, char pairCharacter)
 		{
-			return text.Length == 1 && text[0] == matchCharacter && Editor.Text.Length > Editor.CaretOffset && Editor.CaretOffset >= 1 && Editor.Text[Editor.CaretOffset] == matchCharacter && Editor.Text[Editor.CaretOffset - 1] == pairCharacter;
+			return text.Length == 1 && text[0] == matchCharacter && Editor.CaretOffset > 0 && Editor.Text[Editor.CaretOffset - 1] == pairCharacter;
+		}
+
+		private bool NextPairCharacterExists(string text, char matchCharacter, char pairCharacter)
+		{
+			return text.Length == 1 && text[0] == matchCharacter && Editor.Text.Length > Editor.CaretOffset && Editor.Text[Editor.CaretOffset] == pairCharacter;
+		}
+
+		private bool HandlePairCharacterInsertion(string text)
+		{
+			var pairCharacterHandled = false;
+
+			switch (text)
+			{
+				case "(":
+					pairCharacterHandled = !NextPairCharacterExists(text, '(', ')');
+					if (pairCharacterHandled)
+					{
+						InsertPairCharacter("()");
+					}
+
+					break;
+				case "\"":
+					pairCharacterHandled = !PreviousPairCharacterExists(text, '"', '"');
+					if (pairCharacterHandled)
+					{
+						InsertPairCharacter("\"\"");
+					}
+					
+					break;
+				case "'":
+					pairCharacterHandled = !PreviousPairCharacterExists(text, '\'', '\'');
+					if (pairCharacterHandled)
+					{
+						InsertPairCharacter("''");
+					}
+
+					break;
+			}
+
+			return pairCharacterHandled;
 		}
 
 		private void TextEnteringHandler(object sender, TextCompositionEventArgs e)
@@ -637,27 +679,17 @@ namespace SqlPad
 				e.Handled = true;
 			}
 
-			if (PreviousPairCharacterExists(e.Text, ')', '(') || PreviousPairCharacterExists(e.Text, '\'', '\'') || PreviousPairCharacterExists(e.Text, '"', '"'))
+			if (NextPairCharacterExists(e.Text, ')', ')') || NextPairCharacterExists(e.Text, '\'', '\'') || NextPairCharacterExists(e.Text, '"', '"'))
 			{
 				Editor.CaretOffset++;
 				e.Handled = true;
 				return;
 			}
 
-			switch (e.Text)
+			if (HandlePairCharacterInsertion(e.Text))
 			{
-				case "(":
-					InsertPairCharacter("()");
-					e.Handled = true;
-					return;
-				case "\"":
-					InsertPairCharacter("\"\"");
-					e.Handled = true;
-					return;
-				case "'":
-					InsertPairCharacter("''");
-					e.Handled = true;
-					return;
+				e.Handled = true;
+				return;
 			}
 
 			if (_multiNodeEditor != null)
@@ -728,6 +760,8 @@ namespace SqlPad
 
 		public void ReParse()
 		{
+			_enableCodeComplete = false;
+
 			EditorTextChangedHandler(this, EventArgs.Empty);
 		}
 
@@ -766,7 +800,7 @@ namespace SqlPad
 				_isParsing = false;
 				ParseFinished(this, EventArgs.Empty);
 
-				if (_enableCodeComplete && _completionWindow == null)
+				if (_enableCodeComplete && _completionWindow == null /*&& IsSelectedPage*/)
 				{
 					CreateCodeCompletionWindow(false);
 				}
