@@ -11,7 +11,7 @@ namespace SqlPad.Oracle
 	{
 		private static readonly RuntimeTypeModel Serializer;
 
-		private readonly Dictionary<OracleObjectIdentifier, OracleSchemaObject> _allObjects;
+		private readonly Dictionary<OracleObjectIdentifier, OracleSchemaObject> _allObjects = new Dictionary<OracleObjectIdentifier, OracleSchemaObject>();
 		private IDictionary<OracleObjectIdentifier, OracleSchemaObject> _allObjectsReadOnly;
 		
 		public DateTime Timestamp { get; private set; }
