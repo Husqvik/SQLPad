@@ -122,15 +122,18 @@ namespace SqlPad.Oracle
 					var nestedQueryTableReference = queryTableExpression.GetPathFilterDescendants(f => f.Id != NonTerminals.Subquery, NonTerminals.NestedQuery).SingleOrDefault();
 					if (nestedQueryTableReference != null)
 					{
-						var nestedQueryTableReferenceQueryBlock = nestedQueryTableReference.GetPathFilterDescendants(n => n.Id != NonTerminals.NestedQuery && n.Id != NonTerminals.SubqueryFactoringClause, NonTerminals.QueryBlock).First();
-
-						item.ObjectReferences.Add(new OracleDataObjectReference(ReferenceType.InlineView)
+						var nestedQueryTableReferenceQueryBlock = nestedQueryTableReference.GetPathFilterDescendants(n => n.Id != NonTerminals.NestedQuery && n.Id != NonTerminals.SubqueryFactoringClause, NonTerminals.QueryBlock).FirstOrDefault();
+						if (nestedQueryTableReferenceQueryBlock != null)
 						{
-							Owner = item,
-							RootNode = tableReferenceNonterminal,
-							ObjectNode = nestedQueryTableReferenceQueryBlock,
-							AliasNode = tableReferenceAlias
-						});
+							item.ObjectReferences.Add(
+								new OracleDataObjectReference(ReferenceType.InlineView)
+								{
+									Owner = item,
+									RootNode = tableReferenceNonterminal,
+									ObjectNode = nestedQueryTableReferenceQueryBlock,
+									AliasNode = tableReferenceAlias
+								});
+						}
 
 						continue;
 					}

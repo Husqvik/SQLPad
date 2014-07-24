@@ -592,7 +592,7 @@ namespace SqlPad
 				return;
 			}
 
-			if (Editor.Text.Length == Editor.CaretOffset || Editor.Text[Editor.CaretOffset].In(' ', '\t', '\r', '\n'))
+			/*if (Editor.Text.Length == Editor.CaretOffset || Editor.Text[Editor.CaretOffset].In(' ', '\t', '\r', '\n'))
 			{
 				switch (e.Text)
 				{
@@ -606,7 +606,7 @@ namespace SqlPad
 						InsertPairCharacter("'");
 						break;
 				}
-			}
+			}*/
 
 			if (e.Text != "." && e.Text != " " && e.Text != "\n")
 			{
@@ -625,6 +625,11 @@ namespace SqlPad
 			Editor.CaretOffset--;
 		}
 
+		private bool PreviousPairCharacterExists(string text, char matchCharacter, char pairCharacter)
+		{
+			return text.Length == 1 && text[0] == matchCharacter && Editor.Text.Length > Editor.CaretOffset && Editor.CaretOffset >= 1 && Editor.Text[Editor.CaretOffset] == matchCharacter && Editor.Text[Editor.CaretOffset - 1] == pairCharacter;
+		}
+
 		private void TextEnteringHandler(object sender, TextCompositionEventArgs e)
 		{
 			if ((Keyboard.IsKeyDown(Key.Oem2) || Keyboard.IsKeyDown(Key.D)) && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt))
@@ -632,11 +637,27 @@ namespace SqlPad
 				e.Handled = true;
 			}
 
-			if (e.Text == ")" && Editor.Text.Length > Editor.CaretOffset && Editor.CaretOffset >= 1 && Editor.Text[Editor.CaretOffset] == ')' && Editor.Text[Editor.CaretOffset - 1] == '(')
+			if (PreviousPairCharacterExists(e.Text, ')', '(') || PreviousPairCharacterExists(e.Text, '\'', '\'') || PreviousPairCharacterExists(e.Text, '"', '"'))
 			{
 				Editor.CaretOffset++;
 				e.Handled = true;
 				return;
+			}
+
+			switch (e.Text)
+			{
+				case "(":
+					InsertPairCharacter("()");
+					e.Handled = true;
+					return;
+				case "\"":
+					InsertPairCharacter("\"\"");
+					e.Handled = true;
+					return;
+				case "'":
+					InsertPairCharacter("''");
+					e.Handled = true;
+					return;
 			}
 
 			if (_multiNodeEditor != null)
