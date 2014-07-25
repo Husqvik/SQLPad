@@ -74,13 +74,13 @@ namespace SqlPad.Oracle
 		public static OracleDatabaseModel GetDatabaseModel(ConnectionStringSettings connectionString)
 		{
 			OracleDatabaseModel databaseModel;
-			if (!DatabaseModels.TryGetValue(connectionString.ConnectionString, out databaseModel))
+			if (DatabaseModels.TryGetValue(connectionString.ConnectionString, out databaseModel))
 			{
-				DatabaseModels[connectionString.ConnectionString] = databaseModel = new OracleDatabaseModel(connectionString);
+				databaseModel = databaseModel.Clone();
 			}
 			else
 			{
-				databaseModel = databaseModel.Clone();
+				DatabaseModels[connectionString.ConnectionString] = databaseModel = new OracleDatabaseModel(connectionString);
 			}
 
 			return databaseModel;
@@ -95,8 +95,6 @@ namespace SqlPad.Oracle
 			{
 				if (_isRefreshing)
 					return;
-
-				_isRefreshing = true;
 
 				_backgroundTask = Task.Factory.StartNew(action);
 			}
@@ -138,6 +136,11 @@ namespace SqlPad.Oracle
 			}
 		}
 
+		public override bool IsModelFresh
+		{
+			get { return !IsRefreshNeeded; }
+		}
+
 		private bool IsRefreshNeeded
 		{
 			get { return _dataDictionary.Timestamp.AddMinutes(RefreshInterval) < DateTime.Now; }
@@ -148,11 +151,11 @@ namespace SqlPad.Oracle
 			get { return _oracleConnectionString.DataSource + "_" + _oracleConnectionString.UserID; }
 		}
 
-		public override void Refresh()
+		public override Task Refresh(bool force = false)
 		{
 			if (_backgroundTask == null)
 			{
-				ExecuteActionAsync(LoadSchemaObjectMetadata);
+				ExecuteActionAsync(() => LoadSchemaObjectMetadata(force));
 			}
 			else
 			{
@@ -160,9 +163,11 @@ namespace SqlPad.Oracle
 					t =>
 					{
 						t.Dispose();
-						LoadSchemaObjectMetadata();
+						LoadSchemaObjectMetadata(force);
 					});
 			}
+
+			return _backgroundTask;
 		}
 
 		public async override Task<string> GetObjectScriptAsync(OracleSchemaObject schemaObject, CancellationToken cancellationToken)
@@ -210,6 +215,7 @@ namespace SqlPad.Oracle
 			{
 				if (_isRefreshing)
 				{
+					_isRefreshing = false;
 					RaiseEvent(RefreshFinished);
 				}
 
@@ -550,19 +556,19 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		private void LoadSchemaObjectMetadata()
+		private void LoadSchemaObjectMetadata(bool force)
 		{
 			TryLoadSchemaObjectMetadataFromCache();
 
 			//var otmp = _dataDictionary.AllObjects.Where(o => o.Key.NormalizedName.Contains("XMLTYPE")).ToArray();
 			//var customer = _dataDictionary.AllObjects.Where(o => o.Key.NormalizedName.Contains("CUSTOMER\"")).ToArray();
 
-			if (!IsRefreshNeeded)
+			if (!IsRefreshNeeded && !force)
 			{
 				return;
 			}
 
-			var reason = _dataDictionary.Timestamp > DateTime.MinValue ? "has expired" : "does not exist";
+			var reason = force ? "has been forced to refresh" : (_dataDictionary.Timestamp > DateTime.MinValue ? "has expired" : "does not exist");
 			Trace.WriteLine(String.Format("{0} - Cache for '{1}' {2}. Cache refresh started. ", DateTime.Now, CachedConnectionStringName, reason));
 
 			RaiseEvent(RefreshStarted);
@@ -894,15 +900,12 @@ namespace SqlPad.Oracle
 				}
 			}
 
-			if (_dataDictionary != null)
-			{
-				var functionMetadata = _dataDictionary.AllObjects.Values
-					.OfType<IFunctionCollection>()
-					.Where(o => o.FullyQualifiedName != BuiltInFunctionPackageIdentifier)
-					.SelectMany(o => o.Functions);
+			var functionMetadata = _dataDictionary.AllObjects.Values
+				.OfType<IFunctionCollection>()
+				.Where(o => o.FullyQualifiedName != BuiltInFunctionPackageIdentifier)
+				.SelectMany(o => o.Functions);
 
-				_allFunctionMetadata = new OracleFunctionMetadataCollection(BuiltInFunctionMetadata.SqlFunctions.Concat(functionMetadata));
-			}
+			_allFunctionMetadata = new OracleFunctionMetadataCollection(BuiltInFunctionMetadata.SqlFunctions.Concat(functionMetadata));
 
 			_cacheLoaded = true;
 		}

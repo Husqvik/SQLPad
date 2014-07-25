@@ -470,11 +470,16 @@ TABLESPACE ""TBS_HQ_PDB""";
 			Refresh();
 		}
 
-		public override void Refresh()
+		public override Task Refresh(bool force = false)
 		{
 			RefreshStarted(this, EventArgs.Empty);
 			RefreshFinished(this, EventArgs.Empty);
+			var taskCompletionSource = new TaskCompletionSource<object>();
+			taskCompletionSource.SetResult(null);
+			return taskCompletionSource.Task;
 		}
+
+		public override bool IsModelFresh { get { return true; } }
 
 		public override event EventHandler RefreshStarted = delegate { };
 

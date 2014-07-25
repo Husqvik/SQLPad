@@ -64,8 +64,15 @@ namespace SqlPad
 
 		internal bool IsParsingSynchronous { get; set; }
 
-		internal bool IsSelectedPage { get; set; }
-		
+		internal bool IsSelectedPage
+		{
+			get
+			{
+				var mainWindow = (MainWindow)Window.GetWindow(this);
+				return Equals(((TabItem)mainWindow.DocumentTabControl.SelectedItem).Content);
+			}
+		}
+
 		public TextEditorAdapter EditorAdapter { get; private set; }
 		
 		public FileInfo File { get; private set; }
@@ -172,7 +179,15 @@ namespace SqlPad
 
 			_databaseModel.RefreshStarted += DatabaseModelRefreshStartedHandler;
 			_databaseModel.RefreshFinished += DatabaseModelRefreshFinishedHandler;
-			_databaseModel.RefreshIfNeeded();
+
+			if (_databaseModel.IsModelFresh)
+			{
+				ReParse();
+			}
+			else
+			{
+				_databaseModel.RefreshIfNeeded();
+			}
 		}
 
 		private ScrollViewer GetResultGridScrollViewer()
@@ -369,8 +384,8 @@ namespace SqlPad
 
 			if (_databaseModel.CanFetch)
 			{
-				GridLabel.Visibility = Visibility.Visible;
 				InitializeResultGrid();
+				
 				FetchNextRows(null, null);
 
 				if (ResultGrid.Items.Count > 0)
@@ -431,6 +446,8 @@ namespace SqlPad
 
 		private void InitializeResultGrid()
 		{
+			GridLabel.Visibility = Visibility.Visible;
+
 			foreach (var columnHeader in _databaseModel.GetColumnHeaders())
 			{
 				var columnTemplate =
@@ -800,7 +817,7 @@ namespace SqlPad
 				_isParsing = false;
 				ParseFinished(this, EventArgs.Empty);
 
-				if (_enableCodeComplete && _completionWindow == null /*&& IsSelectedPage*/)
+				if (_enableCodeComplete && _completionWindow == null && IsSelectedPage)
 				{
 					CreateCodeCompletionWindow(false);
 				}

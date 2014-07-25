@@ -27,9 +27,11 @@ namespace SqlPad.Oracle
 
 		public virtual void Dispose() { }
 
+		public abstract bool IsModelFresh { get; }
+
 		public abstract void RefreshIfNeeded();
-		
-		public abstract void Refresh();
+
+		public abstract Task Refresh(bool force = false);
 
 		public abstract event EventHandler RefreshStarted;
 

@@ -18,9 +18,11 @@ namespace SqlPad
 
 		bool IsExecuting { get; }
 
+		bool IsModelFresh { get; }
+
 		void RefreshIfNeeded();
-		
-		void Refresh();
+
+		Task Refresh(bool force);
 
 		event EventHandler RefreshStarted;
 
