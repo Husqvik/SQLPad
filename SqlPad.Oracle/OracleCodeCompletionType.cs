@@ -85,10 +85,14 @@ namespace SqlPad.Oracle
 				}
 			}
 
-			var previousTerminal = nearestTerminal.PrecedingTerminal;
-			var isCursorTouchingTwoTerminals = nearestTerminal.SourcePosition.IndexStart == cursorPosition && previousTerminal != null && previousTerminal.SourcePosition.IndexEnd + 1 == cursorPosition;
+			var precedingTerminal = nearestTerminal.PrecedingTerminal;
+			var isCursorTouchingTwoTerminals = nearestTerminal.SourcePosition.IndexStart == cursorPosition && precedingTerminal != null && precedingTerminal.SourcePosition.IndexEnd + 1 == cursorPosition;
+			if (isCursorTouchingTwoTerminals)
+			{
+				precedingTerminal = precedingTerminal.PrecedingTerminal;
+			}
 
-			var terminalCandidates = new HashSet<string>(_parser.GetTerminalCandidates(isCursorAfterToken ? nearestTerminal : previousTerminal));
+			var terminalCandidates = new HashSet<string>(_parser.GetTerminalCandidates(isCursorAfterToken ? nearestTerminal : precedingTerminal));
 			Schema = terminalCandidates.Contains(OracleGrammarDescription.Terminals.SchemaIdentifier);
 			Program = Column = terminalCandidates.Contains(OracleGrammarDescription.Terminals.Identifier);
 			JoinType = !isCursorTouchingTwoTerminals && terminalCandidates.Contains(OracleGrammarDescription.Terminals.Join);

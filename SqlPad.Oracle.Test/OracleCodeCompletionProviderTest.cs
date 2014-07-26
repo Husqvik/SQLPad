@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using NUnit.Framework;
 using Shouldly;
+using System;
 
 namespace SqlPad.Oracle.Test
 {
@@ -10,6 +11,7 @@ namespace SqlPad.Oracle.Test
 		private readonly OracleCodeCompletionProvider _codeCompletionProvider = new OracleCodeCompletionProvider();
 		private static readonly OracleSqlParser Parser = new OracleSqlParser();
 		private readonly SqlDocumentRepository _documentRepository = new SqlDocumentRepository(new OracleSqlParser(), new OracleStatementValidator(), TestFixture.DatabaseModel);
+		private static readonly Func<ICodeCompletionItem, bool> FilterProgramItems = i => !i.Category.In(OracleCodeCompletionCategory.PackageFunction, OracleCodeCompletionCategory.Package, OracleCodeCompletionCategory.SchemaFunction);
 
 		[Test(Description = @"")]
 		public void TestObjectSuggestionWithSchema()
@@ -201,7 +203,7 @@ FROM
 		{
 			const string query1 = @"SELECT 1,  FROM SELECTION S";
 
-			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 10).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 10).Where(FilterProgramItems).ToArray();
 			items.Length.ShouldBe(10);
 			items[0].Name.ShouldBe("S.*");
 			items[0].Text.ShouldBe("S.RESPONDENTBUCKET_ID, S.SELECTION_ID, S.PROJECT_ID, S.NAME");
@@ -454,7 +456,7 @@ FROM
 		{
 			const string query1 = @"SELECT  FROM (SELECT HUSQVIK.SELECTION.NAME FROM HUSQVIK.SELECTION), HUSQVIK.SELECTION";
 
-			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 7).Where(i => !i.Name.Contains("HUSQVIK.SELECTION") && i.Category != OracleCodeCompletionCategory.DatabaseSchema).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 7).Where(FilterProgramItems).Where(i => !i.Name.Contains("HUSQVIK.SELECTION") && i.Category != OracleCodeCompletionCategory.DatabaseSchema).ToArray();
 			items.Length.ShouldBe(0);
 		}
 
@@ -707,6 +709,18 @@ FROM
 				const string statement = @"SELECT CUSTOMER. FROM CUSTOMER JOIN COMPANY ON ";
 				var completionType = InitializeCodeCompletionType(statement, statement.Length - 1);
 				completionType.JoinCondition.ShouldBe(false);
+			}
+
+			[Test(Description = @"")]
+			public void TestCodeCompletionTypeWithinFunctionParameterList()
+			{
+				const string statement = @"SELECT SQLPAD.SQLPAD_FUNCTION(D) FROM DUAL";
+				var completionType = InitializeCodeCompletionType(statement, 31);
+				completionType.SchemaDataObjectReference.ShouldBe(true);
+				completionType.Schema.ShouldBe(true);
+				completionType.Program.ShouldBe(true);
+				completionType.Column.ShouldBe(true);
+				completionType.AllColumns.ShouldBe(false);
 			}
 
 			[Test(Description = @"")]

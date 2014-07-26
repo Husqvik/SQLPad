@@ -299,6 +299,11 @@ namespace SqlPad.Oracle
 				? currentNode.Token.Value.Substring(0, cursorPosition - currentNode.SourcePosition.IndexStart).Trim('"')
 				: null;
 
+			var currentName = partialName == null ? null : currentNode.Token.Value;
+
+			var functionReference = queryBlock.AllFunctionReferences.SingleOrDefault(f => f.FunctionIdentifierNode == currentNode);
+			var addParameterList = functionReference == null;
+
 			var tableReferences = queryBlock.ObjectReferences;
 			var suggestedFunctions = Enumerable.Empty<ICodeCompletionItem>();
 			if (objectIdentifierNode != null)
@@ -313,42 +318,69 @@ namespace SqlPad.Oracle
 
 				if (tableReferences.Count == 0 && (partialName != null || currentNode.SourcePosition.IndexEnd < cursorPosition))
 				{
-					var functionReference = semanticModel.GetQueryBlock(currentNode).AllFunctionReferences.SingleOrDefault(f => f.FunctionIdentifierNode == currentNode);
-					var addParameterList = functionReference == null;
-					var currentName = partialName == null ? null : currentNode.Token.Value;
-
 					if (String.IsNullOrEmpty(schemaName))
 					{
-						var matcher = new OracleFunctionMatcher(
+						var packageMatcher = new OracleFunctionMatcher(
 							new FunctionMatchElement(objectName).SelectOwner(),
 							new FunctionMatchElement(partialName) { AllowStartWithMatch = true, DeniedValue = currentName }.SelectPackage(),
 							null);
 
-						suggestedFunctions = GenerateCodeItems(m => m.Identifier.Package.ToSimpleIdentifier(), OracleCodeCompletionCategory.Package, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, matcher);
+						suggestedFunctions = GenerateCodeItems(m => m.Identifier.Package.ToSimpleIdentifier(), OracleCodeCompletionCategory.Package, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, packageMatcher);
 
-						matcher = new OracleFunctionMatcher(
+						var packageFunctionMatcher = new OracleFunctionMatcher(
 							new FunctionMatchElement(databaseModel.CurrentSchema).SelectOwner(), 
 							new FunctionMatchElement(objectName).SelectPackage(),
 							new FunctionMatchElement(partialName) { AllowStartWithMatch = true, DeniedValue = currentName }.SelectName());
-						suggestedFunctions = suggestedFunctions.Concat(GenerateCodeItems(m => m.Identifier.Name.ToSimpleIdentifier(), OracleCodeCompletionCategory.PackageFunction, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, matcher));
 
-						matcher = new OracleFunctionMatcher(
+						suggestedFunctions = GenerateCodeItems(m => m.Identifier.Name.ToSimpleIdentifier(), OracleCodeCompletionCategory.PackageFunction, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, packageFunctionMatcher)
+							.Concat(suggestedFunctions);
+
+						var schemaFunctionMatcher = new OracleFunctionMatcher(
 							new FunctionMatchElement(objectName).SelectOwner(),
 							new FunctionMatchElement(null).SelectPackage(),
 							new FunctionMatchElement(partialName) { AllowStartWithMatch = true, DeniedValue = currentName }.SelectName());
 
-						suggestedFunctions = suggestedFunctions.Concat(GenerateCodeItems(m => m.Identifier.Name.ToSimpleIdentifier(), OracleCodeCompletionCategory.SchemaFunction, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, matcher));
+						suggestedFunctions = GenerateCodeItems(m => m.Identifier.Name.ToSimpleIdentifier(), OracleCodeCompletionCategory.SchemaFunction, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, schemaFunctionMatcher)
+							.Concat(suggestedFunctions);
 					}
 					else
 					{
-						var matcher = new OracleFunctionMatcher(
+						var packageFunctionMatcher = new OracleFunctionMatcher(
 							new FunctionMatchElement(schemaName).SelectOwner(),
 							new FunctionMatchElement(objectName).SelectPackage(),
 							new FunctionMatchElement(partialName) { AllowStartWithMatch = true, DeniedValue = currentName }.SelectName());
 
-						suggestedFunctions = GenerateCodeItems(m => m.Identifier.Name.ToSimpleIdentifier(), OracleCodeCompletionCategory.PackageFunction, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, matcher);
+						suggestedFunctions = GenerateCodeItems(m => m.Identifier.Name.ToSimpleIdentifier(), OracleCodeCompletionCategory.PackageFunction, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, packageFunctionMatcher);
 					}
 				}
+			}
+			else
+			{
+				var builtInFunctionMatcher =
+					new OracleFunctionMatcher(
+						new FunctionMatchElement(OracleDatabaseModelBase.SchemaSys).SelectOwner(),
+						new FunctionMatchElement(OracleFunctionMetadataCollection.PackageBuiltInFunction).SelectPackage(),
+						new FunctionMatchElement(partialName) { AllowStartWithMatch = true, DeniedValue = currentName }.SelectName());
+
+				var localSchemaFunctionMatcher =
+					new OracleFunctionMatcher(
+						new FunctionMatchElement(databaseModel.CurrentSchema.ToQuotedIdentifier()).SelectOwner(),
+						new FunctionMatchElement(null).SelectPackage(),
+						new FunctionMatchElement(partialName) { AllowStartWithMatch = true, DeniedValue = currentName }.SelectName());
+
+				var localSchemaPackageMatcher =
+					new OracleFunctionMatcher(
+						new FunctionMatchElement(databaseModel.CurrentSchema.ToQuotedIdentifier()).SelectOwner(),
+						new FunctionMatchElement(partialName) { AllowStartWithMatch = true, DeniedValue = currentName }.SelectPackage(),
+						null);
+
+				suggestedFunctions = GenerateCodeItems(m => m.Identifier.Name.ToSimpleIdentifier(), OracleCodeCompletionCategory.PackageFunction, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, builtInFunctionMatcher);
+
+				suggestedFunctions = GenerateCodeItems(m => m.Identifier.Name.ToSimpleIdentifier(), OracleCodeCompletionCategory.SchemaFunction, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, localSchemaFunctionMatcher)
+					.Concat(suggestedFunctions);
+
+				suggestedFunctions = GenerateCodeItems(m => m.Identifier.Package.ToSimpleIdentifier(), OracleCodeCompletionCategory.Package, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, localSchemaPackageMatcher)
+					.Concat(suggestedFunctions);
 			}
 
 			var columnCandidates = tableReferences

@@ -340,7 +340,7 @@ namespace SqlPad
 			_isToolTipOpenByShortCut = true;
 
 			var rectangle = Editor.TextArea.Caret.CalculateCaretRectangle();
-			_toolTip.PlacementTarget = this;
+			_toolTip.PlacementTarget = Editor.TextArea;
 			_toolTip.Placement = PlacementMode.Relative;
 			_toolTip.HorizontalOffset = rectangle.Left;
 			_toolTip.VerticalOffset = rectangle.Top + Editor.TextArea.TextView.DefaultLineHeight;
@@ -611,23 +611,7 @@ namespace SqlPad
 				return;
 			}
 
-			/*if (Editor.Text.Length == Editor.CaretOffset || Editor.Text[Editor.CaretOffset].In(' ', '\t', '\r', '\n'))
-			{
-				switch (e.Text)
-				{
-					case "(":
-						InsertPairCharacter(")");
-						break;
-					case "\"":
-						InsertPairCharacter("\"");
-						break;
-					case "'":
-						InsertPairCharacter("'");
-						break;
-				}
-			}*/
-
-			if (e.Text != "." && e.Text != " " && e.Text != "\n")
+			if (e.Text != "." && e.Text != " " && e.Text != "\n" && e.Text != "\r")
 			{
 				if (_completionWindow != null && _completionWindow.CompletionList.ListBox.Items.Count == 0)
 				{
@@ -661,7 +645,8 @@ namespace SqlPad
 			switch (text)
 			{
 				case "(":
-					pairCharacterHandled = !NextPairCharacterExists(text, '(', ')');
+					var nextCharacter = Editor.Text.Length == Editor.CaretOffset ? null : (char?)Editor.Text[Editor.CaretOffset];
+					pairCharacterHandled = !nextCharacter.HasValue || nextCharacter == ' ' || nextCharacter == '\r' || nextCharacter == '\n' || nextCharacter == '\t';
 					if (pairCharacterHandled)
 					{
 						InsertPairCharacter("()");
@@ -843,7 +828,7 @@ namespace SqlPad
 				return;
 
 			_toolTip.Placement = PlacementMode.Mouse;
-			//_toolTip.PlacementTarget = this; // required for property inheritance
+			_toolTip.PlacementTarget = this; // required for property inheritance
 			_toolTip.Content = toolTip;
 			_toolTip.IsOpen = true;
 			e.Handled = true;

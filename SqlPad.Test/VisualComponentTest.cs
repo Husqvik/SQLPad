@@ -72,6 +72,8 @@ namespace SqlPad.Test
 			
 			TestPairCharacterInsertionAfterAlreadyEnteredPair();
 
+			TestParenthesisCharacterInsertionWithinExistingParenthesis();
+
 			//TestPairCharacterDeletionWithCursorBetweenEmptyPair();
 
 			_editor.IsModified = false;
@@ -147,6 +149,25 @@ namespace SqlPad.Test
 			EnterText("(");
 			_editor.Text.ShouldBe("()()");
 			_editor.CaretOffset.ShouldBe(3);
+		}
+
+		private void TestParenthesisCharacterInsertionWithinExistingParenthesis()
+		{
+			_editor.Clear();
+
+			EnterText("()");
+			_editor.CaretOffset = 1;
+			EnterText("(");
+			_editor.Text.ShouldBe("(()");
+			_editor.CaretOffset.ShouldBe(2);
+
+			_editor.Clear();
+
+			EnterText("(SELECT)");
+			_editor.CaretOffset = 1;
+			EnterText("(");
+			_editor.Text.ShouldBe("((SELECT)");
+			_editor.CaretOffset.ShouldBe(2);
 		}
 
 		private void TestPairCharacterDeletionWithCursorBetweenEmptyPair()
