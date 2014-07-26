@@ -259,7 +259,7 @@ namespace SqlPad
 			commandBindings.Add(new CommandBinding(GenericCommands.DuplicateTextCommand, GenericCommandHandler.DuplicateText));
 			commandBindings.Add(new CommandBinding(GenericCommands.BlockCommentCommand, GenericCommandHandler.HandleBlockComments));
 			commandBindings.Add(new CommandBinding(GenericCommands.LineCommentCommand, GenericCommandHandler.HandleLineComments));
-			commandBindings.Add(new CommandBinding(GenericCommands.ListContextActionCommand, (sender, args) => Editor.ContextMenu.IsOpen = PopulateContextActionMenu()));
+			commandBindings.Add(new CommandBinding(GenericCommands.ListContextActionCommand, ListContextActions));
 			commandBindings.Add(new CommandBinding(GenericCommands.MultiNodeEditCommand, EditMultipleNodes));
 			commandBindings.Add(new CommandBinding(GenericCommands.NavigateToPreviousUsageCommand, NavigateToPreviousHighlightedUsage));
 			commandBindings.Add(new CommandBinding(GenericCommands.NavigateToNextUsageCommand, NavigateToNextHighlightedUsage));
@@ -635,7 +635,7 @@ namespace SqlPad
 				}
 			}
 
-			_enableCodeComplete = _completionWindow == null && e.Text.Length <= 2;
+			_enableCodeComplete = _completionWindow == null && e.Text.Length == 1;
 		}
 
 		private void InsertPairCharacter(string pairCharacter)
@@ -769,7 +769,7 @@ namespace SqlPad
 					_completionWindow.CompletionList.ListBox.SelectedIndex = 0;
 				}
 
-				_enableCodeComplete = false;
+				DisableCodeCompletion();
 
 				_completionWindow.Show();
 			}
@@ -777,7 +777,7 @@ namespace SqlPad
 
 		public void ReParse()
 		{
-			_enableCodeComplete = false;
+			DisableCodeCompletion();
 
 			EditorTextChangedHandler(this, EventArgs.Empty);
 		}
@@ -843,7 +843,7 @@ namespace SqlPad
 				return;
 
 			_toolTip.Placement = PlacementMode.Mouse;
-			_toolTip.PlacementTarget = this; // required for property inheritance
+			//_toolTip.PlacementTarget = this; // required for property inheritance
 			_toolTip.Content = toolTip;
 			_toolTip.IsOpen = true;
 			e.Handled = true;
@@ -861,6 +861,11 @@ namespace SqlPad
 				args.Handled = true;
 		}
 
+		private void DisableCodeCompletion()
+		{
+			_enableCodeComplete = false;
+		}
+
 		private void BuildContextMenuItem(IContextAction action)
 		{
 			var menuItem =
@@ -872,6 +877,17 @@ namespace SqlPad
 				};
 
 			Editor.ContextMenu.Items.Add(menuItem);
+		}
+
+		private void ListContextActions(object sender, ExecutedRoutedEventArgs args)
+		{
+			var isAnyCommandAvailable = PopulateContextActionMenu();
+			if (isAnyCommandAvailable)
+			{
+				DisableCodeCompletion();
+			}
+
+			Editor.ContextMenu.IsOpen = isAnyCommandAvailable;
 		}
 
 		private bool PopulateContextActionMenu()
@@ -916,7 +932,7 @@ namespace SqlPad
 
 			if (e.Key == Key.Return || e.Key == Key.Escape)
 			{
-				_enableCodeComplete = false;
+				DisableCodeCompletion();
 
 				_multiNodeEditor = null;
 
@@ -929,7 +945,7 @@ namespace SqlPad
 
 			if (e.Key == Key.Back || e.Key == Key.Delete)
 			{
-				_enableCodeComplete = false;
+				DisableCodeCompletion();
 			}
 
 			if ((e.Key == Key.Back || e.Key == Key.Delete) && _multiNodeEditor != null)

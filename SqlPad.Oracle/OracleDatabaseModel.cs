@@ -28,7 +28,7 @@ namespace SqlPad.Oracle
 		private bool _cacheLoaded;
 		private bool _isExecuting;
 		private Task _backgroundTask;
-		private Task _statementExecutionTask;
+		private readonly CancellationTokenSource _backgroundTaskCancellationTokenSource = new CancellationTokenSource();
 		private OracleFunctionMetadataCollection _allFunctionMetadata = new OracleFunctionMetadataCollection(Enumerable.Empty<OracleFunctionMetadata>());
 		private OracleFunctionMetadataCollection _builtInFunctionMetadata = new OracleFunctionMetadataCollection(Enumerable.Empty<OracleFunctionMetadata>());
 		private ILookup<string, OracleFunctionMetadata> _nonSchemaBuiltInFunctionMetadata = Enumerable.Empty<OracleFunctionMetadata>().ToLookup(m => m.Identifier.Name, m => m);
@@ -42,7 +42,7 @@ namespace SqlPad.Oracle
 		private OracleCommand _userCommand;
 
 		private static readonly Dictionary<string, OracleDataDictionary> CachedDataDictionaries = new Dictionary<string, OracleDataDictionary>();
-		internal static readonly Dictionary<string, OracleDatabaseModel> DatabaseModels = new Dictionary<string, OracleDatabaseModel>();
+		private static readonly Dictionary<string, OracleDatabaseModel> DatabaseModels = new Dictionary<string, OracleDatabaseModel>();
 
 		private OracleDatabaseModel(ConnectionStringSettings connectionString)
 		{
@@ -208,9 +208,6 @@ namespace SqlPad.Oracle
 
 			DisposeCommandAndReader();
 
-			if (_statementExecutionTask != null)
-				_statementExecutionTask.Dispose();
-
 			if (_backgroundTask != null)
 			{
 				if (_isRefreshing)
@@ -221,7 +218,7 @@ namespace SqlPad.Oracle
 
 				if (_backgroundTask.Status == TaskStatus.Running)
 				{
-					_backgroundTask.ContinueWith(t => t.Dispose());
+					_backgroundTaskCancellationTokenSource.Cancel();
 				}
 				else
 				{
@@ -545,11 +542,16 @@ namespace SqlPad.Oracle
 
 					connection.Open();
 
-					using (var reader = command.ExecuteReader(CommandBehavior.CloseConnection))
+					using (var task = command.ExecuteReaderAsynchronous(CommandBehavior.CloseConnection, _backgroundTaskCancellationTokenSource.Token))
 					{
-						while (reader.Read())
+						task.Wait();
+
+						using (var reader = task.Result)
 						{
-							yield return formatFunction(reader);
+							while (reader.Read())
+							{
+								yield return formatFunction(reader);
+							}
 						}
 					}
 				}
