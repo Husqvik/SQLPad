@@ -31,25 +31,43 @@ namespace SqlPad.Oracle
 		public ICollection<FunctionOverloadDescription> ResolveFunctionOverloads(SqlDocumentRepository sqlDocumentRepository, int cursorPosition)
 		{
 			var emptyCollection = new FunctionOverloadDescription[0];
-			var node = sqlDocumentRepository.Statements.GetNodeAtPosition(cursorPosition, n => !n.Id.In(Terminals.Comma, Terminals.RightParenthesis));
+			var node = sqlDocumentRepository.Statements.GetNodeAtPosition(cursorPosition/*, n => !n.Id.In(Terminals.Comma, Terminals.RightParenthesis)*/);
 			if (node == null)
 				return emptyCollection;
 
 			var semanticModel = (OracleStatementSemanticModel)sqlDocumentRepository.ValidationModels[node.Statement].SemanticModel;
 			var oracleDatabaseModel = semanticModel.DatabaseModel;
 			var queryBlock = semanticModel.GetQueryBlock(cursorPosition);
-			var functionReference = queryBlock.AllProgramReferences.FirstOrDefault(f => node.HasAncestor(f.RootNode));
-			if (functionReference == null || functionReference.Metadata == null)
+			var programReference = queryBlock.AllProgramReferences.FirstOrDefault(f => node.HasAncestor(f.RootNode));
+			if (programReference == null || programReference.Metadata == null)
 				return emptyCollection;
 
 			var currentParameterIndex = -1;
-			if (functionReference.ParameterNodes != null && functionReference.ParameterNodes.Count > 0)
+			if (programReference.ParameterNodes != null && programReference.ParameterNodes.Count > 0)
 			{
-				var parameterNode = functionReference.ParameterNodes.FirstOrDefault(f => node.HasAncestor(f));
-				currentParameterIndex = functionReference.ParameterNodes.ToList().IndexOf(parameterNode);
+				var lookupNode = node.Type == NodeType.Terminal ? node : node.GetNearestTerminalToPosition(cursorPosition);
+
+				if (lookupNode.Id == Terminals.Comma)
+				{
+					lookupNode = cursorPosition == lookupNode.SourcePosition.IndexStart ? lookupNode.PrecedingTerminal : lookupNode.FollowingTerminal;
+				}
+				else if (lookupNode.Id == Terminals.LeftParenthesis && cursorPosition > lookupNode.SourcePosition.IndexStart)
+				{
+					lookupNode = lookupNode.FollowingTerminal;
+				}
+				else if (lookupNode.Id == Terminals.RightParenthesis && cursorPosition == lookupNode.SourcePosition.IndexStart)
+				{
+					lookupNode = lookupNode.PrecedingTerminal;
+				}
+
+				if (lookupNode != null)
+				{
+					var parameterNode = programReference.ParameterNodes.FirstOrDefault(f => lookupNode.HasAncestor(f));
+					currentParameterIndex = programReference.ParameterNodes.ToList().IndexOf(parameterNode);
+				}
 			}
 
-			var functionOverloads = oracleDatabaseModel.AllFunctionMetadata.SqlFunctions.Where(m => functionReference.Metadata.Identifier.EqualsWithAnyOverload(m.Identifier) && (m.Parameters.Count == 0 || currentParameterIndex < m.Parameters.Count - 1));
+			var functionOverloads = oracleDatabaseModel.AllFunctionMetadata.SqlFunctions.Where(m => programReference.Metadata.Identifier.EqualsWithAnyOverload(m.Identifier) && (m.Parameters.Count == 0 || currentParameterIndex < m.Parameters.Count - 1));
 
 			return functionOverloads.Select(
 				o =>
@@ -57,7 +75,7 @@ namespace SqlPad.Oracle
 					var returnParameter = o.Parameters.FirstOrDefault();
 					return new FunctionOverloadDescription
 					       {
-						       Name = functionReference.Metadata.Identifier.FullyQualifiedIdentifier,
+						       Name = programReference.Metadata.Identifier.FullyQualifiedIdentifier,
 						       Parameters = o.Parameters.Skip(1).Select(p => p.Name + ": " + p.DataType).ToArray(),
 						       CurrentParameterIndex = currentParameterIndex,
 							   ReturnedDatatype = returnParameter == null ? null : returnParameter.DataType,
@@ -75,8 +93,6 @@ namespace SqlPad.Oracle
 
 		public ICollection<ICodeCompletionItem> ResolveItems(SqlDocumentRepository sqlDocumentRepository, IDatabaseModel databaseModel, string statementText, int cursorPosition, bool forcedInvokation)
 		{
-			//Trace.WriteLine("OracleCodeCompletionProvider.ResolveItems called. Cursor position: "+ cursorPosition);
-
 			if (sqlDocumentRepository == null || sqlDocumentRepository.Statements == null)
 				return EmptyCollection;
 
@@ -89,23 +105,6 @@ namespace SqlPad.Oracle
 
 			var completionItems = Enumerable.Empty<ICodeCompletionItem>();
 			var statement = (OracleStatement)sqlDocumentRepository.Statements.SingleOrDefault(s => s.GetNodeAtPosition(cursorPosition) != null);
-			//
-			/*currentNode = statements.GetTerminalAtPosition(cursorPosition);
-			var isCursorAtTerminal = true;
-			if (currentNode == null)
-			{
-				var statement = (OracleStatement)statements.LastOrDefault(s => s.GetNearestTerminalToPosition(cursorPosition) != null);
-				if (statement != null)
-				{
-					currentNode = statement.GetNearestTerminalToPosition(cursorPosition);
-					isCursorAtTerminal = false;
-				}
-			}
-
-			if (currentNode == null)
-				return EmptyCollection;*/
-
-			//
 
 			var isCursorAtTerminal = true;
 			if (statement == null)
@@ -119,16 +118,6 @@ namespace SqlPad.Oracle
 				}
 
 				currentNode = statement.GetNearestTerminalToPosition(cursorPosition);
-
-				/*var extraLength = cursorPosition - currentNode.SourcePosition.IndexEnd - 1;
-				if (extraLength > 0)
-				{
-					var substring = statementText.Substring(currentNode.SourcePosition.IndexEnd + 1, extraLength).Trim();
-					if (!String.IsNullOrEmpty(substring))
-					{
-						return EmptyCollection;
-					}
-				}*/
 
 				if (completionType.InUnparsedData)
 					return EmptyCollection;
@@ -155,7 +144,6 @@ namespace SqlPad.Oracle
 			var oracleDatabaseModel = (OracleDatabaseModelBase)databaseModel;
 			var semanticModel = new OracleStatementSemanticModel(null, (OracleStatement)currentNode.Statement, oracleDatabaseModel);
 			var terminalCandidates = new HashSet<string>(_parser.GetTerminalCandidates(isCursorAtTerminal && !currentNode.Id.IsSingleCharacterTerminal() ? currentNode.PrecedingTerminal : currentNode));
-			//var terminalCandidatesNew = new HashSet<string>(_parser.GetTerminalCandidatesNew(isCursorAtTerminal && !currentNode.Id.IsSingleCharacterTerminal() ? currentNode.PrecedingTerminal : currentNode));
 
 			var cursorAtLastTerminal = cursorPosition <= currentNode.SourcePosition.IndexEnd + 1;
 			var terminalToReplace = cursorAtLastTerminal ? currentNode : null;
@@ -223,20 +211,6 @@ namespace SqlPad.Oracle
 					}
 				}
 			}
-
-			/*if ((currentNode.Id.In(Terminals.ObjectIdentifier, Terminals.ObjectAlias) ||
-			    (joinClauseNode != null && joinClauseNode.IsGrammarValid)) &&
-				!cursorAtLastTerminal)
-			{
-				var tableReference = currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.NestedQuery, NonTerminals.TableReference);
-				if ((tableReference != null && currentNode == tableReference.LastTerminalNode && tableReference.ParentNode.Id == NonTerminals.FromClause && tableReference == tableReference.ParentNode.ChildNodes.First()) ||
-					(joinClauseNode != null && joinClauseNode.IsGrammarValid))
-				{
-					completionItems = completionItems.Concat(
-						//JoinClauseTemplates.Where(j => alias == null || j.Name.Contains(alias.Token.Value.ToUpperInvariant()))
-						JoinClauseTemplates);
-				}
-			}*/
 
 			if (completionType.JoinType)
 			{

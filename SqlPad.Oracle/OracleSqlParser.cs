@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -28,18 +27,15 @@ namespace SqlPad.Oracle
 				OracleGrammar = (SqlGrammar)XmlSerializer.Deserialize(grammarReader);
 			}
 
-			/*var hashSet = new HashSet<string>();
-			foreach (var rule in _sqlGrammar.Rules)
+			StartingNonTerminalSequences = new Dictionary<string, SqlGrammarRuleSequence[]>();
+			foreach (var rule in OracleGrammar.Rules)
 			{
-				if (hashSet.Contains(rule.StartingNonTerminal))
-				{
-					
-				}
+				if (StartingNonTerminalSequences.ContainsKey(rule.StartingNonTerminal))
+					throw new InvalidOperationException(String.Format("Rule with starting non-terminal '{0}' has been already defined. ", rule.StartingNonTerminal));
 
-				hashSet.Add(rule.StartingNonTerminal);
-			}*/
+				StartingNonTerminalSequences.Add(rule.StartingNonTerminal, rule.Sequences);
+			}
 
-			StartingNonTerminalSequences = OracleGrammar.Rules.ToDictionary(r => r.StartingNonTerminal, r => r.Sequences);
 			/*var containsSequenceWithAllOptionalMembers = _startingNonTerminalSequences.Values.SelectMany(s => s)
 				.Any(s => s.Items.All(i => (i as SqlGrammarRuleSequenceTerminal != null && !((SqlGrammarRuleSequenceTerminal)i).IsRequired) ||
 				                           (i as SqlGrammarRuleSequenceNonTerminal != null && !((SqlGrammarRuleSequenceNonTerminal)i).IsRequired)));

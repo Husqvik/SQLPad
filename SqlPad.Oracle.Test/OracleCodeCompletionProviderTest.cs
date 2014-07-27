@@ -643,7 +643,8 @@ FROM
 
 			_documentRepository.UpdateStatements(query1);
 			var items = _codeCompletionProvider.ResolveFunctionOverloads(_documentRepository, 18).ToList();
-			items.Count.ShouldBe(0);
+			items.Count.ShouldBe(3);
+			items.ForEach(i => i.CurrentParameterIndex.ShouldBe(1));
 		}
 
 		[Test(Description = @"")]

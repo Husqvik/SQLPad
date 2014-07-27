@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
+using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
 namespace SqlPad.Oracle
 {
@@ -14,6 +16,8 @@ namespace SqlPad.Oracle
 		public bool Schema { get; private set; }
 
 		public bool SchemaDataObject { get; private set; }
+		
+		public bool Sequence { get; private set; }
 		
 		public bool PipelinedFunction { get; private set; }
 		
@@ -93,21 +97,21 @@ namespace SqlPad.Oracle
 			}
 
 			var terminalCandidates = new HashSet<string>(_parser.GetTerminalCandidates(isCursorAfterToken ? nearestTerminal : precedingTerminal));
-			Schema = terminalCandidates.Contains(OracleGrammarDescription.Terminals.SchemaIdentifier);
-			Program = Column = terminalCandidates.Contains(OracleGrammarDescription.Terminals.Identifier);
-			JoinType = !isCursorTouchingTwoTerminals && terminalCandidates.Contains(OracleGrammarDescription.Terminals.Join);
+			Schema = terminalCandidates.Contains(Terminals.SchemaIdentifier);
+			Program = Column = terminalCandidates.Contains(Terminals.Identifier);
+			JoinType = !isCursorTouchingTwoTerminals && terminalCandidates.Contains(Terminals.Join);
 
-			var isWithinFromClause = nearestTerminal.GetPathFilterAncestor(n => n.Id != OracleGrammarDescription.NonTerminals.QueryBlock, OracleGrammarDescription.NonTerminals.FromClause) != null || (isCursorAfterToken && nearestTerminal.Id == OracleGrammarDescription.Terminals.From);
-			var isWithinJoinCondition = nearestTerminal.GetPathFilterAncestor(n => n.Id != OracleGrammarDescription.NonTerminals.JoinClause, OracleGrammarDescription.NonTerminals.JoinColumnsOrCondition) != null;
-			SchemaDataObject = isWithinFromClause && !isWithinJoinCondition && terminalCandidates.Contains(OracleGrammarDescription.Terminals.ObjectIdentifier);
+			var isWithinFromClause = nearestTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.FromClause) != null || (isCursorAfterToken && nearestTerminal.Id == Terminals.From);
+			var isWithinJoinCondition = nearestTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.JoinClause, NonTerminals.JoinColumnsOrCondition) != null;
+			SchemaDataObject = isWithinFromClause && !isWithinJoinCondition && terminalCandidates.Contains(Terminals.ObjectIdentifier);
 
-			var isWithinJoinClause = nearestTerminal.GetPathFilterAncestor(n => n.Id != OracleGrammarDescription.NonTerminals.FromClause, OracleGrammarDescription.NonTerminals.JoinClause) != null;
-			JoinCondition = isWithinJoinClause && isCursorAfterToken && (terminalCandidates.Contains(OracleGrammarDescription.Terminals.On) || nearestTerminal.Id == OracleGrammarDescription.Terminals.On);
+			var isWithinJoinClause = nearestTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.FromClause, NonTerminals.JoinClause) != null;
+			JoinCondition = isWithinJoinClause && isCursorAfterToken && (terminalCandidates.Contains(Terminals.On) || nearestTerminal.Id == Terminals.On);
 
-			var isWithinSelectList = (nearestTerminal.Id == OracleGrammarDescription.Terminals.Select && isCursorAfterToken) || nearestTerminal.GetPathFilterAncestor(n => n.Id != OracleGrammarDescription.NonTerminals.QueryBlock, OracleGrammarDescription.NonTerminals.SelectList) != null;
-			AllColumns = isWithinSelectList && terminalCandidates.Contains(OracleGrammarDescription.Terminals.Asterisk);
+			var isWithinSelectList = (nearestTerminal.Id == Terminals.Select && isCursorAfterToken) || nearestTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.SelectList) != null;
+			AllColumns = isWithinSelectList && terminalCandidates.Contains(Terminals.Asterisk);
 
-			SchemaDataObjectReference = !isWithinFromClause && terminalCandidates.Contains(OracleGrammarDescription.Terminals.ObjectIdentifier);
+			SchemaDataObjectReference = !isWithinFromClause && terminalCandidates.Contains(Terminals.ObjectIdentifier);
 		}
 
 		public void PrintSupportedCompletions()

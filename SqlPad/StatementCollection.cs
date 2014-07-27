@@ -28,7 +28,7 @@ namespace SqlPad
 
 		public StatementGrammarNode GetTerminalAtPosition(int position, Func<StatementGrammarNode, bool> filter = null)
 		{
-			var node = GetNodeAtPosition(position, filter);
+			var node = GetNodeAtPosition(position, n => n.Type == NodeType.Terminal && (filter == null || filter(n)));
 			return node == null || node.Type == NodeType.NonTerminal ? null : node;
 		}
 	}

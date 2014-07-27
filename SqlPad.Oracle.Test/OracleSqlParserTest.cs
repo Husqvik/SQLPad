@@ -1561,6 +1561,45 @@ FROM DUAL";
 			terminals[3].Token.Value.ShouldBe("Q'_Value_'");
 		}
 
+		[Test(Description = @"Tests timestamp <value> AT TIME ZONE <value>. ")]
+		public void TestTimestampAtTimeZone()
+		{
+			const string query1 = "SELECT TIMESTAMP '1999-10-29 01:30:00' AT TIME ZONE 'US/Pacific' FROM DUAL";
+			var result = Parser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			var statement = result.Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			// TODO: Precise assertions
+		}
+
+		[Test(Description = @"Tests year to month interval. ")]
+		public void TestYearToMonthInterval()
+		{
+			const string query1 = "SELECT INTERVAL '5-3' YEAR TO MONTH + INTERVAL'20' MONTH FROM DUAL";
+			var result = Parser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			var statement = result.Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			// TODO: Precise assertions
+		}
+
+		[Test(Description = @"Tests day to second interval. ")]
+		public void TestDayToSecondInterval()
+		{
+			const string query1 = "SELECT INTERVAL '4 5:12:10.2222' DAY(1) TO SECOND(3) + INTERVAL '1234.5678' SECOND(9) FROM DUAL";
+			var result = Parser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			var statement = result.Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			// TODO: Precise assertions
+		}
+
 		[Test(Description = @"")]
 		public void TestSelectListWhenEnteringNewColumnsBeforeFromTerminal()
 		{
@@ -1916,7 +1955,7 @@ FROM DUAL";
 					new[]
 					{
 						Terminals.As,
-						Terminals.At,
+						Terminals.AtCharacter,
 						Terminals.Comma,
 						Terminals.Connect,
 						Terminals.Cross,
@@ -1982,6 +2021,7 @@ FROM DUAL";
 						Terminals.Extract,
 						Terminals.FirstValue,
 						Terminals.Identifier,
+						Terminals.Interval,
 						Terminals.Lag,
 						Terminals.LastValue,
 						Terminals.Lead,

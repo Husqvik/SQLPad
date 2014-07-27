@@ -60,6 +60,26 @@ namespace SqlPad
 				? node.ParentNode._childNodes[index]
 				: GetPrecedingNode(node.ParentNode);
 		}
+
+		public StatementGrammarNode FollowingTerminal
+		{
+			get
+			{
+				var followingNode = GetFollowingNode(this);
+				return followingNode == null ? null : followingNode.FirstTerminalNode;
+			}
+		}
+
+		private StatementGrammarNode GetFollowingNode(StatementGrammarNode node)
+		{
+			if (node.ParentNode == null)
+				return null;
+
+			var index = node.ParentNode._childNodes.IndexOf(node) + 1;
+			return index < node.ParentNode._childNodes.Count
+				? node.ParentNode._childNodes[index]
+				: GetFollowingNode(node.ParentNode);
+		}
 		
 		//public StatementGrammarNode NextTerminal { get; private set; }
 
@@ -275,6 +295,11 @@ namespace SqlPad
 				{
 					returnedNodes.AddRange(GetChildNodesAtPosition(childNodeAtPosition, position));
 				}
+			}
+
+			if (returnedNodes.Count == 0)
+			{
+				returnedNodes.Add(node);
 			}
 
 			return returnedNodes;

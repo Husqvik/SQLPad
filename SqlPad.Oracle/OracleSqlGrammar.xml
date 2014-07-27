@@ -958,6 +958,7 @@
         <Sequence>
           <Terminal Id="Timestamp" />
           <Terminal Id="StringLiteral" />
+          <NonTerminal Id="TimestampAtTimeZone" IsOptional="true" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
@@ -967,6 +968,10 @@
         </Sequence>
         <Sequence>
           <Terminal Id="SystemDate" />
+          <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="IntervalExpression" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
@@ -982,6 +987,125 @@
           <NonTerminal Id="PrefixedColumnReference" />
           <NonTerminal Id="MultisetOperatorClause" IsOptional="true" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="TimestampAtTimeZone">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="At" />
+          <Terminal Id="Time" />
+          <Terminal Id="Zone" />
+          <Terminal Id="StringLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="IntervalExpression">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Interval" />
+          <Terminal Id="StringLiteral" />
+          <NonTerminal Id="YearToMonthOrDayToSecond" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="YearToMonthOrDayToSecond">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="IntervalYearToMonth" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="IntervalDayToSecond" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="IntervalYearToMonth">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="YearOrMonth" />
+          <NonTerminal Id="DataTypeSimplePrecision" IsOptional="true" />
+          <NonTerminal Id="ToYearOrMonth" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="IntervalDayToSecond">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="DayOrHourOrMinuteOrSecondWithLeadingPrecision" />
+          <NonTerminal Id="ToDayOrHourOrMinuteOrSecondWithPrecision" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ToYearOrMonth">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="To" />
+          <NonTerminal Id="YearOrMonth" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="YearOrMonth">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Year" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Month" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="DayOrHourOrMinuteOrSecondWithLeadingPrecision">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="DayOrHourOrMinute" />
+          <NonTerminal Id="DataTypeSimplePrecision" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Second" />
+          <NonTerminal Id="DataTypeIntervalPrecisionAndScale" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="DayOrHourOrMinute">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Day" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Hour" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Minute" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ToDayOrHourOrMinuteOrSecondWithPrecision">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="To" />
+          <NonTerminal Id="DayOrHourOrMinuteOrSecondWithPrecision" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="DayOrHourOrMinuteOrSecondWithPrecision">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="DayOrHourOrMinute" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Second" />
+          <NonTerminal Id="DataTypeSimplePrecision" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -1116,14 +1240,14 @@
         </Sequence>
         <Sequence>
           <Terminal Id="Decimal" />
-          <NonTerminal Id="DataTypePrecisionAndScale" IsOptional="true" />
+          <NonTerminal Id="DataTypeNumericPrecisionAndScale" IsOptional="true" />
         </Sequence>
         <Sequence>
           <Terminal Id="Smallint" />
         </Sequence>
         <Sequence>
           <Terminal Id="Number" />
-          <NonTerminal Id="DataTypePrecisionAndScale" IsOptional="true" />
+          <NonTerminal Id="DataTypeNumericPrecisionAndScale" IsOptional="true" />
         </Sequence>
         <Sequence>
           <Terminal Id="Integer" />
@@ -1188,11 +1312,22 @@
       </Sequences>
     </Rule>
 
-    <Rule StartingNonTerminal="DataTypePrecisionAndScale">
+    <Rule StartingNonTerminal="DataTypeNumericPrecisionAndScale">
       <Sequences>
         <Sequence>
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="IntegerOrAsterisk" />
+          <NonTerminal Id="Scale" IsOptional="true" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="DataTypeIntervalPrecisionAndScale">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <Terminal Id="IntegerLiteral" />
           <NonTerminal Id="Scale" IsOptional="true" />
           <Terminal Id="RightParenthesis" />
         </Sequence>
@@ -1879,7 +2014,7 @@
     <Rule StartingNonTerminal="DatabaseLink">
       <Sequences>
         <Sequence>
-          <Terminal Id="At" />
+          <Terminal Id="AtCharacter" />
           <Terminal Id="DatabaseLinkIdentifier" />
         </Sequence>
       </Sequences>
@@ -3794,7 +3929,7 @@
     <Terminal Id="Semicolon" Value=";" />
     <Terminal Id="Colon" Value=":" />
     <Terminal Id="Asterisk" Value="*" />
-    <Terminal Id="At" Value="@" />
+    <Terminal Id="AtCharacter" Value="@" />
     <Terminal Id="Space" RegexValue="[:space:]+" />
     <Terminal Id="Union" Value="UNION" IsKeyword="true" />
     <Terminal Id="All" Value="ALL" IsKeyword="true" />
@@ -4132,6 +4267,8 @@
     <Terminal Id="Raw" Value="RAW" IsKeyword="true" />
     <Terminal Id="Varchar" Value="VARCHAR" IsKeyword="true" />
     <Terminal Id="NVarchar" Value="NVARCHAR" />
+    <Terminal Id="Interval" Value="INTERVAL" />
+    <Terminal Id="At" Value="AT" />
     <Terminal Id="Time" Value="TIME" />
     <Terminal Id="Zone" Value="ZONE" />
     <Terminal Id="Exclusive" Value="EXCLUSIVE" IsKeyword="true" />
