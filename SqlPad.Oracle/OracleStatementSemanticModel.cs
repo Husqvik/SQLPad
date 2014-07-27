@@ -367,7 +367,7 @@ namespace SqlPad.Oracle
 		private void ResolveFunctionReferences(OracleQueryBlock queryBlock)
 		{
 			var functionsTransferredToTypes = new List<OracleProgramReference>();
-			foreach (var functionReference in queryBlock.AllFunctionReferences)
+			foreach (var functionReference in queryBlock.AllProgramReferences)
 			{
 				if (UpdateFunctionReferenceWithMetadata(functionReference) != null)
 					continue;

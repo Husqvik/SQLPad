@@ -33,7 +33,7 @@ namespace SqlPad.Oracle.Commands
 				.Where(c => selectedTerminals.Contains(c.ColumnNode))
 				.ToDictionary(c => c.ColumnNode, c => c);
 
-			var functionReferences = CurrentQueryBlock.AllFunctionReferences
+			var functionReferences = CurrentQueryBlock.AllProgramReferences
 				.Where(c => selectedTerminals.Contains(c.FunctionIdentifierNode))
 				.ToDictionary(c => c.FunctionIdentifierNode, c => c);
 

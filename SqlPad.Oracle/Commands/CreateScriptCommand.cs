@@ -1,9 +1,10 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Oracle.DataAccess.Client;
 using SqlPad.Commands;
+using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
 namespace SqlPad.Oracle.Commands
 {
@@ -20,7 +21,7 @@ namespace SqlPad.Oracle.Commands
 
 		protected override bool CanExecute()
 		{
-			if (CurrentNode == null || CurrentQueryBlock == null || CurrentNode.Id != OracleGrammarDescription.Terminals.ObjectIdentifier)
+			if (CurrentNode == null || CurrentQueryBlock == null || !CurrentNode.Id.In(Terminals.ObjectIdentifier, Terminals.Identifier))
 				return false;
 
 			_objectReference = CurrentQueryBlock.AllColumnReferences
@@ -30,9 +31,18 @@ namespace SqlPad.Oracle.Commands
 
 			if (_objectReference == null)
 			{
-				_objectReference = CurrentQueryBlock.ObjectReferences
+				_objectReference = ((IEnumerable<OracleObjectWithColumnsReference>)CurrentQueryBlock.ObjectReferences)
+					.Concat(CurrentQueryBlock.AllSequenceReferences)
 					.Where(o => o.ObjectNode == CurrentNode && o.SchemaObject != null)
 					.Select(o => o.SchemaObject)
+					.FirstOrDefault();
+			}
+
+			if (_objectReference == null)
+			{
+				_objectReference = CurrentQueryBlock.AllProgramReferences
+					.Where(p => (p.FunctionIdentifierNode == CurrentNode && p.SchemaObject.Type == OracleSchemaObjectType.Function) || (p.ObjectNode == CurrentNode && p.SchemaObject.Type == OracleSchemaObjectType.Package))
+					.Select(p => p.SchemaObject)
 					.FirstOrDefault();
 			}
 
@@ -53,21 +63,7 @@ namespace SqlPad.Oracle.Commands
 		{
 			var databaseModel = (OracleDatabaseModelBase)ExecutionContext.DocumentRepository.ValidationModels[CurrentNode.Statement].SemanticModel.DatabaseModel;
 
-			string script;
-
-			try
-			{
-				script = await databaseModel.GetObjectScriptAsync(_objectReference, cancellationToken);
-			}
-			catch (OracleException e)
-			{
-				if (e.Number == OracleDatabaseModel.OracleErrorCodeUserInvokedCancellation)
-				{
-					return;
-				}
-				
-				throw;
-			}
+			var script = await databaseModel.GetObjectScriptAsync(_objectReference, cancellationToken);
 
 			var indextStart = CurrentQueryBlock.Statement.LastTerminalNode.SourcePosition.IndexEnd + 1;
 

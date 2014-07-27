@@ -135,7 +135,7 @@ namespace SqlPad.Oracle
 
 		private string GetFunctionToolTip(OracleQueryBlock queryBlock, StatementGrammarNode terminal)
 		{
-			var functionReference = queryBlock.AllFunctionReferences.SingleOrDefault(f => f.FunctionIdentifierNode == terminal);
+			var functionReference = queryBlock.AllProgramReferences.SingleOrDefault(f => f.FunctionIdentifierNode == terminal);
 			return functionReference == null || functionReference.Metadata == null ? null : functionReference.Metadata.Identifier.FullyQualifiedIdentifier;
 		}
 
@@ -147,7 +147,7 @@ namespace SqlPad.Oracle
 
 		private OracleSchemaObject GetSchemaObjectReference(OracleQueryBlock queryBlock, StatementGrammarNode terminal)
 		{
-			return queryBlock.AllFunctionReferences
+			return queryBlock.AllProgramReferences
 				.Cast<OracleReference>()
 				.Concat(queryBlock.AllSequenceReferences)
 				.Where(f => f.ObjectNode == terminal)

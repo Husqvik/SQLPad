@@ -505,7 +505,7 @@ TABLESPACE ""TBS_HQ_PDB""";
 			return ColumnHeaders;
 		}
 
-		public override Task<string> GetObjectScriptAsync(OracleSchemaObject schemaObject, CancellationToken cancellationToken)
+		public override Task<string> GetObjectScriptAsync(OracleSchemaObject schemaObject, CancellationToken cancellationToken, bool suppressUserCancellationException = true)
 		{
 			var source = new TaskCompletionSource<string>();
 			source.SetResult(SelectionTableCreateScript);

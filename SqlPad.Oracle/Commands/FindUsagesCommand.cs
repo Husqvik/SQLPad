@@ -126,14 +126,14 @@ namespace SqlPad.Oracle.Commands
 
 		private ICollection<StatementGrammarNode> GetFunctionReferenceUsage()
 		{
-			var functionReference = _queryBlock.AllFunctionReferences
+			var functionReference = _queryBlock.AllProgramReferences
 				.FirstOrDefault(f => f.FunctionIdentifierNode == _currentNode && f.Metadata != null);
 
 			if (functionReference == null)
 				return new StatementGrammarNode[0];
 
 			return _semanticModel.QueryBlocks
-				.SelectMany(qb => qb.AllFunctionReferences)
+				.SelectMany(qb => qb.AllProgramReferences)
 				.Where(f => f.Metadata == functionReference.Metadata)
 				.Select(f => f.FunctionIdentifierNode)
 				.ToArray();

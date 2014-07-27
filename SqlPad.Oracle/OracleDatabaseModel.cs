@@ -170,7 +170,7 @@ namespace SqlPad.Oracle
 			return _backgroundTask;
 		}
 
-		public async override Task<string> GetObjectScriptAsync(OracleSchemaObject schemaObject, CancellationToken cancellationToken)
+		public async override Task<string> GetObjectScriptAsync(OracleSchemaObject schemaObject, CancellationToken cancellationToken, bool suppressUserCancellationException = true)
 		{
 			using (var connection = new OracleConnection(_oracleConnectionString.ConnectionString))
 			{
@@ -181,11 +181,23 @@ namespace SqlPad.Oracle
 
 					command.AddSimpleParameter("OBJECT_TYPE", schemaObject.Type.ToUpperInvariant())
 						.AddSimpleParameter("NAME", schemaObject.FullyQualifiedName.Name.Trim('"'))
-						.AddSimpleParameter("SCHEMA", schemaObject.FullyQualifiedName.Owner == SchemaPublic ? null : schemaObject.FullyQualifiedName.Owner.Trim('"'));
+						.AddSimpleParameter("SCHEMA", schemaObject.FullyQualifiedName.Owner.Trim('"'));
 
 					connection.Open();
 
-					return (string)await command.ExecuteScalarAsynchronous(cancellationToken);
+					try
+					{
+						return (string)await command.ExecuteScalarAsynchronous(cancellationToken);
+					}
+					catch (OracleException e)
+					{
+						if (suppressUserCancellationException && e.Number == OracleErrorCodeUserInvokedCancellation)
+						{
+							return null;
+						}
+
+						throw;
+					}
 				}
 			}
 		}

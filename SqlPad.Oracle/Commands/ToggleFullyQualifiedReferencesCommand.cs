@@ -37,7 +37,7 @@ namespace SqlPad.Oracle.Commands
 
 		private IEnumerable<TextSegment> GetMissingFunctionQualifications()
 		{
-			return CurrentQueryBlock.AllFunctionReferences
+			return CurrentQueryBlock.AllProgramReferences
 				.Where(f => f.OwnerNode == null && f.Metadata != null && !f.Metadata.IsBuiltIn)
 				.Select(f =>
 					new TextSegment

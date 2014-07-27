@@ -38,7 +38,7 @@ namespace SqlPad.Oracle
 			var semanticModel = (OracleStatementSemanticModel)sqlDocumentRepository.ValidationModels[node.Statement].SemanticModel;
 			var oracleDatabaseModel = semanticModel.DatabaseModel;
 			var queryBlock = semanticModel.GetQueryBlock(cursorPosition);
-			var functionReference = queryBlock.AllFunctionReferences.FirstOrDefault(f => node.HasAncestor(f.RootNode));
+			var functionReference = queryBlock.AllProgramReferences.FirstOrDefault(f => node.HasAncestor(f.RootNode));
 			if (functionReference == null || functionReference.Metadata == null)
 				return emptyCollection;
 
@@ -301,7 +301,7 @@ namespace SqlPad.Oracle
 
 			var currentName = partialName == null ? null : currentNode.Token.Value;
 
-			var functionReference = queryBlock.AllFunctionReferences.SingleOrDefault(f => f.FunctionIdentifierNode == currentNode);
+			var functionReference = queryBlock.AllProgramReferences.SingleOrDefault(f => f.FunctionIdentifierNode == currentNode);
 			var addParameterList = functionReference == null;
 
 			var tableReferences = queryBlock.ObjectReferences;

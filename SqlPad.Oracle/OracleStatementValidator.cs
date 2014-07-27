@@ -46,7 +46,7 @@ namespace SqlPad.Oracle
 
 				ResolveColumnNodeValidities(validationModel, null, queryBlock.ColumnReferences);
 
-				foreach (var functionReference in queryBlock.AllFunctionReferences)
+				foreach (var functionReference in queryBlock.AllProgramReferences)
 				{
 					var metadataFound = functionReference.Metadata != null;
 					var semanticError = SemanticError.None;

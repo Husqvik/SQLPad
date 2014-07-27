@@ -78,7 +78,7 @@ namespace SqlPad.Oracle
 			{
 				return ObjectReferences.Select(o => o.OwnerNode)
 					.Concat(AllColumnReferences.Select(c => c.OwnerNode))
-					.Concat(AllFunctionReferences.Select(f => f.OwnerNode))
+					.Concat(AllProgramReferences.Select(f => f.OwnerNode))
 					.Any(n => n != null);
 			}
 		}
@@ -95,7 +95,7 @@ namespace SqlPad.Oracle
 
 		public ICollection<OracleSelectListColumn> Columns { get; private set; }
 		
-		public IEnumerable<OracleProgramReference> AllFunctionReferences { get { return Columns.SelectMany(c => c.FunctionReferences).Concat(FunctionReferences); } }
+		public IEnumerable<OracleProgramReference> AllProgramReferences { get { return Columns.SelectMany(c => c.FunctionReferences).Concat(FunctionReferences); } }
 
 		public IEnumerable<OracleColumnReference> AllColumnReferences { get { return Columns.SelectMany(c => c.ColumnReferences).Concat(ColumnReferences); } }
 

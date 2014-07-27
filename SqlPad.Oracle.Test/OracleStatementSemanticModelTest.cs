@@ -156,7 +156,7 @@ FROM
 			semanticModel.QueryBlocks.ShouldNotBe(null);
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
 
-			var functionReferences = semanticModel.QueryBlocks.Single().AllFunctionReferences.ToArray();
+			var functionReferences = semanticModel.QueryBlocks.Single().AllProgramReferences.ToArray();
 			functionReferences.Length.ShouldBe(3);
 			var countFunction = functionReferences[0];
 			countFunction.FunctionIdentifierNode.Id.ShouldBe(Terminals.Count);
@@ -187,7 +187,7 @@ FROM
 			semanticModel.QueryBlocks.ShouldNotBe(null);
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
 
-			var functionReferences = semanticModel.QueryBlocks.Single().AllFunctionReferences.ToArray();
+			var functionReferences = semanticModel.QueryBlocks.Single().AllProgramReferences.ToArray();
 			functionReferences.Length.ShouldBe(1);
 			var lagFunction = functionReferences[0];
 			lagFunction.FunctionIdentifierNode.Id.ShouldBe(Terminals.Lag);
@@ -298,7 +298,7 @@ FROM
 			semanticModel.QueryBlocks.ShouldNotBe(null);
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
 
-			var functionReferences = semanticModel.QueryBlocks.Single().AllFunctionReferences.ToArray();
+			var functionReferences = semanticModel.QueryBlocks.Single().AllProgramReferences.ToArray();
 			functionReferences.Length.ShouldBe(1);
 			var maxFunction = functionReferences[0];
 			maxFunction.FunctionIdentifierNode.Id.ShouldBe(Terminals.Max);
