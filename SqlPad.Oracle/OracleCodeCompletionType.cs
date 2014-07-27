@@ -48,6 +48,8 @@ namespace SqlPad.Oracle
 		
 		public string TerminalValueUnderCursor { get; private set; }
 
+		public ReferenceIdentifier ReferenceIdentifier { get; private set; }
+
 		public OracleCodeCompletionType(StatementCollection statementCollection, string statementText, int cursorPosition)
 		{
 			var statement = (OracleStatement)(statementCollection.GetStatementAtPosition(cursorPosition) ?? statementCollection.LastOrDefault());
@@ -112,10 +114,60 @@ namespace SqlPad.Oracle
 			AllColumns = isWithinSelectList && terminalCandidates.Contains(Terminals.Asterisk);
 
 			SchemaDataObjectReference = !isWithinFromClause && terminalCandidates.Contains(Terminals.ObjectIdentifier);
+
+			if (!isCursorAfterToken)
+			{
+				AnalyzeObjectReferencePrefixes();
+			}
+		}
+
+		private void AnalyzeObjectReferencePrefixes()
+		{
+			AnalyzePrefixedColumnReference();
+
+			AnalyzeQueryTableExpression();
+		}
+
+		private void AnalyzePrefixedColumnReference()
+		{
+			var prefixedColumnReference = CurrentTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference);
+			if (prefixedColumnReference == null)
+				return;
+
+			var identifiers = prefixedColumnReference.GetPathFilterDescendants(n => n.Id != NonTerminals.Expression, Terminals.SchemaIdentifier, Terminals.ObjectIdentifier, Terminals.Identifier).ToArray();
+			ReferenceIdentifier = BuildReferenceIdentifier(identifiers);
+		}
+
+		private ReferenceIdentifier BuildReferenceIdentifier(ICollection<StatementGrammarNode> identifiers)
+		{
+			return
+				new ReferenceIdentifier
+				{
+					SchemaIdentifier = GetIdentifierTokenValue(identifiers, Terminals.SchemaIdentifier),
+					ObjectIdentifier = GetIdentifierTokenValue(identifiers, Terminals.ObjectIdentifier),
+					Identifier = GetIdentifierTokenValue(identifiers, Terminals.Identifier)
+				};
+		}
+
+		private StatementGrammarNode GetIdentifierTokenValue(IEnumerable<StatementGrammarNode> identifiers, string identifierId)
+		{
+			return identifiers.FirstOrDefault(i => i.Id == identifierId);
+		}
+
+		private void AnalyzeQueryTableExpression()
+		{
+			var queryTableExpression = CurrentTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.InnerTableReference, NonTerminals.QueryTableExpression);
+			if (queryTableExpression == null)
+				return;
+
+			var identifiers = queryTableExpression.GetPathFilterDescendants(n => !n.Id.In(NonTerminals.Expression, NonTerminals.NestedQuery), Terminals.SchemaIdentifier, Terminals.ObjectIdentifier, Terminals.Identifier).ToArray();
+			ReferenceIdentifier = BuildReferenceIdentifier(identifiers);
 		}
 
 		public void PrintSupportedCompletions()
 		{
+			Trace.WriteLine(ReferenceIdentifier.ToString());
+
 			if (!Any)
 			{
 				Trace.WriteLine("No completions available");
@@ -154,6 +206,45 @@ namespace SqlPad.Oracle
 			builder.Append(Program);
 
 			Trace.WriteLine(builder.ToString());
+		}
+	}
+
+	public struct ReferenceIdentifier
+	{
+		public StatementGrammarNode SchemaIdentifier { get; set; }
+		public StatementGrammarNode ObjectIdentifier { get; set; }
+		public StatementGrammarNode Identifier { get; set; }
+
+		public string SchemaIdentifierValue { get { return SchemaIdentifier == null ? null : SchemaIdentifier.Token.Value; } }
+		public string ObjectIdentifierValue { get { return ObjectIdentifier == null ? null : ObjectIdentifier.Token.Value; } }
+		public string IdentifierValue { get { return Identifier == null ? null : Identifier.Token.Value; } }
+
+		public override string ToString()
+		{
+			var builder = new StringBuilder(98);
+			if (SchemaIdentifier != null)
+			{
+				builder.Append(SchemaIdentifierValue);
+				builder.Append(".");
+			}
+
+			if (ObjectIdentifier != null)
+			{
+				builder.Append(ObjectIdentifierValue);
+				builder.Append(".");
+			}
+
+			if (Identifier != null)
+			{
+				builder.Append(IdentifierValue);
+			}
+
+			if (builder.Length == 0)
+			{
+				builder.Append("No reference identifier has been identified. ");
+			}
+
+			return builder.ToString();
 		}
 	}
 }

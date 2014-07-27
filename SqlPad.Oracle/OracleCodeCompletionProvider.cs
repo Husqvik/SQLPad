@@ -31,19 +31,22 @@ namespace SqlPad.Oracle
 		public ICollection<FunctionOverloadDescription> ResolveFunctionOverloads(SqlDocumentRepository sqlDocumentRepository, int cursorPosition)
 		{
 			var emptyCollection = new FunctionOverloadDescription[0];
-			var node = sqlDocumentRepository.Statements.GetNodeAtPosition(cursorPosition/*, n => !n.Id.In(Terminals.Comma, Terminals.RightParenthesis)*/);
+			var node = sqlDocumentRepository.Statements.GetNodeAtPosition(cursorPosition);
 			if (node == null)
 				return emptyCollection;
 
 			var semanticModel = (OracleStatementSemanticModel)sqlDocumentRepository.ValidationModels[node.Statement].SemanticModel;
 			var oracleDatabaseModel = semanticModel.DatabaseModel;
 			var queryBlock = semanticModel.GetQueryBlock(cursorPosition);
-			var programReference = queryBlock.AllProgramReferences.FirstOrDefault(f => node.HasAncestor(f.RootNode));
+			var programReference = queryBlock.AllProgramReferences.Where(f => node.HasAncestor(f.ParameterListNode))
+				.OrderByDescending(r => r.RootNode.Level)
+				.FirstOrDefault();
+			
 			if (programReference == null || programReference.Metadata == null)
 				return emptyCollection;
 
 			var currentParameterIndex = -1;
-			if (programReference.ParameterNodes != null && programReference.ParameterNodes.Count > 0)
+			if (programReference.ParameterNodes != null)
 			{
 				var lookupNode = node.Type == NodeType.Terminal ? node : node.GetNearestTerminalToPosition(cursorPosition);
 
@@ -63,7 +66,9 @@ namespace SqlPad.Oracle
 				if (lookupNode != null)
 				{
 					var parameterNode = programReference.ParameterNodes.FirstOrDefault(f => lookupNode.HasAncestor(f));
-					currentParameterIndex = programReference.ParameterNodes.ToList().IndexOf(parameterNode);
+					currentParameterIndex = parameterNode == null
+						? programReference.ParameterNodes.Count
+						: programReference.ParameterNodes.ToList().IndexOf(parameterNode);
 				}
 			}
 

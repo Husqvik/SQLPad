@@ -556,7 +556,19 @@ namespace SqlPad.Oracle
 
 					using (var task = command.ExecuteReaderAsynchronous(CommandBehavior.CloseConnection, _backgroundTaskCancellationTokenSource.Token))
 					{
-						task.Wait();
+						try
+						{
+							task.Wait();
+						}
+						catch (AggregateException)
+						{
+							if (task.IsCanceled)
+							{
+								yield break;
+							}
+							
+							throw;
+						}
 
 						using (var reader = task.Result)
 						{

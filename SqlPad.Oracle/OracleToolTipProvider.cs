@@ -29,6 +29,10 @@ namespace SqlPad.Oracle
 			else
 			{
 				var queryBlock = ((OracleStatementSemanticModel)validationModel.SemanticModel).GetQueryBlock(node);
+				if (queryBlock == null)
+				{
+					return null;
+				}
 
 				switch (node.Id)
 				{
