@@ -53,15 +53,15 @@ namespace SqlPad
 			return Path.Combine(CacheDirectory, fileName);
 		}
 
-		public static bool TryLoadMetadata(string fileName, out string metadata)
+		public static bool TryLoadMetadata(string fileName, out Stream stream)
 		{
 			var fullName = GetFullFileName(fileName);
 
-			metadata = null;
+			stream = null;
 			if (!File.Exists(fullName))
 				return false;
 
-			metadata = File.ReadAllText(fullName);
+			stream = File.OpenRead(fullName);
 			return true;
 		}
 

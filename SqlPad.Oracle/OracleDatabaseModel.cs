@@ -20,7 +20,6 @@ namespace SqlPad.Oracle
 		private const string SqlFuntionMetadataFileName = "OracleSqlFunctionMetadataCollection_12_1_0_1_0.xml";
 		internal const int OracleErrorCodeUserInvokedCancellation = 1013;
 
-		private readonly object _lockObject = new object();
 		private readonly OracleConnectionStringBuilder _oracleConnectionString;
 		private readonly Timer _timer = new Timer(RefreshInterval * 60000);
 		private static readonly DataContractSerializer Serializer = new DataContractSerializer(typeof(OracleFunctionMetadataCollection));
@@ -43,6 +42,8 @@ namespace SqlPad.Oracle
 
 		private static readonly Dictionary<string, OracleDataDictionary> CachedDataDictionaries = new Dictionary<string, OracleDataDictionary>();
 		private static readonly Dictionary<string, OracleDatabaseModel> DatabaseModels = new Dictionary<string, OracleDatabaseModel>();
+		private static readonly HashSet<string> ActiveDataModelRefresh = new HashSet<string>();
+		private static readonly Dictionary<string, List<RefreshModel>> WaitingDataModelRefresh = new Dictionary<string, List<RefreshModel>>();
 
 		private OracleDatabaseModel(ConnectionStringSettings connectionString)
 		{
@@ -50,12 +51,24 @@ namespace SqlPad.Oracle
 			_oracleConnectionString = new OracleConnectionStringBuilder(connectionString.ConnectionString);
 			_currentSchema = _oracleConnectionString.UserID;
 
-			string metadata;
-			if (MetadataCache.TryLoadMetadata(SqlFuntionMetadataFileName, out metadata))
+			if (!WaitingDataModelRefresh.ContainsKey(CachedConnectionStringName))
 			{
-				using (var reader = XmlReader.Create(new StringReader(metadata)))
+				WaitingDataModelRefresh[CachedConnectionStringName] = new List<RefreshModel>();
+			}
+
+			Stream metadataStream;
+			if (MetadataCache.TryLoadMetadata(SqlFuntionMetadataFileName, out metadataStream))
+			{
+				try
 				{
-					BuiltInFunctionMetadata = (OracleFunctionMetadataCollection)Serializer.ReadObject(reader);
+					using (var reader = XmlReader.Create(metadataStream))
+					{
+						BuiltInFunctionMetadata = (OracleFunctionMetadataCollection)Serializer.ReadObject(reader);
+					}
+				}
+				finally
+				{
+					metadataStream.Dispose();
 				}
 			}
 			else
@@ -91,13 +104,7 @@ namespace SqlPad.Oracle
 			if (_isRefreshing)
 				return;
 
-			lock (_lockObject)
-			{
-				if (_isRefreshing)
-					return;
-
-				_backgroundTask = Task.Factory.StartNew(action);
-			}
+			_backgroundTask = Task.Factory.StartNew(action);
 		}
 
 		public OracleFunctionMetadataCollection BuiltInFunctionMetadata
@@ -153,21 +160,47 @@ namespace SqlPad.Oracle
 
 		public override Task Refresh(bool force = false)
 		{
-			if (_backgroundTask == null)
+			lock (ActiveDataModelRefresh)
 			{
-				ExecuteActionAsync(() => LoadSchemaObjectMetadata(force));
-			}
-			else
-			{
-				_backgroundTask = _backgroundTask.ContinueWith(
-					t =>
-					{
-						t.Dispose();
-						LoadSchemaObjectMetadata(force);
-					});
+				if (ActiveDataModelRefresh.Contains(CachedConnectionStringName))
+				{
+					var taskCompletionSource = new TaskCompletionSource<OracleDataDictionary>();
+					WaitingDataModelRefresh[CachedConnectionStringName].Add(new RefreshModel { DatabaseModel = this, TaskCompletionSource = taskCompletionSource });
+
+					Trace.WriteLine(String.Format("{0} - Cache for '{1}' is being loaded by other requester. Waiting until operation finishes. ", DateTime.Now, CachedConnectionStringName));
+
+					RaiseEvent(RefreshStarted);
+					return taskCompletionSource.Task.ContinueWith(t => RefreshTaskFinishedHandler(t.Result));
+				}
+
+				ActiveDataModelRefresh.Add(CachedConnectionStringName);
+
+				if (_backgroundTask == null)
+				{
+					ExecuteActionAsync(() => LoadSchemaObjectMetadata(force));
+				}
+				else
+				{
+					_backgroundTask = _backgroundTask.ContinueWith(
+						t =>
+						{
+							t.Dispose();
+							LoadSchemaObjectMetadata(force);
+						});
+				}
 			}
 
 			return _backgroundTask;
+		}
+
+		private void RefreshTaskFinishedHandler(OracleDataDictionary dataDictionary)
+		{
+			_dataDictionary = dataDictionary;
+			BuildAllFunctionMetadata();
+
+			RaiseEvent(RefreshFinished);
+
+			Trace.WriteLine(String.Format("{0} - Cache for '{1}' has been retrieved from the cache. ", DateTime.Now, CachedConnectionStringName));
 		}
 
 		public async override Task<string> GetObjectScriptAsync(OracleSchemaObject schemaObject, CancellationToken cancellationToken, bool suppressUserCancellationException = true)
@@ -283,9 +316,17 @@ namespace SqlPad.Oracle
 		{
 			BuiltInFunctionMetadata = GetFunctionMetadataCollection(DatabaseCommands.BuiltInFunctionMetadataCommandText, DatabaseCommands.BuiltInFunctionParameterMetadataCommandText, true);
 
-			using (var writer = XmlWriter.Create(MetadataCache.GetFullFileName(SqlFuntionMetadataFileName)))
+			lock (Serializer)
 			{
-				Serializer.WriteObject(writer, BuiltInFunctionMetadata);
+				if (File.Exists(MetadataCache.GetFullFileName(SqlFuntionMetadataFileName)))
+				{
+					return;
+				}
+
+				using (var writer = XmlWriter.Create(MetadataCache.GetFullFileName(SqlFuntionMetadataFileName)))
+				{
+					Serializer.WriteObject(writer, BuiltInFunctionMetadata);
+				}
 			}
 
 			/*var allFunctionMetadata = GetUserFunctionMetadata();
@@ -395,25 +436,22 @@ namespace SqlPad.Oracle
 			_userCommand = _userConnection.CreateCommand();
 			_userCommand.CommandText = String.Format("ALTER SESSION SET CURRENT_SCHEMA = {0}", _currentSchema);
 
-			lock (_lockObject)
+			try
 			{
-				try
+				_isExecuting = true;
+				_userConnection.Open();
+
+				_userCommand.ExecuteNonQuery();
+
+				_userCommand.CommandText = commandText;
+
+				return executeFunction(_userCommand);
+			}
+			finally
+			{
+				if (closeConnection && _userConnection.State != ConnectionState.Closed)
 				{
-					_isExecuting = true;
-					_userConnection.Open();
-
-					_userCommand.ExecuteNonQuery();
-
-					_userCommand.CommandText = commandText;
-
-					return executeFunction(_userCommand);
-				}
-				finally
-				{
-					if (closeConnection && _userConnection.State != ConnectionState.Closed)
-					{
-						_userConnection.Close();
-					}
+					_userConnection.Close();
 				}
 			}
 		}
@@ -538,6 +576,11 @@ namespace SqlPad.Oracle
 				throw new InvalidOperationException("No data reader available. ");
 		}
 
+		internal IEnumerable<T> ExecuteReader<T>(string commandText, Func<OracleDataReader, T> formatFunction)
+		{
+			return ExecuteReader(commandText, null, formatFunction);
+		}
+
 		private IEnumerable<T> ExecuteReader<T>(string commandText, Action<OracleCommand> configureCommandFunction, Func<OracleDataReader, T> formatFunction)
 		{
 			using (var connection = new OracleConnection(_oracleConnectionString.ConnectionString))
@@ -582,6 +625,38 @@ namespace SqlPad.Oracle
 			}
 		}
 
+		private void RaiseRefreshEvents()
+		{
+			List<RefreshModel> refreshModels;
+			if (!WaitingDataModelRefresh.TryGetValue(CachedConnectionStringName, out refreshModels))
+				return;
+
+			foreach (var refreshModel in refreshModels)
+			{
+				refreshModel.DatabaseModel._dataDictionary = _dataDictionary;
+				refreshModel.DatabaseModel.BuildAllFunctionMetadata();
+				refreshModel.DatabaseModel.RaiseEvent(refreshModel.DatabaseModel.RefreshFinished);
+				refreshModel.DatabaseModel.RaiseEvent(refreshModel.DatabaseModel.RefreshStarted);
+			}
+		}
+
+		private void SetRefreshTaskResults()
+		{
+			lock (ActiveDataModelRefresh)
+			{
+				List<RefreshModel> refreshModels;
+				if (WaitingDataModelRefresh.TryGetValue(CachedConnectionStringName, out refreshModels))
+				{
+					foreach (var refreshModel in refreshModels)
+					{
+						refreshModel.TaskCompletionSource.SetResult(_dataDictionary);
+					}
+				}
+
+				ActiveDataModelRefresh.Remove(CachedConnectionStringName);
+			}
+		}
+
 		private void LoadSchemaObjectMetadata(bool force)
 		{
 			TryLoadSchemaObjectMetadataFromCache();
@@ -589,10 +664,14 @@ namespace SqlPad.Oracle
 			//var otmp = _dataDictionary.AllObjects.Where(o => o.Key.NormalizedName.Contains("XMLTYPE")).ToArray();
 			//var customer = _dataDictionary.AllObjects.Where(o => o.Key.NormalizedName.Contains("CUSTOMER\"")).ToArray();
 
-			if (!IsRefreshNeeded && !force)
+			var isRefreshDone = !IsRefreshNeeded && !force;
+			if (isRefreshDone)
 			{
+				SetRefreshTaskResults();
 				return;
 			}
+
+			RaiseRefreshEvents();
 
 			var reason = force ? "has been forced to refresh" : (_dataDictionary.Timestamp > DateTime.MinValue ? "has expired" : "does not exist");
 			Trace.WriteLine(String.Format("{0} - Cache for '{1}' {2}. Cache refresh started. ", DateTime.Now, CachedConnectionStringName, reason));
@@ -601,268 +680,7 @@ namespace SqlPad.Oracle
 			var lastRefresh = DateTime.Now;
 			_isRefreshing = true;
 
-			var allObjects = new Dictionary<OracleObjectIdentifier, OracleSchemaObject>();
-
-			var schemaTypeMetadataSource = ExecuteReader(
-				DatabaseCommands.SelectTypesCommandText, null,
-				r =>
-				{
-					OracleTypeBase schemaType = null;
-					var typeType = (string)r["TYPECODE"];
-					switch (typeType)
-					{
-						case OracleTypeBase.XmlType:
-						case OracleTypeBase.ObjectType:
-							schemaType =
-								new OracleObjectType
-								{
-
-								};
-							break;
-						case OracleTypeBase.CollectionType:
-							schemaType =
-								new OracleCollectionType
-								{
-
-								};
-							break;
-					}
-
-					schemaType.FullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(r["OWNER"]), QualifyStringObject(r["TYPE_NAME"]));
-
-					return schemaType;
-				});
-
-			foreach (var schemaType in schemaTypeMetadataSource)
-			{
-				AddSchemaObjectToDictionary(allObjects, schemaType);
-			}
-
-			ExecuteReader(
-				DatabaseCommands.SelectAllObjectsCommandText, null,
-				r =>
-				{
-					var objectTypeIdentifer = OracleObjectIdentifier.Create(QualifyStringObject(r["OWNER"]), QualifyStringObject(r["OBJECT_NAME"]));
-					var objectType = (string)r["OBJECT_TYPE"];
-					var created = (DateTime)r["CREATED"];
-					var isValid = (string)r["STATUS"] == "VALID";
-					var lastDdl = (DateTime)r["LAST_DDL_TIME"];
-					var isTemporary = (string)r["TEMPORARY"] == "Y";
-					
-					OracleSchemaObject schemaObject;
-					if (objectType == OracleSchemaObjectType.Type)
-					{
-						if (allObjects.TryGetValue(objectTypeIdentifer, out schemaObject))
-						{
-							schemaObject.Created = created;
-							schemaObject.IsTemporary = isTemporary;
-							schemaObject.IsValid = isValid;
-							schemaObject.LastDdl = lastDdl;
-						}
-					}
-					else
-					{
-						schemaObject = OracleObjectFactory.CreateSchemaObjectMetadata(objectType, objectTypeIdentifer.NormalizedOwner, objectTypeIdentifer.NormalizedName, isValid, created, lastDdl, isTemporary);
-						AddSchemaObjectToDictionary(allObjects, schemaObject);
-					}
-
-					return schemaObject;
-				})
-				.ToArray();
-
-			ExecuteReader(
-				DatabaseCommands.SelectTablesCommandText, null,
-				r =>
-				{
-					var tableFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(r["OWNER"]), QualifyStringObject(r["TABLE_NAME"]));
-					OracleSchemaObject schemaObject;
-					if (!allObjects.TryGetValue(tableFullyQualifiedName, out schemaObject))
-					{
-						return null;
-					}
-
-					var table = (OracleTable)schemaObject;
-					table.Organization = (OrganizationType)Enum.Parse(typeof(OrganizationType), (string)r["ORGANIZATION"]);
-					return table;
-				})
-				.ToArray();
-
-			ExecuteReader(
-				DatabaseCommands.SelectSynonymTargetsCommandText, null,
-				r =>
-				{
-					var synonymFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(r["OWNER"]), QualifyStringObject(r["SYNONYM_NAME"]));
-					OracleSchemaObject synonymObject;
-					if (!allObjects.TryGetValue(synonymFullyQualifiedName, out synonymObject))
-					{
-						return null;
-					}
-
-					var objectFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(r["TABLE_OWNER"]), QualifyStringObject(r["TABLE_NAME"]));
-					OracleSchemaObject schemaObject;
-					if (!allObjects.TryGetValue(objectFullyQualifiedName, out schemaObject))
-					{
-						return null;
-					}
-
-					var synonym = (OracleSynonym)synonymObject;
-					synonym.SchemaObject = schemaObject;
-					schemaObject.Synonym = synonym;
-
-					return synonymObject;
-				}
-				).ToArray();
-
-			var columnMetadataSource = ExecuteReader(
-				DatabaseCommands.SelectTableColumnsCommandText, null,
-				r =>
-				{
-					var dataTypeOwnerRaw = r["DATA_TYPE_OWNER"];
-					var dataTypeOwner = dataTypeOwnerRaw == DBNull.Value ? null : String.Format("{0}.", dataTypeOwnerRaw);
-					var type = String.Format("{0}{1}", dataTypeOwner, r["DATA_TYPE"]);
-					var precisionRaw = r["DATA_PRECISION"];
-					var scaleRaw = r["DATA_SCALE"];
-					return new KeyValuePair<OracleObjectIdentifier, OracleColumn>(
-						OracleObjectIdentifier.Create(QualifyStringObject(r["OWNER"]), QualifyStringObject(r["TABLE_NAME"])),
-						new OracleColumn
-						{
-							Name = QualifyStringObject(r["COLUMN_NAME"]),
-							Nullable = (string)r["NULLABLE"] == "Y",
-							Type = type,
-							Size = Convert.ToInt32(r["DATA_LENGTH"]),
-							CharacterSize = Convert.ToInt32(r["CHAR_LENGTH"]),
-							Precision = precisionRaw == DBNull.Value ? null : (int?)Convert.ToInt32(precisionRaw),
-							Scale = scaleRaw == DBNull.Value ? null : (int?)Convert.ToInt32(scaleRaw),
-							Unit = type.In("VARCHAR", "VARCHAR2")
-								? (string)r["CHAR_USED"] == "C" ? DataUnit.Character : DataUnit.Byte
-								: DataUnit.NotApplicable
-						});
-				});
-
-			foreach (var columnMetadata in columnMetadataSource)
-			{
-				OracleSchemaObject schemaObject;
-				if (!allObjects.TryGetValue(columnMetadata.Key, out schemaObject))
-					continue;
-
-				var dataObject = (OracleDataObject)schemaObject;
-				dataObject.Columns.Add(columnMetadata.Value.Name, columnMetadata.Value);
-			}
-
-			var constraintSource = ExecuteReader(
-				DatabaseCommands.SelectConstraintsCommandText, null,
-				r =>
-				{
-					var remoteConstraintIdentifier = OracleObjectIdentifier.Empty;
-					var owner = QualifyStringObject(r["OWNER"]);
-					var ownerObjectFullyQualifiedName = OracleObjectIdentifier.Create(owner, QualifyStringObject(r["TABLE_NAME"]));
-					OracleSchemaObject ownerObject;
-					if (!allObjects.TryGetValue(ownerObjectFullyQualifiedName, out ownerObject))
-						return new KeyValuePair<OracleConstraint, OracleObjectIdentifier>(null, remoteConstraintIdentifier); ;
-
-					var relyRaw = r["RELY"];
-					var constraint = OracleObjectFactory.CreateConstraint((string)r["CONSTRAINT_TYPE"], owner, QualifyStringObject(r["CONSTRAINT_NAME"]), (string)r["STATUS"] == "ENABLED", (string)r["VALIDATED"] == "VALIDATED", (string)r["DEFERRABLE"] == "DEFERRABLE", relyRaw != DBNull.Value && (string)relyRaw == "RELY");
-					constraint.Owner = ownerObject;
-					((OracleDataObject)ownerObject).Constraints.Add(constraint);
-
-					var foreignKeyConstraint = constraint as OracleForeignKeyConstraint;
-					if (foreignKeyConstraint != null)
-					{
-						var cascadeAction = DeleteRule.None;
-						switch ((string)r["DELETE_RULE"])
-						{
-							case "CASCADE":
-								cascadeAction = DeleteRule.Cascade;
-								break;
-							case "SET NULL":
-								cascadeAction = DeleteRule.SetNull;
-								break;
-							case "NO ACTION":
-								break;
-						}
-
-						foreignKeyConstraint.DeleteRule = cascadeAction;
-						remoteConstraintIdentifier = OracleObjectIdentifier.Create(QualifyStringObject(r["R_OWNER"]), QualifyStringObject(r["R_CONSTRAINT_NAME"]));
-					}
-					
-					return new KeyValuePair<OracleConstraint, OracleObjectIdentifier>(constraint, remoteConstraintIdentifier);
-				})
-				.Where(c => c.Key != null)
-				.ToArray();
-
-			var constraints = new Dictionary<OracleObjectIdentifier, OracleConstraint>();
-			foreach (var constraintPair in constraintSource)
-			{
-				constraints[constraintPair.Key.FullyQualifiedName] = constraintPair.Key;
-			}
-
-			var constraintColumns = ExecuteReader(
-				DatabaseCommands.SelectConstraintColumnsCommandText, null,
-				r =>
-				{
-					var column = (string)r["COLUMN_NAME"];
-					return new KeyValuePair<OracleObjectIdentifier, string>(OracleObjectIdentifier.Create(QualifyStringObject(r["OWNER"]), QualifyStringObject(r["CONSTRAINT_NAME"])), column[0] == '"' ? column : QualifyStringObject(column));
-				})
-				.GroupBy(c => c.Key)
-				.ToDictionary(g => g.Key, g => g.Select(kvp => kvp.Value).ToList());
-
-			foreach (var constraintPair in constraintSource)
-			{
-				OracleConstraint constraint;
-				if (!constraints.TryGetValue(constraintPair.Key.FullyQualifiedName, out constraint))
-					continue;
-
-				List<string> columns;
-				if (constraintColumns.TryGetValue(constraintPair.Key.FullyQualifiedName, out columns))
-				{
-					constraint.Columns = columns.AsReadOnly();
-				}
-
-				var foreignKeyConstraint = constraintPair.Key as OracleForeignKeyConstraint;
-				if (foreignKeyConstraint == null)
-					continue;
-
-				var referenceConstraint = (OracleUniqueConstraint)constraints[constraintPair.Value];
-				foreignKeyConstraint.TargetObject = referenceConstraint.Owner;
-				foreignKeyConstraint.ReferenceConstraint = referenceConstraint;
-			}
-
-			ExecuteReader(
-				DatabaseCommands.SelectSequencesCommandText, null,
-				r =>
-				{
-					var sequenceFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(r["SEQUENCE_OWNER"]), QualifyStringObject(r["SEQUENCE_NAME"]));
-					OracleSchemaObject sequenceObject;
-					if (!AllObjects.TryGetValue(sequenceFullyQualifiedName, out sequenceObject))
-						return null;
-
-					var sequence = (OracleSequence) sequenceObject;
-					sequence.CurrentValue = Convert.ToDecimal(r["LAST_NUMBER"]);
-					sequence.MinimumValue = Convert.ToDecimal(r["MIN_VALUE"]);
-					sequence.MaximumValue = Convert.ToDecimal(r["MAX_VALUE"]);
-					sequence.Increment = Convert.ToDecimal(r["INCREMENT_BY"]);
-					sequence.CacheSize = Convert.ToDecimal(r["CACHE_SIZE"]);
-					sequence.CanCycle = (string)r["CYCLE_FLAG"] == "Y";
-					sequence.IsOrdered = (string)r["ORDER_FLAG"] == "Y";
-
-					return sequence;
-				})
-				.ToArray();
-
-			ExecuteReader(
-				DatabaseCommands.SelectTypeAttributesCommandText, null,
-				r =>
-				{
-					var typeFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(r["OWNER"]), QualifyStringObject(r["TYPE_NAME"]));
-					OracleSchemaObject typeObject;
-					if (!AllObjects.TryGetValue(typeFullyQualifiedName, out typeObject))
-						return null;
-
-					var type = (OracleTypeBase)typeObject;
-					// TODO:
-					return type;
-				})
-				.ToArray();
+			var allObjects = new DataDictionaryMapper(this).BuildDataDictionary();
 
 			_allFunctionMetadata = new OracleFunctionMetadataCollection(BuiltInFunctionMetadata.SqlFunctions.Concat(GetUserFunctionMetadata().SqlFunctions));
 
@@ -892,6 +710,8 @@ namespace SqlPad.Oracle
 
 			_dataDictionary = new OracleDataDictionary(allObjects, lastRefresh);
 			CachedDataDictionaries[CachedConnectionStringName] = _dataDictionary;
+
+			SetRefreshTaskResults();
 
 			MetadataCache.StoreDatabaseModelCache(CachedConnectionStringName, stream => _dataDictionary.Serialize(stream));
 
@@ -926,14 +746,19 @@ namespace SqlPad.Oracle
 				}
 			}
 
+			BuildAllFunctionMetadata();
+
+			_cacheLoaded = true;
+		}
+
+		private void BuildAllFunctionMetadata()
+		{
 			var functionMetadata = _dataDictionary.AllObjects.Values
 				.OfType<IFunctionCollection>()
 				.Where(o => o.FullyQualifiedName != BuiltInFunctionPackageIdentifier)
 				.SelectMany(o => o.Functions);
 
 			_allFunctionMetadata = new OracleFunctionMetadataCollection(BuiltInFunctionMetadata.SqlFunctions.Concat(functionMetadata));
-
-			_cacheLoaded = true;
 		}
 
 		private void RaiseEvent(EventHandler eventHandler)
@@ -970,6 +795,12 @@ namespace SqlPad.Oracle
 
 			_schemas = new HashSet<string>(schemaSource);
 			_allSchemas = new HashSet<string>(schemaSource.Select(QualifyStringObject)) { SchemaPublic };
+		}
+
+		private struct RefreshModel
+		{
+			public TaskCompletionSource<OracleDataDictionary> TaskCompletionSource { get; set; }
+			public OracleDatabaseModel DatabaseModel { get; set; }
 		}
 	}
 }
