@@ -56,6 +56,9 @@ namespace SqlPad.Oracle
 			if (statement == null)
 				return;
 
+			if (statement.TerminatorNode != null && statement.TerminatorNode.SourcePosition.IndexStart < cursorPosition)
+				return;
+
 			var nearestTerminal = statement.GetNearestTerminalToPosition(cursorPosition);
 			if (nearestTerminal == null)
 				return;

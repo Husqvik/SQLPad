@@ -653,7 +653,7 @@ FROM
 			const string query1 = @"SELECT MAX(DUMMY) FROM DUAL";
 
 			_documentRepository.UpdateStatements(query1);
-			var items = _codeCompletionProvider.ResolveFunctionOverloads(_documentRepository, 8).ToList();
+			var items = _codeCompletionProvider.ResolveFunctionOverloads(_documentRepository, 11).ToList();
 			items.Count.ShouldBe(1);
 			items[0].HasSchemaDefinition.ShouldBe(false);
 		}

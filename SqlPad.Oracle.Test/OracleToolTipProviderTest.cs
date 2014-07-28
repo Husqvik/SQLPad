@@ -267,8 +267,20 @@ namespace SqlPad.Oracle.Test
 
 		private static string GetTextFromTextBlock(TextBlock textBlock)
 		{
-			var inlines = textBlock.Inlines.Select(i => ((Run)i).Text);
+			var inlines = textBlock.Inlines.Select(GetTextFromInline);
 			return String.Join(null, inlines);
+		}
+
+		private static string GetTextFromInline(Inline inline)
+		{
+			var run = inline as Run;
+			if (run != null)
+			{
+				return run.Text;
+			}
+			
+			var bold = (Bold)inline;
+			return String.Join(null, bold.Inlines.Select(GetTextFromInline));
 		}
 
 		[Test(Description = @""), STAThread]
