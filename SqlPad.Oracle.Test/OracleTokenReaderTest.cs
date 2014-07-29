@@ -460,6 +460,14 @@ namespace SqlPad.Oracle.Test
 			tokens.ShouldBe(new[] { "SELECT", "1", "/", "1", "FROM", "DUAL" });
 		}
 
+		[Test(Description = "Tests equals character without space. ")]
+		public void TestEqualsCharacterWithoutSpace()
+		{
+			const string testQuery = "SELECT * FROM V$SGASTAT WHERE NAME='Global Context'";
+			var tokens = GetTokenValuesFromOracleSql(testQuery);
+			tokens.ShouldBe(new[] { "SELECT", "*", "FROM", "V$SGASTAT", "WHERE", "NAME", "=", "'Global Context'" });
+		}
+
 		private string[] GetTokenValuesFromOracleSql(string sqlText, bool includeCommentBlocks = false)
 		{
 			return GetTokensFromOracleSql(sqlText, includeCommentBlocks).Select(t => t.Value).ToArray();

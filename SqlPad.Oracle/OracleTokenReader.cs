@@ -78,6 +78,28 @@ namespace SqlPad.Oracle
 					quotedInitializer = character;
 				}
 
+				if (previousFlags.OptionalParameterCandidate)
+				{
+					if (builder.Length > 0)
+					{
+						yield return BuildToken(builder, index - 2, null);
+					}
+
+					builder.Append(previousFlags.Character);
+					var indexOffset = 1;
+					if (character == '>')
+					{
+						builder.Append(character);
+						indexOffset = 0;
+						characterYielded = true;
+						flags.RelationalOperatorCandidate = false;
+					}
+
+					yield return BuildToken(builder, index - indexOffset, null);
+
+					candidateCharacter = null;
+				}
+
 				if (specialMode.InString)
 				{
 					var isSimpleStringTerminator = previousFlags.StringEndCandidate && character != '\'' && !inQuotedString;
@@ -325,28 +347,6 @@ namespace SqlPad.Oracle
 
 					candidateCharacter = null;
 					flags.BlockCommentBeginCandidate = false;
-				}
-
-				if (previousFlags.OptionalParameterCandidate)
-				{
-					if (builder.Length > 0)
-					{
-						yield return BuildToken(builder, index - 2, null);
-					}
-
-					builder.Append(previousFlags.Character);
-					var indexOffset = 1;
-					if (character == '>')
-					{
-						builder.Append(character);
-						indexOffset = 0;
-						characterYielded = true;
-						flags.RelationalOperatorCandidate = false;
-					}
-
-					yield return BuildToken(builder, index - indexOffset, null);
-
-					candidateCharacter = null;
 				}
 
 				if (previousFlags.RelationalOperatorCandidate)
