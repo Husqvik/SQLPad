@@ -83,12 +83,105 @@ namespace SqlPad.Oracle
 
 			_databaseModel.ExecuteReader(DatabaseCommands.SelectSequencesCommandText, MapSequence).ToArray();
 
-			_databaseModel.ExecuteReader(DatabaseCommands.SelectTypeAttributesCommandText, MapTypeAtrtibutes).ToArray();
+			_databaseModel.ExecuteReader(DatabaseCommands.SelectTypeAttributesCommandText, MapTypeAttributes).ToArray();
 
 			return new ReadOnlyDictionary<OracleObjectIdentifier, OracleSchemaObject>(_allObjects);
 		}
 
-		private OracleTypeBase MapTypeAtrtibutes(OracleDataReader reader)
+		public OracleFunctionMetadataCollection GetUserFunctionMetadata()
+		{
+			return GetFunctionMetadataCollection(DatabaseCommands.UserFunctionMetadataCommandText, DatabaseCommands.UserFunctionParameterMetadataCommandText, false);
+		}
+
+		public OracleFunctionMetadataCollection GetBuiltInFunctionMetadata()
+		{
+			return GetFunctionMetadataCollection(DatabaseCommands.BuiltInFunctionMetadataCommandText, DatabaseCommands.BuiltInFunctionParameterMetadataCommandText, true);
+		}
+
+		public IEnumerable<string> GetSchemaNames()
+		{
+			return _databaseModel.ExecuteReader(DatabaseCommands.SelectAllSchemasCommandText, r => ((string)r["USERNAME"]));
+		}
+
+		public IDictionary<OracleObjectIdentifier, OracleDatabaseLink> GetDatabaseLinks()
+		{
+			return _databaseModel.ExecuteReader(DatabaseCommands.SelectDatabaseLinksCommandText, MapDatabaseLink)
+				.ToDictionary(l => l.FullyQualifiedName, l => l);
+		}
+
+		private OracleFunctionMetadataCollection GetFunctionMetadataCollection(string selectFunctionMetadataCommandText, string selectParameterMetadataCommandText, bool isBuiltIn)
+		{
+			var functionMetadataSource = _databaseModel.ExecuteReader(selectFunctionMetadataCommandText, r => MapFunctionMetadata(r, isBuiltIn));
+			var functionMetadataDictionary = functionMetadataSource.ToDictionary(m => m.Identifier, m => m);
+
+			var functionParameterMetadataSource = _databaseModel.ExecuteReader(selectParameterMetadataCommandText, MapFunctionParameterMetadata);
+			foreach (var functionIdentifierParameterMetadata in functionParameterMetadataSource)
+			{
+				OracleFunctionMetadata functionMetadata;
+				if (functionMetadataDictionary.TryGetValue(functionIdentifierParameterMetadata.Key, out functionMetadata))
+				{
+					functionMetadata.Parameters.Add(functionIdentifierParameterMetadata.Value);
+				}
+			}
+
+			return new OracleFunctionMetadataCollection(functionMetadataDictionary.Values);
+		}
+
+		private static OracleFunctionMetadata MapFunctionMetadata(OracleDataReader reader, bool isBuiltIn)
+		{
+			var identifier = CreateFunctionIdentifierFromReaderValues(reader["OWNER"], reader["PACKAGE_NAME"], reader["FUNCTION_NAME"], reader["OVERLOAD"]);
+			var isAnalytic = (string)reader["ANALYTIC"] == "YES";
+			var isAggregate = (string)reader["AGGREGATE"] == "YES";
+			var isPipelined = (string)reader["PIPELINED"] == "YES";
+			var isOffloadable = (string)reader["OFFLOADABLE"] == "YES";
+			var parallelSupport = (string)reader["PARALLEL"] == "YES";
+			var isDeterministic = (string)reader["DETERMINISTIC"] == "YES";
+			var minimumArgumentsRaw = reader["MINARGS"];
+			var metadataMinimumArguments = minimumArgumentsRaw == DBNull.Value ? null : (int?)Convert.ToInt32(minimumArgumentsRaw);
+			var maximumArgumentsRaw = reader["MAXARGS"];
+			var metadataMaximumArguments = maximumArgumentsRaw == DBNull.Value ? null : (int?)Convert.ToInt32(maximumArgumentsRaw);
+			var authId = (string)reader["AUTHID"] == "CURRENT_USER" ? AuthId.CurrentUser : AuthId.Definer;
+			var displayType = (string)reader["DISP_TYPE"];
+
+			return new OracleFunctionMetadata(identifier, isAnalytic, isAggregate, isPipelined, isOffloadable, parallelSupport, isDeterministic, metadataMinimumArguments, metadataMaximumArguments, authId, displayType, isBuiltIn);
+		}
+
+		private static KeyValuePair<OracleFunctionIdentifier, OracleFunctionParameterMetadata> MapFunctionParameterMetadata(OracleDataReader reader)
+		{
+			var identifier = CreateFunctionIdentifierFromReaderValues(reader[0], reader[1], reader[2], reader[3]);
+
+			var parameterNameRaw = reader[4];
+			var parameterName = parameterNameRaw == DBNull.Value ? null : (string)parameterNameRaw;
+			var position = Convert.ToInt32(reader[5]);
+			var dataTypeRaw = reader[6];
+			var dataType = dataTypeRaw == DBNull.Value ? null : (string)dataTypeRaw;
+			var isOptional = (string)reader[7] == "Y";
+			var directionRaw = (string)reader[8];
+			ParameterDirection direction;
+			switch (directionRaw)
+			{
+				case "IN":
+					direction = ParameterDirection.Input;
+					break;
+				case "OUT":
+					direction = String.IsNullOrEmpty(parameterName) ? ParameterDirection.ReturnValue : ParameterDirection.Output;
+					break;
+				case "IN/OUT":
+					direction = ParameterDirection.InputOutput;
+					break;
+				default:
+					throw new NotSupportedException(String.Format("Parameter direction '{0}' is not supported. ", directionRaw));
+			}
+
+			return new KeyValuePair<OracleFunctionIdentifier, OracleFunctionParameterMetadata>(identifier, new OracleFunctionParameterMetadata(parameterName, position, direction, dataType, isOptional));
+		}
+
+		private static OracleFunctionIdentifier CreateFunctionIdentifierFromReaderValues(object owner, object package, object name, object overload)
+		{
+			return OracleFunctionIdentifier.CreateFromValues(owner == DBNull.Value ? null : QualifyStringObject(owner), package == DBNull.Value ? null : QualifyStringObject(package), QualifyStringObject(name), Convert.ToInt32(overload));
+		}
+
+		private OracleTypeBase MapTypeAttributes(OracleDataReader reader)
 		{
 			var typeFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(reader["OWNER"]), QualifyStringObject(reader["TYPE_NAME"]));
 			OracleSchemaObject typeObject;
@@ -98,6 +191,20 @@ namespace SqlPad.Oracle
 			var type = (OracleTypeBase)typeObject;
 			// TODO:
 			return type;
+		}
+
+		private OracleDatabaseLink MapDatabaseLink(OracleDataReader reader)
+		{
+			var databaseLinkFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(reader["OWNER"]), QualifyStringObject(reader["DB_LINK"]));
+			var userNameRaw = reader["USERNAME"];
+			return
+				new OracleDatabaseLink
+				{
+					FullyQualifiedName = databaseLinkFullyQualifiedName,
+					Created = (DateTime)reader["CREATED"],
+					Host = (string)reader["HOST"],
+					UserName = userNameRaw == DBNull.Value ? null : (string)userNameRaw
+				};
 		}
 
 		private OracleSequence MapSequence(OracleDataReader reader)
@@ -286,7 +393,7 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		private static string QualifyStringObject(object stringValue)
+		internal static string QualifyStringObject(object stringValue)
 		{
 			return String.Format("{0}{1}{0}", "\"", stringValue);
 		}

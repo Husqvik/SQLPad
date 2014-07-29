@@ -35,7 +35,8 @@ namespace SqlPad.Oracle
 		private HashSet<string> _schemas = new HashSet<string>();
 		private HashSet<string> _allSchemas = new HashSet<string>();
 		private string _currentSchema;
-		private OracleDataDictionary _dataDictionary = new OracleDataDictionary(Enumerable.Empty<KeyValuePair<OracleObjectIdentifier, OracleSchemaObject>>(), DateTime.MinValue);
+		private readonly DataDictionaryMapper _dataDictionaryMapper;
+		private OracleDataDictionary _dataDictionary = new OracleDataDictionary(new Dictionary<OracleObjectIdentifier, OracleSchemaObject>(), new Dictionary<OracleObjectIdentifier, OracleDatabaseLink>(), DateTime.MinValue);
 		private readonly OracleConnection _userConnection;
 		private OracleDataReader _userDataReader;
 		private OracleCommand _userCommand;
@@ -76,9 +77,11 @@ namespace SqlPad.Oracle
 				ExecuteActionAsync(GenerateBuiltInFunctionMetadata);
 			}
 
-			LoadSchemaNames();
-
 			_userConnection = new OracleConnection(connectionString.ConnectionString);
+
+			_dataDictionaryMapper = new DataDictionaryMapper(this);
+
+			LoadSchemaNames();
 
 			_timer.Elapsed += (sender, args) => RefreshIfNeeded();
 			_timer.Start();
@@ -134,6 +137,8 @@ namespace SqlPad.Oracle
 		public override ICollection<string> AllSchemas { get { return _allSchemas; } }
 
 		public override IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjects { get { return _dataDictionary.AllObjects; } }
+
+		public override IDictionary<OracleObjectIdentifier, OracleDatabaseLink> DatabaseLinks { get { return _dataDictionary.DatabaseLinks; } }
 
 		public override void RefreshIfNeeded()
 		{
@@ -307,14 +312,9 @@ namespace SqlPad.Oracle
 			return clone;
 		}
 
-		private OracleFunctionMetadataCollection GetUserFunctionMetadata()
-		{
-			return GetFunctionMetadataCollection(DatabaseCommands.UserFunctionMetadataCommandText, DatabaseCommands.UserFunctionParameterMetadataCommandText, false);
-		}
-
 		private void GenerateBuiltInFunctionMetadata()
 		{
-			BuiltInFunctionMetadata = GetFunctionMetadataCollection(DatabaseCommands.BuiltInFunctionMetadataCommandText, DatabaseCommands.BuiltInFunctionParameterMetadataCommandText, true);
+			BuiltInFunctionMetadata = _dataDictionaryMapper.GetBuiltInFunctionMetadata();
 
 			lock (Serializer)
 			{
@@ -338,92 +338,6 @@ namespace SqlPad.Oracle
 			}*/
 
 			_isRefreshing = false;
-		}
-
-		private OracleFunctionMetadataCollection GetFunctionMetadataCollection(string getFunctionMetadataCommandText, string getParameterMetadataCommandText, bool isBuiltIn)
-		{
-			var functionMetadataDictionary = new Dictionary<OracleFunctionIdentifier, OracleFunctionMetadata>();
-
-			using (var connection = new OracleConnection(_oracleConnectionString.ConnectionString))
-			{
-				using (var command = connection.CreateCommand())
-				{
-					command.CommandText = getFunctionMetadataCommandText;
-
-					connection.Open();
-
-					using (var reader = command.ExecuteReader())
-					{
-						while (reader.Read())
-						{
-							var identifier = CreateFunctionIdentifierFromReaderValues(reader["OWNER"], reader["PACKAGE_NAME"], reader["FUNCTION_NAME"], reader["OVERLOAD"]);
-							var isAnalytic = (string)reader["ANALYTIC"] == "YES";
-							var isAggregate = (string)reader["AGGREGATE"] == "YES";
-							var isPipelined = (string)reader["PIPELINED"] == "YES";
-							var isOffloadable = (string)reader["OFFLOADABLE"] == "YES";
-							var parallelSupport = (string)reader["PARALLEL"] == "YES";
-							var isDeterministic = (string)reader["DETERMINISTIC"] == "YES";
-							var minimumArgumentsRaw = reader["MINARGS"];
-							var metadataMinimumArguments = minimumArgumentsRaw == DBNull.Value ? null : (int?)Convert.ToInt32(minimumArgumentsRaw);
-							var maximumArgumentsRaw = reader["MAXARGS"];
-							var metadataMaximumArguments = maximumArgumentsRaw == DBNull.Value ? null : (int?)Convert.ToInt32(maximumArgumentsRaw);
-							var authId = (string)reader["AUTHID"] == "CURRENT_USER" ? AuthId.CurrentUser : AuthId.Definer;
-							var displayType = (string)reader["DISP_TYPE"];
-
-							var functionMetadata = new OracleFunctionMetadata(identifier, isAnalytic, isAggregate, isPipelined, isOffloadable, parallelSupport, isDeterministic, metadataMinimumArguments, metadataMaximumArguments, authId, displayType, isBuiltIn);
-							functionMetadataDictionary.Add(functionMetadata.Identifier, functionMetadata);
-						}
-					}
-
-					command.CommandText = getParameterMetadataCommandText;
-
-					using (var reader = command.ExecuteReader(CommandBehavior.CloseConnection))
-					{
-						while (reader.Read())
-						{
-							var identifier = CreateFunctionIdentifierFromReaderValues(reader[0], reader[1], reader[2], reader[3]);
-
-							if (!functionMetadataDictionary.ContainsKey(identifier))
-								continue;
-
-							var metadata = functionMetadataDictionary[identifier];
-
-							var parameterNameRaw = reader[4];
-							var parameterName = parameterNameRaw == DBNull.Value ? null : (string)parameterNameRaw;
-							var position = Convert.ToInt32(reader[5]);
-							var dataTypeRaw = reader[6];
-							var dataType = dataTypeRaw == DBNull.Value ? null : (string)dataTypeRaw;
-							var isOptional = (string)reader[7] == "Y";
-							var directionRaw = (string)reader[8];
-							ParameterDirection direction;
-							switch (directionRaw)
-							{
-								case "IN":
-									direction = ParameterDirection.Input;
-									break;
-								case "OUT":
-									direction = String.IsNullOrEmpty(parameterName) ? ParameterDirection.ReturnValue : ParameterDirection.Output;
-									break;
-								case "IN/OUT":
-									direction = ParameterDirection.InputOutput;
-									break;
-								default:
-									throw new NotSupportedException(String.Format("Parameter direction '{0}' is not supported. ", directionRaw));
-							}
-
-							var parameterMetadata = new OracleFunctionParameterMetadata(parameterName, position, direction, dataType, isOptional);
-							metadata.Parameters.Add(parameterMetadata);
-						}
-					}
-				}
-			}
-
-			return new OracleFunctionMetadataCollection(functionMetadataDictionary.Values);
-		}
-
-		internal static OracleFunctionIdentifier CreateFunctionIdentifierFromReaderValues(object owner, object package, object name, object overload)
-		{
-			return OracleFunctionIdentifier.CreateFromValues(owner == DBNull.Value ? null : QualifyStringObject(owner), package == DBNull.Value ? null : QualifyStringObject(package), QualifyStringObject(name), Convert.ToInt32(overload));
 		}
 
 		private int ExecuteUserNonQuery(string commandText)
@@ -680,9 +594,9 @@ namespace SqlPad.Oracle
 			var lastRefresh = DateTime.Now;
 			_isRefreshing = true;
 
-			var allObjects = new DataDictionaryMapper(this).BuildDataDictionary();
+			var allObjects = _dataDictionaryMapper.BuildDataDictionary();
 
-			_allFunctionMetadata = new OracleFunctionMetadataCollection(BuiltInFunctionMetadata.SqlFunctions.Concat(GetUserFunctionMetadata().SqlFunctions));
+			_allFunctionMetadata = new OracleFunctionMetadataCollection(BuiltInFunctionMetadata.SqlFunctions.Concat(_dataDictionaryMapper.GetUserFunctionMetadata().SqlFunctions));
 
 			foreach (var functionMetadata in _allFunctionMetadata.SqlFunctions)
 			{
@@ -708,7 +622,9 @@ namespace SqlPad.Oracle
 			//var ftmp = _allFunctionMetadata.SqlFunctions.Where(f => f.Identifier.Package.Contains("DBMS_RANDOM")).ToArray();
 			//var otmp = dataObjectMetadata.Where(o => o.Key.NormalizedName.Contains("DBMS_RANDOM")).ToArray();
 
-			_dataDictionary = new OracleDataDictionary(allObjects, lastRefresh);
+			var databaseLinks = _dataDictionaryMapper.GetDatabaseLinks();
+
+			_dataDictionary = new OracleDataDictionary(allObjects, databaseLinks, lastRefresh);
 			CachedDataDictionaries[CachedConnectionStringName] = _dataDictionary;
 
 			SetRefreshTaskResults();
@@ -769,32 +685,10 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		private static void AddSchemaObjectToDictionary(IDictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects, OracleSchemaObject schemaObject)
-		{
-			if (allObjects.ContainsKey(schemaObject.FullyQualifiedName))
-			{
-				Trace.WriteLine(string.Format("Object '{0}' ({1}) is already in the dictionary. ", schemaObject.FullyQualifiedName, schemaObject.Type));
-			}
-			else
-			{
-				allObjects.Add(schemaObject.FullyQualifiedName, schemaObject);
-			}
-		}
-
-		private static string QualifyStringObject(object stringValue)
-		{
-			return String.Format("{0}{1}{0}", "\"", stringValue);
-		}
-
 		private void LoadSchemaNames()
 		{
-			var schemaSource = ExecuteReader(
-				DatabaseCommands.SelectAllSchemasCommandText, null,
-				r => ((string)r["USERNAME"]))
-				.ToArray();
-
-			_schemas = new HashSet<string>(schemaSource);
-			_allSchemas = new HashSet<string>(schemaSource.Select(QualifyStringObject)) { SchemaPublic };
+			_schemas = new HashSet<string>(_dataDictionaryMapper.GetSchemaNames());
+			_allSchemas = new HashSet<string>(_schemas.Select(DataDictionaryMapper.QualifyStringObject)) { SchemaPublic };
 		}
 
 		private struct RefreshModel

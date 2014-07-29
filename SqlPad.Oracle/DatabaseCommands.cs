@@ -189,6 +189,8 @@ FROM SYS.ALL_TABLES";
 
 		public const string GetObjectScriptCommand = "SELECT SYS.DBMS_METADATA.GET_DDL(OBJECT_TYPE => :OBJECT_TYPE, NAME => :NAME, SCHEMA => :SCHEMA) SCRIPT FROM SYS.DUAL";
 
+		public const string SelectDatabaseLinksCommandText = "SELECT OWNER, DB_LINK, USERNAME, HOST, CREATED FROM ALL_DB_LINKS";
+
 		private static string ToInValueList(params string[] values)
 		{
 			return String.Join(", ", values.Select(t => String.Format("'{0}'", t)));

@@ -124,5 +124,15 @@ namespace SqlPad.Oracle
 				}
 			}
 		}
+
+		public IEnumerable<IDatabaseLinkReference> DatabaseLinkReferences
+		{
+			get
+			{
+				var programReferences = (IEnumerable<IDatabaseLinkReference>)AllProgramReferences.Where(p => p.DatabaseLinkNode != null);
+				var sequenceReferences = AllSequenceReferences.Where(p => p.DatabaseLinkNode != null);
+				return programReferences.Concat(sequenceReferences);
+			}
+		}
 	}
 }

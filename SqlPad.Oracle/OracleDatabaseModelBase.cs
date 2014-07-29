@@ -57,6 +57,8 @@ namespace SqlPad.Oracle
 
 		public abstract IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjects { get; }
 
+		public abstract IDictionary<OracleObjectIdentifier, OracleDatabaseLink> DatabaseLinks { get; }
+
 		public OracleObjectIdentifier[] GetPotentialSchemaObjectIdentifiers(OracleObjectIdentifier identifier)
 		{
 			return String.IsNullOrEmpty(identifier.Owner)
@@ -114,6 +116,14 @@ namespace SqlPad.Oracle
 			result.Metadata = TryFindFunctionOverload(functionMetadataSource, identifier.Name, parameterCount);
 
 			return result;
+		}
+
+		public OracleDatabaseLink GetFirstDatabaseLink(params OracleObjectIdentifier[] identifiers)
+		{
+			OracleDatabaseLink databaseLink;
+			DatabaseLinks.TryGetFirstValue(out databaseLink, identifiers);
+
+			return databaseLink;
 		}
 
 		public OracleSchemaObject GetFirstSchemaObject<T>(params OracleObjectIdentifier[] identifiers) where T : OracleSchemaObject

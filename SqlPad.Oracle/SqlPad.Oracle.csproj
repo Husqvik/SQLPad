@@ -87,6 +87,7 @@
     <Compile Include="OracleColumn.cs" />
     <Compile Include="OracleCommandExtensions.cs" />
     <Compile Include="OracleConstraint.cs" />
+    <Compile Include="OracleDatabaseLink.cs" />
     <Compile Include="OracleDatabaseModelBase.cs" />
     <Compile Include="OracleDataDictionary.cs" />
     <Compile Include="OracleFunctionMatcher.cs" />

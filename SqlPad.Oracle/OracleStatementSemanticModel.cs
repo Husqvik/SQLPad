@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
@@ -303,9 +304,22 @@ namespace SqlPad.Oracle
 
 				var columnReferences = queryBlock.AllColumnReferences.Where(c => c.SelectListColumn == null || c.SelectListColumn.ExplicitDefinition);
 				ResolveColumnObjectReferences(columnReferences, queryBlock.ObjectReferences, parentCorrelatedQueryBlockObjectReferences);
+
+				ResolveDatabaseLinks(queryBlock);
 			}
 
 			ResolveJoinReferences();
+		}
+
+		private void ResolveDatabaseLinks(OracleQueryBlock queryBlock)
+		{
+			if (DatabaseModel == null)
+				return;
+
+			foreach (var databaseLinkReference in queryBlock.DatabaseLinkReferences)
+			{
+				databaseLinkReference.DatabaseLink = DatabaseModel.GetFirstDatabaseLink(DatabaseModel.GetPotentialSchemaObjectIdentifiers(null, databaseLinkReference.DatabaseLinkNode.Token.Value));
+			}
 		}
 
 		private void ExposeAsteriskColumns()
@@ -565,6 +579,7 @@ namespace SqlPad.Oracle
 				new OracleProgramReference
 				{
 					FunctionIdentifierNode = columnReference.ColumnNode,
+					DatabaseLinkNode = GetDatabaseLinkFromIdentifier(columnReference.ColumnNode),
 					ObjectNode = columnReference.ObjectNode,
 					OwnerNode = columnReference.OwnerNode,
 					RootNode = columnReference.ColumnNode,
@@ -630,6 +645,7 @@ namespace SqlPad.Oracle
 				new OracleSequenceReference
 				{
 					ObjectNode = columnReference.ObjectNode,
+					DatabaseLinkNode = GetDatabaseLinkFromIdentifier(columnReference.ColumnNode),
 					Owner = columnReference.Owner,
 					OwnerNode = columnReference.OwnerNode,
 					RootNode = columnReference.RootNode,
@@ -914,7 +930,7 @@ namespace SqlPad.Oracle
 
 		private static StatementGrammarNode[] GetFunctionCallNodes(StatementGrammarNode identifier)
 		{
-			return identifier.ParentNode.ChildNodes.Where(n => n.Id.In(NonTerminals.DatabaseLink, NonTerminals.ParenthesisEnclosedAggregationFunctionParameters, NonTerminals.AnalyticClause)).ToArray();
+			return identifier.ParentNode.ChildNodes.Where(n => n.Id.In(NonTerminals.ParenthesisEnclosedAggregationFunctionParameters, NonTerminals.AnalyticClause)).ToArray();
 		}
 
 		private static OracleProgramReference CreateFunctionReference(OracleQueryBlock queryBlock, OracleSelectListColumn selectListColumn, StatementGrammarNode identifierNode, StatementGrammarNode prefixNonTerminal, ICollection<StatementGrammarNode> functionCallNodes)
@@ -935,6 +951,7 @@ namespace SqlPad.Oracle
 				new OracleProgramReference
 				{
 					FunctionIdentifierNode = identifierNode,
+					DatabaseLinkNode = GetDatabaseLinkFromIdentifier(identifierNode),
 					RootNode = identifierNode.GetAncestor(NonTerminals.Expression),
 					Owner = queryBlock,
 					AnalyticClauseNode = analyticClauseNode,
@@ -946,6 +963,12 @@ namespace SqlPad.Oracle
 			AddPrefixNodes(functionReference, prefixNonTerminal);
 
 			return functionReference;
+		}
+
+		private static StatementGrammarNode GetDatabaseLinkFromIdentifier(StatementGrammarNode identifier)
+		{
+			var databaseLink = identifier.ParentNode.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.DatabaseLink);
+			return databaseLink == null ? null : databaseLink.ChildNodes.SingleOrDefault(n => n.Id == Terminals.DatabaseLinkIdentifier);
 		}
 
 		private static OracleColumnReference CreateColumnReference(OracleQueryBlock queryBlock, OracleSelectListColumn selectListColumn, QueryBlockPlacement type, StatementGrammarNode identifierNode, StatementGrammarNode prefixNonTerminal)

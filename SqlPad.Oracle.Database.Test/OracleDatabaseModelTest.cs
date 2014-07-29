@@ -27,6 +27,7 @@ namespace SqlPad.Oracle.Database.Test
 		private void AssertDatabaseModel(OracleDatabaseModelBase databaseModel)
 		{
 			databaseModel.AllObjects.Count.ShouldBeGreaterThan(0);
+			databaseModel.DatabaseLinks.Count.ShouldBeGreaterThan(0);
 
 			var objectForScriptCreation = databaseModel.GetFirstSchemaObject<OracleSchemaObject>(databaseModel.GetPotentialSchemaObjectIdentifiers("SYS", "OBJ$"));
 			objectForScriptCreation.ShouldNotBe(null);

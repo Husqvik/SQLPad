@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
 using ProtoBuf.Meta;
 
 namespace SqlPad.Oracle
@@ -14,16 +13,22 @@ namespace SqlPad.Oracle
 		private static readonly IDictionary<OracleObjectIdentifier, OracleSchemaObject> InitialDictionary =
 			new ReadOnlyDictionary<OracleObjectIdentifier, OracleSchemaObject>(new Dictionary<OracleObjectIdentifier, OracleSchemaObject>());
 
+		private static readonly IDictionary<OracleObjectIdentifier, OracleDatabaseLink> InitialDatabaseLinkDictionary =
+			new ReadOnlyDictionary<OracleObjectIdentifier, OracleDatabaseLink>(new Dictionary<OracleObjectIdentifier, OracleDatabaseLink>());
+
 		private readonly IDictionary<OracleObjectIdentifier, OracleSchemaObject> _allObjects;
+		private readonly IDictionary<OracleObjectIdentifier, OracleDatabaseLink> _databaseLinks;
 		
 		public DateTime Timestamp { get; private set; }
 
 		public IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjects
 		{
-			get
-			{
-				return _allObjects ?? InitialDictionary;
-			}
+			get { return _allObjects ?? InitialDictionary; }
+		}
+
+		public IDictionary<OracleObjectIdentifier, OracleDatabaseLink> DatabaseLinks
+		{
+			get { return _databaseLinks ?? InitialDatabaseLinkDictionary; }
 		}
 
 		static OracleDataDictionary()
@@ -31,7 +36,7 @@ namespace SqlPad.Oracle
 			Serializer = TypeModel.Create();
 			var oracleDataDictionaryType = Serializer.Add(typeof(OracleDataDictionary), false);
 			oracleDataDictionaryType.UseConstructor = false;
-			oracleDataDictionaryType.Add("Timestamp", "_allObjects");
+			oracleDataDictionaryType.Add("Timestamp", "_allObjects", "_databaseLinks");
 			
 			var oracleObjectIdentifierType = Serializer.Add(typeof(OracleObjectIdentifier), false);
 			oracleObjectIdentifierType.Add("Owner", "Name", "NormalizedOwner", "NormalizedName");
@@ -44,10 +49,15 @@ namespace SqlPad.Oracle
 			oracleObjectType.Add("FullyQualifiedName");
 			oracleObjectType.AddSubType(101, typeof(OracleSchemaObject));
 			oracleObjectType.AddSubType(102, typeof(OracleConstraint));
+			oracleObjectType.AddSubType(103, typeof(OracleDatabaseLink));
 
 			var oracleSchemaObjectType = Serializer.Add(typeof(OracleSchemaObject), false);
 			oracleSchemaObjectType.AsReferenceDefault = true;
 			oracleSchemaObjectType.Add("Created", "LastDdl", "IsValid", "IsTemporary", "Synonym");
+
+			var oracleDatabaseLinkType = Serializer.Add(typeof(OracleDatabaseLink), false);
+			oracleDatabaseLinkType.AsReferenceDefault = true;
+			oracleDatabaseLinkType.Add("UserName", "Host", "Created");
 
 			var oracleConstraintType = Serializer.Add(typeof(OracleConstraint), false);
 			oracleConstraintType.AsReferenceDefault = true;
@@ -125,9 +135,10 @@ namespace SqlPad.Oracle
 			oracleFunctionParameterMetadataType.Add("Name", "Position", "DataType", "Direction", "IsOptional");
 		}
 
-		public OracleDataDictionary(IEnumerable<KeyValuePair<OracleObjectIdentifier, OracleSchemaObject>> schemaObjects, DateTime timestamp)
+		public OracleDataDictionary(IDictionary<OracleObjectIdentifier, OracleSchemaObject> schemaObjects, IDictionary<OracleObjectIdentifier, OracleDatabaseLink> databaseLinks, DateTime timestamp)
 		{
-			_allObjects = new ReadOnlyDictionary<OracleObjectIdentifier, OracleSchemaObject>(schemaObjects.ToDictionary(schemaObject => schemaObject.Key, schemaObject => schemaObject.Value));
+			_allObjects = new ReadOnlyDictionary<OracleObjectIdentifier, OracleSchemaObject>(schemaObjects);
+			_databaseLinks = new ReadOnlyDictionary<OracleObjectIdentifier, OracleDatabaseLink>(databaseLinks);
 
 			Timestamp = timestamp;
 		}

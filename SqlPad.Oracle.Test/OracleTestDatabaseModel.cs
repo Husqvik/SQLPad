@@ -38,6 +38,7 @@ namespace SqlPad.Oracle.Test
 		private static readonly ILookup<string, OracleFunctionMetadata> NonSchemaBuiltInFunctionMetadataInternal;
 
 		private readonly IDictionary<OracleObjectIdentifier, OracleSchemaObject> _allObjects;
+		private readonly IDictionary<OracleObjectIdentifier, OracleDatabaseLink> _databaseLinks = new Dictionary<OracleObjectIdentifier, OracleDatabaseLink>();
 		private int _generatedRowCount;
 
 		static OracleTestDatabaseModel()
@@ -464,6 +465,8 @@ TABLESPACE ""TBS_HQ_PDB""";
 		public IDictionary<OracleObjectIdentifier, OracleSchemaObject> Objects { get { return ObjectsInternal; } }
 
 		public override IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjects { get { return _allObjects; } }
+
+		public override IDictionary<OracleObjectIdentifier, OracleDatabaseLink> DatabaseLinks { get { return _databaseLinks; } }
 
 		public override void RefreshIfNeeded()
 		{

@@ -94,6 +94,14 @@ namespace SqlPad.Oracle
 						}
 						
 						break;
+					case Terminals.DatabaseLinkIdentifier:
+						var databaseLink = GetDatabaseLink(queryBlock, node);
+						if (databaseLink == null)
+							return null;
+
+						tip = databaseLink.FullyQualifiedName + " (" + databaseLink.Host + ")";
+
+						break;
 				}
 			}
 
@@ -167,6 +175,12 @@ namespace SqlPad.Oracle
 				.FirstOrDefault();
 
 			return objectReference ?? queryBlock.ObjectReferences.FirstOrDefault(o => o.ObjectNode == terminal);
+		}
+
+		private OracleDatabaseLink GetDatabaseLink(OracleQueryBlock queryBlock, StatementGrammarNode terminal)
+		{
+			var databaseLink = queryBlock.DatabaseLinkReferences.SingleOrDefault(l => l.DatabaseLinkNode == terminal);
+			return databaseLink == null ? null : databaseLink.DatabaseLink;
 		}
 	}
 }
