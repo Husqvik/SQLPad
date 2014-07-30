@@ -48,65 +48,40 @@ namespace SqlPad.Oracle
 
 				foreach (var functionReference in queryBlock.AllProgramReferences)
 				{
-					var metadataFound = functionReference.Metadata != null;
-					var semanticError = SemanticError.None;
-					var isRecognized = false;
-					if (metadataFound)
+					if (functionReference.DatabaseLinkNode == null)
 					{
-						isRecognized = true;
-						if (functionReference.ParameterListNode != null)
-						{
-							var maximumParameterCount = functionReference.Metadata.MinimumArguments > 0 && functionReference.Metadata.MaximumArguments == 0
-								? Int32.MaxValue
-								: functionReference.Metadata.MaximumArguments;
-
-							// TODO: Handle optional parameters
-							if ((functionReference.ParameterNodes.Count < functionReference.Metadata.MinimumArguments) ||
-							    (functionReference.ParameterNodes.Count > maximumParameterCount))
-							{
-								validationModel.ProgramNodeValidity[functionReference.ParameterListNode] = new ProgramValidationData(SemanticError.InvalidParameterCount) { IsRecognized = true };
-							}
-						}
-						else if (functionReference.Metadata.MinimumArguments > 0)
-						{
-							semanticError = SemanticError.InvalidParameterCount;
-						}
-						else if (functionReference.Metadata.DisplayType == OracleFunctionMetadata.DisplayTypeParenthesis)
-						{
-							semanticError = SemanticError.MissingParenthesis;
-						}
-
-						if (functionReference.AnalyticClauseNode != null && !functionReference.Metadata.IsAnalytic)
-						{
-							validationModel.ProgramNodeValidity[functionReference.AnalyticClauseNode] = new ProgramValidationData(SemanticError.AnalyticClauseNotSupported) { IsRecognized = true, Node = functionReference.AnalyticClauseNode };
-						}
+						ValidateLocalFunctionReference(functionReference, validationModel);
 					}
-					
-					if (functionReference.ObjectNode != null)
+					else
 					{
-						var packageSemanticError = GetCompilationEror(functionReference);
-						validationModel.ProgramNodeValidity[functionReference.ObjectNode] = new ProgramValidationData(packageSemanticError) { IsRecognized = functionReference.SchemaObject != null, Node = functionReference.ObjectNode };
+						ValidateDatabaseLinkReference(validationModel, functionReference);
 					}
-
-					if (semanticError == SemanticError.None && isRecognized && !functionReference.Metadata.IsPackageFunction && functionReference.SchemaObject != null && !functionReference.SchemaObject.IsValid)
-					{
-						semanticError = SemanticError.ObjectStatusInvalid;
-					}
-
-					validationModel.ProgramNodeValidity[functionReference.FunctionIdentifierNode] = new ProgramValidationData(semanticError) { IsRecognized = isRecognized, Node = functionReference.FunctionIdentifierNode };
 				}
 
 				foreach (var typeReference in queryBlock.AllTypeReferences)
 				{
-					var semanticError = GetCompilationEror(typeReference);
-					validationModel.ProgramNodeValidity[typeReference.ObjectNode] = new ProgramValidationData(semanticError) { IsRecognized = true, Node = typeReference.ObjectNode };
+					if (typeReference.DatabaseLinkNode == null)
+					{
+						var semanticError = GetCompilationEror(typeReference);
+						validationModel.ProgramNodeValidity[typeReference.ObjectNode] = new ProgramValidationData(semanticError) { IsRecognized = true, Node = typeReference.ObjectNode };
+					}
+					else
+					{
+						ValidateDatabaseLinkReference(validationModel, typeReference);
+					}
 				}
 
 				foreach (var sequenceReference in queryBlock.AllSequenceReferences)
 				{
-					//validationModel.ColumnNodeValidity[sequenceReference.] = new ProgramValidationData { IsRecognized = true, Node = sequenceReference.ObjectNode };
-					var semanticError = sequenceReference.SelectListColumn == null ? SemanticError.ObjectCannotBeUsed : SemanticError.None;
-					validationModel.ObjectNodeValidity[sequenceReference.ObjectNode] = new ProgramValidationData(semanticError) { IsRecognized = true, Node = sequenceReference.ObjectNode };
+					if (sequenceReference.DatabaseLinkNode == null)
+					{
+						var semanticError = sequenceReference.SelectListColumn == null ? SemanticError.ObjectCannotBeUsed : SemanticError.None;
+						validationModel.ObjectNodeValidity[sequenceReference.ObjectNode] = new ProgramValidationData(semanticError) { IsRecognized = true, Node = sequenceReference.ObjectNode };
+					}
+					else
+					{
+						ValidateDatabaseLinkReference(validationModel, sequenceReference);
+					}
 				}
 			}
 
@@ -120,6 +95,61 @@ namespace SqlPad.Oracle
 			}
 
 			return validationModel;
+		}
+
+		private static void ValidateDatabaseLinkReference(OracleValidationModel validationModel, IDatabaseLinkReference databaseLinkReference)
+		{
+			validationModel.ObjectNodeValidity[databaseLinkReference.DatabaseLinkNode] = new ProgramValidationData { IsRecognized = databaseLinkReference.DatabaseLink != null, Node = databaseLinkReference.DatabaseLinkNode };
+		}
+
+		private void ValidateLocalFunctionReference(OracleProgramReference functionReference, OracleValidationModel validationModel)
+		{
+			var metadataFound = functionReference.Metadata != null;
+			var semanticError = SemanticError.None;
+			var isRecognized = false;
+			if (metadataFound)
+			{
+				isRecognized = true;
+				if (functionReference.ParameterListNode != null)
+				{
+					var maximumParameterCount = functionReference.Metadata.MinimumArguments > 0 && functionReference.Metadata.MaximumArguments == 0
+						? Int32.MaxValue
+						: functionReference.Metadata.MaximumArguments;
+
+					// TODO: Handle optional parameters
+					if ((functionReference.ParameterNodes.Count < functionReference.Metadata.MinimumArguments) ||
+					    (functionReference.ParameterNodes.Count > maximumParameterCount))
+					{
+						validationModel.ProgramNodeValidity[functionReference.ParameterListNode] = new ProgramValidationData(SemanticError.InvalidParameterCount) { IsRecognized = true };
+					}
+				}
+				else if (functionReference.Metadata.MinimumArguments > 0)
+				{
+					semanticError = SemanticError.InvalidParameterCount;
+				}
+				else if (functionReference.Metadata.DisplayType == OracleFunctionMetadata.DisplayTypeParenthesis)
+				{
+					semanticError = SemanticError.MissingParenthesis;
+				}
+
+				if (functionReference.AnalyticClauseNode != null && !functionReference.Metadata.IsAnalytic)
+				{
+					validationModel.ProgramNodeValidity[functionReference.AnalyticClauseNode] = new ProgramValidationData(SemanticError.AnalyticClauseNotSupported) { IsRecognized = true, Node = functionReference.AnalyticClauseNode };
+				}
+			}
+
+			if (functionReference.ObjectNode != null)
+			{
+				var packageSemanticError = GetCompilationEror(functionReference);
+				validationModel.ProgramNodeValidity[functionReference.ObjectNode] = new ProgramValidationData(packageSemanticError) { IsRecognized = functionReference.SchemaObject != null, Node = functionReference.ObjectNode };
+			}
+
+			if (semanticError == SemanticError.None && isRecognized && !functionReference.Metadata.IsPackageFunction && functionReference.SchemaObject != null && !functionReference.SchemaObject.IsValid)
+			{
+				semanticError = SemanticError.ObjectStatusInvalid;
+			}
+
+			validationModel.ProgramNodeValidity[functionReference.FunctionIdentifierNode] = new ProgramValidationData(semanticError) { IsRecognized = isRecognized, Node = functionReference.FunctionIdentifierNode };
 		}
 
 		private SemanticError GetCompilationEror(OracleProgramReferenceBase reference)

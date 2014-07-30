@@ -412,6 +412,8 @@ namespace SqlPad.Oracle
 				new OracleTypeReference
 				{
 					OwnerNode = functionReference.ObjectNode,
+					DatabaseLinkNode = functionReference.DatabaseLinkNode,
+					DatabaseLink = functionReference.DatabaseLink,
 					Owner = functionReference.Owner,
 					ParameterNodes = functionReference.ParameterNodes,
 					ParameterListNode = functionReference.ParameterListNode,

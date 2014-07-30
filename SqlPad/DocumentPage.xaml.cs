@@ -638,6 +638,12 @@ namespace SqlPad
 			return text.Length == 1 && text[0] == matchCharacter && Editor.Text.Length > Editor.CaretOffset && Editor.Text[Editor.CaretOffset] == pairCharacter;
 		}
 
+		private bool IsNextCharacterBlank()
+		{
+			var nextCharacter = Editor.Text.Length == Editor.CaretOffset ? null : (char?)Editor.Text[Editor.CaretOffset];
+			return !nextCharacter.HasValue || nextCharacter == ' ' || nextCharacter == '\r' || nextCharacter == '\n' || nextCharacter == '\t';
+		}
+
 		private bool HandlePairCharacterInsertion(string text)
 		{
 			var pairCharacterHandled = false;
@@ -645,8 +651,7 @@ namespace SqlPad
 			switch (text)
 			{
 				case "(":
-					var nextCharacter = Editor.Text.Length == Editor.CaretOffset ? null : (char?)Editor.Text[Editor.CaretOffset];
-					pairCharacterHandled = !nextCharacter.HasValue || nextCharacter == ' ' || nextCharacter == '\r' || nextCharacter == '\n' || nextCharacter == '\t';
+					pairCharacterHandled = IsNextCharacterBlank();
 					if (pairCharacterHandled)
 					{
 						InsertPairCharacter("()");
@@ -654,7 +659,7 @@ namespace SqlPad
 
 					break;
 				case "\"":
-					pairCharacterHandled = !PreviousPairCharacterExists(text, '"', '"');
+					pairCharacterHandled = !PreviousPairCharacterExists(text, '"', '"') && IsNextCharacterBlank();
 					if (pairCharacterHandled)
 					{
 						InsertPairCharacter("\"\"");
@@ -662,7 +667,7 @@ namespace SqlPad
 					
 					break;
 				case "'":
-					pairCharacterHandled = !PreviousPairCharacterExists(text, '\'', '\'');
+					pairCharacterHandled = !PreviousPairCharacterExists(text, '\'', '\'') && IsNextCharacterBlank();
 					if (pairCharacterHandled)
 					{
 						InsertPairCharacter("''");

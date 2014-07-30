@@ -38,7 +38,21 @@ namespace SqlPad.Oracle.Test
 		private static readonly ILookup<string, OracleFunctionMetadata> NonSchemaBuiltInFunctionMetadataInternal;
 
 		private readonly IDictionary<OracleObjectIdentifier, OracleSchemaObject> _allObjects;
-		private readonly IDictionary<OracleObjectIdentifier, OracleDatabaseLink> _databaseLinks = new Dictionary<OracleObjectIdentifier, OracleDatabaseLink>();
+
+		private static readonly HashSet<OracleDatabaseLink> DatabaseLinksInternal =
+			new HashSet<OracleDatabaseLink>
+			{
+				new OracleDatabaseLink
+				{
+					Created = DateTime.Now,
+					FullyQualifiedName = OracleObjectIdentifier.Create(SchemaPublic, "HQ_PDB_LOOPBACK"),
+					Host = "localhost:1521/hq_pdb",
+					UserName = "HUSQVIK"
+				}
+			};
+
+		private readonly IDictionary<OracleObjectIdentifier, OracleDatabaseLink> _databaseLinks = DatabaseLinksInternal.ToDictionary(l => l.FullyQualifiedName, l => l);
+		
 		private int _generatedRowCount;
 
 		static OracleTestDatabaseModel()

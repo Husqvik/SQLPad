@@ -237,6 +237,18 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestDatabaseLinkToolTip()
+		{
+			const string query = "SELECT SQLPAD_FUNCTION@HQ_PDB_LOOPBACK(5) FROM DUAL";
+			_documentRepository.UpdateStatements(query);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 30);
+
+			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.DataContext.ShouldBe("\"PUBLIC\".HQ_PDB_LOOPBACK (localhost:1521/hq_pdb)");
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestToolTipBeforeDatabaseModelLoaded()
 		{
 			const string query = "SELECT S.* FROM SELECTION S";

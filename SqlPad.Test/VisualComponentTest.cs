@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -71,6 +72,8 @@ namespace SqlPad.Test
 			TestPairCharacterInsertionWhenNextCharacterIsThePairCharacter();
 			
 			TestPairCharacterInsertionAfterAlreadyEnteredPair();
+			
+			TestPairCharacterInsertionBeforeExistingText();
 
 			TestParenthesisCharacterInsertionWithinExistingParenthesis();
 
@@ -80,6 +83,22 @@ namespace SqlPad.Test
 
 			_mainWindow.Close();
 			Dispatcher.CurrentDispatcher.InvokeShutdown();
+		}
+
+		private void TestPairCharacterInsertionBeforeExistingText()
+		{
+			_editor.Clear();
+			EnterText("Existing text");
+			_editor.CaretOffset = 0;
+
+			EnterText("'");
+			_editor.Text.ShouldBe("'Existing text");
+			_editor.CaretOffset.ShouldBe(1);
+
+			_editor.CaretOffset = 10;
+			EnterText("\"");
+			_editor.Text.ShouldBe("'Existing \"text");
+			_editor.CaretOffset.ShouldBe(11);
 		}
 
 		private void TestPairCharacterInsertion()
