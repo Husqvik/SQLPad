@@ -249,6 +249,17 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestFunctionIdentifierOverDatabaseLinkToolTip()
+		{
+			const string query = "SELECT SQLPAD_FUNCTION@UNDEFINED_DB_LINK FROM DUAL";
+			_documentRepository.UpdateStatements(query);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 12);
+
+			toolTip.ShouldBe(null);
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestToolTipBeforeDatabaseModelLoaded()
 		{
 			const string query = "SELECT S.* FROM SELECTION S";

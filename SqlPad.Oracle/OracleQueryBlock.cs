@@ -125,13 +125,15 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		public IEnumerable<IDatabaseLinkReference> DatabaseLinkReferences
+		public IEnumerable<OracleReference> DatabaseLinkReferences
 		{
 			get
 			{
-				var programReferences = (IEnumerable<IDatabaseLinkReference>)AllProgramReferences.Where(p => p.DatabaseLinkNode != null);
+				var programReferences = (IEnumerable<OracleReference>)AllProgramReferences.Where(p => p.DatabaseLinkNode != null);
 				var sequenceReferences = AllSequenceReferences.Where(p => p.DatabaseLinkNode != null);
-				return programReferences.Concat(sequenceReferences);
+				var columnReferences = AllColumnReferences.Where(p => p.DatabaseLinkNode != null);
+				var objectReferences = ObjectReferences.Where(p => p.DatabaseLinkNode != null);
+				return programReferences.Concat(sequenceReferences).Concat(columnReferences).Concat(objectReferences);
 			}
 		}
 	}

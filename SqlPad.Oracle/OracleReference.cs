@@ -36,5 +36,9 @@ namespace SqlPad.Oracle
 		{
 			get { return SelectListColumn ?? (OracleReferenceContainer)Owner; }
 		}
+
+		public StatementGrammarNode DatabaseLinkNode { get; set; }
+
+		public OracleDatabaseLink DatabaseLink { get; set; }
 	}
 }

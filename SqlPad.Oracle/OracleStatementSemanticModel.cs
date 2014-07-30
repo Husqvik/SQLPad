@@ -979,6 +979,7 @@ namespace SqlPad.Oracle
 				new OracleColumnReference
 				{
 					ColumnNode = identifierNode,
+					DatabaseLinkNode = GetDatabaseLinkFromIdentifier(identifierNode),
 					Placement = type,
 					Owner = queryBlock,
 					SelectListColumn = selectListColumn

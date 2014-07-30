@@ -111,7 +111,7 @@ namespace SqlPad.Oracle
 		private static string GetTypeToolTip(OracleQueryBlock queryBlock, StatementGrammarNode node)
 		{
 			var typeReference = queryBlock.AllTypeReferences.SingleOrDefault(t => t.ObjectNode == node);
-			return typeReference == null ? null : GetFullSchemaObjectToolTip(typeReference.SchemaObject);
+			return typeReference == null || typeReference.DatabaseLinkNode != null ? null : GetFullSchemaObjectToolTip(typeReference.SchemaObject);
 		}
 
 		private static string GetObjectToolTip(OracleObjectWithColumnsReference objectReference)
@@ -148,7 +148,7 @@ namespace SqlPad.Oracle
 		private string GetFunctionToolTip(OracleQueryBlock queryBlock, StatementGrammarNode terminal)
 		{
 			var functionReference = queryBlock.AllProgramReferences.SingleOrDefault(f => f.FunctionIdentifierNode == terminal);
-			return functionReference == null || functionReference.Metadata == null ? null : functionReference.Metadata.Identifier.FullyQualifiedIdentifier;
+			return functionReference == null || functionReference.DatabaseLinkNode != null || functionReference.Metadata == null ? null : functionReference.Metadata.Identifier.FullyQualifiedIdentifier;
 		}
 
 		private OracleColumnReference GetColumnDescription(OracleQueryBlock queryBlock, StatementGrammarNode terminal)

@@ -34,7 +34,7 @@ namespace SqlPad.Oracle
 					validationModel.ObjectNodeValidity[tableReference.OwnerNode] = new NodeValidationData { IsRecognized = oracleDatabaseModel.ExistsSchema(tableReference.OwnerNode.Token.Value) };
 				}
 
-				validationModel.ObjectNodeValidity[tableReference.ObjectNode] = new NodeValidationData { IsRecognized = tableReference.SchemaObject != null };
+				validationModel.ObjectNodeValidity[tableReference.ObjectNode] = new NodeValidationData { IsRecognized = tableReference.SchemaObject != null, Node = tableReference.ObjectNode };
 			}
 
 			foreach (var queryBlock in oracleSemanticModel.QueryBlocks)
@@ -54,7 +54,7 @@ namespace SqlPad.Oracle
 					}
 					else
 					{
-						ValidateDatabaseLinkReference(validationModel, functionReference);
+						ValidateDatabaseLinkReference(validationModel.ProgramNodeValidity, functionReference);
 					}
 				}
 
@@ -67,7 +67,7 @@ namespace SqlPad.Oracle
 					}
 					else
 					{
-						ValidateDatabaseLinkReference(validationModel, typeReference);
+						ValidateDatabaseLinkReference(validationModel.ProgramNodeValidity, typeReference);
 					}
 				}
 
@@ -80,7 +80,7 @@ namespace SqlPad.Oracle
 					}
 					else
 					{
-						ValidateDatabaseLinkReference(validationModel, sequenceReference);
+						ValidateDatabaseLinkReference(validationModel.ObjectNodeValidity, sequenceReference);
 					}
 				}
 			}
@@ -97,9 +97,9 @@ namespace SqlPad.Oracle
 			return validationModel;
 		}
 
-		private static void ValidateDatabaseLinkReference(OracleValidationModel validationModel, IDatabaseLinkReference databaseLinkReference)
+		private static void ValidateDatabaseLinkReference(IDictionary<StatementGrammarNode, INodeValidationData> nodeValidityDictionary, OracleReference databaseLinkReference)
 		{
-			validationModel.ObjectNodeValidity[databaseLinkReference.DatabaseLinkNode] = new ProgramValidationData { IsRecognized = databaseLinkReference.DatabaseLink != null, Node = databaseLinkReference.DatabaseLinkNode };
+			nodeValidityDictionary[databaseLinkReference.DatabaseLinkNode] = new ProgramValidationData { IsRecognized = databaseLinkReference.DatabaseLink != null, Node = databaseLinkReference.DatabaseLinkNode };
 		}
 
 		private void ValidateLocalFunctionReference(OracleProgramReference functionReference, OracleValidationModel validationModel)
@@ -193,31 +193,38 @@ namespace SqlPad.Oracle
 		{
 			foreach (var columnReference in columnReferences)
 			{
-				// Schema
-				if (columnReference.OwnerNode != null)
-					validationModel.ObjectNodeValidity[columnReference.OwnerNode] =
-						new NodeValidationData(columnReference.ObjectNodeObjectReferences)
-						{
-							IsRecognized = columnReference.ObjectNodeObjectReferences.Count > 0,
-							Node = columnReference.OwnerNode
-						};
+				if (columnReference.DatabaseLinkNode == null)
+				{
+					// Schema
+					if (columnReference.OwnerNode != null)
+						validationModel.ObjectNodeValidity[columnReference.OwnerNode] =
+							new NodeValidationData(columnReference.ObjectNodeObjectReferences)
+							{
+								IsRecognized = columnReference.ObjectNodeObjectReferences.Count > 0,
+								Node = columnReference.OwnerNode
+							};
 
-				// Object
-				if (columnReference.ObjectNode != null)
-					validationModel.ObjectNodeValidity[columnReference.ObjectNode] =
-						new NodeValidationData(columnReference.ObjectNodeObjectReferences)
-						{
-							IsRecognized = columnReference.ObjectNodeObjectReferences.Count > 0,
-							Node = columnReference.ObjectNode
-						};
+					// Object
+					if (columnReference.ObjectNode != null)
+						validationModel.ObjectNodeValidity[columnReference.ObjectNode] =
+							new NodeValidationData(columnReference.ObjectNodeObjectReferences)
+							{
+								IsRecognized = columnReference.ObjectNodeObjectReferences.Count > 0,
+								Node = columnReference.ObjectNode
+							};
 
-				// Column
-				validationModel.ColumnNodeValidity[columnReference.ColumnNode] =
-					new ColumnNodeValidationData(columnReference)
-					{
-						IsRecognized = column != null && column.IsAsterisk || columnReference.ColumnNodeObjectReferences.Count > 0,
-						Node = columnReference.ColumnNode
-					};
+					// Column
+					validationModel.ColumnNodeValidity[columnReference.ColumnNode] =
+						new ColumnNodeValidationData(columnReference)
+						{
+							IsRecognized = column != null && column.IsAsterisk || columnReference.ColumnNodeObjectReferences.Count > 0,
+							Node = columnReference.ColumnNode
+						};
+				}
+				else
+				{
+					ValidateDatabaseLinkReference(validationModel.ObjectNodeValidity, columnReference);
+				}
 			}
 		}
 	}

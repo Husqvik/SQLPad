@@ -22,7 +22,7 @@ namespace SqlPad.Oracle
 	}
 
 	[DebuggerDisplay("OracleSequenceReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; Sequence={ObjectNode.Token.Value})")]
-	public class OracleSequenceReference : OracleObjectWithColumnsReference, IDatabaseLinkReference
+	public class OracleSequenceReference : OracleObjectWithColumnsReference
 	{
 		public override string Name { get { return ObjectNode.Token.Value; } }
 
@@ -35,27 +35,12 @@ namespace SqlPad.Oracle
 		{
 			get { return ReferenceType.SchemaObject; }
 		}
-
-		public StatementGrammarNode DatabaseLinkNode { get; set; }
-
-		public OracleDatabaseLink DatabaseLink { get; set; }
 	}
 
-	public abstract class OracleProgramReferenceBase : OracleReference, IDatabaseLinkReference
+	public abstract class OracleProgramReferenceBase : OracleReference
 	{
 		public StatementGrammarNode ParameterListNode { get; set; }
 
 		public ICollection<StatementGrammarNode> ParameterNodes { get; set; }
-
-		public StatementGrammarNode DatabaseLinkNode { get; set; }
-
-		public OracleDatabaseLink DatabaseLink { get; set; }
-	}
-
-	public interface IDatabaseLinkReference
-	{
-		StatementGrammarNode DatabaseLinkNode { get; }
-
-		OracleDatabaseLink DatabaseLink { get; set; }
 	}
 }

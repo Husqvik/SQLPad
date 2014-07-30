@@ -1089,6 +1089,51 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		}
 
 		[Test(Description = @"")]
+		public void TestFunctionNodeValidityOverUndefinedDatabaseLink()
+		{
+			const string sqlText = "SELECT SQLPAD_FUNCTION@UNDEFINED_DB_LINK FROM DUAL";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var nodeValidityDictionary = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var programNodeValidity = nodeValidityDictionary.Values.ToList();
+			programNodeValidity.Count.ShouldBe(1);
+			programNodeValidity[0].Node.Token.Value.ShouldBe("UNDEFINED_DB_LINK");
+			programNodeValidity[0].IsRecognized.ShouldBe(false);
+			programNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+		}
+
+		[Test(Description = @"")]
+		public void TestSequenceAndPseudoColumnValidityOverUndefinedDatabaseLink()
+		{
+			const string sqlText = "SELECT TEST_SEQ.NEXTVAL@UNDEFINED_DB_LINK FROM DUAL";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var nodeValidityDictionary = validationModel.ObjectNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var objectNodeValidity = nodeValidityDictionary.Values.ToList();
+			objectNodeValidity.Count.ShouldBe(2);
+			objectNodeValidity[0].Node.Token.Value.ShouldBe("UNDEFINED_DB_LINK");
+			objectNodeValidity[0].IsRecognized.ShouldBe(false);
+			objectNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+			objectNodeValidity[1].Node.Token.Value.ShouldBe("DUAL");
+			objectNodeValidity[1].IsRecognized.ShouldBe(true);
+			objectNodeValidity[1].SemanticError.ShouldBe(SemanticError.None);
+
+			nodeValidityDictionary = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var programNodeValidity = nodeValidityDictionary.Values.ToList();
+			programNodeValidity.Count.ShouldBe(0);
+
+			nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var columnNodeValidity = nodeValidityDictionary.Values.ToList();
+			columnNodeValidity.Count.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
 		public void TestInvalidIdentifier()
 		{
 			const string sqlText = "SELECT \"\" FROM DUAL";
