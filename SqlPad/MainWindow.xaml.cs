@@ -103,10 +103,10 @@ namespace SqlPad
 
 		private void TabControlSelectionChangedHandler(object sender, SelectionChangedEventArgs e)
 		{
-			var page = DocumentTabControl.SelectedContent as DocumentPage;
-			if (page != null)
+			var document = DocumentTabControl.SelectedContent as DocumentPage;
+			if (document != null)
 			{
-				_findReplaceManager.CurrentEditor = page.EditorAdapter;
+				_findReplaceManager.CurrentEditor = document.EditorAdapter;
 			}
 
 			if (!e.AddedItems.Contains(NewTabItem))
@@ -151,36 +151,58 @@ namespace SqlPad
 
 			contextMenu.CommandBindings.Add(new CommandBinding(menuItemClose.Command, CloseTabExecutedHandler, (sender, args) => args.CanExecute = true));
 
+			var menuItemCloseAllButThis = new MenuItem
+			{
+				Header = "Close All But This",
+				Command = new RoutedCommand()
+			};
+
+			contextMenu.CommandBindings.Add(new CommandBinding(menuItemCloseAllButThis.Command, CloseAllButThisTabExecutedHandler, (sender, args) => args.CanExecute = DocumentTabControl.Items.Count > 2));
+
+			contextMenu.Items.Add(menuItemCloseAllButThis);
+
 			return contextMenu;
+		}
+
+		private void CloseAllButThisTabExecutedHandler(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
+		{
+			var allDocuments = DocumentTabControl.Items.Cast<TabItem>().Select(ti => ti.Content).OfType<DocumentPage>();
+			var documentsToClose = allDocuments.Where(p => !p.Equals(CurrentPage)).ToArray();
+			foreach (var page in documentsToClose)
+			{
+				ClosePage(page);
+			}
 		}
 
 		private void CloseTabExecutedHandler(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
 		{
-			var page = (DocumentPage)executedRoutedEventArgs.Parameter;
+			var document = (DocumentPage)executedRoutedEventArgs.Parameter;
 
-			ClosePage(page);
+			ClosePage(document);
 		}
 
-		private void ClosePage(DocumentPage page)
+		private void ClosePage(DocumentPage document)
 		{
-			if (page.IsDirty && !ConfirmPageSave(page))
+			DocumentTabControl.SelectedItem = document.Parent;
+
+			if (document.IsDirty && !ConfirmPageSave(document))
 				return;
 
 			SelectNewTabItem();
-			DocumentTabControl.Items.Remove(page.Parent);
+			DocumentTabControl.Items.Remove(document.Parent);
 		}
 
-		private bool ConfirmPageSave(DocumentPage page)
+		private bool ConfirmPageSave(DocumentPage document)
 		{
-			var message = page.File == null
+			var message = document.File == null
 				? "Do you want to save the document?"
-				: String.Format("Do you want to save changes in '{0}'?", page.File.FullName);
+				: String.Format("Do you want to save changes in '{0}'?", document.File.FullName);
 			
 			var dialogResult = MessageBox.Show(message, "Confirmation", MessageBoxButton.YesNoCancel, MessageBoxImage.Question, MessageBoxResult.Yes);
 			switch (dialogResult)
 			{
 				case MessageBoxResult.Yes:
-					return page.Save();
+					return document.Save();
 				case MessageBoxResult.No:
 					return true;
 				case MessageBoxResult.Cancel:
