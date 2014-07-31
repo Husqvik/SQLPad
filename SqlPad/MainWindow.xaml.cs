@@ -181,15 +181,16 @@ namespace SqlPad
 			ClosePage(document);
 		}
 
-		private void ClosePage(DocumentPage document)
+		private bool ClosePage(DocumentPage document)
 		{
 			DocumentTabControl.SelectedItem = document.Parent;
 
 			if (document.IsDirty && !ConfirmPageSave(document))
-				return;
+				return false;
 
 			SelectNewTabItem();
 			DocumentTabControl.Items.Remove(document.Parent);
+			return true;
 		}
 
 		private bool ConfirmPageSave(DocumentPage document)
@@ -238,7 +239,12 @@ namespace SqlPad
 			
 			foreach (var page in pages)
 			{
-				ClosePage(page);
+				if (!ClosePage(page))
+				{
+					e.Cancel = true;
+					return;
+				}
+				
 				page.Dispose();
 			}
 		}
