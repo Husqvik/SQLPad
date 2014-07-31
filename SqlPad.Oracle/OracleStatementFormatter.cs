@@ -28,7 +28,10 @@ namespace SqlPad.Oracle
 		}
 
 		private readonly SqlFormatterOptions _options;
+		
 		public CommandExecutionHandler ExecutionHandler { get; private set; }
+
+		public CommandExecutionHandler SingleLineExecutionHandler { get; private set; }
 
 		private static readonly HashSet<LineBreakSettings> LineBreaks =
 			new HashSet<LineBreakSettings>
@@ -101,6 +104,23 @@ namespace SqlPad.Oracle
 				Terminals.Keep
 			};
 
+		private static readonly HashSet<string> SingleLineNoSpaceBeforeTerminals =
+			new HashSet<string>
+			{
+				Terminals.Dot,
+				Terminals.RightParenthesis,
+				Terminals.AtCharacter,
+				Terminals.Comma
+			};
+
+		private static readonly HashSet<string> SingleLineNoSpaceAfterTerminals =
+		new HashSet<string>
+			{
+				Terminals.Dot,
+				Terminals.LeftParenthesis,
+				Terminals.AtCharacter
+			};
+
 		public OracleStatementFormatter(SqlFormatterOptions options)
 		{
 			_options = options;
@@ -112,44 +132,95 @@ namespace SqlPad.Oracle
 					DefaultGestures = GenericCommands.FormatStatementCommand.InputGestures,
 					ExecutionHandler = ExecutionHandlerImplementation
 				};
+
+			SingleLineExecutionHandler =
+				new CommandExecutionHandler
+				{
+					Name = "FormatStatementAsSingleLine",
+					DefaultGestures = GenericCommands.FormatStatementAsSingleLineCommand.InputGestures,
+					ExecutionHandler = SingleLineExecutionHandlerImplementation
+				};
+		}
+
+		private void SingleLineExecutionHandlerImplementation(CommandExecutionContext executionContext)
+		{
+			ExecutionHandlerImplementationInternal(executionContext, FormatStatementsAsSingleLine);
 		}
 
 		private void ExecutionHandlerImplementation(CommandExecutionContext executionContext)
 		{
+			ExecutionHandlerImplementationInternal(executionContext, FormatStatements);
+		}
+
+		private void ExecutionHandlerImplementationInternal(CommandExecutionContext executionContext, Func<ICollection<StatementBase>, string> formatFunction)
+		{
 			if (executionContext.DocumentRepository == null)
 				return;
 
-			var formattedStatements = executionContext.DocumentRepository.Statements.Where(s => s.SourcePosition.IndexStart <= executionContext.SelectionStart + executionContext.SelectionLength && s.SourcePosition.IndexEnd + 1 >= executionContext.SelectionStart)
+			var statementsToFormat = executionContext.DocumentRepository.Statements.Where(s => s.SourcePosition.IndexStart <= executionContext.SelectionStart + executionContext.SelectionLength && s.SourcePosition.IndexEnd + 1 >= executionContext.SelectionStart && s.RootNode != null)
 				.OrderBy(s => s.SourcePosition.IndexStart)
 				.ToArray();
 
-			if (formattedStatements.Length == 0)
+			if (statementsToFormat.Length == 0)
 				return;
 
-			var stringBuilder = new StringBuilder();
-			var skipSpaceBeforeToken = false;
-
-			foreach (var statement in formattedStatements)
-			{
-				if (statement.RootNode == null)
-					continue;
-
-				string indentation = null;
-
-				FormatNode(statement.RootNode, stringBuilder, ref skipSpaceBeforeToken, ref indentation);
-			}
-
-			var indextStart = formattedStatements[0].RootNode.FirstTerminalNode.SourcePosition.IndexStart;
+			var indextStart = statementsToFormat[0].RootNode.FirstTerminalNode.SourcePosition.IndexStart;
 
 			var formattedStatement =
 				new TextSegment
 				{
-					Text = stringBuilder.ToString(),
+					Text = formatFunction(statementsToFormat),
 					IndextStart = indextStart,
-					Length = formattedStatements[formattedStatements.Length - 1].RootNode.LastTerminalNode.SourcePosition.IndexEnd - indextStart + 1,
+					Length = statementsToFormat[statementsToFormat.Length - 1].RootNode.LastTerminalNode.SourcePosition.IndexEnd - indextStart + 1,
 				};
 
 			executionContext.SegmentsToReplace.Add(formattedStatement);
+		}
+
+		private string FormatStatementsAsSingleLine(IEnumerable<StatementBase> formattedStatements)
+		{
+			var builder = new StringBuilder();
+
+			foreach (var statement in formattedStatements)
+			{
+				FormatStatementAsSingleLine(statement, builder);
+				builder.AppendLine();
+			}
+
+			return builder.ToString();
+		}
+
+		private void FormatStatementAsSingleLine(StatementBase statement, StringBuilder builder)
+		{
+			var terminals = ((IEnumerable<StatementNode>) statement.AllTerminals).Concat(statement.Comments);
+			StatementNode precedingNode = null;
+			foreach (var terminal in terminals.OrderBy(t => t.Token.Index))
+			{
+				var precedingGrammarTerminal = precedingNode as StatementGrammarNode;
+				var grammarTerminal = terminal as StatementGrammarNode;
+				if (precedingNode != null && precedingGrammarTerminal != null && !SingleLineNoSpaceAfterTerminals.Contains(precedingGrammarTerminal.Id) && grammarTerminal != null && !SingleLineNoSpaceBeforeTerminals.Contains(grammarTerminal.Id))
+				{
+					builder.Append(' ');
+				}
+
+				builder.Append(terminal.Token.Value);
+
+				precedingNode = terminal;
+			}
+		}
+
+		private string FormatStatements(IEnumerable<StatementBase> formattedStatements)
+		{
+			var builder = new StringBuilder();
+			var skipSpaceBeforeToken = false;
+
+			foreach (var statement in formattedStatements)
+			{
+				string indentation = null;
+				FormatNode(statement.RootNode, builder, ref skipSpaceBeforeToken, ref indentation);
+			}
+
+			return builder.ToString();
 		}
 
 		private void FormatNode(StatementGrammarNode startNode, StringBuilder stringBuilder, ref bool skipSpaceBeforeToken, ref string indentation)

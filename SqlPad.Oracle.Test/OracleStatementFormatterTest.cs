@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using NUnit.Framework;
 using Shouldly;
 using SqlPad.Commands;
@@ -34,11 +35,43 @@ ORDER BY
 	NAME,
 	SELECTION_ID";
 
+			AssertFormattedResult(executionContext, expectedFormat);
+		}
+
+		[Test(Description = @"")]
+		public void TestSingleLineFormat()
+		{
+			const string sourceFormat =
+@"SELECT
+	SELECTION.NAME,
+	COUNT(*) OVER (PARTITION BY NAME ORDER BY RESPONDENTBUCKET_ID, SELECTION_ID) DUMMY_COUNT,
+	MAX(RESPONDENTBUCKET_ID) KEEP (DENSE_RANK FIRST ORDER BY PROJECT_ID, SELECTION_ID)
+FROM
+	SELECTION
+	LEFT JOIN RESPONDENTBUCKET
+		ON SELECTION.RESPONDENTBUCKET_ID = RESPONDENTBUCKET.RESPONDENTBUCKET_ID
+	LEFT JOIN TARGETGROUP
+		ON RESPONDENTBUCKET.TARGETGROUP_ID = TARGETGROUP.TARGETGROUP_ID
+ORDER BY
+	NAME,
+	SELECTION_ID";
+
+			_documentRepository.UpdateStatements(sourceFormat);
+			var executionContext = new CommandExecutionContext(sourceFormat, 0, 0, 0, _documentRepository);
+			Formatter.SingleLineExecutionHandler.ExecutionHandler(executionContext);
+
+			var expectedFormat = "SELECT SELECTION.NAME, COUNT (*) OVER (PARTITION BY NAME ORDER BY RESPONDENTBUCKET_ID, SELECTION_ID) DUMMY_COUNT, MAX (RESPONDENTBUCKET_ID) KEEP (DENSE_RANK FIRST ORDER BY PROJECT_ID, SELECTION_ID) FROM SELECTION LEFT JOIN RESPONDENTBUCKET ON SELECTION.RESPONDENTBUCKET_ID = RESPONDENTBUCKET.RESPONDENTBUCKET_ID LEFT JOIN TARGETGROUP ON RESPONDENTBUCKET.TARGETGROUP_ID = TARGETGROUP.TARGETGROUP_ID ORDER BY NAME, SELECTION_ID" + Environment.NewLine;
+
+			AssertFormattedResult(executionContext, expectedFormat);
+		}
+
+		private void AssertFormattedResult(CommandExecutionContext executionContext, string expectedFormat)
+		{
 			executionContext.SegmentsToReplace.Count.ShouldBe(1);
 			var formattedSegment = executionContext.SegmentsToReplace.First();
 			formattedSegment.Text.ShouldBe(expectedFormat);
 			formattedSegment.IndextStart.ShouldBe(0);
-			formattedSegment.Length.ShouldBe(sourceFormat.Length);
+			formattedSegment.Length.ShouldBe(executionContext.StatementText.Length);
 		}
 	}
 }

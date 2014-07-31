@@ -19,6 +19,7 @@ namespace SqlPad.Commands
 		public static RoutedCommand ExecuteDatabaseCommandCommand = new RoutedCommand("ExecuteDatabaseCommand", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.F9), new KeyGesture(Key.Enter, ModifierKeys.Control) });
 		public static RoutedCommand SaveCommand = new RoutedCommand("Save", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.S, ModifierKeys.Control) });
 		public static RoutedCommand FormatStatementCommand = new RoutedCommand("FormatStatement", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.F, ModifierKeys.Control | ModifierKeys.Alt) });
+		public static RoutedCommand FormatStatementAsSingleLineCommand = new RoutedCommand("FormatStatementAsSingleLine", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.F, ModifierKeys.Shift | ModifierKeys.Alt) });
 		public static RoutedCommand FindUsagesCommand = new RoutedCommand("FindUsages", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.F11, ModifierKeys.Alt | ModifierKeys.Shift) });
 		public static RoutedCommand FetchNextRowsCommand = new RoutedCommand("FetchNextRows", typeof(DataGrid), new InputGestureCollection { new KeyGesture(Key.PageDown), new KeyGesture(Key.Down) });
 		public static RoutedCommand CancelStatementCommand = new RoutedCommand("CancelStatement", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.Escape) });

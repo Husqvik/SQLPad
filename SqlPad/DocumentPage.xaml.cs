@@ -268,6 +268,7 @@ namespace SqlPad
 			commandBindings.Add(new CommandBinding(GenericCommands.ExecuteDatabaseCommandCommand, ExecuteDatabaseCommandHandler, CanExecuteDatabaseCommandHandler));
 			commandBindings.Add(new CommandBinding(GenericCommands.SaveCommand, SaveCommandExecutedHandler));
 			commandBindings.Add(new CommandBinding(GenericCommands.FormatStatementCommand, FormatStatement));
+			commandBindings.Add(new CommandBinding(GenericCommands.FormatStatementAsSingleLineCommand, FormatStatementAsSingleLine));
 			commandBindings.Add(new CommandBinding(GenericCommands.FindUsagesCommand, FindUsages));
 			commandBindings.Add(new CommandBinding(GenericCommands.CancelStatementCommand, CancelStatementHandler, (sender, args) => args.CanExecute = _databaseModel.IsExecuting));
 
@@ -293,6 +294,11 @@ namespace SqlPad
 		private void FormatStatement(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
 		{
 			GenericCommandHandler.ExecuteEditCommand(_sqlDocumentRepository, Editor, _statementFormatter.ExecutionHandler.ExecutionHandler);
+		}
+
+		private void FormatStatementAsSingleLine(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
+		{
+			GenericCommandHandler.ExecuteEditCommand(_sqlDocumentRepository, Editor, _statementFormatter.SingleLineExecutionHandler.ExecutionHandler);
 		}
 
 		private void CanFetchNextRows(object sender, CanExecuteRoutedEventArgs canExecuteRoutedEventArgs)
