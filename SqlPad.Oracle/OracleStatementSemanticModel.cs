@@ -178,6 +178,7 @@ namespace SqlPad.Oracle
 							RootNode = tableReferenceNonterminal,
 							OwnerNode = schemaPrefixNode,
 							ObjectNode = tableIdentifierNode,
+							DatabaseLinkNode = GetDatabaseLinkFromQueryTableExpression(tableIdentifierNode.ParentNode),
 							AliasNode = tableReferenceAlias,
 							SchemaObject = schemaObject
 						};
@@ -967,9 +968,22 @@ namespace SqlPad.Oracle
 			return functionReference;
 		}
 
+		private static StatementGrammarNode GetDatabaseLinkFromQueryTableExpression(StatementGrammarNode queryTableExpression)
+		{
+			var partitionOrDatabaseLink = queryTableExpression.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.PartitionOrDatabaseLink);
+			return partitionOrDatabaseLink == null
+				? null
+				: GetDatabaseLinkFromNode(partitionOrDatabaseLink);
+		}
+
 		private static StatementGrammarNode GetDatabaseLinkFromIdentifier(StatementGrammarNode identifier)
 		{
-			var databaseLink = identifier.ParentNode.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.DatabaseLink);
+			return GetDatabaseLinkFromNode(identifier.ParentNode);
+		}
+
+		private static StatementGrammarNode GetDatabaseLinkFromNode(StatementGrammarNode node)
+		{
+			var databaseLink = node.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.DatabaseLink);
 			return databaseLink == null ? null : databaseLink.ChildNodes.SingleOrDefault(n => n.Id == Terminals.DatabaseLinkIdentifier);
 		}
 

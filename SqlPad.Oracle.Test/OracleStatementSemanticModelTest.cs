@@ -348,5 +348,26 @@ FROM
 			orderByName.Placement.ShouldBe(QueryBlockPlacement.OrderBy);
 			orderByName.ColumnNodeColumnReferences.Count.ShouldBe(2);
 		}
+
+		[Test(Description = @"")]
+		public void TestFromClauseWithObjectOverDatabaseLink()
+		{
+			const string query1 = @"SELECT * FROM SELECTION@HQ_PDB_LOOPBACK";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.QueryBlocks.ShouldNotBe(null);
+			semanticModel.QueryBlocks.Count.ShouldBe(1);
+
+			var objectReferences = semanticModel.QueryBlocks.Single().ObjectReferences.ToArray();
+			objectReferences.Length.ShouldBe(1);
+			var selectionTable = objectReferences[0];
+			selectionTable.DatabaseLinkNode.ShouldNotBe(null);
+			selectionTable.DatabaseLink.ShouldNotBe(null);
+			selectionTable.DatabaseLink.FullyQualifiedName.Name.ShouldBe("HQ_PDB_LOOPBACK");
+		}
 	}
 }

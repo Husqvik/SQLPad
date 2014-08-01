@@ -174,7 +174,10 @@ namespace SqlPad.Oracle
 				.Select(c => c.ObjectNodeObjectReferences.First())
 				.FirstOrDefault();
 
-			return objectReference ?? queryBlock.ObjectReferences.FirstOrDefault(o => o.ObjectNode == terminal);
+			objectReference = objectReference ?? queryBlock.ObjectReferences.FirstOrDefault(o => o.ObjectNode == terminal);
+			return objectReference == null || objectReference.DatabaseLinkNode != null
+				? null
+				: objectReference;
 		}
 
 		private OracleDatabaseLink GetDatabaseLink(OracleQueryBlock queryBlock, StatementGrammarNode terminal)

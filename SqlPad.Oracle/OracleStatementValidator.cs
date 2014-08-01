@@ -34,7 +34,14 @@ namespace SqlPad.Oracle
 					validationModel.ObjectNodeValidity[tableReference.OwnerNode] = new NodeValidationData { IsRecognized = oracleDatabaseModel.ExistsSchema(tableReference.OwnerNode.Token.Value) };
 				}
 
-				validationModel.ObjectNodeValidity[tableReference.ObjectNode] = new NodeValidationData { IsRecognized = tableReference.SchemaObject != null, Node = tableReference.ObjectNode };
+				if (tableReference.DatabaseLinkNode == null)
+				{
+					validationModel.ObjectNodeValidity[tableReference.ObjectNode] = new NodeValidationData { IsRecognized = tableReference.SchemaObject != null, Node = tableReference.ObjectNode };
+				}
+				else
+				{
+					ValidateDatabaseLinkReference(validationModel.ObjectNodeValidity, tableReference);
+				}
 			}
 
 			foreach (var queryBlock in oracleSemanticModel.QueryBlocks)

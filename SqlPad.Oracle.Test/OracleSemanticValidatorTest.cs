@@ -1106,6 +1106,23 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		}
 
 		[Test(Description = @"")]
+		public void TestObjectReferenceNodeValidityOverUndefinedDatabaseLink()
+		{
+			const string sqlText = "SELECT * FROM SELECTION@UNDEFINED_DB_LINK";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var nodeValidityDictionary = validationModel.ObjectNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var objectNodeValidity = nodeValidityDictionary.Values.ToList();
+			objectNodeValidity.Count.ShouldBe(1);
+			objectNodeValidity[0].Node.Token.Value.ShouldBe("UNDEFINED_DB_LINK");
+			objectNodeValidity[0].IsRecognized.ShouldBe(false);
+			objectNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+		}
+
+		[Test(Description = @"")]
 		public void TestSequenceAndPseudoColumnValidityOverUndefinedDatabaseLink()
 		{
 			const string sqlText = "SELECT TEST_SEQ.NEXTVAL@UNDEFINED_DB_LINK FROM DUAL";
