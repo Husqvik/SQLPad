@@ -102,7 +102,8 @@ namespace SqlPad
 			_timerReParse.Elapsed += (sender, args) => Dispatcher.Invoke(ReParse);
 			_timerExecutionMonitor.Elapsed += (sender, args) => Dispatcher.Invoke(() => TextExecutionTime.Text = FormatElapsedMilliseconds(_stopWatch.Elapsed));
 
-			_pageModel = new PageModel(this) { CurrentConnection = ConfigurationProvider.ConnectionStrings[0] };
+			_pageModel = new PageModel(this);
+			_pageModel.CurrentConnection = ConfigurationProvider.ConnectionStrings[0];
 
 			ConfigureEditor();
 
@@ -163,7 +164,9 @@ namespace SqlPad
 				_databaseModel.Dispose();
 			}
 
-			_infrastructureFactory = ConfigurationProvider.GetInfrastructureFactory(connectionString.Name);
+			var connectionConfiguration = ConfigurationProvider.GetConnectionCofiguration(connectionString.Name);
+			_pageModel.ProductionLabelVisibility = connectionConfiguration.IsProduction ? Visibility.Visible : Visibility.Collapsed;
+			_infrastructureFactory = connectionConfiguration.InfrastructureFactory;
 			_codeCompletionProvider = _infrastructureFactory.CreateCodeCompletionProvider();
 			_codeSnippetProvider = _infrastructureFactory.CreateSnippetProvider();
 			_contextActionProvider = _infrastructureFactory.CreateContextActionProvider();

@@ -1,12 +1,12 @@
 ﻿<UserControl x:Class="SqlPad.DocumentPage"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
              xmlns:sqlPad="clr-namespace:SqlPad"
              Loaded="PageLoadedHandler"
-             mc:Ignorable="d" 
+             mc:Ignorable="d"
              d:DesignHeight="320" d:DesignWidth="440">
 	<UserControl.Resources>
 		<sqlPad:SelectedIndexConverter x:Key="SelectedIndexConverter" />
@@ -19,43 +19,54 @@
 			<RowDefinition Height="*" />
 			<RowDefinition Height="24" />
 		</Grid.RowDefinitions>
-		<StackPanel HorizontalAlignment="Right" Orientation="Horizontal" sqlPad:MarginSetter.Margin="4,1,4,1">
-			<TextBlock Text="Connection: " VerticalAlignment="Center"></TextBlock>
+
+		<StackPanel HorizontalAlignment="Right" Orientation="Horizontal"
+		            sqlPad:MarginSetter.Margin="4,1,4,1">
+			<TextBlock Text="Connection: " VerticalAlignment="Center" />
 			<ComboBox x:Name="ComboBoxConnection" SelectedItem="{Binding Path=CurrentConnection}">
 				<ComboBox.ItemTemplate>
 					<DataTemplate>
-						<TextBlock Text="{Binding Path=Name}"></TextBlock>
+						<TextBlock Text="{Binding Path=Name}" />
 					</DataTemplate>
 				</ComboBox.ItemTemplate>
 			</ComboBox>
-			<TextBlock Text="Schema: " VerticalAlignment="Center"></TextBlock>
+			<TextBlock Text="Schema: " VerticalAlignment="Center" />
 			<ComboBox x:Name="ComboBoxSchema" ItemsSource="{Binding Path=Schemas}" SelectedItem="{Binding Path=CurrentSchema}">
 				<ComboBox.ItemTemplate>
 					<DataTemplate>
-						<TextBlock Text="{Binding}"></TextBlock>
+						<TextBlock Text="{Binding}" />
 					</DataTemplate>
 				</ComboBox.ItemTemplate>
 			</ComboBox>
 		</StackPanel>
-		<avalonedit:TextEditor x:Name="Editor"
-										   Grid.Row="1" Grid.Column="0"
-										   FontFamily="Consolas"
-										   ShowLineNumbers="True"
-										   TextChanged="EditorTextChangedHandler"
-										   ContextMenuOpening="ContextMenuOpeningHandler"
-										   MouseHover="MouseHoverHandler"
-										   PreviewKeyDown="EditorKeyDownHandler"
-										   PreviewKeyUp="EditorKeyUpHandler"
-										   MouseHoverStopped="MouseHoverStoppedHandler">
-			<avalonedit:TextEditor.ContextMenu>
-				<ContextMenu x:Name="CommandMenu" Placement="RelativePoint"></ContextMenu>
-			</avalonedit:TextEditor.ContextMenu>
-		</avalonedit:TextEditor>
-		<GridSplitter Grid.Row="2" Height="5" HorizontalAlignment="Stretch" ShowsPreview="True" VerticalAlignment="Center" Background="DimGray" />
-		<DataGrid x:Name="ResultGrid" Grid.Row="3" AutoGenerateColumns="False" ItemsSource="{Binding ResultRowItems}" VirtualizingStackPanel.VirtualizationMode="Recycling" EnableColumnVirtualization="True"
-		          HorizontalGridLinesBrush="LightGray" VerticalGridLinesBrush="LightGray" PreviewMouseWheel="ResultGridPreviewMouseWheelHandler" PreviewMouseDown="ResultGridPreviewMouseDownHandler">
-		</DataGrid>
-		<StatusBar x:Name="StatusBar" Grid.Row="4" Grid.Column="0">
+		<DockPanel Grid.Row="1">
+			<TextBlock Text="PRODUCTION" TextAlignment="Center" Foreground="White" Background="DarkRed" FontWeight="Bold" FontSize="14" Visibility="{Binding Path=ProductionLabelVisibility}" Height="21">
+				<TextBlock.LayoutTransform>
+					<RotateTransform Angle="-90" />
+				</TextBlock.LayoutTransform>
+			</TextBlock>
+			<avalonedit:TextEditor x:Name="Editor"
+								   FontFamily="Consolas"
+								   ShowLineNumbers="True"
+								   TextChanged="EditorTextChangedHandler"
+								   ContextMenuOpening="ContextMenuOpeningHandler"
+								   MouseHover="MouseHoverHandler"
+								   PreviewKeyDown="EditorKeyDownHandler"
+								   PreviewKeyUp="EditorKeyUpHandler"
+								   MouseHoverStopped="MouseHoverStoppedHandler">
+				<avalonedit:TextEditor.ContextMenu>
+					<ContextMenu x:Name="CommandMenu" Placement="RelativePoint" />
+				</avalonedit:TextEditor.ContextMenu>
+			</avalonedit:TextEditor>
+		</DockPanel>
+		<GridSplitter Grid.Column="0" Grid.Row="2" Height="5" HorizontalAlignment="Stretch" ShowsPreview="True"
+		              VerticalAlignment="Center" Background="DimGray" />
+		<DataGrid Grid.Column="0" x:Name="ResultGrid" Grid.Row="3" AutoGenerateColumns="False"
+		          ItemsSource="{Binding ResultRowItems}" VirtualizingStackPanel.VirtualizationMode="Recycling"
+		          EnableColumnVirtualization="True"
+		          HorizontalGridLinesBrush="LightGray" VerticalGridLinesBrush="LightGray"
+		          PreviewMouseWheel="ResultGridPreviewMouseWheelHandler" PreviewMouseDown="ResultGridPreviewMouseDownHandler" />
+		<StatusBar x:Name="StatusBar" Grid.ColumnSpan="2" Grid.Row="4" Grid.Column="0">
 			<StatusBar.ItemsPanel>
 				<ItemsPanelTemplate>
 					<Grid>
@@ -73,13 +84,13 @@
 			<StatusBarItem Grid.Column="0">
 				<StackPanel Orientation="Horizontal" sqlPad:MarginSetter.Margin="2,0,2,0">
 					<TextBlock>
-						<Run Text="Line: "/>
+						<Run Text="Line: " />
 						<Run Text="{Binding CurrentLine}" />
-						<Run Text=" Column: "/>
+						<Run Text=" Column: " />
 						<Run Text="{Binding CurrentColumn}" />
 					</TextBlock>
 					<TextBlock Visibility="{Binding SelectionTextVisibility}">
-						<Run Text=" Selection: "/>
+						<Run Text=" Selection: " />
 						<Run Text="{Binding SelectionLength}" />
 					</TextBlock>
 				</StackPanel>
@@ -94,9 +105,10 @@
 			<StatusBarItem Grid.Column="4">
 				<StackPanel Orientation="Horizontal" sqlPad:MarginSetter.Margin="2,0,2,0">
 					<TextBlock x:Name="GridLabel" Visibility="Collapsed">
-						<Run Text="Row "/>
-						<Run Text="{Binding ElementName=ResultGrid, Path=SelectedIndex, Mode=OneWay, Converter={StaticResource SelectedIndexConverter}}" />
-						<Run Text=" of "/>
+						<Run Text="Row " />
+						<Run
+							Text="{Binding ElementName=ResultGrid, Path=SelectedIndex, Mode=OneWay, Converter={StaticResource SelectedIndexConverter}}" />
+						<Run Text=" of " />
 						<Run Text="{Binding ElementName=ResultGrid, Path=Items.Count, Mode=OneWay}" />
 					</TextBlock>
 					<TextBlock Text=" (more rows exist)" x:Name="TextMoreRowsExist" Visibility="Collapsed" />

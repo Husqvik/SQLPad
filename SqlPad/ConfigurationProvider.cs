@@ -7,7 +7,7 @@ namespace SqlPad
 {
 	public class ConfigurationProvider
 	{
-		private static readonly Dictionary<string, IInfrastructureFactory> InternalInfrastructureFactories;
+		private static readonly Dictionary<string, ConnectionConfiguration> InternalInfrastructureFactories;
 
 		static ConfigurationProvider()
 		{
@@ -19,8 +19,34 @@ namespace SqlPad
 
 			InternalInfrastructureFactories = databaseConfiguration.Infrastructures
 				.Cast<InfrastructureConfigurationSection>()
-				.ToDictionary(s => s.ConnectionStringName, s => (IInfrastructureFactory)Activator.CreateInstance(GetInfrastuctureFactoryType(s.InfrastructureFactory)));
+				.ToDictionary(s => s.ConnectionStringName, s => new ConnectionConfiguration(s));
 		}
+
+		public static ConnectionConfiguration GetConnectionCofiguration(string connectionStringName)
+		{
+			ConnectionConfiguration connectionConfiguration;
+			if (InternalInfrastructureFactories.TryGetValue(connectionStringName, out connectionConfiguration))
+			{
+				return connectionConfiguration;
+			}
+
+			throw new ArgumentException(String.Format("Connection string '{0}' doesn't exist. ", connectionStringName), "connectionStringName");
+		}
+
+		public static ConnectionStringSettingsCollection ConnectionStrings { get { return ConfigurationManager.ConnectionStrings; } }
+	}
+
+	public class ConnectionConfiguration
+	{
+		internal ConnectionConfiguration(InfrastructureConfigurationSection infrastructureConfigurationSection)
+		{
+			InfrastructureFactory = (IInfrastructureFactory)Activator.CreateInstance(GetInfrastuctureFactoryType(infrastructureConfigurationSection.InfrastructureFactory));
+			IsProduction = infrastructureConfigurationSection.IsProduction;
+		}
+
+		public IInfrastructureFactory InfrastructureFactory { get; private set; }
+
+		public bool IsProduction { get; private set; }
 
 		private static Type GetInfrastuctureFactoryType(string typeName)
 		{
@@ -32,18 +58,5 @@ namespace SqlPad
 
 			return infrastructureFactoryType;
 		}
-
-		public static IInfrastructureFactory GetInfrastructureFactory(string connectionStringName)
-		{
-			IInfrastructureFactory infrastructureFactory;
-			if (InternalInfrastructureFactories.TryGetValue(connectionStringName, out infrastructureFactory))
-			{
-				return infrastructureFactory;
-			}
-
-			throw new ArgumentException(String.Format("Connection string '{0}' doesn't exist. ", connectionStringName), "connectionStringName");
-		}
-
-		public static ConnectionStringSettingsCollection ConnectionStrings { get { return ConfigurationManager.ConnectionStrings; } }
 	}
 }

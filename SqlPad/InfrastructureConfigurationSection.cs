@@ -21,6 +21,7 @@ namespace SqlPad
 	{
 		private const string AttributeConnectionStringName = "ConnectionStringName";
 		private const string AttributeInfrastructureFactory = "InfrastructureFactory";
+		private const string AttributeIsProduction = "IsProduction";
 		public const string SectionName = "infrastructureConfiguration";
 
 		[ConfigurationProperty(AttributeConnectionStringName, IsRequired = true)]
@@ -35,6 +36,13 @@ namespace SqlPad
 		{
 			get { return (string)this[AttributeInfrastructureFactory]; }
 			set { this[AttributeInfrastructureFactory] = value; }
+		}
+
+		[ConfigurationProperty(AttributeIsProduction, IsRequired = false)]
+		public bool IsProduction
+		{
+			get { return (bool)this[AttributeIsProduction]; }
+			set { this[AttributeIsProduction] = value; }
 		}
 	}
 

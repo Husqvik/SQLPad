@@ -16,6 +16,7 @@ namespace SqlPad
 		private int _currentColumn;
 		private int? _selectionLength;
 		private Visibility _selectionTextVisibility = Visibility.Collapsed;
+		private Visibility _productionLabelVisibility = Visibility.Collapsed;
 		private ConnectionStringSettings _currentConnection;
 		private string _currentSchema;
 
@@ -58,6 +59,12 @@ namespace SqlPad
 		{
 			get { return _selectionTextVisibility; }
 			set { UpdateValueAndRaisePropertyChanged(ref _selectionTextVisibility, value); }
+		}
+
+		public Visibility ProductionLabelVisibility
+		{
+			get { return _productionLabelVisibility; }
+			set { UpdateValueAndRaisePropertyChanged(ref _productionLabelVisibility, value); }
 		}
 
 		public ObservableCollection<object[]> ResultRowItems { get { return _resultRowItems; } }
