@@ -33,15 +33,19 @@ namespace SqlPad.Oracle
 		
 		public bool Program { get; private set; }
 		
+		public bool DatabaseLink { get; private set; }
+		
 		public bool InUnparsedData { get; private set; }
 		
 		public StatementGrammarNode CurrentTerminal { get; private set; }
 
 		public OracleStatement Statement { get; private set; }
 
+		public ICollection<string> TerminalCandidates { get; private set; }
+
 		private bool Any
 		{
-			get { return Schema || SchemaDataObject || PipelinedFunction || SchemaDataObjectReference || Column || AllColumns || JoinType || JoinCondition || Program; }
+			get { return Schema || SchemaDataObject || PipelinedFunction || SchemaDataObjectReference || Column || AllColumns || JoinType || JoinCondition || Program || DatabaseLink || Sequence; }
 		}
 
 		public bool ExistsTerminalValue { get { return !String.IsNullOrEmpty(TerminalValuePartUntilCaret); } }
@@ -103,22 +107,23 @@ namespace SqlPad.Oracle
 				precedingTerminal = precedingTerminal.PrecedingTerminal;
 			}
 
-			var terminalCandidates = new HashSet<string>(_parser.GetTerminalCandidates(isCursorAfterToken ? nearestTerminal : precedingTerminal));
-			Schema = terminalCandidates.Contains(Terminals.SchemaIdentifier);
-			Program = Column = terminalCandidates.Contains(Terminals.Identifier);
-			JoinType = !isCursorTouchingTwoTerminals && terminalCandidates.Contains(Terminals.Join);
+			TerminalCandidates = new HashSet<string>(_parser.GetTerminalCandidates(isCursorAfterToken ? nearestTerminal : precedingTerminal));
+			Schema = TerminalCandidates.Contains(Terminals.SchemaIdentifier);
+			Program = Column = TerminalCandidates.Contains(Terminals.Identifier);
+			DatabaseLink = TerminalCandidates.Contains(Terminals.DatabaseLinkIdentifier);
+			JoinType = !isCursorTouchingTwoTerminals && TerminalCandidates.Contains(Terminals.Join);
 
 			var isWithinFromClause = nearestTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.FromClause) != null || (isCursorAfterToken && nearestTerminal.Id == Terminals.From);
 			var isWithinJoinCondition = nearestTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.JoinClause, NonTerminals.JoinColumnsOrCondition) != null;
-			SchemaDataObject = isWithinFromClause && !isWithinJoinCondition && terminalCandidates.Contains(Terminals.ObjectIdentifier);
+			SchemaDataObject = isWithinFromClause && !isWithinJoinCondition && TerminalCandidates.Contains(Terminals.ObjectIdentifier);
 
 			var isWithinJoinClause = nearestTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.FromClause, NonTerminals.JoinClause) != null;
-			JoinCondition = isWithinJoinClause && isCursorAfterToken && (terminalCandidates.Contains(Terminals.On) || nearestTerminal.Id == Terminals.On);
+			JoinCondition = isWithinJoinClause && isCursorAfterToken && (TerminalCandidates.Contains(Terminals.On) || nearestTerminal.Id == Terminals.On);
 
 			var isWithinSelectList = (nearestTerminal.Id == Terminals.Select && isCursorAfterToken) || nearestTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.SelectList) != null;
-			AllColumns = isWithinSelectList && terminalCandidates.Contains(Terminals.Asterisk);
+			AllColumns = isWithinSelectList && TerminalCandidates.Contains(Terminals.Asterisk);
 
-			SchemaDataObjectReference = !isWithinFromClause && terminalCandidates.Contains(Terminals.ObjectIdentifier);
+			SchemaDataObjectReference = !isWithinFromClause && TerminalCandidates.Contains(Terminals.ObjectIdentifier);
 
 			if (!isCursorAfterToken)
 			{
@@ -209,6 +214,12 @@ namespace SqlPad.Oracle
 			builder.Append("; ");
 			builder.Append("Program: ");
 			builder.Append(Program);
+			builder.Append("; ");
+			builder.Append("DatabaseLink: ");
+			builder.Append(DatabaseLink);
+			builder.Append("; ");
+			builder.Append("Sequence: ");
+			builder.Append(Sequence);
 
 			Trace.WriteLine(builder.ToString());
 		}

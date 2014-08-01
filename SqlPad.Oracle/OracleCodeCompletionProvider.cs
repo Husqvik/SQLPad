@@ -253,6 +253,22 @@ namespace SqlPad.Oracle
 				completionItems = completionItems.Concat(GenerateSelectListItems(currentNode, semanticModel, cursorPosition, oracleDatabaseModel));
 			}
 
+			if (completionType.DatabaseLink)
+			{
+				var databaseLinkItems = oracleDatabaseModel.DatabaseLinks.Values
+					.Where(l => (String.IsNullOrEmpty(completionType.TerminalValuePartUntilCaret) || completionType.TerminalValueUnderCursor.ToQuotedIdentifier() != l.FullyQualifiedName.Name) &&
+								(String.IsNullOrEmpty(completionType.TerminalValuePartUntilCaret) || l.FullyQualifiedName.Name.ToUpperInvariant().Contains(completionType.TerminalValuePartUntilCaret.ToUpperInvariant())))
+					.Select(l => new OracleCodeCompletionItem
+					             {
+						             Name = l.FullyQualifiedName.Name.ToSimpleIdentifier(),
+									 Text = l.FullyQualifiedName.Name.ToSimpleIdentifier(),
+						             Category = OracleCodeCompletionCategory.DatabaseLink,
+						             StatementNode = completionType.CurrentTerminal
+					             });
+
+				completionItems = completionItems.Concat(databaseLinkItems);
+			}
+
 			return completionItems.OrderItems().ToArray();
 
 			// TODO: Add option to search all/current/public schemas

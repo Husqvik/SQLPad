@@ -679,13 +679,14 @@ FROM
 		}
 
 		[Test(Description = @"")]
-		public void TestTableSuggestionAfterQuoteCharacter()
+		public void TestSuggestionWhenTypingDatabaseLinkIdentifier()
 		{
-			const string query1 = @"SELECT * FROM ""CaseUnknownTable""";
+			const string query1 = @"SELECT * FROM CUSTOMER@H";
 
-			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 15).ToList();
-			items.Count.ShouldBe(13);
-			items[0].Text.ShouldBe("\"CaseSensitiveTable\"");
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 24).ToList();
+			items.Count.ShouldBe(1);
+			items[0].Name.ShouldBe("HQ_PDB_LOOPBACK");
+			items[0].Text.ShouldBe("HQ_PDB_LOOPBACK");
 		}
 
 		[Test(Description = @"")]
@@ -699,6 +700,16 @@ se";
 
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 37).ToList();
 			items.Count.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
+		public void TestTableSuggestionAfterQuoteCharacter()
+		{
+			const string query1 = @"SELECT * FROM ""CaseUnknownTable""";
+
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 15).ToList();
+			items.Count.ShouldBe(13);
+			items[0].Text.ShouldBe("\"CaseSensitiveTable\"");
 		}
 
 		public class OracleCodeCompletionTypeTest
@@ -748,6 +759,25 @@ se";
 				completionType.Program.ShouldBe(true);
 				completionType.SchemaDataObject.ShouldBe(false);
 				//completionType.SchemaDataObjectReference.ShouldBe(true);
+			}
+
+			[Test(Description = @"")]
+			public void TestCodeCompletionTypeWhenTypingDatabaseLinkIdentifier()
+			{
+				const string statement = @"SELECT * FROM CUSTOMER@H";
+				var completionType = InitializeCodeCompletionType(statement, 24);
+				AssertOnlyDatabaseLinkCompletion(completionType);
+			}
+
+			private void AssertOnlyDatabaseLinkCompletion(OracleCodeCompletionType completionType)
+			{
+				completionType.Schema.ShouldBe(false);
+				completionType.Column.ShouldBe(false);
+				completionType.AllColumns.ShouldBe(false);
+				completionType.Program.ShouldBe(false);
+				completionType.SchemaDataObject.ShouldBe(false);
+				completionType.SchemaDataObjectReference.ShouldBe(false);
+				completionType.DatabaseLink.ShouldBe(true);
 			}
 		}
 	}
