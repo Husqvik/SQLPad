@@ -73,7 +73,8 @@ namespace SqlPad.Oracle.Commands
 			builder.Append(_missingColumn.Name.ToSimpleIdentifier());
 			var newCaretOffset = builder.Length + indextStart + 1;
 
-			builder.Append(" VARCHAR2(100) NULL");
+			const string defaultType = " VARCHAR2(100) NULL";
+			builder.Append(defaultType);
 
 			builder.AppendLine();
 			builder.AppendLine(");");
@@ -87,6 +88,7 @@ namespace SqlPad.Oracle.Commands
 			ExecutionContext.SegmentsToReplace.Add(addedSegment);
 
 			ExecutionContext.CaretOffset = newCaretOffset;
+			ExecutionContext.SelectionLength = defaultType.Length - 1;
 		}
 	}
 }

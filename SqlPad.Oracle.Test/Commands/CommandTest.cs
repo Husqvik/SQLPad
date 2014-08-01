@@ -872,6 +872,7 @@ WHERE
 
 			_editor.Text.ShouldBe("SELECT NOT_EXISTING_COLUMN FROM SELECTION;\r\n\r\nALTER TABLE HUSQVIK.SELECTION ADD\r\n(\r\n\tNOT_EXISTING_COLUMN VARCHAR2(100) NULL\r\n);\r\n");
 			_editor.CaretOffset.ShouldBe(105);
+			_editor.SelectionLength.ShouldBe(18);
 		}
 
 		[Test(Description = @""), STAThread]

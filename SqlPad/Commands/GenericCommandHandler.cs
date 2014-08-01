@@ -37,9 +37,18 @@ namespace SqlPad.Commands
 		public static void UpdateDocument(TextEditor editor, CommandExecutionContext executionContext)
 		{
 			var caretOffset = editor.CaretOffset;
+			var selectionLength = editor.SelectionLength;
 			editor.ReplaceTextSegments(executionContext.SegmentsToReplace);
 
-			if (executionContext.CaretOffset != caretOffset)
+			var caretOffsetChanged = executionContext.CaretOffset != caretOffset;
+
+			if (executionContext.SelectionLength != selectionLength)
+			{
+				editor.SelectionStart = caretOffsetChanged ? executionContext.CaretOffset : editor.CaretOffset;
+				editor.SelectionLength = executionContext.SelectionLength;
+			}
+
+			if (caretOffsetChanged)
 				editor.CaretOffset = executionContext.CaretOffset;
 		}
 

@@ -32,7 +32,7 @@ namespace SqlPad.Commands
 		
 		public int CaretOffset { get; set; }
 
-		public int SelectionLength { get; private set; }
+		public int SelectionLength { get; set; }
 		
 		public ICommandSettingsProvider SettingsProvider { get; set; }
 

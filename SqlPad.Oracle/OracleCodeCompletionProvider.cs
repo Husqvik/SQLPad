@@ -256,7 +256,7 @@ namespace SqlPad.Oracle
 			if (completionType.DatabaseLink)
 			{
 				var databaseLinkItems = oracleDatabaseModel.DatabaseLinks.Values
-					.Where(l => (String.IsNullOrEmpty(completionType.TerminalValuePartUntilCaret) || completionType.TerminalValueUnderCursor.ToQuotedIdentifier() != l.FullyQualifiedName.Name) &&
+					.Where(l => (String.IsNullOrEmpty(completionType.TerminalValueUnderCursor) || completionType.TerminalValueUnderCursor.ToQuotedIdentifier() != l.FullyQualifiedName.Name) &&
 								(String.IsNullOrEmpty(completionType.TerminalValuePartUntilCaret) || l.FullyQualifiedName.Name.ToUpperInvariant().Contains(completionType.TerminalValuePartUntilCaret.ToUpperInvariant())))
 					.Select(l => new OracleCodeCompletionItem
 					             {
