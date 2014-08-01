@@ -688,6 +688,19 @@ FROM
 			items[0].Text.ShouldBe("\"CaseSensitiveTable\"");
 		}
 
+		[Test(Description = @"")]
+		public void TestSuggestionAtSecondStatementBeginningWithFirstStatementEndingWithQuotedIdentifier()
+		{
+			const string query1 =
+@"SELECT * FROM ""PaymentPlans""
+;
+
+se";
+
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 37).ToList();
+			items.Count.ShouldBe(0);
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)

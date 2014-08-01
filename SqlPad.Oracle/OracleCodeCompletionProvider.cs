@@ -116,7 +116,7 @@ namespace SqlPad.Oracle
 			{
 				isCursorAtTerminal = false;
 
-				statement = (OracleStatement)sqlDocumentRepository.Statements.LastOrDefault(s => s.GetNearestTerminalToPosition(cursorPosition) != null);
+				statement = completionType.Statement;
 				if (statement == null)
 				{
 					return EmptyCollection;
@@ -124,7 +124,7 @@ namespace SqlPad.Oracle
 
 				currentNode = statement.GetNearestTerminalToPosition(cursorPosition);
 
-				if (completionType.InUnparsedData)
+				if (completionType.InUnparsedData || currentNode == null)
 					return EmptyCollection;
 			}
 			else

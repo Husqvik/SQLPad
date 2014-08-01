@@ -37,6 +37,8 @@ namespace SqlPad.Oracle
 		
 		public StatementGrammarNode CurrentTerminal { get; private set; }
 
+		public OracleStatement Statement { get; private set; }
+
 		private bool Any
 		{
 			get { return Schema || SchemaDataObject || PipelinedFunction || SchemaDataObjectReference || Column || AllColumns || JoinType || JoinCondition || Program; }
@@ -52,14 +54,14 @@ namespace SqlPad.Oracle
 
 		public OracleCodeCompletionType(StatementCollection statementCollection, string statementText, int cursorPosition)
 		{
-			var statement = (OracleStatement)(statementCollection.GetStatementAtPosition(cursorPosition) ?? statementCollection.LastOrDefault());
-			if (statement == null)
+			Statement = (OracleStatement)(statementCollection.GetStatementAtPosition(cursorPosition) ?? statementCollection.LastOrDefault());
+			if (Statement == null)
 				return;
 
-			if (statement.TerminatorNode != null && statement.TerminatorNode.SourcePosition.IndexStart < cursorPosition)
+			if (Statement.TerminatorNode != null && Statement.TerminatorNode.SourcePosition.IndexStart < cursorPosition)
 				return;
 
-			var nearestTerminal = statement.GetNearestTerminalToPosition(cursorPosition);
+			var nearestTerminal = Statement.GetNearestTerminalToPosition(cursorPosition);
 			if (nearestTerminal == null)
 				return;
 
@@ -80,7 +82,7 @@ namespace SqlPad.Oracle
 				if (TerminalValueUnderCursor != null)
 				{
 					TerminalValuePartUntilCaret = TerminalValueUnderCursor;
-					CurrentTerminal = new StatementGrammarNode(NodeType.Terminal, statement, new OracleToken(TerminalValueUnderCursor, cursorPosition - TerminalValuePartUntilCaret.Length));
+					CurrentTerminal = new StatementGrammarNode(NodeType.Terminal, Statement, new OracleToken(TerminalValueUnderCursor, cursorPosition - TerminalValuePartUntilCaret.Length));
 				}
 			}
 			else
