@@ -166,25 +166,35 @@ namespace SqlPad.Oracle
 
 			var indextStart = statementsToFormat[0].RootNode.FirstTerminalNode.SourcePosition.IndexStart;
 
+			var lastStatement = statementsToFormat[statementsToFormat.Length - 1];
+			var lastStatementIndexEnd = lastStatement.TerminatorNode == null
+				? lastStatement.RootNode.LastTerminalNode.SourcePosition.IndexEnd
+				: lastStatement.TerminatorNode.SourcePosition.IndexEnd;
+
 			var formattedStatement =
 				new TextSegment
 				{
 					Text = formatFunction(statementsToFormat),
 					IndextStart = indextStart,
-					Length = statementsToFormat[statementsToFormat.Length - 1].RootNode.LastTerminalNode.SourcePosition.IndexEnd - indextStart + 1,
+					Length = lastStatementIndexEnd - indextStart + 1,
 				};
 
 			executionContext.SegmentsToReplace.Add(formattedStatement);
 		}
 
-		private string FormatStatementsAsSingleLine(IEnumerable<StatementBase> formattedStatements)
+		private string FormatStatementsAsSingleLine(ICollection<StatementBase> formattedStatements)
 		{
 			var builder = new StringBuilder();
 
+			var statementIndex = 0;
 			foreach (var statement in formattedStatements)
 			{
 				FormatStatementAsSingleLine(statement, builder);
-				builder.AppendLine();
+
+				if (++statementIndex < formattedStatements.Count)
+				{
+					builder.AppendLine();
+				}
 			}
 
 			return builder.ToString();
@@ -207,6 +217,16 @@ namespace SqlPad.Oracle
 
 				precedingNode = terminal;
 			}
+
+			AppendTerminatorIfExists(statement, builder);
+		}
+
+		private void AppendTerminatorIfExists(StatementBase statement, StringBuilder builder)
+		{
+			if (statement.TerminatorNode != null)
+			{
+				builder.Append(statement.TerminatorNode.Token.Value);
+			}			
 		}
 
 		private string FormatStatements(IEnumerable<StatementBase> formattedStatements)
@@ -218,6 +238,8 @@ namespace SqlPad.Oracle
 			{
 				string indentation = null;
 				FormatNode(statement.RootNode, builder, ref skipSpaceBeforeToken, ref indentation);
+
+				AppendTerminatorIfExists(statement, builder);
 			}
 
 			return builder.ToString();

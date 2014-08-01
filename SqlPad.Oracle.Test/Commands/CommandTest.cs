@@ -253,7 +253,7 @@ WHERE
 		private List<TextSegment> FindUsagesOrdered(string statementText, int currentPosition)
 		{
 			_documentRepository.UpdateStatements(statementText);
-			var executionContext = new CommandExecutionContext(statementText, 0, 0, currentPosition, _documentRepository);
+			var executionContext = new CommandExecutionContext(statementText, currentPosition, currentPosition, 0, _documentRepository);
 			FindUsagesCommand.FindUsages.ExecutionHandler(executionContext);
 			return executionContext.SegmentsToReplace.OrderBy(s => s.IndextStart).ToList();
 		}

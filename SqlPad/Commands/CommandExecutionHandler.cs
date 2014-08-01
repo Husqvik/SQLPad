@@ -32,10 +32,6 @@ namespace SqlPad.Commands
 		
 		public int CaretOffset { get; set; }
 
-		public int Line { get; set; }
-		
-		public int Column { get; set; }
-		
 		public int SelectionLength { get; private set; }
 		
 		public ICommandSettingsProvider SettingsProvider { get; set; }
@@ -46,11 +42,11 @@ namespace SqlPad.Commands
 				throw new InvalidOperationException(String.Format("Settings provider is mandatory. "));
 		}
 
-		public CommandExecutionContext(string statementText, int line, int column, int caretOffset, SqlDocumentRepository documentRepository)
+		public CommandExecutionContext(string statementText, int caretOffset, int selectionStart, int selectionLength, SqlDocumentRepository documentRepository)
 		{
 			StatementText = statementText;
-			Line = line;
-			Column = column;
+			SelectionStart = selectionStart;
+			SelectionLength = selectionLength;
 			CaretOffset = caretOffset;
 			SelectionStart = caretOffset;
 			DocumentRepository = documentRepository;
@@ -58,12 +54,10 @@ namespace SqlPad.Commands
 
 		public static CommandExecutionContext Create(TextEditor editor, SqlDocumentRepository documentRepository)
 		{
-			return new CommandExecutionContext(editor.Text, editor.TextArea.Caret.Line, editor.TextArea.Caret.Column, editor.CaretOffset, documentRepository)
+			return new CommandExecutionContext(editor.Text, editor.CaretOffset, editor.SelectionStart, editor.SelectionLength, documentRepository)
 			{
 				SelectionStart = editor.SelectionStart,
 				SelectionLength = editor.SelectionLength,
-				Line = editor.TextArea.Caret.Line,
-				Column = editor.TextArea.Caret.Column
 			};
 		}
 

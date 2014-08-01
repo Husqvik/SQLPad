@@ -54,18 +54,43 @@ FROM
 		ON RESPONDENTBUCKET.TARGETGROUP_ID = TARGETGROUP.TARGETGROUP_ID
 ORDER BY
 	NAME,
-	SELECTION_ID";
+	SELECTION_ID;";
 
 			_documentRepository.UpdateStatements(sourceFormat);
 			var executionContext = new CommandExecutionContext(sourceFormat, 0, 0, 0, _documentRepository);
 			Formatter.SingleLineExecutionHandler.ExecutionHandler(executionContext);
 
-			var expectedFormat = "SELECT SELECTION.NAME, COUNT (*) OVER (PARTITION BY NAME ORDER BY RESPONDENTBUCKET_ID, SELECTION_ID) DUMMY_COUNT, MAX (RESPONDENTBUCKET_ID) KEEP (DENSE_RANK FIRST ORDER BY PROJECT_ID, SELECTION_ID) FROM SELECTION LEFT JOIN RESPONDENTBUCKET ON SELECTION.RESPONDENTBUCKET_ID = RESPONDENTBUCKET.RESPONDENTBUCKET_ID LEFT JOIN TARGETGROUP ON RESPONDENTBUCKET.TARGETGROUP_ID = TARGETGROUP.TARGETGROUP_ID ORDER BY NAME, SELECTION_ID" + Environment.NewLine;
+			const string expectedFormat = "SELECT SELECTION.NAME, COUNT (*) OVER (PARTITION BY NAME ORDER BY RESPONDENTBUCKET_ID, SELECTION_ID) DUMMY_COUNT, MAX (RESPONDENTBUCKET_ID) KEEP (DENSE_RANK FIRST ORDER BY PROJECT_ID, SELECTION_ID) FROM SELECTION LEFT JOIN RESPONDENTBUCKET ON SELECTION.RESPONDENTBUCKET_ID = RESPONDENTBUCKET.RESPONDENTBUCKET_ID LEFT JOIN TARGETGROUP ON RESPONDENTBUCKET.TARGETGROUP_ID = TARGETGROUP.TARGETGROUP_ID ORDER BY NAME, SELECTION_ID;";
 
 			AssertFormattedResult(executionContext, expectedFormat);
 		}
 
-		private void AssertFormattedResult(CommandExecutionContext executionContext, string expectedFormat)
+		[Test(Description = @"")]
+		public void TestMultipleStatementSingleLineFormat()
+		{
+			const string sourceFormat =
+@"SELECT
+	DUMMY
+FROM
+	DUAL
+;
+
+SELECT
+	DUMMY
+FROM
+	DUAL
+;";
+
+			_documentRepository.UpdateStatements(sourceFormat);
+			var executionContext = new CommandExecutionContext(sourceFormat, 0, 0, sourceFormat.Length, _documentRepository);
+			Formatter.SingleLineExecutionHandler.ExecutionHandler(executionContext);
+
+			var expectedFormat = "SELECT DUMMY FROM DUAL;" + Environment.NewLine + "SELECT DUMMY FROM DUAL;";
+
+			AssertFormattedResult(executionContext, expectedFormat);
+		}
+
+		private static void AssertFormattedResult(CommandExecutionContext executionContext, string expectedFormat)
 		{
 			executionContext.SegmentsToReplace.Count.ShouldBe(1);
 			var formattedSegment = executionContext.SegmentsToReplace.First();

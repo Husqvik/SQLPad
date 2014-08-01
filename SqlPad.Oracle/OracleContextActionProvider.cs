@@ -15,7 +15,7 @@ namespace SqlPad.Oracle
 		internal ICollection<IContextAction> GetContextActions(OracleDatabaseModelBase databaseModel, string statementText, int cursorPosition)
 		{
 			var documentStore = new SqlDocumentRepository(_oracleParser, new OracleStatementValidator(), databaseModel, statementText);
-			var executionContext = new CommandExecutionContext(statementText, 0, 0, cursorPosition, documentStore);
+			var executionContext = new CommandExecutionContext(statementText, cursorPosition, cursorPosition, 0, documentStore);
 			return GetContextActions(documentStore, executionContext);
 		}
 
