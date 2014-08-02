@@ -760,6 +760,20 @@ se";
 				completionType.SchemaDataObject.ShouldBe(false);
 				//completionType.SchemaDataObjectReference.ShouldBe(true);
 			}
+			
+			[Test(Description = @"")]
+			public void TestCodeCompletionTypeAfterSemicolonAfterExpectedJoinCondition()
+			{
+				const string statement = @"SELECT I.*, INVOICES.ID FROM HUSQVIK.INVOICELINES I JOIN HUSQVIK.INVOICES;";
+				var completionType = InitializeCodeCompletionType(statement, statement.Length);
+				completionType.Schema.ShouldBe(false);
+				completionType.JoinType.ShouldBe(false);
+				completionType.JoinCondition.ShouldBe(false);
+				completionType.Column.ShouldBe(false);
+				completionType.AllColumns.ShouldBe(false);
+				completionType.Program.ShouldBe(false);
+				completionType.SchemaDataObject.ShouldBe(false);
+			}
 
 			[Test(Description = @"")]
 			public void TestCodeCompletionTypeWhenTypingDatabaseLinkIdentifier()
@@ -778,6 +792,127 @@ se";
 				completionType.SchemaDataObject.ShouldBe(false);
 				completionType.SchemaDataObjectReference.ShouldBe(false);
 				completionType.DatabaseLink.ShouldBe(true);
+			}
+
+			public class ReferenceIdentifierTest
+			{
+				public class SelectList
+				{
+					[Test(Description = @"")]
+					public void TestReferenceIdentifiersWhenCursorAtIdentifierOfAlreadyEnteredFullyQualifiedColumnIdentifier()
+					{
+						const string statement = @"SELECT HUSQVIK.SELECTION.SELECTION_ID FROM HUSQVIK.SELECTION";
+						var referenceIdentifier = InitializeCodeCompletionType(statement, 29).ReferenceIdentifier;
+						referenceIdentifier.CursorPosition.ShouldBe(29);
+						referenceIdentifier.SchemaIdentifierOriginalValue.ShouldBe("HUSQVIK");
+						referenceIdentifier.ObjectIdentifierOriginalValue.ShouldBe("SELECTION");
+						referenceIdentifier.IdentifierOriginalValue.ShouldBe("SELECTION_ID");
+						referenceIdentifier.SchemaIdentifierEffectiveValue.ShouldBe("HUSQVIK");
+						referenceIdentifier.ObjectIdentifierEffectiveValue.ShouldBe("SELECTION");
+						referenceIdentifier.IdentifierEffectiveValue.ShouldBe("SELE");
+					}
+
+					[Test(Description = @"")]
+					public void TestReferenceIdentifiersWhenCursorAtObjectIdentifierOfAlreadyEnteredFullyQualifiedColumnIdentifier()
+					{
+						const string statement = @"SELECT HUSQVIK.SELECTION.SELECTION_ID FROM HUSQVIK.SELECTION";
+						var referenceIdentifier = InitializeCodeCompletionType(statement, 19).ReferenceIdentifier;
+						referenceIdentifier.CursorPosition.ShouldBe(19);
+						referenceIdentifier.SchemaIdentifierOriginalValue.ShouldBe("HUSQVIK");
+						referenceIdentifier.ObjectIdentifierOriginalValue.ShouldBe("SELECTION");
+						referenceIdentifier.IdentifierOriginalValue.ShouldBe("SELECTION_ID");
+						referenceIdentifier.SchemaIdentifierEffectiveValue.ShouldBe("HUSQVIK");
+						referenceIdentifier.ObjectIdentifierEffectiveValue.ShouldBe("SELE");
+						referenceIdentifier.IdentifierEffectiveValue.ShouldBe(null);
+					}
+
+					[Test(Description = @"")]
+					public void TestReferenceIdentifiersWhenCursorAtSchemaIdentifierOfAlreadyEnteredFullyQualifiedColumnIdentifier()
+					{
+						const string statement = @"SELECT HUSQVIK.SELECTION.SELECTION_ID FROM HUSQVIK.SELECTION";
+						var referenceIdentifier = InitializeCodeCompletionType(statement, 10).ReferenceIdentifier;
+						referenceIdentifier.CursorPosition.ShouldBe(10);
+						referenceIdentifier.SchemaIdentifierOriginalValue.ShouldBe("HUSQVIK");
+						referenceIdentifier.ObjectIdentifierOriginalValue.ShouldBe("SELECTION");
+						referenceIdentifier.IdentifierOriginalValue.ShouldBe("SELECTION_ID");
+						referenceIdentifier.SchemaIdentifierEffectiveValue.ShouldBe("HUS");
+						referenceIdentifier.ObjectIdentifierEffectiveValue.ShouldBe(null);
+						referenceIdentifier.IdentifierEffectiveValue.ShouldBe(null);
+					}
+
+					[Test(Description = @"")]
+					public void TestReferenceIdentifiersWhenTypingColumnIdentifier()
+					{
+						const string statement = @"SELECT NAM FROM SELECTION";
+						var referenceIdentifier = InitializeCodeCompletionType(statement, 10).ReferenceIdentifier;
+						referenceIdentifier.CursorPosition.ShouldBe(10);
+						referenceIdentifier.SchemaIdentifierOriginalValue.ShouldBe(null);
+						referenceIdentifier.ObjectIdentifierOriginalValue.ShouldBe(null);
+						referenceIdentifier.IdentifierOriginalValue.ShouldBe("NAM");
+						referenceIdentifier.SchemaIdentifierEffectiveValue.ShouldBe(null);
+						referenceIdentifier.ObjectIdentifierEffectiveValue.ShouldBe(null);
+						referenceIdentifier.IdentifierEffectiveValue.ShouldBe("NAM");
+					}
+
+					[Test(Description = @"")]
+					public void TestReferenceIdentifiersWhenTypingObjectIdentifier()
+					{
+						const string statement = @"SELECT SELECTION.NAM FROM SELECTION";
+						var referenceIdentifier = InitializeCodeCompletionType(statement, 20).ReferenceIdentifier;
+						referenceIdentifier.CursorPosition.ShouldBe(20);
+						referenceIdentifier.SchemaIdentifierOriginalValue.ShouldBe(null);
+						referenceIdentifier.ObjectIdentifierOriginalValue.ShouldBe("SELECTION");
+						referenceIdentifier.IdentifierOriginalValue.ShouldBe("NAM");
+						referenceIdentifier.SchemaIdentifierEffectiveValue.ShouldBe(null);
+						referenceIdentifier.ObjectIdentifierEffectiveValue.ShouldBe("SELECTION");
+						referenceIdentifier.IdentifierEffectiveValue.ShouldBe("NAM");
+					}
+				}
+
+				public class FromClause
+				{
+					[Test(Description = @"")]
+					public void TestReferenceIdentifiersWhenTypingFullyQualifiedObjectIdentifier()
+					{
+						const string statement = @"SELECT * FROM HUSQVIK.SELE";
+						var referenceIdentifier = InitializeCodeCompletionType(statement, 26).ReferenceIdentifier;
+						referenceIdentifier.CursorPosition.ShouldBe(26);
+						referenceIdentifier.SchemaIdentifierOriginalValue.ShouldBe("HUSQVIK");
+						referenceIdentifier.ObjectIdentifierOriginalValue.ShouldBe("SELE");
+						referenceIdentifier.IdentifierOriginalValue.ShouldBe(null);
+						referenceIdentifier.SchemaIdentifierEffectiveValue.ShouldBe("HUSQVIK");
+						referenceIdentifier.ObjectIdentifierEffectiveValue.ShouldBe("SELE");
+						referenceIdentifier.IdentifierEffectiveValue.ShouldBe(null);
+					}
+
+					[Test(Description = @"")]
+					public void TestReferenceIdentifiersWhenTypingObjectIdentifier()
+					{
+						const string statement = @"SELECT * FROM SELE";
+						var referenceIdentifier = InitializeCodeCompletionType(statement, 18).ReferenceIdentifier;
+						referenceIdentifier.CursorPosition.ShouldBe(18);
+						referenceIdentifier.SchemaIdentifierOriginalValue.ShouldBe(null);
+						referenceIdentifier.ObjectIdentifierOriginalValue.ShouldBe("SELE");
+						referenceIdentifier.IdentifierOriginalValue.ShouldBe(null);
+						referenceIdentifier.SchemaIdentifierEffectiveValue.ShouldBe(null);
+						referenceIdentifier.ObjectIdentifierEffectiveValue.ShouldBe("SELE");
+						referenceIdentifier.IdentifierEffectiveValue.ShouldBe(null);
+					}
+
+					[Test(Description = @"")]
+					public void TestReferenceIdentifiersWhenCursorAtObjectIdentifierOfAlreadyEnteredFullyQualifiedObjectName()
+					{
+						const string statement = @"SELECT * FROM HUSQVIK.SELECTION";
+						var referenceIdentifier = InitializeCodeCompletionType(statement, 26).ReferenceIdentifier;
+						referenceIdentifier.CursorPosition.ShouldBe(26);
+						referenceIdentifier.SchemaIdentifierOriginalValue.ShouldBe("HUSQVIK");
+						referenceIdentifier.ObjectIdentifierOriginalValue.ShouldBe("SELECTION");
+						referenceIdentifier.IdentifierOriginalValue.ShouldBe(null);
+						referenceIdentifier.SchemaIdentifierEffectiveValue.ShouldBe("HUSQVIK");
+						referenceIdentifier.ObjectIdentifierEffectiveValue.ShouldBe("SELE");
+						referenceIdentifier.IdentifierEffectiveValue.ShouldBe(null);
+					}
+				}
 			}
 		}
 	}

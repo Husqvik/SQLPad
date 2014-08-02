@@ -12,6 +12,7 @@ namespace SqlPad.Oracle
 	{
 		private readonly OracleSqlParser _parser = new OracleSqlParser();
 		private static readonly char[] Separators = { ' ', '\t', '\r', '\n' };
+		private readonly int _cursorPosition;
 
 		public bool Schema { get; private set; }
 
@@ -58,6 +59,8 @@ namespace SqlPad.Oracle
 
 		public OracleCodeCompletionType(StatementCollection statementCollection, string statementText, int cursorPosition)
 		{
+			_cursorPosition = cursorPosition;
+
 			Statement = (OracleStatement)(statementCollection.GetStatementAtPosition(cursorPosition) ?? statementCollection.LastOrDefault());
 			if (Statement == null)
 				return;
@@ -155,7 +158,8 @@ namespace SqlPad.Oracle
 				{
 					SchemaIdentifier = GetIdentifierTokenValue(identifiers, Terminals.SchemaIdentifier),
 					ObjectIdentifier = GetIdentifierTokenValue(identifiers, Terminals.ObjectIdentifier),
-					Identifier = GetIdentifierTokenValue(identifiers, Terminals.Identifier)
+					Identifier = GetIdentifierTokenValue(identifiers, Terminals.Identifier),
+					CursorPosition = _cursorPosition
 				};
 		}
 
@@ -222,6 +226,7 @@ namespace SqlPad.Oracle
 			builder.Append(Sequence);
 
 			Trace.WriteLine(builder.ToString());
+			Trace.WriteLine(ReferenceIdentifier.ToString());
 		}
 	}
 
@@ -230,29 +235,44 @@ namespace SqlPad.Oracle
 		public StatementGrammarNode SchemaIdentifier { get; set; }
 		public StatementGrammarNode ObjectIdentifier { get; set; }
 		public StatementGrammarNode Identifier { get; set; }
+		public int CursorPosition { get; set; }
 
-		public string SchemaIdentifierValue { get { return SchemaIdentifier == null ? null : SchemaIdentifier.Token.Value; } }
-		public string ObjectIdentifierValue { get { return ObjectIdentifier == null ? null : ObjectIdentifier.Token.Value; } }
-		public string IdentifierValue { get { return Identifier == null ? null : Identifier.Token.Value; } }
+		public string SchemaIdentifierOriginalValue { get { return SchemaIdentifier == null ? null : SchemaIdentifier.Token.Value; } }
+		public string ObjectIdentifierOriginalValue { get { return ObjectIdentifier == null ? null : ObjectIdentifier.Token.Value; } }
+		public string IdentifierOriginalValue { get { return Identifier == null ? null : Identifier.Token.Value; } }
+
+		public string SchemaIdentifierEffectiveValue { get { return GetTerminalEffectiveValue(SchemaIdentifier); } }
+		public string ObjectIdentifierEffectiveValue { get { return GetTerminalEffectiveValue(ObjectIdentifier); } }
+		public string IdentifierEffectiveValue { get { return GetTerminalEffectiveValue(Identifier); } }
+
+		private string GetTerminalEffectiveValue(StatementNode terminal)
+		{
+			if (terminal == null || terminal.SourcePosition.IndexStart >= CursorPosition)
+				return null;
+
+			return terminal.SourcePosition.IndexEnd < CursorPosition
+				? terminal.Token.Value
+				: terminal.Token.Value.Substring(0, CursorPosition - terminal.SourcePosition.IndexStart);
+		}
 
 		public override string ToString()
 		{
 			var builder = new StringBuilder(98);
 			if (SchemaIdentifier != null)
 			{
-				builder.Append(SchemaIdentifierValue);
+				builder.Append(SchemaIdentifierOriginalValue);
 				builder.Append(".");
 			}
 
 			if (ObjectIdentifier != null)
 			{
-				builder.Append(ObjectIdentifierValue);
+				builder.Append(ObjectIdentifierOriginalValue);
 				builder.Append(".");
 			}
 
 			if (Identifier != null)
 			{
-				builder.Append(IdentifierValue);
+				builder.Append(IdentifierOriginalValue);
 			}
 
 			if (builder.Length == 0)

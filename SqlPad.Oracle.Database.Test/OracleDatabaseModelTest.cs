@@ -17,10 +17,18 @@ namespace SqlPad.Oracle.Database.Test
 			{
 				databaseModel.AllObjects.Count.ShouldBe(0);
 
-				var refreshTask = databaseModel.Refresh(true);
-				refreshTask.Wait();
+				using (var modelClone = OracleDatabaseModel.GetDatabaseModel(connectionString))
+				{
+					var refreshTask = databaseModel.Refresh(true);
+					var cloneRefreshTask = modelClone.Refresh();
+					
+					refreshTask.Wait();
+					cloneRefreshTask.Wait();
 
-				AssertDatabaseModel(databaseModel);
+					AssertDatabaseModel(databaseModel);
+
+					AssertDatabaseModel(modelClone);
+				}
 			}
 		}
 
