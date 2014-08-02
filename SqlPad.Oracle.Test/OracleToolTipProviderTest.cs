@@ -13,7 +13,7 @@ namespace SqlPad.Oracle.Test
 	{
 		private readonly OracleToolTipProvider _toolTipProvider = new OracleToolTipProvider();
 		private readonly OracleCodeCompletionProvider _codeCompletionProvider = new OracleCodeCompletionProvider();
-		private readonly SqlDocumentRepository _documentRepository = new SqlDocumentRepository(new OracleSqlParser(), new OracleStatementValidator(), TestFixture.DatabaseModel);
+		private readonly SqlDocumentRepository _documentRepository = TestFixture.CreateDocumentRepository();
 
 		[Test(Description = @""), STAThread]
 		public void TestColumnTypeToolTip()

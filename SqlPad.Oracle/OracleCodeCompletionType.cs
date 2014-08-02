@@ -41,6 +41,8 @@ namespace SqlPad.Oracle
 		public StatementGrammarNode CurrentTerminal { get; private set; }
 
 		public OracleStatement Statement { get; private set; }
+		
+		public OracleStatementSemanticModel SemanticModel { get; private set; }
 
 		public ICollection<string> TerminalCandidates { get; private set; }
 
@@ -57,11 +59,11 @@ namespace SqlPad.Oracle
 
 		public ReferenceIdentifier ReferenceIdentifier { get; private set; }
 
-		public OracleCodeCompletionType(StatementCollection statementCollection, string statementText, int cursorPosition)
+		public OracleCodeCompletionType(SqlDocumentRepository documentRepository, string statementText, int cursorPosition)
 		{
 			_cursorPosition = cursorPosition;
 
-			Statement = (OracleStatement)(statementCollection.GetStatementAtPosition(cursorPosition) ?? statementCollection.LastOrDefault());
+			Statement = (OracleStatement)(documentRepository.Statements.GetStatementAtPosition(cursorPosition) ?? documentRepository.Statements.LastOrDefault());
 			if (Statement == null)
 				return;
 
@@ -71,6 +73,8 @@ namespace SqlPad.Oracle
 			var nearestTerminal = Statement.GetNearestTerminalToPosition(cursorPosition);
 			if (nearestTerminal == null)
 				return;
+
+			SemanticModel = (OracleStatementSemanticModel)documentRepository.ValidationModels[Statement].SemanticModel;
 
 			var requiredOffsetAfterToken = nearestTerminal.Id.IsZeroOffsetTerminalId() ? 0 : 1;
 			var isCursorAfterToken = nearestTerminal.SourcePosition.IndexEnd + requiredOffsetAfterToken < cursorPosition;

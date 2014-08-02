@@ -9,8 +9,7 @@ namespace SqlPad.Oracle.Test
 	public class OracleCodeCompletionProviderTest
 	{
 		private readonly OracleCodeCompletionProvider _codeCompletionProvider = new OracleCodeCompletionProvider();
-		private static readonly OracleSqlParser Parser = new OracleSqlParser();
-		private readonly SqlDocumentRepository _documentRepository = new SqlDocumentRepository(new OracleSqlParser(), new OracleStatementValidator(), TestFixture.DatabaseModel);
+		private readonly SqlDocumentRepository _documentRepository = TestFixture.CreateDocumentRepository();
 		private static readonly Func<ICodeCompletionItem, bool> FilterProgramItems = i => !i.Category.In(OracleCodeCompletionCategory.PackageFunction, OracleCodeCompletionCategory.Package, OracleCodeCompletionCategory.SchemaFunction);
 
 		[Test(Description = @"")]
@@ -716,7 +715,9 @@ se";
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)
 			{
-				return new OracleCodeCompletionType(Parser.Parse(statementText), statementText, cursorPosition);
+				var documentRepository = TestFixture.CreateDocumentRepository();
+				documentRepository.UpdateStatements(statementText);
+				return new OracleCodeCompletionType(documentRepository, statementText, cursorPosition);
 			}
 
 			[Test(Description = @"")]
@@ -810,6 +811,34 @@ se";
 						referenceIdentifier.SchemaIdentifierEffectiveValue.ShouldBe("HUSQVIK");
 						referenceIdentifier.ObjectIdentifierEffectiveValue.ShouldBe("SELECTION");
 						referenceIdentifier.IdentifierEffectiveValue.ShouldBe("SELE");
+					}
+
+					[Test(Description = @"")]
+					public void TestReferenceIdentifiersWhenCursorAtIdentifierOfAlreadyEnteredFullyQualifiedPackageFunctionIdentifier()
+					{
+						const string statement = @"SELECT HUSQVIK.SQLPAD.SQLPAD_FUNCTION() FROM DUAL";
+						var referenceIdentifier = InitializeCodeCompletionType(statement, 25).ReferenceIdentifier;
+						referenceIdentifier.CursorPosition.ShouldBe(25);
+						referenceIdentifier.SchemaIdentifierOriginalValue.ShouldBe("HUSQVIK");
+						referenceIdentifier.ObjectIdentifierOriginalValue.ShouldBe("SQLPAD");
+						referenceIdentifier.IdentifierOriginalValue.ShouldBe("SQLPAD_FUNCTION");
+						referenceIdentifier.SchemaIdentifierEffectiveValue.ShouldBe("HUSQVIK");
+						referenceIdentifier.ObjectIdentifierEffectiveValue.ShouldBe("SQLPAD");
+						referenceIdentifier.IdentifierEffectiveValue.ShouldBe("SQL");
+					}
+
+					[Test(Description = @""), Ignore]
+					public void TestReferenceIdentifiersWhenCursorAtIdentifierOfAlreadyEnteredFullyQualifiedFunctionIdentifier()
+					{
+						const string statement = @"SELECT HUSQVIK.SQLPAD_FUNCTION() FROM DUAL";
+						var referenceIdentifier = InitializeCodeCompletionType(statement, 18).ReferenceIdentifier;
+						referenceIdentifier.CursorPosition.ShouldBe(18);
+						referenceIdentifier.SchemaIdentifierOriginalValue.ShouldBe("HUSQVIK");
+						referenceIdentifier.ObjectIdentifierOriginalValue.ShouldBe("SQLPAD_FUNCTION");
+						referenceIdentifier.IdentifierOriginalValue.ShouldBe(null);
+						referenceIdentifier.SchemaIdentifierEffectiveValue.ShouldBe("HUSQVIK");
+						referenceIdentifier.ObjectIdentifierEffectiveValue.ShouldBe("SQL");
+						referenceIdentifier.IdentifierEffectiveValue.ShouldBe(null);
 					}
 
 					[Test(Description = @"")]

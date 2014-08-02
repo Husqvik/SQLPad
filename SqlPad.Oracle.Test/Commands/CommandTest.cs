@@ -84,7 +84,7 @@ WHERE
 		public void SetUp()
 		{
 			_editor = new TextEditor();
-			_documentRepository = new SqlDocumentRepository(new OracleSqlParser(), new OracleStatementValidator(), TestFixture.DatabaseModel);
+			_documentRepository = TestFixture.CreateDocumentRepository();
 		}
 
 		private class TestCommandSettings : ICommandSettingsProvider

@@ -8,7 +8,7 @@ namespace SqlPad.Oracle.Test
 	public class OracleNavigationServiceTest
 	{
 		private readonly OracleNavigationService _navigationService = new OracleNavigationService();
-		private readonly SqlDocumentRepository _documentRepository = new SqlDocumentRepository(new OracleSqlParser(), new OracleStatementValidator(), TestFixture.DatabaseModel);
+		private readonly SqlDocumentRepository _documentRepository = TestFixture.CreateDocumentRepository();
 
 		private SqlDocumentRepository GetDocumentRepository(string statementText)
 		{

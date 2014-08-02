@@ -9,7 +9,7 @@ namespace SqlPad.Oracle.Test
 	[TestFixture]
 	public class OracleStatementFormatterTest
 	{
-		private readonly SqlDocumentRepository _documentRepository = new SqlDocumentRepository(new OracleSqlParser(), new OracleStatementValidator(), TestFixture.DatabaseModel);
+		private readonly SqlDocumentRepository _documentRepository = TestFixture.CreateDocumentRepository();
 		private static readonly OracleStatementFormatter Formatter = new OracleStatementFormatter(new SqlFormatterOptions());
 
 		[Test(Description = @"")]

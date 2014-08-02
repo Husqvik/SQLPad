@@ -5,7 +5,12 @@ namespace SqlPad.Oracle.Test
 {
 	public class TestFixture
 	{
-		public static readonly OracleDatabaseModelBase DatabaseModel = OracleTestDatabaseModel.Instance; 
+		public static readonly OracleDatabaseModelBase DatabaseModel = OracleTestDatabaseModel.Instance;
+
+		public static SqlDocumentRepository CreateDocumentRepository()
+		{
+			return new SqlDocumentRepository(new OracleSqlParser(), new OracleStatementValidator(), DatabaseModel);
+		}
 	}
 
 	public static class TestExtensions

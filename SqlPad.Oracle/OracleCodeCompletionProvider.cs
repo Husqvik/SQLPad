@@ -101,7 +101,7 @@ namespace SqlPad.Oracle
 			if (sqlDocumentRepository == null || sqlDocumentRepository.Statements == null)
 				return EmptyCollection;
 
-			var completionType = new OracleCodeCompletionType(sqlDocumentRepository.Statements, statementText, cursorPosition);
+			var completionType = new OracleCodeCompletionType(sqlDocumentRepository, statementText, cursorPosition);
 			completionType.PrintSupportedCompletions();
 			if (!forcedInvokation && !completionType.JoinCondition && String.IsNullOrEmpty(completionType.TerminalValuePartUntilCaret))
 				return EmptyCollection;
@@ -256,12 +256,13 @@ namespace SqlPad.Oracle
 			if (completionType.DatabaseLink)
 			{
 				var databaseLinkItems = oracleDatabaseModel.DatabaseLinks.Values
-					.Where(l => (String.IsNullOrEmpty(completionType.TerminalValueUnderCursor) || completionType.TerminalValueUnderCursor.ToQuotedIdentifier() != l.FullyQualifiedName.Name) &&
-								(String.IsNullOrEmpty(completionType.TerminalValuePartUntilCaret) || l.FullyQualifiedName.Name.ToUpperInvariant().Contains(completionType.TerminalValuePartUntilCaret.ToUpperInvariant())))
+					.Where(l => l.FullyQualifiedName.NormalizedOwner.In(OracleDatabaseModelBase.SchemaPublic, oracleDatabaseModel.CurrentSchema.ToQuotedIdentifier()) &&
+					            (String.IsNullOrEmpty(completionType.TerminalValueUnderCursor) || completionType.TerminalValueUnderCursor.ToQuotedIdentifier() != l.FullyQualifiedName.NormalizedName) &&
+					            (String.IsNullOrEmpty(completionType.TerminalValuePartUntilCaret) || l.FullyQualifiedName.Name.ToUpperInvariant().Contains(completionType.TerminalValuePartUntilCaret.ToUpperInvariant())))
 					.Select(l => new OracleCodeCompletionItem
 					             {
 						             Name = l.FullyQualifiedName.Name.ToSimpleIdentifier(),
-									 Text = l.FullyQualifiedName.Name.ToSimpleIdentifier(),
+						             Text = l.FullyQualifiedName.Name.ToSimpleIdentifier(),
 						             Category = OracleCodeCompletionCategory.DatabaseLink,
 						             StatementNode = completionType.CurrentTerminal
 					             });
