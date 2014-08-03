@@ -13,7 +13,6 @@ namespace SqlPad
 		private readonly int _offset;
 		private readonly int _caretOffset;
 		
-		private readonly StatementGrammarNode _node;
 		private readonly ICodeSnippet _snippet;
 
 		public CompletionData(ICodeCompletionItem codeCompletion)
@@ -21,7 +20,7 @@ namespace SqlPad
 			Text = codeCompletion.Name;
 			Content = Text;
 			_completionText = codeCompletion.Text;
-			_node = codeCompletion.StatementNode;
+			Node = codeCompletion.StatementNode;
 			_offset = codeCompletion.Offset;
 			_caretOffset = codeCompletion.CaretOffset;
 			Description = codeCompletion.Category;
@@ -37,6 +36,8 @@ namespace SqlPad
 			Description = "Code Snippet" + description;
 			_completionText = String.Format(codeSnippet.BaseText, codeSnippet.Parameters.OrderBy(p => p.Index).Select(p => p.DefaultValue).Cast<object>().ToArray());
 		}
+
+		public StatementGrammarNode Node { get; private set; }
 
 		public ImageSource Image
 		{
@@ -60,9 +61,9 @@ namespace SqlPad
 				return;
 			}
 
-			if (_node != null)
+			if (Node != null)
 			{
-				textArea.Document.Replace(_node.SourcePosition.IndexStart, _node.SourcePosition.Length + completionSegment.Length, _completionText.Trim());
+				textArea.Document.Replace(Node.SourcePosition.IndexStart, /*Node.SourcePosition.Length + */completionSegment.Length, _completionText.Trim());
 			}
 			else
 			{

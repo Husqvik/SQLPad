@@ -143,29 +143,12 @@ namespace SqlPad.Oracle
 				return ((byte[])value).ToHexString();
 			}
 
-			if (columnHeader.DatabaseDataType.In("Blob", "LongRaw"))
-			{
-				var dataTypeLabel = columnHeader.DatabaseDataType == "Blob" ? "BLOB" : "LONG RAW";
-				return CreateLargeBinaryValue(value, dataTypeLabel);
-			}
-
-			if (columnHeader.DatabaseDataType.In("Clob", "Long"))
-			{
-				var text = (string)value;
-				return new LargeTextValue { Value = text, Preview = text.Length > 1020 ? String.Format("{0}{1}", text.Substring(0, 1020), "...") : text };
-			}
-
 			if (columnHeader.DataType == TypeDateTime)
 			{
 				return ((DateTime)value).ToString(CultureInfo.CurrentUICulture);
 			}
 			
 			return value;
-		}
-
-		private static object CreateLargeBinaryValue(object value, string dataType)
-		{
-			return new LargeBinaryValue { Data = (byte[])value, Preview = String.Format("({0})", dataType.ToUpperInvariant()) };
 		}
 
 		private static bool TryGetSchemaObjectFunctionMetadata(OracleSchemaObject schemaObject, out ICollection<OracleFunctionMetadata> functionMetadata)

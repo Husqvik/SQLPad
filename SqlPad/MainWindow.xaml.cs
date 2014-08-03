@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Input;
 using SqlPad.FindReplace;
 
@@ -121,47 +120,18 @@ namespace SqlPad
 			
 			_editorAdapters.Add(newDocumentPage.EditorAdapter);
 
-			var header = new ContentControl { ContextMenu = CreateTabItemHeaderContextMenu(newDocumentPage) };
-			var newTab = new TabItem
-			{
-				Content = newDocumentPage,
-				Header = header
-			};
+			AddDocumentTabItemContextMenuCommandBindinga(newDocumentPage);
 
-			var binding = new Binding("DocumentHeader") { Source = newDocumentPage.DataContext, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged };
-			header.SetBinding(ContentProperty, binding);
-			
-			DocumentTabControl.Items.Insert(DocumentTabControl.Items.Count - 1, newTab);
-			DocumentTabControl.SelectedItem = newTab;
+			DocumentTabControl.Items.Insert(DocumentTabControl.Items.Count - 1, newDocumentPage.TabItem);
+			DocumentTabControl.SelectedItem = newDocumentPage.TabItem;
 
 			_findReplaceManager.CurrentEditor = newDocumentPage.EditorAdapter;
 		}
 
-		private ContextMenu CreateTabItemHeaderContextMenu(DocumentPage documentPage)
+		private void AddDocumentTabItemContextMenuCommandBindinga(DocumentPage documentPage)
 		{
-			var contextMenu = new ContextMenu();
-			var menuItemClose = new MenuItem
-			{
-				Header = "Close",
-				Command = new RoutedCommand(),
-				CommandParameter = documentPage
-			};
-			
-			contextMenu.Items.Add(menuItemClose);
-
-			contextMenu.CommandBindings.Add(new CommandBinding(menuItemClose.Command, CloseTabExecutedHandler, (sender, args) => args.CanExecute = true));
-
-			var menuItemCloseAllButThis = new MenuItem
-			{
-				Header = "Close All But This",
-				Command = new RoutedCommand()
-			};
-
-			contextMenu.CommandBindings.Add(new CommandBinding(menuItemCloseAllButThis.Command, CloseAllButThisTabExecutedHandler, (sender, args) => args.CanExecute = DocumentTabControl.Items.Count > 2));
-
-			contextMenu.Items.Add(menuItemCloseAllButThis);
-
-			return contextMenu;
+			documentPage.TabItemContextMenu.CommandBindings.Add(new CommandBinding(DocumentPageCommands.CloseDocumentCommand, CloseTabExecutedHandler, (sender, args) => args.CanExecute = true));
+			documentPage.TabItemContextMenu.CommandBindings.Add(new CommandBinding(DocumentPageCommands.CloseAllDocumentsButThisCommand, CloseAllButThisTabExecutedHandler, (sender, args) => args.CanExecute = DocumentTabControl.Items.Count > 2));
 		}
 
 		private void CloseAllButThisTabExecutedHandler(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
@@ -176,20 +146,19 @@ namespace SqlPad
 
 		private void CloseTabExecutedHandler(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
 		{
-			var document = (DocumentPage)executedRoutedEventArgs.Parameter;
-
+			var document = (DocumentPage)((TabItem)DocumentTabControl.SelectedItem).Content;
 			ClosePage(document);
 		}
 
 		private bool ClosePage(DocumentPage document)
 		{
-			DocumentTabControl.SelectedItem = document.Parent;
+			DocumentTabControl.SelectedItem = document.TabItem;
 
 			if (document.IsDirty && !ConfirmPageSave(document))
 				return false;
 
 			SelectNewTabItem();
-			DocumentTabControl.Items.Remove(document.Parent);
+			DocumentTabControl.Items.Remove(document.TabItem);
 			return true;
 		}
 
@@ -247,6 +216,8 @@ namespace SqlPad
 				
 				page.Dispose();
 			}
+
+			DocumentTabControl.Items.Clear();
 		}
 
 		private void WindowClosedHandler(object sender, EventArgs e)

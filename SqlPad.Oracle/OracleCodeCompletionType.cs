@@ -134,28 +134,38 @@ namespace SqlPad.Oracle
 
 			SchemaDataObjectReference = !isWithinFromClause && TerminalCandidates.Contains(Terminals.ObjectIdentifier);
 
-			if (!isCursorAfterToken)
-			{
-				AnalyzeObjectReferencePrefixes();
-			}
+			var effectiveTerminal = Statement.GetNearestTerminalToPosition(cursorPosition, n => !n.Id.In(Terminals.RightParenthesis, Terminals.Comma));
+			AnalyzeObjectReferencePrefixes(effectiveTerminal);
 
-			PackageFunction = (!String.IsNullOrEmpty(ReferenceIdentifier.IdentifierOriginalValue) || !String.IsNullOrEmpty(ReferenceIdentifier.ObjectIdentifierOriginalValue)) && TerminalCandidates.Contains(Terminals.Identifier);
+			PackageFunction = !String.IsNullOrEmpty(ReferenceIdentifier.ObjectIdentifierOriginalValue) && TerminalCandidates.Contains(Terminals.Identifier);
 		}
 
-		private void AnalyzeObjectReferencePrefixes()
+		private void AnalyzeObjectReferencePrefixes(StatementGrammarNode effectiveTerminal)
 		{
-			AnalyzePrefixedColumnReference();
+			AnalyzePrefixedColumnReference(effectiveTerminal);
 
-			AnalyzeQueryTableExpression();
+			AnalyzeQueryTableExpression(effectiveTerminal);
 		}
 
-		private void AnalyzePrefixedColumnReference()
+		private void AnalyzePrefixedColumnReference(StatementGrammarNode effectiveTerminal)
 		{
-			var prefixedColumnReference = CurrentTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference);
-			if (prefixedColumnReference == null)
+			var prefixedColumnReference = effectiveTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference);
+			var prefix = effectiveTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.Prefix);
+			var lookupNode = prefixedColumnReference ?? prefix;
+			if (lookupNode == null)
 				return;
 
-			var identifiers = prefixedColumnReference.GetPathFilterDescendants(n => n.Id != NonTerminals.Expression, Terminals.SchemaIdentifier, Terminals.ObjectIdentifier, Terminals.Identifier).ToArray();
+			var identifiers = lookupNode.GetPathFilterDescendants(n => n.Id != NonTerminals.Expression, Terminals.SchemaIdentifier, Terminals.ObjectIdentifier, Terminals.Identifier).ToArray();
+			ReferenceIdentifier = BuildReferenceIdentifier(identifiers);
+		}
+
+		private void AnalyzeQueryTableExpression(StatementGrammarNode effectiveTerminal)
+		{
+			var queryTableExpression = effectiveTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.InnerTableReference, NonTerminals.QueryTableExpression);
+			if (queryTableExpression == null)
+				return;
+
+			var identifiers = queryTableExpression.GetPathFilterDescendants(n => !n.Id.In(NonTerminals.Expression, NonTerminals.NestedQuery), Terminals.SchemaIdentifier, Terminals.ObjectIdentifier, Terminals.Identifier).ToArray();
 			ReferenceIdentifier = BuildReferenceIdentifier(identifiers);
 		}
 
@@ -174,16 +184,6 @@ namespace SqlPad.Oracle
 		private StatementGrammarNode GetIdentifierTokenValue(IEnumerable<StatementGrammarNode> identifiers, string identifierId)
 		{
 			return identifiers.FirstOrDefault(i => i.Id == identifierId);
-		}
-
-		private void AnalyzeQueryTableExpression()
-		{
-			var queryTableExpression = CurrentTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.InnerTableReference, NonTerminals.QueryTableExpression);
-			if (queryTableExpression == null)
-				return;
-
-			var identifiers = queryTableExpression.GetPathFilterDescendants(n => !n.Id.In(NonTerminals.Expression, NonTerminals.NestedQuery), Terminals.SchemaIdentifier, Terminals.ObjectIdentifier, Terminals.Identifier).ToArray();
-			ReferenceIdentifier = BuildReferenceIdentifier(identifiers);
 		}
 
 		public void PrintSupportedCompletions()

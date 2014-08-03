@@ -87,9 +87,9 @@ namespace SqlPad
 			return node == null || node.Type == NodeType.NonTerminal ? null : node;
 		}
 
-		public StatementGrammarNode GetNearestTerminalToPosition(int position)
+		public StatementGrammarNode GetNearestTerminalToPosition(int position, Func<StatementGrammarNode, bool> filter = null)
 		{
-			return RootNode == null ? null : RootNode.GetNearestTerminalToPosition(position);
+			return RootNode == null ? null : RootNode.GetNearestTerminalToPosition(position, filter);
 		}
 	}
 }

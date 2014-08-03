@@ -6,12 +6,18 @@ namespace SqlPad
 {
 	public class CellValueConverter : IValueConverter
 	{
+		private const string NullValuePlaceholder = "(null)";
+
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			var columnHeader = (ColumnHeader)parameter;
-			return value == DBNull.Value
-				? "(null)"
-				: columnHeader.ValueConverterFunction(columnHeader, value);
+			if (value == DBNull.Value)
+				return NullValuePlaceholder;
+
+			var convertedValue = columnHeader.ValueConverterFunction(columnHeader, value).ToString();
+			return String.Empty.Equals(convertedValue)
+				? NullValuePlaceholder
+				: convertedValue;
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

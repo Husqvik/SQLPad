@@ -751,6 +751,7 @@ se";
 				completionType.SchemaDataObjectReference.ShouldBe(true);
 				completionType.Schema.ShouldBe(true);
 				completionType.SchemaProgram.ShouldBe(true);
+				completionType.PackageFunction.ShouldBe(false);
 				completionType.Column.ShouldBe(true);
 				completionType.AllColumns.ShouldBe(false);
 			}
@@ -764,6 +765,7 @@ se";
 				completionType.Column.ShouldBe(true);
 				completionType.AllColumns.ShouldBe(true);
 				completionType.SchemaProgram.ShouldBe(true);
+				completionType.PackageFunction.ShouldBe(true);
 				completionType.SchemaDataObject.ShouldBe(false);
 				//completionType.SchemaDataObjectReference.ShouldBe(true);
 			}
@@ -779,6 +781,7 @@ se";
 				completionType.Column.ShouldBe(false);
 				completionType.AllColumns.ShouldBe(false);
 				completionType.SchemaProgram.ShouldBe(false);
+				completionType.PackageFunction.ShouldBe(false);
 				completionType.SchemaDataObject.ShouldBe(false);
 			}
 
@@ -787,15 +790,11 @@ se";
 			{
 				const string statement = @"SELECT * FROM CUSTOMER@H";
 				var completionType = InitializeCodeCompletionType(statement, 24);
-				AssertOnlyDatabaseLinkCompletion(completionType);
-			}
-
-			private void AssertOnlyDatabaseLinkCompletion(OracleCodeCompletionType completionType)
-			{
 				completionType.Schema.ShouldBe(false);
 				completionType.Column.ShouldBe(false);
 				completionType.AllColumns.ShouldBe(false);
 				completionType.SchemaProgram.ShouldBe(false);
+				completionType.PackageFunction.ShouldBe(false);
 				completionType.SchemaDataObject.ShouldBe(false);
 				completionType.SchemaDataObjectReference.ShouldBe(false);
 				completionType.DatabaseLink.ShouldBe(true);

@@ -305,9 +305,9 @@ namespace SqlPad
 			return returnedNodes;
 		}
 
-		public StatementGrammarNode GetNearestTerminalToPosition(int position)
+		public StatementGrammarNode GetNearestTerminalToPosition(int position, Func<StatementGrammarNode, bool> filter = null)
 		{
-			return Terminals.TakeWhile(t => t.SourcePosition.IndexStart <= position).LastOrDefault();
+			return Terminals.TakeWhile(t => t.SourcePosition.IndexStart <= position && (filter == null || filter(t))).LastOrDefault();
 		}
 
 		/*private void ResolveLinks()

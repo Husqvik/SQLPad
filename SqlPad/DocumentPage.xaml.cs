@@ -62,6 +62,10 @@ namespace SqlPad
 		
 		public EventHandler ParseFinished = delegate { };
 
+		internal TabItem TabItem { get; private set; }
+		
+		internal ContextMenu TabItemContextMenu { get { return ((ContentControl)TabItem.Header).ContextMenu; } }
+
 		internal bool IsParsingSynchronous { get; set; }
 
 		internal bool IsSelectedPage
@@ -123,6 +127,38 @@ namespace SqlPad
 			_pageModel.DocumentHeader = DocumentHeader;
 
 			DataContext = _pageModel;
+
+			InitializeTabItem();
+		}
+
+		private void InitializeTabItem()
+		{
+			var header = new ContentControl { ContextMenu = CreateTabItemHeaderContextMenu() };
+			TabItem = new TabItem { Content = this, Header = header };
+
+			var binding = new Binding("DocumentHeader") { Source = _pageModel, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged };
+			header.SetBinding(ContentProperty, binding);
+		}
+
+		private static ContextMenu CreateTabItemHeaderContextMenu()
+		{
+			var contextMenu = new ContextMenu();
+			var menuItemClose = new MenuItem
+			{
+				Header = "Close",
+				Command = DocumentPageCommands.CloseDocumentCommand,
+			};
+
+			contextMenu.Items.Add(menuItemClose);
+
+			var menuItemCloseAllButThis = new MenuItem
+			{
+				Header = "Close All But This",
+				Command = DocumentPageCommands.CloseAllDocumentsButThisCommand,
+			};
+
+			contextMenu.Items.Add(menuItemCloseAllButThis);
+			return contextMenu;
 		}
 
 		private void ConfigureEditor()
@@ -258,6 +294,7 @@ namespace SqlPad
 			ChangeDeleteLineCommandInputGesture();
 
 			var commandBindings = Editor.TextArea.DefaultInputHandler.Editing.CommandBindings;
+			commandBindings.Add(new CommandBinding(GenericCommands.ShowCodeCompletionOptionCommand, ShowCodeCompletionOptions));
 			commandBindings.Add(new CommandBinding(GenericCommands.ShowFunctionOverloadCommand, ShowFunctionOverloads));
 			commandBindings.Add(new CommandBinding(GenericCommands.DuplicateTextCommand, GenericCommandHandler.DuplicateText));
 			commandBindings.Add(new CommandBinding(GenericCommands.BlockCommentCommand, GenericCommandHandler.HandleBlockComments));
@@ -278,6 +315,11 @@ namespace SqlPad
 			commandBindings.Add(new CommandBinding(DiagnosticCommands.ShowTokenCommand, ShowTokenCommandExecutionHandler));
 
 			ResultGrid.CommandBindings.Add(new CommandBinding(GenericCommands.FetchNextRowsCommand, FetchNextRows, CanFetchNextRows));
+		}
+
+		private void ShowCodeCompletionOptions(object sender, ExecutedRoutedEventArgs e)
+		{
+			CreateCodeCompletionWindow(true);
 		}
 
 		private void CancelStatementHandler(object sender, ExecutedRoutedEventArgs args)
@@ -313,9 +355,14 @@ namespace SqlPad
 		private async void FetchNextRows(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
 		{
 			var nextRowBatch = _databaseModel.FetchRecords(RowBatchSize);
-			await SafeActionAsync(() => Task.Factory.StartNew(() => Dispatcher.Invoke(() => _pageModel.ResultRowItems.AddRange(nextRowBatch))));
+			var exception = await SafeActionAsync(() => Task.Factory.StartNew(() => Dispatcher.Invoke(() => _pageModel.ResultRowItems.AddRange(nextRowBatch))));
 
 			TextMoreRowsExist.Visibility = _databaseModel.CanFetch ? Visibility.Visible : Visibility.Collapsed;
+
+			if (exception != null)
+			{
+				Messages.ShowError(exception.Message);
+			}
 		}
 
 		private void NavigateToQueryBlockRoot(object sender, ExecutedRoutedEventArgs args)
@@ -478,6 +525,8 @@ namespace SqlPad
 
 		public void Dispose()
 		{
+			TabItemContextMenu.CommandBindings.Clear();
+			DataContext = null;
 			_timerReParse.Stop();
 			_timerReParse.Dispose();
 			_timerExecutionMonitor.Stop();
@@ -690,10 +739,10 @@ namespace SqlPad
 
 		private void TextEnteringHandler(object sender, TextCompositionEventArgs e)
 		{
-			if ((Keyboard.IsKeyDown(Key.Oem2) || Keyboard.IsKeyDown(Key.D)) && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt))
+			/*if ((Keyboard.IsKeyDown(Key.Oem2) || Keyboard.IsKeyDown(Key.D)) && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt))
 			{
 				e.Handled = true;
-			}
+			}*/
 
 			if (NextPairCharacterExists(e.Text, ')', ')') || NextPairCharacterExists(e.Text, '\'', '\'') || NextPairCharacterExists(e.Text, '"', '"'))
 			{
@@ -725,30 +774,21 @@ namespace SqlPad
 					_completionWindow.CompletionList.RequestInsertion(e);
 				}
 			}
-
-			// Do not set e.Handled=true.
-			// We still want to insert the character that was typed.
-			if (e.Text == " " && Keyboard.Modifiers == ModifierKeys.Control)
-			{
-				e.Handled = true;
-				CreateCodeCompletionWindow(true);
-			}
 		}
 
 		private void CreateCodeCompletionWindow(bool forcedInvokation)
 		{
 			CreateCompletionWindow(
 				() => _codeCompletionProvider.ResolveItems(_sqlDocumentRepository, _databaseModel, Editor.Text, Editor.CaretOffset, forcedInvokation)
-					.Select(i => new CompletionData(i)),
-				true);
+					.Select(i => new CompletionData(i)));
 		}
 
-		private void CreateSnippetCompletionWindow(IEnumerable<ICompletionData> items)
+		private void CreateSnippetCompletionWindow(IEnumerable<CompletionData> items)
 		{
-			CreateCompletionWindow(() => items, true);
+			CreateCompletionWindow(() => items);
 		}
 
-		private void CreateCompletionWindow(Func<IEnumerable<ICompletionData>> getCompletionDataFunc, bool show)
+		private void CreateCompletionWindow(Func<IEnumerable<CompletionData>> getCompletionDataFunc)
 		{
 			var completionWindow = new CompletionWindow(Editor.TextArea) { SizeToContent = SizeToContent.WidthAndHeight };
 			var data = completionWindow.CompletionList.CompletionData;
@@ -758,20 +798,24 @@ namespace SqlPad
 				data.Add(item);
 			}
 
-			if (show && data.Count > 0)
+			if (data.Count == 0)
+				return;
+			
+			_completionWindow = completionWindow;
+			_completionWindow.Closed += delegate { _completionWindow = null; };
+
+			var firstItem = (CompletionData)data.First();
+			if (firstItem.Node != null)
+				_completionWindow.StartOffset = firstItem.Node.SourcePosition.IndexStart;
+
+			if (data.Count == 1)
 			{
-				_completionWindow = completionWindow;
-				_completionWindow.Closed += delegate { _completionWindow = null; };
-
-				if (data.Count == 1)
-				{
-					_completionWindow.CompletionList.ListBox.SelectedIndex = 0;
-				}
-
-				DisableCodeCompletion();
-
-				_completionWindow.Show();
+				_completionWindow.CompletionList.ListBox.SelectedIndex = 0;
 			}
+
+			DisableCodeCompletion();
+
+			_completionWindow.Show();
 		}
 
 		public void ReParse()
@@ -981,33 +1025,23 @@ namespace SqlPad
 			}
 		}
 
-		private void ResultGridPreviewMouseDownHandler(object sender, MouseButtonEventArgs e)
+		private void ResultGridMouseDoubleClickHandler(object sender, MouseButtonEventArgs e)
 		{
-			
-		}
-	}
+			var currentRow = (object[])ResultGrid.CurrentItem;
+			if (currentRow == null || ResultGrid.CurrentColumn == null)
+				return;
 
-	public struct LargeBinaryValue
-	{
-		public string Preview { get; set; }
-		
-		public byte[] Data { get; set; }
-
-		public override string ToString()
-		{
-			return Preview;
-		}
-	}
-
-	public struct LargeTextValue
-	{
-		public string Preview { get; set; }
-		
-		public string Value { get; set; }
-
-		public override string ToString()
-		{
-			return Preview;
+			var cellValue = currentRow[ResultGrid.CurrentColumn.DisplayIndex];
+			var largeBinary = cellValue as ILargeBinaryValue;
+			var largeText = cellValue as ILargeTextValue;
+			if (largeBinary != null)
+			{
+				
+			}
+			else if (largeText != null)
+			{
+				
+			}
 		}
 	}
 
@@ -1018,5 +1052,11 @@ namespace SqlPad
 		public Exception Exception { get; set; }
 
 		public TimeSpan Elapsed { get; set; }
+	}
+
+	public static class DocumentPageCommands
+	{
+		public static ICommand CloseDocumentCommand = new RoutedCommand();
+		public static ICommand CloseAllDocumentsButThisCommand = new RoutedCommand();
 	}
 }

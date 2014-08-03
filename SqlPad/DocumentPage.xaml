@@ -61,11 +61,18 @@
 		</DockPanel>
 		<GridSplitter Grid.Column="0" Grid.Row="2" Height="5" HorizontalAlignment="Stretch" ShowsPreview="True"
 		              VerticalAlignment="Center" Background="DimGray" />
-		<DataGrid Grid.Column="0" x:Name="ResultGrid" Grid.Row="3" AutoGenerateColumns="False"
-		          ItemsSource="{Binding ResultRowItems}" VirtualizingStackPanel.VirtualizationMode="Recycling"
+		<DataGrid x:Name="ResultGrid"
+		          Grid.Column="0"
+		          Grid.Row="3"
+		          AutoGenerateColumns="False"
+		          ItemsSource="{Binding ResultRowItems}"
+		          VirtualizingStackPanel.VirtualizationMode="Recycling"
 		          EnableColumnVirtualization="True"
-		          HorizontalGridLinesBrush="LightGray" VerticalGridLinesBrush="LightGray"
-		          PreviewMouseWheel="ResultGridPreviewMouseWheelHandler" PreviewMouseDown="ResultGridPreviewMouseDownHandler" />
+		          HorizontalGridLinesBrush="LightGray"
+		          VerticalGridLinesBrush="LightGray"
+				  IsReadOnly="True"
+				  MouseDoubleClick="ResultGridMouseDoubleClickHandler"
+		          PreviewMouseWheel="ResultGridPreviewMouseWheelHandler" />
 		<StatusBar x:Name="StatusBar" Grid.ColumnSpan="2" Grid.Row="4" Grid.Column="0">
 			<StatusBar.ItemsPanel>
 				<ItemsPanelTemplate>

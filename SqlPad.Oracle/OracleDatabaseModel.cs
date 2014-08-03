@@ -19,6 +19,7 @@ namespace SqlPad.Oracle
 		private const int RefreshInterval = 10;
 		private const string SqlFuntionMetadataFileName = "OracleSqlFunctionMetadataCollection_12_1_0_1_0.xml";
 		internal const int OracleErrorCodeUserInvokedCancellation = 1013;
+		internal const int InitialLongFetchSize = 131072;
 
 		private readonly OracleConnectionStringBuilder _oracleConnectionString;
 		private readonly Timer _timer = new Timer(RefreshInterval * 60000);
@@ -256,7 +257,7 @@ namespace SqlPad.Oracle
 			_timer.Stop();
 			_timer.Dispose();
 
-			DisposeCommandAndReader();
+			DisposeCommandAndReaderAndCloseConnection();
 
 			if (_backgroundTask != null)
 			{
@@ -284,7 +285,7 @@ namespace SqlPad.Oracle
 			DatabaseModels.Remove(_connectionString.ConnectionString);
 		}
 
-		private void DisposeCommandAndReader()
+		private void DisposeCommandAndReaderAndCloseConnection()
 		{
 			if (_userDataReader != null)
 			{
@@ -294,6 +295,11 @@ namespace SqlPad.Oracle
 			if (_userCommand != null)
 			{
 				_userCommand.Dispose();
+			}
+
+			if (_userConnection.State != ConnectionState.Closed)
+			{
+				_userConnection.Close();
 			}
 		}
 
@@ -358,6 +364,7 @@ namespace SqlPad.Oracle
 				_userCommand.ExecuteNonQuery();
 
 				_userCommand.CommandText = commandText;
+				_userCommand.InitialLONGFetchSize = InitialLongFetchSize;
 
 				return executeFunction(_userCommand);
 			}
@@ -388,11 +395,11 @@ namespace SqlPad.Oracle
 			{
 				if (returnDataset)
 				{
-					_userDataReader = await ExecuteUserStatement(statementText, c => c.ExecuteReaderAsynchronous(CommandBehavior.CloseConnection, cancellationToken));
+					_userDataReader = await ExecuteUserStatement(statementText, c => c.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken));
 				}
 				else
 				{
-					affectedRowCount = await ExecuteUserStatement(statementText, c => c.ExecuteNonQueryAsynchronous(cancellationToken));
+					affectedRowCount = await ExecuteUserStatement(statementText, c => c.ExecuteNonQueryAsynchronous(cancellationToken), true);
 				}
 			}
 			catch (Exception exception)
@@ -432,7 +439,7 @@ namespace SqlPad.Oracle
 			if (_isExecuting)
 				throw new InvalidOperationException("Another statement is executing right now. ");
 
-			DisposeCommandAndReader();
+			DisposeCommandAndReaderAndCloseConnection();
 		}
 
 		public override ICollection<ColumnHeader> GetColumnHeaders()
@@ -460,9 +467,11 @@ namespace SqlPad.Oracle
 		{
 			CheckCanFetch();
 
+			var fieldTypes = new string[_userDataReader.FieldCount];
 			for (var i = 0; i < _userDataReader.FieldCount; i++)
 			{
 				var fieldType = _userDataReader.GetDataTypeName(i);
+				fieldTypes[i] = fieldType;
 				Trace.Write(i + ". " + fieldType + "; ");
 			}
 
@@ -472,9 +481,7 @@ namespace SqlPad.Oracle
 			{
 				if (_userDataReader.Read())
 				{
-					var columnData = new object[_userDataReader.FieldCount];
-					_userDataReader.GetValues(columnData);
-					yield return columnData;
+					yield return BuildValueArray(fieldTypes);
 				}
 				else
 				{
@@ -482,6 +489,41 @@ namespace SqlPad.Oracle
 					break;
 				}
 			}
+		}
+
+		private object[] BuildValueArray(IList<string> fieldTypes)
+		{
+			var columnData = new object[fieldTypes.Count];
+
+			for (var i = 0; i < fieldTypes.Count; i++)
+			{
+				object value;
+				switch (fieldTypes[i])
+				{
+					case "Blob":
+						value = new OracleBlobValue(_userDataReader.GetOracleBlob(i));
+						break;
+					case "Clob":
+						value = new OracleClobValue(_userDataReader.GetOracleClob(i));
+						break;
+					case "Long":
+						var oracleString = _userDataReader.GetOracleString(i);
+						value = oracleString.IsNull
+							? String.Empty
+							: String.Format("{0}{1}", oracleString.Value, oracleString.Value.Length == InitialLongFetchSize ? OracleClobValue.Ellipsis : null);
+						break;
+					case "LongRaw":
+						value = new OracleLongRawValue(_userDataReader, i);
+						break;
+					default:
+						value = _userDataReader.GetValue(i);
+						break;
+				}
+
+				columnData[i] = value;
+			}
+
+			return columnData;
 		}
 
 		private void CheckCanFetch()
