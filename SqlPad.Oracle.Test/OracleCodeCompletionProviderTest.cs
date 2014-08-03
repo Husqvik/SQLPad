@@ -395,9 +395,15 @@ FROM
 			const string query1 = @"SELECT NULL FROM SELECTION, ";
 
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 28).ToArray();
-			var currentSchemaTableCount = OracleTestDatabaseModel.Instance.AllObjects.Values.Count(o => o.Owner == OracleTestDatabaseModel.Instance.CurrentSchema && o.Type.In(OracleSchemaObjectType.Table, OracleSchemaObjectType.View));
+			var currentSchemaTableCount = OracleTestDatabaseModel.Instance.AllObjects.Values.Count(FilterRowSources);
 			var schemaCount = OracleTestDatabaseModel.Instance.Schemas.Count; // PUBLIC excluded
 			items.Length.ShouldBe(currentSchemaTableCount + schemaCount);
+		}
+
+		private static bool FilterRowSources(OracleSchemaObject schemaObject)
+		{
+			var targetObject = schemaObject.GetTargetSchemaObject();
+			return schemaObject.Owner.In(OracleTestDatabaseModel.Instance.CurrentSchema, OracleDatabaseModelBase.SchemaPublic) && targetObject.Type.In(OracleSchemaObjectType.Table, OracleSchemaObjectType.View);
 		}
 
 		[Test(Description = @"")]
@@ -707,7 +713,7 @@ se";
 			const string query1 = @"SELECT * FROM ""CaseUnknownTable""";
 
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 15).ToList();
-			items.Count.ShouldBe(13);
+			items.Count.ShouldBe(15);
 			items[0].Text.ShouldBe("\"CaseSensitiveTable\"");
 		}
 
@@ -744,7 +750,7 @@ se";
 				var completionType = InitializeCodeCompletionType(statement, 31);
 				completionType.SchemaDataObjectReference.ShouldBe(true);
 				completionType.Schema.ShouldBe(true);
-				completionType.Program.ShouldBe(true);
+				completionType.SchemaProgram.ShouldBe(true);
 				completionType.Column.ShouldBe(true);
 				completionType.AllColumns.ShouldBe(false);
 			}
@@ -757,7 +763,7 @@ se";
 				completionType.Schema.ShouldBe(false);
 				completionType.Column.ShouldBe(true);
 				completionType.AllColumns.ShouldBe(true);
-				completionType.Program.ShouldBe(true);
+				completionType.SchemaProgram.ShouldBe(true);
 				completionType.SchemaDataObject.ShouldBe(false);
 				//completionType.SchemaDataObjectReference.ShouldBe(true);
 			}
@@ -772,7 +778,7 @@ se";
 				completionType.JoinCondition.ShouldBe(false);
 				completionType.Column.ShouldBe(false);
 				completionType.AllColumns.ShouldBe(false);
-				completionType.Program.ShouldBe(false);
+				completionType.SchemaProgram.ShouldBe(false);
 				completionType.SchemaDataObject.ShouldBe(false);
 			}
 
@@ -789,7 +795,7 @@ se";
 				completionType.Schema.ShouldBe(false);
 				completionType.Column.ShouldBe(false);
 				completionType.AllColumns.ShouldBe(false);
-				completionType.Program.ShouldBe(false);
+				completionType.SchemaProgram.ShouldBe(false);
 				completionType.SchemaDataObject.ShouldBe(false);
 				completionType.SchemaDataObjectReference.ShouldBe(false);
 				completionType.DatabaseLink.ShouldBe(true);

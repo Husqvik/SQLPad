@@ -159,7 +159,7 @@ namespace SqlPad.Oracle
 			if ((currentNode.Id == Terminals.From && !cursorAtLastTerminal) ||
 				(currentNode.Id.In(Terminals.ObjectIdentifier, Terminals.Comma) && fromClause != null))
 			{
-				var schemaName = databaseModel.CurrentSchema;
+				var schemaName = databaseModel.CurrentSchema.ToQuotedIdentifier();
 				var schemaFound = false;
 				if (currentNode.Id == Terminals.ObjectIdentifier && currentNode.ParentNode.Id == NonTerminals.QueryTableExpression &&
 				    currentNode.ParentNode.FirstTerminalNode.Id == Terminals.SchemaIdentifier)
@@ -175,6 +175,7 @@ namespace SqlPad.Oracle
 
 					if (!schemaFound)
 					{
+						completionItems = completionItems.Concat(GenerateSchemaObjectItems(oracleDatabaseModel, OracleDatabaseModelBase.SchemaPublic, currentName, terminalToReplace, extraOffset, true));
 						completionItems = completionItems.Concat(GenerateSchemaItems(currentName, terminalToReplace, extraOffset, oracleDatabaseModel));
 					}
 
@@ -225,7 +226,8 @@ namespace SqlPad.Oracle
 			if (currentNode.Id == Terminals.Join ||
 				(currentNode.Id == Terminals.ObjectAlias && currentNode.Token.Value.ToUpperInvariant() == Terminals.Join.ToUpperInvariant()))
 			{
-				completionItems = completionItems.Concat(GenerateSchemaObjectItems(oracleDatabaseModel, databaseModel.CurrentSchema, null, null, extraOffset, true));
+				completionItems = completionItems.Concat(GenerateSchemaObjectItems(oracleDatabaseModel, databaseModel.CurrentSchema.ToQuotedIdentifier(), null, null, extraOffset, true));
+				completionItems = completionItems.Concat(GenerateSchemaObjectItems(oracleDatabaseModel, OracleDatabaseModelBase.SchemaPublic, null, null, extraOffset, true));
 				completionItems = completionItems.Concat(GenerateSchemaItems(null, null, extraOffset, oracleDatabaseModel));
 				completionItems = completionItems.Concat(GenerateCommonTableExpressionReferenceItems(semanticModel, null, null, extraOffset));
 			}
@@ -545,6 +547,7 @@ namespace SqlPad.Oracle
 						{
 							Name = o.Name.ToSimpleIdentifier(),
 							Text = o.Name.ToSimpleIdentifier(),
+							Priority = String.IsNullOrEmpty(objectNamePart) || o.Name.Trim('"').ToUpperInvariant().StartsWith(objectNamePart.ToUpperInvariant()) ? 0 : 1,
 							StatementNode = node,
 							Category = OracleCodeCompletionCategory.SchemaObject,
 							Offset = insertOffset
@@ -586,14 +589,11 @@ namespace SqlPad.Oracle
 		{
 			var codeItems = Enumerable.Empty<ICodeCompletionItem>();
 
-			if (parentSchemaObject.Type == ReferenceType.SchemaObject && joinedSchemaObject.Type == ReferenceType.SchemaObject)
+			var parentObject = parentSchemaObject.SchemaObject.GetTargetSchemaObject() as OracleDataObject;
+			var joinedObject = joinedSchemaObject.SchemaObject.GetTargetSchemaObject() as OracleDataObject;
+
+			if (parentObject != null && joinedObject != null && (parentObject.ForeignKeys.Any() || joinedObject.ForeignKeys.Any()))
 			{
-				var parentObject = parentSchemaObject.SchemaObject as OracleDataObject;
-				var joinedObject = joinedSchemaObject.SchemaObject as OracleDataObject;
-
-				if (parentObject == null || joinedObject == null)
-					return EmptyCollection;
-
 				var joinedToParentKeys = parentObject.ForeignKeys.Where(k => k.TargetObject == joinedObject)
 					.Select(k => GenerateJoinConditionSuggestionItem(parentSchemaObject.FullyQualifiedObjectName, joinedSchemaObject.FullyQualifiedObjectName, k.Columns, k.ReferenceConstraint.Columns, false, skipOnTerminal, insertOffset));
 

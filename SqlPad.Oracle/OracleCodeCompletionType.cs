@@ -32,8 +32,10 @@ namespace SqlPad.Oracle
 		
 		public bool JoinCondition { get; private set; }
 		
-		public bool Program { get; private set; }
-		
+		public bool SchemaProgram { get; private set; }
+
+		public bool PackageFunction { get; private set; }
+
 		public bool DatabaseLink { get; private set; }
 		
 		public bool InUnparsedData { get; private set; }
@@ -48,7 +50,7 @@ namespace SqlPad.Oracle
 
 		private bool Any
 		{
-			get { return Schema || SchemaDataObject || PipelinedFunction || SchemaDataObjectReference || Column || AllColumns || JoinType || JoinCondition || Program || DatabaseLink || Sequence; }
+			get { return Schema || SchemaDataObject || PipelinedFunction || SchemaDataObjectReference || Column || AllColumns || JoinType || JoinCondition || SchemaProgram || DatabaseLink || Sequence || PackageFunction; }
 		}
 
 		public bool ExistsTerminalValue { get { return !String.IsNullOrEmpty(TerminalValuePartUntilCaret); } }
@@ -116,7 +118,7 @@ namespace SqlPad.Oracle
 
 			TerminalCandidates = new HashSet<string>(_parser.GetTerminalCandidates(isCursorAfterToken ? nearestTerminal : precedingTerminal));
 			Schema = TerminalCandidates.Contains(Terminals.SchemaIdentifier);
-			Program = Column = TerminalCandidates.Contains(Terminals.Identifier);
+			SchemaProgram = Column = TerminalCandidates.Contains(Terminals.Identifier);
 			DatabaseLink = TerminalCandidates.Contains(Terminals.DatabaseLinkIdentifier);
 			JoinType = !isCursorTouchingTwoTerminals && TerminalCandidates.Contains(Terminals.Join);
 
@@ -136,6 +138,8 @@ namespace SqlPad.Oracle
 			{
 				AnalyzeObjectReferencePrefixes();
 			}
+
+			PackageFunction = (!String.IsNullOrEmpty(ReferenceIdentifier.IdentifierOriginalValue) || !String.IsNullOrEmpty(ReferenceIdentifier.ObjectIdentifierOriginalValue)) && TerminalCandidates.Contains(Terminals.Identifier);
 		}
 
 		private void AnalyzeObjectReferencePrefixes()
@@ -220,8 +224,11 @@ namespace SqlPad.Oracle
 			builder.Append("JoinCondition: ");
 			builder.Append(JoinCondition);
 			builder.Append("; ");
-			builder.Append("Program: ");
-			builder.Append(Program);
+			builder.Append("SchemaProgram: ");
+			builder.Append(SchemaProgram);
+			builder.Append("; ");
+			builder.Append("PackageFunction: ");
+			builder.Append(PackageFunction);
 			builder.Append("; ");
 			builder.Append("DatabaseLink: ");
 			builder.Append(DatabaseLink);
