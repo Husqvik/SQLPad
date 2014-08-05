@@ -17,7 +17,7 @@ namespace SqlPad.Oracle
 
 			var isNotKeyword = !identifier.CollidesWithKeyword();
 
-			return isNotKeyword && identifier.IsQuotedWithoutCheck() && identifier == identifier.ToUpperInvariant() ? identifier.Replace(QuoteCharacter, null) : identifier;
+			return isNotKeyword && identifier.IsQuotedWithoutCheck() && identifier == identifier.ToUpperInvariant() && Char.IsLetter(identifier[1]) ? identifier.Replace(QuoteCharacter, null) : identifier;
 		}
 
 		public static string ToRawUpperInvariant(this string identifier)

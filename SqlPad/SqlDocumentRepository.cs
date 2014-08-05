@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SqlPad
 {
@@ -43,7 +45,18 @@ namespace SqlPad
 
 		public void UpdateStatements(string statementText)
 		{
-			var statements = _parser.Parse(statementText);
+			UpdateStatementsInternal(statementText, () => _parser.Parse(statementText));
+		}
+
+		public async Task UpdateStatementsAsync(string statementText)
+		{
+			var statements = await _parser.ParseAsync(statementText, CancellationToken.None);
+			UpdateStatementsInternal(statementText, () => statements);
+		}
+
+		private void UpdateStatementsInternal(string statementText, Func<StatementCollection> parseFunction)
+		{
+			var statements = parseFunction();
 			var validationModels = new ReadOnlyDictionary<StatementBase, IValidationModel>(statements.ToDictionary(s => s, s => _validator.BuildValidationModel(_validator.BuildSemanticModel(statementText, s, _databaseModel))));
 
 			lock (_lockObject)

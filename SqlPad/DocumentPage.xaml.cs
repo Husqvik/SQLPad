@@ -36,7 +36,6 @@ namespace SqlPad
 		private ICodeSnippetProvider _codeSnippetProvider;
 		private IContextActionProvider _contextActionProvider;
 		private IStatementFormatter _statementFormatter;
-		private IDatabaseModel _databaseModel;
 		private IToolTipProvider _toolTipProvider;
 		private INavigationService _navigationService;
 
@@ -67,7 +66,7 @@ namespace SqlPad
 		
 		internal ContextMenu TabItemContextMenu { get { return ((ContentControl)TabItem.Header).ContextMenu; } }
 
-		internal bool IsParsingSynchronous { get; set; }
+		internal static bool IsParsingSynchronous { get; set; }
 
 		internal bool IsSelectedPage
 		{
@@ -85,8 +84,8 @@ namespace SqlPad
 		public string DocumentHeader { get { return File == null ? _initialDocumentHeader : File.Name + (IsDirty ? "*" : null); } }
 
 		public bool IsDirty { get { return Editor.IsModified; } }
-		
-		public IDatabaseModel DatabaseModel { get { return _databaseModel; } }
+
+		public IDatabaseModel DatabaseModel { get; private set; }
 
 		static DocumentPage()
 		{
@@ -197,9 +196,9 @@ namespace SqlPad
 
 		internal void InitializeInfrastructureComponents(ConnectionStringSettings connectionString)
 		{
-			if (_databaseModel != null)
+			if (DatabaseModel != null)
 			{
-				_databaseModel.Dispose();
+				DatabaseModel.Dispose();
 			}
 
 			var connectionConfiguration = ConfigurationProvider.GetConnectionCofiguration(connectionString.Name);
@@ -211,23 +210,23 @@ namespace SqlPad
 			_statementFormatter = _infrastructureFactory.CreateSqlFormatter(new SqlFormatterOptions());
 			_toolTipProvider = _infrastructureFactory.CreateToolTipProvider();
 			_navigationService = _infrastructureFactory.CreateNavigationService();
-			_databaseModel = _infrastructureFactory.CreateDatabaseModel(ConfigurationProvider.ConnectionStrings[connectionString.Name]);
-			_sqlDocumentRepository = new SqlDocumentRepository(_infrastructureFactory.CreateParser(), _infrastructureFactory.CreateStatementValidator(), _databaseModel);
+			DatabaseModel = _infrastructureFactory.CreateDatabaseModel(ConfigurationProvider.ConnectionStrings[connectionString.Name]);
+			_sqlDocumentRepository = new SqlDocumentRepository(_infrastructureFactory.CreateParser(), _infrastructureFactory.CreateStatementValidator(), DatabaseModel);
 
 			_colorizingTransformer.SetParser(_infrastructureFactory.CreateParser());
 
 			InitializeSpecificCommandBindings();
 
-			_databaseModel.RefreshStarted += DatabaseModelRefreshStartedHandler;
-			_databaseModel.RefreshFinished += DatabaseModelRefreshFinishedHandler;
+			DatabaseModel.RefreshStarted += DatabaseModelRefreshStartedHandler;
+			DatabaseModel.RefreshFinished += DatabaseModelRefreshFinishedHandler;
 
-			if (_databaseModel.IsModelFresh)
+			if (DatabaseModel.IsModelFresh)
 			{
 				ReParse();
 			}
 			else
 			{
-				_databaseModel.RefreshIfNeeded();
+				DatabaseModel.RefreshIfNeeded();
 			}
 		}
 
@@ -312,7 +311,7 @@ namespace SqlPad
 			commandBindings.Add(new CommandBinding(GenericCommands.FormatStatementCommand, FormatStatement));
 			commandBindings.Add(new CommandBinding(GenericCommands.FormatStatementAsSingleLineCommand, FormatStatementAsSingleLine));
 			commandBindings.Add(new CommandBinding(GenericCommands.FindUsagesCommand, FindUsages));
-			commandBindings.Add(new CommandBinding(GenericCommands.CancelStatementCommand, CancelStatementHandler, (sender, args) => args.CanExecute = _databaseModel.IsExecuting));
+			commandBindings.Add(new CommandBinding(GenericCommands.CancelStatementCommand, CancelStatementHandler, (sender, args) => args.CanExecute = DatabaseModel.IsExecuting));
 
 			commandBindings.Add(new CommandBinding(DiagnosticCommands.ShowTokenCommand, ShowTokenCommandExecutionHandler));
 
@@ -350,16 +349,16 @@ namespace SqlPad
 
 		private void CanFetchNextRows(object sender, CanExecuteRoutedEventArgs canExecuteRoutedEventArgs)
 		{
-			canExecuteRoutedEventArgs.ContinueRouting = ResultGrid.SelectedIndex < ResultGrid.Items.Count - 1 || !_databaseModel.CanFetch;
+			canExecuteRoutedEventArgs.ContinueRouting = ResultGrid.SelectedIndex < ResultGrid.Items.Count - 1 || !DatabaseModel.CanFetch;
 			canExecuteRoutedEventArgs.CanExecute = !canExecuteRoutedEventArgs.ContinueRouting;
 		}
 
 		private async void FetchNextRows(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
 		{
-			var nextRowBatch = _databaseModel.FetchRecords(RowBatchSize);
+			var nextRowBatch = DatabaseModel.FetchRecords(RowBatchSize);
 			var exception = await SafeActionAsync(() => Task.Factory.StartNew(() => Dispatcher.Invoke(() => _pageModel.ResultRowItems.AddRange(nextRowBatch))));
 
-			TextMoreRowsExist.Visibility = _databaseModel.CanFetch ? Visibility.Visible : Visibility.Collapsed;
+			TextMoreRowsExist.Visibility = DatabaseModel.CanFetch ? Visibility.Visible : Visibility.Collapsed;
 
 			if (exception != null)
 			{
@@ -408,7 +407,7 @@ namespace SqlPad
 
 		private void CanExecuteDatabaseCommandHandler(object sender, CanExecuteRoutedEventArgs args)
 		{
-			if (_databaseModel.IsExecuting || _sqlDocumentRepository.StatementText != Editor.Text)
+			if (DatabaseModel.IsExecuting || _sqlDocumentRepository.StatementText != Editor.Text)
 				return;
 
 			var statement = _sqlDocumentRepository.Statements.GetStatementAtPosition(Editor.CaretOffset);
@@ -427,7 +426,7 @@ namespace SqlPad
 			var commandText = Editor.SelectionLength > 0 ? Editor.SelectedText : statement.RootNode.GetStatementSubstring(Editor.Text);
 			using (_cancellationTokenSource = new CancellationTokenSource())
 			{
-				actionResult = await SafeTimedActionAsync(() => _databaseModel.ExecuteStatementAsync(commandText, statement.ReturnDataset, _cancellationTokenSource.Token));
+				actionResult = await SafeTimedActionAsync(() => DatabaseModel.ExecuteStatementAsync(commandText, statement.ReturnDataset, _cancellationTokenSource.Token));
 			}
 
 			if (!actionResult.IsSuccessful)
@@ -440,7 +439,7 @@ namespace SqlPad
 
 			ResultGrid.Columns.Clear();
 
-			if (_databaseModel.CanFetch)
+			if (DatabaseModel.CanFetch)
 			{
 				InitializeResultGrid();
 				
@@ -506,7 +505,7 @@ namespace SqlPad
 		{
 			GridLabel.Visibility = Visibility.Visible;
 
-			foreach (var columnHeader in _databaseModel.GetColumnHeaders())
+			foreach (var columnHeader in DatabaseModel.GetColumnHeaders())
 			{
 				var columnTemplate =
 					new DataGridTextColumn
@@ -529,12 +528,13 @@ namespace SqlPad
 		public void Dispose()
 		{
 			TabItemContextMenu.CommandBindings.Clear();
+			TabItem.Header = null;
 			DataContext = null;
 			_timerReParse.Stop();
 			_timerReParse.Dispose();
 			_timerExecutionMonitor.Stop();
 			_timerExecutionMonitor.Dispose();
-			_databaseModel.Dispose();
+			DatabaseModel.Dispose();
 		}
 
 		private void FindUsages(object sender, ExecutedRoutedEventArgs args)
@@ -580,7 +580,7 @@ namespace SqlPad
 		{
 			if (_multiNodeEditor == null)
 			{
-				MultiNodeEditor.TryCreateMultiNodeEditor(Editor, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), _databaseModel, out _multiNodeEditor);
+				MultiNodeEditor.TryCreateMultiNodeEditor(Editor, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), DatabaseModel, out _multiNodeEditor);
 			}
 		}
 
@@ -782,7 +782,7 @@ namespace SqlPad
 		private void CreateCodeCompletionWindow(bool forcedInvokation)
 		{
 			CreateCompletionWindow(
-				() => _codeCompletionProvider.ResolveItems(_sqlDocumentRepository, _databaseModel, Editor.Text, Editor.CaretOffset, forcedInvokation)
+				() => _codeCompletionProvider.ResolveItems(_sqlDocumentRepository, DatabaseModel, Editor.Text, Editor.CaretOffset, forcedInvokation)
 					.Select(i => new CompletionData(i)));
 		}
 
@@ -844,17 +844,24 @@ namespace SqlPad
 
 			if (IsParsingSynchronous)
 			{
-				ExecuteParse(Editor.Text);
+				_sqlDocumentRepository.UpdateStatements(Editor.Text);
+				ParseDoneHandler();
 			}
 			else
 			{
-				Task.Factory.StartNew(ExecuteParse, Editor.Text);
+				var asynchronousAction =
+					new Action(async () =>
+					                 {
+						                 await _sqlDocumentRepository.UpdateStatementsAsync(Editor.Text);
+										 ParseDoneHandler();
+					                 });
+
+				asynchronousAction.Invoke();
 			}
 		}
 
-		private void ExecuteParse(object text)
+		private void ParseDoneHandler()
 		{
-			_sqlDocumentRepository.UpdateStatements((string)text);
 			_colorizingTransformer.SetDocumentRepository(_sqlDocumentRepository);
 
 			Dispatcher.Invoke(() =>
@@ -1022,7 +1029,7 @@ namespace SqlPad
 			if (e.Delta >= 0 || scrollViewer == null)
 				return;
 
-			if (scrollViewer.ScrollableHeight == scrollViewer.VerticalOffset && _databaseModel.CanFetch)
+			if (scrollViewer.ScrollableHeight == scrollViewer.VerticalOffset && DatabaseModel.CanFetch)
 			{
 				FetchNextRows(sender, null);
 			}

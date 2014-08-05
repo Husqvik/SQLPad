@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,6 +24,7 @@ namespace SqlPad.Test
 		{
 			var sqlPadDirectory = new Uri(Path.GetDirectoryName(typeof(Snippets).Assembly.CodeBase)).LocalPath;
 			Snippets.SelectSnippetDirectory(Path.Combine(sqlPadDirectory, Snippets.SnippetDirectoryName));
+			DocumentPage.IsParsingSynchronous = true;
 		}
 
 		private void InitializeApplicationWindow()
@@ -32,9 +32,7 @@ namespace SqlPad.Test
 			_mainWindow = new MainWindow();
 			_mainWindow.Show();
 			_page = (DocumentPage)((TabItem)_mainWindow.DocumentTabControl.SelectedItem).Content;
-			_page.IsParsingSynchronous = true;
 			_editor = _page.Editor;
-			_mainWindow.Show();
 		}
 
 		private static void Wait(double seconds)
@@ -215,9 +213,13 @@ namespace SqlPad.Test
 
 		private void PressBackspace()
 		{
-			_editor.TextArea.RaiseEvent(
-				new KeyEventArgs(Keyboard.PrimaryDevice, PresentationSource.FromVisual(_editor), 0, Key.Back) { RoutedEvent = Keyboard.PreviewKeyDownEvent }
-				);
+			var keyEventArgs =
+				new KeyEventArgs(Keyboard.PrimaryDevice, PresentationSource.FromVisual(_editor), 0, Key.Back)
+				{
+					RoutedEvent = Keyboard.PreviewKeyDownEvent
+				};
+			
+			_editor.TextArea.RaiseEvent(keyEventArgs);
 		}
 	}
 }

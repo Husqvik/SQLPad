@@ -39,7 +39,12 @@ namespace SqlPad.Oracle
 		}
 		#endregion
 
-		public IEnumerable<IToken> GetTokens(bool includeCommentBlocks = false)
+		IEnumerable<IToken> ITokenReader.GetTokens(bool includeCommentBlocks)
+		{
+			return (IEnumerable<IToken>)GetTokens(includeCommentBlocks);
+		}
+
+		public IEnumerable<OracleToken> GetTokens(bool includeCommentBlocks = false)
 		{
 			var builder = new StringBuilder();
 
