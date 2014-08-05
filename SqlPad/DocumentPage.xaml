@@ -68,12 +68,12 @@
 		          ItemsSource="{Binding ResultRowItems}"
 		          VirtualizingStackPanel.VirtualizationMode="Recycling"
 		          EnableColumnVirtualization="True"
+				  RowHeight="20"
 		          HorizontalGridLinesBrush="LightGray"
 		          VerticalGridLinesBrush="LightGray"
-				  IsReadOnly="True"
 				  MouseDoubleClick="ResultGridMouseDoubleClickHandler"
 		          PreviewMouseWheel="ResultGridPreviewMouseWheelHandler" />
-		<StatusBar x:Name="StatusBar" Grid.ColumnSpan="2" Grid.Row="4" Grid.Column="0">
+		<StatusBar x:Name="StatusBar" Grid.Row="4" Grid.Column="0">
 			<StatusBar.ItemsPanel>
 				<ItemsPanelTemplate>
 					<Grid>

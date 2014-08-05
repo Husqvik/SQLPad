@@ -248,6 +248,10 @@ namespace SqlPad.Oracle
 		public StatementGrammarNode Identifier { get; set; }
 		public int CursorPosition { get; set; }
 
+		public bool HasSchemaIdentifier { get { return SchemaIdentifier != null; } }
+		public bool HasObjectIdentifier { get { return ObjectIdentifier != null; } }
+		public bool HasIdentifier { get { return Identifier != null; } }
+
 		public string SchemaIdentifierOriginalValue { get { return SchemaIdentifier == null ? null : SchemaIdentifier.Token.Value; } }
 		public string ObjectIdentifierOriginalValue { get { return ObjectIdentifier == null ? null : ObjectIdentifier.Token.Value; } }
 		public string IdentifierOriginalValue { get { return Identifier == null ? null : Identifier.Token.Value; } }

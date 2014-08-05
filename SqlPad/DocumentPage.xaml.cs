@@ -46,6 +46,7 @@ namespace SqlPad
 
 		private static readonly CellValueConverter CellValueConverter = new CellValueConverter();
 		private static readonly Style CellStyleRightAlign = new Style(typeof(DataGridCell));
+		private static readonly Style CellTextBoxStyleReadOnly = new Style(typeof(TextBox));
 		private static readonly Style HeaderStyleRightAlign = new Style(typeof(DataGridColumnHeader));
 		
 		private readonly ToolTip _toolTip = new ToolTip();
@@ -91,6 +92,7 @@ namespace SqlPad
 		{
 			CellStyleRightAlign.Setters.Add(new Setter(Block.TextAlignmentProperty, TextAlignment.Right));
 			HeaderStyleRightAlign.Setters.Add(new Setter(HorizontalContentAlignmentProperty, HorizontalAlignment.Right));
+			CellTextBoxStyleReadOnly.Setters.Add(new Setter(TextBoxBase.IsReadOnlyProperty, true));
 		}
 		
 		public DocumentPage(FileInfo file, bool recoveryMode = false)
@@ -510,7 +512,8 @@ namespace SqlPad
 					new DataGridTextColumn
 					{
 						Header = columnHeader.Name.Replace("_", "__"),
-						Binding = new Binding(String.Format("[{0}]", columnHeader.ColumnIndex)) { Converter = CellValueConverter, ConverterParameter = columnHeader }
+						Binding = new Binding(String.Format("[{0}]", columnHeader.ColumnIndex)) { Converter = CellValueConverter, ConverterParameter = columnHeader },
+						EditingElementStyle = CellTextBoxStyleReadOnly 
 					};
 
 				if (columnHeader.DataType.In(typeof(Decimal), typeof(Int16), typeof(Int32), typeof(Int64), typeof(Byte)))
