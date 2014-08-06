@@ -58,6 +58,8 @@ namespace SqlPad.Oracle
 				WaitingDataModelRefresh[CachedConnectionStringName] = new List<RefreshModel>();
 			}
 
+			_dataDictionaryMapper = new DataDictionaryMapper(this);
+
 			Stream metadataStream;
 			if (MetadataCache.TryLoadMetadata(SqlFuntionMetadataFileName, out metadataStream))
 			{
@@ -79,8 +81,6 @@ namespace SqlPad.Oracle
 			}
 
 			_userConnection = new OracleConnection(connectionString.ConnectionString);
-
-			_dataDictionaryMapper = new DataDictionaryMapper(this);
 
 			LoadSchemaNames();
 
