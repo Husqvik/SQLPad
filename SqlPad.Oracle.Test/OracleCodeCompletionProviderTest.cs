@@ -717,6 +717,15 @@ se";
 			items[0].Text.ShouldBe("\"CaseSensitiveTable\"");
 		}
 
+		[Test(Description = @"")]
+		public void TestCodeCompleteWhenTypingOrderAfterTableNameInFromClause()
+		{
+			const string query1 = @"SELECT * FROM ""CaseUnknownTable"" OR";
+
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 35).ToList();
+			items.Count.ShouldBe(0);
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)
