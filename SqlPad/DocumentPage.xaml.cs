@@ -534,7 +534,11 @@ namespace SqlPad
 			_timerReParse.Dispose();
 			_timerExecutionMonitor.Stop();
 			_timerExecutionMonitor.Dispose();
-			DatabaseModel.Dispose();
+
+			if (DatabaseModel != null)
+			{
+				DatabaseModel.Dispose();
+			}
 		}
 
 		private void FindUsages(object sender, ExecutedRoutedEventArgs args)
@@ -809,7 +813,9 @@ namespace SqlPad
 
 			var firstItem = (CompletionData)data.First();
 			if (firstItem.Node != null)
+			{
 				_completionWindow.StartOffset = firstItem.Node.SourcePosition.IndexStart;
+			}
 
 			if (data.Count == 1)
 			{
@@ -1042,15 +1048,10 @@ namespace SqlPad
 				return;
 
 			var cellValue = currentRow[ResultGrid.CurrentColumn.DisplayIndex];
-			var largeBinary = cellValue as ILargeBinaryValue;
-			var largeText = cellValue as ILargeTextValue;
-			if (largeBinary != null)
+			var largeValue = cellValue as ILargeValue;
+			if (largeValue != null)
 			{
-				
-			}
-			else if (largeText != null)
-			{
-				
+				new LargeValueEditor(largeValue) { Owner = Window.GetWindow(this) }.ShowDialog();
 			}
 		}
 	}

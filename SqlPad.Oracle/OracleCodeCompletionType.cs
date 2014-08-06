@@ -39,6 +39,8 @@ namespace SqlPad.Oracle
 		public bool DatabaseLink { get; private set; }
 		
 		public bool InUnparsedData { get; private set; }
+
+		public bool IsCursorTouchingTwoTerminals { get; private set; }
 		
 		public StatementGrammarNode CurrentTerminal { get; private set; }
 
@@ -109,18 +111,19 @@ namespace SqlPad.Oracle
 				}
 			}
 
-			var precedingTerminal = nearestTerminal.PrecedingTerminal;
-			var isCursorTouchingTwoTerminals = nearestTerminal.SourcePosition.IndexStart == cursorPosition && precedingTerminal != null && precedingTerminal.SourcePosition.IndexEnd + 1 == cursorPosition;
-			if (isCursorTouchingTwoTerminals)
-			{
-				precedingTerminal = precedingTerminal.PrecedingTerminal;
-			}
+			var effectiveTerminal = Statement.GetNearestTerminalToPosition(cursorPosition, n => !n.Id.In(Terminals.RightParenthesis, Terminals.Comma));
+			AnalyzeObjectReferencePrefixes(effectiveTerminal);
 
+			var precedingTerminal = nearestTerminal.PrecedingTerminal;
 			TerminalCandidates = new HashSet<string>(_parser.GetTerminalCandidates(isCursorAfterToken ? nearestTerminal : precedingTerminal));
-			Schema = TerminalCandidates.Contains(Terminals.SchemaIdentifier);
-			SchemaProgram = Column = TerminalCandidates.Contains(Terminals.Identifier);
+			
+			IsCursorTouchingTwoTerminals = nearestTerminal.SourcePosition.IndexStart == cursorPosition && precedingTerminal != null && precedingTerminal.SourcePosition.IndexEnd + 1 == cursorPosition;
+
+			var isCursorBetweenTwoTerminalsWithPrecedingIdentifierWithoutPrefix = IsCursorTouchingTwoTerminals && precedingTerminal.Id == Terminals.Identifier && !ReferenceIdentifier.HasObjectIdentifier;
+			Schema = TerminalCandidates.Contains(Terminals.SchemaIdentifier) || isCursorBetweenTwoTerminalsWithPrecedingIdentifierWithoutPrefix;
+			SchemaProgram = Column = TerminalCandidates.Contains(Terminals.Identifier) || isCursorBetweenTwoTerminalsWithPrecedingIdentifierWithoutPrefix;
 			DatabaseLink = TerminalCandidates.Contains(Terminals.DatabaseLinkIdentifier);
-			JoinType = !isCursorTouchingTwoTerminals && TerminalCandidates.Contains(Terminals.Join);
+			JoinType = !IsCursorTouchingTwoTerminals && TerminalCandidates.Contains(Terminals.Join);
 
 			var isWithinFromClause = nearestTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.FromClause) != null || (isCursorAfterToken && nearestTerminal.Id == Terminals.From);
 			var isWithinJoinCondition = nearestTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.JoinClause, NonTerminals.JoinColumnsOrCondition) != null;
@@ -132,10 +135,7 @@ namespace SqlPad.Oracle
 			var isWithinSelectList = (nearestTerminal.Id == Terminals.Select && isCursorAfterToken) || nearestTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.SelectList) != null;
 			AllColumns = isWithinSelectList && TerminalCandidates.Contains(Terminals.Asterisk);
 
-			SchemaDataObjectReference = !isWithinFromClause && TerminalCandidates.Contains(Terminals.ObjectIdentifier);
-
-			var effectiveTerminal = Statement.GetNearestTerminalToPosition(cursorPosition, n => !n.Id.In(Terminals.RightParenthesis, Terminals.Comma));
-			AnalyzeObjectReferencePrefixes(effectiveTerminal);
+			SchemaDataObjectReference = !isWithinFromClause && (TerminalCandidates.Contains(Terminals.ObjectIdentifier) || isCursorBetweenTwoTerminalsWithPrecedingIdentifierWithoutPrefix);
 
 			PackageFunction = !String.IsNullOrEmpty(ReferenceIdentifier.ObjectIdentifierOriginalValue) && TerminalCandidates.Contains(Terminals.Identifier);
 		}

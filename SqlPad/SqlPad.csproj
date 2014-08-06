@@ -74,6 +74,9 @@
     </ApplicationDefinition>
     <Compile Include="CellValueConverter.cs" />
     <Compile Include="ILargeTextValue.cs" />
+    <Compile Include="LargeValueEditor.xaml.cs">
+      <DependentUpon>LargeValueEditor.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Messages.cs" />
     <Compile Include="SqlDocumentColorizingTransformer.cs" />
     <Compile Include="Commands\CommandExecutionHandler.cs" />
@@ -152,6 +155,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="FunctionOverloadList.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="LargeValueEditor.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -1,24 +1,23 @@
 ﻿namespace SqlPad
 {
-	public interface ILargeTextValue
+	public interface ILargeValue
 	{
 		bool IsEditable { get; }
 
-		string Preview { get; }
-
 		long Length { get; }
+	}
+
+	public interface ILargeTextValue: ILargeValue
+	{
+		string Preview { get; }
 
 		string Value { get; }
 
 		string GetChunk(int offset, int length);
 	}
 
-	public interface ILargeBinaryValue
+	public interface ILargeBinaryValue : ILargeValue
 	{
-		bool IsEditable { get; }
-
-		long Length { get; }
-
 		byte[] Value { get; }
 
 		byte[] GetChunk(int offset, int length);

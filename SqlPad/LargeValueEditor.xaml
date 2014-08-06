@@ -1,0 +1,24 @@
+﻿<Window x:Class="SqlPad.LargeValueEditor"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
+		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		mc:Ignorable="d"
+		d:DesignHeight="640" d:DesignWidth="320"
+        Title="" Width="Auto" Height="Auto" MinHeight="320" MinWidth="480"
+		SizeToContent="WidthAndHeight" WindowStartupLocation="CenterOwner" Icon="EmptyIcon.ico">
+    <Grid>
+		<TabControl x:Name="TabControl">
+			<TabItem x:Name="TabText" Header="Text">
+				<avalonedit:TextEditor x:Name="TextEditor"
+				                       FontFamily="Consolas"
+				                       ShowLineNumbers="True"
+									   IsReadOnly="True" />
+			</TabItem>
+			<TabItem x:Name="TabRaw" Header="Raw">
+				<TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Red" Text="Not implemented yet" FontSize="36" />
+			</TabItem>
+		</TabControl>
+	</Grid>
+</Window>

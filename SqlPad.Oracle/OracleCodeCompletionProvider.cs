@@ -103,7 +103,7 @@ namespace SqlPad.Oracle
 
 			var completionType = new OracleCodeCompletionType(sqlDocumentRepository, statementText, cursorPosition);
 			completionType.PrintSupportedCompletions();
-			if (!forcedInvokation && !completionType.JoinCondition && String.IsNullOrEmpty(completionType.TerminalValuePartUntilCaret))
+			if (!forcedInvokation && !completionType.JoinCondition && (String.IsNullOrEmpty(completionType.TerminalValuePartUntilCaret) || completionType.IsCursorTouchingTwoTerminals))
 				return EmptyCollection;
 
 			StatementGrammarNode currentNode;
@@ -156,8 +156,9 @@ namespace SqlPad.Oracle
 			var extraOffset = currentNode.SourcePosition.IndexStart + currentNode.SourcePosition.Length == cursorPosition && currentNode.Id != Terminals.LeftParenthesis ? 1 : 0;
 
 			var fromClause = currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.NestedQuery, NonTerminals.FromClause);
-			if ((currentNode.Id == Terminals.From && !cursorAtLastTerminal) ||
-				(currentNode.Id.In(Terminals.ObjectIdentifier, Terminals.Comma) && fromClause != null))
+			if (completionType.SchemaDataObject &&
+				((currentNode.Id == Terminals.From && !cursorAtLastTerminal) ||
+				 (currentNode.Id.In(Terminals.ObjectIdentifier, Terminals.Comma) && fromClause != null)))
 			{
 				var schemaName = databaseModel.CurrentSchema.ToQuotedIdentifier();
 				var schemaFound = false;
@@ -168,7 +169,7 @@ namespace SqlPad.Oracle
 					schemaName = currentNode.ParentNode.FirstTerminalNode.Token.Value;
 				}
 
-				var currentName = currentNode.Id.In(Terminals.From, Terminals.Comma) ? null : statementText.Substring(currentNode.SourcePosition.IndexStart, cursorPosition - currentNode.SourcePosition.IndexStart);
+				var currentName = currentNode.Id.In(Terminals.From, Terminals.Comma) ? null : completionType.TerminalValuePartUntilCaret;
 				if (String.IsNullOrEmpty(currentName) || currentName == currentName.Trim())
 				{
 					completionItems = completionItems.Concat(GenerateSchemaObjectItems(oracleDatabaseModel, schemaName, currentName, terminalToReplace, extraOffset, true));
@@ -248,9 +249,7 @@ namespace SqlPad.Oracle
 				completionItems = completionItems.Concat(whereTableReferences);
 			}
 
-			if (currentNode.IsWithinSelectClauseOrExpression() &&
-				terminalCandidates.Contains(Terminals.Identifier) &&
-				currentNode.Id.In(Terminals.ObjectIdentifier, Terminals.Identifier, Terminals.Comma, Terminals.Dot, Terminals.Select))
+			if (completionType.Column)
 			{
 				completionItems = completionItems.Concat(GenerateSelectListItems(currentNode, semanticModel, cursorPosition, oracleDatabaseModel));
 			}
@@ -260,7 +259,7 @@ namespace SqlPad.Oracle
 				var databaseLinkItems = oracleDatabaseModel.DatabaseLinks.Values
 					.Where(l => l.FullyQualifiedName.NormalizedOwner.In(OracleDatabaseModelBase.SchemaPublic, oracleDatabaseModel.CurrentSchema.ToQuotedIdentifier()) &&
 					            (String.IsNullOrEmpty(completionType.TerminalValueUnderCursor) || completionType.TerminalValueUnderCursor.ToQuotedIdentifier() != l.FullyQualifiedName.NormalizedName) &&
-					            (String.IsNullOrEmpty(completionType.TerminalValuePartUntilCaret) || l.FullyQualifiedName.Name.ToUpperInvariant().Contains(completionType.TerminalValuePartUntilCaret.ToUpperInvariant())))
+								CodeCompletionSearchHelper.IsMatch(l.FullyQualifiedName.Name, completionType.TerminalValuePartUntilCaret))
 					.Select(l => new OracleCodeCompletionItem
 					             {
 						             Name = l.FullyQualifiedName.Name.ToSimpleIdentifier(),
@@ -498,7 +497,7 @@ namespace SqlPad.Oracle
 		private IEnumerable<ICodeCompletionItem> GenerateSchemaItems(string schemaNamePart, StatementGrammarNode node, int insertOffset, OracleDatabaseModelBase databaseModel, int priorityOffset = 0)
 		{
 			return databaseModel.AllSchemas
-				.Where(s => s != OracleDatabaseModelBase.SchemaPublic && (MakeSaveQuotedIdentifier(schemaNamePart) != s && (String.IsNullOrEmpty(schemaNamePart) || s.ToUpperInvariant().Contains(schemaNamePart.Trim('"').ToUpperInvariant()))))
+				.Where(s => s != OracleDatabaseModelBase.SchemaPublic && (MakeSaveQuotedIdentifier(schemaNamePart) != s && CodeCompletionSearchHelper.IsMatch(s, schemaNamePart)))
 				.Select(s => new OracleCodeCompletionItem
 				             {
 								 Name = s.ToSimpleIdentifier(),
@@ -541,8 +540,7 @@ namespace SqlPad.Oracle
 			return databaseModel.AllObjects.Values
 						.Where(o => (!dataObjectsOnly || IsDataObject(o)) &&
 							o.Owner == MakeSaveQuotedIdentifier(schemaName) && MakeSaveQuotedIdentifier(objectNamePart) != o.Name &&
-							(node == null || node.Token.Value.ToQuotedIdentifier() != o.Name) &&
-							(String.IsNullOrEmpty(objectNamePart) || o.Name.ToUpperInvariant().Contains(objectNamePart.ToUpperInvariant())))
+							(node == null || node.Token.Value.ToQuotedIdentifier() != o.Name) && CodeCompletionSearchHelper.IsMatch(o.Name, objectNamePart))
 						.Select(o => new OracleCodeCompletionItem
 						{
 							Name = o.Name.ToSimpleIdentifier(),
@@ -573,7 +571,7 @@ namespace SqlPad.Oracle
 		{
 			// TODO: Make proper resolution of CTE accessibility
 			return model.QueryBlocks
-						.Where(qb => qb.Type == QueryBlockType.CommonTableExpression && referenceNamePart.ToQuotedIdentifier() != qb.NormalizedAlias && (String.IsNullOrEmpty(referenceNamePart) || qb.Alias.ToUpperInvariant().Contains(referenceNamePart.ToUpperInvariant())))
+						.Where(qb => qb.Type == QueryBlockType.CommonTableExpression && referenceNamePart.ToQuotedIdentifier() != qb.NormalizedAlias && CodeCompletionSearchHelper.IsMatch(qb.Alias, referenceNamePart))
 						.Select(qb => new OracleCodeCompletionItem
 						{
 							Name = qb.Alias,
@@ -645,6 +643,42 @@ namespace SqlPad.Oracle
 			}
 
 			return new OracleCodeCompletionItem { Name = builder.ToString(), Text = builder.ToString(), Offset = insertOffset };
+		}
+	}
+
+	public static class CodeCompletionSearchHelper
+	{
+		public static bool IsMatch(string fullyQualifiedName, string inputPhrase)
+		{
+			inputPhrase = inputPhrase == null ? null : inputPhrase.Trim('"');
+			return String.IsNullOrWhiteSpace(inputPhrase) ||
+			       ResolveSearchPhrases(inputPhrase).All(p => fullyQualifiedName.ToUpperInvariant().Contains(p));
+		}
+
+		private static IEnumerable<string> ResolveSearchPhrases(string inputPhrase)
+		{
+			var builder = new StringBuilder();
+			var containsSmallLetter = false;
+			foreach (var character in inputPhrase)
+			{
+				if (containsSmallLetter && Char.IsUpper(character) && builder.Length > 0)
+				{
+					yield return builder.ToString().ToUpperInvariant();
+					containsSmallLetter = false;
+					builder.Clear();
+				}
+				else if (Char.IsLower(character))
+				{
+					containsSmallLetter = true;
+				}
+
+				builder.Append(character);
+			}
+
+			if (builder.Length > 0)
+			{
+				yield return builder.ToString().ToUpperInvariant();
+			}
 		}
 	}
 }

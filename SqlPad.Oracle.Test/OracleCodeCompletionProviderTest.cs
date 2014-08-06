@@ -718,12 +718,32 @@ se";
 		}
 
 		[Test(Description = @"")]
-		public void TestCodeCompleteWhenTypingOrderAfterTableNameInFromClause()
+		public void TestCodeCompletionWhenTypingOrderAfterTableNameInFromClause()
 		{
 			const string query1 = @"SELECT * FROM ""CaseUnknownTable"" OR";
 
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 35).ToList();
 			items.Count.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
+		public void TestCodeCompletionWhenTypingWithinParentheses()
+		{
+			const string statement = @"SELECT SQLPAD.SQLPAD_FUNCTION(D) FROM DUAL";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 31).ToList();
+			items.Count.ShouldBe(8);
+			items[0].Text.ShouldBe("DUAL.DUMMY");
+			items[7].Name.ShouldBe("DUMP");
+			items[7].Text.ShouldBe("DUMP()");
+		}
+
+		[Test(Description = @"")]
+		public void TestCodeCompletionWhenUsingNameParts()
+		{
+			const string statement = @"SELECT * FROM SenTab";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 20).ToList();
+			items.Count.ShouldBe(1);
+			items[0].Text.ShouldBe("\"CaseSensitiveTable\"");
 		}
 
 		public class OracleCodeCompletionTypeTest
