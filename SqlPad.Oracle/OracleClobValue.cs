@@ -13,6 +13,8 @@ namespace SqlPad.Oracle
 
 		private readonly OracleClob _clob;
 
+		public string DataTypeName { get; private set; }
+
 		public bool IsEditable { get { return false; } }
 
 		public string Preview { get; private set; }
@@ -29,9 +31,10 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		public OracleClobValue(OracleClob clob)
+		public OracleClobValue(string dataTypeName, OracleClob clob)
 		{
 			_clob = clob;
+			DataTypeName = dataTypeName;
 			Length = _clob.Length;
 			Preview = Length > PreviewLength ? String.Format("{0}{1}", GetChunk(0, PreviewLength), Ellipsis) : Value;
 		}
@@ -57,6 +60,8 @@ namespace SqlPad.Oracle
 	public class OracleBlobValue : ILargeBinaryValue, IDisposable
 	{
 		private readonly OracleBlob _blob;
+
+		public string DataTypeName { get { return "BLOB"; } }
 		
 		public bool IsEditable { get { return false; } }
 
@@ -104,6 +109,8 @@ namespace SqlPad.Oracle
 		private readonly OracleDataReader _reader;
 		private byte[] _value;
 		private readonly int _columnIndex;
+
+		public string DataTypeName { get { return "LONG RAW"; } }
 
 		public bool IsEditable { get { return false; } }
 

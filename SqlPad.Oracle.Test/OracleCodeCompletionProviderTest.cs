@@ -372,7 +372,7 @@ FROM
 		}
 
 		[Test(Description = @"")]
-		public void TestNothingIsSuggestedAfterFromTerminal()
+		public void TestObjectsAreSuggestedAfterFromTerminal()
 		{
 			const string query1 = @"SELECT * FROM ";
 

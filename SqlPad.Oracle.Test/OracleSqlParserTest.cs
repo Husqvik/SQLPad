@@ -2,6 +2,8 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Shouldly;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
@@ -1764,6 +1766,29 @@ FROM DUAL";
 			terminals[1].Id.ShouldBe(Terminals.ObjectIdentifier);
 			terminals[6].Token.Value.ShouldBe("JOIN");
 			terminals[6].Id.ShouldBe(Terminals.ObjectAlias);
+		}
+
+		[Test(Description = @"")]
+		public void TestParsingCancellation()
+		{
+			var cancellationTokenSource = new CancellationTokenSource();
+
+			using (var reader = File.OpenText(@"TestFiles\SqlStatements1.sql"))
+			{
+				var parsingStopwatch = Stopwatch.StartNew();
+				var task = Parser.ParseAsync(OracleTokenReader.Create(reader), cancellationTokenSource.Token);
+
+				var cancellationStopwatch = Stopwatch.StartNew();
+				cancellationTokenSource.Cancel();
+
+				var exception = Assert.Throws<AggregateException>(() => task.Wait());
+				exception.InnerException.ShouldBeTypeOf<TaskCanceledException>();
+
+				parsingStopwatch.Stop();
+				cancellationStopwatch.Stop();
+
+				Trace.WriteLine(String.Format("Parsing successfully cancelled; parse time: {0} ms; cancellation time: {1} ms", parsingStopwatch.ElapsedMilliseconds, cancellationStopwatch.ElapsedMilliseconds));
+			}
 		}
 
 		public class IsRuleValid

@@ -52,12 +52,14 @@
 
 	<Window.InputBindings>
 		<KeyBinding Key="F3" Modifiers="Shift" Command="Search" CommandParameter="something" />
+		<KeyBinding Key="O" Modifiers="Control" Command="Open" />
 	</Window.InputBindings>
 
 	<Window.CommandBindings>
 		<local:StaticResourceBinding ResourceKey="FindReplaceManager" Path="FindBinding" />
 		<local:StaticResourceBinding ResourceKey="FindReplaceManager" Path="ReplaceBinding" />
 		<local:StaticResourceBinding ResourceKey="FindReplaceManager" Path="FindNextBinding" />
+		<CommandBinding Command="Open" Executed="OpenFileHandler" />
 	</Window.CommandBindings>
 
 	<Grid>

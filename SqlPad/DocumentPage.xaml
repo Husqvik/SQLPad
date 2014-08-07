@@ -69,6 +69,7 @@
 		          VirtualizingStackPanel.VirtualizationMode="Recycling"
 		          EnableColumnVirtualization="True"
 				  RowHeight="20"
+				  CanUserSortColumns="False"
 		          HorizontalGridLinesBrush="LightGray"
 		          VerticalGridLinesBrush="LightGray"
 				  MouseDoubleClick="ResultGridMouseDoubleClickHandler"

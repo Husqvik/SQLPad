@@ -4,11 +4,30 @@
         xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
 		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		xmlns:findReplace="clr-namespace:SqlPad.FindReplace"
+		xmlns:sqlPad="clr-namespace:SqlPad"
 		mc:Ignorable="d"
 		d:DesignHeight="640" d:DesignWidth="320"
         Title="" Width="Auto" Height="Auto" MinHeight="320" MinWidth="480"
 		SizeToContent="WidthAndHeight" WindowStartupLocation="CenterOwner" Icon="EmptyIcon.ico">
-    <Grid>
+
+	<Window.Resources>
+		<findReplace:FindReplaceManager
+		    x:Key="FindReplaceManager" />
+	</Window.Resources>
+
+	<Window.InputBindings>
+		<KeyBinding Key="Escape" Command="Close" />
+		<KeyBinding Key="F3" Modifiers="Shift" Command="Search" CommandParameter="something" />
+	</Window.InputBindings>
+
+	<Window.CommandBindings>
+		<CommandBinding Command="Close" Executed="CloseWindowHandler" />
+		<sqlPad:StaticResourceBinding ResourceKey="FindReplaceManager" Path="FindBinding" />
+		<sqlPad:StaticResourceBinding ResourceKey="FindReplaceManager" Path="FindNextBinding" />
+	</Window.CommandBindings>
+
+	<Grid>
 		<TabControl x:Name="TabControl">
 			<TabItem x:Name="TabText" Header="Text">
 				<avalonedit:TextEditor x:Name="TextEditor"
@@ -17,7 +36,16 @@
 									   IsReadOnly="True" />
 			</TabItem>
 			<TabItem x:Name="TabRaw" Header="Raw">
-				<TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Red" Text="Not implemented yet" FontSize="36" />
+				<Grid>
+					<avalonedit:TextEditor x:Name="HexEditor"
+										   FontFamily="Consolas"
+										   IsReadOnly="True" />
+					<StackPanel x:Name="LoadingNotification" VerticalAlignment="Center" Width="240" sqlPad:MarginSetter.Margin="0,8,0,8">
+						<TextBlock Text="Loading..." FontSize="16" HorizontalAlignment="Center" />
+						<ProgressBar x:Name="BinaryValueLoadingProgress" Height="24" IsIndeterminate="True" />
+						<Button Content="_Cancel" Width="72" Padding="4" Click="CancelLoadingHandler" />
+					</StackPanel>
+				</Grid>
 			</TabItem>
 		</TabControl>
 	</Grid>

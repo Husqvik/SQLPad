@@ -6,6 +6,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Microsoft.Win32;
 using SqlPad.FindReplace;
 
 namespace SqlPad
@@ -223,6 +224,18 @@ namespace SqlPad
 		private void WindowClosedHandler(object sender, EventArgs e)
 		{
 			
+		}
+
+		private void OpenFileHandler(object sender, ExecutedRoutedEventArgs e)
+		{
+			var dialog = new OpenFileDialog { Filter = DocumentPage.FileMaskDefault, CheckFileExists = true };
+			if (dialog.ShowDialog() != true)
+			{
+				return;
+			}
+
+			var file = new FileInfo(dialog.FileName);
+			CreateNewDocumentPage(file);
 		}
 	}
 }

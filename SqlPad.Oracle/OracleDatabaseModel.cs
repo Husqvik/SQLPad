@@ -497,14 +497,16 @@ namespace SqlPad.Oracle
 
 			for (var i = 0; i < fieldTypes.Count; i++)
 			{
+				var fieldType = fieldTypes[i];
 				object value;
-				switch (fieldTypes[i])
+				switch (fieldType)
 				{
 					case "Blob":
 						value = new OracleBlobValue(_userDataReader.GetOracleBlob(i));
 						break;
 					case "Clob":
-						value = new OracleClobValue(_userDataReader.GetOracleClob(i));
+					case "NClob":
+						value = new OracleClobValue(fieldType.ToUpperInvariant(), _userDataReader.GetOracleClob(i));
 						break;
 					case "Long":
 						var oracleString = _userDataReader.GetOracleString(i);

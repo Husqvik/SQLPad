@@ -29,7 +29,8 @@ namespace SqlPad
 	public partial class DocumentPage : IDisposable
 	{
 		private const int RowBatchSize = 100;
-		
+		public const string FileMaskDefault = "SQL Files (*.sql)|*.sql|All (*.*)|*";
+
 		private SqlDocumentRepository _sqlDocumentRepository;
 		private IInfrastructureFactory _infrastructureFactory;
 		private ICodeCompletionProvider _codeCompletionProvider;
@@ -259,7 +260,7 @@ namespace SqlPad
 
 		public bool SaveAs()
 		{
-			var dialog = new SaveFileDialog { Filter = "SQL Files (*.sql)|*.sql|All (*.*)|*" };
+			var dialog = new SaveFileDialog { Filter = FileMaskDefault };
 			if (dialog.ShowDialog() != true)
 			{
 				return false;
@@ -1051,7 +1052,7 @@ namespace SqlPad
 			var largeValue = cellValue as ILargeValue;
 			if (largeValue != null)
 			{
-				new LargeValueEditor(largeValue) { Owner = Window.GetWindow(this) }.ShowDialog();
+				new LargeValueEditor(ResultGrid.CurrentColumn.Header.ToString(), largeValue) { Owner = Window.GetWindow(this) }.ShowDialog();
 			}
 		}
 	}

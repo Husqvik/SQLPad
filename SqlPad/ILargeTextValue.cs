@@ -2,6 +2,8 @@
 {
 	public interface ILargeValue
 	{
+		string DataTypeName { get; }
+
 		bool IsEditable { get; }
 
 		long Length { get; }
