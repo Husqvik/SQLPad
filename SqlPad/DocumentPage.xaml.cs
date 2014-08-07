@@ -295,7 +295,7 @@ namespace SqlPad
 			ChangeDeleteLineCommandInputGesture();
 
 			var commandBindings = Editor.TextArea.DefaultInputHandler.Editing.CommandBindings;
-			commandBindings.Add(new CommandBinding(GenericCommands.ShowCodeCompletionOptionCommand, ShowCodeCompletionOptions));
+			commandBindings.Add(new CommandBinding(GenericCommands.ShowCodeCompletionOptionCommand, ShowCodeCompletionOptions, (sender, args) => args.CanExecute = _sqlDocumentRepository.StatementText == Editor.Text));
 			commandBindings.Add(new CommandBinding(GenericCommands.ShowFunctionOverloadCommand, ShowFunctionOverloads));
 			commandBindings.Add(new CommandBinding(GenericCommands.DuplicateTextCommand, GenericCommandHandler.DuplicateText));
 			commandBindings.Add(new CommandBinding(GenericCommands.BlockCommentCommand, GenericCommandHandler.HandleBlockComments));

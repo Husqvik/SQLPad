@@ -63,7 +63,7 @@ namespace SqlPad
 
 			if (Node != null)
 			{
-				textArea.Document.Replace(Node.SourcePosition.IndexStart, /*Node.SourcePosition.Length + */completionSegment.Length, _completionText.Trim());
+				textArea.Document.Replace(Node.SourcePosition.IndexStart, Math.Max(Node.SourcePosition.Length, completionSegment.Length), _completionText.Trim());
 			}
 			else
 			{
