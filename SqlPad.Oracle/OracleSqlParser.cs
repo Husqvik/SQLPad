@@ -429,6 +429,11 @@ namespace SqlPad.Oracle
 					var workingTerminalCount = workingNodes.Sum(t => t.TerminalCount);
 					var tokenOffset = tokenStartOffset + workingTerminalCount;
 
+					if (tokenOffset >= tokenBuffer.Count && !item.IsRequired)
+					{
+						continue;
+					}
+
 					var bestCandidateTerminalCount = bestCandidateNodes.Sum(t => t.TerminalCount);
 					var bestCandidateOffset = tokenStartOffset + bestCandidateTerminalCount;
 					var tryBestCandidates = bestCandidatesCompatible && !tokenReverted && bestCandidateTerminalCount > workingTerminalCount;

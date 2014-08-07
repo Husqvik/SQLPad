@@ -1749,6 +1749,23 @@ FROM DUAL";
 			statement.AllTerminals.Count.ShouldBe(8);
 		}
 
+		[Test(Description = @"")]
+		public void TestJoinKeywordAsAlias()
+		{
+			const string statement1 = @"SELECT JOIN.* FROM ""CaseSensitiveTable"" JOIN";
+
+			var statements = Parser.Parse(statement1);
+			var statement = statements.Single().Validate();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			
+			var terminals = statement.RootNode.Terminals.ToArray();
+			terminals.Length.ShouldBe(7);
+			terminals[1].Token.Value.ShouldBe("JOIN");
+			terminals[1].Id.ShouldBe(Terminals.ObjectIdentifier);
+			terminals[6].Token.Value.ShouldBe("JOIN");
+			terminals[6].Id.ShouldBe(Terminals.ObjectAlias);
+		}
+
 		public class IsRuleValid
 		{
 			[Test(Description = @"")]
