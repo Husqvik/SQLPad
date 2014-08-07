@@ -40,7 +40,7 @@ namespace SqlPad.Oracle
 		
 		public bool InUnparsedData { get; private set; }
 
-		public bool IsCursorTouchingTwoTerminals { get; private set; }
+		public bool IsCursorTouchingIdentifier { get; private set; }
 		
 		public StatementGrammarNode CurrentTerminal { get; private set; }
 
@@ -117,13 +117,14 @@ namespace SqlPad.Oracle
 			var precedingTerminal = nearestTerminal.PrecedingTerminal;
 			TerminalCandidates = new HashSet<string>(_parser.GetTerminalCandidates(isCursorAfterToken ? nearestTerminal : precedingTerminal));
 			
-			IsCursorTouchingTwoTerminals = nearestTerminal.SourcePosition.IndexStart == cursorPosition && precedingTerminal != null && precedingTerminal.SourcePosition.IndexEnd + 1 == cursorPosition;
+			var isCursorTouchingTwoTerminals = nearestTerminal.SourcePosition.IndexStart == cursorPosition && precedingTerminal != null && precedingTerminal.SourcePosition.IndexEnd + 1 == cursorPosition;
+			IsCursorTouchingIdentifier = isCursorTouchingTwoTerminals && precedingTerminal.Id == Terminals.Identifier;
 
-			var isCursorBetweenTwoTerminalsWithPrecedingIdentifierWithoutPrefix = IsCursorTouchingTwoTerminals && precedingTerminal.Id == Terminals.Identifier && !ReferenceIdentifier.HasObjectIdentifier;
+			var isCursorBetweenTwoTerminalsWithPrecedingIdentifierWithoutPrefix = IsCursorTouchingIdentifier && !ReferenceIdentifier.HasObjectIdentifier;
 			Schema = TerminalCandidates.Contains(Terminals.SchemaIdentifier) || isCursorBetweenTwoTerminalsWithPrecedingIdentifierWithoutPrefix;
 			SchemaProgram = Column = TerminalCandidates.Contains(Terminals.Identifier) || isCursorBetweenTwoTerminalsWithPrecedingIdentifierWithoutPrefix;
 			DatabaseLink = TerminalCandidates.Contains(Terminals.DatabaseLinkIdentifier);
-			JoinType = !IsCursorTouchingTwoTerminals && TerminalCandidates.Contains(Terminals.Join);
+			JoinType = !isCursorTouchingTwoTerminals && TerminalCandidates.Contains(Terminals.Join);
 
 			var isWithinFromClause = nearestTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.FromClause) != null || (isCursorAfterToken && nearestTerminal.Id == Terminals.From);
 			var isWithinJoinCondition = nearestTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.JoinClause, NonTerminals.JoinColumnsOrCondition) != null;

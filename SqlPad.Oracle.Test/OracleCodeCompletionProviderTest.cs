@@ -786,6 +786,19 @@ se";
 			}
 
 			[Test(Description = @"")]
+			public void TestCodeCompletionTypeWithinChainedFunctionParameterList()
+			{
+				const string statement = @"SELECT LENGTH(SELECTION.NAME) + LENGTH(N) FROM SELECTION";
+				var completionType = InitializeCodeCompletionType(statement, 40);
+				completionType.SchemaDataObjectReference.ShouldBe(true);
+				completionType.Schema.ShouldBe(true);
+				completionType.SchemaProgram.ShouldBe(true);
+				completionType.PackageFunction.ShouldBe(false);
+				completionType.Column.ShouldBe(true);
+				completionType.AllColumns.ShouldBe(false);
+			}
+
+			[Test(Description = @"")]
 			public void TestCodeCompletionTypeAfterSchemaOrObjectIdentifierCandidate()
 			{
 				const string statement = @"SELECT CUSTOMER. FROM CUSTOMER JOIN COMPANY ON ";

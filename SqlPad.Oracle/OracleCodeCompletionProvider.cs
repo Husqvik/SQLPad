@@ -103,7 +103,7 @@ namespace SqlPad.Oracle
 
 			var completionType = new OracleCodeCompletionType(sqlDocumentRepository, statementText, cursorPosition);
 			completionType.PrintSupportedCompletions();
-			if (!forcedInvokation && !completionType.JoinCondition && (String.IsNullOrEmpty(completionType.TerminalValuePartUntilCaret) || completionType.IsCursorTouchingTwoTerminals))
+			if (!forcedInvokation && !completionType.JoinCondition && String.IsNullOrEmpty(completionType.TerminalValuePartUntilCaret) && !completionType.IsCursorTouchingIdentifier)
 				return EmptyCollection;
 
 			StatementGrammarNode currentNode;

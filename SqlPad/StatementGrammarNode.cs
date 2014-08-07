@@ -307,9 +307,42 @@ namespace SqlPad
 
 		public StatementGrammarNode GetNearestTerminalToPosition(int position, Func<StatementGrammarNode, bool> filter = null)
 		{
-			return Terminals.TakeWhile(t => t.SourcePosition.IndexStart <= position && (filter == null || filter(t))).LastOrDefault();
+			return GetNearestTerminalToPosition(this, position, filter);
 		}
 
+		private static StatementGrammarNode GetNearestTerminalToPosition(StatementGrammarNode node, int position, Func<StatementGrammarNode, bool> filter = null)
+		{
+			if (node.Type == NodeType.Terminal)
+			{
+				throw new InvalidOperationException("This operation is available only at non-terminal nodes. ");
+			}
+
+			for (var index = node._childNodes.Count - 1; index >= 0; index--)
+			{
+				var childNode = node._childNodes[index];
+				if (childNode.SourcePosition.IndexStart == SourcePosition.Empty.IndexStart || childNode.SourcePosition.IndexStart > position)
+					continue;
+
+				if (filter == null || filter(childNode))
+				{
+					return childNode.Type == NodeType.Terminal
+						? childNode
+						: GetNearestTerminalToPosition(childNode, position, filter);
+				}
+
+				var precedingTerminal = childNode;
+				do
+				{
+					precedingTerminal = precedingTerminal.PrecedingTerminal;
+				}
+				while (precedingTerminal != null && !filter(precedingTerminal));
+				
+				return precedingTerminal;
+			}
+
+			return null;
+		}
+		
 		/*private void ResolveLinks()
 		{
 			StatementGrammarNode previousTerminal = null;
