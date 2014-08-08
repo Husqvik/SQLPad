@@ -12,6 +12,7 @@ namespace SqlPad.Oracle
 	{
 		public const string DisplayTypeNormal = "NORMAL";
 		public const string DisplayTypeParenthesis = "PARENTHESIS";
+		public const string DisplayTypeNoParenthesis = "NOPARENTHESIS";
 
 		[DataMember]
 		private int? _metadataMinimumArguments;

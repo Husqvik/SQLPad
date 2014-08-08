@@ -325,14 +325,14 @@ FROM
 		{
 			const string query1 = @"SELECT D FROM DUAL";
 
-			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 8, OracleCodeCompletionCategory.Column).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 8, true, OracleCodeCompletionCategory.Column).ToArray();
 			items.Length.ShouldBe(1);
 			items[0].Name.ShouldBe("DUAL.DUMMY");
 			items[0].Text.ShouldBe("DUAL.DUMMY");
 
 			const string query2 = @"SELECT D FROM DUAL X";
 
-			items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query2, 8, OracleCodeCompletionCategory.Column).ToArray();
+			items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query2, 8, true, OracleCodeCompletionCategory.Column).ToArray();
 			items.Length.ShouldBe(1);
 			items[0].Name.ShouldBe("X.DUMMY");
 			items[0].Text.ShouldBe("X.DUMMY");
@@ -411,7 +411,7 @@ FROM
 		{
 			const string query1 = @"SELECT  1 FROM SYS.DUAL";
 
-			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 7, OracleCodeCompletionCategory.SchemaObject, OracleCodeCompletionCategory.Column).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 7, true, OracleCodeCompletionCategory.SchemaObject, OracleCodeCompletionCategory.Column).ToArray();
 			items.Length.ShouldBe(2);
 			items[0].Name.ShouldBe("SYS.DUAL.DUMMY");
 			items[1].Name.ShouldBe("SYS.DUAL");
@@ -519,7 +519,7 @@ FROM
 		{
 			const string query1 = @"SELECT  DUMMY FROM (SELECT DUMMY, COUNT(*) OVER () ROW_COUNT FROM (SELECT DUMMY FROM DUAL))";
 
-			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 7, OracleCodeCompletionCategory.Column, OracleCodeCompletionCategory.AllColumns).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 7, true, OracleCodeCompletionCategory.Column, OracleCodeCompletionCategory.AllColumns).ToArray();
 			items.Length.ShouldBe(3);
 			items[0].Name.ShouldBe("*");
 			items[0].Text.ShouldBe("DUMMY, ROW_COUNT");
@@ -744,6 +744,16 @@ se";
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 20).ToList();
 			items.Count.ShouldBe(1);
 			items[0].Text.ShouldBe("\"CaseSensitiveTable\"");
+		}
+
+		[Test(Description = @"")]
+		public void TestNoParenthesesFunctionCodeCompletionWhenUsingNameParts()
+		{
+			const string statement = @"SELECT SeTiZo FROM DUAL";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 13, false).ToList();
+			items.Count.ShouldBe(1);
+			items[0].Name.ShouldBe("SESSIONTIMEZONE");
+			items[0].Text.ShouldBe("SESSIONTIMEZONE");
 		}
 
 		public class OracleCodeCompletionTypeTest

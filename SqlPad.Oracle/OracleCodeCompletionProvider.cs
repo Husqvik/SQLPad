@@ -89,10 +89,10 @@ namespace SqlPad.Oracle
 				}).ToArray();
 		}
 
-		internal ICollection<ICodeCompletionItem> ResolveItems(IDatabaseModel databaseModel, string statementText, int cursorPosition, params string[] categories)
+		internal ICollection<ICodeCompletionItem> ResolveItems(IDatabaseModel databaseModel, string statementText, int cursorPosition, bool forcedInvokation = true, params string[] categories)
 		{
 			var documentStore = new SqlDocumentRepository(_parser, new OracleStatementValidator(), databaseModel, statementText);
-			var sourceItems = ResolveItems(documentStore, databaseModel, statementText, cursorPosition, true);
+			var sourceItems = ResolveItems(documentStore, databaseModel, statementText, cursorPosition, forcedInvokation);
 			return sourceItems.Where(i => categories.Length == 0 || categories.Contains(i.Category)).ToArray();
 		}
 
@@ -251,7 +251,7 @@ namespace SqlPad.Oracle
 
 			if (completionType.Column)
 			{
-				completionItems = completionItems.Concat(GenerateSelectListItems(currentNode, semanticModel, cursorPosition, oracleDatabaseModel));
+				completionItems = completionItems.Concat(GenerateSelectListItems(currentNode, semanticModel, cursorPosition, oracleDatabaseModel, forcedInvokation));
 			}
 
 			if (completionType.DatabaseLink)
@@ -276,7 +276,7 @@ namespace SqlPad.Oracle
 			// TODO: Add option to search all/current/public schemas
 		}
 
-		private IEnumerable<ICodeCompletionItem> GenerateSelectListItems(StatementGrammarNode currentNode, OracleStatementSemanticModel semanticModel, int cursorPosition, OracleDatabaseModelBase databaseModel)
+		private IEnumerable<ICodeCompletionItem> GenerateSelectListItems(StatementGrammarNode currentNode, OracleStatementSemanticModel semanticModel, int cursorPosition, OracleDatabaseModelBase databaseModel, bool forcedInvokation)
 		{
 			var prefixedColumnReference = currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference);
 			var columnIdentifierFollowing = currentNode.Id != Terminals.Identifier && prefixedColumnReference != null && prefixedColumnReference.GetDescendants(Terminals.Identifier).FirstOrDefault() != null;
@@ -319,7 +319,7 @@ namespace SqlPad.Oracle
 					{
 						var packageMatcher = new OracleFunctionMatcher(
 							new FunctionMatchElement(objectName).SelectOwner(),
-							new FunctionMatchElement(partialName) { AllowStartWithMatch = true, DeniedValue = currentName }.SelectPackage(),
+							new FunctionMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectPackage(),
 							null);
 
 						suggestedFunctions = GenerateCodeItems(m => m.Identifier.Package.ToSimpleIdentifier(), OracleCodeCompletionCategory.Package, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, packageMatcher);
@@ -327,7 +327,7 @@ namespace SqlPad.Oracle
 						var packageFunctionMatcher = new OracleFunctionMatcher(
 							new FunctionMatchElement(databaseModel.CurrentSchema).SelectOwner(), 
 							new FunctionMatchElement(objectName).SelectPackage(),
-							new FunctionMatchElement(partialName) { AllowStartWithMatch = true, DeniedValue = currentName }.SelectName());
+							new FunctionMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectName());
 
 						suggestedFunctions = GenerateCodeItems(m => m.Identifier.Name.ToSimpleIdentifier(), OracleCodeCompletionCategory.PackageFunction, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, packageFunctionMatcher)
 							.Concat(suggestedFunctions);
@@ -335,7 +335,7 @@ namespace SqlPad.Oracle
 						var schemaFunctionMatcher = new OracleFunctionMatcher(
 							new FunctionMatchElement(objectName).SelectOwner(),
 							new FunctionMatchElement(null).SelectPackage(),
-							new FunctionMatchElement(partialName) { AllowStartWithMatch = true, DeniedValue = currentName }.SelectName());
+							new FunctionMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectName());
 
 						suggestedFunctions = GenerateCodeItems(m => m.Identifier.Name.ToSimpleIdentifier(), OracleCodeCompletionCategory.SchemaFunction, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, schemaFunctionMatcher)
 							.Concat(suggestedFunctions);
@@ -345,7 +345,7 @@ namespace SqlPad.Oracle
 						var packageFunctionMatcher = new OracleFunctionMatcher(
 							new FunctionMatchElement(schemaName).SelectOwner(),
 							new FunctionMatchElement(objectName).SelectPackage(),
-							new FunctionMatchElement(partialName) { AllowStartWithMatch = true, DeniedValue = currentName }.SelectName());
+							new FunctionMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectName());
 
 						suggestedFunctions = GenerateCodeItems(m => m.Identifier.Name.ToSimpleIdentifier(), OracleCodeCompletionCategory.PackageFunction, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, packageFunctionMatcher);
 					}
@@ -357,18 +357,18 @@ namespace SqlPad.Oracle
 					new OracleFunctionMatcher(
 						new FunctionMatchElement(OracleDatabaseModelBase.SchemaSys).SelectOwner(),
 						new FunctionMatchElement(OracleFunctionMetadataCollection.PackageBuiltInFunction).SelectPackage(),
-						new FunctionMatchElement(partialName) { AllowStartWithMatch = true, DeniedValue = currentName }.SelectName());
+						new FunctionMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectName());
 
 				var localSchemaFunctionMatcher =
 					new OracleFunctionMatcher(
 						new FunctionMatchElement(databaseModel.CurrentSchema.ToQuotedIdentifier()).SelectOwner(),
 						new FunctionMatchElement(null).SelectPackage(),
-						new FunctionMatchElement(partialName) { AllowStartWithMatch = true, DeniedValue = currentName }.SelectName());
+						new FunctionMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectName());
 
 				var localSchemaPackageMatcher =
 					new OracleFunctionMatcher(
 						new FunctionMatchElement(databaseModel.CurrentSchema.ToQuotedIdentifier()).SelectOwner(),
-						new FunctionMatchElement(partialName) { AllowStartWithMatch = true, DeniedValue = currentName }.SelectPackage(),
+						new FunctionMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectPackage(),
 						null);
 
 				suggestedFunctions = GenerateCodeItems(m => m.Identifier.Name.ToSimpleIdentifier(), OracleCodeCompletionCategory.PackageFunction, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, builtInFunctionMatcher);
@@ -521,16 +521,16 @@ namespace SqlPad.Oracle
 			
 			return databaseModel.AllFunctionMetadata.SqlFunctions
 				.Where(f => matchers.Any(m => m.IsMatch(f, databaseModel.CurrentSchema)) && !String.IsNullOrEmpty(identifierSelector(f)))
-				.Select(f => identifierSelector(f).ToSimpleIdentifier())
+				.Select(f => new { Name = identifierSelector(f).ToSimpleIdentifier(), f.DisplayType })
 				.Distinct()
 				.Select(i => new OracleCodeCompletionItem
 				             {
-					             Name = i,
-								 Text = i + (category == OracleCodeCompletionCategory.Package ? "." : parameterList),
+								 Name = i.Name,
+								 Text = i.Name + (category == OracleCodeCompletionCategory.Package ? "." : i.DisplayType == OracleFunctionMetadata.DisplayTypeNoParenthesis ? null : parameterList),
 					             StatementNode = node,
 					             Category = category,
 					             Offset = insertOffset,
-								 CaretOffset = category == OracleCodeCompletionCategory.Package ? 0 : parameterListCaretOffset,
+								 CaretOffset = category == OracleCodeCompletionCategory.Package || i.DisplayType == OracleFunctionMetadata.DisplayTypeNoParenthesis ? 0 : parameterListCaretOffset,
 					             CategoryPriority = 2
 				             });
 		}

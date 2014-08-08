@@ -520,6 +520,28 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		}
 
 		[Test(Description = @"")]
+		public void TestFuctionRequiringNoParenthesis()
+		{
+			const string sqlText = "SELECT SESSIONTIMEZONE() FROM DUAL";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			var nodeValidity = validationModel.ProgramNodeValidity
+				.OrderBy(cv => cv.Key.SourcePosition.IndexStart)
+				.Select(kvp => kvp.Value)
+				.ToArray();
+
+			nodeValidity.Length.ShouldBe(2);
+			nodeValidity[0].IsRecognized.ShouldBe(true);
+			nodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+			nodeValidity[1].IsRecognized.ShouldBe(true);
+			nodeValidity[1].SemanticError.ShouldBe(SemanticError.NoParenthesisFunction);
+		}
+
+		[Test(Description = @"")]
 		public void TestParameterFuctionWithUnlimitedMaximumParameterCount()
 		{
 			const string sqlText = "SELECT COALESCE(SELECTION.RESPONDENTBUCKET_ID, SELECTION.SELECTION_ID) FROM SELECTION";

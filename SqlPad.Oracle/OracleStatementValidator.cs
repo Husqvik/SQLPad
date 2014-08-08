@@ -124,10 +124,20 @@ namespace SqlPad.Oracle
 						: functionReference.Metadata.MaximumArguments;
 
 					// TODO: Handle optional parameters
+					var parameterListSemanticError = SemanticError.None;
 					if ((functionReference.ParameterNodes.Count < functionReference.Metadata.MinimumArguments) ||
 					    (functionReference.ParameterNodes.Count > maximumParameterCount))
 					{
-						validationModel.ProgramNodeValidity[functionReference.ParameterListNode] = new ProgramValidationData(SemanticError.InvalidParameterCount) { IsRecognized = true };
+						parameterListSemanticError = SemanticError.InvalidParameterCount;
+					}
+					else if (functionReference.Metadata.DisplayType == OracleFunctionMetadata.DisplayTypeNoParenthesis)
+					{
+						parameterListSemanticError = SemanticError.NoParenthesisFunction;
+					}
+
+					if (parameterListSemanticError != SemanticError.None)
+					{
+						validationModel.ProgramNodeValidity[functionReference.ParameterListNode] = new ProgramValidationData(parameterListSemanticError) { IsRecognized = true };
 					}
 				}
 				else if (functionReference.Metadata.MinimumArguments > 0)

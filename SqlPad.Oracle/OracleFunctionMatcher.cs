@@ -47,9 +47,9 @@ namespace SqlPad.Oracle
 		public bool IsMatch(TElement elementIdentifier)
 		{
 			var elementValue = Selector(elementIdentifier);
-			var valueMatches = (elementValue == Value.ToQuotedIdentifier()) ||
+			var valueMatches = elementValue == Value.ToQuotedIdentifier() ||
 			                   (AllowStartWithMatch && elementValue.ToRawUpperInvariant().StartsWith(Value.ToRawUpperInvariant())) ||
-			                   (AllowPartialMatch && elementValue.ToRawUpperInvariant().Contains(Value.ToRawUpperInvariant()));
+			                   (AllowPartialMatch && CodeCompletionSearchHelper.IsMatch(elementValue, Value));
 
 			return valueMatches && (String.IsNullOrEmpty(DeniedValue) || elementValue != DeniedValue.ToQuotedIdentifier());
 		}

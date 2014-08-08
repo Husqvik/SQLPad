@@ -116,6 +116,8 @@ namespace SqlPad
 					return "Invalid parameter count";
 				case SemanticError.MissingParenthesis:
 					return "Missing parenthesis";
+				case SemanticError.NoParenthesisFunction:
+					return "Non-parenthesis function";
 				case SemanticError.ObjectStatusInvalid:
 					return "Object is invalid or unusable";
 			}

@@ -280,12 +280,24 @@ namespace SqlPad.Oracle.Test
 			_documentRepository.UpdateStatements(query);
 
 			var functionOverloads = _codeCompletionProvider.ResolveFunctionOverloads(_documentRepository, 30);
-			var toolTip = new FunctionOverloadList { FunctionOverloads = functionOverloads };
-			toolTip.ViewOverloads.Items.Count.ShouldBe(1);
-			toolTip.ViewOverloads.Items[0].ShouldBeTypeOf(typeof(TextBlock));
+			var functionOverloadList = new FunctionOverloadList { FunctionOverloads = functionOverloads };
+			functionOverloadList.ViewOverloads.Items.Count.ShouldBe(1);
+			functionOverloadList.ViewOverloads.Items[0].ShouldBeTypeOf(typeof(TextBlock));
 
-			var itemText = GetTextFromTextBlock((TextBlock)toolTip.ViewOverloads.Items[0]);
+			var itemText = GetTextFromTextBlock((TextBlock)functionOverloadList.ViewOverloads.Items[0]);
 			itemText.ShouldBe("HUSQVIK.SQLPAD.SQLPAD_FUNCTION(P: NUMBER) RETURN: NUMBER");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestNoParenthesisFunctionWithParentheses()
+		{
+			const string query = "SELECT SESSIONTIMEZONE() FROM DUAL";
+			_documentRepository.UpdateStatements(query);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 23);
+
+			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.DataContext.ShouldBe("Non-parenthesis function");
 		}
 
 		private static string GetTextFromTextBlock(TextBlock textBlock)

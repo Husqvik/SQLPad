@@ -12,6 +12,7 @@ namespace SqlPad.Oracle
 		public const string Ellipsis = "\u2026";
 
 		private readonly OracleClob _clob;
+		private string _value;
 
 		public string DataTypeName { get; private set; }
 
@@ -23,12 +24,14 @@ namespace SqlPad.Oracle
 
 		public string Value
 		{
-			get
-			{
-				return _clob.IsNull
+			get { return _value ?? (_value = GetValue()); }
+		}
+
+		private string GetValue()
+		{
+			return _clob.IsNull
 					? String.Empty
 					: OracleLargeObjectHelper.ExecuteFunction(_clob.Connection, () => _clob.Value);
-			}
 		}
 
 		public OracleClobValue(string dataTypeName, OracleClob clob)
@@ -60,6 +63,7 @@ namespace SqlPad.Oracle
 	public class OracleBlobValue : ILargeBinaryValue, IDisposable
 	{
 		private readonly OracleBlob _blob;
+		private byte[] _value;
 
 		public string DataTypeName { get { return "BLOB"; } }
 		
@@ -69,12 +73,14 @@ namespace SqlPad.Oracle
 
 		public byte[] Value
 		{
-			get
-			{
-				return _blob.IsNull
+			get { return _value ?? (_value = GetValue()); }
+		}
+
+		private byte[] GetValue()
+		{
+			return _blob.IsNull
 					? new byte[0]
 					: OracleLargeObjectHelper.ExecuteFunction(_blob.Connection, () => _blob.Value);
-			}
 		}
 
 		public OracleBlobValue(OracleBlob blob)

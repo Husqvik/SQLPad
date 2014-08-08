@@ -35,6 +35,7 @@ namespace SqlPad
 		AmbiguousReference,
 		InvalidParameterCount,
 		MissingParenthesis,
+		NoParenthesisFunction,
 		InvalidIdentifier,
 		AnalyticClauseNotSupported,
 		ObjectStatusInvalid,

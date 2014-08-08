@@ -6,36 +6,43 @@
 		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 		xmlns:findReplace="clr-namespace:SqlPad.FindReplace"
 		xmlns:sqlPad="clr-namespace:SqlPad"
+		xmlns:moonPdfLib="clr-namespace:MoonPdfLib;assembly=MoonPdfLib"
 		mc:Ignorable="d"
 		d:DesignHeight="640" d:DesignWidth="320"
         Title="" Width="Auto" Height="Auto" MinHeight="320" MinWidth="480"
+		Loaded="LargeValueEditorLoadedHandler"
 		SizeToContent="WidthAndHeight" WindowStartupLocation="CenterOwner" Icon="EmptyIcon.ico">
 
 	<Window.Resources>
-		<findReplace:FindReplaceManager
-		    x:Key="FindReplaceManager" />
+		<findReplace:FindReplaceManager x:Key="FindReplaceManager" />
 	</Window.Resources>
 
 	<Window.InputBindings>
 		<KeyBinding Key="Escape" Command="Close" />
+		<KeyBinding Key="F5" Command="Refresh" />
 		<KeyBinding Key="F3" Modifiers="Shift" Command="Search" CommandParameter="something" />
+		<KeyBinding Key="PageDown" Command="NextPage" />
+		<KeyBinding Key="PageUp" Command="PreviousPage" />
 	</Window.InputBindings>
 
 	<Window.CommandBindings>
+		<CommandBinding Command="Refresh" Executed="RefreshPdfHandler" />
 		<CommandBinding Command="Close" Executed="CloseWindowHandler" />
+		<CommandBinding Command="NextPage" Executed="NextPdfPageHandler" />
+		<CommandBinding Command="PreviousPage" Executed="PreviousPdfPageHandler" />
 		<sqlPad:StaticResourceBinding ResourceKey="FindReplaceManager" Path="FindBinding" />
 		<sqlPad:StaticResourceBinding ResourceKey="FindReplaceManager" Path="FindNextBinding" />
 	</Window.CommandBindings>
 
 	<Grid>
 		<TabControl x:Name="TabControl">
-			<TabItem x:Name="TabText" Header="Text">
+			<TabItem x:Name="TabText" Header="Text" Visibility="Collapsed">
 				<avalonedit:TextEditor x:Name="TextEditor"
 				                       FontFamily="Consolas"
 				                       ShowLineNumbers="True"
 									   IsReadOnly="True" />
 			</TabItem>
-			<TabItem x:Name="TabRaw" Header="Raw">
+			<TabItem x:Name="TabRaw" Header="Raw" Visibility="Collapsed">
 				<Grid>
 					<avalonedit:TextEditor x:Name="HexEditor"
 										   FontFamily="Consolas"
@@ -46,6 +53,12 @@
 						<Button Content="_Cancel" Width="72" Padding="4" Click="CancelLoadingHandler" />
 					</StackPanel>
 				</Grid>
+			</TabItem>
+			<TabItem x:Name="TabPdf" Header="PDF" Visibility="Collapsed">
+				<moonPdfLib:MoonPdfPanel x:Name="PdfViewer" />
+			</TabItem>
+			<TabItem x:Name="TabImage" Header="Image" Visibility="Collapsed">
+				<Image x:Name="ImageViewer" />
 			</TabItem>
 		</TabControl>
 	</Grid>
