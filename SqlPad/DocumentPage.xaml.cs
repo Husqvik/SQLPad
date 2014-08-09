@@ -430,10 +430,18 @@ namespace SqlPad
 			TextMoreRowsExist.Visibility = Visibility.Collapsed;
 
 			ActionResult actionResult;
-			var commandText = Editor.SelectionLength > 0 ? Editor.SelectedText : statement.RootNode.GetStatementSubstring(Editor.Text);
+			var statementText = Editor.SelectionLength > 0 ? Editor.SelectedText : statement.RootNode.GetStatementSubstring(Editor.Text);
 			using (_cancellationTokenSource = new CancellationTokenSource())
 			{
-				actionResult = await SafeTimedActionAsync(() => DatabaseModel.ExecuteStatementAsync(commandText, statement.ReturnDataset, _cancellationTokenSource.Token));
+				var executionModel =
+					new StatementExecutionModel
+					{
+						StatementText = statementText,
+						ReturnDataset = statement.ReturnDataset,
+						BindVariables = _pageModel.BindVariables
+					};
+				
+				actionResult = await SafeTimedActionAsync(() => DatabaseModel.ExecuteStatementAsync(executionModel, _cancellationTokenSource.Token));
 			}
 
 			if (!actionResult.IsSuccessful)
@@ -624,6 +632,8 @@ namespace SqlPad
 
 			if (!_isParsing)
 			{
+				ShowHideBindVariableList();
+
 				var parenthesisTerminal = _sqlDocumentRepository.Statements == null
 					? null
 					: _sqlDocumentRepository.ExecuteStatementAction(s => s.GetTerminalAtPosition(Editor.CaretOffset, n => n.Token.Value.In("(", ")")));
@@ -657,6 +667,23 @@ namespace SqlPad
 			_colorizingTransformer.SetHighlightParenthesis(parenthesisNodes);
 
 			RedrawNodes(oldNodes.Concat(parenthesisNodes));
+		}
+
+		private void ShowHideBindVariableList()
+		{
+			if (_sqlDocumentRepository.Statements == null)
+				return;
+
+			var statement = _sqlDocumentRepository.Statements.GetStatementAtPosition(Editor.CaretOffset);
+			if (statement == null || statement.BindVariables.Count == 0)
+			{
+				_pageModel.BindVariables = null;
+				return;
+			}
+
+			_pageModel.BindVariables = statement.BindVariables
+				.Select(v => new BindVariableModel(v))
+				.ToArray();
 		}
 
 		private void RedrawNodes(IEnumerable<StatementGrammarNode> nodes)
@@ -753,11 +780,6 @@ namespace SqlPad
 
 		private void TextEnteringHandler(object sender, TextCompositionEventArgs e)
 		{
-			/*if ((Keyboard.IsKeyDown(Key.Oem2) || Keyboard.IsKeyDown(Key.D)) && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt))
-			{
-				e.Handled = true;
-			}*/
-
 			if (NextPairCharacterExists(e.Text, ')', ')') || NextPairCharacterExists(e.Text, '\'', '\'') || NextPairCharacterExists(e.Text, '"', '"'))
 			{
 				Editor.CaretOffset++;
@@ -877,19 +899,23 @@ namespace SqlPad
 		{
 			_colorizingTransformer.SetDocumentRepository(_sqlDocumentRepository);
 
-			Dispatcher.Invoke(() =>
-			{
-				Editor.TextArea.TextView.Redraw();
-				_isParsing = false;
-				ParseFinished(this, EventArgs.Empty);
-
-				if (_enableCodeComplete && _completionWindow == null && IsSelectedPage)
-				{
-					CreateCodeCompletionWindow(false);
-				}
-			});
+			Dispatcher.Invoke(ParseDoneHandlerInternal);
 
 			_timerReParse.Stop();
+		}
+
+		private void ParseDoneHandlerInternal()
+		{
+			Editor.TextArea.TextView.Redraw();
+			_isParsing = false;
+			ParseFinished(this, EventArgs.Empty);
+
+			ShowHideBindVariableList();
+
+			if (_enableCodeComplete && _completionWindow == null && IsSelectedPage)
+			{
+				CreateCodeCompletionWindow(false);
+			}
 		}
 
 		void MouseHoverHandler(object sender, MouseEventArgs e)

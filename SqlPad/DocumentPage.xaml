@@ -21,7 +21,7 @@
 		</Grid.RowDefinitions>
 
 		<StackPanel HorizontalAlignment="Right" Orientation="Horizontal"
-		            sqlPad:MarginSetter.Margin="4,1,4,1">
+		            sqlPad:MarginSetter.Margin="6,1,2,1">
 			<TextBlock Text="Connection: " VerticalAlignment="Center" />
 			<ComboBox x:Name="ComboBoxConnection" SelectedItem="{Binding Path=CurrentConnection}">
 				<ComboBox.ItemTemplate>
@@ -39,27 +39,65 @@
 				</ComboBox.ItemTemplate>
 			</ComboBox>
 		</StackPanel>
-		<DockPanel Grid.Row="1">
-			<TextBlock Text="PRODUCTION" TextAlignment="Center" Foreground="White" Background="DarkRed" FontWeight="Bold" FontSize="14" Visibility="{Binding Path=ProductionLabelVisibility}" Height="21">
+
+		<DockPanel Grid.Row="1" LastChildFill="True">
+			<TextBlock Text="PRODUCTION" TextAlignment="Center" Foreground="White" Background="DarkRed" FontWeight="Bold" FontSize="14" Visibility="{Binding Path=ProductionLabelVisibility}" Height="21" DockPanel.Dock="Left">
 				<TextBlock.LayoutTransform>
 					<RotateTransform Angle="-90" />
 				</TextBlock.LayoutTransform>
 			</TextBlock>
-			<avalonedit:TextEditor x:Name="Editor"
-								   FontFamily="Consolas"
-								   ShowLineNumbers="True"
-								   TextChanged="EditorTextChangedHandler"
-								   ContextMenuOpening="ContextMenuOpeningHandler"
-								   MouseHover="MouseHoverHandler"
-								   PreviewKeyDown="EditorKeyDownHandler"
-								   PreviewKeyUp="EditorKeyUpHandler"
-								   MouseHoverStopped="MouseHoverStoppedHandler">
-				<avalonedit:TextEditor.ContextMenu>
-					<ContextMenu x:Name="CommandMenu" Placement="RelativePoint" />
-				</avalonedit:TextEditor.ContextMenu>
-			</avalonedit:TextEditor>
+			<Grid>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="3*" />
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="1*" />
+				</Grid.ColumnDefinitions>
+				<avalonedit:TextEditor x:Name="Editor"
+				                       FontFamily="Consolas"
+				                       ShowLineNumbers="True"
+				                       TextChanged="EditorTextChangedHandler"
+				                       ContextMenuOpening="ContextMenuOpeningHandler"
+				                       MouseHover="MouseHoverHandler"
+				                       PreviewKeyDown="EditorKeyDownHandler"
+				                       PreviewKeyUp="EditorKeyUpHandler"
+				                       MouseHoverStopped="MouseHoverStoppedHandler">
+					<avalonedit:TextEditor.ContextMenu>
+						<ContextMenu x:Name="CommandMenu" Placement="RelativePoint" />
+					</avalonedit:TextEditor.ContextMenu>
+					<avalonedit:TextEditor.Style>
+						<Style>
+							<Style.Triggers>
+								<DataTrigger Binding="{Binding ElementName=BindVariableList, Path=Visibility}" Value="0">
+									<Setter Property="Grid.ColumnSpan" Value="1"/>
+								</DataTrigger>
+								<DataTrigger Binding="{Binding ElementName=BindVariableList, Path=Visibility}" Value="2">
+									<Setter Property="Grid.ColumnSpan" Value="3"/>
+								</DataTrigger>
+							</Style.Triggers>
+						</Style>
+					</avalonedit:TextEditor.Style>
+				</avalonedit:TextEditor>
+				<GridSplitter Grid.Column="1" Width="4" HorizontalAlignment="Center" ShowsPreview="True" VerticalAlignment="Stretch" Background="DimGray" Visibility="{Binding ElementName=BindVariableList, Path=Visibility}" />
+				<ItemsControl x:Name="BindVariableList" Grid.Column="2" MinWidth="100" ItemsSource="{Binding Path=BindVariables}" Visibility="{Binding Path=BindVariableListVisibility}">
+					<ItemsControl.ItemTemplate>
+						<DataTemplate>
+							<Grid sqlPad:MarginSetter.Margin="2,2,2,2">
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="*" />
+									<ColumnDefinition Width="100" />
+									<ColumnDefinition Width="60" />
+								</Grid.ColumnDefinitions>
+								<TextBlock Text="{Binding Path=Name}" VerticalAlignment="Center" />
+								<ComboBox Grid.Column="1" ItemsSource="{Binding Path=DataTypes}" SelectedValue="{Binding Path=DataType}" />
+								<TextBox Grid.Column="2" Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}" />
+							</Grid>
+						</DataTemplate>
+					</ItemsControl.ItemTemplate>
+				</ItemsControl>
+			</Grid>
 		</DockPanel>
-		<GridSplitter Grid.Column="0" Grid.Row="2" Height="5" HorizontalAlignment="Stretch" ShowsPreview="True"
+
+		<GridSplitter Grid.Column="0" Grid.Row="2" Height="4" HorizontalAlignment="Stretch" ShowsPreview="True"
 		              VerticalAlignment="Center" Background="DimGray" />
 		<DataGrid x:Name="ResultGrid"
 		          Grid.Column="0"

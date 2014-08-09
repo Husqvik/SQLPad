@@ -20,7 +20,9 @@ namespace SqlPad
 			get
 			{
 				if (RootNode == null)
+				{
 					return Enumerable.Empty<StatementCommentNode>();
+				}
 
 				return RootNode.AllChildNodes
 					.Where(n => n.Type == NodeType.NonTerminal)
@@ -31,6 +33,8 @@ namespace SqlPad
 		public SourcePosition SourcePosition { get; set; }
 
 		public abstract bool ReturnDataset { get; }
+
+		public abstract ICollection<BindVariable> BindVariables { get; }
 
 		public ICollection<StatementGrammarNode> InvalidGrammarNodes
 		{
@@ -91,5 +95,21 @@ namespace SqlPad
 		{
 			return RootNode == null ? null : RootNode.GetNearestTerminalToPosition(position, filter);
 		}
+	}
+
+	public abstract class BindVariable
+	{
+		protected BindVariable(string name)
+		{
+			Name = name;
+		}
+
+		public string Name { get; private set; }
+		
+		public string DataType { get; set; }
+		
+		public object Value { get; set; }
+
+		public abstract ICollection<string> DataTypes { get; }
 	}
 }

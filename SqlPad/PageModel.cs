@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Configuration;
 using System.Linq;
@@ -19,6 +20,8 @@ namespace SqlPad
 		private Visibility _productionLabelVisibility = Visibility.Collapsed;
 		private ConnectionStringSettings _currentConnection;
 		private string _currentSchema;
+		private ICollection<BindVariableModel> _bindVariables;
+		private Visibility _bindVariableListVisibility = Visibility.Collapsed;
 
 		public PageModel(DocumentPage documentPage)
 		{
@@ -65,6 +68,30 @@ namespace SqlPad
 		{
 			get { return _productionLabelVisibility; }
 			set { UpdateValueAndRaisePropertyChanged(ref _productionLabelVisibility, value); }
+		}
+
+		public Visibility BindVariableListVisibility
+		{
+			get { return _bindVariableListVisibility; }
+			private set { UpdateValueAndRaisePropertyChanged(ref _bindVariableListVisibility, value); }
+		}
+
+		public ICollection<BindVariableModel> BindVariables
+		{
+			get { return _bindVariables; }
+			set
+			{
+				UpdateValueAndRaisePropertyChanged(ref _bindVariables, value);
+				
+				if (_bindVariables == null && BindVariableListVisibility == Visibility.Visible)
+				{
+					BindVariableListVisibility = Visibility.Collapsed;
+				}
+				else if (_bindVariables != null && BindVariableListVisibility == Visibility.Collapsed)
+				{
+					BindVariableListVisibility = Visibility.Visible;
+				}
+			}
 		}
 
 		public ObservableCollection<object[]> ResultRowItems { get { return _resultRowItems; } }
@@ -127,5 +154,54 @@ namespace SqlPad
 			_schemas.AddRange(schemas);
 			_currentSchema = null;
 		}
+	}
+
+	public class BindVariableModel : ModelBase
+	{
+		private readonly BindVariable _bindVariable;
+
+		public BindVariableModel(BindVariable bindVariable)
+		{
+			_bindVariable = bindVariable;
+		}
+
+		public string Name { get { return _bindVariable.Name; } }
+		
+		public ICollection<string> DataTypes { get { return _bindVariable.DataTypes; } }
+
+		public object Value
+		{
+			get { return _bindVariable.Value; }
+			set
+			{
+				if (_bindVariable.Value == value)
+					return;
+
+				_bindVariable.Value = value;
+				RaisePropertyChanged("Value");
+			}
+		}
+
+		public string DataType
+		{
+			get { return _bindVariable.DataType; }
+			set
+			{
+				if (_bindVariable.DataType == value)
+					return;
+
+				_bindVariable.DataType = value;
+				RaisePropertyChanged("DataType");
+			}
+		}
+	}
+
+	public class StatementExecutionModel
+	{
+		public string StatementText { get; set; }
+		
+		public bool ReturnDataset { get; set; }
+
+		public ICollection<BindVariableModel> BindVariables { get; set; }
 	}
 }

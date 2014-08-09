@@ -346,12 +346,12 @@ namespace SqlPad.Oracle
 			_isRefreshing = false;
 		}
 
-		private int ExecuteUserNonQuery(string commandText)
+		private int ExecuteUserNonQuery(StatementExecutionModel executionModel)
 		{
-			return ExecuteUserStatement(commandText, c => c.ExecuteNonQuery(), true);
+			return ExecuteUserStatement(executionModel, c => c.ExecuteNonQuery(), true);
 		}
 
-		private T ExecuteUserStatement<T>(string commandText, Func<OracleCommand, T> executeFunction, bool closeConnection = false)
+		private T ExecuteUserStatement<T>(StatementExecutionModel executionModel, Func<OracleCommand, T> executeFunction, bool closeConnection = false)
 		{
 			_userCommand = _userConnection.CreateCommand();
 			_userCommand.CommandText = String.Format("ALTER SESSION SET CURRENT_SCHEMA = {0}", _currentSchema);
@@ -363,8 +363,16 @@ namespace SqlPad.Oracle
 
 				_userCommand.ExecuteNonQuery();
 
-				_userCommand.CommandText = commandText;
+				_userCommand.CommandText = executionModel.StatementText;
 				_userCommand.InitialLONGFetchSize = InitialLongFetchSize;
+
+				if (executionModel.BindVariables != null)
+				{
+					foreach (var variable in executionModel.BindVariables)
+					{
+						_userCommand.AddSimpleParameter(variable.Name, variable.Value, variable.DataType);
+					}
+				}
 
 				return executeFunction(_userCommand);
 			}
@@ -377,15 +385,15 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		public override int ExecuteStatement(string statementText, bool returnDataset)
+		public override int ExecuteStatement(StatementExecutionModel executionModel)
 		{
-			var executionTask = ExecuteStatementAsync(statementText, returnDataset, CancellationToken.None);
+			var executionTask = ExecuteStatementAsync(executionModel, CancellationToken.None);
 			executionTask.Wait();
 			
 			return executionTask.Result;
 		}
 
-		public override async Task<int> ExecuteStatementAsync(string statementText, bool returnDataset, CancellationToken cancellationToken)
+		public override async Task<int> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
 		{
 			PreInitialize();
 
@@ -393,13 +401,13 @@ namespace SqlPad.Oracle
 
 			try
 			{
-				if (returnDataset)
+				if (executionModel.ReturnDataset)
 				{
-					_userDataReader = await ExecuteUserStatement(statementText, c => c.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken));
+					_userDataReader = await ExecuteUserStatement(executionModel, c => c.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken));
 				}
 				else
 				{
-					affectedRowCount = await ExecuteUserStatement(statementText, c => c.ExecuteNonQueryAsynchronous(cancellationToken), true);
+					affectedRowCount = await ExecuteUserStatement(executionModel, c => c.ExecuteNonQueryAsynchronous(cancellationToken), true);
 				}
 			}
 			catch (Exception exception)

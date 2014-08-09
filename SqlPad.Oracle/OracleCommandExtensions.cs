@@ -8,11 +8,39 @@ namespace SqlPad.Oracle
 {
 	public static class OracleCommandExtensions
 	{
-		internal static OracleCommand AddSimpleParameter(this OracleCommand command, string parameterName, object value)
+		internal static OracleCommand AddSimpleParameter(this OracleCommand command, string parameterName, object value, string databaseType = null)
 		{
 			var parameter = command.CreateParameter();
 			parameter.ParameterName = parameterName;
 			parameter.Value = value;
+
+			switch (databaseType)
+			{
+				case OracleBindVariable.DataTypeChar:
+					parameter.OracleDbType = OracleDbType.Char;
+					break;
+				case OracleBindVariable.DataTypeClob:
+					parameter.OracleDbType = OracleDbType.Clob;
+					break;
+				case OracleBindVariable.DataTypeDate:
+					parameter.OracleDbType = OracleDbType.Date;
+					break;
+				case OracleBindVariable.DataTypeNumber:
+					parameter.OracleDbType = OracleDbType.Decimal;
+					break;
+				case OracleBindVariable.DataTypeUnicodeChar:
+					parameter.OracleDbType = OracleDbType.NChar;
+					break;
+				case OracleBindVariable.DataTypeUnicodeClob:
+					parameter.OracleDbType = OracleDbType.NClob;
+					break;
+				case OracleBindVariable.DataTypeUnicodeVarchar2:
+					parameter.OracleDbType = OracleDbType.NVarchar2;
+					break;
+				case OracleBindVariable.DataTypeVarchar2:
+					parameter.OracleDbType = OracleDbType.Varchar2;
+					break;
+			}
 
 			command.Parameters.Add(parameter);
 

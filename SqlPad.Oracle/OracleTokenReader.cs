@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace SqlPad.Oracle
@@ -41,7 +42,7 @@ namespace SqlPad.Oracle
 
 		IEnumerable<IToken> ITokenReader.GetTokens(bool includeCommentBlocks)
 		{
-			return (IEnumerable<IToken>)GetTokens(includeCommentBlocks);
+			return GetTokens(includeCommentBlocks).Cast<IToken>();
 		}
 
 		public IEnumerable<OracleToken> GetTokens(bool includeCommentBlocks = false)

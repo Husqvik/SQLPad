@@ -502,12 +502,12 @@ TABLESPACE ""TBS_HQ_PDB""";
 
 		public override event EventHandler RefreshFinished = delegate { };
 
-		public override int ExecuteStatement(string statementText, bool returnDataset)
+		public override int ExecuteStatement(StatementExecutionModel executionModel)
 		{
 			return 0;
 		}
 
-		public override Task<int> ExecuteStatementAsync(string statementText, bool returnDataset, CancellationToken cancellationToken)
+		public override Task<int> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
 		{
 			return Task.Factory.StartNew(() => 0, cancellationToken);
 		}

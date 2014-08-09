@@ -1112,13 +1112,21 @@ namespace SqlPad.Oracle.Test
 		[Test(Description = @"Tests query with bind variable expressions. ")]
 		public void TestBindVariableExpressions()
 		{
-			const string query1 = @"SELECT:1 FROM DUAL WHERE DUMMY = :BV1 OR DUMMY IN(:""bv2"", :        BV3)";
+			const string query1 = @"SELECT:1 FROM DUAL WHERE DUMMY = :BV1 OR DUMMY IN(:""bv2"", :        BV3, : ""BV1"")";
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			var statement = (OracleStatement)result.Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-			// TODO: Precise assertions
+			statement.BindVariableIdentifierTerminals.Count.ShouldBe(5);
+
+			var bindVariables = statement.BindVariables.ToArray();
+			bindVariables.Length.ShouldBe(4);
+			bindVariables[0].Name.ShouldBe("1");
+			bindVariables[1].Name.ShouldBe("BV1");
+			bindVariables[2].Name.ShouldBe("bv2");
+			bindVariables[3].Name.ShouldBe("BV3");
 		}
 
 		[Test(Description = @"Tests KEEP clause. ")]

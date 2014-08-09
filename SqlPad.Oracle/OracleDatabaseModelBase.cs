@@ -37,9 +37,9 @@ namespace SqlPad.Oracle
 
 		public abstract event EventHandler RefreshFinished;
 
-		public abstract int ExecuteStatement(string statementText, bool returnDataset);
+		public abstract int ExecuteStatement(StatementExecutionModel executionModel);
 
-		public abstract Task<int> ExecuteStatementAsync(string statementText, bool returnDataset, CancellationToken cancellationToken);
+		public abstract Task<int> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken);
 
 		public abstract IEnumerable<object[]> FetchRecords(int rowCount);
 
