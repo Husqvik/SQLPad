@@ -240,7 +240,7 @@ namespace SqlPad
 			return border.Child as ScrollViewer;
 		}
 
-		public void SaveCommandExecutedHandler(object sender, ExecutedRoutedEventArgs args)
+		private void SaveCommandExecutedHandler(object sender, ExecutedRoutedEventArgs args)
 		{
 			Save();
 		}
@@ -312,6 +312,7 @@ namespace SqlPad
 			commandBindings.Add(new CommandBinding(GenericCommands.FormatStatementCommand, FormatStatement));
 			commandBindings.Add(new CommandBinding(GenericCommands.FormatStatementAsSingleLineCommand, FormatStatementAsSingleLine));
 			commandBindings.Add(new CommandBinding(GenericCommands.FindUsagesCommand, FindUsages));
+			commandBindings.Add(new CommandBinding(GenericCommands.RefreshDatabaseModelCommand, RefreshDatabaseModel));
 			commandBindings.Add(new CommandBinding(GenericCommands.CancelStatementCommand, CancelStatementHandler, (sender, args) => args.CanExecute = DatabaseModel.IsExecuting));
 
 			commandBindings.Add(new CommandBinding(DiagnosticCommands.ShowTokenCommand, ShowTokenCommandExecutionHandler));
@@ -386,6 +387,11 @@ namespace SqlPad
 			
 			Editor.CaretOffset = offset.Value;
 			Editor.ScrollToCaret();
+		}
+
+		private void RefreshDatabaseModel(object sender, ExecutedRoutedEventArgs args)
+		{
+			DatabaseModel.Refresh(true);
 		}
 
 		private void ShowFunctionOverloads(object sender, ExecutedRoutedEventArgs args)
