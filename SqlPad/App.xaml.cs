@@ -15,6 +15,7 @@ namespace SqlPad
 		public static readonly string FolderNameUserData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), FolderNameSqlPad);
 		public static readonly string FolderNameErrorLog = Path.Combine(FolderNameUserData, "ErrorLog");
 		public static readonly string FolderNameRecoveryFiles = Path.Combine(FolderNameUserData, "Recovery");
+		public static readonly string FolderNameHistory = Path.Combine(FolderNameUserData, "History");
 		public static readonly string FolderNameApplication = Path.GetDirectoryName(typeof(App).Assembly.Location);
 
 		static App()
@@ -97,7 +98,7 @@ namespace SqlPad
 
 		public App()
 		{
-			CreateDirectoryIfNotExists(FolderNameUserData, FolderNameRecoveryFiles);
+			CreateDirectoryIfNotExists(FolderNameUserData, FolderNameRecoveryFiles, FolderNameHistory);
 		}
 	}
 }

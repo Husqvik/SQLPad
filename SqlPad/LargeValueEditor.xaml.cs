@@ -146,14 +146,21 @@ namespace SqlPad
 			if (_largeBinaryValue == null || _largeBinaryValue.Value.Length == 0)
 				return;
 
-			var isPdf = TryOpenPdf();
-			if (!isPdf)
-			{
-				TryOpenImage();
-			}
+			if (TryOpenPdf())
+				return;
+
+			if (TryOpenImage())
+				return;
+
+			TryOpenMedia();
 		}
 
-		private void TryOpenImage()
+		private void TryOpenMedia()
+		{
+			
+		}
+
+		private bool TryOpenImage()
 		{
 			var bitmapImage = new BitmapImage { CacheOption = BitmapCacheOption.OnLoad, CreateOptions = BitmapCreateOptions.PreservePixelFormat };
 			bitmapImage.BeginInit();
@@ -168,8 +175,12 @@ namespace SqlPad
 				ImageViewer.Source = bitmapImage;
 				TabImage.Visibility = Visibility.Visible;
 				TabControl.SelectedItem = TabImage;
+				return true;
 			}
-			catch {}
+			catch
+			{
+				return false;
+			}
 		}
 
 		private void NextPdfPageHandler(object sender, ExecutedRoutedEventArgs e)

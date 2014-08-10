@@ -57,6 +57,7 @@
   <ItemGroup>
     <Reference Include="ICSharpCode.AvalonEdit" />
     <Reference Include="MoonPdfLib" />
+    <Reference Include="protobuf-net" />
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Xml" />
@@ -80,6 +81,7 @@
       <DependentUpon>LargeValueEditor.xaml</DependentUpon>
     </Compile>
     <Compile Include="Messages.cs" />
+    <Compile Include="ModelBase.cs" />
     <Compile Include="PasswordDialog.xaml.cs">
       <DependentUpon>PasswordDialog.xaml</DependentUpon>
     </Compile>
@@ -100,6 +102,7 @@
     <Compile Include="InfrastructureConfigurationSection.cs" />
     <Compile Include="MarginSetter.cs" />
     <Compile Include="PageModel.cs" />
+    <Compile Include="SqlPadConfiguration.cs" />
     <Compile Include="StatementCommentNode.cs" />
     <Compile Include="StatementNode.cs" />
     <Compile Include="TextSegment.cs" />

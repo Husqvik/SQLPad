@@ -121,7 +121,7 @@ namespace SqlPad
 			
 			_editorAdapters.Add(newDocumentPage.EditorAdapter);
 
-			AddDocumentTabItemContextMenuCommandBindinga(newDocumentPage);
+			AddDocumentTabItemContextMenuCommandBindings(newDocumentPage);
 
 			DocumentTabControl.Items.Insert(DocumentTabControl.Items.Count - 1, newDocumentPage.TabItem);
 			DocumentTabControl.SelectedItem = newDocumentPage.TabItem;
@@ -129,7 +129,7 @@ namespace SqlPad
 			_findReplaceManager.CurrentEditor = newDocumentPage.EditorAdapter;
 		}
 
-		private void AddDocumentTabItemContextMenuCommandBindinga(DocumentPage documentPage)
+		private void AddDocumentTabItemContextMenuCommandBindings(DocumentPage documentPage)
 		{
 			documentPage.TabItemContextMenu.CommandBindings.Add(new CommandBinding(DocumentPageCommands.CloseDocumentCommand, CloseTabExecutedHandler, (sender, args) => args.CanExecute = true));
 			documentPage.TabItemContextMenu.CommandBindings.Add(new CommandBinding(DocumentPageCommands.CloseAllDocumentsButThisCommand, CloseAllButThisTabExecutedHandler, (sender, args) => args.CanExecute = DocumentTabControl.Items.Count > 2));
@@ -137,8 +137,9 @@ namespace SqlPad
 
 		private void CloseAllButThisTabExecutedHandler(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
 		{
+			var currentDocument = (DocumentPage)executedRoutedEventArgs.Parameter;
 			var allDocuments = DocumentTabControl.Items.Cast<TabItem>().Select(ti => ti.Content).OfType<DocumentPage>();
-			var documentsToClose = allDocuments.Where(p => !p.Equals(CurrentPage)).ToArray();
+			var documentsToClose = allDocuments.Where(p => !p.Equals(currentDocument)).ToArray();
 			foreach (var page in documentsToClose)
 			{
 				ClosePage(page);
@@ -147,12 +148,14 @@ namespace SqlPad
 
 		private void CloseTabExecutedHandler(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
 		{
-			var document = (DocumentPage)((TabItem)DocumentTabControl.SelectedItem).Content;
-			ClosePage(document);
+			var currentDocument = (DocumentPage)executedRoutedEventArgs.Parameter;
+			ClosePage(currentDocument);
 		}
 
 		private bool ClosePage(DocumentPage document)
 		{
+			SqlPadConfiguration.StoreConfiguration();
+
 			DocumentTabControl.SelectedItem = document.TabItem;
 
 			if (document.IsDirty && !ConfirmPageSave(document))

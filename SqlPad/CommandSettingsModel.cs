@@ -1,33 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 
 namespace SqlPad
 {
-	public class ModelBase : INotifyPropertyChanged
-	{
-		public event PropertyChangedEventHandler PropertyChanged = delegate { };
-
-		protected bool UpdateValueAndRaisePropertyChanged<T>(ref T value, T newValue, [CallerMemberName] string propertyName = null)
-		{
-			if (Equals(value, newValue))
-				return false;
-
-			value = newValue;
-			PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-			return true;
-		}
-
-		protected void RaisePropertyChanged(string propertyName)
-		{
-			PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-		}
-	}
-
 	public class CommandSettingsModel : ModelBase
 	{
 		private string _value = String.Empty;

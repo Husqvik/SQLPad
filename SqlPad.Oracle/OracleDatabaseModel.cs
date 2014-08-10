@@ -354,6 +354,7 @@ namespace SqlPad.Oracle
 		private T ExecuteUserStatement<T>(StatementExecutionModel executionModel, Func<OracleCommand, T> executeFunction, bool closeConnection = false)
 		{
 			_userCommand = _userConnection.CreateCommand();
+			_userCommand.BindByName = true;
 			_userCommand.CommandText = String.Format("ALTER SESSION SET CURRENT_SCHEMA = {0}", _currentSchema);
 
 			try
@@ -639,7 +640,7 @@ namespace SqlPad.Oracle
 
 			RaiseRefreshEvents();
 
-			var reason = force ? "has been forced to refresh" : (_dataDictionary.Timestamp > DateTime.MinValue ? "has expired" : "does not exist");
+			var reason = force ? "has been forced to refresh" : (_dataDictionary.Timestamp > DateTime.MinValue ? "has expired" : "does not exist or is corrupted");
 			Trace.WriteLine(String.Format("{0} - Cache for '{1}' {2}. Cache refresh started. ", DateTime.Now, CachedConnectionStringName, reason));
 
 			RaiseEvent(RefreshStarted);
@@ -707,6 +708,7 @@ namespace SqlPad.Oracle
 					_dataDictionary = CachedDataDictionaries[CachedConnectionStringName] = OracleDataDictionary.Deserialize(stream);
 					Trace.WriteLine(String.Format("{0} - Cache for '{1}' loaded in {2}", DateTime.Now, CachedConnectionStringName, stopwatch.Elapsed));
 				}
+				catch { }
 				finally
 				{
 					stream.Dispose();

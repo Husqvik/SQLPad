@@ -158,16 +158,16 @@ namespace SqlPad
 
 	public class BindVariableModel : ModelBase
 	{
-		private readonly BindVariable _bindVariable;
+		private readonly BindVariableConfiguration _bindVariable;
 
-		public BindVariableModel(BindVariable bindVariable)
+		public BindVariableModel(BindVariableConfiguration bindVariable)
 		{
 			_bindVariable = bindVariable;
 		}
 
 		public string Name { get { return _bindVariable.Name; } }
 		
-		public ICollection<string> DataTypes { get { return _bindVariable.DataTypes; } }
+		public ICollection<string> DataTypes { get { return _bindVariable.DataTypes.Keys; } }
 
 		public object Value
 		{
@@ -182,6 +182,11 @@ namespace SqlPad
 			}
 		}
 
+		public string InputType
+		{
+			get { return _bindVariable.DataTypes[_bindVariable.DataType].Name; }
+		}
+
 		public string DataType
 		{
 			get { return _bindVariable.DataType; }
@@ -190,7 +195,15 @@ namespace SqlPad
 				if (_bindVariable.DataType == value)
 					return;
 
+				var previousInputType = _bindVariable.DataTypes[_bindVariable.DataType].Name;
 				_bindVariable.DataType = value;
+
+				if (previousInputType != InputType)
+				{
+					Value = null;
+					RaisePropertyChanged("InputType");
+				}
+
 				RaisePropertyChanged("DataType");
 			}
 		}

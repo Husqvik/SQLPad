@@ -774,6 +774,15 @@ se";
 				completionType.SchemaDataObject.ShouldBe(false);
 			}
 
+			[Test(Description = @""), Ignore]
+			public void TestCodeCompletionTypeAfterExistingConditionInJoinClause()
+			{
+				const string statement = @"SELECT * FROM SELECTION JOIN RESPONDENTBUCKET ON SELECTION.RESPONDENTBUCKET_ID = RESPONDENTBUCKET.RESPONDENTBUCKET AND ";
+				var completionType = InitializeCodeCompletionType(statement, statement.Length);
+				completionType.JoinCondition.ShouldBe(true);
+				completionType.SchemaDataObject.ShouldBe(false);
+			}
+
 			[Test(Description = @"")]
 			public void TestCodeCompletionTypeAtTheEndOnTerminalWithinJoinCondition()
 			{

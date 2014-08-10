@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 
@@ -8,7 +10,7 @@ namespace SqlPad.Oracle
 	public class OracleStatement : StatementBase
 	{
 		private ICollection<StatementGrammarNode> _bindVariableIdentifierNodes;
-		private ICollection<BindVariable> _bindVariables;
+		private ICollection<BindVariableConfiguration> _bindVariables;
 
 		public static readonly OracleStatement EmptyStatement =
 			new OracleStatement
@@ -22,7 +24,7 @@ namespace SqlPad.Oracle
 			get { return RootNode != null && RootNode.Id == OracleGrammarDescription.NonTerminals.SelectStatement; }
 		}
 
-		public override ICollection<BindVariable> BindVariables
+		public override ICollection<BindVariableConfiguration> BindVariables
 		{
 			get { return _bindVariables ?? (_bindVariables = BuildBindVariableCollection()); }
 		}
@@ -32,12 +34,12 @@ namespace SqlPad.Oracle
 			get { return _bindVariableIdentifierNodes ?? (_bindVariableIdentifierNodes = BuildBindVariableIdentifierTerminalCollection()); }
 		}
 
-		private ICollection<BindVariable> BuildBindVariableCollection()
+		private ICollection<BindVariableConfiguration> BuildBindVariableCollection()
 		{
 			return BindVariableIdentifierTerminals
 				.Select(n => n.Token.Value.Trim('"'))
 				.Distinct()
-				.Select(v => new OracleBindVariable(v) { DataType = OracleBindVariable.DataTypeVarchar2 })
+				.Select(v => new BindVariableConfiguration { Name = v, DataType = OracleBindVariable.DataTypeVarchar2, DataTypes = OracleBindVariable.DataTypes })
 				.ToArray();
 		}
 
@@ -49,7 +51,7 @@ namespace SqlPad.Oracle
 		}
 	}
 
-	public class OracleBindVariable : BindVariable
+	public static class OracleBindVariable
 	{
 		public const string DataTypeChar = "CHAR";
 		public const string DataTypeClob = "CLOB";
@@ -60,25 +62,25 @@ namespace SqlPad.Oracle
 		public const string DataTypeUnicodeVarchar2 = "NVARCHAR2";
 		public const string DataTypeVarchar2 = "VARCHAR2";
 
-		private static readonly string[] BindDataTypesInternal =
-		{
-			DataTypeChar,
-			DataTypeClob,
-			DataTypeDate,
-			DataTypeUnicodeChar,
-			DataTypeUnicodeClob,
-			DataTypeNumber,
-			DataTypeUnicodeVarchar2,
-			DataTypeVarchar2
-		};
+		private static readonly Dictionary<string, Type> BindDataTypesInternal =
+			new Dictionary<string, Type>
+			{
+				{ DataTypeChar, typeof(string) },
+				{ DataTypeClob, typeof(string) },
+				{ DataTypeDate, typeof(DateTime) },
+				{ DataTypeUnicodeChar, typeof(string) },
+				{ DataTypeUnicodeClob, typeof(string) },
+				{ DataTypeNumber, typeof(string) },
+				{ DataTypeUnicodeVarchar2, typeof(string) },
+				{ DataTypeVarchar2, typeof(string) }
+			};
 
-		public OracleBindVariable(string name) : base(name)
-		{
-		}
+		private static readonly IDictionary<string, Type> BindDataTypesDictionary =
+			new ReadOnlyDictionary<string, Type>(BindDataTypesInternal);
 
-		public override ICollection<string> DataTypes
+		public static IDictionary<string, Type> DataTypes
 		{
-			get { return BindDataTypesInternal; }
+			get { return BindDataTypesDictionary; }
 		}
 	}
 }

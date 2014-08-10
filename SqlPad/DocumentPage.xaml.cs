@@ -142,13 +142,14 @@ namespace SqlPad
 			header.SetBinding(ContentProperty, binding);
 		}
 
-		private static ContextMenu CreateTabItemHeaderContextMenu()
+		private ContextMenu CreateTabItemHeaderContextMenu()
 		{
 			var contextMenu = new ContextMenu();
 			var menuItemClose = new MenuItem
 			{
 				Header = "Close",
 				Command = DocumentPageCommands.CloseDocumentCommand,
+				CommandParameter = this
 			};
 
 			contextMenu.Items.Add(menuItemClose);
@@ -157,6 +158,7 @@ namespace SqlPad
 			{
 				Header = "Close All But This",
 				Command = DocumentPageCommands.CloseAllDocumentsButThisCommand,
+				CommandParameter = this
 			};
 
 			contextMenu.Items.Add(menuItemCloseAllButThis);
@@ -425,6 +427,8 @@ namespace SqlPad
 		{
 			var statement = _sqlDocumentRepository.Statements.GetStatementAtPosition(Editor.CaretOffset);
 
+			SqlPadConfiguration.StoreConfiguration();
+
 			_pageModel.ResultRowItems.Clear();
 			GridLabel.Visibility = Visibility.Collapsed;
 			TextMoreRowsExist.Visibility = Visibility.Collapsed;
@@ -681,9 +685,30 @@ namespace SqlPad
 				return;
 			}
 
-			_pageModel.BindVariables = statement.BindVariables
-				.Select(v => new BindVariableModel(v))
-				.ToArray();
+			_pageModel.BindVariables = BuildBindVariableModels(statement.BindVariables);
+		}
+
+		private ICollection<BindVariableModel> BuildBindVariableModels(IEnumerable<BindVariableConfiguration> bindVariables)
+		{
+			var configuration = SqlPadConfiguration.GetConfiguration(DatabaseModel.ConnectionString.ProviderName);
+
+			var models = new List<BindVariableModel>();
+			foreach (var bindVariable in bindVariables)
+			{
+				var model = new BindVariableModel(bindVariable);
+				model.PropertyChanged += (sender, args) => configuration.SetBindVariable(bindVariable);
+				
+				var storedVariable = configuration.GetBindVariable(bindVariable.Name);
+				if (storedVariable != null)
+				{
+					model.DataType = storedVariable.DataType;
+					model.Value = storedVariable.Value;
+				}
+
+				models.Add(model);
+			}
+
+			return models;
 		}
 
 		private void RedrawNodes(IEnumerable<StatementGrammarNode> nodes)
