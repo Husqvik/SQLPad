@@ -145,6 +145,34 @@ namespace SqlPad
 		private ContextMenu CreateTabItemHeaderContextMenu()
 		{
 			var contextMenu = new ContextMenu();
+			var menuItemSave = new MenuItem
+			{
+				Header = "Save",
+				Command = GenericCommands.SaveCommand,
+			};
+
+			contextMenu.Items.Add(menuItemSave);
+			contextMenu.CommandBindings.Add(new CommandBinding(GenericCommands.SaveCommand, SaveCommandExecutedHandler));
+
+			var menuItemSaveAs = new MenuItem
+			{
+				Header = "Save as...",
+				Command = GenericCommands.SaveAsCommand,
+			};
+
+			contextMenu.Items.Add(menuItemSaveAs);
+			contextMenu.CommandBindings.Add(new CommandBinding(GenericCommands.SaveAsCommand, SaveAsCommandExecutedHandler));
+
+			var menuItemOpenContainingFolder = new MenuItem
+			{
+				Header = "Open Containing Folder",
+				Command = DocumentPageCommands.OpenContainingFolderCommand,
+				CommandParameter = this
+			};
+
+			contextMenu.Items.Add(menuItemOpenContainingFolder);
+			contextMenu.CommandBindings.Add(new CommandBinding(DocumentPageCommands.OpenContainingFolderCommand, OpenContainingFolderCommandExecutedHandler, (sender, args) => args.CanExecute = File != null));
+
 			var menuItemClose = new MenuItem
 			{
 				Header = "Close",
@@ -245,6 +273,16 @@ namespace SqlPad
 		private void SaveCommandExecutedHandler(object sender, ExecutedRoutedEventArgs args)
 		{
 			Save();
+		}
+
+		private void SaveAsCommandExecutedHandler(object sender, ExecutedRoutedEventArgs e)
+		{
+			SaveAs();
+		}
+
+		private void OpenContainingFolderCommandExecutedHandler(object sender, ExecutedRoutedEventArgs e)
+		{
+			Process.Start("explorer.exe", "/select," + File.FullName);
 		}
 
 		public bool Save()
@@ -1127,5 +1165,6 @@ namespace SqlPad
 	{
 		public static ICommand CloseDocumentCommand = new RoutedCommand();
 		public static ICommand CloseAllDocumentsButThisCommand = new RoutedCommand();
+		public static ICommand OpenContainingFolderCommand = new RoutedCommand();
 	}
 }
