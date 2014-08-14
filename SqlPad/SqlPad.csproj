@@ -75,6 +75,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="BinaryDataHelper.cs" />
+    <Compile Include="BindVariableModel.cs" />
     <Compile Include="CellValueConverter.cs" />
     <Compile Include="ILargeTextValue.cs" />
     <Compile Include="LargeValueEditor.xaml.cs">
@@ -150,6 +151,7 @@
     <Compile Include="WindowOperationMonitor.xaml.cs">
       <DependentUpon>WindowOperationMonitor.xaml</DependentUpon>
     </Compile>
+    <Compile Include="WorkingDocumentCollection.cs" />
     <Page Include="DocumentPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

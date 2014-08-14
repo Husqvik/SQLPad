@@ -5,9 +5,10 @@ using System.Linq;
 
 namespace SqlPad
 {
-	public class ConfigurationProvider
+	public static class ConfigurationProvider
 	{
 		private static readonly Dictionary<string, ConnectionConfiguration> InternalInfrastructureFactories;
+		private static bool _enableWorkingDocuments = true;
 
 		static ConfigurationProvider()
 		{
@@ -20,6 +21,12 @@ namespace SqlPad
 			InternalInfrastructureFactories = databaseConfiguration.Infrastructures
 				.Cast<InfrastructureConfigurationSection>()
 				.ToDictionary(s => s.ConnectionStringName, s => new ConnectionConfiguration(s));
+		}
+
+		public static bool EnableWorkingDocuments
+		{
+			get { return _enableWorkingDocuments; }
+			set { _enableWorkingDocuments = value; }
 		}
 
 		public static ConnectionConfiguration GetConnectionCofiguration(string connectionStringName)

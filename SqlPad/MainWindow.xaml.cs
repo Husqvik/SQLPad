@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -19,6 +20,8 @@ namespace SqlPad
 		private readonly FindReplaceManager _findReplaceManager;
 		private readonly List<TextEditorAdapter> _editorAdapters = new List<TextEditorAdapter>();
 
+		private readonly Timer _timerWorkingDocumentSave = new Timer(60000);
+
 		public MainWindow()
 		{
 			InitializeComponent();
@@ -29,6 +32,16 @@ namespace SqlPad
 			_findReplaceManager = (FindReplaceManager)Resources["FindReplaceManager"];
 			_findReplaceManager.OwnerWindow = this;
 			_findReplaceManager.Editors = _editorAdapters;
+
+			_timerWorkingDocumentSave.Elapsed += (sender, args) => Dispatcher.Invoke(SaveActiveWorkingDocument);
+		}
+
+		private void SaveActiveWorkingDocument()
+		{
+			if (ActiveDocument == null)
+				return;
+
+			ActiveDocument.SaveWorkingDocument();
 		}
 
 		private static bool EnsureValidConfiguration()
@@ -55,34 +68,41 @@ namespace SqlPad
 			Messages.ShowError("At least one connection string and infrastructure factory must be defined", "Configuration Error");
 		}
 
-		internal DocumentPage CurrentPage
+		internal DocumentPage ActiveDocument
 		{
 			get { return ((TabItem)DocumentTabControl.SelectedItem).Content as DocumentPage; }
 		}
 
-		internal IEnumerable<DocumentPage> AllPages
+		internal IEnumerable<DocumentPage> AllDocuments
 		{
-			get { return DocumentTabControl.Items.Cast<TabItem>().Take(DocumentTabControl.Items.Count - 1).Select(t => (DocumentPage)t.Content); }
+			get
+			{
+				return DocumentTabControl.Items
+					.Cast<TabItem>()
+					.Select(t => t.Content)
+					.OfType<DocumentPage>();
+			}
 		}
 
 		private void WindowLoadedHandler(object sender, RoutedEventArgs e)
 		{
 			SqlPad.Resources.Initialize(Resources);
 
-			var filesToRecover = App.GetRecoverableDocuments().Select(f => new FileInfo(f)).Where(f => f.Exists).ToList();
-			if (filesToRecover.Count == 0)
+			if (WorkingDocumentCollection.WorkingDocuments.Count > 0)
 			{
-				filesToRecover.Add(null);
+				foreach (var workingDocument in WorkingDocumentCollection.WorkingDocuments)
+				{
+					CreateNewDocumentPage(workingDocument);
+				}
 			}
-
-			foreach (var fileInfo in filesToRecover)
+			else
 			{
-				CreateNewDocumentPage(fileInfo, fileInfo != null);
+				CreateNewDocumentPage();
 			}
-
-			App.PurgeRecoveryFiles();
 
 			DocumentTabControl.SelectionChanged += TabControlSelectionChangedHandler;
+
+			DocumentTabControl.SelectedIndex = WorkingDocumentCollection.ActiveDocumentIndex;
 		}
 
 		private void DropObjectHandler(object sender, DragEventArgs e)
@@ -97,7 +117,7 @@ namespace SqlPad
 				if (!fileInfo.Exists)
 					continue;
 
-				CreateNewDocumentPage(fileInfo);
+				OpenExistingFile(fileInfo.FullName);
 			}
 		}
 
@@ -109,15 +129,17 @@ namespace SqlPad
 				_findReplaceManager.CurrentEditor = document.EditorAdapter;
 			}
 
+			WorkingDocumentCollection.ActiveDocumentIndex = DocumentTabControl.SelectedIndex;
+
 			if (!e.AddedItems.Contains(NewTabItem))
 				return;
 
 			CreateNewDocumentPage();
 		}
 
-		private void CreateNewDocumentPage(FileInfo file = null, bool recoveryMode = false)
+		private void CreateNewDocumentPage(WorkingDocument workingDocument = null)
 		{
-			var newDocumentPage = new DocumentPage(file, recoveryMode);
+			var newDocumentPage = new DocumentPage(workingDocument);
 			
 			_editorAdapters.Add(newDocumentPage.EditorAdapter);
 
@@ -142,35 +164,37 @@ namespace SqlPad
 			var documentsToClose = allDocuments.Where(p => !p.Equals(currentDocument)).ToArray();
 			foreach (var page in documentsToClose)
 			{
-				ClosePage(page);
+				CloseDocument(page);
 			}
 		}
 
 		private void CloseTabExecutedHandler(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
 		{
 			var currentDocument = (DocumentPage)executedRoutedEventArgs.Parameter;
-			ClosePage(currentDocument);
+			CloseDocument(currentDocument);
 		}
 
-		private bool ClosePage(DocumentPage document)
+		private void CloseDocument(DocumentPage document)
 		{
 			SqlPadConfiguration.StoreConfiguration();
-
 			DocumentTabControl.SelectedItem = document.TabItem;
 
-			if (document.IsDirty && !ConfirmPageSave(document))
-				return false;
+			if (document.IsDirty && !ConfirmDocumentSave(document))
+				return;
 
 			SelectNewTabItem();
 			DocumentTabControl.Items.Remove(document.TabItem);
-			return true;
+
+			WorkingDocumentCollection.CloseDocument(document.WorkingDocument);
+
+			document.Dispose();
 		}
 
-		private bool ConfirmPageSave(DocumentPage document)
+		private bool ConfirmDocumentSave(DocumentPage document)
 		{
-			var message = document.File == null
+			var message = document.WorkingDocument.File == null
 				? "Do you want to save the document?"
-				: String.Format("Do you want to save changes in '{0}'?", document.File.FullName);
+				: String.Format("Do you want to save changes in '{0}'?", document.WorkingDocument.File.FullName);
 			
 			var dialogResult = MessageBox.Show(message, "Confirmation", MessageBoxButton.YesNoCancel, MessageBoxImage.Question, MessageBoxResult.Yes);
 			switch (dialogResult)
@@ -204,41 +228,52 @@ namespace SqlPad
 
 		private void WindowClosingHandler(object sender, CancelEventArgs e)
 		{
-			var pages = DocumentTabControl.Items
-				.Cast<TabItem>()
-				.Select(t => t.Content)
-				.OfType<DocumentPage>()
-				.ToArray();
-			
-			foreach (var page in pages)
+			_timerWorkingDocumentSave.Stop();
+
+			foreach (var document in AllDocuments)
 			{
-				if (!ClosePage(page))
-				{
-					e.Cancel = true;
-					return;
-				}
-				
-				page.Dispose();
+				document.SaveWorkingDocument();
 			}
 
+			WorkingDocumentCollection.Save();
+			
 			DocumentTabControl.Items.Clear();
 		}
 
 		private void WindowClosedHandler(object sender, EventArgs e)
 		{
-			
+			_timerWorkingDocumentSave.Dispose();
 		}
 
 		private void OpenFileHandler(object sender, ExecutedRoutedEventArgs e)
 		{
-			var dialog = new OpenFileDialog { Filter = DocumentPage.FileMaskDefault, CheckFileExists = true };
+			var dialog = new OpenFileDialog { Filter = DocumentPage.FileMaskDefault, CheckFileExists = true, Multiselect = true };
 			if (dialog.ShowDialog() != true)
 			{
 				return;
 			}
 
-			var file = new FileInfo(dialog.FileName);
-			CreateNewDocumentPage(file);
+			foreach (var fileName in dialog.FileNames)
+			{
+				OpenExistingFile(fileName);
+			}
+		}
+
+		private void OpenExistingFile(string fileName)
+		{
+			WorkingDocument workingDocument;
+			if (WorkingDocumentCollection.TryGetWorkingDocumentFor(fileName, out workingDocument))
+			{
+				var documentForFile = AllDocuments.First(d => d.WorkingDocument == workingDocument);
+				DocumentTabControl.SelectedItem = documentForFile.TabItem;
+			}
+			else
+			{
+				workingDocument = new WorkingDocument { DocumentFileName = fileName };
+
+				WorkingDocumentCollection.AddDocument(workingDocument);
+				CreateNewDocumentPage(workingDocument);
+			}
 		}
 	}
 }

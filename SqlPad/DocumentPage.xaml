@@ -136,6 +136,7 @@
 		          EnableColumnVirtualization="True"
 				  RowHeight="20"
 				  CanUserSortColumns="False"
+				  HeadersVisibility="None"
 		          HorizontalGridLinesBrush="LightGray"
 		          VerticalGridLinesBrush="LightGray"
 				  MouseDoubleClick="ResultGridMouseDoubleClickHandler"

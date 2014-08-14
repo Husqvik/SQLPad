@@ -22,6 +22,8 @@ namespace SqlPad.Test
 
 		static VisualComponentTest()
 		{
+			ConfigurationProvider.EnableWorkingDocuments = false;
+
 			var sqlPadDirectory = new Uri(Path.GetDirectoryName(typeof(Snippets).Assembly.CodeBase)).LocalPath;
 			Snippets.SelectSnippetDirectory(Path.Combine(sqlPadDirectory, Snippets.SnippetDirectoryName));
 			DocumentPage.IsParsingSynchronous = true;

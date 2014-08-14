@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,9 +22,6 @@ using Timer = System.Timers.Timer;
 
 namespace SqlPad
 {
-	/// <summary>
-	/// Interaction logic for DocumentPage.xaml
-	/// </summary>
 	public partial class DocumentPage : IDisposable
 	{
 		private const int RowBatchSize = 100;
@@ -58,7 +54,7 @@ namespace SqlPad
 		private readonly Timer _timerReParse = new Timer(100);
 		private readonly Timer _timerExecutionMonitor = new Timer(100);
 		private readonly Stopwatch _stopWatch = new Stopwatch();
-		private readonly string _initialDocumentHeader = "New*";
+		private const string InitialDocumentHeader = "New*";
 		private readonly List<CommandBinding> _specificCommandBindings = new List<CommandBinding>(); 
 		
 		public EventHandler ParseFinished = delegate { };
@@ -79,10 +75,10 @@ namespace SqlPad
 		}
 
 		public TextEditorAdapter EditorAdapter { get; private set; }
-		
-		public FileInfo File { get; private set; }
 
-		public string DocumentHeader { get { return File == null ? _initialDocumentHeader : File.Name + (IsDirty ? "*" : null); } }
+		public WorkingDocument WorkingDocument { get; private set; }
+
+		public string DocumentHeader { get { return WorkingDocument.File == null ? InitialDocumentHeader : WorkingDocument.File.Name + (IsDirty ? "*" : null); } }
 
 		public bool IsDirty { get { return Editor.IsModified; } }
 
@@ -94,8 +90,8 @@ namespace SqlPad
 			HeaderStyleRightAlign.Setters.Add(new Setter(HorizontalContentAlignmentProperty, HorizontalAlignment.Right));
 			CellTextBoxStyleReadOnly.Setters.Add(new Setter(TextBoxBase.IsReadOnlyProperty, true));
 		}
-		
-		public DocumentPage(FileInfo file, bool recoveryMode = false)
+
+		public DocumentPage(WorkingDocument workingDocument = null)
 		{
 			InitializeComponent();
 
@@ -109,21 +105,67 @@ namespace SqlPad
 			_timerExecutionMonitor.Elapsed += (sender, args) => Dispatcher.Invoke(() => TextExecutionTime.Text = FormatElapsedMilliseconds(_stopWatch.Elapsed));
 
 			_pageModel = new PageModel(this);
-			_pageModel.CurrentConnection = ConfigurationProvider.ConnectionStrings[0];
 
 			ConfigureEditor();
 
-			if (file != null)
-			{
-				File = file;
-				Editor.Load(file.FullName);
-			}
+			var usedConnection = ConfigurationProvider.ConnectionStrings[0];
 
-			if (recoveryMode)
+			if (workingDocument == null)
 			{
-				_initialDocumentHeader = "RecoveredDocument*";
-				File = null;
-				Editor.IsModified = true;
+				WorkingDocument = new WorkingDocument { ConnectionName = ((ConnectionStringSettings)ComboBoxConnection.SelectedItem).Name };
+
+				WorkingDocumentCollection.AddDocument(WorkingDocument);
+				_pageModel.CurrentConnection = usedConnection;
+			}
+			else
+			{
+				WorkingDocument = workingDocument;
+
+				var fileExists = WorkingDocument.WorkingFile.Exists || (WorkingDocument.File != null && WorkingDocument.File.Exists);
+				if (fileExists)
+				{
+					var fileName = WorkingDocument.WorkingFile.Exists
+						? WorkingDocument.WorkingFile.FullName
+						: WorkingDocument.File.FullName;
+					
+					if (!String.IsNullOrEmpty(WorkingDocument.ConnectionName))
+					{
+						var connectionString = ConfigurationProvider.ConnectionStrings
+							.Cast<ConnectionStringSettings>()
+							.FirstOrDefault(cs => cs.Name == WorkingDocument.ConnectionName);
+
+						if (connectionString != null)
+						{
+							usedConnection = connectionString;
+						}
+					}
+
+					_pageModel.CurrentConnection = usedConnection;
+
+					Editor.Load(fileName);
+
+					if (Editor.Text.Length >= WorkingDocument.SelectionStart)
+					{
+						Editor.SelectionStart = WorkingDocument.SelectionStart;
+
+						var storedSelectionEndIndex = WorkingDocument.SelectionStart + WorkingDocument.SelectionLength;
+						var validSelectionEndIndex = storedSelectionEndIndex > Editor.Text.Length
+							? Editor.Text.Length
+							: storedSelectionEndIndex;
+						
+						Editor.SelectionLength = validSelectionEndIndex - WorkingDocument.SelectionStart;
+					}
+
+					Editor.CaretOffset = Editor.Text.Length >= WorkingDocument.CursorPosition
+						? WorkingDocument.CursorPosition
+						: Editor.Text.Length;
+
+					Editor.IsModified = WorkingDocument.IsModified;
+				}
+				else
+				{
+					WorkingDocumentCollection.CloseDocument(WorkingDocument);
+				}
 			}
 
 			_pageModel.DocumentHeader = DocumentHeader;
@@ -171,7 +213,7 @@ namespace SqlPad
 			};
 
 			contextMenu.Items.Add(menuItemOpenContainingFolder);
-			contextMenu.CommandBindings.Add(new CommandBinding(DocumentPageCommands.OpenContainingFolderCommand, OpenContainingFolderCommandExecutedHandler, (sender, args) => args.CanExecute = File != null));
+			contextMenu.CommandBindings.Add(new CommandBinding(DocumentPageCommands.OpenContainingFolderCommand, OpenContainingFolderCommandExecutedHandler, (sender, args) => args.CanExecute = WorkingDocument.File != null));
 
 			var menuItemClose = new MenuItem
 			{
@@ -282,19 +324,18 @@ namespace SqlPad
 
 		private void OpenContainingFolderCommandExecutedHandler(object sender, ExecutedRoutedEventArgs e)
 		{
-			Process.Start("explorer.exe", "/select," + File.FullName);
+			Process.Start("explorer.exe", "/select," + WorkingDocument.File.FullName);
 		}
 
 		public bool Save()
 		{
-			if (File == null)
+			if (WorkingDocument.File == null)
 				return SaveAs();
 
 			if (!IsDirty)
 				return true;
 
-			Editor.Save(File.FullName);
-			_pageModel.DocumentHeader = File.Name;
+			SaveDocument();
 			return true;
 		}
 
@@ -306,10 +347,33 @@ namespace SqlPad
 				return false;
 			}
 
-			File = new FileInfo(dialog.FileName);
-			Editor.Save(File.FullName);
-			_pageModel.DocumentHeader = File.Name;
+			WorkingDocument.DocumentFileName = dialog.FileName;
+
+			SaveDocument();
+			SaveWorkingDocument();
 			return true;
+		}
+
+		public void SaveWorkingDocument()
+		{
+			Editor.Save(WorkingDocument.WorkingFile.FullName);
+			WorkingDocument.CursorPosition = Editor.CaretOffset;
+			WorkingDocument.SelectionStart = Editor.SelectionStart;
+			WorkingDocument.SelectionLength = Editor.SelectionLength;
+
+			if (_pageModel.CurrentConnection != null)
+			{
+				WorkingDocument.ConnectionName = _pageModel.CurrentConnection.Name;
+			}
+			
+			WorkingDocumentCollection.Save();
+		}
+
+		private void SaveDocument()
+		{
+			Editor.Save(WorkingDocument.File.FullName);
+			WorkingDocument.IsModified = false;
+			_pageModel.DocumentHeader = WorkingDocument.File.Name;
 		}
 
 		private void SelectionChangedHandler(object sender, EventArgs eventArgs)
@@ -471,6 +535,9 @@ namespace SqlPad
 			GridLabel.Visibility = Visibility.Collapsed;
 			TextMoreRowsExist.Visibility = Visibility.Collapsed;
 
+			ResultGrid.HeadersVisibility = DataGridHeadersVisibility.None;
+			ResultGrid.Columns.Clear();
+
 			ActionResult actionResult;
 			var statementText = Editor.SelectionLength > 0 ? Editor.SelectedText : statement.RootNode.GetStatementSubstring(Editor.Text);
 			using (_cancellationTokenSource = new CancellationTokenSource())
@@ -494,18 +561,16 @@ namespace SqlPad
 
 			TextExecutionTime.Text = FormatElapsedMilliseconds(actionResult.Elapsed);
 
-			ResultGrid.Columns.Clear();
-
-			if (DatabaseModel.CanFetch)
-			{
-				InitializeResultGrid();
+			if (!DatabaseModel.CanFetch)
+				return;
+			
+			InitializeResultGrid();
 				
-				FetchNextRows(null, null);
+			FetchNextRows(null, null);
 
-				if (ResultGrid.Items.Count > 0)
-				{
-					ResultGrid.SelectedIndex = 0;
-				}
+			if (ResultGrid.Items.Count > 0)
+			{
+				ResultGrid.SelectedIndex = 0;
 			}
 		}
 
@@ -580,6 +645,8 @@ namespace SqlPad
 
 				ResultGrid.Columns.Add(columnTemplate);
 			}
+
+			ResultGrid.HeadersVisibility = DataGridHeadersVisibility.Column;
 		}
 
 		public void Dispose()
@@ -759,6 +826,8 @@ namespace SqlPad
 
 		private void TextEnteredHandler(object sender, TextCompositionEventArgs e)
 		{
+			WorkingDocument.IsModified = Editor.IsModified;
+
 			if (Editor.Document.IsInUpdate)
 			{
 				Editor.Document.EndUpdate();

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -64,9 +65,12 @@ namespace SqlPad
 					{
 						try
 						{
-							configuration = (SqlPadConfiguration)Serializer.Deserialize(file, new SqlPadConfiguration(providerName), typeof(SqlPadConfiguration));
+							configuration = (SqlPadConfiguration) Serializer.Deserialize(file, new SqlPadConfiguration(providerName), typeof (SqlPadConfiguration));
 						}
-						catch { }
+						catch (Exception e)
+						{
+							Trace.WriteLine("SqlPadConfiguration deserialization failed: " + e.Message);
+						}
 					}
 				}
 				else
@@ -98,7 +102,7 @@ namespace SqlPad
 
 		private static string GetFileName(string providerName)
 		{
-			return Path.Combine(App.FolderNameHistory, String.Format("{0}.dat", providerName));
+			return Path.Combine(App.FolderNameWorkArea, String.Format("{0}.dat", providerName));
 		}
 	}
 

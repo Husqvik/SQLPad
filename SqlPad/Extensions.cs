@@ -101,7 +101,8 @@ namespace SqlPad
 
 		public static void ScrollToCaret(this TextEditor editor)
 		{
-			editor.ScrollToLine(editor.Document.GetLineByOffset(editor.CaretOffset).LineNumber);
+			var location = editor.Document.GetLocation(editor.CaretOffset);
+			editor.ScrollTo(location.Line, location.Column);
 		}
 
 		public static string ToToolTipText(this SemanticError error)
