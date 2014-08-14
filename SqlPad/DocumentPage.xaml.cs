@@ -116,6 +116,8 @@ namespace SqlPad
 
 				WorkingDocumentCollection.AddDocument(WorkingDocument);
 				_pageModel.CurrentConnection = usedConnection;
+
+				WorkingDocument.SchemaName = _pageModel.CurrentSchema;
 			}
 			else
 			{
@@ -141,6 +143,8 @@ namespace SqlPad
 					}
 
 					_pageModel.CurrentConnection = usedConnection;
+
+					_pageModel.CurrentSchema = WorkingDocument.SchemaName;
 
 					Editor.Load(fileName);
 
@@ -364,6 +368,7 @@ namespace SqlPad
 			if (_pageModel.CurrentConnection != null)
 			{
 				WorkingDocument.ConnectionName = _pageModel.CurrentConnection.Name;
+				WorkingDocument.SchemaName = _pageModel.CurrentSchema;
 			}
 			
 			WorkingDocumentCollection.Save();

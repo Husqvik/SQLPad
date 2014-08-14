@@ -13,7 +13,7 @@ namespace SqlPad
 		private static string _snippetDirectory = Path.Combine(App.FolderNameApplication, SnippetDirectoryName);
 		private static readonly List<Snippet> SnippetCollectionInternal = new List<Snippet>();
 
-		public static void SelectSnippetDirectory(string directory)
+		public static void SetSnippetDirectory(string directory)
 		{
 			_snippetDirectory = directory;
 		}

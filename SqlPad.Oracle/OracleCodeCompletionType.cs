@@ -40,6 +40,8 @@ namespace SqlPad.Oracle
 		
 		public bool InUnparsedData { get; private set; }
 
+		public bool InComment { get; private set; }
+
 		public bool IsCursorTouchingIdentifier { get; private set; }
 		
 		public StatementGrammarNode CurrentTerminal { get; private set; }
@@ -77,6 +79,8 @@ namespace SqlPad.Oracle
 			var nearestTerminal = Statement.GetNearestTerminalToPosition(cursorPosition);
 			if (nearestTerminal == null)
 				return;
+
+			InComment = Statement.Comments.Any(c => c.SourcePosition.ContainsIndex(cursorPosition));
 
 			SemanticModel = (OracleStatementSemanticModel)documentRepository.ValidationModels[Statement].SemanticModel;
 
@@ -187,7 +191,7 @@ namespace SqlPad.Oracle
 			return identifiers.FirstOrDefault(i => i.Id == identifierId);
 		}
 
-		public void PrintSupportedCompletions()
+		public void PrintResults()
 		{
 			Trace.WriteLine(ReferenceIdentifier.ToString());
 
@@ -236,6 +240,9 @@ namespace SqlPad.Oracle
 			builder.Append("; ");
 			builder.Append("Sequence: ");
 			builder.Append(Sequence);
+			builder.Append("; ");
+			builder.Append("In comment: ");
+			builder.Append(InComment);
 
 			Trace.WriteLine(builder.ToString());
 			Trace.WriteLine(ReferenceIdentifier.ToString());

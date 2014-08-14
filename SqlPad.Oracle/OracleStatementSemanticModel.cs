@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
@@ -561,7 +560,7 @@ namespace SqlPad.Oracle
 					columnReference.ObjectNodeObjectReferences.Add(rowSourceReference);
 				}
 
-				var columnNodeColumnReferences = GetColumnNodeObjectReferences(rowSourceReference, columnReference);
+				var columnNodeColumnReferences = GetColumnNodeColumnReferences(rowSourceReference, columnReference);
 
 				if (columnNodeColumnReferences.Count > 0 &&
 				    (String.IsNullOrEmpty(columnReference.FullyQualifiedObjectName.NormalizedName) ||
@@ -672,7 +671,7 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		private IList<OracleColumn> GetColumnNodeObjectReferences(OracleDataObjectReference rowSourceReference, OracleColumnReference columnReference)
+		private IList<OracleColumn> GetColumnNodeColumnReferences(OracleDataObjectReference rowSourceReference, OracleColumnReference columnReference)
 		{
 			var columnNodeColumnReferences = new List<OracleColumn>();
 			if (rowSourceReference.Type == ReferenceType.SchemaObject)
@@ -868,13 +867,16 @@ namespace SqlPad.Oracle
 					else
 					{
 						var identifiers = columnExpression.GetDescendantsWithinSameQuery(Terminals.Identifier, Terminals.RowIdPseudoColumn).ToArray();
+
+						var previousColumnReferences = column.ColumnReferences.Count;
+						ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, column.ColumnReferences, identifiers, QueryBlockPlacement.SelectList, column);
+						
 						column.IsDirectReference = identifiers.Length == 1 && identifiers[0].GetAncestor(NonTerminals.Expression).ChildNodes.Count == 1;
-						if (column.IsDirectReference && columnAliasNode == null)
+						var columnReferenceAdded = column.ColumnReferences.Count > previousColumnReferences;
+						if (columnReferenceAdded && column.IsDirectReference && columnAliasNode == null)
 						{
 							column.AliasNode = identifiers[0];
 						}
-
-						ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, column.ColumnReferences, identifiers, QueryBlockPlacement.SelectList, column);
 
 						var grammarSpecificFunctions = columnExpression.GetDescendantsWithinSameQuery(Terminals.Count, NonTerminals.AggregateFunction, NonTerminals.AnalyticFunction).ToArray();
 						CreateGrammarSpecificFunctionReferences(grammarSpecificFunctions, queryBlock, column.FunctionReferences, column);

@@ -9,9 +9,10 @@ namespace SqlPad
 {
 	public class WorkingDocumentCollection
 	{
-		private static readonly string FileName = Path.Combine(App.FolderNameWorkArea, "WorkingDocuments.dat");
+		internal const string ConfigurationFileName = "WorkingDocuments.dat";
+		private static string _fileName = GetWorkingDocumentConfigurationFileName(App.FolderNameWorkArea);
 		private static readonly RuntimeTypeModel Serializer;
-		private static readonly WorkingDocumentCollection Instance;
+		private static WorkingDocumentCollection _instance;
 
 		private Dictionary<string, WorkingDocument> _workingDocuments = new Dictionary<string, WorkingDocument>();
 		private int _activeDocumentIndex;
@@ -25,15 +26,20 @@ namespace SqlPad
 
 			var workingDocumentType = Serializer.Add(typeof(WorkingDocument), false);
 			workingDocumentType.UseConstructor = false;
-			workingDocumentType.Add("DocumentFileName", "_workingFileName", "ConnectionName", "CursorPosition", "SelectionStart", "SelectionLength", "IsModified");
+			workingDocumentType.Add("DocumentFileName", "_workingFileName", "ConnectionName", "SchemaName", "CursorPosition", "SelectionStart", "SelectionLength", "IsModified");
+		}
 
-			if (ConfigurationProvider.EnableWorkingDocuments && File.Exists(FileName))
+		private WorkingDocumentCollection() {}
+
+		private static void Initialize()
+		{
+			if (File.Exists(_fileName))
 			{
-				using (var file = File.OpenRead(FileName))
+				using (var file = File.OpenRead(_fileName))
 				{
 					try
 					{
-						Instance = (WorkingDocumentCollection) Serializer.Deserialize(file, Instance, typeof (WorkingDocumentCollection));
+						_instance = (WorkingDocumentCollection)Serializer.Deserialize(file, _instance, typeof(WorkingDocumentCollection));
 					}
 					catch (Exception e)
 					{
@@ -42,17 +48,47 @@ namespace SqlPad
 				}
 			}
 
-			if (Instance == null)
+			if (_instance == null)
 			{
-				Instance = new WorkingDocumentCollection();
+				_instance = new WorkingDocumentCollection();
 			}
-			else if (Instance._workingDocuments == null)
+			else if (_instance._workingDocuments == null)
 			{
-				Instance._workingDocuments = new Dictionary<string, WorkingDocument>();
+				_instance._workingDocuments = new Dictionary<string, WorkingDocument>();
 			}
 		}
 
-		private WorkingDocumentCollection() {}
+		public static void SetWorkingDocumentDirectory(string directory)
+		{
+			_instance = null;
+			_fileName = GetWorkingDocumentConfigurationFileName(directory);
+		}
+
+		private static string GetWorkingDocumentConfigurationFileName(string directory)
+		{
+			if (!Directory.Exists(directory))
+			{
+				throw new ArgumentException(String.Format("Directory '{0}' does not exist. ", directory), "directory");
+			}
+
+			return Path.Combine(directory, ConfigurationFileName);
+		}
+
+		private static WorkingDocumentCollection Instance
+		{
+			get
+			{
+				lock (Serializer)
+				{
+					if (_instance == null)
+					{
+						Initialize();
+					}
+
+					return _instance;
+				}
+			}
+		}
 
 		public static int ActiveDocumentIndex
 		{
@@ -95,6 +131,14 @@ namespace SqlPad
 			}
 		}
 
+		public static void CloseAllDocuments()
+		{
+			foreach (var document in WorkingDocuments)
+			{
+				CloseDocument(document);
+			}
+		}
+
 		private static void ValidateWorkingDocument(WorkingDocument workingDocument)
 		{
 			if (workingDocument == null)
@@ -110,12 +154,9 @@ namespace SqlPad
 
 		public static void Save()
 		{
-			if (!ConfigurationProvider.EnableWorkingDocuments)
-				return;
-
 			lock (Instance)
 			{
-				using (var file = File.Create(FileName))
+				using (var file = File.Create(_fileName))
 				{
 					Serializer.Serialize(file, Instance);
 				}
@@ -143,13 +184,22 @@ namespace SqlPad
 			return Path.Combine(App.FolderNameWorkArea, fileInfo.Name + ".working");
 		}
 
-		public string DocumentFileName { get; set; }
 		public FileInfo File { get { return String.IsNullOrEmpty(DocumentFileName) ? null : new FileInfo(DocumentFileName); } }
+		
 		public FileInfo WorkingFile { get { return new FileInfo(_workingFileName); } }
+
+		public string DocumentFileName { get; set; }
+		
 		public string ConnectionName { get; set; }
+		
+		public string SchemaName { get; set; }
+		
 		public int CursorPosition { get; set; }
+		
 		public int SelectionStart { get; set; }
+		
 		public int SelectionLength { get; set; }
+		
 		public bool IsModified { get; set; }
 	}
 }

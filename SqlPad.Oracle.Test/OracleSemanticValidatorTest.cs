@@ -1224,7 +1224,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			columnNodeValidity[1].SemanticError.ShouldBe(SemanticError.None);
 		}
 
-		[Test(Description = @""), Ignore]
+		[Test(Description = @"")]
 		public void TestExposedGeneratedColumnWithoutAliasValidity()
 		{
 			const string sqlText = "SELECT TO_CHAR FROM (SELECT TO_CHAR('') FROM DUAL)";
@@ -1235,8 +1235,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
 			var columnNodeValidity = nodeValidityDictionary.Values.ToList();
-			columnNodeValidity.Count.ShouldBe(1);
-			columnNodeValidity[0].IsRecognized.ShouldBe(false);
+			columnNodeValidity.Count.ShouldBe(0);
 
 			nodeValidityDictionary = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
 			var programNodeValidity = nodeValidityDictionary.Values.ToList();

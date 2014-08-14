@@ -19,13 +19,15 @@ namespace SqlPad.Test
 		private MainWindow _mainWindow;
 		private DocumentPage _page;
 		private TextEditor _editor;
+		private static readonly string TempDirectoryName;
 
 		static VisualComponentTest()
 		{
-			ConfigurationProvider.EnableWorkingDocuments = false;
+			TempDirectoryName = TestFixture.SetupTestDirectory();
+			WorkingDocumentCollection.SetWorkingDocumentDirectory(TempDirectoryName);
 
 			var sqlPadDirectory = new Uri(Path.GetDirectoryName(typeof(Snippets).Assembly.CodeBase)).LocalPath;
-			Snippets.SelectSnippetDirectory(Path.Combine(sqlPadDirectory, Snippets.SnippetDirectoryName));
+			Snippets.SetSnippetDirectory(Path.Combine(sqlPadDirectory, Snippets.SnippetDirectoryName));
 			DocumentPage.IsParsingSynchronous = true;
 		}
 
@@ -48,6 +50,12 @@ namespace SqlPad.Test
 				});
 			
 			Dispatcher.PushFrame(frame);
+		}
+
+		[TearDown]
+		public void TearDown()
+		{
+			Directory.Delete(TempDirectoryName, true);
 		}
 
 		[Test(Description = @""), STAThread, RequiresThread]

@@ -102,7 +102,11 @@ namespace SqlPad.Oracle
 				return EmptyCollection;
 
 			var completionType = new OracleCodeCompletionType(sqlDocumentRepository, statementText, cursorPosition);
-			completionType.PrintSupportedCompletions();
+			completionType.PrintResults();
+
+			if (completionType.InComment)
+				return EmptyCollection;
+			
 			if (!forcedInvokation && !completionType.JoinCondition && String.IsNullOrEmpty(completionType.TerminalValuePartUntilCaret) && !completionType.IsCursorTouchingIdentifier)
 				return EmptyCollection;
 

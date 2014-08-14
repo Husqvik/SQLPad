@@ -756,6 +756,14 @@ se";
 			items[0].Text.ShouldBe("SESSIONTIMEZONE");
 		}
 
+		[Test(Description = @"")]
+		public void TestCodeCompletionInComment()
+		{
+			const string statement = @"SELECT /*+ PARALLEL */ DUMMY FROM DUAL";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 15).ToList();
+			items.Count.ShouldBe(0);
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)
@@ -893,18 +901,18 @@ se";
 						referenceIdentifier.IdentifierEffectiveValue.ShouldBe("SQL");
 					}
 
-					[Test(Description = @""), Ignore]
+					[Test(Description = @"")]
 					public void TestReferenceIdentifiersWhenCursorAtIdentifierOfAlreadyEnteredFullyQualifiedFunctionIdentifier()
 					{
 						const string statement = @"SELECT HUSQVIK.SQLPAD_FUNCTION() FROM DUAL";
 						var referenceIdentifier = InitializeCodeCompletionType(statement, 18).ReferenceIdentifier;
 						referenceIdentifier.CursorPosition.ShouldBe(18);
-						referenceIdentifier.SchemaIdentifierOriginalValue.ShouldBe("HUSQVIK");
-						referenceIdentifier.ObjectIdentifierOriginalValue.ShouldBe("SQLPAD_FUNCTION");
-						referenceIdentifier.IdentifierOriginalValue.ShouldBe(null);
-						referenceIdentifier.SchemaIdentifierEffectiveValue.ShouldBe("HUSQVIK");
-						referenceIdentifier.ObjectIdentifierEffectiveValue.ShouldBe("SQL");
-						referenceIdentifier.IdentifierEffectiveValue.ShouldBe(null);
+						referenceIdentifier.SchemaIdentifierOriginalValue.ShouldBe(null);
+						referenceIdentifier.ObjectIdentifierOriginalValue.ShouldBe("HUSQVIK");
+						referenceIdentifier.IdentifierOriginalValue.ShouldBe("SQLPAD_FUNCTION");
+						referenceIdentifier.SchemaIdentifierEffectiveValue.ShouldBe(null);
+						referenceIdentifier.ObjectIdentifierEffectiveValue.ShouldBe("HUSQVIK");
+						referenceIdentifier.IdentifierEffectiveValue.ShouldBe("SQL");
 					}
 
 					[Test(Description = @"")]
