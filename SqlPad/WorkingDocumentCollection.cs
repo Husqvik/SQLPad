@@ -120,7 +120,11 @@ namespace SqlPad
 
 			try
 			{
-				File.Delete(workingDocument.WorkingFile.FullName);
+				if (File.Exists(workingDocument.WorkingFile.FullName))
+				{
+					File.Delete(workingDocument.WorkingFile.FullName);
+				}
+				
 				Instance._workingDocuments.Remove(workingDocument.WorkingFile.FullName);
 
 				Save();
