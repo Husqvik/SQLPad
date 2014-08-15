@@ -831,14 +831,10 @@ namespace SqlPad
 
 		private void TextEnteredHandler(object sender, TextCompositionEventArgs e)
 		{
-			WorkingDocument.IsModified = Editor.IsModified;
-
 			if (Editor.Document.IsInUpdate)
 			{
 				Editor.Document.EndUpdate();
 			}
-
-			_pageModel.DocumentHeader = DocumentHeader;
 
 			var snippets = _codeSnippetProvider.GetSnippets(_sqlDocumentRepository, Editor.Text, Editor.CaretOffset).Select(i => new CompletionData(i)).ToArray();
 			if (_completionWindow == null && snippets.Length > 0)
@@ -1002,6 +998,9 @@ namespace SqlPad
 
 		private void EditorTextChangedHandler(object sender, EventArgs e)
 		{
+			WorkingDocument.IsModified = IsDirty;
+			_pageModel.DocumentHeader = DocumentHeader;
+
 			if (_isParsing)
 			{
 				if (!_timerReParse.Enabled)
@@ -1148,6 +1147,9 @@ namespace SqlPad
 			{
 				Editor.Document.EndUpdate();
 			}
+
+			WorkingDocument.IsModified = IsDirty;
+			_pageModel.DocumentHeader = DocumentHeader;
 		}
 
 		private void EditorKeyDownHandler(object sender, KeyEventArgs e)
