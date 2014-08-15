@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Microsoft.Win32;
+using SqlPad.Commands;
 using SqlPad.FindReplace;
 
 namespace SqlPad
@@ -88,6 +89,8 @@ namespace SqlPad
 		{
 			SqlPad.Resources.Initialize(Resources);
 
+			CommandBindings.Add(new CommandBinding(GenericCommands.SaveAllCommand, SaveAllCommandExecutedHandler));
+
 			if (WorkingDocumentCollection.WorkingDocuments.Count > 0)
 			{
 				foreach (var workingDocument in WorkingDocumentCollection.WorkingDocuments)
@@ -103,6 +106,17 @@ namespace SqlPad
 			DocumentTabControl.SelectionChanged += TabControlSelectionChangedHandler;
 
 			DocumentTabControl.SelectedIndex = WorkingDocumentCollection.ActiveDocumentIndex;
+		}
+
+		private void SaveAllCommandExecutedHandler(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
+		{
+			foreach (var document in AllDocuments)
+			{
+				if (!document.Save())
+				{
+					return;
+				}
+			}
 		}
 
 		private void DropObjectHandler(object sender, DragEventArgs e)
