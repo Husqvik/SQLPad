@@ -28,7 +28,7 @@ namespace SqlPad
 
 			var workingDocumentType = Serializer.Add(typeof(WorkingDocument), false);
 			workingDocumentType.UseConstructor = false;
-			workingDocumentType.Add("DocumentFileName", "DocumentId", "ConnectionName", "SchemaName", "CursorPosition", "SelectionStart", "SelectionLength", "IsModified", "VisualLeft", "VisualTop", "EditorGridRowHeight", "Text");
+			workingDocumentType.Add("DocumentFileName", "DocumentId", "ConnectionName", "SchemaName", "CursorPosition", "SelectionStart", "SelectionLength", "IsModified", "VisualLeft", "VisualTop", "EditorGridRowHeight", "Text", "EditorGridColumnWidth");
 
 			var windowPropertiesType = Serializer.Add(typeof(WindowProperties), false);
 			windowPropertiesType.UseConstructor = false;
@@ -49,7 +49,7 @@ namespace SqlPad
 					}
 					catch (Exception e)
 					{
-						Trace.WriteLine("WorkingDocumentCollection deserialization failed: " + e.Message);
+						Trace.WriteLine("WorkingDocumentCollection deserialization failed: " + e);
 					}
 				}
 			}
@@ -132,7 +132,7 @@ namespace SqlPad
 			}
 			catch (Exception e)
 			{
-				Trace.WriteLine("Close working document failed: " + e.Message);
+				Trace.WriteLine("Close working document failed: " + e);
 			}
 		}
 
@@ -232,5 +232,7 @@ namespace SqlPad
 		public double VisualLeft { get; set; }
 
 		public double EditorGridRowHeight { get; set; }
+		
+		public double EditorGridColumnWidth { get; set; }
 	}
 }

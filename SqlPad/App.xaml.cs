@@ -38,7 +38,7 @@ namespace SqlPad
 			}
 			catch(Exception e)
 			{
-				Trace.WriteLine("Work area storing operation failed: " + e.Message);
+				Trace.WriteLine("Work area storing operation failed: " + e);
 			}
 		}
 

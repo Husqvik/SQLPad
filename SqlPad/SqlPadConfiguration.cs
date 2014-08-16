@@ -69,7 +69,7 @@ namespace SqlPad
 						}
 						catch (Exception e)
 						{
-							Trace.WriteLine("SqlPadConfiguration deserialization failed: " + e.Message);
+							Trace.WriteLine("SqlPadConfiguration deserialization failed: " + e);
 						}
 					}
 				}

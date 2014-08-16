@@ -40,6 +40,7 @@ namespace SqlPad.Test
 					SelectionLength = 20,
 					SelectionStart = 10,
 					EditorGridRowHeight = 142.17,
+					EditorGridColumnWidth = 98.32,
 					Text = "SELECT * FROM DUAL"
 				};
 
@@ -50,7 +51,7 @@ namespace SqlPad.Test
 
 			var fileInfo = new FileInfo(Path.Combine(_tempDirectoryName, WorkingDocumentCollection.ConfigurationFileName));
 			fileInfo.Exists.ShouldBe(true);
-			fileInfo.Length.ShouldBe(153);
+			fileInfo.Length.ShouldBe(163);
 
 			WorkingDocumentCollection.SetWorkingDocumentDirectory(_tempDirectoryName);
 			WorkingDocumentCollection.WorkingDocuments.Count.ShouldBe(1);
@@ -67,6 +68,7 @@ namespace SqlPad.Test
 			deserializedWorkingDocument.Text.ShouldBe(newWorkingDocument.Text);
 			deserializedWorkingDocument.DocumentId.ShouldBe(newWorkingDocument.DocumentId);
 			deserializedWorkingDocument.EditorGridRowHeight.ShouldBe(newWorkingDocument.EditorGridRowHeight);
+			deserializedWorkingDocument.EditorGridColumnWidth.ShouldBe(newWorkingDocument.EditorGridColumnWidth);
 
 			WorkingDocumentCollection.ActiveDocumentIndex.ShouldBe(expectedActiveDocumentIndex);
 		}

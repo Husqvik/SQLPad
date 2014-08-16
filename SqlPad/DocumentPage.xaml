@@ -48,7 +48,7 @@
 			</TextBlock>
 			<Grid>
 				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="5*" />
+					<ColumnDefinition Width="5*" x:Name="ColumnDefinitionEditor" />
 					<ColumnDefinition Width="Auto" />
 					<ColumnDefinition Width="2*" />
 				</Grid.ColumnDefinitions>
@@ -179,13 +179,16 @@
 					<TextBlock x:Name="TextExecutionTime" />
 				</StackPanel>
 			</StatusBarItem>
-			<Separator Grid.Column="3" Visibility="{Binding ElementName=GridLabel, Path=Visibility}" />
+			<Separator Grid.Column="3" Visibility="{Binding StatementExecutionInfoSeparatorVisibility}" />
 			<StatusBarItem Grid.Column="4">
 				<StackPanel Orientation="Horizontal" sqlPad:MarginSetter.Margin="2,0,2,0">
-					<TextBlock x:Name="GridLabel" Visibility="Collapsed">
+					<TextBlock Visibility="{Binding AffectedRowCountVisibility}">
+						<Run Text="{Binding AffectedRowCount}" />
+						<Run Text=" row(s) affected " />
+					</TextBlock>
+					<TextBlock Visibility="{Binding GridRowInfoVisibility}">
 						<Run Text="Row " />
-						<Run
-							Text="{Binding ElementName=ResultGrid, Path=SelectedIndex, Mode=OneWay, Converter={StaticResource SelectedIndexConverter}}" />
+						<Run Text="{Binding ElementName=ResultGrid, Path=SelectedIndex, Mode=OneWay, Converter={StaticResource SelectedIndexConverter}}" />
 						<Run Text=" of " />
 						<Run Text="{Binding ElementName=ResultGrid, Path=Items.Count, Mode=OneWay}" />
 					</TextBlock>

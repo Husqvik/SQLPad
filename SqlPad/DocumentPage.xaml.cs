@@ -373,6 +373,7 @@ namespace SqlPad
 			WorkingDocument.VisualLeft = textView.ScrollOffset.X;
 			WorkingDocument.VisualTop = textView.ScrollOffset.Y;
 			WorkingDocument.EditorGridRowHeight = RowDefinitionEditor.ActualHeight;
+			WorkingDocument.EditorGridColumnWidth = ColumnDefinitionEditor.ActualWidth;
 
 			if (_pageModel.CurrentConnection != null)
 			{
@@ -546,13 +547,15 @@ namespace SqlPad
 			SqlPadConfiguration.StoreConfiguration();
 
 			_pageModel.ResultRowItems.Clear();
-			GridLabel.Visibility = Visibility.Collapsed;
+			_pageModel.GridRowInfoVisibility = Visibility.Collapsed;
 			TextMoreRowsExist.Visibility = Visibility.Collapsed;
 
 			ResultGrid.HeadersVisibility = DataGridHeadersVisibility.None;
 			ResultGrid.Columns.Clear();
 
 			ActionResult actionResult;
+			_pageModel.AffectedRowCount = -1;
+			Task<int> innerTask = null;
 			var statementText = Editor.SelectionLength > 0 ? Editor.SelectedText : statement.RootNode.GetStatementSubstring(Editor.Text);
 			using (_cancellationTokenSource = new CancellationTokenSource())
 			{
@@ -560,11 +563,10 @@ namespace SqlPad
 					new StatementExecutionModel
 					{
 						StatementText = statementText,
-						ReturnDataset = statement.ReturnDataset,
 						BindVariables = _pageModel.BindVariables
 					};
-				
-				actionResult = await SafeTimedActionAsync(() => DatabaseModel.ExecuteStatementAsync(executionModel, _cancellationTokenSource.Token));
+
+				actionResult = await SafeTimedActionAsync(() => innerTask = DatabaseModel.ExecuteStatementAsync(executionModel, _cancellationTokenSource.Token));
 			}
 
 			if (!actionResult.IsSuccessful)
@@ -573,12 +575,18 @@ namespace SqlPad
 				return;
 			}
 
+			_pageModel.AffectedRowCount = innerTask.Result;
+			
 			TextExecutionTime.Text = FormatElapsedMilliseconds(actionResult.Elapsed);
 
-			if (!DatabaseModel.CanFetch)
+			var columnHeaders = DatabaseModel.GetColumnHeaders();
+
+			if (columnHeaders.Count == 0)
+			{
 				return;
-			
-			InitializeResultGrid();
+			}
+
+			InitializeResultGrid(columnHeaders);
 				
 			FetchNextRows(null, null);
 
@@ -637,11 +645,11 @@ namespace SqlPad
 			return formattedValue;
 		}
 
-		private void InitializeResultGrid()
+		private void InitializeResultGrid(IEnumerable<ColumnHeader> columnHeaders)
 		{
-			GridLabel.Visibility = Visibility.Visible;
+			_pageModel.GridRowInfoVisibility = Visibility.Visible;
 
-			foreach (var columnHeader in DatabaseModel.GetColumnHeaders())
+			foreach (var columnHeader in columnHeaders)
 			{
 				var columnTemplate =
 					new DataGridTextColumn
@@ -742,6 +750,11 @@ namespace SqlPad
 				if (WorkingDocument.EditorGridRowHeight > 0)
 				{
 					RowDefinitionEditor.Height = new GridLength(WorkingDocument.EditorGridRowHeight);
+				}
+
+				if (WorkingDocument.EditorGridColumnWidth > 0)
+				{
+					ColumnDefinitionEditor.Width = new GridLength(WorkingDocument.EditorGridColumnWidth);
 				}
 				
 				Editor.ScrollToVerticalOffset(WorkingDocument.VisualTop);

@@ -15,6 +15,7 @@ namespace SqlPad
 		private string _documentHeader;
 		private int _currentLine;
 		private int _currentColumn;
+		private int _affectedRowCount = -1;
 		private int? _selectionLength;
 		private Visibility _selectionTextVisibility = Visibility.Collapsed;
 		private Visibility _productionLabelVisibility = Visibility.Collapsed;
@@ -22,10 +23,28 @@ namespace SqlPad
 		private string _currentSchema;
 		private ICollection<BindVariableModel> _bindVariables;
 		private Visibility _bindVariableListVisibility = Visibility.Collapsed;
+		private Visibility _gridRowInfoVisibity = Visibility.Collapsed;
 
 		public PageModel(DocumentPage documentPage)
 		{
 			_documentPage = documentPage;
+		}
+
+		public Visibility StatementExecutionInfoSeparatorVisibility
+		{
+			get { return _gridRowInfoVisibity == Visibility.Collapsed && AffectedRowCountVisibility == Visibility.Collapsed ? Visibility.Collapsed : Visibility.Visible; }
+		}
+
+		public Visibility GridRowInfoVisibility
+		{
+			get { return _gridRowInfoVisibity; }
+			set
+			{
+				if (UpdateValueAndRaisePropertyChanged(ref _gridRowInfoVisibity, value))
+				{
+					RaisePropertyChanged("StatementExecutionInfoSeparatorVisibility");
+				}
+			}
 		}
 
 		public string DocumentHeader
@@ -38,6 +57,24 @@ namespace SqlPad
 		{
 			get { return _currentLine; }
 			set { UpdateValueAndRaisePropertyChanged(ref _currentLine, value); }
+		}
+
+		public int AffectedRowCount
+		{
+			get { return _affectedRowCount; }
+			set
+			{
+				if (!UpdateValueAndRaisePropertyChanged(ref _affectedRowCount, value))
+					return;
+				
+				RaisePropertyChanged("AffectedRowCountVisibility");
+				RaisePropertyChanged("StatementExecutionInfoSeparatorVisibility");
+			}
+		}
+
+		public Visibility AffectedRowCountVisibility
+		{
+			get { return _affectedRowCount == -1 ? Visibility.Collapsed : Visibility.Visible; }
 		}
 
 		public int CurrentColumn
@@ -160,8 +197,6 @@ namespace SqlPad
 	{
 		public string StatementText { get; set; }
 		
-		public bool ReturnDataset { get; set; }
-
 		public ICollection<BindVariableModel> BindVariables { get; set; }
 	}
 }

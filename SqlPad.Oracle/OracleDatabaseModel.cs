@@ -346,11 +346,6 @@ namespace SqlPad.Oracle
 			_isRefreshing = false;
 		}
 
-		private int ExecuteUserNonQuery(StatementExecutionModel executionModel)
-		{
-			return ExecuteUserStatement(executionModel, c => c.ExecuteNonQuery(), true);
-		}
-
 		private T ExecuteUserStatement<T>(StatementExecutionModel executionModel, Func<OracleCommand, T> executeFunction, bool closeConnection = false)
 		{
 			_userCommand = _userConnection.CreateCommand();
@@ -402,14 +397,8 @@ namespace SqlPad.Oracle
 
 			try
 			{
-				if (executionModel.ReturnDataset)
-				{
-					_userDataReader = await ExecuteUserStatement(executionModel, c => c.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken));
-				}
-				else
-				{
-					affectedRowCount = await ExecuteUserStatement(executionModel, c => c.ExecuteNonQueryAsynchronous(cancellationToken), true);
-				}
+				_userDataReader = await ExecuteUserStatement(executionModel, c => c.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken));
+				affectedRowCount = _userDataReader.RecordsAffected;
 			}
 			catch (Exception exception)
 			{
@@ -438,8 +427,9 @@ namespace SqlPad.Oracle
 					_userConnection.Close();
 				}
 			}
-			catch
+			catch (Exception e)
 			{
+				Trace.WriteLine("Connection closing failed: " + e);
 			}
 		}
 
@@ -710,7 +700,10 @@ namespace SqlPad.Oracle
 					_dataDictionary = CachedDataDictionaries[CachedConnectionStringName] = OracleDataDictionary.Deserialize(stream);
 					Trace.WriteLine(String.Format("{0} - Cache for '{1}' loaded in {2}", DateTime.Now, CachedConnectionStringName, stopwatch.Elapsed));
 				}
-				catch { }
+				catch (Exception e)
+				{
+					Trace.WriteLine("Oracle data dictionary cache deserialization failed: " + e);
+				}
 				finally
 				{
 					stream.Dispose();

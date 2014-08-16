@@ -19,11 +19,6 @@ namespace SqlPad.Oracle
 				SourcePosition = new SourcePosition { IndexStart = -1, IndexEnd = -1 }
 			};
 
-		public override bool ReturnDataset
-		{
-			get { return RootNode != null && RootNode.Id == OracleGrammarDescription.NonTerminals.SelectStatement; }
-		}
-
 		public override ICollection<BindVariableConfiguration> BindVariables
 		{
 			get { return _bindVariables ?? (_bindVariables = BuildBindVariableCollection()); }
