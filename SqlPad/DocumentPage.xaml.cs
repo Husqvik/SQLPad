@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -127,53 +128,46 @@ namespace SqlPad
 			{
 				WorkingDocument = workingDocument;
 
-				var fileExists = WorkingDocument.WorkingFile.Exists || (WorkingDocument.File != null && WorkingDocument.File.Exists);
-				if (fileExists)
+				if (WorkingDocument.Text == null && WorkingDocument.File.Exists)
 				{
-					var fileName = WorkingDocument.WorkingFile.Exists
-						? WorkingDocument.WorkingFile.FullName
-						: WorkingDocument.File.FullName;
-					
-					if (!String.IsNullOrEmpty(WorkingDocument.ConnectionName))
-					{
-						var connectionString = ConfigurationProvider.ConnectionStrings
-							.Cast<ConnectionStringSettings>()
-							.FirstOrDefault(cs => cs.Name == WorkingDocument.ConnectionName);
-
-						if (connectionString != null)
-						{
-							usedConnection = connectionString;
-						}
-					}
-
-					_pageModel.CurrentConnection = usedConnection;
-
-					_pageModel.CurrentSchema = WorkingDocument.SchemaName;
-
-					Editor.Load(fileName);
-
-					if (Editor.Document.TextLength >= WorkingDocument.SelectionStart)
-					{
-						Editor.SelectionStart = WorkingDocument.SelectionStart;
-
-						var storedSelectionEndIndex = WorkingDocument.SelectionStart + WorkingDocument.SelectionLength;
-						var validSelectionEndIndex = storedSelectionEndIndex > Editor.Document.TextLength
-							? Editor.Document.TextLength
-							: storedSelectionEndIndex;
-						
-						Editor.SelectionLength = validSelectionEndIndex - WorkingDocument.SelectionStart;
-					}
-
-					Editor.CaretOffset = Editor.Document.TextLength >= WorkingDocument.CursorPosition
-						? WorkingDocument.CursorPosition
-						: Editor.Document.TextLength;
-
-					Editor.IsModified = WorkingDocument.IsModified;
+					WorkingDocument.Text = File.ReadAllText(WorkingDocument.File.FullName);
 				}
-				else
+
+				if (!String.IsNullOrEmpty(WorkingDocument.ConnectionName))
 				{
-					WorkingDocumentCollection.CloseDocument(WorkingDocument);
+					var connectionString = ConfigurationProvider.ConnectionStrings
+						.Cast<ConnectionStringSettings>()
+						.FirstOrDefault(cs => cs.Name == WorkingDocument.ConnectionName);
+
+					if (connectionString != null)
+					{
+						usedConnection = connectionString;
+					}
 				}
+
+				_pageModel.CurrentConnection = usedConnection;
+
+				_pageModel.CurrentSchema = WorkingDocument.SchemaName;
+
+				Editor.Text = WorkingDocument.Text;
+
+				if (Editor.Document.TextLength >= WorkingDocument.SelectionStart)
+				{
+					Editor.SelectionStart = WorkingDocument.SelectionStart;
+
+					var storedSelectionEndIndex = WorkingDocument.SelectionStart + WorkingDocument.SelectionLength;
+					var validSelectionEndIndex = storedSelectionEndIndex > Editor.Document.TextLength
+						? Editor.Document.TextLength
+						: storedSelectionEndIndex;
+
+					Editor.SelectionLength = validSelectionEndIndex - WorkingDocument.SelectionStart;
+				}
+
+				Editor.CaretOffset = Editor.Document.TextLength >= WorkingDocument.CursorPosition
+					? WorkingDocument.CursorPosition
+					: Editor.Document.TextLength;
+
+				Editor.IsModified = WorkingDocument.IsModified;
 			}
 
 			_pageModel.DocumentHeader = DocumentHeader;
@@ -367,7 +361,7 @@ namespace SqlPad
 
 		public void SaveWorkingDocument()
 		{
-			Editor.Save(WorkingDocument.WorkingFile.FullName);
+			WorkingDocument.Text = Editor.Text;
 			WorkingDocument.CursorPosition = Editor.CaretOffset;
 			WorkingDocument.SelectionStart = Editor.SelectionStart;
 			WorkingDocument.SelectionLength = Editor.SelectionLength;

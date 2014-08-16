@@ -14,10 +14,6 @@ namespace SqlPad.Test
 		public void SetUp()
 		{
 			_tempDirectoryName = TestFixture.SetupTestDirectory();
-
-			var sourceName = Path.Combine("TestFiles", WorkingDocumentCollection.ConfigurationFileName);
-			var destinationName = Path.Combine(_tempDirectoryName, WorkingDocumentCollection.ConfigurationFileName);
-			File.Copy(sourceName, destinationName, true);
 			WorkingDocumentCollection.SetWorkingDocumentDirectory(_tempDirectoryName);
 		}
 
@@ -25,25 +21,6 @@ namespace SqlPad.Test
 		public void TearDown()
 		{
 			Directory.Delete(_tempDirectoryName, true);
-		}
-
-		[Test]
-		public void InitializationTest()
-		{
-			var workingDocuments = WorkingDocumentCollection.WorkingDocuments.ToArray();
-			workingDocuments.Length.ShouldBe(3);
-			workingDocuments[0].DocumentFileName.ShouldBe(null);
-			workingDocuments[0].SchemaName.ShouldBe("MMA_DEV");
-			workingDocuments[0].IsModified.ShouldBe(true);
-			workingDocuments[0].CursorPosition.ShouldBe(22);
-			workingDocuments[0].ConnectionName.ShouldBe("Oracle 12c PDB EZ-Connect");
-			workingDocuments[0].WorkingFile.Name.ShouldBe("WorkingDocument_e03fc4ff2480476f8bdc5cf245e7104d.working");
-			workingDocuments[2].DocumentFileName.ShouldBe(null);
-			workingDocuments[2].SchemaName.ShouldBe("CA_DEV");
-			workingDocuments[2].IsModified.ShouldBe(true);
-			workingDocuments[2].CursorPosition.ShouldBe(60);
-			workingDocuments[2].ConnectionName.ShouldBe("Oracle 12c PDB EZ-Connect");
-			workingDocuments[2].WorkingFile.Name.ShouldBe("WorkingDocument_19557492bb62410abe880adf1975999b.working");
 		}
 
 		[Test]
@@ -61,7 +38,9 @@ namespace SqlPad.Test
 					IsModified = true,
 					SchemaName = "DummySchema",
 					SelectionLength = 20,
-					SelectionStart = 10
+					SelectionStart = 10,
+					EditorGridRowHeight = 142.17,
+					Text = "SELECT * FROM DUAL"
 				};
 
 			const int expectedActiveDocumentIndex = 666;
@@ -69,7 +48,12 @@ namespace SqlPad.Test
 			WorkingDocumentCollection.AddDocument(newWorkingDocument);
 			WorkingDocumentCollection.Save();
 
+			var fileInfo = new FileInfo(Path.Combine(_tempDirectoryName, WorkingDocumentCollection.ConfigurationFileName));
+			fileInfo.Exists.ShouldBe(true);
+			fileInfo.Length.ShouldBe(153);
+
 			WorkingDocumentCollection.SetWorkingDocumentDirectory(_tempDirectoryName);
+			WorkingDocumentCollection.WorkingDocuments.Count.ShouldBe(1);
 			var deserializedWorkingDocument = WorkingDocumentCollection.WorkingDocuments.Single();
 
 			deserializedWorkingDocument.ShouldNotBeSameAs(newWorkingDocument);
@@ -80,6 +64,9 @@ namespace SqlPad.Test
 			deserializedWorkingDocument.SchemaName.ShouldBe(newWorkingDocument.SchemaName);
 			deserializedWorkingDocument.SelectionLength.ShouldBe(newWorkingDocument.SelectionLength);
 			deserializedWorkingDocument.SelectionStart.ShouldBe(newWorkingDocument.SelectionStart);
+			deserializedWorkingDocument.Text.ShouldBe(newWorkingDocument.Text);
+			deserializedWorkingDocument.DocumentId.ShouldBe(newWorkingDocument.DocumentId);
+			deserializedWorkingDocument.EditorGridRowHeight.ShouldBe(newWorkingDocument.EditorGridRowHeight);
 
 			WorkingDocumentCollection.ActiveDocumentIndex.ShouldBe(expectedActiveDocumentIndex);
 		}

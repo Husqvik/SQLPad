@@ -15,7 +15,7 @@ namespace SqlPad
 		private static readonly RuntimeTypeModel Serializer;
 		private static WorkingDocumentCollection _instance;
 
-		private Dictionary<string, WorkingDocument> _workingDocuments = new Dictionary<string, WorkingDocument>();
+		private Dictionary<Guid, WorkingDocument> _workingDocuments = new Dictionary<Guid, WorkingDocument>();
 		private int _activeDocumentIndex;
 		private WindowProperties _windowProperties;
 
@@ -28,7 +28,7 @@ namespace SqlPad
 
 			var workingDocumentType = Serializer.Add(typeof(WorkingDocument), false);
 			workingDocumentType.UseConstructor = false;
-			workingDocumentType.Add("DocumentFileName", "_workingFileName", "ConnectionName", "SchemaName", "CursorPosition", "SelectionStart", "SelectionLength", "IsModified", "VisualLeft", "VisualTop", "EditorGridRowHeight");
+			workingDocumentType.Add("DocumentFileName", "DocumentId", "ConnectionName", "SchemaName", "CursorPosition", "SelectionStart", "SelectionLength", "IsModified", "VisualLeft", "VisualTop", "EditorGridRowHeight", "Text");
 
 			var windowPropertiesType = Serializer.Add(typeof(WindowProperties), false);
 			windowPropertiesType.UseConstructor = false;
@@ -60,7 +60,7 @@ namespace SqlPad
 			}
 			else if (_instance._workingDocuments == null)
 			{
-				_instance._workingDocuments = new Dictionary<string, WorkingDocument>();
+				_instance._workingDocuments = new Dictionary<Guid, WorkingDocument>();
 			}
 		}
 
@@ -117,7 +117,7 @@ namespace SqlPad
 		{
 			ValidateWorkingDocument(workingDocument);
 
-			Instance._workingDocuments[workingDocument.WorkingFile.FullName] = workingDocument;
+			Instance._workingDocuments[workingDocument.DocumentId] = workingDocument;
 		}
 
 		public static void CloseDocument(WorkingDocument workingDocument)
@@ -126,12 +126,7 @@ namespace SqlPad
 
 			try
 			{
-				if (File.Exists(workingDocument.WorkingFile.FullName))
-				{
-					File.Delete(workingDocument.WorkingFile.FullName);
-				}
-				
-				Instance._workingDocuments.Remove(workingDocument.WorkingFile.FullName);
+				Instance._workingDocuments.Remove(workingDocument.DocumentId);
 
 				Save();
 			}
@@ -154,11 +149,6 @@ namespace SqlPad
 			if (workingDocument == null)
 			{
 				throw new ArgumentNullException("workingDocument");
-			}
-
-			if (workingDocument.WorkingFile == null)
-			{
-				throw new ArgumentException("WorkingFile property is mandatory. ", "workingDocument");
 			}
 		}
 
@@ -212,33 +202,22 @@ namespace SqlPad
 
 	public class WorkingDocument
 	{
-		private readonly string _workingFileName;
-
 		public WorkingDocument()
 		{
-			_workingFileName = Path.Combine(App.FolderNameWorkArea, String.Format("WorkingDocument_{0}.working", Guid.NewGuid().ToString("N")));
+			DocumentId = Guid.NewGuid();
 		}
 
-		public static string GetWorkingFileName(string documentFileName)
-		{
-			if (!System.IO.File.Exists(documentFileName))
-			{
-				throw new ArgumentException(String.Format("File '{0}' does not exist. ", documentFileName));
-			}
-
-			var fileInfo = new FileInfo(documentFileName);
-			return Path.Combine(App.FolderNameWorkArea, fileInfo.Name + ".working");
-		}
+		public Guid DocumentId { get; private set; }
 
 		public FileInfo File { get { return String.IsNullOrEmpty(DocumentFileName) ? null : new FileInfo(DocumentFileName); } }
 		
-		public FileInfo WorkingFile { get { return new FileInfo(_workingFileName); } }
-
 		public string DocumentFileName { get; set; }
 		
 		public string ConnectionName { get; set; }
 		
 		public string SchemaName { get; set; }
+
+		public string Text { get; set; }
 		
 		public int CursorPosition { get; set; }
 		
