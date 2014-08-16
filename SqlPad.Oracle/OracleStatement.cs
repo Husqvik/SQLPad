@@ -39,6 +39,7 @@ namespace SqlPad.Oracle
 			return BindVariableIdentifierTerminals
 				.Select(n => n.Token.Value.Trim('"'))
 				.Distinct()
+				.OrderBy(v => v)
 				.Select(v => new BindVariableConfiguration { Name = v, DataType = OracleBindVariable.DataTypeVarchar2, DataTypes = OracleBindVariable.DataTypes })
 				.ToArray();
 		}

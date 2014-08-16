@@ -78,50 +78,52 @@
 					</avalonedit:TextEditor.Style>
 				</avalonedit:TextEditor>
 				<GridSplitter Grid.Column="1" Width="4" HorizontalAlignment="Center" ShowsPreview="True" VerticalAlignment="Stretch" Background="DimGray" Visibility="{Binding ElementName=BindVariableList, Path=Visibility}" />
-				<StackPanel Grid.Column="2" x:Name="BindVariableList" Visibility="{Binding Path=BindVariableListVisibility}">
-					<TextBlock Text="Bind Variables: " Padding="4,2,0,4" Margin="0,0,2,0" Background="Gray" />
-					<ItemsControl MinWidth="160" ItemsSource="{Binding Path=BindVariables}">
+				<ScrollViewer Grid.Column="2" x:Name="BindVariableList" Visibility="{Binding Path=BindVariableListVisibility}" VerticalScrollBarVisibility="Auto">
+					<StackPanel>
+						<TextBlock Text="Bind Variables: " Padding="4,2,0,4" Margin="0,0,2,0" Background="Gray" />
+						<ItemsControl MinWidth="160" ItemsSource="{Binding Path=BindVariables}">
 
-						<ItemsControl.Resources>
-							<DataTemplate x:Key="TextBoxTemplate">
-								<TextBox Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}" />
-							</DataTemplate>
-							<DataTemplate x:Key="DatePickerTemplate">
-								<DatePicker SelectedDate="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}" />
-							</DataTemplate>
-						</ItemsControl.Resources>
+							<ItemsControl.Resources>
+								<DataTemplate x:Key="TextBoxTemplate">
+									<TextBox Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}" />
+								</DataTemplate>
+								<DataTemplate x:Key="DatePickerTemplate">
+									<DatePicker SelectedDate="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}" />
+								</DataTemplate>
+							</ItemsControl.Resources>
 
-						<ItemsControl.ItemTemplate>
-							<DataTemplate>
-								<Grid sqlPad:MarginSetter.Margin="2,2,2,2">
-									<Grid.ColumnDefinitions>
-										<ColumnDefinition Width="60" />
-										<ColumnDefinition Width="100" />
-										<ColumnDefinition Width="*" />
-									</Grid.ColumnDefinitions>
-									<TextBlock Text="{Binding Path=Name}" VerticalAlignment="Center" />
-									<ComboBox Grid.Column="1" ItemsSource="{Binding Path=DataTypes}" SelectedValue="{Binding Path=DataType}" />
-									<!--<TextBox Grid.Column="2" Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}" />-->
-									<ContentControl Grid.Column="2" Content="{Binding}">
-										<ContentControl.Style>
-											<Style TargetType="ContentControl">
-												<Style.Triggers>
-													<DataTrigger Binding="{Binding Path=InputType}" Value="String">
-														<Setter Property="ContentTemplate" Value="{StaticResource TextBoxTemplate}" />
-													</DataTrigger>
-													<DataTrigger Binding="{Binding Path=InputType}" Value="DateTime">
-														<Setter Property="ContentTemplate" Value="{StaticResource DatePickerTemplate}" />
-													</DataTrigger>
-												</Style.Triggers>
-											</Style>
-										</ContentControl.Style>
-									</ContentControl>
+							<ItemsControl.ItemTemplate>
+								<DataTemplate>
+									<Grid sqlPad:MarginSetter.Margin="2,2,2,2">
+										<Grid.ColumnDefinitions>
+											<ColumnDefinition Width="60" />
+											<ColumnDefinition Width="100" />
+											<ColumnDefinition Width="*" />
+										</Grid.ColumnDefinitions>
+										<TextBlock Text="{Binding Path=Name}" VerticalAlignment="Center" />
+										<ComboBox Grid.Column="1" ItemsSource="{Binding Path=DataTypes}" SelectedValue="{Binding Path=DataType}" />
+										<!--<TextBox Grid.Column="2" Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}" />-->
+										<ContentControl Grid.Column="2" Content="{Binding}">
+											<ContentControl.Style>
+												<Style TargetType="ContentControl">
+													<Style.Triggers>
+														<DataTrigger Binding="{Binding Path=InputType}" Value="String">
+															<Setter Property="ContentTemplate" Value="{StaticResource TextBoxTemplate}" />
+														</DataTrigger>
+														<DataTrigger Binding="{Binding Path=InputType}" Value="DateTime">
+															<Setter Property="ContentTemplate" Value="{StaticResource DatePickerTemplate}" />
+														</DataTrigger>
+													</Style.Triggers>
+												</Style>
+											</ContentControl.Style>
+										</ContentControl>
 
-								</Grid>
-							</DataTemplate>
-						</ItemsControl.ItemTemplate>
-					</ItemsControl>
-				</StackPanel>
+									</Grid>
+								</DataTemplate>
+							</ItemsControl.ItemTemplate>
+						</ItemsControl>
+					</StackPanel>
+				</ScrollViewer>
 			</Grid>
 		</DockPanel>
 
@@ -132,6 +134,7 @@
 		          Grid.Row="3"
 		          AutoGenerateColumns="False"
 		          ItemsSource="{Binding ResultRowItems}"
+				  MaxColumnWidth="{Binding ElementName=ResultGrid, Path=ActualWidth}"
 		          VirtualizingStackPanel.VirtualizationMode="Recycling"
 		          EnableColumnVirtualization="True"
 				  RowHeight="20"

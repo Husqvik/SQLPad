@@ -618,6 +618,8 @@ namespace SqlPad.Oracle
 					{
 						refreshModel.TaskCompletionSource.SetResult(_dataDictionary);
 					}
+
+					refreshModels.Clear();
 				}
 
 				ActiveDataModelRefresh.Remove(CachedConnectionStringName);

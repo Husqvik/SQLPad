@@ -292,5 +292,47 @@ namespace SqlPad
 				CreateNewDocumentPage(workingDocument);
 			}
 		}
+
+		private void DocumentTabControlDropHandler(object sender, DragEventArgs e)
+		{
+			var draggedObject = e.Source as ContentControl;
+			if (draggedObject == null)
+			{
+				return;
+			}
+
+			var tabItemTarget = draggedObject.Parent as TabItem;
+			var tabItemDragged = (TabItem)e.Data.GetData(typeof(TabItem));
+			if (tabItemTarget == null || tabItemDragged == null || NewTabItem.Equals(tabItemTarget) || Equals(tabItemTarget, tabItemDragged))
+			{
+				return;
+			}
+
+			var tabControl = (TabControl)tabItemTarget.Parent;
+			var indexFrom = tabControl.Items.IndexOf(tabItemDragged);
+			var indexTo = tabControl.Items.IndexOf(tabItemTarget);
+
+			tabControl.SelectedIndex = 0;
+
+			tabControl.Items.Remove(tabItemDragged);
+			tabControl.Items.Insert(indexTo, tabItemDragged);
+
+			tabControl.Items.Remove(tabItemTarget);
+			tabControl.Items.Insert(indexFrom, tabItemTarget);
+			
+			tabControl.SelectedIndex = indexTo;
+		}
+
+		private void DocumentTabControlPreviewMouseMoveHandler(object sender, MouseEventArgs e)
+		{
+			var tabItem = e.Source as TabItem;
+			if (tabItem == null || Equals(tabItem, NewTabItem))
+				return;
+
+			if (Mouse.PrimaryDevice.LeftButton == MouseButtonState.Pressed)
+			{
+				DragDrop.DoDragDrop(tabItem, tabItem, DragDropEffects.All);
+			}	
+		}
 	}
 }

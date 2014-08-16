@@ -26,6 +26,7 @@ namespace SqlPad
 	public partial class DocumentPage : IDisposable
 	{
 		private const int RowBatchSize = 100;
+		private const string InitialDocumentHeader = "New*";
 		public const string FileMaskDefault = "SQL Files (*.sql)|*.sql|All (*.*)|*";
 
 		private SqlDocumentRepository _sqlDocumentRepository;
@@ -38,26 +39,28 @@ namespace SqlPad
 		private INavigationService _navigationService;
 
 		private MultiNodeEditor _multiNodeEditor;
-		private readonly SqlDocumentColorizingTransformer _colorizingTransformer = new SqlDocumentColorizingTransformer();
 		private CancellationTokenSource _cancellationTokenSource;
+		private readonly SqlDocumentColorizingTransformer _colorizingTransformer = new SqlDocumentColorizingTransformer();
 
 		private static readonly CellValueConverter CellValueConverter = new CellValueConverter();
 		private static readonly Style CellStyleRightAlign = new Style(typeof(DataGridCell));
 		private static readonly Style CellTextBoxStyleReadOnly = new Style(typeof(TextBox));
 		private static readonly Style HeaderStyleRightAlign = new Style(typeof(DataGridColumnHeader));
-		
-		private readonly ToolTip _toolTip = new ToolTip();
-		private bool _isToolTipOpenByShortCut;
-		private CompletionWindow _completionWindow;
-		private readonly PageModel _pageModel;
+
 		private bool _isParsing;
 		private bool _isInitializing = true;
 		private bool _enableCodeComplete;
+		private bool _isToolTipOpenByShortCut;
+		
+		private readonly ToolTip _toolTip = new ToolTip();
+		private readonly PageModel _pageModel;
 		private readonly Timer _timerReParse = new Timer(100);
 		private readonly Timer _timerExecutionMonitor = new Timer(100);
 		private readonly Stopwatch _stopWatch = new Stopwatch();
-		private const string InitialDocumentHeader = "New*";
-		private readonly List<CommandBinding> _specificCommandBindings = new List<CommandBinding>(); 
+		private readonly List<CommandBinding> _specificCommandBindings = new List<CommandBinding>();
+
+		private CompletionWindow _completionWindow;
+		private HashSet<string> _currentBindVariables = new HashSet<string>();
 		
 		public EventHandler ParseFinished = delegate { };
 
@@ -645,7 +648,7 @@ namespace SqlPad
 					{
 						Header = columnHeader.Name.Replace("_", "__"),
 						Binding = new Binding(String.Format("[{0}]", columnHeader.ColumnIndex)) { Converter = CellValueConverter, ConverterParameter = columnHeader },
-						EditingElementStyle = CellTextBoxStyleReadOnly 
+						EditingElementStyle = CellTextBoxStyleReadOnly
 					};
 
 				if (columnHeader.DataType.In(typeof(Decimal), typeof(Int16), typeof(Int32), typeof(Int64), typeof(Byte)))
@@ -810,9 +813,17 @@ namespace SqlPad
 			if (statement == null || statement.BindVariables.Count == 0)
 			{
 				_pageModel.BindVariables = null;
+				_currentBindVariables.Clear();
 				return;
 			}
 
+			var bindVariables = new HashSet<string>(statement.BindVariables.Select(v => v.Name));
+			if (bindVariables.SetEquals(_currentBindVariables))
+			{
+				return;
+			}
+
+			_currentBindVariables = bindVariables;
 			_pageModel.BindVariables = BuildBindVariableModels(statement.BindVariables);
 		}
 

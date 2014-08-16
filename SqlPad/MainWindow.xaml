@@ -64,6 +64,14 @@
 
 	<Grid>
 		<TabControl x:Name="DocumentTabControl">
+			<TabControl.Resources>
+				<Style TargetType="TabItem">
+					<Setter Property="AllowDrop" Value="True"/>
+					<EventSetter Event="PreviewMouseMove" Handler="DocumentTabControlPreviewMouseMoveHandler"/>
+					<EventSetter Event="Drop" Handler="DocumentTabControlDropHandler"/>
+				</Style>
+			</TabControl.Resources>
+			
 			<TabItem Header="+" x:Name="NewTabItem">
 			</TabItem>
 		</TabControl>
