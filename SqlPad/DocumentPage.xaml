@@ -14,7 +14,7 @@
 	<Grid>
 		<Grid.RowDefinitions>
 			<RowDefinition Height="24" />
-			<RowDefinition Height="*" />
+			<RowDefinition Height="*" x:Name="RowDefinitionEditor" />
 			<RowDefinition Height="Auto" />
 			<RowDefinition Height="*" />
 			<RowDefinition Height="24" />

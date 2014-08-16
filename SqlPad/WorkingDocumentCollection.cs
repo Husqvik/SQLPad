@@ -17,17 +17,22 @@ namespace SqlPad
 
 		private Dictionary<string, WorkingDocument> _workingDocuments = new Dictionary<string, WorkingDocument>();
 		private int _activeDocumentIndex;
+		private WindowProperties _windowProperties;
 
 		static WorkingDocumentCollection()
 		{
 			Serializer = TypeModel.Create();
 			var workingDocumentCollectionType = Serializer.Add(typeof(WorkingDocumentCollection), false);
 			workingDocumentCollectionType.UseConstructor = false;
-			workingDocumentCollectionType.Add("_workingDocuments", "_activeDocumentIndex");
+			workingDocumentCollectionType.Add("_workingDocuments", "_activeDocumentIndex", "_windowProperties");
 
 			var workingDocumentType = Serializer.Add(typeof(WorkingDocument), false);
 			workingDocumentType.UseConstructor = false;
-			workingDocumentType.Add("DocumentFileName", "_workingFileName", "ConnectionName", "SchemaName", "CursorPosition", "SelectionStart", "SelectionLength", "IsModified", "VisualLeft", "VisualTop");
+			workingDocumentType.Add("DocumentFileName", "_workingFileName", "ConnectionName", "SchemaName", "CursorPosition", "SelectionStart", "SelectionLength", "IsModified", "VisualLeft", "VisualTop", "EditorGridRowHeight");
+
+			var windowPropertiesType = Serializer.Add(typeof(WindowProperties), false);
+			windowPropertiesType.UseConstructor = false;
+			windowPropertiesType.Add("Left", "Top", "Width", "Height", "State");
 		}
 
 		private WorkingDocumentCollection() {}
@@ -167,6 +172,42 @@ namespace SqlPad
 				}
 			}
 		}
+
+		public static void SetApplicationWindowProperties(Window window)
+		{
+			Instance._windowProperties = new WindowProperties(window);
+		}
+
+		public static void RestoreApplicationWindowProperties(Window window)
+		{
+			var properties = Instance._windowProperties;
+			if (properties == null)
+				return;
+
+			window.Left = properties.Left;
+			window.Top = properties.Top;
+			window.Width = properties.Width;
+			window.Height = properties.Height;
+			window.WindowState = properties.State;
+		}
+	}
+
+	internal class WindowProperties
+	{
+		public WindowProperties(Window window)
+		{
+			Left = window.Left;
+			Top = window.Top;
+			Width = window.Width;
+			Height = window.Height;
+			State = window.WindowState;
+		}
+
+		public double Left { get; private set; }
+		public double Top { get; private set; }
+		public double Width { get; private set; }
+		public double Height { get; private set; }
+		public WindowState State { get; private set; }
 	}
 
 	public class WorkingDocument
@@ -210,5 +251,7 @@ namespace SqlPad
 		public double VisualTop { get; set; }
 		
 		public double VisualLeft { get; set; }
+
+		public double EditorGridRowHeight { get; set; }
 	}
 }

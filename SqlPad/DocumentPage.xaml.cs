@@ -113,7 +113,10 @@ namespace SqlPad
 
 			if (workingDocument == null)
 			{
-				WorkingDocument = new WorkingDocument { ConnectionName = ((ConnectionStringSettings)ComboBoxConnection.SelectedItem).Name };
+				WorkingDocument = new WorkingDocument
+				{
+					ConnectionName = ((ConnectionStringSettings)ComboBoxConnection.SelectedItem).Name
+				};
 
 				WorkingDocumentCollection.AddDocument(WorkingDocument);
 				_pageModel.CurrentConnection = usedConnection;
@@ -213,17 +216,17 @@ namespace SqlPad
 			var menuItemOpenContainingFolder = new MenuItem
 			{
 				Header = "Open Containing Folder",
-				Command = DocumentPageCommands.OpenContainingFolderCommand,
+				Command = GenericCommands.OpenContainingFolderCommand,
 				CommandParameter = this
 			};
 
 			contextMenu.Items.Add(menuItemOpenContainingFolder);
-			contextMenu.CommandBindings.Add(new CommandBinding(DocumentPageCommands.OpenContainingFolderCommand, OpenContainingFolderCommandExecutedHandler, (sender, args) => args.CanExecute = WorkingDocument.File != null));
+			contextMenu.CommandBindings.Add(new CommandBinding(GenericCommands.OpenContainingFolderCommand, OpenContainingFolderCommandExecutedHandler, (sender, args) => args.CanExecute = WorkingDocument.File != null));
 
 			var menuItemClose = new MenuItem
 			{
 				Header = "Close",
-				Command = DocumentPageCommands.CloseDocumentCommand,
+				Command = GenericCommands.CloseDocumentCommand,
 				CommandParameter = this
 			};
 
@@ -232,7 +235,7 @@ namespace SqlPad
 			var menuItemCloseAllButThis = new MenuItem
 			{
 				Header = "Close All But This",
-				Command = DocumentPageCommands.CloseAllDocumentsButThisCommand,
+				Command = GenericCommands.CloseAllDocumentsButThisCommand,
 				CommandParameter = this
 			};
 
@@ -242,6 +245,9 @@ namespace SqlPad
 
 		private void ConfigureEditor()
 		{
+			//Editor.Options.ShowColumnRuler = true;
+
+			Editor.TextArea.SelectionCornerRadius = 0;
 			Editor.TextArea.TextView.LineTransformers.Add(_colorizingTransformer);
 
 			Editor.TextArea.TextEntering += TextEnteringHandler;
@@ -369,6 +375,7 @@ namespace SqlPad
 			var textView = Editor.TextArea.TextView;
 			WorkingDocument.VisualLeft = textView.ScrollOffset.X;
 			WorkingDocument.VisualTop = textView.ScrollOffset.Y;
+			WorkingDocument.EditorGridRowHeight = RowDefinitionEditor.ActualHeight;
 
 			if (_pageModel.CurrentConnection != null)
 			{
@@ -735,6 +742,11 @@ namespace SqlPad
 		{
 			if (_isInitializing)
 			{
+				if (WorkingDocument.EditorGridRowHeight > 0)
+				{
+					RowDefinitionEditor.Height = new GridLength(WorkingDocument.EditorGridRowHeight);
+				}
+				
 				Editor.ScrollToVerticalOffset(WorkingDocument.VisualTop);
 				Editor.ScrollToHorizontalOffset(WorkingDocument.VisualLeft);
 				_isInitializing = false;
@@ -1247,12 +1259,5 @@ namespace SqlPad
 		public Exception Exception { get; set; }
 
 		public TimeSpan Elapsed { get; set; }
-	}
-
-	public static class DocumentPageCommands
-	{
-		public static ICommand CloseDocumentCommand = new RoutedCommand();
-		public static ICommand CloseAllDocumentsButThisCommand = new RoutedCommand();
-		public static ICommand OpenContainingFolderCommand = new RoutedCommand();
 	}
 }

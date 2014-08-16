@@ -91,6 +91,8 @@ namespace SqlPad
 
 			CommandBindings.Add(new CommandBinding(GenericCommands.SaveAllCommand, SaveAllCommandExecutedHandler));
 
+			WorkingDocumentCollection.RestoreApplicationWindowProperties(this);
+
 			if (WorkingDocumentCollection.WorkingDocuments.Count > 0)
 			{
 				foreach (var workingDocument in WorkingDocumentCollection.WorkingDocuments)
@@ -167,8 +169,8 @@ namespace SqlPad
 
 		private void AddDocumentTabItemContextMenuCommandBindings(DocumentPage documentPage)
 		{
-			documentPage.TabItemContextMenu.CommandBindings.Add(new CommandBinding(DocumentPageCommands.CloseDocumentCommand, CloseTabExecutedHandler, (sender, args) => args.CanExecute = true));
-			documentPage.TabItemContextMenu.CommandBindings.Add(new CommandBinding(DocumentPageCommands.CloseAllDocumentsButThisCommand, CloseAllButThisTabExecutedHandler, (sender, args) => args.CanExecute = DocumentTabControl.Items.Count > 2));
+			documentPage.TabItemContextMenu.CommandBindings.Add(new CommandBinding(GenericCommands.CloseDocumentCommand, CloseTabExecutedHandler, (sender, args) => args.CanExecute = true));
+			documentPage.TabItemContextMenu.CommandBindings.Add(new CommandBinding(GenericCommands.CloseAllDocumentsButThisCommand, CloseAllButThisTabExecutedHandler, (sender, args) => args.CanExecute = DocumentTabControl.Items.Count > 2));
 		}
 
 		private void CloseAllButThisTabExecutedHandler(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
@@ -249,6 +251,7 @@ namespace SqlPad
 				document.SaveWorkingDocument();
 			}
 
+			WorkingDocumentCollection.SetApplicationWindowProperties(this);
 			WorkingDocumentCollection.Save();
 			
 			DocumentTabControl.Items.Clear();
