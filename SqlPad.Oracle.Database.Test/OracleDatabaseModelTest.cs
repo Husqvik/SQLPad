@@ -45,7 +45,10 @@ namespace SqlPad.Oracle.Database.Test
 			scriptTask.Result.Length.ShouldBeGreaterThan(100);
 
 			var executionModel = new StatementExecutionModel { StatementText = "SELECT * FROM DUAL" };
-			databaseModel.ExecuteStatement(executionModel).ShouldBe(-1);
+			var result = databaseModel.ExecuteStatement(executionModel);
+			result.ExecutedSucessfully.ShouldBe(true);
+			result.AffectedRowCount.ShouldBe(-1);
+			
 			databaseModel.CanFetch.ShouldBe(true);
 
 			var columnHeaders = databaseModel.GetColumnHeaders().ToArray();

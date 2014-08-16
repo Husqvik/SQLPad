@@ -28,9 +28,9 @@ namespace SqlPad
 
 		event EventHandler RefreshFinished;
 
-		int ExecuteStatement(StatementExecutionModel executionModel);
+		StatementExecutionResult ExecuteStatement(StatementExecutionModel executionModel);
 
-		Task<int> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken);
+		Task<StatementExecutionResult> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken);
 
 		IEnumerable<object[]> FetchRecords(int rowCount);
 

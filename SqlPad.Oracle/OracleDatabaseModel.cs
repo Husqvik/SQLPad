@@ -381,7 +381,7 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		public override int ExecuteStatement(StatementExecutionModel executionModel)
+		public override StatementExecutionResult ExecuteStatement(StatementExecutionModel executionModel)
 		{
 			var executionTask = ExecuteStatementAsync(executionModel, CancellationToken.None);
 			executionTask.Wait();
@@ -389,16 +389,17 @@ namespace SqlPad.Oracle
 			return executionTask.Result;
 		}
 
-		public override async Task<int> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
+		public override async Task<StatementExecutionResult> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
 		{
 			PreInitialize();
 
-			var affectedRowCount = 0;
+			var result = new StatementExecutionResult();
 
 			try
 			{
 				_userDataReader = await ExecuteUserStatement(executionModel, c => c.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken));
-				affectedRowCount = _userDataReader.RecordsAffected;
+				result.AffectedRowCount = _userDataReader.RecordsAffected;
+				result.ExecutedSucessfully = true;
 			}
 			catch (Exception exception)
 			{
@@ -415,7 +416,7 @@ namespace SqlPad.Oracle
 				_isExecuting = false;
 			}
 
-			return affectedRowCount;
+			return result;
 		}
 
 		private void SafeCloseUserConnection()

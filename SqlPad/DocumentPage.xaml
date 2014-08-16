@@ -63,7 +63,20 @@
 				                       PreviewKeyUp="EditorKeyUpHandler"
 				                       MouseHoverStopped="MouseHoverStoppedHandler">
 					<avalonedit:TextEditor.CommandBindings>
-						
+						<CommandBinding Command="commands:GenericCommands.CancelStatementCommand" Executed="CancelStatementHandler" CanExecute="CanExecuteCancelStatementHandler" />
+						<CommandBinding Command="commands:GenericCommands.ExecuteDatabaseCommandCommand" Executed="ExecuteDatabaseCommandHandler" CanExecute="CanExecuteDatabaseCommandHandler" />
+						<CommandBinding Command="commands:GenericCommands.FindUsagesCommand" Executed="FindUsages" />
+						<CommandBinding Command="commands:GenericCommands.FormatStatementCommand" Executed="FormatStatement" />
+						<CommandBinding Command="commands:GenericCommands.FormatStatementAsSingleLineCommand" Executed="FormatStatementAsSingleLine" />
+						<CommandBinding Command="commands:GenericCommands.ListContextActionCommand" Executed="ListContextActions" />
+						<CommandBinding Command="commands:GenericCommands.NavigateToDefinitionRootCommand" Executed="NavigateToDefinition" />
+						<CommandBinding Command="commands:GenericCommands.NavigateToNextUsageCommand" Executed="NavigateToNextHighlightedUsage" />
+						<CommandBinding Command="commands:GenericCommands.NavigateToPreviousUsageCommand" Executed="NavigateToPreviousHighlightedUsage" />
+						<CommandBinding Command="commands:GenericCommands.NavigateToQueryBlockRootCommand" Executed="NavigateToQueryBlockRoot" />
+						<CommandBinding Command="commands:GenericCommands.RefreshDatabaseModelCommand" Executed="RefreshDatabaseModel" />
+						<CommandBinding Command="commands:GenericCommands.SaveCommand" Executed="SaveCommandExecutedHandler" />
+						<CommandBinding Command="commands:GenericCommands.ShowCodeCompletionOptionCommand" Executed="ShowCodeCompletionOptions" CanExecute="CanExecuteShowCodeCompletionHandler" />
+						<CommandBinding Command="commands:GenericCommands.ShowFunctionOverloadCommand" Executed="ShowFunctionOverloads" />
 					</avalonedit:TextEditor.CommandBindings>
 					<avalonedit:TextEditor.ContextMenu>
 						<ContextMenu x:Name="CommandMenu" Placement="RelativePoint" />

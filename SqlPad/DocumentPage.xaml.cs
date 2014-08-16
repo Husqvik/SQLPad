@@ -419,31 +419,27 @@ namespace SqlPad
 			ChangeDeleteLineCommandInputGesture();
 
 			var commandBindings = Editor.TextArea.DefaultInputHandler.Editing.CommandBindings;
-			commandBindings.Add(new CommandBinding(GenericCommands.ShowCodeCompletionOptionCommand, ShowCodeCompletionOptions, (sender, args) => args.CanExecute = _sqlDocumentRepository.StatementText == Editor.Text));
-			commandBindings.Add(new CommandBinding(GenericCommands.ShowFunctionOverloadCommand, ShowFunctionOverloads));
 			commandBindings.Add(new CommandBinding(GenericCommands.DuplicateTextCommand, GenericCommandHandler.DuplicateText));
 			commandBindings.Add(new CommandBinding(GenericCommands.BlockCommentCommand, GenericCommandHandler.HandleBlockComments));
 			commandBindings.Add(new CommandBinding(GenericCommands.LineCommentCommand, GenericCommandHandler.HandleLineComments));
-			commandBindings.Add(new CommandBinding(GenericCommands.ListContextActionCommand, ListContextActions));
 			commandBindings.Add(new CommandBinding(GenericCommands.MultiNodeEditCommand, EditMultipleNodes));
-			commandBindings.Add(new CommandBinding(GenericCommands.NavigateToPreviousUsageCommand, NavigateToPreviousHighlightedUsage));
-			commandBindings.Add(new CommandBinding(GenericCommands.NavigateToNextUsageCommand, NavigateToNextHighlightedUsage));
-			commandBindings.Add(new CommandBinding(GenericCommands.NavigateToQueryBlockRootCommand, NavigateToQueryBlockRoot));
-			commandBindings.Add(new CommandBinding(GenericCommands.NavigateToDefinitionRootCommand, NavigateToDefinition));
-			commandBindings.Add(new CommandBinding(GenericCommands.ExecuteDatabaseCommandCommand, ExecuteDatabaseCommandHandler, CanExecuteDatabaseCommandHandler));
-			commandBindings.Add(new CommandBinding(GenericCommands.SaveCommand, SaveCommandExecutedHandler));
-			commandBindings.Add(new CommandBinding(GenericCommands.FormatStatementCommand, FormatStatement));
-			commandBindings.Add(new CommandBinding(GenericCommands.FormatStatementAsSingleLineCommand, FormatStatementAsSingleLine));
-			commandBindings.Add(new CommandBinding(GenericCommands.FindUsagesCommand, FindUsages));
-			commandBindings.Add(new CommandBinding(GenericCommands.RefreshDatabaseModelCommand, RefreshDatabaseModel));
-			commandBindings.Add(new CommandBinding(GenericCommands.CancelStatementCommand, CancelStatementHandler, (sender, args) => args.CanExecute = DatabaseModel.IsExecuting));
 
 			commandBindings.Add(new CommandBinding(DiagnosticCommands.ShowTokenCommand, ShowTokenCommandExecutionHandler));
+		}
+
+		private void CanExecuteShowCodeCompletionHandler(object sender, CanExecuteRoutedEventArgs args)
+		{
+			args.CanExecute = _sqlDocumentRepository.StatementText == Editor.Text;
 		}
 
 		private void ShowCodeCompletionOptions(object sender, ExecutedRoutedEventArgs e)
 		{
 			CreateCodeCompletionWindow(true);
+		}
+
+		private void CanExecuteCancelStatementHandler(object sender, CanExecuteRoutedEventArgs args)
+		{
+			args.CanExecute = DatabaseModel.IsExecuting;
 		}
 
 		private void CancelStatementHandler(object sender, ExecutedRoutedEventArgs args)
@@ -557,7 +553,7 @@ namespace SqlPad
 
 			ActionResult actionResult;
 			_pageModel.AffectedRowCount = -1;
-			Task<int> innerTask = null;
+			Task<StatementExecutionResult> innerTask = null;
 			var statementText = Editor.SelectionLength > 0 ? Editor.SelectedText : statement.RootNode.GetStatementSubstring(Editor.Text);
 			using (_cancellationTokenSource = new CancellationTokenSource())
 			{
@@ -577,14 +573,17 @@ namespace SqlPad
 				return;
 			}
 
-			_pageModel.AffectedRowCount = innerTask.Result;
-			
+			if (!DatabaseModel.CanFetch || !innerTask.Result.ExecutedSucessfully)
+			{
+				return;
+			}
+
 			TextExecutionTime.Text = FormatElapsedMilliseconds(actionResult.Elapsed);
 
 			var columnHeaders = DatabaseModel.GetColumnHeaders();
-
 			if (columnHeaders.Count == 0)
 			{
+				_pageModel.AffectedRowCount = innerTask.Result.AffectedRowCount;
 				return;
 			}
 

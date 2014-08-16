@@ -199,4 +199,11 @@ namespace SqlPad
 		
 		public ICollection<BindVariableModel> BindVariables { get; set; }
 	}
+
+	public struct StatementExecutionResult
+	{
+		public int AffectedRowCount { get; set; }
+
+		public bool ExecutedSucessfully { get; set; }
+	}
 }

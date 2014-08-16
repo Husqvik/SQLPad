@@ -502,14 +502,14 @@ TABLESPACE ""TBS_HQ_PDB""";
 
 		public override event EventHandler RefreshFinished = delegate { };
 
-		public override int ExecuteStatement(StatementExecutionModel executionModel)
+		public override StatementExecutionResult ExecuteStatement(StatementExecutionModel executionModel)
 		{
-			return 0;
+			return new StatementExecutionResult { ExecutedSucessfully = true };
 		}
 
-		public override Task<int> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
+		public override Task<StatementExecutionResult> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
 		{
-			return Task.Factory.StartNew(() => 0, cancellationToken);
+			return Task.Factory.StartNew(() => new StatementExecutionResult { ExecutedSucessfully = true }, cancellationToken);
 		}
 		
 		public override IEnumerable<object[]> FetchRecords(int rowCount)

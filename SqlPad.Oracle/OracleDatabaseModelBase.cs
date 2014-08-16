@@ -37,9 +37,9 @@ namespace SqlPad.Oracle
 
 		public abstract event EventHandler RefreshFinished;
 
-		public abstract int ExecuteStatement(StatementExecutionModel executionModel);
+		public abstract StatementExecutionResult ExecuteStatement(StatementExecutionModel executionModel);
 
-		public abstract Task<int> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken);
+		public abstract Task<StatementExecutionResult> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken);
 
 		public abstract IEnumerable<object[]> FetchRecords(int rowCount);
 
@@ -153,17 +153,12 @@ namespace SqlPad.Oracle
 
 		private static bool TryGetSchemaObjectFunctionMetadata(OracleSchemaObject schemaObject, out ICollection<OracleFunctionMetadata> functionMetadata)
 		{
-			var functions = schemaObject as IFunctionCollection;
+			var targetObject = schemaObject.GetTargetSchemaObject();
+			var functions = targetObject as IFunctionCollection;
 			if (functions != null)
 			{
 				functionMetadata = functions.Functions;
 				return true;
-			}
-
-			var synonym = schemaObject as OracleSynonym;
-			if (synonym != null)
-			{
-				return TryGetSchemaObjectFunctionMetadata(synonym.SchemaObject, out functionMetadata);
 			}
 
 			functionMetadata = new OracleFunctionMetadata[0];
