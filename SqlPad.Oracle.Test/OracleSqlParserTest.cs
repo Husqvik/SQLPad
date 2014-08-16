@@ -1883,6 +1883,70 @@ FROM DUAL";
 			}
 		}
 
+		public class Rollback
+		{
+			[Test(Description = @"")]
+			public void TestRollbackStatement()
+			{
+				const string statementText = @"ROLLBACK TO SAVEPOINT savepoint_name";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+				var terminals = statement.AllTerminals.ToArray();
+				terminals.Length.ShouldBe(4);
+
+				terminals[0].Id.ShouldBe(Terminals.Rollback);
+				terminals[1].Id.ShouldBe(Terminals.To);
+				terminals[2].Id.ShouldBe(Terminals.Savepoint);
+				terminals[3].Id.ShouldBe(Terminals.Identifier);
+			}
+
+			[Test(Description = @"")]
+			public void TestRollbackStatementForceDistributedTransaction()
+			{
+				const string statementText = @"ROLLBACK WORK FORCE '25.32.87';";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+				var terminals = statement.AllTerminals.ToArray();
+				terminals.Length.ShouldBe(4);
+
+				terminals[0].Id.ShouldBe(Terminals.Rollback);
+				terminals[1].Id.ShouldBe(Terminals.Work);
+				terminals[2].Id.ShouldBe(Terminals.Force);
+				terminals[3].Id.ShouldBe(Terminals.StringLiteral);
+			}
+		}
+
+		public class Savepoint
+		{
+			[Test(Description = @"")]
+			public void TestSavepointStatement()
+			{
+				const string statementText = @"SAVEPOINT savepoint_name";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+				var terminals = statement.AllTerminals.ToArray();
+				terminals.Length.ShouldBe(2);
+
+				terminals[0].Id.ShouldBe(Terminals.Savepoint);
+				terminals[1].Id.ShouldBe(Terminals.Identifier);
+			}
+		}
+
 		public class SetTransaction
 		{
 			[Test(Description = @"")]
@@ -1980,7 +2044,7 @@ FROM DUAL";
 			{
 				var terminalCandidates = Parser.GetTerminalCandidates(null).OrderBy(t => t).ToArray();
 
-				var expectedTerminals = new[] { Terminals.Commit, Terminals.Delete, Terminals.Insert, Terminals.LeftParenthesis, Terminals.Merge, Terminals.Select, Terminals.Set, Terminals.Update, Terminals.With };
+				var expectedTerminals = new[] { Terminals.Commit, Terminals.Delete, Terminals.Insert, Terminals.LeftParenthesis, Terminals.Merge, Terminals.Rollback, Terminals.Savepoint, Terminals.Select, Terminals.Set, Terminals.Update, Terminals.With };
 				terminalCandidates.ShouldBe(expectedTerminals);
 			}
 

@@ -7,6 +7,8 @@
     <StartSymbol Id="UpdateStatement" />
     <StartSymbol Id="MergeStatement" />
     <StartSymbol Id="CommitStatement" />
+    <StartSymbol Id="RollbackStatement" />
+    <StartSymbol Id="SavepointStatement" />
     <StartSymbol Id="SetTransactionStatement" />
     <StartSymbol Id="InsertStatement" />
     <!--<StartSymbol Id="CreateStatement" />
@@ -21,7 +23,7 @@
   </Terminators>
     
   <Rules>
-    <!-- Commit statement -->
+    <!-- COMMIT statement -->
     <Rule StartingNonTerminal="CommitStatement">
       <Sequences>
         <Sequence>
@@ -36,8 +38,7 @@
     <Rule StartingNonTerminal="CommitCommentOrWriteOrForce">
       <Sequences>
         <Sequence>
-          <Terminal Id="Force" />
-          <Terminal Id="StringLiteral" />
+          <NonTerminal Id="ForceTransactionIdentifier" />
           <NonTerminal Id="CommitSetScn" IsOptional="true" />
         </Sequence>
         <Sequence>
@@ -46,6 +47,15 @@
         </Sequence>
         <Sequence>
           <NonTerminal Id="CommitWriteClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ForceTransactionIdentifier">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Force" />
+          <Terminal Id="StringLiteral" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -96,6 +106,42 @@
         <Sequence>
           <Terminal Id="Comma" />
           <Terminal Id="IntegerLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <!-- SAVEPOINT statement -->
+    <Rule StartingNonTerminal="SavepointStatement">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Savepoint" />
+          <Terminal Id="Identifier" />
+          <Terminal Id="Semicolon" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <!-- ROLLBACK statement -->
+    <Rule StartingNonTerminal="RollbackStatement">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Rollback" />
+          <Terminal Id="Work" IsOptional="true" />
+          <NonTerminal Id="ToSavepointOrForceTransactionIdentifier" IsOptional="true" />
+          <Terminal Id="Semicolon" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ToSavepointOrForceTransactionIdentifier">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ForceTransactionIdentifier" />
+        </Sequence>
+       <Sequence>
+          <Terminal Id="To" />
+          <Terminal Id="Savepoint" IsOptional="true" />
+          <Terminal Id="Identifier" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -4201,6 +4247,9 @@
     <Terminal Id="Write" Value="WRITE" />
     <Terminal Id="Immediate" Value="IMMEDIATE" IsKeyword="true" />
     <Terminal Id="Batch" Value="BATCH" />
+    
+    <!-- Rollback -->
+    <Terminal Id="Savepoint" Value="SAVEPOINT" />
 
     <!-- Set Transaction -->
     <Terminal Id="Transaction" Value="TRANSACTION" />

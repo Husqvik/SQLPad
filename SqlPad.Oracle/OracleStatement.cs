@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace SqlPad.Oracle
 {
-	[DebuggerDisplay("OracleStatement (Count={RootNode == null ? 0 : RootNode.ChildNodes.Count})")]
+	[DebuggerDisplay("OracleStatement (ChildNodes={RootNode == null ? 0 : RootNode.ChildNodes.Count})")]
 	public class OracleStatement : StatementBase
 	{
 		private ICollection<StatementGrammarNode> _bindVariableIdentifierNodes;
