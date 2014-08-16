@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -52,12 +53,6 @@ namespace SqlPad.Test
 			Dispatcher.PushFrame(frame);
 		}
 
-		[TearDown]
-		public void TearDown()
-		{
-			Directory.Delete(TempDirectoryName, true);
-		}
-
 		[Test(Description = @""), STAThread, RequiresThread]
 		public void TestBasicApplicationBehavior()
 		{
@@ -92,6 +87,8 @@ namespace SqlPad.Test
 
 			_mainWindow.Close();
 			Dispatcher.CurrentDispatcher.InvokeShutdown();
+
+			Directory.Delete(TempDirectoryName, true);
 		}
 
 		private void TestPairCharacterInsertionBeforeExistingText()
@@ -230,6 +227,52 @@ namespace SqlPad.Test
 				};
 			
 			_editor.TextArea.RaiseEvent(keyEventArgs);
+		}
+
+		[Test, STAThread]
+		public void TestLargeTextValueEditorInitialization()
+		{
+			var editor = new LargeValueEditor("Dummy", new TestLargeTextValue());
+			editor.TextEditor.Text.ShouldBe(TestLargeTextValue.TextValue);
+			editor.TabText.Visibility.ShouldBe(Visibility.Visible);
+			editor.TabRaw.Visibility.ShouldBe(Visibility.Collapsed);
+		}
+
+		[Test, STAThread]
+		public void TestLargeBinaryValueEditorInitialization()
+		{
+			var editor = new LargeValueEditor("Dummy", new TestLargeBinaryValue());
+
+			editor.TabText.Visibility.ShouldBe(Visibility.Collapsed);
+			editor.TabRaw.Visibility.ShouldBe(Visibility.Visible);
+		}
+
+		private class TestLargeTextValue : ILargeTextValue
+		{
+			public const string TextValue = "</root>";
+			public string DataTypeName { get { return "CLOB"; } }
+			public bool IsEditable { get { return false; } }
+			public long Length { get { return TextValue.Length; } }
+			public string Preview { get { throw new NotImplementedException(); } }
+			public string Value { get { return TextValue; } }
+			public string GetChunk(int offset, int length)
+			{
+				throw new NotImplementedException();
+			}
+		}
+
+		private class TestLargeBinaryValue : ILargeBinaryValue
+		{
+			private static readonly byte[] BinaryValue = Encoding.ASCII.GetBytes("</root>");
+			public string DataTypeName { get { return "CLOB"; } }
+			public bool IsEditable { get { return false; } }
+			public long Length { get { return BinaryValue.Length; } }
+			public string Preview { get { throw new NotImplementedException(); } }
+			public byte[] Value { get { return BinaryValue; } }
+			public byte[] GetChunk(int offset, int length)
+			{
+				throw new NotImplementedException();
+			}
 		}
 	}
 }
