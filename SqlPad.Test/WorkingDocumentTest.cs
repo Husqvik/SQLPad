@@ -6,23 +6,8 @@ using Shouldly;
 namespace SqlPad.Test
 {
 	[TestFixture]
-	public class WorkingDocumentTest
+	public class WorkingDocumentTest : TemporaryDirectoryTestFixture
 	{
-		private string _tempDirectoryName;
-
-		[SetUp]
-		public void SetUp()
-		{
-			_tempDirectoryName = TestFixture.SetupTestDirectory();
-			WorkingDocumentCollection.SetWorkingDocumentDirectory(_tempDirectoryName);
-		}
-
-		[TearDown]
-		public void TearDown()
-		{
-			Directory.Delete(_tempDirectoryName, true);
-		}
-
 		[Test]
 		public void SerializationTest()
 		{
@@ -49,11 +34,11 @@ namespace SqlPad.Test
 			WorkingDocumentCollection.AddDocument(newWorkingDocument);
 			WorkingDocumentCollection.Save();
 
-			var fileInfo = new FileInfo(Path.Combine(_tempDirectoryName, WorkingDocumentCollection.ConfigurationFileName));
+			var fileInfo = new FileInfo(Path.Combine(TempDirectoryName, WorkingDocumentCollection.ConfigurationFileName));
 			fileInfo.Exists.ShouldBe(true);
 			fileInfo.Length.ShouldBe(163);
 
-			WorkingDocumentCollection.SetWorkingDocumentDirectory(_tempDirectoryName);
+			WorkingDocumentCollection.SetWorkingDocumentDirectory(TempDirectoryName);
 			WorkingDocumentCollection.WorkingDocuments.Count.ShouldBe(1);
 			var deserializedWorkingDocument = WorkingDocumentCollection.WorkingDocuments.Single();
 

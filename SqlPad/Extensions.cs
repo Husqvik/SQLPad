@@ -130,12 +130,13 @@ namespace SqlPad
 		{
 			var characters = new char[byteArray.Length * 2];
 
-			for (int y = 0, x = 0; y < byteArray.Length; ++y, ++x)
+			for (var i = 0; i < byteArray.Length; ++i)
 			{
-				var b = ((byte)(byteArray[y] >> 4));
-				characters[x] = (char)(b > 9 ? b + 0x37 : b + 0x30);
-				b = ((byte)(byteArray[y] & 0xF));
-				characters[++x] = (char)(b > 9 ? b + 0x37 : b + 0x30);
+				var b = ((byte)(byteArray[i] >> 4));
+				var index = 2 * i;
+				characters[index] = (char)(b > 9 ? b + 0x37 : b + 0x30);
+				b = ((byte)(byteArray[i] & 0xF));
+				characters[index + 1] = (char)(b > 9 ? b + 0x37 : b + 0x30);
 			}
 
 			return new string(characters);

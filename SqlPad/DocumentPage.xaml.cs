@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -27,6 +28,9 @@ namespace SqlPad
 	{
 		private const int RowBatchSize = 100;
 		private const string InitialDocumentHeader = "New*";
+		private const string MaskWrapByQuote = "\"{0}\"";
+		private const string QuoteCharacter = "\"";
+		private const string DoubleQuotes = "\"\"";
 		public const string FileMaskDefault = "SQL Files (*.sql)|*.sql|All (*.*)|*";
 
 		private SqlDocumentRepository _sqlDocumentRepository;
@@ -435,8 +439,6 @@ namespace SqlPad
 			commandBindings.Add(new CommandBinding(GenericCommands.CancelStatementCommand, CancelStatementHandler, (sender, args) => args.CanExecute = DatabaseModel.IsExecuting));
 
 			commandBindings.Add(new CommandBinding(DiagnosticCommands.ShowTokenCommand, ShowTokenCommandExecutionHandler));
-
-			ResultGrid.CommandBindings.Add(new CommandBinding(GenericCommands.FetchNextRowsCommand, FetchNextRows, CanFetchNextRows));
 		}
 
 		private void ShowCodeCompletionOptions(object sender, ExecutedRoutedEventArgs e)
@@ -1267,6 +1269,58 @@ namespace SqlPad
 			{
 				new LargeValueEditor(ResultGrid.CurrentColumn.Header.ToString(), largeValue) { Owner = Window.GetWindow(this) }.ShowDialog();
 			}
+		}
+
+		private void CanExportToCsv(object sender, CanExecuteRoutedEventArgs args)
+		{
+			args.CanExecute = ResultGrid.Items.Count > 0;
+		}
+
+		private void ExportToCsv(object sender, ExecutedRoutedEventArgs args)
+		{
+			var dialog = new SaveFileDialog { Filter = "CSV Files (*.csv)|*.csv|All (*.*)|*" };
+			if (dialog.ShowDialog() != true)
+			{
+				return;
+			}
+
+			using (var file = File.CreateText(dialog.FileName))
+			{
+				ExportToCsv(file);
+			}
+		}
+
+		private void ExportToCsv(TextWriter writer)
+		{
+			var orderedColumns = ResultGrid.Columns
+				.OrderBy(c => c.DisplayIndex)
+				.ToArray();
+
+			var columnHeaders = orderedColumns
+				.Select(c => String.Format(MaskWrapByQuote, c.Header.ToString().Replace(QuoteCharacter, DoubleQuotes)));
+
+			const string separator = ";";
+			var headerLine = String.Join(separator, columnHeaders);
+			writer.WriteLine(headerLine);
+
+			var converterParameters = orderedColumns
+				.Select(c => ((Binding)((DataGridTextColumn)c).Binding).ConverterParameter)
+				.ToArray();
+
+			foreach (object[] rowValues in ResultGrid.Items)
+			{
+				var contentLine = String.Join(separator, rowValues.Select((t, i) => FormatCsvValue(t, converterParameters[i])));
+				writer.WriteLine(contentLine);
+			}
+		}
+
+		private static string FormatCsvValue(object value, object converterParameter)
+		{
+			if (value == DBNull.Value)
+				return null;
+
+			var stringValue = CellValueConverter.Convert(value, typeof(String), converterParameter, CultureInfo.CurrentUICulture).ToString();
+			return String.Format(MaskWrapByQuote, stringValue.Replace(QuoteCharacter, DoubleQuotes));
 		}
 	}
 

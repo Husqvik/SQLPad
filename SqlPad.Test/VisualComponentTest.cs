@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,12 +21,12 @@ namespace SqlPad.Test
 		private MainWindow _mainWindow;
 		private DocumentPage _page;
 		private TextEditor _editor;
-		private static readonly string TempDirectoryName;
+		private string _tempDirectoryName;
 
-		static VisualComponentTest()
+		private void SetupEnvironment()
 		{
-			TempDirectoryName = TestFixture.SetupTestDirectory();
-			WorkingDocumentCollection.SetWorkingDocumentDirectory(TempDirectoryName);
+			_tempDirectoryName = TestFixture.SetupTestDirectory();
+			WorkingDocumentCollection.SetWorkingDocumentDirectory(_tempDirectoryName);
 
 			var sqlPadDirectory = new Uri(Path.GetDirectoryName(typeof(Snippets).Assembly.CodeBase)).LocalPath;
 			Snippets.SetSnippetDirectory(Path.Combine(sqlPadDirectory, Snippets.SnippetDirectoryName));
@@ -34,6 +35,8 @@ namespace SqlPad.Test
 
 		private void InitializeApplicationWindow()
 		{
+			SetupEnvironment();
+
 			_mainWindow = new MainWindow();
 			_mainWindow.Show();
 			_page = (DocumentPage)((TabItem)_mainWindow.DocumentTabControl.SelectedItem).Content;
@@ -88,7 +91,7 @@ namespace SqlPad.Test
 			_mainWindow.Close();
 			Dispatcher.CurrentDispatcher.InvokeShutdown();
 
-			Directory.Delete(TempDirectoryName, true);
+			Directory.Delete(_tempDirectoryName, true);
 		}
 
 		private void TestPairCharacterInsertionBeforeExistingText()
@@ -227,6 +230,37 @@ namespace SqlPad.Test
 				};
 			
 			_editor.TextArea.RaiseEvent(keyEventArgs);
+		}
+
+		[Test, STAThread]
+		public void TestExportToCsv()
+		{
+			var columnHeaders =
+				new[]
+					{
+						new ColumnHeader { ColumnIndex = 0, DatabaseDataType = "Varchar2", DataType = typeof(string), Name = "DUMMY1", ValueConverterFunction = (h, v) => v },
+						new ColumnHeader { ColumnIndex = 1, DatabaseDataType = "Date", DataType = typeof(DateTime), Name = "DUMMY2", ValueConverterFunction = (h, v) => ((DateTime)v).ToString("O") }
+					};
+
+			var documentPage = new DocumentPage();
+			documentPage.GetType().InvokeMember("InitializeResultGrid", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.InvokeMethod, null, documentPage, new object[] { columnHeaders });
+			documentPage.ResultGrid.ItemsSource =
+				new[]
+					{
+						new object[] {"Value \"1\"", new DateTime(2014, 8, 16, 22, 25, 34)},
+						new object[] {"\"2.\"Value", new DateTime(2014, 8, 16)}
+					};
+
+			var stringBuilder = new StringBuilder();
+			using (var writer = new StringWriter(stringBuilder))
+			{
+				documentPage.GetType().InvokeMember("ExportToCsv", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.InvokeMethod, null, documentPage, new object[] { writer });
+			}
+
+			var result = stringBuilder.ToString();
+
+			const string expectedResult = "\"DUMMY1\";\"DUMMY2\"\r\n\"Value \"\"1\"\"\";\"2014-08-16T22:25:34.0000000\"\r\n\"\"\"2.\"\"Value\";\"2014-08-16T00:00:00.0000000\"\r\n";
+			result.ShouldBe(expectedResult);
 		}
 
 		[Test, STAThread]

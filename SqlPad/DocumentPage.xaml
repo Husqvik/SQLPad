@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
              xmlns:sqlPad="clr-namespace:SqlPad"
+             xmlns:commands="clr-namespace:SqlPad.Commands"
              Loaded="PageLoadedHandler"
              mc:Ignorable="d"
              d:DesignHeight="320" d:DesignWidth="440">
@@ -48,9 +49,9 @@
 			</TextBlock>
 			<Grid>
 				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="5*" x:Name="ColumnDefinitionEditor" />
+					<ColumnDefinition Width="3*" x:Name="ColumnDefinitionEditor" />
 					<ColumnDefinition Width="Auto" />
-					<ColumnDefinition Width="2*" />
+					<ColumnDefinition Width="*" />
 				</Grid.ColumnDefinitions>
 				<avalonedit:TextEditor x:Name="Editor"
 				                       FontFamily="Consolas"
@@ -61,6 +62,9 @@
 				                       PreviewKeyDown="EditorKeyDownHandler"
 				                       PreviewKeyUp="EditorKeyUpHandler"
 				                       MouseHoverStopped="MouseHoverStoppedHandler">
+					<avalonedit:TextEditor.CommandBindings>
+						
+					</avalonedit:TextEditor.CommandBindings>
 					<avalonedit:TextEditor.ContextMenu>
 						<ContextMenu x:Name="CommandMenu" Placement="RelativePoint" />
 					</avalonedit:TextEditor.ContextMenu>
@@ -143,7 +147,17 @@
 		          HorizontalGridLinesBrush="LightGray"
 		          VerticalGridLinesBrush="LightGray"
 				  MouseDoubleClick="ResultGridMouseDoubleClickHandler"
-		          PreviewMouseWheel="ResultGridPreviewMouseWheelHandler" />
+		          PreviewMouseWheel="ResultGridPreviewMouseWheelHandler">
+			<DataGrid.CommandBindings>
+				<CommandBinding Command="commands:GenericCommands.ExportToCsv" Executed="ExportToCsv" CanExecute="CanExportToCsv" />
+				<CommandBinding Command="commands:GenericCommands.FetchNextRowsCommand" Executed="FetchNextRows" CanExecute="CanFetchNextRows" />
+			</DataGrid.CommandBindings>
+			<DataGrid.ContextMenu>
+				<ContextMenu>
+					<MenuItem Header="_Export to CSV..." Command="commands:GenericCommands.ExportToCsv" />
+				</ContextMenu>
+			</DataGrid.ContextMenu>
+		</DataGrid>
 		<StatusBar x:Name="StatusBar" Grid.Row="4" Grid.Column="0">
 			<StatusBar.ItemsPanel>
 				<ItemsPanelTemplate>
