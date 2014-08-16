@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Windows;
 using ProtoBuf.Meta;
 
 namespace SqlPad
@@ -26,7 +27,7 @@ namespace SqlPad
 
 			var workingDocumentType = Serializer.Add(typeof(WorkingDocument), false);
 			workingDocumentType.UseConstructor = false;
-			workingDocumentType.Add("DocumentFileName", "_workingFileName", "ConnectionName", "SchemaName", "CursorPosition", "SelectionStart", "SelectionLength", "IsModified");
+			workingDocumentType.Add("DocumentFileName", "_workingFileName", "ConnectionName", "SchemaName", "CursorPosition", "SelectionStart", "SelectionLength", "IsModified", "VisualLeft", "VisualTop");
 		}
 
 		private WorkingDocumentCollection() {}
@@ -205,5 +206,9 @@ namespace SqlPad
 		public int SelectionLength { get; set; }
 		
 		public bool IsModified { get; set; }
+
+		public double VisualTop { get; set; }
+		
+		public double VisualLeft { get; set; }
 	}
 }

@@ -50,6 +50,7 @@ namespace SqlPad
 		private CompletionWindow _completionWindow;
 		private readonly PageModel _pageModel;
 		private bool _isParsing;
+		private bool _isInitializing = true;
 		private bool _enableCodeComplete;
 		private readonly Timer _timerReParse = new Timer(100);
 		private readonly Timer _timerExecutionMonitor = new Timer(100);
@@ -148,21 +149,21 @@ namespace SqlPad
 
 					Editor.Load(fileName);
 
-					if (Editor.Text.Length >= WorkingDocument.SelectionStart)
+					if (Editor.Document.TextLength >= WorkingDocument.SelectionStart)
 					{
 						Editor.SelectionStart = WorkingDocument.SelectionStart;
 
 						var storedSelectionEndIndex = WorkingDocument.SelectionStart + WorkingDocument.SelectionLength;
-						var validSelectionEndIndex = storedSelectionEndIndex > Editor.Text.Length
-							? Editor.Text.Length
+						var validSelectionEndIndex = storedSelectionEndIndex > Editor.Document.TextLength
+							? Editor.Document.TextLength
 							: storedSelectionEndIndex;
 						
 						Editor.SelectionLength = validSelectionEndIndex - WorkingDocument.SelectionStart;
 					}
 
-					Editor.CaretOffset = Editor.Text.Length >= WorkingDocument.CursorPosition
+					Editor.CaretOffset = Editor.Document.TextLength >= WorkingDocument.CursorPosition
 						? WorkingDocument.CursorPosition
-						: Editor.Text.Length;
+						: Editor.Document.TextLength;
 
 					Editor.IsModified = WorkingDocument.IsModified;
 				}
@@ -364,6 +365,10 @@ namespace SqlPad
 			WorkingDocument.CursorPosition = Editor.CaretOffset;
 			WorkingDocument.SelectionStart = Editor.SelectionStart;
 			WorkingDocument.SelectionLength = Editor.SelectionLength;
+
+			var textView = Editor.TextArea.TextView;
+			WorkingDocument.VisualLeft = textView.ScrollOffset.X;
+			WorkingDocument.VisualTop = textView.ScrollOffset.Y;
 
 			if (_pageModel.CurrentConnection != null)
 			{
@@ -728,6 +733,13 @@ namespace SqlPad
 
 		private void PageLoadedHandler(object sender, RoutedEventArgs e)
 		{
+			if (_isInitializing)
+			{
+				Editor.ScrollToVerticalOffset(WorkingDocument.VisualTop);
+				Editor.ScrollToHorizontalOffset(WorkingDocument.VisualLeft);
+				_isInitializing = false;
+			}
+
 			Editor.Focus();
 			
 			if (!String.IsNullOrEmpty(Editor.Text))
@@ -867,12 +879,12 @@ namespace SqlPad
 
 		private bool NextPairCharacterExists(string text, char matchCharacter, char pairCharacter)
 		{
-			return text.Length == 1 && text[0] == matchCharacter && Editor.Text.Length > Editor.CaretOffset && Editor.Text[Editor.CaretOffset] == pairCharacter;
+			return text.Length == 1 && text[0] == matchCharacter && Editor.Document.TextLength > Editor.CaretOffset && Editor.Text[Editor.CaretOffset] == pairCharacter;
 		}
 
 		private bool IsNextCharacterBlank()
 		{
-			var nextCharacter = Editor.Text.Length == Editor.CaretOffset ? null : (char?)Editor.Text[Editor.CaretOffset];
+			var nextCharacter = Editor.Document.TextLength == Editor.CaretOffset ? null : (char?)Editor.Text[Editor.CaretOffset];
 			return !nextCharacter.HasValue || nextCharacter == ' ' || nextCharacter == '\r' || nextCharacter == '\n' || nextCharacter == '\t';
 		}
 
@@ -1185,7 +1197,7 @@ namespace SqlPad
 				if (!_multiNodeEditor.RemoveCharacter(e.Key == Key.Back))
 					_multiNodeEditor = null;
 			}
-			else if (e.Key == Key.Back && Editor.Text.Length > Editor.CaretOffset)
+			else if (e.Key == Key.Back && Editor.Document.TextLength > Editor.CaretOffset)
 			{
 				if (AreConsencutive('(', ')') ||
 				    AreConsencutive('"', '"') ||
