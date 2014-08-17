@@ -1034,6 +1034,11 @@ namespace SqlPad
 
 		public void ReParse()
 		{
+			if (_isInitializing)
+			{
+				return;
+			}
+
 			DisableCodeCompletion();
 
 			Parse();
@@ -1073,14 +1078,8 @@ namespace SqlPad
 			}
 			else
 			{
-				var asynchronousAction =
-					new Action(async () =>
-					{
-						await _sqlDocumentRepository.UpdateStatementsAsync(Editor.Text);
-						ParseDoneHandler();
-					});
-
-				asynchronousAction.Invoke();
+				_sqlDocumentRepository.UpdateStatementsAsync(Editor.Text)
+					.ContinueWith(t => ParseDoneHandler());
 			}
 		}
 
@@ -1088,12 +1087,12 @@ namespace SqlPad
 		{
 			_colorizingTransformer.SetDocumentRepository(_sqlDocumentRepository);
 
-			Dispatcher.Invoke(ParseDoneHandlerInternal);
+			Dispatcher.Invoke(ParseDoneUiHandler);
 
 			_timerReParse.Stop();
 		}
 
-		private void ParseDoneHandlerInternal()
+		private void ParseDoneUiHandler()
 		{
 			Editor.TextArea.TextView.Redraw();
 			_isParsing = false;
@@ -1101,7 +1100,7 @@ namespace SqlPad
 
 			ShowHideBindVariableList();
 
-			if (_enableCodeComplete && _completionWindow == null && IsSelectedPage)
+			if (_enableCodeComplete && _completionWindow == null && IsSelectedPage && _sqlDocumentRepository.StatementText == Editor.Text)
 			{
 				CreateCodeCompletionWindow(false);
 			}

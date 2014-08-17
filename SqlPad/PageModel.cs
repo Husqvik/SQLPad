@@ -168,14 +168,10 @@ namespace SqlPad
 					if (_currentConnection == null)
 						return;
 
-					try
-					{
-						_documentPage.InitializeInfrastructureComponents(_currentConnection);
-					}
-					catch
-					{
-						Trace.WriteLine("CurrentConnection setter failed: " + e);
-					}
+					var originalValue = _currentConnection;
+					_currentConnection = value;
+					RevertConnection(originalValue);
+					_documentPage.ReParse();
 
 					return;
 				}
@@ -185,6 +181,25 @@ namespace SqlPad
 				SetSchemas();
 
 				CurrentSchema = _documentPage.DatabaseModel.CurrentSchema;
+			}
+		}
+
+		private void RevertConnection(ConnectionStringSettings originalValue)
+		{
+			try
+			{
+				_documentPage.InitializeInfrastructureComponents(originalValue);
+				_documentPage.DatabaseModel.CurrentSchema = _currentSchema;
+
+				Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+				{
+					_currentConnection = originalValue;
+					RaisePropertyChanged("CurrentConnection");
+				}));
+			}
+			catch (Exception e)
+			{
+				Trace.WriteLine("CurrentConnection setter failed: " + e);
 			}
 		}
 
