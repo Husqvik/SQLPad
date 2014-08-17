@@ -4280,7 +4280,7 @@
     <Terminal Id="Matched" Value="MATCHED" />
     
     <!-- Insert -->
-    <Terminal Id="Insert" Value="INSERT" />
+    <Terminal Id="Insert" Value="INSERT" IsKeyword="true" />
     
     <!-- Other -->
     <Terminal Id="Float" Value="FLOAT" IsKeyword="true" />
