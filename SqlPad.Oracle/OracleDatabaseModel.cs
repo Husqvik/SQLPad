@@ -5,10 +5,8 @@ using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml;
 using Oracle.DataAccess.Client;
 using Timer = System.Timers.Timer;
 
@@ -17,27 +15,23 @@ namespace SqlPad.Oracle
 	public class OracleDatabaseModel : OracleDatabaseModelBase
 	{
 		private const int RefreshInterval = 10;
-		private const string SqlFuntionMetadataFileName = "OracleSqlFunctionMetadataCollection_12_1_0_1_0.xml";
 		internal const int OracleErrorCodeUserInvokedCancellation = 1013;
 		internal const int InitialLongFetchSize = 131072;
 
 		private readonly OracleConnectionStringBuilder _oracleConnectionString;
 		private readonly Timer _timer = new Timer(RefreshInterval * 60000);
-		private static readonly DataContractSerializer Serializer = new DataContractSerializer(typeof(OracleFunctionMetadataCollection));
 		private bool _isRefreshing;
 		private bool _cacheLoaded;
 		private bool _isExecuting;
 		private Task _backgroundTask;
 		private readonly CancellationTokenSource _backgroundTaskCancellationTokenSource = new CancellationTokenSource();
 		private OracleFunctionMetadataCollection _allFunctionMetadata = new OracleFunctionMetadataCollection(Enumerable.Empty<OracleFunctionMetadata>());
-		private OracleFunctionMetadataCollection _builtInFunctionMetadata = new OracleFunctionMetadataCollection(Enumerable.Empty<OracleFunctionMetadata>());
-		private ILookup<string, OracleFunctionMetadata> _nonSchemaBuiltInFunctionMetadata = Enumerable.Empty<OracleFunctionMetadata>().ToLookup(m => m.Identifier.Name, m => m);
 		private readonly ConnectionStringSettings _connectionString;
 		private HashSet<string> _schemas = new HashSet<string>();
 		private HashSet<string> _allSchemas = new HashSet<string>();
 		private string _currentSchema;
 		private readonly DataDictionaryMapper _dataDictionaryMapper;
-		private OracleDataDictionary _dataDictionary = new OracleDataDictionary(new Dictionary<OracleObjectIdentifier, OracleSchemaObject>(), new Dictionary<OracleObjectIdentifier, OracleDatabaseLink>(), DateTime.MinValue);
+		private OracleDataDictionary _dataDictionary = OracleDataDictionary.EmptyDictionary;
 		private readonly OracleConnection _userConnection;
 		private OracleDataReader _userDataReader;
 		private OracleCommand _userCommand;
@@ -53,32 +47,15 @@ namespace SqlPad.Oracle
 			_oracleConnectionString = new OracleConnectionStringBuilder(connectionString.ConnectionString);
 			_currentSchema = _oracleConnectionString.UserID;
 
-			if (!WaitingDataModelRefresh.ContainsKey(CachedConnectionStringName))
+			lock (ActiveDataModelRefresh)
 			{
-				WaitingDataModelRefresh[CachedConnectionStringName] = new List<RefreshModel>();
+				if (!WaitingDataModelRefresh.ContainsKey(CachedConnectionStringName))
+				{
+					WaitingDataModelRefresh[CachedConnectionStringName] = new List<RefreshModel>();
+				}
 			}
 
 			_dataDictionaryMapper = new DataDictionaryMapper(this);
-
-			Stream metadataStream;
-			if (MetadataCache.TryLoadMetadata(SqlFuntionMetadataFileName, out metadataStream))
-			{
-				try
-				{
-					using (var reader = XmlReader.Create(metadataStream))
-					{
-						BuiltInFunctionMetadata = (OracleFunctionMetadataCollection)Serializer.ReadObject(reader);
-					}
-				}
-				finally
-				{
-					metadataStream.Dispose();
-				}
-			}
-			else
-			{
-				ExecuteActionAsync(GenerateBuiltInFunctionMetadata);
-			}
 
 			_userConnection = new OracleConnection(connectionString.ConnectionString);
 
@@ -111,19 +88,9 @@ namespace SqlPad.Oracle
 			_backgroundTask = Task.Factory.StartNew(action);
 		}
 
-		public OracleFunctionMetadataCollection BuiltInFunctionMetadata
-		{
-			get { return _builtInFunctionMetadata; }
-			private set
-			{
-				_builtInFunctionMetadata = value;
-				_nonSchemaBuiltInFunctionMetadata = value.SqlFunctions.Where(f => String.IsNullOrEmpty(f.Identifier.Owner)).ToLookup(f => f.Identifier.Name, f => f);
-			}
-		}
-
 		public override OracleFunctionMetadataCollection AllFunctionMetadata { get { return _allFunctionMetadata; } }
 
-		protected override ILookup<string, OracleFunctionMetadata> NonSchemaBuiltInFunctionMetadata { get { return _nonSchemaBuiltInFunctionMetadata; } }
+		protected override IDictionary<string, OracleFunctionMetadata> NonSchemaBuiltInFunctionMetadata { get { return _dataDictionary.NonSchemaFunctionMetadata; } }
 
 		public override ConnectionStringSettings ConnectionString { get { return _connectionString; } }
 
@@ -310,40 +277,10 @@ namespace SqlPad.Oracle
 				{
 					_currentSchema = _currentSchema,
 					_dataDictionary = _dataDictionary,
-					_allFunctionMetadata = _allFunctionMetadata,
-					_builtInFunctionMetadata = _builtInFunctionMetadata,
-					_nonSchemaBuiltInFunctionMetadata = _nonSchemaBuiltInFunctionMetadata
+					_allFunctionMetadata = _allFunctionMetadata
 				};
 
 			return clone;
-		}
-
-		private void GenerateBuiltInFunctionMetadata()
-		{
-			BuiltInFunctionMetadata = _dataDictionaryMapper.GetBuiltInFunctionMetadata();
-
-			lock (Serializer)
-			{
-				if (File.Exists(MetadataCache.GetFullFileName(SqlFuntionMetadataFileName)))
-				{
-					return;
-				}
-
-				using (var writer = XmlWriter.Create(MetadataCache.GetFullFileName(SqlFuntionMetadataFileName)))
-				{
-					Serializer.WriteObject(writer, BuiltInFunctionMetadata);
-				}
-			}
-
-			/*var allFunctionMetadata = GetUserFunctionMetadata();
-
-			var test = new OracleFunctionMetadataCollection(allFunctionMetadata.SqlFunctions.Where(f => f.Identifier.Owner == "husqvik".ToQuotedIdentifier()).ToArray());
-			using (var writer = XmlWriter.Create(@"D:\TestFunctionCollection.xml"))
-			{
-				Serializer.WriteObject(writer, test);
-			}*/
-
-			_isRefreshing = false;
 		}
 
 		private T ExecuteUserStatement<T>(StatementExecutionModel executionModel, Func<OracleCommand, T> executeFunction, bool closeConnection = false)
@@ -621,9 +558,6 @@ namespace SqlPad.Oracle
 		{
 			TryLoadSchemaObjectMetadataFromCache();
 
-			//var otmp = _dataDictionary.AllObjects.Where(o => o.Key.NormalizedName.Contains("XMLTYPE")).ToArray();
-			//var customer = _dataDictionary.AllObjects.Where(o => o.Key.NormalizedName.Contains("CUSTOMER\"")).ToArray();
-
 			var isRefreshDone = !IsRefreshNeeded && !force;
 			if (isRefreshDone)
 			{
@@ -642,10 +576,19 @@ namespace SqlPad.Oracle
 
 			var allObjects = _dataDictionaryMapper.BuildDataDictionary();
 
-			_allFunctionMetadata = new OracleFunctionMetadataCollection(BuiltInFunctionMetadata.SqlFunctions.Concat(_dataDictionaryMapper.GetUserFunctionMetadata().SqlFunctions));
+			var userFunctions = _dataDictionaryMapper.GetUserFunctionMetadata().SqlFunctions;
+			var builtInFunctions = _dataDictionaryMapper.GetBuiltInFunctionMetadata().SqlFunctions;
+			_allFunctionMetadata = new OracleFunctionMetadataCollection(builtInFunctions.Concat(userFunctions));
+			var nonSchemaBuiltInFunctionMetadata = new Dictionary<string, OracleFunctionMetadata>();
 
 			foreach (var functionMetadata in _allFunctionMetadata.SqlFunctions)
 			{
+				if (String.IsNullOrEmpty(functionMetadata.Identifier.Owner))
+				{
+					nonSchemaBuiltInFunctionMetadata.Add(functionMetadata.Identifier.Name, functionMetadata);
+					continue;
+				}
+
 				if (functionMetadata.IsPackageFunction)
 				{
 					OracleSchemaObject packageObject;
@@ -664,13 +607,9 @@ namespace SqlPad.Oracle
 				}
 			}
 
-			//var ftmp = _allFunctionMetadata.SqlFunctions.Where(f => f.Identifier.Owner.Contains("CA_DEV")).ToArray();
-			//var ftmp = _allFunctionMetadata.SqlFunctions.Where(f => f.Identifier.Package.Contains("DBMS_RANDOM")).ToArray();
-			//var otmp = dataObjectMetadata.Where(o => o.Key.NormalizedName.Contains("DBMS_RANDOM")).ToArray();
-
 			var databaseLinks = _dataDictionaryMapper.GetDatabaseLinks();
 
-			_dataDictionary = new OracleDataDictionary(allObjects, databaseLinks, lastRefresh);
+			_dataDictionary = new OracleDataDictionary(allObjects, databaseLinks, nonSchemaBuiltInFunctionMetadata, lastRefresh);
 			CachedDataDictionaries[CachedConnectionStringName] = _dataDictionary;
 
 			SetRefreshTaskResults();
@@ -721,10 +660,10 @@ namespace SqlPad.Oracle
 		{
 			var functionMetadata = _dataDictionary.AllObjects.Values
 				.OfType<IFunctionCollection>()
-				.Where(o => o.FullyQualifiedName != BuiltInFunctionPackageIdentifier)
-				.SelectMany(o => o.Functions);
+				.SelectMany(o => o.Functions)
+				.Concat(_dataDictionary.NonSchemaFunctionMetadata.Values);
 
-			_allFunctionMetadata = new OracleFunctionMetadataCollection(BuiltInFunctionMetadata.SqlFunctions.Concat(functionMetadata));
+			_allFunctionMetadata = new OracleFunctionMetadataCollection(functionMetadata);
 		}
 
 		private void RaiseEvent(EventHandler eventHandler)

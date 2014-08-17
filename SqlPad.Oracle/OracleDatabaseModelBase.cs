@@ -53,7 +53,7 @@ namespace SqlPad.Oracle
 
 		public abstract OracleFunctionMetadataCollection AllFunctionMetadata { get; }
 
-		protected abstract ILookup<string, OracleFunctionMetadata> NonSchemaBuiltInFunctionMetadata { get; }
+		protected abstract IDictionary<string, OracleFunctionMetadata> NonSchemaBuiltInFunctionMetadata { get; }
 
 		public abstract IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjects { get; }
 
@@ -99,9 +99,17 @@ namespace SqlPad.Oracle
 					TryGetSchemaObjectFunctionMetadata(schemaObject, out functionMetadataSource);
 				}
 
-				functionMetadataSource.AddRange(NonSchemaBuiltInFunctionMetadata[identifier.Name]);
-
 				var metadata = TryFindFunctionOverload(functionMetadataSource, identifier.Name, parameterCount);
+
+				if (metadata == null)
+				{
+					OracleFunctionMetadata nonSchemaFunctionMetadata;
+					if (NonSchemaBuiltInFunctionMetadata.TryGetValue(identifier.Name, out nonSchemaFunctionMetadata))
+					{
+						metadata = TryFindFunctionOverload(Enumerable.Repeat(nonSchemaFunctionMetadata, 1), identifier.Name, parameterCount);
+					}
+				}
+
 				if (metadata != null)
 					return new FunctionMetadataResult { Metadata = metadata, SchemaObject = schemaObject };
 			}

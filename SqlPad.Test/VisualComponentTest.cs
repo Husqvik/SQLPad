@@ -26,10 +26,10 @@ namespace SqlPad.Test
 		private void SetupEnvironment()
 		{
 			_tempDirectoryName = TestFixture.SetupTestDirectory();
-			WorkingDocumentCollection.SetWorkingDocumentDirectory(_tempDirectoryName);
+			ConfigurationProvider.SetUserDataFolder(_tempDirectoryName);
 
 			var sqlPadDirectory = new Uri(Path.GetDirectoryName(typeof(Snippets).Assembly.CodeBase)).LocalPath;
-			Snippets.SetSnippetDirectory(Path.Combine(sqlPadDirectory, Snippets.SnippetDirectoryName));
+			ConfigurationProvider.SetSnippetsFolder(Path.Combine(sqlPadDirectory, Snippets.SnippetDirectoryName));
 			DocumentPage.IsParsingSynchronous = true;
 		}
 

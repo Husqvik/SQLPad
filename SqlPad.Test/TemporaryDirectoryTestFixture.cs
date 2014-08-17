@@ -11,7 +11,7 @@ namespace SqlPad.Test
 		public void SetUp()
 		{
 			TempDirectoryName = TestFixture.SetupTestDirectory();
-			WorkingDocumentCollection.SetWorkingDocumentDirectory(TempDirectoryName);
+			ConfigurationProvider.SetUserDataFolder(TempDirectoryName);
 		}
 
 		[TearDown]

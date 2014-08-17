@@ -11,7 +11,6 @@ namespace SqlPad.Test
 		[Test]
 		public void SerializationTest()
 		{
-			WorkingDocumentCollection.CloseAllDocuments();
 			WorkingDocumentCollection.WorkingDocuments.Count.ShouldBe(0);
 
 			var newWorkingDocument =
@@ -34,11 +33,11 @@ namespace SqlPad.Test
 			WorkingDocumentCollection.AddDocument(newWorkingDocument);
 			WorkingDocumentCollection.Save();
 
-			var fileInfo = new FileInfo(Path.Combine(TempDirectoryName, WorkingDocumentCollection.ConfigurationFileName));
+			var fileInfo = new FileInfo(Path.Combine(TempDirectoryName, "WorkArea", WorkingDocumentCollection.ConfigurationFileName));
 			fileInfo.Exists.ShouldBe(true);
 			fileInfo.Length.ShouldBe(163);
 
-			WorkingDocumentCollection.SetWorkingDocumentDirectory(TempDirectoryName);
+			WorkingDocumentCollection.Configure();
 			WorkingDocumentCollection.WorkingDocuments.Count.ShouldBe(1);
 			var deserializedWorkingDocument = WorkingDocumentCollection.WorkingDocuments.Single();
 

@@ -149,15 +149,15 @@ namespace SqlPad.Oracle
 	[DebuggerDisplay("OracleFunction (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
 	public class OracleFunction : OracleSchemaObject, IFunctionCollection
 	{
-		private readonly OracleFunctionMetadata[] _metadata = new OracleFunctionMetadata[1];
+		private OracleFunctionMetadata _metadata;
 
 		public OracleFunctionMetadata Metadata
 		{
-			get { return _metadata[0]; }
-			set { _metadata[0] = value; }
+			get { return _metadata; }
+			set { _metadata = value; }
 		}
 
-		ICollection<OracleFunctionMetadata> IFunctionCollection.Functions { get { return _metadata; } }
+		ICollection<OracleFunctionMetadata> IFunctionCollection.Functions { get { return new [] { _metadata }; } }
 
 		public override string Type { get { return OracleSchemaObjectType.Function; } }
 	}

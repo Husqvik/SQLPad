@@ -11,7 +11,7 @@ namespace SqlPad
 	public class WorkingDocumentCollection
 	{
 		internal const string ConfigurationFileName = "WorkingDocuments.dat";
-		private static string _fileName = GetWorkingDocumentConfigurationFileName(App.FolderNameWorkArea);
+		private static string _fileName = GetWorkingDocumentConfigurationFileName(ConfigurationProvider.FolderNameWorkArea);
 		private static readonly RuntimeTypeModel Serializer;
 		private static WorkingDocumentCollection _instance;
 
@@ -64,10 +64,10 @@ namespace SqlPad
 			}
 		}
 
-		public static void SetWorkingDocumentDirectory(string directory)
+		public static void Configure()
 		{
 			_instance = null;
-			_fileName = GetWorkingDocumentConfigurationFileName(directory);
+			_fileName = GetWorkingDocumentConfigurationFileName(ConfigurationProvider.FolderNameWorkArea);
 		}
 
 		private static string GetWorkingDocumentConfigurationFileName(string directory)

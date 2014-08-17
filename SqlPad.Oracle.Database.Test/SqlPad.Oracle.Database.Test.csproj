@@ -74,6 +74,10 @@
       <Project>{e90b1839-1a3e-471c-997a-c010f463cd6c}</Project>
       <Name>SqlPad.Oracle</Name>
     </ProjectReference>
+    <ProjectReference Include="..\SqlPad.Test\SqlPad.Test.csproj">
+      <Project>{15B68042-211B-48A7-8395-FD330755B690}</Project>
+      <Name>SqlPad.Test</Name>
+    </ProjectReference>
     <ProjectReference Include="..\SqlPad\SqlPad.csproj">
       <Project>{a899ecdc-34cf-4b97-a25f-774cfcdbfdac}</Project>
       <Name>SqlPad</Name>

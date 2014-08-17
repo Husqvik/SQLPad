@@ -2,11 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.Serialization;
 
 namespace SqlPad.Oracle
 {
-	[DataContract(Namespace = Namespaces.SqlPadBaseNamespace)]
 	[DebuggerDisplay("OracleFunctionMetadata (Identifier={Identifier.FullyQualifiedIdentifier}; Overload={Identifier.Overload}; DataType={DataType}; IsAnalytic={IsAnalytic}; IsAggregate={IsAggregate}; MinimumArguments={MinimumArguments}; MaximumArguments={MaximumArguments})")]
 	public class OracleFunctionMetadata
 	{
@@ -14,11 +12,11 @@ namespace SqlPad.Oracle
 		public const string DisplayTypeParenthesis = "PARENTHESIS";
 		public const string DisplayTypeNoParenthesis = "NOPARENTHESIS";
 
-		[DataMember]
-		private int? _metadataMinimumArguments;
+		private readonly int? _metadataMinimumArguments;
 
-		[DataMember]
-		private int? _metadataMaximumArguments;
+		private readonly int? _metadataMaximumArguments;
+
+		private List<OracleFunctionParameterMetadata> _parameters;
 
 		internal OracleFunctionMetadata(OracleFunctionIdentifier identifier, bool isAnalytic, bool isAggregate, bool isPipelined, bool isOffloadable, bool parallelSupport, bool isDeterministic, int? metadataMinimumArguments, int? metadataMaximumArguments, AuthId authId, string displayType, bool isBuiltIn)
 		{
@@ -34,37 +32,26 @@ namespace SqlPad.Oracle
 			AuthId = authId;
 			DisplayType = displayType;
 			IsBuiltIn = isBuiltIn;
-			Parameters = new List<OracleFunctionParameterMetadata>();
 		}
 
-		[DataMember]
-		public ICollection<OracleFunctionParameterMetadata> Parameters { get; private set; }
+		public ICollection<OracleFunctionParameterMetadata> Parameters { get { return _parameters ?? (_parameters = new List<OracleFunctionParameterMetadata>()); } }
 
-		[DataMember]
 		public bool IsBuiltIn { get; private set; }
 
-		[DataMember]
 		public OracleFunctionIdentifier Identifier { get; private set; }
 
-		[DataMember]
 		public string DataType { get; private set; }
 
-		[DataMember]
 		public bool IsAnalytic { get; private set; }
 
-		[DataMember]
 		public bool IsAggregate { get; private set; }
 
-		[DataMember]
 		public bool IsPipelined { get; private set; }
 
-		[DataMember]
 		public bool IsOffloadable { get; private set; }
 
-		[DataMember]
 		public bool ParallelSupport { get; private set; }
 
-		[DataMember]
 		public bool IsDeterministic { get; private set; }
 
 		public int MinimumArguments
@@ -82,14 +69,11 @@ namespace SqlPad.Oracle
 			get { return !String.IsNullOrEmpty(Identifier.Package); }
 		}
 
-		[DataMember]
 		public AuthId AuthId { get; private set; }
 
-		[DataMember]
 		public string DisplayType { get; private set; }
 	}
 
-	[DataContract(Namespace = Namespaces.SqlPadBaseNamespace)]
 	[DebuggerDisplay("OracleFunctionParameterMetadata (Name={Name}; Position={Position}; DataType={DataType}; Direction={Direction}; IsOptional={IsOptional})")]
 	public class OracleFunctionParameterMetadata
 	{
@@ -102,39 +86,28 @@ namespace SqlPad.Oracle
 			IsOptional = isOptional;
 		}
 
-		[DataMember]
 		public string Name { get; private set; }
 
-		[DataMember]
 		public int Position { get; private set; }
 
-		[DataMember]
 		public string DataType { get; private set; }
 
-		[DataMember]
 		public ParameterDirection Direction { get; private set; }
 
-		[DataMember]
 		public bool IsOptional { get; private set; }
 	}
 
 	public enum ParameterDirection
 	{
-		[EnumMember]
 		Input,
-		[EnumMember]
 		Output,
-		[EnumMember]
 		InputOutput,
-		[EnumMember]
 		ReturnValue,
 	}
 
 	public enum AuthId
 	{
-		[EnumMember]
 		CurrentUser,
-		[EnumMember]
 		Definer
 	}
 }

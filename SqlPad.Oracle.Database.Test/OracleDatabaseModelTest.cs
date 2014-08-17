@@ -3,11 +3,12 @@ using System.Linq;
 using System.Threading;
 using NUnit.Framework;
 using Shouldly;
+using SqlPad.Test;
 
 namespace SqlPad.Oracle.Database.Test
 {
 	[TestFixture]
-	public class OracleDatabaseModelTest
+	public class OracleDatabaseModelTest : TemporaryDirectoryTestFixture
 	{
 		[Test]
 		public void ModelInitializationTest()

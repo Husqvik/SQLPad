@@ -1042,7 +1042,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			var nodeValidityDictionary = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
 			var programNodeValidity = nodeValidityDictionary.Values.ToList();
 			programNodeValidity.Count.ShouldBe(1);
-			programNodeValidity[0].IsRecognized.ShouldBe(true);
+			programNodeValidity[0].IsRecognized.ShouldBe(false);
 			programNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
 		}
 

@@ -13,7 +13,7 @@ namespace SqlPad.Oracle.Test
 		public OracleSnippetProviderTest()
 		{
 			var sqlPadDirectory = new Uri(Path.GetDirectoryName(typeof(Snippets).Assembly.CodeBase)).LocalPath;
-			Snippets.SetSnippetDirectory(Path.Combine(sqlPadDirectory, Snippets.SnippetDirectoryName));
+			ConfigurationProvider.SetSnippetsFolder(Path.Combine(sqlPadDirectory, Snippets.SnippetDirectoryName));
 		}
 
 		[Test(Description = @"")]

@@ -7,14 +7,6 @@ namespace SqlPad
 {
 	public partial class App
 	{
-		public const string RecoveredDocumentFileNameTemplate = "RecoveredDocument.{0}.sql.tmp";
-		private const string FolderNameSqlPad = "SQL Pad";
-
-		public static readonly string FolderNameUserData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), FolderNameSqlPad);
-		public static readonly string FolderNameErrorLog = Path.Combine(FolderNameUserData, "ErrorLog");
-		public static readonly string FolderNameWorkArea = Path.Combine(FolderNameUserData, "WorkArea");
-		public static readonly string FolderNameApplication = Path.GetDirectoryName(typeof(App).Assembly.Location);
-
 		static App()
 		{
 			AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionHandler;
@@ -22,8 +14,6 @@ namespace SqlPad
 
 		private static void UnhandledExceptionHandler(object sender, UnhandledExceptionEventArgs unhandledExceptionEventArgs)
 		{
-			CreateDirectoryIfNotExists(FolderNameErrorLog);
-
 			var mainWindow = (MainWindow)Current.MainWindow;
 
 			if (mainWindow.ActiveDocument != null)
@@ -68,23 +58,9 @@ namespace SqlPad
 				}
 			}
 
-			File.WriteAllText(Path.Combine(FolderNameErrorLog, String.Format("Error_{0}.log", DateTime.UtcNow.Ticks)), logBuilder.ToString());
+			File.WriteAllText(Path.Combine(ConfigurationProvider.FolderNameErrorLog, String.Format("Error_{0}.log", DateTime.UtcNow.Ticks)), logBuilder.ToString());
 		}
 
-		private static void CreateDirectoryIfNotExists(params string[] directoryNames)
-		{
-			foreach (var directoryName in directoryNames)
-			{
-				if (!Directory.Exists(directoryName))
-				{
-					Directory.CreateDirectory(directoryName);
-				}
-			}
-		}
-
-		public App()
-		{
-			CreateDirectoryIfNotExists(FolderNameUserData, FolderNameWorkArea);
-		}
+		public App() { }
 	}
 }

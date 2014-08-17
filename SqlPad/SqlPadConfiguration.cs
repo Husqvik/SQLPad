@@ -102,7 +102,7 @@ namespace SqlPad
 
 		private static string GetFileName(string providerName)
 		{
-			return Path.Combine(App.FolderNameWorkArea, String.Format("{0}.dat", providerName));
+			return Path.Combine(ConfigurationProvider.FolderNameWorkArea, String.Format("{0}.dat", providerName));
 		}
 	}
 

@@ -533,17 +533,17 @@ FROM
 			const string query1 = @"SELECT HUSQVIK. FROM DUAL";
 
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 15).ToArray();
-			items.Length.ShouldBe(10);
+			items.Length.ShouldBe(7);
 			items[0].Name.ShouldBe("AS_PDF3");
 			items[0].Text.ShouldBe("AS_PDF3.");
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.Package);
 			items[0].CaretOffset.ShouldBe(0);
 			items[0].StatementNode.ShouldBe(null);
-			items[9].Name.ShouldBe("TESTFUNC");
-			items[9].Text.ShouldBe("TESTFUNC()");
-			items[9].Category.ShouldBe(OracleCodeCompletionCategory.SchemaFunction);
-			items[9].CaretOffset.ShouldBe(-1);
-			items[9].StatementNode.ShouldBe(null);
+			items[4].Name.ShouldBe("TESTFUNC");
+			items[4].Text.ShouldBe("TESTFUNC()");
+			items[4].Category.ShouldBe(OracleCodeCompletionCategory.SchemaFunction);
+			items[4].CaretOffset.ShouldBe(-1);
+			items[4].StatementNode.ShouldBe(null);
 		}
 
 		[Test(Description = @"")]
@@ -633,12 +633,12 @@ FROM
 
 			_documentRepository.UpdateStatements(query1);
 			var items = _codeCompletionProvider.ResolveFunctionOverloads(_documentRepository, 19).ToList();
-			items.Count.ShouldBe(3);
-			items.ForEach(i => i.Name.ShouldBe("SYS.STANDARD.ROUND"));
-			items.ForEach(i => i.Parameters.Count.ShouldBe(2));
-			items.ForEach(i => i.CurrentParameterIndex.ShouldBe(1));
-			items.ForEach(i => i.ReturnedDatatype.ShouldNotBe(null));
-			items.ForEach(i => i.HasSchemaDefinition.ShouldBe(true));
+			items.Count.ShouldBe(1);
+			items[0].Name.ShouldBe("SYS.STANDARD.ROUND");
+			items[0].Parameters.Count.ShouldBe(2);
+			items[0].CurrentParameterIndex.ShouldBe(1);
+			items[0].ReturnedDatatype.ShouldNotBe(null);
+			items[0].HasSchemaDefinition.ShouldBe(true);
 		}
 
 		[Test(Description = @"")]
@@ -648,8 +648,8 @@ FROM
 
 			_documentRepository.UpdateStatements(query1);
 			var items = _codeCompletionProvider.ResolveFunctionOverloads(_documentRepository, 18).ToList();
-			items.Count.ShouldBe(3);
-			items.ForEach(i => i.CurrentParameterIndex.ShouldBe(1));
+			items.Count.ShouldBe(1);
+			items[0].CurrentParameterIndex.ShouldBe(1);
 		}
 
 		[Test(Description = @"")]
@@ -731,10 +731,10 @@ se";
 		{
 			const string statement = @"SELECT SQLPAD.SQLPAD_FUNCTION(D) FROM DUAL";
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 31).ToList();
-			items.Count.ShouldBe(8);
+			items.Count.ShouldBe(3);
 			items[0].Text.ShouldBe("DUAL.DUMMY");
-			items[7].Name.ShouldBe("DUMP");
-			items[7].Text.ShouldBe("DUMP()");
+			items[2].Name.ShouldBe("DUMP");
+			items[2].Text.ShouldBe("DUMP()");
 		}
 
 		[Test(Description = @"")]

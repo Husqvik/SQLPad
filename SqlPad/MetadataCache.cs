@@ -10,17 +10,15 @@ namespace SqlPad
 {
 	public static class MetadataCache
 	{
-		public static readonly string CacheDirectory = Path.Combine(App.FolderNameUserData, "MetadataCache");
-
 		private static readonly string CacheConfigrationFileName = GetFullFileName("DatabaseModelCacheConfiguration.dat");
 		private static readonly BinaryFormatter Serializer = new BinaryFormatter();
 		private static readonly DatabaseModelCacheConfiguration DatabaseModelCacheConfiguration;
 
 		static MetadataCache()
 		{
-			if (!Directory.Exists(CacheDirectory))
+			if (!Directory.Exists(ConfigurationProvider.FolderNameMetadataCache))
 			{
-				Directory.CreateDirectory(CacheDirectory);
+				Directory.CreateDirectory(ConfigurationProvider.FolderNameMetadataCache);
 			}
 
 			if (!File.Exists(CacheConfigrationFileName))
@@ -53,7 +51,7 @@ namespace SqlPad
 
 		public static string GetFullFileName(string fileName)
 		{
-			return Path.Combine(CacheDirectory, fileName);
+			return Path.Combine(ConfigurationProvider.FolderNameMetadataCache, fileName);
 		}
 
 		public static bool TryLoadMetadata(string fileName, out Stream stream)

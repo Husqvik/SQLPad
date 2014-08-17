@@ -35,7 +35,7 @@ namespace SqlPad.Oracle.Test
 		private static readonly HashSet<string> SchemasInternal = new HashSet<string> { OwnerNameSys, "\"SYSTEM\"", InitialSchema };
 		private static readonly HashSet<string> AllSchemasInternal = new HashSet<string>(SchemasInternal) { OwnerNameSys, "\"SYSTEM\"", InitialSchema, SchemaPublic };
 		private static readonly OracleFunctionMetadataCollection AllFunctionMetadataInternal;
-		private static readonly ILookup<string, OracleFunctionMetadata> NonSchemaBuiltInFunctionMetadataInternal;
+		private static readonly Dictionary<string, OracleFunctionMetadata> NonSchemaBuiltInFunctionMetadataInternal;
 
 		private readonly IDictionary<OracleObjectIdentifier, OracleSchemaObject> _allObjects;
 
@@ -57,17 +57,18 @@ namespace SqlPad.Oracle.Test
 
 		static OracleTestDatabaseModel()
 		{
-			using (var builtInFunctionReader = XmlReader.Create(File.OpenRead(@"TestFiles\OracleSqlFunctionMetadataCollection_12_1_0_1_0.xml")))
+			/*using (var builtInFunctionReader = XmlReader.Create(File.OpenRead(@"TestFiles\OracleSqlFunctionMetadataCollection_12_1_0_1_0.xml")))
 			{
 				var builtInFunctionMetadata = (OracleFunctionMetadataCollection)Serializer.ReadObject(builtInFunctionReader);
 				NonSchemaBuiltInFunctionMetadataInternal = builtInFunctionMetadata.SqlFunctions
 					.Where(f => String.IsNullOrEmpty(f.Identifier.Owner))
-					.ToLookup(f => f.Identifier.Name, f => f);
+					.ToDictionary(f => f.Identifier.Name, f => f);
 
 				var testFolder = Path.GetDirectoryName(typeof(OracleTestDatabaseModel).Assembly.CodeBase);
 				using (var reader = XmlReader.Create(Path.Combine(testFolder, @"TestFiles\TestFunctionCollection.xml")))
 				{
-					AllFunctionMetadataInternal = new OracleFunctionMetadataCollection(builtInFunctionMetadata.SqlFunctions.Concat(((OracleFunctionMetadataCollection)Serializer.ReadObject(reader)).SqlFunctions));
+					var obosolete = (OracleFunctionMetadataCollection)Serializer.ReadObject(reader);
+					AllFunctionMetadataInternal = new OracleFunctionMetadataCollection(builtInFunctionMetadata.SqlFunctions.Concat(obosolete.SqlFunctions));
 				}
 			}
 
@@ -91,7 +92,7 @@ namespace SqlPad.Oracle.Test
 				{
 					((OracleFunction)schemaObject).Metadata = function;
 				}
-			}
+			}*/
 
 			const string tableNameDual = "\"DUAL\"";
 			var synonym =
@@ -165,6 +166,76 @@ namespace SqlPad.Oracle.Test
 			uncompilablePackageFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "NUMBER", false));
 			uncompilablePackage.Functions.Add(uncompilablePackageFunctionMetadata);
 
+			var userCountFunction = (OracleFunction)AllObjectsInternal.Single(o => o.Name == "\"COUNT\"" && o.Owner == InitialSchema);
+			userCountFunction.Metadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), null, "COUNT"), false, false, false, false, false, false, null, null, AuthId.Definer, OracleFunctionMetadata.DisplayTypeNormal, false);
+			userCountFunction.Metadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "NUMBER", false));
+
+			var sqlPadFunction = (OracleFunction)AllObjectsInternal.Single(o => o.Name == "\"SQLPAD_FUNCTION\"" && o.Owner == InitialSchema);
+			sqlPadFunction.Metadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), null, "SQLPAD_FUNCTION"), false, false, false, false, false, false, null, null, AuthId.Definer, OracleFunctionMetadata.DisplayTypeNormal, false);
+			sqlPadFunction.Metadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "VARCHAR2", false));
+
+			var testFunction = (OracleFunction)AllObjectsInternal.Single(o => o.Name == "\"TESTFUNC\"" && o.Owner == InitialSchema);
+			testFunction.Metadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), null, "TESTFUNC"), false, false, false, false, false, false, null, null, AuthId.Definer, OracleFunctionMetadata.DisplayTypeNormal, false);
+			testFunction.Metadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "NUMBER", false));
+			testFunction.Metadata.Parameters.Add(new OracleFunctionParameterMetadata("PARAM", 1, ParameterDirection.ReturnValue, "NUMBER", false));
+
+			var sqlPadPackage = (OraclePackage)AllObjectsInternal.Single(o => o.Name == "\"SQLPAD\"" && o.Owner == InitialSchema);
+			var packageSqlPadFunctionMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), "SQLPAD", "SQLPAD_FUNCTION"), false, false, false, false, false, false, null, null, AuthId.Definer, OracleFunctionMetadata.DisplayTypeNormal, false);
+			packageSqlPadFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "NUMBER", false));
+			packageSqlPadFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("P", 1, ParameterDirection.Input, "NUMBER", false));
+			sqlPadPackage.Functions.Add(packageSqlPadFunctionMetadata);
+
+			var asPdfPackage = (OraclePackage)AllObjectsInternal.Single(o => o.Name == "\"AS_PDF3\"" && o.Owner == InitialSchema);
+			var asPdfPackageFunctionMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), "AS_PDF3", "STR_LEN"), false, false, false, false, false, false, null, null, AuthId.Definer, OracleFunctionMetadata.DisplayTypeNormal, false);
+			asPdfPackageFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "NUMBER", false));
+			asPdfPackageFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("P_TXT", 1, ParameterDirection.Input, "VARCHAR2", false));
+			asPdfPackage.Functions.Add(asPdfPackageFunctionMetadata);
+
+			var builtInFunctionPackage = (OraclePackage)AllObjectsInternal.Single(o => o.Name == OracleFunctionMetadataCollection.PackageBuiltInFunction && o.Owner == OwnerNameSys);
+			var toCharFunctionMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues("SYS", "STANDARD", "TO_CHAR"), false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNormal, true);
+			toCharFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "VARCHAR2", false));
+			toCharFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("V", 1, ParameterDirection.Input, "NUMBER", false));
+			builtInFunctionPackage.Functions.Add(toCharFunctionMetadata);
+
+			var roundFunctionOverload1Metadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues("SYS", "STANDARD", "ROUND", 1), false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNormal, true);
+			roundFunctionOverload1Metadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "NUMBER", false));
+			roundFunctionOverload1Metadata.Parameters.Add(new OracleFunctionParameterMetadata("N", 1, ParameterDirection.Input, "NUMBER", false));
+			builtInFunctionPackage.Functions.Add(roundFunctionOverload1Metadata);
+
+			var roundFunctionOverload2Metadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues("SYS", "STANDARD", "ROUND", 2), false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNormal, true);
+			roundFunctionOverload2Metadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "NUMBER", false));
+			roundFunctionOverload2Metadata.Parameters.Add(new OracleFunctionParameterMetadata("N", 1, ParameterDirection.Input, "NUMBER", false));
+			roundFunctionOverload2Metadata.Parameters.Add(new OracleFunctionParameterMetadata("F", 2, ParameterDirection.Input, "NUMBER", false));
+			builtInFunctionPackage.Functions.Add(roundFunctionOverload2Metadata);
+
+			var dumpFunctionMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues("SYS", "STANDARD", "DUMP"), false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNormal, true);
+			builtInFunctionPackage.Functions.Add(dumpFunctionMetadata);
+
+			var coalesceFunctionMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues("SYS", "STANDARD", "COALESCE"), false, false, false, true, false, false, 2, null, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNormal, true);
+			builtInFunctionPackage.Functions.Add(coalesceFunctionMetadata);
+
+			var greatestFunctionMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues("SYS", "STANDARD", "GREATEST"), false, false, false, true, false, false, 2, null, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNormal, true);
+			builtInFunctionPackage.Functions.Add(greatestFunctionMetadata);
+
+			var noParenthesisFunctionMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues("SYS", "STANDARD", "SESSIONTIMEZONE"), false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNoParenthesis, true);
+			builtInFunctionPackage.Functions.Add(noParenthesisFunctionMetadata);
+
+			var nvlFunctionMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues("SYS", "STANDARD", "NVL"), false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNormal, true);
+			nvlFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "VARCHAR2", false));
+			nvlFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("B1", 1, ParameterDirection.Input, "VARCHAR2", false));
+			nvlFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("B2", 2, ParameterDirection.Input, "VARCHAR2", false));
+			builtInFunctionPackage.Functions.Add(nvlFunctionMetadata);
+
+			var upperFunctionMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues("SYS", "STANDARD", "UPPER"), false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNormal, true);
+			upperFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "VARCHAR2", false));
+			upperFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("CH", 0, ParameterDirection.Input, "VARCHAR2", false));
+			builtInFunctionPackage.Functions.Add(upperFunctionMetadata);
+
+			var sysGuidFunctionMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues("SYS", "STANDARD", "SYS_GUID"), false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeParenthesis, true);
+			sysGuidFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "RAW", false));
+			builtInFunctionPackage.Functions.Add(sysGuidFunctionMetadata);
+
+
 			AllObjectDictionary = AllObjectsInternal.ToDictionary(o => o.FullyQualifiedName, o => o);
 
 			ObjectsInternal = AllObjectDictionary
@@ -172,6 +243,22 @@ namespace SqlPad.Oracle.Test
 				.ToDictionary(o => OracleObjectIdentifier.Create(o.Owner, o.Name), o => o);
 
 			AddConstraints();
+
+			var allFunctionMetadata = AllObjectsInternal.OfType<IFunctionCollection>().SelectMany(c => c.Functions).ToList();
+
+			var countFunctionMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues(null, null, "COUNT"), true, true, false, false, false, false, 1, 1, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNormal, true);
+			allFunctionMetadata.Add(countFunctionMetadata);
+
+			var maxFunctionMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues(null, null, "MAX"), true, true, false, false, false, false, 1, 1, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNormal, true);
+			allFunctionMetadata.Add(maxFunctionMetadata);
+
+			var lastValueFunctionMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues(null, null, "LAST_VALUE"), true, false, false, false, false, false, 1, 1, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNormal, true);
+			allFunctionMetadata.Add(lastValueFunctionMetadata);
+
+			AllFunctionMetadataInternal = new OracleFunctionMetadataCollection(allFunctionMetadata);
+			NonSchemaBuiltInFunctionMetadataInternal = allFunctionMetadata
+				.Where(m => String.IsNullOrEmpty(m.Identifier.Owner))
+				.ToDictionary(m => m.Identifier.Name, m => m);
 
 			Instance = new OracleTestDatabaseModel { CurrentSchema = InitialSchema };
 		}
@@ -298,7 +385,7 @@ namespace SqlPad.Oracle.Test
 
 		public override OracleFunctionMetadataCollection AllFunctionMetadata { get { return AllFunctionMetadataInternal; } }
 
-		protected override ILookup<string, OracleFunctionMetadata> NonSchemaBuiltInFunctionMetadata { get { return NonSchemaBuiltInFunctionMetadataInternal; } }
+		protected override IDictionary<string, OracleFunctionMetadata> NonSchemaBuiltInFunctionMetadata { get { return NonSchemaBuiltInFunctionMetadataInternal; } }
 
 		private static readonly HashSet<OracleSchemaObject> AllObjectsInternal = new HashSet<OracleSchemaObject>
 		{
@@ -426,9 +513,39 @@ namespace SqlPad.Oracle.Test
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"UNCOMPILABLE_FUNCTION\"")
 			},
+			new OracleFunction
+			{
+				FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"SQLPAD_FUNCTION\""),
+				IsValid = true
+			},
+			new OracleFunction
+			{
+				FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"COUNT\""),
+				IsValid = true
+			},
+			new OracleFunction
+			{
+				FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"TESTFUNC\""),
+				IsValid = true
+			},
 			new OraclePackage
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"UNCOMPILABLE_PACKAGE\"")
+			},
+			new OraclePackage
+			{
+				FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"SQLPAD\""),
+				IsValid = true
+			},
+			new OraclePackage
+			{
+				FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"AS_PDF3\""),
+				IsValid = true
+			},
+			new OraclePackage
+			{
+				FullyQualifiedName = OracleObjectIdentifier.Create(OwnerNameSys, OracleFunctionMetadataCollection.PackageBuiltInFunction),
+				IsValid = true
 			},
 			new OracleObjectType
 			{

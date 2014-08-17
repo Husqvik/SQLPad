@@ -1,16 +1,37 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.IO;
 using System.Linq;
 
 namespace SqlPad
 {
 	public static class ConfigurationProvider
 	{
+		private const string FolderNameSqlPad = "SQL Pad";
+		private const string PostfixErrorLog = "ErrorLog";
+		private const string PostfixWorkArea = "WorkArea";
+		private const string PostfixMetadataCache = "MetadataCache";
+
+		private static readonly string DefaultUserDataFolderName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), FolderNameSqlPad);
+
+		public static string FolderNameUserData = DefaultUserDataFolderName;
+		private static string _folderNameErrorLog;
+		private static string _folderNameWorkArea;
+		private static string _folderNameMetadataCache;
+
+		public static readonly string FolderNameApplication = Path.GetDirectoryName(typeof(App).Assembly.Location);
+
+		private static string _folderNameSnippets = Path.Combine(FolderNameApplication, Snippets.SnippetDirectoryName);
+
 		private static readonly Dictionary<string, ConnectionConfiguration> InternalInfrastructureFactories;
 
 		static ConfigurationProvider()
 		{
+			SetWorkAreaAndErrorLogFolders();
+
+			CreateDirectoryIfNotExists(DefaultUserDataFolderName, _folderNameWorkArea);
+
 			var databaseConfiguration = (DatabaseConnectionConfigurationSection)ConfigurationManager.GetSection(DatabaseConnectionConfigurationSection.SectionName);
 			if (databaseConfiguration == null)
 			{
@@ -34,6 +55,71 @@ namespace SqlPad
 		}
 
 		public static ConnectionStringSettingsCollection ConnectionStrings { get { return ConfigurationManager.ConnectionStrings; } }
+
+		public static string FolderNameErrorLog
+		{
+			get
+			{
+				CreateDirectoryIfNotExists(_folderNameErrorLog);
+				return _folderNameErrorLog;
+			}
+		}
+
+		public static string FolderNameWorkArea { get { return _folderNameWorkArea; } }
+		
+		public static string FolderNameMetadataCache { get { return _folderNameMetadataCache; } }
+		
+		public static string FolderNameSnippets { get { return _folderNameSnippets; } }
+
+		public static void SetUserDataFolder(string directoryName)
+		{
+			CheckDirectoryExists(directoryName);
+
+			FolderNameUserData = directoryName;
+
+			SetWorkAreaAndErrorLogFolders();
+
+			ConfigureWorkArea();
+		}
+
+		public static void SetSnippetsFolder(string directoryName)
+		{
+			CheckDirectoryExists(directoryName);
+			
+			_folderNameSnippets = directoryName;
+		}
+
+		private static void CheckDirectoryExists(string directoryName)
+		{
+			if (!Directory.Exists(directoryName))
+			{
+				throw new ArgumentException(String.Format("Directory '{0}' does not exist. ", directoryName));
+			}
+		}
+
+		private static void SetWorkAreaAndErrorLogFolders()
+		{
+			_folderNameErrorLog = Path.Combine(FolderNameUserData, PostfixErrorLog);
+			_folderNameWorkArea = Path.Combine(FolderNameUserData, PostfixWorkArea);
+			_folderNameMetadataCache = Path.Combine(FolderNameUserData, PostfixMetadataCache);
+		}
+
+		private static void ConfigureWorkArea()
+		{
+			CreateDirectoryIfNotExists(_folderNameWorkArea);
+			WorkingDocumentCollection.Configure();
+		}
+
+		private static void CreateDirectoryIfNotExists(params string[] directoryNames)
+		{
+			foreach (var directoryName in directoryNames)
+			{
+				if (!Directory.Exists(directoryName))
+				{
+					Directory.CreateDirectory(directoryName);
+				}
+			}
+		}
 	}
 
 	public class ConnectionConfiguration
