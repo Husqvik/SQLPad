@@ -22,6 +22,8 @@ namespace SqlPad
 		{
 			InitializeComponent();
 
+			SetMaximumHeight();
+
 			HexEditor.TextArea.TextView.ElementGenerators.Clear();
 
 			_findReplaceManager = (FindReplaceManager)Resources["FindReplaceManager"];
@@ -108,7 +110,7 @@ namespace SqlPad
 						Messages.ShowError("Invalid password");
 					}
 
-					var passwordDialog = new PasswordDialog("PDF password: ");
+					var passwordDialog = new PasswordDialog("PDF password: ") { Owner = this };
 					if (passwordDialog.ShowDialog() != true)
 					{
 						return true;
@@ -204,6 +206,16 @@ namespace SqlPad
 		private void RefreshPdfHandler(object sender, ExecutedRoutedEventArgs e)
 		{
 			ChangePdfPage(() => PdfViewer.ZoomToHeight());
+		}
+
+		private void WindowStateChanged(object sender, EventArgs e)
+		{
+			SetMaximumHeight();
+		}
+
+		private void SetMaximumHeight()
+		{
+			MaxHeight = WindowState == WindowState.Maximized ? Double.PositiveInfinity : SystemParameters.WorkArea.Height;
 		}
 	}
 }

@@ -9,9 +9,10 @@
 		xmlns:moonPdfLib="clr-namespace:MoonPdfLib;assembly=MoonPdfLib"
 		mc:Ignorable="d"
 		d:DesignHeight="640" d:DesignWidth="320"
-        Title="" Width="Auto" Height="Auto" MinHeight="320" MinWidth="480"
+        Width="Auto" Height="Auto" MinHeight="320" MinWidth="480"
 		Loaded="LargeValueEditorLoadedHandler"
-		SizeToContent="WidthAndHeight" WindowStartupLocation="CenterOwner" Icon="EmptyIcon.ico">
+		StateChanged="WindowStateChanged"
+		SizeToContent="WidthAndHeight" WindowStartupLocation="CenterOwner" Icon="EmptyIcon.ico" ShowInTaskbar="False">
 
 	<Window.Resources>
 		<findReplace:FindReplaceManager x:Key="FindReplaceManager" />
