@@ -1036,14 +1036,24 @@ namespace SqlPad
 		{
 			DisableCodeCompletion();
 
-			EditorTextChangedHandler(this, EventArgs.Empty);
+			Parse();
 		}
 
 		private void EditorTextChangedHandler(object sender, EventArgs e)
 		{
+			if (_isInitializing)
+			{
+				return;
+			}
+
 			WorkingDocument.IsModified = IsDirty;
 			_pageModel.DocumentHeader = DocumentHeader;
 
+			Parse();
+		}
+
+		private void Parse()
+		{
 			if (_isParsing)
 			{
 				if (!_timerReParse.Enabled)
@@ -1065,10 +1075,10 @@ namespace SqlPad
 			{
 				var asynchronousAction =
 					new Action(async () =>
-					                 {
-						                 await _sqlDocumentRepository.UpdateStatementsAsync(Editor.Text);
-										 ParseDoneHandler();
-					                 });
+					{
+						await _sqlDocumentRepository.UpdateStatementsAsync(Editor.Text);
+						ParseDoneHandler();
+					});
 
 				asynchronousAction.Invoke();
 			}
