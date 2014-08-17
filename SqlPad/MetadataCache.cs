@@ -43,7 +43,10 @@ namespace SqlPad
 						File.Delete(CacheConfigrationFileName);
 						DatabaseModelCacheConfiguration = new DatabaseModelCacheConfiguration();
 					}
-					catch { }
+					catch(Exception e)
+					{
+						Trace.WriteLine("DatabaseModelCacheConfiguration deserialization failed: " + e);
+					}
 				}
 			}
 		}
@@ -70,15 +73,15 @@ namespace SqlPad
 			if (DatabaseModelCacheConfiguration == null)
 				return;
 
-			CacheFile cacheFile;
-			if (!DatabaseModelCacheConfiguration.Files.TryGetValue(cacheKey, out cacheFile))
-			{
-				DatabaseModelCacheConfiguration.Files[cacheKey] =
-					cacheFile = new CacheFile { FileName = Thread.CurrentThread.ManagedThreadId + DateTime.Now.Ticks.ToString(CultureInfo.CurrentUICulture) + ".dat" };
-			}
-
 			lock (DatabaseModelCacheConfiguration)
 			{
+				CacheFile cacheFile;
+				if (!DatabaseModelCacheConfiguration.Files.TryGetValue(cacheKey, out cacheFile))
+				{
+					DatabaseModelCacheConfiguration.Files[cacheKey] =
+						cacheFile = new CacheFile { FileName = Thread.CurrentThread.ManagedThreadId + DateTime.Now.Ticks.ToString(CultureInfo.CurrentUICulture) + ".dat" };
+				}
+
 				var timer = Stopwatch.StartNew();
 
 				using (var stream = File.Create(GetFullFileName(cacheFile.FileName)))

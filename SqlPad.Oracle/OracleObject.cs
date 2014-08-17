@@ -139,12 +139,9 @@ namespace SqlPad.Oracle
 	[DebuggerDisplay("OraclePackage (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
 	public class OraclePackage : OracleSchemaObject, IFunctionCollection
 	{
-		public OraclePackage()
-		{
-			Functions = new HashSet<OracleFunctionMetadata>();
-		}
+		private readonly List<OracleFunctionMetadata> _functions = new List<OracleFunctionMetadata>();
 
-		public ICollection<OracleFunctionMetadata> Functions { get; private set; } 
+		public ICollection<OracleFunctionMetadata> Functions { get { return _functions; } } 
 
 		public override string Type { get { return OracleSchemaObjectType.Package; } }
 	}

@@ -101,11 +101,11 @@ namespace SqlPad.Oracle
 
 			var oraclePackageType = Serializer.Add(typeof(OraclePackage), false);
 			oraclePackageType.AsReferenceDefault = true;
-			oraclePackageType.Add("Functions");
+			oraclePackageType.Add("_functions");
 
 			var oracleFunctionType = Serializer.Add(typeof(OracleFunction), false);
 			oracleFunctionType.AsReferenceDefault = true;
-			oracleFunctionType.Add("Metadata");
+			oracleFunctionType.Add("_metadata");
 
 			oracleTypeBaseType.AddSubType(101, typeof(OracleObjectType));
 			oracleTypeBaseType.AddSubType(102, typeof(OracleCollectionType));
@@ -127,10 +127,12 @@ namespace SqlPad.Oracle
 			oracleFunctionIdentifierType.Add("Owner", "Name", "Package", "Overload");
 
 			var oracleFunctionMetadataType = Serializer.Add(typeof(OracleFunctionMetadata), false);
+			oracleFunctionMetadataType.AsReferenceDefault = true;
 			oracleFunctionMetadataType.UseConstructor = false;
-			oracleFunctionMetadataType.Add("Identifier", "DataType", "IsAnalytic", "IsAggregate", "IsPipelined", "IsOffloadable", "ParallelSupport", "IsDeterministic", "_metadataMinimumArguments", "_metadataMaximumArguments", "AuthId", "DisplayType", "IsBuiltIn", "Parameters");
+			oracleFunctionMetadataType.Add("Parameters", "Identifier", "DataType", "IsAnalytic", "IsAggregate", "IsPipelined", "IsOffloadable", "ParallelSupport", "IsDeterministic", "_metadataMinimumArguments", "_metadataMaximumArguments", "AuthId", "DisplayType", "IsBuiltIn");
 
 			var oracleFunctionParameterMetadataType = Serializer.Add(typeof(OracleFunctionParameterMetadata), false);
+			oracleFunctionMetadataType.AsReferenceDefault = true;
 			oracleFunctionParameterMetadataType.UseConstructor = false;
 			oracleFunctionParameterMetadataType.Add("Name", "Position", "DataType", "Direction", "IsOptional");
 		}
