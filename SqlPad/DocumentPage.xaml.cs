@@ -110,7 +110,7 @@ namespace SqlPad
 
 			InitializeGenericCommandBindings();
 
-			_timerReParse.Elapsed += (sender, args) => Dispatcher.Invoke(ReParse);
+			_timerReParse.Elapsed += (sender, args) => Dispatcher.Invoke(Parse);
 			_timerExecutionMonitor.Elapsed += (sender, args) => Dispatcher.Invoke(() => TextExecutionTime.Text = FormatElapsedMilliseconds(_stopWatch.Elapsed));
 
 			_pageModel = new PageModel(this);
@@ -1069,6 +1069,7 @@ namespace SqlPad
 				return;
 			}
 
+			_timerReParse.Stop();
 			_isParsing = true;
 
 			if (IsParsingSynchronous)
@@ -1088,8 +1089,6 @@ namespace SqlPad
 			_colorizingTransformer.SetDocumentRepository(_sqlDocumentRepository);
 
 			Dispatcher.Invoke(ParseDoneUiHandler);
-
-			_timerReParse.Stop();
 		}
 
 		private void ParseDoneUiHandler()

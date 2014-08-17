@@ -45,19 +45,26 @@ namespace SqlPad
 
 		public void UpdateStatements(string statementText)
 		{
-			UpdateStatementsInternal(statementText, () => _parser.Parse(statementText));
+			UpdateStatementsInternal(statementText, () => _parser.Parse(statementText), BuildValidationModels);
 		}
 
 		public async Task UpdateStatementsAsync(string statementText)
 		{
 			var statements = await _parser.ParseAsync(statementText, CancellationToken.None);
-			UpdateStatementsInternal(statementText, () => statements);
+			var validationModels = await Task.Factory.StartNew(() => BuildValidationModels(statements, statementText));
+			
+			UpdateStatementsInternal(statementText, () => statements, (c, t) => validationModels);
 		}
 
-		private void UpdateStatementsInternal(string statementText, Func<StatementCollection> parseFunction)
+		private IDictionary<StatementBase, IValidationModel> BuildValidationModels(StatementCollection statements, string statementText)
+		{
+			return new ReadOnlyDictionary<StatementBase, IValidationModel>(statements.ToDictionary(s => s, s => _validator.BuildValidationModel(_validator.BuildSemanticModel(statementText, s, _databaseModel))));
+		}
+
+		private void UpdateStatementsInternal(string statementText, Func<StatementCollection> parseFunction, Func<StatementCollection, string, IDictionary<StatementBase, IValidationModel>> buildValidationModelFunction)
 		{
 			var statements = parseFunction();
-			var validationModels = new ReadOnlyDictionary<StatementBase, IValidationModel>(statements.ToDictionary(s => s, s => _validator.BuildValidationModel(_validator.BuildSemanticModel(statementText, s, _databaseModel))));
+			var validationModels = buildValidationModelFunction(statements, statementText);
 
 			lock (_lockObject)
 			{
