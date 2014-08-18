@@ -95,7 +95,7 @@ namespace SqlPad
 
 			if (WorkingDocumentCollection.WorkingDocuments.Count > 0)
 			{
-				foreach (var workingDocument in WorkingDocumentCollection.WorkingDocuments)
+				foreach (var workingDocument in WorkingDocumentCollection.WorkingDocuments.OrderBy(d => d.TabIndex))
 				{
 					CreateNewDocumentPage(workingDocument);
 				}
@@ -163,6 +163,11 @@ namespace SqlPad
 
 			DocumentTabControl.Items.Insert(DocumentTabControl.Items.Count - 1, newDocumentPage.TabItem);
 			DocumentTabControl.SelectedItem = newDocumentPage.TabItem;
+
+			if (workingDocument == null)
+			{
+				newDocumentPage.WorkingDocument.TabIndex = DocumentTabControl.TabIndex;
+			}
 
 			_findReplaceManager.CurrentEditor = newDocumentPage.EditorAdapter;
 		}
@@ -308,19 +313,22 @@ namespace SqlPad
 				return;
 			}
 
-			var tabControl = (TabControl)tabItemTarget.Parent;
-			var indexFrom = tabControl.Items.IndexOf(tabItemDragged);
-			var indexTo = tabControl.Items.IndexOf(tabItemTarget);
+			var indexFrom = DocumentTabControl.Items.IndexOf(tabItemDragged);
+			var workingDocumentFrom = ((DocumentPage)tabItemDragged.Content).WorkingDocument;
+			var indexTo = DocumentTabControl.Items.IndexOf(tabItemTarget);
+			var workingDocumentTo = ((DocumentPage)tabItemTarget.Content).WorkingDocument;
 
-			tabControl.SelectedIndex = 0;
+			DocumentTabControl.SelectedIndex = 0;
 
-			tabControl.Items.Remove(tabItemDragged);
-			tabControl.Items.Insert(indexTo, tabItemDragged);
+			DocumentTabControl.Items.Remove(tabItemDragged);
+			DocumentTabControl.Items.Insert(indexTo, tabItemDragged);
+			workingDocumentFrom.TabIndex = indexTo;
 
-			tabControl.Items.Remove(tabItemTarget);
-			tabControl.Items.Insert(indexFrom, tabItemTarget);
-			
-			tabControl.SelectedIndex = indexTo;
+			DocumentTabControl.Items.Remove(tabItemTarget);
+			DocumentTabControl.Items.Insert(indexFrom, tabItemTarget);
+			workingDocumentTo.TabIndex = indexFrom;
+
+			DocumentTabControl.SelectedIndex = indexTo;
 		}
 
 		private void DocumentTabControlPreviewMouseMoveHandler(object sender, MouseEventArgs e)

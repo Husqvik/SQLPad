@@ -25,7 +25,8 @@ namespace SqlPad.Test
 					SelectionStart = 10,
 					EditorGridRowHeight = 142.17,
 					EditorGridColumnWidth = 98.32,
-					Text = "SELECT * FROM DUAL"
+					Text = "SELECT * FROM DUAL",
+					TabIndex = 3
 				};
 
 			const int expectedActiveDocumentIndex = 666;
@@ -35,7 +36,7 @@ namespace SqlPad.Test
 
 			var fileInfo = new FileInfo(Path.Combine(TempDirectoryName, "WorkArea", WorkingDocumentCollection.ConfigurationFileName));
 			fileInfo.Exists.ShouldBe(true);
-			fileInfo.Length.ShouldBe(163);
+			fileInfo.Length.ShouldBe(165);
 
 			WorkingDocumentCollection.Configure();
 			WorkingDocumentCollection.WorkingDocuments.Count.ShouldBe(1);
@@ -53,6 +54,7 @@ namespace SqlPad.Test
 			deserializedWorkingDocument.DocumentId.ShouldBe(newWorkingDocument.DocumentId);
 			deserializedWorkingDocument.EditorGridRowHeight.ShouldBe(newWorkingDocument.EditorGridRowHeight);
 			deserializedWorkingDocument.EditorGridColumnWidth.ShouldBe(newWorkingDocument.EditorGridColumnWidth);
+			deserializedWorkingDocument.TabIndex.ShouldBe(newWorkingDocument.TabIndex);
 
 			WorkingDocumentCollection.ActiveDocumentIndex.ShouldBe(expectedActiveDocumentIndex);
 		}
