@@ -23,8 +23,14 @@ namespace SqlPad.Oracle.Test
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 8);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
-			toolTip.Control.DataContext.ShouldBe("SELECTION.NAME VARCHAR2(50 BYTE) NOT NULL");
+			toolTip.Control.ShouldBeTypeOf<ToolTipColumn>();
+			toolTip.Control.DataContext.ShouldBeTypeOf<ColumnDetailsModel>();
+			var dataModel = (ColumnDetailsModel)toolTip.Control.DataContext;
+			dataModel.Owner.ShouldBe("HUSQVIK.SELECTION");
+			dataModel.Name.ShouldBe("NAME");
+			dataModel.DataType.ShouldBe("VARCHAR2(50 BYTE)");
+			dataModel.Nullable.ShouldBe(false);
+			dataModel.LastAnalyzed.ShouldBe(new DateTime(2014, 8, 19, 6, 18, 12));
 		}
 
 		[Test(Description = @""), STAThread]
@@ -35,8 +41,32 @@ namespace SqlPad.Oracle.Test
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 8);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
-			toolTip.Control.DataContext.ShouldBe("SELECTION.ROWID ROWID NOT NULL");
+			toolTip.Control.ShouldBeTypeOf<ToolTipColumn>();
+			toolTip.Control.DataContext.ShouldBeTypeOf<ColumnDetailsModel>();
+			var dataModel = (ColumnDetailsModel)toolTip.Control.DataContext;
+			dataModel.Owner.ShouldBe("HUSQVIK.SELECTION");
+			dataModel.Name.ShouldBe("ROWID");
+			dataModel.DataType.ShouldBe("ROWID");
+			dataModel.Nullable.ShouldBe(false);
+			dataModel.LastAnalyzed.ShouldBe(new DateTime(2014, 8, 19, 6, 18, 12));
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestNullableColumnTypeToolTip()
+		{
+			const string query = "SELECT RESPONDENTBUCKET_ID FROM SELECTION";
+			_documentRepository.UpdateStatements(query);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 8);
+
+			toolTip.Control.ShouldBeTypeOf<ToolTipColumn>();
+			toolTip.Control.DataContext.ShouldBeTypeOf<ColumnDetailsModel>();
+			var dataModel = (ColumnDetailsModel)toolTip.Control.DataContext;
+			dataModel.Owner.ShouldBe("HUSQVIK.SELECTION");
+			dataModel.Name.ShouldBe("RESPONDENTBUCKET_ID");
+			dataModel.DataType.ShouldBe("NUMBER(9)");
+			dataModel.Nullable.ShouldBe(true);
+			dataModel.LastAnalyzed.ShouldBe(new DateTime(2014, 8, 19, 6, 18, 12));
 		}
 
 		[Test(Description = @""), STAThread]
@@ -47,8 +77,13 @@ namespace SqlPad.Oracle.Test
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 8);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
-			toolTip.Control.DataContext.ShouldBe("INVOICELINES.AMOUNT NUMBER(20, 2) NOT NULL");
+			toolTip.Control.ShouldBeTypeOf<ToolTipColumn>();
+			toolTip.Control.DataContext.ShouldBeTypeOf<ColumnDetailsModel>();
+			var dataModel = (ColumnDetailsModel)toolTip.Control.DataContext;
+			dataModel.Owner.ShouldBe("HUSQVIK.INVOICELINES");
+			dataModel.Name.ShouldBe("AMOUNT");
+			dataModel.DataType.ShouldBe("NUMBER(20, 2)");
+			dataModel.Nullable.ShouldBe(false);
 		}
 
 		[Test(Description = @""), STAThread]
@@ -59,8 +94,13 @@ namespace SqlPad.Oracle.Test
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 8);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
-			toolTip.Control.DataContext.ShouldBe("INVOICELINES.CORRELATION_VALUE NUMBER(*, 5) NOT NULL");
+			toolTip.Control.ShouldBeTypeOf<ToolTipColumn>();
+			toolTip.Control.DataContext.ShouldBeTypeOf<ColumnDetailsModel>();
+			var dataModel = (ColumnDetailsModel)toolTip.Control.DataContext;
+			dataModel.Owner.ShouldBe("HUSQVIK.INVOICELINES");
+			dataModel.Name.ShouldBe("CORRELATION_VALUE");
+			dataModel.DataType.ShouldBe("NUMBER(*, 5)");
+			dataModel.Nullable.ShouldBe(false);
 		}
 
 		[Test(Description = @""), STAThread]

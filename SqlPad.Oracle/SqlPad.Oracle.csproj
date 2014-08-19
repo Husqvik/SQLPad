@@ -129,6 +129,9 @@
     <Compile Include="OracleTokenReader.cs" />
     <Compile Include="OracleToolTipProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ToolTips\ToolTipColumn.xaml.cs">
+      <DependentUpon>ToolTipColumn.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ToolTips\ToolTipObject.xaml.cs">
       <DependentUpon>ToolTipObject.xaml</DependentUpon>
     </Compile>
@@ -164,6 +167,10 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
+    <Page Include="ToolTips\ToolTipColumn.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="ToolTips\ToolTipObject.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

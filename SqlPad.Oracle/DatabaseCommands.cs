@@ -191,6 +191,10 @@ FROM SYS.ALL_TABLES";
 
 		public const string SelectDatabaseLinksCommandText = "SELECT OWNER, DB_LINK, USERNAME, HOST, CREATED FROM ALL_DB_LINKS";
 
+		public const string GetColumnStatisticsCommand = "SELECT NUM_DISTINCT, LOW_VALUE, HIGH_VALUE, DENSITY, NUM_NULLS, NUM_BUCKETS, LAST_ANALYZED, SAMPLE_SIZE, AVG_COL_LEN, HISTOGRAM FROM ALL_TAB_COL_STATISTICS WHERE OWNER = :OWNER AND TABLE_NAME = :TABLE_NAME AND COLUMN_NAME = :COLUMN_NAME";
+
+		public const string GetColumnHistogramCommand = "SELECT ENDPOINT_NUMBER FROM ALL_TAB_HISTOGRAMS WHERE OWNER = :OWNER AND TABLE_NAME = :TABLE_NAME AND COLUMN_NAME = :COLUMN_NAME";
+
 		private static string ToInValueList(params string[] values)
 		{
 			return String.Join(", ", values.Select(t => String.Format("'{0}'", t)));

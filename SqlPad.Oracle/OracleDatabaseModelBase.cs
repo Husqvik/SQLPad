@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using SqlPad.Oracle.ToolTips;
 
 namespace SqlPad.Oracle
 {
@@ -46,6 +47,8 @@ namespace SqlPad.Oracle
 		public abstract ICollection<ColumnHeader> GetColumnHeaders();
 
 		public abstract Task<string> GetObjectScriptAsync(OracleSchemaObject schemaObject, CancellationToken cancellationToken, bool suppressUserCancellationException = true);
+
+		public abstract Task UpdateColumnDetailsAsync(OracleObjectIdentifier schemaObject, string columnName, ColumnDetailsModel dataModel, CancellationToken cancellationToken);
 
 		public abstract bool CanFetch { get; }
 

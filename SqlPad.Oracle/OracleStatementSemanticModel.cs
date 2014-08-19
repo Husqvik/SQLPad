@@ -9,12 +9,24 @@ namespace SqlPad.Oracle
 	public class OracleStatementSemanticModel : IStatementSemanticModel
 	{
 		private Dictionary<StatementGrammarNode, OracleQueryBlock> _queryBlockNodes = new Dictionary<StatementGrammarNode, OracleQueryBlock>();
+		private readonly OracleDatabaseModelBase _databaseModel;
 		private readonly Dictionary<OracleSelectListColumn, ICollection<OracleDataObjectReference>> _asteriskTableReferences = new Dictionary<OracleSelectListColumn, ICollection<OracleDataObjectReference>>();
 		private readonly List<ICollection<OracleColumnReference>> _joinClauseColumnReferences = new List<ICollection<OracleColumnReference>>();
 		private readonly Dictionary<OracleQueryBlock, ICollection<StatementGrammarNode>> _accessibleQueryBlockRoot = new Dictionary<OracleQueryBlock, ICollection<StatementGrammarNode>>();
 		private readonly Dictionary<OracleDataObjectReference, ICollection<KeyValuePair<StatementGrammarNode, string>>> _objectReferenceCteRootNodes = new Dictionary<OracleDataObjectReference, ICollection<KeyValuePair<StatementGrammarNode, string>>>();
 
-		public OracleDatabaseModelBase DatabaseModel { get; private set; }
+		public OracleDatabaseModelBase DatabaseModel
+		{
+			get
+			{
+				if (_databaseModel == null)
+				{
+					throw new InvalidOperationException("This model does not include database model reference. ");
+				}
+
+				return _databaseModel;
+			}
+		}
 
 		IDatabaseModel IStatementSemanticModel.DatabaseModel { get { return DatabaseModel; } }
 
@@ -24,7 +36,7 @@ namespace SqlPad.Oracle
 		
 		public string StatementText { get; private set; }
 		
-		public bool IsSimpleModel { get { return DatabaseModel == null; } }
+		public bool IsSimpleModel { get { return _databaseModel == null; } }
 
 		public ICollection<OracleQueryBlock> QueryBlocks
 		{
@@ -62,7 +74,7 @@ namespace SqlPad.Oracle
 				throw new ArgumentNullException("statement");
 
 			Statement = statement;
-			DatabaseModel = databaseModel;
+			_databaseModel = databaseModel;
 
 			if (statement.RootNode == null)
 				return;
@@ -170,9 +182,9 @@ namespace SqlPad.Oracle
 						var objectName = tableIdentifierNode.Token.Value;
 						var owner = schemaPrefixNode == null ? null : schemaPrefixNode.Token.Value;
 
-						if (DatabaseModel != null)
+						if (!IsSimpleModel)
 						{
-							schemaObject = DatabaseModel.GetFirstSchemaObject<OracleDataObject>(DatabaseModel.GetPotentialSchemaObjectIdentifiers(owner, objectName));
+							schemaObject = _databaseModel.GetFirstSchemaObject<OracleDataObject>(_databaseModel.GetPotentialSchemaObjectIdentifiers(owner, objectName));
 						}
 					}
 
@@ -319,12 +331,12 @@ namespace SqlPad.Oracle
 
 		private void ResolveDatabaseLinks(OracleQueryBlock queryBlock)
 		{
-			if (DatabaseModel == null)
+			if (IsSimpleModel)
 				return;
 
 			foreach (var databaseLinkReference in queryBlock.DatabaseLinkReferences)
 			{
-				databaseLinkReference.DatabaseLink = DatabaseModel.GetFirstDatabaseLink(DatabaseModel.GetPotentialSchemaObjectIdentifiers(null, databaseLinkReference.DatabaseLinkNode.Token.Value));
+				databaseLinkReference.DatabaseLink = _databaseModel.GetFirstDatabaseLink(_databaseModel.GetPotentialSchemaObjectIdentifiers(null, databaseLinkReference.DatabaseLinkNode.Token.Value));
 			}
 		}
 
@@ -408,9 +420,9 @@ namespace SqlPad.Oracle
 			if (functionReference.ParameterListNode == null || functionReference.OwnerNode != null)
 				return null;
 
-			var identifierCandidates = DatabaseModel.GetPotentialSchemaObjectIdentifiers(functionReference.FullyQualifiedObjectName.NormalizedName, functionReference.NormalizedName);
+			var identifierCandidates = _databaseModel.GetPotentialSchemaObjectIdentifiers(functionReference.FullyQualifiedObjectName.NormalizedName, functionReference.NormalizedName);
 
-			var schemaObject = DatabaseModel.GetFirstSchemaObject<OracleTypeBase>(identifierCandidates);
+			var schemaObject = _databaseModel.GetFirstSchemaObject<OracleTypeBase>(identifierCandidates);
 			if (schemaObject == null)
 				return null;
 
@@ -432,26 +444,26 @@ namespace SqlPad.Oracle
 
 		private OracleFunctionMetadata UpdateFunctionReferenceWithMetadata(OracleProgramReference programReference)
 		{
-			if (DatabaseModel == null)
+			if (IsSimpleModel)
 				return null;
 
 			var owner = String.IsNullOrEmpty(programReference.FullyQualifiedObjectName.NormalizedOwner)
-				? DatabaseModel.CurrentSchema
+				? _databaseModel.CurrentSchema
 				: programReference.FullyQualifiedObjectName.NormalizedOwner;
 
 			var originalIdentifier = OracleFunctionIdentifier.CreateFromValues(owner, programReference.FullyQualifiedObjectName.NormalizedName, programReference.NormalizedName);
 			var parameterCount = programReference.ParameterNodes == null ? 0 : programReference.ParameterNodes.Count;
-			var result = DatabaseModel.GetFunctionMetadata(originalIdentifier, parameterCount, true);
+			var result = _databaseModel.GetFunctionMetadata(originalIdentifier, parameterCount, true);
 			if (result.Metadata == null && !String.IsNullOrEmpty(originalIdentifier.Package) && String.IsNullOrEmpty(programReference.FullyQualifiedObjectName.NormalizedOwner))
 			{
 				var identifier = OracleFunctionIdentifier.CreateFromValues(originalIdentifier.Package, null, originalIdentifier.Name);
-				result = DatabaseModel.GetFunctionMetadata(identifier, parameterCount, false);
+				result = _databaseModel.GetFunctionMetadata(identifier, parameterCount, false);
 			}
 
 			if (result.Metadata == null && String.IsNullOrEmpty(programReference.FullyQualifiedObjectName.NormalizedOwner))
 			{
 				var identifier = OracleFunctionIdentifier.CreateFromValues(OracleDatabaseModelBase.SchemaPublic, originalIdentifier.Package, originalIdentifier.Name);
-				result = DatabaseModel.GetFunctionMetadata(identifier, parameterCount, false);
+				result = _databaseModel.GetFunctionMetadata(identifier, parameterCount, false);
 			}
 
 			if (result.Metadata != null && String.IsNullOrEmpty(result.Metadata.Identifier.Package) &&
@@ -644,8 +656,8 @@ namespace SqlPad.Oracle
 				columnReference.ObjectNodeObjectReferences.Count > 0)
 				return;
 
-			var identifierCandidates = DatabaseModel.GetPotentialSchemaObjectIdentifiers(columnReference.FullyQualifiedObjectName);	
-			var schemaObject = DatabaseModel.GetFirstSchemaObject<OracleSequence>(identifierCandidates);
+			var identifierCandidates = _databaseModel.GetPotentialSchemaObjectIdentifiers(columnReference.FullyQualifiedObjectName);	
+			var schemaObject = _databaseModel.GetFirstSchemaObject<OracleSequence>(identifierCandidates);
 			if (schemaObject == null)
 				return;
 			

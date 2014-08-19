@@ -77,7 +77,7 @@ namespace SqlPad
 				if (!DatabaseModelCacheConfiguration.Files.TryGetValue(cacheKey, out cacheFile))
 				{
 					DatabaseModelCacheConfiguration.Files[cacheKey] =
-						cacheFile = new CacheFile { FileName = Thread.CurrentThread.ManagedThreadId + DateTime.Now.Ticks.ToString(CultureInfo.CurrentUICulture) + ".dat" };
+						cacheFile = new CacheFile { FileName = Thread.CurrentThread.ManagedThreadId + DateTime.Now.Ticks.ToString(CultureInfo.InvariantCulture) + ".dat" };
 				}
 
 				var timer = Stopwatch.StartNew();

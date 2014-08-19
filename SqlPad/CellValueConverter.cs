@@ -26,12 +26,43 @@ namespace SqlPad
 		}
 	}
 
-	public class SelectedIndexConverter : IValueConverter
+	public class SelectedIndexConverter : ValueConverter
 	{
-		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			return (int)value + 1;
 		}
+	}
+
+	public class DateTimeLabelConverter : ValueConverter
+	{
+		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			return value == null ? ValueNotAvailable : ((DateTime)value).ToString(CultureInfo.CurrentUICulture);
+		}
+	}
+
+	public class NumericConverter : ValueConverter
+	{
+		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			return value == null ? ValueNotAvailable : System.Convert.ToString(value);
+		}
+	}
+
+	public class BooleanLabelConverter : ValueConverter
+	{
+		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			return value == null ? ValueNotAvailable : (bool)value ? "Yes" : "No";
+		}
+	}
+
+	public abstract class ValueConverter : IValueConverter
+	{
+		public static string ValueNotAvailable = "N/A";
+
+		public abstract object Convert(object value, Type targetType, object parameter, CultureInfo culture);
 
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
 		{

@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Oracle.DataAccess.Client;
+using SqlPad.Oracle.ToolTips;
 using Timer = System.Timers.Timer;
 
 namespace SqlPad.Oracle
@@ -203,6 +204,73 @@ namespace SqlPad.Oracle
 						}
 
 						throw;
+					}
+				}
+			}
+		}
+
+		public async override Task UpdateColumnDetailsAsync(OracleObjectIdentifier objectIdentifier, string columnName, ColumnDetailsModel dataModel, CancellationToken cancellationToken)
+		{
+			using (var connection = new OracleConnection(_oracleConnectionString.ConnectionString))
+			{
+				using (var command = connection.CreateCommand())
+				{
+					command.CommandText = DatabaseCommands.GetColumnStatisticsCommand;
+					command.BindByName = true;
+
+					columnName = columnName.Trim('"');
+					command
+						.AddSimpleParameter("OWNER", objectIdentifier.Owner.Trim('"'))
+						.AddSimpleParameter("TABLE_NAME", objectIdentifier.Name.Trim('"'))
+						.AddSimpleParameter("COLUMN_NAME", columnName);
+
+					connection.Open();
+
+					try
+					{
+						string histogramType = null;
+						using (var reader = await command.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken))
+						{
+							if (reader.Read())
+							{
+								var distinctValueCountRaw = reader["NUM_DISTINCT"];
+								var lastAnalyzedRaw = reader["LAST_ANALYZED"];
+								var nullValueCountRaw = reader["NUM_NULLS"];
+								var averageValueSizeRaw = reader["AVG_COL_LEN"];
+								var sampleSizeRaw = reader["SAMPLE_SIZE"];
+
+								dataModel.DistinctValueCount = distinctValueCountRaw == DBNull.Value ? null : (int?)Convert.ToInt32(distinctValueCountRaw);
+								dataModel.LastAnalyzed = lastAnalyzedRaw == DBNull.Value ? null : (DateTime?)lastAnalyzedRaw;
+								dataModel.NullValueCount = nullValueCountRaw == DBNull.Value ? null : (int?)Convert.ToInt32(nullValueCountRaw);
+								dataModel.SampleSize = sampleSizeRaw == DBNull.Value ? null : (int?)Convert.ToInt32(sampleSizeRaw);
+								dataModel.AverageValueSize = averageValueSizeRaw == DBNull.Value ? null : (int?)Convert.ToInt32(averageValueSizeRaw);
+
+								histogramType = (string)reader["HISTOGRAM"];
+							}
+						}
+
+						if (histogramType != null && histogramType != "NONE")
+						{
+							command.CommandText = DatabaseCommands.GetColumnHistogramCommand;
+
+							var histogramValues = new List<int>();
+							using (var reader = await command.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken))
+							{
+								while (reader.Read())
+								{
+									histogramValues.Add(Convert.ToInt32(reader["ENDPOINT_NUMBER"]));
+								}
+							}
+
+							//dataModel.HistogramValues = histogramValues;
+						}
+					}
+					catch (OracleException e)
+					{
+						if (e.Number != OracleErrorCodeUserInvokedCancellation)
+						{
+							Trace.WriteLine("Column statistics retrieval failed: " + e);
+						}
 					}
 				}
 			}

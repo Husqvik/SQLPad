@@ -1,19 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.IO;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml;
+using SqlPad.Oracle.ToolTips;
 
 namespace SqlPad.Oracle.Test
 {
 	public class OracleTestDatabaseModel : OracleDatabaseModelBase
 	{
 		public static readonly OracleTestDatabaseModel Instance;
-		private static readonly DataContractSerializer Serializer = new DataContractSerializer(typeof(OracleFunctionMetadataCollection));
 
 		private const string InitialSchema = "\"HUSQVIK\"";
 		private const string OwnerNameSys = "\"SYS\"";
@@ -627,6 +624,21 @@ TABLESPACE ""TBS_HQ_PDB""";
 		public override Task<StatementExecutionResult> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
 		{
 			return Task.Factory.StartNew(() => new StatementExecutionResult { ExecutedSucessfully = true }, cancellationToken);
+		}
+
+		public override Task UpdateColumnDetailsAsync(OracleObjectIdentifier objectIdentifier, string columnName, ColumnDetailsModel dataModel, CancellationToken cancellationToken)
+		{
+			var taskCompletionSource = new TaskCompletionSource<ColumnDetailsModel>();
+
+			dataModel.DistinctValueCount = 567;
+			dataModel.LastAnalyzed = new DateTime(2014, 8, 19, 6, 18, 12);
+			dataModel.SampleSize = 12346;
+			dataModel.AverageValueSize = 1;
+			dataModel.NullValueCount = 1344;
+			dataModel.HistogramValues = Enumerable.Repeat(new Random(), 128).Select(r => r.Next(200)).ToArray();
+
+			taskCompletionSource.SetResult(null);
+			return taskCompletionSource.Task;
 		}
 		
 		public override IEnumerable<object[]> FetchRecords(int rowCount)

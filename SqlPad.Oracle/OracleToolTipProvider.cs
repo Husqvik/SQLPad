@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 using SqlPad.Oracle.ToolTips;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
@@ -28,7 +29,8 @@ namespace SqlPad.Oracle
 			}
 			else
 			{
-				var queryBlock = ((OracleStatementSemanticModel)validationModel.SemanticModel).GetQueryBlock(node);
+				var semanticModel = (OracleStatementSemanticModel)validationModel.SemanticModel;
+				var queryBlock = semanticModel.GetQueryBlock(node);
 				if (queryBlock == null)
 				{
 					return null;
@@ -86,11 +88,7 @@ namespace SqlPad.Oracle
 						}
 						else if (columnReference.ColumnDescription != null)
 						{
-							var objectPrefix = columnReference.ObjectNode == null
-								? String.Format("{0}.{1} ", columnReference.ValidObjectReference.FullyQualifiedObjectName, columnReference.Name.ToSimpleIdentifier())
-								: null;
-							
-							tip = String.Format("{0}{1} {2}{3}", objectPrefix, columnReference.ColumnDescription.FullTypeName, columnReference.ColumnDescription.Nullable ? null : "NOT ", "NULL");
+							return BuildColumnToolTip(semanticModel.DatabaseModel, columnReference);
 						}
 						
 						break;
@@ -106,6 +104,34 @@ namespace SqlPad.Oracle
 			}
 
 			return String.IsNullOrEmpty(tip) ? null : new ToolTipObject { DataContext = tip };
+		}
+
+		private static IToolTip BuildColumnToolTip(OracleDatabaseModelBase databaseModel, OracleColumnReference columnReference)
+		{
+			var objectPrefix = columnReference.ObjectNode == null
+				? String.Format("{0}.{1} ", columnReference.ValidObjectReference.FullyQualifiedObjectName, columnReference.Name.ToSimpleIdentifier())
+				: null;
+
+			if (columnReference.ValidObjectReference.Type != ReferenceType.SchemaObject || columnReference.ValidObjectReference.SchemaObject.Type != OracleSchemaObjectType.Table)
+			{
+				var tip = String.Format("{0}{1} {2}{3}", objectPrefix, columnReference.ColumnDescription.FullTypeName, columnReference.ColumnDescription.Nullable ? null : "NOT ", "NULL");
+				return new ToolTipObject {DataContext = tip};
+			}
+
+			var tableOwner = columnReference.ValidObjectReference.SchemaObject.FullyQualifiedName;
+			var dataModel =
+				new ColumnDetailsModel
+				{
+					Owner = tableOwner.ToString(),
+					Name = columnReference.Name.ToSimpleIdentifier(),
+					Nullable = columnReference.ColumnDescription.Nullable,
+					DataType = columnReference.ColumnDescription.FullTypeName,
+					//HistogramValues = Enumerable.Repeat(new Random(), 128).Select(r => r.Next(200)).ToArray()
+				};
+
+			databaseModel.UpdateColumnDetailsAsync(tableOwner, columnReference.ColumnDescription.Name, dataModel, CancellationToken.None);
+
+			return new ToolTipColumn(dataModel);
 		}
 
 		private static string GetTypeToolTip(OracleQueryBlock queryBlock, StatementGrammarNode node)
