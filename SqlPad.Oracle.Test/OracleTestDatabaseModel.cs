@@ -635,7 +635,7 @@ TABLESPACE ""TBS_HQ_PDB""";
 			dataModel.SampleSize = 12346;
 			dataModel.AverageValueSize = 1;
 			dataModel.NullValueCount = 1344;
-			dataModel.HistogramValues = Enumerable.Repeat(new Random(), 128).Select(r => r.Next(200)).ToArray();
+			dataModel.HistogramValues = Enumerable.Repeat(new Random(), 128).Select(r => r.NextDouble() * 200).ToArray();
 
 			taskCompletionSource.SetResult(null);
 			return taskCompletionSource.Task;

@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:sqlPad="clr-namespace:SqlPad;assembly=SqlPad"
              mc:Ignorable="d" 
-             d:DesignHeight="200" d:DesignWidth="240"
+             d:DesignHeight="280" d:DesignWidth="240"
 			 Padding="4">
     <StackPanel>
 		<StackPanel.Resources>
@@ -58,9 +58,25 @@
 			<GroupBox.Header>
 				<TextBlock Text="Histogram" FontWeight="Bold"/>
 			</GroupBox.Header>
-			<Border BorderThickness="1" BorderBrush="Black" Background="White" Margin="4">
-				<Polygon Points="{Binding HistogramPoints}" Stretch="Fill" Fill="Black" Opacity="1" />
-			</Border>
+			<StackPanel>
+				<Grid Margin="4">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="96"/>
+						<ColumnDefinition/>
+					</Grid.ColumnDefinitions>
+					<Grid.RowDefinitions>
+						<RowDefinition />
+						<RowDefinition />
+					</Grid.RowDefinitions>
+					<TextBlock Grid.Row="0" Grid.Column="0" Text="Histogram type: " />
+					<TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding HistogramType}" />
+					<TextBlock Grid.Row="1" Grid.Column="0" Text="Buckets: " />
+					<TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding HistogramBucketCount}" />
+				</Grid>
+				<Border BorderThickness="1" BorderBrush="Black" Height="254" Width="254" Margin="4">
+					<Polygon Points="{Binding HistogramPoints}" Width="254" Height="{Binding HistogramHeight}" Stretch="Fill" Fill="DimGray" Opacity="1" VerticalAlignment="Bottom" />
+				</Border>
+			</StackPanel>
 		</GroupBox>
 	</StackPanel>
 </UserControl>

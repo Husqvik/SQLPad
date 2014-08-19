@@ -7,9 +7,6 @@ using System.Windows.Media;
 
 namespace SqlPad.Oracle.ToolTips
 {
-	/// <summary>
-	/// Interaction logic for ToolTipObject.xaml
-	/// </summary>
 	public partial class ToolTipColumn : IToolTip
 	{
 		public ToolTipColumn(ColumnDetailsModel dataModel)
@@ -24,13 +21,16 @@ namespace SqlPad.Oracle.ToolTips
 
 	public class ColumnDetailsModel : ModelBase
 	{
-		private int? _distinctValueCount;
-		private int? _nullValueCount;
+		private int _distinctValueCount;
+		private int _nullValueCount;
 		private int? _sampleSize;
 		private object _minimumValue;
 		private object _maximumValue;
-		private DateTime? _lastAnalyzed;
-		private int? _averageValueSize;
+		private DateTime _lastAnalyzed;
+		private int _averageValueSize;
+		private string _histogramType;
+		private int _histogramBucketCount;
+		private double _histogramHeight;
 		private PointCollection _histogramPoints;
 
 		public string Owner { get; set; }
@@ -41,13 +41,13 @@ namespace SqlPad.Oracle.ToolTips
 		
 		public string DataType { get; set; }
 		
-		public int? DistinctValueCount
+		public int DistinctValueCount
 		{
 			get { return _distinctValueCount; }
 			set { UpdateValueAndRaisePropertyChanged(ref _distinctValueCount, value); }
 		}
 
-		public int? NullValueCount
+		public int NullValueCount
 		{
 			get { return _nullValueCount; }
 			set { UpdateValueAndRaisePropertyChanged(ref _nullValueCount, value); }
@@ -63,16 +63,28 @@ namespace SqlPad.Oracle.ToolTips
 		
 		public object MaximumValue { get; set; }
 
-		public DateTime? LastAnalyzed
+		public DateTime LastAnalyzed
 		{
 			get { return _lastAnalyzed; }
 			set { UpdateValueAndRaisePropertyChanged(ref _lastAnalyzed, value); }
 		}
 
-		public int? AverageValueSize
+		public int AverageValueSize
 		{
 			get { return _averageValueSize; }
 			set { UpdateValueAndRaisePropertyChanged(ref _averageValueSize, value); }
+		}
+
+		public string HistogramType
+		{
+			get { return _histogramType; }
+			set { UpdateValueAndRaisePropertyChanged(ref _histogramType, value); }
+		}
+
+		public int HistogramBucketCount
+		{
+			get { return _histogramBucketCount; }
+			set { UpdateValueAndRaisePropertyChanged(ref _histogramBucketCount, value); }
 		}
 
 		public PointCollection HistogramPoints
@@ -92,12 +104,18 @@ namespace SqlPad.Oracle.ToolTips
 			get { return _histogramPoints == null || _histogramPoints.Count == 0 ? Visibility.Collapsed : Visibility.Visible; }
 		}
 
-		public IList<int> HistogramValues
+		public double HistogramHeight
 		{
-			set { HistogramPoints = ConvertToPointCollection(value); }
+			get { return _histogramHeight; }
+			set { UpdateValueAndRaisePropertyChanged(ref _histogramHeight, value); }
 		}
 
-		private PointCollection ConvertToPointCollection(IList<int> values, bool smooth = false)
+		public IList<double> HistogramValues
+		{
+			set { HistogramPoints = ConvertToPointCollection(NormalizeHistogramValues(value)); }
+		}
+
+		private PointCollection ConvertToPointCollection(IList<double> values, bool smooth = false)
 		{
 			if (smooth)
 			{
@@ -119,9 +137,78 @@ namespace SqlPad.Oracle.ToolTips
 			return points;
 		}
 
-		private int[] SmoothHistogram(IList<int> originalValues)
+		private IList<double> NormalizeHistogramValues(IList<double> originalValues)
 		{
-			var smoothedValues = new int[originalValues.Count];
+			NormalizeHistogramChartValues(originalValues);
+			return ComputeHorizontalHistogramChartValues(originalValues);
+		}
+
+		private void NormalizeHistogramChartValues(IList<double> originalValues)
+		{
+			var previousBucketRowCount = originalValues[0];
+			var totalRowCount = originalValues[originalValues.Count - 1];
+			var maximumBucketRowCount = previousBucketRowCount;
+			for (var i = 1; i < originalValues.Count; i++)
+			{
+				var currentBucketRowCount = originalValues[i];
+				var bucketRowCount = currentBucketRowCount - previousBucketRowCount;
+				previousBucketRowCount = currentBucketRowCount;
+				originalValues[i] = bucketRowCount;
+				maximumBucketRowCount = Math.Max(maximumBucketRowCount, bucketRowCount);
+			}
+
+			var ratio = totalRowCount / 254d;
+			HistogramHeight = maximumBucketRowCount / ratio;
+
+			for (var i = 0; i < originalValues.Count; i++)
+			{
+				originalValues[i] = originalValues[i] / ratio;
+			}
+		}
+
+		private IList<double> ComputeHorizontalHistogramChartValues(IList<double> originalValues)
+		{
+			var histogramValues = originalValues;
+			double ratio;
+			if (originalValues.Count < 254)
+			{
+				histogramValues = new double[254];
+				ratio = originalValues.Count / 254d;
+
+				for (var i = 0; i < histogramValues.Count; i++)
+				{
+					var sourceIndex = (int)(i * ratio);
+					histogramValues[i] = originalValues[sourceIndex];
+				}
+			}
+			else if (originalValues.Count > 254)
+			{
+				var rangeStart = 0d;
+				histogramValues = new double[254];
+				ratio = originalValues.Count / 254d;
+
+				for (var i = 0; i < histogramValues.Count; i++)
+				{
+					var rangeEnd = rangeStart + ratio;
+					var valuesToCount = Math.Round(rangeEnd - rangeStart);
+					var sourceIndexStart = (int)rangeStart;
+					var sum = 0d;
+					for (var j = sourceIndexStart + 1; j <= sourceIndexStart + valuesToCount; j++)
+					{
+						sum += originalValues[j];
+					}
+
+					rangeStart += ratio;
+					histogramValues[i] = sum / valuesToCount;
+				}
+			}
+
+			return histogramValues;
+		}
+
+		private IList<double> SmoothHistogram(IList<double> originalValues)
+		{
+			var smoothedValues = new double[originalValues.Count];
 
 			var mask = new[] { 0.25, 0.5, 0.25 };
 
@@ -133,7 +220,7 @@ namespace SqlPad.Oracle.ToolTips
 					smoothedValue += originalValues[bin - 1 + i] * mask[i];
 				}
 				
-				smoothedValues[bin] = (int)smoothedValue;
+				smoothedValues[bin] = smoothedValue;
 			}
 
 			return smoothedValues;

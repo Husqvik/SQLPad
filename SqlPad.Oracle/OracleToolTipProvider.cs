@@ -126,7 +126,6 @@ namespace SqlPad.Oracle
 					Name = columnReference.Name.ToSimpleIdentifier(),
 					Nullable = columnReference.ColumnDescription.Nullable,
 					DataType = columnReference.ColumnDescription.FullTypeName,
-					//HistogramValues = Enumerable.Repeat(new Random(), 128).Select(r => r.Next(200)).ToArray()
 				};
 
 			databaseModel.UpdateColumnDetailsAsync(tableOwner, columnReference.ColumnDescription.Name, dataModel, CancellationToken.None);
