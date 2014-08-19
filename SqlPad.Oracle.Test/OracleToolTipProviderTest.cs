@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using NUnit.Framework;
@@ -70,6 +71,18 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestNonAliasedInlineViewColumnToolTip()
+		{
+			const string query = "SELECT NAME FROM (SELECT NAME FROM SELECTION)";
+			_documentRepository.UpdateStatements(query);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 8);
+
+			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.DataContext.ShouldBe("NAME VARCHAR2(50 BYTE) NOT NULL");
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestDecimalColumnTypeToolTip()
 		{
 			const string query = "SELECT AMOUNT FROM INVOICELINES";
@@ -111,8 +124,44 @@ namespace SqlPad.Oracle.Test
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 20);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
-			toolTip.Control.DataContext.ShouldBe("HUSQVIK.SELECTION (Table)");
+			toolTip.Control.ShouldBeTypeOf<ToolTipTable>();
+			toolTip.Control.DataContext.ShouldBeTypeOf<TableDetailsModel>();
+			var dataModel = (TableDetailsModel)toolTip.Control.DataContext;
+			dataModel.Title.ShouldBe("HUSQVIK.SELECTION (Table)");
+			dataModel.AverageRowSize.ShouldBe(237);
+			dataModel.BlockCount.ShouldBe(544);
+			dataModel.ClusterName.ShouldBe(null);
+			dataModel.ClusterNameVisible.ShouldBe(Visibility.Collapsed);
+			dataModel.Compression.ShouldBe("Disabled");
+			dataModel.IsPartitioned.ShouldBe(false);
+			dataModel.IsTemporary.ShouldBe(false);
+			dataModel.LastAnalyzed.ShouldBe(new DateTime(2014, 8, 19, 6, 18, 12));
+			dataModel.Organization.ShouldBe("Index");
+			dataModel.RowCount.ShouldBe(8312);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestTableObjectToolTipUsingSynonym()
+		{
+			const string query = "SELECT NAME FROM SYNONYM_TO_SELECTION";
+			_documentRepository.UpdateStatements(query);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 20);
+
+			toolTip.Control.ShouldBeTypeOf<ToolTipTable>();
+			toolTip.Control.DataContext.ShouldBeTypeOf<TableDetailsModel>();
+			var dataModel = (TableDetailsModel)toolTip.Control.DataContext;
+			dataModel.Title.ShouldBe("HUSQVIK.SYNONYM_TO_SELECTION (Synonym) => HUSQVIK.SELECTION (Table)");
+			dataModel.AverageRowSize.ShouldBe(237);
+			dataModel.BlockCount.ShouldBe(544);
+			dataModel.ClusterName.ShouldBe(null);
+			dataModel.ClusterNameVisible.ShouldBe(Visibility.Collapsed);
+			dataModel.Compression.ShouldBe("Disabled");
+			dataModel.IsPartitioned.ShouldBe(false);
+			dataModel.IsTemporary.ShouldBe(false);
+			dataModel.LastAnalyzed.ShouldBe(new DateTime(2014, 8, 19, 6, 18, 12));
+			dataModel.Organization.ShouldBe("Index");
+			dataModel.RowCount.ShouldBe(8312);
 		}
 
 		[Test(Description = @""), STAThread]
@@ -123,8 +172,10 @@ namespace SqlPad.Oracle.Test
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 10);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
-			toolTip.Control.DataContext.ShouldBe("HUSQVIK.SELECTION (Table)");
+			toolTip.Control.ShouldBeTypeOf<ToolTipTable>();
+			toolTip.Control.DataContext.ShouldBeTypeOf<TableDetailsModel>();
+			var dataModel = (TableDetailsModel)toolTip.Control.DataContext;
+			dataModel.Title.ShouldBe("HUSQVIK.SELECTION (Table)");
 		}
 
 		[Test(Description = @""), STAThread]

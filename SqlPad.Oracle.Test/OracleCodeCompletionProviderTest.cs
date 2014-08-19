@@ -18,11 +18,11 @@ namespace SqlPad.Oracle.Test
 			const string testQuery = "SELECT I.*, INVOICES.ID FROM HUSQVIK.INVOICELINES I JOIN HUSQVIK.INVOICES";
 
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, testQuery, 37).ToArray();
-			items.Length.ShouldBe(9);
+			items.Length.ShouldBe(10);
 			items[0].Name.ShouldBe("\"CaseSensitiveTable\"");
 			items[0].Text.ShouldBe("\"CaseSensitiveTable\"");
-			items[8].Name.ShouldBe("VIEW_INSTANTSEARCH");
-			items[8].Text.ShouldBe("VIEW_INSTANTSEARCH");
+			items[9].Name.ShouldBe("VIEW_INSTANTSEARCH");
+			items[9].Text.ShouldBe("VIEW_INSTANTSEARCH");
 		}
 
 		[Test(Description = @"")]
@@ -713,7 +713,7 @@ se";
 			const string query1 = @"SELECT * FROM ""CaseUnknownTable""";
 
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 15).ToList();
-			items.Count.ShouldBe(15);
+			items.Count.ShouldBe(16);
 			items[0].Text.ShouldBe("\"CaseSensitiveTable\"");
 		}
 

@@ -209,61 +209,61 @@ namespace SqlPad.Oracle
 			}
 		}
 
+		public async override Task UpdateTableDetailsAsync(OracleObjectIdentifier objectIdentifier, TableDetailsModel dataModel, CancellationToken cancellationToken)
+		{
+			var commandConfiguration =
+				new Action<OracleCommand>(
+					c => c.AddSimpleParameter("OWNER", objectIdentifier.Owner.Trim('"'))
+						.AddSimpleParameter("TABLE_NAME", objectIdentifier.Name.Trim('"')));
+
+			await UpdateModelAsync(commandConfiguration, cancellationToken, new TableDetailsModelUpdater(dataModel));
+		}
+
 		public async override Task UpdateColumnDetailsAsync(OracleObjectIdentifier objectIdentifier, string columnName, ColumnDetailsModel dataModel, CancellationToken cancellationToken)
+		{
+			var commandConfiguration =
+				new Action<OracleCommand>(
+					c => c.AddSimpleParameter("OWNER", objectIdentifier.Owner.Trim('"'))
+						.AddSimpleParameter("TABLE_NAME", objectIdentifier.Name.Trim('"'))
+						.AddSimpleParameter("COLUMN_NAME", columnName.Trim('"')));
+
+			await UpdateModelAsync(commandConfiguration, cancellationToken, new ColumnDetailsModelUpdater(dataModel), new ColumnDetailsHistogramUpdater(dataModel));
+		}
+
+		private async Task UpdateModelAsync(Action<OracleCommand> configureCommandFunction, CancellationToken cancellationToken, params IDataModelUpdater[] updaters)
 		{
 			using (var connection = new OracleConnection(_oracleConnectionString.ConnectionString))
 			{
 				using (var command = connection.CreateCommand())
 				{
-					command.CommandText = DatabaseCommands.GetColumnStatisticsCommand;
 					command.BindByName = true;
 
-					columnName = columnName.Trim('"');
-					command
-						.AddSimpleParameter("OWNER", objectIdentifier.Owner.Trim('"'))
-						.AddSimpleParameter("TABLE_NAME", objectIdentifier.Name.Trim('"'))
-						.AddSimpleParameter("COLUMN_NAME", columnName);
+					configureCommandFunction(command);
 
 					connection.Open();
 
-					try
+					foreach (var updater in updaters)
 					{
-						using (var reader = await command.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken))
-						{
-							if (reader.Read())
-							{
-								dataModel.DistinctValueCount = Convert.ToInt32(reader["NUM_DISTINCT"]);
-								dataModel.LastAnalyzed = (DateTime)reader["LAST_ANALYZED"];
-								dataModel.NullValueCount = Convert.ToInt32(reader["NUM_NULLS"]);
-								var sampleSizeRaw = reader["SAMPLE_SIZE"];
-								dataModel.SampleSize = sampleSizeRaw == DBNull.Value ? null : (int?)Convert.ToInt32(sampleSizeRaw);
-								dataModel.AverageValueSize = Convert.ToInt32(reader["AVG_COL_LEN"]);
-								dataModel.HistogramBucketCount = Convert.ToInt32(reader["NUM_BUCKETS"]);
-								dataModel.HistogramType = (string)reader["HISTOGRAM"];
-							}
-						}
+						command.CommandText = updater.CommandText;
 
-						if (dataModel.HistogramType != null && dataModel.HistogramType != "None")
+						try
 						{
-							command.CommandText = DatabaseCommands.GetColumnHistogramCommand;
-
-							var histogramValues = new List<double>();
 							using (var reader = await command.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken))
 							{
-								while (reader.Read())
-								{
-									histogramValues.Add(Convert.ToInt32(reader["ENDPOINT_NUMBER"]));
-								}
+								updater.MapData(reader);
 							}
 
-							dataModel.HistogramValues = histogramValues;
+							if (!updater.CanContinue)
+							{
+								break;
+							}
 						}
-					}
-					catch (OracleException e)
-					{
-						if (e.Number != OracleErrorCodeUserInvokedCancellation)
+						catch (OracleException e)
 						{
-							Trace.WriteLine("Column statistics retrieval failed: " + e);
+							if (e.Number != OracleErrorCodeUserInvokedCancellation)
+							{
+								Trace.WriteLine("Update model failed: " + e);
+							}
 						}
 					}
 				}

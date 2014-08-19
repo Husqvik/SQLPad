@@ -54,43 +54,6 @@ namespace SqlPad.Oracle.Test
 
 		static OracleTestDatabaseModel()
 		{
-			/*using (var builtInFunctionReader = XmlReader.Create(File.OpenRead(@"TestFiles\OracleSqlFunctionMetadataCollection_12_1_0_1_0.xml")))
-			{
-				var builtInFunctionMetadata = (OracleFunctionMetadataCollection)Serializer.ReadObject(builtInFunctionReader);
-				NonSchemaBuiltInFunctionMetadataInternal = builtInFunctionMetadata.SqlFunctions
-					.Where(f => String.IsNullOrEmpty(f.Identifier.Owner))
-					.ToDictionary(f => f.Identifier.Name, f => f);
-
-				var testFolder = Path.GetDirectoryName(typeof(OracleTestDatabaseModel).Assembly.CodeBase);
-				using (var reader = XmlReader.Create(Path.Combine(testFolder, @"TestFiles\TestFunctionCollection.xml")))
-				{
-					var obosolete = (OracleFunctionMetadataCollection)Serializer.ReadObject(reader);
-					AllFunctionMetadataInternal = new OracleFunctionMetadataCollection(builtInFunctionMetadata.SqlFunctions.Concat(obosolete.SqlFunctions));
-				}
-			}
-
-			foreach (var function in AllFunctionMetadataInternal.SqlFunctions.Where(f => !String.IsNullOrEmpty(f.Identifier.Owner)))
-			{
-				var objectName = function.IsPackageFunction ? function.Identifier.Package : function.Identifier.Name;
-				var schemaObject = AllObjectsInternal.SingleOrDefault(o => o.Owner == function.Identifier.Owner && o.Name == objectName);
-
-				if (schemaObject == null)
-				{
-					var objectType = function.IsPackageFunction ? OracleSchemaObjectType.Package : OracleSchemaObjectType.Function;
-					schemaObject = OracleObjectFactory.CreateSchemaObjectMetadata(objectType, function.Identifier.Owner, objectName, true, DateTime.Now, DateTime.Now, false);
-					AllObjectsInternal.Add(schemaObject);
-				}
-
-				if (function.IsPackageFunction)
-				{
-					((OraclePackage)schemaObject).Functions.Add(function);
-				}
-				else
-				{
-					((OracleFunction)schemaObject).Metadata = function;
-				}
-			}*/
-
 			const string tableNameDual = "\"DUAL\"";
 			var synonym =
 				new OracleSynonym
@@ -130,6 +93,17 @@ namespace SqlPad.Oracle.Test
 				{
 					FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"SYNONYM_TO_TEST_SEQ\""),
 					SchemaObject = AllObjectsInternal.Single(o => o.Name == "\"TEST_SEQ\"" && o.Owner == InitialSchema),
+					IsValid = true
+				};
+			synonym.SchemaObject.Synonym = synonym;
+
+			AllObjectsInternal.Add(synonym);
+
+			synonym =
+				new OracleSynonym
+				{
+					FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"SYNONYM_TO_SELECTION\""),
+					SchemaObject = AllObjectsInternal.Single(o => o.Name == "\"SELECTION\"" && o.Owner == InitialSchema),
 					IsValid = true
 				};
 			synonym.SchemaObject.Synonym = synonym;
@@ -624,6 +598,21 @@ TABLESPACE ""TBS_HQ_PDB""";
 		public override Task<StatementExecutionResult> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
 		{
 			return Task.Factory.StartNew(() => new StatementExecutionResult { ExecutedSucessfully = true }, cancellationToken);
+		}
+
+		public override Task UpdateTableDetailsAsync(OracleObjectIdentifier objectIdentifier, TableDetailsModel dataModel, CancellationToken cancellationToken)
+		{
+			var taskCompletionSource = new TaskCompletionSource<TableDetailsModel>();
+
+			dataModel.AverageRowSize = 237;
+			dataModel.LastAnalyzed = new DateTime(2014, 8, 19, 6, 18, 12);
+			dataModel.BlockCount = 544;
+			dataModel.RowCount = 8312;
+			dataModel.Compression = "Disabled";
+			dataModel.Organization = "Index";
+
+			taskCompletionSource.SetResult(null);
+			return taskCompletionSource.Task;
 		}
 
 		public override Task UpdateColumnDetailsAsync(OracleObjectIdentifier objectIdentifier, string columnName, ColumnDetailsModel dataModel, CancellationToken cancellationToken)

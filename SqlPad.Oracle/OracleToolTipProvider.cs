@@ -43,9 +43,10 @@ namespace SqlPad.Oracle
 						var schemaObjectReference = GetSchemaObjectReference(queryBlock, node);
 						if (objectReference != null)
 						{
-							tip = GetObjectToolTip(objectReference);
+							return BuildObjectTooltip(semanticModel.DatabaseModel, objectReference);
 						}
-						else if (schemaObjectReference != null)
+						
+						if (schemaObjectReference != null)
 						{
 							tip = GetFullSchemaObjectToolTip(schemaObjectReference);
 						}
@@ -108,17 +109,23 @@ namespace SqlPad.Oracle
 
 		private static IToolTip BuildColumnToolTip(OracleDatabaseModelBase databaseModel, OracleColumnReference columnReference)
 		{
-			var objectPrefix = columnReference.ObjectNode == null
-				? String.Format("{0}.{1} ", columnReference.ValidObjectReference.FullyQualifiedObjectName, columnReference.Name.ToSimpleIdentifier())
-				: null;
-
-			if (columnReference.ValidObjectReference.Type != ReferenceType.SchemaObject || columnReference.ValidObjectReference.SchemaObject.Type != OracleSchemaObjectType.Table)
+			var validObjectReference = columnReference.ValidObjectReference;
+			var isSchemaObject = validObjectReference.Type == ReferenceType.SchemaObject;
+			if (!isSchemaObject || validObjectReference.SchemaObject.Type != OracleSchemaObjectType.Table)
 			{
-				var tip = String.Format("{0}{1} {2}{3}", objectPrefix, columnReference.ColumnDescription.FullTypeName, columnReference.ColumnDescription.Nullable ? null : "NOT ", "NULL");
-				return new ToolTipObject {DataContext = tip};
+				var objectPrefix = columnReference.ObjectNode == null && !String.IsNullOrEmpty(validObjectReference.FullyQualifiedObjectName.Name)
+					? String.Format("{0}.", validObjectReference.FullyQualifiedObjectName)
+					: null;
+
+				var qualifiedColumnName = isSchemaObject && validObjectReference.SchemaObject.Type == OracleSchemaObjectType.Sequence
+					? null
+					: String.Format("{0}{1} ", objectPrefix, columnReference.Name.ToSimpleIdentifier());
+				
+				var tip = String.Format("{0}{1} {2}{3}", qualifiedColumnName, columnReference.ColumnDescription.FullTypeName, columnReference.ColumnDescription.Nullable ? null : "NOT ", "NULL");
+				return new ToolTipObject { DataContext = tip };
 			}
 
-			var tableOwner = columnReference.ValidObjectReference.SchemaObject.FullyQualifiedName;
+			var tableOwner = validObjectReference.SchemaObject.FullyQualifiedName;
 			var dataModel =
 				new ColumnDetailsModel
 				{
@@ -139,14 +146,36 @@ namespace SqlPad.Oracle
 			return typeReference == null || typeReference.DatabaseLinkNode != null ? null : GetFullSchemaObjectToolTip(typeReference.SchemaObject);
 		}
 
-		private static string GetObjectToolTip(OracleObjectWithColumnsReference objectReference)
+		private IToolTip BuildObjectTooltip(OracleDatabaseModelBase databaseModel, OracleObjectWithColumnsReference objectReference)
 		{
+			string simpleToolTip;
 			if (objectReference.Type == ReferenceType.SchemaObject)
 			{
-				return GetFullSchemaObjectToolTip(objectReference.SchemaObject);
+				simpleToolTip = GetFullSchemaObjectToolTip(objectReference.SchemaObject);
+				if (String.IsNullOrEmpty(simpleToolTip))
+				{
+					return null;
+				}
+
+				IToolTip toolTip = new ToolTipObject { DataContext = simpleToolTip };
+				var schemaObject = objectReference.SchemaObject.GetTargetSchemaObject();
+				if (schemaObject != null && schemaObject.Type == OracleSchemaObjectType.Table)
+				{
+					var dataModel =
+						new TableDetailsModel
+						{
+							Title = simpleToolTip
+						};
+
+					databaseModel.UpdateTableDetailsAsync(schemaObject.FullyQualifiedName, dataModel, CancellationToken.None);
+					toolTip = new ToolTipTable(dataModel);
+				}
+
+				return toolTip;
 			}
-			
-			return objectReference.FullyQualifiedObjectName + " (" + objectReference.Type.ToCategoryLabel() + ")";
+
+			simpleToolTip = objectReference.FullyQualifiedObjectName + " (" + objectReference.Type.ToCategoryLabel() + ")";
+			return new ToolTipObject { DataContext = simpleToolTip };
 		}
 
 		private static string GetFullSchemaObjectToolTip(OracleSchemaObject schemaObject)

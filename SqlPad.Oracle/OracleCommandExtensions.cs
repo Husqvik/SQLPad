@@ -120,4 +120,32 @@ namespace SqlPad.Oracle
 			catch { }
 		}
 	}
+
+	public static class OracleReaderValueConvert
+	{
+		public static int? ToInt32(object value)
+		{
+			return value.IsNull() ? null : (int?)Convert.ToInt32(value);
+		}
+
+		public static DateTime? ToDateTime(object value)
+		{
+			return value.IsNull() ? null : (DateTime?)Convert.ToDateTime(value);
+		}
+
+		public static string ToString(object value)
+		{
+			return value.IsNull() ? null : (string)value;
+		}
+
+		public static bool? ToBoolean(object value)
+		{
+			return value.IsNull() ? null : (bool?)value;
+		}
+
+		private static bool IsNull(this object value)
+		{
+			return value == DBNull.Value;
+		}
+	}
 }

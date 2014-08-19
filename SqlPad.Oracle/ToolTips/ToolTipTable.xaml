@@ -1,0 +1,57 @@
+﻿<UserControl x:Class="SqlPad.Oracle.ToolTips.ToolTipTable"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:sqlPad="clr-namespace:SqlPad;assembly=SqlPad"
+             mc:Ignorable="d" 
+             d:DesignHeight="176" d:DesignWidth="240"
+			 Padding="4">
+    <StackPanel>
+		<StackPanel.Resources>
+			<sqlPad:DateTimeLabelConverter x:Key="DateTimeConverter" />
+			<sqlPad:BooleanLabelConverter x:Key="BooleanConverter" />
+			<sqlPad:NumericConverter x:Key="NumericConverter" />
+		</StackPanel.Resources>
+		<GroupBox BorderThickness="0">
+			<GroupBox.Header>
+				<TextBlock Text="{Binding Title}" FontWeight="Bold"/>
+			</GroupBox.Header>
+			<Grid Margin="4">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="96"/>
+					<ColumnDefinition/>
+				</Grid.ColumnDefinitions>
+				<Grid.RowDefinitions>
+					<RowDefinition />
+					<RowDefinition />
+					<RowDefinition />
+					<RowDefinition />
+					<RowDefinition />
+					<RowDefinition />
+					<RowDefinition />
+					<RowDefinition />
+					<RowDefinition Height="Auto" />
+				</Grid.RowDefinitions>
+				<TextBlock Grid.Row="0" Grid.Column="0" Text="Organization: " />
+				<TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Organization}" />
+				<TextBlock Grid.Row="1" Grid.Column="0" Text="Partitioned: " />
+				<TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding IsPartitioned, Converter={StaticResource BooleanConverter}}" />
+				<TextBlock Grid.Row="2" Grid.Column="0" Text="Temporary: " />
+				<TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding IsTemporary, Converter={StaticResource BooleanConverter}}" />
+				<TextBlock Grid.Row="3" Grid.Column="0" Text="Blocks: " />
+				<TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding BlockCount, Converter={StaticResource NumericConverter}}" />
+				<TextBlock Grid.Row="4" Grid.Column="0" Text="Rows: " />
+				<TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding RowCount, Converter={StaticResource NumericConverter}}" />
+				<TextBlock Grid.Row="5" Grid.Column="0" Text="Avg. row bytes: " />
+				<TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding AverageRowSize, Converter={StaticResource NumericConverter}}" />
+				<TextBlock Grid.Row="6" Grid.Column="0" Text="Compression: " />
+				<TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding Compression}" />
+				<TextBlock Grid.Row="7" Grid.Column="0" Text="Last analyzed: " />
+				<TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding LastAnalyzed, Converter={StaticResource DateTimeConverter}}" />
+				<TextBlock Grid.Row="8" Grid.Column="0" Text="Cluster: " Visibility="{Binding ClusterNameVisible}" />
+				<TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding ClusterName}" Visibility="{Binding ClusterNameVisible}" />
+			</Grid>
+		</GroupBox>
+	</StackPanel>
+</UserControl>
