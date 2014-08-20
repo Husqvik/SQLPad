@@ -12,6 +12,7 @@
 			<sqlPad:DateTimeLabelConverter x:Key="DateTimeConverter" />
 			<sqlPad:BooleanLabelConverter x:Key="BooleanConverter" />
 			<sqlPad:NumericConverter x:Key="NumericConverter" />
+			<sqlPad:DataSpaceConverter x:Key="DataSpaceConverter" />
 		</StackPanel.Resources>
 		<GroupBox BorderThickness="0">
 			<GroupBox.Header>
@@ -31,6 +32,7 @@
 					<RowDefinition />
 					<RowDefinition />
 					<RowDefinition />
+					<RowDefinition />
 					<RowDefinition Height="Auto" />
 				</Grid.RowDefinitions>
 				<TextBlock Grid.Row="0" Grid.Column="0" Text="Organization: " />
@@ -41,16 +43,18 @@
 				<TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding IsTemporary, Converter={StaticResource BooleanConverter}}" />
 				<TextBlock Grid.Row="3" Grid.Column="0" Text="Blocks: " />
 				<TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding BlockCount, Converter={StaticResource NumericConverter}}" />
-				<TextBlock Grid.Row="4" Grid.Column="0" Text="Rows: " />
-				<TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding RowCount, Converter={StaticResource NumericConverter}}" />
-				<TextBlock Grid.Row="5" Grid.Column="0" Text="Avg. row bytes: " />
-				<TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding AverageRowSize, Converter={StaticResource NumericConverter}}" />
-				<TextBlock Grid.Row="6" Grid.Column="0" Text="Compression: " />
-				<TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding Compression}" />
-				<TextBlock Grid.Row="7" Grid.Column="0" Text="Last analyzed: " />
-				<TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding LastAnalyzed, Converter={StaticResource DateTimeConverter}}" />
-				<TextBlock Grid.Row="8" Grid.Column="0" Text="Cluster: " Visibility="{Binding ClusterNameVisible}" />
-				<TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding ClusterName}" Visibility="{Binding ClusterNameVisible}" />
+				<TextBlock Grid.Row="4" Grid.Column="0" Text="Space: " />
+				<TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding AllocatedBytes, Converter={StaticResource DataSpaceConverter}}" />
+				<TextBlock Grid.Row="5" Grid.Column="0" Text="Rows: " />
+				<TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding RowCount, Converter={StaticResource NumericConverter}}" />
+				<TextBlock Grid.Row="6" Grid.Column="0" Text="Avg. row bytes: " />
+				<TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding AverageRowSize, Converter={StaticResource NumericConverter}}" />
+				<TextBlock Grid.Row="7" Grid.Column="0" Text="Compression: " />
+				<TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding Compression}" />
+				<TextBlock Grid.Row="8" Grid.Column="0" Text="Last analyzed: " />
+				<TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding LastAnalyzed, Converter={StaticResource DateTimeConverter}}" />
+				<TextBlock Grid.Row="9" Grid.Column="0" Text="Cluster: " Visibility="{Binding ClusterNameVisible}" />
+				<TextBlock Grid.Row="9" Grid.Column="1" Text="{Binding ClusterName}" Visibility="{Binding ClusterNameVisible}" />
 			</Grid>
 		</GroupBox>
 	</StackPanel>

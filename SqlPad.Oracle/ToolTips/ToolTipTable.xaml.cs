@@ -27,6 +27,7 @@ namespace SqlPad.Oracle.ToolTips
 		private int? _averageRowSize;
 		private bool _isTemporary;
 		private bool _isPartitioned;
+		private long? _allocatedBytes;
 
 		public string Title { get; set; }
 
@@ -93,6 +94,12 @@ namespace SqlPad.Oracle.ToolTips
 		public Visibility ClusterNameVisible
 		{
 			get { return String.IsNullOrEmpty(_clusterName) ? Visibility.Collapsed : Visibility.Visible; }
+		}
+
+		public long? AllocatedBytes
+		{
+			get { return _allocatedBytes; }
+			set { UpdateValueAndRaisePropertyChanged(ref _allocatedBytes, value); }
 		}
 	}
 }

@@ -128,6 +128,11 @@ namespace SqlPad.Oracle
 			return value.IsNull() ? null : (int?)Convert.ToInt32(value);
 		}
 
+		public static long? ToInt64(object value)
+		{
+			return value.IsNull() ? null : (long?)Convert.ToInt64(value);
+		}
+
 		public static DateTime? ToDateTime(object value)
 		{
 			return value.IsNull() ? null : (DateTime?)Convert.ToDateTime(value);

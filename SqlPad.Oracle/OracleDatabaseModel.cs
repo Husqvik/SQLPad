@@ -216,7 +216,7 @@ namespace SqlPad.Oracle
 					c => c.AddSimpleParameter("OWNER", objectIdentifier.Owner.Trim('"'))
 						.AddSimpleParameter("TABLE_NAME", objectIdentifier.Name.Trim('"')));
 
-			await UpdateModelAsync(commandConfiguration, cancellationToken, new TableDetailsModelUpdater(dataModel));
+			await UpdateModelAsync(commandConfiguration, cancellationToken, new TableDetailsModelUpdater(dataModel), new TableSpaceAllocationModelUpdater(dataModel));
 		}
 
 		public async override Task UpdateColumnDetailsAsync(OracleObjectIdentifier objectIdentifier, string columnName, ColumnDetailsModel dataModel, CancellationToken cancellationToken)

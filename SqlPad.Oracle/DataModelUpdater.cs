@@ -125,6 +125,34 @@ namespace SqlPad.Oracle
 
 		public override bool CanContinue
 		{
+			get { return true; }
+		}
+	}
+
+	internal class TableSpaceAllocationModelUpdater : DataModelUpdater<TableDetailsModel>
+	{
+		public TableSpaceAllocationModelUpdater(TableDetailsModel dataModel)
+			: base(dataModel)
+		{
+		}
+
+		public override string CommandText
+		{
+			get { return DatabaseCommands.GetTableAllocatedBytesCommand; }
+		}
+
+		public override void MapData(OracleDataReader reader)
+		{
+			if (!reader.Read())
+			{
+				return;
+			}
+
+			DataModel.AllocatedBytes = OracleReaderValueConvert.ToInt64(reader["ALLOCATED_BYTES"]);
+		}
+
+		public override bool CanContinue
+		{
 			get { return false; }
 		}
 	}

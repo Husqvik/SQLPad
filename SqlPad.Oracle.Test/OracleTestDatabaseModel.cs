@@ -608,6 +608,7 @@ TABLESPACE ""TBS_HQ_PDB""";
 			dataModel.LastAnalyzed = new DateTime(2014, 8, 19, 6, 18, 12);
 			dataModel.BlockCount = 544;
 			dataModel.RowCount = 8312;
+			dataModel.AllocatedBytes = 22546891;
 			dataModel.Compression = "Disabled";
 			dataModel.Organization = "Index";
 
