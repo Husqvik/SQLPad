@@ -239,7 +239,7 @@ namespace SqlPad.Test
 				new[]
 					{
 						new ColumnHeader { ColumnIndex = 0, DatabaseDataType = "Varchar2", DataType = typeof(string), Name = "DUMMY1", ValueConverterFunction = (h, v) => v },
-						new ColumnHeader { ColumnIndex = 1, DatabaseDataType = "Date", DataType = typeof(DateTime), Name = "DUMMY2", ValueConverterFunction = (h, v) => ((DateTime)v).ToString("O") }
+						new ColumnHeader { ColumnIndex = 1, DatabaseDataType = "Date", DataType = typeof(DateTime), Name = "DUMMY_WITH_UNDERSCORES", ValueConverterFunction = (h, v) => ((DateTime)v).ToString("O") }
 					};
 
 			var documentPage = new DocumentPage();
@@ -259,7 +259,7 @@ namespace SqlPad.Test
 
 			var result = stringBuilder.ToString();
 
-			const string expectedResult = "\"DUMMY1\";\"DUMMY2\"\r\n\"Value \"\"1\"\"\";\"2014-08-16T22:25:34.0000000\"\r\n\"\"\"2.\"\"Value\";\"2014-08-16T00:00:00.0000000\"\r\n";
+			const string expectedResult = "\"DUMMY1\";\"DUMMY_WITH_UNDERSCORES\"\r\n\"Value \"\"1\"\"\";\"2014-08-16T22:25:34.0000000\"\r\n\"\"\"2.\"\"Value\";\"2014-08-16T00:00:00.0000000\"\r\n";
 			result.ShouldBe(expectedResult);
 		}
 

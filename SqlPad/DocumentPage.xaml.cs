@@ -1304,7 +1304,7 @@ namespace SqlPad
 				.ToArray();
 
 			var columnHeaders = orderedColumns
-				.Select(c => String.Format(MaskWrapByQuote, c.Header.ToString().Replace(QuoteCharacter, DoubleQuotes)));
+				.Select(c => String.Format(MaskWrapByQuote, c.Header.ToString().Replace("__", "_").Replace(QuoteCharacter, DoubleQuotes)));
 
 			const string separator = ";";
 			var headerLine = String.Join(separator, columnHeaders);
