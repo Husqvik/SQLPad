@@ -104,6 +104,8 @@ namespace SqlPad
 		{
 			InitializeComponent();
 
+			_toolTip.PlacementTarget = Editor.TextArea;
+
 			ComboBoxConnection.IsEnabled = ConfigurationProvider.ConnectionStrings.Count > 1;
 			ComboBoxConnection.ItemsSource = ConfigurationProvider.ConnectionStrings;
 			ComboBoxConnection.SelectedIndex = 0;
@@ -521,11 +523,9 @@ namespace SqlPad
 			_isToolTipOpenByShortCut = true;
 
 			var rectangle = Editor.TextArea.Caret.CalculateCaretRectangle();
-			_toolTip.PlacementTarget = Editor.TextArea;
 			_toolTip.Placement = PlacementMode.Relative;
 			_toolTip.HorizontalOffset = rectangle.Left;
 			_toolTip.VerticalOffset = rectangle.Top + Editor.TextArea.TextView.DefaultLineHeight;
-
 			_toolTip.IsOpen = true;
 		}
 
@@ -1122,7 +1122,8 @@ namespace SqlPad
 				return;
 
 			_toolTip.Placement = PlacementMode.Mouse;
-			_toolTip.PlacementTarget = this; // required for property inheritance
+			_toolTip.HorizontalOffset = 0;
+			_toolTip.VerticalOffset = 0;
 			_toolTip.Content = toolTip;
 			_toolTip.IsOpen = true;
 			e.Handled = true;
