@@ -31,7 +31,13 @@ namespace SqlPad.Oracle.Test
 			dataModel.Name.ShouldBe("NAME");
 			dataModel.DataType.ShouldBe("VARCHAR2(50 BYTE)");
 			dataModel.Nullable.ShouldBe(false);
+			dataModel.DistinctValueCount.ShouldBe(567);
+			dataModel.SampleSize.ShouldBe(12346);
+			dataModel.AverageValueSize.ShouldBe(7);
 			dataModel.LastAnalyzed.ShouldBe(new DateTime(2014, 8, 19, 6, 18, 12));
+			dataModel.HistogramType.ShouldBe("Frequency");
+			dataModel.HistogramBucketCount.ShouldBe(6);
+			dataModel.HistogramVisibility.ShouldBe(Visibility.Visible);
 		}
 
 		[Test(Description = @""), STAThread]

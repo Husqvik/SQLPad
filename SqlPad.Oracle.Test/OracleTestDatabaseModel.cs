@@ -622,9 +622,13 @@ TABLESPACE ""TBS_HQ_PDB""";
 			dataModel.DistinctValueCount = 567;
 			dataModel.LastAnalyzed = new DateTime(2014, 8, 19, 6, 18, 12);
 			dataModel.SampleSize = 12346;
-			dataModel.AverageValueSize = 1;
+			dataModel.AverageValueSize = 7;
 			dataModel.NullValueCount = 1344;
-			dataModel.HistogramValues = Enumerable.Repeat(new Random(), 128).Select(r => r.NextDouble() * 200).ToArray();
+			dataModel.HistogramBucketCount = 6;
+			dataModel.HistogramType = "Frequency";
+
+			var previousValue = 0d;
+			dataModel.HistogramValues = Enumerable.Repeat(new Random(), dataModel.HistogramBucketCount).Select(r => (previousValue += r.NextDouble())).ToArray();
 
 			taskCompletionSource.SetResult(null);
 			return taskCompletionSource.Task;
