@@ -145,5 +145,7 @@ namespace SqlPad
 		}
 
 		public IDictionary<string, Type> DataTypes { get; set; }
+		
+		public ICollection<StatementGrammarNode> Nodes { get; set; }
 	}
 }

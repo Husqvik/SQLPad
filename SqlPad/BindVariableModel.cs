@@ -4,45 +4,45 @@ namespace SqlPad
 {
 	public class BindVariableModel : ModelBase
 	{
-		private readonly BindVariableConfiguration _bindVariable;
-
 		public BindVariableModel(BindVariableConfiguration bindVariable)
 		{
-			_bindVariable = bindVariable;
+			BindVariable = bindVariable;
 		}
 
-		public string Name { get { return _bindVariable.Name; } }
+		public BindVariableConfiguration BindVariable { get; private set; }
+
+		public string Name { get { return BindVariable.Name; } }
 		
-		public ICollection<string> DataTypes { get { return _bindVariable.DataTypes.Keys; } }
+		public ICollection<string> DataTypes { get { return BindVariable.DataTypes.Keys; } }
 
 		public object Value
 		{
-			get { return _bindVariable.Value; }
+			get { return BindVariable.Value; }
 			set
 			{
-				if (_bindVariable.Value == value)
+				if (BindVariable.Value == value)
 					return;
 
-				_bindVariable.Value = value;
+				BindVariable.Value = value;
 				RaisePropertyChanged("Value");
 			}
 		}
 
 		public string InputType
 		{
-			get { return _bindVariable.DataTypes[_bindVariable.DataType].Name; }
+			get { return BindVariable.DataTypes[BindVariable.DataType].Name; }
 		}
 
 		public string DataType
 		{
-			get { return _bindVariable.DataType; }
+			get { return BindVariable.DataType; }
 			set
 			{
-				if (_bindVariable.DataType == value)
+				if (BindVariable.DataType == value)
 					return;
 
-				var previousInputType = _bindVariable.DataTypes[_bindVariable.DataType].Name;
-				_bindVariable.DataType = value;
+				var previousInputType = BindVariable.DataTypes[BindVariable.DataType].Name;
+				BindVariable.DataType = value;
 
 				if (previousInputType != InputType)
 				{

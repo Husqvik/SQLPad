@@ -1119,7 +1119,8 @@ namespace SqlPad.Oracle.Test
 			var statement = (OracleStatement)result.Single();
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-			statement.BindVariableIdentifierTerminals.Count.ShouldBe(5);
+			var bindVariableTerminalCount = statement.BindVariables.SelectMany(c => c.Nodes).Count();
+			bindVariableTerminalCount.ShouldBe(5);
 
 			var bindVariables = statement.BindVariables.ToArray();
 			bindVariables.Length.ShouldBe(4);

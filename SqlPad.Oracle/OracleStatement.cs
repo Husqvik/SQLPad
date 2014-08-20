@@ -9,7 +9,6 @@ namespace SqlPad.Oracle
 	[DebuggerDisplay("OracleStatement (ChildNodes={RootNode == null ? 0 : RootNode.ChildNodes.Count})")]
 	public class OracleStatement : StatementBase
 	{
-		private ICollection<StatementGrammarNode> _bindVariableIdentifierNodes;
 		private ICollection<BindVariableConfiguration> _bindVariables;
 
 		public static readonly OracleStatement EmptyStatement =
@@ -24,26 +23,21 @@ namespace SqlPad.Oracle
 			get { return _bindVariables ?? (_bindVariables = BuildBindVariableCollection()); }
 		}
 
-		public ICollection<StatementGrammarNode> BindVariableIdentifierTerminals
-		{
-			get { return _bindVariableIdentifierNodes ?? (_bindVariableIdentifierNodes = BuildBindVariableIdentifierTerminalCollection()); }
-		}
-
 		private ICollection<BindVariableConfiguration> BuildBindVariableCollection()
 		{
-			return BindVariableIdentifierTerminals
-				.Select(n => n.Token.Value.Trim('"'))
-				.Distinct()
-				.OrderBy(v => v)
-				.Select(v => new BindVariableConfiguration { Name = v, DataType = OracleBindVariable.DataTypeVarchar2, DataTypes = OracleBindVariable.DataTypes })
+			return BuildBindVariableIdentifierTerminalLookup()
+				.OrderBy(g => g.Key)
+				.Select(g => new BindVariableConfiguration { Name = g.Key, DataType = OracleBindVariable.DataTypeVarchar2, Nodes = g.ToList().AsReadOnly(), DataTypes = OracleBindVariable.DataTypes })
 				.ToArray();
 		}
 
-		private ICollection<StatementGrammarNode> BuildBindVariableIdentifierTerminalCollection()
+		private IEnumerable<IGrouping<string, StatementGrammarNode>> BuildBindVariableIdentifierTerminalLookup()
 		{
-			return RootNode == null
+			var sourceTerminals = RootNode == null
 				? new StatementGrammarNode[0]
-				: RootNode.Terminals.Where(t => t.Id == OracleGrammarDescription.Terminals.BindVariableIdentifier).ToArray();
+				: RootNode.Terminals.Where(t => t.Id == OracleGrammarDescription.Terminals.BindVariableIdentifier);
+
+			return sourceTerminals.ToLookup(t => t.Token.Value.Trim('"'));
 		}
 	}
 

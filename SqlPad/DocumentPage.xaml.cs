@@ -554,15 +554,19 @@ namespace SqlPad
 			ActionResult actionResult;
 			_pageModel.AffectedRowCount = -1;
 			Task<StatementExecutionResult> innerTask = null;
-			var statementText = Editor.SelectionLength > 0 ? Editor.SelectedText : statement.RootNode.GetStatementSubstring(Editor.Text);
 			using (_cancellationTokenSource = new CancellationTokenSource())
 			{
-				var executionModel =
-					new StatementExecutionModel
-					{
-						StatementText = statementText,
-						BindVariables = _pageModel.BindVariables
-					};
+				var executionModel = new StatementExecutionModel();
+				if (Editor.SelectionLength > 0)
+				{
+					executionModel.StatementText = Editor.SelectedText;
+					executionModel.BindVariables = _pageModel.BindVariables.Where(c => c.BindVariable.Nodes.Any(n => n.SourcePosition.IndexStart >= Editor.SelectionStart && n.SourcePosition.IndexEnd + 1 <= Editor.SelectionStart + Editor.SelectionLength)).ToArray();
+				}
+				else
+				{
+					executionModel.StatementText = statement.RootNode.GetStatementSubstring(Editor.Text);
+					executionModel.BindVariables = _pageModel.BindVariables;
+				}
 
 				actionResult = await SafeTimedActionAsync(() => innerTask = DatabaseModel.ExecuteStatementAsync(executionModel, _cancellationTokenSource.Token));
 			}
