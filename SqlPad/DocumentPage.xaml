@@ -119,7 +119,6 @@
 										</Grid.ColumnDefinitions>
 										<TextBlock Text="{Binding Path=Name}" VerticalAlignment="Center" />
 										<ComboBox Grid.Column="1" ItemsSource="{Binding Path=DataTypes}" SelectedValue="{Binding Path=DataType}" />
-										<!--<TextBox Grid.Column="2" Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}" />-->
 										<ContentControl Grid.Column="2" Content="{Binding}">
 											<ContentControl.Style>
 												<Style TargetType="ContentControl">
@@ -146,31 +145,37 @@
 
 		<GridSplitter Grid.Column="0" Grid.Row="2" Height="4" HorizontalAlignment="Stretch" ShowsPreview="True"
 		              VerticalAlignment="Center" Background="DimGray" />
-		<DataGrid x:Name="ResultGrid"
-		          Grid.Column="0"
-		          Grid.Row="3"
-		          AutoGenerateColumns="False"
-		          ItemsSource="{Binding ResultRowItems}"
-				  MaxColumnWidth="{Binding ElementName=ResultGrid, Path=ActualWidth}"
-		          VirtualizingStackPanel.VirtualizationMode="Recycling"
-		          EnableColumnVirtualization="True"
-				  RowHeight="20"
-				  CanUserSortColumns="False"
-				  HeadersVisibility="None"
-		          HorizontalGridLinesBrush="LightGray"
-		          VerticalGridLinesBrush="LightGray"
-				  MouseDoubleClick="ResultGridMouseDoubleClickHandler"
-		          PreviewMouseWheel="ResultGridPreviewMouseWheelHandler">
-			<DataGrid.CommandBindings>
-				<CommandBinding Command="commands:GenericCommands.ExportToCsv" Executed="ExportToCsv" CanExecute="CanExportToCsv" />
-				<CommandBinding Command="commands:GenericCommands.FetchNextRowsCommand" Executed="FetchNextRows" CanExecute="CanFetchNextRows" />
-			</DataGrid.CommandBindings>
-			<DataGrid.ContextMenu>
-				<ContextMenu>
-					<MenuItem Header="_Export to CSV..." Command="commands:GenericCommands.ExportToCsv" />
-				</ContextMenu>
-			</DataGrid.ContextMenu>
-		</DataGrid>
+		<TabControl x:Name="TabControlResult" Grid.Column="0" Grid.Row="3">
+			<TabItem Header="Result set">
+				<DataGrid x:Name="ResultGrid"
+				          AutoGenerateColumns="False"
+				          ItemsSource="{Binding ResultRowItems}"
+				          MaxColumnWidth="{Binding ElementName=ResultGrid, Path=ActualWidth}"
+				          VirtualizingStackPanel.VirtualizationMode="Recycling"
+				          EnableColumnVirtualization="True"
+				          RowHeight="20"
+				          CanUserSortColumns="False"
+				          HeadersVisibility="None"
+				          HorizontalGridLinesBrush="LightGray"
+				          VerticalGridLinesBrush="LightGray"
+				          MouseDoubleClick="ResultGridMouseDoubleClickHandler"
+				          PreviewMouseWheel="ResultGridPreviewMouseWheelHandler">
+					<DataGrid.CommandBindings>
+						<CommandBinding Command="commands:GenericCommands.ExportToCsv" Executed="ExportToCsv" CanExecute="CanExportToCsv" />
+						<CommandBinding Command="commands:GenericCommands.FetchNextRowsCommand" Executed="FetchNextRows"
+						                CanExecute="CanFetchNextRows" />
+					</DataGrid.CommandBindings>
+					<DataGrid.ContextMenu>
+						<ContextMenu>
+							<MenuItem Header="_Export to CSV..." Command="commands:GenericCommands.ExportToCsv" />
+						</ContextMenu>
+					</DataGrid.ContextMenu>
+				</DataGrid>
+			</TabItem>
+			<TabItem Header="Execution plan" Visibility="{Binding IsExecutionPlanAvailable}">
+				<TextBox Text="{Binding TextExecutionPlan}" FontFamily="Consolas" VerticalScrollBarVisibility="Auto"/>
+			</TabItem>
+		</TabControl>
 		<StatusBar x:Name="StatusBar" Grid.Row="4" Grid.Column="0">
 			<StatusBar.ItemsPanel>
 				<ItemsPanelTemplate>

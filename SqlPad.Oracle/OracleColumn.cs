@@ -4,7 +4,7 @@ using System.Diagnostics;
 namespace SqlPad.Oracle
 {
 	[DebuggerDisplay("OracleColumn (Name={Name}; Type={FullTypeName})")]
-	public class OracleColumn : IColumn
+	public class OracleColumn
 	{
 		public const string RowId = "ROWID";
 

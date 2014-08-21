@@ -32,18 +32,11 @@ namespace SqlPad
 
 		Task<StatementExecutionResult> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken);
 
+		Task<string> GetExecutionPlanAsync(CancellationToken cancellationToken);
+
 		IEnumerable<object[]> FetchRecords(int rowCount);
 
 		ICollection<ColumnHeader> GetColumnHeaders();
-	}
-
-	public interface IDatabaseObject
-	{
-		string Name { get; }
-
-		string Type { get; }
-
-		string Owner { get; }
 	}
 
 	public class ColumnHeader
@@ -56,13 +49,11 @@ namespace SqlPad
 
 		public Type DataType { get; set; }
 
-		public Func<ColumnHeader, object, object> ValueConverterFunction { get; set; }
+		public IColumnValueConverter ValueConverter { get; set; }
 	}
 
-	public interface IColumn
+	public interface IColumnValueConverter
 	{
-		string Name { get; }
-
-		string FullTypeName { get; }
+		object ConvertToCellValue(object rawValue);
 	}
 }

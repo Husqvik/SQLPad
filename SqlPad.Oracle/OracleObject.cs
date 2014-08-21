@@ -10,7 +10,7 @@ namespace SqlPad.Oracle
 		public OracleObjectIdentifier FullyQualifiedName { get; set; }
 	}
 
-	public abstract class OracleSchemaObject : OracleObject, IDatabaseObject
+	public abstract class OracleSchemaObject : OracleObject
 	{
 		public DateTime Created { get; set; }
 

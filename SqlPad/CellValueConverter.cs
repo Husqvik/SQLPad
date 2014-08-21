@@ -6,18 +6,25 @@ namespace SqlPad
 {
 	public class CellValueConverter : IValueConverter
 	{
-		private const string NullValuePlaceholder = "(null)";
-
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			var columnHeader = (ColumnHeader)parameter;
 			if (value == DBNull.Value)
-				return NullValuePlaceholder;
+				return ConfigurationProvider.Configuration.ResultGrid.NullPlaceholder;
 
-			var convertedValue = columnHeader.ValueConverterFunction(columnHeader, value).ToString();
-			return String.Empty.Equals(convertedValue)
-				? NullValuePlaceholder
-				: convertedValue;
+			var convertedValue = columnHeader.ValueConverter.ConvertToCellValue(value);
+			if (convertedValue is DateTime)
+			{
+				return String.IsNullOrEmpty(ConfigurationProvider.Configuration.ResultGrid.DateFormat)
+					? ((DateTime)value).ToString(CultureInfo.CurrentUICulture)
+					: ((DateTime)value).ToString(ConfigurationProvider.Configuration.ResultGrid.DateFormat);
+			}
+
+			var convertedStringValue = convertedValue as String ?? System.Convert.ToString(convertedValue);
+
+			return String.Empty.Equals(convertedStringValue)
+				? ConfigurationProvider.Configuration.ResultGrid.NullPlaceholder
+				: convertedStringValue;
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

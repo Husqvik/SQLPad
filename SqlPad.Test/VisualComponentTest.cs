@@ -238,8 +238,8 @@ namespace SqlPad.Test
 			var columnHeaders =
 				new[]
 					{
-						new ColumnHeader { ColumnIndex = 0, DatabaseDataType = "Varchar2", DataType = typeof(string), Name = "DUMMY1", ValueConverterFunction = (h, v) => v },
-						new ColumnHeader { ColumnIndex = 1, DatabaseDataType = "Date", DataType = typeof(DateTime), Name = "DUMMY_WITH_UNDERSCORES", ValueConverterFunction = (h, v) => ((DateTime)v).ToString("O") }
+						new ColumnHeader { ColumnIndex = 0, DatabaseDataType = "Varchar2", DataType = typeof(string), Name = "DUMMY1", ValueConverter = TestColumnValueConverter.Instance },
+						new ColumnHeader { ColumnIndex = 1, DatabaseDataType = "Date", DataType = typeof(DateTime), Name = "DUMMY_WITH_UNDERSCORES", ValueConverter = TestColumnValueConverter.Instance }
 					};
 
 			var documentPage = new DocumentPage();
@@ -306,6 +306,18 @@ namespace SqlPad.Test
 			public byte[] GetChunk(int offset, int length)
 			{
 				throw new NotImplementedException();
+			}
+		}
+
+		private class TestColumnValueConverter : IColumnValueConverter
+		{
+			public static readonly TestColumnValueConverter Instance = new TestColumnValueConverter();
+
+			public object ConvertToCellValue(object rawValue)
+			{
+				return rawValue is DateTime
+					? ((DateTime)rawValue).ToString("O")
+					: rawValue;
 			}
 		}
 	}

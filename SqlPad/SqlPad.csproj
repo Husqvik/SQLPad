@@ -77,6 +77,10 @@
     <Compile Include="BinaryDataHelper.cs" />
     <Compile Include="BindVariableModel.cs" />
     <Compile Include="CellValueConverter.cs" />
+    <Compile Include="Configuration.Extensions.cs" />
+    <Compile Include="Configuration.cs">
+      <DependentUpon>Configuration.xsd</DependentUpon>
+    </Compile>
     <Compile Include="ILargeTextValue.cs" />
     <Compile Include="LargeValueEditor.xaml.cs">
       <DependentUpon>LargeValueEditor.xaml</DependentUpon>
@@ -211,6 +215,9 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="Configuration.xsd">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -229,7 +236,11 @@
   <ItemGroup>
     <Resource Include="EmptyIcon.ico" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="Configuration.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>echo Copying tools to $(TargetDir)...

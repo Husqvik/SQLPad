@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://husqvik.com/SqlPad/2014/02" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="Configuration">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="DataModel">
+          <xs:complexType>
+            <xs:attribute name="DataModelRefreshPeriod" type="xs:unsignedInt" use="required" />
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="ResultGrid">
+          <xs:complexType>
+            <xs:attribute name="DateFormat" type="xs:string" use="optional" />
+            <xs:attribute name="NullPlaceholder" type="xs:string" use="required" />
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="ExecutionPlan">
+          <xs:complexType>
+            <xs:attribute name="Enabled" type="xs:boolean" use="optional" />
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

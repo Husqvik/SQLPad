@@ -546,6 +546,7 @@ namespace SqlPad
 
 			_pageModel.ResultRowItems.Clear();
 			_pageModel.GridRowInfoVisibility = Visibility.Collapsed;
+			_pageModel.TextExecutionPlan = null;
 			TextMoreRowsExist.Visibility = Visibility.Collapsed;
 
 			ResultGrid.HeadersVisibility = DataGridHeadersVisibility.None;
@@ -569,17 +570,26 @@ namespace SqlPad
 				}
 
 				actionResult = await SafeTimedActionAsync(() => innerTask = DatabaseModel.ExecuteStatementAsync(executionModel, _cancellationTokenSource.Token));
-			}
 
-			if (!actionResult.IsSuccessful)
-			{
-				Messages.ShowError(actionResult.Exception.Message);
-				return;
-			}
+				if (!actionResult.IsSuccessful)
+				{
+					Messages.ShowError(actionResult.Exception.Message);
+					return;
+				}
 
-			if (!DatabaseModel.CanFetch || !innerTask.Result.ExecutedSucessfully)
-			{
-				return;
+				if (!DatabaseModel.CanFetch || !innerTask.Result.ExecutedSucessfully)
+				{
+					return;
+				}
+
+				if (ConfigurationProvider.Configuration.ExecutionPlan.Enabled)
+				{
+					_pageModel.TextExecutionPlan = await DatabaseModel.GetExecutionPlanAsync(_cancellationTokenSource.Token);
+					if (String.IsNullOrEmpty(_pageModel.TextExecutionPlan))
+					{
+						TabControlResult.SelectedIndex = 0;
+					}
+				}
 			}
 
 			TextExecutionTime.Text = FormatElapsedMilliseconds(actionResult.Elapsed);

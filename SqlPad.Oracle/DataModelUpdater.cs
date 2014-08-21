@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using Oracle.DataAccess.Client;
 using SqlPad.Oracle.ToolTips;
 
@@ -7,7 +8,7 @@ namespace SqlPad.Oracle
 {
 	internal interface IDataModelUpdater
 	{
-		string CommandText { get; }
+		void InitializeCommand(OracleCommand command);
 		
 		bool CanContinue { get; }
 		
@@ -23,7 +24,7 @@ namespace SqlPad.Oracle
 			DataModel = dataModel;
 		}
 
-		public abstract string CommandText { get; }
+		public abstract void InitializeCommand(OracleCommand command);
 
 		public abstract void MapData(OracleDataReader reader);
 
@@ -32,13 +33,23 @@ namespace SqlPad.Oracle
 
 	internal class ColumnDetailsModelUpdater : DataModelUpdater<ColumnDetailsModel>
 	{
-		public ColumnDetailsModelUpdater(ColumnDetailsModel dataModel) : base(dataModel)
+		private readonly OracleObjectIdentifier _objectIdentifier;
+		private readonly string _columnName;
+
+		public ColumnDetailsModelUpdater(ColumnDetailsModel dataModel, OracleObjectIdentifier objectIdentifier, string columnName)
+			: base(dataModel)
 		{
+			_objectIdentifier = objectIdentifier;
+			_columnName = columnName;
 		}
 
-		public override string CommandText
+		public override void InitializeCommand(OracleCommand command)
 		{
-			get { return DatabaseCommands.GetColumnStatisticsCommand; }
+			command.CommandText = DatabaseCommands.GetColumnStatisticsCommand;
+			command.Parameters.Clear();
+			command.AddSimpleParameter("OWNER", _objectIdentifier.Owner.Trim('"'));
+			command.AddSimpleParameter("TABLE_NAME", _objectIdentifier.Name.Trim('"'));
+			command.AddSimpleParameter("COLUMN_NAME", _columnName);
 		}
 
 		public override void MapData(OracleDataReader reader)
@@ -65,14 +76,23 @@ namespace SqlPad.Oracle
 
 	internal class ColumnDetailsHistogramUpdater : DataModelUpdater<ColumnDetailsModel>
 	{
-		public ColumnDetailsHistogramUpdater(ColumnDetailsModel dataModel)
+		private readonly OracleObjectIdentifier _objectIdentifier;
+		private readonly string _columnName;
+
+		public ColumnDetailsHistogramUpdater(ColumnDetailsModel dataModel, OracleObjectIdentifier objectIdentifier, string columnName)
 			: base(dataModel)
 		{
+			_objectIdentifier = objectIdentifier;
+			_columnName = columnName;
 		}
 
-		public override string CommandText
+		public override void InitializeCommand(OracleCommand command)
 		{
-			get { return DatabaseCommands.GetColumnHistogramCommand; }
+			command.CommandText = DatabaseCommands.GetColumnHistogramCommand;
+			command.Parameters.Clear();
+			command.AddSimpleParameter("OWNER", _objectIdentifier.Owner.Trim('"'));
+			command.AddSimpleParameter("TABLE_NAME", _objectIdentifier.Name.Trim('"'));
+			command.AddSimpleParameter("COLUMN_NAME", _columnName);
 		}
 
 		public override void MapData(OracleDataReader reader)
@@ -95,14 +115,20 @@ namespace SqlPad.Oracle
 
 	internal class TableDetailsModelUpdater : DataModelUpdater<TableDetailsModel>
 	{
-		public TableDetailsModelUpdater(TableDetailsModel dataModel)
+		private readonly OracleObjectIdentifier _objectIdentifier;
+
+		public TableDetailsModelUpdater(TableDetailsModel dataModel, OracleObjectIdentifier objectIdentifier)
 			: base(dataModel)
 		{
+			_objectIdentifier = objectIdentifier;
 		}
 
-		public override string CommandText
+		public override void InitializeCommand(OracleCommand command)
 		{
-			get { return DatabaseCommands.GetTableDetailsCommand; }
+			command.CommandText = DatabaseCommands.GetTableDetailsCommand;
+			command.Parameters.Clear();
+			command.AddSimpleParameter("OWNER", _objectIdentifier.Owner.Trim('"'));
+			command.AddSimpleParameter("TABLE_NAME", _objectIdentifier.Name.Trim('"'));
 		}
 
 		public override void MapData(OracleDataReader reader)
@@ -131,14 +157,20 @@ namespace SqlPad.Oracle
 
 	internal class TableSpaceAllocationModelUpdater : DataModelUpdater<TableDetailsModel>
 	{
-		public TableSpaceAllocationModelUpdater(TableDetailsModel dataModel)
+		private readonly OracleObjectIdentifier _objectIdentifier;
+		
+		public TableSpaceAllocationModelUpdater(TableDetailsModel dataModel,  OracleObjectIdentifier objectIdentifier)
 			: base(dataModel)
 		{
+			_objectIdentifier = objectIdentifier;
 		}
 
-		public override string CommandText
+		public override void InitializeCommand(OracleCommand command)
 		{
-			get { return DatabaseCommands.GetTableAllocatedBytesCommand; }
+			command.CommandText = DatabaseCommands.GetTableAllocatedBytesCommand;
+			command.Parameters.Clear();
+			command.AddSimpleParameter("OWNER", _objectIdentifier.Owner.Trim('"'));
+			command.AddSimpleParameter("TABLE_NAME", _objectIdentifier.Name.Trim('"'));
 		}
 
 		public override void MapData(OracleDataReader reader)
@@ -154,6 +186,63 @@ namespace SqlPad.Oracle
 		public override bool CanContinue
 		{
 			get { return false; }
+		}
+	}
+
+	internal class ExecutionPlanUpdater : DataModelUpdater<ExecutionPlanModel>
+	{
+		private readonly int _sessionId;
+
+		public ExecutionPlanUpdater(int sessionId, ExecutionPlanModel dataModel)
+			: base(dataModel)
+		{
+			_sessionId = sessionId;
+		}
+
+		public override void InitializeCommand(OracleCommand command)
+		{
+			command.Parameters.Clear();
+
+			if (DataModel.SqlId == null)
+			{
+				command.CommandText = DatabaseCommands.GetExecutionPlanIdentifiers;
+				command.AddSimpleParameter("SID", _sessionId);
+			}
+			else
+			{
+				command.CommandText = DatabaseCommands.GetExecutionPlanText;
+				command.AddSimpleParameter("SQL_ID", DataModel.SqlId);
+				command.AddSimpleParameter("CHILD_NUMBER", DataModel.ChildNumber);
+			}
+		}
+
+		public override void MapData(OracleDataReader reader)
+		{
+			var builder = new StringBuilder();
+
+			while (reader.Read())
+			{
+				if (DataModel.SqlId == null)
+				{
+					DataModel.SqlId = OracleReaderValueConvert.ToString(reader["SQL_ID"]);
+					if (DataModel.SqlId == null)
+					{
+						return;
+					}
+
+					DataModel.ChildNumber = Convert.ToInt32(reader["SQL_CHILD_NUMBER"]);
+					return;
+				}
+
+				builder.AppendLine(Convert.ToString(reader["PLAN_TABLE_OUTPUT"]));
+			}
+
+			DataModel.PlanText = builder.ToString();
+		}
+
+		public override bool CanContinue
+		{
+			get { return DataModel.SqlId != null; }
 		}
 	}
 }

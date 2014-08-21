@@ -22,107 +22,41 @@ namespace SqlPad {
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://husqvik.com/SqlPad/2014/02")]
     [System.Xml.Serialization.XmlRootAttribute(Namespace="http://husqvik.com/SqlPad/2014/02", IsNullable=false)]
-    public partial class Snippet {
+    public partial class Configuration {
         
-        private string textField;
+        private ConfigurationDataModel dataModelField;
         
-        private string descriptionField;
+        private ConfigurationResultGrid resultGridField;
         
-        private SnippetParameter[] parametersField;
-        
-        private SnippetTerminal[] allowedTerminalsField;
-        
-        private string nameField;
-        
-        private string description1Field;
-        
-        private string rdbmsField;
-        
-        private string versionField;
+        private ConfigurationExecutionPlan executionPlanField;
         
         /// <remarks/>
-        public string Text {
+        public ConfigurationDataModel DataModel {
             get {
-                return this.textField;
+                return this.dataModelField;
             }
             set {
-                this.textField = value;
+                this.dataModelField = value;
             }
         }
         
         /// <remarks/>
-        public string Description {
+        public ConfigurationResultGrid ResultGrid {
             get {
-                return this.descriptionField;
+                return this.resultGridField;
             }
             set {
-                this.descriptionField = value;
+                this.resultGridField = value;
             }
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlArrayItemAttribute("Parameter", IsNullable=false)]
-        public SnippetParameter[] Parameters {
+        public ConfigurationExecutionPlan ExecutionPlan {
             get {
-                return this.parametersField;
+                return this.executionPlanField;
             }
             set {
-                this.parametersField = value;
-            }
-        }
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlArrayItemAttribute("Terminal", IsNullable=false)]
-        public SnippetTerminal[] AllowedTerminals {
-            get {
-                return this.allowedTerminalsField;
-            }
-            set {
-                this.allowedTerminalsField = value;
-            }
-        }
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public string Name {
-            get {
-                return this.nameField;
-            }
-            set {
-                this.nameField = value;
-            }
-        }
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute("Description")]
-        public string Description1 {
-            get {
-                return this.description1Field;
-            }
-            set {
-                this.description1Field = value;
-            }
-        }
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public string Rdbms {
-            get {
-                return this.rdbmsField;
-            }
-            set {
-                this.rdbmsField = value;
-            }
-        }
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public string Version {
-            get {
-                return this.versionField;
-            }
-            set {
-                this.versionField = value;
+                this.executionPlanField = value;
             }
         }
     }
@@ -133,31 +67,18 @@ namespace SqlPad {
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://husqvik.com/SqlPad/2014/02")]
-    public partial class SnippetParameter {
+    public partial class ConfigurationDataModel {
         
-        private byte indexField;
-        
-        private string defaultValueField;
+        private uint dataModelRefreshPeriodField;
         
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
-        public byte Index {
+        public uint DataModelRefreshPeriod {
             get {
-                return this.indexField;
+                return this.dataModelRefreshPeriodField;
             }
             set {
-                this.indexField = value;
-            }
-        }
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public string DefaultValue {
-            get {
-                return this.defaultValueField;
-            }
-            set {
-                this.defaultValueField = value;
+                this.dataModelRefreshPeriodField = value;
             }
         }
     }
@@ -168,18 +89,66 @@ namespace SqlPad {
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://husqvik.com/SqlPad/2014/02")]
-    public partial class SnippetTerminal {
+    public partial class ConfigurationResultGrid {
         
-        private string idField;
+        private string dateFormatField;
+        
+        private string nullPlaceholderField;
         
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
-        public string Id {
+        public string DateFormat {
             get {
-                return this.idField;
+                return this.dateFormatField;
             }
             set {
-                this.idField = value;
+                this.dateFormatField = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string NullPlaceholder {
+            get {
+                return this.nullPlaceholderField;
+            }
+            set {
+                this.nullPlaceholderField = value;
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.0.30319.33440")]
+    [System.SerializableAttribute()]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://husqvik.com/SqlPad/2014/02")]
+    public partial class ConfigurationExecutionPlan {
+        
+        private bool enabledField;
+        
+        private bool enabledFieldSpecified;
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public bool Enabled {
+            get {
+                return this.enabledField;
+            }
+            set {
+                this.enabledField = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        public bool EnabledSpecified {
+            get {
+                return this.enabledFieldSpecified;
+            }
+            set {
+                this.enabledFieldSpecified = value;
             }
         }
     }

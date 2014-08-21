@@ -16,18 +16,7 @@ namespace SqlPad.Oracle.Test
 		private const string OwnerNameSys = "\"SYS\"";
 		private static readonly ConnectionStringSettings ConnectionStringInternal = new ConnectionStringSettings("ConnectionFake", "DATA SOURCE=HQ_PDB_TCP;PASSWORD=oracle;USER ID=HUSQVIK", "Oracle.DataAccess.Client");
 
-		private static readonly List<ColumnHeader> ColumnHeaders =
-			new List<ColumnHeader>
-			{
-				new ColumnHeader
-				{
-					ColumnIndex = 0,
-					DataType = typeof(String),
-					DatabaseDataType = "VARCHAR2",
-					Name = "DUMMY",
-					ValueConverterFunction = ValueConverterFunction
-				}
-			};
+		private static readonly List<ColumnHeader> ColumnHeaders;
 
 		private static readonly HashSet<string> SchemasInternal = new HashSet<string> { OwnerNameSys, "\"SYSTEM\"", InitialSchema };
 		private static readonly HashSet<string> AllSchemasInternal = new HashSet<string>(SchemasInternal) { OwnerNameSys, "\"SYSTEM\"", InitialSchema, SchemaPublic };
@@ -54,6 +43,19 @@ namespace SqlPad.Oracle.Test
 
 		static OracleTestDatabaseModel()
 		{
+			var columnHeader =
+				new ColumnHeader
+				{
+					ColumnIndex = 0,
+					DataType = typeof (String),
+					DatabaseDataType = "VARCHAR2",
+					Name = "DUMMY"
+				};
+
+			columnHeader.ValueConverter = new OracleColumnValueConverter(columnHeader);
+
+			ColumnHeaders = new List<ColumnHeader> { columnHeader };
+
 			const string tableNameDual = "\"DUAL\"";
 			var synonym =
 				new OracleSynonym
@@ -643,6 +645,11 @@ TABLESPACE ""TBS_HQ_PDB""";
 		public override ICollection<ColumnHeader> GetColumnHeaders()
 		{
 			return ColumnHeaders;
+		}
+
+		public override Task<string> GetExecutionPlanAsync(CancellationToken cancellationToken)
+		{
+			throw new NotImplementedException();
 		}
 
 		public override Task<string> GetObjectScriptAsync(OracleSchemaObject schemaObject, CancellationToken cancellationToken, bool suppressUserCancellationException = true)

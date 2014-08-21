@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Xml;
+using System.Xml.Serialization;
 
 namespace SqlPad
 {
@@ -12,7 +16,9 @@ namespace SqlPad
 		private const string PostfixErrorLog = "ErrorLog";
 		private const string PostfixWorkArea = "WorkArea";
 		private const string PostfixMetadataCache = "MetadataCache";
+		private const string ConfigurationFileName = "Configuration.xml";
 
+		private static readonly XmlSerializer XmlSerializer = new XmlSerializer(typeof(Configuration));
 		private static readonly string DefaultUserDataFolderName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), FolderNameSqlPad);
 
 		public static string FolderNameUserData = DefaultUserDataFolderName;
@@ -21,10 +27,14 @@ namespace SqlPad
 		private static string _folderNameMetadataCache;
 
 		public static readonly string FolderNameApplication = Path.GetDirectoryName(typeof(App).Assembly.Location);
+		private static readonly string ConfigurationFilePath = Path.Combine(FolderNameApplication, ConfigurationFileName);
 
 		private static string _folderNameSnippets = Path.Combine(FolderNameApplication, Snippets.SnippetDirectoryName);
 
 		private static readonly Dictionary<string, ConnectionConfiguration> InternalInfrastructureFactories;
+		
+		private static readonly FileSystemWatcher ConfigurationWatcher;
+		private static DateTime _lastConfigurationFileChange;
 
 		static ConfigurationProvider()
 		{
@@ -41,6 +51,61 @@ namespace SqlPad
 			InternalInfrastructureFactories = databaseConfiguration.Infrastructures
 				.Cast<InfrastructureConfigurationSection>()
 				.ToDictionary(s => s.ConnectionStringName, s => new ConnectionConfiguration(s));
+
+			Configuration = Configuration.Default;
+
+			Configure();
+
+			ConfigurationWatcher =
+				new FileSystemWatcher(FolderNameApplication, ConfigurationFileName)
+				{
+					EnableRaisingEvents = true,
+					NotifyFilter = NotifyFilters.LastWrite
+				};
+
+			ConfigurationWatcher.Changed += ConfigurationChangedHandler;
+		}
+
+		public static void Dispose()
+		{
+			ConfigurationWatcher.Dispose();
+		}
+
+		private static void ConfigurationChangedHandler(object sender, FileSystemEventArgs fileSystemEventArgs)
+		{
+			var writeTime = File.GetLastWriteTimeUtc(fileSystemEventArgs.FullPath);
+			if (writeTime == _lastConfigurationFileChange)
+			{
+				return;
+			}
+
+			Thread.Sleep(100);
+
+			_lastConfigurationFileChange = writeTime;
+
+			Trace.WriteLine("Configuration file has changed. ");
+			Configure();
+		}
+
+		private static void Configure()
+		{
+			try
+			{
+				if (!File.Exists(ConfigurationFilePath))
+				{
+					return;
+				}
+				
+				using (var reader = XmlReader.Create(ConfigurationFilePath))
+				{
+					Configuration = (Configuration)XmlSerializer.Deserialize(reader);
+					Configuration.Validate();
+				}
+			}
+			catch (Exception e)
+			{
+				Trace.WriteLine("Configuration loading failed: " + e);
+			}
 		}
 
 		public static ConnectionConfiguration GetConnectionCofiguration(string connectionStringName)
@@ -53,6 +118,8 @@ namespace SqlPad
 
 			throw new ArgumentException(String.Format("Connection string '{0}' doesn't exist. ", connectionStringName), "connectionStringName");
 		}
+
+		public static Configuration Configuration { get; private set; }
 
 		public static ConnectionStringSettingsCollection ConnectionStrings { get { return ConfigurationManager.ConnectionStrings; } }
 

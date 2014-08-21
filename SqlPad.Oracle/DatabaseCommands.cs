@@ -239,6 +239,9 @@ WHERE
 		DBA_SEGMENTS.SEGMENT_NAME = :TABLE_NAME
 	)";
 
+		public const string GetExecutionPlanIdentifiers = "SELECT SQL_ID, SQL_CHILD_NUMBER FROM V$SESSION WHERE V$SESSION.SID = :SID";
+		public const string GetExecutionPlanText = "SELECT PLAN_TABLE_OUTPUT FROM TABLE(DBMS_XPLAN.DISPLAY_CURSOR(:SQL_ID, :CHILD_NUMBER, 'ALLSTATS LAST ADVANCED'))";
+
 		private static string ToInValueList(params string[] values)
 		{
 			return String.Join(", ", values.Select(t => String.Format("'{0}'", t)));

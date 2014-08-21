@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Timers;
 using Oracle.DataAccess.Client;
 using SqlPad.Oracle.ToolTips;
 using Timer = System.Timers.Timer;
@@ -15,12 +16,11 @@ namespace SqlPad.Oracle
 {
 	public class OracleDatabaseModel : OracleDatabaseModelBase
 	{
-		private const int RefreshInterval = 10;
 		internal const int OracleErrorCodeUserInvokedCancellation = 1013;
 		internal const int InitialLongFetchSize = 131072;
 
 		private readonly OracleConnectionStringBuilder _oracleConnectionString;
-		private readonly Timer _timer = new Timer(RefreshInterval * 60000);
+		private readonly Timer _timer = new Timer();
 		private bool _isRefreshing;
 		private bool _cacheLoaded;
 		private bool _isExecuting;
@@ -36,6 +36,7 @@ namespace SqlPad.Oracle
 		private readonly OracleConnection _userConnection;
 		private OracleDataReader _userDataReader;
 		private OracleCommand _userCommand;
+		private int _userSessionId;
 
 		private static readonly Dictionary<string, OracleDataDictionary> CachedDataDictionaries = new Dictionary<string, OracleDataDictionary>();
 		private static readonly Dictionary<string, OracleDatabaseModel> DatabaseModels = new Dictionary<string, OracleDatabaseModel>();
@@ -62,8 +63,21 @@ namespace SqlPad.Oracle
 
 			LoadSchemaNames();
 
-			_timer.Elapsed += (sender, args) => RefreshIfNeeded();
+			SetRefreshTimerInterval();
+			_timer.Elapsed += TimerElapsedHandler;
 			_timer.Start();
+		}
+
+		private void TimerElapsedHandler(object sender, ElapsedEventArgs elapsedEventArgs)
+		{
+			SetRefreshTimerInterval();
+			RefreshIfNeeded();
+		}
+
+		private void SetRefreshTimerInterval()
+		{
+			_timer.Interval = ConfigurationProvider.Configuration.DataModel.DataModelRefreshPeriod * 60000;
+			Trace.WriteLine(String.Format("Data model refresh timer set: {0} minute(s). ", ConfigurationProvider.Configuration.DataModel.DataModelRefreshPeriod));
 		}
 
 		public static OracleDatabaseModel GetDatabaseModel(ConnectionStringSettings connectionString)
@@ -124,7 +138,7 @@ namespace SqlPad.Oracle
 
 		private bool IsRefreshNeeded
 		{
-			get { return _dataDictionary.Timestamp.AddMinutes(RefreshInterval) < DateTime.Now; }
+			get { return _dataDictionary.Timestamp.AddMinutes(ConfigurationProvider.Configuration.DataModel.DataModelRefreshPeriod) < DateTime.Now; }
 		}
 
 		private string CachedConnectionStringName
@@ -177,6 +191,14 @@ namespace SqlPad.Oracle
 			Trace.WriteLine(String.Format("{0} - Cache for '{1}' has been retrieved from the cache. ", DateTime.Now, CachedConnectionStringName));
 		}
 
+		public async override Task<string> GetExecutionPlanAsync(CancellationToken cancellationToken)
+		{
+			var dataModel = new ExecutionPlanModel();
+			var executionPlanUpdater = new ExecutionPlanUpdater(_userSessionId, dataModel);
+			await UpdateModelAsync(cancellationToken, executionPlanUpdater, executionPlanUpdater);
+			return dataModel.PlanText;
+		}
+
 		public async override Task<string> GetObjectScriptAsync(OracleSchemaObject schemaObject, CancellationToken cancellationToken, bool suppressUserCancellationException = true)
 		{
 			using (var connection = new OracleConnection(_oracleConnectionString.ConnectionString))
@@ -211,26 +233,19 @@ namespace SqlPad.Oracle
 
 		public async override Task UpdateTableDetailsAsync(OracleObjectIdentifier objectIdentifier, TableDetailsModel dataModel, CancellationToken cancellationToken)
 		{
-			var commandConfiguration =
-				new Action<OracleCommand>(
-					c => c.AddSimpleParameter("OWNER", objectIdentifier.Owner.Trim('"'))
-						.AddSimpleParameter("TABLE_NAME", objectIdentifier.Name.Trim('"')));
-
-			await UpdateModelAsync(commandConfiguration, cancellationToken, new TableDetailsModelUpdater(dataModel), new TableSpaceAllocationModelUpdater(dataModel));
+			var tableDetailsUpdater = new TableDetailsModelUpdater(dataModel, objectIdentifier);
+			var tableSpaceAllocationUpdater = new TableSpaceAllocationModelUpdater(dataModel, objectIdentifier);
+			await UpdateModelAsync(cancellationToken, tableDetailsUpdater, tableSpaceAllocationUpdater);
 		}
 
 		public async override Task UpdateColumnDetailsAsync(OracleObjectIdentifier objectIdentifier, string columnName, ColumnDetailsModel dataModel, CancellationToken cancellationToken)
 		{
-			var commandConfiguration =
-				new Action<OracleCommand>(
-					c => c.AddSimpleParameter("OWNER", objectIdentifier.Owner.Trim('"'))
-						.AddSimpleParameter("TABLE_NAME", objectIdentifier.Name.Trim('"'))
-						.AddSimpleParameter("COLUMN_NAME", columnName.Trim('"')));
-
-			await UpdateModelAsync(commandConfiguration, cancellationToken, new ColumnDetailsModelUpdater(dataModel), new ColumnDetailsHistogramUpdater(dataModel));
+			var columnDetailsUpdater = new ColumnDetailsModelUpdater(dataModel, objectIdentifier, columnName.Trim('"'));
+			var columnHistogramUpdater = new ColumnDetailsHistogramUpdater(dataModel, objectIdentifier, columnName.Trim('"'));
+			await UpdateModelAsync(cancellationToken, columnDetailsUpdater, columnHistogramUpdater);
 		}
 
-		private async Task UpdateModelAsync(Action<OracleCommand> configureCommandFunction, CancellationToken cancellationToken, params IDataModelUpdater[] updaters)
+		private async Task UpdateModelAsync(CancellationToken cancellationToken, params IDataModelUpdater[] updaters)
 		{
 			using (var connection = new OracleConnection(_oracleConnectionString.ConnectionString))
 			{
@@ -238,13 +253,11 @@ namespace SqlPad.Oracle
 				{
 					command.BindByName = true;
 
-					configureCommandFunction(command);
-
 					connection.Open();
 
 					foreach (var updater in updaters)
 					{
-						command.CommandText = updater.CommandText;
+						updater.InitializeCommand(command);
 
 						try
 						{
@@ -358,6 +371,9 @@ namespace SqlPad.Oracle
 
 				_userCommand.ExecuteNonQuery();
 
+				_userCommand.CommandText = "SELECT SYS_CONTEXT('USERENV', 'SID') SID FROM SYS.DUAL";
+				_userSessionId = Convert.ToInt32(_userCommand.ExecuteScalar());
+
 				_userCommand.CommandText = executionModel.StatementText;
 				_userCommand.InitialLONGFetchSize = InitialLongFetchSize;
 
@@ -448,15 +464,17 @@ namespace SqlPad.Oracle
 			var columnTypes = new ColumnHeader[_userDataReader.FieldCount];
 			for (var i = 0; i < _userDataReader.FieldCount; i++)
 			{
-				columnTypes[i] =
-					new ColumnHeader
-					{
-						ColumnIndex = i,
-						Name = _userDataReader.GetName(i),
-						DataType = _userDataReader.GetFieldType(i),
-						DatabaseDataType = _userDataReader.GetDataTypeName(i),
-						ValueConverterFunction = ValueConverterFunction
-					};
+				var columnHeader = new ColumnHeader
+				{
+					ColumnIndex = i,
+					Name = _userDataReader.GetName(i),
+					DataType = _userDataReader.GetFieldType(i),
+					DatabaseDataType = _userDataReader.GetDataTypeName(i)
+				};
+
+				columnHeader.ValueConverter = new OracleColumnValueConverter(columnHeader);
+				
+				columnTypes[i] = columnHeader;
 			}
 
 			return columnTypes;
@@ -747,5 +765,14 @@ namespace SqlPad.Oracle
 			public TaskCompletionSource<OracleDataDictionary> TaskCompletionSource { get; set; }
 			public OracleDatabaseModel DatabaseModel { get; set; }
 		}
+	}
+
+	internal class ExecutionPlanModel : ModelBase
+	{
+		public string PlanText { get; set; }
+		
+		public string SqlId { get; set; }
+		
+		public int ChildNumber { get; set; }
 	}
 }

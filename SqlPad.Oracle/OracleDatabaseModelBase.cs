@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,7 +14,6 @@ namespace SqlPad.Oracle
 		public const string SchemaSys = "\"SYS\"";
 		public const string SchemaSystem = "\"SYSTEM\"";
 
-		private static readonly Type TypeDateTime = typeof(DateTime);
 		protected static readonly OracleObjectIdentifier BuiltInFunctionPackageIdentifier = OracleObjectIdentifier.Create(SchemaSys, OracleFunctionMetadataCollection.PackageBuiltInFunction);
 
 		public abstract ConnectionStringSettings ConnectionString { get; }
@@ -45,6 +43,8 @@ namespace SqlPad.Oracle
 		public abstract IEnumerable<object[]> FetchRecords(int rowCount);
 
 		public abstract ICollection<ColumnHeader> GetColumnHeaders();
+
+		public abstract Task<string> GetExecutionPlanAsync(CancellationToken cancellationToken);
 
 		public abstract Task<string> GetObjectScriptAsync(OracleSchemaObject schemaObject, CancellationToken cancellationToken, bool suppressUserCancellationException = true);
 
@@ -149,21 +149,6 @@ namespace SqlPad.Oracle
 				: schemaObject;
 		}
 
-		internal static object ValueConverterFunction(ColumnHeader columnHeader, object value)
-		{
-			if (columnHeader.DatabaseDataType == "Raw")
-			{
-				return ((byte[])value).ToHexString();
-			}
-
-			if (columnHeader.DataType == TypeDateTime)
-			{
-				return ((DateTime)value).ToString(CultureInfo.CurrentUICulture);
-			}
-			
-			return value;
-		}
-
 		private static bool TryGetSchemaObjectFunctionMetadata(OracleSchemaObject schemaObject, out ICollection<OracleFunctionMetadata> functionMetadata)
 		{
 			var targetObject = schemaObject.GetTargetSchemaObject();
@@ -191,5 +176,25 @@ namespace SqlPad.Oracle
 		public OracleFunctionMetadata Metadata { get; set; }
 
 		public OracleSchemaObject SchemaObject { get; set; }
+	}
+
+	public class OracleColumnValueConverter : IColumnValueConverter
+	{
+		private readonly ColumnHeader _columnHeader;
+
+		public OracleColumnValueConverter(ColumnHeader columnHeader)
+		{
+			_columnHeader = columnHeader;
+		}
+
+		public object ConvertToCellValue(object rawValue)
+		{
+			if (_columnHeader.DatabaseDataType == "Raw")
+			{
+				return ((byte[])rawValue).ToHexString();
+			}
+
+			return rawValue;
+		}
 	}
 }

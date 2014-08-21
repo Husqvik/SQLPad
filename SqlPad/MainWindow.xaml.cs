@@ -265,6 +265,7 @@ namespace SqlPad
 		private void WindowClosedHandler(object sender, EventArgs e)
 		{
 			_timerWorkingDocumentSave.Dispose();
+			ConfigurationProvider.Dispose();
 		}
 
 		private void OpenFileHandler(object sender, ExecutedRoutedEventArgs e)
@@ -313,8 +314,14 @@ namespace SqlPad
 				return;
 			}
 
+			var draggedDocumentPage = tabItemDragged.Content as DocumentPage;
+			if (draggedDocumentPage == null)
+			{
+				return;
+			}
+
 			var indexFrom = DocumentTabControl.Items.IndexOf(tabItemDragged);
-			var workingDocumentFrom = ((DocumentPage)tabItemDragged.Content).WorkingDocument;
+			var workingDocumentFrom = draggedDocumentPage.WorkingDocument;
 			var indexTo = DocumentTabControl.Items.IndexOf(tabItemTarget);
 			var workingDocumentTo = ((DocumentPage)tabItemTarget.Content).WorkingDocument;
 

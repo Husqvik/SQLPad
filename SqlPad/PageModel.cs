@@ -25,6 +25,7 @@ namespace SqlPad
 		private ICollection<BindVariableModel> _bindVariables;
 		private Visibility _bindVariableListVisibility = Visibility.Collapsed;
 		private Visibility _gridRowInfoVisibity = Visibility.Collapsed;
+		private string _textExecutionPlan;
 
 		public PageModel(DocumentPage documentPage)
 		{
@@ -52,6 +53,25 @@ namespace SqlPad
 		{
 			get { return _documentHeader; }
 			set { UpdateValueAndRaisePropertyChanged(ref _documentHeader, value); }
+		}
+
+		public string TextExecutionPlan
+		{
+			get { return _textExecutionPlan; }
+			set
+			{
+				if (!UpdateValueAndRaisePropertyChanged(ref _textExecutionPlan, value))
+				{
+					return;
+				}
+				
+				RaisePropertyChanged("IsExecutionPlanAvailable");
+			}
+		}
+
+		public Visibility IsExecutionPlanAvailable
+		{
+			get { return String.IsNullOrEmpty(_textExecutionPlan) ? Visibility.Collapsed : Visibility.Visible; }
 		}
 
 		public int CurrentLine

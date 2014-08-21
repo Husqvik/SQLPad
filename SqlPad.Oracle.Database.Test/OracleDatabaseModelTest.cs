@@ -57,7 +57,7 @@ namespace SqlPad.Oracle.Database.Test
 			columnHeaders[0].DataType.ShouldBe(typeof(string));
 			columnHeaders[0].DatabaseDataType.ShouldBe("Varchar2");
 			columnHeaders[0].Name.ShouldBe("DUMMY");
-			columnHeaders[0].ValueConverterFunction.ShouldNotBe(null);
+			columnHeaders[0].ValueConverter.ShouldNotBe(null);
 
 			var rows = databaseModel.FetchRecords(2).ToArray();
 			rows.Length.ShouldBe(1);
