@@ -10,6 +10,7 @@ namespace SqlPad.Commands
 		public static RoutedCommand CloseDocumentCommand = new RoutedCommand();
 		public static RoutedCommand CloseAllDocumentsButThisCommand = new RoutedCommand();
 		public static RoutedCommand OpenContainingFolderCommand = new RoutedCommand();
+		public static RoutedCommand ExplainPlan = new RoutedCommand("ExplainPlan", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.E, ModifierKeys.Control) });
 		public static RoutedCommand ExportToCsv = new RoutedCommand();
 		public static RoutedCommand ShowCodeCompletionOptionCommand = new RoutedCommand("ShowCodeCompletionOptions", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.Space, ModifierKeys.Control) });
 		public static RoutedCommand ShowFunctionOverloadCommand = new RoutedCommand("ShowFunctionOverloads", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.Space, ModifierKeys.Control | ModifierKeys.Shift) });
@@ -23,6 +24,7 @@ namespace SqlPad.Commands
 		public static RoutedCommand NavigateToQueryBlockRootCommand = new RoutedCommand("NavigateToQueryBlockRoot", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.Home, ModifierKeys.Control | ModifierKeys.Alt) });
 		public static RoutedCommand NavigateToDefinitionRootCommand = new RoutedCommand("NavigateToDefinition", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.F12) });
 		public static RoutedCommand ExecuteDatabaseCommandCommand = new RoutedCommand("ExecuteDatabaseCommand", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.F9), new KeyGesture(Key.Enter, ModifierKeys.Control) });
+		public static RoutedCommand ExecuteDatabaseCommandWithActualExecutionPlanCommand = new RoutedCommand("ExecuteDatabaseCommandWithActualExecutionPlan", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.F9, ModifierKeys.Shift), new KeyGesture(Key.Enter, ModifierKeys.Control | ModifierKeys.Shift) });
 		public static RoutedCommand SaveCommand = new RoutedCommand("Save", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.S, ModifierKeys.Control) });
 		public static RoutedCommand SaveAsCommand = new RoutedCommand("SaveAs", typeof(TextEditor));
 		public static RoutedCommand SaveAllCommand = new RoutedCommand("SaveAs", typeof(Window), new InputGestureCollection { new KeyGesture(Key.S, ModifierKeys.Control | ModifierKeys.Shift) });

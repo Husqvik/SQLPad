@@ -189,11 +189,45 @@ namespace SqlPad.Oracle
 		}
 	}
 
-	internal class ExecutionPlanUpdater : DataModelUpdater<ExecutionPlanModel>
+	internal class ObjectScriptUpdater : IDataModelUpdater
+	{
+		private readonly OracleSchemaObject _schemaObject;
+
+		public string ScriptText { get; private set; }
+
+		public ObjectScriptUpdater(OracleSchemaObject schemaObject)
+		{
+			_schemaObject = schemaObject;
+		}
+
+		public void InitializeCommand(OracleCommand command)
+		{
+			command.CommandText = DatabaseCommands.GetObjectScriptCommand;
+			command.Parameters.Clear();
+			command.AddSimpleParameter("OBJECT_TYPE", _schemaObject.Type.ToUpperInvariant());
+			command.AddSimpleParameter("NAME", _schemaObject.FullyQualifiedName.Name.Trim('"'));
+			command.AddSimpleParameter("SCHEMA", _schemaObject.FullyQualifiedName.Owner.Trim('"'));
+		}
+
+		public void MapData(OracleDataReader reader)
+		{
+			if (reader.Read())
+			{
+				ScriptText = (string)reader["SCRIPT"];
+			}
+		}
+
+		public bool CanContinue
+		{
+			get { return false; }
+		}
+	}
+
+	internal class DisplayCursorUpdater : DataModelUpdater<CursorModel>
 	{
 		private readonly int _sessionId;
 
-		public ExecutionPlanUpdater(int sessionId, ExecutionPlanModel dataModel)
+		public DisplayCursorUpdater(int sessionId, CursorModel dataModel)
 			: base(dataModel)
 		{
 			_sessionId = sessionId;
@@ -244,5 +278,30 @@ namespace SqlPad.Oracle
 		{
 			get { return DataModel.SqlId != null; }
 		}
+	}
+
+	internal class ExplainPlanUpdater : IDataModelUpdater
+	{
+		private readonly string _statementText;
+		private readonly string _planKey;
+		private readonly OracleObjectIdentifier _targetTableIdentifier;
+
+		public ExplainPlanUpdater(string statementText, string planKey, OracleObjectIdentifier targetTableIdentifier)
+		{
+			_statementText = statementText;
+			_planKey = planKey;
+			_targetTableIdentifier = targetTableIdentifier;
+		}
+
+		public void InitializeCommand(OracleCommand command)
+		{
+			var targetTable = _targetTableIdentifier.ToString();
+			command.CommandText = String.Format("EXPLAIN PLAN SET STATEMENT_ID = '{0}' INTO {1} FOR {2}", _planKey, targetTable, _statementText);
+			command.Parameters.Clear();
+		}
+
+		public void MapData(OracleDataReader reader) { }
+
+		public bool CanContinue { get { return false; } }
 	}
 }

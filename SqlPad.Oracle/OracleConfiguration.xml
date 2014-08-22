@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<OracleConfiguration xmlns="http://husqvik.com/SqlPad/2014/08/Oracle">
+  <ExecutionPlan>
+    <TargetTable Name="TOAD_PLAN_TABLE" />
+  </ExecutionPlan>
+</OracleConfiguration>

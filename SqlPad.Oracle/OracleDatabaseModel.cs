@@ -191,61 +191,55 @@ namespace SqlPad.Oracle
 			Trace.WriteLine(String.Format("{0} - Cache for '{1}' has been retrieved from the cache. ", DateTime.Now, CachedConnectionStringName));
 		}
 
-		public async override Task<string> GetExecutionPlanAsync(CancellationToken cancellationToken)
+		public async override Task<StatementExecutionModel> ExplainPlanAsync(string statement, CancellationToken cancellationToken)
 		{
-			var dataModel = new ExecutionPlanModel();
-			var executionPlanUpdater = new ExecutionPlanUpdater(_userSessionId, dataModel);
-			await UpdateModelAsync(cancellationToken, executionPlanUpdater, executionPlanUpdater);
+			if (String.IsNullOrEmpty(OracleConfiguration.Configuration.ExecutionPlan.TargetTable.Name))
+			{
+				throw new InvalidOperationException("OracleConfiguration/ExecutionPlan/TargetTable[Name] is missing. ");
+			}
+
+			var planKey = Convert.ToString(statement.GetHashCode());
+			var targetTableIdentifier = OracleObjectIdentifier.Create(OracleConfiguration.Configuration.ExecutionPlan.TargetTable.Schema, OracleConfiguration.Configuration.ExecutionPlan.TargetTable.Name);
+			var explainPlanUpdater = new ExplainPlanUpdater(statement, planKey, targetTableIdentifier);
+			await UpdateModelAsync(cancellationToken, true, explainPlanUpdater);
+			return
+				new StatementExecutionModel
+				{
+					StatementText = DatabaseCommands.ExplainPlan,
+					BindVariables = new[] { new BindVariableModel(new BindVariableConfiguration { DataType = "Varchar2", Name = "STATEMENT_ID", Value = planKey }) }
+				};
+		}
+
+		public async override Task<string> GetActualExecutionPlanAsync(CancellationToken cancellationToken)
+		{
+			var dataModel = new CursorModel();
+			var executionPlanUpdater = new DisplayCursorUpdater(_userSessionId, dataModel);
+			await UpdateModelAsync(cancellationToken, true, executionPlanUpdater, executionPlanUpdater);
 			return dataModel.PlanText;
 		}
 
 		public async override Task<string> GetObjectScriptAsync(OracleSchemaObject schemaObject, CancellationToken cancellationToken, bool suppressUserCancellationException = true)
 		{
-			using (var connection = new OracleConnection(_oracleConnectionString.ConnectionString))
-			{
-				using (var command = connection.CreateCommand())
-				{
-					command.CommandText = DatabaseCommands.GetObjectScriptCommand;
-					command.BindByName = true;
-
-					command.AddSimpleParameter("OBJECT_TYPE", schemaObject.Type.ToUpperInvariant())
-						.AddSimpleParameter("NAME", schemaObject.FullyQualifiedName.Name.Trim('"'))
-						.AddSimpleParameter("SCHEMA", schemaObject.FullyQualifiedName.Owner.Trim('"'));
-
-					connection.Open();
-
-					try
-					{
-						return (string)await command.ExecuteScalarAsynchronous(cancellationToken);
-					}
-					catch (OracleException e)
-					{
-						if (suppressUserCancellationException && e.Number == OracleErrorCodeUserInvokedCancellation)
-						{
-							return null;
-						}
-
-						throw;
-					}
-				}
-			}
+			var scriptUpdater = new ObjectScriptUpdater(schemaObject);
+			await UpdateModelAsync(cancellationToken, true, scriptUpdater);
+			return scriptUpdater.ScriptText;
 		}
 
 		public async override Task UpdateTableDetailsAsync(OracleObjectIdentifier objectIdentifier, TableDetailsModel dataModel, CancellationToken cancellationToken)
 		{
 			var tableDetailsUpdater = new TableDetailsModelUpdater(dataModel, objectIdentifier);
 			var tableSpaceAllocationUpdater = new TableSpaceAllocationModelUpdater(dataModel, objectIdentifier);
-			await UpdateModelAsync(cancellationToken, tableDetailsUpdater, tableSpaceAllocationUpdater);
+			await UpdateModelAsync(cancellationToken, true, tableDetailsUpdater, tableSpaceAllocationUpdater);
 		}
 
 		public async override Task UpdateColumnDetailsAsync(OracleObjectIdentifier objectIdentifier, string columnName, ColumnDetailsModel dataModel, CancellationToken cancellationToken)
 		{
 			var columnDetailsUpdater = new ColumnDetailsModelUpdater(dataModel, objectIdentifier, columnName.Trim('"'));
 			var columnHistogramUpdater = new ColumnDetailsHistogramUpdater(dataModel, objectIdentifier, columnName.Trim('"'));
-			await UpdateModelAsync(cancellationToken, columnDetailsUpdater, columnHistogramUpdater);
+			await UpdateModelAsync(cancellationToken, true, columnDetailsUpdater, columnHistogramUpdater);
 		}
 
-		private async Task UpdateModelAsync(CancellationToken cancellationToken, params IDataModelUpdater[] updaters)
+		private async Task UpdateModelAsync(CancellationToken cancellationToken, bool suppressException, params IDataModelUpdater[] updaters)
 		{
 			using (var connection = new OracleConnection(_oracleConnectionString.ConnectionString))
 			{
@@ -271,11 +265,19 @@ namespace SqlPad.Oracle
 								break;
 							}
 						}
-						catch (OracleException e)
+						catch (Exception exception)
 						{
-							if (e.Number != OracleErrorCodeUserInvokedCancellation)
+							var oracleException = exception as OracleException;
+							if (oracleException != null && oracleException.Number == OracleErrorCodeUserInvokedCancellation)
 							{
-								Trace.WriteLine("Update model failed: " + e);
+								continue;
+							}
+							
+							Trace.WriteLine("Update model failed: " + exception);
+
+							if (!suppressException)
+							{
+								throw;
 							}
 						}
 					}
@@ -767,7 +769,7 @@ namespace SqlPad.Oracle
 		}
 	}
 
-	internal class ExecutionPlanModel : ModelBase
+	internal class CursorModel : ModelBase
 	{
 		public string PlanText { get; set; }
 		

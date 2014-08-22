@@ -32,7 +32,9 @@ namespace SqlPad
 
 		Task<StatementExecutionResult> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken);
 
-		Task<string> GetExecutionPlanAsync(CancellationToken cancellationToken);
+		Task<StatementExecutionModel> ExplainPlanAsync(string statement, CancellationToken cancellationToken);
+
+		Task<string> GetActualExecutionPlanAsync(CancellationToken cancellationToken);
 
 		IEnumerable<object[]> FetchRecords(int rowCount);
 

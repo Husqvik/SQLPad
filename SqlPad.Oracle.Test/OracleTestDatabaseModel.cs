@@ -647,7 +647,12 @@ TABLESPACE ""TBS_HQ_PDB""";
 			return ColumnHeaders;
 		}
 
-		public override Task<string> GetExecutionPlanAsync(CancellationToken cancellationToken)
+		public override Task<StatementExecutionModel> ExplainPlanAsync(string statement, CancellationToken cancellationToken)
+		{
+			throw new NotImplementedException();
+		}
+
+		public override Task<string> GetActualExecutionPlanAsync(CancellationToken cancellationToken)
 		{
 			throw new NotImplementedException();
 		}

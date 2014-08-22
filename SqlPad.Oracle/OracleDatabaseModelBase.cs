@@ -44,7 +44,9 @@ namespace SqlPad.Oracle
 
 		public abstract ICollection<ColumnHeader> GetColumnHeaders();
 
-		public abstract Task<string> GetExecutionPlanAsync(CancellationToken cancellationToken);
+		public abstract Task<StatementExecutionModel> ExplainPlanAsync(string statement, CancellationToken cancellationToken);
+
+		public abstract Task<string> GetActualExecutionPlanAsync(CancellationToken cancellationToken);
 
 		public abstract Task<string> GetObjectScriptAsync(OracleSchemaObject schemaObject, CancellationToken cancellationToken, bool suppressUserCancellationException = true);
 

@@ -2,5 +2,5 @@
 <Configuration xmlns="http://husqvik.com/SqlPad/2014/02">
   <DataModel DataModelRefreshPeriod="15" />
   <ResultGrid DateFormat="yyyy-MM-dd hh:mm:ss" NullPlaceholder="(null)" />
-  <ExecutionPlan Enabled="false"/>
+  <ExecutionPlan Enabled="true"/>
 </Configuration>

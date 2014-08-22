@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Transactions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -538,12 +539,45 @@ namespace SqlPad
 			args.CanExecute = statement != null && statement.RootNode != null && statement.RootNode.FirstTerminalNode != null;
 		}
 
-		private async void ExecuteDatabaseCommandHandler(object sender, ExecutedRoutedEventArgs args)
+		private void ExecuteDatabaseCommandWithActualExecutionPlanHandler(object sender, ExecutedRoutedEventArgs args)
+		{
+			ExecuteDatabaseCommandHandlerInternal(ConfigurationProvider.Configuration.ExecutionPlan.Enabled);
+		}
+
+		private void ExecuteDatabaseCommandHandler(object sender, ExecutedRoutedEventArgs args)
+		{
+			ExecuteDatabaseCommandHandlerInternal(false);
+		}
+
+		private async void ExecuteDatabaseCommandHandlerInternal(bool printActualExecutionPlan)
+		{
+			SqlPadConfiguration.StoreConfiguration();
+
+			var executionModel = BuildStatementExecutionModel();
+			await ExecuteDatabaseCommand(executionModel, printActualExecutionPlan);
+		}
+
+		private StatementExecutionModel BuildStatementExecutionModel()
 		{
 			var statement = _sqlDocumentRepository.Statements.GetStatementAtPosition(Editor.CaretOffset);
 
-			SqlPadConfiguration.StoreConfiguration();
+			var executionModel = new StatementExecutionModel();
+			if (Editor.SelectionLength > 0)
+			{
+				executionModel.StatementText = Editor.SelectedText;
+				executionModel.BindVariables = _pageModel.BindVariables.Where(c => c.BindVariable.Nodes.Any(n => n.SourcePosition.IndexStart >= Editor.SelectionStart && n.SourcePosition.IndexEnd + 1 <= Editor.SelectionStart + Editor.SelectionLength)).ToArray();
+			}
+			else
+			{
+				executionModel.StatementText = statement.RootNode.GetStatementSubstring(Editor.Text);
+				executionModel.BindVariables = _pageModel.BindVariables;
+			}
 
+			return executionModel;
+		}
+
+		private async Task ExecuteDatabaseCommand(StatementExecutionModel executionModel, bool printActualExecutionPlan)
+		{
 			_pageModel.ResultRowItems.Clear();
 			_pageModel.GridRowInfoVisibility = Visibility.Collapsed;
 			_pageModel.TextExecutionPlan = null;
@@ -557,18 +591,6 @@ namespace SqlPad
 			Task<StatementExecutionResult> innerTask = null;
 			using (_cancellationTokenSource = new CancellationTokenSource())
 			{
-				var executionModel = new StatementExecutionModel();
-				if (Editor.SelectionLength > 0)
-				{
-					executionModel.StatementText = Editor.SelectedText;
-					executionModel.BindVariables = _pageModel.BindVariables.Where(c => c.BindVariable.Nodes.Any(n => n.SourcePosition.IndexStart >= Editor.SelectionStart && n.SourcePosition.IndexEnd + 1 <= Editor.SelectionStart + Editor.SelectionLength)).ToArray();
-				}
-				else
-				{
-					executionModel.StatementText = statement.RootNode.GetStatementSubstring(Editor.Text);
-					executionModel.BindVariables = _pageModel.BindVariables;
-				}
-
 				actionResult = await SafeTimedActionAsync(() => innerTask = DatabaseModel.ExecuteStatementAsync(executionModel, _cancellationTokenSource.Token));
 
 				if (!actionResult.IsSuccessful)
@@ -582,13 +604,17 @@ namespace SqlPad
 					return;
 				}
 
-				if (ConfigurationProvider.Configuration.ExecutionPlan.Enabled)
+				if (printActualExecutionPlan)
 				{
-					_pageModel.TextExecutionPlan = await DatabaseModel.GetExecutionPlanAsync(_cancellationTokenSource.Token);
+					_pageModel.TextExecutionPlan = await DatabaseModel.GetActualExecutionPlanAsync(_cancellationTokenSource.Token);
 					if (String.IsNullOrEmpty(_pageModel.TextExecutionPlan))
 					{
 						TabControlResult.SelectedIndex = 0;
 					}
+				}
+				else
+				{
+					TabControlResult.SelectedIndex = 0;
 				}
 			}
 
@@ -602,7 +628,7 @@ namespace SqlPad
 			}
 
 			InitializeResultGrid(columnHeaders);
-				
+
 			FetchNextRows(null, null);
 
 			if (ResultGrid.Items.Count > 0)
@@ -1343,6 +1369,26 @@ namespace SqlPad
 
 			var stringValue = CellValueConverter.Convert(value, typeof(String), converterParameter, CultureInfo.CurrentUICulture).ToString();
 			return String.Format(MaskWrapByQuote, stringValue.Replace(QuoteCharacter, DoubleQuotes));
+		}
+
+		private async void ExecuteExplainPlanCommandHandler(object sender, ExecutedRoutedEventArgs args)
+		{
+			using (var cancellationTokenSource = new CancellationTokenSource())
+			{
+				using (new TransactionScope())
+				{
+					var statementText = BuildStatementExecutionModel().StatementText;
+					try
+					{
+						var executionModel = await DatabaseModel.ExplainPlanAsync(statementText, cancellationTokenSource.Token);
+						await ExecuteDatabaseCommand(executionModel, false);
+					}
+					catch (Exception e)
+					{
+						Messages.ShowError(e.Message);
+					}
+				}
+			}
 		}
 	}
 

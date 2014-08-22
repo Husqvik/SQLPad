@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -64,6 +65,10 @@ namespace SqlPad.Oracle.Commands
 			var databaseModel = (OracleDatabaseModelBase)ExecutionContext.DocumentRepository.ValidationModels[CurrentNode.Statement].SemanticModel.DatabaseModel;
 
 			var script = await databaseModel.GetObjectScriptAsync(_objectReference, cancellationToken);
+			if (String.IsNullOrEmpty(script))
+			{
+				return;
+			}
 
 			var indextStart = CurrentQueryBlock.Statement.LastTerminalNode.SourcePosition.IndexEnd + 1;
 
