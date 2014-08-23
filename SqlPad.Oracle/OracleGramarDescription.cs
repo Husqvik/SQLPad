@@ -644,7 +644,7 @@ namespace SqlPad.Oracle
 				Terminals.MathDivide,
 				Terminals.MathPlus,
 				Terminals.MathMinus,
-				Terminals.At,
+				Terminals.AtCharacter,
 				Terminals.Colon
 			};
 

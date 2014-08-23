@@ -315,7 +315,7 @@ namespace SqlPad.Oracle
 						stringBuilder.Append(' ');
 					}
 
-					skipSpaceBeforeToken = SkipSpaceTerminalIds.Contains(grammarNode.Id) || grammarNode.Id.In(Terminals.Dot, Terminals.Colon);
+					skipSpaceBeforeToken = SkipSpaceTerminalIds.Contains(grammarNode.Id) || grammarNode.Id.In(Terminals.Dot, Terminals.Colon, Terminals.AtCharacter);
 				}
 				else
 				{

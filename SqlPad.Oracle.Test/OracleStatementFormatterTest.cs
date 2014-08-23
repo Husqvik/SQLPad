@@ -78,14 +78,32 @@ FROM
 SELECT
 	DUMMY
 FROM
-	DUAL
+	DUAL @ DBLINK
 ;";
 
 			_documentRepository.UpdateStatements(sourceFormat);
 			var executionContext = new CommandExecutionContext(sourceFormat, 0, 0, sourceFormat.Length, _documentRepository);
 			Formatter.SingleLineExecutionHandler.ExecutionHandler(executionContext);
 
-			var expectedFormat = "SELECT DUMMY FROM DUAL;" + Environment.NewLine + "SELECT DUMMY FROM DUAL;";
+			var expectedFormat = "SELECT DUMMY FROM DUAL;" + Environment.NewLine + "SELECT DUMMY FROM DUAL@DBLINK;";
+
+			AssertFormattedResult(executionContext, expectedFormat);
+		}
+
+		[Test(Description = @"")]
+		public void TestAtSymbolFormatting()
+		{
+			const string sourceFormat = @"SELECT DUMMY FROM DUAL@DBLINK";
+
+			_documentRepository.UpdateStatements(sourceFormat);
+			var executionContext = new CommandExecutionContext(sourceFormat, 0, 0, sourceFormat.Length, _documentRepository);
+			Formatter.ExecutionHandler.ExecutionHandler(executionContext);
+
+			const string expectedFormat =
+@"SELECT
+	DUMMY
+FROM
+	DUAL@DBLINK";
 
 			AssertFormattedResult(executionContext, expectedFormat);
 		}
