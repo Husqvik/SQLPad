@@ -257,7 +257,7 @@ namespace SqlPad
 			Editor.TextArea.TextEntering += TextEnteringHandler;
 			Editor.TextArea.TextEntered += TextEnteredHandler;
 
-			Editor.TextArea.Caret.PositionChanged += CaretOnPositionChanged;
+			Editor.TextArea.Caret.PositionChanged += CaretPositionChangedHandler;
 			Editor.TextArea.SelectionChanged += SelectionChangedHandler;
 
 			EditorAdapter = new TextEditorAdapter(Editor);
@@ -811,8 +811,10 @@ namespace SqlPad
 			}
 		}
 
-		private void CaretOnPositionChanged(object sender, EventArgs eventArgs)
+		private void CaretPositionChangedHandler(object sender, EventArgs eventArgs)
 		{
+			EditorNavigationService.RegisterDocumentCursorPosition(WorkingDocument, Editor.CaretOffset);
+
 			var parenthesisNodes = new List<StatementGrammarNode>();
 
 			var location = Editor.Document.GetLocation(Editor.CaretOffset);

@@ -108,6 +108,8 @@ namespace SqlPad
 			DocumentTabControl.SelectionChanged += TabControlSelectionChangedHandler;
 
 			DocumentTabControl.SelectedIndex = WorkingDocumentCollection.ActiveDocumentIndex;
+
+			EditorNavigationService.Initialize(ActiveDocument.WorkingDocument);
 		}
 
 		private void SaveAllCommandExecutedHandler(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
@@ -139,21 +141,25 @@ namespace SqlPad
 
 		private void TabControlSelectionChangedHandler(object sender, SelectionChangedEventArgs e)
 		{
-			var document = DocumentTabControl.SelectedContent as DocumentPage;
+			var tabItem = e.AddedItems.Count == 0 ? null : e.AddedItems[0] as TabItem;
+			var document = tabItem == null ? null : tabItem.Content as DocumentPage;
+
 			if (document != null)
 			{
 				_findReplaceManager.CurrentEditor = document.EditorAdapter;
+				WorkingDocumentCollection.ActiveDocumentIndex = DocumentTabControl.SelectedIndex;
+				EditorNavigationService.RegisterDocumentCursorPosition(document.WorkingDocument, document.Editor.CaretOffset);
 			}
 
-			WorkingDocumentCollection.ActiveDocumentIndex = DocumentTabControl.SelectedIndex;
-
 			if (!e.AddedItems.Contains(NewTabItem))
+			{
 				return;
+			}
 
 			CreateNewDocumentPage();
 		}
 
-		private void CreateNewDocumentPage(WorkingDocument workingDocument = null)
+		private DocumentPage CreateNewDocumentPage(WorkingDocument workingDocument = null)
 		{
 			var newDocumentPage = new DocumentPage(workingDocument);
 			
@@ -170,6 +176,8 @@ namespace SqlPad
 			}
 
 			_findReplaceManager.CurrentEditor = newDocumentPage.EditorAdapter;
+
+			return newDocumentPage;
 		}
 
 		private void AddDocumentTabItemContextMenuCommandBindings(DocumentPage documentPage)
@@ -282,21 +290,24 @@ namespace SqlPad
 			}
 		}
 
-		private void OpenExistingFile(string fileName)
+		private DocumentPage OpenExistingFile(string fileName)
 		{
+			DocumentPage documentPage;
 			WorkingDocument workingDocument;
 			if (WorkingDocumentCollection.TryGetWorkingDocumentFor(fileName, out workingDocument))
 			{
-				var documentForFile = AllDocuments.First(d => d.WorkingDocument == workingDocument);
-				DocumentTabControl.SelectedItem = documentForFile.TabItem;
+				documentPage = AllDocuments.First(d => d.WorkingDocument == workingDocument);
+				DocumentTabControl.SelectedItem = documentPage.TabItem;
 			}
 			else
 			{
 				workingDocument = new WorkingDocument { DocumentFileName = fileName };
 
 				WorkingDocumentCollection.AddDocument(workingDocument);
-				CreateNewDocumentPage(workingDocument);
+				documentPage = CreateNewDocumentPage(workingDocument);
 			}
+
+			return documentPage;
 		}
 
 		private void DocumentTabControlDropHandler(object sender, DragEventArgs e)
@@ -348,6 +359,40 @@ namespace SqlPad
 			{
 				DragDrop.DoDragDrop(tabItem, tabItem, DragDropEffects.All);
 			}	
+		}
+
+		private void GoToNextEditCommandExecutedHandler(object sender, ExecutedRoutedEventArgs e)
+		{
+			GoToEditCommand(EditorNavigationService.GetNextEdit());
+		}
+
+		private void GoToPreviousEditCommandExecutedHandler(object sender, ExecutedRoutedEventArgs e)
+		{
+			GoToEditCommand(EditorNavigationService.GetPreviousEdit());
+		}
+
+		private void GoToEditCommand(DocumentCursorPosition documentCursorPosition)
+		{
+			if (documentCursorPosition == null)
+			{
+				return;
+			}
+
+			var documentPage = AllDocuments.SingleOrDefault(d => d.WorkingDocument.Identifier == documentCursorPosition.Document.Identifier);
+			if (documentPage == null)
+			{
+				if (documentCursorPosition.Document.File == null || !File.Exists(documentCursorPosition.Document.DocumentFileName))
+				{
+					return;
+				}
+
+				documentPage =  OpenExistingFile(documentCursorPosition.Document.DocumentFileName);
+			}
+
+			EditorNavigationService.IsEnabled = false;
+			documentPage.Editor.CaretOffset = documentCursorPosition.CursorPosition;
+			DocumentTabControl.SelectedItem = documentPage.TabItem;
+			EditorNavigationService.IsEnabled = true;
 		}
 	}
 }

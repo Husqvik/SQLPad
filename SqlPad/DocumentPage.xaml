@@ -175,7 +175,7 @@
 				</DataGrid>
 			</TabItem>
 			<TabItem Header="Actual plan" Visibility="{Binding IsExecutionPlanAvailable}">
-				<TextBox Text="{Binding TextExecutionPlan}" FontFamily="Consolas" VerticalScrollBarVisibility="Auto"/>
+				<TextBox Text="{Binding TextExecutionPlan}" FontFamily="Consolas" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" IsReadOnly="True" />
 			</TabItem>
 		</TabControl>
 		<StatusBar x:Name="StatusBar" Grid.Row="4" Grid.Column="0">

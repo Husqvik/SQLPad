@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:SqlPad"
         xmlns:findReplace="clr-namespace:SqlPad.FindReplace"
+        xmlns:commands="clr-namespace:SqlPad.Commands"
         Title="SQL Pad 0.1 ALPHA" Height="640" Width="960" Loaded="WindowLoadedHandler"
 		MinWidth="640" MinHeight="360"
 		ResizeMode="CanResizeWithGrip"
@@ -60,6 +61,8 @@
 		<local:StaticResourceBinding ResourceKey="FindReplaceManager" Path="ReplaceBinding" />
 		<local:StaticResourceBinding ResourceKey="FindReplaceManager" Path="FindNextBinding" />
 		<CommandBinding Command="Open" Executed="OpenFileHandler" />
+		<CommandBinding Command="commands:GenericCommands.GoToNextEdit" Executed="GoToNextEditCommandExecutedHandler" />
+		<CommandBinding Command="commands:GenericCommands.GoToPreviousEdit" Executed="GoToPreviousEditCommandExecutedHandler" />
 	</Window.CommandBindings>
 
 	<Grid>

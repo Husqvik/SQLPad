@@ -60,6 +60,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EditorNavigationServiceTest.cs" />
     <Compile Include="MiscellaneousTest.cs" />
     <Compile Include="TemporaryDirectoryTestFixture.cs" />
     <Compile Include="TestFixture.cs" />

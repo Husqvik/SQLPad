@@ -207,6 +207,8 @@ namespace SqlPad
 			DocumentId = Guid.NewGuid();
 		}
 
+		public string Identifier { get { return File == null ? DocumentId.ToString("N") : DocumentFileName; } }
+
 		public Guid DocumentId { get; private set; }
 
 		public FileInfo File { get { return String.IsNullOrEmpty(DocumentFileName) ? null : new FileInfo(DocumentFileName); } }

@@ -12,6 +12,8 @@ namespace SqlPad.Commands
 		public static RoutedCommand OpenContainingFolderCommand = new RoutedCommand();
 		public static RoutedCommand ExplainPlan = new RoutedCommand("ExplainPlan", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.E, ModifierKeys.Control) });
 		public static RoutedCommand ExportToCsv = new RoutedCommand();
+		public static RoutedCommand GoToNextEdit = new RoutedCommand("GoToNextEdit", typeof(Window), new InputGestureCollection { new KeyGesture(Key.OemMinus, ModifierKeys.Control | ModifierKeys.Shift) });
+		public static RoutedCommand GoToPreviousEdit = new RoutedCommand("GoToPreviousEdit", typeof(Window), new InputGestureCollection { new KeyGesture(Key.OemMinus, ModifierKeys.Control) });
 		public static RoutedCommand ShowCodeCompletionOptionCommand = new RoutedCommand("ShowCodeCompletionOptions", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.Space, ModifierKeys.Control) });
 		public static RoutedCommand ShowFunctionOverloadCommand = new RoutedCommand("ShowFunctionOverloads", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.Space, ModifierKeys.Control | ModifierKeys.Shift) });
 		public static RoutedCommand DuplicateTextCommand = new RoutedCommand("DuplicateText", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.D, ModifierKeys.Control) });

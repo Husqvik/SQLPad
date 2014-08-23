@@ -82,6 +82,7 @@
     <Compile Include="Configuration.cs">
       <DependentUpon>Configuration.xsd</DependentUpon>
     </Compile>
+    <Compile Include="EditorNavigationService.cs" />
     <Compile Include="ILargeTextValue.cs" />
     <Compile Include="LargeValueEditor.xaml.cs">
       <DependentUpon>LargeValueEditor.xaml</DependentUpon>
