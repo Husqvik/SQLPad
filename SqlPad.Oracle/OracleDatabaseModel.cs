@@ -205,17 +205,16 @@ namespace SqlPad.Oracle
 			return
 				new StatementExecutionModel
 				{
-					StatementText = DatabaseCommands.ExplainPlan,
+					StatementText = String.Format(DatabaseCommands.ExplainPlanBase, targetTableIdentifier),
 					BindVariables = new[] { new BindVariableModel(new BindVariableConfiguration { DataType = "Varchar2", Name = "STATEMENT_ID", Value = planKey }) }
 				};
 		}
 
 		public async override Task<string> GetActualExecutionPlanAsync(CancellationToken cancellationToken)
 		{
-			var dataModel = new CursorModel();
-			var executionPlanUpdater = new DisplayCursorUpdater(_userSessionId, dataModel);
-			await UpdateModelAsync(cancellationToken, true, executionPlanUpdater, executionPlanUpdater);
-			return dataModel.PlanText;
+			var displayCursorUpdater = new DisplayCursorUpdater(_userSessionId);
+			await UpdateModelAsync(cancellationToken, true, displayCursorUpdater.ActiveCommandIdentifierUpdater, displayCursorUpdater.DisplayCursorOutputUpdater);
+			return displayCursorUpdater.PlanText;
 		}
 
 		public async override Task<string> GetObjectScriptAsync(OracleSchemaObject schemaObject, CancellationToken cancellationToken, bool suppressUserCancellationException = true)
@@ -251,6 +250,9 @@ namespace SqlPad.Oracle
 
 					foreach (var updater in updaters)
 					{
+						command.Parameters.Clear();
+						command.CommandText = String.Empty;
+						command.CommandType= CommandType.Text;
 						updater.InitializeCommand(command);
 
 						try
@@ -767,14 +769,5 @@ namespace SqlPad.Oracle
 			public TaskCompletionSource<OracleDataDictionary> TaskCompletionSource { get; set; }
 			public OracleDatabaseModel DatabaseModel { get; set; }
 		}
-	}
-
-	internal class CursorModel : ModelBase
-	{
-		public string PlanText { get; set; }
-		
-		public string SqlId { get; set; }
-		
-		public int ChildNumber { get; set; }
 	}
 }

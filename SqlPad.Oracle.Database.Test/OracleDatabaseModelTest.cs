@@ -1,4 +1,6 @@
-﻿using System.Configuration;
+﻿using System;
+using System.Configuration;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using NUnit.Framework;
@@ -42,6 +44,9 @@ namespace SqlPad.Oracle.Database.Test
 			objectForScriptCreation.ShouldNotBe(null);
 			var scriptTask = databaseModel.GetObjectScriptAsync(objectForScriptCreation, CancellationToken.None);
 			scriptTask.Wait();
+
+			Trace.WriteLine("Object script output: " + Environment.NewLine + scriptTask.Result + Environment.NewLine);
+
 			scriptTask.Result.ShouldNotBe(null);
 			scriptTask.Result.Length.ShouldBeGreaterThan(100);
 
@@ -63,6 +68,14 @@ namespace SqlPad.Oracle.Database.Test
 			rows.Length.ShouldBe(1);
 			rows[0].Length.ShouldBe(1);
 			rows[0][0].ShouldBe("X");
+
+			var displayCursorTask = databaseModel.GetActualExecutionPlanAsync(CancellationToken.None);
+			displayCursorTask.Wait();
+
+			Trace.WriteLine("Display cursor output: " + Environment.NewLine + displayCursorTask.Result + Environment.NewLine);
+
+			displayCursorTask.Result.ShouldNotBe(null);
+			displayCursorTask.Result.Length.ShouldBeGreaterThan(100);
 
 			databaseModel.CanFetch.ShouldBe(false);
 		}

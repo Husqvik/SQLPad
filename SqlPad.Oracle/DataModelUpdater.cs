@@ -46,7 +46,6 @@ namespace SqlPad.Oracle
 		public override void InitializeCommand(OracleCommand command)
 		{
 			command.CommandText = DatabaseCommands.GetColumnStatisticsCommand;
-			command.Parameters.Clear();
 			command.AddSimpleParameter("OWNER", _objectIdentifier.Owner.Trim('"'));
 			command.AddSimpleParameter("TABLE_NAME", _objectIdentifier.Name.Trim('"'));
 			command.AddSimpleParameter("COLUMN_NAME", _columnName);
@@ -89,7 +88,6 @@ namespace SqlPad.Oracle
 		public override void InitializeCommand(OracleCommand command)
 		{
 			command.CommandText = DatabaseCommands.GetColumnHistogramCommand;
-			command.Parameters.Clear();
 			command.AddSimpleParameter("OWNER", _objectIdentifier.Owner.Trim('"'));
 			command.AddSimpleParameter("TABLE_NAME", _objectIdentifier.Name.Trim('"'));
 			command.AddSimpleParameter("COLUMN_NAME", _columnName);
@@ -126,7 +124,6 @@ namespace SqlPad.Oracle
 		public override void InitializeCommand(OracleCommand command)
 		{
 			command.CommandText = DatabaseCommands.GetTableDetailsCommand;
-			command.Parameters.Clear();
 			command.AddSimpleParameter("OWNER", _objectIdentifier.Owner.Trim('"'));
 			command.AddSimpleParameter("TABLE_NAME", _objectIdentifier.Name.Trim('"'));
 		}
@@ -168,7 +165,6 @@ namespace SqlPad.Oracle
 		public override void InitializeCommand(OracleCommand command)
 		{
 			command.CommandText = DatabaseCommands.GetTableAllocatedBytesCommand;
-			command.Parameters.Clear();
 			command.AddSimpleParameter("OWNER", _objectIdentifier.Owner.Trim('"'));
 			command.AddSimpleParameter("TABLE_NAME", _objectIdentifier.Name.Trim('"'));
 		}
@@ -203,7 +199,6 @@ namespace SqlPad.Oracle
 		public void InitializeCommand(OracleCommand command)
 		{
 			command.CommandText = DatabaseCommands.GetObjectScriptCommand;
-			command.Parameters.Clear();
 			command.AddSimpleParameter("OBJECT_TYPE", _schemaObject.Type.ToUpperInvariant());
 			command.AddSimpleParameter("NAME", _schemaObject.FullyQualifiedName.Name.Trim('"'));
 			command.AddSimpleParameter("SCHEMA", _schemaObject.FullyQualifiedName.Owner.Trim('"'));
@@ -223,60 +218,108 @@ namespace SqlPad.Oracle
 		}
 	}
 
-	internal class DisplayCursorUpdater : DataModelUpdater<CursorModel>
+	internal class DisplayCursorUpdater
 	{
-		private readonly int _sessionId;
-
-		public DisplayCursorUpdater(int sessionId, CursorModel dataModel)
-			: base(dataModel)
+		private readonly CursorModel _cursorModel;
+		
+		public DisplayCursorUpdater(int sessionId)
 		{
-			_sessionId = sessionId;
+			_cursorModel = new CursorModel(sessionId);
+			ActiveCommandIdentifierUpdater = new ActiveCommandIdentifierUpdaterInternal(_cursorModel);
+			DisplayCursorOutputUpdater = new DisplayCursorUpdaterInternal(_cursorModel);
 		}
 
-		public override void InitializeCommand(OracleCommand command)
-		{
-			command.Parameters.Clear();
+		public IDataModelUpdater ActiveCommandIdentifierUpdater { get; private set; }
 
-			if (DataModel.SqlId == null)
+		public IDataModelUpdater DisplayCursorOutputUpdater { get; private set; }
+
+		public string PlanText { get { return _cursorModel.PlanText; } }
+
+		private class CursorModel
+		{
+			public CursorModel(int sessionId)
+			{
+				SessionId = sessionId;
+			}
+
+			public int SessionId { get; private set; }
+
+			public string PlanText { get; set; }
+
+			public string SqlId { get; set; }
+
+			public int ChildNumber { get; set; }
+		}
+
+		private class ActiveCommandIdentifierUpdaterInternal : IDataModelUpdater
+		{
+			private readonly CursorModel _cursorModel;
+
+			public ActiveCommandIdentifierUpdaterInternal(CursorModel cursorModel)
+			{
+				_cursorModel = cursorModel;
+			}
+
+			public void InitializeCommand(OracleCommand command)
 			{
 				command.CommandText = DatabaseCommands.GetExecutionPlanIdentifiers;
-				command.AddSimpleParameter("SID", _sessionId);
+				command.AddSimpleParameter("SID", _cursorModel.SessionId);
 			}
-			else
-			{
-				command.CommandText = DatabaseCommands.GetExecutionPlanText;
-				command.AddSimpleParameter("SQL_ID", DataModel.SqlId);
-				command.AddSimpleParameter("CHILD_NUMBER", DataModel.ChildNumber);
-			}
-		}
 
-		public override void MapData(OracleDataReader reader)
-		{
-			var builder = new StringBuilder();
-
-			while (reader.Read())
+			public void MapData(OracleDataReader reader)
 			{
-				if (DataModel.SqlId == null)
+				if (!reader.Read())
 				{
-					DataModel.SqlId = OracleReaderValueConvert.ToString(reader["SQL_ID"]);
-					if (DataModel.SqlId == null)
-					{
-						return;
-					}
-
-					DataModel.ChildNumber = Convert.ToInt32(reader["SQL_CHILD_NUMBER"]);
 					return;
 				}
 
-				builder.AppendLine(Convert.ToString(reader["PLAN_TABLE_OUTPUT"]));
+				_cursorModel.SqlId = OracleReaderValueConvert.ToString(reader["SQL_ID"]);
+				if (_cursorModel.SqlId == null)
+				{
+					return;
+				}
+
+				_cursorModel.ChildNumber = Convert.ToInt32(reader["SQL_CHILD_NUMBER"]);
 			}
 
-			DataModel.PlanText = builder.ToString();
+			public bool CanContinue
+			{
+				get { return _cursorModel.SqlId != null; }
+			}
 		}
 
-		public override bool CanContinue
+		private class DisplayCursorUpdaterInternal : IDataModelUpdater
 		{
-			get { return DataModel.SqlId != null; }
+			private readonly CursorModel _cursorModel;
+
+			public DisplayCursorUpdaterInternal(CursorModel cursorModel)
+			{
+				_cursorModel = cursorModel;
+			}
+
+			public void InitializeCommand(OracleCommand command)
+			{
+				command.CommandText = DatabaseCommands.GetExecutionPlanText;
+				command.AddSimpleParameter("SQL_ID", _cursorModel.SqlId);
+				command.AddSimpleParameter("CHILD_NUMBER", _cursorModel.ChildNumber);
+			}
+
+			public void MapData(OracleDataReader reader)
+			{
+				var builder = new StringBuilder();
+
+				while (reader.Read())
+				{
+					builder.AppendLine(Convert.ToString(reader["PLAN_TABLE_OUTPUT"]));
+				}
+
+				_cursorModel.PlanText = builder.ToString();
+			}
+
+			public bool CanContinue
+			{
+				get { return false; }
+			}
 		}
 	}
 
@@ -297,7 +340,6 @@ namespace SqlPad.Oracle
 		{
 			var targetTable = _targetTableIdentifier.ToString();
 			command.CommandText = String.Format("EXPLAIN PLAN SET STATEMENT_ID = '{0}' INTO {1} FOR {2}", _planKey, targetTable, _statementText);
-			command.Parameters.Clear();
 		}
 
 		public void MapData(OracleDataReader reader) { }

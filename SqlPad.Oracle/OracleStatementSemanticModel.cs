@@ -860,7 +860,10 @@ namespace SqlPad.Oracle
 				var columnExpressions = queryBlock.SelectList.GetDescendantsWithinSameQuery(NonTerminals.AliasedExpressionOrAllTableColumns).ToArray();
 				foreach (var columnExpression in columnExpressions)
 				{
-					var columnAliasNode = columnExpression.LastTerminalNode.Id == Terminals.ColumnAlias ? columnExpression.LastTerminalNode : null;
+					var columnAliasNode = columnExpression.LastTerminalNode != null && columnExpression.LastTerminalNode.Id == Terminals.ColumnAlias
+						? columnExpression.LastTerminalNode
+						: null;
+					
 					var column = new OracleSelectListColumn
 					{
 						AliasNode = columnAliasNode,
@@ -869,7 +872,10 @@ namespace SqlPad.Oracle
 						ExplicitDefinition = true
 					};
 
-					var asteriskNode = columnExpression.LastTerminalNode.Id == Terminals.Asterisk ? columnExpression.LastTerminalNode : null;
+					var asteriskNode = columnExpression.LastTerminalNode != null && columnExpression.LastTerminalNode.Id == Terminals.Asterisk
+						? columnExpression.LastTerminalNode
+						: null;
+					
 					if (asteriskNode != null)
 					{
 						column.IsAsterisk = true;

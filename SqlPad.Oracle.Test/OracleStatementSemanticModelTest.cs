@@ -369,5 +369,17 @@ FROM
 			selectionTable.DatabaseLink.ShouldNotBe(null);
 			selectionTable.DatabaseLink.FullyQualifiedName.Name.ShouldBe("HQ_PDB_LOOPBACK");
 		}
+
+		[Test(Description = @"")]
+		public void TestModelBuildWithMissingAliasedColumnExpression()
+		{
+			const string query1 = @"SELECT SQL_CHILD_NUMBER, , PREV_CHILD_NUMBER FROM V$SESSION";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.QueryBlocks.ShouldNotBe(null);
+			semanticModel.QueryBlocks.Count.ShouldBe(1);
+		}
 	}
 }
