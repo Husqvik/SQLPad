@@ -20,7 +20,7 @@ namespace SqlPad.Oracle.Test
 
 		private static readonly HashSet<string> SchemasInternal = new HashSet<string> { OwnerNameSys, "\"SYSTEM\"", InitialSchema };
 		private static readonly HashSet<string> AllSchemasInternal = new HashSet<string>(SchemasInternal) { OwnerNameSys, "\"SYSTEM\"", InitialSchema, SchemaPublic };
-		private static readonly OracleFunctionMetadataCollection AllFunctionMetadataInternal;
+		private static readonly ILookup<OracleFunctionIdentifier, OracleFunctionMetadata> AllFunctionMetadataInternal;
 		private static readonly Dictionary<string, OracleFunctionMetadata> NonSchemaBuiltInFunctionMetadataInternal;
 
 		private readonly IDictionary<OracleObjectIdentifier, OracleSchemaObject> _allObjects;
@@ -164,7 +164,7 @@ namespace SqlPad.Oracle.Test
 			asPdfPackageFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("P_TXT", 1, ParameterDirection.Input, "VARCHAR2", false));
 			asPdfPackage.Functions.Add(asPdfPackageFunctionMetadata);
 
-			var builtInFunctionPackage = (OraclePackage)AllObjectsInternal.Single(o => o.Name == OracleFunctionMetadataCollection.PackageBuiltInFunction && o.Owner == OwnerNameSys);
+			var builtInFunctionPackage = (OraclePackage)AllObjectsInternal.Single(o => o.Name == PackageBuiltInFunction && o.Owner == OwnerNameSys);
 			var toCharFunctionMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues("SYS", "STANDARD", "TO_CHAR"), false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNormal, true);
 			toCharFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "VARCHAR2", false));
 			toCharFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("V", 1, ParameterDirection.Input, "NUMBER", false));
@@ -228,7 +228,7 @@ namespace SqlPad.Oracle.Test
 			var lastValueFunctionMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues(null, null, "LAST_VALUE"), true, false, false, false, false, false, 1, 1, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNormal, true);
 			allFunctionMetadata.Add(lastValueFunctionMetadata);
 
-			AllFunctionMetadataInternal = new OracleFunctionMetadataCollection(allFunctionMetadata);
+			AllFunctionMetadataInternal = allFunctionMetadata.ToLookup(m => m.Identifier);
 			NonSchemaBuiltInFunctionMetadataInternal = allFunctionMetadata
 				.Where(m => String.IsNullOrEmpty(m.Identifier.Owner))
 				.ToDictionary(m => m.Identifier.Name, m => m);
@@ -356,7 +356,7 @@ namespace SqlPad.Oracle.Test
 				}.AsReadOnly();
 		}
 
-		public override OracleFunctionMetadataCollection AllFunctionMetadata { get { return AllFunctionMetadataInternal; } }
+		public override ILookup<OracleFunctionIdentifier, OracleFunctionMetadata> AllFunctionMetadata { get { return AllFunctionMetadataInternal; } }
 
 		protected override IDictionary<string, OracleFunctionMetadata> NonSchemaBuiltInFunctionMetadata { get { return NonSchemaBuiltInFunctionMetadataInternal; } }
 
@@ -517,7 +517,7 @@ namespace SqlPad.Oracle.Test
 			},
 			new OraclePackage
 			{
-				FullyQualifiedName = OracleObjectIdentifier.Create(OwnerNameSys, OracleFunctionMetadataCollection.PackageBuiltInFunction),
+				FullyQualifiedName = OracleObjectIdentifier.Create(OwnerNameSys, PackageBuiltInFunction),
 				IsValid = true
 			},
 			new OracleObjectType

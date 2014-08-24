@@ -88,12 +88,12 @@ namespace SqlPad.Oracle
 			return new ReadOnlyDictionary<OracleObjectIdentifier, OracleSchemaObject>(_allObjects);
 		}
 
-		public OracleFunctionMetadataCollection GetUserFunctionMetadata()
+		public ILookup<OracleFunctionIdentifier, OracleFunctionMetadata> GetUserFunctionMetadata()
 		{
 			return GetFunctionMetadataCollection(DatabaseCommands.UserFunctionMetadataCommandText, DatabaseCommands.UserFunctionParameterMetadataCommandText, false);
 		}
 
-		public OracleFunctionMetadataCollection GetBuiltInFunctionMetadata()
+		public ILookup<OracleFunctionIdentifier, OracleFunctionMetadata> GetBuiltInFunctionMetadata()
 		{
 			return GetFunctionMetadataCollection(DatabaseCommands.BuiltInFunctionMetadataCommandText, DatabaseCommands.BuiltInFunctionParameterMetadataCommandText, true);
 		}
@@ -109,22 +109,26 @@ namespace SqlPad.Oracle
 				.ToDictionary(l => l.FullyQualifiedName, l => l);
 		}
 
-		private OracleFunctionMetadataCollection GetFunctionMetadataCollection(string selectFunctionMetadataCommandText, string selectParameterMetadataCommandText, bool isBuiltIn)
+		private ILookup<OracleFunctionIdentifier, OracleFunctionMetadata> GetFunctionMetadataCollection(string selectFunctionMetadataCommandText, string selectParameterMetadataCommandText, bool isBuiltIn)
 		{
 			var functionMetadataSource = _databaseModel.ExecuteReader(selectFunctionMetadataCommandText, r => MapFunctionMetadata(r, isBuiltIn));
-			var functionMetadataDictionary = functionMetadataSource.ToDictionary(m => m.Identifier, m => m);
+			var functionMetadataLookup = functionMetadataSource.ToLookup(m => m.Identifier);
 
 			var functionParameterMetadataSource = _databaseModel.ExecuteReader(selectParameterMetadataCommandText, MapFunctionParameterMetadata);
 			foreach (var functionIdentifierParameterMetadata in functionParameterMetadataSource)
 			{
-				OracleFunctionMetadata functionMetadata;
-				if (functionMetadataDictionary.TryGetValue(functionIdentifierParameterMetadata.Key, out functionMetadata))
+				var functionMetadata = functionMetadataLookup[functionIdentifierParameterMetadata.Key]
+					.SingleOrDefault(m => m.Identifier.Overload == functionIdentifierParameterMetadata.Key.Overload);
+				//OracleFunctionMetadata functionMetadata;
+				//if (functionMetadataDictionary.TryGetValue(functionIdentifierParameterMetadata.Key, out functionMetadata))
+				if (functionMetadata != null)
 				{
 					functionMetadata.Parameters.Add(functionIdentifierParameterMetadata.Value);
 				}
 			}
 
-			return new OracleFunctionMetadataCollection(functionMetadataDictionary.Values);
+			return functionMetadataLookup;
+			//return new OracleFunctionMetadataCollection(functionMetadataDictionary.Values);
 		}
 
 		private static OracleFunctionMetadata MapFunctionMetadata(OracleDataReader reader, bool isBuiltIn)

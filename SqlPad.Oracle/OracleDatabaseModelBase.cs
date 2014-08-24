@@ -13,8 +13,9 @@ namespace SqlPad.Oracle
 		public const string SchemaPublic = "\"PUBLIC\"";
 		public const string SchemaSys = "\"SYS\"";
 		public const string SchemaSystem = "\"SYSTEM\"";
+		public const string PackageBuiltInFunction = "\"STANDARD\"";
 
-		protected static readonly OracleObjectIdentifier BuiltInFunctionPackageIdentifier = OracleObjectIdentifier.Create(SchemaSys, OracleFunctionMetadataCollection.PackageBuiltInFunction);
+		protected static readonly OracleObjectIdentifier BuiltInFunctionPackageIdentifier = OracleObjectIdentifier.Create(SchemaSys, PackageBuiltInFunction);
 
 		public abstract ConnectionStringSettings ConnectionString { get; }
 		
@@ -58,7 +59,7 @@ namespace SqlPad.Oracle
 
 		public abstract bool IsExecuting { get; }
 
-		public abstract OracleFunctionMetadataCollection AllFunctionMetadata { get; }
+		public abstract ILookup<OracleFunctionIdentifier, OracleFunctionMetadata> AllFunctionMetadata { get; }
 
 		protected abstract IDictionary<string, OracleFunctionMetadata> NonSchemaBuiltInFunctionMetadata { get; }
 

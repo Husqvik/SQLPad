@@ -26,7 +26,7 @@ namespace SqlPad.Oracle
 		private bool _isExecuting;
 		private Task _backgroundTask;
 		private readonly CancellationTokenSource _backgroundTaskCancellationTokenSource = new CancellationTokenSource();
-		private OracleFunctionMetadataCollection _allFunctionMetadata = new OracleFunctionMetadataCollection(Enumerable.Empty<OracleFunctionMetadata>());
+		private ILookup<OracleFunctionIdentifier, OracleFunctionMetadata> _allFunctionMetadata = Enumerable.Empty<OracleFunctionMetadata>().ToLookup(m => m.Identifier);
 		private readonly ConnectionStringSettings _connectionString;
 		private HashSet<string> _schemas = new HashSet<string>();
 		private HashSet<string> _allSchemas = new HashSet<string>();
@@ -103,7 +103,7 @@ namespace SqlPad.Oracle
 			_backgroundTask = Task.Factory.StartNew(action);
 		}
 
-		public override OracleFunctionMetadataCollection AllFunctionMetadata { get { return _allFunctionMetadata; } }
+		public override ILookup<OracleFunctionIdentifier, OracleFunctionMetadata> AllFunctionMetadata { get { return _allFunctionMetadata; } }
 
 		protected override IDictionary<string, OracleFunctionMetadata> NonSchemaBuiltInFunctionMetadata { get { return _dataDictionary.NonSchemaFunctionMetadata; } }
 
@@ -660,12 +660,14 @@ namespace SqlPad.Oracle
 
 			var allObjects = _dataDictionaryMapper.BuildDataDictionary();
 
-			var userFunctions = _dataDictionaryMapper.GetUserFunctionMetadata().SqlFunctions;
-			var builtInFunctions = _dataDictionaryMapper.GetBuiltInFunctionMetadata().SqlFunctions;
-			_allFunctionMetadata = new OracleFunctionMetadataCollection(builtInFunctions.Concat(userFunctions));
+			var userFunctions = _dataDictionaryMapper.GetUserFunctionMetadata().SelectMany(g => g);
+			var builtInFunctions = _dataDictionaryMapper.GetBuiltInFunctionMetadata().SelectMany(g => g);
+			_allFunctionMetadata = builtInFunctions.Concat(userFunctions)
+				.ToLookup(m => m.Identifier);
+
 			var nonSchemaBuiltInFunctionMetadata = new Dictionary<string, OracleFunctionMetadata>();
 
-			foreach (var functionMetadata in _allFunctionMetadata.SqlFunctions)
+			foreach (var functionMetadata in _allFunctionMetadata.SelectMany(g => g))
 			{
 				if (String.IsNullOrEmpty(functionMetadata.Identifier.Owner))
 				{
@@ -747,7 +749,7 @@ namespace SqlPad.Oracle
 				.SelectMany(o => o.Functions)
 				.Concat(_dataDictionary.NonSchemaFunctionMetadata.Values);
 
-			_allFunctionMetadata = new OracleFunctionMetadataCollection(functionMetadata);
+			_allFunctionMetadata = functionMetadata.ToLookup(m => m.Identifier);
 		}
 
 		private void RaiseEvent(EventHandler eventHandler)

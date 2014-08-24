@@ -72,7 +72,8 @@ namespace SqlPad.Oracle
 				}
 			}
 
-			var functionOverloads = oracleDatabaseModel.AllFunctionMetadata.SqlFunctions.Where(m => programReference.Metadata.Identifier.EqualsWithAnyOverload(m.Identifier) && (m.Parameters.Count == 0 || currentParameterIndex < m.Parameters.Count - 1));
+			var functionOverloads = oracleDatabaseModel.AllFunctionMetadata[programReference.Metadata.Identifier]
+				.Where(m => m.Parameters.Count == 0 || currentParameterIndex < m.Parameters.Count - 1);
 
 			return functionOverloads.Select(
 				o =>
@@ -102,7 +103,7 @@ namespace SqlPad.Oracle
 				return EmptyCollection;
 
 			var completionType = new OracleCodeCompletionType(sqlDocumentRepository, statementText, cursorPosition);
-			completionType.PrintResults();
+			//completionType.PrintResults();
 
 			if (completionType.InComment)
 				return EmptyCollection;
@@ -360,7 +361,7 @@ namespace SqlPad.Oracle
 				var builtInFunctionMatcher =
 					new OracleFunctionMatcher(
 						new FunctionMatchElement(OracleDatabaseModelBase.SchemaSys).SelectOwner(),
-						new FunctionMatchElement(OracleFunctionMetadataCollection.PackageBuiltInFunction).SelectPackage(),
+						new FunctionMatchElement(OracleDatabaseModelBase.PackageBuiltInFunction).SelectPackage(),
 						new FunctionMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectName());
 
 				var localSchemaFunctionMatcher =
@@ -523,7 +524,7 @@ namespace SqlPad.Oracle
 				parameterListCaretOffset = -1;
 			}
 			
-			return databaseModel.AllFunctionMetadata.SqlFunctions
+			return databaseModel.AllFunctionMetadata.SelectMany(g => g)
 				.Where(f => matchers.Any(m => m.IsMatch(f, databaseModel.CurrentSchema)) && !String.IsNullOrEmpty(identifierSelector(f)))
 				.Select(f => new { Name = identifierSelector(f).ToSimpleIdentifier(), f.DisplayType })
 				.Distinct()

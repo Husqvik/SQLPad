@@ -97,7 +97,7 @@
     <Compile Include="OracleDataDictionary.cs" />
     <Compile Include="OracleFunctionMatcher.cs" />
     <Compile Include="OracleFunctionMetadata.cs" />
-    <Compile Include="OracleFunctionMetadataCollection.cs" />
+    <Compile Include="OracleFunctionIdentifier.cs" />
     <Compile Include="OracleObjectFactory.cs" />
     <Compile Include="OracleProgramReference.cs" />
     <Compile Include="OracleColumnReference.cs" />
