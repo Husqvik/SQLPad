@@ -15,6 +15,10 @@ namespace SqlPad.Oracle
 		public const string SchemaSystem = "\"SYSTEM\"";
 		public const string PackageBuiltInFunction = "\"STANDARD\"";
 
+		internal static OracleFunctionIdentifier IdentifierBuiltInFunctionRound = OracleFunctionIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "ROUND");
+		internal static OracleFunctionIdentifier IdentifierBuiltInFunctionToChar = OracleFunctionIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "TO_CHAR");
+		internal static OracleFunctionIdentifier IdentifierBuiltInFunctionTrunc = OracleFunctionIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "TRUNC");
+
 		protected static readonly OracleObjectIdentifier BuiltInFunctionPackageIdentifier = OracleObjectIdentifier.Create(SchemaSys, PackageBuiltInFunction);
 
 		public abstract ConnectionStringSettings ConnectionString { get; }

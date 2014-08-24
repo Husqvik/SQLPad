@@ -86,7 +86,7 @@ namespace SqlPad.Oracle
 		{
 			_queryBlockNodes = Statement.RootNode.GetDescendants(NonTerminals.QueryBlock)
 				.OrderByDescending(q => q.Level)
-				.ToDictionary(n => n, n => new OracleQueryBlock { RootNode = n, Statement = Statement });
+				.ToDictionary(n => n, n => new OracleQueryBlock(this) { RootNode = n, Statement = Statement });
 
 			foreach (var kvp in _queryBlockNodes)
 			{

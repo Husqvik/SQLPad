@@ -11,8 +11,8 @@
     <StartSymbol Id="SavepointStatement" />
     <StartSymbol Id="SetTransactionStatement" />
     <StartSymbol Id="InsertStatement" />
-    <!--<StartSymbol Id="CreateStatement" />
     <StartSymbol Id="DropStatement" />
+    <!--<StartSymbol Id="CreateStatement" />
     <StartSymbol Id="AlterStatement" />
     <StartSymbol Id="RenameStatement" />-->
   </StartSymbols>
@@ -23,6 +23,153 @@
   </Terminators>
     
   <Rules>
+    <!-- DROP statement -->
+    <Rule StartingNonTerminal="DropStatement">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Drop" />
+          <NonTerminal Id="DropObjectClause" />
+          <Terminal Id="Semicolon" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DropObjectClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="DropTable" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="DropView" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="DropIndex" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="DropPackage" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="DropOther" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="DropMaterializedView" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="DropContext" />
+        </Sequence>
+        <!-- TODO: Drop other objects -->
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DropTable">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Table" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="CascadeConstraints" IsOptional="true" />
+          <Terminal Id="Purge" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="CascadeConstraints">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Cascade" />
+          <Terminal Id="Constraints" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DropView">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="View" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="CascadeConstraints" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DropMaterializedView">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Materialized" />
+          <Terminal Id="View" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="PreserveTable" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PreserveTable">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Preserve" />
+          <Terminal Id="Table" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DropPackage">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Package" />
+          <Terminal Id="Body" IsOptional="true" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DropOther">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="SimpleSchemaObject" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DropContext">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Context" />
+          <Terminal Id="ObjectIdentifier" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SimpleSchemaObject">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Function" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Procedure" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Sequence" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DropIndex">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Index" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+          <Terminal Id="Online" IsOptional="true" />
+          <Terminal Id="Force" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
     <!-- COMMIT statement -->
     <Rule StartingNonTerminal="CommitStatement">
       <Sequences>
@@ -4281,6 +4428,19 @@
     
     <!-- Insert -->
     <Terminal Id="Insert" Value="INSERT" IsKeyword="true" />
+    
+    <!-- Drop -->
+    <Terminal Id="Cascade" Value="CASCADE" />
+    <Terminal Id="Constraints" Value="CONSTRAINTS" />
+    <Terminal Id="Purge" Value="PURGE" />
+    <Terminal Id="Online" Value="ONLINE" />
+    <Terminal Id="Materialized" Value="MATERIALIZED" />
+    <Terminal Id="Preserve" Value="PRESERVE" />
+    <Terminal Id="Package" Value="PACKAGE" />
+    <Terminal Id="Body" Value="BODY" />
+    <Terminal Id="Procedure" Value="PROCEDURE" />
+    <Terminal Id="Function" Value="FUNCTION" />
+    <Terminal Id="Context" Value="CONTEXT" />
     
     <!-- Other -->
     <Terminal Id="Float" Value="FLOAT" IsKeyword="true" />

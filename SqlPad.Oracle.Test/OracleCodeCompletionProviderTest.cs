@@ -764,6 +764,39 @@ se";
 			items.Count.ShouldBe(0);
 		}
 
+		[Test(Description = @"")]
+		public void TestTruncSpecialParameterCompletion()
+		{
+			const string statement = @"SELECT TRUNC(SYSDATE, 'IW') FROM DUAL";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 23).ToList();
+			items.Count.ShouldBe(16);
+			items[0].Name.ShouldBe("CC - One greater than the first two digits of a four-digit year");
+			items[0].Text.ShouldBe("'CC'");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+			items[15].Name.ShouldBe("YYYY - Year (rounds up on July 1)");
+			items[15].Text.ShouldBe("'YYYY'");
+			items[15].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+		}
+
+		[Test(Description = @"")]
+		public void TestToCharSpecialParameterCompletion()
+		{
+			const string statement = @"SELECT TO_CHAR(12.34, '9G999D00', '') FROM DUAL";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 35).ToList();
+			items.Count.ShouldBe(1);
+			items[0].Name.ShouldBe("NLS_NUMERIC_CHARACTERS = '<decimal separator><group separator>' NLS_CURRENCY = 'currency_symbol' NLS_ISO_CURRENCY = <territory>");
+			items[0].Text.ShouldBe("'NLS_NUMERIC_CHARACTERS = ''<decimal separator><group separator>'' NLS_CURRENCY = ''currency_symbol'' NLS_ISO_CURRENCY = <territory>'");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+		}
+
+		[Test(Description = @"")]
+		public void TestToCharSpecialParameterCompletionAtIncompatibleParameterIndex()
+		{
+			const string statement = @"SELECT TO_CHAR(12.34, '9G999D00', '') FROM DUAL";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 30).ToList();
+			items.Count.ShouldBe(0);
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)

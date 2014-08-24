@@ -36,5 +36,6 @@ namespace SqlPad.Oracle
 		public const string SchemaFunction = "Schema function";
 		public const string Package = "Package";
 		public const string DatabaseLink = "Database link";
+		public const string FunctionParameter = "Function parameter";
 	}
 }

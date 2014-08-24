@@ -10,7 +10,6 @@ namespace SqlPad.Oracle
 	public class OracleCodeCompletionProvider : ICodeCompletionProvider
 	{
 		private readonly OracleSqlParser _parser = new OracleSqlParser();
-		private static readonly ICodeCompletionItem[] EmptyCollection = new ICodeCompletionItem[0];
 
 		private const string JoinTypeJoin = "JOIN";
 		private const string JoinTypeInnerJoin = "INNER JOIN";
@@ -18,6 +17,8 @@ namespace SqlPad.Oracle
 		private const string JoinTypeRightJoin = "RIGHT JOIN";
 		private const string JoinTypeFullJoin = "FULL JOIN";
 		private const string JoinTypeCrossJoin = "CROSS JOIN";
+
+		private static readonly ICodeCompletionItem[] EmptyCollection = new ICodeCompletionItem[0];
 
 		private static readonly OracleCodeCompletionItem[] JoinClauseTemplates =
 		{
@@ -36,14 +37,36 @@ namespace SqlPad.Oracle
 				return emptyCollection;
 
 			var semanticModel = (OracleStatementSemanticModel)sqlDocumentRepository.ValidationModels[node.Statement].SemanticModel;
-			var oracleDatabaseModel = semanticModel.DatabaseModel;
 			var queryBlock = semanticModel.GetQueryBlock(cursorPosition);
+
+			var functionOverloads = ResolveFunctionOverloads(queryBlock, node, cursorPosition);
+
+			return functionOverloads.Select(
+				fo =>
+				{
+					var metadata = fo.FunctionMetadata;
+					var returnParameter = metadata.Parameters.FirstOrDefault();
+					return
+						new FunctionOverloadDescription
+						{
+							Name = metadata.Identifier.FullyQualifiedIdentifier,
+							Parameters = metadata.Parameters.Skip(1).Select(p => p.Name + ": " + p.DataType).ToArray(),
+							CurrentParameterIndex = fo.CurrentParameterIndex,
+							ReturnedDatatype = returnParameter == null ? null : returnParameter.DataType,
+							HasSchemaDefinition = !String.IsNullOrEmpty(metadata.Identifier.Owner)
+						};
+				})
+				.ToArray();
+		}
+
+		private IEnumerable<OracleCodeCompletionFunctionOverload> ResolveFunctionOverloads(OracleQueryBlock queryBlock, StatementGrammarNode node, int cursorPosition)
+		{
 			var programReference = queryBlock.AllProgramReferences.Where(f => node.HasAncestor(f.ParameterListNode))
 				.OrderByDescending(r => r.RootNode.Level)
 				.FirstOrDefault();
 			
 			if (programReference == null || programReference.Metadata == null)
-				return emptyCollection;
+				return Enumerable.Empty<OracleCodeCompletionFunctionOverload>();
 
 			var currentParameterIndex = -1;
 			if (programReference.ParameterNodes != null)
@@ -72,22 +95,15 @@ namespace SqlPad.Oracle
 				}
 			}
 
-			var functionOverloads = oracleDatabaseModel.AllFunctionMetadata[programReference.Metadata.Identifier]
-				.Where(m => m.Parameters.Count == 0 || currentParameterIndex < m.Parameters.Count - 1);
-
-			return functionOverloads.Select(
-				o =>
-				{
-					var returnParameter = o.Parameters.FirstOrDefault();
-					return new FunctionOverloadDescription
-					       {
-						       Name = programReference.Metadata.Identifier.FullyQualifiedIdentifier,
-						       Parameters = o.Parameters.Skip(1).Select(p => p.Name + ": " + p.DataType).ToArray(),
-						       CurrentParameterIndex = currentParameterIndex,
-							   ReturnedDatatype = returnParameter == null ? null : returnParameter.DataType,
-							   HasSchemaDefinition = !String.IsNullOrEmpty(o.Identifier.Owner)
-					       };
-				}).ToArray();
+			return queryBlock.SemanticModel.DatabaseModel.AllFunctionMetadata[programReference.Metadata.Identifier]
+				.Where(m => m.Parameters.Count == 0 || currentParameterIndex < m.Parameters.Count - 1)
+				.Select(m =>
+					new OracleCodeCompletionFunctionOverload
+					{
+						ProgramReference = programReference,
+						FunctionMetadata = m,
+						CurrentParameterIndex = currentParameterIndex
+					});
 		}
 
 		internal ICollection<ICodeCompletionItem> ResolveItems(IDatabaseModel databaseModel, string statementText, int cursorPosition, bool forcedInvokation = true, params string[] categories)
@@ -289,8 +305,14 @@ namespace SqlPad.Oracle
 			{
 				return EmptyCollection;
 			}
-			
+
 			var queryBlock = semanticModel.GetQueryBlock(currentNode);
+			if (currentNode.Id.IsLiteral())
+			{
+				var functionOverloads = ResolveFunctionOverloads(queryBlock, currentNode, cursorPosition);
+				return CodeCompletionSearchHelper.ResolveSpecificFunctionParameterCodeCompletionItems(currentNode, functionOverloads);
+			}
+			
 			var objectIdentifierNode = currentNode.ParentNode.Id == NonTerminals.ObjectPrefix ? currentNode.ParentNode.GetSingleDescendant(Terminals.ObjectIdentifier) : null;
 			if (objectIdentifierNode == null && prefixedColumnReference != null)
 			{
@@ -651,39 +673,12 @@ namespace SqlPad.Oracle
 		}
 	}
 
-	public static class CodeCompletionSearchHelper
+	internal class OracleCodeCompletionFunctionOverload
 	{
-		public static bool IsMatch(string fullyQualifiedName, string inputPhrase)
-		{
-			inputPhrase = inputPhrase == null ? null : inputPhrase.Trim('"');
-			return String.IsNullOrWhiteSpace(inputPhrase) ||
-			       ResolveSearchPhrases(inputPhrase).All(p => fullyQualifiedName.ToUpperInvariant().Contains(p));
-		}
+		public OracleProgramReference ProgramReference { get; set; }
 
-		private static IEnumerable<string> ResolveSearchPhrases(string inputPhrase)
-		{
-			var builder = new StringBuilder();
-			var containsSmallLetter = false;
-			foreach (var character in inputPhrase)
-			{
-				if (containsSmallLetter && Char.IsUpper(character) && builder.Length > 0)
-				{
-					yield return builder.ToString().ToUpperInvariant();
-					containsSmallLetter = false;
-					builder.Clear();
-				}
-				else if (Char.IsLower(character))
-				{
-					containsSmallLetter = true;
-				}
+		public OracleFunctionMetadata FunctionMetadata { get; set; }
 
-				builder.Append(character);
-			}
-
-			if (builder.Length > 0)
-			{
-				yield return builder.ToString().ToUpperInvariant();
-			}
-		}
+		public int CurrentParameterIndex { get; set; }
 	}
 }

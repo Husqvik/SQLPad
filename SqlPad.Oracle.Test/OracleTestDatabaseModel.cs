@@ -165,12 +165,25 @@ namespace SqlPad.Oracle.Test
 			asPdfPackage.Functions.Add(asPdfPackageFunctionMetadata);
 
 			var builtInFunctionPackage = (OraclePackage)AllObjectsInternal.Single(o => o.Name == PackageBuiltInFunction && o.Owner == OwnerNameSys);
-			var toCharFunctionMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues("SYS", "STANDARD", "TO_CHAR"), false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNormal, true);
+			var truncFunctionMetadata = new OracleFunctionMetadata(IdentifierBuiltInFunctionTrunc, false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNormal, true);
+			truncFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "DATE", false));
+			truncFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("LEFT", 1, ParameterDirection.Input, "DATE", false));
+			truncFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("RIGHT", 2, ParameterDirection.Input, "VARCHAR2", false));
+			builtInFunctionPackage.Functions.Add(truncFunctionMetadata);
+
+			var toCharFunctionMetadata = new OracleFunctionMetadata(IdentifierBuiltInFunctionToChar, false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNormal, true);
 			toCharFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "VARCHAR2", false));
-			toCharFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("V", 1, ParameterDirection.Input, "NUMBER", false));
+			toCharFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("LEFT", 1, ParameterDirection.Input, "NUMBER", false));
 			builtInFunctionPackage.Functions.Add(toCharFunctionMetadata);
 
-			var roundFunctionOverload1Metadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues("SYS", "STANDARD", "ROUND", 1), false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNormal, true);
+			var toCharWithNlsParameterFunctionMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues(OwnerNameSys, PackageBuiltInFunction, "TO_CHAR", 1), false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNormal, true);
+			toCharWithNlsParameterFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "VARCHAR2", false));
+			toCharWithNlsParameterFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("LEFT", 1, ParameterDirection.Input, "NUMBER", false));
+			toCharWithNlsParameterFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("FORMAT", 2, ParameterDirection.Input, "VARCHAR2", false));
+			toCharWithNlsParameterFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("PARMS", 3, ParameterDirection.Input, "VARCHAR2", false));
+			builtInFunctionPackage.Functions.Add(toCharWithNlsParameterFunctionMetadata);
+
+			var roundFunctionOverload1Metadata = new OracleFunctionMetadata(IdentifierBuiltInFunctionRound, false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNormal, true);
 			roundFunctionOverload1Metadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "NUMBER", false));
 			roundFunctionOverload1Metadata.Parameters.Add(new OracleFunctionParameterMetadata("N", 1, ParameterDirection.Input, "NUMBER", false));
 			builtInFunctionPackage.Functions.Add(roundFunctionOverload1Metadata);
@@ -554,6 +567,51 @@ PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1
 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
 TABLESPACE ""TBS_HQ_PDB""";
 
+		internal const string DummyPlanText =
+		@"SQL_ID  9g6pyx7qz035v, child number 0
+-------------------------------------
+SELECT * FROM DUAL
+ 
+Plan hash value: 272002086
+ 
+---------------------------------------------------------------------------
+| Id  | Operation         | Name | E-Rows |E-Bytes| Cost (%CPU)| E-Time   |
+---------------------------------------------------------------------------
+|   0 | SELECT STATEMENT  |      |        |       |     2 (100)|          |
+|   1 |  TABLE ACCESS FULL| DUAL |      1 |     2 |     2   (0)| 00:00:01 |
+---------------------------------------------------------------------------
+ 
+Query Block Name / Object Alias (identified by operation id):
+-------------------------------------------------------------
+ 
+   1 - SEL$1 / DUAL@SEL$1
+ 
+Outline Data
+-------------
+ 
+  /*+
+      BEGIN_OUTLINE_DATA
+      IGNORE_OPTIM_EMBEDDED_HINTS
+      OPTIMIZER_FEATURES_ENABLE('12.1.0.1')
+      DB_VERSION('12.1.0.1')
+      ALL_ROWS
+      OUTLINE_LEAF(@""SEL$1"")
+      FULL(@""SEL$1"" ""DUAL""@""SEL$1"")
+      END_OUTLINE_DATA
+  */
+ 
+Column Projection Information (identified by operation id):
+-----------------------------------------------------------
+ 
+   1 - ""DUAL"".""DUMMY""[VARCHAR2,1]
+ 
+Note
+-----
+   - Warning: basic plan statistics not available. These are only collected when:
+       * hint 'gather_plan_statistics' is used for the statement or
+       * parameter 'statistics_level' is set to 'ALL', at session or system level
+";
+
 		private static readonly IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjectDictionary;
 
 		private static readonly IDictionary<OracleObjectIdentifier, OracleSchemaObject> ObjectsInternal;
@@ -649,18 +707,30 @@ TABLESPACE ""TBS_HQ_PDB""";
 
 		public override Task<StatementExecutionModel> ExplainPlanAsync(string statement, CancellationToken cancellationToken)
 		{
-			throw new NotImplementedException();
+			var statementExecutionModel =
+				new StatementExecutionModel
+				{
+					StatementText = String.Format(DatabaseCommands.ExplainPlanBase, OracleObjectIdentifier.Create(InitialSchema, "TARGET_PLAN_TABLE")),
+					BindVariables = new[] { new BindVariableModel(new BindVariableConfiguration { DataType = "Varchar2", Name = "STATEMENT_ID", Value = "DummyStatementId" }) }
+				};
+
+			return CreateFinishedTask(statementExecutionModel);
 		}
 
 		public override Task<string> GetActualExecutionPlanAsync(CancellationToken cancellationToken)
 		{
-			throw new NotImplementedException();
+			return CreateFinishedTask(DummyPlanText);
 		}
 
 		public override Task<string> GetObjectScriptAsync(OracleSchemaObject schemaObject, CancellationToken cancellationToken, bool suppressUserCancellationException = true)
 		{
-			var source = new TaskCompletionSource<string>();
-			source.SetResult(SelectionTableCreateScript);
+			return CreateFinishedTask(SelectionTableCreateScript);
+		}
+
+		private Task<TResult> CreateFinishedTask<TResult>(TResult result)
+		{
+			var source = new TaskCompletionSource<TResult>();
+			source.SetResult(result);
 			return source.Task;
 		}
 

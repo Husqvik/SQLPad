@@ -2055,7 +2055,7 @@ FROM DUAL";
 			{
 				var terminalCandidates = Parser.GetTerminalCandidates(null).OrderBy(t => t).ToArray();
 
-				var expectedTerminals = new[] { Terminals.Commit, Terminals.Delete, Terminals.Insert, Terminals.LeftParenthesis, Terminals.Merge, Terminals.Rollback, Terminals.Savepoint, Terminals.Select, Terminals.Set, Terminals.Update, Terminals.With };
+				var expectedTerminals = new[] { Terminals.Commit, Terminals.Delete, Terminals.Drop, Terminals.Insert, Terminals.LeftParenthesis, Terminals.Merge, Terminals.Rollback, Terminals.Savepoint, Terminals.Select, Terminals.Set, Terminals.Update, Terminals.With };
 				terminalCandidates.ShouldBe(expectedTerminals);
 			}
 
@@ -2332,6 +2332,257 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 
 				var terminals = statement.AllTerminals.ToArray();
 				terminals.Length.ShouldBe(37);
+			}
+		}
+
+		public class DropTable
+		{
+			[Test(Description = @"")]
+			public void TestDropTablePurge()
+			{
+				const string statementText = @"DROP TABLE HUSQVIK.SELECTION PURGE";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+				var terminals = statement.AllTerminals.ToArray();
+				terminals.Length.ShouldBe(6);
+
+				terminals[0].Id.ShouldBe(Terminals.Drop);
+				terminals[1].Id.ShouldBe(Terminals.Table);
+				terminals[2].Id.ShouldBe(Terminals.SchemaIdentifier);
+				terminals[3].Id.ShouldBe(Terminals.Dot);
+				terminals[4].Id.ShouldBe(Terminals.ObjectIdentifier);
+				terminals[5].Id.ShouldBe(Terminals.Purge);
+			}
+
+			[Test(Description = @"")]
+			public void TestDropTableCascadeConstraints()
+			{
+				const string statementText = @"DROP TABLE SELECTION CASCADE CONSTRAINTS;";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+				var terminals = statement.AllTerminals.ToArray();
+				terminals.Length.ShouldBe(5);
+
+				terminals[0].Id.ShouldBe(Terminals.Drop);
+				terminals[1].Id.ShouldBe(Terminals.Table);
+				terminals[2].Id.ShouldBe(Terminals.ObjectIdentifier);
+				terminals[3].Id.ShouldBe(Terminals.Cascade);
+				terminals[4].Id.ShouldBe(Terminals.Constraints);
+			}
+		}
+
+		public class DropIndex
+		{
+			[Test(Description = @"")]
+			public void TestDropIndexForce()
+			{
+				const string statementText = @"DROP INDEX HUSQVIK.PK_SELECTION FORCE";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+				var terminals = statement.AllTerminals.ToArray();
+				terminals.Length.ShouldBe(6);
+
+				terminals[0].Id.ShouldBe(Terminals.Drop);
+				terminals[1].Id.ShouldBe(Terminals.Index);
+				terminals[2].Id.ShouldBe(Terminals.SchemaIdentifier);
+				terminals[3].Id.ShouldBe(Terminals.Dot);
+				terminals[4].Id.ShouldBe(Terminals.ObjectIdentifier);
+				terminals[5].Id.ShouldBe(Terminals.Force);
+			}
+
+			[Test(Description = @"")]
+			public void TestDropIndexOnline()
+			{
+				const string statementText = @"DROP INDEX PK_SELECTION ONLINE;";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+				var terminals = statement.AllTerminals.ToArray();
+				terminals.Length.ShouldBe(4);
+
+				terminals[0].Id.ShouldBe(Terminals.Drop);
+				terminals[1].Id.ShouldBe(Terminals.Index);
+				terminals[2].Id.ShouldBe(Terminals.ObjectIdentifier);
+				terminals[3].Id.ShouldBe(Terminals.Online);
+			}
+		}
+
+		public class DropView
+		{
+			[Test(Description = @"")]
+			public void TestDropViewCascadeConstraints()
+			{
+				const string statementText = @"DROP VIEW HUSQVIK.SELECTION CASCADE CONSTRAINTS;";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+				var terminals = statement.AllTerminals.ToArray();
+				terminals.Length.ShouldBe(7);
+
+				terminals[0].Id.ShouldBe(Terminals.Drop);
+				terminals[1].Id.ShouldBe(Terminals.View);
+				terminals[2].Id.ShouldBe(Terminals.SchemaIdentifier);
+				terminals[3].Id.ShouldBe(Terminals.Dot);
+				terminals[4].Id.ShouldBe(Terminals.ObjectIdentifier);
+				terminals[5].Id.ShouldBe(Terminals.Cascade);
+				terminals[6].Id.ShouldBe(Terminals.Constraints);
+			}
+
+			[Test(Description = @"")]
+			public void TestDropMaterializedViewPreserveTable()
+			{
+				const string statementText = @"DROP MATERIALIZED VIEW HUSQVIK.MV_SELECTION PRESERVE TABLE";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+				var terminals = statement.AllTerminals.ToArray();
+				terminals.Length.ShouldBe(8);
+
+				terminals[0].Id.ShouldBe(Terminals.Drop);
+				terminals[1].Id.ShouldBe(Terminals.Materialized);
+				terminals[2].Id.ShouldBe(Terminals.View);
+				terminals[3].Id.ShouldBe(Terminals.SchemaIdentifier);
+				terminals[4].Id.ShouldBe(Terminals.Dot);
+				terminals[5].Id.ShouldBe(Terminals.ObjectIdentifier);
+				terminals[6].Id.ShouldBe(Terminals.Preserve);
+				terminals[7].Id.ShouldBe(Terminals.Table);
+			}
+		}
+
+		public class DropPackage
+		{
+			[Test(Description = @"")]
+			public void TestDropPackage()
+			{
+				const string statementText = @"DROP PACKAGE BODY HUSQVIK.SQLPAD";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+				var terminals = statement.AllTerminals.ToArray();
+				terminals.Length.ShouldBe(6);
+
+				terminals[0].Id.ShouldBe(Terminals.Drop);
+				terminals[1].Id.ShouldBe(Terminals.Package);
+				terminals[2].Id.ShouldBe(Terminals.Body);
+				terminals[3].Id.ShouldBe(Terminals.SchemaIdentifier);
+				terminals[4].Id.ShouldBe(Terminals.Dot);
+				terminals[5].Id.ShouldBe(Terminals.ObjectIdentifier);
+			}
+		}
+
+		public class DropOther
+		{
+			[Test(Description = @"")]
+			public void TestDropFunction()
+			{
+				const string statementText = @"DROP FUNCTION HUSQVIK.SQLPAD_FUNCTION";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+				var terminals = statement.AllTerminals.ToArray();
+				terminals.Length.ShouldBe(5);
+
+				terminals[0].Id.ShouldBe(Terminals.Drop);
+				terminals[1].Id.ShouldBe(Terminals.Function);
+				terminals[2].Id.ShouldBe(Terminals.SchemaIdentifier);
+				terminals[3].Id.ShouldBe(Terminals.Dot);
+				terminals[4].Id.ShouldBe(Terminals.ObjectIdentifier);
+			}
+
+			[Test(Description = @"")]
+			public void TestDropProcedure()
+			{
+				const string statementText = @"DROP PROCEDURE HUSQVIK.TEST_PROCEDURE";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+				var terminals = statement.AllTerminals.ToArray();
+				terminals.Length.ShouldBe(5);
+
+				terminals[0].Id.ShouldBe(Terminals.Drop);
+				terminals[1].Id.ShouldBe(Terminals.Procedure);
+				terminals[2].Id.ShouldBe(Terminals.SchemaIdentifier);
+				terminals[3].Id.ShouldBe(Terminals.Dot);
+				terminals[4].Id.ShouldBe(Terminals.ObjectIdentifier);
+			}
+
+			[Test(Description = @"")]
+			public void TestDropSequence()
+			{
+				const string statementText = @"DROP SEQUENCE HUSQVIK.TEST_SEQ";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+				var terminals = statement.AllTerminals.ToArray();
+				terminals.Length.ShouldBe(5);
+
+				terminals[0].Id.ShouldBe(Terminals.Drop);
+				terminals[1].Id.ShouldBe(Terminals.Sequence);
+				terminals[2].Id.ShouldBe(Terminals.SchemaIdentifier);
+				terminals[3].Id.ShouldBe(Terminals.Dot);
+				terminals[4].Id.ShouldBe(Terminals.ObjectIdentifier);
+			}
+
+			[Test(Description = @"")]
+			public void TestDropContext()
+			{
+				const string statementText = @"DROP CONTEXT TEST_CONTEXT";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+				var terminals = statement.AllTerminals.ToArray();
+				terminals.Length.ShouldBe(3);
+
+				terminals[0].Id.ShouldBe(Terminals.Drop);
+				terminals[1].Id.ShouldBe(Terminals.Context);
+				terminals[2].Id.ShouldBe(Terminals.ObjectIdentifier);
 			}
 		}
 

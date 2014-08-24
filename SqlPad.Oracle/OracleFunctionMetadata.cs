@@ -34,7 +34,7 @@ namespace SqlPad.Oracle
 			IsBuiltIn = isBuiltIn;
 		}
 
-		public ICollection<OracleFunctionParameterMetadata> Parameters { get { return _parameters ?? (_parameters = new List<OracleFunctionParameterMetadata>()); } }
+		public IList<OracleFunctionParameterMetadata> Parameters { get { return _parameters ?? (_parameters = new List<OracleFunctionParameterMetadata>()); } }
 
 		public bool IsBuiltIn { get; private set; }
 

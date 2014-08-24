@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -29,12 +30,21 @@ namespace SqlPad.Oracle
 	{
 		private OracleDataObjectReference _selfObjectReference;
 
-		public OracleQueryBlock()
+		public OracleQueryBlock(OracleStatementSemanticModel semanticModel)
 		{
+			if (semanticModel == null)
+			{
+				throw new ArgumentNullException("semanticModel");
+			}
+
+			SemanticModel = semanticModel;
+			
 			ObjectReferences = new List<OracleDataObjectReference>();
 			Columns = new List<OracleSelectListColumn>();
 			AccessibleQueryBlocks = new List<OracleQueryBlock>();
 		}
+
+		public OracleStatementSemanticModel SemanticModel { get; private set; }
 
 		public OracleDataObjectReference SelfObjectReference
 		{
