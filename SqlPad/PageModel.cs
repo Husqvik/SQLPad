@@ -26,6 +26,7 @@ namespace SqlPad
 		private Visibility _bindVariableListVisibility = Visibility.Collapsed;
 		private Visibility _gridRowInfoVisibity = Visibility.Collapsed;
 		private string _textExecutionPlan;
+		private string _dateTimeFormat;
 
 		public PageModel(DocumentPage documentPage)
 		{
@@ -53,6 +54,12 @@ namespace SqlPad
 		{
 			get { return _documentHeader; }
 			set { UpdateValueAndRaisePropertyChanged(ref _documentHeader, value); }
+		}
+
+		public string DateTimeFormat
+		{
+			get { return _dateTimeFormat; }
+			set { UpdateValueAndRaisePropertyChanged(ref _dateTimeFormat, value); }
 		}
 
 		public string TextExecutionPlan

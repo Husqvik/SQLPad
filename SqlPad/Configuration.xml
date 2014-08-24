@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Configuration xmlns="http://husqvik.com/SqlPad/2014/02">
   <DataModel DataModelRefreshPeriod="15" />
-  <ResultGrid DateFormat="yyyy-MM-dd hh:mm:ss" NullPlaceholder="(null)" />
+  <ResultGrid DateFormat="yyyy-MM-dd HH:mm:ss" NullPlaceholder="(null)" />
   <ExecutionPlan Enabled="true"/>
 </Configuration>

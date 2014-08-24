@@ -43,6 +43,7 @@ namespace SqlPad
 				return;
 
 			ActiveDocument.SaveWorkingDocument();
+			WorkingDocumentCollection.Save();
 		}
 
 		private static bool EnsureValidConfiguration()
@@ -264,6 +265,7 @@ namespace SqlPad
 				document.SaveWorkingDocument();
 			}
 
+			SqlPadConfiguration.StoreConfiguration();
 			WorkingDocumentCollection.SetApplicationWindowProperties(this);
 			WorkingDocumentCollection.Save();
 			

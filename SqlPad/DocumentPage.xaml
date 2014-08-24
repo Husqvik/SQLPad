@@ -6,6 +6,7 @@
              xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
              xmlns:sqlPad="clr-namespace:SqlPad"
              xmlns:commands="clr-namespace:SqlPad.Commands"
+             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              Loaded="PageLoadedHandler"
              mc:Ignorable="d"
              d:DesignHeight="320" d:DesignWidth="440">
@@ -97,7 +98,7 @@
 					</avalonedit:TextEditor.Style>
 				</avalonedit:TextEditor>
 				<GridSplitter Grid.Column="1" Width="4" HorizontalAlignment="Center" ShowsPreview="True" VerticalAlignment="Stretch" Background="DimGray" Visibility="{Binding ElementName=BindVariableList, Path=Visibility}" />
-				<ScrollViewer Grid.Column="2" x:Name="BindVariableList" Visibility="{Binding Path=BindVariableListVisibility}" VerticalScrollBarVisibility="Auto">
+				<ScrollViewer Grid.Column="2" x:Name="BindVariableList" Visibility="{Binding Path=BindVariableListVisibility}" VerticalScrollBarVisibility="Auto" DataContext="{Binding}">
 					<StackPanel>
 						<TextBlock Text="Bind Variables: " Padding="4,2,0,4" Margin="0,0,2,0" Background="Gray" />
 						<ItemsControl MinWidth="160" ItemsSource="{Binding Path=BindVariables}">
@@ -107,7 +108,7 @@
 									<TextBox Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}" />
 								</DataTemplate>
 								<DataTemplate x:Key="DatePickerTemplate">
-									<DatePicker SelectedDate="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}" />
+									<xctk:DateTimePicker Value="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}" Format="Custom" FormatString="{Binding ElementName=BindVariableList, Path=DataContext.DateTimeFormat}" />
 								</DataTemplate>
 							</ItemsControl.Resources>
 
@@ -115,9 +116,9 @@
 								<DataTemplate>
 									<Grid sqlPad:MarginSetter.Margin="2,2,2,2">
 										<Grid.ColumnDefinitions>
-											<ColumnDefinition Width="60" />
+											<ColumnDefinition Width="2*" />
 											<ColumnDefinition Width="100" />
-											<ColumnDefinition Width="*" />
+											<ColumnDefinition Width="3*" />
 										</Grid.ColumnDefinitions>
 										<TextBlock Text="{Binding Path=Name}" VerticalAlignment="Center" />
 										<ComboBox Grid.Column="1" ItemsSource="{Binding Path=DataTypes}" SelectedValue="{Binding Path=DataType}" />

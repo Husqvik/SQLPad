@@ -116,7 +116,9 @@ namespace SqlPad
 			_timerReParse.Elapsed += (sender, args) => Dispatcher.Invoke(Parse);
 			_timerExecutionMonitor.Elapsed += (sender, args) => Dispatcher.Invoke(() => TextExecutionTime.Text = FormatElapsedMilliseconds(_stopWatch.Elapsed));
 
-			_pageModel = new PageModel(this);
+			_pageModel = new PageModel(this) { DateTimeFormat = ConfigurationProvider.Configuration.ResultGrid.DateFormat };
+
+			ConfigurationProvider.ConfigurationChanged += ConfigurationChangedHandler;
 
 			ConfigureEditor();
 
@@ -185,6 +187,11 @@ namespace SqlPad
 			DataContext = _pageModel;
 
 			InitializeTabItem();
+		}
+
+		private void ConfigurationChangedHandler(object sender, EventArgs eventArgs)
+		{
+			_pageModel.DateTimeFormat = ConfigurationProvider.Configuration.ResultGrid.DateFormat;
 		}
 
 		private void InitializeTabItem()
@@ -366,6 +373,8 @@ namespace SqlPad
 
 			SaveDocument();
 			SaveWorkingDocument();
+			WorkingDocumentCollection.Save();
+			
 			return true;
 		}
 
@@ -387,8 +396,6 @@ namespace SqlPad
 				WorkingDocument.ConnectionName = _pageModel.CurrentConnection.Name;
 				WorkingDocument.SchemaName = _pageModel.CurrentSchema;
 			}
-			
-			WorkingDocumentCollection.Save();
 		}
 
 		private void SaveDocument()
@@ -714,6 +721,8 @@ namespace SqlPad
 
 		public void Dispose()
 		{
+			ConfigurationProvider.ConfigurationChanged -= ConfigurationChangedHandler;
+
 			TabItemContextMenu.CommandBindings.Clear();
 			TabItem.Header = null;
 			DataContext = null;

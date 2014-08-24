@@ -106,6 +106,7 @@ namespace SqlPad
 		}
 	}
 
+	[DebuggerDisplay("BindVariableConfiguration (Name={Name}, DataType={DataType}, Value={Value})")]
 	public class BindVariableConfiguration
 	{
 		private static readonly BinaryFormatter Formatter = new BinaryFormatter();

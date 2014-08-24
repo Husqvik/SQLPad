@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Globalization;
 
 namespace SqlPad
 {
@@ -29,8 +30,9 @@ namespace SqlPad
 			}
 			catch
 			{
-				Trace.WriteLine(String.Format("DateFormat mask '{0}' is invalid. Using system UI culture - {1}. ", resultGridField.DateFormat, DateTime.Now));
-				resultGridField.DateFormat = null;
+				var dateFormat = CultureInfo.CurrentUICulture.DateTimeFormat.UniversalSortableDateTimePattern;
+				Trace.WriteLine(String.Format("DateFormat mask '{0}' is invalid. Using system UI culture - {1} ({2}). ", resultGridField.DateFormat, dateFormat, DateTime.Now));
+				resultGridField.DateFormat = dateFormat;
 			}
 		}
 	}

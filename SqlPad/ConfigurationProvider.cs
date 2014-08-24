@@ -66,6 +66,8 @@ namespace SqlPad
 			ConfigurationWatcher.Changed += ConfigurationChangedHandler;
 		}
 
+		public static event EventHandler ConfigurationChanged;
+
 		public static void Dispose()
 		{
 			ConfigurationWatcher.Dispose();
@@ -84,27 +86,33 @@ namespace SqlPad
 			_lastConfigurationFileChange = writeTime;
 
 			Trace.WriteLine("Configuration file has changed. ");
-			Configure();
+
+			if (Configure() && ConfigurationChanged != null)
+			{
+				ConfigurationChanged(Configuration, EventArgs.Empty);
+			}
 		}
 
-		private static void Configure()
+		private static bool Configure()
 		{
 			try
 			{
 				if (!File.Exists(ConfigurationFilePath))
 				{
-					return;
+					return false;
 				}
 				
 				using (var reader = XmlReader.Create(ConfigurationFilePath))
 				{
 					Configuration = (Configuration)XmlSerializer.Deserialize(reader);
 					Configuration.Validate();
+					return true;
 				}
 			}
 			catch (Exception e)
 			{
 				Trace.WriteLine("Configuration loading failed: " + e);
+				return false;
 			}
 		}
 
