@@ -1790,7 +1790,7 @@ FROM DUAL";
 				var cancellationStopwatch = Stopwatch.StartNew();
 				cancellationTokenSource.Cancel();
 
-				var exception = Assert.Throws<AggregateException>(() => task.Wait());
+				var exception = Assert.Throws<AggregateException>(() => task.Wait(CancellationToken.None));
 				exception.InnerException.ShouldBeTypeOf<TaskCanceledException>();
 
 				parsingStopwatch.Stop();
@@ -1798,6 +1798,16 @@ FROM DUAL";
 
 				Trace.WriteLine(String.Format("Parsing successfully cancelled; parse time: {0} ms; cancellation time: {1} ms", parsingStopwatch.ElapsedMilliseconds, cancellationStopwatch.ElapsedMilliseconds));
 			}
+		}
+
+		[Test(Description = @"")]
+		public void TestInvalidCastFunction()
+		{
+			const string statement1 = @"SELECT CAST(Respondent_ID AS NUMBER(16) FROM RESPONDENT";
+
+			var statements = Parser.Parse(statement1);
+			var statement = statements.Single().Validate();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
 		}
 
 		public class IsRuleValid

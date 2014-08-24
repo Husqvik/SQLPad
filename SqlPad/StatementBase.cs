@@ -48,7 +48,7 @@ namespace SqlPad
 
 		private static IEnumerable<StatementGrammarNode> GetInvalidGrammerNodes(StatementGrammarNode node)
 		{
-			foreach (var childNode in node.ChildNodes.Where(n => n.Type == NodeType.NonTerminal))
+			foreach (var childNode in node.ChildNodes)
 			{
 				if (childNode.IsGrammarValid)
 				{

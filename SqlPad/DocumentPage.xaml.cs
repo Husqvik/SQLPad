@@ -877,7 +877,7 @@ namespace SqlPad
 			var statement = _sqlDocumentRepository.Statements.GetStatementAtPosition(Editor.CaretOffset);
 			if (statement == null || statement.BindVariables.Count == 0)
 			{
-				_pageModel.BindVariables = null;
+				_pageModel.BindVariables = new BindVariableModel[0];
 				_currentBindVariables.Clear();
 				return;
 			}

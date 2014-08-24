@@ -147,12 +147,13 @@ namespace SqlPad
 			set
 			{
 				UpdateValueAndRaisePropertyChanged(ref _bindVariables, value);
-				
-				if (_bindVariables == null && BindVariableListVisibility == Visibility.Visible)
+
+				var showBindVariableList = _bindVariables != null && _bindVariables.Count > 0;
+				if (!showBindVariableList && BindVariableListVisibility == Visibility.Visible)
 				{
 					BindVariableListVisibility = Visibility.Collapsed;
 				}
-				else if (_bindVariables != null && BindVariableListVisibility == Visibility.Collapsed)
+				else if (showBindVariableList && BindVariableListVisibility == Visibility.Collapsed)
 				{
 					BindVariableListVisibility = Visibility.Visible;
 				}
