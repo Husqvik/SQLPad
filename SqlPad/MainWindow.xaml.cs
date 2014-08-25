@@ -34,16 +34,7 @@ namespace SqlPad
 			_findReplaceManager.OwnerWindow = this;
 			_findReplaceManager.Editors = _editorAdapters;
 
-			_timerWorkingDocumentSave.Elapsed += (sender, args) => Dispatcher.Invoke(SaveActiveWorkingDocument);
-		}
-
-		private void SaveActiveWorkingDocument()
-		{
-			if (ActiveDocument == null)
-				return;
-
-			ActiveDocument.SaveWorkingDocument();
-			WorkingDocumentCollection.Save();
+			_timerWorkingDocumentSave.Elapsed += (sender, args) => Dispatcher.Invoke(SaveWorkingDocuments);
 		}
 
 		private static bool EnsureValidConfiguration()
@@ -147,6 +138,7 @@ namespace SqlPad
 
 			if (document != null)
 			{
+				document.SaveWorkingDocument();
 				_findReplaceManager.CurrentEditor = document.EditorAdapter;
 				WorkingDocumentCollection.ActiveDocumentIndex = DocumentTabControl.SelectedIndex;
 				EditorNavigationService.RegisterDocumentCursorPosition(document.WorkingDocument, document.Editor.CaretOffset);
@@ -260,6 +252,13 @@ namespace SqlPad
 		{
 			_timerWorkingDocumentSave.Stop();
 
+			SaveWorkingDocuments();
+			
+			DocumentTabControl.Items.Clear();
+		}
+
+		private void SaveWorkingDocuments()
+		{
 			foreach (var document in AllDocuments)
 			{
 				document.SaveWorkingDocument();
@@ -268,8 +267,6 @@ namespace SqlPad
 			SqlPadConfiguration.StoreConfiguration();
 			WorkingDocumentCollection.SetApplicationWindowProperties(this);
 			WorkingDocumentCollection.Save();
-			
-			DocumentTabControl.Items.Clear();
 		}
 
 		private void WindowClosedHandler(object sender, EventArgs e)
