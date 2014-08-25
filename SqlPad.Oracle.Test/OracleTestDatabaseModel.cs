@@ -176,6 +176,12 @@ namespace SqlPad.Oracle.Test
 			toCharFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("LEFT", 1, ParameterDirection.Input, "NUMBER", false));
 			builtInFunctionPackage.Functions.Add(toCharFunctionMetadata);
 
+			var sysContextFunctionMetadata = new OracleFunctionMetadata(IdentifierBuiltInFunctionSysContext, false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNormal, true);
+			sysContextFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "VARCHAR2", false));
+			sysContextFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("NAMESPACE", 1, ParameterDirection.Input, "VARCHAR2", false));
+			sysContextFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("ATTRIBUTE", 2, ParameterDirection.Input, "VARCHAR2", false));
+			builtInFunctionPackage.Functions.Add(sysContextFunctionMetadata);
+
 			var toCharWithNlsParameterFunctionMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues(OwnerNameSys, PackageBuiltInFunction, "TO_CHAR", 1), false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNormal, true);
 			toCharWithNlsParameterFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "VARCHAR2", false));
 			toCharWithNlsParameterFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("LEFT", 1, ParameterDirection.Input, "NUMBER", false));

@@ -797,6 +797,28 @@ se";
 			items.Count.ShouldBe(0);
 		}
 
+		[Test(Description = @"")]
+		public void TestToCharSysContexSpecialParameterCompletion()
+		{
+			const string statement = @"SELECT SYS_CONTEXT('USERENV', '') FROM DUAL";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 31).ToList();
+			items.Count.ShouldBe(59);
+			items[0].Name.ShouldBe("ACTION - Identifies the position in the module (application name) and is set through the DBMS_APPLICATION_INFO package or OCI. ");
+			items[0].Text.ShouldBe("'ACTION'");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+			items[58].Name.ShouldBe("TERMINAL - The operating system identifier for the client of the current session. ");
+			items[58].Text.ShouldBe("'TERMINAL'");
+			items[58].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+		}
+
+		[Test(Description = @"")]
+		public void TestToCharSysContexSpecialParameterCompletionWithIncompatibleNamespace()
+		{
+			const string statement = @"SELECT SYS_CONTEXT(X || 'USERENV', '') FROM DUAL";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 36).ToList();
+			items.Count.ShouldBe(0);
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)

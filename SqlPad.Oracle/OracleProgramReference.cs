@@ -41,6 +41,6 @@ namespace SqlPad.Oracle
 	{
 		public StatementGrammarNode ParameterListNode { get; set; }
 
-		public ICollection<StatementGrammarNode> ParameterNodes { get; set; }
+		public IList<StatementGrammarNode> ParameterNodes { get; set; }
 	}
 }
