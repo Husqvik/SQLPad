@@ -49,6 +49,12 @@
 				</TextBlock.LayoutTransform>
 			</TextBlock>
 			<Grid>
+				<Grid.CommandBindings>
+					<CommandBinding Command="commands:GenericCommands.CancelStatementCommand" Executed="CancelStatementHandler" CanExecute="CanExecuteCancelStatementHandler" />
+					<CommandBinding Command="commands:GenericCommands.ExecuteDatabaseCommandCommand" Executed="ExecuteDatabaseCommandHandler" CanExecute="CanExecuteDatabaseCommandHandler" />
+					<CommandBinding Command="commands:GenericCommands.ExecuteDatabaseCommandWithActualExecutionPlanCommand" Executed="ExecuteDatabaseCommandWithActualExecutionPlanHandler" CanExecute="CanExecuteDatabaseCommandHandler" />
+					<CommandBinding Command="commands:GenericCommands.ExplainPlan" Executed="ExecuteExplainPlanCommandHandler" CanExecute="CanExecuteDatabaseCommandHandler" />
+				</Grid.CommandBindings>
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="3*" x:Name="ColumnDefinitionEditor" />
 					<ColumnDefinition Width="Auto" />
@@ -64,10 +70,6 @@
 				                       PreviewKeyUp="EditorKeyUpHandler"
 				                       MouseHoverStopped="MouseHoverStoppedHandler">
 					<avalonedit:TextEditor.CommandBindings>
-						<CommandBinding Command="commands:GenericCommands.CancelStatementCommand" Executed="CancelStatementHandler" CanExecute="CanExecuteCancelStatementHandler" />
-						<CommandBinding Command="commands:GenericCommands.ExecuteDatabaseCommandCommand" Executed="ExecuteDatabaseCommandHandler" CanExecute="CanExecuteDatabaseCommandHandler" />
-						<CommandBinding Command="commands:GenericCommands.ExecuteDatabaseCommandWithActualExecutionPlanCommand" Executed="ExecuteDatabaseCommandWithActualExecutionPlanHandler" CanExecute="CanExecuteDatabaseCommandHandler" />
-						<CommandBinding Command="commands:GenericCommands.ExplainPlan" Executed="ExecuteExplainPlanCommandHandler" CanExecute="CanExecuteDatabaseCommandHandler" />
 						<CommandBinding Command="commands:GenericCommands.FindUsagesCommand" Executed="FindUsages" />
 						<CommandBinding Command="commands:GenericCommands.FormatStatementCommand" Executed="FormatStatement" />
 						<CommandBinding Command="commands:GenericCommands.FormatStatementAsSingleLineCommand" Executed="FormatStatementAsSingleLine" />
