@@ -12,8 +12,8 @@
     <StartSymbol Id="SetTransactionStatement" />
     <StartSymbol Id="InsertStatement" />
     <StartSymbol Id="DropStatement" />
-    <!--<StartSymbol Id="CreateStatement" />
-    <StartSymbol Id="AlterStatement" />
+    <StartSymbol Id="CreateStatement" />
+    <!--<StartSymbol Id="AlterStatement" />
     <StartSymbol Id="RenameStatement" />-->
   </StartSymbols>
 
@@ -4078,6 +4078,334 @@
     </Rule>
 
     <!-- TODO: Row pattern clause -->
+
+    <!-- CREATE statement -->
+    <Rule StartingNonTerminal="CreateStatement">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Create" />
+          <NonTerminal Id="CreateObjectClause" />
+          <Terminal Id="Semicolon" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="CreateObjectClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="CreateTable" />
+        </Sequence>
+        <!-- TODO: Create other objects -->
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="CreateTable">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="GlobalTemporary" IsOptional="true" />
+          <Terminal Id="Table" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="CreateTableTypeClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="GlobalTemporary">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Global" />
+          <Terminal Id="Temporary" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="CreateTableTypeClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="RelationalTable" />
+        </Sequence>
+        <!--<Sequence>
+          <NonTerminal Id="ObjectTable" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="XmlTypeTable" />
+        </Sequence>-->
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="RelationalTable">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ParenthesisEnclosedRelationalProperties" />
+          <NonTerminal Id="TemporaryTableOnCommitClause" IsOptional="true" />
+          <!--<NonTerminal Id="PhysicalProperties" />
+          <NonTerminal Id="TableProperties" />-->
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ParenthesisEnclosedRelationalProperties">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="RelationalProperties" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="TemporaryTableOnCommitClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="On" />
+          <Terminal Id="Commit" />
+          <NonTerminal Id="DeleteOrPreserve" />
+          <Terminal Id="Rows" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DeleteOrPreserve">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Delete" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Preserve" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="RelationalProperties">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="RelationalProperty" />
+          <NonTerminal Id="CommaChainedRelationalProperty" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="CommaChainedRelationalProperty">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="RelationalProperties" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="RelationalProperty">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="OutOfLineConstraintDefinition" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ColumnDefinition" />
+        </Sequence>
+        <!--<Sequence>
+          <NonTerminal Id="VirtualColumnDefinition" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="PeriodDefinition" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="SupplementalLoggingProperties" />
+        </Sequence>-->
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ColumnDefinition">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Identifier" />
+          <NonTerminal Id="DataType" />
+          <Terminal Id="Sort" IsOptional="true" />
+          <NonTerminal Id="VisibleOrInvisible" IsOptional="true" />
+          <NonTerminal Id="ColumnDefinitionDefaultClauseOrIdentityClause" IsOptional="true" />
+          <!--<NonTerminal Id="ColumnDefinitionEncryptionClause" IsOptional="true" />-->
+          <NonTerminal Id="ColumnDefinitionInlineConstraintDefinition" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="VisibleOrInvisible">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Visible" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Invisible" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ColumnDefinitionDefaultClauseOrIdentityClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ColumnDefinitionDefaultClause" />
+        </Sequence>
+        <!--<Sequence>
+          <Terminal Id="ColumnDefinitionIdentityClause" />
+        </Sequence>-->
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ColumnDefinitionDefaultClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Default" />
+          <NonTerminal Id="OnNull" IsOptional="true" />
+          <NonTerminal Id="Expression" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="OnNull">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="On" />
+          <Terminal Id="Null" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ColumnDefinitionInlineConstraintDefinition">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="NamedInlineConstraintDefinition" />
+          <NonTerminal Id="ColumnDefinitionInlineConstraintDefinition" IsOptional="true" />
+        </Sequence>
+        <!--<Sequence>
+          <NonTerminal Id="NamedInlineReferenceConstraintDefinition" />
+        </Sequence>-->
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="NamedInlineConstraintDefinition">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ConstraintName" IsOptional="true" />
+          <NonTerminal Id="InlineConstraintType" />
+          <!--<NonTerminal Id="ConstraintState" IsOptional="true" />-->
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="InlineConstraintType">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Not" IsOptional="true" />
+          <Terminal Id="Null" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Unique" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Primary" />
+          <Terminal Id="Key" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Check" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="Condition" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ConstraintReferencesClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="OutOfLineConstraintDefinition">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="NamedOutOfLineConstraint" />
+        </Sequence>
+        <!--<Sequence>
+          <NonTerminal Id="NamedOutOfLineReferenceConstraintDefinition" />
+        </Sequence>-->
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="NamedOutOfLineConstraint">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ConstraintName" IsOptional="true" />
+          <NonTerminal Id="OutOfLineConstraint" />
+          <!--<NonTerminal Id="ConstraintState" IsOptional="true" />-->
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="OutOfLineConstraint">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Unique" />
+          <NonTerminal Id="ParenthesisEnclosedColumnIdentifierList" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Primary" />
+          <Terminal Id="Key" />
+          <NonTerminal Id="ParenthesisEnclosedColumnIdentifierList" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Check" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="Condition" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Foreign" />
+          <Terminal Id="Key" />
+          <NonTerminal Id="ParenthesisEnclosedColumnIdentifierList" />
+          <NonTerminal Id="ConstraintReferencesClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ConstraintReferencesClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="References" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="ParenthesisEnclosedColumnIdentifierList" IsOptional="true" />
+          <NonTerminal Id="ConstraintOnDeleteClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ConstraintOnDeleteClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="On" />
+          <Terminal Id="Delete" />
+          <NonTerminal Id="CascadeOrSetNull" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="CascadeOrSetNull">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Cascade" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Set" />
+          <Terminal Id="Null" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ConstraintState">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Not" IsOptional="true" />
+          <Terminal Id="Deferrable" />
+        </Sequence>
+      </Sequences>
+    </Rule>
   </Rules>
       
   <Terminals>
@@ -4441,6 +4769,17 @@
     <Terminal Id="Procedure" Value="PROCEDURE" />
     <Terminal Id="Function" Value="FUNCTION" />
     <Terminal Id="Context" Value="CONTEXT" />
+
+    <!-- Create -->
+    <Terminal Id="Global" Value="GLOBAL" />
+    <Terminal Id="Temporary" Value="TEMPORARY" />
+    <Terminal Id="Sort" Value="SORT" />
+    <Terminal Id="Visible" Value="VISIBLE" />
+    <Terminal Id="Invisible" Value="INVISIBLE" />
+    <Terminal Id="Primary" Value="PRIMARY" />
+    <Terminal Id="Foreign" Value="FOREIGN" />
+    <Terminal Id="Key" Value="KEY" />
+    <Terminal Id="References" Value="REFERENCES" />
     
     <!-- Other -->
     <Terminal Id="Float" Value="FLOAT" IsKeyword="true" />

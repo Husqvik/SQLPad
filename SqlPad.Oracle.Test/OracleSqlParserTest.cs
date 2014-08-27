@@ -2055,7 +2055,7 @@ FROM DUAL";
 			{
 				var terminalCandidates = Parser.GetTerminalCandidates(null).OrderBy(t => t).ToArray();
 
-				var expectedTerminals = new[] { Terminals.Commit, Terminals.Delete, Terminals.Drop, Terminals.Insert, Terminals.LeftParenthesis, Terminals.Merge, Terminals.Rollback, Terminals.Savepoint, Terminals.Select, Terminals.Set, Terminals.Update, Terminals.With };
+				var expectedTerminals = new[] { Terminals.Commit, Terminals.Create, Terminals.Delete, Terminals.Drop, Terminals.Insert, Terminals.LeftParenthesis, Terminals.Merge, Terminals.Rollback, Terminals.Savepoint, Terminals.Select, Terminals.Set, Terminals.Update, Terminals.With };
 				terminalCandidates.ShouldBe(expectedTerminals);
 			}
 
@@ -2583,6 +2583,38 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 				terminals[0].Id.ShouldBe(Terminals.Drop);
 				terminals[1].Id.ShouldBe(Terminals.Context);
 				terminals[2].Id.ShouldBe(Terminals.ObjectIdentifier);
+			}
+		}
+
+		public class CreateTable
+		{
+			[Test(Description = @"")]
+			public void TestBasicCreateTable()
+			{
+				const string statementText =
+@"CREATE TABLE test_table
+(
+  id NUMBER(6) PRIMARY KEY,
+  parent_id NUMBER(6) CHECK (id <> 0) REFERENCES test_table (id) ON DELETE SET NULL,
+  first_name VARCHAR2(20) VISIBLE,
+  last_name VARCHAR2(25) NOT NULL,
+  email VARCHAR2(25) CONSTRAINT nn_test_table_email NOT NULL UNIQUE,
+  hire_date DATE DEFAULT SYSDATE,
+  salary NUMBER(8, 2) CONSTRAINT nn_test_table_salary NOT NULL,
+  CONSTRAINT chk_test_table_salary CHECK (salary > 0),
+  CONSTRAINT uq_test_table_email UNIQUE (email)
+)";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+				var terminals = statement.AllTerminals.ToArray();
+				terminals.Length.ShouldBe(92);
+
+				terminals[85].Id.ShouldBe(Terminals.Constraint);
 			}
 		}
 
