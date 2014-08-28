@@ -19,6 +19,8 @@ namespace SqlPad.Oracle.Database.Test
 			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(connectionString))
 			{
 				databaseModel.AllObjects.Count.ShouldBe(0);
+				databaseModel.DatabaseLinks.Count.ShouldBe(0);
+				databaseModel.CharacterSets.Count.ShouldBe(0);
 
 				using (var modelClone = OracleDatabaseModel.GetDatabaseModel(connectionString))
 				{
@@ -42,6 +44,9 @@ namespace SqlPad.Oracle.Database.Test
 			
 			databaseModel.DatabaseLinks.Count.ShouldBeGreaterThan(0);
 			Trace.WriteLine(String.Format("Database link dictionary has {0} members. ", databaseModel.DatabaseLinks.Count));
+
+			databaseModel.CharacterSets.Count.ShouldBeGreaterThan(0);
+			Trace.WriteLine(String.Format("Character set collection has {0} members. ", databaseModel.CharacterSets.Count));
 
 			var objectForScriptCreation = databaseModel.GetFirstSchemaObject<OracleSchemaObject>(databaseModel.GetPotentialSchemaObjectIdentifiers("SYS", "OBJ$"));
 			objectForScriptCreation.ShouldNotBe(null);
