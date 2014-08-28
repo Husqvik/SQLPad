@@ -310,7 +310,7 @@ namespace SqlPad.Oracle
 			if (currentNode.Id.IsLiteral())
 			{
 				var functionOverloads = ResolveFunctionOverloads(queryBlock, currentNode, cursorPosition);
-				return CodeCompletionSearchHelper.ResolveSpecificFunctionParameterCodeCompletionItems(currentNode, functionOverloads);
+				return CodeCompletionSearchHelper.ResolveSpecificFunctionParameterCodeCompletionItems(currentNode, functionOverloads, databaseModel);
 			}
 			
 			var objectIdentifierNode = currentNode.ParentNode.Id == NonTerminals.ObjectPrefix ? currentNode.ParentNode.GetSingleDescendant(Terminals.ObjectIdentifier) : null;

@@ -798,7 +798,7 @@ se";
 		}
 
 		[Test(Description = @"")]
-		public void TestToCharSysContexSpecialParameterCompletion()
+		public void TestSysContextSpecialParameterCompletion()
 		{
 			const string statement = @"SELECT SYS_CONTEXT('USERENV', '') FROM DUAL";
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 31).ToList();
@@ -812,11 +812,25 @@ se";
 		}
 
 		[Test(Description = @"")]
-		public void TestToCharSysContexSpecialParameterCompletionWithIncompatibleNamespace()
+		public void TestSysContextSpecialParameterCompletionWithIncompatibleNamespace()
 		{
 			const string statement = @"SELECT SYS_CONTEXT(X || 'USERENV', '') FROM DUAL";
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 36).ToList();
 			items.Count.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
+		public void TestConvertSpecialParameterCompletion()
+		{
+			const string statement = @"SELECT CONVERT('sample text', '', '') FROM DUAL";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 31).ToList();
+			items.Count.ShouldBe(2);
+			items[0].Name.ShouldBe("US7ASCII");
+			items[0].Text.ShouldBe("'US7ASCII'");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+			items[1].Name.ShouldBe("WE8ISO8859P1");
+			items[1].Text.ShouldBe("'WE8ISO8859P1'");
+			items[1].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
 		}
 
 		public class OracleCodeCompletionTypeTest

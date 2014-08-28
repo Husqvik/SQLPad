@@ -103,6 +103,11 @@ namespace SqlPad.Oracle
 			return _databaseModel.ExecuteReader(DatabaseCommands.SelectAllSchemasCommandText, r => ((string)r["USERNAME"]));
 		}
 
+		public IEnumerable<string> GetCharacterSets()
+		{
+			return _databaseModel.ExecuteReader(DatabaseCommands.GetCharacterSets, r => ((string)r["VALUE"]));
+		}
+
 		public IDictionary<OracleObjectIdentifier, OracleDatabaseLink> GetDatabaseLinks()
 		{
 			return _databaseModel.ExecuteReader(DatabaseCommands.SelectDatabaseLinksCommandText, MapDatabaseLink)

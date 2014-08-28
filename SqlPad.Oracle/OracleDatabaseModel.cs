@@ -27,6 +27,7 @@ namespace SqlPad.Oracle
 		private Task _backgroundTask;
 		private readonly CancellationTokenSource _backgroundTaskCancellationTokenSource = new CancellationTokenSource();
 		private ILookup<OracleFunctionIdentifier, OracleFunctionMetadata> _allFunctionMetadata = Enumerable.Empty<OracleFunctionMetadata>().ToLookup(m => m.Identifier);
+		private HashSet<string> _characterSets = new HashSet<string>();
 		private readonly ConnectionStringSettings _connectionString;
 		private HashSet<string> _schemas = new HashSet<string>();
 		private HashSet<string> _allSchemas = new HashSet<string>();
@@ -122,6 +123,8 @@ namespace SqlPad.Oracle
 		public override IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjects { get { return _dataDictionary.AllObjects; } }
 
 		public override IDictionary<OracleObjectIdentifier, OracleDatabaseLink> DatabaseLinks { get { return _dataDictionary.DatabaseLinks; } }
+
+		public override ICollection<string> CharacterSets { get { return _characterSets; } }
 
 		public override void RefreshIfNeeded()
 		{
@@ -356,7 +359,8 @@ namespace SqlPad.Oracle
 				{
 					_currentSchema = _currentSchema,
 					_dataDictionary = _dataDictionary,
-					_allFunctionMetadata = _allFunctionMetadata
+					_allFunctionMetadata = _allFunctionMetadata,
+					_characterSets = _characterSets
 				};
 
 			return clone;
@@ -640,6 +644,8 @@ namespace SqlPad.Oracle
 
 		private void LoadSchemaObjectMetadata(bool force)
 		{
+			_characterSets = new HashSet<string>(_dataDictionaryMapper.GetCharacterSets());
+
 			TryLoadSchemaObjectMetadataFromCache();
 
 			var isRefreshDone = !IsRefreshNeeded && !force;

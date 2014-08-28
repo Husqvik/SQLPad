@@ -19,6 +19,7 @@ namespace SqlPad.Oracle
 		internal static OracleFunctionIdentifier IdentifierBuiltInFunctionSysContext = OracleFunctionIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "SYS_CONTEXT");
 		internal static OracleFunctionIdentifier IdentifierBuiltInFunctionToChar = OracleFunctionIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "TO_CHAR");
 		internal static OracleFunctionIdentifier IdentifierBuiltInFunctionTrunc = OracleFunctionIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "TRUNC");
+		internal static OracleFunctionIdentifier IdentifierBuiltInFunctionConvert = OracleFunctionIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "CONVERT");
 
 		protected static readonly OracleObjectIdentifier BuiltInFunctionPackageIdentifier = OracleObjectIdentifier.Create(SchemaSys, PackageBuiltInFunction);
 
@@ -71,6 +72,8 @@ namespace SqlPad.Oracle
 		public abstract IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjects { get; }
 
 		public abstract IDictionary<OracleObjectIdentifier, OracleDatabaseLink> DatabaseLinks { get; }
+
+		public abstract ICollection<string> CharacterSets { get; }
 
 		public OracleObjectIdentifier[] GetPotentialSchemaObjectIdentifiers(OracleObjectIdentifier identifier)
 		{

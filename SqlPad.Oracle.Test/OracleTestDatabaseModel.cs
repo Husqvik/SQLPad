@@ -22,6 +22,7 @@ namespace SqlPad.Oracle.Test
 		private static readonly HashSet<string> AllSchemasInternal = new HashSet<string>(SchemasInternal) { OwnerNameSys, "\"SYSTEM\"", InitialSchema, SchemaPublic };
 		private static readonly ILookup<OracleFunctionIdentifier, OracleFunctionMetadata> AllFunctionMetadataInternal;
 		private static readonly Dictionary<string, OracleFunctionMetadata> NonSchemaBuiltInFunctionMetadataInternal;
+		private static readonly HashSet<string> CharacterSetsInternal = new HashSet<string> { "US7ASCII", "WE8ISO8859P1" };
 
 		private readonly IDictionary<OracleObjectIdentifier, OracleSchemaObject> _allObjects;
 
@@ -199,6 +200,13 @@ namespace SqlPad.Oracle.Test
 			roundFunctionOverload2Metadata.Parameters.Add(new OracleFunctionParameterMetadata("N", 1, ParameterDirection.Input, "NUMBER", false));
 			roundFunctionOverload2Metadata.Parameters.Add(new OracleFunctionParameterMetadata("F", 2, ParameterDirection.Input, "NUMBER", false));
 			builtInFunctionPackage.Functions.Add(roundFunctionOverload2Metadata);
+
+			var convertFunctionMetadata = new OracleFunctionMetadata(IdentifierBuiltInFunctionConvert, false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNormal, true);
+			convertFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "VARCHAR2", false));
+			convertFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("SRC", 1, ParameterDirection.Input, "VARCHAR2", false));
+			convertFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("DESTCSET", 2, ParameterDirection.Input, "VARCHAR2", false));
+			convertFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("SRCCSET", 3, ParameterDirection.Input, "VARCHAR2", false));
+			builtInFunctionPackage.Functions.Add(convertFunctionMetadata);
 
 			var dumpFunctionMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues("SYS", "STANDARD", "DUMP"), false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNormal, true);
 			builtInFunctionPackage.Functions.Add(dumpFunctionMetadata);
@@ -635,6 +643,8 @@ Note
 		public override IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjects { get { return _allObjects; } }
 
 		public override IDictionary<OracleObjectIdentifier, OracleDatabaseLink> DatabaseLinks { get { return _databaseLinks; } }
+
+		public override ICollection<string> CharacterSets { get { return CharacterSetsInternal; } }
 
 		public override void RefreshIfNeeded()
 		{
