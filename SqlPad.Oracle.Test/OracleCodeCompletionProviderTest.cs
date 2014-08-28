@@ -276,12 +276,11 @@ FROM
 			const string query2 = @"SELECT SELECTION.NAME FROM SELECTION, TARGETGROUP";
 
 			items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query2, 18).ToArray();
-			items.Length.ShouldBe(3);
+			items.Length.ShouldBe(2);
 			items[0].Name.ShouldBe("RESPONDENTBUCKET_ID");
 			items[0].Text.ShouldBe("RESPONDENTBUCKET_ID");
-			items[1].Name.ShouldBe(OracleColumn.RowId);
-			items[2].Name.ShouldBe("SELECTION_ID");
-			items[2].Text.ShouldBe("SELECTION_ID");
+			items[1].Name.ShouldBe("SELECTION_ID");
+			items[1].Text.ShouldBe("SELECTION_ID");
 
 			const string query3 = @"SELECT SELECTION.NAME FROM SELECTION, TARGETGROUP";
 
@@ -731,10 +730,10 @@ se";
 		{
 			const string statement = @"SELECT SQLPAD.SQLPAD_FUNCTION(D) FROM DUAL";
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 31).ToList();
-			items.Count.ShouldBe(3);
+			items.Count.ShouldBe(4);
 			items[0].Text.ShouldBe("DUAL.DUMMY");
-			items[2].Name.ShouldBe("DUMP");
-			items[2].Text.ShouldBe("DUMP()");
+			items[3].Name.ShouldBe("DUMP");
+			items[3].Text.ShouldBe("DUMP()");
 		}
 
 		[Test(Description = @"")]
@@ -831,6 +830,23 @@ se";
 			items[1].Name.ShouldBe("WE8ISO8859P1");
 			items[1].Text.ShouldBe("'WE8ISO8859P1'");
 			items[1].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+		}
+
+		[Test(Description = @"")]
+		public void TestTableIdentifierAndAllTableColumnCompletion()
+		{
+			const string statement = @"SELECT SEL FROM SELECTION, RESPONDENTBUCKET";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 10).ToList();
+			items.Count.ShouldBe(3);
+			items[0].Name.ShouldBe("SELECTION.*");
+			items[0].Text.ShouldBe("SELECTION.RESPONDENTBUCKET_ID, SELECTION.SELECTION_ID, SELECTION.PROJECT_ID, SELECTION.NAME");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.AllColumns);
+			items[1].Name.ShouldBe("SELECTION.SELECTION_ID");
+			items[1].Text.ShouldBe("SELECTION.SELECTION_ID");
+			items[1].Category.ShouldBe(OracleCodeCompletionCategory.Column);
+			items[2].Name.ShouldBe("SELECTION");
+			items[2].Text.ShouldBe("SELECTION");
+			items[2].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
 		}
 
 		public class OracleCodeCompletionTypeTest

@@ -4095,6 +4095,9 @@
         <Sequence>
           <NonTerminal Id="CreateTable" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="CreateSynonym" />
+        </Sequence>
         <!-- TODO: Create other objects -->
       </Sequences>
     </Rule>
@@ -4139,8 +4142,8 @@
         <Sequence>
           <NonTerminal Id="ParenthesisEnclosedRelationalProperties" />
           <NonTerminal Id="TemporaryTableOnCommitClause" IsOptional="true" />
-          <!--<NonTerminal Id="PhysicalProperties" />
-          <NonTerminal Id="TableProperties" />-->
+          <NonTerminal Id="PhysicalProperties" IsOptional="true" />
+          <!--<NonTerminal Id="TableProperties" IsOptional="true" />-->
         </Sequence>
       </Sequences>
     </Rule>
@@ -4404,8 +4407,468 @@
           <Terminal Id="Not" IsOptional="true" />
           <Terminal Id="Deferrable" />
         </Sequence>
+        <Sequence>
+          <Terminal Id="Initially" />
+          <NonTerminal Id="ImmediateOrDeferred" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="RelyOrNoRely" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="EnableOrDisable" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ValidateOrNoValidate" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ConstraintStateExceptionClause" />
+        </Sequence>
+        <!--<Sequence>
+          <NonTerminal Id="UsingIndexClause" />
+        </Sequence>-->
       </Sequences>
     </Rule>
+
+    <Rule StartingNonTerminal="ImmediateOrDeferred">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Immediate" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Deferred" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="RelyOrNoRely">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Rely" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="NoRely" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="EnableOrDisable">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Enable" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Disable" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ValidateOrNoValidate">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Validate" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="NoValidate" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ConstraintStateExceptionClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Exceptions" />
+          <Terminal Id="Into" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SegmentCreationClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Segment" />
+          <Terminal Id="Creation" />
+          <NonTerminal Id="ImmediateOrDeferred" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PhysicalProperties">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="SegmentCreationClause" IsOptional="true" />
+          <NonTerminal Id="ImplicitHeapPhysicalOrganizationOrExplicitPhysicalOrganization" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ClusterPhysicalProperties" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ClusterPhysicalProperties">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Cluster" />
+          <Terminal Id="Identifier" />
+          <NonTerminal Id="ParenthesisEnclosedColumnIdentifierList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ImplicitHeapPhysicalOrganizationOrExplicitPhysicalOrganization">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ImplicitHeapPhysicalOrganization" />
+        </Sequence>
+        <!--<Sequence>
+          <NonTerminal Id="ExplicitPhysicalOrganization" />
+        </Sequence>-->
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ImplicitHeapPhysicalOrganization">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="SegmentAttributesClause" />
+          <!--<NonTerminal Id="TableCompression" IsOptional="true" />-->
+          <!--<NonTerminal Id="InMemoryTableClause" IsOptional="true" />
+          <NonTerminal Id="ILMClause" IsOptional="true" />--><!-- Integrated Lifecycle Management -->
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="LoggingClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Logging" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="NoLogging" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="FileSystemLikeLogging" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SegmentAttributesClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="SegmentAttribute" />
+          <NonTerminal Id="SegmentAttributesClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SegmentAttribute">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="TableSpace" />
+          <Terminal Id="Identifier" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="PhysicalAttributesClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="LoggingClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PhysicalAttributesClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="PhysicalAttribute" />
+          <NonTerminal Id="PhysicalAttributesClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PhysicalAttribute">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="PercentFree" />
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="PercentUsed" />
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="InitialTransactions" />
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="MaximumTransactions" />
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="StorageClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="StorageClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Storage" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="StorageParameterList" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="StorageParameterList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="StorageParameter" />
+          <NonTerminal Id="StorageParameterList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="StorageParameter">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Initial" />
+          <NonTerminal Id="SizeClause" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Next" />
+          <NonTerminal Id="SizeClause" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="MinimumExtents" />
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="MaximumExtents" />
+          <NonTerminal Id="UnlimitedOrIntegerLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="MaximumSize" />
+          <NonTerminal Id="SizeClauseOrUnlimited" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="PercentIncrease" />
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="FreeLists" />
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="FreeList" />
+          <Terminal Id="Groups" />
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="BufferPool" />
+          <NonTerminal Id="BufferPoolType" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="FlashCache" />
+          <NonTerminal Id="FlashCachePoolType" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="CellFlashCache" />
+          <NonTerminal Id="FlashCachePoolType" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Encrypt" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SizeClauseOrUnlimited">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Unlimited" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="SizeClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SizeClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="IntegerLiteral" />
+          <NonTerminal Id="UnitPostfix" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="UnitPostfix">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Kilo" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Mega" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Giga" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Tera" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Peta" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Exa" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="BufferPoolType">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Default" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Keep" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Recycle" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="FlashCachePoolType">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Default" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Keep" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="None" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="TableCompression">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Compress" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="NoCompress" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Row" />
+          <Terminal Id="Store" />
+          <Terminal Id="Compress" />
+          <NonTerminal Id="BasicOrAdvanced" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Column" />
+          <Terminal Id="Store" />
+          <Terminal Id="Compress" />
+          <Terminal Id="ColumnStoreCompressionType" IsOptional="true" />
+          <Terminal Id="RowLevelLocking" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="BasicOrAdvanced">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Basic" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Advanced" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ColumnStoreCompressionType">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="For" />
+          <NonTerminal Id="QueryOrArchive" />
+          <NonTerminal Id="LowOrHigh" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="QueryOrArchive">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Query" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Archive" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="LowOrHigh">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Low" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="High" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="RowLevelLocking">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="No" IsOptional="true" />
+          <Terminal Id="Row" />
+          <Terminal Id="Level" />
+          <Terminal Id="Locking" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <!--CREATE SYNONYM -->
+    <Rule StartingNonTerminal="CreateSynonym">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="OrReplace" IsOptional="true" />
+          <NonTerminal Id="EditionableOrNonEditionable" IsOptional="true" />
+          <Terminal Id="Public" IsOptional="true" />
+          <Terminal Id="Synonym" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+          <Terminal Id="For" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="DatabaseLink" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="OrReplace">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Or" />
+          <Terminal Id="Replace" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="EditionableOrNonEditionable">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Editionable" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="NonEditionable" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
   </Rules>
       
   <Terminals>
@@ -4771,6 +5234,7 @@
     <Terminal Id="Context" Value="CONTEXT" />
 
     <!-- Create -->
+    <Terminal Id="Replace" Value="REPLACE" />
     <Terminal Id="Global" Value="GLOBAL" />
     <Terminal Id="Temporary" Value="TEMPORARY" />
     <Terminal Id="Sort" Value="SORT" />
@@ -4780,6 +5244,45 @@
     <Terminal Id="Foreign" Value="FOREIGN" />
     <Terminal Id="Key" Value="KEY" />
     <Terminal Id="References" Value="REFERENCES" />
+    <Terminal Id="Deferred" Value="DEFERRED" />
+    <Terminal Id="Editionable" Value="EDITIONABLE" />
+    <Terminal Id="NonEditionable" Value="NONEDITIONABLE" />
+    <Terminal Id="Creation" Value="CREATION" />
+    <Terminal Id="TableSpace" Value="TABLESPACE" />
+    <Terminal Id="PercentFree" Value="PCTFREE" />
+    <Terminal Id="PercentUsed" Value="PCTUSED" />s
+    <Terminal Id="InitialTransactions" Value="INITRANS" />
+    <Terminal Id="MaximumTransactions" Value="MAXTRANS" />
+    <Terminal Id="MinimumExtents" Value="MINEXTENTS" />
+    <Terminal Id="MaximumExtents" Value="MAXEXTENTS" />
+    <Terminal Id="PercentIncrease" Value="PCTINCREASE" />
+    <Terminal Id="FreeLists" Value="FREELISTS" />
+    <Terminal Id="FreeList" Value="FREELIST" />
+    <Terminal Id="Groups" Value="GROUPS" />
+    <Terminal Id="BufferPool" Value="BUFFER_POOL" />
+    <Terminal Id="FlashCache" Value="FLASH_CACHE" />
+    <Terminal Id="CellFlashCache" Value="CELL_FLASH_CACHE" />
+    <Terminal Id="Recycle" Value="RECYCLE" />
+    <Terminal Id="Storage" Value="STORAGE" />
+    <Terminal Id="Logging" Value="LOGGING" />
+    <Terminal Id="NoLogging" Value="NOLOGGING" />
+    <Terminal Id="Initial" Value="INITIAL" />
+    <Terminal Id="MaximumSize" Value="MAXSIZE" />
+    <Terminal Id="Encrypt" Value="ENCRYPT" />
+    <Terminal Id="FileSystemLikeLogging" Value="FILESYSTEM_LIKE_LOGGING" />
+    <Terminal Id="Kilo" Value="K" />
+    <Terminal Id="Mega" Value="M" />
+    <Terminal Id="Giga" Value="G" />
+    <Terminal Id="Tera" Value="T" />
+    <Terminal Id="Peta" Value="P" />
+    <Terminal Id="Exa" Value="E" />
+    <Terminal Id="NoCompress" Value="NOCOMPRESS" />
+    <Terminal Id="Query" Value="QUERY" />
+    <Terminal Id="Archive" Value="ARCHIVE" />
+    <Terminal Id="Locking" Value="LOCKING" />
+    <Terminal Id="Store" Value="STORE" />
+    <Terminal Id="Basic" Value="BASIC" />
+    <Terminal Id="Advanced" Value="ADVANCED" />
     
     <!-- Other -->
     <Terminal Id="Float" Value="FLOAT" IsKeyword="true" />

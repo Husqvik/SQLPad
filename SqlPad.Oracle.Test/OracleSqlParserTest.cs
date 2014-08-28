@@ -2616,6 +2616,65 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 
 				terminals[85].Id.ShouldBe(Terminals.Constraint);
 			}
+
+			[Test(Description = @"")]
+			public void TestPhysicalPropertiesClause()
+			{
+				const string statementText =
+@"CREATE TABLE HUSQVIK.SELECTION
+(
+	SELECTION_ID NUMBER
+)
+SEGMENT CREATION IMMEDIATE
+PCTFREE 10 PCTUSED 40 INITRANS 1 MAXTRANS 255
+LOGGING
+STORAGE
+(
+	INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+	PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1
+	BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT
+)
+TABLESPACE TBS_HQ_PDB";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			}
+		}
+
+
+		public class CreateSynonym
+		{
+			[Test(Description = @"")]
+			public void TestCreateSynonym()
+			{
+				const string statementText = @"CREATE OR REPLACE NONEDITIONABLE PUBLIC SYNONYM CUSTOMER FOR HUSQVIK.CUSTOMER@DBLINK;";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+				var terminals = statement.AllTerminals.ToArray();
+				terminals.Length.ShouldBe(13);
+
+				terminals[0].Id.ShouldBe(Terminals.Create);
+				terminals[1].Id.ShouldBe(Terminals.Or);
+				terminals[2].Id.ShouldBe(Terminals.Replace);
+				terminals[3].Id.ShouldBe(Terminals.NonEditionable);
+				terminals[4].Id.ShouldBe(Terminals.Public);
+				terminals[5].Id.ShouldBe(Terminals.Synonym);
+				terminals[6].Id.ShouldBe(Terminals.ObjectIdentifier);
+				terminals[7].Id.ShouldBe(Terminals.For);
+				terminals[8].Id.ShouldBe(Terminals.SchemaIdentifier);
+				terminals[9].Id.ShouldBe(Terminals.Dot);
+				terminals[10].Id.ShouldBe(Terminals.ObjectIdentifier);
+				terminals[11].Id.ShouldBe(Terminals.AtCharacter);
+				terminals[12].Id.ShouldBe(Terminals.DatabaseLinkIdentifier);
+			}
 		}
 
 		private static OracleTokenReader CreateTokenReader(string sqlText)
