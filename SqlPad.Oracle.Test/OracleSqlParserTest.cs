@@ -2642,8 +2642,36 @@ TABLESPACE TBS_HQ_PDB";
 				var statement = result.Single();
 				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 			}
-		}
 
+			[Test(Description = @"")]
+			public void TestTablePropertiesClause()
+			{
+				const string statementText =
+@"CREATE TABLE TEST_TABLE
+(
+	ID
+)
+NOCACHE RESULT_CACHE (MODE FORCE) PARALLEL NOROWDEPENDENCIES DISABLE ROW MOVEMENT NO FLASHBACK ARCHIVE AS SELECT * FROM DUAL";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			}
+
+			[Test(Description = @"")]
+			public void TestConstraintStateClause()
+			{
+				const string statementText = @"CREATE TABLE TEST_TABLE (ID NUMBER CHECK (VAL2 IN ('A', 'B', 'C')) DEFERRABLE INITIALLY DEFERRED NORELY ENABLE)";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			}
+		}
 
 		public class CreateSynonym
 		{

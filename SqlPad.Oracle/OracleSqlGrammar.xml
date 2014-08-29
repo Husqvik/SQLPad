@@ -4143,7 +4143,127 @@
           <NonTerminal Id="ParenthesisEnclosedRelationalProperties" />
           <NonTerminal Id="TemporaryTableOnCommitClause" IsOptional="true" />
           <NonTerminal Id="PhysicalProperties" IsOptional="true" />
-          <!--<NonTerminal Id="TableProperties" IsOptional="true" />-->
+          <NonTerminal Id="TableProperties" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="TableProperties">
+      <Sequences>
+        <Sequence>
+          <!--<NonTerminal Id="ColumnProperties" />
+          <NonTerminal Id="IndexingClause" />
+          <NonTerminal Id="TablePartitioningClauses" />
+          <NonTerminal Id="AttributeClusteringClause" />-->
+          <NonTerminal Id="CacheOrNoCache" IsOptional="true" />
+          <NonTerminal Id="ResultCacheClause" IsOptional="true" />
+          <NonTerminal Id="ParallelClause" IsOptional="true" />
+          <NonTerminal Id="RowDependenciesOrNoRowDependencies" IsOptional="true" />
+          <!--<NonTerminal Id="EnableDisableClauseList" IsOptional="true" />-->
+          <NonTerminal Id="RowMovementClause" IsOptional="true" />
+          <NonTerminal Id="FlashbackArchiveClause" IsOptional="true" />
+          <NonTerminal Id="RowArchival" IsOptional="true" />
+          <NonTerminal Id="AsSubquery" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="CacheOrNoCache">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Cache" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="NoCache" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ResultCacheClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="ResultCache" />
+          <Terminal Id="LeftParenthesis" />
+          <Terminal Id="Mode" />
+          <NonTerminal Id="DefaultOrForce" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="DefaultOrForce">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Default" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Force" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ParallelClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="NoParallel" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Parallel" />
+          <Terminal Id="IntegerLiteral" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="RowDependenciesOrNoRowDependencies">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="RowDependencies" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="NoRowDependencies" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="RowMovementClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="EnableOrDisable" />
+          <Terminal Id="Row" />
+          <Terminal Id="Movement" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="FlashbackArchiveClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Flashback" />
+          <Terminal Id="Archive" />
+          <Terminal Id="Identifier" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="No" />
+          <Terminal Id="Flashback" />
+          <Terminal Id="Archive" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="RowArchival">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Row" />
+          <Terminal Id="Archival" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AsSubquery">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="As" />
+          <NonTerminal Id="NestedQuery" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -4222,7 +4342,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Identifier" />
-          <NonTerminal Id="DataType" />
+          <NonTerminal Id="DataType" IsOptional="true" />
           <Terminal Id="Sort" IsOptional="true" />
           <NonTerminal Id="VisibleOrInvisible" IsOptional="true" />
           <NonTerminal Id="ColumnDefinitionDefaultClauseOrIdentityClause" IsOptional="true" />
@@ -4290,7 +4410,7 @@
         <Sequence>
           <NonTerminal Id="ConstraintName" IsOptional="true" />
           <NonTerminal Id="InlineConstraintType" />
-          <!--<NonTerminal Id="ConstraintState" IsOptional="true" />-->
+          <NonTerminal Id="ConstraintState" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -4336,7 +4456,7 @@
         <Sequence>
           <NonTerminal Id="ConstraintName" IsOptional="true" />
           <NonTerminal Id="OutOfLineConstraint" />
-          <!--<NonTerminal Id="ConstraintState" IsOptional="true" />-->
+          <NonTerminal Id="ConstraintState" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -4400,32 +4520,36 @@
         </Sequence>
       </Sequences>
     </Rule>
-
+    
     <Rule StartingNonTerminal="ConstraintState">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="DeferrableState" IsOptional="true" />
+          <NonTerminal Id="InitialDeferrableState" IsOptional="true" />
+          <NonTerminal Id="RelyOrNoRely" IsOptional="true" />
+          <!--<NonTerminal Id="UsingIndexClause" IsOptional="true" />-->
+          <NonTerminal Id="EnableOrDisable" IsOptional="true" />
+          <!--<NonTerminal Id="ValidateOrNoValidate" IsOptional="true" />-->
+          <!--<NonTerminal Id="ConstraintStateExceptionClause" IsOptional="true" />-->
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DeferrableState">
       <Sequences>
         <Sequence>
           <Terminal Id="Not" IsOptional="true" />
           <Terminal Id="Deferrable" />
         </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="InitialDeferrableState">
+      <Sequences>
         <Sequence>
           <Terminal Id="Initially" />
           <NonTerminal Id="ImmediateOrDeferred" />
         </Sequence>
-        <Sequence>
-          <NonTerminal Id="RelyOrNoRely" />
-        </Sequence>
-        <Sequence>
-          <NonTerminal Id="EnableOrDisable" />
-        </Sequence>
-        <Sequence>
-          <NonTerminal Id="ValidateOrNoValidate" />
-        </Sequence>
-        <Sequence>
-          <NonTerminal Id="ConstraintStateExceptionClause" />
-        </Sequence>
-        <!--<Sequence>
-          <NonTerminal Id="UsingIndexClause" />
-        </Sequence>-->
       </Sequences>
     </Rule>
 
@@ -4526,12 +4650,110 @@
         </Sequence>-->
       </Sequences>
     </Rule>
+    
+    <Rule StartingNonTerminal="ExplicitPhysicalOrganization">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Organization" />
+          <NonTerminal Id="ExplicitPhysicalOrganizationType" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ExplicitPhysicalOrganizationType">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Heap" />
+          <NonTerminal Id="SegmentAttributesClause" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Index" />
+          <NonTerminal Id="SegmentAttributesClause" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="External" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="ExternalTableAccessDriverType" IsOptional="true" />
+          <NonTerminal Id="ExternalTableDataPropeties" />
+          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="ErrorLoggingRejectLimit" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ExternalTableDataPropeties">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Default" />
+          <Terminal Id="Directory" />
+          <Terminal Id="Identifier" />
+          <NonTerminal Id="ExternalTableAccessParameters" IsOptional="true" />
+          <Terminal Id="Location" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="ExternalTableDirectoryLocation" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ExternalTableAccessParameters">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Access" />
+          <Terminal Id="Parameters" />
+          <NonTerminal Id="OpaqueFormatSpecificationOrUsingClobSubquery" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="OpaqueFormatSpecificationOrUsingClobSubquery">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="OpaqueFormatSpecification" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Using" />
+          <Terminal Id="Clob" />
+          <!-- SUBQUERY -->
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ExternalTableDirectoryLocation">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Identifier" />
+          <Terminal Id="Semicolon" />
+          <Terminal Id="StringLiteral" />
+          <NonTerminal Id="CommaChainedExternalTableDirectoryLocation" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="CommaChainedExternalTableDirectoryLocation">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="ExternalTableDirectoryLocation" />
+        </Sequence>
+      </Sequences>
+    </Rule>
 
     <Rule StartingNonTerminal="ImplicitHeapPhysicalOrganization">
       <Sequences>
         <Sequence>
           <NonTerminal Id="SegmentAttributesClause" />
-          <!--<NonTerminal Id="TableCompression" IsOptional="true" />-->
+          <!--<NonTerminal Id="HeapPhysicalOrganizationClause" IsOptional="true" />-->
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="HeapPhysicalOrganizationClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="TableCompression" IsOptional="true" />
           <!--<NonTerminal Id="InMemoryTableClause" IsOptional="true" />
           <NonTerminal Id="ILMClause" IsOptional="true" />--><!-- Integrated Lifecycle Management -->
         </Sequence>
@@ -5283,6 +5505,21 @@
     <Terminal Id="Store" Value="STORE" />
     <Terminal Id="Basic" Value="BASIC" />
     <Terminal Id="Advanced" Value="ADVANCED" />
+    <Terminal Id="Cache" Value="CACHE" />
+    <Terminal Id="NoCache" Value="NOCACHE" />
+    <Terminal Id="RowDependencies" Value="ROWDEPENDENCIES" />
+    <Terminal Id="NoRowDependencies" Value="NOROWDEPENDENCIES" />
+    <Terminal Id="ResultCache" Value="RESULT_CACHE" />
+    <Terminal Id="NoParallel" Value="NOPARALLEL" />
+    <Terminal Id="Parallel" Value="PARALLEL" />
+    <Terminal Id="Enable" Value="ENABLE" />
+    <Terminal Id="Disable" Value="DISABLE" />
+    <Terminal Id="Movement" Value="MOVEMENT" />
+    <Terminal Id="Flashback" Value="FLASHBACK" />
+    <Terminal Id="Deferrable" Value="DEFERRABLE" />
+    <Terminal Id="Initially" Value="INITIALLY" />
+    <Terminal Id="Rely" Value="RELY" />
+    <Terminal Id="NoRely" Value="NORELY" />
     
     <!-- Other -->
     <Terminal Id="Float" Value="FLOAT" IsKeyword="true" />
