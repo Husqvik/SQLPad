@@ -22,23 +22,13 @@ namespace SqlPad
 	public interface INodeValidationData
 	{
 		StatementGrammarNode Node { get; }
-		SemanticError SemanticError { get; }
+
+		string SemanticErrorType { get; }
+
 		bool IsRecognized { get; }
+
 		ICollection<string> ObjectNames { get; }
 
 		string ToolTipText { get; }
-	}
-
-	public enum SemanticError
-	{
-		None,
-		AmbiguousReference,
-		InvalidParameterCount,
-		MissingParenthesis,
-		NoParenthesisFunction,
-		InvalidIdentifier,
-		AnalyticClauseNotSupported,
-		ObjectStatusInvalid,
-		ObjectCannotBeUsed
 	}
 }

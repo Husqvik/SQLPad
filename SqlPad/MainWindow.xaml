@@ -26,6 +26,20 @@
             </TextDecoration.Pen>
         </TextDecoration>
 
+		<TextDecoration x:Key="WaveWarningUnderline" PenOffset="0.5">
+			<TextDecoration.Pen>
+				<Pen Thickness="6">
+					<Pen.Brush>
+						<VisualBrush TileMode="Tile" Viewbox="0,-2,6,5" ViewboxUnits="Absolute" Viewport="0,-1,6,3" ViewportUnits="Absolute">
+							<VisualBrush.Visual>
+								<Path Data="M 0,1 L 1,2 2,2 4,0, 5,0 6,1" Stroke="LightSeaGreen" StrokeThickness="1.5"/>
+							</VisualBrush.Visual>
+						</VisualBrush>
+					</Pen.Brush>
+				</Pen>
+			</TextDecoration.Pen>
+		</TextDecoration>
+
 		<TextDecoration x:Key="BoxedText" PenThicknessUnit="FontRecommended">
 			<TextDecoration.Pen>
 				<Pen Thickness="1">

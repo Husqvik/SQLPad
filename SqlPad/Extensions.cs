@@ -105,27 +105,6 @@ namespace SqlPad
 			editor.ScrollTo(location.Line, location.Column);
 		}
 
-		public static string ToToolTipText(this SemanticError error)
-		{
-			switch (error)
-			{
-				case SemanticError.None:
-					return null;
-				case SemanticError.AmbiguousReference:
-					return "Ambiguous reference";
-				case SemanticError.InvalidParameterCount:
-					return "Invalid parameter count";
-				case SemanticError.MissingParenthesis:
-					return "Missing parenthesis";
-				case SemanticError.NoParenthesisFunction:
-					return "Non-parenthesis function";
-				case SemanticError.ObjectStatusInvalid:
-					return "Object is invalid or unusable";
-			}
-
-			throw new NotSupportedException(String.Format("Value '{0}' is not supported. ", error));
-		}
-
 		public static string ToHexString(this byte[] byteArray)
 		{
 			var characters = new char[byteArray.Length * 2];

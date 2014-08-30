@@ -61,12 +61,12 @@ namespace SqlPad.Test
 		{
 			InitializeApplicationWindow();
 
-			_editor.Document.Insert(0, "SELECT :BIND_VARIABLE, UNDEFINED, DUMMY AMBIGUOUS, SQLPAD_FUNCTION('Invalid parameter 1', 'Invalid parameter 2') FROM DUAL, DUAL D;\nSELECT *");
+			_editor.Document.Insert(0, "SELECT\n\t:BIND_VARIABLE, UNDEFINED, DUMMY AMBIGUOUS,\n\tSQLPAD_FUNCTION('Invalid parameter 1', 'Invalid parameter 2')\nFROM DUAL, DUAL D;\nSELECT *");
 			_editor.CaretOffset = 50;
 
 			Wait(0.1);
 
-			_editor.CaretOffset = 108;
+			_editor.CaretOffset = 111;
 
 			GenericCommands.FindUsagesCommand.Execute(null, _editor.TextArea);
 			GenericCommands.ExecuteDatabaseCommandCommand.Execute(null, _editor.TextArea);
@@ -85,6 +85,8 @@ namespace SqlPad.Test
 			TestParenthesisCharacterInsertionWithinExistingParenthesis();
 
 			TestPairCharacterDeletionWithCursorBetweenEmptyPair();
+
+			Wait(0.2);
 
 			_editor.IsModified = false;
 

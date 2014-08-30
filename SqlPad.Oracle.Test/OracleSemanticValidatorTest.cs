@@ -149,9 +149,9 @@ namespace SqlPad.Oracle.Test
 			var validationModel = BuildValidationModel(sqlText, statement);
 			
 			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
-			var nodeValidity = nodeValidityDictionary.Values.Select(c => c.SemanticError).ToArray();
+			var nodeValidity = nodeValidityDictionary.Values.Select(c => c.SemanticErrorType).ToArray();
 			nodeValidity.Length.ShouldBe(1);
-			nodeValidity[0].ShouldBe(SemanticError.None);
+			nodeValidity[0].ShouldBe(OracleSemanticErrorType.None);
 		}
 
 		[Test(Description = @"")]
@@ -165,9 +165,9 @@ namespace SqlPad.Oracle.Test
 			var validationModel = BuildValidationModel(sqlText, statement);
 
 			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
-			var nodeValidity = nodeValidityDictionary.Values.Select(c => c.SemanticError).ToArray();
+			var nodeValidity = nodeValidityDictionary.Values.Select(c => c.SemanticErrorType).ToArray();
 			nodeValidity.Length.ShouldBe(1);
-			nodeValidity[0].ShouldBe(SemanticError.AmbiguousReference);
+			nodeValidity[0].ShouldBe(OracleSemanticErrorType.AmbiguousReference);
 		}
 
 		[Test(Description = @"")]
@@ -197,7 +197,7 @@ namespace SqlPad.Oracle.Test
 			nodeValidityDictionary.Count.ShouldBe(2);
 			var columnValidationData = nodeValidityDictionary.First().Value;
 			columnValidationData.IsRecognized.ShouldBe(true);
-			columnValidationData.SemanticError.ShouldBe(SemanticError.AmbiguousReference);
+			columnValidationData.SemanticErrorType.ShouldBe(OracleSemanticErrorType.AmbiguousReference);
 			columnValidationData.ObjectNames.Count.ShouldBe(2);
 			
 			var tableNames = columnValidationData.ObjectNames.OrderBy(n => n).ToArray();
@@ -381,13 +381,13 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 
-			var nodeValidity = validationModel.ColumnNodeValidity.OrderBy(cv => cv.Key.SourcePosition.IndexStart).Select(cv => cv.Value.SemanticError).ToArray();
+			var nodeValidity = validationModel.ColumnNodeValidity.OrderBy(cv => cv.Key.SourcePosition.IndexStart).Select(cv => cv.Value.SemanticErrorType).ToArray();
 			nodeValidity.Length.ShouldBe(5);
-			nodeValidity[0].ShouldBe(SemanticError.AmbiguousReference);
-			nodeValidity[1].ShouldBe(SemanticError.None);
-			nodeValidity[2].ShouldBe(SemanticError.None);
-			nodeValidity[3].ShouldBe(SemanticError.None);
-			nodeValidity[4].ShouldBe(SemanticError.None);
+			nodeValidity[0].ShouldBe(OracleSemanticErrorType.AmbiguousReference);
+			nodeValidity[1].ShouldBe(OracleSemanticErrorType.None);
+			nodeValidity[2].ShouldBe(OracleSemanticErrorType.None);
+			nodeValidity[3].ShouldBe(OracleSemanticErrorType.None);
+			nodeValidity[4].ShouldBe(OracleSemanticErrorType.None);
 		}
 
 		[Test(Description = @"")]
@@ -407,18 +407,18 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			
 			nodeValidity.Length.ShouldBe(5);
 			nodeValidity[0].IsRecognized.ShouldBe(true);
-			nodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+			nodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 			nodeValidity[1].IsRecognized.ShouldBe(true);
-			nodeValidity[1].SemanticError.ShouldBe(SemanticError.InvalidParameterCount);
+			nodeValidity[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidParameterCount);
 			// COUNT
 			nodeValidity[2].IsRecognized.ShouldBe(true);
-			nodeValidity[2].SemanticError.ShouldBe(SemanticError.InvalidParameterCount);
+			nodeValidity[2].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidParameterCount);
 			// HUSQVIK.COUNT
 			nodeValidity[3].IsRecognized.ShouldBe(true);
-			nodeValidity[3].SemanticError.ShouldBe(SemanticError.None);
+			nodeValidity[3].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 			// HUSQVIK.COUNT()
 			nodeValidity[4].IsRecognized.ShouldBe(true);
-			nodeValidity[4].SemanticError.ShouldBe(SemanticError.None);
+			nodeValidity[4].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
 		[Test(Description = @"")]
@@ -438,7 +438,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 
 			nodeValidity.Length.ShouldBe(1);
 			nodeValidity[0].IsRecognized.ShouldBe(true);
-			nodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+			nodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
 		[Test(Description = @"")]
@@ -453,10 +453,10 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 
 			var nodeValidity = validationModel.ProgramNodeValidity
 				.Where(f => f.Key.Type == NodeType.NonTerminal)
-				.Select(cv => cv.Value.SemanticError).ToArray();
+				.Select(cv => cv.Value.SemanticErrorType).ToArray();
 			
 			nodeValidity.Length.ShouldBe(1);
-			nodeValidity[0].ShouldBe(SemanticError.InvalidParameterCount);
+			nodeValidity[0].ShouldBe(OracleSemanticErrorType.InvalidParameterCount);
 		}
 
 		[Test(Description = @"")]
@@ -472,7 +472,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			var nodeValidity = validationModel.ProgramNodeValidity
 				.Where(f => f.Key.Type == NodeType.NonTerminal)
 				.OrderBy(cv => cv.Key.SourcePosition.IndexStart)
-				.Select(cv => cv.Value.SemanticError).ToArray();
+				.Select(cv => cv.Value.SemanticErrorType).ToArray();
 			
 			nodeValidity.Length.ShouldBe(0);
 		}
@@ -487,8 +487,8 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 
-			var firstNodeValidity = validationModel.ColumnNodeValidity.OrderBy(cv => cv.Key.SourcePosition.IndexStart).Select(cv => cv.Value.SemanticError).First();
-			firstNodeValidity.ShouldBe(SemanticError.None);
+			var firstNodeValidity = validationModel.ColumnNodeValidity.OrderBy(cv => cv.Key.SourcePosition.IndexStart).Select(cv => cv.Value.SemanticErrorType).First();
+			firstNodeValidity.ShouldBe(OracleSemanticErrorType.None);
 		}
 
 		[Test(Description = @"")]
@@ -508,15 +508,15 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 
 			nodeValidity.Length.ShouldBe(5);
 			nodeValidity[0].IsRecognized.ShouldBe(true);
-			nodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+			nodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 			nodeValidity[1].IsRecognized.ShouldBe(true);
-			nodeValidity[1].SemanticError.ShouldBe(SemanticError.None);
+			nodeValidity[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 			nodeValidity[2].IsRecognized.ShouldBe(true);
-			nodeValidity[2].SemanticError.ShouldBe(SemanticError.InvalidParameterCount);
+			nodeValidity[2].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidParameterCount);
 			nodeValidity[3].IsRecognized.ShouldBe(true);
-			nodeValidity[3].SemanticError.ShouldBe(SemanticError.MissingParenthesis);
+			nodeValidity[3].SemanticErrorType.ShouldBe(OracleSemanticErrorType.MissingParenthesis);
 			nodeValidity[4].IsRecognized.ShouldBe(false);
-			nodeValidity[4].SemanticError.ShouldBe(SemanticError.None);
+			nodeValidity[4].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
 		[Test(Description = @"")]
@@ -536,9 +536,9 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 
 			nodeValidity.Length.ShouldBe(2);
 			nodeValidity[0].IsRecognized.ShouldBe(true);
-			nodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+			nodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 			nodeValidity[1].IsRecognized.ShouldBe(true);
-			nodeValidity[1].SemanticError.ShouldBe(SemanticError.NoParenthesisFunction);
+			nodeValidity[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.NonParenthesisFunction);
 		}
 
 		[Test(Description = @"")]
@@ -554,7 +554,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			validationModel.ProgramNodeValidity.Count.ShouldBe(1);
 			var nodeValidationData = validationModel.ProgramNodeValidity.Single().Value;
 			nodeValidationData.IsRecognized.ShouldBe(true);
-			nodeValidationData.SemanticError.ShouldBe(SemanticError.None);
+			nodeValidationData.SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
 		[Test(Description = @"")]
@@ -574,9 +574,9 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 
 			nodeValidity.Length.ShouldBe(2);
 			nodeValidity[0].IsRecognized.ShouldBe(true);
-			nodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+			nodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 			nodeValidity[1].IsRecognized.ShouldBe(true);
-			nodeValidity[1].SemanticError.ShouldBe(SemanticError.None);
+			nodeValidity[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
 		[Test(Description = @"")]
@@ -673,10 +673,10 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			columnNodeValidity.Count.ShouldBe(2);
 			columnNodeValidity[0].IsRecognized.ShouldBe(true);
 			columnNodeValidity[0].Node.Token.Value.ShouldBe("DUMMY");
-			columnNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+			columnNodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 			columnNodeValidity[1].IsRecognized.ShouldBe(true);
 			columnNodeValidity[1].Node.Token.Value.ShouldBe("NOT_DUMMY");
-			columnNodeValidity[1].SemanticError.ShouldBe(SemanticError.None);
+			columnNodeValidity[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
 		[Test(Description = @"")]
@@ -693,13 +693,13 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			columnNodeValidity.Count.ShouldBe(3);
 			columnNodeValidity[0].IsRecognized.ShouldBe(true);
 			columnNodeValidity[0].Node.Token.Value.ShouldBe("DUMMY");
-			columnNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+			columnNodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 			columnNodeValidity[1].IsRecognized.ShouldBe(true);
 			columnNodeValidity[1].Node.Token.Value.ShouldBe("DUMMY");
-			columnNodeValidity[1].SemanticError.ShouldBe(SemanticError.None);
+			columnNodeValidity[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 			columnNodeValidity[2].IsRecognized.ShouldBe(true);
 			columnNodeValidity[2].Node.Token.Value.ShouldBe("DUMMY");
-			columnNodeValidity[2].SemanticError.ShouldBe(SemanticError.None);
+			columnNodeValidity[2].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
 		[Test(Description = @"")]
@@ -716,13 +716,13 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			columnNodeValidity.Count.ShouldBe(3);
 			columnNodeValidity[0].IsRecognized.ShouldBe(true);
 			columnNodeValidity[0].Node.Token.Value.ShouldBe("NAME");
-			columnNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+			columnNodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 			columnNodeValidity[1].IsRecognized.ShouldBe(true);
 			columnNodeValidity[1].Node.Token.Value.ShouldBe("SELECTION_ID");
-			columnNodeValidity[1].SemanticError.ShouldBe(SemanticError.None);
+			columnNodeValidity[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 			columnNodeValidity[2].IsRecognized.ShouldBe(true);
 			columnNodeValidity[2].Node.Token.Value.ShouldBe("NAME");
-			columnNodeValidity[2].SemanticError.ShouldBe(SemanticError.AmbiguousReference);
+			columnNodeValidity[2].SemanticErrorType.ShouldBe(OracleSemanticErrorType.AmbiguousReference);
 		}
 
 		[Test(Description = @"")]
@@ -739,13 +739,13 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			columnNodeValidity.Count.ShouldBe(3);
 			columnNodeValidity[0].IsRecognized.ShouldBe(true);
 			columnNodeValidity[0].Node.Token.Value.ShouldBe("NAME");
-			columnNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+			columnNodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 			columnNodeValidity[1].IsRecognized.ShouldBe(true);
 			columnNodeValidity[1].Node.Token.Value.ShouldBe("NAME");
-			columnNodeValidity[1].SemanticError.ShouldBe(SemanticError.None);
+			columnNodeValidity[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 			columnNodeValidity[2].IsRecognized.ShouldBe(false);
 			columnNodeValidity[2].Node.Token.Value.ShouldBe("NAME");
-			columnNodeValidity[2].SemanticError.ShouldBe(SemanticError.None);
+			columnNodeValidity[2].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
 		[Test(Description = @"")]
@@ -762,16 +762,16 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			columnNodeValidity.Count.ShouldBe(4);
 			columnNodeValidity[0].IsRecognized.ShouldBe(true);
 			columnNodeValidity[0].Node.Token.Value.ShouldBe("RESPONDENTBUCKET_ID");
-			columnNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+			columnNodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 			columnNodeValidity[1].IsRecognized.ShouldBe(true);
 			columnNodeValidity[1].Node.Token.Value.ShouldBe("TARGETGROUP_ID");
-			columnNodeValidity[1].SemanticError.ShouldBe(SemanticError.None);
+			columnNodeValidity[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 			columnNodeValidity[2].IsRecognized.ShouldBe(true);
 			columnNodeValidity[2].Node.Token.Value.ShouldBe("PROJECT_ID");
-			columnNodeValidity[2].SemanticError.ShouldBe(SemanticError.None);
+			columnNodeValidity[2].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 			columnNodeValidity[3].IsRecognized.ShouldBe(true);
 			columnNodeValidity[3].Node.Token.Value.ShouldBe("ID");
-			columnNodeValidity[3].SemanticError.ShouldBe(SemanticError.None);
+			columnNodeValidity[3].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
 		[Test(Description = @"")]
@@ -788,16 +788,16 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			columnNodeValidity.Count.ShouldBe(4);
 			columnNodeValidity[0].IsRecognized.ShouldBe(true);
 			columnNodeValidity[0].Node.Token.Value.ShouldBe("RESPONDENTBUCKET_ID");
-			columnNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+			columnNodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 			columnNodeValidity[1].IsRecognized.ShouldBe(true);
 			columnNodeValidity[1].Node.Token.Value.ShouldBe("TARGETGROUP_ID");
-			columnNodeValidity[1].SemanticError.ShouldBe(SemanticError.None);
+			columnNodeValidity[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 			columnNodeValidity[2].IsRecognized.ShouldBe(true);
 			columnNodeValidity[2].Node.Token.Value.ShouldBe("PROJECT_ID");
-			columnNodeValidity[2].SemanticError.ShouldBe(SemanticError.None);
+			columnNodeValidity[2].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 			columnNodeValidity[3].IsRecognized.ShouldBe(false);
 			columnNodeValidity[3].Node.Token.Value.ShouldBe("ID");
-			columnNodeValidity[3].SemanticError.ShouldBe(SemanticError.None);
+			columnNodeValidity[3].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
 		[Test(Description = @"")]
@@ -829,7 +829,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			var programNodeValidity = nodeValidityDictionary.Values.ToList();
 			programNodeValidity.Count.ShouldBe(1);
 			programNodeValidity[0].IsRecognized.ShouldBe(true);
-			programNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+			programNodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
 		[Test(Description = @"")]
@@ -845,7 +845,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			var columnNodeValidity = nodeValidityDictionary.Values.ToList();
 			columnNodeValidity.Count.ShouldBe(1);
 			columnNodeValidity[0].IsRecognized.ShouldBe(true);
-			columnNodeValidity[0].SemanticError.ShouldBe(SemanticError.AmbiguousReference);
+			columnNodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.AmbiguousReference);
 		}
 
 		[Test(Description = @"")]
@@ -861,9 +861,9 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			var programNodeValidity = nodeValidityDictionary.Values.ToList();
 			programNodeValidity.Count.ShouldBe(2);
 			programNodeValidity[0].IsRecognized.ShouldBe(true);
-			programNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+			programNodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 			programNodeValidity[1].IsRecognized.ShouldBe(true);
-			programNodeValidity[1].SemanticError.ShouldBe(SemanticError.None);
+			programNodeValidity[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
 		[Test(Description = @"")]
@@ -879,7 +879,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			var columnNodeValidity = nodeValidityDictionary.Values.ToList();
 			columnNodeValidity.Count.ShouldBe(1);
 			columnNodeValidity[0].IsRecognized.ShouldBe(true);
-			columnNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+			columnNodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
 		[Test(Description = @"")]
@@ -898,7 +898,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 
 			nodeValidity.Length.ShouldBe(2);
 			nodeValidity[1].IsRecognized.ShouldBe(true);
-			nodeValidity[1].SemanticError.ShouldBe(SemanticError.AnalyticClauseNotSupported);
+			nodeValidity[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.AnalyticClauseNotSupported);
 		}
 
 		[Test(Description = @"")]
@@ -920,7 +920,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			columnNodeValidity.Count.ShouldBe(3);
 			columnNodeValidity[2].IsRecognized.ShouldBe(true);
 			columnNodeValidity[2].Node.Token.Value.ShouldBe("DUMMY");
-			columnNodeValidity[2].SemanticError.ShouldBe(SemanticError.None);
+			columnNodeValidity[2].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
 		[Test(Description = @"")]
@@ -936,13 +936,13 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			var objectNodeValidity = nodeValidityDictionary.Values.ToList();
 			objectNodeValidity.Count.ShouldBe(4);
 			objectNodeValidity.ForEach(v => v.IsRecognized.ShouldBe(true));
-			objectNodeValidity.ForEach(v => v.SemanticError.ShouldBe(SemanticError.None));
+			objectNodeValidity.ForEach(v => v.SemanticErrorType.ShouldBe(OracleSemanticErrorType.None));
 
 			nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
 			var columnNodeValidity = nodeValidityDictionary.Values.ToList();
 			columnNodeValidity.Count.ShouldBe(5);
 			columnNodeValidity.ForEach(v => v.IsRecognized.ShouldBe(true));
-			columnNodeValidity.ForEach(v => v.SemanticError.ShouldBe(SemanticError.None));
+			columnNodeValidity.ForEach(v => v.SemanticErrorType.ShouldBe(OracleSemanticErrorType.None));
 		}
 
 		[Test(Description = @"")]
@@ -958,9 +958,9 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			var programNodeValidity = nodeValidityDictionary.Values.ToList();
 			programNodeValidity.Count.ShouldBe(2);
 			programNodeValidity[0].IsRecognized.ShouldBe(true);
-			programNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+			programNodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 			programNodeValidity[1].IsRecognized.ShouldBe(true);
-			programNodeValidity[1].SemanticError.ShouldBe(SemanticError.None);
+			programNodeValidity[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
 		[Test(Description = @"")]
@@ -988,9 +988,9 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			var programNodeValidity = nodeValidityDictionary.Values.ToList();
 			programNodeValidity.Count.ShouldBe(2);
 			programNodeValidity[0].IsRecognized.ShouldBe(true);
-			programNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+			programNodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 			programNodeValidity[1].IsRecognized.ShouldBe(false);
-			programNodeValidity[1].SemanticError.ShouldBe(SemanticError.None);
+			programNodeValidity[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
 		[Test(Description = @"")]
@@ -1006,7 +1006,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			var functionNodeValidity = nodeValidityDictionary.Values.ToList();
 			functionNodeValidity.Count.ShouldBe(1);
 			functionNodeValidity[0].IsRecognized.ShouldBe(true);
-			functionNodeValidity[0].SemanticError.ShouldBe(SemanticError.ObjectStatusInvalid);
+			functionNodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.ObjectStatusInvalid);
 		}
 
 		[Test(Description = @"")]
@@ -1022,9 +1022,9 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			var programNodeValidity = nodeValidityDictionary.Values.ToList();
 			programNodeValidity.Count.ShouldBe(2);
 			programNodeValidity[0].IsRecognized.ShouldBe(true);
-			programNodeValidity[0].SemanticError.ShouldBe(SemanticError.ObjectStatusInvalid);
+			programNodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.ObjectStatusInvalid);
 			programNodeValidity[1].IsRecognized.ShouldBe(true);
-			programNodeValidity[1].SemanticError.ShouldBe(SemanticError.None);
+			programNodeValidity[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
 		[Test(Description = @"")]
@@ -1043,7 +1043,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			var programNodeValidity = nodeValidityDictionary.Values.ToList();
 			programNodeValidity.Count.ShouldBe(1);
 			programNodeValidity[0].IsRecognized.ShouldBe(false);
-			programNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+			programNodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
 		[Test(Description = @"")]
@@ -1059,11 +1059,11 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			var programNodeValidity = nodeValidityDictionary.Values.ToList();
 			programNodeValidity.Count.ShouldBe(3);
 			programNodeValidity[0].IsRecognized.ShouldBe(true);
-			programNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+			programNodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 			programNodeValidity[1].IsRecognized.ShouldBe(true);
-			programNodeValidity[1].SemanticError.ShouldBe(SemanticError.None);
+			programNodeValidity[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 			programNodeValidity[2].IsRecognized.ShouldBe(true);
-			programNodeValidity[2].SemanticError.ShouldBe(SemanticError.None);
+			programNodeValidity[2].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
 		[Test(Description = @"")]
@@ -1079,19 +1079,20 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			var objectNodeValidity = nodeValidityDictionary.Values.ToList();
 			objectNodeValidity.Count.ShouldBe(7);
 			objectNodeValidity.ForEach(n => n.IsRecognized.ShouldBe(true));
-			objectNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
-			objectNodeValidity[1].SemanticError.ShouldBe(SemanticError.None);
-			objectNodeValidity[2].SemanticError.ShouldBe(SemanticError.None);
-			objectNodeValidity[3].SemanticError.ShouldBe(SemanticError.None);
-			objectNodeValidity[4].SemanticError.ShouldBe(SemanticError.None);
-			objectNodeValidity[5].SemanticError.ShouldBe(SemanticError.ObjectCannotBeUsed);
-			objectNodeValidity[6].SemanticError.ShouldBe(SemanticError.ObjectCannotBeUsed);
+			objectNodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
+			objectNodeValidity[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
+			objectNodeValidity[2].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
+			objectNodeValidity[3].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
+			objectNodeValidity[4].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
+			objectNodeValidity[5].SemanticErrorType.ShouldBe(OracleSemanticErrorType.ObjectCannotBeUsed);
+			objectNodeValidity[6].SemanticErrorType.ShouldBe(OracleSemanticErrorType.ObjectCannotBeUsed);
+			objectNodeValidity[6].ToolTipText.ShouldBe("Object cannot be used here");
 
 			nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
 			var columnNodeValidity = nodeValidityDictionary.Values.ToList();
 			columnNodeValidity.Count.ShouldBe(5);
 			columnNodeValidity.ForEach(n => n.IsRecognized.ShouldBe(true));
-			columnNodeValidity.ForEach(n => n.SemanticError.ShouldBe(SemanticError.None));
+			columnNodeValidity.ForEach(n => n.SemanticErrorType.ShouldBe(OracleSemanticErrorType.None));
 		}
 
 		[Test(Description = @"")]
@@ -1107,7 +1108,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			var columnNodeValidity = nodeValidityDictionary.Values.ToList();
 			columnNodeValidity.Count.ShouldBe(1);
 			columnNodeValidity[0].IsRecognized.ShouldBe(false);
-			columnNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+			columnNodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
 		[Test(Description = @"")]
@@ -1124,7 +1125,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			programNodeValidity.Count.ShouldBe(1);
 			programNodeValidity[0].Node.Token.Value.ShouldBe("UNDEFINED_DB_LINK");
 			programNodeValidity[0].IsRecognized.ShouldBe(false);
-			programNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+			programNodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
 		[Test(Description = @"")]
@@ -1141,7 +1142,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			objectNodeValidity.Count.ShouldBe(1);
 			objectNodeValidity[0].Node.Token.Value.ShouldBe("UNDEFINED_DB_LINK");
 			objectNodeValidity[0].IsRecognized.ShouldBe(false);
-			objectNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+			objectNodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
 		[Test(Description = @"")]
@@ -1158,10 +1159,10 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			objectNodeValidity.Count.ShouldBe(2);
 			objectNodeValidity[0].Node.Token.Value.ShouldBe("UNDEFINED_DB_LINK");
 			objectNodeValidity[0].IsRecognized.ShouldBe(false);
-			objectNodeValidity[0].SemanticError.ShouldBe(SemanticError.None);
+			objectNodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 			objectNodeValidity[1].Node.Token.Value.ShouldBe("DUAL");
 			objectNodeValidity[1].IsRecognized.ShouldBe(true);
-			objectNodeValidity[1].SemanticError.ShouldBe(SemanticError.None);
+			objectNodeValidity[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 
 			nodeValidityDictionary = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
 			var programNodeValidity = nodeValidityDictionary.Values.ToList();
@@ -1185,7 +1186,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			var identifierNodeValidity = nodeValidityDictionary.Values.ToList();
 			identifierNodeValidity.Count.ShouldBe(1);
 			identifierNodeValidity[0].IsRecognized.ShouldBe(true);
-			identifierNodeValidity[0].SemanticError.ShouldBe(SemanticError.InvalidIdentifier);
+			identifierNodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidIdentifier);
 			identifierNodeValidity[0].ToolTipText.ShouldBe("Identifier length must be between one and 30 characters excluding quotes. ");
 		}
 
@@ -1202,7 +1203,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			var identifierNodeValidity = nodeValidityDictionary.Values.ToList();
 			identifierNodeValidity.Count.ShouldBe(1);
 			identifierNodeValidity[0].IsRecognized.ShouldBe(true);
-			identifierNodeValidity[0].SemanticError.ShouldBe(SemanticError.InvalidIdentifier);
+			identifierNodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidIdentifier);
 			identifierNodeValidity[0].ToolTipText.ShouldBe("Numeric bind variable identifier must be between 0 and 65535. ");
 		}
 
@@ -1219,9 +1220,9 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			var columnNodeValidity = nodeValidityDictionary.Values.ToList();
 			columnNodeValidity.Count.ShouldBe(2);
 			columnNodeValidity[0].IsRecognized.ShouldBe(true);
-			columnNodeValidity[0].SemanticError.ShouldBe(SemanticError.AmbiguousReference);
+			columnNodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.AmbiguousReference);
 			columnNodeValidity[1].IsRecognized.ShouldBe(true);
-			columnNodeValidity[1].SemanticError.ShouldBe(SemanticError.None);
+			columnNodeValidity[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
 		[Test(Description = @"")]
@@ -1241,9 +1242,9 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			var programNodeValidity = nodeValidityDictionary.Values.ToList();
 			programNodeValidity.Count.ShouldBe(2);
 			programNodeValidity[0].IsRecognized.ShouldBe(true);
-			programNodeValidity[0].SemanticError.ShouldBe(SemanticError.InvalidParameterCount);
+			programNodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidParameterCount);
 			programNodeValidity[1].IsRecognized.ShouldBe(true);
-			programNodeValidity[1].SemanticError.ShouldBe(SemanticError.None);
+			programNodeValidity[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
 		//WITH CTE AS (SELECT 1 A, 2 B, 3 C FROM DUAL) SELECT SELECTION.DUMMY, NQ.DUMMY, CTE.DUMMY, SYS.DUAL.DUMMY FROM SELECTION, (SELECT 1 X, 2 Y, 3 Z FROM DUAL) NQ, CTE, SYS.DUAL

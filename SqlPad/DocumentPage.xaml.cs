@@ -388,7 +388,11 @@ namespace SqlPad
 			var textView = Editor.TextArea.TextView;
 			WorkingDocument.VisualLeft = textView.ScrollOffset.X;
 			WorkingDocument.VisualTop = textView.ScrollOffset.Y;
-			WorkingDocument.EditorGridRowHeight = RowDefinitionEditor.ActualHeight;
+
+			if (RowDefinitionEditor.ActualHeight > 0)
+			{
+				WorkingDocument.EditorGridRowHeight = RowDefinitionEditor.ActualHeight;
+			}
 
 			if (_pageModel.BindVariableListVisibility == Visibility.Visible)
 			{
