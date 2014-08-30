@@ -43,6 +43,8 @@ namespace SqlPad.Oracle
 			get { return _queryBlockNodes.Values; }
 		}
 
+		public OracleDataObjectReference MainObjectReference { get; private set; }
+
 		public OracleQueryBlock MainQueryBlock
 		{
 			get
@@ -84,6 +86,8 @@ namespace SqlPad.Oracle
 
 		private void Build()
 		{
+			ResolveMainObjectReference();
+
 			_queryBlockNodes = Statement.RootNode.GetDescendants(NonTerminals.QueryBlock)
 				.OrderByDescending(q => q.Level)
 				.ToDictionary(n => n, n => new OracleQueryBlock(this) { RootNode = n, Statement = Statement });
@@ -135,7 +139,7 @@ namespace SqlPad.Oracle
 					if (queryTableExpression == null)
 						continue;
 
-					var tableReferenceAlias = tableReferenceNonterminal.GetDescendantsWithinSameQuery(Terminals.ObjectAlias).SingleOrDefault();
+					var objectReferenceAlias = tableReferenceNonterminal.GetDescendantsWithinSameQuery(Terminals.ObjectAlias).SingleOrDefault();
 
 					var nestedQueryTableReference = queryTableExpression.GetPathFilterDescendants(f => f.Id != NonTerminals.Subquery, NonTerminals.NestedQuery).SingleOrDefault();
 					if (nestedQueryTableReference != null)
@@ -149,7 +153,7 @@ namespace SqlPad.Oracle
 									Owner = queryBlock,
 									RootNode = tableReferenceNonterminal,
 									ObjectNode = nestedQueryTableReferenceQueryBlock,
-									AliasNode = tableReferenceAlias
+									AliasNode = objectReferenceAlias
 								});
 						}
 
@@ -196,7 +200,7 @@ namespace SqlPad.Oracle
 							OwnerNode = schemaPrefixNode,
 							ObjectNode = tableIdentifierNode,
 							DatabaseLinkNode = GetDatabaseLinkFromQueryTableExpression(tableIdentifierNode.ParentNode),
-							AliasNode = tableReferenceAlias,
+							AliasNode = objectReferenceAlias,
 							SchemaObject = schemaObject
 						};
 
@@ -255,6 +259,47 @@ namespace SqlPad.Oracle
 			ExposeAsteriskColumns();
 
 			ResolveReferences();
+		}
+
+		private void ResolveMainObjectReference()
+		{
+			var mainObjectRefrenceNode = Statement.RootNode.GetSingleDescendant(NonTerminals.DmlTableExpressionClause);
+			if (mainObjectRefrenceNode == null)
+			{
+				return;
+			}
+
+			var objectIdentifier = mainObjectRefrenceNode.GetDescendantByPath(NonTerminals.QueryTableExpression, Terminals.ObjectIdentifier);
+			if (objectIdentifier == null)
+			{
+				return;
+			}
+
+			var queryTableExpressionNode = objectIdentifier.ParentNode;
+
+			var schemaPrefixNode = queryTableExpressionNode.ChildNodes[0].Id == Terminals.SchemaIdentifier
+				? queryTableExpressionNode.ChildNodes[0]
+				: null;
+
+			var objectReferenceAlias = mainObjectRefrenceNode.ChildNodes.SingleOrDefault(n => n.Id == Terminals.ObjectAlias);
+
+			OracleSchemaObject schemaObject = null;
+			if (!IsSimpleModel)
+			{
+				var owner = schemaPrefixNode == null ? null : schemaPrefixNode.Token.Value;
+				schemaObject = _databaseModel.GetFirstSchemaObject<OracleDataObject>(_databaseModel.GetPotentialSchemaObjectIdentifiers(owner, objectIdentifier.Token.Value));
+			}
+			
+			MainObjectReference =
+				new OracleDataObjectReference(ReferenceType.SchemaObject)
+				{
+					RootNode = mainObjectRefrenceNode,
+					OwnerNode = schemaPrefixNode,
+					ObjectNode = objectIdentifier,
+					DatabaseLinkNode = GetDatabaseLinkFromQueryTableExpression(queryTableExpressionNode),
+					AliasNode = objectReferenceAlias,
+					SchemaObject = schemaObject
+				};
 		}
 
 		private void ResolveParentCorrelatedQueryBlock(OracleQueryBlock queryBlock, bool allowMoreThanOneLevel = false)

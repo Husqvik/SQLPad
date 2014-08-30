@@ -201,6 +201,22 @@ namespace SqlPad
 			return GetDescendants(descendantNodeIds).SingleOrDefault();
 		}
 
+		public StatementGrammarNode GetDescendantByPath(params string[] descendantNodeIds)
+		{
+			var node = this;
+			foreach (var id in descendantNodeIds)
+			{
+				if (node == null || node._childNodes.Count == 0)
+				{
+					return null;
+				}
+
+				node = node._childNodes.SingleOrDefault(n => n.Id == id);
+			}
+
+			return node;
+		}
+
 		public IEnumerable<StatementGrammarNode> GetDescendants(params string[] descendantNodeIds)
 		{
 			return GetPathFilterDescendants(null, descendantNodeIds);

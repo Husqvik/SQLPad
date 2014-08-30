@@ -21,26 +21,34 @@ namespace SqlPad.Oracle
 
 			var validationModel = new OracleValidationModel { SemanticModel = oracleSemanticModel };
 
-			foreach (var tableReference in oracleSemanticModel.QueryBlocks.SelectMany(qb => qb.ObjectReferences).Where(tr => tr.Type != ReferenceType.InlineView))
+			var mainObjectReferences = oracleSemanticModel.MainObjectReference == null
+				? Enumerable.Empty<OracleDataObjectReference>()
+				: Enumerable.Repeat(oracleSemanticModel.MainObjectReference, 1);
+			
+			var objectReferences = oracleSemanticModel.QueryBlocks.SelectMany(qb => qb.ObjectReferences)
+				.Where(tr => tr.Type != ReferenceType.InlineView)
+				.Concat(mainObjectReferences);
+			
+			foreach (var objectReference in objectReferences)
 			{
-				if (tableReference.Type == ReferenceType.CommonTableExpression)
+				if (objectReference.Type == ReferenceType.CommonTableExpression)
 				{
-					validationModel.ObjectNodeValidity[tableReference.ObjectNode] = new NodeValidationData { IsRecognized = true };
+					validationModel.ObjectNodeValidity[objectReference.ObjectNode] = new NodeValidationData { IsRecognized = true };
 					continue;
 				}
 
-				if (tableReference.OwnerNode != null)
+				if (objectReference.OwnerNode != null)
 				{
-					validationModel.ObjectNodeValidity[tableReference.OwnerNode] = new NodeValidationData { IsRecognized = oracleDatabaseModel.ExistsSchema(tableReference.OwnerNode.Token.Value) };
+					validationModel.ObjectNodeValidity[objectReference.OwnerNode] = new NodeValidationData { IsRecognized = oracleDatabaseModel.ExistsSchema(objectReference.OwnerNode.Token.Value) };
 				}
 
-				if (tableReference.DatabaseLinkNode == null)
+				if (objectReference.DatabaseLinkNode == null)
 				{
-					validationModel.ObjectNodeValidity[tableReference.ObjectNode] = new NodeValidationData { IsRecognized = tableReference.SchemaObject != null, Node = tableReference.ObjectNode };
+					validationModel.ObjectNodeValidity[objectReference.ObjectNode] = new NodeValidationData { IsRecognized = objectReference.SchemaObject != null, Node = objectReference.ObjectNode };
 				}
 				else
 				{
-					ValidateDatabaseLinkReference(validationModel.ObjectNodeValidity, tableReference);
+					ValidateDatabaseLinkReference(validationModel.ObjectNodeValidity, objectReference);
 				}
 			}
 

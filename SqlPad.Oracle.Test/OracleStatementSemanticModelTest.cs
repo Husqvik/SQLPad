@@ -381,5 +381,17 @@ FROM
 			semanticModel.QueryBlocks.ShouldNotBe(null);
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
 		}
+
+		[Test(Description = @"")]
+		public void TestSimpleInsertValuesStatementModelBuild()
+		{
+			const string query1 = @"INSERT INTO HUSQVIK.SELECTION(NAME) VALUES ('Dummy selection')";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.MainObjectReference.ShouldNotBe(null);
+			semanticModel.MainObjectReference.SchemaObject.ShouldNotBe(null);
+		}
 	}
 }

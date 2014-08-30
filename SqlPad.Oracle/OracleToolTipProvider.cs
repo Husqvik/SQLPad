@@ -31,15 +31,11 @@ namespace SqlPad.Oracle
 			{
 				var semanticModel = (OracleStatementSemanticModel)validationModel.SemanticModel;
 				var queryBlock = semanticModel.GetQueryBlock(node);
-				if (queryBlock == null)
-				{
-					return null;
-				}
 
 				switch (node.Id)
 				{
 					case Terminals.ObjectIdentifier:
-						var objectReference = GetObjectReference(queryBlock, node);
+						var objectReference = GetObjectReference(queryBlock, node) ?? semanticModel.MainObjectReference;
 						var schemaObjectReference = GetSchemaObjectReference(queryBlock, node);
 						if (objectReference != null)
 						{
@@ -72,6 +68,11 @@ namespace SqlPad.Oracle
 						var columnReference = GetColumnDescription(queryBlock, node);
 						if (columnReference == null)
 						{
+							if (queryBlock == null)
+							{
+								return null;
+							}
+
 							var functionToolTip = GetFunctionToolTip(queryBlock, node);
 							var typeToolTip = GetTypeToolTip(queryBlock, node);
 							if (functionToolTip != null)
@@ -207,12 +208,22 @@ namespace SqlPad.Oracle
 
 		private OracleColumnReference GetColumnDescription(OracleQueryBlock queryBlock, StatementGrammarNode terminal)
 		{
+			if (queryBlock == null)
+			{
+				return null;
+			}
+
 			return queryBlock.AllColumnReferences
 				.FirstOrDefault(c => c.ColumnNode == terminal);
 		}
 
 		private OracleSchemaObject GetSchemaObjectReference(OracleQueryBlock queryBlock, StatementGrammarNode terminal)
 		{
+			if (queryBlock == null)
+			{
+				return null;
+			}
+
 			return queryBlock.AllProgramReferences
 				.Cast<OracleReference>()
 				.Concat(queryBlock.AllSequenceReferences)
@@ -223,6 +234,11 @@ namespace SqlPad.Oracle
 
 		private OracleObjectWithColumnsReference GetObjectReference(OracleQueryBlock queryBlock, StatementGrammarNode terminal)
 		{
+			if (queryBlock == null)
+			{
+				return null;
+			}
+
 			var objectReference = queryBlock.AllColumnReferences
 				.Where(c => c.ObjectNode == terminal && c.ObjectNodeObjectReferences.Count == 1)
 				.Select(c => c.ObjectNodeObjectReferences.First())
@@ -236,6 +252,11 @@ namespace SqlPad.Oracle
 
 		private OracleDatabaseLink GetDatabaseLink(OracleQueryBlock queryBlock, StatementGrammarNode terminal)
 		{
+			if (queryBlock == null)
+			{
+				return null;
+			}
+
 			var databaseLink = queryBlock.DatabaseLinkReferences.SingleOrDefault(l => l.DatabaseLinkNode == terminal);
 			return databaseLink == null ? null : databaseLink.DatabaseLink;
 		}
