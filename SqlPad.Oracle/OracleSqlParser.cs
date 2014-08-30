@@ -399,19 +399,19 @@ namespace SqlPad.Oracle
 			return new StatementCollection(oracleSqlCollection, commentNodes);
 		}
 
-		private ProcessingResult ProceedNonTerminal(OracleStatement statement, string nonTerminal, int level, int tokenStartOffset, bool tokenReverted, IList<OracleToken> tokenBuffer, CancellationToken cancellationToken)
+		private ProcessingResult ProceedNonTerminal(OracleStatement statement, string nonTerminalId, int level, int tokenStartOffset, bool tokenReverted, IList<OracleToken> tokenBuffer, CancellationToken cancellationToken)
 		{
 			var bestCandidateNodes = new List<StatementGrammarNode>();
 			var workingNodes = new List<StatementGrammarNode>();
 			var result = new ProcessingResult
 			             {
-							 NodeId = nonTerminal,
+							 NodeId = nonTerminalId,
 							 Nodes = workingNodes,
 							 BestCandidates = new List<StatementGrammarNode>(),
 			             };
 
 			var workingTerminalMaxCount = 0;
-			foreach (var sequence in StartingNonTerminalSequences[nonTerminal])
+			foreach (var sequence in StartingNonTerminalSequences[nonTerminalId])
 			{
 				result.Status = ProcessingStatus.Success;
 				workingNodes.Clear();
@@ -430,6 +430,11 @@ namespace SqlPad.Oracle
 					var tokenOffset = tokenStartOffset + workingTerminalCount;
 
 					if (tokenOffset >= tokenBuffer.Count && !item.IsRequired)
+					{
+						continue;
+					}
+
+					if (item.Id == nonTerminalId && !item.IsRequired && workingTerminalCount == 0)
 					{
 						continue;
 					}
@@ -579,7 +584,14 @@ namespace SqlPad.Oracle
 			optionalNodeCandidate = optionalNodeCandidate != null && optionalNodeCandidate.IsRequired ? optionalNodeCandidate.ParentNode : optionalNodeCandidate;
 
 			if (optionalNodeCandidate == null || optionalNodeCandidate.IsRequired)
+			{
 				return false;
+			}
+
+			if (optionalNodeCandidate.ParentNode != null && optionalNodeCandidate.ParentNode.ChildNodes.All(n => !n.IsRequired))
+			{
+				return false;
+			}
 
 			var optionalTerminalCount = optionalNodeCandidate.TerminalCount;
 			var newResult = getAlternativeProcessingResultFunction(optionalTerminalCount);

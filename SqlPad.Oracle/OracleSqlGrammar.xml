@@ -4110,6 +4110,7 @@
           <NonTerminal Id="SchemaPrefix" IsOptional="true" />
           <Terminal Id="ObjectIdentifier" />
           <NonTerminal Id="CreateTableTypeClause" />
+          <NonTerminal Id="AsSubquery" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -4140,10 +4141,10 @@
     <Rule StartingNonTerminal="RelationalTable">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="ParenthesisEnclosedRelationalProperties" />
+          <NonTerminal Id="ParenthesisEnclosedRelationalProperties" IsOptional="true" />
           <NonTerminal Id="TemporaryTableOnCommitClause" IsOptional="true" />
           <NonTerminal Id="PhysicalProperties" IsOptional="true" />
-          <NonTerminal Id="TableProperties" IsOptional="true" />
+          <!--<NonTerminal Id="TableProperties" IsOptional="true" />--><!-- To move to physical properties -->
         </Sequence>
       </Sequences>
     </Rule>
@@ -4163,7 +4164,7 @@
           <NonTerminal Id="RowMovementClause" IsOptional="true" />
           <NonTerminal Id="FlashbackArchiveClause" IsOptional="true" />
           <NonTerminal Id="RowArchival" IsOptional="true" />
-          <NonTerminal Id="AsSubquery" IsOptional="true" />
+          <!--<NonTerminal Id="AsSubquery" IsOptional="true" />-->
         </Sequence>
       </Sequences>
     </Rule>
@@ -4744,16 +4745,16 @@
     <Rule StartingNonTerminal="ImplicitHeapPhysicalOrganization">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="SegmentAttributesClause" />
+          <NonTerminal Id="HeapTableSegmentAttributesClause" IsOptional="true" />
           <!--<NonTerminal Id="HeapPhysicalOrganizationClause" IsOptional="true" />-->
         </Sequence>
       </Sequences>
     </Rule>
     
-    <Rule StartingNonTerminal="HeapPhysicalOrganizationClause">
+    <Rule StartingNonTerminal="HeapPhysicalOrganizationClause"><!-- NOT USED -->
       <Sequences>
         <Sequence>
-          <NonTerminal Id="TableCompression" IsOptional="true" />
+          <NonTerminal Id="TableCompression" />
           <!--<NonTerminal Id="InMemoryTableClause" IsOptional="true" />
           <NonTerminal Id="ILMClause" IsOptional="true" />--><!-- Integrated Lifecycle Management -->
         </Sequence>
@@ -4770,6 +4771,29 @@
         </Sequence>
         <Sequence>
           <Terminal Id="FileSystemLikeLogging" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="HeapTableSegmentAttributesClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="SegmentAttributeOrTableCompressionOrTableProperties" />
+          <NonTerminal Id="HeapTableSegmentAttributesClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="SegmentAttributeOrTableCompressionOrTableProperties">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="SegmentAttribute" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="TableCompression" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="TableProperties" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -4979,6 +5003,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Compress" />
+          <NonTerminal Id="BackwardCompatibilityCompressionType" IsOptional="true" />
         </Sequence>
         <Sequence>
           <Terminal Id="NoCompress" />
@@ -4993,8 +5018,34 @@
           <Terminal Id="Column" />
           <Terminal Id="Store" />
           <Terminal Id="Compress" />
-          <Terminal Id="ColumnStoreCompressionType" IsOptional="true" />
-          <Terminal Id="RowLevelLocking" IsOptional="true" />
+          <NonTerminal Id="ColumnStoreCompressionType" IsOptional="true" />
+          <NonTerminal Id="RowLevelLocking" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="BackwardCompatibilityCompressionType">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Basic" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="For" />
+          <Terminal Id="OltpOrQueryOrArchive" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="OltpOrQueryOrArchive">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Oltp" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Query" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Archive" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -5520,6 +5571,10 @@
     <Terminal Id="Initially" Value="INITIALLY" />
     <Terminal Id="Rely" Value="RELY" />
     <Terminal Id="NoRely" Value="NORELY" />
+    <Terminal Id="Oltp" Value="OLTP" />
+    <Terminal Id="Low" Value="LOW" />
+    <Terminal Id="High" Value="HIGH" />
+    <Terminal Id="Archival" Value="ARCHIVAL" />
     
     <!-- Other -->
     <Terminal Id="Float" Value="FLOAT" IsKeyword="true" />

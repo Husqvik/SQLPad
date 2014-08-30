@@ -2651,7 +2651,10 @@ TABLESPACE TBS_HQ_PDB";
 (
 	ID
 )
-NOCACHE RESULT_CACHE (MODE FORCE) PARALLEL NOROWDEPENDENCIES DISABLE ROW MOVEMENT NO FLASHBACK ARCHIVE AS SELECT * FROM DUAL";
+NOCACHE RESULT_CACHE (MODE FORCE) PARALLEL NOROWDEPENDENCIES DISABLE ROW MOVEMENT NO FLASHBACK ARCHIVE
+NOLOGGING
+AS
+SELECT * FROM DUAL";
 
 				var result = Parser.Parse(statementText);
 
@@ -2664,6 +2667,30 @@ NOCACHE RESULT_CACHE (MODE FORCE) PARALLEL NOROWDEPENDENCIES DISABLE ROW MOVEMEN
 			public void TestConstraintStateClause()
 			{
 				const string statementText = @"CREATE TABLE TEST_TABLE (ID NUMBER CHECK (VAL2 IN ('A', 'B', 'C')) DEFERRABLE INITIALLY DEFERRED NORELY ENABLE)";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			}
+
+			[Test(Description = @"")]
+			public void TestSimpleCreateTableAsSelect()
+			{
+				const string statementText = @"CREATE TABLE XXX COLUMN STORE COMPRESS FOR ARCHIVE HIGH NO ROW LEVEL LOCKING AS SELECT * FROM DUAL";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			}
+
+			[Test(Description = @"")]
+			public void TestCreateGlobalTemporaryTable()
+			{
+				const string statementText = @"CREATE GLOBAL TEMPORARY TABLE XXX (VAL NUMBER) ON COMMIT PRESERVE ROWS";
 
 				var result = Parser.Parse(statementText);
 
