@@ -849,6 +849,14 @@ se";
 			items[2].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
 		}
 
+		[Test(Description = @"")]
+		public void TestColumnCodeCompletionWithStatementWithoutQueryBlock()
+		{
+			const string statement = @"UPDATE T SET ID = 998 WHERE I";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 29).ToList();
+			items.Count.ShouldBe(0);
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)

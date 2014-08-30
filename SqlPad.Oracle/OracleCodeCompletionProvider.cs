@@ -169,7 +169,6 @@ namespace SqlPad.Oracle
 
 			var oracleDatabaseModel = (OracleDatabaseModelBase)databaseModel;
 			var semanticModel = (OracleStatementSemanticModel)sqlDocumentRepository.ValidationModels[statement].SemanticModel;
-			var terminalCandidates = new HashSet<string>(_parser.GetTerminalCandidates(isCursorAtTerminal && !currentNode.Id.IsSingleCharacterTerminal() ? currentNode.PrecedingTerminal : currentNode));
 
 			var cursorAtLastTerminal = cursorPosition <= currentNode.SourcePosition.IndexEnd + 1;
 			var terminalToReplace = cursorAtLastTerminal ? currentNode : null;
@@ -256,7 +255,7 @@ namespace SqlPad.Oracle
 
 			if (completionType.Column)
 			{
-				completionItems = completionItems.Concat(GenerateSelectListItems(currentNode, semanticModel, cursorPosition, oracleDatabaseModel, forcedInvokation));
+				completionItems = completionItems.Concat(GenerateSelectListItems(currentNode, queryBlock, cursorPosition, oracleDatabaseModel, forcedInvokation));
 			}
 
 			if (completionType.DatabaseLink)
@@ -281,19 +280,19 @@ namespace SqlPad.Oracle
 			// TODO: Add option to search all/current/public schemas
 		}
 
-		private IEnumerable<ICodeCompletionItem> GenerateSelectListItems(StatementGrammarNode currentNode, OracleStatementSemanticModel semanticModel, int cursorPosition, OracleDatabaseModelBase databaseModel, bool forcedInvokation)
+		private IEnumerable<ICodeCompletionItem> GenerateSelectListItems(StatementGrammarNode currentNode, OracleQueryBlock currentQueryBlock, int cursorPosition, OracleDatabaseModelBase databaseModel, bool forcedInvokation)
 		{
 			var prefixedColumnReference = currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference);
 			var columnIdentifierFollowing = currentNode.Id != Terminals.Identifier && prefixedColumnReference != null && prefixedColumnReference.GetDescendants(Terminals.Identifier).FirstOrDefault() != null;
-			if (!currentNode.IsWithinSelectClauseOrExpression() || columnIdentifierFollowing)
+
+			if (!currentNode.IsWithinSelectClauseOrExpression() || columnIdentifierFollowing || currentQueryBlock == null)
 			{
 				return EmptyCollection;
 			}
 
-			var queryBlock = semanticModel.GetQueryBlock(currentNode);
 			if (currentNode.Id.IsLiteral())
 			{
-				var functionOverloads = ResolveFunctionOverloads(queryBlock, currentNode, cursorPosition);
+				var functionOverloads = ResolveFunctionOverloads(currentQueryBlock, currentNode, cursorPosition);
 				return CodeCompletionSearchHelper.ResolveSpecificFunctionParameterCodeCompletionItems(currentNode, functionOverloads, databaseModel);
 			}
 			
@@ -309,10 +308,10 @@ namespace SqlPad.Oracle
 
 			var currentName = partialName == null ? null : currentNode.Token.Value;
 
-			var functionReference = queryBlock.AllProgramReferences.SingleOrDefault(f => f.FunctionIdentifierNode == currentNode);
+			var functionReference = currentQueryBlock.AllProgramReferences.SingleOrDefault(f => f.FunctionIdentifierNode == currentNode);
 			var addParameterList = functionReference == null;
 
-			var tableReferences = queryBlock.ObjectReferences;
+			var tableReferences = currentQueryBlock.ObjectReferences;
 			var suggestedFunctions = Enumerable.Empty<ICodeCompletionItem>();
 			if (objectIdentifierNode != null)
 			{
@@ -424,7 +423,7 @@ namespace SqlPad.Oracle
 
 			if (objectIdentifierNode == null)
 			{
-				var queryBlockReferencedObjects = queryBlock.ObjectReferences.Where(r => !String.IsNullOrEmpty(r.FullyQualifiedObjectName.ToString())).ToArray();
+				var queryBlockReferencedObjects = currentQueryBlock.ObjectReferences.Where(r => !String.IsNullOrEmpty(r.FullyQualifiedObjectName.ToString())).ToArray();
 				var referencedObjectCompletionData = queryBlockReferencedObjects
 					.Select(r =>
 						new ObjectReferenceCompletionData

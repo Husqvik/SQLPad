@@ -393,5 +393,29 @@ FROM
 			semanticModel.MainObjectReference.ShouldNotBe(null);
 			semanticModel.MainObjectReference.SchemaObject.ShouldNotBe(null);
 		}
+
+		[Test(Description = @"")]
+		public void TestSimpleUpdateStatementModelBuild()
+		{
+			const string query1 = @"UPDATE SELECTION SET NAME = 'Dummy selection' WHERE ID = 0";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.MainObjectReference.ShouldNotBe(null);
+			semanticModel.MainObjectReference.SchemaObject.ShouldNotBe(null);
+		}
+
+		[Test(Description = @"")]
+		public void TestSimpleDeleteStatementModelBuild()
+		{
+			const string query1 = @"DELETE SELECTION WHERE ID = 0";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.MainObjectReference.ShouldNotBe(null);
+			semanticModel.MainObjectReference.SchemaObject.ShouldNotBe(null);
+		}
 	}
 }

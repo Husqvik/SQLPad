@@ -86,7 +86,8 @@ namespace SqlPad.Oracle
 
 		private void Build()
 		{
-			ResolveMainObjectReference();
+			ResolveMainObjectReferenceInsert();
+			ResolveMainObjectReferenceUpdateOrDelete();
 
 			_queryBlockNodes = Statement.RootNode.GetDescendants(NonTerminals.QueryBlock)
 				.OrderByDescending(q => q.Level)
@@ -261,7 +262,29 @@ namespace SqlPad.Oracle
 			ResolveReferences();
 		}
 
-		private void ResolveMainObjectReference()
+		private void ResolveMainObjectReferenceUpdateOrDelete()
+		{
+			var tableReferenceNode = Statement.RootNode.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.TableReference);
+			if (tableReferenceNode == null)
+			{
+				return;
+			}
+
+			var innerTableReference = tableReferenceNode.GetSingleDescendant(NonTerminals.InnerTableReference);
+			if (innerTableReference == null)
+			{
+				return;
+			}
+
+			var objectIdentifier = innerTableReference.GetDescendantByPath(NonTerminals.QueryTableExpression, Terminals.ObjectIdentifier);
+			if (objectIdentifier != null)
+			{
+				var objectReferenceAlias = innerTableReference.ParentNode.ChildNodes.SingleOrDefault(n => n.Id == Terminals.ObjectAlias);
+				CreateMainDataObjectReference(tableReferenceNode, objectIdentifier, objectReferenceAlias);
+			}
+		}
+
+		private void ResolveMainObjectReferenceInsert()
 		{
 			var mainObjectRefrenceNode = Statement.RootNode.GetSingleDescendant(NonTerminals.DmlTableExpressionClause);
 			if (mainObjectRefrenceNode == null)
@@ -270,18 +293,20 @@ namespace SqlPad.Oracle
 			}
 
 			var objectIdentifier = mainObjectRefrenceNode.GetDescendantByPath(NonTerminals.QueryTableExpression, Terminals.ObjectIdentifier);
-			if (objectIdentifier == null)
+			if (objectIdentifier != null)
 			{
-				return;
+				var objectReferenceAlias = mainObjectRefrenceNode.ChildNodes.SingleOrDefault(n => n.Id == Terminals.ObjectAlias);
+				CreateMainDataObjectReference(mainObjectRefrenceNode, objectIdentifier, objectReferenceAlias);
 			}
+		}
 
+		private void CreateMainDataObjectReference(StatementGrammarNode rootNode, StatementGrammarNode objectIdentifier, StatementGrammarNode aliasNode)
+		{
 			var queryTableExpressionNode = objectIdentifier.ParentNode;
 
 			var schemaPrefixNode = queryTableExpressionNode.ChildNodes[0].Id == Terminals.SchemaIdentifier
 				? queryTableExpressionNode.ChildNodes[0]
 				: null;
-
-			var objectReferenceAlias = mainObjectRefrenceNode.ChildNodes.SingleOrDefault(n => n.Id == Terminals.ObjectAlias);
 
 			OracleSchemaObject schemaObject = null;
 			if (!IsSimpleModel)
@@ -289,15 +314,15 @@ namespace SqlPad.Oracle
 				var owner = schemaPrefixNode == null ? null : schemaPrefixNode.Token.Value;
 				schemaObject = _databaseModel.GetFirstSchemaObject<OracleDataObject>(_databaseModel.GetPotentialSchemaObjectIdentifiers(owner, objectIdentifier.Token.Value));
 			}
-			
+
 			MainObjectReference =
 				new OracleDataObjectReference(ReferenceType.SchemaObject)
 				{
-					RootNode = mainObjectRefrenceNode,
+					RootNode = rootNode,
 					OwnerNode = schemaPrefixNode,
 					ObjectNode = objectIdentifier,
 					DatabaseLinkNode = GetDatabaseLinkFromQueryTableExpression(queryTableExpressionNode),
-					AliasNode = objectReferenceAlias,
+					AliasNode = aliasNode,
 					SchemaObject = schemaObject
 				};
 		}
