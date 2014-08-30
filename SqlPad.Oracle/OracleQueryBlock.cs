@@ -5,26 +5,6 @@ using System.Linq;
 
 namespace SqlPad.Oracle
 {
-	public abstract class OracleReferenceContainer
-	{
-		protected OracleReferenceContainer()
-		{
-			TypeReferences = new List<OracleTypeReference>();
-			ColumnReferences = new List<OracleColumnReference>();
-			FunctionReferences = new List<OracleProgramReference>();
-			SequenceReferences = new List<OracleSequenceReference>();
-		}
-
-		public ICollection<OracleTypeReference> TypeReferences { get; private set; }
-
-		public ICollection<OracleSequenceReference> SequenceReferences { get; private set; }
-
-		public ICollection<OracleColumnReference> ColumnReferences { get; private set; }
-
-		public ICollection<OracleProgramReference> FunctionReferences { get; private set; }
-
-	}
-
 	[DebuggerDisplay("OracleQueryBlock (Alias={Alias}; Type={Type}; RootNode={RootNode}; Columns={Columns.Count})")]
 	public class OracleQueryBlock : OracleReferenceContainer
 	{
@@ -105,7 +85,7 @@ namespace SqlPad.Oracle
 
 		public ICollection<OracleSelectListColumn> Columns { get; private set; }
 		
-		public IEnumerable<OracleProgramReference> AllProgramReferences { get { return Columns.SelectMany(c => c.FunctionReferences).Concat(FunctionReferences); } }
+		public IEnumerable<OracleProgramReference> AllProgramReferences { get { return Columns.SelectMany(c => c.ProgramReferences).Concat(ProgramReferences); } }
 
 		public IEnumerable<OracleColumnReference> AllColumnReferences { get { return Columns.SelectMany(c => c.ColumnReferences).Concat(ColumnReferences); } }
 

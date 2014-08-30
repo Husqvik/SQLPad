@@ -172,6 +172,48 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestTableObjectToolTipInUpdateStatementMainObjectReference()
+		{
+			const string query = "UPDATE SELECTION SET NAME = 'Dummy selection' WHERE SELECTION_ID = 0";
+			_documentRepository.UpdateStatements(query);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 8);
+
+			toolTip.Control.ShouldBeTypeOf<ToolTipTable>();
+			toolTip.Control.DataContext.ShouldBeTypeOf<TableDetailsModel>();
+			var dataModel = (TableDetailsModel)toolTip.Control.DataContext;
+			dataModel.Title.ShouldBe("HUSQVIK.SELECTION (Table)");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestTableObjectToolTipInDeleteStatementMainObjectReference()
+		{
+			const string query = "DELETE SELECTION WHERE SELECTION_ID = 0";
+			_documentRepository.UpdateStatements(query);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 8);
+
+			toolTip.Control.ShouldBeTypeOf<ToolTipTable>();
+			toolTip.Control.DataContext.ShouldBeTypeOf<TableDetailsModel>();
+			var dataModel = (TableDetailsModel)toolTip.Control.DataContext;
+			dataModel.Title.ShouldBe("HUSQVIK.SELECTION (Table)");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestTableObjectToolTipInInsertStatementMainObjectReference()
+		{
+			const string query = "INSERT INTO HUSQVIK.SYNONYM_TO_SELECTION(NAME) VALUES ('Dummy selection')";
+			_documentRepository.UpdateStatements(query);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 23);
+
+			toolTip.Control.ShouldBeTypeOf<ToolTipTable>();
+			toolTip.Control.DataContext.ShouldBeTypeOf<TableDetailsModel>();
+			var dataModel = (TableDetailsModel)toolTip.Control.DataContext;
+			dataModel.Title.ShouldBe("HUSQVIK.SYNONYM_TO_SELECTION (Synonym) => HUSQVIK.SELECTION (Table)");
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestTableObjectToolTipInSelectListWithInvalidColumn()
 		{
 			const string query = "SELECT SELECTION.INVALID FROM SELECTION";

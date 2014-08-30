@@ -21,9 +21,9 @@ namespace SqlPad.Oracle
 
 			var validationModel = new OracleValidationModel { SemanticModel = oracleSemanticModel };
 
-			var mainObjectReferences = oracleSemanticModel.MainObjectReference == null
+			var mainObjectReferences = oracleSemanticModel.MainObjectReferenceContainer.MainObjectReference == null
 				? Enumerable.Empty<OracleDataObjectReference>()
-				: Enumerable.Repeat(oracleSemanticModel.MainObjectReference, 1);
+				: Enumerable.Repeat(oracleSemanticModel.MainObjectReferenceContainer.MainObjectReference, 1);
 			
 			var objectReferences = oracleSemanticModel.QueryBlocks.SelectMany(qb => qb.ObjectReferences)
 				.Where(tr => tr.Type != ReferenceType.InlineView)
@@ -52,52 +52,9 @@ namespace SqlPad.Oracle
 				}
 			}
 
-			foreach (var queryBlock in oracleSemanticModel.QueryBlocks)
+			foreach (var referenceContainer in oracleSemanticModel.AllReferenceContainers)
 			{
-				foreach (var column in queryBlock.Columns.Where(c => c.ExplicitDefinition))
-				{
-					ResolveColumnNodeValidities(validationModel, column, column.ColumnReferences);
-				}
-
-				ResolveColumnNodeValidities(validationModel, null, queryBlock.ColumnReferences);
-
-				foreach (var functionReference in queryBlock.AllProgramReferences)
-				{
-					if (functionReference.DatabaseLinkNode == null)
-					{
-						ValidateLocalFunctionReference(functionReference, validationModel);
-					}
-					else
-					{
-						ValidateDatabaseLinkReference(validationModel.ProgramNodeValidity, functionReference);
-					}
-				}
-
-				foreach (var typeReference in queryBlock.AllTypeReferences)
-				{
-					if (typeReference.DatabaseLinkNode == null)
-					{
-						var semanticError = GetCompilationEror(typeReference);
-						validationModel.ProgramNodeValidity[typeReference.ObjectNode] = new ProgramValidationData(semanticError) { IsRecognized = true, Node = typeReference.ObjectNode };
-					}
-					else
-					{
-						ValidateDatabaseLinkReference(validationModel.ProgramNodeValidity, typeReference);
-					}
-				}
-
-				foreach (var sequenceReference in queryBlock.AllSequenceReferences)
-				{
-					if (sequenceReference.DatabaseLinkNode == null)
-					{
-						var semanticError = sequenceReference.SelectListColumn == null ? OracleSemanticErrorType.ObjectCannotBeUsed : OracleSemanticErrorType.None;
-						validationModel.ObjectNodeValidity[sequenceReference.ObjectNode] = new ProgramValidationData(semanticError) { IsRecognized = true, Node = sequenceReference.ObjectNode };
-					}
-					else
-					{
-						ValidateDatabaseLinkReference(validationModel.ObjectNodeValidity, sequenceReference);
-					}
-				}
+				ResolveContainerValidities(validationModel, referenceContainer);
 			}
 
 			var invalidIdentifiers = oracleSemanticModel.Statement.AllTerminals
@@ -110,6 +67,49 @@ namespace SqlPad.Oracle
 			}
 
 			return validationModel;
+		}
+
+		private void ResolveContainerValidities(OracleValidationModel validationModel, OracleReferenceContainer referenceContainer)
+		{
+			ResolveColumnNodeValidities(validationModel, referenceContainer.ColumnReferences);
+
+			foreach (var functionReference in referenceContainer.ProgramReferences)
+			{
+				if (functionReference.DatabaseLinkNode == null)
+				{
+					ValidateLocalFunctionReference(functionReference, validationModel);
+				}
+				else
+				{
+					ValidateDatabaseLinkReference(validationModel.ProgramNodeValidity, functionReference);
+				}
+			}
+
+			foreach (var typeReference in referenceContainer.TypeReferences)
+			{
+				if (typeReference.DatabaseLinkNode == null)
+				{
+					var semanticError = GetCompilationEror(typeReference);
+					validationModel.ProgramNodeValidity[typeReference.ObjectNode] = new ProgramValidationData(semanticError) { IsRecognized = true, Node = typeReference.ObjectNode };
+				}
+				else
+				{
+					ValidateDatabaseLinkReference(validationModel.ProgramNodeValidity, typeReference);
+				}
+			}
+
+			foreach (var sequenceReference in referenceContainer.SequenceReferences)
+			{
+				if (sequenceReference.DatabaseLinkNode == null)
+				{
+					var semanticError = sequenceReference.SelectListColumn == null ? OracleSemanticErrorType.ObjectCannotBeUsed : OracleSemanticErrorType.None;
+					validationModel.ObjectNodeValidity[sequenceReference.ObjectNode] = new ProgramValidationData(semanticError) { IsRecognized = true, Node = sequenceReference.ObjectNode };
+				}
+				else
+				{
+					ValidateDatabaseLinkReference(validationModel.ObjectNodeValidity, sequenceReference);
+				}
+			}
 		}
 
 		private static void ValidateDatabaseLinkReference(IDictionary<StatementGrammarNode, INodeValidationData> nodeValidityDictionary, OracleReference databaseLinkReference)
@@ -214,9 +214,9 @@ namespace SqlPad.Oracle
 			return new InvalidIdentifierNodeValidationData(errorMessage) { IsRecognized = true, Node = node };
 		}
 
-		private void ResolveColumnNodeValidities(OracleValidationModel validationModel, OracleSelectListColumn column, IEnumerable<OracleColumnReference> columnReferences)
+		private void ResolveColumnNodeValidities(OracleValidationModel validationModel, IEnumerable<OracleColumnReference> columnReferences)
 		{
-			foreach (var columnReference in columnReferences)
+			foreach (var columnReference in columnReferences.Where(columnReference => columnReference.SelectListColumn == null || columnReference.SelectListColumn.ExplicitDefinition))
 			{
 				if (columnReference.DatabaseLinkNode == null)
 				{
@@ -242,7 +242,7 @@ namespace SqlPad.Oracle
 					validationModel.ColumnNodeValidity[columnReference.ColumnNode] =
 						new ColumnNodeValidationData(columnReference)
 						{
-							IsRecognized = column != null && column.IsAsterisk || columnReference.ColumnNodeObjectReferences.Count > 0,
+							IsRecognized = columnReference.SelectListColumn != null && columnReference.SelectListColumn.IsAsterisk || columnReference.ColumnNodeObjectReferences.Count > 0,
 							Node = columnReference.ColumnNode
 						};
 				}

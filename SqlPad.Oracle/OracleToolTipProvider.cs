@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -31,11 +32,12 @@ namespace SqlPad.Oracle
 			{
 				var semanticModel = (OracleStatementSemanticModel)validationModel.SemanticModel;
 				var queryBlock = semanticModel.GetQueryBlock(node);
+				var columnReferences = queryBlock == null ? semanticModel.MainObjectReferenceContainer.ColumnReferences : queryBlock.AllColumnReferences;
 
 				switch (node.Id)
 				{
 					case Terminals.ObjectIdentifier:
-						var objectReference = GetObjectReference(queryBlock, node) ?? semanticModel.MainObjectReference;
+						var objectReference = GetObjectReference(queryBlock, semanticModel, node);
 						var schemaObjectReference = GetSchemaObjectReference(queryBlock, node);
 						if (objectReference != null)
 						{
@@ -65,7 +67,7 @@ namespace SqlPad.Oracle
 					case Terminals.Lag:
 					case Terminals.RowIdPseudoColumn:
 					case Terminals.Identifier:
-						var columnReference = GetColumnDescription(queryBlock, node);
+						var columnReference = GetColumnDescription(columnReferences, node);
 						if (columnReference == null)
 						{
 							if (queryBlock == null)
@@ -206,15 +208,9 @@ namespace SqlPad.Oracle
 			return functionReference == null || functionReference.DatabaseLinkNode != null || functionReference.Metadata == null ? null : functionReference.Metadata.Identifier.FullyQualifiedIdentifier;
 		}
 
-		private OracleColumnReference GetColumnDescription(OracleQueryBlock queryBlock, StatementGrammarNode terminal)
+		private OracleColumnReference GetColumnDescription(IEnumerable<OracleColumnReference> columnReferences, StatementGrammarNode terminal)
 		{
-			if (queryBlock == null)
-			{
-				return null;
-			}
-
-			return queryBlock.AllColumnReferences
-				.FirstOrDefault(c => c.ColumnNode == terminal);
+			return columnReferences.FirstOrDefault(c => c.ColumnNode == terminal);
 		}
 
 		private OracleSchemaObject GetSchemaObjectReference(OracleQueryBlock queryBlock, StatementGrammarNode terminal)
@@ -232,11 +228,13 @@ namespace SqlPad.Oracle
 				.FirstOrDefault();
 		}
 
-		private OracleObjectWithColumnsReference GetObjectReference(OracleQueryBlock queryBlock, StatementGrammarNode terminal)
+		private OracleObjectWithColumnsReference GetObjectReference(OracleQueryBlock queryBlock, OracleStatementSemanticModel semanticModel, StatementGrammarNode terminal)
 		{
 			if (queryBlock == null)
 			{
-				return null;
+				return semanticModel.MainObjectReferenceContainer.MainObjectReference != null && semanticModel.MainObjectReferenceContainer.MainObjectReference.ObjectNode == terminal
+					? semanticModel.MainObjectReferenceContainer.MainObjectReference
+					: null;
 			}
 
 			var objectReference = queryBlock.AllColumnReferences

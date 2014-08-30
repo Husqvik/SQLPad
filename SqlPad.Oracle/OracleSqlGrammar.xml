@@ -5523,7 +5523,7 @@
     <Terminal Id="Creation" Value="CREATION" />
     <Terminal Id="TableSpace" Value="TABLESPACE" />
     <Terminal Id="PercentFree" Value="PCTFREE" />
-    <Terminal Id="PercentUsed" Value="PCTUSED" />s
+    <Terminal Id="PercentUsed" Value="PCTUSED" />
     <Terminal Id="InitialTransactions" Value="INITRANS" />
     <Terminal Id="MaximumTransactions" Value="MAXTRANS" />
     <Terminal Id="MinimumExtents" Value="MINEXTENTS" />
