@@ -33,8 +33,8 @@ namespace SqlPad.Oracle
 			.SelectMany(s => s.Elements())
 			.SelectMany(s => s.Elements(xmlNamespace + "NonTerminal"))
 			.Select(e => e.Attribute("Id").Value)
-			.Distinct()
 			.Concat(startNonterminalIds)
+			.Distinct()
 			.OrderBy(id => id);
 		foreach(var nonTerminalId in nonTerminalIds)
 		{

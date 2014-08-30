@@ -13,6 +13,7 @@
     <StartSymbol Id="InsertStatement" />
     <StartSymbol Id="DropStatement" />
     <StartSymbol Id="CreateStatement" />
+    <StartSymbol Id="ExplainPlanStatement" />
     <!--<StartSymbol Id="AlterStatement" />
     <StartSymbol Id="RenameStatement" />-->
   </StartSymbols>
@@ -23,6 +24,66 @@
   </Terminators>
     
   <Rules>
+    <!-- EXPLAIN PLAN statement -->
+    <Rule StartingNonTerminal="ExplainPlanStatement">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Explain" />
+          <Terminal Id="Plan" />
+          <NonTerminal Id="SetStatementId" IsOptional="true" />
+          <NonTerminal Id="IntoPlanTable" IsOptional="true" />
+          <Terminal Id="For" />
+          <NonTerminal Id="Statement" />
+          <Terminal Id="Semicolon" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SetStatementId">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Set" />
+          <Terminal Id="StatementId" />
+          <Terminal Id="MathEquals" />
+          <Terminal Id="StringLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="IntoPlanTable">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Into" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="DatabaseLink" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="Statement">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="SelectStatement" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="DeleteStatement" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="UpdateStatement" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="MergeStatement" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="InsertStatement" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="CreateStatement" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
     <!-- DROP statement -->
     <Rule StartingNonTerminal="DropStatement">
       <Sequences>
@@ -5505,6 +5566,11 @@
     <Terminal Id="Procedure" Value="PROCEDURE" />
     <Terminal Id="Function" Value="FUNCTION" />
     <Terminal Id="Context" Value="CONTEXT" />
+
+    <!-- Explain plan -->
+    <Terminal Id="Explain" Value="EXPLAIN" />
+    <Terminal Id="Plan" Value="PLAN" />
+    <Terminal Id="StatementId" Value="STATEMENT_ID" />
 
     <!-- Create -->
     <Terminal Id="Replace" Value="REPLACE" />

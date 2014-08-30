@@ -2055,7 +2055,7 @@ FROM DUAL";
 			{
 				var terminalCandidates = Parser.GetTerminalCandidates(null).OrderBy(t => t).ToArray();
 
-				var expectedTerminals = new[] { Terminals.Commit, Terminals.Create, Terminals.Delete, Terminals.Drop, Terminals.Insert, Terminals.LeftParenthesis, Terminals.Merge, Terminals.Rollback, Terminals.Savepoint, Terminals.Select, Terminals.Set, Terminals.Update, Terminals.With };
+				var expectedTerminals = new[] { Terminals.Commit, Terminals.Create, Terminals.Delete, Terminals.Drop, Terminals.Explain, Terminals.Insert, Terminals.LeftParenthesis, Terminals.Merge, Terminals.Rollback, Terminals.Savepoint, Terminals.Select, Terminals.Set, Terminals.Update, Terminals.With };
 				terminalCandidates.ShouldBe(expectedTerminals);
 			}
 
@@ -2729,6 +2729,38 @@ SELECT * FROM DUAL";
 				terminals[10].Id.ShouldBe(Terminals.ObjectIdentifier);
 				terminals[11].Id.ShouldBe(Terminals.AtCharacter);
 				terminals[12].Id.ShouldBe(Terminals.DatabaseLinkIdentifier);
+			}
+		}
+
+		public class ExplainPlan
+		{
+			[Test(Description = @"")]
+			public void TestExplainPlan()
+			{
+				const string statementText = @"EXPLAIN PLAN SET STATEMENT_ID = 'dummyStatementId' INTO PLAN_TABLE FOR SELECT * FROM DUAL";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+				var terminals = statement.AllTerminals.ToArray();
+				terminals.Length.ShouldBe(13);
+
+				terminals[0].Id.ShouldBe(Terminals.Explain);
+				terminals[1].Id.ShouldBe(Terminals.Plan);
+				terminals[2].Id.ShouldBe(Terminals.Set);
+				terminals[3].Id.ShouldBe(Terminals.StatementId);
+				terminals[4].Id.ShouldBe(Terminals.MathEquals);
+				terminals[5].Id.ShouldBe(Terminals.StringLiteral);
+				terminals[6].Id.ShouldBe(Terminals.Into);
+				terminals[7].Id.ShouldBe(Terminals.ObjectIdentifier);
+				terminals[8].Id.ShouldBe(Terminals.For);
+				terminals[9].Id.ShouldBe(Terminals.Select);
+				terminals[10].Id.ShouldBe(Terminals.Asterisk);
+				terminals[11].Id.ShouldBe(Terminals.From);
+				terminals[12].Id.ShouldBe(Terminals.ObjectIdentifier);
 			}
 		}
 
