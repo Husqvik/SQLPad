@@ -392,6 +392,7 @@ FROM
 
 			semanticModel.MainObjectReferenceContainer.MainObjectReference.ShouldNotBe(null);
 			semanticModel.MainObjectReferenceContainer.MainObjectReference.SchemaObject.ShouldNotBe(null);
+			semanticModel.MainObjectReferenceContainer.ColumnReferences.Count.ShouldBe(1);
 		}
 
 		[Test(Description = @"")]
@@ -404,7 +405,7 @@ FROM
 
 			semanticModel.MainObjectReferenceContainer.MainObjectReference.ShouldNotBe(null);
 			semanticModel.MainObjectReferenceContainer.MainObjectReference.SchemaObject.ShouldNotBe(null);
-			semanticModel.MainObjectReferenceContainer.ColumnReferences.Count.ShouldBe(1);
+			semanticModel.MainObjectReferenceContainer.ColumnReferences.Count.ShouldBe(2);
 		}
 
 		[Test(Description = @"")]

@@ -310,6 +310,20 @@ namespace SqlPad.Oracle
 			{
 				var objectReferenceAlias = innerTableReference.ParentNode.ChildNodes.SingleOrDefault(n => n.Id == Terminals.ObjectAlias);
 				CreateMainDataObjectReference(tableReferenceNode, objectIdentifier, objectReferenceAlias);
+
+				if (Statement.RootNode.FirstTerminalNode.Id != Terminals.Update)
+				{
+					return;
+				}
+
+				var updateListNode = Statement.RootNode.GetDescendantByPath(NonTerminals.UpdateSetClause, NonTerminals.UpdateSetColumnsOrObjectValue);
+				if (updateListNode == null)
+				{
+					return;
+				}
+
+				var identifiers = updateListNode.GetDescendantsWithinSameQuery(Terminals.Identifier);
+				ResolveColumnAndFunctionReferenceFromIdentifiers(null, MainObjectReferenceContainer.ColumnReferences, identifiers, QueryBlockPlacement.None, null);
 			}
 		}
 
@@ -326,6 +340,13 @@ namespace SqlPad.Oracle
 			{
 				var objectReferenceAlias = mainObjectRefrenceNode.ChildNodes.SingleOrDefault(n => n.Id == Terminals.ObjectAlias);
 				CreateMainDataObjectReference(mainObjectRefrenceNode, objectIdentifier, objectReferenceAlias);
+
+				var columnIdentifierListNode = mainObjectRefrenceNode.ParentNode.ChildNodes[mainObjectRefrenceNode.ParentNode.ChildNodes.Count - 1];
+				if (columnIdentifierListNode.Id == NonTerminals.ParenthesisEnclosedColumnIdentifierList)
+				{
+					var columnIdentiferNodes = columnIdentifierListNode.GetDescendants(Terminals.Identifier);
+					ResolveColumnAndFunctionReferenceFromIdentifiers(null, MainObjectReferenceContainer.ColumnReferences, columnIdentiferNodes, QueryBlockPlacement.None, null);
+				}
 			}
 		}
 
@@ -904,8 +925,10 @@ namespace SqlPad.Oracle
 		{
 			foreach (var identifier in identifiers)
 			{
-				var prefixNonTerminal = identifier.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference)
-					.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.Prefix);
+				var parentNode = identifier.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference);
+				var prefixNonTerminal = parentNode == null
+					? null
+					: parentNode.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.Prefix);
 
 				var functionCallNodes = GetFunctionCallNodes(identifier);
 				if (functionCallNodes.Length == 0)

@@ -229,6 +229,7 @@ namespace SqlPad.Oracle
 			public const string MergeSetColumnEqualsExpressionOrOrDefaultValueList = "MergeSetColumnEqualsExpressionOrOrDefaultValueList";
 			public const string MergeSource = "MergeSource";
 			public const string MergeStatement = "MergeStatement";
+			public const string MergeTarget = "MergeTarget";
 			public const string MergeUpdateClause = "MergeUpdateClause";
 			public const string MergeUpdateInsertClause = "MergeUpdateInsertClause";
 			public const string MinimumValueOrNoMinimumValue = "MinimumValueOrNoMinimumValue";

@@ -43,6 +43,7 @@ namespace SqlPad.Oracle
 
 	public enum QueryBlockPlacement
 	{
+		None,
 		SelectList,
 		From,
 		Where,

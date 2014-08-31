@@ -854,9 +854,7 @@
         <Sequence>
           <Terminal Id="Merge" />
           <Terminal Id="Into" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
-          <Terminal Id="ObjectAlias" IsOptional="true" />
+          <NonTerminal Id="MergeTarget" />
           <NonTerminal Id="MergeSource" />
           <Terminal Id="On" />
           <Terminal Id="LeftParenthesis" />
@@ -865,6 +863,16 @@
           <NonTerminal Id="MergeUpdateInsertClause" />
           <NonTerminal Id="ErrorLoggingClause" IsOptional="true" />
           <Terminal Id="Semicolon" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="MergeTarget">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+          <Terminal Id="ObjectAlias" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
