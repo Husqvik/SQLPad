@@ -375,6 +375,9 @@ namespace SqlPad.Oracle
 				_isExecuting = true;
 				_userConnection.Open();
 
+				_userConnection.ModuleName = "SQLPad database model";
+				_userConnection.ActionName = "User query";
+
 				_userCommand.ExecuteNonQuery();
 
 				_userCommand.CommandText = "SELECT SYS_CONTEXT('USERENV', 'SID') SID FROM SYS.DUAL";
@@ -559,11 +562,6 @@ namespace SqlPad.Oracle
 
 		internal IEnumerable<T> ExecuteReader<T>(string commandText, Func<OracleDataReader, T> formatFunction)
 		{
-			return ExecuteReader(commandText, null, formatFunction);
-		}
-
-		private IEnumerable<T> ExecuteReader<T>(string commandText, Action<OracleCommand> configureCommandFunction, Func<OracleDataReader, T> formatFunction)
-		{
 			using (var connection = new OracleConnection(_oracleConnectionString.ConnectionString))
 			{
 				using (var command = connection.CreateCommand())
@@ -571,12 +569,10 @@ namespace SqlPad.Oracle
 					command.CommandText = commandText;
 					command.BindByName = true;
 
-					if (configureCommandFunction != null)
-					{
-						configureCommandFunction(command);
-					}
-
 					connection.Open();
+
+					connection.ModuleName = "SQLPad database model";
+					connection.ActionName = "Fetch data dictionary metadata";
 
 					using (var task = command.ExecuteReaderAsynchronous(CommandBehavior.CloseConnection, _backgroundTaskCancellationTokenSource.Token))
 					{

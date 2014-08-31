@@ -4159,6 +4159,9 @@
         <Sequence>
           <NonTerminal Id="CreateSynonym" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="CreateSequence" />
+        </Sequence>
         <!-- TODO: Create other objects -->
       </Sequences>
     </Rule>
@@ -4205,7 +4208,7 @@
           <NonTerminal Id="ParenthesisEnclosedRelationalProperties" IsOptional="true" />
           <NonTerminal Id="TemporaryTableOnCommitClause" IsOptional="true" />
           <NonTerminal Id="PhysicalProperties" IsOptional="true" />
-          <!--<NonTerminal Id="TableProperties" IsOptional="true" />--><!-- To move to physical properties -->
+          <!--<NonTerminal Id="TableProperties" IsOptional="true" />--><!-- moved to physical properties -->
         </Sequence>
       </Sequences>
     </Rule>
@@ -4386,13 +4389,13 @@
           <NonTerminal Id="OutOfLineConstraintDefinition" />
         </Sequence>
         <Sequence>
+          <NonTerminal Id="PeriodDefinition" />
+        </Sequence>
+        <Sequence>
           <NonTerminal Id="ColumnDefinition" />
         </Sequence>
         <!--<Sequence>
           <NonTerminal Id="VirtualColumnDefinition" />
-        </Sequence>
-        <Sequence>
-          <NonTerminal Id="PeriodDefinition" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="SupplementalLoggingProperties" />
@@ -4408,7 +4411,7 @@
           <Terminal Id="Sort" IsOptional="true" />
           <NonTerminal Id="VisibleOrInvisible" IsOptional="true" />
           <NonTerminal Id="ColumnDefinitionDefaultClauseOrIdentityClause" IsOptional="true" />
-          <!--<NonTerminal Id="ColumnDefinitionEncryptionClause" IsOptional="true" />-->
+          <NonTerminal Id="ColumnDefinitionEncryptionClause" IsOptional="true" />
           <NonTerminal Id="ColumnDefinitionInlineConstraintDefinition" IsOptional="true" />
         </Sequence>
       </Sequences>
@@ -4430,9 +4433,9 @@
         <Sequence>
           <NonTerminal Id="ColumnDefinitionDefaultClause" />
         </Sequence>
-        <!--<Sequence>
-          <Terminal Id="ColumnDefinitionIdentityClause" />
-        </Sequence>-->
+        <Sequence>
+          <NonTerminal Id="ColumnDefinitionIdentityClause" />
+        </Sequence>
       </Sequences>
     </Rule>
 
@@ -4451,6 +4454,196 @@
         <Sequence>
           <Terminal Id="On" />
           <Terminal Id="Null" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ColumnDefinitionIdentityClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Generated" />
+          <NonTerminal Id="IdentityGeneratedAlwaysOrByDefault" IsOptional="true" />
+          <Terminal Id="As" />
+          <Terminal Id="Identity" />
+          <NonTerminal Id="ParenthesisEnclosedIdentityOptions" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="IdentityGeneratedAlwaysOrByDefault">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Always" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="By" />
+          <Terminal Id="Default" />
+          <NonTerminal Id="OnNull" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ParenthesisEnclosedIdentityOptions">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="IdentityOptions" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="IdentityOptions">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="IdentityOption" />
+          <NonTerminal Id="IdentityOptions" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="IdentityOption">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="CommonSequenceOption" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Start" />
+          <Terminal Id="With" />
+          <Terminal Id="Limit" />
+          <Terminal Id="Value" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="CommonSequenceOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Start" />
+          <Terminal Id="With" />
+          <Terminal Id="MathMinus" IsOptional="true" />
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Increment" />
+          <Terminal Id="By" />
+          <Terminal Id="MathMinus" IsOptional="true" />
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="MaximumValueOrNoMaximumValue" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="MinimumValueOrNoMinimumValue" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="CycleOrNoCycle" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="SequenceCacheOrNoCache" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="OrderOrNoOrder" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="MaximumValueOrNoMaximumValue">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="MaximumValue" />
+          <Terminal Id="MathMinus" IsOptional="true" />
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="NoMaximumValue" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="MinimumValueOrNoMinimumValue">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="MinimumValue" />
+          <Terminal Id="MathMinus" IsOptional="true" />
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="NoMinimumValue" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="CycleOrNoCycle">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Cycle" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="NoCycle" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SequenceCacheOrNoCache">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Cache" />
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="NoCache" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="OrderOrNoOrder">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Order" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="NoOrder" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ColumnDefinitionEncryptionClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Encrypt" />
+          <NonTerminal Id="UsingEncryptionAlgorithm" IsOptional="true" />
+          <NonTerminal Id="IdentifiedByClause" IsOptional="true" />
+          <Terminal Id="StringLiteral" IsOptional="true" />
+          <NonTerminal Id="EncryptionSalt" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="UsingEncryptionAlgorithm">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Using" />
+          <Terminal Id="StringLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="IdentifiedByClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Identified" />
+          <Terminal Id="By" />
+          <Terminal Id="Identifier" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="EncryptionSalt">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="No" IsOptional="true" />
+          <Terminal Id="Salt" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -4498,6 +4691,29 @@
         </Sequence>
         <Sequence>
           <NonTerminal Id="ConstraintReferencesClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="PeriodDefinition">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Period" />
+          <Terminal Id="For" />
+          <Terminal Id="Identifier" />
+          <NonTerminal Id="ParenthesisEnclosedPeriodStartEndColumns" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ParenthesisEnclosedPeriodStartEndColumns">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <Terminal Id="Identifier" />
+          <Terminal Id="Comma" />
+          <Terminal Id="Identifier" />
+          <Terminal Id="RightParenthesis" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -5164,8 +5380,65 @@
         </Sequence>
       </Sequences>
     </Rule>
+    
+    <!-- CREATE SEQUENCE -->
+    <Rule StartingNonTerminal="CreateSequence">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Sequence" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SequenceOptions" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="SequenceOptions">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="SequenceOption" />
+          <NonTerminal Id="SequenceOptions" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
 
-    <!--CREATE SYNONYM -->
+    <Rule StartingNonTerminal="SequenceOption">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="CommonSequenceOption" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="KeepOrNoKeep" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="SessionOrGlobal" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="KeepOrNoKeep">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Keep" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="NoKeep" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SessionOrGlobal">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Session" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Global" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <!-- CREATE SYNONYM -->
     <Rule StartingNonTerminal="CreateSynonym">
       <Sequences>
         <Sequence>
@@ -5572,6 +5845,14 @@
     <Terminal Id="Plan" Value="PLAN" />
     <Terminal Id="StatementId" Value="STATEMENT_ID" />
 
+    <!-- Sequence -->
+    <Terminal Id="Increment" Value="INCREMENT" />
+    <Terminal Id="NoMaximumValue" Value="NOMAXVALUE" />
+    <Terminal Id="NoMinimumValue" Value="NOMINVALUE" />
+    <Terminal Id="NoOrder" Value="NOORDER" />
+    <Terminal Id="NoKeep" Value="NOKEEP" />
+    <Terminal Id="Session" Value="SESSION" />
+
     <!-- Create -->
     <Terminal Id="Replace" Value="REPLACE" />
     <Terminal Id="Global" Value="GLOBAL" />
@@ -5641,6 +5922,10 @@
     <Terminal Id="Low" Value="LOW" />
     <Terminal Id="High" Value="HIGH" />
     <Terminal Id="Archival" Value="ARCHIVAL" />
+    <Terminal Id="Salt" Value="SALT" />
+    <Terminal Id="Generated" Value="GENERATED" />
+    <Terminal Id="Always" Value="ALWAYS" />
+    <Terminal Id="Identity" Value="IDENTITY" />
     
     <!-- Other -->
     <Terminal Id="Float" Value="FLOAT" IsKeyword="true" />
