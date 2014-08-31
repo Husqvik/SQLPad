@@ -1810,6 +1810,16 @@ FROM DUAL";
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
 		}
 
+		[Test(Description = @"")]
+		public void TestInvalidCastFunctionFollowedByChainingClause()
+		{
+			const string statement1 = @"SELECT CAST(Respondent_ID AS NUMBER(16), Respondent_ID FROM RESPONDENT";
+
+			var statements = Parser.Parse(statement1);
+			var statement = statements.Single().Validate();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+		}
+
 		public class IsRuleValid
 		{
 			[Test(Description = @"")]
@@ -2730,6 +2740,56 @@ SELECT * FROM DUAL";
      EMPID NUMBER,
      SALARY NUMBER(12, 2) ENCRYPT USING 'AES256' IDENTIFIED BY oracle 'SHA-1' SALT
 )";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			}
+
+			[Test(Description = @"")]
+			public void TestExplicitHeapOrganizationClause()
+			{
+				const string statementText =
+@"CREATE TABLE TEST_TABLE
+(
+	VAL NUMBER
+)
+SEGMENT CREATION IMMEDIATE
+ORGANIZATION HEAP
+LOGGING
+NOCOMPRESS
+NOROWDEPENDENCIES
+TABLESPACE TBS_HQ_PDB";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			}
+
+			[Test(Description = @"")]
+			public void TestExplicitIndexpOrganizationClause()
+			{
+				const string statementText =
+@"CREATE TABLE TEST_TABLE
+(
+	ID1 NUMBER,
+	ID2 NUMBER,
+	DATA VARCHAR2(255),
+	CONSTRAINT PK_TEST_TABLE PRIMARY KEY (ID1, ID2)
+)
+ORGANIZATION INDEX
+TABLESPACE TBS_HQ_PDB
+INCLUDING DATA
+COMPRESS 1
+NOMAPPING
+PCTTHRESHOLD 2 
+STORAGE (INITIAL 4K)
+OVERFLOW STORAGE (INITIAL 4K)
+TABLESPACE TBS_MSSM";
 
 				var result = Parser.Parse(statementText);
 

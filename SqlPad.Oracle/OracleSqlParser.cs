@@ -515,7 +515,7 @@ namespace SqlPad.Oracle
 
 						var terminalResult = IsTokenValid(statement, terminalReference, level, tokenOffset, tokenBuffer);
 
-						var inValidGrammarParsed = TryParseInvalidGrammar(tryBestCandidates, () => IsTokenValid(statement, terminalReference, level, bestCandidateOffset, tokenBuffer), ref terminalResult, workingNodes, bestCandidateNodes);
+						TryParseInvalidGrammar(tryBestCandidates, () => IsTokenValid(statement, terminalReference, level, bestCandidateOffset, tokenBuffer), ref terminalResult, workingNodes, bestCandidateNodes);
 
 						if (terminalResult.Status == ProcessingStatus.SequenceNotFound)
 						{
@@ -529,7 +529,6 @@ namespace SqlPad.Oracle
 						}
 
 						var terminalNode = terminalResult.Nodes[0];
-						terminalNode.IsGrammarValid = !inValidGrammarParsed;
 
 						workingNodes.Add(terminalNode);
 						bestCandidateNodes.Add(terminalNode.Clone());
@@ -562,20 +561,23 @@ namespace SqlPad.Oracle
 			return result;
 		}
 
-		private bool TryParseInvalidGrammar(bool preconditionsValid, Func<ProcessingResult> getForceParseProcessingResultFunction, ref ProcessingResult processingResult, List<StatementGrammarNode> workingNodes, IEnumerable<StatementGrammarNode> bestCandidateNodes)
+		private void TryParseInvalidGrammar(bool preconditionsValid, Func<ProcessingResult> getForceParseProcessingResultFunction, ref ProcessingResult processingResult, List<StatementGrammarNode> workingNodes, IEnumerable<StatementGrammarNode> bestCandidateNodes)
 		{
 			if (!preconditionsValid || processingResult.Status == ProcessingStatus.Success)
-				return false;
+				return;
 
 			var bestCandidateResult = getForceParseProcessingResultFunction();
 			if (bestCandidateResult.Status == ProcessingStatus.SequenceNotFound)
-				return false;
-			
+				return;
+
 			workingNodes.Clear();
 			workingNodes.AddRange(bestCandidateNodes.Select(n => n.Clone()));
+			if (workingNodes[workingNodes.Count - 1].AllChildNodes.All(n => n.IsGrammarValid))
+			{
+				workingNodes[workingNodes.Count - 1].IsGrammarValid = false;
+			}
 
 			processingResult = bestCandidateResult;
-			return true;
 		}
 
 		private bool TryRevertOptionalToken(Func<int, ProcessingResult> getAlternativeProcessingResultFunction, ref ProcessingResult currentResult, IList<StatementGrammarNode> workingNodes)

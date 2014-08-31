@@ -4974,11 +4974,11 @@
     <Rule StartingNonTerminal="ImplicitHeapPhysicalOrganizationOrExplicitPhysicalOrganization">
       <Sequences>
         <Sequence>
+          <NonTerminal Id="ExplicitPhysicalOrganization" />
+        </Sequence>
+        <Sequence>
           <NonTerminal Id="ImplicitHeapPhysicalOrganization" />
         </Sequence>
-        <!--<Sequence>
-          <NonTerminal Id="ExplicitPhysicalOrganization" />
-        </Sequence>-->
       </Sequences>
     </Rule>
     
@@ -4995,11 +4995,11 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Heap" />
-          <NonTerminal Id="SegmentAttributesClause" IsOptional="true" />
+          <NonTerminal Id="HeapTableSegmentAttributesClause" IsOptional="true" />
         </Sequence>
         <Sequence>
           <Terminal Id="Index" />
-          <NonTerminal Id="SegmentAttributesClause" IsOptional="true" />
+          <NonTerminal Id="IndexOrganizedTableClause" />
         </Sequence>
         <Sequence>
           <Terminal Id="External" />
@@ -5008,6 +5008,71 @@
           <NonTerminal Id="ExternalTableDataPropeties" />
           <Terminal Id="RightParenthesis" />
           <NonTerminal Id="ErrorLoggingRejectLimit" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="IndexOrganizedTableClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="IndexOrganizedTableProperties" IsOptional="true" />
+          <NonTerminal Id="IndexOrganizedOverflowClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="IndexOrganizedTableProperties">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="IndexOrganizedTableProperty" />
+          <NonTerminal Id="IndexOrganizedTableProperties" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="IndexOrganizedTableProperty">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Mapping" />
+          <Terminal Id="Table" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="NoMapping" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="PercentThreshold" />
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Compress" />
+          <Terminal Id="IntegerLiteral" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="NoCompress" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="IndexOrganizedIncludingColumn" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="SegmentAttributesClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="IndexOrganizedOverflowClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Overflow" />
+          <NonTerminal Id="SegmentAttributesClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="IndexOrganizedIncludingColumn">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Including" />
+          <Terminal Id="Identifier" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -5983,7 +6048,15 @@
     <Terminal Id="Generated" Value="GENERATED" />
     <Terminal Id="Always" Value="ALWAYS" />
     <Terminal Id="Identity" Value="IDENTITY" />
-    
+    <Terminal Id="Organization" Value="ORGANIZATION" />
+    <Terminal Id="Heap" Value="HEAP" />
+    <Terminal Id="External" Value="EXTERNAL" />
+    <Terminal Id="Mapping" Value="MAPPING" />
+    <Terminal Id="NoMapping" Value="NOMAPPING" />
+    <Terminal Id="PercentThreshold" Value="PCTTHRESHOLD" />
+    <Terminal Id="Including" Value="INCLUDING" />
+    <Terminal Id="Overflow" Value="OVERFLOW" />
+
     <!-- Other -->
     <Terminal Id="Float" Value="FLOAT" IsKeyword="true" />
     <Terminal Id="Compress" Value="COMPRESS" IsKeyword="true" />
