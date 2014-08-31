@@ -2055,7 +2055,7 @@ FROM DUAL";
 			{
 				var terminalCandidates = Parser.GetTerminalCandidates(null).OrderBy(t => t).ToArray();
 
-				var expectedTerminals = new[] { Terminals.Commit, Terminals.Create, Terminals.Delete, Terminals.Drop, Terminals.Explain, Terminals.Insert, Terminals.LeftParenthesis, Terminals.Merge, Terminals.Rollback, Terminals.Savepoint, Terminals.Select, Terminals.Set, Terminals.Update, Terminals.With };
+				var expectedTerminals = new[] { Terminals.Commit, Terminals.Create, Terminals.Delete, Terminals.Drop, Terminals.Explain, Terminals.Insert, Terminals.LeftParenthesis, Terminals.Merge, Terminals.Purge, Terminals.Rollback, Terminals.Savepoint, Terminals.Select, Terminals.Set, Terminals.Update, Terminals.With };
 				terminalCandidates.ShouldBe(expectedTerminals);
 			}
 
@@ -2779,6 +2779,30 @@ SELECT * FROM DUAL";
 				terminals[21].Id.ShouldBe(Terminals.By);
 				terminals[22].Id.ShouldBe(Terminals.MathMinus);
 				terminals[23].Id.ShouldBe(Terminals.IntegerLiteral);
+			}
+		}
+
+		public class Purge
+		{
+			[Test(Description = @"")]
+			public void TestPurge()
+			{
+				const string statementText = @"PURGE TABLESPACE TEST_TABLESPACE USER TEST_USER;";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+				var terminals = statement.AllTerminals.ToArray();
+				terminals.Length.ShouldBe(5);
+
+				terminals[0].Id.ShouldBe(Terminals.Purge);
+				terminals[1].Id.ShouldBe(Terminals.TableSpace);
+				terminals[2].Id.ShouldBe(Terminals.Identifier);
+				terminals[3].Id.ShouldBe(Terminals.User);
+				terminals[4].Id.ShouldBe(Terminals.Identifier);
 			}
 		}
 

@@ -14,6 +14,7 @@
     <StartSymbol Id="DropStatement" />
     <StartSymbol Id="CreateStatement" />
     <StartSymbol Id="ExplainPlanStatement" />
+    <StartSymbol Id="PurgeStatement" />
     <!--<StartSymbol Id="AlterStatement" />
     <StartSymbol Id="RenameStatement" />-->
   </StartSymbols>
@@ -24,6 +25,50 @@
   </Terminators>
     
   <Rules>
+    <!-- PURGE statement -->
+    <Rule StartingNonTerminal="PurgeStatement">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Purge" />
+          <NonTerminal Id="PurgeOption" />
+          <Terminal Id="Semicolon" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PurgeOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Table" />
+          <Terminal Id="ObjectIdentifier" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Index" />
+          <Terminal Id="ObjectIdentifier" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="RecycleBin" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="DbaRecycleBin" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="TableSpace" />
+          <Terminal Id="Identifier" />
+          <NonTerminal Id="UserIdentifier" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="UserIdentifier">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="User" />
+          <Terminal Id="Identifier" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
     <!-- EXPLAIN PLAN statement -->
     <Rule StartingNonTerminal="ExplainPlanStatement">
       <Sequences>
@@ -5853,6 +5898,10 @@
     <Terminal Id="NoKeep" Value="NOKEEP" />
     <Terminal Id="Session" Value="SESSION" />
 
+    <!-- Purge -->
+    <Terminal Id="RecycleBin" Value="RECYCLEBIN" />
+    <Terminal Id="DbaRecycleBin" Value="DBA_RECYCLEBIN" />
+
     <!-- Create -->
     <Terminal Id="Replace" Value="REPLACE" />
     <Terminal Id="Global" Value="GLOBAL" />
@@ -5967,6 +6016,7 @@
     <Terminal Id="Zone" Value="ZONE" />
     <Terminal Id="Exclusive" Value="EXCLUSIVE" IsKeyword="true" />
     <Terminal Id="Nocompress" Value="NOCOMPRESS" IsKeyword="true" />
+    <Terminal Id="User" Value="USER" IsKeyword="true" />
  </Terminals>
   
   <DatabaseTypes>
