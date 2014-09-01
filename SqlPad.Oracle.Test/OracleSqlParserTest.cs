@@ -1820,6 +1820,26 @@ FROM DUAL";
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
 		}
 
+		[Test(Description = @"")]
+		public void TestNegativeScaleInDataType()
+		{
+			const string statement1 = @"SELECT CAST(99 AS NUMBER(5,-2)) FROM DUAL";
+
+			var statements = Parser.Parse(statement1);
+			var statement = statements.Single().Validate();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+		}
+
+		[Test(Description = @"")]
+		public void TestTimestampWithLocalTimeZoneDataType()
+		{
+			const string statement1 = @"SELECT CAST(SYSDATE AS TIMESTAMP (9) WITH LOCAL TIME ZONE) FROM DUAL";
+
+			var statements = Parser.Parse(statement1);
+			var statement = statements.Single().Validate();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+		}
+
 		public class IsRuleValid
 		{
 			[Test(Description = @"")]
@@ -2790,6 +2810,32 @@ PCTTHRESHOLD 2
 STORAGE (INITIAL 4K)
 OVERFLOW STORAGE (INITIAL 4K)
 TABLESPACE TBS_MSSM";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			}
+
+			[Test(Description = @"")]
+			public void TestSupplementalLoggingClause()
+			{
+				const string statementText =
+@"CREATE TABLE TEST_TABLE
+(
+	ID NUMBER,
+	DATA1 VARCHAR2(255) UNIQUE,
+	DATA2 VARCHAR2(255),
+	DATA3 VARCHAR2(255),
+	DATA4 VARCHAR2(255),
+	DATA5 VARCHAR2(255),
+	DATA6 VARCHAR2(255),
+	CONSTRAINT PK_TEST_TABLE PRIMARY KEY (ID),
+	SUPPLEMENTAL LOG DATA (PRIMARY KEY, UNIQUE) COLUMNS,
+	SUPPLEMENTAL LOG GROUP TEST_SUPPLEMENTAL_LOG_GROUP1 (DATA2, DATA3, DATA4) ALWAYS,
+	SUPPLEMENTAL LOG GROUP TEST_SUPPLEMENTAL_LOG_GROUP2 (DATA5 NO LOG, DATA6)
+)";
 
 				var result = Parser.Parse(statementText);
 

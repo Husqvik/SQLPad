@@ -88,7 +88,7 @@ namespace SqlPad.Oracle
 			Statement = statement;
 			_databaseModel = databaseModel;
 
-			MainObjectReferenceContainer = new OracleMainObjectReferenceContainer();
+			MainObjectReferenceContainer = new OracleMainObjectReferenceContainer(this);
 
 			if (statement.RootNode == null)
 				return;
@@ -98,8 +98,6 @@ namespace SqlPad.Oracle
 
 		private void Build()
 		{
-			BuildDmlModel();
-
 			_queryBlockNodes = Statement.RootNode.GetDescendants(NonTerminals.QueryBlock)
 				.OrderByDescending(q => q.Level)
 				.ToDictionary(n => n, n => new OracleQueryBlock(this) { RootNode = n, Statement = Statement });
@@ -271,6 +269,8 @@ namespace SqlPad.Oracle
 			ExposeAsteriskColumns();
 
 			ResolveReferences();
+
+			BuildDmlModel();
 		}
 
 		private void BuildDmlModel()
@@ -299,7 +299,7 @@ namespace SqlPad.Oracle
 				return;
 			}
 
-			var innerTableReference = tableReferenceNode.GetSingleDescendant(NonTerminals.InnerTableReference);
+			var innerTableReference = tableReferenceNode.GetDescendantsWithinSameQuery(NonTerminals.InnerTableReference).SingleOrDefault();
 			if (innerTableReference == null)
 			{
 				return;
@@ -310,21 +310,25 @@ namespace SqlPad.Oracle
 			{
 				var objectReferenceAlias = innerTableReference.ParentNode.ChildNodes.SingleOrDefault(n => n.Id == Terminals.ObjectAlias);
 				CreateMainDataObjectReference(tableReferenceNode, objectIdentifier, objectReferenceAlias);
-
-				if (Statement.RootNode.FirstTerminalNode.Id != Terminals.Update)
-				{
-					return;
-				}
-
-				var updateListNode = Statement.RootNode.GetDescendantByPath(NonTerminals.UpdateSetClause, NonTerminals.UpdateSetColumnsOrObjectValue);
-				if (updateListNode == null)
-				{
-					return;
-				}
-
-				var identifiers = updateListNode.GetDescendantsWithinSameQuery(Terminals.Identifier);
-				ResolveColumnAndFunctionReferenceFromIdentifiers(null, MainObjectReferenceContainer.ColumnReferences, identifiers, QueryBlockPlacement.None, null);
 			}
+			else
+			{
+				MainObjectReferenceContainer.MainObjectReference = MainQueryBlock.SelfObjectReference;
+			}
+
+			if (Statement.RootNode.FirstTerminalNode.Id != Terminals.Update)
+			{
+				return;
+			}
+
+			var updateListNode = Statement.RootNode.GetDescendantByPath(NonTerminals.UpdateSetClause, NonTerminals.UpdateSetColumnsOrObjectValue);
+			if (updateListNode == null)
+			{
+				return;
+			}
+
+			var identifiers = updateListNode.GetDescendantsWithinSameQuery(Terminals.Identifier);
+			ResolveColumnAndFunctionReferenceFromIdentifiers(null, MainObjectReferenceContainer.ColumnReferences, identifiers, QueryBlockPlacement.None, null);
 		}
 
 		private void ResolveMainObjectReferenceInsert()
@@ -474,7 +478,7 @@ namespace SqlPad.Oracle
 							continue;
 
 						exposedColumns = dataObject.Columns.Values
-							.Select(c => new OracleSelectListColumn
+							.Select(c => new OracleSelectListColumn(this)
 							{
 								ExplicitDefinition = false,
 								IsDirectReference = true,
@@ -961,7 +965,7 @@ namespace SqlPad.Oracle
 			if (queryBlock.SelectList.FirstTerminalNode.Id == Terminals.Asterisk)
 			{
 				var asteriskNode = queryBlock.SelectList.ChildNodes[0];
-				var column = new OracleSelectListColumn
+				var column = new OracleSelectListColumn(this)
 				{
 					RootNode = asteriskNode,
 					Owner = queryBlock,
@@ -986,7 +990,7 @@ namespace SqlPad.Oracle
 						? columnExpression.LastTerminalNode
 						: null;
 					
-					var column = new OracleSelectListColumn
+					var column = new OracleSelectListColumn(this)
 					{
 						AliasNode = columnAliasNode,
 						RootNode = columnExpression,

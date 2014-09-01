@@ -38,6 +38,8 @@ namespace SqlPad.Oracle
 
 		public bool DatabaseLink { get; private set; }
 		
+		public bool InsertIntoColumns { get; private set; }
+		
 		public bool InUnparsedData { get; private set; }
 
 		public bool InComment { get; private set; }
@@ -143,6 +145,8 @@ namespace SqlPad.Oracle
 			SchemaDataObjectReference = !isWithinFromClause && (TerminalCandidates.Contains(Terminals.ObjectIdentifier) || isCursorBetweenTwoTerminalsWithPrecedingIdentifierWithoutPrefix);
 
 			PackageFunction = !String.IsNullOrEmpty(ReferenceIdentifier.ObjectIdentifierOriginalValue) && TerminalCandidates.Contains(Terminals.Identifier);
+
+			var inInsertStatement = Statement.RootNode.FirstTerminalNode.Id == Terminals.Insert;
 		}
 
 		private void AnalyzeObjectReferencePrefixes(StatementGrammarNode effectiveTerminal)
@@ -240,6 +244,9 @@ namespace SqlPad.Oracle
 			builder.Append("; ");
 			builder.Append("Sequence: ");
 			builder.Append(Sequence);
+			builder.Append("; ");
+			builder.Append("InsertIntoColumns: ");
+			builder.Append(InsertIntoColumns);
 			builder.Append("; ");
 			builder.Append("In comment: ");
 			builder.Append(InComment);

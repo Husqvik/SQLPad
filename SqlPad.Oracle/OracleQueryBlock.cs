@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -10,21 +9,11 @@ namespace SqlPad.Oracle
 	{
 		private OracleDataObjectReference _selfObjectReference;
 
-		public OracleQueryBlock(OracleStatementSemanticModel semanticModel)
+		public OracleQueryBlock(OracleStatementSemanticModel semanticModel) : base(semanticModel)
 		{
-			if (semanticModel == null)
-			{
-				throw new ArgumentNullException("semanticModel");
-			}
-
-			SemanticModel = semanticModel;
-			
-			ObjectReferences = new List<OracleDataObjectReference>();
 			Columns = new List<OracleSelectListColumn>();
 			AccessibleQueryBlocks = new List<OracleQueryBlock>();
 		}
-
-		public OracleStatementSemanticModel SemanticModel { get; private set; }
 
 		public OracleDataObjectReference SelfObjectReference
 		{
@@ -62,17 +51,6 @@ namespace SqlPad.Oracle
 
 		public bool HasDistinctResultSet { get; set; }
 
-		public bool ContainsSchemaQualifiers
-		{
-			get
-			{
-				return ObjectReferences.Select(o => o.OwnerNode)
-					.Concat(AllColumnReferences.Select(c => c.OwnerNode))
-					.Concat(AllProgramReferences.Select(f => f.OwnerNode))
-					.Any(n => n != null);
-			}
-		}
-
 		public StatementGrammarNode GroupByClause { get; set; }
 
 		public StatementGrammarNode HavingClause { get; set; }
@@ -80,8 +58,6 @@ namespace SqlPad.Oracle
 		public StatementGrammarNode OrderByClause { get; set; }
 		
 		public OracleStatement Statement { get; set; }
-
-		public ICollection<OracleDataObjectReference> ObjectReferences { get; private set; }
 
 		public ICollection<OracleSelectListColumn> Columns { get; private set; }
 		

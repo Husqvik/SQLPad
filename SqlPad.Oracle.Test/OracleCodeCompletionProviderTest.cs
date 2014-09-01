@@ -852,9 +852,18 @@ se";
 		[Test(Description = @"")]
 		public void TestColumnCodeCompletionWithStatementWithoutQueryBlock()
 		{
-			const string statement = @"UPDATE T SET ID = 998 WHERE I";
-			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 29).ToList();
-			items.Count.ShouldBe(0);
+			const string statement = @"UPDATE SELECTION SET PROJECT_ID = 998 WHERE E";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 45).ToList();
+			items.Count.ShouldBe(6);
+		}
+
+		[Test(Description = @"")]
+		public void TestColumnCodeCompletionOfSubqueryMainObjectReference()
+		{
+			const string statement = @"DELETE (SELECT * FROM SELECTION) WHERE SELECTION_ID = 0";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 41).ToList();
+			items.Count.ShouldBe(1);
+			items[0].Name.ShouldBe("SESSIONTIMEZONE");
 		}
 
 		public class OracleCodeCompletionTypeTest

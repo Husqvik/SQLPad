@@ -60,7 +60,10 @@ namespace SqlPad.Oracle
 				
 				if (Type != ReferenceType.SchemaObject)
 				{
-					var queryColumns = QueryBlocks.SelectMany(qb => qb.Columns).Select(c => c.ColumnDescription);
+					var queryColumns = QueryBlocks.SelectMany(qb => qb.Columns)
+						.Where(c => !c.IsAsterisk)
+						.Select(c => c.ColumnDescription);
+					
 					_columns.AddRange(queryColumns);
 				}
 

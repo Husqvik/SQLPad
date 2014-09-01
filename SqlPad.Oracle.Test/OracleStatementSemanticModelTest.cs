@@ -420,5 +420,19 @@ FROM
 			semanticModel.MainObjectReferenceContainer.MainObjectReference.SchemaObject.ShouldNotBe(null);
 			semanticModel.MainObjectReferenceContainer.ColumnReferences.Count.ShouldBe(1);
 		}
+
+		[Test(Description = @"")]
+		public void TestUpdateOfSubqueryModelBuild()
+		{
+			const string query1 = @"UPDATE (SELECT * FROM SELECTION) SET NAME = 'Dummy selection' WHERE SELECTION_ID = 0";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.MainObjectReferenceContainer.MainObjectReference.ShouldNotBe(null);
+			semanticModel.MainObjectReferenceContainer.MainObjectReference.SchemaObject.ShouldBe(null);
+			semanticModel.MainObjectReferenceContainer.MainObjectReference.Type.ShouldBe(ReferenceType.InlineView);
+			semanticModel.MainObjectReferenceContainer.ColumnReferences.Count.ShouldBe(2);
+		}
 	}
 }

@@ -24,10 +24,10 @@ namespace SqlPad.Oracle
 			var mainObjectReferences = oracleSemanticModel.MainObjectReferenceContainer.MainObjectReference == null
 				? Enumerable.Empty<OracleDataObjectReference>()
 				: Enumerable.Repeat(oracleSemanticModel.MainObjectReferenceContainer.MainObjectReference, 1);
-			
+
 			var objectReferences = oracleSemanticModel.QueryBlocks.SelectMany(qb => qb.ObjectReferences)
-				.Where(tr => tr.Type != ReferenceType.InlineView)
-				.Concat(mainObjectReferences);
+				.Concat(mainObjectReferences)
+				.Where(tr => tr.Type != ReferenceType.InlineView);
 			
 			foreach (var objectReference in objectReferences)
 			{

@@ -9,6 +9,11 @@ namespace SqlPad.Oracle
 	{
 		private OracleColumn _columnDescription;
 
+		public OracleSelectListColumn(OracleStatementSemanticModel semanticModel)
+			: base(semanticModel)
+		{
+		}
+
 		public bool IsDirectReference { get; set; }
 		
 		public bool IsAsterisk { get; set; }
@@ -45,11 +50,6 @@ namespace SqlPad.Oracle
 
 		private OracleColumn BuildColumnDescription()
 		{
-			/*OracleColumnReference columnReference;
-			var columnDescription = IsDirectReference && (columnReference = ColumnReferences.Single()).ColumnNodeObjectReferences.Count == 1 && columnReference.ColumnNodeColumnReferences == 1
-				? columnReference.ColumnNodeObjectReferences.Single().Columns.Single(c => c.Name == columnReference.NormalizedName)
-				: null;*/
-
 			var columnDescription = IsDirectReference && ColumnReferences.Count == 1
 				? ColumnReferences.First().ColumnDescription
 				: null;
@@ -72,7 +72,7 @@ namespace SqlPad.Oracle
 
 		public OracleSelectListColumn AsImplicit()
 		{
-			return new OracleSelectListColumn
+			return new OracleSelectListColumn(SemanticModel)
 			       {
 				       ExplicitDefinition = false,
 				       AliasNode = AliasNode,
