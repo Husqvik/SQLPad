@@ -1572,6 +1572,10 @@
           <Terminal Id="Raw" IsOptional="true" />
         </Sequence>
         <Sequence>
+          <Terminal Id="Interval" />
+          <NonTerminal Id="YearToMonthOrDayToSecond" />
+        </Sequence>
+        <Sequence>
           <Terminal Id="DataTypeIdentifier" />
         </Sequence>
       </Sequences>

@@ -1840,6 +1840,16 @@ FROM DUAL";
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 		}
 
+		[Test(Description = @"")]
+		public void TestIntervalDataTypes()
+		{
+			const string statement1 = @"SELECT CAST('4-8' AS INTERVAL YEAR(9) TO MONTH), CAST('2 12:34:45.6789' AS INTERVAL DAY (9) TO SECOND (9)) FROM DUAL";
+
+			var statements = Parser.Parse(statement1);
+			var statement = statements.Single().Validate();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+		}
+
 		public class IsRuleValid
 		{
 			[Test(Description = @"")]
