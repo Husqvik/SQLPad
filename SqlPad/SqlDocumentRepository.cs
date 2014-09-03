@@ -50,10 +50,17 @@ namespace SqlPad
 
 		public async Task UpdateStatementsAsync(string statementText)
 		{
-			var statements = await _parser.ParseAsync(statementText, CancellationToken.None);
-			var validationModels = await Task.Factory.StartNew(() => BuildValidationModels(statements, statementText));
-			
-			UpdateStatementsInternal(statementText, () => statements, (c, t) => validationModels);
+			try
+			{
+				var statements = await _parser.ParseAsync(statementText, CancellationToken.None);
+				var validationModels = await Task.Factory.StartNew(() => BuildValidationModels(statements, statementText));
+
+				UpdateStatementsInternal(statementText, () => statements, (c, t) => validationModels);
+			}
+			catch (Exception exception)
+			{
+				App.CreateErrorLog(exception);
+			}
 		}
 
 		private IDictionary<StatementBase, IValidationModel> BuildValidationModels(StatementCollection statements, string statementText)

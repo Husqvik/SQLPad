@@ -885,7 +885,7 @@ WHERE
 			CanExecuteCommand(OracleCommands.CreateScript).ShouldBe(true);
 			ExecuteCommand(OracleCommands.CreateScript);
 
-			var expectedResult = statementText + ";" + Environment.NewLine + Environment.NewLine + OracleTestDatabaseModel.SelectionTableCreateScript;
+			var expectedResult = statementText + ";" + Environment.NewLine + Environment.NewLine + OracleTestDatabaseModel.SelectionTableCreateScript + ";";
 			_editor.Text.ShouldBe(expectedResult);
 			_editor.CaretOffset.ShouldBe(17);
 		}

@@ -81,6 +81,7 @@ namespace SqlPad.Oracle.Commands
 			builder.AppendLine();
 			builder.AppendLine();
 			builder.Append(script.Trim());
+			builder.Append(';');
 
 			var addedSegment = new TextSegment
 			{

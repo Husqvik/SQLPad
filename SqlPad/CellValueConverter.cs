@@ -45,7 +45,7 @@ namespace SqlPad
 	{
 		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			return value == null ? ValueNotAvailable : ((DateTime)value).ToString(CultureInfo.CurrentUICulture);
+			return value == null || (DateTime)value == DateTime.MinValue ? ValueNotAvailable : ((DateTime)value).ToString(CultureInfo.CurrentUICulture);
 		}
 	}
 

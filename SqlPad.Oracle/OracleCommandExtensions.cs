@@ -47,22 +47,27 @@ namespace SqlPad.Oracle
 			return command;
 		}
 
+		public static Task<bool> ReadAsynchronous(this OracleDataReader reader, CancellationToken cancellationToken)
+		{
+			return ExecuteCommandAsynchronous(reader.Close, reader.Read, cancellationToken);
+		}
+
 		public static Task<int> ExecuteNonQueryAsynchronous(this OracleCommand command, CancellationToken cancellationToken)
 		{
-			return ExecuteCommandAsynchronous(command, command.ExecuteNonQuery, cancellationToken);
+			return ExecuteCommandAsynchronous(command.CancelIgnoreFailure, command.ExecuteNonQuery, cancellationToken);
 		}
 
 		public static Task<object> ExecuteScalarAsynchronous(this OracleCommand command, CancellationToken cancellationToken)
 		{
-			return ExecuteCommandAsynchronous(command, command.ExecuteScalar, cancellationToken);
+			return ExecuteCommandAsynchronous(command.CancelIgnoreFailure, command.ExecuteScalar, cancellationToken);
 		}
 
 		public static Task<OracleDataReader> ExecuteReaderAsynchronous(this OracleCommand command, CommandBehavior behavior, CancellationToken cancellationToken)
 		{
-			return ExecuteCommandAsynchronous(command, () => command.ExecuteReader(behavior), cancellationToken);
+			return ExecuteCommandAsynchronous(command.CancelIgnoreFailure, () => command.ExecuteReader(behavior), cancellationToken);
 		}
 
-		private static Task<T> ExecuteCommandAsynchronous<T>(OracleCommand command, Func<T> synchronousOperation, CancellationToken cancellationToken)
+		private static Task<T> ExecuteCommandAsynchronous<T>(Action cancellationAction, Func<T> synchronousOperation, CancellationToken cancellationToken)
 		{
 			var source = new TaskCompletionSource<T>();
 			var registration = new CancellationTokenRegistration();
@@ -75,10 +80,8 @@ namespace SqlPad.Oracle
 					return source.Task;
 				}
 
-				registration = cancellationToken.Register(command.CancelIgnoreFailure);
+				registration = cancellationToken.Register(cancellationAction);
 			}
-
-			var mainTask = source.Task;
 
 			try
 			{
@@ -90,7 +93,7 @@ namespace SqlPad.Oracle
 				source.SetException(exception);
 			}
 
-			return mainTask;
+			return source.Task;
 		}
 
 		private static void AfterExecutionHandler<T>(Task<T> executionTask, TaskCompletionSource<T> source, CancellationTokenRegistration registration)

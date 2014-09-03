@@ -12,7 +12,11 @@ namespace SqlPad.Oracle
 		
 		bool CanContinue { get; }
 		
-		void MapData(OracleDataReader reader);
+		void MapReaderData(OracleDataReader reader);
+
+		void MapScalarData(object value);
+
+		bool HasScalarResult { get; }
 	}
 
 	internal abstract class DataModelUpdater<TModel> : IDataModelUpdater where TModel: ModelBase
@@ -26,9 +30,19 @@ namespace SqlPad.Oracle
 
 		public abstract void InitializeCommand(OracleCommand command);
 
-		public abstract void MapData(OracleDataReader reader);
+		public virtual void MapReaderData(OracleDataReader reader)
+		{
+			throw new NotImplementedException();
+		}
 
 		public abstract bool CanContinue { get; }
+
+		public virtual bool HasScalarResult { get { return false; } }
+
+		public virtual void MapScalarData(object value)
+		{
+			throw new NotImplementedException();
+		}
 	}
 
 	internal class ColumnDetailsModelUpdater : DataModelUpdater<ColumnDetailsModel>
@@ -51,7 +65,7 @@ namespace SqlPad.Oracle
 			command.AddSimpleParameter("COLUMN_NAME", _columnName);
 		}
 
-		public override void MapData(OracleDataReader reader)
+		public override void MapReaderData(OracleDataReader reader)
 		{
 			if (!reader.Read())
 			{
@@ -93,7 +107,7 @@ namespace SqlPad.Oracle
 			command.AddSimpleParameter("COLUMN_NAME", _columnName);
 		}
 
-		public override void MapData(OracleDataReader reader)
+		public override void MapReaderData(OracleDataReader reader)
 		{
 			var histogramValues = new List<double>();
 
@@ -128,7 +142,7 @@ namespace SqlPad.Oracle
 			command.AddSimpleParameter("TABLE_NAME", _objectIdentifier.Name.Trim('"'));
 		}
 
-		public override void MapData(OracleDataReader reader)
+		public override void MapReaderData(OracleDataReader reader)
 		{
 			if (!reader.Read())
 			{
@@ -169,19 +183,19 @@ namespace SqlPad.Oracle
 			command.AddSimpleParameter("TABLE_NAME", _objectIdentifier.Name.Trim('"'));
 		}
 
-		public override void MapData(OracleDataReader reader)
+		public override void MapScalarData(object value)
 		{
-			if (!reader.Read())
-			{
-				return;
-			}
-
-			DataModel.AllocatedBytes = OracleReaderValueConvert.ToInt64(reader["ALLOCATED_BYTES"]);
+			DataModel.AllocatedBytes = OracleReaderValueConvert.ToInt64(value);
 		}
 
 		public override bool CanContinue
 		{
 			get { return false; }
+		}
+
+		public override bool HasScalarResult
+		{
+			get { return true; }
 		}
 	}
 
@@ -204,18 +218,22 @@ namespace SqlPad.Oracle
 			command.AddSimpleParameter("SCHEMA", _schemaObject.FullyQualifiedName.Owner.Trim('"'));
 		}
 
-		public void MapData(OracleDataReader reader)
+		public void MapReaderData(OracleDataReader reader)
 		{
-			if (reader.Read())
-			{
-				ScriptText = (string)reader["SCRIPT"];
-			}
+			throw new NotSupportedException();
+		}
+
+		public void MapScalarData(object value)
+		{
+			ScriptText = (string)value;
 		}
 
 		public bool CanContinue
 		{
 			get { return false; }
 		}
+
+		public bool HasScalarResult { get { return true; } }
 	}
 
 	internal class DisplayCursorUpdater
@@ -266,7 +284,7 @@ namespace SqlPad.Oracle
 				command.AddSimpleParameter("SID", _cursorModel.SessionId);
 			}
 
-			public void MapData(OracleDataReader reader)
+			public void MapReaderData(OracleDataReader reader)
 			{
 				if (!reader.Read())
 				{
@@ -282,10 +300,17 @@ namespace SqlPad.Oracle
 				_cursorModel.ChildNumber = Convert.ToInt32(reader["SQL_CHILD_NUMBER"]);
 			}
 
+			public void MapScalarData(object value)
+			{
+				throw new NotSupportedException();
+			}
+
 			public bool CanContinue
 			{
 				get { return _cursorModel.SqlId != null; }
 			}
+
+			public bool HasScalarResult { get { return false; } }
 		}
 
 		private class DisplayCursorUpdaterInternal : IDataModelUpdater
@@ -304,7 +329,7 @@ namespace SqlPad.Oracle
 				command.AddSimpleParameter("CHILD_NUMBER", _cursorModel.ChildNumber);
 			}
 
-			public void MapData(OracleDataReader reader)
+			public void MapReaderData(OracleDataReader reader)
 			{
 				var builder = new StringBuilder();
 
@@ -316,10 +341,17 @@ namespace SqlPad.Oracle
 				_cursorModel.PlanText = builder.ToString();
 			}
 
+			public void MapScalarData(object value)
+			{
+				throw new NotSupportedException();
+			}
+
 			public bool CanContinue
 			{
 				get { return false; }
 			}
+
+			public bool HasScalarResult { get { return false; } }
 		}
 	}
 
@@ -342,8 +374,15 @@ namespace SqlPad.Oracle
 			command.CommandText = String.Format("EXPLAIN PLAN SET STATEMENT_ID = '{0}' INTO {1} FOR {2}", _planKey, targetTable, _statementText);
 		}
 
-		public void MapData(OracleDataReader reader) { }
+		public void MapReaderData(OracleDataReader reader) { }
+
+		public void MapScalarData(object value)
+		{
+			throw new NotSupportedException();
+		}
 
 		public bool CanContinue { get { return false; } }
+
+		public bool HasScalarResult { get { return false; } }
 	}
 }

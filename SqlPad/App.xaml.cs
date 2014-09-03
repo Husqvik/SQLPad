@@ -12,14 +12,19 @@ namespace SqlPad
 			AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionHandler;
 		}
 
-		private static void UnhandledExceptionHandler(object sender, UnhandledExceptionEventArgs unhandledExceptionEventArgs)
+		internal static void CreateErrorLog(object exceptionObject)
 		{
 			var mainWindow = (MainWindow)Current.MainWindow;
 
 			if (mainWindow.ActiveDocument != null)
 			{
-				BuildErrorLog(unhandledExceptionEventArgs.ExceptionObject, mainWindow.ActiveDocument);
+				BuildErrorLog(exceptionObject, mainWindow.ActiveDocument);
 			}
+		}
+
+		private static void UnhandledExceptionHandler(object sender, UnhandledExceptionEventArgs unhandledExceptionEventArgs)
+		{
+			CreateErrorLog(unhandledExceptionEventArgs.ExceptionObject);
 
 			try
 			{

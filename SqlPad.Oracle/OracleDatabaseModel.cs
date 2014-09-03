@@ -259,9 +259,17 @@ namespace SqlPad.Oracle
 
 						try
 						{
-							using (var reader = await command.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken))
+							if (updater.HasScalarResult)
 							{
-								updater.MapData(reader);
+								var result = await command.ExecuteScalarAsynchronous(cancellationToken);
+								updater.MapScalarData(result);
+							}
+							else
+							{
+								using (var reader = await command.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken))
+								{
+									updater.MapReaderData(reader);
+								}
 							}
 
 							if (!updater.CanContinue)
