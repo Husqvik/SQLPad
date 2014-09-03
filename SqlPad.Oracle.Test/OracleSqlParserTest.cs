@@ -2853,6 +2853,45 @@ TABLESPACE TBS_MSSM";
 				var statement = result.Single();
 				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 			}
+
+			[Test(Description = @"")]
+			public void TestLargeObjectStorageClause()
+			{
+				const string statementText =
+@"CREATE TABLE TEST_TABLE
+(
+	LOB_COLUMN1 CLOB,
+	LOB_COLUMN2 CLOB,
+	LOB_COLUMN3 BLOB
+)
+LOB (LOB_COLUMN1, LOB_COLUMN2)
+STORE AS SECUREFILE
+(
+	TABLESPACE TBS_HQ_PDB
+	CHUNK 4000
+	DECRYPT
+	PCTVERSION 10
+	STORAGE (INITIAL 6144)
+	KEEP_DUPLICATES
+	CACHE READS FILESYSTEM_LIKE_LOGGING
+)
+LOB (LOB_COLUMN3)
+STORE AS BASICFILE TEST_LOB_SEGMENT
+(
+	DISABLE STORAGE IN ROW
+	TABLESPACE TBS_HQ_PDB
+	CHUNK 4000
+	STORAGE (INITIAL 6144)
+	CACHE
+	LOGGING
+)";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			}
 		}
 
 		public class CreateSequence

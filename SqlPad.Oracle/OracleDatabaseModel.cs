@@ -254,7 +254,7 @@ namespace SqlPad.Oracle
 					{
 						command.Parameters.Clear();
 						command.CommandText = String.Empty;
-						command.CommandType= CommandType.Text;
+						command.CommandType = CommandType.Text;
 						updater.InitializeCommand(command);
 
 						try

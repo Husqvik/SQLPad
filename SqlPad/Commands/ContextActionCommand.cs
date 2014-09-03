@@ -51,21 +51,22 @@ namespace SqlPad.Commands
 		{
 			using (var cancellationTokenSource = new CancellationTokenSource())
 			{
-				textEditor.IsEnabled = false;
-
 				var operationMonitor = new WindowOperationMonitor(cancellationTokenSource) { Owner = Application.Current.MainWindow };
 				operationMonitor.Show();
 
 				try
 				{
+					textEditor.IsEnabled = false;
 					await ContextAction.ExecutionHandler.ExecutionHandlerAsync(ContextAction.ExecutionContext, cancellationTokenSource.Token);
 				}
 				catch (Exception exception)
 				{
 					ShowErrorMessage(exception);
 				}
-
-				textEditor.IsEnabled = true;
+				finally
+				{
+					textEditor.IsEnabled = true;
+				}
 
 				operationMonitor.Close();
 			}

@@ -346,7 +346,7 @@ namespace SqlPad.Oracle
 				CreateMainDataObjectReference(mainObjectRefrenceNode, objectIdentifier, objectReferenceAlias);
 
 				var columnIdentifierListNode = mainObjectRefrenceNode.ParentNode.ChildNodes[mainObjectRefrenceNode.ParentNode.ChildNodes.Count - 1];
-				if (columnIdentifierListNode.Id == NonTerminals.ParenthesisEnclosedColumnIdentifierList)
+				if (columnIdentifierListNode.Id == NonTerminals.ParenthesisEnclosedIdentifierList)
 				{
 					var columnIdentiferNodes = columnIdentifierListNode.GetDescendants(Terminals.Identifier);
 					ResolveColumnAndFunctionReferenceFromIdentifiers(null, MainObjectReferenceContainer.ColumnReferences, columnIdentiferNodes, QueryBlockPlacement.None, null);
