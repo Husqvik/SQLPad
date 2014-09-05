@@ -646,6 +646,13 @@ Note
 
 		public override ICollection<string> CharacterSets { get { return CharacterSetsInternal; } }
 
+		public override IDictionary<int, string> StatisticsKeys { get { throw new NotImplementedException(); } }
+
+		public override Task<ICollection<SessionExecutionStatisticsRecord>> GetExecutionStatisticsAsync(CancellationToken cancellationToken)
+		{
+			throw new NotImplementedException();
+		}
+
 		public override void RefreshIfNeeded()
 		{
 			Refresh();

@@ -136,6 +136,11 @@ namespace SqlPad.Oracle
 			return value.IsNull() ? null : (long?)Convert.ToInt64(value);
 		}
 
+		public static decimal? ToDecimal(object value)
+		{
+			return value.IsNull() ? null : (decimal?)Convert.ToDecimal(value);
+		}
+
 		public static DateTime? ToDateTime(object value)
 		{
 			return value.IsNull() ? null : (DateTime?)Convert.ToDateTime(value);

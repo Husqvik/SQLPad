@@ -75,6 +75,10 @@ namespace SqlPad.Oracle
 
 		public abstract ICollection<string> CharacterSets { get; }
 
+		public abstract IDictionary<int, string> StatisticsKeys { get; }
+
+		public abstract Task<ICollection<SessionExecutionStatisticsRecord>> GetExecutionStatisticsAsync(CancellationToken cancellationToken);
+
 		public OracleObjectIdentifier[] GetPotentialSchemaObjectIdentifiers(OracleObjectIdentifier identifier)
 		{
 			return String.IsNullOrEmpty(identifier.Owner)

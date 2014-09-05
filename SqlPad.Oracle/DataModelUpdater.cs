@@ -385,4 +385,97 @@ namespace SqlPad.Oracle
 
 		public bool HasScalarResult { get { return false; } }
 	}
+
+	internal class SessionExecutionStatisticsUpdater
+	{
+		private readonly SessionExecutionStatisticsModel _statisticsModel;
+
+		public IDataModelUpdater SessionBeginExecutionStatisticsUpdater { get; private set; }
+
+		public IDataModelUpdater SessionEndExecutionStatisticsUpdater { get; private set; }
+
+		public ICollection<SessionExecutionStatisticsRecord> ExecutionStatistics { get { return _statisticsModel.StatisticsRecords.Values; } }
+
+		public SessionExecutionStatisticsUpdater(IDictionary<int, string> statisticsKeys, int sessionId)
+		{
+			_statisticsModel = new SessionExecutionStatisticsModel(statisticsKeys, sessionId);
+			SessionBeginExecutionStatisticsUpdater = new SessionExecutionStatisticsUpdaterInternal(_statisticsModel, true);
+			SessionEndExecutionStatisticsUpdater = new SessionExecutionStatisticsUpdaterInternal(_statisticsModel, false);
+		}
+
+		private class SessionExecutionStatisticsUpdaterInternal : DataModelUpdater<SessionExecutionStatisticsModel>
+		{
+			private readonly bool _executionStart;
+
+			public SessionExecutionStatisticsUpdaterInternal(SessionExecutionStatisticsModel dataModel, bool executionStart)
+				: base(dataModel)
+			{
+				_executionStart = executionStart;
+			}
+
+			public override void InitializeCommand(OracleCommand command)
+			{
+				command.CommandText = DatabaseCommands.GetSessionsStatistics;
+				command.AddSimpleParameter("SID", DataModel.SessionId);
+
+				DataModel.StatisticsRecords.Clear();
+			}
+
+			public override void MapReaderData(OracleDataReader reader)
+			{
+				if (DataModel.StatisticsKeys.Count == 0)
+				{
+					return;
+				}
+
+				while (reader.Read())
+				{
+					var statisticsRecord =
+						new SessionExecutionStatisticsRecord
+						{
+							Name = DataModel.StatisticsKeys[Convert.ToInt32(reader["STATISTIC#"])],
+							Value = Convert.ToDecimal(reader["VALUE"])
+						};
+
+					if (_executionStart)
+					{
+						DataModel.ExecutionStartRecords[statisticsRecord.Name] = statisticsRecord;
+					}
+					else
+					{
+						SessionExecutionStatisticsRecord executionStartRecord;
+						var executionStartValue = 0m;
+						if (DataModel.ExecutionStartRecords.TryGetValue(statisticsRecord.Name, out executionStartRecord))
+						{
+							executionStartValue = executionStartRecord.Value;
+						}
+
+						statisticsRecord.Value = executionStartValue;
+						DataModel.StatisticsRecords[statisticsRecord.Name] = statisticsRecord;
+					}
+				}
+			}
+
+			public override bool CanContinue
+			{
+				get { return DataModel.StatisticsKeys.Count > 0; }
+			}
+		}
+
+		private class SessionExecutionStatisticsModel : ModelBase
+		{
+			public readonly Dictionary<string, SessionExecutionStatisticsRecord> ExecutionStartRecords = new Dictionary<string, SessionExecutionStatisticsRecord>();
+			public Dictionary<string, SessionExecutionStatisticsRecord> StatisticsRecords = new Dictionary<string, SessionExecutionStatisticsRecord>();
+
+			public int SessionId { get; private set; }
+
+			public IDictionary<int, string> StatisticsKeys { get; private set; }
+
+			public SessionExecutionStatisticsModel(IDictionary<int, string> statisticsKeys, int sessionId)
+			{
+				StatisticsKeys = statisticsKeys;
+				SessionId = sessionId;
+			}
+		}
+	}
 }

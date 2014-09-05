@@ -180,6 +180,14 @@
 			<TabItem Header="Actual plan" Visibility="{Binding IsExecutionPlanAvailable}">
 				<TextBox Text="{Binding TextExecutionPlan}" FontFamily="Consolas" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" IsReadOnly="True" />
 			</TabItem>
+			<TabItem Header="Statistics" Visibility="{Binding ExecutionStatisticsAvailable}">
+				<DataGrid ItemsSource="{Binding SessionExecutionStatistics}">
+					<DataGrid.Columns>
+						<DataGridTextColumn Header="Name"/>
+						<DataGridTextColumn Header="Value"/>
+					</DataGrid.Columns>
+				</DataGrid>
+			</TabItem>
 		</TabControl>
 		<StatusBar x:Name="StatusBar" Grid.Row="4" Grid.Column="0">
 			<StatusBar.ItemsPanel>

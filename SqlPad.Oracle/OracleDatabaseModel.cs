@@ -37,6 +37,7 @@ namespace SqlPad.Oracle
 		private OracleDataReader _userDataReader;
 		private OracleCommand _userCommand;
 		private int _userSessionId;
+		private SessionExecutionStatisticsUpdater _executionStatisticsUpdater;
 
 		private static readonly Dictionary<string, OracleDataDictionary> CachedDataDictionaries = new Dictionary<string, OracleDataDictionary>();
 		private static readonly Dictionary<string, OracleDatabaseModel> DatabaseModels = new Dictionary<string, OracleDatabaseModel>();
@@ -125,6 +126,8 @@ namespace SqlPad.Oracle
 
 		public override ICollection<string> CharacterSets { get { return _dataDictionary.CharacterSets; } }
 
+		public override IDictionary<int, string> StatisticsKeys { get { return _dataDictionary.StatisticsKeys; } }
+
 		public override void RefreshIfNeeded()
 		{
 			if (IsRefreshNeeded)
@@ -210,6 +213,12 @@ namespace SqlPad.Oracle
 					StatementText = String.Format(DatabaseCommands.ExplainPlanBase, targetTableIdentifier),
 					BindVariables = new[] { new BindVariableModel(new BindVariableConfiguration { DataType = "Varchar2", Name = "STATEMENT_ID", Value = planKey }) }
 				};
+		}
+
+		public override async Task<ICollection<SessionExecutionStatisticsRecord>> GetExecutionStatisticsAsync(CancellationToken cancellationToken)
+		{
+			await UpdateModelAsync(cancellationToken, true, _executionStatisticsUpdater.SessionEndExecutionStatisticsUpdater);
+			return _executionStatisticsUpdater.ExecutionStatistics;
 		}
 
 		public async override Task<string> GetActualExecutionPlanAsync(CancellationToken cancellationToken)
@@ -372,7 +381,7 @@ namespace SqlPad.Oracle
 			return clone;
 		}
 
-		private T ExecuteUserStatement<T>(StatementExecutionModel executionModel, Func<OracleCommand, T> executeFunction, bool closeConnection = false)
+		private async Task<OracleDataReader> ExecuteUserStatement(StatementExecutionModel executionModel, CancellationToken cancellationToken, bool closeConnection = false)
 		{
 			_userCommand = _userConnection.CreateCommand();
 			_userCommand.BindByName = true;
@@ -402,7 +411,14 @@ namespace SqlPad.Oracle
 					}
 				}
 
-				return executeFunction(_userCommand);
+				_executionStatisticsUpdater = new SessionExecutionStatisticsUpdater(StatisticsKeys, _userSessionId);
+
+				if (executionModel.GatherExecutionStatistics)
+				{
+					await UpdateModelAsync(cancellationToken, true, _executionStatisticsUpdater.SessionBeginExecutionStatisticsUpdater);
+				}
+
+				return await _userCommand.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken);
 			}
 			finally
 			{
@@ -429,7 +445,7 @@ namespace SqlPad.Oracle
 
 			try
 			{
-				_userDataReader = await ExecuteUserStatement(executionModel, c => c.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken));
+				_userDataReader = await ExecuteUserStatement(executionModel, cancellationToken);
 				result.AffectedRowCount = _userDataReader.RecordsAffected;
 				result.ExecutedSucessfully = true;
 			}
@@ -701,8 +717,9 @@ namespace SqlPad.Oracle
 
 			var databaseLinks = _dataDictionaryMapper.GetDatabaseLinks();
 			var characterSets = _dataDictionaryMapper.GetCharacterSets();
+			var statisticsKeys = _dataDictionaryMapper.GetStatisticsKeys().ToDictionary(k => k.Key, k => k.Value);
 
-			_dataDictionary = new OracleDataDictionary(allObjects, databaseLinks, nonSchemaBuiltInFunctionMetadata, characterSets, lastRefresh);
+			_dataDictionary = new OracleDataDictionary(allObjects, databaseLinks, nonSchemaBuiltInFunctionMetadata, characterSets, statisticsKeys, lastRefresh);
 			CachedDataDictionaries[CachedConnectionStringName] = _dataDictionary;
 
 			SetRefreshTaskResults();
@@ -776,6 +793,7 @@ namespace SqlPad.Oracle
 		private struct RefreshModel
 		{
 			public TaskCompletionSource<OracleDataDictionary> TaskCompletionSource { get; set; }
+			
 			public OracleDatabaseModel DatabaseModel { get; set; }
 		}
 	}

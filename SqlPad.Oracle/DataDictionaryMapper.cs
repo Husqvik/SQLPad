@@ -108,6 +108,11 @@ namespace SqlPad.Oracle
 			return _databaseModel.ExecuteReader(DatabaseCommands.GetCharacterSets, r => ((string)r["VALUE"]));
 		}
 
+		public IEnumerable<KeyValuePair<int, string>> GetStatisticsKeys()
+		{
+			return _databaseModel.ExecuteReader(DatabaseCommands.GetStatisticsKeys, MapStatisticsKey);
+		}
+
 		public IDictionary<OracleObjectIdentifier, OracleDatabaseLink> GetDatabaseLinks()
 		{
 			return _databaseModel.ExecuteReader(DatabaseCommands.SelectDatabaseLinksCommandText, MapDatabaseLink)
@@ -124,8 +129,7 @@ namespace SqlPad.Oracle
 			{
 				var functionMetadata = functionMetadataLookup[functionIdentifierParameterMetadata.Key]
 					.SingleOrDefault(m => m.Identifier.Overload == functionIdentifierParameterMetadata.Key.Overload);
-				//OracleFunctionMetadata functionMetadata;
-				//if (functionMetadataDictionary.TryGetValue(functionIdentifierParameterMetadata.Key, out functionMetadata))
+
 				if (functionMetadata != null)
 				{
 					functionMetadata.Parameters.Add(functionIdentifierParameterMetadata.Value);
@@ -133,7 +137,11 @@ namespace SqlPad.Oracle
 			}
 
 			return functionMetadataLookup;
-			//return new OracleFunctionMetadataCollection(functionMetadataDictionary.Values);
+		}
+
+		private static KeyValuePair<int, string> MapStatisticsKey(OracleDataReader reader)
+		{
+			return new KeyValuePair<int, string>(Convert.ToInt32(reader["STATISTIC#"]), (string)reader["DISPLAY_NAME"]);
 		}
 
 		private static OracleFunctionMetadata MapFunctionMetadata(OracleDataReader reader, bool isBuiltIn)

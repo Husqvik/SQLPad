@@ -13,6 +13,7 @@ namespace SqlPad
 		private readonly DocumentPage _documentPage;
 		private readonly ObservableCollection<object[]> _resultRowItems = new ObservableCollection<object[]>();
 		private readonly ObservableCollection<string> _schemas = new ObservableCollection<string>();
+		private readonly ObservableCollection<SessionExecutionStatisticsRecord> _sessionExecutionStatistics = new ObservableCollection<SessionExecutionStatisticsRecord>();
 		private string _documentHeader;
 		private int _currentLine;
 		private int _currentColumn;
@@ -31,6 +32,7 @@ namespace SqlPad
 		public PageModel(DocumentPage documentPage)
 		{
 			_documentPage = documentPage;
+			_sessionExecutionStatistics.CollectionChanged += (sender, args) => RaisePropertyChanged("ExecutionStatisticsAvailable");
 		}
 
 		public Visibility StatementExecutionInfoSeparatorVisibility
@@ -79,6 +81,11 @@ namespace SqlPad
 		public Visibility IsExecutionPlanAvailable
 		{
 			get { return String.IsNullOrEmpty(_textExecutionPlan) ? Visibility.Collapsed : Visibility.Visible; }
+		}
+
+		public Visibility ExecutionStatisticsAvailable
+		{
+			get { return _sessionExecutionStatistics.Count > 0 ? Visibility.Visible : Visibility.Collapsed; }
 		}
 
 		public int CurrentLine
@@ -164,6 +171,8 @@ namespace SqlPad
 
 		public ObservableCollection<string> Schemas { get { return _schemas; } }
 
+		public ObservableCollection<SessionExecutionStatisticsRecord> SessionExecutionStatistics { get { return _sessionExecutionStatistics; } }
+
 		public string CurrentSchema
 		{
 			get { return _currentSchema; }
@@ -245,6 +254,8 @@ namespace SqlPad
 		public string StatementText { get; set; }
 		
 		public ICollection<BindVariableModel> BindVariables { get; set; }
+		
+		public bool GatherExecutionStatistics { get; set; }
 	}
 
 	public struct StatementExecutionResult
@@ -252,5 +263,13 @@ namespace SqlPad
 		public int AffectedRowCount { get; set; }
 
 		public bool ExecutedSucessfully { get; set; }
+	}
+
+	[DebuggerDisplay("SessionExecutionStatisticsRecord (Name={Name}; Value={Value})")]
+	public struct SessionExecutionStatisticsRecord
+	{
+		public string Name { get; set; }
+		
+		public decimal Value { get; set; }
 	}
 }
