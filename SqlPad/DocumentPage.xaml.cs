@@ -12,7 +12,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using ICSharpCode.AvalonEdit;
@@ -48,14 +47,12 @@ namespace SqlPad
 		private readonly SqlDocumentColorizingTransformer _colorizingTransformer = new SqlDocumentColorizingTransformer();
 
 		private static readonly CellValueConverter CellValueConverter = new CellValueConverter();
-		private static readonly Style CellStyleRightAlign = new Style(typeof(DataGridCell));
-		private static readonly Style CellTextBoxStyleReadOnly = new Style(typeof(TextBox));
-		private static readonly Style HeaderStyleRightAlign = new Style(typeof(DataGridColumnHeader));
 
 		private bool _isParsing;
 		private bool _isInitializing = true;
 		private bool _enableCodeComplete;
 		private bool _isToolTipOpenByShortCut;
+		private bool _gatherExecutionStatistics;
 		
 		private readonly ToolTip _toolTip = new ToolTip();
 		private readonly PageModel _pageModel;
@@ -93,13 +90,6 @@ namespace SqlPad
 		public bool IsDirty { get { return Editor.IsModified; } }
 
 		public IDatabaseModel DatabaseModel { get; private set; }
-
-		static DocumentPage()
-		{
-			CellStyleRightAlign.Setters.Add(new Setter(Block.TextAlignmentProperty, TextAlignment.Right));
-			HeaderStyleRightAlign.Setters.Add(new Setter(HorizontalContentAlignmentProperty, HorizontalAlignment.Right));
-			CellTextBoxStyleReadOnly.Setters.Add(new Setter(TextBoxBase.IsReadOnlyProperty, true));
-		}
 
 		public DocumentPage(WorkingDocument workingDocument = null)
 		{
@@ -501,6 +491,10 @@ namespace SqlPad
 			{
 				Messages.ShowError(exception.Message);
 			}
+			else if (_gatherExecutionStatistics)
+			{
+				_pageModel.SessionExecutionStatistics.AddRange(await DatabaseModel.GetExecutionStatisticsAsync(CancellationToken.None));
+			}
 		}
 
 		private void NavigateToQueryBlockRoot(object sender, ExecutedRoutedEventArgs args)
@@ -556,27 +550,29 @@ namespace SqlPad
 
 		private void ExecuteDatabaseCommandWithActualExecutionPlanHandler(object sender, ExecutedRoutedEventArgs args)
 		{
-			ExecuteDatabaseCommandHandlerInternal(ConfigurationProvider.Configuration.ExecutionPlan.Enabled);
+			_gatherExecutionStatistics = ConfigurationProvider.Configuration.ExecutionPlan.Enabled;
+			ExecuteDatabaseCommandHandlerInternal();
 		}
 
 		private void ExecuteDatabaseCommandHandler(object sender, ExecutedRoutedEventArgs args)
 		{
-			ExecuteDatabaseCommandHandlerInternal(false);
+			_gatherExecutionStatistics = false;
+			ExecuteDatabaseCommandHandlerInternal();
 		}
 
-		private async void ExecuteDatabaseCommandHandlerInternal(bool printActualExecutionPlan)
+		private async void ExecuteDatabaseCommandHandlerInternal()
 		{
 			SqlPadConfiguration.StoreConfiguration();
 
 			var executionModel = BuildStatementExecutionModel();
-			await ExecuteDatabaseCommand(executionModel, printActualExecutionPlan);
+			await ExecuteDatabaseCommand(executionModel);
 		}
 
 		private StatementExecutionModel BuildStatementExecutionModel()
 		{
 			var statement = _sqlDocumentRepository.Statements.GetStatementAtPosition(Editor.CaretOffset);
 
-			var executionModel = new StatementExecutionModel();
+			var executionModel = new StatementExecutionModel { GatherExecutionStatistics = _gatherExecutionStatistics };
 			if (Editor.SelectionLength > 0)
 			{
 				executionModel.StatementText = Editor.SelectedText;
@@ -591,22 +587,22 @@ namespace SqlPad
 			return executionModel;
 		}
 
-		private async Task ExecuteDatabaseCommand(StatementExecutionModel executionModel, bool printActualExecutionPlan)
+		private async Task ExecuteDatabaseCommand(StatementExecutionModel executionModel)
 		{
 			_pageModel.ResultRowItems.Clear();
 			_pageModel.GridRowInfoVisibility = Visibility.Collapsed;
 			_pageModel.TextExecutionPlan = null;
+			_pageModel.SessionExecutionStatistics.Clear();
 			TextMoreRowsExist.Visibility = Visibility.Collapsed;
 
 			ResultGrid.HeadersVisibility = DataGridHeadersVisibility.None;
 			ResultGrid.Columns.Clear();
 
-			ActionResult actionResult;
 			_pageModel.AffectedRowCount = -1;
 			Task<StatementExecutionResult> innerTask = null;
 			using (_cancellationTokenSource = new CancellationTokenSource())
 			{
-				actionResult = await SafeTimedActionAsync(() => innerTask = DatabaseModel.ExecuteStatementAsync(executionModel, _cancellationTokenSource.Token));
+				var actionResult = await SafeTimedActionAsync(() => innerTask = DatabaseModel.ExecuteStatementAsync(executionModel, _cancellationTokenSource.Token));
 
 				if (!actionResult.IsSuccessful)
 				{
@@ -619,9 +615,10 @@ namespace SqlPad
 					return;
 				}
 
-				if (printActualExecutionPlan)
+				if (_gatherExecutionStatistics)
 				{
 					_pageModel.TextExecutionPlan = await DatabaseModel.GetActualExecutionPlanAsync(_cancellationTokenSource.Token);
+
 					if (String.IsNullOrEmpty(_pageModel.TextExecutionPlan))
 					{
 						TabControlResult.SelectedIndex = 0;
@@ -631,20 +628,26 @@ namespace SqlPad
 				{
 					TabControlResult.SelectedIndex = 0;
 				}
+
+				TextExecutionTime.Text = FormatElapsedMilliseconds(actionResult.Elapsed);
+
+				var columnHeaders = DatabaseModel.GetColumnHeaders();
+				if (columnHeaders.Count == 0)
+				{
+					_pageModel.AffectedRowCount = innerTask.Result.AffectedRowCount;
+
+					if (_gatherExecutionStatistics)
+					{
+						_pageModel.SessionExecutionStatistics.AddRange(await DatabaseModel.GetExecutionStatisticsAsync(_cancellationTokenSource.Token));
+					}
+
+					return;
+				}
+
+				InitializeResultGrid(columnHeaders);
+
+				FetchNextRows(null, null);
 			}
-
-			TextExecutionTime.Text = FormatElapsedMilliseconds(actionResult.Elapsed);
-
-			var columnHeaders = DatabaseModel.GetColumnHeaders();
-			if (columnHeaders.Count == 0)
-			{
-				_pageModel.AffectedRowCount = innerTask.Result.AffectedRowCount;
-				return;
-			}
-
-			InitializeResultGrid(columnHeaders);
-
-			FetchNextRows(null, null);
 
 			if (ResultGrid.Items.Count > 0)
 			{
@@ -712,13 +715,13 @@ namespace SqlPad
 					{
 						Header = columnHeader.Name.Replace("_", "__"),
 						Binding = new Binding(String.Format("[{0}]", columnHeader.ColumnIndex)) { Converter = CellValueConverter, ConverterParameter = columnHeader },
-						EditingElementStyle = CellTextBoxStyleReadOnly
+						EditingElementStyle = (Style)Resources["CellTextBoxStyleReadOnly"]
 					};
 
 				if (columnHeader.DataType.In(typeof(Decimal), typeof(Int16), typeof(Int32), typeof(Int64), typeof(Byte)))
 				{
-					columnTemplate.HeaderStyle = HeaderStyleRightAlign;
-					columnTemplate.CellStyle = CellStyleRightAlign;
+					columnTemplate.HeaderStyle = (Style)Resources["HeaderStyleRightAlign"];
+					columnTemplate.CellStyle = (Style)Resources["CellStyleRightAlign"];
 				}
 
 				ResultGrid.Columns.Add(columnTemplate);
@@ -1392,6 +1395,8 @@ namespace SqlPad
 
 		private async void ExecuteExplainPlanCommandHandler(object sender, ExecutedRoutedEventArgs args)
 		{
+			_gatherExecutionStatistics = false;
+
 			using (var cancellationTokenSource = new CancellationTokenSource())
 			{
 				using (new TransactionScope())
@@ -1400,7 +1405,7 @@ namespace SqlPad
 					try
 					{
 						var executionModel = await DatabaseModel.ExplainPlanAsync(statementText, cancellationTokenSource.Token);
-						await ExecuteDatabaseCommand(executionModel, false);
+						await ExecuteDatabaseCommand(executionModel);
 					}
 					catch (Exception e)
 					{

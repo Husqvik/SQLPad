@@ -69,7 +69,7 @@ namespace SqlPad.Test
 			_editor.CaretOffset = 111;
 
 			GenericCommands.FindUsagesCommand.Execute(null, _editor.TextArea);
-			GenericCommands.ExecuteDatabaseCommandCommand.Execute(null, _editor.TextArea);
+			GenericCommands.ExecuteDatabaseCommandWithActualExecutionPlanCommand.Execute(null, _editor.TextArea);
 			GenericCommands.ListContextActionCommand.Execute(null, _editor.TextArea);
 
 			Wait(0.2);

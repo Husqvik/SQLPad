@@ -24,6 +24,31 @@ namespace SqlPad.Oracle.Test
 		private static readonly Dictionary<string, OracleFunctionMetadata> NonSchemaBuiltInFunctionMetadataInternal;
 		private static readonly HashSet<string> CharacterSetsInternal = new HashSet<string> { "US7ASCII", "WE8ISO8859P1" };
 
+		private const int StatisticsCodeSessionLogicalReads = 12;
+		private const int StatisticsCodePhysicalReadTotalBytes = 53;
+		private const int StatisticsCodeConsistentGets = 79;
+		private const int StatisticsCodeBytesSentViaSqlNetToClient = 779;
+		private const int StatisticsCodeBytesReceivedViaSqlNetFromClient = 780;
+		private const int StatisticsCodeSqlNetRoundtripsToOrFromClient = 781;
+
+		private const string StatisticsDescriptionSessionLogicalReads = "session logical reads";
+		private const string StatisticsDescriptionPhysicalReadTotalBytes = "physical read total bytes";
+		private const string StatisticsDescriptionConsistentGets = "consistent gets";
+		private const string StatisticsDescriptionBytesSentViaSqlNetToClient = "bytes sent via SQL*Net to client";
+		private const string StatisticsDescriptionBytesReceivedViaSqlNetFromClient = "bytes received via SQL*Net from client";
+		private const string StatisticsDescriptionSqlNetRoundtripsToOrFromClient = "SQL*Net roundtrips to/from client";
+
+		private static readonly Dictionary<int, string> StatisticsKeysInternal =
+			new Dictionary<int, string>
+			{
+				{ StatisticsCodeSessionLogicalReads, StatisticsDescriptionSessionLogicalReads },
+				{ StatisticsCodePhysicalReadTotalBytes, StatisticsDescriptionPhysicalReadTotalBytes },
+				{ StatisticsCodeConsistentGets, StatisticsDescriptionConsistentGets },
+				{ StatisticsCodeBytesSentViaSqlNetToClient, StatisticsDescriptionBytesSentViaSqlNetToClient },
+				{ StatisticsCodeBytesReceivedViaSqlNetFromClient, StatisticsDescriptionBytesReceivedViaSqlNetFromClient },
+				{ StatisticsCodeSqlNetRoundtripsToOrFromClient, StatisticsDescriptionSqlNetRoundtripsToOrFromClient }
+			};
+
 		private readonly IDictionary<OracleObjectIdentifier, OracleSchemaObject> _allObjects;
 
 		private static readonly HashSet<OracleDatabaseLink> DatabaseLinksInternal =
@@ -646,11 +671,22 @@ Note
 
 		public override ICollection<string> CharacterSets { get { return CharacterSetsInternal; } }
 
-		public override IDictionary<int, string> StatisticsKeys { get { throw new NotImplementedException(); } }
+		public override IDictionary<int, string> StatisticsKeys { get { return StatisticsKeysInternal; } }
 
 		public override Task<ICollection<SessionExecutionStatisticsRecord>> GetExecutionStatisticsAsync(CancellationToken cancellationToken)
 		{
-			throw new NotImplementedException();
+			ICollection<SessionExecutionStatisticsRecord> statistics =
+				new[]
+				{
+					new SessionExecutionStatisticsRecord { Name = StatisticsDescriptionBytesReceivedViaSqlNetFromClient, Value = 124 },
+					new SessionExecutionStatisticsRecord { Name = StatisticsDescriptionBytesSentViaSqlNetToClient, Value = 24316 },
+					new SessionExecutionStatisticsRecord { Name = StatisticsDescriptionConsistentGets, Value = 16 },
+					new SessionExecutionStatisticsRecord { Name = StatisticsDescriptionPhysicalReadTotalBytes, Value = 1336784 },
+					new SessionExecutionStatisticsRecord { Name = StatisticsDescriptionSessionLogicalReads, Value = 16 },
+					new SessionExecutionStatisticsRecord { Name = StatisticsDescriptionSqlNetRoundtripsToOrFromClient, Value = 2 }
+				};
+
+			return CreateFinishedTask(statistics);
 		}
 
 		public override void RefreshIfNeeded()

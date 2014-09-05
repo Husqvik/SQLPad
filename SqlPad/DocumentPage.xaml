@@ -12,6 +12,15 @@
              d:DesignHeight="320" d:DesignWidth="440">
 	<UserControl.Resources>
 		<sqlPad:SelectedIndexConverter x:Key="SelectedIndexConverter" />
+		<Style x:Key="CellTextBoxStyleReadOnly">
+			<Setter Property="TextBoxBase.IsReadOnly" Value="True" />
+		</Style>
+		<Style x:Key="CellStyleRightAlign">
+			<Setter Property="Block.TextAlignment" Value="Right" />
+		</Style>
+		<Style x:Key="HeaderStyleRightAlign">
+			<Setter Property="Control.HorizontalContentAlignment" Value="Right" />
+		</Style>
 	</UserControl.Resources>
 	<Grid>
 		<Grid.RowDefinitions>
@@ -151,7 +160,7 @@
 		<GridSplitter Grid.Column="0" Grid.Row="2" Height="4" HorizontalAlignment="Stretch" ShowsPreview="True"
 		              VerticalAlignment="Center" Background="DimGray" />
 		<TabControl x:Name="TabControlResult" Grid.Column="0" Grid.Row="3">
-			<TabItem Header="Result set">
+			<TabItem Header="_Result set">
 				<DataGrid x:Name="ResultGrid"
 				          AutoGenerateColumns="False"
 				          ItemsSource="{Binding ResultRowItems}"
@@ -160,6 +169,7 @@
 				          EnableColumnVirtualization="True"
 				          RowHeight="20"
 				          CanUserSortColumns="False"
+						  CanUserDeleteRows ="False"
 				          HeadersVisibility="None"
 				          HorizontalGridLinesBrush="LightGray"
 				          VerticalGridLinesBrush="LightGray"
@@ -177,16 +187,27 @@
 					</DataGrid.ContextMenu>
 				</DataGrid>
 			</TabItem>
-			<TabItem Header="Actual plan" Visibility="{Binding IsExecutionPlanAvailable}">
+			<TabItem Header="_Actual plan" Visibility="{Binding IsExecutionPlanAvailable}">
 				<TextBox Text="{Binding TextExecutionPlan}" FontFamily="Consolas" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" IsReadOnly="True" />
 			</TabItem>
-			<TabItem Header="Statistics" Visibility="{Binding ExecutionStatisticsAvailable}">
-				<DataGrid ItemsSource="{Binding SessionExecutionStatistics}">
-					<DataGrid.Columns>
-						<DataGridTextColumn Header="Name"/>
-						<DataGridTextColumn Header="Value"/>
-					</DataGrid.Columns>
-				</DataGrid>
+			<TabItem Header="_Statistics" Visibility="{Binding ExecutionStatisticsAvailable}">
+				<DockPanel>
+					<CheckBox DockPanel.Dock="Right" Margin="4" Content="Show _All" IsChecked="{Binding ShowAllSessionExecutionStatistics}" />
+					<DataGrid ItemsSource="{Binding SessionExecutionStatistics}"
+							  AutoGenerateColumns="False"
+							  CanUserDeleteRows ="False"
+							  HorizontalGridLinesBrush="LightGray"
+							  VerticalGridLinesBrush="LightGray">
+						<DataGrid.Columns>
+							<DataGridTextColumn Header="Name" Binding="{Binding Path=Name}"
+												EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}" />
+							<DataGridTextColumn Header="Value" Binding="{Binding Path=Value}"
+												HeaderStyle="{StaticResource HeaderStyleRightAlign}"
+												CellStyle="{StaticResource CellStyleRightAlign}"
+												EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}" />
+						</DataGrid.Columns>
+					</DataGrid>
+				</DockPanel>
 			</TabItem>
 		</TabControl>
 		<StatusBar x:Name="StatusBar" Grid.Row="4" Grid.Column="0">

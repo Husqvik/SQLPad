@@ -428,6 +428,11 @@ namespace SqlPad.Oracle
 					return;
 				}
 
+				if (!_executionStart && !DataModel.IsInitialized)
+				{
+					throw new InvalidOperationException("Execution start statistics have not been set. ");
+				}
+
 				while (reader.Read())
 				{
 					var statisticsRecord =
@@ -450,9 +455,14 @@ namespace SqlPad.Oracle
 							executionStartValue = executionStartRecord.Value;
 						}
 
-						statisticsRecord.Value = executionStartValue;
+						statisticsRecord.Value = statisticsRecord.Value - executionStartValue;
 						DataModel.StatisticsRecords[statisticsRecord.Name] = statisticsRecord;
 					}
+				}
+
+				if (_executionStart)
+				{
+					DataModel.ExecutionStartRecordsSet();
 				}
 			}
 
@@ -465,11 +475,23 @@ namespace SqlPad.Oracle
 		private class SessionExecutionStatisticsModel : ModelBase
 		{
 			public readonly Dictionary<string, SessionExecutionStatisticsRecord> ExecutionStartRecords = new Dictionary<string, SessionExecutionStatisticsRecord>();
-			public Dictionary<string, SessionExecutionStatisticsRecord> StatisticsRecords = new Dictionary<string, SessionExecutionStatisticsRecord>();
+			public readonly Dictionary<string, SessionExecutionStatisticsRecord> StatisticsRecords = new Dictionary<string, SessionExecutionStatisticsRecord>();
 
 			public int SessionId { get; private set; }
 
+			public bool IsInitialized { get; private set; }
+
 			public IDictionary<int, string> StatisticsKeys { get; private set; }
+
+			public void ExecutionStartRecordsSet()
+			{
+				if (IsInitialized)
+				{
+					throw new InvalidOperationException("Execution start statistics have been set already. ");
+				}
+
+				IsInitialized = true;
+			}
 
 			public SessionExecutionStatisticsModel(IDictionary<int, string> statisticsKeys, int sessionId)
 			{

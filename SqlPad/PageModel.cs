@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Configuration;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows;
+using System.Windows.Data;
 
 namespace SqlPad
 {
@@ -28,11 +30,20 @@ namespace SqlPad
 		private Visibility _gridRowInfoVisibity = Visibility.Collapsed;
 		private string _textExecutionPlan;
 		private string _dateTimeFormat;
+		private bool _showAllSessionExecutionStatistics;
 
 		public PageModel(DocumentPage documentPage)
 		{
 			_documentPage = documentPage;
 			_sessionExecutionStatistics.CollectionChanged += (sender, args) => RaisePropertyChanged("ExecutionStatisticsAvailable");
+			SetUpSessionExecutionStatisticsFilter();
+			SetUpSessionExecutionStatisticsSorting();
+		}
+
+		private void SetUpSessionExecutionStatisticsSorting()
+		{
+			var view = CollectionViewSource.GetDefaultView(_sessionExecutionStatistics);
+			view.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Ascending));
 		}
 
 		public Visibility StatementExecutionInfoSeparatorVisibility
@@ -86,6 +97,32 @@ namespace SqlPad
 		public Visibility ExecutionStatisticsAvailable
 		{
 			get { return _sessionExecutionStatistics.Count > 0 ? Visibility.Visible : Visibility.Collapsed; }
+		}
+
+		public bool ShowAllSessionExecutionStatistics
+		{
+			get { return _showAllSessionExecutionStatistics; }
+			set
+			{
+				if (UpdateValueAndRaisePropertyChanged(ref _showAllSessionExecutionStatistics, value))
+				{
+					SetUpSessionExecutionStatisticsFilter();
+				}
+			}
+		}
+
+		private void SetUpSessionExecutionStatisticsFilter()
+		{
+			var view = CollectionViewSource.GetDefaultView(_sessionExecutionStatistics);
+			view.Filter = _showAllSessionExecutionStatistics
+				? (Predicate<object>)null
+				: ShowActiveSessionExecutionStatisticsFilter;
+		}
+
+		public bool ShowActiveSessionExecutionStatisticsFilter(object record)
+		{
+			var statisticsRecord = (SessionExecutionStatisticsRecord)record;
+			return statisticsRecord.Value != 0;
 		}
 
 		public int CurrentLine
