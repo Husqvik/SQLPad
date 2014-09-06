@@ -4216,6 +4216,9 @@
           <NonTerminal Id="CreateTable" />
         </Sequence>
         <Sequence>
+          <NonTerminal Id="CreateIndex" />
+        </Sequence>
+        <Sequence>
           <NonTerminal Id="CreateSynonym" />
         </Sequence>
         <Sequence>
@@ -4225,6 +4228,7 @@
       </Sequences>
     </Rule>
 
+    <!-- CREATE TABLE -->
     <Rule StartingNonTerminal="CreateTable">
       <Sequences>
         <Sequence>
@@ -6164,6 +6168,241 @@
       </Sequences>
     </Rule>
 
+    <!-- CREATE INDEX -->
+    <Rule StartingNonTerminal="CreateIndex">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="UniqueOrBitmap" IsOptional="true" />
+          <Terminal Id="Index" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+          <Terminal Id="On" />
+          <NonTerminal Id="IndexTypeClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="IndexTypeClause">
+      <Sequences>
+        <!--<Sequence>
+          <NonTerminal Id="ClusterIndexClause" />
+        </Sequence>-->
+        <Sequence>
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="TableIndexOrBitmapJoinIndexClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="TableIndexOrBitmapJoinIndexClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="TableIndexClause" />
+        </Sequence>
+        <!--<Sequence>
+          <NonTerminal Id="BitmapJoinIndexClause" />
+        </Sequence>-->
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="TableIndexClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="ObjectAlias" IsOptional="true" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="TableIndexExpressionList" />
+          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="IndexProperties" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="IndexProperties">
+      <Sequences>
+        <!--<Sequence>
+          <Terminal Id="IndexType" />
+          <Terminal Id="Is" />
+          <NonTerminal Id="DomainIndexClauseOrXmlIndexClause" />
+        </Sequence>-->
+        <Sequence>
+          <NonTerminal Id="IndexAttributesOrPartitionedIndexList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="IndexAttributesOrPartitionedIndexList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="PartitionedIndex" />
+          <NonTerminal Id="IndexAttributesOrPartitionedIndexList" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="IndexAttribute" />
+          <NonTerminal Id="IndexAttributesOrPartitionedIndexList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PartitionedIndex">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="LocalPartitionedIndex" />
+        </Sequence>
+        <!--<Sequence>
+          <NonTerminal Id="GlobalPartitionedIndex" />
+        </Sequence>-->
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="LocalPartitionedIndex">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Local" />
+          <!-- TODO: -->
+          <!--<NonTerminal Id="PartitionedIndexPartitionType" IsOptional="true" />-->
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="IndexAttribute">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="LoggingClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="UsableOrUnusable" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Online" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="TableSpace" />
+          <NonTerminal Id="DefaultOrIdentifier" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="IndexCompression" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="SortOrNoSort" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Reverse" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="VisibleOrInvisible" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Indexing" />
+          <NonTerminal Id="PartialOrFull" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ParallelClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="PhysicalAttributesClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="IndexCompression">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="NoCompress" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Compress" />
+          <NonTerminal Id="IndexCompressionPrefixOrAdvancedCompression" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="IndexCompressionPrefixOrAdvancedCompression">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Advanced" />
+          <Terminal Id="Low" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PartialOrFull">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Partial" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Full" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SortOrNoSort">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Sort" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="NoSort" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DefaultOrIdentifier">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Default" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Identifier" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="TableIndexExpressionList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="Expression" />
+          <NonTerminal Id="SortOrder" IsOptional="true" />
+          <NonTerminal Id="CommaChainedTableIndexExpressionList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="CommaChainedTableIndexExpressionList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="TableIndexExpressionList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="UniqueOrBitmap">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Unique" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Bitmap" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="UsableOrUnusable">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Usable" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Unusable" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
     <!-- CREATE SYNONYM -->
     <Rule StartingNonTerminal="CreateSynonym">
       <Sequences>
@@ -6690,6 +6929,14 @@
     <Terminal Id="Type" Value="TYPE" />
     <Terminal Id="Locator" Value="LOCATOR" />
     <Terminal Id="Nested" Value="NESTED" />
+
+    <!-- Index -->
+    <Terminal Id="Bitmap" Value="BITMAP" />
+    <Terminal Id="NoSort" Value="NOSORT" />
+    <Terminal Id="Reverse" Value="REVERSE" />
+    <Terminal Id="Indexing" Value="INDEXING" />
+    <Terminal Id="Usable" Value="USABLE" />
+    <Terminal Id="Unusable" Value="UNUSABLE" />
 
     <!-- Other -->
     <Terminal Id="Float" Value="FLOAT" IsKeyword="true" />

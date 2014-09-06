@@ -2958,6 +2958,27 @@ NESTED TABLE NESTED_TABLE_COLUMN
 			}
 		}
 
+		public class CreateIndex
+		{
+			[Test(Description = @"")]
+			public void TestCreateSequence()
+			{
+				const string statementText =
+@"CREATE INDEX HUSQVIK.IX_MEASUREVALUES
+ON MEASUREVALUES (USAGEPOINT_ID, MEASURETIMESTAMP)
+COMPRESS 1
+LOCAL
+UNUSABLE
+NOLOGGING";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			}
+		}
+
 		public class CreateSequence
 		{
 			[Test(Description = @"")]
