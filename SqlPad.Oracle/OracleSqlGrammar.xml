@@ -4353,8 +4353,8 @@
       <Sequences>
         <Sequence>
           <NonTerminal Id="ColumnProperties" IsOptional="true" />
-          <!--<NonTerminal Id="IndexingClause" />
-          <NonTerminal Id="TablePartitioningClauses" />
+          <NonTerminal Id="IndexingClause" IsOptional="true" />
+          <!--<NonTerminal Id="TablePartitioningClauses" />
           <NonTerminal Id="AttributeClusteringClause" />-->
           <NonTerminal Id="CacheOrNoCache" IsOptional="true" />
           <NonTerminal Id="ResultCacheClause" IsOptional="true" />
@@ -4365,6 +4365,26 @@
           <NonTerminal Id="FlashbackArchiveClause" IsOptional="true" />
           <NonTerminal Id="RowArchival" IsOptional="true" />
           <!--<NonTerminal Id="AsSubquery" IsOptional="true" />-->
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="IndexingClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Indexing" />
+          <NonTerminal Id="OnOrOff" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="OnOrOff">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="On" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Off" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -5360,10 +5380,38 @@
           <NonTerminal Id="DeferrableState" IsOptional="true" />
           <NonTerminal Id="InitialDeferrableState" IsOptional="true" />
           <NonTerminal Id="RelyOrNoRely" IsOptional="true" />
-          <!--<NonTerminal Id="UsingIndexClause" IsOptional="true" />-->
+          <NonTerminal Id="UsingIndexClause" IsOptional="true" />
           <NonTerminal Id="EnableOrDisable" IsOptional="true" />
           <!--<NonTerminal Id="ValidateOrNoValidate" IsOptional="true" />-->
           <!--<NonTerminal Id="ConstraintStateExceptionClause" IsOptional="true" />-->
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="UsingIndexClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Using" />
+          <Terminal Id="Index" />
+          <NonTerminal Id="UsingIndexOption" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="UsingIndexOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <Terminal Id="Create" />
+          <NonTerminal Id="CreateIndex" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="IndexProperties" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="SchemaPrefix" />
+          <Terminal Id="ObjectIdentifier" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -6906,6 +6954,7 @@
     <Terminal Id="Overflow" Value="OVERFLOW" />
     <Terminal Id="Supplemental" Value="SUPPLEMENTAL" />
     <Terminal Id="Data" Value="DATA" />
+    <Terminal Id="Off" Value="OFF" />
 
     <!-- Large objects -->
     <Terminal Id="LargeObject" Value="LOB" />

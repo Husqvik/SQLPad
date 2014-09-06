@@ -2956,6 +2956,25 @@ NESTED TABLE NESTED_TABLE_COLUMN
 				var statement = result.Single();
 				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 			}
+
+			[Test(Description = @"")]
+			public void TestUsingCreateIndexClause()
+			{
+				const string statementText =
+@"CREATE TABLE TEST_TABLE
+(
+	ID NUMBER PRIMARY KEY USING INDEX (CREATE INDEX PK_TEST_TABLE ON TEST_TABLE (ID)),
+	VALUE NUMBER,
+	CONSTRAINT IX_TEST_TABLE UNIQUE (VALUE) USING INDEX (CREATE UNIQUE INDEX IX_TEST_TABLE_VALUE ON TEST_TABLE (VALUE)),
+	DATA VARCHAR2(255) CONSTRAINT UQ_TEST_TABLE_DATA UNIQUE USING INDEX PCTFREE 20 STORAGE (INITIAL 8M) REVERSE
+)";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			}
 		}
 
 		public class CreateIndex
