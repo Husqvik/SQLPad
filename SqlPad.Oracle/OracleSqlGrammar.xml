@@ -4261,6 +4261,80 @@
       </Sequences>
     </Rule>
 
+    <Rule StartingNonTerminal="ObjectTable">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Of" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="ObjectTableSubstitutionClause" IsOptional="true" />
+          <!--<NonTerminal Id="ParenthesisEnclosedObjectProperties" IsOptional="true" />-->
+          <NonTerminal Id="TemporaryTableOnCommitClause" IsOptional="true" />
+          <NonTerminal Id="ObjectTableObjectIdentifierClause" IsOptional="true" />
+          <NonTerminal Id="ObjectTableObjectIdentifierIndexClause" IsOptional="true" />
+          <NonTerminal Id="PhysicalProperties" IsOptional="true" />
+          <NonTerminal Id="TableProperties" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ObjectTableObjectIdentifierIndexClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="ObjectIdentifierIndex" />
+          <Terminal Id="Identifier" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="PhysicalAttributesClauseOrTableSpaceIdentifierList" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PhysicalAttributesClauseOrTableSpaceIdentifierList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="PhysicalAttributesClauseOrTableSpaceIdentifier" />
+          <NonTerminal Id="PhysicalAttributesClauseOrTableSpaceIdentifierList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PhysicalAttributesClauseOrTableSpaceIdentifier">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="TableSpace" />
+          <Terminal Id="Identifier" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="PhysicalAttributesClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ObjectTableObjectIdentifierClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Object" />
+          <Terminal Id="Identifier" />
+          <Terminal Id="Is" />
+          <NonTerminal Id="SystemGeneratedOrPrimaryKey" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SystemGeneratedOrPrimaryKey">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="System" />
+          <Terminal Id="Generated" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Primary" />
+          <Terminal Id="Key" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
     <Rule StartingNonTerminal="RelationalTable">
       <Sequences>
         <Sequence>
@@ -4302,9 +4376,9 @@
 
     <Rule StartingNonTerminal="ColumnProperty">
       <Sequences>
-        <!--<Sequence>
-          <NonTerminal Id="ObjectTypeColumnProperty" />
-        </Sequence>-->
+        <Sequence>
+          <NonTerminal Id="ObjectTypeColumnProperties" />
+        </Sequence>
         <Sequence>
           <NonTerminal Id="NestedTableColumnProperties" />
         </Sequence>
@@ -4315,6 +4389,16 @@
         <!--<Sequence>
           <NonTerminal Id="XmlTypeColumnProperty" />
         </Sequence>-->
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ObjectTypeColumnProperties">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Column" />
+          <Terminal Id="Identifier" />
+          <NonTerminal Id="SubstitutableColumnClause" />
+        </Sequence>
       </Sequences>
     </Rule>
     
@@ -4329,13 +4413,13 @@
           <Terminal Id="Store" />
           <Terminal Id="As" />
           <Terminal Id="ObjectIdentifier" />
-          <NonTerminal Id="ParenthesisEncapsulatedNestedStorageTableProperties" IsOptional="true" />
+          <NonTerminal Id="ParenthesisEnclosedNestedStorageTableProperties" IsOptional="true" />
           <NonTerminal Id="NestedTableReturnType" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
     
-    <Rule StartingNonTerminal="ParenthesisEncapsulatedNestedStorageTableProperties">
+    <Rule StartingNonTerminal="ParenthesisEnclosedNestedStorageTableProperties">
       <Sequences>
         <Sequence>
           <Terminal Id="LeftParenthesis" />
@@ -4353,13 +4437,21 @@
         </Sequence>
       </Sequences>
     </Rule>
+
+    <Rule StartingNonTerminal="ParenthesisEnclosedObjectProperties">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="ObjectProperties" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
     
     <Rule StartingNonTerminal="NestedStorageTableProperty">
       <Sequences>
         <!--<Sequence>
-          <Terminal Id="LeftParenthesis" />
-          <NonTerminal Id="ObjectProperties" />
-          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="ParenthesisEnclosedObjectProperties" />
         </Sequence>-->
         <Sequence>
           <NonTerminal Id="PhysicalProperties" />
@@ -4447,6 +4539,14 @@
           <NonTerminal Id="DataType" />
           <Terminal Id="RightParenthesis" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="ObjectTableSubstitutionClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ObjectTableSubstitutionClause">
+      <Sequences>
         <Sequence>
           <Terminal Id="Not" IsOptional="true" />
           <Terminal Id="Substitutable" />

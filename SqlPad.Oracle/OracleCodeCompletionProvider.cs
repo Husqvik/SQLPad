@@ -614,7 +614,7 @@ namespace SqlPad.Oracle
 					StatementNode = node,
 					Category = o.Category,
 					InsertOffset = insertOffset,
-					CaretOffset = o.CaretOffset - insertOffset,
+					CaretOffset = o.CaretOffset,
 					CategoryPriority = categoryOffset
 				});
 		}

@@ -10,7 +10,7 @@ namespace SqlPad
 	public class CompletionData : ICompletionData
 	{
 		private readonly string _completionText;
-		private readonly int _offset;
+		private readonly int _insertOffset;
 		private readonly int _caretOffset;
 		
 		private readonly ICodeSnippet _snippet;
@@ -21,7 +21,7 @@ namespace SqlPad
 			Content = Text;
 			_completionText = codeCompletion.Text;
 			Node = codeCompletion.StatementNode;
-			_offset = codeCompletion.InsertOffset;
+			_insertOffset = codeCompletion.InsertOffset;
 			_caretOffset = codeCompletion.CaretOffset;
 			Description = codeCompletion.Category;
 		}
@@ -69,7 +69,7 @@ namespace SqlPad
 			}
 			else
 			{
-				textArea.Document.Replace(completionSegment, new String(' ', _offset) + _completionText.Trim());
+				textArea.Document.Replace(completionSegment, new String(' ', _insertOffset) + _completionText.Trim());
 			}
 
 			if (_caretOffset != 0)

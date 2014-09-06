@@ -275,6 +275,11 @@ namespace SqlPad.Oracle
 			public const string NullNaNOrInfinite = "NullNaNOrInfinite";
 			public const string NullsClause = "NullsClause";
 			public const string ObjectPrefix = "ObjectPrefix";
+			public const string ObjectProperties = "ObjectProperties";
+			public const string ObjectTableObjectIdentifierClause = "ObjectTableObjectIdentifierClause";
+			public const string ObjectTableObjectIdentifierIndexClause = "ObjectTableObjectIdentifierIndexClause";
+			public const string ObjectTableSubstitutionClause = "ObjectTableSubstitutionClause";
+			public const string ObjectTypeColumnProperties = "ObjectTypeColumnProperties";
 			public const string ObjectTypeNestedFunctionCallChained = "ObjectTypeNestedFunctionCallChained";
 			public const string OnlyOrWithTies = "OnlyOrWithTies";
 			public const string OnNull = "OnNull";
@@ -298,7 +303,6 @@ namespace SqlPad.Oracle
 			public const string OutOfLineConstraintDefinition = "OutOfLineConstraintDefinition";
 			public const string OverQueryPartitionClause = "OverQueryPartitionClause";
 			public const string ParallelClause = "ParallelClause";
-			public const string ParenthesisEncapsulatedNestedStorageTableProperties = "ParenthesisEncapsulatedNestedStorageTableProperties";
 			public const string ParenthesisEnclosedAggregationFunctionParameters = "ParenthesisEnclosedAggregationFunctionParameters";
 			public const string ParenthesisEnclosedExpression = "ParenthesisEnclosedExpression";
 			public const string ParenthesisEnclosedExpressionList = "ParenthesisEnclosedExpressionList";
@@ -311,6 +315,7 @@ namespace SqlPad.Oracle
 			public const string ParenthesisEnclosedIdentityOptions = "ParenthesisEnclosedIdentityOptions";
 			public const string ParenthesisEnclosedLargeObjectStorageParameters = "ParenthesisEnclosedLargeObjectStorageParameters";
 			public const string ParenthesisEnclosedMergeInsertValuesExpressionOrOrDefaultValueList = "ParenthesisEnclosedMergeInsertValuesExpressionOrOrDefaultValueList";
+			public const string ParenthesisEnclosedNestedStorageTableProperties = "ParenthesisEnclosedNestedStorageTableProperties";
 			public const string ParenthesisEnclosedPeriodStartEndColumns = "ParenthesisEnclosedPeriodStartEndColumns";
 			public const string ParenthesisEnclosedRelationalProperties = "ParenthesisEnclosedRelationalProperties";
 			public const string ParenthesisEnclosedStringOrIntegerLiteralList = "ParenthesisEnclosedStringOrIntegerLiteralList";
@@ -321,6 +326,8 @@ namespace SqlPad.Oracle
 			public const string PeriodDefinition = "PeriodDefinition";
 			public const string PhysicalAttribute = "PhysicalAttribute";
 			public const string PhysicalAttributesClause = "PhysicalAttributesClause";
+			public const string PhysicalAttributesClauseOrTableSpaceIdentifier = "PhysicalAttributesClauseOrTableSpaceIdentifier";
+			public const string PhysicalAttributesClauseOrTableSpaceIdentifierList = "PhysicalAttributesClauseOrTableSpaceIdentifierList";
 			public const string PhysicalProperties = "PhysicalProperties";
 			public const string PivotAliasedAggregationFunctionList = "PivotAliasedAggregationFunctionList";
 			public const string PivotAliasedAggregationFunctionListChained = "PivotAliasedAggregationFunctionListChained";
@@ -422,6 +429,7 @@ namespace SqlPad.Oracle
 			public const string SupplementalLogKeyList = "SupplementalLogKeyList";
 			public const string SystemChangeNumberOrTimestamp = "SystemChangeNumberOrTimestamp";
 			public const string SystemChangeNumberOrTimestampOrPeriodFor = "SystemChangeNumberOrTimestampOrPeriodFor";
+			public const string SystemGeneratedOrPrimaryKey = "SystemGeneratedOrPrimaryKey";
 			public const string TableCollectionExpression = "TableCollectionExpression";
 			public const string TableCollectionInnerExpression = "TableCollectionInnerExpression";
 			public const string TableCompression = "TableCompression";

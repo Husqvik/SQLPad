@@ -691,6 +691,7 @@ FROM
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 19).ToList();
 			items.Count.ShouldBe(1);
 			items[0].Text.ShouldBe("\"CaseSensitiveTable\"");
+			items[0].CaretOffset.ShouldBe(0);
 		}
 
 		[Test(Description = @"")]
@@ -701,6 +702,7 @@ FROM
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 24).ToList();
 			items.Count.ShouldBe(1);
 			items[0].Name.ShouldBe("HQ_PDB_LOOPBACK");
+			items[0].CaretOffset.ShouldBe(0);
 			items[0].Text.ShouldBe("HQ_PDB_LOOPBACK");
 		}
 
@@ -857,6 +859,7 @@ se";
 			items[1].Category.ShouldBe(OracleCodeCompletionCategory.Column);
 			items[2].Name.ShouldBe("SELECTION");
 			items[2].Text.ShouldBe("SELECTION");
+			items[2].CaretOffset.ShouldBe(0);
 			items[2].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
 		}
 
@@ -875,6 +878,7 @@ se";
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 41).ToList();
 			items.Count.ShouldBe(1);
 			items[0].Name.ShouldBe("SESSIONTIMEZONE");
+			items[0].CaretOffset.ShouldBe(0);
 		}
 
 		[Test(Description = @"")]
@@ -885,9 +889,11 @@ se";
 			items.Count.ShouldBe(2);
 			items[0].Name.ShouldBe("SYNONYM_TO_TEST_SEQ");
 			items[0].Text.ShouldBe("SYNONYM_TO_TEST_SEQ");
+			items[0].CaretOffset.ShouldBe(0);
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
 			items[1].Name.ShouldBe("TEST_SEQ");
 			items[1].Text.ShouldBe("TEST_SEQ");
+			items[1].CaretOffset.ShouldBe(0);
 			items[1].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
 		}
 
@@ -917,6 +923,20 @@ se";
 			const string statement = @"SELECT INACESSIBLE FROM DUAL";
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 18).ToList();
 			items.Count.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
+		public void TestCaretOffsetWhenTypingSourceRowSource()
+		{
+			const string statement = @"SELECT * FROM SELECTIO";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 22).ToList();
+			items.Count.ShouldBe(2);
+			items[0].Name.ShouldBe("SELECTION");
+			items[0].Text.ShouldBe("SELECTION");
+			items[0].CaretOffset.ShouldBe(0);
+			items[1].Name.ShouldBe("SYNONYM_TO_SELECTION");
+			items[1].Text.ShouldBe("SYNONYM_TO_SELECTION");
+			items[1].CaretOffset.ShouldBe(0);
 		}
 
 		public class OracleCodeCompletionTypeTest
