@@ -580,10 +580,34 @@ namespace SqlPad.Oracle
 			processingResult = bestCandidateResult;
 		}
 
+		private int TryGetOptionalAncestor(ref StatementGrammarNode node)
+		{
+			var depth = -1;
+
+			do
+			{
+				depth++;
+				node = node.ParentNode;
+			} while (node != null && node.IsRequired);
+
+			return depth;
+		}
+
 		private bool TryRevertOptionalToken(Func<int, ProcessingResult> getAlternativeProcessingResultFunction, ref ProcessingResult currentResult, IList<StatementGrammarNode> workingNodes)
 		{
 			var optionalNodeCandidate = workingNodes.Count > 0 ? workingNodes[workingNodes.Count - 1].LastTerminalNode : null;
-			optionalNodeCandidate = optionalNodeCandidate != null && optionalNodeCandidate.IsRequired ? optionalNodeCandidate.ParentNode : optionalNodeCandidate;
+			var revertingDepth = 0;
+			if (optionalNodeCandidate != null && optionalNodeCandidate.IsRequired)
+			{
+				if (currentResult.Status == ProcessingStatus.SequenceNotFound)
+				{
+					revertingDepth = TryGetOptionalAncestor(ref optionalNodeCandidate);
+				}
+				else
+				{
+					optionalNodeCandidate = optionalNodeCandidate.ParentNode;
+				}
+			}
 
 			if (optionalNodeCandidate == null || optionalNodeCandidate.IsRequired)
 			{
@@ -598,22 +622,25 @@ namespace SqlPad.Oracle
 			var optionalTerminalCount = optionalNodeCandidate.TerminalCount;
 			var newResult = getAlternativeProcessingResultFunction(optionalTerminalCount);
 
-			var newResultTerminalCount = newResult.BestCandidates.Sum(n => n.TerminalCount);
-			var revertNode = newResultTerminalCount >= optionalTerminalCount &&
-			                 newResultTerminalCount > currentResult.Nodes.Sum(n => n.TerminalCount);
+			var effectiveNodes = revertingDepth == 0 ? newResult.BestCandidates : newResult.Nodes;
+			var effectiveTerminalCount = effectiveNodes.Sum(n => n.TerminalCount);
+			var revertNode = effectiveTerminalCount >= optionalTerminalCount &&
+							 effectiveTerminalCount > currentResult.Nodes.Sum(n => n.TerminalCount);
 
 			if (!revertNode)
 				return false;
 			
 			currentResult = newResult;
-			RevertLastOptionalNode(workingNodes, optionalNodeCandidate.Type);
+			
+			var removeChildNodeOnly = optionalNodeCandidate.Type == NodeType.Terminal || revertingDepth > 0;
+			RevertLastOptionalNode(workingNodes, removeChildNodeOnly);
 			return true;
 		}
 
-		private void RevertLastOptionalNode(IList<StatementGrammarNode> workingNodes, NodeType nodeType)
+		private void RevertLastOptionalNode(IList<StatementGrammarNode> workingNodes, bool removeChildNodeOnly)
 		{
 			var nodeToRemove = workingNodes[workingNodes.Count - 1];
-			if (nodeType == NodeType.Terminal && nodeToRemove.Type == NodeType.NonTerminal)
+			if (removeChildNodeOnly && nodeToRemove.Type == NodeType.NonTerminal)
 			{
 				nodeToRemove.RemoveLastChildNodeIfOptional();
 			}

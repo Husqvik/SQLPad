@@ -2892,6 +2892,31 @@ STORE AS BASICFILE TEST_LOB_SEGMENT
 				var statement = result.Single();
 				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 			}
+
+			[Test(Description = @"")]
+			public void TestVariableElementArrayColumnProperties()
+			{
+				const string statementText =
+@"CREATE TABLE TEST_TABLE
+(
+	VARRAY_COLUMN1 SYS.ODCIVARCHAR2LIST,
+	VARRAY_COLUMN2 HUSQVIK.ALERT_COLLECTION
+)
+VARRAY VARRAY_COLUMN1
+	NOT SUBSTITUTABLE AT ALL LEVELS
+	STORE AS SECUREFILE LOB 
+		(ENABLE STORAGE IN ROW CHUNK 8192 CACHE COMPRESS MEDIUM DEDUPLICATE
+			STORAGE(BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+		)
+VARRAY VARRAY_COLUMN2
+	IS OF (ONLY HUSQVIK.ALERT)";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			}
 		}
 
 		public class CreateSequence

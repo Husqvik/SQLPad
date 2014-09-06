@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace SqlPad
 {
-	[DebuggerDisplay("ProcessingResult (Status={Status}{Nodes == null ? null : \", Nodes=\" + System.Linq.Enumerable.Count(Nodes), nq})")]
+	[DebuggerDisplay("ProcessingResult (Status={Status}{Nodes == null ? \"\" : \", Nodes=\" + System.Linq.Enumerable.Count(Nodes), nq})")]
 	public struct ProcessingResult
 	{
 		public ProcessingStatus Status { get; set; }
