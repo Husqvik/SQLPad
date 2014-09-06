@@ -4304,10 +4304,10 @@
       <Sequences>
         <!--<Sequence>
           <NonTerminal Id="ObjectTypeColumnProperty" />
-        </Sequence>
-        <Sequence>
-          <NonTerminal Id="NestedTableColumnProperty" />
         </Sequence>-->
+        <Sequence>
+          <NonTerminal Id="NestedTableColumnProperties" />
+        </Sequence>
         <Sequence>
           <NonTerminal Id="VariableElementArrayColumnPropertiesOrLargeObjectStorageClause" />
           <!--<NonTerminal Id="ParenthesisEnclosedLargeObjectPartitionClause" IsOptional="true" />-->
@@ -4315,6 +4315,90 @@
         <!--<Sequence>
           <NonTerminal Id="XmlTypeColumnProperty" />
         </Sequence>-->
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="NestedTableColumnProperties">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Nested" />
+          <Terminal Id="Table" />
+          <Terminal Id="Identifier" Comment="Includes COLUMN_VALUE option. " />
+          <NonTerminal Id="SubstitutableColumnClause" IsOptional="true" />
+          <NonTerminal Id="LocalOrGlobal" IsOptional="true" />
+          <Terminal Id="Store" />
+          <Terminal Id="As" />
+          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="ParenthesisEncapsulatedNestedStorageTableProperties" IsOptional="true" />
+          <NonTerminal Id="NestedTableReturnType" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ParenthesisEncapsulatedNestedStorageTableProperties">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="NestedStorageTableProperties" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+      
+    <Rule StartingNonTerminal="NestedStorageTableProperties">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="NestedStorageTableProperty" />
+          <NonTerminal Id="NestedStorageTableProperties" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="NestedStorageTableProperty">
+      <Sequences>
+        <!--<Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="ObjectProperties" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>-->
+        <Sequence>
+          <NonTerminal Id="PhysicalProperties" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ColumnProperties" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="LocalOrGlobal">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Local" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Global" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="NestedTableReturnType">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Return" />
+          <Terminal Id="As" />
+          <NonTerminal Id="LocatorOrValue" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="LocatorOrValue">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Locator" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Value" />
+        </Sequence>
       </Sequences>
     </Rule>
 
@@ -6504,6 +6588,8 @@
     <Terminal Id="Substitutable" Value="SUBSTITUTABLE" />
     <Terminal Id="Levels" Value="LEVELS" />
     <Terminal Id="Type" Value="TYPE" />
+    <Terminal Id="Locator" Value="LOCATOR" />
+    <Terminal Id="Nested" Value="NESTED" />
 
     <!-- Other -->
     <Terminal Id="Float" Value="FLOAT" IsKeyword="true" />
