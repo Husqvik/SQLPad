@@ -1,0 +1,51 @@
+﻿<UserControl x:Class="SqlPad.Oracle.ToolTips.ToolTipSequence"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:sqlPad="clr-namespace:SqlPad;assembly=SqlPad"
+             mc:Ignorable="d" 
+             d:DesignHeight="144" d:DesignWidth="240"
+			 Padding="4">
+    <StackPanel>
+		<StackPanel.Resources>
+			<sqlPad:DateTimeLabelConverter x:Key="DateTimeConverter" />
+			<sqlPad:BooleanLabelConverter x:Key="BooleanConverter" />
+			<sqlPad:NumericConverter x:Key="NumericConverter" />
+		</StackPanel.Resources>
+		<GroupBox BorderThickness="0">
+			<GroupBox.Header>
+				<TextBlock x:Name="LabelTitle" FontWeight="Bold"/>
+			</GroupBox.Header>
+			<Grid Margin="4">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="96"/>
+					<ColumnDefinition/>
+				</Grid.ColumnDefinitions>
+				<Grid.RowDefinitions>
+					<RowDefinition />
+					<RowDefinition />
+					<RowDefinition />
+					<RowDefinition />
+					<RowDefinition />
+					<RowDefinition />
+					<RowDefinition />
+				</Grid.RowDefinitions>
+				<TextBlock Grid.Row="0" Grid.Column="0" Text="Current value: " />
+				<TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding CurrentValue}" />
+				<TextBlock Grid.Row="1" Grid.Column="0" Text="Increment: " />
+				<TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Increment}" />
+				<TextBlock Grid.Row="2" Grid.Column="0" Text="Minimum value: " />
+				<TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding MinimumValue}" />
+				<TextBlock Grid.Row="3" Grid.Column="0" Text="Maximum value: " />
+				<TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding MaximumValue}" />
+				<TextBlock Grid.Row="4" Grid.Column="0" Text="Cached values: " />
+				<TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding CacheSize}" />
+				<TextBlock Grid.Row="5" Grid.Column="0" Text="Ordered: " />
+				<TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding IsOrdered, Converter={StaticResource BooleanConverter}}" />
+				<TextBlock Grid.Row="6" Grid.Column="0" Text="Can cycle: " />
+				<TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding CanCycle, Converter={StaticResource BooleanConverter}}" />
+			</Grid>
+		</GroupBox>
+	</StackPanel>
+</UserControl>

@@ -162,16 +162,22 @@ namespace SqlPad.Oracle
 
 				IToolTip toolTip = new ToolTipObject { DataContext = simpleToolTip };
 				var schemaObject = objectReference.SchemaObject.GetTargetSchemaObject();
-				if (schemaObject != null && schemaObject.Type == OracleSchemaObjectType.Table)
+				if (schemaObject != null)
 				{
-					var dataModel =
-						new TableDetailsModel
-						{
-							Title = simpleToolTip
-						};
+					switch (schemaObject.Type)
+					{
+						case OracleSchemaObjectType.Table:
+							var dataModel =
+								new TableDetailsModel
+								{
+									Title = simpleToolTip
+								};
 
-					databaseModel.UpdateTableDetailsAsync(schemaObject.FullyQualifiedName, dataModel, CancellationToken.None);
-					toolTip = new ToolTipTable(dataModel);
+							databaseModel.UpdateTableDetailsAsync(schemaObject.FullyQualifiedName, dataModel, CancellationToken.None);
+							return new ToolTipTable(dataModel);
+						case OracleSchemaObjectType.Sequence:
+							return new ToolTipSequence(simpleToolTip, (OracleSequence)schemaObject);
+					}
 				}
 
 				return toolTip;

@@ -348,8 +348,10 @@ namespace SqlPad.Oracle.Test
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 10);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
-			toolTip.Control.DataContext.ShouldBe("HUSQVIK.SYNONYM_TO_TEST_SEQ (Synonym) => HUSQVIK.TEST_SEQ (Sequence)");
+			toolTip.Control.ShouldBeTypeOf<ToolTipSequence>();
+			var toolTipSequence = (ToolTipSequence)toolTip.Control;
+			toolTipSequence.LabelTitle.Text.ShouldBe("HUSQVIK.SYNONYM_TO_TEST_SEQ (Synonym) => HUSQVIK.TEST_SEQ (Sequence)");
+
 		}
 
 		[Test(Description = @""), STAThread]
