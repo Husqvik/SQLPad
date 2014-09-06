@@ -15,7 +15,7 @@ namespace SqlPad.Oracle
 
 		public int CategoryPriority { get; set; }
 		
-		public int Offset { get; set; }
+		public int InsertOffset { get; set; }
 		
 		public int CaretOffset { get; set; }
 

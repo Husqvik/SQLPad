@@ -33,11 +33,11 @@ namespace SqlPad.Oracle.Test
 			items.Length.ShouldBe(5);
 			items[0].Name.ShouldBe("JOIN");
 			items[0].Text.ShouldBe("JOIN");
-			items[0].Offset.ShouldBe(0);
+			items[0].InsertOffset.ShouldBe(0);
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.JoinMethod);
 			items[4].Name.ShouldBe("CROSS JOIN");
 			items[4].Text.ShouldBe("CROSS JOIN");
-			items[4].Offset.ShouldBe(0);
+			items[4].InsertOffset.ShouldBe(0);
 			items[4].Category.ShouldBe(OracleCodeCompletionCategory.JoinMethod);
 		}
 
@@ -60,7 +60,7 @@ namespace SqlPad.Oracle.Test
 			items.Length.ShouldBe(2);
 			items[0].Name.ShouldBe("INVOICELINES");
 			items[0].Text.ShouldBe("INVOICELINES");
-			//items[0].Offset.ShouldBe(0);
+			//items[0].InsertOffset.ShouldBe(0);
 			items[1].Name.ShouldBe("INVOICES");
 			items[1].Text.ShouldBe("INVOICES");
 
@@ -80,7 +80,7 @@ namespace SqlPad.Oracle.Test
 			items.Length.ShouldBe(1);
 			items[0].Name.ShouldBe("ON S.PROJECT_ID = P.PROJECT_ID");
 			items[0].Text.ShouldBe("ON S.PROJECT_ID = P.PROJECT_ID");
-			items[0].Offset.ShouldBe(0);
+			items[0].InsertOffset.ShouldBe(0);
 		}
 
 		[Test(Description = @"")]
@@ -93,7 +93,7 @@ namespace SqlPad.Oracle.Test
 			items.Length.ShouldBe(1);
 			items[0].Name.ShouldBe("S.PROJECT_ID = P.PROJECT_ID");
 			items[0].Text.ShouldBe("S.PROJECT_ID = P.PROJECT_ID");
-			items[0].Offset.ShouldBe(0);
+			items[0].InsertOffset.ShouldBe(0);
 		}
 
 		[Test(Description = @"")]
@@ -103,7 +103,7 @@ namespace SqlPad.Oracle.Test
 			items.Length.ShouldBe(1);
 			items[0].Name.ShouldBe("ON T1.VAL = T2.VAL");
 			items[0].Text.ShouldBe("ON T1.VAL = T2.VAL");
-			items[0].Offset.ShouldBe(0);
+			items[0].InsertOffset.ShouldBe(0);
 		}
 
 		[Test(Description = @"")]
@@ -113,10 +113,10 @@ namespace SqlPad.Oracle.Test
 			items.Length.ShouldBe(2);
 			items[0].Name.ShouldBe("ON P.PROJECT_ID = B.PROJECT_ID");
 			items[0].Text.ShouldBe("ON P.PROJECT_ID = B.PROJECT_ID");
-			items[0].Offset.ShouldBe(0);
+			items[0].InsertOffset.ShouldBe(0);
 			items[1].Name.ShouldBe("ON S.RESPONDENTBUCKET_ID = B.RESPONDENTBUCKET_ID");
 			items[1].Text.ShouldBe("ON S.RESPONDENTBUCKET_ID = B.RESPONDENTBUCKET_ID");
-			items[1].Offset.ShouldBe(0);
+			items[1].InsertOffset.ShouldBe(0);
 		}
 
 		[Test(Description = @"")]
@@ -143,7 +143,7 @@ FROM
 			items.Length.ShouldBe(1);
 			items[0].Name.ShouldBe("ON CTE1.ID = CTE2.ID");
 			items[0].Text.ShouldBe("ON CTE1.ID = CTE2.ID");
-			items[0].Offset.ShouldBe(0);
+			items[0].InsertOffset.ShouldBe(0);
 		}
 
 		[Test(Description = @"")]
@@ -203,7 +203,7 @@ FROM
 			const string query1 = @"SELECT 1,  FROM SELECTION S";
 
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 10).Where(FilterProgramItems).ToArray();
-			items.Length.ShouldBe(10);
+			items.Length.ShouldBe(14);
 			items[0].Name.ShouldBe("S.*");
 			items[0].Text.ShouldBe("S.RESPONDENTBUCKET_ID, S.SELECTION_ID, S.PROJECT_ID, S.NAME");
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.AllColumns);
@@ -225,16 +225,26 @@ FROM
 			items[6].Name.ShouldBe("S");
 			items[6].Text.ShouldBe("S");
 			items[6].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
+			// Other schema objects
+			items[7].Name.ShouldBe("INVALID_OBJECT_TYPE");
+			items[7].Text.ShouldBe("INVALID_OBJECT_TYPE()");
+			items[7].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
+			items[9].Name.ShouldBe("TEST_SEQ");
+			items[9].Text.ShouldBe("TEST_SEQ");
+			items[9].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
+			items[10].Name.ShouldBe("XMLTYPE");
+			items[10].Text.ShouldBe("XMLTYPE()");
+			items[10].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
 			// Schemas
-			items[7].Name.ShouldBe("HUSQVIK");
-			items[7].Text.ShouldBe("HUSQVIK");
-			items[7].Category.ShouldBe(OracleCodeCompletionCategory.DatabaseSchema);
-			items[8].Name.ShouldBe("SYS");
-			items[8].Text.ShouldBe("SYS");
-			items[8].Category.ShouldBe(OracleCodeCompletionCategory.DatabaseSchema);
-			items[9].Name.ShouldBe("SYSTEM");
-			items[9].Text.ShouldBe("SYSTEM");
-			items[9].Category.ShouldBe(OracleCodeCompletionCategory.DatabaseSchema);
+			items[11].Name.ShouldBe("HUSQVIK");
+			items[11].Text.ShouldBe("HUSQVIK");
+			items[11].Category.ShouldBe(OracleCodeCompletionCategory.DatabaseSchema);
+			items[12].Name.ShouldBe("SYS");
+			items[12].Text.ShouldBe("SYS");
+			items[12].Category.ShouldBe(OracleCodeCompletionCategory.DatabaseSchema);
+			items[13].Name.ShouldBe("SYSTEM");
+			items[13].Text.ShouldBe("SYSTEM");
+			items[13].Category.ShouldBe(OracleCodeCompletionCategory.DatabaseSchema);
 		}
 
 		[Test(Description = @"")]
@@ -402,7 +412,7 @@ FROM
 		private static bool FilterRowSources(OracleSchemaObject schemaObject)
 		{
 			var targetObject = schemaObject.GetTargetSchemaObject();
-			return schemaObject.Owner.In(OracleTestDatabaseModel.Instance.CurrentSchema, OracleDatabaseModelBase.SchemaPublic) && targetObject.Type.In(OracleSchemaObjectType.Table, OracleSchemaObjectType.View);
+			return targetObject != null && schemaObject.Owner.In(OracleTestDatabaseModel.Instance.CurrentSchema, OracleDatabaseModelBase.SchemaPublic) && targetObject.Type.In(OracleSchemaObjectType.Table, OracleSchemaObjectType.View);
 		}
 
 		[Test(Description = @"")]
@@ -411,9 +421,10 @@ FROM
 			const string query1 = @"SELECT  1 FROM SYS.DUAL";
 
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 7, true, OracleCodeCompletionCategory.SchemaObject, OracleCodeCompletionCategory.Column).ToArray();
-			items.Length.ShouldBe(2);
+			items.Length.ShouldBe(6);
 			items[0].Name.ShouldBe("SYS.DUAL.DUMMY");
 			items[1].Name.ShouldBe("SYS.DUAL");
+			items[5].Name.ShouldBe("XMLTYPE");
 		}
 
 		[Test(Description = @"")]
@@ -460,7 +471,7 @@ FROM
 		{
 			const string query1 = @"SELECT  FROM (SELECT HUSQVIK.SELECTION.NAME FROM HUSQVIK.SELECTION), HUSQVIK.SELECTION";
 
-			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 7).Where(FilterProgramItems).Where(i => !i.Name.Contains("HUSQVIK.SELECTION") && i.Category != OracleCodeCompletionCategory.DatabaseSchema).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 7).Where(FilterProgramItems).Where(i => !i.Name.Contains("HUSQVIK.SELECTION") && !i.Category.In(OracleCodeCompletionCategory.DatabaseSchema, OracleCodeCompletionCategory.SchemaObject)).ToArray();
 			items.Length.ShouldBe(0);
 		}
 
@@ -730,10 +741,10 @@ se";
 		{
 			const string statement = @"SELECT SQLPAD.SQLPAD_FUNCTION(D) FROM DUAL";
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 31).ToList();
-			items.Count.ShouldBe(4);
+			items.Count.ShouldBe(5);
 			items[0].Text.ShouldBe("DUAL.DUMMY");
-			items[3].Name.ShouldBe("DUMP");
-			items[3].Text.ShouldBe("DUMP()");
+			items[4].Name.ShouldBe("DUMP");
+			items[4].Text.ShouldBe("DUMP()");
 		}
 
 		[Test(Description = @"")]
@@ -854,7 +865,7 @@ se";
 		{
 			const string statement = @"UPDATE SELECTION SET PROJECT_ID = 998 WHERE E";
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 45).ToList();
-			items.Count.ShouldBe(6);
+			items.Count.ShouldBe(8);
 		}
 
 		[Test(Description = @"")]
@@ -864,6 +875,48 @@ se";
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 41).ToList();
 			items.Count.ShouldBe(1);
 			items[0].Name.ShouldBe("SESSIONTIMEZONE");
+		}
+
+		[Test(Description = @"")]
+		public void TestSequenceObjectCodeCompletion()
+		{
+			const string statement = @"SELECT SEQ FROM SELECTION";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 10).ToList();
+			items.Count.ShouldBe(2);
+			items[0].Name.ShouldBe("SYNONYM_TO_TEST_SEQ");
+			items[0].Text.ShouldBe("SYNONYM_TO_TEST_SEQ");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
+			items[1].Name.ShouldBe("TEST_SEQ");
+			items[1].Text.ShouldBe("TEST_SEQ");
+			items[1].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
+		}
+
+		[Test(Description = @"")]
+		public void TestSchemaTypeCodeCompletion()
+		{
+			const string statement = @"SELECT XML FROM SELECTION";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 10).ToList();
+			items.Count.ShouldBe(1);
+			items[0].Name.ShouldBe("XMLTYPE");
+			items[0].Text.ShouldBe("XMLTYPE()");
+			items[0].CaretOffset.ShouldBe(-1);
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
+		}
+
+		[Test(Description = @"")]
+		public void TestSequenceObjectCodeCompletionInSubquery()
+		{
+			const string statement = @"SELECT * FROM (SELECT SEQ FROM SELECTION)";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 25).ToList();
+			items.Count.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
+		public void TestOtherSchemaObjectCodeCompletionThroughSynonymWithInaccessibleTargetObject()
+		{
+			const string statement = @"SELECT INACESSIBLE FROM DUAL";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 18).ToList();
+			items.Count.ShouldBe(0);
 		}
 
 		public class OracleCodeCompletionTypeTest

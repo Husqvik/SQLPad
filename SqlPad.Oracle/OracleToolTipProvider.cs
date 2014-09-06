@@ -167,12 +167,7 @@ namespace SqlPad.Oracle
 					switch (schemaObject.Type)
 					{
 						case OracleSchemaObjectType.Table:
-							var dataModel =
-								new TableDetailsModel
-								{
-									Title = simpleToolTip
-								};
-
+							var dataModel = new TableDetailsModel { Title = simpleToolTip };
 							databaseModel.UpdateTableDetailsAsync(schemaObject.FullyQualifiedName, dataModel, CancellationToken.None);
 							return new ToolTipTable(dataModel);
 						case OracleSchemaObjectType.Sequence:

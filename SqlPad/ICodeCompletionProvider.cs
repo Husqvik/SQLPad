@@ -34,7 +34,7 @@ namespace SqlPad
 
 		int CategoryPriority { get; }
 
-		int Offset { get; }
+		int InsertOffset { get; }
 
 		int CaretOffset { get; }
 

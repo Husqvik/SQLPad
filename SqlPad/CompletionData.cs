@@ -21,7 +21,7 @@ namespace SqlPad
 			Content = Text;
 			_completionText = codeCompletion.Text;
 			Node = codeCompletion.StatementNode;
-			_offset = codeCompletion.Offset;
+			_offset = codeCompletion.InsertOffset;
 			_caretOffset = codeCompletion.CaretOffset;
 			Description = codeCompletion.Category;
 		}

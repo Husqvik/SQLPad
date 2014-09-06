@@ -586,6 +586,11 @@ namespace SqlPad.Oracle.Test
 				FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"TEST_SEQ\""),
 				IsValid = true,
 				CacheSize = 20, CurrentValue = 1234, MinimumValue = 1, MaximumValue = Decimal.MaxValue, CanCycle = true
+			},
+			new OracleSynonym
+			{
+				FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"SYNONYM_TO_INACESSIBLE_OBJECT\""),
+				IsValid = true
 			}
 		};
 

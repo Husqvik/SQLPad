@@ -90,8 +90,12 @@ namespace SqlPad.Oracle
 
 		public static bool IsWithinSelectClauseOrExpression(this StatementGrammarNode node)
 		{
-			return node.IsWithinSelectClause() ||
-			       node.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.Expression) != null;
+			return node.IsWithinSelectClause() || node.IsWithinExpression();
+		}
+
+		public static bool IsWithinExpression(this StatementGrammarNode node)
+		{
+			return node.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.Expression) != null;
 		}
 
 		public static bool IsWithinSelectClause(this StatementGrammarNode node)
