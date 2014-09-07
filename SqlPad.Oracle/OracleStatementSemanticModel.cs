@@ -9,6 +9,7 @@ namespace SqlPad.Oracle
 	public class OracleStatementSemanticModel : IStatementSemanticModel
 	{
 		private Dictionary<StatementGrammarNode, OracleQueryBlock> _queryBlockNodes = new Dictionary<StatementGrammarNode, OracleQueryBlock>();
+		private readonly List<OracleInsertTarget> _insertTargets = new List<OracleInsertTarget>();
 		private readonly OracleDatabaseModelBase _databaseModel;
 		private readonly Dictionary<OracleSelectListColumn, ICollection<OracleDataObjectReference>> _asteriskTableReferences = new Dictionary<OracleSelectListColumn, ICollection<OracleDataObjectReference>>();
 		private readonly List<ICollection<OracleColumnReference>> _joinClauseColumnReferences = new List<ICollection<OracleColumnReference>>();
@@ -42,6 +43,8 @@ namespace SqlPad.Oracle
 		{
 			get { return _queryBlockNodes.Values; }
 		}
+
+		public ICollection<OracleInsertTarget> InsertTargets { get { return _insertTargets; }} 
 
 		public OracleMainObjectReferenceContainer MainObjectReferenceContainer { get; private set; }
 
@@ -350,6 +353,7 @@ namespace SqlPad.Oracle
 				{
 					var columnIdentiferNodes = columnIdentifierListNode.GetDescendants(Terminals.Identifier);
 					ResolveColumnAndFunctionReferenceFromIdentifiers(null, MainObjectReferenceContainer.ColumnReferences, columnIdentiferNodes, QueryBlockPlacement.None, null);
+					_insertTargets.Add(new OracleInsertTarget { ColumnListNode = columnIdentifierListNode });
 				}
 			}
 		}
@@ -1221,5 +1225,14 @@ namespace SqlPad.Oracle
 		Normal,
 		ScalarSubquery,
 		CommonTableExpression
+	}
+
+	public class OracleInsertTarget
+	{
+		public StatementGrammarNode ColumnListNode { get; set; }
+		
+		public StatementGrammarNode ValueList { get; set; }
+
+		public OracleQueryBlock RowSource { get; set; }
 	}
 }

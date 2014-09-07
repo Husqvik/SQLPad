@@ -88,6 +88,14 @@ namespace SqlPad.Oracle
 				actionList.Add(new OracleContextAction(CreateScriptCommand.Title, OracleCommands.CreateScript, executionContext, true));
 			}
 
+			if (OracleCommands.AddInsertIntoColumnList.CanExecuteHandler(executionContext))
+			{
+				var addInsertIntoColumnListExecutionContext = executionContext.Clone();
+				addInsertIntoColumnListExecutionContext.SettingsProvider = new EditDialog(new CommandSettingsModel { UseDefaultSettings = () => !Keyboard.IsKeyDown(Key.LeftShift) });
+
+				actionList.Add(new OracleContextAction(AddInsertIntoColumnListCommand.Title, OracleCommands.AddInsertIntoColumnList, addInsertIntoColumnListExecutionContext));
+			}
+
 			var actions = ResolveAmbiguousColumnCommand.ResolveCommandHandlers(semanticModel, currentTerminal)
 				.Select(c => new OracleContextAction("Resolve as " + c.Name, c, executionContext));
 

@@ -30,6 +30,7 @@ namespace SqlPad.Oracle.Commands
 	public static class OracleCommands
 	{
 		public static readonly CommandExecutionHandler AddAlias = OracleCommandBase.CreateStandardExecutionHandler<AddAliasCommand>("AddAlias");
+		public static readonly CommandExecutionHandler AddInsertIntoColumnList = OracleCommandBase.CreateStandardExecutionHandler<AddInsertIntoColumnListCommand>("AddInsertIntoColumnList");
 		public static readonly CommandExecutionHandler AddToGroupByClause = OracleCommandBase.CreateStandardExecutionHandler<AddToGroupByCommand>("AddToGroupByClause");
 		public static readonly CommandExecutionHandler CreateScript = OracleCommandBase.CreateStandardExecutionHandler<CreateScriptCommand>("CreateScript");
 		public static readonly CommandExecutionHandler ExpandAsterisk = OracleCommandBase.CreateStandardExecutionHandler<ExpandAsteriskCommand>("ExpandAsterisk");

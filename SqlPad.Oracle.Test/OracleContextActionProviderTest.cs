@@ -227,5 +227,24 @@ namespace SqlPad.Oracle.Test
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 7).SingleOrDefault(a => a.Name == CreateScriptCommand.Title);
 			action.ShouldNotBe(null);
 		}
+
+		[Test(Description = @""), STAThread]
+		public void TestObjectAliasSuggestedAtInsertMainObjectReference()
+		{
+			const string query1 = @"INSERT INTO SELECTION SELECT * FROM SELECTION";
+
+			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 17).ToArray();
+			actions.Length.ShouldBe(0);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestAddInsertIntoColumns()
+		{
+			const string query1 = @"INSERT INTO SELECTION SELECT * FROM SELECTION";
+
+			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 9).ToArray();
+			actions.Length.ShouldBe(1);
+			actions[0].Name.ShouldBe("Add Column List");
+		}
 	}
 }

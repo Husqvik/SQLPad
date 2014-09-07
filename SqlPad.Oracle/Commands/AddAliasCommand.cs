@@ -9,7 +9,6 @@ namespace SqlPad.Oracle.Commands
 	internal class AddAliasCommand : OracleCommandBase
 	{
 		public const string Title = "Add Alias";
-		private OracleQueryBlock _currentQueryBlock;
 		private OracleDataObjectReference _currentObjectReference;
 		private OracleColumnReference _currentColumnReference;
 
@@ -25,14 +24,14 @@ namespace SqlPad.Oracle.Commands
 
 		protected override bool CanExecute()
 		{
-			if (CurrentNode == null)
+			if (CurrentNode == null || CurrentQueryBlock == null)
+			{
 				return false;
-
-			_currentQueryBlock = SemanticModel.GetQueryBlock(CurrentNode);
+			}
 			
 			if (CurrentNode.Id == Terminals.ObjectIdentifier)
 			{
-				var objectReferences = _currentQueryBlock.ObjectReferences.Where(t => t.ObjectNode == CurrentNode).ToArray();
+				var objectReferences = CurrentQueryBlock.ObjectReferences.Where(t => t.ObjectNode == CurrentNode).ToArray();
 				return objectReferences.Length == 1 && (_currentObjectReference = objectReferences[0]).AliasNode == null;
 			}
 
@@ -46,7 +45,7 @@ namespace SqlPad.Oracle.Commands
 
 		private OracleColumnReference GetCurrentColumnReference()
 		{
-			return _currentColumnReference = _currentQueryBlock.Columns
+			return _currentColumnReference = CurrentQueryBlock.Columns
 				.Where(c => c.IsDirectReference)
 				.SelectMany(c => c.ColumnReferences)
 				.FirstOrDefault(c => c.ColumnNode == CurrentNode && c.SelectListColumn.AliasNode == CurrentNode && c.ColumnNodeColumnReferences.Count == 1);
@@ -146,10 +145,10 @@ namespace SqlPad.Oracle.Commands
 
 		private void AddObjectAlias(string alias)
 		{
-			var prefixedColumnReferences = _currentQueryBlock.AllColumnReferences
+			var prefixedColumnReferences = CurrentQueryBlock.AllColumnReferences
 				.Where(c => (c.OwnerNode != null || c.ObjectNode != null) && c.ColumnNodeObjectReferences.Count == 1 && c.ColumnNodeObjectReferences.Single() == _currentObjectReference);
 
-			var asteriskColumnReferences = _currentQueryBlock.Columns.Where(c => c.IsAsterisk).SelectMany(c => c.ColumnReferences)
+			var asteriskColumnReferences = CurrentQueryBlock.Columns.Where(c => c.IsAsterisk).SelectMany(c => c.ColumnReferences)
 				.Where(c => c.ObjectNodeObjectReferences.Count == 1 && c.ObjectNodeObjectReferences.Single() == _currentObjectReference);
 
 			foreach (var columnReference in prefixedColumnReferences.Concat(asteriskColumnReferences))

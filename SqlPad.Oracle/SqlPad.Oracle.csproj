@@ -65,6 +65,7 @@
     <Compile Include="CodeCompletionSearchHelper.cs" />
     <Compile Include="Commands\AddMissingColumnCommand.cs" />
     <Compile Include="Commands\CreateScriptCommand.cs" />
+    <Compile Include="Commands\AddInsertIntoColumnListCommand.cs" />
     <Compile Include="Commands\MoveContentCommand.cs" />
     <Compile Include="Commands\ToggleFullyQualifiedReferencesCommand.cs" />
     <Compile Include="Commands\ModifyCaseCommand.cs" />

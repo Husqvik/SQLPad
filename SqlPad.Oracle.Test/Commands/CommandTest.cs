@@ -91,9 +91,9 @@ WHERE
 		{
 			private readonly bool _isValueValid;
 
-			public TestCommandSettings(string value, bool isValueValid = true)
+			public TestCommandSettings(CommandSettingsModel settingsModel, bool isValueValid = true)
 			{
-				Settings = new CommandSettingsModel { Value = value };
+				Settings = settingsModel;
 				_isValueValid = isValueValid;
 			}
 
@@ -117,19 +117,19 @@ WHERE
 			return executionHandler.CanExecuteHandler(executionContext);
 		}
 
-		private void ExecuteCommand(CommandExecutionHandler executionHandler, string commandParameter = null, bool isValidParameter = true)
+		private void ExecuteCommand(CommandExecutionHandler executionHandler, CommandSettingsModel settingsModel = null, bool isValidParameter = true)
 		{
 			var executionContext = CreateExecutionContext();
-			AddSettingsProvider(executionContext, commandParameter, isValidParameter);
+			AddSettingsProvider(executionContext, settingsModel, isValidParameter);
 
 			ExecuteCommand(executionHandler, executionContext);
 		}
 
-		private void AddSettingsProvider(CommandExecutionContext executionContext, string commandParameter, bool isValidParameter)
+		private void AddSettingsProvider(CommandExecutionContext executionContext, CommandSettingsModel settingsModel, bool isValidParameter)
 		{
-			if (commandParameter != null)
+			if (settingsModel != null)
 			{
-				executionContext.SettingsProvider = new TestCommandSettings(commandParameter, isValidParameter);
+				executionContext.SettingsProvider = new TestCommandSettings(settingsModel, isValidParameter);
 			}
 		}
 
@@ -146,7 +146,7 @@ WHERE
 			_editor.CaretOffset = 87;
 
 			CanExecuteCommand(OracleCommands.AddAlias).ShouldBe(true);
-			ExecuteCommand(OracleCommands.AddAlias, "S");
+			ExecuteCommand(OracleCommands.AddAlias, new CommandSettingsModel { Value = "S"} );
 
 			_editor.Text.ShouldBe(@"SELECT S.RESPONDENTBUCKET_ID, S.SELECTION_ID, PROJECT_ID, NAME FROM SELECTION S");
 		}
@@ -158,7 +158,7 @@ WHERE
 			_editor.CaretOffset = 114;
 
 			CanExecuteCommand(OracleCommands.AddAlias).ShouldBe(true);
-			ExecuteCommand(OracleCommands.AddAlias, "RBID");
+			ExecuteCommand(OracleCommands.AddAlias, new CommandSettingsModel { Value = "RBID"} );
 
 			_editor.Text.ShouldBe(@"SELECT 'Prefix' || TBL.RBID || 'Postfix', NAME FROM (SELECT RBID, NAME FROM (SELECT RESPONDENTBUCKET_ID RBID, NAME FROM SELECTION) WHERE RBID > 0) TBL");
 		}
@@ -179,7 +179,7 @@ WHERE
 			_editor.CaretOffset = 60;
 
 			CanExecuteCommand(OracleCommands.AddAlias).ShouldBe(true);
-			ExecuteCommand(OracleCommands.AddAlias, "S");
+			ExecuteCommand(OracleCommands.AddAlias, new CommandSettingsModel { Value = "S" } );
 
 			_editor.Text.ShouldBe("SELECT S.RESPONDENTBUCKET_ID, PROJECT_ID FROM SELECTION S WHERE S.NAME = NAME GROUP BY S.RESPONDENTBUCKET_ID, PROJECT_ID HAVING COUNT(S.SELECTION_ID) = COUNT(SELECTION_ID)");
 		}
@@ -190,7 +190,7 @@ WHERE
 			_editor.Text = @"SELECT S.RESPONDENTBUCKET_ID, S.SELECTION_ID, PROJECT_ID, NAME, 1 FROM SELECTION S";
 			_editor.CaretOffset = 0;
 
-			ExecuteCommand(OracleCommands.WrapAsInlineView, "IV");
+			ExecuteCommand(OracleCommands.WrapAsInlineView, new CommandSettingsModel { Value = "IV" } );
 
 			_editor.Text.ShouldBe(@"SELECT IV.RESPONDENTBUCKET_ID, IV.SELECTION_ID, IV.PROJECT_ID, IV.NAME FROM (SELECT S.RESPONDENTBUCKET_ID, S.SELECTION_ID, PROJECT_ID, NAME, 1 FROM SELECTION S) IV");
 		}
@@ -201,7 +201,7 @@ WHERE
 			_editor.Text = "SELECT 1, 1 + 1 MYCOLUMN, DUMMY || '3' COLUMN3 FROM DUAL";
 			_editor.CaretOffset = 0;
 
-			ExecuteCommand(OracleCommands.WrapAsCommonTableExpression, "MYQUERY");
+			ExecuteCommand(OracleCommands.WrapAsCommonTableExpression, new CommandSettingsModel { Value = "MYQUERY" } );
 
 			_editor.Text.ShouldBe(@"WITH MYQUERY AS (SELECT 1, 1 + 1 MYCOLUMN, DUMMY || '3' COLUMN3 FROM DUAL) SELECT MYQUERY.MYCOLUMN, MYQUERY.COLUMN3 FROM MYQUERY");
 		}
@@ -212,7 +212,7 @@ WHERE
 			_editor.Text = "\t\t            WITH OLDQUERY AS (SELECT OLD FROM OLD) SELECT 1, 1 + 1 MYCOLUMN, DUMMY || '3' COLUMN3 FROM DUAL";
 			_editor.CaretOffset = 55;
 
-			ExecuteCommand(OracleCommands.WrapAsCommonTableExpression, "NEWQUERY");
+			ExecuteCommand(OracleCommands.WrapAsCommonTableExpression, new CommandSettingsModel { Value = "NEWQUERY" });
 
 			_editor.Text.ShouldBe("\t\t            WITH OLDQUERY AS (SELECT OLD FROM OLD), NEWQUERY AS (SELECT 1, 1 + 1 MYCOLUMN, DUMMY || '3' COLUMN3 FROM DUAL) SELECT NEWQUERY.MYCOLUMN, NEWQUERY.COLUMN3 FROM NEWQUERY");
 		}
@@ -477,7 +477,7 @@ WHERE
 			_editor.Text = "WITH CTE1 AS (SELECT NAME FROM SELECTION) SELECT NAME FROM CTE1";
 			_editor.CaretOffset = 15;
 
-			ExecuteCommand(OracleCommands.WrapAsCommonTableExpression, "CTE2");
+			ExecuteCommand(OracleCommands.WrapAsCommonTableExpression, new CommandSettingsModel { Value = "CTE2" } );
 
 			_editor.Text.ShouldBe(@"WITH CTE2 AS (SELECT NAME FROM SELECTION), CTE1 AS (SELECT CTE2.NAME FROM CTE2) SELECT NAME FROM CTE1");
 		}
@@ -487,8 +487,8 @@ WHERE
 		{
 			_editor.Text = "SELECT SELECTION.*, PROJECT.* FROM SELECTION, PROJECT";
 			_editor.CaretOffset = 28;
-			
-			ExecuteCommand(OracleCommands.ExpandAsterisk, String.Empty);
+
+			ExecuteCommand(OracleCommands.ExpandAsterisk, new CommandSettingsModel());
 
 			_editor.Text.ShouldBe("SELECT SELECTION.*, PROJECT.NAME, PROJECT.PROJECT_ID FROM SELECTION, PROJECT");
 		}
@@ -499,7 +499,7 @@ WHERE
 			_editor.Text = "SELECT * FROM PROJECT, PROJECT P";
 			_editor.CaretOffset = 7;
 
-			ExecuteCommand(OracleCommands.ExpandAsterisk, String.Empty);
+			ExecuteCommand(OracleCommands.ExpandAsterisk, new CommandSettingsModel());
 
 			_editor.Text.ShouldBe("SELECT PROJECT.NAME, PROJECT.PROJECT_ID, P.NAME, P.PROJECT_ID FROM PROJECT, PROJECT P");
 		}
@@ -888,6 +888,36 @@ WHERE
 			var expectedResult = statementText + ";" + Environment.NewLine + Environment.NewLine + OracleTestDatabaseModel.SelectionTableCreateScript + ";";
 			_editor.Text.ShouldBe(expectedResult);
 			_editor.CaretOffset.ShouldBe(17);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void AddInsertIntoColumnListCommand()
+		{
+			const string statementText = @"INSERT INTO SELECTION SELECT * FROM SELECTION";
+			_editor.Text = statementText;
+			_editor.CaretOffset = 8;
+
+			CanExecuteCommand(OracleCommands.AddInsertIntoColumnList).ShouldBe(true);
+			ExecuteCommand(OracleCommands.AddInsertIntoColumnList, new CommandSettingsModel { UseDefaultSettings = () => true } );
+
+			const string expectedResult = "INSERT INTO SELECTION (RESPONDENTBUCKET_ID, SELECTION_ID, PROJECT_ID, NAME) SELECT * FROM SELECTION";
+			_editor.Text.ShouldBe(expectedResult);
+			_editor.CaretOffset.ShouldBe(8);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void ReconfigureInsertIntoColumnList()
+		{
+			const string statementText = @"INSERT INTO SELECTION (RESPONDENTBUCKET_ID) SELECT * FROM SELECTION";
+			_editor.Text = statementText;
+			_editor.CaretOffset = 8;
+
+			CanExecuteCommand(OracleCommands.AddInsertIntoColumnList).ShouldBe(true);
+			ExecuteCommand(OracleCommands.AddInsertIntoColumnList, new CommandSettingsModel { UseDefaultSettings = () => true } );
+
+			const string expectedResult = "INSERT INTO SELECTION (RESPONDENTBUCKET_ID, SELECTION_ID, PROJECT_ID, NAME) SELECT * FROM SELECTION";
+			_editor.Text.ShouldBe(expectedResult);
+			_editor.CaretOffset.ShouldBe(8);
 		}
 	}
 }

@@ -98,15 +98,15 @@ namespace SqlPad.Oracle.Commands
 
 		private SourcePosition FillColumnNames(List<ExpandedColumn> columnNames, bool includeRowId)
 		{
-			var segmentToReplace = SourcePosition.Empty;
+			var sourcePosition = SourcePosition.Empty;
 			var asteriskReference = CurrentQueryBlock.Columns.FirstOrDefault(c => c.RootNode == CurrentNode);
 			if (asteriskReference == null)
 			{
 				var columnReference = CurrentQueryBlock.Columns.SelectMany(c => c.ColumnReferences).FirstOrDefault(c => c.ColumnNode == CurrentNode);
 				if (columnReference == null || columnReference.ObjectNodeObjectReferences.Count != 1)
-					return segmentToReplace;
+					return sourcePosition;
 				
-				segmentToReplace = columnReference.SelectListColumn.RootNode.SourcePosition;
+				sourcePosition = columnReference.SelectListColumn.RootNode.SourcePosition;
 				var objectReference = columnReference.ObjectNodeObjectReferences.First();
 
 				columnNames.AddRange(objectReference.Columns
@@ -127,7 +127,7 @@ namespace SqlPad.Oracle.Commands
 					.Select(c => GetExpandedColumn(GetObjectReference(c), c.NormalizedName, false)));
 
 				if (!includeRowId)
-					return segmentToReplace;
+					return sourcePosition;
 				
 				var rowIdColumns = CurrentQueryBlock.ObjectReferences
 					.Select(o => new { ObjectReference = o, DataObject = o.SchemaObject.GetTargetSchemaObject() as OracleTable })
@@ -136,13 +136,13 @@ namespace SqlPad.Oracle.Commands
 
 				columnNames.InsertRange(0, rowIdColumns);
 
-				segmentToReplace = asteriskReference.RootNode.SourcePosition;
+				sourcePosition = asteriskReference.RootNode.SourcePosition;
 			}
 
-			return segmentToReplace;
+			return sourcePosition;
 		}
 
-		private static OracleDataObjectReference GetObjectReference(OracleSelectListColumn column)
+		private static OracleDataObjectReference GetObjectReference(OracleReferenceContainer column)
 		{
 			var columnReference = column.ColumnReferences.FirstOrDefault();
 			return columnReference != null && columnReference.ColumnNodeObjectReferences.Count == 1
@@ -150,12 +150,12 @@ namespace SqlPad.Oracle.Commands
 				: null;
 		}
 
-		private static ExpandedColumn GetExpandedColumn(OracleObjectWithColumnsReference objectReference, string columnName, bool isRowId)
+		private static ExpandedColumn GetExpandedColumn(OracleReference objectReference, string columnName, bool isRowId)
 		{
 			return new ExpandedColumn { ColumnName = GetColumnName(objectReference, columnName), IsRowId = isRowId };
 		}
 
-		private static string GetColumnName(OracleObjectWithColumnsReference objectReference, string columnName)
+		private static string GetColumnName(OracleReference objectReference, string columnName)
 		{
 			var simpleColumnName = columnName.ToSimpleIdentifier();
 			if (objectReference == null)
