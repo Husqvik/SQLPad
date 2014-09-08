@@ -1263,6 +1263,70 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			columnNodeValidity.ForEach(c => c.SemanticErrorType.ShouldBe(null));
 		}
 
+		[Test(Description = @"")]
+		public void TestValidInsertColumnCount()
+		{
+			const string sqlText = "INSERT INTO SELECTION (RESPONDENTBUCKET_ID, NAME) SELECT RESPONDENTBUCKET_ID, NAME FROM SELECTION";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			nodeValidityDictionary.Values.ToList().ForEach(v => v.SemanticErrorType.ShouldBe(null));
+		}
+
+		[Test(Description = @"")]
+		public void TestInvalidInsertColumnCountWithBothListsDefined()
+		{
+			const string sqlText = "INSERT INTO SELECTION (RESPONDENTBUCKET_ID, NAME) SELECT RESPONDENTBUCKET_ID, NAME, PROJECT_ID FROM SELECTION";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var semanticErrorNodes = nodeValidityDictionary.Values.Where(v => v.SemanticErrorType != null).ToList();
+			semanticErrorNodes.Count.ShouldBe(2);
+			semanticErrorNodes[0].Node.GetStatementSubstring(sqlText).ShouldBe("(RESPONDENTBUCKET_ID, NAME)");
+			semanticErrorNodes[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidInsertColumnCount);
+			semanticErrorNodes[1].Node.GetStatementSubstring(sqlText).ShouldBe("RESPONDENTBUCKET_ID, NAME, PROJECT_ID");
+			semanticErrorNodes[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidInsertColumnCount);
+		}
+
+		[Test(Description = @"")]
+		public void TestInvalidInsertColumnCountWithInsertListOnly()
+		{
+			const string sqlText = "INSERT INTO SELECTION (RESPONDENTBUCKET_ID, NAME) SELECT * FROM SELECTION";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var semanticErrorNodes = nodeValidityDictionary.Values.Where(v => v.SemanticErrorType != null).ToList();
+			semanticErrorNodes.Count.ShouldBe(2);
+			semanticErrorNodes[0].Node.GetStatementSubstring(sqlText).ShouldBe("(RESPONDENTBUCKET_ID, NAME)");
+			semanticErrorNodes[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidInsertColumnCount);
+			semanticErrorNodes[1].Node.GetStatementSubstring(sqlText).ShouldBe("*");
+			semanticErrorNodes[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidInsertColumnCount);
+		}
+
+		[Test(Description = @"")]
+		public void TestInvalidInsertColumnCountWithSelectListOnly()
+		{
+			const string sqlText = "INSERT INTO SELECTION SELECT RESPONDENTBUCKET_ID, NAME, PROJECT_ID FROM SELECTION";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var semanticErrorNodes = nodeValidityDictionary.Values.Where(v => v.SemanticErrorType != null).ToList();
+			semanticErrorNodes.Count.ShouldBe(1);
+			semanticErrorNodes[0].Node.GetStatementSubstring(sqlText).ShouldBe("RESPONDENTBUCKET_ID, NAME, PROJECT_ID");
+			semanticErrorNodes[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidInsertColumnCount);
+		}
 		//WITH CTE AS (SELECT 1 A, 2 B, 3 C FROM DUAL) SELECT SELECTION.DUMMY, NQ.DUMMY, CTE.DUMMY, SYS.DUAL.DUMMY FROM SELECTION, (SELECT 1 X, 2 Y, 3 Z FROM DUAL) NQ, CTE, SYS.DUAL
 	}
 }

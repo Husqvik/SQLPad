@@ -434,5 +434,18 @@ FROM
 			semanticModel.MainObjectReferenceContainer.MainObjectReference.Type.ShouldBe(ReferenceType.InlineView);
 			semanticModel.MainObjectReferenceContainer.ColumnReferences.Count.ShouldBe(2);
 		}
+
+		[Test(Description = @"")]
+		public void TestInsertColumnListIdentiferMatchingFunctionName()
+		{
+			const string query1 = @"INSERT INTO SELECTION(SESSIONTIMEZONE) SELECT * FROM SELECTION";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.MainObjectReferenceContainer.MainObjectReference.ShouldNotBe(null);
+			semanticModel.MainObjectReferenceContainer.MainObjectReference.SchemaObject.ShouldNotBe(null);
+			semanticModel.MainObjectReferenceContainer.ProgramReferences.Count.ShouldBe(0);
+		}
 	}
 }

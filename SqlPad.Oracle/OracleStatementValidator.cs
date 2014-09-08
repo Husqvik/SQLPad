@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
+using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
 namespace SqlPad.Oracle
 {
@@ -21,9 +23,10 @@ namespace SqlPad.Oracle
 
 			var validationModel = new OracleValidationModel { SemanticModel = oracleSemanticModel };
 
-			var mainObjectReferences = oracleSemanticModel.MainObjectReferenceContainer.MainObjectReference == null
+			var mainObjectReference = oracleSemanticModel.MainObjectReferenceContainer.MainObjectReference;
+			var mainObjectReferences = mainObjectReference == null
 				? Enumerable.Empty<OracleDataObjectReference>()
-				: Enumerable.Repeat(oracleSemanticModel.MainObjectReferenceContainer.MainObjectReference, 1);
+				: Enumerable.Repeat(mainObjectReference, 1);
 
 			var objectReferences = oracleSemanticModel.QueryBlocks.SelectMany(qb => qb.ObjectReferences)
 				.Concat(mainObjectReferences)
@@ -64,6 +67,38 @@ namespace SqlPad.Oracle
 			foreach (var nodeValidity in invalidIdentifiers)
 			{
 				validationModel.IdentifierNodeValidity[nodeValidity.Node] = nodeValidity;
+			}
+
+			if (mainObjectReference != null &&
+			    (mainObjectReference.Type == ReferenceType.InlineView ||
+			     validationModel.ObjectNodeValidity[mainObjectReference.ObjectNode].IsRecognized))
+			{
+				foreach (var insertTarget in oracleSemanticModel.InsertTargets)
+				{
+					var insertColumnCount = insertTarget.ColumnListNode == null
+						? mainObjectReference.Columns.Count
+						: insertTarget.ColumnListNode.GetDescendants(Terminals.Identifier).Count();
+					
+					var rowSourceColumnCount = insertTarget.RowSource == null
+						? insertTarget.ValueList.GetDescendantsWithinSameQuery(NonTerminals.ExpressionOrOrDefaultValue).Count()
+						: insertTarget.RowSource.Columns.Count(c => !c.IsAsterisk);
+
+					if (insertColumnCount == rowSourceColumnCount)
+					{
+						continue;
+					}
+
+					if (insertTarget.ColumnListNode != null)
+					{
+						validationModel.ColumnNodeValidity[insertTarget.ColumnListNode] = new ProgramValidationData(OracleSemanticErrorType.InvalidInsertColumnCount) {IsRecognized = true, Node = insertTarget.ColumnListNode};
+					}
+
+					var sourceDataNode = insertTarget.ValueList ?? insertTarget.RowSource.SelectList;
+					if (sourceDataNode != null)
+					{
+						validationModel.ColumnNodeValidity[sourceDataNode] = new ProgramValidationData(OracleSemanticErrorType.InvalidInsertColumnCount) {IsRecognized = true, Node = sourceDataNode};
+					}
+				}
 			}
 
 			return validationModel;
@@ -436,18 +471,5 @@ namespace SqlPad.Oracle
 		{
 			get { return _toolTipText; }
 		}
-	}
-
-	public static class OracleSemanticErrorType
-	{
-		public const string None = null;
-		public const string AmbiguousReference = "Ambiguous reference";
-		public const string InvalidParameterCount = "Invalid parameter count";
-		public const string MissingParenthesis = "Missing parenthesis";
-		public const string NonParenthesisFunction = "Non-parenthesis function";
-		public const string InvalidIdentifier = "Invalid identifier";
-		public const string AnalyticClauseNotSupported = "Analytic clause not supported";
-		public const string ObjectStatusInvalid = "Object is invalid or unusable";
-		public const string ObjectCannotBeUsed = "Object cannot be used here";
 	}
 }

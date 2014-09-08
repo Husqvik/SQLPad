@@ -348,12 +348,36 @@ namespace SqlPad.Oracle
 				var objectReferenceAlias = mainObjectRefrenceNode.ChildNodes.SingleOrDefault(n => n.Id == Terminals.ObjectAlias);
 				CreateMainDataObjectReference(mainObjectRefrenceNode, objectIdentifier, objectReferenceAlias);
 
+				// TODO: Make proper implementation for multi-table insert
 				var columnIdentifierListNode = mainObjectRefrenceNode.ParentNode.ChildNodes[mainObjectRefrenceNode.ParentNode.ChildNodes.Count - 1];
 				if (columnIdentifierListNode.Id == NonTerminals.ParenthesisEnclosedIdentifierList)
 				{
 					var columnIdentiferNodes = columnIdentifierListNode.GetDescendants(Terminals.Identifier);
 					ResolveColumnAndFunctionReferenceFromIdentifiers(null, MainObjectReferenceContainer.ColumnReferences, columnIdentiferNodes, QueryBlockPlacement.None, null);
-					_insertTargets.Add(new OracleInsertTarget { ColumnListNode = columnIdentifierListNode });
+				}
+
+				var insertIntoClauses = Statement.RootNode.GetDescendantsWithinSameQuery(NonTerminals.InsertIntoClause);
+				foreach (var insertIntoClause in insertIntoClauses)
+				{
+					var insertTarget = new OracleInsertTarget();
+					insertTarget.ColumnListNode = insertIntoClause.GetDescendantByPath(NonTerminals.ParenthesisEnclosedIdentifierList);
+					insertTarget.ValueList = insertIntoClause.ParentNode.GetDescendantByPath(NonTerminals.InsertValuesClause, NonTerminals.ParenthesisEnclosedExpressionOrOrDefaultValueList)
+					                         ?? insertIntoClause.ParentNode.GetDescendantByPath(NonTerminals.InsertValuesOrSubquery, NonTerminals.InsertValuesClause, NonTerminals.ParenthesisEnclosedExpressionOrOrDefaultValueList);
+
+					if (insertTarget.ValueList == null)
+					{
+						var nestedQuery = insertIntoClause.ParentNode.GetDescendantByPath(NonTerminals.InsertValuesOrSubquery, NonTerminals.NestedQuery);
+						if (nestedQuery != null)
+						{
+							var queryBlock = nestedQuery.GetDescendantsWithinSameQuery(NonTerminals.QueryBlock).FirstOrDefault();
+							if (queryBlock != null)
+							{
+								insertTarget.RowSource = _queryBlockNodes[queryBlock];
+							}
+						}
+					}
+
+					_insertTargets.Add(insertTarget);
 				}
 			}
 		}
@@ -720,7 +744,7 @@ namespace SqlPad.Oracle
 
 		private void TryColumnReferenceAsProgramOrSequenceReference(OracleColumnReference columnReference)
 		{
-			if (columnReference.ColumnNodeColumnReferences.Count != 0 || columnReference.ReferencesAllColumns)
+			if (columnReference.ColumnNodeColumnReferences.Count != 0 || columnReference.ReferencesAllColumns || columnReference.Container == null)
 				return;
 			
 			var programReference =

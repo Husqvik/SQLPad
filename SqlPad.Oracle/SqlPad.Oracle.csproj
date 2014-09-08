@@ -121,6 +121,7 @@
     <Compile Include="OracleReference.cs" />
     <Compile Include="OracleReferenceContainer.cs" />
     <Compile Include="OracleSelectListColumn.cs" />
+    <Compile Include="OracleSemanticErrorType.cs" />
     <Compile Include="OracleSnippetProvider.cs" />
     <Compile Include="OracleStatementFormatter.cs" />
     <Compile Include="OracleSqlGrammar.cs">
