@@ -36,5 +36,6 @@ namespace SqlPad.Commands
 		public static RoutedCommand FetchNextRowsCommand = new RoutedCommand("FetchNextRows", typeof(DataGrid), new InputGestureCollection { new KeyGesture(Key.PageDown), new KeyGesture(Key.Down) });
 		public static RoutedCommand CancelStatementCommand = new RoutedCommand("CancelStatement", typeof(Grid), new InputGestureCollection { new KeyGesture(Key.Escape) });
 		public static RoutedCommand RefreshDatabaseModelCommand = new RoutedCommand("RefreshDatabaseModel", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.F5) });
+		public static RoutedCommand CreateNewPageCommand = new RoutedCommand("CreateNewTab", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.T, ModifierKeys.Control) });
 	}
 }

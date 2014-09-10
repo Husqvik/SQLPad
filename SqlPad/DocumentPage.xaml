@@ -79,6 +79,7 @@
 				                       PreviewKeyUp="EditorKeyUpHandler"
 				                       MouseHoverStopped="MouseHoverStoppedHandler">
 					<avalonedit:TextEditor.CommandBindings>
+						<CommandBinding Command="commands:GenericCommands.CreateNewPageCommand" Executed="CreateNewPage" />
 						<CommandBinding Command="commands:GenericCommands.FindUsagesCommand" Executed="FindUsages" />
 						<CommandBinding Command="commands:GenericCommands.FormatStatementCommand" Executed="FormatStatement" />
 						<CommandBinding Command="commands:GenericCommands.FormatStatementAsSingleLineCommand" Executed="FormatStatementAsSingleLine" />

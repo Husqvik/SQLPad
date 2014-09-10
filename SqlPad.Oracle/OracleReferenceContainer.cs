@@ -35,7 +35,7 @@ namespace SqlPad.Oracle
 		public ICollection<OracleDataObjectReference> ObjectReferences { get; private set; }
 	}
 
-	[DebuggerDisplay("OracleMainObjectReferenceContainer (MainObjectReference={MainObjectReference}; Columns={Columns.Count})")]
+	[DebuggerDisplay("OracleMainObjectReferenceContainer (MainObjectReference={MainObjectReference})")]
 	public class OracleMainObjectReferenceContainer : OracleReferenceContainer
 	{
 		private OracleDataObjectReference _mainObjectReference;

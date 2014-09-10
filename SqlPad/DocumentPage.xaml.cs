@@ -72,13 +72,14 @@ namespace SqlPad
 
 		internal static bool IsParsingSynchronous { get; set; }
 
+		private MainWindow MainWindow
+		{
+			get { return (MainWindow)Window.GetWindow(this); }
+		}
+
 		internal bool IsSelectedPage
 		{
-			get
-			{
-				var mainWindow = (MainWindow)Window.GetWindow(this);
-				return Equals(((TabItem)mainWindow.DocumentTabControl.SelectedItem).Content);
-			}
+			get { return Equals(((TabItem)MainWindow.DocumentTabControl.SelectedItem).Content); }
 		}
 
 		public TextEditorAdapter EditorAdapter { get; private set; }
@@ -1413,6 +1414,11 @@ namespace SqlPad
 					}
 				}
 			}
+		}
+
+		private void CreateNewPage(object sender, ExecutedRoutedEventArgs e)
+		{
+			MainWindow.CreateNewDocumentPage();
 		}
 	}
 

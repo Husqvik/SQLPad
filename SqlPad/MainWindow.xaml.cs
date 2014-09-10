@@ -152,7 +152,7 @@ namespace SqlPad
 			CreateNewDocumentPage();
 		}
 
-		private DocumentPage CreateNewDocumentPage(WorkingDocument workingDocument = null)
+		public DocumentPage CreateNewDocumentPage(WorkingDocument workingDocument = null)
 		{
 			var newDocumentPage = new DocumentPage(workingDocument);
 			
