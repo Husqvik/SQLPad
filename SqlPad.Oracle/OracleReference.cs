@@ -1,9 +1,12 @@
+using System;
 using System.Collections.Generic;
 
 namespace SqlPad.Oracle
 {
 	public abstract class OracleReference
 	{
+		private OracleReferenceContainer _container;
+
 		protected OracleReference()
 		{
 			ObjectNodeObjectReferences = new HashSet<OracleObjectWithColumnsReference>();
@@ -17,6 +20,8 @@ namespace SqlPad.Oracle
 		public abstract string Name { get; }
 
 		public string NormalizedName { get { return Name.ToQuotedIdentifier(); } }
+
+		public QueryBlockPlacement Placement { get; set; }
 
 		public OracleQueryBlock Owner { get; set; }
 
@@ -32,9 +37,19 @@ namespace SqlPad.Oracle
 
 		public OracleSelectListColumn SelectListColumn { get; set; }
 
+		public void SetContainer(OracleReferenceContainer container)
+		{
+			if (_container != null)
+			{
+				throw new InvalidOperationException("Container has been already set. ");	
+			}
+
+			_container = container;
+		}
+
 		public OracleReferenceContainer Container
 		{
-			get { return SelectListColumn ?? (OracleReferenceContainer)Owner; }
+			get { return SelectListColumn ?? Owner ?? _container; }
 		}
 
 		public StatementGrammarNode DatabaseLinkNode { get; set; }

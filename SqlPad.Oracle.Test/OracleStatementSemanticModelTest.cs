@@ -390,9 +390,12 @@ FROM
 			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
 			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
 
-			semanticModel.MainObjectReferenceContainer.MainObjectReference.ShouldNotBe(null);
-			semanticModel.MainObjectReferenceContainer.MainObjectReference.SchemaObject.ShouldNotBe(null);
-			semanticModel.MainObjectReferenceContainer.ColumnReferences.Count.ShouldBe(1);
+			semanticModel.InsertTargets.Count.ShouldBe(1);
+			semanticModel.MainObjectReferenceContainer.MainObjectReference.ShouldBe(null);
+			var insertTarget = semanticModel.InsertTargets.First();
+			insertTarget.ObjectReferences.Count.ShouldBe(1);
+			insertTarget.ObjectReferences.First().SchemaObject.ShouldNotBe(null);
+			insertTarget.ColumnReferences.Count.ShouldBe(1);
 		}
 
 		[Test(Description = @"")]
@@ -443,9 +446,30 @@ FROM
 			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
 			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
 
-			semanticModel.MainObjectReferenceContainer.MainObjectReference.ShouldNotBe(null);
-			semanticModel.MainObjectReferenceContainer.MainObjectReference.SchemaObject.ShouldNotBe(null);
-			semanticModel.MainObjectReferenceContainer.ProgramReferences.Count.ShouldBe(0);
+			semanticModel.MainObjectReferenceContainer.MainObjectReference.ShouldBe(null);
+			semanticModel.InsertTargets.Count.ShouldBe(1);
+			var insertTarget = semanticModel.InsertTargets.First();
+			insertTarget.ObjectReferences.Count.ShouldBe(1);
+			insertTarget.ObjectReferences.First().SchemaObject.ShouldNotBe(null);
+			insertTarget.ProgramReferences.Count.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
+		public void TestFunctionTypeAndSequenceInInsertValuesClause()
+		{
+			const string query1 = @"INSERT INTO SELECTION (SELECTION_ID, NAME, RESPONDENTBUCKET_ID) VALUES (SQLPAD_FUNCTION, XMLTYPE(), TEST_SEQ.NEXTVAL)";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.InsertTargets.Count.ShouldBe(1);
+			var insertTarget = semanticModel.InsertTargets.First();
+			insertTarget.ObjectReferences.Count.ShouldBe(1);
+			var insertTargetDataObjectReference = insertTarget.ObjectReferences.First();
+			insertTargetDataObjectReference.SchemaObject.ShouldNotBe(null);
+			insertTarget.ProgramReferences.Count.ShouldBe(1);
+			insertTarget.TypeReferences.Count.ShouldBe(1);
+			insertTarget.SequenceReferences.Count.ShouldBe(1);
 		}
 	}
 }

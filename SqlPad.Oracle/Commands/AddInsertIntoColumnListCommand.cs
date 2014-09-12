@@ -14,6 +14,7 @@ namespace SqlPad.Oracle.Commands
 		private CommandSettingsModel _settingsModel;
 		private StatementGrammarNode _columnList;
 		private HashSet<string> _existingColumns;
+		private OracleInsertTarget _insertTarget;
 
 		private AddInsertIntoColumnListCommand(CommandExecutionContext executionContext)
 			: base(executionContext)
@@ -22,19 +23,29 @@ namespace SqlPad.Oracle.Commands
 
 		protected override bool CanExecute()
 		{
-			return CurrentNode != null && SemanticModel.MainObjectReferenceContainer.MainObjectReference != null &&
+			return CurrentNode != null &&
 			       CurrentNode.Statement.RootNode.FirstTerminalNode.Id == Terminals.Insert &&
-				   IsCompatibleNode(CurrentNode) &&
+			       Initialize() &&
 			       ExistNamedColumns();
 		}
 
-		private static bool IsCompatibleNode(StatementGrammarNode node)
+		private bool Initialize()
 		{
-			if (node.Id == Terminals.Into)
-				return true;
+			if (CurrentNode.Id == Terminals.Into)
+			{
+				_insertTarget = SemanticModel.InsertTargets.FirstOrDefault(t => CurrentNode.HasAncestor(t.RootNode));
+			}
+			else
+			{
+				var isSingleTableInsert = CurrentNode.Id == Terminals.Insert &&
+				                          CurrentNode.ParentNode.GetDescendantByPath(NonTerminals.SingleTableInsertOrMultiTableInsert, NonTerminals.SingleTableInsert) != null;
+				if (isSingleTableInsert && SemanticModel.InsertTargets.Count == 1)
+				{
+					_insertTarget = SemanticModel.InsertTargets.First();
+				}
+			}
 
-			return node.Id == Terminals.Insert &&
-			       node.ParentNode.GetDescendantByPath(NonTerminals.SingleTableInsertOrMultiTableInsert, NonTerminals.SingleTableInsert) != null;
+			return _insertTarget != null && _insertTarget.DataObjectReference != null;
 		}
 
 		private bool ExistNamedColumns()
@@ -112,7 +123,7 @@ namespace SqlPad.Oracle.Commands
 			{
 				return new TextSegment
 				{
-					IndextStart = SemanticModel.MainObjectReferenceContainer.MainObjectReference.RootNode.SourcePosition.IndexEnd + 1,
+					IndextStart = _insertTarget.TargetNode.SourcePosition.IndexEnd + 1,
 					Length = 0,
 					Text = String.Format(" {0}", columnListText)
 				};
@@ -128,7 +139,7 @@ namespace SqlPad.Oracle.Commands
 
 		private void FillColumnNames(List<string> columnNames)
 		{
-			columnNames.AddRange(SemanticModel.MainObjectReferenceContainer.MainObjectReference.Columns
+			columnNames.AddRange(_insertTarget.DataObjectReference.Columns
 				.Where(c => !String.IsNullOrEmpty(c.Name))
 				.Select(c => c.Name.ToSimpleIdentifier()));
 		}

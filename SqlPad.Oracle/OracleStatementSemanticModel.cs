@@ -54,6 +54,7 @@ namespace SqlPad.Oracle
 			{
 				return ((IEnumerable<OracleReferenceContainer>)_queryBlockNodes.Values)
 					.Concat(_queryBlockNodes.Values.SelectMany(qb => qb.Columns))
+					.Concat(_insertTargets)
 					.Concat(Enumerable.Repeat(MainObjectReferenceContainer, 1));
 			}
 		}
@@ -285,7 +286,7 @@ namespace SqlPad.Oracle
 			if (whereClauseRootNode != null)
 			{
 				var whereClauseIdentifiers = whereClauseRootNode.GetDescendantsWithinSameQuery(Terminals.Identifier, Terminals.RowIdPseudoColumn);
-				ResolveColumnAndFunctionReferenceFromIdentifiers(null, MainObjectReferenceContainer.ColumnReferences, whereClauseIdentifiers, QueryBlockPlacement.Where, null);
+				ResolveColumnAndFunctionReferenceFromIdentifiers(null, MainObjectReferenceContainer, whereClauseIdentifiers, QueryBlockPlacement.Where, null);
 			}
 
 			if (MainObjectReferenceContainer.MainObjectReference != null)
@@ -312,7 +313,7 @@ namespace SqlPad.Oracle
 			if (objectIdentifier != null)
 			{
 				var objectReferenceAlias = innerTableReference.ParentNode.ChildNodes.SingleOrDefault(n => n.Id == Terminals.ObjectAlias);
-				CreateMainDataObjectReference(tableReferenceNode, objectIdentifier, objectReferenceAlias);
+				MainObjectReferenceContainer.MainObjectReference = CreateDataObjectReference(tableReferenceNode, objectIdentifier, objectReferenceAlias);
 			}
 			else
 			{
@@ -331,58 +332,68 @@ namespace SqlPad.Oracle
 			}
 
 			var identifiers = updateListNode.GetDescendantsWithinSameQuery(Terminals.Identifier);
-			ResolveColumnAndFunctionReferenceFromIdentifiers(null, MainObjectReferenceContainer.ColumnReferences, identifiers, QueryBlockPlacement.None, null);
+			ResolveColumnAndFunctionReferenceFromIdentifiers(null, MainObjectReferenceContainer, identifiers, QueryBlockPlacement.None, null);
 		}
 
 		private void ResolveMainObjectReferenceInsert()
 		{
-			var mainObjectRefrenceNode = Statement.RootNode.GetSingleDescendant(NonTerminals.DmlTableExpressionClause);
-			if (mainObjectRefrenceNode == null)
+			var insertIntoClauses = Statement.RootNode.GetDescendantsWithinSameQuery(NonTerminals.InsertIntoClause);
+			foreach (var insertIntoClause in insertIntoClauses)
 			{
-				return;
-			}
-
-			var objectIdentifier = mainObjectRefrenceNode.GetDescendantByPath(NonTerminals.QueryTableExpression, Terminals.ObjectIdentifier);
-			if (objectIdentifier != null)
-			{
-				var objectReferenceAlias = mainObjectRefrenceNode.ChildNodes.SingleOrDefault(n => n.Id == Terminals.ObjectAlias);
-				CreateMainDataObjectReference(mainObjectRefrenceNode, objectIdentifier, objectReferenceAlias);
-
-				// TODO: Make proper implementation for multi-table insert
-				var columnIdentifierListNode = mainObjectRefrenceNode.ParentNode.ChildNodes[mainObjectRefrenceNode.ParentNode.ChildNodes.Count - 1];
-				if (columnIdentifierListNode.Id == NonTerminals.ParenthesisEnclosedIdentifierList)
+				var dmlTableExpressionClause = insertIntoClause.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.DmlTableExpressionClause);
+				StatementGrammarNode objectReferenceAlias = null;
+				StatementGrammarNode objectIdentifier = null;
+				if (dmlTableExpressionClause != null)
 				{
-					var columnIdentiferNodes = columnIdentifierListNode.GetDescendants(Terminals.Identifier);
-					ResolveColumnAndFunctionReferenceFromIdentifiers(null, MainObjectReferenceContainer.ColumnReferences, columnIdentiferNodes, QueryBlockPlacement.None, null);
+					objectReferenceAlias = dmlTableExpressionClause.ChildNodes.SingleOrDefault(n => n.Id == Terminals.ObjectAlias);
+					objectIdentifier = dmlTableExpressionClause.GetDescendantByPath(NonTerminals.QueryTableExpression, Terminals.ObjectIdentifier);
 				}
 
-				var insertIntoClauses = Statement.RootNode.GetDescendantsWithinSameQuery(NonTerminals.InsertIntoClause);
-				foreach (var insertIntoClause in insertIntoClauses)
-				{
-					var insertTarget = new OracleInsertTarget();
-					insertTarget.ColumnListNode = insertIntoClause.GetDescendantByPath(NonTerminals.ParenthesisEnclosedIdentifierList);
-					insertTarget.ValueList = insertIntoClause.ParentNode.GetDescendantByPath(NonTerminals.InsertValuesClause, NonTerminals.ParenthesisEnclosedExpressionOrOrDefaultValueList)
-					                         ?? insertIntoClause.ParentNode.GetDescendantByPath(NonTerminals.InsertValuesOrSubquery, NonTerminals.InsertValuesClause, NonTerminals.ParenthesisEnclosedExpressionOrOrDefaultValueList);
+				var dataObjectReference = CreateDataObjectReference(dmlTableExpressionClause, objectIdentifier, objectReferenceAlias);
 
-					if (insertTarget.ValueList == null)
+				var referenceContainer = new OracleMainObjectReferenceContainer(this);
+				var insertTarget = new OracleInsertTarget(this);
+				insertTarget.TargetNode = dmlTableExpressionClause;
+				insertTarget.RootNode = insertIntoClause.ParentNode;
+				insertTarget.ObjectReferences.Add(dataObjectReference);
+				insertTarget.ColumnListNode = insertIntoClause.GetDescendantByPath(NonTerminals.ParenthesisEnclosedIdentifierList);
+				if (insertTarget.ColumnListNode != null)
+				{
+					var columnIdentiferNodes = insertTarget.ColumnListNode.GetDescendants(Terminals.Identifier);
+					ResolveColumnAndFunctionReferenceFromIdentifiers(null, referenceContainer, columnIdentiferNodes, QueryBlockPlacement.None, null);
+					ResolveColumnObjectReferences(referenceContainer.ColumnReferences, insertTarget.ObjectReferences, new OracleDataObjectReference[0]);
+				}
+
+				insertTarget.ValueList = insertIntoClause.ParentNode.GetDescendantByPath(NonTerminals.InsertValuesClause, NonTerminals.ParenthesisEnclosedExpressionOrOrDefaultValueList)
+				                         ?? insertIntoClause.ParentNode.GetDescendantByPath(NonTerminals.InsertValuesOrSubquery, NonTerminals.InsertValuesClause, NonTerminals.ParenthesisEnclosedExpressionOrOrDefaultValueList);
+
+				if (insertTarget.ValueList == null)
+				{
+					var nestedQuery = insertIntoClause.ParentNode.GetDescendantByPath(NonTerminals.InsertValuesOrSubquery, NonTerminals.NestedQuery);
+					if (nestedQuery != null)
 					{
-						var nestedQuery = insertIntoClause.ParentNode.GetDescendantByPath(NonTerminals.InsertValuesOrSubquery, NonTerminals.NestedQuery);
-						if (nestedQuery != null)
+						var queryBlock = nestedQuery.GetDescendantsWithinSameQuery(NonTerminals.QueryBlock).FirstOrDefault();
+						if (queryBlock != null)
 						{
-							var queryBlock = nestedQuery.GetDescendantsWithinSameQuery(NonTerminals.QueryBlock).FirstOrDefault();
-							if (queryBlock != null)
-							{
-								insertTarget.RowSource = _queryBlockNodes[queryBlock];
-							}
+							insertTarget.RowSource = _queryBlockNodes[queryBlock];
 						}
 					}
-
-					_insertTargets.Add(insertTarget);
 				}
+				else
+				{
+					var identifiers = insertTarget.ValueList.GetDescendantsWithinSameQuery(Terminals.Identifier);
+					ResolveColumnAndFunctionReferenceFromIdentifiers(null, insertTarget, identifiers, QueryBlockPlacement.None, null);
+					ResolveColumnObjectReferences(insertTarget.ColumnReferences, insertTarget.ObjectReferences, new OracleDataObjectReference[0]);
+					ResolveFunctionReferences(insertTarget.ProgramReferences);
+				}
+
+				insertTarget.ColumnReferences.AddRange(referenceContainer.ColumnReferences);
+
+				_insertTargets.Add(insertTarget);
 			}
 		}
 
-		private void CreateMainDataObjectReference(StatementGrammarNode rootNode, StatementGrammarNode objectIdentifier, StatementGrammarNode aliasNode)
+		private OracleDataObjectReference CreateDataObjectReference(StatementGrammarNode rootNode, StatementGrammarNode objectIdentifier, StatementGrammarNode aliasNode)
 		{
 			var queryTableExpressionNode = objectIdentifier.ParentNode;
 
@@ -397,7 +408,7 @@ namespace SqlPad.Oracle
 				schemaObject = _databaseModel.GetFirstSchemaObject<OracleDataObject>(_databaseModel.GetPotentialSchemaObjectIdentifiers(owner, objectIdentifier.Token.Value));
 			}
 
-			MainObjectReferenceContainer.MainObjectReference =
+			return
 				new OracleDataObjectReference(ReferenceType.SchemaObject)
 				{
 					RootNode = rootNode,
@@ -528,7 +539,7 @@ namespace SqlPad.Oracle
 						OracleColumnReference columnReference;
 						if (String.IsNullOrEmpty(exposedColumn.NormalizedName) || !exposedColumnDictionary.TryGetValue(exposedColumn.NormalizedName, out columnReference))
 						{
-							columnReference = CreateColumnReference(exposedColumn.Owner, exposedColumn, QueryBlockPlacement.SelectList, asteriskTableReference.Key.RootNode.LastTerminalNode, null);
+							columnReference = CreateColumnReference(exposedColumn, exposedColumn.Owner, exposedColumn, QueryBlockPlacement.SelectList, asteriskTableReference.Key.RootNode.LastTerminalNode, null);
 
 							if (!String.IsNullOrEmpty(exposedColumn.NormalizedName))
 							{
@@ -636,6 +647,11 @@ namespace SqlPad.Oracle
 				.Where(qb => qb.RootNode.SourcePosition.ContainsIndex(position))
 				.OrderByDescending(qb => qb.RootNode.Level)
 				.FirstOrDefault();
+		}
+
+		public OracleColumnReference GetColumnReference(StatementGrammarNode columnIdentifer)
+		{
+			return AllReferenceContainers.SelectMany(c => c.ColumnReferences).SingleOrDefault(c => c.ColumnNode == columnIdentifer);
 		}
 
 		public OracleQueryBlock GetQueryBlock(StatementGrammarNode node)
@@ -757,6 +773,7 @@ namespace SqlPad.Oracle
 					RootNode = columnReference.ColumnNode,
 					Owner = columnReference.Owner,
 					SelectListColumn = columnReference.SelectListColumn,
+					Placement = columnReference.Placement,
 					AnalyticClauseNode = null,
 					ParameterListNode = null,
 					ParameterNodes = null
@@ -822,6 +839,7 @@ namespace SqlPad.Oracle
 					OwnerNode = columnReference.OwnerNode,
 					RootNode = columnReference.RootNode,
 					SelectListColumn = columnReference.SelectListColumn,
+					Placement = columnReference.Placement,
 					SchemaObject = schemaObject
 				};
 
@@ -895,12 +913,12 @@ namespace SqlPad.Oracle
 						continue;
 
 					var identifiers = joinCondition.GetDescendants(Terminals.Identifier);
-					var columnReferences = new List<OracleColumnReference>();
-					ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, columnReferences, identifiers, QueryBlockPlacement.Join, null);
+					var joinReferenceContainer = new OracleMainObjectReferenceContainer(this);
+					ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, joinReferenceContainer, identifiers, QueryBlockPlacement.Join, null);
 
-					if (columnReferences.Count > 0)
+					if (joinReferenceContainer.ColumnReferences.Count > 0)
 					{
-						_joinClauseColumnReferences.Add(columnReferences);
+						_joinClauseColumnReferences.Add(joinReferenceContainer.ColumnReferences);
 					}
 				}
 			}
@@ -913,7 +931,7 @@ namespace SqlPad.Oracle
 			{
 				queryBlock.WhereClause = whereClauseRootNode;
 				var whereClauseIdentifiers = whereClauseRootNode.GetDescendantsWithinSameQuery(Terminals.Identifier, Terminals.RowIdPseudoColumn);
-				ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock.ColumnReferences, whereClauseIdentifiers, QueryBlockPlacement.Where, null);
+				ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock, whereClauseIdentifiers, QueryBlockPlacement.Where, null);
 			}
 
 			var groupByClauseRootNode = queryBlock.RootNode.GetDescendantsWithinSameQuery(NonTerminals.GroupByClause).FirstOrDefault();
@@ -924,7 +942,7 @@ namespace SqlPad.Oracle
 			
 			queryBlock.GroupByClause = groupByClauseRootNode;
 			var identifiers = groupByClauseRootNode.GetPathFilterDescendants(n => !n.Id.In(NonTerminals.NestedQuery, NonTerminals.HavingClause), Terminals.Identifier, Terminals.RowIdPseudoColumn);
-			ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock.ColumnReferences, identifiers, QueryBlockPlacement.GroupBy, null);
+			ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock, identifiers, QueryBlockPlacement.GroupBy, null);
 
 			var havingClauseRootNode = groupByClauseRootNode.GetDescendantsWithinSameQuery(NonTerminals.HavingClause).FirstOrDefault();
 			if (havingClauseRootNode == null)
@@ -934,7 +952,7 @@ namespace SqlPad.Oracle
 
 			queryBlock.HavingClause = havingClauseRootNode;
 			identifiers = havingClauseRootNode.GetDescendantsWithinSameQuery(Terminals.Identifier, Terminals.RowIdPseudoColumn);
-			ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock.ColumnReferences, identifiers, QueryBlockPlacement.Having, null);
+			ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock, identifiers, QueryBlockPlacement.Having, null);
 
 			var grammarSpecificFunctions = havingClauseRootNode.GetDescendantsWithinSameQuery(Terminals.Count, NonTerminals.AggregateFunction, NonTerminals.AnalyticFunction).ToArray();
 			CreateGrammarSpecificFunctionReferences(grammarSpecificFunctions, queryBlock, queryBlock.ProgramReferences, null);
@@ -950,30 +968,35 @@ namespace SqlPad.Oracle
 				return;
 
 			var identifiers = queryBlock.OrderByClause.GetDescendantsWithinSameQuery(Terminals.Identifier, Terminals.RowIdPseudoColumn);
-			ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock.ColumnReferences, identifiers, QueryBlockPlacement.OrderBy, null);
+			ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock, identifiers, QueryBlockPlacement.OrderBy, null);
 		}
 
-		private void ResolveColumnAndFunctionReferenceFromIdentifiers(OracleQueryBlock queryBlock, ICollection<OracleColumnReference> columnReferences, IEnumerable<StatementGrammarNode> identifiers, QueryBlockPlacement type, OracleSelectListColumn selectListColumn)
+		private void ResolveColumnAndFunctionReferenceFromIdentifiers(OracleQueryBlock queryBlock, OracleReferenceContainer referenceContainer, IEnumerable<StatementGrammarNode> identifiers, QueryBlockPlacement type, OracleSelectListColumn selectListColumn)
 		{
 			foreach (var identifier in identifiers)
 			{
-				var parentNode = identifier.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference);
-				var prefixNonTerminal = parentNode == null
-					? null
-					: parentNode.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.Prefix);
+				var prefixNonTerminal = GetPrefixNodeFromPrefixedColumnReference(identifier);
 
 				var functionCallNodes = GetFunctionCallNodes(identifier);
 				if (functionCallNodes.Length == 0)
 				{
-					var columnReference = CreateColumnReference(queryBlock, selectListColumn, type, identifier, prefixNonTerminal);
-					columnReferences.Add(columnReference);
+					var columnReference = CreateColumnReference(referenceContainer, queryBlock, selectListColumn, type, identifier, prefixNonTerminal);
+					referenceContainer.ColumnReferences.Add(columnReference);
 				}
 				else
 				{
-					var functionReference = CreateFunctionReference(queryBlock, selectListColumn, identifier, prefixNonTerminal, functionCallNodes);
-					functionReference.Container.ProgramReferences.Add(functionReference);
+					var functionReference = CreateFunctionReference(referenceContainer, queryBlock, selectListColumn, identifier, prefixNonTerminal, functionCallNodes);
+					referenceContainer.ProgramReferences.Add(functionReference);
 				}
 			}
+		}
+
+		private StatementGrammarNode GetPrefixNodeFromPrefixedColumnReference(StatementGrammarNode identifier)
+		{
+			var parentNode = identifier.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference);
+			return parentNode == null
+				? null
+				: parentNode.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.Prefix);
 		}
 
 		private void FindSelectListReferences(OracleQueryBlock queryBlock)
@@ -1003,7 +1026,7 @@ namespace SqlPad.Oracle
 
 				queryBlock.HasAsteriskClause = true;
 
-				column.ColumnReferences.Add(CreateColumnReference(queryBlock, column, QueryBlockPlacement.SelectList, asteriskNode, null));
+				column.ColumnReferences.Add(CreateColumnReference(column, queryBlock, column, QueryBlockPlacement.SelectList, asteriskNode, null));
 
 				_asteriskTableReferences[column] = new List<OracleDataObjectReference>(queryBlock.ObjectReferences);
 
@@ -1035,7 +1058,7 @@ namespace SqlPad.Oracle
 						column.IsAsterisk = true;
 
 						var prefixNonTerminal = asteriskNode.ParentNode.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.Prefix);
-						var columnReference = CreateColumnReference(queryBlock, column, QueryBlockPlacement.SelectList, asteriskNode, prefixNonTerminal);
+						var columnReference = CreateColumnReference(column, queryBlock, column, QueryBlockPlacement.SelectList, asteriskNode, prefixNonTerminal);
 						column.ColumnReferences.Add(columnReference);
 
 						var tableReferences = queryBlock.ObjectReferences.Where(t => t.FullyQualifiedObjectName == columnReference.FullyQualifiedObjectName || (columnReference.ObjectNode == null && t.FullyQualifiedObjectName.NormalizedName == columnReference.FullyQualifiedObjectName.NormalizedName));
@@ -1049,7 +1072,7 @@ namespace SqlPad.Oracle
 						var identifiers = columnGrammarLookup[Terminals.Identifier].Concat(columnGrammarLookup[Terminals.RowIdPseudoColumn]).ToArray();
 
 						var previousColumnReferences = column.ColumnReferences.Count;
-						ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, column.ColumnReferences, identifiers, QueryBlockPlacement.SelectList, column);
+						ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, column, identifiers, QueryBlockPlacement.SelectList, column);
 						
 						column.IsDirectReference = identifiers.Length == 1 && identifiers[0].GetAncestor(NonTerminals.Expression).ChildNodes.Count == 1;
 						var columnReferenceAdded = column.ColumnReferences.Count > previousColumnReferences;
@@ -1118,7 +1141,7 @@ namespace SqlPad.Oracle
 			return identifier.ParentNode.ChildNodes.Where(n => n.Id.In(NonTerminals.ParenthesisEnclosedAggregationFunctionParameters, NonTerminals.AnalyticClause)).ToArray();
 		}
 
-		private static OracleProgramReference CreateFunctionReference(OracleQueryBlock queryBlock, OracleSelectListColumn selectListColumn, StatementGrammarNode identifierNode, StatementGrammarNode prefixNonTerminal, ICollection<StatementGrammarNode> functionCallNodes)
+		private static OracleProgramReference CreateFunctionReference(OracleReferenceContainer container, OracleQueryBlock queryBlock, OracleSelectListColumn selectListColumn, StatementGrammarNode identifierNode, StatementGrammarNode prefixNonTerminal, ICollection<StatementGrammarNode> functionCallNodes)
 		{
 			var analyticClauseNode = functionCallNodes.SingleOrDefault(n => n.Id == NonTerminals.AnalyticClause);
 
@@ -1145,6 +1168,8 @@ namespace SqlPad.Oracle
 					SelectListColumn = selectListColumn
 				};
 
+			functionReference.SetContainer(container);
+
 			AddPrefixNodes(functionReference, prefixNonTerminal);
 
 			return functionReference;
@@ -1169,14 +1194,14 @@ namespace SqlPad.Oracle
 			return databaseLink == null ? null : databaseLink.ChildNodes.SingleOrDefault(n => n.Id == Terminals.DatabaseLinkIdentifier);
 		}
 
-		private static OracleColumnReference CreateColumnReference(OracleQueryBlock queryBlock, OracleSelectListColumn selectListColumn, QueryBlockPlacement type, StatementGrammarNode identifierNode, StatementGrammarNode prefixNonTerminal)
+		private static OracleColumnReference CreateColumnReference(OracleReferenceContainer container, OracleQueryBlock queryBlock, OracleSelectListColumn selectListColumn, QueryBlockPlacement placement, StatementGrammarNode identifierNode, StatementGrammarNode prefixNonTerminal)
 		{
 			var columnReference =
-				new OracleColumnReference
+				new OracleColumnReference(container)
 				{
 					ColumnNode = identifierNode,
 					DatabaseLinkNode = GetDatabaseLinkFromIdentifier(identifierNode),
-					Placement = type,
+					Placement = placement,
 					Owner = queryBlock,
 					SelectListColumn = selectListColumn
 				};
@@ -1251,12 +1276,22 @@ namespace SqlPad.Oracle
 		CommonTableExpression
 	}
 
-	public class OracleInsertTarget
+	public class OracleInsertTarget : OracleReferenceContainer
 	{
+		public OracleInsertTarget(OracleStatementSemanticModel semanticModel) : base(semanticModel)
+		{
+		}
+
+		public StatementGrammarNode RootNode { get; set; }
+
+		public StatementGrammarNode TargetNode { get; set; }
+
 		public StatementGrammarNode ColumnListNode { get; set; }
 		
 		public StatementGrammarNode ValueList { get; set; }
 
 		public OracleQueryBlock RowSource { get; set; }
+
+		public OracleDataObjectReference DataObjectReference { get { return ObjectReferences.Count == 1 ? ObjectReferences.First() : null; } }
 	}
 }

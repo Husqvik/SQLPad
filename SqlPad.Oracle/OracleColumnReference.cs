@@ -7,18 +7,17 @@ namespace SqlPad.Oracle
 	[DebuggerDisplay("OracleColumnReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; Object={ObjectNode == null ? null : ObjectNode.Token.Value}; Column={ColumnNode.Token.Value})")]
 	public class OracleColumnReference : OracleReference
 	{
-		public OracleColumnReference()
+		public OracleColumnReference(OracleReferenceContainer referenceContainer)
 		{
 			ColumnNodeObjectReferences = new HashSet<OracleObjectWithColumnsReference>();
 			ColumnNodeColumnReferences = new List<OracleColumn>();
+			SetContainer(referenceContainer);
 		}
 
 		public override string Name { get { return ColumnNode.Token.Value; } }
 
 		public bool ReferencesAllColumns { get { return ColumnNode.Token.Value == "*"; } }
 
-		public QueryBlockPlacement Placement { get; set; }
-		
 		public StatementGrammarNode ColumnNode { get; set; }
 
 		public ICollection<OracleObjectWithColumnsReference> ColumnNodeObjectReferences { get; private set; }

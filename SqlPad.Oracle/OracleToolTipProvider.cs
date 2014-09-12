@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -17,7 +16,9 @@ namespace SqlPad.Oracle
 
 			var node = sqlDocumentRepository.Statements.GetNodeAtPosition(cursorPosition);
 			if (node == null)
+			{
 				return null;
+			}
 
 			var tip = node.Type == NodeType.Terminal ? node.Id : null;
 
@@ -32,7 +33,6 @@ namespace SqlPad.Oracle
 			{
 				var semanticModel = (OracleStatementSemanticModel)validationModel.SemanticModel;
 				var queryBlock = semanticModel.GetQueryBlock(node);
-				var columnReferences = queryBlock == null ? semanticModel.MainObjectReferenceContainer.ColumnReferences : queryBlock.AllColumnReferences;
 
 				switch (node.Id)
 				{
@@ -67,7 +67,7 @@ namespace SqlPad.Oracle
 					case Terminals.Lag:
 					case Terminals.RowIdPseudoColumn:
 					case Terminals.Identifier:
-						var columnReference = GetColumnDescription(columnReferences, node);
+						var columnReference = semanticModel.GetColumnReference(node);
 						if (columnReference == null)
 						{
 							if (queryBlock == null)
@@ -209,11 +209,6 @@ namespace SqlPad.Oracle
 			return functionReference == null || functionReference.DatabaseLinkNode != null || functionReference.Metadata == null ? null : functionReference.Metadata.Identifier.FullyQualifiedIdentifier;
 		}
 
-		private OracleColumnReference GetColumnDescription(IEnumerable<OracleColumnReference> columnReferences, StatementGrammarNode terminal)
-		{
-			return columnReferences.FirstOrDefault(c => c.ColumnNode == terminal);
-		}
-
 		private OracleSchemaObject GetSchemaObjectReference(OracleQueryBlock queryBlock, StatementGrammarNode terminal)
 		{
 			if (queryBlock == null)
@@ -233,14 +228,19 @@ namespace SqlPad.Oracle
 		{
 			if (queryBlock == null)
 			{
-				return semanticModel.MainObjectReferenceContainer.MainObjectReference != null && semanticModel.MainObjectReferenceContainer.MainObjectReference.ObjectNode == terminal
-					? semanticModel.MainObjectReferenceContainer.MainObjectReference
-					: null;
+				if (semanticModel.MainObjectReferenceContainer.MainObjectReference != null && semanticModel.MainObjectReferenceContainer.MainObjectReference.ObjectNode == terminal)
+				{
+					return semanticModel.MainObjectReferenceContainer.MainObjectReference;
+				}
+
+				return semanticModel.InsertTargets
+					.Select(t => t.DataObjectReference)
+					.SingleOrDefault(o => o != null && o.ObjectNode == terminal);
 			}
 
 			var objectReference = queryBlock.AllColumnReferences
-				.Where(c => c.ObjectNode == terminal && c.ObjectNodeObjectReferences.Count == 1)
-				.Select(c => c.ObjectNodeObjectReferences.First())
+				.Where(c => c.ObjectNode == terminal && c.ValidObjectReference != null)
+				.Select(c => c.ValidObjectReference)
 				.FirstOrDefault();
 
 			objectReference = objectReference ?? queryBlock.ObjectReferences.FirstOrDefault(o => o.ObjectNode == terminal);

@@ -30,6 +30,7 @@ namespace SqlPad.Oracle
 
 			var objectReferences = oracleSemanticModel.QueryBlocks.SelectMany(qb => qb.ObjectReferences)
 				.Concat(mainObjectReferences)
+				.Concat(oracleSemanticModel.InsertTargets.SelectMany(t => t.ObjectReferences))
 				.Where(tr => tr.Type != ReferenceType.InlineView);
 			
 			foreach (var objectReference in objectReferences)
@@ -69,16 +70,17 @@ namespace SqlPad.Oracle
 				validationModel.IdentifierNodeValidity[nodeValidity.Node] = nodeValidity;
 			}
 
-			if (mainObjectReference != null &&
-			    (mainObjectReference.Type == ReferenceType.InlineView ||
-			     validationModel.ObjectNodeValidity[mainObjectReference.ObjectNode].IsRecognized))
+			foreach (var insertTarget in oracleSemanticModel.InsertTargets)
 			{
-				foreach (var insertTarget in oracleSemanticModel.InsertTargets)
+				var dataObjectReference = insertTarget.DataObjectReference;
+				if (dataObjectReference != null &&
+				    (dataObjectReference.Type == ReferenceType.InlineView ||
+				     validationModel.ObjectNodeValidity[dataObjectReference.ObjectNode].IsRecognized))
 				{
 					var insertColumnCount = insertTarget.ColumnListNode == null
-						? mainObjectReference.Columns.Count
+						? dataObjectReference.Columns.Count
 						: insertTarget.ColumnListNode.GetDescendants(Terminals.Identifier).Count();
-					
+
 					var rowSourceColumnCount = insertTarget.RowSource == null
 						? insertTarget.ValueList.GetDescendantsWithinSameQuery(NonTerminals.ExpressionOrOrDefaultValue).Count()
 						: insertTarget.RowSource.Columns.Count(c => !c.IsAsterisk);
@@ -137,7 +139,7 @@ namespace SqlPad.Oracle
 			{
 				if (sequenceReference.DatabaseLinkNode == null)
 				{
-					var semanticError = sequenceReference.SelectListColumn == null ? OracleSemanticErrorType.ObjectCannotBeUsed : OracleSemanticErrorType.None;
+					var semanticError = !sequenceReference.Placement.In(QueryBlockPlacement.None, QueryBlockPlacement.SelectList) ? OracleSemanticErrorType.ObjectCannotBeUsed : OracleSemanticErrorType.None;
 					validationModel.ObjectNodeValidity[sequenceReference.ObjectNode] = new ProgramValidationData(semanticError) { IsRecognized = true, Node = sequenceReference.ObjectNode };
 				}
 				else
