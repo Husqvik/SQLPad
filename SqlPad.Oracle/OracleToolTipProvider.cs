@@ -256,8 +256,8 @@ namespace SqlPad.Oracle
 				return null;
 			}
 
-			var databaseLink = queryBlock.DatabaseLinkReferences.SingleOrDefault(l => l.DatabaseLinkNode == terminal);
-			return databaseLink == null ? null : databaseLink.DatabaseLink;
+			var databaseLinkReference = queryBlock.DatabaseLinkReferences.SingleOrDefault(l => l.DatabaseLinkNode.Terminals.Contains(terminal));
+			return databaseLinkReference == null ? null : databaseLinkReference.DatabaseLink;
 		}
 	}
 }

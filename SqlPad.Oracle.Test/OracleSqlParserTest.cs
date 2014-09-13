@@ -1864,6 +1864,16 @@ FROM DUAL";
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 		}
 
+		[Test(Description = @"")]
+		public void TestDatabaseLinkWithDomainName()
+		{
+			const string statement1 = @"CREATE SYNONYM emp_table FOR oe.employees@remote.us.oracle.com";
+
+			var statements = Parser.Parse(statement1);
+			var statement = statements.Single().Validate();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+		}
+
 		public class IsRuleValid
 		{
 			[Test(Description = @"")]

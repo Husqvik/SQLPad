@@ -499,7 +499,8 @@ namespace SqlPad.Oracle
 
 			foreach (var databaseLinkReference in queryBlock.DatabaseLinkReferences)
 			{
-				databaseLinkReference.DatabaseLink = _databaseModel.GetFirstDatabaseLink(_databaseModel.GetPotentialSchemaObjectIdentifiers(null, databaseLinkReference.DatabaseLinkNode.Token.Value));
+				var databaseLinkName = String.Join(null, databaseLinkReference.DatabaseLinkNode.Terminals.Select(t => t.Token.Value));
+				databaseLinkReference.DatabaseLink = _databaseModel.GetFirstDatabaseLink(_databaseModel.GetPotentialSchemaObjectIdentifiers(null, databaseLinkName));
 			}
 		}
 
@@ -1191,7 +1192,7 @@ namespace SqlPad.Oracle
 		private static StatementGrammarNode GetDatabaseLinkFromNode(StatementGrammarNode node)
 		{
 			var databaseLink = node.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.DatabaseLink);
-			return databaseLink == null ? null : databaseLink.ChildNodes.SingleOrDefault(n => n.Id == Terminals.DatabaseLinkIdentifier);
+			return databaseLink == null ? null : databaseLink.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.DatabaseLinkName);
 		}
 
 		private static OracleColumnReference CreateColumnReference(OracleReferenceContainer container, OracleQueryBlock queryBlock, OracleSelectListColumn selectListColumn, QueryBlockPlacement placement, StatementGrammarNode identifierNode, StatementGrammarNode prefixNonTerminal)

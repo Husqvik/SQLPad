@@ -96,6 +96,8 @@ namespace SqlPad.Oracle
 			public const string CrossOrOuterApplyClause = "CrossOrOuterApplyClause";
 			public const string CycleOrNoCycle = "CycleOrNoCycle";
 			public const string DatabaseLink = "DatabaseLink";
+			public const string DatabaseLinkDomain = "DatabaseLinkDomain";
+			public const string DatabaseLinkName = "DatabaseLinkName";
 			public const string DataType = "DataType";
 			public const string DataTypeDefinition = "DataTypeDefinition";
 			public const string DataTypeIntervalPrecisionAndScale = "DataTypeIntervalPrecisionAndScale";

@@ -2414,7 +2414,25 @@
       <Sequences>
         <Sequence>
           <Terminal Id="AtCharacter" />
+          <NonTerminal Id="DatabaseLinkName" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DatabaseLinkName">
+      <Sequences>
+        <Sequence>
           <Terminal Id="DatabaseLinkIdentifier" />
+          <NonTerminal Id="DatabaseLinkDomain" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DatabaseLinkDomain">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Dot" />
+          <NonTerminal Id="DatabaseLinkName" />
         </Sequence>
       </Sequences>
     </Rule>
