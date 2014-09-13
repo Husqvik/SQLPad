@@ -939,6 +939,20 @@ se";
 			items[1].CaretOffset.ShouldBe(0);
 		}
 
+		[Test(Description = @"")]
+		public void TestSequenceSuggestionInInsertValuesClause()
+		{
+			const string statement = @"INSERT INTO SELECTION (SELECTION_ID) VALUES (SEQ)";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 48).ToList();
+			items.Count.ShouldBe(2);
+			items[0].Name.ShouldBe("SYNONYM_TO_TEST_SEQ");
+			items[0].Text.ShouldBe("SYNONYM_TO_TEST_SEQ");
+			items[0].CaretOffset.ShouldBe(0);
+			items[1].Name.ShouldBe("TEST_SEQ");
+			items[1].Text.ShouldBe("TEST_SEQ");
+			items[1].CaretOffset.ShouldBe(0);
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)

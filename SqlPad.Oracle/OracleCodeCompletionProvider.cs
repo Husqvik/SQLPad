@@ -258,7 +258,7 @@ namespace SqlPad.Oracle
 			if (completionType.Column)
 			{
 				var inMainQueryBlockOrMainObjectReference = queryBlock == semanticModel.MainQueryBlock || (queryBlock == null && semanticModel.MainObjectReferenceContainer.MainObjectReference != null);
-				var sequencesAllowed = inMainQueryBlockOrMainObjectReference && (currentNode.IsWithinSelectClause() || !currentNode.IsWithinExpression());
+				var sequencesAllowed = inMainQueryBlockOrMainObjectReference && (currentNode.IsWithinSelectClause() || !currentNode.IsWithinExpression() || currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.InsertValuesClause) != null);
 				completionItems = completionItems.Concat(GenerateSelectListItems(currentNode, referenceContainers, cursorPosition, oracleDatabaseModel, sequencesAllowed, forcedInvokation));
 			}
 
