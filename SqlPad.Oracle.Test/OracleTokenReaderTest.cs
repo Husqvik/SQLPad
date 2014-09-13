@@ -468,6 +468,14 @@ namespace SqlPad.Oracle.Test
 			tokens.ShouldBe(new[] { "SELECT", "*", "FROM", "V$SGASTAT", "WHERE", "NAME", "=", "'Global Context'" });
 		}
 
+		[Test(Description = "Tests equals character without space. ")]
+		public void TestStringQuotedNotationWithPairCharacterForOpeningClosing()
+		{
+			const string testQuery = "SELECT q'<text>', q'[text]', Q'(text)', NQ'{text}' FROM DUAL";
+			var tokens = GetTokenValuesFromOracleSql(testQuery);
+			tokens.ShouldBe(new[] { "SELECT", "q'<text>'", ",", "q'[text]'", ",", "Q'(text)'", ",", "NQ'{text}'", "FROM", "DUAL" });
+		}
+
 		private string[] GetTokenValuesFromOracleSql(string sqlText, bool includeCommentBlocks = false)
 		{
 			return GetTokensFromOracleSql(sqlText, includeCommentBlocks).Select(t => t.Value).ToArray();
@@ -485,7 +493,7 @@ namespace SqlPad.Oracle.Test
 			using (var reader = new StringReader(sqlText))
 			{
 				var tokenReader = OracleTokenReader.Create(reader);
-				return tokenReader.GetTokens(includeCommentBlocks).Cast<OracleToken>().ToArray();
+				return tokenReader.GetTokens(includeCommentBlocks).ToArray();
 			}
 		}
     }

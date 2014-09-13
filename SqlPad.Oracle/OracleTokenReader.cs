@@ -53,7 +53,7 @@ namespace SqlPad.Oracle
 
 			var inQuotedString = false;
 			char? candidateCharacter = null;
-			char? quotedInitializer = null;
+			char? quotingInitializer = null;
 
 			var specialMode = new SpecialModeFlags();
 			var flags = new RecognizedFlags();
@@ -79,9 +79,9 @@ namespace SqlPad.Oracle
 					flags.QuotedStringCandidate = false;
 				}
 
-				if (inQuotedString && quotedInitializer == null)
+				if (inQuotedString && quotingInitializer == null)
 				{
-					quotedInitializer = character;
+					quotingInitializer = character;
 				}
 
 				if (previousFlags.OptionalParameterCandidate)
@@ -108,8 +108,8 @@ namespace SqlPad.Oracle
 
 				if (specialMode.InString)
 				{
-					var isSimpleStringTerminator = previousFlags.StringEndCandidate && character != '\'' && !inQuotedString;
-					var isQuotedStringTerminator = previousFlags.Character == quotedInitializer && character == '\'' && inQuotedString;
+					var isSimpleStringTerminator = !inQuotedString && previousFlags.StringEndCandidate && character != '\'';
+					var isQuotedStringTerminator = inQuotedString && character == '\'' && IsQuotedStringClosingCharacter(quotingInitializer.Value, previousFlags.Character);
 
 					if (isSimpleStringTerminator || isQuotedStringTerminator)
 					{
@@ -121,7 +121,7 @@ namespace SqlPad.Oracle
 
 						specialMode.InString = false;
 						inQuotedString = false;
-						quotedInitializer = null;
+						quotingInitializer = null;
 						characterYielded = isQuotedStringTerminator;
 					}
 					else if (previousFlags.StringEndCandidate && flags.StringEndCandidate && character == '\'')
@@ -438,6 +438,23 @@ namespace SqlPad.Oracle
 				{
 					yield return new OracleToken(new String(candidateCharacter.Value, 1), index - indexOffset, specialMode.InComment);
 				}
+			}
+		}
+
+		private static bool IsQuotedStringClosingCharacter(char openingCharacter, char closingCharacterCandidate)
+		{
+			switch (openingCharacter)
+			{
+				case '<':
+					return closingCharacterCandidate == '>';
+				case '[':
+					return closingCharacterCandidate == ']';
+				case '(':
+					return closingCharacterCandidate == ')';
+				case '{':
+					return closingCharacterCandidate == '}';
+				default:
+					return openingCharacter == closingCharacterCandidate;
 			}
 		}
 
