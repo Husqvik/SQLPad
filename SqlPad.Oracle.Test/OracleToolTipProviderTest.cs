@@ -442,6 +442,38 @@ namespace SqlPad.Oracle.Test
 			toolTip.Control.DataContext.ShouldBe("Non-parenthesis function");
 		}
 
+		[Test(Description = @""), STAThread]
+		public void TestFunctionOverloadsToolTipNotShowForNonSchemaFunctions()
+		{
+			const string query = "SELECT MAX(DUMMY) FROM DUAL";
+			_documentRepository.UpdateStatements(query);
+
+			var functionOverloads = _codeCompletionProvider.ResolveFunctionOverloads(_documentRepository, 9);
+			var toolTip = new FunctionOverloadList { FunctionOverloads = functionOverloads };
+			toolTip.ViewOverloads.Items.Count.ShouldBe(0);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestToolTipInInsertValuesClause()
+		{
+			const string query = "INSERT INTO SELECTION (SELECTION_ID, SELECTIONNAME, RESPONDENTBUCKET_ID) VALUES (SQLPAD_FUNCTION, XMLTYPE(), SYNONYM_TO_TEST_SEQ.NEXTVAL)";
+			_documentRepository.UpdateStatements(query);
+
+			var toolTipFunction = _toolTipProvider.GetToolTip(_documentRepository, 84);
+
+			toolTipFunction.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTipFunction.Control.DataContext.ShouldBe("HUSQVIK.SQLPAD_FUNCTION");
+
+			var toolTipType = _toolTipProvider.GetToolTip(_documentRepository, 101);
+			toolTipType.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTipType.Control.DataContext.ShouldBe("\"PUBLIC\".XMLTYPE (Synonym) => SYS.XMLTYPE (Type)");
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 112);
+			toolTip.Control.ShouldBeTypeOf<ToolTipSequence>();
+			var toolTipSequence = (ToolTipSequence)toolTip.Control;
+			toolTipSequence.LabelTitle.Text.ShouldBe("HUSQVIK.SYNONYM_TO_TEST_SEQ (Synonym) => HUSQVIK.TEST_SEQ (Sequence)");
+		}
+
 		private static string GetTextFromTextBlock(TextBlock textBlock)
 		{
 			var inlines = textBlock.Inlines.Select(GetTextFromInline);
@@ -458,17 +490,6 @@ namespace SqlPad.Oracle.Test
 			
 			var bold = (Bold)inline;
 			return String.Join(null, bold.Inlines.Select(GetTextFromInline));
-		}
-
-		[Test(Description = @""), STAThread]
-		public void TestFunctionOverloadsToolTipNotShowForNonSchemaFunctions()
-		{
-			const string query = "SELECT MAX(DUMMY) FROM DUAL";
-			_documentRepository.UpdateStatements(query);
-
-			var functionOverloads = _codeCompletionProvider.ResolveFunctionOverloads(_documentRepository, 9);
-			var toolTip = new FunctionOverloadList { FunctionOverloads = functionOverloads };
-			toolTip.ViewOverloads.Items.Count.ShouldBe(0);
 		}
 	}
 }

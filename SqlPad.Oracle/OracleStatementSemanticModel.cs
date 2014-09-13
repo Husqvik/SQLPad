@@ -655,6 +655,21 @@ namespace SqlPad.Oracle
 			return AllReferenceContainers.SelectMany(c => c.ColumnReferences).SingleOrDefault(c => c.ColumnNode == columnIdentifer);
 		}
 
+		public OracleProgramReference GetProgramReference(StatementGrammarNode identifer)
+		{
+			return AllReferenceContainers.SelectMany(c => c.ProgramReferences).SingleOrDefault(c => c.FunctionIdentifierNode == identifer);
+		}
+
+		public OracleTypeReference GetTypeReference(StatementGrammarNode typeIdentifer)
+		{
+			return AllReferenceContainers.SelectMany(c => c.TypeReferences).SingleOrDefault(c => c.ObjectNode == typeIdentifer);
+		}
+
+		public OracleSequenceReference GetSequenceReference(StatementGrammarNode sequenceIdentifer)
+		{
+			return AllReferenceContainers.SelectMany(c => c.SequenceReferences).SingleOrDefault(c => c.ObjectNode == sequenceIdentifer);
+		}
+
 		public OracleQueryBlock GetQueryBlock(StatementGrammarNode node)
 		{
 			var queryBlockNode = node.GetAncestor(NonTerminals.QueryBlock);

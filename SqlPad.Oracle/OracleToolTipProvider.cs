@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -70,13 +71,8 @@ namespace SqlPad.Oracle
 						var columnReference = semanticModel.GetColumnReference(node);
 						if (columnReference == null)
 						{
-							if (queryBlock == null)
-							{
-								return null;
-							}
-
-							var functionToolTip = GetFunctionToolTip(queryBlock, node);
-							var typeToolTip = GetTypeToolTip(queryBlock, node);
+							var functionToolTip = GetFunctionToolTip(semanticModel, node);
+							var typeToolTip = GetTypeToolTip(semanticModel, node);
 							if (functionToolTip != null)
 							{
 								tip = functionToolTip;
@@ -143,9 +139,9 @@ namespace SqlPad.Oracle
 			return new ToolTipColumn(dataModel);
 		}
 
-		private static string GetTypeToolTip(OracleQueryBlock queryBlock, StatementGrammarNode node)
+		private static string GetTypeToolTip(OracleStatementSemanticModel semanticModel, StatementGrammarNode node)
 		{
-			var typeReference = queryBlock.AllTypeReferences.SingleOrDefault(t => t.ObjectNode == node);
+			var typeReference = semanticModel.GetTypeReference(node);
 			return typeReference == null || typeReference.DatabaseLinkNode != null ? null : GetFullSchemaObjectToolTip(typeReference.SchemaObject);
 		}
 
@@ -203,9 +199,9 @@ namespace SqlPad.Oracle
 			return schemaObject.FullyQualifiedName + " (" + CultureInfo.InvariantCulture.TextInfo.ToTitleCase(schemaObject.Type.ToLower()) + ")";
 		}
 
-		private string GetFunctionToolTip(OracleQueryBlock queryBlock, StatementGrammarNode terminal)
+		private string GetFunctionToolTip(OracleStatementSemanticModel semanticModel, StatementGrammarNode terminal)
 		{
-			var functionReference = queryBlock.AllProgramReferences.SingleOrDefault(f => f.FunctionIdentifierNode == terminal);
+			var functionReference = semanticModel.GetProgramReference(terminal);
 			return functionReference == null || functionReference.DatabaseLinkNode != null || functionReference.Metadata == null ? null : functionReference.Metadata.Identifier.FullyQualifiedIdentifier;
 		}
 
@@ -233,20 +229,26 @@ namespace SqlPad.Oracle
 					return semanticModel.MainObjectReferenceContainer.MainObjectReference;
 				}
 
-				return semanticModel.InsertTargets
+				var insertValuesObjectReference = GetObjectReferenceFromColumn(semanticModel.InsertTargets.SelectMany(t => t.ColumnReferences), terminal);
+
+				return insertValuesObjectReference ?? semanticModel.InsertTargets
 					.Select(t => t.DataObjectReference)
 					.SingleOrDefault(o => o != null && o.ObjectNode == terminal);
 			}
 
-			var objectReference = queryBlock.AllColumnReferences
-				.Where(c => c.ObjectNode == terminal && c.ValidObjectReference != null)
-				.Select(c => c.ValidObjectReference)
-				.FirstOrDefault();
+			var objectReference = GetObjectReferenceFromColumn(queryBlock.AllColumnReferences, terminal);
 
 			objectReference = objectReference ?? queryBlock.ObjectReferences.FirstOrDefault(o => o.ObjectNode == terminal);
 			return objectReference == null || objectReference.DatabaseLinkNode != null
 				? null
 				: objectReference;
+		}
+
+		private OracleObjectWithColumnsReference GetObjectReferenceFromColumn(IEnumerable<OracleColumnReference> columnReferences, StatementGrammarNode objectIdentifier)
+		{
+			return columnReferences.Where(c => c.ObjectNode == objectIdentifier && c.ValidObjectReference != null)
+					.Select(c => c.ValidObjectReference)
+					.FirstOrDefault();
 		}
 
 		private OracleDatabaseLink GetDatabaseLink(OracleQueryBlock queryBlock, StatementGrammarNode terminal)

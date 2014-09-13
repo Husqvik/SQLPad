@@ -231,7 +231,7 @@ namespace SqlPad.Oracle
 		public async override Task<string> GetObjectScriptAsync(OracleSchemaObject schemaObject, CancellationToken cancellationToken, bool suppressUserCancellationException = true)
 		{
 			var scriptUpdater = new ObjectScriptUpdater(schemaObject);
-			await UpdateModelAsync(cancellationToken, true, scriptUpdater);
+			await UpdateModelAsync(cancellationToken, false, scriptUpdater);
 			return scriptUpdater.ScriptText;
 		}
 
