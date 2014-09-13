@@ -1519,7 +1519,7 @@
         </Sequence>
         <Sequence>
           <Terminal Id="Char" />
-          <NonTerminal Id="DataTypeVarcharSimplePrecision" IsOptional="true" />
+          <NonTerminal Id="DataTypeVarcharSimplePrecisionOrVaryingSize" IsOptional="true" />
         </Sequence>
         <Sequence>
           <Terminal Id="Varchar" />
@@ -1531,7 +1531,7 @@
         </Sequence>
         <Sequence>
           <Terminal Id="NChar" />
-          <NonTerminal Id="DataTypeSimplePrecision" IsOptional="true" />
+          <NonTerminal Id="DataTypeSimplePrecisionOrVaryingSize" IsOptional="true" />
         </Sequence>
         <Sequence>
           <Terminal Id="NVarchar" />
@@ -1546,11 +1546,14 @@
           <NonTerminal Id="DataTypeSimplePrecision" IsOptional="true" />
         </Sequence>
         <Sequence>
-          <Terminal Id="Decimal" />
+          <NonTerminal Id="NumericOrDecimalOrDec" />
           <NonTerminal Id="DataTypeNumericPrecisionAndScale" IsOptional="true" />
         </Sequence>
         <Sequence>
           <Terminal Id="Smallint" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Int" />
         </Sequence>
         <Sequence>
           <Terminal Id="Number" />
@@ -1576,7 +1579,90 @@
           <NonTerminal Id="YearToMonthOrDayToSecond" />
         </Sequence>
         <Sequence>
+          <Terminal Id="Double" />
+          <Terminal Id="Precision" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Real" />
+        </Sequence>
+        <!--<Sequence>
+          <Terminal Id="Blob" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Clob" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="NClob" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="BFile" />
+        </Sequence>-->
+        <Sequence>
+          <Terminal Id="National" />
+          <NonTerminal Id="CharacterOrChar" />
+          <Terminal Id="Varying" IsOptional="true" />
+          <NonTerminal Id="DataTypeSimplePrecision" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Character" />
+          <Terminal Id="Varying" IsOptional="true" />
+          <NonTerminal Id="DataTypeSimplePrecision" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="UniversalRowId" />
+          <NonTerminal Id="DataTypeSimplePrecision" IsOptional="true" />
+        </Sequence>
+        <Sequence>
           <Terminal Id="DataTypeIdentifier" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="DataTypeVarcharSimplePrecisionOrVaryingSize">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="DataTypeVarcharSimplePrecision" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Varying" />
+          <NonTerminal Id="DataTypeSimplePrecision" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="DataTypeSimplePrecisionOrVaryingSize">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="DataTypeSimplePrecision" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Varying" />
+          <NonTerminal Id="DataTypeSimplePrecision" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="CharacterOrChar">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Character" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Char" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="NumericOrDecimalOrDec">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Numeric" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Decimal" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Dec" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -6992,7 +7078,7 @@
     <Terminal Id="Compress" Value="COMPRESS" IsKeyword="true" />
     <Terminal Id="Drop" Value="DROP" IsKeyword="true" />
     <Terminal Id="Char" Value="CHAR" IsKeyword="true" />
-    <Terminal Id="NChar" Value="CHAR" />
+    <Terminal Id="NChar" Value="NCHAR" />
     <Terminal Id="Pctfree" Value="PCTFREE" IsKeyword="true" />
     <Terminal Id="Revoke" Value="REVOKE" IsKeyword="true" />
     <Terminal Id="Identified" Value="IDENTIFIED" IsKeyword="true" />
@@ -7015,6 +7101,16 @@
     <Terminal Id="Values" Value="VALUES" IsKeyword="true" />
     <Terminal Id="Varchar2" Value="VARCHAR2" IsKeyword="true" />
     <Terminal Id="NVarchar2" Value="NVARCHAR2" />
+    <Terminal Id="Real" Value="REAL" />
+    <Terminal Id="Dec" Value="DEC" />
+    <Terminal Id="Int" Value="INT" />
+    <Terminal Id="UniversalRowId" Value="UROWID" />
+    <Terminal Id="Character" Value="CHARACTER" />
+    <Terminal Id="Numeric" Value="NUMERIC" />
+    <Terminal Id="Double" Value="DOUBLE" />
+    <Terminal Id="Precision" Value="PRECISION" />
+    <Terminal Id="National" Value="NATIONAL" />
+    <Terminal Id="Varying" Value="VARYING" />
     <Terminal Id="Index" Value="INDEX" IsKeyword="true" />
     <Terminal Id="Create" Value="CREATE" IsKeyword="true" />
     <Terminal Id="Decimal" Value="DECIMAL" IsKeyword="true" />

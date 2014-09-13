@@ -1850,6 +1850,20 @@ FROM DUAL";
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 		}
 
+		[Test(Description = @"")]
+		public void TestOtherDataTypes()
+		{
+			const string statement1 =
+@"SELECT
+	CAST(1 AS INT), CAST(1.3 AS DEC(*, 1)), CAST(1.2 AS DOUBLE PRECISION), CAST(1.4 AS REAL), CAST('X' AS NATIONAL CHARACTER VARYING (30)), --CAST(NULL AS BFILE)
+	CAST('Y' AS CHARACTER (1)), CAST(ROWID AS UROWID(16)), CAST('ABC' AS CHAR VARYING (3)), CAST('Z' AS NCHAR VARYING (6))
+FROM DUAL";
+
+			var statements = Parser.Parse(statement1);
+			var statement = statements.Single().Validate();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+		}
+
 		public class IsRuleValid
 		{
 			[Test(Description = @"")]
