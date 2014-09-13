@@ -2999,6 +2999,18 @@ NESTED TABLE NESTED_TABLE_COLUMN
 				var statement = result.Single();
 				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 			}
+
+			[Test(Description = @"")]
+			public void TestObjectPropertiesClause()
+			{
+				const string statementText = @"CREATE TABLE EMPLOYEES_OBJ_T OF EMPLOYEES_TYP (E_NO PRIMARY KEY) OBJECT IDENTIFIER IS PRIMARY KEY";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			}
 		}
 
 		public class CreateIndex

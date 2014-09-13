@@ -4125,7 +4125,7 @@
         <Sequence>
           <NonTerminal Id="DataTypeOrXmlType" />
           <NonTerminal Id="XmlTableColumnPathClause" IsOptional="true" />
-          <NonTerminal Id="XmlTableColumnDefaultClause" IsOptional="true" />
+          <NonTerminal Id="DefaultExpression" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -4163,7 +4163,7 @@
       </Sequences>
     </Rule>
 
-    <Rule StartingNonTerminal="XmlTableColumnDefaultClause">
+    <Rule StartingNonTerminal="DefaultExpression">
       <Sequences>
         <Sequence>
           <Terminal Id="Default" />
@@ -4358,12 +4358,12 @@
     <Rule StartingNonTerminal="CreateTableTypeClause">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="RelationalTable" />
-        </Sequence>
-        <!--<Sequence>
           <NonTerminal Id="ObjectTable" />
         </Sequence>
         <Sequence>
+          <NonTerminal Id="RelationalTable" />
+        </Sequence>
+        <!--<Sequence>
           <NonTerminal Id="XmlTypeTable" />
         </Sequence>-->
       </Sequences>
@@ -4376,7 +4376,7 @@
           <NonTerminal Id="SchemaPrefix" IsOptional="true" />
           <Terminal Id="ObjectIdentifier" />
           <NonTerminal Id="ObjectTableSubstitutionClause" IsOptional="true" />
-          <!--<NonTerminal Id="ParenthesisEnclosedObjectProperties" IsOptional="true" />-->
+          <NonTerminal Id="ParenthesisEnclosedObjectProperties" IsOptional="true" />
           <NonTerminal Id="TemporaryTableOnCommitClause" IsOptional="true" />
           <NonTerminal Id="ObjectTableObjectIdentifierClause" IsOptional="true" />
           <NonTerminal Id="ObjectTableObjectIdentifierIndexClause" IsOptional="true" />
@@ -4575,12 +4575,36 @@
         </Sequence>
       </Sequences>
     </Rule>
+
+    <Rule StartingNonTerminal="ObjectProperties">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ObjectAttributeProperty" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="OutOfLineConstraintDefinition" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="SupplementalLoggingProperties" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ObjectAttributeProperty">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Identifier" />
+          <NonTerminal Id="DefaultExpression" IsOptional="true" />
+          <NonTerminal Id="ColumnDefinitionInlineConstraintDefinition" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
     
     <Rule StartingNonTerminal="NestedStorageTableProperty">
       <Sequences>
-        <!--<Sequence>
+        <Sequence>
           <NonTerminal Id="ParenthesisEnclosedObjectProperties" />
-        </Sequence>-->
+        </Sequence>
         <Sequence>
           <NonTerminal Id="PhysicalProperties" />
         </Sequence>
@@ -7082,6 +7106,8 @@
     <Terminal Id="Type" Value="TYPE" />
     <Terminal Id="Locator" Value="LOCATOR" />
     <Terminal Id="Nested" Value="NESTED" />
+    <Terminal Id="Object" Value="OBJECT" />
+    <Terminal Id="System" Value="SYSTEM" />
 
     <!-- Index -->
     <Terminal Id="Bitmap" Value="BITMAP" />
