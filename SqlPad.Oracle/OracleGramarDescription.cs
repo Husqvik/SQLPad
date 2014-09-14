@@ -364,6 +364,7 @@ namespace SqlPad.Oracle
 			public const string PrecedingOnlyOrBetweenPrecedingAndFollowing = "PrecedingOnlyOrBetweenPrecedingAndFollowing";
 			public const string PrecedingOrFollowing = "PrecedingOrFollowing";
 			public const string Prefix = "Prefix";
+			public const string PrefixedAsterisk = "PrefixedAsterisk";
 			public const string PrefixedColumnReference = "PrefixedColumnReference";
 			public const string PreserveTable = "PreserveTable";
 			public const string PurgeOption = "PurgeOption";

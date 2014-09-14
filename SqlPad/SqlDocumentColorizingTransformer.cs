@@ -22,10 +22,12 @@ namespace SqlPad
 		private static readonly SolidColorBrush ProgramBrush = new SolidColorBrush(Colors.Magenta);
 		private static readonly SolidColorBrush ValidStatementBackgroundBrush = new SolidColorBrush(Color.FromArgb(32, Colors.LightGreen.R, Colors.LightGreen.G, Colors.LightGreen.B));
 		private static readonly SolidColorBrush InvalidStatementBackgroundBrush = new SolidColorBrush(Color.FromArgb(32, Colors.PaleVioletRed.R, Colors.PaleVioletRed.G, Colors.PaleVioletRed.B));
+		private static readonly SolidColorBrush RedundantBrush = new SolidColorBrush(Color.FromArgb(168, Colors.Black.R, Colors.Black.G, Colors.Black.B));
 
 		private readonly Stack<ICollection<TextSegment>> _highlightSegments = new Stack<ICollection<TextSegment>>();
 		private readonly List<StatementGrammarNode> _highlightParenthesis = new List<StatementGrammarNode>();
 		private readonly Dictionary<DocumentLine, ICollection<StatementGrammarNode>> _lineTerminals = new Dictionary<DocumentLine, ICollection<StatementGrammarNode>>();
+		private readonly HashSet<StatementGrammarNode> _redundantTerminals = new HashSet<StatementGrammarNode>();
 		private readonly Dictionary<DocumentLine, ICollection<StatementGrammarNode>> _lineNodesWithSemanticErrorsOrInvalidGrammar = new Dictionary<DocumentLine, ICollection<StatementGrammarNode>>();
 		private readonly Dictionary<DocumentLine, ICollection<StatementCommentNode>> _lineComments = new Dictionary<DocumentLine, ICollection<StatementCommentNode>>();
 		private readonly HashSet<StatementGrammarNode> _recognizedProgramTerminals = new HashSet<StatementGrammarNode>();
@@ -72,6 +74,7 @@ namespace SqlPad
 		private void ClearNodeIndexes()
 		{
 			_lineTerminals.Clear();
+			_redundantTerminals.Clear();
 			_recognizedProgramTerminals.Clear();
 			_unrecognizedTerminals.Clear();
 			_lineNodesWithSemanticErrorsOrInvalidGrammar.Clear();
@@ -125,6 +128,8 @@ namespace SqlPad
 			
 			BuildLineTerminalDictionary(context);
 
+			BuildRedundantHashSet();
+
 			BuildProgramTerminalHashset();
 
 			BuildUnrecognizedTerminalHashset();
@@ -132,6 +137,12 @@ namespace SqlPad
 			BuildLineNodeWithSemanticErrorOrInvalidGrammarDictionary(context);
 
 			BuildLineCommentDictionary(context);
+		}
+
+		private void BuildRedundantHashSet()
+		{
+			var redundantTerminals = _validationModels.Values.SelectMany(vm => vm.SemanticModel.RedundantNodes);
+			_redundantTerminals.AddRange(redundantTerminals);
 		}
 
 		private void BuildLineCommentDictionary(ITextRunConstructionContext context)
@@ -226,6 +237,8 @@ namespace SqlPad
 						brush = ProgramBrush;
 					else if (_unrecognizedTerminals.Contains(terminal))
 						brush = ErrorBrush;
+					else if (_redundantTerminals.Contains(terminal))
+						brush = RedundantBrush;
 
 					if (brush == null)
 						continue;

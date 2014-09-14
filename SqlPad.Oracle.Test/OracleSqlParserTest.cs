@@ -1510,7 +1510,7 @@ FROM DUAL";
 			selectColumnNodes[4].IsGrammarValid.ShouldBe(true);
 
 			var invalidNodes = rootNode.AllChildNodes.Where(n => !n.IsGrammarValid).ToArray();
-			invalidNodes.Length.ShouldBe(3);
+			invalidNodes.Length.ShouldBe(4);
 		}
 
 		[Test(Description = @"Tests select list when entering math expressions. ")]

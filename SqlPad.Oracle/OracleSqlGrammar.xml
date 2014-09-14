@@ -1072,11 +1072,19 @@
     <Rule StartingNonTerminal="AliasedExpressionOrAllTableColumns">
       <Sequences>
         <Sequence Comment="(Schema.)Object.*">
-          <NonTerminal Id="Prefix" />
-          <Terminal Id="Asterisk" />
+          <NonTerminal Id="PrefixedAsterisk" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="AliasedExpression" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PrefixedAsterisk">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="Prefix" />
+          <Terminal Id="Asterisk" />
         </Sequence>
       </Sequences>
     </Rule>

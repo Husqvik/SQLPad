@@ -10,6 +10,7 @@ namespace SqlPad.Oracle
 	{
 		private Dictionary<StatementGrammarNode, OracleQueryBlock> _queryBlockNodes = new Dictionary<StatementGrammarNode, OracleQueryBlock>();
 		private readonly List<OracleInsertTarget> _insertTargets = new List<OracleInsertTarget>();
+		private readonly List<StatementGrammarNode> _redundantTerminals = new List<StatementGrammarNode>();
 		private readonly OracleDatabaseModelBase _databaseModel;
 		private readonly Dictionary<OracleSelectListColumn, ICollection<OracleDataObjectReference>> _asteriskTableReferences = new Dictionary<OracleSelectListColumn, ICollection<OracleDataObjectReference>>();
 		private readonly List<ICollection<OracleColumnReference>> _joinClauseColumnReferences = new List<ICollection<OracleColumnReference>>();
@@ -44,7 +45,9 @@ namespace SqlPad.Oracle
 			get { return _queryBlockNodes.Values; }
 		}
 
-		public ICollection<OracleInsertTarget> InsertTargets { get { return _insertTargets; }} 
+		public ICollection<OracleInsertTarget> InsertTargets { get { return _insertTargets; }}
+
+		public ICollection<StatementGrammarNode> RedundantNodes { get { return _redundantTerminals.AsReadOnly(); } } 
 
 		public OracleMainObjectReferenceContainer MainObjectReferenceContainer { get; private set; }
 
@@ -174,12 +177,11 @@ namespace SqlPad.Oracle
 						continue;
 					}
 
-					var tableIdentifierNode = queryTableExpression.ChildNodes.SingleOrDefault(n => n.Id == Terminals.ObjectIdentifier);
-
+					var tableIdentifierNode = queryTableExpression.GetDescendantByPath(Terminals.ObjectIdentifier);
 					if (tableIdentifierNode == null)
 						continue;
 
-					var schemaPrefixNode = queryTableExpression.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.SchemaPrefix);
+					var schemaPrefixNode = queryTableExpression.GetDescendantByPath(NonTerminals.SchemaPrefix);
 					if (schemaPrefixNode != null)
 					{
 						schemaPrefixNode = schemaPrefixNode.ChildNodes.First();
@@ -275,6 +277,52 @@ namespace SqlPad.Oracle
 			ResolveReferences();
 
 			BuildDmlModel();
+			
+			ResolveRedundantTerminals();
+		}
+
+		private void ResolveRedundantTerminals()
+		{
+			foreach (var queryBlock in _queryBlockNodes.Values)
+			{
+				var columnNameObjectReferences = queryBlock.AllColumnReferences
+					.Where(c => c.ObjectNode != null && c.RootNode != null && c.ValidObjectReference != null)
+					.ToLookup(c => c.NormalizedName);
+
+				foreach (var columnNameObjectReference in columnNameObjectReferences)
+				{
+					var uniqueObjectReferenceCount = columnNameObjectReference.Select(c => c.ValidObjectReference).Distinct().Count();
+					if (uniqueObjectReferenceCount != 1)
+					{
+						continue;
+					}
+
+					foreach (var columnReference in columnNameObjectReference)
+					{
+						var redundantTerminals = columnReference.RootNode.Terminals.TakeWhile(t => t != columnReference.ColumnNode);
+						_redundantTerminals.AddRange(redundantTerminals);
+					}
+				}
+
+				var ownerNameObjectReferences = queryBlock.ObjectReferences
+					.Where(o => o.OwnerNode != null && o.Type == ReferenceType.SchemaObject && o.SchemaObject != null)
+					.ToLookup(o => o.SchemaObject.Name);
+
+				foreach (var ownerNameObjectReference in ownerNameObjectReferences)
+				{
+					var uniqueObjectReferenceCount = ownerNameObjectReference.Count();
+					if (uniqueObjectReferenceCount != 1 || IsSimpleModel)
+					{
+						continue;
+					}
+
+					foreach (var objectReference in ownerNameObjectReference.Where(o => o.SchemaObject.Owner == DatabaseModel.CurrentSchema))
+					{
+						var redundantTerminals = objectReference.RootNode.Terminals.TakeWhile(t => t != objectReference.ObjectNode);
+						_redundantTerminals.AddRange(redundantTerminals);
+					}
+				}
+			}
 		}
 
 		private void BuildDmlModel()
@@ -1009,10 +1057,10 @@ namespace SqlPad.Oracle
 
 		private StatementGrammarNode GetPrefixNodeFromPrefixedColumnReference(StatementGrammarNode identifier)
 		{
-			var parentNode = identifier.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference);
-			return parentNode == null
+			var prefixedColumnReferenceNode = identifier.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference);
+			return prefixedColumnReferenceNode == null
 				? null
-				: parentNode.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.Prefix);
+				: prefixedColumnReferenceNode.GetDescendantByPath(NonTerminals.Prefix);
 		}
 
 		private void FindSelectListReferences(OracleQueryBlock queryBlock)
@@ -1215,6 +1263,8 @@ namespace SqlPad.Oracle
 			var columnReference =
 				new OracleColumnReference(container)
 				{
+					RootNode = identifierNode.GetPathFilterAncestor(n => n.Id != NonTerminals.AliasedExpressionOrAllTableColumns, NonTerminals.PrefixedColumnReference)
+					           ?? identifierNode.GetPathFilterAncestor(n => n.Id != NonTerminals.AliasedExpressionOrAllTableColumns, NonTerminals.PrefixedAsterisk),
 					ColumnNode = identifierNode,
 					DatabaseLinkNode = GetDatabaseLinkFromIdentifier(identifierNode),
 					Placement = placement,
@@ -1231,12 +1281,9 @@ namespace SqlPad.Oracle
 		{
 			if (prefixNonTerminal == null)
 				return;
-			
-			var objectIdentifier = prefixNonTerminal.GetSingleDescendant(Terminals.ObjectIdentifier);
-			var schemaIdentifier = prefixNonTerminal.GetSingleDescendant(Terminals.SchemaIdentifier);
 
-			reference.OwnerNode = schemaIdentifier;
-			reference.ObjectNode = objectIdentifier;
+			reference.OwnerNode = prefixNonTerminal.GetSingleDescendant(Terminals.SchemaIdentifier);
+			reference.ObjectNode = prefixNonTerminal.GetSingleDescendant(Terminals.ObjectIdentifier);
 		}
 
 		private IEnumerable<KeyValuePair<StatementGrammarNode, string>> GetCommonTableExpressionReferences(StatementGrammarNode node)

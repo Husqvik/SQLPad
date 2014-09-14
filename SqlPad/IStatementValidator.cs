@@ -1,4 +1,6 @@
-﻿namespace SqlPad
+﻿using System.Collections.Generic;
+
+namespace SqlPad
 {
 	public interface IStatementValidator
 	{
@@ -13,5 +15,6 @@
 		StatementBase Statement { get; }
 		string StatementText { get; }
 		bool IsSimpleModel { get; }
+		ICollection<StatementGrammarNode> RedundantNodes { get; }
 	}
 }

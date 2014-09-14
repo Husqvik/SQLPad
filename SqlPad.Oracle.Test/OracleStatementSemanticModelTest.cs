@@ -471,5 +471,33 @@ FROM
 			insertTarget.TypeReferences.Count.ShouldBe(1);
 			insertTarget.SequenceReferences.Count.ShouldBe(1);
 		}
+
+		[Test(Description = @"")]
+		public void TestRedundantTerminals()
+		{
+			const string query1 = @"SELECT HUSQVIK.SELECTION.SELECTION_ID, SELECTION.NAME, RESPONDENTBUCKET.TARGETGROUP_ID, RESPONDENTBUCKET.NAME FROM HUSQVIK.SELECTION LEFT JOIN RESPONDENTBUCKET ON SELECTION.RESPONDENTBUCKET_ID = RESPONDENTBUCKET.RESPONDENTBUCKET_ID, SYS.DUAL";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			var redundantTerminals = semanticModel.RedundantNodes.OrderBy(t => t.SourcePosition.IndexStart).ToArray();
+			redundantTerminals.Length.ShouldBe(8);
+			redundantTerminals[0].Id.ShouldBe(Terminals.SchemaIdentifier);
+			redundantTerminals[0].Token.Value.ShouldBe("HUSQVIK");
+			redundantTerminals[0].SourcePosition.IndexStart.ShouldBe(7);
+			redundantTerminals[1].Id.ShouldBe(Terminals.Dot);
+			redundantTerminals[2].Id.ShouldBe(Terminals.ObjectIdentifier);
+			redundantTerminals[2].Token.Value.ShouldBe("SELECTION");
+			redundantTerminals[2].SourcePosition.IndexStart.ShouldBe(15);
+			redundantTerminals[3].Id.ShouldBe(Terminals.Dot);
+			redundantTerminals[4].Id.ShouldBe(Terminals.ObjectIdentifier);
+			redundantTerminals[4].Token.Value.ShouldBe("RESPONDENTBUCKET");
+			redundantTerminals[4].SourcePosition.IndexStart.ShouldBe(55);
+			redundantTerminals[5].Id.ShouldBe(Terminals.Dot);
+			redundantTerminals[6].Id.ShouldBe(Terminals.SchemaIdentifier);
+			redundantTerminals[6].Token.Value.ShouldBe("HUSQVIK");
+			redundantTerminals[6].SourcePosition.IndexStart.ShouldBe(115);
+			redundantTerminals[7].Id.ShouldBe(Terminals.Dot);
+		}
 	}
 }
