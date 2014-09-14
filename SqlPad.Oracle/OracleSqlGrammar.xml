@@ -7083,6 +7083,9 @@
     <Terminal Id="Supplemental" Value="SUPPLEMENTAL" />
     <Terminal Id="Data" Value="DATA" />
     <Terminal Id="Off" Value="OFF" />
+    <Terminal Id="Object" Value="OBJECT" />
+    <Terminal Id="ObjectIdentifierIndex" Value="OIDINDEX" />
+    <Terminal Id="System" Value="SYSTEM" />
 
     <!-- Large objects -->
     <Terminal Id="LargeObject" Value="LOB" />
@@ -7106,8 +7109,6 @@
     <Terminal Id="Type" Value="TYPE" />
     <Terminal Id="Locator" Value="LOCATOR" />
     <Terminal Id="Nested" Value="NESTED" />
-    <Terminal Id="Object" Value="OBJECT" />
-    <Terminal Id="System" Value="SYSTEM" />
 
     <!-- Index -->
     <Terminal Id="Bitmap" Value="BITMAP" />
