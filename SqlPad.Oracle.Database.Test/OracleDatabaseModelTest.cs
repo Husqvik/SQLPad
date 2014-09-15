@@ -62,7 +62,13 @@ namespace SqlPad.Oracle.Database.Test
 			scriptTask.Result.ShouldNotBe(null);
 			scriptTask.Result.Length.ShouldBeGreaterThan(100);
 
-			var executionModel = new StatementExecutionModel { StatementText = "SELECT * FROM DUAL" };
+			var executionModel =
+				new StatementExecutionModel
+				{
+					StatementText = "SELECT /*+ gather_plan_statistics */ * FROM DUAL WHERE DUMMY = :1",
+					BindVariables = new[] {new BindVariableModel(new BindVariableConfiguration {Name = "1", Value = "X"})}
+				};
+			
 			var result = databaseModel.ExecuteStatement(executionModel);
 			result.ExecutedSucessfully.ShouldBe(true);
 			result.AffectedRowCount.ShouldBe(-1);

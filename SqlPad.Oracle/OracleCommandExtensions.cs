@@ -12,7 +12,8 @@ namespace SqlPad.Oracle
 		{
 			var parameter = command.CreateParameter();
 			parameter.ParameterName = parameterName;
-			parameter.Value = value;
+			parameter.Direction = System.Data.ParameterDirection.InputOutput;
+			parameter.Value = Equals(value, String.Empty) ? null : value;
 
 			switch (databaseType)
 			{

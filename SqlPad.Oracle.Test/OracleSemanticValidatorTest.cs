@@ -1360,6 +1360,21 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			columnNodeValidity[1].SemanticErrorType.ShouldBe(null);
 		}
 
+		[Test(Description = @"")]
+		public void TestUnfinishedInsertValidationModelBuild()
+		{
+			const string sqlText = "INSERT INTO SELECTION";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var nodeValidityDictionary = validationModel.ObjectNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			nodeValidityDictionary.Count.ShouldBe(1);
+			var columnNodeValidity = nodeValidityDictionary.Values.ToArray();
+			columnNodeValidity[0].IsRecognized.ShouldBe(true);
+		}
+
 		//WITH CTE AS (SELECT 1 A, 2 B, 3 C FROM DUAL) SELECT SELECTION.DUMMY, NQ.DUMMY, CTE.DUMMY, SYS.DUAL.DUMMY FROM SELECTION, (SELECT 1 X, 2 Y, 3 Z FROM DUAL) NQ, CTE, SYS.DUAL
 	}
 }

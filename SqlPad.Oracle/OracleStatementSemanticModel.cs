@@ -316,7 +316,7 @@ namespace SqlPad.Oracle
 						continue;
 					}
 
-					foreach (var objectReference in ownerNameObjectReference.Where(o => o.SchemaObject.Owner == DatabaseModel.CurrentSchema))
+					foreach (var objectReference in ownerNameObjectReference.Where(o => o.SchemaObject.Owner == DatabaseModel.CurrentSchema.ToQuotedIdentifier()))
 					{
 						var redundantTerminals = objectReference.RootNode.Terminals.TakeWhile(t => t != objectReference.ObjectNode);
 						_redundantTerminals.AddRange(redundantTerminals);
@@ -395,6 +395,11 @@ namespace SqlPad.Oracle
 				{
 					objectReferenceAlias = dmlTableExpressionClause.ChildNodes.SingleOrDefault(n => n.Id == Terminals.ObjectAlias);
 					objectIdentifier = dmlTableExpressionClause.GetDescendantByPath(NonTerminals.QueryTableExpression, Terminals.ObjectIdentifier);
+				}
+
+				if (objectIdentifier == null)
+				{
+					continue;
 				}
 
 				var dataObjectReference = CreateDataObjectReference(dmlTableExpressionClause, objectIdentifier, objectReferenceAlias);

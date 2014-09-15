@@ -109,6 +109,46 @@ namespace SqlPad.Oracle
 		}
 	}
 
+	public class OracleNumber
+	{
+		private readonly OracleDecimal _oracleDecimal;
+
+		public OracleNumber(OracleDataReader reader, int columnIndex)
+		{
+			_oracleDecimal = SetOutputFormat(reader.GetOracleDecimal(columnIndex));
+		}
+
+		internal static OracleDecimal SetOutputFormat(OracleDecimal value)
+		{
+			if (!value.IsNull)
+			{
+				var absValue = OracleDecimal.Abs(value);
+				if (absValue < 1e-28m)
+				{
+					value.Format = "FM0D0999999999999999999999999999999999999999EEEE";
+				}
+				else if (absValue > 0 && absValue < 1)
+				{
+					value.Format = "FM0D9999999999999999999999999999999999999999";
+				}
+			}
+
+			return value;
+		}
+
+		public bool IsNull { get { return _oracleDecimal.IsNull; } }
+
+		public override string ToString()
+		{
+			if (IsNull)
+			{
+				throw new InvalidOperationException();
+			}
+
+			return _oracleDecimal.ToString();
+		}
+	}
+
 	public class OracleLongRawValue : ILargeBinaryValue
 	{
 		private const int BufferSize = 8192;

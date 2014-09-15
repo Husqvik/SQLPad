@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using Oracle.DataAccess.Client;
+using Oracle.DataAccess.Types;
 using SqlPad.Oracle.ToolTips;
 using Timer = System.Timers.Timer;
 
@@ -403,12 +404,9 @@ namespace SqlPad.Oracle
 				_userCommand.CommandText = executionModel.StatementText;
 				_userCommand.InitialLONGFetchSize = InitialLongFetchSize;
 
-				if (executionModel.BindVariables != null)
+				foreach (var variable in executionModel.BindVariables)
 				{
-					foreach (var variable in executionModel.BindVariables)
-					{
-						_userCommand.AddSimpleParameter(variable.Name, variable.Value, variable.DataType);
-					}
+					_userCommand.AddSimpleParameter(variable.Name, variable.Value, variable.DataType);
 				}
 
 				_executionStatisticsUpdater = new SessionExecutionStatisticsUpdater(StatisticsKeys, _userSessionId);
@@ -418,7 +416,21 @@ namespace SqlPad.Oracle
 					await UpdateModelAsync(cancellationToken, true, _executionStatisticsUpdater.SessionBeginExecutionStatisticsUpdater);
 				}
 
-				return await _userCommand.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken);
+				var reader = await _userCommand.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken);
+
+				var bindVariableModels = executionModel.BindVariables.ToDictionary(v => v.Name, v => v);
+				foreach (OracleParameter parameter in _userCommand.Parameters)
+				{
+					var value = parameter.Value;
+					if (parameter.Value is OracleDecimal)
+					{
+						value = OracleNumber.SetOutputFormat((OracleDecimal)parameter.Value);
+					}
+
+					bindVariableModels[parameter.ParameterName].Value = value;
+				}
+
+				return reader;
 			}
 			finally
 			{
@@ -566,6 +578,10 @@ namespace SqlPad.Oracle
 						break;
 					case "LongRaw":
 						value = new OracleLongRawValue(_userDataReader, i);
+						break;
+					case "Decimal":
+						var oracleDecimal = new OracleNumber(_userDataReader, i);
+						value = oracleDecimal.IsNull ? (object)DBNull.Value : oracleDecimal;
 						break;
 					default:
 						value = _userDataReader.GetValue(i);

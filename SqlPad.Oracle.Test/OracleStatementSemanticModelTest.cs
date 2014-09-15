@@ -439,6 +439,17 @@ FROM
 		}
 
 		[Test(Description = @"")]
+		public void TestUnfinishedInsertModelBuild()
+		{
+			const string query1 = @"INSERT INTO";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.MainObjectReferenceContainer.MainObjectReference.ShouldBe(null);
+		}
+
+		[Test(Description = @"")]
 		public void TestInsertColumnListIdentiferMatchingFunctionName()
 		{
 			const string query1 = @"INSERT INTO SELECTION(SESSIONTIMEZONE) SELECT * FROM SELECTION";

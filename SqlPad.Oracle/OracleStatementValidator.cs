@@ -73,7 +73,8 @@ namespace SqlPad.Oracle
 			foreach (var insertTarget in oracleSemanticModel.InsertTargets)
 			{
 				var dataObjectReference = insertTarget.DataObjectReference;
-				if (dataObjectReference != null &&
+				var dataSourceSpecified = insertTarget.RowSource != null || insertTarget.ValueList != null;
+				if (dataObjectReference != null && dataSourceSpecified &&
 				    (dataObjectReference.Type == ReferenceType.InlineView ||
 				     validationModel.ObjectNodeValidity[dataObjectReference.ObjectNode].IsRecognized))
 				{
