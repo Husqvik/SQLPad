@@ -375,24 +375,49 @@ namespace SqlPad.Oracle
 						new FunctionMatchElement(OracleDatabaseModelBase.PackageBuiltInFunction).SelectPackage(),
 						new FunctionMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectName());
 
+				var currentSchema = databaseModel.CurrentSchema.ToQuotedIdentifier();
 				var localSchemaFunctionMatcher =
 					new OracleFunctionMatcher(
-						new FunctionMatchElement(databaseModel.CurrentSchema.ToQuotedIdentifier()).SelectOwner(),
+						new FunctionMatchElement(currentSchema).SelectOwner(),
 						new FunctionMatchElement(null).SelectPackage(),
 						new FunctionMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectName());
 
+				var localSynonymFunctionMatcher =
+					new OracleFunctionMatcher(
+						new FunctionMatchElement(currentSchema).SelectSynonymOwner(),
+						new FunctionMatchElement(null).SelectSynonymPackage(),
+						new FunctionMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectSynonymName());
+
+				var publicSynonymFunctionMatcher =
+					new OracleFunctionMatcher(
+						new FunctionMatchElement(OracleDatabaseModelBase.SchemaPublic).SelectSynonymOwner(),
+						new FunctionMatchElement(null).SelectSynonymPackage(),
+						new FunctionMatchElement(partialName) {AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName}.SelectSynonymName());
+
 				var localSchemaPackageMatcher =
 					new OracleFunctionMatcher(
-						new FunctionMatchElement(databaseModel.CurrentSchema.ToQuotedIdentifier()).SelectOwner(),
+						new FunctionMatchElement(currentSchema).SelectOwner(),
 						new FunctionMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectPackage(),
+						null);
+
+				var localSynonymPackageMatcher =
+					new OracleFunctionMatcher(
+						new FunctionMatchElement(currentSchema).SelectSynonymOwner(),
+						new FunctionMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectSynonymPackage(),
+						null);
+
+				var publicSynonymPackageMatcher =
+					new OracleFunctionMatcher(
+						new FunctionMatchElement(OracleDatabaseModelBase.SchemaPublic).SelectSynonymOwner(),
+						new FunctionMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectSynonymPackage(),
 						null);
 
 				suggestedFunctions = GenerateCodeItems(m => m.Identifier.Name.ToSimpleIdentifier(), OracleCodeCompletionCategory.PackageFunction, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, builtInFunctionMatcher);
 
-				suggestedFunctions = GenerateCodeItems(m => m.Identifier.Name.ToSimpleIdentifier(), OracleCodeCompletionCategory.SchemaFunction, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, localSchemaFunctionMatcher)
+				suggestedFunctions = GenerateCodeItems(m => m.Identifier.Name.ToSimpleIdentifier(), OracleCodeCompletionCategory.SchemaFunction, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, localSchemaFunctionMatcher, localSynonymFunctionMatcher, publicSynonymFunctionMatcher)
 					.Concat(suggestedFunctions);
 
-				suggestedFunctions = GenerateCodeItems(m => m.Identifier.Package.ToSimpleIdentifier(), OracleCodeCompletionCategory.Package, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, localSchemaPackageMatcher)
+				suggestedFunctions = GenerateCodeItems(m => m.Identifier.Package.ToSimpleIdentifier(), OracleCodeCompletionCategory.Package, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, localSchemaPackageMatcher, publicSynonymPackageMatcher, localSynonymPackageMatcher)
 					.Concat(suggestedFunctions);
 			}
 

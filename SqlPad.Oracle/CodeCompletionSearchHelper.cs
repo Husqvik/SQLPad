@@ -161,6 +161,11 @@ namespace SqlPad.Oracle
 
 		public static bool IsMatch(string fullyQualifiedName, string inputPhrase)
 		{
+			if (String.IsNullOrEmpty(fullyQualifiedName))
+			{
+				return false;
+			}
+
 			inputPhrase = inputPhrase == null ? null : inputPhrase.Trim('"');
 			return String.IsNullOrWhiteSpace(inputPhrase) ||
 			       ResolveSearchPhrases(inputPhrase).All(p => fullyQualifiedName.ToUpperInvariant().Contains(p));

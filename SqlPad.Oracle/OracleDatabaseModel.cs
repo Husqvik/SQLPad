@@ -718,7 +718,9 @@ namespace SqlPad.Oracle
 					OracleSchemaObject packageObject;
 					if (allObjects.TryGetValue(OracleObjectIdentifier.Create(functionMetadata.Identifier.Owner, functionMetadata.Identifier.Package), out packageObject))
 					{
-						((OraclePackage)packageObject).Functions.Add(functionMetadata);
+						var package = (OraclePackage)packageObject;
+						package.Functions.Add(functionMetadata);
+						functionMetadata.Owner = package;
 					}
 				}
 				else
@@ -726,7 +728,9 @@ namespace SqlPad.Oracle
 					OracleSchemaObject functionObject;
 					if (allObjects.TryGetValue(OracleObjectIdentifier.Create(functionMetadata.Identifier.Owner, functionMetadata.Identifier.Name), out functionObject))
 					{
-						((OracleFunction)functionObject).Metadata = functionMetadata;
+						var function = (OracleFunction)functionObject;
+						function.Metadata = functionMetadata;
+						functionMetadata.Owner = function;
 					}
 				}
 			}

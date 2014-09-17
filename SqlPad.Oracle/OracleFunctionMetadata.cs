@@ -72,6 +72,8 @@ namespace SqlPad.Oracle
 		public AuthId AuthId { get; private set; }
 
 		public string DisplayType { get; private set; }
+		
+		public OracleSchemaObject Owner { get; set; }
 	}
 
 	[DebuggerDisplay("OracleFunctionParameterMetadata (Name={Name}; Position={Position}; DataType={DataType}; Direction={Direction}; IsOptional={IsOptional})")]

@@ -150,7 +150,7 @@ namespace SqlPad.Oracle
 			var oracleFunctionMetadataType = Serializer.Add(typeof(OracleFunctionMetadata), false);
 			oracleFunctionMetadataType.AsReferenceDefault = true;
 			oracleFunctionMetadataType.UseConstructor = false;
-			oracleFunctionMetadataType.Add("_parameters", "Identifier", "DataType", "IsAnalytic", "IsAggregate", "IsPipelined", "IsOffloadable", "ParallelSupport", "IsDeterministic", "_metadataMinimumArguments", "_metadataMaximumArguments", "AuthId", "DisplayType", "IsBuiltIn");
+			oracleFunctionMetadataType.Add("_parameters", "Identifier", "DataType", "IsAnalytic", "IsAggregate", "IsPipelined", "IsOffloadable", "ParallelSupport", "IsDeterministic", "_metadataMinimumArguments", "_metadataMaximumArguments", "AuthId", "DisplayType", "IsBuiltIn", "Owner");
 
 			var oracleFunctionParameterMetadataType = Serializer.Add(typeof(OracleFunctionParameterMetadata), false);
 			oracleFunctionMetadataType.AsReferenceDefault = true;
