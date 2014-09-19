@@ -177,6 +177,17 @@ namespace SqlPad.Oracle.Test
 			sqlPadFunction.Metadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "VARCHAR2", false));
 			sqlPadFunction.Metadata.Owner = sqlPadFunction;
 
+			synonym =
+				new OracleSynonym
+				{
+					FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"SYNONYM_TO_SQLPAD_FUNCTION\""),
+					SchemaObject = AllObjectsInternal.Single(o => o.Name == "\"SQLPAD_FUNCTION\"" && o.Owner == InitialSchema),
+					IsValid = true
+				};
+			synonym.SchemaObject.Synonym = synonym;
+
+			AllObjectsInternal.Add(synonym);
+
 			var testFunction = (OracleFunction)AllObjectsInternal.Single(o => o.Name == "\"TESTFUNC\"" && o.Owner == InitialSchema);
 			testFunction.Metadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), null, "TESTFUNC"), false, false, false, false, false, false, null, null, AuthId.Definer, OracleFunctionMetadata.DisplayTypeNormal, false);
 			testFunction.Metadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "NUMBER", false));

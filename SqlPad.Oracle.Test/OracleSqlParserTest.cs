@@ -3011,6 +3011,18 @@ NESTED TABLE NESTED_TABLE_COLUMN
 				var statement = result.Single();
 				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 			}
+
+			[Test(Description = @"")]
+			public void TestVirtualColumnClause()
+			{
+				const string statementText = @"CREATE TABLE TEST_TABLE (C1 NUMBER, C2 NUMBER, C3 VISIBLE GENERATED ALWAYS AS ((C1 + C2) * (C1 * C2)) VIRTUAL EVALUATE USING NULL EDITION UNUSABLE BEGINNING WITH EDITION TEST_EDITION CONSTRAINT NN_VIRTUAL_C3 NOT NULL)";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			}
 		}
 
 		public class CreateIndex

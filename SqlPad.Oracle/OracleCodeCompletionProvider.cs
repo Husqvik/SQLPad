@@ -315,7 +315,7 @@ namespace SqlPad.Oracle
 			var currentName = partialName == null ? null : currentNode.Token.Value;
 
 			var functionReference = programReferences.SingleOrDefault(f => f.FunctionIdentifierNode == currentNode);
-			var addParameterList = functionReference == null;
+			var addParameterList = functionReference == null || functionReference.ParameterListNode == null;
 
 			var tableReferences = (ICollection<OracleDataObjectReference>)referenceContainers.SelectMany(c => c.ObjectReferences).ToArray();
 			var suggestedFunctions = Enumerable.Empty<ICodeCompletionItem>();
@@ -345,7 +345,12 @@ namespace SqlPad.Oracle
 							new FunctionMatchElement(objectName).SelectPackage(),
 							new FunctionMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectName());
 
-						suggestedFunctions = GenerateCodeItems(m => m.Identifier.Name.ToSimpleIdentifier(), OracleCodeCompletionCategory.PackageFunction, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, packageFunctionMatcher)
+						var publicSynonymPackageFunctionMatcher = new OracleFunctionMatcher(
+							new FunctionMatchElement(OracleDatabaseModelBase.SchemaPublic).SelectSynonymOwner(),
+							new FunctionMatchElement(objectName).SelectSynonymPackage(),
+							new FunctionMatchElement(partialName) {AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName}.SelectSynonymName());
+
+						suggestedFunctions = GenerateCodeItems(m => m.Identifier.Name.ToSimpleIdentifier(), OracleCodeCompletionCategory.PackageFunction, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, packageFunctionMatcher, publicSynonymPackageFunctionMatcher)
 							.Concat(suggestedFunctions);
 
 						var schemaFunctionMatcher = new OracleFunctionMatcher(
@@ -385,13 +390,13 @@ namespace SqlPad.Oracle
 				var localSynonymFunctionMatcher =
 					new OracleFunctionMatcher(
 						new FunctionMatchElement(currentSchema).SelectSynonymOwner(),
-						new FunctionMatchElement(null).SelectSynonymPackage(),
+						null,
 						new FunctionMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectSynonymName());
 
 				var publicSynonymFunctionMatcher =
 					new OracleFunctionMatcher(
 						new FunctionMatchElement(OracleDatabaseModelBase.SchemaPublic).SelectSynonymOwner(),
-						new FunctionMatchElement(null).SelectSynonymPackage(),
+						null,
 						new FunctionMatchElement(partialName) {AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName}.SelectSynonymName());
 
 				var localSchemaPackageMatcher =
@@ -414,10 +419,16 @@ namespace SqlPad.Oracle
 
 				suggestedFunctions = GenerateCodeItems(m => m.Identifier.Name.ToSimpleIdentifier(), OracleCodeCompletionCategory.PackageFunction, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, builtInFunctionMatcher);
 
-				suggestedFunctions = GenerateCodeItems(m => m.Identifier.Name.ToSimpleIdentifier(), OracleCodeCompletionCategory.SchemaFunction, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, localSchemaFunctionMatcher, localSynonymFunctionMatcher, publicSynonymFunctionMatcher)
+				suggestedFunctions = GenerateCodeItems(m => m.Identifier.Name.ToSimpleIdentifier(), OracleCodeCompletionCategory.SchemaFunction, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, localSchemaFunctionMatcher)
 					.Concat(suggestedFunctions);
 
-				suggestedFunctions = GenerateCodeItems(m => m.Identifier.Package.ToSimpleIdentifier(), OracleCodeCompletionCategory.Package, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, localSchemaPackageMatcher, publicSynonymPackageMatcher, localSynonymPackageMatcher)
+				suggestedFunctions = GenerateCodeItems(m => m.Owner.Synonym.Name.ToSimpleIdentifier(), OracleCodeCompletionCategory.SchemaFunction, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, localSynonymFunctionMatcher, publicSynonymFunctionMatcher)
+					.Concat(suggestedFunctions);
+
+				suggestedFunctions = GenerateCodeItems(m => m.Identifier.Package.ToSimpleIdentifier(), OracleCodeCompletionCategory.Package, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, localSchemaPackageMatcher)
+					.Concat(suggestedFunctions);
+
+				suggestedFunctions = GenerateCodeItems(m => m.Owner.Synonym.Name.ToSimpleIdentifier(), OracleCodeCompletionCategory.Package, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, localSynonymPackageMatcher, publicSynonymPackageMatcher)
 					.Concat(suggestedFunctions);
 			}
 

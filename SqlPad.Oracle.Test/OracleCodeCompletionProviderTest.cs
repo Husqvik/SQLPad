@@ -964,6 +964,28 @@ se";
 			items[0].CaretOffset.ShouldBe(0);
 		}
 
+		[Test(Description = @"")]
+		public void TestSynonymPackageFunctionSuggestion()
+		{
+			const string statement = @"SELECT DBMS_RANDOM.STR FROM DUAL";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 22).ToList();
+			items.Count.ShouldBe(1);
+			items[0].Name.ShouldBe("STRING");
+			items[0].Text.ShouldBe("STRING()");
+			items[0].CaretOffset.ShouldBe(-1);
+		}
+
+		[Test(Description = @"")]
+		public void TestSynonymFunctionSuggestion()
+		{
+			const string statement = @"SELECT SYNONYM_TO_SQLPAD_FUNC FROM DUAL";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 29).ToList();
+			items.Count.ShouldBe(1);
+			items[0].Name.ShouldBe("SYNONYM_TO_SQLPAD_FUNCTION");
+			items[0].Text.ShouldBe("SYNONYM_TO_SQLPAD_FUNCTION()");
+			items[0].CaretOffset.ShouldBe(-1);
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)

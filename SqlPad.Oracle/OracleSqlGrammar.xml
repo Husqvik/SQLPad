@@ -5106,14 +5106,93 @@
           <NonTerminal Id="SupplementalLoggingProperties" />
         </Sequence>
         <Sequence>
+          <NonTerminal Id="VirtualColumnDefinition" />
+        </Sequence>
+        <Sequence>
           <NonTerminal Id="ColumnDefinition" />
         </Sequence>
-        <!--<Sequence>
-          <NonTerminal Id="VirtualColumnDefinition" />
-        </Sequence>-->
       </Sequences>
     </Rule>
 
+    <Rule StartingNonTerminal="VirtualColumnDefinition">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Identifier" />
+          <NonTerminal Id="DataType" IsOptional="true" />
+          <NonTerminal Id="VisibleOrInvisible" IsOptional="true" />
+          <NonTerminal Id="GeneratedAlways" IsOptional="true" />
+          <Terminal Id="As" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="Expression" />
+          <Terminal Id="RightParenthesis" />
+          <Terminal Id="Virtual" IsOptional="true" />
+          <NonTerminal Id="EvaluationEditionClause" IsOptional="true" />
+          <NonTerminal Id="UnusableEditionClause" IsOptional="true" />
+          <NonTerminal Id="ColumnDefinitionInlineConstraintDefinition" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="GeneratedAlways">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Generated" />
+          <Terminal Id="Always" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="UnusableEditionClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Unusable" />
+          <Terminal Id="Before" />
+          <NonTerminal Id="CurrentEditionOrSpecificEdition" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Unusable" />
+          <Terminal Id="Beginning" />
+          <Terminal Id="With" />
+          <NonTerminal Id="EvaluationEdition" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="EvaluationEditionClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Evaluate" />
+          <Terminal Id="Using" />
+          <NonTerminal Id="EvaluationEdition" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="EvaluationEdition">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Null" />
+          <Terminal Id="Edition" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="CurrentEditionOrSpecificEdition" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="CurrentEditionOrSpecificEdition">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Current" />
+          <Terminal Id="Edition" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Edition" />
+          <Terminal Id="Identifier" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
     <Rule StartingNonTerminal="ColumnDefinition">
       <Sequences>
         <Sequence>
@@ -7094,6 +7173,11 @@
     <Terminal Id="Object" Value="OBJECT" />
     <Terminal Id="ObjectIdentifierIndex" Value="OIDINDEX" />
     <Terminal Id="System" Value="SYSTEM" />
+    <Terminal Id="Virtual" Value="VIRTUAL" />
+    <Terminal Id="Evaluate" Value="EVALUATE" />
+    <Terminal Id="Edition" Value="EDITION" />
+    <Terminal Id="Before" Value="BEFORE" />
+    <Terminal Id="Beginning" Value="BEGINNING" />
 
     <!-- Large objects -->
     <Terminal Id="LargeObject" Value="LOB" />
