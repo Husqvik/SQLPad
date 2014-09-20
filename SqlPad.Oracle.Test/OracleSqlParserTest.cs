@@ -3023,6 +3023,36 @@ NESTED TABLE NESTED_TABLE_COLUMN
 				var statement = result.Single();
 				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 			}
+
+			[Test(Description = @"")]
+			public void TestRangePartitioningClause()
+			{
+				const string statementText =
+@"CREATE TABLE TEST_PARTITION_TABLE
+(
+	PROD_ID NUMBER(6),
+	CUST_ID NUMBER,
+	TIME_IDB DATE,
+	CHANNEL_ID CHAR(1),
+	PROMO_ID NUMBER(6),
+	QUANTITY_SOLD NUMBER(3),
+	AMOUNT_SOLD NUMBER(10, 2)
+)
+PARTITION
+	BY RANGE (TIME_ID)
+(
+   PARTITION SALES_Q1_2000 VALUES LESS THAN (TO_DATE('01-APR-2000', 'DD-MON-YYYY')),
+   PARTITION SALES_Q2_2000 VALUES LESS THAN (TO_DATE('01-JUL-2000', 'DD-MON-YYYY')),
+   PARTITION SALES_Q3_2000 VALUES LESS THAN (TO_DATE('01-OCT-2000', 'DD-MON-YYYY')),
+   PARTITION SALES_Q4_2000 VALUES LESS THAN (MAXVALUE)
+)";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			}
 		}
 
 		public class CreateIndex

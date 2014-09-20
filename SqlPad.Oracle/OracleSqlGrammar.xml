@@ -4586,8 +4586,8 @@
         <Sequence>
           <NonTerminal Id="ColumnProperties" IsOptional="true" />
           <NonTerminal Id="IndexingClause" IsOptional="true" />
-          <!--<NonTerminal Id="TablePartitioningClauses" />
-          <NonTerminal Id="AttributeClusteringClause" />-->
+          <NonTerminal Id="TablePartitioningClauses" IsOptional="true" />
+          <!--<NonTerminal Id="AttributeClusteringClause" IsOptional="true" />-->
           <NonTerminal Id="CacheOrNoCache" IsOptional="true" />
           <NonTerminal Id="ResultCacheClause" IsOptional="true" />
           <NonTerminal Id="ParallelClause" IsOptional="true" />
@@ -4596,7 +4596,126 @@
           <NonTerminal Id="RowMovementClause" IsOptional="true" />
           <NonTerminal Id="FlashbackArchiveClause" IsOptional="true" />
           <NonTerminal Id="RowArchival" IsOptional="true" />
-          <!--<NonTerminal Id="AsSubquery" IsOptional="true" />-->
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="TablePartitioningClauses">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Partition" />
+          <Terminal Id="By" />
+          <NonTerminal Id="TablePartitioningType" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="TablePartitioningType">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="RangePartitions" />
+        </Sequence>
+        <!--<Sequence>
+          <NonTerminal Id="ListPartitions" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="HashPartitions" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="CompositeRangePartitions" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="CompositeListPartitions" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="CompositeHashPartitions" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ReferencePartitioning" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="SystemPartitioning" />
+        </Sequence>-->
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="RangePartitions">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Range" />
+          <NonTerminal Id="ParenthesisEnclosedIdentifierList" />
+          <NonTerminal Id="PartitionInterval" IsOptional="true" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="RangePartitionList" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PartitionInterval">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Interval" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="Expression" />
+          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="PartitionIntervalTablespaces" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="RangePartitionList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Partition" />
+          <Terminal Id="Identifier" IsOptional="true" />
+          <NonTerminal Id="RangeValuesClause" />
+          <NonTerminal Id="TablePartitionDescription" />
+          <NonTerminal Id="CommaChainedRangePartitionList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="TablePartitionDescription">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="SegmentCreationClause" IsOptional="true" />
+          <NonTerminal Id="IndexingClause" IsOptional="true" />
+          <NonTerminal Id="SegmentAttributesClause" IsOptional="true" />
+          <!--<NonTerminal Id="TableCompressionOrPrefixCompression" IsOptional="true" />
+          <NonTerminal Id="InMemoryClause" IsOptional="true" />-->
+          <NonTerminal Id="IndexOrganizedOverflowClause" IsOptional="true" />
+          <!--<NonTerminal Id="NestedTableColumnPropertiesOrVariableElementArrayColumnPropertiesOrLargeObjectStorageClause" IsOptional="true" />-->
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="RangeValuesClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Values" />
+          <Terminal Id="Less" />
+          <Terminal Id="Than" />
+          <NonTerminal Id="ParenthesisEnclosedExpressionListWithMandatoryExpressions" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="CommaChainedRangePartitionList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="RangePartitionList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PartitionIntervalTablespaces">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Store" />
+          <Terminal Id="In" />
+          <NonTerminal Id="ParenthesisEnclosedIdentifierList" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -7302,6 +7421,8 @@
     <Terminal Id="Bequeath" Value="BEQUEATH" />
     <Terminal Id="Validate" Value="VALIDATE" />
     <Terminal Id="NoValidate" Value="NOVALIDATE" />
+    <Terminal Id="Less" Value="LESS" />
+    <Terminal Id="Than" Value="THAN" />
 
     <!-- Large objects -->
     <Terminal Id="LargeObject" Value="LOB" />
