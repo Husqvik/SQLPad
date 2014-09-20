@@ -28,7 +28,6 @@ namespace SqlPad
 
 			try
 			{
-				SqlPadConfiguration.StoreConfiguration();
 				WorkingDocumentCollection.Save();
 			}
 			catch(Exception e)

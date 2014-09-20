@@ -110,7 +110,7 @@
     <Compile Include="InfrastructureConfigurationSection.cs" />
     <Compile Include="MarginSetter.cs" />
     <Compile Include="PageModel.cs" />
-    <Compile Include="SqlPadConfiguration.cs" />
+    <Compile Include="DatabaseProviderConfiguration.cs" />
     <Compile Include="StatementCommentNode.cs" />
     <Compile Include="StatementNode.cs" />
     <Compile Include="TextSegment.cs" />

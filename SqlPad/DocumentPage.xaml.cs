@@ -563,8 +563,6 @@ namespace SqlPad
 
 		private async void ExecuteDatabaseCommandHandlerInternal()
 		{
-			SqlPadConfiguration.StoreConfiguration();
-
 			var executionModel = BuildStatementExecutionModel();
 			await ExecuteDatabaseCommand(executionModel);
 		}
@@ -906,7 +904,7 @@ namespace SqlPad
 
 		private ICollection<BindVariableModel> BuildBindVariableModels(IEnumerable<BindVariableConfiguration> bindVariables)
 		{
-			var configuration = SqlPadConfiguration.GetConfiguration(DatabaseModel.ConnectionString.ProviderName);
+			var configuration = WorkingDocumentCollection.GetProviderConfiguration(DatabaseModel.ConnectionString.ProviderName);
 
 			var models = new List<BindVariableModel>();
 			foreach (var bindVariable in bindVariables)

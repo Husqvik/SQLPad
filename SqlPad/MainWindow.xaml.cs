@@ -198,7 +198,6 @@ namespace SqlPad
 
 		private void CloseDocument(DocumentPage document)
 		{
-			SqlPadConfiguration.StoreConfiguration();
 			DocumentTabControl.SelectedItem = document.TabItem;
 
 			if (document.IsDirty && !ConfirmDocumentSave(document))
@@ -264,7 +263,6 @@ namespace SqlPad
 				document.SaveWorkingDocument();
 			}
 
-			SqlPadConfiguration.StoreConfiguration();
 			WorkingDocumentCollection.SetApplicationWindowProperties(this);
 			WorkingDocumentCollection.Save();
 		}

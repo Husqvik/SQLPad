@@ -17,6 +17,7 @@ namespace SqlPad
 		private static readonly RuntimeTypeModel Serializer;
 		private static WorkingDocumentCollection _instance;
 
+		private Dictionary<string, DatabaseProviderConfiguration> _databaseProviderConfigurations = new Dictionary<string, DatabaseProviderConfiguration>();
 		private Dictionary<Guid, WorkingDocument> _workingDocuments = new Dictionary<Guid, WorkingDocument>();
 		private int _activeDocumentIndex;
 		private WindowProperties _windowProperties;
@@ -26,7 +27,7 @@ namespace SqlPad
 			Serializer = TypeModel.Create();
 			var workingDocumentCollectionType = Serializer.Add(typeof(WorkingDocumentCollection), false);
 			workingDocumentCollectionType.UseConstructor = false;
-			workingDocumentCollectionType.Add("_workingDocuments", "_activeDocumentIndex", "_windowProperties");
+			workingDocumentCollectionType.Add("_workingDocuments", "_activeDocumentIndex", "_windowProperties", "_databaseProviderConfigurations");
 
 			var workingDocumentType = Serializer.Add(typeof(WorkingDocument), false);
 			workingDocumentType.UseConstructor = false;
@@ -35,6 +36,13 @@ namespace SqlPad
 			var windowPropertiesType = Serializer.Add(typeof(WindowProperties), false);
 			windowPropertiesType.UseConstructor = false;
 			windowPropertiesType.Add("Left", "Top", "Width", "Height", "State");
+
+			var sqlPadConfigurationType = Serializer.Add(typeof(DatabaseProviderConfiguration), false);
+			sqlPadConfigurationType.UseConstructor = false;
+			sqlPadConfigurationType.Add("_bindVariables", "ProviderName");
+
+			var bindVariableConfigurationType = Serializer.Add(typeof(BindVariableConfiguration), false);
+			bindVariableConfigurationType.Add("Name", "DataType", "_internalValue");
 		}
 
 		private WorkingDocumentCollection() {}
@@ -75,6 +83,11 @@ namespace SqlPad
 			{
 				_instance._workingDocuments = new Dictionary<Guid, WorkingDocument>();
 			}
+
+			if (_instance._databaseProviderConfigurations == null)
+			{
+				_instance._databaseProviderConfigurations = new Dictionary<string, DatabaseProviderConfiguration>();
+			}
 		}
 
 		public static void Configure()
@@ -92,6 +105,18 @@ namespace SqlPad
 
 			_lockFile.Dispose();
 			_lockFile = null;
+		}
+
+		public static DatabaseProviderConfiguration GetProviderConfiguration(string providerName)
+		{
+			DatabaseProviderConfiguration configuration;
+			if (!Instance._databaseProviderConfigurations.TryGetValue(providerName, out configuration))
+			{
+				configuration = new DatabaseProviderConfiguration(providerName);
+				Instance._databaseProviderConfigurations.Add(providerName, configuration);
+			}
+
+			return configuration;
 		}
 
 		private static string GetWorkingDocumentConfigurationFileName(string directory)
