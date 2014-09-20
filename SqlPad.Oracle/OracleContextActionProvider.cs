@@ -96,6 +96,11 @@ namespace SqlPad.Oracle
 				actionList.Add(new OracleContextAction(AddInsertIntoColumnListCommand.Title, OracleCommands.AddInsertIntoColumnList, addInsertIntoColumnListExecutionContext));
 			}
 
+			if (OracleCommands.CleanRedundantQualifier.CanExecuteHandler(executionContext))
+			{
+				actionList.Add(new OracleContextAction(CleanRedundantQualifierCommand.Title, OracleCommands.CleanRedundantQualifier, executionContext));
+			}
+
 			var actions = ResolveAmbiguousColumnCommand.ResolveCommandHandlers(semanticModel, currentTerminal)
 				.Select(c => new OracleContextAction("Resolve as " + c.Name, c, executionContext));
 

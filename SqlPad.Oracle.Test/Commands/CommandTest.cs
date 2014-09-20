@@ -919,5 +919,18 @@ WHERE
 			_editor.Text.ShouldBe(expectedResult);
 			_editor.CaretOffset.ShouldBe(8);
 		}
+
+		[Test(Description = @""), STAThread]
+		public void TestCleanRedundantQualifierCommand()
+		{
+			const string statementText = @"SELECT SELECTION.SELECTION_ID, HUSQVIK.RESPONDENTBUCKET.TARGETGROUP_ID, HUSQVIK.SELECTION.RESPONDENTBUCKET_ID FROM HUSQVIK.SELECTION, HUSQVIK.RESPONDENTBUCKET";
+			_editor.Text = statementText;
+
+			CanExecuteCommand(OracleCommands.CleanRedundantQualifier).ShouldBe(true);
+			ExecuteCommand(OracleCommands.CleanRedundantQualifier);
+
+			_editor.Text.ShouldBe("SELECT SELECTION_ID, TARGETGROUP_ID, SELECTION.RESPONDENTBUCKET_ID FROM SELECTION, RESPONDENTBUCKET");
+			_editor.CaretOffset.ShouldBe(0);
+		}
 	}
 }

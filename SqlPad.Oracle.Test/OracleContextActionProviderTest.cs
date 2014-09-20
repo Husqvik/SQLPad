@@ -246,5 +246,23 @@ namespace SqlPad.Oracle.Test
 			actions.Length.ShouldBe(1);
 			actions[0].Name.ShouldBe("Add Column List");
 		}
+
+		[Test(Description = @""), STAThread]
+		public void TestCleanRedundantQualifierCommand()
+		{
+			const string query1 = @"SELECT SELECTION.NAME FROM HUSQVIK.SELECTION";
+
+			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 0).SingleOrDefault(a => a.Name == CleanRedundantQualifierCommand.Title);
+			action.ShouldNotBe(null);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestCleanRedundantQualifierNotSuggestedWhenNoRedundantQualifiersAvailable()
+		{
+			const string query1 = @"SELECT SELECTION.NAME, RESPONDENTBUCKET.NAME FROM SELECTION, RESPONDENTBUCKET";
+
+			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 0).SingleOrDefault(a => a.Name == CleanRedundantQualifierCommand.Title);
+			action.ShouldBe(null);
+		}
 	}
 }

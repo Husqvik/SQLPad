@@ -32,6 +32,7 @@ namespace SqlPad.Oracle.Commands
 		public static readonly CommandExecutionHandler AddAlias = OracleCommandBase.CreateStandardExecutionHandler<AddAliasCommand>("AddAlias");
 		public static readonly CommandExecutionHandler AddInsertIntoColumnList = OracleCommandBase.CreateStandardExecutionHandler<AddInsertIntoColumnListCommand>("AddInsertIntoColumnList");
 		public static readonly CommandExecutionHandler AddToGroupByClause = OracleCommandBase.CreateStandardExecutionHandler<AddToGroupByCommand>("AddToGroupByClause");
+		public static readonly CommandExecutionHandler CleanRedundantQualifier = OracleCommandBase.CreateStandardExecutionHandler<CleanRedundantQualifierCommand>("CleanRedundantQualifier");
 		public static readonly CommandExecutionHandler CreateScript = OracleCommandBase.CreateStandardExecutionHandler<CreateScriptCommand>("CreateScript");
 		public static readonly CommandExecutionHandler ExpandAsterisk = OracleCommandBase.CreateStandardExecutionHandler<ExpandAsteriskCommand>("ExpandAsterisk");
 		public static readonly CommandExecutionHandler GenerateMissingColumns = OracleCommandBase.CreateStandardExecutionHandler<AddMissingColumnCommand>("GenerateMissingColumns");

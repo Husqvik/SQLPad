@@ -285,29 +285,11 @@ namespace SqlPad.Oracle
 		{
 			foreach (var queryBlock in _queryBlockNodes.Values)
 			{
-				var columnNameObjectReferences = queryBlock.AllColumnReferences
-					.Where(c => c.ObjectNode != null && c.RootNode != null && c.ValidObjectReference != null)
-					.ToLookup(c => c.NormalizedName);
-
-				foreach (var columnNameObjectReference in columnNameObjectReferences)
-				{
-					var uniqueObjectReferenceCount = columnNameObjectReference.Select(c => c.ValidObjectReference).Distinct().Count();
-					if (uniqueObjectReferenceCount != 1)
-					{
-						continue;
-					}
-
-					foreach (var columnReference in columnNameObjectReference)
-					{
-						var redundantTerminals = columnReference.RootNode.Terminals.TakeWhile(t => t != columnReference.ColumnNode);
-						_redundantTerminals.AddRange(redundantTerminals);
-					}
-				}
-
 				var ownerNameObjectReferences = queryBlock.ObjectReferences
-					.Where(o => o.OwnerNode != null && o.Type == ReferenceType.SchemaObject && o.SchemaObject != null)
-					.ToLookup(o => o.SchemaObject.Name);
+						.Where(o => o.OwnerNode != null && o.Type == ReferenceType.SchemaObject && o.SchemaObject != null)
+						.ToLookup(o => o.SchemaObject.Name);
 
+				var removedObjectReferenceOwners = new HashSet<OracleDataObjectReference>();
 				foreach (var ownerNameObjectReference in ownerNameObjectReferences)
 				{
 					var uniqueObjectReferenceCount = ownerNameObjectReference.Count();
@@ -320,7 +302,26 @@ namespace SqlPad.Oracle
 					{
 						var redundantTerminals = objectReference.RootNode.Terminals.TakeWhile(t => t != objectReference.ObjectNode);
 						_redundantTerminals.AddRange(redundantTerminals);
+						removedObjectReferenceOwners.Add(objectReference);
 					}
+				}
+
+				foreach (var columnReference in queryBlock.AllColumnReferences.Where(c => c.ObjectNode != null && c.RootNode != null))
+				{
+					var uniqueObjectReferenceCount = queryBlock.ObjectReferences.Where(o => o.Columns.Any(c => c.Name == columnReference.NormalizedName)).Distinct().Count();
+					if (uniqueObjectReferenceCount != 1)
+					{
+						if (columnReference.OwnerNode != null && removedObjectReferenceOwners.Contains(columnReference.ValidObjectReference))
+						{
+							var redundantSchemaPrefixTerminals = columnReference.RootNode.Terminals.TakeWhile(t => t != columnReference.ObjectNode);
+							_redundantTerminals.AddRange(redundantSchemaPrefixTerminals);
+						}
+
+						continue;
+					}
+
+					var redundantTerminals = columnReference.RootNode.Terminals.TakeWhile(t => t != columnReference.ColumnNode);
+					_redundantTerminals.AddRange(redundantTerminals);
 				}
 			}
 		}
