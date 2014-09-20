@@ -427,6 +427,11 @@ namespace SqlPad.Oracle
 						value = OracleNumber.SetOutputFormat((OracleDecimal)parameter.Value);
 					}
 
+					if (parameter.Value is OracleDate)
+					{
+						value = ((OracleDate)parameter.Value).Value;
+					}
+
 					bindVariableModels[parameter.ParameterName].Value = value;
 				}
 

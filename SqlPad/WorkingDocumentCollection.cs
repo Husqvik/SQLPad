@@ -11,7 +11,9 @@ namespace SqlPad
 	public class WorkingDocumentCollection
 	{
 		internal const string ConfigurationFileName = "WorkingDocuments.dat";
+		private const string LockFileName = "Configuration.lock";
 		private static string _fileName = GetWorkingDocumentConfigurationFileName(ConfigurationProvider.FolderNameWorkArea);
+		private static FileStream _lockFile;
 		private static readonly RuntimeTypeModel Serializer;
 		private static WorkingDocumentCollection _instance;
 
@@ -39,6 +41,17 @@ namespace SqlPad
 
 		private static void Initialize()
 		{
+			ReleaseConfigurationLock();
+
+			try
+			{
+				_lockFile = new FileStream(Path.Combine(ConfigurationProvider.FolderNameWorkArea, LockFileName), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+			}
+			catch (Exception e)
+			{
+				Trace.WriteLine("Configuration lock aquire failed: " + e);
+			}
+
 			if (File.Exists(_fileName))
 			{
 				using (var file = File.OpenRead(_fileName))
@@ -68,6 +81,17 @@ namespace SqlPad
 		{
 			_instance = null;
 			_fileName = GetWorkingDocumentConfigurationFileName(ConfigurationProvider.FolderNameWorkArea);
+		}
+
+		public static void ReleaseConfigurationLock()
+		{
+			if (_lockFile == null)
+			{
+				return;
+			}
+
+			_lockFile.Dispose();
+			_lockFile = null;
 		}
 
 		private static string GetWorkingDocumentConfigurationFileName(string directory)
@@ -154,6 +178,11 @@ namespace SqlPad
 
 		public static void Save()
 		{
+			if (_lockFile == null)
+			{
+				return;
+			}
+
 			lock (Instance)
 			{
 				using (var file = File.Create(_fileName))

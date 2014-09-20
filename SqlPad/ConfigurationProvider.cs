@@ -71,6 +71,7 @@ namespace SqlPad
 		public static void Dispose()
 		{
 			ConfigurationWatcher.Dispose();
+			WorkingDocumentCollection.ReleaseConfigurationLock();
 		}
 
 		private static void ConfigurationChangedHandler(object sender, FileSystemEventArgs fileSystemEventArgs)
