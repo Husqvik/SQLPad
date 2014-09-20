@@ -4615,10 +4615,10 @@
         <Sequence>
           <NonTerminal Id="RangePartitions" />
         </Sequence>
-        <!--<Sequence>
+        <Sequence>
           <NonTerminal Id="ListPartitions" />
         </Sequence>
-        <Sequence>
+        <!--<Sequence>
           <NonTerminal Id="HashPartitions" />
         </Sequence>
         <Sequence>
@@ -4636,6 +4636,61 @@
         <Sequence>
           <NonTerminal Id="SystemPartitioning" />
         </Sequence>-->
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ListPartitions">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="List" />
+          <NonTerminal Id="ParenthesisEnclosedIdentifierList" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="ListPartitionList" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ListPartitionList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Partition" />
+          <Terminal Id="Identifier" IsOptional="true" />
+          <NonTerminal Id="ListValuesClause" />
+          <NonTerminal Id="TablePartitionDescription" />
+          <NonTerminal Id="CommaChainedListPartitionList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="CommaChainedListPartitionList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="ListPartitionList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ListValuesClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Values" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="DefaultOrExpressionList" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DefaultOrExpressionList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Default" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ExpressionList" />
+        </Sequence>
       </Sequences>
     </Rule>
 
@@ -4685,7 +4740,7 @@
           <!--<NonTerminal Id="TableCompressionOrPrefixCompression" IsOptional="true" />
           <NonTerminal Id="InMemoryClause" IsOptional="true" />-->
           <NonTerminal Id="IndexOrganizedOverflowClause" IsOptional="true" />
-          <!--<NonTerminal Id="NestedTableColumnPropertiesOrVariableElementArrayColumnPropertiesOrLargeObjectStorageClause" IsOptional="true" />-->
+          <!--<NonTerminal Id="NestedTableColumnPropertiesOrVariableElementArrayColumnPropertiesOrLargeObjectStorageClauseList" IsOptional="true" />-->
         </Sequence>
       </Sequences>
     </Rule>
@@ -7423,6 +7478,7 @@
     <Terminal Id="NoValidate" Value="NOVALIDATE" />
     <Terminal Id="Less" Value="LESS" />
     <Terminal Id="Than" Value="THAN" />
+    <Terminal Id="List" Value="LIST" />
 
     <!-- Large objects -->
     <Terminal Id="LargeObject" Value="LOB" />
