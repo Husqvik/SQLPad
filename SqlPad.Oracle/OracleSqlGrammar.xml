@@ -53,8 +53,7 @@
           <Terminal Id="DbaRecycleBin" />
         </Sequence>
         <Sequence>
-          <Terminal Id="TableSpace" />
-          <Terminal Id="Identifier" />
+          <NonTerminal Id="TableSpaceIdentifier" />
           <NonTerminal Id="UserIdentifier" IsOptional="true" />
         </Sequence>
       </Sequences>
@@ -4538,8 +4537,7 @@
     <Rule StartingNonTerminal="PhysicalAttributesClauseOrTableSpaceIdentifier">
       <Sequences>
         <Sequence>
-          <Terminal Id="TableSpace" />
-          <Terminal Id="Identifier" />
+          <NonTerminal Id="TableSpaceIdentifier" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="PhysicalAttributesClause" />
@@ -4618,10 +4616,10 @@
         <Sequence>
           <NonTerminal Id="ListPartitions" />
         </Sequence>
-        <!--<Sequence>
+        <Sequence>
           <NonTerminal Id="HashPartitions" />
         </Sequence>
-        <Sequence>
+        <!--<Sequence>
           <NonTerminal Id="CompositeRangePartitions" />
         </Sequence>
         <Sequence>
@@ -4636,6 +4634,113 @@
         <Sequence>
           <NonTerminal Id="SystemPartitioning" />
         </Sequence>-->
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="HashPartitions">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Hash" />
+          <NonTerminal Id="ParenthesisEnclosedIdentifierList" />
+          <NonTerminal Id="IndividualHashPartitionsOrHashPartitionsByQuantity" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="IndividualHashPartitionsOrHashPartitionsByQuantity">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="IndividualHashPartitionList" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Partitions" />
+          <Terminal Id="IntegerLiteral" />
+          <NonTerminal Id="StoreInTableSpaceList" IsOptional="true" />
+          <!--<NonTerminal Id="TableCompressionOrIndexCompression" />-->
+          <NonTerminal Id="OverflowStoreInTableSpaceList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="IndividualHashPartitionList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="IndividualHashPartition" />
+          <NonTerminal Id="IndividualHashPartitionList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+     <Rule StartingNonTerminal="IndividualHashPartition">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Partition" />
+          <Terminal Id="Identifier" IsOptional="true" />
+          <NonTerminal Id="IndexingClause" IsOptional="true" />
+          <NonTerminal Id="PartitioningStorageClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="PartitioningStorageClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="PartitionStorageProperty" />
+          <NonTerminal Id="PartitioningStorageClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="PartitionStorageProperty">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="TableSpaceIdentifier" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Overflow" />
+          <NonTerminal Id="TableSpaceIdentifier" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="TableCompression" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="IndexCompression" />
+        </Sequence>
+        <!--<Sequence>
+          <NonTerminal Id="InMemoryClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="LargeObjectPartitioningClause" />
+        </Sequence>-->
+        <Sequence>
+          <Terminal Id="VariableElementArray" />
+          <Terminal Id="Identifier" />
+          <Terminal Id="Store" />
+          <Terminal Id="As" />
+          <NonTerminal Id="BasicFileOrSecureFile" IsOptional="true" />
+          <Terminal Id="LargeObject" />
+          <Terminal Id="Identifier" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="TableSpaceIdentifier">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="TableSpace" />
+          <Terminal Id="Identifier" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="OverflowStoreInTableSpaceList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Overflow" />
+          <NonTerminal Id="StoreInTableSpaceList" />
+        </Sequence>
       </Sequences>
     </Rule>
 
@@ -4714,7 +4819,7 @@
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="Expression" />
           <Terminal Id="RightParenthesis" />
-          <NonTerminal Id="PartitionIntervalTablespaces" IsOptional="true" />
+          <NonTerminal Id="StoreInTableSpaceList" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -4765,7 +4870,7 @@
       </Sequences>
     </Rule>
 
-    <Rule StartingNonTerminal="PartitionIntervalTablespaces">
+    <Rule StartingNonTerminal="StoreInTableSpaceList">
       <Sequences>
         <Sequence>
           <Terminal Id="Store" />
@@ -5122,8 +5227,7 @@
     <Rule StartingNonTerminal="LargeObjectTableSpaceOrLargeObjectParameter">
       <Sequences>
         <Sequence>
-          <Terminal Id="TableSpace" />
-          <Terminal Id="Identifier" />
+          <NonTerminal Id="TableSpaceIdentifier" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="LargeObjectParameters" />
@@ -6359,8 +6463,7 @@
     <Rule StartingNonTerminal="SegmentAttribute">
       <Sequences>
         <Sequence>
-          <Terminal Id="TableSpace" />
-          <Terminal Id="Identifier" />
+          <NonTerminal Id="TableSpaceIdentifier" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="PhysicalAttributesClause" />
@@ -7479,6 +7582,8 @@
     <Terminal Id="Less" Value="LESS" />
     <Terminal Id="Than" Value="THAN" />
     <Terminal Id="List" Value="LIST" />
+    <Terminal Id="Hash" Value="HASH" />
+    <Terminal Id="Partitions" Value="PARTITIONS" />
 
     <!-- Large objects -->
     <Terminal Id="LargeObject" Value="LOB" />

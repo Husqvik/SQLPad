@@ -3080,6 +3080,36 @@ PARTITION BY LIST (NLS_TERRITORY)
 				var statement = result.Single();
 				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 			}
+
+			[Test(Description = @"")]
+			public void TestHashPartitioningClauseWithPartitionsByQuantity()
+			{
+				const string statementText =
+@"CREATE TABLE TEST_PARTITION_TABLE 
+(
+	PRODUCT_ID NUMBER(6) PRIMARY KEY,
+	PRODUCT_NAME VARCHAR2(50),
+	PRODUCT_DESCRIPTION VARCHAR2(2000),
+	CATEGORY_ID NUMBER(2),
+	WEIGHT_CLASS NUMBER(1),
+	WARRANTY_PERIOD INTERVAL YEAR TO MONTH,
+	SUPPLIER_ID NUMBER(6),
+	PRODUCT_STATUS VARCHAR2(20),
+	LIST_PRICE NUMBER(8, 2),
+	MIN_PRICE NUMBER(8, 2),
+	CATALOG_URL VARCHAR2(50),
+	CONSTRAINT PRODUCT_STATUS_LOV_DEMO
+		CHECK (PRODUCT_STATUS IN ('orderable', 'planned', 'under development', 'obsolete'))
+) 
+PARTITION BY HASH (PRODUCT_ID)
+PARTITIONS 4 STORE IN (TABLESPACE_1, TABLESPACE_2, TABLESPACE_3, TABLESPACE_4)";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			}
 		}
 
 		public class CreateIndex
