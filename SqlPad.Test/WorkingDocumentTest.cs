@@ -32,11 +32,19 @@ namespace SqlPad.Test
 			const int expectedActiveDocumentIndex = 666;
 			WorkingDocumentCollection.ActiveDocumentIndex = expectedActiveDocumentIndex;
 			WorkingDocumentCollection.AddDocument(newWorkingDocument);
+			
+			const string providerName = "Oracle.DataAccess.Client";
+			const string bindVariableDataType = "CHAR";
+			const string bindVariableName = "Variable";
+			const string bindVariableValue = "TestValue";
+			var providerConfiguration = WorkingDocumentCollection.GetProviderConfiguration(providerName);
+			providerConfiguration.SetBindVariable(new BindVariableConfiguration { DataType = bindVariableDataType, Name = bindVariableName, Value = bindVariableValue });
+
 			WorkingDocumentCollection.Save();
 
 			var fileInfo = new FileInfo(Path.Combine(TempDirectoryName, "WorkArea", WorkingDocumentCollection.ConfigurationFileName));
 			fileInfo.Exists.ShouldBe(true);
-			fileInfo.Length.ShouldBe(165);
+			fileInfo.Length.ShouldBe(286);
 
 			WorkingDocumentCollection.Configure();
 			WorkingDocumentCollection.WorkingDocuments.Count.ShouldBe(1);
@@ -55,6 +63,14 @@ namespace SqlPad.Test
 			deserializedWorkingDocument.EditorGridRowHeight.ShouldBe(newWorkingDocument.EditorGridRowHeight);
 			deserializedWorkingDocument.EditorGridColumnWidth.ShouldBe(newWorkingDocument.EditorGridColumnWidth);
 			deserializedWorkingDocument.TabIndex.ShouldBe(newWorkingDocument.TabIndex);
+
+			var deserializedProviderConfiguration = WorkingDocumentCollection.GetProviderConfiguration(providerName);
+			providerConfiguration.ShouldNotBeSameAs(deserializedProviderConfiguration);
+			deserializedProviderConfiguration.BindVariables.Count.ShouldBe(1);
+			var deserializedBindVariable = deserializedProviderConfiguration.BindVariables.First();
+			deserializedBindVariable.DataType.ShouldBe(bindVariableDataType);
+			deserializedBindVariable.Name.ShouldBe(bindVariableName);
+			deserializedBindVariable.Value.ShouldBe(bindVariableValue);
 
 			WorkingDocumentCollection.ActiveDocumentIndex.ShouldBe(expectedActiveDocumentIndex);
 		}
