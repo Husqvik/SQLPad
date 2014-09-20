@@ -4336,7 +4336,127 @@
         <Sequence>
           <NonTerminal Id="CreateSequence" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="CreateView" />
+        </Sequence>
         <!-- TODO: Create other objects -->
+      </Sequences>
+    </Rule>
+
+    <!-- CREATE VIEW -->
+    <Rule StartingNonTerminal="CreateView">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="OrReplace" IsOptional="true" />
+          <NonTerminal Id="NoForce" IsOptional="true" />
+          <NonTerminal Id="ViewEditioning" IsOptional="true" />
+          <Terminal Id="View" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="CreateViewTypeClause" />
+          <NonTerminal Id="ViewBequeath" IsOptional="true" />
+          <NonTerminal Id="AsSubquery" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="CreateViewTypeClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="ViewRelationalProperties" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+        <!--<Sequence>
+          <NonTerminal Id="ObjectViewClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="XmlTypeViewClause" />
+        </Sequence>-->
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ViewRelationalProperties">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ViewRelationalProperty" />
+          <NonTerminal Id="CommaChainedViewRelationalProperty" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="CommaChainedViewRelationalProperty">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="ViewRelationalProperties" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ViewRelationalProperty">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="NamedOutOfLineConstraint" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Identifier" />
+          <NonTerminal Id="VisibleOrInvisible" IsOptional="true" />
+          <NonTerminal Id="ViewInlineConstraintDefinition" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ViewInlineConstraintDefinition">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="NamedInlineConstraintDefinition" />
+          <NonTerminal Id="ViewInlineConstraintDefinition" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="NoForce">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="No" IsOptional="true" />
+          <Terminal Id="Force" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ViewEditioning">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Editioning" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Editionable" />
+          <Terminal Id="Editioning" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="NonEditionable" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ViewBequeath">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Bequeath" />
+          <NonTerminal Id="CurrentUserOrDefiner" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="CurrentUserOrDefiner">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="CurrentUser" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Definer" />
+        </Sequence>
       </Sequences>
     </Rule>
 
@@ -5597,7 +5717,7 @@
           <NonTerminal Id="RelyOrNoRely" IsOptional="true" />
           <NonTerminal Id="UsingIndexClause" IsOptional="true" />
           <NonTerminal Id="EnableOrDisable" IsOptional="true" />
-          <!--<NonTerminal Id="ValidateOrNoValidate" IsOptional="true" />-->
+          <NonTerminal Id="ValidateOrNoValidate" IsOptional="true" /><!-- VALIDATE and NOVALIDATE are supported only in VIEW clauses not in TABLE clauses -->
           <!--<NonTerminal Id="ConstraintStateExceptionClause" IsOptional="true" />-->
         </Sequence>
       </Sequences>
@@ -7178,6 +7298,10 @@
     <Terminal Id="Edition" Value="EDITION" />
     <Terminal Id="Before" Value="BEFORE" />
     <Terminal Id="Beginning" Value="BEGINNING" />
+    <Terminal Id="Editioning" Value="EDITIONING" />
+    <Terminal Id="Bequeath" Value="BEQUEATH" />
+    <Terminal Id="Validate" Value="VALIDATE" />
+    <Terminal Id="NoValidate" Value="NOVALIDATE" />
 
     <!-- Large objects -->
     <Terminal Id="LargeObject" Value="LOB" />

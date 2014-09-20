@@ -3046,6 +3046,31 @@ NOLOGGING";
 			}
 		}
 
+		public class CreateView
+		{
+			[Test(Description = @"")]
+			public void TestCreateSimpleView()
+			{
+				const string statementText =
+@"CREATE VIEW TEST_VIEW
+(
+	SELECTION_ID,
+	NAME,
+	PROJECT_ID,
+	RESPONDENTBUCKET_ID,
+	GUID UNIQUE RELY DISABLE NOVALIDATE,
+	CONSTRAINT PK_TEST_VIEW PRIMARY KEY (SELECTION_ID) RELY DISABLE NOVALIDATE
+) AS
+SELECT SELECTION_ID, NAME, PROJECT_ID, RESPONDENTBUCKET_ID, SYS_GUID() GUID FROM SELECTION";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			}
+		}
+
 		public class CreateSequence
 		{
 			[Test(Description = @"")]
