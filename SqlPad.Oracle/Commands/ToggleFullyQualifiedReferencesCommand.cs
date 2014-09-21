@@ -64,28 +64,29 @@ namespace SqlPad.Oracle.Commands
 		private IEnumerable<TextSegment> GetMissingColumnReferenceObjectQualifications()
 		{
 			var columnReferences = CurrentQueryBlock.AllColumnReferences
-				.Where(c => c.ValidObjectReference != null);
+				.Where(c => c.ValidObjectReference != null && (!c.ReferencesAllColumns || c.ObjectNode != null));
 			
 			var qualificationBuilder = new StringBuilder();
 			foreach (var column in columnReferences)
 			{
 				qualificationBuilder.Clear();
 
-				var tableReference = column.ValidObjectReference as OracleDataObjectReference;
-				if (column.OwnerNode == null && column.ValidObjectReference.Type == ReferenceType.SchemaObject &&
+				var validObjectReference = column.ValidObjectReference;
+				var tableReference = validObjectReference as OracleDataObjectReference;
+				if (column.OwnerNode == null && validObjectReference.Type == ReferenceType.SchemaObject &&
 					(tableReference == null || tableReference.AliasNode == null) &&
-					column.ValidObjectReference.SchemaObject.FullyQualifiedName.Owner != OracleDatabaseModelBase.SchemaPublic)
+					validObjectReference.SchemaObject != null && validObjectReference.SchemaObject.FullyQualifiedName.Owner != OracleDatabaseModelBase.SchemaPublic)
 				{
-					qualificationBuilder.Append(column.ValidObjectReference.SchemaObject.Owner.ToSimpleIdentifier());
+					qualificationBuilder.Append(validObjectReference.SchemaObject.Owner.ToSimpleIdentifier());
 					qualificationBuilder.Append(".");
 				}
 
 				int indexStart;
 				if (column.ObjectNode == null)
 				{
-					if (!String.IsNullOrEmpty(column.ValidObjectReference.FullyQualifiedObjectName.Name))
+					if (!String.IsNullOrEmpty(validObjectReference.FullyQualifiedObjectName.Name))
 					{
-						qualificationBuilder.Append(column.ValidObjectReference.FullyQualifiedObjectName.Name);
+						qualificationBuilder.Append(validObjectReference.FullyQualifiedObjectName.Name);
 						qualificationBuilder.Append(".");
 					}
 					

@@ -793,14 +793,41 @@ WHERE
 		}
 
 		[Test(Description = @""), STAThread]
-		public void TestToggleFullyQualifiedReferencesOn()
+		public void TestToggleFullyQualifiedReferences()
 		{
 			_editor.Text = @"SELECT SQLPAD_FUNCTION, RESPONDENTBUCKET_ID, SELECTION_ID, PROJECT_ID, NAME, SQLPAD.SQLPAD_FUNCTION(0), TO_CHAR('') FROM SELECTION";
-			_editor.SelectionLength = 0;
 
 			ExecuteCommand(OracleCommands.ToggleFullyQualifiedReferences);
 
 			_editor.Text.ShouldBe("SELECT HUSQVIK.SQLPAD_FUNCTION, HUSQVIK.SELECTION.RESPONDENTBUCKET_ID, HUSQVIK.SELECTION.SELECTION_ID, HUSQVIK.SELECTION.PROJECT_ID, HUSQVIK.SELECTION.NAME, HUSQVIK.SQLPAD.SQLPAD_FUNCTION(0), TO_CHAR('') FROM HUSQVIK.SELECTION");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestToggleFullyQualifiedReferencesWithAsteriskClause()
+		{
+			_editor.Text = @"SELECT * FROM SELECTION";
+
+			ExecuteCommand(OracleCommands.ToggleFullyQualifiedReferences);
+
+			_editor.Text.ShouldBe("SELECT * FROM HUSQVIK.SELECTION");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestToggleFullyQualifiedReferencesWithPartiallyQualifiedAsteriskClause()
+		{
+			_editor.Text = @"SELECT SELECTION.*, PROJECT.* FROM SELECTION, PROJECT";
+
+			ExecuteCommand(OracleCommands.ToggleFullyQualifiedReferences);
+
+			_editor.Text.ShouldBe("SELECT HUSQVIK.SELECTION.*, HUSQVIK.PROJECT.* FROM HUSQVIK.SELECTION, HUSQVIK.PROJECT");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestToggleFullyQualifiedReferencesWithNotExistingTable()
+		{
+			_editor.Text = @"SELECT NOT_EXISTING_TABLE.* FROM NOT_EXISTING_TABLE";
+
+			CanExecuteCommand(OracleCommands.ToggleFullyQualifiedReferences).ShouldBe(false);
 		}
 
 		[Test(Description = @""), STAThread]
