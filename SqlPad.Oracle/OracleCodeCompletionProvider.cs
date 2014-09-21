@@ -390,13 +390,13 @@ namespace SqlPad.Oracle
 				var localSynonymFunctionMatcher =
 					new OracleFunctionMatcher(
 						new FunctionMatchElement(currentSchema).SelectSynonymOwner(),
-						null,
+						new FunctionMatchElement(null).SelectPackage(),
 						new FunctionMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectSynonymName());
 
 				var publicSynonymFunctionMatcher =
 					new OracleFunctionMatcher(
 						new FunctionMatchElement(OracleDatabaseModelBase.SchemaPublic).SelectSynonymOwner(),
-						null,
+						new FunctionMatchElement(null).SelectPackage(),
 						new FunctionMatchElement(partialName) {AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName}.SelectSynonymName());
 
 				var localSchemaPackageMatcher =

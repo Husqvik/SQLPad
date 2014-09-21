@@ -743,10 +743,10 @@ se";
 		{
 			const string statement = @"SELECT SQLPAD.SQLPAD_FUNCTION(D) FROM DUAL";
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 31).ToList();
-			items.Count.ShouldBe(6);
+			items.Count.ShouldBe(7);
 			items[0].Text.ShouldBe("DUAL.DUMMY");
-			items[5].Name.ShouldBe("DUMP");
-			items[5].Text.ShouldBe("DUMP()");
+			items[6].Name.ShouldBe("DUMP");
+			items[6].Text.ShouldBe("DUMP()");
 		}
 
 		[Test(Description = @"")]
@@ -984,6 +984,18 @@ se";
 			items[0].Name.ShouldBe("SYNONYM_TO_SQLPAD_FUNCTION");
 			items[0].Text.ShouldBe("SYNONYM_TO_SQLPAD_FUNCTION()");
 			items[0].CaretOffset.ShouldBe(-1);
+		}
+
+		[Test(Description = @"")]
+		public void TestPackageSuggestionWhenPackageNameTypedFromMiddle()
+		{
+			const string statement = @"SELECT RANDOM FROM DUAL";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 13, false).ToList();
+			items.Count.ShouldBe(1);
+			items[0].Name.ShouldBe("DBMS_RANDOM");
+			items[0].Text.ShouldBe("DBMS_RANDOM.");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.Package);
+			items[0].CaretOffset.ShouldBe(0);
 		}
 
 		public class OracleCodeCompletionTypeTest

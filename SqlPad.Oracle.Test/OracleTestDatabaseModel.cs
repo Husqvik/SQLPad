@@ -157,6 +157,24 @@ namespace SqlPad.Oracle.Test
 
 			AllObjectsInternal.Add(synonym);
 
+			var dbmsCrypto = (OraclePackage)AllObjectsInternal.Single(o => o.Name == "\"DBMS_CRYPTO\"" && o.Owner == OwnerNameSys);
+			var randomBytesFunctionMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues("SYS", "DBMS_CRYPTO", "RANDOMBYTES"), false, false, false, false, true, false, null, null, AuthId.Definer, OracleFunctionMetadata.DisplayTypeNormal, false);
+			randomBytesFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "RAW", false));
+			randomBytesFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("NUMBER_BYTES", 1, ParameterDirection.Input, "BINARY_INTEGER", false));
+			randomBytesFunctionMetadata.Owner = dbmsCrypto;
+			dbmsCrypto.Functions.Add(randomBytesFunctionMetadata);
+
+			synonym =
+				new OracleSynonym
+				{
+					FullyQualifiedName = OracleObjectIdentifier.Create(SchemaPublic, "\"DBMS_CRYPTO\""),
+					SchemaObject = dbmsCrypto,
+					IsValid = true
+				};
+			synonym.SchemaObject.Synonym = synonym;
+
+			AllObjectsInternal.Add(synonym);
+
 			var uncompilableFunction = (OracleFunction)AllObjectsInternal.Single(o => o.Name == "\"UNCOMPILABLE_FUNCTION\"" && o.Owner == InitialSchema);
 			uncompilableFunction.Metadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), null, "UNCOMPILABLE_FUNCTION"), false, false, false, false, true, false, null, null, AuthId.Definer, OracleFunctionMetadata.DisplayTypeNormal, false);
 			uncompilableFunction.Metadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "NUMBER", false));
@@ -550,6 +568,11 @@ namespace SqlPad.Oracle.Test
 			new OraclePackage
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(OwnerNameSys, "\"DBMS_RANDOM\""),
+				IsValid = true
+			},
+			new OraclePackage
+			{
+				FullyQualifiedName = OracleObjectIdentifier.Create(OwnerNameSys, "\"DBMS_CRYPTO\""),
 				IsValid = true
 			},
 			new OracleFunction
