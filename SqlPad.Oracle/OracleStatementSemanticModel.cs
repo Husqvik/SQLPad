@@ -286,7 +286,7 @@ namespace SqlPad.Oracle
 			foreach (var queryBlock in _queryBlockNodes.Values)
 			{
 				var ownerNameObjectReferences = queryBlock.ObjectReferences
-						.Where(o => o.OwnerNode != null && o.Type == ReferenceType.SchemaObject && o.SchemaObject != null)
+						.Where(o => o.OwnerNode != null && o.SchemaObject != null)
 						.ToLookup(o => o.SchemaObject.Name);
 
 				var removedObjectReferenceOwners = new HashSet<OracleDataObjectReference>();
@@ -304,6 +304,14 @@ namespace SqlPad.Oracle
 						_redundantTerminals.AddRange(redundantTerminals);
 						removedObjectReferenceOwners.Add(objectReference);
 					}
+				}
+
+				var otherRedundantOwnerReferences = ((IEnumerable<OracleReference>)queryBlock.AllProgramReferences).Concat(queryBlock.AllTypeReferences).Concat(queryBlock.AllSequenceReferences)
+					.Where(o => o.OwnerNode != null && IsSchemaObjectInCurrentSchemaOrAccessibleByPublicSynonym(o.SchemaObject));
+				foreach (var reference in otherRedundantOwnerReferences)
+				{
+					var redundantTerminals = reference.RootNode.Terminals.TakeWhile(t => t != reference.ObjectNode);
+					_redundantTerminals.AddRange(redundantTerminals);
 				}
 
 				foreach (var columnReference in queryBlock.AllColumnReferences.Where(c => c.ObjectNode != null && c.RootNode != null))
@@ -324,6 +332,18 @@ namespace SqlPad.Oracle
 					_redundantTerminals.AddRange(redundantTerminals);
 				}
 			}
+		}
+
+		private bool IsSchemaObjectInCurrentSchemaOrAccessibleByPublicSynonym(OracleSchemaObject schemaObject)
+		{
+			if (schemaObject == null)
+			{
+				return false;
+			}
+
+			var isSchemaObjectInCurrentSchema = schemaObject.Owner == DatabaseModel.CurrentSchema.ToQuotedIdentifier();
+			var isAccessibleByPublicSynonym = schemaObject.Synonym != null && schemaObject.Synonym.Owner == OracleDatabaseModelBase.SchemaPublic && schemaObject.Synonym.Name == schemaObject.Name;
+			return isSchemaObjectInCurrentSchema || isAccessibleByPublicSynonym;
 		}
 
 		private void BuildDmlModel()
@@ -840,7 +860,7 @@ namespace SqlPad.Oracle
 					DatabaseLinkNode = GetDatabaseLinkFromIdentifier(columnReference.ColumnNode),
 					ObjectNode = columnReference.ObjectNode,
 					OwnerNode = columnReference.OwnerNode,
-					RootNode = columnReference.ColumnNode,
+					RootNode = columnReference.RootNode,
 					Owner = columnReference.Owner,
 					SelectListColumn = columnReference.SelectListColumn,
 					Placement = columnReference.Placement,

@@ -484,6 +484,31 @@ FROM
 		}
 
 		[Test(Description = @"")]
+		public void TestPackageFunctionReferenceProperties()
+		{
+			const string query1 = @"SELECT 1 + SYS.DBMS_RANDOM.VALUE + 1 FROM DUAL";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.QueryBlocks.ShouldNotBe(null);
+			semanticModel.QueryBlocks.Count.ShouldBe(1);
+
+			var functionReferences = semanticModel.QueryBlocks.Single().AllProgramReferences.ToArray();
+			functionReferences.Length.ShouldBe(1);
+			var functionReference = functionReferences[0];
+			functionReference.FunctionIdentifierNode.Token.Value.ShouldBe("VALUE");
+			functionReference.ObjectNode.Token.Value.ShouldBe("DBMS_RANDOM");
+			functionReference.OwnerNode.Token.Value.ShouldBe("SYS");
+			functionReference.AnalyticClauseNode.ShouldBe(null);
+			functionReference.SelectListColumn.ShouldNotBe(null);
+			functionReference.ParameterListNode.ShouldBe(null);
+			functionReference.ParameterNodes.ShouldBe(null);
+			functionReference.RootNode.FirstTerminalNode.Token.Value.ShouldBe("SYS");
+			functionReference.RootNode.LastTerminalNode.Token.Value.ShouldBe("VALUE");
+		}
+
+		[Test(Description = @"")]
 		public void TestRedundantTerminals()
 		{
 			const string query1 = @"SELECT HUSQVIK.SELECTION.SELECTION_ID, SELECTION.NAME, RESPONDENTBUCKET.TARGETGROUP_ID, RESPONDENTBUCKET.NAME FROM HUSQVIK.SELECTION LEFT JOIN RESPONDENTBUCKET ON SELECTION.RESPONDENTBUCKET_ID = RESPONDENTBUCKET.RESPONDENTBUCKET_ID, SYS.DUAL";

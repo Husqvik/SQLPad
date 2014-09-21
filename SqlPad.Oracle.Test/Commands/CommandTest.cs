@@ -959,5 +959,18 @@ WHERE
 			_editor.Text.ShouldBe("SELECT SELECTION_ID, TARGETGROUP_ID, SELECTION.RESPONDENTBUCKET_ID FROM SELECTION, RESPONDENTBUCKET");
 			_editor.CaretOffset.ShouldBe(0);
 		}
+
+		[Test(Description = @""), STAThread]
+		public void TestCleanRedundantProgramQualifier()
+		{
+			const string statementText = @"SELECT HUSQVIK.INVALID_OBJECT_TYPE(), SYS.XMLTYPE('<root/>'), HUSQVIK.SQLPAD.SQLPAD_FUNCTION(), SYS.DBMS_RANDOM.VALUE FROM SYS.DUAL";
+			_editor.Text = statementText;
+
+			CanExecuteCommand(OracleCommands.CleanRedundantQualifier).ShouldBe(true);
+			ExecuteCommand(OracleCommands.CleanRedundantQualifier);
+
+			_editor.Text.ShouldBe("SELECT INVALID_OBJECT_TYPE(), XMLTYPE('<root/>'), SQLPAD.SQLPAD_FUNCTION(), DBMS_RANDOM.VALUE FROM SYS.DUAL");
+			_editor.CaretOffset.ShouldBe(0);
+		}
 	}
 }
