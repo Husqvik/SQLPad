@@ -15,9 +15,7 @@ namespace SqlPad
 			var convertedValue = columnHeader.ValueConverter.ConvertToCellValue(value);
 			if (convertedValue is DateTime)
 			{
-				return String.IsNullOrEmpty(ConfigurationProvider.Configuration.ResultGrid.DateFormat)
-					? ((DateTime)value).ToString(CultureInfo.CurrentUICulture)
-					: ((DateTime)value).ToString(ConfigurationProvider.Configuration.ResultGrid.DateFormat);
+				return FormatDateTime((DateTime)value);
 			}
 
 			var convertedStringValue = convertedValue as String ?? System.Convert.ToString(convertedValue);
@@ -30,6 +28,13 @@ namespace SqlPad
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			return value;
+		}
+
+		public static string FormatDateTime(DateTime value)
+		{
+			return String.IsNullOrEmpty(ConfigurationProvider.Configuration.ResultGrid.DateFormat)
+					? value.ToString(CultureInfo.CurrentUICulture)
+					: value.ToString(ConfigurationProvider.Configuration.ResultGrid.DateFormat);
 		}
 	}
 

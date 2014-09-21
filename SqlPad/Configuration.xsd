@@ -14,11 +14,6 @@
             <xs:attribute name="NullPlaceholder" type="xs:string" use="required" />
           </xs:complexType>
         </xs:element>
-        <xs:element name="ExecutionPlan">
-          <xs:complexType>
-            <xs:attribute name="Enabled" type="xs:boolean" use="optional" />
-          </xs:complexType>
-        </xs:element>
       </xs:sequence>
     </xs:complexType>
   </xs:element>

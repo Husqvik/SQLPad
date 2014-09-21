@@ -13,8 +13,7 @@ namespace SqlPad
 			new Configuration
 			{
 				dataModelField = new ConfigurationDataModel { DataModelRefreshPeriod = DefaultDataModelRefreshPeriod },
-				resultGridField = new ConfigurationResultGrid { NullPlaceholder = DefaultNullValuePlaceholder },
-				executionPlanField = new ConfigurationExecutionPlan()
+				resultGridField = new ConfigurationResultGrid { NullPlaceholder = DefaultNullValuePlaceholder }
 			};
 
 		public void Validate()

@@ -551,7 +551,7 @@ namespace SqlPad
 
 		private void ExecuteDatabaseCommandWithActualExecutionPlanHandler(object sender, ExecutedRoutedEventArgs args)
 		{
-			_gatherExecutionStatistics = ConfigurationProvider.Configuration.ExecutionPlan.Enabled;
+			_gatherExecutionStatistics = true;
 			ExecuteDatabaseCommandHandlerInternal();
 		}
 

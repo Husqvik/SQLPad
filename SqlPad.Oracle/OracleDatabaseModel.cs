@@ -584,6 +584,14 @@ namespace SqlPad.Oracle
 					case "LongRaw":
 						value = new OracleLongRawValue(_userDataReader, i);
 						break;
+					case "TimeStamp":
+						var oracleTimestamp = new OracleTimestamp(_userDataReader, i);
+						value = oracleTimestamp.IsNull ? (object)DBNull.Value : oracleTimestamp;
+						break;
+					case "TimeStampTZ":
+						var oracleTimestampWithTimeZone = new OracleTimestampWithTimeZone(_userDataReader, i);
+						value = oracleTimestampWithTimeZone.IsNull ? (object)DBNull.Value : oracleTimestampWithTimeZone;
+						break;
 					case "Decimal":
 						var oracleDecimal = new OracleNumber(_userDataReader, i);
 						value = oracleDecimal.IsNull ? (object)DBNull.Value : oracleDecimal;

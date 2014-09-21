@@ -28,8 +28,6 @@ namespace SqlPad {
         
         private ConfigurationResultGrid resultGridField;
         
-        private ConfigurationExecutionPlan executionPlanField;
-        
         /// <remarks/>
         public ConfigurationDataModel DataModel {
             get {
@@ -47,16 +45,6 @@ namespace SqlPad {
             }
             set {
                 this.resultGridField = value;
-            }
-        }
-        
-        /// <remarks/>
-        public ConfigurationExecutionPlan ExecutionPlan {
-            get {
-                return this.executionPlanField;
-            }
-            set {
-                this.executionPlanField = value;
             }
         }
     }
@@ -114,41 +102,6 @@ namespace SqlPad {
             }
             set {
                 this.nullPlaceholderField = value;
-            }
-        }
-    }
-    
-    /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.0.30319.33440")]
-    [System.SerializableAttribute()]
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://husqvik.com/SqlPad/2014/02")]
-    public partial class ConfigurationExecutionPlan {
-        
-        private bool enabledField;
-        
-        private bool enabledFieldSpecified;
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public bool Enabled {
-            get {
-                return this.enabledField;
-            }
-            set {
-                this.enabledField = value;
-            }
-        }
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
-        public bool EnabledSpecified {
-            get {
-                return this.enabledFieldSpecified;
-            }
-            set {
-                this.enabledFieldSpecified = value;
             }
         }
     }

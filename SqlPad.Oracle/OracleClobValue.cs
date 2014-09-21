@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 using Oracle.DataAccess.Client;
 using Oracle.DataAccess.Types;
 
@@ -106,6 +107,40 @@ namespace SqlPad.Oracle
 		public override string ToString()
 		{
 			return Length == 0 ? String.Empty : String.Format("(BLOB[{0} B])", Length);
+		}
+	}
+
+	public class OracleTimestamp
+	{
+		private readonly OracleTimeStamp _oracleTimeStamp;
+
+		public OracleTimestamp(OracleDataReader reader, int columnIndex)
+		{
+			_oracleTimeStamp = reader.GetOracleTimeStamp(columnIndex);
+		}
+
+		public bool IsNull { get { return _oracleTimeStamp.IsNull; } }
+
+		public override string ToString()
+		{
+			return String.Format("{0}.{1}", CellValueConverter.FormatDateTime(_oracleTimeStamp.Value), _oracleTimeStamp.Nanosecond.ToString(CultureInfo.InvariantCulture));
+		}
+	}
+
+	public class OracleTimestampWithTimeZone
+	{
+		private readonly OracleTimeStampTZ _oracleTimeStamp;
+
+		public OracleTimestampWithTimeZone(OracleDataReader reader, int columnIndex)
+		{
+			_oracleTimeStamp = reader.GetOracleTimeStampTZ(columnIndex);
+		}
+
+		public bool IsNull { get { return _oracleTimeStamp.IsNull; } }
+
+		public override string ToString()
+		{
+			return String.Format("{0}.{1} {2}", CellValueConverter.FormatDateTime(_oracleTimeStamp.Value), _oracleTimeStamp.Nanosecond.ToString(CultureInfo.InvariantCulture), _oracleTimeStamp.TimeZone);
 		}
 	}
 
