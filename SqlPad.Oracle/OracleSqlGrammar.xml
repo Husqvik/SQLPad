@@ -4627,13 +4627,76 @@
         </Sequence>
         <Sequence>
           <NonTerminal Id="CompositeHashPartitions" />
-        </Sequence>
+        </Sequence>-->
         <Sequence>
           <NonTerminal Id="ReferencePartitioning" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="SystemPartitioning" />
-        </Sequence>-->
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SystemPartitioning">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="System" />
+          <NonTerminal Id="PartitionCountOrReferencePartitionDescriptionList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PartitionCountOrReferencePartitionDescriptionList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Partitions" />
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ParenthesisEnclosedReferencePartitionDescriptionList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ReferencePartitioning">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Reference" />
+          <Terminal Id="LeftParenthesis" />
+          <Terminal Id="Identifier" />
+          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="ParenthesisEnclosedReferencePartitionDescriptionList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ParenthesisEnclosedReferencePartitionDescriptionList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="ReferencePartitionDescriptionList" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ReferencePartitionDescriptionList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Partition" />
+          <Terminal Id="Identifier" IsOptional="true" />
+          <NonTerminal Id="TablePartitionDescription" IsOptional="true" />
+          <NonTerminal Id="CommaChainedReferencePartitionDescriptionList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="CommaChainedReferencePartitionDescriptionList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="ReferencePartitionDescriptionList" />
+        </Sequence>
       </Sequences>
     </Rule>
 
@@ -7590,6 +7653,7 @@
     <Terminal Id="Partitions" Value="PARTITIONS" />
     <Terminal Id="Compute" Value="COMPUTE" />
     <Terminal Id="Statistics" Value="STATISTICS" />
+    <Terminal Id="Reference" Value="REFERENCE" />
 
     <!-- Large objects -->
     <Terminal Id="LargeObject" Value="LOB" />

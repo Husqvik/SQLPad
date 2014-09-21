@@ -963,13 +963,13 @@ WHERE
 		[Test(Description = @""), STAThread]
 		public void TestCleanRedundantProgramQualifier()
 		{
-			const string statementText = @"SELECT HUSQVIK.INVALID_OBJECT_TYPE(), SYS.XMLTYPE('<root/>'), HUSQVIK.SQLPAD.SQLPAD_FUNCTION(), SYS.DBMS_RANDOM.VALUE FROM SYS.DUAL";
+			const string statementText = @"SELECT HUSQVIK.INVALID_OBJECT_TYPE(), SYS.XMLTYPE('<root/>'), HUSQVIK.SQLPAD.SQLPAD_FUNCTION(), SYS.DBMS_RANDOM.VALUE, HUSQVIK.TEST_SEQ.NEXTVAL FROM SYS.DUAL";
 			_editor.Text = statementText;
 
 			CanExecuteCommand(OracleCommands.CleanRedundantQualifier).ShouldBe(true);
 			ExecuteCommand(OracleCommands.CleanRedundantQualifier);
 
-			_editor.Text.ShouldBe("SELECT INVALID_OBJECT_TYPE(), XMLTYPE('<root/>'), SQLPAD.SQLPAD_FUNCTION(), DBMS_RANDOM.VALUE FROM SYS.DUAL");
+			_editor.Text.ShouldBe("SELECT INVALID_OBJECT_TYPE(), XMLTYPE('<root/>'), SQLPAD.SQLPAD_FUNCTION(), DBMS_RANDOM.VALUE, TEST_SEQ.NEXTVAL FROM SYS.DUAL");
 			_editor.CaretOffset.ShouldBe(0);
 		}
 	}
