@@ -38,6 +38,14 @@ namespace SqlPad.Oracle.Test
 		private const string StatisticsDescriptionBytesReceivedViaSqlNetFromClient = "bytes received via SQL*Net from client";
 		private const string StatisticsDescriptionSqlNetRoundtripsToOrFromClient = "SQL*Net roundtrips to/from client";
 
+		private static readonly ILookup<string, string> ContextDataInternal =
+			new[]
+			{
+				new KeyValuePair<string, string>("TEST_CONTEXT_1", "TestAttribute1"),
+				new KeyValuePair<string, string>("TEST_CONTEXT_2", "TestAttribute2"),
+				new KeyValuePair<string, string>("TEST_CONTEXT_1", "TestAttribute3")
+			}.ToLookup(r => r.Key, r => r.Value);
+
 		private static readonly Dictionary<int, string> StatisticsKeysInternal =
 			new Dictionary<int, string>
 			{
@@ -718,6 +726,11 @@ Note
 		public override ICollection<string> CharacterSets { get { return CharacterSetsInternal; } }
 
 		public override IDictionary<int, string> StatisticsKeys { get { return StatisticsKeysInternal; } }
+
+		public override ILookup<string, string> ContextData
+		{
+			get { return ContextDataInternal; }
+		}
 
 		public override Task<ICollection<SessionExecutionStatisticsRecord>> GetExecutionStatisticsAsync(CancellationToken cancellationToken)
 		{

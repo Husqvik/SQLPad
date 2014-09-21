@@ -245,6 +245,7 @@ WHERE
 		public const string GetCharacterSets = "SELECT VALUE FROM V$NLS_VALID_VALUES WHERE parameter = 'CHARACTERSET' AND ISDEPRECATED = 'FALSE' ORDER BY VALUE";
 		public const string GetStatisticsKeys = "SELECT STATISTIC#, CLASS, DISPLAY_NAME FROM V$STATNAME";
 		public const string GetSessionsStatistics = "SELECT STATISTIC#, VALUE FROM V$SESSTAT WHERE SID = :SID";
+		public const string GetContextData = "SELECT NAMESPACE, ATTRIBUTE FROM GLOBAL_CONTEXT UNION SELECT NAMESPACE, ATTRIBUTE FROM SESSION_CONTEXT";
 
 		private static string ToInValueList(params string[] values)
 		{

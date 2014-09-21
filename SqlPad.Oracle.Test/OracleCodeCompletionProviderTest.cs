@@ -824,6 +824,48 @@ se";
 		}
 
 		[Test(Description = @"")]
+		public void TestSysContextUserContextNamespaceCompletion()
+		{
+			const string statement = @"SELECT SYS_CONTEXT('', '') FROM DUAL";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 20).ToList();
+			items.Count.ShouldBe(2);
+			items[0].Name.ShouldBe("TEST_CONTEXT_1");
+			items[0].Text.ShouldBe("'TEST_CONTEXT_1'");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+			items[1].Name.ShouldBe("TEST_CONTEXT_2");
+			items[1].Text.ShouldBe("'TEST_CONTEXT_2'");
+			items[1].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+		}
+
+		[Test(Description = @""), Ignore]
+		public void TestSysContextUserContextNamespaceCompletionWithEmptyParameterList()
+		{
+			const string statement = @"SELECT SYS_CONTEXT() FROM DUAL";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 19).ToList();
+			items.Count.ShouldBe(2);
+			items[0].Name.ShouldBe("TEST_CONTEXT_1");
+			items[0].Text.ShouldBe("'TEST_CONTEXT_1'");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+			items[1].Name.ShouldBe("TEST_CONTEXT_2");
+			items[1].Text.ShouldBe("'TEST_CONTEXT_2'");
+			items[1].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+		}
+
+		[Test(Description = @"")]
+		public void TestSysContextUserContextAttributeCompletion()
+		{
+			const string statement = @"SELECT SYS_CONTEXT('TEST_CONTEXT_1', '') FROM DUAL";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 38).ToList();
+			items.Count.ShouldBe(2);
+			items[0].Name.ShouldBe("TestAttribute1");
+			items[0].Text.ShouldBe("'TestAttribute1'");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+			items[1].Name.ShouldBe("TestAttribute3");
+			items[1].Text.ShouldBe("'TestAttribute3'");
+			items[1].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+		}
+
+		[Test(Description = @"")]
 		public void TestSysContextSpecialParameterCompletionWithIncompatibleNamespace()
 		{
 			const string statement = @"SELECT SYS_CONTEXT(X || 'USERENV', '') FROM DUAL";

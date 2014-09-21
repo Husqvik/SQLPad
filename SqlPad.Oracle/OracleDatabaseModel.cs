@@ -152,6 +152,11 @@ namespace SqlPad.Oracle
 			get { return _oracleConnectionString.DataSource + "_" + _oracleConnectionString.UserID; }
 		}
 
+		public override ILookup<string, string> ContextData
+		{
+			get { return _dataDictionaryMapper.GetContextData(); }
+		}
+
 		public override Task Refresh(bool force = false)
 		{
 			lock (ActiveDataModelRefresh)

@@ -65,6 +65,8 @@ namespace SqlPad.Oracle
 
 		public abstract bool IsExecuting { get; }
 
+		public abstract ILookup<string, string> ContextData { get; }
+
 		public abstract ILookup<OracleFunctionIdentifier, OracleFunctionMetadata> AllFunctionMetadata { get; }
 
 		protected abstract IDictionary<string, OracleFunctionMetadata> NonSchemaBuiltInFunctionMetadata { get; }

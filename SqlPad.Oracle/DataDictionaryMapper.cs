@@ -98,6 +98,11 @@ namespace SqlPad.Oracle
 			return GetFunctionMetadataCollection(DatabaseCommands.BuiltInFunctionMetadataCommandText, DatabaseCommands.BuiltInFunctionParameterMetadataCommandText, true);
 		}
 
+		public ILookup<string, string> GetContextData()
+		{
+			return _databaseModel.ExecuteReader(DatabaseCommands.GetContextData, MapContextData).ToLookup(r => r.Key, r => r.Value);
+		}
+
 		public IEnumerable<string> GetSchemaNames()
 		{
 			return _databaseModel.ExecuteReader(DatabaseCommands.SelectAllSchemasCommandText, r => ((string)r["USERNAME"]));
@@ -142,6 +147,11 @@ namespace SqlPad.Oracle
 		private static KeyValuePair<int, string> MapStatisticsKey(OracleDataReader reader)
 		{
 			return new KeyValuePair<int, string>(Convert.ToInt32(reader["STATISTIC#"]), (string)reader["DISPLAY_NAME"]);
+		}
+
+		private static KeyValuePair<string, string> MapContextData(OracleDataReader reader)
+		{
+			return new KeyValuePair<string, string>((string)reader["NAMESPACE"], (string)reader["ATTRIBUTE"]);
 		}
 
 		private static OracleFunctionMetadata MapFunctionMetadata(OracleDataReader reader, bool isBuiltIn)
