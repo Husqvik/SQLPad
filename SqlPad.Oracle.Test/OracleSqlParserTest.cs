@@ -3110,6 +3110,18 @@ PARTITIONS 4 STORE IN (TABLESPACE_1, TABLESPACE_2, TABLESPACE_3, TABLESPACE_4)";
 				var statement = result.Single();
 				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 			}
+
+			[Test(Description = @"")]
+			public void TestObsoleteComputeStatisticsInConstraintUsingIndexClause()
+			{
+				const string statementText = @"CREATE TABLE TEST_TABLE (ID NUMBER PRIMARY KEY USING INDEX COMPUTE STATISTICS)";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			}
 		}
 
 		public class CreateIndex

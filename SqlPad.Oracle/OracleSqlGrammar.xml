@@ -6959,6 +6959,10 @@
         <Sequence>
           <NonTerminal Id="ParallelClause" />
         </Sequence>
+        <Sequence Comment="Obsolete">
+          <Terminal Id="Compute" />
+          <Terminal Id="Statistics" />
+        </Sequence>
         <Sequence>
           <NonTerminal Id="PhysicalAttributesClause" />
         </Sequence>
@@ -7584,6 +7588,8 @@
     <Terminal Id="List" Value="LIST" />
     <Terminal Id="Hash" Value="HASH" />
     <Terminal Id="Partitions" Value="PARTITIONS" />
+    <Terminal Id="Compute" Value="COMPUTE" />
+    <Terminal Id="Statistics" Value="STATISTICS" />
 
     <!-- Large objects -->
     <Terminal Id="LargeObject" Value="LOB" />
