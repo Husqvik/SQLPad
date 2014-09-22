@@ -20,9 +20,24 @@ namespace SqlPad.Oracle
 			return isNotKeyword && identifier.IsQuotedWithoutCheck() && identifier == identifier.ToUpperInvariant() && Char.IsLetter(identifier[1]) ? identifier.Replace(QuoteCharacter, null) : identifier;
 		}
 
+		public static string ToSimpleString(this string oracleString)
+		{
+			if (String.IsNullOrEmpty(oracleString))
+			{
+				return oracleString;
+			}
+
+			return oracleString[0] == '\'' ? oracleString.Trim('\'') : oracleString;
+		}
+
+		public static string ToOracleString(this string value)
+		{
+			return value.Replace("'", "''");
+		}
+
 		public static string ToRawUpperInvariant(this string identifier)
 		{
-			return identifier.ToSimpleIdentifier().Replace("\"", null).ToUpperInvariant();
+			return identifier.ToSimpleIdentifier().Replace(QuoteCharacter, null).ToUpperInvariant();
 		}
 
 		public static bool CollidesWithKeyword(this string identifier)

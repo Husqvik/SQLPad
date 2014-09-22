@@ -43,7 +43,9 @@ namespace SqlPad.Oracle.Test
 			{
 				new KeyValuePair<string, string>("TEST_CONTEXT_1", "TestAttribute1"),
 				new KeyValuePair<string, string>("TEST_CONTEXT_2", "TestAttribute2"),
-				new KeyValuePair<string, string>("TEST_CONTEXT_1", "TestAttribute3")
+				new KeyValuePair<string, string>("TEST_CONTEXT_1", "TestAttribute3"),
+				new KeyValuePair<string, string>("TEST_CONTEXT_1", "Special'Attribute'4"),
+				new KeyValuePair<string, string>("Special'Context", "Special'Attribute'5")
 			}.ToLookup(r => r.Key, r => r.Value);
 
 		private static readonly Dictionary<int, string> StatisticsKeysInternal =

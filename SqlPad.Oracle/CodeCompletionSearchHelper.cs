@@ -8,6 +8,8 @@ namespace SqlPad.Oracle
 {
 	internal static class CodeCompletionSearchHelper
 	{
+		private const string ContextNamespaceUserEnvironment = "USERENV";
+
 		private static readonly HashSet<OracleFunctionIdentifier> SpecificCodeCompletionFunctionIdentifiers =
 				new HashSet<OracleFunctionIdentifier>
 			{
@@ -56,7 +58,7 @@ namespace SqlPad.Oracle
 				                      o.FunctionMetadata.Parameters[o.CurrentParameterIndex + 1].DataType == "VARCHAR2");
 			if (toCharFunctionOverload != null && HasSingleStringLiteralParameter(toCharFunctionOverload))
 			{
-				const string itemText = "NLS_NUMERIC_CHARACTERS = ''<decimal separator><group separator>'' NLS_CURRENCY = ''currency_symbol'' NLS_ISO_CURRENCY = <territory>";
+				const string itemText = "NLS_NUMERIC_CHARACTERS = '<decimal separator><group separator>' NLS_CURRENCY = 'currency_symbol' NLS_ISO_CURRENCY = <territory>";
 				const string itemDescription = "NLS_NUMERIC_CHARACTERS = '<decimal separator><group separator>' NLS_CURRENCY = 'currency_symbol' NLS_ISO_CURRENCY = <territory>";
 				completionItems.Add(BuildParameterCompletionItem(currentNode, itemText, itemDescription));
 			}
@@ -66,7 +68,7 @@ namespace SqlPad.Oracle
 			{
 				if (sysContextFunctionOverload.CurrentParameterIndex == 0 && sysContextFunctionOverload.FunctionMetadata.Parameters[sysContextFunctionOverload.CurrentParameterIndex + 1].DataType == "VARCHAR2" && HasSingleStringLiteralParameter(sysContextFunctionOverload))
 				{
-					var namespaces = databaseModel.ContextData.Select(d => d.Key.Trim('\'')).Distinct();
+					var namespaces = databaseModel.ContextData.Select(d => d.Key.ToSimpleString()).Concat(Enumerable.Repeat(ContextNamespaceUserEnvironment, 1)).Distinct();
 					var namespaceItems = namespaces.Select(n => BuildParameterCompletionItem(currentNode, n, n));
 					completionItems.AddRange(namespaceItems);
 				}
@@ -74,7 +76,7 @@ namespace SqlPad.Oracle
 				{
 					var firstParameter = sysContextFunctionOverload.ProgramReference.ParameterNodes[0];
 					var contextNamespace = HasSingleStringLiteralParameter(sysContextFunctionOverload, 0) ? firstParameter.ChildNodes[0].Token.Value.ToUpperInvariant() : null;
-					if (contextNamespace == "'USERENV'")
+					if (contextNamespace.ToSimpleString() == ContextNamespaceUserEnvironment)
 					{
 						completionItems.Add(BuildParameterCompletionItem(currentNode, "ACTION", "ACTION - Identifies the position in the module (application name) and is set through the DBMS_APPLICATION_INFO package or OCI. "));
 						completionItems.Add(BuildParameterCompletionItem(currentNode, "AUDITED_CURSORID", "AUDITED_CURSORID - Returns the cursor ID of the SQL that triggered the audit. "));
@@ -138,7 +140,7 @@ namespace SqlPad.Oracle
 					}
 					else if (!String.IsNullOrEmpty(contextNamespace))
 					{
-						var attributes = databaseModel.ContextData[contextNamespace.Trim('\'')];
+						var attributes = databaseModel.ContextData[contextNamespace.ToSimpleString()];
 						var attributeItems = attributes.Select(a => BuildParameterCompletionItem(currentNode, a, a));
 						completionItems.AddRange(attributeItems);
 					}
@@ -170,7 +172,7 @@ namespace SqlPad.Oracle
 					Category = OracleCodeCompletionCategory.FunctionParameter,
 					Name = description,
 					StatementNode = node,
-					Text = String.Format("'{0}'", parameterValue)
+					Text = String.Format("'{0}'", parameterValue.ToOracleString())
 				};
 		}
 

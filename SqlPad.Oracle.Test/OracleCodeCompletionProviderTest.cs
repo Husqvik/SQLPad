@@ -828,13 +828,19 @@ se";
 		{
 			const string statement = @"SELECT SYS_CONTEXT('', '') FROM DUAL";
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 20).ToList();
-			items.Count.ShouldBe(2);
-			items[0].Name.ShouldBe("TEST_CONTEXT_1");
-			items[0].Text.ShouldBe("'TEST_CONTEXT_1'");
+			items.Count.ShouldBe(4);
+			items[0].Name.ShouldBe("Special'Context");
+			items[0].Text.ShouldBe("'Special''Context'");
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
-			items[1].Name.ShouldBe("TEST_CONTEXT_2");
-			items[1].Text.ShouldBe("'TEST_CONTEXT_2'");
+			items[1].Name.ShouldBe("TEST_CONTEXT_1");
+			items[1].Text.ShouldBe("'TEST_CONTEXT_1'");
 			items[1].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+			items[2].Name.ShouldBe("TEST_CONTEXT_2");
+			items[2].Text.ShouldBe("'TEST_CONTEXT_2'");
+			items[2].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+			items[3].Name.ShouldBe("USERENV");
+			items[3].Text.ShouldBe("'USERENV'");
+			items[3].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
 		}
 
 		[Test(Description = @""), Ignore]
@@ -842,13 +848,19 @@ se";
 		{
 			const string statement = @"SELECT SYS_CONTEXT() FROM DUAL";
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 19).ToList();
-			items.Count.ShouldBe(2);
-			items[0].Name.ShouldBe("TEST_CONTEXT_1");
-			items[0].Text.ShouldBe("'TEST_CONTEXT_1'");
+			items.Count.ShouldBe(4);
+			items[0].Name.ShouldBe("Special'Context");
+			items[0].Text.ShouldBe("'Special''Context'");
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
-			items[1].Name.ShouldBe("TEST_CONTEXT_2");
-			items[1].Text.ShouldBe("'TEST_CONTEXT_2'");
+			items[1].Name.ShouldBe("TEST_CONTEXT_1");
+			items[1].Text.ShouldBe("'TEST_CONTEXT_1'");
 			items[1].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+			items[2].Name.ShouldBe("TEST_CONTEXT_2");
+			items[2].Text.ShouldBe("'TEST_CONTEXT_2'");
+			items[2].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+			items[3].Name.ShouldBe("USERENV");
+			items[3].Text.ShouldBe("'USERENV'");
+			items[3].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
 		}
 
 		[Test(Description = @"")]
@@ -856,13 +868,16 @@ se";
 		{
 			const string statement = @"SELECT SYS_CONTEXT('TEST_CONTEXT_1', '') FROM DUAL";
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 38).ToList();
-			items.Count.ShouldBe(2);
-			items[0].Name.ShouldBe("TestAttribute1");
-			items[0].Text.ShouldBe("'TestAttribute1'");
+			items.Count.ShouldBe(3);
+			items[0].Name.ShouldBe("Special'Attribute'4");
+			items[0].Text.ShouldBe("'Special''Attribute''4'");
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
-			items[1].Name.ShouldBe("TestAttribute3");
-			items[1].Text.ShouldBe("'TestAttribute3'");
+			items[1].Name.ShouldBe("TestAttribute1");
+			items[1].Text.ShouldBe("'TestAttribute1'");
 			items[1].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+			items[2].Name.ShouldBe("TestAttribute3");
+			items[2].Text.ShouldBe("'TestAttribute3'");
+			items[2].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
 		}
 
 		[Test(Description = @"")]
