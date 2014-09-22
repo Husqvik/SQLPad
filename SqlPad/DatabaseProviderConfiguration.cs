@@ -8,7 +8,7 @@ namespace SqlPad
 {
 	public class DatabaseProviderConfiguration
 	{
-		private readonly Dictionary<string, BindVariableConfiguration> _bindVariables = new Dictionary<string, BindVariableConfiguration>();
+		private Dictionary<string, BindVariableConfiguration> _bindVariables;
 
 		public DatabaseProviderConfiguration(string providerName)
 		{
@@ -17,22 +17,27 @@ namespace SqlPad
 
 		public string ProviderName { get; private set; }
 
+		public Dictionary<string, BindVariableConfiguration> BindVariablesInternal
+		{
+			get { return _bindVariables ?? (_bindVariables = new Dictionary<string, BindVariableConfiguration>()); }
+		}
+
 		public ICollection<BindVariableConfiguration> BindVariables
 		{
-			get { return _bindVariables.Values; }
+			get { return BindVariablesInternal.Values; }
 		}
 
 		public BindVariableConfiguration GetBindVariable(string variableName)
 		{
 			BindVariableConfiguration bindVariable;
-			return _bindVariables.TryGetValue(variableName, out bindVariable)
+			return BindVariablesInternal.TryGetValue(variableName, out bindVariable)
 				? bindVariable
 				: null;
 		}
 
 		public void SetBindVariable(BindVariableConfiguration bindVariable)
 		{
-			_bindVariables[bindVariable.Name] = bindVariable;
+			BindVariablesInternal[bindVariable.Name] = bindVariable;
 		}
 	}
 
