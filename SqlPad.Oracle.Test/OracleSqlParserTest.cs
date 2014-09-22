@@ -2565,6 +2565,34 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 			}
 		}
 
+		public class DropCluster
+		{
+			[Test(Description = @"")]
+			public void TestDropPackage()
+			{
+				const string statementText = @"DROP CLUSTER HUSQVIK.TEST_CLUSTER INCLUDING TABLES CASCADE CONSTRAINTS";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+				var terminals = statement.AllTerminals.ToArray();
+				terminals.Length.ShouldBe(9);
+
+				terminals[0].Id.ShouldBe(Terminals.Drop);
+				terminals[1].Id.ShouldBe(Terminals.Cluster);
+				terminals[2].Id.ShouldBe(Terminals.SchemaIdentifier);
+				terminals[3].Id.ShouldBe(Terminals.Dot);
+				terminals[4].Id.ShouldBe(Terminals.ObjectIdentifier);
+				terminals[5].Id.ShouldBe(Terminals.Including);
+				terminals[6].Id.ShouldBe(Terminals.Tables);
+				terminals[7].Id.ShouldBe(Terminals.Cascade);
+				terminals[8].Id.ShouldBe(Terminals.Constraints);
+			}
+		}
+
 		public class DropOther
 		{
 			[Test(Description = @"")]
@@ -3179,6 +3207,35 @@ NOLOGGING";
 	CONSTRAINT PK_TEST_VIEW PRIMARY KEY (SELECTION_ID) RELY DISABLE NOVALIDATE
 ) AS
 SELECT SELECTION_ID, NAME, PROJECT_ID, RESPONDENTBUCKET_ID, SYS_GUID() GUID FROM SELECTION";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			}
+		}
+
+		public class CreateCluster
+		{
+			[Test(Description = @"")]
+			public void TestCreateCluster()
+			{
+				const string statementText =
+@"CREATE CLUSTER SALES (
+	AMOUNT_SOLD NUMBER,
+	PROD_ID NUMBER
+)
+HASHKEYS 100000
+HASH IS (AMOUNT_SOLD * 10 + PROD_ID)
+SIZE 300
+TABLESPACE TEST_TABLESPACE
+PARTITION BY RANGE (AMOUNT_SOLD) (
+	PARTITION P1 VALUES LESS THAN (1000),
+	PARTITION P2 VALUES LESS THAN (2000),
+	PARTITION P3 VALUES LESS THAN (3000),
+	PARTITION PM VALUES LESS THAN (MAXVALUE)
+)";
 
 				var result = Parser.Parse(statementText);
 

@@ -162,6 +162,9 @@
         <Sequence>
           <NonTerminal Id="DropContext" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="DropCluster" />
+        </Sequence>
         <!-- TODO: Drop other objects -->
       </Sequences>
     </Rule>
@@ -271,6 +274,27 @@
           <Terminal Id="ObjectIdentifier" />
           <Terminal Id="Online" IsOptional="true" />
           <Terminal Id="Force" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DropCluster">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Cluster" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="IncludingTables" IsOptional="true" />
+       </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="IncludingTables">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Including" />
+          <Terminal Id="Tables" />
+          <NonTerminal Id="CascadeConstraints" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -4338,7 +4362,115 @@
         <Sequence>
           <NonTerminal Id="CreateView" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="CreateCluster" />
+        </Sequence>
         <!-- TODO: Create other objects -->
+      </Sequences>
+    </Rule>
+    
+    <!-- CREATE CLUSTER -->
+    <Rule StartingNonTerminal="CreateCluster">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Cluster" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="ClusterColumnDefinitionList" />
+          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="ClusterProperties" />
+          <NonTerminal Id="ParallelClause" IsOptional="true" />
+          <NonTerminal Id="RowDependenciesOrNoRowDependencies" IsOptional="true" />
+          <NonTerminal Id="CacheOrNoCache" IsOptional="true" />
+          <NonTerminal Id="ClusterRangePartitions" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ClusterRangePartitions">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Partition" />
+          <Terminal Id="By" />
+          <Terminal Id="Range" />
+          <NonTerminal Id="ParenthesisEnclosedIdentifierList" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="RangePartitionList" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ClusterProperties">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ClusterProperty" />
+          <NonTerminal Id="ClusterProperties" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ClusterProperty">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="PhysicalAttributesClause" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Size" />
+          <NonTerminal Id="SizeClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="TableSpaceIdentifier" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Index" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="SingleTable" IsOptional="true" />
+          <Terminal Id="HashKeys" />
+          <Terminal Id="IntegerLiteral" />
+          <NonTerminal Id="HashIsExpression" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="HashIsExpression">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Hash" />
+          <Terminal Id="Is" />
+          <NonTerminal Id="Expression" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="SingleTable">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Single" />
+          <Terminal Id="Table" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ClusterColumnDefinitionList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Identifier" />
+          <NonTerminal Id="DataType" />
+          <Terminal Id="Sort" IsOptional="true" />
+          <NonTerminal Id="CommaChainedClusterColumnDefinition" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="CommaChainedClusterColumnDefinition">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="ClusterColumnDefinitionList" />
+        </Sequence>
       </Sequences>
     </Rule>
 
@@ -7531,6 +7663,7 @@
     <Terminal Id="Procedure" Value="PROCEDURE" />
     <Terminal Id="Function" Value="FUNCTION" />
     <Terminal Id="Context" Value="CONTEXT" />
+    <Terminal Id="Tables" Value="TABLES" />
 
     <!-- Explain plan -->
     <Terminal Id="Explain" Value="EXPLAIN" />
@@ -7654,6 +7787,8 @@
     <Terminal Id="Compute" Value="COMPUTE" />
     <Terminal Id="Statistics" Value="STATISTICS" />
     <Terminal Id="Reference" Value="REFERENCE" />
+    <Terminal Id="Single" Value="SINGLE" />
+    <Terminal Id="HashKeys" Value="HASHKEYS" />
 
     <!-- Large objects -->
     <Terminal Id="LargeObject" Value="LOB" />
