@@ -157,13 +157,16 @@
           <NonTerminal Id="DropOther" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="DropMaterializedView" />
-        </Sequence>
-        <Sequence>
           <NonTerminal Id="DropContext" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="DropCluster" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="DropMaterializedViewLog" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="DropMaterializedView" />
         </Sequence>
         <!-- TODO: Drop other objects -->
       </Sequences>
@@ -295,6 +298,19 @@
           <Terminal Id="Including" />
           <Terminal Id="Tables" />
           <NonTerminal Id="CascadeConstraints" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DropMaterializedViewLog">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Materialized" />
+          <Terminal Id="View" />
+          <Terminal Id="Log" />
+          <Terminal Id="On" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -4365,7 +4381,206 @@
         <Sequence>
           <NonTerminal Id="CreateCluster" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="CreateMaterializedViewLog" />
+        </Sequence>
         <!-- TODO: Create other objects -->
+      </Sequences>
+    </Rule>
+
+    <!-- CREATE MATERIALIZED VIEW LOG -->
+    <Rule StartingNonTerminal="CreateMaterializedViewLog">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Materialized" />
+          <Terminal Id="View" />
+          <Terminal Id="Log" />
+          <Terminal Id="On" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="MaterializedViewLogProperties" IsOptional="true" />
+          <NonTerminal Id="ParallelClause" IsOptional="true" />
+          <NonTerminal Id="TablePartitioningClauses" IsOptional="true" />
+          <NonTerminal Id="MaterializedViewLogWithColumnsClause" IsOptional="true" />
+          <NonTerminal Id="MaterializedViewLogPurgeClause" IsOptional="true" />
+          <NonTerminal Id="MaterializedViewLogForRefreshClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="MaterializedViewLogProperties">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="MaterializedViewLogProperty" />
+          <NonTerminal Id="MaterializedViewLogProperties" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="MaterializedViewLogProperty">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="PhysicalAttributesClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="TableSpaceIdentifier" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="LoggingClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="CacheOrNoCache" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="MaterializedViewLogWithColumnsClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="With" />
+          <NonTerminal Id="MaterializedViewLogSpecialColumnList" />
+          <NonTerminal Id="MaterializedViewLogNewValuesClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="MaterializedViewLogSpecialColumnList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="MaterializedViewLogSpecialColumn" />
+          <NonTerminal Id="ParenthesisEnclosedIdentifierList" IsOptional="true" />
+          <NonTerminal Id="CommaChainedMaterializedViewLogSpecialColumn" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ParenthesisEnclosedIdentifierList" />
+          <NonTerminal Id="CommaChainedMaterializedViewLogSpecialColumn" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="MaterializedViewLogSpecialColumn">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Object" />
+          <Terminal Id="Id" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Primary" />
+          <Terminal Id="Key" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="RowIdPseudoColumn" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Sequence" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Commit" />
+          <Terminal Id="SystemChangeNumber" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="CommaChainedMaterializedViewLogSpecialColumn">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="MaterializedViewLogSpecialColumnList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="MaterializedViewLogNewValuesClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="IncludingOrExcluding" />
+          <Terminal Id="New" />
+          <Terminal Id="Values" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="IncludingOrExcluding">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Including" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Excluding" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="MaterializedViewLogPurgeClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Purge" />
+          <NonTerminal Id="MaterializedViewLogPurgeOption" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="MaterializedViewLogPurgeOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Immediate" />
+          <NonTerminal Id="SynchronousOrAsynchronous" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="StartWithDateTimeExpression" />
+          <NonTerminal Id="NextDateTimeExpressionOrRepeatInterval" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="StartWithDateTimeExpression" IsOptional="true" />
+          <NonTerminal Id="NextDateTimeExpressionOrRepeatInterval" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="NextDateTimeExpressionOrRepeatInterval">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Next" />
+          <NonTerminal Id="Expression" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Repeat" />
+          <NonTerminal Id="IntervalExpression" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="StartWithDateTimeExpression">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Start" />
+          <Terminal Id="With" />
+          <NonTerminal Id="Expression" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="MaterializedViewLogForRefreshClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="For" />
+          <NonTerminal Id="SynchronousRefreshUsingStagingLogOrFastRefresh" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SynchronousRefreshUsingStagingLogOrFastRefresh">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Fast" />
+          <Terminal Id="Refresh" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Synchronous" />
+          <Terminal Id="Refresh" />
+          <Terminal Id="Using" />
+          <Terminal Id="Identifier" />
+        </Sequence>
       </Sequences>
     </Rule>
     
@@ -7401,7 +7616,7 @@
     <Terminal Id="ColumnAlias" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
     <Terminal Id="ObjectAlias" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
     <Terminal Id="XmlAlias" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
-    <Terminal Id="StringLiteral" RegexValue="^[nN]?[qQ]?(&apos;([^&apos;]|(&apos;&apos;))*&apos;)$" />
+    <Terminal Id="StringLiteral" RegexValue="^[nN]?[qQ]?(&apos;(.|\n)*&apos;)$" />
     <Terminal Id="NumberLiteral" RegexValue="^((\d+\.?\d*)|(\d*\.?\d+))([eE][+-]?\d+)?[fFdD]?$" />
     <Terminal Id="IntegerLiteral" RegexValue="^\d+([eE]((\+?\d+)|(-0)))?$" />
 
@@ -7789,6 +8004,13 @@
     <Terminal Id="Reference" Value="REFERENCE" />
     <Terminal Id="Single" Value="SINGLE" />
     <Terminal Id="HashKeys" Value="HASHKEYS" />
+    <Terminal Id="Excluding" Value="EXCLUDING" />
+    <Terminal Id="Repeat" Value="REPEAT" />
+    <Terminal Id="Fast" Value="FAST" />
+    <Terminal Id="Synchronous" Value="SYNCHRONOUS" />
+    <Terminal Id="Asynchronous" Value="ASYNCHRONOUS" />
+    <Terminal Id="Refresh" Value="REFRESH" />
+    <Terminal Id="New" Value="NEW" />
 
     <!-- Large objects -->
     <Terminal Id="LargeObject" Value="LOB" />

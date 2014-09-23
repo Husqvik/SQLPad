@@ -167,12 +167,12 @@ namespace SqlPad.Oracle
 
 			var cursorAtLastTerminal = cursorPosition <= currentNode.SourcePosition.IndexEnd + 1;
 			var terminalToReplace = cursorAtLastTerminal ? currentNode : null;
-			var queryBlock = semanticModel.GetQueryBlock(currentNode);
+
 			var referenceContainers = new List<OracleReferenceContainer> { semanticModel.MainObjectReferenceContainer };
-			if (queryBlock != null)
+			if (completionType.CurrentQueryBlock != null)
 			{
-				referenceContainers.Add(queryBlock);
-				referenceContainers.AddRange(queryBlock.Columns);
+				referenceContainers.Add(completionType.CurrentQueryBlock);
+				referenceContainers.AddRange(completionType.CurrentQueryBlock.Columns);
 			}
 
 			var extraOffset = currentNode.SourcePosition.IndexStart + currentNode.SourcePosition.Length == cursorPosition && currentNode.Id != Terminals.LeftParenthesis ? 1 : 0;
@@ -225,10 +225,10 @@ namespace SqlPad.Oracle
 						var joinedTableReferenceNodes = joinClauseNode.GetPathFilterDescendants(n => !n.Id.In(NonTerminals.JoinClause, NonTerminals.NestedQuery), NonTerminals.TableReference).ToArray();
 						if (joinedTableReferenceNodes.Length == 1)
 						{
-							var joinedTableReference = queryBlock.ObjectReferences.SingleOrDefault(t => t.RootNode == joinedTableReferenceNodes[0]);
+							var joinedTableReference = completionType.CurrentQueryBlock.ObjectReferences.SingleOrDefault(t => t.RootNode == joinedTableReferenceNodes[0]);
 							if (joinedTableReference != null)
 							{
-								foreach (var parentTableReference in queryBlock.ObjectReferences
+								foreach (var parentTableReference in completionType.CurrentQueryBlock.ObjectReferences
 									.Where(t => t.RootNode.SourcePosition.IndexStart < joinedTableReference.RootNode.SourcePosition.IndexStart &&
 									            (t.Type != ReferenceType.InlineView || t.AliasNode != null)))
 								{
@@ -257,9 +257,12 @@ namespace SqlPad.Oracle
 
 			if (completionType.Column)
 			{
-				var inMainQueryBlockOrMainObjectReference = queryBlock == semanticModel.MainQueryBlock || (queryBlock == null && semanticModel.MainObjectReferenceContainer.MainObjectReference != null);
-				var sequencesAllowed = inMainQueryBlockOrMainObjectReference && (currentNode.IsWithinSelectClause() || !currentNode.IsWithinExpression() || currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.InsertValuesClause) != null);
-				completionItems = completionItems.Concat(GenerateSelectListItems(currentNode, referenceContainers, cursorPosition, oracleDatabaseModel, sequencesAllowed, forcedInvokation));
+				completionItems = completionItems.Concat(GenerateSelectListItems(currentNode, referenceContainers, cursorPosition, oracleDatabaseModel, completionType.Sequence, forcedInvokation));
+
+				var programReferences = referenceContainers.SelectMany(c => c.ProgramReferences);
+				var functionOverloads = ResolveFunctionOverloads(programReferences, currentNode, cursorPosition);
+				var specificFunctionParameterCodeCompletionItems = CodeCompletionSearchHelper.ResolveSpecificFunctionParameterCodeCompletionItems(currentNode, functionOverloads, oracleDatabaseModel);
+				completionItems = completionItems.Concat(specificFunctionParameterCodeCompletionItems);
 			}
 
 			if (completionType.DatabaseLink)
@@ -289,19 +292,12 @@ namespace SqlPad.Oracle
 			var prefixedColumnReference = currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference);
 			var columnIdentifierFollowing = currentNode.Id != Terminals.Identifier && prefixedColumnReference != null && prefixedColumnReference.GetDescendants(Terminals.Identifier).FirstOrDefault() != null;
 
-			if (!currentNode.IsWithinSelectClauseOrExpression() || columnIdentifierFollowing)
+			if (!currentNode.IsWithinSelectClauseOrExpression() || columnIdentifierFollowing || currentNode.Id.IsLiteral())
 			{
 				return EmptyCollection;
 			}
 
 			var programReferences = referenceContainers.SelectMany(c => c.ProgramReferences);
-
-			if (currentNode.Id.IsLiteral())
-			{
-				var functionOverloads = ResolveFunctionOverloads(programReferences, currentNode, cursorPosition);
-				return CodeCompletionSearchHelper.ResolveSpecificFunctionParameterCodeCompletionItems(currentNode, functionOverloads, databaseModel);
-			}
-			
 			var objectIdentifierNode = currentNode.ParentNode.Id == NonTerminals.ObjectPrefix ? currentNode.ParentNode.GetSingleDescendant(Terminals.ObjectIdentifier) : null;
 			if (objectIdentifierNode == null && prefixedColumnReference != null)
 			{

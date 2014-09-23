@@ -24,7 +24,7 @@ namespace SqlPad.Oracle
 		{
 			var completionItems = new List<ICodeCompletionItem>();
 			var specificFunctionOverloads = functionOverloads.Where(m => SpecificCodeCompletionFunctionIdentifiers.Contains(m.FunctionMetadata.Identifier)).ToArray();
-			if (specificFunctionOverloads.Length == 0 || currentNode.Id != Terminals.StringLiteral)
+			if (specificFunctionOverloads.Length == 0 || !currentNode.Id.In(Terminals.StringLiteral, Terminals.LeftParenthesis, Terminals.Comma))
 			{
 				return completionItems;
 			}
@@ -33,7 +33,7 @@ namespace SqlPad.Oracle
 				.FirstOrDefault(o => o.CurrentParameterIndex == 1 && o.FunctionMetadata.Identifier.In(OracleDatabaseModelBase.IdentifierBuiltInFunctionTrunc, OracleDatabaseModelBase.IdentifierBuiltInFunctionRound) &&
 				                      o.FunctionMetadata.Parameters[o.CurrentParameterIndex + 1].DataType == "VARCHAR2");
 
-			if (truncFunctionOverload != null && HasSingleStringLiteralParameter(truncFunctionOverload))
+			if (truncFunctionOverload != null && HasSingleStringLiteralParameterOrNoParameterToken(truncFunctionOverload))
 			{
 				completionItems.Add(BuildParameterCompletionItem(currentNode, "CC", "CC - One greater than the first two digits of a four-digit year"));
 				completionItems.Add(BuildParameterCompletionItem(currentNode, "YYYY", "YYYY - Year (rounds up on July 1)"));
@@ -56,7 +56,7 @@ namespace SqlPad.Oracle
 			var toCharFunctionOverload = specificFunctionOverloads
 				.FirstOrDefault(o => o.CurrentParameterIndex == 2 && o.FunctionMetadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInFunctionToChar &&
 				                      o.FunctionMetadata.Parameters[o.CurrentParameterIndex + 1].DataType == "VARCHAR2");
-			if (toCharFunctionOverload != null && HasSingleStringLiteralParameter(toCharFunctionOverload))
+			if (toCharFunctionOverload != null && HasSingleStringLiteralParameterOrNoParameterToken(toCharFunctionOverload))
 			{
 				const string itemText = "NLS_NUMERIC_CHARACTERS = '<decimal separator><group separator>' NLS_CURRENCY = 'currency_symbol' NLS_ISO_CURRENCY = <territory>";
 				const string itemDescription = "NLS_NUMERIC_CHARACTERS = '<decimal separator><group separator>' NLS_CURRENCY = 'currency_symbol' NLS_ISO_CURRENCY = <territory>";
@@ -66,16 +66,17 @@ namespace SqlPad.Oracle
 			var sysContextFunctionOverload = specificFunctionOverloads.FirstOrDefault(o => o.FunctionMetadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInFunctionSysContext);
 			if (sysContextFunctionOverload != null)
 			{
-				if (sysContextFunctionOverload.CurrentParameterIndex == 0 && sysContextFunctionOverload.FunctionMetadata.Parameters[sysContextFunctionOverload.CurrentParameterIndex + 1].DataType == "VARCHAR2" && HasSingleStringLiteralParameter(sysContextFunctionOverload))
+				if (sysContextFunctionOverload.CurrentParameterIndex == 0 && sysContextFunctionOverload.FunctionMetadata.Parameters[sysContextFunctionOverload.CurrentParameterIndex + 1].DataType == "VARCHAR2" &&
+				    HasSingleStringLiteralParameterOrNoParameterToken(sysContextFunctionOverload))
 				{
-					var namespaces = databaseModel.ContextData.Select(d => d.Key.ToSimpleString()).Concat(Enumerable.Repeat(ContextNamespaceUserEnvironment, 1)).Distinct();
+					var namespaces = databaseModel.ContextData.Select(d => d.Key).Concat(Enumerable.Repeat(ContextNamespaceUserEnvironment, 1)).Distinct();
 					var namespaceItems = namespaces.Select(n => BuildParameterCompletionItem(currentNode, n, n));
 					completionItems.AddRange(namespaceItems);
 				}
 				else if (sysContextFunctionOverload.CurrentParameterIndex == 1 && sysContextFunctionOverload.FunctionMetadata.Parameters[sysContextFunctionOverload.CurrentParameterIndex + 1].DataType == "VARCHAR2")
 				{
 					var firstParameter = sysContextFunctionOverload.ProgramReference.ParameterNodes[0];
-					var contextNamespace = HasSingleStringLiteralParameter(sysContextFunctionOverload, 0) ? firstParameter.ChildNodes[0].Token.Value.ToUpperInvariant() : null;
+					var contextNamespace = HasSingleStringLiteralParameterOrNoParameterToken(sysContextFunctionOverload, 0) ? firstParameter.ChildNodes[0].Token.Value.ToUpperInvariant() : null;
 					if (contextNamespace.ToSimpleString() == ContextNamespaceUserEnvironment)
 					{
 						completionItems.Add(BuildParameterCompletionItem(currentNode, "ACTION", "ACTION - Identifies the position in the module (application name) and is set through the DBMS_APPLICATION_INFO package or OCI. "));
@@ -149,7 +150,7 @@ namespace SqlPad.Oracle
 
 			var convertFunctionOverload = specificFunctionOverloads
 					.FirstOrDefault(o => (o.CurrentParameterIndex == 1 || o.CurrentParameterIndex == 2) && o.FunctionMetadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInFunctionConvert);
-			if (convertFunctionOverload != null && HasSingleStringLiteralParameter(convertFunctionOverload))
+			if (convertFunctionOverload != null && HasSingleStringLiteralParameterOrNoParameterToken(convertFunctionOverload))
 			{
 				completionItems.AddRange(databaseModel.CharacterSets.Select(cs => BuildParameterCompletionItem(currentNode, cs, cs)));
 			}
@@ -157,9 +158,14 @@ namespace SqlPad.Oracle
 			return completionItems;
 		}
 
-		private static bool HasSingleStringLiteralParameter(OracleCodeCompletionFunctionOverload functionOverload, int? parameterIndex = null)
+		private static bool HasSingleStringLiteralParameterOrNoParameterToken(OracleCodeCompletionFunctionOverload functionOverload, int? parameterIndex = null)
 		{
 			parameterIndex = parameterIndex ?? functionOverload.CurrentParameterIndex;
+			if (parameterIndex >= functionOverload.ProgramReference.ParameterNodes.Count)
+			{
+				return functionOverload.ProgramReference.ParameterNodes.Count == parameterIndex;
+			}
+
 			var firstParameter = functionOverload.ProgramReference.ParameterNodes[parameterIndex.Value];
 			return firstParameter.ChildNodes.Count == 1 && firstParameter.ChildNodes[0].Id == Terminals.StringLiteral;
 		}
@@ -171,7 +177,7 @@ namespace SqlPad.Oracle
 				{
 					Category = OracleCodeCompletionCategory.FunctionParameter,
 					Name = description,
-					StatementNode = node,
+					StatementNode = node.Id == Terminals.StringLiteral ? node : null,
 					Text = String.Format("'{0}'", parameterValue.ToOracleString())
 				};
 		}

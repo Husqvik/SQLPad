@@ -1874,6 +1874,16 @@ FROM DUAL";
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 		}
 
+		[Test(Description = @"")]
+		public void TestQuotedStringWithApostrophe()
+		{
+			const string statement1 = @"SELECT q'|quoted'string|' FROM DUAL";
+
+			var statements = Parser.Parse(statement1);
+			var statement = statements.Single().Validate();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+		}
+
 		public class IsRuleValid
 		{
 			[Test(Description = @"")]
@@ -2593,6 +2603,33 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 			}
 		}
 
+		public class DropMaterializedViewLog
+		{
+			[Test(Description = @"")]
+			public void TestDropMaterializedViewLog()
+			{
+				const string statementText = @"DROP MATERIALIZED VIEW LOG ON HUSQVIK.TEST_CLUSTER";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+				var terminals = statement.AllTerminals.ToArray();
+				terminals.Length.ShouldBe(8);
+
+				terminals[0].Id.ShouldBe(Terminals.Drop);
+				terminals[1].Id.ShouldBe(Terminals.Materialized);
+				terminals[2].Id.ShouldBe(Terminals.View);
+				terminals[3].Id.ShouldBe(Terminals.Log);
+				terminals[4].Id.ShouldBe(Terminals.On);
+				terminals[5].Id.ShouldBe(Terminals.SchemaIdentifier);
+				terminals[6].Id.ShouldBe(Terminals.Dot);
+				terminals[7].Id.ShouldBe(Terminals.ObjectIdentifier);
+			}
+		}
+
 		public class DropOther
 		{
 			[Test(Description = @"")]
@@ -3236,6 +3273,53 @@ PARTITION BY RANGE (AMOUNT_SOLD) (
 	PARTITION P3 VALUES LESS THAN (3000),
 	PARTITION PM VALUES LESS THAN (MAXVALUE)
 )";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			}
+		}
+
+		public class CreateMaterializedViewLog
+		{
+			[Test(Description = @"")]
+			public void CreateSimpleMaterializedViewLog()
+			{
+				const string statementText =
+@"CREATE MATERIALIZED VIEW LOG ON TEST_TABLE 
+WITH ROWID, SEQUENCE (LIST_PRICE, MIN_PRICE, CATEGORY_ID), PRIMARY KEY
+INCLUDING NEW VALUES";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			}
+
+			[Test(Description = @"")]
+			public void CreateMaterializedViewLogWithPurgeClause()
+			{
+				const string statementText =
+@"CREATE MATERIALIZED VIEW LOG ON TEST_TABLE
+PCTFREE 5
+TABLESPACE TABLESPACE_01
+STORAGE (INITIAL 10K)
+PURGE REPEAT INTERVAL '5' DAY";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			}
+
+			[Test(Description = @"")]
+			public void CreateMaterializedViewLogForSynchronousRefreshClause()
+			{
+				const string statementText = @"CREATE MATERIALIZED VIEW LOG ON TEST_TABLE FOR SYNCHRONOUS REFRESH USING TEST_STAGING_LOG";
 
 				var result = Parser.Parse(statementText);
 

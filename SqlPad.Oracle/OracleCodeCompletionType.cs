@@ -52,6 +52,8 @@ namespace SqlPad.Oracle
 		
 		public OracleStatementSemanticModel SemanticModel { get; private set; }
 
+		public OracleQueryBlock CurrentQueryBlock { get; private set; }
+
 		public ICollection<string> TerminalCandidates { get; private set; }
 
 		private bool Any
@@ -92,7 +94,7 @@ namespace SqlPad.Oracle
 			{
 				var unparsedTextBetweenTokenAndCursor = statementText.Substring(nearestTerminal.SourcePosition.IndexEnd + 1, cursorPosition - nearestTerminal.SourcePosition.IndexEnd - 1).Trim();
 				var extraUnparsedTokens = unparsedTextBetweenTokenAndCursor.Split(Separators, StringSplitOptions.RemoveEmptyEntries);
-				if (extraUnparsedTokens.Length > 1)
+				if (extraUnparsedTokens.Length > 0)
 				{
 					InUnparsedData = true;
 					return;
@@ -146,7 +148,9 @@ namespace SqlPad.Oracle
 
 			PackageFunction = !String.IsNullOrEmpty(ReferenceIdentifier.ObjectIdentifierOriginalValue) && TerminalCandidates.Contains(Terminals.Identifier);
 
-			var inInsertStatement = Statement.RootNode.FirstTerminalNode.Id == Terminals.Insert;
+			CurrentQueryBlock = SemanticModel.GetQueryBlock(nearestTerminal);
+			var inMainQueryBlockOrMainObjectReference = CurrentQueryBlock == SemanticModel.MainQueryBlock || (CurrentQueryBlock == null && SemanticModel.MainObjectReferenceContainer.MainObjectReference != null);
+			Sequence = inMainQueryBlockOrMainObjectReference && (nearestTerminal.IsWithinSelectClause() || !nearestTerminal.IsWithinExpression() || nearestTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.InsertValuesClause) != null);
 		}
 
 		private void AnalyzeObjectReferencePrefixes(StatementGrammarNode effectiveTerminal)

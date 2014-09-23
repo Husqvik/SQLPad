@@ -784,10 +784,28 @@ se";
 			items.Count.ShouldBe(16);
 			items[0].Name.ShouldBe("CC - One greater than the first two digits of a four-digit year");
 			items[0].Text.ShouldBe("'CC'");
+			items[0].StatementNode.ShouldNotBe(null);
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
 			items[15].Name.ShouldBe("YYYY - Year (rounds up on July 1)");
 			items[15].Text.ShouldBe("'YYYY'");
 			items[15].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+			items[15].StatementNode.ShouldNotBe(null);
+		}
+
+		[Test(Description = @"")]
+		public void TestTruncSpecialParameterCompletionWithNoParameterToken()
+		{
+			const string statement = @"SELECT TRUNC(SYSDATE, ) FROM DUAL";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 22).ToList();
+			items.Count.ShouldBe(16);
+			items[0].Name.ShouldBe("CC - One greater than the first two digits of a four-digit year");
+			items[0].Text.ShouldBe("'CC'");
+			items[0].StatementNode.ShouldBe(null);
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+			items[15].Name.ShouldBe("YYYY - Year (rounds up on July 1)");
+			items[15].Text.ShouldBe("'YYYY'");
+			items[15].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+			items[15].StatementNode.ShouldBe(null);
 		}
 
 		[Test(Description = @"")]
@@ -829,8 +847,8 @@ se";
 			const string statement = @"SELECT SYS_CONTEXT('', '') FROM DUAL";
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 20).ToList();
 			items.Count.ShouldBe(4);
-			items[0].Name.ShouldBe("Special'Context");
-			items[0].Text.ShouldBe("'Special''Context'");
+			items[0].Name.ShouldBe("SPECIAL'CONTEXT");
+			items[0].Text.ShouldBe("'SPECIAL''CONTEXT'");
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
 			items[1].Name.ShouldBe("TEST_CONTEXT_1");
 			items[1].Text.ShouldBe("'TEST_CONTEXT_1'");
@@ -843,14 +861,14 @@ se";
 			items[3].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
 		}
 
-		[Test(Description = @""), Ignore]
+		[Test(Description = @"")]
 		public void TestSysContextUserContextNamespaceCompletionWithEmptyParameterList()
 		{
 			const string statement = @"SELECT SYS_CONTEXT() FROM DUAL";
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 19).ToList();
 			items.Count.ShouldBe(4);
-			items[0].Name.ShouldBe("Special'Context");
-			items[0].Text.ShouldBe("'Special''Context'");
+			items[0].Name.ShouldBe("SPECIAL'CONTEXT");
+			items[0].Text.ShouldBe("'SPECIAL''CONTEXT'");
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
 			items[1].Name.ShouldBe("TEST_CONTEXT_1");
 			items[1].Text.ShouldBe("'TEST_CONTEXT_1'");
@@ -866,7 +884,7 @@ se";
 		[Test(Description = @"")]
 		public void TestSysContextUserContextAttributeCompletion()
 		{
-			const string statement = @"SELECT SYS_CONTEXT('TEST_CONTEXT_1', '') FROM DUAL";
+			const string statement = @"SELECT SYS_CONTEXT('TEST_context_1', '') FROM DUAL";
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 38).ToList();
 			items.Count.ShouldBe(3);
 			items[0].Name.ShouldBe("Special'Attribute'4");
@@ -878,6 +896,17 @@ se";
 			items[2].Name.ShouldBe("TestAttribute3");
 			items[2].Text.ShouldBe("'TestAttribute3'");
 			items[2].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+		}
+
+		[Test(Description = @"")]
+		public void TestSysContextUserContextAttributeCompletionWithQuotedIdentifierNamespace()
+		{
+			const string statement = @"SELECT SYS_CONTEXT(q'|Special'Context|', ) FROM DUAL";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 41).ToList();
+			items.Count.ShouldBe(1);
+			items[0].Name.ShouldBe("Special'Attribute'5");
+			items[0].Text.ShouldBe("'Special''Attribute''5'");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
 		}
 
 		[Test(Description = @"")]
@@ -1053,6 +1082,14 @@ se";
 			items[0].Text.ShouldBe("DBMS_RANDOM.");
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.Package);
 			items[0].CaretOffset.ShouldBe(0);
+		}
+		
+		[Test(Description = @"")]
+		public void TestIdentifierItemsNotSuggestedWhenInStringLiteral()
+		{
+			const string statement = @"SELECT 'string FROM DUAL";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 13, false).ToList();
+			items.Count.ShouldBe(0);
 		}
 
 		public class OracleCodeCompletionTypeTest
