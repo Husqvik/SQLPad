@@ -15,6 +15,9 @@
     <StartSymbol Id="CreateStatement" />
     <StartSymbol Id="ExplainPlanStatement" />
     <StartSymbol Id="PurgeStatement" />
+    <StartSymbol Id="LockTableStatement" />
+    <StartSymbol Id="RenameStatement" />
+    <StartSymbol Id="CommentStatement" />
     <!--<StartSymbol Id="AlterStatement" />
     <StartSymbol Id="RenameStatement" />-->
   </StartSymbols>
@@ -25,6 +28,154 @@
   </Terminators>
     
   <Rules>
+    <!-- COMMENT statement -->
+    <Rule StartingNonTerminal="CommentStatement">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comment" />
+          <Terminal Id="On" />
+          <NonTerminal Id="ObjectCommentOption" />
+          <Terminal Id="Is" />
+          <Terminal Id="StringLiteral" />
+          <Terminal Id="Semicolon" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ObjectCommentOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Audit" />
+          <Terminal Id="Policy" />
+          <Terminal Id="Identifier" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Column" />
+          <NonTerminal Id="Prefix" />
+          <Terminal Id="Identifier" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Edition" />
+          <Terminal Id="Identifier" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="IndexType" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Materialized" />
+          <Terminal Id="View" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Mining" />
+          <Terminal Id="Model" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Operator" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Table" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <!-- RENAME statement -->
+    <Rule StartingNonTerminal="RenameStatement">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Rename" />
+          <Terminal Id="ObjectIdentifier" />
+          <Terminal Id="To" />
+          <Terminal Id="ObjectIdentifier" />
+          <Terminal Id="Semicolon" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <!-- LOCK TABLE statement -->
+    <Rule StartingNonTerminal="LockTableStatement">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Lock" />
+          <Terminal Id="Table" />
+          <NonTerminal Id="LockTableList" />
+          <Terminal Id="In" />
+          <NonTerminal Id="LockMode" />
+          <Terminal Id="Mode" />
+          <NonTerminal Id="ForUpdateWaitClause" IsOptional="true" />
+          <Terminal Id="Semicolon" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="LockMode">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Row" />
+          <NonTerminal Id="ShareOrExclusive" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Share" />
+          <NonTerminal Id="UpdateOrRowExclusive" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Exclusive" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="UpdateOrRowExclusive">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Update" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Row" />
+          <Terminal Id="Exclusive" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ShareOrExclusive">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Share" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Exclusive" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="LockTableList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="PartitionOrDatabaseLink" IsOptional="true" />
+          <NonTerminal Id="CommaChainedLockTableList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="CommaChainedLockTableList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="LockTableList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
     <!-- PURGE statement -->
     <Rule StartingNonTerminal="PurgeStatement">
       <Sequences>
@@ -8011,6 +8162,10 @@
     <Terminal Id="Asynchronous" Value="ASYNCHRONOUS" />
     <Terminal Id="Refresh" Value="REFRESH" />
     <Terminal Id="New" Value="NEW" />
+    <Terminal Id="Audit" Value="AUDIT" IsKeyword="true" />
+    <Terminal Id="IndexType" Value="INDEXTYPE" />
+    <Terminal Id="Mining" Value="MINING" />
+    <Terminal Id="Operator" Value="OPERATOR" />
 
     <!-- Large objects -->
     <Terminal Id="LargeObject" Value="LOB" />

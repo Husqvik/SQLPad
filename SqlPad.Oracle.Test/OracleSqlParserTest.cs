@@ -2129,7 +2129,7 @@ FROM DUAL";
 			{
 				var terminalCandidates = Parser.GetTerminalCandidates(null).OrderBy(t => t).ToArray();
 
-				var expectedTerminals = new[] { Terminals.Commit, Terminals.Create, Terminals.Delete, Terminals.Drop, Terminals.Explain, Terminals.Insert, Terminals.LeftParenthesis, Terminals.Merge, Terminals.Purge, Terminals.Rollback, Terminals.Savepoint, Terminals.Select, Terminals.Set, Terminals.Update, Terminals.With };
+				var expectedTerminals = new[] { Terminals.Comment, Terminals.Commit, Terminals.Create, Terminals.Delete, Terminals.Drop, Terminals.Explain, Terminals.Insert, Terminals.LeftParenthesis, Terminals.Lock, Terminals.Merge, Terminals.Purge, Terminals.Rename, Terminals.Rollback, Terminals.Savepoint, Terminals.Select, Terminals.Set, Terminals.Update, Terminals.With };
 				terminalCandidates.ShouldBe(expectedTerminals);
 			}
 
@@ -2712,6 +2712,119 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 				terminals[0].Id.ShouldBe(Terminals.Drop);
 				terminals[1].Id.ShouldBe(Terminals.Context);
 				terminals[2].Id.ShouldBe(Terminals.ObjectIdentifier);
+			}
+		}
+
+		public class LockTable
+		{
+			[Test(Description = @"")]
+			public void TestLockTable()
+			{
+				const string statementText = @"LOCK TABLE HUSQVIK.TEST_TABLE1@REMOTE, TEST_TABLE2 PARTITION (P1) IN EXCLUSIVE MODE WAIT 6";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+				var terminals = statement.AllTerminals.ToArray();
+				terminals.Length.ShouldBe(18);
+
+				terminals[0].Id.ShouldBe(Terminals.Lock);
+				terminals[1].Id.ShouldBe(Terminals.Table);
+				terminals[2].Id.ShouldBe(Terminals.SchemaIdentifier);
+				terminals[3].Id.ShouldBe(Terminals.Dot);
+				terminals[4].Id.ShouldBe(Terminals.ObjectIdentifier);
+				terminals[5].Id.ShouldBe(Terminals.AtCharacter);
+				terminals[6].Id.ShouldBe(Terminals.DatabaseLinkIdentifier);
+				terminals[7].Id.ShouldBe(Terminals.Comma);
+				terminals[8].Id.ShouldBe(Terminals.ObjectIdentifier);
+				terminals[9].Id.ShouldBe(Terminals.Partition);
+				terminals[10].Id.ShouldBe(Terminals.LeftParenthesis);
+				terminals[11].Id.ShouldBe(Terminals.ObjectIdentifier);
+				terminals[12].Id.ShouldBe(Terminals.RightParenthesis);
+				terminals[13].Id.ShouldBe(Terminals.In);
+				terminals[14].Id.ShouldBe(Terminals.Exclusive);
+				terminals[15].Id.ShouldBe(Terminals.Mode);
+				terminals[16].Id.ShouldBe(Terminals.Wait);
+				terminals[17].Id.ShouldBe(Terminals.IntegerLiteral);
+			}
+		}
+
+		public class RenameSchemaObject
+		{
+			[Test(Description = @"")]
+			public void TestLockTable()
+			{
+				const string statementText = @"RENAME TEST_TABLE1 TO TEST_TABLE2";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+				var terminals = statement.AllTerminals.ToArray();
+				terminals.Length.ShouldBe(4);
+
+				terminals[0].Id.ShouldBe(Terminals.Rename);
+				terminals[1].Id.ShouldBe(Terminals.ObjectIdentifier);
+				terminals[2].Id.ShouldBe(Terminals.To);
+				terminals[3].Id.ShouldBe(Terminals.ObjectIdentifier);
+			}
+		}
+
+		public class Comment
+		{
+			[Test(Description = @"")]
+			public void TestCommentOnTable()
+			{
+				const string statementText = @"COMMENT ON TABLE HUSQVIK.TEST_TABLE IS 'Test comment'";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+				var terminals = statement.AllTerminals.ToArray();
+				terminals.Length.ShouldBe(8);
+
+				terminals[0].Id.ShouldBe(Terminals.Comment);
+				terminals[1].Id.ShouldBe(Terminals.On);
+				terminals[2].Id.ShouldBe(Terminals.Table);
+				terminals[3].Id.ShouldBe(Terminals.SchemaIdentifier);
+				terminals[4].Id.ShouldBe(Terminals.Dot);
+				terminals[5].Id.ShouldBe(Terminals.ObjectIdentifier);
+				terminals[6].Id.ShouldBe(Terminals.Is);
+				terminals[7].Id.ShouldBe(Terminals.StringLiteral);
+			}
+
+			[Test(Description = @"")]
+			public void TestCommentOnColumn()
+			{
+				const string statementText = @"COMMENT ON COLUMN HUSQVIK.TEST_TABLE.COLUMN1 IS 'Test column comment'";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+				var terminals = statement.AllTerminals.ToArray();
+				terminals.Length.ShouldBe(10);
+
+				terminals[0].Id.ShouldBe(Terminals.Comment);
+				terminals[1].Id.ShouldBe(Terminals.On);
+				terminals[2].Id.ShouldBe(Terminals.Column);
+				terminals[3].Id.ShouldBe(Terminals.SchemaIdentifier);
+				terminals[4].Id.ShouldBe(Terminals.Dot);
+				terminals[5].Id.ShouldBe(Terminals.ObjectIdentifier);
+				terminals[6].Id.ShouldBe(Terminals.Dot);
+				terminals[7].Id.ShouldBe(Terminals.Identifier);
+				terminals[8].Id.ShouldBe(Terminals.Is);
+				terminals[9].Id.ShouldBe(Terminals.StringLiteral);
 			}
 		}
 

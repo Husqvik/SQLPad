@@ -158,7 +158,7 @@ namespace SqlPad.Oracle
 			if (!value.IsNull)
 			{
 				var absValue = OracleDecimal.Abs(value);
-				if (absValue < 1e-28m)
+				if (absValue < 1e-28m && absValue != 0)
 				{
 					value.Format = "FM0D0999999999999999999999999999999999999999EEEE";
 				}
