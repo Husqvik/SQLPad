@@ -44,6 +44,7 @@ namespace SqlPad.Oracle
 		private static readonly Dictionary<string, OracleDatabaseModel> DatabaseModels = new Dictionary<string, OracleDatabaseModel>();
 		private static readonly HashSet<string> ActiveDataModelRefresh = new HashSet<string>();
 		private static readonly Dictionary<string, List<RefreshModel>> WaitingDataModelRefresh = new Dictionary<string, List<RefreshModel>>();
+		private string _oracleVersion;
 
 		private OracleDatabaseModel(ConnectionStringSettings connectionString)
 		{
@@ -128,6 +129,8 @@ namespace SqlPad.Oracle
 		public override ICollection<string> CharacterSets { get { return _dataDictionary.CharacterSets; } }
 
 		public override IDictionary<int, string> StatisticsKeys { get { return _dataDictionary.StatisticsKeys; } }
+
+		public override int VersionMajor { get { return Convert.ToInt32(_oracleVersion.Split('.')[0]); } }
 
 		public override void RefreshIfNeeded()
 		{
@@ -628,6 +631,11 @@ namespace SqlPad.Oracle
 					command.BindByName = true;
 
 					connection.Open();
+
+					if (_oracleVersion == null)
+					{
+						_oracleVersion = connection.ServerVersion;
+					}
 
 					connection.ModuleName = "SQLPad database model";
 					connection.ActionName = "Fetch data dictionary metadata";

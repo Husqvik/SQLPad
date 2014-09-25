@@ -115,7 +115,11 @@ namespace SqlPad.Oracle
 
 		public IEnumerable<KeyValuePair<int, string>> GetStatisticsKeys()
 		{
-			return _databaseModel.ExecuteReader(DatabaseCommands.GetStatisticsKeys, MapStatisticsKey);
+			var command = _databaseModel.VersionMajor == OracleDatabaseModelBase.VersionMajorOracle12c
+				? DatabaseCommands.GetStatisticsKeys
+				: DatabaseCommands.GetStatisticsKeysOracle11;
+			
+			return _databaseModel.ExecuteReader(command, MapStatisticsKey);
 		}
 
 		public IDictionary<OracleObjectIdentifier, OracleDatabaseLink> GetDatabaseLinks()

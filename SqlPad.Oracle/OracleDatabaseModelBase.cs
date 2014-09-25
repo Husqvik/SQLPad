@@ -14,6 +14,7 @@ namespace SqlPad.Oracle
 		public const string SchemaSys = "\"SYS\"";
 		public const string SchemaSystem = "\"SYSTEM\"";
 		public const string PackageBuiltInFunction = "\"STANDARD\"";
+		public const int VersionMajorOracle12c = 12;
 
 		internal static OracleFunctionIdentifier IdentifierBuiltInFunctionRound = OracleFunctionIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "ROUND");
 		internal static OracleFunctionIdentifier IdentifierBuiltInFunctionSysContext = OracleFunctionIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "SYS_CONTEXT");
@@ -78,6 +79,8 @@ namespace SqlPad.Oracle
 		public abstract ICollection<string> CharacterSets { get; }
 
 		public abstract IDictionary<int, string> StatisticsKeys { get; }
+
+		public abstract int VersionMajor { get; }
 
 		public abstract Task<ICollection<SessionExecutionStatisticsRecord>> GetExecutionStatisticsAsync(CancellationToken cancellationToken);
 

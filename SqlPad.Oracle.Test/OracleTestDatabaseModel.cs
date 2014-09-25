@@ -729,6 +729,8 @@ Note
 
 		public override IDictionary<int, string> StatisticsKeys { get { return StatisticsKeysInternal; } }
 
+		public override int VersionMajor { get { return 12; } }
+
 		public override ILookup<string, string> ContextData
 		{
 			get { return ContextDataInternal; }
