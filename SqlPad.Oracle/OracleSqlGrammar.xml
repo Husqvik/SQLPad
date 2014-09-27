@@ -5330,11 +5330,19 @@
         <Sequence>
           <Terminal Id="VariableElementArray" />
           <Terminal Id="Identifier" />
+          <NonTerminal Id="StoreAsBasicFileOrSecureFile" />
+          <Terminal Id="LargeObject" />
+          <Terminal Id="Identifier" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="StoreAsBasicFileOrSecureFile">
+      <Sequences>
+        <Sequence>
           <Terminal Id="Store" />
           <Terminal Id="As" />
           <NonTerminal Id="BasicFileOrSecureFile" IsOptional="true" />
-          <Terminal Id="LargeObject" />
-          <Terminal Id="Identifier" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -5727,7 +5735,20 @@
           <!--<NonTerminal Id="TableCompressionOrPrefixCompression" IsOptional="true" />
           <NonTerminal Id="InMemoryClause" IsOptional="true" />-->
           <NonTerminal Id="IndexOrganizedOverflowClause" IsOptional="true" />
-          <!--<NonTerminal Id="NestedTableColumnPropertiesOrVariableElementArrayColumnPropertiesOrLargeObjectStorageClauseList" IsOptional="true" />-->
+          <NonTerminal Id="NestedTableColumnPropertiesOrVariableElementArrayColumnPropertiesOrLargeObjectStorageClauseList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="NestedTableColumnPropertiesOrVariableElementArrayColumnPropertiesOrLargeObjectStorageClauseList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="VariableElementArrayColumnPropertiesOrLargeObjectStorageClause" />
+          <NonTerminal Id="NestedTableColumnPropertiesOrVariableElementArrayColumnPropertiesOrLargeObjectStorageClauseList" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="NestedTableColumnProperties" />
+          <NonTerminal Id="NestedTableColumnPropertiesOrVariableElementArrayColumnPropertiesOrLargeObjectStorageClauseList" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -5801,11 +5822,118 @@
         </Sequence>
         <Sequence>
           <NonTerminal Id="VariableElementArrayColumnPropertiesOrLargeObjectStorageClause" />
-          <!--<NonTerminal Id="ParenthesisEnclosedLargeObjectPartitionClause" IsOptional="true" />-->
+          <NonTerminal Id="ParenthesisEnclosedLargeObjectPartitionStorageList" IsOptional="true" />
         </Sequence>
         <!--<Sequence>
           <NonTerminal Id="XmlTypeColumnProperty" />
         </Sequence>-->
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ParenthesisEnclosedLargeObjectPartitionStorageList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="LargeObjectPartitionStorageList" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="LargeObjectPartitionStorageList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Partition" />
+          <Terminal Id="Identifier" />
+          <NonTerminal Id="LargeObjectStorageClauseOrVariableElementArrayProperties" />
+          <NonTerminal Id="ParenthesisEnclosedLargeObjectSubpartitionStorageClause" IsOptional="true" />
+          <NonTerminal Id="CommaChainedLargeObjectPartitionStorageList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="CommaChainedLargeObjectPartitionStorageList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="LargeObjectPartitionStorageList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="LargeObjectStorageClauseOrVariableElementArrayProperties">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="VariableElementArrayColumnPropertiesOrLargeObjectStorageClause" />
+          <NonTerminal Id="LargeObjectStorageClauseOrVariableElementArrayProperties" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ParenthesisEnclosedLargeObjectSubpartitionStorageClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <Terminal Id="Subpartition" />
+          <Terminal Id="Identifier" />
+          <NonTerminal Id="VariableElementArrayColumnPropertiesOrLargeObjectPartitioningStorageList" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="VariableElementArrayColumnPropertiesOrLargeObjectPartitioningStorageList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="VariableElementArrayColumnPropertiesOrLargeObjectPartitioningStorage" />
+          <NonTerminal Id="VariableElementArrayColumnPropertiesOrLargeObjectPartitioningStorageList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="VariableElementArrayColumnPropertiesOrLargeObjectPartitioningStorage">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="VariableElementArrayColumnProperties" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="LargeObjectPartitioningStorage" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="LargeObjectPartitioningStorage">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LargeObject" />
+          <Terminal Id="LeftParenthesis" />
+          <Terminal Id="Identifier" />
+          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="StoreAsBasicFileOrSecureFile" />
+          <NonTerminal Id="LargeObjectSegmentNameOrParenthesisEnclosedTableSpaceIdentifier" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="LargeObjectSegmentNameOrParenthesisEnclosedTableSpaceIdentifier">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Identifier" />
+          <NonTerminal Id="ParenthesisEnclosedTableSpaceIdentifier" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ParenthesisEnclosedTableSpaceIdentifier" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ParenthesisEnclosedTableSpaceIdentifier">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="TableSpaceIdentifier" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
       </Sequences>
     </Rule>
 
@@ -6001,9 +6129,7 @@
     <Rule StartingNonTerminal="VariableElementArrayStorageClause">
       <Sequences>
         <Sequence>
-          <Terminal Id="Store" />
-          <Terminal Id="As" />
-          <NonTerminal Id="BasicFileOrSecureFile" IsOptional="true" />
+          <NonTerminal Id="StoreAsBasicFileOrSecureFile" />
           <Terminal Id="LargeObject" />
           <NonTerminal Id="LargeObjectSegmentNameOrParenthesisEnclosedLargeObjectStorageParameters" />
         </Sequence>
