@@ -5323,10 +5323,10 @@
         </Sequence>
         <!--<Sequence>
           <NonTerminal Id="InMemoryClause" />
-        </Sequence>
-        <Sequence>
-          <NonTerminal Id="LargeObjectPartitioningClause" />
         </Sequence>-->
+        <Sequence>
+          <NonTerminal Id="LargeObjectPartitioningStorage" />
+        </Sequence>
         <Sequence>
           <Terminal Id="VariableElementArray" />
           <Terminal Id="Identifier" />
@@ -5729,13 +5729,46 @@
     <Rule StartingNonTerminal="TablePartitionDescription">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="SegmentCreationClause" IsOptional="true" />
-          <NonTerminal Id="IndexingClause" IsOptional="true" />
-          <NonTerminal Id="SegmentAttributesClause" IsOptional="true" />
-          <!--<NonTerminal Id="TableCompressionOrPrefixCompression" IsOptional="true" />
-          <NonTerminal Id="InMemoryClause" IsOptional="true" />-->
-          <NonTerminal Id="IndexOrganizedOverflowClause" IsOptional="true" />
-          <NonTerminal Id="NestedTableColumnPropertiesOrVariableElementArrayColumnPropertiesOrLargeObjectStorageClauseList" IsOptional="true" />
+          <NonTerminal Id="TablePartitionDescriptionOption" IsOptional="true" />
+          <NonTerminal Id="TablePartitionDescription" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="TablePartitionDescriptionOption">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="SegmentCreationClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="IndexingClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="SegmentAttributesClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="TableCompressionOrPrefixCompression" />
+        </Sequence>
+        <!--<Sequence>
+          <NonTerminal Id="InMemoryClause" />
+        </Sequence>-->
+        <Sequence>
+          <NonTerminal Id="IndexOrganizedOverflowClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="NestedTableColumnPropertiesOrVariableElementArrayColumnPropertiesOrLargeObjectStorageClauseList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="TableCompressionOrPrefixCompression">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="TableCompression" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Compress" />
+          <Terminal Id="IntegerLiteral" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -7418,7 +7451,7 @@
         <Sequence>
           <NonTerminal Id="TableCompression" />
           <!--<NonTerminal Id="InMemoryTableClause" IsOptional="true" />
-          <NonTerminal Id="ILMClause" IsOptional="true" />--><!-- Integrated Lifecycle Management -->
+          <NonTerminal Id="IntegratedLifecycleManagementClause" IsOptional="true" />-->
         </Sequence>
       </Sequences>
     </Rule>

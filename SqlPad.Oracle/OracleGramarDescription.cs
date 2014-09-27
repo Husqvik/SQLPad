@@ -568,10 +568,12 @@ namespace SqlPad.Oracle
 			public const string TableCollectionExpression = "TableCollectionExpression";
 			public const string TableCollectionInnerExpression = "TableCollectionInnerExpression";
 			public const string TableCompression = "TableCompression";
+			public const string TableCompressionOrPrefixCompression = "TableCompressionOrPrefixCompression";
 			public const string TableIndexClause = "TableIndexClause";
 			public const string TableIndexExpressionList = "TableIndexExpressionList";
 			public const string TableIndexOrBitmapJoinIndexClause = "TableIndexOrBitmapJoinIndexClause";
 			public const string TablePartitionDescription = "TablePartitionDescription";
+			public const string TablePartitionDescriptionOption = "TablePartitionDescriptionOption";
 			public const string TablePartitioningClauses = "TablePartitioningClauses";
 			public const string TablePartitioningType = "TablePartitioningType";
 			public const string TableProperties = "TableProperties";
