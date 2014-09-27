@@ -535,5 +535,19 @@ FROM
 			redundantTerminals[6].SourcePosition.IndexStart.ShouldBe(115);
 			redundantTerminals[7].Id.ShouldBe(Terminals.Dot);
 		}
+
+		[Test(Description = @"")]
+		public void TestFunctionReferenceValidityInSetColumnValueClause()
+		{
+			const string query1 = @"UPDATE SELECTION SET NAME = SQLPAD_FUNCTION() WHERE SELECTION_ID = 0";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.MainObjectReferenceContainer.MainObjectReference.ShouldNotBe(null);
+			semanticModel.MainObjectReferenceContainer.ProgramReferences.Count.ShouldBe(1);
+			var functionReference = semanticModel.MainObjectReferenceContainer.ProgramReferences.Single();
+			functionReference.Metadata.ShouldNotBe(null);
+		}
 	}
 }

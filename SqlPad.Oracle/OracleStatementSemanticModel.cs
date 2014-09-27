@@ -360,6 +360,7 @@ namespace SqlPad.Oracle
 
 			if (MainObjectReferenceContainer.MainObjectReference != null)
 			{
+				ResolveFunctionReferences(MainObjectReferenceContainer.ProgramReferences);
 				ResolveColumnObjectReferences(MainObjectReferenceContainer.ColumnReferences, new [] { MainObjectReferenceContainer.MainObjectReference }, new OracleDataObjectReference[0]);
 			}
 		}
