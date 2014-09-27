@@ -3394,6 +3394,18 @@ PARTITION BY RANGE (CREDIT_LIMIT)
 				var statement = result.Single();
 				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 			}
+
+			[Test(Description = @"")]
+			public void TestEnableDisableConstraintdClause()
+			{
+				const string statementText = @"CREATE TABLE TT (ID NUMBER CONSTRAINT PK_TT PRIMARY KEY, VAL NUMBER CONSTRAINT UQ_TT_VAL UNIQUE) ENABLE NOVALIDATE PRIMARY KEY DISABLE NOVALIDATE UNIQUE (VAL) CASCADE DROP INDEX";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			}
 		}
 
 		public class CreateIndex

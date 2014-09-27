@@ -5088,10 +5088,70 @@
           <NonTerminal Id="ResultCacheClause" IsOptional="true" />
           <NonTerminal Id="ParallelClause" IsOptional="true" />
           <NonTerminal Id="RowDependenciesOrNoRowDependencies" IsOptional="true" />
-          <!--<NonTerminal Id="EnableDisableClauseList" IsOptional="true" />-->
+          <NonTerminal Id="EnableDisableClauseList" IsOptional="true" />
           <NonTerminal Id="RowMovementClause" IsOptional="true" />
           <NonTerminal Id="FlashbackArchiveClause" IsOptional="true" />
           <NonTerminal Id="RowArchival" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="EnableDisableClauseList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="EnableDisableClause" />
+          <NonTerminal Id="EnableDisableClauseList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="EnableDisableClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="EnableOrDisable" />
+          <NonTerminal Id="ValidateOrNoValidate" IsOptional="true" />
+          <NonTerminal Id="EnableDisableConstraintType" />
+          <NonTerminal Id="UsingIndexClause" IsOptional="true" />
+          <NonTerminal Id="ConstraintStateExceptionClause" IsOptional="true" />
+          <Terminal Id="Cascade" IsOptional="true" />
+          <NonTerminal Id="KeepOrDropIndex" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="KeepOrDropIndex">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="KeepOrDrop" />
+          <Terminal Id="Index" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="KeepOrDrop">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Keep" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Drop" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="EnableDisableConstraintType">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Unique" />
+          <NonTerminal Id="ParenthesisEnclosedIdentifierList" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Primary" />
+          <Terminal Id="Key" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Constraint" />
+          <Terminal Id="Identifier" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -8436,6 +8496,7 @@
     <Terminal Id="Template" Value="TEMPLATE" />
     <Terminal Id="DirectLoad" Value="DIRECT_LOAD" />
     <Terminal Id="Operations" Value="OPERATIONS" />
+    <Terminal Id="Exceptions" Value="EXCEPTIONS" />
     
     <!-- Comment -->
     <Terminal Id="Audit" Value="AUDIT" IsKeyword="true" />
