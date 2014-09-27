@@ -4850,7 +4850,7 @@
           <Terminal Id="View" />
           <NonTerminal Id="SchemaPrefix" IsOptional="true" />
           <Terminal Id="ObjectIdentifier" />
-          <NonTerminal Id="CreateViewTypeClause" />
+          <NonTerminal Id="CreateViewTypeClause" IsOptional="true" />
           <NonTerminal Id="ViewBequeath" IsOptional="true" />
           <NonTerminal Id="AsSubquery" />
         </Sequence>
@@ -6260,6 +6260,7 @@
         <Sequence>
           <Terminal Id="As" />
           <NonTerminal Id="NestedQuery" />
+          <NonTerminal Id="SubQueryRestrictionClause" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>

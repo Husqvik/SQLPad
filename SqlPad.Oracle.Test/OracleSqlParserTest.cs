@@ -3440,6 +3440,18 @@ SELECT SELECTION_ID, NAME, PROJECT_ID, RESPONDENTBUCKET_ID, SYS_GUID() GUID FROM
 				var statement = result.Single();
 				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 			}
+
+			[Test(Description = @"")]
+			public void TestCreateViewWithoutColumnList()
+			{
+				const string statementText = @"CREATE VIEW TEST_VIEW AS SELECT * FROM DUAL WITH READ ONLY";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			}
 		}
 
 		public class CreateCluster
