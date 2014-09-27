@@ -5117,15 +5117,6 @@
         <Sequence>
           <NonTerminal Id="HashPartitions" />
         </Sequence>
-        <!--<Sequence>
-          <NonTerminal Id="CompositeRangePartitions" />
-        </Sequence>
-        <Sequence>
-          <NonTerminal Id="CompositeListPartitions" />
-        </Sequence>
-        <Sequence>
-          <NonTerminal Id="CompositeHashPartitions" />
-        </Sequence>-->
         <Sequence>
           <NonTerminal Id="ReferencePartitioning" />
         </Sequence>
@@ -5203,6 +5194,7 @@
         <Sequence>
           <Terminal Id="Hash" />
           <NonTerminal Id="ParenthesisEnclosedIdentifierList" />
+          <NonTerminal Id="SubpartitionClause" IsOptional="true" />
           <NonTerminal Id="IndividualHashPartitionsOrHashPartitionsByQuantity" />
         </Sequence>
       </Sequences>
@@ -5309,10 +5301,56 @@
       <Sequences>
         <Sequence>
           <Terminal Id="List" />
-          <NonTerminal Id="ParenthesisEnclosedIdentifierList" />
+          <Terminal Id="LeftParenthesis" />
+          <Terminal Id="Identifier" />
+          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="ParenthesisEnclosedListPartitionListOrSubpartitionClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ParenthesisEnclosedListPartitionListOrSubpartitionClause">
+      <Sequences>
+        <Sequence>
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="ListPartitionList" />
           <Terminal Id="RightParenthesis" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="SubpartitionClause" />
+          <NonTerminal Id="ParenthesisEnclosedListPartitionDescriptionList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ParenthesisEnclosedListPartitionDescriptionList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="ListPartitionDescriptionList" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ListPartitionDescriptionList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Partition" />
+          <Terminal Id="Identifier" IsOptional="true" />
+          <NonTerminal Id="ListValuesClause" />
+          <NonTerminal Id="TablePartitionDescription" />
+          <NonTerminal Id="HashSubpartitionQuantityOrParenthesisEnclosedIndividualSubpartitionList" IsOptional="true" />
+          <NonTerminal Id="CommaChainedListPartitionDescriptionList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="CommaChainedListPartitionDescriptionList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="ListPartitionDescriptionList" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -5366,9 +5404,232 @@
           <Terminal Id="Range" />
           <NonTerminal Id="ParenthesisEnclosedIdentifierList" />
           <NonTerminal Id="PartitionInterval" IsOptional="true" />
+          <NonTerminal Id="ParenthesisEnclosedRangePartitionListOrSubpartitionClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ParenthesisEnclosedRangePartitionListOrSubpartitionClause">
+      <Sequences>
+        <Sequence>
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="RangePartitionList" />
           <Terminal Id="RightParenthesis" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="SubpartitionClause" />
+          <NonTerminal Id="ParenthesisEnclosedRangePartitionDescriptionList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ParenthesisEnclosedRangePartitionDescriptionList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="RangePartitionDescriptionList" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="RangePartitionDescriptionList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Partition" />
+          <Terminal Id="Identifier" IsOptional="true" />
+          <NonTerminal Id="RangeValuesClause" />
+          <NonTerminal Id="TablePartitionDescription" />
+          <NonTerminal Id="HashSubpartitionQuantityOrParenthesisEnclosedIndividualSubpartitionList" IsOptional="true" />
+          <NonTerminal Id="CommaChainedRangePartitionDescriptionList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="CommaChainedRangePartitionDescriptionList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="RangePartitionDescriptionList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SubpartitionClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Subpartition" />
+          <Terminal Id="By" />
+          <NonTerminal Id="SubpartitionType" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SubpartitionType">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="SubpartitionByRange" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="SubpartitionByList" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="SubpartitionByHash" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SubpartitionByRange">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Range" />
+          <NonTerminal Id="ParenthesisEnclosedIdentifierList" />
+          <NonTerminal Id="SubpartitionTemplate" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="SubpartitionByList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="List" />
+          <Terminal Id="LeftParenthesis" />
+          <Terminal Id="Identifier" />
+          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="SubpartitionTemplate" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="SubpartitionByHash">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Hash" />
+          <NonTerminal Id="ParenthesisEnclosedIdentifierList" />
+          <NonTerminal Id="HashSubpartitionQuantityOrSubpartitionTemplate" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="HashSubpartitionQuantityOrSubpartitionTemplate">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="HashSubpartitionQuantity" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="SubpartitionTemplate" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SubpartitionTemplate">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Subpartition" />
+          <Terminal Id="Template" />
+          <NonTerminal Id="HashSubpartitionQuantityOrParenthesisEnclosedIndividualSubpartitionList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="HashSubpartitionQuantityOrParenthesisEnclosedIndividualSubpartitionList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="IndividualSubpartitionList" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="HashSubpartitionQuantity" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="IndividualSubpartitionList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="IndividualRangeSubpartitionList" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="IndividualListSubpartitionList" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="IndividualHashSubpartitionList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="IndividualRangeSubpartitionList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Subpartition" />
+          <Terminal Id="Identifier" IsOptional="true" />
+          <NonTerminal Id="RangeValuesClause" />
+          <NonTerminal Id="IndexingClause" IsOptional="true" />
+          <NonTerminal Id="PartitioningStorageClause" IsOptional="true" />
+          <NonTerminal Id="CommaChainedIndividualRangeSubpartitionList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="CommaChainedIndividualRangeSubpartitionList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="IndividualRangeSubpartitionList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="IndividualListSubpartitionList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Subpartition" />
+          <Terminal Id="Identifier" IsOptional="true" />
+          <NonTerminal Id="ListValuesClause" />
+          <NonTerminal Id="IndexingClause" IsOptional="true" />
+          <NonTerminal Id="PartitioningStorageClause" IsOptional="true" />
+          <NonTerminal Id="CommaChainedIndividualListSubpartitionList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="CommaChainedIndividualListSubpartitionList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="IndividualListSubpartitionList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="IndividualHashSubpartitionList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Subpartition" />
+          <Terminal Id="Identifier" IsOptional="true" />
+          <NonTerminal Id="IndexingClause" IsOptional="true" />
+          <NonTerminal Id="PartitioningStorageClause" IsOptional="true" />
+          <NonTerminal Id="CommaChainedIndividualHashSubpartitionList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="CommaChainedIndividualHashSubpartitionList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="IndividualHashSubpartitionList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="HashSubpartitionQuantity">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Subpartitions" />
+          <Terminal Id="IntegerLiteral" />
+          <NonTerminal Id="StoreInTableSpaceList" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -7244,12 +7505,12 @@
         </Sequence>
         <Sequence>
           <Terminal Id="For" />
-          <Terminal Id="OltpOrQueryOrArchive" />
+          <NonTerminal Id="OltpOrQueryOrArchiveOrAllOrDirectLoadOperations" />
         </Sequence>
       </Sequences>
     </Rule>
 
-    <Rule StartingNonTerminal="OltpOrQueryOrArchive">
+    <Rule StartingNonTerminal="OltpOrQueryOrArchiveOrAllOrDirectLoadOperations">
       <Sequences>
         <Sequence>
           <Terminal Id="Oltp" />
@@ -7259,6 +7520,14 @@
         </Sequence>
         <Sequence>
           <Terminal Id="Archive" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="All" />
+          <Terminal Id="Operations" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="DirectLoad" />
+          <Terminal Id="Operations" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -8162,6 +8431,12 @@
     <Terminal Id="Asynchronous" Value="ASYNCHRONOUS" />
     <Terminal Id="Refresh" Value="REFRESH" />
     <Terminal Id="New" Value="NEW" />
+    <Terminal Id="Subpartitions" Value="SUBPARTITIONS" />
+    <Terminal Id="Template" Value="TEMPLATE" />
+    <Terminal Id="DirectLoad" Value="DIRECT_LOAD" />
+    <Terminal Id="Operations" Value="OPERATIONS" />
+    
+    <!-- Comment -->
     <Terminal Id="Audit" Value="AUDIT" IsKeyword="true" />
     <Terminal Id="IndexType" Value="INDEXTYPE" />
     <Terminal Id="Mining" Value="MINING" />

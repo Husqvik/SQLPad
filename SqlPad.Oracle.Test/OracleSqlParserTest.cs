@@ -3318,6 +3318,82 @@ PARTITION BY SYSTEM (
 				var statement = result.Single();
 				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 			}
+
+			[Test(Description = @"")]
+			public void TestCompositeRangeHashPartitioningClause()
+			{
+				const string statementText =
+@"CREATE TABLE TEST_PARTITION_TABLE (
+	PROD_ID NUMBER(6),
+	CUST_ID NUMBER,
+	TIME_ID DATE,
+	CHANNEL_ID CHAR(1),
+	PROMO_ID NUMBER(6),
+	QUANTITY_SOLD  NUMBER(3),
+	AMOUNT_SOLD NUMBER(10, 2)
+)
+PARTITION BY RANGE (TIME_ID)
+SUBPARTITION BY HASH (CHANNEL_ID) (
+	PARTITION SALES_Q1_2000 VALUES LESS THAN (TO_DATE('01-APR-2000','DD-MON-YYYY')),
+	PARTITION SALES_Q2_2000 VALUES LESS THAN (TO_DATE('01-JUL-2000','DD-MON-YYYY'))
+    SUBPARTITIONS 8,
+   	PARTITION SALES_Q3_2000 VALUES LESS THAN (TO_DATE('01-OCT-2000','DD-MON-YYYY')) (
+   		SUBPARTITION CH_C,
+		SUBPARTITION CH_I,
+		SUBPARTITION CH_P),
+	PARTITION SALES_Q4_2000 VALUES LESS THAN (MAXVALUE)
+	SUBPARTITIONS 4
+)";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			}
+
+			[Test(Description = @"")]
+			public void TestCompositeRangeListPartitioningClause()
+			{
+				const string statementText =
+@"CREATE TABLE TEST_PARTITION_TABLE (
+	CUSTOMER_ID NUMBER(6),
+	CUST_FIRST_NAME VARCHAR2(20),
+	CUST_LAST_NAME VARCHAR2(20),
+	NLS_TERRITORY VARCHAR2(30),
+	CREDIT_LIMIT NUMBER(9, 2)
+) 
+PARTITION BY RANGE (CREDIT_LIMIT)
+	SUBPARTITION BY LIST (NLS_TERRITORY)
+	SUBPARTITION TEMPLATE (
+		SUBPARTITION EAST VALUES ('CHINA', 'JAPAN', 'INDIA', 'THAILAND'),
+		SUBPARTITION WEST VALUES ('AMERICA', 'GERMANY', 'ITALY', 'SWITZERLAND'),
+		SUBPARTITION OTHER VALUES (DEFAULT)
+	)
+(
+	PARTITION P1 VALUES LESS THAN (1000),
+    PARTITION P2 VALUES LESS THAN (2500),
+    PARTITION P3 VALUES LESS THAN (MAXVALUE)
+)";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			}
+
+			[Test(Description = @"")]
+			public void TestObsololeteCompressForClause()
+			{
+				const string statementText = @"CREATE TABLE TEST_PARTITION_TABLE (C1 NUMBER) COMPRESS FOR DIRECT_LOAD OPERATIONS";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			}
 		}
 
 		public class CreateIndex

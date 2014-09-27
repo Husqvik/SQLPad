@@ -1166,7 +1166,7 @@ namespace SqlPad
 
 		private void ParseDoneUiHandler()
 		{
-			_foldingStrategy.UpdateFoldings(_sqlDocumentRepository.Statements);
+			//_foldingStrategy.UpdateFoldings(_sqlDocumentRepository.Statements);
 
 			if (_isInitialParsing)
 			{

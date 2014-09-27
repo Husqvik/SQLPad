@@ -40,13 +40,8 @@ namespace SqlPad
 		public void Restore(WorkingDocument workingDocument)
 		{
 			var foldingEnumerator = _foldingManager.AllFoldings.GetEnumerator();
-			foreach (var isFolded in workingDocument.FoldingStates)
+			foreach (var isFolded in workingDocument.FoldingStates.Where(s => foldingEnumerator.MoveNext()))
 			{
-				if (!foldingEnumerator.MoveNext())
-				{
-					break;
-				}
-				
 				foldingEnumerator.Current.IsFolded = isFolded;
 			}
 		}
