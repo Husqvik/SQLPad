@@ -82,6 +82,7 @@
     <Compile Include="Commands\ResolveAmbiguousColumnCommand.cs" />
     <Compile Include="Commands\AddAliasCommand.cs" />
     <Compile Include="Commands\OracleCommandFactory.cs" />
+    <Compile Include="OracleBindVariable.cs" />
     <Compile Include="OracleConfiguration.cs">
       <DependentUpon>OracleConfiguration.xsd</DependentUpon>
     </Compile>

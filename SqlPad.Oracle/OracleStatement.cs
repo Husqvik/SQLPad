@@ -1,8 +1,7 @@
-using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 
 namespace SqlPad.Oracle
 {
@@ -23,6 +22,26 @@ namespace SqlPad.Oracle
 			get { return _bindVariables ?? (_bindVariables = BuildBindVariableCollection()); }
 		}
 
+		public override IEnumerable<FoldingSection> Sections
+		{
+			get
+			{
+				return RootNode == null
+					? base.Sections
+					: RootNode.GetDescendants(NonTerminals.NestedQuery, NonTerminals.Subquery)
+						.Where(n => n.Id == NonTerminals.NestedQuery || n.ParentNode.Id != NonTerminals.NestedQuery)
+						.Select(n =>
+							new FoldingSection
+							{
+								FoldingStart = n.SourcePosition.IndexStart,
+								FoldingEnd = n.SourcePosition.IndexEnd + 1,
+								Node = n,
+								IsNestedSection = n.ParentNode.ParentNode != null,
+								Placeholder = "Subquery"
+							});
+			}
+		}
+
 		private ICollection<BindVariableConfiguration> BuildBindVariableCollection()
 		{
 			return BuildBindVariableIdentifierTerminalLookup()
@@ -38,39 +57,6 @@ namespace SqlPad.Oracle
 				: RootNode.Terminals.Where(t => t.Id == OracleGrammarDescription.Terminals.BindVariableIdentifier);
 
 			return sourceTerminals.ToLookup(t => t.Token.Value.Trim('"'));
-		}
-	}
-
-	public static class OracleBindVariable
-	{
-		public const string DataTypeChar = "CHAR";
-		public const string DataTypeClob = "CLOB";
-		public const string DataTypeDate = "DATE";
-		public const string DataTypeUnicodeChar = "NCHAR";
-		public const string DataTypeUnicodeClob = "NCLOB";
-		public const string DataTypeNumber = "NUMBER";
-		public const string DataTypeUnicodeVarchar2 = "NVARCHAR2";
-		public const string DataTypeVarchar2 = "VARCHAR2";
-
-		private static readonly Dictionary<string, Type> BindDataTypesInternal =
-			new Dictionary<string, Type>
-			{
-				{ DataTypeChar, typeof(string) },
-				{ DataTypeClob, typeof(string) },
-				{ DataTypeDate, typeof(DateTime) },
-				{ DataTypeUnicodeChar, typeof(string) },
-				{ DataTypeUnicodeClob, typeof(string) },
-				{ DataTypeNumber, typeof(string) },
-				{ DataTypeUnicodeVarchar2, typeof(string) },
-				{ DataTypeVarchar2, typeof(string) }
-			};
-
-		private static readonly IDictionary<string, Type> BindDataTypesDictionary =
-			new ReadOnlyDictionary<string, Type>(BindDataTypesInternal);
-
-		public static IDictionary<string, Type> DataTypes
-		{
-			get { return BindDataTypesDictionary; }
 		}
 	}
 }

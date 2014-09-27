@@ -6,6 +6,8 @@ namespace SqlPad
 {
 	public abstract class StatementBase
 	{
+		private static readonly FoldingSection[] EmptySectionCollection = new FoldingSection[0];
+
 		private ICollection<StatementGrammarNode> _allTerminals;
 		private ICollection<StatementGrammarNode> _invalidGrammarNodes;
 
@@ -33,6 +35,11 @@ namespace SqlPad
 		public SourcePosition SourcePosition { get; set; }
 
 		public abstract ICollection<BindVariableConfiguration> BindVariables { get; }
+
+		public virtual IEnumerable<FoldingSection> Sections
+		{
+			get { return EmptySectionCollection; }
+		}
 
 		public ICollection<StatementGrammarNode> InvalidGrammarNodes
 		{
@@ -93,5 +100,18 @@ namespace SqlPad
 		{
 			return RootNode == null ? null : RootNode.GetNearestTerminalToPosition(position, filter);
 		}
+	}
+
+	public class FoldingSection
+	{
+		public int FoldingStart { get; set; }
+
+		public int FoldingEnd { get; set; }
+		
+		public string Placeholder { get; set; }
+		
+		public StatementGrammarNode Node { get; set; }
+		
+		public bool IsNestedSection { get; set; }
 	}
 }

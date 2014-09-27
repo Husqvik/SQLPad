@@ -16,6 +16,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.CodeCompletion;
+using ICSharpCode.AvalonEdit.Folding;
 using Microsoft.Win32;
 using SqlPad.Commands;
 using SqlPad.FindReplace;
@@ -50,6 +51,7 @@ namespace SqlPad
 
 		private bool _isParsing;
 		private bool _isInitializing = true;
+		private bool _isInitialParsing = true;
 		private bool _enableCodeComplete;
 		private bool _isToolTipOpenByShortCut;
 		private bool _gatherExecutionStatistics;
@@ -65,6 +67,7 @@ namespace SqlPad
 		private HashSet<string> _currentBindVariables = new HashSet<string>();
 		
 		public EventHandler ParseFinished = delegate { };
+		private readonly SqlFoldingStrategy _foldingStrategy;
 
 		internal TabItem TabItem { get; private set; }
 		
@@ -95,6 +98,8 @@ namespace SqlPad
 		public DocumentPage(WorkingDocument workingDocument = null)
 		{
 			InitializeComponent();
+
+			_foldingStrategy = new SqlFoldingStrategy(FoldingManager.Install(Editor.TextArea), Editor);
 
 			_toolTip.PlacementTarget = Editor.TextArea;
 
@@ -371,6 +376,11 @@ namespace SqlPad
 
 		public void SaveWorkingDocument()
 		{
+			if (_isInitializing)
+			{
+				return;
+			}
+
 			WorkingDocument.Text = Editor.Text;
 			WorkingDocument.CursorPosition = Editor.CaretOffset;
 			WorkingDocument.SelectionStart = Editor.SelectionStart;
@@ -379,6 +389,8 @@ namespace SqlPad
 			var textView = Editor.TextArea.TextView;
 			WorkingDocument.VisualLeft = textView.ScrollOffset.X;
 			WorkingDocument.VisualTop = textView.ScrollOffset.Y;
+
+			_foldingStrategy.Store(WorkingDocument);
 
 			if (RowDefinitionEditor.ActualHeight > 0)
 			{
@@ -1154,6 +1166,14 @@ namespace SqlPad
 
 		private void ParseDoneUiHandler()
 		{
+			_foldingStrategy.UpdateFoldings(_sqlDocumentRepository.Statements);
+
+			if (_isInitialParsing)
+			{
+				_foldingStrategy.Restore(WorkingDocument);
+				_isInitialParsing = false;
+			}
+
 			Editor.TextArea.TextView.Redraw();
 			_isParsing = false;
 			ParseFinished(this, EventArgs.Empty);

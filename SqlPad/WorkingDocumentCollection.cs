@@ -31,7 +31,7 @@ namespace SqlPad
 
 			var workingDocumentType = Serializer.Add(typeof(WorkingDocument), false);
 			workingDocumentType.UseConstructor = false;
-			workingDocumentType.Add("DocumentFileName", "DocumentId", "ConnectionName", "SchemaName", "CursorPosition", "SelectionStart", "SelectionLength", "IsModified", "VisualLeft", "VisualTop", "EditorGridRowHeight", "Text", "EditorGridColumnWidth", "TabIndex");
+			workingDocumentType.Add("DocumentFileName", "DocumentId", "ConnectionName", "SchemaName", "CursorPosition", "SelectionStart", "SelectionLength", "IsModified", "VisualLeft", "VisualTop", "EditorGridRowHeight", "Text", "EditorGridColumnWidth", "TabIndex", "_foldingStates");
 
 			var windowPropertiesType = Serializer.Add(typeof(WindowProperties), false);
 			windowPropertiesType.UseConstructor = false;
@@ -256,9 +256,27 @@ namespace SqlPad
 
 	public class WorkingDocument
 	{
+		private List<bool> _foldingStates;
+
 		public WorkingDocument()
 		{
 			DocumentId = Guid.NewGuid();
+		}
+
+		private List<bool> FoldingStatesInternal
+		{
+			get { return _foldingStates ?? (_foldingStates = new List<bool>()); }
+		}
+
+		public IList<bool> FoldingStates
+		{
+			get { return FoldingStatesInternal.AsReadOnly(); }
+		}
+
+		public void UpdateFoldingStates(IEnumerable<bool> foldingStates)
+		{
+			FoldingStatesInternal.Clear();
+			FoldingStatesInternal.AddRange(foldingStates);
 		}
 
 		public string Identifier { get { return File == null ? DocumentId.ToString("N") : DocumentFileName; } }

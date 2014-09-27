@@ -111,8 +111,10 @@
     <Compile Include="MarginSetter.cs" />
     <Compile Include="PageModel.cs" />
     <Compile Include="DatabaseProviderConfiguration.cs" />
+    <Compile Include="SqlFoldingStrategy.cs" />
     <Compile Include="StatementCommentNode.cs" />
     <Compile Include="StatementNode.cs" />
+    <Compile Include="TextEditorExtensions.cs" />
     <Compile Include="TextSegment.cs" />
     <Compile Include="CommandSettingsModel.cs" />
     <Compile Include="Commands\ICommandFactory.cs" />
