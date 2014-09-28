@@ -314,6 +314,7 @@ namespace SqlPad.Oracle
 
 			var tableReferences = (ICollection<OracleDataObjectReference>)referenceContainers.SelectMany(c => c.ObjectReferences).ToArray();
 			var suggestedFunctions = Enumerable.Empty<ICodeCompletionItem>();
+			var nodeToReplace = partialName == null ? null : currentNode;
 			if (objectIdentifierNode != null)
 			{
 				var objectName = objectIdentifierNode.Token.Value;
@@ -333,7 +334,7 @@ namespace SqlPad.Oracle
 							new FunctionMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectPackage().AsResultValue(),
 							null);
 
-						suggestedFunctions = GenerateCodeItems(OracleCodeCompletionCategory.Package, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, packageMatcher);
+						suggestedFunctions = GenerateCodeItems(OracleCodeCompletionCategory.Package, nodeToReplace, 0, addParameterList, databaseModel, packageMatcher);
 
 						var packageFunctionMatcher = new OracleFunctionMatcher(
 							new FunctionMatchElement(databaseModel.CurrentSchema).SelectOwner(), 
@@ -345,7 +346,7 @@ namespace SqlPad.Oracle
 							new FunctionMatchElement(objectName).SelectSynonymPackage(),
 							new FunctionMatchElement(partialName) {AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName}.SelectSynonymName().AsResultValue());
 
-						suggestedFunctions = GenerateCodeItems(OracleCodeCompletionCategory.PackageFunction, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, packageFunctionMatcher, publicSynonymPackageFunctionMatcher)
+						suggestedFunctions = GenerateCodeItems(OracleCodeCompletionCategory.PackageFunction, nodeToReplace, 0, addParameterList, databaseModel, packageFunctionMatcher, publicSynonymPackageFunctionMatcher)
 							.Concat(suggestedFunctions);
 
 						var schemaFunctionMatcher = new OracleFunctionMatcher(
@@ -353,7 +354,7 @@ namespace SqlPad.Oracle
 							new FunctionMatchElement(null).SelectPackage(),
 							new FunctionMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectName().AsResultValue());
 
-						suggestedFunctions = GenerateCodeItems(OracleCodeCompletionCategory.SchemaFunction, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, schemaFunctionMatcher)
+						suggestedFunctions = GenerateCodeItems(OracleCodeCompletionCategory.SchemaFunction, nodeToReplace, 0, addParameterList, databaseModel, schemaFunctionMatcher)
 							.Concat(suggestedFunctions);
 					}
 					else
@@ -363,7 +364,7 @@ namespace SqlPad.Oracle
 							new FunctionMatchElement(objectName).SelectPackage(),
 							new FunctionMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectName().AsResultValue());
 
-						suggestedFunctions = GenerateCodeItems(OracleCodeCompletionCategory.PackageFunction, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, packageFunctionMatcher);
+						suggestedFunctions = GenerateCodeItems(OracleCodeCompletionCategory.PackageFunction, nodeToReplace, 0, addParameterList, databaseModel, packageFunctionMatcher);
 					}
 				}
 			}
@@ -418,21 +419,21 @@ namespace SqlPad.Oracle
 						new FunctionMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectSynonymPackage().AsResultValue(),
 						null);
 
-				suggestedFunctions = GenerateCodeItems(OracleCodeCompletionCategory.PackageFunction, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, builtInPackageFunctionMatcher);
+				suggestedFunctions = GenerateCodeItems(OracleCodeCompletionCategory.PackageFunction, nodeToReplace, 0, addParameterList, databaseModel, builtInPackageFunctionMatcher);
 
-				suggestedFunctions = GenerateCodeItems(OracleCodeCompletionCategory.BuiltInFunction, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, builtInNonSchemaFunctionMatcher)
+				suggestedFunctions = GenerateCodeItems(OracleCodeCompletionCategory.BuiltInFunction, nodeToReplace, 0, addParameterList, databaseModel, builtInNonSchemaFunctionMatcher)
 					.Concat(suggestedFunctions);
 
-				suggestedFunctions = GenerateCodeItems(OracleCodeCompletionCategory.SchemaFunction, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, localSchemaFunctionMatcher)
+				suggestedFunctions = GenerateCodeItems(OracleCodeCompletionCategory.SchemaFunction, nodeToReplace, 0, addParameterList, databaseModel, localSchemaFunctionMatcher)
 					.Concat(suggestedFunctions);
 
-				suggestedFunctions = GenerateCodeItems(OracleCodeCompletionCategory.SchemaFunction, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, localSynonymFunctionMatcher, publicSynonymFunctionMatcher)
+				suggestedFunctions = GenerateCodeItems(OracleCodeCompletionCategory.SchemaFunction, nodeToReplace, 0, addParameterList, databaseModel, localSynonymFunctionMatcher, publicSynonymFunctionMatcher)
 					.Concat(suggestedFunctions);
 
-				suggestedFunctions = GenerateCodeItems(OracleCodeCompletionCategory.Package, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, localSchemaPackageMatcher)
+				suggestedFunctions = GenerateCodeItems(OracleCodeCompletionCategory.Package, nodeToReplace, 0, addParameterList, databaseModel, localSchemaPackageMatcher)
 					.Concat(suggestedFunctions);
 
-				suggestedFunctions = GenerateCodeItems(OracleCodeCompletionCategory.Package, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, localSynonymPackageMatcher, publicSynonymPackageMatcher)
+				suggestedFunctions = GenerateCodeItems(OracleCodeCompletionCategory.Package, nodeToReplace, 0, addParameterList, databaseModel, localSynonymPackageMatcher, publicSynonymPackageMatcher)
 					.Concat(suggestedFunctions);
 			}
 
@@ -479,7 +480,7 @@ namespace SqlPad.Oracle
 							Category = r.Type.ToCategoryLabel()
 						});
 
-				var nodeToReplace = currentNode.Id == Terminals.Select ? null : currentNode;
+				nodeToReplace = currentNode.Id == Terminals.Select ? null : currentNode;
 				suggestedItems = suggestedItems.Concat(CreateObjectItems(referencedObjectCompletionData, partialName, nodeToReplace));
 				suggestedItems = suggestedItems.Concat(GenerateSchemaItems(partialName, nodeToReplace, 0, databaseModel, 2));
 

@@ -186,7 +186,11 @@ namespace SqlPad
 			var documentsToClose = allDocuments.Where(p => !p.Equals(currentDocument)).ToArray();
 			foreach (var page in documentsToClose)
 			{
-				CloseDocument(page);
+				var isCancelled = !CloseDocument(page);
+				if (isCancelled)
+				{
+					break;
+				}
 			}
 		}
 
@@ -196,12 +200,12 @@ namespace SqlPad
 			CloseDocument(currentDocument);
 		}
 
-		private void CloseDocument(DocumentPage document)
+		private bool CloseDocument(DocumentPage document)
 		{
 			DocumentTabControl.SelectedItem = document.TabItem;
 
 			if (document.IsDirty && !ConfirmDocumentSave(document))
-				return;
+				return false;
 
 			SelectNewTabItem();
 			DocumentTabControl.Items.Remove(document.TabItem);
@@ -209,6 +213,7 @@ namespace SqlPad
 			WorkingDocumentCollection.CloseDocument(document.WorkingDocument);
 
 			document.Dispose();
+			return true;
 		}
 
 		private bool ConfirmDocumentSave(DocumentPage document)
