@@ -17,17 +17,18 @@ namespace SqlPad.Oracle
 			_ownerMatch = ownerMatch;
 		}
 
-		public FunctionMatchResult GetMatchResult(OracleFunctionMetadata functionMetadata, string currentSchema)
+		public FunctionMatchResult GetMatchResult(OracleFunctionMetadata functionMetadata, string quotedCurrentSchema)
 		{
+			var isSchemaMatched = _ownerMatch == null || (String.IsNullOrEmpty(_ownerMatch.Value) && functionMetadata.Identifier.Owner == quotedCurrentSchema) ||
+			                      _ownerMatch.IsMatch(functionMetadata).Any();
 			var matchResult =
 				new FunctionMatchResult
 				{
 					Metadata = functionMetadata,
-					IsMatched = _ownerMatch == null || (String.IsNullOrEmpty(_ownerMatch.Value) && functionMetadata.Identifier.Owner == currentSchema.ToQuotedIdentifier()) ||
-					            _ownerMatch.IsMatch(functionMetadata).Any()
+					IsMatched = isSchemaMatched
 				};
 
-			if (_packageMatch != null)
+			if (_packageMatch != null && isSchemaMatched)
 			{
 				var matchedPackageNames = _packageMatch.IsMatch(functionMetadata);
 				if (_packageMatch.IsResultValue)
@@ -38,7 +39,7 @@ namespace SqlPad.Oracle
 				matchResult.IsMatched &= matchedPackageNames.Any();
 			}
 
-			if (_identifierMatch != null)
+			if (_identifierMatch != null && isSchemaMatched)
 			{
 				var matchedIdentifierNames = _identifierMatch.IsMatch(functionMetadata);
 				if (_identifierMatch.IsResultValue)
@@ -123,9 +124,9 @@ namespace SqlPad.Oracle
 
 	internal class FunctionMatchElement : MatchElement<OracleFunctionMetadata>
 	{
-		private static readonly Func<OracleFunctionMetadata, IEnumerable<string>> OwnerSelector = metadata => new [] { metadata.Identifier.Owner };
-		private static readonly Func<OracleFunctionMetadata, IEnumerable<string>> PackageSelector = metadata => new [] { metadata.Identifier.Package };
-		private static readonly Func<OracleFunctionMetadata, IEnumerable<string>> NameSelector = metadata => new [] { metadata.Identifier.Name };
+		private static readonly Func<OracleFunctionMetadata, IEnumerable<string>> OwnerSelector = metadata => Enumerable.Repeat(metadata.Identifier.Owner, 1);
+		private static readonly Func<OracleFunctionMetadata, IEnumerable<string>> PackageSelector = metadata => Enumerable.Repeat(metadata.Identifier.Package, 1);
+		private static readonly Func<OracleFunctionMetadata, IEnumerable<string>> NameSelector = metadata => Enumerable.Repeat(metadata.Identifier.Name, 1);
 
 		private Func<OracleFunctionMetadata, IEnumerable<string>> _selector;
 

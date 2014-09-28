@@ -539,8 +539,10 @@ namespace SqlPad
 		private void ShowFunctionOverloads(object sender, ExecutedRoutedEventArgs args)
 		{
 			var functionOverloads = _codeCompletionProvider.ResolveFunctionOverloads(_sqlDocumentRepository, Editor.CaretOffset);
-			if (functionOverloads.Count <= 0)
+			if (functionOverloads.Count == 0)
+			{
 				return;
+			}
 
 			_toolTip.Content = new FunctionOverloadList { FunctionOverloads = functionOverloads };
 			_isToolTipOpenByShortCut = true;

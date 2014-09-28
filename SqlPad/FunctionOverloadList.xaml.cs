@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Windows.Controls;
 using System.Windows.Documents;
 
@@ -21,9 +20,17 @@ namespace SqlPad
 		{
 			set
 			{
-				foreach (var overloadDescription in value.Where(o => o.HasSchemaDefinition))
+				foreach (var overloadDescription in value)
 				{
 					var textBlock = new TextBlock();
+
+					if (!overloadDescription.IsBuiltInFunction)
+					{
+						textBlock.Inlines.Add("Parameter metadata is not availale. ");
+						ViewOverloads.Items.Add(textBlock);
+						continue;
+					}
+
 					textBlock.Inlines.Add(overloadDescription.Name);
 
 					textBlock.Inlines.Add("(");

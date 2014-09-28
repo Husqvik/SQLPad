@@ -11,7 +11,7 @@ namespace SqlPad.Oracle.Test
 	{
 		private readonly OracleCodeCompletionProvider _codeCompletionProvider = new OracleCodeCompletionProvider();
 		private readonly SqlDocumentRepository _documentRepository = TestFixture.CreateDocumentRepository();
-		private static readonly Func<ICodeCompletionItem, bool> FilterProgramItems = i => !i.Category.In(OracleCodeCompletionCategory.PackageFunction, OracleCodeCompletionCategory.Package, OracleCodeCompletionCategory.SchemaFunction);
+		private static readonly Func<ICodeCompletionItem, bool> FilterProgramItems = i => !i.Category.In(OracleCodeCompletionCategory.PackageFunction, OracleCodeCompletionCategory.Package, OracleCodeCompletionCategory.SchemaFunction, OracleCodeCompletionCategory.BuiltInFunction);
 
 		[Test(Description = @"")]
 		public void TestObjectSuggestionWithSchema()
@@ -474,7 +474,7 @@ FROM
 		{
 			const string query1 = @"SELECT  FROM (SELECT HUSQVIK.SELECTION.NAME FROM HUSQVIK.SELECTION), HUSQVIK.SELECTION";
 
-			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 7).Where(FilterProgramItems).Where(i => !i.Name.Contains("HUSQVIK.SELECTION") && !i.Category.In(OracleCodeCompletionCategory.DatabaseSchema, OracleCodeCompletionCategory.SchemaObject)).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 7).Where(FilterProgramItems).Where(i => !i.Name.Contains("HUSQVIK.SELECTION") && !i.Category.In(OracleCodeCompletionCategory.DatabaseSchema, OracleCodeCompletionCategory.SchemaObject, OracleCodeCompletionCategory.BuiltInFunction)).ToArray();
 			items.Length.ShouldBe(0);
 		}
 
@@ -651,7 +651,7 @@ FROM
 			items[0].Parameters.Count.ShouldBe(2);
 			items[0].CurrentParameterIndex.ShouldBe(1);
 			items[0].ReturnedDatatype.ShouldNotBe(null);
-			items[0].HasSchemaDefinition.ShouldBe(true);
+			items[0].IsBuiltInFunction.ShouldBe(true);
 		}
 
 		[Test(Description = @"")]
@@ -673,7 +673,7 @@ FROM
 			_documentRepository.UpdateStatements(query1);
 			var items = _codeCompletionProvider.ResolveFunctionOverloads(_documentRepository, 11).ToList();
 			items.Count.ShouldBe(1);
-			items[0].HasSchemaDefinition.ShouldBe(false);
+			items[0].IsBuiltInFunction.ShouldBe(false);
 		}
 
 		[Test(Description = @"")]
@@ -1177,6 +1177,18 @@ se";
 			items[1].Text.ShouldBe("SYNONYM_TO_SELECTION");
 			items[1].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
 			items[1].CaretOffset.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
+		public void TestBuiltInNonSchemaFunctionSuggestion()
+		{
+			const string statement = @"SELECT LAST_V FROM DUAL";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 13).ToList();
+			items.Count.ShouldBe(1);
+			items[0].Name.ShouldBe("LAST_VALUE");
+			items[0].Text.ShouldBe("LAST_VALUE()");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.BuiltInFunction);
+			items[0].CaretOffset.ShouldBe(-1);
 		}
 
 		public class OracleCodeCompletionTypeTest

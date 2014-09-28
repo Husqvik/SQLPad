@@ -19,7 +19,7 @@ namespace SqlPad
 		
 		public string ReturnedDatatype { get; set; }
 		
-		public bool HasSchemaDefinition { get; set; }
+		public bool IsBuiltInFunction { get; set; }
 	}
 
 	public interface ICodeCompletionItem

@@ -53,7 +53,7 @@ namespace SqlPad.Oracle
 							Parameters = metadata.Parameters.Skip(1).Select(p => p.Name + ": " + p.DataType).ToArray(),
 							CurrentParameterIndex = fo.CurrentParameterIndex,
 							ReturnedDatatype = returnParameter == null ? null : returnParameter.DataType,
-							HasSchemaDefinition = !String.IsNullOrEmpty(metadata.Identifier.Owner)
+							IsBuiltInFunction = !String.IsNullOrEmpty(metadata.Identifier.Owner)
 						};
 				})
 				.ToArray();
@@ -369,11 +369,17 @@ namespace SqlPad.Oracle
 			}
 			else
 			{
-				var builtInFunctionMatcher =
+				var builtInPackageFunctionMatcher =
 					new OracleFunctionMatcher(
 						new FunctionMatchElement(OracleDatabaseModelBase.SchemaSys).SelectOwner(),
 						new FunctionMatchElement(OracleDatabaseModelBase.PackageBuiltInFunction).SelectPackage(),
 						new FunctionMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectName().AsResultValue());
+
+				var builtInNonSchemaFunctionMatcher =
+					new OracleFunctionMatcher(
+						new FunctionMatchElement(null).SelectOwner(),
+						new FunctionMatchElement(null).SelectPackage(),
+						new FunctionMatchElement(partialName) {AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName}.SelectName().AsResultValue());
 
 				var currentSchema = databaseModel.CurrentSchema.ToQuotedIdentifier();
 				var localSchemaFunctionMatcher =
@@ -412,7 +418,10 @@ namespace SqlPad.Oracle
 						new FunctionMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectSynonymPackage().AsResultValue(),
 						null);
 
-				suggestedFunctions = GenerateCodeItems(OracleCodeCompletionCategory.PackageFunction, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, builtInFunctionMatcher);
+				suggestedFunctions = GenerateCodeItems(OracleCodeCompletionCategory.PackageFunction, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, builtInPackageFunctionMatcher);
+
+				suggestedFunctions = GenerateCodeItems(OracleCodeCompletionCategory.BuiltInFunction, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, builtInNonSchemaFunctionMatcher)
+					.Concat(suggestedFunctions);
 
 				suggestedFunctions = GenerateCodeItems(OracleCodeCompletionCategory.SchemaFunction, partialName == null ? null : currentNode, 0, addParameterList, databaseModel, localSchemaFunctionMatcher)
 					.Concat(suggestedFunctions);
@@ -594,8 +603,9 @@ namespace SqlPad.Oracle
 				parameterListCaretOffset = -1;
 			}
 
+			var quotedSchemaName = databaseModel.CurrentSchema.ToQuotedIdentifier();
 			return databaseModel.AllFunctionMetadata
-				.SelectMany(g => matchers.SelectMany(m => g.Select(f => m.GetMatchResult(f, databaseModel.CurrentSchema))))
+				.SelectMany(g => matchers.SelectMany(m => g.Select(f => m.GetMatchResult(f, quotedSchemaName))))
 				.Where(r => r.IsMatched)
 				.SelectMany(r => r.Matches.Where(v => !String.IsNullOrEmpty(v)).Select(v => new { Name = v.ToSimpleIdentifier(), r.Metadata.DisplayType }))
 				.Distinct()
