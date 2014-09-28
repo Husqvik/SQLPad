@@ -3396,7 +3396,7 @@ PARTITION BY RANGE (CREDIT_LIMIT)
 			}
 
 			[Test(Description = @"")]
-			public void TestEnableDisableConstraintdClause()
+			public void TestEnableDisableConstraintClause()
 			{
 				const string statementText = @"CREATE TABLE TEST_TABLE (ID NUMBER CONSTRAINT PK_TEST_PARTITION_TABLE PRIMARY KEY, VAL NUMBER CONSTRAINT UQ_TEST_PARTITION_TABLE_VAL UNIQUE) ENABLE NOVALIDATE PRIMARY KEY DISABLE NOVALIDATE UNIQUE (VAL) CASCADE DROP INDEX";
 
@@ -3444,6 +3444,33 @@ PARTITION BY RANGE (C3)
 	SEGMENT CREATION DEFERRED
 	INDEXING OFF
 )";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			}
+
+			[Test(Description = @"")]
+			public void TestInMemoryClause()
+			{
+				const string statementText =
+@"CREATE TABLE TEST_TABLE (
+	C1 NUMBER,
+	C2 VARCHAR2(128),
+	C3 VARCHAR2(128),
+	C4 VARCHAR2(128)
+)
+NOLOGGING
+INMEMORY
+	DISTRIBUTE BY ROWID RANGE
+	PRIORITY CRITICAL
+	NO DUPLICATE
+	INMEMORY MEMCOMPRESS FOR QUERY HIGH (C2, C3)
+	NO INMEMORY (C1)
+	INMEMORY MEMCOMPRESS FOR CAPACITY HIGH (C4)
+TABLESPACE TBS_HQ_PDB";
 
 				var result = Parser.Parse(statementText);
 

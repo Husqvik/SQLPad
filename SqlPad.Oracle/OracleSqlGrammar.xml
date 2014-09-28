@@ -7450,8 +7450,186 @@
       <Sequences>
         <Sequence>
           <NonTerminal Id="TableCompression" />
-          <!--<NonTerminal Id="InMemoryTableClause" IsOptional="true" />
-          <NonTerminal Id="IntegratedLifecycleManagementClause" IsOptional="true" />-->
+          <!--<NonTerminal Id="IntegratedLifecycleManagementClause" IsOptional="true" />-->
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="InMemoryTableClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="InMemory" />
+          <NonTerminal Id="InMemoryParameters" IsOptional="true" />
+          <NonTerminal Id="InMemoryColumnClause" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="No" />
+          <Terminal Id="InMemory" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="InMemoryColumnClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="InMemoryColumnOptions" />
+          <NonTerminal Id="InMemoryColumnClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="InMemoryColumnOptions">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="No" />
+          <Terminal Id="InMemory" />
+          <NonTerminal Id="ParenthesisEnclosedIdentifierList" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="InMemory" />
+          <NonTerminal Id="InMemoryMemoryCompression" IsOptional="true" />
+          <NonTerminal Id="ParenthesisEnclosedIdentifierList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="InMemoryParameters">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="InMemoryParameter" />
+          <NonTerminal Id="InMemoryParameters" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="InMemoryParameter">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="InMemoryMemoryCompression" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="InMemoryPriority" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="InMemoryDistribute" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="InMemoryDuplicate" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="InMemoryDuplicate">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Duplicate" />
+          <Terminal Id="All" IsOptional="true" />
+        </Sequence>
+      <Sequence>
+          <Terminal Id="No" />
+          <Terminal Id="Duplicate" />
+       </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="InMemoryDistribute">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Distribute" />
+          <NonTerminal Id="InMemoryDistributeOptions" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="InMemoryDistributeOptions">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Auto" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="By" />
+          <NonTerminal Id="InMemoryDistributeOption" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="InMemoryDistributeOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="RowIdPseudoColumn" />
+          <Terminal Id="Range" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Partition" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Subpartition" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="InMemoryPriority">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Priority" />
+          <NonTerminal Id="InMemoryPriorityOption" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="InMemoryPriorityOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="None" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Low" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Medium" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="High" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Critical" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="InMemoryMemoryCompression">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="MemoryCompression" />
+          <Terminal Id="For" />
+          <NonTerminal Id="InMemoryMemoryCompressionType" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="No" />
+          <Terminal Id="MemoryCompression" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="InMemoryMemoryCompressionType">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="DataManipulationLanguage" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="QueryOrCapacity" />
+          <NonTerminal Id="LowOrHigh" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="QueryOrCapacity">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Query" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Capacity" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -7473,19 +7651,22 @@
     <Rule StartingNonTerminal="HeapTableSegmentAttributesClause">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="SegmentAttributeOrTableCompressionOrTableProperties" />
+          <NonTerminal Id="SegmentAttributeOrTableCompressionOrInMemoryTableClauseOrTableProperties" />
           <NonTerminal Id="HeapTableSegmentAttributesClause" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
     
-    <Rule StartingNonTerminal="SegmentAttributeOrTableCompressionOrTableProperties">
+    <Rule StartingNonTerminal="SegmentAttributeOrTableCompressionOrInMemoryTableClauseOrTableProperties">
       <Sequences>
         <Sequence>
           <NonTerminal Id="SegmentAttribute" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="TableCompression" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="InMemoryTableClause" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="TableProperties" />
@@ -8656,6 +8837,14 @@
     <Terminal Id="DirectLoad" Value="DIRECT_LOAD" />
     <Terminal Id="Operations" Value="OPERATIONS" />
     <Terminal Id="Exceptions" Value="EXCEPTIONS" />
+    <Terminal Id="InMemory" Value="INMEMORY" />
+    <Terminal Id="MemoryCompression" Value="MEMCOMPRESS" />
+    <Terminal Id="Priority" Value="PRIORITY" />
+    <Terminal Id="Distribute" Value="DISTRIBUTE" />
+    <Terminal Id="Duplicate" Value="DUPLICATE" />
+    <Terminal Id="Critical" Value="CRITICAL" />
+    <Terminal Id="DataManipulationLanguage" Value="DML" />
+    <Terminal Id="Capacity" Value="CAPACITY" />
     
     <!-- Comment -->
     <Terminal Id="Audit" Value="AUDIT" IsKeyword="true" />
