@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 using Shouldly;
 using System;
@@ -152,14 +153,16 @@ FROM
 			const string query1 = @"SELECT S.* FROM SELECTION S JOIN P";
 
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 34).ToArray();
-			items.Length.ShouldBe(3);
+			items.Length.ShouldBe(4);
 			items[0].Name.ShouldBe("PROJECT");
 			items[0].Text.ShouldBe("PROJECT");
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
-			items[1].Name.ShouldBe("RESPONDENTBUCKET");
-			items[1].Text.ShouldBe("RESPONDENTBUCKET");
-			items[2].Name.ShouldBe("TARGETGROUP");
-			items[2].Text.ShouldBe("TARGETGROUP");
+			items[1].Name.ShouldBe("PUBLIC_SYNONYM_TO_SELECTION");
+			items[1].Text.ShouldBe("PUBLIC_SYNONYM_TO_SELECTION");
+			items[2].Name.ShouldBe("RESPONDENTBUCKET");
+			items[2].Text.ShouldBe("RESPONDENTBUCKET");
+			items[3].Name.ShouldBe("TARGETGROUP");
+			items[3].Text.ShouldBe("TARGETGROUP");
 		}
 
 		[Test(Description = @"")]
@@ -725,7 +728,7 @@ se";
 			const string query1 = @"SELECT * FROM ""CaseUnknownTable""";
 
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 15).ToList();
-			items.Count.ShouldBe(16);
+			items.Count.ShouldBe(17);
 			items[0].Text.ShouldBe("\"CaseSensitiveTable\"");
 		}
 
@@ -1016,13 +1019,16 @@ se";
 		{
 			const string statement = @"SELECT * FROM SELECTIO";
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 22).ToList();
-			items.Count.ShouldBe(2);
+			items.Count.ShouldBe(3);
 			items[0].Name.ShouldBe("SELECTION");
 			items[0].Text.ShouldBe("SELECTION");
 			items[0].CaretOffset.ShouldBe(0);
-			items[1].Name.ShouldBe("SYNONYM_TO_SELECTION");
-			items[1].Text.ShouldBe("SYNONYM_TO_SELECTION");
+			items[1].Name.ShouldBe("PUBLIC_SYNONYM_TO_SELECTION");
+			items[1].Text.ShouldBe("PUBLIC_SYNONYM_TO_SELECTION");
 			items[1].CaretOffset.ShouldBe(0);
+			items[2].Name.ShouldBe("SYNONYM_TO_SELECTION");
+			items[2].Text.ShouldBe("SYNONYM_TO_SELECTION");
+			items[2].CaretOffset.ShouldBe(0);
 		}
 
 		[Test(Description = @"")]
@@ -1129,15 +1135,7 @@ se";
 		{
 			const string statement = @"UPDATE SEL";
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 10).ToList();
-			items.Count.ShouldBe(2);
-			items[0].Name.ShouldBe("SELECTION");
-			items[0].Text.ShouldBe("SELECTION");
-			items[0].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
-			items[0].CaretOffset.ShouldBe(0);
-			items[1].Name.ShouldBe("SYNONYM_TO_SELECTION");
-			items[1].Text.ShouldBe("SYNONYM_TO_SELECTION");
-			items[1].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
-			items[1].CaretOffset.ShouldBe(0);
+			AssertTableSuggestionWhenTypingUpdateOrDeleteCommand(items);
 		}
 
 		[Test(Description = @"")]
@@ -1145,15 +1143,24 @@ se";
 		{
 			const string statement = @"DELETE SEL";
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 10).ToList();
-			items.Count.ShouldBe(2);
+			AssertTableSuggestionWhenTypingUpdateOrDeleteCommand(items);
+		}
+
+		private static void AssertTableSuggestionWhenTypingUpdateOrDeleteCommand(List<ICodeCompletionItem> items)
+		{
+			items.Count.ShouldBe(3);
 			items[0].Name.ShouldBe("SELECTION");
 			items[0].Text.ShouldBe("SELECTION");
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
 			items[0].CaretOffset.ShouldBe(0);
-			items[1].Name.ShouldBe("SYNONYM_TO_SELECTION");
-			items[1].Text.ShouldBe("SYNONYM_TO_SELECTION");
+			items[1].Name.ShouldBe("PUBLIC_SYNONYM_TO_SELECTION");
+			items[1].Text.ShouldBe("PUBLIC_SYNONYM_TO_SELECTION");
 			items[1].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
 			items[1].CaretOffset.ShouldBe(0);
+			items[2].Name.ShouldBe("SYNONYM_TO_SELECTION");
+			items[2].Text.ShouldBe("SYNONYM_TO_SELECTION");
+			items[2].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
+			items[2].CaretOffset.ShouldBe(0);
 		}
 
 		[Test(Description = @"")]

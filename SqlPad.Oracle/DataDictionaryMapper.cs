@@ -342,7 +342,7 @@ namespace SqlPad.Oracle
 
 			var synonym = (OracleSynonym)synonymObject;
 			synonym.SchemaObject = schemaObject;
-			schemaObject.Synonym = synonym;
+			schemaObject.Synonyms.Add(synonym);
 
 			return synonymObject;
 		}

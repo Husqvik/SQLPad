@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace SqlPad.Oracle
 {
@@ -15,80 +17,157 @@ namespace SqlPad.Oracle
 			_ownerMatch = ownerMatch;
 		}
 
-		public bool IsMatch(OracleFunctionMetadata functionMetadata, string currentSchema)
+		public FunctionMatchResult GetMatchResult(OracleFunctionMetadata functionMetadata, string currentSchema)
 		{
-			var result = _ownerMatch == null || (String.IsNullOrEmpty(_ownerMatch.Value) && functionMetadata.Identifier.Owner == currentSchema.ToQuotedIdentifier()) ||
-			             _ownerMatch.IsMatch(functionMetadata);
-			
-			result &= _packageMatch == null || _packageMatch.IsMatch(functionMetadata);
-			return result && (_identifierMatch == null || _identifierMatch.IsMatch(functionMetadata));
+			var matchResult =
+				new FunctionMatchResult
+				{
+					Metadata = functionMetadata,
+					IsMatched = _ownerMatch == null || (String.IsNullOrEmpty(_ownerMatch.Value) && functionMetadata.Identifier.Owner == currentSchema.ToQuotedIdentifier()) ||
+					            _ownerMatch.IsMatch(functionMetadata).Any()
+				};
+
+			if (_packageMatch != null)
+			{
+				var matchedPackageNames = _packageMatch.IsMatch(functionMetadata);
+				if (_packageMatch.IsResultValue)
+				{
+					matchResult.Matches = matchedPackageNames;
+				}
+
+				matchResult.IsMatched &= matchedPackageNames.Any();
+			}
+
+			if (_identifierMatch != null)
+			{
+				var matchedIdentifierNames = _identifierMatch.IsMatch(functionMetadata);
+				if (_identifierMatch.IsResultValue)
+				{
+					if (matchResult.Matches != null)
+					{
+						throw new InvalidOperationException("Only one MatchElement can be IsResultValue enabled. ");
+					}
+
+					matchResult.Matches = matchedIdentifierNames;
+				}
+
+				matchResult.IsMatched &= matchedIdentifierNames.Any();
+			}
+
+			return matchResult;
 		}
 	}
 
-	internal class MatchElement<TElement>
+	internal struct FunctionMatchResult
 	{
-		public MatchElement(string value)
+		public bool IsMatched { get; set; }
+
+		public OracleFunctionMetadata Metadata { get; set; }
+		
+		public IEnumerable<string> Matches { get; set; }
+	}
+
+	internal abstract class MatchElement<TElement>
+	{
+		private readonly string _quotedValue;
+		private readonly string _rawUpperInvariantValue;
+		private string _deniedValue;
+		private string _quotedDeniedValue;
+
+		protected MatchElement(string value)
 		{
 			Value = value;
+			_quotedValue = value.ToQuotedIdentifier();
+			_rawUpperInvariantValue = value.ToRawUpperInvariant();
 		}
 
 		public string Value { get; private set; }
 
 		public bool AllowPartialMatch { get; set; }
 
+		public bool IsResultValue { get; set; }
+
 		public bool AllowStartWithMatch { get; set; }
 
 		public bool DenyEqualMatch { get; set; }
 
-		public string DeniedValue { get; set; }
-
-		public Func<TElement, string> Selector { get; protected set; }
-
-		public bool IsMatch(TElement element)
+		public string DeniedValue
 		{
-			var elementValue = Selector(element);
-			var valueMatches = elementValue == Value.ToQuotedIdentifier() ||
-			                   (AllowStartWithMatch && elementValue.ToRawUpperInvariant().StartsWith(Value.ToRawUpperInvariant())) ||
+			get { return _deniedValue; }
+			set
+			{
+				_deniedValue = value;
+				_quotedDeniedValue = value.ToQuotedIdentifier();
+			}
+		}
+
+		protected abstract Func<TElement, IEnumerable<string>> Selector { get; }
+
+		public IEnumerable<string> IsMatch(TElement element)
+		{
+			var elements = Selector(element);
+			return elements == null
+				? Enumerable.Empty<string>()
+				: elements.Where(IsElementMatch);
+		}
+
+		private bool IsElementMatch(string elementValue)
+		{
+			var valueMatches = elementValue == _quotedValue ||
+			                   (AllowStartWithMatch && elementValue.ToRawUpperInvariant().StartsWith(_rawUpperInvariantValue)) ||
 			                   (AllowPartialMatch && CodeCompletionSearchHelper.IsMatch(elementValue, Value));
 
-			return valueMatches && (String.IsNullOrEmpty(DeniedValue) || elementValue != DeniedValue.ToQuotedIdentifier());
+			return valueMatches && (String.IsNullOrEmpty(DeniedValue) || elementValue != _quotedDeniedValue);
 		}
 	}
 
 	internal class FunctionMatchElement : MatchElement<OracleFunctionMetadata>
 	{
-		private static readonly Func<OracleFunctionMetadata, string> OwnerSelector = metadata => metadata.Identifier.Owner;
-		private static readonly Func<OracleFunctionMetadata, string> PackageSelector = metadata => metadata.Identifier.Package;
-		private static readonly Func<OracleFunctionMetadata, string> NameSelector = metadata => metadata.Identifier.Name;
+		private static readonly Func<OracleFunctionMetadata, IEnumerable<string>> OwnerSelector = metadata => new [] { metadata.Identifier.Owner };
+		private static readonly Func<OracleFunctionMetadata, IEnumerable<string>> PackageSelector = metadata => new [] { metadata.Identifier.Package };
+		private static readonly Func<OracleFunctionMetadata, IEnumerable<string>> NameSelector = metadata => new [] { metadata.Identifier.Name };
+
+		private Func<OracleFunctionMetadata, IEnumerable<string>> _selector;
 
 		public FunctionMatchElement(string value) : base(value)
 		{
 		}
 
+		protected override Func<OracleFunctionMetadata, IEnumerable<string>> Selector
+		{
+			get { return _selector; }
+		}
+
+		public FunctionMatchElement AsResultValue()
+		{
+			IsResultValue = true;
+			return this;
+		}
+
 		public FunctionMatchElement SelectOwner()
 		{
 			CheckSelectorNotAssigned();
-			Selector = OwnerSelector;
+			_selector = OwnerSelector;
 			return this;
 		}
 
 		public FunctionMatchElement SelectPackage()
 		{
 			CheckSelectorNotAssigned();
-			Selector = PackageSelector;
+			_selector = PackageSelector;
 			return this;
 		}
 
 		public FunctionMatchElement SelectName()
 		{
 			CheckSelectorNotAssigned();
-			Selector = NameSelector;
+			_selector = NameSelector;
 			return this;
 		}
 
 		private void CheckSelectorNotAssigned()
 		{
-			if (Selector != null)
+			if (_selector != null)
 			{
 				throw new InvalidOperationException("Selector has been assigned already. ");
 			}
@@ -97,61 +176,61 @@ namespace SqlPad.Oracle
 		public FunctionMatchElement SelectSynonymOwner()
 		{
 			CheckSelectorNotAssigned();
-			Selector = SelectSynonymOwnerHandler;
+			_selector = SelectSynonymOwnerHandler;
 			return this;
 		}
 
 		public FunctionMatchElement SelectSynonymPackage()
 		{
 			CheckSelectorNotAssigned();
-			Selector = SelectSynonymPackageHandler;
+			_selector = SelectSynonymPackageHandler;
 			return this;
 		}
 
 		public FunctionMatchElement SelectSynonymName()
 		{
 			CheckSelectorNotAssigned();
-			Selector = SelectSynonymIdentifierHandler;
+			_selector = SelectSynonymIdentifierHandler;
 			return this;
 		}
 
-		private static string SelectSynonymIdentifierHandler(OracleFunctionMetadata metadata)
+		private static IEnumerable<string> SelectSynonymIdentifierHandler(OracleFunctionMetadata metadata)
 		{
-			var synonym = GetSynonymFor(metadata);
-			if (synonym == null)
+			var synonyms = GetSynonymsFor(metadata);
+			if (synonyms == null || metadata.Owner == null)
 			{
 				return null;
 			}
 
 			return metadata.Owner.Type == OracleSchemaObjectType.Function
-				? synonym.Name
-				: metadata.Identifier.Name;
+				? synonyms.Select(s => s.Name)
+				: Enumerable.Repeat(metadata.Identifier.Name, 1);
 		}
 
-		private static string SelectSynonymPackageHandler(OracleFunctionMetadata metadata)
+		private static IEnumerable<string> SelectSynonymPackageHandler(OracleFunctionMetadata metadata)
 		{
-			var synonym = GetSynonymFor(metadata);
-			if (synonym == null)
+			var synonyms = GetSynonymsFor(metadata);
+			if (synonyms == null || metadata.Owner == null)
 			{
 				return null;
 			}
 
 			return metadata.Owner.Type == OracleSchemaObjectType.Function
 				? null
-				: synonym.Name;
+				: synonyms.Select(s => s.Name);
 		}
 
-		private static string SelectSynonymOwnerHandler(OracleFunctionMetadata metadata)
+		private static IEnumerable<string> SelectSynonymOwnerHandler(OracleFunctionMetadata metadata)
 		{
-			var synonym = GetSynonymFor(metadata);
-			return synonym == null ? null : synonym.Owner;
+			var synonyms = GetSynonymsFor(metadata);
+			return synonyms == null ? null : synonyms.Select(s => s.Owner);
 		}
 
-		private static OracleSynonym GetSynonymFor(OracleFunctionMetadata metadata)
+		private static IEnumerable<OracleSynonym> GetSynonymsFor(OracleFunctionMetadata metadata)
 		{
 			return metadata == null || metadata.Owner == null
 				? null
-				: metadata.Owner.Synonym;
+				: metadata.Owner.Synonyms;
 		}
 	}
 }

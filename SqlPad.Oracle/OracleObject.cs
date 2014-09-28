@@ -12,6 +12,8 @@ namespace SqlPad.Oracle
 
 	public abstract class OracleSchemaObject : OracleObject
 	{
+		private HashSet<OracleSynonym> _synonyms; 
+
 		public DateTime Created { get; set; }
 
 		public DateTime LastDdl { get; set; }
@@ -26,7 +28,7 @@ namespace SqlPad.Oracle
 
 		public string Owner { get { return FullyQualifiedName.NormalizedOwner; } }
 
-		public OracleSynonym Synonym { get; set; }
+		public ICollection<OracleSynonym> Synonyms { get { return _synonyms ?? (_synonyms = new HashSet<OracleSynonym>()); } }
 	}
 
 	public abstract class OracleDataObject : OracleSchemaObject

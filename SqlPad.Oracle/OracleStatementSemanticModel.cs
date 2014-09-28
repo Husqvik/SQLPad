@@ -342,7 +342,7 @@ namespace SqlPad.Oracle
 			}
 
 			var isSchemaObjectInCurrentSchema = schemaObject.Owner == DatabaseModel.CurrentSchema.ToQuotedIdentifier();
-			var isAccessibleByPublicSynonym = schemaObject.Synonym != null && schemaObject.Synonym.Owner == OracleDatabaseModelBase.SchemaPublic && schemaObject.Synonym.Name == schemaObject.Name;
+			var isAccessibleByPublicSynonym = schemaObject.Synonyms.Any(s => s.Owner == OracleDatabaseModelBase.SchemaPublic && s.Name == schemaObject.Name);
 			return isSchemaObjectInCurrentSchema || isAccessibleByPublicSynonym;
 		}
 

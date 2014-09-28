@@ -74,7 +74,7 @@ namespace SqlPad.Oracle
 
 			var oracleSchemaObjectType = Serializer.Add(typeof(OracleSchemaObject), false);
 			oracleSchemaObjectType.AsReferenceDefault = true;
-			oracleSchemaObjectType.Add("Created", "LastDdl", "IsValid", "IsTemporary", "Synonym");
+			oracleSchemaObjectType.Add("Created", "LastDdl", "IsValid", "IsTemporary", "_synonyms");
 
 			var oracleDatabaseLinkType = Serializer.Add(typeof(OracleDatabaseLink), false);
 			oracleDatabaseLinkType.AsReferenceDefault = true;

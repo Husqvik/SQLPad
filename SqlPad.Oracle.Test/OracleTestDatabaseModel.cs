@@ -100,7 +100,7 @@ namespace SqlPad.Oracle.Test
 					SchemaObject = AllObjectsInternal.Single(o => o.Name == tableNameDual && o.Owner == OwnerNameSys),
 					IsValid = true
 				};
-			synonym.SchemaObject.Synonym = synonym;
+			synonym.SchemaObject.Synonyms.Add(synonym);
 			
 			AllObjectsInternal.Add(synonym);
 
@@ -111,7 +111,7 @@ namespace SqlPad.Oracle.Test
 					SchemaObject = AllObjectsInternal.Single(o => o.Name == "\"V_$SESSION\"" && o.Owner == OwnerNameSys),
 					IsValid = true
 				};
-			synonym.SchemaObject.Synonym = synonym;
+			synonym.SchemaObject.Synonyms.Add(synonym);
 
 			AllObjectsInternal.Add(synonym);
 
@@ -122,7 +122,7 @@ namespace SqlPad.Oracle.Test
 					SchemaObject = AllObjectsInternal.Single(o => o.Name == "\"XMLTYPE\"" && o.Owner == OwnerNameSys),
 					IsValid = true
 				};
-			synonym.SchemaObject.Synonym = synonym;
+			synonym.SchemaObject.Synonyms.Add(synonym);
 
 			AllObjectsInternal.Add(synonym);
 
@@ -133,7 +133,7 @@ namespace SqlPad.Oracle.Test
 					SchemaObject = AllObjectsInternal.Single(o => o.Name == "\"TEST_SEQ\"" && o.Owner == InitialSchema),
 					IsValid = true
 				};
-			synonym.SchemaObject.Synonym = synonym;
+			synonym.SchemaObject.Synonyms.Add(synonym);
 
 			AllObjectsInternal.Add(synonym);
 
@@ -144,7 +144,18 @@ namespace SqlPad.Oracle.Test
 					SchemaObject = AllObjectsInternal.Single(o => o.Name == "\"SELECTION\"" && o.Owner == InitialSchema),
 					IsValid = true
 				};
-			synonym.SchemaObject.Synonym = synonym;
+			synonym.SchemaObject.Synonyms.Add(synonym);
+
+			AllObjectsInternal.Add(synonym);
+
+			synonym =
+				new OracleSynonym
+				{
+					FullyQualifiedName = OracleObjectIdentifier.Create(SchemaPublic, "\"PUBLIC_SYNONYM_TO_SELECTION\""),
+					SchemaObject = AllObjectsInternal.Single(o => o.Name == "\"SELECTION\"" && o.Owner == InitialSchema),
+					IsValid = true
+				};
+			synonym.SchemaObject.Synonyms.Add(synonym);
 
 			AllObjectsInternal.Add(synonym);
 
@@ -163,7 +174,7 @@ namespace SqlPad.Oracle.Test
 					SchemaObject = dbmsRandom,
 					IsValid = true
 				};
-			synonym.SchemaObject.Synonym = synonym;
+			synonym.SchemaObject.Synonyms.Add(synonym);
 
 			AllObjectsInternal.Add(synonym);
 
@@ -181,7 +192,7 @@ namespace SqlPad.Oracle.Test
 					SchemaObject = dbmsCrypto,
 					IsValid = true
 				};
-			synonym.SchemaObject.Synonym = synonym;
+			synonym.SchemaObject.Synonyms.Add(synonym);
 
 			AllObjectsInternal.Add(synonym);
 
@@ -198,6 +209,7 @@ namespace SqlPad.Oracle.Test
 
 			var userCountFunction = (OracleFunction)AllObjectsInternal.Single(o => o.Name == "\"COUNT\"" && o.Owner == InitialSchema);
 			userCountFunction.Metadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), null, "COUNT"), false, false, false, false, false, false, null, null, AuthId.Definer, OracleFunctionMetadata.DisplayTypeNormal, false);
+			userCountFunction.Metadata.Owner = userCountFunction;
 			userCountFunction.Metadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "NUMBER", false));
 
 			var sqlPadFunction = (OracleFunction)AllObjectsInternal.Single(o => o.Name == "\"SQLPAD_FUNCTION\"" && o.Owner == InitialSchema);
@@ -212,7 +224,7 @@ namespace SqlPad.Oracle.Test
 					SchemaObject = AllObjectsInternal.Single(o => o.Name == "\"SQLPAD_FUNCTION\"" && o.Owner == InitialSchema),
 					IsValid = true
 				};
-			synonym.SchemaObject.Synonym = synonym;
+			synonym.SchemaObject.Synonyms.Add(synonym);
 
 			AllObjectsInternal.Add(synonym);
 
