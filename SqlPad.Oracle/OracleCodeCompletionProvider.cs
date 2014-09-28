@@ -265,6 +265,11 @@ namespace SqlPad.Oracle
 				completionItems = completionItems.Concat(specificFunctionParameterCodeCompletionItems);
 			}
 
+			if (completionType.UpdateSetColumn && semanticModel.MainObjectReferenceContainer.MainObjectReference != null)
+			{
+				completionItems = completionItems.Concat(GenerateUpdateSetColumnItems(currentNode, semanticModel.MainObjectReferenceContainer.MainObjectReference, completionType));
+			}
+
 			if (completionType.DatabaseLink)
 			{
 				var databaseLinkItems = oracleDatabaseModel.DatabaseLinks.Values
@@ -285,6 +290,19 @@ namespace SqlPad.Oracle
 			return completionItems.OrderItems().ToArray();
 
 			// TODO: Add option to search all/current/public schemas
+		}
+
+		private IEnumerable<ICodeCompletionItem> GenerateUpdateSetColumnItems(StatementGrammarNode currentNode, OracleDataObjectReference targetDataObject, OracleCodeCompletionType completionType)
+		{
+			return targetDataObject.Columns
+				.Where(c => completionType.TerminalValueUnderCursor.ToQuotedIdentifier() != c.Name && CodeCompletionSearchHelper.IsMatch(c.Name, completionType.TerminalValuePartUntilCaret))
+				.Select(c => new OracleCodeCompletionItem
+				{
+					Name = c.Name.ToSimpleIdentifier(),
+					Text = c.Name.ToSimpleIdentifier(),
+					Category = OracleCodeCompletionCategory.Column,
+					StatementNode = currentNode
+				});
 		}
 
 		private IEnumerable<ICodeCompletionItem> GenerateSelectListItems(StatementGrammarNode currentNode, IEnumerable<OracleReferenceContainer> referenceContainers, int cursorPosition, OracleDatabaseModelBase databaseModel, bool sequencesAllowed, bool forcedInvokation)

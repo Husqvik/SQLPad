@@ -1092,6 +1092,38 @@ se";
 			items.Count.ShouldBe(0);
 		}
 
+		[Test(Description = @"")]
+		public void TestColumnIdentifierSuggestionInUpdateSetClause()
+		{
+			const string statement = @"UPDATE SELECTION SET NAME = 'Dummy name' WHERE SELECTION_ID = 0";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 21).ToList();
+			items.Count.ShouldBe(3);
+			items[0].Name.ShouldBe("PROJECT_ID");
+			items[0].Text.ShouldBe("PROJECT_ID");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.Column);
+			items[0].CaretOffset.ShouldBe(0);
+			items[2].Name.ShouldBe("SELECTION_ID");
+			items[2].Text.ShouldBe("SELECTION_ID");
+			items[2].Category.ShouldBe(OracleCodeCompletionCategory.Column);
+			items[2].CaretOffset.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
+		public void TestColumnIdentifierSuggestionWithoutIdentifier()
+		{
+			const string statement = @"UPDATE SELECTION SET ";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 21).ToList();
+			items.Count.ShouldBe(4);
+			items[0].Name.ShouldBe("NAME");
+			items[0].Text.ShouldBe("NAME");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.Column);
+			items[0].CaretOffset.ShouldBe(0);
+			items[3].Name.ShouldBe("SELECTION_ID");
+			items[3].Text.ShouldBe("SELECTION_ID");
+			items[3].Category.ShouldBe(OracleCodeCompletionCategory.Column);
+			items[3].CaretOffset.ShouldBe(0);
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)

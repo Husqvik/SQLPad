@@ -26,6 +26,8 @@ namespace SqlPad.Oracle
 		
 		public bool Column { get; private set; }
 
+		public bool UpdateSetColumn { get; private set; }
+
 		public bool AllColumns { get; private set; }
 		
 		public bool JoinType { get; private set; }
@@ -151,6 +153,10 @@ namespace SqlPad.Oracle
 			CurrentQueryBlock = SemanticModel.GetQueryBlock(nearestTerminal);
 			var inMainQueryBlockOrMainObjectReference = CurrentQueryBlock == SemanticModel.MainQueryBlock || (CurrentQueryBlock == null && SemanticModel.MainObjectReferenceContainer.MainObjectReference != null);
 			Sequence = inMainQueryBlockOrMainObjectReference && (nearestTerminal.IsWithinSelectClause() || !nearestTerminal.IsWithinExpression() || nearestTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.InsertValuesClause) != null);
+
+			var isWithinUpdateSetNonTerminal = nearestTerminal.ParentNode.Id == NonTerminals.SetColumnEqualsExpressionOrNestedQueryOrDefaultValue || nearestTerminal.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBoundary, NonTerminals.SetColumnListEqualsNestedQuery) != null;
+			var isAfterSetTerminal = nearestTerminal.Id == Terminals.Set && isCursorAfterToken;
+			UpdateSetColumn = TerminalCandidates.Contains(Terminals.Identifier) && (isWithinUpdateSetNonTerminal || isAfterSetTerminal);
 		}
 
 		private void AnalyzeObjectReferencePrefixes(StatementGrammarNode effectiveTerminal)

@@ -406,6 +406,12 @@ namespace SqlPad.Oracle
 
 				_userCommand.ExecuteNonQuery();
 
+				/*if (executionModel.GatherExecutionStatistics)
+				{
+					_userCommand.CommandText = "ALTER SESSION SET STATISTICS_LEVEL = ALL";
+					_userCommand.ExecuteNonQuery();
+				}*/
+
 				_userCommand.CommandText = "SELECT SYS_CONTEXT('USERENV', 'SID') SID FROM SYS.DUAL";
 				_userSessionId = Convert.ToInt32(_userCommand.ExecuteScalar());
 
@@ -426,22 +432,7 @@ namespace SqlPad.Oracle
 
 				var reader = await _userCommand.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken);
 
-				var bindVariableModels = executionModel.BindVariables.ToDictionary(v => v.Name, v => v);
-				foreach (OracleParameter parameter in _userCommand.Parameters)
-				{
-					var value = parameter.Value;
-					if (parameter.Value is OracleDecimal)
-					{
-						value = OracleNumber.SetOutputFormat((OracleDecimal)parameter.Value);
-					}
-
-					if (parameter.Value is OracleDate)
-					{
-						value = ((OracleDate)parameter.Value).Value;
-					}
-
-					bindVariableModels[parameter.ParameterName].Value = value;
-				}
+				UpdateBindVariables(executionModel);
 
 				return reader;
 			}
@@ -451,6 +442,26 @@ namespace SqlPad.Oracle
 				{
 					_userConnection.Close();
 				}
+			}
+		}
+
+		private void UpdateBindVariables(StatementExecutionModel executionModel)
+		{
+			var bindVariableModels = executionModel.BindVariables.ToDictionary(v => v.Name, v => v);
+			foreach (OracleParameter parameter in _userCommand.Parameters)
+			{
+				var value = parameter.Value;
+				if (parameter.Value is OracleDecimal)
+				{
+					value = OracleNumber.SetOutputFormat((OracleDecimal)parameter.Value);
+				}
+
+				if (parameter.Value is OracleDate)
+				{
+					value = ((OracleDate)parameter.Value).Value;
+				}
+
+				bindVariableModels[parameter.ParameterName].Value = value;
 			}
 		}
 
