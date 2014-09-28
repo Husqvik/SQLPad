@@ -1124,6 +1124,54 @@ se";
 			items[3].CaretOffset.ShouldBe(0);
 		}
 
+		[Test(Description = @"")]
+		public void TestTableSuggestionWhenTypingUpdateCommand()
+		{
+			const string statement = @"UPDATE SEL";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 10).ToList();
+			items.Count.ShouldBe(2);
+			items[0].Name.ShouldBe("SELECTION");
+			items[0].Text.ShouldBe("SELECTION");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
+			items[0].CaretOffset.ShouldBe(0);
+			items[1].Name.ShouldBe("SYNONYM_TO_SELECTION");
+			items[1].Text.ShouldBe("SYNONYM_TO_SELECTION");
+			items[1].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
+			items[1].CaretOffset.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
+		public void TestTableSuggestionWhenTypingDeleteCommand()
+		{
+			const string statement = @"DELETE SEL";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 10).ToList();
+			items.Count.ShouldBe(2);
+			items[0].Name.ShouldBe("SELECTION");
+			items[0].Text.ShouldBe("SELECTION");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
+			items[0].CaretOffset.ShouldBe(0);
+			items[1].Name.ShouldBe("SYNONYM_TO_SELECTION");
+			items[1].Text.ShouldBe("SYNONYM_TO_SELECTION");
+			items[1].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
+			items[1].CaretOffset.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
+		public void TestTableSuggestionWhenTypingDeleteCommandWithSchema()
+		{
+			const string statement = @"DELETE HUSQVIK.SEL";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 18).ToList();
+			items.Count.ShouldBe(2);
+			items[0].Name.ShouldBe("SELECTION");
+			items[0].Text.ShouldBe("SELECTION");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
+			items[0].CaretOffset.ShouldBe(0);
+			items[1].Name.ShouldBe("SYNONYM_TO_SELECTION");
+			items[1].Text.ShouldBe("SYNONYM_TO_SELECTION");
+			items[1].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
+			items[1].CaretOffset.ShouldBe(0);
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)

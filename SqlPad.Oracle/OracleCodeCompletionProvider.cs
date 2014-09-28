@@ -177,41 +177,22 @@ namespace SqlPad.Oracle
 
 			var extraOffset = currentNode.SourcePosition.IndexStart + currentNode.SourcePosition.Length == cursorPosition && currentNode.Id != Terminals.LeftParenthesis ? 1 : 0;
 
-			var fromClause = currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.NestedQuery, NonTerminals.FromClause);
-			if (completionType.SchemaDataObject &&
-				((currentNode.Id == Terminals.From && !cursorAtLastTerminal) ||
-				 (currentNode.Id.In(Terminals.ObjectIdentifier, Terminals.Comma) && fromClause != null)))
+			if (completionType.SchemaDataObject)
 			{
-				var schemaName = databaseModel.CurrentSchema.ToQuotedIdentifier();
-				var schemaFound = false;
-				if (currentNode.Id == Terminals.ObjectIdentifier && currentNode.ParentNode.Id == NonTerminals.QueryTableExpression &&
-				    currentNode.ParentNode.FirstTerminalNode.Id == Terminals.SchemaIdentifier)
+				var schemaName = completionType.ReferenceIdentifier.HasSchemaIdentifier
+					? currentNode.ParentNode.FirstTerminalNode.Token.Value
+					: databaseModel.CurrentSchema.ToQuotedIdentifier();
+
+				var currentName = completionType.TerminalValuePartUntilCaret;
+				completionItems = completionItems.Concat(GenerateSchemaDataObjectItems(oracleDatabaseModel, schemaName, currentName, terminalToReplace, insertOffset: extraOffset));
+
+				if (!completionType.ReferenceIdentifier.HasSchemaIdentifier)
 				{
-					schemaFound = true;
-					schemaName = currentNode.ParentNode.FirstTerminalNode.Token.Value;
+					completionItems = completionItems.Concat(GenerateSchemaDataObjectItems(oracleDatabaseModel, OracleDatabaseModelBase.SchemaPublic, currentName, terminalToReplace, insertOffset: extraOffset));
+					completionItems = completionItems.Concat(GenerateSchemaItems(currentName, terminalToReplace, extraOffset, oracleDatabaseModel));
 				}
 
-				var currentName = currentNode.Id.In(Terminals.From, Terminals.Comma) ? null : completionType.TerminalValuePartUntilCaret;
-				if (String.IsNullOrEmpty(currentName) || currentName == currentName.Trim())
-				{
-					completionItems = completionItems.Concat(GenerateSchemaDataObjectItems(oracleDatabaseModel, schemaName, currentName, terminalToReplace, insertOffset: extraOffset));
-
-					if (!schemaFound)
-					{
-						completionItems = completionItems.Concat(GenerateSchemaDataObjectItems(oracleDatabaseModel, OracleDatabaseModelBase.SchemaPublic, currentName, terminalToReplace, insertOffset: extraOffset));
-						completionItems = completionItems.Concat(GenerateSchemaItems(currentName, terminalToReplace, extraOffset, oracleDatabaseModel));
-					}
-
-					completionItems = completionItems.Concat(GenerateCommonTableExpressionReferenceItems(semanticModel, currentName, terminalToReplace, extraOffset));
-				}
-			}
-
-			if (currentNode.Id == Terminals.Dot &&
-				currentNode.ParentNode.Id == NonTerminals.SchemaPrefix &&
-				!currentNode.IsWithinSelectClauseOrExpression())
-			{
-				var ownerName = currentNode.ParentNode.ChildNodes.Single(n => n.Id == Terminals.SchemaIdentifier).Token.Value;
-				completionItems = completionItems.Concat(GenerateSchemaDataObjectItems(oracleDatabaseModel, ownerName, null, null));
+				completionItems = completionItems.Concat(GenerateCommonTableExpressionReferenceItems(semanticModel, currentName, terminalToReplace, extraOffset));
 			}
 
 			var joinClauseNode = currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.FromClause, NonTerminals.JoinClause);
