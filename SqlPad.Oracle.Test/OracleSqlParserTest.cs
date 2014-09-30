@@ -1884,6 +1884,120 @@ FROM DUAL";
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 		}
 
+		[Test(Description = @"")]
+		public void TestComplexModelClause()
+		{
+			const string statement1 =
+@"WITH PRIME_CANDIDATES(PRIME_CANDIDATE, NUMBER_RANGE) AS
+(SELECT PRIME_CANDIDATE, CAST(POWER(10, CEIL(LOG(10, PRIME_CANDIDATE))) AS NUMBER) NUMBER_RANGE FROM
+    (SELECT CAST(LEVEL AS BINARY_DOUBLE) PRIME_CANDIDATE FROM DUAL CONNECT BY LEVEL <= 10000))
+SELECT
+    ROW_NUMBER,
+    PRIME_NUMBER,
+    PRIME_PRODUCT,
+    ROUND(POWER(10, CASE WHEN PRIME_PRODUCT_APPROX < 1 THEN PRIME_PRODUCT_APPROX ELSE REMAINDER(PRIME_PRODUCT_APPROX, TRUNC(PRIME_PRODUCT_APPROX)) END), TRUNC(PRIME_PRODUCT_APPROX)) || 'E+' || TRUNC(PRIME_PRODUCT_APPROX) PRIME_PRODUCT_APPROX,
+    TOTAL_PRIMES,
+    '<' || 2 || ', ' || (NUMBER_RANGE - 1) || '>' NUMBER_RANGE,
+    PRIMES_WITHIN_SAME_ORDER,
+    PERCENT_WITHIN_SAME_ORDER
+FROM
+    (SELECT
+        ROWNUM ROW_NUMBER,
+        PRIME_CANDIDATE PRIME_NUMBER,
+        NUMBER_RANGE
+    FROM
+        PRIME_CANDIDATES
+    WHERE
+        PRIME_CANDIDATE > 1 AND
+        NOT EXISTS
+            (SELECT PRIME_CANDIDATE FROM PRIME_CANDIDATES T WHERE PRIME_CANDIDATES.PRIME_CANDIDATE > T.PRIME_CANDIDATE AND T.PRIME_CANDIDATE > 1 AND MOD(PRIME_CANDIDATES.PRIME_CANDIDATE, T.PRIME_CANDIDATE) = 0)
+    ORDER BY
+        PRIME_NUMBER
+    ) PRIME_NUMBER_DATA
+MODEL
+    DIMENSION BY (ROW_NUMBER)
+    MEASURES
+    (
+        PRIME_NUMBER,
+        NUMBER_RANGE,
+        CAST(NULL AS INTEGER) PRIME_PRODUCT,
+        CAST(NULL AS NUMBER) PRIME_PRODUCT_APPROX,
+        CAST(NULL AS INTEGER) TOTAL_PRIMES,
+        CAST(NULL AS INTEGER) PRIMES_WITHIN_SAME_ORDER,
+        CAST(NULL AS NUMBER) PERCENT_WITHIN_SAME_ORDER
+    )
+    RULES
+    (
+        PRIME_PRODUCT[1] = PRIME_NUMBER[CV()],
+        PRIME_PRODUCT[ROW_NUMBER > 1] =
+            CASE
+                WHEN LOG(10, PRIME_PRODUCT[CV() - 1]) >= 38 THEN NULL
+                ELSE PRIME_PRODUCT[CV() - 1] * PRIME_NUMBER[CV()]
+            END,
+        PRIME_PRODUCT_APPROX[ANY] = SUM(LOG(10, PRIME_NUMBER)) OVER (ORDER BY PRIME_NUMBER), -- sum using analytics 
+        TOTAL_PRIMES[ANY] = COUNT(*) OVER (),
+        PRIMES_WITHIN_SAME_ORDER[ANY] = COUNT(*) OVER (ORDER BY NUMBER_RANGE), -- ranges 2 - 9, 2 - 99, 2 - 999, ...
+        PERCENT_WITHIN_SAME_ORDER[ANY] = ROUND(PRIMES_WITHIN_SAME_ORDER[CV()] / NUMBER_RANGE[CV()] * 100, 2)
+    )";
+
+			var statements = Parser.Parse(statement1);
+			var statement = statements.Single().Validate();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+		}
+
+		[Test(Description = @"")]
+		public void TestModelClauseWithIterateClause()
+		{
+			const string statement1 =
+@"SELECT
+    NEXT_DAY
+    (
+        LAST_DAY(ADD_MONTHS(TRUNC(SYSDATE, 'y'), cell)) - 7,
+        TO_CHAR(TO_DATE('29-jan-1927', 'dd-mon-yyyy'), 'DAY') -- Saturday
+    ) LAST_SATURDAY_IN_MONTH
+FROM
+    DUAL
+MODEL
+    RETURN ALL ROWS
+    DIMENSION BY (0 dimension_column)
+    MEASURES (0 cell)
+    RULES ITERATE (12)
+    (
+        cell[Iteration_Number] = Iteration_Number
+    )";
+
+			var statements = Parser.Parse(statement1);
+			var statement = statements.Single().Validate();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+		}
+
+		[Test(Description = @"")]
+		public void TestModelClauseWithOtherClauses()
+		{
+			const string statement1 =
+@"SELECT
+	COUNTRY, PROD, YEAR, S
+FROM
+	SALES_VIEW_REF
+MODEL
+	PARTITION BY (COUNTRY)
+	DIMENSION BY (PROD, YEAR)
+	MEASURES (SALE S)
+	IGNORE NAV
+	UNIQUE DIMENSION
+	RULES UPSERT SEQUENTIAL ORDER (
+		S[PROD = 'Mouse Pad', YEAR = 2000] = S['Mouse Pad', 1998] + S['Mouse Pad', 1999],
+		S['Standard Mouse', 2001] = S['Standard Mouse', 2000],
+		S['Standard Mouse', 2002] = SUM(S)['Mouse Pad', YEAR BETWEEN CV() - 2 AND CV() - 1]
+    )
+ORDER BY
+	COUNTRY, PROD, YEAR";
+
+			var statements = Parser.Parse(statement1);
+			var statement = statements.Single().Validate();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+		}
+
 		public class IsRuleValid
 		{
 			[Test(Description = @"")]
@@ -2166,6 +2280,7 @@ FROM DUAL";
 						Terminals.Intersect,
 						Terminals.Join,
 						Terminals.Left,
+						Terminals.Model,
 						Terminals.Natural,
 						Terminals.ObjectAlias,
 						Terminals.Offset,

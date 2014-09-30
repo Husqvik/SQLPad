@@ -12,8 +12,8 @@ namespace SqlPad.Oracle
 	{
 		private readonly TextReader _sqlReader;
 
-		private readonly HashSet<char> _singleCharacterTerminalsNew =
-			new HashSet<char> { '(', ')', ',', ';', '+', '@', ':' };
+		private readonly HashSet<char> _singleCharacterTerminals =
+			new HashSet<char> { '(', ')', ',', ';', '+', '@', ':', '[', ']' };
 
 		private OracleTokenReader(TextReader sqlReader)
 		{
@@ -71,7 +71,7 @@ namespace SqlPad.Oracle
 				FindFlags(specialMode, character, out flags);
 
 				var isBlank = flags.IsSpace || flags.IsLineTerminator;
-				var isSingleCharacterTerminal = _singleCharacterTerminalsNew.Contains(character);
+				var isSingleCharacterTerminal = _singleCharacterTerminals.Contains(character);
 				var characterYielded = false;
 
 				if (flags.QuotedStringCandidate && (builder.Length > 1 || (builder.Length == 1 && character != 'q' && character != 'Q' && previousFlags.Character != 'n' && previousFlags.Character != 'N')))

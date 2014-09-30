@@ -1146,7 +1146,7 @@ se";
 			AssertTableSuggestionWhenTypingUpdateOrDeleteCommand(items);
 		}
 
-		private static void AssertTableSuggestionWhenTypingUpdateOrDeleteCommand(List<ICodeCompletionItem> items)
+		private static void AssertTableSuggestionWhenTypingUpdateOrDeleteCommand(IReadOnlyList<ICodeCompletionItem> items)
 		{
 			items.Count.ShouldBe(3);
 			items[0].Name.ShouldBe("SELECTION");
@@ -1189,6 +1189,18 @@ se";
 			items[0].Text.ShouldBe("LAST_VALUE()");
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.BuiltInFunction);
 			items[0].CaretOffset.ShouldBe(-1);
+		}
+
+		[Test(Description = @"")]
+		public void TestSuggestionInSubsequentEmptySelectListItem()
+		{
+			const string statement = @"SELECT DUMMY, , DUMMY FROM DUAL";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 14, true, OracleCodeCompletionCategory.Column).ToList();
+			items.Count.ShouldBe(1);
+			items[0].Name.ShouldBe("DUAL.DUMMY");
+			items[0].Text.ShouldBe("DUAL.DUMMY");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.Column);
+			items[0].CaretOffset.ShouldBe(0);
 		}
 
 		public class OracleCodeCompletionTypeTest

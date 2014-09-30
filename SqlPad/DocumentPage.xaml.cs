@@ -506,6 +506,7 @@ namespace SqlPad
 			}
 			else if (_gatherExecutionStatistics)
 			{
+				_pageModel.SessionExecutionStatistics.Clear();
 				_pageModel.SessionExecutionStatistics.AddRange(await DatabaseModel.GetExecutionStatisticsAsync(CancellationToken.None));
 			}
 		}

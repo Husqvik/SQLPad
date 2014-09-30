@@ -125,6 +125,11 @@ namespace SqlPad.Oracle
 			AnalyzeObjectReferencePrefixes(effectiveTerminal);
 
 			var precedingTerminal = nearestTerminal.PrecedingTerminal;
+			if (precedingTerminal == null && nearestTerminal != Statement.RootNode.FirstTerminalNode)
+			{
+				precedingTerminal = nearestTerminal;
+			}
+
 			TerminalCandidates = new HashSet<string>(_parser.GetTerminalCandidates(isCursorAfterToken ? nearestTerminal : precedingTerminal));
 			
 			var isCursorTouchingTwoTerminals = nearestTerminal.SourcePosition.IndexStart == cursorPosition && precedingTerminal != null && precedingTerminal.SourcePosition.IndexEnd + 1 == cursorPosition;
@@ -163,6 +168,11 @@ namespace SqlPad.Oracle
 
 		private void AnalyzeObjectReferencePrefixes(StatementGrammarNode effectiveTerminal)
 		{
+			if (effectiveTerminal == null)
+			{
+				return;
+			}
+
 			AnalyzePrefixedColumnReference(effectiveTerminal);
 
 			AnalyzeQueryTableExpression(effectiveTerminal);

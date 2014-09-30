@@ -39,7 +39,7 @@ namespace SqlPad.Oracle
 				matchResult.IsMatched &= matchedPackageNames.Any();
 			}
 
-			if (_identifierMatch != null && isSchemaMatched)
+			if (_identifierMatch != null && matchResult.IsMatched)
 			{
 				var matchedIdentifierNames = _identifierMatch.IsMatch(functionMetadata);
 				if (_identifierMatch.IsResultValue)

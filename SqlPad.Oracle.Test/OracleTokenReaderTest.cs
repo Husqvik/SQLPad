@@ -476,6 +476,14 @@ namespace SqlPad.Oracle.Test
 			tokens.ShouldBe(new[] { "SELECT", "q'<text>'", ",", "q'[text]'", ",", "Q'(text)'", ",", "NQ'{text}'", "FROM", "DUAL" });
 		}
 
+		[Test(Description = "Tests brackets used within MODEL clause. ")]
+		public void TestBracketsFromModelClause()
+		{
+			const string testQuery = "CELL[ITERATION_NUMBER]=ITERATION_NUMBER";
+			var tokens = GetTokenValuesFromOracleSql(testQuery);
+			tokens.ShouldBe(new[] { "CELL", "[", "ITERATION_NUMBER", "]", "=", "ITERATION_NUMBER" });
+		}
+
 		private string[] GetTokenValuesFromOracleSql(string sqlText, bool includeCommentBlocks = false)
 		{
 			return GetTokensFromOracleSql(sqlText, includeCommentBlocks).Select(t => t.Value).ToArray();

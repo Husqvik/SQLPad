@@ -1220,7 +1220,493 @@
           <NonTerminal Id="WhereClause" IsOptional="true" />
           <NonTerminal Id="HierarchicalQueryClause" IsOptional="true" />
           <NonTerminal Id="GroupByClause" IsOptional="true" />
-          <!--<NonTerminal Id="ModelClause" IsOptional="true" />-->
+          <NonTerminal Id="ModelClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ModelClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Model" />
+          <NonTerminal Id="CellReferenceOptions" IsOptional="true" />
+          <NonTerminal Id="ReturnRowsClause" IsOptional="true" />
+          <NonTerminal Id="ReferenceModelList" IsOptional="true" />
+          <NonTerminal Id="MainModel" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="MainModel">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="MainModelName" IsOptional="true" />
+          <NonTerminal Id="ModelColumnClauses" />
+          <NonTerminal Id="CellReferenceOptions" IsOptional="true" />
+          <NonTerminal Id="ModelRulesClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ModelRulesClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ModelRulesClauseRulesPart" IsOptional="true" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="ModelRulesClauseAssignmentList" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ModelRulesClauseAssignmentList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="UpdateOrUpsertAll" IsOptional="true" />
+          <NonTerminal Id="CellAssignment" />
+          <NonTerminal Id="OrderByClause" IsOptional="true" />
+          <Terminal Id="MathEquals" />
+          <NonTerminal Id="Expression" />
+          <NonTerminal Id="CommaChainedModelRulesClauseAssignmentList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="CellAssignment">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Identifier" />
+          <Terminal Id="LeftBracket" />
+          <NonTerminal Id="MultiColumnForLoopOrConditionOrExpressionOrSingleColumnForLoopList" />
+          <Terminal Id="RightBracket" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="MultiColumnForLoopOrConditionOrExpressionOrSingleColumnForLoopList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="MultiColumnForLoop" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ConditionOrExpressionOrSingleColumnForLoopList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="MultiColumnForLoop">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="For" />
+          <NonTerminal Id="ParenthesisEnclosedIdentifierList" />
+          <Terminal Id="In" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="ParenthesisEnclosedLiteralListListOrSubquery" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ParenthesisEnclosedLiteralListListOrSubquery">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="NestedQuery" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ParenthesisEnclosedLiteralList" />
+          <NonTerminal Id="CommaChainedParenthesisEnclosedLiteralList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="CommaChainedParenthesisEnclosedLiteralList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="ParenthesisEnclosedLiteralList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ParenthesisEnclosedLiteralList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="LiteralList" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ConditionOrExpressionOrSingleColumnForLoopList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="Condition" />
+          <NonTerminal Id="CommaChainedConditionOrExpressionOrSingleColumnForLoopList" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="Expression" />
+          <NonTerminal Id="CommaChainedConditionOrExpressionOrSingleColumnForLoopList" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="SingleColumnForLoop" />
+          <NonTerminal Id="CommaChainedConditionOrExpressionOrSingleColumnForLoopList" IsOptional="true" />
+        </Sequence>
+        <Sequence Comment="ANY is not mentioned in the documentation">
+          <Terminal Id="Any" />
+          <NonTerminal Id="CommaChainedConditionOrExpressionOrSingleColumnForLoopList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ConditionOrExpressionList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ConditionOrExpression" />
+          <NonTerminal Id="CommaChainedConditionOrExpression" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="CommaChainedConditionOrExpression">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="ConditionOrExpressionList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ConditionOrExpression">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="Condition" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="Expression" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="SingleColumnForLoop">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="For" />
+          <Terminal Id="Identifier" />
+          <NonTerminal Id="InParenthesisEnclosedLiteralListOrSubqueryOrWithinRange" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="InParenthesisEnclosedLiteralListOrSubqueryOrWithinRange">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="In" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="LiteralListOrSubquery" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="LikePattern" IsOptional="true" />
+          <Terminal Id="From" />
+          <NonTerminal Id="Literal" />
+          <Terminal Id="To" />
+          <NonTerminal Id="Literal" />
+          <NonTerminal Id="IncrementOrDecrement" />
+          <NonTerminal Id="Literal" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="IncrementOrDecrement">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Increment" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="Decrement" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="LikePattern">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Like" /><!--TODO: Check if LIKE is the only valid operator -->
+          <Terminal Id="StringLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="LiteralListOrSubquery">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="NestedQuery" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="LiteralList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="LiteralList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Literal" />
+          <NonTerminal Id="CommaChainedLiteralList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="Literal">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="StringLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="NumberLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="CommaChainedLiteralList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="LiteralList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+      
+    <Rule StartingNonTerminal="CommaChainedConditionOrExpressionOrSingleColumnForLoopList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="ConditionOrExpressionOrSingleColumnForLoopList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="CommaChainedModelRulesClauseAssignmentList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="ModelRulesClauseAssignmentList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ModelRulesClauseRulesPart">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Rules" />
+          <NonTerminal Id="UpdateOrUpsertAll" IsOptional="true" />
+          <NonTerminal Id="AutomaticOrSequentialOrder" IsOptional="true" />
+          <NonTerminal Id="ModelIterateClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ModelIterateClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Iterate" />
+          <Terminal Id="LeftParenthesis" />
+          <Terminal Id="IntegerLiteral" />
+          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="UntilCondition" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="UntilCondition">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Until" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="Condition" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AutomaticOrSequentialOrder">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="AutomaticOrSequential" />
+          <Terminal Id="Order" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AutomaticOrSequential">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Automatic" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Sequential" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="UpdateOrUpsertAll">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Update" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Upsert" />
+          <Terminal Id="All" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="MainModelName">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Main" />
+          <Terminal Id="Identifier" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ReferenceModelList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ReferenceModel" />
+          <NonTerminal Id="ReferenceModelList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ReferenceModel">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Reference" />
+          <Terminal Id="Identifier" />
+          <Terminal Id="On" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="NestedQuery" />
+          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="ModelColumnClauses" />
+          <NonTerminal Id="CellReferenceOptions" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ModelColumnClauses">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ModelColumnClausesPartitionByExpressionList" IsOptional="true" />
+          <Terminal Id="Dimension" />
+          <Terminal Id="By" />
+          <NonTerminal Id="ParenthesisEnclosedAliasedExpressionList" />
+          <Terminal Id="Measures" />
+          <NonTerminal Id="ParenthesisEnclosedAliasedExpressionList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ModelColumnClausesPartitionByExpressionList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Partition" />
+          <Terminal Id="By" />
+          <NonTerminal Id="ParenthesisEnclosedAliasedExpressionList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ParenthesisEnclosedAliasedExpressionList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="AliasedExpressionList" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AliasedExpressionList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="Expression" />
+          <Terminal Id="ColumnAlias" IsOptional="true" />
+          <NonTerminal Id="CommaChainedAliasedExpressionList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="CommaChainedAliasedExpressionList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="AliasedExpressionList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ReturnRowsClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Return" />
+          <NonTerminal Id="AllOrUpdated" />
+          <Terminal Id="Rows" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AllOrUpdated">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="All" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Updated" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="CellReferenceOptions">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="IgnoreOrKeepNonAvailableValues" IsOptional="true" />
+          <NonTerminal Id="UniqueDimensionOrSingleReference" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="UniqueDimensionOrSingleReference">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Unique" />
+          <Terminal Id="Dimension" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Unique" />
+          <Terminal Id="Single" />
+          <Terminal Id="Reference" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="IgnoreOrKeepNonAvailableValues">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="IgnoreOrKeep" />
+          <Terminal Id="NonAvailableValues" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="IgnoreOrKeep">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Ignore" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Keep" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -1486,6 +1972,13 @@
           <Terminal Id="From" />
           <NonTerminal Id="Expression" />
           <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Identifier" />
+          <Terminal Id="LeftBracket" />
+          <NonTerminal Id="ConditionOrExpressionList" />
+          <Terminal Id="RightBracket" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
@@ -3526,10 +4019,55 @@
         <Sequence>
           <NonTerminal Id="AggregateFunction" />
           <NonTerminal Id="AggregateFunctionParameter" />
-          <NonTerminal Id="AnalyticOrKeepClause" IsOptional="true" />
+          <NonTerminal Id="AnalyticOrKeepClauseOrModelAggregateFunctionExpression" IsOptional="true" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="ListAggregationClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AnalyticOrKeepClauseOrModelAggregateFunctionExpression">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="AnalyticOrKeepClause" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="LeftBracket" />
+          <NonTerminal Id="ConditionOrExpressionListOrSingleColumnForLoopListOrMultiColumnForLoop" />
+          <Terminal Id="RightBracket" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ConditionOrExpressionListOrSingleColumnForLoopListOrMultiColumnForLoop">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="MultiColumnForLoop" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="SingleColumnForLoopList" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ConditionOrExpressionList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SingleColumnForLoopList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="SingleColumnForLoop" />
+          <NonTerminal Id="CommaChainedSingleColumnForLoopList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="CommaChainedSingleColumnForLoopList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="SingleColumnForLoopList" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -8344,6 +8882,8 @@
     <Terminal Id="Is" Value="IS" IsKeyword="true" />
     <Terminal Id="LeftParenthesis" Value="(" />
     <Terminal Id="RightParenthesis" Value=")" />
+    <Terminal Id="LeftBracket" Value="[" />
+    <Terminal Id="RightBracket" Value="]" />
     <Terminal Id="MathPlus" Value="+" />
     <Terminal Id="MathMinus" Value="-" />
     <Terminal Id="MathFactor" Value="*" />
@@ -8618,6 +9158,16 @@
 
     <!-- Model clause -->
     <Terminal Id="Model" Value="MODEL" />
+    <Terminal Id="Main" Value="MAIN" />
+    <Terminal Id="Dimension" Value="DIMENSION" />
+    <Terminal Id="Measures" Value="MEASURES" />
+    <Terminal Id="Rules" Value="RULES" />
+    <Terminal Id="Upsert" Value="UPSERT" />
+    <Terminal Id="Automatic" Value="AUTOMATIC" />
+    <Terminal Id="Sequential" Value="SEQUENTIAL" />
+    <Terminal Id="Iterate" Value="ITERATE" />
+    <Terminal Id="Until" Value="UNTIL" />
+    <Terminal Id="NonAvailableValues" Value="NAV" />
 
     <!-- Oracle 12c specific -->
     <!-- Cross/outer apply clause -->
