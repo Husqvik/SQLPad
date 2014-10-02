@@ -74,9 +74,10 @@ namespace SqlPad.Oracle
 				var isSingleCharacterTerminal = _singleCharacterTerminals.Contains(character);
 				var characterYielded = false;
 
-				if (flags.QuotedStringCandidate && (builder.Length > 1 || (builder.Length == 1 && character != 'q' && character != 'Q' && previousFlags.Character != 'n' && previousFlags.Character != 'N')))
+				if ((flags.QuotedStringCandidate || flags.UnicodeCandidate) && (builder.Length > 1 || (builder.Length == 1 && character != 'q' && character != 'Q' && previousFlags.Character != 'n' && previousFlags.Character != 'N')))
 				{
 					flags.QuotedStringCandidate = false;
+					flags.UnicodeCandidate = false;
 				}
 
 				if (inQuotedString && quotingInitializer == null)
@@ -133,7 +134,7 @@ namespace SqlPad.Oracle
 				{
 					AppendCandidateCharacter(builder, ref candidateCharacter);
 
-					if (builder.Length > 0 && !previousFlags.QuotedStringCandidate)
+					if (builder.Length > 0 && !previousFlags.QuotedStringCandidate && !previousFlags.UnicodeCandidate)
 					{
 						yield return BuildToken(builder, index - 1, null);
 					}
@@ -519,6 +520,8 @@ namespace SqlPad.Oracle
 					break;
 				case 'n':
 				case 'N':
+					flags.UnicodeCandidate = !specialMode.InString;
+					break;
 				case 'q':
 				case 'Q':
 					flags.QuotedStringCandidate = !specialMode.InString;
@@ -535,7 +538,7 @@ namespace SqlPad.Oracle
 					break;
 				case '\r':
 				case '\n':
-					flags.IsLineTerminator = true;//!specialMode.InBlockComment && !specialMode.InString && !specialMode.InQuotedIdentifier;
+					flags.IsLineTerminator = true;
 					break;
 			}
 		}
@@ -557,6 +560,7 @@ namespace SqlPad.Oracle
 			public bool QuotedStringCandidate;
 			public bool StringEndCandidate;
 			public bool ExponentCandidate;
+			public bool UnicodeCandidate;
 
 			public void Reset()
 			{
@@ -570,6 +574,7 @@ namespace SqlPad.Oracle
 				OptionalParameterCandidate = false;
 				RelationalOperatorCandidate = false;
 				QuotedStringCandidate = false;
+				UnicodeCandidate = false;
 				StringEndCandidate = false;
 				ExponentCandidate = false;
 			}

@@ -53,6 +53,11 @@ namespace SqlPad
 	{
 		private bool _value;
 
+		public BooleanOption()
+		{
+			IsEnabled = true;
+		}
+
 		public bool Value
 		{
 			get { return _value; }
@@ -64,5 +69,7 @@ namespace SqlPad
 		public string Description { get; set; }
 
 		public object Tag { get; set; }
+		
+		public bool IsEnabled { get; set; }
 	}
 }

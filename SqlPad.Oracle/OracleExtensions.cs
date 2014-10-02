@@ -28,18 +28,26 @@ namespace SqlPad.Oracle
 			}
 
 			var trimToIndex = 1;
-			var isUnicode = oracleString[0] == 'n' || oracleString[0] == 'N';
-			if (isUnicode || oracleString[0] == 'q' || oracleString[0] == 'Q')
+			var isQuotedString = false;
+			if (oracleString[0] == 'n' || oracleString[0] == 'N')
 			{
-				trimToIndex = 3;
-
-				if (isUnicode && (oracleString[1] == 'q' || oracleString[1] == 'Q'))
+				if ((oracleString[1] == 'q' || oracleString[1] == 'Q'))
 				{
 					trimToIndex = 4;
+					isQuotedString = true;
+				}
+				else
+				{
+					trimToIndex = 2;
 				}
 			}
+			else if (oracleString[0] == 'q' || oracleString[0] == 'Q')
+			{
+				trimToIndex = 3;
+				isQuotedString = true;
+			}
 
-			return oracleString.Substring(trimToIndex, oracleString.Length - trimToIndex - (trimToIndex > 1 ? 2 : 1));
+			return oracleString.Substring(trimToIndex, oracleString.Length - trimToIndex - (isQuotedString ? 2 : 1));
 		}
 
 		public static string ToOracleString(this string value)

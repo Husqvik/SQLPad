@@ -475,7 +475,8 @@ namespace SqlPad.Oracle
 					.Select(r =>
 						new ObjectReferenceCompletionData
 						{
-							Name = r.FullyQualifiedObjectName.ToString(),
+							Identifier1 = r.FullyQualifiedObjectName.Owner,
+							Identifier2 = r.FullyQualifiedObjectName.NormalizedName,
 							SchemaObject = r.SchemaObject,
 							Category = r.Type.ToCategoryLabel()
 						});
@@ -633,7 +634,7 @@ namespace SqlPad.Oracle
 			var activeSchema = databaseModel.CurrentSchema.ToQuotedIdentifier();
 			var dataObjects = databaseModel.AllObjects.Values
 				.Where(o => (filter == null || filter(o)) && FilterSchema(o, activeSchema, schemaName))
-				.Select(o => new ObjectReferenceCompletionData { Name = o.Name, SchemaObject = o, Category = OracleCodeCompletionCategory.SchemaObject });
+				.Select(o => new ObjectReferenceCompletionData { Identifier2 = o.Name, SchemaObject = o, Category = OracleCodeCompletionCategory.SchemaObject });
 			return CreateObjectItems(dataObjects, objectNamePart, node, categoryOffset, insertOffset);
 		}
 
@@ -648,26 +649,31 @@ namespace SqlPad.Oracle
 		private IEnumerable<ICodeCompletionItem> CreateObjectItems(IEnumerable<ObjectReferenceCompletionData> objects, string objectNamePart, StatementGrammarNode node, int categoryOffset = 0, int insertOffset = 0)
 		{
 			return objects
-				.Where(o => MakeSaveQuotedIdentifier(objectNamePart) != o.Name &&
-				            (node == null || node.Token.Value.ToQuotedIdentifier() != o.Name) && CodeCompletionSearchHelper.IsMatch(o.Name, objectNamePart))
-				.Select(o => new OracleCodeCompletionItem
-				{
-					Name = o.Name.ToSimpleIdentifier(),
-					Text = o.Name.ToSimpleIdentifier() + o.TextPostFix,
-					Priority = String.IsNullOrEmpty(objectNamePart) || o.Name.Trim('"').ToUpperInvariant().StartsWith(objectNamePart.ToUpperInvariant()) ? 0 : 1,
-					StatementNode = node,
-					Category = o.Category,
-					InsertOffset = insertOffset,
-					CaretOffset = o.CaretOffset,
-					CategoryPriority = categoryOffset
-				});
+				.Where(o => MakeSaveQuotedIdentifier(objectNamePart) != o.Identifier2 &&
+							(node == null || node.Token.Value.ToQuotedIdentifier() != o.Identifier2) && CodeCompletionSearchHelper.IsMatch(o.Identifier2, objectNamePart))
+				.Select(o =>
+					new OracleCodeCompletionItem
+					{
+						Name = o.CompletionText,
+						Text = o.CompletionText + o.TextPostFix,
+						Priority = String.IsNullOrEmpty(objectNamePart) || o.CompletionText.TrimStart('"').ToUpperInvariant().StartsWith(objectNamePart.ToUpperInvariant()) ? 0 : 1,
+						StatementNode = node,
+						Category = o.Category,
+						InsertOffset = insertOffset,
+						CaretOffset = o.CaretOffset,
+						CategoryPriority = categoryOffset
+					});
 		}
 
 		private class ObjectReferenceCompletionData
 		{
 			public OracleSchemaObject SchemaObject { get; set; }
 
-			public string Name { get; set; }
+			public string Identifier1 { get; set; }
+			
+			public string Identifier2 { get; set; }
+
+			public string CompletionText { get { return OracleObjectIdentifier.MergeIdentifiersIntoSimpleString(Identifier1, Identifier2); } }
 			
 			public string Category { get; set; }
 

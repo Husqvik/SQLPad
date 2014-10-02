@@ -270,7 +270,7 @@ namespace SqlPad.Oracle.Test
 		{
 			const string query1 = @"SELECT SELECTION.NAME, RESPONDENTBUCKET.NAME FROM SELECTION, RESPONDENTBUCKET";
 
-			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 0).SingleOrDefault(a => a.Name == GenerateCreateTableScriptFromQueryCommand.Title);
+			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 0).SingleOrDefault(a => a.Name == AddCreateTableAsCommand.Title);
 			action.ShouldNotBe(null);
 		}
 
@@ -279,7 +279,7 @@ namespace SqlPad.Oracle.Test
 		{
 			const string query1 = @"SELECT * FROM";
 
-			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 0).SingleOrDefault(a => a.Name == GenerateCreateTableScriptFromQueryCommand.Title);
+			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 0).SingleOrDefault(a => a.Name == AddCreateTableAsCommand.Title);
 			action.ShouldBe(null);
 		}
 	}

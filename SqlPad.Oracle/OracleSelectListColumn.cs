@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
+using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
 namespace SqlPad.Oracle
 {
@@ -67,19 +68,74 @@ namespace SqlPad.Oracle
 					Unit = columnDescription == null ? DataUnit.NotApplicable : columnDescription.Unit
 				};
 
+			if (columnDescription == null && RootNode.TerminalCount == 1)
+			{
+				var tokenValue = RootNode.FirstTerminalNode.Token.Value;
+				switch (RootNode.FirstTerminalNode.Id)
+				{
+					case Terminals.StringLiteral:
+						if (tokenValue[0] == 'n' || tokenValue[0] == 'N')
+						{
+							_columnDescription.Type = "NVARCHAR2";
+						}
+						else
+						{
+							_columnDescription.Type = "VARCHAR2";
+							_columnDescription.Unit = DataUnit.Character;
+						}
+
+						_columnDescription.CharacterSize = tokenValue.ToSimpleString().Length;
+						_columnDescription.Nullable = false;
+						break;
+					case Terminals.NumberLiteral:
+						_columnDescription.Type = "NUMBER";
+						_columnDescription.Precision = GetNumberPrecision(tokenValue);
+						int? scale = null;
+						if (_columnDescription.Precision.HasValue)
+						{
+							var indexDecimalDigit = tokenValue.IndexOf('.');
+							if (indexDecimalDigit != -1)
+							{
+								scale = tokenValue.Length - indexDecimalDigit - 1;
+							}
+						}
+
+						_columnDescription.Scale = scale;
+						_columnDescription.Nullable = false;
+						break;
+					case Terminals.IntegerLiteral:
+						_columnDescription.Type = "INTEGER";
+						_columnDescription.Precision = GetNumberPrecision(tokenValue);
+						_columnDescription.Scale = 0;
+						_columnDescription.Nullable = false;
+						break;
+				}
+			}
+
 			return _columnDescription;
+		}
+
+		private static int? GetNumberPrecision(string value)
+		{
+			if (value.Any(c => c.In('e', 'E')))
+			{
+				return null;
+			}
+
+			return value.Count(Char.IsDigit);
 		}
 
 		public OracleSelectListColumn AsImplicit()
 		{
-			return new OracleSelectListColumn(SemanticModel)
-			       {
-				       ExplicitDefinition = false,
-				       AliasNode = AliasNode,
-				       RootNode = RootNode,
-				       IsDirectReference = true,
-					   _columnDescription = _columnDescription
-			       };
+			return
+				new OracleSelectListColumn(SemanticModel)
+				{
+					ExplicitDefinition = false,
+					AliasNode = AliasNode,
+					RootNode = RootNode,
+					IsDirectReference = true,
+					_columnDescription = _columnDescription
+				};
 		}
 	}
 }

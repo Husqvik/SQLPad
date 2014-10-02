@@ -41,7 +41,7 @@
 						<ListView.ItemTemplate>
 							<DataTemplate >
 								<StackPanel Orientation="Horizontal">
-									<CheckBox IsChecked="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Margin="0, 0, 8, 0" />
+									<CheckBox IsChecked="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" IsEnabled="{Binding Path=IsEnabled}" Margin="0, 0, 8, 0" />
 									<TextBlock Text="{Binding Path=Description, Mode=OneWay}" VerticalAlignment="Center"></TextBlock>
 								</StackPanel>
 							</DataTemplate>

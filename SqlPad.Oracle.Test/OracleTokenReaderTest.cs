@@ -484,6 +484,14 @@ namespace SqlPad.Oracle.Test
 			tokens.ShouldBe(new[] { "CELL", "[", "ITERATION_NUMBER", "]", "=", "ITERATION_NUMBER" });
 		}
 
+		[Test(Description = "Tests unicode string literal. ")]
+		public void TestUnicodeStringLiteral()
+		{
+			const string testQuery = "SELECT n'value' FROM DUAL";
+			var tokens = GetTokenValuesFromOracleSql(testQuery);
+			tokens.ShouldBe(new[] { "SELECT", "n'value'", "FROM", "DUAL" });
+		}
+
 		private string[] GetTokenValuesFromOracleSql(string sqlText, bool includeCommentBlocks = false)
 		{
 			return GetTokensFromOracleSql(sqlText, includeCommentBlocks).Select(t => t.Value).ToArray();

@@ -549,5 +549,29 @@ FROM
 			var functionReference = semanticModel.MainObjectReferenceContainer.ProgramReferences.Single();
 			functionReference.Metadata.ShouldNotBe(null);
 		}
+
+		[Test(Description = @"")]
+		public void TestLiteralColumnDataTypeResolution()
+		{
+			const string query1 = @"SELECT 123.456, '123.456', N'123.456', 123., 1.2E+1 FROM DUAL";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.QueryBlocks.Count.ShouldBe(1);
+			var queryBlock = semanticModel.QueryBlocks.First();
+			queryBlock.Columns.Count.ShouldBe(5);
+			var columns = queryBlock.Columns.ToArray();
+			columns[0].ColumnDescription.ShouldNotBe(null);
+			columns[0].ColumnDescription.FullTypeName.ShouldBe("NUMBER(6, 3)");
+			columns[1].ColumnDescription.ShouldNotBe(null);
+			columns[1].ColumnDescription.FullTypeName.ShouldBe("VARCHAR2(7 CHAR)");
+			columns[2].ColumnDescription.ShouldNotBe(null);
+			columns[2].ColumnDescription.FullTypeName.ShouldBe("NVARCHAR2(7)");
+			columns[3].ColumnDescription.ShouldNotBe(null);
+			columns[3].ColumnDescription.FullTypeName.ShouldBe("NUMBER(3)");
+			columns[4].ColumnDescription.ShouldNotBe(null);
+			columns[4].ColumnDescription.FullTypeName.ShouldBe("NUMBER");
+		}
 	}
 }

@@ -1203,6 +1203,14 @@ se";
 			items[0].CaretOffset.ShouldBe(0);
 		}
 
+		[Test(Description = @"")]
+		public void TestColumnSuggestionFromQuotedFullyQualifiedTable()
+		{
+			const string statement = "SELECT P FROM \"eng\".\"BlacklistPanels\"";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 8).ToList();
+			items.Count.ShouldBe(3);
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)

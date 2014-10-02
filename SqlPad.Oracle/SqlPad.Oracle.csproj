@@ -63,7 +63,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CodeCompletionSearchHelper.cs" />
-    <Compile Include="Commands\GenerateCreateTableScriptFromQueryCommand.cs" />
+    <Compile Include="Commands\AddCreateTableAsCommand.cs" />
     <Compile Include="Commands\AddMissingColumnCommand.cs" />
     <Compile Include="Commands\CreateScriptCommand.cs" />
     <Compile Include="Commands\AddInsertIntoColumnListCommand.cs" />

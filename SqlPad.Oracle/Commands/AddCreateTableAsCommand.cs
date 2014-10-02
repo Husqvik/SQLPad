@@ -1,18 +1,20 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
+using System.Windows;
 using SqlPad.Commands;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
 namespace SqlPad.Oracle.Commands
 {
-	internal class GenerateCreateTableScriptFromQueryCommand : OracleCommandBase
+	internal class AddCreateTableAsCommand : OracleCommandBase
 	{
-		public const string Title = "Generate CREATE TABLE script";
-		private CommandSettingsModel _settingsModel;
-		private bool _useDefaultSettings;
+		public const string Title = "Add CREATE TABLE AS";
+		public const string CreateSeparateStatement = "CreateSeparateStatement";
 
-		private GenerateCreateTableScriptFromQueryCommand(CommandExecutionContext executionContext)
+		private CommandSettingsModel _settingsModel;
+
+		private AddCreateTableAsCommand(CommandExecutionContext executionContext)
 			: base(executionContext)
 		{
 		}
@@ -37,13 +39,23 @@ namespace SqlPad.Oracle.Commands
 			ExecutionContext.EnsureSettingsProviderAvailable();
 
 			_settingsModel = ExecutionContext.SettingsProvider.Settings;
-			_useDefaultSettings = _settingsModel.UseDefaultSettings == null || _settingsModel.UseDefaultSettings();
 			_settingsModel.ValidationRule = new OracleIdentifierValidationRule();
 
 			_settingsModel.Title = "Create table script";
 			_settingsModel.Description = "Enter table name: ";
 
 			_settingsModel.Heading = _settingsModel.Title;
+
+			var createTableAsAllowed = CurrentQueryBlock == SemanticModel.MainQueryBlock;
+			_settingsModel.BooleanOptionsVisibility = Visibility.Visible;
+			_settingsModel.AddBooleanOption(
+					new BooleanOption
+					{
+						OptionIdentifier = CreateSeparateStatement,
+						Description = "Create separate statement",
+						Value = !createTableAsAllowed,
+						IsEnabled = createTableAsAllowed
+					});
 		}
 
 		protected override void Execute()
@@ -53,9 +65,9 @@ namespace SqlPad.Oracle.Commands
 			if (!ExecutionContext.SettingsProvider.GetSettings())
 				return;
 
-			var textSegment = _useDefaultSettings
-				? AddCreateTableAsPrefix()
-				: BuildCreateTableCommand();
+			var textSegment = _settingsModel.BooleanOptions[CreateSeparateStatement].Value
+				? BuildCreateTableCommand()
+				: AddCreateTableAsPrefix();
 
 			ExecutionContext.SegmentsToReplace.Add(textSegment);
 		}

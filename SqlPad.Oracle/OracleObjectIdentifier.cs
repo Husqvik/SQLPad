@@ -68,6 +68,12 @@ namespace SqlPad.Oracle
 			return uniqueIdentifiers;
 		}
 
+		public static string MergeIdentifiersIntoSimpleString(string identifier1, string identifier2)
+		{
+			var ownerPrefix = String.IsNullOrEmpty(identifier1) ? null : String.Format("{0}.", identifier1.ToSimpleIdentifier());
+			return String.Format("{0}{1}", ownerPrefix, identifier2.ToSimpleIdentifier());
+		}
+
 		#region Overrides of ValueType
 		public override string ToString()
 		{
