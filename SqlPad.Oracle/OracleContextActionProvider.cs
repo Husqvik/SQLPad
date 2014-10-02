@@ -62,10 +62,7 @@ namespace SqlPad.Oracle
 
 			if (OracleCommands.ExpandAsterisk.CanExecuteHandler(executionContext))
 			{
-				var expandAsteriskExecutionContext = executionContext.Clone();
-				expandAsteriskExecutionContext.SettingsProvider = new EditDialog(new CommandSettingsModel { UseDefaultSettings = () => !Keyboard.IsKeyDown(Key.LeftShift) } );
-
-				actionList.Add(new OracleContextAction(ExpandAsteriskCommand.Title, OracleCommands.ExpandAsterisk, expandAsteriskExecutionContext));
+				actionList.Add(new OracleContextAction(ExpandAsteriskCommand.Title, OracleCommands.ExpandAsterisk, CloneContextWithUseDefaultSettingsOption(executionContext)));
 			}
 
 			if (OracleCommands.UnnestInlineView.CanExecuteHandler(executionContext))
@@ -90,10 +87,7 @@ namespace SqlPad.Oracle
 
 			if (OracleCommands.AddInsertIntoColumnList.CanExecuteHandler(executionContext))
 			{
-				var addInsertIntoColumnListExecutionContext = executionContext.Clone();
-				addInsertIntoColumnListExecutionContext.SettingsProvider = new EditDialog(new CommandSettingsModel { UseDefaultSettings = () => !Keyboard.IsKeyDown(Key.LeftShift) });
-
-				actionList.Add(new OracleContextAction(AddInsertIntoColumnListCommand.Title, OracleCommands.AddInsertIntoColumnList, addInsertIntoColumnListExecutionContext));
+				actionList.Add(new OracleContextAction(AddInsertIntoColumnListCommand.Title, OracleCommands.AddInsertIntoColumnList, CloneContextWithUseDefaultSettingsOption(executionContext)));
 			}
 
 			if (OracleCommands.CleanRedundantQualifier.CanExecuteHandler(executionContext))
@@ -103,7 +97,7 @@ namespace SqlPad.Oracle
 
 			if (OracleCommands.GenerateCreateTableScriptFromQuery.CanExecuteHandler(executionContext))
 			{
-				actionList.Add(new OracleContextAction(GenerateCreateTableScriptFromQueryCommand.Title, OracleCommands.GenerateCreateTableScriptFromQuery, executionContext));
+				actionList.Add(new OracleContextAction(GenerateCreateTableScriptFromQueryCommand.Title, OracleCommands.GenerateCreateTableScriptFromQuery, CloneContextWithUseDefaultSettingsOption(executionContext)));
 			}
 
 			var actions = ResolveAmbiguousColumnCommand.ResolveCommandHandlers(semanticModel, currentTerminal)
@@ -113,6 +107,14 @@ namespace SqlPad.Oracle
 
 			// TODO: Resolve command order
 			return actionList.AsReadOnly();
+		}
+
+		private static CommandExecutionContext CloneContextWithUseDefaultSettingsOption(CommandExecutionContext executionContext)
+		{
+			var contextWithUseDefaultSettingsOption = executionContext.Clone();
+			contextWithUseDefaultSettingsOption.SettingsProvider = new EditDialog(new CommandSettingsModel { UseDefaultSettings = () => !Keyboard.IsKeyDown(Key.LeftShift) });
+
+			return contextWithUseDefaultSettingsOption;
 		}
 	}
 

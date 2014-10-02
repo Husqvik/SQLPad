@@ -43,7 +43,7 @@ namespace SqlPad.Oracle.Commands
 			var expandedColumns = new List<ExpandedColumn>();
 			_sourcePosition = FillColumnNames(expandedColumns, true);
 
-			var initialValue = _settingsModel.UseDefaultSettings == null || _settingsModel.UseDefaultSettings();
+			var useDefaultSettings = _settingsModel.UseDefaultSettings == null || _settingsModel.UseDefaultSettings();
 
 			foreach (var expandedColumn in expandedColumns)
 			{
@@ -52,7 +52,7 @@ namespace SqlPad.Oracle.Commands
 					{
 						OptionIdentifier = expandedColumn.ColumnName,
 						Description = expandedColumn.ColumnName,
-						Value = !expandedColumn.IsRowId && initialValue,
+						Value = !expandedColumn.IsRowId && useDefaultSettings,
 						Tag = expandedColumn
 					});
 			}

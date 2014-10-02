@@ -980,7 +980,7 @@ WHERE
 			_editor.Text = statementText;
 
 			CanExecuteCommand(OracleCommands.GenerateCreateTableScriptFromQuery).ShouldBe(true);
-			ExecuteCommand(OracleCommands.GenerateCreateTableScriptFromQuery, new CommandSettingsModel { Value = "NEW_TABLE" });
+			ExecuteCommand(OracleCommands.GenerateCreateTableScriptFromQuery, new CommandSettingsModel { Value = "NEW_TABLE", UseDefaultSettings = () => false });
 
 			const string expectedResult =
 @"SELECT * FROM DUAL;
@@ -991,6 +991,25 @@ CREATE TABLE NEW_TABLE (
 ";
 			_editor.Text.ShouldBe(expectedResult);
 			_editor.CaretOffset.ShouldBe(0);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestGenerateCreateTableAsSelectFromQueryCommand()
+		{
+			const string statementText = @"SELECT * FROM DUAL";
+			_editor.Text = statementText;
+
+			CanExecuteCommand(OracleCommands.GenerateCreateTableScriptFromQuery).ShouldBe(true);
+			ExecuteCommand(OracleCommands.GenerateCreateTableScriptFromQuery, new CommandSettingsModel { Value = "NEW_TABLE" });
+
+			const string expectedResult =
+@"CREATE TABLE NEW_TABLE (
+	DUMMY
+)
+AS
+SELECT * FROM DUAL";
+			_editor.Text.ShouldBe(expectedResult);
+			_editor.CaretOffset.ShouldBe(41);
 		}
 	}
 }
