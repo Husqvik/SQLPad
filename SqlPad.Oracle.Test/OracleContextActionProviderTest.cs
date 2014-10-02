@@ -264,5 +264,23 @@ namespace SqlPad.Oracle.Test
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 0).SingleOrDefault(a => a.Name == CleanRedundantQualifierCommand.Title);
 			action.ShouldBe(null);
 		}
+
+		[Test(Description = @""), STAThread]
+		public void TestGenerateCreateTableScriptAvailable()
+		{
+			const string query1 = @"SELECT SELECTION.NAME, RESPONDENTBUCKET.NAME FROM SELECTION, RESPONDENTBUCKET";
+
+			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 0).SingleOrDefault(a => a.Name == GenerateCreateTableScriptFromQueryCommand.Title);
+			action.ShouldNotBe(null);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestGenerateCreateTableScriptNoAvailableWhenObjectReferencesNotResolved()
+		{
+			const string query1 = @"SELECT * FROM";
+
+			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 0).SingleOrDefault(a => a.Name == GenerateCreateTableScriptFromQueryCommand.Title);
+			action.ShouldBe(null);
+		}
 	}
 }

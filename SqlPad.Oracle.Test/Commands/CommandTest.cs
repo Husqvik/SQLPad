@@ -972,5 +972,25 @@ WHERE
 			_editor.Text.ShouldBe("SELECT INVALID_OBJECT_TYPE(), XMLTYPE('<root/>'), SQLPAD.SQLPAD_FUNCTION(), DBMS_RANDOM.VALUE, TEST_SEQ.NEXTVAL FROM SYS.DUAL");
 			_editor.CaretOffset.ShouldBe(0);
 		}
+
+		[Test(Description = @""), STAThread]
+		public void TestGenerateCreateTableScriptFromQueryCommand()
+		{
+			const string statementText = @"SELECT * FROM DUAL";
+			_editor.Text = statementText;
+
+			CanExecuteCommand(OracleCommands.GenerateCreateTableScriptFromQuery).ShouldBe(true);
+			ExecuteCommand(OracleCommands.GenerateCreateTableScriptFromQuery, new CommandSettingsModel { Value = "NEW_TABLE" });
+
+			const string expectedResult =
+@"SELECT * FROM DUAL;
+
+CREATE TABLE NEW_TABLE (
+	DUMMY VARCHAR2(1 BYTE)
+);
+";
+			_editor.Text.ShouldBe(expectedResult);
+			_editor.CaretOffset.ShouldBe(0);
+		}
 	}
 }
