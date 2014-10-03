@@ -95,9 +95,14 @@ namespace SqlPad.Oracle
 				actionList.Add(new OracleContextAction(CleanRedundantQualifierCommand.Title, OracleCommands.CleanRedundantQualifier, executionContext));
 			}
 
-			if (OracleCommands.AddCreateTableAsCommand.CanExecuteHandler(executionContext))
+			if (OracleCommands.AddCreateTableAs.CanExecuteHandler(executionContext))
 			{
-				actionList.Add(new OracleContextAction(AddCreateTableAsCommand.Title, OracleCommands.AddCreateTableAsCommand, executionContext));
+				actionList.Add(new OracleContextAction(AddCreateTableAsCommand.Title, OracleCommands.AddCreateTableAs, executionContext));
+			}
+
+			if (OracleCommands.Unquote.CanExecuteHandler(executionContext))
+			{
+				actionList.Add(new OracleContextAction(UnquoteCommand.Title, OracleCommands.Unquote, executionContext));
 			}
 
 			var actions = ResolveAmbiguousColumnCommand.ResolveCommandHandlers(semanticModel, currentTerminal)

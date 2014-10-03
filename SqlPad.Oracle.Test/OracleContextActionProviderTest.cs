@@ -282,5 +282,14 @@ namespace SqlPad.Oracle.Test
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 0).SingleOrDefault(a => a.Name == AddCreateTableAsCommand.Title);
 			action.ShouldBe(null);
 		}
+
+		[Test(Description = @""), STAThread]
+		public void TestUnquoteCommandAvailable()
+		{
+			const string query1 = @"SELECT ""CaseSensitiveColumn"" FROM INVOICELINES";
+
+			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 0).SingleOrDefault(a => a.Name == UnquoteCommand.Title);
+			action.ShouldNotBe(null);
+		}
 	}
 }

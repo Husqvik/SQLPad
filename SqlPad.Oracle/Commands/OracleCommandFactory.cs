@@ -35,11 +35,12 @@ namespace SqlPad.Oracle.Commands
 		public static readonly CommandExecutionHandler CleanRedundantQualifier = OracleCommandBase.CreateStandardExecutionHandler<CleanRedundantQualifierCommand>("CleanRedundantQualifier");
 		public static readonly CommandExecutionHandler CreateScript = OracleCommandBase.CreateStandardExecutionHandler<CreateScriptCommand>("CreateScript");
 		public static readonly CommandExecutionHandler ExpandAsterisk = OracleCommandBase.CreateStandardExecutionHandler<ExpandAsteriskCommand>("ExpandAsterisk");
-		public static readonly CommandExecutionHandler AddCreateTableAsCommand = OracleCommandBase.CreateStandardExecutionHandler<AddCreateTableAsCommand>("AddCreateTableAs");
+		public static readonly CommandExecutionHandler AddCreateTableAs = OracleCommandBase.CreateStandardExecutionHandler<AddCreateTableAsCommand>("AddCreateTableAs");
 		public static readonly CommandExecutionHandler GenerateMissingColumns = OracleCommandBase.CreateStandardExecutionHandler<AddMissingColumnCommand>("GenerateMissingColumns");
 		public static readonly CommandExecutionHandler ToggleFullyQualifiedReferences = OracleCommandBase.CreateStandardExecutionHandler<ToggleFullyQualifiedReferencesCommand>("ToggleFullyQualifiedReferences");
 		public static readonly CommandExecutionHandler ToggleQuotedNotation = OracleCommandBase.CreateStandardExecutionHandler<ToggleQuotedNotationCommand>("ToggleQuotedNotation");
 		public static readonly CommandExecutionHandler UnnestInlineView = OracleCommandBase.CreateStandardExecutionHandler<UnnestInlineViewCommand>(UnnestInlineViewCommand.Title);
+		public static readonly CommandExecutionHandler Unquote = OracleCommandBase.CreateStandardExecutionHandler<UnquoteCommand>(UnquoteCommand.Title);
 		public static readonly CommandExecutionHandler WrapAsCommonTableExpression = OracleCommandBase.CreateStandardExecutionHandler<WrapAsCommonTableExpressionCommand>("WrapAsCommonTableExpression");
 		public static readonly CommandExecutionHandler WrapAsInlineView = OracleCommandBase.CreateStandardExecutionHandler<WrapAsInlineViewCommand>("WrapAsInlineView");
 	}

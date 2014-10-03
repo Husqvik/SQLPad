@@ -977,11 +977,11 @@ WHERE
 			const string statementText = @"SELECT * FROM DUAL";
 			_editor.Text = statementText;
 
-			CanExecuteCommand(OracleCommands.AddCreateTableAsCommand).ShouldBe(true);
+			CanExecuteCommand(OracleCommands.AddCreateTableAs).ShouldBe(true);
 			var commandSettings = new TestCommandSettings(new CommandSettingsModel { Value = "NEW_TABLE" });
 			commandSettings.GetSettingsCalled += (sender, args) => commandSettings.Settings.BooleanOptions[AddCreateTableAsCommand.CreateSeparateStatement].Value = true;
 
-			ExecuteCommand(OracleCommands.AddCreateTableAsCommand, commandSettings);
+			ExecuteCommand(OracleCommands.AddCreateTableAs, commandSettings);
 
 			const string expectedResult =
 @"SELECT * FROM DUAL;
@@ -1001,11 +1001,11 @@ CREATE TABLE NEW_TABLE (
 			_editor.Text = statementText;
 			_editor.CaretOffset = 18;
 
-			CanExecuteCommand(OracleCommands.AddCreateTableAsCommand).ShouldBe(true);
+			CanExecuteCommand(OracleCommands.AddCreateTableAs).ShouldBe(true);
 			var commandSettings = new TestCommandSettings(new CommandSettingsModel { Value = "NEW_TABLE" });
 			commandSettings.GetSettingsCalled += (sender, args) => commandSettings.Settings.BooleanOptions[AddCreateTableAsCommand.CreateSeparateStatement].IsEnabled.ShouldBe(false);
 
-			ExecuteCommand(OracleCommands.AddCreateTableAsCommand, commandSettings);
+			ExecuteCommand(OracleCommands.AddCreateTableAs, commandSettings);
 		}
 
 		[Test(Description = @""), STAThread]
@@ -1014,8 +1014,8 @@ CREATE TABLE NEW_TABLE (
 			const string statementText = @"SELECT * FROM DUAL";
 			_editor.Text = statementText;
 
-			CanExecuteCommand(OracleCommands.AddCreateTableAsCommand).ShouldBe(true);
-			ExecuteCommand(OracleCommands.AddCreateTableAsCommand, new TestCommandSettings(new CommandSettingsModel { Value = "NEW_TABLE" }));
+			CanExecuteCommand(OracleCommands.AddCreateTableAs).ShouldBe(true);
+			ExecuteCommand(OracleCommands.AddCreateTableAs, new TestCommandSettings(new CommandSettingsModel { Value = "NEW_TABLE" }));
 
 			const string expectedResult =
 @"CREATE TABLE NEW_TABLE (
@@ -1025,6 +1025,21 @@ AS
 SELECT * FROM DUAL";
 			_editor.Text.ShouldBe(expectedResult);
 			_editor.CaretOffset.ShouldBe(41);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestUnquoteCommand()
+		{
+			const string statementText = @"SELECT ""CaseSensitiveColumn"", ""CaseSensitiveColumn"" FROM INVOICELINES";
+			_editor.Text = statementText;
+
+			CanExecuteCommand(OracleCommands.Unquote).ShouldBe(true);
+			ExecuteCommand(OracleCommands.Unquote);
+
+			const string expectedResult = @"SELECT ""CaseSensitiveColumn"" CaseSensitiveColumn, ""CaseSensitiveColumn"" CaseSensitiveColumn FROM INVOICELINES";
+
+			_editor.Text.ShouldBe(expectedResult);
+			_editor.CaretOffset.ShouldBe(0);
 		}
 	}
 }

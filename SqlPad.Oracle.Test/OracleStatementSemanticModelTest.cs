@@ -226,7 +226,8 @@ FROM
 			columns[2].NormalizedName.ShouldBe("\"MY_NUMBER_COLUMN\"");
 			columns[2].ExplicitDefinition.ShouldBe(true);
 			columns[2].IsDirectReference.ShouldBe(false);
-			columns[2].ColumnDescription.Type.ShouldBe(null); // TODO: Add column expression type resolving
+			columns[2].ColumnDescription.Type.ShouldBe("NUMBER");
+			columns[2].ColumnDescription.FullTypeName.ShouldBe("NUMBER(1)");
 
 			var outerBlock = queryBlocks[1];
 			outerBlock.ObjectReferences.Count.ShouldBe(1);
@@ -245,7 +246,8 @@ FROM
 			columns[2].NormalizedName.ShouldBe("\"MY_NUMBER_COLUMN\"");
 			columns[2].ExplicitDefinition.ShouldBe(true);
 			columns[2].IsDirectReference.ShouldBe(true);
-			columns[2].ColumnDescription.Type.ShouldBe(null); // TODO: Add column expression type resolving
+			columns[2].ColumnDescription.Type.ShouldBe("NUMBER");
+			columns[2].ColumnDescription.FullTypeName.ShouldBe("NUMBER(1)");
 		}
 
 		[Test(Description = @"")]
@@ -553,25 +555,41 @@ FROM
 		[Test(Description = @"")]
 		public void TestLiteralColumnDataTypeResolution()
 		{
-			const string query1 = @"SELECT 123.456, '123.456', N'123.456', 123., 1.2E+1 FROM DUAL";
+			const string query1 = @"SELECT 123.456, '123.456', N'123.456', 123., 1.2E+1, DATE'2014-10-03', TIMESTAMP'2014-10-03 23:15:43.777' FROM DUAL";
 
 			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
 			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
 			var queryBlock = semanticModel.QueryBlocks.First();
-			queryBlock.Columns.Count.ShouldBe(5);
-			var columns = queryBlock.Columns.ToArray();
-			columns[0].ColumnDescription.ShouldNotBe(null);
+			queryBlock.Columns.Count.ShouldBe(7);
+			var columns = queryBlock.Columns.ToList();
+			columns.ForEach(c => c.ColumnDescription.ShouldNotBe(null));
+			columns.ForEach(c => c.ColumnDescription.Nullable.ShouldBe(false));
 			columns[0].ColumnDescription.FullTypeName.ShouldBe("NUMBER(6, 3)");
-			columns[1].ColumnDescription.ShouldNotBe(null);
-			columns[1].ColumnDescription.FullTypeName.ShouldBe("VARCHAR2(7 CHAR)");
-			columns[2].ColumnDescription.ShouldNotBe(null);
-			columns[2].ColumnDescription.FullTypeName.ShouldBe("NVARCHAR2(7)");
-			columns[3].ColumnDescription.ShouldNotBe(null);
+			columns[1].ColumnDescription.FullTypeName.ShouldBe("CHAR(7 CHAR)");
+			columns[2].ColumnDescription.FullTypeName.ShouldBe("NCHAR(7)");
 			columns[3].ColumnDescription.FullTypeName.ShouldBe("NUMBER(3)");
-			columns[4].ColumnDescription.ShouldNotBe(null);
 			columns[4].ColumnDescription.FullTypeName.ShouldBe("NUMBER");
+			columns[5].ColumnDescription.FullTypeName.ShouldBe("DATE");
+			columns[6].ColumnDescription.FullTypeName.ShouldBe("TIMESTAMP");
+		}
+
+		[Test(Description = @"")]
+		public void TestLiteralColumnDataTypeResolutionAccessedFromInlineView()
+		{
+			const string query1 = @"SELECT CONSTANT FROM (SELECT 123.456 CONSTANT FROM DUAL)";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.QueryBlocks.Count.ShouldBe(2);
+			var queryBlock = semanticModel.QueryBlocks.First();
+			queryBlock.Columns.Count.ShouldBe(1);
+			var column = queryBlock.Columns.First();
+			column.ColumnDescription.ShouldNotBe(null);
+			column.ColumnDescription.Name.ShouldBe("\"CONSTANT\"");
+			column.ColumnDescription.FullTypeName.ShouldBe("NUMBER(6, 3)");
 		}
 	}
 }

@@ -68,19 +68,25 @@ namespace SqlPad.Oracle
 					Unit = columnDescription == null ? DataUnit.NotApplicable : columnDescription.Unit
 				};
 
-			if (columnDescription == null && RootNode.TerminalCount == 1)
+			if (columnDescription == null && RootNode.TerminalCount > 0)
 			{
+				var expectedTerminalCountOffset = RootNode.TerminalCount > 0 && RootNode.LastTerminalNode.Id == Terminals.ColumnAlias ? 1 : 0;
 				var tokenValue = RootNode.FirstTerminalNode.Token.Value;
 				switch (RootNode.FirstTerminalNode.Id)
 				{
 					case Terminals.StringLiteral:
+						if (RootNode.TerminalCount != 1 + expectedTerminalCountOffset)
+						{
+							break;
+						}
+
 						if (tokenValue[0] == 'n' || tokenValue[0] == 'N')
 						{
-							_columnDescription.Type = "NVARCHAR2";
+							_columnDescription.Type = "NCHAR";
 						}
 						else
 						{
-							_columnDescription.Type = "VARCHAR2";
+							_columnDescription.Type = "CHAR";
 							_columnDescription.Unit = DataUnit.Character;
 						}
 
@@ -88,6 +94,11 @@ namespace SqlPad.Oracle
 						_columnDescription.Nullable = false;
 						break;
 					case Terminals.NumberLiteral:
+						if (RootNode.TerminalCount != 1 + expectedTerminalCountOffset)
+						{
+							break;
+						}
+						
 						_columnDescription.Type = "NUMBER";
 						_columnDescription.Precision = GetNumberPrecision(tokenValue);
 						int? scale = null;
@@ -103,10 +114,22 @@ namespace SqlPad.Oracle
 						_columnDescription.Scale = scale;
 						_columnDescription.Nullable = false;
 						break;
-					case Terminals.IntegerLiteral:
-						_columnDescription.Type = "INTEGER";
-						_columnDescription.Precision = GetNumberPrecision(tokenValue);
-						_columnDescription.Scale = 0;
+					case Terminals.Date:
+						if (RootNode.TerminalCount != 2 + expectedTerminalCountOffset)
+						{
+							break;
+						}
+
+						_columnDescription.Type = "DATE";
+						_columnDescription.Nullable = false;
+						break;
+					case Terminals.Timestamp:
+						if (RootNode.TerminalCount != 2 + expectedTerminalCountOffset)
+						{
+							break;
+						}
+
+						_columnDescription.Type = "TIMESTAMP";
 						_columnDescription.Nullable = false;
 						break;
 				}

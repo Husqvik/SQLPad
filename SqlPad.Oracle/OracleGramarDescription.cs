@@ -140,6 +140,7 @@ namespace SqlPad.Oracle
 			public const string CycleOrNoCycle = "CycleOrNoCycle";
 			public const string DatabaseLink = "DatabaseLink";
 			public const string DatabaseLinkDomain = "DatabaseLinkDomain";
+			public const string DatabaseLinkInstance = "DatabaseLinkInstance";
 			public const string DatabaseLinkName = "DatabaseLinkName";
 			public const string DataType = "DataType";
 			public const string DataTypeDefinition = "DataTypeDefinition";

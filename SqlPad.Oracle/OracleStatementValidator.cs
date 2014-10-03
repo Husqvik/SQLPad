@@ -152,7 +152,11 @@ namespace SqlPad.Oracle
 
 		private static void ValidateDatabaseLinkReference(IDictionary<StatementGrammarNode, INodeValidationData> nodeValidityDictionary, OracleReference databaseLinkReference)
 		{
-			nodeValidityDictionary[databaseLinkReference.DatabaseLinkNode] = new ProgramValidationData { IsRecognized = databaseLinkReference.DatabaseLink != null, Node = databaseLinkReference.DatabaseLinkNode };
+			var isRecognized = databaseLinkReference.DatabaseLink != null;
+			foreach (var terminal in databaseLinkReference.DatabaseLinkNode.Terminals)
+			{
+				nodeValidityDictionary[terminal] = new ProgramValidationData { IsRecognized = isRecognized, Node = terminal };	
+			}
 		}
 
 		private void ValidateLocalFunctionReference(OracleProgramReference functionReference, OracleValidationModel validationModel)

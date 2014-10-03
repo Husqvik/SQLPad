@@ -88,58 +88,8 @@ namespace SqlPad.Oracle.Commands
 					AddObjectAlias(settingsModel.Value);
 					break;
 				case Terminals.Identifier:
-					AddColumnAlias(settingsModel.Value);
+					new AliasCommandHelper(ExecutionContext, SemanticModel).AddColumnAlias(_currentColumnReference, settingsModel.Value);
 					break;
-			}
-		}
-
-		private void AddColumnAlias(string alias)
-		{
-			ExecutionContext.SegmentsToReplace.Add(
-				new TextSegment
-				{
-					IndextStart = _currentColumnReference.ColumnNode.SourcePosition.IndexEnd + 1,
-					Text = " " + alias
-				});
-
-			var parentObjectReferences = GetParentObjectReferences(_currentColumnReference.Owner);
-			foreach (var objectReference in parentObjectReferences)
-			{
-				AddColumnAliasToQueryBlock(_currentColumnReference.NormalizedName, alias, objectReference);
-			}
-		}
-
-		private IEnumerable<OracleDataObjectReference> GetParentObjectReferences(OracleQueryBlock referredQueryBlock)
-		{
-			return SemanticModel.QueryBlocks
-				.SelectMany(qb => qb.ObjectReferences)
-				.Where(o => o.QueryBlocks.Count == 1 && o.QueryBlocks.First() == referredQueryBlock);
-		}
-
-		private void AddColumnAliasToQueryBlock(string columnName, string alias, OracleDataObjectReference objectReference)
-		{
-			var parentObjectReferences = new HashSet<OracleDataObjectReference>();
-			var columnReferences = objectReference.Owner.AllColumnReferences.Where(c => c.ValidObjectReference == objectReference && c.NormalizedName == columnName);
-			foreach (var columnReference in columnReferences)
-			{
-				ExecutionContext.SegmentsToReplace.Add(
-					new TextSegment
-					{
-						IndextStart = columnReference.ColumnNode.SourcePosition.IndexStart,
-						Length = columnReference.ColumnNode.SourcePosition.Length,
-						Text = alias
-					});
-
-				if (columnReference.SelectListColumn != null &&
-				    columnReference.SelectListColumn.IsDirectReference && columnReference.SelectListColumn.AliasNode == columnReference.ColumnNode)
-				{
-					parentObjectReferences.AddRange(GetParentObjectReferences(objectReference.Owner));
-				}
-			}
-
-			foreach (var parentReference in parentObjectReferences)
-			{
-				AddColumnAliasToQueryBlock(columnName, alias, parentReference);
 			}
 		}
 
@@ -171,6 +121,68 @@ namespace SqlPad.Oracle.Commands
 					Length = 0,
 					Text = " " + alias
 				});
+		}
+	}
+
+	internal class AliasCommandHelper
+	{
+		private readonly CommandExecutionContext _executionContext;
+		private readonly OracleStatementSemanticModel _semanticModel;
+
+		public AliasCommandHelper(CommandExecutionContext executionContext, OracleStatementSemanticModel semanticModel)
+		{
+			_executionContext = executionContext;
+			_semanticModel = semanticModel;
+		}
+
+		public void AddColumnAlias(OracleColumnReference columnReference, string alias)
+		{
+			_executionContext.SegmentsToReplace.Add(
+				new TextSegment
+				{
+					IndextStart = columnReference.ColumnNode.SourcePosition.IndexEnd + 1,
+					Text = " " + alias
+				});
+
+			var parentObjectReferences = GetParentObjectReferences(columnReference.Owner);
+			foreach (var objectReference in parentObjectReferences)
+			{
+				AddColumnAliasToQueryBlock(columnReference.NormalizedName, alias, objectReference);
+			}
+		}
+
+		private IEnumerable<OracleDataObjectReference> GetParentObjectReferences(OracleQueryBlock referredQueryBlock)
+		{
+			return _semanticModel.QueryBlocks
+				.SelectMany(qb => qb.ObjectReferences)
+				.Where(o => o.QueryBlocks.Count == 1 && o.QueryBlocks.First() == referredQueryBlock);
+		}
+
+		private void AddColumnAliasToQueryBlock(string columnName, string alias, OracleDataObjectReference objectReference)
+		{
+			var parentObjectReferences = new HashSet<OracleDataObjectReference>();
+			var columnReferences = objectReference.Owner.AllColumnReferences.Where(c => c.ValidObjectReference == objectReference && c.NormalizedName == columnName);
+			foreach (var columnReference in columnReferences)
+			{
+				_executionContext.SegmentsToReplace.Add(
+					new TextSegment
+					{
+						IndextStart = columnReference.ColumnNode.SourcePosition.IndexStart,
+						Length = columnReference.ColumnNode.SourcePosition.Length,
+						Text = alias
+					});
+
+				if (columnReference.SelectListColumn != null &&
+					columnReference.SelectListColumn.IsDirectReference && columnReference.SelectListColumn.AliasNode == columnReference.ColumnNode)
+				{
+					parentObjectReferences.AddRange(GetParentObjectReferences(objectReference.Owner));
+				}
+			}
+
+			foreach (var parentReference in parentObjectReferences)
+			{
+				AddColumnAliasToQueryBlock(columnName, alias, parentReference);
+			}
 		}
 	}
 }

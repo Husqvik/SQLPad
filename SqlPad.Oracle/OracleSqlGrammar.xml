@@ -3115,6 +3115,16 @@
         <Sequence>
           <Terminal Id="DatabaseLinkIdentifier" />
           <NonTerminal Id="DatabaseLinkDomain" IsOptional="true" />
+          <NonTerminal Id="DatabaseLinkInstance" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DatabaseLinkInstance">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="AtCharacter" />
+          <Terminal Id="DatabaseLinkIdentifier" />
         </Sequence>
       </Sequences>
     </Rule>

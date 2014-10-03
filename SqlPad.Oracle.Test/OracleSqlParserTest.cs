@@ -1867,7 +1867,7 @@ FROM DUAL";
 		[Test(Description = @"")]
 		public void TestDatabaseLinkWithDomainName()
 		{
-			const string statement1 = @"CREATE SYNONYM emp_table FOR oe.employees@remote.us.oracle.com";
+			const string statement1 = @"CREATE SYNONYM emp_table FOR oe.employees@remote.us.oracle.com@instance";
 
 			var statements = Parser.Parse(statement1);
 			var statement = statements.Single().Validate();

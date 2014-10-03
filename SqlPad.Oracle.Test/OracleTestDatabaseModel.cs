@@ -70,6 +70,13 @@ namespace SqlPad.Oracle.Test
 					FullyQualifiedName = OracleObjectIdentifier.Create(SchemaPublic, "HQ_PDB_LOOPBACK"),
 					Host = "localhost:1521/hq_pdb",
 					UserName = "HUSQVIK"
+				},
+				new OracleDatabaseLink
+				{
+					Created = DateTime.Now,
+					FullyQualifiedName = OracleObjectIdentifier.Create(SchemaPublic, "SQLPAD.HUSQVIK.COM@HQINSTANCE"),
+					Host = "sqlpad.husqvik.com:1521/servicename",
+					UserName = "HUSQVIK"
 				}
 			};
 
