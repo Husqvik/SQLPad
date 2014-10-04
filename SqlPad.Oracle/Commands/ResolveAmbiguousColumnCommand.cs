@@ -13,11 +13,7 @@ namespace SqlPad.Oracle.Commands
 
 		public static ICollection<CommandExecutionHandler> ResolveCommandHandlers(OracleStatementSemanticModel semanticModel, StatementGrammarNode currentTerminal)
 		{
-			if (semanticModel == null)
-				throw new InvalidOperationException("semanticModel");
-
-			if (currentTerminal == null)
-				throw new InvalidOperationException("currentTerminal");
+			CheckParametersNotNull(semanticModel, currentTerminal);
 
 			var commands = new List<CommandExecutionHandler>();
 			if (currentTerminal.Id != Terminals.Identifier && currentTerminal.Id != Terminals.RowIdPseudoColumn)

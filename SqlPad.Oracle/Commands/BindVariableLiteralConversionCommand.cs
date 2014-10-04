@@ -13,40 +13,34 @@ namespace SqlPad.Oracle.Commands
 
 		public static ICollection<CommandExecutionHandler> ResolveCommandHandlers(OracleStatementSemanticModel semanticModel, StatementGrammarNode currentTerminal)
 		{
-			if (semanticModel == null)
-				throw new InvalidOperationException("semanticModel");
+			CheckParametersNotNull(semanticModel, currentTerminal);
 
-			if (currentTerminal == null)
-				throw new InvalidOperationException("currentTerminal");
-
-			var commands = new List<CommandExecutionHandler>();
-			if (!currentTerminal.Id.In(Terminals.BindVariableIdentifier/*, Terminals.StringLiteral, Terminals.NumberLiteral*/))
+			if (currentTerminal.Id != Terminals.BindVariableIdentifier)
 				return EmptyHandlerCollection;
 
-			var conversionTarget = currentTerminal.Id == Terminals.BindVariableIdentifier ? "literal" : "bind variable";
 			var bindVariable = FindUsagesCommand.GetBindVariable(semanticModel, currentTerminal.Token.Value);
 
 			var singleOccurenceConvertAction =
 				new CommandExecutionHandler
 				{
-					Name = String.Format("Convert to {0}", conversionTarget),
+					Name = "Convert to literal",
 					ExecutionHandler = c => new BindVariableLiteralConversionCommand(c, bindVariable, false)
 						.Execute(),
 					CanExecuteHandler = c => true
 				};
 
-			commands.Add(singleOccurenceConvertAction);
-
+			var commands = new List<CommandExecutionHandler> { singleOccurenceConvertAction };
+			
 			if (bindVariable.Nodes.Count > 1)
 			{
 				var allOccurencesConvertAction =
-				new CommandExecutionHandler
-				{
-					Name = String.Format("Convert all accurences to {0}", conversionTarget),
-					ExecutionHandler = c => new BindVariableLiteralConversionCommand(c, bindVariable, true)
-						.Execute(),
-					CanExecuteHandler = c => true
-				};
+					new CommandExecutionHandler
+					{
+						Name = "Convert all accurences to literal",
+						ExecutionHandler = c => new BindVariableLiteralConversionCommand(c, bindVariable, true)
+							.Execute(),
+						CanExecuteHandler = c => true
+					};
 
 				commands.Add(allOccurencesConvertAction);
 			}
@@ -65,11 +59,12 @@ namespace SqlPad.Oracle.Commands
 		{
 			foreach (var node in _bindVariable.Nodes.Where(n => _allOccurences || n == CurrentNode))
 			{
-				var textSegment = new TextSegment
-				{
-					IndextStart = node.ParentNode.SourcePosition.IndexStart,
-					Length = node.ParentNode.SourcePosition.Length,
-				};
+				var textSegment =
+					new TextSegment
+					{
+						IndextStart = node.ParentNode.SourcePosition.IndexStart,
+						Length = node.ParentNode.SourcePosition.Length
+					};
 				
 				switch (_bindVariable.DataType)
 				{

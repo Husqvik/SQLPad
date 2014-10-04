@@ -37,6 +37,15 @@ namespace SqlPad.Oracle.Commands
 			CurrentQueryBlock = SemanticModel.GetQueryBlock(CurrentNode);
 		}
 
+		protected static void CheckParametersNotNull(OracleStatementSemanticModel semanticModel, StatementGrammarNode currentTerminal)
+		{
+			if (semanticModel == null)
+				throw new InvalidOperationException("semanticModel");
+
+			if (currentTerminal == null)
+				throw new InvalidOperationException("currentTerminal");
+		}
+
 		protected virtual bool CanExecute()
 		{
 			return true;

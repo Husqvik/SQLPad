@@ -591,5 +591,41 @@ FROM
 			column.ColumnDescription.Name.ShouldBe("\"CONSTANT\"");
 			column.ColumnDescription.FullTypeName.ShouldBe("NUMBER(6, 3)");
 		}
+
+		[Test(Description = @"")]
+		public void TestLiteralColumnDataTypeResolutionWithExpressions()
+		{
+			const string query1 = @"SELECT 1 + 1, 1.1 + 1.1, 'x' || 'y', DATE'2014-10-04' + 1, TIMESTAMP'2014-10-04 20:21:13' + INTERVAL '1' HOUR FROM DUAL";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.QueryBlocks.Count.ShouldBe(1);
+			var queryBlock = semanticModel.QueryBlocks.First();
+			queryBlock.Columns.Count.ShouldBe(5);
+			var columns = queryBlock.Columns.ToList();
+			columns.ForEach(c => c.ColumnDescription.ShouldNotBe(null));
+			columns.ForEach(c => c.ColumnDescription.Nullable.ShouldBe(true));
+			columns.ForEach(c => c.ColumnDescription.Type.ShouldBe(null));
+			columns.ForEach(c => c.ColumnDescription.FullTypeName.ShouldBe(null));
+		}
+
+		[Test(Description = @"")]
+		public void TestSequenceDatabaseLinkReference()
+		{
+			const string query1 = @"SELECT TEST_SEQ.NEXTVAL@SQLPAD.HUSQVIK.COM@HQINSTANCE, SQLPAD_FUNCTION@SQLPAD.HUSQVIK.COM@HQINSTANCE FROM DUAL@SQLPAD.HUSQVIK.COM@HQINSTANCE";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.QueryBlocks.Count.ShouldBe(1);
+			var queryBlock = semanticModel.QueryBlocks.First();
+			var databaseLinkReferences = queryBlock.DatabaseLinkReferences.OrderBy(r => r.RootNode.SourcePosition.IndexStart).ToArray();
+			databaseLinkReferences.Length.ShouldBe(4);
+			databaseLinkReferences[0].ShouldBeTypeOf<OracleSequenceReference>();
+			databaseLinkReferences[1].ShouldBeTypeOf<OracleColumnReference>();
+			databaseLinkReferences[2].ShouldBeTypeOf<OracleProgramReference>();
+			databaseLinkReferences[3].ShouldBeTypeOf<OracleDataObjectReference>();
+		}
 	}
 }

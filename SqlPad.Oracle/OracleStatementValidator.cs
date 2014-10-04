@@ -231,30 +231,41 @@ namespace SqlPad.Oracle
 			if (!node.Id.IsIdentifierOrAlias())
 				return null;
 
-			var trimmedIdentifier = node.Token.Value.Trim('"');
+			var errorMessage = ValidateIdentifier(node.Token.Value, node.Id == Terminals.BindVariableIdentifier).ErrorMessage;
+			return String.IsNullOrEmpty(errorMessage)
+				? null
+				: new InvalidIdentifierNodeValidationData(errorMessage) { IsRecognized = true, Node = node };
+		}
 
-			var errorMessage = String.Empty;
-			if (node.Id == OracleGrammarDescription.Terminals.BindVariableIdentifier && trimmedIdentifier == node.Token.Value)
+		public static bool IsValidBindVariableIdentifier(string identifier)
+		{
+			var validationResult = ValidateIdentifier(identifier, true);
+			return validationResult.IsValid && (validationResult.IsNumericBindVariable || OracleSqlParser.IsValidIdentifier(identifier)) && !identifier.IsKeyword();
+		}
+
+		private static IdentifierValidationResult ValidateIdentifier(string identifier, bool validateNumericBindVariable)
+		{
+			var trimmedIdentifier = identifier.Trim('"');
+			var result = new IdentifierValidationResult();
+
+			if (validateNumericBindVariable && trimmedIdentifier == identifier)
 			{
+				result.IsNumericBindVariable = trimmedIdentifier.All(Char.IsDigit);
+
 				int bindVariableNumberIdentifier;
-				if (Int32.TryParse(trimmedIdentifier.Substring(0, trimmedIdentifier.Length > 5 ? 5 : trimmedIdentifier.Length), out bindVariableNumberIdentifier) && bindVariableNumberIdentifier > 65535)
+				if (result.IsNumericBindVariable && Int32.TryParse(trimmedIdentifier.Substring(0, trimmedIdentifier.Length > 5 ? 5 : trimmedIdentifier.Length), out bindVariableNumberIdentifier) && bindVariableNumberIdentifier > 65535)
 				{
-					errorMessage = "Numeric bind variable identifier must be between 0 and 65535. ";
+					result.ErrorMessage = "Numeric bind variable identifier must be between 0 and 65535. ";
 				}
 			}
 
-			if (String.IsNullOrEmpty(errorMessage) && trimmedIdentifier.Length > 0 && trimmedIdentifier.Length <= 30)
+			if (String.IsNullOrEmpty(result.ErrorMessage) && trimmedIdentifier.Length == 0 || trimmedIdentifier.Length > 30)
 			{
-				return null;
+				result.ErrorMessage = "Identifier length must be between one and 30 characters excluding quotes. ";
 			}
 
-			if (String.IsNullOrEmpty(errorMessage))
-			{
-				errorMessage = "Identifier length must be between one and 30 characters excluding quotes. ";
-			}
-
-			return new InvalidIdentifierNodeValidationData(errorMessage) { IsRecognized = true, Node = node };
-		}
+			return result;
+		} 
 
 		private void ResolveColumnNodeValidities(OracleValidationModel validationModel, IEnumerable<OracleColumnReference> columnReferences)
 		{
@@ -293,6 +304,15 @@ namespace SqlPad.Oracle
 					ValidateDatabaseLinkReference(validationModel.ObjectNodeValidity, columnReference);
 				}
 			}
+		}
+
+		private struct IdentifierValidationResult
+		{
+			public bool IsValid { get { return String.IsNullOrEmpty(ErrorMessage); } }
+			
+			public string ErrorMessage { get; set; }
+
+			public bool IsNumericBindVariable { get; set; }
 		}
 	}
 

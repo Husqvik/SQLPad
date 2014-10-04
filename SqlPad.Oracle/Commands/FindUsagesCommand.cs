@@ -127,7 +127,12 @@ namespace SqlPad.Oracle.Commands
 
 		private IEnumerable<StatementGrammarNode> GetLiteralUsage()
 		{
-			return _semanticModel.Statement.RootNode.Terminals.Where(t => t.Id == _currentNode.Id && t.Token.Value == _currentNode.Token.Value);
+			return GetEqualValueLiteralTerminals(_semanticModel.Statement, _currentNode);
+		}
+
+		public static IEnumerable<StatementGrammarNode> GetEqualValueLiteralTerminals(OracleStatement statement, StatementGrammarNode literal)
+		{
+			return statement.RootNode.Terminals.Where(t => t.Id == literal.Id && t.Token.Value == literal.Token.Value);
 		}
 
 		private ICollection<StatementGrammarNode> GetFunctionReferenceUsage()

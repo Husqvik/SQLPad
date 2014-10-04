@@ -1049,14 +1049,7 @@ SELECT * FROM DUAL";
 			_editor.Text = statementText;
 			_editor.CaretOffset = 12;
 
-			var actions = new OracleContextActionProvider()
-				.GetContextActions(TestFixture.DatabaseModel, _editor.Text, _editor.CaretOffset)
-				.Where(a => a.Name.StartsWith("Convert"))
-				.ToArray();
-
-			actions.Length.ShouldBe(2);
-
-			SetBindVariableAndExecute(actions[0], "VALUE");
+			SetBindVariableAndExecute(0, "VALUE");
 
 			const string expectedResult = @"SELECT :1, 'VALUE' FROM DUAL";
 
@@ -1064,32 +1057,75 @@ SELECT * FROM DUAL";
 		}
 
 		[Test(Description = @""), STAThread]
-		public void TestConvertAllBindVariablesToLiteralCommand()
+		public void TestConvertAllBindVariableOccurencesToLiteralCommand()
 		{
 			const string statementText = @"SELECT :1, :1 FROM DUAL";
 			_editor.Text = statementText;
 			_editor.CaretOffset = 12;
 
-			var actions = new OracleContextActionProvider()
-				.GetContextActions(TestFixture.DatabaseModel, _editor.Text, _editor.CaretOffset)
-				.Where(a => a.Name.StartsWith("Convert"))
-				.ToArray();
-
-			actions.Length.ShouldBe(2);
-
-			SetBindVariableAndExecute(actions[1], "2014-10-04", OracleBindVariable.DataTypeDate);
+			SetBindVariableAndExecute(1, "2014-10-04", OracleBindVariable.DataTypeDate);
 
 			const string expectedResult = @"SELECT DATE'2014-10-04', DATE'2014-10-04' FROM DUAL";
 
 			_editor.Text.ShouldBe(expectedResult);
 		}
 
-		private void SetBindVariableAndExecute(IContextAction action, string value, string dataType = OracleBindVariable.DataTypeVarchar2)
+		private void SetBindVariableAndExecute(int actionIndex, string value, string dataType = OracleBindVariable.DataTypeVarchar2)
 		{
+			var actions = new OracleContextActionProvider()
+					.GetContextActions(TestFixture.DatabaseModel, _editor.Text, _editor.CaretOffset)
+					.Where(a => a.Name.StartsWith("Convert"))
+					.ToArray();
+
+			actions.Length.ShouldBe(2);
+
+			var action = actions[actionIndex];
 			action.ExecutionContext.DocumentRepository.Statements.Count.ShouldBe(1);
 			var bindVariable = action.ExecutionContext.DocumentRepository.Statements.Single().BindVariables.Single();
 			bindVariable.DataType = dataType;
 			bindVariable.Value = value;
+			action.ExecutionHandler.CanExecuteHandler(action.ExecutionContext).ShouldBe(true);
+			ExecuteCommand(action.ExecutionHandler, action.ExecutionContext);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestConvertSingleLiteralToBindVariableCommand()
+		{
+			const string statementText = @"SELECT 'VALUE', 'VALUE' FROM DUAL";
+			_editor.Text = statementText;
+			_editor.CaretOffset = 20;
+
+			ExecuteConvertLiteralToBindVariableCommmand(0);
+
+			const string expectedResult = @"SELECT 'VALUE', :BIND_VARIABLE FROM DUAL";
+
+			_editor.Text.ShouldBe(expectedResult);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestConvertAllLiteralOccurencesToBindVariableCommand()
+		{
+			const string statementText = @"SELECT DATE'2014-10-04', DATE'2014-10-04', TIMESTAMP'2014-10-04', '2014-10-04' FROM DUAL";
+			_editor.Text = statementText;
+			_editor.CaretOffset = 15;
+
+			ExecuteConvertLiteralToBindVariableCommmand(1);
+
+			const string expectedResult = @"SELECT :BIND_VARIABLE, :BIND_VARIABLE, TIMESTAMP'2014-10-04', '2014-10-04' FROM DUAL";
+
+			_editor.Text.ShouldBe(expectedResult);
+		}
+
+		private void ExecuteConvertLiteralToBindVariableCommmand(int actionIndex)
+		{
+			var actions = new OracleContextActionProvider()
+				.GetContextActions(TestFixture.DatabaseModel, _editor.Text, _editor.CaretOffset)
+				.Where(a => a.Name.StartsWith("Convert"))
+				.ToArray();
+
+			actions.Length.ShouldBe(2);
+			var action = actions[actionIndex];
+			action.ExecutionContext.SettingsProvider = new TestCommandSettings(new CommandSettingsModel { Value = "BIND_VARIABLE" });
 			action.ExecutionHandler.CanExecuteHandler(action.ExecutionContext).ShouldBe(true);
 			ExecuteCommand(action.ExecutionHandler, action.ExecutionContext);
 		}
