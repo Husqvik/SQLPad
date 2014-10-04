@@ -291,5 +291,23 @@ namespace SqlPad.Oracle.Test
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 0).SingleOrDefault(a => a.Name == UnquoteCommand.Title);
 			action.ShouldNotBe(null);
 		}
+
+		[Test(Description = @""), STAThread]
+		public void TestConvertBindVariableToLiteralAvailable()
+		{
+			const string query1 = @"SELECT :1 FROM DUAL";
+
+			var actionCount = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 8).Count(a => a.Name.StartsWith("Convert"));
+			actionCount.ShouldBe(1);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestConvertAllBindVariableOccurencesToLiteralAvailable()
+		{
+			const string query1 = @"SELECT :1, :1 FROM DUAL";
+
+			var actionCount = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 13).Count(a => a.Name.StartsWith("Convert"));
+			actionCount.ShouldBe(2);
+		}
 	}
 }

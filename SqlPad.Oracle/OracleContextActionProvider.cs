@@ -110,6 +110,11 @@ namespace SqlPad.Oracle
 
 			actionList.AddRange(actions);
 
+			actions = BindVariableLiteralConversionCommand.ResolveCommandHandlers(semanticModel, currentTerminal)
+				.Select(c => new OracleContextAction(c.Name, c, executionContext));
+
+			actionList.AddRange(actions);
+
 			// TODO: Resolve command order
 			return actionList.AsReadOnly();
 		}

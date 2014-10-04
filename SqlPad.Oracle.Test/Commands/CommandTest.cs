@@ -1041,5 +1041,57 @@ SELECT * FROM DUAL";
 			_editor.Text.ShouldBe(expectedResult);
 			_editor.CaretOffset.ShouldBe(0);
 		}
+
+		[Test(Description = @""), STAThread]
+		public void TestConvertSingleBindVariableToLiteralCommand()
+		{
+			const string statementText = @"SELECT :1, :1 FROM DUAL";
+			_editor.Text = statementText;
+			_editor.CaretOffset = 12;
+
+			var actions = new OracleContextActionProvider()
+				.GetContextActions(TestFixture.DatabaseModel, _editor.Text, _editor.CaretOffset)
+				.Where(a => a.Name.StartsWith("Convert"))
+				.ToArray();
+
+			actions.Length.ShouldBe(2);
+
+			SetBindVariableAndExecute(actions[0], "VALUE");
+
+			const string expectedResult = @"SELECT :1, 'VALUE' FROM DUAL";
+
+			_editor.Text.ShouldBe(expectedResult);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestConvertAllBindVariablesToLiteralCommand()
+		{
+			const string statementText = @"SELECT :1, :1 FROM DUAL";
+			_editor.Text = statementText;
+			_editor.CaretOffset = 12;
+
+			var actions = new OracleContextActionProvider()
+				.GetContextActions(TestFixture.DatabaseModel, _editor.Text, _editor.CaretOffset)
+				.Where(a => a.Name.StartsWith("Convert"))
+				.ToArray();
+
+			actions.Length.ShouldBe(2);
+
+			SetBindVariableAndExecute(actions[1], "2014-10-04", OracleBindVariable.DataTypeDate);
+
+			const string expectedResult = @"SELECT DATE'2014-10-04', DATE'2014-10-04' FROM DUAL";
+
+			_editor.Text.ShouldBe(expectedResult);
+		}
+
+		private void SetBindVariableAndExecute(IContextAction action, string value, string dataType = OracleBindVariable.DataTypeVarchar2)
+		{
+			action.ExecutionContext.DocumentRepository.Statements.Count.ShouldBe(1);
+			var bindVariable = action.ExecutionContext.DocumentRepository.Statements.Single().BindVariables.Single();
+			bindVariable.DataType = dataType;
+			bindVariable.Value = value;
+			action.ExecutionHandler.CanExecuteHandler(action.ExecutionContext).ShouldBe(true);
+			ExecuteCommand(action.ExecutionHandler, action.ExecutionContext);
+		}
 	}
 }

@@ -64,7 +64,7 @@ namespace SqlPad
 		private readonly List<CommandBinding> _specificCommandBindings = new List<CommandBinding>();
 
 		private CompletionWindow _completionWindow;
-		private HashSet<string> _currentBindVariables = new HashSet<string>();
+		private Dictionary<string, BindVariableConfiguration> _currentBindVariables = new Dictionary<string, BindVariableConfiguration>();
 		
 		public EventHandler ParseFinished = delegate { };
 		private readonly SqlFoldingStrategy _foldingStrategy;
@@ -907,14 +907,30 @@ namespace SqlPad
 				return;
 			}
 
-			var bindVariables = new HashSet<string>(statement.BindVariables.Select(v => v.Name));
-			if (bindVariables.SetEquals(_currentBindVariables))
+			if (ApplyBindVariables(statement))
 			{
 				return;
 			}
 
-			_currentBindVariables = bindVariables;
+			_currentBindVariables = statement.BindVariables.ToDictionary(v => v.Name, v => v);
 			_pageModel.BindVariables = BuildBindVariableModels(statement.BindVariables);
+		}
+
+		private bool ApplyBindVariables(StatementBase statement)
+		{
+			var matchedCount = 0;
+			foreach (var statementVariable in statement.BindVariables)
+			{
+				BindVariableConfiguration currentVariable;
+				if (_currentBindVariables.TryGetValue(statementVariable.Name, out currentVariable))
+				{
+					matchedCount++;
+					statementVariable.DataType = currentVariable.DataType;
+					statementVariable.Value = currentVariable.Value;
+				}
+			}
+
+			return matchedCount == _currentBindVariables.Count && matchedCount == statement.BindVariables.Count;
 		}
 
 		private ICollection<BindVariableModel> BuildBindVariableModels(IEnumerable<BindVariableConfiguration> bindVariables)
