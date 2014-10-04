@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,6 +9,8 @@ namespace SqlPad.Oracle.Commands
 {
 	internal abstract class OracleCommandBase
 	{
+		protected static readonly ICollection<CommandExecutionHandler> EmptyHandlerCollection = new CommandExecutionHandler[0];
+
 		protected readonly CommandExecutionContext ExecutionContext;
 
 		protected StatementGrammarNode CurrentNode { get; private set; }

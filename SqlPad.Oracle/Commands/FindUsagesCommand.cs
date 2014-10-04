@@ -116,9 +116,14 @@ namespace SqlPad.Oracle.Commands
 
 		private IEnumerable<StatementGrammarNode> GetBindVariableUsage()
 		{
-			return _semanticModel.Statement.BindVariables
+			return GetSameBindVariableNodes(_semanticModel, _currentNode.Token.Value);
+		}
+
+		public static IEnumerable<StatementGrammarNode> GetSameBindVariableNodes(OracleStatementSemanticModel semanticModel, string bindVariableIdentifier)
+		{
+			return semanticModel.Statement.BindVariables
 				.SelectMany(c => c.Nodes)
-				.Where(t => t.Token.Value.ToQuotedIdentifier() == _currentNode.Token.Value.ToQuotedIdentifier());
+				.Where(t => t.Token.Value.ToQuotedIdentifier() == bindVariableIdentifier.ToQuotedIdentifier());
 		}
 
 		private IEnumerable<StatementGrammarNode> GetLiteralUsage()

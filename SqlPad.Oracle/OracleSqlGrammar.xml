@@ -1854,6 +1854,7 @@
         </Sequence>
         <Sequence>
           <NonTerminal Id="CaseExpression" />
+          <NonTerminal Id="TimestampAtTimeZone" IsOptional="true" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
@@ -1897,6 +1898,7 @@
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="Expression" />
           <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="TimestampAtTimeZone" IsOptional="true" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
@@ -1924,10 +1926,12 @@
         </Sequence>
         <Sequence>
           <NonTerminal Id="AggregateFunctionCall" />
+          <NonTerminal Id="TimestampAtTimeZone" IsOptional="true" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="AnalyticFunctionCall" />
+          <NonTerminal Id="TimestampAtTimeZone" IsOptional="true" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
@@ -1979,11 +1983,12 @@
           <Terminal Id="LeftBracket" />
           <NonTerminal Id="ConditionOrExpressionList" />
           <Terminal Id="RightBracket" />
+          <NonTerminal Id="TimestampAtTimeZone" IsOptional="true" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="PrefixedColumnReference" />
-          <NonTerminal Id="MultisetOperatorClause" IsOptional="true" />
+          <NonTerminal Id="MultisetOperatorClauseOrTimestampAtTimeZone" IsOptional="true" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
       </Sequences>
@@ -1993,9 +1998,37 @@
       <Sequences>
         <Sequence>
           <Terminal Id="At" />
+          <NonTerminal Id="TimeZoneOrLocal" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="TimeZoneOrLocal">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Local" />
+        </Sequence>
+        <Sequence>
           <Terminal Id="Time" />
           <Terminal Id="Zone" />
+          <NonTerminal Id="TimeZoneExpression" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="TimeZoneExpression">
+      <Sequences>
+        <Sequence>
           <Terminal Id="StringLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="DatabaseTimezone" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="SessionTimezone" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="Expression" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -2104,6 +2137,17 @@
         <Sequence>
           <Terminal Id="Second" />
           <NonTerminal Id="DataTypeSimplePrecision" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="MultisetOperatorClauseOrTimestampAtTimeZone">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="TimestampAtTimeZone" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="MultisetOperatorClause" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -9492,6 +9536,8 @@
     <Terminal Id="Local" Value="LOCAL" />
     <Terminal Id="Time" Value="TIME" />
     <Terminal Id="Zone" Value="ZONE" />
+    <Terminal Id="DatabaseTimezone" Value="DBTIMEZONE" />
+    <Terminal Id="SessionTimezone" Value="SESSIONTIMEZONE" />
     <Terminal Id="Exclusive" Value="EXCLUSIVE" IsKeyword="true" />
     <Terminal Id="Nocompress" Value="NOCOMPRESS" IsKeyword="true" />
     <Terminal Id="User" Value="USER" IsKeyword="true" />

@@ -1885,6 +1885,16 @@ FROM DUAL";
 		}
 
 		[Test(Description = @"")]
+		public void TestDatetimeAtTimeZoneClause()
+		{
+			const string statement1 = @"SELECT SYSTIMESTAMP AT TIME ZONE SESSIONTIMEZONE, TIMESTAMP'2014-10-04 12:32:34.123456' AT TIME ZONE DBTIMEZONE, SYSTIMESTAMP AT TIME ZONE 'America/Los_Angeles', DUMMY AT LOCAL FROM DUAL";
+
+			var statements = Parser.Parse(statement1);
+			var statement = statements.Single().Validate();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+		}
+
+		[Test(Description = @"")]
 		public void TestComplexModelClause()
 		{
 			const string statement1 =

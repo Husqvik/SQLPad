@@ -10,7 +10,6 @@ namespace SqlPad.Oracle.Commands
 	internal class ResolveAmbiguousColumnCommand : OracleCommandBase
 	{
 		private readonly string _resolvedName;
-		private static readonly ICollection<CommandExecutionHandler> EmptyCollection = new CommandExecutionHandler[0];
 
 		public static ICollection<CommandExecutionHandler> ResolveCommandHandlers(OracleStatementSemanticModel semanticModel, StatementGrammarNode currentTerminal)
 		{
@@ -22,11 +21,11 @@ namespace SqlPad.Oracle.Commands
 
 			var commands = new List<CommandExecutionHandler>();
 			if (currentTerminal.Id != Terminals.Identifier && currentTerminal.Id != Terminals.RowIdPseudoColumn)
-				return EmptyCollection;
+				return EmptyHandlerCollection;
 
 			var columnReference = semanticModel.QueryBlocks.SelectMany(qb => qb.AllColumnReferences).SingleOrDefault(c => c.ColumnNode == currentTerminal);
 			if (columnReference == null || columnReference.ColumnNodeObjectReferences.Count <= 1)
-				return EmptyCollection;
+				return EmptyHandlerCollection;
 
 			var identifiers = OracleObjectIdentifier.GetUniqueReferences(columnReference.ColumnNodeObjectReferences.Select(r => r.FullyQualifiedObjectName).ToArray());
 			var actions = columnReference.ColumnNodeObjectReferences
@@ -47,9 +46,6 @@ namespace SqlPad.Oracle.Commands
 		private ResolveAmbiguousColumnCommand(CommandExecutionContext executionContext, string resolvedName)
 			: base(executionContext)
 		{	
-			if (String.IsNullOrWhiteSpace(resolvedName))
-				throw new ArgumentException("resolvedName");
-
 			_resolvedName = resolvedName;
 		}
 
