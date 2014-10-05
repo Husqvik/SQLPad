@@ -327,5 +327,14 @@ namespace SqlPad.Oracle.Test
 			var actionCount = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 10).Count(a => a.Name.StartsWith("Convert"));
 			actionCount.ShouldBe(2);
 		}
+
+		[Test(Description = @""), STAThread]
+		public void TestConvertSingleLiteralToBindVariablesAvailableWhenSameLiteralRepresentsMultipleTypes()
+		{
+			const string query1 = @"SELECT DATE'2014-10-04', DATE'2014-10-04', '2014-10-04' FROM DUAL";
+
+			var actionCount = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 50).Count(a => a.Name.StartsWith("Convert"));
+			actionCount.ShouldBe(1);
+		}
 	}
 }

@@ -77,7 +77,7 @@ namespace SqlPad.Oracle
 				{
 					var firstParameter = sysContextFunctionOverload.ProgramReference.ParameterNodes[0];
 					var contextNamespace = HasSingleStringLiteralParameterOrNoParameterToken(sysContextFunctionOverload, 0) ? firstParameter.ChildNodes[0].Token.Value.ToUpperInvariant() : null;
-					if (contextNamespace.ToSimpleString() == ContextNamespaceUserEnvironment)
+					if (contextNamespace.ToPlainString() == ContextNamespaceUserEnvironment)
 					{
 						completionItems.Add(BuildParameterCompletionItem(currentNode, "ACTION", "ACTION - Identifies the position in the module (application name) and is set through the DBMS_APPLICATION_INFO package or OCI. "));
 						completionItems.Add(BuildParameterCompletionItem(currentNode, "AUDITED_CURSORID", "AUDITED_CURSORID - Returns the cursor ID of the SQL that triggered the audit. "));
@@ -141,7 +141,7 @@ namespace SqlPad.Oracle
 					}
 					else if (!String.IsNullOrEmpty(contextNamespace))
 					{
-						var attributes = databaseModel.ContextData[contextNamespace.ToSimpleString()];
+						var attributes = databaseModel.ContextData[contextNamespace.ToPlainString()];
 						var attributeItems = attributes.Select(a => BuildParameterCompletionItem(currentNode, a, a));
 						completionItems.AddRange(attributeItems);
 					}

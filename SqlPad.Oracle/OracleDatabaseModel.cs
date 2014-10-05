@@ -220,7 +220,7 @@ namespace SqlPad.Oracle
 				new StatementExecutionModel
 				{
 					StatementText = String.Format(DatabaseCommands.ExplainPlanBase, targetTableIdentifier),
-					BindVariables = new[] { new BindVariableModel(new BindVariableConfiguration { DataType = "Varchar2", Name = "STATEMENT_ID", Value = planKey }) }
+					BindVariables = new[] { new BindVariableModel(new BindVariableConfiguration { DataType = OracleBindVariable.DataTypeVarchar2, Name = "STATEMENT_ID", Value = planKey }) }
 				};
 		}
 
@@ -459,6 +459,12 @@ namespace SqlPad.Oracle
 				if (parameter.Value is OracleDate)
 				{
 					value = ((OracleDate)parameter.Value).Value;
+				}
+
+				if (parameter.Value is OracleString)
+				{
+					var oracleString = (OracleString)parameter.Value;
+					value = oracleString.IsNull ? String.Empty : oracleString.Value;
 				}
 
 				bindVariableModels[parameter.ParameterName].Value = value;

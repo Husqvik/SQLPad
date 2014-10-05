@@ -1326,7 +1326,7 @@ namespace SqlPad
 				}
 			}
 
-			if (e.Key == Key.Back || e.Key == Key.Delete)
+			if (e.Key == Key.Back || e.Key == Key.Delete || (e.Key.In(Key.V, Key.Insert) && Keyboard.Modifiers == ModifierKeys.Control))
 			{
 				DisableCodeCompletion();
 			}

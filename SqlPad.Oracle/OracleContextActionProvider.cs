@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows.Input;
 using SqlPad.Commands;
 using SqlPad.Oracle.Commands;
+using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
 namespace SqlPad.Oracle
 {
@@ -27,6 +28,13 @@ namespace SqlPad.Oracle
 			var currentTerminal = sqlDocumentRepository.Statements.GetTerminalAtPosition(executionContext.CaretOffset);
 			if (currentTerminal == null)
 				return EmptyCollection;
+
+			var precedingTerminal = currentTerminal.PrecedingTerminal;
+			if (currentTerminal.SourcePosition.IndexStart == executionContext.CaretOffset && precedingTerminal != null && precedingTerminal.SourcePosition.IndexEnd + 1 == executionContext.CaretOffset &&
+				currentTerminal.Id.In(Terminals.Comma, Terminals.LeftParenthesis, Terminals.RightParenthesis))
+			{
+				currentTerminal = precedingTerminal;
+			}
 
 			var semanticModel = (OracleStatementSemanticModel)sqlDocumentRepository.ValidationModels[currentTerminal.Statement].SemanticModel;
 			var enterIdentifierModel = new CommandSettingsModel { Value = "Enter value" };

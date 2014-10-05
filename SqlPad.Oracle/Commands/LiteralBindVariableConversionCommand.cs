@@ -10,6 +10,7 @@ namespace SqlPad.Oracle.Commands
 	internal class LiteralBindVariableConversionCommand : OracleCommandBase
 	{
 		private readonly ICollection<StatementGrammarNode> _literalTerminals;
+		private readonly string _requiredPrecedingTerminalId;
 
 		public static ICollection<CommandExecutionHandler> ResolveCommandHandlers(OracleStatementSemanticModel semanticModel, StatementGrammarNode currentTerminal)
 		{
@@ -22,13 +23,16 @@ namespace SqlPad.Oracle.Commands
 				return EmptyHandlerCollection;
 			}
 
-			var literalTerminals = FindUsagesCommand.GetEqualValueLiteralTerminals(semanticModel.Statement, currentTerminal).ToArray();
+			var requiredPrecedingTerminalId = GetRequiredPrecedingTerminalId(currentTerminal);
+			var literalTerminals = FindUsagesCommand.GetEqualValueLiteralTerminals(semanticModel.Statement, currentTerminal)
+				.Where(t => requiredPrecedingTerminalId == t.PrecedingTerminal.Id || (requiredPrecedingTerminalId == null && !t.PrecedingTerminal.Id.In(Terminals.Date, Terminals.Timestamp)))
+				.ToArray();
 
 			var singleOccurenceConvertAction =
 				new CommandExecutionHandler
 				{
 					Name = "Convert to bind variable",
-					ExecutionHandler = c => new LiteralBindVariableConversionCommand(c, new[] { currentTerminal })
+					ExecutionHandler = c => new LiteralBindVariableConversionCommand(c, new[] { currentTerminal }, requiredPrecedingTerminalId)
 						.Execute(),
 					CanExecuteHandler = c => true
 				};
@@ -41,7 +45,7 @@ namespace SqlPad.Oracle.Commands
 				new CommandExecutionHandler
 				{
 					Name = "Convert all occurences to bind variable",
-					ExecutionHandler = c => new LiteralBindVariableConversionCommand(c, literalTerminals)
+					ExecutionHandler = c => new LiteralBindVariableConversionCommand(c, literalTerminals, requiredPrecedingTerminalId)
 						.Execute(),
 					CanExecuteHandler = c => true
 				};
@@ -58,10 +62,11 @@ namespace SqlPad.Oracle.Commands
 			       currentTerminal.RootNode.Id.In(NonTerminals.SelectStatement, NonTerminals.UpdateStatement, NonTerminals.DeleteStatement, NonTerminals.InsertStatement);
 		}
 
-		private LiteralBindVariableConversionCommand(CommandExecutionContext executionContext, ICollection<StatementGrammarNode> literalTerminals)
+		private LiteralBindVariableConversionCommand(CommandExecutionContext executionContext, ICollection<StatementGrammarNode> literalTerminals, string requiredPrecedingTerminalId)
 			: base(executionContext)
 		{
 			_literalTerminals = literalTerminals;
+			_requiredPrecedingTerminalId = requiredPrecedingTerminalId;
 		}
 
 		protected override void Execute()
@@ -71,18 +76,13 @@ namespace SqlPad.Oracle.Commands
 			if (!ExecutionContext.SettingsProvider.GetSettings())
 				return;
 
-			var precedingTerminal = CurrentNode.PrecedingTerminal;
-			var requiredPrecedingTerminalId = precedingTerminal != null && precedingTerminal.Id.In(Terminals.Date, Terminals.Timestamp)
-				? precedingTerminal.Id
-				: null;
-
-			foreach (var node in _literalTerminals.Where(t => requiredPrecedingTerminalId == null || requiredPrecedingTerminalId == t.PrecedingTerminal.Id))
+			foreach (var node in _literalTerminals)
 			{
-				var indexStart = requiredPrecedingTerminalId == null
+				var indexStart = _requiredPrecedingTerminalId == null
 					? node.SourcePosition.IndexStart
 					: node.PrecedingTerminal.SourcePosition.IndexStart;
 
-				var replaceLength = requiredPrecedingTerminalId == null
+				var replaceLength = _requiredPrecedingTerminalId == null
 					? node.SourcePosition.Length
 					: node.SourcePosition.IndexEnd - node.PrecedingTerminal.SourcePosition.IndexStart + 1;
 
@@ -96,6 +96,51 @@ namespace SqlPad.Oracle.Commands
 
 				ExecutionContext.SegmentsToReplace.Add(textSegment);
 			}
+
+			var bindVariableName = settingsModel.Value.ToNormalizedBindVariableIdentifier();
+			CreateBindVariable(bindVariableName);
+		}
+
+		private void CreateBindVariable(string bindVariableName)
+		{
+			var bindVariable = new BindVariableConfiguration { Name = bindVariableName };
+
+			switch (CurrentNode.Id)
+			{
+				case Terminals.NumberLiteral:
+					bindVariable.Value = CurrentNode.Token.Value;
+					break;
+				case Terminals.StringLiteral:
+					bindVariable.Value = CurrentNode.Token.Value.ToPlainString();
+					break;
+			}
+
+			switch (_requiredPrecedingTerminalId)
+			{
+				case Terminals.Date:
+				case Terminals.Timestamp:
+					bindVariable.DataType = OracleBindVariable.DataTypeDate;
+					break;
+				case null:
+					if (CurrentNode.Id == Terminals.NumberLiteral)
+					{
+						bindVariable.DataType = OracleBindVariable.DataTypeNumber;
+					}
+
+					bindVariable.DataType = CurrentNode.Token.Value[0].In('n', 'N') ? OracleBindVariable.DataTypeUnicodeVarchar2 : OracleBindVariable.DataTypeVarchar2;
+					break;
+			}
+
+			var configuration = WorkingDocumentCollection.GetProviderConfiguration(SemanticModel.DatabaseModel.ConnectionString.ProviderName);
+			configuration.SetBindVariable(bindVariable);
+		}
+
+		private static string GetRequiredPrecedingTerminalId(StatementGrammarNode terminal)
+		{
+			var precedingTerminal = terminal.PrecedingTerminal;
+			return precedingTerminal != null && precedingTerminal.Id.In(Terminals.Date, Terminals.Timestamp)
+				? precedingTerminal.Id
+				: null;
 		}
 
 		private CommandSettingsModel ConfigureSettings()

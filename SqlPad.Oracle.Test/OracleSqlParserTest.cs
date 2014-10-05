@@ -1122,11 +1122,11 @@ namespace SqlPad.Oracle.Test
 			var bindVariableTerminalCount = statement.BindVariables.SelectMany(c => c.Nodes).Count();
 			bindVariableTerminalCount.ShouldBe(5);
 
-			var bindVariables = statement.BindVariables.ToArray();
+			var bindVariables = statement.BindVariables.OrderBy(v => v.Nodes.First().SourcePosition.IndexStart).ToArray();
 			bindVariables.Length.ShouldBe(4);
 			bindVariables[0].Name.ShouldBe("1");
 			bindVariables[1].Name.ShouldBe("BV1");
-			bindVariables[2].Name.ShouldBe("bv2");
+			bindVariables[2].Name.ShouldBe("\"bv2\"");
 			bindVariables[3].Name.ShouldBe("BV3");
 		}
 

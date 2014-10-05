@@ -90,7 +90,7 @@ namespace SqlPad.Oracle
 							_columnDescription.Unit = DataUnit.Character;
 						}
 
-						_columnDescription.CharacterSize = tokenValue.ToSimpleString().Length;
+						_columnDescription.CharacterSize = tokenValue.ToPlainString().Length;
 						_columnDescription.Nullable = false;
 						break;
 					case Terminals.NumberLiteral:

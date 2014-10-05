@@ -20,7 +20,7 @@ namespace SqlPad.Oracle
 			return isNotKeyword && identifier.IsQuotedWithoutCheck() && identifier == identifier.ToUpperInvariant() && Char.IsLetter(identifier[1]) ? identifier.Replace(QuoteCharacter, null) : identifier;
 		}
 
-		public static string ToSimpleString(this string oracleString)
+		public static string ToPlainString(this string oracleString)
 		{
 			if (String.IsNullOrEmpty(oracleString))
 			{
@@ -98,6 +98,13 @@ namespace SqlPad.Oracle
 		{
 			if (identifier.IsQuotedWithoutCheck() && (identifier.Length == 1 || identifier[identifier.Length - 1] != '"' || identifier.Substring(1, identifier.Length - 2).Contains(QuoteCharacter)))
 				throw new ArgumentException("invalid quoted notation");
+		}
+
+		public static string ToNormalizedBindVariableIdentifier(this string identifier)
+		{
+			return identifier.All(Char.IsDigit)
+				? identifier
+				: identifier.ToQuotedIdentifier().ToSimpleIdentifier();
 		}
 
 		public static IEnumerable<StatementGrammarNode> GetDescendantsWithinSameQuery(this StatementGrammarNode node, params string[] descendantNodeIds)

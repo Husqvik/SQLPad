@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 
 namespace SqlPad.Oracle
@@ -46,7 +47,14 @@ namespace SqlPad.Oracle
 		{
 			return BuildBindVariableIdentifierTerminalLookup()
 				.OrderBy(g => g.Key)
-				.Select(g => new BindVariableConfiguration { Name = g.Key, DataType = OracleBindVariable.DataTypeVarchar2, Nodes = g.ToList().AsReadOnly(), DataTypes = OracleBindVariable.DataTypes })
+				.Select(g =>
+					new BindVariableConfiguration
+					{
+						Name = g.Key,
+						DataType = OracleBindVariable.DataTypeVarchar2,
+						Nodes = g.ToList().AsReadOnly(),
+						DataTypes = OracleBindVariable.DataTypes
+					})
 				.ToArray();
 		}
 
@@ -54,9 +62,9 @@ namespace SqlPad.Oracle
 		{
 			var sourceTerminals = RootNode == null
 				? new StatementGrammarNode[0]
-				: RootNode.Terminals.Where(t => t.Id == OracleGrammarDescription.Terminals.BindVariableIdentifier);
+				: RootNode.Terminals.Where(t => t.Id == Terminals.BindVariableIdentifier);
 
-			return sourceTerminals.ToLookup(t => t.Token.Value.Trim('"'));
+			return sourceTerminals.ToLookup(t => t.Token.Value.ToNormalizedBindVariableIdentifier());
 		}
 	}
 }
