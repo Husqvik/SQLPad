@@ -378,13 +378,13 @@ namespace SqlPad.Oracle.Test
 			var tokenValues = tokens.Select(t => t.Value).ToArray();
 			tokenValues.ShouldBe(new[] { "SELECT", "/* block comment */", "1", "FROM", "--line comment\n", "DUAL", "/* unfinished comment" });
 
-			tokens[0].IsComment.ShouldBe(false);
-			tokens[1].IsComment.ShouldBe(true);
-			tokens[2].IsComment.ShouldBe(false);
-			tokens[3].IsComment.ShouldBe(false);
-			tokens[4].IsComment.ShouldBe(true);
-			tokens[5].IsComment.ShouldBe(false);
-			tokens[6].IsComment.ShouldBe(true);
+			tokens[0].CommentType.ShouldBe(CommentType.None);
+			tokens[1].CommentType.ShouldBe(CommentType.Block);
+			tokens[2].CommentType.ShouldBe(CommentType.None);
+			tokens[3].CommentType.ShouldBe(CommentType.None);
+			tokens[4].CommentType.ShouldBe(CommentType.Line);
+			tokens[5].CommentType.ShouldBe(CommentType.None);
+			tokens[6].CommentType.ShouldBe(CommentType.Block);
 
 			var tokenIndexes = tokens.Select(t => t.Index).ToArray();
 			tokenIndexes.ShouldBe(new[] { 0, 7, 27, 29, 34, 50, 55 });

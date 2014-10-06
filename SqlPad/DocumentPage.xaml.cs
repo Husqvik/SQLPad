@@ -472,8 +472,8 @@ namespace SqlPad
 		private void ShowTokenCommandExecutionHandler(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
 		{
 			var tokens = _infrastructureFactory.CreateTokenReader(_sqlDocumentRepository.StatementText).GetTokens(true).ToArray();
-			var message = "Parsed: " + String.Join(", ", tokens.Where(t => !t.IsComment).Select(t => "{" + t.Value + "}"));
-			message += Environment.NewLine + "Comments: " + String.Join(", ", tokens.Where(t => t.IsComment).Select(t => "{" + t.Value + "}"));
+			var message = "Parsed: " + String.Join(", ", tokens.Where(t => t.CommentType == CommentType.None).Select(t => "{" + t.Value + "}"));
+			message += Environment.NewLine + "Comments: " + String.Join(", ", tokens.Where(t => t.CommentType != CommentType.None).Select(t => "{" + t.Value + "}"));
 			MessageBox.Show(message, "Tokens", MessageBoxButton.OK, MessageBoxImage.Information);
 		}
 

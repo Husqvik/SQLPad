@@ -116,8 +116,7 @@ namespace SqlPad.Oracle
 
 				if (nearestTerminal.Id.IsIdentifierOrAlias())
 				{
-					TerminalValueUnderCursor = nearestTerminal.Token.Value;
-					TerminalValuePartUntilCaret = nearestTerminal.Token.Value.Substring(0, cursorPosition - nearestTerminal.SourcePosition.IndexStart).Trim('"');
+					ResolveCurrentTerminalValue(nearestTerminal);
 				}
 			}
 
@@ -130,10 +129,17 @@ namespace SqlPad.Oracle
 				precedingTerminal = nearestTerminal;
 			}
 
-			TerminalCandidates = new HashSet<string>(_parser.GetTerminalCandidates(isCursorAfterToken ? nearestTerminal : precedingTerminal));
-			
 			var isCursorTouchingTwoTerminals = nearestTerminal.SourcePosition.IndexStart == cursorPosition && precedingTerminal != null && precedingTerminal.SourcePosition.IndexEnd + 1 == cursorPosition;
 			IsCursorTouchingIdentifier = isCursorTouchingTwoTerminals && precedingTerminal.Id == Terminals.Identifier;
+
+			var terminalCandidateSourceToken = isCursorAfterToken ? nearestTerminal : precedingTerminal;
+			if (nearestTerminal.Id.In(Terminals.RightParenthesis, Terminals.Comma) && isCursorTouchingTwoTerminals && precedingTerminal.Id.IsIdentifier())
+			{
+				terminalCandidateSourceToken = precedingTerminal.PrecedingTerminal;
+				ResolveCurrentTerminalValue(precedingTerminal);
+			}
+
+			TerminalCandidates = new HashSet<string>(_parser.GetTerminalCandidates(terminalCandidateSourceToken));
 
 			var isCursorBetweenTwoTerminalsWithPrecedingIdentifierWithoutPrefix = IsCursorTouchingIdentifier && !ReferenceIdentifier.HasObjectIdentifier;
 			Schema = TerminalCandidates.Contains(Terminals.SchemaIdentifier) || isCursorBetweenTwoTerminalsWithPrecedingIdentifierWithoutPrefix;
@@ -164,6 +170,12 @@ namespace SqlPad.Oracle
 			var isWithinUpdateSetNonTerminal = nearestTerminal.ParentNode.Id == NonTerminals.SetColumnEqualsExpressionOrNestedQueryOrDefaultValue || nearestTerminal.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBoundary, NonTerminals.SetColumnListEqualsNestedQuery) != null;
 			var isAfterSetTerminal = nearestTerminal.Id == Terminals.Set && isCursorAfterToken;
 			UpdateSetColumn = TerminalCandidates.Contains(Terminals.Identifier) && (isWithinUpdateSetNonTerminal || isAfterSetTerminal);
+		}
+
+		private void ResolveCurrentTerminalValue(StatementGrammarNode terminal)
+		{
+			TerminalValueUnderCursor = terminal.Token.Value;
+			TerminalValuePartUntilCaret = terminal.Token.Value.Substring(0, _cursorPosition - terminal.SourcePosition.IndexStart).Trim('"');
 		}
 
 		private void AnalyzeObjectReferencePrefixes(StatementGrammarNode effectiveTerminal)

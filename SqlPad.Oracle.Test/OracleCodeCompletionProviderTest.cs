@@ -1214,6 +1214,14 @@ se";
 			items.Count.ShouldBe(3);
 		}
 
+		[Test(Description = @"")]
+		public void TestSchemaObjectSuggestionInFromClauseBeforeClosingParenthesis()
+		{
+			const string statement = "SELECT * FROM (SELECT * FROM D)";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 30).ToList();
+			items.Count.ShouldBeGreaterThan(0);
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)

@@ -281,13 +281,13 @@ namespace SqlPad.Oracle
 
 			foreach (var token in tokens)
 			{
-				if (token.IsComment)
+				if (token.CommentType == CommentType.None)
 				{
-					commentBuffer.Add(token);
+					tokenBuffer.Add(token);
 				}
 				else
 				{
-					tokenBuffer.Add(token);
+					commentBuffer.Add(token);
 				}
 			}
 

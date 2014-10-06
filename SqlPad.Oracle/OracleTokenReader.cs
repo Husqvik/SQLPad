@@ -153,7 +153,7 @@ namespace SqlPad.Oracle
 
 					if (character == '*')
 					{
-						specialMode.InBlockComment = true;
+						specialMode.CommentType = CommentType.Block;
 						AppendCandidateCharacter(builder, ref candidateCharacter);
 					}
 					else
@@ -177,7 +177,7 @@ namespace SqlPad.Oracle
 
 					if (character == '-')
 					{
-						specialMode.InLineComment = true;
+						specialMode.CommentType = CommentType.Line;
 					}
 					else
 					{
@@ -318,11 +318,11 @@ namespace SqlPad.Oracle
 					previousFlags.Reset();
 				}
 				
-				if (flags.IsLineTerminator && specialMode.InLineComment)
+				if (flags.IsLineTerminator && specialMode.CommentType == CommentType.Line)
 				{
 					if (includeCommentBlocks)
 					{
-						yield return BuildToken(builder, index, character, true);
+						yield return BuildToken(builder, index, character, CommentType.Line);
 					}
 					else
 					{
@@ -330,19 +330,19 @@ namespace SqlPad.Oracle
 					}
 
 					characterYielded = true;
-					specialMode.InLineComment = false;
+					specialMode.CommentType = CommentType.None;
 					candidateCharacter = null;
 				}
 
-				if (previousFlags.BlockCommentEndCandidate && specialMode.InBlockComment)
+				if (previousFlags.BlockCommentEndCandidate && specialMode.CommentType == CommentType.Block)
 				{
 					if (character == '/')
 					{
-						specialMode.InBlockComment = false;
+						specialMode.CommentType = CommentType.None;
 
 						if (includeCommentBlocks)
 						{
-							yield return BuildToken(builder, index, character, true);
+							yield return BuildToken(builder, index, character, CommentType.Block);
 						}
 						else
 						{
@@ -427,17 +427,17 @@ namespace SqlPad.Oracle
 				}
 			}
 
-			if (!specialMode.InComment || includeCommentBlocks)
+			if (specialMode.CommentType == CommentType.None || includeCommentBlocks)
 			{
 				var indexOffset = candidateCharacter.HasValue ? 1 : 0;
 				if (builder.Length > 0)
 				{
-					yield return new OracleToken(builder.ToString(), index - builder.Length - indexOffset, specialMode.InComment);
+					yield return new OracleToken(builder.ToString(), index - builder.Length - indexOffset, specialMode.CommentType);
 				}
 
 				if (candidateCharacter.HasValue)
 				{
-					yield return new OracleToken(new String(candidateCharacter.Value, 1), index - indexOffset, specialMode.InComment);
+					yield return new OracleToken(new String(candidateCharacter.Value, 1), index - indexOffset, specialMode.CommentType);
 				}
 			}
 		}
@@ -473,14 +473,14 @@ namespace SqlPad.Oracle
 			return new OracleToken(character.ToString(CultureInfo.InvariantCulture), index - 1);	
 		}
 
-		private static OracleToken BuildToken(StringBuilder builder, int index, char? currentCharacter, bool isComment = false)
+		private static OracleToken BuildToken(StringBuilder builder, int index, char? currentCharacter, CommentType commentType = CommentType.None)
 		{
 			if (currentCharacter.HasValue)
 			{
 				builder.Append(currentCharacter);
 			}
 
-			var token = new OracleToken(builder.ToString(), index - builder.Length, isComment);
+			var token = new OracleToken(builder.ToString(), index - builder.Length, commentType);
 
 			builder.Clear();
 			
@@ -494,13 +494,13 @@ namespace SqlPad.Oracle
 			switch (character)
 			{
 				case '/':
-					flags.BlockCommentBeginCandidate = !specialMode.InComment;
+					flags.BlockCommentBeginCandidate = specialMode.CommentType == CommentType.None;
 					break;
 				case '*':
-					flags.BlockCommentEndCandidate = specialMode.InBlockComment;
+					flags.BlockCommentEndCandidate = specialMode.CommentType == CommentType.Block;
 					break;
 				case '-':
-					flags.LineCommentCandidate = !specialMode.InComment;
+					flags.LineCommentCandidate = specialMode.CommentType == CommentType.None;
 					break;
 				case '|':
 					flags.ConcatenationCandidate = !specialMode.IsEnabled;
@@ -586,22 +586,16 @@ namespace SqlPad.Oracle
 			private bool _inNumber;
 
 			public bool InString;
-			public bool InBlockComment;
-			public bool InLineComment;
+			public CommentType CommentType;
 			public bool InQuotedIdentifier;
 
 			public bool InPostfixedNumber;
 			public bool InDecimalNumber;
 			public bool InExponent;
 
-			public bool InComment
-			{
-				get { return InLineComment || InBlockComment; }
-			}
-
 			public bool IsEnabled
 			{
-				get { return InString || InBlockComment || InLineComment || InQuotedIdentifier; }
+				get { return InString || CommentType != CommentType.None || InQuotedIdentifier; }
 			}
 
 			public bool InNumber

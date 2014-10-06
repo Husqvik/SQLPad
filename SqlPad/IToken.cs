@@ -5,7 +5,14 @@
 		string Value { get; }
 		
 		int Index { get; }
-		
-		bool IsComment { get; }
+
+		CommentType CommentType { get; }
+	}
+
+	public enum CommentType
+	{
+		None,
+		Line,
+		Block
 	}
 }

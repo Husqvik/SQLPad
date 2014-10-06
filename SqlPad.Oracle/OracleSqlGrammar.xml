@@ -18,8 +18,7 @@
     <StartSymbol Id="LockTableStatement" />
     <StartSymbol Id="RenameStatement" />
     <StartSymbol Id="CommentStatement" />
-    <!--<StartSymbol Id="AlterStatement" />
-    <StartSymbol Id="RenameStatement" />-->
+    <!--<StartSymbol Id="AlterStatement" />-->
   </StartSymbols>
 
   <Terminators>
