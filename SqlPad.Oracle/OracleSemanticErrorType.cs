@@ -11,6 +11,6 @@ namespace SqlPad.Oracle
 		public const string AnalyticClauseNotSupported = "Analytic clause not supported";
 		public const string ObjectStatusInvalid = "Object is invalid or unusable";
 		public const string ObjectCannotBeUsed = "Object cannot be used here";
-		public const string InvalidInsertColumnCount = "Invalid column count";
+		public const string InvalidColumnCount = "Invalid column count";
 	}
 }

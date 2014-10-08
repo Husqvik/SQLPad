@@ -515,11 +515,11 @@ namespace SqlPad.Oracle
 			if (queryBlock.RootNode.ParentNode.ParentNode.Id != NonTerminals.ConcatenatedSubquery)
 				return;
 			
-			var parentSubquery = queryBlock.RootNode.ParentNode.GetAncestor(NonTerminals.Subquery);
-			if (parentSubquery == null)
-				return;
-			
-			var parentQueryBlockNode = parentSubquery.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.QueryBlock);
+			var grandGrandParent = queryBlock.RootNode.ParentNode.ParentNode.ParentNode;
+			var parentQueryBlockNode = grandGrandParent.Id == NonTerminals.ConcatenatedSubquery
+				? grandGrandParent.GetDescendantByPath(NonTerminals.Subquery, NonTerminals.QueryBlock)
+				: grandGrandParent.GetDescendantByPath(NonTerminals.QueryBlock);
+
 			if (parentQueryBlockNode == null)
 				return;
 			

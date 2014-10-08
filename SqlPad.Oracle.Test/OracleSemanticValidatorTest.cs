@@ -1295,9 +1295,9 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			var semanticErrorNodes = nodeValidityDictionary.Values.Where(v => v.SemanticErrorType != null).ToList();
 			semanticErrorNodes.Count.ShouldBe(2);
 			semanticErrorNodes[0].Node.GetStatementSubstring(sqlText).ShouldBe("(RESPONDENTBUCKET_ID, NAME)");
-			semanticErrorNodes[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidInsertColumnCount);
+			semanticErrorNodes[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidColumnCount);
 			semanticErrorNodes[1].Node.GetStatementSubstring(sqlText).ShouldBe("RESPONDENTBUCKET_ID, NAME, PROJECT_ID");
-			semanticErrorNodes[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidInsertColumnCount);
+			semanticErrorNodes[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidColumnCount);
 		}
 
 		[Test(Description = @"")]
@@ -1313,9 +1313,9 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			var semanticErrorNodes = nodeValidityDictionary.Values.Where(v => v.SemanticErrorType != null).ToList();
 			semanticErrorNodes.Count.ShouldBe(2);
 			semanticErrorNodes[0].Node.GetStatementSubstring(sqlText).ShouldBe("(RESPONDENTBUCKET_ID, NAME)");
-			semanticErrorNodes[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidInsertColumnCount);
+			semanticErrorNodes[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidColumnCount);
 			semanticErrorNodes[1].Node.GetStatementSubstring(sqlText).ShouldBe("*");
-			semanticErrorNodes[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidInsertColumnCount);
+			semanticErrorNodes[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidColumnCount);
 		}
 
 		[Test(Description = @"")]
@@ -1331,7 +1331,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			var semanticErrorNodes = nodeValidityDictionary.Values.Where(v => v.SemanticErrorType != null).ToList();
 			semanticErrorNodes.Count.ShouldBe(1);
 			semanticErrorNodes[0].Node.GetStatementSubstring(sqlText).ShouldBe("RESPONDENTBUCKET_ID, NAME, PROJECT_ID");
-			semanticErrorNodes[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidInsertColumnCount);
+			semanticErrorNodes[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidColumnCount);
 		}
 
 		[Test(Description = @"")]
@@ -1373,6 +1373,36 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			nodeValidityDictionary.Count.ShouldBe(1);
 			var columnNodeValidity = nodeValidityDictionary.Values.ToArray();
 			columnNodeValidity[0].IsRecognized.ShouldBe(true);
+		}
+
+		[Test(Description = @"")]
+		public void TestConcatenatedQueryBlocksWithDifferentColumnCount()
+		{
+			const string sqlText = "SELECT 1, 2 FROM DUAL UNION ALL SELECT 1 FROM DUAL";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var nodeValidityDictionary = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			nodeValidityDictionary.Count.ShouldBe(2);
+			var invalidNonTerminalValidityDictionary = nodeValidityDictionary.Values.ToList();
+			invalidNonTerminalValidityDictionary.ForEach(nv => nv.SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidColumnCount));
+		}
+
+		[Test(Description = @"")]
+		public void TestMultipleConcatenatedQueryBlocksWithDifferentColumnCountWithTerminatorSymbol()
+		{
+			const string sqlText = "SELECT 1 FROM DUAL UNION ALL SELECT 2 FROM DUAL UNION ALL SELECT 3, 4 FROM DUAL;";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var nodeValidityDictionary = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			nodeValidityDictionary.Count.ShouldBe(3);
+			var invalidNonTerminalValidityDictionary = nodeValidityDictionary.Values.ToList();
+			invalidNonTerminalValidityDictionary.ForEach(nv => nv.SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidColumnCount));
 		}
 
 		//WITH CTE AS (SELECT 1 A, 2 B, 3 C FROM DUAL) SELECT SELECTION.DUMMY, NQ.DUMMY, CTE.DUMMY, SYS.DUAL.DUMMY FROM SELECTION, (SELECT 1 X, 2 Y, 3 Z FROM DUAL) NQ, CTE, SYS.DUAL

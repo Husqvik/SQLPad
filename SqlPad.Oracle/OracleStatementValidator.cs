@@ -93,18 +93,42 @@ namespace SqlPad.Oracle
 
 					if (insertTarget.ColumnListNode != null)
 					{
-						validationModel.ColumnNodeValidity[insertTarget.ColumnListNode] = new ProgramValidationData(OracleSemanticErrorType.InvalidInsertColumnCount) {IsRecognized = true, Node = insertTarget.ColumnListNode};
+						validationModel.ColumnNodeValidity[insertTarget.ColumnListNode] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) {IsRecognized = true, Node = insertTarget.ColumnListNode};
 					}
 
 					var sourceDataNode = insertTarget.ValueList ?? insertTarget.RowSource.SelectList;
 					if (sourceDataNode != null)
 					{
-						validationModel.ColumnNodeValidity[sourceDataNode] = new ProgramValidationData(OracleSemanticErrorType.InvalidInsertColumnCount) {IsRecognized = true, Node = sourceDataNode};
+						validationModel.ColumnNodeValidity[sourceDataNode] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) {IsRecognized = true, Node = sourceDataNode};
 					}
 				}
 			}
 
+			ValidateConcatenatedQueryBlocks(validationModel);
+
 			return validationModel;
+		}
+
+		private void ValidateConcatenatedQueryBlocks(OracleValidationModel validationModel)
+		{
+			foreach (var queryBlock in validationModel.SemanticModel.QueryBlocks.Where(qb => qb.PrecedingConcatenatedQueryBlock == null && qb.FollowingConcatenatedQueryBlock != null))
+			{
+				var firstQueryBlockColumnCount = queryBlock.Columns.Count(c => !c.IsAsterisk);
+				foreach (var concatenatedQueryBlock in queryBlock.AllFollowingConcatenatedQueryBlocks)
+				{
+					var concatenatedQueryBlockColumnCount = concatenatedQueryBlock.Columns.Count(c => !c.IsAsterisk);
+					if (concatenatedQueryBlockColumnCount != firstQueryBlockColumnCount)
+					{
+						validationModel.InvalidNonTerminals[queryBlock.SelectList] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount);
+						foreach (var invalidColumnCountQueryBlock in queryBlock.AllFollowingConcatenatedQueryBlocks)
+						{
+							validationModel.InvalidNonTerminals[invalidColumnCountQueryBlock.SelectList] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount);
+						}
+
+						break;
+					}
+				}
+			}
 		}
 
 		private void ResolveContainerValidities(OracleValidationModel validationModel, OracleReferenceContainer referenceContainer)
@@ -128,7 +152,7 @@ namespace SqlPad.Oracle
 				if (typeReference.DatabaseLinkNode == null)
 				{
 					var semanticError = GetCompilationEror(typeReference);
-					validationModel.ProgramNodeValidity[typeReference.ObjectNode] = new ProgramValidationData(semanticError) { IsRecognized = true, Node = typeReference.ObjectNode };
+					validationModel.ProgramNodeValidity[typeReference.ObjectNode] = new InvalidNodeValidationData(semanticError) { IsRecognized = true, Node = typeReference.ObjectNode };
 				}
 				else
 				{
@@ -141,7 +165,7 @@ namespace SqlPad.Oracle
 				if (sequenceReference.DatabaseLinkNode == null)
 				{
 					var semanticError = !sequenceReference.Placement.In(QueryBlockPlacement.None, QueryBlockPlacement.SelectList) ? OracleSemanticErrorType.ObjectCannotBeUsed : OracleSemanticErrorType.None;
-					validationModel.ObjectNodeValidity[sequenceReference.ObjectNode] = new ProgramValidationData(semanticError) { IsRecognized = true, Node = sequenceReference.ObjectNode };
+					validationModel.ObjectNodeValidity[sequenceReference.ObjectNode] = new InvalidNodeValidationData(semanticError) { IsRecognized = true, Node = sequenceReference.ObjectNode };
 				}
 				else
 				{
@@ -155,7 +179,7 @@ namespace SqlPad.Oracle
 			var isRecognized = databaseLinkReference.DatabaseLink != null;
 			foreach (var terminal in databaseLinkReference.DatabaseLinkNode.Terminals)
 			{
-				nodeValidityDictionary[terminal] = new ProgramValidationData { IsRecognized = isRecognized, Node = terminal };	
+				nodeValidityDictionary[terminal] = new InvalidNodeValidationData { IsRecognized = isRecognized, Node = terminal };	
 			}
 		}
 
@@ -187,7 +211,7 @@ namespace SqlPad.Oracle
 
 					if (parameterListSemanticError != OracleSemanticErrorType.None)
 					{
-						validationModel.ProgramNodeValidity[functionReference.ParameterListNode] = new ProgramValidationData(parameterListSemanticError) { IsRecognized = true };
+						validationModel.ProgramNodeValidity[functionReference.ParameterListNode] = new InvalidNodeValidationData(parameterListSemanticError) { IsRecognized = true };
 					}
 				}
 				else if (functionReference.Metadata.MinimumArguments > 0)
@@ -201,14 +225,14 @@ namespace SqlPad.Oracle
 
 				if (functionReference.AnalyticClauseNode != null && !functionReference.Metadata.IsAnalytic)
 				{
-					validationModel.ProgramNodeValidity[functionReference.AnalyticClauseNode] = new ProgramValidationData(OracleSemanticErrorType.AnalyticClauseNotSupported) { IsRecognized = true, Node = functionReference.AnalyticClauseNode };
+					validationModel.ProgramNodeValidity[functionReference.AnalyticClauseNode] = new InvalidNodeValidationData(OracleSemanticErrorType.AnalyticClauseNotSupported) { IsRecognized = true, Node = functionReference.AnalyticClauseNode };
 				}
 			}
 
 			if (functionReference.ObjectNode != null)
 			{
 				var packageSemanticError = GetCompilationEror(functionReference);
-				validationModel.ProgramNodeValidity[functionReference.ObjectNode] = new ProgramValidationData(packageSemanticError) { IsRecognized = functionReference.SchemaObject != null, Node = functionReference.ObjectNode };
+				validationModel.ProgramNodeValidity[functionReference.ObjectNode] = new InvalidNodeValidationData(packageSemanticError) { IsRecognized = functionReference.SchemaObject != null, Node = functionReference.ObjectNode };
 			}
 
 			if (semanticError == OracleSemanticErrorType.None && isRecognized && !functionReference.Metadata.IsPackageFunction && functionReference.SchemaObject != null && !functionReference.SchemaObject.IsValid)
@@ -216,7 +240,7 @@ namespace SqlPad.Oracle
 				semanticError = OracleSemanticErrorType.ObjectStatusInvalid;
 			}
 
-			validationModel.ProgramNodeValidity[functionReference.FunctionIdentifierNode] = new ProgramValidationData(semanticError) { IsRecognized = isRecognized, Node = functionReference.FunctionIdentifierNode };
+			validationModel.ProgramNodeValidity[functionReference.FunctionIdentifierNode] = new InvalidNodeValidationData(semanticError) { IsRecognized = isRecognized, Node = functionReference.FunctionIdentifierNode };
 		}
 
 		private string GetCompilationEror(OracleProgramReferenceBase reference)
@@ -322,8 +346,11 @@ namespace SqlPad.Oracle
 		private readonly Dictionary<StatementGrammarNode, INodeValidationData> _columnNodeValidity = new Dictionary<StatementGrammarNode, INodeValidationData>();
 		private readonly Dictionary<StatementGrammarNode, INodeValidationData> _programNodeValidity = new Dictionary<StatementGrammarNode, INodeValidationData>();
 		private readonly Dictionary<StatementGrammarNode, INodeValidationData> _identifierNodeValidity = new Dictionary<StatementGrammarNode, INodeValidationData>();
+		private readonly Dictionary<StatementGrammarNode, INodeValidationData> _invalidNonTerminals = new Dictionary<StatementGrammarNode, INodeValidationData>();
 
-		public IStatementSemanticModel SemanticModel { get; set; }
+		IStatementSemanticModel IValidationModel.SemanticModel { get { return SemanticModel; } }
+
+		public OracleStatementSemanticModel SemanticModel { get; set; }
 
 		public StatementBase Statement { get { return SemanticModel.Statement; } }
 
@@ -335,12 +362,15 @@ namespace SqlPad.Oracle
 
 		public IDictionary<StatementGrammarNode, INodeValidationData> IdentifierNodeValidity { get { return _identifierNodeValidity; } }
 
+		public IDictionary<StatementGrammarNode, INodeValidationData> InvalidNonTerminals { get { return _invalidNonTerminals; } }
+
 		public IEnumerable<KeyValuePair<StatementGrammarNode, INodeValidationData>> GetNodesWithSemanticErrors()
 		{
-			return ColumnNodeValidity
-				.Concat(ObjectNodeValidity)
-				.Concat(ProgramNodeValidity)
-				.Concat(IdentifierNodeValidity)
+			return _columnNodeValidity
+				.Concat(_objectNodeValidity)
+				.Concat(_programNodeValidity)
+				.Concat(_identifierNodeValidity)
+				.Concat(_invalidNonTerminals)
 				.Where(nv => nv.Value.SemanticErrorType != OracleSemanticErrorType.None)
 				.Select(nv => new KeyValuePair<StatementGrammarNode, INodeValidationData>(nv.Key, nv.Value));
 		}
@@ -400,11 +430,11 @@ namespace SqlPad.Oracle
 		}
 	}
 
-	public class ProgramValidationData : NodeValidationData
+	public class InvalidNodeValidationData : NodeValidationData
 	{
 		private readonly string _semanticError;
 
-		public ProgramValidationData(string semanticError = OracleSemanticErrorType.None)
+		public InvalidNodeValidationData(string semanticError = OracleSemanticErrorType.None)
 		{
 			_semanticError = semanticError;
 		}
