@@ -1405,6 +1405,21 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			invalidNonTerminalValidityDictionary.ForEach(nv => nv.SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidColumnCount));
 		}
 
+		[Test(Description = @"")]
+		public void TestAggregationFunctionWithinAnalyticFunctionWithScalarFunction()
+		{
+			const string sqlText = "SELECT ROUND(RATIO_TO_REPORT(COUNT(*)) OVER (PARTITION BY TRUNC(NULL, 'HH')) * 100, 2) PERCENT FROM DUAL";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var nodeValidityDictionary = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			nodeValidityDictionary.Count.ShouldBe(4);
+			var programNodeValidity = nodeValidityDictionary.Values.ToList();
+			programNodeValidity.ForEach(nv => nv.SemanticErrorType.ShouldBe(null));
+		}
+
 		//WITH CTE AS (SELECT 1 A, 2 B, 3 C FROM DUAL) SELECT SELECTION.DUMMY, NQ.DUMMY, CTE.DUMMY, SYS.DUAL.DUMMY FROM SELECTION, (SELECT 1 X, 2 Y, 3 Z FROM DUAL) NQ, CTE, SYS.DUAL
 	}
 }

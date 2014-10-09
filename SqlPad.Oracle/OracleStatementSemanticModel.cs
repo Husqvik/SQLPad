@@ -1240,7 +1240,7 @@ namespace SqlPad.Oracle
 			var parameterExpressionRootNodes = parameterList != null
 				? parameterList
 					.GetPathFilterDescendants(
-						n => !n.Id.In(NonTerminals.NestedQuery, NonTerminals.ParenthesisEnclosedAggregationFunctionParameters, NonTerminals.AggregateFunctionCall, NonTerminals.AnalyticFunctionCall),
+						n => !n.Id.In(NonTerminals.NestedQuery, NonTerminals.ParenthesisEnclosedAggregationFunctionParameters, NonTerminals.AggregateFunctionCall, NonTerminals.AnalyticFunctionCall, NonTerminals.AnalyticClause),
 						NonTerminals.ExpressionList, NonTerminals.OptionalParameterExpressionList)
 					.Select(n => n.ChildNodes.FirstOrDefault())
 					.ToArray()
