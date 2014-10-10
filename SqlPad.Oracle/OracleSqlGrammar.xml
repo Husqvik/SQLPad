@@ -5687,6 +5687,196 @@
       </Sequences>
     </Rule>
 
+    <Rule StartingNonTerminal="AttributeClusteringClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Clustering" />
+          <NonTerminal Id="ClusteringJoin" IsOptional="true" />
+          <NonTerminal Id="ClusterClause" />
+          <NonTerminal Id="ClusteringWhen" IsOptional="true" />
+          <NonTerminal Id="ZoneMapClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ClusteringJoin">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="AttributeClusteringJoinTableOnEquijoinConditionList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AttributeClusteringJoinTableOnEquijoinConditionList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Join" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+          <Terminal Id="On" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="Condition" />
+          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="CommaChainedAttributeClusteringJoinTableOnEquijoinConditionList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="CommaChainedAttributeClusteringJoinTableOnEquijoinConditionList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="AttributeClusteringJoinTableOnEquijoinConditionList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ClusterClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="By" />
+          <NonTerminal Id="LinearOrInterleaved" IsOptional="true" />
+          <Terminal Id="Order" />
+          <NonTerminal Id="ClusteringColumns" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="LinearOrInterleaved">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Linear" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Interleaved" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ClusteringColumns">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ParenthesisEnclosedIdentifierList" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ParenthesisEnclosedListOfParenthesisEnclosedIdentifierLists" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ParenthesisEnclosedListOfParenthesisEnclosedIdentifierLists">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="ListOfParenthesisEnclosedIdentifierLists" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ListOfParenthesisEnclosedIdentifierLists">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ParenthesisEnclosedIdentifierList" />
+          <NonTerminal Id="CommaChainedParenthesisEnclosedIdentifierList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="CommaChainedParenthesisEnclosedIdentifierList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="ListOfParenthesisEnclosedIdentifierLists" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ZoneMapClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="WithMaterializedZoneMap" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="WithoutMaterializedZoneMap" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="WithMaterializedZoneMap">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="With" />
+          <Terminal Id="Materialized" />
+          <Terminal Id="ZoneMap" />
+          <NonTerminal Id="ParenthesisEnclosedIdentifier" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="WithoutMaterializedZoneMap">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Without" />
+          <Terminal Id="Materialized" />
+          <Terminal Id="ZoneMap" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ParenthesisEnclosedIdentifier">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <Terminal Id="Identifier" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ClusteringWhen">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="YesOrNoOnLoad" IsOptional="true" />
+          <NonTerminal Id="YesOrNoOnDataMovement" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="YesOrNoOnLoad">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="YesOrNo" />
+          <Terminal Id="On" />
+          <Terminal Id="Load" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="YesOrNoOnDataMovement">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="YesOrNo" />
+          <Terminal Id="On" />
+          <Terminal Id="Data" />
+          <Terminal Id="Movement" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="YesOrNo">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Yes" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="No" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
     <Rule StartingNonTerminal="EnableDisableClauseList">
       <Sequences>
         <Sequence>
