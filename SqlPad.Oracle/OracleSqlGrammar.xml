@@ -5674,7 +5674,7 @@
           <NonTerminal Id="ColumnProperties" IsOptional="true" />
           <NonTerminal Id="IndexingClause" IsOptional="true" />
           <NonTerminal Id="TablePartitioningClauses" IsOptional="true" />
-          <!--<NonTerminal Id="AttributeClusteringClause" IsOptional="true" />-->
+          <NonTerminal Id="AttributeClusteringClause" IsOptional="true" />
           <NonTerminal Id="CacheOrNoCache" IsOptional="true" />
           <NonTerminal Id="ResultCacheClause" IsOptional="true" />
           <NonTerminal Id="ParallelClause" IsOptional="true" />
@@ -9638,6 +9638,12 @@
     <Terminal Id="Critical" Value="CRITICAL" />
     <Terminal Id="DataManipulationLanguage" Value="DML" />
     <Terminal Id="Capacity" Value="CAPACITY" />
+    <Terminal Id="Clustering" Value="CLUSTERING" />
+    <Terminal Id="Linear" Value="LINEAR" />
+    <Terminal Id="Interleaved" Value="INTERLEAVED" />
+    <Terminal Id="Load" Value="LOAD" />
+    <Terminal Id="Without" Value="WITHOUT" />
+    <Terminal Id="ZoneMap" Value="ZONEMAP" />
     
     <!-- Comment -->
     <Terminal Id="Audit" Value="AUDIT" IsKeyword="true" />
