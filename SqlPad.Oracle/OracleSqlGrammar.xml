@@ -3085,13 +3085,21 @@
     <Rule StartingNonTerminal="ReadOnlyOrCheckOption">
       <Sequences>
         <Sequence>
-          <Terminal Id="Read" />
-          <Terminal Id="Only" />
+          <NonTerminal Id="ReadOnly" />
         </Sequence>
         <Sequence>
           <Terminal Id="Check" />
           <Terminal Id="Option" />
           <NonTerminal Id="ConstraintName" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ReadOnly">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Read" />
+          <Terminal Id="Only" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -8231,7 +8239,155 @@
       <Sequences>
         <Sequence>
           <NonTerminal Id="TableCompression" />
-          <!--<NonTerminal Id="IntegratedLifecycleManagementClause" IsOptional="true" />-->
+          <!--<NonTerminal Id="InformationLifecycleManagementClause" IsOptional="true" />-->
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="InformationLifecycleManagementClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="InformationLifecycleManagement" />
+          <NonTerminal Id="InformationLifecycleManagementPolicyOption" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="InformationLifecycleManagementPolicyOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Add" />
+          <Terminal Id="Policy" />
+          <NonTerminal Id="InformationLifecycleManagementPolicyClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="DeleteOrEnableOrDisable" />
+          <Terminal Id="Policy" />
+          <Terminal Id="Identifier" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="DeleteAll" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="EnableAll" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="DisableAll" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="InformationLifecycleManagementPolicyClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="TableCompressionOrTieringClause" />
+          <NonTerminal Id="SegmentOrGroupOrRow" />
+          <NonTerminal Id="InformationLifecycleManagementPolicyAfterIntervalOrOnFunction" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="TableCompressionOrTieringClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="TableCompression" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="TieringClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="TieringClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Tier" />
+          <Terminal Id="To" />
+          <Terminal Id="Identifier" />
+          <NonTerminal Id="ReadOnly" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="InformationLifecycleManagementPolicyAfterIntervalOrOnFunction">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="After" />
+          <Terminal Id="NumberLiteral" />
+          <NonTerminal Id="InformationLifecycleManagementPolicyPeriod" />
+          <Terminal Id="Of" />
+          <NonTerminal Id="InformationLifecycleManagementPolicyTrigger" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="On" />
+          <Terminal Id="Identifier" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="InformationLifecycleManagementPolicyPeriod">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Day" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Days" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Month" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Months" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Year" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Years" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="InformationLifecycleManagementPolicyTrigger">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="No" />
+          <Terminal Id="Access" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="No" />
+          <Terminal Id="Modification" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Creation" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SegmentOrGroupOrRow">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Segment" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Group" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Row" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="DeleteOrEnableOrDisable">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Delete" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Enable" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Disable" />
         </Sequence>
       </Sequences>
     </Rule>
