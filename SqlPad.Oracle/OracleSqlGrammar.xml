@@ -8230,20 +8230,10 @@
       <Sequences>
         <Sequence>
           <NonTerminal Id="HeapTableSegmentAttributesClause" IsOptional="true" />
-          <!--<NonTerminal Id="HeapPhysicalOrganizationClause" IsOptional="true" />-->
         </Sequence>
       </Sequences>
     </Rule>
     
-    <Rule StartingNonTerminal="HeapPhysicalOrganizationClause"><!-- NOT USED -->
-      <Sequences>
-        <Sequence>
-          <NonTerminal Id="TableCompression" />
-          <!--<NonTerminal Id="InformationLifecycleManagementClause" IsOptional="true" />-->
-        </Sequence>
-      </Sequences>
-    </Rule>
-
     <Rule StartingNonTerminal="InformationLifecycleManagementClause">
       <Sequences>
         <Sequence>
@@ -8588,13 +8578,13 @@
     <Rule StartingNonTerminal="HeapTableSegmentAttributesClause">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="SegmentAttributeOrTableCompressionOrInMemoryTableClauseOrTableProperties" />
+          <NonTerminal Id="SegmentAttributeOrTableCompressionOrInMemoryTableClauseOrTablePropertiesOrInformationLifecycleManagementClause" />
           <NonTerminal Id="HeapTableSegmentAttributesClause" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
     
-    <Rule StartingNonTerminal="SegmentAttributeOrTableCompressionOrInMemoryTableClauseOrTableProperties">
+    <Rule StartingNonTerminal="SegmentAttributeOrTableCompressionOrInMemoryTableClauseOrTablePropertiesOrInformationLifecycleManagementClause">
       <Sequences>
         <Sequence>
           <NonTerminal Id="SegmentAttribute" />
@@ -8604,6 +8594,9 @@
         </Sequence>
         <Sequence>
           <NonTerminal Id="InMemoryTableClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="InformationLifecycleManagementClause" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="TableProperties" />
@@ -8630,6 +8623,20 @@
         </Sequence>
         <Sequence>
           <NonTerminal Id="LoggingClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="RecoverableOrUnrecoverable" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="RecoverableOrUnrecoverable">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Recoverable" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Unrecoverable" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -8855,9 +8862,11 @@
         </Sequence>
         <Sequence>
           <Terminal Id="Query" />
+          <NonTerminal Id="LowOrHigh" IsOptional="true" />
         </Sequence>
         <Sequence>
           <Terminal Id="Archive" />
+          <NonTerminal Id="LowOrHigh" IsOptional="true" />
         </Sequence>
         <Sequence>
           <Terminal Id="All" />
@@ -9800,6 +9809,20 @@
     <Terminal Id="Load" Value="LOAD" />
     <Terminal Id="Without" Value="WITHOUT" />
     <Terminal Id="ZoneMap" Value="ZONEMAP" />
+    <Terminal Id="Unrecoverable" Value="UNRECOVERABLE" />
+    <Terminal Id="Recoverable" Value="RECOVERABLE" />
+    <Terminal Id="InformationLifecycleManagement" Value="ILM" />
+    <Terminal Id="Add" Value="ADD" IsKeyword="true" />
+    <Terminal Id="Policy" Value="POLICY" />
+    <Terminal Id="Tier" Value="TIER" />
+    <Terminal Id="DeleteAll" Value="DELETE_ALL" />
+    <Terminal Id="EnableAll" Value="ENABLE_ALL" />
+    <Terminal Id="DisableAll" Value="DISABLE_ALL" />
+    <Terminal Id="After" Value="AFTER" />
+    <Terminal Id="Days" Value="DAYS" />
+    <Terminal Id="Months" Value="MONTHS" />
+    <Terminal Id="Years" Value="YEARS" />
+    <Terminal Id="Access" Value="ACCESS" IsKeyword="true" />
     
     <!-- Comment -->
     <Terminal Id="Audit" Value="AUDIT" IsKeyword="true" />

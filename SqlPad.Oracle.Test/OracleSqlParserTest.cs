@@ -3607,7 +3607,31 @@ TABLESPACE TBS_HQ_PDB";
 			[Test(Description = @"")]
 			public void TestAttributeClusteringClause()
 			{
-				const string statementText = @"CREATE TABLE TEST_TABLE (C1 NUMBER, C2 NUMBER, C3 NUMBER) CLUSTERING BY INTERLEAVED ORDER ((COL1, COL2), (C3)) YES ON LOAD NO ON DATA MOVEMENT WITHOUT MATERIALIZED ZONEMAP";
+				const string statementText = @"CREATE TABLE TEST_TABLE (C1 NUMBER, C2 NUMBER, C3 NUMBER) CLUSTERING BY INTERLEAVED ORDER ((C1, C2), (C3)) YES ON LOAD NO ON DATA MOVEMENT WITHOUT MATERIALIZED ZONEMAP";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			}
+
+			[Test(Description = @"")]
+			public void TestObsoleteRecoverableClause()
+			{
+				const string statementText = @"CREATE TABLE TEST_TABLE (C) UNRECOVERABLE TABLESPACE TBS_HQ_PDB AS SELECT * FROM DUAL";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			}
+
+			[Test(Description = @"")]
+			public void TestInformationLifecycleManagementClause()
+			{
+				const string statementText = @"CREATE TABLE TEST_TABLE (C NUMBER) ILM ADD POLICY TIER TO TBS_HQ_PDB READ ONLY SEGMENT AFTER 2 YEARS OF CREATION";
 
 				var result = Parser.Parse(statementText);
 
