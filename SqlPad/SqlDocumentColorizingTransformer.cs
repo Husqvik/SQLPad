@@ -227,7 +227,9 @@ namespace SqlPad
 				foreach (var terminal in lineTerminals)
 				{
 					SolidColorBrush brush = null;
-					if (_parser.IsKeyword(terminal.Token.Value))
+					if (_redundantTerminals.Contains(terminal))
+						brush = RedundantBrush;
+					else if (_parser.IsKeyword(terminal.Token.Value))
 						brush = KeywordBrush;
 					else if (_parser.IsLiteral(terminal.Id))
 						brush = LiteralBrush;
@@ -237,8 +239,6 @@ namespace SqlPad
 						brush = ProgramBrush;
 					else if (_unrecognizedTerminals.Contains(terminal))
 						brush = ErrorBrush;
-					else if (_redundantTerminals.Contains(terminal))
-						brush = RedundantBrush;
 
 					if (brush == null)
 						continue;

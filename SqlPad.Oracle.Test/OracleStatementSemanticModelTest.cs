@@ -627,5 +627,43 @@ FROM
 			databaseLinkReferences[2].ShouldBeTypeOf<OracleProgramReference>();
 			databaseLinkReferences[3].ShouldBeTypeOf<OracleDataObjectReference>();
 		}
+
+		[Test(Description = @"")]
+		public void TestUnusedColumnRedundantTerminals()
+		{
+			const string query1 = @"SELECT C1 FROM (SELECT 1 C1, 1 + 2 C2, DUMMY C3 FROM DUAL)";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			var redundantTerminals = semanticModel.RedundantNodes.OrderBy(t => t.SourcePosition.IndexStart).ToArray();
+			redundantTerminals.Length.ShouldBe(8);
+			redundantTerminals[0].Id.ShouldBe(Terminals.Comma);
+			redundantTerminals[1].Id.ShouldBe(Terminals.NumberLiteral);
+			redundantTerminals[2].Id.ShouldBe(Terminals.MathPlus);
+			redundantTerminals[3].Id.ShouldBe(Terminals.NumberLiteral);
+			redundantTerminals[4].Id.ShouldBe(Terminals.ColumnAlias);
+			redundantTerminals[5].Id.ShouldBe(Terminals.Comma);
+			redundantTerminals[6].Id.ShouldBe(Terminals.Identifier);
+			redundantTerminals[7].Id.ShouldBe(Terminals.ColumnAlias);
+		}
+
+		[Test(Description = @"")]
+		public void TestUnusedColumnRedundantTerminalsWithAllQueryBlockColumns()
+		{
+			const string query1 = @"SELECT 1 FROM (SELECT 1 C1, 1 C2, DUMMY C3 FROM DUAL)";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			var redundantTerminals = semanticModel.RedundantNodes.OrderBy(t => t.SourcePosition.IndexStart).ToArray();
+			redundantTerminals.Length.ShouldBe(6);
+			redundantTerminals[0].Id.ShouldBe(Terminals.NumberLiteral);
+			redundantTerminals[1].Id.ShouldBe(Terminals.ColumnAlias);
+			redundantTerminals[2].Id.ShouldBe(Terminals.Comma);
+			redundantTerminals[3].Id.ShouldBe(Terminals.NumberLiteral);
+			redundantTerminals[4].Id.ShouldBe(Terminals.ColumnAlias);
+			redundantTerminals[5].Id.ShouldBe(Terminals.Comma);
+		}
 	}
 }

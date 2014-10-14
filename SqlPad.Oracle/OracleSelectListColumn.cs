@@ -15,6 +15,13 @@ namespace SqlPad.Oracle
 		{
 		}
 
+		public void RegisterOuterReference()
+		{
+			OuterReferenceCount++;
+		}
+
+		public int OuterReferenceCount { get; private set; }
+		
 		public bool IsDirectReference { get; set; }
 		
 		public bool IsAsterisk { get; set; }
@@ -32,6 +39,11 @@ namespace SqlPad.Oracle
 
 				return _columnDescription == null ? null : _columnDescription.Name;
 			}
+		}
+
+		public bool HasExplicitAlias
+		{
+			get { return !IsAsterisk && ExplicitDefinition && RootNode.TerminalCount > 1 && AliasNode != null; }
 		}
 
 		public StatementGrammarNode AliasNode { get; set; }
