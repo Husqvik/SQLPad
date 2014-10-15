@@ -124,6 +124,8 @@ namespace SqlPad.Oracle
 						inQuotedString = false;
 						quotingInitializer = null;
 						characterYielded = isQuotedStringTerminator;
+
+						FindFlags(specialMode, character, out flags);
 					}
 					else if (previousFlags.StringEndCandidate && flags.StringEndCandidate && character == '\'')
 					{
@@ -580,7 +582,7 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		[DebuggerDisplay("SpecialModeFlags (InString={InString}; InBlockComment={InBlockComment}; InLineComment={InLineComment}; InQuotedIdentifier={InQuotedIdentifier}")]
+		[DebuggerDisplay("SpecialModeFlags (InString={InString}; CommentType={CommentType}; InQuotedIdentifier={InQuotedIdentifier}")]
 		private struct SpecialModeFlags
 		{
 			private bool _inNumber;

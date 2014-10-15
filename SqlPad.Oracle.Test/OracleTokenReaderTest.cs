@@ -492,6 +492,14 @@ namespace SqlPad.Oracle.Test
 			tokens.ShouldBe(new[] { "SELECT", "n'value'", "FROM", "DUAL" });
 		}
 
+		[Test(Description = "Tests unicode string literal. ")]
+		public void TestConcatenationOperatorBetweenStringAndIdentifierWithoutSpaces()
+		{
+			const string testQuery = "SELECT 'string'||DUMMY FROM DUAL";
+			var tokens = GetTokenValuesFromOracleSql(testQuery);
+			tokens.ShouldBe(new[] { "SELECT", "'string'", "||", "DUMMY", "FROM", "DUAL" });
+		}
+
 		private string[] GetTokenValuesFromOracleSql(string sqlText, bool includeCommentBlocks = false)
 		{
 			return GetTokensFromOracleSql(sqlText, includeCommentBlocks).Select(t => t.Value).ToArray();

@@ -312,7 +312,7 @@ namespace SqlPad.Oracle
 
 		private bool TryMakeRedundantIfComma(StatementGrammarNode terminal)
 		{
-			return terminal == null || terminal.Id != Terminals.Comma || !_redundantTerminals.Add(terminal);
+			return terminal != null && terminal.Id == Terminals.Comma && _redundantTerminals.Add(terminal);
 		}
 
 		private void ResolveRedundantQualifiers()
@@ -639,9 +639,14 @@ namespace SqlPad.Oracle
 					}
 					else
 					{
-						exposedColumns = objectReference.QueryBlocks.SelectMany(qb => qb.Columns)
-							.Where(c => !c.IsAsterisk)
-							.Select(c => c.AsImplicit());
+						var columns = new List<OracleSelectListColumn>();
+						foreach (var column in objectReference.QueryBlocks.SelectMany(qb => qb.Columns).Where(c => !c.IsAsterisk))
+						{
+							column.RegisterOuterReference();
+							columns.Add(column.AsImplicit());
+						}
+						
+						exposedColumns = columns;
 					}
 
 					var exposedColumnDictionary = new Dictionary<string, OracleColumnReference>();

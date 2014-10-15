@@ -665,5 +665,32 @@ FROM
 			redundantTerminals[4].Id.ShouldBe(Terminals.ColumnAlias);
 			redundantTerminals[5].Id.ShouldBe(Terminals.Comma);
 		}
+
+		[Test(Description = @"")]
+		public void TestUnusedColumnRedundantTerminalsWithFirstRedundantColumn()
+		{
+			const string query1 = @"SELECT C2 FROM (SELECT 1 C1, 2 C2 FROM DUAL)";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			var redundantTerminals = semanticModel.RedundantNodes.OrderBy(t => t.SourcePosition.IndexStart).ToArray();
+			redundantTerminals.Length.ShouldBe(3);
+			redundantTerminals[0].Id.ShouldBe(Terminals.NumberLiteral);
+			redundantTerminals[1].Id.ShouldBe(Terminals.ColumnAlias);
+			redundantTerminals[2].Id.ShouldBe(Terminals.Comma);
+		}
+
+		[Test(Description = @"")]
+		public void TestUnusedColumnRedundantTerminalsWithAsteriskReference()
+		{
+			const string query1 = @"SELECT * FROM (SELECT 1 C1, 2 C2 FROM DUAL)";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			var redundantTerminals = semanticModel.RedundantNodes.OrderBy(t => t.SourcePosition.IndexStart).ToArray();
+			redundantTerminals.Length.ShouldBe(0);
+		}
 	}
 }
