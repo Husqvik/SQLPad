@@ -2008,6 +2008,34 @@ ORDER BY
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 		}
 
+		[Test(Description = @"")]
+		public void TestComplexHierarchicalQuery()
+		{
+			const string statement1 =
+@"SELECT
+    CONNECT_BY_ROOT ID STARTELEMENTID,
+    CONNECT_BY_ROOT ELEMENTNAME STARTELEMENT,
+    ID, PARENT_ID, LEVEL - 1 DEPTH, ELEMENTNAME,
+    SYS_CONNECT_BY_PATH(ELEMENTNAME, '/') TREEPATH,
+    AMOUNT,
+    CONNECT_BY_ISCYCLE ISCYCLE,
+    CONNECT_BY_ISLEAF ISLEAF
+FROM
+    HIEARCHYTEST
+WHERE
+    LEVEL < 4
+START WITH
+    ID = 8
+CONNECT BY NOCYCLE PRIOR
+    PARENT_ID = ID
+ORDER BY
+    LEVEL DESC";
+
+			var statements = Parser.Parse(statement1);
+			var statement = statements.Single().Validate();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+		}
+
 		public class IsRuleValid
 		{
 			[Test(Description = @"")]
@@ -2339,6 +2367,7 @@ ORDER BY
 						Terminals.Case,
 						Terminals.Cast,
 						Terminals.Colon,
+						Terminals.ConnectByRoot,
 						Terminals.Count,
 						Terminals.Date,
 						Terminals.Distinct,
@@ -2359,6 +2388,7 @@ ORDER BY
 						Terminals.Null,
 						Terminals.NumberLiteral,
 						Terminals.ObjectIdentifier,
+						Terminals.Prior,
 						Terminals.RowIdPseudoColumn,
 						Terminals.RowNumberPseudoColumn,
 						Terminals.SchemaIdentifier,

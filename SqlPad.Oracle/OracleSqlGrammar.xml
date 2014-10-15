@@ -1915,6 +1915,14 @@
           <NonTerminal Id="Expression" />
         </Sequence>
         <Sequence>
+          <Terminal Id="Prior" />
+          <NonTerminal Id="Expression" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="ConnectByRoot" />
+          <NonTerminal Id="Expression" />
+        </Sequence>
+        <Sequence>
           <Terminal Id="Cast" />
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="ExpressionOrMultiset" />
@@ -9499,6 +9507,8 @@
     <Terminal Id="Connect" Value="CONNECT" IsKeyword="true" />
     <Terminal Id="Start" Value="START" IsKeyword="true" />
     <Terminal Id="Level" Value="LEVEL" IsKeyword="true" />
+    <Terminal Id="Prior" Value="PRIOR" IsKeyword="true" />
+    <Terminal Id="ConnectByRoot" Value="CONNECT_BY_ROOT" />
     <Terminal Id="NoCycle" Value="NOCYCLE" />
     
     <!-- Aggregate functions -->
