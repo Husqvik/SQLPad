@@ -293,7 +293,7 @@ namespace SqlPad.Oracle
 			foreach (var queryBlock in _queryBlockNodes.Values.Where(qb => qb != MainQueryBlock))
 			{
 				var redundantColumns = 0;
-				foreach (var column in queryBlock.Columns.Where(c => c.ExplicitDefinition && c.OuterReferenceCount == 0))
+				foreach (var column in queryBlock.Columns.Where(c => c.ExplicitDefinition && !c.IsReferenced))
 				{
 					if (++redundantColumns == queryBlock.Columns.Count)
 					{

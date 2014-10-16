@@ -1129,5 +1129,35 @@ SELECT * FROM DUAL";
 			action.ExecutionHandler.CanExecuteHandler(action.ExecutionContext).ShouldBe(true);
 			ExecuteCommand(action.ExecutionHandler, action.ExecutionContext);
 		}
+
+		[Test(Description = @""), STAThread]
+		public void TestPropagateCommand()
+		{
+			const string statementText = @"SELECT 1 C1 FROM (SELECT 2 C2 FROM DUAL)";
+			_editor.Text = statementText;
+			_editor.CaretOffset = 28;
+
+			CanExecuteCommand(OracleCommands.PropagateColumn).ShouldBe(true);
+			ExecuteCommand(OracleCommands.PropagateColumn);
+
+			const string expectedResult = @"SELECT 1 C1, C2 FROM (SELECT 2 C2 FROM DUAL)";
+
+			_editor.Text.ShouldBe(expectedResult);
+		}
+
+		[Test(Description = @""), STAThread, Ignore]
+		public void TestPropagateCommandWithGrandParentWithAsterisk()
+		{
+			const string statementText = @"SELECT * FROM (SELECT 1 FROM (SELECT 1 C FROM DUAL))";
+			_editor.Text = statementText;
+			_editor.CaretOffset = 37;
+
+			CanExecuteCommand(OracleCommands.PropagateColumn).ShouldBe(true);
+			ExecuteCommand(OracleCommands.PropagateColumn);
+
+			const string expectedResult = @"SELECT * FROM (SELECT 1, C FROM (SELECT 1 C FROM DUAL))";
+
+			_editor.Text.ShouldBe(expectedResult);
+		}
 	}
 }

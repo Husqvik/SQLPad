@@ -21,6 +21,8 @@ namespace SqlPad.Oracle
 		}
 
 		public int OuterReferenceCount { get; private set; }
+
+		public bool IsReferenced { get { return OuterReferenceCount > 0; } }
 		
 		public bool IsDirectReference { get; set; }
 		

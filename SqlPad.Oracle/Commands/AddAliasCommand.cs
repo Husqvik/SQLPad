@@ -151,14 +151,14 @@ namespace SqlPad.Oracle.Commands
 			}
 		}
 
-		private IEnumerable<OracleDataObjectReference> GetParentObjectReferences(OracleQueryBlock referredQueryBlock)
+		internal static IEnumerable<OracleDataObjectReference> GetParentObjectReferences(OracleQueryBlock referredQueryBlock)
 		{
-			return _semanticModel.QueryBlocks
+			return referredQueryBlock.SemanticModel.QueryBlocks
 				.SelectMany(qb => qb.ObjectReferences)
 				.Where(o => o.QueryBlocks.Count == 1 && o.QueryBlocks.First() == referredQueryBlock);
 		}
 
-		private void AddColumnAliasToQueryBlock(string columnName, string alias, OracleDataObjectReference objectReference)
+		private void AddColumnAliasToQueryBlock(string columnName, string alias, OracleReference objectReference)
 		{
 			var parentObjectReferences = new HashSet<OracleDataObjectReference>();
 			var columnReferences = objectReference.Owner.AllColumnReferences.Where(c => c.ValidObjectReference == objectReference && c.NormalizedName == columnName);

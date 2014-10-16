@@ -113,6 +113,11 @@ namespace SqlPad.Oracle
 				actionList.Add(new OracleContextAction(UnquoteCommand.Title, OracleCommands.Unquote, executionContext));
 			}
 
+			if (OracleCommands.PropagateColumn.CanExecuteHandler(executionContext))
+			{
+				actionList.Add(new OracleContextAction(PropagateColumnCommand.Title, OracleCommands.PropagateColumn, executionContext));
+			}
+
 			var actions = ResolveAmbiguousColumnCommand.ResolveCommandHandlers(semanticModel, currentTerminal)
 				.Select(c => new OracleContextAction("Resolve as " + c.Name, c, executionContext));
 

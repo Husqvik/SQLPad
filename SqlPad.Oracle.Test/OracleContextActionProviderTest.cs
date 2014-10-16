@@ -336,5 +336,22 @@ namespace SqlPad.Oracle.Test
 			var actionCount = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 50).Count(a => a.Name.StartsWith("Convert"));
 			actionCount.ShouldBe(1);
 		}
+
+		[Test(Description = @""), STAThread]
+		public void TestPropagateColumnAvailable()
+		{
+			const string query1 = @"SELECT 1 C1 FROM (SELECT 2 C2 FROM DUAL)";
+
+			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 28).SingleOrDefault(a => a.Name == PropagateColumnCommand.Title);
+			action.ShouldNotBe(null);
+		}
+		[Test(Description = @""), STAThread]
+		public void TestPropagateColumnNotAvailableAtReferencedColumn()
+		{
+			const string query1 = @"SELECT C2 C1 FROM (SELECT 2 C2 FROM DUAL)";
+
+			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 28).SingleOrDefault(a => a.Name == PropagateColumnCommand.Title);
+			action.ShouldBe(null);
+		}
 	}
 }
