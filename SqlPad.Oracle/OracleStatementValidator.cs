@@ -117,7 +117,7 @@ namespace SqlPad.Oracle
 				foreach (var concatenatedQueryBlock in queryBlock.AllFollowingConcatenatedQueryBlocks)
 				{
 					var concatenatedQueryBlockColumnCount = concatenatedQueryBlock.Columns.Count(c => !c.IsAsterisk);
-					if (concatenatedQueryBlockColumnCount != firstQueryBlockColumnCount)
+					if (concatenatedQueryBlockColumnCount != firstQueryBlockColumnCount && concatenatedQueryBlockColumnCount > 0)
 					{
 						validationModel.InvalidNonTerminals[queryBlock.SelectList] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount);
 						foreach (var invalidColumnCountQueryBlock in queryBlock.AllFollowingConcatenatedQueryBlocks)

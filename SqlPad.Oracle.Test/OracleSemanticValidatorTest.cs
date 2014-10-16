@@ -1452,6 +1452,15 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			nodeValidity[2].SemanticErrorType.ShouldBe(OracleSemanticErrorType.AmbiguousReference);
 		}
 
+		[Test(Description = @"")]
+		public void TestModelInitializatinWhileTypingConcatenatedSubquery()
+		{
+			const string sqlText = "SELECT NULL FROM DUAL UNION SELECT";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			BuildValidationModel(sqlText, statement);
+		}
+
 		//WITH CTE AS (SELECT 1 A, 2 B, 3 C FROM DUAL) SELECT SELECTION.DUMMY, NQ.DUMMY, CTE.DUMMY, SYS.DUAL.DUMMY FROM SELECTION, (SELECT 1 X, 2 Y, 3 Z FROM DUAL) NQ, CTE, SYS.DUAL
 	}
 }
