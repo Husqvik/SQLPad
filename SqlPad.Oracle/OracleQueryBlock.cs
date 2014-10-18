@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -59,7 +60,7 @@ namespace SqlPad.Oracle
 		
 		public OracleStatement Statement { get; set; }
 
-		public ICollection<OracleSelectListColumn> Columns { get; private set; }
+		public IList<OracleSelectListColumn> Columns { get; private set; }
 		
 		public IEnumerable<OracleProgramReference> AllProgramReferences { get { return Columns.SelectMany(c => c.ProgramReferences).Concat(ProgramReferences); } }
 
@@ -77,17 +78,24 @@ namespace SqlPad.Oracle
 
 		public OracleQueryBlock ParentCorrelatedQueryBlock { get; set; }
 
+		public IEnumerable<OracleQueryBlock> AllPrecedingConcatenatedQueryBlocks
+		{
+			get { return GetAllConcatenatedQueryBlocks(qb => qb.PrecedingConcatenatedQueryBlock); }
+		}
+		
 		public IEnumerable<OracleQueryBlock> AllFollowingConcatenatedQueryBlocks
 		{
-			get
-			{
-				var concatenatedQueryBlock = FollowingConcatenatedQueryBlock;
-				while (concatenatedQueryBlock != null)
-				{
-					yield return concatenatedQueryBlock;
+			get { return GetAllConcatenatedQueryBlocks(qb => qb.FollowingConcatenatedQueryBlock); }
+		}
 
-					concatenatedQueryBlock = concatenatedQueryBlock.FollowingConcatenatedQueryBlock;
-				}
+		private IEnumerable<OracleQueryBlock> GetAllConcatenatedQueryBlocks(Func<OracleQueryBlock, OracleQueryBlock> getConcatenatedQueryBlockFunction)
+		{
+			var concatenatedQueryBlock = getConcatenatedQueryBlockFunction(this);
+			while (concatenatedQueryBlock != null)
+			{
+				yield return concatenatedQueryBlock;
+
+				concatenatedQueryBlock = getConcatenatedQueryBlockFunction(concatenatedQueryBlock);
 			}
 		}
 

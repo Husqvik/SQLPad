@@ -300,6 +300,20 @@ namespace SqlPad.Oracle
 						break;
 					}
 
+					var initialPrecedingQueryBlock = queryBlock.AllPrecedingConcatenatedQueryBlocks.LastOrDefault();
+					if (initialPrecedingQueryBlock != null)
+					{
+						var initialQueryBlockColumn = initialPrecedingQueryBlock.Columns
+							.Where(c => c.ExplicitDefinition)
+							.Skip(redundantColumns - 1)
+							.FirstOrDefault();
+
+						if (initialQueryBlockColumn != null && (initialQueryBlockColumn.IsReferenced || initialPrecedingQueryBlock == MainQueryBlock))
+						{
+							continue;
+						}
+					}
+
 					_redundantTerminals.AddRange(column.RootNode.Terminals);
 
 					if (!TryMakeRedundantIfComma(column.RootNode.PrecedingTerminal))

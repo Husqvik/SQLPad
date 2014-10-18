@@ -692,5 +692,17 @@ FROM
 			var redundantTerminals = semanticModel.RedundantNodes.OrderBy(t => t.SourcePosition.IndexStart).ToArray();
 			redundantTerminals.Length.ShouldBe(0);
 		}
+
+		[Test(Description = @"")]
+		public void TestUnusedColumnRedundantTerminalsWithConcatenatedSubquery()
+		{
+			const string query1 = @"SELECT DUMMY, DUMMY FROM DUAL UNION SELECT DUMMY, DUMMY FROM DUAL";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			var redundantTerminals = semanticModel.RedundantNodes.OrderBy(t => t.SourcePosition.IndexStart).ToArray();
+			redundantTerminals.Length.ShouldBe(0);
+		}
 	}
 }
