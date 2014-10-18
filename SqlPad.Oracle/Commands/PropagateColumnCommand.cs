@@ -72,15 +72,19 @@ namespace SqlPad.Oracle.Commands
 			foreach (var parentDataObjectReference in AliasCommandHelper.GetParentObjectReferences(queryBlock).Where(r => r.QueryBlocks.Count == 1))
 			{
 				var parentQueryBlock = parentDataObjectReference.Owner;
-				var lastColumn = parentQueryBlock.Columns.LastOrDefault(c => c.ExplicitDefinition);
-				if (lastColumn != null)
+				var isNotReferencedByAsterisk = parentQueryBlock.Columns.Count(c => c.IsAsterisk) == 0;
+				if (isNotReferencedByAsterisk)
 				{
-					ExecutionContext.SegmentsToReplace.Add(
-					new TextSegment
+					var lastColumn = parentQueryBlock.Columns.LastOrDefault(c => c.ExplicitDefinition);
+					if (lastColumn != null)
 					{
-						IndextStart = lastColumn.RootNode.SourcePosition.IndexEnd + 1,
-						Text = ", " + columnName
-					});
+						ExecutionContext.SegmentsToReplace.Add(
+							new TextSegment
+							{
+								IndextStart = lastColumn.RootNode.SourcePosition.IndexEnd + 1,
+								Text = ", " + columnName
+							});
+					}
 				}
 
 				AddColumnToQueryBlock(parentQueryBlock, columnName);

@@ -1145,7 +1145,7 @@ SELECT * FROM DUAL";
 			_editor.Text.ShouldBe(expectedResult);
 		}
 
-		[Test(Description = @""), STAThread, Ignore]
+		[Test(Description = @""), STAThread]
 		public void TestPropagateCommandWithGrandParentWithAsterisk()
 		{
 			const string statementText = @"SELECT * FROM (SELECT 1 FROM (SELECT 1 C FROM DUAL))";
