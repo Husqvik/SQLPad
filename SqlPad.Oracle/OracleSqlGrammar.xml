@@ -1986,6 +1986,14 @@
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
+          <Terminal Id="CharacterCode" />
+          <Terminal Id="LeftParenthesis" />
+          <Terminal Id="IntegerLiteral" />
+          <NonTerminal Id="UsingNationalCharacterSet" IsOptional="true" />
+          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
+        </Sequence>
+        <Sequence>
           <Terminal Id="Identifier" />
           <Terminal Id="LeftBracket" />
           <NonTerminal Id="ConditionOrExpressionList" />
@@ -1997,6 +2005,15 @@
           <NonTerminal Id="PrefixedColumnReference" />
           <NonTerminal Id="MultisetOperatorClauseOrTimestampAtTimeZone" IsOptional="true" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="UsingNationalCharacterSet">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Using" />
+          <Terminal Id="NationalCharacterSet" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -9925,6 +9942,8 @@
     <Terminal Id="Exclusive" Value="EXCLUSIVE" IsKeyword="true" />
     <Terminal Id="Nocompress" Value="NOCOMPRESS" IsKeyword="true" />
     <Terminal Id="User" Value="USER" IsKeyword="true" />
+    <Terminal Id="CharacterCode" Value="CHR" />
+    <Terminal Id="NationalCharacterSet" Value="NCHAR_CS" />
  </Terminals>
   
   <DatabaseTypes>

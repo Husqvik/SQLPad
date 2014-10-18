@@ -2036,6 +2036,16 @@ ORDER BY
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 		}
 
+		[Test(Description = @"")]
+		public void TestCharacterFunctionWithNationalCharacterSet()
+		{
+			const string statement1 = @"SELECT CHR(219 USING NCHAR_CS) FROM DUAL";
+
+			var statements = Parser.Parse(statement1);
+			var statement = statements.Single().Validate();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+		}
+
 		public class IsRuleValid
 		{
 			[Test(Description = @"")]
@@ -2366,6 +2376,7 @@ ORDER BY
 						Terminals.Avg,
 						Terminals.Case,
 						Terminals.Cast,
+						Terminals.CharacterCode,
 						Terminals.Colon,
 						Terminals.ConnectByRoot,
 						Terminals.Count,
