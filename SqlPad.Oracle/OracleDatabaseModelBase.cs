@@ -81,6 +81,8 @@ namespace SqlPad.Oracle
 		public abstract IDictionary<int, string> StatisticsKeys { get; }
 
 		public abstract int VersionMajor { get; }
+		
+		public abstract string VersionString { get; }
 
 		public abstract Task<ICollection<SessionExecutionStatisticsRecord>> GetExecutionStatisticsAsync(CancellationToken cancellationToken);
 

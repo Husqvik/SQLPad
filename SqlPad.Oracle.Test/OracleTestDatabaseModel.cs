@@ -750,6 +750,8 @@ Note
 
 		public override int VersionMajor { get { return 12; } }
 
+		public override string VersionString { get { return "12.1.0.2"; } }
+
 		public override ILookup<string, string> ContextData
 		{
 			get { return ContextDataInternal; }
@@ -811,6 +813,7 @@ Note
 			dataModel.RowCount = 8312;
 			dataModel.AllocatedBytes = 22546891;
 			dataModel.Compression = "Disabled";
+			dataModel.InMemoryCompression = "Disabled";
 			dataModel.Organization = "Index";
 
 			taskCompletionSource.SetResult(null);

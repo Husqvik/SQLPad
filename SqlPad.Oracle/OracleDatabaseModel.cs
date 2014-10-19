@@ -39,12 +39,12 @@ namespace SqlPad.Oracle
 		private OracleCommand _userCommand;
 		private int _userSessionId;
 		private SessionExecutionStatisticsUpdater _executionStatisticsUpdater;
+		private string _oracleVersion;
 
 		private static readonly Dictionary<string, OracleDataDictionary> CachedDataDictionaries = new Dictionary<string, OracleDataDictionary>();
 		private static readonly Dictionary<string, OracleDatabaseModel> DatabaseModels = new Dictionary<string, OracleDatabaseModel>();
 		private static readonly HashSet<string> ActiveDataModelRefresh = new HashSet<string>();
 		private static readonly Dictionary<string, List<RefreshModel>> WaitingDataModelRefresh = new Dictionary<string, List<RefreshModel>>();
-		private string _oracleVersion;
 
 		private OracleDatabaseModel(ConnectionStringSettings connectionString)
 		{
@@ -131,6 +131,8 @@ namespace SqlPad.Oracle
 		public override IDictionary<int, string> StatisticsKeys { get { return _dataDictionary.StatisticsKeys; } }
 
 		public override int VersionMajor { get { return Convert.ToInt32(_oracleVersion.Split('.')[0]); } }
+		
+		public override string VersionString { get { return _oracleVersion; } }
 
 		public override void RefreshIfNeeded()
 		{
@@ -246,7 +248,7 @@ namespace SqlPad.Oracle
 
 		public async override Task UpdateTableDetailsAsync(OracleObjectIdentifier objectIdentifier, TableDetailsModel dataModel, CancellationToken cancellationToken)
 		{
-			var tableDetailsUpdater = new TableDetailsModelUpdater(dataModel, objectIdentifier);
+			var tableDetailsUpdater = new TableDetailsModelUpdater(dataModel, objectIdentifier, _oracleVersion);
 			var tableSpaceAllocationUpdater = new TableSpaceAllocationModelUpdater(dataModel, objectIdentifier);
 			await UpdateModelAsync(cancellationToken, true, tableDetailsUpdater, tableSpaceAllocationUpdater);
 		}

@@ -168,6 +168,7 @@ namespace SqlPad.Oracle.Test
 			dataModel.IsTemporary.ShouldBe(false);
 			dataModel.LastAnalyzed.ShouldBe(new DateTime(2014, 8, 19, 6, 18, 12));
 			dataModel.Organization.ShouldBe("Index");
+			dataModel.InMemoryCompression.ShouldBe("Disabled");
 			dataModel.RowCount.ShouldBe(8312);
 		}
 

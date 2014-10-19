@@ -194,6 +194,17 @@ WHERE
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestBasicWrapAsInlineViewCommandWithFunctionInvokationWithSingleIdentifierParameter()
+		{
+			_editor.Text = @"SELECT COUNT(DISTINCT SELECTION_ID) OVER (), RESPONDENTBUCKET_ID FROM SELECTION";
+			_editor.CaretOffset = 0;
+
+			ExecuteCommand(OracleCommands.WrapAsInlineView, new TestCommandSettings(new CommandSettingsModel { Value = "IV" }));
+
+			_editor.Text.ShouldBe(@"SELECT IV.RESPONDENTBUCKET_ID FROM (SELECT COUNT(DISTINCT SELECTION_ID) OVER (), RESPONDENTBUCKET_ID FROM SELECTION) IV");
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestBasicWrapAsCommonTableExpressionCommand()
 		{
 			_editor.Text = "SELECT 1, 1 + 1 MYCOLUMN, DUMMY || '3' COLUMN3 FROM DUAL";

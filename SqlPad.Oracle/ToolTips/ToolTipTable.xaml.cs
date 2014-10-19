@@ -23,6 +23,8 @@ namespace SqlPad.Oracle.ToolTips
 		private string _compression;
 		private string _organization;
 		private string _clusterName;
+		private string _parallelDegree;
+		private string _inMemoryCompression;
 		private DateTime? _lastAnalyzed;
 		private int? _averageRowSize;
 		private bool _isTemporary;
@@ -53,6 +55,12 @@ namespace SqlPad.Oracle.ToolTips
 		{
 			get { return _organization; }
 			set { UpdateValueAndRaisePropertyChanged(ref _organization, value); }
+		}
+
+		public string ParallelDegree
+		{
+			get { return _parallelDegree; }
+			set { UpdateValueAndRaisePropertyChanged(ref _parallelDegree, value); }
 		}
 
 		public DateTime? LastAnalyzed
@@ -100,6 +108,23 @@ namespace SqlPad.Oracle.ToolTips
 		{
 			get { return _allocatedBytes; }
 			set { UpdateValueAndRaisePropertyChanged(ref _allocatedBytes, value); }
+		}
+
+		public string InMemoryCompression
+		{
+			get { return _inMemoryCompression; }
+			set
+			{
+				if (UpdateValueAndRaisePropertyChanged(ref _inMemoryCompression, value))
+				{
+					RaisePropertyChanged("InMemoryCompressionVisible");
+				}
+			}
+		}
+
+		public Visibility InMemoryCompressionVisible
+		{
+			get { return String.IsNullOrEmpty(_inMemoryCompression) ? Visibility.Collapsed : Visibility.Visible; }
 		}
 	}
 }

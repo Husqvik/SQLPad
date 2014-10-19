@@ -1222,8 +1222,13 @@ namespace SqlPad.Oracle
 
 						var previousColumnReferences = column.ColumnReferences.Count;
 						ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, column, identifiers, QueryBlockPlacement.SelectList, column);
+
+						if (identifiers.Length == 1)
+						{
+							var parentExpression = identifiers[0].ParentNode.ParentNode.ParentNode;
+							column.IsDirectReference = parentExpression.Id == NonTerminals.Expression && parentExpression.ChildNodes.Count == 1 && parentExpression.ParentNode.Id == NonTerminals.AliasedExpression;
+						}
 						
-						column.IsDirectReference = identifiers.Length == 1 && identifiers[0].GetAncestor(NonTerminals.Expression).ChildNodes.Count == 1;
 						var columnReferenceAdded = column.ColumnReferences.Count > previousColumnReferences;
 						if (columnReferenceAdded && column.IsDirectReference && columnAliasNode == null)
 						{

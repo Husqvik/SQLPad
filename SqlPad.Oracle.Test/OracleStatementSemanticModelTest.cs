@@ -694,9 +694,21 @@ FROM
 		}
 
 		[Test(Description = @"")]
-		public void TestUnusedColumnRedundantTerminalsWithConcatenatedSubquery()
+		public void TestRedundantTerminalsWithConcatenatedSubquery()
 		{
 			const string query1 = @"SELECT DUMMY, DUMMY FROM DUAL UNION SELECT DUMMY, DUMMY FROM DUAL";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			var redundantTerminals = semanticModel.RedundantNodes.OrderBy(t => t.SourcePosition.IndexStart).ToArray();
+			redundantTerminals.Length.ShouldBe(0);
+		}
+
+		[Test(Description = @""), Ignore]
+		public void TestRedundantTerminalsWithCorrelatedSubquery()
+		{
+			const string query1 = @"SELECT (SELECT 1 FROM DUAL WHERE DUMMY = D.DUMMY) VAL FROM DUAL D";
 
 			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
 			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);

@@ -128,16 +128,19 @@ namespace SqlPad.Oracle
 	internal class TableDetailsModelUpdater : DataModelUpdater<TableDetailsModel>
 	{
 		private readonly OracleObjectIdentifier _objectIdentifier;
+		private readonly bool _includeInMemoryCompression;
 
-		public TableDetailsModelUpdater(TableDetailsModel dataModel, OracleObjectIdentifier objectIdentifier)
+		public TableDetailsModelUpdater(TableDetailsModel dataModel, OracleObjectIdentifier objectIdentifier, string oracleVersion)
 			: base(dataModel)
 		{
 			_objectIdentifier = objectIdentifier;
+			_includeInMemoryCompression = String.CompareOrdinal(oracleVersion, "12.1.0.2.0") >= 0;
 		}
 
 		public override void InitializeCommand(OracleCommand command)
 		{
-			command.CommandText = DatabaseCommands.GetTableDetailsCommand;
+			var inMemoryCompressionColumn = _includeInMemoryCompression ? ", NVL(INITCAP(INMEMORY_COMPRESSION), 'Disabled') INMEMORY_COMPRESSION" : String.Empty;
+			command.CommandText = String.Format(DatabaseCommands.GetTableDetailsBaseCommand, inMemoryCompressionColumn);
 			command.AddSimpleParameter("OWNER", _objectIdentifier.Owner.Trim('"'));
 			command.AddSimpleParameter("TABLE_NAME", _objectIdentifier.Name.Trim('"'));
 		}
@@ -155,9 +158,15 @@ namespace SqlPad.Oracle
 			DataModel.BlockCount = OracleReaderValueConvert.ToInt32(reader["BLOCKS"]);
 			DataModel.Compression = OracleReaderValueConvert.ToString(reader["COMPRESSION"]);
 			DataModel.Organization = OracleReaderValueConvert.ToString(reader["ORGANIZATION"]);
+			DataModel.ParallelDegree = OracleReaderValueConvert.ToString(reader["DEGREE"]);
 			DataModel.ClusterName = OracleReaderValueConvert.ToString(reader["CLUSTER_NAME"]);
 			DataModel.IsTemporary = (string)reader["TEMPORARY"] == "Y";
 			DataModel.IsPartitioned = (string)reader["PARTITIONED"] == "YES";
+
+			if (_includeInMemoryCompression)
+			{
+				DataModel.InMemoryCompression = OracleReaderValueConvert.ToString(reader["INMEMORY_COMPRESSION"]);	
+			}
 		}
 
 		public override bool CanContinue
