@@ -217,7 +217,17 @@ namespace SqlPad.Oracle
 			var planKey = Convert.ToString(statement.GetHashCode());
 			var targetTableIdentifier = OracleObjectIdentifier.Create(OracleConfiguration.Configuration.ExecutionPlan.TargetTable.Schema, OracleConfiguration.Configuration.ExecutionPlan.TargetTable.Name);
 			var explainPlanUpdater = new ExplainPlanUpdater(statement, planKey, targetTableIdentifier);
-			await UpdateModelAsync(cancellationToken, true, explainPlanUpdater);
+
+			try
+			{
+				_isExecuting = true;
+				await UpdateModelAsync(cancellationToken, true, explainPlanUpdater);
+			}
+			finally
+			{
+				_isExecuting = false;
+			}
+			
 			return
 				new StatementExecutionModel
 				{

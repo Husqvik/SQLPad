@@ -180,7 +180,7 @@ namespace SqlPad.Oracle
 
 		public override void InitializeCommand(OracleCommand command)
 		{
-			var inMemoryCompressionColumn = _includeInMemoryCompression ? ", NVL(INITCAP(INMEMORY_COMPRESSION), 'Disabled') INMEMORY_COMPRESSION" : String.Empty;
+			var inMemoryCompressionColumn = _includeInMemoryCompression ? ", INITCAP(INMEMORY_COMPRESSION) INMEMORY_COMPRESSION" : String.Empty;
 			command.CommandText = String.Format(DatabaseCommands.GetTableDetailsBaseCommand, inMemoryCompressionColumn);
 			command.AddSimpleParameter("OWNER", _objectIdentifier.Owner.Trim('"'));
 			command.AddSimpleParameter("TABLE_NAME", _objectIdentifier.Name.Trim('"'));
