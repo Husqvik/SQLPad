@@ -19,7 +19,7 @@
 			</GroupBox.Header>
 			<Grid Margin="4">
 				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="96"/>
+					<ColumnDefinition Width="Auto"/>
 					<ColumnDefinition/>
 				</Grid.ColumnDefinitions>
 				<Grid.RowDefinitions>
@@ -32,6 +32,7 @@
 					<RowDefinition />
 					<RowDefinition />
 					<RowDefinition />
+					<RowDefinition Height="Auto" />
 				</Grid.RowDefinitions>
 				<TextBlock Grid.Row="0" Grid.Column="0" Text="Owner: " />
 				<TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Owner}" />
@@ -51,6 +52,8 @@
 				<TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding AverageValueSize, Converter={StaticResource NumericConverter}}" />
 				<TextBlock Grid.Row="8" Grid.Column="0" Text="Last analyzed: " />
 				<TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding LastAnalyzed, Converter={StaticResource DateTimeConverter}}" />
+				<TextBlock Grid.Row="9" Grid.Column="0" Text="In-memory compression: " Visibility="{Binding InMemoryCompressionVisible}" />
+				<TextBlock Grid.Row="9" Grid.Column="1" Text="{Binding InMemoryCompression}" Visibility="{Binding InMemoryCompressionVisible}" />
 			</Grid>
 		</GroupBox>
 

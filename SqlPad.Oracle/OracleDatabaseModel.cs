@@ -257,7 +257,8 @@ namespace SqlPad.Oracle
 		{
 			var columnDetailsUpdater = new ColumnDetailsModelUpdater(dataModel, objectIdentifier, columnName.Trim('"'));
 			var columnHistogramUpdater = new ColumnDetailsHistogramUpdater(dataModel, objectIdentifier, columnName.Trim('"'));
-			await UpdateModelAsync(cancellationToken, true, columnDetailsUpdater, columnHistogramUpdater);
+			var columnInMemoryDetailsUpdater = new ColumnInMemoryDetailsModelUpdater(dataModel, objectIdentifier, columnName.Trim('"'), _oracleVersion);
+			await UpdateModelAsync(cancellationToken, true, columnDetailsUpdater, columnHistogramUpdater, columnInMemoryDetailsUpdater);
 		}
 
 		private async Task UpdateModelAsync(CancellationToken cancellationToken, bool suppressException, params IDataModelUpdater[] updaters)
@@ -279,22 +280,20 @@ namespace SqlPad.Oracle
 
 						try
 						{
-							if (updater.HasScalarResult)
+							if (updater.IsValid)
 							{
-								var result = await command.ExecuteScalarAsynchronous(cancellationToken);
-								updater.MapScalarData(result);
-							}
-							else
-							{
-								using (var reader = await command.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken))
+								if (updater.HasScalarResult)
 								{
-									updater.MapReaderData(reader);
+									var result = await command.ExecuteScalarAsynchronous(cancellationToken);
+									updater.MapScalarData(result);
 								}
-							}
-
-							if (!updater.CanContinue)
-							{
-								break;
+								else
+								{
+									using (var reader = await command.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken))
+									{
+										updater.MapReaderData(reader);
+									}
+								}
 							}
 						}
 						catch (Exception exception)

@@ -28,6 +28,7 @@ namespace SqlPad.Oracle.ToolTips
 		private object _maximumValue;
 		private DateTime _lastAnalyzed;
 		private int _averageValueSize;
+		private string _inMemoryCompression;
 		private string _histogramType;
 		private int _histogramBucketCount;
 		private double _histogramHeight;
@@ -73,6 +74,23 @@ namespace SqlPad.Oracle.ToolTips
 		{
 			get { return _averageValueSize; }
 			set { UpdateValueAndRaisePropertyChanged(ref _averageValueSize, value); }
+		}
+
+		public string InMemoryCompression
+		{
+			get { return _inMemoryCompression; }
+			set
+			{
+				if (UpdateValueAndRaisePropertyChanged(ref _inMemoryCompression, value))
+				{
+					RaisePropertyChanged("InMemoryCompressionVisible");
+				}
+			}
+		}
+
+		public Visibility InMemoryCompressionVisible
+		{
+			get { return String.IsNullOrEmpty(_inMemoryCompression) ? Visibility.Collapsed : Visibility.Visible; }
 		}
 
 		public string HistogramType

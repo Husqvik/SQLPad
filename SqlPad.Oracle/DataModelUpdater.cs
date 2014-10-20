@@ -10,13 +10,13 @@ namespace SqlPad.Oracle
 	{
 		void InitializeCommand(OracleCommand command);
 		
-		bool CanContinue { get; }
-		
 		void MapReaderData(OracleDataReader reader);
 
 		void MapScalarData(object value);
 
 		bool HasScalarResult { get; }
+		
+		bool IsValid { get; }
 	}
 
 	internal abstract class DataModelUpdater<TModel> : IDataModelUpdater where TModel: ModelBase
@@ -35,9 +35,9 @@ namespace SqlPad.Oracle
 			throw new NotImplementedException();
 		}
 
-		public abstract bool CanContinue { get; }
-
 		public virtual bool HasScalarResult { get { return false; } }
+		
+		public virtual bool IsValid { get { return true; } }
 
 		public virtual void MapScalarData(object value)
 		{
@@ -80,11 +80,6 @@ namespace SqlPad.Oracle
 			DataModel.HistogramBucketCount = Convert.ToInt32(reader["NUM_BUCKETS"]);
 			DataModel.HistogramType = (string)reader["HISTOGRAM"];
 		}
-
-		public override bool CanContinue
-		{
-			get { return DataModel.HistogramType != null && DataModel.HistogramType != "None"; }
-		}
 	}
 
 	internal class ColumnDetailsHistogramUpdater : DataModelUpdater<ColumnDetailsModel>
@@ -119,9 +114,55 @@ namespace SqlPad.Oracle
 			DataModel.HistogramValues = histogramValues;
 		}
 
-		public override bool CanContinue
+		public override bool IsValid
 		{
-			get { return false; }
+			get { return DataModel.HistogramType != null && DataModel.HistogramType != "None"; }
+		}
+	}
+
+	internal class ColumnInMemoryDetailsModelUpdater : DataModelUpdater<ColumnDetailsModel>
+	{
+		private readonly OracleObjectIdentifier _objectIdentifier;
+		private readonly string _columnName;
+		private readonly string _oracleVersion;
+
+		public ColumnInMemoryDetailsModelUpdater(ColumnDetailsModel dataModel, OracleObjectIdentifier objectIdentifier, string columnName, string oracleVersion)
+			: base(dataModel)
+		{
+			_objectIdentifier = objectIdentifier;
+			_columnName = columnName;
+			_oracleVersion = oracleVersion;
+		}
+
+		public override void InitializeCommand(OracleCommand command)
+		{
+			command.CommandText = DatabaseCommands.GetColumnInMemoryDetailsCommand;
+			command.AddSimpleParameter("OWNER", _objectIdentifier.Owner.Trim('"'));
+			command.AddSimpleParameter("TABLE_NAME", _objectIdentifier.Name.Trim('"'));
+			command.AddSimpleParameter("COLUMN_NAME", _columnName);
+		}
+
+		public override void MapReaderData(OracleDataReader reader)
+		{
+			if (!reader.Read())
+			{
+				return;
+			}
+
+			DataModel.InMemoryCompression = (string)reader["INMEMORY_COMPRESSION"];
+		}
+
+		public override bool IsValid
+		{
+			get { return InMemoryHelper.HasInMemorySupport(_oracleVersion); }
+		}
+	}
+
+	internal static class InMemoryHelper
+	{
+		public static bool HasInMemorySupport(string oracleVersion)
+		{
+			return String.CompareOrdinal(oracleVersion, "12.1.0.2.0") >= 0;
 		}
 	}
 
@@ -134,7 +175,7 @@ namespace SqlPad.Oracle
 			: base(dataModel)
 		{
 			_objectIdentifier = objectIdentifier;
-			_includeInMemoryCompression = String.CompareOrdinal(oracleVersion, "12.1.0.2.0") >= 0;
+			_includeInMemoryCompression = InMemoryHelper.HasInMemorySupport(oracleVersion);
 		}
 
 		public override void InitializeCommand(OracleCommand command)
@@ -168,11 +209,6 @@ namespace SqlPad.Oracle
 				DataModel.InMemoryCompression = OracleReaderValueConvert.ToString(reader["INMEMORY_COMPRESSION"]);	
 			}
 		}
-
-		public override bool CanContinue
-		{
-			get { return true; }
-		}
 	}
 
 	internal class TableSpaceAllocationModelUpdater : DataModelUpdater<TableDetailsModel>
@@ -195,11 +231,6 @@ namespace SqlPad.Oracle
 		public override void MapScalarData(object value)
 		{
 			DataModel.AllocatedBytes = OracleReaderValueConvert.ToInt64(value);
-		}
-
-		public override bool CanContinue
-		{
-			get { return false; }
 		}
 
 		public override bool HasScalarResult
@@ -237,12 +268,9 @@ namespace SqlPad.Oracle
 			ScriptText = (string)value;
 		}
 
-		public bool CanContinue
-		{
-			get { return false; }
-		}
-
 		public bool HasScalarResult { get { return true; } }
+		
+		public bool IsValid { get { return true; } }
 	}
 
 	internal class DisplayCursorUpdater
@@ -314,12 +342,9 @@ namespace SqlPad.Oracle
 				throw new NotSupportedException();
 			}
 
-			public bool CanContinue
-			{
-				get { return _cursorModel.SqlId != null; }
-			}
-
 			public bool HasScalarResult { get { return false; } }
+
+			public bool IsValid { get { return true; } }
 		}
 
 		private class DisplayCursorUpdaterInternal : IDataModelUpdater
@@ -355,12 +380,12 @@ namespace SqlPad.Oracle
 				throw new NotSupportedException();
 			}
 
-			public bool CanContinue
-			{
-				get { return false; }
-			}
-
 			public bool HasScalarResult { get { return false; } }
+
+			public bool IsValid
+			{
+				get { return _cursorModel.SqlId != null; }
+			}
 		}
 	}
 
@@ -390,9 +415,9 @@ namespace SqlPad.Oracle
 			throw new NotSupportedException();
 		}
 
-		public bool CanContinue { get { return false; } }
-
 		public bool HasScalarResult { get { return false; } }
+
+		public bool IsValid { get { return true; } }
 	}
 
 	internal class SessionExecutionStatisticsUpdater
@@ -428,6 +453,11 @@ namespace SqlPad.Oracle
 				command.AddSimpleParameter("SID", DataModel.SessionId);
 
 				DataModel.StatisticsRecords.Clear();
+			}
+
+			public override bool IsValid
+			{
+				get { return _executionStart || DataModel.StatisticsKeys.Count > 0; }
 			}
 
 			public override void MapReaderData(OracleDataReader reader)
@@ -473,11 +503,6 @@ namespace SqlPad.Oracle
 				{
 					DataModel.ExecutionStartRecordsSet();
 				}
-			}
-
-			public override bool CanContinue
-			{
-				get { return DataModel.StatisticsKeys.Count > 0; }
 			}
 		}
 
