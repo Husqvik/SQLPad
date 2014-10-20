@@ -175,7 +175,9 @@ namespace SqlPad
 
 		private void AddDocumentTabItemContextMenuCommandBindings(DocumentPage documentPage)
 		{
-			documentPage.TabItemContextMenu.CommandBindings.Add(new CommandBinding(GenericCommands.CloseDocumentCommand, CloseTabExecutedHandler, (sender, args) => args.CanExecute = true));
+			var closeDocumentCommandBinding = new CommandBinding(GenericCommands.CloseDocumentCommand, CloseTabExecutedHandler, (sender, args) => args.CanExecute = true);
+			documentPage.TabItemContextMenu.CommandBindings.Add(closeDocumentCommandBinding);
+			documentPage.CommandBindings.Add(closeDocumentCommandBinding);
 			documentPage.TabItemContextMenu.CommandBindings.Add(new CommandBinding(GenericCommands.CloseAllDocumentsButThisCommand, CloseAllButThisTabExecutedHandler, (sender, args) => args.CanExecute = DocumentTabControl.Items.Count > 2));
 		}
 
@@ -196,8 +198,11 @@ namespace SqlPad
 
 		private void CloseTabExecutedHandler(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
 		{
-			var currentDocument = (DocumentPage)executedRoutedEventArgs.Parameter;
-			CloseDocument(currentDocument);
+			var currentDocument = (executedRoutedEventArgs.Parameter ?? sender) as DocumentPage;
+			if (currentDocument != null)
+			{
+				CloseDocument(currentDocument);
+			}
 		}
 
 		private bool CloseDocument(DocumentPage document)
