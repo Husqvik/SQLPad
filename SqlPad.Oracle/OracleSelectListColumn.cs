@@ -30,7 +30,7 @@ namespace SqlPad.Oracle
 		
 		public bool IsGrouped { get; set; }
 
-		public bool ExplicitDefinition { get; set; }
+		public bool HasExplicitDefinition { get; set; }
 
 		public string NormalizedName
 		{
@@ -45,7 +45,7 @@ namespace SqlPad.Oracle
 
 		public bool HasExplicitAlias
 		{
-			get { return !IsAsterisk && ExplicitDefinition && RootNode.TerminalCount > 1 && AliasNode != null; }
+			get { return !IsAsterisk && HasExplicitDefinition && RootNode.TerminalCount > 1 && AliasNode != null; }
 		}
 
 		public StatementGrammarNode AliasNode { get; set; }
@@ -167,7 +167,7 @@ namespace SqlPad.Oracle
 			return
 				new OracleSelectListColumn(SemanticModel)
 				{
-					ExplicitDefinition = false,
+					HasExplicitDefinition = false,
 					AliasNode = AliasNode,
 					RootNode = RootNode,
 					IsDirectReference = true,

@@ -48,7 +48,7 @@ namespace SqlPad.Oracle.Commands
 
 		private IEnumerable<OracleSelectListColumn> GetQuotedColumns(Func<OracleSelectListColumn, bool> columnFilter)
 		{
-			return CurrentQueryBlock.Columns.Where(c => !c.IsAsterisk && c.IsDirectReference && c.ExplicitDefinition && c.RootNode.TerminalCount == 1 && c.ColumnReferences.Count == 1 && IsUnquotable(c) && columnFilter(c));
+			return CurrentQueryBlock.Columns.Where(c => !c.IsAsterisk && c.IsDirectReference && c.HasExplicitDefinition && c.RootNode.TerminalCount == 1 && c.ColumnReferences.Count == 1 && IsUnquotable(c) && columnFilter(c));
 		}
 
 		private static bool IsUnquotable(OracleSelectListColumn column)

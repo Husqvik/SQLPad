@@ -92,10 +92,11 @@ namespace SqlPad.Oracle
 
 		private bool IsRuleValid(string nonTerminalId, IEnumerable<OracleToken> tokens)
 		{
-			var result = ProceedNonTerminal(null, nonTerminalId, 0, 0, false, new List<OracleToken>(tokens), CancellationToken.None);
+			var tokenBuffer = new List<OracleToken>(tokens);
+			var result = ProceedNonTerminal(null, nonTerminalId, 0, 0, false, tokenBuffer, CancellationToken.None);
 			return result.Status == ProcessingStatus.Success &&
-			       result.Nodes.All(n => n.AllChildNodes.All(c => c.IsGrammarValid))/* &&
-			       result.Terminals.Count() == result.BestCandidates.Sum(n => n.Terminals.Count())*/;
+			       result.Nodes.Sum(n => n.TerminalCount) == tokenBuffer.Count &&
+			       result.Nodes.All(n => n.AllChildNodes.All(c => c.IsGrammarValid));
 		}
 
 		public StatementCollection Parse(string sqlText)

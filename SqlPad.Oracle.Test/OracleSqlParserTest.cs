@@ -2067,6 +2067,13 @@ ORDER BY
 				isRuleValid = Parser.IsRuleValid(NonTerminals.SelectList, "SELECTION.NAME, SELECTION./* missing column */, /* missing expression */, SELECTION.SELECTION_ID");
 				isRuleValid.ShouldBe(false);
 			}
+
+			[Test(Description = @"")]
+			public void TestInvalidExpressionEndingWithComma()
+			{
+				var isRuleValid = Parser.IsRuleValid(NonTerminals.Expression, "PROJECT_ID,");
+				isRuleValid.ShouldBe(false);
+			}
 		}
 
 		public class Commit

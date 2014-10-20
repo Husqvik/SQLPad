@@ -796,9 +796,81 @@ WHERE
 			_editor.Text = @"SELECT SELECTION.PROJECT_ID, COUNT(*) PROJECT_SELECTIONS FROM SELECTION";
 			_editor.CaretOffset = 18;
 
+			CanExecuteCommand(OracleCommands.AddToGroupByClause).ShouldBe(true);
 			ExecuteCommand(OracleCommands.AddToGroupByClause);
 
-			_editor.Text.ShouldBe("SELECT SELECTION.PROJECT_ID, COUNT(*) PROJECT_SELECTIONS FROM SELECTION GROUP BY PROJECT_ID");
+			_editor.Text.ShouldBe("SELECT SELECTION.PROJECT_ID, COUNT(*) PROJECT_SELECTIONS FROM SELECTION GROUP BY SELECTION.PROJECT_ID");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestAddToGroupByCommandWithMultipleSelectColumns()
+		{
+			_editor.Text = @"SELECT PROJECT_ID, RESPONDENTBUCKET_ID, COUNT(*) PROJECT_SELECTIONS FROM SELECTION";
+			_editor.SelectionStart = 7;
+			_editor.SelectionLength = 30;
+
+			CanExecuteCommand(OracleCommands.AddToGroupByClause).ShouldBe(true);
+			ExecuteCommand(OracleCommands.AddToGroupByClause);
+
+			_editor.Text.ShouldBe("SELECT PROJECT_ID, RESPONDENTBUCKET_ID, COUNT(*) PROJECT_SELECTIONS FROM SELECTION GROUP BY PROJECT_ID, RESPONDENTBUCKET_ID");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestAddToGroupByCommandWithSameExpressionWithinExistingGroupByClause()
+		{
+			_editor.Text = @"SELECT PROJECT_ID, COUNT(*) SELECTION_COUNT FROM SELECTION GROUP BY PROJECT_ID";
+			_editor.CaretOffset = 7;
+
+			CanExecuteCommand(OracleCommands.AddToGroupByClause).ShouldBe(false);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestAddToGroupByCommandNotAvailableAtAsteriskTerminal()
+		{
+			_editor.Text = @"SELECT * FROM SELECTION";
+			_editor.CaretOffset = 7;
+
+			CanExecuteCommand(OracleCommands.AddToGroupByClause).ShouldBe(false);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestAddToGroupByCommandWithExistingGroupByClause()
+		{
+			_editor.Text = @"SELECT SELECTION.PROJECT_ID, SELECTION.RESPONDENTBUCKET_ID, COUNT(*) SELECTION_COUNT FROM SELECTION GROUP BY SELECTION.PROJECT_ID";
+			_editor.CaretOffset = 40;
+
+			CanExecuteCommand(OracleCommands.AddToGroupByClause).ShouldBe(true);
+			ExecuteCommand(OracleCommands.AddToGroupByClause);
+
+			_editor.Text.ShouldBe("SELECT SELECTION.PROJECT_ID, SELECTION.RESPONDENTBUCKET_ID, COUNT(*) SELECTION_COUNT FROM SELECTION GROUP BY SELECTION.PROJECT_ID, SELECTION.RESPONDENTBUCKET_ID");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestAddToGroupByCommandNotAvailableAtInvalidExpression()
+		{
+			_editor.Text = @"SELECT 1 + SELECTION_ID FROM SELECTION";
+			_editor.SelectionStart = 7;
+			_editor.SelectionLength = 3;
+
+			CanExecuteCommand(OracleCommands.AddToGroupByClause).ShouldBe(false);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestAddToGroupByCommandNotAvailableWhenSequencePseudoColumnWithinSelection()
+		{
+			_editor.Text = @"SELECT TEST_SEQ.NEXTVAL FROM SELECTION";
+			_editor.CaretOffset = 18;
+
+			CanExecuteCommand(OracleCommands.AddToGroupByClause).ShouldBe(false);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestAddToGroupByCommandNotAvailableWhenSequenceWithinSelection()
+		{
+			_editor.Text = @"SELECT TEST_SEQ.NEXTVAL FROM SELECTION";
+			_editor.CaretOffset = 10;
+
+			CanExecuteCommand(OracleCommands.AddToGroupByClause).ShouldBe(false);
 		}
 
 		[Test(Description = @""), STAThread]
@@ -1169,6 +1241,16 @@ SELECT * FROM DUAL";
 			const string expectedResult = @"SELECT * FROM (SELECT 1, C FROM (SELECT 1 C FROM DUAL))";
 
 			_editor.Text.ShouldBe(expectedResult);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestPropagateCommandNotAvailable()
+		{
+			const string statementText = @"SELECT SELECTION_ID FROM SELECTION";
+			_editor.Text = statementText;
+			_editor.CaretOffset = 8;
+
+			CanExecuteCommand(OracleCommands.PropagateColumn).ShouldBe(false);
 		}
 	}
 }

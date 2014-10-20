@@ -134,10 +134,10 @@ FROM
 			queryBlock.Columns.Count.ShouldBe(3);
 			var columns = queryBlock.Columns.ToArray();
 			columns[0].ColumnReferences.Count.ShouldBe(1);
-			columns[0].ExplicitDefinition.ShouldBe(true);
+			columns[0].HasExplicitDefinition.ShouldBe(true);
 			columns[0].IsAsterisk.ShouldBe(true);
 			columns[1].ColumnReferences.Count.ShouldBe(1);
-			columns[1].ExplicitDefinition.ShouldBe(false);
+			columns[1].HasExplicitDefinition.ShouldBe(false);
 			columns[1].ColumnReferences.Count.ShouldBe(1);
 			columns[1].ColumnReferences.First().ColumnNodeObjectReferences.Count.ShouldBe(1);
 			columns[1].ColumnReferences.First().ColumnNodeObjectReferences.Single().ShouldBe(objectReference);
@@ -216,15 +216,15 @@ FROM
 			innerBlock.Columns.Count.ShouldBe(3);
 			var columns = innerBlock.Columns.ToArray();
 			columns[0].NormalizedName.ShouldBe("\"RESPONDENTBUCKET_ID\"");
-			columns[0].ExplicitDefinition.ShouldBe(true);
+			columns[0].HasExplicitDefinition.ShouldBe(true);
 			columns[0].IsDirectReference.ShouldBe(true);
 			columns[0].ColumnDescription.Type.ShouldBe("NUMBER");
 			columns[1].NormalizedName.ShouldBe("\"SELECTION_NAME\"");
-			columns[1].ExplicitDefinition.ShouldBe(true);
+			columns[1].HasExplicitDefinition.ShouldBe(true);
 			columns[1].IsDirectReference.ShouldBe(true);
 			columns[1].ColumnDescription.Type.ShouldBe("VARCHAR2");
 			columns[2].NormalizedName.ShouldBe("\"MY_NUMBER_COLUMN\"");
-			columns[2].ExplicitDefinition.ShouldBe(true);
+			columns[2].HasExplicitDefinition.ShouldBe(true);
 			columns[2].IsDirectReference.ShouldBe(false);
 			columns[2].ColumnDescription.Type.ShouldBe("NUMBER");
 			columns[2].ColumnDescription.FullTypeName.ShouldBe("NUMBER(1)");
@@ -236,15 +236,15 @@ FROM
 			outerBlock.Columns.Count.ShouldBe(3);
 			columns = outerBlock.Columns.ToArray();
 			columns[0].NormalizedName.ShouldBe("\"RESPONDENTBUCKET_ID\"");
-			columns[0].ExplicitDefinition.ShouldBe(true);
+			columns[0].HasExplicitDefinition.ShouldBe(true);
 			columns[0].IsDirectReference.ShouldBe(true);
 			columns[0].ColumnDescription.Type.ShouldBe("NUMBER");
 			columns[1].NormalizedName.ShouldBe("\"SELECTION_NAME\"");
-			columns[1].ExplicitDefinition.ShouldBe(true);
+			columns[1].HasExplicitDefinition.ShouldBe(true);
 			columns[1].IsDirectReference.ShouldBe(true);
 			columns[1].ColumnDescription.Type.ShouldBe("VARCHAR2");
 			columns[2].NormalizedName.ShouldBe("\"MY_NUMBER_COLUMN\"");
-			columns[2].ExplicitDefinition.ShouldBe(true);
+			columns[2].HasExplicitDefinition.ShouldBe(true);
 			columns[2].IsDirectReference.ShouldBe(true);
 			columns[2].ColumnDescription.Type.ShouldBe("NUMBER");
 			columns[2].ColumnDescription.FullTypeName.ShouldBe("NUMBER(1)");
@@ -269,9 +269,9 @@ FROM
 			innerBlock.Columns.Count.ShouldBe(5);
 			var columns = innerBlock.Columns.ToArray();
 			columns[0].IsAsterisk.ShouldBe(true);
-			columns[0].ExplicitDefinition.ShouldBe(true);
+			columns[0].HasExplicitDefinition.ShouldBe(true);
 			columns[1].NormalizedName.ShouldBe("\"RESPONDENTBUCKET_ID\"");
-			columns[1].ExplicitDefinition.ShouldBe(false);
+			columns[1].HasExplicitDefinition.ShouldBe(false);
 			columns[1].ColumnDescription.Type.ShouldBe("NUMBER");
 
 			var outerBlock = queryBlocks[1];
@@ -281,9 +281,9 @@ FROM
 			outerBlock.Columns.Count.ShouldBe(5);
 			columns = outerBlock.Columns.ToArray();
 			columns[0].IsAsterisk.ShouldBe(true);
-			columns[0].ExplicitDefinition.ShouldBe(true);
+			columns[0].HasExplicitDefinition.ShouldBe(true);
 			columns[1].NormalizedName.ShouldBe("\"RESPONDENTBUCKET_ID\"");
-			columns[1].ExplicitDefinition.ShouldBe(false);
+			columns[1].HasExplicitDefinition.ShouldBe(false);
 			columns[1].ColumnDescription.Type.ShouldBe("NUMBER");
 		}
 

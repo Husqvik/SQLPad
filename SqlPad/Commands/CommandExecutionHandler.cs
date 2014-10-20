@@ -29,6 +29,8 @@ namespace SqlPad.Commands
 		public SqlDocumentRepository DocumentRepository { get; private set; }
 		
 		public int SelectionStart { get; private set; }
+
+		public int SelectionEnd { get { return SelectionStart + SelectionLength; } }
 		
 		public int CaretOffset { get; set; }
 

@@ -52,6 +52,8 @@ namespace SqlPad.Oracle
 
 		public bool HasDistinctResultSet { get; set; }
 
+		public StatementGrammarNode FromClause { get; set; }
+
 		public StatementGrammarNode GroupByClause { get; set; }
 
 		public StatementGrammarNode HavingClause { get; set; }

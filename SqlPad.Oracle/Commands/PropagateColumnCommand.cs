@@ -21,8 +21,8 @@ namespace SqlPad.Oracle.Commands
 				return false;
 			}
 
-			_selectListColumn = CurrentQueryBlock.Columns.SingleOrDefault(c => c.ExplicitDefinition && CurrentNode.HasAncestor(c.RootNode));
-			return _selectListColumn != null && !_selectListColumn.IsAsterisk && !_selectListColumn.IsReferenced;
+			_selectListColumn = CurrentQueryBlock.Columns.SingleOrDefault(c => c.HasExplicitDefinition && CurrentNode.HasAncestor(c.RootNode));
+			return _selectListColumn != null && !_selectListColumn.IsAsterisk && !_selectListColumn.IsReferenced && _selectListColumn.Owner != SemanticModel.MainQueryBlock;
 		}
 
 		private CommandSettingsModel ConfigureSettings()
@@ -75,7 +75,7 @@ namespace SqlPad.Oracle.Commands
 				var isNotReferencedByAsterisk = parentQueryBlock.Columns.Count(c => c.IsAsterisk) == 0;
 				if (isNotReferencedByAsterisk)
 				{
-					var lastColumn = parentQueryBlock.Columns.LastOrDefault(c => c.ExplicitDefinition);
+					var lastColumn = parentQueryBlock.Columns.LastOrDefault(c => c.HasExplicitDefinition);
 					if (lastColumn != null)
 					{
 						ExecutionContext.SegmentsToReplace.Add(

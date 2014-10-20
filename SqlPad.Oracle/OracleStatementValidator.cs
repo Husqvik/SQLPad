@@ -293,7 +293,7 @@ namespace SqlPad.Oracle
 
 		private void ResolveColumnNodeValidities(OracleValidationModel validationModel, IEnumerable<OracleColumnReference> columnReferences)
 		{
-			foreach (var columnReference in columnReferences.Where(columnReference => columnReference.SelectListColumn == null || columnReference.SelectListColumn.ExplicitDefinition))
+			foreach (var columnReference in columnReferences.Where(columnReference => columnReference.SelectListColumn == null || columnReference.SelectListColumn.HasExplicitDefinition))
 			{
 				if (columnReference.DatabaseLinkNode == null)
 				{
@@ -465,7 +465,7 @@ namespace SqlPad.Oracle
 			if (_columnReference.SelectListColumn != null && _columnReference.SelectListColumn.IsAsterisk)
 			{
 				_ambiguousColumnNames = _columnReference.Owner
-					.Columns.Where(c => !c.ExplicitDefinition)
+					.Columns.Where(c => !c.HasExplicitDefinition)
 					.SelectMany(c => c.ColumnReferences)
 					.Where(c => c.ColumnNodeColumnReferences.Count > 1 && ObjectReferencesEqual(_columnReference, c))
 					.SelectMany(c => c.ColumnNodeColumnReferences)

@@ -141,10 +141,10 @@ namespace SqlPad.Oracle
 					}
 				}
 
-				var fromClause = queryBlockRoot.GetDescendantsWithinSameQuery(NonTerminals.FromClause).FirstOrDefault();
-				var tableReferenceNonterminals = fromClause == null
+				queryBlock.FromClause = queryBlockRoot.GetDescendantsWithinSameQuery(NonTerminals.FromClause).FirstOrDefault();
+				var tableReferenceNonterminals = queryBlock.FromClause == null
 					? Enumerable.Empty<StatementGrammarNode>()
-					: fromClause.GetDescendantsWithinSameQuery(NonTerminals.TableReference).ToArray();
+					: queryBlock.FromClause.GetDescendantsWithinSameQuery(NonTerminals.TableReference).ToArray();
 
 				// TODO: Check possible issue within GetCommonTableExpressionReferences to remove the Distinct.
 				var cteReferences = GetCommonTableExpressionReferences(queryBlockRoot).Distinct().ToDictionary(qb => qb.Key, qb => qb.Value);
@@ -293,7 +293,7 @@ namespace SqlPad.Oracle
 			foreach (var queryBlock in _queryBlockNodes.Values.Where(qb => qb != MainQueryBlock))
 			{
 				var redundantColumns = 0;
-				foreach (var column in queryBlock.Columns.Where(c => c.ExplicitDefinition && !c.IsReferenced))
+				foreach (var column in queryBlock.Columns.Where(c => c.HasExplicitDefinition && !c.IsReferenced))
 				{
 					if (++redundantColumns == queryBlock.Columns.Count)
 					{
@@ -304,7 +304,7 @@ namespace SqlPad.Oracle
 					if (initialPrecedingQueryBlock != null)
 					{
 						var initialQueryBlockColumn = initialPrecedingQueryBlock.Columns
-							.Where(c => c.ExplicitDefinition)
+							.Where(c => c.HasExplicitDefinition)
 							.Skip(redundantColumns - 1)
 							.FirstOrDefault();
 
@@ -609,7 +609,7 @@ namespace SqlPad.Oracle
 					? new OracleDataObjectReference[0]
 					: queryBlock.ParentCorrelatedQueryBlock.ObjectReferences;
 
-				var columnReferences = queryBlock.AllColumnReferences.Where(c => c.SelectListColumn == null || c.SelectListColumn.ExplicitDefinition);
+				var columnReferences = queryBlock.AllColumnReferences.Where(c => c.SelectListColumn == null || c.SelectListColumn.HasExplicitDefinition);
 				ResolveColumnObjectReferences(columnReferences, queryBlock.ObjectReferences, parentCorrelatedQueryBlockObjectReferences);
 
 				ResolveDatabaseLinks(queryBlock);
@@ -646,7 +646,7 @@ namespace SqlPad.Oracle
 						exposedColumns = dataObject.Columns.Values
 							.Select(c => new OracleSelectListColumn(this)
 							{
-								ExplicitDefinition = false,
+								HasExplicitDefinition = false,
 								IsDirectReference = true,
 								ColumnDescription = c
 							});
@@ -1169,7 +1169,7 @@ namespace SqlPad.Oracle
 				{
 					RootNode = asteriskNode,
 					Owner = queryBlock,
-					ExplicitDefinition = true,
+					HasExplicitDefinition = true,
 					IsAsterisk = true
 				};
 
@@ -1195,7 +1195,7 @@ namespace SqlPad.Oracle
 						AliasNode = columnAliasNode,
 						RootNode = columnExpression,
 						Owner = queryBlock,
-						ExplicitDefinition = true
+						HasExplicitDefinition = true
 					};
 
 					var asteriskNode = columnExpression.LastTerminalNode != null && columnExpression.LastTerminalNode.Id == Terminals.Asterisk

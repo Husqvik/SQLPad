@@ -17,6 +17,8 @@ namespace SqlPad.Oracle
 			get { return OracleObjectIdentifier.Create(OwnerNode, ObjectNode, null); }
 		}
 
+		public bool HasExplicitDefinition { get { return SelectListColumn == null || SelectListColumn.HasExplicitDefinition; } }
+
 		public abstract string Name { get; }
 
 		public string NormalizedName { get { return Name.ToQuotedIdentifier(); } }

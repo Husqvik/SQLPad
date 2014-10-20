@@ -85,7 +85,7 @@ namespace SqlPad.Oracle
 			var isAliasedDirectReference = selectListColumn.AliasNode != columnReference.ColumnNode && !selectListColumn.IsAsterisk;
 			if (isAliasedDirectReference || objectReference == null || objectReference.QueryBlocks.Count != 1)
 			{
-				var destinationNode = selectListColumn.ExplicitDefinition
+				var destinationNode = selectListColumn.HasExplicitDefinition
 					? selectListColumn.AliasNode
 					: columnReference.ColumnNode;
 				

@@ -37,7 +37,7 @@ namespace SqlPad.Oracle.Commands
 		{
 			foreach (var columnReference in _parentQueryBlock.AllColumnReferences
 				.Where(c => c.ColumnNodeObjectReferences.Count == 1 && c.ColumnNodeObjectReferences.First().QueryBlocks.Count == 1 && c.ColumnNodeObjectReferences.First().QueryBlocks.First() == CurrentQueryBlock &&
-				            (c.SelectListColumn == null || (!c.SelectListColumn.IsAsterisk && c.SelectListColumn.ExplicitDefinition))))
+				            (c.SelectListColumn == null || (!c.SelectListColumn.IsAsterisk && c.SelectListColumn.HasExplicitDefinition))))
 			{
 				var indextStart = (columnReference.OwnerNode ?? columnReference.ObjectNode ?? columnReference.ColumnNode).SourcePosition.IndexStart;
 				var columnExpression = GetUnnestedColumnExpression(columnReference, ExecutionContext.StatementText);
@@ -135,7 +135,7 @@ namespace SqlPad.Oracle.Commands
 
 		private string GetUnnestedColumnExpression(OracleSelectListColumn column, string statementText)
 		{
-			if (column.ExplicitDefinition)
+			if (column.HasExplicitDefinition)
 			{
 				var columnExpression = column.RootNode.GetDescendantsWithinSameQuery(NonTerminals.Expression).First().GetStatementSubstring(statementText);
 				var offset = column.RootNode.SourcePosition.IndexStart;
