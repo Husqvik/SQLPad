@@ -535,6 +535,7 @@ namespace SqlPad.Oracle
 					flags.IsDecimalCandidate = !specialMode.IsEnabled;
 					break;
 				case ' ':
+				case '\u00A0':
 				case '\t':
 					flags.IsSpace = true;
 					break;

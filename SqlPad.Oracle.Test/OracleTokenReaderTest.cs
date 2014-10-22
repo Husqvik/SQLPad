@@ -500,6 +500,14 @@ namespace SqlPad.Oracle.Test
 			tokens.ShouldBe(new[] { "SELECT", "'string'", "||", "DUMMY", "FROM", "DUAL" });
 		}
 
+		[Test(Description = "Tests non-breaking spaces. ")]
+		public void TestNonBreakingSpaces()
+		{
+			const string testQuery = "SELECT\u00A0DateToSend\u00A0FROM\u00A0Circular";
+			var tokens = GetTokenValuesFromOracleSql(testQuery);
+			tokens.ShouldBe(new[] { "SELECT", "DateToSend", "FROM", "Circular" });
+		}
+
 		private string[] GetTokenValuesFromOracleSql(string sqlText, bool includeCommentBlocks = false)
 		{
 			return GetTokensFromOracleSql(sqlText, includeCommentBlocks).Select(t => t.Value).ToArray();
