@@ -834,6 +834,43 @@ WHERE
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestAddToGroupByCommandWithWhereClause()
+		{
+			_editor.Text = @"SELECT PROJECT_ID, COUNT(*) PROJECT_SELECTIONS FROM SELECTION WHERE NAME LIKE '%1%'";
+			_editor.SelectionStart = 7;
+
+			CanExecuteCommand(OracleCommands.AddToGroupByClause).ShouldBe(true);
+			ExecuteCommand(OracleCommands.AddToGroupByClause);
+
+			_editor.Text.ShouldBe("SELECT PROJECT_ID, COUNT(*) PROJECT_SELECTIONS FROM SELECTION WHERE NAME LIKE '%1%' GROUP BY PROJECT_ID");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestAddToGroupByCommandWithOrderByClause()
+		{
+			_editor.Text = @"SELECT PROJECT_ID, RESPONDENTBUCKET_ID, COUNT(*) PROJECT_SELECTIONS FROM SELECTION GROUP BY PROJECT_ID ORDER BY PROJECT_SELECTIONS";
+			_editor.SelectionStart = 25;
+
+			CanExecuteCommand(OracleCommands.AddToGroupByClause).ShouldBe(true);
+			ExecuteCommand(OracleCommands.AddToGroupByClause);
+
+			_editor.Text.ShouldBe("SELECT PROJECT_ID, RESPONDENTBUCKET_ID, COUNT(*) PROJECT_SELECTIONS FROM SELECTION GROUP BY PROJECT_ID, RESPONDENTBUCKET_ID ORDER BY PROJECT_SELECTIONS");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestAddToGroupByCommandWithExpressionFollowedByOtherColumn()
+		{
+			_editor.Text = @"SELECT SELECTIONNAME || 'X', PROJECT_ID + 3 FROM SELECTION";
+			_editor.SelectionStart = 7;
+			_editor.SelectionLength = 20;
+
+			CanExecuteCommand(OracleCommands.AddToGroupByClause).ShouldBe(true);
+			ExecuteCommand(OracleCommands.AddToGroupByClause);
+
+			_editor.Text.ShouldBe("SELECT SELECTIONNAME || 'X', PROJECT_ID + 3 FROM SELECTION GROUP BY SELECTIONNAME || 'X'");
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestAddToGroupByCommandWithExistingGroupByClause()
 		{
 			_editor.Text = @"SELECT SELECTION.PROJECT_ID, SELECTION.RESPONDENTBUCKET_ID, COUNT(*) SELECTION_COUNT FROM SELECTION GROUP BY SELECTION.PROJECT_ID";
@@ -851,6 +888,15 @@ WHERE
 			_editor.Text = @"SELECT 1 + SELECTION_ID FROM SELECTION";
 			_editor.SelectionStart = 7;
 			_editor.SelectionLength = 3;
+
+			CanExecuteCommand(OracleCommands.AddToGroupByClause).ShouldBe(false);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestAddToGroupByCommandNotAvailableAtBindVariable()
+		{
+			_editor.Text = @"SELECT :X FROM SELECTION";
+			_editor.CaretOffset = 8;
 
 			CanExecuteCommand(OracleCommands.AddToGroupByClause).ShouldBe(false);
 		}

@@ -1461,6 +1461,17 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			BuildValidationModel(sqlText, statement);
 		}
 
-		//WITH CTE AS (SELECT 1 A, 2 B, 3 C FROM DUAL) SELECT SELECTION.DUMMY, NQ.DUMMY, CTE.DUMMY, SYS.DUAL.DUMMY FROM SELECTION, (SELECT 1 X, 2 Y, 3 Z FROM DUAL) NQ, CTE, SYS.DUAL
+		[Test(Description = @"")]
+		public void TestLongXmlAliases()
+		{
+			const string sqlText = "SELECT XMLELEMENT(NAME \"VeryLongXmlAliasVeryLongXmlAlias\", NULL) VAL1, XMLELEMENT(NAME VeryLongXmlAliasVeryLongXmlAlias, NULL) VAL2 FROM DUAL";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var nodeValidityDictionary = validationModel.IdentifierNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			nodeValidityDictionary.Count.ShouldBe(0);
+		}
 	}
 }

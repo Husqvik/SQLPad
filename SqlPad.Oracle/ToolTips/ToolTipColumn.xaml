@@ -76,7 +76,7 @@
 					<TextBlock Grid.Row="1" Grid.Column="0" Text="Buckets: " />
 					<TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding HistogramBucketCount}" />
 				</Grid>
-				<Border BorderThickness="1" BorderBrush="Black" Height="254" Width="254" Margin="4">
+				<Border BorderThickness="1" BorderBrush="Black" Height="254" Width="254" Margin="4" HorizontalAlignment="Left">
 					<Polygon Points="{Binding HistogramPoints}" Width="254" Height="{Binding HistogramHeight}" Stretch="Fill" Fill="DimGray" Opacity="1" VerticalAlignment="Bottom" />
 				</Border>
 			</StackPanel>

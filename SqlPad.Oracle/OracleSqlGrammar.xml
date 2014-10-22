@@ -1894,6 +1894,10 @@
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
+          <NonTerminal Id="XmlSerializeFunction" />
+          <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
+        </Sequence>
+        <Sequence>
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="Expression" />
           <Terminal Id="RightParenthesis" />
@@ -1926,8 +1930,7 @@
           <Terminal Id="Cast" />
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="ExpressionOrMultiset" />
-          <Terminal Id="As" />
-          <NonTerminal Id="DataType" />
+          <NonTerminal Id="AsDataType" />
           <Terminal Id="RightParenthesis" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
@@ -5080,7 +5083,87 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
+    <Rule StartingNonTerminal="XmlSerializeFunction">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="XmlSerialize" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="DocumentOrContent" />
+          <NonTerminal Id="Expression" />
+          <NonTerminal Id="AsDataType" IsOptional="true" />
+          <NonTerminal Id="XmlEncoding" IsOptional="true" />
+          <NonTerminal Id="XmlVersion" IsOptional="true" />
+          <NonTerminal Id="XmlIndentClause" IsOptional="true" />
+          <NonTerminal Id="HideOrShowDefaults" IsOptional="true" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AsDataType">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="As" />
+          <NonTerminal Id="DataType" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="XmlEncoding">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Encoding" />
+          <Terminal Id="StringLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="XmlVersion">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Version" />
+          <Terminal Id="StringLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="XmlIndentClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="No" />
+          <Terminal Id="Indent" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Indent" />
+          <NonTerminal Id="XmlIndentSize" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="XmlIndentSize">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Size" />
+          <Terminal Id="MathEquals" />
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="HideOrShowDefaults">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Hide" />
+          <Terminal Id="Defaults" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Show" />
+          <Terminal Id="Defaults" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
     <Rule StartingNonTerminal="XmlRootFunctionExpressionOrNoValue">
       <Sequences>
         <Sequence>
@@ -9590,6 +9673,12 @@
     <Terminal Id="XmlForest" Value="XMLFOREST" />
     <Terminal Id="XmlColumnValue" Value="XMLCOLATTVAL" />
     <Terminal Id="XmlAggregate" Value="XMLAGG" />
+    <Terminal Id="XmlSerialize" Value="XMLSERIALIZE" />
+    <Terminal Id="Encoding" Value="ENCODING" />
+    <Terminal Id="Indent" Value="INDENT" />
+    <Terminal Id="Hide" Value="HIDE" />
+    <Terminal Id="Show" Value="SHOW" />
+    <Terminal Id="Defaults" Value="DEFAULTS" />
 
     <!-- Model clause -->
     <Terminal Id="Model" Value="MODEL" />

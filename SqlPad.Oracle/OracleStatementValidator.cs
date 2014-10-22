@@ -252,7 +252,7 @@ namespace SqlPad.Oracle
 
 		private INodeValidationData GetInvalidIdentifierValidationData(StatementGrammarNode node)
 		{
-			if (!node.Id.IsIdentifierOrAlias())
+			if (!node.Id.IsIdentifierOrAlias() || node.Id == Terminals.XmlAlias)
 				return null;
 
 			var errorMessage = ValidateIdentifier(node.Token.Value, node.Id == Terminals.BindVariableIdentifier).ErrorMessage;

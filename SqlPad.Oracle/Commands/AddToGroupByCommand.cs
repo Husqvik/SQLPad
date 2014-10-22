@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using SqlPad.Commands;
+using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 
 namespace SqlPad.Oracle.Commands
@@ -40,10 +41,18 @@ namespace SqlPad.Oracle.Commands
 			ExecutionContext.SegmentsToReplace.Add(_addedTextSegment);
 		}
 
+		private bool IsTerminalSelected(StatementGrammarNode terminal)
+		{
+			var isWithinSelection = terminal.SourcePosition.IndexEnd >= ExecutionContext.SelectionStart && terminal.SourcePosition.IndexStart <= ExecutionContext.SelectionEnd;
+			return isWithinSelection && ExecutionContext.SelectionLength == 0
+				? terminal.Id.IsIdentifier() && terminal.Id != Terminals.BindVariableIdentifier
+				: terminal.SourcePosition.IndexEnd > ExecutionContext.SelectionStart && terminal.SourcePosition.IndexStart < ExecutionContext.SelectionEnd;
+		}
+
 		private void ResolveGroupingExpressionText()
 		{
 			_selectedTerminals = CurrentQueryBlock.RootNode.Terminals
-				.Where(t => t.SourcePosition.IndexEnd >= ExecutionContext.SelectionStart && t.SourcePosition.IndexStart <= ExecutionContext.SelectionEnd)
+				.Where(IsTerminalSelected)
 				.ToArray();
 
 			if (_selectedTerminals.Count == 0)
@@ -97,17 +106,24 @@ namespace SqlPad.Oracle.Commands
 			var groupByClause = CurrentQueryBlock.RootNode.GetDescendantsWithinSameQuery(NonTerminals.GroupByClause).SingleOrDefault();
 			if (groupByClause == null)
 			{
-				_addedTextSegment =
-					new TextSegment
-					{
-						IndextStart = CurrentQueryBlock.FromClause.LastTerminalNode.SourcePosition.IndexEnd + 1,
-						Length = 0,
-						Text = " GROUP BY " + _groupingExpressionText
-					};
+				var targetNode = CurrentQueryBlock.RootNode.GetDescendantByPath(NonTerminals.HierarchicalQueryClause)
+				                 ?? CurrentQueryBlock.RootNode.GetDescendantByPath(NonTerminals.WhereClause)
+				                 ?? CurrentQueryBlock.FromClause;
+
+				if (targetNode != null && targetNode.LastTerminalNode != null)
+				{
+					_addedTextSegment =
+						new TextSegment
+						{
+							IndextStart = targetNode.LastTerminalNode.SourcePosition.IndexEnd + 1,
+							Length = 0,
+							Text = " GROUP BY " + _groupingExpressionText
+						};
+				}
 			}
 			else
 			{
-				var groupingExpressions = groupByClause.GetPathFilterDescendants(n => !n.Id.In(NonTerminals.GroupingSetsClause, NonTerminals.RollupCubeClause, NonTerminals.NestedQuery), NonTerminals.GroupingClause)
+				var groupingExpressions = groupByClause.GetPathFilterDescendants(n => !n.Id.In(NonTerminals.GroupingSetsClause, NonTerminals.RollupCubeClause, NonTerminals.NestedQuery, NonTerminals.HavingClause), NonTerminals.GroupingClause)
 					.Where(n => n.ChildNodes.Count > 0 && n.ChildNodes[0].Id == NonTerminals.Expression);
 
 				StatementGrammarNode lastGroupingExpression = null;
@@ -124,7 +140,7 @@ namespace SqlPad.Oracle.Commands
 				_addedTextSegment =
 					new TextSegment
 					{
-						IndextStart = (lastGroupingExpression == null ? groupByClause.RootNode.SourcePosition.IndexEnd : lastGroupingExpression.RootNode.SourcePosition.IndexEnd) + 1,
+						IndextStart = (lastGroupingExpression == null ? groupByClause.SourcePosition.IndexEnd : lastGroupingExpression.SourcePosition.IndexEnd) + 1,
 						Length = 0,
 						Text = (lastGroupingExpression == null ? String.Empty : ", ") + _groupingExpressionText
 					};

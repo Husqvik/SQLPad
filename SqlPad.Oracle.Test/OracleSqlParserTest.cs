@@ -2046,6 +2046,16 @@ ORDER BY
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 		}
 
+		[Test(Description = @"")]
+		public void TestXmlSerializeFunction()
+		{
+			const string statement1 = @"SELECT XMLSERIALIZE(CONTENT XMLTYPE('<Root>value</Root>').GETCLOBVAL() AS CLOB ENCODING 'UTF-8' VERSION '1.0' INDENT SIZE = 2 SHOW DEFAULTS) || '' FROM DUAL";
+
+			var statements = Parser.Parse(statement1);
+			var statement = statements.Single().Validate();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+		}
+
 		public class IsRuleValid
 		{
 			[Test(Description = @"")]
@@ -2424,7 +2434,8 @@ ORDER BY
 						Terminals.XmlForest,
 						Terminals.XmlParse,
 						Terminals.XmlQuery,
-						Terminals.XmlRoot
+						Terminals.XmlRoot,
+						Terminals.XmlSerialize
 					};
 				
 				terminalCandidates.ShouldBe(expectedTerminals);
