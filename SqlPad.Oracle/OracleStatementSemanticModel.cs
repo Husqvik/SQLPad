@@ -338,19 +338,22 @@ namespace SqlPad.Oracle
 					.ToLookup(o => o.SchemaObject.Name);
 
 				var removedObjectReferenceOwners = new HashSet<OracleDataObjectReference>();
-				foreach (var ownerNameObjectReference in ownerNameObjectReferences)
+				if (!IsSimpleModel)
 				{
-					var uniqueObjectReferenceCount = ownerNameObjectReference.Count();
-					if (uniqueObjectReferenceCount != 1 || IsSimpleModel)
+					foreach (var ownerNameObjectReference in ownerNameObjectReferences)
 					{
-						continue;
-					}
+						var uniqueObjectReferenceCount = ownerNameObjectReference.Count();
+						if (uniqueObjectReferenceCount != 1)
+						{
+							continue;
+						}
 
-					foreach (var objectReference in ownerNameObjectReference.Where(o => o.SchemaObject.Owner == DatabaseModel.CurrentSchema.ToQuotedIdentifier()))
-					{
-						var terminals = objectReference.RootNode.Terminals.TakeWhile(t => t != objectReference.ObjectNode);
-						_redundantTerminals.AddRange(terminals);
-						removedObjectReferenceOwners.Add(objectReference);
+						foreach (var objectReference in ownerNameObjectReference.Where(o => o.SchemaObject.Owner == DatabaseModel.CurrentSchema.ToQuotedIdentifier()))
+						{
+							var terminals = objectReference.RootNode.Terminals.TakeWhile(t => t != objectReference.ObjectNode);
+							_redundantTerminals.AddRange(terminals);
+							removedObjectReferenceOwners.Add(objectReference);
+						}
 					}
 				}
 
@@ -376,7 +379,8 @@ namespace SqlPad.Oracle
 						continue;
 					}
 
-					var terminals = columnReference.RootNode.Terminals.TakeWhile(t => t != columnReference.ColumnNode);
+					var requiredNode = columnReference.IsCorrelated ? columnReference.ObjectNode : columnReference.ColumnNode;
+					var terminals = columnReference.RootNode.Terminals.TakeWhile(t => t != requiredNode);
 					_redundantTerminals.AddRange(terminals);
 				}
 			}
@@ -842,10 +846,10 @@ namespace SqlPad.Oracle
 					columnReference.ColumnNodeColumnReferences.AddRange(orderByColumnAliasOrAsteriskReferences);
 				}
 
-				ResolveColumnReference(accessibleRowSourceReferences, columnReference);
+				ResolveColumnReference(accessibleRowSourceReferences, columnReference, false);
 				if (columnReference.ColumnNodeObjectReferences.Count == 0)
 				{
-					ResolveColumnReference(parentCorrelatedRowSourceReferences, columnReference);
+					ResolveColumnReference(parentCorrelatedRowSourceReferences, columnReference, true);
 				}
 
 				var referencesSelectListColumn = columnReference.Placement == QueryBlockPlacement.OrderBy && columnReference.ColumnNodeObjectReferences.Count == 0 &&
@@ -867,7 +871,7 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		private void ResolveColumnReference(IEnumerable<OracleDataObjectReference> rowSources, OracleColumnReference columnReference)
+		private void ResolveColumnReference(IEnumerable<OracleDataObjectReference> rowSources, OracleColumnReference columnReference, bool correlatedRowSources)
 		{
 			foreach (var rowSourceReference in rowSources)
 			{
@@ -877,13 +881,14 @@ namespace SqlPad.Oracle
 				      rowSourceReference.Type == ReferenceType.SchemaObject && rowSourceReference.FullyQualifiedObjectName.NormalizedName == columnReference.FullyQualifiedObjectName.NormalizedName)))
 				{
 					columnReference.ObjectNodeObjectReferences.Add(rowSourceReference);
+					columnReference.IsCorrelated = correlatedRowSources;
 				}
 
 				if (columnReference.Placement == QueryBlockPlacement.OrderBy && columnReference.ColumnNodeColumnReferences.Count > 0)
 				{
 					continue;
 				}
-				
+
 				AddColumnNodeColumnReferences(rowSourceReference, columnReference);
 			}
 		}

@@ -705,16 +705,16 @@ FROM
 			redundantTerminals.Length.ShouldBe(0);
 		}
 
-		[Test(Description = @""), Ignore]
+		[Test(Description = @"")]
 		public void TestRedundantTerminalsWithCorrelatedSubquery()
 		{
-			const string query1 = @"SELECT (SELECT 1 FROM DUAL WHERE DUMMY = D.DUMMY) VAL FROM DUAL D";
+			const string query1 = @"SELECT (SELECT 1 FROM DUAL D WHERE DUMMY = SYS.DUAL.DUMMY) VAL FROM SYS.DUAL";
 
 			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
 			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
 
 			var redundantTerminals = semanticModel.RedundantNodes.OrderBy(t => t.SourcePosition.IndexStart).ToArray();
-			redundantTerminals.Length.ShouldBe(0);
+			redundantTerminals.Length.ShouldBe(2);
 		}
 	}
 }

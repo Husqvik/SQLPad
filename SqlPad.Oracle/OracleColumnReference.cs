@@ -25,6 +25,8 @@ namespace SqlPad.Oracle
 		public ICollection<OracleColumn> ColumnNodeColumnReferences { get; set; }
 		
 		public OracleColumn ColumnDescription { get; set; }
+		
+		public bool IsCorrelated { get; set; }
 
 		public OracleObjectWithColumnsReference ValidObjectReference
 		{

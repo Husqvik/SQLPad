@@ -791,9 +791,10 @@ namespace SqlPad.Oracle
 
 			var databaseLinks = _dataDictionaryMapper.GetDatabaseLinks();
 			var characterSets = _dataDictionaryMapper.GetCharacterSets();
-			var statisticsKeys = _dataDictionaryMapper.GetStatisticsKeys().ToDictionary(k => k.Key, k => k.Value);
+			var statisticsKeys = FetchStatisticsKeys();
 
 			_dataDictionary = new OracleDataDictionary(allObjects, databaseLinks, nonSchemaBuiltInFunctionMetadata, characterSets, statisticsKeys, lastRefresh);
+
 			CachedDataDictionaries[CachedConnectionStringName] = _dataDictionary;
 
 			SetRefreshTaskResults();
@@ -802,6 +803,19 @@ namespace SqlPad.Oracle
 
 			_isRefreshing = false;
 			RaiseEvent(RefreshFinished);
+		}
+
+		private Dictionary<int, string> FetchStatisticsKeys()
+		{
+			try
+			{
+				return _dataDictionaryMapper.GetStatisticsKeys().ToDictionary(k => k.Key, k => k.Value);
+			}
+			catch (Exception e)
+			{
+				Trace.WriteLine("DataDictionaryMapper.GetStatisticsKeys failed: " + e);
+				return new Dictionary<int, string>();
+			}
 		}
 
 		private void TryLoadSchemaObjectMetadataFromCache()

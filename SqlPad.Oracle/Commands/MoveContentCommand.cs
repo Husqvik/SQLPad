@@ -43,7 +43,8 @@ namespace SqlPad.Oracle.Commands
 		private static readonly string[] SupportedNodeIds =
 		{
 			NonTerminals.AliasedExpressionOrAllTableColumns,
-			NonTerminals.OrderExpression
+			NonTerminals.OrderExpression,
+			NonTerminals.GroupingClause
 		};
 
 		private void MoveContent()
