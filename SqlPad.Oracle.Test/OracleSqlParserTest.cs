@@ -2732,6 +2732,25 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 				terminals[6].Id.ShouldBe(Terminals.Preserve);
 				terminals[7].Id.ShouldBe(Terminals.Table);
 			}
+
+			[Test(Description = @"")]
+			public void TestDropMaterializedViewWithObsoleteSnapshotKeyword()
+			{
+				const string statementText = @"DROP SNAPSHOT MV_SELECTION";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+				var terminals = statement.AllTerminals.ToArray();
+				terminals.Length.ShouldBe(3);
+
+				terminals[0].Id.ShouldBe(Terminals.Drop);
+				terminals[1].Id.ShouldBe(Terminals.Snapshot);
+				terminals[2].Id.ShouldBe(Terminals.ObjectIdentifier);
+			}
 		}
 
 		public class DropPackage

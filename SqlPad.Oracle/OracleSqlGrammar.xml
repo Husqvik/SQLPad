@@ -357,11 +357,22 @@
     <Rule StartingNonTerminal="DropMaterializedView">
       <Sequences>
         <Sequence>
-          <Terminal Id="Materialized" />
-          <Terminal Id="View" />
+          <NonTerminal Id="MaterializedViewOrSnapshot" />
           <NonTerminal Id="SchemaPrefix" IsOptional="true" />
           <Terminal Id="ObjectIdentifier" />
           <NonTerminal Id="PreserveTable" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="MaterializedViewOrSnapshot">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Materialized" />
+          <Terminal Id="View" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Snapshot" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -9767,6 +9778,7 @@
     <Terminal Id="Purge" Value="PURGE" />
     <Terminal Id="Online" Value="ONLINE" />
     <Terminal Id="Materialized" Value="MATERIALIZED" />
+    <Terminal Id="Snapshot" Value="SNAPSHOT" />
     <Terminal Id="Preserve" Value="PRESERVE" />
     <Terminal Id="Package" Value="PACKAGE" />
     <Terminal Id="Body" Value="BODY" />
