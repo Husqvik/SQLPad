@@ -239,6 +239,46 @@ namespace SqlPad.Oracle
 		}
 	}
 
+	internal class TableInMemorySpaceAllocationModelUpdater : DataModelUpdater<TableDetailsModel>
+	{
+		private readonly OracleObjectIdentifier _objectIdentifier;
+		private readonly string _oracleVersion;
+
+		public TableInMemorySpaceAllocationModelUpdater(TableDetailsModel dataModel, OracleObjectIdentifier objectIdentifier, string oracleVersion)
+			: base(dataModel)
+		{
+			_objectIdentifier = objectIdentifier;
+			_oracleVersion = oracleVersion;
+		}
+
+		public override void InitializeCommand(OracleCommand command)
+		{
+			command.CommandText = DatabaseCommands.GetTableInMemoryAllocatedBytesCommand;
+			command.AddSimpleParameter("OWNER", _objectIdentifier.Owner.Trim('"'));
+			command.AddSimpleParameter("SEGMENT_NAME", _objectIdentifier.Name.Trim('"'));
+		}
+
+		public override void MapReaderData(OracleDataReader reader)
+		{
+			if (!reader.Read())
+			{
+				return;
+			}
+
+			DataModel.InMemoryAllocatedBytes = OracleReaderValueConvert.ToInt64(reader["INMEMORY_SIZE"]);
+		}
+
+		public override bool HasScalarResult
+		{
+			get { return false; }
+		}
+
+		public override bool IsValid
+		{
+			get { return InMemoryHelper.HasInMemorySupport(_oracleVersion); }
+		}
+	}
+
 	internal class ObjectScriptUpdater : IDataModelUpdater
 	{
 		private readonly OracleSchemaObject _schemaObject;

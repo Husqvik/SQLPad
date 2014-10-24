@@ -30,6 +30,7 @@ namespace SqlPad.Oracle.ToolTips
 		private bool _isTemporary;
 		private bool _isPartitioned;
 		private long? _allocatedBytes;
+		private long? _inMemoryAllocatedBytes;
 
 		public string Title { get; set; }
 
@@ -125,6 +126,23 @@ namespace SqlPad.Oracle.ToolTips
 		public Visibility InMemoryCompressionVisible
 		{
 			get { return String.IsNullOrEmpty(_inMemoryCompression) ? Visibility.Collapsed : Visibility.Visible; }
+		}
+
+		public long? InMemoryAllocatedBytes
+		{
+			get { return _inMemoryAllocatedBytes; }
+			set
+			{
+				if (UpdateValueAndRaisePropertyChanged(ref _inMemoryAllocatedBytes, value))
+				{
+					RaisePropertyChanged("InMemoryAllocatedBytesVisible");
+				}
+			}
+		}
+
+		public Visibility InMemoryAllocatedBytesVisible
+		{
+			get { return _inMemoryAllocatedBytes.HasValue ? Visibility.Visible : Visibility.Collapsed; }
 		}
 	}
 }

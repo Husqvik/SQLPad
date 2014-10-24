@@ -36,6 +36,7 @@
 					<RowDefinition />
 					<RowDefinition Height="Auto" />
 					<RowDefinition Height="Auto" />
+					<RowDefinition Height="Auto" />
 				</Grid.RowDefinitions>
 				<TextBlock Grid.Row="0" Grid.Column="0" Text="Organization: " />
 				<TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Organization}" />
@@ -59,8 +60,10 @@
 				<TextBlock Grid.Row="9" Grid.Column="1" Text="{Binding LastAnalyzed, Converter={StaticResource DateTimeConverter}}" />
 				<TextBlock Grid.Row="10" Grid.Column="0" Text="In-memory compression: " Visibility="{Binding InMemoryCompressionVisible}" />
 				<TextBlock Grid.Row="10" Grid.Column="1" Text="{Binding InMemoryCompression}" Visibility="{Binding InMemoryCompressionVisible}" />
-				<TextBlock Grid.Row="11" Grid.Column="0" Text="Cluster: " Visibility="{Binding ClusterNameVisible}" />
-				<TextBlock Grid.Row="11" Grid.Column="1" Text="{Binding ClusterName}" Visibility="{Binding ClusterNameVisible}" />
+				<TextBlock Grid.Row="11" Grid.Column="0" Text="In-memory space: " Visibility="{Binding InMemoryAllocatedBytesVisible}" />
+				<TextBlock Grid.Row="11" Grid.Column="1" Text="{Binding InMemoryAllocatedBytes, Converter={StaticResource DataSpaceConverter}}" Visibility="{Binding InMemoryAllocatedBytesVisible}" />
+				<TextBlock Grid.Row="12" Grid.Column="0" Text="Cluster: " Visibility="{Binding ClusterNameVisible}" />
+				<TextBlock Grid.Row="12" Grid.Column="1" Text="{Binding ClusterName}" Visibility="{Binding ClusterNameVisible}" />
 			</Grid>
 		</GroupBox>
 	</StackPanel>

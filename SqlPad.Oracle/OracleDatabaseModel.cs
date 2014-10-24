@@ -260,7 +260,8 @@ namespace SqlPad.Oracle
 		{
 			var tableDetailsUpdater = new TableDetailsModelUpdater(dataModel, objectIdentifier, _oracleVersion);
 			var tableSpaceAllocationUpdater = new TableSpaceAllocationModelUpdater(dataModel, objectIdentifier);
-			await UpdateModelAsync(cancellationToken, true, tableDetailsUpdater, tableSpaceAllocationUpdater);
+			var tableInMemorySpaceAllocationUpdater = new TableInMemorySpaceAllocationModelUpdater(dataModel, objectIdentifier, _oracleVersion);
+			await UpdateModelAsync(cancellationToken, true, tableDetailsUpdater, tableSpaceAllocationUpdater, tableInMemorySpaceAllocationUpdater);
 		}
 
 		public async override Task UpdateColumnDetailsAsync(OracleObjectIdentifier objectIdentifier, string columnName, ColumnDetailsModel dataModel, CancellationToken cancellationToken)
