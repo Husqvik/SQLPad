@@ -30,7 +30,6 @@ namespace SqlPad.Oracle.ToolTips
 		private bool _isTemporary;
 		private bool _isPartitioned;
 		private long? _allocatedBytes;
-		private long? _inMemoryAllocatedBytes;
 
 		public string Title { get; set; }
 
@@ -114,35 +113,36 @@ namespace SqlPad.Oracle.ToolTips
 		public string InMemoryCompression
 		{
 			get { return _inMemoryCompression; }
-			set
+			set { UpdateValueAndRaisePropertyChanged(ref _inMemoryCompression, value); }
+		}
+
+		public long? InMemoryAllocatedBytes { get; private set; }
+		public long? StorageBytes { get; private set; }
+		public long? NonPopulatedBytes { get; private set; }
+		public string InMemoryPopulationStatus { get; private set; }
+
+		public void SetInMemoryAllocationStatus(long? inMemoryAllocatedBytes, long? storageBytes, long? nonPopulatedBytes, string populationStatus)
+		{
+			InMemoryAllocatedBytes = inMemoryAllocatedBytes;
+			StorageBytes = storageBytes;
+			NonPopulatedBytes = nonPopulatedBytes;
+			InMemoryPopulationStatus = populationStatus;
+
+			if (!inMemoryAllocatedBytes.HasValue)
 			{
-				if (UpdateValueAndRaisePropertyChanged(ref _inMemoryCompression, value))
-				{
-					RaisePropertyChanged("InMemoryCompressionVisible");
-				}
+				return;
 			}
+
+			RaisePropertyChanged("InMemoryAllocatedBytes");
+			RaisePropertyChanged("StorageBytes");
+			RaisePropertyChanged("NonPopulatedBytes");
+			RaisePropertyChanged("InMemoryPopulationStatus");
+			RaisePropertyChanged("InMemoryAllocationStatusVisible");
 		}
 
-		public Visibility InMemoryCompressionVisible
+		public Visibility InMemoryAllocationStatusVisible
 		{
-			get { return String.IsNullOrEmpty(_inMemoryCompression) ? Visibility.Collapsed : Visibility.Visible; }
-		}
-
-		public long? InMemoryAllocatedBytes
-		{
-			get { return _inMemoryAllocatedBytes; }
-			set
-			{
-				if (UpdateValueAndRaisePropertyChanged(ref _inMemoryAllocatedBytes, value))
-				{
-					RaisePropertyChanged("InMemoryAllocatedBytesVisible");
-				}
-			}
-		}
-
-		public Visibility InMemoryAllocatedBytesVisible
-		{
-			get { return _inMemoryAllocatedBytes.HasValue ? Visibility.Visible : Visibility.Collapsed; }
+			get { return InMemoryAllocatedBytes.HasValue ? Visibility.Visible : Visibility.Collapsed; }
 		}
 	}
 }

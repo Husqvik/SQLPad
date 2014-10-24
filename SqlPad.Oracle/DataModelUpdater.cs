@@ -169,19 +169,16 @@ namespace SqlPad.Oracle
 	internal class TableDetailsModelUpdater : DataModelUpdater<TableDetailsModel>
 	{
 		private readonly OracleObjectIdentifier _objectIdentifier;
-		private readonly bool _includeInMemoryCompression;
 
-		public TableDetailsModelUpdater(TableDetailsModel dataModel, OracleObjectIdentifier objectIdentifier, string oracleVersion)
+		public TableDetailsModelUpdater(TableDetailsModel dataModel, OracleObjectIdentifier objectIdentifier)
 			: base(dataModel)
 		{
 			_objectIdentifier = objectIdentifier;
-			_includeInMemoryCompression = InMemoryHelper.HasInMemorySupport(oracleVersion);
 		}
 
 		public override void InitializeCommand(OracleCommand command)
 		{
-			var inMemoryCompressionColumn = _includeInMemoryCompression ? ", INITCAP(INMEMORY_COMPRESSION) INMEMORY_COMPRESSION" : String.Empty;
-			command.CommandText = String.Format(DatabaseCommands.GetTableDetailsBaseCommand, inMemoryCompressionColumn);
+			command.CommandText = String.Format(DatabaseCommands.GetTableDetailsCommand);
 			command.AddSimpleParameter("OWNER", _objectIdentifier.Owner.Trim('"'));
 			command.AddSimpleParameter("TABLE_NAME", _objectIdentifier.Name.Trim('"'));
 		}
@@ -203,11 +200,6 @@ namespace SqlPad.Oracle
 			DataModel.ClusterName = OracleReaderValueConvert.ToString(reader["CLUSTER_NAME"]);
 			DataModel.IsTemporary = (string)reader["TEMPORARY"] == "Y";
 			DataModel.IsPartitioned = (string)reader["PARTITIONED"] == "YES";
-
-			if (_includeInMemoryCompression)
-			{
-				DataModel.InMemoryCompression = OracleReaderValueConvert.ToString(reader["INMEMORY_COMPRESSION"]);	
-			}
 		}
 	}
 
@@ -265,7 +257,13 @@ namespace SqlPad.Oracle
 				return;
 			}
 
-			DataModel.InMemoryAllocatedBytes = OracleReaderValueConvert.ToInt64(reader["INMEMORY_SIZE"]);
+			DataModel.InMemoryCompression = OracleReaderValueConvert.ToString(reader["INMEMORY_COMPRESSION"]);
+
+			DataModel.SetInMemoryAllocationStatus(
+				 OracleReaderValueConvert.ToInt64(reader["INMEMORY_SIZE"]),
+				 OracleReaderValueConvert.ToInt64(reader["BYTES"]),
+				 OracleReaderValueConvert.ToInt64(reader["BYTES_NOT_POPULATED"]),
+				 OracleReaderValueConvert.ToString(reader["POPULATE_STATUS"]));
 		}
 
 		public override bool HasScalarResult

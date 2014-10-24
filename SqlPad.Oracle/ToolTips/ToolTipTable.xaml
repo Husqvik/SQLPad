@@ -13,6 +13,7 @@
 			<sqlPad:BooleanLabelConverter x:Key="BooleanConverter" />
 			<sqlPad:NumericConverter x:Key="NumericConverter" />
 			<sqlPad:DataSpaceConverter x:Key="DataSpaceConverter" />
+			<sqlPad:InMemoryAllocationStatusConverter x:Key="InMemoryAllocationStatusConverter" />
 		</StackPanel.Resources>
 		<GroupBox BorderThickness="0">
 			<GroupBox.Header>
@@ -58,10 +59,19 @@
 				<TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding Compression}" />
 				<TextBlock Grid.Row="9" Grid.Column="0" Text="Last analyzed: " />
 				<TextBlock Grid.Row="9" Grid.Column="1" Text="{Binding LastAnalyzed, Converter={StaticResource DateTimeConverter}}" />
-				<TextBlock Grid.Row="10" Grid.Column="0" Text="In-memory compression: " Visibility="{Binding InMemoryCompressionVisible}" />
-				<TextBlock Grid.Row="10" Grid.Column="1" Text="{Binding InMemoryCompression}" Visibility="{Binding InMemoryCompressionVisible}" />
-				<TextBlock Grid.Row="11" Grid.Column="0" Text="In-memory space: " Visibility="{Binding InMemoryAllocatedBytesVisible}" />
-				<TextBlock Grid.Row="11" Grid.Column="1" Text="{Binding InMemoryAllocatedBytes, Converter={StaticResource DataSpaceConverter}}" Visibility="{Binding InMemoryAllocatedBytesVisible}" />
+				<TextBlock Grid.Row="10" Grid.Column="0" Text="In-memory space: " Visibility="{Binding InMemoryAllocationStatusVisible}" />
+				<TextBlock Grid.Row="10" Grid.Column="1" Visibility="{Binding InMemoryAllocationStatusVisible}">
+					<TextBlock.Text>
+						<MultiBinding Converter="{StaticResource InMemoryAllocationStatusConverter}">
+							<Binding Path="InMemoryAllocatedBytes" />
+							<Binding Path="StorageBytes" />
+							<Binding Path="NonPopulatedBytes" />
+							<Binding Path="InMemoryPopulationStatus" />
+						</MultiBinding>
+					</TextBlock.Text>
+				</TextBlock>
+				<TextBlock Grid.Row="11" Grid.Column="0" Text="In-memory compression: " Visibility="{Binding InMemoryAllocationStatusVisible}" />
+				<TextBlock Grid.Row="11" Grid.Column="1" Text="{Binding InMemoryCompression}" Visibility="{Binding InMemoryAllocationStatusVisible}" />
 				<TextBlock Grid.Row="12" Grid.Column="0" Text="Cluster: " Visibility="{Binding ClusterNameVisible}" />
 				<TextBlock Grid.Row="12" Grid.Column="1" Text="{Binding ClusterName}" Visibility="{Binding ClusterNameVisible}" />
 			</Grid>

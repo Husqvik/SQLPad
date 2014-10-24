@@ -74,10 +74,10 @@ namespace SqlPad
 	{
 		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			return value == null ? ValueNotAvailable : FormatValue((long)value);
+			return value == null ? ValueNotAvailable : PrettyPrint((long)value);
 		}
 
-		private static string FormatValue(long bytes)
+		public static string PrettyPrint(long bytes)
 		{
 			if (bytes < 1024)
 			{
@@ -100,6 +100,35 @@ namespace SqlPad
 			}
 
 			return String.Format("{0} TB", Math.Round(bytes / 1099511627776m, 2));
+		}
+	}
+
+	public class InMemoryAllocationStatusConverter : IMultiValueConverter
+	{
+		public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+		{
+			var allocatedInMemoryBytes = (long?)values[0];
+			var storageBytes = (long?)values[1];
+			var nonPopulatedBytes = (long?)values[2];
+			var populationStatus = (string)values[3];
+			if (!allocatedInMemoryBytes.HasValue || !storageBytes.HasValue || !nonPopulatedBytes.HasValue || String.IsNullOrEmpty(populationStatus))
+			{
+				return ValueConverter.ValueNotAvailable;
+			}
+
+			var populatedRatio = Math.Round(((decimal)storageBytes.Value - nonPopulatedBytes.Value) / storageBytes.Value * 100, 2);
+			var populationStatusLabel = populationStatus == "STARTED" ? " - ongoing" : null;
+			var populatedRatioLabel = populatedRatio == 100 ? null : String.Format("{0} %", populatedRatio);
+			var populationStatusDetail = populatedRatio == 100 && populationStatusLabel == null
+				? null
+				: String.Format("({0}{1})", populatedRatioLabel, populationStatusLabel);
+
+			return String.Format("{0} {1}", DataSpaceConverter.PrettyPrint(allocatedInMemoryBytes.Value), populationStatusDetail);
+		}
+
+		public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+		{
+			throw new NotImplementedException();
 		}
 	}
 
