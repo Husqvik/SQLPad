@@ -127,7 +127,8 @@ namespace SqlPad
 				if (!fileInfo.Exists)
 					continue;
 
-				OpenExistingFile(fileInfo.FullName);
+				var documentPage = OpenExistingFile(fileInfo.FullName);
+				documentPage.WorkingDocument.TabIndex = DocumentTabControl.SelectedIndex;
 			}
 		}
 

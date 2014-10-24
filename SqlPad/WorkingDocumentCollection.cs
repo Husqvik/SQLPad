@@ -254,6 +254,7 @@ namespace SqlPad
 		public WindowState State { get; private set; }
 	}
 
+	[DebuggerDisplay("WorkingDocument (DocumentFileName={DocumentFileName}; TabIndex={TabIndex}; ConnectionName={ConnectionName}; SchemaName={SchemaName})")]
 	public class WorkingDocument
 	{
 		private List<bool> _foldingStates;
