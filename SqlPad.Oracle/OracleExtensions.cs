@@ -156,6 +156,11 @@ namespace SqlPad.Oracle
 			return node.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.HavingClause) != null;
 		}
 
+		public static bool IsWithinOrderByClause(this StatementGrammarNode node)
+		{
+			return node.GetPathFilterAncestor(n => n.Id != NonTerminals.Subquery, NonTerminals.OrderByClause) != null;
+		}
+
 		public static StatementGrammarNode GetParentExpression(this StatementGrammarNode node)
 		{
 			return node == null

@@ -246,6 +246,11 @@ namespace SqlPad.Oracle
 				completionItems = completionItems.Concat(specificFunctionParameterCodeCompletionItems);
 			}
 
+			if (completionType.ColumnAlias)
+			{
+				completionItems = completionItems.Concat(GenerateColumnAliases(currentNode, completionType));
+			}
+
 			if (completionType.UpdateSetColumn && semanticModel.MainObjectReferenceContainer.MainObjectReference != null)
 			{
 				completionItems = completionItems.Concat(GenerateUpdateSetColumnItems(currentNode, semanticModel.MainObjectReferenceContainer.MainObjectReference, completionType));
@@ -273,7 +278,21 @@ namespace SqlPad.Oracle
 			// TODO: Add option to search all/current/public schemas
 		}
 
-		private IEnumerable<ICodeCompletionItem> GenerateUpdateSetColumnItems(StatementGrammarNode currentNode, OracleDataObjectReference targetDataObject, OracleCodeCompletionType completionType)
+		private IEnumerable<ICodeCompletionItem> GenerateColumnAliases(StatementGrammarNode currentTerminal, OracleCodeCompletionType completionType)
+		{
+			return completionType.CurrentQueryBlock.Columns
+				.Where(c => c.HasExplicitAlias && !c.IsDirectReference)
+				.Select(c =>
+					new OracleCodeCompletionItem
+					{
+						Name = c.NormalizedName.ToSimpleIdentifier(),
+						Text = c.NormalizedName.ToSimpleIdentifier(),
+						Category = OracleCodeCompletionCategory.Column,
+						StatementNode = currentTerminal
+					});
+		}
+
+		private IEnumerable<ICodeCompletionItem> GenerateUpdateSetColumnItems(StatementGrammarNode currentTerminal, OracleDataObjectReference targetDataObject, OracleCodeCompletionType completionType)
 		{
 			return targetDataObject.Columns
 				.Where(c => completionType.TerminalValueUnderCursor.ToQuotedIdentifier() != c.Name && CodeCompletionSearchHelper.IsMatch(c.Name, completionType.TerminalValuePartUntilCaret))
@@ -282,7 +301,7 @@ namespace SqlPad.Oracle
 					Name = c.Name.ToSimpleIdentifier(),
 					Text = c.Name.ToSimpleIdentifier(),
 					Category = OracleCodeCompletionCategory.Column,
-					StatementNode = currentNode
+					StatementNode = currentTerminal
 				});
 		}
 

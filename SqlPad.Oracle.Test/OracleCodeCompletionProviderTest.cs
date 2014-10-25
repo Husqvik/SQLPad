@@ -1222,6 +1222,18 @@ se";
 			items.Count.ShouldBeGreaterThan(0);
 		}
 
+		[Test(Description = @"")]
+		public void TestColumnAliasSuggestionInOrderByClause()
+		{
+			const string statement = "SELECT LENGTH(DUMMY) COLUMN_NAME FROM DUAL ORDER BY C";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 53, true, OracleCodeCompletionCategory.Column).ToList();
+			items.Count.ShouldBe(1);
+			items[0].Name.ShouldBe("COLUMN_NAME");
+			items[0].Text.ShouldBe("COLUMN_NAME");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.Column);
+			items[0].CaretOffset.ShouldBe(0);
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)
@@ -1238,6 +1250,7 @@ se";
 				var completionType = InitializeCodeCompletionType(statement, statement.Length);
 				completionType.JoinCondition.ShouldBe(true);
 				completionType.SchemaDataObject.ShouldBe(false);
+				completionType.ColumnAlias.ShouldBe(false);
 			}
 
 			[Test(Description = @""), Ignore]
@@ -1247,6 +1260,7 @@ se";
 				var completionType = InitializeCodeCompletionType(statement, statement.Length);
 				completionType.JoinCondition.ShouldBe(true);
 				completionType.SchemaDataObject.ShouldBe(false);
+				completionType.ColumnAlias.ShouldBe(false);
 			}
 
 			[Test(Description = @"")]
@@ -1255,6 +1269,7 @@ se";
 				const string statement = @"SELECT CUSTOMER. FROM CUSTOMER JOIN COMPANY ON ";
 				var completionType = InitializeCodeCompletionType(statement, statement.Length - 1);
 				completionType.JoinCondition.ShouldBe(false);
+				completionType.ColumnAlias.ShouldBe(false);
 			}
 
 			[Test(Description = @"")]
@@ -1268,6 +1283,7 @@ se";
 				completionType.PackageFunction.ShouldBe(false);
 				completionType.Column.ShouldBe(true);
 				completionType.AllColumns.ShouldBe(false);
+				completionType.ColumnAlias.ShouldBe(false);
 			}
 
 			[Test(Description = @"")]
@@ -1281,6 +1297,7 @@ se";
 				completionType.PackageFunction.ShouldBe(false);
 				completionType.Column.ShouldBe(true);
 				completionType.AllColumns.ShouldBe(false);
+				completionType.ColumnAlias.ShouldBe(false);
 			}
 
 			[Test(Description = @"")]
@@ -1295,6 +1312,7 @@ se";
 				completionType.PackageFunction.ShouldBe(true);
 				completionType.SchemaDataObject.ShouldBe(false);
 				//completionType.SchemaDataObjectReference.ShouldBe(true);
+				completionType.ColumnAlias.ShouldBe(false);
 			}
 			
 			[Test(Description = @"")]
@@ -1310,6 +1328,7 @@ se";
 				completionType.SchemaProgram.ShouldBe(false);
 				completionType.PackageFunction.ShouldBe(false);
 				completionType.SchemaDataObject.ShouldBe(false);
+				completionType.ColumnAlias.ShouldBe(false);
 			}
 
 			[Test(Description = @"")]
@@ -1325,6 +1344,15 @@ se";
 				completionType.SchemaDataObject.ShouldBe(false);
 				completionType.SchemaDataObjectReference.ShouldBe(false);
 				completionType.DatabaseLink.ShouldBe(true);
+				completionType.ColumnAlias.ShouldBe(false);
+			}
+
+			[Test(Description = @"")]
+			public void TestCodeCompletionTypeWhenTypingColumnAliasInOrderByClause()
+			{
+				const string statement = @"SELECT LENGTH(DUMMY) COLUMN_NAME FROM DUAL ORDER BY C";
+				var completionType = InitializeCodeCompletionType(statement, 53);
+				completionType.ColumnAlias.ShouldBe(true);
 			}
 
 			public class ReferenceIdentifierTest

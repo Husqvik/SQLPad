@@ -40,6 +40,8 @@ namespace SqlPad.Oracle
 
 		public bool DatabaseLink { get; private set; }
 		
+		public bool ColumnAlias { get; private set; }
+		
 		public bool InsertIntoColumns { get; private set; }
 		
 		public bool InUnparsedData { get; private set; }
@@ -170,6 +172,8 @@ namespace SqlPad.Oracle
 			var isWithinUpdateSetNonTerminal = nearestTerminal.ParentNode.Id == NonTerminals.SetColumnEqualsExpressionOrNestedQueryOrDefaultValue || nearestTerminal.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBoundary, NonTerminals.SetColumnListEqualsNestedQuery) != null;
 			var isAfterSetTerminal = nearestTerminal.Id == Terminals.Set && isCursorAfterToken;
 			UpdateSetColumn = TerminalCandidates.Contains(Terminals.Identifier) && (isWithinUpdateSetNonTerminal || isAfterSetTerminal);
+
+			ColumnAlias = Column && nearestTerminal.IsWithinOrderByClause();
 		}
 
 		private void ResolveCurrentTerminalValue(StatementGrammarNode terminal)
