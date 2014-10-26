@@ -37,6 +37,7 @@ namespace SqlPad.Oracle
 		private readonly OracleConnection _userConnection;
 		private OracleDataReader _userDataReader;
 		private OracleCommand _userCommand;
+		private OracleTransaction _userTransaction;
 		private int _userSessionId;
 		private SessionExecutionStatisticsUpdater _executionStatisticsUpdater;
 		private string _oracleVersion;
@@ -129,6 +130,8 @@ namespace SqlPad.Oracle
 		public override ICollection<string> CharacterSets { get { return _dataDictionary.CharacterSets; } }
 
 		public override IDictionary<int, string> StatisticsKeys { get { return _dataDictionary.StatisticsKeys; } }
+
+		public override IDictionary<string, string> SystemParameters { get { return _dataDictionary.SystemParameters; } }
 
 		public override int VersionMajor { get { return Convert.ToInt32(_oracleVersion.Split('.')[0]); } }
 		
@@ -793,8 +796,9 @@ namespace SqlPad.Oracle
 			var databaseLinks = _dataDictionaryMapper.GetDatabaseLinks();
 			var characterSets = _dataDictionaryMapper.GetCharacterSets();
 			var statisticsKeys = FetchStatisticsKeys();
+			var systemParameters = _dataDictionaryMapper.GetSystemParameters();
 
-			_dataDictionary = new OracleDataDictionary(allObjects, databaseLinks, nonSchemaBuiltInFunctionMetadata, characterSets, statisticsKeys, lastRefresh);
+			_dataDictionary = new OracleDataDictionary(allObjects, databaseLinks, nonSchemaBuiltInFunctionMetadata, characterSets, statisticsKeys, systemParameters, lastRefresh);
 
 			CachedDataDictionaries[CachedConnectionStringName] = _dataDictionary;
 
@@ -860,6 +864,7 @@ namespace SqlPad.Oracle
 			var functionMetadata = _dataDictionary.AllObjects.Values
 				.OfType<IFunctionCollection>()
 				.SelectMany(o => o.Functions)
+				//.Where(m => m != null) // Enable this line if NullReferenceException occures. At some Oracle environments can happen that function metadata is not available for schema functions without reasonable explanation.
 				.Concat(_dataDictionary.NonSchemaFunctionMetadata.Values);
 
 			_allFunctionMetadata = functionMetadata.ToLookup(m => m.Identifier);

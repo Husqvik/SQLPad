@@ -14,6 +14,7 @@ namespace SqlPad.Oracle
 		private static readonly IDictionary<OracleObjectIdentifier, OracleDatabaseLink> InitialDatabaseLinkDictionary = BuildEmptyReadOnlyDictionary<OracleObjectIdentifier, OracleDatabaseLink>();
 		private static readonly IDictionary<string, OracleFunctionMetadata> InitialNonSchemaFunctionMetadataDictionary = BuildEmptyReadOnlyDictionary<string, OracleFunctionMetadata>();
 		private static readonly IDictionary<int, string> InitialStatisticsKeys = BuildEmptyReadOnlyDictionary<int, string>();
+		private static readonly IDictionary<string, string> InitialSystemParameters = BuildEmptyReadOnlyDictionary<string, string>();
 		private static readonly HashSet<string> InitialCharacterSetCollection = new HashSet<string>();
 
 		public static readonly OracleDataDictionary EmptyDictionary = new OracleDataDictionary();
@@ -22,6 +23,7 @@ namespace SqlPad.Oracle
 		private readonly IDictionary<OracleObjectIdentifier, OracleDatabaseLink> _databaseLinks;
 		private readonly IDictionary<string, OracleFunctionMetadata> _nonSchemaFunctionMetadata;
 		private readonly IDictionary<int, string> _statisticsKeys;
+		private readonly IDictionary<string, string> _systemParameters;
 		private readonly HashSet<string> _characterSets;
 
 		public DateTime Timestamp { get; private set; }
@@ -51,13 +53,18 @@ namespace SqlPad.Oracle
 			get { return _statisticsKeys ?? InitialStatisticsKeys; }
 		}
 
+		public IDictionary<string, string> SystemParameters
+		{
+			get { return _systemParameters ?? InitialSystemParameters; }
+		}
+
 		static OracleDataDictionary()
 		{
 			Serializer = TypeModel.Create();
 			var oracleDataDictionaryType = Serializer.Add(typeof(OracleDataDictionary), false);
 			oracleDataDictionaryType.AsReferenceDefault = true;
 			oracleDataDictionaryType.UseConstructor = false;
-			oracleDataDictionaryType.Add("Timestamp", "_allObjects", "_databaseLinks", "_nonSchemaFunctionMetadata", "_characterSets", "_statisticsKeys");
+			oracleDataDictionaryType.Add("Timestamp", "_allObjects", "_databaseLinks", "_nonSchemaFunctionMetadata", "_characterSets", "_statisticsKeys", "_systemParameters");
 			
 			var oracleObjectIdentifierType = Serializer.Add(typeof(OracleObjectIdentifier), false);
 			oracleObjectIdentifierType.Add("Owner", "Name", "NormalizedOwner", "NormalizedName");
@@ -158,13 +165,14 @@ namespace SqlPad.Oracle
 			oracleFunctionParameterMetadataType.Add("Name", "Position", "DataType", "Direction", "IsOptional");
 		}
 
-		public OracleDataDictionary(IDictionary<OracleObjectIdentifier, OracleSchemaObject> schemaObjects, IDictionary<OracleObjectIdentifier, OracleDatabaseLink> databaseLinks, IDictionary<string, OracleFunctionMetadata> nonSchemaFunctionMetadata, IEnumerable<string> characterSets, IDictionary<int, string> statisticsKeys, DateTime timestamp)
+		public OracleDataDictionary(IDictionary<OracleObjectIdentifier, OracleSchemaObject> schemaObjects, IDictionary<OracleObjectIdentifier, OracleDatabaseLink> databaseLinks, IDictionary<string, OracleFunctionMetadata> nonSchemaFunctionMetadata, IEnumerable<string> characterSets, IDictionary<int, string> statisticsKeys, IDictionary<string, string> systemParameters, DateTime timestamp)
 		{
 			_allObjects = new ReadOnlyDictionary<OracleObjectIdentifier, OracleSchemaObject>(schemaObjects);
 			_databaseLinks = new ReadOnlyDictionary<OracleObjectIdentifier, OracleDatabaseLink>(databaseLinks);
 			_nonSchemaFunctionMetadata = new ReadOnlyDictionary<string, OracleFunctionMetadata>(nonSchemaFunctionMetadata);
 			_characterSets = new HashSet<string>(characterSets);
 			_statisticsKeys = new ReadOnlyDictionary<int, string>(statisticsKeys);
+			_systemParameters = new ReadOnlyDictionary<string, string>(systemParameters);
 
 			Timestamp = timestamp;
 		}

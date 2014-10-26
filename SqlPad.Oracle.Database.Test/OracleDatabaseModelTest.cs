@@ -22,6 +22,7 @@ namespace SqlPad.Oracle.Database.Test
 				databaseModel.DatabaseLinks.Count.ShouldBe(0);
 				databaseModel.CharacterSets.Count.ShouldBe(0);
 				databaseModel.StatisticsKeys.Count.ShouldBe(0);
+				databaseModel.SystemParameters.Count.ShouldBe(0);
 
 				using (var modelClone = OracleDatabaseModel.GetDatabaseModel(connectionString))
 				{
@@ -51,6 +52,9 @@ namespace SqlPad.Oracle.Database.Test
 
 			databaseModel.StatisticsKeys.Count.ShouldBeGreaterThan(0);
 			Trace.WriteLine(String.Format("Statistics key dictionary has {0} members. ", databaseModel.StatisticsKeys.Count));
+
+			databaseModel.SystemParameters.Count.ShouldBeGreaterThan(0);
+			Trace.WriteLine(String.Format("System parameters dictionary has {0} members. ", databaseModel.SystemParameters.Count));
 
 			var objectForScriptCreation = databaseModel.GetFirstSchemaObject<OracleSchemaObject>(databaseModel.GetPotentialSchemaObjectIdentifiers("SYS", "OBJ$"));
 			objectForScriptCreation.ShouldNotBe(null);

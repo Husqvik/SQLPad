@@ -128,6 +128,12 @@ namespace SqlPad.Oracle
 				.ToDictionary(l => l.FullyQualifiedName, l => l);
 		}
 
+		public IDictionary<string, string> GetSystemParameters()
+		{
+			return _databaseModel.ExecuteReader(DatabaseCommands.GetSystemParameters, MapParameter)
+				.ToDictionary(l => l.Key, l => l.Value);
+		}
+
 		private ILookup<OracleFunctionIdentifier, OracleFunctionMetadata> GetFunctionMetadataCollection(string selectFunctionMetadataCommandText, string selectParameterMetadataCommandText, bool isBuiltIn)
 		{
 			var functionMetadataSource = _databaseModel.ExecuteReader(selectFunctionMetadataCommandText, r => MapFunctionMetadata(r, isBuiltIn));
@@ -167,10 +173,8 @@ namespace SqlPad.Oracle
 			var isOffloadable = (string)reader["OFFLOADABLE"] == "YES";
 			var parallelSupport = (string)reader["PARALLEL"] == "YES";
 			var isDeterministic = (string)reader["DETERMINISTIC"] == "YES";
-			var minimumArgumentsRaw = reader["MINARGS"];
-			var metadataMinimumArguments = minimumArgumentsRaw == DBNull.Value ? null : (int?)Convert.ToInt32(minimumArgumentsRaw);
-			var maximumArgumentsRaw = reader["MAXARGS"];
-			var metadataMaximumArguments = maximumArgumentsRaw == DBNull.Value ? null : (int?)Convert.ToInt32(maximumArgumentsRaw);
+			var metadataMinimumArguments = OracleReaderValueConvert.ToInt32(reader["MINARGS"]);
+			var metadataMaximumArguments = OracleReaderValueConvert.ToInt32(reader["MAXARGS"]);
 			var authId = (string)reader["AUTHID"] == "CURRENT_USER" ? AuthId.CurrentUser : AuthId.Definer;
 			var displayType = (string)reader["DISP_TYPE"];
 
@@ -181,11 +185,9 @@ namespace SqlPad.Oracle
 		{
 			var identifier = CreateFunctionIdentifierFromReaderValues(reader[0], reader[1], reader[2], reader[3]);
 
-			var parameterNameRaw = reader[4];
-			var parameterName = parameterNameRaw == DBNull.Value ? null : (string)parameterNameRaw;
+			var parameterName = OracleReaderValueConvert.ToString(reader[4]);
 			var position = Convert.ToInt32(reader[5]);
-			var dataTypeRaw = reader[6];
-			var dataType = dataTypeRaw == DBNull.Value ? null : (string)dataTypeRaw;
+			var dataType = OracleReaderValueConvert.ToString(reader[6]);
 			var isOptional = (string)reader[7] == "Y";
 			var directionRaw = (string)reader[8];
 			ParameterDirection direction;
@@ -227,15 +229,19 @@ namespace SqlPad.Oracle
 		private OracleDatabaseLink MapDatabaseLink(OracleDataReader reader)
 		{
 			var databaseLinkFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(reader["OWNER"]), QualifyStringObject(reader["DB_LINK"]));
-			var userNameRaw = reader["USERNAME"];
 			return
 				new OracleDatabaseLink
 				{
 					FullyQualifiedName = databaseLinkFullyQualifiedName,
 					Created = (DateTime)reader["CREATED"],
 					Host = (string)reader["HOST"],
-					UserName = userNameRaw == DBNull.Value ? null : (string)userNameRaw
+					UserName = OracleReaderValueConvert.ToString(reader["USERNAME"])
 				};
+		}
+
+		private KeyValuePair<string, string> MapParameter(OracleDataReader reader)
+		{
+			return new KeyValuePair<string, string>((string)reader["NAME"], OracleReaderValueConvert.ToString(reader["VALUE"]));
 		}
 
 		private OracleSequence MapSequence(OracleDataReader reader)
@@ -272,8 +278,8 @@ namespace SqlPad.Oracle
 			if (!_allObjects.TryGetValue(ownerObjectFullyQualifiedName, out ownerObject))
 				return new KeyValuePair<OracleConstraint, OracleObjectIdentifier>(null, remoteConstraintIdentifier);
 
-			var relyRaw = reader["RELY"];
-			var constraint = OracleObjectFactory.CreateConstraint((string)reader["CONSTRAINT_TYPE"], owner, QualifyStringObject(reader["CONSTRAINT_NAME"]), (string)reader["STATUS"] == "ENABLED", (string)reader["VALIDATED"] == "VALIDATED", (string)reader["DEFERRABLE"] == "DEFERRABLE", relyRaw != DBNull.Value && (string)relyRaw == "RELY");
+			var rely = OracleReaderValueConvert.ToString(reader["RELY"]);
+			var constraint = OracleObjectFactory.CreateConstraint((string)reader["CONSTRAINT_TYPE"], owner, QualifyStringObject(reader["CONSTRAINT_NAME"]), (string)reader["STATUS"] == "ENABLED", (string)reader["VALIDATED"] == "VALIDATED", (string)reader["DEFERRABLE"] == "DEFERRABLE", rely == "RELY");
 			constraint.Owner = ownerObject;
 			((OracleDataObject)ownerObject).Constraints.Add(constraint);
 
@@ -305,8 +311,6 @@ namespace SqlPad.Oracle
 			var dataTypeOwnerRaw = reader["DATA_TYPE_OWNER"];
 			var dataTypeOwner = dataTypeOwnerRaw == DBNull.Value ? null : String.Format("{0}.", dataTypeOwnerRaw);
 			var type = String.Format("{0}{1}", dataTypeOwner, reader["DATA_TYPE"]);
-			var precisionRaw = reader["DATA_PRECISION"];
-			var scaleRaw = reader["DATA_SCALE"];
 			return new KeyValuePair<OracleObjectIdentifier, OracleColumn>(
 				OracleObjectIdentifier.Create(QualifyStringObject(reader["OWNER"]), QualifyStringObject(reader["TABLE_NAME"])),
 				new OracleColumn
@@ -316,8 +320,8 @@ namespace SqlPad.Oracle
 					Type = type,
 					Size = Convert.ToInt32(reader["DATA_LENGTH"]),
 					CharacterSize = Convert.ToInt32(reader["CHAR_LENGTH"]),
-					Precision = precisionRaw == DBNull.Value ? null : (int?)Convert.ToInt32(precisionRaw),
-					Scale = scaleRaw == DBNull.Value ? null : (int?)Convert.ToInt32(scaleRaw),
+					Precision = OracleReaderValueConvert.ToInt32(reader["DATA_PRECISION"]),
+					Scale = OracleReaderValueConvert.ToInt32(reader["DATA_SCALE"]),
 					Unit = type.In("VARCHAR", "VARCHAR2")
 						? (string)reader["CHAR_USED"] == "C" ? DataUnit.Character : DataUnit.Byte
 						: DataUnit.NotApplicable

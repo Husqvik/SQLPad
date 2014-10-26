@@ -245,7 +245,7 @@ namespace SqlPad.Oracle
 
 		public override void InitializeCommand(OracleCommand command)
 		{
-			command.CommandText = DatabaseCommands.GetTableInMemoryAllocatedBytesCommand;
+			command.CommandText = DatabaseCommands.GetTableInMemoryAllocatedBytes;
 			command.AddSimpleParameter("OWNER", _objectIdentifier.Owner.Trim('"'));
 			command.AddSimpleParameter("SEGMENT_NAME", _objectIdentifier.Name.Trim('"'));
 		}

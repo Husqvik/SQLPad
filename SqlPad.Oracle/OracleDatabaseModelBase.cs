@@ -79,6 +79,8 @@ namespace SqlPad.Oracle
 		public abstract ICollection<string> CharacterSets { get; }
 
 		public abstract IDictionary<int, string> StatisticsKeys { get; }
+		
+		public abstract IDictionary<string, string> SystemParameters { get; }
 
 		public abstract int VersionMajor { get; }
 		

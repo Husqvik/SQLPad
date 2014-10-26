@@ -59,6 +59,12 @@ namespace SqlPad.Oracle.Test
 				{ StatisticsCodeSqlNetRoundtripsToOrFromClient, StatisticsDescriptionSqlNetRoundtripsToOrFromClient }
 			};
 
+		private static readonly Dictionary<string, string> SystemParametersInternal =
+		new Dictionary<string, string>
+			{
+				{ "db_domain", "sqlpad.husqvik.com" }
+			};
+
 		private readonly IDictionary<OracleObjectIdentifier, OracleSchemaObject> _allObjects;
 
 		private static readonly HashSet<OracleDatabaseLink> DatabaseLinksInternal =
@@ -747,6 +753,8 @@ Note
 		public override ICollection<string> CharacterSets { get { return CharacterSetsInternal; } }
 
 		public override IDictionary<int, string> StatisticsKeys { get { return StatisticsKeysInternal; } }
+
+		public override IDictionary<string, string> SystemParameters { get { return SystemParametersInternal; } }
 
 		public override int VersionMajor { get { return 12; } }
 
