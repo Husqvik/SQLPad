@@ -1355,6 +1355,13 @@ se";
 				completionType.ColumnAlias.ShouldBe(true);
 			}
 
+			[Test(Description = @"")]
+			public void TestCodeCompletionTypeWithMissingSelectList()
+			{
+				const string statement = @"SELECT FROM V$TRANSACTION";
+				InitializeCodeCompletionType(statement, 7);
+			}
+
 			public class ReferenceIdentifierTest
 			{
 				public class SelectList
