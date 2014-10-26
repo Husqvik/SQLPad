@@ -18,6 +18,7 @@ namespace SqlPad
 		private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 		private readonly FindReplaceManager _findReplaceManager;
 		private ILargeBinaryValue _largeBinaryValue;
+		private bool _isXml;
 
 		public LargeValueEditor(string columnName, ILargeValue largeValue)
 		{
@@ -45,7 +46,7 @@ namespace SqlPad
 				TabText.Visibility = Visibility.Visible;
 				TabControl.SelectedItem = TabText;
 				
-				var isXml = true;
+				_isXml = true;
 				using (var reader = new XmlTextReader(new StringReader(largeTextValue.Value)))
 				{
 					try
@@ -56,11 +57,11 @@ namespace SqlPad
 					}
 					catch
 					{
-						isXml = false;
+						_isXml = false;
 					}
 				}
 
-				if (isXml)
+				if (_isXml)
 				{
 					TextEditor.SyntaxHighlighting = HighlightingManager.Instance.GetDefinition("XML");
 				}
@@ -221,7 +222,13 @@ namespace SqlPad
 
 		private void SaveTextAsClickHandler(object sender, RoutedEventArgs args)
 		{
-			var dialog = new SaveFileDialog { Filter = "Text Files (*.txt)|*.txt|All (*.*)|*", OverwritePrompt = true };
+			var filterSettings = "Text Files (*.txt)|*.txt|All (*.*)|*";
+			if (_isXml)
+			{
+				filterSettings = String.Format("XML Files (*.xml)|*.xml|{0}", filterSettings);
+			}
+
+			var dialog = new SaveFileDialog { Filter = filterSettings, OverwritePrompt = true };
 			if (dialog.ShowDialog() != true)
 			{
 				return;
