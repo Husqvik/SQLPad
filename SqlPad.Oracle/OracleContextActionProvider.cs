@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows.Input;
@@ -18,6 +19,11 @@ namespace SqlPad.Oracle
 			var documentStore = new SqlDocumentRepository(_oracleParser, new OracleStatementValidator(), databaseModel, statementText);
 			var executionContext = new CommandExecutionContext(statementText, cursorPosition, cursorPosition, 0, documentStore);
 			return GetContextActions(documentStore, executionContext);
+		}
+
+		public ICollection<IContextAction> GetAvailableRefactorings(SqlDocumentRepository sqlDocumentRepository, CommandExecutionContext executionContext)
+		{
+			throw new NotImplementedException();
 		}
 
 		public ICollection<IContextAction> GetContextActions(SqlDocumentRepository sqlDocumentRepository, CommandExecutionContext executionContext)
@@ -62,11 +68,10 @@ namespace SqlPad.Oracle
 				actionList.Add(new OracleContextAction(ToggleQuotedNotationCommand.Title, OracleCommands.ToggleQuotedNotation, executionContext));
 			}
 
-			// TODO
-			/*if (OracleCommands.AddToGroupByClause.CanExecuteHandler(executionContext))
+			if (OracleCommands.AddToGroupByClause.CanExecuteHandler(executionContext))
 			{
 				actionList.Add(new OracleContextAction(AddToGroupByCommand.Title, OracleCommands.AddToGroupByClause, executionContext));
-			}*/
+			}
 
 			if (OracleCommands.ExpandAsterisk.CanExecuteHandler(executionContext))
 			{

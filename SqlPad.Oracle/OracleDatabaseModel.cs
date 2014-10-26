@@ -204,7 +204,7 @@ namespace SqlPad.Oracle
 
 			RaiseEvent(RefreshFinished);
 
-			Trace.WriteLine(String.Format("{0} - Cache for '{1}' has been retrieved from the cache. ", DateTime.Now, CachedConnectionStringName));
+			Trace.WriteLine(String.Format("{0} - Metadata for '{1}' has been retrieved from the cache. ", DateTime.Now, CachedConnectionStringName));
 		}
 
 		public async override Task<StatementExecutionModel> ExplainPlanAsync(string statement, CancellationToken cancellationToken)

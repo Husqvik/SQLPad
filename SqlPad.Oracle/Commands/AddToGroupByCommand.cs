@@ -73,7 +73,12 @@ namespace SqlPad.Oracle.Commands
 			}
 
 			var columnReferences = CurrentQueryBlock.AllColumnReferences
-				.Where(c => !c.ReferencesAllColumns && c.HasExplicitDefinition && _selectedTerminals.Contains(c.ColumnNode));
+				.Where(c => !c.ReferencesAllColumns && c.HasExplicitDefinition && _selectedTerminals.Contains(c.ColumnNode))
+				.ToArray();
+			if (columnReferences.Length == 0)
+			{
+				return;
+			}
 
 			var functionReferences = CurrentQueryBlock.AllProgramReferences
 				.Where(c => c.HasExplicitDefinition && _selectedTerminals.Contains(c.FunctionIdentifierNode));

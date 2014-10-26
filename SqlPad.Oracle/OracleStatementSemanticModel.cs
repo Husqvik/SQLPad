@@ -13,6 +13,7 @@ namespace SqlPad.Oracle
 		private readonly HashSet<StatementGrammarNode> _redundantTerminals = new HashSet<StatementGrammarNode>();
 		private readonly OracleDatabaseModelBase _databaseModel;
 		private readonly Dictionary<OracleSelectListColumn, ICollection<OracleDataObjectReference>> _asteriskTableReferences = new Dictionary<OracleSelectListColumn, ICollection<OracleDataObjectReference>>();
+		private readonly Dictionary<OracleQueryBlock, IList<string>> _commonTableExpressionExplicititColumnNames = new Dictionary<OracleQueryBlock, IList<string>>();
 		private readonly List<ICollection<OracleColumnReference>> _joinClauseColumnReferences = new List<ICollection<OracleColumnReference>>();
 		private readonly Dictionary<OracleQueryBlock, ICollection<StatementGrammarNode>> _accessibleQueryBlockRoot = new Dictionary<OracleQueryBlock, ICollection<StatementGrammarNode>>();
 		private readonly Dictionary<OracleDataObjectReference, ICollection<KeyValuePair<StatementGrammarNode, string>>> _objectReferenceCteRootNodes = new Dictionary<OracleDataObjectReference, ICollection<KeyValuePair<StatementGrammarNode, string>>>();
@@ -123,7 +124,7 @@ namespace SqlPad.Oracle
 				var commonTableExpression = queryBlockRoot.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBoundary, NonTerminals.SubqueryComponent);
 				if (commonTableExpression != null)
 				{
-					queryBlock.AliasNode = commonTableExpression.ChildNodes.First();
+					queryBlock.AliasNode = commonTableExpression.ChildNodes[0];
 					queryBlock.Type = QueryBlockType.CommonTableExpression;
 				}
 				else
@@ -132,12 +133,7 @@ namespace SqlPad.Oracle
 					if (selfTableReference != null)
 					{
 						queryBlock.Type = QueryBlockType.Normal;
-
-						var nestedSubqueryAlias = selfTableReference.ChildNodes.SingleOrDefault(n => n.Id == Terminals.ObjectAlias);
-						if (nestedSubqueryAlias != null)
-						{
-							queryBlock.AliasNode = nestedSubqueryAlias;
-						}
+						queryBlock.AliasNode = selfTableReference.GetDescendantByPath(Terminals.ObjectAlias);
 					}
 				}
 
@@ -274,11 +270,30 @@ namespace SqlPad.Oracle
 
 			ExposeAsteriskColumns();
 
+			ApplyExplicitCommonTableExpressionColumnNames();
+
 			ResolveReferences();
 
 			BuildDmlModel();
 			
 			ResolveRedundantTerminals();
+		}
+
+		private void ApplyExplicitCommonTableExpressionColumnNames()
+		{
+			foreach (var kvp in _commonTableExpressionExplicititColumnNames)
+			{
+				var columnIndex = 0;
+				foreach (var column in kvp.Key.Columns.Where(c => !c.IsAsterisk))
+				{
+					if (kvp.Value.Count == columnIndex)
+					{
+						break;
+					}
+
+					column.ExplicitNormalizedName = kvp.Value[columnIndex++];
+				}
+			}
 		}
 
 		private void ResolveRedundantTerminals()
@@ -638,6 +653,10 @@ namespace SqlPad.Oracle
 		{
 			foreach (var asteriskTableReference in _asteriskTableReferences)
 			{
+				var asteriskColumn = asteriskTableReference.Key;
+				var ownerQueryBlock = asteriskColumn.Owner;
+				var columnIndex = ownerQueryBlock.Columns.IndexOf(asteriskColumn);
+				
 				foreach (var objectReference in asteriskTableReference.Value)
 				{
 					IEnumerable<OracleSelectListColumn> exposedColumns;
@@ -648,9 +667,8 @@ namespace SqlPad.Oracle
 							continue;
 
 						exposedColumns = dataObject.Columns.Values
-							.Select(c => new OracleSelectListColumn(this)
+							.Select(c => new OracleSelectListColumn(this, asteriskColumn)
 							{
-								HasExplicitDefinition = false,
 								IsDirectReference = true,
 								ColumnDescription = c
 							});
@@ -661,7 +679,7 @@ namespace SqlPad.Oracle
 						foreach (var column in objectReference.QueryBlocks.SelectMany(qb => qb.Columns).Where(c => !c.IsAsterisk))
 						{
 							column.RegisterOuterReference();
-							columns.Add(column.AsImplicit());
+							columns.Add(column.AsImplicit(asteriskColumn));
 						}
 						
 						exposedColumns = columns;
@@ -670,12 +688,12 @@ namespace SqlPad.Oracle
 					var exposedColumnDictionary = new Dictionary<string, OracleColumnReference>();
 					foreach (var exposedColumn in exposedColumns)
 					{
-						exposedColumn.Owner = asteriskTableReference.Key.Owner;
+						exposedColumn.Owner = ownerQueryBlock;
 
 						OracleColumnReference columnReference;
 						if (String.IsNullOrEmpty(exposedColumn.NormalizedName) || !exposedColumnDictionary.TryGetValue(exposedColumn.NormalizedName, out columnReference))
 						{
-							columnReference = CreateColumnReference(exposedColumn, exposedColumn.Owner, exposedColumn, QueryBlockPlacement.SelectList, asteriskTableReference.Key.RootNode.LastTerminalNode, null);
+							columnReference = CreateColumnReference(exposedColumn, exposedColumn.Owner, exposedColumn, QueryBlockPlacement.SelectList, asteriskColumn.RootNode.LastTerminalNode, null);
 
 							if (!String.IsNullOrEmpty(exposedColumn.NormalizedName))
 							{
@@ -689,7 +707,7 @@ namespace SqlPad.Oracle
 
 						exposedColumn.ColumnReferences.Add(columnReference);
 
-						asteriskTableReference.Key.Owner.Columns.Add(exposedColumn);
+						ownerQueryBlock.Columns.Insert(++columnIndex, exposedColumn);
 					}
 				}
 			}
@@ -1157,24 +1175,36 @@ namespace SqlPad.Oracle
 		{
 			var queryBlockRoot = queryBlock.RootNode;
 
-			queryBlock.SelectList = queryBlockRoot.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.SelectList);
+			queryBlock.SelectList = queryBlockRoot.GetDescendantByPath(NonTerminals.SelectList);
 			if (queryBlock.SelectList == null)
 				return;
 
-			var distinctModifierNode = queryBlockRoot.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.DistinctModifier);
+			var distinctModifierNode = queryBlockRoot.GetDescendantByPath(NonTerminals.DistinctModifier);
 			queryBlock.HasDistinctResultSet = distinctModifierNode != null && distinctModifierNode.FirstTerminalNode.Id.In(Terminals.Distinct, Terminals.Unique);
 
 			if (queryBlock.SelectList.FirstTerminalNode == null)
 				return;
 
+			if (queryBlock.Type == QueryBlockType.CommonTableExpression)
+			{
+				var parenthesisEnclosedColumnListNode = queryBlock.AliasNode.ParentNode.GetDescendantByPath(NonTerminals.ParenthesisEnclosedIdentifierList);
+				if (parenthesisEnclosedColumnListNode != null)
+				{
+					var commonTableExpressionExplicitColumnNameList = new List<string>(
+						parenthesisEnclosedColumnListNode.GetDescendants(Terminals.Identifier)
+							.Select(t => t.Token.Value.ToQuotedIdentifier()));
+
+					_commonTableExpressionExplicititColumnNames.Add(queryBlock, commonTableExpressionExplicitColumnNameList);
+				}
+			}
+
 			if (queryBlock.SelectList.FirstTerminalNode.Id == Terminals.Asterisk)
 			{
 				var asteriskNode = queryBlock.SelectList.ChildNodes[0];
-				var column = new OracleSelectListColumn(this)
+				var column = new OracleSelectListColumn(this, null)
 				{
 					RootNode = asteriskNode,
 					Owner = queryBlock,
-					HasExplicitDefinition = true,
 					IsAsterisk = true
 				};
 
@@ -1195,12 +1225,11 @@ namespace SqlPad.Oracle
 						? columnExpression.LastTerminalNode
 						: null;
 					
-					var column = new OracleSelectListColumn(this)
+					var column = new OracleSelectListColumn(this, null)
 					{
 						AliasNode = columnAliasNode,
 						RootNode = columnExpression,
-						Owner = queryBlock,
-						HasExplicitDefinition = true
+						Owner = queryBlock
 					};
 
 					var asteriskNode = columnExpression.LastTerminalNode != null && columnExpression.LastTerminalNode.Id == Terminals.Asterisk

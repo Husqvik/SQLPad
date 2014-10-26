@@ -846,6 +846,15 @@ WHERE
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestAddToGroupByCommandAtColumnTableQualifier()
+		{
+			_editor.Text = @"SELECT SELECTION.NAME, COUNT(*) FROM SELECTION JOIN RESPONDENTBUCKET ON SELECTION.RESPONDENTBUCKET_ID = RESPONDENTBUCKET.RESPONDENTBUCKET_ID";
+			_editor.SelectionStart = 7;
+
+			CanExecuteCommand(OracleCommands.AddToGroupByClause).ShouldBe(false);
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestAddToGroupByCommandWithOrderByClause()
 		{
 			_editor.Text = @"SELECT PROJECT_ID, RESPONDENTBUCKET_ID, COUNT(*) PROJECT_SELECTIONS FROM SELECTION GROUP BY PROJECT_ID ORDER BY PROJECT_SELECTIONS";

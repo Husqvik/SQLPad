@@ -10,14 +10,20 @@ namespace SqlPad.Oracle
 	{
 		private OracleColumn _columnDescription;
 
-		public OracleSelectListColumn(OracleStatementSemanticModel semanticModel)
+		public OracleSelectListColumn(OracleStatementSemanticModel semanticModel, OracleSelectListColumn asteriskColumn)
 			: base(semanticModel)
 		{
+			AsteriskColumn = asteriskColumn;
 		}
 
 		public void RegisterOuterReference()
 		{
 			OuterReferenceCount++;
+
+			if (AsteriskColumn != null)
+			{
+				AsteriskColumn.RegisterOuterReference();
+			}
 		}
 
 		public int OuterReferenceCount { get; private set; }
@@ -28,20 +34,27 @@ namespace SqlPad.Oracle
 		
 		public bool IsAsterisk { get; set; }
 		
-		public bool IsGrouped { get; set; }
+		public OracleSelectListColumn AsteriskColumn { get; private set; }
 
-		public bool HasExplicitDefinition { get; set; }
+		public bool HasExplicitDefinition { get { return AsteriskColumn == null; } }
 
 		public string NormalizedName
 		{
 			get
 			{
+				if (!String.IsNullOrEmpty(ExplicitNormalizedName))
+					return ExplicitNormalizedName;
+
 				if (AliasNode != null)
 					return AliasNode.Token.Value.ToQuotedIdentifier();
 
-				return _columnDescription == null ? null : _columnDescription.Name;
+				return _columnDescription == null
+					? null
+					: _columnDescription.Name;
 			}
 		}
+
+		public string ExplicitNormalizedName { get; set; }
 
 		public bool HasExplicitAlias
 		{
@@ -66,13 +79,13 @@ namespace SqlPad.Oracle
 		private OracleColumn BuildColumnDescription()
 		{
 			var columnDescription = IsDirectReference && ColumnReferences.Count == 1
-				? ColumnReferences.First().ColumnDescription
+				? ColumnReferences[0].ColumnDescription
 				: null;
 
 			_columnDescription =
 				new OracleColumn
 				{
-					Name = AliasNode == null ? null : AliasNode.Token.Value.ToQuotedIdentifier(),
+					Name = NormalizedName,
 					Nullable = columnDescription == null || columnDescription.Nullable,
 					Type = columnDescription == null ? null : columnDescription.Type,
 					Precision = columnDescription == null ? null : columnDescription.Precision,
@@ -162,12 +175,11 @@ namespace SqlPad.Oracle
 			return value.Count(Char.IsDigit);
 		}
 
-		public OracleSelectListColumn AsImplicit()
+		public OracleSelectListColumn AsImplicit(OracleSelectListColumn asteriskColumn)
 		{
 			return
-				new OracleSelectListColumn(SemanticModel)
+				new OracleSelectListColumn(SemanticModel, asteriskColumn)
 				{
-					HasExplicitDefinition = false,
 					AliasNode = AliasNode,
 					RootNode = RootNode,
 					IsDirectReference = true,

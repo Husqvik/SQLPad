@@ -77,9 +77,9 @@ namespace SqlPad.Oracle.Commands
 
 			ExecutionContext.SegmentsToReplace.Add(segmentToRemove);
 
-			var objectPrefixAsteriskColumns = _parentQueryBlock.Columns.Where(c => c.IsAsterisk && c.ColumnReferences.Count == 1 && c.ColumnReferences.First().ObjectNode != null &&
-			                                                                       c.ColumnReferences.First().ObjectNodeObjectReferences.Count == 1 && c.ColumnReferences.First().ObjectNodeObjectReferences.First().QueryBlocks.Count == 1 &&
-			                                                                       c.ColumnReferences.First().ObjectNodeObjectReferences.First().QueryBlocks.First() == CurrentQueryBlock);
+			var objectPrefixAsteriskColumns = _parentQueryBlock.Columns.Where(c => c.IsAsterisk && c.ColumnReferences.Count == 1 && c.ColumnReferences[0].ObjectNode != null &&
+																				   c.ColumnReferences[0].ObjectNodeObjectReferences.Count == 1 && c.ColumnReferences[0].ObjectNodeObjectReferences.First().QueryBlocks.Count == 1 &&
+																				   c.ColumnReferences[0].ObjectNodeObjectReferences.First().QueryBlocks.First() == CurrentQueryBlock);
 
 			foreach (var objectPrefixAsteriskColumn in objectPrefixAsteriskColumns)
 			{
@@ -156,8 +156,8 @@ namespace SqlPad.Oracle.Commands
 				return columnExpression;
 			}
 
-			var objectName = column.ColumnReferences.Count == 1 && column.ColumnReferences.First().ColumnNodeObjectReferences.Count == 1
-				? column.ColumnReferences.First().ColumnNodeObjectReferences.First().FullyQualifiedObjectName + "."
+			var objectName = column.ColumnReferences.Count == 1 && column.ColumnReferences[0].ColumnNodeObjectReferences.Count == 1
+				? column.ColumnReferences[0].ColumnNodeObjectReferences.First().FullyQualifiedObjectName + "."
 				: null;
 
 			return objectName + column.NormalizedName.ToSimpleIdentifier();

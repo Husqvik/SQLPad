@@ -6,6 +6,8 @@ namespace SqlPad
 	public interface IContextActionProvider
 	{
 		ICollection<IContextAction> GetContextActions(SqlDocumentRepository sqlDocumentRepository, CommandExecutionContext executionContext);
+
+		ICollection<IContextAction> GetAvailableRefactorings(SqlDocumentRepository sqlDocumentRepository, CommandExecutionContext executionContext);
 	}
 
 	public interface IContextAction

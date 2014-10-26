@@ -139,8 +139,8 @@ FROM
 			columns[1].ColumnReferences.Count.ShouldBe(1);
 			columns[1].HasExplicitDefinition.ShouldBe(false);
 			columns[1].ColumnReferences.Count.ShouldBe(1);
-			columns[1].ColumnReferences.First().ColumnNodeObjectReferences.Count.ShouldBe(1);
-			columns[1].ColumnReferences.First().ColumnNodeObjectReferences.Single().ShouldBe(objectReference);
+			columns[1].ColumnReferences[0].ColumnNodeObjectReferences.Count.ShouldBe(1);
+			columns[1].ColumnReferences[0].ColumnNodeObjectReferences.Single().ShouldBe(objectReference);
 		}
 
 		[Test(Description = @"")]
@@ -555,7 +555,7 @@ FROM
 		[Test(Description = @"")]
 		public void TestLiteralColumnDataTypeResolution()
 		{
-			const string query1 = @"SELECT 123.456, '123.456', N'123.456', 123., 1.2E+1, DATE'2014-10-03', TIMESTAMP'2014-10-03 23:15:43.777' FROM DUAL";
+			const string query1 = @"SELECT UNIQUE 123.456, '123.456', N'123.456', 123., 1.2E+1, DATE'2014-10-03', TIMESTAMP'2014-10-03 23:15:43.777' FROM DUAL";
 
 			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
 			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
@@ -563,6 +563,7 @@ FROM
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
 			var queryBlock = semanticModel.QueryBlocks.First();
 			queryBlock.Columns.Count.ShouldBe(7);
+			queryBlock.HasDistinctResultSet.ShouldBe(true);
 			var columns = queryBlock.Columns.ToList();
 			columns.ForEach(c => c.ColumnDescription.ShouldNotBe(null));
 			columns.ForEach(c => c.ColumnDescription.Nullable.ShouldBe(false));
@@ -578,7 +579,7 @@ FROM
 		[Test(Description = @"")]
 		public void TestLiteralColumnDataTypeResolutionAccessedFromInlineView()
 		{
-			const string query1 = @"SELECT CONSTANT FROM (SELECT 123.456 CONSTANT FROM DUAL)";
+			const string query1 = @"SELECT CONSTANT FROM (SELECT DISTINCT 123.456 CONSTANT FROM DUAL)";
 
 			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
 			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
@@ -586,6 +587,7 @@ FROM
 			semanticModel.QueryBlocks.Count.ShouldBe(2);
 			var queryBlock = semanticModel.QueryBlocks.First();
 			queryBlock.Columns.Count.ShouldBe(1);
+			queryBlock.HasDistinctResultSet.ShouldBe(true);
 			var column = queryBlock.Columns.First();
 			column.ColumnDescription.ShouldNotBe(null);
 			column.ColumnDescription.Name.ShouldBe("\"CONSTANT\"");
@@ -602,6 +604,7 @@ FROM
 
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
 			var queryBlock = semanticModel.QueryBlocks.First();
+			queryBlock.HasDistinctResultSet.ShouldBe(false);
 			queryBlock.Columns.Count.ShouldBe(5);
 			var columns = queryBlock.Columns.ToList();
 			columns.ForEach(c => c.ColumnDescription.ShouldNotBe(null));
@@ -715,6 +718,43 @@ FROM
 
 			var redundantTerminals = semanticModel.RedundantNodes.OrderBy(t => t.SourcePosition.IndexStart).ToArray();
 			redundantTerminals.Length.ShouldBe(2);
+		}
+
+		[Test(Description = @"")]
+		public void TestRedundantTerminalsOfUnreferencedAsteriskClause()
+		{
+			const string query1 = @"SELECT DUMMY FROM (SELECT DUAL.*, SELECTION.* FROM DUAL, SELECTION)";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			var redundantTerminals = semanticModel.RedundantNodes.OrderBy(t => t.SourcePosition.IndexStart).ToArray();
+			redundantTerminals.Length.ShouldBe(4);
+		}
+
+		[Test(Description = @"")]
+		public void TestCommonTableExpressionColumnNameList()
+		{
+			const string query1 = @"WITH GENERATOR(C1, C2, C3, C4) AS (SELECT 1, DUAL.*, 3, DUMMY FROM DUAL) SELECT C1, C2, C3, C4 FROM GENERATOR";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			var columns = semanticModel.MainQueryBlock.Columns.ToList();
+			columns.Count.ShouldBe(4);
+			columns.ForEach(c => c.ColumnReferences.Count.ShouldBe(1));
+
+			foreach (var column in columns)
+			{
+				var columnReference = column.ColumnReferences[0];
+				columnReference.ColumnNodeObjectReferences.Count.ShouldBe(1);
+				var tableReference = columnReference.ColumnNodeObjectReferences.Single();
+				tableReference.FullyQualifiedObjectName.Name.ShouldBe("GENERATOR");
+				tableReference.Type.ShouldBe(ReferenceType.CommonTableExpression);
+				tableReference.QueryBlocks.Count.ShouldBe(1);
+			}
+
+			semanticModel.RedundantNodes.Count.ShouldBe(0);
 		}
 	}
 }

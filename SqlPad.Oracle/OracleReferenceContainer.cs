@@ -28,7 +28,7 @@ namespace SqlPad.Oracle
 
 		public ICollection<OracleSequenceReference> SequenceReferences { get; private set; }
 
-		public ICollection<OracleColumnReference> ColumnReferences { get; private set; }
+		public IList<OracleColumnReference> ColumnReferences { get; private set; }
 
 		public ICollection<OracleProgramReference> ProgramReferences { get; private set; }
 
