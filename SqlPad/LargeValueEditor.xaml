@@ -38,10 +38,17 @@
 	<Grid>
 		<TabControl x:Name="TabControl">
 			<TabItem x:Name="TabText" Header="Text" Visibility="Collapsed">
-				<avalonedit:TextEditor x:Name="TextEditor"
-				                       FontFamily="Consolas"
-				                       ShowLineNumbers="True"
-									   IsReadOnly="True" />
+				<DockPanel>
+					<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" sqlPad:MarginSetter.Margin="8,0,0,8">
+						<Button Content="Save as..." Padding="6,0,6,0" Click="SaveTextAsClickHandler" />
+						<CheckBox x:Name="CheckBoxWordWrap" Content="Word wrap" VerticalAlignment="Center" />
+					</StackPanel>
+					<avalonedit:TextEditor x:Name="TextEditor"
+										   FontFamily="Consolas"
+										   ShowLineNumbers="True"
+										   IsReadOnly="True"
+										   WordWrap="{Binding ElementName=CheckBoxWordWrap, Path=IsChecked}" />
+				</DockPanel>
 			</TabItem>
 			<TabItem x:Name="TabRaw" Header="Raw" Visibility="Collapsed">
 				<Grid>

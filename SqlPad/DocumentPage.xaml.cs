@@ -353,7 +353,7 @@ namespace SqlPad
 			if (!IsDirty)
 				return true;
 
-			SaveDocument();
+			SafeActionWithUserError(SaveDocument);
 			return true;
 		}
 
@@ -367,7 +367,8 @@ namespace SqlPad
 
 			WorkingDocument.DocumentFileName = dialog.FileName;
 
-			SaveDocument();
+			SafeActionWithUserError(SaveDocument);
+			
 			SaveWorkingDocument();
 			WorkingDocumentCollection.Save();
 			
@@ -1392,9 +1393,26 @@ namespace SqlPad
 				return;
 			}
 
-			using (var file = File.CreateText(dialog.FileName))
+			SafeActionWithUserError(() =>
 			{
-				ExportToCsv(file);
+				using (var file = File.CreateText(dialog.FileName))
+				{
+					ExportToCsv(file);
+				}
+			});
+		}
+
+		internal static bool SafeActionWithUserError(Action action)
+		{
+			try
+			{
+				action();
+				return true;
+			}
+			catch (Exception e)
+			{
+				Messages.ShowError(e.Message);
+				return false;
 			}
 		}
 

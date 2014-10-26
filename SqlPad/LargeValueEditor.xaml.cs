@@ -7,6 +7,7 @@ using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using System.Xml;
 using ICSharpCode.AvalonEdit.Highlighting;
+using Microsoft.Win32;
 using MoonPdfLib.MuPdf;
 using SqlPad.FindReplace;
 
@@ -216,6 +217,18 @@ namespace SqlPad
 		private void SetMaximumHeight()
 		{
 			MaxHeight = WindowState == WindowState.Maximized ? Double.PositiveInfinity : SystemParameters.WorkArea.Height;
+		}
+
+		private void SaveTextAsClickHandler(object sender, RoutedEventArgs args)
+		{
+			var dialog = new SaveFileDialog { Filter = "Text Files (*.txt)|*.txt|All (*.*)|*", OverwritePrompt = true };
+			if (dialog.ShowDialog() != true)
+			{
+				return;
+			}
+
+			DocumentPage.SafeActionWithUserError(
+				() => File.WriteAllText(dialog.FileName, String.IsNullOrEmpty(TextEditor.SelectedText) ? TextEditor.Text : TextEditor.SelectedText));
 		}
 	}
 }
