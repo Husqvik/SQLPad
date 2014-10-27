@@ -23,6 +23,7 @@ namespace SqlPad.Oracle
 
 		private readonly OracleConnectionStringBuilder _oracleConnectionString;
 		private readonly Timer _timer = new Timer();
+		private bool _isInitialized;
 		private bool _isRefreshing;
 		private bool _cacheLoaded;
 		private bool _isExecuting;
@@ -66,12 +67,6 @@ namespace SqlPad.Oracle
 			_dataDictionaryMapper = new DataDictionaryMapper(this);
 
 			_userConnection = new OracleConnection(connectionString.ConnectionString);
-
-			LoadSchemaNames();
-
-			SetRefreshTimerInterval();
-			_timer.Elapsed += TimerElapsedHandler;
-			_timer.Start();
 		}
 
 		private void TimerElapsedHandler(object sender, ElapsedEventArgs elapsedEventArgs)
@@ -115,10 +110,22 @@ namespace SqlPad.Oracle
 
 		public override ConnectionStringSettings ConnectionString { get { return _connectionString; } }
 
+		public override bool IsInitialized { get { return _isInitialized; } }
+
 		public override string CurrentSchema
 		{
 			get { return _currentSchema; }
-			set { _currentSchema = value; }
+			set
+			{
+				_currentSchema = value;
+				
+				if (!_isInitialized || _userConnection.State != ConnectionState.Open)
+				{
+					return;
+				}
+				
+				SetCurrentSchema();
+			}
 		}
 
 		public override bool HasActiveTransaction { get { return _hasActiveTransaction; } }
@@ -364,6 +371,10 @@ namespace SqlPad.Oracle
 			}
 		}
 
+		public override event EventHandler Initialized;
+		
+		public override event EventHandler<DatabaseModelInitializationFailedArgs> InitializationFailed;
+		
 		public override event EventHandler RefreshStarted;
 
 		public override event EventHandler RefreshFinished;
@@ -402,6 +413,8 @@ namespace SqlPad.Oracle
 				}
 			}
 
+			Initialized = null;
+			InitializationFailed = null;
 			RefreshStarted = null;
 			RefreshFinished = null;
 			
@@ -448,30 +461,47 @@ namespace SqlPad.Oracle
 
 		private void InitializeSession()
 		{
-			_userCommand = _userConnection.CreateCommand();
-			_userCommand.BindByName = true;
+			using (var command = _userConnection.CreateCommand())
+			{
+				command.CommandText = String.Format("ALTER SESSION SET CURRENT_SCHEMA = {0}", _currentSchema);
+				command.ExecuteNonQuery();
 
+				command.CommandText = "SELECT SYS_CONTEXT('USERENV', 'SID') SID FROM SYS.DUAL";
+				_userSessionId = Convert.ToInt32(command.ExecuteScalar());
+			}
+		}
+
+		private void SetCurrentSchema()
+		{
+			InitializeSession();
+		}
+
+		private bool EnsureUserConnectionOpen()
+		{
 			if (_userConnection.State == ConnectionState.Open)
 			{
-				return;
+				return false;
 			}
 
 			_userConnection.Open();
+
 			_userConnection.ModuleName = ModuleNameSqlPadDatabaseModel;
 			_userConnection.ActionName = "User query";
 
-			_userCommand.CommandText = String.Format("ALTER SESSION SET CURRENT_SCHEMA = {0}", _currentSchema);
-			_userCommand.ExecuteNonQuery();
-
-			_userCommand.CommandText = "SELECT SYS_CONTEXT('USERENV', 'SID') SID FROM SYS.DUAL";
-			_userSessionId = Convert.ToInt32(_userCommand.ExecuteScalar());
+			return true;
 		}
 
 		private async Task<OracleDataReader> ExecuteUserStatement(StatementExecutionModel executionModel, CancellationToken cancellationToken)
 		{
 			_isExecuting = true;
-			
-			InitializeSession();
+
+			if (EnsureUserConnectionOpen())
+			{
+				InitializeSession();
+			}
+
+			_userCommand = _userConnection.CreateCommand();
+			_userCommand.BindByName = true;
 
 			if (_userTransaction == null)
 			{
@@ -814,63 +844,81 @@ namespace SqlPad.Oracle
 			Trace.WriteLine(String.Format("{0} - Cache for '{1}' {2}. Cache refresh started. ", DateTime.Now, CachedConnectionStringName, reason));
 
 			RaiseEvent(RefreshStarted);
-			var lastRefresh = DateTime.Now;
 			_isRefreshing = true;
 
-			var allObjects = _dataDictionaryMapper.BuildDataDictionary();
-
-			var userFunctions = _dataDictionaryMapper.GetUserFunctionMetadata().SelectMany(g => g);
-			var builtInFunctions = _dataDictionaryMapper.GetBuiltInFunctionMetadata().SelectMany(g => g);
-			_allFunctionMetadata = builtInFunctions.Concat(userFunctions)
-				.ToLookup(m => m.Identifier);
-
-			var nonSchemaBuiltInFunctionMetadata = new Dictionary<string, OracleFunctionMetadata>();
-
-			foreach (var functionMetadata in _allFunctionMetadata.SelectMany(g => g))
-			{
-				if (String.IsNullOrEmpty(functionMetadata.Identifier.Owner))
-				{
-					nonSchemaBuiltInFunctionMetadata.Add(functionMetadata.Identifier.Name, functionMetadata);
-					continue;
-				}
-
-				if (functionMetadata.IsPackageFunction)
-				{
-					OracleSchemaObject packageObject;
-					if (allObjects.TryGetValue(OracleObjectIdentifier.Create(functionMetadata.Identifier.Owner, functionMetadata.Identifier.Package), out packageObject))
-					{
-						var package = (OraclePackage)packageObject;
-						package.Functions.Add(functionMetadata);
-						functionMetadata.Owner = package;
-					}
-				}
-				else
-				{
-					OracleSchemaObject functionObject;
-					if (allObjects.TryGetValue(OracleObjectIdentifier.Create(functionMetadata.Identifier.Owner, functionMetadata.Identifier.Name), out functionObject))
-					{
-						var function = (OracleFunction)functionObject;
-						function.Metadata = functionMetadata;
-						functionMetadata.Owner = function;
-					}
-				}
-			}
-
-			var databaseLinks = _dataDictionaryMapper.GetDatabaseLinks();
-			var characterSets = _dataDictionaryMapper.GetCharacterSets();
-			var statisticsKeys = SafeFetchDictionary(_dataDictionaryMapper.GetStatisticsKeys, "DataDictionaryMapper.GetStatisticsKeys failed: ");
-			var systemParameters = SafeFetchDictionary(_dataDictionaryMapper.GetSystemParameters, "DataDictionaryMapper.GetSystemParameters failed: ");
-
-			_dataDictionary = new OracleDataDictionary(allObjects, databaseLinks, nonSchemaBuiltInFunctionMetadata, characterSets, statisticsKeys, systemParameters, lastRefresh);
-
-			CachedDataDictionaries[CachedConnectionStringName] = _dataDictionary;
+			var isRefreshSuccessful = RefreshSchemaObjectMetadata();
 
 			SetRefreshTaskResults();
 
-			MetadataCache.StoreDatabaseModelCache(CachedConnectionStringName, stream => _dataDictionary.Serialize(stream));
+			if (isRefreshSuccessful)
+			{
+				MetadataCache.StoreDatabaseModelCache(CachedConnectionStringName, stream => _dataDictionary.Serialize(stream));
+			}
 
 			_isRefreshing = false;
 			RaiseEvent(RefreshFinished);
+		}
+
+		private bool RefreshSchemaObjectMetadata()
+		{
+			var lastRefresh = DateTime.Now;
+
+			try
+			{
+				var allObjects = _dataDictionaryMapper.BuildDataDictionary();
+
+				var userFunctions = _dataDictionaryMapper.GetUserFunctionMetadata().SelectMany(g => g);
+				var builtInFunctions = _dataDictionaryMapper.GetBuiltInFunctionMetadata().SelectMany(g => g);
+				_allFunctionMetadata = builtInFunctions.Concat(userFunctions)
+					.ToLookup(m => m.Identifier);
+
+				var nonSchemaBuiltInFunctionMetadata = new Dictionary<string, OracleFunctionMetadata>();
+
+				foreach (var functionMetadata in _allFunctionMetadata.SelectMany(g => g))
+				{
+					if (String.IsNullOrEmpty(functionMetadata.Identifier.Owner))
+					{
+						nonSchemaBuiltInFunctionMetadata.Add(functionMetadata.Identifier.Name, functionMetadata);
+						continue;
+					}
+
+					if (functionMetadata.IsPackageFunction)
+					{
+						OracleSchemaObject packageObject;
+						if (allObjects.TryGetValue(OracleObjectIdentifier.Create(functionMetadata.Identifier.Owner, functionMetadata.Identifier.Package), out packageObject))
+						{
+							var package = (OraclePackage)packageObject;
+							package.Functions.Add(functionMetadata);
+							functionMetadata.Owner = package;
+						}
+					}
+					else
+					{
+						OracleSchemaObject functionObject;
+						if (allObjects.TryGetValue(OracleObjectIdentifier.Create(functionMetadata.Identifier.Owner, functionMetadata.Identifier.Name), out functionObject))
+						{
+							var function = (OracleFunction)functionObject;
+							function.Metadata = functionMetadata;
+							functionMetadata.Owner = function;
+						}
+					}
+				}
+
+				var databaseLinks = _dataDictionaryMapper.GetDatabaseLinks();
+				var characterSets = _dataDictionaryMapper.GetCharacterSets();
+				var statisticsKeys = SafeFetchDictionary(_dataDictionaryMapper.GetStatisticsKeys, "DataDictionaryMapper.GetStatisticsKeys failed: ");
+				var systemParameters = SafeFetchDictionary(_dataDictionaryMapper.GetSystemParameters, "DataDictionaryMapper.GetSystemParameters failed: ");
+
+				_dataDictionary = new OracleDataDictionary(allObjects, databaseLinks, nonSchemaBuiltInFunctionMetadata, characterSets, statisticsKeys, systemParameters, lastRefresh);
+
+				CachedDataDictionaries[CachedConnectionStringName] = _dataDictionary;
+				return true;
+			}
+			catch(Exception e)
+			{
+				Trace.WriteLine("Oracle data dictionary refresh failed: " + e);
+				return false;
+			}
 		}
 
 		private Dictionary<TKey, TValue> SafeFetchDictionary<TKey, TValue>(Func<IEnumerable<KeyValuePair<TKey, TValue>>> fetchKeyValuePairFunction, string traceMessage)
@@ -939,6 +987,40 @@ namespace SqlPad.Oracle
 			{
 				eventHandler(this, EventArgs.Empty);
 			}
+		}
+
+		public override void Initialize()
+		{
+			Task.Factory.StartNew(InitializeInternal);
+		}
+
+		private void InitializeInternal()
+		{
+			try
+			{
+				LoadSchemaNames();
+			}
+			catch(Exception e)
+			{
+				Trace.WriteLine("Database model initialization failed: " + e);
+
+				if (InitializationFailed != null)
+				{
+					InitializationFailed(this, new DatabaseModelInitializationFailedArgs(e));
+				}
+
+				return;
+			}
+			
+			_isInitialized = true;
+			
+			RaiseEvent(Initialized);
+
+			RefreshIfNeeded();
+
+			SetRefreshTimerInterval();
+			_timer.Elapsed += TimerElapsedHandler;
+			_timer.Start();
 		}
 
 		private void LoadSchemaNames()

@@ -63,6 +63,7 @@ namespace SqlPad
 		private readonly List<CommandBinding> _specificCommandBindings = new List<CommandBinding>();
 
 		private CompletionWindow _completionWindow;
+		private ConnectionStringSettings _connectionString;
 		private Dictionary<string, BindVariableConfiguration> _currentBindVariables = new Dictionary<string, BindVariableConfiguration>();
 		
 		public EventHandler ParseFinished = delegate { };
@@ -153,7 +154,6 @@ namespace SqlPad
 				}
 
 				_pageModel.CurrentConnection = usedConnection;
-
 				_pageModel.CurrentSchema = WorkingDocument.SchemaName;
 
 				Editor.Text = WorkingDocument.Text;
@@ -286,12 +286,16 @@ namespace SqlPad
 
 		internal void InitializeInfrastructureComponents(ConnectionStringSettings connectionString)
 		{
+			_connectionString = connectionString;
+
 			if (DatabaseModel != null)
 			{
 				DatabaseModel.Dispose();
 			}
 
-			var connectionConfiguration = ConfigurationProvider.GetConnectionCofiguration(connectionString.Name);
+			_pageModel.ResetSchemas();
+
+			var connectionConfiguration = ConfigurationProvider.GetConnectionCofiguration(_connectionString.Name);
 			_pageModel.ProductionLabelVisibility = connectionConfiguration.IsProduction ? Visibility.Visible : Visibility.Collapsed;
 			_infrastructureFactory = connectionConfiguration.InfrastructureFactory;
 			_codeCompletionProvider = _infrastructureFactory.CreateCodeCompletionProvider();
@@ -300,24 +304,22 @@ namespace SqlPad
 			_statementFormatter = _infrastructureFactory.CreateSqlFormatter(new SqlFormatterOptions());
 			_toolTipProvider = _infrastructureFactory.CreateToolTipProvider();
 			_navigationService = _infrastructureFactory.CreateNavigationService();
-			DatabaseModel = _infrastructureFactory.CreateDatabaseModel(ConfigurationProvider.ConnectionStrings[connectionString.Name]);
-			_sqlDocumentRepository = new SqlDocumentRepository(_infrastructureFactory.CreateParser(), _infrastructureFactory.CreateStatementValidator(), DatabaseModel);
 
 			_colorizingTransformer.SetParser(_infrastructureFactory.CreateParser());
 
 			InitializeSpecificCommandBindings();
 
+			DatabaseModel = _infrastructureFactory.CreateDatabaseModel(ConfigurationProvider.ConnectionStrings[_connectionString.Name]);
+			_sqlDocumentRepository = new SqlDocumentRepository(_infrastructureFactory.CreateParser(), _infrastructureFactory.CreateStatementValidator(), DatabaseModel);
+
+			DatabaseModel.Initialized += DatabaseModelInitializedHandler;
+			DatabaseModel.InitializationFailed += DatabaseModelInitializationFailedHandler;
 			DatabaseModel.RefreshStarted += DatabaseModelRefreshStartedHandler;
 			DatabaseModel.RefreshFinished += DatabaseModelRefreshFinishedHandler;
 
-			if (DatabaseModel.IsModelFresh)
-			{
-				ReParse();
-			}
-			else
-			{
-				DatabaseModel.RefreshIfNeeded();
-			}
+			DatabaseModel.Initialize();
+
+			ReParse();
 		}
 
 		private ScrollViewer GetResultGridScrollViewer()
@@ -419,6 +421,34 @@ namespace SqlPad
 		private void SelectionChangedHandler(object sender, EventArgs eventArgs)
 		{
 			_pageModel.SelectionLength = Editor.SelectionLength == 0 ? null : (int?)Editor.SelectionLength;
+		}
+
+		private void DatabaseModelInitializedHandler(object sender, EventArgs args)
+		{
+			_pageModel.ConnectProgressBarVisibility = Visibility.Collapsed;
+			Dispatcher.Invoke(
+				() =>
+				{
+					_pageModel.SetSchemas(DatabaseModel.Schemas);
+					_pageModel.CurrentSchema = DatabaseModel.CurrentSchema;
+				});
+		}
+
+		private void DatabaseModelInitializationFailedHandler(object sender, DatabaseModelInitializationFailedArgs args)
+		{
+			_pageModel.ConnectProgressBarVisibility = Visibility.Collapsed;
+			_pageModel.ReconnectButtonVisibility = Visibility.Visible;
+		}
+
+		private void ButtonReconnectClickHandler(object sender, RoutedEventArgs e)
+		{
+			_pageModel.ReconnectButtonVisibility = Visibility.Collapsed;
+			_pageModel.ConnectProgressBarVisibility = Visibility.Visible;
+
+			if (!DatabaseModel.IsInitialized)
+			{
+				DatabaseModel.Initialize();
+			}
 		}
 
 		private void DatabaseModelRefreshStartedHandler(object sender, EventArgs args)
@@ -938,7 +968,7 @@ namespace SqlPad
 
 		private ICollection<BindVariableModel> BuildBindVariableModels(IEnumerable<BindVariableConfiguration> bindVariables)
 		{
-			var configuration = WorkingDocumentCollection.GetProviderConfiguration(DatabaseModel.ConnectionString.ProviderName);
+			var configuration = WorkingDocumentCollection.GetProviderConfiguration(_connectionString.ProviderName);
 
 			var models = new List<BindVariableModel>();
 			foreach (var bindVariable in bindVariables)
@@ -1482,6 +1512,8 @@ namespace SqlPad
 				DatabaseModel.CommitTransaction();
 				_pageModel.TransactionControlVisibity = Visibility.Collapsed;
 			});
+
+			Editor.Focus();
 		}
 
 		private void ButtonRollbackTransactionClickHandler(object sender, RoutedEventArgs e)
@@ -1491,6 +1523,8 @@ namespace SqlPad
 				DatabaseModel.RollbackTransaction();
 				_pageModel.TransactionControlVisibity = Visibility.Collapsed;
 			});
+
+			Editor.Focus();
 		}
 	}
 

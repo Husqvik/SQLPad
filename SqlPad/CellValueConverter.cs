@@ -117,8 +117,9 @@ namespace SqlPad
 			}
 
 			var populatedRatio = Math.Round(((decimal)storageBytes.Value - nonPopulatedBytes.Value) / storageBytes.Value * 100, 2);
-			var populationStatusLabel = populationStatus == "STARTED" ? " - ongoing" : null;
-			var populatedRatioLabel = populatedRatio == 100 ? null : String.Format("{0} %", populatedRatio);
+			var isPopulating = populationStatus == "STARTED";
+			var populationStatusLabel = isPopulating ? " - ongoing" : null;
+			var populatedRatioLabel = populatedRatio < 100 || isPopulating ? String.Format("{0} %", populatedRatio) : null;
 			var populationStatusDetail = populatedRatio == 100 && populationStatusLabel == null
 				? null
 				: String.Format("({0}{1})", populatedRatioLabel, populationStatusLabel);

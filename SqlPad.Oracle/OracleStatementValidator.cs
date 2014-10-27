@@ -18,7 +18,6 @@ namespace SqlPad.Oracle
 			if (semanticModel == null)
 				throw new ArgumentNullException("semanticModel");
 
-			var oracleDatabaseModel = (OracleDatabaseModelBase)semanticModel.DatabaseModel;
 			var oracleSemanticModel = (OracleStatementSemanticModel)semanticModel;
 
 			var validationModel = new OracleValidationModel { SemanticModel = oracleSemanticModel };
@@ -43,7 +42,8 @@ namespace SqlPad.Oracle
 
 				if (objectReference.OwnerNode != null)
 				{
-					validationModel.ObjectNodeValidity[objectReference.OwnerNode] = new NodeValidationData { IsRecognized = oracleDatabaseModel.ExistsSchema(objectReference.OwnerNode.Token.Value) };
+					var isRecognized = !semanticModel.IsSimpleModel && ((OracleDatabaseModelBase)semanticModel.DatabaseModel).ExistsSchema(objectReference.OwnerNode.Token.Value);
+					validationModel.ObjectNodeValidity[objectReference.OwnerNode] = new NodeValidationData { IsRecognized = isRecognized };
 				}
 
 				if (objectReference.DatabaseLinkNode == null)

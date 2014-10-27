@@ -27,6 +27,8 @@ namespace SqlPad.Oracle
 
 		public abstract ConnectionStringSettings ConnectionString { get; }
 		
+		public abstract bool IsInitialized { get; }
+		
 		public abstract string CurrentSchema { get; set; }
 		
 		public abstract ICollection<string> Schemas { get; }
@@ -35,11 +37,17 @@ namespace SqlPad.Oracle
 
 		public virtual void Dispose() { }
 
+		public abstract void Initialize();
+
 		public abstract bool IsModelFresh { get; }
 
 		public abstract void RefreshIfNeeded();
 
 		public abstract Task Refresh(bool force = false);
+
+		public abstract event EventHandler Initialized;
+
+		public abstract event EventHandler<DatabaseModelInitializationFailedArgs> InitializationFailed;
 
 		public abstract event EventHandler RefreshStarted;
 

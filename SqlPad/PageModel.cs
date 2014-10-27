@@ -29,6 +29,9 @@ namespace SqlPad
 		private Visibility _bindVariableListVisibility = Visibility.Collapsed;
 		private Visibility _gridRowInfoVisibity = Visibility.Collapsed;
 		private Visibility _transactionControlVisibity = Visibility.Collapsed;
+		private Visibility _reconnectButtonVisibility = Visibility.Collapsed;
+		private Visibility _schemaComboBoxVisibility = Visibility.Collapsed;
+		private Visibility _connectProgressBarVisibility = Visibility.Visible;
 		private string _textExecutionPlan;
 		private string _dateTimeFormat;
 		private bool _showAllSessionExecutionStatistics;
@@ -192,6 +195,18 @@ namespace SqlPad
 			private set { UpdateValueAndRaisePropertyChanged(ref _bindVariableListVisibility, value); }
 		}
 
+		public Visibility ReconnectButtonVisibility
+		{
+			get { return _reconnectButtonVisibility; }
+			set { UpdateValueAndRaisePropertyChanged(ref _reconnectButtonVisibility, value); }
+		}
+
+		public Visibility ConnectProgressBarVisibility
+		{
+			get { return _connectProgressBarVisibility; }
+			set { UpdateValueAndRaisePropertyChanged(ref _connectProgressBarVisibility, value); }
+		}
+
 		public ICollection<BindVariableModel> BindVariables
 		{
 			get { return _bindVariables; }
@@ -238,58 +253,36 @@ namespace SqlPad
 			get { return _currentConnection; }
 			set
 			{
-				try
-				{
-					_documentPage.InitializeInfrastructureComponents(value);
-				}
-				catch(Exception e)
-				{
-					Messages.ShowError(e.Message);
+				ReconnectButtonVisibility = Visibility.Collapsed;
+				ConnectProgressBarVisibility = Visibility.Visible;
 
-					if (_currentConnection == null)
-						return;
-
-					var originalValue = _currentConnection;
-					_currentConnection = value;
-					RevertConnection(originalValue);
-					_documentPage.ReParse();
-
-					return;
-				}
-
+				_documentPage.InitializeInfrastructureComponents(value);
 				_currentConnection = value;
-
-				SetSchemas();
-
-				CurrentSchema = _documentPage.DatabaseModel.CurrentSchema;
 			}
 		}
 
-		private void RevertConnection(ConnectionStringSettings originalValue)
+		public Visibility SchemaComboBoxVisibility
 		{
-			try
-			{
-				_documentPage.InitializeInfrastructureComponents(originalValue);
-				_documentPage.DatabaseModel.CurrentSchema = _currentSchema;
-
-				Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-				{
-					_currentConnection = originalValue;
-					RaisePropertyChanged("CurrentConnection");
-				}));
-			}
-			catch (Exception e)
-			{
-				Trace.WriteLine("CurrentConnection setter failed: " + e);
-			}
+			get { return _schemaComboBoxVisibility; }
+			set { UpdateValueAndRaisePropertyChanged(ref _schemaComboBoxVisibility, value); }
 		}
 
-		private void SetSchemas()
+		public void ResetSchemas()
 		{
-			var schemas = _documentPage.DatabaseModel.Schemas.OrderBy(s => s);
 			_schemas.Clear();
-			_schemas.AddRange(schemas);
 			_currentSchema = null;
+			SchemaComboBoxVisibility = Visibility.Collapsed;
+		}
+
+		public void SetSchemas(IEnumerable<string> schemas)
+		{
+			ResetSchemas();
+			_schemas.AddRange(schemas.OrderBy(s => s));
+
+			if (_schemas.Count > 0)
+			{
+				SchemaComboBoxVisibility = Visibility.Visible;
+			}
 		}
 	}
 

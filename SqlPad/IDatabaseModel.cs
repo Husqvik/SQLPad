@@ -12,6 +12,8 @@ namespace SqlPad
 
 		string CurrentSchema { get; set; }
 
+		bool IsInitialized { get; }
+
 		ICollection<string> Schemas { get; }
 
 		bool CanFetch { get; }
@@ -22,7 +24,13 @@ namespace SqlPad
 
 		void RefreshIfNeeded();
 
+		void Initialize();
+
 		Task Refresh(bool force);
+
+		event EventHandler Initialized;
+
+		event EventHandler<DatabaseModelInitializationFailedArgs> InitializationFailed;
 
 		event EventHandler RefreshStarted;
 
@@ -65,5 +73,15 @@ namespace SqlPad
 	public interface IColumnValueConverter
 	{
 		object ConvertToCellValue(object rawValue);
+	}
+
+	public class DatabaseModelInitializationFailedArgs : EventArgs
+	{
+		public Exception Exception { get; private set; }
+
+		public DatabaseModelInitializationFailedArgs(Exception exception)
+		{
+			Exception = exception;
+		}
 	}
 }

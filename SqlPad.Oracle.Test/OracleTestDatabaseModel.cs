@@ -742,6 +742,8 @@ Note
 
 		public override string CurrentSchema { get; set; }
 		
+		public override bool IsInitialized { get { return true; } }
+		
 		public override ICollection<string> Schemas { get { return SchemasInternal; } }
 		
 		public override ICollection<string> AllSchemas { get { return AllSchemasInternal; } }
@@ -797,7 +799,15 @@ Note
 			return taskCompletionSource.Task;
 		}
 
+		public override void Initialize()
+		{
+		}
+
 		public override bool IsModelFresh { get { return true; } }
+
+		public override event EventHandler Initialized = delegate { };
+
+		public override event EventHandler<DatabaseModelInitializationFailedArgs> InitializationFailed;
 
 		public override event EventHandler RefreshStarted = delegate { };
 

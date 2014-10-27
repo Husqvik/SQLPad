@@ -9,7 +9,7 @@
              xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              Loaded="PageLoadedHandler"
              mc:Ignorable="d"
-             d:DesignHeight="320" d:DesignWidth="440">
+             d:DesignHeight="320" d:DesignWidth="480">
 	<UserControl.Resources>
 		<sqlPad:SelectedIndexConverter x:Key="SelectedIndexConverter" />
 		<Style x:Key="CellTextBoxStyleReadOnly">
@@ -38,10 +38,12 @@
 				<ColumnDefinition Width="Auto" />
 			</Grid.ColumnDefinitions>
 			<StackPanel Visibility="{Binding TransactionControlVisibity}" HorizontalAlignment="Left" Orientation="Horizontal" sqlPad:MarginSetter.Margin="6,1,2,3">
-				<Button Content="Commit" Margin="0,2,4,2" Padding="6,0,6,0" Click="ButtonCommitTransactionClickHandler" />
-				<Button Content="Rollback" Margin="0,2,4,2" Padding="6,0,6,0" Click="ButtonRollbackTransactionClickHandler" />
+				<Button Content="Commit" Padding="6,0,6,0" Click="ButtonCommitTransactionClickHandler" />
+				<Button Content="Rollback" Padding="6,0,6,0" Click="ButtonRollbackTransactionClickHandler" />
 			</StackPanel>
 			<StackPanel HorizontalAlignment="Right" Orientation="Horizontal" sqlPad:MarginSetter.Margin="6,1,2,3" Grid.Column="2">
+				<Button Content="Reconnect" Padding="6,0,6,0" Visibility="{Binding ReconnectButtonVisibility}" Click="ButtonReconnectClickHandler" />
+				<ProgressBar Width="60" IsIndeterminate="True" Visibility="{Binding ConnectProgressBarVisibility}" />
 				<TextBlock Text="Connection: " VerticalAlignment="Center" />
 				<ComboBox x:Name="ComboBoxConnection" SelectedItem="{Binding Path=CurrentConnection}">
 					<ComboBox.ItemTemplate>
@@ -50,8 +52,8 @@
 						</DataTemplate>
 					</ComboBox.ItemTemplate>
 				</ComboBox>
-				<TextBlock Text="Schema: " VerticalAlignment="Center" />
-				<ComboBox x:Name="ComboBoxSchema" ItemsSource="{Binding Path=Schemas}" SelectedItem="{Binding Path=CurrentSchema}">
+				<TextBlock Text="Schema: " VerticalAlignment="Center" Visibility="{Binding SchemaComboBoxVisibility}" />
+				<ComboBox x:Name="ComboBoxSchema" ItemsSource="{Binding Path=Schemas}" SelectedItem="{Binding Path=CurrentSchema}" Visibility="{Binding SchemaComboBoxVisibility}" >
 					<ComboBox.ItemTemplate>
 						<DataTemplate>
 							<TextBlock Text="{Binding}" />
