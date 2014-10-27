@@ -179,13 +179,14 @@ namespace SqlPad.Oracle
 			{
 				foreach (var link in DatabaseLinks.Values)
 				{
-					var instanceQualifierIndex = link.FullyQualifiedName.Name.IndexOf("@", StringComparison.InvariantCulture);
+					var databaseLinkNormalizedName = link.FullyQualifiedName.NormalizedName;
+					var instanceQualifierIndex = databaseLinkNormalizedName.IndexOf("@", StringComparison.InvariantCulture);
 					if (instanceQualifierIndex == -1)
 					{
 						continue;
 					}
 
-					var shortName = link.FullyQualifiedName.NormalizedName.Substring(1, instanceQualifierIndex).ToQuotedIdentifier();
+					var shortName = databaseLinkNormalizedName.Substring(1, instanceQualifierIndex - 1).ToQuotedIdentifier();
 					var shortIdentifier = OracleObjectIdentifier.Create(link.FullyQualifiedName.Owner, shortName);
 					if (identifiers.Any(i => i == shortIdentifier))
 					{

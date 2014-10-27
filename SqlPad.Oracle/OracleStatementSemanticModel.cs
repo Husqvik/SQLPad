@@ -663,9 +663,10 @@ namespace SqlPad.Oracle
 						hasInstanceDefinition = true;
 					}
 
+					databaseLinkBuilder.Append(terminal.Token.Value);
+
 					if (!hasInstanceDefinition)
 					{
-						databaseLinkBuilder.Append(terminal.Token.Value);
 						linkLengthUntilInstanceQualifier = databaseLinkBuilder.Length;
 					}
 				}
