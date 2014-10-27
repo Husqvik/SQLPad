@@ -373,6 +373,42 @@ FROM
 		}
 
 		[Test(Description = @"")]
+		public void TestDatabaseLinkWithoutDomain()
+		{
+			const string query1 = @"SELECT * FROM SELECTION@TESTHOST";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.QueryBlocks.ShouldNotBe(null);
+			semanticModel.QueryBlocks.Count.ShouldBe(1);
+
+			var objectReferences = semanticModel.QueryBlocks.Single().ObjectReferences.ToArray();
+			objectReferences.Length.ShouldBe(1);
+			var selectionTable = objectReferences[0];
+			selectionTable.DatabaseLinkNode.ShouldNotBe(null);
+			selectionTable.DatabaseLink.ShouldNotBe(null);
+			selectionTable.DatabaseLink.FullyQualifiedName.Name.ShouldBe("TESTHOST.SQLPAD.HUSQVIK.COM@HQINSTANCE");
+		}
+
+		[Test(Description = @"")]
+		public void TestDatabaseLinkWithNullDatabaseDomainSystemParameter()
+		{
+			const string query1 = @"SELECT * FROM SELECTION@TESTHOST";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var databaseModel = new OracleTestDatabaseModel();
+			databaseModel.SystemParameters[OracleDatabaseModelBase.SystemParameterNameDatabaseDomain] = null;
+
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, databaseModel);
+			semanticModel.StatementText.ShouldBe(query1);
+		}
+
+		[Test(Description = @"")]
 		public void TestModelBuildWithMissingAliasedColumnExpression()
 		{
 			const string query1 = @"SELECT SQL_CHILD_NUMBER, , PREV_CHILD_NUMBER FROM V$SESSION";

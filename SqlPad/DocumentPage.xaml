@@ -31,25 +31,35 @@
 			<RowDefinition Height="24" />
 		</Grid.RowDefinitions>
 
-		<StackPanel HorizontalAlignment="Right" Orientation="Horizontal"
-		            sqlPad:MarginSetter.Margin="6,1,2,3">
-			<TextBlock Text="Connection: " VerticalAlignment="Center" />
-			<ComboBox x:Name="ComboBoxConnection" SelectedItem="{Binding Path=CurrentConnection}">
-				<ComboBox.ItemTemplate>
-					<DataTemplate>
-						<TextBlock Text="{Binding Path=Name}" />
-					</DataTemplate>
-				</ComboBox.ItemTemplate>
-			</ComboBox>
-			<TextBlock Text="Schema: " VerticalAlignment="Center" />
-			<ComboBox x:Name="ComboBoxSchema" ItemsSource="{Binding Path=Schemas}" SelectedItem="{Binding Path=CurrentSchema}">
-				<ComboBox.ItemTemplate>
-					<DataTemplate>
-						<TextBlock Text="{Binding}" />
-					</DataTemplate>
-				</ComboBox.ItemTemplate>
-			</ComboBox>
-		</StackPanel>
+		<Grid>
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="Auto" />
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="Auto" />
+			</Grid.ColumnDefinitions>
+			<StackPanel Visibility="{Binding TransactionControlVisibity}" HorizontalAlignment="Left" Orientation="Horizontal" sqlPad:MarginSetter.Margin="6,1,2,3">
+				<Button Content="Commit" Margin="0,2,4,2" Padding="6,0,6,0" Click="ButtonCommitTransactionClickHandler" />
+				<Button Content="Rollback" Margin="0,2,4,2" Padding="6,0,6,0" Click="ButtonRollbackTransactionClickHandler" />
+			</StackPanel>
+			<StackPanel HorizontalAlignment="Right" Orientation="Horizontal" sqlPad:MarginSetter.Margin="6,1,2,3" Grid.Column="2">
+				<TextBlock Text="Connection: " VerticalAlignment="Center" />
+				<ComboBox x:Name="ComboBoxConnection" SelectedItem="{Binding Path=CurrentConnection}">
+					<ComboBox.ItemTemplate>
+						<DataTemplate>
+							<TextBlock Text="{Binding Path=Name}" />
+						</DataTemplate>
+					</ComboBox.ItemTemplate>
+				</ComboBox>
+				<TextBlock Text="Schema: " VerticalAlignment="Center" />
+				<ComboBox x:Name="ComboBoxSchema" ItemsSource="{Binding Path=Schemas}" SelectedItem="{Binding Path=CurrentSchema}">
+					<ComboBox.ItemTemplate>
+						<DataTemplate>
+							<TextBlock Text="{Binding}" />
+						</DataTemplate>
+					</ComboBox.ItemTemplate>
+				</ComboBox>
+			</StackPanel>
+		</Grid>
 
 		<DockPanel Grid.Row="1" LastChildFill="True">
 			<TextBlock Text="PRODUCTION" TextAlignment="Center" Foreground="White" Background="DarkRed" FontWeight="Bold" FontSize="14" Visibility="{Binding Path=ProductionLabelVisibility}" Height="21" DockPanel.Dock="Left">

@@ -28,6 +28,7 @@ namespace SqlPad
 		private ICollection<BindVariableModel> _bindVariables;
 		private Visibility _bindVariableListVisibility = Visibility.Collapsed;
 		private Visibility _gridRowInfoVisibity = Visibility.Collapsed;
+		private Visibility _transactionControlVisibity = Visibility.Collapsed;
 		private string _textExecutionPlan;
 		private string _dateTimeFormat;
 		private bool _showAllSessionExecutionStatistics;
@@ -61,6 +62,12 @@ namespace SqlPad
 					RaisePropertyChanged("StatementExecutionInfoSeparatorVisibility");
 				}
 			}
+		}
+
+		public Visibility TransactionControlVisibity
+		{
+			get { return _transactionControlVisibity; }
+			set { UpdateValueAndRaisePropertyChanged(ref _transactionControlVisibity, value); }
 		}
 
 		public string DocumentHeader

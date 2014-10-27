@@ -80,13 +80,14 @@ namespace SqlPad.Oracle.Test
 				new OracleDatabaseLink
 				{
 					Created = DateTime.Now,
-					FullyQualifiedName = OracleObjectIdentifier.Create(SchemaPublic, "SQLPAD.HUSQVIK.COM@HQINSTANCE"),
+					FullyQualifiedName = OracleObjectIdentifier.Create(SchemaPublic, "TESTHOST.SQLPAD.HUSQVIK.COM@HQINSTANCE"),
 					Host = "sqlpad.husqvik.com:1521/servicename",
 					UserName = "HUSQVIK"
 				}
 			};
 
 		private readonly IDictionary<OracleObjectIdentifier, OracleDatabaseLink> _databaseLinks = DatabaseLinksInternal.ToDictionary(l => l.FullyQualifiedName, l => l);
+		private readonly IDictionary<string, string> _systemParameters = new Dictionary<string, string>(SystemParametersInternal);
 		
 		private int _generatedRowCount;
 
@@ -538,7 +539,8 @@ namespace SqlPad.Oracle.Test
 					          { "\"INVOICE_ID\"", new OracleColumn { Name = "\"INVOICE_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 } },
 							  { "\"AMOUNT\"", new OracleColumn { Name = "\"AMOUNT\"", Type = "NUMBER", Precision = 20, Scale = 2 } },
 							  { "\"CORRELATION_VALUE\"", new OracleColumn { Name = "\"CORRELATION_VALUE\"", Type = "NUMBER", Scale = 5 } },
-							  { "\"CaseSensitiveColumn\"", new OracleColumn { Name = "\"CaseSensitiveColumn\"", Type = "NVARCHAR2", CharacterSize = 30 } }
+							  { "\"CaseSensitiveColumn\"", new OracleColumn { Name = "\"CaseSensitiveColumn\"", Type = "NVARCHAR2", CharacterSize = 30 } },
+							  { "\"DASH-COLUMN\"", new OracleColumn { Name = "\"DASH-COLUMN\"", Type = "RAW", Size = 8 } }
 				          }
 			},
 			new OracleTable
@@ -754,7 +756,7 @@ Note
 
 		public override IDictionary<int, string> StatisticsKeys { get { return StatisticsKeysInternal; } }
 
-		public override IDictionary<string, string> SystemParameters { get { return SystemParametersInternal; } }
+		public override IDictionary<string, string> SystemParameters { get { return _systemParameters; } }
 
 		public override int VersionMajor { get { return 12; } }
 
@@ -856,6 +858,12 @@ Note
 		{
 			return ColumnHeaders;
 		}
+
+		public override bool HasActiveTransaction { get { return false; } }
+
+		public override void CommitTransaction() { }
+
+		public override void RollbackTransaction() { }
 
 		public override Task<StatementExecutionModel> ExplainPlanAsync(string statement, CancellationToken cancellationToken)
 		{

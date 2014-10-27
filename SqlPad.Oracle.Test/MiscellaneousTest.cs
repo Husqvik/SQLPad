@@ -15,6 +15,14 @@ namespace SqlPad.Oracle.Test
 				var simpleIdentifier = quotedIdentifier.ToSimpleIdentifier();
 				simpleIdentifier.ShouldBe(quotedIdentifier);
 			}
+
+			[Test(Description = @"")]
+			public void TestQuotedToSimpleIdentifierContainingDash()
+			{
+				const string quotedIdentifier = "\"DASH-COLUMN\"";
+				var simpleIdentifier = quotedIdentifier.ToSimpleIdentifier();
+				simpleIdentifier.ShouldBe(quotedIdentifier);
+			}
 		}
 	}
 }

@@ -7,7 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Transactions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -496,8 +495,9 @@ namespace SqlPad
 
 		private async void FetchNextRows(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
 		{
-			var nextRowBatch = DatabaseModel.FetchRecords(RowBatchSize);
-			var exception = await SafeActionAsync(() => Task.Factory.StartNew(() => Dispatcher.Invoke(() => _pageModel.ResultRowItems.AddRange(nextRowBatch))));
+			ICollection<object[]> nextRowBatch = null;
+			var exception = await SafeActionAsync(() => Task.Factory.StartNew(() => nextRowBatch = DatabaseModel.FetchRecords(RowBatchSize).ToArray()));
+			_pageModel.ResultRowItems.AddRange(nextRowBatch);
 
 			TextMoreRowsExist.Visibility = DatabaseModel.CanFetch ? Visibility.Visible : Visibility.Collapsed;
 
@@ -618,6 +618,8 @@ namespace SqlPad
 			using (_cancellationTokenSource = new CancellationTokenSource())
 			{
 				var actionResult = await SafeTimedActionAsync(() => innerTask = DatabaseModel.ExecuteStatementAsync(executionModel, _cancellationTokenSource.Token));
+
+				_pageModel.TransactionControlVisibity = DatabaseModel.HasActiveTransaction ? Visibility.Visible : Visibility.Collapsed;
 
 				if (!actionResult.IsSuccessful)
 				{
@@ -1455,18 +1457,15 @@ namespace SqlPad
 
 			using (var cancellationTokenSource = new CancellationTokenSource())
 			{
-				using (new TransactionScope())
+				var statementText = BuildStatementExecutionModel().StatementText;
+				try
 				{
-					var statementText = BuildStatementExecutionModel().StatementText;
-					try
-					{
-						var executionModel = await DatabaseModel.ExplainPlanAsync(statementText, cancellationTokenSource.Token);
-						await ExecuteDatabaseCommand(executionModel);
-					}
-					catch (Exception e)
-					{
-						Messages.ShowError(e.Message);
-					}
+					var executionModel = await DatabaseModel.ExplainPlanAsync(statementText, cancellationTokenSource.Token);
+					await ExecuteDatabaseCommand(executionModel);
+				}
+				catch (Exception e)
+				{
+					Messages.ShowError(e.Message);
 				}
 			}
 		}
@@ -1474,6 +1473,24 @@ namespace SqlPad
 		private void CreateNewPage(object sender, ExecutedRoutedEventArgs e)
 		{
 			MainWindow.CreateNewDocumentPage();
+		}
+
+		private void ButtonCommitTransactionClickHandler(object sender, RoutedEventArgs e)
+		{
+			SafeActionWithUserError(() =>
+			{
+				DatabaseModel.CommitTransaction();
+				_pageModel.TransactionControlVisibity = Visibility.Collapsed;
+			});
+		}
+
+		private void ButtonRollbackTransactionClickHandler(object sender, RoutedEventArgs e)
+		{
+			SafeActionWithUserError(() =>
+			{
+				DatabaseModel.RollbackTransaction();
+				_pageModel.TransactionControlVisibity = Visibility.Collapsed;
+			});
 		}
 	}
 

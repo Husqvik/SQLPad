@@ -128,10 +128,9 @@ namespace SqlPad.Oracle
 				.ToDictionary(l => l.FullyQualifiedName, l => l);
 		}
 
-		public IDictionary<string, string> GetSystemParameters()
+		public IEnumerable<KeyValuePair<string, string>> GetSystemParameters()
 		{
-			return _databaseModel.ExecuteReader(DatabaseCommands.GetSystemParameters, MapParameter)
-				.ToDictionary(l => l.Key, l => l.Value);
+			return _databaseModel.ExecuteReader(DatabaseCommands.GetSystemParameters, MapParameter);
 		}
 
 		private ILookup<OracleFunctionIdentifier, OracleFunctionMetadata> GetFunctionMetadataCollection(string selectFunctionMetadataCommandText, string selectParameterMetadataCommandText, bool isBuiltIn)

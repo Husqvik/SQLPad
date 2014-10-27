@@ -682,7 +682,7 @@ FROM
 			const string query1 = @"SELECT IL."""" FROM INVOICELINES IL";
 
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 11).ToList();
-			items.Count.ShouldBe(6);
+			items.Count.ShouldBe(7);
 			items[0].Text.ShouldBe("\"CaseSensitiveColumn\"");
 		}
 
@@ -707,9 +707,9 @@ FROM
 			items[0].Name.ShouldBe("HQ_PDB_LOOPBACK");
 			items[0].CaretOffset.ShouldBe(0);
 			items[0].Text.ShouldBe("HQ_PDB_LOOPBACK");
-			items[1].Name.ShouldBe("SQLPAD.HUSQVIK.COM@HQINSTANCE");
+			items[1].Name.ShouldBe("TESTHOST.SQLPAD.HUSQVIK.COM@HQINSTANCE");
 			items[1].CaretOffset.ShouldBe(0);
-			items[1].Text.ShouldBe("SQLPAD.HUSQVIK.COM@HQINSTANCE");
+			items[1].Text.ShouldBe("TESTHOST.SQLPAD.HUSQVIK.COM@HQINSTANCE");
 		}
 
 		[Test(Description = @"")]

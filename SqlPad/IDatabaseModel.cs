@@ -41,6 +41,12 @@ namespace SqlPad
 		IEnumerable<object[]> FetchRecords(int rowCount);
 
 		ICollection<ColumnHeader> GetColumnHeaders();
+
+		bool HasActiveTransaction { get; }
+
+		void CommitTransaction();
+
+		void RollbackTransaction();
 	}
 
 	public class ColumnHeader

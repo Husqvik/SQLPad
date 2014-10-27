@@ -17,7 +17,31 @@ namespace SqlPad.Oracle
 
 			var isNotKeyword = !identifier.CollidesWithKeyword();
 
-			return isNotKeyword && identifier.IsQuotedWithoutCheck() && identifier == identifier.ToUpperInvariant() && Char.IsLetter(identifier[1]) ? identifier.Replace(QuoteCharacter, null) : identifier;
+			return isNotKeyword && identifier.IsQuotedWithoutCheck() && AllCharactersSupportSimpleIdentifier(identifier) ? identifier.Replace(QuoteCharacter, null) : identifier;
+		}
+
+		private static bool AllCharactersSupportSimpleIdentifier(string identifier)
+		{
+			if (!Char.IsLetter(identifier[1]))
+			{
+				return false;
+			}
+
+			for (var i = 2; i < identifier.Length - 1; i++)
+			{
+				var character = identifier[i];
+				if (!Char.IsLetterOrDigit(character) && character != '_' && character != '$' && character != '#')
+				{
+					return false;
+				}
+
+				if (Char.IsLower(character))
+				{
+					return false;
+				}
+			}
+
+			return true;
 		}
 
 		public static string ToPlainString(this string oracleString)

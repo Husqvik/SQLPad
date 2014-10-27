@@ -19,6 +19,7 @@ namespace SqlPad.Oracle
 	{
 		internal const int OracleErrorCodeUserInvokedCancellation = 1013;
 		internal const int InitialLongFetchSize = 131072;
+		private const string ModuleNameSqlPadDatabaseModel = "SQLPad database model";
 
 		private readonly OracleConnectionStringBuilder _oracleConnectionString;
 		private readonly Timer _timer = new Timer();
@@ -38,6 +39,7 @@ namespace SqlPad.Oracle
 		private OracleDataReader _userDataReader;
 		private OracleCommand _userCommand;
 		private OracleTransaction _userTransaction;
+		private bool _hasActiveTransaction;
 		private int _userSessionId;
 		private SessionExecutionStatisticsUpdater _executionStatisticsUpdater;
 		private string _oracleVersion;
@@ -117,6 +119,38 @@ namespace SqlPad.Oracle
 		{
 			get { return _currentSchema; }
 			set { _currentSchema = value; }
+		}
+
+		public override bool HasActiveTransaction { get { return _hasActiveTransaction; } }
+
+		public override void CommitTransaction()
+		{
+			ExecuteUserTransactionAction(t => t.Commit());
+		}
+
+		public override void RollbackTransaction()
+		{
+			ExecuteUserTransactionAction(t => t.Rollback());
+		}
+
+		private void ExecuteUserTransactionAction(Action<OracleTransaction> action)
+		{
+			if (!HasActiveTransaction)
+			{
+				return;
+			}
+
+			action(_userTransaction);
+
+			_hasActiveTransaction = false;
+
+			DisposeUserTransaction();
+		}
+
+		private void DisposeUserTransaction()
+		{
+			_userTransaction.Dispose();
+			_userTransaction = null;
 		}
 
 		public override ICollection<string> Schemas { get { return _schemas; } }
@@ -346,6 +380,8 @@ namespace SqlPad.Oracle
 			_timer.Stop();
 			_timer.Dispose();
 
+			RollbackTransaction();
+
 			DisposeCommandAndReaderAndCloseConnection();
 
 			if (_backgroundTask != null)
@@ -374,7 +410,7 @@ namespace SqlPad.Oracle
 			DatabaseModels.Remove(_connectionString.ConnectionString);
 		}
 
-		private void DisposeCommandAndReaderAndCloseConnection()
+		private void DisposeCommandAndReader()
 		{
 			if (_userDataReader != null)
 			{
@@ -385,6 +421,11 @@ namespace SqlPad.Oracle
 			{
 				_userCommand.Dispose();
 			}
+		}
+
+		private void DisposeCommandAndReaderAndCloseConnection()
+		{
+			DisposeCommandAndReader();
 
 			if (_userConnection.State != ConnectionState.Closed)
 			{
@@ -405,58 +446,79 @@ namespace SqlPad.Oracle
 			return clone;
 		}
 
-		private async Task<OracleDataReader> ExecuteUserStatement(StatementExecutionModel executionModel, CancellationToken cancellationToken, bool closeConnection = false)
+		private void InitializeSession()
 		{
 			_userCommand = _userConnection.CreateCommand();
 			_userCommand.BindByName = true;
-			_userCommand.CommandText = String.Format("ALTER SESSION SET CURRENT_SCHEMA = {0}", _currentSchema);
 
-			try
+			if (_userConnection.State == ConnectionState.Open)
 			{
-				_isExecuting = true;
-				_userConnection.Open();
-
-				_userConnection.ModuleName = "SQLPad database model";
-				_userConnection.ActionName = "User query";
-
-				_userCommand.ExecuteNonQuery();
-
-				/*if (executionModel.GatherExecutionStatistics)
-				{
-					_userCommand.CommandText = "ALTER SESSION SET STATISTICS_LEVEL = ALL";
-					_userCommand.ExecuteNonQuery();
-				}*/
-
-				_userCommand.CommandText = "SELECT SYS_CONTEXT('USERENV', 'SID') SID FROM SYS.DUAL";
-				_userSessionId = Convert.ToInt32(_userCommand.ExecuteScalar());
-
-				_userCommand.CommandText = executionModel.StatementText;
-				_userCommand.InitialLONGFetchSize = InitialLongFetchSize;
-
-				foreach (var variable in executionModel.BindVariables)
-				{
-					_userCommand.AddSimpleParameter(variable.Name, variable.Value, variable.DataType);
-				}
-
-				_executionStatisticsUpdater = new SessionExecutionStatisticsUpdater(StatisticsKeys, _userSessionId);
-
-				if (executionModel.GatherExecutionStatistics)
-				{
-					await UpdateModelAsync(cancellationToken, true, _executionStatisticsUpdater.SessionBeginExecutionStatisticsUpdater);
-				}
-
-				var reader = await _userCommand.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken);
-
-				UpdateBindVariables(executionModel);
-
-				return reader;
+				return;
 			}
-			finally
+
+			_userConnection.Open();
+			_userConnection.ModuleName = ModuleNameSqlPadDatabaseModel;
+			_userConnection.ActionName = "User query";
+
+			_userCommand.CommandText = String.Format("ALTER SESSION SET CURRENT_SCHEMA = {0}", _currentSchema);
+			_userCommand.ExecuteNonQuery();
+
+			_userCommand.CommandText = "SELECT SYS_CONTEXT('USERENV', 'SID') SID FROM SYS.DUAL";
+			_userSessionId = Convert.ToInt32(_userCommand.ExecuteScalar());
+		}
+
+		private async Task<OracleDataReader> ExecuteUserStatement(StatementExecutionModel executionModel, CancellationToken cancellationToken)
+		{
+			_isExecuting = true;
+			
+			InitializeSession();
+
+			if (_userTransaction == null)
 			{
-				if (closeConnection && _userConnection.State != ConnectionState.Closed)
-				{
-					_userConnection.Close();
-				}
+				_userTransaction = _userConnection.BeginTransaction();
+			}
+
+			/*if (executionModel.GatherExecutionStatistics)
+			{
+				_userCommand.CommandText = "ALTER SESSION SET STATISTICS_LEVEL = ALL";
+				_userCommand.ExecuteNonQuery();
+			}*/
+
+			_userCommand.CommandText = executionModel.StatementText;
+			_userCommand.InitialLONGFetchSize = InitialLongFetchSize;
+
+			foreach (var variable in executionModel.BindVariables)
+			{
+				_userCommand.AddSimpleParameter(variable.Name, variable.Value, variable.DataType);
+			}
+
+			_executionStatisticsUpdater = new SessionExecutionStatisticsUpdater(StatisticsKeys, _userSessionId);
+
+			if (executionModel.GatherExecutionStatistics)
+			{
+				await UpdateModelAsync(cancellationToken, true, _executionStatisticsUpdater.SessionBeginExecutionStatisticsUpdater);
+			}
+
+			var reader = await _userCommand.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken);
+
+			UpdateBindVariables(executionModel);
+
+			ResolveTransactionStatus();
+
+			return reader;
+		}
+
+		private void ResolveTransactionStatus()
+		{
+			using (var command = _userConnection.CreateCommand())
+			{
+				command.CommandText = DatabaseCommands.GetLocalTransactionId;
+				_hasActiveTransaction = command.ExecuteScalar() != DBNull.Value;
+			}
+
+			if (!_hasActiveTransaction && _userTransaction != null)
+			{
+				DisposeUserTransaction();
 			}
 		}
 
@@ -508,8 +570,6 @@ namespace SqlPad.Oracle
 			}
 			catch (Exception exception)
 			{
-				SafeCloseUserConnection();
-
 				var oracleException = exception as OracleException;
 				if (oracleException == null || oracleException.Number != OracleErrorCodeUserInvokedCancellation)
 				{
@@ -524,27 +584,12 @@ namespace SqlPad.Oracle
 			return result;
 		}
 
-		private void SafeCloseUserConnection()
-		{
-			try
-			{
-				if (_userConnection.State != ConnectionState.Closed)
-				{
-					_userConnection.Close();
-				}
-			}
-			catch (Exception e)
-			{
-				Trace.WriteLine("Connection closing failed: " + e);
-			}
-		}
-
 		private void PreInitialize()
 		{
 			if (_isExecuting)
 				throw new InvalidOperationException("Another statement is executing right now. ");
 
-			DisposeCommandAndReaderAndCloseConnection();
+			DisposeCommandAndReader();
 		}
 
 		public override ICollection<ColumnHeader> GetColumnHeaders()
@@ -579,14 +624,30 @@ namespace SqlPad.Oracle
 			{
 				var fieldType = _userDataReader.GetDataTypeName(i);
 				fieldTypes[i] = fieldType;
-				Trace.Write(i + ". " + fieldType + "; ");
+				//Trace.Write(i + ". " + fieldType + "; ");
 			}
 
-			Trace.WriteLine(String.Empty);
+			//Trace.WriteLine(String.Empty);
 
 			for (var i = 0; i < rowCount; i++)
 			{
-				if (_userDataReader.Read())
+				if (!CanFetch)
+				{
+					break;
+				}
+
+				bool rowFetched;
+				try
+				{
+					_isExecuting = true;
+					rowFetched = _userDataReader.Read();
+				}
+				finally
+				{
+					_isExecuting = false;
+				}
+
+				if (rowFetched)
 				{
 					yield return BuildValueArray(fieldTypes);
 				}
@@ -649,8 +710,10 @@ namespace SqlPad.Oracle
 
 		private void CheckCanFetch()
 		{
-			if (_userDataReader == null || _userDataReader.IsClosed)
+			if (!CanFetch)
+			{
 				throw new InvalidOperationException("No data reader available. ");
+			}
 		}
 
 		internal IEnumerable<T> ExecuteReader<T>(string commandText, Func<OracleDataReader, T> formatFunction)
@@ -669,7 +732,7 @@ namespace SqlPad.Oracle
 						_oracleVersion = connection.ServerVersion;
 					}
 
-					connection.ModuleName = "SQLPad database model";
+					connection.ModuleName = ModuleNameSqlPadDatabaseModel;
 					connection.ActionName = "Fetch data dictionary metadata";
 
 					using (var task = command.ExecuteReaderAsynchronous(CommandBehavior.CloseConnection, _backgroundTaskCancellationTokenSource.Token))
@@ -795,8 +858,8 @@ namespace SqlPad.Oracle
 
 			var databaseLinks = _dataDictionaryMapper.GetDatabaseLinks();
 			var characterSets = _dataDictionaryMapper.GetCharacterSets();
-			var statisticsKeys = FetchStatisticsKeys();
-			var systemParameters = _dataDictionaryMapper.GetSystemParameters();
+			var statisticsKeys = SafeFetchDictionary(_dataDictionaryMapper.GetStatisticsKeys, "DataDictionaryMapper.GetStatisticsKeys failed: ");
+			var systemParameters = SafeFetchDictionary(_dataDictionaryMapper.GetSystemParameters, "DataDictionaryMapper.GetSystemParameters failed: ");
 
 			_dataDictionary = new OracleDataDictionary(allObjects, databaseLinks, nonSchemaBuiltInFunctionMetadata, characterSets, statisticsKeys, systemParameters, lastRefresh);
 
@@ -810,16 +873,16 @@ namespace SqlPad.Oracle
 			RaiseEvent(RefreshFinished);
 		}
 
-		private Dictionary<int, string> FetchStatisticsKeys()
+		private Dictionary<TKey, TValue> SafeFetchDictionary<TKey, TValue>(Func<IEnumerable<KeyValuePair<TKey, TValue>>> fetchKeyValuePairFunction, string traceMessage)
 		{
 			try
 			{
-				return _dataDictionaryMapper.GetStatisticsKeys().ToDictionary(k => k.Key, k => k.Value);
+				return fetchKeyValuePairFunction().ToDictionary(k => k.Key, k => k.Value);
 			}
 			catch (Exception e)
 			{
-				Trace.WriteLine("DataDictionaryMapper.GetStatisticsKeys failed: " + e);
-				return new Dictionary<int, string>();
+				Trace.WriteLine(traceMessage + e);
+				return new Dictionary<TKey, TValue>();
 			}
 		}
 
@@ -864,7 +927,7 @@ namespace SqlPad.Oracle
 			var functionMetadata = _dataDictionary.AllObjects.Values
 				.OfType<IFunctionCollection>()
 				.SelectMany(o => o.Functions)
-				//.Where(m => m != null) // Enable this line if NullReferenceException occures. At some Oracle environments can happen that function metadata is not available for schema functions without reasonable explanation.
+				//.Where(m => m != null) // Enable this line if NullReferenceException occures. At some Oracle environments can happen that function metadata is not available for schema functions with reasonable explanation.
 				.Concat(_dataDictionary.NonSchemaFunctionMetadata.Values);
 
 			_allFunctionMetadata = functionMetadata.ToLookup(m => m.Identifier);

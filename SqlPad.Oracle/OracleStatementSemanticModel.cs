@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
@@ -640,12 +641,52 @@ namespace SqlPad.Oracle
 		private void ResolveDatabaseLinks(OracleQueryBlock queryBlock)
 		{
 			if (IsSimpleModel)
+			{
 				return;
+			}
 
 			foreach (var databaseLinkReference in queryBlock.DatabaseLinkReferences)
 			{
-				var databaseLinkName = String.Join(null, databaseLinkReference.DatabaseLinkNode.Terminals.Select(t => t.Token.Value));
-				databaseLinkReference.DatabaseLink = _databaseModel.GetFirstDatabaseLink(_databaseModel.GetPotentialSchemaObjectIdentifiers(null, databaseLinkName));
+				var databaseLinkBuilder = new StringBuilder(128);
+				var linkLengthUntilInstanceQualifier = 0;
+				var includesDomain = false;
+				var hasInstanceDefinition = false;
+				foreach (var terminal in databaseLinkReference.DatabaseLinkNode.Terminals)
+				{
+					if (terminal.Id == Terminals.Dot)
+					{
+						includesDomain = true;
+					}
+
+					if (terminal.Id == Terminals.AtCharacter)
+					{
+						hasInstanceDefinition = true;
+					}
+
+					if (!hasInstanceDefinition)
+					{
+						databaseLinkBuilder.Append(terminal.Token.Value);
+						linkLengthUntilInstanceQualifier = databaseLinkBuilder.Length;
+					}
+				}
+
+				var potentialIdentifiers = _databaseModel.GetPotentialSchemaObjectIdentifiers(null, databaseLinkBuilder.ToString()).ToList();
+
+				if (hasInstanceDefinition)
+				{
+					var databaseLinkNameWithoutInstance = databaseLinkBuilder.ToString(0, linkLengthUntilInstanceQualifier);
+					potentialIdentifiers.AddRange(_databaseModel.GetPotentialSchemaObjectIdentifiers(null, databaseLinkNameWithoutInstance));
+				}
+
+				string domainName;
+				if (!includesDomain && DatabaseModel.SystemParameters.TryGetValue(OracleDatabaseModelBase.SystemParameterNameDatabaseDomain, out domainName) && !String.IsNullOrEmpty(domainName))
+				{
+					databaseLinkBuilder.Append(".");
+					databaseLinkBuilder.Append(domainName.ToUpperInvariant());
+					potentialIdentifiers.AddRange(_databaseModel.GetPotentialSchemaObjectIdentifiers(null, databaseLinkBuilder.ToString()));
+				}
+
+				databaseLinkReference.DatabaseLink = _databaseModel.GetFirstDatabaseLink(potentialIdentifiers.ToArray());
 			}
 		}
 

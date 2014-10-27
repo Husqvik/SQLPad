@@ -14,6 +14,7 @@ namespace SqlPad.Oracle
 		public const string SchemaSys = "\"SYS\"";
 		public const string SchemaSystem = "\"SYSTEM\"";
 		public const string PackageBuiltInFunction = "\"STANDARD\"";
+		public const string SystemParameterNameDatabaseDomain = "db_domain";
 		public const int VersionMajorOracle12c = 12;
 
 		internal static OracleFunctionIdentifier IdentifierBuiltInFunctionRound = OracleFunctionIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "ROUND");
@@ -43,6 +44,12 @@ namespace SqlPad.Oracle
 		public abstract event EventHandler RefreshStarted;
 
 		public abstract event EventHandler RefreshFinished;
+
+		public abstract bool HasActiveTransaction { get; }
+
+		public abstract void CommitTransaction();
+
+		public abstract void RollbackTransaction();
 
 		public abstract StatementExecutionResult ExecuteStatement(StatementExecutionModel executionModel);
 
@@ -159,6 +166,26 @@ namespace SqlPad.Oracle
 		{
 			OracleDatabaseLink databaseLink;
 			DatabaseLinks.TryGetFirstValue(out databaseLink, identifiers);
+
+			if (databaseLink == null)
+			{
+				foreach (var link in DatabaseLinks.Values)
+				{
+					var instanceQualifierIndex = link.FullyQualifiedName.Name.IndexOf("@", StringComparison.InvariantCulture);
+					if (instanceQualifierIndex == -1)
+					{
+						continue;
+					}
+
+					var shortName = link.FullyQualifiedName.NormalizedName.Substring(1, instanceQualifierIndex).ToQuotedIdentifier();
+					var shortIdentifier = OracleObjectIdentifier.Create(link.FullyQualifiedName.Owner, shortName);
+					if (identifiers.Any(i => i == shortIdentifier))
+					{
+						databaseLink = link;
+						break;
+					}
+				}
+			}
 
 			return databaseLink;
 		}
