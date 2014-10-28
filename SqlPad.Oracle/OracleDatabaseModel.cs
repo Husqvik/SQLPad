@@ -383,7 +383,7 @@ namespace SqlPad.Oracle
 
 		public override bool CanFetch
 		{
-			get { return _userDataReader != null && !_userDataReader.IsClosed; }
+			get { return _userDataReader != null && !_userDataReader.IsClosed && !_isExecuting; }
 		}
 
 		public override void Dispose()
@@ -666,25 +666,23 @@ namespace SqlPad.Oracle
 					break;
 				}
 
-				bool rowFetched;
 				try
 				{
 					_isExecuting = true;
-					rowFetched = _userDataReader.Read();
+
+					if (_userDataReader.Read())
+					{
+						yield return BuildValueArray(fieldTypes);
+					}
+					else
+					{
+						_userDataReader.Close();
+						break;
+					}
 				}
 				finally
 				{
 					_isExecuting = false;
-				}
-
-				if (rowFetched)
-				{
-					yield return BuildValueArray(fieldTypes);
-				}
-				else
-				{
-					_userDataReader.Close();
-					break;
 				}
 			}
 		}
