@@ -29,11 +29,12 @@ namespace SqlPad
 		private Visibility _bindVariableListVisibility = Visibility.Collapsed;
 		private Visibility _gridRowInfoVisibity = Visibility.Collapsed;
 		private Visibility _transactionControlVisibity = Visibility.Collapsed;
-		private Visibility _reconnectButtonVisibility = Visibility.Collapsed;
+		private Visibility _reconnectOptionVisibility = Visibility.Collapsed;
 		private Visibility _schemaComboBoxVisibility = Visibility.Collapsed;
 		private Visibility _connectProgressBarVisibility = Visibility.Visible;
 		private string _textExecutionPlan;
 		private string _dateTimeFormat;
+		private string _connectionErrorMessage;
 		private bool _showAllSessionExecutionStatistics;
 
 		public PageModel(DocumentPage documentPage)
@@ -195,16 +196,22 @@ namespace SqlPad
 			private set { UpdateValueAndRaisePropertyChanged(ref _bindVariableListVisibility, value); }
 		}
 
-		public Visibility ReconnectButtonVisibility
-		{
-			get { return _reconnectButtonVisibility; }
-			set { UpdateValueAndRaisePropertyChanged(ref _reconnectButtonVisibility, value); }
-		}
-
 		public Visibility ConnectProgressBarVisibility
 		{
 			get { return _connectProgressBarVisibility; }
 			set { UpdateValueAndRaisePropertyChanged(ref _connectProgressBarVisibility, value); }
+		}
+
+		public Visibility ReconnectOptionVisibility
+		{
+			get { return _reconnectOptionVisibility; }
+			set { UpdateValueAndRaisePropertyChanged(ref _reconnectOptionVisibility, value); }
+		}
+
+		public string ConnectionErrorMessage
+		{
+			get { return _connectionErrorMessage; }
+			set { UpdateValueAndRaisePropertyChanged(ref _connectionErrorMessage, value); }
 		}
 
 		public ICollection<BindVariableModel> BindVariables
@@ -253,7 +260,7 @@ namespace SqlPad
 			get { return _currentConnection; }
 			set
 			{
-				ReconnectButtonVisibility = Visibility.Collapsed;
+				ReconnectOptionVisibility = Visibility.Collapsed;
 				ConnectProgressBarVisibility = Visibility.Visible;
 
 				_documentPage.InitializeInfrastructureComponents(value);

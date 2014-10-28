@@ -437,12 +437,13 @@ namespace SqlPad
 		private void DatabaseModelInitializationFailedHandler(object sender, DatabaseModelInitializationFailedArgs args)
 		{
 			_pageModel.ConnectProgressBarVisibility = Visibility.Collapsed;
-			_pageModel.ReconnectButtonVisibility = Visibility.Visible;
+			_pageModel.ConnectionErrorMessage = args.Exception.Message;
+			_pageModel.ReconnectOptionVisibility = Visibility.Visible;
 		}
 
 		private void ButtonReconnectClickHandler(object sender, RoutedEventArgs e)
 		{
-			_pageModel.ReconnectButtonVisibility = Visibility.Collapsed;
+			_pageModel.ReconnectOptionVisibility = Visibility.Collapsed;
 			_pageModel.ConnectProgressBarVisibility = Visibility.Visible;
 
 			if (!DatabaseModel.IsInitialized)

@@ -81,6 +81,11 @@ namespace SqlPad
 
 		public DatabaseModelInitializationFailedArgs(Exception exception)
 		{
+			if (exception == null)
+			{
+				throw new ArgumentNullException("exception");
+			}
+			
 			Exception = exception;
 		}
 	}

@@ -24,7 +24,7 @@
 	</UserControl.Resources>
 	<Grid>
 		<Grid.RowDefinitions>
-			<RowDefinition Height="24" />
+			<RowDefinition Height="Auto" />
 			<RowDefinition Height="*" x:Name="RowDefinitionEditor" />
 			<RowDefinition Height="Auto" />
 			<RowDefinition Height="*" />
@@ -37,29 +37,39 @@
 				<ColumnDefinition Width="*" />
 				<ColumnDefinition Width="Auto" />
 			</Grid.ColumnDefinitions>
-			<StackPanel Visibility="{Binding TransactionControlVisibity}" HorizontalAlignment="Left" Orientation="Horizontal" sqlPad:MarginSetter.Margin="6,1,2,3">
+			<Grid.RowDefinitions>
+				<RowDefinition />
+				<RowDefinition Height="Auto" />
+			</Grid.RowDefinitions>
+			<StackPanel Visibility="{Binding TransactionControlVisibity}" HorizontalAlignment="Left" Orientation="Horizontal" sqlPad:MarginSetter.Margin="2,1,0,3">
 				<Button Content="Commit" Padding="6,0,6,0" Click="ButtonCommitTransactionClickHandler" />
 				<Button Content="Rollback" Padding="6,0,6,0" Click="ButtonRollbackTransactionClickHandler" />
 			</StackPanel>
-			<StackPanel HorizontalAlignment="Right" Orientation="Horizontal" sqlPad:MarginSetter.Margin="6,1,2,3" Grid.Column="2">
-				<Button Content="Reconnect" Padding="6,0,6,0" Visibility="{Binding ReconnectButtonVisibility}" Click="ButtonReconnectClickHandler" />
-				<ProgressBar Width="60" IsIndeterminate="True" Visibility="{Binding ConnectProgressBarVisibility}" />
-				<TextBlock Text="Connection: " VerticalAlignment="Center" />
-				<ComboBox x:Name="ComboBoxConnection" SelectedItem="{Binding Path=CurrentConnection}">
+			<StackPanel Grid.Row="0" HorizontalAlignment="Right" Orientation="Horizontal" Grid.Column="2">
+				<Grid Visibility="{Binding ConnectProgressBarVisibility}" Margin="0,1,8,3">
+					<ProgressBar Width="84" IsIndeterminate="True" />
+					<TextBlock Text="Connecting..." HorizontalAlignment="Center" VerticalAlignment="Center" />
+				</Grid>
+				<TextBlock Text="Connection: " VerticalAlignment="Center" Margin="0,1,4,3" />
+				<ComboBox x:Name="ComboBoxConnection" SelectedItem="{Binding Path=CurrentConnection}" Margin="0,1,0,3">
 					<ComboBox.ItemTemplate>
 						<DataTemplate>
 							<TextBlock Text="{Binding Path=Name}" />
 						</DataTemplate>
 					</ComboBox.ItemTemplate>
 				</ComboBox>
-				<TextBlock Text="Schema: " VerticalAlignment="Center" Visibility="{Binding SchemaComboBoxVisibility}" />
-				<ComboBox x:Name="ComboBoxSchema" ItemsSource="{Binding Path=Schemas}" SelectedItem="{Binding Path=CurrentSchema}" Visibility="{Binding SchemaComboBoxVisibility}" >
+				<TextBlock Text="Schema: " VerticalAlignment="Center" Visibility="{Binding SchemaComboBoxVisibility}" Margin="6,1,4,3" />
+				<ComboBox x:Name="ComboBoxSchema" ItemsSource="{Binding Path=Schemas}" SelectedItem="{Binding Path=CurrentSchema}" Visibility="{Binding SchemaComboBoxVisibility}" Margin="0,1,0,3" >
 					<ComboBox.ItemTemplate>
 						<DataTemplate>
 							<TextBlock Text="{Binding}" />
 						</DataTemplate>
 					</ComboBox.ItemTemplate>
 				</ComboBox>
+			</StackPanel>
+			<StackPanel Orientation="Horizontal" Background="DarkRed" Visibility="{Binding ReconnectOptionVisibility}" sqlPad:MarginSetter.Margin="2,2,2,2" Grid.Row="1" Grid.Column="2">
+				<Button Content="Reconnect" Padding="6,2,6,2" Click="ButtonReconnectClickHandler" />
+				<TextBlock Foreground="White" Text="{Binding ConnectionErrorMessage}" VerticalAlignment="Center" Padding="0,0,4,0" />
 			</StackPanel>
 		</Grid>
 
