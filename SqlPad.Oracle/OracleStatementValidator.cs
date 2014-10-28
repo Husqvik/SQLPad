@@ -139,7 +139,7 @@ namespace SqlPad.Oracle
 			{
 				if (functionReference.DatabaseLinkNode == null)
 				{
-					ValidateLocalFunctionReference(functionReference, validationModel);
+					ValidateLocalProgramReference(functionReference, validationModel);
 				}
 				else
 				{
@@ -151,7 +151,7 @@ namespace SqlPad.Oracle
 			{
 				if (typeReference.DatabaseLinkNode == null)
 				{
-					var semanticError = GetCompilationEror(typeReference);
+					var semanticError = GetCompilationError(typeReference);
 					validationModel.ProgramNodeValidity[typeReference.ObjectNode] = new InvalidNodeValidationData(semanticError) { IsRecognized = true, Node = typeReference.ObjectNode };
 				}
 				else
@@ -183,69 +183,69 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		private void ValidateLocalFunctionReference(OracleProgramReference functionReference, OracleValidationModel validationModel)
+		private void ValidateLocalProgramReference(OracleProgramReference programReference, OracleValidationModel validationModel)
 		{
-			var metadataFound = functionReference.Metadata != null;
+			var metadataFound = programReference.Metadata != null;
 			var semanticError = OracleSemanticErrorType.None;
 			var isRecognized = false;
 			if (metadataFound)
 			{
 				isRecognized = true;
-				if (functionReference.ParameterListNode != null)
+				if (programReference.ParameterListNode != null)
 				{
-					var maximumParameterCount = functionReference.Metadata.MinimumArguments > 0 && functionReference.Metadata.MaximumArguments == 0
+					var maximumParameterCount = programReference.Metadata.MinimumArguments > 0 && programReference.Metadata.MaximumArguments == 0
 						? Int32.MaxValue
-						: functionReference.Metadata.MaximumArguments;
+						: programReference.Metadata.MaximumArguments;
 
 					// TODO: Handle optional parameters
 					var parameterListSemanticError = OracleSemanticErrorType.None;
-					if ((functionReference.ParameterNodes.Count < functionReference.Metadata.MinimumArguments) ||
-					    (functionReference.ParameterNodes.Count > maximumParameterCount))
+					if ((programReference.ParameterNodes.Count < programReference.Metadata.MinimumArguments) ||
+					    (programReference.ParameterNodes.Count > maximumParameterCount))
 					{
 						parameterListSemanticError = OracleSemanticErrorType.InvalidParameterCount;
 					}
-					else if (functionReference.Metadata.DisplayType == OracleFunctionMetadata.DisplayTypeNoParenthesis)
+					else if (programReference.Metadata.DisplayType == OracleFunctionMetadata.DisplayTypeNoParenthesis)
 					{
 						parameterListSemanticError = OracleSemanticErrorType.NonParenthesisFunction;
 					}
 
 					if (parameterListSemanticError != OracleSemanticErrorType.None)
 					{
-						validationModel.ProgramNodeValidity[functionReference.ParameterListNode] = new InvalidNodeValidationData(parameterListSemanticError) { IsRecognized = true };
+						validationModel.ProgramNodeValidity[programReference.ParameterListNode] = new InvalidNodeValidationData(parameterListSemanticError) { IsRecognized = true };
 					}
 				}
-				else if (functionReference.Metadata.MinimumArguments > 0)
+				else if (programReference.Metadata.MinimumArguments > 0)
 				{
 					semanticError = OracleSemanticErrorType.InvalidParameterCount;
 				}
-				else if (functionReference.Metadata.DisplayType == OracleFunctionMetadata.DisplayTypeParenthesis)
+				else if (programReference.Metadata.DisplayType == OracleFunctionMetadata.DisplayTypeParenthesis)
 				{
 					semanticError = OracleSemanticErrorType.MissingParenthesis;
 				}
 
-				if (functionReference.AnalyticClauseNode != null && !functionReference.Metadata.IsAnalytic)
+				if (programReference.AnalyticClauseNode != null && !programReference.Metadata.IsAnalytic)
 				{
-					validationModel.ProgramNodeValidity[functionReference.AnalyticClauseNode] = new InvalidNodeValidationData(OracleSemanticErrorType.AnalyticClauseNotSupported) { IsRecognized = true, Node = functionReference.AnalyticClauseNode };
+					validationModel.ProgramNodeValidity[programReference.AnalyticClauseNode] = new InvalidNodeValidationData(OracleSemanticErrorType.AnalyticClauseNotSupported) { IsRecognized = true, Node = programReference.AnalyticClauseNode };
 				}
 			}
 
-			if (functionReference.ObjectNode != null)
+			if (programReference.ObjectNode != null)
 			{
-				var packageSemanticError = GetCompilationEror(functionReference);
-				validationModel.ProgramNodeValidity[functionReference.ObjectNode] = new InvalidNodeValidationData(packageSemanticError) { IsRecognized = functionReference.SchemaObject != null, Node = functionReference.ObjectNode };
+				var packageSemanticError = GetCompilationError(programReference);
+				validationModel.ProgramNodeValidity[programReference.ObjectNode] = new InvalidNodeValidationData(packageSemanticError) { IsRecognized = programReference.SchemaObject != null, Node = programReference.ObjectNode };
 			}
 
-			if (semanticError == OracleSemanticErrorType.None && isRecognized && !functionReference.Metadata.IsPackageFunction && functionReference.SchemaObject != null && !functionReference.SchemaObject.IsValid)
+			if (semanticError == OracleSemanticErrorType.None && isRecognized && !programReference.Metadata.IsPackageFunction && programReference.SchemaObject != null && !programReference.SchemaObject.IsValid)
 			{
 				semanticError = OracleSemanticErrorType.ObjectStatusInvalid;
 			}
 
-			validationModel.ProgramNodeValidity[functionReference.FunctionIdentifierNode] = new InvalidNodeValidationData(semanticError) { IsRecognized = isRecognized, Node = functionReference.FunctionIdentifierNode };
+			validationModel.ProgramNodeValidity[programReference.FunctionIdentifierNode] = new InvalidNodeValidationData(semanticError) { IsRecognized = isRecognized, Node = programReference.FunctionIdentifierNode };
 		}
 
-		private string GetCompilationEror(OracleProgramReferenceBase reference)
+		private string GetCompilationError(OracleProgramReferenceBase reference)
 		{
-			return reference.SchemaObject != null && reference.SchemaObject.IsValid
+			return reference.SchemaObject == null || reference.SchemaObject.IsValid
 				? OracleSemanticErrorType.None
 				: OracleSemanticErrorType.ObjectStatusInvalid;
 		}
