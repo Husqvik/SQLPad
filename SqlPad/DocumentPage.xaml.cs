@@ -658,7 +658,7 @@ namespace SqlPad
 
 				if (!actionResult.IsSuccessful)
 				{
-					Messages.ShowError(actionResult.Exception.Message);
+					Messages.ShowError(MainWindow, actionResult.Exception.Message);
 					return;
 				}
 
