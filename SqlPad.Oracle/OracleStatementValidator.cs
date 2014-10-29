@@ -252,10 +252,22 @@ namespace SqlPad.Oracle
 
 		private INodeValidationData GetInvalidIdentifierValidationData(StatementGrammarNode node)
 		{
-			if (!node.Id.IsIdentifierOrAlias() || node.Id == Terminals.XmlAlias)
+			if (!node.Id.IsIdentifierOrAlias())
 				return null;
 
-			var errorMessage = ValidateIdentifier(node.Token.Value, node.Id == Terminals.BindVariableIdentifier).ErrorMessage;
+			var validationResult = ValidateIdentifier(node.Token.Value, node.Id == Terminals.BindVariableIdentifier);
+			string errorMessage;
+			if (node.Id == Terminals.XmlAlias)
+			{
+				errorMessage = validationResult.IsEmptyQuotedIdentifier
+					? "XML alias length must be at least one character excluding quotes. "
+					: null;
+			}
+			else
+			{
+				errorMessage = validationResult.ErrorMessage;
+			}
+
 			return String.IsNullOrEmpty(errorMessage)
 				? null
 				: new InvalidIdentifierNodeValidationData(errorMessage) { IsRecognized = true, Node = node };
@@ -283,7 +295,8 @@ namespace SqlPad.Oracle
 				}
 			}
 
-			if (String.IsNullOrEmpty(result.ErrorMessage) && trimmedIdentifier.Length == 0 || trimmedIdentifier.Length > 30)
+			result.IsEmptyQuotedIdentifier = trimmedIdentifier.Length == 0;
+			if (String.IsNullOrEmpty(result.ErrorMessage) && result.IsEmptyQuotedIdentifier || trimmedIdentifier.Length > 30)
 			{
 				result.ErrorMessage = "Identifier length must be between one and 30 characters excluding quotes. ";
 			}
@@ -337,6 +350,8 @@ namespace SqlPad.Oracle
 			public string ErrorMessage { get; set; }
 
 			public bool IsNumericBindVariable { get; set; }
+			
+			public bool IsEmptyQuotedIdentifier { get; set; }
 		}
 	}
 

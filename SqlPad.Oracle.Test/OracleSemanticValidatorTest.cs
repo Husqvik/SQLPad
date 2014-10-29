@@ -1475,6 +1475,20 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		}
 
 		[Test(Description = @"")]
+		public void TestEmptyXmlAlias()
+		{
+			const string sqlText = "SELECT XMLELEMENT(NAME \"\", NULL) VAL FROM DUAL";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var nodeValiditities = validationModel.IdentifierNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(nv => nv.Value).ToArray();
+			nodeValiditities.Length.ShouldBe(1);
+			nodeValiditities[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidIdentifier);
+		}
+
+		[Test(Description = @"")]
 		public void TestUndefinedPackageFunctionCall()
 		{
 			const string sqlText = @"SELECT UNDEFINEDPACKAGE.FUNCTION() FROM DUAL";
