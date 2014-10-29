@@ -528,18 +528,22 @@ namespace SqlPad
 		{
 			ICollection<object[]> nextRowBatch = null;
 			var exception = await SafeActionAsync(() => Task.Factory.StartNew(() => nextRowBatch = DatabaseModel.FetchRecords(RowBatchSize).ToArray()));
-			_pageModel.ResultRowItems.AddRange(nextRowBatch);
 
 			TextMoreRowsExist.Visibility = DatabaseModel.CanFetch ? Visibility.Visible : Visibility.Collapsed;
 
 			if (exception != null)
 			{
-				Messages.ShowError(exception.Message);
+				Messages.ShowError(MainWindow, exception.Message);
 			}
-			else if (_gatherExecutionStatistics)
+			else
 			{
-				_pageModel.SessionExecutionStatistics.Clear();
-				_pageModel.SessionExecutionStatistics.AddRange(await DatabaseModel.GetExecutionStatisticsAsync(CancellationToken.None));
+				_pageModel.ResultRowItems.AddRange(nextRowBatch);
+				
+				if (_gatherExecutionStatistics)
+				{
+					_pageModel.SessionExecutionStatistics.Clear();
+					_pageModel.SessionExecutionStatistics.AddRange(await DatabaseModel.GetExecutionStatisticsAsync(CancellationToken.None));
+				}
 			}
 		}
 

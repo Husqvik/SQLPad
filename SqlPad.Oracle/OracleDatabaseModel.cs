@@ -666,24 +666,37 @@ namespace SqlPad.Oracle
 					break;
 				}
 
+				object[] values;
+
 				try
 				{
 					_isExecuting = true;
 
 					if (_userDataReader.Read())
 					{
-						yield return BuildValueArray(fieldTypes);
+						values = BuildValueArray(fieldTypes);
 					}
 					else
 					{
 						_userDataReader.Close();
-						break;
+						yield break;
 					}
+				}
+				catch
+				{
+					if (!_userDataReader.IsClosed)
+					{
+						_userDataReader.Close();
+					}
+
+					throw;
 				}
 				finally
 				{
 					_isExecuting = false;
 				}
+
+				yield return values;
 			}
 		}
 
