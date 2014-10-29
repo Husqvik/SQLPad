@@ -7,57 +7,116 @@ using Oracle.DataAccess.Types;
 
 namespace SqlPad.Oracle
 {
-	public class OracleClobValue : ILargeTextValue, IDisposable
+	public abstract class OracleLargeTextValue : ILargeTextValue
 	{
-		private const int PreviewLength = 1023;
+		protected const int PreviewLength = 1023;
 		public const string Ellipsis = "\u2026";
 
-		private readonly OracleClob _clob;
+		private string _preview;
 		private string _value;
-
-		public string DataTypeName { get; private set; }
 
 		public bool IsEditable { get { return false; } }
 
-		public string Preview { get; private set; }
+		public abstract string DataTypeName { get; }
 
-		public long Length { get; private set; }
+		public abstract long Length { get; }
+
+		public string Preview
+		{
+			get { return _preview ?? BuildPreview(); }
+		}
+
+		private string BuildPreview()
+		{
+			var preview = GetChunk(0, PreviewLength + 1);
+			if (preview.Length > PreviewLength)
+			{
+				preview = String.Format("{0}{1}", preview.Substring(0, PreviewLength), Ellipsis);
+			}
+
+			return _preview = preview;
+		}
 
 		public string Value
 		{
 			get { return _value ?? (_value = GetValue()); }
 		}
 
-		private string GetValue()
+		protected abstract string GetValue();
+
+		public abstract string GetChunk(int offset, int length);
+
+		public override string ToString()
+		{
+			return Preview;
+		}
+	}
+
+	public class OracleXmlValue : OracleLargeTextValue, IDisposable
+	{
+		private readonly OracleXmlType _xmlType;
+
+		public override string DataTypeName { get { return "XMLTYPE"; } }
+
+		public override long Length { get { return Value.Length; } }
+
+		protected override string GetValue()
+		{
+			return _xmlType.IsNull
+					? String.Empty
+					: _xmlType.Value;
+		}
+
+		public OracleXmlValue(OracleXmlType xmlType)
+		{
+			_xmlType = xmlType;
+		}
+
+		public override string GetChunk(int offset, int length)
+		{
+			var characters = new char[length];
+			var characterCount = _xmlType.GetStream().Read(characters, 0, length);
+			return new string(characters, 0, characterCount);
+		}
+
+		public void Dispose()
+		{
+			_xmlType.Dispose();
+		}
+	}
+
+	public class OracleClobValue : OracleLargeTextValue, IDisposable
+	{
+		private readonly OracleClob _clob;
+		private readonly string _dataTypeName;
+
+		public override string DataTypeName { get { return _dataTypeName; } }
+
+		public override long Length { get { return _clob.Length; } }
+
+		protected override string GetValue()
 		{
 			return _clob.IsNull
 					? String.Empty
-					: OracleLargeObjectHelper.ExecuteFunction(_clob.Connection, () => _clob.Value);
+					: _clob.Value;
 		}
 
 		public OracleClobValue(string dataTypeName, OracleClob clob)
 		{
 			_clob = clob;
-			DataTypeName = dataTypeName;
-			Length = _clob.Length;
-			Preview = Length > PreviewLength ? String.Format("{0}{1}", GetChunk(0, PreviewLength), Ellipsis) : Value;
+			_dataTypeName = dataTypeName;
 		}
 
-		public string GetChunk(int offset, int length)
+		public override string GetChunk(int offset, int length)
 		{
 			var characters = new char[length];
-			var characterCount = OracleLargeObjectHelper.ExecuteFunction(_clob.Connection, () => _clob.Read(characters, offset, length));
+			var characterCount = _clob.Read(characters, offset, length);
 			return new string(characters, 0, characterCount);
 		}
 
 		public void Dispose()
 		{
 			_clob.Dispose();
-		}
-
-		public override string ToString()
-		{
-			return Preview;
 		}
 	}
 
@@ -81,7 +140,7 @@ namespace SqlPad.Oracle
 		{
 			return _blob.IsNull
 					? new byte[0]
-					: OracleLargeObjectHelper.ExecuteFunction(_blob.Connection, () => _blob.Value);
+					: _blob.Value;
 		}
 
 		public OracleBlobValue(OracleBlob blob)
@@ -93,7 +152,7 @@ namespace SqlPad.Oracle
 		public byte[] GetChunk(int offset, int length)
 		{
 			var buffer = new byte[length];
-			var bytesRead = OracleLargeObjectHelper.ExecuteFunction(_blob.Connection, () => _blob.Read(buffer, offset, length));
+			var bytesRead = _blob.Read(buffer, offset, length);
 			var result = new byte[bytesRead];
 			Array.Copy(buffer, 0, result, 0, bytesRead);
 			return result;

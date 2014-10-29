@@ -725,6 +725,9 @@ namespace SqlPad.Oracle
 						var oracleDecimal = new OracleNumber(_userDataReader, i);
 						value = oracleDecimal.IsNull ? (object)DBNull.Value : oracleDecimal;
 						break;
+					case "XmlType":
+						value = new OracleXmlValue(_userDataReader.GetOracleXmlType(i));
+						break;
 					default:
 						value = _userDataReader.GetValue(i);
 						break;
