@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -17,7 +19,8 @@ namespace SqlPad
 	{
 		private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 		private readonly FindReplaceManager _findReplaceManager;
-		private ILargeBinaryValue _largeBinaryValue;
+		private readonly ILargeValue _largeValue;
+		private readonly ILargeBinaryValue _largeBinaryValue;
 		private bool _isXml;
 
 		public LargeValueEditor(string columnName, ILargeValue largeValue)
@@ -33,60 +36,67 @@ namespace SqlPad
 
 			Title = columnName;
 
-			SetEditorValue(largeValue);
+			_largeValue = largeValue;
+			_largeBinaryValue = _largeValue as ILargeBinaryValue;
 		}
 
-		private async void SetEditorValue(ILargeValue largeValue)
+		private async Task SetEditorValue()
 		{
-			var largeTextValue = largeValue as ILargeTextValue;
-			_largeBinaryValue = largeValue as ILargeBinaryValue;
+			var largeTextValue = _largeValue as ILargeTextValue;
 			var searchEditor = HexEditor;
-			if (largeTextValue != null)
+
+			try
 			{
-				TabText.Visibility = Visibility.Visible;
-				TabControl.SelectedItem = TabText;
-				
-				_isXml = true;
-				using (var reader = new XmlTextReader(new StringReader(largeTextValue.Value)))
+				if (largeTextValue != null)
 				{
-					try
+					TabText.Visibility = Visibility.Visible;
+					TabControl.SelectedItem = TabText;
+
+					_isXml = true;
+					using (var reader = new XmlTextReader(new StringReader(largeTextValue.Value)))
 					{
-						while (reader.Read())
+						try
 						{
+							while (reader.Read())
+							{
+							}
+						}
+						catch
+						{
+							_isXml = false;
 						}
 					}
-					catch
+
+					TextEditor.Text = largeTextValue.Value;
+
+					if (_isXml)
 					{
-						_isXml = false;
+						TextEditor.SyntaxHighlighting = HighlightingManager.Instance.GetDefinition("XML");
 					}
+
+					searchEditor = TextEditor;
 				}
-
-				if (_isXml)
+				else if (_largeBinaryValue != null)
 				{
-					TextEditor.SyntaxHighlighting = HighlightingManager.Instance.GetDefinition("XML");
-				}
+					TabRaw.Visibility = Visibility.Visible;
+					TabControl.SelectedItem = TabRaw;
 
-				TextEditor.Text = largeTextValue.Value;
-
-				searchEditor = TextEditor;
-			}
-			else if (_largeBinaryValue != null)
-			{
-				TabRaw.Visibility = Visibility.Visible;
-				TabControl.SelectedItem = TabRaw;
-
-				try
-				{
 					HexEditor.Text = await BinaryDataHelper.FormatBinaryDataAsync(_largeBinaryValue.Value, _cancellationTokenSource.Token);
 					LoadingNotification.Visibility = Visibility.Collapsed;
 				}
-				catch (TaskCanceledException)
-				{
-					Close();
-				}
-			}
 
-			_findReplaceManager.CurrentEditor = new TextEditorAdapter(searchEditor);
+				_findReplaceManager.CurrentEditor = new TextEditorAdapter(searchEditor);
+			}
+			catch (TaskCanceledException)
+			{
+				Trace.WriteLine("User has cancelled large data editor load operation. ");
+				Close();
+			}
+			catch (Exception e)
+			{
+				Messages.ShowError(this, e.Message);
+				Close();
+			}
 		}
 
 		private bool TryOpenPdf()
@@ -145,8 +155,10 @@ namespace SqlPad
 			_cancellationTokenSource.Cancel();
 		}
 
-		private void LargeValueEditorLoadedHandler(object sender, RoutedEventArgs e)
+		private async void LargeValueEditorLoadedHandler(object sender, RoutedEventArgs e)
 		{
+			await SetEditorValue();
+
 			if (_largeBinaryValue == null || _largeBinaryValue.Value.Length == 0)
 				return;
 

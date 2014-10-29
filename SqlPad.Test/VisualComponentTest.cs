@@ -269,18 +269,12 @@ namespace SqlPad.Test
 		public void TestLargeTextValueEditorInitialization()
 		{
 			var editor = new LargeValueEditor("Dummy", new TestLargeTextValue());
+			var task = (Task) typeof (LargeValueEditor).GetMethod("SetEditorValue", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(editor, null);
+			task.Wait();
+			
 			editor.TextEditor.Text.ShouldBe(TestLargeTextValue.TextValue);
 			editor.TabText.Visibility.ShouldBe(Visibility.Visible);
 			editor.TabRaw.Visibility.ShouldBe(Visibility.Collapsed);
-		}
-
-		[Test, STAThread]
-		public void TestLargeBinaryValueEditorInitialization()
-		{
-			var editor = new LargeValueEditor("Dummy", new TestLargeBinaryValue());
-
-			editor.TabText.Visibility.ShouldBe(Visibility.Collapsed);
-			editor.TabRaw.Visibility.ShouldBe(Visibility.Visible);
 		}
 
 		private class TestLargeTextValue : ILargeTextValue
