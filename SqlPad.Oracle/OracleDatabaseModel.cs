@@ -123,8 +123,8 @@ namespace SqlPad.Oracle
 				{
 					return;
 				}
-				
-				SetCurrentSchema();
+
+				InitializeSession();
 			}
 		}
 
@@ -326,6 +326,8 @@ namespace SqlPad.Oracle
 
 					connection.Open();
 
+					SetCurrentSchema(command);
+
 					foreach (var updater in updaters)
 					{
 						command.Parameters.Clear();
@@ -463,17 +465,17 @@ namespace SqlPad.Oracle
 		{
 			using (var command = _userConnection.CreateCommand())
 			{
-				command.CommandText = String.Format("ALTER SESSION SET CURRENT_SCHEMA = {0}", _currentSchema);
-				command.ExecuteNonQuery();
+				SetCurrentSchema(command);
 
 				command.CommandText = "SELECT SYS_CONTEXT('USERENV', 'SID') SID FROM SYS.DUAL";
 				_userSessionId = Convert.ToInt32(command.ExecuteScalar());
 			}
 		}
 
-		private void SetCurrentSchema()
+		private void SetCurrentSchema(IDbCommand command)
 		{
-			InitializeSession();
+			command.CommandText = String.Format("ALTER SESSION SET CURRENT_SCHEMA = {0}", _currentSchema);
+			command.ExecuteNonQuery();
 		}
 
 		private bool EnsureUserConnectionOpen()
