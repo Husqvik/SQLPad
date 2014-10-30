@@ -18,6 +18,8 @@ namespace SqlPad.Oracle
 		public bool IsEditable { get { return false; } }
 
 		public abstract string DataTypeName { get; }
+		
+		public abstract bool IsNull { get; }
 
 		public abstract long Length { get; }
 
@@ -28,6 +30,11 @@ namespace SqlPad.Oracle
 
 		private string BuildPreview()
 		{
+			if (IsNull)
+			{
+				return String.Empty;
+			}
+
 			var preview = GetChunk(0, PreviewLength + 1);
 			if (preview.Length > PreviewLength)
 			{
@@ -39,7 +46,7 @@ namespace SqlPad.Oracle
 
 		public string Value
 		{
-			get { return _value ?? (_value = GetValue()); }
+			get { return _value ?? (_value = IsNull ? String.Empty : GetValue()); }
 		}
 
 		protected abstract string GetValue();
@@ -60,11 +67,11 @@ namespace SqlPad.Oracle
 
 		public override long Length { get { return Value.Length; } }
 
+		public override bool IsNull { get { return _xmlType.IsNull; } }
+
 		protected override string GetValue()
 		{
-			return _xmlType.IsNull
-					? String.Empty
-					: _xmlType.Value;
+			return _xmlType.Value;
 		}
 
 		public OracleXmlValue(OracleXmlType xmlType)
@@ -94,11 +101,11 @@ namespace SqlPad.Oracle
 
 		public override long Length { get { return _clob.Length; } }
 
+		public override bool IsNull { get { return _clob.IsNull; } }
+
 		protected override string GetValue()
 		{
-			return _clob.IsNull
-					? String.Empty
-					: _clob.Value;
+			return _clob.Value;
 		}
 
 		public OracleClobValue(string dataTypeName, OracleClob clob)
