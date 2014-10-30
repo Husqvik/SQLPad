@@ -12,6 +12,7 @@ namespace SqlPad.Oracle
 		private Dictionary<StatementGrammarNode, OracleQueryBlock> _queryBlockNodes = new Dictionary<StatementGrammarNode, OracleQueryBlock>();
 		private readonly List<OracleInsertTarget> _insertTargets = new List<OracleInsertTarget>();
 		private readonly HashSet<StatementGrammarNode> _redundantTerminals = new HashSet<StatementGrammarNode>();
+		private readonly List<RedundantTerminalGroup> _redundantTerminalGroups = new List<RedundantTerminalGroup>();
 		private readonly OracleDatabaseModelBase _databaseModel;
 		private readonly Dictionary<OracleSelectListColumn, ICollection<OracleDataObjectReference>> _asteriskTableReferences = new Dictionary<OracleSelectListColumn, ICollection<OracleDataObjectReference>>();
 		private readonly Dictionary<OracleQueryBlock, IList<string>> _commonTableExpressionExplicititColumnNames = new Dictionary<OracleQueryBlock, IList<string>>();
@@ -49,7 +50,7 @@ namespace SqlPad.Oracle
 
 		public ICollection<OracleInsertTarget> InsertTargets { get { return _insertTargets; }}
 
-		public ICollection<StatementGrammarNode> RedundantNodes { get { return _redundantTerminals; } } 
+		public ICollection<RedundantTerminalGroup> RedundantSymbolGroups { get { return _redundantTerminalGroups.AsReadOnly(); } } 
 
 		public OracleMainObjectReferenceContainer MainObjectReferenceContainer { get; private set; }
 
@@ -299,9 +300,9 @@ namespace SqlPad.Oracle
 
 		private void ResolveRedundantTerminals()
 		{
-			ResolveRedundantQualifiers();
-
 			ResolveRedundantSelectListColumns();
+			
+			ResolveRedundantQualifiers();
 		}
 
 		private void ResolveRedundantSelectListColumns()
@@ -330,19 +331,31 @@ namespace SqlPad.Oracle
 						}
 					}
 
-					_redundantTerminals.AddRange(column.RootNode.Terminals);
+					var terminalGroup = new List<StatementGrammarNode>(column.RootNode.Terminals);
+					_redundantTerminals.AddRange(terminalGroup);
 
-					if (!TryMakeRedundantIfComma(column.RootNode.PrecedingTerminal))
+					StatementGrammarNode commaTerminal;
+					if (!TryMakeRedundantIfComma(column.RootNode.PrecedingTerminal, out commaTerminal))
 					{
-						TryMakeRedundantIfComma(column.RootNode.FollowingTerminal);
+						if (TryMakeRedundantIfComma(column.RootNode.FollowingTerminal, out commaTerminal))
+						{
+							terminalGroup.Add(commaTerminal);
+						}
 					}
+					else
+					{
+						terminalGroup.Insert(0, commaTerminal);
+					}
+
+					_redundantTerminalGroups.Add(new RedundantTerminalGroup(terminalGroup, RedundancyType.UnusedColumn));
 				}
 			}
 		}
 
-		private bool TryMakeRedundantIfComma(StatementGrammarNode terminal)
+		private bool TryMakeRedundantIfComma(StatementGrammarNode terminal, out StatementGrammarNode commaTerminal)
 		{
-			return terminal != null && terminal.Id == Terminals.Comma && _redundantTerminals.Add(terminal);
+			commaTerminal = terminal != null && terminal.Id == Terminals.Comma && _redundantTerminals.Add(terminal) ? terminal : null;
+			return commaTerminal != null;
 		}
 
 		private void ResolveRedundantQualifiers()
@@ -367,7 +380,7 @@ namespace SqlPad.Oracle
 						foreach (var objectReference in ownerNameObjectReference.Where(o => o.SchemaObject.Owner == DatabaseModel.CurrentSchema.ToQuotedIdentifier()))
 						{
 							var terminals = objectReference.RootNode.Terminals.TakeWhile(t => t != objectReference.ObjectNode);
-							_redundantTerminals.AddRange(terminals);
+							CreateRedundantTerminalGroup(terminals);
 							removedObjectReferenceOwners.Add(objectReference);
 						}
 					}
@@ -378,7 +391,7 @@ namespace SqlPad.Oracle
 				foreach (var reference in otherRedundantOwnerReferences)
 				{
 					var terminals = reference.RootNode.Terminals.TakeWhile(t => t != reference.ObjectNode);
-					_redundantTerminals.AddRange(terminals);
+					CreateRedundantTerminalGroup(terminals);
 				}
 
 				foreach (var columnReference in queryBlock.AllColumnReferences.Where(c => c.ObjectNode != null && c.RootNode != null))
@@ -389,7 +402,7 @@ namespace SqlPad.Oracle
 						if (columnReference.OwnerNode != null && removedObjectReferenceOwners.Contains(columnReference.ValidObjectReference))
 						{
 							var redundantSchemaPrefixTerminals = columnReference.RootNode.Terminals.TakeWhile(t => t != columnReference.ObjectNode);
-							_redundantTerminals.AddRange(redundantSchemaPrefixTerminals);
+							CreateRedundantTerminalGroup(redundantSchemaPrefixTerminals);
 						}
 
 						continue;
@@ -397,8 +410,17 @@ namespace SqlPad.Oracle
 
 					var requiredNode = columnReference.IsCorrelated ? columnReference.ObjectNode : columnReference.ColumnNode;
 					var terminals = columnReference.RootNode.Terminals.TakeWhile(t => t != requiredNode);
-					_redundantTerminals.AddRange(terminals);
+					CreateRedundantTerminalGroup(terminals);
 				}
+			}
+		}
+
+		private void CreateRedundantTerminalGroup(IEnumerable<StatementGrammarNode> terminals)
+		{
+			var terminalGroup = new RedundantTerminalGroup(terminals, RedundancyType.Qualifier);
+			if (terminalGroup.All(t => _redundantTerminals.Add(t)))
+			{
+				_redundantTerminalGroups.Add(terminalGroup);	
 			}
 		}
 

@@ -141,7 +141,7 @@ namespace SqlPad
 
 		private void BuildRedundantHashSet()
 		{
-			var redundantTerminals = _validationModels.Values.SelectMany(vm => vm.SemanticModel.RedundantNodes);
+			var redundantTerminals = _validationModels.Values.SelectMany(vm => vm.SemanticModel.RedundantSymbolGroups.SelectMany(g => g));
 			_redundantTerminals.AddRange(redundantTerminals);
 		}
 

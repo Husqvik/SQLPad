@@ -103,9 +103,9 @@ namespace SqlPad.Oracle
 				actionList.Add(new OracleContextAction(AddInsertIntoColumnListCommand.Title, OracleCommands.AddInsertIntoColumnList, CloneContextWithUseDefaultSettingsOption(executionContext)));
 			}
 
-			if (OracleCommands.CleanRedundantQualifier.CanExecuteHandler(executionContext))
+			if (OracleCommands.CleanRedundantSymbol.CanExecuteHandler(executionContext))
 			{
-				actionList.Add(new OracleContextAction(CleanRedundantQualifierCommand.Title, OracleCommands.CleanRedundantQualifier, executionContext));
+				actionList.Add(new OracleContextAction(CleanRedundantSymbolCommand.Title, OracleCommands.CleanRedundantSymbol, executionContext));
 			}
 
 			if (OracleCommands.AddCreateTableAs.CanExecuteHandler(executionContext))

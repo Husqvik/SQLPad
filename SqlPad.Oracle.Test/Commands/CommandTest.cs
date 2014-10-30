@@ -1084,13 +1084,13 @@ WHERE
 		}
 
 		[Test(Description = @""), STAThread]
-		public void TestCleanRedundantQualifierCommand()
+		public void TestCleanRedundantSymbolCommand()
 		{
 			const string statementText = @"SELECT SELECTION.SELECTION_ID, HUSQVIK.RESPONDENTBUCKET.TARGETGROUP_ID, HUSQVIK.SELECTION.RESPONDENTBUCKET_ID FROM HUSQVIK.SELECTION, HUSQVIK.RESPONDENTBUCKET";
 			_editor.Text = statementText;
 
-			CanExecuteCommand(OracleCommands.CleanRedundantQualifier).ShouldBe(true);
-			ExecuteCommand(OracleCommands.CleanRedundantQualifier);
+			CanExecuteCommand(OracleCommands.CleanRedundantSymbol).ShouldBe(true);
+			ExecuteCommand(OracleCommands.CleanRedundantSymbol);
 
 			_editor.Text.ShouldBe("SELECT SELECTION_ID, TARGETGROUP_ID, SELECTION.RESPONDENTBUCKET_ID FROM SELECTION, RESPONDENTBUCKET");
 			_editor.CaretOffset.ShouldBe(0);
@@ -1102,11 +1102,24 @@ WHERE
 			const string statementText = @"SELECT HUSQVIK.INVALID_OBJECT_TYPE(), SYS.XMLTYPE('<root/>'), HUSQVIK.SQLPAD.SQLPAD_FUNCTION(), SYS.DBMS_RANDOM.VALUE, HUSQVIK.TEST_SEQ.NEXTVAL FROM SYS.DUAL";
 			_editor.Text = statementText;
 
-			CanExecuteCommand(OracleCommands.CleanRedundantQualifier).ShouldBe(true);
-			ExecuteCommand(OracleCommands.CleanRedundantQualifier);
+			CanExecuteCommand(OracleCommands.CleanRedundantSymbol).ShouldBe(true);
+			ExecuteCommand(OracleCommands.CleanRedundantSymbol);
 
 			_editor.Text.ShouldBe("SELECT INVALID_OBJECT_TYPE(), XMLTYPE('<root/>'), SQLPAD.SQLPAD_FUNCTION(), DBMS_RANDOM.VALUE, TEST_SEQ.NEXTVAL FROM SYS.DUAL");
 			_editor.CaretOffset.ShouldBe(0);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestCleanSingleRedundantQualifier()
+		{
+			const string statementText = @"SELECT SYS.XMLTYPE('<root/>'), SYS.DBMS_RANDOM.VALUE FROM HUSQVIK.SELECTION";
+			_editor.Text = statementText;
+			_editor.CaretOffset = 8;
+
+			CanExecuteCommand(OracleCommands.CleanRedundantSymbol).ShouldBe(true);
+			ExecuteCommand(OracleCommands.CleanRedundantSymbol);
+
+			_editor.Text.ShouldBe("SELECT XMLTYPE('<root/>'), SYS.DBMS_RANDOM.VALUE FROM HUSQVIK.SELECTION");
 		}
 
 		[Test(Description = @""), STAThread]

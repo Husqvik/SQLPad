@@ -252,7 +252,7 @@ namespace SqlPad.Oracle.Test
 		{
 			const string query1 = @"SELECT SELECTION.NAME FROM HUSQVIK.SELECTION";
 
-			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 0).SingleOrDefault(a => a.Name == CleanRedundantQualifierCommand.Title);
+			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 0).SingleOrDefault(a => a.Name == CleanRedundantSymbolCommand.Title);
 			action.ShouldNotBe(null);
 		}
 
@@ -261,7 +261,7 @@ namespace SqlPad.Oracle.Test
 		{
 			const string query1 = @"SELECT SELECTION.NAME, RESPONDENTBUCKET.NAME FROM SELECTION, RESPONDENTBUCKET";
 
-			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 0).SingleOrDefault(a => a.Name == CleanRedundantQualifierCommand.Title);
+			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 0).SingleOrDefault(a => a.Name == CleanRedundantSymbolCommand.Title);
 			action.ShouldBe(null);
 		}
 
