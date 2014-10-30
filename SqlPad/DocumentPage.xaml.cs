@@ -524,7 +524,12 @@ namespace SqlPad
 			canExecuteRoutedEventArgs.CanExecute = !canExecuteRoutedEventArgs.ContinueRouting;
 		}
 
-		private async void FetchNextRows(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
+		private void FetchNextRows(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
+		{
+			FetchNextRows();
+		}
+
+		private async Task FetchNextRows()
 		{
 			ICollection<object[]> nextRowBatch = null;
 			var exception = await SafeActionAsync(() => Task.Factory.StartNew(() => nextRowBatch = DatabaseModel.FetchRecords(RowBatchSize).ToArray()));
@@ -637,7 +642,7 @@ namespace SqlPad
 			return executionModel;
 		}
 
-		private async Task ExecuteDatabaseCommand(StatementExecutionModel executionModel)
+		private void InitializeViewBeforeCommandExecution()
 		{
 			_pageModel.ResultRowItems.Clear();
 			_pageModel.GridRowInfoVisibility = Visibility.Collapsed;
@@ -646,9 +651,14 @@ namespace SqlPad
 			TextMoreRowsExist.Visibility = Visibility.Collapsed;
 
 			ResultGrid.HeadersVisibility = DataGridHeadersVisibility.None;
-			ResultGrid.Columns.Clear();
 
 			_pageModel.AffectedRowCount = -1;
+		}
+
+		private async Task ExecuteDatabaseCommand(StatementExecutionModel executionModel)
+		{
+			InitializeViewBeforeCommandExecution();
+			
 			Task<StatementExecutionResult> innerTask = null;
 			using (_cancellationTokenSource = new CancellationTokenSource())
 			{
@@ -681,10 +691,10 @@ namespace SqlPad
 					TabControlResult.SelectedIndex = 0;
 				}
 
-				TextExecutionTime.Text = FormatElapsedMilliseconds(actionResult.Elapsed);
+				UpdateStatusBarElapsedExecutionTime(actionResult.Elapsed);
 
-				var columnHeaders = DatabaseModel.GetColumnHeaders();
-				if (columnHeaders.Count == 0)
+				//var columnHeaders = DatabaseModel.GetColumnHeaders();
+				if (innerTask.Result.ColumnHeaders.Count == 0)
 				{
 					_pageModel.AffectedRowCount = innerTask.Result.AffectedRowCount;
 
@@ -696,15 +706,20 @@ namespace SqlPad
 					return;
 				}
 
-				InitializeResultGrid(columnHeaders);
+				InitializeResultGrid(innerTask.Result.ColumnHeaders);
 
-				FetchNextRows(null, null);
+				await FetchNextRows();
 			}
 
 			if (ResultGrid.Items.Count > 0)
 			{
 				ResultGrid.SelectedIndex = 0;
 			}
+		}
+
+		private void UpdateStatusBarElapsedExecutionTime(TimeSpan timeSpan)
+		{
+			TextExecutionTime.Text = FormatElapsedMilliseconds(timeSpan);
 		}
 
 		private async Task<ActionResult> SafeTimedActionAsync(Func<Task> action)
@@ -758,6 +773,8 @@ namespace SqlPad
 
 		private void InitializeResultGrid(IEnumerable<ColumnHeader> columnHeaders)
 		{
+			ResultGrid.Columns.Clear();
+
 			_pageModel.GridRowInfoVisibility = Visibility.Visible;
 
 			foreach (var columnHeader in columnHeaders)
@@ -1399,7 +1416,7 @@ namespace SqlPad
 
 			if (scrollViewer.ScrollableHeight == scrollViewer.VerticalOffset && DatabaseModel.CanFetch)
 			{
-				FetchNextRows(sender, null);
+				FetchNextRows();
 			}
 		}
 
@@ -1490,19 +1507,26 @@ namespace SqlPad
 		{
 			_gatherExecutionStatistics = false;
 
-			using (var cancellationTokenSource = new CancellationTokenSource())
+			InitializeViewBeforeCommandExecution();
+
+			var statementText = BuildStatementExecutionModel().StatementText;
+
+			Task<ExplainPlanResult> innerTask = null;
+			using (_cancellationTokenSource = new CancellationTokenSource())
 			{
-				var statementText = BuildStatementExecutionModel().StatementText;
-				try
+				var actionResult = await SafeTimedActionAsync(() => innerTask = DatabaseModel.ExplainPlanAsync(statementText, _cancellationTokenSource.Token));
+				
+				UpdateStatusBarElapsedExecutionTime(actionResult.Elapsed);
+				
+				if (!actionResult.IsSuccessful)
 				{
-					var executionModel = await DatabaseModel.ExplainPlanAsync(statementText, cancellationTokenSource.Token);
-					await ExecuteDatabaseCommand(executionModel);
-				}
-				catch (Exception e)
-				{
-					Messages.ShowError(e.Message);
+					Messages.ShowError(MainWindow, actionResult.Exception.Message);
+					return;
 				}
 			}
+
+			InitializeResultGrid(innerTask.Result.ColumnHeaders);
+			_pageModel.ResultRowItems.AddRange(innerTask.Result.RowData);
 		}
 
 		private void CreateNewPage(object sender, ExecutedRoutedEventArgs e)

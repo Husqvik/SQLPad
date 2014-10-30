@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Oracle.DataAccess.Client;
 using SqlPad.Oracle.ToolTips;
@@ -311,142 +312,37 @@ namespace SqlPad.Oracle
 		public bool IsValid { get { return true; } }
 	}
 
-	internal class DisplayCursorUpdater
+	internal class DisplayCursorUpdater : IDataModelUpdater
 	{
-		private readonly CursorModel _cursorModel;
-		
-		public DisplayCursorUpdater(int sessionId)
+		private readonly string _sqlId;
+		private readonly int _childNumber;
+
+		public string PlanText { get; private set; }
+
+		public DisplayCursorUpdater(string sqlId, int childNumber)
 		{
-			_cursorModel = new CursorModel(sessionId);
-			ActiveCommandIdentifierUpdater = new ActiveCommandIdentifierUpdaterInternal(_cursorModel);
-			DisplayCursorOutputUpdater = new DisplayCursorUpdaterInternal(_cursorModel);
-		}
-
-		public IDataModelUpdater ActiveCommandIdentifierUpdater { get; private set; }
-
-		public IDataModelUpdater DisplayCursorOutputUpdater { get; private set; }
-
-		public string PlanText { get { return _cursorModel.PlanText; } }
-
-		private class CursorModel
-		{
-			public CursorModel(int sessionId)
-			{
-				SessionId = sessionId;
-			}
-
-			public int SessionId { get; private set; }
-
-			public string PlanText { get; set; }
-
-			public string SqlId { get; set; }
-
-			public int ChildNumber { get; set; }
-		}
-
-		private class ActiveCommandIdentifierUpdaterInternal : IDataModelUpdater
-		{
-			private readonly CursorModel _cursorModel;
-
-			public ActiveCommandIdentifierUpdaterInternal(CursorModel cursorModel)
-			{
-				_cursorModel = cursorModel;
-			}
-
-			public void InitializeCommand(OracleCommand command)
-			{
-				command.CommandText = DatabaseCommands.GetExecutionPlanIdentifiers;
-				command.AddSimpleParameter("SID", _cursorModel.SessionId);
-			}
-
-			public void MapReaderData(OracleDataReader reader)
-			{
-				if (!reader.Read())
-				{
-					return;
-				}
-
-				_cursorModel.SqlId = OracleReaderValueConvert.ToString(reader["SQL_ID"]);
-				if (_cursorModel.SqlId == null)
-				{
-					return;
-				}
-
-				_cursorModel.ChildNumber = Convert.ToInt32(reader["SQL_CHILD_NUMBER"]);
-			}
-
-			public void MapScalarData(object value)
-			{
-				throw new NotSupportedException();
-			}
-
-			public bool HasScalarResult { get { return false; } }
-
-			public bool IsValid { get { return true; } }
-		}
-
-		private class DisplayCursorUpdaterInternal : IDataModelUpdater
-		{
-			private readonly CursorModel _cursorModel;
-
-			public DisplayCursorUpdaterInternal(CursorModel cursorModel)
-			{
-				_cursorModel = cursorModel;
-			}
-
-			public void InitializeCommand(OracleCommand command)
-			{
-				command.CommandText = DatabaseCommands.GetExecutionPlanText;
-				command.AddSimpleParameter("SQL_ID", _cursorModel.SqlId);
-				command.AddSimpleParameter("CHILD_NUMBER", _cursorModel.ChildNumber);
-			}
-
-			public void MapReaderData(OracleDataReader reader)
-			{
-				var builder = new StringBuilder();
-
-				while (reader.Read())
-				{
-					builder.AppendLine(Convert.ToString(reader["PLAN_TABLE_OUTPUT"]));
-				}
-
-				_cursorModel.PlanText = builder.ToString();
-			}
-
-			public void MapScalarData(object value)
-			{
-				throw new NotSupportedException();
-			}
-
-			public bool HasScalarResult { get { return false; } }
-
-			public bool IsValid
-			{
-				get { return _cursorModel.SqlId != null; }
-			}
-		}
-	}
-
-	internal class ExplainPlanUpdater : IDataModelUpdater
-	{
-		private readonly string _statementText;
-		private readonly string _planKey;
-		private readonly OracleObjectIdentifier _targetTableIdentifier;
-
-		public ExplainPlanUpdater(string statementText, string planKey, OracleObjectIdentifier targetTableIdentifier)
-		{
-			_statementText = statementText;
-			_planKey = planKey;
-			_targetTableIdentifier = targetTableIdentifier;
+			_sqlId = sqlId;
+			_childNumber = childNumber;
 		}
 
 		public void InitializeCommand(OracleCommand command)
 		{
-			var targetTable = _targetTableIdentifier.ToString();
-			command.CommandText = String.Format("EXPLAIN PLAN SET STATEMENT_ID = '{0}' INTO {1} FOR {2}", _planKey, targetTable, _statementText);
+			command.CommandText = DatabaseCommands.GetExecutionPlanText;
+			command.AddSimpleParameter("SQL_ID", _sqlId);
+			command.AddSimpleParameter("CHILD_NUMBER", _childNumber);
 		}
 
-		public void MapReaderData(OracleDataReader reader) { }
+		public void MapReaderData(OracleDataReader reader)
+		{
+			var builder = new StringBuilder();
+
+			while (reader.Read())
+			{
+				builder.AppendLine(Convert.ToString(reader["PLAN_TABLE_OUTPUT"]));
+			}
+
+			PlanText = builder.ToString();
+		}
 
 		public void MapScalarData(object value)
 		{
@@ -455,7 +351,83 @@ namespace SqlPad.Oracle
 
 		public bool HasScalarResult { get { return false; } }
 
-		public bool IsValid { get { return true; } }
+		public bool IsValid
+		{
+			get { return _sqlId != null; }
+		}
+	}
+
+	internal class ExplainPlanUpdater
+	{
+		private readonly ExplainPlanModelInternal _dataMmodel;
+		
+		public IDataModelUpdater CreateExplainPlanUpdater { get; private set; }
+		
+		public IDataModelUpdater LoadExplainPlanUpdater { get; private set; }
+
+		public ExplainPlanResult ExplainPlanResult { get { return _dataMmodel.ExplainPlanResult; } }
+
+		public ExplainPlanUpdater(string statementText, string planKey, OracleObjectIdentifier targetTableIdentifier)
+		{
+			_dataMmodel = new ExplainPlanModelInternal(statementText, planKey, targetTableIdentifier);
+			CreateExplainPlanUpdater = new CreateExplainPlanUpdaterInternal(_dataMmodel);
+			LoadExplainPlanUpdater = new LoadExplainPlanUpdaterInternal(_dataMmodel);
+		}
+
+		private class CreateExplainPlanUpdaterInternal : DataModelUpdater<ExplainPlanModelInternal>
+		{
+			public CreateExplainPlanUpdaterInternal(ExplainPlanModelInternal model) : base(model)
+			{
+			}
+
+			public override void InitializeCommand(OracleCommand command)
+			{
+				command.CommandText = String.Format("EXPLAIN PLAN SET STATEMENT_ID = '{0}' INTO {1} FOR {2}", DataModel.ExecutionPlanKey, DataModel.TargetTableName, DataModel.StatementText);
+			}
+
+			public override void MapReaderData(OracleDataReader reader) { }
+		}
+
+		private class LoadExplainPlanUpdaterInternal : DataModelUpdater<ExplainPlanModelInternal>
+		{
+			public LoadExplainPlanUpdaterInternal(ExplainPlanModelInternal model) : base(model)
+			{
+			}
+
+			public override void InitializeCommand(OracleCommand command)
+			{
+				command.CommandText = String.Format(DatabaseCommands.ExplainPlanBase, DataModel.TargetTableName);
+				command.AddSimpleParameter("STATEMENT_ID", DataModel.ExecutionPlanKey);
+			}
+
+			public override void MapReaderData(OracleDataReader reader)
+			{
+				DataModel.ExplainPlanResult =
+					new ExplainPlanResult
+					{
+						ColumnHeaders = OracleDatabaseModel.GetColumnHeadersFromReader(reader),
+						RowData = OracleDatabaseModel.FetchRecordsFromReader(reader, Int32.MaxValue).ToArray()
+					};
+			}
+		}
+
+		private class ExplainPlanModelInternal : ModelBase
+		{
+			public string StatementText { get; private set; }
+			
+			public string ExecutionPlanKey { get; private set; }
+			
+			public string TargetTableName { get; private set; }
+
+			public ExplainPlanResult ExplainPlanResult { get; set; }
+			
+			public ExplainPlanModelInternal(string statementText, string executionPlanKey, OracleObjectIdentifier targetTableIdentifier)
+			{
+				StatementText = statementText;
+				ExecutionPlanKey = executionPlanKey;
+				TargetTableName = targetTableIdentifier.ToString();
+			}
+		}
 	}
 
 	internal class SessionExecutionStatisticsUpdater

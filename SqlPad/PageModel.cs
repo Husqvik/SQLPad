@@ -300,6 +300,15 @@ namespace SqlPad
 		public ICollection<BindVariableModel> BindVariables { get; set; }
 		
 		public bool GatherExecutionStatistics { get; set; }
+		
+		public bool FetchAllRows { get; set; }
+	}
+
+	public struct ExplainPlanResult
+	{
+		public ICollection<ColumnHeader> ColumnHeaders { get; set; }
+
+		public ICollection<object[]> RowData { get; set; }
 	}
 
 	public struct StatementExecutionResult
@@ -307,6 +316,8 @@ namespace SqlPad
 		public int AffectedRowCount { get; set; }
 
 		public bool ExecutedSucessfully { get; set; }
+
+		public ICollection<ColumnHeader> ColumnHeaders { get; set; }
 	}
 
 	[DebuggerDisplay("SessionExecutionStatisticsRecord (Name={Name}; Value={Value})")]

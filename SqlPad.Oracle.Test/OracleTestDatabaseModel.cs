@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Configuration;
 using System.Linq;
 using System.Threading;
@@ -815,12 +816,12 @@ Note
 
 		public override StatementExecutionResult ExecuteStatement(StatementExecutionModel executionModel)
 		{
-			return new StatementExecutionResult { ExecutedSucessfully = true };
+			return new StatementExecutionResult { ExecutedSucessfully = true, ColumnHeaders = ColumnHeaders };
 		}
 
 		public override Task<StatementExecutionResult> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
 		{
-			return Task.Factory.StartNew(() => new StatementExecutionResult { ExecutedSucessfully = true }, cancellationToken);
+			return Task.Factory.StartNew(() => ExecuteStatement(executionModel), cancellationToken);
 		}
 
 		public override Task UpdateTableDetailsAsync(OracleObjectIdentifier objectIdentifier, TableDetailsModel dataModel, CancellationToken cancellationToken)
@@ -864,27 +865,22 @@ Note
 			yield return new object[] { "Dummy Value " + ++_generatedRowCount};
 		}
 
-		public override ICollection<ColumnHeader> GetColumnHeaders()
-		{
-			return ColumnHeaders;
-		}
-
 		public override bool HasActiveTransaction { get { return false; } }
 
 		public override void CommitTransaction() { }
 
 		public override void RollbackTransaction() { }
 
-		public override Task<StatementExecutionModel> ExplainPlanAsync(string statement, CancellationToken cancellationToken)
+		public override Task<ExplainPlanResult> ExplainPlanAsync(string statement, CancellationToken cancellationToken)
 		{
-			var statementExecutionModel =
-				new StatementExecutionModel
+			var explainPlanResult =
+				new ExplainPlanResult
 				{
-					StatementText = String.Format(DatabaseCommands.ExplainPlanBase, OracleObjectIdentifier.Create(InitialSchema, "TARGET_PLAN_TABLE")),
-					BindVariables = new[] { new BindVariableModel(new BindVariableConfiguration { DataType = "Varchar2", Name = "STATEMENT_ID", Value = "DummyStatementId" }) }
+					ColumnHeaders = ColumnHeaders,
+					RowData = new ReadOnlyCollection<object[]>(new List<object[]>(FetchRecords(1)))
 				};
 
-			return CreateFinishedTask(statementExecutionModel);
+			return CreateFinishedTask(explainPlanResult);
 		}
 
 		public override Task<string> GetActualExecutionPlanAsync(CancellationToken cancellationToken)

@@ -79,7 +79,7 @@ namespace SqlPad.Oracle.Database.Test
 			
 			databaseModel.CanFetch.ShouldBe(true);
 
-			var columnHeaders = databaseModel.GetColumnHeaders().ToArray();
+			var columnHeaders = result.ColumnHeaders.ToArray();
 			columnHeaders.Length.ShouldBe(1);
 			columnHeaders[0].DataType.ShouldBe(typeof(string));
 			columnHeaders[0].DatabaseDataType.ShouldBe("Varchar2");

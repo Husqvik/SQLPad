@@ -42,6 +42,8 @@ namespace SqlPad.Oracle
 		private OracleTransaction _userTransaction;
 		private bool _hasActiveTransaction;
 		private int _userSessionId;
+		private string _userCommandSqlId;
+		private int _userCommandChildNumber;
 		private SessionExecutionStatisticsUpdater _executionStatisticsUpdater;
 		private string _oracleVersion;
 
@@ -251,7 +253,7 @@ namespace SqlPad.Oracle
 			Trace.WriteLine(String.Format("{0} - Metadata for '{1}' has been retrieved from the cache. ", DateTime.Now, CachedConnectionStringName));
 		}
 
-		public async override Task<StatementExecutionModel> ExplainPlanAsync(string statement, CancellationToken cancellationToken)
+		public async override Task<ExplainPlanResult> ExplainPlanAsync(string statement, CancellationToken cancellationToken)
 		{
 			if (String.IsNullOrEmpty(OracleConfiguration.Configuration.ExecutionPlan.TargetTable.Name))
 			{
@@ -265,19 +267,14 @@ namespace SqlPad.Oracle
 			try
 			{
 				_isExecuting = true;
-				await UpdateModelAsync(cancellationToken, true, explainPlanUpdater);
+				await UpdateModelAsync(cancellationToken, true, explainPlanUpdater.CreateExplainPlanUpdater, explainPlanUpdater.LoadExplainPlanUpdater);
 			}
 			finally
 			{
 				_isExecuting = false;
 			}
-			
-			return
-				new StatementExecutionModel
-				{
-					StatementText = String.Format(DatabaseCommands.ExplainPlanBase, targetTableIdentifier),
-					BindVariables = new[] { new BindVariableModel(new BindVariableConfiguration { DataType = OracleBindVariable.DataTypeVarchar2, Name = "STATEMENT_ID", Value = planKey }) }
-				};
+
+			return explainPlanUpdater.ExplainPlanResult;
 		}
 
 		public override async Task<ICollection<SessionExecutionStatisticsRecord>> GetExecutionStatisticsAsync(CancellationToken cancellationToken)
@@ -288,8 +285,8 @@ namespace SqlPad.Oracle
 
 		public async override Task<string> GetActualExecutionPlanAsync(CancellationToken cancellationToken)
 		{
-			var displayCursorUpdater = new DisplayCursorUpdater(_userSessionId);
-			await UpdateModelAsync(cancellationToken, true, displayCursorUpdater.ActiveCommandIdentifierUpdater, displayCursorUpdater.DisplayCursorOutputUpdater);
+			var displayCursorUpdater = new DisplayCursorUpdater(_userCommandSqlId, _userCommandChildNumber);
+			await UpdateModelAsync(cancellationToken, true, displayCursorUpdater);
 			return displayCursorUpdater.PlanText;
 		}
 
@@ -326,48 +323,53 @@ namespace SqlPad.Oracle
 
 					connection.Open();
 
-					SetCurrentSchema(command);
-
-					foreach (var updater in updaters)
+					using (var transaction = connection.BeginTransaction())
 					{
-						command.Parameters.Clear();
-						command.CommandText = String.Empty;
-						command.CommandType = CommandType.Text;
-						updater.InitializeCommand(command);
+						SetCurrentSchema(command);
 
-						try
+						foreach (var updater in updaters)
 						{
-							if (updater.IsValid)
+							command.Parameters.Clear();
+							command.CommandText = String.Empty;
+							command.CommandType = CommandType.Text;
+							updater.InitializeCommand(command);
+
+							try
 							{
-								if (updater.HasScalarResult)
+								if (updater.IsValid)
 								{
-									var result = await command.ExecuteScalarAsynchronous(cancellationToken);
-									updater.MapScalarData(result);
-								}
-								else
-								{
-									using (var reader = await command.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken))
+									if (updater.HasScalarResult)
 									{
-										updater.MapReaderData(reader);
+										var result = await command.ExecuteScalarAsynchronous(cancellationToken);
+										updater.MapScalarData(result);
+									}
+									else
+									{
+										using (var reader = await command.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken))
+										{
+											updater.MapReaderData(reader);
+										}
 									}
 								}
 							}
-						}
-						catch (Exception exception)
-						{
-							var oracleException = exception as OracleException;
-							if (oracleException != null && oracleException.Number == OracleErrorCodeUserInvokedCancellation)
+							catch (Exception exception)
 							{
-								continue;
-							}
-							
-							Trace.WriteLine("Update model failed: " + exception);
+								var oracleException = exception as OracleException;
+								if (oracleException != null && oracleException.Number == OracleErrorCodeUserInvokedCancellation)
+								{
+									continue;
+								}
 
-							if (!suppressException)
-							{
-								throw;
+								Trace.WriteLine("Update model failed: " + exception);
+
+								if (!suppressException)
+								{
+									throw;
+								}
 							}
 						}
+
+						transaction.Rollback();
 					}
 				}
 			}
@@ -385,7 +387,7 @@ namespace SqlPad.Oracle
 
 		public override bool CanFetch
 		{
-			get { return _userDataReader != null && !_userDataReader.IsClosed && !_isExecuting; }
+			get { return CanFetchFromReader(_userDataReader) && !_isExecuting; }
 		}
 
 		public override void Dispose()
@@ -495,8 +497,6 @@ namespace SqlPad.Oracle
 
 		private async Task<OracleDataReader> ExecuteUserStatement(StatementExecutionModel executionModel, CancellationToken cancellationToken)
 		{
-			_isExecuting = true;
-
 			if (EnsureUserConnectionOpen())
 			{
 				InitializeSession();
@@ -533,11 +533,48 @@ namespace SqlPad.Oracle
 
 			var reader = await _userCommand.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken);
 
+			ResolveExecutionPlanIdentifiers();
+
 			UpdateBindVariables(executionModel);
 
 			ResolveTransactionStatus();
 
 			return reader;
+		}
+
+		private void ResolveExecutionPlanIdentifiers()
+		{
+			using (var connection = new OracleConnection(_oracleConnectionString.ConnectionString))
+			{
+				using (var command = connection.CreateCommand())
+				{
+					command.BindByName = true;
+					command.CommandText = DatabaseCommands.GetExecutionPlanIdentifiers;
+					command.AddSimpleParameter("SID", _userSessionId);
+
+					try
+					{
+						connection.Open();
+
+						using (var reader = command.ExecuteReader())
+						{
+							if (reader.Read())
+							{
+								_userCommandSqlId = (string)reader["SQL_ID"];
+								_userCommandChildNumber = Convert.ToInt32(reader["SQL_CHILD_NUMBER"]);
+							}
+							else
+							{
+								_userCommandSqlId = null;
+							}
+						}
+					}
+					catch (OracleException e)
+					{
+						Trace.WriteLine("Execution plan could not been fetched: " + e);
+					}
+				}
+			}
 		}
 
 		private void ResolveTransactionStatus()
@@ -596,9 +633,11 @@ namespace SqlPad.Oracle
 
 			try
 			{
+				_isExecuting = true;
 				_userDataReader = await ExecuteUserStatement(executionModel, cancellationToken);
 				result.AffectedRowCount = _userDataReader.RecordsAffected;
 				result.ExecutedSucessfully = true;
+				result.ColumnHeaders = GetColumnHeadersFromReader(_userDataReader);
 			}
 			catch (Exception exception)
 			{
@@ -624,23 +663,21 @@ namespace SqlPad.Oracle
 			DisposeCommandAndReader();
 		}
 
-		public override ICollection<ColumnHeader> GetColumnHeaders()
+		internal static ICollection<ColumnHeader> GetColumnHeadersFromReader(IDataRecord reader)
 		{
-			CheckCanFetch();
-
-			var columnTypes = new ColumnHeader[_userDataReader.FieldCount];
-			for (var i = 0; i < _userDataReader.FieldCount; i++)
+			var columnTypes = new ColumnHeader[reader.FieldCount];
+			for (var i = 0; i < reader.FieldCount; i++)
 			{
 				var columnHeader = new ColumnHeader
 				{
 					ColumnIndex = i,
-					Name = _userDataReader.GetName(i),
-					DataType = _userDataReader.GetFieldType(i),
-					DatabaseDataType = _userDataReader.GetDataTypeName(i)
+					Name = reader.GetName(i),
+					DataType = reader.GetFieldType(i),
+					DatabaseDataType = reader.GetDataTypeName(i)
 				};
 
 				columnHeader.ValueConverter = new OracleColumnValueConverter(columnHeader);
-				
+
 				columnTypes[i] = columnHeader;
 			}
 
@@ -649,12 +686,25 @@ namespace SqlPad.Oracle
 
 		public override IEnumerable<object[]> FetchRecords(int rowCount)
 		{
-			CheckCanFetch();
+			return FetchRecordsFromReader(_userDataReader, rowCount);
+		}
 
-			var fieldTypes = new string[_userDataReader.FieldCount];
-			for (var i = 0; i < _userDataReader.FieldCount; i++)
+		private static bool CanFetchFromReader(IDataReader reader)
+		{
+			return reader != null && !reader.IsClosed;
+		}
+
+		internal static IEnumerable<object[]> FetchRecordsFromReader(OracleDataReader reader, int rowCount)
+		{
+			if (!CanFetchFromReader(reader))
 			{
-				var fieldType = _userDataReader.GetDataTypeName(i);
+				yield break;
+			}
+
+			var fieldTypes = new string[reader.FieldCount];
+			for (var i = 0; i < reader.FieldCount; i++)
+			{
+				var fieldType = reader.GetDataTypeName(i);
 				fieldTypes[i] = fieldType;
 				//Trace.Write(i + ". " + fieldType + "; ");
 			}
@@ -663,46 +713,40 @@ namespace SqlPad.Oracle
 
 			for (var i = 0; i < rowCount; i++)
 			{
-				if (!CanFetch)
+				if (!CanFetchFromReader(reader))
 				{
-					break;
+					yield break;
 				}
 
 				object[] values;
 
 				try
 				{
-					_isExecuting = true;
-
-					if (_userDataReader.Read())
+					if (reader.Read())
 					{
-						values = BuildValueArray(fieldTypes);
+						values = BuildValueArray(reader, fieldTypes);
 					}
 					else
 					{
-						_userDataReader.Close();
+						reader.Close();
 						yield break;
 					}
 				}
 				catch
 				{
-					if (!_userDataReader.IsClosed)
+					if (!reader.IsClosed)
 					{
-						_userDataReader.Close();
+						reader.Close();
 					}
 
 					throw;
-				}
-				finally
-				{
-					_isExecuting = false;
 				}
 
 				yield return values;
 			}
 		}
 
-		private object[] BuildValueArray(IList<string> fieldTypes)
+		private static object[] BuildValueArray(OracleDataReader reader, IList<string> fieldTypes)
 		{
 			var columnData = new object[fieldTypes.Count];
 
@@ -713,38 +757,38 @@ namespace SqlPad.Oracle
 				switch (fieldType)
 				{
 					case "Blob":
-						value = new OracleBlobValue(_userDataReader.GetOracleBlob(i));
+						value = new OracleBlobValue(reader.GetOracleBlob(i));
 						break;
 					case "Clob":
 					case "NClob":
-						value = new OracleClobValue(fieldType.ToUpperInvariant(), _userDataReader.GetOracleClob(i));
+						value = new OracleClobValue(fieldType.ToUpperInvariant(), reader.GetOracleClob(i));
 						break;
 					case "Long":
-						var oracleString = _userDataReader.GetOracleString(i);
+						var oracleString = reader.GetOracleString(i);
 						value = oracleString.IsNull
 							? String.Empty
-							: String.Format("{0}{1}", oracleString.Value, oracleString.Value.Length == InitialLongFetchSize ? OracleClobValue.Ellipsis : null);
+							: String.Format("{0}{1}", oracleString.Value, oracleString.Value.Length == InitialLongFetchSize ? OracleLargeTextValue.Ellipsis : null);
 						break;
 					case "LongRaw":
-						value = new OracleLongRawValue(_userDataReader, i);
+						value = new OracleLongRawValue(reader, i);
 						break;
 					case "TimeStamp":
-						var oracleTimestamp = new OracleTimestamp(_userDataReader, i);
+						var oracleTimestamp = new OracleTimestamp(reader, i);
 						value = oracleTimestamp.IsNull ? (object)DBNull.Value : oracleTimestamp;
 						break;
 					case "TimeStampTZ":
-						var oracleTimestampWithTimeZone = new OracleTimestampWithTimeZone(_userDataReader, i);
+						var oracleTimestampWithTimeZone = new OracleTimestampWithTimeZone(reader, i);
 						value = oracleTimestampWithTimeZone.IsNull ? (object)DBNull.Value : oracleTimestampWithTimeZone;
 						break;
 					case "Decimal":
-						var oracleDecimal = new OracleNumber(_userDataReader, i);
+						var oracleDecimal = new OracleNumber(reader, i);
 						value = oracleDecimal.IsNull ? (object)DBNull.Value : oracleDecimal;
 						break;
 					case "XmlType":
-						value = new OracleXmlValue(_userDataReader.GetOracleXmlType(i));
+						value = new OracleXmlValue(reader.GetOracleXmlType(i));
 						break;
 					default:
-						value = _userDataReader.GetValue(i);
+						value = reader.GetValue(i);
 						break;
 				}
 
