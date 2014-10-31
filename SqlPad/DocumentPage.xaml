@@ -23,6 +23,9 @@
 		</Style>
 	</UserControl.Resources>
 	<Grid>
+		<Grid.CommandBindings>
+			<CommandBinding Command="commands:GenericCommands.CancelUserAction" Executed="CancelUserActionHandler" CanExecute="CanExecuteCancelUserActionHandler" />
+		</Grid.CommandBindings>
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto" />
 			<RowDefinition Height="*" x:Name="RowDefinitionEditor" />
@@ -81,9 +84,8 @@
 			</TextBlock>
 			<Grid>
 				<Grid.CommandBindings>
-					<CommandBinding Command="commands:GenericCommands.CancelStatementCommand" Executed="CancelStatementHandler" CanExecute="CanExecuteCancelStatementHandler" />
-					<CommandBinding Command="commands:GenericCommands.ExecuteDatabaseCommandCommand" Executed="ExecuteDatabaseCommandHandler" CanExecute="CanExecuteDatabaseCommandHandler" />
-					<CommandBinding Command="commands:GenericCommands.ExecuteDatabaseCommandWithActualExecutionPlanCommand" Executed="ExecuteDatabaseCommandWithActualExecutionPlanHandler" CanExecute="CanExecuteDatabaseCommandHandler" />
+					<CommandBinding Command="commands:GenericCommands.ExecuteDatabaseCommand" Executed="ExecuteDatabaseCommandHandler" CanExecute="CanExecuteDatabaseCommandHandler" />
+					<CommandBinding Command="commands:GenericCommands.ExecuteDatabaseCommandWithActualExecutionPlan" Executed="ExecuteDatabaseCommandWithActualExecutionPlanHandler" CanExecute="CanExecuteDatabaseCommandHandler" />
 					<CommandBinding Command="commands:GenericCommands.ExplainPlan" Executed="ExecuteExplainPlanCommandHandler" CanExecute="CanExecuteDatabaseCommandHandler" />
 				</Grid.CommandBindings>
 				<Grid.ColumnDefinitions>
@@ -101,19 +103,19 @@
 				                       PreviewKeyUp="EditorKeyUpHandler"
 				                       MouseHoverStopped="MouseHoverStoppedHandler">
 					<avalonedit:TextEditor.CommandBindings>
-						<CommandBinding Command="commands:GenericCommands.CreateNewPageCommand" Executed="CreateNewPage" />
-						<CommandBinding Command="commands:GenericCommands.FindUsagesCommand" Executed="FindUsages" />
-						<CommandBinding Command="commands:GenericCommands.FormatStatementCommand" Executed="FormatStatement" />
-						<CommandBinding Command="commands:GenericCommands.FormatStatementAsSingleLineCommand" Executed="FormatStatementAsSingleLine" />
-						<CommandBinding Command="commands:GenericCommands.ListContextActionCommand" Executed="ListContextActions" />
-						<CommandBinding Command="commands:GenericCommands.NavigateToDefinitionRootCommand" Executed="NavigateToDefinition" />
-						<CommandBinding Command="commands:GenericCommands.NavigateToNextUsageCommand" Executed="NavigateToNextHighlightedUsage" />
-						<CommandBinding Command="commands:GenericCommands.NavigateToPreviousUsageCommand" Executed="NavigateToPreviousHighlightedUsage" />
-						<CommandBinding Command="commands:GenericCommands.NavigateToQueryBlockRootCommand" Executed="NavigateToQueryBlockRoot" />
-						<CommandBinding Command="commands:GenericCommands.RefreshDatabaseModelCommand" Executed="RefreshDatabaseModel" />
-						<CommandBinding Command="commands:GenericCommands.SaveCommand" Executed="SaveCommandExecutedHandler" />
-						<CommandBinding Command="commands:GenericCommands.ShowCodeCompletionOptionCommand" Executed="ShowCodeCompletionOptions" CanExecute="CanExecuteShowCodeCompletionHandler" />
-						<CommandBinding Command="commands:GenericCommands.ShowFunctionOverloadCommand" Executed="ShowFunctionOverloads" />
+						<CommandBinding Command="commands:GenericCommands.CreateNewPage" Executed="CreateNewPage" />
+						<CommandBinding Command="commands:GenericCommands.FindUsages" Executed="FindUsages" />
+						<CommandBinding Command="commands:GenericCommands.FormatStatement" Executed="FormatStatement" />
+						<CommandBinding Command="commands:GenericCommands.FormatStatementAsSingleLine" Executed="FormatStatementAsSingleLine" />
+						<CommandBinding Command="commands:GenericCommands.ListContextAction" Executed="ListContextActions" />
+						<CommandBinding Command="commands:GenericCommands.NavigateToDefinitionRoot" Executed="NavigateToDefinition" />
+						<CommandBinding Command="commands:GenericCommands.NavigateToNextUsage" Executed="NavigateToNextHighlightedUsage" />
+						<CommandBinding Command="commands:GenericCommands.NavigateToPreviousUsage" Executed="NavigateToPreviousHighlightedUsage" />
+						<CommandBinding Command="commands:GenericCommands.NavigateToQueryBlockRoot" Executed="NavigateToQueryBlockRoot" />
+						<CommandBinding Command="commands:GenericCommands.RefreshDatabaseModel" Executed="RefreshDatabaseModel" />
+						<CommandBinding Command="commands:GenericCommands.Save" Executed="SaveCommandExecutedHandler" />
+						<CommandBinding Command="commands:GenericCommands.ShowCodeCompletionOption" Executed="ShowCodeCompletionOptions" CanExecute="CanExecuteShowCodeCompletionHandler" />
+						<CommandBinding Command="commands:GenericCommands.ShowFunctionOverload" Executed="ShowFunctionOverloads" />
 					</avalonedit:TextEditor.CommandBindings>
 					<avalonedit:TextEditor.ContextMenu>
 						<ContextMenu x:Name="CommandMenu" Placement="RelativePoint" />
@@ -200,11 +202,12 @@
 				          PreviewMouseWheel="ResultGridPreviewMouseWheelHandler">
 					<DataGrid.CommandBindings>
 						<CommandBinding Command="commands:GenericCommands.ExportToCsv" Executed="ExportToCsv" CanExecute="CanExportToCsv" />
-						<CommandBinding Command="commands:GenericCommands.FetchNextRowsCommand" Executed="FetchNextRows"
-						                CanExecute="CanFetchNextRows" />
+						<CommandBinding Command="commands:GenericCommands.FetchNextRows" Executed="FetchNextRows" CanExecute="CanFetchNextRows" />
+						<CommandBinding Command="commands:GenericCommands.FetchAllRows" Executed="FetchAllRows" CanExecute="CanFetchAllRows" />
 					</DataGrid.CommandBindings>
 					<DataGrid.ContextMenu>
 						<ContextMenu>
+							<MenuItem Header="_Fetch all" Command="commands:GenericCommands.FetchAllRows" />
 							<MenuItem Header="_Export to CSV..." Command="commands:GenericCommands.ExportToCsv" />
 						</ContextMenu>
 					</DataGrid.ContextMenu>

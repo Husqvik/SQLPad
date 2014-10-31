@@ -81,7 +81,7 @@ namespace SqlPad
 		{
 			SqlPad.Resources.Initialize(Resources);
 
-			CommandBindings.Add(new CommandBinding(GenericCommands.SaveAllCommand, SaveAllCommandExecutedHandler));
+			CommandBindings.Add(new CommandBinding(GenericCommands.SaveAll, SaveAllCommandExecutedHandler));
 
 			WorkingDocumentCollection.RestoreApplicationWindowProperties(this);
 
@@ -176,10 +176,10 @@ namespace SqlPad
 
 		private void AddDocumentTabItemContextMenuCommandBindings(DocumentPage documentPage)
 		{
-			var closeDocumentCommandBinding = new CommandBinding(GenericCommands.CloseDocumentCommand, CloseTabExecutedHandler, (sender, args) => args.CanExecute = true);
+			var closeDocumentCommandBinding = new CommandBinding(GenericCommands.CloseDocument, CloseTabExecutedHandler, (sender, args) => args.CanExecute = true);
 			documentPage.TabItemContextMenu.CommandBindings.Add(closeDocumentCommandBinding);
 			documentPage.CommandBindings.Add(closeDocumentCommandBinding);
-			documentPage.TabItemContextMenu.CommandBindings.Add(new CommandBinding(GenericCommands.CloseAllDocumentsButThisCommand, CloseAllButThisTabExecutedHandler, (sender, args) => args.CanExecute = DocumentTabControl.Items.Count > 2));
+			documentPage.TabItemContextMenu.CommandBindings.Add(new CommandBinding(GenericCommands.CloseAllDocumentsButThis, CloseAllButThisTabExecutedHandler, (sender, args) => args.CanExecute = DocumentTabControl.Items.Count > 2));
 		}
 
 		private void CloseAllButThisTabExecutedHandler(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)

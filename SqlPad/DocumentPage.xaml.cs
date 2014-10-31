@@ -26,7 +26,7 @@ namespace SqlPad
 {
 	public partial class DocumentPage : IDisposable
 	{
-		private const int RowBatchSize = 100;
+		private const int DefaultRowBatchSize = 100;
 		private const string InitialDocumentHeader = "New*";
 		private const string MaskWrapByQuote = "\"{0}\"";
 		private const string QuoteCharacter = "\"";
@@ -51,6 +51,7 @@ namespace SqlPad
 		private bool _isParsing;
 		private bool _isInitializing = true;
 		private bool _isInitialParsing = true;
+		private bool _isFetching;
 		private bool _enableCodeComplete;
 		private bool _isToolTipOpenByShortCut;
 		private bool _gatherExecutionStatistics;
@@ -204,35 +205,35 @@ namespace SqlPad
 			var menuItemSave = new MenuItem
 			{
 				Header = "Save",
-				Command = GenericCommands.SaveCommand,
+				Command = GenericCommands.Save,
 			};
 
 			contextMenu.Items.Add(menuItemSave);
-			contextMenu.CommandBindings.Add(new CommandBinding(GenericCommands.SaveCommand, SaveCommandExecutedHandler));
+			contextMenu.CommandBindings.Add(new CommandBinding(GenericCommands.Save, SaveCommandExecutedHandler));
 
 			var menuItemSaveAs = new MenuItem
 			{
 				Header = "Save as...",
-				Command = GenericCommands.SaveAsCommand,
+				Command = GenericCommands.SaveAs,
 			};
 
 			contextMenu.Items.Add(menuItemSaveAs);
-			contextMenu.CommandBindings.Add(new CommandBinding(GenericCommands.SaveAsCommand, SaveAsCommandExecutedHandler));
+			contextMenu.CommandBindings.Add(new CommandBinding(GenericCommands.SaveAs, SaveAsCommandExecutedHandler));
 
 			var menuItemOpenContainingFolder = new MenuItem
 			{
 				Header = "Open Containing Folder",
-				Command = GenericCommands.OpenContainingFolderCommand,
+				Command = GenericCommands.OpenContainingFolder,
 				CommandParameter = this
 			};
 
 			contextMenu.Items.Add(menuItemOpenContainingFolder);
-			contextMenu.CommandBindings.Add(new CommandBinding(GenericCommands.OpenContainingFolderCommand, OpenContainingFolderCommandExecutedHandler, (sender, args) => args.CanExecute = WorkingDocument.File != null));
+			contextMenu.CommandBindings.Add(new CommandBinding(GenericCommands.OpenContainingFolder, OpenContainingFolderCommandExecutedHandler, (sender, args) => args.CanExecute = WorkingDocument.File != null));
 
 			var menuItemClose = new MenuItem
 			{
 				Header = "Close",
-				Command = GenericCommands.CloseDocumentCommand,
+				Command = GenericCommands.CloseDocument,
 				CommandParameter = this
 			};
 
@@ -241,7 +242,7 @@ namespace SqlPad
 			var menuItemCloseAllButThis = new MenuItem
 			{
 				Header = "Close All But This",
-				Command = GenericCommands.CloseAllDocumentsButThisCommand,
+				Command = GenericCommands.CloseAllDocumentsButThis,
 				CommandParameter = this
 			};
 
@@ -471,10 +472,10 @@ namespace SqlPad
 			ChangeDeleteLineCommandInputGesture();
 
 			var commandBindings = Editor.TextArea.DefaultInputHandler.Editing.CommandBindings;
-			commandBindings.Add(new CommandBinding(GenericCommands.DuplicateTextCommand, GenericCommandHandler.DuplicateText));
-			commandBindings.Add(new CommandBinding(GenericCommands.BlockCommentCommand, GenericCommandHandler.HandleBlockComments));
-			commandBindings.Add(new CommandBinding(GenericCommands.LineCommentCommand, GenericCommandHandler.HandleLineComments));
-			commandBindings.Add(new CommandBinding(GenericCommands.MultiNodeEditCommand, EditMultipleNodes));
+			commandBindings.Add(new CommandBinding(GenericCommands.DuplicateText, GenericCommandHandler.DuplicateText));
+			commandBindings.Add(new CommandBinding(GenericCommands.BlockComment, GenericCommandHandler.HandleBlockComments));
+			commandBindings.Add(new CommandBinding(GenericCommands.LineComment, GenericCommandHandler.HandleLineComments));
+			commandBindings.Add(new CommandBinding(GenericCommands.MultiNodeEdit, EditMultipleNodes));
 
 			commandBindings.Add(new CommandBinding(DiagnosticCommands.ShowTokenCommand, ShowTokenCommandExecutionHandler));
 		}
@@ -489,14 +490,14 @@ namespace SqlPad
 			CreateCodeCompletionWindow(true);
 		}
 
-		private void CanExecuteCancelStatementHandler(object sender, CanExecuteRoutedEventArgs args)
+		private void CanExecuteCancelUserActionHandler(object sender, CanExecuteRoutedEventArgs args)
 		{
-			args.CanExecute = DatabaseModel.IsExecuting;
+			args.CanExecute = DatabaseModel.IsExecuting || _isFetching;
 		}
 
-		private void CancelStatementHandler(object sender, ExecutedRoutedEventArgs args)
+		private void CancelUserActionHandler(object sender, ExecutedRoutedEventArgs args)
 		{
-			Trace.WriteLine("Command is about to cancel. ");
+			Trace.WriteLine("Action is about to cancel. ");
 			_cancellationTokenSource.Cancel();
 		}
 
@@ -518,21 +519,45 @@ namespace SqlPad
 			GenericCommandHandler.ExecuteEditCommand(_sqlDocumentRepository, Editor, _statementFormatter.SingleLineExecutionHandler.ExecutionHandler);
 		}
 
+		private void CanFetchAllRows(object sender, CanExecuteRoutedEventArgs canExecuteRoutedEventArgs)
+		{
+			canExecuteRoutedEventArgs.CanExecute = DatabaseModel.CanFetch && !DatabaseModel.IsExecuting;
+			canExecuteRoutedEventArgs.ContinueRouting = canExecuteRoutedEventArgs.CanExecute;
+		}
+
+		private async void FetchAllRows(object sender, ExecutedRoutedEventArgs args)
+		{
+			using (_cancellationTokenSource = new CancellationTokenSource())
+			{
+				while (DatabaseModel.CanFetch)
+				{
+					if (_cancellationTokenSource.Token.IsCancellationRequested)
+					{
+						break;
+					}
+
+					await FetchNextRows();
+				}
+			}
+		}
+
 		private void CanFetchNextRows(object sender, CanExecuteRoutedEventArgs canExecuteRoutedEventArgs)
 		{
-			canExecuteRoutedEventArgs.ContinueRouting = ResultGrid.SelectedIndex < ResultGrid.Items.Count - 1 || !DatabaseModel.CanFetch;
-			canExecuteRoutedEventArgs.CanExecute = !canExecuteRoutedEventArgs.ContinueRouting;
+			canExecuteRoutedEventArgs.CanExecute = ResultGrid.SelectedIndex == ResultGrid.Items.Count - 1 && DatabaseModel.CanFetch;
+			canExecuteRoutedEventArgs.ContinueRouting = !canExecuteRoutedEventArgs.CanExecute;
 		}
 
-		private void FetchNextRows(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
+		private async void FetchNextRows(object sender, ExecutedRoutedEventArgs args)
 		{
-			FetchNextRows();
+			await FetchNextRows();
 		}
 
-		private async void FetchNextRows()
+		private async Task FetchNextRows()
 		{
 			ICollection<object[]> nextRowBatch = null;
-			var exception = await SafeActionAsync(() => Task.Factory.StartNew(() => nextRowBatch = DatabaseModel.FetchRecords(RowBatchSize).ToArray()));
+			_isFetching = true;
+			var exception = await SafeActionAsync(() => Task.Factory.StartNew(() => nextRowBatch = DatabaseModel.FetchRecords(DefaultRowBatchSize).ToArray()));
+			_isFetching = false;
 
 			TextMoreRowsExist.Visibility = DatabaseModel.CanFetch ? Visibility.Visible : Visibility.Collapsed;
 
@@ -598,7 +623,7 @@ namespace SqlPad
 
 		private void CanExecuteDatabaseCommandHandler(object sender, CanExecuteRoutedEventArgs args)
 		{
-			if (DatabaseModel.IsExecuting || _sqlDocumentRepository.StatementText != Editor.Text)
+			if (_isFetching || DatabaseModel.IsExecuting || _sqlDocumentRepository.StatementText != Editor.Text)
 				return;
 
 			var statement = _sqlDocumentRepository.Statements.GetStatementAtPosition(Editor.CaretOffset);
@@ -708,7 +733,7 @@ namespace SqlPad
 
 				InitializeResultGrid(innerTask.Result.ColumnHeaders);
 
-				FetchNextRows();
+				await FetchNextRows();
 			}
 
 			if (ResultGrid.Items.Count > 0)
@@ -1408,7 +1433,7 @@ namespace SqlPad
 			return Editor.Text[Editor.CaretOffset] == currentCharacter && Editor.Text[Editor.CaretOffset - 1] == previousCharacter;
 		}
 
-		private void ResultGridPreviewMouseWheelHandler(object sender, MouseWheelEventArgs e)
+		private async void ResultGridPreviewMouseWheelHandler(object sender, MouseWheelEventArgs e)
 		{
 			var scrollViewer = GetResultGridScrollViewer();
 			if (e.Delta >= 0 || scrollViewer == null)
@@ -1416,7 +1441,7 @@ namespace SqlPad
 
 			if (scrollViewer.ScrollableHeight == scrollViewer.VerticalOffset && DatabaseModel.CanFetch)
 			{
-				FetchNextRows();
+				await FetchNextRows();
 			}
 		}
 

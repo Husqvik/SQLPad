@@ -281,7 +281,7 @@ namespace SqlPad.Oracle
 		private IEnumerable<ICodeCompletionItem> GenerateColumnAliases(StatementGrammarNode currentTerminal, OracleCodeCompletionType completionType)
 		{
 			return completionType.CurrentQueryBlock.Columns
-				.Where(c => c.HasExplicitAlias && !c.IsDirectReference)
+				.Where(c => c.HasExplicitAlias)
 				.Select(c =>
 					new OracleCodeCompletionItem
 					{

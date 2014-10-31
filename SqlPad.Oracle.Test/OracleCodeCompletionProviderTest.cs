@@ -1226,7 +1226,19 @@ se";
 		public void TestColumnAliasSuggestionInOrderByClause()
 		{
 			const string statement = "SELECT LENGTH(DUMMY) COLUMN_NAME FROM DUAL ORDER BY C";
-			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 53, true, OracleCodeCompletionCategory.Column).ToList();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 53, false, OracleCodeCompletionCategory.Column).ToList();
+			items.Count.ShouldBe(1);
+			items[0].Name.ShouldBe("COLUMN_NAME");
+			items[0].Text.ShouldBe("COLUMN_NAME");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.Column);
+			items[0].CaretOffset.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
+		public void TestDirectReferenceColumnAliasSuggestionInOrderByClauseUsingForcedInvocation()
+		{
+			const string statement = "SELECT DUMMY COLUMN_NAME FROM DUAL ORDER BY ";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 44, true, OracleCodeCompletionCategory.Column).ToList();
 			items.Count.ShouldBe(1);
 			items[0].Name.ShouldBe("COLUMN_NAME");
 			items[0].Text.ShouldBe("COLUMN_NAME");

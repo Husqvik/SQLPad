@@ -17,7 +17,7 @@ namespace SqlPad.Oracle.Commands
 		public static readonly CommandExecutionHandler FindUsages = new CommandExecutionHandler
 		{
 			Name = "FindUsages",
-			DefaultGestures = GenericCommands.FindUsagesCommand.InputGestures,
+			DefaultGestures = GenericCommands.FindUsages.InputGestures,
 			ExecutionHandler = ExecutionHandlerImplementation
 		};
 

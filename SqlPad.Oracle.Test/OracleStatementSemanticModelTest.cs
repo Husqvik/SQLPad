@@ -804,5 +804,20 @@ FROM
 
 			semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
 		}
+
+		[Test(Description = @"")]
+		public void TestModelBuildWithMultipleAnalyticFunctionsWithinSameExpression()
+		{
+			const string query1 = @"SELECT SUM(COUNT(*) OVER (ORDER BY NULL) / COUNT(*) OVER (ORDER BY NULL) FROM DUAL";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.QueryBlocks.ShouldNotBe(null);
+			semanticModel.QueryBlocks.Count.ShouldBe(1);
+
+			var functionReferences = semanticModel.QueryBlocks.Single().AllProgramReferences.ToArray();
+			functionReferences.Length.ShouldBe(3);
+		}
 	}
 }
