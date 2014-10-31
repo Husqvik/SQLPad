@@ -2,9 +2,12 @@
 using System.Configuration;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Shouldly;
+using SqlPad.Oracle.ToolTips;
 using SqlPad.Test;
 
 namespace SqlPad.Oracle.Database.Test
@@ -12,11 +15,12 @@ namespace SqlPad.Oracle.Database.Test
 	[TestFixture]
 	public class OracleDatabaseModelTest : TemporaryDirectoryTestFixture
 	{
+		private readonly ConnectionStringSettings _connectionString = new ConnectionStringSettings("TestConnection", "DATA SOURCE=HQ_PDB_TCP;PASSWORD=oracle;USER ID=HUSQVIK");
+
 		[Test]
-		public void ModelInitializationTest()
+		public void TestModelInitialization()
 		{
-			var connectionString = new ConnectionStringSettings("TestConnection", "DATA SOURCE=HQ_PDB_TCP;PASSWORD=oracle;PERSIST SECURITY INFO=True;USER ID=HUSQVIK");
-			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(connectionString))
+			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
 			{
 				databaseModel.AllObjects.Count.ShouldBe(0);
 				databaseModel.DatabaseLinks.Count.ShouldBe(0);
@@ -24,7 +28,7 @@ namespace SqlPad.Oracle.Database.Test
 				databaseModel.StatisticsKeys.Count.ShouldBe(0);
 				databaseModel.SystemParameters.Count.ShouldBe(0);
 
-				using (var modelClone = OracleDatabaseModel.GetDatabaseModel(connectionString))
+				using (var modelClone = OracleDatabaseModel.GetDatabaseModel(_connectionString))
 				{
 					var refreshTask = databaseModel.Refresh(true);
 					var cloneRefreshTask = modelClone.Refresh();
@@ -100,6 +104,32 @@ namespace SqlPad.Oracle.Database.Test
 			displayCursorTask.Result.Length.ShouldBeGreaterThan(100);
 
 			databaseModel.CanFetch.ShouldBe(false);
+		}
+
+		[Test]
+		public void TestColumnDetailsModelUpdater()
+		{
+			var model = new ColumnDetailsModel();
+			var columnDetailsUpdater = new ColumnDetailsModelUpdater(model, new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"DUAL\""), "DUMMY");
+
+			UpdateModel(columnDetailsUpdater);
+
+			model.AverageValueSize.ShouldBe(2);
+			model.DistinctValueCount.ShouldBe(1);
+			model.HistogramBucketCount.ShouldBe(1);
+			model.HistogramType.ShouldBe("None");
+			model.LastAnalyzed.ShouldBeGreaterThan(DateTime.MinValue);
+			model.NullValueCount.ShouldBe(0);
+			model.SampleSize.ShouldBe(1);
+		}
+
+		private void UpdateModel(IDataModelUpdater columnDetailsUpdater)
+		{
+			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
+			{
+				var task = (Task)typeof(OracleDatabaseModel).GetMethod("UpdateModelAsync", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(databaseModel, new object[] { CancellationToken.None, false, new[] { columnDetailsUpdater } });
+				task.Wait();
+			}
 		}
 	}
 }

@@ -1232,6 +1232,7 @@ se";
 			items[0].Text.ShouldBe("COLUMN_NAME");
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.Column);
 			items[0].CaretOffset.ShouldBe(0);
+			items[0].StatementNode.ShouldNotBe(null);
 		}
 
 		[Test(Description = @"")]
@@ -1244,6 +1245,7 @@ se";
 			items[0].Text.ShouldBe("COLUMN_NAME");
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.Column);
 			items[0].CaretOffset.ShouldBe(0);
+			items[0].StatementNode.ShouldBe(null);
 		}
 
 		public class OracleCodeCompletionTypeTest

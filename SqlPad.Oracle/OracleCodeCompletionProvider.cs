@@ -248,7 +248,7 @@ namespace SqlPad.Oracle
 
 			if (completionType.ColumnAlias)
 			{
-				completionItems = completionItems.Concat(GenerateColumnAliases(currentNode, completionType));
+				completionItems = completionItems.Concat(GenerateColumnAliases(cursorAtLastTerminal ? currentNode : null, completionType));
 			}
 
 			if (completionType.UpdateSetColumn && semanticModel.MainObjectReferenceContainer.MainObjectReference != null)
