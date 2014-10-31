@@ -47,6 +47,7 @@ namespace SqlPad.Oracle
 		private int _userCommandChildNumber;
 		private SessionExecutionStatisticsUpdater _executionStatisticsUpdater;
 		private string _oracleVersion;
+		private string _databaseDomainName;
 
 		private static readonly Dictionary<string, OracleDataDictionary> CachedDataDictionaries = new Dictionary<string, OracleDataDictionary>();
 		private static readonly Dictionary<string, OracleDatabaseModel> DatabaseModels = new Dictionary<string, OracleDatabaseModel>();
@@ -130,6 +131,8 @@ namespace SqlPad.Oracle
 				InitializeSession();
 			}
 		}
+
+		public override string DatabaseDomainName { get { return _databaseDomainName; } }
 
 		public override bool HasActiveTransaction { get { return !String.IsNullOrEmpty(_userTransactionId); } }
 
@@ -821,6 +824,7 @@ namespace SqlPad.Oracle
 					if (_oracleVersion == null)
 					{
 						_oracleVersion = connection.ServerVersion;
+						_databaseDomainName = connection.DatabaseDomainName;
 					}
 
 					connection.ModuleName = ModuleNameSqlPadDatabaseModel;

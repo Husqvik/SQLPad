@@ -15,6 +15,7 @@ namespace SqlPad.Oracle.Test
 
 		private const string InitialSchema = "\"HUSQVIK\"";
 		private const string OwnerNameSys = "\"SYS\"";
+		private const string DatabaseDomainNameInternal = "sqlpad.husqvik.com";
 		private static readonly ConnectionStringSettings ConnectionStringInternal = new ConnectionStringSettings("ConnectionFake", "DATA SOURCE=HQ_PDB_TCP;PASSWORD=oracle;USER ID=HUSQVIK", "Oracle.DataAccess.Client");
 
 		private static readonly List<ColumnHeader> ColumnHeaders;
@@ -63,7 +64,7 @@ namespace SqlPad.Oracle.Test
 		private static readonly Dictionary<string, string> SystemParametersInternal =
 		new Dictionary<string, string>
 			{
-				{ "db_domain", "sqlpad.husqvik.com" }
+				{ "db_domain", DatabaseDomainNameInternal }
 			};
 
 		private readonly IDictionary<OracleObjectIdentifier, OracleSchemaObject> _allObjects;
@@ -864,6 +865,8 @@ Note
 		{
 			yield return new object[] { "Dummy Value " + ++_generatedRowCount};
 		}
+
+		public override string DatabaseDomainName { get { return DatabaseDomainNameInternal; } }
 
 		public override bool HasActiveTransaction { get { return false; } }
 

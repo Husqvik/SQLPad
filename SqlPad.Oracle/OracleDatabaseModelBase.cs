@@ -53,6 +53,8 @@ namespace SqlPad.Oracle
 
 		public abstract event EventHandler RefreshFinished;
 
+		public abstract string DatabaseDomainName { get; }
+
 		public abstract bool HasActiveTransaction { get; }
 
 		public abstract void CommitTransaction();

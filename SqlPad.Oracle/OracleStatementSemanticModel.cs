@@ -701,11 +701,10 @@ namespace SqlPad.Oracle
 					potentialIdentifiers.AddRange(_databaseModel.GetPotentialSchemaObjectIdentifiers(null, databaseLinkNameWithoutInstance));
 				}
 
-				string domainName;
-				if (!includesDomain && DatabaseModel.SystemParameters.TryGetValue(OracleDatabaseModelBase.SystemParameterNameDatabaseDomain, out domainName) && !String.IsNullOrEmpty(domainName))
+				if (!includesDomain && !String.IsNullOrEmpty(DatabaseModel.DatabaseDomainName))
 				{
 					databaseLinkBuilder.Append(".");
-					databaseLinkBuilder.Append(domainName.ToUpperInvariant());
+					databaseLinkBuilder.Append(DatabaseModel.DatabaseDomainName.ToUpperInvariant());
 					potentialIdentifiers.AddRange(_databaseModel.GetPotentialSchemaObjectIdentifiers(null, databaseLinkBuilder.ToString()));
 				}
 

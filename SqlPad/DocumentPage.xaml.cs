@@ -529,7 +529,7 @@ namespace SqlPad
 			FetchNextRows();
 		}
 
-		private async Task FetchNextRows()
+		private async void FetchNextRows()
 		{
 			ICollection<object[]> nextRowBatch = null;
 			var exception = await SafeActionAsync(() => Task.Factory.StartNew(() => nextRowBatch = DatabaseModel.FetchRecords(RowBatchSize).ToArray()));
@@ -708,7 +708,7 @@ namespace SqlPad
 
 				InitializeResultGrid(innerTask.Result.ColumnHeaders);
 
-				await FetchNextRows();
+				FetchNextRows();
 			}
 
 			if (ResultGrid.Items.Count > 0)
