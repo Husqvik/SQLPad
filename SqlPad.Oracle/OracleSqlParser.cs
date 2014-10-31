@@ -743,7 +743,8 @@ namespace SqlPad.Oracle
 				return null;
 			}
 
-			var candidateNode = node.ChildNodes.SingleOrDefault(n => n.SourcePosition.ContainsIndex(index));
+			// NOTE: FirstOrDefault must be used because child nodes in invalid grammar can overlap.
+			var candidateNode = node.ChildNodes.FirstOrDefault(n => n.SourcePosition.ContainsIndex(index));
 			if (candidateNode == null || candidateNode.Type == NodeType.Terminal)
 			{
 				return node;

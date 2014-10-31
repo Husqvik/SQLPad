@@ -2056,6 +2056,16 @@ ORDER BY
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 		}
 
+		[Test(Description = @"")]
+		public void TestCommentWithInvalidGrammarWithOverlappingChildNodes()
+		{
+			const string statement1 = "SELECT NULL FROM (SELECT NULL FROM DUAL WHERE DUMMY = 'X'--77918\nAN";
+
+			var statements = Parser.Parse(statement1);
+			var statement = statements.Single().Validate();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+		}
+
 		public class IsRuleValid
 		{
 			[Test(Description = @"")]
