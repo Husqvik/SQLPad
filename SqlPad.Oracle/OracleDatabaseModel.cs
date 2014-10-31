@@ -40,9 +40,10 @@ namespace SqlPad.Oracle
 		private OracleDataReader _userDataReader;
 		private OracleCommand _userCommand;
 		private OracleTransaction _userTransaction;
-		private bool _hasActiveTransaction;
 		private int _userSessionId;
 		private string _userCommandSqlId;
+		private string _userTransactionId;
+		private IsolationLevel _userTransactionIsolationLevel;
 		private int _userCommandChildNumber;
 		private SessionExecutionStatisticsUpdater _executionStatisticsUpdater;
 		private string _oracleVersion;
@@ -130,7 +131,7 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		public override bool HasActiveTransaction { get { return _hasActiveTransaction; } }
+		public override bool HasActiveTransaction { get { return !String.IsNullOrEmpty(_userTransactionId); } }
 
 		public override void CommitTransaction()
 		{
@@ -151,7 +152,8 @@ namespace SqlPad.Oracle
 
 			action(_userTransaction);
 
-			_hasActiveTransaction = false;
+			_userTransactionId = null;
+			_userTransactionIsolationLevel = IsolationLevel.Unspecified;
 
 			DisposeUserTransaction();
 		}
@@ -533,16 +535,22 @@ namespace SqlPad.Oracle
 
 			var reader = await _userCommand.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken);
 
-			ResolveExecutionPlanIdentifiers();
+			if (!ResolveExecutionPlanIdentifiersAndTransactionStatus())
+			{
+				SafeResolveTransactionStatus();
+			}
 
 			UpdateBindVariables(executionModel);
 
-			ResolveTransactionStatus();
+			if (!HasActiveTransaction && _userTransaction != null)
+			{
+				DisposeUserTransaction();
+			}
 
 			return reader;
 		}
 
-		private void ResolveExecutionPlanIdentifiers()
+		private bool ResolveExecutionPlanIdentifiersAndTransactionStatus()
 		{
 			using (var connection = new OracleConnection(_oracleConnectionString.ConnectionString))
 			{
@@ -562,32 +570,33 @@ namespace SqlPad.Oracle
 							{
 								_userCommandSqlId = (string)reader["SQL_ID"];
 								_userCommandChildNumber = Convert.ToInt32(reader["SQL_CHILD_NUMBER"]);
+								_userTransactionId = OracleReaderValueConvert.ToString(reader["TRANSACTION_ID"]);
+								_userTransactionIsolationLevel = (IsolationLevel)Convert.ToInt32(reader["TRANSACTION_ISOLATION_LEVEL"]);
 							}
 							else
 							{
 								_userCommandSqlId = null;
 							}
 						}
+
+						return true;
 					}
 					catch (OracleException e)
 					{
-						Trace.WriteLine("Execution plan could not been fetched: " + e);
+						Trace.WriteLine("Execution plan identifers and transaction status could not been fetched: " + e);
+						return false;
 					}
 				}
 			}
 		}
 
-		private void ResolveTransactionStatus()
+		private void SafeResolveTransactionStatus()
 		{
 			using (var command = _userConnection.CreateCommand())
 			{
 				command.CommandText = DatabaseCommands.GetLocalTransactionId;
-				_hasActiveTransaction = command.ExecuteScalar() != DBNull.Value;
-			}
-
-			if (!_hasActiveTransaction && _userTransaction != null)
-			{
-				DisposeUserTransaction();
+				_userTransactionId = OracleReaderValueConvert.ToString(command.ExecuteScalar());
+				_userTransactionIsolationLevel = String.IsNullOrEmpty(_userTransactionId) ? IsolationLevel.Unspecified : IsolationLevel.ReadCommitted;
 			}
 		}
 
@@ -796,14 +805,6 @@ namespace SqlPad.Oracle
 			}
 
 			return columnData;
-		}
-
-		private void CheckCanFetch()
-		{
-			if (!CanFetch)
-			{
-				throw new InvalidOperationException("No data reader available. ");
-			}
 		}
 
 		internal IEnumerable<T> ExecuteReader<T>(string commandText, Func<OracleDataReader, T> formatFunction)
