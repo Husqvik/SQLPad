@@ -31,13 +31,13 @@ namespace SqlPad.Oracle.Database.Test
 
 				databaseModel.IsInitialized.ShouldBe(false);
 				var resetEvent = new ManualResetEvent(false);
-				databaseModel.RefreshFinished += (sender, args) => resetEvent.Set();
+				databaseModel.RefreshStarted += (sender, args) => resetEvent.Set();
 				databaseModel.Initialize();
+				resetEvent.WaitOne();
 
 				using (var modelClone = OracleDatabaseModel.GetDatabaseModel(_connectionString))
 				{
 					var cloneRefreshTask = modelClone.Refresh();
-					resetEvent.WaitOne();
 					cloneRefreshTask.Wait();
 
 					databaseModel.IsInitialized.ShouldBe(true);

@@ -32,7 +32,7 @@ namespace SqlPad.Oracle
 			}
 			else
 			{
-				var semanticModel = (OracleStatementSemanticModel)validationModel.SemanticModel;
+				var semanticModel = validationModel.SemanticModel;
 				var queryBlock = semanticModel.GetQueryBlock(node);
 
 				switch (node.Id)
@@ -110,13 +110,14 @@ namespace SqlPad.Oracle
 		{
 			var validObjectReference = columnReference.ValidObjectReference;
 			var isSchemaObject = validObjectReference.Type == ReferenceType.SchemaObject;
-			if (!isSchemaObject || validObjectReference.SchemaObject.Type != OracleSchemaObjectType.Table)
+			var targetSchemaObject = isSchemaObject ? validObjectReference.SchemaObject.GetTargetSchemaObject() : null;
+			if (!isSchemaObject || targetSchemaObject.Type != OracleSchemaObjectType.Table)
 			{
 				var objectPrefix = columnReference.ObjectNode == null && !String.IsNullOrEmpty(validObjectReference.FullyQualifiedObjectName.Name)
 					? String.Format("{0}.", validObjectReference.FullyQualifiedObjectName)
 					: null;
 
-				var qualifiedColumnName = isSchemaObject && validObjectReference.SchemaObject.Type == OracleSchemaObjectType.Sequence
+				var qualifiedColumnName = isSchemaObject && targetSchemaObject.Type == OracleSchemaObjectType.Sequence
 					? null
 					: String.Format("{0}{1} ", objectPrefix, columnReference.Name.ToSimpleIdentifier());
 				
@@ -124,7 +125,7 @@ namespace SqlPad.Oracle
 				return new ToolTipObject { DataContext = tip };
 			}
 
-			var tableOwner = validObjectReference.SchemaObject.FullyQualifiedName;
+			var tableOwner = targetSchemaObject.FullyQualifiedName;
 			var dataModel =
 				new ColumnDetailsModel
 				{

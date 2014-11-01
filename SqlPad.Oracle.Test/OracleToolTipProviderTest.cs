@@ -41,6 +41,18 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestColumnTypeToolTipFromObjectReferencedUsingSynonym()
+		{
+			const string query = "SELECT DUMMY FROM DUAL";
+			_documentRepository.UpdateStatements(query);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 8);
+
+			toolTip.Control.ShouldBeTypeOf<ToolTipColumn>();
+			toolTip.Control.DataContext.ShouldBeTypeOf<ColumnDetailsModel>();
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestRowIdPsedoColumnTypeToolTip()
 		{
 			const string query = "SELECT ROWID FROM SELECTION";
