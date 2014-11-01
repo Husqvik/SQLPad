@@ -37,9 +37,9 @@ namespace SqlPad.Oracle.Database.Test
 				using (var modelClone = OracleDatabaseModel.GetDatabaseModel(_connectionString))
 				{
 					var cloneRefreshTask = modelClone.Refresh();
+					resetEvent.WaitOne();
 					cloneRefreshTask.Wait();
 
-					resetEvent.WaitOne();
 					databaseModel.IsInitialized.ShouldBe(true);
 					databaseModel.Schemas.Count.ShouldBeGreaterThan(0);
 
@@ -129,45 +129,63 @@ namespace SqlPad.Oracle.Database.Test
 		[Test]
 		public void TestDataTypesFetch()
 		{
+			var clobParameter = String.Join(" ", Enumerable.Repeat("CLOB DATA", 200));
 			var executionModel =
 					new StatementExecutionModel
 					{
-						StatementText = "SELECT TO_BLOB(RAWTOHEX('BLOB')), TO_CLOB('CLOB DATA'), TO_NCLOB('NCLOB DATA'), DATA_DEFAULT, SYSTIMESTAMP, LOCALTIMESTAMP, 1.23, XMLTYPE('<root/>') FROM ALL_TAB_COLS WHERE OWNER = 'SYS' AND TABLE_NAME = 'DUAL'",
+						StatementText = "SELECT TO_BLOB(RAWTOHEX('BLOB')), TO_CLOB('" + clobParameter + "'), TO_NCLOB('NCLOB DATA'), DATA_DEFAULT, TIMESTAMP'2014-11-01 14:16:32.123456789 CET' AT TIME ZONE '02:00', TIMESTAMP'2014-11-01 14:16:32.123456789', 0.1234567890123456789012345678901234567891, XMLTYPE('<root/>'), 1.23456789012345678901234567890123456789E-125 FROM ALL_TAB_COLS WHERE OWNER = 'SYS' AND TABLE_NAME = 'DUAL'",
 						BindVariables = new BindVariableModel[0],
 						GatherExecutionStatistics = true
 					};
 
-			StatementExecutionResult result;
 			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
 			{
-				result = databaseModel.ExecuteStatement(executionModel);
-			}
+				var result = databaseModel.ExecuteStatement(executionModel);
+				
+				result.ExecutedSuccessfully.ShouldBe(true);
 
-			result.ExecutedSuccessfully.ShouldBe(true);
-			
-			result.ColumnHeaders.Count.ShouldBe(8);
-			result.ColumnHeaders[0].DatabaseDataType.ShouldBe("Blob");
-			result.ColumnHeaders[1].DatabaseDataType.ShouldBe("Clob");
-			result.ColumnHeaders[2].DatabaseDataType.ShouldBe("NClob");
-			result.ColumnHeaders[3].DatabaseDataType.ShouldBe("Long");
-			result.ColumnHeaders[4].DatabaseDataType.ShouldBe("TimeStampTZ");
-			result.ColumnHeaders[5].DatabaseDataType.ShouldBe("TimeStamp");
-			result.ColumnHeaders[6].DatabaseDataType.ShouldBe("Decimal");
-			result.ColumnHeaders[7].DatabaseDataType.ShouldBe("XmlType");
-			
-			result.InitialResultSet.Count.ShouldBe(1);
-			var firstRow = result.InitialResultSet[0];
-			firstRow[0].ShouldBeTypeOf<OracleBlobValue>();
-			firstRow[0].ToString().ShouldBe("(BLOB[4 B])");
-			firstRow[1].ShouldBeTypeOf<OracleClobValue>();
-			((OracleClobValue)firstRow[1]).DataTypeName.ShouldBe("CLOB");
-			firstRow[2].ShouldBeTypeOf<OracleClobValue>();
-			((OracleClobValue)firstRow[2]).DataTypeName.ShouldBe("NCLOB");
-			firstRow[3].ShouldBeTypeOf<string>();
-			firstRow[4].ShouldBeTypeOf<OracleTimestampWithTimeZone>();
-			firstRow[5].ShouldBeTypeOf<OracleTimestamp>();
-			firstRow[6].ShouldBeTypeOf<OracleNumber>();
-			firstRow[7].ShouldBeTypeOf<OracleXmlValue>();
+				result.ColumnHeaders.Count.ShouldBe(9);
+				result.ColumnHeaders[0].DatabaseDataType.ShouldBe("Blob");
+				result.ColumnHeaders[1].DatabaseDataType.ShouldBe("Clob");
+				result.ColumnHeaders[2].DatabaseDataType.ShouldBe("NClob");
+				result.ColumnHeaders[3].DatabaseDataType.ShouldBe("Long");
+				result.ColumnHeaders[4].DatabaseDataType.ShouldBe("TimeStampTZ");
+				result.ColumnHeaders[5].DatabaseDataType.ShouldBe("TimeStamp");
+				result.ColumnHeaders[6].DatabaseDataType.ShouldBe("Decimal");
+				result.ColumnHeaders[7].DatabaseDataType.ShouldBe("XmlType");
+				result.ColumnHeaders[8].DatabaseDataType.ShouldBe("Decimal");
+
+				result.InitialResultSet.Count.ShouldBe(1);
+				var firstRow = result.InitialResultSet[0];
+				firstRow[0].ShouldBeTypeOf<OracleBlobValue>();
+				var blobValue = (OracleBlobValue)firstRow[0];
+				blobValue.Length.ShouldBe(4);
+				blobValue.GetChunk(2).ShouldBe(new byte[] { 66, 76 });
+				blobValue.Value.Length.ShouldBe(4);
+				blobValue.ToString().ShouldBe("(BLOB[4 B])");
+				firstRow[1].ShouldBeTypeOf<OracleClobValue>();
+				var expectedPreview = clobParameter.Substring(0, 1023) + OracleLargeTextValue.Ellipsis;
+				firstRow[1].ToString().ShouldBe(expectedPreview);
+				((OracleClobValue)firstRow[1]).DataTypeName.ShouldBe("CLOB");
+				firstRow[2].ShouldBeTypeOf<OracleClobValue>();
+				var clobValue = (OracleClobValue)firstRow[2];
+				clobValue.DataTypeName.ShouldBe("NCLOB");
+				clobValue.Length.ShouldBe(20);
+				clobValue.Value.ShouldBe("NCLOB DATA");
+				firstRow[3].ShouldBeTypeOf<string>();
+				firstRow[4].ShouldBeTypeOf<OracleTimestampWithTimeZone>();
+				firstRow[4].ToString().ShouldBe("11/1/2014 3:16:32 PM.123456789 +02:00");
+				firstRow[5].ShouldBeTypeOf<OracleTimestamp>();
+				firstRow[5].ToString().ShouldBe("11/1/2014 2:16:32 PM.123456789");
+				firstRow[6].ShouldBeTypeOf<OracleNumber>();
+				firstRow[6].ToString().ShouldBe("0.1234567890123456789012345678901234567891");
+				firstRow[7].ShouldBeTypeOf<OracleXmlValue>();
+				var xmlValue = (OracleXmlValue)firstRow[7];
+				xmlValue.Length.ShouldBe(8);
+				xmlValue.Preview.ShouldBe("<root/>\n");
+				firstRow[8].ShouldBeTypeOf<OracleNumber>();
+				firstRow[8].ToString().ShouldBe("1.23456789012345678901234567890123456789E-125");
+			}
 		}
 
 		[Test]

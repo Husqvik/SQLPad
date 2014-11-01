@@ -22,6 +22,6 @@
 	{
 		byte[] Value { get; }
 
-		byte[] GetChunk(int offset, int length);
+		byte[] GetChunk(int bytes);
 	}
 }

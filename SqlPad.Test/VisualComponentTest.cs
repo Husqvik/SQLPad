@@ -291,20 +291,6 @@ namespace SqlPad.Test
 			}
 		}
 
-		private class TestLargeBinaryValue : ILargeBinaryValue
-		{
-			private static readonly byte[] BinaryValue = Encoding.ASCII.GetBytes("</root>");
-			public string DataTypeName { get { return "CLOB"; } }
-			public bool IsEditable { get { return false; } }
-			public long Length { get { return BinaryValue.Length; } }
-			public string Preview { get { throw new NotImplementedException(); } }
-			public byte[] Value { get { return BinaryValue; } }
-			public byte[] GetChunk(int offset, int length)
-			{
-				throw new NotImplementedException();
-			}
-		}
-
 		private class TestColumnValueConverter : IColumnValueConverter
 		{
 			public static readonly TestColumnValueConverter Instance = new TestColumnValueConverter();

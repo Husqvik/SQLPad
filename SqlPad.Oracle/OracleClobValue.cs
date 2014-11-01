@@ -156,10 +156,10 @@ namespace SqlPad.Oracle
 			Length = _blob.Length;
 		}
 
-		public byte[] GetChunk(int offset, int length)
+		public byte[] GetChunk(int bytes)
 		{
-			var buffer = new byte[length];
-			var bytesRead = _blob.Read(buffer, offset, length);
+			var buffer = new byte[bytes];
+			var bytesRead = _blob.Read(buffer, 0, bytes);
 			var result = new byte[bytesRead];
 			Array.Copy(buffer, 0, result, 0, bytesRead);
 			return result;
@@ -273,13 +273,8 @@ namespace SqlPad.Oracle
 			_value = oracleBinary.IsNull ? new byte[0] : oracleBinary.Value;
 		}
 
-		public byte[] GetChunk(int offset, int length)
+		public byte[] GetChunk(int bytes)
 		{
-			if (offset != 0)
-			{
-				throw new NotSupportedException("'offset' parameter is not supported. ");
-			}
-
 			throw new NotImplementedException();
 		}
 
