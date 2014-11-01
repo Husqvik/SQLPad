@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using SqlPad.Commands;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
@@ -9,7 +10,7 @@ namespace SqlPad.Oracle.Commands
 	{
 		public const string Title = "Clean redundant symbols";
 
-		private RedundantTerminalGroup _terminalGroup;
+		private IReadOnlyCollection<RedundantTerminalGroup> _terminalGroupsToRemove;
 
 		private CleanRedundantSymbolCommand(CommandExecutionContext executionContext)
 			: base(executionContext)
@@ -19,24 +20,35 @@ namespace SqlPad.Oracle.Commands
 		protected override bool CanExecute()
 		{
 			var prerequisitesMet = ExecutionContext.SelectionLength == 0 && CurrentNode != null &&
-			                       CurrentQueryBlock != null &&
 			                       SemanticModel.RedundantSymbolGroups.Any();
 			if (!prerequisitesMet)
 			{
 				return false;
 			}
 
-			var doGlobalClean = CurrentNode.Id.In(Terminals.Select, Terminals.Update, Terminals.Insert, Terminals.Delete);
-			_terminalGroup = doGlobalClean
-				? null
-				: SemanticModel.RedundantSymbolGroups.SingleOrDefault(g => g.Contains(CurrentNode));
+			var terminalGroupsToRemove = (IEnumerable<RedundantTerminalGroup>)SemanticModel.RedundantSymbolGroups;
 
-			return doGlobalClean || _terminalGroup != null;
+			var doGlobalClean = CurrentNode.Id.In(Terminals.Select, Terminals.Update, Terminals.Insert, Terminals.Delete);
+			if (doGlobalClean)
+			{
+				if (CurrentQueryBlock != null)
+				{
+					terminalGroupsToRemove = terminalGroupsToRemove.Where(g => g.Any(n => n.HasAncestor(CurrentQueryBlock.RootNode)));
+				}
+			}
+			else
+			{
+				terminalGroupsToRemove = terminalGroupsToRemove.Where(g => g.Contains(CurrentNode));
+			}
+
+			_terminalGroupsToRemove = terminalGroupsToRemove.ToArray();
+
+			return _terminalGroupsToRemove.Count > 0;
 		}
 
 		protected override void Execute()
 		{
-			var removedTerminals = _terminalGroup ?? SemanticModel.RedundantSymbolGroups.SelectMany(g => g);
+			var removedTerminals = _terminalGroupsToRemove.SelectMany(g => g);
 			var removedSegments = removedTerminals
 				.Select(n =>
 					new TextSegment

@@ -136,7 +136,7 @@ namespace SqlPad
 			{
 				WorkingDocument = workingDocument;
 
-				if (WorkingDocument.Text == null && WorkingDocument.File.Exists)
+				if (WorkingDocument.Text == null && WorkingDocument.File != null && WorkingDocument.File.Exists)
 				{
 					WorkingDocument.Text = File.ReadAllText(WorkingDocument.File.FullName);
 				}
@@ -1389,6 +1389,11 @@ namespace SqlPad
 
 			WorkingDocument.IsModified = IsDirty;
 			_pageModel.DocumentHeader = DocumentHeader;
+
+			if (_completionWindow != null && _completionWindow.CompletionList.ListBox.Items.Count == 0)
+			{
+				_completionWindow.Close();
+			}
 		}
 
 		private void EditorKeyDownHandler(object sender, KeyEventArgs e)

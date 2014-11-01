@@ -817,7 +817,7 @@ Note
 
 		public override StatementExecutionResult ExecuteStatement(StatementExecutionModel executionModel)
 		{
-			return new StatementExecutionResult { ExecutedSuccessfully = true, ColumnHeaders = ColumnHeaders };
+			return new StatementExecutionResult { ExecutedSuccessfully = true, ColumnHeaders = ColumnHeaders, InitialResultSet = FetchRecords(1).ToArray() };
 		}
 
 		public override Task<StatementExecutionResult> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
