@@ -646,7 +646,7 @@ namespace SqlPad.Oracle
 				_isExecuting = true;
 				await ExecuteUserStatement(executionModel, cancellationToken);
 				result.AffectedRowCount = _userDataReader.RecordsAffected;
-				result.ExecutedSucessfully = true;
+				result.ExecutedSuccessfully = true;
 				result.ColumnHeaders = GetColumnHeadersFromReader(_userDataReader);
 				result.InitialResultSet = await EnumerateAsync(FetchRecordsFromReader(_userDataReader, executionModel.InitialFetchRowCount), cancellationToken);
 			}
@@ -674,12 +674,12 @@ namespace SqlPad.Oracle
 			DisposeCommandAndReader();
 		}
 
-		private Task<IReadOnlyCollection<T>> EnumerateAsync<T>(IEnumerable<T> source, CancellationToken cancellationToken)
+		private Task<IReadOnlyList<T>> EnumerateAsync<T>(IEnumerable<T> source, CancellationToken cancellationToken)
 		{
-			return Task.Factory.StartNew(() => (IReadOnlyCollection<T>)new List<T>(source.TakeWhile(i => !cancellationToken.IsCancellationRequested)).AsReadOnly(), cancellationToken);
+			return Task.Factory.StartNew(() => (IReadOnlyList<T>)new List<T>(source.TakeWhile(i => !cancellationToken.IsCancellationRequested)).AsReadOnly(), cancellationToken);
 		}
 
-		internal static IReadOnlyCollection<ColumnHeader> GetColumnHeadersFromReader(IDataRecord reader)
+		internal static IReadOnlyList<ColumnHeader> GetColumnHeadersFromReader(IDataRecord reader)
 		{
 			var columnTypes = new ColumnHeader[reader.FieldCount];
 			for (var i = 0; i < reader.FieldCount; i++)

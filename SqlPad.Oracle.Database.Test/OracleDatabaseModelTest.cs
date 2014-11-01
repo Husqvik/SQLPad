@@ -22,19 +22,26 @@ namespace SqlPad.Oracle.Database.Test
 		{
 			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
 			{
+				databaseModel.Schemas.Count.ShouldBe(0);
 				databaseModel.AllObjects.Count.ShouldBe(0);
 				databaseModel.DatabaseLinks.Count.ShouldBe(0);
 				databaseModel.CharacterSets.Count.ShouldBe(0);
 				databaseModel.StatisticsKeys.Count.ShouldBe(0);
 				databaseModel.SystemParameters.Count.ShouldBe(0);
 
+				databaseModel.IsInitialized.ShouldBe(false);
+				var resetEvent = new ManualResetEvent(false);
+				databaseModel.RefreshFinished += (sender, args) => resetEvent.Set();
+				databaseModel.Initialize();
+
 				using (var modelClone = OracleDatabaseModel.GetDatabaseModel(_connectionString))
 				{
-					var refreshTask = databaseModel.Refresh(true);
 					var cloneRefreshTask = modelClone.Refresh();
-					
-					refreshTask.Wait();
 					cloneRefreshTask.Wait();
+
+					resetEvent.WaitOne();
+					databaseModel.IsInitialized.ShouldBe(true);
+					databaseModel.Schemas.Count.ShouldBeGreaterThan(0);
 
 					Trace.WriteLine("Assert original database model");
 					AssertDatabaseModel(databaseModel);
@@ -81,7 +88,7 @@ namespace SqlPad.Oracle.Database.Test
 				};
 			
 			var result = databaseModel.ExecuteStatement(executionModel);
-			result.ExecutedSucessfully.ShouldBe(true);
+			result.ExecutedSuccessfully.ShouldBe(true);
 			result.AffectedRowCount.ShouldBe(-1);
 			
 			databaseModel.CanFetch.ShouldBe(false);
@@ -120,12 +127,57 @@ namespace SqlPad.Oracle.Database.Test
 		}
 
 		[Test]
+		public void TestDataTypesFetch()
+		{
+			var executionModel =
+					new StatementExecutionModel
+					{
+						StatementText = "SELECT TO_BLOB(RAWTOHEX('BLOB')), TO_CLOB('CLOB DATA'), TO_NCLOB('NCLOB DATA'), DATA_DEFAULT, SYSTIMESTAMP, LOCALTIMESTAMP, 1.23, XMLTYPE('<root/>') FROM ALL_TAB_COLS WHERE OWNER = 'SYS' AND TABLE_NAME = 'DUAL'",
+						BindVariables = new BindVariableModel[0],
+						GatherExecutionStatistics = true
+					};
+
+			StatementExecutionResult result;
+			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
+			{
+				result = databaseModel.ExecuteStatement(executionModel);
+			}
+
+			result.ExecutedSuccessfully.ShouldBe(true);
+			
+			result.ColumnHeaders.Count.ShouldBe(8);
+			result.ColumnHeaders[0].DatabaseDataType.ShouldBe("Blob");
+			result.ColumnHeaders[1].DatabaseDataType.ShouldBe("Clob");
+			result.ColumnHeaders[2].DatabaseDataType.ShouldBe("NClob");
+			result.ColumnHeaders[3].DatabaseDataType.ShouldBe("Long");
+			result.ColumnHeaders[4].DatabaseDataType.ShouldBe("TimeStampTZ");
+			result.ColumnHeaders[5].DatabaseDataType.ShouldBe("TimeStamp");
+			result.ColumnHeaders[6].DatabaseDataType.ShouldBe("Decimal");
+			result.ColumnHeaders[7].DatabaseDataType.ShouldBe("XmlType");
+			
+			result.InitialResultSet.Count.ShouldBe(1);
+			var firstRow = result.InitialResultSet[0];
+			firstRow[0].ShouldBeTypeOf<OracleBlobValue>();
+			firstRow[0].ToString().ShouldBe("(BLOB[4 B])");
+			firstRow[1].ShouldBeTypeOf<OracleClobValue>();
+			((OracleClobValue)firstRow[1]).DataTypeName.ShouldBe("CLOB");
+			firstRow[2].ShouldBeTypeOf<OracleClobValue>();
+			((OracleClobValue)firstRow[2]).DataTypeName.ShouldBe("NCLOB");
+			firstRow[3].ShouldBeTypeOf<string>();
+			firstRow[4].ShouldBeTypeOf<OracleTimestampWithTimeZone>();
+			firstRow[5].ShouldBeTypeOf<OracleTimestamp>();
+			firstRow[6].ShouldBeTypeOf<OracleNumber>();
+			firstRow[7].ShouldBeTypeOf<OracleXmlValue>();
+		}
+
+		[Test]
 		public void TestColumnDetailsModelUpdater()
 		{
 			var model = new ColumnDetailsModel();
-			var columnDetailsUpdater = new ColumnDetailsModelUpdater(model, new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"DUAL\""), "DUMMY");
-
-			ExecuteUpdater(columnDetailsUpdater);
+			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
+			{
+				databaseModel.UpdateColumnDetailsAsync(new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"DUAL\""), "\"DUMMY\"", model, CancellationToken.None).Wait();
+			}
 
 			model.AverageValueSize.ShouldBe(2);
 			model.DistinctValueCount.ShouldBe(1);
@@ -140,9 +192,11 @@ namespace SqlPad.Oracle.Database.Test
 		public void TestTableDetailsModelUpdater()
 		{
 			var model = new TableDetailsModel();
-			var tableDetailsUpdater = new TableDetailsModelUpdater(model, new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"DUAL\""));
 
-			ExecuteUpdater(tableDetailsUpdater);
+			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
+			{
+				databaseModel.UpdateTableDetailsAsync(new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"DUAL\""), model, CancellationToken.None).Wait();
+			}
 
 			model.AverageRowSize.ShouldBe(2);
 			model.BlockCount.ShouldBe(1);

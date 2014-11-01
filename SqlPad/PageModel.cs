@@ -335,11 +335,11 @@ namespace SqlPad
 	{
 		public int AffectedRowCount { get; set; }
 
-		public bool ExecutedSucessfully { get; set; }
+		public bool ExecutedSuccessfully { get; set; }
 
-		public IReadOnlyCollection<ColumnHeader> ColumnHeaders { get; set; }
+		public IReadOnlyList<ColumnHeader> ColumnHeaders { get; set; }
 
-		public IReadOnlyCollection<object[]> InitialResultSet { get; set; }
+		public IReadOnlyList<object[]> InitialResultSet { get; set; }
 	}
 
 	[DebuggerDisplay("SessionExecutionStatisticsRecord (Name={Name}; Value={Value})")]

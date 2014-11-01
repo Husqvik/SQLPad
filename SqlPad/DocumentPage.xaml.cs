@@ -705,7 +705,7 @@ namespace SqlPad
 					return;
 				}
 
-				if (!innerTask.Result.ExecutedSucessfully)
+				if (!innerTask.Result.ExecutedSuccessfully)
 				{
 					return;
 				}

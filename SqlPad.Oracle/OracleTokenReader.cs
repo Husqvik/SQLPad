@@ -234,7 +234,7 @@ namespace SqlPad.Oracle
 
 				if (!specialMode.IsEnabled && previousFlags.IsDecimalCandidate)
 				{
-					if (specialMode.InNumber)
+					/*if (specialMode.InNumber)
 					{
 						if (specialMode.InDecimalNumber)
 						{
@@ -252,7 +252,7 @@ namespace SqlPad.Oracle
 							specialMode.InDecimalNumber = true;
 						}
 					}
-					else if (isNumericCharacter)
+					else */if (isNumericCharacter)
 					{
 						if (builder.Length > 0)
 						{
