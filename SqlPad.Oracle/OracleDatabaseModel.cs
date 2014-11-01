@@ -1094,7 +1094,7 @@ namespace SqlPad.Oracle
 
 		private void LoadSchemaNames()
 		{
-			_schemas = new HashSet<string>(_dataDictionaryMapper.GetSchemaNames());
+			_schemas = new HashSet<string>(OracleSchemaResolver.ResolveSchemas(this));
 			_allSchemas = new HashSet<string>(_schemas.Select(DataDictionaryMapper.QualifyStringObject)) { SchemaPublic };
 		}
 
@@ -1103,6 +1103,48 @@ namespace SqlPad.Oracle
 			public TaskCompletionSource<OracleDataDictionary> TaskCompletionSource { get; set; }
 			
 			public OracleDatabaseModel DatabaseModel { get; set; }
+		}
+
+		private class OracleSchemaResolver
+		{
+			private static readonly Dictionary<string, OracleSchemaResolver> ActiveResolvers = new Dictionary<string, OracleSchemaResolver>();
+
+			private readonly OracleDatabaseModel _databaseModel;
+			private IReadOnlyCollection<string> _schemas;
+
+			private OracleSchemaResolver(OracleDatabaseModel databaseModel)
+			{
+				_databaseModel = databaseModel;
+			}
+
+			public static IReadOnlyCollection<string> ResolveSchemas(OracleDatabaseModel databaseModel)
+			{
+				OracleSchemaResolver resolver;
+				lock (ActiveResolvers)
+				{
+					if (!ActiveResolvers.TryGetValue(databaseModel.ConnectionString.ConnectionString, out resolver))
+					{
+						resolver = new OracleSchemaResolver(databaseModel);
+						ActiveResolvers.Add(databaseModel.ConnectionString.ConnectionString, resolver);
+					}
+				}
+
+				resolver.ResolveSchemas();
+				return resolver._schemas;
+			}
+
+			private void ResolveSchemas()
+			{
+				lock (this)
+				{
+					if (_schemas != null)
+					{
+						return;
+					}
+
+					_schemas = _databaseModel._dataDictionaryMapper.GetSchemaNames().ToList().AsReadOnly();
+				}
+			}
 		}
 	}
 }

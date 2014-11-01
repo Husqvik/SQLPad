@@ -542,7 +542,7 @@ namespace SqlPad
 
 		private void CanFetchNextRows(object sender, CanExecuteRoutedEventArgs canExecuteRoutedEventArgs)
 		{
-			canExecuteRoutedEventArgs.CanExecute = ResultGrid.SelectedIndex == ResultGrid.Items.Count - 1 && DatabaseModel.CanFetch;
+			canExecuteRoutedEventArgs.CanExecute = !_isFetching && ResultGrid.SelectedIndex == ResultGrid.Items.Count - 1 && DatabaseModel.CanFetch;
 			canExecuteRoutedEventArgs.ContinueRouting = !canExecuteRoutedEventArgs.CanExecute;
 		}
 
@@ -1163,8 +1163,6 @@ namespace SqlPad
 			{
 				if (e.Text == " " || e.Text == "\t")
 				{
-					// Whenever a non-letter is typed while the completion window is open,
-					// insert the currently selected element.
 					_completionWindow.CompletionList.RequestInsertion(e);
 				}
 			}
@@ -1185,26 +1183,26 @@ namespace SqlPad
 		private void CreateCompletionWindow(Func<IEnumerable<CompletionData>> getCompletionDataFunc)
 		{
 			var completionWindow = new CompletionWindow(Editor.TextArea) { SizeToContent = SizeToContent.WidthAndHeight };
-			var data = completionWindow.CompletionList.CompletionData;
+			var items = completionWindow.CompletionList.CompletionData;
 
 			foreach (var item in getCompletionDataFunc())
 			{
-				data.Add(item);
+				items.Add(item);
 			}
 
-			if (data.Count == 0)
+			if (items.Count == 0)
 				return;
 			
 			_completionWindow = completionWindow;
 			_completionWindow.Closed += delegate { _completionWindow = null; };
 
-			var firstItem = (CompletionData)data.First();
+			var firstItem = (CompletionData)items[0];
 			if (firstItem.Node != null)
 			{
 				_completionWindow.StartOffset = firstItem.Node.SourcePosition.IndexStart;
 			}
 
-			if (data.Count == 1)
+			if (items.Count == 1)
 			{
 				_completionWindow.CompletionList.ListBox.SelectedIndex = 0;
 			}
