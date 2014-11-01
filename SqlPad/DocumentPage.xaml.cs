@@ -520,7 +520,7 @@ namespace SqlPad
 
 		private void CanFetchAllRows(object sender, CanExecuteRoutedEventArgs canExecuteRoutedEventArgs)
 		{
-			canExecuteRoutedEventArgs.CanExecute = DatabaseModel.CanFetch && !DatabaseModel.IsExecuting;
+			canExecuteRoutedEventArgs.CanExecute = !_isFetching && DatabaseModel.CanFetch && !DatabaseModel.IsExecuting;
 			canExecuteRoutedEventArgs.ContinueRouting = canExecuteRoutedEventArgs.CanExecute;
 		}
 
@@ -553,10 +553,9 @@ namespace SqlPad
 
 		private async Task FetchNextRows()
 		{
-			IReadOnlyCollection<object[]> nextRowBatch = null;
 			_isFetching = true;
-			var exception = await SafeActionAsync(() => Task.Factory.StartNew(() => nextRowBatch = DatabaseModel.FetchRecords(StatementExecutionModel.DefaultRowBatchSize).ToArray()));
-			_isFetching = false;
+			Task<IReadOnlyList<object[]>> innerTask = null;
+			var exception = await SafeActionAsync(() => innerTask = DatabaseModel.FetchRecords(StatementExecutionModel.DefaultRowBatchSize).EnumerateAsync(CancellationToken.None));
 
 			//TextMoreRowsExist.Visibility = DatabaseModel.CanFetch ? Visibility.Visible : Visibility.Collapsed;
 
@@ -566,8 +565,10 @@ namespace SqlPad
 			}
 			else
 			{
-				await AppendRows(nextRowBatch);
+				await AppendRows(innerTask.Result);
 			}
+
+			_isFetching = false;
 		}
 
 		private async Task AppendRows(IEnumerable<object[]> rows)
@@ -578,8 +579,7 @@ namespace SqlPad
 
 			if (_gatherExecutionStatistics)
 			{
-				_pageModel.SessionExecutionStatistics.Clear();
-				_pageModel.SessionExecutionStatistics.AddRange(await DatabaseModel.GetExecutionStatisticsAsync(CancellationToken.None));
+				_pageModel.SessionExecutionStatistics.MergeWith(await DatabaseModel.GetExecutionStatisticsAsync(CancellationToken.None));
 			}
 		}
 
@@ -739,7 +739,7 @@ namespace SqlPad
 
 					if (_gatherExecutionStatistics)
 					{
-						_pageModel.SessionExecutionStatistics.AddRange(await DatabaseModel.GetExecutionStatisticsAsync(_cancellationTokenSource.Token));
+						_pageModel.SessionExecutionStatistics.MergeWith(await DatabaseModel.GetExecutionStatisticsAsync(_cancellationTokenSource.Token));
 					}
 
 					return;

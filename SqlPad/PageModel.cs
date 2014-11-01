@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Configuration;
-using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Data;
@@ -15,7 +14,7 @@ namespace SqlPad
 		private readonly DocumentPage _documentPage;
 		private readonly ObservableCollection<object[]> _resultRowItems = new ObservableCollection<object[]>();
 		private readonly ObservableCollection<string> _schemas = new ObservableCollection<string>();
-		private readonly ObservableCollection<SessionExecutionStatisticsRecord> _sessionExecutionStatistics = new ObservableCollection<SessionExecutionStatisticsRecord>();
+		private readonly SessionExecutionStatisticsCollection _sessionExecutionStatistics = new SessionExecutionStatisticsCollection();
 		private ConnectionStringSettings _currentConnection;
 		private string _currentSchema;
 		private ICollection<BindVariableModel> _bindVariables;
@@ -250,7 +249,7 @@ namespace SqlPad
 
 		public ObservableCollection<string> Schemas { get { return _schemas; } }
 
-		public ObservableCollection<SessionExecutionStatisticsRecord> SessionExecutionStatistics { get { return _sessionExecutionStatistics; } }
+		public SessionExecutionStatisticsCollection SessionExecutionStatistics { get { return _sessionExecutionStatistics; } }
 
 		public string CurrentSchema
 		{
@@ -304,49 +303,5 @@ namespace SqlPad
 				SchemaComboBoxVisibility = Visibility.Visible;
 			}
 		}
-	}
-
-	public class StatementExecutionModel
-	{
-		public const int DefaultRowBatchSize = 100;
-		
-		public StatementExecutionModel()
-		{
-			InitialFetchRowCount = DefaultRowBatchSize;
-		}
-
-		public string StatementText { get; set; }
-		
-		public ICollection<BindVariableModel> BindVariables { get; set; }
-		
-		public bool GatherExecutionStatistics { get; set; }
-		
-		public int InitialFetchRowCount { get; set; }
-	}
-
-	public struct ExplainPlanResult
-	{
-		public IReadOnlyCollection<ColumnHeader> ColumnHeaders { get; set; }
-
-		public IReadOnlyCollection<object[]> ResultSet { get; set; }
-	}
-
-	public struct StatementExecutionResult
-	{
-		public int AffectedRowCount { get; set; }
-
-		public bool ExecutedSuccessfully { get; set; }
-
-		public IReadOnlyList<ColumnHeader> ColumnHeaders { get; set; }
-
-		public IReadOnlyList<object[]> InitialResultSet { get; set; }
-	}
-
-	[DebuggerDisplay("SessionExecutionStatisticsRecord (Name={Name}; Value={Value})")]
-	public struct SessionExecutionStatisticsRecord
-	{
-		public string Name { get; set; }
-		
-		public decimal Value { get; set; }
 	}
 }

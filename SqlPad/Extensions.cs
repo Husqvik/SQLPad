@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
 
@@ -67,6 +69,11 @@ namespace SqlPad
 			}
 
 			return new string(characters);
+		}
+
+		public static Task<IReadOnlyList<T>> EnumerateAsync<T>(this IEnumerable<T> source, CancellationToken cancellationToken)
+		{
+			return Task.Factory.StartNew(() => (IReadOnlyList<T>)new List<T>(source.TakeWhile(i => !cancellationToken.IsCancellationRequested)).AsReadOnly(), cancellationToken);
 		}
 	}
 

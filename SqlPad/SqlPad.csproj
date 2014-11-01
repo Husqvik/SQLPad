@@ -113,6 +113,7 @@
     <Compile Include="DatabaseProviderConfiguration.cs" />
     <Compile Include="SqlFoldingStrategy.cs" />
     <Compile Include="StatementCommentNode.cs" />
+    <Compile Include="StatementExecutionModel.cs" />
     <Compile Include="StatementNode.cs" />
     <Compile Include="TextEditorExtensions.cs" />
     <Compile Include="TextSegment.cs" />

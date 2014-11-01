@@ -648,7 +648,7 @@ namespace SqlPad.Oracle
 				result.AffectedRowCount = _userDataReader.RecordsAffected;
 				result.ExecutedSuccessfully = true;
 				result.ColumnHeaders = GetColumnHeadersFromReader(_userDataReader);
-				result.InitialResultSet = await EnumerateAsync(FetchRecordsFromReader(_userDataReader, executionModel.InitialFetchRowCount), cancellationToken);
+				result.InitialResultSet = await FetchRecordsFromReader(_userDataReader, executionModel.InitialFetchRowCount).EnumerateAsync(cancellationToken);
 			}
 			catch (Exception exception)
 			{
@@ -672,11 +672,6 @@ namespace SqlPad.Oracle
 				throw new InvalidOperationException("Another statement is executing right now. ");
 
 			DisposeCommandAndReader();
-		}
-
-		private Task<IReadOnlyList<T>> EnumerateAsync<T>(IEnumerable<T> source, CancellationToken cancellationToken)
-		{
-			return Task.Factory.StartNew(() => (IReadOnlyList<T>)new List<T>(source.TakeWhile(i => !cancellationToken.IsCancellationRequested)).AsReadOnly(), cancellationToken);
 		}
 
 		internal static IReadOnlyList<ColumnHeader> GetColumnHeadersFromReader(IDataRecord reader)
