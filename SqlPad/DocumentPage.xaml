@@ -278,6 +278,7 @@
 						<Run Text="{Binding AffectedRowCount}" />
 						<Run Text=" row(s) affected " />
 					</TextBlock>
+					<TextBlock Text="Command executed successfully " Visibility="{Binding StatementExecutedSuccessfullyStatusMessageVisibility}" />
 					<TextBlock Visibility="{Binding GridRowInfoVisibility}">
 						<Run Text="Row " />
 						<Run Text="{Binding ElementName=ResultGrid, Path=SelectedIndex, Mode=OneWay, Converter={StaticResource SelectedIndexConverter}}" />

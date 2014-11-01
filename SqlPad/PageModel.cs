@@ -16,16 +16,17 @@ namespace SqlPad
 		private readonly ObservableCollection<object[]> _resultRowItems = new ObservableCollection<object[]>();
 		private readonly ObservableCollection<string> _schemas = new ObservableCollection<string>();
 		private readonly ObservableCollection<SessionExecutionStatisticsRecord> _sessionExecutionStatistics = new ObservableCollection<SessionExecutionStatisticsRecord>();
+		private ConnectionStringSettings _currentConnection;
+		private string _currentSchema;
+		private ICollection<BindVariableModel> _bindVariables;
 		private string _documentHeader;
 		private int _currentLine;
 		private int _currentColumn;
 		private int _affectedRowCount = -1;
 		private int? _selectionLength;
+		private Visibility _statementExecutedSuccessfullyStatusMessageVisibility = Visibility.Collapsed;
 		private Visibility _selectionTextVisibility = Visibility.Collapsed;
 		private Visibility _productionLabelVisibility = Visibility.Collapsed;
-		private ConnectionStringSettings _currentConnection;
-		private string _currentSchema;
-		private ICollection<BindVariableModel> _bindVariables;
 		private Visibility _bindVariableListVisibility = Visibility.Collapsed;
 		private Visibility _gridRowInfoVisibity = Visibility.Collapsed;
 		private Visibility _transactionControlVisibity = Visibility.Collapsed;
@@ -53,7 +54,7 @@ namespace SqlPad
 
 		public Visibility StatementExecutionInfoSeparatorVisibility
 		{
-			get { return _gridRowInfoVisibity == Visibility.Collapsed && AffectedRowCountVisibility == Visibility.Collapsed ? Visibility.Collapsed : Visibility.Visible; }
+			get { return _gridRowInfoVisibity == Visibility.Collapsed && (AffectedRowCountVisibility == Visibility.Collapsed && StatementExecutedSuccessfullyStatusMessageVisibility == Visibility.Collapsed) ? Visibility.Collapsed : Visibility.Visible; }
 		}
 
 		public Visibility GridRowInfoVisibility
@@ -178,6 +179,18 @@ namespace SqlPad
 			}
 		}
 
+		public Visibility StatementExecutedSuccessfullyStatusMessageVisibility
+		{
+			get { return _statementExecutedSuccessfullyStatusMessageVisibility; }
+			set
+			{
+				if (UpdateValueAndRaisePropertyChanged(ref _statementExecutedSuccessfullyStatusMessageVisibility, value))
+				{
+					RaisePropertyChanged("StatementExecutionInfoSeparatorVisibility");
+				}
+			}
+		}
+
 		public Visibility SelectionTextVisibility
 		{
 			get { return _selectionTextVisibility; }
@@ -295,20 +308,27 @@ namespace SqlPad
 
 	public class StatementExecutionModel
 	{
+		public const int DefaultRowBatchSize = 100;
+		
+		public StatementExecutionModel()
+		{
+			InitialFetchRowCount = DefaultRowBatchSize;
+		}
+
 		public string StatementText { get; set; }
 		
 		public ICollection<BindVariableModel> BindVariables { get; set; }
 		
 		public bool GatherExecutionStatistics { get; set; }
 		
-		public bool FetchAllRows { get; set; }
+		public int InitialFetchRowCount { get; set; }
 	}
 
 	public struct ExplainPlanResult
 	{
-		public ICollection<ColumnHeader> ColumnHeaders { get; set; }
+		public IReadOnlyCollection<ColumnHeader> ColumnHeaders { get; set; }
 
-		public ICollection<object[]> RowData { get; set; }
+		public IReadOnlyCollection<object[]> ResultSet { get; set; }
 	}
 
 	public struct StatementExecutionResult
@@ -317,7 +337,9 @@ namespace SqlPad
 
 		public bool ExecutedSucessfully { get; set; }
 
-		public ICollection<ColumnHeader> ColumnHeaders { get; set; }
+		public IReadOnlyCollection<ColumnHeader> ColumnHeaders { get; set; }
+
+		public IReadOnlyCollection<object[]> InitialResultSet { get; set; }
 	}
 
 	[DebuggerDisplay("SessionExecutionStatisticsRecord (Name={Name}; Value={Value})")]

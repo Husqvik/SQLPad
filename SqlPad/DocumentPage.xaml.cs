@@ -26,7 +26,6 @@ namespace SqlPad
 {
 	public partial class DocumentPage : IDisposable
 	{
-		private const int DefaultRowBatchSize = 100;
 		private const string InitialDocumentHeader = "New*";
 		private const string MaskWrapByQuote = "\"{0}\"";
 		private const string QuoteCharacter = "\"";
@@ -554,12 +553,12 @@ namespace SqlPad
 
 		private async Task FetchNextRows()
 		{
-			ICollection<object[]> nextRowBatch = null;
+			IReadOnlyCollection<object[]> nextRowBatch = null;
 			_isFetching = true;
-			var exception = await SafeActionAsync(() => Task.Factory.StartNew(() => nextRowBatch = DatabaseModel.FetchRecords(DefaultRowBatchSize).ToArray()));
+			var exception = await SafeActionAsync(() => Task.Factory.StartNew(() => nextRowBatch = DatabaseModel.FetchRecords(StatementExecutionModel.DefaultRowBatchSize).ToArray()));
 			_isFetching = false;
 
-			TextMoreRowsExist.Visibility = DatabaseModel.CanFetch ? Visibility.Visible : Visibility.Collapsed;
+			//TextMoreRowsExist.Visibility = DatabaseModel.CanFetch ? Visibility.Visible : Visibility.Collapsed;
 
 			if (exception != null)
 			{
@@ -567,13 +566,20 @@ namespace SqlPad
 			}
 			else
 			{
-				_pageModel.ResultRowItems.AddRange(nextRowBatch);
-				
-				if (_gatherExecutionStatistics)
-				{
-					_pageModel.SessionExecutionStatistics.Clear();
-					_pageModel.SessionExecutionStatistics.AddRange(await DatabaseModel.GetExecutionStatisticsAsync(CancellationToken.None));
-				}
+				await AppendRows(nextRowBatch);
+			}
+		}
+
+		private async Task AppendRows(IEnumerable<object[]> rows)
+		{
+			_pageModel.ResultRowItems.AddRange(rows);
+			
+			TextMoreRowsExist.Visibility = DatabaseModel.CanFetch ? Visibility.Visible : Visibility.Collapsed;
+
+			if (_gatherExecutionStatistics)
+			{
+				_pageModel.SessionExecutionStatistics.Clear();
+				_pageModel.SessionExecutionStatistics.AddRange(await DatabaseModel.GetExecutionStatisticsAsync(CancellationToken.None));
 			}
 		}
 
@@ -671,8 +677,10 @@ namespace SqlPad
 		{
 			_pageModel.ResultRowItems.Clear();
 			_pageModel.GridRowInfoVisibility = Visibility.Collapsed;
+			_pageModel.StatementExecutedSuccessfullyStatusMessageVisibility = Visibility.Collapsed;
 			_pageModel.TextExecutionPlan = null;
 			_pageModel.SessionExecutionStatistics.Clear();
+
 			TextMoreRowsExist.Visibility = Visibility.Collapsed;
 
 			ResultGrid.HeadersVisibility = DataGridHeadersVisibility.None;
@@ -697,7 +705,7 @@ namespace SqlPad
 					return;
 				}
 
-				if (!DatabaseModel.CanFetch || !innerTask.Result.ExecutedSucessfully)
+				if (!innerTask.Result.ExecutedSucessfully)
 				{
 					return;
 				}
@@ -718,10 +726,16 @@ namespace SqlPad
 
 				UpdateStatusBarElapsedExecutionTime(actionResult.Elapsed);
 
-				//var columnHeaders = DatabaseModel.GetColumnHeaders();
 				if (innerTask.Result.ColumnHeaders.Count == 0)
 				{
-					_pageModel.AffectedRowCount = innerTask.Result.AffectedRowCount;
+					if (innerTask.Result.AffectedRowCount == - 1)
+					{
+						_pageModel.StatementExecutedSuccessfullyStatusMessageVisibility = Visibility.Visible;
+					}
+					else
+					{
+						_pageModel.AffectedRowCount = innerTask.Result.AffectedRowCount;
+					}
 
 					if (_gatherExecutionStatistics)
 					{
@@ -733,12 +747,7 @@ namespace SqlPad
 
 				InitializeResultGrid(innerTask.Result.ColumnHeaders);
 
-				await FetchNextRows();
-			}
-
-			if (ResultGrid.Items.Count > 0)
-			{
-				ResultGrid.SelectedIndex = 0;
+				await AppendRows(innerTask.Result.InitialResultSet);
 			}
 		}
 
@@ -800,8 +809,6 @@ namespace SqlPad
 		{
 			ResultGrid.Columns.Clear();
 
-			_pageModel.GridRowInfoVisibility = Visibility.Visible;
-
 			foreach (var columnHeader in columnHeaders)
 			{
 				var columnTemplate =
@@ -821,7 +828,10 @@ namespace SqlPad
 				ResultGrid.Columns.Add(columnTemplate);
 			}
 
+			_pageModel.GridRowInfoVisibility = Visibility.Visible;
 			ResultGrid.HeadersVisibility = DataGridHeadersVisibility.Column;
+
+			_pageModel.ResultRowItems.Clear();
 		}
 
 		public void Dispose()
@@ -1551,7 +1561,7 @@ namespace SqlPad
 			}
 
 			InitializeResultGrid(innerTask.Result.ColumnHeaders);
-			_pageModel.ResultRowItems.AddRange(innerTask.Result.RowData);
+			_pageModel.ResultRowItems.AddRange(innerTask.Result.ResultSet);
 		}
 
 		private void CreateNewPage(object sender, ExecutedRoutedEventArgs e)

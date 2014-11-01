@@ -500,7 +500,7 @@ namespace SqlPad.Oracle
 			return true;
 		}
 
-		private async Task<OracleDataReader> ExecuteUserStatement(StatementExecutionModel executionModel, CancellationToken cancellationToken)
+		private async Task ExecuteUserStatement(StatementExecutionModel executionModel, CancellationToken cancellationToken)
 		{
 			if (EnsureUserConnectionOpen())
 			{
@@ -536,21 +536,19 @@ namespace SqlPad.Oracle
 				await UpdateModelAsync(cancellationToken, true, _executionStatisticsUpdater.SessionBeginExecutionStatisticsUpdater);
 			}
 
-			var reader = await _userCommand.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken);
+			_userDataReader = await _userCommand.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken);
 
 			if (!ResolveExecutionPlanIdentifiersAndTransactionStatus())
 			{
 				SafeResolveTransactionStatus();
 			}
 
-			UpdateBindVariables(executionModel);
-
 			if (!HasActiveTransaction && _userTransaction != null)
 			{
 				DisposeUserTransaction();
 			}
-
-			return reader;
+			
+			UpdateBindVariables(executionModel);
 		}
 
 		private bool ResolveExecutionPlanIdentifiersAndTransactionStatus()
@@ -646,10 +644,11 @@ namespace SqlPad.Oracle
 			try
 			{
 				_isExecuting = true;
-				_userDataReader = await ExecuteUserStatement(executionModel, cancellationToken);
+				await ExecuteUserStatement(executionModel, cancellationToken);
 				result.AffectedRowCount = _userDataReader.RecordsAffected;
 				result.ExecutedSucessfully = true;
 				result.ColumnHeaders = GetColumnHeadersFromReader(_userDataReader);
+				result.InitialResultSet = await EnumerateAsync(FetchRecordsFromReader(_userDataReader, executionModel.InitialFetchRowCount), cancellationToken);
 			}
 			catch (Exception exception)
 			{
@@ -675,7 +674,12 @@ namespace SqlPad.Oracle
 			DisposeCommandAndReader();
 		}
 
-		internal static ICollection<ColumnHeader> GetColumnHeadersFromReader(IDataRecord reader)
+		private Task<IReadOnlyCollection<T>> EnumerateAsync<T>(IEnumerable<T> source, CancellationToken cancellationToken)
+		{
+			return Task.Factory.StartNew(() => (IReadOnlyCollection<T>)new List<T>(source.TakeWhile(i => !cancellationToken.IsCancellationRequested)).AsReadOnly(), cancellationToken);
+		}
+
+		internal static IReadOnlyCollection<ColumnHeader> GetColumnHeadersFromReader(IDataRecord reader)
 		{
 			var columnTypes = new ColumnHeader[reader.FieldCount];
 			for (var i = 0; i < reader.FieldCount; i++)

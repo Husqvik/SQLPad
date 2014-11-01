@@ -880,7 +880,7 @@ Note
 				new ExplainPlanResult
 				{
 					ColumnHeaders = ColumnHeaders,
-					RowData = new ReadOnlyCollection<object[]>(new List<object[]>(FetchRecords(1)))
+					ResultSet = new ReadOnlyCollection<object[]>(new List<object[]>(FetchRecords(1)))
 				};
 
 			return CreateFinishedTask(explainPlanResult);

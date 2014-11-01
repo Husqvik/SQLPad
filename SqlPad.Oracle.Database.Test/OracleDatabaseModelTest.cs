@@ -81,7 +81,7 @@ namespace SqlPad.Oracle.Database.Test
 			result.ExecutedSucessfully.ShouldBe(true);
 			result.AffectedRowCount.ShouldBe(-1);
 			
-			databaseModel.CanFetch.ShouldBe(true);
+			databaseModel.CanFetch.ShouldBe(false);
 
 			var columnHeaders = result.ColumnHeaders.ToArray();
 			columnHeaders.Length.ShouldBe(1);
@@ -90,10 +90,12 @@ namespace SqlPad.Oracle.Database.Test
 			columnHeaders[0].Name.ShouldBe("DUMMY");
 			columnHeaders[0].ValueConverter.ShouldNotBe(null);
 
-			var rows = databaseModel.FetchRecords(2).ToArray();
+			var rows = result.InitialResultSet.ToArray();
 			rows.Length.ShouldBe(1);
 			rows[0].Length.ShouldBe(1);
 			rows[0][0].ShouldBe("X");
+
+			databaseModel.FetchRecords(1).Any().ShouldBe(false);
 
 			var displayCursorTask = databaseModel.GetActualExecutionPlanAsync(CancellationToken.None);
 			displayCursorTask.Wait();
