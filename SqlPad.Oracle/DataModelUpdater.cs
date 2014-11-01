@@ -315,14 +315,25 @@ namespace SqlPad.Oracle
 	internal class DisplayCursorUpdater : IDataModelUpdater
 	{
 		private readonly string _sqlId;
-		private readonly int _childNumber;
+		private readonly int? _childNumber;
+		private readonly bool _displayLastCursor;
 
 		public string PlanText { get; private set; }
+
+		private DisplayCursorUpdater()
+		{
+			_displayLastCursor = true;
+		}
 
 		public DisplayCursorUpdater(string sqlId, int childNumber)
 		{
 			_sqlId = sqlId;
 			_childNumber = childNumber;
+		}
+
+		public static IDataModelUpdater CreateDisplayLastCursorUpdater()
+		{
+			return new DisplayCursorUpdater();
 		}
 
 		public void InitializeCommand(OracleCommand command)
@@ -353,7 +364,7 @@ namespace SqlPad.Oracle
 
 		public bool IsValid
 		{
-			get { return _sqlId != null; }
+			get { return _displayLastCursor || _sqlId != null; }
 		}
 	}
 

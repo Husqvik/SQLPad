@@ -36,8 +36,10 @@ namespace SqlPad.Oracle.Database.Test
 					refreshTask.Wait();
 					cloneRefreshTask.Wait();
 
+					Trace.WriteLine("Assert original database model");
 					AssertDatabaseModel(databaseModel);
 
+					Trace.WriteLine("Assert cloned database model");
 					AssertDatabaseModel(modelClone);
 				}
 			}
@@ -74,7 +76,8 @@ namespace SqlPad.Oracle.Database.Test
 				new StatementExecutionModel
 				{
 					StatementText = "SELECT /*+ gather_plan_statistics */ * FROM DUAL WHERE DUMMY = :1",
-					BindVariables = new[] {new BindVariableModel(new BindVariableConfiguration {Name = "1", Value = "X"})}
+					BindVariables = new[] { new BindVariableModel(new BindVariableConfiguration { Name = "1", Value = "X" }) },
+					GatherExecutionStatistics = true
 				};
 			
 			var result = databaseModel.ExecuteStatement(executionModel);
@@ -100,12 +103,20 @@ namespace SqlPad.Oracle.Database.Test
 			var displayCursorTask = databaseModel.GetActualExecutionPlanAsync(CancellationToken.None);
 			displayCursorTask.Wait();
 
+			displayCursorTask.Result.ShouldNotBe(null);
+
 			Trace.WriteLine("Display cursor output: " + Environment.NewLine + displayCursorTask.Result + Environment.NewLine);
 
-			displayCursorTask.Result.ShouldNotBe(null);
 			displayCursorTask.Result.Length.ShouldBeGreaterThan(100);
 
-			databaseModel.CanFetch.ShouldBe(false);
+			var task = databaseModel.GetExecutionStatisticsAsync(CancellationToken.None);
+			task.Wait();
+
+			var statisticsRecords = task.Result.Where(r => r.Value != 0).ToArray();
+			statisticsRecords.Length.ShouldBeGreaterThan(0);
+
+			var statistics = String.Join(Environment.NewLine, statisticsRecords.Select(r => String.Format("{0}: {1}", r.Name.PadRight(40), r.Value)));
+			Trace.WriteLine("Execution statistics output: " + Environment.NewLine + statistics + Environment.NewLine);
 		}
 
 		[Test]
@@ -114,7 +125,7 @@ namespace SqlPad.Oracle.Database.Test
 			var model = new ColumnDetailsModel();
 			var columnDetailsUpdater = new ColumnDetailsModelUpdater(model, new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"DUAL\""), "DUMMY");
 
-			UpdateModel(columnDetailsUpdater);
+			ExecuteUpdater(columnDetailsUpdater);
 
 			model.AverageValueSize.ShouldBe(2);
 			model.DistinctValueCount.ShouldBe(1);
@@ -125,7 +136,48 @@ namespace SqlPad.Oracle.Database.Test
 			model.SampleSize.ShouldBe(1);
 		}
 
-		private void UpdateModel(IDataModelUpdater columnDetailsUpdater)
+		[Test]
+		public void TestTableDetailsModelUpdater()
+		{
+			var model = new TableDetailsModel();
+			var tableDetailsUpdater = new TableDetailsModelUpdater(model, new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"DUAL\""));
+
+			ExecuteUpdater(tableDetailsUpdater);
+
+			model.AverageRowSize.ShouldBe(2);
+			model.BlockCount.ShouldBe(1);
+			model.ClusterName.ShouldBe(null);
+			model.Compression.ShouldBe("Disabled");
+			model.IsPartitioned.ShouldBe(false);
+			model.IsTemporary.ShouldBe(false);
+			model.LastAnalyzed.ShouldBeGreaterThan(DateTime.MinValue);
+			model.Organization.ShouldBe("Heap");
+			model.ParallelDegree.ShouldBe("1");
+			model.RowCount.ShouldBe(1);
+		}
+
+		[Test]
+		public void TestTableSpaceAllocationModelUpdater()
+		{
+			var model = new TableDetailsModel();
+			var tableSpaceAllocationUpdater = new TableSpaceAllocationModelUpdater(model, new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"DUAL\""));
+
+			ExecuteUpdater(tableSpaceAllocationUpdater);
+
+			model.AllocatedBytes.ShouldBe(65536);
+		}
+
+		[Test]
+		public void TestDisplayCursorUpdater()
+		{
+			var displayCursorUpdater = (DisplayCursorUpdater)DisplayCursorUpdater.CreateDisplayLastCursorUpdater();
+			ExecuteUpdater(displayCursorUpdater);
+
+			displayCursorUpdater.PlanText.ShouldNotBe(null);
+			Trace.WriteLine(displayCursorUpdater.PlanText);
+		}
+
+		private void ExecuteUpdater(IDataModelUpdater columnDetailsUpdater)
 		{
 			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
 			{
