@@ -8,13 +8,19 @@ namespace SqlPad.Commands
 {
 	internal class ContextActionCommand : ICommand
 	{
+		private readonly TextEditor _textEditor;
+		
 		public IContextAction ContextAction { get; private set; }
 
-		public ContextActionCommand(IContextAction contextAction)
+		public ContextActionCommand(TextEditor textEditor, IContextAction contextAction)
 		{
+			if (textEditor == null)
+				throw new ArgumentNullException("textEditor");
+			
 			if (contextAction == null)
 				throw new ArgumentNullException("contextAction");
-			
+
+			_textEditor = textEditor;
 			ContextAction = contextAction;
 		}
 
@@ -27,18 +33,16 @@ namespace SqlPad.Commands
 
 		public void Execute(object parameter)
 		{
-			var textEditor = (TextEditor)parameter;
-
 			if (ContextAction.IsLongOperation)
 			{
-				ExecuteLongOperation(textEditor);
+				ExecuteLongOperation();
 			}
 			else
 			{
 				try
 				{
 					ContextAction.ExecutionHandler.ExecutionHandler(ContextAction.ExecutionContext);
-					GenericCommandHandler.UpdateDocument(textEditor, ContextAction.ExecutionContext);
+					GenericCommandHandler.UpdateDocument(_textEditor, ContextAction.ExecutionContext);
 				}
 				catch (Exception exception)
 				{
@@ -47,36 +51,43 @@ namespace SqlPad.Commands
 			}
 		}
 
-		private async void ExecuteLongOperation(TextEditor textEditor)
+		private async void ExecuteLongOperation()
 		{
 			using (var cancellationTokenSource = new CancellationTokenSource())
 			{
 				var operationMonitor = new WindowOperationMonitor(cancellationTokenSource) { Owner = Application.Current.MainWindow };
 				operationMonitor.Show();
 
+				Exception exception = null;
+
 				try
 				{
-					textEditor.IsEnabled = false;
+					_textEditor.IsEnabled = false;
 					await ContextAction.ExecutionHandler.ExecutionHandlerAsync(ContextAction.ExecutionContext, cancellationTokenSource.Token);
+					operationMonitor.Close();
 				}
-				catch (Exception exception)
+				catch (Exception e)
 				{
-					ShowErrorMessage(exception);
+					exception = e;
 				}
 				finally
 				{
-					textEditor.IsEnabled = true;
+					operationMonitor.Close();
+					_textEditor.IsEnabled = true;
 				}
 
-				operationMonitor.Close();
+				if (exception != null)
+				{
+					ShowErrorMessage(exception);
+				}
 			}
 
-			GenericCommandHandler.UpdateDocument(textEditor, ContextAction.ExecutionContext);
+			GenericCommandHandler.UpdateDocument(_textEditor, ContextAction.ExecutionContext);
 		}
 
 		private static void ShowErrorMessage(Exception exception)
 		{
-			Messages.ShowError("Action failed: " + Environment.NewLine + exception.Message);
+			Messages.ShowError(Application.Current.MainWindow, "Action failed: " + Environment.NewLine + exception.Message);
 		}
 	}
 }

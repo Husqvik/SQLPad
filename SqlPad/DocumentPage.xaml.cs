@@ -1340,8 +1340,7 @@ namespace SqlPad
 				new MenuItem
 				{
 					Header = action.Name,
-					Command = new ContextActionCommand(action),
-					CommandParameter = Editor
+					Command = new ContextActionCommand(Editor, action),
 				};
 
 			Editor.ContextMenu.Items.Add(menuItem);
