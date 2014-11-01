@@ -30,14 +30,17 @@ namespace SqlPad.Oracle.Database.Test
 				databaseModel.SystemParameters.Count.ShouldBe(0);
 
 				databaseModel.IsInitialized.ShouldBe(false);
-				var resetEvent = new ManualResetEvent(false);
-				databaseModel.RefreshStarted += (sender, args) => resetEvent.Set();
+				var initializingResetEvent = new ManualResetEvent(false);
+				var refreshFinishedResetEvent = new ManualResetEvent(false);
+				databaseModel.RefreshStarted += (sender, args) => initializingResetEvent.Set();
+				databaseModel.RefreshFinished += (sender, args) => refreshFinishedResetEvent.Set();
 				databaseModel.Initialize();
-				resetEvent.WaitOne();
+				initializingResetEvent.WaitOne();
 
 				using (var modelClone = OracleDatabaseModel.GetDatabaseModel(_connectionString))
 				{
 					var cloneRefreshTask = modelClone.Refresh();
+					refreshFinishedResetEvent.WaitOne();
 					cloneRefreshTask.Wait();
 
 					databaseModel.IsInitialized.ShouldBe(true);

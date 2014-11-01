@@ -351,6 +351,26 @@ FROM
 			orderByName.ColumnNodeColumnReferences.Count.ShouldBe(2);
 		}
 
+		[Test(Description = @""), Ignore]
+		public void TestColumnResolvedAmbiguousInOrderByClauseWhenNotReferencedInSelectClause()
+		{
+			const string query1 = @"SELECT NULL FROM DUAL D1 JOIN DUAL D2 ON D1.DUMMY = D2.DUMMY ORDER BY DUMMY";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.QueryBlocks.ShouldNotBe(null);
+			semanticModel.QueryBlocks.Count.ShouldBe(1);
+
+			var columnReferences = semanticModel.QueryBlocks.Single().AllColumnReferences.OrderBy(r => r.ColumnNode.SourcePosition.IndexStart).ToArray();
+			columnReferences.Length.ShouldBe(3);
+			var orderByDummy = columnReferences[2];
+			orderByDummy.Placement.ShouldBe(QueryBlockPlacement.OrderBy);
+			orderByDummy.ColumnNodeColumnReferences.Count.ShouldBe(2);
+		}
+
 		[Test(Description = @"")]
 		public void TestFromClauseWithObjectOverDatabaseLink()
 		{

@@ -44,6 +44,17 @@ namespace SqlPad.Oracle.Test
 			actions[1].Name.ShouldBe("Resolve as PROJECT.NAME");
 		}
 
+		[Test(Description = @""), STAThread, Ignore]
+		public void TestSuggestingAmbiguousColumnReferenceResolutionInOrderClause()
+		{
+			const string query1 = @"SELECT * FROM DUAL D1 JOIN DUAL D2 ON D1.DUMMY = D2.DUMMY ORDER BY DUMMY";
+
+			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 72).Where(a => a.Name.StartsWith("Resolve as")).ToArray();
+			actions.Length.ShouldBe(2);
+			actions[0].Name.ShouldBe("Resolve as D1.DUMMY");
+			actions[1].Name.ShouldBe("Resolve as D1.DUMMY");
+		}
+
 		[Test(Description = @""), STAThread]
 		public void TestSuggestingAmbiguousColumnReferenceResolutionWithFullyQualifiedName()
 		{
