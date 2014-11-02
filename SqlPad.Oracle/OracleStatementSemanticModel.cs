@@ -918,13 +918,14 @@ namespace SqlPad.Oracle
 						continue;
 					}
 
-					var orderByColumnAliasOrAsteriskReferences = columnReference.ObjectNode == null
-						? columnReference.Owner.Columns
+					if (columnReference.ObjectNode == null)
+					{
+						var orderByColumnAliasOrAsteriskReferences = columnReference.Owner.Columns
 							.Where(c => c.NormalizedName == columnReference.NormalizedName)
-							.Select(c => c.ColumnDescription)
-						: Enumerable.Empty<OracleColumn>();
+							.Select(c => c.ColumnDescription);
 
-					columnReference.ColumnNodeColumnReferences.AddRange(orderByColumnAliasOrAsteriskReferences);
+						columnReference.ColumnNodeColumnReferences.AddRange(orderByColumnAliasOrAsteriskReferences);
+					}
 				}
 
 				ResolveColumnReference(accessibleRowSourceReferences, columnReference, false);
@@ -954,6 +955,8 @@ namespace SqlPad.Oracle
 
 		private void ResolveColumnReference(IEnumerable<OracleDataObjectReference> rowSources, OracleColumnReference columnReference, bool correlatedRowSources)
 		{
+			var hasColumnReferencesToSelectList = columnReference.Placement == QueryBlockPlacement.OrderBy && columnReference.ColumnNodeColumnReferences.Count > 0;
+
 			foreach (var rowSourceReference in rowSources)
 			{
 				if (columnReference.ObjectNode != null &&
@@ -965,13 +968,63 @@ namespace SqlPad.Oracle
 					columnReference.IsCorrelated = correlatedRowSources;
 				}
 
-				if (columnReference.Placement == QueryBlockPlacement.OrderBy && columnReference.ColumnNodeColumnReferences.Count > 0)
-				{
-					continue;
-				}
-
-				AddColumnNodeColumnReferences(rowSourceReference, columnReference);
+				AddColumnNodeColumnReferences(rowSourceReference, columnReference, hasColumnReferencesToSelectList);
 			}
+		}
+
+		private void AddColumnNodeColumnReferences(OracleDataObjectReference rowSourceReference, OracleColumnReference columnReference, bool hasColumnReferencesToSelectList)
+		{
+			if (!String.IsNullOrEmpty(columnReference.FullyQualifiedObjectName.NormalizedName) &&
+				columnReference.ObjectNodeObjectReferences.Count == 0)
+			{
+				return;
+			}
+
+			var newColumnReferences = new List<OracleColumn>();
+			if (rowSourceReference.Type == ReferenceType.SchemaObject)
+			{
+				if (rowSourceReference.SchemaObject == null)
+					return;
+
+				var dataObject = (OracleDataObject)rowSourceReference.SchemaObject.GetTargetSchemaObject();
+				var oracleTable = dataObject as OracleTable;
+				if (columnReference.ColumnNode.Id == Terminals.RowIdPseudoColumn)
+				{
+					if (oracleTable != null && oracleTable.RowIdPseudoColumn != null &&
+						(columnReference.ObjectNode == null || IsTableReferenceValid(columnReference, rowSourceReference)))
+					{
+						newColumnReferences.Add(oracleTable.RowIdPseudoColumn);
+					}
+				}
+				else
+				{
+					newColumnReferences.AddRange(dataObject.Columns.Values
+						.Where(c => c.Name == columnReference.NormalizedName && (columnReference.ObjectNode == null || IsTableReferenceValid(columnReference, rowSourceReference))));
+				}
+			}
+			else
+			{
+				var selectListColumns = rowSourceReference.QueryBlocks.SelectMany(qb => qb.Columns)
+					.Where(c => c.NormalizedName == columnReference.NormalizedName && (columnReference.ObjectNode == null || columnReference.FullyQualifiedObjectName.NormalizedName == rowSourceReference.FullyQualifiedObjectName.NormalizedName));
+
+				foreach (var selectListColumn in selectListColumns)
+				{
+					newColumnReferences.Add(selectListColumn.ColumnDescription);
+					selectListColumn.RegisterOuterReference();
+				}
+			}
+
+			if (newColumnReferences.Count <= 0)
+			{
+				return;
+			}
+			
+			if (!hasColumnReferencesToSelectList)
+			{
+				columnReference.ColumnNodeColumnReferences.AddRange(newColumnReferences);
+			}
+
+			columnReference.ColumnNodeObjectReferences.Add(rowSourceReference);
 		}
 
 		private void TryColumnReferenceAsProgramOrSequenceReference(OracleColumnReference columnReference)
@@ -1079,55 +1132,7 @@ namespace SqlPad.Oracle
 				columnReference.ObjectNodeObjectReferences.Add(sequenceReference);
 			}
 		}
-
-		private void AddColumnNodeColumnReferences(OracleDataObjectReference rowSourceReference, OracleColumnReference columnReference)
-		{
-			if (!String.IsNullOrEmpty(columnReference.FullyQualifiedObjectName.NormalizedName) &&
-			    columnReference.ObjectNodeObjectReferences.Count == 0)
-			{
-				return;
-			}
-
-			var precedingReferenceCount = columnReference.ColumnNodeColumnReferences.Count;
-			if (rowSourceReference.Type == ReferenceType.SchemaObject)
-			{
-				if (rowSourceReference.SchemaObject == null)
-					return;
-
-				var dataObject = (OracleDataObject)rowSourceReference.SchemaObject.GetTargetSchemaObject();
-				var oracleTable = dataObject as OracleTable;
-				if (columnReference.ColumnNode.Id == Terminals.RowIdPseudoColumn)
-				{
-					if (oracleTable != null && oracleTable.RowIdPseudoColumn != null &&
-						(columnReference.ObjectNode == null || IsTableReferenceValid(columnReference, rowSourceReference)))
-					{
-						columnReference.ColumnNodeColumnReferences.Add(oracleTable.RowIdPseudoColumn);
-					}
-				}
-				else
-				{
-					columnReference.ColumnNodeColumnReferences.AddRange(dataObject.Columns.Values
-						.Where(c => c.Name == columnReference.NormalizedName && (columnReference.ObjectNode == null || IsTableReferenceValid(columnReference, rowSourceReference))));
-				}
-			}
-			else
-			{
-				var selectListColumns = rowSourceReference.QueryBlocks.SelectMany(qb => qb.Columns)
-					.Where(c => c.NormalizedName == columnReference.NormalizedName && (columnReference.ObjectNode == null || columnReference.FullyQualifiedObjectName.NormalizedName == rowSourceReference.FullyQualifiedObjectName.NormalizedName));
-
-				foreach (var selectListColumn in selectListColumns)
-				{
-					columnReference.ColumnNodeColumnReferences.Add(selectListColumn.ColumnDescription);
-					selectListColumn.RegisterOuterReference();
-				}
-			}
-
-			if (columnReference.ColumnNodeColumnReferences.Count > precedingReferenceCount)
-			{
-				columnReference.ColumnNodeObjectReferences.Add(rowSourceReference);
-			}
-		}
-
+		
 		private bool IsTableReferenceValid(OracleColumnReference column, OracleDataObjectReference schemaObject)
 		{
 			var objectName = column.FullyQualifiedObjectName;

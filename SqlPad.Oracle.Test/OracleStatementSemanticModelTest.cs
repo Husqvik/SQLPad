@@ -351,7 +351,7 @@ FROM
 			orderByName.ColumnNodeColumnReferences.Count.ShouldBe(2);
 		}
 
-		[Test(Description = @""), Ignore]
+		[Test(Description = @"")]
 		public void TestColumnResolvedAmbiguousInOrderByClauseWhenNotReferencedInSelectClause()
 		{
 			const string query1 = @"SELECT NULL FROM DUAL D1 JOIN DUAL D2 ON D1.DUMMY = D2.DUMMY ORDER BY DUMMY";
