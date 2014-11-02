@@ -166,24 +166,37 @@ namespace SqlPad.Oracle
 
 	public abstract class OracleTypeBase : OracleSchemaObject
 	{
-		public const string ObjectType = "OBJECT";
-		public const string XmlType = "XMLTYPE";
-		public const string CollectionType = "COLLECTION";
+		public const string TypeCodeObject = "OBJECT";
+		public const string TypeCodeXml = "XMLTYPE";
+		public const string TypeCodeCollection = "COLLECTION";
+		
 		public override string Type { get { return OracleSchemaObjectType.Type; } }
 
 		public abstract string TypeCode { get; }
 	}
 
-	[DebuggerDisplay("OracleObjectType (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
-	public class OracleObjectType : OracleTypeBase
+	[DebuggerDisplay("OracleTypeObject (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
+	public class OracleTypeObject : OracleTypeBase
 	{
-		public override string TypeCode { get { return ObjectType; } }
+		public override string TypeCode { get { return TypeCodeObject; } }
 	}
 
-	[DebuggerDisplay("OracleCollectionType (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
-	public class OracleCollectionType : OracleTypeBase
+	[DebuggerDisplay("OracleTypeCollection (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
+	public class OracleTypeCollection : OracleTypeBase
 	{
-		public override string TypeCode { get { return CollectionType; } }
+		public override string TypeCode { get { return TypeCodeCollection; } }
+
+		public OracleObjectIdentifier ElementTypeIdentifier { get; set; }
+
+		public OracleCollectionType CollectionType { get; set; }
+
+		public int? UpperBound { get; set; }
+	}
+
+	public enum OracleCollectionType
+	{
+		Table,
+		VarryingArray
 	}
 
 	public enum OrganizationType

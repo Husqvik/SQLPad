@@ -798,6 +798,7 @@ namespace SqlPad.Oracle
 					case "XmlType":
 						value = new OracleXmlValue(reader.GetOracleXmlType(i));
 						break;
+					case "Array":
 					default:
 						value = reader.GetValue(i);
 						break;
@@ -974,6 +975,8 @@ namespace SqlPad.Oracle
 				var systemParameters = SafeFetchDictionary(_dataDictionaryMapper.GetSystemParameters, "DataDictionaryMapper.GetSystemParameters failed: ");
 
 				_dataDictionary = new OracleDataDictionary(allObjects, databaseLinks, nonSchemaBuiltInFunctionMetadata, characterSets, statisticsKeys, systemParameters, lastRefresh);
+
+				//OracleCustomTypeGenerator.GenerateCustomTypeAssembly(_dataDictionary);
 
 				CachedDataDictionaries[CachedConnectionStringName] = _dataDictionary;
 				return true;

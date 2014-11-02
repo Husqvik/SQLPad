@@ -135,10 +135,12 @@ namespace SqlPad.Oracle
 			oracleFunctionType.AsReferenceDefault = true;
 			oracleFunctionType.Add("_metadata");
 
-			oracleTypeBaseType.AddSubType(101, typeof(OracleObjectType));
-			oracleTypeBaseType.AddSubType(102, typeof(OracleCollectionType));
-			Serializer.Add(typeof(OracleObjectType), true).AsReferenceDefault = true;
-			Serializer.Add(typeof(OracleCollectionType), true).AsReferenceDefault = true;
+			oracleTypeBaseType.AddSubType(101, typeof(OracleTypeObject));
+			oracleTypeBaseType.AddSubType(102, typeof(OracleTypeCollection));
+			Serializer.Add(typeof(OracleTypeObject), true).AsReferenceDefault = true;
+			var oracleCollectionType = Serializer.Add(typeof(OracleTypeCollection), true);
+			oracleCollectionType.AsReferenceDefault = true;
+			oracleCollectionType.Add("ElementTypeIdentifier", "CollectionType", "UpperBound");
 
 			oracleDataObjectType.AddSubType(101, typeof(OracleTable));
 			oracleDataObjectType.AddSubType(102, typeof(OracleView));

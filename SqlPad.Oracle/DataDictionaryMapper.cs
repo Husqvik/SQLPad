@@ -85,6 +85,8 @@ namespace SqlPad.Oracle
 
 			_databaseModel.ExecuteReader(DatabaseCommands.SelectTypeAttributesCommandText, MapTypeAttributes).ToArray();
 
+			_databaseModel.ExecuteReader(DatabaseCommands.SelectCollectionTypeAttributesCommandText, MapCollectionTypeAttributes).ToArray();
+
 			return new ReadOnlyDictionary<OracleObjectIdentifier, OracleSchemaObject>(_allObjects);
 		}
 
@@ -213,16 +215,32 @@ namespace SqlPad.Oracle
 			return OracleFunctionIdentifier.CreateFromValues(owner == DBNull.Value ? null : QualifyStringObject(owner), package == DBNull.Value ? null : QualifyStringObject(package), QualifyStringObject(name), Convert.ToInt32(overload));
 		}
 
-		private OracleTypeBase MapTypeAttributes(OracleDataReader reader)
+		private OracleTypeObject MapTypeAttributes(OracleDataReader reader)
 		{
 			var typeFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(reader["OWNER"]), QualifyStringObject(reader["TYPE_NAME"]));
 			OracleSchemaObject typeObject;
 			if (!_allObjects.TryGetValue(typeFullyQualifiedName, out typeObject))
 				return null;
 
-			var type = (OracleTypeBase)typeObject;
+			var type = (OracleTypeObject)typeObject;
 			// TODO:
 			return type;
+		}
+
+		private OracleTypeCollection MapCollectionTypeAttributes(OracleDataReader reader)
+		{
+			var typeFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(reader["OWNER"]), QualifyStringObject(reader["TYPE_NAME"]));
+			OracleSchemaObject typeObject;
+			if (!_allObjects.TryGetValue(typeFullyQualifiedName, out typeObject))
+				return null;
+
+			var collectionType = (OracleTypeCollection)typeObject;
+			var elementTypeIdentifier = OracleObjectIdentifier.Create(QualifyStringObject(reader["ELEM_TYPE_OWNER"]), QualifyStringObject(reader["ELEM_TYPE_NAME"]));
+			collectionType.ElementTypeIdentifier = elementTypeIdentifier;
+			collectionType.CollectionType = (string)reader["COLL_TYPE"] == "TABLE" ? OracleCollectionType.Table : OracleCollectionType.VarryingArray ;
+			collectionType.UpperBound = OracleReaderValueConvert.ToInt32(reader["UPPER_BOUND"]);
+
+			return collectionType;
 		}
 
 		private OracleDatabaseLink MapDatabaseLink(OracleDataReader reader)
@@ -399,12 +417,12 @@ namespace SqlPad.Oracle
 			var typeType = (string)reader["TYPECODE"];
 			switch (typeType)
 			{
-				case OracleTypeBase.XmlType:
-				case OracleTypeBase.ObjectType:
-					schemaType = new OracleObjectType(); // TODO: Add members
+				case OracleTypeBase.TypeCodeXml:
+				case OracleTypeBase.TypeCodeObject:
+					schemaType = new OracleTypeObject(); // TODO: Add members
 					break;
-				case OracleTypeBase.CollectionType:
-					schemaType = new OracleCollectionType(); // TODO: Add item type
+				case OracleTypeBase.TypeCodeCollection:
+					schemaType = new OracleTypeCollection(); // TODO: Add item type
 					break;
 				default:
 					throw new NotSupportedException(string.Format("Type '{0}' is not supported. ", typeType));

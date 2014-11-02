@@ -652,12 +652,12 @@ namespace SqlPad.Oracle.Test
 				FullyQualifiedName = OracleObjectIdentifier.Create(OwnerNameSys, PackageBuiltInFunction),
 				IsValid = true
 			},
-			new OracleObjectType
+			new OracleTypeObject
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(OwnerNameSys, "\"XMLTYPE\""),
 				IsValid = true
 			},
-			new OracleObjectType
+			new OracleTypeObject
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"INVALID_OBJECT_TYPE\"")
 			},
