@@ -46,11 +46,10 @@ namespace SqlPad.Oracle
 		private IsolationLevel _userTransactionIsolationLevel;
 		private int _userCommandChildNumber;
 		private SessionExecutionStatisticsUpdater _executionStatisticsUpdater;
-		private string _oracleVersion;
-		private string _databaseDomainName;
 
 		private static readonly Dictionary<string, OracleDataDictionary> CachedDataDictionaries = new Dictionary<string, OracleDataDictionary>();
 		private static readonly Dictionary<string, OracleDatabaseModel> DatabaseModels = new Dictionary<string, OracleDatabaseModel>();
+		private static readonly Dictionary<string, DatabaseProperty> DatabaseProperties = new Dictionary<string, DatabaseProperty>();
 		private static readonly HashSet<string> ActiveDataModelRefresh = new HashSet<string>();
 		private static readonly Dictionary<string, List<RefreshModel>> WaitingDataModelRefresh = new Dictionary<string, List<RefreshModel>>();
 
@@ -132,7 +131,7 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		public override string DatabaseDomainName { get { return _databaseDomainName; } }
+		public override string DatabaseDomainName { get { return DatabaseProperties[_connectionString.ConnectionString].DomainName; } }
 
 		public override bool HasActiveTransaction { get { return !String.IsNullOrEmpty(_userTransactionId); } }
 
@@ -181,9 +180,9 @@ namespace SqlPad.Oracle
 
 		public override IDictionary<string, string> SystemParameters { get { return _dataDictionary.SystemParameters; } }
 
-		public override int VersionMajor { get { return Convert.ToInt32(_oracleVersion.Split('.')[0]); } }
-		
-		public override string VersionString { get { return _oracleVersion; } }
+		public override int VersionMajor { get { return Convert.ToInt32(DatabaseProperties[_connectionString.ConnectionString].Version.Split('.')[0]); } }
+
+		public override string VersionString { get { return DatabaseProperties[_connectionString.ConnectionString].Version; } }
 
 		public override void RefreshIfNeeded()
 		{
@@ -306,7 +305,7 @@ namespace SqlPad.Oracle
 		{
 			var tableDetailsUpdater = new TableDetailsModelUpdater(dataModel, objectIdentifier);
 			var tableSpaceAllocationUpdater = new TableSpaceAllocationModelUpdater(dataModel, objectIdentifier);
-			var tableInMemorySpaceAllocationUpdater = new TableInMemorySpaceAllocationModelUpdater(dataModel, objectIdentifier, _oracleVersion);
+			var tableInMemorySpaceAllocationUpdater = new TableInMemorySpaceAllocationModelUpdater(dataModel, objectIdentifier, VersionString);
 			await UpdateModelAsync(cancellationToken, true, tableDetailsUpdater, tableSpaceAllocationUpdater, tableInMemorySpaceAllocationUpdater);
 		}
 
@@ -314,7 +313,7 @@ namespace SqlPad.Oracle
 		{
 			var columnDetailsUpdater = new ColumnDetailsModelUpdater(dataModel, objectIdentifier, columnName.Trim('"'));
 			var columnHistogramUpdater = new ColumnDetailsHistogramUpdater(dataModel, objectIdentifier, columnName.Trim('"'));
-			var columnInMemoryDetailsUpdater = new ColumnInMemoryDetailsModelUpdater(dataModel, objectIdentifier, columnName.Trim('"'), _oracleVersion);
+			var columnInMemoryDetailsUpdater = new ColumnInMemoryDetailsModelUpdater(dataModel, objectIdentifier, columnName.Trim('"'), VersionString);
 			await UpdateModelAsync(cancellationToken, true, columnDetailsUpdater, columnHistogramUpdater, columnInMemoryDetailsUpdater);
 		}
 
@@ -429,7 +428,10 @@ namespace SqlPad.Oracle
 			
 			_userConnection.Dispose();
 
-			DatabaseModels.Remove(_connectionString.ConnectionString);
+			if (DatabaseModels.ContainsValue(this))
+			{
+				DatabaseModels.Remove(_connectionString.ConnectionString);
+			}
 		}
 
 		private void DisposeCommandAndReader()
@@ -810,6 +812,20 @@ namespace SqlPad.Oracle
 			return columnData;
 		}
 
+		private void EnsureDatabaseVersion(OracleConnection connection)
+		{
+			DatabaseProperty property;
+			if (!DatabaseProperties.TryGetValue(_connectionString.ConnectionString, out property))
+			{
+				DatabaseProperties[_connectionString.ConnectionString] =
+					new DatabaseProperty
+					{
+						DomainName = connection.DatabaseDomainName,
+						Version = connection.ServerVersion
+					};
+			}
+		}
+
 		internal IEnumerable<T> ExecuteReader<T>(string commandText, Func<OracleDataReader, T> formatFunction)
 		{
 			using (var connection = new OracleConnection(_oracleConnectionString.ConnectionString))
@@ -821,11 +837,7 @@ namespace SqlPad.Oracle
 
 					connection.Open();
 
-					if (_oracleVersion == null)
-					{
-						_oracleVersion = connection.ServerVersion;
-						_databaseDomainName = connection.DatabaseDomainName;
-					}
+					EnsureDatabaseVersion(connection);
 
 					connection.ModuleName = ModuleNameSqlPadDatabaseModel;
 					connection.ActionName = "Fetch data dictionary metadata";
@@ -917,7 +929,14 @@ namespace SqlPad.Oracle
 
 			if (isRefreshSuccessful)
 			{
-				MetadataCache.StoreDatabaseModelCache(CachedConnectionStringName, stream => _dataDictionary.Serialize(stream));
+				try
+				{
+					MetadataCache.StoreDatabaseModelCache(CachedConnectionStringName, stream => _dataDictionary.Serialize(stream));
+				}
+				catch (Exception e)
+				{
+					Trace.WriteLine("Storing metadata cache failed: " + e);
+				}
 			}
 
 			_isRefreshing = false;
@@ -1056,9 +1075,9 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		public override void Initialize()
+		public override Task Initialize()
 		{
-			Task.Factory.StartNew(InitializeInternal);
+			return Task.Factory.StartNew(InitializeInternal);
 		}
 
 		private void InitializeInternal()
@@ -1101,6 +1120,12 @@ namespace SqlPad.Oracle
 			public TaskCompletionSource<OracleDataDictionary> TaskCompletionSource { get; set; }
 			
 			public OracleDatabaseModel DatabaseModel { get; set; }
+		}
+
+		private struct DatabaseProperty
+		{
+			public string Version { get; set; }
+			public string DomainName { get; set; }
 		}
 
 		private class OracleSchemaResolver

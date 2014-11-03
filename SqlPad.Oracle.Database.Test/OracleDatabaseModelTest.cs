@@ -30,12 +30,12 @@ namespace SqlPad.Oracle.Database.Test
 				databaseModel.SystemParameters.Count.ShouldBe(0);
 
 				databaseModel.IsInitialized.ShouldBe(false);
-				var initializingResetEvent = new ManualResetEvent(false);
+				var refreshStartedResetEvent = new ManualResetEvent(false);
 				var refreshFinishedResetEvent = new ManualResetEvent(false);
-				databaseModel.RefreshStarted += (sender, args) => initializingResetEvent.Set();
+				databaseModel.RefreshStarted += (sender, args) => refreshStartedResetEvent.Set();
 				databaseModel.RefreshFinished += (sender, args) => refreshFinishedResetEvent.Set();
 				databaseModel.Initialize();
-				initializingResetEvent.WaitOne();
+				refreshStartedResetEvent.WaitOne();
 
 				using (var modelClone = OracleDatabaseModel.GetDatabaseModel(_connectionString))
 				{
@@ -57,6 +57,10 @@ namespace SqlPad.Oracle.Database.Test
 
 		private void AssertDatabaseModel(OracleDatabaseModelBase databaseModel)
 		{
+			databaseModel.VersionString.ShouldNotBe(null);
+
+			databaseModel.VersionMajor.ShouldBeGreaterThan(8);
+
 			databaseModel.AllObjects.Count.ShouldBeGreaterThan(0);
 			Trace.WriteLine(String.Format("All object dictionary has {0} members. ", databaseModel.AllObjects.Count));
 			
@@ -197,6 +201,7 @@ namespace SqlPad.Oracle.Database.Test
 			var model = new ColumnDetailsModel();
 			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
 			{
+				databaseModel.Initialize().Wait();
 				databaseModel.UpdateColumnDetailsAsync(new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"DUAL\""), "\"DUMMY\"", model, CancellationToken.None).Wait();
 			}
 

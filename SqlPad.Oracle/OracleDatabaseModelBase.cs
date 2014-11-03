@@ -37,7 +37,7 @@ namespace SqlPad.Oracle
 
 		public virtual void Dispose() { }
 
-		public abstract void Initialize();
+		public abstract Task Initialize();
 
 		public abstract bool IsModelFresh { get; }
 

@@ -801,8 +801,9 @@ Note
 			return taskCompletionSource.Task;
 		}
 
-		public override void Initialize()
+		public override Task Initialize()
 		{
+			return CreateFinishedTask<object>(null);
 		}
 
 		public override bool IsModelFresh { get { return true; } }
@@ -827,8 +828,6 @@ Note
 
 		public override Task UpdateTableDetailsAsync(OracleObjectIdentifier objectIdentifier, TableDetailsModel dataModel, CancellationToken cancellationToken)
 		{
-			var taskCompletionSource = new TaskCompletionSource<TableDetailsModel>();
-
 			dataModel.AverageRowSize = 237;
 			dataModel.LastAnalyzed = new DateTime(2014, 8, 19, 6, 18, 12);
 			dataModel.BlockCount = 544;
@@ -838,14 +837,11 @@ Note
 			dataModel.InMemoryCompression = "Disabled";
 			dataModel.Organization = "Index";
 
-			taskCompletionSource.SetResult(null);
-			return taskCompletionSource.Task;
+			return CreateFinishedTask<object>(null);
 		}
 
 		public override Task UpdateColumnDetailsAsync(OracleObjectIdentifier objectIdentifier, string columnName, ColumnDetailsModel dataModel, CancellationToken cancellationToken)
 		{
-			var taskCompletionSource = new TaskCompletionSource<ColumnDetailsModel>();
-
 			dataModel.DistinctValueCount = 567;
 			dataModel.LastAnalyzed = new DateTime(2014, 8, 19, 6, 18, 12);
 			dataModel.SampleSize = 12346;
@@ -857,8 +853,7 @@ Note
 			var previousValue = 0d;
 			dataModel.HistogramValues = Enumerable.Repeat(new Random(), dataModel.HistogramBucketCount).Select(r => (previousValue += r.NextDouble())).ToArray();
 
-			taskCompletionSource.SetResult(null);
-			return taskCompletionSource.Task;
+			return CreateFinishedTask<object>(null);
 		}
 		
 		public override IEnumerable<object[]> FetchRecords(int rowCount)

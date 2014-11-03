@@ -24,7 +24,7 @@ namespace SqlPad
 
 		void RefreshIfNeeded();
 
-		void Initialize();
+		Task Initialize();
 
 		Task Refresh(bool force);
 
