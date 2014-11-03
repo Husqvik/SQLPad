@@ -130,7 +130,7 @@ namespace SqlPad.Oracle
 				new CommandExecutionHandler
 				{
 					Name = "FormatStatement",
-					DefaultGestures = GenericCommands.FormatStatementCommand.InputGestures,
+					DefaultGestures = GenericCommands.FormatStatement.InputGestures,
 					ExecutionHandler = ExecutionHandlerImplementation
 				};
 
@@ -138,7 +138,7 @@ namespace SqlPad.Oracle
 				new CommandExecutionHandler
 				{
 					Name = "FormatStatementAsSingleLine",
-					DefaultGestures = GenericCommands.FormatStatementAsSingleLineCommand.InputGestures,
+					DefaultGestures = GenericCommands.FormatStatementAsSingleLine.InputGestures,
 					ExecutionHandler = SingleLineExecutionHandlerImplementation
 				};
 		}
