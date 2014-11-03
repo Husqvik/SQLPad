@@ -238,7 +238,7 @@ namespace SqlPad.Oracle
 
 			if (completionType.Column)
 			{
-				completionItems = completionItems.Concat(GenerateSelectListItems(currentNode, referenceContainers, cursorPosition, oracleDatabaseModel, completionType.Sequence, forcedInvokation));
+				completionItems = completionItems.Concat(GenerateSelectListItems(currentNode, referenceContainers, cursorPosition, oracleDatabaseModel, completionType, forcedInvokation));
 
 				var programReferences = referenceContainers.SelectMany(c => c.ProgramReferences);
 				var functionOverloads = ResolveFunctionOverloads(programReferences, currentNode, cursorPosition);
@@ -305,7 +305,7 @@ namespace SqlPad.Oracle
 				});
 		}
 
-		private IEnumerable<ICodeCompletionItem> GenerateSelectListItems(StatementGrammarNode currentNode, IEnumerable<OracleReferenceContainer> referenceContainers, int cursorPosition, OracleDatabaseModelBase databaseModel, bool sequencesAllowed, bool forcedInvokation)
+		private IEnumerable<ICodeCompletionItem> GenerateSelectListItems(StatementGrammarNode currentNode, IEnumerable<OracleReferenceContainer> referenceContainers, int cursorPosition, OracleDatabaseModelBase databaseModel, OracleCodeCompletionType completionType, bool forcedInvokation)
 		{
 			var prefixedColumnReference = currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference);
 			var columnIdentifierFollowing = currentNode.Id != Terminals.Identifier && prefixedColumnReference != null && prefixedColumnReference.GetDescendants(Terminals.Identifier).FirstOrDefault() != null;
@@ -334,11 +334,10 @@ namespace SqlPad.Oracle
 			var tableReferences = (ICollection<OracleDataObjectReference>)referenceContainers.SelectMany(c => c.ObjectReferences).ToArray();
 			var suggestedFunctions = Enumerable.Empty<ICodeCompletionItem>();
 			var nodeToReplace = partialName == null ? null : currentNode;
+			var schemaName = completionType.ReferenceIdentifier.SchemaIdentifierOriginalValue;
 			if (objectIdentifierNode != null)
 			{
 				var objectName = objectIdentifierNode.Token.Value;
-				var schemaIdentifier = currentNode.ParentNode.ParentNode.GetSingleDescendant(Terminals.SchemaIdentifier);
-				var schemaName = schemaIdentifier == null ? null : schemaIdentifier.Token.Value;
 				var fullyQualifiedName = OracleObjectIdentifier.Create(schemaName, objectName);
 				tableReferences = tableReferences
 					.Where(t => t.FullyQualifiedObjectName == fullyQualifiedName || (String.IsNullOrEmpty(fullyQualifiedName.Owner) && fullyQualifiedName.NormalizedName == t.FullyQualifiedObjectName.NormalizedName))
@@ -504,7 +503,7 @@ namespace SqlPad.Oracle
 				suggestedItems = suggestedItems.Concat(CreateObjectItems(referencedObjectCompletionData, partialName, nodeToReplace));
 				suggestedItems = suggestedItems.Concat(GenerateSchemaItems(partialName, nodeToReplace, 0, databaseModel, 2));
 
-				var otherSchemaObjectItems = GenerateSchemaObjectItems(databaseModel, null, partialName, nodeToReplace, o => FilterOtherSchemaObject(o, sequencesAllowed), categoryOffset: 1);
+				var otherSchemaObjectItems = GenerateSchemaObjectItems(databaseModel, null, partialName, nodeToReplace, o => FilterOtherSchemaObject(o, completionType.Sequence), categoryOffset: 1);
 				suggestedItems = suggestedItems.Concat(otherSchemaObjectItems);
 
 				if (partialName != null && currentNode.IsWithinSelectClause() && currentNode.GetParentExpression().GetParentExpression() == null)
@@ -512,6 +511,12 @@ namespace SqlPad.Oracle
 					var matchedqueryBlockReferencedObjects = queryBlockReferencedObjects.Where(r => CodeCompletionSearchHelper.IsMatch(r.FullyQualifiedObjectName.Name, partialName));
 					suggestedItems = suggestedItems.Concat(CreateAsteriskColumnCompletionItems(matchedqueryBlockReferencedObjects, false, currentNode));
 				}
+			}
+			else if (String.IsNullOrEmpty(schemaName))
+			{
+				var objectName = objectIdentifierNode.Token.Value;
+				var otherSchemaObjectItems = GenerateSchemaObjectItems(databaseModel, objectName, partialName, nodeToReplace, o => FilterOtherSchemaObject(o, completionType.Sequence), categoryOffset: 1);
+				suggestedItems = suggestedItems.Concat(otherSchemaObjectItems);
 			}
 
 			return suggestedItems.Concat(suggestedFunctions);
@@ -628,19 +633,35 @@ namespace SqlPad.Oracle
 			return databaseModel.AllFunctionMetadata
 				.SelectMany(g => matchers.SelectMany(m => g.Select(f => m.GetMatchResult(f, quotedSchemaName))))
 				.Where(r => r.IsMatched)
-				.SelectMany(r => r.Matches.Where(v => !String.IsNullOrEmpty(v)).Select(v => new { Name = v.ToSimpleIdentifier(), r.Metadata.DisplayType }))
+				.SelectMany(r => r.Matches.Where(v => !String.IsNullOrEmpty(v)).Select(v => new {Name = v.ToSimpleIdentifier(), r.Metadata}))
 				.Distinct()
 				.Select(i =>
-					new OracleCodeCompletionItem
+				{
+					var postFix = parameterList;
+					if (category == OracleCodeCompletionCategory.Package)
+					{
+						postFix = ".";
+					}
+					else if (i.Metadata.DisplayType == OracleFunctionMetadata.DisplayTypeNoParenthesis)
+					{
+						postFix = null;
+					}
+					
+					var analyticClause = addParameterList && !i.Metadata.IsAggregate && i.Metadata.IsAnalytic
+						? " OVER ()"
+						: null;
+					
+					return new OracleCodeCompletionItem
 					{
 						Name = i.Name,
-						Text = i.Name + (category == OracleCodeCompletionCategory.Package ? "." : i.DisplayType == OracleFunctionMetadata.DisplayTypeNoParenthesis ? null : parameterList),
+						Text = String.Format("{0}{1}{2}", i.Name, postFix, analyticClause),
 						StatementNode = node,
 						Category = category,
 						InsertOffset = insertOffset,
-						CaretOffset = category == OracleCodeCompletionCategory.Package || i.DisplayType == OracleFunctionMetadata.DisplayTypeNoParenthesis ? 0 : parameterListCaretOffset,
+						CaretOffset = category == OracleCodeCompletionCategory.Package || i.Metadata.DisplayType == OracleFunctionMetadata.DisplayTypeNoParenthesis ? 0 : parameterListCaretOffset,
 						CategoryPriority = 2
-					});
+					};
+				});
 		}
 
 		private IEnumerable<ICodeCompletionItem> GenerateSchemaDataObjectItems(OracleDatabaseModelBase databaseModel, string schemaName, string objectNamePart, StatementGrammarNode node, int categoryOffset = 0, int insertOffset = 0)

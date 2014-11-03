@@ -546,17 +546,17 @@ FROM
 			const string query1 = @"SELECT HUSQVIK. FROM DUAL";
 
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 15).ToArray();
-			items.Length.ShouldBe(7);
-			items[0].Name.ShouldBe("AS_PDF3");
-			items[0].Text.ShouldBe("AS_PDF3.");
-			items[0].Category.ShouldBe(OracleCodeCompletionCategory.Package);
-			items[0].CaretOffset.ShouldBe(0);
-			items[0].StatementNode.ShouldBe(null);
-			items[4].Name.ShouldBe("TESTFUNC");
-			items[4].Text.ShouldBe("TESTFUNC()");
-			items[4].Category.ShouldBe(OracleCodeCompletionCategory.SchemaFunction);
-			items[4].CaretOffset.ShouldBe(-1);
-			items[4].StatementNode.ShouldBe(null);
+			items.Length.ShouldBe(10);
+			items[3].Name.ShouldBe("AS_PDF3");
+			items[3].Text.ShouldBe("AS_PDF3.");
+			items[3].Category.ShouldBe(OracleCodeCompletionCategory.Package);
+			items[3].CaretOffset.ShouldBe(0);
+			items[3].StatementNode.ShouldBe(null);
+			items[7].Name.ShouldBe("TESTFUNC");
+			items[7].Text.ShouldBe("TESTFUNC()");
+			items[7].Category.ShouldBe(OracleCodeCompletionCategory.SchemaFunction);
+			items[7].CaretOffset.ShouldBe(-1);
+			items[7].StatementNode.ShouldBe(null);
 		}
 
 		[Test(Description = @"")]
@@ -573,7 +573,7 @@ FROM
 		{
 			const string query1 = @"SELECT HUSQVIK.SQLPAD FROM DUAL";
 
-			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 16).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 18).ToArray();
 			items.Length.ShouldBe(1);
 			items[0].Name.ShouldBe("SQLPAD_FUNCTION");
 			items[0].Text.ShouldBe("SQLPAD_FUNCTION()");
@@ -585,9 +585,9 @@ FROM
 		[Test(Description = @"")]
 		public void TestPackageFunctionSuggestionDoesNotContainParameterListWhenAlreadyEnteredWithParameterList()
 		{
-			const string query1 = @"SELECT HUSQVIK.SFUNCTION('PARAMETER') FROM DUAL";
+			const string query1 = @"SELECT HUSQVIK.SQLFUNCTION('PARAMETER') FROM DUAL";
 
-			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 16).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 18).ToArray();
 			items.Length.ShouldBe(2);
 			items[1].Name.ShouldBe("SQLPAD_FUNCTION");
 			items[1].Text.ShouldBe("SQLPAD_FUNCTION");
@@ -601,7 +601,7 @@ FROM
 		{
 			const string query1 = @"SELECT HUSQVIK.SFUNCTION('PARAMETER') FROM DUAL";
 
-			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 15).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 15, true, OracleCodeCompletionCategory.SchemaFunction).ToArray();
 			items.Length.ShouldBeGreaterThan(0);
 			items[0].CaretOffset.ShouldBe(0);
 			items[0].StatementNode.ShouldNotBe(null);
@@ -1002,6 +1002,18 @@ se";
 		}
 
 		[Test(Description = @"")]
+		public void TestSchemaTypeCodeCompletionWithSchemaQualifier()
+		{
+			const string statement = @"SELECT SYS.XML FROM SELECTION";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 14).ToList();
+			items.Count.ShouldBe(1);
+			items[0].Name.ShouldBe("XMLTYPE");
+			items[0].Text.ShouldBe("XMLTYPE()");
+			items[0].CaretOffset.ShouldBe(-1);
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
+		}
+
+		[Test(Description = @"")]
 		public void TestSequenceObjectCodeCompletionInSubquery()
 		{
 			const string statement = @"SELECT * FROM (SELECT SEQ FROM SELECTION)";
@@ -1189,7 +1201,7 @@ se";
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 13).ToList();
 			items.Count.ShouldBe(1);
 			items[0].Name.ShouldBe("LAST_VALUE");
-			items[0].Text.ShouldBe("LAST_VALUE()");
+			items[0].Text.ShouldBe("LAST_VALUE() OVER ()");
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.BuiltInFunction);
 			items[0].CaretOffset.ShouldBe(-1);
 		}

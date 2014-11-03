@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -13,23 +14,44 @@ namespace SqlPad.Oracle
 {
 	internal static class OracleCustomTypeGenerator
 	{
+		private const string DynamicAssemblyName = "SqlPad.Oracle.CustomTypes";
+		private const string DynamicAssemblyFileName = DynamicAssemblyName + ".dll";
+
+		private static readonly Assembly CurrentAssembly = typeof (OracleCustomTypeGenerator).Assembly;
+		
+		private static Assembly _customTypeAssembly;
+		//private static readonly AppDomain CustomTypeHostDomain = AppDomain.CreateDomain("CustomTypeHostDomain");
+
+		public static void Initialize()
+		{
+			var directoryName = Path.GetDirectoryName(CurrentAssembly.Location);
+			var assemblyFileName = Path.Combine(directoryName, DynamicAssemblyFileName);
+
+			if (File.Exists(assemblyFileName))
+			{
+				_customTypeAssembly = Assembly.LoadFile(assemblyFileName);
+				//CustomTypeHostDomain.Load(DynamicAssemblyName);
+			}
+		}
+
 		public static void GenerateCustomTypeAssembly(OracleDataDictionary dataDictionary)
 		{
-			var baseFactoryType = typeof(OracleTableValueFactoryBase);
-			var assembly = baseFactoryType.Assembly;
-			var fileVersionAttribute = assembly.GetCustomAttribute<AssemblyFileVersionAttribute>();
-			var targetFrameworkAttribute = assembly.GetCustomAttribute<TargetFrameworkAttribute>();
-			var companyAttribute = assembly.GetCustomAttribute<AssemblyCompanyAttribute>();
-			var productAttribute = assembly.GetCustomAttribute<AssemblyProductAttribute>();
-			const string dynamicAssemblyName = "SqlPad.Oracle.CustomTypes";
-			const string dynamicAssemblyFileName = "SqlPad.Oracle.CustomTypes.dll";
+			if (_customTypeAssembly != null)
+			{
+				return;
+			}
 
-			var assemblyVersion = assembly.GetName().Version;
+			var fileVersionAttribute = CurrentAssembly.GetCustomAttribute<AssemblyFileVersionAttribute>();
+			var targetFrameworkAttribute = CurrentAssembly.GetCustomAttribute<TargetFrameworkAttribute>();
+			var companyAttribute = CurrentAssembly.GetCustomAttribute<AssemblyCompanyAttribute>();
+			var productAttribute = CurrentAssembly.GetCustomAttribute<AssemblyProductAttribute>();
+
+			var assemblyVersion = CurrentAssembly.GetName().Version;
 			var constructorStringParameters = new[] { typeof(string) };
 
 			var customAttributeBuilders = new[]
 			{
-				new CustomAttributeBuilder(typeof (AssemblyTitleAttribute).GetConstructor(constructorStringParameters), GetParameterAsObjectArray(dynamicAssemblyName)),
+				new CustomAttributeBuilder(typeof (AssemblyTitleAttribute).GetConstructor(constructorStringParameters), GetParameterAsObjectArray(DynamicAssemblyName)),
 				new CustomAttributeBuilder(typeof (NeutralResourcesLanguageAttribute).GetConstructor(constructorStringParameters), GetParameterAsObjectArray(String.Empty)),
 				new CustomAttributeBuilder(typeof (GuidAttribute).GetConstructor(constructorStringParameters), GetParameterAsObjectArray(Guid.NewGuid().ToString())),
 				new CustomAttributeBuilder(typeof (AssemblyCompanyAttribute).GetConstructor(constructorStringParameters), GetParameterAsObjectArray(companyAttribute.Company)),
@@ -44,16 +66,15 @@ namespace SqlPad.Oracle
 				new CustomAttributeBuilder(typeof (TargetFrameworkAttribute).GetConstructor(constructorStringParameters), GetParameterAsObjectArray(targetFrameworkAttribute.FrameworkName))
 			};
 
-			var assemblyName = new AssemblyName(dynamicAssemblyName) { Version = assemblyVersion };
+			var assemblyName = new AssemblyName(DynamicAssemblyName) { Version = assemblyVersion };
 			var customTypeAssemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.RunAndSave, null, true, customAttributeBuilders);
 
 			customTypeAssemblyBuilder.DefineVersionInfoResource(); // Makes attributes readable by unmanaged environment like Windows Explorer.
-			var customTypeModuleBuilder = customTypeAssemblyBuilder.DefineDynamicModule(dynamicAssemblyFileName, dynamicAssemblyFileName, true);
+			var customTypeModuleBuilder = customTypeAssemblyBuilder.DefineDynamicModule(DynamicAssemblyFileName, DynamicAssemblyFileName, true);
 
 			var collectionTypes = dataDictionary.AllObjects.Values
 				.OfType<OracleTypeCollection>()
-				.Where(c => c.ElementTypeIdentifier.Owner == "\"\"")
-				.Select(c => c.FullyQualifiedName.ToString());
+				.Select(c => new KeyValuePair<string, string>(c.FullyQualifiedName.ToString(), c.ElementTypeIdentifier.Name.Trim('"')));
 
 			var types = new List<Type>();
 			foreach (var typeName in collectionTypes)
@@ -61,13 +82,34 @@ namespace SqlPad.Oracle
 				types.Add(CreateOracleCustomType(customTypeModuleBuilder, typeName));
 			}
 
-			customTypeAssemblyBuilder.Save(dynamicAssemblyFileName);
+			customTypeAssemblyBuilder.Save(DynamicAssemblyFileName);
 		}
 
-		private static Type CreateOracleCustomType(ModuleBuilder customTypeModuleBuilder, string fullyQualifiedCollectionTypeName)
+		private static Type CreateOracleCustomType(ModuleBuilder customTypeModuleBuilder, KeyValuePair<string, string> fullyQualifiedCollectionTypeNameDataTypePair)
 		{
-			var baseFactoryType = typeof(OracleTableValueFactoryBase);
-			var wrapperTypeName = "SqlPad.Oracle.CustomTypes" + "." + fullyQualifiedCollectionTypeName.Replace('.', '_');
+			var fullyQualifiedCollectionTypeName = fullyQualifiedCollectionTypeNameDataTypePair.Key;
+			
+			var targetType = typeof (string);
+			var enclosingCharacter = "'";
+			switch (fullyQualifiedCollectionTypeNameDataTypePair.Value)
+			{
+				case "NUMBER":
+					targetType = typeof (decimal);
+					enclosingCharacter = String.Empty;
+					break;
+				case "DATE":
+					targetType = typeof(DateTime);
+					enclosingCharacter = String.Empty;
+					break;
+				case "RAW":
+					targetType = typeof(byte[]);
+					enclosingCharacter = String.Empty;
+					break;
+			}
+			
+			var baseFactoryType = typeof(OracleTableValueFactoryBase<>);
+			baseFactoryType = baseFactoryType.MakeGenericType(targetType);
+			var wrapperTypeName = String.Format("{0}.{1}", DynamicAssemblyName, fullyQualifiedCollectionTypeName.Replace('.', '_'));
 
 			var customTypeBuilder = customTypeModuleBuilder.DefineType(wrapperTypeName, TypeAttributes.Public | TypeAttributes.Class, baseFactoryType);
 			var attributeType = typeof (OracleCustomTypeMappingAttribute);
@@ -82,6 +124,7 @@ namespace SqlPad.Oracle
 			ilGenerator.Emit(OpCodes.Ret);
 
 			ImplementAbstractStringValueProperty(customTypeBuilder, "FullyQualifiedName", fullyQualifiedCollectionTypeName);
+			ImplementAbstractStringValueProperty(customTypeBuilder, "EnclosingCharacter", enclosingCharacter);
 
 			return customTypeBuilder.CreateType();
 		}
@@ -141,7 +184,7 @@ namespace SqlPad.Oracle
 				return String.Empty;
 			}
 
-			var items = Array.Select(i => i.ToString());
+			var items = Array.Select(i => Convert.ToString(i));
 
 			if (!String.IsNullOrEmpty(_enclosingCharacter))
 			{
@@ -152,18 +195,20 @@ namespace SqlPad.Oracle
 		}
 	}
 
-	public abstract class OracleTableValueFactoryBase : IOracleCustomTypeFactory, IOracleArrayTypeFactory
+	public abstract class OracleTableValueFactoryBase<T> : IOracleCustomTypeFactory, IOracleArrayTypeFactory
 	{
 		protected abstract string FullyQualifiedName { get; }
+		
+		protected abstract string EnclosingCharacter { get; }
 
 		public IOracleCustomType CreateObject()
 		{
-			return new OracleValueArray<string>(FullyQualifiedName, "'");
+			return new OracleValueArray<T>(FullyQualifiedName, EnclosingCharacter);
 		}
 
 		public Array CreateArray(int elementCount)
 		{
-			return new string[elementCount];
+			return new T[elementCount];
 		}
 
 		public Array CreateStatusArray(int elementCount)
