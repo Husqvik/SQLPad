@@ -542,8 +542,13 @@ namespace SqlPad
 
 		private void CanFetchNextRows(object sender, CanExecuteRoutedEventArgs canExecuteRoutedEventArgs)
 		{
-			canExecuteRoutedEventArgs.CanExecute = !_isFetching && ResultGrid.SelectedIndex == ResultGrid.Items.Count - 1 && DatabaseModel.CanFetch;
+			canExecuteRoutedEventArgs.CanExecute = CanFetchNextRows() && ResultGrid.SelectedIndex == ResultGrid.Items.Count - 1;
 			canExecuteRoutedEventArgs.ContinueRouting = !canExecuteRoutedEventArgs.CanExecute;
+		}
+
+		private bool CanFetchNextRows()
+		{
+			return !_isFetching && DatabaseModel.CanFetch;
 		}
 
 		private async void FetchNextRows(object sender, ExecutedRoutedEventArgs args)
@@ -1451,7 +1456,7 @@ namespace SqlPad
 			if (e.Delta >= 0 || scrollViewer == null)
 				return;
 
-			if (scrollViewer.ScrollableHeight == scrollViewer.VerticalOffset && DatabaseModel.CanFetch)
+			if (scrollViewer.ScrollableHeight == scrollViewer.VerticalOffset && CanFetchNextRows())
 			{
 				await FetchNextRows();
 			}
