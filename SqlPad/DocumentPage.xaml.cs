@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -66,7 +67,6 @@ namespace SqlPad
 		private ConnectionStringSettings _connectionString;
 		private Dictionary<string, BindVariableConfiguration> _currentBindVariables = new Dictionary<string, BindVariableConfiguration>();
 		
-		public EventHandler ParseFinished = delegate { };
 		private readonly SqlFoldingStrategy _foldingStrategy;
 
 		internal TabItem TabItem { get; private set; }
@@ -74,6 +74,16 @@ namespace SqlPad
 		internal ContextMenu TabItemContextMenu { get { return ((ContentControl)TabItem.Header).ContextMenu; } }
 
 		internal static bool IsParsingSynchronous { get; set; }
+
+		private bool IsFetching
+		{
+			get { return _isFetching; }
+			set
+			{
+				_isFetching = value;
+				_pageModel.DocumentHeader = DocumentHeader;
+			}
+		}
 
 		private MainWindow MainWindow
 		{
@@ -89,7 +99,33 @@ namespace SqlPad
 
 		public WorkingDocument WorkingDocument { get; private set; }
 
-		public string DocumentHeader { get { return WorkingDocument.File == null ? InitialDocumentHeader : WorkingDocument.File.Name + (IsDirty ? "*" : null); } }
+		public string DocumentHeader
+		{
+			get
+			{
+				var builder = new StringBuilder();
+				if (WorkingDocument.File == null)
+				{
+					builder.Append(InitialDocumentHeader);
+				}
+				else
+				{
+					builder.Append(WorkingDocument.File.Name);
+
+					if (IsDirty)
+					{
+						builder.Append("*");
+					}
+				}
+
+				if (IsFetching)
+				{
+					builder.Append(" (running)");
+				}
+
+				return builder.ToString();
+			}
+		}
 
 		public bool IsDirty { get { return Editor.IsModified; } }
 
@@ -415,7 +451,7 @@ namespace SqlPad
 		{
 			Editor.Save(WorkingDocument.File.FullName);
 			WorkingDocument.IsModified = false;
-			_pageModel.DocumentHeader = WorkingDocument.File.Name;
+			_pageModel.DocumentHeader = DocumentHeader;
 		}
 
 		private void SelectionChangedHandler(object sender, EventArgs eventArgs)
@@ -491,7 +527,7 @@ namespace SqlPad
 
 		private void CanExecuteCancelUserActionHandler(object sender, CanExecuteRoutedEventArgs args)
 		{
-			args.CanExecute = DatabaseModel.IsExecuting || _isFetching;
+			args.CanExecute = DatabaseModel.IsExecuting || IsFetching;
 		}
 
 		private void CancelUserActionHandler(object sender, ExecutedRoutedEventArgs args)
@@ -520,7 +556,7 @@ namespace SqlPad
 
 		private void CanFetchAllRows(object sender, CanExecuteRoutedEventArgs canExecuteRoutedEventArgs)
 		{
-			canExecuteRoutedEventArgs.CanExecute = !_isFetching && DatabaseModel.CanFetch && !DatabaseModel.IsExecuting;
+			canExecuteRoutedEventArgs.CanExecute = !IsFetching && DatabaseModel.CanFetch && !DatabaseModel.IsExecuting;
 			canExecuteRoutedEventArgs.ContinueRouting = canExecuteRoutedEventArgs.CanExecute;
 		}
 
@@ -548,7 +584,7 @@ namespace SqlPad
 
 		private bool CanFetchNextRows()
 		{
-			return !_isFetching && DatabaseModel.CanFetch;
+			return !IsFetching && DatabaseModel.CanFetch;
 		}
 
 		private async void FetchNextRows(object sender, ExecutedRoutedEventArgs args)
@@ -558,7 +594,7 @@ namespace SqlPad
 
 		private async Task FetchNextRows()
 		{
-			_isFetching = true;
+			IsFetching = true;
 			Task<IReadOnlyList<object[]>> innerTask = null;
 			var exception = await SafeActionAsync(() => innerTask = DatabaseModel.FetchRecords(StatementExecutionModel.DefaultRowBatchSize).EnumerateAsync(CancellationToken.None));
 
@@ -573,7 +609,7 @@ namespace SqlPad
 				await AppendRows(innerTask.Result);
 			}
 
-			_isFetching = false;
+			IsFetching = false;
 		}
 
 		private async Task AppendRows(IEnumerable<object[]> rows)
@@ -634,7 +670,7 @@ namespace SqlPad
 
 		private void CanExecuteDatabaseCommandHandler(object sender, CanExecuteRoutedEventArgs args)
 		{
-			if (_isFetching || DatabaseModel.IsExecuting || _sqlDocumentRepository.StatementText != Editor.Text)
+			if (IsFetching || DatabaseModel.IsExecuting || _sqlDocumentRepository.StatementText != Editor.Text)
 				return;
 
 			var statement = _sqlDocumentRepository.Statements.GetStatementAtPosition(Editor.CaretOffset);
@@ -655,8 +691,12 @@ namespace SqlPad
 
 		private async void ExecuteDatabaseCommandHandlerInternal()
 		{
+			IsFetching = true;
+			
 			var executionModel = BuildStatementExecutionModel();
 			await ExecuteDatabaseCommand(executionModel);
+
+			IsFetching = false;
 		}
 
 		private StatementExecutionModel BuildStatementExecutionModel()
@@ -715,19 +755,7 @@ namespace SqlPad
 					return;
 				}
 
-				if (_gatherExecutionStatistics)
-				{
-					_pageModel.TextExecutionPlan = await DatabaseModel.GetActualExecutionPlanAsync(_cancellationTokenSource.Token);
-
-					if (String.IsNullOrEmpty(_pageModel.TextExecutionPlan))
-					{
-						TabControlResult.SelectedIndex = 0;
-					}
-				}
-				else
-				{
-					TabControlResult.SelectedIndex = 0;
-				}
+				await ShowExecutionStatistics();
 
 				UpdateStatusBarElapsedExecutionTime(actionResult.Elapsed);
 
@@ -753,6 +781,23 @@ namespace SqlPad
 				InitializeResultGrid(innerTask.Result.ColumnHeaders);
 
 				await AppendRows(innerTask.Result.InitialResultSet);
+			}
+		}
+
+		private async Task ShowExecutionStatistics()
+		{
+			if (_gatherExecutionStatistics)
+			{
+				_pageModel.TextExecutionPlan = await DatabaseModel.GetActualExecutionPlanAsync(_cancellationTokenSource.Token);
+
+				if (String.IsNullOrEmpty(_pageModel.TextExecutionPlan))
+				{
+					TabControlResult.SelectedIndex = 0;
+				}
+			}
+			else
+			{
+				TabControlResult.SelectedIndex = 0;
 			}
 		}
 
@@ -1288,7 +1333,6 @@ namespace SqlPad
 
 			Editor.TextArea.TextView.Redraw();
 			_isParsing = false;
-			ParseFinished(this, EventArgs.Empty);
 
 			ShowHideBindVariableList();
 
@@ -1546,6 +1590,13 @@ namespace SqlPad
 		}
 
 		private async void ExecuteExplainPlanCommandHandler(object sender, ExecutedRoutedEventArgs args)
+		{
+			IsFetching = true;
+			await ExecuteExplainPlan();
+			IsFetching = false;
+		}
+
+		private async Task ExecuteExplainPlan()
 		{
 			_gatherExecutionStatistics = false;
 

@@ -40,6 +40,7 @@ namespace SqlPad.Oracle
 		private OracleDataReader _userDataReader;
 		private OracleCommand _userCommand;
 		private OracleTransaction _userTransaction;
+		//private OracleCustomTypeGenerator _customTypeGenerator;
 		private int _userSessionId;
 		private string _userCommandSqlId;
 		private string _userTransactionId;
@@ -70,6 +71,8 @@ namespace SqlPad.Oracle
 			_dataDictionaryMapper = new DataDictionaryMapper(this);
 
 			_userConnection = new OracleConnection(connectionString.ConnectionString);
+
+			//_customTypeGenerator = OracleCustomTypeGenerator.GetCustomTypeGenerator(connectionString.Name);
 		}
 
 		private void TimerElapsedHandler(object sender, ElapsedEventArgs elapsedEventArgs)
@@ -650,7 +653,7 @@ namespace SqlPad.Oracle
 				result.AffectedRowCount = _userDataReader.RecordsAffected;
 				result.ExecutedSuccessfully = true;
 				result.ColumnHeaders = GetColumnHeadersFromReader(_userDataReader);
-				result.InitialResultSet = await FetchRecordsFromReader(_userDataReader, executionModel.InitialFetchRowCount).EnumerateAsync(cancellationToken);
+				result.InitialResultSet = await FetchRecordsFromReader(_userDataReader, executionModel.InitialFetchRowCount, false).EnumerateAsync(cancellationToken);
 			}
 			catch (Exception exception)
 			{
@@ -699,7 +702,7 @@ namespace SqlPad.Oracle
 
 		public override IEnumerable<object[]> FetchRecords(int rowCount)
 		{
-			return FetchRecordsFromReader(_userDataReader, rowCount);
+			return FetchRecordsFromReader(_userDataReader, rowCount, false);
 		}
 
 		private static bool CanFetchFromReader(IDataReader reader)
@@ -707,7 +710,7 @@ namespace SqlPad.Oracle
 			return reader != null && !reader.IsClosed;
 		}
 
-		internal static IEnumerable<object[]> FetchRecordsFromReader(OracleDataReader reader, int rowCount)
+		internal static IEnumerable<object[]> FetchRecordsFromReader(OracleDataReader reader, int rowCount, bool prefetch)
 		{
 			if (!CanFetchFromReader(reader))
 			{
@@ -737,7 +740,7 @@ namespace SqlPad.Oracle
 				{
 					if (reader.Read())
 					{
-						values = BuildValueArray(reader, fieldTypes);
+						values = BuildValueArray(reader, fieldTypes, prefetch);
 					}
 					else
 					{
@@ -759,7 +762,7 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		private static object[] BuildValueArray(OracleDataReader reader, IList<string> fieldTypes)
+		private static object[] BuildValueArray(OracleDataReader reader, IList<string> fieldTypes, bool prefetch)
 		{
 			var columnData = new object[fieldTypes.Count];
 
@@ -804,6 +807,15 @@ namespace SqlPad.Oracle
 					default:
 						value = reader.GetValue(i);
 						break;
+				}
+
+				if (prefetch)
+				{
+					var largeValue = value as ILargeValue;
+					if (largeValue != null)
+					{
+						largeValue.Prefetch();
+					}
 				}
 
 				columnData[i] = value;
@@ -995,7 +1007,7 @@ namespace SqlPad.Oracle
 
 				_dataDictionary = new OracleDataDictionary(allObjects, databaseLinks, nonSchemaBuiltInFunctionMetadata, characterSets, statisticsKeys, systemParameters, lastRefresh);
 
-				//OracleCustomTypeGenerator.GenerateCustomTypeAssembly(_dataDictionary);
+				//_customTypeGenerator.GenerateCustomTypeAssembly(_dataDictionary);
 
 				CachedDataDictionaries[CachedConnectionStringName] = _dataDictionary;
 				return true;

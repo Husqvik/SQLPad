@@ -7,6 +7,8 @@
 		bool IsEditable { get; }
 
 		long Length { get; }
+
+		void Prefetch();
 	}
 
 	public interface ILargeTextValue: ILargeValue

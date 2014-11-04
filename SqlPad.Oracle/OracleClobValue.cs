@@ -46,7 +46,12 @@ namespace SqlPad.Oracle
 
 		public string Value
 		{
-			get { return _value ?? (_value = IsNull ? String.Empty : GetValue()); }
+			get
+			{
+				Prefetch();
+
+				return _value;
+			}
 		}
 
 		protected abstract string GetValue();
@@ -56,6 +61,18 @@ namespace SqlPad.Oracle
 		public override string ToString()
 		{
 			return Preview;
+		}
+
+		public void Prefetch()
+		{
+			if (_value != null)
+			{
+				return;
+			}
+			
+			BuildPreview();
+
+			_value = IsNull ? String.Empty : GetValue();
 		}
 	}
 
@@ -136,11 +153,16 @@ namespace SqlPad.Oracle
 		
 		public bool IsEditable { get { return false; } }
 
-		public long Length { get; private set; }
+		public long Length { get { return _blob.Length; } }
 
 		public byte[] Value
 		{
-			get { return _value ?? (_value = GetValue()); }
+			get
+			{
+				Prefetch();
+
+				return _value;
+			}
 		}
 
 		private byte[] GetValue()
@@ -153,7 +175,6 @@ namespace SqlPad.Oracle
 		public OracleBlobValue(OracleBlob blob)
 		{
 			_blob = blob;
-			Length = _blob.Length;
 		}
 
 		public byte[] GetChunk(int bytes)
@@ -173,6 +194,14 @@ namespace SqlPad.Oracle
 		public override string ToString()
 		{
 			return Length == 0 ? String.Empty : String.Format("(BLOB[{0} B])", Length);
+		}
+
+		public void Prefetch()
+		{
+			if (_value == null)
+			{
+				_value = GetValue();
+			}
 		}
 	}
 
@@ -311,6 +340,8 @@ namespace SqlPad.Oracle
 
 			return result;
 		}
+
+		public void Prefetch() { }
 	}
 
 	internal static class OracleLargeObjectHelper

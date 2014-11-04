@@ -289,6 +289,11 @@ namespace SqlPad.Test
 			{
 				throw new NotImplementedException();
 			}
+
+			public void Prefetch()
+			{
+				throw new NotImplementedException();
+			}
 		}
 
 		private class TestColumnValueConverter : IColumnValueConverter

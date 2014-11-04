@@ -417,7 +417,7 @@ namespace SqlPad.Oracle
 					new ExplainPlanResult
 					{
 						ColumnHeaders = OracleDatabaseModel.GetColumnHeadersFromReader(reader),
-						ResultSet = OracleDatabaseModel.FetchRecordsFromReader(reader, Int32.MaxValue).ToArray()
+						ResultSet = OracleDatabaseModel.FetchRecordsFromReader(reader, Int32.MaxValue, true).ToArray()
 					};
 			}
 		}
