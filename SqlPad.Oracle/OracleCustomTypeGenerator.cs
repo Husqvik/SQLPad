@@ -12,29 +12,50 @@ using Oracle.DataAccess.Types;
 
 namespace SqlPad.Oracle
 {
-	internal static class OracleCustomTypeGenerator
+	internal class OracleCustomTypeGenerator
 	{
-		private const string DynamicAssemblyName = "SqlPad.Oracle.CustomTypes";
-		private const string DynamicAssemblyFileName = DynamicAssemblyName + ".dll";
+		private const string DynamicAssemblyNameBase = "SqlPad.Oracle.CustomTypes";
+		private static readonly Assembly CurrentAssembly = typeof(OracleCustomTypeGenerator).Assembly;
+		private static readonly Dictionary<string, OracleCustomTypeGenerator> Generators = new Dictionary<string, OracleCustomTypeGenerator>();
 
-		private static readonly Assembly CurrentAssembly = typeof (OracleCustomTypeGenerator).Assembly;
-		
-		private static Assembly _customTypeAssembly;
-		//private static readonly AppDomain CustomTypeHostDomain = AppDomain.CreateDomain("CustomTypeHostDomain");
+		private readonly string _customTypeAssemblyName;	
+		private readonly FileInfo _customTypeAssemblyFile;	
+		private readonly Assembly _customTypeAssembly;
+		//private readonly AppDomain _customTypeHostDomain;
 
-		public static void Initialize()
+		private OracleCustomTypeGenerator(string connectionStringName)
 		{
+			_customTypeAssemblyName = String.Format("{0}.{1}", DynamicAssemblyNameBase, connectionStringName);
+			var customTypeAssemblyFileName = String.Format("{0}.dll", _customTypeAssemblyName);
 			var directoryName = Path.GetDirectoryName(CurrentAssembly.Location);
-			var assemblyFileName = Path.Combine(directoryName, DynamicAssemblyFileName);
+			var customTypeAssemblyFullFileName = Path.Combine(directoryName, customTypeAssemblyFileName);
 
-			if (File.Exists(assemblyFileName))
+			if (File.Exists(customTypeAssemblyFullFileName))
 			{
-				_customTypeAssembly = Assembly.LoadFile(assemblyFileName);
-				//CustomTypeHostDomain.Load(DynamicAssemblyName);
+				_customTypeAssembly = Assembly.LoadFile(customTypeAssemblyFullFileName);
+				//_customTypeHostDomain = AppDomain.CreateDomain(String.Format("{0}.{1}", "CustomTypeHostDomain", connectionStringName));
+				//_customTypeHostDomain.Load(DynamicAssemblyNameBase);
+			}
+
+			_customTypeAssemblyFile = new FileInfo(customTypeAssemblyFullFileName);
+		}
+
+		public static OracleCustomTypeGenerator GetCustomTypeGenerator(string connectionStringName)
+		{
+			lock (Generators)
+			{
+				OracleCustomTypeGenerator generator;
+				if (!Generators.TryGetValue(connectionStringName, out generator))
+				{
+					generator = new OracleCustomTypeGenerator(connectionStringName);
+					Generators.Add(connectionStringName, generator);
+				}
+
+				return generator;
 			}
 		}
 
-		public static void GenerateCustomTypeAssembly(OracleDataDictionary dataDictionary)
+		public void GenerateCustomTypeAssembly(OracleDataDictionary dataDictionary)
 		{
 			if (_customTypeAssembly != null)
 			{
@@ -51,7 +72,7 @@ namespace SqlPad.Oracle
 
 			var customAttributeBuilders = new[]
 			{
-				new CustomAttributeBuilder(typeof (AssemblyTitleAttribute).GetConstructor(constructorStringParameters), GetParameterAsObjectArray(DynamicAssemblyName)),
+				new CustomAttributeBuilder(typeof (AssemblyTitleAttribute).GetConstructor(constructorStringParameters), GetParameterAsObjectArray(DynamicAssemblyNameBase)),
 				new CustomAttributeBuilder(typeof (NeutralResourcesLanguageAttribute).GetConstructor(constructorStringParameters), GetParameterAsObjectArray(String.Empty)),
 				new CustomAttributeBuilder(typeof (GuidAttribute).GetConstructor(constructorStringParameters), GetParameterAsObjectArray(Guid.NewGuid().ToString())),
 				new CustomAttributeBuilder(typeof (AssemblyCompanyAttribute).GetConstructor(constructorStringParameters), GetParameterAsObjectArray(companyAttribute.Company)),
@@ -66,11 +87,11 @@ namespace SqlPad.Oracle
 				new CustomAttributeBuilder(typeof (TargetFrameworkAttribute).GetConstructor(constructorStringParameters), GetParameterAsObjectArray(targetFrameworkAttribute.FrameworkName))
 			};
 
-			var assemblyName = new AssemblyName(DynamicAssemblyName) { Version = assemblyVersion };
-			var customTypeAssemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.RunAndSave, null, true, customAttributeBuilders);
+			var assemblyName = new AssemblyName(_customTypeAssemblyName) { Version = assemblyVersion };
+			var customTypeAssemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.RunAndSave, _customTypeAssemblyFile.DirectoryName, true, customAttributeBuilders);
 
 			customTypeAssemblyBuilder.DefineVersionInfoResource(); // Makes attributes readable by unmanaged environment like Windows Explorer.
-			var customTypeModuleBuilder = customTypeAssemblyBuilder.DefineDynamicModule(DynamicAssemblyFileName, DynamicAssemblyFileName, true);
+			var customTypeModuleBuilder = customTypeAssemblyBuilder.DefineDynamicModule(_customTypeAssemblyName, _customTypeAssemblyFile.Name, true);
 
 			var collectionTypes = dataDictionary.AllObjects.Values
 				.OfType<OracleTypeCollection>()
@@ -82,7 +103,7 @@ namespace SqlPad.Oracle
 				types.Add(CreateOracleCustomType(customTypeModuleBuilder, typeName));
 			}
 
-			customTypeAssemblyBuilder.Save(DynamicAssemblyFileName);
+			customTypeAssemblyBuilder.Save(_customTypeAssemblyFile.Name);
 		}
 
 		private static Type CreateOracleCustomType(ModuleBuilder customTypeModuleBuilder, KeyValuePair<string, string> fullyQualifiedCollectionTypeNameDataTypePair)
@@ -109,7 +130,7 @@ namespace SqlPad.Oracle
 			
 			var baseFactoryType = typeof(OracleTableValueFactoryBase<>);
 			baseFactoryType = baseFactoryType.MakeGenericType(targetType);
-			var wrapperTypeName = String.Format("{0}.{1}", DynamicAssemblyName, fullyQualifiedCollectionTypeName.Replace('.', '_'));
+			var wrapperTypeName = String.Format("{0}.{1}", DynamicAssemblyNameBase, fullyQualifiedCollectionTypeName.Replace('.', '_'));
 
 			var customTypeBuilder = customTypeModuleBuilder.DefineType(wrapperTypeName, TypeAttributes.Public | TypeAttributes.Class, baseFactoryType);
 			var attributeType = typeof (OracleCustomTypeMappingAttribute);

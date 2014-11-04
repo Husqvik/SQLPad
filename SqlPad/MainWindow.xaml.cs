@@ -267,7 +267,7 @@ namespace SqlPad
 			DocumentTabControl.Items.Clear();
 		}
 
-		private void SaveWorkingDocuments()
+		internal void SaveWorkingDocuments()
 		{
 			foreach (var document in AllDocuments)
 			{

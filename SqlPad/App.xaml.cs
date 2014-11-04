@@ -28,7 +28,8 @@ namespace SqlPad
 
 			try
 			{
-				WorkingDocumentCollection.Save();
+				var mainWindow = (MainWindow)Current.MainWindow;
+				mainWindow.SaveWorkingDocuments();
 			}
 			catch(Exception e)
 			{
