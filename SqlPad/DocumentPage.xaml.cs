@@ -562,6 +562,8 @@ namespace SqlPad
 
 		private async void FetchAllRows(object sender, ExecutedRoutedEventArgs args)
 		{
+			IsFetching = true;
+
 			using (_cancellationTokenSource = new CancellationTokenSource())
 			{
 				while (DatabaseModel.CanFetch)
@@ -574,6 +576,8 @@ namespace SqlPad
 					await FetchNextRows();
 				}
 			}
+
+			IsFetching = false;
 		}
 
 		private void CanFetchNextRows(object sender, CanExecuteRoutedEventArgs canExecuteRoutedEventArgs)
@@ -589,12 +593,13 @@ namespace SqlPad
 
 		private async void FetchNextRows(object sender, ExecutedRoutedEventArgs args)
 		{
+			IsFetching = true;
 			await FetchNextRows();
+			IsFetching = false;
 		}
 
 		private async Task FetchNextRows()
 		{
-			IsFetching = true;
 			Task<IReadOnlyList<object[]>> innerTask = null;
 			var exception = await SafeActionAsync(() => innerTask = DatabaseModel.FetchRecords(StatementExecutionModel.DefaultRowBatchSize).EnumerateAsync(CancellationToken.None));
 
@@ -608,8 +613,6 @@ namespace SqlPad
 			{
 				await AppendRows(innerTask.Result);
 			}
-
-			IsFetching = false;
 		}
 
 		private async Task AppendRows(IEnumerable<object[]> rows)

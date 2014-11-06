@@ -599,6 +599,11 @@ namespace SqlPad.Oracle
 					continue;
 				
 				queryBlock.ParentCorrelatedQueryBlock = GetQueryBlock(parentExpression);
+				foreach (var asteriskColumn in queryBlock.Columns.Where(c => c.IsAsterisk))
+				{
+					asteriskColumn.RegisterOuterReference();
+				}
+
 				return;
 			}
 		}

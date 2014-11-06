@@ -1382,6 +1382,14 @@ se";
 			}
 
 			[Test(Description = @"")]
+			public void TestCodeCompletionTypeInFromClauseInCorrelatedSubquery()
+			{
+				const string statement = @"SELECT * FROM SELECTION WHERE SELECTIONNAME IN (SELECT * FROM SELE)";
+				var completionType = InitializeCodeCompletionType(statement, 66);
+				completionType.SchemaDataObject.ShouldBe(true);
+			}
+
+			[Test(Description = @"")]
 			public void TestCodeCompletionTypeWithMissingSelectList()
 			{
 				const string statement = @"SELECT FROM V$TRANSACTION";

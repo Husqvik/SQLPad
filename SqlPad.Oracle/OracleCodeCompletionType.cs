@@ -122,7 +122,7 @@ namespace SqlPad.Oracle
 				}
 			}
 
-			var effectiveTerminal = Statement.GetNearestTerminalToPosition(cursorPosition, n => !n.Id.In(Terminals.RightParenthesis, Terminals.Comma));
+			var effectiveTerminal = Statement.GetNearestTerminalToPosition(cursorPosition, n => !n.Id.In(Terminals.RightParenthesis, Terminals.Comma)) ?? nearestTerminal;
 			AnalyzeObjectReferencePrefixes(effectiveTerminal);
 
 			var precedingTerminal = nearestTerminal.PrecedingTerminal;
@@ -149,7 +149,7 @@ namespace SqlPad.Oracle
 			DatabaseLink = TerminalCandidates.Contains(Terminals.DatabaseLinkIdentifier);
 			JoinType = !isCursorTouchingTwoTerminals && TerminalCandidates.Contains(Terminals.Join);
 
-			var isWithinFromClause = nearestTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.FromClause) != null || (isCursorAfterToken && nearestTerminal.Id == Terminals.From);
+			var isWithinFromClause = effectiveTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.FromClause) != null || effectiveTerminal.Id == Terminals.From;
 			var isWithinJoinCondition = nearestTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.JoinClause, NonTerminals.JoinColumnsOrCondition) != null;
 			var isAfterUpdateOrDeleteTerminal = (nearestTerminal.Id.In(Terminals.Update, Terminals.Delete) || (nearestTerminal.Id == Terminals.From && nearestTerminal.PrecedingTerminal != null && nearestTerminal.PrecedingTerminal.Id == Terminals.Delete)) && isCursorAfterToken;
 			var isWithinMainObjectReference = nearestTerminal.GetAncestor(NonTerminals.TableReference) != null && nearestTerminal.GetAncestor(NonTerminals.QueryBlock) == null;

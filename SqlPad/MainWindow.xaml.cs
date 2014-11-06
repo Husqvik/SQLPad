@@ -263,8 +263,6 @@ namespace SqlPad
 			_timerWorkingDocumentSave.Stop();
 
 			SaveWorkingDocuments();
-			
-			DocumentTabControl.Items.Clear();
 		}
 
 		internal void SaveWorkingDocuments()

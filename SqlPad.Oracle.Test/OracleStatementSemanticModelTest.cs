@@ -839,5 +839,17 @@ FROM
 			var functionReferences = semanticModel.QueryBlocks.Single().AllProgramReferences.ToArray();
 			functionReferences.Length.ShouldBe(3);
 		}
+
+		[Test(Description = @"")]
+		public void TestAsteriskNotRedundantImCorrelatedSubquery()
+		{
+			const string query1 = @"SELECT * FROM SELECTION WHERE SELECTIONNAME IN (SELECT * FROM DUAL)";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			var redundantTerminals = semanticModel.RedundantSymbolGroups.SelectMany(g => g).OrderBy(t => t.SourcePosition.IndexStart).ToArray();
+			redundantTerminals.Length.ShouldBe(0);
+		}
 	}
 }
