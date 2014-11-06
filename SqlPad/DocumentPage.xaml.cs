@@ -1505,7 +1505,9 @@ namespace SqlPad
 
 			if (scrollViewer.ScrollableHeight == scrollViewer.VerticalOffset && CanFetchNextRows())
 			{
+				IsFetching = true;
 				await FetchNextRows();
+				IsFetching = false;
 			}
 		}
 
