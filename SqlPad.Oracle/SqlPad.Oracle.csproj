@@ -105,6 +105,7 @@
     <Compile Include="OracleDatabaseLink.cs" />
     <Compile Include="OracleDatabaseModelBase.cs" />
     <Compile Include="OracleDataDictionary.cs" />
+    <Compile Include="OracleDataType.cs" />
     <Compile Include="OracleFunctionMatcher.cs" />
     <Compile Include="OracleFunctionMetadata.cs" />
     <Compile Include="OracleFunctionIdentifier.cs" />

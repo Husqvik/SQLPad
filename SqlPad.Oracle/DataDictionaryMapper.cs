@@ -223,7 +223,29 @@ namespace SqlPad.Oracle
 				return null;
 
 			var type = (OracleTypeObject)typeObject;
-			// TODO:
+			var attributeTypeIdentifier = OracleObjectIdentifier.Create(QualifyStringObject(reader["ATTR_TYPE_OWNER"]), QualifyStringObject(reader["ATTR_TYPE_NAME"]));
+
+			var dataType =
+				new OracleDataType
+				{
+					FullyQualifiedName = attributeTypeIdentifier,
+					Length = OracleReaderValueConvert.ToInt32(reader["LENGTH"]),
+					Precision = OracleReaderValueConvert.ToInt32(reader["PRECISION"]),
+					Scale = OracleReaderValueConvert.ToInt32(reader["SCALE"])
+				};
+
+			ResolveDataUnit(dataType, reader["CHAR_USED"]);
+
+			var attribute =
+				new OracleTypeAttribute
+				{
+					Name = QualifyStringObject(reader["ATTR_NAME"]),
+					DataType = dataType,
+					IsInherited = (string)reader["INHERITED"] == "YES"
+				};
+			
+			type.Attributes.Add(attribute);
+
 			return type;
 		}
 
@@ -325,24 +347,34 @@ namespace SqlPad.Oracle
 
 		private static KeyValuePair<OracleObjectIdentifier, OracleColumn> MapTableColumn(OracleDataReader reader)
 		{
-			var dataTypeOwnerRaw = reader["DATA_TYPE_OWNER"];
-			var dataTypeOwner = dataTypeOwnerRaw == DBNull.Value ? null : String.Format("{0}.", dataTypeOwnerRaw);
-			var type = String.Format("{0}{1}", dataTypeOwner, reader["DATA_TYPE"]);
+			var dataTypeIdentifier = OracleObjectIdentifier.Create(QualifyStringObject(reader["DATA_TYPE_OWNER"]), QualifyStringObject(reader["DATA_TYPE"]));
+			var dataType =
+				new OracleDataType
+				{
+					FullyQualifiedName = dataTypeIdentifier,
+					Length = Convert.ToInt32(reader["DATA_LENGTH"]),
+					Precision = OracleReaderValueConvert.ToInt32(reader["DATA_PRECISION"]),
+					Scale = OracleReaderValueConvert.ToInt32(reader["DATA_SCALE"])
+				};
+
+			ResolveDataUnit(dataType, reader["CHAR_USED"]);
+
 			return new KeyValuePair<OracleObjectIdentifier, OracleColumn>(
 				OracleObjectIdentifier.Create(QualifyStringObject(reader["OWNER"]), QualifyStringObject(reader["TABLE_NAME"])),
 				new OracleColumn
 				{
 					Name = QualifyStringObject(reader["COLUMN_NAME"]),
+					DataType = dataType,
 					Nullable = (string)reader["NULLABLE"] == "Y",
-					Type = type,
-					Size = Convert.ToInt32(reader["DATA_LENGTH"]),
-					CharacterSize = Convert.ToInt32(reader["CHAR_LENGTH"]),
-					Precision = OracleReaderValueConvert.ToInt32(reader["DATA_PRECISION"]),
-					Scale = OracleReaderValueConvert.ToInt32(reader["DATA_SCALE"]),
-					Unit = type.In("VARCHAR", "VARCHAR2")
-						? (string)reader["CHAR_USED"] == "C" ? DataUnit.Character : DataUnit.Byte
-						: DataUnit.NotApplicable
+					CharacterSize = Convert.ToInt32(reader["CHAR_LENGTH"])
 				});
+		}
+
+		private static void ResolveDataUnit(OracleDataType dataType, object characterUsedValue)
+		{
+			dataType.Unit = String.IsNullOrEmpty(dataType.FullyQualifiedName.Owner) && dataType.FullyQualifiedName.NormalizedName.In("\"VARCHAR\"", "\"VARCHAR2\"")
+				? (string)characterUsedValue == "C" ? DataUnit.Character : DataUnit.Byte
+				: DataUnit.NotApplicable;
 		}
 
 		private OracleSchemaObject MapSynonymTarget(OracleDataReader reader)
@@ -447,7 +479,7 @@ namespace SqlPad.Oracle
 
 		internal static string QualifyStringObject(object stringValue)
 		{
-			return String.Format("{0}{1}{0}", "\"", stringValue);
+			return stringValue == DBNull.Value ? null : String.Format("{0}{1}{0}", "\"", stringValue);
 		}
 	}
 }

@@ -82,7 +82,11 @@ namespace SqlPad.Oracle
 					? new OracleColumn
 					  {
 						  Name = OracleColumn.RowId.ToQuotedIdentifier(),
-						  Type = Organization == OrganizationType.Index ? "UROWID" : OracleColumn.RowId
+						  DataType =
+							new OracleDataType
+							{
+								FullyQualifiedName = OracleObjectIdentifier.Create(null, Organization == OrganizationType.Index ? "UROWID" : OracleColumn.RowId)
+							}
 					  }
 					: null;
 			}
@@ -104,8 +108,12 @@ namespace SqlPad.Oracle
 				new OracleColumn
 				{
 					Name = NormalizedColumnNameNextValue,
-					Type = "INTEGER",
-					Scale = 0
+					DataType =
+						new OracleDataType
+						{
+							FullyQualifiedName = OracleObjectIdentifier.Create(null, "INTEGER"),
+							Scale = 0
+						}
 				};
 
 			_columns.Add(NormalizedColumnNameNextValue, nextValueColumn);
@@ -178,7 +186,24 @@ namespace SqlPad.Oracle
 	[DebuggerDisplay("OracleTypeObject (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
 	public class OracleTypeObject : OracleTypeBase
 	{
+		public OracleTypeObject()
+		{
+			Attributes = new List<OracleTypeAttribute>();
+		}
+
 		public override string TypeCode { get { return TypeCodeObject; } }
+
+		public IList<OracleTypeAttribute> Attributes { get; set; }
+	}
+
+	[DebuggerDisplay("OracleTypeAttribute (Name={Name}; DataType={DataType}; IsInherited={IsInherited})")]
+	public class OracleTypeAttribute
+	{
+		public string Name { get; set; }
+		
+		public OracleDataType DataType { get; set; }
+
+		public bool IsInherited { get; set; }
 	}
 
 	[DebuggerDisplay("OracleTypeCollection (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]

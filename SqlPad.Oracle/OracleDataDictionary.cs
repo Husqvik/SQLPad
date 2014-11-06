@@ -70,7 +70,7 @@ namespace SqlPad.Oracle
 			oracleObjectIdentifierType.Add("Owner", "Name", "NormalizedOwner", "NormalizedName");
 
 			var oracleColumnType = Serializer.Add(typeof(OracleColumn), false);
-			oracleColumnType.Add("Name", "Type", "Precision", "Scale", "Size", "CharacterSize", "Nullable", "Unit");
+			oracleColumnType.Add("Name", "DataType", "CharacterSize", "Nullable");
 
 			var oracleObjectType = Serializer.Add(typeof(OracleObject), false);
 			oracleObjectType.AsReferenceDefault = true;
@@ -78,6 +78,7 @@ namespace SqlPad.Oracle
 			oracleObjectType.AddSubType(101, typeof(OracleSchemaObject));
 			oracleObjectType.AddSubType(102, typeof(OracleConstraint));
 			oracleObjectType.AddSubType(103, typeof(OracleDatabaseLink));
+			oracleObjectType.AddSubType(104, typeof(OracleDataType));
 
 			var oracleSchemaObjectType = Serializer.Add(typeof(OracleSchemaObject), false);
 			oracleSchemaObjectType.AsReferenceDefault = true;
@@ -86,6 +87,10 @@ namespace SqlPad.Oracle
 			var oracleDatabaseLinkType = Serializer.Add(typeof(OracleDatabaseLink), false);
 			oracleDatabaseLinkType.AsReferenceDefault = true;
 			oracleDatabaseLinkType.Add("UserName", "Host", "Created");
+
+			var oracleOracleDataTypeType = Serializer.Add(typeof(OracleDataType), false);
+			oracleOracleDataTypeType.AsReferenceDefault = true;
+			oracleOracleDataTypeType.Add("Length", "Precision", "Scale", "Unit");
 
 			var oracleConstraintType = Serializer.Add(typeof(OracleConstraint), false);
 			oracleConstraintType.AsReferenceDefault = true;
@@ -137,8 +142,15 @@ namespace SqlPad.Oracle
 
 			oracleTypeBaseType.AddSubType(101, typeof(OracleTypeObject));
 			oracleTypeBaseType.AddSubType(102, typeof(OracleTypeCollection));
-			Serializer.Add(typeof(OracleTypeObject), true).AsReferenceDefault = true;
-			var oracleCollectionType = Serializer.Add(typeof(OracleTypeCollection), true);
+			var oracleObjectTypeType = Serializer.Add(typeof(OracleTypeObject), false);
+			oracleObjectTypeType.AsReferenceDefault = true;
+			oracleObjectTypeType.Add("Attributes");
+
+			var oracleObjectTypeAttributeType = Serializer.Add(typeof(OracleTypeAttribute), false);
+			oracleObjectTypeAttributeType.AsReferenceDefault = true;
+			oracleObjectTypeAttributeType.Add("Name", "DataType", "IsInherited");
+			
+			var oracleCollectionType = Serializer.Add(typeof(OracleTypeCollection), false);
 			oracleCollectionType.AsReferenceDefault = true;
 			oracleCollectionType.Add("ElementTypeIdentifier", "CollectionType", "UpperBound");
 

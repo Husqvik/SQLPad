@@ -8,14 +8,20 @@ namespace SqlPad.Oracle
 	{
 		public const string RowId = "ROWID";
 
-		#region Implementation of IColumn
+		public OracleDataType DataType { get; set; }
+
 		public string Name { get; set; }
 
 		public string FullTypeName
 		{
 			get
 			{
-				var name = Type;
+				if (!DataType.IsPrimitive)
+				{
+					return DataType.FullyQualifiedName.ToString();
+				}
+
+				var name = DataType.FullyQualifiedName.Name.Trim('"');
 				switch (name)
 				{
 					case "NVARCHAR2":
@@ -24,34 +30,29 @@ namespace SqlPad.Oracle
 					case "VARCHAR":
 					case "NCHAR":
 					case "CHAR":
-						var unit = Unit == DataUnit.Byte ? " BYTE" : " CHAR";
-						name = String.Format("{0}({1}{2})", name, CharacterSize, Unit == DataUnit.NotApplicable ? null : unit);
+						var unit = DataType.Unit == DataUnit.Byte ? " BYTE" : " CHAR";
+						name = String.Format("{0}({1}{2})", name, CharacterSize, DataType.Unit == DataUnit.NotApplicable ? null : unit);
 						break;
 					case "FLOAT":
 					case "NUMBER":
-						var decimalScale = Scale > 0 ? String.Format(", {0}", Scale) : null;
-						if (Precision > 0 || Scale > 0)
+						var decimalScale = DataType.Scale > 0 ? String.Format(", {0}", DataType.Scale) : null;
+						if (DataType.Precision > 0 || DataType.Scale > 0)
 						{
-							name = String.Format("{0}({1}{2})", name, Precision == null ? "*" : Convert.ToString(Precision), decimalScale);
+							name = String.Format("{0}({1}{2})", name, DataType.Precision == null ? "*" : Convert.ToString(DataType.Precision), decimalScale);
 						}
 						break;
 					case "RAW":
-						name = String.Format("{0}({1})", name, Size);
+						name = String.Format("{0}({1})", name, DataType.Length);
 						break;
 				}
 
 				return name;
 			}
 		}
-		#endregion
 
-		public string Type { get; set; }
-		public int? Precision { get; set; }
-		public int? Scale { get; set; }
-		public int Size { get; set; }
 		public int CharacterSize { get; set; }
+
 		public bool Nullable { get; set; }
-		public DataUnit Unit { get; set; }
 
 		public OracleColumn Clone(string newName)
 		{
@@ -59,12 +60,8 @@ namespace SqlPad.Oracle
 			       {
 					   Name = newName,
 					   Nullable = Nullable,
-					   Type = Type,
-					   Size = Size,
+					   DataType = DataType,
 					   CharacterSize = CharacterSize,
-					   Precision = Precision,
-					   Scale = Scale,
-					   Unit = Unit
 			       };
 		}
 	}

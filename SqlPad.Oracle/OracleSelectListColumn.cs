@@ -87,18 +87,16 @@ namespace SqlPad.Oracle
 				{
 					Name = NormalizedName,
 					Nullable = columnDescription == null || columnDescription.Nullable,
-					Type = columnDescription == null ? null : columnDescription.Type,
-					Precision = columnDescription == null ? null : columnDescription.Precision,
-					Scale = columnDescription == null ? null : columnDescription.Scale,
-					Size = columnDescription == null ? Int32.MinValue : columnDescription.Size,
-					CharacterSize = columnDescription == null ? Int32.MinValue : columnDescription.CharacterSize,
-					Unit = columnDescription == null ? DataUnit.NotApplicable : columnDescription.Unit
+					DataType = columnDescription == null ? OracleDataType.Empty : columnDescription.DataType,
+					CharacterSize = columnDescription == null ? Int32.MinValue : columnDescription.CharacterSize
 				};
 
 			if (columnDescription == null && RootNode.TerminalCount > 0)
 			{
 				var expectedTerminalCountOffset = RootNode.TerminalCount > 0 && RootNode.LastTerminalNode.Id == Terminals.ColumnAlias ? 1 : 0;
 				var tokenValue = RootNode.FirstTerminalNode.Token.Value;
+				string literalBasedDataTypeName = null;
+				var literalInferredDataType = new OracleDataType();
 				switch (RootNode.FirstTerminalNode.Id)
 				{
 					case Terminals.StringLiteral:
@@ -109,12 +107,12 @@ namespace SqlPad.Oracle
 
 						if (tokenValue[0] == 'n' || tokenValue[0] == 'N')
 						{
-							_columnDescription.Type = "NCHAR";
+							literalBasedDataTypeName = "NCHAR";
 						}
 						else
 						{
-							_columnDescription.Type = "CHAR";
-							_columnDescription.Unit = DataUnit.Character;
+							literalBasedDataTypeName = "CHAR";
+							literalInferredDataType.Unit = DataUnit.Character;
 						}
 
 						_columnDescription.CharacterSize = tokenValue.ToPlainString().Length;
@@ -125,11 +123,11 @@ namespace SqlPad.Oracle
 						{
 							break;
 						}
-						
-						_columnDescription.Type = "NUMBER";
-						_columnDescription.Precision = GetNumberPrecision(tokenValue);
+
+						literalBasedDataTypeName = "NUMBER";
+						literalInferredDataType.Precision = GetNumberPrecision(tokenValue);
 						int? scale = null;
-						if (_columnDescription.Precision.HasValue)
+						if (literalInferredDataType.Precision.HasValue)
 						{
 							var indexDecimalDigit = tokenValue.IndexOf('.');
 							if (indexDecimalDigit != -1)
@@ -138,7 +136,7 @@ namespace SqlPad.Oracle
 							}
 						}
 
-						_columnDescription.Scale = scale;
+						literalInferredDataType.Scale = scale;
 						_columnDescription.Nullable = false;
 						break;
 					case Terminals.Date:
@@ -147,7 +145,7 @@ namespace SqlPad.Oracle
 							break;
 						}
 
-						_columnDescription.Type = "DATE";
+						literalBasedDataTypeName = "DATE";
 						_columnDescription.Nullable = false;
 						break;
 					case Terminals.Timestamp:
@@ -156,9 +154,15 @@ namespace SqlPad.Oracle
 							break;
 						}
 
-						_columnDescription.Type = "TIMESTAMP";
+						literalBasedDataTypeName = "TIMESTAMP";
 						_columnDescription.Nullable = false;
 						break;
+				}
+
+				if (literalBasedDataTypeName != null)
+				{
+					literalInferredDataType.FullyQualifiedName = OracleObjectIdentifier.Create(null, literalBasedDataTypeName);
+					_columnDescription.DataType = literalInferredDataType;
 				}
 			}
 

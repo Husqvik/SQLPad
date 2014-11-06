@@ -494,7 +494,7 @@ namespace SqlPad.Oracle.Test
 				Organization = OrganizationType.Heap,
 				Columns = new Dictionary<string, OracleColumn>
 				             {
-					             { "\"DUMMY\"", new OracleColumn { Name = "\"DUMMY\"", Type = "VARCHAR2", Size = 1, CharacterSize = 1, Unit = DataUnit.Byte } }
+					             { "\"DUMMY\"", new OracleColumn { Name = "\"DUMMY\"", CharacterSize = 1, DataType = BuildPrimitiveDataType("VARCHAR2", 1, dataUnit: DataUnit.Byte) } }
 				             }
 			},
 			new OracleView
@@ -508,8 +508,8 @@ namespace SqlPad.Oracle.Test
 				Organization = OrganizationType.Heap,
 				Columns = new Dictionary<string, OracleColumn>
 				          {
-					          { "\"ID\"", new OracleColumn { Name = "\"ID\"", Type = "NUMBER", Precision = 9, Scale = 0 } },
-							  { "\"NAME\"", new OracleColumn { Name = "\"NAME\"", Type = "VARCHAR2", Size = 50, CharacterSize = 50, Unit = DataUnit.Byte } }
+					          { "\"ID\"", new OracleColumn { Name = "\"ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0) } },
+							  { "\"NAME\"", new OracleColumn { Name = "\"NAME\"", CharacterSize = 50, DataType = BuildPrimitiveDataType("VARCHAR2", 50, dataUnit: DataUnit.Byte) } }
 				          }
 			},
 			new OracleTable
@@ -518,7 +518,7 @@ namespace SqlPad.Oracle.Test
 				Organization = OrganizationType.Heap,
 				Columns = new Dictionary<string, OracleColumn>
 				          {
-					          { "\"ID\"", new OracleColumn { Name = "\"ID\"", Type = "NUMBER", Precision = 9, Scale = 0 } }
+					          { "\"ID\"", new OracleColumn { Name = "\"ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0) } }
 				          }
 			},
 			new OracleTable
@@ -527,8 +527,8 @@ namespace SqlPad.Oracle.Test
 				Organization = OrganizationType.Heap,
 				Columns = new Dictionary<string, OracleColumn>
 				          {
-					          { "\"ID\"", new OracleColumn { Name = "\"ID\"", Type = "NUMBER", Precision = 9, Scale = 0 } },
-					          { "\"DUEDATE\"", new OracleColumn { Name = "\"DUEDATE\"", Type = "DATE" } }
+					          { "\"ID\"", new OracleColumn { Name = "\"ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0) } },
+					          { "\"DUEDATE\"", new OracleColumn { Name = "\"DUEDATE\"", DataType = BuildPrimitiveDataType("DATE") } }
 				          }
 			},
 			new OracleTable
@@ -537,12 +537,12 @@ namespace SqlPad.Oracle.Test
 				Organization = OrganizationType.Heap,
 				Columns = new Dictionary<string, OracleColumn>
 				          {
-					          { "\"ID\"", new OracleColumn { Name = "\"ID\"", Type = "NUMBER", Precision = 9, Scale = 0 } },
-					          { "\"INVOICE_ID\"", new OracleColumn { Name = "\"INVOICE_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 } },
-							  { "\"AMOUNT\"", new OracleColumn { Name = "\"AMOUNT\"", Type = "NUMBER", Precision = 20, Scale = 2 } },
-							  { "\"CORRELATION_VALUE\"", new OracleColumn { Name = "\"CORRELATION_VALUE\"", Type = "NUMBER", Scale = 5 } },
-							  { "\"CaseSensitiveColumn\"", new OracleColumn { Name = "\"CaseSensitiveColumn\"", Type = "NVARCHAR2", CharacterSize = 30 } },
-							  { "\"DASH-COLUMN\"", new OracleColumn { Name = "\"DASH-COLUMN\"", Type = "RAW", Size = 8 } }
+					          { "\"ID\"", new OracleColumn { Name = "\"ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0) } },
+					          { "\"INVOICE_ID\"", new OracleColumn { Name = "\"INVOICE_ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0) } },
+							  { "\"AMOUNT\"", new OracleColumn { Name = "\"AMOUNT\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 20, scale: 2) } },
+							  { "\"CORRELATION_VALUE\"", new OracleColumn { Name = "\"CORRELATION_VALUE\"", DataType = BuildPrimitiveDataType("NUMBER", scale: 5) } },
+							  { "\"CaseSensitiveColumn\"", new OracleColumn { Name = "\"CaseSensitiveColumn\"", DataType = BuildPrimitiveDataType("NVARCHAR2"), CharacterSize = 30 } },
+							  { "\"DASH-COLUMN\"", new OracleColumn { Name = "\"DASH-COLUMN\"", DataType = BuildPrimitiveDataType("RAW", 8) } }
 				          }
 			},
 			new OracleTable
@@ -551,7 +551,7 @@ namespace SqlPad.Oracle.Test
 				Organization = OrganizationType.Heap,
 				Columns = new Dictionary<string, OracleColumn>
 				          {
-					          { "\"CaseSensitiveColumn\"", new OracleColumn { Name = "\"CaseSensitiveColumn\"", Type = "RAW", Size = 4000 } }
+					          { "\"CaseSensitiveColumn\"", new OracleColumn { Name = "\"CaseSensitiveColumn\"", DataType = BuildPrimitiveDataType("RAW", 4000) } }
 				          }
 			},
 			new OracleView
@@ -565,9 +565,9 @@ namespace SqlPad.Oracle.Test
 				Organization = OrganizationType.Heap,
 				Columns = new Dictionary<string, OracleColumn>
 				          {
-					          { "\"TARGETGROUP_ID\"", new OracleColumn { Name = "\"TARGETGROUP_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 } },
-					          { "\"PROJECT_ID\"", new OracleColumn { Name = "\"PROJECT_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 } },
-							  { "\"NAME\"", new OracleColumn { Name = "\"NAME\"", Type = "VARCHAR2", Size = 50, CharacterSize = 50, Unit = DataUnit.Byte } }
+					          { "\"TARGETGROUP_ID\"", new OracleColumn { Name = "\"TARGETGROUP_ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0) } },
+					          { "\"PROJECT_ID\"", new OracleColumn { Name = "\"PROJECT_ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0) } },
+							  { "\"NAME\"", new OracleColumn { Name = "\"NAME\"", DataType = BuildPrimitiveDataType("VARCHAR2", 50, dataUnit: DataUnit.Byte), CharacterSize = 50 } }
 				          }
 			},
 			new OracleTable
@@ -576,8 +576,8 @@ namespace SqlPad.Oracle.Test
 				Organization = OrganizationType.Heap,
 				Columns = new Dictionary<string, OracleColumn>
 				          {
-					          { "\"NAME\"", new OracleColumn { Name = "\"NAME\"", Type = "VARCHAR2", Size = 50, CharacterSize = 50, Unit = DataUnit.Byte } },
-					          { "\"PROJECT_ID\"", new OracleColumn { Name = "\"PROJECT_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 } }
+					          { "\"NAME\"", new OracleColumn { Name = "\"NAME\"", CharacterSize = 50, DataType = BuildPrimitiveDataType("VARCHAR2", 50, dataUnit: DataUnit.Byte) } },
+					          { "\"PROJECT_ID\"", new OracleColumn { Name = "\"PROJECT_ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0) } }
 				          }
 			},
 			new OracleTable
@@ -586,10 +586,10 @@ namespace SqlPad.Oracle.Test
 				Organization = OrganizationType.Heap,
 				Columns = new Dictionary<string, OracleColumn>
 				          {
-							  { "\"RESPONDENTBUCKET_ID\"", new OracleColumn { Name = "\"RESPONDENTBUCKET_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 } },
-					          { "\"TARGETGROUP_ID\"", new OracleColumn { Name = "\"TARGETGROUP_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 } },
-					          { "\"PROJECT_ID\"", new OracleColumn { Name = "\"PROJECT_ID\"", Type = "NUMBER", Precision = 9, Scale = 0 } },
-							  { "\"NAME\"", new OracleColumn { Name = "\"NAME\"", Type = "VARCHAR2", Size = 50, CharacterSize = 50, Unit = DataUnit.Byte } }
+							  { "\"RESPONDENTBUCKET_ID\"", new OracleColumn { Name = "\"RESPONDENTBUCKET_ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0) } },
+					          { "\"TARGETGROUP_ID\"", new OracleColumn { Name = "\"TARGETGROUP_ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0) } },
+					          { "\"PROJECT_ID\"", new OracleColumn { Name = "\"PROJECT_ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0) } },
+							  { "\"NAME\"", new OracleColumn { Name = "\"NAME\"", CharacterSize = 50, DataType = BuildPrimitiveDataType("VARCHAR2", 50, dataUnit: DataUnit.Byte) } }
 				          }
 			},
 			new OracleTable
@@ -598,10 +598,10 @@ namespace SqlPad.Oracle.Test
 				Organization = OrganizationType.Heap,
 				Columns = new Dictionary<string, OracleColumn>
 				          {
-							  { "\"RESPONDENTBUCKET_ID\"", new OracleColumn { Name = "\"RESPONDENTBUCKET_ID\"", Type = "NUMBER", Precision = 9, Scale = 0, Nullable = true } },
-					          { "\"SELECTION_ID\"", new OracleColumn { Name = "\"SELECTION_ID\"", Type = "NUMBER", Precision = 9, Scale = 0, Nullable = false } },
-					          { "\"PROJECT_ID\"", new OracleColumn { Name = "\"PROJECT_ID\"", Type = "NUMBER", Precision = 9, Scale = 0, Nullable = false } },
-							  { "\"NAME\"", new OracleColumn { Name = "\"NAME\"", Type = "VARCHAR2", Size = 50, CharacterSize = 50, Nullable = false, Unit = DataUnit.Byte } }
+							  { "\"RESPONDENTBUCKET_ID\"", new OracleColumn { Name = "\"RESPONDENTBUCKET_ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0), Nullable = true } },
+					          { "\"SELECTION_ID\"", new OracleColumn { Name = "\"SELECTION_ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0), Nullable = false } },
+					          { "\"PROJECT_ID\"", new OracleColumn { Name = "\"PROJECT_ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0), Nullable = false } },
+							  { "\"NAME\"", new OracleColumn { Name = "\"NAME\"", CharacterSize = 50, Nullable = false, DataType = BuildPrimitiveDataType("VARCHAR2", 50, dataUnit: DataUnit.Byte) } }
 				          }
 			},
 			new OraclePackage
@@ -901,5 +901,18 @@ Note
 		public override bool CanFetch { get { return true; } }
 		
 		public override bool IsExecuting { get { return false; } }
+
+		private static OracleDataType BuildPrimitiveDataType(string typeName, int? length = null, int? precision = null, int? scale = null, DataUnit dataUnit = DataUnit.NotApplicable)
+		{
+			return
+				new OracleDataType
+				{
+					FullyQualifiedName = OracleObjectIdentifier.Create(null, typeName),
+					Length = length,
+					Precision = precision,
+					Scale = scale,
+					Unit = dataUnit
+				};
+		}
 	}
 }

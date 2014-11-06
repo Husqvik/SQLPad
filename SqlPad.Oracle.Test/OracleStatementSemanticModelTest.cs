@@ -218,15 +218,15 @@ FROM
 			columns[0].NormalizedName.ShouldBe("\"RESPONDENTBUCKET_ID\"");
 			columns[0].HasExplicitDefinition.ShouldBe(true);
 			columns[0].IsDirectReference.ShouldBe(true);
-			columns[0].ColumnDescription.Type.ShouldBe("NUMBER");
+			columns[0].ColumnDescription.DataType.FullyQualifiedName.Name.ShouldBe("NUMBER");
 			columns[1].NormalizedName.ShouldBe("\"SELECTION_NAME\"");
 			columns[1].HasExplicitDefinition.ShouldBe(true);
 			columns[1].IsDirectReference.ShouldBe(true);
-			columns[1].ColumnDescription.Type.ShouldBe("VARCHAR2");
+			columns[1].ColumnDescription.DataType.FullyQualifiedName.Name.ShouldBe("VARCHAR2");
 			columns[2].NormalizedName.ShouldBe("\"MY_NUMBER_COLUMN\"");
 			columns[2].HasExplicitDefinition.ShouldBe(true);
 			columns[2].IsDirectReference.ShouldBe(false);
-			columns[2].ColumnDescription.Type.ShouldBe("NUMBER");
+			columns[2].ColumnDescription.DataType.FullyQualifiedName.Name.ShouldBe("NUMBER");
 			columns[2].ColumnDescription.FullTypeName.ShouldBe("NUMBER(1)");
 
 			var outerBlock = queryBlocks[1];
@@ -238,15 +238,15 @@ FROM
 			columns[0].NormalizedName.ShouldBe("\"RESPONDENTBUCKET_ID\"");
 			columns[0].HasExplicitDefinition.ShouldBe(true);
 			columns[0].IsDirectReference.ShouldBe(true);
-			columns[0].ColumnDescription.Type.ShouldBe("NUMBER");
+			columns[0].ColumnDescription.DataType.FullyQualifiedName.Name.ShouldBe("NUMBER");
 			columns[1].NormalizedName.ShouldBe("\"SELECTION_NAME\"");
 			columns[1].HasExplicitDefinition.ShouldBe(true);
 			columns[1].IsDirectReference.ShouldBe(true);
-			columns[1].ColumnDescription.Type.ShouldBe("VARCHAR2");
+			columns[1].ColumnDescription.DataType.FullyQualifiedName.Name.ShouldBe("VARCHAR2");
 			columns[2].NormalizedName.ShouldBe("\"MY_NUMBER_COLUMN\"");
 			columns[2].HasExplicitDefinition.ShouldBe(true);
 			columns[2].IsDirectReference.ShouldBe(true);
-			columns[2].ColumnDescription.Type.ShouldBe("NUMBER");
+			columns[2].ColumnDescription.DataType.FullyQualifiedName.Name.ShouldBe("NUMBER");
 			columns[2].ColumnDescription.FullTypeName.ShouldBe("NUMBER(1)");
 		}
 
@@ -272,7 +272,7 @@ FROM
 			columns[0].HasExplicitDefinition.ShouldBe(true);
 			columns[1].NormalizedName.ShouldBe("\"RESPONDENTBUCKET_ID\"");
 			columns[1].HasExplicitDefinition.ShouldBe(false);
-			columns[1].ColumnDescription.Type.ShouldBe("NUMBER");
+			columns[1].ColumnDescription.DataType.FullyQualifiedName.Name.ShouldBe("NUMBER");
 
 			var outerBlock = queryBlocks[1];
 			outerBlock.ObjectReferences.Count.ShouldBe(1);
@@ -284,7 +284,7 @@ FROM
 			columns[0].HasExplicitDefinition.ShouldBe(true);
 			columns[1].NormalizedName.ShouldBe("\"RESPONDENTBUCKET_ID\"");
 			columns[1].HasExplicitDefinition.ShouldBe(false);
-			columns[1].ColumnDescription.Type.ShouldBe("NUMBER");
+			columns[1].ColumnDescription.DataType.FullyQualifiedName.Name.ShouldBe("NUMBER");
 		}
 
 		[Test(Description = @"")]
@@ -665,8 +665,8 @@ FROM
 			var columns = queryBlock.Columns.ToList();
 			columns.ForEach(c => c.ColumnDescription.ShouldNotBe(null));
 			columns.ForEach(c => c.ColumnDescription.Nullable.ShouldBe(true));
-			columns.ForEach(c => c.ColumnDescription.Type.ShouldBe(null));
-			columns.ForEach(c => c.ColumnDescription.FullTypeName.ShouldBe(null));
+			columns.ForEach(c => c.ColumnDescription.DataType.ShouldBe(OracleDataType.Empty));
+			columns.ForEach(c => c.ColumnDescription.FullTypeName.ShouldBe(String.Empty));
 		}
 
 		[Test(Description = @"")]
