@@ -884,16 +884,19 @@ namespace SqlPad.Oracle
 
 		private void RaiseRefreshEvents()
 		{
-			List<RefreshModel> refreshModels;
-			if (!WaitingDataModelRefresh.TryGetValue(CachedConnectionStringName, out refreshModels))
-				return;
-
-			foreach (var refreshModel in refreshModels)
+			lock (ActiveDataModelRefresh)
 			{
-				refreshModel.DatabaseModel._dataDictionary = _dataDictionary;
-				refreshModel.DatabaseModel.BuildAllFunctionMetadata();
-				refreshModel.DatabaseModel.RaiseEvent(refreshModel.DatabaseModel.RefreshFinished);
-				refreshModel.DatabaseModel.RaiseEvent(refreshModel.DatabaseModel.RefreshStarted);
+				List<RefreshModel> refreshModels;
+				if (!WaitingDataModelRefresh.TryGetValue(CachedConnectionStringName, out refreshModels))
+					return;
+
+				foreach (var refreshModel in refreshModels)
+				{
+					refreshModel.DatabaseModel._dataDictionary = _dataDictionary;
+					refreshModel.DatabaseModel.BuildAllFunctionMetadata();
+					refreshModel.DatabaseModel.RaiseEvent(refreshModel.DatabaseModel.RefreshFinished);
+					refreshModel.DatabaseModel.RaiseEvent(refreshModel.DatabaseModel.RefreshStarted);
+				}
 			}
 		}
 
