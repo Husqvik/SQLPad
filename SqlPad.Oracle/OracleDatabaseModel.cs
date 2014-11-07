@@ -973,32 +973,28 @@ namespace SqlPad.Oracle
 
 				var nonSchemaBuiltInFunctionMetadata = new Dictionary<string, OracleFunctionMetadata>();
 
-				foreach (var functionMetadata in _allFunctionMetadata.SelectMany(g => g))
+				foreach (var programMetadata in _allFunctionMetadata.SelectMany(g => g))
 				{
-					if (String.IsNullOrEmpty(functionMetadata.Identifier.Owner))
+					if (String.IsNullOrEmpty(programMetadata.Identifier.Owner))
 					{
-						nonSchemaBuiltInFunctionMetadata.Add(functionMetadata.Identifier.Name, functionMetadata);
+						nonSchemaBuiltInFunctionMetadata.Add(programMetadata.Identifier.Name, programMetadata);
 						continue;
 					}
 
-					if (functionMetadata.IsPackageFunction)
+					OracleSchemaObject schemaObject;
+					var packageIdentifier = OracleObjectIdentifier.Create(programMetadata.Identifier.Owner, programMetadata.Identifier.Package);
+					if (allObjects.TryGetFirstValue(out schemaObject, packageIdentifier))
 					{
-						OracleSchemaObject packageObject;
-						if (allObjects.TryGetValue(OracleObjectIdentifier.Create(functionMetadata.Identifier.Owner, functionMetadata.Identifier.Package), out packageObject))
-						{
-							var package = (OraclePackage)packageObject;
-							package.Functions.Add(functionMetadata);
-							functionMetadata.Owner = package;
-						}
+						((OraclePackage)schemaObject).Functions.Add(programMetadata);
+						programMetadata.Owner = schemaObject;
 					}
 					else
 					{
-						OracleSchemaObject functionObject;
-						if (allObjects.TryGetValue(OracleObjectIdentifier.Create(functionMetadata.Identifier.Owner, functionMetadata.Identifier.Name), out functionObject))
+						var functionIdentifier = OracleObjectIdentifier.Create(programMetadata.Identifier.Owner, programMetadata.Identifier.Name);
+						if (allObjects.TryGetFirstValue(out schemaObject, functionIdentifier))
 						{
-							var function = (OracleFunction)functionObject;
-							function.Metadata = functionMetadata;
-							functionMetadata.Owner = function;
+							((OracleFunction)schemaObject).Metadata = programMetadata;
+							programMetadata.Owner = schemaObject;
 						}
 					}
 				}
@@ -1075,12 +1071,18 @@ namespace SqlPad.Oracle
 		{
 			var functionMetadata = _dataDictionary.AllObjects.Values
 				.OfType<IFunctionCollection>()
-				.SelectMany(o => o.Functions)
-				//.Where(m => m != null) // Enable this line if NullReferenceException occures. At some Oracle environments can happen that function metadata is not available for schema functions with reasonable explanation.
+				.SelectMany(o => o.Functions);
+
+			functionMetadata = FilterFunctionsWithUnavailableMetadataInOracle11(functionMetadata)
 				.Concat(_dataDictionary.NonSchemaFunctionMetadata.Values);
 
 			_allFunctionMetadata = functionMetadata.ToLookup(m => m.Identifier);
 		}
+
+		private IEnumerable<OracleFunctionMetadata> FilterFunctionsWithUnavailableMetadataInOracle11(IEnumerable<OracleFunctionMetadata> functions)
+		{
+			return functions.Where(m => m != null);
+		} 
 
 		private void RaiseEvent(EventHandler eventHandler)
 		{

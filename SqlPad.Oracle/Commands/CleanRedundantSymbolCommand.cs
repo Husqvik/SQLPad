@@ -33,7 +33,7 @@ namespace SqlPad.Oracle.Commands
 			{
 				if (CurrentQueryBlock != null)
 				{
-					terminalGroupsToRemove = terminalGroupsToRemove.Where(g => g.Any(n => n.HasAncestor(CurrentQueryBlock.RootNode)));
+					terminalGroupsToRemove = terminalGroupsToRemove.Where(g => g.Any(n => n.HasAncestor(CurrentQueryBlock.RootNode) || (CurrentQueryBlock.OrderByClause != null && n.HasAncestor(CurrentQueryBlock.OrderByClause))));
 				}
 			}
 			else

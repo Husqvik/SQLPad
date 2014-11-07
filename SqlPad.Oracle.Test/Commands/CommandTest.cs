@@ -1110,6 +1110,19 @@ WHERE
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestCleanRedundantTerminalsAtQueryBlockLevelInOrderByClause()
+		{
+			const string statementText = @"SELECT * FROM SELECTION ORDER BY SELECTION.PROJECT_ID, SELECTION.NAME";
+			_editor.Text = statementText;
+
+			CanExecuteCommand(OracleCommands.CleanRedundantSymbol).ShouldBe(true);
+			ExecuteCommand(OracleCommands.CleanRedundantSymbol);
+
+			_editor.Text.ShouldBe("SELECT * FROM SELECTION ORDER BY PROJECT_ID, NAME");
+			_editor.CaretOffset.ShouldBe(0);
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestCleanSingleRedundantQualifier()
 		{
 			const string statementText = @"SELECT SYS.XMLTYPE('<root/>'), SYS.DBMS_RANDOM.VALUE FROM HUSQVIK.SELECTION";

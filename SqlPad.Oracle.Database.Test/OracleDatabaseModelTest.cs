@@ -221,6 +221,7 @@ namespace SqlPad.Oracle.Database.Test
 
 			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
 			{
+				databaseModel.Initialize().Wait();
 				databaseModel.UpdateTableDetailsAsync(new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"DUAL\""), model, CancellationToken.None).Wait();
 			}
 
