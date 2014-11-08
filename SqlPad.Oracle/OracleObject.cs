@@ -177,10 +177,19 @@ namespace SqlPad.Oracle
 		public const string TypeCodeObject = "OBJECT";
 		public const string TypeCodeXml = "XMLTYPE";
 		public const string TypeCodeCollection = "COLLECTION";
+
+		private OracleFunctionMetadata _constructorMetadata;
 		
 		public override string Type { get { return OracleSchemaObjectType.Type; } }
 
 		public abstract string TypeCode { get; }
+
+		public OracleFunctionMetadata GetConstructorMetadata()
+		{
+			return _constructorMetadata ?? (_constructorMetadata = BuildConstructorMetadata());
+		}
+
+		protected abstract OracleFunctionMetadata BuildConstructorMetadata();
 	}
 
 	[DebuggerDisplay("OracleTypeObject (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
@@ -194,6 +203,19 @@ namespace SqlPad.Oracle
 		public override string TypeCode { get { return TypeCodeObject; } }
 
 		public IList<OracleTypeAttribute> Attributes { get; set; }
+
+		protected override OracleFunctionMetadata BuildConstructorMetadata()
+		{
+			var constructorMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues(FullyQualifiedName.Owner, null, FullyQualifiedName.Name), false, false, false, false, false, false, null, null, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeParenthesis, false);
+			var constructorParameters = Attributes.Select(
+				(a, i) => new OracleFunctionParameterMetadata(a.Name.ToSimpleIdentifier(), i + 1, ParameterDirection.Input, OracleDataType.ResolveFullTypeName(a.DataType), false));
+
+			constructorParameters = Enumerable.Repeat(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, FullyQualifiedName.ToString(), false), 1)
+				.Concat(constructorParameters);
+			
+			constructorMetadata.Parameters.AddRange(constructorParameters);
+			return constructorMetadata;
+		}
 	}
 
 	[DebuggerDisplay("OracleTypeAttribute (Name={Name}; DataType={DataType}; IsInherited={IsInherited})")]
@@ -216,6 +238,16 @@ namespace SqlPad.Oracle
 		public OracleCollectionType CollectionType { get; set; }
 
 		public int? UpperBound { get; set; }
+
+		protected override OracleFunctionMetadata BuildConstructorMetadata()
+		{
+			var elementTypeLabel = String.IsNullOrEmpty(ElementTypeIdentifier.Owner) ? ElementTypeIdentifier.Name.Trim('"') : ElementTypeIdentifier.ToString();
+			var constructorMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues(FullyQualifiedName.Owner, null, FullyQualifiedName.Name), false, false, false, false, false, false, 0, 0, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeParenthesis, false);
+			constructorMetadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, FullyQualifiedName.ToString(), false));
+			constructorMetadata.Parameters.Add(new OracleFunctionParameterMetadata(String.Format("array of {0}", elementTypeLabel), 1, ParameterDirection.Input, null, true));
+			
+			return constructorMetadata;
+		}
 	}
 
 	public enum OracleCollectionType

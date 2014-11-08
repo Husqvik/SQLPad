@@ -95,7 +95,7 @@ namespace SqlPad.Oracle
 			{
 				var expectedTerminalCountOffset = RootNode.TerminalCount > 0 && RootNode.LastTerminalNode.Id == Terminals.ColumnAlias ? 1 : 0;
 				var tokenValue = RootNode.FirstTerminalNode.Token.Value;
-				string literalBasedDataTypeName = null;
+				string literalInferredDataTypeName = null;
 				var literalInferredDataType = new OracleDataType();
 				switch (RootNode.FirstTerminalNode.Id)
 				{
@@ -107,11 +107,11 @@ namespace SqlPad.Oracle
 
 						if (tokenValue[0] == 'n' || tokenValue[0] == 'N')
 						{
-							literalBasedDataTypeName = "NCHAR";
+							literalInferredDataTypeName = "NCHAR";
 						}
 						else
 						{
-							literalBasedDataTypeName = "CHAR";
+							literalInferredDataTypeName = "CHAR";
 							literalInferredDataType.Unit = DataUnit.Character;
 						}
 
@@ -124,7 +124,7 @@ namespace SqlPad.Oracle
 							break;
 						}
 
-						literalBasedDataTypeName = "NUMBER";
+						literalInferredDataTypeName = "NUMBER";
 						literalInferredDataType.Precision = GetNumberPrecision(tokenValue);
 						int? scale = null;
 						if (literalInferredDataType.Precision.HasValue)
@@ -145,7 +145,7 @@ namespace SqlPad.Oracle
 							break;
 						}
 
-						literalBasedDataTypeName = "DATE";
+						literalInferredDataTypeName = "DATE";
 						_columnDescription.Nullable = false;
 						break;
 					case Terminals.Timestamp:
@@ -154,14 +154,14 @@ namespace SqlPad.Oracle
 							break;
 						}
 
-						literalBasedDataTypeName = "TIMESTAMP";
+						literalInferredDataTypeName = "TIMESTAMP";
 						_columnDescription.Nullable = false;
 						break;
 				}
 
-				if (literalBasedDataTypeName != null)
+				if (literalInferredDataTypeName != null)
 				{
-					literalInferredDataType.FullyQualifiedName = OracleObjectIdentifier.Create(null, literalBasedDataTypeName);
+					literalInferredDataType.FullyQualifiedName = OracleObjectIdentifier.Create(null, literalInferredDataTypeName);
 					_columnDescription.DataType = literalInferredDataType;
 				}
 			}

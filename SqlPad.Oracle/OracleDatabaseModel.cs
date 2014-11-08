@@ -614,7 +614,8 @@ namespace SqlPad.Oracle
 				var value = parameter.Value;
 				if (parameter.Value is OracleDecimal)
 				{
-					value = OracleNumber.SetOutputFormat((OracleDecimal)parameter.Value);
+					var oracleDecimal = OracleNumber.SetOutputFormat((OracleDecimal)parameter.Value);
+					value = oracleDecimal.IsNull ? String.Empty : oracleDecimal.ToString();
 				}
 
 				if (parameter.Value is OracleDate)

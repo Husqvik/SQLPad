@@ -651,7 +651,22 @@ FROM
 			items[0].Parameters.Count.ShouldBe(2);
 			items[0].CurrentParameterIndex.ShouldBe(1);
 			items[0].ReturnedDatatype.ShouldNotBe(null);
-			items[0].IsBuiltInFunction.ShouldBe(true);
+			items[0].IsParameterMetadataAvailable.ShouldBe(true);
+		}
+
+		[Test(Description = @"")]
+		public void TestResolveFunctionOverloadsInUserDefinedTypeConstructor()
+		{
+			const string query1 = @"SELECT SYS.ODCIARGDESC() FROM DUAL";
+
+			_documentRepository.UpdateStatements(query1);
+			var items = _codeCompletionProvider.ResolveFunctionOverloads(_documentRepository, 23).ToList();
+			items.Count.ShouldBe(1);
+			items[0].Name.ShouldBe("SYS.ODCIARGDESC");
+			items[0].Parameters.Count.ShouldBe(7);
+			items[0].CurrentParameterIndex.ShouldBe(0);
+			items[0].ReturnedDatatype.ShouldBe("SYS.ODCIARGDESC");
+			items[0].IsParameterMetadataAvailable.ShouldBe(true);
 		}
 
 		[Test(Description = @"")]
@@ -673,7 +688,7 @@ FROM
 			_documentRepository.UpdateStatements(query1);
 			var items = _codeCompletionProvider.ResolveFunctionOverloads(_documentRepository, 11).ToList();
 			items.Count.ShouldBe(1);
-			items[0].IsBuiltInFunction.ShouldBe(false);
+			items[0].IsParameterMetadataAvailable.ShouldBe(false);
 		}
 
 		[Test(Description = @"")]
@@ -684,6 +699,17 @@ FROM
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 11).ToList();
 			items.Count.ShouldBe(7);
 			items[0].Text.ShouldBe("\"CaseSensitiveColumn\"");
+		}
+
+		[Test(Description = @"")]
+		public void TestPackageFunctionSuggestionWhenPackageContainsMoreFunctions()
+		{
+			const string query1 = @"SELECT DBMS_R FROM DUAL";
+
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 13).ToList();
+			items.Count.ShouldBe(1);
+			items[0].Name.ShouldBe("DBMS_RANDOM");
+			items[0].Text.ShouldBe("DBMS_RANDOM.");
 		}
 
 		[Test(Description = @"")]

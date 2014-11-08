@@ -444,6 +444,51 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestObjectTypeConstructorToolTip()
+		{
+			const string query = "SELECT SYS.ODCIARGDESC() FROM DUAL";
+			_documentRepository.UpdateStatements(query);
+
+			var functionOverloads = _codeCompletionProvider.ResolveFunctionOverloads(_documentRepository, 23);
+			var functionOverloadList = new FunctionOverloadList { FunctionOverloads = functionOverloads };
+			functionOverloadList.ViewOverloads.Items.Count.ShouldBe(1);
+			functionOverloadList.ViewOverloads.Items[0].ShouldBeTypeOf(typeof(TextBlock));
+
+			var itemText = GetTextFromTextBlock((TextBlock)functionOverloadList.ViewOverloads.Items[0]);
+			itemText.ShouldBe("SYS.ODCIARGDESC(ARGTYPE: NUMBER, TABLENAME: VARCHAR2, TABLESCHEMA: VARCHAR2, COLNAME: VARCHAR2, TABLEPARTITIONLOWER: VARCHAR2, TABLEPARTITIONUPPER: VARCHAR2, CARDINALITY: NUMBER) RETURN: SYS.ODCIARGDESC");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestCollectionTypeConstructorToolTip()
+		{
+			const string query = "SELECT SYS.ODCIARGDESCLIST() FROM DUAL";
+			_documentRepository.UpdateStatements(query);
+
+			var functionOverloads = _codeCompletionProvider.ResolveFunctionOverloads(_documentRepository, 27);
+			var functionOverloadList = new FunctionOverloadList { FunctionOverloads = functionOverloads };
+			functionOverloadList.ViewOverloads.Items.Count.ShouldBe(1);
+			functionOverloadList.ViewOverloads.Items[0].ShouldBeTypeOf(typeof(TextBlock));
+
+			var itemText = GetTextFromTextBlock((TextBlock)functionOverloadList.ViewOverloads.Items[0]);
+			itemText.ShouldBe("SYS.ODCIARGDESCLIST(array of SYS.ODCIARGDESC) RETURN: SYS.ODCIARGDESCLIST");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestPrimitiveTypeCollectionTypeConstructorToolTip()
+		{
+			const string query = "SELECT SYS.ODCIRAWLIST() FROM DUAL";
+			_documentRepository.UpdateStatements(query);
+
+			var functionOverloads = _codeCompletionProvider.ResolveFunctionOverloads(_documentRepository, 23);
+			var functionOverloadList = new FunctionOverloadList { FunctionOverloads = functionOverloads };
+			functionOverloadList.ViewOverloads.Items.Count.ShouldBe(1);
+			functionOverloadList.ViewOverloads.Items[0].ShouldBeTypeOf(typeof(TextBlock));
+
+			var itemText = GetTextFromTextBlock((TextBlock)functionOverloadList.ViewOverloads.Items[0]);
+			itemText.ShouldBe("SYS.ODCIRAWLIST(array of RAW) RETURN: SYS.ODCIRAWLIST");
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestNoParenthesisFunctionWithParentheses()
 		{
 			const string query = "SELECT SESSIONTIMEZONE() FROM DUAL";

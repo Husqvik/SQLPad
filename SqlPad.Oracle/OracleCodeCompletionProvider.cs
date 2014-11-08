@@ -39,9 +39,10 @@ namespace SqlPad.Oracle
 			var semanticModel = (OracleStatementSemanticModel)sqlDocumentRepository.ValidationModels[node.Statement].SemanticModel;
 			var queryBlock = semanticModel.GetQueryBlock(cursorPosition);
 
-			var functionOverloads = ResolveFunctionOverloads(queryBlock.AllProgramReferences, node, cursorPosition);
+			var referenceContainers = GetReferenceContainers(semanticModel.MainObjectReferenceContainer, queryBlock);
+			var functionOverloadSource = ResolveFunctionOverloads(referenceContainers, node, cursorPosition);
 
-			return functionOverloads.Select(
+			var functionOverloads = functionOverloadSource.Select(
 				fo =>
 				{
 					var metadata = fo.FunctionMetadata;
@@ -50,26 +51,44 @@ namespace SqlPad.Oracle
 						new FunctionOverloadDescription
 						{
 							Name = metadata.Identifier.FullyQualifiedIdentifier,
-							Parameters = metadata.Parameters.Skip(1).Select(p => p.Name + ": " + p.DataType).ToArray(),
+							Parameters = metadata.Parameters.Skip(1)
+								.Select(p => String.Format("{0}{1}", p.Name, String.IsNullOrEmpty(p.DataType) ? null : String.Format(": {0}", p.DataType)))
+								.ToArray(),
 							CurrentParameterIndex = fo.CurrentParameterIndex,
 							ReturnedDatatype = returnParameter == null ? null : returnParameter.DataType,
-							IsBuiltInFunction = !String.IsNullOrEmpty(metadata.Identifier.Owner)
+							IsParameterMetadataAvailable = !String.IsNullOrEmpty(metadata.Identifier.Owner)
 						};
-				})
-				.ToArray();
+				});
+			
+			return functionOverloads.ToArray();
 		}
 
-		private IEnumerable<OracleCodeCompletionFunctionOverload> ResolveFunctionOverloads(IEnumerable<OracleProgramReference> programReferences, StatementGrammarNode node, int cursorPosition)
+		private ICollection<OracleReferenceContainer> GetReferenceContainers(OracleReferenceContainer mainContainer, OracleQueryBlock currentQueryBlock)
 		{
-			var programReference = programReferences.Where(f => node.HasAncestor(f.ParameterListNode))
+			var referenceContainers = new List<OracleReferenceContainer> { mainContainer };
+			if (currentQueryBlock != null)
+			{
+				referenceContainers.Add(currentQueryBlock);
+				referenceContainers.AddRange(currentQueryBlock.Columns);
+			}
+
+			return referenceContainers;
+		}
+
+		private IEnumerable<OracleCodeCompletionFunctionOverload> ResolveFunctionOverloads(IEnumerable<OracleReferenceContainer> referenceContainers, StatementGrammarNode node, int cursorPosition)
+		{
+			var programReferenceBase = referenceContainers.SelectMany(c => ((IEnumerable<OracleProgramReferenceBase>)c.ProgramReferences).Concat(c.TypeReferences)).Where(f => node.HasAncestor(f.ParameterListNode))
+			//var programReference = referenceContainers.SelectMany(c => c.ProgramReferences).Where(f => node.HasAncestor(f.ParameterListNode))
 				.OrderByDescending(r => r.RootNode.Level)
 				.FirstOrDefault();
-			
-			if (programReference == null || programReference.Metadata == null)
+
+			if (programReferenceBase == null || programReferenceBase.Metadata == null)
+			{
 				return Enumerable.Empty<OracleCodeCompletionFunctionOverload>();
+			}
 
 			var currentParameterIndex = -1;
-			if (programReference.ParameterNodes != null)
+			if (programReferenceBase.ParameterNodes != null)
 			{
 				var lookupNode = node.Type == NodeType.Terminal ? node : node.GetNearestTerminalToPosition(cursorPosition);
 
@@ -88,19 +107,30 @@ namespace SqlPad.Oracle
 
 				if (lookupNode != null)
 				{
-					var parameterNode = programReference.ParameterNodes.FirstOrDefault(f => lookupNode.HasAncestor(f));
+					var parameterNode = programReferenceBase.ParameterNodes.FirstOrDefault(f => lookupNode.HasAncestor(f));
 					currentParameterIndex = parameterNode == null
-						? programReference.ParameterNodes.Count
-						: programReference.ParameterNodes.ToList().IndexOf(parameterNode);
+						? programReferenceBase.ParameterNodes.Count
+						: programReferenceBase.ParameterNodes.ToList().IndexOf(parameterNode);
 				}
 			}
 
-			return programReference.Container.SemanticModel.DatabaseModel.AllFunctionMetadata[programReference.Metadata.Identifier]
-				.Where(m => m.Parameters.Count == 0 || currentParameterIndex < m.Parameters.Count - 1)
+			IEnumerable<OracleFunctionMetadata> matchedMetadata;
+			var typeReference = programReferenceBase as OracleTypeReference;
+			if (typeReference == null)
+			{
+				matchedMetadata = programReferenceBase.Container.SemanticModel.DatabaseModel.AllFunctionMetadata[programReferenceBase.Metadata.Identifier]
+					.Where(m => m.Parameters.Count == 0 || currentParameterIndex < m.Parameters.Count - 1);
+			}
+			else
+			{
+				matchedMetadata = Enumerable.Repeat(typeReference.Metadata, 1);
+			}
+
+			return matchedMetadata
 				.Select(m =>
 					new OracleCodeCompletionFunctionOverload
 					{
-						ProgramReference = programReference,
+						ProgramReference = programReferenceBase,
 						FunctionMetadata = m,
 						CurrentParameterIndex = currentParameterIndex
 					});
@@ -168,12 +198,7 @@ namespace SqlPad.Oracle
 			var cursorAtLastTerminal = cursorPosition <= currentNode.SourcePosition.IndexEnd + 1;
 			var terminalToReplace = cursorAtLastTerminal ? currentNode : null;
 
-			var referenceContainers = new List<OracleReferenceContainer> { semanticModel.MainObjectReferenceContainer };
-			if (completionType.CurrentQueryBlock != null)
-			{
-				referenceContainers.Add(completionType.CurrentQueryBlock);
-				referenceContainers.AddRange(completionType.CurrentQueryBlock.Columns);
-			}
+			var referenceContainers = GetReferenceContainers(semanticModel.MainObjectReferenceContainer, completionType.CurrentQueryBlock);
 
 			var extraOffset = currentNode.SourcePosition.IndexStart + currentNode.SourcePosition.Length == cursorPosition && currentNode.Id != Terminals.LeftParenthesis ? 1 : 0;
 
@@ -240,8 +265,7 @@ namespace SqlPad.Oracle
 			{
 				completionItems = completionItems.Concat(GenerateSelectListItems(currentNode, referenceContainers, cursorPosition, oracleDatabaseModel, completionType, forcedInvokation));
 
-				var programReferences = referenceContainers.SelectMany(c => c.ProgramReferences);
-				var functionOverloads = ResolveFunctionOverloads(programReferences, currentNode, cursorPosition);
+				var functionOverloads = ResolveFunctionOverloads(referenceContainers, currentNode, cursorPosition);
 				var specificFunctionParameterCodeCompletionItems = CodeCompletionSearchHelper.ResolveSpecificFunctionParameterCodeCompletionItems(currentNode, functionOverloads, oracleDatabaseModel);
 				completionItems = completionItems.Concat(specificFunctionParameterCodeCompletionItems);
 			}
@@ -449,9 +473,11 @@ namespace SqlPad.Oracle
 					.Concat(suggestedFunctions);
 
 				suggestedFunctions = GenerateCodeItems(OracleCodeCompletionCategory.Package, nodeToReplace, 0, addParameterList, databaseModel, localSchemaPackageMatcher)
+					.Distinct()
 					.Concat(suggestedFunctions);
 
 				suggestedFunctions = GenerateCodeItems(OracleCodeCompletionCategory.Package, nodeToReplace, 0, addParameterList, databaseModel, localSynonymPackageMatcher, publicSynonymPackageMatcher)
+					.Distinct()
 					.Concat(suggestedFunctions);
 			}
 
@@ -830,7 +856,7 @@ namespace SqlPad.Oracle
 
 	internal class OracleCodeCompletionFunctionOverload
 	{
-		public OracleProgramReference ProgramReference { get; set; }
+		public OracleProgramReferenceBase ProgramReference { get; set; }
 
 		public OracleFunctionMetadata FunctionMetadata { get; set; }
 

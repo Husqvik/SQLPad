@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -12,13 +13,19 @@ namespace SqlPad.Oracle
 		
 		public StatementGrammarNode AnalyticClauseNode { get; set; }
 		
-		public OracleFunctionMetadata Metadata { get; set; }
+		public override OracleFunctionMetadata Metadata { get; set; }
 	}
 
 	[DebuggerDisplay("OracleTypeReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; Type={ObjectNode.Token.Value})")]
 	public class OracleTypeReference : OracleProgramReferenceBase
 	{
 		public override string Name { get { return ObjectNode.Token.Value; } }
+
+		public override OracleFunctionMetadata Metadata
+		{
+			get { return ((OracleTypeBase)SchemaObject.GetTargetSchemaObject()).GetConstructorMetadata(); }
+			set { throw new NotSupportedException("Metadata cannot be set. It is inferred from type attributes"); }
+		}
 	}
 
 	[DebuggerDisplay("OracleSequenceReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; Sequence={ObjectNode.Token.Value})")]
@@ -42,5 +49,7 @@ namespace SqlPad.Oracle
 		public StatementGrammarNode ParameterListNode { get; set; }
 
 		public IList<StatementGrammarNode> ParameterNodes { get; set; }
+
+		public abstract OracleFunctionMetadata Metadata { get; set; }
 	}
 }

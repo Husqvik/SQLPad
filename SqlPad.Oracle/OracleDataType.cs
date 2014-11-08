@@ -17,5 +17,46 @@ namespace SqlPad.Oracle
 		public DataUnit Unit { get; set; }
 
 		public bool IsPrimitive { get { return String.IsNullOrEmpty(FullyQualifiedName.Owner); } }
+
+		public static string ResolveFullTypeName(OracleDataType dataType, int? characterSize = null)
+		{
+				if (!dataType.IsPrimitive)
+				{
+					return dataType.FullyQualifiedName.ToString();
+				}
+
+				var name = dataType.FullyQualifiedName.Name.Trim('"');
+				var effectiveSize = String.Empty;
+				switch (name)
+				{
+					case "NVARCHAR2":
+					case "NVARCHAR":
+					case "VARCHAR2":
+					case "VARCHAR":
+					case "NCHAR":
+					case "CHAR":
+						if (characterSize.HasValue)
+						{
+							var unit = dataType.Unit == DataUnit.Byte ? " BYTE" : " CHAR";
+							effectiveSize = String.Format("({0}{1})", characterSize, dataType.Unit == DataUnit.NotApplicable ? null : unit);
+						}
+
+						name = String.Format("{0}{1}", name, effectiveSize);
+						break;
+					case "FLOAT":
+					case "NUMBER":
+						var decimalScale = dataType.Scale > 0 ? String.Format(", {0}", dataType.Scale) : null;
+						if (dataType.Precision > 0 || dataType.Scale > 0)
+						{
+							name = String.Format("{0}({1}{2})", name, dataType.Precision == null ? "*" : Convert.ToString(dataType.Precision), decimalScale);
+						}
+						break;
+					case "RAW":
+						name = String.Format("{0}({1})", name, dataType.Length);
+						break;
+				}
+
+				return name;
+		}
 	}
 }

@@ -24,7 +24,7 @@ namespace SqlPad
 				{
 					var textBlock = new TextBlock();
 
-					if (!overloadDescription.IsBuiltInFunction)
+					if (!overloadDescription.IsParameterMetadataAvailable)
 					{
 						textBlock.Inlines.Add("Parameter metadata is not availale. ");
 						ViewOverloads.Items.Add(textBlock);

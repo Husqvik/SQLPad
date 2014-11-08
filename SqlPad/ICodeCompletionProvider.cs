@@ -13,13 +13,13 @@ namespace SqlPad
 	{
 		public string Name { get; set; }
 
-		public ICollection<string> Parameters { get; set; }
+		public IList<string> Parameters { get; set; }
 
 		public int CurrentParameterIndex { get; set; }
 		
 		public string ReturnedDatatype { get; set; }
 		
-		public bool IsBuiltInFunction { get; set; }
+		public bool IsParameterMetadataAvailable { get; set; }
 	}
 
 	public interface ICodeCompletionItem

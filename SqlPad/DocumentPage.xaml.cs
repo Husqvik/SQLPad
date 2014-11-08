@@ -611,20 +611,20 @@ namespace SqlPad
 			}
 			else
 			{
-				await AppendRows(innerTask.Result);
+				AppendRows(innerTask.Result);
+
+				if (_gatherExecutionStatistics)
+				{
+					_pageModel.SessionExecutionStatistics.MergeWith(await DatabaseModel.GetExecutionStatisticsAsync(CancellationToken.None));
+				}
 			}
 		}
 
-		private async Task AppendRows(IEnumerable<object[]> rows)
+		private void AppendRows(IEnumerable<object[]> rows)
 		{
 			_pageModel.ResultRowItems.AddRange(rows);
 			
 			TextMoreRowsExist.Visibility = DatabaseModel.CanFetch ? Visibility.Visible : Visibility.Collapsed;
-
-			if (_gatherExecutionStatistics)
-			{
-				_pageModel.SessionExecutionStatistics.MergeWith(await DatabaseModel.GetExecutionStatisticsAsync(CancellationToken.None));
-			}
 		}
 
 		private void NavigateToQueryBlockRoot(object sender, ExecutedRoutedEventArgs args)
@@ -734,12 +734,16 @@ namespace SqlPad
 			ResultGrid.HeadersVisibility = DataGridHeadersVisibility.None;
 
 			_pageModel.AffectedRowCount = -1;
+
+			TabControlResult.SelectedIndex = 0;
 		}
 
 		private async Task ExecuteDatabaseCommand(StatementExecutionModel executionModel)
 		{
+			var previousTabControlResultSelectedIndex = TabControlResult.SelectedIndex;
+
 			InitializeViewBeforeCommandExecution();
-			
+
 			Task<StatementExecutionResult> innerTask = null;
 			using (_cancellationTokenSource = new CancellationTokenSource())
 			{
@@ -758,9 +762,14 @@ namespace SqlPad
 					return;
 				}
 
-				await ShowExecutionStatistics();
-
 				UpdateStatusBarElapsedExecutionTime(actionResult.Elapsed);
+
+				if (_gatherExecutionStatistics)
+				{
+					_pageModel.TextExecutionPlan = await DatabaseModel.GetActualExecutionPlanAsync(_cancellationTokenSource.Token);
+					_pageModel.SessionExecutionStatistics.MergeWith(await DatabaseModel.GetExecutionStatisticsAsync(_cancellationTokenSource.Token));
+					TabControlResult.SelectedIndex = previousTabControlResultSelectedIndex;
+				}
 
 				if (innerTask.Result.ColumnHeaders.Count == 0)
 				{
@@ -773,34 +782,12 @@ namespace SqlPad
 						_pageModel.AffectedRowCount = innerTask.Result.AffectedRowCount;
 					}
 
-					if (_gatherExecutionStatistics)
-					{
-						_pageModel.SessionExecutionStatistics.MergeWith(await DatabaseModel.GetExecutionStatisticsAsync(_cancellationTokenSource.Token));
-					}
-
 					return;
 				}
 
 				InitializeResultGrid(innerTask.Result.ColumnHeaders);
 
-				await AppendRows(innerTask.Result.InitialResultSet);
-			}
-		}
-
-		private async Task ShowExecutionStatistics()
-		{
-			if (_gatherExecutionStatistics)
-			{
-				_pageModel.TextExecutionPlan = await DatabaseModel.GetActualExecutionPlanAsync(_cancellationTokenSource.Token);
-
-				if (String.IsNullOrEmpty(_pageModel.TextExecutionPlan))
-				{
-					TabControlResult.SelectedIndex = 0;
-				}
-			}
-			else
-			{
-				TabControlResult.SelectedIndex = 0;
+				AppendRows(innerTask.Result.InitialResultSet);
 			}
 		}
 
@@ -1212,12 +1199,9 @@ namespace SqlPad
 					_multiNodeEditor = null;
 			}
 
-			if (e.Text.Length == 1 && _completionWindow != null)
+			if (e.Text.Length == 1 && _completionWindow != null && e.Text == "\t")
 			{
-				if (e.Text == " " || e.Text == "\t")
-				{
-					_completionWindow.CompletionList.RequestInsertion(e);
-				}
+				_completionWindow.CompletionList.RequestInsertion(e);
 			}
 		}
 
@@ -1391,7 +1375,7 @@ namespace SqlPad
 			var menuItem =
 				new MenuItem
 				{
-					Header = action.Name,
+					Header = action.Name.Replace("_", "__"),
 					Command = new ContextActionCommand(Editor, action),
 				};
 

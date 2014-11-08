@@ -182,6 +182,10 @@ namespace SqlPad.Oracle.Test
 			randomStringFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("LEN", 2, ParameterDirection.Input, "NUMBER", false));
 			randomStringFunctionMetadata.Owner = dbmsRandom;
 			dbmsRandom.Functions.Add(randomStringFunctionMetadata);
+			var randomStringNormalFunctionMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues("SYS", "DBMS_RANDOM", "NORMAL"), false, false, false, false, true, false, null, null, AuthId.Definer, OracleFunctionMetadata.DisplayTypeNormal, false);
+			randomStringNormalFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "NUMBER", false));
+			randomStringNormalFunctionMetadata.Owner = dbmsRandom;
+			dbmsRandom.Functions.Add(randomStringNormalFunctionMetadata);
 
 			synonym =
 				new OracleSynonym
@@ -656,6 +660,38 @@ namespace SqlPad.Oracle.Test
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(OwnerNameSys, "\"XMLTYPE\""),
 				IsValid = true
+			},
+			new OracleTypeCollection
+			{
+				FullyQualifiedName = OracleObjectIdentifier.Create(OwnerNameSys, "\"ODCIARGDESCLIST\""),
+				IsValid = true,
+				CollectionType = OracleCollectionType.VarryingArray,
+				ElementTypeIdentifier = OracleObjectIdentifier.Create(OwnerNameSys, "\"ODCIARGDESC\""),
+				UpperBound = 32767
+			},
+			new OracleTypeCollection
+			{
+				FullyQualifiedName = OracleObjectIdentifier.Create(OwnerNameSys, "\"ODCIRAWLIST\""),
+				IsValid = true,
+				CollectionType = OracleCollectionType.VarryingArray,
+				ElementTypeIdentifier = OracleObjectIdentifier.Create(null, "\"RAW\""),
+				UpperBound = 32767
+			},
+			new OracleTypeObject
+			{
+				FullyQualifiedName = OracleObjectIdentifier.Create(OwnerNameSys, "\"ODCIARGDESC\""),
+				IsValid = true,
+				Attributes =
+					new []
+					{
+						new OracleTypeAttribute { Name = "\"ARGTYPE\"", DataType = BuildPrimitiveDataType("NUMBER") },
+						new OracleTypeAttribute { Name = "\"TABLENAME\"", DataType = BuildPrimitiveDataType("VARCHAR2", 128, dataUnit: DataUnit.Byte) },
+						new OracleTypeAttribute { Name = "\"TABLESCHEMA\"", DataType = BuildPrimitiveDataType("VARCHAR2", 128, dataUnit: DataUnit.Byte) },
+						new OracleTypeAttribute { Name = "\"COLNAME\"", DataType = BuildPrimitiveDataType("VARCHAR2", 4000, dataUnit: DataUnit.Byte) },
+						new OracleTypeAttribute { Name = "\"TABLEPARTITIONLOWER\"", DataType = BuildPrimitiveDataType("VARCHAR2", 128, dataUnit: DataUnit.Byte) },
+						new OracleTypeAttribute { Name = "\"TABLEPARTITIONUPPER\"", DataType = BuildPrimitiveDataType("VARCHAR2", 128, dataUnit: DataUnit.Byte) },
+						new OracleTypeAttribute { Name = "\"CARDINALITY\"", DataType = BuildPrimitiveDataType("NUMBER") }
+					}
 			},
 			new OracleTypeObject
 			{
