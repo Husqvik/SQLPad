@@ -152,7 +152,16 @@ namespace SqlPad.Oracle
 				if (typeReference.DatabaseLinkNode == null)
 				{
 					var semanticError = GetCompilationError(typeReference);
-					validationModel.ProgramNodeValidity[typeReference.ObjectNode] = new InvalidNodeValidationData(semanticError) { IsRecognized = true, Node = typeReference.ObjectNode };
+					var node = typeReference.ObjectNode;
+					var targetTypeObject = typeReference.SchemaObject.GetTargetSchemaObject() as OracleTypeObject;
+					if (semanticError == OracleSemanticErrorType.None && targetTypeObject != null &&
+						targetTypeObject.TypeCode == OracleTypeBase.TypeCodeObject && targetTypeObject.Attributes.Count != typeReference.ParameterNodes.Count)
+					{
+						semanticError = OracleSemanticErrorType.InvalidParameterCount;
+						node = typeReference.ParameterListNode;
+					}
+
+					validationModel.ProgramNodeValidity[node] = new InvalidNodeValidationData(semanticError) { IsRecognized = true, Node = node };
 				}
 				else
 				{

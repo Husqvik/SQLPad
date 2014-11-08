@@ -660,7 +660,7 @@ namespace SqlPad.Oracle.Test
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(OwnerNameSys, "\"XMLTYPE\""),
 				IsValid = true
-			},
+			}.WithXmlTypeCode(),
 			new OracleTypeCollection
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(OwnerNameSys, "\"ODCIARGDESCLIST\""),

@@ -1067,6 +1067,44 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		}
 
 		[Test(Description = @"")]
+		public void TestObjectTypeConstructorWithInvalidParameterCount()
+		{
+			const string sqlText = "SELECT SYS.ODCIARGDESC(1) FROM DUAL";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var nodeValidityDictionary = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var programNodeValidity = nodeValidityDictionary.Values.ToList();
+			programNodeValidity.Count.ShouldBe(1);
+			programNodeValidity[0].IsRecognized.ShouldBe(true);
+			programNodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidParameterCount);
+			programNodeValidity[0].Node.ShouldNotBe(null);
+			var invalidTerminals = programNodeValidity[0].Node.Terminals.ToArray();
+			invalidTerminals.Length.ShouldBe(3);
+			invalidTerminals[0].Token.Value.ShouldBe("(");
+			invalidTerminals[1].Token.Value.ShouldBe("1");
+			invalidTerminals[2].Token.Value.ShouldBe(")");
+		}
+
+		[Test(Description = @"")]
+		public void TestCollectionTypeConstructorWithNoParameters()
+		{
+			const string sqlText = "SELECT SYS.ODCIARGDESCLIST() FROM DUAL";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var nodeValidityDictionary = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var programNodeValidity = nodeValidityDictionary.Values.ToList();
+			programNodeValidity.Count.ShouldBe(1);
+			programNodeValidity[0].IsRecognized.ShouldBe(true);
+			programNodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
+		}
+
+		[Test(Description = @"")]
 		public void TestColumnValidityNodesWithSequence()
 		{
 			const string sqlText = "SELECT TEST_SEQ.NEXTVAL, HUSQVIK.TEST_SEQ.\"NEXTVAL\", SYNONYM_TO_TEST_SEQ.CURRVAL FROM DUAL WHERE TEST_SEQ.\"CURRVAL\" < TEST_SEQ.NEXTVAL";

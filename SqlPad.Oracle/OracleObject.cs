@@ -195,12 +195,20 @@ namespace SqlPad.Oracle
 	[DebuggerDisplay("OracleTypeObject (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
 	public class OracleTypeObject : OracleTypeBase
 	{
+		private string _typeCode = TypeCodeObject;
+
 		public OracleTypeObject()
 		{
 			Attributes = new List<OracleTypeAttribute>();
 		}
 
-		public override string TypeCode { get { return TypeCodeObject; } }
+		internal OracleTypeObject WithXmlTypeCode()
+		{
+			_typeCode = TypeCodeXml;
+			return this;
+		}
+
+		public override string TypeCode { get { return _typeCode; } }
 
 		public IList<OracleTypeAttribute> Attributes { get; set; }
 

@@ -144,7 +144,7 @@ namespace SqlPad.Oracle
 			oracleTypeBaseType.AddSubType(102, typeof(OracleTypeCollection));
 			var oracleObjectTypeType = Serializer.Add(typeof(OracleTypeObject), false);
 			oracleObjectTypeType.AsReferenceDefault = true;
-			oracleObjectTypeType.Add("Attributes");
+			oracleObjectTypeType.Add("_typeCode", "Attributes");
 
 			var oracleObjectTypeAttributeType = Serializer.Add(typeof(OracleTypeAttribute), false);
 			oracleObjectTypeAttributeType.AsReferenceDefault = true;

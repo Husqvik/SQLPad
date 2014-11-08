@@ -61,8 +61,6 @@ namespace SqlPad.Oracle
 					return new OracleSequence();
 				case OracleSchemaObjectType.Package:
 					return new OraclePackage();
-				case OracleSchemaObjectType.Type:
-					return new OracleTypeObject();
 				default:
 					throw new InvalidOperationException(String.Format("Object type '{0}' not supported. ", objectType));
 			}

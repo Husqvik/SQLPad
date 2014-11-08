@@ -450,11 +450,13 @@ namespace SqlPad.Oracle
 			switch (typeType)
 			{
 				case OracleTypeBase.TypeCodeXml:
+					schemaType = new OracleTypeObject().WithXmlTypeCode();
+					break;
 				case OracleTypeBase.TypeCodeObject:
-					schemaType = new OracleTypeObject(); // TODO: Add members
+					schemaType = new OracleTypeObject();
 					break;
 				case OracleTypeBase.TypeCodeCollection:
-					schemaType = new OracleTypeCollection(); // TODO: Add item type
+					schemaType = new OracleTypeCollection();
 					break;
 				default:
 					throw new NotSupportedException(string.Format("Type '{0}' is not supported. ", typeType));
