@@ -1327,7 +1327,7 @@ namespace SqlPad.Oracle
 			
 		private static readonly HashSet<string> IdentifiersInternal = new HashSet<string> { Terminals.BindVariableIdentifier, Terminals.DatabaseLinkIdentifier, Terminals.DataTypeIdentifier, Terminals.Identifier, Terminals.MemberFunctionIdentifier, Terminals.ObjectIdentifier, Terminals.ObjectIdentifierIndex, Terminals.ParameterIdentifier, Terminals.SchemaIdentifier };
 
-		private static readonly HashSet<string> Keywords = new HashSet<string> { "ACCESS", "ADD", "ALL", "ALTER", "AND", "ANY", "ASC", "AUDIT", "BETWEEN", "BY", "CHAR", "CHECK", "CLUSTER", "COLUMN", "COMMENT", "COMPRESS", "CONNECT", "CREATE", "CURRENT", "DATE", "DECIMAL", "DEFAULT", "DELETE", "DESC", "DISTINCT", "DROP", "ELSE", "EXCLUSIVE", "EXISTS", "FLOAT", "FOR", "FROM", "GRANT", "GROUP", "HAVING", "IDENTIFIED", "IMMEDIATE", "IN", "INDEX", "INSERT", "INTEGER", "INTERSECT", "INTO", "IS", "LEVEL", "LIKE", "LOCK", "LONG", "MINUS", "MODE", "NOCOMPRESS", "NOT", "NOWAIT", "NULL", "NUMBER", "OF", "ON", "OPTION", "OR", "ORDER", "PCTFREE", "PRIOR", "PUBLIC", "RAW", "RENAME", "RESOURCE", "REVOKE", "ROW", "ROWID", "ROWNUM", "ROWS", "SELECT", "SET", "SHARE", "SIZE", "SMALLINT", "SOME", "START", "SYNONYM", "SYSDATE", "TABLE", "THEN", "TO", "TRIGGER", "UNION", "UNIQUE", "UPDATE", "USER", "VALUES", "VARCHAR", "VARCHAR2", "WHERE", "VIEW", "WITH" };
+		private static readonly HashSet<string> ReservedWords = new HashSet<string> { "ACCESS", "ADD", "ALL", "ALTER", "AND", "ANY", "ASC", "AUDIT", "BETWEEN", "BY", "CHAR", "CHECK", "CLUSTER", "COLUMN", "COMMENT", "COMPRESS", "CONNECT", "CREATE", "CURRENT", "DATE", "DECIMAL", "DEFAULT", "DELETE", "DESC", "DISTINCT", "DROP", "ELSE", "EXCLUSIVE", "EXISTS", "FLOAT", "FOR", "FROM", "GRANT", "GROUP", "HAVING", "IDENTIFIED", "IMMEDIATE", "IN", "INDEX", "INSERT", "INTEGER", "INTERSECT", "INTO", "IS", "LEVEL", "LIKE", "LOCK", "LONG", "MINUS", "MODE", "NOCOMPRESS", "NOT", "NOWAIT", "NULL", "NUMBER", "OF", "ON", "OPTION", "OR", "ORDER", "PCTFREE", "PRIOR", "PUBLIC", "RAW", "RENAME", "RESOURCE", "REVOKE", "ROW", "ROWID", "ROWNUM", "ROWS", "SELECT", "SET", "SHARE", "SIZE", "SMALLINT", "SOME", "START", "SYNONYM", "SYSDATE", "TABLE", "THEN", "TO", "TRIGGER", "UNION", "UNIQUE", "UPDATE", "USER", "VALUES", "VARCHAR", "VARCHAR2", "WHERE", "VIEW", "WITH" };
 		
 		private static readonly HashSet<string> LiteralsInternal = new HashSet<string> { Terminals.IntegerLiteral, Terminals.NumberLiteral, Terminals.StringLiteral };
 
@@ -1393,9 +1393,9 @@ namespace SqlPad.Oracle
 			get { return IdentifiersInternal; }
 		}
 
-		public static bool IsKeyword(this string value)
+		public static bool IsReservedWord(this string value)
 		{
-			return Keywords.Contains(value.ToUpperInvariant());
+			return ReservedWords.Contains(value.ToUpperInvariant());
 		}
 
 		public static bool IsIdentifier(this string terminalId)

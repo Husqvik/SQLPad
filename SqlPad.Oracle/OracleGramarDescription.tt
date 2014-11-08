@@ -51,7 +51,7 @@ namespace SqlPad.Oracle
 		var identifierTerminalIds = terminalElements.Where(e => e.Attribute("Id").Value.Contains("Identifier")).Select(e => e.Attribute("Id").Value).OrderBy(id => id);
 		var aliasTerminalIds = terminalElements.Where(e => e.Attribute("Id").Value.Contains("Alias")).Select(e => e.Attribute("Id").Value).OrderBy(id => id);
 		var literalTerminalIds = terminalElements.Where(e => e.Attribute("Id").Value.Contains("Literal")).Select(e => e.Attribute("Id").Value).OrderBy(id => id);
-		var keywords = terminalElements.Where(e => e.Attribute("IsKeyword") != null && e.Attribute("IsKeyword").Value.ToLowerInvariant() == "true").Select(e => "\"" + e.Attribute("Value").Value.ToUpperInvariant() + "\"").OrderBy(id => id);
+		var reservedWords = terminalElements.Where(e => e.Attribute("IsKeyword") != null && e.Attribute("IsKeyword").Value.ToLowerInvariant() == "true").Select(e => "\"" + e.Attribute("Value").Value.ToUpperInvariant() + "\"").OrderBy(id => id);
 #>
 
 		/// <summary>
@@ -79,7 +79,7 @@ namespace SqlPad.Oracle
 			
 		private static readonly HashSet<string> IdentifiersInternal = new HashSet<string> { <#= String.Join(", ", identifierTerminalIds.Select(id => "Terminals." + id)) #> };
 
-		private static readonly HashSet<string> Keywords = new HashSet<string> { <#= String.Join(", ", keywords) #> };
+		private static readonly HashSet<string> ReservedWords = new HashSet<string> { <#= String.Join(", ", reservedWords) #> };
 		
 		private static readonly HashSet<string> LiteralsInternal = new HashSet<string> { <#= String.Join(", ", literalTerminalIds.Select(id => "Terminals." + id)) #> };
 
@@ -145,9 +145,9 @@ namespace SqlPad.Oracle
 			get { return IdentifiersInternal; }
 		}
 
-		public static bool IsKeyword(this string value)
+		public static bool IsReservedWord(this string value)
 		{
-			return Keywords.Contains(value.ToUpperInvariant());
+			return ReservedWords.Contains(value.ToUpperInvariant());
 		}
 
 		public static bool IsIdentifier(this string terminalId)

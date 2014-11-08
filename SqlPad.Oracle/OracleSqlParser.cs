@@ -62,12 +62,12 @@ namespace SqlPad.Oracle
 		public static bool IsValidIdentifier(string identifier)
 		{
 			return Regex.IsMatch(identifier, Terminals[OracleGrammarDescription.Terminals.Identifier].RegexValue) &&
-			       !identifier.IsKeyword();
+			       !identifier.IsReservedWord();
 		}
 
 		public bool IsKeyword(string value)
 		{
-			return value.IsKeyword();
+			return value.IsReservedWord();
 		}
 
 		public bool IsLiteral(string terminalId)
@@ -670,7 +670,7 @@ namespace SqlPad.Oracle
 				}
 				else
 				{
-					tokenIsValid = terminal.RegexMatcher.IsMatch(currentToken.Value) && !currentToken.Value.IsKeyword();
+					tokenIsValid = terminal.RegexMatcher.IsMatch(currentToken.Value) && !currentToken.Value.IsReservedWord();
 				}
 
 				if (tokenIsValid)

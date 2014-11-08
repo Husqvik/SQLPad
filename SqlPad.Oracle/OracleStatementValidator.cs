@@ -285,7 +285,7 @@ namespace SqlPad.Oracle
 		public static bool IsValidBindVariableIdentifier(string identifier)
 		{
 			var validationResult = ValidateIdentifier(identifier, true);
-			return validationResult.IsValid && (validationResult.IsNumericBindVariable || OracleSqlParser.IsValidIdentifier(identifier)) && !identifier.IsKeyword();
+			return validationResult.IsValid && (validationResult.IsNumericBindVariable || OracleSqlParser.IsValidIdentifier(identifier)) && !identifier.IsReservedWord();
 		}
 
 		private static IdentifierValidationResult ValidateIdentifier(string identifier, bool validateNumericBindVariable)

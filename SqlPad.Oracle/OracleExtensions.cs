@@ -15,7 +15,7 @@ namespace SqlPad.Oracle
 			if (String.IsNullOrWhiteSpace(identifier))
 				return String.Empty;
 
-			var isNotKeyword = !identifier.CollidesWithKeyword();
+			var isNotKeyword = !identifier.CollidesWithReservedWord();
 
 			return isNotKeyword && identifier.IsQuotedWithoutCheck() && AllCharactersSupportSimpleIdentifier(identifier) ? identifier.Replace(QuoteCharacter, null) : identifier;
 		}
@@ -84,14 +84,14 @@ namespace SqlPad.Oracle
 			return identifier.ToSimpleIdentifier().Replace(QuoteCharacter, null).ToUpperInvariant();
 		}
 
-		public static bool CollidesWithKeyword(this string identifier)
+		public static bool CollidesWithReservedWord(this string identifier)
 		{
 			if (String.IsNullOrEmpty(identifier))
 				return false;
 
 			CheckQuotedIdentifier(identifier);
 
-			return identifier.Replace(QuoteCharacter, null).IsKeyword();
+			return identifier.Replace(QuoteCharacter, null).IsReservedWord();
 		}
 
 		public static bool IsQuoted(this string identifier)

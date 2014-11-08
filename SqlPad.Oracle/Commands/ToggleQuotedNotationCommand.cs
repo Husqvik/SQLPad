@@ -29,7 +29,7 @@ namespace SqlPad.Oracle.Commands
 		private IEnumerable<TextSegment> GetReplacedSegments()
 		{
 			bool? enableQuotes = null;
-			foreach (var identifier in CurrentQueryBlock.RootNode.Terminals.Where(t => t.Id.IsIdentifierOrAlias() && t.Token.Value.ToQuotedIdentifier() != t.Token.Value.ToSimpleIdentifier() && !t.Token.Value.CollidesWithKeyword()))
+			foreach (var identifier in CurrentQueryBlock.RootNode.Terminals.Where(t => t.Id.IsIdentifierOrAlias() && t.Token.Value.ToQuotedIdentifier() != t.Token.Value.ToSimpleIdentifier() && !t.Token.Value.CollidesWithReservedWord()))
 			{
 				if (!enableQuotes.HasValue)
 				{
