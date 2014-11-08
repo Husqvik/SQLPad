@@ -1516,7 +1516,7 @@ namespace SqlPad
 
 		private void ExportToCsv(object sender, ExecutedRoutedEventArgs args)
 		{
-			var dialog = new SaveFileDialog { Filter = "CSV Files (*.csv)|*.csv|All (*.*)|*" };
+			var dialog = new SaveFileDialog { Filter = "CSV Files (*.csv)|*.csv|All Files (*.*)|*" };
 			if (dialog.ShowDialog() != true)
 			{
 				return;

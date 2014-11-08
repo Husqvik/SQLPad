@@ -1286,6 +1286,19 @@ se";
 			items[0].StatementNode.ShouldBe(null);
 		}
 
+		[Test(Description = @"")]
+		public void TestDistinctFunctionSuggestionWhenMultipleOverloadExist()
+		{
+			const string statement = "SELECT TO_CH FROM DUAL";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 12).ToList();
+			items.Count.ShouldBe(1);
+			items[0].Name.ShouldBe("TO_CHAR");
+			items[0].Text.ShouldBe("TO_CHAR()");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.PackageFunction);
+			items[0].CaretOffset.ShouldBe(-1);
+			items[0].StatementNode.ShouldNotBe(null);
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)

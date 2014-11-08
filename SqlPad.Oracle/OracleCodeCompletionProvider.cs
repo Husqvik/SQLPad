@@ -473,11 +473,9 @@ namespace SqlPad.Oracle
 					.Concat(suggestedFunctions);
 
 				suggestedFunctions = GenerateCodeItems(OracleCodeCompletionCategory.Package, nodeToReplace, 0, addParameterList, databaseModel, localSchemaPackageMatcher)
-					.Distinct()
 					.Concat(suggestedFunctions);
 
 				suggestedFunctions = GenerateCodeItems(OracleCodeCompletionCategory.Package, nodeToReplace, 0, addParameterList, databaseModel, localSynonymPackageMatcher, publicSynonymPackageMatcher)
-					.Distinct()
 					.Concat(suggestedFunctions);
 			}
 
@@ -656,11 +654,14 @@ namespace SqlPad.Oracle
 			}
 
 			var quotedSchemaName = databaseModel.CurrentSchema.ToQuotedIdentifier();
+
 			return databaseModel.AllFunctionMetadata
-				.SelectMany(g => matchers.SelectMany(m => g.Select(f => m.GetMatchResult(f, quotedSchemaName))))
+				.SelectMany(g => g)
+				.SelectMany(f => matchers.Select(m => m.GetMatchResult(f, quotedSchemaName)))
 				.Where(r => r.IsMatched)
-				.SelectMany(r => r.Matches.Where(v => !String.IsNullOrEmpty(v)).Select(v => new {Name = v.ToSimpleIdentifier(), r.Metadata}))
-				.Distinct()
+				.SelectMany(r => r.Matches.Where(v => !String.IsNullOrEmpty(v)).Select(v => new { Name = v.ToSimpleIdentifier(), r.Metadata }))
+				.GroupBy(r => r.Name)
+				.Select(g => new { Name = g.Key, g.First().Metadata })
 				.Select(i =>
 				{
 					var postFix = parameterList;

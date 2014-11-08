@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -83,6 +82,7 @@ namespace SqlPad
 
 					HexEditor.Text = await BinaryDataHelper.FormatBinaryDataAsync(_largeBinaryValue.Value, _cancellationTokenSource.Token);
 					LoadingNotification.Visibility = Visibility.Collapsed;
+					ButtonSaveRawAs.Visibility = Visibility.Visible;
 				}
 
 				_findReplaceManager.CurrentEditor = new TextEditorAdapter(searchEditor);
@@ -234,7 +234,7 @@ namespace SqlPad
 
 		private void SaveTextAsClickHandler(object sender, RoutedEventArgs args)
 		{
-			var filterSettings = "Text Files (*.txt)|*.txt|All (*.*)|*";
+			var filterSettings = "Text Files (*.txt)|*.txt|All Files (*.*)|*";
 			if (_isXml)
 			{
 				filterSettings = String.Format("XML Files (*.xml)|*.xml|{0}", filterSettings);
@@ -248,6 +248,18 @@ namespace SqlPad
 
 			DocumentPage.SafeActionWithUserError(
 				() => File.WriteAllText(dialog.FileName, String.IsNullOrEmpty(TextEditor.SelectedText) ? TextEditor.Text : TextEditor.SelectedText));
+		}
+
+		private void SaveRawAsClickHandler(object sender, RoutedEventArgs args)
+		{
+			var dialog = new SaveFileDialog { Filter = "All Files (*.*)|*", OverwritePrompt = true };
+			if (dialog.ShowDialog() != true)
+			{
+				return;
+			}
+
+			DocumentPage.SafeActionWithUserError(
+				() => File.WriteAllBytes(dialog.FileName, _largeBinaryValue.Value));
 		}
 	}
 }
