@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -35,6 +36,8 @@ namespace SqlPad.Oracle
 				_customTypeAssembly = Assembly.LoadFile(customTypeAssemblyFullFileName);
 				//_customTypeHostDomain = AppDomain.CreateDomain(String.Format("{0}.{1}", "CustomTypeHostDomain", connectionStringName));
 				//_customTypeHostDomain.Load(DynamicAssemblyNameBase);
+
+				Trace.WriteLine(String.Format("{0} - Custom object and collection types assembly '{1}' has been found and loaded. ", DateTime.Now, customTypeAssemblyFileName));
 			}
 
 			_customTypeAssemblyFile = new FileInfo(customTypeAssemblyFullFileName);
@@ -61,6 +64,10 @@ namespace SqlPad.Oracle
 			{
 				return;
 			}
+
+			Trace.WriteLine(String.Format("{0} - Custom object and collection types generation started. ", DateTime.Now));
+
+			var stopwatch = Stopwatch.StartNew();
 
 			var fileVersionAttribute = CurrentAssembly.GetCustomAttribute<AssemblyFileVersionAttribute>();
 			var targetFrameworkAttribute = CurrentAssembly.GetCustomAttribute<TargetFrameworkAttribute>();
@@ -93,61 +100,194 @@ namespace SqlPad.Oracle
 			customTypeAssemblyBuilder.DefineVersionInfoResource(); // Makes attributes readable by unmanaged environment like Windows Explorer.
 			var customTypeModuleBuilder = customTypeAssemblyBuilder.DefineDynamicModule(_customTypeAssemblyName, _customTypeAssemblyFile.Name, true);
 
-			var collectionTypes = dataDictionary.AllObjects.Values
-				.OfType<OracleTypeCollection>()
-				.Select(c => new KeyValuePair<string, string>(c.FullyQualifiedName.ToString(), c.ElementTypeIdentifier.Name.Trim('"')));
-
-			var types = new List<Type>();
-			foreach (var typeName in collectionTypes)
+			var customTypes = new Dictionary<string, Type>();
+			foreach (var objectType in dataDictionary.AllObjects.Values.OfType<OracleTypeObject>().Where(t => t.TypeCode != OracleTypeBase.TypeCodeXml))
 			{
-				types.Add(CreateOracleCustomType(customTypeModuleBuilder, typeName));
+				CreateOracleObjectType(customTypeModuleBuilder, objectType, customTypes);
+			}
+			
+			var objectTypeCount = customTypes.Count;
+			foreach (var collectionType in dataDictionary.AllObjects.Values.OfType<OracleTypeCollection>())
+			{
+				CreateOracleCollectionType(customTypeModuleBuilder, collectionType, customTypes);
 			}
 
 			customTypeAssemblyBuilder.Save(_customTypeAssemblyFile.Name);
+
+			stopwatch.Stop();
+
+			var collectionTypeCount = customTypes.Count - objectTypeCount;
+			Trace.WriteLine(String.Format("{0} - {1} Custom object types and {2} collection types generated into {3} in {4}. ", DateTime.Now, objectTypeCount, collectionTypeCount, _customTypeAssemblyFile.Name, stopwatch.Elapsed));
 		}
 
-		private static Type CreateOracleCustomType(ModuleBuilder customTypeModuleBuilder, KeyValuePair<string, string> fullyQualifiedCollectionTypeNameDataTypePair)
+		private static void CreateOracleObjectType(ModuleBuilder customTypeModuleBuilder, OracleTypeObject objectType, IDictionary<string, Type> customTypes)
 		{
-			var fullyQualifiedCollectionTypeName = fullyQualifiedCollectionTypeNameDataTypePair.Key;
-			
-			var targetType = typeof (string);
-			var enclosingCharacter = "'";
-			switch (fullyQualifiedCollectionTypeNameDataTypePair.Value)
+			var fullyQualifiedObjectTypeName = objectType.FullyQualifiedName.ToString().Replace("\"", null);
+			var customTypeClassName = String.Format("{0}.ObjectTypes.{1}", DynamicAssemblyNameBase, MakeValidMemberName(fullyQualifiedObjectTypeName));
+			var customTypeBuilder = customTypeModuleBuilder.DefineType(customTypeClassName, TypeAttributes.Public | TypeAttributes.Class, typeof(object), new[] { typeof(IOracleCustomType), typeof(IOracleCustomTypeFactory) });
+			AddOracleCustomTypeMappingAttribute(customTypeBuilder, fullyQualifiedObjectTypeName);
+
+			var constructorBuilder = AddConstructor(customTypeBuilder, typeof(object).GetConstructor(Type.EmptyTypes));
+
+			const MethodAttributes attributes = MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.Virtual | MethodAttributes.Final | MethodAttributes.NewSlot;
+			var propertyGetterBuilder = customTypeBuilder.DefineMethod("CreateObject", attributes, typeof(IOracleCustomType), null);
+
+			var ilGenerator = propertyGetterBuilder.GetILGenerator();
+			ilGenerator.Emit(OpCodes.Newobj, constructorBuilder);
+			ilGenerator.Emit(OpCodes.Ret);
+
+			var fields = new Dictionary<string, FieldInfo>();
+			foreach (var objectAttribute in objectType.Attributes)
 			{
-				case "NUMBER":
-					targetType = typeof (decimal);
-					enclosingCharacter = String.Empty;
-					break;
-				case "DATE":
-					targetType = typeof(DateTime);
-					enclosingCharacter = String.Empty;
-					break;
-				case "RAW":
-					targetType = typeof(byte[]);
-					enclosingCharacter = String.Empty;
-					break;
+				var targetType = typeof (string);
+				switch (objectAttribute.DataType.FullyQualifiedName.ToString().Trim('"'))
+				{
+					case "NUMBER":
+						targetType = typeof(decimal?);
+						break;
+					case "DATE":
+						targetType = typeof(DateTime?);
+						break;
+					case "BLOB":
+					case "LONG RAW":
+					case "RAW":
+						targetType = typeof(byte[]);
+						break;
+				}
+
+				var fieldName = MakeValidMemberName(objectAttribute.Name);
+				var fieldBuilder = customTypeBuilder.DefineField(fieldName, targetType, FieldAttributes.Public);
+
+				var attributeType = typeof (OracleObjectMappingAttribute);
+				var attribute = new CustomAttributeBuilder(attributeType.GetConstructor(new[] { typeof(string) }), new[] { objectAttribute.Name.Replace("\"", null) });
+				fieldBuilder.SetCustomAttribute(attribute);
+
+				fields.Add(fieldName, fieldBuilder);
 			}
-			
+
+			var fromCustomObjectBuilder = customTypeBuilder.DefineMethod("FromCustomObject", attributes, null, new []{ typeof(OracleConnection), typeof(IntPtr) });
+			fromCustomObjectBuilder.DefineParameter(1, ParameterAttributes.None, "connection");
+			fromCustomObjectBuilder.DefineParameter(2, ParameterAttributes.None, "pointerUdt");
+			ilGenerator = fromCustomObjectBuilder.GetILGenerator();
+
+			foreach (var field in fields)
+			{
+				ilGenerator.Emit(OpCodes.Ldarg_1);
+				ilGenerator.Emit(OpCodes.Ldarg_2);
+				ilGenerator.Emit(OpCodes.Ldstr, field.Key);
+				ilGenerator.Emit(OpCodes.Ldarg_0);
+				ilGenerator.Emit(OpCodes.Ldfld, field.Value);
+
+				if (field.Value.FieldType.IsValueType)
+				{
+					ilGenerator.Emit(OpCodes.Box, field.Value.FieldType);
+				}
+
+				ilGenerator.Emit(OpCodes.Call, typeof(OracleUdt).GetMethod("SetValue", BindingFlags.Static | BindingFlags.Public, null, new[] { typeof(OracleConnection), typeof(IntPtr), typeof(string), typeof(object) }, null));
+			}
+
+			ilGenerator.Emit(OpCodes.Ret);
+
+			var toCustomObjectBuilder = customTypeBuilder.DefineMethod("ToCustomObject", attributes, null, new[] { typeof(OracleConnection), typeof(IntPtr) });
+			toCustomObjectBuilder.DefineParameter(1, ParameterAttributes.None, "connection");
+			toCustomObjectBuilder.DefineParameter(2, ParameterAttributes.None, "pointerUdt");
+			ilGenerator = toCustomObjectBuilder.GetILGenerator();
+
+			foreach (var field in fields)
+			{
+				ilGenerator.Emit(OpCodes.Ldarg_0);
+				ilGenerator.Emit(OpCodes.Ldarg_1);
+				ilGenerator.Emit(OpCodes.Ldarg_2);
+				ilGenerator.Emit(OpCodes.Ldstr, field.Key);
+
+				ilGenerator.Emit(OpCodes.Call, typeof(OracleUdt).GetMethod("GetValue", BindingFlags.Static | BindingFlags.Public, null, new[] { typeof(OracleConnection), typeof(IntPtr), typeof(string) }, null));
+
+				if (field.Value.FieldType.IsValueType)
+				{
+					ilGenerator.Emit(OpCodes.Unbox_Any, field.Value.FieldType);
+				}
+
+				ilGenerator.Emit(OpCodes.Stfld, field.Value);
+			}
+
+			ilGenerator.Emit(OpCodes.Ret);
+
+			customTypes.Add(fullyQualifiedObjectTypeName, customTypeBuilder.CreateType());
+		}
+
+		private static void CreateOracleCollectionType(ModuleBuilder customTypeModuleBuilder, OracleTypeCollection collectionType, IDictionary<string, Type> customTypes)
+		{
+			Type targetType;
+			var enclosingCharacter = String.Empty;
+			if (String.IsNullOrEmpty(collectionType.ElementTypeIdentifier.Owner))
+			{
+				var dataType = collectionType.ElementTypeIdentifier.Name.Trim('"');
+				switch (dataType)
+				{
+					case "NUMBER":
+						targetType = typeof (decimal);
+						break;
+					case "DATE":
+						targetType = typeof (DateTime);
+						break;
+					case "BLOB":
+					case "LONG RAW":
+					case "RAW":
+						targetType = typeof (byte[]);
+						break;
+					default:
+						enclosingCharacter = "'";
+						targetType = typeof(string);
+						break;
+				}
+			}
+			else if (customTypes.TryGetValue(collectionType.ElementTypeIdentifier.ToString().Replace("\"", null), out targetType))
+			{
+
+			}
+			else
+			{
+				targetType = typeof(object);
+			}
+
 			var baseFactoryType = typeof(OracleTableValueFactoryBase<>);
 			baseFactoryType = baseFactoryType.MakeGenericType(targetType);
-			var wrapperTypeName = String.Format("{0}.{1}", DynamicAssemblyNameBase, fullyQualifiedCollectionTypeName.Replace('.', '_'));
+			var fullyQualifiedCollectionTypeName = collectionType.FullyQualifiedName.ToString().Replace("\"", null); ;
+			var customTypeClassName = String.Format("{0}.CollectionTypes.{1}", DynamicAssemblyNameBase, MakeValidMemberName(fullyQualifiedCollectionTypeName));
 
-			var customTypeBuilder = customTypeModuleBuilder.DefineType(wrapperTypeName, TypeAttributes.Public | TypeAttributes.Class, baseFactoryType);
-			var attributeType = typeof (OracleCustomTypeMappingAttribute);
-			var attribute = new CustomAttributeBuilder(attributeType.GetConstructor(new[] {typeof (string)}), new[] {fullyQualifiedCollectionTypeName});
-			customTypeBuilder.SetCustomAttribute(attribute);
+			var customTypeBuilder = customTypeModuleBuilder.DefineType(customTypeClassName, TypeAttributes.Public | TypeAttributes.Class, baseFactoryType);
+			AddOracleCustomTypeMappingAttribute(customTypeBuilder, fullyQualifiedCollectionTypeName);
 
 			var baseConstructor = baseFactoryType.GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance, null, Type.EmptyTypes, null);
+			AddConstructor(customTypeBuilder, baseConstructor);
+
+			ImplementAbstractStringValueProperty(customTypeBuilder, "FullyQualifiedName", fullyQualifiedCollectionTypeName);
+			ImplementAbstractStringValueProperty(customTypeBuilder, "EnclosingCharacter", enclosingCharacter);
+
+			customTypes.Add(fullyQualifiedCollectionTypeName, customTypeBuilder.CreateType());
+		}
+
+		private static void AddOracleCustomTypeMappingAttribute(TypeBuilder customTypeBuilder, string value)
+		{
+			var attributeType = typeof(OracleCustomTypeMappingAttribute);
+			var attribute = new CustomAttributeBuilder(attributeType.GetConstructor(new[] { typeof(string) }), new[] { value.Replace("\"", null) });
+			customTypeBuilder.SetCustomAttribute(attribute);
+		}
+
+		private static ConstructorBuilder AddConstructor(TypeBuilder customTypeBuilder, ConstructorInfo baseConstructor)
+		{
 			var constructor = customTypeBuilder.DefineConstructor(MethodAttributes.Public | MethodAttributes.HideBySig, CallingConventions.HasThis, null);
 			var ilGenerator = constructor.GetILGenerator();
 			ilGenerator.Emit(OpCodes.Ldarg_0);
 			ilGenerator.Emit(OpCodes.Call, baseConstructor);
 			ilGenerator.Emit(OpCodes.Ret);
 
-			ImplementAbstractStringValueProperty(customTypeBuilder, "FullyQualifiedName", fullyQualifiedCollectionTypeName);
-			ImplementAbstractStringValueProperty(customTypeBuilder, "EnclosingCharacter", enclosingCharacter);
+			return constructor;
+		}
 
-			return customTypeBuilder.CreateType();
+		private static string MakeValidMemberName(string typeName)
+		{
+			return new String(typeName.Replace('.', '_').Where(c => c == '_' || Char.IsLetterOrDigit(c)).ToArray());
 		}
 
 		private static void ImplementAbstractStringValueProperty(TypeBuilder typeBuilder, string propertyName, string value)
@@ -236,5 +376,10 @@ namespace SqlPad.Oracle
 		{
 			return new OracleUdtStatus[elementCount];
 		}
-	}
+	}/*
+		public override string ToString()
+		{
+			return String.Format("{0}(ARGTYPE={1}, TABLENAME={2}, TABLESCHEMA={3}, COLNAME={4}, TABLEPARTITIONLOWER={5}, TABLEPARTITIONUPPER={6}, CARDINALITY={7})", "SYS.ODCIARGDESC", ARGTYPE, TABLENAME, TABLESCHEMA, COLNAME, TABLEPARTITIONLOWER, TABLEPARTITIONUPPER, CARDINALITY);
+		}
+	}*/
 }
