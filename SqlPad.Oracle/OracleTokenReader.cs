@@ -52,6 +52,7 @@ namespace SqlPad.Oracle
 			var index = 0;
 
 			var inQuotedString = false;
+			var sqlPlusTerminatorCandidate = false;
 			char? candidateCharacter = null;
 			char? quotingInitializer = null;
 
@@ -73,6 +74,23 @@ namespace SqlPad.Oracle
 				var isBlank = flags.IsSpace || flags.IsLineTerminator;
 				var isSingleCharacterTerminal = _singleCharacterTerminals.Contains(character);
 				var characterYielded = false;
+				
+				if (flags.BlockCommentBeginCandidate && previousFlags.IsLineTerminator)
+				{
+					sqlPlusTerminatorCandidate = true;
+				}
+				else
+				{
+					if (sqlPlusTerminatorCandidate && flags.IsLineTerminator)
+					{
+						builder.Append("\n/\n");
+						candidateCharacter = null;
+						yield return BuildToken(builder, index, null);
+						previousFlags.Reset();
+					}
+
+					sqlPlusTerminatorCandidate = false;
+				}
 
 				if ((flags.QuotedStringCandidate || flags.UnicodeCandidate) && (builder.Length > 1 || (builder.Length == 1 && character != 'q' && character != 'Q' && previousFlags.Character != 'n' && previousFlags.Character != 'N')))
 				{
@@ -234,41 +252,18 @@ namespace SqlPad.Oracle
 
 				if (!specialMode.IsEnabled && previousFlags.IsDecimalCandidate)
 				{
-					/*if (specialMode.InNumber)
+					if (builder.Length > 0)
 					{
-						if (specialMode.InDecimalNumber)
-						{
-							if (builder.Length > 0)
-							{
-								yield return BuildToken(builder, index - 2, null);
-							}
-
-							yield return BuildToken(previousFlags.Character, index - 1);
-							specialMode.InNumber = false;
-						}
-						else
-						{
-							AppendCandidateCharacter(builder, ref candidateCharacter);
-							specialMode.InDecimalNumber = true;
-						}
+						yield return BuildToken(builder, index - 2, null);
 					}
-					else */if (isNumericCharacter)
-					{
-						if (builder.Length > 0)
-						{
-							yield return BuildToken(builder, index - 2, null);
-						}
 
+					if (isNumericCharacter)
+					{
 						AppendCandidateCharacter(builder, ref candidateCharacter);
 						specialMode.InNumber = true;
 					}
 					else
 					{
-						if (builder.Length > 0)
-						{
-							yield return BuildToken(builder, index - 2, null);
-						}
-
 						yield return BuildToken(previousFlags.Character, index - 1);
 						specialMode.InNumber = false;
 					}

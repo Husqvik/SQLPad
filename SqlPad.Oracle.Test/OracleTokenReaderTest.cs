@@ -508,6 +508,17 @@ namespace SqlPad.Oracle.Test
 			tokens.ShouldBe(new[] { "SELECT", "DateToSend", "FROM", "Circular" });
 		}
 
+		[Test(Description = "Tests SQL Plus statement terminator. ")]
+		public void TestSqlPlusStatementTerminator()
+		{
+			const string testQuery = "WORD1\n/\nWORD2";
+			var tokens = GetTokenValuesFromOracleSql(testQuery);
+			tokens.ShouldBe(new[] { "WORD1", "\n/\n", "WORD2" });
+
+			var tokenIndexes = GetTokenIndexesFromOracleSql(testQuery);
+			tokenIndexes.ShouldBe(new[] { 0, 5, 8 });
+		}
+
 		private string[] GetTokenValuesFromOracleSql(string sqlText, bool includeCommentBlocks = false)
 		{
 			return GetTokensFromOracleSql(sqlText, includeCommentBlocks).Select(t => t.Value).ToArray();

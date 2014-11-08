@@ -269,7 +269,7 @@ namespace SqlPad.Oracle
 			{
 				GatherCandidatesFromNonterminal(item.Id, candidates);
 			}
-			else
+			else if (!TerminatorIds.Contains(item.Id))
 			{
 				candidates.Add(item.Id);
 			}
@@ -324,7 +324,7 @@ namespace SqlPad.Oracle
 
 					result = newResult;
 
-					if (!TerminatorIds.Contains(result.Nodes[result.Nodes.Count - 1].Id) && tokenBuffer.Count > result.Nodes.Sum(n => n.TerminalCount))
+					if (!TerminatorIds.Contains(result.Nodes[result.Nodes.Count - 1].FirstTerminalNode.Id) && tokenBuffer.Count > result.Nodes.Sum(n => n.TerminalCount))
 					{
 						result.Status = ProcessingStatus.SequenceNotFound;
 					}
@@ -372,9 +372,9 @@ namespace SqlPad.Oracle
 				}
 
 				var lastNode = result.Nodes.LastOrDefault();
-				if (lastNode != null && TerminatorIds.Contains(lastNode.Id))
+				if (lastNode != null && lastNode.FirstTerminalNode != null && TerminatorIds.Contains(lastNode.FirstTerminalNode.Id))
 				{
-					statement.TerminatorNode = lastNode;
+					statement.TerminatorNode = lastNode.FirstTerminalNode;
 					result.Nodes.Remove(lastNode);
 				}
 
@@ -662,15 +662,15 @@ namespace SqlPad.Oracle
 
 				var terminal = Terminals[terminalReference.Id];
 				var isKeyword = false;
-				if (!String.IsNullOrEmpty(terminal.RegexValue))
+				if (String.IsNullOrEmpty(terminal.RegexValue))
 				{
-					tokenIsValid = terminal.RegexMatcher.IsMatch(currentToken.Value) && !currentToken.Value.IsKeyword();
+					var tokenValue = currentToken.Value.ToUpperInvariant();
+					tokenIsValid = terminal.Value == tokenValue || (terminal.AllowQuotedNotation && tokenValue == String.Format("\"{0}\"", terminal.Value));
+					isKeyword = tokenIsValid && terminal.IsKeyword;
 				}
 				else
 				{
-					var tokenValue = currentToken.Value.ToUpperInvariant();
-					tokenIsValid = terminal.Value == tokenValue || (terminal.AllowQuotedNotation && tokenValue == "\"" + terminal.Value + "\"");
-					isKeyword = tokenIsValid && terminal.IsKeyword;
+					tokenIsValid = terminal.RegexMatcher.IsMatch(currentToken.Value) && !currentToken.Value.IsKeyword();
 				}
 
 				if (tokenIsValid)

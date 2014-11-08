@@ -18,15 +18,201 @@
     <StartSymbol Id="LockTableStatement" />
     <StartSymbol Id="RenameStatement" />
     <StartSymbol Id="CommentStatement" />
-    <!--<StartSymbol Id="AlterStatement" />-->
+    <StartSymbol Id="AlterStatement" />
   </StartSymbols>
 
   <Terminators>
-    <Terminator Id = "Semicolon" />
-    <!--<Terminator Id = "NewLineSlashNewLine" />-->
+    <Terminator Id="Semicolon" />
+    <Terminator Id="SqlPlusTerminator" />
   </Terminators>
     
   <Rules>
+    <Rule StartingNonTerminal="StatementTerminator">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Semicolon" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="SqlPlusTerminator" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <!-- ALTER statement -->
+    <Rule StartingNonTerminal="AlterStatement">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Alter" />
+          <NonTerminal Id="AlterObjectClause" />
+          <NonTerminal Id="StatementTerminator" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AlterObjectClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="AlterSession" />
+        </Sequence>
+        <!-- TODO: Add other objects -->
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AlterSession">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Session" />
+          <NonTerminal Id="AlterSessionOption" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AlterSessionOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Advice" />
+          <NonTerminal Id="CommitOrRollbackOrNothing" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Close" />
+          <Terminal Id="Database" />
+          <Terminal Id="Link" />
+          <Terminal Id="Identifier" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="EnableOrDisable" />
+          <Terminal Id="Commit" />
+          <Terminal Id="In" />
+          <Terminal Id="Procedure" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="EnableOrDisable" />
+          <Terminal Id="Guard" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="EnableOrDisableOrForce" />
+          <Terminal Id="Parallel" />
+          <NonTerminal Id="DataManipulationLanguageOrDataDefinitionLanguageOrQuery" />
+          <NonTerminal Id="ParallelDegree" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Enable" />
+          <Terminal Id="Resumable" />
+          <NonTerminal Id="TimeoutClause" IsOptional="true" />
+          <NonTerminal Id="NameClause" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Disable" />
+          <Terminal Id="Resumable" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Sync" />
+          <Terminal Id="With" />
+          <Terminal Id="Primary" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Set" />
+          <NonTerminal Id="AlterSesionSetOptions" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="TimeoutClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Timeout" />
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AlterSesionSetOptions">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Edition" />
+          <Terminal Id="MathEquals" />
+          <Terminal Id="Identifier" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="AlterSesionSetOptionList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AlterSesionSetOptionList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Identifier" />
+          <Terminal Id="MathEquals" />
+          <NonTerminal Id="IdentifierOrStringLiteralOrNumberLiteral" />
+          <NonTerminal Id="AlterSesionSetOptionList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="IdentifierOrStringLiteralOrNumberLiteral">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Identifier" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="StringLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="NumberLiteral" />
+          <Terminal Id="UnitPostfix" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="DataManipulationLanguageOrDataDefinitionLanguageOrQuery">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="DataManipulationLanguage" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="DataDefinitionLanguage" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Query" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ParallelDegree">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Parallel" />
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="EnableOrDisableOrForce">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="EnableOrDisable" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Force" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="CommitOrRollbackOrNothing">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Commit" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Rollback" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Nothing" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
     <!-- COMMENT statement -->
     <Rule StartingNonTerminal="CommentStatement">
       <Sequences>
@@ -36,7 +222,7 @@
           <NonTerminal Id="ObjectCommentOption" />
           <Terminal Id="Is" />
           <Terminal Id="StringLiteral" />
-          <Terminal Id="Semicolon" IsOptional="true" />
+          <NonTerminal Id="StatementTerminator" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -95,7 +281,7 @@
           <Terminal Id="ObjectIdentifier" />
           <Terminal Id="To" />
           <Terminal Id="ObjectIdentifier" />
-          <Terminal Id="Semicolon" IsOptional="true" />
+          <NonTerminal Id="StatementTerminator" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -111,7 +297,7 @@
           <NonTerminal Id="LockMode" />
           <Terminal Id="Mode" />
           <NonTerminal Id="ForUpdateWaitClause" IsOptional="true" />
-          <Terminal Id="Semicolon" IsOptional="true" />
+          <NonTerminal Id="StatementTerminator" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -181,7 +367,7 @@
         <Sequence>
           <Terminal Id="Purge" />
           <NonTerminal Id="PurgeOption" />
-          <Terminal Id="Semicolon" IsOptional="true" />
+          <NonTerminal Id="StatementTerminator" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -228,7 +414,7 @@
           <NonTerminal Id="IntoPlanTable" IsOptional="true" />
           <Terminal Id="For" />
           <NonTerminal Id="Statement" />
-          <Terminal Id="Semicolon" IsOptional="true" />
+          <NonTerminal Id="StatementTerminator" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -284,7 +470,7 @@
         <Sequence>
           <Terminal Id="Drop" />
           <NonTerminal Id="DropObjectClause" />
-          <Terminal Id="Semicolon" IsOptional="true" />
+          <NonTerminal Id="StatementTerminator" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -483,7 +669,7 @@
           <Terminal Id="Commit" />
           <Terminal Id="Work" IsOptional="true" />
           <NonTerminal Id="CommitCommentOrWriteOrForce" IsOptional="true" />
-          <Terminal Id="Semicolon" IsOptional="true" />
+          <NonTerminal Id="StatementTerminator" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -569,7 +755,7 @@
         <Sequence>
           <Terminal Id="Savepoint" />
           <Terminal Id="Identifier" />
-          <Terminal Id="Semicolon" IsOptional="true" />
+          <NonTerminal Id="StatementTerminator" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -581,7 +767,7 @@
           <Terminal Id="Rollback" />
           <Terminal Id="Work" IsOptional="true" />
           <NonTerminal Id="ToSavepointOrForceTransactionIdentifier" IsOptional="true" />
-          <Terminal Id="Semicolon" IsOptional="true" />
+          <NonTerminal Id="StatementTerminator" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -606,13 +792,13 @@
           <Terminal Id="Set" />
           <Terminal Id="Transaction" />
           <NonTerminal Id="TransactionModeOrIsolationLevelOrRollbackSegment" IsOptional="true" />
-          <NonTerminal Id="TransactionNameClause" IsOptional="true" />
-          <Terminal Id="Semicolon" IsOptional="true" />
+          <NonTerminal Id="NameClause" IsOptional="true" />
+          <NonTerminal Id="StatementTerminator" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
 
-    <Rule StartingNonTerminal="TransactionNameClause">
+    <Rule StartingNonTerminal="NameClause">
       <Sequences>
         <Sequence>
           <Terminal Id="Name" />
@@ -670,7 +856,7 @@
         <Sequence>
           <Terminal Id="Insert" />
           <NonTerminal Id="SingleTableInsertOrMultiTableInsert" />
-          <Terminal Id="Semicolon" IsOptional="true" />
+          <NonTerminal Id="StatementTerminator" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -841,7 +1027,7 @@
           <NonTerminal Id="WhereClause" IsOptional="true" />
           <NonTerminal Id="ReturningClause" IsOptional="true" />
           <NonTerminal Id="ErrorLoggingClause" IsOptional="true" />
-          <Terminal Id="Semicolon" IsOptional="true" />
+          <NonTerminal Id="StatementTerminator" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -942,7 +1128,7 @@
           <NonTerminal Id="WhereClause" IsOptional="true" />
           <NonTerminal Id="ReturningClause" IsOptional="true" />
           <NonTerminal Id="ErrorLoggingClause" IsOptional="true" />
-          <Terminal Id="Semicolon" IsOptional="true" />
+          <NonTerminal Id="StatementTerminator" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -1062,7 +1248,7 @@
           <Terminal Id="RightParenthesis" />
           <NonTerminal Id="MergeUpdateInsertClause" />
           <NonTerminal Id="ErrorLoggingClause" IsOptional="true" />
-          <Terminal Id="Semicolon" IsOptional="true" />
+          <NonTerminal Id="StatementTerminator" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -1205,7 +1391,7 @@
         <Sequence>
           <NonTerminal Id="NestedQuery" />
           <NonTerminal Id="ForUpdateClause" IsOptional="true" />
-          <Terminal Id="Semicolon" IsOptional="true" />
+          <NonTerminal Id="StatementTerminator" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -5225,7 +5411,7 @@
         <Sequence>
           <Terminal Id="Create" />
           <NonTerminal Id="CreateObjectClause" />
-          <Terminal Id="Semicolon" IsOptional="true" />
+          <NonTerminal Id="StatementTerminator" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -9445,6 +9631,7 @@
     <Terminal Id="Dot" Value="." />
     <Terminal Id="Comma" Value="," />
     <Terminal Id="Semicolon" Value=";" />
+    <Terminal Id="SqlPlusTerminator" Value="&#x0a;/&#x0a;" />
     <Terminal Id="Colon" Value=":" />
     <Terminal Id="Asterisk" Value="*" />
     <Terminal Id="AtCharacter" Value="@" />
@@ -9988,6 +10175,17 @@
     <Terminal Id="Indexing" Value="INDEXING" />
     <Terminal Id="Usable" Value="USABLE" />
     <Terminal Id="Unusable" Value="UNUSABLE" />
+    
+    <!-- Alter session -->
+    <Terminal Id="Advice" Value="ADVICE" />
+    <Terminal Id="Close" Value="CLOSE" />
+    <Terminal Id="Sync" Value="SYNC" />
+    <Terminal Id="Guard" Value="GUARD" />
+    <Terminal Id="Resumable" Value="RESUMABLE" />
+    <Terminal Id="Timeout" Value="TIMEOUT" />
+    <Terminal Id="DataDefinitionLanguage" Value="DDL" />
+    <Terminal Id="Database" Value="DATABASE" />
+    <Terminal Id="Link" Value="LINK" />
 
     <!-- Other -->
     <Terminal Id="Float" Value="FLOAT" IsKeyword="true" />

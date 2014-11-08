@@ -2066,6 +2066,19 @@ ORDER BY
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
 		}
 
+		[Test(Description = @"")]
+		public void TestSqlPlusSeparator()
+		{
+			const string statement1 = "SELECT NULL FROM DUAL\n/\nSELECT NULL FROM DUAL";
+
+			var statements = Parser.Parse(statement1).ToArray();
+			statements.Length.ShouldBe(2);
+			var statement = statements[0].Validate();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement = statements[1].Validate();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+		}
+
 		public class IsRuleValid
 		{
 			[Test(Description = @"")]
@@ -2096,187 +2109,6 @@ ORDER BY
 			}
 		}
 
-		public class Commit
-		{
-			[Test(Description = @"")]
-			public void TestCommitStatement()
-			{
-				const string statement1 = @"COMMIT COMMENT 'In-doubt transaction Code 36, Call (415) 555-2637' WRITE NOWAIT;";
-				var result = Parser.Parse(statement1);
-
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-
-				var terminals = statement.AllTerminals.ToArray();
-				terminals.Length.ShouldBe(5);
-
-				terminals[0].Id.ShouldBe(Terminals.Commit);
-				terminals[1].Id.ShouldBe(Terminals.Comment);
-				terminals[2].Id.ShouldBe(Terminals.StringLiteral);
-				terminals[3].Id.ShouldBe(Terminals.Write);
-				terminals[4].Id.ShouldBe(Terminals.Nowait);
-			}
-
-			[Test(Description = @"")]
-			public void TestCommitWriteBatchWithoutWait()
-			{
-				const string statement1 = @"COMMIT WRITE BATCH";
-				var result = Parser.Parse(statement1);
-
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-
-				var terminals = statement.AllTerminals.ToArray();
-				terminals.Length.ShouldBe(3);
-
-				terminals[0].Id.ShouldBe(Terminals.Commit);
-				terminals[1].Id.ShouldBe(Terminals.Write);
-				terminals[2].Id.ShouldBe(Terminals.Batch);
-			}
-
-			[Test(Description = @"")]
-			public void TestCommitForceDistributedTransaction()
-			{
-				const string statement1 = @"COMMIT FORCE '22.57.53', 1234 /* specific SCN */";
-				var result = Parser.Parse(statement1);
-
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-
-				var terminals = statement.AllTerminals.ToArray();
-				terminals.Length.ShouldBe(5);
-
-				terminals[0].Id.ShouldBe(Terminals.Commit);
-				terminals[1].Id.ShouldBe(Terminals.Force);
-				terminals[2].Id.ShouldBe(Terminals.StringLiteral);
-				terminals[3].Id.ShouldBe(Terminals.Comma);
-				terminals[4].Id.ShouldBe(Terminals.IntegerLiteral);
-			}
-		}
-
-		public class Rollback
-		{
-			[Test(Description = @"")]
-			public void TestRollbackStatement()
-			{
-				const string statementText = @"ROLLBACK TO SAVEPOINT savepoint_name";
-
-				var result = Parser.Parse(statementText);
-
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-
-				var terminals = statement.AllTerminals.ToArray();
-				terminals.Length.ShouldBe(4);
-
-				terminals[0].Id.ShouldBe(Terminals.Rollback);
-				terminals[1].Id.ShouldBe(Terminals.To);
-				terminals[2].Id.ShouldBe(Terminals.Savepoint);
-				terminals[3].Id.ShouldBe(Terminals.Identifier);
-			}
-
-			[Test(Description = @"")]
-			public void TestRollbackStatementForceDistributedTransaction()
-			{
-				const string statementText = @"ROLLBACK WORK FORCE '25.32.87';";
-
-				var result = Parser.Parse(statementText);
-
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-
-				var terminals = statement.AllTerminals.ToArray();
-				terminals.Length.ShouldBe(4);
-
-				terminals[0].Id.ShouldBe(Terminals.Rollback);
-				terminals[1].Id.ShouldBe(Terminals.Work);
-				terminals[2].Id.ShouldBe(Terminals.Force);
-				terminals[3].Id.ShouldBe(Terminals.StringLiteral);
-			}
-		}
-
-		public class Savepoint
-		{
-			[Test(Description = @"")]
-			public void TestSavepointStatement()
-			{
-				const string statementText = @"SAVEPOINT savepoint_name";
-
-				var result = Parser.Parse(statementText);
-
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-
-				var terminals = statement.AllTerminals.ToArray();
-				terminals.Length.ShouldBe(2);
-
-				terminals[0].Id.ShouldBe(Terminals.Savepoint);
-				terminals[1].Id.ShouldBe(Terminals.Identifier);
-			}
-		}
-
-		public class SetTransaction
-		{
-			[Test(Description = @"")]
-			public void TestSetReadOnlyTransactionWithName()
-			{
-				const string statement1 = @"SET TRANSACTION READ ONLY NAME 'Toronto'";
-				var statement = Parser.Parse(statement1).Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-
-				var terminalCandidates = statement.AllTerminals.ToArray();
-				terminalCandidates.Length.ShouldBe(6);
-				terminalCandidates[0].Id.ShouldBe(Terminals.Set);
-				terminalCandidates[1].Id.ShouldBe(Terminals.Transaction);
-				terminalCandidates[2].Id.ShouldBe(Terminals.Read);
-				terminalCandidates[3].Id.ShouldBe(Terminals.Only);
-				terminalCandidates[4].Id.ShouldBe(Terminals.Name);
-				terminalCandidates[5].Id.ShouldBe(Terminals.StringLiteral);
-			}
-
-			[Test(Description = @"")]
-			public void TestSetTransactionWithReadCommittedIsolationLevel()
-			{
-				const string statement1 = @"SET TRANSACTION ISOLATION LEVEL READ COMMITTED";
-				var statement = Parser.Parse(statement1).Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-
-				var terminalCandidates = statement.AllTerminals.ToArray();
-				terminalCandidates.Length.ShouldBe(6);
-				terminalCandidates[0].Id.ShouldBe(Terminals.Set);
-				terminalCandidates[1].Id.ShouldBe(Terminals.Transaction);
-				terminalCandidates[2].Id.ShouldBe(Terminals.Isolation);
-				terminalCandidates[3].Id.ShouldBe(Terminals.Level);
-				terminalCandidates[4].Id.ShouldBe(Terminals.Read);
-				terminalCandidates[5].Id.ShouldBe(Terminals.Committed);
-			}
-
-			[Test(Description = @"")]
-			public void TestSetTransactionWithRollbackSegment()
-			{
-				const string statement1 = @"SET TRANSACTION USE ROLLBACK SEGMENT ROLLBACK_SEGMENT NAME 'HQ Transaction'";
-				var statement = Parser.Parse(statement1).Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-
-				var terminalCandidates = statement.AllTerminals.ToArray();
-				terminalCandidates.Length.ShouldBe(8);
-				terminalCandidates[0].Id.ShouldBe(Terminals.Set);
-				terminalCandidates[1].Id.ShouldBe(Terminals.Transaction);
-				terminalCandidates[2].Id.ShouldBe(Terminals.Use);
-				terminalCandidates[3].Id.ShouldBe(Terminals.Rollback);
-				terminalCandidates[4].Id.ShouldBe(Terminals.Segment);
-				terminalCandidates[5].Id.ShouldBe(Terminals.Identifier);
-				terminalCandidates[6].Id.ShouldBe(Terminals.Name);
-				terminalCandidates[7].Id.ShouldBe(Terminals.StringLiteral);
-			}
-		}
-
 		public class TerminalCandidates
 		{
 			[Test(Description = @"")]
@@ -2296,7 +2128,7 @@ ORDER BY
 				const string statement2 = @"SELECT 1";
 				var node = Parser.Parse(statement2).Single().RootNode.LastTerminalNode;
 				var terminalCandidates = Parser.GetTerminalCandidates(node).OrderBy(t => t).ToArray();
-				
+
 				var expectedTerminals = new[] { Terminals.As, Terminals.ColumnAlias, Terminals.Comma, Terminals.From, Terminals.MathDivide, Terminals.MathFactor, Terminals.MathMinus, Terminals.MathPlus, Terminals.OperatorConcatenation };
 				terminalCandidates.ShouldBe(expectedTerminals);
 			}
@@ -2318,7 +2150,7 @@ ORDER BY
 			{
 				var terminalCandidates = Parser.GetTerminalCandidates(null).OrderBy(t => t).ToArray();
 
-				var expectedTerminals = new[] { Terminals.Comment, Terminals.Commit, Terminals.Create, Terminals.Delete, Terminals.Drop, Terminals.Explain, Terminals.Insert, Terminals.LeftParenthesis, Terminals.Lock, Terminals.Merge, Terminals.Purge, Terminals.Rename, Terminals.Rollback, Terminals.Savepoint, Terminals.Select, Terminals.Set, Terminals.Update, Terminals.With };
+				var expectedTerminals = new[] { Terminals.Alter, Terminals.Comment, Terminals.Commit, Terminals.Create, Terminals.Delete, Terminals.Drop, Terminals.Explain, Terminals.Insert, Terminals.LeftParenthesis, Terminals.Lock, Terminals.Merge, Terminals.Purge, Terminals.Rename, Terminals.Rollback, Terminals.Savepoint, Terminals.Select, Terminals.Set, Terminals.Update, Terminals.With };
 				terminalCandidates.ShouldBe(expectedTerminals);
 			}
 
@@ -2365,7 +2197,6 @@ ORDER BY
 						Terminals.Pivot,
 						Terminals.Right,
 						Terminals.Sample,
-						Terminals.Semicolon,
 						Terminals.SetMinus,
 						Terminals.Start,
 						Terminals.Subpartition,
@@ -2374,7 +2205,7 @@ ORDER BY
 						Terminals.Versions,
 						Terminals.Where
 					};
-				
+
 				terminalCandidates.ShouldBe(expectedTerminals);
 			}
 
@@ -2447,144 +2278,330 @@ ORDER BY
 						Terminals.XmlRoot,
 						Terminals.XmlSerialize
 					};
-				
+
 				terminalCandidates.ShouldBe(expectedTerminals);
 			}
 		}
 
-		public class Delete
+		public class Transaction
 		{
-			[Test(Description = @"")]
-			public void TestDeleteWithReturningAndErrorLogging()
+			public class Commit
 			{
-				const string statement1 = @"DELETE FROM TEST_TABLE RETURNING COLUMN1, COLUMN2 INTO :C1, :C2 LOG ERRORS INTO SCHEMA.LOG_TABLE ('Delete statement') REJECT LIMIT 10";
-				var statements = Parser.Parse(statement1);
-				statements.Count.ShouldBe(1);
-				var statement = statements.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-				
-				var terminals = statement.AllTerminals.ToArray();
-				terminals.Length.ShouldBe(25);
+				[Test(Description = @"")]
+				public void TestCommitStatement()
+				{
+					const string statement1 = @"COMMIT COMMENT 'In-doubt transaction Code 36, Call (415) 555-2637' WRITE NOWAIT;";
+					var result = Parser.Parse(statement1);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+					var terminals = statement.AllTerminals.ToArray();
+					terminals.Length.ShouldBe(5);
+
+					terminals[0].Id.ShouldBe(Terminals.Commit);
+					terminals[1].Id.ShouldBe(Terminals.Comment);
+					terminals[2].Id.ShouldBe(Terminals.StringLiteral);
+					terminals[3].Id.ShouldBe(Terminals.Write);
+					terminals[4].Id.ShouldBe(Terminals.Nowait);
+				}
+
+				[Test(Description = @"")]
+				public void TestCommitWriteBatchWithoutWait()
+				{
+					const string statement1 = @"COMMIT WRITE BATCH";
+					var result = Parser.Parse(statement1);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+					var terminals = statement.AllTerminals.ToArray();
+					terminals.Length.ShouldBe(3);
+
+					terminals[0].Id.ShouldBe(Terminals.Commit);
+					terminals[1].Id.ShouldBe(Terminals.Write);
+					terminals[2].Id.ShouldBe(Terminals.Batch);
+				}
+
+				[Test(Description = @"")]
+				public void TestCommitForceDistributedTransaction()
+				{
+					const string statement1 = @"COMMIT FORCE '22.57.53', 1234 /* specific SCN */";
+					var result = Parser.Parse(statement1);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+					var terminals = statement.AllTerminals.ToArray();
+					terminals.Length.ShouldBe(5);
+
+					terminals[0].Id.ShouldBe(Terminals.Commit);
+					terminals[1].Id.ShouldBe(Terminals.Force);
+					terminals[2].Id.ShouldBe(Terminals.StringLiteral);
+					terminals[3].Id.ShouldBe(Terminals.Comma);
+					terminals[4].Id.ShouldBe(Terminals.IntegerLiteral);
+				}
+			}
+
+			public class Rollback
+			{
+				[Test(Description = @"")]
+				public void TestRollbackStatement()
+				{
+					const string statementText = @"ROLLBACK TO SAVEPOINT savepoint_name";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+					var terminals = statement.AllTerminals.ToArray();
+					terminals.Length.ShouldBe(4);
+
+					terminals[0].Id.ShouldBe(Terminals.Rollback);
+					terminals[1].Id.ShouldBe(Terminals.To);
+					terminals[2].Id.ShouldBe(Terminals.Savepoint);
+					terminals[3].Id.ShouldBe(Terminals.Identifier);
+				}
+
+				[Test(Description = @"")]
+				public void TestRollbackStatementForceDistributedTransaction()
+				{
+					const string statementText = @"ROLLBACK WORK FORCE '25.32.87';";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+					var terminals = statement.AllTerminals.ToArray();
+					terminals.Length.ShouldBe(4);
+
+					terminals[0].Id.ShouldBe(Terminals.Rollback);
+					terminals[1].Id.ShouldBe(Terminals.Work);
+					terminals[2].Id.ShouldBe(Terminals.Force);
+					terminals[3].Id.ShouldBe(Terminals.StringLiteral);
+				}
+			}
+
+			public class Savepoint
+			{
+				[Test(Description = @"")]
+				public void TestSavepointStatement()
+				{
+					const string statementText = @"SAVEPOINT savepoint_name";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+					var terminals = statement.AllTerminals.ToArray();
+					terminals.Length.ShouldBe(2);
+
+					terminals[0].Id.ShouldBe(Terminals.Savepoint);
+					terminals[1].Id.ShouldBe(Terminals.Identifier);
+				}
+			}
+
+			public class SetTransaction
+			{
+				[Test(Description = @"")]
+				public void TestSetReadOnlyTransactionWithName()
+				{
+					const string statement1 = @"SET TRANSACTION READ ONLY NAME 'Toronto'";
+					var statement = Parser.Parse(statement1).Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+					var terminalCandidates = statement.AllTerminals.ToArray();
+					terminalCandidates.Length.ShouldBe(6);
+					terminalCandidates[0].Id.ShouldBe(Terminals.Set);
+					terminalCandidates[1].Id.ShouldBe(Terminals.Transaction);
+					terminalCandidates[2].Id.ShouldBe(Terminals.Read);
+					terminalCandidates[3].Id.ShouldBe(Terminals.Only);
+					terminalCandidates[4].Id.ShouldBe(Terminals.Name);
+					terminalCandidates[5].Id.ShouldBe(Terminals.StringLiteral);
+				}
+
+				[Test(Description = @"")]
+				public void TestSetTransactionWithReadCommittedIsolationLevel()
+				{
+					const string statement1 = @"SET TRANSACTION ISOLATION LEVEL READ COMMITTED";
+					var statement = Parser.Parse(statement1).Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+					var terminalCandidates = statement.AllTerminals.ToArray();
+					terminalCandidates.Length.ShouldBe(6);
+					terminalCandidates[0].Id.ShouldBe(Terminals.Set);
+					terminalCandidates[1].Id.ShouldBe(Terminals.Transaction);
+					terminalCandidates[2].Id.ShouldBe(Terminals.Isolation);
+					terminalCandidates[3].Id.ShouldBe(Terminals.Level);
+					terminalCandidates[4].Id.ShouldBe(Terminals.Read);
+					terminalCandidates[5].Id.ShouldBe(Terminals.Committed);
+				}
+
+				[Test(Description = @"")]
+				public void TestSetTransactionWithRollbackSegment()
+				{
+					const string statement1 = @"SET TRANSACTION USE ROLLBACK SEGMENT ROLLBACK_SEGMENT NAME 'HQ Transaction'";
+					var statement = Parser.Parse(statement1).Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+					var terminalCandidates = statement.AllTerminals.ToArray();
+					terminalCandidates.Length.ShouldBe(8);
+					terminalCandidates[0].Id.ShouldBe(Terminals.Set);
+					terminalCandidates[1].Id.ShouldBe(Terminals.Transaction);
+					terminalCandidates[2].Id.ShouldBe(Terminals.Use);
+					terminalCandidates[3].Id.ShouldBe(Terminals.Rollback);
+					terminalCandidates[4].Id.ShouldBe(Terminals.Segment);
+					terminalCandidates[5].Id.ShouldBe(Terminals.Identifier);
+					terminalCandidates[6].Id.ShouldBe(Terminals.Name);
+					terminalCandidates[7].Id.ShouldBe(Terminals.StringLiteral);
+				}
 			}
 		}
 
-		public class Update
+		public class Dml
 		{
-			[Test(Description = @"")]
-			public void TestUpdateWithExpressionAndScalarSubqueryAndReturningAndErrorLogging()
+			public class Delete
 			{
-				const string statement1 = @"UPDATE TEST_TABLE SET COLUMN1 = 2 / (COLUMN2 + 2), COLUMN2 = (SELECT 1 FROM DUAL), (COLUMN3, COLUMN4) = (SELECT X1, X2 FROM X3), COLUMN5 = DEFAULT RETURNING COLUMN1, COLUMN2 INTO :C1, :C2 LOG ERRORS INTO SCHEMA.LOG_TABLE ('Delete statement') REJECT LIMIT UNLIMITED";
-				var statements = Parser.Parse(statement1);
-				statements.Count.ShouldBe(1);
-				var statement = statements.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				[Test(Description = @"")]
+				public void TestDeleteWithReturningAndErrorLogging()
+				{
+					const string statement1 = @"DELETE FROM TEST_TABLE RETURNING COLUMN1, COLUMN2 INTO :C1, :C2 LOG ERRORS INTO SCHEMA.LOG_TABLE ('Delete statement') REJECT LIMIT 10";
+					var statements = Parser.Parse(statement1);
+					statements.Count.ShouldBe(1);
+					var statement = statements.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-				var terminals = statement.AllTerminals.ToArray();
-				terminals.Length.ShouldBe(62);
+					var terminals = statement.AllTerminals.ToArray();
+					terminals.Length.ShouldBe(25);
+				}
 			}
 
-			[Test(Description = @"")]
-			public void TestUpdateWithSetObjectValueFromSubquery()
+			public class Update
 			{
-				const string statement1 = @"UPDATE PEOPLE_DEMO1 P SET VALUE(P) = (SELECT VALUE(Q) FROM PEOPLE_DEMO2 Q WHERE P.DEPARTMENT_ID = Q.DEPARTMENT_ID) WHERE P.DEPARTMENT_ID = 10;";
-				var statements = Parser.Parse(statement1);
-				statements.Count.ShouldBe(1);
-				var statement = statements.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				[Test(Description = @"")]
+				public void TestUpdateWithExpressionAndScalarSubqueryAndReturningAndErrorLogging()
+				{
+					const string statement1 = @"UPDATE TEST_TABLE SET COLUMN1 = 2 / (COLUMN2 + 2), COLUMN2 = (SELECT 1 FROM DUAL), (COLUMN3, COLUMN4) = (SELECT X1, X2 FROM X3), COLUMN5 = DEFAULT RETURNING COLUMN1, COLUMN2 INTO :C1, :C2 LOG ERRORS INTO SCHEMA.LOG_TABLE ('Delete statement') REJECT LIMIT UNLIMITED";
+					var statements = Parser.Parse(statement1);
+					statements.Count.ShouldBe(1);
+					var statement = statements.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-				var terminals = statement.AllTerminals.ToArray();
-				terminals.Length.ShouldBe(33);
-			}
-		}
+					var terminals = statement.AllTerminals.ToArray();
+					terminals.Length.ShouldBe(62);
+				}
 
-		public class Merge
-		{
-			[Test(Description = @"")]
-			public void TestMergeWithTableReferenceAndErrorLogging()
-			{
-				const string statement1 = @"MERGE INTO IDX_TEST TARGET USING IDX_TEST PARTITION (P_C3_10) AS OF TIMESTAMP SYSDATE - 0.01 SOURCE ON (1 = 1) WHEN NOT MATCHED THEN INSERT (C1) VALUES (1) LOG ERRORS INTO SCHEMA.LOG_TABLE ('Merge statement') REJECT LIMIT UNLIMITED;";
-				var statements = Parser.Parse(statement1);
-				statements.Count.ShouldBe(1);
-				var statement = statements.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				[Test(Description = @"")]
+				public void TestUpdateWithSetObjectValueFromSubquery()
+				{
+					const string statement1 = @"UPDATE PEOPLE_DEMO1 P SET VALUE(P) = (SELECT VALUE(Q) FROM PEOPLE_DEMO2 Q WHERE P.DEPARTMENT_ID = Q.DEPARTMENT_ID) WHERE P.DEPARTMENT_ID = 10;";
+					var statements = Parser.Parse(statement1);
+					statements.Count.ShouldBe(1);
+					var statement = statements.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-				var terminals = statement.AllTerminals.ToArray();
-				terminals.Length.ShouldBe(47);
-			}
-
-			[Test(Description = @"")]
-			public void TestMergeWithSubqueryAndAllUpdateDeleteInsertClauses()
-			{
-				const string statement1 = @"MERGE INTO IDX_TEST USING LATERAL (SELECT * FROM DUAL WITH CHECK OPTION) ON (1 = 1) WHEN MATCHED THEN UPDATE SET C10 = C10 DELETE WHERE C1 IS NULL WHEN NOT MATCHED THEN INSERT (C1) VALUES (1) WHERE 1 = 1";
-				var statements = Parser.Parse(statement1);
-				statements.Count.ShouldBe(1);
-				var statement = statements.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-
-				var terminals = statement.AllTerminals.ToArray();
-				terminals.Length.ShouldBe(49);
+					var terminals = statement.AllTerminals.ToArray();
+					terminals.Length.ShouldBe(33);
+				}
 			}
 
-			[Test(Description = @"")]
-			public void TestMergeWithTableCollectionExpression()
+			public class Merge
 			{
-				const string statement1 = @"MERGE INTO IDX_TEST USING TABLE((DATABASE_ALERTS)) ON (1 = 1) WHEN NOT MATCHED THEN INSERT (C1) VALUES (1)";
-				var statements = Parser.Parse(statement1);
-				statements.Count.ShouldBe(1);
-				var statement = statements.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				[Test(Description = @"")]
+				public void TestMergeWithTableReferenceAndErrorLogging()
+				{
+					const string statement1 = @"MERGE INTO IDX_TEST TARGET USING IDX_TEST PARTITION (P_C3_10) AS OF TIMESTAMP SYSDATE - 0.01 SOURCE ON (1 = 1) WHEN NOT MATCHED THEN INSERT (C1) VALUES (1) LOG ERRORS INTO SCHEMA.LOG_TABLE ('Merge statement') REJECT LIMIT UNLIMITED;";
+					var statements = Parser.Parse(statement1);
+					statements.Count.ShouldBe(1);
+					var statement = statements.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-				var terminals = statement.AllTerminals.ToArray();
-				terminals.Length.ShouldBe(28);
+					var terminals = statement.AllTerminals.ToArray();
+					terminals.Length.ShouldBe(47);
+				}
+
+				[Test(Description = @"")]
+				public void TestMergeWithSubqueryAndAllUpdateDeleteInsertClauses()
+				{
+					const string statement1 = @"MERGE INTO IDX_TEST USING LATERAL (SELECT * FROM DUAL WITH CHECK OPTION) ON (1 = 1) WHEN MATCHED THEN UPDATE SET C10 = C10 DELETE WHERE C1 IS NULL WHEN NOT MATCHED THEN INSERT (C1) VALUES (1) WHERE 1 = 1";
+					var statements = Parser.Parse(statement1);
+					statements.Count.ShouldBe(1);
+					var statement = statements.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+					var terminals = statement.AllTerminals.ToArray();
+					terminals.Length.ShouldBe(49);
+				}
+
+				[Test(Description = @"")]
+				public void TestMergeWithTableCollectionExpression()
+				{
+					const string statement1 = @"MERGE INTO IDX_TEST USING TABLE((DATABASE_ALERTS)) ON (1 = 1) WHEN NOT MATCHED THEN INSERT (C1) VALUES (1)";
+					var statements = Parser.Parse(statement1);
+					statements.Count.ShouldBe(1);
+					var statement = statements.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+					var terminals = statement.AllTerminals.ToArray();
+					terminals.Length.ShouldBe(28);
+				}
 			}
-		}
 
-		public class Insert
-		{
-			[Test(Description = @"")]
-			public void TestSingleTableInsertWithErrorLogging()
+			public class Insert
 			{
-				const string statement1 =
-@"INSERT INTO ERRORLOGTEST(ID, PARENT_ID, VAL1, VAL2, VAL3)
+				[Test(Description = @"")]
+				public void TestSingleTableInsertWithErrorLogging()
+				{
+					const string statement1 =
+						@"INSERT INTO ERRORLOGTEST(ID, PARENT_ID, VAL1, VAL2, VAL3)
 SELECT * FROM
     (SELECT 1 ID, NULL PARENT_ID, 'Row 1 Column 1' VAL1, 'A' VAL2, 'Row 1 Column 3' VAL3 FROM DUAL UNION ALL
     SELECT 2 ID, 999 PARENT_ID, 'Row 2 Column 1' VAL1, 'B' VAL2, 'Row 2 Column 3' VAL3 FROM DUAL) TESTDATA
 LOG ERRORS INTO ERR$_ERRORLOGTEST ('COMMAND TAG 1') REJECT LIMIT UNLIMITED;";
 
-				var statements = Parser.Parse(statement1);
-				statements.Count.ShouldBe(1);
-				var statement = statements.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					var statements = Parser.Parse(statement1);
+					statements.Count.ShouldBe(1);
+					var statement = statements.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-				var terminals = statement.AllTerminals.ToArray();
-				terminals.Length.ShouldBe(66);
-			}
+					var terminals = statement.AllTerminals.ToArray();
+					terminals.Length.ShouldBe(66);
+				}
 
-			[Test(Description = @"")]
-			public void TestMultiTableInsertAll()
-			{
-				const string statement1 =
-@"INSERT ALL
+				[Test(Description = @"")]
+				public void TestMultiTableInsertAll()
+				{
+					const string statement1 =
+						@"INSERT ALL
     INTO TT VALUES (C1, NULL, NULL)
     INTO TT VALUES (NULL, C2, NULL)
     INTO TT VALUES (NULL, NULL, C3)
 SELECT (ROWNUM - 1) * 3 + 1 C1, (ROWNUM - 1) * 3 + 2 C2, (ROWNUM - 1) * 3 + 3 C3
 FROM DUAL CONNECT BY LEVEL <= 3";
 
-				var statements = Parser.Parse(statement1);
-				statements.Count.ShouldBe(1);
-				var statement = statements.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					var statements = Parser.Parse(statement1);
+					statements.Count.ShouldBe(1);
+					var statement = statements.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-				var terminals = statement.AllTerminals.ToArray();
-				terminals.Length.ShouldBe(72);
-			}
+					var terminals = statement.AllTerminals.ToArray();
+					terminals.Length.ShouldBe(72);
+				}
 
-			[Test(Description = @"")]
-			public void TestMultiTableInsertConditional()
-			{
-				const string statement1 =
-@"INSERT ALL
+				[Test(Description = @"")]
+				public void TestMultiTableInsertConditional()
+				{
+					const string statement1 =
+						@"INSERT ALL
     WHEN 1 = 1 THEN
         INTO INSERT1
     WHEN VAL > 5 THEN
@@ -2593,338 +2610,342 @@ FROM DUAL CONNECT BY LEVEL <= 3";
         INTO INSERT3
 SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 
-				var statements = Parser.Parse(statement1);
-				statements.Count.ShouldBe(1);
-				var statement = statements.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					var statements = Parser.Parse(statement1);
+					statements.Count.ShouldBe(1);
+					var statement = statements.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-				var terminals = statement.AllTerminals.ToArray();
-				terminals.Length.ShouldBe(37);
+					var terminals = statement.AllTerminals.ToArray();
+					terminals.Length.ShouldBe(37);
+				}
 			}
 		}
 
-		public class DropTable
+		public class Drop
 		{
-			[Test(Description = @"")]
-			public void TestDropTablePurge()
+			public class DropTable
 			{
-				const string statementText = @"DROP TABLE HUSQVIK.SELECTION PURGE";
+				[Test(Description = @"")]
+				public void TestDropTablePurge()
+				{
+					const string statementText = @"DROP TABLE HUSQVIK.SELECTION PURGE";
 
-				var result = Parser.Parse(statementText);
+					var result = Parser.Parse(statementText);
 
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-				var terminals = statement.AllTerminals.ToArray();
-				terminals.Length.ShouldBe(6);
+					var terminals = statement.AllTerminals.ToArray();
+					terminals.Length.ShouldBe(6);
 
-				terminals[0].Id.ShouldBe(Terminals.Drop);
-				terminals[1].Id.ShouldBe(Terminals.Table);
-				terminals[2].Id.ShouldBe(Terminals.SchemaIdentifier);
-				terminals[3].Id.ShouldBe(Terminals.Dot);
-				terminals[4].Id.ShouldBe(Terminals.ObjectIdentifier);
-				terminals[5].Id.ShouldBe(Terminals.Purge);
+					terminals[0].Id.ShouldBe(Terminals.Drop);
+					terminals[1].Id.ShouldBe(Terminals.Table);
+					terminals[2].Id.ShouldBe(Terminals.SchemaIdentifier);
+					terminals[3].Id.ShouldBe(Terminals.Dot);
+					terminals[4].Id.ShouldBe(Terminals.ObjectIdentifier);
+					terminals[5].Id.ShouldBe(Terminals.Purge);
+				}
+
+				[Test(Description = @"")]
+				public void TestDropTableCascadeConstraints()
+				{
+					const string statementText = @"DROP TABLE SELECTION CASCADE CONSTRAINTS;";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+					var terminals = statement.AllTerminals.ToArray();
+					terminals.Length.ShouldBe(5);
+
+					terminals[0].Id.ShouldBe(Terminals.Drop);
+					terminals[1].Id.ShouldBe(Terminals.Table);
+					terminals[2].Id.ShouldBe(Terminals.ObjectIdentifier);
+					terminals[3].Id.ShouldBe(Terminals.Cascade);
+					terminals[4].Id.ShouldBe(Terminals.Constraints);
+				}
 			}
 
-			[Test(Description = @"")]
-			public void TestDropTableCascadeConstraints()
+			public class DropIndex
 			{
-				const string statementText = @"DROP TABLE SELECTION CASCADE CONSTRAINTS;";
+				[Test(Description = @"")]
+				public void TestDropIndexForce()
+				{
+					const string statementText = @"DROP INDEX HUSQVIK.PK_SELECTION FORCE";
 
-				var result = Parser.Parse(statementText);
+					var result = Parser.Parse(statementText);
 
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-				var terminals = statement.AllTerminals.ToArray();
-				terminals.Length.ShouldBe(5);
+					var terminals = statement.AllTerminals.ToArray();
+					terminals.Length.ShouldBe(6);
 
-				terminals[0].Id.ShouldBe(Terminals.Drop);
-				terminals[1].Id.ShouldBe(Terminals.Table);
-				terminals[2].Id.ShouldBe(Terminals.ObjectIdentifier);
-				terminals[3].Id.ShouldBe(Terminals.Cascade);
-				terminals[4].Id.ShouldBe(Terminals.Constraints);
-			}
-		}
+					terminals[0].Id.ShouldBe(Terminals.Drop);
+					terminals[1].Id.ShouldBe(Terminals.Index);
+					terminals[2].Id.ShouldBe(Terminals.SchemaIdentifier);
+					terminals[3].Id.ShouldBe(Terminals.Dot);
+					terminals[4].Id.ShouldBe(Terminals.ObjectIdentifier);
+					terminals[5].Id.ShouldBe(Terminals.Force);
+				}
 
-		public class DropIndex
-		{
-			[Test(Description = @"")]
-			public void TestDropIndexForce()
-			{
-				const string statementText = @"DROP INDEX HUSQVIK.PK_SELECTION FORCE";
+				[Test(Description = @"")]
+				public void TestDropIndexOnline()
+				{
+					const string statementText = @"DROP INDEX PK_SELECTION ONLINE;";
 
-				var result = Parser.Parse(statementText);
+					var result = Parser.Parse(statementText);
 
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-				var terminals = statement.AllTerminals.ToArray();
-				terminals.Length.ShouldBe(6);
+					var terminals = statement.AllTerminals.ToArray();
+					terminals.Length.ShouldBe(4);
 
-				terminals[0].Id.ShouldBe(Terminals.Drop);
-				terminals[1].Id.ShouldBe(Terminals.Index);
-				terminals[2].Id.ShouldBe(Terminals.SchemaIdentifier);
-				terminals[3].Id.ShouldBe(Terminals.Dot);
-				terminals[4].Id.ShouldBe(Terminals.ObjectIdentifier);
-				terminals[5].Id.ShouldBe(Terminals.Force);
-			}
-
-			[Test(Description = @"")]
-			public void TestDropIndexOnline()
-			{
-				const string statementText = @"DROP INDEX PK_SELECTION ONLINE;";
-
-				var result = Parser.Parse(statementText);
-
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-
-				var terminals = statement.AllTerminals.ToArray();
-				terminals.Length.ShouldBe(4);
-
-				terminals[0].Id.ShouldBe(Terminals.Drop);
-				terminals[1].Id.ShouldBe(Terminals.Index);
-				terminals[2].Id.ShouldBe(Terminals.ObjectIdentifier);
-				terminals[3].Id.ShouldBe(Terminals.Online);
-			}
-		}
-
-		public class DropView
-		{
-			[Test(Description = @"")]
-			public void TestDropViewCascadeConstraints()
-			{
-				const string statementText = @"DROP VIEW HUSQVIK.SELECTION CASCADE CONSTRAINTS;";
-
-				var result = Parser.Parse(statementText);
-
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-
-				var terminals = statement.AllTerminals.ToArray();
-				terminals.Length.ShouldBe(7);
-
-				terminals[0].Id.ShouldBe(Terminals.Drop);
-				terminals[1].Id.ShouldBe(Terminals.View);
-				terminals[2].Id.ShouldBe(Terminals.SchemaIdentifier);
-				terminals[3].Id.ShouldBe(Terminals.Dot);
-				terminals[4].Id.ShouldBe(Terminals.ObjectIdentifier);
-				terminals[5].Id.ShouldBe(Terminals.Cascade);
-				terminals[6].Id.ShouldBe(Terminals.Constraints);
+					terminals[0].Id.ShouldBe(Terminals.Drop);
+					terminals[1].Id.ShouldBe(Terminals.Index);
+					terminals[2].Id.ShouldBe(Terminals.ObjectIdentifier);
+					terminals[3].Id.ShouldBe(Terminals.Online);
+				}
 			}
 
-			[Test(Description = @"")]
-			public void TestDropMaterializedViewPreserveTable()
+			public class DropView
 			{
-				const string statementText = @"DROP MATERIALIZED VIEW HUSQVIK.MV_SELECTION PRESERVE TABLE";
+				[Test(Description = @"")]
+				public void TestDropViewCascadeConstraints()
+				{
+					const string statementText = @"DROP VIEW HUSQVIK.SELECTION CASCADE CONSTRAINTS;";
 
-				var result = Parser.Parse(statementText);
+					var result = Parser.Parse(statementText);
 
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-				var terminals = statement.AllTerminals.ToArray();
-				terminals.Length.ShouldBe(8);
+					var terminals = statement.AllTerminals.ToArray();
+					terminals.Length.ShouldBe(7);
 
-				terminals[0].Id.ShouldBe(Terminals.Drop);
-				terminals[1].Id.ShouldBe(Terminals.Materialized);
-				terminals[2].Id.ShouldBe(Terminals.View);
-				terminals[3].Id.ShouldBe(Terminals.SchemaIdentifier);
-				terminals[4].Id.ShouldBe(Terminals.Dot);
-				terminals[5].Id.ShouldBe(Terminals.ObjectIdentifier);
-				terminals[6].Id.ShouldBe(Terminals.Preserve);
-				terminals[7].Id.ShouldBe(Terminals.Table);
+					terminals[0].Id.ShouldBe(Terminals.Drop);
+					terminals[1].Id.ShouldBe(Terminals.View);
+					terminals[2].Id.ShouldBe(Terminals.SchemaIdentifier);
+					terminals[3].Id.ShouldBe(Terminals.Dot);
+					terminals[4].Id.ShouldBe(Terminals.ObjectIdentifier);
+					terminals[5].Id.ShouldBe(Terminals.Cascade);
+					terminals[6].Id.ShouldBe(Terminals.Constraints);
+				}
+
+				[Test(Description = @"")]
+				public void TestDropMaterializedViewPreserveTable()
+				{
+					const string statementText = @"DROP MATERIALIZED VIEW HUSQVIK.MV_SELECTION PRESERVE TABLE";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+					var terminals = statement.AllTerminals.ToArray();
+					terminals.Length.ShouldBe(8);
+
+					terminals[0].Id.ShouldBe(Terminals.Drop);
+					terminals[1].Id.ShouldBe(Terminals.Materialized);
+					terminals[2].Id.ShouldBe(Terminals.View);
+					terminals[3].Id.ShouldBe(Terminals.SchemaIdentifier);
+					terminals[4].Id.ShouldBe(Terminals.Dot);
+					terminals[5].Id.ShouldBe(Terminals.ObjectIdentifier);
+					terminals[6].Id.ShouldBe(Terminals.Preserve);
+					terminals[7].Id.ShouldBe(Terminals.Table);
+				}
+
+				[Test(Description = @"")]
+				public void TestDropMaterializedViewWithObsoleteSnapshotKeyword()
+				{
+					const string statementText = @"DROP SNAPSHOT MV_SELECTION";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+					var terminals = statement.AllTerminals.ToArray();
+					terminals.Length.ShouldBe(3);
+
+					terminals[0].Id.ShouldBe(Terminals.Drop);
+					terminals[1].Id.ShouldBe(Terminals.Snapshot);
+					terminals[2].Id.ShouldBe(Terminals.ObjectIdentifier);
+				}
 			}
 
-			[Test(Description = @"")]
-			public void TestDropMaterializedViewWithObsoleteSnapshotKeyword()
+			public class DropPackage
 			{
-				const string statementText = @"DROP SNAPSHOT MV_SELECTION";
+				[Test(Description = @"")]
+				public void TestDropPackage()
+				{
+					const string statementText = @"DROP PACKAGE BODY HUSQVIK.SQLPAD";
 
-				var result = Parser.Parse(statementText);
+					var result = Parser.Parse(statementText);
 
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-				var terminals = statement.AllTerminals.ToArray();
-				terminals.Length.ShouldBe(3);
+					var terminals = statement.AllTerminals.ToArray();
+					terminals.Length.ShouldBe(6);
 
-				terminals[0].Id.ShouldBe(Terminals.Drop);
-				terminals[1].Id.ShouldBe(Terminals.Snapshot);
-				terminals[2].Id.ShouldBe(Terminals.ObjectIdentifier);
-			}
-		}
-
-		public class DropPackage
-		{
-			[Test(Description = @"")]
-			public void TestDropPackage()
-			{
-				const string statementText = @"DROP PACKAGE BODY HUSQVIK.SQLPAD";
-
-				var result = Parser.Parse(statementText);
-
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-
-				var terminals = statement.AllTerminals.ToArray();
-				terminals.Length.ShouldBe(6);
-
-				terminals[0].Id.ShouldBe(Terminals.Drop);
-				terminals[1].Id.ShouldBe(Terminals.Package);
-				terminals[2].Id.ShouldBe(Terminals.Body);
-				terminals[3].Id.ShouldBe(Terminals.SchemaIdentifier);
-				terminals[4].Id.ShouldBe(Terminals.Dot);
-				terminals[5].Id.ShouldBe(Terminals.ObjectIdentifier);
-			}
-		}
-
-		public class DropCluster
-		{
-			[Test(Description = @"")]
-			public void TestDropPackage()
-			{
-				const string statementText = @"DROP CLUSTER HUSQVIK.TEST_CLUSTER INCLUDING TABLES CASCADE CONSTRAINTS";
-
-				var result = Parser.Parse(statementText);
-
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-
-				var terminals = statement.AllTerminals.ToArray();
-				terminals.Length.ShouldBe(9);
-
-				terminals[0].Id.ShouldBe(Terminals.Drop);
-				terminals[1].Id.ShouldBe(Terminals.Cluster);
-				terminals[2].Id.ShouldBe(Terminals.SchemaIdentifier);
-				terminals[3].Id.ShouldBe(Terminals.Dot);
-				terminals[4].Id.ShouldBe(Terminals.ObjectIdentifier);
-				terminals[5].Id.ShouldBe(Terminals.Including);
-				terminals[6].Id.ShouldBe(Terminals.Tables);
-				terminals[7].Id.ShouldBe(Terminals.Cascade);
-				terminals[8].Id.ShouldBe(Terminals.Constraints);
-			}
-		}
-
-		public class DropMaterializedViewLog
-		{
-			[Test(Description = @"")]
-			public void TestDropMaterializedViewLog()
-			{
-				const string statementText = @"DROP MATERIALIZED VIEW LOG ON HUSQVIK.TEST_CLUSTER";
-
-				var result = Parser.Parse(statementText);
-
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-
-				var terminals = statement.AllTerminals.ToArray();
-				terminals.Length.ShouldBe(8);
-
-				terminals[0].Id.ShouldBe(Terminals.Drop);
-				terminals[1].Id.ShouldBe(Terminals.Materialized);
-				terminals[2].Id.ShouldBe(Terminals.View);
-				terminals[3].Id.ShouldBe(Terminals.Log);
-				terminals[4].Id.ShouldBe(Terminals.On);
-				terminals[5].Id.ShouldBe(Terminals.SchemaIdentifier);
-				terminals[6].Id.ShouldBe(Terminals.Dot);
-				terminals[7].Id.ShouldBe(Terminals.ObjectIdentifier);
-			}
-		}
-
-		public class DropOther
-		{
-			[Test(Description = @"")]
-			public void TestDropFunction()
-			{
-				const string statementText = @"DROP FUNCTION HUSQVIK.SQLPAD_FUNCTION";
-
-				var result = Parser.Parse(statementText);
-
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-
-				var terminals = statement.AllTerminals.ToArray();
-				terminals.Length.ShouldBe(5);
-
-				terminals[0].Id.ShouldBe(Terminals.Drop);
-				terminals[1].Id.ShouldBe(Terminals.Function);
-				terminals[2].Id.ShouldBe(Terminals.SchemaIdentifier);
-				terminals[3].Id.ShouldBe(Terminals.Dot);
-				terminals[4].Id.ShouldBe(Terminals.ObjectIdentifier);
+					terminals[0].Id.ShouldBe(Terminals.Drop);
+					terminals[1].Id.ShouldBe(Terminals.Package);
+					terminals[2].Id.ShouldBe(Terminals.Body);
+					terminals[3].Id.ShouldBe(Terminals.SchemaIdentifier);
+					terminals[4].Id.ShouldBe(Terminals.Dot);
+					terminals[5].Id.ShouldBe(Terminals.ObjectIdentifier);
+				}
 			}
 
-			[Test(Description = @"")]
-			public void TestDropProcedure()
+			public class DropCluster
 			{
-				const string statementText = @"DROP PROCEDURE HUSQVIK.TEST_PROCEDURE";
+				[Test(Description = @"")]
+				public void TestDropPackage()
+				{
+					const string statementText = @"DROP CLUSTER HUSQVIK.TEST_CLUSTER INCLUDING TABLES CASCADE CONSTRAINTS";
 
-				var result = Parser.Parse(statementText);
+					var result = Parser.Parse(statementText);
 
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-				var terminals = statement.AllTerminals.ToArray();
-				terminals.Length.ShouldBe(5);
+					var terminals = statement.AllTerminals.ToArray();
+					terminals.Length.ShouldBe(9);
 
-				terminals[0].Id.ShouldBe(Terminals.Drop);
-				terminals[1].Id.ShouldBe(Terminals.Procedure);
-				terminals[2].Id.ShouldBe(Terminals.SchemaIdentifier);
-				terminals[3].Id.ShouldBe(Terminals.Dot);
-				terminals[4].Id.ShouldBe(Terminals.ObjectIdentifier);
+					terminals[0].Id.ShouldBe(Terminals.Drop);
+					terminals[1].Id.ShouldBe(Terminals.Cluster);
+					terminals[2].Id.ShouldBe(Terminals.SchemaIdentifier);
+					terminals[3].Id.ShouldBe(Terminals.Dot);
+					terminals[4].Id.ShouldBe(Terminals.ObjectIdentifier);
+					terminals[5].Id.ShouldBe(Terminals.Including);
+					terminals[6].Id.ShouldBe(Terminals.Tables);
+					terminals[7].Id.ShouldBe(Terminals.Cascade);
+					terminals[8].Id.ShouldBe(Terminals.Constraints);
+				}
 			}
 
-			[Test(Description = @"")]
-			public void TestDropSequence()
+			public class DropMaterializedViewLog
 			{
-				const string statementText = @"DROP SEQUENCE HUSQVIK.TEST_SEQ";
+				[Test(Description = @"")]
+				public void TestDropMaterializedViewLog()
+				{
+					const string statementText = @"DROP MATERIALIZED VIEW LOG ON HUSQVIK.TEST_CLUSTER";
 
-				var result = Parser.Parse(statementText);
+					var result = Parser.Parse(statementText);
 
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-				var terminals = statement.AllTerminals.ToArray();
-				terminals.Length.ShouldBe(5);
+					var terminals = statement.AllTerminals.ToArray();
+					terminals.Length.ShouldBe(8);
 
-				terminals[0].Id.ShouldBe(Terminals.Drop);
-				terminals[1].Id.ShouldBe(Terminals.Sequence);
-				terminals[2].Id.ShouldBe(Terminals.SchemaIdentifier);
-				terminals[3].Id.ShouldBe(Terminals.Dot);
-				terminals[4].Id.ShouldBe(Terminals.ObjectIdentifier);
+					terminals[0].Id.ShouldBe(Terminals.Drop);
+					terminals[1].Id.ShouldBe(Terminals.Materialized);
+					terminals[2].Id.ShouldBe(Terminals.View);
+					terminals[3].Id.ShouldBe(Terminals.Log);
+					terminals[4].Id.ShouldBe(Terminals.On);
+					terminals[5].Id.ShouldBe(Terminals.SchemaIdentifier);
+					terminals[6].Id.ShouldBe(Terminals.Dot);
+					terminals[7].Id.ShouldBe(Terminals.ObjectIdentifier);
+				}
 			}
 
-			[Test(Description = @"")]
-			public void TestDropContext()
+			public class DropOther
 			{
-				const string statementText = @"DROP CONTEXT TEST_CONTEXT";
+				[Test(Description = @"")]
+				public void TestDropFunction()
+				{
+					const string statementText = @"DROP FUNCTION HUSQVIK.SQLPAD_FUNCTION";
 
-				var result = Parser.Parse(statementText);
+					var result = Parser.Parse(statementText);
 
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-				var terminals = statement.AllTerminals.ToArray();
-				terminals.Length.ShouldBe(3);
+					var terminals = statement.AllTerminals.ToArray();
+					terminals.Length.ShouldBe(5);
 
-				terminals[0].Id.ShouldBe(Terminals.Drop);
-				terminals[1].Id.ShouldBe(Terminals.Context);
-				terminals[2].Id.ShouldBe(Terminals.ObjectIdentifier);
+					terminals[0].Id.ShouldBe(Terminals.Drop);
+					terminals[1].Id.ShouldBe(Terminals.Function);
+					terminals[2].Id.ShouldBe(Terminals.SchemaIdentifier);
+					terminals[3].Id.ShouldBe(Terminals.Dot);
+					terminals[4].Id.ShouldBe(Terminals.ObjectIdentifier);
+				}
+
+				[Test(Description = @"")]
+				public void TestDropProcedure()
+				{
+					const string statementText = @"DROP PROCEDURE HUSQVIK.TEST_PROCEDURE";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+					var terminals = statement.AllTerminals.ToArray();
+					terminals.Length.ShouldBe(5);
+
+					terminals[0].Id.ShouldBe(Terminals.Drop);
+					terminals[1].Id.ShouldBe(Terminals.Procedure);
+					terminals[2].Id.ShouldBe(Terminals.SchemaIdentifier);
+					terminals[3].Id.ShouldBe(Terminals.Dot);
+					terminals[4].Id.ShouldBe(Terminals.ObjectIdentifier);
+				}
+
+				[Test(Description = @"")]
+				public void TestDropSequence()
+				{
+					const string statementText = @"DROP SEQUENCE HUSQVIK.TEST_SEQ";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+					var terminals = statement.AllTerminals.ToArray();
+					terminals.Length.ShouldBe(5);
+
+					terminals[0].Id.ShouldBe(Terminals.Drop);
+					terminals[1].Id.ShouldBe(Terminals.Sequence);
+					terminals[2].Id.ShouldBe(Terminals.SchemaIdentifier);
+					terminals[3].Id.ShouldBe(Terminals.Dot);
+					terminals[4].Id.ShouldBe(Terminals.ObjectIdentifier);
+				}
+
+				[Test(Description = @"")]
+				public void TestDropContext()
+				{
+					const string statementText = @"DROP CONTEXT TEST_CONTEXT";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+					var terminals = statement.AllTerminals.ToArray();
+					terminals.Length.ShouldBe(3);
+
+					terminals[0].Id.ShouldBe(Terminals.Drop);
+					terminals[1].Id.ShouldBe(Terminals.Context);
+					terminals[2].Id.ShouldBe(Terminals.ObjectIdentifier);
+				}
 			}
 		}
 
@@ -3041,13 +3062,15 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 			}
 		}
 
-		public class CreateTable
+		public class Create
 		{
-			[Test(Description = @"")]
-			public void TestBasicCreateTable()
+			public class CreateTable
 			{
-				const string statementText =
-@"CREATE TABLE test_table (
+				[Test(Description = @"")]
+				public void TestBasicCreateTable()
+				{
+					const string statementText =
+						@"CREATE TABLE test_table (
   id NUMBER(6) PRIMARY KEY,
   parent_id NUMBER(6) CHECK (id <> 0) REFERENCES test_table (id) ON DELETE SET NULL,
   first_name VARCHAR2(20) VISIBLE,
@@ -3059,23 +3082,23 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
   CONSTRAINT uq_test_table_email UNIQUE (email)
 )";
 
-				var result = Parser.Parse(statementText);
+					var result = Parser.Parse(statementText);
 
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-				var terminals = statement.AllTerminals.ToArray();
-				terminals.Length.ShouldBe(92);
+					var terminals = statement.AllTerminals.ToArray();
+					terminals.Length.ShouldBe(92);
 
-				terminals[85].Id.ShouldBe(Terminals.Constraint);
-			}
+					terminals[85].Id.ShouldBe(Terminals.Constraint);
+				}
 
-			[Test(Description = @"")]
-			public void TestPhysicalPropertiesClause()
-			{
-				const string statementText =
-@"CREATE TABLE HUSQVIK.SELECTION (
+				[Test(Description = @"")]
+				public void TestPhysicalPropertiesClause()
+				{
+					const string statementText =
+						@"CREATE TABLE HUSQVIK.SELECTION (
 	SELECTION_ID NUMBER
 )
 SEGMENT CREATION IMMEDIATE
@@ -3088,18 +3111,18 @@ STORAGE (
 )
 TABLESPACE TBS_HQ_PDB";
 
-				var result = Parser.Parse(statementText);
+					var result = Parser.Parse(statementText);
 
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-			}
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
 
-			[Test(Description = @"")]
-			public void TestTablePropertiesClause()
-			{
-				const string statementText =
-@"CREATE TABLE TEST_TABLE (
+				[Test(Description = @"")]
+				public void TestTablePropertiesClause()
+				{
+					const string statementText =
+						@"CREATE TABLE TEST_TABLE (
 	ID
 )
 NOCACHE RESULT_CACHE (MODE FORCE) PARALLEL NOROWDEPENDENCIES DISABLE ROW MOVEMENT NO FLASHBACK ARCHIVE
@@ -3107,54 +3130,54 @@ NOLOGGING
 AS
 SELECT * FROM DUAL";
 
-				var result = Parser.Parse(statementText);
+					var result = Parser.Parse(statementText);
 
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-			}
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
 
-			[Test(Description = @"")]
-			public void TestConstraintStateClause()
-			{
-				const string statementText = @"CREATE TABLE TEST_TABLE (ID NUMBER CHECK (VAL2 IN ('A', 'B', 'C')) DEFERRABLE INITIALLY DEFERRED NORELY ENABLE)";
+				[Test(Description = @"")]
+				public void TestConstraintStateClause()
+				{
+					const string statementText = @"CREATE TABLE TEST_TABLE (ID NUMBER CHECK (VAL2 IN ('A', 'B', 'C')) DEFERRABLE INITIALLY DEFERRED NORELY ENABLE)";
 
-				var result = Parser.Parse(statementText);
+					var result = Parser.Parse(statementText);
 
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-			}
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
 
-			[Test(Description = @"")]
-			public void TestSimpleCreateTableAsSelect()
-			{
-				const string statementText = @"CREATE TABLE XXX COLUMN STORE COMPRESS FOR ARCHIVE HIGH NO ROW LEVEL LOCKING AS SELECT * FROM DUAL";
+				[Test(Description = @"")]
+				public void TestSimpleCreateTableAsSelect()
+				{
+					const string statementText = @"CREATE TABLE XXX COLUMN STORE COMPRESS FOR ARCHIVE HIGH NO ROW LEVEL LOCKING AS SELECT * FROM DUAL";
 
-				var result = Parser.Parse(statementText);
+					var result = Parser.Parse(statementText);
 
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-			}
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
 
-			[Test(Description = @"")]
-			public void TestCreateGlobalTemporaryTable()
-			{
-				const string statementText = @"CREATE GLOBAL TEMPORARY TABLE XXX (VAL NUMBER) ON COMMIT PRESERVE ROWS";
+				[Test(Description = @"")]
+				public void TestCreateGlobalTemporaryTable()
+				{
+					const string statementText = @"CREATE GLOBAL TEMPORARY TABLE XXX (VAL NUMBER) ON COMMIT PRESERVE ROWS";
 
-				var result = Parser.Parse(statementText);
+					var result = Parser.Parse(statementText);
 
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-			}
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
 
-			[Test(Description = @"")]
-			public void TestGeneratedIdentityClause()
-			{
-				const string statementText =
-@"CREATE TABLE TESTTABLE (
+				[Test(Description = @"")]
+				public void TestGeneratedIdentityClause()
+				{
+					const string statementText =
+						@"CREATE TABLE TESTTABLE (
     ID1 NUMBER GENERATED BY DEFAULT ON NULL AS IDENTITY (START WITH 42 INCREMENT BY 1000 NOCYCLE NOORDER CACHE 100 NOMINVALUE NOMAXVALUE),
     ID2 NUMBER DEFAULT SEQ_TEST.NEXTVAL,
     STARTDATE DATE NOT NULL,
@@ -3163,36 +3186,36 @@ SELECT * FROM DUAL";
     HIDDENCOLUMN VARCHAR2(100) INVISIBLE
 )";
 
-				var result = Parser.Parse(statementText);
+					var result = Parser.Parse(statementText);
 
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-			}
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
 
-			[Test(Description = @"")]
-			public void TestEncryptColumnClause()
-			{
-				const string statementText =
-@"CREATE TABLE ENCRYPTIONTEST (
+				[Test(Description = @"")]
+				public void TestEncryptColumnClause()
+				{
+					const string statementText =
+						@"CREATE TABLE ENCRYPTIONTEST (
      FIRST_NAME VARCHAR2(128),
      LAST_NAME VARCHAR2(128),
      EMPID NUMBER,
      SALARY NUMBER(12, 2) ENCRYPT USING 'AES256' IDENTIFIED BY oracle 'SHA-1' SALT
 )";
 
-				var result = Parser.Parse(statementText);
+					var result = Parser.Parse(statementText);
 
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-			}
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
 
-			[Test(Description = @"")]
-			public void TestExplicitHeapOrganizationClause()
-			{
-				const string statementText =
-@"CREATE TABLE TEST_TABLE (
+				[Test(Description = @"")]
+				public void TestExplicitHeapOrganizationClause()
+				{
+					const string statementText =
+						@"CREATE TABLE TEST_TABLE (
 	VAL NUMBER
 )
 SEGMENT CREATION IMMEDIATE
@@ -3202,18 +3225,18 @@ NOCOMPRESS
 NOROWDEPENDENCIES
 TABLESPACE TBS_HQ_PDB";
 
-				var result = Parser.Parse(statementText);
+					var result = Parser.Parse(statementText);
 
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-			}
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
 
-			[Test(Description = @"")]
-			public void TestExplicitIndexpOrganizationClause()
-			{
-				const string statementText =
-@"CREATE TABLE TEST_TABLE (
+				[Test(Description = @"")]
+				public void TestExplicitIndexpOrganizationClause()
+				{
+					const string statementText =
+						@"CREATE TABLE TEST_TABLE (
 	ID1 NUMBER,
 	ID2 NUMBER,
 	DATA VARCHAR2(255),
@@ -3229,18 +3252,18 @@ STORAGE (INITIAL 4K)
 OVERFLOW STORAGE (INITIAL 4K)
 TABLESPACE TBS_MSSM";
 
-				var result = Parser.Parse(statementText);
+					var result = Parser.Parse(statementText);
 
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-			}
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
 
-			[Test(Description = @"")]
-			public void TestSupplementalLoggingClause()
-			{
-				const string statementText =
-@"CREATE TABLE TEST_TABLE (
+				[Test(Description = @"")]
+				public void TestSupplementalLoggingClause()
+				{
+					const string statementText =
+						@"CREATE TABLE TEST_TABLE (
 	ID NUMBER,
 	DATA1 VARCHAR2(255) UNIQUE,
 	DATA2 VARCHAR2(255),
@@ -3254,18 +3277,18 @@ TABLESPACE TBS_MSSM";
 	SUPPLEMENTAL LOG GROUP TEST_SUPPLEMENTAL_LOG_GROUP2 (DATA5 NO LOG, DATA6)
 )";
 
-				var result = Parser.Parse(statementText);
+					var result = Parser.Parse(statementText);
 
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-			}
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
 
-			[Test(Description = @"")]
-			public void TestLargeObjectStorageClause()
-			{
-				const string statementText =
-@"CREATE TABLE TEST_TABLE (
+				[Test(Description = @"")]
+				public void TestLargeObjectStorageClause()
+				{
+					const string statementText =
+						@"CREATE TABLE TEST_TABLE (
 	LOB_COLUMN1 CLOB,
 	LOB_COLUMN2 CLOB,
 	LOB_COLUMN3 BLOB
@@ -3290,18 +3313,18 @@ STORE AS BASICFILE TEST_LOB_SEGMENT (
 	LOGGING
 )";
 
-				var result = Parser.Parse(statementText);
+					var result = Parser.Parse(statementText);
 
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-			}
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
 
-			[Test(Description = @"")]
-			public void TestVariableElementArrayColumnProperties()
-			{
-				const string statementText =
-@"CREATE TABLE TEST_TABLE (
+				[Test(Description = @"")]
+				public void TestVariableElementArrayColumnProperties()
+				{
+					const string statementText =
+						@"CREATE TABLE TEST_TABLE (
 	VARRAY_COLUMN1 SYS.ODCIVARCHAR2LIST,
 	VARRAY_COLUMN2 HUSQVIK.ALERT_COLLECTION
 )
@@ -3314,18 +3337,18 @@ VARRAY VARRAY_COLUMN1
 VARRAY VARRAY_COLUMN2
 	IS OF (ONLY HUSQVIK.ALERT)";
 
-				var result = Parser.Parse(statementText);
+					var result = Parser.Parse(statementText);
 
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-			}
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
 
-			[Test(Description = @"")]
-			public void TestNestedTableColumnProperties()
-			{
-				const string statementText =
-@"CREATE TABLE HUSQVIK.TEST_TABLE (
+				[Test(Description = @"")]
+				public void TestNestedTableColumnProperties()
+				{
+					const string statementText =
+						@"CREATE TABLE HUSQVIK.TEST_TABLE (
 	NESTED_TABLE_COLUMN HUSQVIK.ALERT_COLLECTION 
 )
 SEGMENT CREATION IMMEDIATE
@@ -3349,60 +3372,60 @@ NESTED TABLE NESTED_TABLE_COLUMN
 	)
 	RETURN AS VALUE";
 
-				var result = Parser.Parse(statementText);
+					var result = Parser.Parse(statementText);
 
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-			}
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
 
-			[Test(Description = @"")]
-			public void TestUsingCreateIndexClause()
-			{
-				const string statementText =
-@"CREATE TABLE TEST_TABLE (
+				[Test(Description = @"")]
+				public void TestUsingCreateIndexClause()
+				{
+					const string statementText =
+						@"CREATE TABLE TEST_TABLE (
 	ID NUMBER PRIMARY KEY USING INDEX (CREATE INDEX PK_TEST_TABLE ON TEST_TABLE (ID)),
 	VALUE NUMBER,
 	CONSTRAINT IX_TEST_TABLE UNIQUE (VALUE) USING INDEX (CREATE UNIQUE INDEX IX_TEST_TABLE_VALUE ON TEST_TABLE (VALUE)),
 	DATA VARCHAR2(255) CONSTRAINT UQ_TEST_TABLE_DATA UNIQUE USING INDEX PCTFREE 20 STORAGE (INITIAL 8M) REVERSE
 )";
 
-				var result = Parser.Parse(statementText);
+					var result = Parser.Parse(statementText);
 
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-			}
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
 
-			[Test(Description = @"")]
-			public void TestObjectPropertiesClause()
-			{
-				const string statementText = @"CREATE TABLE EMPLOYEES_OBJ_T OF EMPLOYEES_TYP (E_NO PRIMARY KEY) OBJECT IDENTIFIER IS PRIMARY KEY";
+				[Test(Description = @"")]
+				public void TestObjectPropertiesClause()
+				{
+					const string statementText = @"CREATE TABLE EMPLOYEES_OBJ_T OF EMPLOYEES_TYP (E_NO PRIMARY KEY) OBJECT IDENTIFIER IS PRIMARY KEY";
 
-				var result = Parser.Parse(statementText);
+					var result = Parser.Parse(statementText);
 
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-			}
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
 
-			[Test(Description = @"")]
-			public void TestVirtualColumnClause()
-			{
-				const string statementText = @"CREATE TABLE TEST_TABLE (C1 NUMBER, C2 NUMBER, C3 VISIBLE GENERATED ALWAYS AS ((C1 + C2) * (C1 * C2)) VIRTUAL EVALUATE USING NULL EDITION UNUSABLE BEGINNING WITH EDITION TEST_EDITION CONSTRAINT NN_VIRTUAL_C3 NOT NULL)";
+				[Test(Description = @"")]
+				public void TestVirtualColumnClause()
+				{
+					const string statementText = @"CREATE TABLE TEST_TABLE (C1 NUMBER, C2 NUMBER, C3 VISIBLE GENERATED ALWAYS AS ((C1 + C2) * (C1 * C2)) VIRTUAL EVALUATE USING NULL EDITION UNUSABLE BEGINNING WITH EDITION TEST_EDITION CONSTRAINT NN_VIRTUAL_C3 NOT NULL)";
 
-				var result = Parser.Parse(statementText);
+					var result = Parser.Parse(statementText);
 
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-			}
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
 
-			[Test(Description = @"")]
-			public void TestRangePartitioningClause()
-			{
-				const string statementText =
-@"CREATE TABLE TEST_PARTITION_TABLE (
+				[Test(Description = @"")]
+				public void TestRangePartitioningClause()
+				{
+					const string statementText =
+						@"CREATE TABLE TEST_PARTITION_TABLE (
 	PROD_ID NUMBER(6),
 	CUST_ID NUMBER,
 	TIME_IDB DATE,
@@ -3418,18 +3441,18 @@ PARTITION BY RANGE (TIME_ID) (
    PARTITION SALES_Q4_2000 VALUES LESS THAN (MAXVALUE)
 )";
 
-				var result = Parser.Parse(statementText);
+					var result = Parser.Parse(statementText);
 
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-			}
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
 
-			[Test(Description = @"")]
-			public void TestListPartitioningClause()
-			{
-				const string statementText =
-@"CREATE TABLE TEST_PARTITION_TABLE (
+				[Test(Description = @"")]
+				public void TestListPartitioningClause()
+				{
+					const string statementText =
+						@"CREATE TABLE TEST_PARTITION_TABLE (
 	CUSTOMER_ID NUMBER(6),
 	CUST_FIRST_NAME VARCHAR2(20),
 	CUST_LAST_NAME VARCHAR2(20),
@@ -3444,18 +3467,18 @@ PARTITION BY LIST (NLS_TERRITORY) (
 	PARTITION REST VALUES (DEFAULT)
 )";
 
-				var result = Parser.Parse(statementText);
+					var result = Parser.Parse(statementText);
 
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-			}
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
 
-			[Test(Description = @"")]
-			public void TestHashPartitioningClauseWithPartitionsByQuantity()
-			{
-				const string statementText =
-@"CREATE TABLE TEST_PARTITION_TABLE (
+				[Test(Description = @"")]
+				public void TestHashPartitioningClauseWithPartitionsByQuantity()
+				{
+					const string statementText =
+						@"CREATE TABLE TEST_PARTITION_TABLE (
 	PRODUCT_ID NUMBER(6) PRIMARY KEY,
 	PRODUCT_NAME VARCHAR2(50),
 	PRODUCT_DESCRIPTION VARCHAR2(2000),
@@ -3473,30 +3496,30 @@ PARTITION BY LIST (NLS_TERRITORY) (
 PARTITION BY HASH (PRODUCT_ID)
 PARTITIONS 4 STORE IN (TABLESPACE_1, TABLESPACE_2, TABLESPACE_3, TABLESPACE_4)";
 
-				var result = Parser.Parse(statementText);
+					var result = Parser.Parse(statementText);
 
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-			}
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
 
-			[Test(Description = @"")]
-			public void TestObsoleteComputeStatisticsInConstraintUsingIndexClause()
-			{
-				const string statementText = @"CREATE TABLE TEST_TABLE (ID NUMBER PRIMARY KEY USING INDEX COMPUTE STATISTICS)";
+				[Test(Description = @"")]
+				public void TestObsoleteComputeStatisticsInConstraintUsingIndexClause()
+				{
+					const string statementText = @"CREATE TABLE TEST_TABLE (ID NUMBER PRIMARY KEY USING INDEX COMPUTE STATISTICS)";
 
-				var result = Parser.Parse(statementText);
+					var result = Parser.Parse(statementText);
 
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-			}
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
 
-			[Test(Description = @"")]
-			public void TestReferencePartitioningClause()
-			{
-				const string statementText =
-@"CREATE TABLE TEST_PARTITION_TABLE (
+				[Test(Description = @"")]
+				public void TestReferencePartitioningClause()
+				{
+					const string statementText =
+						@"CREATE TABLE TEST_PARTITION_TABLE (
 	ORDER_ID NUMBER(12) PRIMARY KEY,
     LINE_ITEM_ID NUMBER(3),
     PRODUCT_ID NUMBER(6) NOT NULL,
@@ -3507,36 +3530,36 @@ PARTITIONS 4 STORE IN (TABLESPACE_1, TABLESPACE_2, TABLESPACE_3, TABLESPACE_4)";
 )
 PARTITION BY REFERENCE (FK_PRODUCT_ID)";
 
-				var result = Parser.Parse(statementText);
+					var result = Parser.Parse(statementText);
 
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-			}
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
 
-			[Test(Description = @"")]
-			public void TestSystemPartitioningClause()
-			{
-				const string statementText =
-@"CREATE TABLE TEST_PARTITION_TABLE (C1 NUMBER, C2 NUMBER)
+				[Test(Description = @"")]
+				public void TestSystemPartitioningClause()
+				{
+					const string statementText =
+						@"CREATE TABLE TEST_PARTITION_TABLE (C1 NUMBER, C2 NUMBER)
 PARTITION BY SYSTEM (
    PARTITION PARTITION_1 TABLESPACE TABLESPACE_1,
    PARTITION PARTITION_2 TABLESPACE TABLESPACE_2,
    PARTITION PARTITION_3 TABLESPACE TABLESPACE_3
 )";
 
-				var result = Parser.Parse(statementText);
+					var result = Parser.Parse(statementText);
 
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-			}
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
 
-			[Test(Description = @"")]
-			public void TestCompositeRangeHashPartitioningClause()
-			{
-				const string statementText =
-@"CREATE TABLE TEST_PARTITION_TABLE (
+				[Test(Description = @"")]
+				public void TestCompositeRangeHashPartitioningClause()
+				{
+					const string statementText =
+						@"CREATE TABLE TEST_PARTITION_TABLE (
 	PROD_ID NUMBER(6),
 	CUST_ID NUMBER,
 	TIME_ID DATE,
@@ -3558,18 +3581,18 @@ SUBPARTITION BY HASH (CHANNEL_ID) (
 	SUBPARTITIONS 4
 )";
 
-				var result = Parser.Parse(statementText);
+					var result = Parser.Parse(statementText);
 
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-			}
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
 
-			[Test(Description = @"")]
-			public void TestCompositeRangeListPartitioningClause()
-			{
-				const string statementText =
-@"CREATE TABLE TEST_PARTITION_TABLE (
+				[Test(Description = @"")]
+				public void TestCompositeRangeListPartitioningClause()
+				{
+					const string statementText =
+						@"CREATE TABLE TEST_PARTITION_TABLE (
 	CUSTOMER_ID NUMBER(6),
 	CUST_FIRST_NAME VARCHAR2(20),
 	CUST_LAST_NAME VARCHAR2(20),
@@ -3589,42 +3612,42 @@ PARTITION BY RANGE (CREDIT_LIMIT)
     PARTITION P3 VALUES LESS THAN (MAXVALUE)
 )";
 
-				var result = Parser.Parse(statementText);
+					var result = Parser.Parse(statementText);
 
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-			}
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
 
-			[Test(Description = @"")]
-			public void TestObsololeteCompressForClause()
-			{
-				const string statementText = @"CREATE TABLE TEST_PARTITION_TABLE (C1 NUMBER) COMPRESS FOR DIRECT_LOAD OPERATIONS";
+				[Test(Description = @"")]
+				public void TestObsololeteCompressForClause()
+				{
+					const string statementText = @"CREATE TABLE TEST_PARTITION_TABLE (C1 NUMBER) COMPRESS FOR DIRECT_LOAD OPERATIONS";
 
-				var result = Parser.Parse(statementText);
+					var result = Parser.Parse(statementText);
 
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-			}
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
 
-			[Test(Description = @"")]
-			public void TestEnableDisableConstraintClause()
-			{
-				const string statementText = @"CREATE TABLE TEST_TABLE (ID NUMBER CONSTRAINT PK_TEST_PARTITION_TABLE PRIMARY KEY, VAL NUMBER CONSTRAINT UQ_TEST_PARTITION_TABLE_VAL UNIQUE) ENABLE NOVALIDATE PRIMARY KEY DISABLE NOVALIDATE UNIQUE (VAL) CASCADE DROP INDEX";
+				[Test(Description = @"")]
+				public void TestEnableDisableConstraintClause()
+				{
+					const string statementText = @"CREATE TABLE TEST_TABLE (ID NUMBER CONSTRAINT PK_TEST_PARTITION_TABLE PRIMARY KEY, VAL NUMBER CONSTRAINT UQ_TEST_PARTITION_TABLE_VAL UNIQUE) ENABLE NOVALIDATE PRIMARY KEY DISABLE NOVALIDATE UNIQUE (VAL) CASCADE DROP INDEX";
 
-				var result = Parser.Parse(statementText);
+					var result = Parser.Parse(statementText);
 
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-			}
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
 
-			[Test(Description = @"")]
-			public void TestPartitionLargeObjectStorageClause()
-			{
-				const string statementText =
-@"CREATE TABLE TEST_PARTITION_TABLE (
+				[Test(Description = @"")]
+				public void TestPartitionLargeObjectStorageClause()
+				{
+					const string statementText =
+						@"CREATE TABLE TEST_PARTITION_TABLE (
 	C3 NUMBER,
 	C4 VARCHAR2(30),
 	C25 BLOB
@@ -3658,18 +3681,18 @@ PARTITION BY RANGE (C3)
 	INDEXING OFF
 )";
 
-				var result = Parser.Parse(statementText);
+					var result = Parser.Parse(statementText);
 
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-			}
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
 
-			[Test(Description = @"")]
-			public void TestInMemoryClause()
-			{
-				const string statementText =
-@"CREATE TABLE TEST_TABLE (
+				[Test(Description = @"")]
+				public void TestInMemoryClause()
+				{
+					const string statementText =
+						@"CREATE TABLE TEST_TABLE (
 	C1 NUMBER,
 	C2 VARCHAR2(128),
 	C3 VARCHAR2(128),
@@ -3685,78 +3708,78 @@ INMEMORY
 	INMEMORY MEMCOMPRESS FOR CAPACITY HIGH (C4)
 TABLESPACE TBS_HQ_PDB";
 
-				var result = Parser.Parse(statementText);
+					var result = Parser.Parse(statementText);
 
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAttributeClusteringClause()
+				{
+					const string statementText = @"CREATE TABLE TEST_TABLE (C1 NUMBER, C2 NUMBER, C3 NUMBER) CLUSTERING BY INTERLEAVED ORDER ((C1, C2), (C3)) YES ON LOAD NO ON DATA MOVEMENT WITHOUT MATERIALIZED ZONEMAP";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestObsoleteRecoverableClause()
+				{
+					const string statementText = @"CREATE TABLE TEST_TABLE (C) UNRECOVERABLE TABLESPACE TBS_HQ_PDB AS SELECT * FROM DUAL";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestInformationLifecycleManagementClause()
+				{
+					const string statementText = @"CREATE TABLE TEST_TABLE (C NUMBER) ILM ADD POLICY TIER TO TBS_HQ_PDB READ ONLY SEGMENT AFTER 2 YEARS OF CREATION";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
 			}
 
-			[Test(Description = @"")]
-			public void TestAttributeClusteringClause()
+			public class CreateIndex
 			{
-				const string statementText = @"CREATE TABLE TEST_TABLE (C1 NUMBER, C2 NUMBER, C3 NUMBER) CLUSTERING BY INTERLEAVED ORDER ((C1, C2), (C3)) YES ON LOAD NO ON DATA MOVEMENT WITHOUT MATERIALIZED ZONEMAP";
-
-				var result = Parser.Parse(statementText);
-
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-			}
-
-			[Test(Description = @"")]
-			public void TestObsoleteRecoverableClause()
-			{
-				const string statementText = @"CREATE TABLE TEST_TABLE (C) UNRECOVERABLE TABLESPACE TBS_HQ_PDB AS SELECT * FROM DUAL";
-
-				var result = Parser.Parse(statementText);
-
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-			}
-
-			[Test(Description = @"")]
-			public void TestInformationLifecycleManagementClause()
-			{
-				const string statementText = @"CREATE TABLE TEST_TABLE (C NUMBER) ILM ADD POLICY TIER TO TBS_HQ_PDB READ ONLY SEGMENT AFTER 2 YEARS OF CREATION";
-
-				var result = Parser.Parse(statementText);
-
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-			}
-		}
-
-		public class CreateIndex
-		{
-			[Test(Description = @"")]
-			public void TestCreateSequence()
-			{
-				const string statementText =
-@"CREATE INDEX HUSQVIK.IX_MEASUREVALUES
+				[Test(Description = @"")]
+				public void TestCreateSequence()
+				{
+					const string statementText =
+						@"CREATE INDEX HUSQVIK.IX_MEASUREVALUES
 ON MEASUREVALUES (USAGEPOINT_ID, MEASURETIMESTAMP)
 COMPRESS 1
 LOCAL
 UNUSABLE
 NOLOGGING";
 
-				var result = Parser.Parse(statementText);
+					var result = Parser.Parse(statementText);
 
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
 			}
-		}
 
-		public class CreateView
-		{
-			[Test(Description = @"")]
-			public void TestCreateSimpleView()
+			public class CreateView
 			{
-				const string statementText =
-@"CREATE VIEW TEST_VIEW
+				[Test(Description = @"")]
+				public void TestCreateSimpleView()
+				{
+					const string statementText =
+						@"CREATE VIEW TEST_VIEW
 (
 	SELECTION_ID,
 	NAME,
@@ -3767,33 +3790,33 @@ NOLOGGING";
 ) AS
 SELECT SELECTION_ID, NAME, PROJECT_ID, RESPONDENTBUCKET_ID, SYS_GUID() GUID FROM SELECTION";
 
-				var result = Parser.Parse(statementText);
+					var result = Parser.Parse(statementText);
 
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestCreateViewWithoutColumnList()
+				{
+					const string statementText = @"CREATE VIEW TEST_VIEW AS SELECT * FROM DUAL WITH READ ONLY";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
 			}
 
-			[Test(Description = @"")]
-			public void TestCreateViewWithoutColumnList()
+			public class CreateCluster
 			{
-				const string statementText = @"CREATE VIEW TEST_VIEW AS SELECT * FROM DUAL WITH READ ONLY";
-
-				var result = Parser.Parse(statementText);
-
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-			}
-		}
-
-		public class CreateCluster
-		{
-			[Test(Description = @"")]
-			public void TestCreateCluster()
-			{
-				const string statementText =
-@"CREATE CLUSTER SALES (
+				[Test(Description = @"")]
+				public void TestCreateCluster()
+				{
+					const string statementText =
+						@"CREATE CLUSTER SALES (
 	AMOUNT_SOLD NUMBER,
 	PROD_ID NUMBER
 )
@@ -3808,101 +3831,237 @@ PARTITION BY RANGE (AMOUNT_SOLD) (
 	PARTITION PM VALUES LESS THAN (MAXVALUE)
 )";
 
-				var result = Parser.Parse(statementText);
+					var result = Parser.Parse(statementText);
 
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
 			}
-		}
 
-		public class CreateMaterializedViewLog
-		{
-			[Test(Description = @"")]
-			public void CreateSimpleMaterializedViewLog()
+			public class CreateMaterializedViewLog
 			{
-				const string statementText =
-@"CREATE MATERIALIZED VIEW LOG ON TEST_TABLE 
+				[Test(Description = @"")]
+				public void CreateSimpleMaterializedViewLog()
+				{
+					const string statementText =
+						@"CREATE MATERIALIZED VIEW LOG ON TEST_TABLE 
 WITH ROWID, SEQUENCE (LIST_PRICE, MIN_PRICE, CATEGORY_ID), PRIMARY KEY
 INCLUDING NEW VALUES";
 
-				var result = Parser.Parse(statementText);
+					var result = Parser.Parse(statementText);
 
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-			}
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
 
-			[Test(Description = @"")]
-			public void CreateMaterializedViewLogWithPurgeClause()
-			{
-				const string statementText =
-@"CREATE MATERIALIZED VIEW LOG ON TEST_TABLE
+				[Test(Description = @"")]
+				public void CreateMaterializedViewLogWithPurgeClause()
+				{
+					const string statementText =
+						@"CREATE MATERIALIZED VIEW LOG ON TEST_TABLE
 PCTFREE 5
 TABLESPACE TABLESPACE_01
 STORAGE (INITIAL 10K)
 PURGE REPEAT INTERVAL '5' DAY";
 
-				var result = Parser.Parse(statementText);
+					var result = Parser.Parse(statementText);
 
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void CreateMaterializedViewLogForSynchronousRefreshClause()
+				{
+					const string statementText = @"CREATE MATERIALIZED VIEW LOG ON TEST_TABLE FOR SYNCHRONOUS REFRESH USING TEST_STAGING_LOG";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
 			}
 
-			[Test(Description = @"")]
-			public void CreateMaterializedViewLogForSynchronousRefreshClause()
+			public class CreateSequence
 			{
-				const string statementText = @"CREATE MATERIALIZED VIEW LOG ON TEST_TABLE FOR SYNCHRONOUS REFRESH USING TEST_STAGING_LOG";
+				[Test(Description = @"")]
+				public void TestCreateSequence()
+				{
+					const string statementText = @"CREATE SEQUENCE HUSQVIK.TEST_SEQUNCE GLOBAL NOKEEP NOORDER NOCACHE NOCYCLE MINVALUE - 1000000 MAXVALUE -1 START WITH -1 INCREMENT BY -1;";
 
-				var result = Parser.Parse(statementText);
+					var result = Parser.Parse(statementText);
 
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+					var terminals = statement.AllTerminals.ToArray();
+					terminals.Length.ShouldBe(24);
+
+					terminals[0].Id.ShouldBe(Terminals.Create);
+					terminals[1].Id.ShouldBe(Terminals.Sequence);
+					terminals[2].Id.ShouldBe(Terminals.SchemaIdentifier);
+					terminals[3].Id.ShouldBe(Terminals.Dot);
+					terminals[4].Id.ShouldBe(Terminals.ObjectIdentifier);
+					terminals[5].Id.ShouldBe(Terminals.Global);
+					terminals[6].Id.ShouldBe(Terminals.NoKeep);
+					terminals[7].Id.ShouldBe(Terminals.NoOrder);
+					terminals[8].Id.ShouldBe(Terminals.NoCache);
+					terminals[9].Id.ShouldBe(Terminals.NoCycle);
+					terminals[10].Id.ShouldBe(Terminals.MinimumValue);
+					terminals[11].Id.ShouldBe(Terminals.MathMinus);
+					terminals[12].Id.ShouldBe(Terminals.IntegerLiteral);
+					terminals[13].Id.ShouldBe(Terminals.MaximumValue);
+					terminals[14].Id.ShouldBe(Terminals.MathMinus);
+					terminals[15].Id.ShouldBe(Terminals.IntegerLiteral);
+					terminals[16].Id.ShouldBe(Terminals.Start);
+					terminals[17].Id.ShouldBe(Terminals.With);
+					terminals[18].Id.ShouldBe(Terminals.MathMinus);
+					terminals[19].Id.ShouldBe(Terminals.IntegerLiteral);
+					terminals[20].Id.ShouldBe(Terminals.Increment);
+					terminals[21].Id.ShouldBe(Terminals.By);
+					terminals[22].Id.ShouldBe(Terminals.MathMinus);
+					terminals[23].Id.ShouldBe(Terminals.IntegerLiteral);
+				}
+			}
+
+			public class CreateSynonym
+			{
+				[Test(Description = @"")]
+				public void TestCreateSynonym()
+				{
+					const string statementText = @"CREATE OR REPLACE NONEDITIONABLE PUBLIC SYNONYM CUSTOMER FOR HUSQVIK.CUSTOMER@DBLINK;";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+					var terminals = statement.AllTerminals.ToArray();
+					terminals.Length.ShouldBe(13);
+
+					terminals[0].Id.ShouldBe(Terminals.Create);
+					terminals[1].Id.ShouldBe(Terminals.Or);
+					terminals[2].Id.ShouldBe(Terminals.Replace);
+					terminals[3].Id.ShouldBe(Terminals.NonEditionable);
+					terminals[4].Id.ShouldBe(Terminals.Public);
+					terminals[5].Id.ShouldBe(Terminals.Synonym);
+					terminals[6].Id.ShouldBe(Terminals.ObjectIdentifier);
+					terminals[7].Id.ShouldBe(Terminals.For);
+					terminals[8].Id.ShouldBe(Terminals.SchemaIdentifier);
+					terminals[9].Id.ShouldBe(Terminals.Dot);
+					terminals[10].Id.ShouldBe(Terminals.ObjectIdentifier);
+					terminals[11].Id.ShouldBe(Terminals.AtCharacter);
+					terminals[12].Id.ShouldBe(Terminals.DatabaseLinkIdentifier);
+				}
 			}
 		}
 
-		public class CreateSequence
+		public class Alter
 		{
-			[Test(Description = @"")]
-			public void TestCreateSequence()
+			public class AlterSession
 			{
-				const string statementText = @"CREATE SEQUENCE HUSQVIK.TEST_SEQUNCE GLOBAL NOKEEP NOORDER NOCACHE NOCYCLE MINVALUE - 1000000 MAXVALUE -1 START WITH -1 INCREMENT BY -1;";
+				[Test(Description = @"")]
+				public void TestAlterSessionParameters()
+				{
+					const string statementText = @"ALTER SESSION SET statistics_level = TYPICAL SQL_TRACE = TRUE";
 
-				var result = Parser.Parse(statementText);
+					var result = Parser.Parse(statementText);
 
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-				var terminals = statement.AllTerminals.ToArray();
-				terminals.Length.ShouldBe(24);
+					var terminals = statement.AllTerminals.ToArray();
+					terminals.Length.ShouldBe(9);
 
-				terminals[0].Id.ShouldBe(Terminals.Create);
-				terminals[1].Id.ShouldBe(Terminals.Sequence);
-				terminals[2].Id.ShouldBe(Terminals.SchemaIdentifier);
-				terminals[3].Id.ShouldBe(Terminals.Dot);
-				terminals[4].Id.ShouldBe(Terminals.ObjectIdentifier);
-				terminals[5].Id.ShouldBe(Terminals.Global);
-				terminals[6].Id.ShouldBe(Terminals.NoKeep);
-				terminals[7].Id.ShouldBe(Terminals.NoOrder);
-				terminals[8].Id.ShouldBe(Terminals.NoCache);
-				terminals[9].Id.ShouldBe(Terminals.NoCycle);
-				terminals[10].Id.ShouldBe(Terminals.MinimumValue);
-				terminals[11].Id.ShouldBe(Terminals.MathMinus);
-				terminals[12].Id.ShouldBe(Terminals.IntegerLiteral);
-				terminals[13].Id.ShouldBe(Terminals.MaximumValue);
-				terminals[14].Id.ShouldBe(Terminals.MathMinus);
-				terminals[15].Id.ShouldBe(Terminals.IntegerLiteral);
-				terminals[16].Id.ShouldBe(Terminals.Start);
-				terminals[17].Id.ShouldBe(Terminals.With);
-				terminals[18].Id.ShouldBe(Terminals.MathMinus);
-				terminals[19].Id.ShouldBe(Terminals.IntegerLiteral);
-				terminals[20].Id.ShouldBe(Terminals.Increment);
-				terminals[21].Id.ShouldBe(Terminals.By);
-				terminals[22].Id.ShouldBe(Terminals.MathMinus);
-				terminals[23].Id.ShouldBe(Terminals.IntegerLiteral);
+					terminals[0].Id.ShouldBe(Terminals.Alter);
+					terminals[1].Id.ShouldBe(Terminals.Session);
+					terminals[2].Id.ShouldBe(Terminals.Set);
+					terminals[3].Id.ShouldBe(Terminals.Identifier);
+					terminals[4].Id.ShouldBe(Terminals.MathEquals);
+					terminals[5].Id.ShouldBe(Terminals.Identifier);
+					terminals[6].Id.ShouldBe(Terminals.Identifier);
+					terminals[7].Id.ShouldBe(Terminals.MathEquals);
+					terminals[8].Id.ShouldBe(Terminals.Identifier);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterSessionResumableDistributedTransaction()
+				{
+					const string statementText = @"ALTER SESSION ENABLE RESUMABLE TIMEOUT 60 NAME 'Distributed transaction'";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterSessionSyncWithPrimary()
+				{
+					const string statementText = @"ALTER SESSION SYNC WITH PRIMARY";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterSessionGuard()
+				{
+					const string statementText = @"ALTER SESSION DISABLE GUARD";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterSessionProcedureCommit()
+				{
+					const string statementText = @"ALTER SESSION DISABLE COMMIT IN PROCEDURE";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterSessionForceParallel()
+				{
+					const string statementText = @"ALTER SESSION FORCE PARALLEL QUERY PARALLEL 8";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterSessionCloseDatabaseLink()
+				{
+					const string statementText = @"ALTER SESSION CLOSE DATABASE LINK TEST_DB_LINK";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
 			}
 		}
 
@@ -3927,38 +4086,6 @@ PURGE REPEAT INTERVAL '5' DAY";
 				terminals[2].Id.ShouldBe(Terminals.Identifier);
 				terminals[3].Id.ShouldBe(Terminals.User);
 				terminals[4].Id.ShouldBe(Terminals.Identifier);
-			}
-		}
-
-		public class CreateSynonym
-		{
-			[Test(Description = @"")]
-			public void TestCreateSynonym()
-			{
-				const string statementText = @"CREATE OR REPLACE NONEDITIONABLE PUBLIC SYNONYM CUSTOMER FOR HUSQVIK.CUSTOMER@DBLINK;";
-
-				var result = Parser.Parse(statementText);
-
-				result.Count.ShouldBe(1);
-				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-
-				var terminals = statement.AllTerminals.ToArray();
-				terminals.Length.ShouldBe(13);
-
-				terminals[0].Id.ShouldBe(Terminals.Create);
-				terminals[1].Id.ShouldBe(Terminals.Or);
-				terminals[2].Id.ShouldBe(Terminals.Replace);
-				terminals[3].Id.ShouldBe(Terminals.NonEditionable);
-				terminals[4].Id.ShouldBe(Terminals.Public);
-				terminals[5].Id.ShouldBe(Terminals.Synonym);
-				terminals[6].Id.ShouldBe(Terminals.ObjectIdentifier);
-				terminals[7].Id.ShouldBe(Terminals.For);
-				terminals[8].Id.ShouldBe(Terminals.SchemaIdentifier);
-				terminals[9].Id.ShouldBe(Terminals.Dot);
-				terminals[10].Id.ShouldBe(Terminals.ObjectIdentifier);
-				terminals[11].Id.ShouldBe(Terminals.AtCharacter);
-				terminals[12].Id.ShouldBe(Terminals.DatabaseLinkIdentifier);
 			}
 		}
 
