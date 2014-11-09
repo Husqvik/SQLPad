@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -142,21 +143,7 @@ namespace SqlPad.Oracle
 			var fields = new Dictionary<string, FieldInfo>();
 			foreach (var objectAttribute in objectType.Attributes)
 			{
-				var targetType = typeof (string);
-				switch (objectAttribute.DataType.FullyQualifiedName.ToString().Trim('"'))
-				{
-					case "NUMBER":
-						targetType = typeof(decimal?);
-						break;
-					case "DATE":
-						targetType = typeof(DateTime?);
-						break;
-					case "BLOB":
-					case "LONG RAW":
-					case "RAW":
-						targetType = typeof(byte[]);
-						break;
-				}
+				var targetType = MapOracleTypeToNetType(objectAttribute.DataType.FullyQualifiedName);
 
 				var fieldName = MakeValidMemberName(objectAttribute.Name);
 				var fieldBuilder = customTypeBuilder.DefineField(fieldName, targetType, FieldAttributes.Public);
@@ -226,6 +213,50 @@ namespace SqlPad.Oracle
 			mappingTable.Add(mappingTableKey, mappingTableValue);*/
 		}
 
+		private static Type MapOracleTypeToNetType(OracleObjectIdentifier typeIdentifier)
+		{
+			var targetType = typeof(string);
+			switch (typeIdentifier.ToString().Trim('"'))
+			{
+				case "NUMBER":
+				case "INTEGER":
+					targetType = typeof(OracleDecimal);
+					break;
+				case "DATE":
+					targetType = typeof(DateTime?);
+					break;
+				case "CLOB":
+				case "NCLOB":
+					targetType = typeof(OracleClob);
+					break;
+				case "BLOB":
+					targetType = typeof(OracleBlob);
+					break;
+				case "LONG RAW":
+					targetType = typeof(OracleBinary);
+					break;
+				case "RAW":
+					targetType = typeof(byte[]);
+					break;
+				case "BFILE":
+					targetType = typeof(OracleBFile);
+					break;
+				case "BINARY_DOUBLE":
+				case "DOUBLE PRECISION":
+				case "BINARY_FLOAT":
+					targetType = typeof(decimal?);
+					break;
+				case "TIMESTAMP":
+					targetType = typeof(OracleTimeStamp);
+					break;
+				case "TIMESTAMP WITH TZ":
+					targetType = typeof(OracleTimeStampTZ);
+					break;
+			}
+
+			return targetType;
+		}
+
 		private static ILGenerator BuildOracleCustomTypeInterfaceMethod(TypeBuilder typeBuilder, string methodName)
 		{
 			var methodBuilder = typeBuilder.DefineMethod(methodName, InterfaceMethodAttributes, null, new[] { typeof(OracleConnection), typeof(IntPtr) });
@@ -240,24 +271,11 @@ namespace SqlPad.Oracle
 			var enclosingCharacter = String.Empty;
 			if (String.IsNullOrEmpty(collectionType.ElementTypeIdentifier.Owner))
 			{
-				var dataType = collectionType.ElementTypeIdentifier.Name.Trim('"');
-				switch (dataType)
+				targetType = MapOracleTypeToNetType(collectionType.ElementTypeIdentifier);
+
+				if (targetType == typeof (string))
 				{
-					case "NUMBER":
-						targetType = typeof (decimal);
-						break;
-					case "DATE":
-						targetType = typeof (DateTime);
-						break;
-					case "BLOB":
-					case "LONG RAW":
-					case "RAW":
-						targetType = typeof (byte[]);
-						break;
-					default:
-						enclosingCharacter = "'";
-						targetType = typeof(string);
-						break;
+					enclosingCharacter = "'";
 				}
 			}
 			else if (customTypes.TryGetValue(collectionType.ElementTypeIdentifier.ToString().Replace("\"", null), out targetType))
@@ -329,18 +347,19 @@ namespace SqlPad.Oracle
 		}
 	}
 
-	public class OracleValueArray<T> : IOracleCustomType, INullable
+	public class OracleValueArray<T> : IOracleCustomType, INullable, ICollectionValue
 	{
+		private const int PreviewMaxItemCount = 10;
+		
+		private static readonly Type ArrayItemType = typeof (T);
+
 		private readonly string _enclosingCharacter;
 
-		public string FullTypeName { get; private set; }
+		[OracleArrayMapping] public T[] Array;
 
-		[OracleArrayMapping]
-		public T[] Array { get; set; }
-
-		public OracleValueArray(string fullTypeName, string enclosingCharacter = null, T[] array = null)
+		public OracleValueArray(string dataTypeName, string enclosingCharacter = null, T[] array = null)
 		{
-			FullTypeName = fullTypeName;
+			DataTypeName = dataTypeName;
 			_enclosingCharacter = enclosingCharacter;
 			Array = array;
 		}
@@ -357,21 +376,38 @@ namespace SqlPad.Oracle
 			Array = (T[])OracleUdt.GetValue(connection, pointerUdt, 0);
 		}
 
+		public string DataTypeName { get; private set; }
+		
+		public bool IsEditable { get { return false; } }
+		
+		public long Length { get { return Array == null ? 0 : Array.Length; } }
+		
+		public void Prefetch() { }
+
+		public IList Records { get { return Array; } }
+
+		public Type ItemType { get { return ArrayItemType; } }
+
 		public override string ToString()
+		{
+			return BuildPreview();
+		}
+
+		private string BuildPreview()
 		{
 			if (IsNull)
 			{
 				return String.Empty;
 			}
 
-			var items = Array.Select(i => Convert.ToString(i));
+			var items = Array.Take(PreviewMaxItemCount).Select(i => Convert.ToString(i));
 
 			if (!String.IsNullOrEmpty(_enclosingCharacter))
 			{
 				items = items.Select(i => String.Format("{0}{1}{0}", _enclosingCharacter, i));
 			}
 
-			return String.Format("{0}({1})", FullTypeName, String.Join(", ", items));
+			return String.Format("{0}({1}{2})", DataTypeName, String.Join(", ", items), Array.Length > PreviewMaxItemCount ? String.Format(", {0} ({1} items)", OracleLargeTextValue.Ellipsis, Array.Length) : String.Empty);
 		}
 	}
 

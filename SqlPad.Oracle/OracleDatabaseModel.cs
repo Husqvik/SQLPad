@@ -40,7 +40,7 @@ namespace SqlPad.Oracle
 		private OracleDataReader _userDataReader;
 		private OracleCommand _userCommand;
 		private OracleTransaction _userTransaction;
-		//private OracleCustomTypeGenerator _customTypeGenerator;
+		//private readonly OracleCustomTypeGenerator _customTypeGenerator;
 		private int _userSessionId;
 		private string _userCommandSqlId;
 		private string _userTransactionId;
@@ -787,23 +787,24 @@ namespace SqlPad.Oracle
 							: String.Format("{0}{1}", oracleString.Value, oracleString.Value.Length == InitialLongFetchSize ? OracleLargeTextValue.Ellipsis : null);
 						break;
 					case "LongRaw":
-						value = new OracleLongRawValue(reader, i);
+						value = new OracleLongRawValue(reader.GetOracleBinary(i));
 						break;
 					case "TimeStamp":
-						var oracleTimestamp = new OracleTimestamp(reader, i);
-						value = oracleTimestamp.IsNull ? (object)DBNull.Value : oracleTimestamp;
+						value = new OracleTimestamp(reader.GetOracleTimeStamp(i));
 						break;
 					case "TimeStampTZ":
-						var oracleTimestampWithTimeZone = new OracleTimestampWithTimeZone(reader, i);
-						value = oracleTimestampWithTimeZone.IsNull ? (object)DBNull.Value : oracleTimestampWithTimeZone;
+						value = new OracleTimestampWithTimeZone(reader.GetOracleTimeStampTZ(i));
+						break;
+					case "TimeStampLTZ":
+						value = new OracleTimestampWithLocalTimeZone(reader.GetOracleTimeStampLTZ(i));
 						break;
 					case "Decimal":
-						var oracleDecimal = new OracleNumber(reader, i);
-						value = oracleDecimal.IsNull ? (object)DBNull.Value : oracleDecimal;
+						value = new OracleNumber(reader.GetOracleDecimal(i));
 						break;
 					case "XmlType":
 						value = new OracleXmlValue(reader.GetOracleXmlType(i));
 						break;
+					case "Object":
 					case "Array":
 					default:
 						value = reader.GetValue(i);

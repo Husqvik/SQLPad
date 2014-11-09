@@ -189,9 +189,54 @@ namespace SqlPad.Oracle.Database.Test
 				firstRow[7].ShouldBeTypeOf<OracleXmlValue>();
 				var xmlValue = (OracleXmlValue)firstRow[7];
 				xmlValue.Length.ShouldBe(8);
-				xmlValue.Preview.ShouldBe("<root/>\n");
+				xmlValue.Preview.ShouldBe("<root/>\u2026");
 				firstRow[8].ShouldBeTypeOf<OracleNumber>();
 				firstRow[8].ToString().ShouldBe("1.23456789012345678901234567890123456789E-125");
+			}
+		}
+
+		[Test]
+		public void TestNullDataTypesFetch()
+		{
+			var executionModel =
+					new StatementExecutionModel
+					{
+						StatementText = "SELECT EMPTY_BLOB(), EMPTY_CLOB(), CAST(NULL AS TIMESTAMP WITH TIME ZONE), CAST(NULL AS TIMESTAMP), CAST(NULL AS DECIMAL), NVL2(XMLTYPE('<root/>'), null, XMLTYPE('<root/>')) FROM DUAL",
+						BindVariables = new BindVariableModel[0],
+						GatherExecutionStatistics = true
+					};
+
+			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
+			{
+				var result = databaseModel.ExecuteStatement(executionModel);
+
+				result.ExecutedSuccessfully.ShouldBe(true);
+
+				result.ColumnHeaders.Count.ShouldBe(6);
+				result.ColumnHeaders[0].DatabaseDataType.ShouldBe("Blob");
+				result.ColumnHeaders[1].DatabaseDataType.ShouldBe("Clob");
+				result.ColumnHeaders[2].DatabaseDataType.ShouldBe("TimeStampTZ");
+				result.ColumnHeaders[3].DatabaseDataType.ShouldBe("TimeStamp");
+				result.ColumnHeaders[4].DatabaseDataType.ShouldBe("Decimal");
+				result.ColumnHeaders[5].DatabaseDataType.ShouldBe("XmlType");
+
+				result.InitialResultSet.Count.ShouldBe(1);
+				var firstRow = result.InitialResultSet[0];
+				firstRow[0].ShouldBeTypeOf<OracleBlobValue>();
+				var blobValue = (OracleBlobValue)firstRow[0];
+				blobValue.Length.ShouldBe(0);
+				blobValue.ToString().ShouldBe(String.Empty);
+				firstRow[1].ShouldBeTypeOf<OracleClobValue>();
+				firstRow[1].ToString().ShouldBe(String.Empty);
+				((OracleClobValue)firstRow[1]).DataTypeName.ShouldBe("CLOB");
+				firstRow[2].ShouldBeTypeOf<OracleTimestampWithTimeZone>();
+				firstRow[2].ToString().ShouldBe(String.Empty);
+				firstRow[3].ShouldBeTypeOf<OracleTimestamp>();
+				firstRow[3].ToString().ShouldBe(String.Empty);
+				firstRow[4].ShouldBeTypeOf<OracleNumber>();
+				firstRow[4].ToString().ShouldBe(String.Empty);
+				firstRow[5].ShouldBeTypeOf<OracleXmlValue>();
+				firstRow[5].ToString().ShouldBe(String.Empty);
 			}
 		}
 

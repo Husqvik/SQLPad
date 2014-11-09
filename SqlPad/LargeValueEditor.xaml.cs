@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -42,6 +43,7 @@ namespace SqlPad
 		private async Task SetEditorValue()
 		{
 			var largeTextValue = _largeValue as ILargeTextValue;
+			var collectionValue = _largeValue as ICollectionValue;
 			var searchEditor = HexEditor;
 
 			try
@@ -83,6 +85,12 @@ namespace SqlPad
 					HexEditor.Text = await BinaryDataHelper.FormatBinaryDataAsync(_largeBinaryValue.Value, _cancellationTokenSource.Token);
 					LoadingNotification.Visibility = Visibility.Collapsed;
 					ButtonSaveRawAs.Visibility = Visibility.Visible;
+				}
+				else if (collectionValue != null)
+				{
+					TabCollection.Visibility = Visibility.Visible;
+					TabControl.SelectedItem = TabCollection;
+					CollectionViewer.ItemsSource = collectionValue.Records.Cast<object>().Select(r => new CollectionValueHost { Value = r }).ToArray();
 				}
 
 				_findReplaceManager.CurrentEditor = new TextEditorAdapter(searchEditor);
@@ -261,5 +269,10 @@ namespace SqlPad
 			DocumentPage.SafeActionWithUserError(
 				() => File.WriteAllBytes(dialog.FileName, _largeBinaryValue.Value));
 		}
+	}
+
+	public class CollectionValueHost
+	{
+		public object Value { get; set; }
 	}
 }

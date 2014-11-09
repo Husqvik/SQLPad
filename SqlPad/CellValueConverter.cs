@@ -18,11 +18,18 @@ namespace SqlPad
 				return FormatDateTime((DateTime)value);
 			}
 
-			var convertedStringValue = convertedValue as String ?? System.Convert.ToString(convertedValue);
+			try
+			{
+				var convertedStringValue = convertedValue as String ?? System.Convert.ToString(convertedValue);
 
-			return String.Empty.Equals(convertedStringValue)
-				? ConfigurationProvider.Configuration.ResultGrid.NullPlaceholder
-				: convertedStringValue;
+				return String.Empty.Equals(convertedStringValue)
+					? ConfigurationProvider.Configuration.ResultGrid.NullPlaceholder
+					: convertedStringValue;
+			}
+			catch (Exception e)
+			{
+				return String.Format("Data conversion error: {0}", e);
+			}
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

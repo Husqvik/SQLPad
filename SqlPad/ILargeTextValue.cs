@@ -1,4 +1,7 @@
-﻿namespace SqlPad
+﻿using System;
+using System.Collections;
+
+namespace SqlPad
 {
 	public interface ILargeValue
 	{
@@ -25,5 +28,12 @@
 		byte[] Value { get; }
 
 		byte[] GetChunk(int bytes);
+	}
+
+	public interface ICollectionValue : ILargeValue
+	{
+		IList Records { get; }
+
+		Type ItemType { get; }
 	}
 }

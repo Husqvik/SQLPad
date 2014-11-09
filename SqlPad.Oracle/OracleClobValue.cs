@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Globalization;
+using System.Reflection;
 using Oracle.DataAccess.Client;
 using Oracle.DataAccess.Types;
 
@@ -36,9 +36,10 @@ namespace SqlPad.Oracle
 			}
 
 			var preview = GetChunk(0, PreviewLength + 1);
-			if (preview.Length > PreviewLength)
+			var indexFirstLineBreak = preview.IndexOf('\n', 0, preview.Length < PreviewLength ? preview.Length : PreviewLength);
+			if (preview.Length > PreviewLength || indexFirstLineBreak != -1)
 			{
-				preview = String.Format("{0}{1}", preview.Substring(0, PreviewLength), Ellipsis);
+				preview = String.Format("{0}{1}", preview.Substring(0, indexFirstLineBreak != -1 ? indexFirstLineBreak : PreviewLength), Ellipsis);
 			}
 
 			return _preview = preview;
@@ -118,7 +119,7 @@ namespace SqlPad.Oracle
 
 		public override long Length { get { return _clob.Length; } }
 
-		public override bool IsNull { get { return _clob.IsNull; } }
+		public override bool IsNull { get { return _clob.IsNull || _clob.IsEmpty; } }
 
 		protected override string GetValue()
 		{
@@ -167,7 +168,7 @@ namespace SqlPad.Oracle
 
 		private byte[] GetValue()
 		{
-			return _blob.IsNull
+			return _blob.IsNull || _blob.IsEmpty
 					? new byte[0]
 					: _blob.Value;
 		}
@@ -209,16 +210,38 @@ namespace SqlPad.Oracle
 	{
 		private readonly OracleTimeStamp _oracleTimeStamp;
 
-		public OracleTimestamp(OracleDataReader reader, int columnIndex)
+		private const BindingFlags BindingFlagsPrivateInstanceField = BindingFlags.Instance | BindingFlags.NonPublic;
+		private static readonly Dictionary<Type, FieldInfo> FractionPrecisionFields =
+			new Dictionary<Type, FieldInfo>
+			{
+				{ typeof(OracleTimeStamp), typeof(OracleTimeStamp).GetField("m_fSecondPrec", BindingFlagsPrivateInstanceField)},
+				{ typeof(OracleTimeStampTZ), typeof(OracleTimeStampTZ).GetField("m_fSecondPrec", BindingFlagsPrivateInstanceField)},
+				{ typeof(OracleTimeStampLTZ), typeof(OracleTimeStampLTZ).GetField("m_fSecondPrec", BindingFlagsPrivateInstanceField)}
+			};
+
+		public OracleTimestamp(OracleTimeStamp timeStamp)
 		{
-			_oracleTimeStamp = reader.GetOracleTimeStamp(columnIndex);
+			_oracleTimeStamp = timeStamp;
 		}
 
 		public bool IsNull { get { return _oracleTimeStamp.IsNull; } }
 
 		public override string ToString()
 		{
-			return String.Format("{0}.{1}", CellValueConverter.FormatDateTime(_oracleTimeStamp.Value), _oracleTimeStamp.Nanosecond.ToString(CultureInfo.InvariantCulture));
+			return _oracleTimeStamp.IsNull
+				? String.Empty
+				: FormatValue(_oracleTimeStamp.Value, _oracleTimeStamp.Nanosecond, GetFractionPrecision(_oracleTimeStamp));
+		}
+
+		internal static string FormatValue(DateTime dateTime, int nanoseconds, int fractionPrecision)
+		{
+			var fractionPart = nanoseconds.ToString(CultureInfo.InvariantCulture).PadRight(9, '0').Substring(0, fractionPrecision);
+			return String.Format("{0}{1}", CellValueConverter.FormatDateTime(dateTime), String.IsNullOrEmpty(fractionPart) ? null : String.Format(".{0}", fractionPart));
+		}
+
+		internal static int GetFractionPrecision<T>(T value)
+		{
+			return (int)FractionPrecisionFields[typeof(T)].GetValue(value);
 		}
 	}
 
@@ -226,16 +249,37 @@ namespace SqlPad.Oracle
 	{
 		private readonly OracleTimeStampTZ _oracleTimeStamp;
 
-		public OracleTimestampWithTimeZone(OracleDataReader reader, int columnIndex)
+		public OracleTimestampWithTimeZone(OracleTimeStampTZ timeStamp)
 		{
-			_oracleTimeStamp = reader.GetOracleTimeStampTZ(columnIndex);
+			_oracleTimeStamp = timeStamp;
 		}
 
 		public bool IsNull { get { return _oracleTimeStamp.IsNull; } }
 
 		public override string ToString()
 		{
-			return String.Format("{0}.{1} {2}", CellValueConverter.FormatDateTime(_oracleTimeStamp.Value), _oracleTimeStamp.Nanosecond.ToString(CultureInfo.InvariantCulture), _oracleTimeStamp.TimeZone);
+			return _oracleTimeStamp.IsNull
+				? String.Empty
+				: String.Format("{0} {1}", OracleTimestamp.FormatValue(_oracleTimeStamp.Value, _oracleTimeStamp.Nanosecond, OracleTimestamp.GetFractionPrecision(_oracleTimeStamp)), _oracleTimeStamp.TimeZone);
+		}
+	}
+
+	public class OracleTimestampWithLocalTimeZone
+	{
+		private readonly OracleTimeStampLTZ _oracleTimeStamp;
+
+		public OracleTimestampWithLocalTimeZone(OracleTimeStampLTZ timeStamp)
+		{
+			_oracleTimeStamp = timeStamp;
+		}
+
+		public bool IsNull { get { return _oracleTimeStamp.IsNull; } }
+
+		public override string ToString()
+		{
+			return _oracleTimeStamp.IsNull
+				? String.Empty
+				: OracleTimestamp.FormatValue(_oracleTimeStamp.Value, _oracleTimeStamp.Nanosecond, OracleTimestamp.GetFractionPrecision(_oracleTimeStamp));
 		}
 	}
 
@@ -243,9 +287,9 @@ namespace SqlPad.Oracle
 	{
 		private readonly OracleDecimal _oracleDecimal;
 
-		public OracleNumber(OracleDataReader reader, int columnIndex)
+		public OracleNumber(OracleDecimal value)
 		{
-			_oracleDecimal = SetOutputFormat(reader.GetOracleDecimal(columnIndex));
+			_oracleDecimal = SetOutputFormat(value);
 		}
 
 		internal static OracleDecimal SetOutputFormat(OracleDecimal value)
@@ -270,12 +314,9 @@ namespace SqlPad.Oracle
 
 		public override string ToString()
 		{
-			if (IsNull)
-			{
-				throw new InvalidOperationException();
-			}
-
-			return _oracleDecimal.ToString();
+			return _oracleDecimal.IsNull
+				? String.Empty
+				: _oracleDecimal.ToString();
 		}
 	}
 
@@ -294,12 +335,9 @@ namespace SqlPad.Oracle
 
 		public byte[] Value { get { return _value; } }
 
-		public OracleLongRawValue(OracleDataReader reader, int columnIndex)
+		public OracleLongRawValue(OracleBinary binary)
 		{
-			_columnIndex = columnIndex;
-			_reader = reader;
-			var oracleBinary = reader.GetOracleBinary(columnIndex);
-			_value = oracleBinary.IsNull ? new byte[0] : oracleBinary.Value;
+			_value = binary.IsNull ? new byte[0] : binary.Value;
 		}
 
 		public byte[] GetChunk(int bytes)
@@ -342,31 +380,5 @@ namespace SqlPad.Oracle
 		}
 
 		public void Prefetch() { }
-	}
-
-	internal static class OracleLargeObjectHelper
-	{
-		public static T ExecuteFunction<T>(OracleConnection connection, Func<T> function)
-		{
-			var closeConnection = false;
-
-			try
-			{
-				if (connection.State != ConnectionState.Open)
-				{
-					connection.Open();
-					closeConnection = true;
-				}
-
-				return function();
-			}
-			finally
-			{
-				if (closeConnection && connection.State != ConnectionState.Closed)
-				{
-					connection.Close();
-				}
-			}
-		}
 	}
 }

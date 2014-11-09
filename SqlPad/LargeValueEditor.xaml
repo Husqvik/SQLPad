@@ -16,6 +16,9 @@
 
 	<Window.Resources>
 		<findReplace:FindReplaceManager x:Key="FindReplaceManager" />
+		<Style x:Key="CellTextBoxStyleReadOnly">
+			<Setter Property="TextBoxBase.IsReadOnly" Value="True" />
+		</Style>
 	</Window.Resources>
 
 	<Window.InputBindings>
@@ -73,6 +76,25 @@
 			<TabItem x:Name="TabImage" Header="Image" Visibility="Collapsed">
 				<Image x:Name="ImageViewer" />
 			</TabItem>
+			<TabItem x:Name="TabCollection" Header="Collection" Visibility="Collapsed">
+				<DataGrid x:Name="CollectionViewer"
+						  AutoGenerateColumns="False"
+						  CanUserDeleteRows ="False"
+						  MinRowHeight="20"
+				          HorizontalGridLinesBrush="LightGray"
+				          VerticalGridLinesBrush="LightGray">
+					<DataGrid.Columns>
+						<DataGridTextColumn Header="COLUMN__VALUE"
+											Binding="{Binding Path=Value}"
+											EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}" />
+					</DataGrid.Columns>
+				</DataGrid>
+			</TabItem>
 		</TabControl>
 	</Grid>
+	<!--
+	MaxColumnWidth="{Binding ElementName=CollectionViewer, Path=ActualWidth}"
+	VirtualizingStackPanel.VirtualizationMode="Recycling"
+				          EnableColumnVirtualization="True"
+	-->
 </Window>
