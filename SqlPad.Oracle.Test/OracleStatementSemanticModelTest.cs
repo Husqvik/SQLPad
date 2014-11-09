@@ -635,19 +635,21 @@ FROM
 		[Test(Description = @"")]
 		public void TestLiteralColumnDataTypeResolutionAccessedFromInlineView()
 		{
-			const string query1 = @"SELECT CONSTANT FROM (SELECT DISTINCT 123.456 CONSTANT FROM DUAL)";
+			const string query1 = @"SELECT CONSTANT1, CONSTANT2 FROM (SELECT DISTINCT 123.456 CONSTANT1, 654.321 AS CONSTANT2 FROM DUAL)";
 
 			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
 			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.Count.ShouldBe(2);
 			var queryBlock = semanticModel.QueryBlocks.First();
-			queryBlock.Columns.Count.ShouldBe(1);
 			queryBlock.HasDistinctResultSet.ShouldBe(true);
-			var column = queryBlock.Columns.First();
-			column.ColumnDescription.ShouldNotBe(null);
-			column.ColumnDescription.Name.ShouldBe("\"CONSTANT\"");
-			column.ColumnDescription.FullTypeName.ShouldBe("NUMBER(6, 3)");
+			queryBlock.Columns.Count.ShouldBe(2);
+			queryBlock.Columns[0].ColumnDescription.ShouldNotBe(null);
+			queryBlock.Columns[0].ColumnDescription.Name.ShouldBe("\"CONSTANT1\"");
+			queryBlock.Columns[0].ColumnDescription.FullTypeName.ShouldBe("NUMBER(6, 3)");
+			queryBlock.Columns[1].ColumnDescription.ShouldNotBe(null);
+			queryBlock.Columns[1].ColumnDescription.Name.ShouldBe("\"CONSTANT2\"");
+			queryBlock.Columns[1].ColumnDescription.FullTypeName.ShouldBe("NUMBER(6, 3)");
 		}
 
 		[Test(Description = @"")]

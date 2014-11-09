@@ -250,7 +250,6 @@ namespace SqlPad.Oracle
 
 		private void ResolveModelClause()
 		{
-			var columns = new List<string>();
 			foreach (var queryBlock in _queryBlockNodes.Values)
 			{
 				queryBlock.ModelClause = queryBlock.RootNode.GetDescendantByPath(NonTerminals.ModelClause);
@@ -266,21 +265,28 @@ namespace SqlPad.Oracle
 				}
 
 				var parenthesisEnclosedAliasedExpressionList = modelColumnClauses.ChildNodes[modelColumnClauses.ChildNodes.Count - 1];
-				foreach (var aliasedExpression in parenthesisEnclosedAliasedExpressionList.GetDescendants(NonTerminals.AliasedExpressionList))
+				foreach (var aliasedExpression in parenthesisEnclosedAliasedExpressionList.GetDescendants(NonTerminals.AliasedExpression))
 				{
+					var column = new OracleColumn { Nullable = true };
+
 					var expressionAliasNode = aliasedExpression.GetDescendantByPath(NonTerminals.ColumnAsAlias, Terminals.ColumnAlias);
 					if (expressionAliasNode == null)
 					{
 						var expressionNode = aliasedExpression.GetDescendantByPath(NonTerminals.Expression);
 						if (expressionNode.TerminalCount == 1 && expressionNode.FirstTerminalNode.Id == Terminals.Identifier)
 						{
-							columns.Add(expressionNode.FirstTerminalNode.Token.Value.ToQuotedIdentifier());
+							column.Name = expressionNode.FirstTerminalNode.Token.Value.ToQuotedIdentifier();
 						}
 					}
 					else
 					{
-						columns.Add(expressionAliasNode.Token.Value.ToQuotedIdentifier());
+						column.Name = expressionAliasNode.Token.Value.ToQuotedIdentifier();
 					}
+
+					var dataType = OracleSelectListColumn.TryResolveDataTypeFromAliasedExpression(aliasedExpression);
+					column.DataType = dataType;
+
+					queryBlock.ModelMeasureColumns.Add(column);
 				}
 			}
 		}

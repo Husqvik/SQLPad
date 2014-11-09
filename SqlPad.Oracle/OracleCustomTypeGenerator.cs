@@ -16,6 +16,7 @@ namespace SqlPad.Oracle
 	internal class OracleCustomTypeGenerator
 	{
 		private const string DynamicAssemblyNameBase = "SqlPad.Oracle.CustomTypes";
+		private const MethodAttributes InterfaceMethodAttributes = MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.Virtual | MethodAttributes.Final | MethodAttributes.NewSlot;
 		private static readonly Assembly CurrentAssembly = typeof(OracleCustomTypeGenerator).Assembly;
 		private static readonly Dictionary<string, OracleCustomTypeGenerator> Generators = new Dictionary<string, OracleCustomTypeGenerator>();
 
@@ -114,6 +115,9 @@ namespace SqlPad.Oracle
 
 			customTypeAssemblyBuilder.Save(_customTypeAssemblyFile.Name);
 
+			//var mappingTableField = typeof(OracleUdt).GetField("s_mapUdtNameToMappingObj", BindingFlags.Static | BindingFlags.NonPublic);
+			//mappingTableField.SetValue(null, mappingTable);
+
 			stopwatch.Stop();
 
 			var collectionTypeCount = customTypes.Count - objectTypeCount;
@@ -129,8 +133,7 @@ namespace SqlPad.Oracle
 
 			var constructorBuilder = AddConstructor(customTypeBuilder, typeof(object).GetConstructor(Type.EmptyTypes));
 
-			const MethodAttributes attributes = MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.Virtual | MethodAttributes.Final | MethodAttributes.NewSlot;
-			var propertyGetterBuilder = customTypeBuilder.DefineMethod("CreateObject", attributes, typeof(IOracleCustomType), null);
+			var propertyGetterBuilder = customTypeBuilder.DefineMethod("CreateObject", InterfaceMethodAttributes, typeof(IOracleCustomType), null);
 
 			var ilGenerator = propertyGetterBuilder.GetILGenerator();
 			ilGenerator.Emit(OpCodes.Newobj, constructorBuilder);
@@ -165,10 +168,7 @@ namespace SqlPad.Oracle
 				fields.Add(fieldName, fieldBuilder);
 			}
 
-			var fromCustomObjectBuilder = customTypeBuilder.DefineMethod("FromCustomObject", attributes, null, new []{ typeof(OracleConnection), typeof(IntPtr) });
-			fromCustomObjectBuilder.DefineParameter(1, ParameterAttributes.None, "connection");
-			fromCustomObjectBuilder.DefineParameter(2, ParameterAttributes.None, "pointerUdt");
-			ilGenerator = fromCustomObjectBuilder.GetILGenerator();
+			ilGenerator = BuildOracleCustomTypeInterfaceMethod(customTypeBuilder, "FromCustomObject");
 
 			foreach (var field in fields)
 			{
@@ -188,10 +188,7 @@ namespace SqlPad.Oracle
 
 			ilGenerator.Emit(OpCodes.Ret);
 
-			var toCustomObjectBuilder = customTypeBuilder.DefineMethod("ToCustomObject", attributes, null, new[] { typeof(OracleConnection), typeof(IntPtr) });
-			toCustomObjectBuilder.DefineParameter(1, ParameterAttributes.None, "connection");
-			toCustomObjectBuilder.DefineParameter(2, ParameterAttributes.None, "pointerUdt");
-			ilGenerator = toCustomObjectBuilder.GetILGenerator();
+			ilGenerator = BuildOracleCustomTypeInterfaceMethod(customTypeBuilder, "ToCustomObject"); ;
 
 			foreach (var field in fields)
 			{
@@ -212,7 +209,29 @@ namespace SqlPad.Oracle
 
 			ilGenerator.Emit(OpCodes.Ret);
 
-			customTypes.Add(fullyQualifiedObjectTypeName, customTypeBuilder.CreateType());
+			var customType = customTypeBuilder.CreateType();
+			customTypes.Add(fullyQualifiedObjectTypeName, customType);
+
+			/*var schemaName = objectType.FullyQualifiedName.Owner.Trim('"');
+			var typeName = objectType.FullyQualifiedName.Name.Trim('"');
+			var mappingTableKey = String.Format("schemaName='{0}' typeName='{1}'", schemaName, typeName);
+			var mappingTableValue =
+				new NameValueCollection
+				{
+					{ "schemaName", schemaName },
+					{ "typeName", typeName },
+					{ "factoryName", customType.FullName }
+				};
+
+			mappingTable.Add(mappingTableKey, mappingTableValue);*/
+		}
+
+		private static ILGenerator BuildOracleCustomTypeInterfaceMethod(TypeBuilder typeBuilder, string methodName)
+		{
+			var methodBuilder = typeBuilder.DefineMethod(methodName, InterfaceMethodAttributes, null, new[] { typeof(OracleConnection), typeof(IntPtr) });
+			methodBuilder.DefineParameter(1, ParameterAttributes.None, "connection");
+			methodBuilder.DefineParameter(2, ParameterAttributes.None, "pointerUdt");
+			return methodBuilder.GetILGenerator();
 		}
 
 		private static void CreateOracleCollectionType(ModuleBuilder customTypeModuleBuilder, OracleTypeCollection collectionType, IDictionary<string, Type> customTypes)

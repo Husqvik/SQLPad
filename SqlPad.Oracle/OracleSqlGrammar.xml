@@ -1827,8 +1827,7 @@
     <Rule StartingNonTerminal="AliasedExpressionList">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="Expression" />
-          <NonTerminal Id="ColumnAsAlias" IsOptional="true" />
+          <NonTerminal Id="AliasedExpression" />
           <NonTerminal Id="CommaChainedAliasedExpressionList" IsOptional="true" />
         </Sequence>
       </Sequences>
