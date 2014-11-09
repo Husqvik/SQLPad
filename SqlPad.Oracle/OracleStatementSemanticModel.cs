@@ -233,6 +233,60 @@ namespace SqlPad.Oracle
 				FindJoinColumnReferences(queryBlock);
 			}
 
+			ResolveInlineViewOrCommonTableExpressionRelations();
+
+			ResolveModelClause();
+
+			ExposeAsteriskColumns();
+
+			ApplyExplicitCommonTableExpressionColumnNames();
+
+			ResolveReferences();
+
+			BuildDmlModel();
+			
+			ResolveRedundantTerminals();
+		}
+
+		private void ResolveModelClause()
+		{
+			var columns = new List<string>();
+			foreach (var queryBlock in _queryBlockNodes.Values)
+			{
+				queryBlock.ModelClause = queryBlock.RootNode.GetDescendantByPath(NonTerminals.ModelClause);
+				if (queryBlock.ModelClause == null)
+				{
+					continue;
+				}
+
+				var modelColumnClauses = queryBlock.ModelClause.GetDescendantByPath(NonTerminals.MainModel, NonTerminals.ModelColumnClauses);
+				if (modelColumnClauses == null || modelColumnClauses.ChildNodes.Count < 5)
+				{
+					continue;
+				}
+
+				var parenthesisEnclosedAliasedExpressionList = modelColumnClauses.ChildNodes[modelColumnClauses.ChildNodes.Count - 1];
+				foreach (var aliasedExpression in parenthesisEnclosedAliasedExpressionList.GetDescendants(NonTerminals.AliasedExpressionList))
+				{
+					var expressionAliasNode = aliasedExpression.GetDescendantByPath(NonTerminals.ColumnAsAlias, Terminals.ColumnAlias);
+					if (expressionAliasNode == null)
+					{
+						var expressionNode = aliasedExpression.GetDescendantByPath(NonTerminals.Expression);
+						if (expressionNode.TerminalCount == 1 && expressionNode.FirstTerminalNode.Id == Terminals.Identifier)
+						{
+							columns.Add(expressionNode.FirstTerminalNode.Token.Value.ToQuotedIdentifier());
+						}
+					}
+					else
+					{
+						columns.Add(expressionAliasNode.Token.Value.ToQuotedIdentifier());
+					}
+				}
+			}
+		}
+
+		private void ResolveInlineViewOrCommonTableExpressionRelations()
+		{
 			foreach (var queryBlock in _queryBlockNodes.Values)
 			{
 				ResolveConcatenatedQueryBlocks(queryBlock);
@@ -269,16 +323,6 @@ namespace SqlPad.Oracle
 					}
 				}
 			}
-
-			ExposeAsteriskColumns();
-
-			ApplyExplicitCommonTableExpressionColumnNames();
-
-			ResolveReferences();
-
-			BuildDmlModel();
-			
-			ResolveRedundantTerminals();
 		}
 
 		private void ApplyExplicitCommonTableExpressionColumnNames()
@@ -1246,13 +1290,11 @@ namespace SqlPad.Oracle
 
 		private void FindSelectListReferences(OracleQueryBlock queryBlock)
 		{
-			var queryBlockRoot = queryBlock.RootNode;
-
-			queryBlock.SelectList = queryBlockRoot.GetDescendantByPath(NonTerminals.SelectList);
+			queryBlock.SelectList = queryBlock.RootNode.GetDescendantByPath(NonTerminals.SelectList);
 			if (queryBlock.SelectList == null)
 				return;
 
-			var distinctModifierNode = queryBlockRoot.GetDescendantByPath(NonTerminals.DistinctModifier);
+			var distinctModifierNode = queryBlock.RootNode.GetDescendantByPath(NonTerminals.DistinctModifier);
 			queryBlock.HasDistinctResultSet = distinctModifierNode != null && distinctModifierNode.FirstTerminalNode.Id.In(Terminals.Distinct, Terminals.Unique);
 
 			if (queryBlock.SelectList.FirstTerminalNode == null)

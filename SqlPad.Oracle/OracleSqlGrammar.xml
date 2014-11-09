@@ -1828,7 +1828,7 @@
       <Sequences>
         <Sequence>
           <NonTerminal Id="Expression" />
-          <Terminal Id="ColumnAlias" IsOptional="true" />
+          <NonTerminal Id="ColumnAsAlias" IsOptional="true" />
           <NonTerminal Id="CommaChainedAliasedExpressionList" IsOptional="true" />
         </Sequence>
       </Sequences>

@@ -60,6 +60,8 @@ namespace SqlPad.Oracle
 		
 		public StatementGrammarNode OrderByClause { get; set; }
 		
+		public StatementGrammarNode ModelClause { get; set; }
+		
 		public OracleStatement Statement { get; set; }
 
 		public IList<OracleSelectListColumn> Columns { get; private set; }

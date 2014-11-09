@@ -2009,6 +2009,27 @@ ORDER BY
 		}
 
 		[Test(Description = @"")]
+		public void TestModelClauseWithDimensionAndMeasuresWithAsAlias()
+		{
+			const string statement1 =
+@"SELECT 1 FROM DUAL
+MODEL
+	DIMENSION BY (0 AS KEY)
+	MEASURES (
+    	CAST(NULL AS VARCHAR2(4000)) AS M1,
+    	CAST(NULL AS VARCHAR2(4000)) AS M2
+	)
+	RULES UPDATE (
+    	M1[ANY] = 'x',
+    	M2[ANY] = 'x'
+	)";
+
+			var statements = Parser.Parse(statement1);
+			var statement = statements.Single().Validate();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+		}
+
+		[Test(Description = @"")]
 		public void TestComplexHierarchicalQuery()
 		{
 			const string statement1 =
