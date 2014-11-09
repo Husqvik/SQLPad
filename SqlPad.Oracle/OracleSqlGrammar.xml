@@ -153,14 +153,14 @@
     <Rule StartingNonTerminal="IdentifierOrStringLiteralOrNumberLiteral">
       <Sequences>
         <Sequence>
-          <Terminal Id="Identifier" />
-        </Sequence>
-        <Sequence>
           <Terminal Id="StringLiteral" />
         </Sequence>
         <Sequence>
           <Terminal Id="NumberLiteral" />
           <Terminal Id="UnitPostfix" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Identifier" AllowReservedWord="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -9127,7 +9127,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Compress" />
-          <NonTerminal Id="BackwardCompatibilityCompressionType" IsOptional="true" />
+          <NonTerminal Id="BackwardCompatibilityCompressionType" IsOptional="true" Comment="Obsolete but still working options from older versions" />
         </Sequence>
         <Sequence>
           <Terminal Id="NoCompress" />
@@ -9590,9 +9590,9 @@
   </Rules>
       
   <Terminals>
-    <Terminal Id="With" Value="WITH" IsKeyword="true" />
+    <Terminal Id="With" Value="WITH" IsReservedWord="true" />
     <Terminal Id="As" Value="AS" />
-    <Terminal Id="Is" Value="IS" IsKeyword="true" />
+    <Terminal Id="Is" Value="IS" IsReservedWord="true" />
     <Terminal Id="LeftParenthesis" Value="(" />
     <Terminal Id="RightParenthesis" Value=")" />
     <Terminal Id="LeftBracket" Value="[" />
@@ -9636,51 +9636,51 @@
     <Terminal Id="Asterisk" Value="*" />
     <Terminal Id="AtCharacter" Value="@" />
     <Terminal Id="Space" RegexValue="[:space:]+" />
-    <Terminal Id="Union" Value="UNION" IsKeyword="true" />
-    <Terminal Id="All" Value="ALL" IsKeyword="true" />
-    <Terminal Id="Any" Value="ANY" IsKeyword="true">
+    <Terminal Id="Union" Value="UNION" IsReservedWord="true" />
+    <Terminal Id="All" Value="ALL" IsReservedWord="true" />
+    <Terminal Id="Any" Value="ANY" IsReservedWord="true">
       <Synonyms>
         <Synonym Id="Some"/>
       </Synonyms>
     </Terminal>
-    <Terminal Id="Some" Value="SOME" IsKeyword="true">
+    <Terminal Id="Some" Value="SOME" IsReservedWord="true">
       <Synonyms>
         <Synonym Id="Any"/>
       </Synonyms>
     </Terminal>
-    <Terminal Id="In" Value="IN" IsKeyword="true" />
-    <Terminal Id="Set" Value="SET" IsKeyword="true" />
-    <Terminal Id="SetMinus" Value="MINUS" IsKeyword="true" />
-    <Terminal Id="Intersect" Value="INTERSECT" IsKeyword="true" />
-    <Terminal Id="Select" Value="SELECT" IsKeyword="true" />
-    <Terminal Id="Distinct" Value="DISTINCT" IsKeyword="true">
+    <Terminal Id="In" Value="IN" IsReservedWord="true" />
+    <Terminal Id="Set" Value="SET" IsReservedWord="true" />
+    <Terminal Id="SetMinus" Value="MINUS" IsReservedWord="true" />
+    <Terminal Id="Intersect" Value="INTERSECT" IsReservedWord="true" />
+    <Terminal Id="Select" Value="SELECT" IsReservedWord="true" />
+    <Terminal Id="Distinct" Value="DISTINCT" IsReservedWord="true">
       <Synonyms>
         <Synonym Id="Unique" />
       </Synonyms>
     </Terminal>
-    <Terminal Id="Unique" Value="UNIQUE" IsKeyword="true">
+    <Terminal Id="Unique" Value="UNIQUE" IsReservedWord="true">
       <Synonyms>
         <Synonym Id="Distinct" />
       </Synonyms>
     </Terminal>
-    <Terminal Id="From" Value="FROM" IsKeyword="true" />
-    <Terminal Id="Null" Value="NULL" IsKeyword="true" />
-    <Terminal Id="And" Value="AND" IsKeyword="true" />
-    <Terminal Id="Or" Value="OR" IsKeyword="true" />
-    <Terminal Id="Not" Value="NOT" IsKeyword="true" />
+    <Terminal Id="From" Value="FROM" IsReservedWord="true" />
+    <Terminal Id="Null" Value="NULL" IsReservedWord="true" />
+    <Terminal Id="And" Value="AND" IsReservedWord="true" />
+    <Terminal Id="Or" Value="OR" IsReservedWord="true" />
+    <Terminal Id="Not" Value="NOT" IsReservedWord="true" />
     <Terminal Id="NegationOrNull" Value="LNNVL" />
-    <Terminal Id="Exists" Value="EXISTS" IsKeyword="true" />
-    <Terminal Id="Where" Value="WHERE" IsKeyword="true" />
-    <Terminal Id="Between" Value="BETWEEN" IsKeyword="true" />
-    <Terminal Id="Date" Value="DATE" IsKeyword="true" />
-    <Terminal Id="SystemDate" Value="SYSDATE" IsKeyword="true" />
+    <Terminal Id="Exists" Value="EXISTS" IsReservedWord="true" />
+    <Terminal Id="Where" Value="WHERE" IsReservedWord="true" />
+    <Terminal Id="Between" Value="BETWEEN" IsReservedWord="true" />
+    <Terminal Id="Date" Value="DATE" IsReservedWord="true" />
+    <Terminal Id="SystemDate" Value="SYSDATE" IsReservedWord="true" />
     <Terminal Id="Partition" Value="PARTITION" />
     <Terminal Id="Subpartition" Value="SUBPARTITION" />
-    <Terminal Id="Table" Value="TABLE" IsKeyword="true" />
-    <Terminal Id="Public" Value="PUBLIC" IsKeyword="true" />
-    <Terminal Id="Column" Value="COLUMN" IsKeyword="true" />
-    <Terminal Id="RowNumberPseudoColumn" Value="ROWNUM" IsKeyword="true" />
-    <Terminal Id="RowIdPseudoColumn" Value="ROWID" IsKeyword="true" />
+    <Terminal Id="Table" Value="TABLE" IsReservedWord="true" />
+    <Terminal Id="Public" Value="PUBLIC" IsReservedWord="true" />
+    <Terminal Id="Column" Value="COLUMN" IsReservedWord="true" />
+    <Terminal Id="RowNumberPseudoColumn" Value="ROWNUM" IsReservedWord="true" />
+    <Terminal Id="RowIdPseudoColumn" Value="ROWID" IsReservedWord="true" />
     <Terminal Id="Identifier" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
     <Terminal Id="MemberFunctionIdentifier" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
     <Terminal Id="DatabaseLinkIdentifier" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
@@ -9737,39 +9737,39 @@
     <!-- Restriction clause -->
     <Terminal Id="Read" Value="READ" />
     <Terminal Id="Only" Value="ONLY" />
-    <Terminal Id="Check" Value="CHECK" IsKeyword="true" />
-    <Terminal Id="Option" Value="OPTION" IsKeyword="true" />
+    <Terminal Id="Check" Value="CHECK" IsReservedWord="true" />
+    <Terminal Id="Option" Value="OPTION" IsReservedWord="true" />
     <Terminal Id="Constraint" Value="CONSTRAINT" />
 
     <!-- LIKE -->
-    <Terminal Id="Like" Value="LIKE" IsKeyword="true" Comment="Uses input character set" />
+    <Terminal Id="Like" Value="LIKE" IsReservedWord="true" Comment="Uses input character set" />
     <Terminal Id="LikeUcs2" Value="LIKE2" Comment="2 byte Universal Character Set" />
     <Terminal Id="LikeUcs4" Value="LIKE4" Comment="4 byte Universal Character Set" />
     <Terminal Id="LikeUnicode" Value="LIKEC" Comment="Unicode" />
     <Terminal Id="Escape" Value="ESCAPE" />
 
     <!-- For update -->
-    <Terminal Id="For" Value="FOR" IsKeyword="true" />
-    <Terminal Id="Update" Value="UPDATE" IsKeyword="true" />
-    <Terminal Id="Nowait" Value="NOWAIT" IsKeyword="true" />
+    <Terminal Id="For" Value="FOR" IsReservedWord="true" />
+    <Terminal Id="Update" Value="UPDATE" IsReservedWord="true" />
+    <Terminal Id="Nowait" Value="NOWAIT" IsReservedWord="true" />
     <Terminal Id="Wait" Value="WAIT" />
     <Terminal Id="Skip" Value="SKIP" />
     <Terminal Id="Locked" Value="LOCKED" />
-    <Terminal Id="Of" Value="OF" IsKeyword="true" />
+    <Terminal Id="Of" Value="OF" IsReservedWord="true" />
     
     <!-- Case expression -->
     <Terminal Id="Case" Value="CASE" />
     <Terminal Id="When" Value="WHEN" />
-    <Terminal Id="Then" Value="THEN" IsKeyword="true" />
-    <Terminal Id="Else" Value="ELSE" IsKeyword="true" />
+    <Terminal Id="Then" Value="THEN" IsReservedWord="true" />
+    <Terminal Id="Else" Value="ELSE" IsReservedWord="true" />
     <Terminal Id="End" Value="END" />
 
     <!-- Group by -->
-    <Terminal Id="Group" Value="GROUP" IsKeyword="true" />
-    <Terminal Id="By" Value="BY" IsKeyword="true" />
+    <Terminal Id="Group" Value="GROUP" IsReservedWord="true" />
+    <Terminal Id="By" Value="BY" IsReservedWord="true" />
     <Terminal Id="Rollup" Value="ROLLUP" />
     <Terminal Id="Cube" Value="CUBE" />
-    <Terminal Id="Having" Value="HAVING" IsKeyword="true" />
+    <Terminal Id="Having" Value="HAVING" IsReservedWord="true" />
     <Terminal Id="Grouping" Value="GROUPING" />
     <Terminal Id="Sets" Value="SETS" />
     
@@ -9790,22 +9790,22 @@
     <Terminal Id="Natural" Value="NATURAL" />
     <Terminal Id="Cross" Value="CROSS" />
     <Terminal Id="Using" Value="USING" />
-    <Terminal Id="On" Value="ON" IsKeyword="true" />
+    <Terminal Id="On" Value="ON" IsReservedWord="true" />
 
     <!-- Order by -->
-    <Terminal Id="Order" Value="ORDER" IsKeyword="true" />
-    <Terminal Id="Asc" Value="ASC" IsKeyword="true" />
-    <Terminal Id="Desc" Value="DESC" IsKeyword="true" />
+    <Terminal Id="Order" Value="ORDER" IsReservedWord="true" />
+    <Terminal Id="Asc" Value="ASC" IsReservedWord="true" />
+    <Terminal Id="Desc" Value="DESC" IsReservedWord="true" />
     <Terminal Id="Siblings" Value="SIBLINGS" />
     <Terminal Id="Nulls" Value="NULLS" />
     <Terminal Id="First" Value="FIRST" />
     <Terminal Id="Last" Value="LAST" />
 
     <!-- Hierarchical query -->
-    <Terminal Id="Connect" Value="CONNECT" IsKeyword="true" />
-    <Terminal Id="Start" Value="START" IsKeyword="true" />
-    <Terminal Id="Level" Value="LEVEL" IsKeyword="true" />
-    <Terminal Id="Prior" Value="PRIOR" IsKeyword="true" />
+    <Terminal Id="Connect" Value="CONNECT" IsReservedWord="true" />
+    <Terminal Id="Start" Value="START" IsReservedWord="true" />
+    <Terminal Id="Level" Value="LEVEL" IsReservedWord="true" />
+    <Terminal Id="Prior" Value="PRIOR" IsReservedWord="true" />
     <Terminal Id="ConnectByRoot" Value="CONNECT_BY_ROOT" />
     <Terminal Id="NoCycle" Value="NOCYCLE" />
     
@@ -9824,13 +9824,13 @@
     <Terminal Id="Lead" Value="LEAD" AllowQuotedNotation ="true" />
     <Terminal Id="Lag" Value="LAG" AllowQuotedNotation ="true" />
     <Terminal Id="Over" Value="OVER" />
-    <Terminal Id="Rows" Value="ROWS" IsKeyword="true" />
+    <Terminal Id="Rows" Value="ROWS" IsReservedWord="true" />
     <Terminal Id="Range" Value="RANGE" />
-    <Terminal Id="Current" Value="CURRENT" IsKeyword="true" />
+    <Terminal Id="Current" Value="CURRENT" IsReservedWord="true" />
     <Terminal Id="Unbounded" Value="UNBOUNDED" />
     <Terminal Id="Preceding" Value="PRECEDING" />
     <Terminal Id="Following" Value="FOLLOWING" />
-    <Terminal Id="Row" Value="ROW" IsKeyword="true" />
+    <Terminal Id="Row" Value="ROW" IsReservedWord="true" />
     <Terminal Id="Ignore" Value="IGNORE" />
     <Terminal Id="Keep" Value="KEEP" />
     <Terminal Id="DenseRank" Value="DENSE_RANK" />
@@ -9913,16 +9913,16 @@
     <Terminal Id="Search" Value="SEARCH" />
     <Terminal Id="Depth" Value="DEPTH" />
     <Terminal Id="Breadth" Value="BREADTH" />
-    <Terminal Id="To" Value="TO" IsKeyword="true" />
-    <Terminal Id="Default" Value="DEFAULT" IsKeyword="true" />
+    <Terminal Id="To" Value="TO" IsReservedWord="true" />
+    <Terminal Id="Default" Value="DEFAULT" IsReservedWord="true" />
 
     <!-- Commit -->
     <Terminal Id="Commit" Value="COMMIT" />
     <Terminal Id="Work" Value="WORK" />
-    <Terminal Id="Comment" Value="COMMENT" IsKeyword="true" />
+    <Terminal Id="Comment" Value="COMMENT" IsReservedWord="true" />
     <Terminal Id="Force" Value="FORCE" />
     <Terminal Id="Write" Value="WRITE" />
-    <Terminal Id="Immediate" Value="IMMEDIATE" IsKeyword="true" />
+    <Terminal Id="Immediate" Value="IMMEDIATE" IsReservedWord="true" />
     <Terminal Id="Batch" Value="BATCH" />
     
     <!-- Rollback -->
@@ -9941,7 +9941,7 @@
     <!-- Update -->
     <Terminal Id="Return" Value="RETURN" />
     <Terminal Id="Returning" Value="RETURNING" />
-    <Terminal Id="Into" Value="INTO" IsKeyword="true" />
+    <Terminal Id="Into" Value="INTO" IsReservedWord="true" />
     <Terminal Id="Log" Value="LOG" />
     <Terminal Id="Errors" Value="ERRORS" />
     <Terminal Id="Reject" Value="REJECT" />
@@ -9950,14 +9950,14 @@
     <Terminal Id="Value" Value="VALUE" />
 
     <!-- Delete -->
-    <Terminal Id="Delete" Value="DELETE" IsKeyword="true" />
+    <Terminal Id="Delete" Value="DELETE" IsReservedWord="true" />
 
     <!-- Merge -->
     <Terminal Id="Merge" Value="MERGE" />
     <Terminal Id="Matched" Value="MATCHED" />
     
     <!-- Insert -->
-    <Terminal Id="Insert" Value="INSERT" IsKeyword="true" />
+    <Terminal Id="Insert" Value="INSERT" IsReservedWord="true" />
     
     <!-- Drop -->
     <Terminal Id="Cascade" Value="CASCADE" />
@@ -10127,7 +10127,7 @@
     <Terminal Id="Unrecoverable" Value="UNRECOVERABLE" />
     <Terminal Id="Recoverable" Value="RECOVERABLE" />
     <Terminal Id="InformationLifecycleManagement" Value="ILM" />
-    <Terminal Id="Add" Value="ADD" IsKeyword="true" />
+    <Terminal Id="Add" Value="ADD" IsReservedWord="true" />
     <Terminal Id="Policy" Value="POLICY" />
     <Terminal Id="Tier" Value="TIER" />
     <Terminal Id="DeleteAll" Value="DELETE_ALL" />
@@ -10137,10 +10137,10 @@
     <Terminal Id="Days" Value="DAYS" />
     <Terminal Id="Months" Value="MONTHS" />
     <Terminal Id="Years" Value="YEARS" />
-    <Terminal Id="Access" Value="ACCESS" IsKeyword="true" />
+    <Terminal Id="Access" Value="ACCESS" IsReservedWord="true" />
     
     <!-- Comment -->
-    <Terminal Id="Audit" Value="AUDIT" IsKeyword="true" />
+    <Terminal Id="Audit" Value="AUDIT" IsReservedWord="true" />
     <Terminal Id="IndexType" Value="INDEXTYPE" />
     <Terminal Id="Mining" Value="MINING" />
     <Terminal Id="Operator" Value="OPERATOR" />
@@ -10188,32 +10188,32 @@
     <Terminal Id="Link" Value="LINK" />
 
     <!-- Other -->
-    <Terminal Id="Float" Value="FLOAT" IsKeyword="true" />
-    <Terminal Id="Compress" Value="COMPRESS" IsKeyword="true" />
-    <Terminal Id="Drop" Value="DROP" IsKeyword="true" />
-    <Terminal Id="Char" Value="CHAR" IsKeyword="true" />
+    <Terminal Id="Float" Value="FLOAT" IsReservedWord="true" />
+    <Terminal Id="Compress" Value="COMPRESS" IsReservedWord="true" />
+    <Terminal Id="Drop" Value="DROP" IsReservedWord="true" />
+    <Terminal Id="Char" Value="CHAR" IsReservedWord="true" />
     <Terminal Id="NChar" Value="NCHAR" />
-    <Terminal Id="Pctfree" Value="PCTFREE" IsKeyword="true" />
-    <Terminal Id="Revoke" Value="REVOKE" IsKeyword="true" />
-    <Terminal Id="Identified" Value="IDENTIFIED" IsKeyword="true" />
-    <Terminal Id="Resource" Value="RESOURCE" IsKeyword="true" />
-    <Terminal Id="Rename" Value="RENAME" IsKeyword="true" />
-    <Terminal Id="Integer" Value="INTEGER" IsKeyword="true" />
-    <Terminal Id="Mode" Value="MODE" IsKeyword="true" />
-    <Terminal Id="View" Value="VIEW" IsKeyword="true" />
-    <Terminal Id="Cluster" Value="CLUSTER" IsKeyword="true" />
-    <Terminal Id="Lock" Value="LOCK" IsKeyword="true" />
-    <Terminal Id="Share" Value="SHARE" IsKeyword="true" />
-    <Terminal Id="Long" Value="LONG" IsKeyword="true" />
-    <Terminal Id="Synonym" Value="SYNONYM" IsKeyword="true" />
-    <Terminal Id="Alter" Value="ALTER" IsKeyword="true" />
-    <Terminal Id="Size" Value="SIZE" IsKeyword="true" />
-    <Terminal Id="Grant" Value="GRANT" IsKeyword="true" />
-    <Terminal Id="Number" Value="NUMBER" IsKeyword="true" />
-    <Terminal Id="Trigger" Value="TRIGGER" IsKeyword="true" />
-    <Terminal Id="Smallint" Value="SMALLINT" IsKeyword="true" />
-    <Terminal Id="Values" Value="VALUES" IsKeyword="true" />
-    <Terminal Id="Varchar2" Value="VARCHAR2" IsKeyword="true" />
+    <Terminal Id="Pctfree" Value="PCTFREE" IsReservedWord="true" />
+    <Terminal Id="Revoke" Value="REVOKE" IsReservedWord="true" />
+    <Terminal Id="Identified" Value="IDENTIFIED" IsReservedWord="true" />
+    <Terminal Id="Resource" Value="RESOURCE" IsReservedWord="true" />
+    <Terminal Id="Rename" Value="RENAME" IsReservedWord="true" />
+    <Terminal Id="Integer" Value="INTEGER" IsReservedWord="true" />
+    <Terminal Id="Mode" Value="MODE" IsReservedWord="true" />
+    <Terminal Id="View" Value="VIEW" IsReservedWord="true" />
+    <Terminal Id="Cluster" Value="CLUSTER" IsReservedWord="true" />
+    <Terminal Id="Lock" Value="LOCK" IsReservedWord="true" />
+    <Terminal Id="Share" Value="SHARE" IsReservedWord="true" />
+    <Terminal Id="Long" Value="LONG" IsReservedWord="true" />
+    <Terminal Id="Synonym" Value="SYNONYM" IsReservedWord="true" />
+    <Terminal Id="Alter" Value="ALTER" IsReservedWord="true" />
+    <Terminal Id="Size" Value="SIZE" IsReservedWord="true" />
+    <Terminal Id="Grant" Value="GRANT" IsReservedWord="true" />
+    <Terminal Id="Number" Value="NUMBER" IsReservedWord="true" />
+    <Terminal Id="Trigger" Value="TRIGGER" IsReservedWord="true" />
+    <Terminal Id="Smallint" Value="SMALLINT" IsReservedWord="true" />
+    <Terminal Id="Values" Value="VALUES" IsReservedWord="true" />
+    <Terminal Id="Varchar2" Value="VARCHAR2" IsReservedWord="true" />
     <Terminal Id="NVarchar2" Value="NVARCHAR2" />
     <Terminal Id="Real" Value="REAL" />
     <Terminal Id="Dec" Value="DEC" />
@@ -10225,11 +10225,11 @@
     <Terminal Id="Precision" Value="PRECISION" />
     <Terminal Id="National" Value="NATIONAL" />
     <Terminal Id="Varying" Value="VARYING" />
-    <Terminal Id="Index" Value="INDEX" IsKeyword="true" />
-    <Terminal Id="Create" Value="CREATE" IsKeyword="true" />
-    <Terminal Id="Decimal" Value="DECIMAL" IsKeyword="true" />
-    <Terminal Id="Raw" Value="RAW" IsKeyword="true" />
-    <Terminal Id="Varchar" Value="VARCHAR" IsKeyword="true" />
+    <Terminal Id="Index" Value="INDEX" IsReservedWord="true" />
+    <Terminal Id="Create" Value="CREATE" IsReservedWord="true" />
+    <Terminal Id="Decimal" Value="DECIMAL" IsReservedWord="true" />
+    <Terminal Id="Raw" Value="RAW" IsReservedWord="true" />
+    <Terminal Id="Varchar" Value="VARCHAR" IsReservedWord="true" />
     <Terminal Id="NVarchar" Value="NVARCHAR" />
     <Terminal Id="Interval" Value="INTERVAL" />
     <Terminal Id="At" Value="AT" />
@@ -10238,31 +10238,10 @@
     <Terminal Id="Zone" Value="ZONE" />
     <Terminal Id="DatabaseTimezone" Value="DBTIMEZONE" />
     <Terminal Id="SessionTimezone" Value="SESSIONTIMEZONE" />
-    <Terminal Id="Exclusive" Value="EXCLUSIVE" IsKeyword="true" />
-    <Terminal Id="Nocompress" Value="NOCOMPRESS" IsKeyword="true" />
-    <Terminal Id="User" Value="USER" IsKeyword="true" />
+    <Terminal Id="Exclusive" Value="EXCLUSIVE" IsReservedWord="true" />
+    <Terminal Id="Nocompress" Value="NOCOMPRESS" IsReservedWord="true" />
+    <Terminal Id="User" Value="USER" IsReservedWord="true" />
     <Terminal Id="CharacterCode" Value="CHR" />
     <Terminal Id="NationalCharacterSet" Value="NCHAR_CS" />
  </Terminals>
-  
-  <DatabaseTypes>
-    <Type Name="CHAR" IsKeyword="true" />
-    <Type Name="NCHAR" />
-    <Type Name="VARCHAR" IsKeyword="true" />
-    <Type Name="NVARCHAR" />
-    <Type Name="VARCHAR2" IsKeyword="true" />
-    <Type Name="NVARCHAR2" />
-    <Type Name="CLOB" />
-    <Type Name="BLOB" />
-    <Type Name="NUMBER" IsKeyword="true" />
-    <Type Name="BINARY_FLOAT" />
-    <Type Name="BINARY_DOUBLE" />
-    <Type Name="XML_TYPE" />
-    <Type Name="BFILE" />
-    <Type Name="RAW" IsKeyword="true" />
-    <Type Name="DATE" IsKeyword="true" />
-    <Type Name="TIMESTAMP" />
-    <Type Name="LOCALTIMESTAMP" />
-    <Type Name="TIMESTAMP WITH TIMEZONE" />
-  </DatabaseTypes>
 </SqlGrammar>

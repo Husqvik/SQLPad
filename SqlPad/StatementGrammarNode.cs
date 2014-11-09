@@ -93,7 +93,7 @@ namespace SqlPad
 
 		public bool IsRequired { get; set; }
 
-		public bool IsKeyword { get; set; }
+		public bool IsReservedWord { get; set; }
 		
 		public bool IsGrammarValid { get; set; }
 
@@ -415,7 +415,7 @@ namespace SqlPad
 				                 IsRequired = IsRequired,
 				                 Level = Level,
 				                 IsGrammarValid = IsGrammarValid,
-								 IsKeyword = IsKeyword
+								 IsReservedWord = IsReservedWord
 			                 };
 
 			if (Type == NodeType.NonTerminal)

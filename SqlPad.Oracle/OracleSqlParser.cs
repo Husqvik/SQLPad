@@ -14,7 +14,6 @@ namespace SqlPad.Oracle
 	public class OracleSqlParser : ISqlParser
 	{
 		private static readonly Assembly LocalAssembly = typeof(OracleSqlParser).Assembly;
-		private static readonly SqlGrammar OracleGrammar;
 		private static readonly XmlSerializer XmlSerializer = new XmlSerializer(typeof(SqlGrammar));
 		private static readonly Dictionary<string, SqlGrammarRuleSequence[]> StartingNonTerminalSequences;
 		private static readonly Dictionary<string, SqlGrammarTerminal> Terminals;
@@ -24,13 +23,14 @@ namespace SqlPad.Oracle
 		
 		static OracleSqlParser()
 		{
+			SqlGrammar oracleGrammar;
 			using (var grammarReader = XmlReader.Create(LocalAssembly.GetManifestResourceStream("SqlPad.Oracle.OracleSqlGrammar.xml")))
 			{
-				OracleGrammar = (SqlGrammar)XmlSerializer.Deserialize(grammarReader);
+				oracleGrammar = (SqlGrammar)XmlSerializer.Deserialize(grammarReader);
 			}
 
 			StartingNonTerminalSequences = new Dictionary<string, SqlGrammarRuleSequence[]>();
-			foreach (var rule in OracleGrammar.Rules)
+			foreach (var rule in oracleGrammar.Rules)
 			{
 				if (StartingNonTerminalSequences.ContainsKey(rule.StartingNonTerminal))
 					throw new InvalidOperationException(String.Format("Rule with starting non-terminal '{0}' has been already defined. ", rule.StartingNonTerminal));
@@ -45,7 +45,7 @@ namespace SqlPad.Oracle
 				throw new InvalidOperationException("Grammar sequence must have at least one mandatory item. ");*/
 
 			Terminals = new Dictionary<string, SqlGrammarTerminal>();
-			foreach (var terminal in OracleGrammar.Terminals)
+			foreach (var terminal in oracleGrammar.Terminals)
 			{
 				if (Terminals.ContainsKey(terminal.Id))
 					throw new InvalidOperationException(String.Format("Terminal '{0}' has been already defined. ", terminal.Id));
@@ -54,8 +54,8 @@ namespace SqlPad.Oracle
 				Terminals.Add(terminal.Id, terminal);
 			}
 
-			AvailableNonTerminals = OracleGrammar.StartSymbols.Select(s => s.Id).ToArray();
-			TerminatorIds = new HashSet<string>(OracleGrammar.Terminators.Select(t => t.Id));
+			AvailableNonTerminals = oracleGrammar.StartSymbols.Select(s => s.Id).ToArray();
+			TerminatorIds = new HashSet<string>(oracleGrammar.Terminators.Select(t => t.Id));
 			TerminatorValues = new HashSet<string>(TerminatorIds.Select(id => Terminals[id].Value));
 		}
 
@@ -651,7 +651,7 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		private ProcessingResult IsTokenValid(StatementBase statement, ISqlGrammarRuleSequenceItem terminalReference, int level, int tokenOffset, IList<OracleToken> tokenBuffer)
+		private static ProcessingResult IsTokenValid(StatementBase statement, SqlGrammarRuleSequenceTerminal terminalReference, int level, int tokenOffset, IList<OracleToken> tokenBuffer)
 		{
 			var tokenIsValid = false;
 			IList<StatementGrammarNode> nodes = null;
@@ -661,27 +661,28 @@ namespace SqlPad.Oracle
 				var currentToken = tokenBuffer[tokenOffset];
 
 				var terminal = Terminals[terminalReference.Id];
-				var isKeyword = false;
+				var isReservedWord = false;
 				if (String.IsNullOrEmpty(terminal.RegexValue))
 				{
 					var tokenValue = currentToken.Value.ToUpperInvariant();
 					tokenIsValid = terminal.Value == tokenValue || (terminal.AllowQuotedNotation && tokenValue == String.Format("\"{0}\"", terminal.Value));
-					isKeyword = tokenIsValid && terminal.IsKeyword;
+					isReservedWord = tokenIsValid && terminal.IsReservedWord;
 				}
 				else
 				{
-					tokenIsValid = terminal.RegexMatcher.IsMatch(currentToken.Value) && !currentToken.Value.IsReservedWord();
+					tokenIsValid = terminal.RegexMatcher.IsMatch(currentToken.Value) && (terminalReference.AllowReservedWord || !currentToken.Value.IsReservedWord());
 				}
 
 				if (tokenIsValid)
 				{
-					var terminalNode = new StatementGrammarNode(NodeType.Terminal, statement, currentToken)
-					               {
-						               Id = terminalReference.Id,
-						               Level = level,
-						               IsRequired = terminalReference.IsRequired,
-									   IsKeyword = isKeyword
-					               };
+					var terminalNode =
+						new StatementGrammarNode(NodeType.Terminal, statement, currentToken)
+						{
+							Id = terminalReference.Id,
+							Level = level,
+							IsRequired = terminalReference.IsRequired,
+							IsReservedWord = isReservedWord
+						};
 
 					nodes = new[] { terminalNode };
 				}

@@ -32,8 +32,6 @@ namespace SqlPad.Oracle {
         
         private SqlGrammarTerminal[] terminalsField;
         
-        private SqlGrammarType[] databaseTypesField;
-        
         private string dbmsField;
         
         private string versionField;
@@ -79,17 +77,6 @@ namespace SqlPad.Oracle {
             }
             set {
                 this.terminalsField = value;
-            }
-        }
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlArrayItemAttribute("Type", IsNullable=false)]
-        public SqlGrammarType[] DatabaseTypes {
-            get {
-                return this.databaseTypesField;
-            }
-            set {
-                this.databaseTypesField = value;
             }
         }
         
@@ -245,6 +232,8 @@ namespace SqlPad.Oracle {
         
         private bool isOptionalFieldSpecified;
         
+        private string commentField;
+        
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
         public string Id {
@@ -277,6 +266,17 @@ namespace SqlPad.Oracle {
                 this.isOptionalFieldSpecified = value;
             }
         }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string Comment {
+            get {
+                return this.commentField;
+            }
+            set {
+                this.commentField = value;
+            }
+        }
     }
     
     /// <remarks/>
@@ -292,6 +292,10 @@ namespace SqlPad.Oracle {
         private bool isOptionalField;
         
         private bool isOptionalFieldSpecified;
+        
+        private bool allowReservedWordField;
+        
+        private bool allowReservedWordFieldSpecified;
         
         private string tagField;
         
@@ -332,6 +336,28 @@ namespace SqlPad.Oracle {
         
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
+        public bool AllowReservedWord {
+            get {
+                return this.allowReservedWordField;
+            }
+            set {
+                this.allowReservedWordField = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        public bool AllowReservedWordSpecified {
+            get {
+                return this.allowReservedWordFieldSpecified;
+            }
+            set {
+                this.allowReservedWordFieldSpecified = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
         public string Tag {
             get {
                 return this.tagField;
@@ -367,9 +393,9 @@ namespace SqlPad.Oracle {
         
         private string valueField;
         
-        private bool isKeywordField;
+        private bool isReservedWordField;
         
-        private bool isKeywordFieldSpecified;
+        private bool isReservedWordFieldSpecified;
         
         private string regexValueField;
         
@@ -414,23 +440,23 @@ namespace SqlPad.Oracle {
         
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
-        public bool IsKeyword {
+        public bool IsReservedWord {
             get {
-                return this.isKeywordField;
+                return this.isReservedWordField;
             }
             set {
-                this.isKeywordField = value;
+                this.isReservedWordField = value;
             }
         }
         
         /// <remarks/>
         [System.Xml.Serialization.XmlIgnoreAttribute()]
-        public bool IsKeywordSpecified {
+        public bool IsReservedWordSpecified {
             get {
-                return this.isKeywordFieldSpecified;
+                return this.isReservedWordFieldSpecified;
             }
             set {
-                this.isKeywordFieldSpecified = value;
+                this.isReservedWordFieldSpecified = value;
             }
         }
         
@@ -497,54 +523,6 @@ namespace SqlPad.Oracle {
             }
             set {
                 this.idField = value;
-            }
-        }
-    }
-    
-    /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.0.30319.33440")]
-    [System.SerializableAttribute()]
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://husqvik.com/SqlPad/2014/02")]
-    public partial class SqlGrammarType {
-        
-        private string nameField;
-        
-        private bool isKeywordField;
-        
-        private bool isKeywordFieldSpecified;
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public string Name {
-            get {
-                return this.nameField;
-            }
-            set {
-                this.nameField = value;
-            }
-        }
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public bool IsKeyword {
-            get {
-                return this.isKeywordField;
-            }
-            set {
-                this.isKeywordField = value;
-            }
-        }
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
-        public bool IsKeywordSpecified {
-            get {
-                return this.isKeywordFieldSpecified;
-            }
-            set {
-                this.isKeywordFieldSpecified = value;
             }
         }
     }
