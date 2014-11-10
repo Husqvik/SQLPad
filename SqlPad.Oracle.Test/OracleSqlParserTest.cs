@@ -4083,6 +4083,18 @@ PURGE REPEAT INTERVAL '5' DAY";
 					var statement = result.Single();
 					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 				}
+
+				[Test(Description = @"")]
+				public void TestAlterSessionNumericParameter()
+				{
+					const string statementText = @"ALTER SESSION SET SORT_AREA_SIZE=1073741824;";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
 			}
 		}
 

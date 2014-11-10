@@ -157,7 +157,7 @@
         </Sequence>
         <Sequence>
           <Terminal Id="NumberLiteral" />
-          <Terminal Id="UnitPostfix" IsOptional="true" />
+          <NonTerminal Id="UnitPostfix" IsOptional="true" />
         </Sequence>
         <Sequence>
           <Terminal Id="Identifier" AllowReservedWord="true" />
