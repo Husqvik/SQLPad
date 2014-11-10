@@ -51,7 +51,7 @@ namespace SqlPad
 		private bool _isParsing;
 		private bool _isInitializing = true;
 		private bool _isInitialParsing = true;
-		private bool _isFetching;
+		private bool _isBusy;
 		private bool _enableCodeComplete;
 		private bool _isToolTipOpenByShortCut;
 		private bool _gatherExecutionStatistics;
@@ -75,13 +75,14 @@ namespace SqlPad
 
 		internal static bool IsParsingSynchronous { get; set; }
 
-		private bool IsFetching
+		public bool IsBusy
 		{
-			get { return _isFetching; }
-			set
+			get { return _isBusy; }
+			private set
 			{
-				_isFetching = value;
+				_isBusy = value;
 				_pageModel.DocumentHeader = DocumentHeader;
+				MainWindow.NotifyTask(this);
 			}
 		}
 
@@ -118,7 +119,7 @@ namespace SqlPad
 					}
 				}
 
-				if (IsFetching)
+				if (IsBusy)
 				{
 					builder.Append(" (running)");
 				}
@@ -527,7 +528,7 @@ namespace SqlPad
 
 		private void CanExecuteCancelUserActionHandler(object sender, CanExecuteRoutedEventArgs args)
 		{
-			args.CanExecute = DatabaseModel.IsExecuting || IsFetching;
+			args.CanExecute = DatabaseModel.IsExecuting || IsBusy;
 		}
 
 		private void CancelUserActionHandler(object sender, ExecutedRoutedEventArgs args)
@@ -556,13 +557,13 @@ namespace SqlPad
 
 		private void CanFetchAllRows(object sender, CanExecuteRoutedEventArgs canExecuteRoutedEventArgs)
 		{
-			canExecuteRoutedEventArgs.CanExecute = !IsFetching && DatabaseModel.CanFetch && !DatabaseModel.IsExecuting;
+			canExecuteRoutedEventArgs.CanExecute = !IsBusy && DatabaseModel.CanFetch && !DatabaseModel.IsExecuting;
 			canExecuteRoutedEventArgs.ContinueRouting = canExecuteRoutedEventArgs.CanExecute;
 		}
 
 		private async void FetchAllRows(object sender, ExecutedRoutedEventArgs args)
 		{
-			IsFetching = true;
+			IsBusy = true;
 
 			using (_cancellationTokenSource = new CancellationTokenSource())
 			{
@@ -577,7 +578,7 @@ namespace SqlPad
 				}
 			}
 
-			IsFetching = false;
+			IsBusy = false;
 		}
 
 		private void CanFetchNextRows(object sender, CanExecuteRoutedEventArgs canExecuteRoutedEventArgs)
@@ -588,14 +589,14 @@ namespace SqlPad
 
 		private bool CanFetchNextRows()
 		{
-			return !IsFetching && DatabaseModel.CanFetch;
+			return !IsBusy && DatabaseModel.CanFetch;
 		}
 
 		private async void FetchNextRows(object sender, ExecutedRoutedEventArgs args)
 		{
-			IsFetching = true;
+			IsBusy = true;
 			await FetchNextRows();
-			IsFetching = false;
+			IsBusy = false;
 		}
 
 		private async Task FetchNextRows()
@@ -673,7 +674,7 @@ namespace SqlPad
 
 		private void CanExecuteDatabaseCommandHandler(object sender, CanExecuteRoutedEventArgs args)
 		{
-			if (IsFetching || DatabaseModel.IsExecuting || _sqlDocumentRepository.StatementText != Editor.Text)
+			if (IsBusy || DatabaseModel.IsExecuting || _sqlDocumentRepository.StatementText != Editor.Text)
 				return;
 
 			var statement = _sqlDocumentRepository.Statements.GetStatementAtPosition(Editor.CaretOffset);
@@ -694,12 +695,12 @@ namespace SqlPad
 
 		private async void ExecuteDatabaseCommandHandlerInternal()
 		{
-			IsFetching = true;
+			IsBusy = true;
 			
 			var executionModel = BuildStatementExecutionModel();
 			await ExecuteDatabaseCommand(executionModel);
 
-			IsFetching = false;
+			IsBusy = false;
 		}
 
 		private StatementExecutionModel BuildStatementExecutionModel()
@@ -1489,9 +1490,9 @@ namespace SqlPad
 
 			if (scrollViewer.ScrollableHeight == scrollViewer.VerticalOffset && CanFetchNextRows())
 			{
-				IsFetching = true;
+				IsBusy = true;
 				await FetchNextRows();
-				IsFetching = false;
+				IsBusy = false;
 			}
 		}
 
@@ -1580,9 +1581,9 @@ namespace SqlPad
 
 		private async void ExecuteExplainPlanCommandHandler(object sender, ExecutedRoutedEventArgs args)
 		{
-			IsFetching = true;
+			IsBusy = true;
 			await ExecuteExplainPlan();
-			IsFetching = false;
+			IsBusy = false;
 		}
 
 		private async Task ExecuteExplainPlan()

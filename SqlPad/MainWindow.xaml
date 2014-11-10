@@ -11,6 +11,10 @@
 		Closing="WindowClosingHandler"
 		Closed="WindowClosedHandler">
 
+	<Window.TaskbarItemInfo>
+		<TaskbarItemInfo />
+	</Window.TaskbarItemInfo>
+
 	<Window.Resources>
         <TextDecoration x:Key="WaveErrorUnderline" PenOffset="0.5">
             <TextDecoration.Pen>

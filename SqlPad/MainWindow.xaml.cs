@@ -7,6 +7,7 @@ using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Shell;
 using Microsoft.Win32;
 using SqlPad.Commands;
 using SqlPad.FindReplace;
@@ -399,6 +400,14 @@ namespace SqlPad
 			documentPage.Editor.CaretOffset = documentCursorPosition.CursorPosition;
 			DocumentTabControl.SelectedItem = documentPage.TabItem;
 			EditorNavigationService.IsEnabled = true;
+		}
+
+		public void NotifyTask(DocumentPage document)
+		{
+			var isAnyDocumentBusy = AllDocuments.Any(d => d.IsBusy);
+			TaskbarItemInfo.ProgressState = isAnyDocumentBusy
+				? TaskbarItemProgressState.Indeterminate
+				: TaskbarItemProgressState.None;
 		}
 	}
 }
