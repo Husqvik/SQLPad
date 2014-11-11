@@ -1333,5 +1333,20 @@ SELECT * FROM DUAL";
 
 			CanExecuteCommand(OracleCommands.PropagateColumn).ShouldBe(false);
 		}
+
+		[Test(Description = @""), STAThread]
+		public void TestPropagateCommandWithWithoutAlias()
+		{
+			const string statementText = @"SELECT 1 FROM (SELECT 1 FROM DUAL)";
+			_editor.Text = statementText;
+			_editor.CaretOffset = 22;
+
+			CanExecuteCommand(OracleCommands.PropagateColumn).ShouldBe(true);
+			ExecuteCommand(OracleCommands.PropagateColumn, new TestCommandSettings(new CommandSettingsModel { Value = "COLUMN1" }));
+
+			const string expectedResult = @"SELECT 1, COLUMN1 FROM (SELECT 1 COLUMN1 FROM DUAL)";
+
+			_editor.Text.ShouldBe(expectedResult);
+		}
 	}
 }
