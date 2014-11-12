@@ -1229,7 +1229,7 @@ se";
 			items[0].Name.ShouldBe("LAST_VALUE");
 			items[0].Text.ShouldBe("LAST_VALUE() OVER ()");
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.BuiltInFunction);
-			items[0].CaretOffset.ShouldBe(-1);
+			items[0].CaretOffset.ShouldBe(-9);
 		}
 
 		[Test(Description = @"")]
@@ -1296,6 +1296,19 @@ se";
 			items[0].Text.ShouldBe("TO_CHAR()");
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.PackageFunction);
 			items[0].CaretOffset.ShouldBe(-1);
+			items[0].StatementNode.ShouldNotBe(null);
+		}
+
+		[Test(Description = @"")]
+		public void TestFunctionSuggestionWithExistingParameterListWhenCursorIsJustAtOpeningParenthesis()
+		{
+			const string statement = "SELECT ROUN(1) FROM DUAL";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 11).ToList();
+			items.Count.ShouldBe(1);
+			items[0].Name.ShouldBe("ROUND");
+			items[0].Text.ShouldBe("ROUND");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.PackageFunction);
+			items[0].CaretOffset.ShouldBe(0);
 			items[0].StatementNode.ShouldNotBe(null);
 		}
 

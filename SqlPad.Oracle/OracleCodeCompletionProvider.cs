@@ -78,7 +78,6 @@ namespace SqlPad.Oracle
 		private IEnumerable<OracleCodeCompletionFunctionOverload> ResolveFunctionOverloads(IEnumerable<OracleReferenceContainer> referenceContainers, StatementGrammarNode node, int cursorPosition)
 		{
 			var programReferenceBase = referenceContainers.SelectMany(c => ((IEnumerable<OracleProgramReferenceBase>)c.ProgramReferences).Concat(c.TypeReferences)).Where(f => node.HasAncestor(f.ParameterListNode))
-			//var programReference = referenceContainers.SelectMany(c => c.ProgramReferences).Where(f => node.HasAncestor(f.ParameterListNode))
 				.OrderByDescending(r => r.RootNode.Level)
 				.FirstOrDefault();
 
@@ -263,7 +262,7 @@ namespace SqlPad.Oracle
 
 			if (completionType.Column)
 			{
-				completionItems = completionItems.Concat(GenerateSelectListItems(currentNode, referenceContainers, cursorPosition, oracleDatabaseModel, completionType, forcedInvokation));
+				completionItems = completionItems.Concat(GenerateSelectListItems(referenceContainers, cursorPosition, oracleDatabaseModel, completionType, forcedInvokation));
 
 				var functionOverloads = ResolveFunctionOverloads(referenceContainers, currentNode, cursorPosition);
 				var specificFunctionParameterCodeCompletionItems = CodeCompletionSearchHelper.ResolveSpecificFunctionParameterCodeCompletionItems(currentNode, functionOverloads, oracleDatabaseModel);
@@ -329,8 +328,10 @@ namespace SqlPad.Oracle
 				});
 		}
 
-		private IEnumerable<ICodeCompletionItem> GenerateSelectListItems(StatementGrammarNode currentNode, IEnumerable<OracleReferenceContainer> referenceContainers, int cursorPosition, OracleDatabaseModelBase databaseModel, OracleCodeCompletionType completionType, bool forcedInvokation)
+		private IEnumerable<ICodeCompletionItem> GenerateSelectListItems(IEnumerable<OracleReferenceContainer> referenceContainers, int cursorPosition, OracleDatabaseModelBase databaseModel, OracleCodeCompletionType completionType, bool forcedInvokation)
 		{
+			var currentNode = completionType.EffectiveTerminal;
+			
 			var prefixedColumnReference = currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference);
 			var columnIdentifierFollowing = currentNode.Id != Terminals.Identifier && prefixedColumnReference != null && prefixedColumnReference.GetDescendants(Terminals.Identifier).FirstOrDefault() != null;
 
@@ -340,11 +341,8 @@ namespace SqlPad.Oracle
 			}
 
 			var programReferences = referenceContainers.SelectMany(c => c.ProgramReferences);
-			var objectIdentifierNode = currentNode.ParentNode.Id == NonTerminals.ObjectPrefix ? currentNode.ParentNode.GetSingleDescendant(Terminals.ObjectIdentifier) : null;
-			if (objectIdentifierNode == null && prefixedColumnReference != null)
-			{
-				objectIdentifierNode = prefixedColumnReference.ChildNodes[0].GetSingleDescendant(Terminals.ObjectIdentifier);
-			}
+
+			var objectIdentifierNode = completionType.ReferenceIdentifier.ObjectIdentifier;
 
 			var partialName = currentNode.Id == Terminals.Identifier && cursorPosition <= currentNode.SourcePosition.IndexEnd + 1
 				? currentNode.Token.Value.Substring(0, cursorPosition - currentNode.SourcePosition.IndexStart).Trim('"')
@@ -674,21 +672,43 @@ namespace SqlPad.Oracle
 						postFix = null;
 					}
 					
-					var analyticClause = addParameterList && !i.Metadata.IsAggregate && i.Metadata.IsAnalytic
-						? " OVER ()"
-						: null;
-					
-					return new OracleCodeCompletionItem
-					{
-						Name = i.Name,
-						Text = String.Format("{0}{1}{2}", i.Name, postFix, analyticClause),
-						StatementNode = node,
-						Category = category,
-						InsertOffset = insertOffset,
-						CaretOffset = category == OracleCodeCompletionCategory.Package || i.Metadata.DisplayType == OracleFunctionMetadata.DisplayTypeNoParenthesis ? 0 : parameterListCaretOffset,
-						CategoryPriority = 2
-					};
+					var analyticClause = addParameterList
+						? GetAdditionalFunctionClause(i.Metadata)
+						: String.Empty;
+
+					return
+						new OracleCodeCompletionItem
+						{
+							Name = i.Name,
+							Text = String.Format("{0}{1}{2}", i.Name, postFix, analyticClause),
+							StatementNode = node,
+							Category = category,
+							InsertOffset = insertOffset,
+							CaretOffset = category == OracleCodeCompletionCategory.Package || i.Metadata.DisplayType == OracleFunctionMetadata.DisplayTypeNoParenthesis
+								? 0
+								: (parameterListCaretOffset - analyticClause.Length),
+							CategoryPriority = 2
+						};
 				});
+		}
+
+		private string GetAdditionalFunctionClause(OracleFunctionMetadata metadata)
+		{
+			var orderByClause = metadata.IsBuiltIn && metadata.Identifier.Name.In("\"NTILE\"", "\"ROW_NUMBER\"", "\"RANK\"", "\"DENSE_RANK\"", "\"LEAD\"", "\"LAG\"")
+				? "ORDER BY NULL"
+				: String.Empty;
+
+			if (metadata.IsBuiltIn && metadata.Identifier.Name == "\"LISTAGG\"")
+			{
+				return " WITHIN GROUP (ORDER BY NULL)";
+			}
+
+			if (!metadata.IsAggregate && metadata.IsAnalytic)
+			{
+				return String.Format(" OVER ({0})", orderByClause);
+			}
+
+			return String.Empty;
 		}
 
 		private IEnumerable<ICodeCompletionItem> GenerateSchemaDataObjectItems(OracleDatabaseModelBase databaseModel, string schemaName, string objectNamePart, StatementGrammarNode node, int categoryOffset = 0, int insertOffset = 0)

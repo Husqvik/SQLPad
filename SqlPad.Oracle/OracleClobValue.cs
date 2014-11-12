@@ -9,7 +9,7 @@ namespace SqlPad.Oracle
 {
 	public abstract class OracleLargeTextValue : ILargeTextValue
 	{
-		protected const int PreviewLength = 1023;
+		protected const int DefaultPreviewLength = 1023;
 		public const string Ellipsis = "\u2026";
 
 		private string _preview;
@@ -35,11 +35,11 @@ namespace SqlPad.Oracle
 				return String.Empty;
 			}
 
-			var preview = GetChunk(0, PreviewLength + 1);
-			var indexFirstLineBreak = preview.IndexOf('\n', 0, preview.Length < PreviewLength ? preview.Length : PreviewLength);
-			if (preview.Length > PreviewLength || indexFirstLineBreak != -1)
+			var preview = GetChunk(0, DefaultPreviewLength + 1);
+			var indexFirstLineBreak = preview.IndexOf('\n', 0, preview.Length < DefaultPreviewLength ? preview.Length : DefaultPreviewLength);
+			if (preview.Length > DefaultPreviewLength || indexFirstLineBreak != -1)
 			{
-				preview = String.Format("{0}{1}", preview.Substring(0, indexFirstLineBreak != -1 ? indexFirstLineBreak : PreviewLength), Ellipsis);
+				preview = String.Format("{0}{1}", preview.Substring(0, indexFirstLineBreak != -1 ? indexFirstLineBreak : DefaultPreviewLength), Ellipsis);
 			}
 
 			return _preview = preview;

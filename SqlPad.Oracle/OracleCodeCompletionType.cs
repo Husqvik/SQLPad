@@ -52,6 +52,8 @@ namespace SqlPad.Oracle
 		
 		public StatementGrammarNode CurrentTerminal { get; private set; }
 
+		public StatementGrammarNode EffectiveTerminal { get; private set; }
+
 		public OracleStatement Statement { get; private set; }
 		
 		public OracleStatementSemanticModel SemanticModel { get; private set; }
@@ -132,7 +134,15 @@ namespace SqlPad.Oracle
 			}
 
 			var isCursorTouchingTwoTerminals = nearestTerminal.SourcePosition.IndexStart == cursorPosition && precedingTerminal != null && precedingTerminal.SourcePosition.IndexEnd + 1 == cursorPosition;
-			IsCursorTouchingIdentifier = isCursorTouchingTwoTerminals && precedingTerminal.Id == Terminals.Identifier;
+			if (isCursorTouchingTwoTerminals && nearestTerminal.Id != Terminals.Identifier)
+			{
+				IsCursorTouchingIdentifier = true;
+				EffectiveTerminal = precedingTerminal;
+			}
+			else
+			{
+				EffectiveTerminal = nearestTerminal;
+			}
 
 			var terminalCandidateSourceToken = isCursorAfterToken ? nearestTerminal : precedingTerminal;
 			if (nearestTerminal.Id.In(Terminals.RightParenthesis, Terminals.Comma) && isCursorTouchingTwoTerminals && precedingTerminal.Id.IsIdentifier())
