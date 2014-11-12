@@ -39,6 +39,11 @@ namespace SqlPad.Test
 
 			_mainWindow = new MainWindow();
 			_mainWindow.Show();
+
+			var tempFile = Path.Combine(_tempDirectoryName, "tempDocument.sql");
+			File.WriteAllText(tempFile, String.Empty);
+			_mainWindow.GetType().GetMethod("OpenExistingFile", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(_mainWindow, new object[] { tempFile });
+
 			_page = (DocumentPage)((TabItem)_mainWindow.DocumentTabControl.SelectedItem).Content;
 			_editor = _page.Editor;
 		}

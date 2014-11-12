@@ -9,7 +9,7 @@ namespace SqlPad
 
 		Task<StatementCollection> ParseAsync(string sqlText, CancellationToken cancellationToken);
 
-		bool IsKeyword(string value);
+		bool IsReservedWord(string value);
 
 		bool IsLiteral(string terminalId);
 

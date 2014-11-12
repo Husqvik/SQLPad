@@ -2193,6 +2193,13 @@
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
+          <Terminal Id="Cursor" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="NestedQuery" />
+          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
+        </Sequence>
+        <Sequence>
           <Terminal Id="Identifier" />
           <Terminal Id="LeftBracket" />
           <NonTerminal Id="ConditionOrExpressionList" />
@@ -9676,6 +9683,7 @@
     <Terminal Id="Partition" Value="PARTITION" />
     <Terminal Id="Subpartition" Value="SUBPARTITION" />
     <Terminal Id="Table" Value="TABLE" IsReservedWord="true" />
+    <Terminal Id="Cursor" Value="CURSOR" />
     <Terminal Id="Public" Value="PUBLIC" IsReservedWord="true" />
     <Terminal Id="Column" Value="COLUMN" IsReservedWord="true" />
     <Terminal Id="RowNumberPseudoColumn" Value="ROWNUM" IsReservedWord="true" />

@@ -2100,6 +2100,16 @@ ORDER BY
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 		}
 
+		[Test(Description = @"")]
+		public void TestCursorFunction()
+		{
+			const string statement1 = "SELECT CURSOR(SELECT * FROM DUAL) CURSOR_OUTPUT FROM DUAL";
+
+			var statements = Parser.Parse(statement1).ToArray();
+			var statement = statements.Single().Validate();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+		}
+
 		public class IsRuleValid
 		{
 			[Test(Description = @"")]
@@ -2259,6 +2269,7 @@ ORDER BY
 						Terminals.Colon,
 						Terminals.ConnectByRoot,
 						Terminals.Count,
+						Terminals.Cursor,
 						Terminals.Date,
 						Terminals.Distinct,
 						Terminals.Extract,

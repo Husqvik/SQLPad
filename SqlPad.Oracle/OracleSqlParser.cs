@@ -65,7 +65,7 @@ namespace SqlPad.Oracle
 			       !identifier.IsReservedWord();
 		}
 
-		public bool IsKeyword(string value)
+		public bool IsReservedWord(string value)
 		{
 			return value.IsReservedWord();
 		}

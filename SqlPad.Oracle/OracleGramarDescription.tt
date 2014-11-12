@@ -51,7 +51,7 @@ namespace SqlPad.Oracle
 		var identifierTerminalIds = terminalElements.Where(e => e.Attribute("Id").Value.Contains("Identifier")).Select(e => e.Attribute("Id").Value).OrderBy(id => id);
 		var aliasTerminalIds = terminalElements.Where(e => e.Attribute("Id").Value.Contains("Alias")).Select(e => e.Attribute("Id").Value).OrderBy(id => id);
 		var literalTerminalIds = terminalElements.Where(e => e.Attribute("Id").Value.Contains("Literal")).Select(e => e.Attribute("Id").Value).OrderBy(id => id);
-		var reservedWords = terminalElements.Where(e => e.Attribute("IsKeyword") != null && e.Attribute("IsKeyword").Value.ToLowerInvariant() == "true").Select(e => "\"" + e.Attribute("Value").Value.ToUpperInvariant() + "\"").OrderBy(id => id);
+		var reservedWords = terminalElements.Where(e => e.Attribute("IsReservedWord") != null && e.Attribute("IsReservedWord").Value.ToLowerInvariant() == "true").Select(e => "\"" + e.Attribute("Value").Value.ToUpperInvariant() + "\"").OrderBy(id => id);
 #>
 
 		/// <summary>
