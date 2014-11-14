@@ -402,7 +402,7 @@ namespace SqlPad
 			EditorNavigationService.IsEnabled = true;
 		}
 
-		public void NotifyTask(DocumentPage document)
+		public void NotifyTaskStatus()
 		{
 			var isAnyDocumentBusy = AllDocuments.Any(d => d.IsBusy);
 			TaskbarItemInfo.ProgressState = isAnyDocumentBusy

@@ -9,7 +9,7 @@ namespace SqlPad.Oracle
 {
 	public abstract class OracleLargeTextValue : ILargeTextValue
 	{
-		protected const int DefaultPreviewLength = 1023;
+		public const int DefaultPreviewLength = 1023;
 		public const string Ellipsis = "\u2026";
 
 		private string _preview;
@@ -23,6 +23,11 @@ namespace SqlPad.Oracle
 
 		public abstract long Length { get; }
 
+		public virtual int PreviewLength
+		{
+			get { return DefaultPreviewLength; }
+		}
+
 		public string Preview
 		{
 			get { return _preview ?? BuildPreview(); }
@@ -35,11 +40,11 @@ namespace SqlPad.Oracle
 				return String.Empty;
 			}
 
-			var preview = GetChunk(0, DefaultPreviewLength + 1);
-			var indexFirstLineBreak = preview.IndexOf('\n', 0, preview.Length < DefaultPreviewLength ? preview.Length : DefaultPreviewLength);
-			if (preview.Length > DefaultPreviewLength || indexFirstLineBreak != -1)
+			var preview = GetChunk(0, PreviewLength + 1);
+			var indexFirstLineBreak = preview.IndexOf('\n', 0, preview.Length < PreviewLength ? preview.Length : PreviewLength);
+			if (preview.Length > PreviewLength || indexFirstLineBreak != -1)
 			{
-				preview = String.Format("{0}{1}", preview.Substring(0, indexFirstLineBreak != -1 ? indexFirstLineBreak : DefaultPreviewLength), Ellipsis);
+				preview = String.Format("{0}{1}", preview.Substring(0, indexFirstLineBreak != -1 ? indexFirstLineBreak : PreviewLength), Ellipsis);
 			}
 
 			return _preview = preview;
@@ -80,6 +85,7 @@ namespace SqlPad.Oracle
 	public class OracleXmlValue : OracleLargeTextValue, IDisposable
 	{
 		private readonly OracleXmlType _xmlType;
+		private readonly int _previewLength;
 
 		public override string DataTypeName { get { return "XMLTYPE"; } }
 
@@ -87,14 +93,20 @@ namespace SqlPad.Oracle
 
 		public override bool IsNull { get { return _xmlType.IsNull; } }
 
+		public override int PreviewLength
+		{
+			get { return _previewLength; }
+		}
+
 		protected override string GetValue()
 		{
 			return _xmlType.Value;
 		}
 
-		public OracleXmlValue(OracleXmlType xmlType)
+		public OracleXmlValue(OracleXmlType xmlType, int previewLength = DefaultPreviewLength)
 		{
 			_xmlType = xmlType;
+			_previewLength = previewLength;
 		}
 
 		public override string GetChunk(int offset, int length)
@@ -113,6 +125,7 @@ namespace SqlPad.Oracle
 	public class OracleClobValue : OracleLargeTextValue, IDisposable
 	{
 		private readonly OracleClob _clob;
+		private readonly int _previewLength;
 		private readonly string _dataTypeName;
 
 		public override string DataTypeName { get { return _dataTypeName; } }
@@ -121,14 +134,20 @@ namespace SqlPad.Oracle
 
 		public override bool IsNull { get { return _clob.IsNull || _clob.IsEmpty; } }
 
+		public override int PreviewLength
+		{
+			get { return _previewLength; }
+		}
+
 		protected override string GetValue()
 		{
 			return _clob.Value;
 		}
 
-		public OracleClobValue(string dataTypeName, OracleClob clob)
+		public OracleClobValue(string dataTypeName, OracleClob clob, int previewLength = DefaultPreviewLength)
 		{
 			_clob = clob;
+			_previewLength = previewLength;
 			_dataTypeName = dataTypeName;
 		}
 

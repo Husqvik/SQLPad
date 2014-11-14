@@ -16,9 +16,6 @@
 
 	<Window.Resources>
 		<findReplace:FindReplaceManager x:Key="FindReplaceManager" />
-		<Style x:Key="CellTextBoxStyleReadOnly">
-			<Setter Property="TextBoxBase.IsReadOnly" Value="True" />
-		</Style>
 	</Window.Resources>
 
 	<Window.InputBindings>
@@ -81,13 +78,9 @@
 						  AutoGenerateColumns="False"
 						  CanUserDeleteRows ="False"
 						  MinRowHeight="20"
+						  MaxColumnWidth="{Binding ElementName=CollectionViewer, Path=ActualWidth}"
 				          HorizontalGridLinesBrush="LightGray"
 				          VerticalGridLinesBrush="LightGray">
-					<DataGrid.Columns>
-						<DataGridTextColumn Header="COLUMN__VALUE"
-											Binding="{Binding Path=Value}"
-											EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}" />
-					</DataGrid.Columns>
 				</DataGrid>
 			</TabItem>
 		</TabControl>

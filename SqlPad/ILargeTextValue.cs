@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 
 namespace SqlPad
 {
@@ -34,6 +33,6 @@ namespace SqlPad
 	{
 		IList Records { get; }
 
-		Type ItemType { get; }
+		ColumnHeader ColumnHeader { get; }
 	}
 }

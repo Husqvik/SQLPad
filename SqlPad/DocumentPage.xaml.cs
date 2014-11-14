@@ -82,7 +82,7 @@ namespace SqlPad
 			{
 				_isBusy = value;
 				_pageModel.DocumentHeader = DocumentHeader;
-				MainWindow.NotifyTask(this);
+				MainWindow.NotifyTaskStatus();
 			}
 		}
 
@@ -852,20 +852,7 @@ namespace SqlPad
 
 			foreach (var columnHeader in columnHeaders)
 			{
-				var columnTemplate =
-					new DataGridTextColumn
-					{
-						Header = columnHeader.Name.Replace("_", "__"),
-						Binding = new Binding(String.Format("[{0}]", columnHeader.ColumnIndex)) { Converter = CellValueConverter, ConverterParameter = columnHeader },
-						EditingElementStyle = (Style)Resources["CellTextBoxStyleReadOnly"]
-					};
-
-				if (columnHeader.DataType.In(typeof(Decimal), typeof(Int16), typeof(Int32), typeof(Int64), typeof(Byte)))
-				{
-					columnTemplate.HeaderStyle = (Style)Resources["HeaderStyleRightAlign"];
-					columnTemplate.CellStyle = (Style)Resources["CellStyleRightAlign"];
-				}
-
+				var columnTemplate = CreateDataGridTextColumnTemplate(columnHeader);
 				ResultGrid.Columns.Add(columnTemplate);
 			}
 
@@ -873,6 +860,25 @@ namespace SqlPad
 			ResultGrid.HeadersVisibility = DataGridHeadersVisibility.Column;
 
 			_pageModel.ResultRowItems.Clear();
+		}
+
+		internal DataGridTextColumn CreateDataGridTextColumnTemplate(ColumnHeader columnHeader)
+		{
+			var columnTemplate =
+				new DataGridTextColumn
+				{
+					Header = columnHeader.Name.Replace("_", "__"),
+					Binding = new Binding(String.Format("[{0}]", columnHeader.ColumnIndex)) { Converter = CellValueConverter, ConverterParameter = columnHeader },
+					EditingElementStyle = (Style)Resources["CellTextBoxStyleReadOnly"]
+				};
+
+			if (columnHeader.DataType.In(typeof(Decimal), typeof(Int16), typeof(Int32), typeof(Int64), typeof(Byte)))
+			{
+				columnTemplate.HeaderStyle = (Style)Resources["HeaderStyleRightAlign"];
+				columnTemplate.CellStyle = (Style)Resources["CellStyleRightAlign"];
+			}
+
+			return columnTemplate;
 		}
 
 		public void Dispose()
@@ -1506,7 +1512,7 @@ namespace SqlPad
 			var largeValue = cellValue as ILargeValue;
 			if (largeValue != null)
 			{
-				new LargeValueEditor(ResultGrid.CurrentColumn.Header.ToString(), largeValue) { Owner = Window.GetWindow(this) }.ShowDialog();
+				new LargeValueEditor(this, ResultGrid.CurrentColumn.Header.ToString(), largeValue) { Owner = Window.GetWindow(this) }.ShowDialog();
 			}
 		}
 

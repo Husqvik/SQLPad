@@ -300,6 +300,7 @@ namespace SqlPad.Oracle
 
 			ImplementAbstractStringValueProperty(customTypeBuilder, "FullyQualifiedName", fullyQualifiedCollectionTypeName);
 			ImplementAbstractStringValueProperty(customTypeBuilder, "EnclosingCharacter", enclosingCharacter);
+			ImplementAbstractStringValueProperty(customTypeBuilder, "ElementTypeName", collectionType.ElementTypeIdentifier.ToString());
 
 			customTypes.Add(fullyQualifiedCollectionTypeName, customTypeBuilder.CreateType());
 		}
@@ -350,18 +351,20 @@ namespace SqlPad.Oracle
 	public class OracleValueArray<T> : IOracleCustomType, INullable, ICollectionValue
 	{
 		private const int PreviewMaxItemCount = 10;
+		private const int LargeValuePreviewLength = 16;
 		
 		private static readonly Type ArrayItemType = typeof (T);
 
 		private readonly string _enclosingCharacter;
+		private ColumnHeader _columnHeader;
 
 		[OracleArrayMapping] public T[] Array;
 
-		public OracleValueArray(string dataTypeName, string enclosingCharacter = null, T[] array = null)
+		public OracleValueArray(string dataTypeName, string elementTypeName, string enclosingCharacter)
 		{
 			DataTypeName = dataTypeName;
+			ElementTypeName = elementTypeName;
 			_enclosingCharacter = enclosingCharacter;
-			Array = array;
 		}
 
 		public bool IsNull { get { return Array == null; } }
@@ -377,6 +380,8 @@ namespace SqlPad.Oracle
 		}
 
 		public string DataTypeName { get; private set; }
+
+		public string ElementTypeName { get; private set; }
 		
 		public bool IsEditable { get { return false; } }
 		
@@ -386,7 +391,25 @@ namespace SqlPad.Oracle
 
 		public IList Records { get { return Array; } }
 
-		public Type ItemType { get { return ArrayItemType; } }
+		public ColumnHeader ColumnHeader
+		{
+			get { return _columnHeader ?? BuildColumnHeader(); }
+		}
+
+		private ColumnHeader BuildColumnHeader()
+		{
+			_columnHeader =
+				new ColumnHeader
+				{
+					DataType = ArrayItemType,
+					DatabaseDataType = CustomTypeValueConverter.ConvertDatabaseTypeNameToReaderTypeName(ElementTypeName),
+					Name = "COLUMN_VALUE",
+				};
+
+			_columnHeader.ValueConverter = new OracleColumnValueConverter(_columnHeader);
+
+			return _columnHeader;
+		}
 
 		public override string ToString()
 		{
@@ -400,7 +423,7 @@ namespace SqlPad.Oracle
 				return String.Empty;
 			}
 
-			var items = Array.Take(PreviewMaxItemCount).Select(i => Convert.ToString(i));
+			var items = Array.Take(PreviewMaxItemCount).Select(i => CustomTypeValueConverter.ConvertItem(i, LargeValuePreviewLength));
 
 			if (!String.IsNullOrEmpty(_enclosingCharacter))
 			{
@@ -411,15 +434,119 @@ namespace SqlPad.Oracle
 		}
 	}
 
+	internal static class CustomTypeValueConverter
+	{
+		public static string ConvertDatabaseTypeNameToReaderTypeName(string databaseTypeName)
+		{
+			switch (databaseTypeName)
+			{
+				case "\"RAW\"":
+					return "Raw";
+				default:
+					return databaseTypeName;
+			}
+		}
+
+		public static object ConvertItem(object value, int largeValuePreviewLength)
+		{
+			var oracleBlob = value as OracleBlob;
+			if (oracleBlob != null)
+			{
+				return new OracleBlobValue(oracleBlob);
+			}
+			
+			var oracleClob = value as OracleClob;
+			if (oracleClob != null)
+			{
+				var typeName = oracleClob.IsNClob ? "NCLOB" : "CLOB";
+				return new OracleClobValue(typeName, oracleClob, largeValuePreviewLength);
+			}
+
+			var oracleBinary = value as OracleBinary?;
+			if (oracleBinary != null)
+			{
+				return new OracleLongRawValue(oracleBinary.Value);
+			}
+
+			var oracleTimestamp = value as OracleTimeStamp?;
+			if (oracleTimestamp != null)
+			{
+				return new OracleTimestamp(oracleTimestamp.Value);
+			}
+			
+			var oracleTimestampWithTimeZone = value as OracleTimeStampTZ?;
+			if (oracleTimestampWithTimeZone != null)
+			{
+				return new OracleTimestampWithTimeZone(oracleTimestampWithTimeZone.Value);
+			}
+
+			var oracleTimestampWithLocalTimeZone = value as OracleTimeStampLTZ?;
+			if (oracleTimestampWithLocalTimeZone != null)
+			{
+				return new OracleTimestampWithLocalTimeZone(oracleTimestampWithLocalTimeZone.Value);
+			}
+
+			var oracleDecimal = value as OracleDecimal?;
+			if (oracleDecimal != null)
+			{
+				return new OracleNumber(oracleDecimal.Value);
+			}
+
+			var oracleXmlType = value as OracleXmlType;
+			if (oracleXmlType != null)
+			{
+				return new OracleXmlValue((OracleXmlType)value, largeValuePreviewLength);
+			}
+
+			var oracleRaw = value as byte[];
+			if (oracleRaw != null)
+			{
+				var hexValue = oracleRaw.ToHexString();
+				return hexValue.Length > largeValuePreviewLength
+					? String.Format("{0}{1}", hexValue.Substring(0, largeValuePreviewLength), OracleLargeTextValue.Ellipsis)
+					: hexValue;
+			}
+
+			return value;
+		}
+
+		public static string CreatePreview(IOracleCustomType customType)
+		{
+			var attributeValues = GetAttributeValues(customType);
+			var attributeValuesPreview = String.Join(", ", attributeValues.Select(Convert.ToString));
+			return String.Format("{0}({1})", GetDatabaseTypeName(customType), attributeValuesPreview);
+		}
+
+		private static string GetDatabaseTypeName(IOracleCustomType customType)
+		{
+			return customType.GetType().GetCustomAttribute<OracleCustomTypeMappingAttribute>().UdtTypeName;
+		}
+
+		public static object[] GetAttributeValues(IOracleCustomType customType)
+		{
+			return customType.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public)
+				.Where(IsOracleTypeField)
+				.Select(f => ConvertItem(f.GetValue(customType), OracleLargeTextValue.DefaultPreviewLength))
+				.ToArray();
+		}
+
+		private static bool IsOracleTypeField(MemberInfo fieldInfo)
+		{
+			return fieldInfo.GetCustomAttribute<OracleObjectMappingAttribute>() != null;
+		}
+	}
+
 	public abstract class OracleTableValueFactoryBase<T> : IOracleCustomTypeFactory, IOracleArrayTypeFactory
 	{
 		protected abstract string FullyQualifiedName { get; }
+
+		protected abstract string ElementTypeName { get; }
 		
 		protected abstract string EnclosingCharacter { get; }
 
 		public IOracleCustomType CreateObject()
 		{
-			return new OracleValueArray<T>(FullyQualifiedName, EnclosingCharacter);
+			return new OracleValueArray<T>(FullyQualifiedName, ElementTypeName, EnclosingCharacter);
 		}
 
 		public Array CreateArray(int elementCount)

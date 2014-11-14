@@ -22,8 +22,9 @@ namespace SqlPad
 		private readonly ILargeValue _largeValue;
 		private readonly ILargeBinaryValue _largeBinaryValue;
 		private bool _isXml;
+		private readonly DocumentPage _documentPage;
 
-		public LargeValueEditor(string columnName, ILargeValue largeValue)
+		public LargeValueEditor(DocumentPage documentPage, string columnName, ILargeValue largeValue)
 		{
 			InitializeComponent();
 
@@ -35,6 +36,8 @@ namespace SqlPad
 			_findReplaceManager.OwnerWindow = this;
 
 			Title = columnName;
+
+			_documentPage = documentPage;
 
 			_largeValue = largeValue;
 			_largeBinaryValue = _largeValue as ILargeBinaryValue;
@@ -90,7 +93,9 @@ namespace SqlPad
 				{
 					TabCollection.Visibility = Visibility.Visible;
 					TabControl.SelectedItem = TabCollection;
-					CollectionViewer.ItemsSource = collectionValue.Records.Cast<object>().Select(r => new CollectionValueHost { Value = r }).ToArray();
+					var columnTemplate = _documentPage.CreateDataGridTextColumnTemplate(collectionValue.ColumnHeader);
+					CollectionViewer.Columns.Add(columnTemplate);
+					CollectionViewer.ItemsSource = collectionValue.Records.Cast<object>().Select(r => new [] { r }).ToArray();
 				}
 
 				_findReplaceManager.CurrentEditor = new TextEditorAdapter(searchEditor);
@@ -269,10 +274,5 @@ namespace SqlPad
 			DocumentPage.SafeActionWithUserError(
 				() => File.WriteAllBytes(dialog.FileName, _largeBinaryValue.Value));
 		}
-	}
-
-	public class CollectionValueHost
-	{
-		public object Value { get; set; }
 	}
 }

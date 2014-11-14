@@ -273,7 +273,7 @@ namespace SqlPad.Test
 		[Test, STAThread]
 		public void TestLargeTextValueEditorInitialization()
 		{
-			var editor = new LargeValueEditor("Dummy", new TestLargeTextValue());
+			var editor = new LargeValueEditor(null, "Dummy", new TestLargeTextValue());
 			var task = (Task) typeof (LargeValueEditor).GetMethod("SetEditorValue", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(editor, null);
 			task.Wait();
 			
