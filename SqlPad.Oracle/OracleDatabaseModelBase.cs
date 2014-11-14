@@ -47,7 +47,9 @@ namespace SqlPad.Oracle
 
 		public abstract event EventHandler Initialized;
 
-		public abstract event EventHandler<DatabaseModelInitializationFailedArgs> InitializationFailed;
+		public abstract event EventHandler<DatabaseModelConnectionErrorArgs> InitializationFailed;
+
+		public abstract event EventHandler<DatabaseModelConnectionErrorArgs> Disconnected;
 
 		public abstract event EventHandler RefreshStarted;
 

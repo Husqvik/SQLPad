@@ -30,7 +30,9 @@ namespace SqlPad
 
 		event EventHandler Initialized;
 
-		event EventHandler<DatabaseModelInitializationFailedArgs> InitializationFailed;
+		event EventHandler<DatabaseModelConnectionErrorArgs> InitializationFailed;
+
+		event EventHandler<DatabaseModelConnectionErrorArgs> Disconnected;
 
 		event EventHandler RefreshStarted;
 
@@ -73,11 +75,11 @@ namespace SqlPad
 		object ConvertToCellValue(object rawValue);
 	}
 
-	public class DatabaseModelInitializationFailedArgs : EventArgs
+	public class DatabaseModelConnectionErrorArgs : EventArgs
 	{
 		public Exception Exception { get; private set; }
 
-		public DatabaseModelInitializationFailedArgs(Exception exception)
+		public DatabaseModelConnectionErrorArgs(Exception exception)
 		{
 			if (exception == null)
 			{

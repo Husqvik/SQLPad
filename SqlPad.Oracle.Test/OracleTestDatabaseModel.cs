@@ -846,7 +846,9 @@ Note
 
 		public override event EventHandler Initialized = delegate { };
 
-		public override event EventHandler<DatabaseModelInitializationFailedArgs> InitializationFailed;
+		public override event EventHandler<DatabaseModelConnectionErrorArgs> InitializationFailed;
+
+		public override event EventHandler<DatabaseModelConnectionErrorArgs> Disconnected;
 
 		public override event EventHandler RefreshStarted = delegate { };
 

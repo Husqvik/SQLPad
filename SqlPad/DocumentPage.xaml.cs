@@ -350,6 +350,7 @@ namespace SqlPad
 			_sqlDocumentRepository = new SqlDocumentRepository(_infrastructureFactory.CreateParser(), _infrastructureFactory.CreateStatementValidator(), DatabaseModel);
 
 			DatabaseModel.Initialized += DatabaseModelInitializedHandler;
+			DatabaseModel.Disconnected += DatabaseModelInitializationFailedHandler;
 			DatabaseModel.InitializationFailed += DatabaseModelInitializationFailedHandler;
 			DatabaseModel.RefreshStarted += DatabaseModelRefreshStartedHandler;
 			DatabaseModel.RefreshFinished += DatabaseModelRefreshFinishedHandler;
@@ -471,7 +472,7 @@ namespace SqlPad
 				});
 		}
 
-		private void DatabaseModelInitializationFailedHandler(object sender, DatabaseModelInitializationFailedArgs args)
+		private void DatabaseModelInitializationFailedHandler(object sender, DatabaseModelConnectionErrorArgs args)
 		{
 			_pageModel.ConnectProgressBarVisibility = Visibility.Collapsed;
 			_pageModel.ConnectionErrorMessage = args.Exception.Message;
@@ -674,7 +675,7 @@ namespace SqlPad
 
 		private void CanExecuteDatabaseCommandHandler(object sender, CanExecuteRoutedEventArgs args)
 		{
-			if (IsBusy || DatabaseModel.IsExecuting || _sqlDocumentRepository.StatementText != Editor.Text)
+			if (IsBusy || !DatabaseModel.IsInitialized || DatabaseModel.IsExecuting || _sqlDocumentRepository.StatementText != Editor.Text)
 				return;
 
 			var statement = _sqlDocumentRepository.Statements.GetStatementAtPosition(Editor.CaretOffset);

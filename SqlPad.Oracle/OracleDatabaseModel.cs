@@ -18,6 +18,8 @@ namespace SqlPad.Oracle
 	public class OracleDatabaseModel : OracleDatabaseModelBase
 	{
 		internal const int OracleErrorCodeUserInvokedCancellation = 1013;
+		internal const int OracleErrorCodeNotConnectedToOracle = 3114;
+		internal const int OracleErrorCodeEndOfFileOnCommunicationChannel = 3113;
 		internal const int InitialLongFetchSize = 131072;
 		private const string ModuleNameSqlPadDatabaseModel = "SQLPad database model";
 
@@ -36,7 +38,7 @@ namespace SqlPad.Oracle
 		private string _currentSchema;
 		private readonly DataDictionaryMapper _dataDictionaryMapper;
 		private OracleDataDictionary _dataDictionary = OracleDataDictionary.EmptyDictionary;
-		private readonly OracleConnection _userConnection;
+		private OracleConnection _userConnection;
 		private OracleDataReader _userDataReader;
 		private OracleCommand _userCommand;
 		private OracleTransaction _userTransaction;
@@ -70,9 +72,21 @@ namespace SqlPad.Oracle
 
 			_dataDictionaryMapper = new DataDictionaryMapper(this);
 
-			_userConnection = new OracleConnection(connectionString.ConnectionString);
+			InitializeUserConnection();
 
 			//_customTypeGenerator = OracleCustomTypeGenerator.GetCustomTypeGenerator(connectionString.Name);
+		}
+
+		private void InitializeUserConnection()
+		{
+			if (_userConnection != null)
+			{
+				_userConnection.Dispose();
+			}
+
+			_isInitialized = false;
+
+			_userConnection = new OracleConnection(_connectionString.ConnectionString);
 		}
 
 		private void TimerElapsedHandler(object sender, ElapsedEventArgs elapsedEventArgs)
@@ -384,7 +398,9 @@ namespace SqlPad.Oracle
 
 		public override event EventHandler Initialized;
 		
-		public override event EventHandler<DatabaseModelInitializationFailedArgs> InitializationFailed;
+		public override event EventHandler<DatabaseModelConnectionErrorArgs> InitializationFailed;
+
+		public override event EventHandler<DatabaseModelConnectionErrorArgs> Disconnected;
 		
 		public override event EventHandler RefreshStarted;
 
@@ -534,10 +550,9 @@ namespace SqlPad.Oracle
 				_userCommand.AddSimpleParameter(variable.Name, variable.Value, variable.DataType);
 			}
 
-			_executionStatisticsUpdater = new SessionExecutionStatisticsUpdater(StatisticsKeys, _userSessionId);
-
 			if (executionModel.GatherExecutionStatistics)
 			{
+				_executionStatisticsUpdater = new SessionExecutionStatisticsUpdater(StatisticsKeys, _userSessionId);
 				await UpdateModelAsync(cancellationToken, true, _executionStatisticsUpdater.SessionBeginExecutionStatisticsUpdater);
 			}
 
@@ -656,10 +671,22 @@ namespace SqlPad.Oracle
 				result.ColumnHeaders = GetColumnHeadersFromReader(_userDataReader);
 				result.InitialResultSet = await FetchRecordsFromReader(_userDataReader, executionModel.InitialFetchRowCount, false).EnumerateAsync(cancellationToken);
 			}
-			catch (Exception exception)
+			catch (OracleException exception)
 			{
-				var oracleException = exception as OracleException;
-				if (oracleException == null || oracleException.Number != OracleErrorCodeUserInvokedCancellation)
+				if (exception.Number.In(OracleErrorCodeEndOfFileOnCommunicationChannel, OracleErrorCodeNotConnectedToOracle))
+				{
+					OracleSchemaResolver.Unregister(this);
+
+					InitializeUserConnection();
+
+					if (Disconnected != null)
+					{
+						Disconnected(this, new DatabaseModelConnectionErrorArgs(exception));
+					}
+
+					throw;
+				}
+				else if (exception.Number != OracleErrorCodeUserInvokedCancellation)
 				{
 					throw;
 				}
@@ -805,6 +832,10 @@ namespace SqlPad.Oracle
 						value = new OracleXmlValue(reader.GetOracleXmlType(i));
 						break;
 					case "Object":
+						/*var customType = (IOracleCustomType)reader.GetOracleValue(i);
+						var x = CustomTypeValueConverter.CreatePreview(customType);
+						value = customType;
+						break;*/
 					case "Array":
 					default:
 						value = reader.GetValue(i);
@@ -1111,7 +1142,7 @@ namespace SqlPad.Oracle
 
 				if (InitializationFailed != null)
 				{
-					InitializationFailed(this, new DatabaseModelInitializationFailedArgs(e));
+					InitializationFailed(this, new DatabaseModelConnectionErrorArgs(e));
 				}
 
 				return;
@@ -1157,6 +1188,14 @@ namespace SqlPad.Oracle
 			private OracleSchemaResolver(OracleDatabaseModel databaseModel)
 			{
 				_databaseModel = databaseModel;
+			}
+
+			public static void Unregister(OracleDatabaseModel databaseModel)
+			{
+				lock (ActiveResolvers)
+				{
+					ActiveResolvers.Remove(databaseModel.ConnectionString.ConnectionString);
+				}
 			}
 
 			public static IReadOnlyCollection<string> ResolveSchemas(OracleDatabaseModel databaseModel)
