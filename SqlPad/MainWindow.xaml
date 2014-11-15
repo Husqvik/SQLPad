@@ -30,6 +30,20 @@
             </TextDecoration.Pen>
         </TextDecoration>
 
+		<!--<TextDecoration x:Key="WaveErrorUnderline">
+			<TextDecoration.Pen>
+				<Pen Thickness="6">
+					<Pen.Brush>
+						<VisualBrush TileMode="Tile" Viewbox="0,-2,6,5" ViewboxUnits="Absolute" Viewport="0,-1,6,3" ViewportUnits="Absolute">
+							<VisualBrush.Visual>
+								<Image Source="c:\Users\Jan\Desktop\WaveLine.png" />
+							</VisualBrush.Visual>
+						</VisualBrush>
+					</Pen.Brush>
+				</Pen>
+			</TextDecoration.Pen>
+		</TextDecoration>-->
+
 		<TextDecoration x:Key="WaveWarningUnderline">
 			<TextDecoration.Pen>
 				<Pen Thickness="6">
