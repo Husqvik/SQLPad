@@ -832,11 +832,9 @@ namespace SqlPad.Oracle
 						value = new OracleXmlValue(reader.GetOracleXmlType(i));
 						break;
 					case "Object":
-						/*var customType = (IOracleCustomType)reader.GetOracleValue(i);
-						var x = CustomTypeValueConverter.CreatePreview(customType);
-						value = customType;
-						break;*/
 					case "Array":
+						value = reader.GetOracleValue(i);
+						break;
 					default:
 						value = reader.GetValue(i);
 						break;

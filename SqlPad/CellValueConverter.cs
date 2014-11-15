@@ -8,10 +8,10 @@ namespace SqlPad
 	{
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			var columnHeader = (ColumnHeader)parameter;
 			if (value == DBNull.Value)
 				return ConfigurationProvider.Configuration.ResultGrid.NullPlaceholder;
 
+			var columnHeader = (ColumnHeader)parameter;
 			var convertedValue = columnHeader.ValueConverter.ConvertToCellValue(value);
 			if (convertedValue is DateTime)
 			{

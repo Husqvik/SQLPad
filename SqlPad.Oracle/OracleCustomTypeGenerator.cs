@@ -35,7 +35,7 @@ namespace SqlPad.Oracle
 
 			if (File.Exists(customTypeAssemblyFullFileName))
 			{
-				_customTypeAssembly = Assembly.LoadFile(customTypeAssemblyFullFileName);
+				_customTypeAssembly = Assembly.Load(File.ReadAllBytes(customTypeAssemblyFullFileName));
 				//_customTypeHostDomain = AppDomain.CreateDomain(String.Format("{0}.{1}", "CustomTypeHostDomain", connectionStringName));
 				//_customTypeHostDomain.Load(DynamicAssemblyNameBase);
 
@@ -129,14 +129,16 @@ namespace SqlPad.Oracle
 		{
 			var fullyQualifiedObjectTypeName = objectType.FullyQualifiedName.ToString().Replace("\"", null);
 			var customTypeClassName = String.Format("{0}.ObjectTypes.{1}", DynamicAssemblyNameBase, MakeValidMemberName(fullyQualifiedObjectTypeName));
-			var customTypeBuilder = customTypeModuleBuilder.DefineType(customTypeClassName, TypeAttributes.Public | TypeAttributes.Class, typeof(object), new[] { typeof(IOracleCustomType), typeof(IOracleCustomTypeFactory) });
+			var customTypeBuilder = customTypeModuleBuilder.DefineType(customTypeClassName, TypeAttributes.Public | TypeAttributes.Class, typeof(OracleCustomTypeBase), new[] { typeof(IOracleCustomType), typeof(IOracleCustomTypeFactory) });
 			AddOracleCustomTypeMappingAttribute(customTypeBuilder, fullyQualifiedObjectTypeName);
 
 			var constructorBuilder = AddConstructor(customTypeBuilder, typeof(object).GetConstructor(Type.EmptyTypes));
 
-			var propertyGetterBuilder = customTypeBuilder.DefineMethod("CreateObject", InterfaceMethodAttributes, typeof(IOracleCustomType), null);
+			ImplementAbstractStringValueProperty(customTypeBuilder, "DataTypeName", fullyQualifiedObjectTypeName, MethodAttributes.Public);
 
-			var ilGenerator = propertyGetterBuilder.GetILGenerator();
+			var createObjectMethodBuilder = customTypeBuilder.DefineMethod("CreateObject", InterfaceMethodAttributes, typeof(IOracleCustomType), null);
+
+			var ilGenerator = createObjectMethodBuilder.GetILGenerator();
 			ilGenerator.Emit(OpCodes.Newobj, constructorBuilder);
 			ilGenerator.Emit(OpCodes.Ret);
 
@@ -328,11 +330,11 @@ namespace SqlPad.Oracle
 			return new String(typeName.Replace('.', '_').Where(c => c == '_' || Char.IsLetterOrDigit(c)).ToArray());
 		}
 
-		private static void ImplementAbstractStringValueProperty(TypeBuilder typeBuilder, string propertyName, string value)
+		private static void ImplementAbstractStringValueProperty(TypeBuilder typeBuilder, string propertyName, string value, MethodAttributes methodAttributes = MethodAttributes.Family)
 		{
 			var propertyBuilder = typeBuilder.DefineProperty(propertyName, PropertyAttributes.None, CallingConventions.HasThis, typeof(string), null);
 
-			const MethodAttributes attributes = MethodAttributes.Family | MethodAttributes.HideBySig | MethodAttributes.Virtual | MethodAttributes.SpecialName;
+			var attributes = methodAttributes | MethodAttributes.HideBySig | MethodAttributes.Virtual | MethodAttributes.SpecialName;
 			var propertyGetterBuilder = typeBuilder.DefineMethod("get_" + propertyName, attributes, typeof(string), null);
 
 			var ilGenerator = propertyGetterBuilder.GetILGenerator();
@@ -434,6 +436,75 @@ namespace SqlPad.Oracle
 		}
 	}
 
+	public abstract class OracleCustomTypeBase : IComplexType
+	{
+		private List<CustomTypeAttributeValue> _attributes;
+		private string _preview;
+
+		public abstract string DataTypeName { get; }
+		
+		public bool IsEditable { get { return false; } }
+		
+		public long Length { get { throw new NotSupportedException(); } }
+		
+		public void Prefetch() { }
+
+		public ICollection<CustomTypeAttributeValue> Attributes
+		{
+			get { return _attributes ?? BuildAttributeCollection(); }
+		}
+
+		public override string ToString()
+		{
+			return _preview ?? BuildPreview();
+		}
+
+		private string BuildPreview()
+		{
+			var attributeValues = BuildAttributeCollection();
+			var attributeValuesPreview = String.Join(", ", attributeValues.Select(FormatAttributeLabel));
+			return _preview = String.Format("{0}({1})", DataTypeName, attributeValuesPreview);
+		}
+
+		private string FormatAttributeLabel(CustomTypeAttributeValue attribute)
+		{
+			var stringValue = Convert.ToString(attribute.Value);
+			return String.Format("{0}={1}", attribute.ColumnHeader.Name, String.IsNullOrEmpty(stringValue) ? "NULL" : stringValue);
+		}
+
+		private ICollection<CustomTypeAttributeValue> BuildAttributeCollection()
+		{
+			var columnIndex = 0;
+			var attributeSource = GetType().GetFields(BindingFlags.Instance | BindingFlags.Public)
+				.Select(f =>
+					new
+					{
+						Field = f,
+						Attribute = f.GetCustomAttribute<OracleObjectMappingAttribute>()
+					})
+				.Where(fa => fa.Attribute != null)
+				.Select(fa =>
+					new CustomTypeAttributeValue
+					{
+						ColumnHeader =
+							new ColumnHeader
+							{
+								ColumnIndex = columnIndex++,
+								Name = fa.Attribute.AttributeName
+							},
+						Value = CustomTypeValueConverter.ConvertItem(fa.Field.GetValue(this), OracleLargeTextValue.DefaultPreviewLength)
+					})
+				.ToList();
+
+			attributeSource.ForEach(a =>
+			{
+				a.ColumnHeader.ValueConverter = new OracleColumnValueConverter(a.ColumnHeader);
+			});
+
+			return _attributes = attributeSource;
+		}
+	}
+
 	internal static class CustomTypeValueConverter
 	{
 		public static string ConvertDatabaseTypeNameToReaderTypeName(string databaseTypeName)
@@ -508,31 +579,6 @@ namespace SqlPad.Oracle
 			}
 
 			return value;
-		}
-
-		public static string CreatePreview(IOracleCustomType customType)
-		{
-			var attributeValues = GetAttributeValues(customType);
-			var attributeValuesPreview = String.Join(", ", attributeValues.Select(Convert.ToString));
-			return String.Format("{0}({1})", GetDatabaseTypeName(customType), attributeValuesPreview);
-		}
-
-		private static string GetDatabaseTypeName(IOracleCustomType customType)
-		{
-			return customType.GetType().GetCustomAttribute<OracleCustomTypeMappingAttribute>().UdtTypeName;
-		}
-
-		public static object[] GetAttributeValues(IOracleCustomType customType)
-		{
-			return customType.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public)
-				.Where(IsOracleTypeField)
-				.Select(f => ConvertItem(f.GetValue(customType), OracleLargeTextValue.DefaultPreviewLength))
-				.ToArray();
-		}
-
-		private static bool IsOracleTypeField(MemberInfo fieldInfo)
-		{
-			return fieldInfo.GetCustomAttribute<OracleObjectMappingAttribute>() != null;
 		}
 	}
 

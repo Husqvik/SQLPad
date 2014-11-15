@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using System.Xml;
@@ -47,6 +50,7 @@ namespace SqlPad
 		{
 			var largeTextValue = _largeValue as ILargeTextValue;
 			var collectionValue = _largeValue as ICollectionValue;
+			var complexType = _largeValue as IComplexType;
 			var searchEditor = HexEditor;
 
 			try
@@ -96,6 +100,12 @@ namespace SqlPad
 					var columnTemplate = _documentPage.CreateDataGridTextColumnTemplate(collectionValue.ColumnHeader);
 					CollectionViewer.Columns.Add(columnTemplate);
 					CollectionViewer.ItemsSource = collectionValue.Records.Cast<object>().Select(r => new [] { r }).ToArray();
+				}
+				else if (complexType != null)
+				{
+					TabComplexType.Visibility = Visibility.Visible;
+					TabControl.SelectedItem = TabComplexType;
+					ComplexTypeViewer.ItemsSource = complexType.Attributes;
 				}
 
 				_findReplaceManager.CurrentEditor = new TextEditorAdapter(searchEditor);
@@ -273,6 +283,36 @@ namespace SqlPad
 
 			DocumentPage.SafeActionWithUserError(
 				() => File.WriteAllBytes(dialog.FileName, _largeBinaryValue.Value));
+		}
+	}
+
+	internal class CustomTypeDataTemplateSelector : DataTemplateSelector
+	{
+		public override DataTemplate SelectTemplate(object item, DependencyObject container)
+		{
+			//var collectionValue = item as ICollectionValue;
+			//var complexType = item as IComplexType;
+
+			var largeValueEditor = (LargeValueEditor)Window.GetWindow(container);
+			var dataTemplate = (DataTemplate)largeValueEditor.Resources["PrimitiveValueTypeTemplate"];
+
+			//return base.SelectTemplate(item, container);
+			return dataTemplate;
+		}
+	}
+
+	internal class CustomTypeAttributeCellValueConverter : IMultiValueConverter
+	{
+		private static readonly CellValueConverter CellValueConverter = new CellValueConverter();
+
+		public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+		{
+			return CellValueConverter.Convert(values[0], targetType, values[1], culture);
+		}
+
+		public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+		{
+			throw new NotImplementedException();
 		}
 	}
 }

@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 
 namespace SqlPad
 {
@@ -34,5 +35,17 @@ namespace SqlPad
 		IList Records { get; }
 
 		ColumnHeader ColumnHeader { get; }
+	}
+
+	public interface IComplexType : ILargeValue
+	{
+		ICollection<CustomTypeAttributeValue> Attributes { get; }
+	}
+
+	public struct CustomTypeAttributeValue
+	{
+		public ColumnHeader ColumnHeader { get; set; }
+		
+		public object Value { get; set; }
 	}
 }
