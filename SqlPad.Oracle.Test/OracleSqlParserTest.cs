@@ -2181,7 +2181,7 @@ ORDER BY
 			{
 				var terminalCandidates = Parser.GetTerminalCandidates(null).OrderBy(t => t).ToArray();
 
-				var expectedTerminals = new[] { Terminals.Alter, Terminals.Comment, Terminals.Commit, Terminals.Create, Terminals.Delete, Terminals.Drop, Terminals.Explain, Terminals.Insert, Terminals.LeftParenthesis, Terminals.Lock, Terminals.Merge, Terminals.Purge, Terminals.Rename, Terminals.Rollback, Terminals.Savepoint, Terminals.Select, Terminals.Set, Terminals.Update, Terminals.With };
+				var expectedTerminals = new[] { Terminals.Alter, Terminals.Call, Terminals.Comment, Terminals.Commit, Terminals.Create, Terminals.Delete, Terminals.Drop, Terminals.Explain, Terminals.Insert, Terminals.LeftParenthesis, Terminals.Lock, Terminals.Merge, Terminals.Purge, Terminals.Rename, Terminals.Rollback, Terminals.Savepoint, Terminals.Select, Terminals.Set, Terminals.Update, Terminals.With };
 				terminalCandidates.ShouldBe(expectedTerminals);
 			}
 
@@ -4162,6 +4162,47 @@ PURGE REPEAT INTERVAL '5' DAY";
 				terminals[10].Id.ShouldBe(Terminals.Asterisk);
 				terminals[11].Id.ShouldBe(Terminals.From);
 				terminals[12].Id.ShouldBe(Terminals.ObjectIdentifier);
+			}
+		}
+
+		public class Call
+		{
+			[Test(Description = @"")]
+			public void TestCallStatement()
+			{
+				const string statementText = @"CALL HUSQVIK.RET_WAREHOUSE_TYP(WAREHOUSE_TYP(234, 'Warehouse 234')).ret_name() INTO :x INDICATOR :y;";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+				var terminals = statement.AllTerminals.ToArray();
+				terminals.Length.ShouldBe(22);
+
+				terminals[0].Id.ShouldBe(Terminals.Call);
+				terminals[1].Id.ShouldBe(Terminals.ObjectIdentifier);
+				terminals[2].Id.ShouldBe(Terminals.Dot);
+				terminals[3].Id.ShouldBe(Terminals.Identifier);
+				terminals[4].Id.ShouldBe(Terminals.LeftParenthesis);
+				terminals[5].Id.ShouldBe(Terminals.Identifier);
+				terminals[6].Id.ShouldBe(Terminals.LeftParenthesis);
+				terminals[7].Id.ShouldBe(Terminals.NumberLiteral);
+				terminals[8].Id.ShouldBe(Terminals.Comma);
+				terminals[9].Id.ShouldBe(Terminals.StringLiteral);
+				terminals[10].Id.ShouldBe(Terminals.RightParenthesis);
+				terminals[11].Id.ShouldBe(Terminals.RightParenthesis);
+				terminals[12].Id.ShouldBe(Terminals.Dot);
+				terminals[13].Id.ShouldBe(Terminals.MemberFunctionIdentifier);
+				terminals[14].Id.ShouldBe(Terminals.LeftParenthesis);
+				terminals[15].Id.ShouldBe(Terminals.RightParenthesis);
+				terminals[16].Id.ShouldBe(Terminals.Into);
+				terminals[17].Id.ShouldBe(Terminals.Colon);
+				terminals[18].Id.ShouldBe(Terminals.BindVariableIdentifier);
+				terminals[19].Id.ShouldBe(Terminals.Indicator);
+				terminals[20].Id.ShouldBe(Terminals.Colon);
+				terminals[21].Id.ShouldBe(Terminals.IndicatorVariableIdentifier);
 			}
 		}
 

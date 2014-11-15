@@ -19,6 +19,7 @@
     <StartSymbol Id="RenameStatement" />
     <StartSymbol Id="CommentStatement" />
     <StartSymbol Id="AlterStatement" />
+    <StartSymbol Id="CallStatement" />
   </StartSymbols>
 
   <Terminators>
@@ -27,6 +28,7 @@
   </Terminators>
     
   <Rules>
+    <!-- Statement terminators -->
     <Rule StartingNonTerminal="StatementTerminator">
       <Sequences>
         <Sequence>
@@ -34,6 +36,56 @@
         </Sequence>
         <Sequence>
           <Terminal Id="SqlPlusTerminator" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <!-- CALL statement -->
+    <Rule StartingNonTerminal="CallStatement">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Call" />
+          <NonTerminal Id="ObjectAccessExpression" />
+          <NonTerminal Id="CallIntoClause" IsOptional="true" />
+          <NonTerminal Id="StatementTerminator" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="CallIntoClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Into" />
+          <NonTerminal Id="BindVariableExpression" />
+          <NonTerminal Id="IndicatorVariableClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="IndicatorVariableClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Indicator" IsOptional="true" />
+          <Terminal Id="Colon" />
+          <Terminal Id="IndicatorVariableIdentifier" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ObjectAccessExpression">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="Prefix" IsOptional="true" />
+          <Terminal Id="Identifier" />
+          <!-- Function call -->
+          <NonTerminal Id="DatabaseLink" IsOptional="true" />
+          <NonTerminal Id="ParenthesisEnclosedFunctionParameters" IsOptional="true" />
+          <NonTerminal Id="ObjectTypeNestedFunctionCallChained" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="ObjectAccessExpression" />
+          <Terminal Id="RightParenthesis" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -9695,6 +9747,7 @@
     <Terminal Id="ObjectIdentifier" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
     <Terminal Id="ParameterIdentifier" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
     <Terminal Id="BindVariableIdentifier" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*)|(\d+))$" />
+    <Terminal Id="IndicatorVariableIdentifier" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*)|(\d+))$" />
     <Terminal Id="ColumnAlias" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
     <Terminal Id="ObjectAlias" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
     <Terminal Id="XmlAlias" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
@@ -10193,6 +10246,10 @@
     <Terminal Id="DataDefinitionLanguage" Value="DDL" />
     <Terminal Id="Database" Value="DATABASE" />
     <Terminal Id="Link" Value="LINK" />
+
+    <!-- Call -->
+    <Terminal Id="Call" Value="CALL" />
+    <Terminal Id="Indicator" Value="INDICATOR" />
 
     <!-- Other -->
     <Terminal Id="Float" Value="FLOAT" IsReservedWord="true" />
