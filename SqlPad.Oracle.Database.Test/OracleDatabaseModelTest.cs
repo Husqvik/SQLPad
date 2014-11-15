@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
 using System.Linq;
@@ -16,6 +17,7 @@ namespace SqlPad.Oracle.Database.Test
 	public class OracleDatabaseModelTest : TemporaryDirectoryTestFixture
 	{
 		private readonly ConnectionStringSettings _connectionString = new ConnectionStringSettings("TestConnection", "DATA SOURCE=HQ_PDB_TCP;PASSWORD=oracle;USER ID=HUSQVIK");
+		private const string LoopbackDatabaseLinkName = "HQ_PDB";
 
 		[Test]
 		public void TestModelInitialization()
@@ -280,6 +282,25 @@ namespace SqlPad.Oracle.Database.Test
 			model.Organization.ShouldBe("Heap");
 			model.ParallelDegree.ShouldBe("1");
 			model.RowCount.ShouldBe(1);
+		}
+
+		[Test]
+		public void TestRemoteTableColumnsUpdater()
+		{
+			IReadOnlyList<string> remoteTableColumns;
+
+			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
+			{
+				databaseModel.Initialize().Wait();
+				var task = databaseModel.GetRemoteTableColumnsAsync(LoopbackDatabaseLinkName, new OracleObjectIdentifier(null, "\"USER_TABLES\""), CancellationToken.None);
+				task.Wait();
+
+				remoteTableColumns = task.Result;
+			}
+
+			remoteTableColumns.Count.ShouldBe(64);
+			remoteTableColumns[0].ShouldBe("\"TABLE_NAME\"");
+			remoteTableColumns[63].ShouldBe("\"INMEMORY_DUPLICATE\"");
 		}
 
 		[Test]

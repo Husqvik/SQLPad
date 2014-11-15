@@ -20,7 +20,7 @@ namespace SqlPad.Oracle.Commands
 		{
 		}
 
-		protected override bool CanExecute()
+		protected override CommandCanExecuteResult CanExecute()
 		{
 			if (CurrentNode == null || CurrentQueryBlock == null || !CurrentNode.Id.In(Terminals.ObjectIdentifier, Terminals.Identifier))
 				return false;
@@ -47,7 +47,12 @@ namespace SqlPad.Oracle.Commands
 					.FirstOrDefault();
 			}
 
-			return _objectReference != null;
+			return
+				new CommandCanExecuteResult
+				{
+					CanExecute = _objectReference != null,
+					IsLongOperation = true
+				};
 		}
 
 		protected override Task ExecuteAsync(CancellationToken cancellationToken)

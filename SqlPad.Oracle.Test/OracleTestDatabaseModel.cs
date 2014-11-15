@@ -893,6 +893,18 @@ Note
 
 			return CreateFinishedTask<object>(null);
 		}
+
+		public override Task<IReadOnlyList<string>> GetRemoteTableColumnsAsync(string databaseLink, OracleObjectIdentifier schemaObject, CancellationToken cancellationToken)
+		{
+			var remoteColumns =
+				new List<string>
+				{
+					"\"REMOTE_COLUMN1\"",
+					"\"RemoteColumn2\""
+				};
+
+			return CreateFinishedTask((IReadOnlyList<string>)remoteColumns.AsReadOnly());
+		}
 		
 		public override IEnumerable<object[]> FetchRecords(int rowCount)
 		{

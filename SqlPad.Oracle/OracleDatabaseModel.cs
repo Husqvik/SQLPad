@@ -334,6 +334,13 @@ namespace SqlPad.Oracle
 			await UpdateModelAsync(cancellationToken, true, columnDetailsUpdater, columnHistogramUpdater, columnInMemoryDetailsUpdater);
 		}
 
+		public async override Task<IReadOnlyList<string>> GetRemoteTableColumnsAsync(string databaseLink, OracleObjectIdentifier schemaObject, CancellationToken cancellationToken)
+		{
+			var remoteTableColumnsUpdater = new RemoteTableColumnsUpdater(databaseLink, schemaObject);
+			await UpdateModelAsync(cancellationToken, false, remoteTableColumnsUpdater);
+			return remoteTableColumnsUpdater.Columns;
+		}
+
 		private async Task UpdateModelAsync(CancellationToken cancellationToken, bool suppressException, params IDataModelUpdater[] updaters)
 		{
 			using (var connection = new OracleConnection(_oracleConnectionString.ConnectionString))

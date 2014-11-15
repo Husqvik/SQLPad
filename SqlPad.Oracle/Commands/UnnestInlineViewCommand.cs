@@ -23,7 +23,7 @@ namespace SqlPad.Oracle.Commands
 					.FirstOrDefault();
 		}
 
-		protected override bool CanExecute()
+		protected override CommandCanExecuteResult CanExecute()
 		{
 			var canExecute = CurrentNode != null && CurrentNode.Id == Terminals.Select && _parentQueryBlock != null &&
 				!CurrentQueryBlock.HasDistinctResultSet && CurrentQueryBlock.GroupByClause == null;

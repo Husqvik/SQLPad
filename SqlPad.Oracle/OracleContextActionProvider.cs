@@ -73,9 +73,10 @@ namespace SqlPad.Oracle
 				actionList.Add(new OracleContextAction(AddToGroupByCommand.Title, OracleCommands.AddToGroupByClause, executionContext));
 			}
 
-			if (OracleCommands.ExpandAsterisk.CanExecuteHandler(executionContext))
+			var canExecuteResult = OracleCommands.ExpandAsterisk.CanExecuteHandler(executionContext);
+			if (canExecuteResult)
 			{
-				actionList.Add(new OracleContextAction(ExpandAsteriskCommand.Title, OracleCommands.ExpandAsterisk, CloneContextWithUseDefaultSettingsOption(executionContext)));
+				actionList.Add(new OracleContextAction(ExpandAsteriskCommand.Title, OracleCommands.ExpandAsterisk, CloneContextWithUseDefaultSettingsOption(executionContext), canExecuteResult.IsLongOperation));
 			}
 
 			if (OracleCommands.UnnestInlineView.CanExecuteHandler(executionContext))
@@ -93,9 +94,10 @@ namespace SqlPad.Oracle
 				actionList.Add(new OracleContextAction(AddMissingColumnCommand.Title, OracleCommands.GenerateMissingColumns, executionContext));
 			}
 
-			if (OracleCommands.CreateScript.CanExecuteHandler(executionContext))
+			canExecuteResult = OracleCommands.CreateScript.CanExecuteHandler(executionContext);
+			if (canExecuteResult)
 			{
-				actionList.Add(new OracleContextAction(CreateScriptCommand.Title, OracleCommands.CreateScript, executionContext, true));
+				actionList.Add(new OracleContextAction(CreateScriptCommand.Title, OracleCommands.CreateScript, executionContext, canExecuteResult.IsLongOperation));
 			}
 
 			if (OracleCommands.AddInsertIntoColumnList.CanExecuteHandler(executionContext))

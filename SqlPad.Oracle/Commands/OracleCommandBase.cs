@@ -46,7 +46,7 @@ namespace SqlPad.Oracle.Commands
 				throw new InvalidOperationException("currentTerminal");
 		}
 
-		protected virtual bool CanExecute()
+		protected virtual CommandCanExecuteResult CanExecute()
 		{
 			return true;
 		}

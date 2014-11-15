@@ -22,7 +22,7 @@ namespace SqlPad.Oracle.Commands
 			get { return n => n.Id.In(Terminals.ObjectIdentifier, Terminals.Identifier); }
 		}
 
-		protected override bool CanExecute()
+		protected override CommandCanExecuteResult CanExecute()
 		{
 			if (CurrentNode == null || CurrentQueryBlock == null)
 			{

@@ -14,7 +14,7 @@ namespace SqlPad.Oracle.Commands
 		{
 		}
 
-		protected override bool CanExecute()
+		protected override CommandCanExecuteResult CanExecute()
 		{
 			if (CurrentNode == null || CurrentQueryBlock == null || !CurrentNode.IsWithinSelectClause())
 			{

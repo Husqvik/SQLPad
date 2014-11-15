@@ -555,4 +555,42 @@ namespace SqlPad.Oracle
 			}
 		}
 	}
+
+	internal class RemoteTableColumnsUpdater : IDataModelUpdater
+	{
+		private readonly List<string> _columns = new List<string>();
+		private readonly string _commandText;
+
+		public RemoteTableColumnsUpdater(string databaseLink, OracleObjectIdentifier objectIdentifer)
+		{
+			_commandText = String.Format("SELECT * FROM {0}@{1} WHERE 1 = 0", objectIdentifer.ToNormalizedString(), databaseLink);
+		}
+
+		public IReadOnlyList<string> Columns
+		{
+			get { return _columns.AsReadOnly(); }
+		}
+
+		public void InitializeCommand(OracleCommand command)
+		{
+			command.CommandText = _commandText;
+		}
+
+		public void MapReaderData(OracleDataReader reader)
+		{
+			var columnNames = OracleDatabaseModel.GetColumnHeadersFromReader(reader)
+				.Select(h => String.Format("\"{0}\"", h.Name));
+
+			_columns.AddRange(columnNames);
+		}
+
+		public void MapScalarData(object value)
+		{
+			throw new NotImplementedException();
+		}
+
+		public bool HasScalarResult { get { return false; } }
+		
+		public bool IsValid { get { return true; } }
+	}
 }

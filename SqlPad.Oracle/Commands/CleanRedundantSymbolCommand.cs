@@ -17,7 +17,7 @@ namespace SqlPad.Oracle.Commands
 		{
 		}
 
-		protected override bool CanExecute()
+		protected override CommandCanExecuteResult CanExecute()
 		{
 			var prerequisitesMet = ExecutionContext.SelectionLength == 0 && CurrentNode != null &&
 			                       SemanticModel.RedundantSymbolGroups.Any();

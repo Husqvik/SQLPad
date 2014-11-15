@@ -24,7 +24,7 @@ namespace SqlPad.Oracle.Commands
 			get { return n => n.Id == Terminals.Select; }
 		}
 
-		protected override bool CanExecute()
+		protected override CommandCanExecuteResult CanExecute()
 		{
 			if (CurrentNode == null || CurrentQueryBlock == null)
 			{

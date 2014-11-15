@@ -80,6 +80,8 @@ namespace SqlPad.Commands
 				{
 					ShowErrorMessage(exception);
 				}
+
+				_textEditor.Focus();
 			}
 
 			GenericCommandHandler.UpdateDocument(_textEditor, ContextAction.ExecutionContext);

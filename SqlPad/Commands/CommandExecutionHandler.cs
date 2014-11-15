@@ -16,8 +16,8 @@ namespace SqlPad.Commands
 		public Action<CommandExecutionContext> ExecutionHandler { get; set; }
 		
 		public Func<CommandExecutionContext, CancellationToken, Task> ExecutionHandlerAsync { get; set; }
-		
-		public Func<CommandExecutionContext, bool> CanExecuteHandler { get; set; }
+
+		public Func<CommandExecutionContext, CommandCanExecuteResult> CanExecuteHandler { get; set; }
 	}
 
 	public class CommandExecutionContext
@@ -66,6 +66,23 @@ namespace SqlPad.Commands
 		public CommandExecutionContext Clone()
 		{
 			return (CommandExecutionContext)MemberwiseClone();
+		}
+	}
+
+	public struct CommandCanExecuteResult
+	{
+		public bool CanExecute { get; set; }
+
+		public bool IsLongOperation { get; set; }
+
+		public static implicit operator CommandCanExecuteResult(bool canExecute)
+		{
+			return new CommandCanExecuteResult { CanExecute = canExecute };
+		}
+
+		public static implicit operator Boolean(CommandCanExecuteResult canExecuteResult)
+		{
+			return canExecuteResult.CanExecute;
 		}
 	}
 }

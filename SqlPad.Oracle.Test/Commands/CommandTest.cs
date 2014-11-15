@@ -503,6 +503,17 @@ WHERE
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestExpandAsteriskCommandWithObjectReferenceOverDatabaseLink()
+		{
+			_editor.Text = "SELECT SELECTION.*, PROJECT.* FROM SELECTION, PROJECT@HQ_PDB_LOOPBACK";
+			_editor.CaretOffset = 28;
+
+			ExecuteCommand(OracleCommands.ExpandAsterisk, new TestCommandSettings(new CommandSettingsModel()));
+
+			_editor.Text.ShouldBe("SELECT SELECTION.*, PROJECT.REMOTE_COLUMN1, PROJECT.\"RemoteColumn2\" FROM SELECTION, PROJECT@HQ_PDB_LOOPBACK");
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestExpandAsteriskCommandWithAllColumns()
 		{
 			_editor.Text = "SELECT * FROM PROJECT, PROJECT P";
@@ -511,6 +522,17 @@ WHERE
 			ExecuteCommand(OracleCommands.ExpandAsterisk, new TestCommandSettings(new CommandSettingsModel()));
 
 			_editor.Text.ShouldBe("SELECT PROJECT.NAME, PROJECT.PROJECT_ID, P.NAME, P.PROJECT_ID FROM PROJECT, PROJECT P");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestExpandAsteriskCommandWithAllColumnsOverDatabaseLink()
+		{
+			_editor.Text = "SELECT * FROM PROJECT@HQ_PDB_LOOPBACK, PROJECT@HQ_PDB_LOOPBACK P";
+			_editor.CaretOffset = 7;
+
+			ExecuteCommand(OracleCommands.ExpandAsterisk, new TestCommandSettings(new CommandSettingsModel()));
+
+			_editor.Text.ShouldBe("SELECT PROJECT.REMOTE_COLUMN1, PROJECT.\"RemoteColumn2\", P.REMOTE_COLUMN1, P.\"RemoteColumn2\" FROM PROJECT@HQ_PDB_LOOPBACK, PROJECT@HQ_PDB_LOOPBACK P");
 		}
 
 		[Test(Description = @""), STAThread]
@@ -1248,7 +1270,7 @@ SELECT * FROM DUAL";
 			var bindVariable = action.ExecutionContext.DocumentRepository.Statements.Single().BindVariables.Single();
 			bindVariable.DataType = dataType;
 			bindVariable.Value = value;
-			action.ExecutionHandler.CanExecuteHandler(action.ExecutionContext).ShouldBe(true);
+			action.ExecutionHandler.CanExecuteHandler(action.ExecutionContext).CanExecute.ShouldBe(true);
 			ExecuteCommand(action.ExecutionHandler, action.ExecutionContext);
 		}
 
@@ -1290,7 +1312,7 @@ SELECT * FROM DUAL";
 			actions.Length.ShouldBe(2);
 			var action = actions[actionIndex];
 			action.ExecutionContext.SettingsProvider = new TestCommandSettings(new CommandSettingsModel { Value = "BIND_VARIABLE" });
-			action.ExecutionHandler.CanExecuteHandler(action.ExecutionContext).ShouldBe(true);
+			action.ExecutionHandler.CanExecuteHandler(action.ExecutionContext).CanExecute.ShouldBe(true);
 			ExecuteCommand(action.ExecutionHandler, action.ExecutionContext);
 		}
 

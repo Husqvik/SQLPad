@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using SqlPad.Commands;
 
@@ -17,21 +19,33 @@ namespace SqlPad.Oracle.Commands
 		{
 		}
 
-		protected override bool CanExecute()
+		protected override CommandCanExecuteResult CanExecute()
 		{
-			return CurrentNode != null && CurrentQueryBlock != null &&
-			       CurrentNode.Id == OracleGrammarDescription.Terminals.Asterisk &&
-				   ExistExpandableColumns();
+			if (CurrentNode == null || CurrentQueryBlock == null ||
+			    CurrentNode.Id != OracleGrammarDescription.Terminals.Asterisk)
+			{
+				return false;
+			}
+
+			return ExistExpandableColumns();
 		}
 
-		private bool ExistExpandableColumns()
+		private CommandCanExecuteResult ExistExpandableColumns()
 		{
 			var expandedColumns = new List<ExpandedColumn>();
-			FillColumnNames(expandedColumns, false);
-			return expandedColumns.Count > 0;
+			var databaseLinkReferences = new List<OracleObjectWithColumnsReference>();
+			FillColumnNames(expandedColumns, databaseLinkReferences, false);
+
+			var isLongOperation = databaseLinkReferences.Count > 0;
+			return
+				new CommandCanExecuteResult
+				{
+					CanExecute = expandedColumns.Count > 0 || isLongOperation,
+					IsLongOperation = isLongOperation
+				};
 		}
 
-		private void ConfigureSettings()
+		private async Task ConfigureSettings(CancellationToken cancellationToken)
 		{
 			ExecutionContext.EnsureSettingsProviderAvailable();
 
@@ -41,9 +55,17 @@ namespace SqlPad.Oracle.Commands
 			_settingsModel.BooleanOptionsVisibility = Visibility.Visible;
 
 			var expandedColumns = new List<ExpandedColumn>();
-			_sourcePosition = FillColumnNames(expandedColumns, true);
+			var databaseLinkReferences = new List<OracleObjectWithColumnsReference>();
+			_sourcePosition = FillColumnNames(expandedColumns, databaseLinkReferences, true);
 
 			var useDefaultSettings = _settingsModel.UseDefaultSettings == null || _settingsModel.UseDefaultSettings();
+
+			foreach (var databaseLinkReference in databaseLinkReferences)
+			{
+				var databaseLinkIdentifier = String.Join(null, databaseLinkReference.DatabaseLinkNode.Terminals.Select(t => t.Token.Value));
+				var columnNames = await CurrentQueryBlock.SemanticModel.DatabaseModel.GetRemoteTableColumnsAsync(databaseLinkIdentifier, databaseLinkReference.FullyQualifiedObjectName, cancellationToken);
+				expandedColumns.AddRange(columnNames.Select(n => new ExpandedColumn { ColumnName = String.Format("{0}.{1}", databaseLinkReference.FullyQualifiedObjectName, n.ToSimpleIdentifier()) }));
+			}
 
 			foreach (var expandedColumn in expandedColumns)
 			{
@@ -61,9 +83,9 @@ namespace SqlPad.Oracle.Commands
 			_settingsModel.Heading = _settingsModel.Title;
 		}
 
-		protected override void Execute()
+		protected async override Task ExecuteAsync(CancellationToken cancellationToken)
 		{
-			ConfigureSettings();
+			await ConfigureSettings(cancellationToken);
 
 			if (!ExecutionContext.SettingsProvider.GetSettings())
 				return;
@@ -73,6 +95,11 @@ namespace SqlPad.Oracle.Commands
 			{
 				ExecutionContext.SegmentsToReplace.Add(segmentToReplace);
 			}
+		}
+
+		protected override void Execute()
+		{
+			ExecuteAsync(CancellationToken.None).Wait();
 		}
 
 		private TextSegment GetSegmentToReplace()
@@ -96,7 +123,7 @@ namespace SqlPad.Oracle.Commands
 			return textSegment;
 		}
 
-		private SourcePosition FillColumnNames(List<ExpandedColumn> columnNames, bool includeRowId)
+		private SourcePosition FillColumnNames(List<ExpandedColumn> columnNames, List<OracleObjectWithColumnsReference> databaseLinkReferences, bool includeRowId)
 		{
 			var sourcePosition = SourcePosition.Empty;
 			var asteriskReference = CurrentQueryBlock.Columns.FirstOrDefault(c => c.RootNode == CurrentNode);
@@ -105,33 +132,42 @@ namespace SqlPad.Oracle.Commands
 				var columnReference = CurrentQueryBlock.Columns.SelectMany(c => c.ColumnReferences).FirstOrDefault(c => c.ColumnNode == CurrentNode);
 				if (columnReference == null || columnReference.ObjectNodeObjectReferences.Count != 1)
 					return sourcePosition;
-				
+
 				sourcePosition = columnReference.SelectListColumn.RootNode.SourcePosition;
 				var objectReference = columnReference.ObjectNodeObjectReferences.First();
 
-				columnNames.AddRange(objectReference.Columns
-					.Where(c => !String.IsNullOrEmpty(c.Name))
-					.Select(c => GetExpandedColumn(objectReference, c.Name, false)));
-
-				var dataObject = objectReference.SchemaObject as OracleTable;
-				if (includeRowId && dataObject != null &&
-					dataObject.Organization.In(OrganizationType.Heap, OrganizationType.Index))
+				if (objectReference.DatabaseLink == null)
 				{
-					columnNames.Insert(0, GetExpandedColumn(objectReference, OracleColumn.RowId, true));
+					columnNames.AddRange(objectReference.Columns
+						.Where(c => !String.IsNullOrEmpty(c.Name))
+						.Select(c => GetExpandedColumn(objectReference, c.Name, false)));
+
+					var dataObject = objectReference.SchemaObject as OracleTable;
+					if (includeRowId && dataObject != null &&
+					    dataObject.Organization.In(OrganizationType.Heap, OrganizationType.Index))
+					{
+						columnNames.Insert(0, GetExpandedColumn(objectReference, OracleColumn.RowId, true));
+					}
+				}
+				else
+				{
+					databaseLinkReferences.Add(objectReference);
 				}
 			}
 			else
 			{
 				columnNames.AddRange(CurrentQueryBlock.Columns
-					.Where(c => !c.IsAsterisk && !String.IsNullOrEmpty(c.NormalizedName))
+					.Where(c => !c.IsAsterisk && !String.IsNullOrEmpty(c.NormalizedName) && GetObjectReference(c).DatabaseLinkNode == null)
 					.Select(c => GetExpandedColumn(GetObjectReference(c), c.NormalizedName, false)));
+
+				databaseLinkReferences.AddRange(CurrentQueryBlock.ObjectReferences.Where(o => o.DatabaseLink != null));
 
 				if (!includeRowId)
 					return sourcePosition;
-				
+
 				var rowIdColumns = CurrentQueryBlock.ObjectReferences
 					.Select(o => new { ObjectReference = o, DataObject = o.SchemaObject.GetTargetSchemaObject() as OracleTable })
-					.Where(o => o.DataObject != null && o.DataObject.Organization.In(OrganizationType.Heap, OrganizationType.Index))
+					.Where(o => o.DataObject != null && o.ObjectReference.DatabaseLinkNode == null && o.DataObject.Organization.In(OrganizationType.Heap, OrganizationType.Index))
 					.Select(o => GetExpandedColumn(o.ObjectReference, OracleColumn.RowId, true));
 
 				columnNames.InsertRange(0, rowIdColumns);
