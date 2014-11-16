@@ -3,6 +3,15 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
-    </Application.Resources>
+		<Style x:Key="CellTextBoxStyleReadOnly">
+			<Setter Property="TextBoxBase.IsReadOnly" Value="True" />
+			<Setter Property="TextBoxBase.IsReadOnlyCaretVisible" Value="True" />
+		</Style>
+		<Style x:Key="CellStyleRightAlign">
+			<Setter Property="Block.TextAlignment" Value="Right" />
+		</Style>
+		<Style x:Key="HeaderStyleRightAlign">
+			<Setter Property="Control.HorizontalContentAlignment" Value="Right" />
+		</Style>
+	</Application.Resources>
 </Application>

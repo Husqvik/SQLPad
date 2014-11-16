@@ -12,16 +12,6 @@
              d:DesignHeight="320" d:DesignWidth="480">
 	<UserControl.Resources>
 		<sqlPad:SelectedIndexConverter x:Key="SelectedIndexConverter" />
-		<Style x:Key="CellTextBoxStyleReadOnly">
-			<Setter Property="TextBoxBase.IsReadOnly" Value="True" />
-			<Setter Property="TextBoxBase.IsReadOnlyCaretVisible" Value="True" />
-		</Style>
-		<Style x:Key="CellStyleRightAlign">
-			<Setter Property="Block.TextAlignment" Value="Right" />
-		</Style>
-		<Style x:Key="HeaderStyleRightAlign">
-			<Setter Property="Control.HorizontalContentAlignment" Value="Right" />
-		</Style>
 	</UserControl.Resources>
 	<Grid>
 		<Grid.CommandBindings>

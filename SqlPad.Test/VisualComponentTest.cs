@@ -18,6 +18,7 @@ namespace SqlPad.Test
 	[TestFixture]
 	public class VisualComponentTest
 	{
+		private App _app;
 		private MainWindow _mainWindow;
 		private DocumentPage _page;
 		private TextEditor _editor;
@@ -25,6 +26,9 @@ namespace SqlPad.Test
 
 		private void SetupEnvironment()
 		{
+			_app = new App();
+			_app.InitializeComponent();
+
 			_tempDirectoryName = TestFixture.SetupTestDirectory();
 			ConfigurationProvider.SetUserDataFolder(_tempDirectoryName);
 
@@ -37,7 +41,7 @@ namespace SqlPad.Test
 		{
 			SetupEnvironment();
 
-			_mainWindow = new MainWindow();
+			_mainWindow = (MainWindow)(_app.MainWindow = new MainWindow());
 			_mainWindow.Show();
 
 			var tempFile = Path.Combine(_tempDirectoryName, "tempDocument.sql");
@@ -273,7 +277,7 @@ namespace SqlPad.Test
 		[Test, STAThread]
 		public void TestLargeTextValueEditorInitialization()
 		{
-			var editor = new LargeValueEditor(null, "Dummy", new TestLargeTextValue());
+			var editor = new LargeValueEditor("Dummy", new TestLargeTextValue());
 			var task = (Task) typeof (LargeValueEditor).GetMethod("SetEditorValue", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(editor, null);
 			task.Wait();
 			

@@ -863,20 +863,20 @@ namespace SqlPad
 			_pageModel.ResultRowItems.Clear();
 		}
 
-		internal DataGridTextColumn CreateDataGridTextColumnTemplate(ColumnHeader columnHeader)
+		internal static DataGridTextColumn CreateDataGridTextColumnTemplate(ColumnHeader columnHeader)
 		{
 			var columnTemplate =
 				new DataGridTextColumn
 				{
 					Header = columnHeader.Name.Replace("_", "__"),
 					Binding = new Binding(String.Format("[{0}]", columnHeader.ColumnIndex)) { Converter = CellValueConverter, ConverterParameter = columnHeader },
-					EditingElementStyle = (Style)Resources["CellTextBoxStyleReadOnly"]
+					EditingElementStyle = (Style)Application.Current.Resources["CellTextBoxStyleReadOnly"]
 				};
 
 			if (columnHeader.DataType.In(typeof(Decimal), typeof(Int16), typeof(Int32), typeof(Int64), typeof(Byte)))
 			{
-				columnTemplate.HeaderStyle = (Style)Resources["HeaderStyleRightAlign"];
-				columnTemplate.CellStyle = (Style)Resources["CellStyleRightAlign"];
+				columnTemplate.HeaderStyle = (Style)Application.Current.Resources["HeaderStyleRightAlign"];
+				columnTemplate.CellStyle = (Style)Application.Current.Resources["CellStyleRightAlign"];
 			}
 
 			return columnTemplate;
@@ -1505,10 +1505,10 @@ namespace SqlPad
 
 		private void ResultGridMouseDoubleClickHandler(object sender, MouseButtonEventArgs e)
 		{
-			ShowLargeValueEditor(this, ResultGrid);
+			ShowLargeValueEditor(ResultGrid);
 		}
 
-		internal static void ShowLargeValueEditor(DocumentPage document, DataGrid dataGrid)
+		internal static void ShowLargeValueEditor(DataGrid dataGrid)
 		{
 			var currentRow = (object[])dataGrid.CurrentItem;
 			if (currentRow == null || dataGrid.CurrentColumn == null)
@@ -1518,7 +1518,7 @@ namespace SqlPad
 			var largeValue = cellValue as ILargeValue;
 			if (largeValue != null)
 			{
-				new LargeValueEditor(document, dataGrid.CurrentColumn.Header.ToString(), largeValue) { Owner = Window.GetWindow(dataGrid) }.ShowDialog();
+				new LargeValueEditor(dataGrid.CurrentColumn.Header.ToString(), largeValue) { Owner = Window.GetWindow(dataGrid) }.ShowDialog();
 			}
 		}
 
