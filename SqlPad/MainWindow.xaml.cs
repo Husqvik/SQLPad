@@ -207,7 +207,7 @@ namespace SqlPad
 			}
 		}
 
-		private bool CloseDocument(DocumentPage document)
+		internal bool CloseDocument(DocumentPage document)
 		{
 			DocumentTabControl.SelectedItem = document.TabItem;
 

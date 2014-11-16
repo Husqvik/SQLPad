@@ -44,6 +44,8 @@ namespace SqlPad
 
 		private MultiNodeEditor _multiNodeEditor;
 		private CancellationTokenSource _cancellationTokenSource;
+		private FileSystemWatcher _documentFileWatcher;
+		private DateTime _lastDocumentFileChange;
 		private readonly SqlDocumentColorizingTransformer _colorizingTransformer = new SqlDocumentColorizingTransformer();
 
 		private static readonly CellValueConverter CellValueConverter = new CellValueConverter();
@@ -173,9 +175,10 @@ namespace SqlPad
 			{
 				WorkingDocument = workingDocument;
 
-				if (WorkingDocument.Text == null && WorkingDocument.File != null && WorkingDocument.File.Exists)
+				if (!WorkingDocument.IsModified && WorkingDocument.File != null && WorkingDocument.File.Exists)
 				{
 					WorkingDocument.Text = File.ReadAllText(WorkingDocument.File.FullName);
+					InitializeFileWatcher();
 				}
 
 				if (!String.IsNullOrEmpty(WorkingDocument.ConnectionName))
@@ -219,6 +222,57 @@ namespace SqlPad
 			DataContext = _pageModel;
 
 			InitializeTabItem();
+		}
+		private void InitializeFileWatcher()
+		{
+			_documentFileWatcher =
+				new FileSystemWatcher(WorkingDocument.File.DirectoryName, WorkingDocument.File.Name)
+				{
+					EnableRaisingEvents = true,
+					NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName
+				};
+
+			_documentFileWatcher.Changed += DocumentFileWatcherChangedHandler;
+			_documentFileWatcher.Deleted += (sender, args) => Dispatcher.BeginInvoke(new Action(() => DocumentFileWatcherDeletedHandler(args.FullPath)));
+		}
+
+		private void DocumentFileWatcherDeletedHandler(string fullFileName)
+		{
+			MainWindow.DocumentTabControl.SelectedItem = TabItem;
+
+			var message = String.Format("File '{0}' has been deleted. Do you want to close the document? ", fullFileName);
+			if (MessageBox.Show(MainWindow, message, "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.Yes) == MessageBoxResult.No)
+			{
+				return;
+			}
+
+			Editor.IsModified = false;
+			MainWindow.CloseDocument(this);
+		}
+
+		private void DocumentFileWatcherChangedHandler(object sender, FileSystemEventArgs fileSystemEventArgs)
+		{
+			var writeTime = File.GetLastWriteTimeUtc(fileSystemEventArgs.FullPath);
+			if (writeTime == _lastDocumentFileChange)
+			{
+				return;
+			}
+
+			Thread.Sleep(40);
+
+			_lastDocumentFileChange = writeTime;
+
+			Dispatcher.Invoke(
+				() =>
+				{
+					MainWindow.DocumentTabControl.SelectedItem = TabItem;
+
+					var message = String.Format("File '{0}' has been changed by another application. Do you want to load new content? ", fileSystemEventArgs.FullPath);
+					if (MessageBox.Show(MainWindow, message, "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.Yes) == MessageBoxResult.Yes)
+					{
+						Editor.Load(fileSystemEventArgs.FullPath);
+					}
+				});
 		}
 
 		private void ConfigurationChangedHandler(object sender, EventArgs eventArgs)
@@ -389,9 +443,6 @@ namespace SqlPad
 			if (WorkingDocument.File == null)
 				return SaveAs();
 
-			if (!IsDirty)
-				return true;
-
 			SafeActionWithUserError(SaveDocument);
 			return true;
 		}
@@ -406,7 +457,14 @@ namespace SqlPad
 
 			WorkingDocument.DocumentFileName = dialog.FileName;
 
-			SafeActionWithUserError(SaveDocument);
+			if (!SafeActionWithUserError(SaveDocument))
+			{
+				WorkingDocument.DocumentFileName = null;
+			}
+			else
+			{
+				InitializeFileWatcher();
+			}
 			
 			SaveWorkingDocument();
 			WorkingDocumentCollection.Save();
@@ -449,9 +507,30 @@ namespace SqlPad
 			}
 		}
 
+		private void WithDisabledFileWatcher(Action action)
+		{
+			if (_documentFileWatcher != null)
+			{
+				_documentFileWatcher.EnableRaisingEvents = false;
+
+				try
+				{
+					action();
+				}
+				finally
+				{
+					_documentFileWatcher.EnableRaisingEvents = true;
+				}
+			}
+			else
+			{
+				action();
+			}
+		}
+
 		private void SaveDocument()
 		{
-			Editor.Save(WorkingDocument.File.FullName);
+			WithDisabledFileWatcher(() => Editor.Save(WorkingDocument.File.FullName));
 			WorkingDocument.IsModified = false;
 			_pageModel.DocumentHeader = DocumentHeader;
 		}
@@ -886,9 +965,13 @@ namespace SqlPad
 		{
 			ConfigurationProvider.ConfigurationChanged -= ConfigurationChangedHandler;
 
+			if (_documentFileWatcher != null)
+			{
+				_documentFileWatcher.Dispose();
+			}
+
 			TabItemContextMenu.CommandBindings.Clear();
-			TabItem.Header = null;
-			DataContext = null;
+
 			_timerReParse.Stop();
 			_timerReParse.Dispose();
 			_timerExecutionMonitor.Stop();
