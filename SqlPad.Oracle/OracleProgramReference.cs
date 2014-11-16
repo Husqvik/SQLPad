@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace SqlPad.Oracle
 {
@@ -59,7 +60,7 @@ namespace SqlPad.Oracle
 
 		public override OracleObjectIdentifier FullyQualifiedObjectName
 		{
-			get { return OracleObjectIdentifier.Empty; }
+			get { return OracleObjectIdentifier.Create(null, Name); }
 		}
 
 		public override ICollection<OracleColumn> Columns
@@ -87,7 +88,21 @@ namespace SqlPad.Oracle
 			}
 			else if (FunctionMetadata != null)
 			{
-				//FunctionMetadata.Parameters
+				var returnComplexTypeParameter = FunctionMetadata.Parameters.SingleOrDefault(p => p.Direction == ParameterDirection.ReturnValue && p.DataType == OracleTypeBase.TypeCodeObject);
+				if (returnComplexTypeParameter != null &&
+				    Owner.SemanticModel.DatabaseModel.AllObjects.TryGetValue(returnComplexTypeParameter.CustomDataType, out schemaObject))
+				{
+					var columns = ((OracleTypeObject)schemaObject).Attributes
+						.Select(a =>
+							new OracleColumn
+							{
+								DataType = a.DataType,
+								Nullable = true,
+								Name = a.Name
+							});
+
+					_columns.AddRange(columns);
+				}
 			}
 
 			return _columns;

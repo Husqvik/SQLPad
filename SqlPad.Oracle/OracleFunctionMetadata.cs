@@ -79,12 +79,12 @@ namespace SqlPad.Oracle
 	[DebuggerDisplay("OracleFunctionParameterMetadata (Name={Name}; Position={Position}; DataType={DataType}; Direction={Direction}; IsOptional={IsOptional})")]
 	public class OracleFunctionParameterMetadata
 	{
-		internal OracleFunctionParameterMetadata(string name, int position, ParameterDirection direction, string dataType/*, OracleObjectIdentifier customDataType*/, bool isOptional)
+		internal OracleFunctionParameterMetadata(string name, int position, ParameterDirection direction, string dataType, OracleObjectIdentifier customDataType, bool isOptional)
 		{
 			Name = name;
 			Position = position;
 			DataType = dataType;
-			//CustomDataType = customDataType;
+			CustomDataType = customDataType;
 			Direction = direction;
 			IsOptional = isOptional;
 		}
@@ -100,6 +100,8 @@ namespace SqlPad.Oracle
 		public ParameterDirection Direction { get; private set; }
 
 		public bool IsOptional { get; private set; }
+
+		public string FullDataTypeName { get { return String.IsNullOrEmpty(CustomDataType.Owner) ? DataType.Trim('"') : CustomDataType.ToString(); } }
 	}
 
 	public enum ParameterDirection

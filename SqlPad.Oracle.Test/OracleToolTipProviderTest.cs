@@ -404,6 +404,18 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestTableCollectionExpressionColumnQualifierToolTip()
+		{
+			const string query = "SELECT COLUMN_VALUE FROM TABLE(SYS.ODCIRAWLIST(NULL)) TEST_TABLE";
+			_documentRepository.UpdateStatements(query);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 8);
+
+			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.DataContext.ShouldBe("TEST_TABLE.COLUMN_VALUE RAW(2000) NULL");
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestFunctionIdentifierOverDatabaseLinkToolTip()
 		{
 			const string query = "SELECT SQLPAD_FUNCTION@UNDEFINED_DB_LINK FROM DUAL";
@@ -455,7 +467,7 @@ namespace SqlPad.Oracle.Test
 			functionOverloadList.ViewOverloads.Items[0].ShouldBeTypeOf(typeof(TextBlock));
 
 			var itemText = GetTextFromTextBlock((TextBlock)functionOverloadList.ViewOverloads.Items[0]);
-			itemText.ShouldBe("SYS.ODCIARGDESC(ARGTYPE: NUMBER, TABLENAME: VARCHAR2(128 BYTE), TABLESCHEMA: VARCHAR2(128 BYTE), COLNAME: VARCHAR2(4000 BYTE), TABLEPARTITIONLOWER: VARCHAR2(128 BYTE), TABLEPARTITIONUPPER: VARCHAR2(128 BYTE), CARDINALITY: NUMBER) RETURN: SYS.ODCIARGDESC");
+			itemText.ShouldBe("SYS.ODCIARGDESC(ARGTYPE: NUMBER, TABLENAME: VARCHAR2, TABLESCHEMA: VARCHAR2, COLNAME: VARCHAR2, TABLEPARTITIONLOWER: VARCHAR2, TABLEPARTITIONUPPER: VARCHAR2, CARDINALITY: NUMBER) RETURN: SYS.ODCIARGDESC");
 		}
 
 		[Test(Description = @""), STAThread]
@@ -486,6 +498,21 @@ namespace SqlPad.Oracle.Test
 
 			var itemText = GetTextFromTextBlock((TextBlock)functionOverloadList.ViewOverloads.Items[0]);
 			itemText.ShouldBe("SYS.ODCIRAWLIST(array of RAW) RETURN: SYS.ODCIRAWLIST");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestFunctionOverloadWithFunctionReturningCollection()
+		{
+			const string query = "SELECT DBMS_XPLAN.DISPLAY_CURSOR() FROM DUAL";
+			_documentRepository.UpdateStatements(query);
+
+			var functionOverloads = _codeCompletionProvider.ResolveFunctionOverloads(_documentRepository, 33);
+			var functionOverloadList = new FunctionOverloadList { FunctionOverloads = functionOverloads };
+			functionOverloadList.ViewOverloads.Items.Count.ShouldBe(1);
+			functionOverloadList.ViewOverloads.Items[0].ShouldBeTypeOf(typeof(TextBlock));
+
+			var itemText = GetTextFromTextBlock((TextBlock)functionOverloadList.ViewOverloads.Items[0]);
+			itemText.ShouldBe("SYS.DBMS_XPLAN.DISPLAY_CURSOR(SQL_ID: VARCHAR2, CURSOR_CHILD_NUMBER: NUMBER, FORMAT: VARCHAR2) RETURN: SYS.DBMS_XPLAN_TYPE_TABLE");
 		}
 
 		[Test(Description = @""), STAThread]

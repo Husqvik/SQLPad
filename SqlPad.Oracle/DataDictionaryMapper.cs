@@ -210,7 +210,7 @@ namespace SqlPad.Oracle
 			}
 
 			return new KeyValuePair<OracleFunctionIdentifier, OracleFunctionParameterMetadata>(
-				identifier, new OracleFunctionParameterMetadata(parameterName, position, direction, dataType/*, OracleObjectIdentifier.Create(typeOwner, typeName)*/, isOptional));
+				identifier, new OracleFunctionParameterMetadata(parameterName, position, direction, dataType, OracleObjectIdentifier.Create(typeOwner, typeName), isOptional));
 		}
 
 		private static OracleFunctionIdentifier CreateFunctionIdentifierFromReaderValues(object owner, object package, object name, object overload)

@@ -843,7 +843,7 @@ FROM
 		}
 
 		[Test(Description = @"")]
-		public void TestAsteriskNotRedundantImCorrelatedSubquery()
+		public void TestAsteriskNotRedundantInCorrelatedSubquery()
 		{
 			const string query1 = @"SELECT * FROM SELECTION WHERE SELECTIONNAME IN (SELECT * FROM DUAL)";
 

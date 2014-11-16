@@ -216,13 +216,24 @@ namespace SqlPad.Oracle
 		{
 			var constructorMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues(FullyQualifiedName.Owner, null, FullyQualifiedName.Name), false, false, false, false, false, false, null, null, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeParenthesis, false);
 			var constructorParameters = Attributes.Select(
-				(a, i) => new OracleFunctionParameterMetadata(a.Name.ToSimpleIdentifier(), i + 1, ParameterDirection.Input, OracleDataType.ResolveFullTypeName(a.DataType), false));
+				(a, i) => new OracleFunctionParameterMetadata(a.Name.ToSimpleIdentifier(), i + 1, ParameterDirection.Input, GetFunctionParameterTypeName(a.DataType), GetFunctionParameterCustomTypeIdentifier(a.DataType), false));
 
-			constructorParameters = Enumerable.Repeat(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, FullyQualifiedName.ToString(), false), 1)
+			var returnParameter = new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, TypeCodeObject, FullyQualifiedName, false);
+			constructorParameters = Enumerable.Repeat(returnParameter, 1)
 				.Concat(constructorParameters);
 			
 			constructorMetadata.Parameters.AddRange(constructorParameters);
 			return constructorMetadata;
+		}
+
+		private static OracleObjectIdentifier GetFunctionParameterCustomTypeIdentifier(OracleDataType dataType)
+		{
+			return dataType.IsPrimitive ? OracleObjectIdentifier.Empty : dataType.FullyQualifiedName;
+		}
+
+		private static string GetFunctionParameterTypeName(OracleDataType dataType)
+		{
+			return dataType.IsPrimitive ? dataType.FullyQualifiedName.NormalizedName : TypeCodeObject;
 		}
 	}
 
@@ -247,10 +258,13 @@ namespace SqlPad.Oracle
 
 		protected override OracleFunctionMetadata BuildConstructorMetadata()
 		{
-			var elementTypeLabel = String.IsNullOrEmpty(ElementDataType.FullyQualifiedName.Owner) ? ElementDataType.FullyQualifiedName.Name.Trim('"') : ElementDataType.FullyQualifiedName.ToString();
+			var elementTypeLabel = ElementDataType.IsPrimitive
+				? ElementDataType.FullyQualifiedName.Name.Trim('"')
+				: ElementDataType.FullyQualifiedName.ToString();
+			
 			var constructorMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues(FullyQualifiedName.Owner, null, FullyQualifiedName.Name), false, false, false, false, false, false, 0, UpperBound ?? Int32.MaxValue, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeParenthesis, false);
-			constructorMetadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, FullyQualifiedName.ToString(), false));
-			constructorMetadata.Parameters.Add(new OracleFunctionParameterMetadata(String.Format("array of {0}", elementTypeLabel), 1, ParameterDirection.Input, null, true));
+			constructorMetadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, null, FullyQualifiedName, false));
+			constructorMetadata.Parameters.Add(new OracleFunctionParameterMetadata(String.Format("array of {0}", elementTypeLabel), 1, ParameterDirection.Input, String.Empty, OracleObjectIdentifier.Empty, true));
 			constructorMetadata.Owner = this;
 			
 			return constructorMetadata;

@@ -790,10 +790,10 @@ se";
 		{
 			const string statement = @"SELECT SQLPAD.SQLPAD_FUNCTION(D) FROM DUAL";
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 31).ToList();
-			items.Count.ShouldBe(7);
+			items.Count.ShouldBe(8);
 			items[0].Text.ShouldBe("DUAL.DUMMY");
-			items[6].Name.ShouldBe("DUMP");
-			items[6].Text.ShouldBe("DUMP()");
+			items[7].Name.ShouldBe("DUMP");
+			items[7].Text.ShouldBe("DUMP()");
 		}
 
 		[Test(Description = @"")]
@@ -1293,12 +1293,17 @@ se";
 		{
 			const string statement = "SELECT DUMMY COLUMN_NAME FROM DUAL ORDER BY ";
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 44, true, OracleCodeCompletionCategory.Column).ToList();
-			items.Count.ShouldBe(1);
-			items[0].Name.ShouldBe("COLUMN_NAME");
-			items[0].Text.ShouldBe("COLUMN_NAME");
+			items.Count.ShouldBe(2);
+			items[0].Name.ShouldBe("DUAL.DUMMY");
+			items[0].Text.ShouldBe("DUAL.DUMMY");
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.Column);
 			items[0].CaretOffset.ShouldBe(0);
 			items[0].StatementNode.ShouldBe(null);
+			items[1].Name.ShouldBe("COLUMN_NAME");
+			items[1].Text.ShouldBe("COLUMN_NAME");
+			items[1].Category.ShouldBe(OracleCodeCompletionCategory.Column);
+			items[1].CaretOffset.ShouldBe(0);
+			items[1].StatementNode.ShouldBe(null);
 		}
 
 		[Test(Description = @"")]
@@ -1325,6 +1330,38 @@ se";
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.PackageFunction);
 			items[0].CaretOffset.ShouldBe(0);
 			items[0].StatementNode.ShouldNotBe(null);
+		}
+
+		[Test(Description = @"")]
+		public void TestForcedColumnSuggestionJustAfterWhereKeyword()
+		{
+			const string statement = "SELECT * FROM DUAL WHERE ";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 25).ToList();
+			items.Count.ShouldBeGreaterThan(0);
+		}
+
+		[Test(Description = @"")]
+		public void TestForcedColumnSuggestionJustAfterGroupByKeyword()
+		{
+			const string statement = "SELECT * FROM DUAL GROUP BY ";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 28).ToList();
+			items.Count.ShouldBeGreaterThan(0);
+		}
+
+		[Test(Description = @"")]
+		public void TestForcedColumnSuggestionJustAfterHavingKeyword()
+		{
+			const string statement = "SELECT * FROM DUAL GROUP BY 1 HAVING ";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 37).ToList();
+			items.Count.ShouldBeGreaterThan(0);
+		}
+
+		[Test(Description = @"")]
+		public void TestForcedColumnSuggestionJustAfterOrderByKeyword()
+		{
+			const string statement = "SELECT * FROM DUAL ORDER BY ";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 28).ToList();
+			items.Count.ShouldBeGreaterThan(0);
 		}
 
 		public class OracleCodeCompletionTypeTest

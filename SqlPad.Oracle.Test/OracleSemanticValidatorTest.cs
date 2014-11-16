@@ -1554,5 +1554,22 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			var nodesWithSemanticError = validationModel.GetNodesWithSemanticErrors().Select(kvp => kvp.Value).ToArray();
 			nodesWithSemanticError.Length.ShouldBe(0);
 		}
+
+		[Test(Description = @"")]
+		public void TestColumnResolutionFromTableCollectionExpressionUsingCollectionType()
+		{
+			const string sqlText = @"SELECT PLAN_TABLE_OUTPUT, COLUMN_VALUE FROM TABLE(DBMS_XPLAN.DISPLAY_CURSOR(NULL, NULL, 'ALLSTATS LAST ADVANCED')) T1, TABLE(SYS.ODCIRAWLIST(HEXTORAW('ABCDEF'), HEXTORAW('A12345'), HEXTORAW('F98765'))) T2";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var columnNodeValidity = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToArray();
+			columnNodeValidity.Length.ShouldBe(2);
+			columnNodeValidity[0].IsRecognized.ShouldBe(true);
+			columnNodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
+			columnNodeValidity[1].IsRecognized.ShouldBe(true);
+			columnNodeValidity[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
+		}
 	}
 }

@@ -51,11 +51,12 @@ namespace SqlPad.Oracle
 						new FunctionOverloadDescription
 						{
 							Name = metadata.Identifier.FullyQualifiedIdentifier,
-							Parameters = metadata.Parameters.Skip(1)
-								.Select(p => String.Format("{0}{1}", p.Name, String.IsNullOrEmpty(p.DataType) ? null : String.Format(": {0}", p.DataType)))
+							Parameters = metadata.Parameters
+								.Where(p => p.Direction != ParameterDirection.ReturnValue)
+								.Select(p => String.Format("{0}{1}", p.Name, String.IsNullOrEmpty(p.FullDataTypeName) ? null : String.Format(": {0}", p.FullDataTypeName)))
 								.ToArray(),
 							CurrentParameterIndex = fo.CurrentParameterIndex,
-							ReturnedDatatype = returnParameter == null ? null : returnParameter.DataType,
+							ReturnedDatatype = returnParameter == null ? null : returnParameter.FullDataTypeName,
 							IsParameterMetadataAvailable = !String.IsNullOrEmpty(metadata.Identifier.Owner)
 						};
 				});
@@ -344,7 +345,8 @@ namespace SqlPad.Oracle
 			var prefixedColumnReference = currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference);
 			var columnIdentifierFollowing = currentNode.Id != Terminals.Identifier && prefixedColumnReference != null && prefixedColumnReference.GetDescendants(Terminals.Identifier).FirstOrDefault() != null;
 
-			if (!currentNode.IsWithinSelectClauseOrExpression() || columnIdentifierFollowing || currentNode.Id.IsLiteral())
+			if ((!currentNode.IsWithinSelectClauseOrExpression() && !currentNode.ParentNode.Id.In(NonTerminals.WhereClause, NonTerminals.GroupByClause, NonTerminals.HavingClause, NonTerminals.OrderByClause)) ||
+			    columnIdentifierFollowing || currentNode.Id.IsLiteral())
 			{
 				return EmptyCollection;
 			}
