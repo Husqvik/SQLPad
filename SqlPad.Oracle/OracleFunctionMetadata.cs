@@ -79,11 +79,12 @@ namespace SqlPad.Oracle
 	[DebuggerDisplay("OracleFunctionParameterMetadata (Name={Name}; Position={Position}; DataType={DataType}; Direction={Direction}; IsOptional={IsOptional})")]
 	public class OracleFunctionParameterMetadata
 	{
-		internal OracleFunctionParameterMetadata(string name, int position, ParameterDirection direction, string dataType, bool isOptional)
+		internal OracleFunctionParameterMetadata(string name, int position, ParameterDirection direction, string dataType/*, OracleObjectIdentifier customDataType*/, bool isOptional)
 		{
 			Name = name;
 			Position = position;
 			DataType = dataType;
+			//CustomDataType = customDataType;
 			Direction = direction;
 			IsOptional = isOptional;
 		}
@@ -93,6 +94,8 @@ namespace SqlPad.Oracle
 		public int Position { get; private set; }
 
 		public string DataType { get; private set; }
+		
+		public OracleObjectIdentifier CustomDataType { get; private set; }
 
 		public ParameterDirection Direction { get; private set; }
 

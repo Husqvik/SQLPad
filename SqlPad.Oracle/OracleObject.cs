@@ -237,11 +237,9 @@ namespace SqlPad.Oracle
 	}
 
 	[DebuggerDisplay("OracleTypeCollection (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
-	public class OracleTypeCollection : OracleTypeBase
+	public class OracleTypeCollection : OracleTypeBase, IFunctionCollection
 	{
 		public override string TypeCode { get { return TypeCodeCollection; } }
-
-		public OracleObjectIdentifier ElementTypeIdentifier { get; set; }
 
 		public OracleCollectionType CollectionType { get; set; }
 
@@ -249,13 +247,21 @@ namespace SqlPad.Oracle
 
 		protected override OracleFunctionMetadata BuildConstructorMetadata()
 		{
-			var elementTypeLabel = String.IsNullOrEmpty(ElementTypeIdentifier.Owner) ? ElementTypeIdentifier.Name.Trim('"') : ElementTypeIdentifier.ToString();
-			var constructorMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues(FullyQualifiedName.Owner, null, FullyQualifiedName.Name), false, false, false, false, false, false, 0, 0, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeParenthesis, false);
+			var elementTypeLabel = String.IsNullOrEmpty(ElementDataType.FullyQualifiedName.Owner) ? ElementDataType.FullyQualifiedName.Name.Trim('"') : ElementDataType.FullyQualifiedName.ToString();
+			var constructorMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues(FullyQualifiedName.Owner, null, FullyQualifiedName.Name), false, false, false, false, false, false, 0, UpperBound ?? Int32.MaxValue, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeParenthesis, false);
 			constructorMetadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, FullyQualifiedName.ToString(), false));
 			constructorMetadata.Parameters.Add(new OracleFunctionParameterMetadata(String.Format("array of {0}", elementTypeLabel), 1, ParameterDirection.Input, null, true));
+			constructorMetadata.Owner = this;
 			
 			return constructorMetadata;
 		}
+
+		public ICollection<OracleFunctionMetadata> Functions
+		{
+			get { return new [] { BuildConstructorMetadata() }; }
+		}
+
+		public OracleDataType ElementDataType { get; set; }
 	}
 
 	public enum OracleCollectionType

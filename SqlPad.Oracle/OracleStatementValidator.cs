@@ -30,7 +30,7 @@ namespace SqlPad.Oracle
 			var objectReferences = oracleSemanticModel.QueryBlocks.SelectMany(qb => qb.ObjectReferences)
 				.Concat(mainObjectReferences)
 				.Concat(oracleSemanticModel.InsertTargets.SelectMany(t => t.ObjectReferences))
-				.Where(tr => tr.Type != ReferenceType.InlineView);
+				.Where(tr => tr.Type.In(ReferenceType.CommonTableExpression, ReferenceType.SchemaObject, ReferenceType.TableCollection));
 			
 			foreach (var objectReference in objectReferences)
 			{

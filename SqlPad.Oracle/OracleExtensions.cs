@@ -202,6 +202,12 @@ namespace SqlPad.Oracle
 					return OracleCodeCompletionCategory.SchemaObject;
 				case ReferenceType.InlineView:
 					return OracleCodeCompletionCategory.InlineView;
+				case ReferenceType.XmlTable:
+					return OracleCodeCompletionCategory.XmlTable;
+				case ReferenceType.JsonTable:
+					return OracleCodeCompletionCategory.JsonTable;
+				case ReferenceType.TableCollection:
+					return OracleCodeCompletionCategory.TableCollection;
 			}
 
 			throw new NotSupportedException(String.Format("Value '{0}' is not supported. ", type));

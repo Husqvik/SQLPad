@@ -182,15 +182,17 @@ namespace SqlPad.Oracle
 			return new OracleFunctionMetadata(identifier, isAnalytic, isAggregate, isPipelined, isOffloadable, parallelSupport, isDeterministic, metadataMinimumArguments, metadataMaximumArguments, authId, displayType, isBuiltIn);
 		}
 
-		private static KeyValuePair<OracleFunctionIdentifier, OracleFunctionParameterMetadata> MapFunctionParameterMetadata(OracleDataReader reader)
+		private KeyValuePair<OracleFunctionIdentifier, OracleFunctionParameterMetadata> MapFunctionParameterMetadata(OracleDataReader reader)
 		{
-			var identifier = CreateFunctionIdentifierFromReaderValues(reader[0], reader[1], reader[2], reader[3]);
+			var identifier = CreateFunctionIdentifierFromReaderValues(reader["OWNER"], reader["PACKAGE_NAME"], reader["FUNCTION_NAME"], reader["OVERLOAD"]);
 
-			var parameterName = OracleReaderValueConvert.ToString(reader[4]);
-			var position = Convert.ToInt32(reader[5]);
-			var dataType = OracleReaderValueConvert.ToString(reader[6]);
-			var isOptional = (string)reader[7] == "Y";
-			var directionRaw = (string)reader[8];
+			var parameterName = OracleReaderValueConvert.ToString(reader["ARGUMENT_NAME"]);
+			var position = Convert.ToInt32(reader["POSITION"]);
+			var dataType = OracleReaderValueConvert.ToString(reader["DATA_TYPE"]);
+			var typeOwner = OracleReaderValueConvert.ToString(reader["TYPE_OWNER"]);
+			var typeName = OracleReaderValueConvert.ToString(reader["TYPE_NAME"]);
+			var isOptional = (string)reader["DEFAULTED"] == "Y";
+			var directionRaw = (string)reader["IN_OUT"];
 			ParameterDirection direction;
 			switch (directionRaw)
 			{
@@ -207,7 +209,8 @@ namespace SqlPad.Oracle
 					throw new NotSupportedException(String.Format("Parameter direction '{0}' is not supported. ", directionRaw));
 			}
 
-			return new KeyValuePair<OracleFunctionIdentifier, OracleFunctionParameterMetadata>(identifier, new OracleFunctionParameterMetadata(parameterName, position, direction, dataType, isOptional));
+			return new KeyValuePair<OracleFunctionIdentifier, OracleFunctionParameterMetadata>(
+				identifier, new OracleFunctionParameterMetadata(parameterName, position, direction, dataType/*, OracleObjectIdentifier.Create(typeOwner, typeName)*/, isOptional));
 		}
 
 		private static OracleFunctionIdentifier CreateFunctionIdentifierFromReaderValues(object owner, object package, object name, object overload)
@@ -258,7 +261,19 @@ namespace SqlPad.Oracle
 
 			var collectionType = (OracleTypeCollection)typeObject;
 			var elementTypeIdentifier = OracleObjectIdentifier.Create(QualifyStringObject(reader["ELEM_TYPE_OWNER"]), QualifyStringObject(reader["ELEM_TYPE_NAME"]));
-			collectionType.ElementTypeIdentifier = elementTypeIdentifier;
+
+			var dataType =
+				new OracleDataType
+				{
+					FullyQualifiedName = elementTypeIdentifier,
+					Length = OracleReaderValueConvert.ToInt32(reader["LENGTH"]),
+					Precision = OracleReaderValueConvert.ToInt32(reader["PRECISION"]),
+					Scale = OracleReaderValueConvert.ToInt32(reader["SCALE"])
+				};
+
+			ResolveDataUnit(dataType, reader["CHARACTER_SET_NAME"]);
+
+			collectionType.ElementDataType = dataType;
 			collectionType.CollectionType = (string)reader["COLL_TYPE"] == "TABLE" ? OracleCollectionType.Table : OracleCollectionType.VarryingArray ;
 			collectionType.UpperBound = OracleReaderValueConvert.ToInt32(reader["UPPER_BOUND"]);
 

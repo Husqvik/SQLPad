@@ -1089,6 +1089,22 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		}
 
 		[Test(Description = @"")]
+		public void TestCollectionTypeConstructorHasAlwaysValidParameterCount()
+		{
+			const string sqlText = "SELECT SYS.ODCIRAWLIST(NULL, NULL) FROM DUAL";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var nodeValidityDictionary = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var programNodeValidity = nodeValidityDictionary.Values.ToList();
+			programNodeValidity.Count.ShouldBe(1);
+			programNodeValidity[0].IsRecognized.ShouldBe(true);
+			programNodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
+		}
+
+		[Test(Description = @"")]
 		public void TestCollectionTypeConstructorWithNoParameters()
 		{
 			const string sqlText = "SELECT SYS.ODCIARGDESCLIST() FROM DUAL";

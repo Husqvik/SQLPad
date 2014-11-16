@@ -670,6 +670,21 @@ FROM
 		}
 
 		[Test(Description = @"")]
+		public void TestResolveFunctionOverloadsInUserDefinedCollectionTypeConstructorAtNonFirstParameter()
+		{
+			const string query1 = @"SELECT SYS.ODCIRAWLIST(NULL, NULL) FROM DUAL";
+
+			_documentRepository.UpdateStatements(query1);
+			var items = _codeCompletionProvider.ResolveFunctionOverloads(_documentRepository, 29).ToList();
+			items.Count.ShouldBe(1);
+			items[0].Name.ShouldBe("SYS.ODCIRAWLIST");
+			items[0].Parameters.Count.ShouldBe(1);
+			items[0].CurrentParameterIndex.ShouldBe(0);
+			items[0].ReturnedDatatype.ShouldBe("SYS.ODCIRAWLIST");
+			items[0].IsParameterMetadataAvailable.ShouldBe(true);
+		}
+
+		[Test(Description = @"")]
 		public void TestResolveFunctionOverloadsOutsideTerminal()
 		{
 			const string query1 = @"SELECT ROUND(1.23, 1) FROM DUAL";

@@ -666,7 +666,7 @@ namespace SqlPad.Oracle.Test
 				FullyQualifiedName = OracleObjectIdentifier.Create(OwnerNameSys, "\"ODCIARGDESCLIST\""),
 				IsValid = true,
 				CollectionType = OracleCollectionType.VarryingArray,
-				ElementTypeIdentifier = OracleObjectIdentifier.Create(OwnerNameSys, "\"ODCIARGDESC\""),
+				ElementDataType = new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(OwnerNameSys, "\"ODCIARGDESC\"") },
 				UpperBound = 32767
 			},
 			new OracleTypeCollection
@@ -674,7 +674,7 @@ namespace SqlPad.Oracle.Test
 				FullyQualifiedName = OracleObjectIdentifier.Create(OwnerNameSys, "\"ODCIRAWLIST\""),
 				IsValid = true,
 				CollectionType = OracleCollectionType.VarryingArray,
-				ElementTypeIdentifier = OracleObjectIdentifier.Create(null, "\"RAW\""),
+				ElementDataType = new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(null, "\"RAW\"") },
 				UpperBound = 32767
 			},
 			new OracleTypeObject

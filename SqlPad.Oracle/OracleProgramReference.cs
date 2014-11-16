@@ -44,6 +44,56 @@ namespace SqlPad.Oracle
 		}
 	}
 
+	[DebuggerDisplay("OracleTableCollectionReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; FunctionIdentifier={ObjectNode.Token.Value})")]
+	public class OracleTableCollectionReference : OracleDataObjectReference
+	{
+		private List<OracleColumn> _columns;
+
+		public OracleTableCollectionReference() : base(ReferenceType.TableCollection)
+		{
+		}
+
+		public OracleFunctionMetadata FunctionMetadata { get; set; }
+
+		public override string Name { get { return AliasNode == null ? null : AliasNode.Token.Value; } }
+
+		public override OracleObjectIdentifier FullyQualifiedObjectName
+		{
+			get { return OracleObjectIdentifier.Empty; }
+		}
+
+		public override ICollection<OracleColumn> Columns
+		{
+			get { return _columns ?? BuildColumns(); }
+		}
+
+		private ICollection<OracleColumn> BuildColumns()
+		{
+			_columns = new List<OracleColumn>();
+
+			var schemaObject = SchemaObject.GetTargetSchemaObject();
+			var collectionType = schemaObject as OracleTypeCollection;
+			if (collectionType != null)
+			{
+				var column =
+					new OracleColumn
+					{
+						Name = "\"COLUMN_VALUE\"",
+						DataType = collectionType.ElementDataType,
+						Nullable = true
+					};
+
+				_columns.Add(column);
+			}
+			else if (FunctionMetadata != null)
+			{
+				//FunctionMetadata.Parameters
+			}
+
+			return _columns;
+		}
+	}
+
 	public abstract class OracleProgramReferenceBase : OracleReference
 	{
 		public StatementGrammarNode ParameterListNode { get; set; }

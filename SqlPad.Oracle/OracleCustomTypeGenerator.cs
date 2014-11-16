@@ -271,16 +271,16 @@ namespace SqlPad.Oracle
 		{
 			Type targetType;
 			var enclosingCharacter = String.Empty;
-			if (String.IsNullOrEmpty(collectionType.ElementTypeIdentifier.Owner))
+			if (String.IsNullOrEmpty(collectionType.ElementDataType.FullyQualifiedName.Owner))
 			{
-				targetType = MapOracleTypeToNetType(collectionType.ElementTypeIdentifier);
+				targetType = MapOracleTypeToNetType(collectionType.ElementDataType.FullyQualifiedName);
 
 				if (targetType == typeof (string))
 				{
 					enclosingCharacter = "'";
 				}
 			}
-			else if (customTypes.TryGetValue(collectionType.ElementTypeIdentifier.ToString().Replace("\"", null), out targetType))
+			else if (customTypes.TryGetValue(collectionType.ElementDataType.FullyQualifiedName.ToString().Replace("\"", null), out targetType))
 			{
 
 			}
@@ -302,7 +302,7 @@ namespace SqlPad.Oracle
 
 			ImplementAbstractStringValueProperty(customTypeBuilder, "FullyQualifiedName", fullyQualifiedCollectionTypeName);
 			ImplementAbstractStringValueProperty(customTypeBuilder, "EnclosingCharacter", enclosingCharacter);
-			ImplementAbstractStringValueProperty(customTypeBuilder, "ElementTypeName", collectionType.ElementTypeIdentifier.ToString());
+			ImplementAbstractStringValueProperty(customTypeBuilder, "ElementTypeName", collectionType.ElementDataType.FullyQualifiedName.ToString());
 
 			customTypes.Add(fullyQualifiedCollectionTypeName, customTypeBuilder.CreateType());
 		}

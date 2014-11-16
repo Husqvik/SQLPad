@@ -82,5 +82,8 @@ namespace SqlPad.Oracle
 		public const string DatabaseLink = "Database link";
 		public const string FunctionParameter = "Function parameter";
 		public const string BuiltInFunction = "Built-in function";
+		public const string XmlTable = "XML Table";
+		public const string JsonTable = "JSON table";
+		public const string TableCollection = "Table collection";
 	}
 }

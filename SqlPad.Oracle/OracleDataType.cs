@@ -35,10 +35,11 @@ namespace SqlPad.Oracle
 					case "VARCHAR":
 					case "NCHAR":
 					case "CHAR":
-						if (characterSize.HasValue)
+						var effectiveLength = characterSize ?? dataType.Length;
+						if (effectiveLength.HasValue)
 						{
 							var unit = dataType.Unit == DataUnit.Byte ? " BYTE" : " CHAR";
-							effectiveSize = String.Format("({0}{1})", characterSize, dataType.Unit == DataUnit.NotApplicable ? null : unit);
+							effectiveSize = String.Format("({0}{1})", effectiveLength, dataType.Unit == DataUnit.NotApplicable ? null : unit);
 						}
 
 						name = String.Format("{0}{1}", name, effectiveSize);

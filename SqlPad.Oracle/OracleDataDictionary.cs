@@ -152,7 +152,7 @@ namespace SqlPad.Oracle
 			
 			var oracleCollectionType = Serializer.Add(typeof(OracleTypeCollection), false);
 			oracleCollectionType.AsReferenceDefault = true;
-			oracleCollectionType.Add("ElementTypeIdentifier", "CollectionType", "UpperBound");
+			oracleCollectionType.Add("ElementDataType", "CollectionType", "UpperBound");
 
 			oracleDataObjectType.AddSubType(101, typeof(OracleTable));
 			oracleDataObjectType.AddSubType(102, typeof(OracleView));
@@ -176,7 +176,7 @@ namespace SqlPad.Oracle
 			var oracleFunctionParameterMetadataType = Serializer.Add(typeof(OracleFunctionParameterMetadata), false);
 			oracleFunctionMetadataType.AsReferenceDefault = true;
 			oracleFunctionParameterMetadataType.UseConstructor = false;
-			oracleFunctionParameterMetadataType.Add("Name", "Position", "DataType", "Direction", "IsOptional");
+			oracleFunctionParameterMetadataType.Add("Name", "Position", "DataType", "CustomDataType", "Direction", "IsOptional");
 		}
 
 		public OracleDataDictionary(IDictionary<OracleObjectIdentifier, OracleSchemaObject> schemaObjects, IDictionary<OracleObjectIdentifier, OracleDatabaseLink> databaseLinks, IDictionary<string, OracleFunctionMetadata> nonSchemaFunctionMetadata, IEnumerable<string> characterSets, IDictionary<int, string> statisticsKeys, IDictionary<string, string> systemParameters, DateTime timestamp)

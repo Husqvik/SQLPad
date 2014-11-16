@@ -1,5 +1,4 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace SqlPad.Oracle
 {
@@ -17,7 +16,7 @@ namespace SqlPad.Oracle
 			get { return OracleDataType.ResolveFullTypeName(DataType, CharacterSize); }
 		}
 
-		public int CharacterSize { get; set; }
+		public int? CharacterSize { get; set; }
 
 		public bool Nullable { get; set; }
 
