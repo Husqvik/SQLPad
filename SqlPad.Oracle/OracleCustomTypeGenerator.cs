@@ -391,7 +391,10 @@ namespace SqlPad.Oracle
 		
 		public void Prefetch() { }
 
-		public IList Records { get { return Array; } }
+		public IList Records
+		{
+			get { return Array.Select(i => CustomTypeValueConverter.ConvertItem(i, OracleLargeTextValue.DefaultPreviewLength)).ToArray(); }
+		}
 
 		public ColumnHeader ColumnHeader
 		{
@@ -425,7 +428,7 @@ namespace SqlPad.Oracle
 				return String.Empty;
 			}
 
-			var items = Array.Take(PreviewMaxItemCount).Select(i => CustomTypeValueConverter.ConvertItem(i, LargeValuePreviewLength));
+			var items = Array.Take(PreviewMaxItemCount).Select(i => ToPrintable(CustomTypeValueConverter.ConvertItem(i, LargeValuePreviewLength)));
 
 			if (!String.IsNullOrEmpty(_enclosingCharacter))
 			{
@@ -433,6 +436,20 @@ namespace SqlPad.Oracle
 			}
 
 			return String.Format("{0}({1}{2})", DataTypeName, String.Join(", ", items), Array.Length > PreviewMaxItemCount ? String.Format(", {0} ({1} items)", OracleLargeTextValue.Ellipsis, Array.Length) : String.Empty);
+		}
+
+		private static object ToPrintable(object value)
+		{
+			var oracleRaw = value as byte[];
+			if (oracleRaw == null)
+			{
+				return value;
+			}
+			
+			var hexValue = oracleRaw.ToHexString();
+			return hexValue.Length > LargeValuePreviewLength
+				? String.Format("{0}{1}", hexValue.Substring(0, LargeValuePreviewLength), OracleLargeTextValue.Ellipsis)
+				: hexValue;
 		}
 	}
 
@@ -567,15 +584,6 @@ namespace SqlPad.Oracle
 			if (oracleXmlType != null)
 			{
 				return new OracleXmlValue((OracleXmlType)value, largeValuePreviewLength);
-			}
-
-			var oracleRaw = value as byte[];
-			if (oracleRaw != null)
-			{
-				var hexValue = oracleRaw.ToHexString();
-				return hexValue.Length > largeValuePreviewLength
-					? String.Format("{0}{1}", hexValue.Substring(0, largeValuePreviewLength), OracleLargeTextValue.Ellipsis)
-					: hexValue;
 			}
 
 			return value;

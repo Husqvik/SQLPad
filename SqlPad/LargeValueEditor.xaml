@@ -16,25 +16,6 @@
 
 	<Window.Resources>
 		<findReplace:FindReplaceManager x:Key="FindReplaceManager" />
-
-		<sqlPad:CustomTypeAttributeCellValueConverter x:Key="ValueConverter"/>
-
-		<Style x:Key="CellTextBoxStyleReadOnly">
-			<Setter Property="TextBoxBase.IsReadOnly" Value="True" />
-			<Setter Property="TextBoxBase.IsReadOnlyCaretVisible" Value="True" />
-		</Style>
-
-		<sqlPad:CustomTypeDataTemplateSelector x:Key="CustomDataTemplateSelector" />
-		<DataTemplate x:Key="PrimitiveValueTypeTemplate">
-			<TextBox IsReadOnly="True" IsReadOnlyCaretVisible="True">
-				<TextBox.Text>
-					<MultiBinding Converter="{StaticResource ValueConverter}">
-						<Binding Path="Value"/>
-						<Binding Path="ColumnHeader"/>
-					</MultiBinding>
-				</TextBox.Text>
-			</TextBox>
-		</DataTemplate>
 	</Window.Resources>
 
 	<Window.InputBindings>
@@ -99,27 +80,12 @@
 						  MinRowHeight="20"
 						  MaxColumnWidth="{Binding ElementName=CollectionViewer, Path=ActualWidth}"
 				          HorizontalGridLinesBrush="LightGray"
-				          VerticalGridLinesBrush="LightGray">
+				          VerticalGridLinesBrush="LightGray"
+						  MouseDoubleClick="CollectionViewerMouseDoubleClickHandler">
 				</DataGrid>
 			</TabItem>
 			<TabItem x:Name="TabComplexType" Header="Complex type" Visibility="Collapsed">
-				<DataGrid x:Name="ComplexTypeViewer"
-						  AutoGenerateColumns="False"
-						  CanUserDeleteRows ="False"
-						  CanUserReorderColumns="False"
-						  MinRowHeight="20"
-						  MaxColumnWidth="{Binding ElementName=ComplexTypeViewer, Path=ActualWidth}"
-				          HorizontalGridLinesBrush="LightGray"
-				          VerticalGridLinesBrush="LightGray">
-					<DataGrid.Columns>
-						<DataGridTextColumn Header="Attribute name"
-						                    Binding="{Binding ColumnHeader.Name}"
-						                    EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}" />
-						<DataGridTemplateColumn Header="Value"
-						                        CellTemplateSelector="{StaticResource CustomDataTemplateSelector}"
-						                        CellEditingTemplateSelector="{StaticResource CustomDataTemplateSelector}" />
-					</DataGrid.Columns>
-				</DataGrid>
+				<sqlPad:ComplexTypeViewer x:Name="ComplexTypeViewer" />
 			</TabItem>
 		</TabControl>
 	</Grid>

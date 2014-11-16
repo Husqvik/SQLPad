@@ -1,0 +1,75 @@
+﻿<UserControl x:Class="SqlPad.ComplexTypeViewer"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:sqlPad="clr-namespace:SqlPad"
+             mc:Ignorable="d"
+             d:DesignHeight="300" d:DesignWidth="300">
+
+	<UserControl.Resources>
+		<Style x:Key="CellTextBoxStyleReadOnly">
+			<Setter Property="TextBoxBase.IsReadOnly" Value="True" />
+			<Setter Property="TextBoxBase.IsReadOnlyCaretVisible" Value="True" />
+		</Style>
+
+		<sqlPad:CustomTypeAttributeCellValueConverter x:Key="ValueConverter"/>
+
+		<!--<sqlPad:CustomTypeDataTemplateSelector x:Key="CustomDataTemplateSelector" />
+		<DataTemplate x:Key="PrimitiveValueTypeTemplate">
+			<TextBlock>
+				<TextBlock.Text>
+					<MultiBinding Converter="{StaticResource ValueConverter}">
+						<Binding Path="Value"/>
+						<Binding Path="ColumnHeader"/>
+					</MultiBinding>
+				</TextBlock.Text>
+			</TextBlock>
+		</DataTemplate>
+
+		<sqlPad:CustomTypeDataTemplateSelector x:Key="CustomDataEditingTemplateSelector" IsEditing="True" />
+		<DataTemplate x:Key="PrimitiveValueTypeEditingTemplate">
+			<TextBox IsReadOnly="True" IsReadOnlyCaretVisible="True">
+				<TextBox.Text>
+					<MultiBinding Converter="{StaticResource ValueConverter}">
+						<Binding Path="Value"/>
+						<Binding Path="ColumnHeader"/>
+					</MultiBinding>
+				</TextBox.Text>
+			</TextBox>
+		</DataTemplate>-->
+	</UserControl.Resources>
+	<StackPanel x:Name="RootPanel">
+		<TextBlock Padding="0,3,0,3">
+			<Run Text="Type: "/>
+			<Run Text="{Binding DataTypeName, Mode=OneTime}"/>
+		</TextBlock>
+		<DataGrid x:Name="ComplexTypeViewerGrid"
+				  AutoGenerateColumns="False"
+				  CanUserDeleteRows="False"
+				  CanUserReorderColumns="False"
+				  MinRowHeight="20"
+				  ItemsSource="{Binding Attributes}"
+				  MaxColumnWidth="{Binding ElementName=ComplexTypeViewerGrid, Path=ActualWidth}"
+				  HorizontalGridLinesBrush="LightGray"
+				  VerticalGridLinesBrush="LightGray">
+			<DataGrid.Columns>
+				<DataGridTextColumn Header="Attribute name"
+									Binding="{Binding ColumnHeader.Name}"
+									EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}" />
+				<!--<DataGridTemplateColumn Header="Value"
+										CellTemplateSelector="{StaticResource CustomDataTemplateSelector}"
+										CellEditingTemplateSelector="{StaticResource CustomDataEditingTemplateSelector}" />-->
+				<DataGridTextColumn Header="Value"
+									EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}">
+					<DataGridTextColumn.Binding>
+						<MultiBinding Converter="{StaticResource ValueConverter}">
+							<Binding Path="Value"/>
+							<Binding Path="ColumnHeader"/>
+						</MultiBinding>
+					</DataGridTextColumn.Binding>
+				</DataGridTextColumn>
+			</DataGrid.Columns>
+		</DataGrid>
+	</StackPanel>
+</UserControl>

@@ -215,7 +215,7 @@
 				</DataGrid>
 			</TabItem>
 			<TabItem Header="_Actual plan" Visibility="{Binding IsExecutionPlanAvailable}">
-				<TextBox Text="{Binding TextExecutionPlan}" FontFamily="Consolas" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" IsReadOnly="True" />
+				<TextBox Text="{Binding TextExecutionPlan}" FontFamily="Consolas" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" IsReadOnly="True" IsReadOnlyCaretVisible="True" />
 			</TabItem>
 			<TabItem Header="_Statistics" Visibility="{Binding ExecutionStatisticsAvailable}">
 				<DockPanel>

@@ -1505,15 +1505,20 @@ namespace SqlPad
 
 		private void ResultGridMouseDoubleClickHandler(object sender, MouseButtonEventArgs e)
 		{
-			var currentRow = (object[])ResultGrid.CurrentItem;
-			if (currentRow == null || ResultGrid.CurrentColumn == null)
+			ShowLargeValueEditor(this, ResultGrid);
+		}
+
+		internal static void ShowLargeValueEditor(DocumentPage document, DataGrid dataGrid)
+		{
+			var currentRow = (object[])dataGrid.CurrentItem;
+			if (currentRow == null || dataGrid.CurrentColumn == null)
 				return;
 
-			var cellValue = currentRow[ResultGrid.CurrentColumn.DisplayIndex];
+			var cellValue = currentRow[dataGrid.CurrentColumn.DisplayIndex];
 			var largeValue = cellValue as ILargeValue;
 			if (largeValue != null)
 			{
-				new LargeValueEditor(this, ResultGrid.CurrentColumn.Header.ToString(), largeValue) { Owner = Window.GetWindow(this) }.ShowDialog();
+				new LargeValueEditor(document, dataGrid.CurrentColumn.Header.ToString(), largeValue) { Owner = Window.GetWindow(dataGrid) }.ShowDialog();
 			}
 		}
 

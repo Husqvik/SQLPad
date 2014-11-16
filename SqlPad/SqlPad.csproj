@@ -79,6 +79,9 @@
     <Compile Include="BinaryDataHelper.cs" />
     <Compile Include="BindVariableModel.cs" />
     <Compile Include="CellValueConverter.cs" />
+    <Compile Include="ComplexTypeViewer.xaml.cs">
+      <DependentUpon>ComplexTypeViewer.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Configuration.Extensions.cs" />
     <Compile Include="Configuration.cs">
       <DependentUpon>Configuration.xsd</DependentUpon>
@@ -162,6 +165,11 @@
       <DependentUpon>WindowOperationMonitor.xaml</DependentUpon>
     </Compile>
     <Compile Include="WorkingDocumentCollection.cs" />
+    <Compile Include="WpfExtensions.cs" />
+    <Page Include="ComplexTypeViewer.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="DocumentPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
