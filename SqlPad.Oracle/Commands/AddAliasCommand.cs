@@ -88,7 +88,7 @@ namespace SqlPad.Oracle.Commands
 					AddObjectAlias(settingsModel.Value);
 					break;
 				case Terminals.Identifier:
-					new AliasCommandHelper(ExecutionContext, SemanticModel).AddColumnAlias(_currentColumnReference, settingsModel.Value);
+					new AliasCommandHelper(ExecutionContext).AddColumnAlias(_currentColumnReference.ColumnNode, CurrentQueryBlock, _currentColumnReference.NormalizedName, settingsModel.Value);
 					break;
 			}
 		}
@@ -127,27 +127,25 @@ namespace SqlPad.Oracle.Commands
 	internal class AliasCommandHelper
 	{
 		private readonly CommandExecutionContext _executionContext;
-		private readonly OracleStatementSemanticModel _semanticModel;
 
-		public AliasCommandHelper(CommandExecutionContext executionContext, OracleStatementSemanticModel semanticModel)
+		public AliasCommandHelper(CommandExecutionContext executionContext)
 		{
 			_executionContext = executionContext;
-			_semanticModel = semanticModel;
 		}
 
-		public void AddColumnAlias(OracleColumnReference columnReference, string alias)
+		public void AddColumnAlias(StatementGrammarNode columnNode, OracleQueryBlock queryBlock, string columnNormalizedName, string alias)
 		{
 			_executionContext.SegmentsToReplace.Add(
 				new TextSegment
 				{
-					IndextStart = columnReference.ColumnNode.SourcePosition.IndexEnd + 1,
+					IndextStart = columnNode.SourcePosition.IndexEnd + 1,
 					Text = " " + alias
 				});
 
-			var parentObjectReferences = GetParentObjectReferences(columnReference.Owner);
+			var parentObjectReferences = GetParentObjectReferences(queryBlock);
 			foreach (var objectReference in parentObjectReferences)
 			{
-				AddColumnAliasToQueryBlock(columnReference.NormalizedName, alias, objectReference);
+				AddColumnAliasToQueryBlock(columnNormalizedName, alias, objectReference);
 			}
 		}
 

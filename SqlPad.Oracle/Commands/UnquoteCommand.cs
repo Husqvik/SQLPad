@@ -39,21 +39,21 @@ namespace SqlPad.Oracle.Commands
 
 		protected override void Execute()
 		{
-			var commandHelper = new AliasCommandHelper(ExecutionContext, SemanticModel);
+			var commandHelper = new AliasCommandHelper(ExecutionContext);
 			foreach (var column in _unquotableColumns)
 			{
-				commandHelper.AddColumnAlias(column.ColumnReferences.Single(), column.NormalizedName.Trim('"'));
+				commandHelper.AddColumnAlias(column.RootNode, column.Owner, column.NormalizedName, column.NormalizedName.Trim('"'));
 			}
 		}
 
 		private IEnumerable<OracleSelectListColumn> GetQuotedColumns(Func<OracleSelectListColumn, bool> columnFilter)
 		{
-			return CurrentQueryBlock.Columns.Where(c => !c.IsAsterisk && c.IsDirectReference && c.HasExplicitDefinition && c.RootNode.TerminalCount == 1 && c.ColumnReferences.Count == 1 && IsUnquotable(c) && columnFilter(c));
+			return CurrentQueryBlock.Columns.Where(c => !c.IsAsterisk && c.HasExplicitDefinition && c.AliasNode != null && IsUnquotable(c) && columnFilter(c));
 		}
 
 		private static bool IsUnquotable(OracleSelectListColumn column)
 		{
-			var value = column.RootNode.FirstTerminalNode.Token.Value;
+			var value = column.AliasNode.Token.Value;
 			return value.IsQuoted() && Char.IsLetter(value[1]) && value.Substring(1, value.Length - 2).All(c => Char.IsLetterOrDigit(c) || c.In('_', '$', '#'));
 		}
 	}
