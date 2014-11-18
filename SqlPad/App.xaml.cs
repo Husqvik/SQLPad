@@ -56,10 +56,10 @@ namespace SqlPad
 				logBuilder.Append("Selection length: ");
 				logBuilder.AppendLine(Convert.ToString(page.Editor.SelectionLength));
 
-				if (page.WorkingDocument.File != null)
+				if (page.WorkDocument.File != null)
 				{
 					logBuilder.Append("Document name: ");
-					logBuilder.AppendLine(page.WorkingDocument.File.FullName);
+					logBuilder.AppendLine(page.WorkDocument.File.FullName);
 				}
 			}
 

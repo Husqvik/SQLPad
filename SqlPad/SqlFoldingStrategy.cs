@@ -24,15 +24,15 @@ namespace SqlPad
 			_foldingManager.UpdateFoldings(foldings, -1);
 		}
 
-		public void Store(WorkingDocument workingDocument)
+		public void Store(WorkDocument workDocument)
 		{
-			workingDocument.UpdateFoldingStates(_foldingManager.AllFoldings.Select(f => f.IsFolded));
+			workDocument.UpdateFoldingStates(_foldingManager.AllFoldings.Select(f => f.IsFolded));
 		}
 
-		public void Restore(WorkingDocument workingDocument)
+		public void Restore(WorkDocument workDocument)
 		{
 			var foldingEnumerator = _foldingManager.AllFoldings.GetEnumerator();
-			foreach (var isFolded in workingDocument.FoldingStates.Where(s => foldingEnumerator.MoveNext()))
+			foreach (var isFolded in workDocument.FoldingStates.Where(s => foldingEnumerator.MoveNext()))
 			{
 				foldingEnumerator.Current.IsFolded = isFolded;
 			}

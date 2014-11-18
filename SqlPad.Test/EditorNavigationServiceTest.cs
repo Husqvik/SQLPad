@@ -24,7 +24,7 @@ namespace SqlPad.Test
 		[Test(Description = @""), STAThread]
 		public void TestRegisterDocumentCursorPosition()
 		{
-			var workingDocument = new WorkingDocument();
+			var workingDocument = new WorkDocument();
 			const int originalPosition = 10;
 			const int position2 = 99;
 			const int lastPosition = 43;

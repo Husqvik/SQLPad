@@ -226,6 +226,12 @@
 					</DataGrid>
 				</DockPanel>
 			</TabItem>
+			<TabItem Header="_Output">
+				<DockPanel>
+					<CheckBox DockPanel.Dock="Top" Margin="4" Content="_Enable" IsChecked="{Binding EnableDatabaseOutput}" />
+					<TextBox Text="{Binding DatabaseOutput}" FontFamily="Consolas" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" IsReadOnly="True" IsReadOnlyCaretVisible="True" />
+				</DockPanel>
+			</TabItem>
 		</TabControl>
 		<StatusBar x:Name="StatusBar" Grid.Row="4" Grid.Column="0">
 			<StatusBar.ItemsPanel>

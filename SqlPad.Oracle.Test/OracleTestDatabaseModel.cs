@@ -894,7 +894,9 @@ Note
 			return CreateFinishedTask<object>(null);
 		}
 
-		public override bool IsModelFresh { get { return true; } }
+		public override bool IsFresh { get { return true; } }
+
+		public override bool EnableDatabaseOutput { get; set; }
 
 		public override event EventHandler Initialized = delegate { };
 

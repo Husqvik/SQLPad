@@ -39,7 +39,9 @@ namespace SqlPad.Oracle
 
 		public abstract Task Initialize();
 
-		public abstract bool IsModelFresh { get; }
+		public abstract bool IsFresh { get; }
+		
+		public abstract bool EnableDatabaseOutput { get; set; }
 
 		public abstract void RefreshIfNeeded();
 

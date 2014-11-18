@@ -14,7 +14,7 @@ namespace SqlPad
 
 		public static bool IsEnabled { get; set; }
 
-		public static void Initialize(WorkingDocument initialDocument = null)
+		public static void Initialize(WorkDocument initialDocument = null)
 		{
 			DocumentCursorPositions.Clear();
 			_lastDocumentIdentifier = null;
@@ -30,16 +30,16 @@ namespace SqlPad
 			}
 		}
 
-		public static void RegisterDocumentCursorPosition(WorkingDocument workingDocument, int cursorPosition)
+		public static void RegisterDocumentCursorPosition(WorkDocument workDocument, int cursorPosition)
 		{
 			if (!IsEnabled)
 			{
 				return;
 			}
 
-			var isCursorAtAdjacentPosition = Math.Abs(cursorPosition - _lastCursorPosition) <= 1 && workingDocument.Identifier == _lastDocumentIdentifier;
+			var isCursorAtAdjacentPosition = Math.Abs(cursorPosition - _lastCursorPosition) <= 1 && workDocument.Identifier == _lastDocumentIdentifier;
 
-			_lastDocumentIdentifier = workingDocument.Identifier;
+			_lastDocumentIdentifier = workDocument.Identifier;
 			_lastCursorPosition = cursorPosition;
 
 			if (isCursorAtAdjacentPosition)
@@ -50,7 +50,7 @@ namespace SqlPad
 			if (DocumentCursorPositions.Count > _currentIndex + 1)
 			{
 				var nextDocument = DocumentCursorPositions[_currentIndex + 1];
-				if (workingDocument.Identifier == nextDocument.Document.Identifier && nextDocument.CursorPosition == cursorPosition)
+				if (workDocument.Identifier == nextDocument.Document.Identifier && nextDocument.CursorPosition == cursorPosition)
 				{
 					_currentIndex++;
 					return;
@@ -65,7 +65,7 @@ namespace SqlPad
 				new DocumentCursorPosition
 				{
 					CursorPosition = cursorPosition,
-					Document = workingDocument
+					Document = workDocument
 				});
 		}
 
@@ -84,7 +84,7 @@ namespace SqlPad
 	[DebuggerDisplay("DocumentCursorPosition (DocumentIdentifier={Document.Identifier}, CursorPosition={CursorPosition})")]
 	public class DocumentCursorPosition
 	{
-		public WorkingDocument Document { get; set; }
+		public WorkDocument Document { get; set; }
 
 		public int CursorPosition { get; set; }
 	}

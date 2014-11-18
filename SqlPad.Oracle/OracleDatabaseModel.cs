@@ -29,6 +29,7 @@ namespace SqlPad.Oracle
 		private bool _isRefreshing;
 		private bool _cacheLoaded;
 		private bool _isExecuting;
+		private bool _databaseOutputEnabled;
 		private Task _backgroundTask;
 		private readonly CancellationTokenSource _backgroundTaskCancellationTokenSource = new CancellationTokenSource();
 		private ILookup<OracleFunctionIdentifier, OracleFunctionMetadata> _allFunctionMetadata = Enumerable.Empty<OracleFunctionMetadata>().ToLookup(m => m.Identifier);
@@ -85,6 +86,7 @@ namespace SqlPad.Oracle
 			}
 
 			_isInitialized = false;
+			_databaseOutputEnabled = false;
 
 			_userConnection = new OracleConnection(_connectionString.ConnectionString);
 		}
@@ -209,10 +211,12 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		public override bool IsModelFresh
+		public override bool IsFresh
 		{
 			get { return !IsRefreshNeeded; }
 		}
+
+		public override bool EnableDatabaseOutput { get; set; }
 
 		private bool IsRefreshNeeded
 		{
@@ -528,6 +532,19 @@ namespace SqlPad.Oracle
 			return true;
 		}
 
+		private void EnsureDatabaseOutput()
+		{
+			if ((EnableDatabaseOutput && _databaseOutputEnabled) ||
+				!EnableDatabaseOutput && !_databaseOutputEnabled)
+			{
+				return;
+			}
+
+			_userCommand.CommandText = String.Format("CALL DBMS_OUTPUT.{0}", EnableDatabaseOutput ? "ENABLE(1)" : "DISABLE");
+			_userCommand.ExecuteNonQuery();
+			_databaseOutputEnabled = true;
+		}
+
 		private async Task ExecuteUserStatement(StatementExecutionModel executionModel, CancellationToken cancellationToken)
 		{
 			if (EnsureUserConnectionOpen())
@@ -536,6 +553,9 @@ namespace SqlPad.Oracle
 			}
 
 			_userCommand = _userConnection.CreateCommand();
+
+			EnsureDatabaseOutput();
+
 			_userCommand.BindByName = true;
 
 			if (_userTransaction == null)
@@ -674,6 +694,7 @@ namespace SqlPad.Oracle
 				_isExecuting = true;
 				await ExecuteUserStatement(executionModel, cancellationToken);
 				result.AffectedRowCount = _userDataReader.RecordsAffected;
+				result.DatabaseOutput = await FetchDatabaseOutput(cancellationToken);
 				result.ExecutedSuccessfully = true;
 				result.ColumnHeaders = GetColumnHeadersFromReader(_userDataReader);
 				result.InitialResultSet = await FetchRecordsFromReader(_userDataReader, executionModel.InitialFetchRowCount, false).EnumerateAsync(cancellationToken);
@@ -704,6 +725,31 @@ namespace SqlPad.Oracle
 			}
 
 			return result;
+		}
+
+		private async Task<string> FetchDatabaseOutput(CancellationToken cancellationToken)
+		{
+			if (!_databaseOutputEnabled)
+			{
+				return null;
+			}
+
+			using (var command = _userConnection.CreateCommand())
+			{
+				command.CommandText = DatabaseCommands.FetchDatabaseOutput;
+
+				using (var parameter = command.CreateParameter())
+				{
+					parameter.OracleDbType = OracleDbType.Clob;
+					parameter.Direction = System.Data.ParameterDirection.Output;
+					command.Parameters.Add(parameter);
+
+					await command.ExecuteNonQueryAsynchronous(cancellationToken);
+
+					var oracleClob = (OracleClob)parameter.Value;
+					return oracleClob.IsNull ? String.Empty : oracleClob.Value;
+				}
+			}
 		}
 
 		private void PreInitialize()

@@ -40,6 +40,8 @@ namespace SqlPad
 		public IReadOnlyList<ColumnHeader> ColumnHeaders { get; set; }
 
 		public IReadOnlyList<object[]> InitialResultSet { get; set; }
+		
+		public string DatabaseOutput { get; set; }
 	}
 
 	[DebuggerDisplay("SessionExecutionStatisticsRecord (Name={Name}; Value={Value})")]

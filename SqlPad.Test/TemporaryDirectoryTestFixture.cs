@@ -17,7 +17,7 @@ namespace SqlPad.Test
 		[TearDown]
 		public void TearDown()
 		{
-			WorkingDocumentCollection.ReleaseConfigurationLock();
+			WorkDocumentCollection.ReleaseConfigurationLock();
 			Directory.Delete(TempDirectoryName, true);
 		}
 	}

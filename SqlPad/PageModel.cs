@@ -35,6 +35,7 @@ namespace SqlPad
 		private string _textExecutionPlan;
 		private string _dateTimeFormat;
 		private string _connectionErrorMessage;
+		private string _databaseOutput;
 		private bool _showAllSessionExecutionStatistics;
 
 		public PageModel(DocumentPage documentPage)
@@ -134,6 +135,18 @@ namespace SqlPad
 		{
 			var statisticsRecord = (SessionExecutionStatisticsRecord)record;
 			return statisticsRecord.Value != 0;
+		}
+
+		public bool EnableDatabaseOutput
+		{
+			get { return _documentPage.DatabaseModel.EnableDatabaseOutput; }
+			set { _documentPage.DatabaseModel.EnableDatabaseOutput = value; }
+		}
+
+		public string DatabaseOutput
+		{
+			get { return _databaseOutput; }
+			set { UpdateValueAndRaisePropertyChanged(ref _databaseOutput, value); }
 		}
 
 		public int CurrentLine

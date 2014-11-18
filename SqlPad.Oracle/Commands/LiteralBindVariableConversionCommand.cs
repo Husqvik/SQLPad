@@ -131,7 +131,7 @@ namespace SqlPad.Oracle.Commands
 					break;
 			}
 
-			var configuration = WorkingDocumentCollection.GetProviderConfiguration(SemanticModel.DatabaseModel.ConnectionString.ProviderName);
+			var configuration = WorkDocumentCollection.GetProviderConfiguration(SemanticModel.DatabaseModel.ConnectionString.ProviderName);
 			configuration.SetBindVariable(bindVariable);
 		}
 

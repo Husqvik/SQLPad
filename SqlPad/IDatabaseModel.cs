@@ -20,7 +20,9 @@ namespace SqlPad
 
 		bool IsExecuting { get; }
 
-		bool IsModelFresh { get; }
+		bool IsFresh { get; }
+
+		bool EnableDatabaseOutput { get; set; }
 
 		void RefreshIfNeeded();
 

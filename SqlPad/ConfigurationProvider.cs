@@ -71,7 +71,7 @@ namespace SqlPad
 		public static void Dispose()
 		{
 			ConfigurationWatcher.Dispose();
-			WorkingDocumentCollection.ReleaseConfigurationLock();
+			WorkDocumentCollection.ReleaseConfigurationLock();
 		}
 
 		private static void ConfigurationChangedHandler(object sender, FileSystemEventArgs fileSystemEventArgs)
@@ -183,7 +183,7 @@ namespace SqlPad
 		private static void ConfigureWorkArea()
 		{
 			CreateDirectoryIfNotExists(_folderNameWorkArea);
-			WorkingDocumentCollection.Configure();
+			WorkDocumentCollection.Configure();
 		}
 
 		private static void CreateDirectoryIfNotExists(params string[] directoryNames)

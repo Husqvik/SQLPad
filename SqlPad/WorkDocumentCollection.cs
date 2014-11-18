@@ -8,30 +8,30 @@ using ProtoBuf.Meta;
 
 namespace SqlPad
 {
-	public class WorkingDocumentCollection
+	public class WorkDocumentCollection
 	{
-		internal const string ConfigurationFileName = "WorkingDocuments.dat";
+		internal const string ConfigurationFileName = "WorkDocuments.dat";
 		private const string LockFileName = "Configuration.lock";
 		private static string _fileName = GetWorkingDocumentConfigurationFileName(ConfigurationProvider.FolderNameWorkArea);
 		private static FileStream _lockFile;
 		private static readonly RuntimeTypeModel Serializer;
-		private static WorkingDocumentCollection _instance;
+		private static WorkDocumentCollection _instance;
 
 		private Dictionary<string, DatabaseProviderConfiguration> _databaseProviderConfigurations = new Dictionary<string, DatabaseProviderConfiguration>();
-		private Dictionary<Guid, WorkingDocument> _workingDocuments = new Dictionary<Guid, WorkingDocument>();
+		private Dictionary<Guid, WorkDocument> _workingDocuments = new Dictionary<Guid, WorkDocument>();
 		private int _activeDocumentIndex;
 		private WindowProperties _windowProperties;
 
-		static WorkingDocumentCollection()
+		static WorkDocumentCollection()
 		{
 			Serializer = TypeModel.Create();
-			var workingDocumentCollectionType = Serializer.Add(typeof(WorkingDocumentCollection), false);
+			var workingDocumentCollectionType = Serializer.Add(typeof(WorkDocumentCollection), false);
 			workingDocumentCollectionType.UseConstructor = false;
 			workingDocumentCollectionType.Add("_workingDocuments", "_activeDocumentIndex", "_windowProperties", "_databaseProviderConfigurations");
 
-			var workingDocumentType = Serializer.Add(typeof(WorkingDocument), false);
+			var workingDocumentType = Serializer.Add(typeof(WorkDocument), false);
 			workingDocumentType.UseConstructor = false;
-			workingDocumentType.Add("DocumentFileName", "DocumentId", "ConnectionName", "SchemaName", "CursorPosition", "SelectionStart", "SelectionLength", "IsModified", "VisualLeft", "VisualTop", "EditorGridRowHeight", "Text", "EditorGridColumnWidth", "TabIndex", "_foldingStates");
+			workingDocumentType.Add("DocumentFileName", "DocumentId", "ConnectionName", "SchemaName", "CursorPosition", "SelectionStart", "SelectionLength", "IsModified", "VisualLeft", "VisualTop", "EditorGridRowHeight", "Text", "EditorGridColumnWidth", "TabIndex", "_foldingStates", "EnableDatabaseOutput");
 
 			var windowPropertiesType = Serializer.Add(typeof(WindowProperties), false);
 			windowPropertiesType.UseConstructor = false;
@@ -45,7 +45,7 @@ namespace SqlPad
 			bindVariableConfigurationType.Add("Name", "DataType", "_internalValue");
 		}
 
-		private WorkingDocumentCollection() {}
+		private WorkDocumentCollection() {}
 
 		private static void Initialize()
 		{
@@ -66,22 +66,22 @@ namespace SqlPad
 				{
 					try
 					{
-						_instance = (WorkingDocumentCollection)Serializer.Deserialize(file, _instance, typeof(WorkingDocumentCollection));
+						_instance = (WorkDocumentCollection)Serializer.Deserialize(file, _instance, typeof(WorkDocumentCollection));
 					}
 					catch (Exception e)
 					{
-						Trace.WriteLine("WorkingDocumentCollection deserialization failed: " + e);
+						Trace.WriteLine("WorkDocumentCollection deserialization failed: " + e);
 					}
 				}
 			}
 
 			if (_instance == null)
 			{
-				_instance = new WorkingDocumentCollection();
+				_instance = new WorkDocumentCollection();
 			}
 			else if (_instance._workingDocuments == null)
 			{
-				_instance._workingDocuments = new Dictionary<Guid, WorkingDocument>();
+				_instance._workingDocuments = new Dictionary<Guid, WorkDocument>();
 			}
 
 			if (_instance._databaseProviderConfigurations == null)
@@ -129,7 +129,7 @@ namespace SqlPad
 			return Path.Combine(directory, ConfigurationFileName);
 		}
 
-		private static WorkingDocumentCollection Instance
+		private static WorkDocumentCollection Instance
 		{
 			get
 			{
@@ -151,31 +151,31 @@ namespace SqlPad
 			set { Instance._activeDocumentIndex = value; }
 		}
 
-		public static ICollection<WorkingDocument> WorkingDocuments { get { return Instance._workingDocuments.Values.ToArray(); } }
+		public static ICollection<WorkDocument> WorkingDocuments { get { return Instance._workingDocuments.Values.ToArray(); } }
 
-		public static bool TryGetWorkingDocumentFor(string fileName, out WorkingDocument workingDocument)
+		public static bool TryGetWorkingDocumentFor(string fileName, out WorkDocument workDocument)
 		{
 			if (fileName == null)
 				throw new ArgumentNullException("fileName");
 
-			workingDocument = Instance._workingDocuments.Values.FirstOrDefault(d => d.File != null && d.File.FullName.ToLowerInvariant() == fileName.ToLowerInvariant());
-			return workingDocument != null;
+			workDocument = Instance._workingDocuments.Values.FirstOrDefault(d => d.File != null && d.File.FullName.ToLowerInvariant() == fileName.ToLowerInvariant());
+			return workDocument != null;
 		}
 
-		public static void AddDocument(WorkingDocument workingDocument)
+		public static void AddDocument(WorkDocument workDocument)
 		{
-			ValidateWorkingDocument(workingDocument);
+			ValidateWorkingDocument(workDocument);
 
-			Instance._workingDocuments[workingDocument.DocumentId] = workingDocument;
+			Instance._workingDocuments[workDocument.DocumentId] = workDocument;
 		}
 
-		public static void CloseDocument(WorkingDocument workingDocument)
+		public static void CloseDocument(WorkDocument workDocument)
 		{
-			ValidateWorkingDocument(workingDocument);
+			ValidateWorkingDocument(workDocument);
 
 			try
 			{
-				Instance._workingDocuments.Remove(workingDocument.DocumentId);
+				Instance._workingDocuments.Remove(workDocument.DocumentId);
 
 				Save();
 			}
@@ -193,11 +193,11 @@ namespace SqlPad
 			}
 		}
 
-		private static void ValidateWorkingDocument(WorkingDocument workingDocument)
+		private static void ValidateWorkingDocument(WorkDocument workDocument)
 		{
-			if (workingDocument == null)
+			if (workDocument == null)
 			{
-				throw new ArgumentNullException("workingDocument");
+				throw new ArgumentNullException("workDocument");
 			}
 		}
 
@@ -254,12 +254,12 @@ namespace SqlPad
 		public WindowState State { get; private set; }
 	}
 
-	[DebuggerDisplay("WorkingDocument (DocumentFileName={DocumentFileName}; TabIndex={TabIndex}; ConnectionName={ConnectionName}; SchemaName={SchemaName})")]
-	public class WorkingDocument
+	[DebuggerDisplay("WorkDocument (DocumentFileName={DocumentFileName}; TabIndex={TabIndex}; ConnectionName={ConnectionName}; SchemaName={SchemaName})")]
+	public class WorkDocument
 	{
 		private List<bool> _foldingStates;
 
-		public WorkingDocument()
+		public WorkDocument()
 		{
 			DocumentId = Guid.NewGuid();
 		}
@@ -303,7 +303,7 @@ namespace SqlPad
 		public int TabIndex { get; set; }
 		
 		public bool IsModified { get; set; }
-
+		
 		public double VisualTop { get; set; }
 		
 		public double VisualLeft { get; set; }
@@ -311,5 +311,7 @@ namespace SqlPad
 		public double EditorGridRowHeight { get; set; }
 		
 		public double EditorGridColumnWidth { get; set; }
+
+		public bool EnableDatabaseOutput { get; set; }
 	}
 }

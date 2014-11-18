@@ -164,7 +164,7 @@
     <Compile Include="WindowOperationMonitor.xaml.cs">
       <DependentUpon>WindowOperationMonitor.xaml</DependentUpon>
     </Compile>
-    <Compile Include="WorkingDocumentCollection.cs" />
+    <Compile Include="WorkDocumentCollection.cs" />
     <Compile Include="WpfExtensions.cs" />
     <Page Include="ComplexTypeViewer.xaml">
       <SubType>Designer</SubType>

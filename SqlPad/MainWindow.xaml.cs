@@ -84,11 +84,11 @@ namespace SqlPad
 
 			CommandBindings.Add(new CommandBinding(GenericCommands.SaveAll, SaveAllCommandExecutedHandler));
 
-			WorkingDocumentCollection.RestoreApplicationWindowProperties(this);
+			WorkDocumentCollection.RestoreApplicationWindowProperties(this);
 
-			if (WorkingDocumentCollection.WorkingDocuments.Count > 0)
+			if (WorkDocumentCollection.WorkingDocuments.Count > 0)
 			{
-				foreach (var workingDocument in WorkingDocumentCollection.WorkingDocuments.OrderBy(d => d.TabIndex))
+				foreach (var workingDocument in WorkDocumentCollection.WorkingDocuments.OrderBy(d => d.TabIndex))
 				{
 					CreateNewDocumentPage(workingDocument);
 				}
@@ -100,9 +100,9 @@ namespace SqlPad
 
 			DocumentTabControl.SelectionChanged += TabControlSelectionChangedHandler;
 
-			DocumentTabControl.SelectedIndex = WorkingDocumentCollection.ActiveDocumentIndex;
+			DocumentTabControl.SelectedIndex = WorkDocumentCollection.ActiveDocumentIndex;
 
-			EditorNavigationService.Initialize(ActiveDocument.WorkingDocument);
+			EditorNavigationService.Initialize(ActiveDocument.WorkDocument);
 		}
 
 		private void SaveAllCommandExecutedHandler(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
@@ -129,7 +129,7 @@ namespace SqlPad
 					continue;
 
 				var documentPage = OpenExistingFile(fileInfo.FullName);
-				documentPage.WorkingDocument.TabIndex = DocumentTabControl.SelectedIndex;
+				documentPage.WorkDocument.TabIndex = DocumentTabControl.SelectedIndex;
 			}
 		}
 
@@ -142,8 +142,8 @@ namespace SqlPad
 			{
 				document.SaveWorkingDocument();
 				_findReplaceManager.CurrentEditor = document.EditorAdapter;
-				WorkingDocumentCollection.ActiveDocumentIndex = DocumentTabControl.SelectedIndex;
-				EditorNavigationService.RegisterDocumentCursorPosition(document.WorkingDocument, document.Editor.CaretOffset);
+				WorkDocumentCollection.ActiveDocumentIndex = DocumentTabControl.SelectedIndex;
+				EditorNavigationService.RegisterDocumentCursorPosition(document.WorkDocument, document.Editor.CaretOffset);
 			}
 
 			if (!e.AddedItems.Contains(NewTabItem))
@@ -154,9 +154,9 @@ namespace SqlPad
 			CreateNewDocumentPage();
 		}
 
-		public DocumentPage CreateNewDocumentPage(WorkingDocument workingDocument = null)
+		public DocumentPage CreateNewDocumentPage(WorkDocument workDocument = null)
 		{
-			var newDocumentPage = new DocumentPage(workingDocument);
+			var newDocumentPage = new DocumentPage(workDocument);
 			
 			_editorAdapters.Add(newDocumentPage.EditorAdapter);
 
@@ -165,9 +165,9 @@ namespace SqlPad
 			DocumentTabControl.Items.Insert(DocumentTabControl.Items.Count - 1, newDocumentPage.TabItem);
 			DocumentTabControl.SelectedItem = newDocumentPage.TabItem;
 
-			if (workingDocument == null)
+			if (workDocument == null)
 			{
-				newDocumentPage.WorkingDocument.TabIndex = DocumentTabControl.TabIndex;
+				newDocumentPage.WorkDocument.TabIndex = DocumentTabControl.TabIndex;
 			}
 
 			_findReplaceManager.CurrentEditor = newDocumentPage.EditorAdapter;
@@ -217,7 +217,7 @@ namespace SqlPad
 			SelectNewTabItem();
 			DocumentTabControl.Items.Remove(document.TabItem);
 
-			WorkingDocumentCollection.CloseDocument(document.WorkingDocument);
+			WorkDocumentCollection.CloseDocument(document.WorkDocument);
 
 			document.Dispose();
 			return true;
@@ -225,9 +225,9 @@ namespace SqlPad
 
 		private bool ConfirmDocumentSave(DocumentPage document)
 		{
-			var message = document.WorkingDocument.File == null
+			var message = document.WorkDocument.File == null
 				? "Do you want to save the document?"
-				: String.Format("Do you want to save changes in '{0}'?", document.WorkingDocument.File.FullName);
+				: String.Format("Do you want to save changes in '{0}'?", document.WorkDocument.File.FullName);
 			
 			var dialogResult = MessageBox.Show(message, "Confirmation", MessageBoxButton.YesNoCancel, MessageBoxImage.Question, MessageBoxResult.Yes);
 			switch (dialogResult)
@@ -273,8 +273,8 @@ namespace SqlPad
 				document.SaveWorkingDocument();
 			}
 
-			WorkingDocumentCollection.SetApplicationWindowProperties(this);
-			WorkingDocumentCollection.Save();
+			WorkDocumentCollection.SetApplicationWindowProperties(this);
+			WorkDocumentCollection.Save();
 		}
 
 		private void WindowClosedHandler(object sender, EventArgs e)
@@ -300,18 +300,18 @@ namespace SqlPad
 		private DocumentPage OpenExistingFile(string fileName)
 		{
 			DocumentPage documentPage;
-			WorkingDocument workingDocument;
-			if (WorkingDocumentCollection.TryGetWorkingDocumentFor(fileName, out workingDocument))
+			WorkDocument workDocument;
+			if (WorkDocumentCollection.TryGetWorkingDocumentFor(fileName, out workDocument))
 			{
-				documentPage = AllDocuments.First(d => d.WorkingDocument == workingDocument);
+				documentPage = AllDocuments.First(d => d.WorkDocument == workDocument);
 				DocumentTabControl.SelectedItem = documentPage.TabItem;
 			}
 			else
 			{
-				workingDocument = new WorkingDocument { DocumentFileName = fileName };
+				workDocument = new WorkDocument { DocumentFileName = fileName };
 
-				WorkingDocumentCollection.AddDocument(workingDocument);
-				documentPage = CreateNewDocumentPage(workingDocument);
+				WorkDocumentCollection.AddDocument(workDocument);
+				documentPage = CreateNewDocumentPage(workDocument);
 			}
 
 			return documentPage;
@@ -339,9 +339,9 @@ namespace SqlPad
 			}
 
 			var indexFrom = DocumentTabControl.Items.IndexOf(tabItemDragged);
-			var workingDocumentFrom = draggedDocumentPage.WorkingDocument;
+			var workingDocumentFrom = draggedDocumentPage.WorkDocument;
 			var indexTo = DocumentTabControl.Items.IndexOf(tabItemTarget);
-			var workingDocumentTo = ((DocumentPage)tabItemTarget.Content).WorkingDocument;
+			var workingDocumentTo = ((DocumentPage)tabItemTarget.Content).WorkDocument;
 
 			DocumentTabControl.SelectedIndex = 0;
 
@@ -385,7 +385,7 @@ namespace SqlPad
 				return;
 			}
 
-			var documentPage = AllDocuments.SingleOrDefault(d => d.WorkingDocument.Identifier == documentCursorPosition.Document.Identifier);
+			var documentPage = AllDocuments.SingleOrDefault(d => d.WorkDocument.Identifier == documentCursorPosition.Document.Identifier);
 			if (documentPage == null)
 			{
 				if (documentCursorPosition.Document.File == null || !File.Exists(documentCursorPosition.Document.DocumentFileName))

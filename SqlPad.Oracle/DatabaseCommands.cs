@@ -261,6 +261,27 @@ FROM
 	ON 1 = 1
 WHERE
 	SID = :SID";
+
+		public const string FetchDatabaseOutput =
+@"DECLARE
+	line_count NUMBER := 32767;
+	dest_offset INTEGER := 0;
+	lines DBMSOUTPUT_LINESARRAY;
+	line_length INTEGER;
+	line_content VARCHAR2(32767);
+BEGIN
+	DBMS_LOB.CREATETEMPORARY(:output_clob, TRUE); 
+    DBMS_LOB.OPEN(:output_clob, DBMS_LOB.LOB_READWRITE);
+
+	DBMS_OUTPUT.GET_LINES(lines, line_count);
+
+    FOR i IN 1..line_count LOOP
+		line_content := lines(i);
+		line_length := LENGTH(line_content);
+        DBMS_LOB.WRITEAPPEND(:output_clob, line_length, line_content);
+        dest_offset := dest_offset + line_length;
+    END LOOP;
+END;";
 		
 		public const string GetExecutionPlanText = "SELECT PLAN_TABLE_OUTPUT FROM TABLE(DBMS_XPLAN.DISPLAY_CURSOR(:SQL_ID, :CHILD_NUMBER, 'ALLSTATS LAST ADVANCED'))";
 		public const string ExplainPlanBase = "SELECT OPERATION, OPTIONS, OBJECT_NODE, OBJECT_OWNER, OBJECT_NAME, OBJECT_ALIAS, OBJECT_INSTANCE, OBJECT_TYPE, OPTIMIZER, SEARCH_COLUMNS, POSITION, COST, CARDINALITY, BYTES, OTHER_TAG, PARTITION_START, PARTITION_STOP, PARTITION_ID, OTHER, DISTRIBUTION, CPU_COST, IO_COST, TEMP_SPACE, ACCESS_PREDICATES, FILTER_PREDICATES, PROJECTION, TIME, QBLOCK_NAME, OTHER_XML, REMARKS FROM {0} WHERE STATEMENT_ID = :STATEMENT_ID ORDER BY ID";

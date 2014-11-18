@@ -100,20 +100,20 @@ namespace SqlPad
 
 		public TextEditorAdapter EditorAdapter { get; private set; }
 
-		public WorkingDocument WorkingDocument { get; private set; }
+		public WorkDocument WorkDocument { get; private set; }
 
 		public string DocumentHeader
 		{
 			get
 			{
 				var builder = new StringBuilder();
-				if (WorkingDocument.File == null)
+				if (WorkDocument.File == null)
 				{
 					builder.Append(InitialDocumentHeader);
 				}
 				else
 				{
-					builder.Append(WorkingDocument.File.Name);
+					builder.Append(WorkDocument.File.Name);
 
 					if (IsDirty)
 					{
@@ -134,7 +134,7 @@ namespace SqlPad
 
 		public IDatabaseModel DatabaseModel { get; private set; }
 
-		public DocumentPage(WorkingDocument workingDocument = null)
+		public DocumentPage(WorkDocument workDocument = null)
 		{
 			InitializeComponent();
 
@@ -159,33 +159,33 @@ namespace SqlPad
 
 			var usedConnection = ConfigurationProvider.ConnectionStrings[0];
 
-			if (workingDocument == null)
+			if (workDocument == null)
 			{
-				WorkingDocument = new WorkingDocument
+				WorkDocument = new WorkDocument
 				{
 					ConnectionName = ((ConnectionStringSettings)ComboBoxConnection.SelectedItem).Name
 				};
 
-				WorkingDocumentCollection.AddDocument(WorkingDocument);
+				WorkDocumentCollection.AddDocument(WorkDocument);
 				_pageModel.CurrentConnection = usedConnection;
 
-				WorkingDocument.SchemaName = _pageModel.CurrentSchema;
+				WorkDocument.SchemaName = _pageModel.CurrentSchema;
 			}
 			else
 			{
-				WorkingDocument = workingDocument;
+				WorkDocument = workDocument;
 
-				if (!WorkingDocument.IsModified && WorkingDocument.File != null && WorkingDocument.File.Exists)
+				if (!WorkDocument.IsModified && WorkDocument.File != null && WorkDocument.File.Exists)
 				{
-					WorkingDocument.Text = File.ReadAllText(WorkingDocument.File.FullName);
+					WorkDocument.Text = File.ReadAllText(WorkDocument.File.FullName);
 					InitializeFileWatcher();
 				}
 
-				if (!String.IsNullOrEmpty(WorkingDocument.ConnectionName))
+				if (!String.IsNullOrEmpty(WorkDocument.ConnectionName))
 				{
 					var connectionString = ConfigurationProvider.ConnectionStrings
 						.Cast<ConnectionStringSettings>()
-						.FirstOrDefault(cs => cs.Name == WorkingDocument.ConnectionName);
+						.FirstOrDefault(cs => cs.Name == WorkDocument.ConnectionName);
 
 					if (connectionString != null)
 					{
@@ -194,27 +194,28 @@ namespace SqlPad
 				}
 
 				_pageModel.CurrentConnection = usedConnection;
-				_pageModel.CurrentSchema = WorkingDocument.SchemaName;
+				_pageModel.CurrentSchema = WorkDocument.SchemaName;
+				_pageModel.EnableDatabaseOutput = WorkDocument.EnableDatabaseOutput;
 
-				Editor.Text = WorkingDocument.Text;
+				Editor.Text = WorkDocument.Text;
 
-				if (Editor.Document.TextLength >= WorkingDocument.SelectionStart)
+				if (Editor.Document.TextLength >= WorkDocument.SelectionStart)
 				{
-					Editor.SelectionStart = WorkingDocument.SelectionStart;
+					Editor.SelectionStart = WorkDocument.SelectionStart;
 
-					var storedSelectionEndIndex = WorkingDocument.SelectionStart + WorkingDocument.SelectionLength;
+					var storedSelectionEndIndex = WorkDocument.SelectionStart + WorkDocument.SelectionLength;
 					var validSelectionEndIndex = storedSelectionEndIndex > Editor.Document.TextLength
 						? Editor.Document.TextLength
 						: storedSelectionEndIndex;
 
-					Editor.SelectionLength = validSelectionEndIndex - WorkingDocument.SelectionStart;
+					Editor.SelectionLength = validSelectionEndIndex - WorkDocument.SelectionStart;
 				}
 
-				Editor.CaretOffset = Editor.Document.TextLength >= WorkingDocument.CursorPosition
-					? WorkingDocument.CursorPosition
+				Editor.CaretOffset = Editor.Document.TextLength >= WorkDocument.CursorPosition
+					? WorkDocument.CursorPosition
 					: Editor.Document.TextLength;
 
-				Editor.IsModified = WorkingDocument.IsModified;
+				Editor.IsModified = WorkDocument.IsModified;
 			}
 
 			_pageModel.DocumentHeader = DocumentHeader;
@@ -226,7 +227,7 @@ namespace SqlPad
 		private void InitializeFileWatcher()
 		{
 			_documentFileWatcher =
-				new FileSystemWatcher(WorkingDocument.File.DirectoryName, WorkingDocument.File.Name)
+				new FileSystemWatcher(WorkDocument.File.DirectoryName, WorkDocument.File.Name)
 				{
 					EnableRaisingEvents = true,
 					NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName
@@ -318,7 +319,7 @@ namespace SqlPad
 			};
 
 			contextMenu.Items.Add(menuItemOpenContainingFolder);
-			contextMenu.CommandBindings.Add(new CommandBinding(GenericCommands.OpenContainingFolder, OpenContainingFolderCommandExecutedHandler, (sender, args) => args.CanExecute = WorkingDocument.File != null));
+			contextMenu.CommandBindings.Add(new CommandBinding(GenericCommands.OpenContainingFolder, OpenContainingFolderCommandExecutedHandler, (sender, args) => args.CanExecute = WorkDocument.File != null));
 
 			var menuItemClose = new MenuItem
 			{
@@ -435,12 +436,12 @@ namespace SqlPad
 
 		private void OpenContainingFolderCommandExecutedHandler(object sender, ExecutedRoutedEventArgs e)
 		{
-			Process.Start("explorer.exe", "/select," + WorkingDocument.File.FullName);
+			Process.Start("explorer.exe", "/select," + WorkDocument.File.FullName);
 		}
 
 		public bool Save()
 		{
-			if (WorkingDocument.File == null)
+			if (WorkDocument.File == null)
 				return SaveAs();
 
 			SafeActionWithUserError(SaveDocument);
@@ -455,11 +456,11 @@ namespace SqlPad
 				return false;
 			}
 
-			WorkingDocument.DocumentFileName = dialog.FileName;
+			WorkDocument.DocumentFileName = dialog.FileName;
 
 			if (!SafeActionWithUserError(SaveDocument))
 			{
-				WorkingDocument.DocumentFileName = null;
+				WorkDocument.DocumentFileName = null;
 			}
 			else
 			{
@@ -467,7 +468,7 @@ namespace SqlPad
 			}
 			
 			SaveWorkingDocument();
-			WorkingDocumentCollection.Save();
+			WorkDocumentCollection.Save();
 			
 			return true;
 		}
@@ -479,31 +480,32 @@ namespace SqlPad
 				return;
 			}
 
-			WorkingDocument.Text = Editor.Text;
-			WorkingDocument.CursorPosition = Editor.CaretOffset;
-			WorkingDocument.SelectionStart = Editor.SelectionStart;
-			WorkingDocument.SelectionLength = Editor.SelectionLength;
+			WorkDocument.Text = Editor.Text;
+			WorkDocument.CursorPosition = Editor.CaretOffset;
+			WorkDocument.SelectionStart = Editor.SelectionStart;
+			WorkDocument.SelectionLength = Editor.SelectionLength;
+			WorkDocument.EnableDatabaseOutput = DatabaseModel.EnableDatabaseOutput;
 
 			var textView = Editor.TextArea.TextView;
-			WorkingDocument.VisualLeft = textView.ScrollOffset.X;
-			WorkingDocument.VisualTop = textView.ScrollOffset.Y;
+			WorkDocument.VisualLeft = textView.ScrollOffset.X;
+			WorkDocument.VisualTop = textView.ScrollOffset.Y;
 
-			_foldingStrategy.Store(WorkingDocument);
+			_foldingStrategy.Store(WorkDocument);
 
 			if (RowDefinitionEditor.ActualHeight > 0)
 			{
-				WorkingDocument.EditorGridRowHeight = RowDefinitionEditor.ActualHeight;
+				WorkDocument.EditorGridRowHeight = RowDefinitionEditor.ActualHeight;
 			}
 
 			if (_pageModel.BindVariableListVisibility == Visibility.Visible)
 			{
-				WorkingDocument.EditorGridColumnWidth = ColumnDefinitionEditor.ActualWidth;
+				WorkDocument.EditorGridColumnWidth = ColumnDefinitionEditor.ActualWidth;
 			}
 
 			if (_pageModel.CurrentConnection != null)
 			{
-				WorkingDocument.ConnectionName = _pageModel.CurrentConnection.Name;
-				WorkingDocument.SchemaName = _pageModel.CurrentSchema;
+				WorkDocument.ConnectionName = _pageModel.CurrentConnection.Name;
+				WorkDocument.SchemaName = _pageModel.CurrentSchema;
 			}
 		}
 
@@ -530,8 +532,8 @@ namespace SqlPad
 
 		private void SaveDocument()
 		{
-			WithDisabledFileWatcher(() => Editor.Save(WorkingDocument.File.FullName));
-			WorkingDocument.IsModified = false;
+			WithDisabledFileWatcher(() => Editor.Save(WorkDocument.File.FullName));
+			WorkDocument.IsModified = false;
 			_pageModel.DocumentHeader = DocumentHeader;
 		}
 
@@ -809,6 +811,7 @@ namespace SqlPad
 			_pageModel.StatementExecutedSuccessfullyStatusMessageVisibility = Visibility.Collapsed;
 			_pageModel.TextExecutionPlan = null;
 			_pageModel.SessionExecutionStatistics.Clear();
+			_pageModel.DatabaseOutput = String.Empty;
 
 			TextMoreRowsExist.Visibility = Visibility.Collapsed;
 
@@ -821,7 +824,7 @@ namespace SqlPad
 
 		private async Task ExecuteDatabaseCommand(StatementExecutionModel executionModel)
 		{
-			var previousTabControlResultSelectedIndex = TabControlResult.SelectedIndex;
+			var previousSelectedTab = TabControlResult.SelectedItem;
 
 			InitializeViewBeforeCommandExecution();
 
@@ -845,12 +848,15 @@ namespace SqlPad
 
 				UpdateStatusBarElapsedExecutionTime(actionResult.Elapsed);
 
+				_pageModel.DatabaseOutput = innerTask.Result.DatabaseOutput;
+
 				if (_gatherExecutionStatistics)
 				{
 					_pageModel.TextExecutionPlan = await DatabaseModel.GetActualExecutionPlanAsync(_cancellationTokenSource.Token);
 					_pageModel.SessionExecutionStatistics.MergeWith(await DatabaseModel.GetExecutionStatisticsAsync(_cancellationTokenSource.Token));
-					TabControlResult.SelectedIndex = previousTabControlResultSelectedIndex;
 				}
+
+				TabControlResult.SelectedItem = previousSelectedTab;
 
 				if (innerTask.Result.ColumnHeaders.Count == 0)
 				{
@@ -1043,18 +1049,18 @@ namespace SqlPad
 		{
 			if (_isInitializing)
 			{
-				if (WorkingDocument.EditorGridRowHeight > 0)
+				if (WorkDocument.EditorGridRowHeight > 0)
 				{
-					RowDefinitionEditor.Height = new GridLength(WorkingDocument.EditorGridRowHeight);
+					RowDefinitionEditor.Height = new GridLength(WorkDocument.EditorGridRowHeight);
 				}
 
-				if (WorkingDocument.EditorGridColumnWidth > 0)
+				if (WorkDocument.EditorGridColumnWidth > 0)
 				{
-					ColumnDefinitionEditor.Width = new GridLength(WorkingDocument.EditorGridColumnWidth);
+					ColumnDefinitionEditor.Width = new GridLength(WorkDocument.EditorGridColumnWidth);
 				}
 				
-				Editor.ScrollToVerticalOffset(WorkingDocument.VisualTop);
-				Editor.ScrollToHorizontalOffset(WorkingDocument.VisualLeft);
+				Editor.ScrollToVerticalOffset(WorkDocument.VisualTop);
+				Editor.ScrollToHorizontalOffset(WorkDocument.VisualLeft);
 				_isInitializing = false;
 			}
 
@@ -1068,7 +1074,7 @@ namespace SqlPad
 
 		private void CaretPositionChangedHandler(object sender, EventArgs eventArgs)
 		{
-			EditorNavigationService.RegisterDocumentCursorPosition(WorkingDocument, Editor.CaretOffset);
+			EditorNavigationService.RegisterDocumentCursorPosition(WorkDocument, Editor.CaretOffset);
 
 			var parenthesisNodes = new List<StatementGrammarNode>();
 
@@ -1156,7 +1162,7 @@ namespace SqlPad
 
 		private ICollection<BindVariableModel> BuildBindVariableModels(IEnumerable<BindVariableConfiguration> bindVariables)
 		{
-			var configuration = WorkingDocumentCollection.GetProviderConfiguration(_connectionString.ProviderName);
+			var configuration = WorkDocumentCollection.GetProviderConfiguration(_connectionString.ProviderName);
 
 			var models = new List<BindVariableModel>();
 			foreach (var bindVariable in bindVariables)
@@ -1359,7 +1365,7 @@ namespace SqlPad
 				return;
 			}
 
-			WorkingDocument.IsModified = IsDirty;
+			WorkDocument.IsModified = IsDirty;
 			_pageModel.DocumentHeader = DocumentHeader;
 
 			Parse();
@@ -1405,7 +1411,7 @@ namespace SqlPad
 
 			if (_isInitialParsing)
 			{
-				_foldingStrategy.Restore(WorkingDocument);
+				_foldingStrategy.Restore(WorkDocument);
 				_isInitialParsing = false;
 			}
 
@@ -1514,7 +1520,7 @@ namespace SqlPad
 				Editor.Document.EndUpdate();
 			}
 
-			WorkingDocument.IsModified = IsDirty;
+			WorkDocument.IsModified = IsDirty;
 			_pageModel.DocumentHeader = DocumentHeader;
 
 			if (_completionWindow != null && _completionWindow.CompletionList.ListBox.Items.Count == 0)
