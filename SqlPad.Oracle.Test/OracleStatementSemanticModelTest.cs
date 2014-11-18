@@ -843,6 +843,17 @@ FROM
 		}
 
 		[Test(Description = @"")]
+		public void TestModelBuildWithQuotedDatabaseLinkName()
+		{
+			const string query1 = @"SELECT * FROM DUAL@""SQLSERVERDB.STOCKHOLM.CINT.COM""";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.QueryBlocks.Count.ShouldBe(1);
+		}
+
+		[Test(Description = @"")]
 		public void TestAsteriskNotRedundantInCorrelatedSubquery()
 		{
 			const string query1 = @"SELECT * FROM SELECTION WHERE SELECTIONNAME IN (SELECT * FROM DUAL)";

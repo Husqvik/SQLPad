@@ -799,7 +799,7 @@ namespace SqlPad.Oracle
 				var hasInstanceDefinition = false;
 				foreach (var terminal in databaseLinkReference.DatabaseLinkNode.Terminals)
 				{
-					if (terminal.Id == Terminals.Dot)
+					if (terminal.Id == Terminals.Dot || (terminal.Id == Terminals.DatabaseLinkIdentifier && terminal.Token.Value.Contains('.')))
 					{
 						includesDomain = true;
 					}
