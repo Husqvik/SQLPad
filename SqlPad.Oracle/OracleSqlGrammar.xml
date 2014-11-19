@@ -185,6 +185,10 @@
           <Terminal Id="MathEquals" />
           <Terminal Id="Identifier" />
         </Sequence>
+        <Sequence Comment="Not documented">
+          <Terminal Id="Events" />
+          <Terminal Id="StringLiteral" />
+        </Sequence>
         <Sequence>
           <NonTerminal Id="AlterSesionSetOptionList" />
         </Sequence>
@@ -10246,6 +10250,7 @@
     <Terminal Id="DataDefinitionLanguage" Value="DDL" />
     <Terminal Id="Database" Value="DATABASE" />
     <Terminal Id="Link" Value="LINK" />
+    <Terminal Id="Events" Value="EVENTS" />
 
     <!-- Call -->
     <Terminal Id="Call" Value="CALL" />

@@ -4106,6 +4106,18 @@ PURGE REPEAT INTERVAL '5' DAY";
 					var statement = result.Single();
 					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 				}
+
+				[Test(Description = @"")]
+				public void TestAlterSessionSetEvents()
+				{
+					const string statementText = @"ALTER SESSION SET EVENTS '10053 trace name context forever, level 2'";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
 			}
 		}
 
