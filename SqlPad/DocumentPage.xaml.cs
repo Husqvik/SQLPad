@@ -196,6 +196,7 @@ namespace SqlPad
 				_pageModel.CurrentConnection = usedConnection;
 				_pageModel.CurrentSchema = WorkDocument.SchemaName;
 				_pageModel.EnableDatabaseOutput = WorkDocument.EnableDatabaseOutput;
+				_pageModel.KeepDatabaseOutputHistory = WorkDocument.KeepDatabaseOutputHistory;
 
 				Editor.Text = WorkDocument.Text;
 
@@ -507,6 +508,8 @@ namespace SqlPad
 				WorkDocument.ConnectionName = _pageModel.CurrentConnection.Name;
 				WorkDocument.SchemaName = _pageModel.CurrentSchema;
 			}
+
+			WorkDocument.KeepDatabaseOutputHistory = _pageModel.KeepDatabaseOutputHistory;
 		}
 
 		private void WithDisabledFileWatcher(Action action)
@@ -811,7 +814,7 @@ namespace SqlPad
 			_pageModel.StatementExecutedSuccessfullyStatusMessageVisibility = Visibility.Collapsed;
 			_pageModel.TextExecutionPlan = null;
 			_pageModel.SessionExecutionStatistics.Clear();
-			_pageModel.DatabaseOutput = String.Empty;
+			_pageModel.WriteDatabaseOutput(String.Empty);
 
 			TextMoreRowsExist.Visibility = Visibility.Collapsed;
 
@@ -819,7 +822,15 @@ namespace SqlPad
 
 			_pageModel.AffectedRowCount = -1;
 
-			TabControlResult.SelectedIndex = 0;
+			if (!IsSelectedTabAlwaysVisible())
+			{
+				TabControlResult.SelectedIndex = 0;
+			}
+		}
+
+		private bool IsSelectedTabAlwaysVisible()
+		{
+			return TabControlResult.SelectedIndex.In(0, 3);
 		}
 
 		private async Task ExecuteDatabaseCommand(StatementExecutionModel executionModel)
@@ -848,7 +859,7 @@ namespace SqlPad
 
 				UpdateStatusBarElapsedExecutionTime(actionResult.Elapsed);
 
-				_pageModel.DatabaseOutput = innerTask.Result.DatabaseOutput;
+				_pageModel.WriteDatabaseOutput(innerTask.Result.DatabaseOutput);
 
 				if (_gatherExecutionStatistics)
 				{

@@ -6,7 +6,7 @@ using Shouldly;
 namespace SqlPad.Test
 {
 	[TestFixture]
-	public class WorkingDocumentTest : TemporaryDirectoryTestFixture
+	public class WorkDocumentTest : TemporaryDirectoryTestFixture
 	{
 		[Test]
 		public void SerializationTest()
@@ -26,7 +26,9 @@ namespace SqlPad.Test
 					EditorGridRowHeight = 142.17,
 					EditorGridColumnWidth = 98.32,
 					Text = "SELECT * FROM DUAL",
-					TabIndex = 3
+					TabIndex = 3,
+					EnableDatabaseOutput = true,
+					KeepDatabaseOutputHistory = true
 				};
 
 			const int expectedActiveDocumentIndex = 666;
@@ -44,7 +46,7 @@ namespace SqlPad.Test
 
 			var fileInfo = new FileInfo(Path.Combine(TempDirectoryName, "WorkArea", WorkDocumentCollection.ConfigurationFileName));
 			fileInfo.Exists.ShouldBe(true);
-			fileInfo.Length.ShouldBe(289);
+			fileInfo.Length.ShouldBe(292);
 
 			WorkDocumentCollection.Configure();
 			WorkDocumentCollection.WorkingDocuments.Count.ShouldBe(1);
@@ -64,6 +66,7 @@ namespace SqlPad.Test
 			deserializedWorkingDocument.EditorGridColumnWidth.ShouldBe(newWorkingDocument.EditorGridColumnWidth);
 			deserializedWorkingDocument.TabIndex.ShouldBe(newWorkingDocument.TabIndex);
 			deserializedWorkingDocument.EnableDatabaseOutput.ShouldBe(newWorkingDocument.EnableDatabaseOutput);
+			deserializedWorkingDocument.KeepDatabaseOutputHistory.ShouldBe(newWorkingDocument.KeepDatabaseOutputHistory);
 
 			var deserializedProviderConfiguration = WorkDocumentCollection.GetProviderConfiguration(providerName);
 			providerConfiguration.ShouldNotBeSameAs(deserializedProviderConfiguration);

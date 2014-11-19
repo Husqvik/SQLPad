@@ -228,8 +228,11 @@
 			</TabItem>
 			<TabItem Header="_Output">
 				<DockPanel>
-					<CheckBox DockPanel.Dock="Top" Margin="4" Content="_Enable" IsChecked="{Binding EnableDatabaseOutput}" />
-					<TextBox Text="{Binding DatabaseOutput}" FontFamily="Consolas" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" IsReadOnly="True" IsReadOnlyCaretVisible="True" />
+					<StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
+						<CheckBox Margin="4" Content="_Enable" IsChecked="{Binding EnableDatabaseOutput}" />
+						<CheckBox Margin="4" Content="_Keep history" IsChecked="{Binding KeepDatabaseOutputHistory}" />
+					</StackPanel>
+					<sqlPad:ScrollingTextBox Text="{Binding DatabaseOutput, Mode=OneWay}" FontFamily="Consolas" IsReadOnly="True" IsReadOnlyCaretVisible="True" />
 				</DockPanel>
 			</TabItem>
 		</TabControl>

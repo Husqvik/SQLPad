@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Configuration;
 using System.Linq;
+using System.Text;
 using System.Windows;
 using System.Windows.Data;
 
@@ -15,6 +16,7 @@ namespace SqlPad
 		private readonly ObservableCollection<object[]> _resultRowItems = new ObservableCollection<object[]>();
 		private readonly ObservableCollection<string> _schemas = new ObservableCollection<string>();
 		private readonly SessionExecutionStatisticsCollection _sessionExecutionStatistics = new SessionExecutionStatisticsCollection();
+		private readonly StringBuilder _databaseOutputBuilder = new StringBuilder();
 		private ConnectionStringSettings _currentConnection;
 		private string _currentSchema;
 		private ICollection<BindVariableModel> _bindVariables;
@@ -35,7 +37,6 @@ namespace SqlPad
 		private string _textExecutionPlan;
 		private string _dateTimeFormat;
 		private string _connectionErrorMessage;
-		private string _databaseOutput;
 		private bool _showAllSessionExecutionStatistics;
 
 		public PageModel(DocumentPage documentPage)
@@ -142,12 +143,28 @@ namespace SqlPad
 			get { return _documentPage.DatabaseModel.EnableDatabaseOutput; }
 			set { _documentPage.DatabaseModel.EnableDatabaseOutput = value; }
 		}
+		public bool KeepDatabaseOutputHistory { get; set; }
 
-		public string DatabaseOutput
+		public void WriteDatabaseOutput(string output)
 		{
-			get { return _databaseOutput; }
-			set { UpdateValueAndRaisePropertyChanged(ref _databaseOutput, value); }
+			if (KeepDatabaseOutputHistory)
+			{
+				if (String.IsNullOrEmpty(output))
+				{
+					return;
+				}
+			}
+			else
+			{
+				_databaseOutputBuilder.Clear();
+			}
+
+			_databaseOutputBuilder.AppendLine(output);
+
+			RaisePropertyChanged("DatabaseOutput");
 		}
+
+		public string DatabaseOutput { get { return _databaseOutputBuilder.ToString(); } }
 
 		public int CurrentLine
 		{

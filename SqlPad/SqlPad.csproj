@@ -96,6 +96,7 @@
     <Compile Include="PasswordDialog.xaml.cs">
       <DependentUpon>PasswordDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ScrollingTextBox.cs" />
     <Compile Include="SqlDocumentColorizingTransformer.cs" />
     <Compile Include="Commands\CommandExecutionHandler.cs" />
     <Compile Include="Commands\ContextActionCommand.cs" />
