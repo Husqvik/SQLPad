@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
+using Microsoft.Win32;
 using Oracle.DataAccess.Client;
 using Oracle.DataAccess.Types;
 using SqlPad.Oracle.ToolTips;
@@ -22,6 +23,8 @@ namespace SqlPad.Oracle
 		internal const int OracleErrorCodeEndOfFileOnCommunicationChannel = 3113;
 		internal const int InitialLongFetchSize = 131072;
 		private const string ModuleNameSqlPadDatabaseModel = "SQLPad database model";
+		private const string OracleDataAccessRegistryPath = @"Software\Oracle\ODP.NET";
+		private const string OracleDataAccessComponents = "Oracle Data Access Components";
 
 		private readonly OracleConnectionStringBuilder _oracleConnectionString;
 		private readonly Timer _timer = new Timer();
@@ -101,6 +104,24 @@ namespace SqlPad.Oracle
 		{
 			_timer.Interval = ConfigurationProvider.Configuration.DataModel.DataModelRefreshPeriod * 60000;
 			Trace.WriteLine(String.Format("Data model refresh timer set: {0} minute(s). ", ConfigurationProvider.Configuration.DataModel.DataModelRefreshPeriod));
+		}
+
+		public static void ValidateConfiguration()
+		{
+			string odacVersion = null;
+			var odacRegistryKey = Registry.LocalMachine.OpenSubKey(OracleDataAccessRegistryPath);
+			if (odacRegistryKey != null)
+			{
+				odacVersion = odacRegistryKey.GetSubKeyNames().OrderByDescending(n => n).FirstOrDefault();
+			}
+
+			var traceMessage = odacVersion == null
+				? String.Format("{0} registry entry was not found. ", OracleDataAccessComponents)
+				: String.Format("{0} version {1} found. ", OracleDataAccessComponents, odacVersion);
+
+			Trace.WriteLine(traceMessage);
+
+			Trace.WriteLine(String.Format("{0} assembly version {1}", OracleDataAccessComponents, typeof(OracleConnection).Assembly.FullName));
 		}
 
 		public static OracleDatabaseModel GetDatabaseModel(ConnectionStringSettings connectionString)

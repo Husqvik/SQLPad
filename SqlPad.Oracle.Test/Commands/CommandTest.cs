@@ -1357,6 +1357,24 @@ SELECT * FROM DUAL";
 			_editor.Text.ShouldBe(expectedResult);
 		}
 
+		[Test(Description = @""), STAThread]
+		public void TestConvertNumberLiteralToBindVariable()
+		{
+			const string statementText = @"SELECT 123, 123 FROM DUAL";
+			_editor.Text = statementText;
+			_editor.CaretOffset = 10;
+
+			ExecuteConvertLiteralToBindVariableCommmand(0);
+
+			const string expectedResult = @"SELECT :BIND_VARIABLE, 123 FROM DUAL";
+
+			_editor.Text.ShouldBe(expectedResult);
+
+			var configuration = WorkDocumentCollection.GetProviderConfiguration(TestFixture.DatabaseModel.ConnectionString.ProviderName);
+			configuration.BindVariablesInternal.ContainsKey("BIND_VARIABLE").ShouldBe(true);
+			configuration.BindVariablesInternal["BIND_VARIABLE"].DataType.ShouldBe("NUMBER");
+		}
+
 		private void ExecuteConvertLiteralToBindVariableCommmand(int actionIndex)
 		{
 			var actions = new OracleContextActionProvider()

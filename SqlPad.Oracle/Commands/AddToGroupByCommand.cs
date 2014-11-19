@@ -43,10 +43,10 @@ namespace SqlPad.Oracle.Commands
 
 		private bool IsTerminalSelected(StatementGrammarNode terminal)
 		{
-			var isWithinSelection = terminal.SourcePosition.IndexEnd >= ExecutionContext.SelectionStart && terminal.SourcePosition.IndexStart <= ExecutionContext.SelectionEnd;
+			var isWithinSelection = terminal.SourcePosition.IndexEnd + 1 >= ExecutionContext.SelectionStart && terminal.SourcePosition.IndexStart <= ExecutionContext.SelectionEnd;
 			return isWithinSelection && ExecutionContext.SelectionLength == 0
 				? terminal.Id.IsIdentifier() && terminal.Id != Terminals.BindVariableIdentifier
-				: terminal.SourcePosition.IndexEnd > ExecutionContext.SelectionStart && terminal.SourcePosition.IndexStart < ExecutionContext.SelectionEnd;
+				: terminal.SourcePosition.IndexEnd + 1 > ExecutionContext.SelectionStart && terminal.SourcePosition.IndexStart < ExecutionContext.SelectionEnd;
 		}
 
 		private void ResolveGroupingExpressionText()

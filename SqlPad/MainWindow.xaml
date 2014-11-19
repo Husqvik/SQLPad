@@ -4,12 +4,10 @@
         xmlns:local="clr-namespace:SqlPad"
         xmlns:findReplace="clr-namespace:SqlPad.FindReplace"
         xmlns:commands="clr-namespace:SqlPad.Commands"
-        Title="SQL Pad 0.2 ALPHA" Height="640" Width="960" Loaded="WindowLoadedHandler"
+        Title="SQL Pad 0.2 ALPHA" Height="640" Width="960"
 		MinWidth="640" MinHeight="360"
 		ResizeMode="CanResizeWithGrip"
-		Drop="DropObjectHandler"
-		Closing="WindowClosingHandler"
-		Closed="WindowClosedHandler">
+		Drop="DropObjectHandler">
 
 	<Window.TaskbarItemInfo>
 		<TaskbarItemInfo />

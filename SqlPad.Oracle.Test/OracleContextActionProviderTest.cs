@@ -356,6 +356,7 @@ namespace SqlPad.Oracle.Test
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 28).SingleOrDefault(a => a.Name == PropagateColumnCommand.Title);
 			action.ShouldNotBe(null);
 		}
+
 		[Test(Description = @""), STAThread]
 		public void TestPropagateColumnNotAvailableAtReferencedColumn()
 		{
@@ -363,6 +364,15 @@ namespace SqlPad.Oracle.Test
 
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 28).SingleOrDefault(a => a.Name == PropagateColumnCommand.Title);
 			action.ShouldBe(null);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestAddToGroupByAvailableAtTheEndOfIdentifier()
+		{
+			const string query1 = @"SELECT DUMMY FROM DUAL";
+
+			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 12).SingleOrDefault(a => a.Name == AddToGroupByCommand.Title);
+			action.ShouldNotBe(null);
 		}
 	}
 }

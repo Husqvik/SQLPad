@@ -29,13 +29,20 @@ namespace SqlPad
 			InitializeComponent();
 
 			if (!EnsureValidConfiguration())
+			{
+				Application.Current.Shutdown(-1);
 				return;
+			}
 
 			_findReplaceManager = (FindReplaceManager)Resources["FindReplaceManager"];
 			_findReplaceManager.OwnerWindow = this;
 			_findReplaceManager.Editors = _editorAdapters;
 
 			_timerWorkingDocumentSave.Elapsed += (sender, args) => Dispatcher.Invoke(SaveWorkingDocuments);
+
+			Loaded += WindowLoadedHandler;
+			Closing += WindowClosingHandler;
+			Closed += WindowClosedHandler;
 		}
 
 		private static bool EnsureValidConfiguration()
@@ -44,22 +51,17 @@ namespace SqlPad
 			{
 				if (ConfigurationProvider.ConnectionStrings.Count == 0)
 				{
-					ShowStartingErrorMessage();
+					Messages.ShowError("At least one connection string and infrastructure factory must be defined", "Configuration Error");
 					return false;
 				}
 			}
-			catch (Exception)
+			catch (Exception e)
 			{
-				ShowStartingErrorMessage();
+				Messages.ShowError(e.ToString());
 				return false;
 			}
 			
 			return true;
-		}
-
-		private static void ShowStartingErrorMessage()
-		{
-			Messages.ShowError("At least one connection string and infrastructure factory must be defined", "Configuration Error");
 		}
 
 		internal DocumentPage ActiveDocument

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Configuration;
-using System.Diagnostics;
-using System.Linq;
-using Microsoft.Win32;
+﻿using System.Configuration;
 using SqlPad.Commands;
 using SqlPad.Oracle.Commands;
 
@@ -10,24 +6,11 @@ namespace SqlPad.Oracle
 {
 	public class OracleInfrastructureFactory : IInfrastructureFactory
 	{
-		private const string OracleDataAccessRegistryPath = @"Software\Oracle\ODP.NET";
-
 		private readonly OracleCommandFactory _commandFactory = new OracleCommandFactory();
 
 		static OracleInfrastructureFactory()
 		{
-			string odacVersion = null;
-			var odacRegistryKey = Registry.LocalMachine.OpenSubKey(OracleDataAccessRegistryPath);
-			if (odacRegistryKey != null)
-			{
-				odacVersion = odacRegistryKey.GetSubKeyNames().OrderByDescending(n => n).FirstOrDefault();
-			}
-
-			var traceMessage = odacVersion == null
-				? "Oracle Data Access Client registry entry was not found. "
-				: String.Format("Oracle Data Access Client version {0} found. ", odacVersion);
-
-			Trace.WriteLine(traceMessage);
+			OracleDatabaseModel.ValidateConfiguration();
 		}
 
 		#region Implementation of IInfrastructureFactory

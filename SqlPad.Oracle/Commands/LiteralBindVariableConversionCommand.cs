@@ -9,7 +9,7 @@ namespace SqlPad.Oracle.Commands
 {
 	internal class LiteralBindVariableConversionCommand : OracleCommandBase
 	{
-		private readonly ICollection<StatementGrammarNode> _literalTerminals;
+		private readonly IReadOnlyList<StatementGrammarNode> _literalTerminals;
 		private readonly string _requiredPrecedingTerminalId;
 
 		public static ICollection<CommandExecutionHandler> ResolveCommandHandlers(OracleStatementSemanticModel semanticModel, StatementGrammarNode currentTerminal)
@@ -42,13 +42,13 @@ namespace SqlPad.Oracle.Commands
 			if (literalTerminals.Length > 1)
 			{
 				var allOccurencesConvertAction =
-				new CommandExecutionHandler
-				{
-					Name = "Convert all occurences to bind variable",
-					ExecutionHandler = c => new LiteralBindVariableConversionCommand(c, literalTerminals, requiredPrecedingTerminalId)
-						.Execute(),
-					CanExecuteHandler = c => true
-				};
+					new CommandExecutionHandler
+					{
+						Name = "Convert all occurences to bind variable",
+						ExecutionHandler = c => new LiteralBindVariableConversionCommand(c, literalTerminals, requiredPrecedingTerminalId)
+							.Execute(),
+						CanExecuteHandler = c => true
+					};
 
 				commands.Add(allOccurencesConvertAction);
 			}
@@ -62,7 +62,7 @@ namespace SqlPad.Oracle.Commands
 			       currentTerminal.RootNode.Id.In(NonTerminals.SelectStatement, NonTerminals.UpdateStatement, NonTerminals.DeleteStatement, NonTerminals.InsertStatement);
 		}
 
-		private LiteralBindVariableConversionCommand(CommandExecutionContext executionContext, ICollection<StatementGrammarNode> literalTerminals, string requiredPrecedingTerminalId)
+		private LiteralBindVariableConversionCommand(CommandExecutionContext executionContext, IReadOnlyList<StatementGrammarNode> literalTerminals, string requiredPrecedingTerminalId)
 			: base(executionContext)
 		{
 			_literalTerminals = literalTerminals;
@@ -104,14 +104,15 @@ namespace SqlPad.Oracle.Commands
 		private void CreateBindVariable(string bindVariableName)
 		{
 			var bindVariable = new BindVariableConfiguration { Name = bindVariableName };
-
-			switch (CurrentNode.Id)
+			var literalTerminal = _literalTerminals[0];
+			
+			switch (literalTerminal.Id)
 			{
 				case Terminals.NumberLiteral:
-					bindVariable.Value = CurrentNode.Token.Value;
+					bindVariable.Value = literalTerminal.Token.Value;
 					break;
 				case Terminals.StringLiteral:
-					bindVariable.Value = CurrentNode.Token.Value.ToPlainString();
+					bindVariable.Value = literalTerminal.Token.Value.ToPlainString();
 					break;
 			}
 
@@ -122,12 +123,17 @@ namespace SqlPad.Oracle.Commands
 					bindVariable.DataType = OracleBindVariable.DataTypeDate;
 					break;
 				case null:
-					if (CurrentNode.Id == Terminals.NumberLiteral)
+					if (literalTerminal.Id == Terminals.NumberLiteral)
 					{
 						bindVariable.DataType = OracleBindVariable.DataTypeNumber;
 					}
+					else
+					{
+						bindVariable.DataType = literalTerminal.Token.Value[0].In('n', 'N')
+							? OracleBindVariable.DataTypeUnicodeVarchar2
+							: OracleBindVariable.DataTypeVarchar2;
+					}
 
-					bindVariable.DataType = CurrentNode.Token.Value[0].In('n', 'N') ? OracleBindVariable.DataTypeUnicodeVarchar2 : OracleBindVariable.DataTypeVarchar2;
 					break;
 			}
 
