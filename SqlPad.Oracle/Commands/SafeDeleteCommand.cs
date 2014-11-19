@@ -33,14 +33,43 @@ namespace SqlPad.Oracle.Commands
 			switch (currentNode.Id)
 			{
 				case Terminals.ObjectAlias:
-					AddObjectAliasNodesToRemove(executionContext.SegmentsToReplace, queryBlock, currentNode);
+					AddObjectAliasNodesToReplace(executionContext.SegmentsToReplace, queryBlock, currentNode);
 					break;
 				case Terminals.ColumnAlias:
+					AddColumnAliasNodesToReplace(executionContext.SegmentsToReplace, queryBlock, currentNode);
 					break;
 			}
 		}
 
-		private static void AddObjectAliasNodesToRemove(ICollection<TextSegment> segmentsToReplace, OracleQueryBlock queryBlock, StatementGrammarNode currentNode)
+		private static void AddColumnAliasNodesToReplace(ICollection<TextSegment> segmentsToReplace, OracleQueryBlock queryBlock, StatementGrammarNode currentNode)
+		{
+			var column = queryBlock.Columns.SingleOrDefault(c => c.HasExplicitDefinition && c.IsDirectReference && c.RootNode.Terminals.Any(t => t == currentNode));
+			if (column == null)
+			{
+				return;
+			}
+
+			foreach (var terminal in FindUsagesCommand.GetParentQueryBlockReferences(column))
+			{
+				segmentsToReplace.Add
+					(new TextSegment
+					{
+						IndextStart = terminal.SourcePosition.IndexStart,
+						Length = terminal.SourcePosition.Length,
+						Text = currentNode.PrecedingTerminal.Token.Value
+					});
+			}
+
+			segmentsToReplace.Add(
+				new TextSegment
+				{
+					IndextStart = currentNode.SourcePosition.IndexStart,
+					Length = currentNode.SourcePosition.Length,
+					Text = String.Empty
+				});
+		}
+
+		private static void AddObjectAliasNodesToReplace(ICollection<TextSegment> segmentsToReplace, OracleQueryBlock queryBlock, StatementGrammarNode currentNode)
 		{
 			var objectReference = queryBlock.ObjectReferences.Single(o => o.AliasNode == currentNode);
 			if (objectReference.Type == ReferenceType.InlineView)

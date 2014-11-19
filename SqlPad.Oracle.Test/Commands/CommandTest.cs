@@ -702,6 +702,17 @@ WHERE
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestSafeDeleteCommandAtColumnAlias()
+		{
+			_editor.Text = @"SELECT XXX FROM (SELECT XXX FROM (SELECT XXX FROM (SELECT DUMMY XXX FROM DUAL) T1) T2) T3";
+			_editor.CaretOffset = 64;
+
+			ExecuteCommand(SafeDeleteCommand.SafeDelete);
+
+			_editor.Text.ShouldBe("SELECT DUMMY FROM (SELECT DUMMY FROM (SELECT DUMMY FROM (SELECT DUMMY  FROM DUAL) T1) T2) T3");
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestModifyCaseCommandWithMultipleTerminalsSelected()
 		{
 			_editor.Text = @"select null, 'null' from selection";
@@ -1252,10 +1263,24 @@ SELECT * FROM DUAL";
 			CanExecuteCommand(OracleCommands.Unquote).ShouldBe(true);
 			ExecuteCommand(OracleCommands.Unquote);
 
-			const string expectedResult = @"SELECT 1 + 1 ""CaseSensitiveColumn"" CaseSensitiveColumn FROM DUAL";
+			const string expectedResult = @"SELECT 1 + 1 CaseSensitiveColumn FROM DUAL";
 
 			_editor.Text.ShouldBe(expectedResult);
 			_editor.CaretOffset.ShouldBe(0);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestUnquoteCommandWithExistingQuotedAlias()
+		{
+			const string statementText = @"SELECT ""CaseSensitiveColumn"" ""Alias"", ""CaseSensitiveColumn"" FROM INVOICELINES";
+			_editor.Text = statementText;
+
+			CanExecuteCommand(OracleCommands.Unquote).ShouldBe(true);
+			ExecuteCommand(OracleCommands.Unquote);
+
+			const string expectedResult = @"SELECT ""CaseSensitiveColumn"" Alias, ""CaseSensitiveColumn"" CaseSensitiveColumn FROM INVOICELINES";
+
+			_editor.Text.ShouldBe(expectedResult);
 		}
 
 		[Test(Description = @""), STAThread]

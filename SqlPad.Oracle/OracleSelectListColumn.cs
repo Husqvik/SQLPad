@@ -58,7 +58,7 @@ namespace SqlPad.Oracle
 
 		public bool HasExplicitAlias
 		{
-			get { return !IsAsterisk && HasExplicitDefinition && RootNode.TerminalCount > 1 && AliasNode != null; }
+			get { return !IsAsterisk && HasExplicitDefinition && RootNode.LastTerminalNode.Id == Terminals.ColumnAlias; }
 		}
 
 		public StatementGrammarNode AliasNode { get; set; }

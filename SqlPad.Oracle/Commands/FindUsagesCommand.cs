@@ -288,13 +288,13 @@ namespace SqlPad.Oracle.Commands
 			return nodes;
 		}
 
-		private IEnumerable<StatementGrammarNode> GetParentQueryBlockReferences(OracleSelectListColumn selectListColumn)
+		internal static IEnumerable<StatementGrammarNode> GetParentQueryBlockReferences(OracleSelectListColumn selectListColumn)
 		{
 			var nodes = Enumerable.Empty<StatementGrammarNode>();
 			if (selectListColumn == null || selectListColumn.AliasNode == null)
 				return nodes;
 
-			var parentQueryBlocks = _semanticModel.QueryBlocks.Where(qb => qb.ObjectReferences.SelectMany(o => o.QueryBlocks).Contains(selectListColumn.Owner));
+			var parentQueryBlocks = selectListColumn.Owner.SemanticModel.QueryBlocks.Where(qb => qb.ObjectReferences.SelectMany(o => o.QueryBlocks).Contains(selectListColumn.Owner));
 			foreach (var parentQueryBlock in parentQueryBlocks)
 			{
 				var parentReferences = parentQueryBlock.AllColumnReferences

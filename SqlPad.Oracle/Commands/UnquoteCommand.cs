@@ -42,7 +42,31 @@ namespace SqlPad.Oracle.Commands
 			var commandHelper = new AliasCommandHelper(ExecutionContext);
 			foreach (var column in _unquotableColumns)
 			{
-				commandHelper.AddColumnAlias(column.RootNode, column.Owner, column.NormalizedName, column.NormalizedName.Trim('"'));
+				if (column.HasExplicitAlias)
+				{
+					foreach (var terminal in FindUsagesCommand.GetParentQueryBlockReferences(column))
+					{
+						ExecutionContext.SegmentsToReplace.Add(
+							new TextSegment
+							{
+								IndextStart = terminal.SourcePosition.IndexStart,
+								Length = terminal.SourcePosition.Length,
+								Text = column.NormalizedName.Trim('"')
+							});
+					}
+
+					ExecutionContext.SegmentsToReplace.Add(
+						new TextSegment
+						{
+							IndextStart = column.AliasNode.SourcePosition.IndexStart,
+							Length = column.AliasNode.SourcePosition.Length,
+							Text = column.NormalizedName.Trim('"')
+						});
+				}
+				else
+				{
+					commandHelper.AddColumnAlias(column.RootNode, column.Owner, column.NormalizedName, column.NormalizedName.Trim('"'));
+				}
 			}
 		}
 
