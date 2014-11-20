@@ -92,7 +92,6 @@
 				                       MouseHover="MouseHoverHandler"
 				                       PreviewKeyDown="EditorKeyDownHandler"
 				                       PreviewKeyUp="EditorKeyUpHandler"
-									   MouseUp="EditorMouseUpHandler"
 				                       MouseHoverStopped="MouseHoverStoppedHandler">
 					<avalonedit:TextEditor.CommandBindings>
 						<CommandBinding Command="commands:GenericCommands.CreateNewPage" Executed="CreateNewPage" />
@@ -109,9 +108,18 @@
 						<CommandBinding Command="commands:GenericCommands.ShowCodeCompletionOption" Executed="ShowCodeCompletionOptions" CanExecute="CanExecuteShowCodeCompletionHandler" />
 						<CommandBinding Command="commands:GenericCommands.ShowFunctionOverload" Executed="ShowFunctionOverloads" />
 					</avalonedit:TextEditor.CommandBindings>
+
 					<avalonedit:TextEditor.ContextMenu>
-						<ContextMenu x:Name="CommandMenu" Placement="RelativePoint" />
+						<ContextMenu>
+							<MenuItem Command="Undo" />
+							<MenuItem Command="Redo" />
+							<Separator/>
+							<MenuItem Command="Cut" />
+							<MenuItem Command="Copy" />
+							<MenuItem Command="Paste" />
+						</ContextMenu>
 					</avalonedit:TextEditor.ContextMenu>
+
 					<avalonedit:TextEditor.Style>
 						<Style>
 							<Style.Triggers>

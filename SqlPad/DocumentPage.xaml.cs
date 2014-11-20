@@ -47,6 +47,7 @@ namespace SqlPad
 		private FileSystemWatcher _documentFileWatcher;
 		private DateTime _lastDocumentFileChange;
 		private readonly SqlDocumentColorizingTransformer _colorizingTransformer = new SqlDocumentColorizingTransformer();
+		private readonly ContextMenu _contextActionMenu = new ContextMenu { Placement = PlacementMode.Relative };
 
 		private static readonly CellValueConverter CellValueConverter = new CellValueConverter();
 
@@ -141,6 +142,7 @@ namespace SqlPad
 			_foldingStrategy = new SqlFoldingStrategy(FoldingManager.Install(Editor.TextArea), Editor);
 
 			_toolTip.PlacementTarget = Editor.TextArea;
+			_contextActionMenu.PlacementTarget = Editor;
 
 			ComboBoxConnection.IsEnabled = ConfigurationProvider.ConnectionStrings.Count > 1;
 			ComboBoxConnection.ItemsSource = ConfigurationProvider.ConnectionStrings;
@@ -1470,11 +1472,6 @@ namespace SqlPad
 				_toolTip.IsOpen = false;
 		}
 
-		private void EditorMouseUpHandler(object sender, MouseButtonEventArgs e)
-		{
-			e.Handled = true;
-		}
-
 		private void ContextMenuOpeningHandler(object sender, ContextMenuEventArgs args)
 		{
 			if (!PopulateContextActionMenu())
@@ -1495,7 +1492,7 @@ namespace SqlPad
 					Command = new ContextActionCommand(Editor, action),
 				};
 
-			Editor.ContextMenu.Items.Add(menuItem);
+			_contextActionMenu.Items.Add(menuItem);
 		}
 
 		private void ListContextActions(object sender, ExecutedRoutedEventArgs args)
@@ -1506,32 +1503,29 @@ namespace SqlPad
 				DisableCodeCompletion();
 			}
 
-			Editor.ContextMenu.IsOpen = isAnyCommandAvailable;
+			_contextActionMenu.IsOpen = isAnyCommandAvailable;
 		}
 
 		private bool PopulateContextActionMenu()
 		{
-			Editor.ContextMenu.Items.Clear();
+			_contextActionMenu.Items.Clear();
 
 			var executionContext = CommandExecutionContext.Create(Editor, _sqlDocumentRepository);
 			_contextActionProvider.GetContextActions(_sqlDocumentRepository, executionContext)
 				.ToList()
 				.ForEach(BuildContextMenuItem);
 
-			if (Editor.ContextMenu.Items.Count == 1)
+			if (_contextActionMenu.Items.Count == 1)
 			{
-				Editor.ContextMenu.Opened += (sender, args) => ((MenuItem)Editor.ContextMenu.Items[0]).Focus();
+				_contextActionMenu.Opened += (sender, args) => ((MenuItem)_contextActionMenu.Items[0]).Focus();
 			}
-
-			Editor.ContextMenu.PlacementTarget = Editor;
 
 			var position = Editor.TextArea.Caret.CalculateCaretRectangle().BottomLeft;
 
-			Editor.ContextMenu.Placement = PlacementMode.Relative;
-			Editor.ContextMenu.HorizontalOffset = position.X + 32;
-			Editor.ContextMenu.VerticalOffset = position.Y + 2;
+			_contextActionMenu.HorizontalOffset = position.X + 32;
+			_contextActionMenu.VerticalOffset = position.Y + 2;
 
-			return Editor.ContextMenu.Items.Count > 0;
+			return _contextActionMenu.Items.Count > 0;
 		}
 
 		private void EditorKeyUpHandler(object sender, KeyEventArgs e)
