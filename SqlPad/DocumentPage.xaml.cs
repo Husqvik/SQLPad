@@ -1470,6 +1470,11 @@ namespace SqlPad
 				_toolTip.IsOpen = false;
 		}
 
+		private void EditorMouseUpHandler(object sender, MouseButtonEventArgs e)
+		{
+			e.Handled = true;
+		}
+
 		private void ContextMenuOpeningHandler(object sender, ContextMenuEventArgs args)
 		{
 			if (!PopulateContextActionMenu())
@@ -1506,6 +1511,8 @@ namespace SqlPad
 
 		private bool PopulateContextActionMenu()
 		{
+			Editor.ContextMenu.Items.Clear();
+
 			var executionContext = CommandExecutionContext.Create(Editor, _sqlDocumentRepository);
 			_contextActionProvider.GetContextActions(_sqlDocumentRepository, executionContext)
 				.ToList()
@@ -1516,13 +1523,13 @@ namespace SqlPad
 				Editor.ContextMenu.Opened += (sender, args) => ((MenuItem)Editor.ContextMenu.Items[0]).Focus();
 			}
 
-			Editor.ContextMenu.Closed += (sender, args) => Editor.ContextMenu.Items.Clear();
-
 			Editor.ContextMenu.PlacementTarget = Editor;
 
-			var position = Editor.TextArea.Caret.CalculateCaretRectangle().TopRight;
-			Editor.ContextMenu.HorizontalOffset = position.X - 24;
-			Editor.ContextMenu.VerticalOffset = position.Y - 32;
+			var position = Editor.TextArea.Caret.CalculateCaretRectangle().BottomLeft;
+
+			Editor.ContextMenu.Placement = PlacementMode.Relative;
+			Editor.ContextMenu.HorizontalOffset = position.X + 32;
+			Editor.ContextMenu.VerticalOffset = position.Y + 2;
 
 			return Editor.ContextMenu.Items.Count > 0;
 		}

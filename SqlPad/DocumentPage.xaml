@@ -92,6 +92,7 @@
 				                       MouseHover="MouseHoverHandler"
 				                       PreviewKeyDown="EditorKeyDownHandler"
 				                       PreviewKeyUp="EditorKeyUpHandler"
+									   MouseUp="EditorMouseUpHandler"
 				                       MouseHoverStopped="MouseHoverStoppedHandler">
 					<avalonedit:TextEditor.CommandBindings>
 						<CommandBinding Command="commands:GenericCommands.CreateNewPage" Executed="CreateNewPage" />
