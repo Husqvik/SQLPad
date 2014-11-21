@@ -26,13 +26,13 @@ namespace SqlPad
 
 		public MainWindow()
 		{
-			InitializeComponent();
-
 			if (!EnsureValidConfiguration())
 			{
-				Application.Current.Shutdown(-1);
+				Application.Current.Shutdown(Int32.MinValue);
 				return;
 			}
+
+			InitializeComponent();
 
 			_findReplaceManager = (FindReplaceManager)Resources["FindReplaceManager"];
 			_findReplaceManager.OwnerWindow = this;

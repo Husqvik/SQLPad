@@ -147,18 +147,16 @@ namespace SqlPad
 
 		public void WriteDatabaseOutput(string output)
 		{
-			if (KeepDatabaseOutputHistory)
-			{
-				if (String.IsNullOrEmpty(output))
-				{
-					return;
-				}
-			}
-			else
+			if (!KeepDatabaseOutputHistory)
 			{
 				_databaseOutputBuilder.Clear();
 			}
 
+			if (String.IsNullOrEmpty(output))
+			{
+				return;
+			}
+			
 			_databaseOutputBuilder.AppendLine(output);
 
 			RaisePropertyChanged("DatabaseOutput");

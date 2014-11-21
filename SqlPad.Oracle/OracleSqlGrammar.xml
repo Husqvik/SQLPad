@@ -4435,25 +4435,13 @@
       <Sequences>
         <Sequence>
           <Terminal Id="ListAggregation" />
-          <Terminal Id="LeftParenthesis" />
-          <NonTerminal Id="Expression" />
-          <NonTerminal Id="ListAggregationDelimiter" IsOptional="true" />
-          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="ParenthesisEnclosedExpressionListWithMandatoryExpressions" />
           <Terminal Id="Within" />
           <Terminal Id="Group" />
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="OrderByClause" />
           <Terminal Id="RightParenthesis" />
           <NonTerminal Id="OverQueryPartitionClause" IsOptional="true" />
-        </Sequence>
-      </Sequences>
-    </Rule>
-
-    <Rule StartingNonTerminal="ListAggregationDelimiter">
-      <Sequences>
-        <Sequence>
-          <Terminal Id="Comma" />
-          <NonTerminal Id="Expression" />
         </Sequence>
       </Sequences>
     </Rule>

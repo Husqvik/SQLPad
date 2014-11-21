@@ -864,5 +864,47 @@ FROM
 			var redundantTerminals = semanticModel.RedundantSymbolGroups.SelectMany(g => g).OrderBy(t => t.SourcePosition.IndexStart).ToArray();
 			redundantTerminals.Length.ShouldBe(0);
 		}
+
+		[Test(Description = @"")]
+		public void TestSpecificGrammarFunctionInOrderByClause()
+		{
+			const string query1 = @"SELECT NULL FROM DUAL ORDER BY COUNT(*)";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			var functionReferences = semanticModel.QueryBlocks.Single().AllProgramReferences.ToArray();
+			functionReferences.Length.ShouldBe(1);
+			var functionReference = functionReferences[0];
+			functionReference.FunctionIdentifierNode.Id.ShouldBe(Terminals.Count);
+			functionReference.ObjectNode.ShouldBe(null);
+			functionReference.OwnerNode.ShouldBe(null);
+			functionReference.AnalyticClauseNode.ShouldBe(null);
+			functionReference.SelectListColumn.ShouldBe(null);
+			functionReference.ParameterListNode.ShouldNotBe(null);
+			functionReference.ParameterNodes.ShouldNotBe(null);
+			functionReference.ParameterNodes.Count.ShouldBe(1);
+		}
+
+		[Test(Description = @"")]
+		public void TestListAggregationFunction()
+		{
+			const string query1 = @"SELECT LISTAGG(LEVEL, ', ') WITHIN GROUP (ORDER BY ROWNUM) FROM DUAL";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			var functionReferences = semanticModel.QueryBlocks.Single().AllProgramReferences.ToArray();
+			functionReferences.Length.ShouldBe(1);
+			var functionReference = functionReferences[0];
+			functionReference.FunctionIdentifierNode.Id.ShouldBe(Terminals.ListAggregation);
+			functionReference.ObjectNode.ShouldBe(null);
+			functionReference.OwnerNode.ShouldBe(null);
+			functionReference.AnalyticClauseNode.ShouldBe(null);
+			functionReference.SelectListColumn.ShouldNotBe(null);
+			functionReference.ParameterListNode.ShouldNotBe(null);
+			functionReference.ParameterNodes.ShouldNotBe(null);
+			functionReference.ParameterNodes.Count.ShouldBe(2);
+		}
 	}
 }

@@ -175,7 +175,7 @@ namespace SqlPad.Oracle
 						continue;
 					}
 
-					StatementGrammarNode schemaTerminal = null;
+					StatementGrammarNode schemaTerminal;
 					OracleSchemaObject schemaObject = null;
 					ICollection<KeyValuePair<StatementGrammarNode, string>> commonTableExpressions = new Dictionary<StatementGrammarNode, string>();
 					var referenceType = ReferenceType.CommonTableExpression;
@@ -1322,7 +1322,7 @@ namespace SqlPad.Oracle
 			identifiers = havingClauseRootNode.GetDescendantsWithinSameQuery(Terminals.Identifier, Terminals.RowIdPseudoColumn);
 			ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock, identifiers, QueryBlockPlacement.Having, null);
 
-			var grammarSpecificFunctions = havingClauseRootNode.GetDescendantsWithinSameQuery(Terminals.Count, NonTerminals.AggregateFunction, NonTerminals.AnalyticFunction).ToArray();
+			var grammarSpecificFunctions = GetGrammarSpecificFunctionNodes(havingClauseRootNode);
 			CreateGrammarSpecificFunctionReferences(grammarSpecificFunctions, queryBlock, queryBlock.ProgramReferences, null);
 		}
 
@@ -1337,6 +1337,13 @@ namespace SqlPad.Oracle
 
 			var identifiers = queryBlock.OrderByClause.GetDescendantsWithinSameQuery(Terminals.Identifier, Terminals.RowIdPseudoColumn);
 			ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock, identifiers, QueryBlockPlacement.OrderBy, null);
+			var grammarSpecificFunctions = GetGrammarSpecificFunctionNodes(queryBlock.OrderByClause);
+			CreateGrammarSpecificFunctionReferences(grammarSpecificFunctions, queryBlock, queryBlock.ProgramReferences, null);
+		}
+
+		private IEnumerable<StatementGrammarNode> GetGrammarSpecificFunctionNodes(StatementGrammarNode sourceNode)
+		{
+			return sourceNode.GetDescendantsWithinSameQuery(Terminals.Count, NonTerminals.AggregateFunction, NonTerminals.AnalyticFunction, Terminals.ListAggregation);
 		}
 
 		private void ResolveColumnAndFunctionReferenceFromIdentifiers(OracleQueryBlock queryBlock, OracleReferenceContainer referenceContainer, IEnumerable<StatementGrammarNode> identifiers, QueryBlockPlacement type, OracleSelectListColumn selectListColumn)
@@ -1443,7 +1450,7 @@ namespace SqlPad.Oracle
 					}
 					else
 					{
-						var columnGrammarLookup = columnExpression.GetDescendantsWithinSameQuery(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Count, NonTerminals.AggregateFunction, NonTerminals.AnalyticFunction)
+						var columnGrammarLookup = columnExpression.GetDescendantsWithinSameQuery(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Count, NonTerminals.AggregateFunction, NonTerminals.AnalyticFunction, Terminals.ListAggregation)
 							.ToLookup(n => n.Id, n => n);
 
 						var identifiers = columnGrammarLookup[Terminals.Identifier].Concat(columnGrammarLookup[Terminals.RowIdPseudoColumn]).ToArray();
@@ -1463,7 +1470,7 @@ namespace SqlPad.Oracle
 							column.AliasNode = identifiers[0];
 						}
 
-						var grammarSpecificFunctions = columnGrammarLookup[Terminals.Count].Concat(columnGrammarLookup[NonTerminals.AggregateFunction]).Concat(columnGrammarLookup[NonTerminals.AnalyticFunction]);
+						var grammarSpecificFunctions = columnGrammarLookup[Terminals.Count].Concat(columnGrammarLookup[NonTerminals.AggregateFunction]).Concat(columnGrammarLookup[NonTerminals.AnalyticFunction]).Concat(columnGrammarLookup[Terminals.ListAggregation]);
 						CreateGrammarSpecificFunctionReferences(grammarSpecificFunctions, queryBlock, column.ProgramReferences, column);
 					}
 
@@ -1476,7 +1483,7 @@ namespace SqlPad.Oracle
 		{
 			foreach (var identifierNode in grammarSpecificFunctions.Select(n => n.FirstTerminalNode).Distinct())
 			{
-				var rootNode = identifierNode.GetAncestor(NonTerminals.AnalyticFunctionCall) ?? identifierNode.GetAncestor(NonTerminals.AggregateFunctionCall);
+				var rootNode = identifierNode.GetAncestor(NonTerminals.AnalyticFunctionCall) ?? identifierNode.GetAncestor(NonTerminals.ListAggregationClause) ?? identifierNode.GetAncestor(NonTerminals.AggregateFunctionCall);
 				var analyticClauseNode = rootNode.GetDescendants(NonTerminals.AnalyticClause).FirstOrDefault();
 
 				var parameterList = rootNode.ChildNodes.SingleOrDefault(n => n.Id.In(NonTerminals.ParenthesisEnclosedExpressionListWithMandatoryExpressions, NonTerminals.CountAsteriskParameter, NonTerminals.AggregateFunctionParameter, NonTerminals.ParenthesisEnclosedExpressionListWithIgnoreNulls));
