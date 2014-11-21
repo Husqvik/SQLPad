@@ -36,8 +36,8 @@ namespace SqlPad.Oracle
 		private static readonly HashSet<LineBreakSettings> LineBreaks =
 			new HashSet<LineBreakSettings>
 			{
-				new LineBreakSettings { NonTerminalId = NonTerminals.QueryBlock, ChildNodeId = Terminals.Select, BreakPosition = n => LineBreakPosition.AfterNode, GetIndentationAfter = n => 1 },
-				new LineBreakSettings { NonTerminalId = NonTerminals.QueryBlock, ChildNodeId = Terminals.From, BreakPosition = n => LineBreakPosition.BeforeNode | LineBreakPosition.AfterNode, GetIndentationBefore = n => -1, GetIndentationAfter = n => 1 },
+				new LineBreakSettings { NonTerminalId = NonTerminals.QueryBlock, ChildNodeId = Terminals.Select, BreakPosition = GetSelectBreakPosition, GetIndentationAfter = n => 1 },
+				new LineBreakSettings { NonTerminalId = NonTerminals.QueryBlock, ChildNodeId = Terminals.From, BreakPosition = GetQueryBlockFromBreakPosition, GetIndentationBefore = n => -1, GetIndentationAfter = n => 1 },
 				new LineBreakSettings { NonTerminalId = NonTerminals.WhereClause, ChildNodeId = Terminals.Where, BreakPosition = n => LineBreakPosition.BeforeNode | LineBreakPosition.AfterNode, GetIndentationBefore = n => -1, GetIndentationAfter = n => 1 },
 				new LineBreakSettings { NonTerminalId = NonTerminals.Condition, ChildNodeId = Terminals.Exists, BreakPosition = n => LineBreakPosition.AfterNode, GetIndentationAfter = n => 1 },
 				new LineBreakSettings { NonTerminalId = NonTerminals.SelectExpressionExpressionChainedList, ChildNodeId = Terminals.Comma, BreakPosition = n => LineBreakPosition.AfterNode },
@@ -60,7 +60,22 @@ namespace SqlPad.Oracle
 				new LineBreakSettings { NonTerminalId = NonTerminals.SubqueryComponent, ChildNodeId = Terminals.As, BreakPosition = n => LineBreakPosition.AfterNode },
 				new LineBreakSettings { NonTerminalId = NonTerminals.SelectStatement, ChildNodeId = Terminals.Semicolon, BreakPosition = n => LineBreakPosition.AfterNode, GetIndentationAfter = n => -1 },
 				new LineBreakSettings { NonTerminalId = NonTerminals.ConcatenatedSubquery, ChildNodeId = NonTerminals.SetOperation, BreakPosition = n => LineBreakPosition.BeforeNode | LineBreakPosition.AfterNode, GetIndentationBefore = n => -1 },
+				new LineBreakSettings { NonTerminalId = NonTerminals.QueryTableExpression, ChildNodeId = Terminals.RightParenthesis, BreakPosition = n => LineBreakPosition.BeforeNode, GetIndentationBefore = n => -2 }
 			};
+
+		private static LineBreakPosition GetQueryBlockFromBreakPosition(StatementGrammarNode node)
+		{
+			return node.FollowingTerminal != null && node.FollowingTerminal.Id == Terminals.LeftParenthesis
+				? LineBreakPosition.BeforeNode
+				: LineBreakPosition.BeforeNode | LineBreakPosition.AfterNode;
+		}
+
+		private static LineBreakPosition GetSelectBreakPosition(StatementGrammarNode node)
+		{
+			return node.PrecedingTerminal != null && node.PrecedingTerminal.Id == Terminals.LeftParenthesis
+				? LineBreakPosition.BeforeNode | LineBreakPosition.AfterNode
+				: LineBreakPosition.AfterNode;
+		}
 
 		private static int GetAfterTableReferenceIndentation(StatementGrammarNode node)
 		{
@@ -96,14 +111,6 @@ namespace SqlPad.Oracle
 				NonTerminals.OrderByClause,
 			};
 
-		private static readonly HashSet<string> AddSpaceTerminalIds =
-			new HashSet<string>
-			{
-				Terminals.In,
-				Terminals.Over,
-				Terminals.Keep
-			};
-
 		private static readonly HashSet<string> SingleLineNoSpaceBeforeTerminals =
 			new HashSet<string>
 			{
@@ -114,12 +121,23 @@ namespace SqlPad.Oracle
 			};
 
 		private static readonly HashSet<string> SingleLineNoSpaceAfterTerminals =
-		new HashSet<string>
+			new HashSet<string>
 			{
 				Terminals.Colon,
 				Terminals.Dot,
 				Terminals.LeftParenthesis,
 				Terminals.AtCharacter
+			};
+
+		private static readonly HashSet<string> SingleCharacterTerminals =
+			new HashSet<string>
+			{
+				Terminals.RightParenthesis,
+				Terminals.Comma,
+				Terminals.Semicolon,
+				Terminals.Dot,
+				Terminals.AtCharacter,
+				Terminals.Colon
 			};
 
 		public OracleStatementFormatter(SqlFormatterOptions options)
@@ -158,7 +176,7 @@ namespace SqlPad.Oracle
 			if (executionContext.DocumentRepository == null)
 				return;
 
-			var statementsToFormat = executionContext.DocumentRepository.Statements.Where(s => s.SourcePosition.IndexStart <= executionContext.SelectionStart + executionContext.SelectionLength && s.SourcePosition.IndexEnd + 1 >= executionContext.SelectionStart && s.RootNode != null)
+			var statementsToFormat = executionContext.DocumentRepository.Statements.Where(s => s.SourcePosition.IndexStart <= executionContext.SelectionEnd && s.SourcePosition.IndexEnd + 1 >= executionContext.SelectionStart && s.RootNode != null)
 				.OrderBy(s => s.SourcePosition.IndexStart)
 				.ToArray();
 
@@ -237,7 +255,7 @@ namespace SqlPad.Oracle
 
 			foreach (var statement in formattedStatements)
 			{
-				string indentation = null;
+				var indentation = String.Empty;
 				FormatNode(statement.RootNode, builder, ref skipSpaceBeforeToken, ref indentation);
 
 				AppendTerminatorIfExists(statement, builder);
@@ -281,7 +299,7 @@ namespace SqlPad.Oracle
 					}
 					else if (indentationBefore < 0)
 					{
-						indentation = indentation.Remove(0, -indentationBefore);
+						indentation = indentation.Remove(0, Math.Min(-indentationBefore, indentation.Length));
 					}
 
 					breakBefore = lineBreakSettings.BreakPosition != null && (lineBreakSettings.BreakPosition(grammarNode) & LineBreakPosition.BeforeNode) != LineBreakPosition.None;
@@ -300,7 +318,7 @@ namespace SqlPad.Oracle
 				if (grammarNode.Type == NodeType.Terminal)
 				{
 					if ((!breakSettingsFound || !breakBefore) &&
-					    (!OracleGrammarDescription.SingleCharacterTerminals.Contains(grammarNode.Id) ||
+						(!SingleCharacterTerminals.Contains(grammarNode.Id) ||
 					     OracleGrammarDescription.MathTerminals.Contains(grammarNode.Id) ||
 						 grammarNode.Id == Terminals.Colon) &&
 					    !skipSpaceBeforeToken && stringBuilder.Length > 0)
@@ -309,11 +327,6 @@ namespace SqlPad.Oracle
 					}
 
 					stringBuilder.Append(grammarNode.Token.Value);
-
-					if (AddSpaceTerminalIds.Contains(grammarNode.Id))
-					{
-						stringBuilder.Append(' ');
-					}
 
 					skipSpaceBeforeToken = SkipSpaceTerminalIds.Contains(grammarNode.Id) || grammarNode.Id.In(Terminals.Dot, Terminals.Colon, Terminals.AtCharacter);
 				}
@@ -332,7 +345,7 @@ namespace SqlPad.Oracle
 					}
 					else if (indentationAfter < 0)
 					{
-						indentation = indentation.Remove(0, -indentationAfter);
+						indentation = indentation.Remove(0, Math.Min(-indentationAfter, indentation.Length));
 					}
 
 					if (lineBreakSettings.BreakPosition != null && (lineBreakSettings.BreakPosition(grammarNode) & LineBreakPosition.AfterNode) != LineBreakPosition.None)

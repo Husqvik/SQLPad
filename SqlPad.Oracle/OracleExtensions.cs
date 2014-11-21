@@ -213,11 +213,6 @@ namespace SqlPad.Oracle
 			throw new NotSupportedException(String.Format("Value '{0}' is not supported. ", type));
 		}
 
-		public static bool IsSingleCharacterTerminal(this string terminalId)
-		{
-			return OracleGrammarDescription.SingleCharacterTerminals.Contains(terminalId);
-		}
-
 		public static OracleSchemaObject GetTargetSchemaObject(this OracleSchemaObject schemaObject)
 		{
 			var synonym = schemaObject as OracleSynonym;

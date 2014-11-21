@@ -377,7 +377,6 @@ namespace SqlPad.Oracle
 			public const string LikePattern = "LikePattern";
 			public const string LinearOrInterleaved = "LinearOrInterleaved";
 			public const string ListAggregationClause = "ListAggregationClause";
-			public const string ListAggregationDelimiter = "ListAggregationDelimiter";
 			public const string ListOfParenthesisEnclosedIdentifierLists = "ListOfParenthesisEnclosedIdentifierLists";
 			public const string ListPartitionDescriptionList = "ListPartitionDescriptionList";
 			public const string ListPartitionList = "ListPartitionList";
@@ -1340,21 +1339,6 @@ namespace SqlPad.Oracle
 		
 		private static readonly HashSet<string> LiteralsInternal = new HashSet<string> { Terminals.IntegerLiteral, Terminals.NumberLiteral, Terminals.StringLiteral };
 
-		private static readonly HashSet<string> SingleCharacterTerminalsInternal =
-			new HashSet<string>
-			{
-				Terminals.LeftParenthesis,
-				Terminals.RightParenthesis,
-				Terminals.Comma,
-				Terminals.Semicolon,
-				Terminals.Dot,
-				Terminals.MathDivide,
-				Terminals.MathPlus,
-				Terminals.MathMinus,
-				Terminals.AtCharacter,
-				Terminals.Colon
-			};
-
 		private static readonly HashSet<string> ZeroOffsetTerminalIdsInternal =
 			new HashSet<string>
 			{
@@ -1386,11 +1370,6 @@ namespace SqlPad.Oracle
 				Terminals.MathMinus,
 				Terminals.OperatorConcatenation
 			};
-
-		public static ICollection<string> SingleCharacterTerminals
-		{
-			get { return SingleCharacterTerminalsInternal; }
-		}
 
 		public static ICollection<string> MathTerminals
 		{

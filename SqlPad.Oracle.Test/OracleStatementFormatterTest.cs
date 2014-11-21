@@ -23,8 +23,8 @@ namespace SqlPad.Oracle.Test
 			const string expectedFormat =
 @"SELECT
 	SELECTION.NAME,
-	COUNT(*) OVER (PARTITION BY NAME ORDER BY RESPONDENTBUCKET_ID, SELECTION_ID) DUMMY_COUNT,
-	MAX(RESPONDENTBUCKET_ID) KEEP (DENSE_RANK FIRST ORDER BY PROJECT_ID, SELECTION_ID)
+	COUNT (*) OVER (PARTITION BY NAME ORDER BY RESPONDENTBUCKET_ID, SELECTION_ID) DUMMY_COUNT,
+	MAX (RESPONDENTBUCKET_ID) KEEP (DENSE_RANK FIRST ORDER BY PROJECT_ID, SELECTION_ID)
 FROM
 	SELECTION
 	LEFT JOIN RESPONDENTBUCKET
@@ -115,6 +115,51 @@ FROM
 			formattedSegment.Text.ShouldBe(expectedFormat);
 			formattedSegment.IndextStart.ShouldBe(0);
 			formattedSegment.Length.ShouldBe(executionContext.StatementText.Length);
+		}
+
+		[Test(Description = @"")]
+		public void TestFormatDeleteStatement()
+		{
+			const string sourceFormat = "DELETE FROM DUAL WHERE DUMMY IN (SELECT NULL FROM DUAL)";
+			_documentRepository.UpdateStatements(sourceFormat);
+			var executionContext = new CommandExecutionContext(sourceFormat, 0, 0, 0, _documentRepository);
+			Formatter.ExecutionHandler.ExecutionHandler(executionContext);
+
+			const string expectedFormat =
+@"DELETE FROM DUAL
+WHERE
+	DUMMY IN (
+	SELECT
+		NULL
+	FROM
+		DUAL)";
+
+			AssertFormattedResult(executionContext, expectedFormat);
+		}
+
+		[Test(Description = @"")]
+		public void TestFormatInlineView()
+		{
+			const string sourceFormat = "SELECT DUMMY FROM (SELECT DUMMY FROM (SELECT DUMMY FROM DUAL) X) X";
+			_documentRepository.UpdateStatements(sourceFormat);
+			var executionContext = new CommandExecutionContext(sourceFormat, 0, 0, 0, _documentRepository);
+			Formatter.ExecutionHandler.ExecutionHandler(executionContext);
+
+			const string expectedFormat =
+@"SELECT
+	DUMMY
+FROM (
+	SELECT
+		DUMMY
+	FROM (
+		SELECT
+			DUMMY
+		FROM
+			DUAL
+	) X
+) X";
+
+			AssertFormattedResult(executionContext, expectedFormat);
 		}
 	}
 }

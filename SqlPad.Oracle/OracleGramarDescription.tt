@@ -83,21 +83,6 @@ namespace SqlPad.Oracle
 		
 		private static readonly HashSet<string> LiteralsInternal = new HashSet<string> { <#= String.Join(", ", literalTerminalIds.Select(id => "Terminals." + id)) #> };
 
-		private static readonly HashSet<string> SingleCharacterTerminalsInternal =
-			new HashSet<string>
-			{
-				Terminals.LeftParenthesis,
-				Terminals.RightParenthesis,
-				Terminals.Comma,
-				Terminals.Semicolon,
-				Terminals.Dot,
-				Terminals.MathDivide,
-				Terminals.MathPlus,
-				Terminals.MathMinus,
-				Terminals.AtCharacter,
-				Terminals.Colon
-			};
-
 		private static readonly HashSet<string> ZeroOffsetTerminalIdsInternal =
 			new HashSet<string>
 			{
@@ -129,11 +114,6 @@ namespace SqlPad.Oracle
 				Terminals.MathMinus,
 				Terminals.OperatorConcatenation
 			};
-
-		public static ICollection<string> SingleCharacterTerminals
-		{
-			get { return SingleCharacterTerminalsInternal; }
-		}
 
 		public static ICollection<string> MathTerminals
 		{
