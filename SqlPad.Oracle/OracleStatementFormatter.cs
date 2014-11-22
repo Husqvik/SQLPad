@@ -60,8 +60,22 @@ namespace SqlPad.Oracle
 				new LineBreakSettings { NonTerminalId = NonTerminals.SubqueryComponent, ChildNodeId = Terminals.As, BreakPosition = n => LineBreakPosition.AfterNode },
 				new LineBreakSettings { NonTerminalId = NonTerminals.SelectStatement, ChildNodeId = Terminals.Semicolon, BreakPosition = n => LineBreakPosition.AfterNode, GetIndentationAfter = n => -1 },
 				new LineBreakSettings { NonTerminalId = NonTerminals.ConcatenatedSubquery, ChildNodeId = NonTerminals.SetOperation, BreakPosition = n => LineBreakPosition.BeforeNode | LineBreakPosition.AfterNode, GetIndentationBefore = n => -1 },
-				new LineBreakSettings { NonTerminalId = NonTerminals.QueryTableExpression, ChildNodeId = Terminals.RightParenthesis, BreakPosition = n => LineBreakPosition.BeforeNode, GetIndentationBefore = n => -2 }
+				new LineBreakSettings { NonTerminalId = NonTerminals.QueryTableExpression, ChildNodeId = Terminals.RightParenthesis, BreakPosition = n => LineBreakPosition.BeforeNode, GetIndentationBefore = n => -2 },
+				new LineBreakSettings { NonTerminalId = NonTerminals.Condition, ChildNodeId = Terminals.RightParenthesis, GetIndentationAfter = GetAfterConditionClosingParenthesisIndentation },
+				new LineBreakSettings { NonTerminalId = NonTerminals.Expression, ChildNodeId = Terminals.RightParenthesis, GetIndentationAfter = GetAfterExpressionClosingParenthesisIndentation }
 			};
+
+		private static int GetAfterConditionClosingParenthesisIndentation(StatementGrammarNode node)
+		{
+			var conditionNode = node.ParentNode;
+			return conditionNode.GetDescendantByPath(NonTerminals.ExpressionListOrNestedQuery) == null ? 0 : -1;
+		}
+
+		private static int GetAfterExpressionClosingParenthesisIndentation(StatementGrammarNode node)
+		{
+			var expressionNode = node.ParentNode;
+			return expressionNode.GetDescendants(NonTerminals.NestedQuery).Any() ? -1 : 0;
+		}
 
 		private static LineBreakPosition GetQueryBlockFromBreakPosition(StatementGrammarNode node)
 		{
