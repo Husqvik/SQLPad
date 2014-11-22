@@ -1570,6 +1570,15 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			columnNodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 			columnNodeValidity[1].IsRecognized.ShouldBe(true);
 			columnNodeValidity[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
+
+			var programNodeValidity = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToArray();
+			programNodeValidity.Length.ShouldBe(3);
+			programNodeValidity[0].IsRecognized.ShouldBe(true);
+			programNodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
+			programNodeValidity[1].IsRecognized.ShouldBe(true);
+			programNodeValidity[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
+			programNodeValidity[2].IsRecognized.ShouldBe(true);
+			programNodeValidity[2].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 	}
 }

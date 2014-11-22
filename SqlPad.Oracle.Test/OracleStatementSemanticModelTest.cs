@@ -873,17 +873,17 @@ FROM
 			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
 			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
 
-			var functionReferences = semanticModel.QueryBlocks.Single().AllProgramReferences.ToArray();
-			functionReferences.Length.ShouldBe(1);
-			var functionReference = functionReferences[0];
-			functionReference.FunctionIdentifierNode.Id.ShouldBe(Terminals.Count);
-			functionReference.ObjectNode.ShouldBe(null);
-			functionReference.OwnerNode.ShouldBe(null);
-			functionReference.AnalyticClauseNode.ShouldBe(null);
-			functionReference.SelectListColumn.ShouldBe(null);
-			functionReference.ParameterListNode.ShouldNotBe(null);
-			functionReference.ParameterNodes.ShouldNotBe(null);
-			functionReference.ParameterNodes.Count.ShouldBe(1);
+			var programReferences = semanticModel.QueryBlocks.Single().AllProgramReferences.ToArray();
+			programReferences.Length.ShouldBe(1);
+			var programReference = programReferences[0];
+			programReference.FunctionIdentifierNode.Id.ShouldBe(Terminals.Count);
+			programReference.ObjectNode.ShouldBe(null);
+			programReference.OwnerNode.ShouldBe(null);
+			programReference.AnalyticClauseNode.ShouldBe(null);
+			programReference.SelectListColumn.ShouldBe(null);
+			programReference.ParameterListNode.ShouldNotBe(null);
+			programReference.ParameterNodes.ShouldNotBe(null);
+			programReference.ParameterNodes.Count.ShouldBe(1);
 		}
 
 		[Test(Description = @"")]
@@ -894,17 +894,52 @@ FROM
 			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
 			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
 
-			var functionReferences = semanticModel.QueryBlocks.Single().AllProgramReferences.ToArray();
-			functionReferences.Length.ShouldBe(1);
-			var functionReference = functionReferences[0];
-			functionReference.FunctionIdentifierNode.Id.ShouldBe(Terminals.ListAggregation);
-			functionReference.ObjectNode.ShouldBe(null);
-			functionReference.OwnerNode.ShouldBe(null);
-			functionReference.AnalyticClauseNode.ShouldBe(null);
-			functionReference.SelectListColumn.ShouldNotBe(null);
-			functionReference.ParameterListNode.ShouldNotBe(null);
-			functionReference.ParameterNodes.ShouldNotBe(null);
-			functionReference.ParameterNodes.Count.ShouldBe(2);
+			var programReferences = semanticModel.QueryBlocks.Single().AllProgramReferences.ToArray();
+			programReferences.Length.ShouldBe(1);
+			var programReference = programReferences[0];
+			programReference.FunctionIdentifierNode.Id.ShouldBe(Terminals.ListAggregation);
+			programReference.ObjectNode.ShouldBe(null);
+			programReference.OwnerNode.ShouldBe(null);
+			programReference.AnalyticClauseNode.ShouldBe(null);
+			programReference.SelectListColumn.ShouldNotBe(null);
+			programReference.ParameterListNode.ShouldNotBe(null);
+			programReference.ParameterNodes.ShouldNotBe(null);
+			programReference.ParameterNodes.Count.ShouldBe(2);
+		}
+
+		[Test(Description = @"")]
+		public void TestTableCollectionExpressionProgramReferences()
+		{
+			const string query1 = @"SELECT PLAN_TABLE_OUTPUT, COLUMN_VALUE FROM TABLE(DBMS_XPLAN.DISPLAY_CURSOR(NULL, NULL, 'ALLSTATS LAST ADVANCED')) T1, TABLE(SYS.ODCIRAWLIST(HEXTORAW('ABCDEF'), HEXTORAW('A12345'), HEXTORAW('F98765'))) T2";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			var objectReferences = semanticModel.QueryBlocks.Single().ObjectReferences.ToArray();
+			objectReferences.Length.ShouldBe(2);
+			objectReferences[0].RootNode.ShouldNotBe(null);
+			objectReferences[0].RootNode.FirstTerminalNode.Id.ShouldBe(Terminals.Table);
+			objectReferences[0].RootNode.LastTerminalNode.Id.ShouldBe(Terminals.ObjectAlias);
+			objectReferences[0].RootNode.LastTerminalNode.Token.Value.ShouldBe("T1");
+			objectReferences[1].RootNode.ShouldNotBe(null);
+			objectReferences[1].RootNode.FirstTerminalNode.Id.ShouldBe(Terminals.Table);
+			objectReferences[1].RootNode.LastTerminalNode.Id.ShouldBe(Terminals.ObjectAlias);
+			objectReferences[1].RootNode.LastTerminalNode.Token.Value.ShouldBe("T2");
+
+			var programReferences = semanticModel.QueryBlocks.Single().AllProgramReferences.ToArray();
+			programReferences.Length.ShouldBe(2);
+			programReferences[0].RootNode.ShouldNotBe(null);
+			programReferences[0].RootNode.FirstTerminalNode.Id.ShouldBe(Terminals.ObjectIdentifier);
+			programReferences[0].RootNode.LastTerminalNode.Id.ShouldBe(Terminals.RightParenthesis);
+			programReferences[0].ParameterListNode.ShouldNotBe(null);
+			programReferences[0].ParameterNodes.ShouldNotBe(null);
+			programReferences[0].ParameterNodes.Count.ShouldBe(3);
+			programReferences[1].RootNode.ShouldNotBe(null);
+			programReferences[1].RootNode.FirstTerminalNode.Id.ShouldBe(Terminals.ObjectIdentifier);
+			programReferences[1].RootNode.LastTerminalNode.Id.ShouldBe(Terminals.RightParenthesis);
+			programReferences[1].ParameterListNode.ShouldNotBe(null);
+			programReferences[1].ParameterNodes.ShouldNotBe(null);
+			programReferences[1].ParameterNodes.Count.ShouldBe(3);
 		}
 	}
 }
