@@ -357,6 +357,11 @@ namespace SqlPad.Oracle.Test
 			nvlFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("B2", 2, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, false));
 			builtInFunctionPackage.Functions.Add(nvlFunctionMetadata);
 
+			var hexToRawFunctionMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues("SYS", "STANDARD", "HEXTORAW"), false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNormal, true);
+			hexToRawFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "RAW", OracleObjectIdentifier.Empty, false));
+			hexToRawFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("C", 0, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, false));
+			builtInFunctionPackage.Functions.Add(hexToRawFunctionMetadata);
+
 			var upperFunctionMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues("SYS", "STANDARD", "UPPER"), false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNormal, true);
 			upperFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "VARCHAR2", OracleObjectIdentifier.Empty, false));
 			upperFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("CH", 0, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, false));

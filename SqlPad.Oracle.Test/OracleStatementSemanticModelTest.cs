@@ -927,7 +927,7 @@ FROM
 			objectReferences[1].RootNode.LastTerminalNode.Token.Value.ShouldBe("T2");
 
 			var programReferences = semanticModel.QueryBlocks.Single().AllProgramReferences.ToArray();
-			programReferences.Length.ShouldBe(2);
+			programReferences.Length.ShouldBe(5);
 			programReferences[0].RootNode.ShouldNotBe(null);
 			programReferences[0].RootNode.FirstTerminalNode.Id.ShouldBe(Terminals.ObjectIdentifier);
 			programReferences[0].RootNode.LastTerminalNode.Id.ShouldBe(Terminals.RightParenthesis);
@@ -940,6 +940,12 @@ FROM
 			programReferences[1].ParameterListNode.ShouldNotBe(null);
 			programReferences[1].ParameterNodes.ShouldNotBe(null);
 			programReferences[1].ParameterNodes.Count.ShouldBe(3);
+			programReferences[2].Metadata.ShouldNotBe(null);
+			programReferences[2].Metadata.Identifier.Name.ShouldBe("\"HEXTORAW\"");
+			programReferences[3].Metadata.ShouldNotBe(null);
+			programReferences[3].Metadata.Identifier.Name.ShouldBe("\"HEXTORAW\"");
+			programReferences[4].Metadata.ShouldNotBe(null);
+			programReferences[4].Metadata.Identifier.Name.ShouldBe("\"HEXTORAW\"");
 		}
 	}
 }

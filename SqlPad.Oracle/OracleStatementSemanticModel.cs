@@ -229,13 +229,13 @@ namespace SqlPad.Oracle
 											RootNode = functionIdentifierNode.GetAncestor(NonTerminals.TableReference)
 										};
 
+									var prefixNonTerminal = functionIdentifierNode.ParentNode.GetDescendantByPath(NonTerminals.Prefix);
+									var functionCallNodes = GetFunctionCallNodes(functionIdentifierNode);
+									var tableCollectionProgramReference = CreateFunctionReference(queryBlock, queryBlock, null, QueryBlockPlacement.From, functionIdentifierNode, prefixNonTerminal, functionCallNodes);
+									tableCollectionProgramReference.RootNode = functionIdentifierNode.ParentNode;
+
 									if (tableCollectionDataObjectReference.DatabaseLinkNode == null)
 									{
-										var prefixNonTerminal = functionIdentifierNode.ParentNode.GetDescendantByPath(NonTerminals.Prefix);
-										var functionCallNodes = GetFunctionCallNodes(functionIdentifierNode);
-										var tableCollectionProgramReference = CreateFunctionReference(queryBlock, queryBlock, null, QueryBlockPlacement.From, functionIdentifierNode, prefixNonTerminal, functionCallNodes);
-										tableCollectionProgramReference.RootNode = functionIdentifierNode.ParentNode;
-
 										var metadata = UpdateFunctionReferenceWithMetadata(tableCollectionProgramReference);
 										if (metadata != null)
 										{
@@ -244,11 +244,13 @@ namespace SqlPad.Oracle
 											tableCollectionDataObjectReference.OwnerNode = tableCollectionProgramReference.OwnerNode;
 											tableCollectionDataObjectReference.ObjectNode = tableCollectionProgramReference.ObjectNode;
 										}
-
-										queryBlock.ProgramReferences.Add(tableCollectionProgramReference);
 									}
-
+									
+									queryBlock.ProgramReferences.Add(tableCollectionProgramReference);
 									queryBlock.ObjectReferences.Add(tableCollectionDataObjectReference);
+
+									var identifiers = functionCallNodes.SelectMany(n => n.GetDescendantsWithinSameQuery(Terminals.Identifier));
+									ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock, identifiers, QueryBlockPlacement.From, null);
 								}
 							}
 						}
