@@ -2110,6 +2110,26 @@ ORDER BY
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 		}
 
+		[Test(Description = @"")]
+		public void TestXmlCastFunction()
+		{
+			const string statement1 = "SELECT XMLCAST(XMLQUERY('/r/v' PASSING XMLTYPE('<r><c>id</c><v>value 1</v></r>') RETURNING CONTENT) AS VARCHAR2(100)) || ' Value' FROM DUAL";
+
+			var statements = Parser.Parse(statement1).ToArray();
+			var statement = statements.Single().Validate();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+		}
+
+		[Test(Description = @"")]
+		public void TestXmlExistsFunction()
+		{
+			const string statement1 = "SELECT * FROM DUAL WHERE XMLEXISTS('/r[c=\"id\"]' PASSING XMLTYPE('<r><c>id</c><v>value 1</v></r>')) AND 1 = 1";
+
+			var statements = Parser.Parse(statement1).ToArray();
+			var statement = statements.Single().Validate();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+		}
+
 		public class IsRuleValid
 		{
 			[Test(Description = @"")]
@@ -2302,6 +2322,7 @@ ORDER BY
 						Terminals.Unique,
 						Terminals.Variance,
 						Terminals.XmlAggregate,
+						Terminals.XmlCast,
 						Terminals.XmlColumnValue,
 						Terminals.XmlElement,
 						Terminals.XmlForest,

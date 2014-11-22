@@ -2179,7 +2179,7 @@
           <NonTerminal Id="Expression" />
         </Sequence>
         <Sequence>
-          <Terminal Id="Cast" />
+          <NonTerminal Id="CastOrXmlCast" />
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="ExpressionOrMultiset" />
           <NonTerminal Id="AsDataType" />
@@ -2267,6 +2267,17 @@
           <NonTerminal Id="PrefixedColumnReference" />
           <NonTerminal Id="MultisetOperatorClauseOrTimestampAtTimeZone" IsOptional="true" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="CastOrXmlCast">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Cast" />
+        </Sequence>
+       <Sequence>
+          <Terminal Id="XmlCast" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -2979,6 +2990,10 @@
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="GroupingExpressionListOrNestedQuery" />
           <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="ChainedCondition" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="XmlExistsClause" />
           <NonTerminal Id="ChainedCondition" IsOptional="true" />
         </Sequence>
         <Sequence>
@@ -5240,6 +5255,18 @@
         <Sequence>
           <Terminal Id="Default" />
           <NonTerminal Id="Expression" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="XmlExistsClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="XmlExists" />
+          <Terminal Id="LeftParenthesis" />
+          <Terminal Id="StringLiteral" />
+          <NonTerminal Id="XmlPassingClause" IsOptional="true" />
+          <Terminal Id="RightParenthesis" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -9749,6 +9776,7 @@
 
     <!-- CAST function -->
     <Terminal Id="Cast" Value="CAST" />
+    <Terminal Id="XmlCast" Value="XMLCAST" />
     <Terminal Id="Byte" Value="BYTE" />
     <Terminal Id="Multiset" Value="MULTISET" />
     <Terminal Id="DataTypeIdentifier" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
@@ -9911,6 +9939,7 @@
 	  <Terminal Id="Ordinality" Value="ORDINALITY" />
 	  <Terminal Id="Columns" Value="COLUMNS" />
     <Terminal Id="XmlQuery" Value="XMLQUERY" />
+    <Terminal Id="XmlExists" Value="XMLEXISTS" />
 	  <Terminal Id="Content" Value="CONTENT" />
 	  <Terminal Id="Document" Value="DOCUMENT" />
 	  <Terminal Id="Version" Value="VERSION" />

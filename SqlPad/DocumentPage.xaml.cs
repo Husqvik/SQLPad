@@ -1754,6 +1754,11 @@ namespace SqlPad
 
 			Editor.Focus();
 		}
+
+		private void TabControlResultGiveFeedbackHandler(object sender, GiveFeedbackEventArgs e)
+		{
+			e.Handled = true;
+		}
 	}
 
 	internal struct ActionResult

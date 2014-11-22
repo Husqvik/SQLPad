@@ -184,7 +184,7 @@
 
 		<GridSplitter Grid.Column="0" Grid.Row="2" Height="4" HorizontalAlignment="Stretch" ShowsPreview="True"
 		              VerticalAlignment="Center" Background="DimGray" />
-		<TabControl x:Name="TabControlResult" Grid.Column="0" Grid.Row="3">
+		<TabControl x:Name="TabControlResult" Grid.Column="0" Grid.Row="3" GiveFeedback="TabControlResultGiveFeedbackHandler">
 			<TabItem Header="_Result set">
 				<DataGrid x:Name="ResultGrid"
 				          AutoGenerateColumns="False"
