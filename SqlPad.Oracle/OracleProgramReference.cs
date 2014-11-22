@@ -45,7 +45,7 @@ namespace SqlPad.Oracle
 		}
 	}
 
-	[DebuggerDisplay("OracleTableCollectionReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; FunctionIdentifier={ObjectNode.Token.Value})")]
+	[DebuggerDisplay("OracleTableCollectionReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; ObjectIdentifier={ObjectNode.Token.Value})")]
 	public class OracleTableCollectionReference : OracleDataObjectReference
 	{
 		private List<OracleColumn> _columns;
@@ -105,7 +105,31 @@ namespace SqlPad.Oracle
 				}
 			}
 
-			return _columns;
+			return _columns.AsReadOnly();
+		}
+	}
+
+	[DebuggerDisplay("OracleXmlTableReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; FunctionIdentifier={ObjectNode.Token.Value})")]
+	public class OracleXmlTableReference : OracleDataObjectReference
+	{
+		private readonly ICollection<OracleColumn> _columns;
+
+		public OracleXmlTableReference(IEnumerable<OracleColumn> columns)
+			: base(ReferenceType.XmlTable)
+		{
+			_columns = new List<OracleColumn>(columns).AsReadOnly();
+		}
+
+		public override string Name { get { return AliasNode == null ? null : AliasNode.Token.Value; } }
+
+		public override OracleObjectIdentifier FullyQualifiedObjectName
+		{
+			get { return OracleObjectIdentifier.Create(null, Name); }
+		}
+
+		public override ICollection<OracleColumn> Columns
+		{
+			get { return _columns; }
 		}
 	}
 

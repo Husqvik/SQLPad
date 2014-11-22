@@ -175,15 +175,11 @@ namespace SqlPad.Oracle
 						continue;
 					}
 
-					StatementGrammarNode schemaTerminal;
-					OracleSchemaObject schemaObject = null;
-					ICollection<KeyValuePair<StatementGrammarNode, string>> commonTableExpressions = new Dictionary<StatementGrammarNode, string>();
-					var referenceType = ReferenceType.CommonTableExpression;
-					
 					var objectIdentifierNode = queryTableExpression.GetDescendantByPath(Terminals.ObjectIdentifier);
 					if (objectIdentifierNode != null)
 					{
-						schemaTerminal = queryTableExpression.GetDescendantByPath(NonTerminals.SchemaPrefix);
+						ICollection<KeyValuePair<StatementGrammarNode, string>> commonTableExpressions = new Dictionary<StatementGrammarNode, string>();
+						var schemaTerminal = queryTableExpression.GetDescendantByPath(NonTerminals.SchemaPrefix);
 						if (schemaTerminal != null)
 						{
 							schemaTerminal = schemaTerminal.ChildNodes[0];
@@ -195,6 +191,8 @@ namespace SqlPad.Oracle
 							commonTableExpressions.AddRange(cteReferences.Where(n => n.Value == tableName));
 						}
 
+						OracleSchemaObject schemaObject = null;
+						var referenceType = ReferenceType.CommonTableExpression;
 						if (commonTableExpressions.Count == 0)
 						{
 							referenceType = ReferenceType.SchemaObject;
@@ -206,6 +204,25 @@ namespace SqlPad.Oracle
 							{
 								schemaObject = _databaseModel.GetFirstSchemaObject<OracleDataObject>(_databaseModel.GetPotentialSchemaObjectIdentifiers(owner, objectName));
 							}
+						}
+
+						var objectReference =
+						new OracleDataObjectReference(referenceType)
+						{
+							Owner = queryBlock,
+							RootNode = tableReferenceNonterminal,
+							OwnerNode = schemaTerminal,
+							ObjectNode = objectIdentifierNode,
+							DatabaseLinkNode = GetDatabaseLinkFromQueryTableExpression(queryTableExpression),
+							AliasNode = objectReferenceAlias,
+							SchemaObject = schemaObject
+						};
+
+						queryBlock.ObjectReferences.Add(objectReference);
+
+						if (commonTableExpressions.Count > 0)
+						{
+							_objectReferenceCteRootNodes[objectReference] = commonTableExpressions;
 						}
 					}
 					else
@@ -226,7 +243,7 @@ namespace SqlPad.Oracle
 											Placement = QueryBlockPlacement.From,
 											AliasNode = objectReferenceAlias,
 											DatabaseLinkNode = GetDatabaseLinkFromQueryTableExpression(queryTableExpression),
-											RootNode = functionIdentifierNode.GetAncestor(NonTerminals.TableReference)
+											RootNode = tableReferenceNonterminal
 										};
 
 									var prefixNonTerminal = functionIdentifierNode.ParentNode.GetDescendantByPath(NonTerminals.Prefix);
@@ -256,32 +273,55 @@ namespace SqlPad.Oracle
 						}
 						else
 						{
-							//objectIdentifierNode = xmlTableClause.GetDescendantByPath(Terminals.XmlTable);
+							var columnList = xmlTableClause.GetDescendantByPath(NonTerminals.XmlTableOptions, NonTerminals.XmlTableColumnList);
+							if (columnList != null)
+							{
+								var columns = new List<OracleColumn>();
+								foreach (var xmlTableColumn in columnList.GetDescendants(NonTerminals.XmlTableColumn).Where(c => c.ChildNodes.Count >= 1))
+								{
+									var xmlColumnAlias = xmlTableColumn.ChildNodes[0];
+
+									var column =
+										new OracleColumn
+										{
+											Name = xmlColumnAlias.Token.Value.ToQuotedIdentifier(),
+											Nullable = true,
+											DataType = OracleDataType.Empty
+										};
+
+									columns.Add(column);
+
+									var dataTypeNode = xmlTableColumn.GetDescendantByPath(NonTerminals.XmlTableColumnDefinition, NonTerminals.DataTypeOrXmlType);
+									// TODO: Resolve proper data type
+									if (dataTypeNode == null)
+									{
+										
+									}
+									else
+									{
+										/*column.DataType =
+											new OracleDataType
+											{
+												//FullyQualifiedName = ,
+											};*/
+									}
+								}
+
+								if (columns.Count > 0)
+								{
+									var xmlTableReference =
+										new OracleXmlTableReference(columns)
+										{
+											RootNode = tableReferenceNonterminal,
+											AliasNode = objectReferenceAlias
+										};
+
+									queryBlock.ObjectReferences.Add(xmlTableReference);
+								}
+							}
 
 							//var xmlTablePassingClause = xmlTableClause.GetDescendantByPath(NonTerminals.XmlTableOptions, NonTerminals.XmlPassingClause, NonTerminals.ExpressionAsXmlAliasWithMandatoryAsList);
-							//referenceType = ReferenceType.XmlTable;
 						}
-
-						continue;
-					}
-
-					var objectReference =
-						new OracleDataObjectReference(referenceType)
-						{
-							Owner = queryBlock,
-							RootNode = tableReferenceNonterminal,
-							OwnerNode = schemaTerminal,
-							ObjectNode = objectIdentifierNode,
-							DatabaseLinkNode = GetDatabaseLinkFromQueryTableExpression(queryTableExpression),
-							AliasNode = objectReferenceAlias,
-							SchemaObject = schemaObject
-						};
-
-					queryBlock.ObjectReferences.Add(objectReference);
-
-					if (commonTableExpressions.Count > 0)
-					{
-						_objectReferenceCteRootNodes[objectReference] = commonTableExpressions;
 					}
 				}
 
@@ -1097,6 +1137,9 @@ namespace SqlPad.Oracle
 			var newColumnReferences = new List<OracleColumn>();
 			switch (rowSourceReference.Type)
 			{
+				case ReferenceType.XmlTable:
+					newColumnReferences.AddRange(GetColumnReferenceMatchingColumns(rowSourceReference, columnReference));
+					break;
 				case ReferenceType.SchemaObject:
 				case ReferenceType.TableCollection:
 					if (rowSourceReference.SchemaObject == null)
@@ -1113,8 +1156,7 @@ namespace SqlPad.Oracle
 					}
 					else
 					{
-						newColumnReferences.AddRange(rowSourceReference.Columns
-							.Where(c => c.Name == columnReference.NormalizedName && (columnReference.ObjectNode == null || IsTableReferenceValid(columnReference, rowSourceReference))));
+						newColumnReferences.AddRange(GetColumnReferenceMatchingColumns(rowSourceReference, columnReference));
 					}
 
 					break;
@@ -1143,6 +1185,12 @@ namespace SqlPad.Oracle
 			}
 
 			columnReference.ColumnNodeObjectReferences.Add(rowSourceReference);
+		}
+
+		private IEnumerable<OracleColumn> GetColumnReferenceMatchingColumns(OracleDataObjectReference rowSourceReference, OracleColumnReference columnReference)
+		{
+			return rowSourceReference.Columns
+				.Where(c => c.Name == columnReference.NormalizedName && (columnReference.ObjectNode == null || IsTableReferenceValid(columnReference, rowSourceReference)));
 		}
 
 		private void TryColumnReferenceAsProgramOrSequenceReference(OracleColumnReference columnReference)

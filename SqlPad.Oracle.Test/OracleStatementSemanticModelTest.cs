@@ -947,5 +947,29 @@ FROM
 			programReferences[4].Metadata.ShouldNotBe(null);
 			programReferences[4].Metadata.Identifier.Name.ShouldBe("\"HEXTORAW\"");
 		}
+
+		[Test(Description = @"")]
+		public void TestXmlTableReference()
+		{
+			const string query1 = @"SELECT SEQ#, TITLE, DESCRIPTION FROM XMLTABLE('for $i in $RSS_DATA/rss/channel/item return $i' PASSING HTTPURITYPE('http://servis.idnes.cz/rss.asp?c=zpravodaj').GETXML() AS RSS_DATA COLUMNS SEQ# FOR ORDINALITY, TITLE VARCHAR2(4000) PATH 'title', DESCRIPTION CLOB PATH 'description') T";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			var objectReferences = semanticModel.QueryBlocks.Single().ObjectReferences.ToArray();
+			objectReferences.Length.ShouldBe(1);
+			objectReferences[0].RootNode.ShouldNotBe(null);
+			objectReferences[0].RootNode.FirstTerminalNode.Id.ShouldBe(Terminals.XmlTable);
+			objectReferences[0].RootNode.LastTerminalNode.Id.ShouldBe(Terminals.ObjectAlias);
+			objectReferences[0].RootNode.LastTerminalNode.Token.Value.ShouldBe("T");
+			objectReferences[0].Columns.Count.ShouldBe(3);
+			var columns = objectReferences[0].Columns.ToArray();
+			columns[0].Name.ShouldBe("\"SEQ#\"");
+			columns[0].Nullable.ShouldBe(true);
+			columns[1].Name.ShouldBe("\"TITLE\"");
+			columns[1].Nullable.ShouldBe(true);
+			columns[2].Name.ShouldBe("\"DESCRIPTION\"");
+			columns[2].Nullable.ShouldBe(true);
+		}
 	}
 }

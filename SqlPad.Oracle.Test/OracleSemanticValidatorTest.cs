@@ -1578,5 +1578,23 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 				v.SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 			});
 		}
+
+		[Test(Description = @"")]
+		public void TestColumnResolutionFromXmlTable()
+		{
+			const string sqlText = @"SELECT SEQ#, TITLE, DESCRIPTION FROM XMLTABLE('for $i in $RSS_DATA/rss/channel/item return $i' PASSING HTTPURITYPE('http://servis.idnes.cz/rss.asp?c=zpravodaj').GETXML() AS RSS_DATA COLUMNS SEQ# FOR ORDINALITY, TITLE VARCHAR2(4000) PATH 'title', DESCRIPTION CLOB PATH 'description') T";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var columnNodeValidity = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			columnNodeValidity.Count.ShouldBe(3);
+			columnNodeValidity.ForEach(v =>
+			{
+				v.IsRecognized.ShouldBe(true);
+				v.SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
+			});
+		}
 	}
 }
