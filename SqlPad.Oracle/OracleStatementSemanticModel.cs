@@ -291,19 +291,37 @@ namespace SqlPad.Oracle
 
 									columns.Add(column);
 
-									var dataTypeNode = xmlTableColumn.GetDescendantByPath(NonTerminals.XmlTableColumnDefinition, NonTerminals.DataTypeOrXmlType);
-									// TODO: Resolve proper data type
-									if (dataTypeNode == null)
+									var xmlTableColumnDefinition = xmlTableColumn.GetDescendantByPath(NonTerminals.XmlTableColumnDefinition);
+									if (xmlTableColumnDefinition != null)
 									{
-										
-									}
-									else
-									{
-										/*column.DataType =
-											new OracleDataType
+										if (xmlTableColumnDefinition.ChildNodes.Count == 2 && xmlTableColumnDefinition.ChildNodes[0].Id == Terminals.For && xmlTableColumnDefinition.ChildNodes[1].Id == Terminals.Ordinality)
+										{
+											column.DataType =
+														new OracleDataType
+														{
+															FullyQualifiedName = OracleObjectIdentifier.Create(null, "NUMBER")
+														};
+										}
+										else
+										{
+											var dataTypeOrXmlTypeNode = xmlTableColumnDefinition.GetDescendantByPath(NonTerminals.DataTypeOrXmlType);
+											if (dataTypeOrXmlTypeNode != null)
 											{
-												//FullyQualifiedName = ,
-											};*/
+												var dataTypeNode = dataTypeOrXmlTypeNode.ChildNodes[0];
+												if (dataTypeNode.Id == Terminals.XmlType)
+												{
+													column.DataType =
+														new OracleDataType
+														{
+															FullyQualifiedName = OracleObjectIdentifier.Create(OracleDatabaseModelBase.SchemaSys, OracleTypeBase.TypeCodeXml)
+														};
+												}
+												else if (dataTypeNode.Id == NonTerminals.DataType)
+												{
+													column.DataType = OracleDataType.FromGrammarNode(dataTypeNode);
+												}
+											}
+										}
 									}
 								}
 

@@ -966,10 +966,13 @@ FROM
 			var columns = objectReferences[0].Columns.ToArray();
 			columns[0].Name.ShouldBe("\"SEQ#\"");
 			columns[0].Nullable.ShouldBe(true);
+			columns[0].FullTypeName.ShouldBe("NUMBER");
 			columns[1].Name.ShouldBe("\"TITLE\"");
 			columns[1].Nullable.ShouldBe(true);
+			columns[1].FullTypeName.ShouldBe("VARCHAR2(4000)");
 			columns[2].Name.ShouldBe("\"DESCRIPTION\"");
 			columns[2].Nullable.ShouldBe(true);
+			columns[2].FullTypeName.ShouldBe("CLOB");
 		}
 	}
 }

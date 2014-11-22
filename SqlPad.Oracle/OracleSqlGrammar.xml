@@ -2585,9 +2585,6 @@
           <Terminal Id="Smallint" />
         </Sequence>
         <Sequence>
-          <Terminal Id="Int" />
-        </Sequence>
-        <Sequence>
           <Terminal Id="Number" />
           <NonTerminal Id="DataTypeNumericPrecisionAndScale" IsOptional="true" />
         </Sequence>
@@ -2614,10 +2611,13 @@
           <Terminal Id="Double" />
           <Terminal Id="Precision" />
         </Sequence>
+        <!--<Sequence>
+          <Terminal Id="Int" />
+        </Sequence>
         <Sequence>
           <Terminal Id="Real" />
         </Sequence>
-        <!--<Sequence>
+        <Sequence>
           <Terminal Id="Blob" />
         </Sequence>
         <Sequence>
@@ -2966,6 +2966,15 @@
         </Sequence>
         <Sequence>
           <NonTerminal Id="Expression" />
+          <Terminal Id="Is" />
+          <Terminal Id="Not" IsOptional="true" />
+          <Terminal Id="Json" />
+          <NonTerminal Id="StrictOrLax" IsOptional="true" />
+          <NonTerminal Id="WithOrWithoutUniqueKeys" IsOptional="true" />
+          <NonTerminal Id="ChainedCondition" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="Expression" />
           <Terminal Id="Not" IsOptional="true" />
           <Terminal Id="In" />
           <Terminal Id="LeftParenthesis" />
@@ -2994,6 +3003,10 @@
         </Sequence>
         <Sequence>
           <NonTerminal Id="XmlExistsClause" />
+          <NonTerminal Id="ChainedCondition" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="JsonExistsClause" />
           <NonTerminal Id="ChainedCondition" IsOptional="true" />
         </Sequence>
         <Sequence>
@@ -3026,6 +3039,38 @@
           <Terminal Id="Of" IsOptional="true" />
           <NonTerminal Id="PrefixedColumnReference" />
           <NonTerminal Id="ChainedCondition" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="StrictOrLax">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Strict" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Lax" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="WithOrWithoutUniqueKeys">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="WithOrWithout" />
+          <Terminal Id="Unique" />
+          <Terminal Id="Keys" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="WithOrWithout">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="With" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Without" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -5267,6 +5312,44 @@
           <Terminal Id="StringLiteral" />
           <NonTerminal Id="XmlPassingClause" IsOptional="true" />
           <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="JsonExistsClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="JsonExists" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="Expression" />
+          <Terminal Id="Comma" />
+          <Terminal Id="StringLiteral" />
+          <NonTerminal Id="JsonExistsOnErrorClause" IsOptional="true" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="JsonExistsOnErrorClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ErrorOrTrueOrFalse" />
+          <Terminal Id="On" />
+          <Terminal Id="Error" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ErrorOrTrueOrFalse">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Error" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="True" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="False" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -10272,6 +10355,16 @@
     <!-- Call -->
     <Terminal Id="Call" Value="CALL" />
     <Terminal Id="Indicator" Value="INDICATOR" />
+    
+    <!-- JSON -->
+    <Terminal Id="Json" Value="JSON" />
+    <Terminal Id="Strict" Value="STRICT" />
+    <Terminal Id="Lax" Value="LAX" />
+    <Terminal Id="Keys" Value="KEYS" />
+    <Terminal Id="JsonExists" Value="JSON_EXISTS" />
+    <Terminal Id="Error" Value="ERROR" />
+    <Terminal Id="True" Value="TRUE" />
+    <Terminal Id="False" Value="FALSE" />
 
     <!-- Other -->
     <Terminal Id="Float" Value="FLOAT" IsReservedWord="true" />
@@ -10301,9 +10394,7 @@
     <Terminal Id="Values" Value="VALUES" IsReservedWord="true" />
     <Terminal Id="Varchar2" Value="VARCHAR2" IsReservedWord="true" />
     <Terminal Id="NVarchar2" Value="NVARCHAR2" />
-    <Terminal Id="Real" Value="REAL" />
     <Terminal Id="Dec" Value="DEC" />
-    <Terminal Id="Int" Value="INT" />
     <Terminal Id="UniversalRowId" Value="UROWID" />
     <Terminal Id="Character" Value="CHARACTER" />
     <Terminal Id="Numeric" Value="NUMERIC" />

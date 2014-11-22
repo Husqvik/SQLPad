@@ -2130,6 +2130,26 @@ ORDER BY
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 		}
 
+		[Test(Description = @"")]
+		public void TestIsJsonCondition()
+		{
+			const string statement1 = "SELECT * FROM DUAL WHERE DUMMY IS NOT JSON LAX WITHOUT UNIQUE KEYS AND 1 = 1";
+
+			var statements = Parser.Parse(statement1).ToArray();
+			var statement = statements.Single().Validate();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+		}
+
+		[Test(Description = @"")]
+		public void TestJsonExistsFunction()
+		{
+			const string statement1 = "SELECT * FROM DUAL WHERE JSON_EXISTS('[{first: \"Jeff\"}, {last: \"Williams\"}]', '$[1].first' FALSE ON ERROR) AND 1 = 1";
+
+			var statements = Parser.Parse(statement1).ToArray();
+			var statement = statements.Single().Validate();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+		}
+
 		public class IsRuleValid
 		{
 			[Test(Description = @"")]
