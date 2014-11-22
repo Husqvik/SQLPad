@@ -130,8 +130,7 @@ namespace SqlPad
 				if (!fileInfo.Exists)
 					continue;
 
-				var documentPage = OpenExistingFile(fileInfo.FullName);
-				documentPage.WorkDocument.TabIndex = DocumentTabControl.SelectedIndex;
+				OpenExistingFile(fileInfo.FullName);
 			}
 		}
 
@@ -166,11 +165,6 @@ namespace SqlPad
 
 			DocumentTabControl.Items.Insert(DocumentTabControl.Items.Count - 1, newDocumentPage.TabItem);
 			DocumentTabControl.SelectedItem = newDocumentPage.TabItem;
-
-			if (workDocument == null)
-			{
-				newDocumentPage.WorkDocument.TabIndex = DocumentTabControl.TabIndex;
-			}
 
 			_findReplaceManager.CurrentEditor = newDocumentPage.EditorAdapter;
 
@@ -273,6 +267,7 @@ namespace SqlPad
 			foreach (var document in AllDocuments)
 			{
 				document.SaveWorkingDocument();
+				document.WorkDocument.TabIndex = DocumentTabControl.Items.IndexOf(document.TabItem);
 			}
 
 			WorkDocumentCollection.SetApplicationWindowProperties(this);
@@ -310,7 +305,7 @@ namespace SqlPad
 			}
 			else
 			{
-				workDocument = new WorkDocument { DocumentFileName = fileName };
+				workDocument = new WorkDocument { DocumentFileName = fileName, TabIndex = -1 };
 
 				WorkDocumentCollection.AddDocument(workDocument);
 				documentPage = CreateNewDocumentPage(workDocument);
@@ -341,19 +336,15 @@ namespace SqlPad
 			}
 
 			var indexFrom = DocumentTabControl.Items.IndexOf(tabItemDragged);
-			var workingDocumentFrom = draggedDocumentPage.WorkDocument;
 			var indexTo = DocumentTabControl.Items.IndexOf(tabItemTarget);
-			var workingDocumentTo = ((DocumentPage)tabItemTarget.Content).WorkDocument;
 
 			DocumentTabControl.SelectedIndex = 0;
 
 			DocumentTabControl.Items.Remove(tabItemDragged);
 			DocumentTabControl.Items.Insert(indexTo, tabItemDragged);
-			workingDocumentFrom.TabIndex = indexTo;
 
 			DocumentTabControl.Items.Remove(tabItemTarget);
 			DocumentTabControl.Items.Insert(indexFrom, tabItemTarget);
-			workingDocumentTo.TabIndex = indexFrom;
 
 			DocumentTabControl.SelectedIndex = indexTo;
 		}
