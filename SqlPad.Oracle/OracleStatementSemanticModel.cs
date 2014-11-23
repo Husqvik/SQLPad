@@ -150,128 +150,13 @@ namespace SqlPad.Oracle
 
 				foreach (var tableReferenceNonterminal in tableReferenceNonterminals)
 				{
-					var queryTableExpression = tableReferenceNonterminal.GetDescendantsWithinSameQuery(NonTerminals.QueryTableExpression).SingleOrDefault();
-					if (queryTableExpression == null)
-						continue;
-
 					var objectReferenceAlias = tableReferenceNonterminal.GetDescendantByPath(Terminals.ObjectAlias);
 
-					var nestedQueryTableReference = queryTableExpression.GetPathFilterDescendants(f => f.Id != NonTerminals.Subquery, NonTerminals.NestedQuery).SingleOrDefault();
-					if (nestedQueryTableReference != null)
+					var queryTableExpression = tableReferenceNonterminal.GetDescendantsWithinSameQuery(NonTerminals.QueryTableExpression).SingleOrDefault();
+					if (queryTableExpression == null)
 					{
-						var nestedQueryTableReferenceQueryBlock = nestedQueryTableReference.GetPathFilterDescendants(n => n.Id != NonTerminals.NestedQuery && n.Id != NonTerminals.SubqueryFactoringClause, NonTerminals.QueryBlock).FirstOrDefault();
-						if (nestedQueryTableReferenceQueryBlock != null)
-						{
-							queryBlock.ObjectReferences.Add(
-								new OracleDataObjectReference(ReferenceType.InlineView)
-								{
-									Owner = queryBlock,
-									RootNode = tableReferenceNonterminal,
-									ObjectNode = nestedQueryTableReferenceQueryBlock,
-									AliasNode = objectReferenceAlias
-								});
-						}
-
-						continue;
-					}
-
-					var objectIdentifierNode = queryTableExpression.GetDescendantByPath(Terminals.ObjectIdentifier);
-					if (objectIdentifierNode != null)
-					{
-						ICollection<KeyValuePair<StatementGrammarNode, string>> commonTableExpressions = new Dictionary<StatementGrammarNode, string>();
-						var schemaTerminal = queryTableExpression.GetDescendantByPath(NonTerminals.SchemaPrefix);
-						if (schemaTerminal != null)
-						{
-							schemaTerminal = schemaTerminal.ChildNodes[0];
-						}
-
-						var tableName = objectIdentifierNode.Token.Value.ToQuotedIdentifier();
-						if (schemaTerminal == null)
-						{
-							commonTableExpressions.AddRange(cteReferences.Where(n => n.Value == tableName));
-						}
-
-						OracleSchemaObject schemaObject = null;
-						var referenceType = ReferenceType.CommonTableExpression;
-						if (commonTableExpressions.Count == 0)
-						{
-							referenceType = ReferenceType.SchemaObject;
-
-							var objectName = objectIdentifierNode.Token.Value;
-							var owner = schemaTerminal == null ? null : schemaTerminal.Token.Value;
-
-							if (!IsSimpleModel)
-							{
-								schemaObject = _databaseModel.GetFirstSchemaObject<OracleDataObject>(_databaseModel.GetPotentialSchemaObjectIdentifiers(owner, objectName));
-							}
-						}
-
-						var objectReference =
-						new OracleDataObjectReference(referenceType)
-						{
-							Owner = queryBlock,
-							RootNode = tableReferenceNonterminal,
-							OwnerNode = schemaTerminal,
-							ObjectNode = objectIdentifierNode,
-							DatabaseLinkNode = GetDatabaseLinkFromQueryTableExpression(queryTableExpression),
-							AliasNode = objectReferenceAlias,
-							SchemaObject = schemaObject
-						};
-
-						queryBlock.ObjectReferences.Add(objectReference);
-
-						if (commonTableExpressions.Count > 0)
-						{
-							_objectReferenceCteRootNodes[objectReference] = commonTableExpressions;
-						}
-					}
-					else
-					{
-						var xmlTableClause = queryTableExpression.GetDescendantByPath(NonTerminals.XmlTableClause);
-						if (xmlTableClause == null)
-						{
-							var tableCollection = queryTableExpression.GetDescendantByPath(NonTerminals.TableCollectionExpression);
-							if (tableCollection != null)
-							{
-								var functionIdentifierNode = tableCollection.GetDescendants(Terminals.Identifier).FirstOrDefault();
-								if (functionIdentifierNode != null)
-								{
-									var tableCollectionDataObjectReference =
-										new OracleTableCollectionReference
-										{
-											Owner = queryBlock,
-											Placement = QueryBlockPlacement.From,
-											AliasNode = objectReferenceAlias,
-											DatabaseLinkNode = GetDatabaseLinkFromQueryTableExpression(queryTableExpression),
-											RootNode = tableReferenceNonterminal
-										};
-
-									var prefixNonTerminal = functionIdentifierNode.ParentNode.GetDescendantByPath(NonTerminals.Prefix);
-									var functionCallNodes = GetFunctionCallNodes(functionIdentifierNode);
-									var tableCollectionProgramReference = CreateFunctionReference(queryBlock, queryBlock, null, QueryBlockPlacement.From, functionIdentifierNode, prefixNonTerminal, functionCallNodes);
-									tableCollectionProgramReference.RootNode = functionIdentifierNode.ParentNode;
-
-									if (tableCollectionDataObjectReference.DatabaseLinkNode == null)
-									{
-										var metadata = UpdateFunctionReferenceWithMetadata(tableCollectionProgramReference);
-										if (metadata != null)
-										{
-											tableCollectionDataObjectReference.SchemaObject = metadata.Owner;
-											tableCollectionDataObjectReference.FunctionMetadata = metadata;
-											tableCollectionDataObjectReference.OwnerNode = tableCollectionProgramReference.OwnerNode;
-											tableCollectionDataObjectReference.ObjectNode = tableCollectionProgramReference.ObjectNode;
-										}
-									}
-									
-									queryBlock.ProgramReferences.Add(tableCollectionProgramReference);
-									queryBlock.ObjectReferences.Add(tableCollectionDataObjectReference);
-
-									var identifiers = functionCallNodes.SelectMany(n => n.GetDescendantsWithinSameQuery(Terminals.Identifier));
-									ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock, identifiers, QueryBlockPlacement.From, null);
-								}
-							}
-						}
-						else
+						var xmlTableClause = tableReferenceNonterminal.GetDescendantsWithinSameQuery(NonTerminals.XmlTableClause).SingleOrDefault();
+						if (xmlTableClause != null)
 						{
 							var columnList = xmlTableClause.GetDescendantByPath(NonTerminals.XmlTableOptions, NonTerminals.XmlTableColumnList);
 							if (columnList != null)
@@ -339,6 +224,121 @@ namespace SqlPad.Oracle
 							}
 
 							//var xmlTablePassingClause = xmlTableClause.GetDescendantByPath(NonTerminals.XmlTableOptions, NonTerminals.XmlPassingClause, NonTerminals.ExpressionAsXmlAliasWithMandatoryAsList);
+						}
+					}
+					else
+					{
+						var nestedQueryTableReference = queryTableExpression.GetPathFilterDescendants(f => f.Id != NonTerminals.Subquery, NonTerminals.NestedQuery).SingleOrDefault();
+						if (nestedQueryTableReference != null)
+						{
+							var nestedQueryTableReferenceQueryBlock = nestedQueryTableReference.GetPathFilterDescendants(n => n.Id != NonTerminals.NestedQuery && n.Id != NonTerminals.SubqueryFactoringClause, NonTerminals.QueryBlock).FirstOrDefault();
+							if (nestedQueryTableReferenceQueryBlock != null)
+							{
+								queryBlock.ObjectReferences.Add(
+									new OracleDataObjectReference(ReferenceType.InlineView)
+									{
+										Owner = queryBlock,
+										RootNode = tableReferenceNonterminal,
+										ObjectNode = nestedQueryTableReferenceQueryBlock,
+										AliasNode = objectReferenceAlias
+									});
+							}
+
+							continue;
+						}
+
+						var objectIdentifierNode = queryTableExpression.GetDescendantByPath(Terminals.ObjectIdentifier);
+						if (objectIdentifierNode == null)
+						{
+							var tableCollection = queryTableExpression.GetDescendantByPath(NonTerminals.TableCollectionExpression);
+							if (tableCollection != null)
+							{
+								var functionIdentifierNode = tableCollection.GetDescendants(Terminals.Identifier).FirstOrDefault();
+								if (functionIdentifierNode != null)
+								{
+									var tableCollectionDataObjectReference =
+										new OracleTableCollectionReference
+										{
+											Owner = queryBlock,
+											Placement = QueryBlockPlacement.From,
+											AliasNode = objectReferenceAlias,
+											DatabaseLinkNode = GetDatabaseLinkFromQueryTableExpression(queryTableExpression),
+											RootNode = tableReferenceNonterminal
+										};
+
+									var prefixNonTerminal = functionIdentifierNode.ParentNode.GetDescendantByPath(NonTerminals.Prefix);
+									var functionCallNodes = GetFunctionCallNodes(functionIdentifierNode);
+									var tableCollectionProgramReference = CreateFunctionReference(queryBlock, queryBlock, null, QueryBlockPlacement.From, functionIdentifierNode, prefixNonTerminal, functionCallNodes);
+									tableCollectionProgramReference.RootNode = functionIdentifierNode.ParentNode;
+
+									if (tableCollectionDataObjectReference.DatabaseLinkNode == null)
+									{
+										var metadata = UpdateFunctionReferenceWithMetadata(tableCollectionProgramReference);
+										if (metadata != null)
+										{
+											tableCollectionDataObjectReference.SchemaObject = metadata.Owner;
+											tableCollectionDataObjectReference.FunctionMetadata = metadata;
+											tableCollectionDataObjectReference.OwnerNode = tableCollectionProgramReference.OwnerNode;
+											tableCollectionDataObjectReference.ObjectNode = tableCollectionProgramReference.ObjectNode;
+										}
+									}
+									
+									queryBlock.ProgramReferences.Add(tableCollectionProgramReference);
+									queryBlock.ObjectReferences.Add(tableCollectionDataObjectReference);
+
+									var identifiers = functionCallNodes.SelectMany(n => n.GetDescendantsWithinSameQuery(Terminals.Identifier));
+									ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock, identifiers, QueryBlockPlacement.From, null);
+								}
+							}
+						}
+						else
+						{
+							ICollection<KeyValuePair<StatementGrammarNode, string>> commonTableExpressions = new Dictionary<StatementGrammarNode, string>();
+							var schemaTerminal = queryTableExpression.GetDescendantByPath(NonTerminals.SchemaPrefix);
+							if (schemaTerminal != null)
+							{
+								schemaTerminal = schemaTerminal.ChildNodes[0];
+							}
+
+							var tableName = objectIdentifierNode.Token.Value.ToQuotedIdentifier();
+							if (schemaTerminal == null)
+							{
+								commonTableExpressions.AddRange(cteReferences.Where(n => n.Value == tableName));
+							}
+
+							OracleSchemaObject schemaObject = null;
+							var referenceType = ReferenceType.CommonTableExpression;
+							if (commonTableExpressions.Count == 0)
+							{
+								referenceType = ReferenceType.SchemaObject;
+
+								var objectName = objectIdentifierNode.Token.Value;
+								var owner = schemaTerminal == null ? null : schemaTerminal.Token.Value;
+
+								if (!IsSimpleModel)
+								{
+									schemaObject = _databaseModel.GetFirstSchemaObject<OracleDataObject>(_databaseModel.GetPotentialSchemaObjectIdentifiers(owner, objectName));
+								}
+							}
+
+							var objectReference =
+								new OracleDataObjectReference(referenceType)
+								{
+									Owner = queryBlock,
+									RootNode = tableReferenceNonterminal,
+									OwnerNode = schemaTerminal,
+									ObjectNode = objectIdentifierNode,
+									DatabaseLinkNode = GetDatabaseLinkFromQueryTableExpression(queryTableExpression),
+									AliasNode = objectReferenceAlias,
+									SchemaObject = schemaObject
+								};
+
+							queryBlock.ObjectReferences.Add(objectReference);
+
+							if (commonTableExpressions.Count > 0)
+							{
+								_objectReferenceCteRootNodes[objectReference] = commonTableExpressions;
+							}
 						}
 					}
 				}

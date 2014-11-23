@@ -79,6 +79,10 @@ namespace SqlPad.Oracle
 				: String.Empty;
 			
 			var definitionNode = dataTypeNode.GetDescendantByPath(NonTerminals.DataTypeDefinition);
+			if (definitionNode == null)
+			{
+				return Empty;
+			}
 
 			var dataType = new OracleDataType();
 

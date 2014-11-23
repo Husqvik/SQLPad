@@ -3312,6 +3312,14 @@
     <Rule StartingNonTerminal="TableReference">
       <Sequences>
         <Sequence>
+          <NonTerminal Id="XmlTableClause" />
+          <NonTerminal Id="ObjectAsAlias" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="JsonTableClause" />
+          <NonTerminal Id="ObjectAsAlias" IsOptional="true" />
+        </Sequence>
+        <Sequence>
           <NonTerminal Id="InnerTableReference" />
           <Terminal Id="ObjectAlias" IsOptional="true" />
         </Sequence>
@@ -3319,6 +3327,15 @@
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="TableReference" />
           <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ObjectAsAlias">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="As" IsOptional="true" />
+          <Terminal Id="ObjectAlias" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -3369,13 +3386,6 @@
           <NonTerminal Id="NestedQuery" />
           <NonTerminal Id="SubQueryRestrictionClause" IsOptional="true" />
           <Terminal Id="RightParenthesis" />
-        </Sequence>
-        <Sequence>
-          <NonTerminal Id="XmlTableClause" />
-        </Sequence>
-        <Sequence>
-          <NonTerminal Id="JsonTableClause" />
-          <!-- TODO: JSON table supports AS keyword before alias -->
         </Sequence>
         <Sequence>
           <NonTerminal Id="SchemaPrefix" IsOptional="true" />

@@ -2201,7 +2201,7 @@ FROM
 			phone_num VARCHAR2(20) FORMAT JSON WITH CONDITIONAL WRAPPER PATH '$.number' EMPTY ON ERROR,
 			has_zip VARCHAR2(5) EXISTS PATH '$.ShippingInstructions.Address.zipCode' FALSE ON ERROR
 		)
-	) T";
+	) AS T";
 
 			var statements = Parser.Parse(statement1).ToArray();
 			var statement = statements.Single().Validate();

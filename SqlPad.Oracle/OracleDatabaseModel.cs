@@ -610,11 +610,6 @@ namespace SqlPad.Oracle
 			{
 				SafeResolveTransactionStatus();
 			}
-
-			if (!HasActiveTransaction && _userTransaction != null)
-			{
-				DisposeUserTransaction();
-			}
 			
 			UpdateBindVariables(executionModel);
 		}
