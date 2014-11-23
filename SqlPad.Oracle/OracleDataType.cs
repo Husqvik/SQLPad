@@ -22,47 +22,90 @@ namespace SqlPad.Oracle
 
 		public static string ResolveFullTypeName(OracleDataType dataType, int? characterSize = null)
 		{
-				if (!dataType.IsPrimitive)
-				{
-					return dataType.FullyQualifiedName.ToString();
-				}
+			if (!dataType.IsPrimitive)
+			{
+				return dataType.FullyQualifiedName.ToString();
+			}
 
-				var name = dataType.FullyQualifiedName.Name.Trim('"');
-				var effectiveSize = String.Empty;
-				switch (name)
-				{
-					case "NVARCHAR2":
-					case "NVARCHAR":
-					case "VARCHAR2":
-					case "VARCHAR":
-					case "NCHAR":
-					case "CHAR":
-						var effectiveLength = characterSize ?? dataType.Length;
-						if (effectiveLength.HasValue)
-						{
-							var unit = dataType.Unit == DataUnit.Byte ? " BYTE" : " CHAR";
-							effectiveSize = String.Format("({0}{1})", effectiveLength, dataType.Unit == DataUnit.NotApplicable ? null : unit);
-						}
+			var name = dataType.FullyQualifiedName.Name.Trim('"');
+			var effectiveSize = String.Empty;
+			switch (name)
+			{
+				case "NVARCHAR2":
+				case "NVARCHAR":
+				case "VARCHAR2":
+				case "VARCHAR":
+				case "NCHAR":
+				case "CHAR":
+					var effectiveLength = characterSize ?? dataType.Length;
+					if (effectiveLength.HasValue)
+					{
+						var unit = dataType.Unit == DataUnit.Byte ? " BYTE" : " CHAR";
+						effectiveSize = String.Format("({0}{1})", effectiveLength, dataType.Unit == DataUnit.NotApplicable ? null : unit);
+					}
 
-						name = String.Format("{0}{1}", name, effectiveSize);
-						break;
-					case "FLOAT":
-					case "NUMBER":
-						var decimalScale = dataType.Scale > 0 ? String.Format(", {0}", dataType.Scale) : null;
-						if (dataType.Precision > 0 || dataType.Scale > 0)
-						{
-							name = String.Format("{0}({1}{2})", name, dataType.Precision == null ? "*" : Convert.ToString(dataType.Precision), decimalScale);
-						}
-						break;
-					case "RAW":
-						name = String.Format("{0}({1})", name, dataType.Length);
-						break;
-				}
+					name = String.Format("{0}{1}", name, effectiveSize);
+					break;
+				case "FLOAT":
+				case "NUMBER":
+					var decimalScale = dataType.Scale > 0 ? String.Format(", {0}", dataType.Scale) : null;
+					if (dataType.Precision > 0 || dataType.Scale > 0)
+					{
+						name = String.Format("{0}({1}{2})", name, dataType.Precision == null ? "*" : Convert.ToString(dataType.Precision), decimalScale);
+					}
+					break;
+				case "RAW":
+					name = String.Format("{0}({1})", name, dataType.Length);
+					break;
+			}
 
-				return name;
+			return name;
 		}
 
-		public static OracleDataType FromGrammarNode(StatementGrammarNode dataTypeNode)
+		public static OracleDataType FromJsonReturnTypeNode(StatementGrammarNode jsonReturnTypeNode)
+		{
+			if (jsonReturnTypeNode == null)
+			{
+				return Empty;
+			}
+
+			var isVarchar = false;
+			if (jsonReturnTypeNode.Id == NonTerminals.JsonValueReturnType)
+			{
+				switch (jsonReturnTypeNode.FirstTerminalNode.Id)
+				{
+					case Terminals.Varchar2:
+						isVarchar = true;
+						break;
+					case Terminals.Number:
+						var dataType = new OracleDataType
+						{
+							FullyQualifiedName = OracleObjectIdentifier.Create(null, "NUMBER")
+						};
+
+						TryResolveNumericPrecisionAndScale(jsonReturnTypeNode, dataType);
+						return dataType;
+					default:
+						return Empty;
+				}
+			}
+
+			if (jsonReturnTypeNode.Id == NonTerminals.JsonQueryReturnType || isVarchar)
+			{
+				var dataType = new OracleDataType
+				{
+					FullyQualifiedName = OracleObjectIdentifier.Create(null, "VARCHAR2")
+				};
+
+				TryResolveVarcharDetails(dataType, jsonReturnTypeNode);
+
+				return dataType;
+			}
+
+			throw new ArgumentException("Node ID must be 'JsonValueReturnType' or 'JsonQueryReturnType'. ", "jsonReturnTypeNode");
+		}
+
+		public static OracleDataType FromDataTypeNode(StatementGrammarNode dataTypeNode)
 		{
 			if (dataTypeNode == null)
 			{
@@ -71,7 +114,7 @@ namespace SqlPad.Oracle
 			
 			if (dataTypeNode.Id != NonTerminals.DataType)
 			{
-				throw new ArgumentException("Node ID must be 'DataType. '", "dataTypeNode");
+				throw new ArgumentException("Node ID must be 'DataType'. ", "dataTypeNode");
 			}
 
 			var owner = dataTypeNode.FirstTerminalNode.Id == Terminals.SchemaIdentifier
@@ -142,43 +185,64 @@ namespace SqlPad.Oracle
 				}
 			}
 
-			var varyingCharacterSimplePrecisionNode = definitionNode.GetSingleDescendant(NonTerminals.DataTypeVarcharSimplePrecision);
-			if (varyingCharacterSimplePrecisionNode != null)
-			{
-				var valueTerminal = varyingCharacterSimplePrecisionNode.GetDescendantByPath(Terminals.IntegerLiteral);
-				if (valueTerminal != null)
-				{
-					dataType.Length = Convert.ToInt32(valueTerminal.Token.Value);
+			TryResolveVarcharDetails(dataType, definitionNode);
 
-					var byteOrCharNode = varyingCharacterSimplePrecisionNode.GetDescendantByPath(NonTerminals.ByteOrChar);
-					if (byteOrCharNode != null)
-					{
-						dataType.Unit = byteOrCharNode.FirstTerminalNode.Id == Terminals.Byte ? DataUnit.Byte : DataUnit.Character;
-					}
-				}
-			}
-
-			var numericPrecisionScaleNode = definitionNode.GetDescendantByPath(NonTerminals.DataTypeNumericPrecisionAndScale);
-			if (numericPrecisionScaleNode != null)
-			{
-				var precisionValueTerminal = numericPrecisionScaleNode.GetDescendantByPath(NonTerminals.IntegerOrAsterisk, Terminals.IntegerLiteral);
-				if (precisionValueTerminal != null)
-				{
-					dataType.Precision = Convert.ToInt32(precisionValueTerminal.Token.Value);
-
-					var scaleValueTerminal = numericPrecisionScaleNode.GetDescendantByPath(NonTerminals.Scale, Terminals.IntegerLiteral);
-					if (scaleValueTerminal != null)
-					{
-						dataType.Scale = Convert.ToInt32(precisionValueTerminal.Token.Value);
-						if (scaleValueTerminal.PrecedingTerminal.Id == Terminals.MathMinus)
-						{
-							dataType.Scale = -dataType.Scale;
-						}
-					}
-				}
-			}
+			TryResolveNumericPrecisionAndScale(definitionNode, dataType);
 
 			return dataType;
+		}
+
+		private static void TryResolveNumericPrecisionAndScale(StatementGrammarNode definitionNode, OracleDataType dataType)
+		{
+			var numericPrecisionScaleNode = definitionNode.GetDescendantByPath(NonTerminals.DataTypeNumericPrecisionAndScale);
+			if (numericPrecisionScaleNode == null)
+			{
+				return;
+			}
+			
+			var precisionValueTerminal = numericPrecisionScaleNode.GetDescendantByPath(NonTerminals.IntegerOrAsterisk, Terminals.IntegerLiteral);
+			if (precisionValueTerminal == null)
+			{
+				return;
+			}
+			
+			dataType.Precision = Convert.ToInt32(precisionValueTerminal.Token.Value);
+
+			var scaleValueTerminal = numericPrecisionScaleNode.GetDescendantByPath(NonTerminals.Scale, Terminals.IntegerLiteral);
+			if (scaleValueTerminal == null)
+			{
+				return;
+			}
+			
+			dataType.Scale = Convert.ToInt32(precisionValueTerminal.Token.Value);
+
+			if (scaleValueTerminal.PrecedingTerminal.Id == Terminals.MathMinus)
+			{
+				dataType.Scale = -dataType.Scale;
+			}
+		}
+
+		private static void TryResolveVarcharDetails(OracleDataType dataType, StatementGrammarNode definitionNode)
+		{
+			var varyingCharacterSimplePrecisionNode = definitionNode.GetSingleDescendant(NonTerminals.DataTypeVarcharSimplePrecision);
+			if (varyingCharacterSimplePrecisionNode == null)
+			{
+				return;
+			}
+			
+			var valueTerminal = varyingCharacterSimplePrecisionNode.GetDescendantByPath(Terminals.IntegerLiteral);
+			if (valueTerminal == null)
+			{
+				return;
+			}
+			
+			dataType.Length = Convert.ToInt32(valueTerminal.Token.Value);
+
+			var byteOrCharNode = varyingCharacterSimplePrecisionNode.GetDescendantByPath(NonTerminals.ByteOrChar);
+			if (byteOrCharNode != null)
+			{
+				dataType.Unit = byteOrCharNode.FirstTerminalNode.Id == Terminals.Byte ? DataUnit.Byte : DataUnit.Character;
+			}
 		}
 	}
 }

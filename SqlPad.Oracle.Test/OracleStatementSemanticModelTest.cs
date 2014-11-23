@@ -436,7 +436,17 @@ FROM
 			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
 			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
 
-			semanticModel.QueryBlocks.ShouldNotBe(null);
+			semanticModel.QueryBlocks.Count.ShouldBe(1);
+		}
+
+		[Test(Description = @"")]
+		public void TestModelBuildWhileTypingXmlTableColumnDataType()
+		{
+			const string query1 = @"SELECT * FROM XMLTABLE ('/root' PASSING XMLTYPE ('<root>value</root>') COLUMNS VALUE V";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
 		}
 
@@ -973,6 +983,69 @@ FROM
 			columns[2].Name.ShouldBe("\"DESCRIPTION\"");
 			columns[2].Nullable.ShouldBe(true);
 			columns[2].FullTypeName.ShouldBe("CLOB");
+		}
+
+		[Test(Description = @"")]
+		public void TestJsonTableReference()
+		{
+			const string query1 =
+@"SELECT
+	*
+FROM
+	JSON_TABLE(
+	'{LineItems : [{ItemNumber : 1,
+                    Part       : {Description : ""One Magic Christmas"",
+                                 UnitPrice    : 19.95,
+                                 UPCCode      : 13131092899},
+                    Quantity   : 9.0,
+                    CorrelationIds: [""CorrelationId1"", ""CorrelationId2""]},
+                   {ItemNumber : 2,
+                    Part       : {Description : ""Lethal Weapon"",
+                                  UnitPrice   : 19.95,
+                                  UPCCode     : 85391628927},
+                    Quantity   : 5.0,
+                    CorrelationIds: [""CorrelationId3"", ""CorrelationId4""]}]}',
+		'$.LineItems[*]'
+		DEFAULT 'invalid data' ON ERROR
+		COLUMNS (
+			SEQ# FOR ORDINALITY,
+			ITEM_NUMBER NUMBER PATH '$.ItemNumber',
+			QUANTITY VARCHAR2 PATH '$.Quantity',
+			NONEXISTING VARCHAR2(20) PATH '$.NonExisting' DEFAULT 'Not found' ON ERROR,
+			HAS_UPCCODE VARCHAR2(5) EXISTS PATH '$.Part.UPCCode' FALSE ON ERROR,
+			NESTED PATH '$.CorrelationIds[*]'
+         	COLUMNS (
+         		NESTED_VALUE VARCHAR2(16) PATH '$',
+				HAS_NESTED_VALUE VARCHAR2(5) EXISTS PATH '$' FALSE ON ERROR)
+		)
+	)
+AS T";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			var objectReferences = semanticModel.QueryBlocks.Single().ObjectReferences.ToArray();
+			objectReferences.Length.ShouldBe(1);
+			objectReferences[0].RootNode.ShouldNotBe(null);
+			objectReferences[0].RootNode.FirstTerminalNode.Id.ShouldBe(Terminals.JsonTable);
+			objectReferences[0].RootNode.LastTerminalNode.Id.ShouldBe(Terminals.ObjectAlias);
+			objectReferences[0].RootNode.LastTerminalNode.Token.Value.ShouldBe("T");
+			objectReferences[0].Columns.Count.ShouldBe(7);
+			var columns = objectReferences[0].Columns.ToArray();
+			columns[0].Name.ShouldBe("\"SEQ#\"");
+			columns[0].FullTypeName.ShouldBe("NUMBER");
+			columns[1].Name.ShouldBe("\"ITEM_NUMBER\"");
+			columns[1].FullTypeName.ShouldBe("NUMBER");
+			columns[2].Name.ShouldBe("\"QUANTITY\"");
+			columns[2].FullTypeName.ShouldBe("VARCHAR2");
+			columns[3].Name.ShouldBe("\"NONEXISTING\"");
+			columns[3].FullTypeName.ShouldBe("VARCHAR2(20)");
+			columns[4].Name.ShouldBe("\"HAS_UPCCODE\"");
+			columns[4].FullTypeName.ShouldBe("VARCHAR2(5)");
+			columns[5].Name.ShouldBe("\"NESTED_VALUE\"");
+			columns[5].FullTypeName.ShouldBe("VARCHAR2(16)");
+			columns[6].Name.ShouldBe("\"HAS_NESTED_VALUE\"");
+			columns[6].FullTypeName.ShouldBe("VARCHAR2(5)");
 		}
 	}
 }

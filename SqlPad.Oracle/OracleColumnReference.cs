@@ -46,7 +46,7 @@ namespace SqlPad.Oracle
 	{
 		None,
 		SelectList,
-		From,
+		TableReference,
 		Where,
 		GroupBy,
 		Having,

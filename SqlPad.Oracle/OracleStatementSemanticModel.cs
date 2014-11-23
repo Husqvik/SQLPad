@@ -153,76 +153,13 @@ namespace SqlPad.Oracle
 					var queryTableExpression = tableReferenceNonterminal.GetDescendantsWithinSameQuery(NonTerminals.QueryTableExpression).SingleOrDefault();
 					if (queryTableExpression == null)
 					{
-						var xmlTableClause = tableReferenceNonterminal.GetDescendantsWithinSameQuery(NonTerminals.XmlTableClause).SingleOrDefault();
-						if (xmlTableClause != null)
+						var specialTableReference = ResolveXmlTableReference(tableReferenceNonterminal) ?? ResolveJsonTableReference(tableReferenceNonterminal);
+
+						if (specialTableReference != null)
 						{
-							var columnList = xmlTableClause.GetDescendantByPath(NonTerminals.XmlTableOptions, NonTerminals.XmlTableColumnList);
-							if (columnList != null)
-							{
-								var columns = new List<OracleColumn>();
-								foreach (var xmlTableColumn in columnList.GetDescendants(NonTerminals.XmlTableColumn).Where(c => c.ChildNodes.Count >= 1))
-								{
-									var columnAlias = xmlTableColumn.ChildNodes[0];
-
-									var column =
-										new OracleColumn
-										{
-											Name = columnAlias.Token.Value.ToQuotedIdentifier(),
-											Nullable = true,
-											DataType = OracleDataType.Empty
-										};
-
-									columns.Add(column);
-
-									var xmlTableColumnDefinition = xmlTableColumn.GetDescendantByPath(NonTerminals.XmlTableColumnDefinition);
-									if (xmlTableColumnDefinition != null)
-									{
-										if (xmlTableColumnDefinition.ChildNodes.Count == 2 && xmlTableColumnDefinition.ChildNodes[0].Id == Terminals.For && xmlTableColumnDefinition.ChildNodes[1].Id == Terminals.Ordinality)
-										{
-											column.DataType =
-												new OracleDataType
-												{
-													FullyQualifiedName = OracleObjectIdentifier.Create(null, "NUMBER")
-												};
-										}
-										else
-										{
-											var dataTypeOrXmlTypeNode = xmlTableColumnDefinition.GetDescendantByPath(NonTerminals.DataTypeOrXmlType);
-											if (dataTypeOrXmlTypeNode != null)
-											{
-												var dataTypeNode = dataTypeOrXmlTypeNode.ChildNodes[0];
-												if (dataTypeNode.Id == Terminals.XmlType)
-												{
-													column.DataType =
-														new OracleDataType
-														{
-															FullyQualifiedName = OracleObjectIdentifier.Create(OracleDatabaseModelBase.SchemaSys, OracleTypeBase.TypeCodeXml)
-														};
-												}
-												else if (dataTypeNode.Id == NonTerminals.DataType)
-												{
-													column.DataType = OracleDataType.FromGrammarNode(dataTypeNode);
-												}
-											}
-										}
-									}
-								}
-
-								if (columns.Count > 0)
-								{
-									var objectReferenceAlias = tableReferenceNonterminal.GetDescendantByPath(NonTerminals.ObjectAsAlias, Terminals.ObjectAlias);
-									var specialTableReference =
-										new OracleSpecialTableReference(ReferenceType.XmlTable, columns)
-										{
-											RootNode = tableReferenceNonterminal,
-											AliasNode = objectReferenceAlias
-										};
-
-									queryBlock.ObjectReferences.Add(specialTableReference);
-								}
-							}
-
-							//var xmlTablePassingClause = xmlTableClause.GetDescendantByPath(NonTerminals.XmlTableOptions, NonTerminals.XmlPassingClause, NonTerminals.ExpressionAsXmlAliasWithMandatoryAsList);
+							specialTableReference.RootNode = tableReferenceNonterminal;
+							specialTableReference.AliasNode = tableReferenceNonterminal.GetDescendantByPath(NonTerminals.ObjectAsAlias, Terminals.ObjectAlias);
+							queryBlock.ObjectReferences.Add(specialTableReference);
 						}
 					}
 					else
@@ -258,14 +195,14 @@ namespace SqlPad.Oracle
 								{
 									var prefixNonTerminal = functionIdentifierNode.ParentNode.GetDescendantByPath(NonTerminals.Prefix);
 									var functionCallNodes = GetFunctionCallNodes(functionIdentifierNode);
-									var tableCollectionProgramReference = CreateFunctionReference(queryBlock, queryBlock, null, QueryBlockPlacement.From, functionIdentifierNode, prefixNonTerminal, functionCallNodes);
+									var tableCollectionProgramReference = CreateFunctionReference(queryBlock, queryBlock, null, QueryBlockPlacement.TableReference, functionIdentifierNode, prefixNonTerminal, functionCallNodes);
 									tableCollectionProgramReference.RootNode = functionIdentifierNode.ParentNode;
 
 									var tableCollectionDataObjectReference =
 										new OracleTableCollectionReference(tableCollectionProgramReference)
 										{
 											Owner = queryBlock,
-											Placement = QueryBlockPlacement.From,
+											Placement = QueryBlockPlacement.TableReference,
 											AliasNode = objectReferenceAlias,
 											DatabaseLinkNode = GetDatabaseLinkFromQueryTableExpression(queryTableExpression),
 											RootNode = tableReferenceNonterminal
@@ -286,7 +223,7 @@ namespace SqlPad.Oracle
 									queryBlock.ObjectReferences.Add(tableCollectionDataObjectReference);
 
 									var identifiers = functionCallNodes.SelectMany(n => n.GetDescendantsWithinSameQuery(Terminals.Identifier));
-									ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock, identifiers, QueryBlockPlacement.From, null);
+									ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock, identifiers, QueryBlockPlacement.TableReference, null);
 								}
 							}
 						}
@@ -362,6 +299,107 @@ namespace SqlPad.Oracle
 			BuildDmlModel();
 			
 			ResolveRedundantTerminals();
+		}
+
+		private static OracleSpecialTableReference ResolveJsonTableReference(StatementGrammarNode tableReferenceNonterminal)
+		{
+			var jsonTableClause = tableReferenceNonterminal.GetDescendantsWithinSameQuery(NonTerminals.JsonTableClause).SingleOrDefault();
+			if (jsonTableClause == null)
+			{
+				return null;
+			}
+
+			var columns = new List<OracleColumn>();
+			foreach (var jsonTableColumn in jsonTableClause.GetDescendants(NonTerminals.JsonColumnDefinition).Where(n => n.TerminalCount >= 1 && n.FirstTerminalNode.Id == Terminals.ColumnAlias))
+			{
+				var columnAlias = jsonTableColumn.FirstTerminalNode.Token.Value.ToQuotedIdentifier();
+				var column =
+					new OracleColumn
+					{
+						Name = columnAlias,
+						Nullable = true
+					};
+
+				columns.Add(column);
+
+				if (!TryAssingnColumnForOrdinality(column, jsonTableColumn.ChildNodes.Skip(1)))
+				{
+					var jsonReturnTypeNode = jsonTableColumn[1];
+					column.DataType = OracleDataType.FromJsonReturnTypeNode(jsonReturnTypeNode);
+				}
+			}
+
+			return new OracleSpecialTableReference(ReferenceType.JsonTable, columns);
+		}
+
+		private static OracleSpecialTableReference ResolveXmlTableReference(StatementGrammarNode tableReferenceNonterminal)
+		{
+			var xmlTableClause = tableReferenceNonterminal.GetDescendantsWithinSameQuery(NonTerminals.XmlTableClause).SingleOrDefault();
+			if (xmlTableClause == null)
+			{
+				return null;
+			}
+
+			var columns = new List<OracleColumn>();
+			foreach (var xmlTableColumn in xmlTableClause.GetDescendants(NonTerminals.XmlTableColumn).Where(n => n.TerminalCount >= 1 && n.FirstTerminalNode.Id == Terminals.ColumnAlias))
+			{
+				var columnAlias = xmlTableColumn.ChildNodes[0];
+
+				var column =
+					new OracleColumn
+					{
+						Name = columnAlias.Token.Value.ToQuotedIdentifier(),
+						Nullable = true,
+						DataType = OracleDataType.Empty
+					};
+
+				columns.Add(column);
+
+				var xmlTableColumnDefinition = xmlTableColumn.GetDescendantByPath(NonTerminals.XmlTableColumnDefinition);
+				if (xmlTableColumnDefinition != null && !TryAssingnColumnForOrdinality(column, xmlTableColumnDefinition.ChildNodes))
+				{
+					var dataTypeOrXmlTypeNode = xmlTableColumnDefinition.GetDescendantByPath(NonTerminals.DataTypeOrXmlType);
+					if (dataTypeOrXmlTypeNode != null)
+					{
+						var dataTypeNode = dataTypeOrXmlTypeNode.ChildNodes[0];
+						if (dataTypeNode.Id == Terminals.XmlType)
+						{
+							column.DataType =
+								new OracleDataType
+								{
+									FullyQualifiedName = OracleObjectIdentifier.Create(OracleDatabaseModelBase.SchemaSys, OracleTypeBase.TypeCodeXml)
+								};
+						}
+						else if (dataTypeNode.Id == NonTerminals.DataType)
+						{
+							column.DataType = OracleDataType.FromDataTypeNode(dataTypeNode);
+						}
+					}
+				}
+			}
+
+			//var xmlTablePassingClause = xmlTableClause.GetDescendantByPath(NonTerminals.XmlTableOptions, NonTerminals.XmlPassingClause, NonTerminals.ExpressionAsXmlAliasWithMandatoryAsList);
+
+			return new OracleSpecialTableReference(ReferenceType.XmlTable, columns);
+		}
+
+		private static bool TryAssingnColumnForOrdinality(OracleColumn column, IEnumerable<StatementGrammarNode> forOrdinalityTerminals)
+		{
+			var enumerator = forOrdinalityTerminals.GetEnumerator();
+			if (enumerator.MoveNext() && enumerator.Current.Id == Terminals.For &&
+			    enumerator.MoveNext() && enumerator.Current.Id == Terminals.Ordinality &&
+			    !enumerator.MoveNext())
+			{
+				column.DataType =
+					new OracleDataType
+					{
+						FullyQualifiedName = OracleObjectIdentifier.Create(null, "NUMBER")
+					};
+
+				return true;
+			}
+
+			return false;
 		}
 
 		private void ResolveModelClause()
@@ -1154,6 +1192,7 @@ namespace SqlPad.Oracle
 			var newColumnReferences = new List<OracleColumn>();
 			switch (rowSourceReference.Type)
 			{
+				case ReferenceType.JsonTable:
 				case ReferenceType.XmlTable:
 					newColumnReferences.AddRange(GetColumnReferenceMatchingColumns(rowSourceReference, columnReference));
 					break;

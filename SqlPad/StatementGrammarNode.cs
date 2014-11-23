@@ -13,6 +13,11 @@ namespace SqlPad
 
 		public int TerminalCount { get; private set; }
 
+		public StatementGrammarNode this[int index] 
+		{
+			get { return _childNodes.Count > index ? _childNodes[index] : null; }
+		}
+
 		public StatementGrammarNode(NodeType type, StatementBase statement, IToken token) : base(statement, token)
 		{
 			Type = type;
