@@ -2149,8 +2149,12 @@
           <NonTerminal Id="XmlSerializeFunction" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
-          <Sequence>
+        <Sequence>
           <NonTerminal Id="JsonQueryClause" />
+          <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="JsonValueClause" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
@@ -5110,7 +5114,7 @@
 				  <Terminal Id="XmlTable" />
 				  <Terminal Id="LeftParenthesis" />
 				  <NonTerminal Id="XmlNamespacesClause" IsOptional="true" />
-          <Terminal Id="StringLiteral" />
+          <Terminal Id="StringLiteral" Comment="XQuery string" />
           <NonTerminal Id="XmlTableOptions" />
 				  <Terminal Id="RightParenthesis" />
 			  </Sequence>
@@ -5308,7 +5312,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Path" />
-          <Terminal Id="StringLiteral" />
+          <Terminal Id="StringLiteral" Comment="XQuery string" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -5327,9 +5331,34 @@
         <Sequence>
           <Terminal Id="XmlExists" />
           <Terminal Id="LeftParenthesis" />
-          <Terminal Id="StringLiteral" />
+          <Terminal Id="StringLiteral" Comment="XQuery string" />
           <NonTerminal Id="XmlPassingClause" IsOptional="true" />
           <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="JsonValueClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="JsonValue" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="Expression" />
+          <Terminal Id="Comma" />
+          <Terminal Id="StringLiteral" Comment="JSON path expression" />
+          <NonTerminal Id="JsonValueReturningClause" IsOptional="true" />
+          <Terminal Id="Ascii" IsOptional="true" />
+          <NonTerminal Id="JsonValueOnErrorClause" IsOptional="true" Comment="Described as 'JsonTableOnErrorClause' but same" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="JsonValueReturningClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Returning" />
+          <NonTerminal Id="JsonValueReturnType" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -10591,6 +10620,7 @@
     <Terminal Id="JsonExists" Value="JSON_EXISTS" />
     <Terminal Id="JsonQuery" Value="JSON_QUERY" />
     <Terminal Id="JsonTable" Value="JSON_TABLE" />
+    <Terminal Id="JsonValue" Value="JSON_VALUE" />
     <Terminal Id="Error" Value="ERROR" />
     <Terminal Id="True" Value="TRUE" />
     <Terminal Id="False" Value="FALSE" />

@@ -2208,6 +2208,16 @@ FROM
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 		}
 
+		[Test(Description = @"")]
+		public void TestJsonValueFunction()
+		{
+			const string statement1 = "SELECT JSON_VALUE('{firstname: \"John\"}', '$.lastname' DEFAULT 'No last name found' ON ERROR) || '' LAST_NAME FROM DUAL";
+
+			var statements = Parser.Parse(statement1).ToArray();
+			var statement = statements.Single().Validate();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+		}
+
 		public class IsRuleValid
 		{
 			[Test(Description = @"")]
@@ -2375,6 +2385,7 @@ FROM
 						Terminals.Identifier,
 						Terminals.Interval,
 						Terminals.JsonQuery,
+						Terminals.JsonValue,
 						Terminals.Lag,
 						Terminals.LastValue,
 						Terminals.Lead,
