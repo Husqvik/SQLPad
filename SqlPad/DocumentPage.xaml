@@ -192,7 +192,7 @@
 				          MaxColumnWidth="{Binding ElementName=ResultGrid, Path=ActualWidth}"
 				          VirtualizingStackPanel.VirtualizationMode="Recycling"
 				          EnableColumnVirtualization="True"
-				          RowHeight="20"
+				          RowHeight="21"
 				          CanUserSortColumns="False"
 						  CanUserDeleteRows ="False"
 				          HeadersVisibility="None"

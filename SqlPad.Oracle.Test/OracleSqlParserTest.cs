@@ -2150,6 +2150,64 @@ ORDER BY
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 		}
 
+		[Test(Description = @"")]
+		public void TestJsonQueryFunction()
+		{
+			const string statement1 = "SELECT JSON_QUERY('[{\"a\": 100}, {\"b\": 200}, {\"c\": 300}]', '$[0]' RETURNING VARCHAR2(100) PRETTY ASCII WITH CONDITIONAL WRAPPER EMPTY ON ERROR) || '' AS VALUE FROM DUAL";
+
+			var statements = Parser.Parse(statement1).ToArray();
+			var statement = statements.Single().Validate();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+		}
+
+		[Test(Description = @"")]
+		public void TestJsonTableFunction()
+		{
+			const string statement1 =
+@"SELECT
+	*
+FROM
+	JSON_TABLE(
+	  '{""PONumber""             : 1600,
+		""Reference""            : ""ABULL-20140421"",
+		""Requestor""            : ""Alexis Bull"",
+		""User""                 : ""ABULL"",
+		""CostCenter""           : ""A50"",
+		""ShippingInstructions"" : {""name""   : ""Alexis Bull"",
+									""Address"": {""street""     : ""200 Sporting Green"",
+												  ""city""       : ""South San Francisco"",
+												  ""state""      : ""CA"",
+												  ""zipCode""    : 99236,
+												  ""country""    : ""United States of America""},
+									""Phone"" : [{""type""       : ""Office"", ""number"" : ""909-555-7307""},
+												 {""type""       : ""Mobile"", ""number"" : ""415-555-1234""}]},
+       ""Special Instructions"" : null,
+       ""AllowPartialShipment"" : true,
+       ""LineItems"" : [{""ItemNumber"" : 1,
+                       ""Part"" : {""Description"" : ""One Magic Christmas"",
+                                 ""UnitPrice""   : 19.95,
+                                 ""UPCCode""     : 13131092899},
+                       ""Quantity"" : 9.0},
+                      {""ItemNumber"" : 2,
+                       ""Part"" : {""Description"" : ""Lethal Weapon"",
+                                 ""UnitPrice""   : 19.95,
+                                 ""UPCCode""     : 85391628927},
+                       ""Quantity"" : 5.0}]}',
+		'$.ShippingInstructions.Phone[*]'
+		DEFAULT 'invalid data' ON ERROR
+		COLUMNS (
+			seq$ FOR ORDINALITY,
+			phone_type VARCHAR2(10) PATH '$.type',
+			phone_num VARCHAR2(20) FORMAT JSON WITH CONDITIONAL WRAPPER PATH '$.number' EMPTY ON ERROR,
+			has_zip VARCHAR2(5) EXISTS PATH '$.ShippingInstructions.Address.zipCode' FALSE ON ERROR
+		)
+	) T";
+
+			var statements = Parser.Parse(statement1).ToArray();
+			var statement = statements.Single().Validate();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+		}
+
 		public class IsRuleValid
 		{
 			[Test(Description = @"")]
@@ -2316,6 +2374,7 @@ ORDER BY
 						Terminals.FirstValue,
 						Terminals.Identifier,
 						Terminals.Interval,
+						Terminals.JsonQuery,
 						Terminals.Lag,
 						Terminals.LastValue,
 						Terminals.Lead,

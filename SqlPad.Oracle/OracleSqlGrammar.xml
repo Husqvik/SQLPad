@@ -2149,6 +2149,10 @@
           <NonTerminal Id="XmlSerializeFunction" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
+          <Sequence>
+          <NonTerminal Id="JsonQueryClause" />
+          <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
+        </Sequence>
         <Sequence>
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="Expression" />
@@ -3368,6 +3372,10 @@
         </Sequence>
         <Sequence>
           <NonTerminal Id="XmlTableClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="JsonTableClause" />
+          <!-- TODO: JSON table supports AS keyword before alias -->
         </Sequence>
         <Sequence>
           <NonTerminal Id="SchemaPrefix" IsOptional="true" />
@@ -5316,6 +5324,215 @@
       </Sequences>
     </Rule>
     
+    <Rule StartingNonTerminal="JsonTableClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="JsonTable" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="Expression" />
+          <Terminal Id="Comma" />
+          <Terminal Id="StringLiteral" Comment="JSON path expression" />
+          <NonTerminal Id="JsonValueOnErrorClause" IsOptional="true" Comment="Described as 'JsonTableOnErrorClause' but same" />
+          <NonTerminal Id="JsonColumnsClause" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="JsonColumnsClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Columns" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="JsonColumnDefinitionList" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="JsonColumnDefinitionList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="JsonColumnDefinition" />
+          <NonTerminal Id="CommaChainedJsonColumnDefinitionList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="JsonColumnDefinition">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Nested" />
+          <Terminal Id="Path"/>
+          <Terminal Id="StringLiteral" Comment="JSON path expression" />
+          <NonTerminal Id="JsonColumnsClause" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="ColumnAlias" />
+          <Terminal Id="For" />
+          <Terminal Id="Ordinality"/>
+        </Sequence>
+        <Sequence Comment="JSON exists column">
+          <Terminal Id="ColumnAlias" />
+          <NonTerminal Id="JsonValueReturnType" />
+          <Terminal Id="Exists" />
+          <Terminal Id="Path"/>
+          <Terminal Id="StringLiteral" Comment="JSON path expression" />
+          <NonTerminal Id="JsonExistsOnErrorClause" IsOptional="true" />
+        </Sequence>
+        <Sequence Comment="JSON query column">
+          <Terminal Id="ColumnAlias" />
+          <NonTerminal Id="JsonQueryReturnType" />
+          <Terminal Id="Format" />
+          <Terminal Id="Json" />
+          <NonTerminal Id="JsonQueryWrapperClause" IsOptional="true" />
+          <Terminal Id="Path" />
+          <Terminal Id="StringLiteral" Comment="JSON path expression" />
+          <NonTerminal Id="JsonQueryOnErrorClause" IsOptional="true" />
+        </Sequence>
+        <Sequence Comment="JSON value column">
+          <Terminal Id="ColumnAlias" />
+          <NonTerminal Id="JsonValueReturnType" />
+          <Terminal Id="Path"/>
+          <Terminal Id="StringLiteral" Comment="JSON path expression" />
+          <NonTerminal Id="JsonValueOnErrorClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="JsonValueReturnType">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="JsonQueryReturnType" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Number" />
+          <NonTerminal Id="DataTypeNumericPrecisionAndScale" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="JsonQueryReturnType">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Varchar2" />
+          <NonTerminal Id="DataTypeVarcharSimplePrecision" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="CommaChainedJsonColumnDefinitionList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="JsonColumnDefinitionList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="JsonValueOnErrorClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ErrorNullOrDefaultStringLiteral" />
+          <Terminal Id="On" />
+          <Terminal Id="Error" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ErrorNullOrDefaultStringLiteral">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Error" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Null" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Default" />
+          <Terminal Id="StringLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="JsonQueryClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="JsonQuery" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="Expression" />
+          <Terminal Id="Comma" />
+          <Terminal Id="StringLiteral" Comment="JSON path expression" />
+          <NonTerminal Id="JsonQueryReturningClause" IsOptional="true" />
+          <Terminal Id="Pretty" IsOptional="true" />
+          <Terminal Id="Ascii" IsOptional="true" />
+          <NonTerminal Id="JsonQueryWrapperClause" IsOptional="true" />
+          <NonTerminal Id="JsonQueryOnErrorClause" IsOptional="true" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="JsonQueryOnErrorClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ErrorOrNullOrEmpty" />
+          <Terminal Id="On" />
+          <Terminal Id="Error" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ErrorOrNullOrEmpty">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Error" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Null" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Empty" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="JsonQueryWrapperClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Without" />
+          <Terminal Id="Array" IsOptional="true" />
+          <Terminal Id="Wrapper" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="With" />
+          <NonTerminal Id="UnconditionalOrConditional" IsOptional="true" />
+          <Terminal Id="Array" IsOptional="true" />
+          <Terminal Id="Wrapper" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="UnconditionalOrConditional">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Unconditional" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Conditional" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="JsonQueryReturningClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Returning" />
+          <NonTerminal Id="JsonQueryReturnType" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
     <Rule StartingNonTerminal="JsonExistsClause">
       <Sequences>
         <Sequence>
@@ -5323,7 +5540,7 @@
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="Expression" />
           <Terminal Id="Comma" />
-          <Terminal Id="StringLiteral" />
+          <Terminal Id="StringLiteral" Comment="JSON path expression" />
           <NonTerminal Id="JsonExistsOnErrorClause" IsOptional="true" />
           <Terminal Id="RightParenthesis" />
         </Sequence>
@@ -10362,9 +10579,18 @@
     <Terminal Id="Lax" Value="LAX" />
     <Terminal Id="Keys" Value="KEYS" />
     <Terminal Id="JsonExists" Value="JSON_EXISTS" />
+    <Terminal Id="JsonQuery" Value="JSON_QUERY" />
+    <Terminal Id="JsonTable" Value="JSON_TABLE" />
     <Terminal Id="Error" Value="ERROR" />
     <Terminal Id="True" Value="TRUE" />
     <Terminal Id="False" Value="FALSE" />
+    <Terminal Id="Pretty" Value="PRETTY" />
+    <Terminal Id="Ascii" Value="ASCII" />
+    <Terminal Id="Unconditional" Value="UNCONDITIONAL" />
+    <Terminal Id="Conditional" Value="CONDITIONAL" />
+    <Terminal Id="Array" Value="ARRAY" />
+    <Terminal Id="Wrapper" Value="WRAPPER" />
+    <Terminal Id="Format" Value="FORMAT" />
 
     <!-- Other -->
     <Terminal Id="Float" Value="FLOAT" IsReservedWord="true" />

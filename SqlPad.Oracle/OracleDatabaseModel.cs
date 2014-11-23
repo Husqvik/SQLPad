@@ -561,9 +561,9 @@ namespace SqlPad.Oracle
 				return;
 			}
 
-			_userCommand.CommandText = String.Format("CALL DBMS_OUTPUT.{0}", EnableDatabaseOutput ? "ENABLE(1)" : "DISABLE");
+			_userCommand.CommandText = String.Format("CALL DBMS_OUTPUT.{0}", EnableDatabaseOutput ? "ENABLE(1)" : "DISABLE()");
 			_userCommand.ExecuteNonQuery();
-			_databaseOutputEnabled = true;
+			_databaseOutputEnabled = EnableDatabaseOutput;
 		}
 
 		private async Task ExecuteUserStatement(StatementExecutionModel executionModel, CancellationToken cancellationToken)
