@@ -885,9 +885,23 @@ se";
 		[Test(Description = @"")]
 		public void TestToCharSpecialParameterCompletionAtIncompatibleParameterIndex()
 		{
+			const string statement = @"SELECT TO_CHAR('12.34', '9G999D00', '') FROM DUAL";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 19).ToList();
+			items.Count.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
+		public void TestToCharFormatParameterCompletion()
+		{
 			const string statement = @"SELECT TO_CHAR(12.34, '9G999D00', '') FROM DUAL";
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 30).ToList();
-			items.Count.ShouldBe(0);
+			items.Count.ShouldBe(9);
+			items[0].Name.ShouldBe("DL - long date format - NLS dependent");
+			items[0].Text.ShouldBe("'DL'");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+			items[8].Name.ShouldStartWith("YYYY-MM-DD\"T\"HH24:MI:SS - XML date time - ");
+			items[8].Text.ShouldBe("'YYYY-MM-DD\"T\"HH24:MI:SS'");
+			items[8].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
 		}
 
 		[Test(Description = @"")]

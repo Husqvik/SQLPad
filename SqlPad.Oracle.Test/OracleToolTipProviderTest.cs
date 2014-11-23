@@ -416,6 +416,18 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestPackageToolTipWithinTableCollectionExpression()
+		{
+			const string query = "SELECT COLUMN_VALUE FROM TABLE(DBMS_XPLAN.DISPLAY_CURSOR()) TEST_TABLE";
+			_documentRepository.UpdateStatements(query);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 40);
+
+			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.DataContext.ShouldBe("\"PUBLIC\".DBMS_XPLAN (Synonym) => SYS.DBMS_XPLAN (Package)");
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestXmlTableColumnQualifierToolTip()
 		{
 			const string query = "SELECT VALUE FROM XMLTABLE('/root' PASSING XMLTYPE('<root>value</root>') COLUMNS VALUE VARCHAR2(10) PATH '.') XML_DATA";

@@ -53,6 +53,15 @@ namespace SqlPad.Oracle
 			}
 
 			var toCharFunctionOverload = specificFunctionOverloads
+				.FirstOrDefault(o => o.CurrentParameterIndex == 1 && o.FunctionMetadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInFunctionToChar &&
+									 o.FunctionMetadata.Parameters[o.CurrentParameterIndex + 1].DataType == "VARCHAR2");
+			if (toCharFunctionOverload != null && HasSingleStringLiteralParameterOrNoParameterToken(toCharFunctionOverload))
+			{
+				BuildCommonDateFormatCompletionItems(currentNode, completionItems);
+				completionItems.Add(BuildParameterCompletionItem(currentNode, "J", "J - Julian day; the number of days since January 1, 4712 BC. "));	
+			}
+
+			toCharFunctionOverload = specificFunctionOverloads
 				.FirstOrDefault(o => o.CurrentParameterIndex == 2 && o.FunctionMetadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInFunctionToChar &&
 				                     o.FunctionMetadata.Parameters[o.CurrentParameterIndex + 1].DataType == "VARCHAR2");
 			if (toCharFunctionOverload != null && HasSingleStringLiteralParameterOrNoParameterToken(toCharFunctionOverload))
@@ -62,14 +71,14 @@ namespace SqlPad.Oracle
 				completionItems.Add(BuildParameterCompletionItem(currentNode, itemText, itemDescription));
 			}
 
-			/*var toToDateOrTimestampFunctionOverload = specificFunctionOverloads
+			var toToDateOrTimestampFunctionOverload = specificFunctionOverloads
 				.FirstOrDefault(o => o.CurrentParameterIndex == 1 && o.FunctionMetadata.Identifier.In(OracleDatabaseModelBase.IdentifierBuiltInFunctionToDate, OracleDatabaseModelBase.IdentifierBuiltInFunctionToTimestamp, OracleDatabaseModelBase.IdentifierBuiltInFunctionToTimestampWithTimeZone) &&
 									 o.FunctionMetadata.Parameters[o.CurrentParameterIndex + 1].DataType == "VARCHAR2");
 			if (toToDateOrTimestampFunctionOverload != null && HasSingleStringLiteralParameterOrNoParameterToken(toToDateOrTimestampFunctionOverload))
 			{
-
-				//completionItems.Add(BuildParameterCompletionItem(currentNode, "MI", "MI - Minute"));
-			}*/
+				BuildCommonDateFormatCompletionItems(currentNode, completionItems);
+				completionItems.Add(BuildParameterCompletionItem(currentNode, "J", "J - Julian day; the number of days since January 1, 4712 BC. Number specified with J must be integers. "));
+			}
 
 			var sysContextFunctionOverload = specificFunctionOverloads.FirstOrDefault(o => o.FunctionMetadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInFunctionSysContext);
 			if (sysContextFunctionOverload != null)
@@ -164,6 +173,18 @@ namespace SqlPad.Oracle
 			}
 
 			return completionItems;
+		}
+
+		private static void BuildCommonDateFormatCompletionItems(StatementGrammarNode currentNode, List<ICodeCompletionItem> completionItems)
+		{
+			completionItems.Add(BuildParameterCompletionItem(currentNode, "DL", "DL - long date format - NLS dependent"));
+			completionItems.Add(BuildParameterCompletionItem(currentNode, "DS", "DS - short date format - NLS dependent"));
+			completionItems.Add(BuildParameterCompletionItem(currentNode, "TS", "TS - short time format - NLS dependent"));
+			completionItems.Add(BuildParameterCompletionItem(currentNode, "YYYY-MM-DD", String.Format("YYYY-MM-DD - ISO date - {0}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"))));
+			completionItems.Add(BuildParameterCompletionItem(currentNode, "YYYY-MM-DD HH24:MI:SS", String.Format("YYYY-MM-DD HH24:MI:SS - ISO date time - {0}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"))));
+			completionItems.Add(BuildParameterCompletionItem(currentNode, "YYYY-MM-DD\"T\"HH24:MI:SS", String.Format("YYYY-MM-DD\"T\"HH24:MI:SS - XML date time - {0}", DateTime.Now.ToString("yyyy-MM-dd\"T\"HH:mm:ss"))));
+			completionItems.Add(BuildParameterCompletionItem(currentNode, "YYYY-MM-DD HH24:MI:SS.FF9 TZH:TZM", String.Format("YYYY-MM-DD HH24:MI:SS.FF9 TZH:TZM - {0}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff000 zzz"))));
+			completionItems.Add(BuildParameterCompletionItem(currentNode, "DY, DD MON YYYY HH24:MI:SS TZD", String.Format("DY, DD MON YYYY HH24:MI:SS TZD - {0} - NLS dependent", DateTime.Now.ToString("r"))));
 		}
 
 		private static bool HasSingleStringLiteralParameterOrNoParameterToken(OracleCodeCompletionFunctionOverload functionOverload, int? parameterIndex = null)

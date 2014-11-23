@@ -256,8 +256,13 @@ namespace SqlPad.Oracle
 								var functionIdentifierNode = tableCollection.GetDescendants(Terminals.Identifier).FirstOrDefault();
 								if (functionIdentifierNode != null)
 								{
+									var prefixNonTerminal = functionIdentifierNode.ParentNode.GetDescendantByPath(NonTerminals.Prefix);
+									var functionCallNodes = GetFunctionCallNodes(functionIdentifierNode);
+									var tableCollectionProgramReference = CreateFunctionReference(queryBlock, queryBlock, null, QueryBlockPlacement.From, functionIdentifierNode, prefixNonTerminal, functionCallNodes);
+									tableCollectionProgramReference.RootNode = functionIdentifierNode.ParentNode;
+
 									var tableCollectionDataObjectReference =
-										new OracleTableCollectionReference
+										new OracleTableCollectionReference(tableCollectionProgramReference)
 										{
 											Owner = queryBlock,
 											Placement = QueryBlockPlacement.From,
@@ -266,18 +271,12 @@ namespace SqlPad.Oracle
 											RootNode = tableReferenceNonterminal
 										};
 
-									var prefixNonTerminal = functionIdentifierNode.ParentNode.GetDescendantByPath(NonTerminals.Prefix);
-									var functionCallNodes = GetFunctionCallNodes(functionIdentifierNode);
-									var tableCollectionProgramReference = CreateFunctionReference(queryBlock, queryBlock, null, QueryBlockPlacement.From, functionIdentifierNode, prefixNonTerminal, functionCallNodes);
-									tableCollectionProgramReference.RootNode = functionIdentifierNode.ParentNode;
-
 									if (tableCollectionDataObjectReference.DatabaseLinkNode == null)
 									{
 										var metadata = UpdateFunctionReferenceWithMetadata(tableCollectionProgramReference);
 										if (metadata != null)
 										{
-											tableCollectionDataObjectReference.SchemaObject = metadata.Owner;
-											tableCollectionDataObjectReference.FunctionMetadata = metadata;
+											tableCollectionDataObjectReference.SchemaObject = tableCollectionProgramReference.SchemaObject;
 											tableCollectionDataObjectReference.OwnerNode = tableCollectionProgramReference.OwnerNode;
 											tableCollectionDataObjectReference.ObjectNode = tableCollectionProgramReference.ObjectNode;
 										}

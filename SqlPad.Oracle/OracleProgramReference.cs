@@ -49,12 +49,15 @@ namespace SqlPad.Oracle
 	public class OracleTableCollectionReference : OracleDataObjectReference
 	{
 		private List<OracleColumn> _columns;
+		
+		public OracleProgramReference PipelinedFunctionReference { get; private set; }
 
-		public OracleTableCollectionReference() : base(ReferenceType.TableCollection)
+		public OracleTableCollectionReference(OracleProgramReference pipelinedFunctionReference) : base(ReferenceType.TableCollection)
 		{
+			PipelinedFunctionReference = pipelinedFunctionReference;
 		}
 
-		public OracleFunctionMetadata FunctionMetadata { get; set; }
+		public OracleFunctionMetadata FunctionMetadata { get { return PipelinedFunctionReference.Metadata; } }
 
 		public override string Name { get { return AliasNode == null ? null : AliasNode.Token.Value; } }
 

@@ -39,15 +39,15 @@ namespace SqlPad.Oracle
 				{
 					case Terminals.ObjectIdentifier:
 						var objectReference = GetObjectReference(queryBlock, semanticModel, node);
-						var schemaObjectReference = GetSchemaObjectReference(queryBlock, node);
+						var schemaObject = GetSchemaObject(queryBlock, node);
 						if (objectReference != null)
 						{
 							return BuildObjectTooltip(semanticModel.DatabaseModel, objectReference);
 						}
 						
-						if (schemaObjectReference != null)
+						if (schemaObject != null)
 						{
-							tip = GetFullSchemaObjectToolTip(schemaObjectReference);
+							tip = GetFullSchemaObjectToolTip(schemaObject);
 						}
 						else
 						{
@@ -66,6 +66,7 @@ namespace SqlPad.Oracle
 					case Terminals.LastValue:
 					case Terminals.Lead:
 					case Terminals.Lag:
+					case Terminals.ListAggregation:
 					case Terminals.RowIdPseudoColumn:
 					case Terminals.Identifier:
 						var columnReference = semanticModel.GetColumnReference(node);
@@ -175,7 +176,15 @@ namespace SqlPad.Oracle
 				return toolTip;
 			}
 
-			simpleToolTip = objectReference.FullyQualifiedObjectName + " (" + objectReference.Type.ToCategoryLabel() + ")";
+			if (objectReference.Type == ReferenceType.TableCollection)
+			{
+				simpleToolTip = GetFullSchemaObjectToolTip(objectReference.SchemaObject);
+			}
+			else
+			{
+				simpleToolTip = objectReference.FullyQualifiedObjectName + " (" + objectReference.Type.ToCategoryLabel() + ")";
+			}
+			
 			return new ToolTipObject { DataContext = simpleToolTip };
 		}
 
@@ -206,7 +215,7 @@ namespace SqlPad.Oracle
 			return functionReference == null || functionReference.DatabaseLinkNode != null || functionReference.Metadata == null ? null : functionReference.Metadata.Identifier.FullyQualifiedIdentifier;
 		}
 
-		private OracleSchemaObject GetSchemaObjectReference(OracleQueryBlock queryBlock, StatementGrammarNode terminal)
+		private OracleSchemaObject GetSchemaObject(OracleQueryBlock queryBlock, StatementGrammarNode terminal)
 		{
 			if (queryBlock == null)
 			{
