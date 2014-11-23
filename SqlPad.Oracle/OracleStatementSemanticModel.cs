@@ -301,7 +301,7 @@ namespace SqlPad.Oracle
 			ResolveRedundantTerminals();
 		}
 
-		private static OracleSpecialTableReference ResolveJsonTableReference(StatementGrammarNode tableReferenceNonterminal)
+		private OracleSpecialTableReference ResolveJsonTableReference(StatementGrammarNode tableReferenceNonterminal)
 		{
 			var jsonTableClause = tableReferenceNonterminal.GetDescendantsWithinSameQuery(NonTerminals.JsonTableClause).SingleOrDefault();
 			if (jsonTableClause == null)
@@ -326,6 +326,19 @@ namespace SqlPad.Oracle
 				{
 					var jsonReturnTypeNode = jsonTableColumn[1];
 					column.DataType = OracleDataType.FromJsonReturnTypeNode(jsonReturnTypeNode);
+					if (column.DataType.FullyQualifiedName.Name == "VARCHAR2" && column.DataType.Length == null)
+					{
+						string maxStringSize;
+						if (!DatabaseModel.SystemParameters.TryGetValue(OracleDatabaseModelBase.SystemParameterNameMaxStringSize, out maxStringSize) ||
+						    maxStringSize == "STANDARD")
+						{
+							column.DataType.Length = 4000;
+						}
+						else
+						{
+							column.DataType.Length = 32767;
+						}
+					}
 				}
 			}
 
@@ -932,29 +945,43 @@ namespace SqlPad.Oracle
 				foreach (var objectReference in asteriskTableReference.Value)
 				{
 					IEnumerable<OracleSelectListColumn> exposedColumns;
-					if (objectReference.Type == ReferenceType.SchemaObject)
+					switch (objectReference.Type)
 					{
-						var dataObject = objectReference.SchemaObject.GetTargetSchemaObject() as OracleDataObject;
-						if (dataObject == null)
-							continue;
+						case ReferenceType.SchemaObject:
+							var dataObject = objectReference.SchemaObject.GetTargetSchemaObject() as OracleDataObject;
+							if (dataObject == null)
+								continue;
 
-						exposedColumns = dataObject.Columns.Values
-							.Select(c => new OracleSelectListColumn(this, asteriskColumn)
+							exposedColumns = dataObject.Columns.Values
+								.Select(c => new OracleSelectListColumn(this, asteriskColumn)
+								{
+									IsDirectReference = true,
+									ColumnDescription = c
+								});
+							break;
+						case ReferenceType.TableCollection:
+						case ReferenceType.XmlTable:
+						case ReferenceType.JsonTable:
+							exposedColumns = objectReference.Columns
+								.Select(c => new OracleSelectListColumn(this, asteriskColumn)
+								{
+									IsDirectReference = true,
+									ColumnDescription = c
+								});
+							break;
+						case ReferenceType.CommonTableExpression:
+						case ReferenceType.InlineView:
+							var columns = new List<OracleSelectListColumn>();
+							foreach (var column in objectReference.QueryBlocks.SelectMany(qb => qb.Columns).Where(c => !c.IsAsterisk))
 							{
-								IsDirectReference = true,
-								ColumnDescription = c
-							});
-					}
-					else
-					{
-						var columns = new List<OracleSelectListColumn>();
-						foreach (var column in objectReference.QueryBlocks.SelectMany(qb => qb.Columns).Where(c => !c.IsAsterisk))
-						{
-							column.RegisterOuterReference();
-							columns.Add(column.AsImplicit(asteriskColumn));
-						}
-						
-						exposedColumns = columns;
+								column.RegisterOuterReference();
+								columns.Add(column.AsImplicit(asteriskColumn));
+							}
+
+							exposedColumns = columns;
+							break;
+						default:
+							throw new NotImplementedException(String.Format("Reference '{0}' is not implemented yet. ", objectReference.Type));
 					}
 
 					var exposedColumnDictionary = new Dictionary<string, OracleColumnReference>();

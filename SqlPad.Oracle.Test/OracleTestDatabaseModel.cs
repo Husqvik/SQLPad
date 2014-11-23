@@ -61,10 +61,12 @@ namespace SqlPad.Oracle.Test
 				{ StatisticsCodeSqlNetRoundtripsToOrFromClient, StatisticsDescriptionSqlNetRoundtripsToOrFromClient }
 			};
 
+		internal string CurrentDatabaseDomainNameInternal = DatabaseDomainNameInternal;
+
 		private static readonly Dictionary<string, string> SystemParametersInternal =
 		new Dictionary<string, string>
 			{
-				{ "db_domain", DatabaseDomainNameInternal }
+				{ SystemParameterNameMaxStringSize, "STANDARD" }
 			};
 
 		private readonly IDictionary<OracleObjectIdentifier, OracleSchemaObject> _allObjects;
@@ -970,7 +972,7 @@ Note
 			yield return new object[] { "Dummy Value " + ++_generatedRowCount};
 		}
 
-		public override string DatabaseDomainName { get { return DatabaseDomainNameInternal; } }
+		public override string DatabaseDomainName { get { return CurrentDatabaseDomainNameInternal; } }
 
 		public override bool HasActiveTransaction { get { return false; } }
 

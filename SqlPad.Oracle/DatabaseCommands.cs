@@ -290,7 +290,7 @@ END;";
 		public const string GetStatisticsKeysOracle11 = "SELECT STATISTIC#, CLASS, NAME DISPLAY_NAME FROM V$STATNAME";
 		public const string GetSessionsStatistics = "SELECT STATISTIC#, VALUE FROM V$SESSTAT WHERE SID = :SID";
 		public const string GetContextData = "SELECT NAMESPACE, ATTRIBUTE FROM GLOBAL_CONTEXT UNION SELECT NAMESPACE, ATTRIBUTE FROM SESSION_CONTEXT";
-		public const string GetSystemParameters = "SELECT NAME, VALUE FROM V$PARAMETER WHERE NAME IN ('db_domain')";
+		public const string GetSystemParameters = "SELECT NAME, VALUE FROM V$PARAMETER WHERE NAME IN ('max_string_size')";
 		public const string GetLocalTransactionId = "SELECT DBMS_TRANSACTION.LOCAL_TRANSACTION_ID TRANSACTION_ID FROM SYS.DUAL";
 
 		private static string ToInValueList(params string[] values)

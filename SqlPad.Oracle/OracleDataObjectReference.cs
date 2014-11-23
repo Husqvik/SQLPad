@@ -55,17 +55,14 @@ namespace SqlPad.Oracle
 
 				if (_columns != null)
 					return _columns;
-				
+
 				_columns = new List<OracleColumn>();
-				
-				if (Type != ReferenceType.SchemaObject)
-				{
-					var queryColumns = QueryBlocks.SelectMany(qb => qb.Columns)
-						.Where(c => !c.IsAsterisk)
-						.Select(c => c.ColumnDescription);
-					
-					_columns.AddRange(queryColumns);
-				}
+
+				var queryColumns = QueryBlocks.SelectMany(qb => qb.Columns)
+					.Where(c => !c.IsAsterisk)
+					.Select(c => c.ColumnDescription);
+
+				_columns.AddRange(queryColumns);
 
 				return _columns;
 			}

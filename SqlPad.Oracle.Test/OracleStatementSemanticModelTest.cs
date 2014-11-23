@@ -421,8 +421,7 @@ FROM
 			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
-			var databaseModel = new OracleTestDatabaseModel();
-			databaseModel.SystemParameters[OracleDatabaseModelBase.SystemParameterNameDatabaseDomain] = null;
+			var databaseModel = new OracleTestDatabaseModel { CurrentDatabaseDomainNameInternal = null };
 
 			var semanticModel = new OracleStatementSemanticModel(query1, statement, databaseModel);
 			semanticModel.StatementText.ShouldBe(query1);
@@ -920,12 +919,13 @@ FROM
 		[Test(Description = @"")]
 		public void TestTableCollectionExpressionProgramReferences()
 		{
-			const string query1 = @"SELECT PLAN_TABLE_OUTPUT, COLUMN_VALUE FROM TABLE(DBMS_XPLAN.DISPLAY_CURSOR(NULL, NULL, 'ALLSTATS LAST ADVANCED')) T1, TABLE(SYS.ODCIRAWLIST(HEXTORAW('ABCDEF'), HEXTORAW('A12345'), HEXTORAW('F98765'))) T2";
+			const string query1 = @"SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY_CURSOR(NULL, NULL, 'ALLSTATS LAST ADVANCED')) T1, TABLE(SYS.ODCIRAWLIST(HEXTORAW('ABCDEF'), HEXTORAW('A12345'), HEXTORAW('F98765'))) T2";
 
 			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
 			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
 
-			var objectReferences = semanticModel.QueryBlocks.Single().ObjectReferences.ToArray();
+			var queryBlock = semanticModel.QueryBlocks.Single();
+			var objectReferences = queryBlock.ObjectReferences.ToArray();
 			objectReferences.Length.ShouldBe(2);
 			objectReferences[0].RootNode.ShouldNotBe(null);
 			objectReferences[0].RootNode.FirstTerminalNode.Id.ShouldBe(Terminals.Table);
@@ -936,7 +936,7 @@ FROM
 			objectReferences[1].RootNode.LastTerminalNode.Id.ShouldBe(Terminals.ObjectAlias);
 			objectReferences[1].RootNode.LastTerminalNode.Token.Value.ShouldBe("T2");
 
-			var programReferences = semanticModel.QueryBlocks.Single().AllProgramReferences.ToArray();
+			var programReferences = queryBlock.AllProgramReferences.ToArray();
 			programReferences.Length.ShouldBe(5);
 			programReferences[0].RootNode.ShouldNotBe(null);
 			programReferences[0].RootNode.FirstTerminalNode.Id.ShouldBe(Terminals.ObjectIdentifier);
@@ -956,17 +956,20 @@ FROM
 			programReferences[3].Metadata.Identifier.Name.ShouldBe("\"HEXTORAW\"");
 			programReferences[4].Metadata.ShouldNotBe(null);
 			programReferences[4].Metadata.Identifier.Name.ShouldBe("\"HEXTORAW\"");
+
+			queryBlock.Columns.Count.ShouldBe(3);
 		}
 
 		[Test(Description = @"")]
 		public void TestXmlTableReference()
 		{
-			const string query1 = @"SELECT SEQ#, TITLE, DESCRIPTION FROM XMLTABLE('for $i in $RSS_DATA/rss/channel/item return $i' PASSING HTTPURITYPE('http://servis.idnes.cz/rss.asp?c=zpravodaj').GETXML() AS RSS_DATA COLUMNS SEQ# FOR ORDINALITY, TITLE VARCHAR2(4000) PATH 'title', DESCRIPTION CLOB PATH 'description') T";
+			const string query1 = @"SELECT * FROM XMLTABLE('for $i in $RSS_DATA/rss/channel/item return $i' PASSING HTTPURITYPE('http://servis.idnes.cz/rss.asp?c=zpravodaj').GETXML() AS RSS_DATA COLUMNS SEQ# FOR ORDINALITY, TITLE VARCHAR2(4000) PATH 'title', DESCRIPTION CLOB PATH 'description') T";
 
 			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
 			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
 
-			var objectReferences = semanticModel.QueryBlocks.Single().ObjectReferences.ToArray();
+			var queryBlock = semanticModel.QueryBlocks.Single();
+			var objectReferences = queryBlock.ObjectReferences.ToArray();
 			objectReferences.Length.ShouldBe(1);
 			objectReferences[0].RootNode.ShouldNotBe(null);
 			objectReferences[0].RootNode.FirstTerminalNode.Id.ShouldBe(Terminals.XmlTable);
@@ -983,6 +986,8 @@ FROM
 			columns[2].Name.ShouldBe("\"DESCRIPTION\"");
 			columns[2].Nullable.ShouldBe(true);
 			columns[2].FullTypeName.ShouldBe("CLOB");
+
+			queryBlock.Columns.Count.ShouldBe(4);
 		}
 
 		[Test(Description = @"")]
@@ -1024,7 +1029,8 @@ AS T";
 			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
 			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
 
-			var objectReferences = semanticModel.QueryBlocks.Single().ObjectReferences.ToArray();
+			var queryBlock = semanticModel.QueryBlocks.Single();
+			var objectReferences = queryBlock.ObjectReferences.ToArray();
 			objectReferences.Length.ShouldBe(1);
 			objectReferences[0].RootNode.ShouldNotBe(null);
 			objectReferences[0].RootNode.FirstTerminalNode.Id.ShouldBe(Terminals.JsonTable);
@@ -1037,7 +1043,7 @@ AS T";
 			columns[1].Name.ShouldBe("\"ITEM_NUMBER\"");
 			columns[1].FullTypeName.ShouldBe("NUMBER");
 			columns[2].Name.ShouldBe("\"QUANTITY\"");
-			columns[2].FullTypeName.ShouldBe("VARCHAR2");
+			columns[2].FullTypeName.ShouldBe("VARCHAR2(4000)");
 			columns[3].Name.ShouldBe("\"NONEXISTING\"");
 			columns[3].FullTypeName.ShouldBe("VARCHAR2(20)");
 			columns[4].Name.ShouldBe("\"HAS_UPCCODE\"");
@@ -1046,6 +1052,8 @@ AS T";
 			columns[5].FullTypeName.ShouldBe("VARCHAR2(16)");
 			columns[6].Name.ShouldBe("\"HAS_NESTED_VALUE\"");
 			columns[6].FullTypeName.ShouldBe("VARCHAR2(5)");
+
+			queryBlock.Columns.Count.ShouldBe(8);
 		}
 	}
 }

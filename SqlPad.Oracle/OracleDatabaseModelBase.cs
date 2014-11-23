@@ -14,7 +14,7 @@ namespace SqlPad.Oracle
 		public const string SchemaSys = "\"SYS\"";
 		public const string SchemaSystem = "\"SYSTEM\"";
 		public const string PackageBuiltInFunction = "\"STANDARD\"";
-		public const string SystemParameterNameDatabaseDomain = "db_domain";
+		public const string SystemParameterNameMaxStringSize = "max_string_size";
 		public const int VersionMajorOracle12c = 12;
 
 		internal static OracleFunctionIdentifier IdentifierBuiltInFunctionRound = OracleFunctionIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "ROUND");
