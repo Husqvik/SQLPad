@@ -109,13 +109,13 @@ namespace SqlPad.Oracle
 		}
 	}
 
-	[DebuggerDisplay("OracleXmlTableReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; FunctionIdentifier={ObjectNode.Token.Value})")]
-	public class OracleXmlTableReference : OracleDataObjectReference
+	[DebuggerDisplay("OracleSpecialTableReference (Alias={Name})")]
+	public class OracleSpecialTableReference : OracleDataObjectReference
 	{
 		private readonly ICollection<OracleColumn> _columns;
 
-		public OracleXmlTableReference(IEnumerable<OracleColumn> columns)
-			: base(ReferenceType.XmlTable)
+		public OracleSpecialTableReference(ReferenceType referenceType, IEnumerable<OracleColumn> columns)
+			: base(referenceType)
 		{
 			_columns = new List<OracleColumn>(columns).AsReadOnly();
 		}

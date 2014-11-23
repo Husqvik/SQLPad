@@ -17,6 +17,9 @@ namespace SqlPad.Oracle
 				OracleDatabaseModelBase.IdentifierBuiltInFunctionRound,
 				OracleDatabaseModelBase.IdentifierBuiltInFunctionToChar,
 				OracleDatabaseModelBase.IdentifierBuiltInFunctionTrunc,
+				OracleDatabaseModelBase.IdentifierBuiltInFunctionToDate,
+				OracleDatabaseModelBase.IdentifierBuiltInFunctionToTimestamp,
+				OracleDatabaseModelBase.IdentifierBuiltInFunctionToTimestampWithTimeZone,
 				OracleDatabaseModelBase.IdentifierBuiltInFunctionSysContext
 			};
 
@@ -31,37 +34,42 @@ namespace SqlPad.Oracle
 
 			var truncFunctionOverload = specificFunctionOverloads
 				.FirstOrDefault(o => o.CurrentParameterIndex == 1 && o.FunctionMetadata.Identifier.In(OracleDatabaseModelBase.IdentifierBuiltInFunctionTrunc, OracleDatabaseModelBase.IdentifierBuiltInFunctionRound) &&
-				                      o.FunctionMetadata.Parameters[o.CurrentParameterIndex + 1].DataType == "VARCHAR2");
+				                     o.FunctionMetadata.Parameters[o.CurrentParameterIndex + 1].DataType == "VARCHAR2");
 
 			if (truncFunctionOverload != null && HasSingleStringLiteralParameterOrNoParameterToken(truncFunctionOverload))
 			{
+				var addRoundInformation = truncFunctionOverload.FunctionMetadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInFunctionRound;
 				completionItems.Add(BuildParameterCompletionItem(currentNode, "CC", "CC - One greater than the first two digits of a four-digit year"));
-				completionItems.Add(BuildParameterCompletionItem(currentNode, "YYYY", "YYYY - Year (rounds up on July 1)"));
-				completionItems.Add(BuildParameterCompletionItem(currentNode, "YEAR", "YEAR - Year (rounds up on July 1)"));
-				completionItems.Add(BuildParameterCompletionItem(currentNode, "I", "I - ISO Year"));
-				completionItems.Add(BuildParameterCompletionItem(currentNode, "IYYY", "IYYY - ISO Year"));
-				completionItems.Add(BuildParameterCompletionItem(currentNode, "Q", "Q - Quarter (rounds up on the sixteenth day of the second month of the quarter)"));
-				completionItems.Add(BuildParameterCompletionItem(currentNode, "MONTH", "MONTH - Month (rounds up on the sixteenth day)"));
-				completionItems.Add(BuildParameterCompletionItem(currentNode, "MON", "MON - Month (rounds up on the sixteenth day)"));
-				completionItems.Add(BuildParameterCompletionItem(currentNode, "MM", "MM - Month (rounds up on the sixteenth day)"));
+				completionItems.Add(BuildParameterCompletionItem(currentNode, "YYYY", String.Format("YYYY (YEAR) - Year{0}", addRoundInformation ? " (rounds up on July 1)" : null)));
+				completionItems.Add(BuildParameterCompletionItem(currentNode, "I", "I (IYYY) - ISO Year"));
+				completionItems.Add(BuildParameterCompletionItem(currentNode, "Q", String.Format("Q - Quarter{0}", addRoundInformation ? " (rounds up on the sixteenth day of the second month of the quarter)" : null)));
+				completionItems.Add(BuildParameterCompletionItem(currentNode, "MM", String.Format("MM (MON, MONTH) - Month{0}", addRoundInformation ? " (rounds up on the sixteenth day)" : null)));
 				completionItems.Add(BuildParameterCompletionItem(currentNode, "WW", "WW - Same day of the week as the first day of the year"));
 				completionItems.Add(BuildParameterCompletionItem(currentNode, "IW", "IW - Same day of the week as the first day of the ISO year"));
 				completionItems.Add(BuildParameterCompletionItem(currentNode, "W", "W - Same day of the week as the first day of the month"));
-				completionItems.Add(BuildParameterCompletionItem(currentNode, "D", "D - Starting day of the week"));
-				completionItems.Add(BuildParameterCompletionItem(currentNode, "DAY", "DAY - Starting day of the week"));
+				completionItems.Add(BuildParameterCompletionItem(currentNode, "D", "D (DY, DAY) - Starting day of the week"));
 				completionItems.Add(BuildParameterCompletionItem(currentNode, "HH", "HH - Hour"));
 				completionItems.Add(BuildParameterCompletionItem(currentNode, "MI", "MI - Minute"));
 			}
 
 			var toCharFunctionOverload = specificFunctionOverloads
 				.FirstOrDefault(o => o.CurrentParameterIndex == 2 && o.FunctionMetadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInFunctionToChar &&
-				                      o.FunctionMetadata.Parameters[o.CurrentParameterIndex + 1].DataType == "VARCHAR2");
+				                     o.FunctionMetadata.Parameters[o.CurrentParameterIndex + 1].DataType == "VARCHAR2");
 			if (toCharFunctionOverload != null && HasSingleStringLiteralParameterOrNoParameterToken(toCharFunctionOverload))
 			{
 				const string itemText = "NLS_NUMERIC_CHARACTERS = '<decimal separator><group separator>' NLS_CURRENCY = 'currency_symbol' NLS_ISO_CURRENCY = <territory>";
 				const string itemDescription = "NLS_NUMERIC_CHARACTERS = '<decimal separator><group separator>' NLS_CURRENCY = 'currency_symbol' NLS_ISO_CURRENCY = <territory>";
 				completionItems.Add(BuildParameterCompletionItem(currentNode, itemText, itemDescription));
 			}
+
+			/*var toToDateOrTimestampFunctionOverload = specificFunctionOverloads
+				.FirstOrDefault(o => o.CurrentParameterIndex == 1 && o.FunctionMetadata.Identifier.In(OracleDatabaseModelBase.IdentifierBuiltInFunctionToDate, OracleDatabaseModelBase.IdentifierBuiltInFunctionToTimestamp, OracleDatabaseModelBase.IdentifierBuiltInFunctionToTimestampWithTimeZone) &&
+									 o.FunctionMetadata.Parameters[o.CurrentParameterIndex + 1].DataType == "VARCHAR2");
+			if (toToDateOrTimestampFunctionOverload != null && HasSingleStringLiteralParameterOrNoParameterToken(toToDateOrTimestampFunctionOverload))
+			{
+
+				//completionItems.Add(BuildParameterCompletionItem(currentNode, "MI", "MI - Minute"));
+			}*/
 
 			var sysContextFunctionOverload = specificFunctionOverloads.FirstOrDefault(o => o.FunctionMetadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInFunctionSysContext);
 			if (sysContextFunctionOverload != null)

@@ -323,13 +323,13 @@ namespace SqlPad.Oracle.Test
 
 			var roundFunctionOverload1Metadata = new OracleFunctionMetadata(IdentifierBuiltInFunctionRound, false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNormal, true);
 			roundFunctionOverload1Metadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "NUMBER", OracleObjectIdentifier.Empty, false));
-			roundFunctionOverload1Metadata.Parameters.Add(new OracleFunctionParameterMetadata("N", 1, ParameterDirection.Input, "NUMBER", OracleObjectIdentifier.Empty, false));
+			roundFunctionOverload1Metadata.Parameters.Add(new OracleFunctionParameterMetadata("LEFT", 1, ParameterDirection.Input, "NUMBER", OracleObjectIdentifier.Empty, false));
 			builtInFunctionPackage.Functions.Add(roundFunctionOverload1Metadata);
 
 			var roundFunctionOverload2Metadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues("SYS", "STANDARD", "ROUND", 2), false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNormal, true);
 			roundFunctionOverload2Metadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "NUMBER", OracleObjectIdentifier.Empty, false));
-			roundFunctionOverload2Metadata.Parameters.Add(new OracleFunctionParameterMetadata("N", 1, ParameterDirection.Input, "NUMBER", OracleObjectIdentifier.Empty, false));
-			roundFunctionOverload2Metadata.Parameters.Add(new OracleFunctionParameterMetadata("F", 2, ParameterDirection.Input, "NUMBER", OracleObjectIdentifier.Empty, false));
+			roundFunctionOverload2Metadata.Parameters.Add(new OracleFunctionParameterMetadata("LEFT", 1, ParameterDirection.Input, "NUMBER", OracleObjectIdentifier.Empty, false));
+			roundFunctionOverload2Metadata.Parameters.Add(new OracleFunctionParameterMetadata("RIGHT", 2, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, false));
 			builtInFunctionPackage.Functions.Add(roundFunctionOverload2Metadata);
 
 			var convertFunctionMetadata = new OracleFunctionMetadata(IdentifierBuiltInFunctionConvert, false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNormal, true);

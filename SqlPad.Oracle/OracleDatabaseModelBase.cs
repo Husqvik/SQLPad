@@ -20,6 +20,9 @@ namespace SqlPad.Oracle
 		internal static OracleFunctionIdentifier IdentifierBuiltInFunctionRound = OracleFunctionIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "ROUND");
 		internal static OracleFunctionIdentifier IdentifierBuiltInFunctionSysContext = OracleFunctionIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "SYS_CONTEXT");
 		internal static OracleFunctionIdentifier IdentifierBuiltInFunctionToChar = OracleFunctionIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "TO_CHAR");
+		internal static OracleFunctionIdentifier IdentifierBuiltInFunctionToDate = OracleFunctionIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "TO_DATE");
+		internal static OracleFunctionIdentifier IdentifierBuiltInFunctionToTimestamp = OracleFunctionIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "TO_TIMESTAMP");
+		internal static OracleFunctionIdentifier IdentifierBuiltInFunctionToTimestampWithTimeZone = OracleFunctionIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "TO_TIMESTAMP_TZ");
 		internal static OracleFunctionIdentifier IdentifierBuiltInFunctionTrunc = OracleFunctionIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "TRUNC");
 		internal static OracleFunctionIdentifier IdentifierBuiltInFunctionConvert = OracleFunctionIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "CONVERT");
 

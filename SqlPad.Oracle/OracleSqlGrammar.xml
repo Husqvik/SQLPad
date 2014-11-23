@@ -5264,7 +5264,7 @@
     <Rule StartingNonTerminal="XmlTableColumn">
       <Sequences>
         <Sequence>
-          <Terminal Id="XmlAlias" />
+          <Terminal Id="ColumnAlias" />
           <NonTerminal Id="XmlTableColumnDefinition" />
         </Sequence>
       </Sequences>

@@ -1522,8 +1522,8 @@ namespace SqlPad
 
 			var position = Editor.TextArea.Caret.CalculateCaretRectangle().BottomLeft;
 
-			_contextActionMenu.HorizontalOffset = position.X + 32;
-			_contextActionMenu.VerticalOffset = position.Y + 2;
+			_contextActionMenu.HorizontalOffset = position.X - Editor.TextArea.TextView.HorizontalOffset + 32;
+			_contextActionMenu.VerticalOffset = position.Y - Editor.TextArea.TextView.VerticalOffset + 2;
 
 			return _contextActionMenu.Items.Count > 0;
 		}

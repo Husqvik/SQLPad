@@ -824,19 +824,35 @@ se";
 		}
 
 		[Test(Description = @"")]
-		public void TestTruncSpecialParameterCompletion()
+		public void TestTruncFunctionSpecialParameterCompletion()
 		{
 			const string statement = @"SELECT TRUNC(SYSDATE, 'IW') FROM DUAL";
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 23).ToList();
-			items.Count.ShouldBe(16);
+			items.Count.ShouldBe(11);
 			items[0].Name.ShouldBe("CC - One greater than the first two digits of a four-digit year");
 			items[0].Text.ShouldBe("'CC'");
 			items[0].StatementNode.ShouldNotBe(null);
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
-			items[15].Name.ShouldBe("YYYY - Year (rounds up on July 1)");
-			items[15].Text.ShouldBe("'YYYY'");
-			items[15].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
-			items[15].StatementNode.ShouldNotBe(null);
+			items[10].Name.ShouldBe("YYYY (YEAR) - Year");
+			items[10].Text.ShouldBe("'YYYY'");
+			items[10].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+			items[10].StatementNode.ShouldNotBe(null);
+		}
+
+		[Test(Description = @"")]
+		public void TestRoundFunctionSpecialParameterCompletion()
+		{
+			const string statement = @"SELECT ROUND(SYSDATE, 'IW') FROM DUAL";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 23).ToList();
+			items.Count.ShouldBe(11);
+			items[0].Name.ShouldBe("CC - One greater than the first two digits of a four-digit year");
+			items[0].Text.ShouldBe("'CC'");
+			items[0].StatementNode.ShouldNotBe(null);
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+			items[10].Name.ShouldBe("YYYY (YEAR) - Year (rounds up on July 1)");
+			items[10].Text.ShouldBe("'YYYY'");
+			items[10].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+			items[10].StatementNode.ShouldNotBe(null);
 		}
 
 		[Test(Description = @"")]
@@ -844,15 +860,15 @@ se";
 		{
 			const string statement = @"SELECT TRUNC(SYSDATE, ) FROM DUAL";
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 22).ToList();
-			items.Count.ShouldBe(16);
+			items.Count.ShouldBe(11);
 			items[0].Name.ShouldBe("CC - One greater than the first two digits of a four-digit year");
 			items[0].Text.ShouldBe("'CC'");
 			items[0].StatementNode.ShouldBe(null);
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
-			items[15].Name.ShouldBe("YYYY - Year (rounds up on July 1)");
-			items[15].Text.ShouldBe("'YYYY'");
-			items[15].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
-			items[15].StatementNode.ShouldBe(null);
+			items[10].Name.ShouldBe("YYYY (YEAR) - Year");
+			items[10].Text.ShouldBe("'YYYY'");
+			items[10].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+			items[10].StatementNode.ShouldBe(null);
 		}
 
 		[Test(Description = @"")]

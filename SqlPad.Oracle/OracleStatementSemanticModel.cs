@@ -150,8 +150,6 @@ namespace SqlPad.Oracle
 
 				foreach (var tableReferenceNonterminal in tableReferenceNonterminals)
 				{
-					var objectReferenceAlias = tableReferenceNonterminal.GetDescendantByPath(Terminals.ObjectAlias);
-
 					var queryTableExpression = tableReferenceNonterminal.GetDescendantsWithinSameQuery(NonTerminals.QueryTableExpression).SingleOrDefault();
 					if (queryTableExpression == null)
 					{
@@ -164,12 +162,12 @@ namespace SqlPad.Oracle
 								var columns = new List<OracleColumn>();
 								foreach (var xmlTableColumn in columnList.GetDescendants(NonTerminals.XmlTableColumn).Where(c => c.ChildNodes.Count >= 1))
 								{
-									var xmlColumnAlias = xmlTableColumn.ChildNodes[0];
+									var columnAlias = xmlTableColumn.ChildNodes[0];
 
 									var column =
 										new OracleColumn
 										{
-											Name = xmlColumnAlias.Token.Value.ToQuotedIdentifier(),
+											Name = columnAlias.Token.Value.ToQuotedIdentifier(),
 											Nullable = true,
 											DataType = OracleDataType.Empty
 										};
@@ -182,10 +180,10 @@ namespace SqlPad.Oracle
 										if (xmlTableColumnDefinition.ChildNodes.Count == 2 && xmlTableColumnDefinition.ChildNodes[0].Id == Terminals.For && xmlTableColumnDefinition.ChildNodes[1].Id == Terminals.Ordinality)
 										{
 											column.DataType =
-														new OracleDataType
-														{
-															FullyQualifiedName = OracleObjectIdentifier.Create(null, "NUMBER")
-														};
+												new OracleDataType
+												{
+													FullyQualifiedName = OracleObjectIdentifier.Create(null, "NUMBER")
+												};
 										}
 										else
 										{
@@ -212,14 +210,15 @@ namespace SqlPad.Oracle
 
 								if (columns.Count > 0)
 								{
-									var xmlTableReference =
-										new OracleXmlTableReference(columns)
+									var objectReferenceAlias = tableReferenceNonterminal.GetDescendantByPath(NonTerminals.ObjectAsAlias, Terminals.ObjectAlias);
+									var specialTableReference =
+										new OracleSpecialTableReference(ReferenceType.XmlTable, columns)
 										{
 											RootNode = tableReferenceNonterminal,
 											AliasNode = objectReferenceAlias
 										};
 
-									queryBlock.ObjectReferences.Add(xmlTableReference);
+									queryBlock.ObjectReferences.Add(specialTableReference);
 								}
 							}
 
@@ -228,6 +227,7 @@ namespace SqlPad.Oracle
 					}
 					else
 					{
+						var objectReferenceAlias = tableReferenceNonterminal.GetDescendantByPath(Terminals.ObjectAlias);
 						var nestedQueryTableReference = queryTableExpression.GetPathFilterDescendants(f => f.Id != NonTerminals.Subquery, NonTerminals.NestedQuery).SingleOrDefault();
 						if (nestedQueryTableReference != null)
 						{
