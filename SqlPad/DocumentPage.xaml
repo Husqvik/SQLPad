@@ -198,11 +198,10 @@
 				          HeadersVisibility="None"
 				          HorizontalGridLinesBrush="LightGray"
 				          VerticalGridLinesBrush="LightGray"
-				          MouseDoubleClick="ResultGridMouseDoubleClickHandler"
-				          PreviewMouseWheel="ResultGridPreviewMouseWheelHandler">
+						  ScrollViewer.ScrollChanged="Handler"
+				          MouseDoubleClick="ResultGridMouseDoubleClickHandler">
 					<DataGrid.CommandBindings>
 						<CommandBinding Command="commands:GenericCommands.ExportToCsv" Executed="ExportToCsv" CanExecute="CanExportToCsv" />
-						<CommandBinding Command="commands:GenericCommands.FetchNextRows" Executed="FetchNextRows" CanExecute="CanFetchNextRows" />
 						<CommandBinding Command="commands:GenericCommands.FetchAllRows" Executed="FetchAllRows" CanExecute="CanFetchAllRows" />
 					</DataGrid.CommandBindings>
 					<DataGrid.ContextMenu>

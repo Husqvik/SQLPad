@@ -644,7 +644,7 @@ namespace SqlPad
 
 		private void CanFetchAllRows(object sender, CanExecuteRoutedEventArgs canExecuteRoutedEventArgs)
 		{
-			canExecuteRoutedEventArgs.CanExecute = !IsBusy && DatabaseModel.CanFetch && !DatabaseModel.IsExecuting;
+			canExecuteRoutedEventArgs.CanExecute = CanFetchNextRows();
 			canExecuteRoutedEventArgs.ContinueRouting = canExecuteRoutedEventArgs.CanExecute;
 		}
 
@@ -668,22 +668,9 @@ namespace SqlPad
 			IsBusy = false;
 		}
 
-		private void CanFetchNextRows(object sender, CanExecuteRoutedEventArgs canExecuteRoutedEventArgs)
-		{
-			canExecuteRoutedEventArgs.CanExecute = CanFetchNextRows() && ResultGrid.SelectedIndex == ResultGrid.Items.Count - 1;
-			canExecuteRoutedEventArgs.ContinueRouting = !canExecuteRoutedEventArgs.CanExecute;
-		}
-
 		private bool CanFetchNextRows()
 		{
-			return !IsBusy && DatabaseModel.CanFetch;
-		}
-
-		private async void FetchNextRows(object sender, ExecutedRoutedEventArgs args)
-		{
-			IsBusy = true;
-			await FetchNextRows();
-			IsBusy = false;
+			return !IsBusy && DatabaseModel.CanFetch && !DatabaseModel.IsExecuting;
 		}
 
 		private async Task FetchNextRows()
@@ -1593,20 +1580,6 @@ namespace SqlPad
 			return Editor.Text[Editor.CaretOffset] == currentCharacter && Editor.Text[Editor.CaretOffset - 1] == previousCharacter;
 		}
 
-		private async void ResultGridPreviewMouseWheelHandler(object sender, MouseWheelEventArgs e)
-		{
-			var scrollViewer = GetResultGridScrollViewer();
-			if (e.Delta >= 0 || scrollViewer == null)
-				return;
-
-			if (scrollViewer.ScrollableHeight == scrollViewer.VerticalOffset && CanFetchNextRows())
-			{
-				IsBusy = true;
-				await FetchNextRows();
-				IsBusy = false;
-			}
-		}
-
 		private void ResultGridMouseDoubleClickHandler(object sender, MouseButtonEventArgs e)
 		{
 			ShowLargeValueEditor(ResultGrid);
@@ -1758,6 +1731,19 @@ namespace SqlPad
 		private void TabControlResultGiveFeedbackHandler(object sender, GiveFeedbackEventArgs e)
 		{
 			e.Handled = true;
+		}
+
+
+		private async void Handler(object sender, ScrollChangedEventArgs e)
+		{
+			if (!CanFetchNextRows() || e.VerticalOffset + e.ViewportHeight != e.ExtentHeight)
+			{
+				return;
+			}
+
+			IsBusy = true;
+			await FetchNextRows();
+			IsBusy = false;
 		}
 	}
 
