@@ -57,6 +57,8 @@ namespace SqlPad.Oracle
 					return new OracleSynonym();
 				case OracleSchemaObjectType.Function:
 					return new OracleFunction();
+				case OracleSchemaObjectType.Procedure:
+					return new OracleProcedure();
 				case OracleSchemaObjectType.Sequence:
 					return new OracleSequence();
 				case OracleSchemaObjectType.Package:

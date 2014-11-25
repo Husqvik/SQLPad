@@ -159,17 +159,19 @@ namespace SqlPad.Oracle
 	[DebuggerDisplay("OracleFunction (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
 	public class OracleFunction : OracleSchemaObject, IFunctionCollection
 	{
-		private OracleFunctionMetadata _metadata;
+		public OracleFunctionMetadata Metadata { get; set; }
 
-		public OracleFunctionMetadata Metadata
-		{
-			get { return _metadata; }
-			set { _metadata = value; }
-		}
-
-		ICollection<OracleFunctionMetadata> IFunctionCollection.Functions { get { return new [] { _metadata }; } }
+		ICollection<OracleFunctionMetadata> IFunctionCollection.Functions { get { return new [] { Metadata }; } }
 
 		public override string Type { get { return OracleSchemaObjectType.Function; } }
+	}
+
+	[DebuggerDisplay("OracleProcedure (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
+	public class OracleProcedure : OracleSchemaObject
+	{
+		public OracleFunctionMetadata Metadata { get; set; }
+
+		public override string Type { get { return OracleSchemaObjectType.Procedure; } }
 	}
 
 	public abstract class OracleTypeBase : OracleSchemaObject
@@ -300,6 +302,7 @@ namespace SqlPad.Oracle
 		public const string Sequence = "SEQUENCE";
 		public const string Function = "FUNCTION";
 		public const string Package = "PACKAGE";
+		public const string Procedure = "PROCEDURE";
 		public const string Type = "TYPE";
 	}
 }

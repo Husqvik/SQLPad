@@ -165,7 +165,7 @@ ORDER BY
 
 		public static readonly string SelectAllObjectsCommandText =
 			String.Format("SELECT OWNER, OBJECT_NAME, SUBOBJECT_NAME, OBJECT_ID, DATA_OBJECT_ID, OBJECT_TYPE, CREATED, LAST_DDL_TIME, STATUS, TEMPORARY/*, EDITIONABLE, EDITION_NAME*/ FROM SYS.ALL_OBJECTS WHERE OBJECT_TYPE IN ({0})",
-				ToInValueList(OracleSchemaObjectType.Synonym, OracleSchemaObjectType.View, OracleSchemaObjectType.Table, OracleSchemaObjectType.Sequence, OracleSchemaObjectType.Function, OracleSchemaObjectType.Package, OracleSchemaObjectType.Type));
+				ToInValueList(OracleSchemaObjectType.Synonym, OracleSchemaObjectType.View, OracleSchemaObjectType.Table, OracleSchemaObjectType.Sequence, OracleSchemaObjectType.Function, OracleSchemaObjectType.Package, OracleSchemaObjectType.Type, OracleSchemaObjectType.Procedure));
 
 		public const string SelectTablesCommandText =
 @"SELECT OWNER, TABLE_NAME, TABLESPACE_NAME, CLUSTER_NAME, STATUS, LOGGING, NUM_ROWS, BLOCKS, AVG_ROW_LEN, DEGREE, CACHE, SAMPLE_SIZE, LAST_ANALYZED, TEMPORARY, NESTED, ROW_MOVEMENT, COMPRESS_FOR,

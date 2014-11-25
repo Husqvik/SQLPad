@@ -116,6 +116,7 @@ namespace SqlPad.Oracle
 			oracleSchemaObjectType.AddSubType(104, typeof(OracleSequence));
 			oracleSchemaObjectType.AddSubType(105, typeof(OraclePackage));
 			oracleSchemaObjectType.AddSubType(106, typeof(OracleFunction));
+			oracleSchemaObjectType.AddSubType(107, typeof(OracleProcedure));
 
 			var oracleTypeBaseType = Serializer.Add(typeof(OracleTypeBase), true);
 			oracleTypeBaseType.AsReferenceDefault = true;
@@ -138,7 +139,11 @@ namespace SqlPad.Oracle
 
 			var oracleFunctionType = Serializer.Add(typeof(OracleFunction), false);
 			oracleFunctionType.AsReferenceDefault = true;
-			oracleFunctionType.Add("_metadata");
+			oracleFunctionType.Add("Metadata");
+
+			var oracleProcedureType = Serializer.Add(typeof(OracleProcedure), false);
+			oracleProcedureType.AsReferenceDefault = true;
+			oracleProcedureType.Add("Metadata");
 
 			oracleTypeBaseType.AddSubType(101, typeof(OracleTypeObject));
 			oracleTypeBaseType.AddSubType(102, typeof(OracleTypeCollection));
