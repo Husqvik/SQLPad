@@ -205,7 +205,7 @@ namespace SqlPad.Oracle
 			var semanticModel = (OracleStatementSemanticModel)sqlDocumentRepository.ValidationModels[statement].SemanticModel;
 
 			var cursorAtLastTerminal = cursorPosition <= currentNode.SourcePosition.IndexEnd + 1;
-			var terminalToReplace = cursorAtLastTerminal ? currentNode : null;
+			var terminalToReplace = cursorAtLastTerminal && currentNode.Id.IsIdentifier() ? currentNode : null;
 
 			var referenceContainers = GetReferenceContainers(semanticModel.MainObjectReferenceContainer, completionType.CurrentQueryBlock);
 

@@ -1394,6 +1394,15 @@ se";
 			items.Count.ShouldBeGreaterThan(0);
 		}
 
+		[Test(Description = @"")]
+		public void TestForcedObjectSuggestionAfterSchemaAndDotInFromClause()
+		{
+			const string statement = "SELECT * FROM HUSQVIK.";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 22).ToList();
+			items.Count.ShouldBeGreaterThan(0);
+			items[0].StatementNode.ShouldBe(null);
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)

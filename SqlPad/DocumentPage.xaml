@@ -198,7 +198,7 @@
 				          HeadersVisibility="None"
 				          HorizontalGridLinesBrush="LightGray"
 				          VerticalGridLinesBrush="LightGray"
-						  ScrollViewer.ScrollChanged="Handler"
+						  ScrollViewer.ScrollChanged="ResultGridScrollChangedHandler"
 				          MouseDoubleClick="ResultGridMouseDoubleClickHandler">
 					<DataGrid.CommandBindings>
 						<CommandBinding Command="commands:GenericCommands.ExportToCsv" Executed="ExportToCsv" CanExecute="CanExportToCsv" />

@@ -136,6 +136,18 @@ namespace SqlPad.Oracle
 		}
 	}
 
+	[DebuggerDisplay("OracleSqlModelReference (Columns={SourceReferences.Count})")]
+	public class OracleSqlModelReference : OracleSpecialTableReference
+	{
+		public ICollection<OracleDataObjectReference> SourceReferences { get; private set; }
+
+		public OracleSqlModelReference(IEnumerable<OracleColumn> columns, ICollection<OracleDataObjectReference> sourceReferences)
+			: base(ReferenceType.SqlModel, columns)
+		{
+			SourceReferences = sourceReferences;
+		}
+	}
+
 	public abstract class OracleProgramReferenceBase : OracleReference
 	{
 		public StatementGrammarNode ParameterListNode { get; set; }

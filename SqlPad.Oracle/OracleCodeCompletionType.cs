@@ -11,7 +11,7 @@ namespace SqlPad.Oracle
 	internal class OracleCodeCompletionType
 	{
 		private readonly OracleSqlParser _parser = new OracleSqlParser();
-		private static readonly char[] Separators = { ' ', '\t', '\r', '\n' };
+		private static readonly char[] Separators = { ' ', '\t', '\r', '\n', '\u00A0' };
 		private readonly int _cursorPosition;
 
 		public bool Schema { get; private set; }
@@ -124,7 +124,7 @@ namespace SqlPad.Oracle
 				}
 			}
 
-			var effectiveTerminal = Statement.GetNearestTerminalToPosition(cursorPosition, n => !n.Id.In(Terminals.RightParenthesis, Terminals.Comma)) ?? nearestTerminal;
+			var effectiveTerminal = Statement.GetNearestTerminalToPosition(cursorPosition, n => !n.Id.In(Terminals.RightParenthesis, Terminals.Comma, Terminals.Semicolon)) ?? nearestTerminal;
 			AnalyzeObjectReferencePrefixes(effectiveTerminal);
 
 			var precedingTerminal = nearestTerminal.PrecedingTerminal;

@@ -85,5 +85,6 @@ namespace SqlPad.Oracle
 		public const string XmlTable = "XML Table";
 		public const string JsonTable = "JSON table";
 		public const string TableCollection = "Table collection";
+		public const string SqlModel = "Model clause";
 	}
 }

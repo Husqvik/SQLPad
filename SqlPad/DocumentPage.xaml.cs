@@ -676,9 +676,8 @@ namespace SqlPad
 		private async Task FetchNextRows()
 		{
 			Task<IReadOnlyList<object[]>> innerTask = null;
-			var exception = await SafeActionAsync(() => innerTask = DatabaseModel.FetchRecords(StatementExecutionModel.DefaultRowBatchSize).EnumerateAsync(CancellationToken.None));
-
-			//TextMoreRowsExist.Visibility = DatabaseModel.CanFetch ? Visibility.Visible : Visibility.Collapsed;
+			var batchSize = StatementExecutionModel.DefaultRowBatchSize - _pageModel.ResultRowItems.Count % StatementExecutionModel.DefaultRowBatchSize;
+			var exception = await SafeActionAsync(() => innerTask = DatabaseModel.FetchRecords(batchSize).EnumerateAsync(_cancellationTokenSource.Token));
 
 			if (exception != null)
 			{
@@ -1734,16 +1733,19 @@ namespace SqlPad
 		}
 
 
-		private async void Handler(object sender, ScrollChangedEventArgs e)
+		private async void ResultGridScrollChangedHandler(object sender, ScrollChangedEventArgs e)
 		{
 			if (!CanFetchNextRows() || e.VerticalOffset + e.ViewportHeight != e.ExtentHeight)
 			{
 				return;
 			}
 
-			IsBusy = true;
-			await FetchNextRows();
-			IsBusy = false;
+			using (_cancellationTokenSource = new CancellationTokenSource())
+			{
+				IsBusy = true;
+				await FetchNextRows();
+				IsBusy = false;
+			}
 		}
 	}
 

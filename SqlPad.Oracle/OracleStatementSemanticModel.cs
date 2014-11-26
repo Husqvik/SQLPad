@@ -16,7 +16,7 @@ namespace SqlPad.Oracle
 		private readonly OracleDatabaseModelBase _databaseModel;
 		private readonly Dictionary<OracleSelectListColumn, ICollection<OracleDataObjectReference>> _asteriskTableReferences = new Dictionary<OracleSelectListColumn, ICollection<OracleDataObjectReference>>();
 		private readonly Dictionary<OracleQueryBlock, IList<string>> _commonTableExpressionExplicititColumnNames = new Dictionary<OracleQueryBlock, IList<string>>();
-		private readonly List<ICollection<OracleColumnReference>> _joinClauseColumnReferences = new List<ICollection<OracleColumnReference>>();
+		private readonly List<IList<OracleColumnReference>> _joinClauseColumnReferences = new List<IList<OracleColumnReference>>();
 		private readonly Dictionary<OracleQueryBlock, ICollection<StatementGrammarNode>> _accessibleQueryBlockRoot = new Dictionary<OracleQueryBlock, ICollection<StatementGrammarNode>>();
 		private readonly Dictionary<OracleDataObjectReference, ICollection<KeyValuePair<StatementGrammarNode, string>>> _objectReferenceCteRootNodes = new Dictionary<OracleDataObjectReference, ICollection<KeyValuePair<StatementGrammarNode, string>>>();
 
@@ -431,6 +431,8 @@ namespace SqlPad.Oracle
 					continue;
 				}
 
+				var measureColumns = new List<OracleColumn>();
+
 				var parenthesisEnclosedAliasedExpressionList = modelColumnClauses.ChildNodes[modelColumnClauses.ChildNodes.Count - 1];
 				foreach (var aliasedExpression in parenthesisEnclosedAliasedExpressionList.GetDescendants(NonTerminals.AliasedExpression))
 				{
@@ -453,7 +455,28 @@ namespace SqlPad.Oracle
 					var dataType = OracleSelectListColumn.TryResolveDataTypeFromAliasedExpression(aliasedExpression);
 					column.DataType = dataType;
 
-					queryBlock.ModelMeasureColumns.Add(column);
+					measureColumns.Add(column);
+				}
+
+				var sqlModelReference = new OracleSqlModelReference(measureColumns, queryBlock.ObjectReferences);
+				queryBlock.ObjectReferences.Clear();
+				queryBlock.ObjectReferences.Add(sqlModelReference);
+
+				for (var i = queryBlock.Columns.Count - 1; i >= 0; i--)
+				{
+					var column = queryBlock.Columns[i];
+					if (!column.IsAsterisk)
+					{
+						continue;
+					}
+
+					if (column.RootNode.TerminalCount == 1)
+					{
+						_asteriskTableReferences[column] = new[] {sqlModelReference};
+						break;
+					}
+					
+					_asteriskTableReferences.Remove(column);
 				}
 			}
 		}
@@ -847,7 +870,7 @@ namespace SqlPad.Oracle
 		{
 			foreach (var joinClauseColumnReferences in _joinClauseColumnReferences)
 			{
-				var queryBlock = joinClauseColumnReferences.First().Owner;
+				var queryBlock = joinClauseColumnReferences[0].Owner;
 				foreach (var columnReference in joinClauseColumnReferences)
 				{
 					var fromClauseNode = columnReference.ColumnNode.GetAncestor(NonTerminals.FromClause);
@@ -962,6 +985,7 @@ namespace SqlPad.Oracle
 						case ReferenceType.TableCollection:
 						case ReferenceType.XmlTable:
 						case ReferenceType.JsonTable:
+						case ReferenceType.SqlModel:
 							exposedColumns = objectReference.Columns
 								.Select(c => new OracleSelectListColumn(this, asteriskColumn)
 								{
@@ -1221,6 +1245,7 @@ namespace SqlPad.Oracle
 			{
 				case ReferenceType.JsonTable:
 				case ReferenceType.XmlTable:
+				case ReferenceType.SqlModel:
 					newColumnReferences.AddRange(GetColumnReferenceMatchingColumns(rowSourceReference, columnReference));
 					break;
 				case ReferenceType.SchemaObject:
@@ -1779,7 +1804,8 @@ namespace SqlPad.Oracle
 		InlineView,
 		TableCollection,
 		XmlTable,
-		JsonTable
+		JsonTable,
+		SqlModel
 	}
 
 	public enum QueryBlockType

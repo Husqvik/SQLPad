@@ -208,6 +208,8 @@ namespace SqlPad.Oracle
 					return OracleCodeCompletionCategory.JsonTable;
 				case ReferenceType.TableCollection:
 					return OracleCodeCompletionCategory.TableCollection;
+				case ReferenceType.SqlModel:
+					return OracleCodeCompletionCategory.SqlModel;
 			}
 
 			throw new NotSupportedException(String.Format("Value '{0}' is not supported. ", type));

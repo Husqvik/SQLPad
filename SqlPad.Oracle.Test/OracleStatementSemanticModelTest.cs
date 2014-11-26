@@ -1055,5 +1055,47 @@ AS T";
 
 			queryBlock.Columns.Count.ShouldBe(8);
 		}
+
+		[Test(Description = @"")]
+		public void TestSqlModelReference()
+		{
+			const string query1 =
+@"SELECT
+	*
+FROM
+	DUAL
+MODEL
+	DIMENSION BY (0 AS KEY)
+	MEASURES
+	(
+		CAST(NULL AS VARCHAR2(4000)) AS C1,
+		CAST(NULL AS VARCHAR2(4000)) AS C2,
+		CAST(NULL AS VARCHAR2(4000)) AS C3
+	)
+	RULES UPDATE
+	(
+		C1[ANY] = 'x',
+		C2[ANY] = 'x',
+		C3[ANY] = 'x'
+	)";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			var queryBlock = semanticModel.QueryBlocks.Single();
+			var objectReferences = queryBlock.ObjectReferences.ToArray();
+			objectReferences.Length.ShouldBe(1);
+			objectReferences[0].ShouldBeTypeOf<OracleSqlModelReference>();
+			objectReferences[0].Columns.Count.ShouldBe(3);
+			
+			queryBlock.Columns.Count.ShouldBe(4);
+			queryBlock.Columns[0].IsAsterisk.ShouldBe(true);
+			queryBlock.Columns[1].NormalizedName.ShouldBe("\"C1\"");
+			queryBlock.Columns[1].IsDirectReference.ShouldBe(true);
+			queryBlock.Columns[2].NormalizedName.ShouldBe("\"C2\"");
+			queryBlock.Columns[2].IsDirectReference.ShouldBe(true);
+			queryBlock.Columns[3].NormalizedName.ShouldBe("\"C3\"");
+			queryBlock.Columns[3].IsDirectReference.ShouldBe(true);
+		}
 	}
 }

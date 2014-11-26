@@ -13,7 +13,6 @@ namespace SqlPad.Oracle
 		public OracleQueryBlock(OracleStatementSemanticModel semanticModel) : base(semanticModel)
 		{
 			Columns = new List<OracleSelectListColumn>();
-			ModelMeasureColumns = new List<OracleColumn>();
 			AccessibleQueryBlocks = new List<OracleQueryBlock>();
 		}
 
@@ -63,8 +62,6 @@ namespace SqlPad.Oracle
 		
 		public StatementGrammarNode ModelClause { get; set; }
 
-		public IList<OracleColumn> ModelMeasureColumns { get; private set; }
-		
 		public OracleStatement Statement { get; set; }
 
 		public IList<OracleSelectListColumn> Columns { get; private set; }
