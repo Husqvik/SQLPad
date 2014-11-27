@@ -1403,6 +1403,22 @@ se";
 			items[0].StatementNode.ShouldBe(null);
 		}
 
+		[Test(Description = @"")]
+		public void TestNoSuggestionAvailableJustAfterAsterisk()
+		{
+			const string statement = "SELECT * FROM DUAL";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 8).ToList();
+			items.Count.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
+		public void TestNoSuggestionAvailableWhenTypingColumnAlias()
+		{
+			const string statement = "SELECT DUMMY D, DUMMY FROM DUAL";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 14).ToList();
+			items.Count.ShouldBe(0);
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)

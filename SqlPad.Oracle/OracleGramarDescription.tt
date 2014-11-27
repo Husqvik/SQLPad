@@ -86,6 +86,7 @@ namespace SqlPad.Oracle
 		private static readonly HashSet<string> ZeroOffsetTerminalIdsInternal =
 			new HashSet<string>
 			{
+				Terminals.Asterisk,
 				Terminals.Dot,
 				Terminals.Comma,
 				Terminals.OperatorConcatenation,

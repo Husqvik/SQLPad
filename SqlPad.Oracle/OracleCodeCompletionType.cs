@@ -136,7 +136,7 @@ namespace SqlPad.Oracle
 			var isCursorTouchingTwoTerminals = nearestTerminal.SourcePosition.IndexStart == cursorPosition && precedingTerminal != null && precedingTerminal.SourcePosition.IndexEnd + 1 == cursorPosition;
 			if (isCursorTouchingTwoTerminals && nearestTerminal.Id != Terminals.Identifier)
 			{
-				IsCursorTouchingIdentifier = true;
+				IsCursorTouchingIdentifier = precedingTerminal.Id == Terminals.Identifier;
 				EffectiveTerminal = precedingTerminal;
 			}
 			else
@@ -207,22 +207,17 @@ namespace SqlPad.Oracle
 		private void AnalyzePrefixedColumnReference(StatementGrammarNode effectiveTerminal)
 		{
 			var prefixedColumnReference = effectiveTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference);
-			var prefix = effectiveTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.Prefix);
+			var prefix = effectiveTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression && n.Id != NonTerminals.AliasedExpressionOrAllTableColumns, NonTerminals.Prefix);
 			var lookupNode = prefixedColumnReference ?? prefix;
+			if (lookupNode == null && effectiveTerminal.Id == Terminals.Asterisk)
+			{
+				lookupNode = effectiveTerminal.ParentNode;
+			}
+
 			if (lookupNode == null)
 				return;
 
-			var identifiers = lookupNode.GetPathFilterDescendants(n => n.Id != NonTerminals.Expression, Terminals.SchemaIdentifier, Terminals.ObjectIdentifier, Terminals.Identifier).ToArray();
-			ReferenceIdentifier = BuildReferenceIdentifier(identifiers);
-		}
-
-		private void AnalyzeQueryTableExpression(StatementGrammarNode effectiveTerminal)
-		{
-			var queryTableExpression = effectiveTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.InnerTableReference, NonTerminals.QueryTableExpression);
-			if (queryTableExpression == null)
-				return;
-
-			var identifiers = queryTableExpression.GetPathFilterDescendants(n => !n.Id.In(NonTerminals.Expression, NonTerminals.NestedQuery), Terminals.SchemaIdentifier, Terminals.ObjectIdentifier, Terminals.Identifier).ToArray();
+			var identifiers = lookupNode.GetPathFilterDescendants(n => n.Id != NonTerminals.Expression && n.Id != NonTerminals.AliasedExpressionOrAllTableColumns, Terminals.SchemaIdentifier, Terminals.ObjectIdentifier, Terminals.Identifier, Terminals.Asterisk).ToList();
 			ReferenceIdentifier = BuildReferenceIdentifier(identifiers);
 		}
 
@@ -233,9 +228,19 @@ namespace SqlPad.Oracle
 				{
 					SchemaIdentifier = GetIdentifierTokenValue(identifiers, Terminals.SchemaIdentifier),
 					ObjectIdentifier = GetIdentifierTokenValue(identifiers, Terminals.ObjectIdentifier),
-					Identifier = GetIdentifierTokenValue(identifiers, Terminals.Identifier),
+					Identifier = GetIdentifierTokenValue(identifiers, Terminals.Identifier) ?? GetIdentifierTokenValue(identifiers, Terminals.Asterisk),
 					CursorPosition = _cursorPosition
 				};
+		}
+
+		private void AnalyzeQueryTableExpression(StatementGrammarNode effectiveTerminal)
+		{
+			var queryTableExpression = effectiveTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.InnerTableReference, NonTerminals.QueryTableExpression);
+			if (queryTableExpression == null)
+				return;
+
+			var identifiers = queryTableExpression.GetPathFilterDescendants(n => !n.Id.In(NonTerminals.Expression, NonTerminals.NestedQuery), Terminals.SchemaIdentifier, Terminals.ObjectIdentifier, Terminals.Identifier).ToArray();
+			ReferenceIdentifier = BuildReferenceIdentifier(identifiers);
 		}
 
 		private StatementGrammarNode GetIdentifierTokenValue(IEnumerable<StatementGrammarNode> identifiers, string identifierId)
@@ -309,6 +314,12 @@ namespace SqlPad.Oracle
 		public StatementGrammarNode SchemaIdentifier { get; set; }
 		public StatementGrammarNode ObjectIdentifier { get; set; }
 		public StatementGrammarNode Identifier { get; set; }
+
+		public StatementGrammarNode IdentifierUnderCursor
+		{
+			get { return GetTerminalIfUnderCursor(Identifier) ?? GetTerminalIfUnderCursor(ObjectIdentifier) ?? GetTerminalIfUnderCursor(SchemaIdentifier); }
+		}
+
 		public int CursorPosition { get; set; }
 
 		public bool HasSchemaIdentifier { get { return SchemaIdentifier != null; } }
@@ -331,6 +342,13 @@ namespace SqlPad.Oracle
 			return terminal.SourcePosition.IndexEnd < CursorPosition
 				? terminal.Token.Value
 				: terminal.Token.Value.Substring(0, CursorPosition - terminal.SourcePosition.IndexStart);
+		}
+
+		private StatementGrammarNode GetTerminalIfUnderCursor(StatementGrammarNode terminal)
+		{
+			return terminal != null && terminal.SourcePosition.ContainsIndex(CursorPosition)
+				? terminal
+				: null;
 		}
 
 		public override string ToString()
