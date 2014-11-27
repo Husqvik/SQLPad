@@ -452,8 +452,8 @@ namespace SqlPad.Oracle
 						column.Name = expressionAliasNode.Token.Value.ToQuotedIdentifier();
 					}
 
-					var dataType = OracleSelectListColumn.TryResolveDataTypeFromAliasedExpression(aliasedExpression);
-					column.DataType = dataType;
+					var dataType = OracleSelectListColumn.TryResolveDataTypeFromAliasedExpression(aliasedExpression, false);
+					column.DataType = dataType ?? OracleDataType.Empty;
 
 					measureColumns.Add(column);
 				}
@@ -472,7 +472,7 @@ namespace SqlPad.Oracle
 
 					if (column.RootNode.TerminalCount == 1)
 					{
-						_asteriskTableReferences[column] = new[] {sqlModelReference};
+						_asteriskTableReferences[column] = new[] { sqlModelReference };
 						break;
 					}
 					

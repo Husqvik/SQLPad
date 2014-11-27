@@ -101,8 +101,7 @@ namespace SqlPad.Oracle
 
 					if (literalInferredDataType.FullyQualifiedName.Name.EndsWith("CHAR"))
 					{
-						var tokenValue = RootNode.FirstTerminalNode.Token.Value;
-						_columnDescription.CharacterSize = tokenValue.ToPlainString().Length;
+						_columnDescription.CharacterSize = literalInferredDataType.Length;
 					}
 				}
 			}
@@ -110,7 +109,7 @@ namespace SqlPad.Oracle
 			return _columnDescription;
 		}
 
-		internal static OracleDataType TryResolveDataTypeFromAliasedExpression(StatementGrammarNode aliasedExpressionNode)
+		internal static OracleDataType TryResolveDataTypeFromAliasedExpression(StatementGrammarNode aliasedExpressionNode, bool includeLengthPrecisionAndScale = true)
 		{
 			if (aliasedExpressionNode == null || aliasedExpressionNode.TerminalCount == 0)
 			{
@@ -134,12 +133,17 @@ namespace SqlPad.Oracle
 
 					if (tokenValue[0] == 'n' || tokenValue[0] == 'N')
 					{
-						literalInferredDataTypeName = "NCHAR";
+						literalInferredDataTypeName = includeLengthPrecisionAndScale ? "NCHAR" : "NVARCHAR2";
 					}
 					else
 					{
-						literalInferredDataTypeName = "CHAR";
+						literalInferredDataTypeName = includeLengthPrecisionAndScale ? "CHAR" : "VARCHAR2";
 						literalInferredDataType.Unit = DataUnit.Character;
+					}
+
+					if (includeLengthPrecisionAndScale)
+					{
+						literalInferredDataType.Length = tokenValue.ToPlainString().Length;
 					}
 
 					break;
@@ -150,18 +154,23 @@ namespace SqlPad.Oracle
 					}
 
 					literalInferredDataTypeName = "NUMBER";
-					literalInferredDataType.Precision = GetNumberPrecision(tokenValue);
-					int? scale = null;
-					if (literalInferredDataType.Precision.HasValue)
-					{
-						var indexDecimalDigit = tokenValue.IndexOf('.');
-						if (indexDecimalDigit != -1)
-						{
-							scale = tokenValue.Length - indexDecimalDigit - 1;
-						}
-					}
 
-					literalInferredDataType.Scale = scale;
+					if (includeLengthPrecisionAndScale)
+					{
+						literalInferredDataType.Precision = GetNumberPrecision(tokenValue);
+						int? scale = null;
+						if (literalInferredDataType.Precision.HasValue)
+						{
+							var indexDecimalDigit = tokenValue.IndexOf('.');
+							if (indexDecimalDigit != -1)
+							{
+								scale = tokenValue.Length - indexDecimalDigit - 1;
+							}
+						}
+
+						literalInferredDataType.Scale = scale;
+					}
+					
 					break;
 				case Terminals.Date:
 					if (aliasedExpressionNode.TerminalCount == 2 + expectedTerminalCountOffset)

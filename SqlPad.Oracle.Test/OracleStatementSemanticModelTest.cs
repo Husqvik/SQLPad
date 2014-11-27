@@ -1068,7 +1068,7 @@ MODEL
 	DIMENSION BY (0 AS KEY)
 	MEASURES
 	(
-		CAST(NULL AS VARCHAR2(4000)) AS C1,
+		'Default Value' AS C1,
 		CAST(NULL AS VARCHAR2(4000)) AS C2,
 		CAST(NULL AS VARCHAR2(4000)) AS C3
 	)
@@ -1091,8 +1091,11 @@ MODEL
 			queryBlock.Columns.Count.ShouldBe(4);
 			queryBlock.Columns[0].IsAsterisk.ShouldBe(true);
 			queryBlock.Columns[1].NormalizedName.ShouldBe("\"C1\"");
+			queryBlock.Columns[1].ColumnDescription.DataType.ShouldNotBe(null);
+			queryBlock.Columns[1].ColumnDescription.FullTypeName.ShouldBe("VARCHAR2");
 			queryBlock.Columns[1].IsDirectReference.ShouldBe(true);
 			queryBlock.Columns[2].NormalizedName.ShouldBe("\"C2\"");
+			queryBlock.Columns[2].ColumnDescription.DataType.ShouldNotBe(null);
 			queryBlock.Columns[2].IsDirectReference.ShouldBe(true);
 			queryBlock.Columns[3].NormalizedName.ShouldBe("\"C3\"");
 			queryBlock.Columns[3].IsDirectReference.ShouldBe(true);
