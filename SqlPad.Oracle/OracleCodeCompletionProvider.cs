@@ -366,7 +366,7 @@ namespace SqlPad.Oracle
 
 			var tableReferences = (ICollection<OracleDataObjectReference>)referenceContainers.SelectMany(c => c.ObjectReferences).ToArray();
 			var suggestedFunctions = Enumerable.Empty<ICodeCompletionItem>();
-			var nodeToReplace = partialName == null ? null : currentNode;
+			var nodeToReplace = completionType.ReferenceIdentifier.IdentifierUnderCursor;
 			var schemaName = completionType.ReferenceIdentifier.SchemaIdentifierOriginalValue;
 			if (objectIdentifierNode != null)
 			{
@@ -510,9 +510,9 @@ namespace SqlPad.Oracle
 				.Where(o => o.DataObject != null && o.DataObject.Organization.In(OrganizationType.Heap, OrganizationType.Index) &&
 							suggestedColumns.Select(t => t.Item2).Contains(o.FullyQualifiedObjectName) &&
 							CodeCompletionSearchHelper.IsMatch(OracleColumn.RowId, partialName))
-				.Select(o => CreateColumnCodeCompletionItem(OracleColumn.RowId, objectIdentifierNode == null ? o.FullyQualifiedObjectName.ToString() : null, currentNode, OracleCodeCompletionCategory.PseudoColumn));
+				.Select(o => CreateColumnCodeCompletionItem(OracleColumn.RowId, objectIdentifierNode == null ? o.FullyQualifiedObjectName.ToString() : null, nodeToReplace, OracleCodeCompletionCategory.PseudoColumn));
 
-			var suggestedItems = rowIdItems.Concat(suggestedColumns.Select(t => CreateColumnCodeCompletionItem(t.Item1, objectIdentifierNode == null ? t.Item2.ToString() : null, currentNode)));
+			var suggestedItems = rowIdItems.Concat(suggestedColumns.Select(t => CreateColumnCodeCompletionItem(t.Item1, objectIdentifierNode == null ? t.Item2.ToString() : null, nodeToReplace)));
 
 			if (partialName == null && currentNode.IsWithinSelectClause() && currentNode.GetParentExpression().GetParentExpression() == null)
 			{
@@ -532,7 +532,6 @@ namespace SqlPad.Oracle
 							Category = r.Type.ToCategoryLabel()
 						});
 
-				nodeToReplace = currentNode.Id == Terminals.Select ? null : currentNode;
 				suggestedItems = suggestedItems.Concat(CreateObjectItems(referencedObjectCompletionData, partialName, nodeToReplace));
 				suggestedItems = suggestedItems.Concat(GenerateSchemaItems(partialName, nodeToReplace, 0, databaseModel, 2));
 
@@ -575,9 +574,9 @@ namespace SqlPad.Oracle
 						CategoryPriority = 1,
 						StatementNode = completionType.CurrentTerminal
 					});
-		} 
+		}
 
-		private IEnumerable<OracleCodeCompletionItem> CreateAsteriskColumnCompletionItems(IEnumerable<OracleDataObjectReference> tables, bool skipFirstObjectIdentifier, StatementGrammarNode currentNode)
+		private IEnumerable<OracleCodeCompletionItem> CreateAsteriskColumnCompletionItems(IEnumerable<OracleDataObjectReference> tables, bool skipFirstObjectIdentifier, StatementGrammarNode nodeToReplace)
 		{
 			var builder = new StringBuilder();
 			
@@ -613,14 +612,14 @@ namespace SqlPad.Oracle
 				             {
 								 Name = (skipFirstObjectIdentifier || String.IsNullOrEmpty(table.FullyQualifiedObjectName.Name) ? String.Empty : table.FullyQualifiedObjectName + ".") + "*",
 								 Text = builder.ToString(),
-								 StatementNode = currentNode.Id == Terminals.Identifier ? currentNode : null,
+								 StatementNode = nodeToReplace,
 								 CategoryPriority = -2,
 								 Category = OracleCodeCompletionCategory.AllColumns
 				             };
 			}
 		}
 
-		private ICodeCompletionItem CreateColumnCodeCompletionItem(string columnName, string objectPrefix, StatementGrammarNode currentNode, string category = OracleCodeCompletionCategory.Column)
+		private ICodeCompletionItem CreateColumnCodeCompletionItem(string columnName, string objectPrefix, StatementGrammarNode nodeToReplace, string category = OracleCodeCompletionCategory.Column)
 		{
 			if (!String.IsNullOrEmpty(objectPrefix))
 				objectPrefix += ".";
@@ -631,7 +630,7 @@ namespace SqlPad.Oracle
 			       {
 					   Name = text,
 					   Text = text,
-				       StatementNode = currentNode.Id == Terminals.Identifier ? currentNode : null,
+				       StatementNode = nodeToReplace,
 				       Category = category,
 					   CategoryPriority = -1
 			       };

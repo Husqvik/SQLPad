@@ -1419,6 +1419,15 @@ se";
 			items.Count.ShouldBe(0);
 		}
 
+		[Test(Description = @"")]
+		public void TestSuggestionAvailableAtAsteriskStartIndex()
+		{
+			const string statement = "SELECT * FROM DUAL";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 7).ToList();
+			items.Count.ShouldBeGreaterThan(0);
+			items[0].StatementNode.ShouldNotBe(null);
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)
