@@ -214,6 +214,11 @@ namespace SqlPad.Oracle
 				lookupNode = effectiveTerminal.ParentNode;
 			}
 
+			if (lookupNode == null && effectiveTerminal.Id.IsIdentifier())
+			{
+				lookupNode = effectiveTerminal.ParentNode;
+			}
+
 			if (lookupNode == null)
 				return;
 

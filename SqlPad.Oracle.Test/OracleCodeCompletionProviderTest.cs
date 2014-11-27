@@ -1428,6 +1428,15 @@ se";
 			items[0].StatementNode.ShouldNotBe(null);
 		}
 
+		[Test(Description = @"")]
+		public void TestNodeToReplaceWhenTypingWhereCondition()
+		{
+			const string statement = "SELECT DUMMY FROM DUAL WHERE D";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 30).ToList();
+			items.Count.ShouldBeGreaterThan(0);
+			items[0].StatementNode.ShouldNotBe(null);
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)
