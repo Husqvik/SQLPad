@@ -125,8 +125,8 @@
     <Compile Include="OracleDataDictionary.cs" />
     <Compile Include="OracleDataType.cs" />
     <Compile Include="OracleFunctionMatcher.cs" />
-    <Compile Include="OracleFunctionMetadata.cs" />
-    <Compile Include="OracleFunctionIdentifier.cs" />
+    <Compile Include="OracleProgramMetadata.cs" />
+    <Compile Include="OracleProgramIdentifier.cs" />
     <Compile Include="OracleObjectFactory.cs" />
     <Compile Include="OracleProgramReference.cs" />
     <Compile Include="OracleColumnReference.cs" />

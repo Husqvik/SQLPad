@@ -141,7 +141,7 @@ namespace SqlPad.Oracle
 
 	public interface IFunctionCollection
 	{
-		ICollection<OracleFunctionMetadata> Functions { get; }
+		ICollection<OracleProgramMetadata> Functions { get; }
 
 		OracleObjectIdentifier FullyQualifiedName { get; }
 	}
@@ -149,9 +149,9 @@ namespace SqlPad.Oracle
 	[DebuggerDisplay("OraclePackage (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
 	public class OraclePackage : OracleSchemaObject, IFunctionCollection
 	{
-		private readonly List<OracleFunctionMetadata> _functions = new List<OracleFunctionMetadata>();
+		private readonly List<OracleProgramMetadata> _functions = new List<OracleProgramMetadata>();
 
-		public ICollection<OracleFunctionMetadata> Functions { get { return _functions; } } 
+		public ICollection<OracleProgramMetadata> Functions { get { return _functions; } } 
 
 		public override string Type { get { return OracleSchemaObjectType.Package; } }
 	}
@@ -159,9 +159,9 @@ namespace SqlPad.Oracle
 	[DebuggerDisplay("OracleFunction (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
 	public class OracleFunction : OracleSchemaObject, IFunctionCollection
 	{
-		public OracleFunctionMetadata Metadata { get; set; }
+		public OracleProgramMetadata Metadata { get; set; }
 
-		ICollection<OracleFunctionMetadata> IFunctionCollection.Functions { get { return new [] { Metadata }; } }
+		ICollection<OracleProgramMetadata> IFunctionCollection.Functions { get { return new [] { Metadata }; } }
 
 		public override string Type { get { return OracleSchemaObjectType.Function; } }
 	}
@@ -169,7 +169,7 @@ namespace SqlPad.Oracle
 	[DebuggerDisplay("OracleProcedure (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
 	public class OracleProcedure : OracleSchemaObject
 	{
-		public OracleFunctionMetadata Metadata { get; set; }
+		public OracleProgramMetadata Metadata { get; set; }
 
 		public override string Type { get { return OracleSchemaObjectType.Procedure; } }
 	}
@@ -180,18 +180,18 @@ namespace SqlPad.Oracle
 		public const string TypeCodeXml = "XMLTYPE";
 		public const string TypeCodeCollection = "COLLECTION";
 
-		private OracleFunctionMetadata _constructorMetadata;
+		private OracleProgramMetadata _constructorMetadata;
 		
 		public override string Type { get { return OracleSchemaObjectType.Type; } }
 
 		public abstract string TypeCode { get; }
 
-		public OracleFunctionMetadata GetConstructorMetadata()
+		public OracleProgramMetadata GetConstructorMetadata()
 		{
 			return _constructorMetadata ?? (_constructorMetadata = BuildConstructorMetadata());
 		}
 
-		protected abstract OracleFunctionMetadata BuildConstructorMetadata();
+		protected abstract OracleProgramMetadata BuildConstructorMetadata();
 	}
 
 	[DebuggerDisplay("OracleTypeObject (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
@@ -214,13 +214,13 @@ namespace SqlPad.Oracle
 
 		public IList<OracleTypeAttribute> Attributes { get; set; }
 
-		protected override OracleFunctionMetadata BuildConstructorMetadata()
+		protected override OracleProgramMetadata BuildConstructorMetadata()
 		{
-			var constructorMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues(FullyQualifiedName.Owner, null, FullyQualifiedName.Name), false, false, false, false, false, false, null, null, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeParenthesis, false);
+			var constructorMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(FullyQualifiedName.Owner, null, FullyQualifiedName.Name), false, false, false, false, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeParenthesis, false);
 			var constructorParameters = Attributes.Select(
-				(a, i) => new OracleFunctionParameterMetadata(a.Name.ToSimpleIdentifier(), i + 1, ParameterDirection.Input, GetFunctionParameterTypeName(a.DataType), GetFunctionParameterCustomTypeIdentifier(a.DataType), false));
+				(a, i) => new OracleProgramParameterMetadata(a.Name.ToSimpleIdentifier(), i + 1, ParameterDirection.Input, GetFunctionParameterTypeName(a.DataType), GetFunctionParameterCustomTypeIdentifier(a.DataType), false));
 
-			var returnParameter = new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, TypeCodeObject, FullyQualifiedName, false);
+			var returnParameter = new OracleProgramParameterMetadata(null, 0, ParameterDirection.ReturnValue, TypeCodeObject, FullyQualifiedName, false);
 			constructorParameters = Enumerable.Repeat(returnParameter, 1)
 				.Concat(constructorParameters);
 			
@@ -258,21 +258,21 @@ namespace SqlPad.Oracle
 
 		public int? UpperBound { get; set; }
 
-		protected override OracleFunctionMetadata BuildConstructorMetadata()
+		protected override OracleProgramMetadata BuildConstructorMetadata()
 		{
 			var elementTypeLabel = ElementDataType.IsPrimitive
 				? ElementDataType.FullyQualifiedName.Name.Trim('"')
 				: ElementDataType.FullyQualifiedName.ToString();
 			
-			var constructorMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues(FullyQualifiedName.Owner, null, FullyQualifiedName.Name), false, false, false, false, false, false, 0, UpperBound ?? Int32.MaxValue, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeParenthesis, false);
-			constructorMetadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, null, FullyQualifiedName, false));
-			constructorMetadata.Parameters.Add(new OracleFunctionParameterMetadata(String.Format("array of {0}", elementTypeLabel), 1, ParameterDirection.Input, String.Empty, OracleObjectIdentifier.Empty, true));
+			var constructorMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(FullyQualifiedName.Owner, null, FullyQualifiedName.Name), false, false, false, false, false, false, 0, UpperBound ?? Int32.MaxValue, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeParenthesis, false);
+			constructorMetadata.Parameters.Add(new OracleProgramParameterMetadata(null, 0, ParameterDirection.ReturnValue, null, FullyQualifiedName, false));
+			constructorMetadata.Parameters.Add(new OracleProgramParameterMetadata(String.Format("array of {0}", elementTypeLabel), 1, ParameterDirection.Input, String.Empty, OracleObjectIdentifier.Empty, true));
 			constructorMetadata.Owner = this;
 			
 			return constructorMetadata;
 		}
 
-		public ICollection<OracleFunctionMetadata> Functions
+		public ICollection<OracleProgramMetadata> Functions
 		{
 			get { return new [] { BuildConstructorMetadata() }; }
 		}

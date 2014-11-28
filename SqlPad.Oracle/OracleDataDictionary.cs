@@ -12,7 +12,7 @@ namespace SqlPad.Oracle
 
 		private static readonly IDictionary<OracleObjectIdentifier, OracleSchemaObject> InitialDictionary = BuildEmptyReadOnlyDictionary<OracleObjectIdentifier, OracleSchemaObject>();
 		private static readonly IDictionary<OracleObjectIdentifier, OracleDatabaseLink> InitialDatabaseLinkDictionary = BuildEmptyReadOnlyDictionary<OracleObjectIdentifier, OracleDatabaseLink>();
-		private static readonly IDictionary<string, OracleFunctionMetadata> InitialNonSchemaFunctionMetadataDictionary = BuildEmptyReadOnlyDictionary<string, OracleFunctionMetadata>();
+		private static readonly IDictionary<string, OracleProgramMetadata> InitialNonSchemaFunctionMetadataDictionary = BuildEmptyReadOnlyDictionary<string, OracleProgramMetadata>();
 		private static readonly IDictionary<int, string> InitialStatisticsKeys = BuildEmptyReadOnlyDictionary<int, string>();
 		private static readonly IDictionary<string, string> InitialSystemParameters = BuildEmptyReadOnlyDictionary<string, string>();
 		private static readonly HashSet<string> InitialCharacterSetCollection = new HashSet<string>();
@@ -21,7 +21,7 @@ namespace SqlPad.Oracle
 
 		private readonly IDictionary<OracleObjectIdentifier, OracleSchemaObject> _allObjects;
 		private readonly IDictionary<OracleObjectIdentifier, OracleDatabaseLink> _databaseLinks;
-		private readonly IDictionary<string, OracleFunctionMetadata> _nonSchemaFunctionMetadata;
+		private readonly IDictionary<string, OracleProgramMetadata> _nonSchemaFunctionMetadata;
 		private readonly IDictionary<int, string> _statisticsKeys;
 		private readonly IDictionary<string, string> _systemParameters;
 		private readonly HashSet<string> _characterSets;
@@ -38,7 +38,7 @@ namespace SqlPad.Oracle
 			get { return _databaseLinks ?? InitialDatabaseLinkDictionary; }
 		}
 
-		public IDictionary<string, OracleFunctionMetadata> NonSchemaFunctionMetadata
+		public IDictionary<string, OracleProgramMetadata> NonSchemaFunctionMetadata
 		{
 			get { return _nonSchemaFunctionMetadata ?? InitialNonSchemaFunctionMetadataDictionary; }
 		}
@@ -169,26 +169,26 @@ namespace SqlPad.Oracle
 			oracleViewType.AsReferenceDefault = true;
 			oracleViewType.Add("StatementText");
 
-			var oracleFunctionIdentifierType = Serializer.Add(typeof(OracleFunctionIdentifier), false);
+			var oracleFunctionIdentifierType = Serializer.Add(typeof(OracleProgramIdentifier), false);
 			oracleFunctionIdentifierType.UseConstructor = false;
 			oracleFunctionIdentifierType.Add("Owner", "Name", "Package", "Overload");
 
-			var oracleFunctionMetadataType = Serializer.Add(typeof(OracleFunctionMetadata), false);
+			var oracleFunctionMetadataType = Serializer.Add(typeof(OracleProgramMetadata), false);
 			oracleFunctionMetadataType.AsReferenceDefault = true;
 			oracleFunctionMetadataType.UseConstructor = false;
-			oracleFunctionMetadataType.Add("_parameters", "Identifier", "DataType", "IsAnalytic", "IsAggregate", "IsPipelined", "IsOffloadable", "ParallelSupport", "IsDeterministic", "_metadataMinimumArguments", "_metadataMaximumArguments", "AuthId", "DisplayType", "IsBuiltIn", "Owner");
+			oracleFunctionMetadataType.Add("_parameters", "Identifier", "IsAnalytic", "IsAggregate", "IsPipelined", "IsOffloadable", "ParallelSupport", "IsDeterministic", "_metadataMinimumArguments", "_metadataMaximumArguments", "AuthId", "DisplayType", "IsBuiltIn", "Owner", "Type");
 
-			var oracleFunctionParameterMetadataType = Serializer.Add(typeof(OracleFunctionParameterMetadata), false);
+			var oracleFunctionParameterMetadataType = Serializer.Add(typeof(OracleProgramParameterMetadata), false);
 			oracleFunctionMetadataType.AsReferenceDefault = true;
 			oracleFunctionParameterMetadataType.UseConstructor = false;
 			oracleFunctionParameterMetadataType.Add("Name", "Position", "DataType", "CustomDataType", "Direction", "IsOptional");
 		}
 
-		public OracleDataDictionary(IDictionary<OracleObjectIdentifier, OracleSchemaObject> schemaObjects, IDictionary<OracleObjectIdentifier, OracleDatabaseLink> databaseLinks, IDictionary<string, OracleFunctionMetadata> nonSchemaFunctionMetadata, IEnumerable<string> characterSets, IDictionary<int, string> statisticsKeys, IDictionary<string, string> systemParameters, DateTime timestamp)
+		public OracleDataDictionary(IDictionary<OracleObjectIdentifier, OracleSchemaObject> schemaObjects, IDictionary<OracleObjectIdentifier, OracleDatabaseLink> databaseLinks, IDictionary<string, OracleProgramMetadata> nonSchemaFunctionMetadata, IEnumerable<string> characterSets, IDictionary<int, string> statisticsKeys, IDictionary<string, string> systemParameters, DateTime timestamp)
 		{
 			_allObjects = new ReadOnlyDictionary<OracleObjectIdentifier, OracleSchemaObject>(schemaObjects);
 			_databaseLinks = new ReadOnlyDictionary<OracleObjectIdentifier, OracleDatabaseLink>(databaseLinks);
-			_nonSchemaFunctionMetadata = new ReadOnlyDictionary<string, OracleFunctionMetadata>(nonSchemaFunctionMetadata);
+			_nonSchemaFunctionMetadata = new ReadOnlyDictionary<string, OracleProgramMetadata>(nonSchemaFunctionMetadata);
 			_characterSets = new HashSet<string>(characterSets);
 			_statisticsKeys = new ReadOnlyDictionary<int, string>(statisticsKeys);
 			_systemParameters = new ReadOnlyDictionary<string, string>(systemParameters);

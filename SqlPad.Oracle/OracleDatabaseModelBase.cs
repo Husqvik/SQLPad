@@ -17,14 +17,14 @@ namespace SqlPad.Oracle
 		public const string SystemParameterNameMaxStringSize = "max_string_size";
 		public const int VersionMajorOracle12c = 12;
 
-		internal static OracleFunctionIdentifier IdentifierBuiltInFunctionRound = OracleFunctionIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "ROUND");
-		internal static OracleFunctionIdentifier IdentifierBuiltInFunctionSysContext = OracleFunctionIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "SYS_CONTEXT");
-		internal static OracleFunctionIdentifier IdentifierBuiltInFunctionToChar = OracleFunctionIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "TO_CHAR");
-		internal static OracleFunctionIdentifier IdentifierBuiltInFunctionToDate = OracleFunctionIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "TO_DATE");
-		internal static OracleFunctionIdentifier IdentifierBuiltInFunctionToTimestamp = OracleFunctionIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "TO_TIMESTAMP");
-		internal static OracleFunctionIdentifier IdentifierBuiltInFunctionToTimestampWithTimeZone = OracleFunctionIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "TO_TIMESTAMP_TZ");
-		internal static OracleFunctionIdentifier IdentifierBuiltInFunctionTrunc = OracleFunctionIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "TRUNC");
-		internal static OracleFunctionIdentifier IdentifierBuiltInFunctionConvert = OracleFunctionIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "CONVERT");
+		internal static OracleProgramIdentifier IdentifierBuiltInProgramRound = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "ROUND");
+		internal static OracleProgramIdentifier IdentifierBuiltInProgramSysContext = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "SYS_CONTEXT");
+		internal static OracleProgramIdentifier IdentifierBuiltInProgramToChar = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "TO_CHAR");
+		internal static OracleProgramIdentifier IdentifierBuiltInProgramToDate = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "TO_DATE");
+		internal static OracleProgramIdentifier IdentifierBuiltInProgramToTimestamp = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "TO_TIMESTAMP");
+		internal static OracleProgramIdentifier IdentifierBuiltInProgramToTimestampWithTimeZone = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "TO_TIMESTAMP_TZ");
+		internal static OracleProgramIdentifier IdentifierBuiltInProgramTrunc = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "TRUNC");
+		internal static OracleProgramIdentifier IdentifierBuiltInProgramConvert = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "CONVERT");
 
 		protected static readonly OracleObjectIdentifier BuiltInFunctionPackageIdentifier = OracleObjectIdentifier.Create(SchemaSys, PackageBuiltInFunction);
 
@@ -92,9 +92,9 @@ namespace SqlPad.Oracle
 
 		public abstract ILookup<string, string> ContextData { get; }
 
-		public abstract ILookup<OracleFunctionIdentifier, OracleFunctionMetadata> AllFunctionMetadata { get; }
+		public abstract ILookup<OracleProgramIdentifier, OracleProgramMetadata> AllFunctionMetadata { get; }
 
-		protected abstract IDictionary<string, OracleFunctionMetadata> NonSchemaBuiltInFunctionMetadata { get; }
+		protected abstract IDictionary<string, OracleProgramMetadata> NonSchemaBuiltInFunctionMetadata { get; }
 
 		public abstract IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjects { get; }
 
@@ -141,10 +141,10 @@ namespace SqlPad.Oracle
 			return AllSchemas.Contains(schemaName.ToQuotedIdentifier());
 		}
 
-		public FunctionMetadataResult GetFunctionMetadata(OracleFunctionIdentifier identifier, int parameterCount, bool forceBuiltInFunction)
+		public FunctionMetadataResult GetFunctionMetadata(OracleProgramIdentifier identifier, int parameterCount, bool forceBuiltInFunction)
 		{
 			OracleSchemaObject schemaObject;
-			ICollection<OracleFunctionMetadata> functionMetadataSource = new List<OracleFunctionMetadata>();
+			ICollection<OracleProgramMetadata> functionMetadataSource = new List<OracleProgramMetadata>();
 			if (String.IsNullOrEmpty(identifier.Package) && (forceBuiltInFunction || String.IsNullOrEmpty(identifier.Owner)))
 			{
 				if (AllObjects.TryGetValue(BuiltInFunctionPackageIdentifier, out schemaObject))
@@ -156,10 +156,10 @@ namespace SqlPad.Oracle
 
 				if (metadata == null)
 				{
-					OracleFunctionMetadata nonSchemaFunctionMetadata;
-					if (NonSchemaBuiltInFunctionMetadata.TryGetValue(identifier.Name, out nonSchemaFunctionMetadata))
+					OracleProgramMetadata nonSchemaProgramMetadata;
+					if (NonSchemaBuiltInFunctionMetadata.TryGetValue(identifier.Name, out nonSchemaProgramMetadata))
 					{
-						metadata = TryFindFunctionOverload(Enumerable.Repeat(nonSchemaFunctionMetadata, 1), identifier.Name, parameterCount);
+						metadata = TryFindFunctionOverload(Enumerable.Repeat(nonSchemaProgramMetadata, 1), identifier.Name, parameterCount);
 					}
 				}
 
@@ -218,7 +218,7 @@ namespace SqlPad.Oracle
 				: schemaObject;
 		}
 
-		private static bool TryGetSchemaObjectFunctionMetadata(OracleSchemaObject schemaObject, out ICollection<OracleFunctionMetadata> functionMetadata)
+		private static bool TryGetSchemaObjectFunctionMetadata(OracleSchemaObject schemaObject, out ICollection<OracleProgramMetadata> functionMetadata)
 		{
 			var targetObject = schemaObject.GetTargetSchemaObject();
 			var functions = targetObject as IFunctionCollection;
@@ -228,11 +228,11 @@ namespace SqlPad.Oracle
 				return true;
 			}
 
-			functionMetadata = new OracleFunctionMetadata[0];
+			functionMetadata = new OracleProgramMetadata[0];
 			return false;
 		}
 
-		private static OracleFunctionMetadata TryFindFunctionOverload(IEnumerable<OracleFunctionMetadata> functionMetadataCollection, string normalizedName, int parameterCount)
+		private static OracleProgramMetadata TryFindFunctionOverload(IEnumerable<OracleProgramMetadata> functionMetadataCollection, string normalizedName, int parameterCount)
 		{
 			return functionMetadataCollection.Where(m => m.Identifier.Name == normalizedName)
 				.OrderBy(m => Math.Abs(parameterCount - m.Parameters.Count + 1))
@@ -242,7 +242,7 @@ namespace SqlPad.Oracle
 
 	public struct FunctionMetadataResult
 	{
-		public OracleFunctionMetadata Metadata { get; set; }
+		public OracleProgramMetadata Metadata { get; set; }
 
 		public OracleSchemaObject SchemaObject { get; set; }
 	}

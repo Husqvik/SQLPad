@@ -213,7 +213,7 @@ namespace SqlPad.Oracle
 					{
 						parameterListSemanticError = OracleSemanticErrorType.InvalidParameterCount;
 					}
-					else if (programReference.Metadata.DisplayType == OracleFunctionMetadata.DisplayTypeNoParenthesis)
+					else if (programReference.Metadata.DisplayType == OracleProgramMetadata.DisplayTypeNoParenthesis)
 					{
 						parameterListSemanticError = OracleSemanticErrorType.NonParenthesisFunction;
 					}
@@ -227,7 +227,7 @@ namespace SqlPad.Oracle
 				{
 					semanticError = OracleSemanticErrorType.InvalidParameterCount;
 				}
-				else if (programReference.Metadata.DisplayType == OracleFunctionMetadata.DisplayTypeParenthesis)
+				else if (programReference.Metadata.DisplayType == OracleProgramMetadata.DisplayTypeParenthesis)
 				{
 					semanticError = OracleSemanticErrorType.MissingParenthesis;
 				}

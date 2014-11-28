@@ -35,7 +35,7 @@ namespace SqlPad.Oracle
 		private bool _databaseOutputEnabled;
 		private Task _backgroundTask;
 		private readonly CancellationTokenSource _backgroundTaskCancellationTokenSource = new CancellationTokenSource();
-		private ILookup<OracleFunctionIdentifier, OracleFunctionMetadata> _allFunctionMetadata = Enumerable.Empty<OracleFunctionMetadata>().ToLookup(m => m.Identifier);
+		private ILookup<OracleProgramIdentifier, OracleProgramMetadata> _allFunctionMetadata = Enumerable.Empty<OracleProgramMetadata>().ToLookup(m => m.Identifier);
 		private readonly ConnectionStringSettings _connectionString;
 		private HashSet<string> _schemas = new HashSet<string>();
 		private HashSet<string> _allSchemas = new HashSet<string>();
@@ -147,9 +147,9 @@ namespace SqlPad.Oracle
 			_backgroundTask = Task.Factory.StartNew(action);
 		}
 
-		public override ILookup<OracleFunctionIdentifier, OracleFunctionMetadata> AllFunctionMetadata { get { return _allFunctionMetadata; } }
+		public override ILookup<OracleProgramIdentifier, OracleProgramMetadata> AllFunctionMetadata { get { return _allFunctionMetadata; } }
 
-		protected override IDictionary<string, OracleFunctionMetadata> NonSchemaBuiltInFunctionMetadata { get { return _dataDictionary.NonSchemaFunctionMetadata; } }
+		protected override IDictionary<string, OracleProgramMetadata> NonSchemaBuiltInFunctionMetadata { get { return _dataDictionary.NonSchemaFunctionMetadata; } }
 
 		public override ConnectionStringSettings ConnectionString { get { return _connectionString; } }
 
@@ -1066,14 +1066,14 @@ namespace SqlPad.Oracle
 			{
 				var allObjects = _dataDictionaryMapper.BuildDataDictionary();
 
-				var userFunctions = _dataDictionaryMapper.GetUserFunctionMetadata().SelectMany(g => g);
-				var builtInFunctions = _dataDictionaryMapper.GetBuiltInFunctionMetadata().SelectMany(g => g);
-				_allFunctionMetadata = builtInFunctions.Concat(userFunctions)
+				var userFunctions = _dataDictionaryMapper.GetUserFunctionMetadata().SelectMany(g => g).ToArray();
+				var builtInFunctions = _dataDictionaryMapper.GetBuiltInFunctionMetadata().SelectMany(g => g).ToArray();
+				_allFunctionMetadata = builtInFunctions.Concat(userFunctions.Where(f => f.Type == ProgramType.Function))
 					.ToLookup(m => m.Identifier);
 
-				var nonSchemaBuiltInFunctionMetadata = new Dictionary<string, OracleFunctionMetadata>();
+				var nonSchemaBuiltInFunctionMetadata = new Dictionary<string, OracleProgramMetadata>();
 
-				foreach (var programMetadata in _allFunctionMetadata.SelectMany(g => g))
+				foreach (var programMetadata in builtInFunctions.Concat(userFunctions))
 				{
 					if (String.IsNullOrEmpty(programMetadata.Identifier.Owner))
 					{
@@ -1090,10 +1090,18 @@ namespace SqlPad.Oracle
 					}
 					else
 					{
-						var functionIdentifier = OracleObjectIdentifier.Create(programMetadata.Identifier.Owner, programMetadata.Identifier.Name);
-						if (allObjects.TryGetFirstValue(out schemaObject, functionIdentifier))
+						var programIdentifier = OracleObjectIdentifier.Create(programMetadata.Identifier.Owner, programMetadata.Identifier.Name);
+						if (allObjects.TryGetFirstValue(out schemaObject, programIdentifier))
 						{
-							((OracleFunction)schemaObject).Metadata = programMetadata;
+							if (programMetadata.Type == ProgramType.Function)
+							{
+								((OracleFunction)schemaObject).Metadata = programMetadata;
+							}
+							else
+							{
+								((OracleProcedure)schemaObject).Metadata = programMetadata;
+							}
+							
 							programMetadata.Owner = schemaObject;
 						}
 					}
@@ -1179,7 +1187,7 @@ namespace SqlPad.Oracle
 			_allFunctionMetadata = functionMetadata.ToLookup(m => m.Identifier);
 		}
 
-		private IEnumerable<OracleFunctionMetadata> FilterFunctionsWithUnavailableMetadataInOracle11(IEnumerable<OracleFunctionMetadata> functions)
+		private IEnumerable<OracleProgramMetadata> FilterFunctionsWithUnavailableMetadataInOracle11(IEnumerable<OracleProgramMetadata> functions)
 		{
 			return functions.Where(m => m != null);
 		} 

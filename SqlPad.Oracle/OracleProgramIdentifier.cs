@@ -3,8 +3,8 @@ using System.Diagnostics;
 
 namespace SqlPad.Oracle
 {
-	[DebuggerDisplay("OracleFunctionIdentifier (FullyQualifiedIdentifier={FullyQualifiedIdentifier}; Overload={Overload})")]
-	public struct OracleFunctionIdentifier
+	[DebuggerDisplay("OracleProgramIdentifier (FullyQualifiedIdentifier={FullyQualifiedIdentifier}; Overload={Overload})")]
+	public struct OracleProgramIdentifier
 	{
 		public string Owner { get; set; }
 
@@ -24,9 +24,9 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		public static OracleFunctionIdentifier CreateFromValues(string owner, string package, string name, int overload = 0)
+		public static OracleProgramIdentifier CreateFromValues(string owner, string package, string name, int overload = 0)
 		{
-			return new OracleFunctionIdentifier
+			return new OracleProgramIdentifier
 			{
 				Owner = owner.ToQuotedIdentifier(),
 				Package = package.ToQuotedIdentifier(),
@@ -35,13 +35,13 @@ namespace SqlPad.Oracle
 			};
 		}
 
-		public bool EqualsWithOverload(OracleFunctionIdentifier other)
+		public bool EqualsWithOverload(OracleProgramIdentifier other)
 		{
 			return string.Equals(Owner, other.Owner) && string.Equals(Name, other.Name) && string.Equals(Package, other.Package) && Overload == other.Overload;
 		}
 
 		#region Equality members
-		public bool Equals(OracleFunctionIdentifier other)
+		public bool Equals(OracleProgramIdentifier other)
 		{
 			return string.Equals(Owner, other.Owner) && string.Equals(Name, other.Name) && string.Equals(Package, other.Package);
 		}
@@ -49,7 +49,7 @@ namespace SqlPad.Oracle
 		public override bool Equals(object obj)
 		{
 			if (ReferenceEquals(null, obj)) return false;
-			return obj is OracleFunctionIdentifier && Equals((OracleFunctionIdentifier)obj);
+			return obj is OracleProgramIdentifier && Equals((OracleProgramIdentifier)obj);
 		}
 
 		public override int GetHashCode()
@@ -63,12 +63,12 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		public static bool operator ==(OracleFunctionIdentifier left, OracleFunctionIdentifier right)
+		public static bool operator ==(OracleProgramIdentifier left, OracleProgramIdentifier right)
 		{
 			return left.Equals(right);
 		}
 
-		public static bool operator !=(OracleFunctionIdentifier left, OracleFunctionIdentifier right)
+		public static bool operator !=(OracleProgramIdentifier left, OracleProgramIdentifier right)
 		{
 			return !left.Equals(right);
 		}

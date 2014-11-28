@@ -45,7 +45,7 @@ namespace SqlPad.Oracle
 			var functionOverloads = functionOverloadSource.Select(
 				fo =>
 				{
-					var metadata = fo.FunctionMetadata;
+					var metadata = fo.ProgramMetadata;
 					var returnParameter = metadata.Parameters.FirstOrDefault();
 					return
 						new FunctionOverloadDescription
@@ -114,7 +114,7 @@ namespace SqlPad.Oracle
 				}
 			}
 
-			IEnumerable<OracleFunctionMetadata> matchedMetadata;
+			IEnumerable<OracleProgramMetadata> matchedMetadata;
 			var typeReference = programReferenceBase as OracleTypeReference;
 			if (typeReference == null)
 			{
@@ -140,7 +140,7 @@ namespace SqlPad.Oracle
 					new OracleCodeCompletionFunctionOverload
 					{
 						ProgramReference = programReferenceBase,
-						FunctionMetadata = m,
+						ProgramMetadata = m,
 						CurrentParameterIndex = currentParameterIndex
 					});
 		}
@@ -677,7 +677,7 @@ namespace SqlPad.Oracle
 					{
 						postFix = ".";
 					}
-					else if (i.Metadata.DisplayType == OracleFunctionMetadata.DisplayTypeNoParenthesis)
+					else if (i.Metadata.DisplayType == OracleProgramMetadata.DisplayTypeNoParenthesis)
 					{
 						postFix = null;
 					}
@@ -694,7 +694,7 @@ namespace SqlPad.Oracle
 							StatementNode = node,
 							Category = category,
 							InsertOffset = insertOffset,
-							CaretOffset = category == OracleCodeCompletionCategory.Package || i.Metadata.DisplayType == OracleFunctionMetadata.DisplayTypeNoParenthesis
+							CaretOffset = category == OracleCodeCompletionCategory.Package || i.Metadata.DisplayType == OracleProgramMetadata.DisplayTypeNoParenthesis
 								? 0
 								: (parameterListCaretOffset - analyticClause.Length),
 							CategoryPriority = 2
@@ -702,7 +702,7 @@ namespace SqlPad.Oracle
 				});
 		}
 
-		private string GetAdditionalFunctionClause(OracleFunctionMetadata metadata)
+		private string GetAdditionalFunctionClause(OracleProgramMetadata metadata)
 		{
 			var orderByClause = metadata.IsBuiltIn && metadata.Identifier.Name.In("\"NTILE\"", "\"ROW_NUMBER\"", "\"RANK\"", "\"DENSE_RANK\"", "\"LEAD\"", "\"LAG\"")
 				? "ORDER BY NULL"
@@ -889,7 +889,7 @@ namespace SqlPad.Oracle
 	{
 		public OracleProgramReferenceBase ProgramReference { get; set; }
 
-		public OracleFunctionMetadata FunctionMetadata { get; set; }
+		public OracleProgramMetadata ProgramMetadata { get; set; }
 
 		public int CurrentParameterIndex { get; set; }
 	}

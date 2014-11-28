@@ -22,8 +22,8 @@ namespace SqlPad.Oracle.Test
 
 		private static readonly HashSet<string> SchemasInternal = new HashSet<string> { OwnerNameSys, "\"SYSTEM\"", InitialSchema };
 		private static readonly HashSet<string> AllSchemasInternal = new HashSet<string>(SchemasInternal) { OwnerNameSys, "\"SYSTEM\"", InitialSchema, SchemaPublic };
-		private static readonly ILookup<OracleFunctionIdentifier, OracleFunctionMetadata> AllFunctionMetadataInternal;
-		private static readonly Dictionary<string, OracleFunctionMetadata> NonSchemaBuiltInFunctionMetadataInternal;
+		private static readonly ILookup<OracleProgramIdentifier, OracleProgramMetadata> AllFunctionMetadataInternal;
+		private static readonly Dictionary<string, OracleProgramMetadata> NonSchemaBuiltInFunctionMetadataInternal;
 		private static readonly HashSet<string> CharacterSetsInternal = new HashSet<string> { "US7ASCII", "WE8ISO8859P1" };
 
 		private const int StatisticsCodeSessionLogicalReads = 12;
@@ -179,14 +179,14 @@ namespace SqlPad.Oracle.Test
 
 			#region SYS.DBMS_RANDOM
 			var dbmsRandom = (OraclePackage)AllObjectsInternal.Single(o => o.Name == "\"DBMS_RANDOM\"" && o.Owner == OwnerNameSys);
-			var randomStringFunctionMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues("SYS", "DBMS_RANDOM", "STRING"), false, false, false, false, true, false, null, null, AuthId.Definer, OracleFunctionMetadata.DisplayTypeNormal, false);
-			randomStringFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "VARCHAR2", OracleObjectIdentifier.Empty, false));
-			randomStringFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("OPT", 1, ParameterDirection.Input, "CHAR", OracleObjectIdentifier.Empty, false));
-			randomStringFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("LEN", 2, ParameterDirection.Input, "NUMBER", OracleObjectIdentifier.Empty, false));
+			var randomStringFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues("SYS", "DBMS_RANDOM", "STRING"), false, false, false, false, true, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
+			randomStringFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata(null, 0, ParameterDirection.ReturnValue, "VARCHAR2", OracleObjectIdentifier.Empty, false));
+			randomStringFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata("OPT", 1, ParameterDirection.Input, "CHAR", OracleObjectIdentifier.Empty, false));
+			randomStringFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata("LEN", 2, ParameterDirection.Input, "NUMBER", OracleObjectIdentifier.Empty, false));
 			randomStringFunctionMetadata.Owner = dbmsRandom;
 			dbmsRandom.Functions.Add(randomStringFunctionMetadata);
-			var randomStringNormalFunctionMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues("SYS", "DBMS_RANDOM", "NORMAL"), false, false, false, false, true, false, null, null, AuthId.Definer, OracleFunctionMetadata.DisplayTypeNormal, false);
-			randomStringNormalFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "NUMBER", OracleObjectIdentifier.Empty, false));
+			var randomStringNormalFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues("SYS", "DBMS_RANDOM", "NORMAL"), false, false, false, false, true, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
+			randomStringNormalFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata(null, 0, ParameterDirection.ReturnValue, "NUMBER", OracleObjectIdentifier.Empty, false));
 			randomStringNormalFunctionMetadata.Owner = dbmsRandom;
 			dbmsRandom.Functions.Add(randomStringNormalFunctionMetadata);
 
@@ -204,12 +204,12 @@ namespace SqlPad.Oracle.Test
 
 			#region DBMS_XPLAN
 			var dbmsXPlan = (OraclePackage)AllObjectsInternal.Single(o => o.Name == "\"DBMS_XPLAN\"" && o.Owner == OwnerNameSys);
-			var displayCursorFunctionMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues("SYS", "DBMS_XPLAN", "DISPLAY_CURSOR"), false, false, true, false, false, false, null, null, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNormal, false);
-			displayCursorFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "TABLE", OracleObjectIdentifier.Create(SchemaSys, "DBMS_XPLAN_TYPE_TABLE"), false));
-			displayCursorFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 1, ParameterDirection.ReturnValue, "OBJECT", OracleObjectIdentifier.Create(SchemaSys, "DBMS_XPLAN_TYPE"), false));
-			displayCursorFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("SQL_ID", 1, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, true));
-			displayCursorFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("CURSOR_CHILD_NUMBER", 2, ParameterDirection.Input, "NUMBER", OracleObjectIdentifier.Empty, true));
-			displayCursorFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("FORMAT", 3, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, true));
+			var displayCursorFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues("SYS", "DBMS_XPLAN", "DISPLAY_CURSOR"), false, false, true, false, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, false);
+			displayCursorFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata(null, 0, ParameterDirection.ReturnValue, "TABLE", OracleObjectIdentifier.Create(SchemaSys, "DBMS_XPLAN_TYPE_TABLE"), false));
+			displayCursorFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata(null, 1, ParameterDirection.ReturnValue, "OBJECT", OracleObjectIdentifier.Create(SchemaSys, "DBMS_XPLAN_TYPE"), false));
+			displayCursorFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata("SQL_ID", 1, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, true));
+			displayCursorFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata("CURSOR_CHILD_NUMBER", 2, ParameterDirection.Input, "NUMBER", OracleObjectIdentifier.Empty, true));
+			displayCursorFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata("FORMAT", 3, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, true));
 			displayCursorFunctionMetadata.Owner = dbmsXPlan;
 			dbmsXPlan.Functions.Add(displayCursorFunctionMetadata);
 
@@ -227,9 +227,9 @@ namespace SqlPad.Oracle.Test
 
 			#region SYS.DBMS_CRYPTO
 			var dbmsCrypto = (OraclePackage)AllObjectsInternal.Single(o => o.Name == "\"DBMS_CRYPTO\"" && o.Owner == OwnerNameSys);
-			var randomBytesFunctionMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues("SYS", "DBMS_CRYPTO", "RANDOMBYTES"), false, false, false, false, true, false, null, null, AuthId.Definer, OracleFunctionMetadata.DisplayTypeNormal, false);
-			randomBytesFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "RAW", OracleObjectIdentifier.Empty, false));
-			randomBytesFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("NUMBER_BYTES", 1, ParameterDirection.Input, "BINARY_INTEGER", OracleObjectIdentifier.Empty, false));
+			var randomBytesFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues("SYS", "DBMS_CRYPTO", "RANDOMBYTES"), false, false, false, false, true, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
+			randomBytesFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata(null, 0, ParameterDirection.ReturnValue, "RAW", OracleObjectIdentifier.Empty, false));
+			randomBytesFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata("NUMBER_BYTES", 1, ParameterDirection.Input, "BINARY_INTEGER", OracleObjectIdentifier.Empty, false));
 			randomBytesFunctionMetadata.Owner = dbmsCrypto;
 			dbmsCrypto.Functions.Add(randomBytesFunctionMetadata);
 
@@ -246,24 +246,24 @@ namespace SqlPad.Oracle.Test
 			#endregion
 
 			var uncompilableFunction = (OracleFunction)AllObjectsInternal.Single(o => o.Name == "\"UNCOMPILABLE_FUNCTION\"" && o.Owner == InitialSchema);
-			uncompilableFunction.Metadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), null, "UNCOMPILABLE_FUNCTION"), false, false, false, false, true, false, null, null, AuthId.Definer, OracleFunctionMetadata.DisplayTypeNormal, false);
-			uncompilableFunction.Metadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "NUMBER", OracleObjectIdentifier.Empty, false));
+			uncompilableFunction.Metadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), null, "UNCOMPILABLE_FUNCTION"), false, false, false, false, true, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
+			uncompilableFunction.Metadata.Parameters.Add(new OracleProgramParameterMetadata(null, 0, ParameterDirection.ReturnValue, "NUMBER", OracleObjectIdentifier.Empty, false));
 			uncompilableFunction.Metadata.Owner = uncompilableFunction;
 
 			var uncompilablePackage = (OraclePackage)AllObjectsInternal.Single(o => o.Name == "\"UNCOMPILABLE_PACKAGE\"" && o.Owner == InitialSchema);
-			var uncompilablePackageFunctionMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), "UNCOMPILABLE_PACKAGE", "FUNCTION"), false, false, false, false, true, false, null, null, AuthId.Definer, OracleFunctionMetadata.DisplayTypeNormal, false);
-			uncompilablePackageFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "NUMBER", OracleObjectIdentifier.Empty, false));
+			var uncompilablePackageFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), "UNCOMPILABLE_PACKAGE", "FUNCTION"), false, false, false, false, true, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
+			uncompilablePackageFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata(null, 0, ParameterDirection.ReturnValue, "NUMBER", OracleObjectIdentifier.Empty, false));
 			uncompilablePackage.Functions.Add(uncompilablePackageFunctionMetadata);
 			uncompilablePackageFunctionMetadata.Owner = uncompilablePackage;
 
 			var userCountFunction = (OracleFunction)AllObjectsInternal.Single(o => o.Name == "\"COUNT\"" && o.Owner == InitialSchema);
-			userCountFunction.Metadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), null, "COUNT"), false, false, false, false, false, false, null, null, AuthId.Definer, OracleFunctionMetadata.DisplayTypeNormal, false);
+			userCountFunction.Metadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), null, "COUNT"), false, false, false, false, false, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
+			userCountFunction.Metadata.Parameters.Add(new OracleProgramParameterMetadata(null, 0, ParameterDirection.ReturnValue, "NUMBER", OracleObjectIdentifier.Empty, false));
 			userCountFunction.Metadata.Owner = userCountFunction;
-			userCountFunction.Metadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "NUMBER", OracleObjectIdentifier.Empty, false));
 
 			var sqlPadFunction = (OracleFunction)AllObjectsInternal.Single(o => o.Name == "\"SQLPAD_FUNCTION\"" && o.Owner == InitialSchema);
-			sqlPadFunction.Metadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), null, "SQLPAD_FUNCTION"), false, false, false, false, false, false, null, null, AuthId.Definer, OracleFunctionMetadata.DisplayTypeNormal, false);
-			sqlPadFunction.Metadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "VARCHAR2", OracleObjectIdentifier.Empty, false));
+			sqlPadFunction.Metadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), null, "SQLPAD_FUNCTION"), false, false, false, false, false, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
+			sqlPadFunction.Metadata.Parameters.Add(new OracleProgramParameterMetadata(null, 0, ParameterDirection.ReturnValue, "VARCHAR2", OracleObjectIdentifier.Empty, false));
 			sqlPadFunction.Metadata.Owner = sqlPadFunction;
 
 			synonym =
@@ -278,99 +278,99 @@ namespace SqlPad.Oracle.Test
 			AllObjectsInternal.Add(synonym);
 
 			var testFunction = (OracleFunction)AllObjectsInternal.Single(o => o.Name == "\"TESTFUNC\"" && o.Owner == InitialSchema);
-			testFunction.Metadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), null, "TESTFUNC"), false, false, false, false, false, false, null, null, AuthId.Definer, OracleFunctionMetadata.DisplayTypeNormal, false);
-			testFunction.Metadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "NUMBER", OracleObjectIdentifier.Empty, false));
-			testFunction.Metadata.Parameters.Add(new OracleFunctionParameterMetadata("PARAM", 1, ParameterDirection.ReturnValue, "NUMBER", OracleObjectIdentifier.Empty, false));
+			testFunction.Metadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), null, "TESTFUNC"), false, false, false, false, false, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
+			testFunction.Metadata.Parameters.Add(new OracleProgramParameterMetadata(null, 0, ParameterDirection.ReturnValue, "NUMBER", OracleObjectIdentifier.Empty, false));
+			testFunction.Metadata.Parameters.Add(new OracleProgramParameterMetadata("PARAM", 1, ParameterDirection.ReturnValue, "NUMBER", OracleObjectIdentifier.Empty, false));
 			testFunction.Metadata.Owner = testFunction;
 
 			var sqlPadPackage = (OraclePackage)AllObjectsInternal.Single(o => o.Name == "\"SQLPAD\"" && o.Owner == InitialSchema);
-			var packageSqlPadFunctionMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), "SQLPAD", "SQLPAD_FUNCTION"), false, false, false, false, false, false, null, null, AuthId.Definer, OracleFunctionMetadata.DisplayTypeNormal, false);
-			packageSqlPadFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "NUMBER", OracleObjectIdentifier.Empty, false));
-			packageSqlPadFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("P", 1, ParameterDirection.Input, "NUMBER", OracleObjectIdentifier.Empty, false));
+			var packageSqlPadFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), "SQLPAD", "SQLPAD_FUNCTION"), false, false, false, false, false, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
+			packageSqlPadFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata(null, 0, ParameterDirection.ReturnValue, "NUMBER", OracleObjectIdentifier.Empty, false));
+			packageSqlPadFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata("P", 1, ParameterDirection.Input, "NUMBER", OracleObjectIdentifier.Empty, false));
 			sqlPadPackage.Functions.Add(packageSqlPadFunctionMetadata);
 			packageSqlPadFunctionMetadata.Owner = sqlPadFunction;
 
 			var asPdfPackage = (OraclePackage)AllObjectsInternal.Single(o => o.Name == "\"AS_PDF3\"" && o.Owner == InitialSchema);
-			var asPdfPackageFunctionMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), "AS_PDF3", "STR_LEN"), false, false, false, false, false, false, null, null, AuthId.Definer, OracleFunctionMetadata.DisplayTypeNormal, false);
-			asPdfPackageFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "NUMBER", OracleObjectIdentifier.Empty, false));
-			asPdfPackageFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("P_TXT", 1, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, false));
+			var asPdfPackageFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), "AS_PDF3", "STR_LEN"), false, false, false, false, false, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
+			asPdfPackageFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata(null, 0, ParameterDirection.ReturnValue, "NUMBER", OracleObjectIdentifier.Empty, false));
+			asPdfPackageFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata("P_TXT", 1, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, false));
 			asPdfPackage.Functions.Add(asPdfPackageFunctionMetadata);
 			asPdfPackageFunctionMetadata.Owner = asPdfPackage;
 
 			#region SYS.STANDARD
 			var builtInFunctionPackage = (OraclePackage)AllObjectsInternal.Single(o => o.Name == PackageBuiltInFunction && o.Owner == OwnerNameSys);
-			var truncFunctionMetadata = new OracleFunctionMetadata(IdentifierBuiltInFunctionTrunc, false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNormal, true);
-			truncFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "DATE", OracleObjectIdentifier.Empty, false));
-			truncFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("LEFT", 1, ParameterDirection.Input, "DATE", OracleObjectIdentifier.Empty, false));
-			truncFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("RIGHT", 2, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, false));
+			var truncFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, IdentifierBuiltInProgramTrunc, false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
+			truncFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata(null, 0, ParameterDirection.ReturnValue, "DATE", OracleObjectIdentifier.Empty, false));
+			truncFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata("LEFT", 1, ParameterDirection.Input, "DATE", OracleObjectIdentifier.Empty, false));
+			truncFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata("RIGHT", 2, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, false));
 			builtInFunctionPackage.Functions.Add(truncFunctionMetadata);
 
-			var toCharFunctionMetadata = new OracleFunctionMetadata(IdentifierBuiltInFunctionToChar, false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNormal, true);
-			toCharFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "VARCHAR2", OracleObjectIdentifier.Empty, false));
-			toCharFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("LEFT", 1, ParameterDirection.Input, "NUMBER", OracleObjectIdentifier.Empty, false));
+			var toCharFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, IdentifierBuiltInProgramToChar, false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
+			toCharFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata(null, 0, ParameterDirection.ReturnValue, "VARCHAR2", OracleObjectIdentifier.Empty, false));
+			toCharFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata("LEFT", 1, ParameterDirection.Input, "NUMBER", OracleObjectIdentifier.Empty, false));
 			builtInFunctionPackage.Functions.Add(toCharFunctionMetadata);
 
-			var sysContextFunctionMetadata = new OracleFunctionMetadata(IdentifierBuiltInFunctionSysContext, false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNormal, true);
-			sysContextFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "VARCHAR2", OracleObjectIdentifier.Empty, false));
-			sysContextFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("NAMESPACE", 1, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, false));
-			sysContextFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("ATTRIBUTE", 2, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, false));
+			var sysContextFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, IdentifierBuiltInProgramSysContext, false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
+			sysContextFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata(null, 0, ParameterDirection.ReturnValue, "VARCHAR2", OracleObjectIdentifier.Empty, false));
+			sysContextFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata("NAMESPACE", 1, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, false));
+			sysContextFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata("ATTRIBUTE", 2, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, false));
 			builtInFunctionPackage.Functions.Add(sysContextFunctionMetadata);
 
-			var toCharWithNlsParameterFunctionMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues(OwnerNameSys, PackageBuiltInFunction, "TO_CHAR", 1), false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNormal, true);
-			toCharWithNlsParameterFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "VARCHAR2", OracleObjectIdentifier.Empty, false));
-			toCharWithNlsParameterFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("LEFT", 1, ParameterDirection.Input, "NUMBER", OracleObjectIdentifier.Empty, false));
-			toCharWithNlsParameterFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("FORMAT", 2, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, false));
-			toCharWithNlsParameterFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("PARMS", 3, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, false));
+			var toCharWithNlsParameterFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(OwnerNameSys, PackageBuiltInFunction, "TO_CHAR", 1), false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
+			toCharWithNlsParameterFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata(null, 0, ParameterDirection.ReturnValue, "VARCHAR2", OracleObjectIdentifier.Empty, false));
+			toCharWithNlsParameterFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata("LEFT", 1, ParameterDirection.Input, "NUMBER", OracleObjectIdentifier.Empty, false));
+			toCharWithNlsParameterFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata("FORMAT", 2, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, false));
+			toCharWithNlsParameterFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata("PARMS", 3, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, false));
 			builtInFunctionPackage.Functions.Add(toCharWithNlsParameterFunctionMetadata);
 
-			var roundFunctionOverload1Metadata = new OracleFunctionMetadata(IdentifierBuiltInFunctionRound, false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNormal, true);
-			roundFunctionOverload1Metadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "NUMBER", OracleObjectIdentifier.Empty, false));
-			roundFunctionOverload1Metadata.Parameters.Add(new OracleFunctionParameterMetadata("LEFT", 1, ParameterDirection.Input, "NUMBER", OracleObjectIdentifier.Empty, false));
+			var roundFunctionOverload1Metadata = new OracleProgramMetadata(ProgramType.Function, IdentifierBuiltInProgramRound, false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
+			roundFunctionOverload1Metadata.Parameters.Add(new OracleProgramParameterMetadata(null, 0, ParameterDirection.ReturnValue, "NUMBER", OracleObjectIdentifier.Empty, false));
+			roundFunctionOverload1Metadata.Parameters.Add(new OracleProgramParameterMetadata("LEFT", 1, ParameterDirection.Input, "NUMBER", OracleObjectIdentifier.Empty, false));
 			builtInFunctionPackage.Functions.Add(roundFunctionOverload1Metadata);
 
-			var roundFunctionOverload2Metadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues("SYS", "STANDARD", "ROUND", 2), false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNormal, true);
-			roundFunctionOverload2Metadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "NUMBER", OracleObjectIdentifier.Empty, false));
-			roundFunctionOverload2Metadata.Parameters.Add(new OracleFunctionParameterMetadata("LEFT", 1, ParameterDirection.Input, "NUMBER", OracleObjectIdentifier.Empty, false));
-			roundFunctionOverload2Metadata.Parameters.Add(new OracleFunctionParameterMetadata("RIGHT", 2, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, false));
+			var roundFunctionOverload2Metadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues("SYS", "STANDARD", "ROUND", 2), false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
+			roundFunctionOverload2Metadata.Parameters.Add(new OracleProgramParameterMetadata(null, 0, ParameterDirection.ReturnValue, "NUMBER", OracleObjectIdentifier.Empty, false));
+			roundFunctionOverload2Metadata.Parameters.Add(new OracleProgramParameterMetadata("LEFT", 1, ParameterDirection.Input, "NUMBER", OracleObjectIdentifier.Empty, false));
+			roundFunctionOverload2Metadata.Parameters.Add(new OracleProgramParameterMetadata("RIGHT", 2, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, false));
 			builtInFunctionPackage.Functions.Add(roundFunctionOverload2Metadata);
 
-			var convertFunctionMetadata = new OracleFunctionMetadata(IdentifierBuiltInFunctionConvert, false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNormal, true);
-			convertFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "VARCHAR2", OracleObjectIdentifier.Empty, false));
-			convertFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("SRC", 1, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, false));
-			convertFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("DESTCSET", 2, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, false));
-			convertFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("SRCCSET", 3, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, false));
+			var convertFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, IdentifierBuiltInProgramConvert, false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
+			convertFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata(null, 0, ParameterDirection.ReturnValue, "VARCHAR2", OracleObjectIdentifier.Empty, false));
+			convertFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata("SRC", 1, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, false));
+			convertFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata("DESTCSET", 2, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, false));
+			convertFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata("SRCCSET", 3, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, false));
 			builtInFunctionPackage.Functions.Add(convertFunctionMetadata);
 
-			var dumpFunctionMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues("SYS", "STANDARD", "DUMP"), false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNormal, true);
+			var dumpFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues("SYS", "STANDARD", "DUMP"), false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
 			builtInFunctionPackage.Functions.Add(dumpFunctionMetadata);
 
-			var coalesceFunctionMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues("SYS", "STANDARD", "COALESCE"), false, false, false, true, false, false, 2, null, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNormal, true);
+			var coalesceFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues("SYS", "STANDARD", "COALESCE"), false, false, false, true, false, false, 2, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
 			builtInFunctionPackage.Functions.Add(coalesceFunctionMetadata);
 
-			var greatestFunctionMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues("SYS", "STANDARD", "GREATEST"), false, false, false, true, false, false, 2, null, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNormal, true);
+			var greatestFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues("SYS", "STANDARD", "GREATEST"), false, false, false, true, false, false, 2, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
 			builtInFunctionPackage.Functions.Add(greatestFunctionMetadata);
 
-			var noParenthesisFunctionMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues("SYS", "STANDARD", "SESSIONTIMEZONE"), false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNoParenthesis, true);
+			var noParenthesisFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues("SYS", "STANDARD", "SESSIONTIMEZONE"), false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNoParenthesis, true);
 			builtInFunctionPackage.Functions.Add(noParenthesisFunctionMetadata);
 
-			var nvlFunctionMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues("SYS", "STANDARD", "NVL"), false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNormal, true);
-			nvlFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "VARCHAR2", OracleObjectIdentifier.Empty, false));
-			nvlFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("B1", 1, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, false));
-			nvlFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("B2", 2, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, false));
+			var nvlFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues("SYS", "STANDARD", "NVL"), false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
+			nvlFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata(null, 0, ParameterDirection.ReturnValue, "VARCHAR2", OracleObjectIdentifier.Empty, false));
+			nvlFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata("B1", 1, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, false));
+			nvlFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata("B2", 2, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, false));
 			builtInFunctionPackage.Functions.Add(nvlFunctionMetadata);
 
-			var hexToRawFunctionMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues("SYS", "STANDARD", "HEXTORAW"), false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNormal, true);
-			hexToRawFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "RAW", OracleObjectIdentifier.Empty, false));
-			hexToRawFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("C", 0, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, false));
+			var hexToRawFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues("SYS", "STANDARD", "HEXTORAW"), false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
+			hexToRawFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata(null, 0, ParameterDirection.ReturnValue, "RAW", OracleObjectIdentifier.Empty, false));
+			hexToRawFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata("C", 0, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, false));
 			builtInFunctionPackage.Functions.Add(hexToRawFunctionMetadata);
 
-			var upperFunctionMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues("SYS", "STANDARD", "UPPER"), false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNormal, true);
-			upperFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "VARCHAR2", OracleObjectIdentifier.Empty, false));
-			upperFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata("CH", 0, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, false));
+			var upperFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues("SYS", "STANDARD", "UPPER"), false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
+			upperFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata(null, 0, ParameterDirection.ReturnValue, "VARCHAR2", OracleObjectIdentifier.Empty, false));
+			upperFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata("CH", 0, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, false));
 			builtInFunctionPackage.Functions.Add(upperFunctionMetadata);
 
-			var sysGuidFunctionMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues("SYS", "STANDARD", "SYS_GUID"), false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeParenthesis, true);
-			sysGuidFunctionMetadata.Parameters.Add(new OracleFunctionParameterMetadata(null, 0, ParameterDirection.ReturnValue, "RAW", OracleObjectIdentifier.Empty, false));
+			var sysGuidFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues("SYS", "STANDARD", "SYS_GUID"), false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeParenthesis, true);
+			sysGuidFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata(null, 0, ParameterDirection.ReturnValue, "RAW", OracleObjectIdentifier.Empty, false));
 			builtInFunctionPackage.Functions.Add(sysGuidFunctionMetadata);
 			#endregion
 
@@ -385,13 +385,13 @@ namespace SqlPad.Oracle.Test
 			#region non-schema built-in functions
 			var allFunctionMetadata = AllObjectsInternal.OfType<IFunctionCollection>().SelectMany(c => c.Functions).ToList();
 
-			var countFunctionMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues(null, null, "COUNT"), true, true, false, false, false, false, 1, 1, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNormal, true);
+			var countFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(null, null, "COUNT"), true, true, false, false, false, false, 1, 1, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
 			allFunctionMetadata.Add(countFunctionMetadata);
 
-			var maxFunctionMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues(null, null, "MAX"), true, true, false, false, false, false, 1, 1, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNormal, true);
+			var maxFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(null, null, "MAX"), true, true, false, false, false, false, 1, 1, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
 			allFunctionMetadata.Add(maxFunctionMetadata);
 
-			var lastValueFunctionMetadata = new OracleFunctionMetadata(OracleFunctionIdentifier.CreateFromValues(null, null, "LAST_VALUE"), true, false, false, false, false, false, 1, 1, AuthId.CurrentUser, OracleFunctionMetadata.DisplayTypeNormal, true);
+			var lastValueFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(null, null, "LAST_VALUE"), true, false, false, false, false, false, 1, 1, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
 			allFunctionMetadata.Add(lastValueFunctionMetadata);
 
 			AllFunctionMetadataInternal = allFunctionMetadata.ToLookup(m => m.Identifier);
@@ -523,9 +523,9 @@ namespace SqlPad.Oracle.Test
 				}.AsReadOnly();
 		}
 
-		public override ILookup<OracleFunctionIdentifier, OracleFunctionMetadata> AllFunctionMetadata { get { return AllFunctionMetadataInternal; } }
+		public override ILookup<OracleProgramIdentifier, OracleProgramMetadata> AllFunctionMetadata { get { return AllFunctionMetadataInternal; } }
 
-		protected override IDictionary<string, OracleFunctionMetadata> NonSchemaBuiltInFunctionMetadata { get { return NonSchemaBuiltInFunctionMetadataInternal; } }
+		protected override IDictionary<string, OracleProgramMetadata> NonSchemaBuiltInFunctionMetadata { get { return NonSchemaBuiltInFunctionMetadataInternal; } }
 
 		private static readonly HashSet<OracleSchemaObject> AllObjectsInternal = new HashSet<OracleSchemaObject>
 		{

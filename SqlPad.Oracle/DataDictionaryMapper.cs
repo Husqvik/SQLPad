@@ -90,12 +90,12 @@ namespace SqlPad.Oracle
 			return new ReadOnlyDictionary<OracleObjectIdentifier, OracleSchemaObject>(_allObjects);
 		}
 
-		public ILookup<OracleFunctionIdentifier, OracleFunctionMetadata> GetUserFunctionMetadata()
+		public ILookup<OracleProgramIdentifier, OracleProgramMetadata> GetUserFunctionMetadata()
 		{
 			return GetFunctionMetadataCollection(DatabaseCommands.UserFunctionMetadataCommandText, DatabaseCommands.UserFunctionParameterMetadataCommandText, false);
 		}
 
-		public ILookup<OracleFunctionIdentifier, OracleFunctionMetadata> GetBuiltInFunctionMetadata()
+		public ILookup<OracleProgramIdentifier, OracleProgramMetadata> GetBuiltInFunctionMetadata()
 		{
 			return GetFunctionMetadataCollection(DatabaseCommands.BuiltInFunctionMetadataCommandText, DatabaseCommands.BuiltInFunctionParameterMetadataCommandText, true);
 		}
@@ -135,12 +135,12 @@ namespace SqlPad.Oracle
 			return _databaseModel.ExecuteReader(DatabaseCommands.GetSystemParameters, MapParameter);
 		}
 
-		private ILookup<OracleFunctionIdentifier, OracleFunctionMetadata> GetFunctionMetadataCollection(string selectFunctionMetadataCommandText, string selectParameterMetadataCommandText, bool isBuiltIn)
+		private ILookup<OracleProgramIdentifier, OracleProgramMetadata> GetFunctionMetadataCollection(string selectFunctionMetadataCommandText, string selectParameterMetadataCommandText, bool isBuiltIn)
 		{
-			var functionMetadataSource = _databaseModel.ExecuteReader(selectFunctionMetadataCommandText, r => MapFunctionMetadata(r, isBuiltIn));
+			var functionMetadataSource = _databaseModel.ExecuteReader(selectFunctionMetadataCommandText, r => MapProgramMetadata(r, isBuiltIn));
 			var functionMetadataLookup = functionMetadataSource.ToLookup(m => m.Identifier);
 
-			var functionParameterMetadataSource = _databaseModel.ExecuteReader(selectParameterMetadataCommandText, MapFunctionParameterMetadata);
+			var functionParameterMetadataSource = _databaseModel.ExecuteReader(selectParameterMetadataCommandText, MapProgramParameterMetadata);
 			foreach (var functionIdentifierParameterMetadata in functionParameterMetadataSource)
 			{
 				var functionMetadata = functionMetadataLookup[functionIdentifierParameterMetadata.Key]
@@ -165,9 +165,10 @@ namespace SqlPad.Oracle
 			return new KeyValuePair<string, string>((string)reader["NAMESPACE"], (string)reader["ATTRIBUTE"]);
 		}
 
-		private static OracleFunctionMetadata MapFunctionMetadata(OracleDataReader reader, bool isBuiltIn)
+		private static OracleProgramMetadata MapProgramMetadata(OracleDataReader reader, bool isBuiltIn)
 		{
-			var identifier = CreateFunctionIdentifierFromReaderValues(reader["OWNER"], reader["PACKAGE_NAME"], reader["FUNCTION_NAME"], reader["OVERLOAD"]);
+			var identifier = CreateFunctionIdentifierFromReaderValues(reader["OWNER"], reader["PACKAGE_NAME"], reader["PROGRAM_NAME"], reader["OVERLOAD"]);
+			var type = Convert.ToBoolean(reader["IS_FUNCTION"]) ? ProgramType.Function : ProgramType.Procedure;
 			var isAnalytic = (string)reader["ANALYTIC"] == "YES";
 			var isAggregate = (string)reader["AGGREGATE"] == "YES";
 			var isPipelined = (string)reader["PIPELINED"] == "YES";
@@ -179,12 +180,12 @@ namespace SqlPad.Oracle
 			var authId = (string)reader["AUTHID"] == "CURRENT_USER" ? AuthId.CurrentUser : AuthId.Definer;
 			var displayType = (string)reader["DISP_TYPE"];
 
-			return new OracleFunctionMetadata(identifier, isAnalytic, isAggregate, isPipelined, isOffloadable, parallelSupport, isDeterministic, metadataMinimumArguments, metadataMaximumArguments, authId, displayType, isBuiltIn);
+			return new OracleProgramMetadata(type, identifier, isAnalytic, isAggregate, isPipelined, isOffloadable, parallelSupport, isDeterministic, metadataMinimumArguments, metadataMaximumArguments, authId, displayType, isBuiltIn);
 		}
 
-		private KeyValuePair<OracleFunctionIdentifier, OracleFunctionParameterMetadata> MapFunctionParameterMetadata(OracleDataReader reader)
+		private KeyValuePair<OracleProgramIdentifier, OracleProgramParameterMetadata> MapProgramParameterMetadata(OracleDataReader reader)
 		{
-			var identifier = CreateFunctionIdentifierFromReaderValues(reader["OWNER"], reader["PACKAGE_NAME"], reader["FUNCTION_NAME"], reader["OVERLOAD"]);
+			var identifier = CreateFunctionIdentifierFromReaderValues(reader["OWNER"], reader["PACKAGE_NAME"], reader["PROGRAM_NAME"], reader["OVERLOAD"]);
 
 			var parameterName = OracleReaderValueConvert.ToString(reader["ARGUMENT_NAME"]);
 			var position = Convert.ToInt32(reader["POSITION"]);
@@ -209,13 +210,13 @@ namespace SqlPad.Oracle
 					throw new NotSupportedException(String.Format("Parameter direction '{0}' is not supported. ", directionRaw));
 			}
 
-			return new KeyValuePair<OracleFunctionIdentifier, OracleFunctionParameterMetadata>(
-				identifier, new OracleFunctionParameterMetadata(parameterName, position, direction, dataType, OracleObjectIdentifier.Create(typeOwner, typeName), isOptional));
+			return new KeyValuePair<OracleProgramIdentifier, OracleProgramParameterMetadata>(
+				identifier, new OracleProgramParameterMetadata(parameterName, position, direction, dataType, OracleObjectIdentifier.Create(typeOwner, typeName), isOptional));
 		}
 
-		private static OracleFunctionIdentifier CreateFunctionIdentifierFromReaderValues(object owner, object package, object name, object overload)
+		private static OracleProgramIdentifier CreateFunctionIdentifierFromReaderValues(object owner, object package, object name, object overload)
 		{
-			return OracleFunctionIdentifier.CreateFromValues(owner == DBNull.Value ? null : QualifyStringObject(owner), package == DBNull.Value ? null : QualifyStringObject(package), QualifyStringObject(name), Convert.ToInt32(overload));
+			return OracleProgramIdentifier.CreateFromValues(owner == DBNull.Value ? null : QualifyStringObject(owner), package == DBNull.Value ? null : QualifyStringObject(package), QualifyStringObject(name), Convert.ToInt32(overload));
 		}
 
 		private OracleTypeObject MapTypeAttributes(OracleDataReader reader)

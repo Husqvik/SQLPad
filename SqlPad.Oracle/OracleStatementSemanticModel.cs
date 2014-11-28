@@ -1083,7 +1083,7 @@ namespace SqlPad.Oracle
 				};
 		}
 
-		private OracleFunctionMetadata UpdateFunctionReferenceWithMetadata(OracleProgramReference programReference)
+		private OracleProgramMetadata UpdateFunctionReferenceWithMetadata(OracleProgramReference programReference)
 		{
 			if (IsSimpleModel)
 				return null;
@@ -1092,18 +1092,18 @@ namespace SqlPad.Oracle
 				? _databaseModel.CurrentSchema
 				: programReference.FullyQualifiedObjectName.NormalizedOwner;
 
-			var originalIdentifier = OracleFunctionIdentifier.CreateFromValues(owner, programReference.FullyQualifiedObjectName.NormalizedName, programReference.NormalizedName);
+			var originalIdentifier = OracleProgramIdentifier.CreateFromValues(owner, programReference.FullyQualifiedObjectName.NormalizedName, programReference.NormalizedName);
 			var parameterCount = programReference.ParameterNodes == null ? 0 : programReference.ParameterNodes.Count;
 			var result = _databaseModel.GetFunctionMetadata(originalIdentifier, parameterCount, true);
 			if (result.Metadata == null && !String.IsNullOrEmpty(originalIdentifier.Package) && String.IsNullOrEmpty(programReference.FullyQualifiedObjectName.NormalizedOwner))
 			{
-				var identifier = OracleFunctionIdentifier.CreateFromValues(originalIdentifier.Package, null, originalIdentifier.Name);
+				var identifier = OracleProgramIdentifier.CreateFromValues(originalIdentifier.Package, null, originalIdentifier.Name);
 				result = _databaseModel.GetFunctionMetadata(identifier, parameterCount, false);
 			}
 
 			if (result.Metadata == null && String.IsNullOrEmpty(programReference.FullyQualifiedObjectName.NormalizedOwner))
 			{
-				var identifier = OracleFunctionIdentifier.CreateFromValues(OracleDatabaseModelBase.SchemaPublic, originalIdentifier.Package, originalIdentifier.Name);
+				var identifier = OracleProgramIdentifier.CreateFromValues(OracleDatabaseModelBase.SchemaPublic, originalIdentifier.Package, originalIdentifier.Name);
 				result = _databaseModel.GetFunctionMetadata(identifier, parameterCount, false);
 			}
 

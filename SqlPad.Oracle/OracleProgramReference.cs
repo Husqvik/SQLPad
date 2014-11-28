@@ -14,7 +14,7 @@ namespace SqlPad.Oracle
 		
 		public StatementGrammarNode AnalyticClauseNode { get; set; }
 		
-		public override OracleFunctionMetadata Metadata { get; set; }
+		public override OracleProgramMetadata Metadata { get; set; }
 	}
 
 	[DebuggerDisplay("OracleTypeReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; Type={ObjectNode.Token.Value})")]
@@ -22,7 +22,7 @@ namespace SqlPad.Oracle
 	{
 		public override string Name { get { return ObjectNode.Token.Value; } }
 
-		public override OracleFunctionMetadata Metadata
+		public override OracleProgramMetadata Metadata
 		{
 			get { return ((OracleTypeBase)SchemaObject.GetTargetSchemaObject()).GetConstructorMetadata(); }
 			set { throw new NotSupportedException("Metadata cannot be set. It is inferred from type attributes"); }
@@ -57,7 +57,7 @@ namespace SqlPad.Oracle
 			PipelinedFunctionReference = pipelinedFunctionReference;
 		}
 
-		public OracleFunctionMetadata FunctionMetadata { get { return PipelinedFunctionReference.Metadata; } }
+		public OracleProgramMetadata ProgramMetadata { get { return PipelinedFunctionReference.Metadata; } }
 
 		public override string Name { get { return AliasNode == null ? null : AliasNode.Token.Value; } }
 
@@ -89,9 +89,9 @@ namespace SqlPad.Oracle
 
 				_columns.Add(column);
 			}
-			else if (FunctionMetadata != null)
+			else if (ProgramMetadata != null)
 			{
-				var returnComplexTypeParameter = FunctionMetadata.Parameters.SingleOrDefault(p => p.Direction == ParameterDirection.ReturnValue && p.DataType == OracleTypeBase.TypeCodeObject);
+				var returnComplexTypeParameter = ProgramMetadata.Parameters.SingleOrDefault(p => p.Direction == ParameterDirection.ReturnValue && p.DataType == OracleTypeBase.TypeCodeObject);
 				if (returnComplexTypeParameter != null &&
 				    Owner.SemanticModel.DatabaseModel.AllObjects.TryGetValue(returnComplexTypeParameter.CustomDataType, out schemaObject))
 				{
@@ -154,6 +154,6 @@ namespace SqlPad.Oracle
 
 		public IList<StatementGrammarNode> ParameterNodes { get; set; }
 
-		public abstract OracleFunctionMetadata Metadata { get; set; }
+		public abstract OracleProgramMetadata Metadata { get; set; }
 	}
 }

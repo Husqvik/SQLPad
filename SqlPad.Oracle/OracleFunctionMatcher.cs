@@ -17,20 +17,20 @@ namespace SqlPad.Oracle
 			_ownerMatch = ownerMatch;
 		}
 
-		public FunctionMatchResult GetMatchResult(OracleFunctionMetadata functionMetadata, string quotedCurrentSchema)
+		public FunctionMatchResult GetMatchResult(OracleProgramMetadata programMetadata, string quotedCurrentSchema)
 		{
-			var isSchemaMatched = _ownerMatch == null || (String.IsNullOrEmpty(_ownerMatch.Value) && functionMetadata.Identifier.Owner == quotedCurrentSchema) ||
-			                      _ownerMatch.IsMatch(functionMetadata).Any();
+			var isSchemaMatched = _ownerMatch == null || (String.IsNullOrEmpty(_ownerMatch.Value) && programMetadata.Identifier.Owner == quotedCurrentSchema) ||
+			                      _ownerMatch.IsMatch(programMetadata).Any();
 			var matchResult =
 				new FunctionMatchResult
 				{
-					Metadata = functionMetadata,
+					Metadata = programMetadata,
 					IsMatched = isSchemaMatched
 				};
 
 			if (_packageMatch != null && isSchemaMatched)
 			{
-				var matchedPackageNames = _packageMatch.IsMatch(functionMetadata);
+				var matchedPackageNames = _packageMatch.IsMatch(programMetadata);
 				if (_packageMatch.IsResultValue)
 				{
 					matchResult.Matches = matchedPackageNames;
@@ -41,7 +41,7 @@ namespace SqlPad.Oracle
 
 			if (_identifierMatch != null && matchResult.IsMatched)
 			{
-				var matchedIdentifierNames = _identifierMatch.IsMatch(functionMetadata);
+				var matchedIdentifierNames = _identifierMatch.IsMatch(programMetadata);
 				if (_identifierMatch.IsResultValue)
 				{
 					if (matchResult.Matches != null)
@@ -63,7 +63,7 @@ namespace SqlPad.Oracle
 	{
 		public bool IsMatched { get; set; }
 
-		public OracleFunctionMetadata Metadata { get; set; }
+		public OracleProgramMetadata Metadata { get; set; }
 		
 		public IEnumerable<string> Matches { get; set; }
 	}
@@ -122,19 +122,19 @@ namespace SqlPad.Oracle
 		}
 	}
 
-	internal class FunctionMatchElement : MatchElement<OracleFunctionMetadata>
+	internal class FunctionMatchElement : MatchElement<OracleProgramMetadata>
 	{
-		private static readonly Func<OracleFunctionMetadata, IEnumerable<string>> OwnerSelector = metadata => Enumerable.Repeat(metadata.Identifier.Owner, 1);
-		private static readonly Func<OracleFunctionMetadata, IEnumerable<string>> PackageSelector = metadata => Enumerable.Repeat(metadata.Identifier.Package, 1);
-		private static readonly Func<OracleFunctionMetadata, IEnumerable<string>> NameSelector = metadata => Enumerable.Repeat(metadata.Identifier.Name, 1);
+		private static readonly Func<OracleProgramMetadata, IEnumerable<string>> OwnerSelector = metadata => Enumerable.Repeat(metadata.Identifier.Owner, 1);
+		private static readonly Func<OracleProgramMetadata, IEnumerable<string>> PackageSelector = metadata => Enumerable.Repeat(metadata.Identifier.Package, 1);
+		private static readonly Func<OracleProgramMetadata, IEnumerable<string>> NameSelector = metadata => Enumerable.Repeat(metadata.Identifier.Name, 1);
 
-		private Func<OracleFunctionMetadata, IEnumerable<string>> _selector;
+		private Func<OracleProgramMetadata, IEnumerable<string>> _selector;
 
 		public FunctionMatchElement(string value) : base(value)
 		{
 		}
 
-		protected override Func<OracleFunctionMetadata, IEnumerable<string>> Selector
+		protected override Func<OracleProgramMetadata, IEnumerable<string>> Selector
 		{
 			get { return _selector; }
 		}
@@ -195,7 +195,7 @@ namespace SqlPad.Oracle
 			return this;
 		}
 
-		private static IEnumerable<string> SelectSynonymIdentifierHandler(OracleFunctionMetadata metadata)
+		private static IEnumerable<string> SelectSynonymIdentifierHandler(OracleProgramMetadata metadata)
 		{
 			var synonyms = GetSynonymsFor(metadata);
 			if (synonyms == null || metadata.Owner == null)
@@ -208,7 +208,7 @@ namespace SqlPad.Oracle
 				: Enumerable.Repeat(metadata.Identifier.Name, 1);
 		}
 
-		private static IEnumerable<string> SelectSynonymPackageHandler(OracleFunctionMetadata metadata)
+		private static IEnumerable<string> SelectSynonymPackageHandler(OracleProgramMetadata metadata)
 		{
 			var synonyms = GetSynonymsFor(metadata);
 			if (synonyms == null || metadata.Owner == null)
@@ -221,13 +221,13 @@ namespace SqlPad.Oracle
 				: synonyms.Select(s => s.Name);
 		}
 
-		private static IEnumerable<string> SelectSynonymOwnerHandler(OracleFunctionMetadata metadata)
+		private static IEnumerable<string> SelectSynonymOwnerHandler(OracleProgramMetadata metadata)
 		{
 			var synonyms = GetSynonymsFor(metadata);
 			return synonyms == null ? null : synonyms.Select(s => s.Owner);
 		}
 
-		private static IEnumerable<OracleSynonym> GetSynonymsFor(OracleFunctionMetadata metadata)
+		private static IEnumerable<OracleSynonym> GetSynonymsFor(OracleProgramMetadata metadata)
 		{
 			return metadata == null || metadata.Owner == null
 				? null

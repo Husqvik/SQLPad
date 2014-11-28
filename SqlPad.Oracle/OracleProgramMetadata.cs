@@ -5,8 +5,8 @@ using System.Linq;
 
 namespace SqlPad.Oracle
 {
-	[DebuggerDisplay("OracleFunctionMetadata (Identifier={Identifier.FullyQualifiedIdentifier}; Overload={Identifier.Overload}; DataType={DataType}; IsAnalytic={IsAnalytic}; IsAggregate={IsAggregate}; MinimumArguments={MinimumArguments}; MaximumArguments={MaximumArguments})")]
-	public class OracleFunctionMetadata
+	[DebuggerDisplay("OracleProgramMetadata (Identifier={Identifier.FullyQualifiedIdentifier}; Overload={Identifier.Overload}; DataType={DataType}; IsAnalytic={IsAnalytic}; IsAggregate={IsAggregate}; MinimumArguments={MinimumArguments}; MaximumArguments={MaximumArguments})")]
+	public class OracleProgramMetadata
 	{
 		public const string DisplayTypeNormal = "NORMAL";
 		public const string DisplayTypeParenthesis = "PARENTHESIS";
@@ -16,10 +16,11 @@ namespace SqlPad.Oracle
 
 		private readonly int? _metadataMaximumArguments;
 
-		private List<OracleFunctionParameterMetadata> _parameters;
+		private List<OracleProgramParameterMetadata> _parameters;
 
-		internal OracleFunctionMetadata(OracleFunctionIdentifier identifier, bool isAnalytic, bool isAggregate, bool isPipelined, bool isOffloadable, bool parallelSupport, bool isDeterministic, int? metadataMinimumArguments, int? metadataMaximumArguments, AuthId authId, string displayType, bool isBuiltIn)
+		internal OracleProgramMetadata(ProgramType type, OracleProgramIdentifier identifier, bool isAnalytic, bool isAggregate, bool isPipelined, bool isOffloadable, bool parallelSupport, bool isDeterministic, int? metadataMinimumArguments, int? metadataMaximumArguments, AuthId authId, string displayType, bool isBuiltIn)
 		{
+			Type = type;
 			Identifier = identifier;
 			IsAnalytic = isAnalytic;
 			IsAggregate = isAggregate;
@@ -34,13 +35,13 @@ namespace SqlPad.Oracle
 			IsBuiltIn = isBuiltIn;
 		}
 
-		public IList<OracleFunctionParameterMetadata> Parameters { get { return _parameters ?? (_parameters = new List<OracleFunctionParameterMetadata>()); } }
+		public IList<OracleProgramParameterMetadata> Parameters { get { return _parameters ?? (_parameters = new List<OracleProgramParameterMetadata>()); } }
 
 		public bool IsBuiltIn { get; private set; }
+		
+		public ProgramType Type { get; private set; }
 
-		public OracleFunctionIdentifier Identifier { get; private set; }
-
-		public string DataType { get; private set; }
+		public OracleProgramIdentifier Identifier { get; private set; }
 
 		public bool IsAnalytic { get; private set; }
 
@@ -76,10 +77,10 @@ namespace SqlPad.Oracle
 		public OracleSchemaObject Owner { get; set; }
 	}
 
-	[DebuggerDisplay("OracleFunctionParameterMetadata (Name={Name}; Position={Position}; DataType={DataType}; Direction={Direction}; IsOptional={IsOptional})")]
-	public class OracleFunctionParameterMetadata
+	[DebuggerDisplay("OracleProgramParameterMetadata (Name={Name}; Position={Position}; DataType={DataType}; Direction={Direction}; IsOptional={IsOptional})")]
+	public class OracleProgramParameterMetadata
 	{
-		internal OracleFunctionParameterMetadata(string name, int position, ParameterDirection direction, string dataType, OracleObjectIdentifier customDataType, bool isOptional)
+		internal OracleProgramParameterMetadata(string name, int position, ParameterDirection direction, string dataType, OracleObjectIdentifier customDataType, bool isOptional)
 		{
 			Name = name;
 			Position = position;
@@ -116,5 +117,11 @@ namespace SqlPad.Oracle
 	{
 		CurrentUser,
 		Definer
+	}
+
+	public enum ProgramType
+	{
+		Procedure,
+		Function
 	}
 }
