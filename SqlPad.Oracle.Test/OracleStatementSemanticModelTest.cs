@@ -889,6 +889,20 @@ FROM
 		}
 
 		[Test(Description = @"")]
+		public void TestStoredProcedureIsIgnoredInSql()
+		{
+			const string query1 = @"SELECT SQLPAD.SQLPAD_PROCEDURE() FROM DUAL";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			var programReferences = semanticModel.QueryBlocks.Single().AllProgramReferences.ToArray();
+			programReferences.Length.ShouldBe(1);
+			programReferences[0].Metadata.ShouldBe(null);
+			programReferences[0].SchemaObject.ShouldBe(null);
+		}
+
+		[Test(Description = @"")]
 		public void TestSpecificGrammarFunctionInOrderByClause()
 		{
 			const string query1 = @"SELECT NULL FROM DUAL ORDER BY COUNT(*)";

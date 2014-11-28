@@ -141,40 +141,43 @@ namespace SqlPad.Oracle
 			return AllSchemas.Contains(schemaName.ToQuotedIdentifier());
 		}
 
-		public FunctionMetadataResult GetFunctionMetadata(OracleProgramIdentifier identifier, int parameterCount, bool forceBuiltInFunction)
+		public ProgramMetadataResult GetProgramMetadata(OracleProgramIdentifier identifier, int parameterCount, bool forceBuiltInFunction)
 		{
+			var result = new ProgramMetadataResult();
+
 			OracleSchemaObject schemaObject;
-			ICollection<OracleProgramMetadata> functionMetadataSource = new List<OracleProgramMetadata>();
+			ICollection<OracleProgramMetadata> programMetadataSource = new List<OracleProgramMetadata>();
 			if (String.IsNullOrEmpty(identifier.Package) && (forceBuiltInFunction || String.IsNullOrEmpty(identifier.Owner)))
 			{
 				if (AllObjects.TryGetValue(BuiltInFunctionPackageIdentifier, out schemaObject))
 				{
-					TryGetSchemaObjectFunctionMetadata(schemaObject, out functionMetadataSource);
+					TryGetSchemaObjectProgramMetadata(schemaObject, out programMetadataSource);
 				}
 
-				var metadata = TryFindFunctionOverload(functionMetadataSource, identifier.Name, parameterCount);
+				result.Metadata = TryFindProgramOverload(programMetadataSource, identifier.Name, parameterCount);
 
-				if (metadata == null)
+				if (result.Metadata == null)
 				{
 					OracleProgramMetadata nonSchemaProgramMetadata;
 					if (NonSchemaBuiltInFunctionMetadata.TryGetValue(identifier.Name, out nonSchemaProgramMetadata))
 					{
-						metadata = TryFindFunctionOverload(Enumerable.Repeat(nonSchemaProgramMetadata, 1), identifier.Name, parameterCount);
+						result.Metadata = TryFindProgramOverload(Enumerable.Repeat(nonSchemaProgramMetadata, 1), identifier.Name, parameterCount);
 					}
 				}
 
-				if (metadata != null)
-					return new FunctionMetadataResult { Metadata = metadata, SchemaObject = schemaObject };
+				result.SchemaObject = schemaObject;
 			}
 
-			var result = new FunctionMetadataResult();
-			var schemaObjectFound = (String.IsNullOrWhiteSpace(identifier.Package) && AllObjects.TryGetValue(OracleObjectIdentifier.Create(identifier.Owner, identifier.Name), out schemaObject)) ||
-			                        AllObjects.TryGetValue(OracleObjectIdentifier.Create(identifier.Owner, identifier.Package), out schemaObject);
-			if (!schemaObjectFound || !TryGetSchemaObjectFunctionMetadata(schemaObject, out functionMetadataSource))
-				return result;
+			if (result.Metadata == null)
+			{
+				var schemaObjectFound = (String.IsNullOrWhiteSpace(identifier.Package) && AllObjects.TryGetValue(OracleObjectIdentifier.Create(identifier.Owner, identifier.Name), out schemaObject)) ||
+				                        AllObjects.TryGetValue(OracleObjectIdentifier.Create(identifier.Owner, identifier.Package), out schemaObject);
+				if (!schemaObjectFound || !TryGetSchemaObjectProgramMetadata(schemaObject, out programMetadataSource))
+					return result;
 
-			result.SchemaObject = schemaObject;
-			result.Metadata = TryFindFunctionOverload(functionMetadataSource, identifier.Name, parameterCount);
+				result.SchemaObject = schemaObject;
+				result.Metadata = TryFindProgramOverload(programMetadataSource, identifier.Name, parameterCount);
+			}
 
 			return result;
 		}
@@ -218,7 +221,7 @@ namespace SqlPad.Oracle
 				: schemaObject;
 		}
 
-		private static bool TryGetSchemaObjectFunctionMetadata(OracleSchemaObject schemaObject, out ICollection<OracleProgramMetadata> functionMetadata)
+		private static bool TryGetSchemaObjectProgramMetadata(OracleSchemaObject schemaObject, out ICollection<OracleProgramMetadata> functionMetadata)
 		{
 			var targetObject = schemaObject.GetTargetSchemaObject();
 			var functions = targetObject as IFunctionCollection;
@@ -232,15 +235,15 @@ namespace SqlPad.Oracle
 			return false;
 		}
 
-		private static OracleProgramMetadata TryFindFunctionOverload(IEnumerable<OracleProgramMetadata> functionMetadataCollection, string normalizedName, int parameterCount)
+		private static OracleProgramMetadata TryFindProgramOverload(IEnumerable<OracleProgramMetadata> functionMetadataCollection, string normalizedName, int parameterCount)
 		{
-			return functionMetadataCollection.Where(m => m.Identifier.Name == normalizedName)
+			return functionMetadataCollection.Where(m => m.Type == ProgramType.Function && m.Identifier.Name == normalizedName)
 				.OrderBy(m => Math.Abs(parameterCount - m.Parameters.Count + 1))
 				.FirstOrDefault();
 		}
 	}
 
-	public struct FunctionMetadataResult
+	public struct ProgramMetadataResult
 	{
 		public OracleProgramMetadata Metadata { get; set; }
 

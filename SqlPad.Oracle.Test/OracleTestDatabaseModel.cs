@@ -287,8 +287,12 @@ namespace SqlPad.Oracle.Test
 			var packageSqlPadFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), "SQLPAD", "SQLPAD_FUNCTION"), false, false, false, false, false, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
 			packageSqlPadFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata(null, 0, ParameterDirection.ReturnValue, "NUMBER", OracleObjectIdentifier.Empty, false));
 			packageSqlPadFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata("P", 1, ParameterDirection.Input, "NUMBER", OracleObjectIdentifier.Empty, false));
+			packageSqlPadFunctionMetadata.Owner = sqlPadPackage;
 			sqlPadPackage.Functions.Add(packageSqlPadFunctionMetadata);
-			packageSqlPadFunctionMetadata.Owner = sqlPadFunction;
+
+			var sqlPadProcedureMetadata = new OracleProgramMetadata(ProgramType.Procedure, OracleProgramIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), null, "SQLPAD_PROCEDURE"), false, false, false, false, false, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
+			sqlPadProcedureMetadata.Owner = sqlPadPackage;
+			sqlPadPackage.Functions.Add(sqlPadProcedureMetadata);
 
 			var asPdfPackage = (OraclePackage)AllObjectsInternal.Single(o => o.Name == "\"AS_PDF3\"" && o.Owner == InitialSchema);
 			var asPdfPackageFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), "AS_PDF3", "STR_LEN"), false, false, false, false, false, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
@@ -394,7 +398,7 @@ namespace SqlPad.Oracle.Test
 			var lastValueFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(null, null, "LAST_VALUE"), true, false, false, false, false, false, 1, 1, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
 			allFunctionMetadata.Add(lastValueFunctionMetadata);
 
-			AllFunctionMetadataInternal = allFunctionMetadata.ToLookup(m => m.Identifier);
+			AllFunctionMetadataInternal = allFunctionMetadata.Where(f => f.Type == ProgramType.Function).ToLookup(m => m.Identifier);
 			NonSchemaBuiltInFunctionMetadataInternal = allFunctionMetadata
 				.Where(m => String.IsNullOrEmpty(m.Identifier.Owner))
 				.ToDictionary(m => m.Identifier.Name, m => m);

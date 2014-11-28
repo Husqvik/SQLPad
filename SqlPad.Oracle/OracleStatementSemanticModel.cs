@@ -1094,17 +1094,17 @@ namespace SqlPad.Oracle
 
 			var originalIdentifier = OracleProgramIdentifier.CreateFromValues(owner, programReference.FullyQualifiedObjectName.NormalizedName, programReference.NormalizedName);
 			var parameterCount = programReference.ParameterNodes == null ? 0 : programReference.ParameterNodes.Count;
-			var result = _databaseModel.GetFunctionMetadata(originalIdentifier, parameterCount, true);
+			var result = _databaseModel.GetProgramMetadata(originalIdentifier, parameterCount, true);
 			if (result.Metadata == null && !String.IsNullOrEmpty(originalIdentifier.Package) && String.IsNullOrEmpty(programReference.FullyQualifiedObjectName.NormalizedOwner))
 			{
 				var identifier = OracleProgramIdentifier.CreateFromValues(originalIdentifier.Package, null, originalIdentifier.Name);
-				result = _databaseModel.GetFunctionMetadata(identifier, parameterCount, false);
+				result = _databaseModel.GetProgramMetadata(identifier, parameterCount, false);
 			}
 
 			if (result.Metadata == null && String.IsNullOrEmpty(programReference.FullyQualifiedObjectName.NormalizedOwner))
 			{
 				var identifier = OracleProgramIdentifier.CreateFromValues(OracleDatabaseModelBase.SchemaPublic, originalIdentifier.Package, originalIdentifier.Name);
-				result = _databaseModel.GetFunctionMetadata(identifier, parameterCount, false);
+				result = _databaseModel.GetProgramMetadata(identifier, parameterCount, false);
 			}
 
 			if (result.Metadata != null && String.IsNullOrEmpty(result.Metadata.Identifier.Package) &&

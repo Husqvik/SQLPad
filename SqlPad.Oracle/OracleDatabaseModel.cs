@@ -1189,7 +1189,7 @@ namespace SqlPad.Oracle
 
 		private IEnumerable<OracleProgramMetadata> FilterFunctionsWithUnavailableMetadataInOracle11(IEnumerable<OracleProgramMetadata> functions)
 		{
-			return functions.Where(m => m != null);
+			return functions.Where(m => m != null && m.Type == ProgramType.Function);
 		} 
 
 		private void RaiseEvent(EventHandler eventHandler)
