@@ -43,7 +43,8 @@ namespace SqlPad
 		private INavigationService _navigationService;
 
 		private MultiNodeEditor _multiNodeEditor;
-		private CancellationTokenSource _cancellationTokenSource;
+		private CancellationTokenSource _statementExecutionCancellationTokenSource;
+		private CancellationTokenSource _parsingCancellationTokenSource;
 		private FileSystemWatcher _documentFileWatcher;
 		private DateTime _lastDocumentFileChange;
 		private readonly SqlDocumentColorizingTransformer _colorizingTransformer = new SqlDocumentColorizingTransformer();
@@ -621,7 +622,7 @@ namespace SqlPad
 		private void CancelUserActionHandler(object sender, ExecutedRoutedEventArgs args)
 		{
 			Trace.WriteLine("Action is about to cancel. ");
-			_cancellationTokenSource.Cancel();
+			_statementExecutionCancellationTokenSource.Cancel();
 		}
 
 		private void ShowTokenCommandExecutionHandler(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
@@ -652,11 +653,11 @@ namespace SqlPad
 		{
 			IsBusy = true;
 
-			using (_cancellationTokenSource = new CancellationTokenSource())
+			using (_statementExecutionCancellationTokenSource = new CancellationTokenSource())
 			{
 				while (DatabaseModel.CanFetch)
 				{
-					if (_cancellationTokenSource.Token.IsCancellationRequested)
+					if (_statementExecutionCancellationTokenSource.Token.IsCancellationRequested)
 					{
 						break;
 					}
@@ -677,7 +678,7 @@ namespace SqlPad
 		{
 			Task<IReadOnlyList<object[]>> innerTask = null;
 			var batchSize = StatementExecutionModel.DefaultRowBatchSize - _pageModel.ResultRowItems.Count % StatementExecutionModel.DefaultRowBatchSize;
-			var exception = await SafeActionAsync(() => innerTask = DatabaseModel.FetchRecords(batchSize).EnumerateAsync(_cancellationTokenSource.Token));
+			var exception = await SafeActionAsync(() => innerTask = DatabaseModel.FetchRecords(batchSize).EnumerateAsync(_statementExecutionCancellationTokenSource.Token));
 
 			if (exception != null)
 			{
@@ -828,9 +829,9 @@ namespace SqlPad
 			InitializeViewBeforeCommandExecution();
 
 			Task<StatementExecutionResult> innerTask = null;
-			using (_cancellationTokenSource = new CancellationTokenSource())
+			using (_statementExecutionCancellationTokenSource = new CancellationTokenSource())
 			{
-				var actionResult = await SafeTimedActionAsync(() => innerTask = DatabaseModel.ExecuteStatementAsync(executionModel, _cancellationTokenSource.Token));
+				var actionResult = await SafeTimedActionAsync(() => innerTask = DatabaseModel.ExecuteStatementAsync(executionModel, _statementExecutionCancellationTokenSource.Token));
 
 				_pageModel.TransactionControlVisibity = DatabaseModel.HasActiveTransaction ? Visibility.Visible : Visibility.Collapsed;
 
@@ -851,8 +852,8 @@ namespace SqlPad
 
 				if (_gatherExecutionStatistics)
 				{
-					_pageModel.TextExecutionPlan = await DatabaseModel.GetActualExecutionPlanAsync(_cancellationTokenSource.Token);
-					_pageModel.SessionExecutionStatistics.MergeWith(await DatabaseModel.GetExecutionStatisticsAsync(_cancellationTokenSource.Token));
+					_pageModel.TextExecutionPlan = await DatabaseModel.GetActualExecutionPlanAsync(_statementExecutionCancellationTokenSource.Token);
+					_pageModel.SessionExecutionStatistics.MergeWith(await DatabaseModel.GetExecutionStatisticsAsync(_statementExecutionCancellationTokenSource.Token));
 					TabControlResult.SelectedItem = previousSelectedTab;
 				}
 				else if (IsTabAlwaysVisible(previousSelectedTab))
@@ -984,6 +985,11 @@ namespace SqlPad
 			_timerReParse.Dispose();
 			_timerExecutionMonitor.Stop();
 			_timerExecutionMonitor.Dispose();
+
+			if (_parsingCancellationTokenSource != null)
+			{
+				_parsingCancellationTokenSource.Dispose();
+			}
 
 			if (DatabaseModel != null)
 			{
@@ -1304,41 +1310,47 @@ namespace SqlPad
 			}
 		}
 
-		private void CreateCodeCompletionWindow(bool forcedInvokation)
+		private async void CreateCodeCompletionWindow(bool forcedInvokation)
 		{
-			CreateCompletionWindow(
-				() => _codeCompletionProvider.ResolveItems(_sqlDocumentRepository, DatabaseModel, Editor.Text, Editor.CaretOffset, forcedInvokation)
-					.Select(i => new CompletionData(i)));
+			var items = await _codeCompletionProvider.ResolveItems(_sqlDocumentRepository, DatabaseModel, Editor.Text, Editor.CaretOffset, forcedInvokation)
+				.Select(i => new CompletionData(i))
+				.EnumerateAsync(CancellationToken.None);
+
+			if (_sqlDocumentRepository.StatementText != Editor.Text)
+			{
+				return;
+			}
+
+			CreateCompletionWindow(items);
 		}
 
 		private void CreateSnippetCompletionWindow(IEnumerable<CompletionData> items)
 		{
-			CreateCompletionWindow(() => items);
+			CreateCompletionWindow(items);
 		}
 
-		private void CreateCompletionWindow(Func<IEnumerable<CompletionData>> getCompletionDataFunc)
+		private void CreateCompletionWindow(IEnumerable<CompletionData> items)
 		{
 			var completionWindow = new CompletionWindow(Editor.TextArea) { SizeToContent = SizeToContent.WidthAndHeight };
-			var items = completionWindow.CompletionList.CompletionData;
+			var listItems = completionWindow.CompletionList.CompletionData;
 
-			foreach (var item in getCompletionDataFunc())
+			listItems.AddRange(items);
+
+			if (listItems.Count == 0)
 			{
-				items.Add(item);
-			}
-
-			if (items.Count == 0)
 				return;
+			}
 			
 			_completionWindow = completionWindow;
 			_completionWindow.Closed += delegate { _completionWindow = null; };
 
-			var firstItem = (CompletionData)items[0];
+			var firstItem = (CompletionData)listItems[0];
 			if (firstItem.Node != null)
 			{
 				_completionWindow.StartOffset = firstItem.Node.SourcePosition.IndexStart;
 			}
 
-			if (items.Count == 1)
+			if (listItems.Count == 1)
 			{
 				_completionWindow.CompletionList.ListBox.SelectedIndex = 0;
 			}
@@ -1377,6 +1389,8 @@ namespace SqlPad
 		{
 			if (_isParsing)
 			{
+				_parsingCancellationTokenSource.Cancel();
+
 				if (!_timerReParse.Enabled)
 				{
 					_timerReParse.Start();
@@ -1384,6 +1398,13 @@ namespace SqlPad
 
 				return;
 			}
+
+			if (_parsingCancellationTokenSource != null && _parsingCancellationTokenSource.IsCancellationRequested)
+			{
+				_parsingCancellationTokenSource.Dispose();
+			}
+			
+			_parsingCancellationTokenSource = new CancellationTokenSource(); 
 
 			_timerReParse.Stop();
 			_isParsing = true;
@@ -1395,7 +1416,7 @@ namespace SqlPad
 			}
 			else
 			{
-				_sqlDocumentRepository.UpdateStatementsAsync(Editor.Text)
+				_sqlDocumentRepository.UpdateStatementsAsync(Editor.Text, _parsingCancellationTokenSource.Token)
 					.ContinueWith(t => ParseDoneHandler());
 			}
 		}
@@ -1683,9 +1704,9 @@ namespace SqlPad
 			var statementText = BuildStatementExecutionModel().StatementText;
 
 			Task<ExplainPlanResult> innerTask = null;
-			using (_cancellationTokenSource = new CancellationTokenSource())
+			using (_statementExecutionCancellationTokenSource = new CancellationTokenSource())
 			{
-				var actionResult = await SafeTimedActionAsync(() => innerTask = DatabaseModel.ExplainPlanAsync(statementText, _cancellationTokenSource.Token));
+				var actionResult = await SafeTimedActionAsync(() => innerTask = DatabaseModel.ExplainPlanAsync(statementText, _statementExecutionCancellationTokenSource.Token));
 				
 				UpdateStatusBarElapsedExecutionTime(actionResult.Elapsed);
 				
@@ -1740,7 +1761,7 @@ namespace SqlPad
 				return;
 			}
 
-			using (_cancellationTokenSource = new CancellationTokenSource())
+			using (_statementExecutionCancellationTokenSource = new CancellationTokenSource())
 			{
 				IsBusy = true;
 				await FetchNextRows();

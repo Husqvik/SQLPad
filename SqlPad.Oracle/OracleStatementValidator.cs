@@ -40,14 +40,14 @@ namespace SqlPad.Oracle
 					continue;
 				}
 
-				if (objectReference.OwnerNode != null)
-				{
-					var isRecognized = !semanticModel.IsSimpleModel && ((OracleDatabaseModelBase)semanticModel.DatabaseModel).ExistsSchema(objectReference.OwnerNode.Token.Value);
-					validationModel.ObjectNodeValidity[objectReference.OwnerNode] = new NodeValidationData { IsRecognized = isRecognized };
-				}
-
 				if (objectReference.DatabaseLinkNode == null)
 				{
+					if (objectReference.OwnerNode != null)
+					{
+						var isRecognized = !semanticModel.IsSimpleModel && ((OracleDatabaseModelBase)semanticModel.DatabaseModel).ExistsSchema(objectReference.OwnerNode.Token.Value);
+						validationModel.ObjectNodeValidity[objectReference.OwnerNode] = new NodeValidationData { IsRecognized = isRecognized };
+					}
+
 					validationModel.ObjectNodeValidity[objectReference.ObjectNode] = new NodeValidationData { IsRecognized = objectReference.SchemaObject != null, Node = objectReference.ObjectNode };
 				}
 				else

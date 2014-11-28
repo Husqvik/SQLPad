@@ -875,6 +875,20 @@ FROM
 		}
 
 		[Test(Description = @"")]
+		public void TestFullyQualifiedTableOverDatabaseLink()
+		{
+			const string query1 = @"SELECT * FROM HUSQVIK.SELECTION@HQ_PDB_LOOPBACK";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			var objectReferences = semanticModel.QueryBlocks.Single().ObjectReferences.ToArray();
+			objectReferences.Length.ShouldBe(1);
+			objectReferences[0].SchemaObject.ShouldBe(null);
+			objectReferences[0].DatabaseLink.ShouldNotBe(null);
+		}
+
+		[Test(Description = @"")]
 		public void TestSpecificGrammarFunctionInOrderByClause()
 		{
 			const string query1 = @"SELECT NULL FROM DUAL ORDER BY COUNT(*)";

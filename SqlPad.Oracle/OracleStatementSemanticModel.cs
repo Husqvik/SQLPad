@@ -185,6 +185,7 @@ namespace SqlPad.Oracle
 						}
 
 						var objectIdentifierNode = queryTableExpression.GetDescendantByPath(Terminals.ObjectIdentifier);
+						var databaseLinkNode = GetDatabaseLinkFromQueryTableExpression(queryTableExpression);
 						if (objectIdentifierNode == null)
 						{
 							var tableCollection = queryTableExpression.GetDescendantByPath(NonTerminals.TableCollectionExpression);
@@ -204,7 +205,7 @@ namespace SqlPad.Oracle
 											Owner = queryBlock,
 											Placement = QueryBlockPlacement.TableReference,
 											AliasNode = objectReferenceAlias,
-											DatabaseLinkNode = GetDatabaseLinkFromQueryTableExpression(queryTableExpression),
+											DatabaseLinkNode = databaseLinkNode,
 											RootNode = tableReferenceNonterminal
 										};
 
@@ -251,7 +252,7 @@ namespace SqlPad.Oracle
 								var objectName = objectIdentifierNode.Token.Value;
 								var owner = schemaTerminal == null ? null : schemaTerminal.Token.Value;
 
-								if (!IsSimpleModel)
+								if (databaseLinkNode == null && !IsSimpleModel)
 								{
 									schemaObject = _databaseModel.GetFirstSchemaObject<OracleDataObject>(_databaseModel.GetPotentialSchemaObjectIdentifiers(owner, objectName));
 								}
@@ -264,7 +265,7 @@ namespace SqlPad.Oracle
 									RootNode = tableReferenceNonterminal,
 									OwnerNode = schemaTerminal,
 									ObjectNode = objectIdentifierNode,
-									DatabaseLinkNode = GetDatabaseLinkFromQueryTableExpression(queryTableExpression),
+									DatabaseLinkNode = databaseLinkNode,
 									AliasNode = objectReferenceAlias,
 									SchemaObject = schemaObject
 								};

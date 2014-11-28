@@ -1556,6 +1556,23 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		}
 
 		[Test(Description = @"")]
+		public void TestFullyQualifiedTableOverDatabaseLink()
+		{
+			const string sqlText = @"SELECT * FROM HUSQVIK.SELECTION@HQ_PDB_LOOPBACK";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var objectNode = validationModel.ObjectNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToArray();
+			objectNode.Length.ShouldBe(1);
+			objectNode[0].IsRecognized.ShouldBe(true);
+			objectNode[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
+			objectNode[0].Node.ShouldNotBe(null);
+			objectNode[0].Node.Token.Value.ShouldBe("HQ_PDB_LOOPBACK");
+		}
+
+		[Test(Description = @"")]
 		public void TestColumnResolutionFromTableCollectionExpressionUsingCollectionType()
 		{
 			const string sqlText = @"SELECT PLAN_TABLE_OUTPUT, COLUMN_VALUE FROM TABLE(DBMS_XPLAN.DISPLAY_CURSOR(NULL, NULL, 'ALLSTATS LAST ADVANCED')) T1, TABLE(SYS.ODCIRAWLIST(HEXTORAW('ABCDEF'), HEXTORAW('A12345'), HEXTORAW('F98765'))) T2";
