@@ -566,7 +566,7 @@ namespace SqlPad.Oracle
 			_databaseOutputEnabled = EnableDatabaseOutput;
 		}
 
-		private async Task ExecuteUserStatement(StatementExecutionModel executionModel, CancellationToken cancellationToken)
+		private async Task<StatementExecutionResult> ExecuteUserStatement(StatementExecutionModel executionModel, CancellationToken cancellationToken)
 		{
 			if (EnsureUserConnectionOpen())
 			{
@@ -606,15 +606,26 @@ namespace SqlPad.Oracle
 
 			_userDataReader = await _userCommand.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken);
 
-			if (!ResolveExecutionPlanIdentifiersAndTransactionStatus())
+			var exception = await ResolveExecutionPlanIdentifiersAndTransactionStatus(cancellationToken);
+			if (exception != null)
 			{
-				SafeResolveTransactionStatus();
+				await SafeResolveTransactionStatus(cancellationToken);
 			}
 			
 			UpdateBindVariables(executionModel);
+
+			return
+				new StatementExecutionResult
+				{
+					AffectedRowCount = _userDataReader.RecordsAffected,
+					DatabaseOutput = await FetchDatabaseOutput(cancellationToken),
+					ExecutedSuccessfully = true,
+					ColumnHeaders = GetColumnHeadersFromReader(_userDataReader),
+					InitialResultSet = await FetchRecordsFromReader(_userDataReader, executionModel.InitialFetchRowCount, false).EnumerateAsync(cancellationToken)
+				};
 		}
 
-		private bool ResolveExecutionPlanIdentifiersAndTransactionStatus()
+		private async Task<Exception> ResolveExecutionPlanIdentifiersAndTransactionStatus(CancellationToken cancellationToken)
 		{
 			using (var connection = new OracleConnection(_oracleConnectionString.ConnectionString))
 			{
@@ -628,7 +639,7 @@ namespace SqlPad.Oracle
 					{
 						connection.Open();
 
-						using (var reader = command.ExecuteReader())
+						using (var reader = await command.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken))
 						{
 							if (reader.Read())
 							{
@@ -643,23 +654,23 @@ namespace SqlPad.Oracle
 							}
 						}
 
-						return true;
+						return null;
 					}
 					catch (OracleException e)
 					{
 						Trace.WriteLine("Execution plan identifers and transaction status could not been fetched: " + e);
-						return false;
+						return e;
 					}
 				}
 			}
 		}
 
-		private void SafeResolveTransactionStatus()
+		private async Task SafeResolveTransactionStatus(CancellationToken cancellationToken)
 		{
 			using (var command = _userConnection.CreateCommand())
 			{
 				command.CommandText = DatabaseCommands.GetLocalTransactionId;
-				_userTransactionId = OracleReaderValueConvert.ToString(command.ExecuteScalar());
+				_userTransactionId = OracleReaderValueConvert.ToString(await command.ExecuteScalarAsynchronous(cancellationToken));
 				_userTransactionIsolationLevel = String.IsNullOrEmpty(_userTransactionId) ? IsolationLevel.Unspecified : IsolationLevel.ReadCommitted;
 			}
 		}
@@ -708,17 +719,10 @@ namespace SqlPad.Oracle
 		{
 			PreInitialize();
 
-			var result = new StatementExecutionResult();
-
 			try
 			{
 				_isExecuting = true;
-				await ExecuteUserStatement(executionModel, cancellationToken);
-				result.AffectedRowCount = _userDataReader.RecordsAffected;
-				result.DatabaseOutput = await FetchDatabaseOutput(cancellationToken);
-				result.ExecutedSuccessfully = true;
-				result.ColumnHeaders = GetColumnHeadersFromReader(_userDataReader);
-				result.InitialResultSet = await FetchRecordsFromReader(_userDataReader, executionModel.InitialFetchRowCount, false).EnumerateAsync(cancellationToken);
+				return await ExecuteUserStatement(executionModel, cancellationToken);
 			}
 			catch (OracleException exception)
 			{
@@ -745,7 +749,7 @@ namespace SqlPad.Oracle
 				_isExecuting = false;
 			}
 
-			return result;
+			return StatementExecutionResult.Empty;
 		}
 
 		private async Task<string> FetchDatabaseOutput(CancellationToken cancellationToken)

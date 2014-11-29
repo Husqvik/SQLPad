@@ -55,6 +55,7 @@ namespace SqlPad
 		{
 			_recentDocumentsMenu.ItemsSource = null;
 			_recentDocumentsMenu.CommandBindings.Clear();
+			_recentDocumentsMenu.InputBindings.Clear();
 		}
 
 		private static bool EnsureValidConfiguration()
@@ -433,10 +434,15 @@ namespace SqlPad
 			var items = new List<RecentFileItem>();
 			for (var i = 0; i < WorkDocumentCollection.RecentDocuments.Count; i++)
 			{
-				var shortcut = i < 10 ? (Key)Enum.Parse(typeof(Key), String.Format(CultureInfo.InvariantCulture, "NumPad{0}", i)) : Key.None;
-				var item = new RecentFileItem(WorkDocumentCollection.RecentDocuments[i], i, shortcut);
+				var item = new RecentFileItem(WorkDocumentCollection.RecentDocuments[i], i);
 				items.Add(item);
 				_recentDocumentsMenu.CommandBindings.Add(new CommandBinding(item.Command, OpenRecentFileHandler));
+
+				if (i < 10)
+				{
+					var shortcut = (Key)Enum.Parse(typeof(Key), String.Format(CultureInfo.InvariantCulture, "NumPad{0}", i));
+					_recentDocumentsMenu.InputBindings.Add(new KeyBinding(item.Command, shortcut, ModifierKeys.None) { CommandParameter = item.WorkDocument });
+				}
 			}
 
 			_recentDocumentsMenu.ItemsSource = items;
@@ -465,16 +471,12 @@ namespace SqlPad
 
 	internal class RecentFileItem
 	{
-		public RecentFileItem(WorkDocument workDocument, int index, Key shortcut)
+		public RecentFileItem(WorkDocument workDocument, int index)
 		{
 			Index = index;
 			WorkDocument = workDocument;
 			DocumentFileName = workDocument.DocumentFileName.Replace("_", "__");
-			var command = new RoutedCommand();
-			if (shortcut != Key.None)
-			{
-				command.InputGestures.Add(new KeyGesture(shortcut));
-			}
+			var command = new RoutedCommand(String.Format("OpenRecentFile{0}", index), typeof(ContextMenu));
 
 			Command = command;
 		}

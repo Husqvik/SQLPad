@@ -33,6 +33,8 @@ namespace SqlPad
 
 	public struct StatementExecutionResult
 	{
+		public static readonly StatementExecutionResult Empty = new StatementExecutionResult { AffectedRowCount = -1 };
+
 		public int AffectedRowCount { get; set; }
 
 		public bool ExecutedSuccessfully { get; set; }
