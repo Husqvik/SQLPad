@@ -1589,6 +1589,19 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		}
 
 		[Test(Description = @"")]
+		public void TestAsteriskColumnSuggestionOverDatabaseLink()
+		{
+			const string sqlText = @"SELECT * FROM SELECTION@HQ_PDB_LOOPBACK";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var columnNodes = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToArray();
+			columnNodes.Length.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
 		public void TestObjectQualifiedColumnSuggestionOverDatabaseLink()
 		{
 			const string sqlText = @"SELECT SELECTION.NAME FROM SELECTION@HQ_PDB_LOOPBACK";

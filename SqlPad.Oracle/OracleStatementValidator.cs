@@ -321,29 +321,33 @@ namespace SqlPad.Oracle
 				{
 					// Schema
 					if (columnReference.OwnerNode != null)
+					{
 						validationModel.ObjectNodeValidity[columnReference.OwnerNode] =
 							new NodeValidationData(columnReference.ObjectNodeObjectReferences)
 							{
 								IsRecognized = columnReference.ObjectNodeObjectReferences.Count > 0,
 								Node = columnReference.OwnerNode
 							};
+					}
 
 					// Object
 					if (columnReference.ObjectNode != null)
+					{
 						validationModel.ObjectNodeValidity[columnReference.ObjectNode] =
 							new NodeValidationData(columnReference.ObjectNodeObjectReferences)
 							{
 								IsRecognized = columnReference.ObjectNodeObjectReferences.Count > 0,
 								Node = columnReference.ObjectNode
 							};
+					}
 
-					var selectList = referenceContainer as OracleSelectListColumn;
-					var sourceObjectReferences = selectList == null
+					var sourceObjectReferences = columnReference.SelectListColumn == null
 						? referenceContainer.ObjectReferences
-						: selectList.Owner.ObjectReferences;
+						: columnReference.SelectListColumn.Owner.ObjectReferences;
 
 					var availableDatabaseLinkReferences = sourceObjectReferences.Where(r => r.DatabaseLinkNode != null).ToArray();
 					var canColumnBeValidated = columnReference.ObjectNode != null || availableDatabaseLinkReferences.Length == 0;
+					var isAsterisk = columnReference.SelectListColumn != null && columnReference.SelectListColumn.IsAsterisk;
 
 					if (canColumnBeValidated)
 					{
@@ -351,11 +355,11 @@ namespace SqlPad.Oracle
 						validationModel.ColumnNodeValidity[columnReference.ColumnNode] =
 							new ColumnNodeValidationData(columnReference)
 							{
-								IsRecognized = columnReference.SelectListColumn != null && columnReference.SelectListColumn.IsAsterisk || columnReference.ColumnNodeObjectReferences.Count > 0,
+								IsRecognized = isAsterisk || columnReference.ColumnNodeObjectReferences.Count > 0,
 								Node = columnReference.ColumnNode
 							};
 					}
-					else if (columnReference.ObjectNode == null)
+					else if (columnReference.ObjectNode == null && !isAsterisk)
 					{
 						validationModel.ColumnNodeValidity[columnReference.ColumnNode] =
 							new SuggestionData(OracleSuggestionType.PotentialDatabaseLink)
