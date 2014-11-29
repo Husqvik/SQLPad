@@ -1437,6 +1437,45 @@ se";
 			items[0].StatementNode.ShouldNotBe(null);
 		}
 
+		[Test(Description = @"")]
+		public void TestNameBasedJoinConditionSuggestionWhenChainedJoinClauseAlreadyExists()
+		{
+			const string statement = "SELECT * FROM DUAL D1 JOIN DUAL  JOIN DUAL D2 ON D1.DUMMY = D2.DUMMY";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 32).ToList();
+			items.Count.ShouldBe(1);
+			items[0].Name.ShouldBe("ON D1.DUMMY = DUAL.DUMMY");
+			items[0].Text.ShouldBe("ON D1.DUMMY = DUAL.DUMMY");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.JoinCondition);
+			items[0].CaretOffset.ShouldBe(0);
+			items[0].StatementNode.ShouldBe(null);
+		}
+
+		[Test(Description = @"")]
+		public void TestChildToParentForeignKeyBasedJoinConditionSuggestionWhenChainedJoinClauseAlreadyExists()
+		{
+			const string statement = "SELECT * FROM SELECTION S JOIN RESPONDENTBUCKET  JOIN TARGETGROUP ON RB.TARGETGROUP_ID = TARGETGROUP.TARGETGROUP_ID";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 48).ToList();
+			items.Count.ShouldBe(1);
+			items[0].Name.ShouldBe("ON S.RESPONDENTBUCKET_ID = RESPONDENTBUCKET.RESPONDENTBUCKET_ID");
+			items[0].Text.ShouldBe("ON S.RESPONDENTBUCKET_ID = RESPONDENTBUCKET.RESPONDENTBUCKET_ID");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.JoinCondition);
+			items[0].CaretOffset.ShouldBe(0);
+			items[0].StatementNode.ShouldBe(null);
+		}
+
+		[Test(Description = @"")]
+		public void TestParentToChildForeignKeyBasedJoinConditionSuggestionWhenChainedJoinClauseAlreadyExists()
+		{
+			const string statement = "SELECT * FROM RESPONDENTBUCKET RB JOIN SELECTION  JOIN TARGETGROUP ON RB.TARGETGROUP_ID = TARGETGROUP.TARGETGROUP_ID";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 49).ToList();
+			items.Count.ShouldBe(1);
+			items[0].Name.ShouldBe("ON RB.RESPONDENTBUCKET_ID = SELECTION.RESPONDENTBUCKET_ID");
+			items[0].Text.ShouldBe("ON RB.RESPONDENTBUCKET_ID = SELECTION.RESPONDENTBUCKET_ID");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.JoinCondition);
+			items[0].CaretOffset.ShouldBe(0);
+			items[0].StatementNode.ShouldBe(null);
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)

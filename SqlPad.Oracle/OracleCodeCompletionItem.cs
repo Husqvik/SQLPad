@@ -76,6 +76,7 @@ namespace SqlPad.Oracle
 		public const string PseudoColumn = "Pseudo column";
 		public const string AllColumns = "All Columns";
 		public const string JoinMethod = "Join Method";
+		public const string JoinCondition = "Join Condition";
 		public const string PackageFunction = "Package function";
 		public const string SchemaFunction = "Schema function";
 		public const string Package = "Package";

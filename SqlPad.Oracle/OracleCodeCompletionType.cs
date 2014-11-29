@@ -12,7 +12,8 @@ namespace SqlPad.Oracle
 	{
 		private readonly OracleSqlParser _parser = new OracleSqlParser();
 		private static readonly char[] Separators = { ' ', '\t', '\r', '\n', '\u00A0' };
-		private readonly int _cursorPosition;
+		
+		public int CursorPosition { get; private set; }
 
 		public bool Schema { get; private set; }
 
@@ -77,7 +78,7 @@ namespace SqlPad.Oracle
 
 		public OracleCodeCompletionType(SqlDocumentRepository documentRepository, string statementText, int cursorPosition)
 		{
-			_cursorPosition = cursorPosition;
+			CursorPosition = cursorPosition;
 
 			Statement = (OracleStatement)(documentRepository.Statements.GetStatementAtPosition(cursorPosition) ?? documentRepository.Statements.LastOrDefault());
 			if (Statement == null)
@@ -189,7 +190,7 @@ namespace SqlPad.Oracle
 		private void ResolveCurrentTerminalValue(StatementGrammarNode terminal)
 		{
 			TerminalValueUnderCursor = terminal.Token.Value;
-			TerminalValuePartUntilCaret = terminal.Token.Value.Substring(0, _cursorPosition - terminal.SourcePosition.IndexStart).Trim('"');
+			TerminalValuePartUntilCaret = terminal.Token.Value.Substring(0, CursorPosition - terminal.SourcePosition.IndexStart).Trim('"');
 		}
 
 		private void AnalyzeObjectReferencePrefixes(StatementGrammarNode effectiveTerminal)
@@ -234,7 +235,7 @@ namespace SqlPad.Oracle
 					SchemaIdentifier = GetIdentifierTokenValue(identifiers, Terminals.SchemaIdentifier),
 					ObjectIdentifier = GetIdentifierTokenValue(identifiers, Terminals.ObjectIdentifier),
 					Identifier = GetIdentifierTokenValue(identifiers, Terminals.Identifier) ?? GetIdentifierTokenValue(identifiers, Terminals.Asterisk),
-					CursorPosition = _cursorPosition
+					CursorPosition = CursorPosition
 				};
 		}
 
