@@ -14,6 +14,28 @@
 	</Window.TaskbarItemInfo>
 
 	<Window.Resources>
+		<ContextMenu x:Key="RecentFileMenu" Placement="Relative" VerticalOffset="64">
+			<ContextMenu.ItemContainerStyle>
+				<Style TargetType="MenuItem">
+					<Setter Property="Command" Value="{Binding Command}" />
+					<Setter Property="InputGestureText" Value=" " />
+					<Setter Property="CommandParameter" Value="{Binding WorkDocument}" />
+				</Style>
+			</ContextMenu.ItemContainerStyle>
+			<ContextMenu.ItemTemplate>
+				<DataTemplate>
+					<Grid Margin="-26,0,-40,0">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="26" />
+							<ColumnDefinition Width="1*" />
+						</Grid.ColumnDefinitions>
+						<TextBlock Grid.Column="0" Text="{Binding Index}" />
+						<TextBlock Grid.Column="1" Text="{Binding DocumentFileName}" />
+					</Grid>
+				</DataTemplate>
+			</ContextMenu.ItemTemplate>
+		</ContextMenu>
+
         <TextDecoration x:Key="WaveErrorUnderline">
             <TextDecoration.Pen>
                 <Pen Thickness="6">
@@ -93,6 +115,7 @@
 		<CommandBinding Command="Open" Executed="OpenFileHandler" />
 		<CommandBinding Command="commands:GenericCommands.GoToNextEdit" Executed="GoToNextEditCommandExecutedHandler" />
 		<CommandBinding Command="commands:GenericCommands.GoToPreviousEdit" Executed="GoToPreviousEditCommandExecutedHandler" />
+		<CommandBinding Command="commands:GenericCommands.ShowRecentDocuments" Executed="ShowRecentDocumentsHandler" />
 	</Window.CommandBindings>
 
 	<Grid>

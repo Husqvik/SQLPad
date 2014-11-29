@@ -30,6 +30,7 @@ namespace SqlPad.Commands
 		public static RoutedCommand Save = new RoutedCommand("Save", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.S, ModifierKeys.Control) });
 		public static RoutedCommand SaveAs = new RoutedCommand("SaveAs", typeof(TextEditor));
 		public static RoutedCommand SaveAll = new RoutedCommand("SaveAll", typeof(Window), new InputGestureCollection { new KeyGesture(Key.S, ModifierKeys.Control | ModifierKeys.Shift) });
+		public static RoutedCommand ShowRecentDocuments = new RoutedCommand("ShowRecentDocuments", typeof(Window), new InputGestureCollection { new KeyGesture(Key.OemComma, ModifierKeys.Control) });
 		public static RoutedCommand FormatStatement = new RoutedCommand("FormatStatement", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.F, ModifierKeys.Control | ModifierKeys.Alt) });
 		public static RoutedCommand FormatStatementAsSingleLine = new RoutedCommand("FormatStatementAsSingleLine", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.F, ModifierKeys.Shift | ModifierKeys.Alt) });
 		public static RoutedCommand FindUsages = new RoutedCommand("FindUsages", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.F11, ModifierKeys.Alt | ModifierKeys.Shift) });

@@ -469,6 +469,7 @@ namespace SqlPad
 			else
 			{
 				InitializeFileWatcher();
+				WorkDocumentCollection.AddRecentDocument(WorkDocument);
 			}
 			
 			SaveWorkingDocument();
@@ -1490,7 +1491,7 @@ namespace SqlPad
 			_enableCodeComplete = false;
 		}
 
-		private void BuildContextMenuItem(IContextAction action)
+		private MenuItem BuildContextMenuItem(IContextAction action)
 		{
 			var menuItem =
 				new MenuItem
@@ -1499,7 +1500,7 @@ namespace SqlPad
 					Command = new ContextActionCommand(Editor, action),
 				};
 
-			_contextActionMenu.Items.Add(menuItem);
+			return menuItem;
 		}
 
 		private void ListContextActions(object sender, ExecutedRoutedEventArgs args)
@@ -1518,9 +1519,11 @@ namespace SqlPad
 			_contextActionMenu.Items.Clear();
 
 			var executionContext = CommandExecutionContext.Create(Editor, _sqlDocumentRepository);
-			_contextActionProvider.GetContextActions(_sqlDocumentRepository, executionContext)
-				.ToList()
-				.ForEach(BuildContextMenuItem);
+			var contextActions = _contextActionProvider.GetContextActions(_sqlDocumentRepository, executionContext);
+			foreach (var contextAction in contextActions)
+			{
+				_contextActionMenu.Items.Add(BuildContextMenuItem(contextAction));
+			}
 
 			if (_contextActionMenu.Items.Count == 1)
 			{

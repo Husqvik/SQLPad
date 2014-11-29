@@ -12,6 +12,7 @@ namespace SqlPad
 	{
 		internal const string ConfigurationFileName = "WorkDocuments.dat";
 		private const string LockFileName = "Configuration.lock";
+		private const int MaxRecentDocumentCount = 16;
 		private static string _fileName = GetWorkingDocumentConfigurationFileName(ConfigurationProvider.FolderNameWorkArea);
 		private static FileStream _lockFile;
 		private static readonly RuntimeTypeModel Serializer;
@@ -21,13 +22,14 @@ namespace SqlPad
 		private Dictionary<Guid, WorkDocument> _workingDocuments = new Dictionary<Guid, WorkDocument>();
 		private int _activeDocumentIndex;
 		private WindowProperties _windowProperties;
+		private List<WorkDocument> _recentFiles = new List<WorkDocument>();
 
 		static WorkDocumentCollection()
 		{
 			Serializer = TypeModel.Create();
 			var workingDocumentCollectionType = Serializer.Add(typeof(WorkDocumentCollection), false);
 			workingDocumentCollectionType.UseConstructor = false;
-			workingDocumentCollectionType.Add("_workingDocuments", "_activeDocumentIndex", "_windowProperties", "_databaseProviderConfigurations");
+			workingDocumentCollectionType.Add("_workingDocuments", "_activeDocumentIndex", "_windowProperties", "_databaseProviderConfigurations", "_recentFiles");
 
 			var workingDocumentType = Serializer.Add(typeof(WorkDocument), false);
 			workingDocumentType.UseConstructor = false;
@@ -79,9 +81,17 @@ namespace SqlPad
 			{
 				_instance = new WorkDocumentCollection();
 			}
-			else if (_instance._workingDocuments == null)
+			else
 			{
-				_instance._workingDocuments = new Dictionary<Guid, WorkDocument>();
+				if (_instance._workingDocuments == null)
+				{
+					_instance._workingDocuments = new Dictionary<Guid, WorkDocument>();
+				}
+
+				if (_instance._recentFiles == null)
+				{
+					_instance._recentFiles = new List<WorkDocument>();
+				}
 			}
 
 			if (_instance._databaseProviderConfigurations == null)
@@ -151,7 +161,9 @@ namespace SqlPad
 			set { Instance._activeDocumentIndex = value; }
 		}
 
-		public static ICollection<WorkDocument> WorkingDocuments { get { return Instance._workingDocuments.Values.ToArray(); } }
+		public static IReadOnlyList<WorkDocument> WorkingDocuments { get { return Instance._workingDocuments.Values.ToArray(); } }
+		
+		public static IReadOnlyList<WorkDocument> RecentDocuments { get { return Instance._recentFiles.AsReadOnly(); } }
 
 		public static bool TryGetWorkingDocumentFor(string fileName, out WorkDocument workDocument)
 		{
@@ -167,6 +179,46 @@ namespace SqlPad
 			ValidateWorkingDocument(workDocument);
 
 			Instance._workingDocuments[workDocument.DocumentId] = workDocument;
+
+			AddRecentDocument(workDocument);
+		}
+
+		public static void RemoveRecentDocument(WorkDocument workDocument)
+		{
+			var index = FindRecentFileIndex(workDocument);
+			if (index != -1)
+			{
+				Instance._recentFiles.RemoveAt(index);
+			}
+		}
+
+		private static int FindRecentFileIndex(WorkDocument workDocument)
+		{
+			return Instance._recentFiles.FindIndex(f => String.Equals(f.DocumentFileName, workDocument.DocumentFileName, StringComparison.InvariantCultureIgnoreCase));
+		}
+
+		public static void AddRecentDocument(WorkDocument workDocument)
+		{
+			if (workDocument.File == null || !workDocument.File.Exists)
+			{
+				return;
+			}
+
+			lock (Instance._recentFiles)
+			{
+				var existingIndex = FindRecentFileIndex(workDocument);
+				if (existingIndex != -1)
+				{
+					Instance._recentFiles.RemoveAt(existingIndex);
+				}
+
+				Instance._recentFiles.Insert(0, workDocument.CloneAsRecent());
+
+				if (Instance._recentFiles.Count > MaxRecentDocumentCount)
+				{
+					Instance._recentFiles.RemoveRange(MaxRecentDocumentCount, Instance._recentFiles.Count - MaxRecentDocumentCount);
+				}
+			}
 		}
 
 		public static void CloseDocument(WorkDocument workDocument)
@@ -205,6 +257,7 @@ namespace SqlPad
 		{
 			if (_lockFile == null)
 			{
+				Trace.WriteLine("Lock file has not been ackquired. Work document collection cannot be saved. ");
 				return;
 			}
 
@@ -315,5 +368,21 @@ namespace SqlPad
 		public bool EnableDatabaseOutput { get; set; }
 
 		public bool KeepDatabaseOutputHistory { get; set; }
+
+		public WorkDocument CloneAsRecent()
+		{
+			if (String.IsNullOrWhiteSpace(DocumentFileName))
+			{
+				throw new InvalidOperationException("Only persisted work document can be referred as recent document. ");
+			}
+
+			return new WorkDocument
+			{
+				ConnectionName = ConnectionName,
+				SchemaName = SchemaName,
+				DocumentFileName = DocumentFileName,
+				TabIndex = -1
+			};
+		}
 	}
 }

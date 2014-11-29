@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Timers;
@@ -21,6 +22,7 @@ namespace SqlPad
 	{
 		private readonly FindReplaceManager _findReplaceManager;
 		private readonly List<TextEditorAdapter> _editorAdapters = new List<TextEditorAdapter>();
+		private readonly ContextMenu _recentDocumentsMenu;
 
 		private readonly Timer _timerWorkingDocumentSave = new Timer(60000);
 
@@ -34,6 +36,10 @@ namespace SqlPad
 
 			InitializeComponent();
 
+			_recentDocumentsMenu = (ContextMenu)Resources["RecentFileMenu"];
+			_recentDocumentsMenu.PlacementTarget = this;
+			_recentDocumentsMenu.Closed += RecentDocumentsMenuClosedHandler;
+
 			_findReplaceManager = (FindReplaceManager)Resources["FindReplaceManager"];
 			_findReplaceManager.OwnerWindow = this;
 			_findReplaceManager.Editors = _editorAdapters;
@@ -43,6 +49,12 @@ namespace SqlPad
 			Loaded += WindowLoadedHandler;
 			Closing += WindowClosingHandler;
 			Closed += WindowClosedHandler;
+		}
+
+		private void RecentDocumentsMenuClosedHandler(object sender, RoutedEventArgs routedEventArgs)
+		{
+			_recentDocumentsMenu.ItemsSource = null;
+			_recentDocumentsMenu.CommandBindings.Clear();
 		}
 
 		private static bool EnsureValidConfiguration()
@@ -402,5 +414,72 @@ namespace SqlPad
 				? TaskbarItemProgressState.Indeterminate
 				: TaskbarItemProgressState.None;
 		}
+
+		private void ShowRecentDocumentsHandler(object sender, ExecutedRoutedEventArgs e)
+		{
+			if (WorkDocumentCollection.RecentDocuments.Count == 0)
+			{
+				return;
+			}
+
+			_recentDocumentsMenu.HorizontalOffset = (Width - 240) / 2;
+			RecentDocumentsMenuClosedHandler(null, null);
+
+			var items = new List<RecentFileItem>();
+			for (var i = 0; i < WorkDocumentCollection.RecentDocuments.Count; i++)
+			{
+				var shortcut = i < 10 ? (Key)Enum.Parse(typeof(Key), String.Format(CultureInfo.InvariantCulture, "NumPad{0}", i)) : Key.None;
+				var item = new RecentFileItem(WorkDocumentCollection.RecentDocuments[i], i, shortcut);
+				items.Add(item);
+				_recentDocumentsMenu.CommandBindings.Add(new CommandBinding(item.Command, OpenRecentFileHandler));
+			}
+
+			_recentDocumentsMenu.ItemsSource = items;
+
+			_recentDocumentsMenu.IsOpen = true;
+		}
+
+		private void OpenRecentFileHandler(object sender, ExecutedRoutedEventArgs args)
+		{
+			var workDocument = (WorkDocument)args.Parameter;
+			if (workDocument.File.Exists)
+			{
+				WorkDocumentCollection.AddRecentDocument(workDocument);
+				OpenExistingFile(workDocument.DocumentFileName);
+			}
+			else
+			{
+				var result = MessageBox.Show(this, String.Format("File '{0}' does not exist anymore. Do you want to remove the link? ", workDocument.DocumentFileName), "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.Yes);
+				if (result == MessageBoxResult.Yes)
+				{
+					WorkDocumentCollection.RemoveRecentDocument(workDocument);
+				}
+			}
+		}
+	}
+
+	internal class RecentFileItem
+	{
+		public RecentFileItem(WorkDocument workDocument, int index, Key shortcut)
+		{
+			Index = index;
+			WorkDocument = workDocument;
+			DocumentFileName = workDocument.DocumentFileName.Replace("_", "__");
+			var command = new RoutedCommand();
+			if (shortcut != Key.None)
+			{
+				command.InputGestures.Add(new KeyGesture(shortcut));
+			}
+
+			Command = command;
+		}
+
+		public int Index { get; private set; }
+
+		public WorkDocument WorkDocument { get; private set; }
+		
+		public string DocumentFileName { get; private set; }
+
+		public ICommand Command { get; private set; }
 	}
 }
