@@ -13,5 +13,9 @@ namespace SqlPad
 		public IList<StatementGrammarNode> Nodes { get; set; }
 
 		public IList<StatementGrammarNode> BestCandidates { get; set; }
+
+		public int TerminalCount { get; set; }
+		
+		public int BestCandidateTerminalCount { get; set; }
 	}
 }
