@@ -2218,6 +2218,22 @@ FROM
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 		}
 
+		[Test(Description = @"")]
+		public void TestIncompleteInlineView()
+		{
+			const string statement1 = "SELECT * FROM DUAL D1 JOIN (SELECT DUMMY FROM DUAL) X";
+
+			var statements = Parser.Parse(statement1).ToArray();
+			var statement = statements.Single().Validate();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+
+			var terminals = statement.RootNode.Terminals.ToArray();
+			terminals[3].Id.ShouldBe(Terminals.ObjectIdentifier);
+			terminals[4].Id.ShouldBe(Terminals.ObjectAlias);
+			terminals[5].Id.ShouldBe(Terminals.Join);
+			terminals[8].Id.ShouldBe(Terminals.Identifier);
+		}
+
 		public class IsRuleValid
 		{
 			[Test(Description = @"")]

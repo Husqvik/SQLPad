@@ -468,8 +468,10 @@ namespace SqlPad.Oracle
 
 						var alternativeNode = nestedNode.Clone();
 
+						int currentTerminalCount;
 						if (nestedResult.BestCandidates.Count > 0 &&
-							workingTerminalCount + nestedResult.BestCandidates.Sum(n => n.TerminalCount) > bestCandidateTerminalCount)
+							((currentTerminalCount = workingTerminalCount + nestedResult.BestCandidates.Sum(n => n.TerminalCount)) > bestCandidateTerminalCount ||
+							 (currentTerminalCount == bestCandidateTerminalCount && nestedResult.Status == ProcessingStatus.Success)))
 						{
 							var bestCandidatePosition = new Dictionary<int, StatementGrammarNode>();
 
