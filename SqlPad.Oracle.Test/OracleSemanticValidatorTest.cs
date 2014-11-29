@@ -1575,7 +1575,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		[Test(Description = @"")]
 		public void TestColumnSuggestionOverDatabaseLink()
 		{
-			const string sqlText = @"SELECT NAME FROM SELECTION@HQ_PDB_LOOPBACK";
+			const string sqlText = @"SELECT NAME FROM SELECTION@HQ_PDB_LOOPBACK, DUAL";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);

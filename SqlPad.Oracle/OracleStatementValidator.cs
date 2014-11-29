@@ -345,8 +345,8 @@ namespace SqlPad.Oracle
 						? referenceContainer.ObjectReferences
 						: columnReference.SelectListColumn.Owner.ObjectReferences;
 
-					var availableDatabaseLinkReferences = sourceObjectReferences.Where(r => r.DatabaseLinkNode != null).ToArray();
-					var canColumnBeValidated = columnReference.ObjectNode != null || availableDatabaseLinkReferences.Length == 0;
+					var noDatabaseLinkReferences = sourceObjectReferences.All(r => r.DatabaseLinkNode == null);
+					var canColumnBeValidated = columnReference.ObjectNode != null || noDatabaseLinkReferences;
 					var isAsterisk = columnReference.SelectListColumn != null && columnReference.SelectListColumn.IsAsterisk;
 
 					if (canColumnBeValidated)
@@ -359,7 +359,7 @@ namespace SqlPad.Oracle
 								Node = columnReference.ColumnNode
 							};
 					}
-					else if (columnReference.ObjectNode == null && !isAsterisk)
+					else if (columnReference.ObjectNode == null && sourceObjectReferences.Count > 1 && !isAsterisk)
 					{
 						validationModel.ColumnNodeValidity[columnReference.ColumnNode] =
 							new SuggestionData(OracleSuggestionType.PotentialDatabaseLink)
