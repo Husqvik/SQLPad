@@ -27,7 +27,7 @@ namespace SqlPad.Oracle
 				return false;
 			}
 
-			for (var i = 2; i < identifier.Length - 1; i++)
+			for (var i = 1; i < identifier.Length - 1; i++)
 			{
 				var character = identifier[i];
 				if (!Char.IsLetterOrDigit(character) && character != '_' && character != '$' && character != '#')

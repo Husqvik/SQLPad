@@ -23,6 +23,9 @@ namespace SqlPad.Oracle
 				case OracleBindVariable.DataTypeClob:
 					parameter.OracleDbType = OracleDbType.Clob;
 					break;
+				case OracleBindVariable.DataTypeTimestamp:
+					parameter.OracleDbType = OracleDbType.TimeStamp;
+					break;
 				case OracleBindVariable.DataTypeDate:
 					parameter.OracleDbType = OracleDbType.Date;
 					break;

@@ -119,8 +119,10 @@ namespace SqlPad.Oracle.Commands
 			switch (_requiredPrecedingTerminalId)
 			{
 				case Terminals.Date:
-				case Terminals.Timestamp:
 					bindVariable.DataType = OracleBindVariable.DataTypeDate;
+					break;
+				case Terminals.Timestamp:
+					bindVariable.DataType = OracleBindVariable.DataTypeTimestamp;
 					break;
 				case null:
 					if (literalTerminal.Id == Terminals.NumberLiteral)

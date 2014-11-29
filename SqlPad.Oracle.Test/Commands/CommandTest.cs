@@ -1311,6 +1311,20 @@ SELECT * FROM DUAL";
 			_editor.Text.ShouldBe(expectedResult);
 		}
 
+		[Test(Description = @""), STAThread]
+		public void TestConvertAllBindVariableOccurencesToTimestampLiteralCommand()
+		{
+			const string statementText = @"SELECT :1, :1 FROM DUAL";
+			_editor.Text = statementText;
+			_editor.CaretOffset = 12;
+
+			SetBindVariableAndExecute(1, "2014-11-28 14:16:18", OracleBindVariable.DataTypeTimestamp);
+
+			const string expectedResult = @"SELECT TIMESTAMP'2014-11-28 14:16:18', TIMESTAMP'2014-11-28 14:16:18' FROM DUAL";
+
+			_editor.Text.ShouldBe(expectedResult);
+		}
+
 		private void SetBindVariableAndExecute(int actionIndex, string value, string dataType = OracleBindVariable.DataTypeVarchar2)
 		{
 			var actions = new OracleContextActionProvider()
@@ -1373,6 +1387,24 @@ SELECT * FROM DUAL";
 			var configuration = WorkDocumentCollection.GetProviderConfiguration(TestFixture.DatabaseModel.ConnectionString.ProviderName);
 			configuration.BindVariablesInternal.ContainsKey("BIND_VARIABLE").ShouldBe(true);
 			configuration.BindVariablesInternal["BIND_VARIABLE"].DataType.ShouldBe("NUMBER");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestConvertTimestampLiteralToBindVariable()
+		{
+			const string statementText = @"SELECT TIMESTAMP'2014-11-24 14:14:14', TIMESTAMP'2014-11-24 14:14:14' FROM DUAL";
+			_editor.Text = statementText;
+			_editor.CaretOffset = 18;
+
+			ExecuteConvertLiteralToBindVariableCommmand(0);
+
+			const string expectedResult = @"SELECT :BIND_VARIABLE, TIMESTAMP'2014-11-24 14:14:14' FROM DUAL";
+
+			_editor.Text.ShouldBe(expectedResult);
+
+			var configuration = WorkDocumentCollection.GetProviderConfiguration(TestFixture.DatabaseModel.ConnectionString.ProviderName);
+			configuration.BindVariablesInternal.ContainsKey("BIND_VARIABLE").ShouldBe(true);
+			configuration.BindVariablesInternal["BIND_VARIABLE"].DataType.ShouldBe("TIMESTAMP");
 		}
 
 		private void ExecuteConvertLiteralToBindVariableCommmand(int actionIndex)

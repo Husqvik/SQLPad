@@ -23,6 +23,14 @@ namespace SqlPad.Oracle.Test
 				var simpleIdentifier = quotedIdentifier.ToSimpleIdentifier();
 				simpleIdentifier.ShouldBe(quotedIdentifier);
 			}
+
+			[Test(Description = @"")]
+			public void TestQuotedToSimpleIdentifierOfSingleLetterIdentifier()
+			{
+				const string quotedIdentifier = "\"x\"";
+				var simpleIdentifier = quotedIdentifier.ToSimpleIdentifier();
+				simpleIdentifier.ShouldBe(quotedIdentifier);
+			}
 		}
 	}
 }

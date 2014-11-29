@@ -74,6 +74,9 @@ namespace SqlPad.Oracle.Commands
 					case OracleBindVariable.DataTypeDate:
 						textSegment.Text = String.Format("DATE'{0}'", _bindVariable.Value);
 						break;
+					case OracleBindVariable.DataTypeTimestamp:
+						textSegment.Text = String.Format("TIMESTAMP'{0}'", _bindVariable.Value);
+						break;
 					default:
 						textSegment.Text = String.Format("'{0}'", _bindVariable.Value);
 						break;

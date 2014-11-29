@@ -9,6 +9,7 @@ namespace SqlPad.Oracle
 		public const string DataTypeChar = "CHAR";
 		public const string DataTypeClob = "CLOB";
 		public const string DataTypeDate = "DATE";
+		public const string DataTypeTimestamp = "TIMESTAMP";
 		public const string DataTypeUnicodeChar = "NCHAR";
 		public const string DataTypeUnicodeClob = "NCLOB";
 		public const string DataTypeNumber = "NUMBER";
@@ -21,6 +22,7 @@ namespace SqlPad.Oracle
 				{ DataTypeChar, typeof(string) },
 				{ DataTypeClob, typeof(string) },
 				{ DataTypeDate, typeof(DateTime) },
+				{ DataTypeTimestamp, typeof(DateTime) },
 				{ DataTypeUnicodeChar, typeof(string) },
 				{ DataTypeUnicodeClob, typeof(string) },
 				{ DataTypeNumber, typeof(string) },

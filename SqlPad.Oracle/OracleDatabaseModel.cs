@@ -676,15 +676,20 @@ namespace SqlPad.Oracle
 					value = oracleDecimal.IsNull ? String.Empty : oracleDecimal.ToString();
 				}
 
+				if (parameter.Value is OracleString)
+				{
+					var oracleString = (OracleString)parameter.Value;
+					value = oracleString.IsNull ? String.Empty : oracleString.Value;
+				}
+				
 				if (parameter.Value is OracleDate)
 				{
 					value = ((OracleDate)parameter.Value).Value;
 				}
 
-				if (parameter.Value is OracleString)
+				if (parameter.Value is OracleTimeStamp)
 				{
-					var oracleString = (OracleString)parameter.Value;
-					value = oracleString.IsNull ? String.Empty : oracleString.Value;
+					value = ((OracleTimeStamp)parameter.Value).Value;
 				}
 
 				bindVariableModels[parameter.ParameterName].Value = value;
