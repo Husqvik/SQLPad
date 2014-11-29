@@ -552,6 +552,18 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestNonQualifiedColumnReferenceOverDatabaseLink()
+		{
+			const string query = "SELECT NAME FROM SELECTION@HQ_PDB_LOOPBACK, DUAL";
+			_documentRepository.UpdateStatements(query);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 8);
+
+			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.DataContext.ShouldBe(OracleSuggestionType.PotentialDatabaseLink);
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestFunctionOverloadsToolTipNotShowForNonSchemaFunctions()
 		{
 			const string query = "SELECT MAX(DUMMY) FROM DUAL";

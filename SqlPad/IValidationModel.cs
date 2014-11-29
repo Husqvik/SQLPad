@@ -16,12 +16,16 @@ namespace SqlPad
 		
 		IDictionary<StatementGrammarNode, INodeValidationData> IdentifierNodeValidity { get; }
 
-		IEnumerable<KeyValuePair<StatementGrammarNode, INodeValidationData>> GetNodesWithSemanticErrors();
+		IEnumerable<KeyValuePair<StatementGrammarNode, INodeValidationData>> GetNodesWithSemanticError();
+
+		IEnumerable<KeyValuePair<StatementGrammarNode, INodeValidationData>> GetNodesWithSuggestion();
 	}
 
 	public interface INodeValidationData
 	{
 		StatementGrammarNode Node { get; }
+
+		string SuggestionType { get; }
 
 		string SemanticErrorType { get; }
 

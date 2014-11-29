@@ -133,7 +133,7 @@ namespace SqlPad.Oracle
 
 		private void ResolveContainerValidities(OracleValidationModel validationModel, OracleReferenceContainer referenceContainer)
 		{
-			ResolveColumnNodeValidities(validationModel, referenceContainer.ColumnReferences);
+			ResolveColumnNodeValidities(validationModel, referenceContainer);
 
 			foreach (var functionReference in referenceContainer.ProgramReferences)
 			{
@@ -311,13 +311,13 @@ namespace SqlPad.Oracle
 			}
 
 			return result;
-		} 
+		}
 
-		private void ResolveColumnNodeValidities(OracleValidationModel validationModel, IEnumerable<OracleColumnReference> columnReferences)
+		private void ResolveColumnNodeValidities(OracleValidationModel validationModel, OracleReferenceContainer referenceContainer)
 		{
-			foreach (var columnReference in columnReferences.Where(columnReference => columnReference.SelectListColumn == null || columnReference.SelectListColumn.HasExplicitDefinition))
+			foreach (var columnReference in referenceContainer.ColumnReferences.Where(columnReference => columnReference.SelectListColumn == null || columnReference.SelectListColumn.HasExplicitDefinition))
 			{
-				if (columnReference.DatabaseLinkNode == null)
+				if (columnReference.ValidObjectReference == null || columnReference.ValidObjectReference.DatabaseLinkNode == null)
 				{
 					// Schema
 					if (columnReference.OwnerNode != null)
@@ -337,17 +337,37 @@ namespace SqlPad.Oracle
 								Node = columnReference.ObjectNode
 							};
 
-					// Column
-					validationModel.ColumnNodeValidity[columnReference.ColumnNode] =
-						new ColumnNodeValidationData(columnReference)
-						{
-							IsRecognized = columnReference.SelectListColumn != null && columnReference.SelectListColumn.IsAsterisk || columnReference.ColumnNodeObjectReferences.Count > 0,
-							Node = columnReference.ColumnNode
-						};
+					var selectList = referenceContainer as OracleSelectListColumn;
+					var sourceObjectReferences = selectList == null
+						? referenceContainer.ObjectReferences
+						: selectList.Owner.ObjectReferences;
+
+					var availableDatabaseLinkReferences = sourceObjectReferences.Where(r => r.DatabaseLinkNode != null).ToArray();
+					var canColumnBeValidated = columnReference.ObjectNode != null || availableDatabaseLinkReferences.Length == 0;
+
+					if (canColumnBeValidated)
+					{
+						// Column
+						validationModel.ColumnNodeValidity[columnReference.ColumnNode] =
+							new ColumnNodeValidationData(columnReference)
+							{
+								IsRecognized = columnReference.SelectListColumn != null && columnReference.SelectListColumn.IsAsterisk || columnReference.ColumnNodeObjectReferences.Count > 0,
+								Node = columnReference.ColumnNode
+							};
+					}
+					else if (columnReference.ObjectNode == null)
+					{
+						validationModel.ColumnNodeValidity[columnReference.ColumnNode] =
+							new SuggestionData(OracleSuggestionType.PotentialDatabaseLink)
+							{
+								IsRecognized = true,
+								Node = columnReference.ColumnNode
+							};
+					}
 				}
 				else
 				{
-					ValidateDatabaseLinkReference(validationModel.ObjectNodeValidity, columnReference);
+					ValidateDatabaseLinkReference(validationModel.ObjectNodeValidity, columnReference.ValidObjectReference);
 				}
 			}
 		}
@@ -388,7 +408,7 @@ namespace SqlPad.Oracle
 
 		public IDictionary<StatementGrammarNode, INodeValidationData> InvalidNonTerminals { get { return _invalidNonTerminals; } }
 
-		public IEnumerable<KeyValuePair<StatementGrammarNode, INodeValidationData>> GetNodesWithSemanticErrors()
+		public IEnumerable<KeyValuePair<StatementGrammarNode, INodeValidationData>> GetNodesWithSemanticError()
 		{
 			return _columnNodeValidity
 				.Concat(_objectNodeValidity)
@@ -396,6 +416,13 @@ namespace SqlPad.Oracle
 				.Concat(_identifierNodeValidity)
 				.Concat(_invalidNonTerminals)
 				.Where(nv => nv.Value.SemanticErrorType != OracleSemanticErrorType.None)
+				.Select(nv => new KeyValuePair<StatementGrammarNode, INodeValidationData>(nv.Key, nv.Value));
+		}
+
+		public IEnumerable<KeyValuePair<StatementGrammarNode, INodeValidationData>> GetNodesWithSuggestion()
+		{
+			return _columnNodeValidity
+				.Where(nv => nv.Value.SuggestionType != OracleSuggestionType.None)
 				.Select(nv => new KeyValuePair<StatementGrammarNode, INodeValidationData>(nv.Key, nv.Value));
 		}
 	}
@@ -414,6 +441,11 @@ namespace SqlPad.Oracle
 		}
 
 		public bool IsRecognized { get; set; }
+
+		public virtual string SuggestionType
+		{
+			get { return null; }
+		}
 
 		public virtual string SemanticErrorType
 		{
@@ -468,6 +500,25 @@ namespace SqlPad.Oracle
 		public override string ToolTipText
 		{
 			get { return _semanticError; }
+		}
+	}
+
+	public class SuggestionData : NodeValidationData
+	{
+		private readonly string _suggestionType;
+
+		public SuggestionData(string suggestionType = OracleSuggestionType.None)
+		{
+			_suggestionType = suggestionType;
+		}
+
+		public override string SuggestionType { get { return _suggestionType; } }
+
+		public override string SemanticErrorType { get { return OracleSemanticErrorType.None; } }
+
+		public override string ToolTipText
+		{
+			get { return _suggestionType; }
 		}
 	}
 

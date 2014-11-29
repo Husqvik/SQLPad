@@ -13,4 +13,10 @@ namespace SqlPad.Oracle
 		public const string ObjectCannotBeUsed = "Object cannot be used here";
 		public const string InvalidColumnCount = "Invalid column count";
 	}
+
+	public static class OracleSuggestionType
+	{
+		public const string None = null;
+		public const string PotentialDatabaseLink = "Reference over database link? Use object qualifier. ";
+	}
 }

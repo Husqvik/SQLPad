@@ -26,9 +26,10 @@ namespace SqlPad
 
 		private readonly Stack<ICollection<TextSegment>> _highlightSegments = new Stack<ICollection<TextSegment>>();
 		private readonly List<StatementGrammarNode> _highlightParenthesis = new List<StatementGrammarNode>();
-		private readonly Dictionary<DocumentLine, ICollection<StatementGrammarNode>> _lineTerminals = new Dictionary<DocumentLine, ICollection<StatementGrammarNode>>();
 		private readonly HashSet<StatementGrammarNode> _redundantTerminals = new HashSet<StatementGrammarNode>();
+		private readonly Dictionary<DocumentLine, ICollection<StatementGrammarNode>> _lineTerminals = new Dictionary<DocumentLine, ICollection<StatementGrammarNode>>();
 		private readonly Dictionary<DocumentLine, ICollection<StatementGrammarNode>> _lineNodesWithSemanticErrorsOrInvalidGrammar = new Dictionary<DocumentLine, ICollection<StatementGrammarNode>>();
+		private readonly Dictionary<DocumentLine, ICollection<StatementGrammarNode>> _lineNodesWithSuggestion = new Dictionary<DocumentLine, ICollection<StatementGrammarNode>>();
 		private readonly Dictionary<DocumentLine, ICollection<StatementCommentNode>> _lineComments = new Dictionary<DocumentLine, ICollection<StatementCommentNode>>();
 		private readonly HashSet<StatementGrammarNode> _recognizedProgramTerminals = new HashSet<StatementGrammarNode>();
 		private readonly HashSet<StatementGrammarNode> _unrecognizedTerminals = new HashSet<StatementGrammarNode>();
@@ -78,6 +79,7 @@ namespace SqlPad
 			_recognizedProgramTerminals.Clear();
 			_unrecognizedTerminals.Clear();
 			_lineNodesWithSemanticErrorsOrInvalidGrammar.Clear();
+			_lineNodesWithSuggestion.Clear();
 			_lineComments.Clear();
 		}
 
@@ -136,6 +138,8 @@ namespace SqlPad
 
 			BuildLineNodeWithSemanticErrorOrInvalidGrammarDictionary(context);
 
+			BuildLineNodeWithSuggestionDictionary(context);
+
 			BuildLineCommentDictionary(context);
 		}
 
@@ -154,13 +158,24 @@ namespace SqlPad
 		private void BuildLineNodeWithSemanticErrorOrInvalidGrammarDictionary(ITextRunConstructionContext context)
 		{
 			var semanticErrorOrInvalidGrammarNodeEnumerator = _validationModels.Values
-				.SelectMany(vm => vm.GetNodesWithSemanticErrors())
+				.SelectMany(vm => vm.GetNodesWithSemanticError())
 				.Select(kvp => kvp.Key)
 				.Concat(_statements.SelectMany(s => s.InvalidGrammarNodes))
 				.OrderBy(n => n.SourcePosition.IndexStart)
 				.GetEnumerator();
 
 			BuildLineNodeDictionary(semanticErrorOrInvalidGrammarNodeEnumerator, context, _lineNodesWithSemanticErrorsOrInvalidGrammar);
+		}
+
+		private void BuildLineNodeWithSuggestionDictionary(ITextRunConstructionContext context)
+		{
+			var suggestionNodeEnumerator = _validationModels.Values
+				.SelectMany(vm => vm.GetNodesWithSuggestion())
+				.Select(kvp => kvp.Key)
+				.OrderBy(n => n.SourcePosition.IndexStart)
+				.GetEnumerator();
+
+			BuildLineNodeDictionary(suggestionNodeEnumerator, context, _lineNodesWithSuggestion);
 		}
 
 		private void BuildUnrecognizedTerminalHashset()
@@ -251,13 +266,22 @@ namespace SqlPad
 			ProcessNodeCollectionAtLine(line, _lineNodesWithSemanticErrorsOrInvalidGrammar,
 				element => element.TextRunProperties.SetTextDecorations(Resources.WaveErrorUnderline));
 
+			ProcessNodeCollectionAtLine(line, _lineNodesWithSuggestion,
+				element => element.TextRunProperties.SetTextDecorations(Resources.WaveWarningUnderline));
+
 			foreach (var parenthesisNode in _highlightParenthesis)
 			{
 				ProcessNodeAtLine(line, parenthesisNode.SourcePosition, element => element.TextRunProperties.SetTextDecorations(TextDecorations.Underline));
 			}
 
-			var statementsAtLine = _statements.Where(s => s.SourcePosition.IndexStart <= line.EndOffset && s.SourcePosition.IndexEnd >= line.Offset);
+			ProcessNodeCollectionAtLine(line, _lineComments,
+				element =>
+				{
+					element.TextRunProperties.SetForegroundBrush(CommentBrush);
+					element.BackgroundBrush = null;
+				});
 
+			var statementsAtLine = _statements.Where(s => s.SourcePosition.IndexStart <= line.EndOffset && s.SourcePosition.IndexEnd >= line.Offset);
 			foreach (var statement in statementsAtLine)
 			{
 				var backgroundColor = statement.ProcessingStatus == ProcessingStatus.Success ? ValidStatementBackgroundBrush : InvalidStatementBackgroundBrush;
@@ -303,13 +327,6 @@ namespace SqlPad
 						element => element.BackgroundBrush = highlightSegment.DisplayOptions == DisplayOptions.Usage ? HighlightUsageBrush : HighlightDefinitionBrush);
 				}
 			}
-
-			ProcessNodeCollectionAtLine(line, _lineComments,
-				element =>
-				{
-					element.TextRunProperties.SetForegroundBrush(CommentBrush);
-					element.BackgroundBrush = null;
-				});
 		}
 
 		private void ProcessNodeCollectionAtLine<TNode>(DocumentLine line, IReadOnlyDictionary<DocumentLine, ICollection<TNode>> lineNodeDictionary, Action<VisualLineElement> visualElementAction) where TNode : StatementNode

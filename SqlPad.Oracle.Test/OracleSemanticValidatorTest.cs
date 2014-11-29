@@ -1551,7 +1551,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
-			var nodesWithSemanticError = validationModel.GetNodesWithSemanticErrors().Select(kvp => kvp.Value).ToArray();
+			var nodesWithSemanticError = validationModel.GetNodesWithSemanticError().Select(kvp => kvp.Value).ToArray();
 			nodesWithSemanticError.Length.ShouldBe(0);
 		}
 
@@ -1564,12 +1564,41 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
-			var objectNode = validationModel.ObjectNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToArray();
-			objectNode.Length.ShouldBe(1);
-			objectNode[0].IsRecognized.ShouldBe(true);
-			objectNode[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
-			objectNode[0].Node.ShouldNotBe(null);
-			objectNode[0].Node.Token.Value.ShouldBe("HQ_PDB_LOOPBACK");
+			var objectNodes = validationModel.ObjectNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToArray();
+			objectNodes.Length.ShouldBe(1);
+			objectNodes[0].IsRecognized.ShouldBe(true);
+			objectNodes[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
+			objectNodes[0].Node.ShouldNotBe(null);
+			objectNodes[0].Node.Token.Value.ShouldBe("HQ_PDB_LOOPBACK");
+		}
+
+		[Test(Description = @"")]
+		public void TestColumnSuggestionOverDatabaseLink()
+		{
+			const string sqlText = @"SELECT NAME FROM SELECTION@HQ_PDB_LOOPBACK";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var columnNodes = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToArray();
+			columnNodes.Length.ShouldBe(1);
+			columnNodes[0].IsRecognized.ShouldBe(true);
+			columnNodes[0].SuggestionType.ShouldBe(OracleSuggestionType.PotentialDatabaseLink);
+			columnNodes[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
+		}
+
+		[Test(Description = @"")]
+		public void TestObjectQualifiedColumnSuggestionOverDatabaseLink()
+		{
+			const string sqlText = @"SELECT SELECTION.NAME FROM SELECTION@HQ_PDB_LOOPBACK";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var columnNodes = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToArray();
+			columnNodes.Length.ShouldBe(0);
 		}
 
 		[Test(Description = @"")]
