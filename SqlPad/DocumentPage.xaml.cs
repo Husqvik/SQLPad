@@ -166,7 +166,7 @@ namespace SqlPad
 			{
 				WorkDocument = new WorkDocument
 				{
-					ConnectionName = ((ConnectionStringSettings)ComboBoxConnection.SelectedItem).Name
+					ConnectionName = usedConnection.Name
 				};
 
 				WorkDocumentCollection.AddDocument(WorkDocument);
@@ -1177,7 +1177,7 @@ namespace SqlPad
 			foreach (var bindVariable in bindVariables)
 			{
 				var model = new BindVariableModel(bindVariable);
-				model.PropertyChanged += (sender, args) => configuration.SetBindVariable(bindVariable);
+				model.PropertyChanged += (sender, args) => configuration.SetBindVariable(model.BindVariable);
 				
 				var storedVariable = configuration.GetBindVariable(bindVariable.Name);
 				if (storedVariable != null)

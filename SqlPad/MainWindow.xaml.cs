@@ -225,6 +225,7 @@ namespace SqlPad
 			SelectNewTabItem();
 			DocumentTabControl.Items.Remove(document.TabItem);
 
+			document.SaveWorkingDocument();
 			WorkDocumentCollection.CloseDocument(document.WorkDocument);
 
 			document.Dispose();
@@ -308,19 +309,23 @@ namespace SqlPad
 
 		private DocumentPage OpenExistingFile(string fileName)
 		{
+			var document = new WorkDocument { DocumentFileName = fileName };
+			return OpenExistingWorkDocument(document);
+		}
+
+		private DocumentPage OpenExistingWorkDocument(WorkDocument document)
+		{
 			DocumentPage documentPage;
 			WorkDocument workDocument;
-			if (WorkDocumentCollection.TryGetWorkingDocumentFor(fileName, out workDocument))
+			if (WorkDocumentCollection.TryGetWorkingDocumentFor(document.DocumentFileName, out workDocument))
 			{
 				documentPage = AllDocuments.First(d => d.WorkDocument == workDocument);
 				DocumentTabControl.SelectedItem = documentPage.TabItem;
 			}
 			else
 			{
-				workDocument = new WorkDocument { DocumentFileName = fileName, TabIndex = -1 };
-
-				WorkDocumentCollection.AddDocument(workDocument);
-				documentPage = CreateNewDocumentPage(workDocument);
+				WorkDocumentCollection.AddDocument(document);
+				documentPage = CreateNewDocumentPage(document);
 			}
 
 			return documentPage;
@@ -445,7 +450,7 @@ namespace SqlPad
 			if (workDocument.File.Exists)
 			{
 				WorkDocumentCollection.AddRecentDocument(workDocument);
-				OpenExistingFile(workDocument.DocumentFileName);
+				OpenExistingWorkDocument(workDocument);
 			}
 			else
 			{

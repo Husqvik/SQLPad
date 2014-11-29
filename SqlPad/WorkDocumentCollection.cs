@@ -225,6 +225,8 @@ namespace SqlPad
 		{
 			ValidateWorkingDocument(workDocument);
 
+			AddRecentDocument(workDocument);
+
 			try
 			{
 				Instance._workingDocuments.Remove(workDocument.DocumentId);
@@ -315,6 +317,7 @@ namespace SqlPad
 		public WorkDocument()
 		{
 			DocumentId = Guid.NewGuid();
+			TabIndex = -1;
 		}
 
 		private List<bool> FoldingStatesInternal
@@ -381,7 +384,16 @@ namespace SqlPad
 				ConnectionName = ConnectionName,
 				SchemaName = SchemaName,
 				DocumentFileName = DocumentFileName,
-				TabIndex = -1
+				CursorPosition = CursorPosition,
+				_foldingStates = _foldingStates,
+				KeepDatabaseOutputHistory = KeepDatabaseOutputHistory,
+				EnableDatabaseOutput = EnableDatabaseOutput,
+				EditorGridColumnWidth = EditorGridColumnWidth,
+				EditorGridRowHeight = EditorGridRowHeight,
+				SelectionLength = SelectionLength,
+				SelectionStart = SelectionStart,
+				VisualLeft = VisualLeft,
+				VisualTop = VisualTop
 			};
 		}
 	}
