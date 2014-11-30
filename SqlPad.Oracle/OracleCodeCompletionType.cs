@@ -12,7 +12,7 @@ namespace SqlPad.Oracle
 	{
 		private readonly OracleSqlParser _parser = new OracleSqlParser();
 		private static readonly char[] Separators = { ' ', '\t', '\r', '\n', '\u00A0' };
-		
+
 		public int CursorPosition { get; private set; }
 
 		public bool Schema { get; private set; }
@@ -50,6 +50,8 @@ namespace SqlPad.Oracle
 		public bool InComment { get; private set; }
 
 		public bool IsCursorTouchingIdentifier { get; private set; }
+
+		public bool IsNewExpressionWithInvalidGrammar { get; private set; }
 		
 		public StatementGrammarNode CurrentTerminal { get; private set; }
 
@@ -156,7 +158,13 @@ namespace SqlPad.Oracle
 
 			var isCursorBetweenTwoTerminalsWithPrecedingIdentifierWithoutPrefix = IsCursorTouchingIdentifier && !ReferenceIdentifier.HasObjectIdentifier;
 			Schema = TerminalCandidates.Contains(Terminals.SchemaIdentifier) || isCursorBetweenTwoTerminalsWithPrecedingIdentifierWithoutPrefix;
-			SchemaProgram = Column = TerminalCandidates.Contains(Terminals.Identifier) || isCursorBetweenTwoTerminalsWithPrecedingIdentifierWithoutPrefix;
+
+			var isCurrentClauseSupported = EffectiveTerminal.IsWithinSelectClauseOrExpression() || EffectiveTerminal.ParentNode.Id.In(NonTerminals.WhereClause, NonTerminals.GroupByClause, NonTerminals.HavingClause, NonTerminals.OrderByClause);
+			if (isCurrentClauseSupported)
+			{
+				SchemaProgram = Column = TerminalCandidates.Contains(Terminals.Identifier) || isCursorBetweenTwoTerminalsWithPrecedingIdentifierWithoutPrefix;
+			}
+			
 			DatabaseLink = TerminalCandidates.Contains(Terminals.DatabaseLinkIdentifier);
 			JoinType = !isCursorTouchingTwoTerminals && TerminalCandidates.Contains(Terminals.Join);
 
@@ -207,6 +215,19 @@ namespace SqlPad.Oracle
 
 		private void AnalyzePrefixedColumnReference(StatementGrammarNode effectiveTerminal)
 		{
+			IsNewExpressionWithInvalidGrammar = effectiveTerminal.Id == Terminals.SchemaIdentifier && effectiveTerminal.FollowingTerminal != null && effectiveTerminal.FollowingTerminal.Id == Terminals.ObjectIdentifier;
+			if (IsNewExpressionWithInvalidGrammar)
+			{
+				ReferenceIdentifier =
+					new ReferenceIdentifier
+					{
+						Identifier = effectiveTerminal,
+						CursorPosition = CursorPosition
+					};
+				
+				return;
+			}
+
 			var prefixedColumnReference = effectiveTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference);
 			var prefix = effectiveTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression && n.Id != NonTerminals.AliasedExpressionOrAllTableColumns, NonTerminals.Prefix);
 			var lookupNode = prefixedColumnReference ?? prefix;
@@ -241,7 +262,7 @@ namespace SqlPad.Oracle
 
 		private void AnalyzeQueryTableExpression(StatementGrammarNode effectiveTerminal)
 		{
-			var queryTableExpression = effectiveTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.InnerTableReference, NonTerminals.QueryTableExpression);
+			var queryTableExpression = effectiveTerminal.GetPathFilterAncestor(n => !n.Id.In(NonTerminals.InnerTableReference, NonTerminals.QueryBlock), NonTerminals.QueryTableExpression);
 			if (queryTableExpression == null)
 				return;
 
@@ -342,12 +363,12 @@ namespace SqlPad.Oracle
 
 		private string GetTerminalEffectiveValue(StatementNode terminal)
 		{
-			if (terminal == null || terminal.SourcePosition.IndexStart >= CursorPosition)
+			if (terminal == null || terminal.SourcePosition.IndexStart > CursorPosition)
 				return null;
 
 			return terminal.SourcePosition.IndexEnd < CursorPosition
 				? terminal.Token.Value
-				: terminal.Token.Value.Substring(0, CursorPosition - terminal.SourcePosition.IndexStart);
+				: terminal.Token.Value.Substring(0, CursorPosition - terminal.SourcePosition.IndexStart).Trim('"');
 		}
 
 		private StatementGrammarNode GetTerminalIfUnderCursor(StatementGrammarNode terminal)

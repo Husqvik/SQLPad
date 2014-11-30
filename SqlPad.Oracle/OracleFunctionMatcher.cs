@@ -19,7 +19,7 @@ namespace SqlPad.Oracle
 
 		public FunctionMatchResult GetMatchResult(OracleProgramMetadata programMetadata, string quotedCurrentSchema)
 		{
-			var isSchemaMatched = _ownerMatch == null || (!String.IsNullOrEmpty(_ownerMatch.Value) && programMetadata.Identifier.Owner == quotedCurrentSchema) ||
+			var isSchemaMatched = _ownerMatch == null || (_ownerMatch.Value != null && _ownerMatch.Value == String.Empty && programMetadata.Identifier.Owner == quotedCurrentSchema) ||
 			                      _ownerMatch.IsMatch(programMetadata).Any();
 			var matchResult =
 				new FunctionMatchResult

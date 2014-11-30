@@ -340,10 +340,8 @@ namespace SqlPad.Oracle
 			var currentNode = completionType.EffectiveTerminal;
 			
 			var prefixedColumnReference = currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference);
-			var columnIdentifierFollowing = currentNode.Id != Terminals.Identifier && prefixedColumnReference != null && prefixedColumnReference.GetDescendants(Terminals.Identifier).FirstOrDefault() != null;
-
-			if ((!currentNode.IsWithinSelectClauseOrExpression() && !currentNode.ParentNode.Id.In(NonTerminals.WhereClause, NonTerminals.GroupByClause, NonTerminals.HavingClause, NonTerminals.OrderByClause)) ||
-			    columnIdentifierFollowing || currentNode.Id.IsLiteral())
+			var columnIdentifierFollowing = !completionType.IsNewExpressionWithInvalidGrammar && currentNode.Id != Terminals.Identifier && prefixedColumnReference != null && prefixedColumnReference.GetDescendants(Terminals.Identifier).FirstOrDefault() != null;
+			if (columnIdentifierFollowing || currentNode.Id.IsLiteral())
 			{
 				return EmptyCollection;
 			}
@@ -351,20 +349,16 @@ namespace SqlPad.Oracle
 			var programReferences = referenceContainers.SelectMany(c => c.ProgramReferences);
 
 			var objectIdentifierNode = completionType.ReferenceIdentifier.ObjectIdentifier;
-
-			var partialName = currentNode.Id == Terminals.Identifier && cursorPosition <= currentNode.SourcePosition.IndexEnd + 1
-				? currentNode.Token.Value.Substring(0, cursorPosition - currentNode.SourcePosition.IndexStart).Trim('"')
-				: null;
-
-			var currentName = partialName == null ? null : currentNode.Token.Value;
+			var partialName = completionType.ReferenceIdentifier.IdentifierEffectiveValue;
+			var currentName = completionType.ReferenceIdentifier.IdentifierOriginalValue;
+			var nodeToReplace = completionType.ReferenceIdentifier.IdentifierUnderCursor;
+			var schemaName = completionType.ReferenceIdentifier.SchemaIdentifierOriginalValue;
 
 			var functionReference = programReferences.SingleOrDefault(f => f.FunctionIdentifierNode == currentNode);
 			var addParameterList = functionReference == null || functionReference.ParameterListNode == null;
 
 			var tableReferences = (ICollection<OracleDataObjectReference>)referenceContainers.SelectMany(c => c.ObjectReferences).ToArray();
 			var suggestedFunctions = Enumerable.Empty<ICodeCompletionItem>();
-			var nodeToReplace = completionType.ReferenceIdentifier.IdentifierUnderCursor;
-			var schemaName = completionType.ReferenceIdentifier.SchemaIdentifierOriginalValue;
 			if (objectIdentifierNode != null)
 			{
 				var objectName = objectIdentifierNode.Token.Value;

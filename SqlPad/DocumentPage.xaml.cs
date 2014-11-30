@@ -1332,7 +1332,13 @@ namespace SqlPad
 
 		private void CreateCompletionWindow(IEnumerable<CompletionData> items)
 		{
-			var completionWindow = new CompletionWindow(Editor.TextArea) { SizeToContent = SizeToContent.WidthAndHeight };
+			var completionWindow =
+				new CompletionWindow(Editor.TextArea)
+				{
+					SizeToContent = SizeToContent.WidthAndHeight,
+					ResizeMode = ResizeMode.NoResize
+				};
+			
 			var listItems = completionWindow.CompletionList.CompletionData;
 
 			listItems.AddRange(items);

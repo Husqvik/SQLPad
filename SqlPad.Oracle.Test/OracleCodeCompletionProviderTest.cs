@@ -859,7 +859,7 @@ se";
 		public void TestTruncSpecialParameterCompletionWithNoParameterToken()
 		{
 			const string statement = @"SELECT TRUNC(SYSDATE, ) FROM DUAL";
-			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 22).ToList();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 22, true, OracleCodeCompletionCategory.FunctionParameter).ToList();
 			items.Count.ShouldBe(11);
 			items[0].Name.ShouldBe("CC - One greater than the first two digits of a four-digit year");
 			items[0].Text.ShouldBe("'CC'");
@@ -942,7 +942,7 @@ se";
 		public void TestSysContextUserContextNamespaceCompletionWithEmptyParameterList()
 		{
 			const string statement = @"SELECT SYS_CONTEXT() FROM DUAL";
-			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 19).ToList();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 19, true, OracleCodeCompletionCategory.FunctionParameter).ToList();
 			items.Count.ShouldBe(4);
 			items[0].Name.ShouldBe("SPECIAL'CONTEXT");
 			items[0].Text.ShouldBe("'SPECIAL''CONTEXT'");
@@ -979,7 +979,7 @@ se";
 		public void TestSysContextUserContextAttributeCompletionWithQuotedIdentifierNamespace()
 		{
 			const string statement = @"SELECT SYS_CONTEXT(q'|Special'Context|', ) FROM DUAL";
-			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 41).ToList();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 41, true, OracleCodeCompletionCategory.FunctionParameter).ToList();
 			items.Count.ShouldBe(1);
 			items[0].Name.ShouldBe("Special'Attribute'5");
 			items[0].Text.ShouldBe("'Special''Attribute''5'");
@@ -1486,10 +1486,26 @@ se";
 		}
 
 		[Test(Description = @"")]
+		public void TestFunctionSuggestionWhenTypingWithinSameColumnBeforeExistingExpression()
+		{
+			const string statement = "SELECT ROUN DBMS_RANDOM.VALUE FROM DUAL";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 11).ToList();
+			items.Count.ShouldBe(1);
+		}
+
+		[Test(Description = @"")]
+		public void TestSchemaFunctionsNotSuggestedWhenSuggestingPackageFunctions()
+		{
+			const string statement = "SELECT DBMS_RANDOM.NORMAL FROM DUAL";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 19, true, OracleCodeCompletionCategory.SchemaFunction, OracleCodeCompletionCategory.Package).ToList();
+			items.Count.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
 		public void TestDbmsRandomStringSpecialParameterCompletion()
 		{
 			const string statement = @"SELECT DBMS_RANDOM.STRING() FROM DUAL";
-			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 26).ToList();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 26, true, OracleCodeCompletionCategory.FunctionParameter).ToList();
 			items.Count.ShouldBe(5);
 			items[0].Name.ShouldBe("A (a) - mixed case alpha characters");
 			items[0].Text.ShouldBe("'A'");
