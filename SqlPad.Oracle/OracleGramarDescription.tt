@@ -79,7 +79,7 @@ namespace SqlPad.Oracle
 			
 		private static readonly HashSet<string> IdentifiersInternal = new HashSet<string> { <#= String.Join(", ", identifierTerminalIds.Select(id => "Terminals." + id)) #> };
 
-		private static readonly HashSet<string> ReservedWords = new HashSet<string> { <#= String.Join(", ", reservedWords) #> };
+		internal static readonly ICollection<string> ReservedWords = new HashSet<string> { <#= String.Join(", ", reservedWords) #> };
 		
 		private static readonly HashSet<string> LiteralsInternal = new HashSet<string> { <#= String.Join(", ", literalTerminalIds.Select(id => "Terminals." + id)) #> };
 

@@ -108,7 +108,8 @@ namespace SqlPad.Oracle
 
 		private void Build()
 		{
-			_queryBlockNodes = Statement.RootNode.GetDescendants(NonTerminals.QueryBlock)
+			_queryBlockNodes = Statement.RootNode.Terminals.Where(t => t.Id == Terminals.Select && t.ParentNode.Id == NonTerminals.QueryBlock)
+				.Select(t => t.ParentNode)
 				.OrderByDescending(q => q.Level)
 				.ToDictionary(n => n, n => new OracleQueryBlock(this) { RootNode = n, Statement = Statement });
 
@@ -139,7 +140,7 @@ namespace SqlPad.Oracle
 					}
 				}
 
-				queryBlock.FromClause = queryBlockRoot.GetDescendantsWithinSameQuery(NonTerminals.FromClause).FirstOrDefault();
+				queryBlock.FromClause = queryBlockRoot.GetDescendantByPath(NonTerminals.FromClause);
 				var tableReferenceNonterminals = queryBlock.FromClause == null
 					? Enumerable.Empty<StatementGrammarNode>()
 					: queryBlock.FromClause.GetDescendantsWithinSameQuery(NonTerminals.TableReference).ToArray();
@@ -1441,7 +1442,7 @@ namespace SqlPad.Oracle
 
 		private void FindWhereGroupByHavingReferences(OracleQueryBlock queryBlock)
 		{
-			var whereClauseRootNode = queryBlock.RootNode.GetDescendantsWithinSameQuery(NonTerminals.WhereClause).FirstOrDefault();
+			var whereClauseRootNode = queryBlock.RootNode.GetDescendantByPath(NonTerminals.WhereClause);
 			if (whereClauseRootNode != null)
 			{
 				queryBlock.WhereClause = whereClauseRootNode;
@@ -1449,7 +1450,7 @@ namespace SqlPad.Oracle
 				ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock, whereClauseIdentifiers, QueryBlockPlacement.Where, null);
 			}
 
-			var groupByClauseRootNode = queryBlock.RootNode.GetDescendantsWithinSameQuery(NonTerminals.GroupByClause).FirstOrDefault();
+			var groupByClauseRootNode = queryBlock.RootNode.GetDescendantByPath(NonTerminals.GroupByClause);
 			if (groupByClauseRootNode == null)
 			{
 				return;
@@ -1459,7 +1460,7 @@ namespace SqlPad.Oracle
 			var identifiers = groupByClauseRootNode.GetPathFilterDescendants(n => !n.Id.In(NonTerminals.NestedQuery, NonTerminals.HavingClause), Terminals.Identifier, Terminals.RowIdPseudoColumn);
 			ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock, identifiers, QueryBlockPlacement.GroupBy, null);
 
-			var havingClauseRootNode = groupByClauseRootNode.GetDescendantsWithinSameQuery(NonTerminals.HavingClause).FirstOrDefault();
+			var havingClauseRootNode = groupByClauseRootNode.GetDescendantByPath(NonTerminals.HavingClause);
 			if (havingClauseRootNode == null)
 			{
 				return;

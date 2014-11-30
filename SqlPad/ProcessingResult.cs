@@ -6,16 +6,16 @@ namespace SqlPad
 	[DebuggerDisplay("ProcessingResult (Status={Status}{Nodes == null ? \"\" : \", Nodes=\" + System.Linq.Enumerable.Count(Nodes), nq})")]
 	public struct ProcessingResult
 	{
-		public ProcessingStatus Status { get; set; }
+		public ProcessingStatus Status;
 
-		public string NodeId { get; set; }
-		
-		public IList<StatementGrammarNode> Nodes { get; set; }
+		public string NodeId;
 
-		public IList<StatementGrammarNode> BestCandidates { get; set; }
+		public IList<StatementGrammarNode> Nodes;
 
-		public int TerminalCount { get; set; }
-		
-		public int BestCandidateTerminalCount { get; set; }
+		public IList<StatementGrammarNode> BestCandidates;
+
+		public int TerminalCount;
+
+		public int BestCandidateTerminalCount;
 	}
 }
