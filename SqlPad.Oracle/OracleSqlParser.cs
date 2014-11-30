@@ -689,8 +689,8 @@ namespace SqlPad.Oracle
 				var isReservedWord = false;
 				if (String.IsNullOrEmpty(terminal.RegexValue))
 				{
-					var tokenValue = currentToken.Value.ToUpperInvariant();
-					tokenIsValid = terminal.Value == tokenValue || (terminal.AllowQuotedNotation && tokenValue == String.Format("\"{0}\"", terminal.Value));
+					var tokenValue = currentToken.UpperInvariantValue;
+					tokenIsValid = terminal.Value == tokenValue || (terminal.AllowQuotedNotation && tokenValue.Length == terminal.Value.Length + 2 && tokenValue[0] == '"' && tokenValue[tokenValue.Length - 1] == '"' && tokenValue.Substring(1, tokenValue.Length - 2) == terminal.Value);
 					isReservedWord = tokenIsValid && terminal.IsReservedWord;
 				}
 				else

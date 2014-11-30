@@ -6,21 +6,23 @@ namespace SqlPad.Oracle
 	public struct OracleToken : IToken
 	{
 		public static OracleToken Empty = new OracleToken();
-		private readonly string _value;
-		private readonly int _index;
-		private readonly CommentType _commentType;
+		public readonly CommentType CommentType;
+		public readonly int Index;
+		public readonly string Value;
+		public readonly string UpperInvariantValue;
 
 		public OracleToken(string value, int index, CommentType commentType = CommentType.None)
 		{
-			_value = value;
-			_index = index;
-			_commentType = commentType;
+			UpperInvariantValue = value.ToUpperInvariant();
+			Value = value;
+			Index = index;
+			CommentType = commentType;
 		}
 
-		public string Value { get { return _value; } }
+		string IToken.Value { get { return Value; } }
 
-		public int Index { get { return _index; } }
+		int IToken.Index { get { return Index; } }
 
-		public CommentType CommentType { get { return _commentType; } }
+		CommentType IToken.CommentType { get { return CommentType; } }
 	}
 }
