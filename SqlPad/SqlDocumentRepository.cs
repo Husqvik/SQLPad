@@ -57,7 +57,7 @@ namespace SqlPad
 
 				UpdateStatementsInternal(statementText, () => statements, (c, t) => validationModels);
 			}
-			catch (TaskCanceledException)
+			catch (OperationCanceledException)
 			{
 				
 			}

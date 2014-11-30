@@ -37,10 +37,7 @@ namespace SqlPad
 
 			for (var i = 0; i < lineCount; ++i)
 			{
-				if (cancellationToken.CanBeCanceled && cancellationToken.IsCancellationRequested)
-				{
-					throw new TaskCanceledException("User has cancelled the task execution. ");
-				}
+				cancellationToken.ThrowIfCancellationRequested();
 
 				NextHexLine(builder, lineAddressMask, bytesPerLine, i, sourceBytes);
 			}

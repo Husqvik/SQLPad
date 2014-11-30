@@ -63,7 +63,7 @@ namespace SqlPad.Oracle.Commands
 				Text = String.Empty
 			};
 
-			var sourceFromClause = CurrentQueryBlock.RootNode.GetDescendantsWithinSameQuery(NonTerminals.FromClause).FirstOrDefault();
+			var sourceFromClause = CurrentQueryBlock.RootNode.GetDescendantByPath(NonTerminals.FromClause);
 			if (sourceFromClause != null)
 			{
 				segmentToRemove.Text = sourceFromClause.GetStatementSubstring(ExecutionContext.StatementText);
@@ -116,7 +116,7 @@ namespace SqlPad.Oracle.Commands
 			}
 			else
 			{
-				var targetFromClause = _parentQueryBlock.RootNode.GetDescendantsWithinSameQuery(NonTerminals.FromClause).First();
+				var targetFromClause = _parentQueryBlock.RootNode.GetDescendantByPath(NonTerminals.FromClause);
 				whereCondition = " WHERE " + whereCondition;
 				whereConditionSegment.IndextStart = targetFromClause.SourcePosition.IndexEnd + 1;
 			}

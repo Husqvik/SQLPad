@@ -417,10 +417,7 @@ namespace SqlPad.Oracle
 
 			foreach (var sequence in StartingNonTerminalSequences[nonTerminalId])
 			{
-				if (cancellationToken.IsCancellationRequested && cancellationToken.CanBeCanceled)
-				{
-					throw new TaskCanceledException("User has cancelled the task execution. ");
-				}
+				cancellationToken.ThrowIfCancellationRequested();
 
 				result.Status = ProcessingStatus.Success;
 				workingNodes.Clear();

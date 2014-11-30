@@ -108,7 +108,7 @@ namespace SqlPad.Oracle.Commands
 
 		private void ResolveAddedTextSegment()
 		{
-			var groupByClause = CurrentQueryBlock.RootNode.GetDescendantsWithinSameQuery(NonTerminals.GroupByClause).SingleOrDefault();
+			var groupByClause = CurrentQueryBlock.RootNode.GetDescendantByPath(NonTerminals.GroupByClause);
 			if (groupByClause == null)
 			{
 				var targetNode = CurrentQueryBlock.RootNode.GetDescendantByPath(NonTerminals.HierarchicalQueryClause)

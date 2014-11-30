@@ -104,7 +104,7 @@ namespace SqlPad
 
 				_findReplaceManager.CurrentEditor = new TextEditorAdapter(searchEditor);
 			}
-			catch (TaskCanceledException)
+			catch (OperationCanceledException)
 			{
 				Trace.WriteLine("User has cancelled large data editor load operation. ");
 				Close();
