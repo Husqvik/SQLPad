@@ -178,14 +178,14 @@ namespace SqlPad.Oracle.Test
 			AllObjectsInternal.Add(synonym);
 
 			#region SYS.DBMS_RANDOM
-			var dbmsRandom = (OraclePackage)AllObjectsInternal.Single(o => o.Name == "\"DBMS_RANDOM\"" && o.Owner == OwnerNameSys);
-			var randomStringFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues("SYS", "DBMS_RANDOM", "STRING"), false, false, false, false, true, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
+			var dbmsRandom = (OraclePackage)AllObjectsInternal.Single(o => o.Name == PackageDbmsRandom && o.Owner == OwnerNameSys);
+			var randomStringFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, IdentifierDbmsRandomString, false, false, false, false, true, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
 			randomStringFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata(null, 0, ParameterDirection.ReturnValue, "VARCHAR2", OracleObjectIdentifier.Empty, false));
 			randomStringFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata("OPT", 1, ParameterDirection.Input, "CHAR", OracleObjectIdentifier.Empty, false));
 			randomStringFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata("LEN", 2, ParameterDirection.Input, "NUMBER", OracleObjectIdentifier.Empty, false));
 			randomStringFunctionMetadata.Owner = dbmsRandom;
 			dbmsRandom.Functions.Add(randomStringFunctionMetadata);
-			var randomStringNormalFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues("SYS", "DBMS_RANDOM", "NORMAL"), false, false, false, false, true, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
+			var randomStringNormalFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageDbmsRandom, "NORMAL"), false, false, false, false, true, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
 			randomStringNormalFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata(null, 0, ParameterDirection.ReturnValue, "NUMBER", OracleObjectIdentifier.Empty, false));
 			randomStringNormalFunctionMetadata.Owner = dbmsRandom;
 			dbmsRandom.Functions.Add(randomStringNormalFunctionMetadata);
@@ -651,7 +651,7 @@ namespace SqlPad.Oracle.Test
 			},
 			new OraclePackage
 			{
-				FullyQualifiedName = OracleObjectIdentifier.Create(OwnerNameSys, "\"DBMS_RANDOM\""),
+				FullyQualifiedName = OracleObjectIdentifier.Create(OwnerNameSys, PackageDbmsRandom),
 				IsValid = true
 			},
 			new OraclePackage

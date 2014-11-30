@@ -1485,6 +1485,20 @@ se";
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.SchemaFunction);
 		}
 
+		[Test(Description = @"")]
+		public void TestDbmsRandomStringSpecialParameterCompletion()
+		{
+			const string statement = @"SELECT DBMS_RANDOM.STRING() FROM DUAL";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 26).ToList();
+			items.Count.ShouldBe(5);
+			items[0].Name.ShouldBe("A (a) - mixed case alpha characters");
+			items[0].Text.ShouldBe("'A'");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+			items[4].Name.ShouldBe("X (x) - uppercase alpha-numeric characters");
+			items[4].Text.ShouldBe("'X'");
+			items[4].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)

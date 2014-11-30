@@ -20,7 +20,8 @@ namespace SqlPad.Oracle
 				OracleDatabaseModelBase.IdentifierBuiltInProgramToDate,
 				OracleDatabaseModelBase.IdentifierBuiltInProgramToTimestamp,
 				OracleDatabaseModelBase.IdentifierBuiltInProgramToTimestampWithTimeZone,
-				OracleDatabaseModelBase.IdentifierBuiltInProgramSysContext
+				OracleDatabaseModelBase.IdentifierBuiltInProgramSysContext,
+				OracleDatabaseModelBase.IdentifierDbmsRandomString
 			};
 
 		public static IEnumerable<ICodeCompletionItem> ResolveSpecificFunctionParameterCodeCompletionItems(StatementGrammarNode currentNode, IEnumerable<OracleCodeCompletionFunctionOverload> functionOverloads, OracleDatabaseModelBase databaseModel)
@@ -78,6 +79,17 @@ namespace SqlPad.Oracle
 			{
 				BuildCommonDateFormatCompletionItems(currentNode, completionItems);
 				completionItems.Add(BuildParameterCompletionItem(currentNode, "J", "J - Julian day; the number of days since January 1, 4712 BC. Number specified with J must be integers. "));
+			}
+
+			var randomStringFunctionOverload = specificFunctionOverloads
+				.FirstOrDefault(o => o.CurrentParameterIndex == 0 && o.ProgramMetadata.Identifier.In(OracleDatabaseModelBase.IdentifierDbmsRandomString));
+			if (randomStringFunctionOverload != null && HasSingleStringLiteralParameterOrNoParameterToken(randomStringFunctionOverload))
+			{
+				completionItems.Add(BuildParameterCompletionItem(currentNode, "U", "U (u) - uppercase alpha characters"));
+				completionItems.Add(BuildParameterCompletionItem(currentNode, "L", "L (l) - lowercase alpha characters"));
+				completionItems.Add(BuildParameterCompletionItem(currentNode, "A", "A (a) - mixed case alpha characters"));
+				completionItems.Add(BuildParameterCompletionItem(currentNode, "X", "X (x) - uppercase alpha-numeric characters"));
+				completionItems.Add(BuildParameterCompletionItem(currentNode, "P", "P (p) - printable characters"));
 			}
 
 			var sysContextFunctionOverload = specificFunctionOverloads.FirstOrDefault(o => o.ProgramMetadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramSysContext);

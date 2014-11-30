@@ -13,7 +13,6 @@
 		Loaded="LargeValueEditorLoadedHandler"
 		StateChanged="WindowStateChanged"
 		SizeToContent="WidthAndHeight"
-		SizeChanged="WindowSizeChangedHandler"
 		WindowStartupLocation="CenterOwner" Icon="EmptyIcon.ico" ShowInTaskbar="False">
 
 	<Window.Resources>
