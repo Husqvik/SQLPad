@@ -1476,6 +1476,15 @@ se";
 			items[0].StatementNode.ShouldBe(null);
 		}
 
+		[Test(Description = @"")]
+		public void TestFunctionsNotDuplicatedWhenSuggested()
+		{
+			const string statement = "SELECT UNCOMPILABLE_F FROM DUAL";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 21).ToList();
+			items.Count.ShouldBe(1);
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.SchemaFunction);
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)
