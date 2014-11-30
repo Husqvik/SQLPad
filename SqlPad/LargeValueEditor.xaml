@@ -12,7 +12,9 @@
         Width="Auto" Height="Auto" MinHeight="320" MinWidth="480"
 		Loaded="LargeValueEditorLoadedHandler"
 		StateChanged="WindowStateChanged"
-		SizeToContent="WidthAndHeight" WindowStartupLocation="CenterOwner" Icon="EmptyIcon.ico" ShowInTaskbar="False">
+		SizeToContent="WidthAndHeight"
+		SizeChanged="WindowSizeChangedHandler"
+		WindowStartupLocation="CenterOwner" Icon="EmptyIcon.ico" ShowInTaskbar="False">
 
 	<Window.Resources>
 		<findReplace:FindReplaceManager x:Key="FindReplaceManager" />

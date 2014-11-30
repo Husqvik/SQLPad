@@ -1344,6 +1344,7 @@ namespace SqlPad
 			
 			_completionWindow = completionWindow;
 			_completionWindow.Closed += delegate { _completionWindow = null; };
+			_completionWindow.SizeChanged += delegate { if (_completionWindow.MinWidth < _completionWindow.Width) _completionWindow.MinWidth = _completionWindow.Width; };
 
 			var firstItem = (CompletionData)listItems[0];
 			if (firstItem.Node != null)

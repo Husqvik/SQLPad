@@ -283,5 +283,13 @@ namespace SqlPad
 		{
 			DocumentPage.ShowLargeValueEditor(CollectionViewer);
 		}
+
+		private void WindowSizeChangedHandler(object sender, SizeChangedEventArgs e)
+		{
+			if (MinWidth < Width)
+			{
+				MinWidth = Width;
+			}
+		}
 	}
 }
