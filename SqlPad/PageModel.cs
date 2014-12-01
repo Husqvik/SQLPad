@@ -88,6 +88,16 @@ namespace SqlPad
 			set { UpdateValueAndRaisePropertyChanged(ref _dateTimeFormat, value); }
 		}
 
+		public string HeaderBackgroundColorCode
+		{
+			get { return _documentPage.WorkDocument.HeaderBackgroundColorCode; }
+			set
+			{
+				_documentPage.WorkDocument.HeaderBackgroundColorCode = value;
+				RaisePropertyChanged("HeaderBackgroundColorCode");
+			}
+		}
+
 		public string TextExecutionPlan
 		{
 			get { return _textExecutionPlan; }

@@ -36,19 +36,19 @@
 			</ContextMenu.ItemTemplate>
 		</ContextMenu>
 
-        <TextDecoration x:Key="WaveErrorUnderline">
-            <TextDecoration.Pen>
-                <Pen Thickness="6">
-                    <Pen.Brush>
-                        <VisualBrush TileMode="Tile" Viewbox="0,-2,6,5" ViewboxUnits="Absolute" Viewport="0,-1,6,3" ViewportUnits="Absolute">
-                            <VisualBrush.Visual>
-                                <Path Data="M 0,1 L 1,2 2,2 4,0, 5,0 6,1" Stroke="Red" StrokeThickness="1.5"/>
-                            </VisualBrush.Visual>
-                        </VisualBrush>
-                    </Pen.Brush>
-                </Pen>
-            </TextDecoration.Pen>
-        </TextDecoration>
+		<TextDecoration x:Key="WaveErrorUnderline">
+			<TextDecoration.Pen>
+				<Pen Thickness="6">
+					<Pen.Brush>
+						<VisualBrush TileMode="Tile" Viewbox="0,-2,6,5" ViewboxUnits="Absolute" Viewport="0,-1,6,3" ViewportUnits="Absolute">
+							<VisualBrush.Visual>
+								<Path Data="M 0,1 L 1,2 2,2 4,0, 5,0 6,1" Stroke="Red" StrokeThickness="1.5"/>
+							</VisualBrush.Visual>
+						</VisualBrush>
+					</Pen.Brush>
+				</Pen>
+			</TextDecoration.Pen>
+		</TextDecoration>
 
 		<!--<TextDecoration x:Key="WaveErrorUnderline">
 			<TextDecoration.Pen>
@@ -98,9 +98,9 @@
 				<Rectangle Stroke="GreenYellow" Fill="Transparent" StrokeThickness="3"></Rectangle>
 			</VisualBrush.Visual>
 		</VisualBrush>-->
-	    <findReplace:FindReplaceManager
-		    x:Key="FindReplaceManager"
-		    AllowReplace="True" />
+		
+		<findReplace:FindReplaceManager x:Key="FindReplaceManager" AllowReplace="True" />
+
 	</Window.Resources>
 
 	<Window.InputBindings>
@@ -127,7 +127,7 @@
 					<EventSetter Event="Drop" Handler="DocumentTabControlDropHandler"/>
 				</Style>
 			</TabControl.Resources>
-			
+
 			<TabItem Header="+" x:Name="NewTabItem">
 			</TabItem>
 		</TabControl>

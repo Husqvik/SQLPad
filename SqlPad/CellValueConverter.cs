@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Windows.Data;
+using System.Windows.Media;
 
 namespace SqlPad
 {
@@ -74,6 +75,38 @@ namespace SqlPad
 		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			return value == null ? ValueNotAvailable : (bool)value ? "Yes" : "No";
+		}
+	}
+
+	public class ColorCodeToBrushConverter : IValueConverter
+	{
+		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			var colorCode = (string)value;
+			return String.IsNullOrEmpty(colorCode)
+				? null
+				: new SolidColorBrush((Color)ColorConverter.ConvertFromString(colorCode));
+		}
+
+		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			throw new NotSupportedException();
+		}
+	}
+
+	public class ColorCodeToColorConverter : IValueConverter
+	{
+		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			var colorCode = (string)value;
+			return String.IsNullOrEmpty(colorCode)
+				? Colors.Transparent
+				: (Color)ColorConverter.ConvertFromString(colorCode);
+		}
+
+		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			throw new NotSupportedException();
 		}
 	}
 

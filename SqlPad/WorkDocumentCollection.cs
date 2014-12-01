@@ -33,7 +33,7 @@ namespace SqlPad
 
 			var workingDocumentType = Serializer.Add(typeof(WorkDocument), false);
 			workingDocumentType.UseConstructor = false;
-			workingDocumentType.Add("DocumentFileName", "DocumentId", "ConnectionName", "SchemaName", "CursorPosition", "SelectionStart", "SelectionLength", "IsModified", "VisualLeft", "VisualTop", "EditorGridRowHeight", "Text", "EditorGridColumnWidth", "TabIndex", "_foldingStates", "EnableDatabaseOutput", "KeepDatabaseOutputHistory");
+			workingDocumentType.Add("DocumentFileName", "DocumentId", "ConnectionName", "SchemaName", "CursorPosition", "SelectionStart", "SelectionLength", "IsModified", "VisualLeft", "VisualTop", "EditorGridRowHeight", "Text", "EditorGridColumnWidth", "TabIndex", "_foldingStates", "EnableDatabaseOutput", "KeepDatabaseOutputHistory", "HeaderBackgroundColorCode");
 
 			var windowPropertiesType = Serializer.Add(typeof(WindowProperties), false);
 			windowPropertiesType.UseConstructor = false;
@@ -371,6 +371,8 @@ namespace SqlPad
 		public bool EnableDatabaseOutput { get; set; }
 
 		public bool KeepDatabaseOutputHistory { get; set; }
+		
+		public string HeaderBackgroundColorCode { get; set; }
 
 		public WorkDocument CloneAsRecent()
 		{

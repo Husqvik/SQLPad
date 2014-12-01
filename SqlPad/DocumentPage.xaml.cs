@@ -20,7 +20,8 @@ using ICSharpCode.AvalonEdit.Folding;
 using Microsoft.Win32;
 using SqlPad.Commands;
 using SqlPad.FindReplace;
-
+using Xceed.Wpf.Toolkit;
+using MessageBox = System.Windows.MessageBox;
 using Timer = System.Timers.Timer;
 
 namespace SqlPad
@@ -51,6 +52,7 @@ namespace SqlPad
 		private readonly ContextMenu _contextActionMenu = new ContextMenu { Placement = PlacementMode.Relative };
 
 		private static readonly CellValueConverter CellValueConverter = new CellValueConverter();
+		private static readonly ColorCodeToBrushConverter TabHeaderBackgroundBrushConverter = new ColorCodeToBrushConverter();
 
 		private bool _isParsing;
 		private bool _isInitializing = true;
@@ -200,6 +202,7 @@ namespace SqlPad
 				_pageModel.CurrentSchema = WorkDocument.SchemaName;
 				_pageModel.EnableDatabaseOutput = WorkDocument.EnableDatabaseOutput;
 				_pageModel.KeepDatabaseOutputHistory = WorkDocument.KeepDatabaseOutputHistory;
+				_pageModel.HeaderBackgroundColorCode = WorkDocument.HeaderBackgroundColorCode;
 
 				Editor.Text = WorkDocument.Text;
 
@@ -288,10 +291,20 @@ namespace SqlPad
 		private void InitializeTabItem()
 		{
 			var header = new ContentControl { ContextMenu = CreateTabItemHeaderContextMenu() };
-			TabItem = new TabItem { Content = this, Header = header };
+			
+			var contentBinding = new Binding("DocumentHeader") { Source = _pageModel, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged };
+			header.SetBinding(ContentProperty, contentBinding);
 
-			var binding = new Binding("DocumentHeader") { Source = _pageModel, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged };
-			header.SetBinding(ContentProperty, binding);
+			TabItem =
+				new TabItem
+				{
+					Content = this,
+					Header = header,
+					Template = (ControlTemplate)Application.Current.Resources["TabItemControlTemplate"]
+				};
+
+			var backgroundBinding = new Binding("HeaderBackgroundColorCode") { Source = _pageModel, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged, Converter = TabHeaderBackgroundBrushConverter };
+			TabItem.SetBinding(BackgroundProperty, backgroundBinding);
 		}
 
 		private ContextMenu CreateTabItemHeaderContextMenu()
@@ -342,6 +355,12 @@ namespace SqlPad
 			};
 
 			contextMenu.Items.Add(menuItemCloseAllButThis);
+			
+			contextMenu.Items.Add(new Separator());
+			var colorPickerMenuItem = (MenuItem)Resources["ColorPickerMenuItem"];
+			colorPickerMenuItem.DataContext = _pageModel;
+			contextMenu.Items.Add(colorPickerMenuItem);
+			
 			return contextMenu;
 		}
 

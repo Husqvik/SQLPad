@@ -12,6 +12,16 @@
              d:DesignHeight="320" d:DesignWidth="480">
 	<UserControl.Resources>
 		<sqlPad:SelectedIndexConverter x:Key="SelectedIndexConverter" />
+		<sqlPad:ColorCodeToColorConverter x:Key="ColorCodeToColorConverter" />
+
+		<MenuItem x:Key="ColorPickerMenuItem">
+			<MenuItem.Header>
+				<StackPanel Orientation="Horizontal">
+					<TextBlock Text="Tab Color " VerticalAlignment="Center" Margin="0,0,4,0" />
+					<xctk:ColorPicker SelectedColor="{Binding HeaderBackgroundColorCode, Converter={StaticResource ColorCodeToColorConverter}}" AvailableColorsSortingMode="HueSaturationBrightness" ShowAvailableColors="False" ShowRecentColors="True" Width="100" />
+				</StackPanel>
+			</MenuItem.Header>
+		</MenuItem>
 	</UserControl.Resources>
 	<Grid>
 		<Grid.CommandBindings>
