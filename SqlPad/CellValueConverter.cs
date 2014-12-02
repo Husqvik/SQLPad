@@ -100,7 +100,7 @@ namespace SqlPad
 		{
 			var colorCode = (string)value;
 			return String.IsNullOrEmpty(colorCode)
-				? Colors.Transparent
+				? Colors.White
 				: (Color)ColorConverter.ConvertFromString(colorCode);
 		}
 

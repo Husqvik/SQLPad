@@ -1009,6 +1009,20 @@ se";
 		}
 
 		[Test(Description = @"")]
+		public void TestCryptoHashSpecialParameterCompletion()
+		{
+			const string statement = @"SELECT DBMS_CRYPTO.HASH(HEXTORAW ('FF'), ) FROM DUAL";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 41).ToList();
+			items.Count.ShouldBe(6);
+			items[0].Name.ShouldBe("1 - DBMS_CRYPTO.HASH_MD4 - MD4");
+			items[0].Text.ShouldBe("1");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+			items[5].Name.ShouldBe("6 - DBMS_CRYPTO.HASH_SH512 - SH512");
+			items[5].Text.ShouldBe("6");
+			items[5].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+		}
+
+		[Test(Description = @"")]
 		public void TestTableIdentifierAndAllTableColumnCompletion()
 		{
 			const string statement = @"SELECT SEL FROM SELECTION, RESPONDENTBUCKET";

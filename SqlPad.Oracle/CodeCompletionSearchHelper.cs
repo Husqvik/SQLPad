@@ -21,7 +21,8 @@ namespace SqlPad.Oracle
 				OracleDatabaseModelBase.IdentifierBuiltInProgramToTimestamp,
 				OracleDatabaseModelBase.IdentifierBuiltInProgramToTimestampWithTimeZone,
 				OracleDatabaseModelBase.IdentifierBuiltInProgramSysContext,
-				OracleDatabaseModelBase.IdentifierDbmsRandomString
+				OracleDatabaseModelBase.IdentifierDbmsRandomString,
+				OracleDatabaseModelBase.IdentifierDbmsCryptoHash
 			};
 
 		public static IEnumerable<ICodeCompletionItem> ResolveSpecificFunctionParameterCodeCompletionItems(StatementGrammarNode currentNode, IEnumerable<OracleCodeCompletionFunctionOverload> functionOverloads, OracleDatabaseModelBase databaseModel)
@@ -90,6 +91,18 @@ namespace SqlPad.Oracle
 				completionItems.Add(BuildParameterCompletionItem(currentNode, "A", "A (a) - mixed case alpha characters"));
 				completionItems.Add(BuildParameterCompletionItem(currentNode, "X", "X (x) - uppercase alpha-numeric characters"));
 				completionItems.Add(BuildParameterCompletionItem(currentNode, "P", "P (p) - printable characters"));
+			}
+
+			var dbmsCrptoHashFunctionOverload = specificFunctionOverloads
+				.FirstOrDefault(o => o.CurrentParameterIndex == 1 && o.ProgramMetadata.Identifier.In(OracleDatabaseModelBase.IdentifierDbmsCryptoHash));
+			if (dbmsCrptoHashFunctionOverload != null && HasSingleStringLiteralParameterOrNoParameterToken(dbmsCrptoHashFunctionOverload))
+			{
+				completionItems.Add(BuildParameterCompletionItem(currentNode, "1", "1 - DBMS_CRYPTO.HASH_MD4 - MD4", false));
+				completionItems.Add(BuildParameterCompletionItem(currentNode, "2", "2 - DBMS_CRYPTO.HASH_MD5 - MD5", false));
+				completionItems.Add(BuildParameterCompletionItem(currentNode, "3", "3 - DBMS_CRYPTO.HASH_SH1 - SH1", false));
+				completionItems.Add(BuildParameterCompletionItem(currentNode, "4", "4 - DBMS_CRYPTO.HASH_SH256 - SH256", false));
+				completionItems.Add(BuildParameterCompletionItem(currentNode, "5", "5 - DBMS_CRYPTO.HASH_SH384 - SH384", false));
+				completionItems.Add(BuildParameterCompletionItem(currentNode, "6", "6 - DBMS_CRYPTO.HASH_SH512 - SH512", false));
 			}
 
 			var sysContextFunctionOverload = specificFunctionOverloads.FirstOrDefault(o => o.ProgramMetadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramSysContext);
@@ -211,15 +224,18 @@ namespace SqlPad.Oracle
 			return firstParameter.ChildNodes.Count == 1 && firstParameter.ChildNodes[0].Id == Terminals.StringLiteral;
 		}
 
-		private static OracleCodeCompletionItem BuildParameterCompletionItem(StatementGrammarNode node, string parameterValue, string description)
+		private static OracleCodeCompletionItem BuildParameterCompletionItem(StatementGrammarNode node, string parameterValue, string description, bool addApostrophes = true)
 		{
+			var value = parameterValue.ToOracleString();
+			var text = addApostrophes ? String.Format("'{0}'", value) : value;
+
 			return
 				new OracleCodeCompletionItem
 				{
 					Category = OracleCodeCompletionCategory.FunctionParameter,
 					Name = description,
 					StatementNode = node.Id == Terminals.StringLiteral ? node : null,
-					Text = String.Format("'{0}'", parameterValue.ToOracleString())
+					Text = text
 				};
 		}
 

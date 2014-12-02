@@ -15,6 +15,7 @@ namespace SqlPad.Oracle
 		public const string SchemaSystem = "\"SYSTEM\"";
 		public const string PackageBuiltInFunction = "\"STANDARD\"";
 		public const string PackageDbmsRandom = "\"DBMS_RANDOM\"";
+		public const string PackageDbmsCrypto = "\"DBMS_CRYPTO\"";
 		public const string SystemParameterNameMaxStringSize = "max_string_size";
 		public const int VersionMajorOracle12c = 12;
 
@@ -27,6 +28,7 @@ namespace SqlPad.Oracle
 		internal static OracleProgramIdentifier IdentifierBuiltInProgramTrunc = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "TRUNC");
 		internal static OracleProgramIdentifier IdentifierBuiltInProgramConvert = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "CONVERT");
 		internal static OracleProgramIdentifier IdentifierDbmsRandomString = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageDbmsRandom, "STRING");
+		internal static OracleProgramIdentifier IdentifierDbmsCryptoHash = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageDbmsCrypto, "HASH");
 
 		protected static readonly OracleObjectIdentifier BuiltInFunctionPackageIdentifier = OracleObjectIdentifier.Create(SchemaSys, PackageBuiltInFunction);
 

@@ -39,7 +39,7 @@ namespace SqlPad
 
 		private static void BuildErrorLog(object exception, DocumentPage page)
 		{
-			var logBuilder = new StringBuilder("Unhandled exception occured at ");
+			var logBuilder = new StringBuilder("Unhandled exception occurred at ");
 			logBuilder.Append(DateTime.Now.ToLongTimeString());
 			logBuilder.AppendLine(". ");
 			logBuilder.AppendLine("Exception: ");

@@ -202,7 +202,7 @@ namespace SqlPad.Oracle.Test
 			AllObjectsInternal.Add(synonym);
 			#endregion
 
-			#region DBMS_XPLAN
+			#region SYS.DBMS_XPLAN
 			var dbmsXPlan = (OraclePackage)AllObjectsInternal.Single(o => o.Name == "\"DBMS_XPLAN\"" && o.Owner == OwnerNameSys);
 			var displayCursorFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues("SYS", "DBMS_XPLAN", "DISPLAY_CURSOR"), false, false, true, false, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, false);
 			displayCursorFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata(null, 0, ParameterDirection.ReturnValue, "TABLE", OracleObjectIdentifier.Create(SchemaSys, "DBMS_XPLAN_TYPE_TABLE"), false));
@@ -232,6 +232,12 @@ namespace SqlPad.Oracle.Test
 			randomBytesFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata("NUMBER_BYTES", 1, ParameterDirection.Input, "BINARY_INTEGER", OracleObjectIdentifier.Empty, false));
 			randomBytesFunctionMetadata.Owner = dbmsCrypto;
 			dbmsCrypto.Functions.Add(randomBytesFunctionMetadata);
+			var dbmsCryptoHashMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues("SYS", "DBMS_CRYPTO", "HASH"), false, false, false, false, true, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
+			dbmsCryptoHashMetadata.Parameters.Add(new OracleProgramParameterMetadata(null, 0, ParameterDirection.ReturnValue, "RAW", OracleObjectIdentifier.Empty, false));
+			dbmsCryptoHashMetadata.Parameters.Add(new OracleProgramParameterMetadata("SRC", 1, ParameterDirection.Input, "RAW", OracleObjectIdentifier.Empty, false));
+			dbmsCryptoHashMetadata.Parameters.Add(new OracleProgramParameterMetadata("TYP", 2, ParameterDirection.Input, "BINARY_INTEGER", OracleObjectIdentifier.Empty, false));
+			dbmsCryptoHashMetadata.Owner = dbmsCrypto;
+			dbmsCrypto.Functions.Add(dbmsCryptoHashMetadata);
 
 			synonym =
 				new OracleSynonym
