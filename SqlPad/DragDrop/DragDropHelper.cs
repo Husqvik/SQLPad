@@ -113,9 +113,13 @@ namespace SqlPad.DragDrop
 
 		private void DragSource_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
 		{
-			_sourceItemsControl = (ItemsControl) sender;
 			var visual = e.OriginalSource as Visual;
+			if (visual == null)
+			{
+				return;
+			}
 
+			_sourceItemsControl = (ItemsControl)sender;
 			_topWindow = Window.GetWindow(_sourceItemsControl);
 			_initialMousePosition = e.GetPosition(_topWindow);
 
