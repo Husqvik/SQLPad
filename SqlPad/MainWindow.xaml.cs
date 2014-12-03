@@ -332,53 +332,6 @@ namespace SqlPad
 			return documentPage;
 		}
 
-		private void DocumentTabControlDropHandler(object sender, DragEventArgs e)
-		{
-			var draggedObject = e.Source as ContentControl;
-			if (draggedObject == null)
-			{
-				return;
-			}
-
-			var tabItemTarget = draggedObject.Parent as TabItem;
-			var tabItemDragged = (TabItem)e.Data.GetData(typeof(TabItem));
-			if (tabItemTarget == null || tabItemDragged == null || NewTabItem.Equals(tabItemTarget) || Equals(tabItemTarget, tabItemDragged))
-			{
-				return;
-			}
-
-			var draggedDocumentPage = tabItemDragged.Content as DocumentPage;
-			if (draggedDocumentPage == null)
-			{
-				return;
-			}
-
-			var indexFrom = DocumentTabControl.Items.IndexOf(tabItemDragged);
-			var indexTo = DocumentTabControl.Items.IndexOf(tabItemTarget);
-
-			DocumentTabControl.SelectedIndex = 0;
-
-			DocumentTabControl.Items.Remove(tabItemDragged);
-			DocumentTabControl.Items.Insert(indexTo, tabItemDragged);
-
-			DocumentTabControl.Items.Remove(tabItemTarget);
-			DocumentTabControl.Items.Insert(indexFrom, tabItemTarget);
-
-			DocumentTabControl.SelectedIndex = indexTo;
-		}
-
-		private void DocumentTabControlPreviewMouseMoveHandler(object sender, MouseEventArgs e)
-		{
-			var tabItem = e.Source as TabItem;
-			if (tabItem == null || Equals(tabItem, NewTabItem))
-				return;
-
-			if (Mouse.PrimaryDevice.LeftButton == MouseButtonState.Pressed)
-			{
-				DragDrop.DoDragDrop(tabItem, tabItem, DragDropEffects.All);
-			}	
-		}
-
 		private void GoToNextEditCommandExecutedHandler(object sender, ExecutedRoutedEventArgs e)
 		{
 			GoToEditCommand(EditorNavigationService.GetNextEdit());
