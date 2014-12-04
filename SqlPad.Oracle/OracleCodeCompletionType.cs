@@ -93,6 +93,8 @@ namespace SqlPad.Oracle
 			if (nearestTerminal == null)
 				return;
 
+			var precedingTerminal = nearestTerminal.PrecedingTerminal;
+
 			InComment = Statement.Comments.Any(c => c.SourcePosition.ContainsIndex(cursorPosition));
 
 			SemanticModel = (OracleStatementSemanticModel)documentRepository.ValidationModels[Statement].SemanticModel;
@@ -105,8 +107,12 @@ namespace SqlPad.Oracle
 				var extraUnparsedTokens = unparsedTextBetweenTokenAndCursor.Split(Separators, StringSplitOptions.RemoveEmptyEntries);
 				if (extraUnparsedTokens.Length > 0)
 				{
-					InUnparsedData = true;
-					return;
+					TerminalCandidates = new HashSet<string>(_parser.GetTerminalCandidates(nearestTerminal));
+					if (TerminalCandidates.Count == 0 || extraUnparsedTokens.Length > 1)
+					{
+						InUnparsedData = true;
+						return;
+					}
 				}
 
 				TerminalValueUnderCursor = extraUnparsedTokens.FirstOrDefault();
@@ -114,7 +120,14 @@ namespace SqlPad.Oracle
 				if (TerminalValueUnderCursor != null)
 				{
 					TerminalValuePartUntilCaret = TerminalValueUnderCursor;
-					CurrentTerminal = new StatementGrammarNode(NodeType.Terminal, Statement, new OracleToken(TerminalValueUnderCursor, cursorPosition - TerminalValuePartUntilCaret.Length));
+					precedingTerminal = nearestTerminal;
+					nearestTerminal = CurrentTerminal = new StatementGrammarNode(NodeType.Terminal, Statement, new OracleToken(TerminalValueUnderCursor, cursorPosition - TerminalValuePartUntilCaret.Length));
+					Statement.RootNode.AddChildNodes(nearestTerminal);
+
+					if (!String.IsNullOrEmpty(TerminalValueUnderCursor) && nearestTerminal.SourcePosition.ContainsIndex(cursorPosition))
+					{
+						isCursorAfterToken = false;
+					}
 				}
 			}
 			else
@@ -130,7 +143,6 @@ namespace SqlPad.Oracle
 			var effectiveTerminal = Statement.GetNearestTerminalToPosition(cursorPosition, n => !n.Id.In(Terminals.RightParenthesis, Terminals.Comma, Terminals.Semicolon)) ?? nearestTerminal;
 			AnalyzeObjectReferencePrefixes(effectiveTerminal);
 
-			var precedingTerminal = nearestTerminal.PrecedingTerminal;
 			if (precedingTerminal == null && nearestTerminal != Statement.RootNode.FirstTerminalNode)
 			{
 				precedingTerminal = nearestTerminal;

@@ -1659,6 +1659,14 @@ se";
 			}
 
 			[Test(Description = @"")]
+			public void TestCodeCompletionTypeWhenWritingChainedJoinClause()
+			{
+				const string statement = @"SELECT * FROM SELECTION JOIN RESPONDENTBUCKET ON SELECTION.RESPONDENTBUCKET_ID = RESPONDENTBUCKET.RESPONDENTBUCKET_ID J";
+				var completionType = InitializeCodeCompletionType(statement, 119);
+				completionType.JoinType.ShouldBe(true);
+			}
+
+			[Test(Description = @"")]
 			public void TestCodeCompletionTypeWithMissingSelectList()
 			{
 				const string statement = @"SELECT FROM V$TRANSACTION";
