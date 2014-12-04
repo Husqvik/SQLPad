@@ -1058,6 +1058,21 @@ WHERE
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestResolveAmbiguousColumnCommandWhenAtClosingParenthesisOutsidePrefixedColumnReference()
+		{
+			_editor.Text = @"SELECT COUNT(DISTINCT DUMMY) FROM DUAL D1, DUAL D2";
+			_editor.CaretOffset = 27;
+
+			var actions = new OracleContextActionProvider().GetContextActions(TestFixture.DatabaseModel, _editor.Text, _editor.CaretOffset).Where(a => a.Name.StartsWith("Resolve as")).ToArray();
+
+			actions.Length.ShouldBe(2);
+			CanExecuteCommand(actions[0].ExecutionHandler).ShouldBe(true);
+			ExecuteCommand(actions[0].ExecutionHandler);
+
+			_editor.Text.ShouldBe(@"SELECT COUNT(DISTINCT D1.DUMMY) FROM DUAL D1, DUAL D2");
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestGenerateMissingColumnsCommand()
 		{
 			_editor.Text = @"SELECT NOT_EXISTING_COLUMN FROM SELECTION";

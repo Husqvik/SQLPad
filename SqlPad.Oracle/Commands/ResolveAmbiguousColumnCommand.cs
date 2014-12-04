@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using SqlPad.Commands;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
@@ -42,6 +43,11 @@ namespace SqlPad.Oracle.Commands
 			: base(executionContext)
 		{	
 			_resolvedName = resolvedName;
+		}
+
+		protected override Func<StatementGrammarNode, bool> CurrentNodeFilterFunction
+		{
+			get { return n => !n.Id.In(Terminals.RightParenthesis); }
 		}
 
 		protected override void Execute()
