@@ -945,6 +945,8 @@ Note
 			dataModel.Compression = "Disabled";
 			dataModel.InMemoryCompression = "Disabled";
 			dataModel.Organization = "Index";
+			dataModel.IsPartitioned = false;
+			dataModel.IsTemporary = false;
 
 			return CreateFinishedTask<object>(null);
 		}

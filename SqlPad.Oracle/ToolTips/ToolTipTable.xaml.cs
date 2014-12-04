@@ -27,8 +27,8 @@ namespace SqlPad.Oracle.ToolTips
 		private string _inMemoryCompression;
 		private DateTime? _lastAnalyzed;
 		private int? _averageRowSize;
-		private bool _isTemporary;
-		private bool _isPartitioned;
+		private bool? _isTemporary;
+		private bool? _isPartitioned;
 		private long? _allocatedBytes;
 
 		public string Title { get; set; }
@@ -87,13 +87,13 @@ namespace SqlPad.Oracle.ToolTips
 			}
 		}
 
-		public bool IsPartitioned
+		public bool? IsPartitioned
 		{
 			get { return _isPartitioned; }
 			set { UpdateValueAndRaisePropertyChanged(ref _isPartitioned, value); }
 		}
 
-		public bool IsTemporary
+		public bool? IsTemporary
 		{
 			get { return _isTemporary; }
 			set { UpdateValueAndRaisePropertyChanged(ref _isTemporary, value); }
