@@ -1055,6 +1055,7 @@ se";
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 41).ToList();
 			items.Count.ShouldBe(1);
 			items[0].Name.ShouldBe("SESSIONTIMEZONE");
+			items[0].Text.ShouldBe("SESSIONTIMEZONE");
 			items[0].CaretOffset.ShouldBe(0);
 		}
 
@@ -1527,6 +1528,29 @@ se";
 			items[4].Name.ShouldBe("X (x) - uppercase alpha-numeric characters");
 			items[4].Text.ShouldBe("'X'");
 			items[4].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+		}
+
+		[Test(Description = @"")]
+		public void TestSysDateFunctionAsReservedWord()
+		{
+			const string statement = @"SELECT ROWNU FROM DUAL";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 12).ToList();
+			items.Count.ShouldBe(1);
+			items[0].Name.ShouldBe("ROWNUM");
+			items[0].Text.ShouldBe("ROWNUM");
+			items[0].CaretOffset.ShouldBe(0);
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.PackageFunction);
+		}
+
+		[Test(Description = @""), Ignore]
+		public void TestRowIdCodeCompletionWhenOnlyChoice()
+		{
+			const string statement = @"SELECT DUAL.ROWI FROM DUAL";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 17).ToList();
+			items.Count.ShouldBe(1);
+			items[0].Name.ShouldBe("ROWID");
+			items[0].Text.ShouldBe("ROWID");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.PseudoColumn);
 		}
 
 		public class OracleCodeCompletionTypeTest

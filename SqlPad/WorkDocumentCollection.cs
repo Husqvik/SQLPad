@@ -33,7 +33,7 @@ namespace SqlPad
 
 			var workingDocumentType = Serializer.Add(typeof(WorkDocument), false);
 			workingDocumentType.UseConstructor = false;
-			workingDocumentType.Add("DocumentFileName", "DocumentId", "ConnectionName", "SchemaName", "CursorPosition", "SelectionStart", "SelectionLength", "IsModified", "VisualLeft", "VisualTop", "EditorGridRowHeight", "Text", "EditorGridColumnWidth", "TabIndex", "_foldingStates", "EnableDatabaseOutput", "KeepDatabaseOutputHistory", "HeaderBackgroundColorCode");
+			workingDocumentType.Add("DocumentFileName", "DocumentId", "ConnectionName", "SchemaName", "CursorPosition", "SelectionStart", "SelectionLength", "IsModified", "VisualLeft", "VisualTop", "EditorGridRowHeight", "Text", "EditorGridColumnWidth", "TabIndex", "_foldingStates", "EnableDatabaseOutput", "KeepDatabaseOutputHistory", "HeaderBackgroundColorCode", "DocumentTitle");
 
 			var windowPropertiesType = Serializer.Add(typeof(WindowProperties), false);
 			windowPropertiesType.UseConstructor = false;
@@ -344,6 +344,8 @@ namespace SqlPad
 		
 		public string DocumentFileName { get; set; }
 		
+		public string DocumentTitle { get; set; }
+		
 		public string ConnectionName { get; set; }
 		
 		public string SchemaName { get; set; }
@@ -386,6 +388,7 @@ namespace SqlPad
 				ConnectionName = ConnectionName,
 				SchemaName = SchemaName,
 				DocumentFileName = DocumentFileName,
+				DocumentTitle = DocumentTitle,
 				CursorPosition = CursorPosition,
 				_foldingStates = _foldingStates,
 				KeepDatabaseOutputHistory = KeepDatabaseOutputHistory,

@@ -20,7 +20,8 @@ namespace SqlPad
 		private ConnectionStringSettings _currentConnection;
 		private string _currentSchema;
 		private ICollection<BindVariableModel> _bindVariables;
-		private string _documentHeader;
+		private bool _isModified;
+		private bool _isRunning;
 		private int _currentLine;
 		private int _currentColumn;
 		private int _affectedRowCount = -1;
@@ -37,6 +38,7 @@ namespace SqlPad
 		private string _textExecutionPlan;
 		private string _dateTimeFormat;
 		private string _connectionErrorMessage;
+		private string _documentHeaderToolTip;
 		private bool _showAllSessionExecutionStatistics;
 
 		public PageModel(DocumentPage documentPage)
@@ -76,10 +78,37 @@ namespace SqlPad
 			set { UpdateValueAndRaisePropertyChanged(ref _transactionControlVisibity, value); }
 		}
 
+		public bool IsModified
+		{
+			get { return _isModified; }
+			set { UpdateValueAndRaisePropertyChanged(ref _isModified, value); }
+		}
+
+		public bool IsRunning
+		{
+			get { return _isRunning; }
+			set { UpdateValueAndRaisePropertyChanged(ref _isRunning, value); }
+		}
+
+		public string DocumentHeaderToolTip
+		{
+			get { return _documentHeaderToolTip; }
+			set { UpdateValueAndRaisePropertyChanged(ref _documentHeaderToolTip, value); }
+		}
+
 		public string DocumentHeader
 		{
-			get { return _documentHeader; }
-			set { UpdateValueAndRaisePropertyChanged(ref _documentHeader, value); }
+			get { return _documentPage.WorkDocument.DocumentTitle; }
+			set
+			{
+				if (_documentPage.WorkDocument.DocumentTitle == value)
+				{
+					return;
+				}
+
+				_documentPage.WorkDocument.DocumentTitle = value;
+				RaisePropertyChanged("DocumentHeader");
+			}
 		}
 
 		public string DateTimeFormat
@@ -153,6 +182,7 @@ namespace SqlPad
 			get { return _documentPage.DatabaseModel.EnableDatabaseOutput; }
 			set { _documentPage.DatabaseModel.EnableDatabaseOutput = value; }
 		}
+
 		public bool KeepDatabaseOutputHistory { get; set; }
 
 		public void WriteDatabaseOutput(string output)

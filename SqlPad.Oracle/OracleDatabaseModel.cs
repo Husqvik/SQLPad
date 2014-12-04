@@ -452,7 +452,7 @@ namespace SqlPad.Oracle
 
 			RollbackTransaction();
 
-			DisposeCommandAndReaderAndCloseConnection();
+			DisposeCommandAndReader();
 
 			if (_backgroundTask != null)
 			{
@@ -495,16 +495,6 @@ namespace SqlPad.Oracle
 			if (_userCommand != null)
 			{
 				_userCommand.Dispose();
-			}
-		}
-
-		private void DisposeCommandAndReaderAndCloseConnection()
-		{
-			DisposeCommandAndReader();
-
-			if (_userConnection.State != ConnectionState.Closed)
-			{
-				_userConnection.Close();
 			}
 		}
 

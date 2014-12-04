@@ -663,12 +663,17 @@ namespace SqlPad.Oracle
 				.Select(g => new { Name = g.Key, g.First().Metadata })
 				.Select(i =>
 				{
+					var hasReservedWordName = i.Metadata.IsBuiltIn && i.Name.CollidesWithReservedWord();
+					var functionName = hasReservedWordName
+						? i.Name.Trim('"')
+						: i.Name;
+
 					var postFix = parameterList;
 					if (category == OracleCodeCompletionCategory.Package)
 					{
 						postFix = ".";
 					}
-					else if (i.Metadata.DisplayType == OracleProgramMetadata.DisplayTypeNoParenthesis)
+					else if (i.Metadata.DisplayType == OracleProgramMetadata.DisplayTypeNoParenthesis || hasReservedWordName)
 					{
 						postFix = null;
 					}
@@ -680,12 +685,12 @@ namespace SqlPad.Oracle
 					return
 						new OracleCodeCompletionItem
 						{
-							Name = i.Name,
-							Text = String.Format("{0}{1}{2}", i.Name, postFix, analyticClause),
+							Name = functionName,
+							Text = String.Format("{0}{1}{2}", functionName, postFix, analyticClause),
 							StatementNode = node,
 							Category = category,
 							InsertOffset = insertOffset,
-							CaretOffset = category == OracleCodeCompletionCategory.Package || i.Metadata.DisplayType == OracleProgramMetadata.DisplayTypeNoParenthesis
+							CaretOffset = hasReservedWordName || category == OracleCodeCompletionCategory.Package || i.Metadata.DisplayType == OracleProgramMetadata.DisplayTypeNoParenthesis
 								? 0
 								: (parameterListCaretOffset - analyticClause.Length),
 							CategoryPriority = 2

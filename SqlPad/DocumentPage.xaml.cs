@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -20,7 +19,6 @@ using ICSharpCode.AvalonEdit.Folding;
 using Microsoft.Win32;
 using SqlPad.Commands;
 using SqlPad.FindReplace;
-using Xceed.Wpf.Toolkit;
 using MessageBox = System.Windows.MessageBox;
 using Timer = System.Timers.Timer;
 
@@ -28,7 +26,7 @@ namespace SqlPad
 {
 	public partial class DocumentPage : IDisposable
 	{
-		private const string InitialDocumentHeader = "New*";
+		private const string InitialDocumentHeader = "New";
 		private const string MaskWrapByQuote = "\"{0}\"";
 		private const string QuoteCharacter = "\"";
 		private const string DoubleQuotes = "\"\"";
@@ -57,7 +55,6 @@ namespace SqlPad
 		private bool _isParsing;
 		private bool _isInitializing = true;
 		private bool _isInitialParsing = true;
-		private bool _isBusy;
 		private bool _enableCodeComplete;
 		private bool _isToolTipOpenByShortCut;
 		private bool _gatherExecutionStatistics;
@@ -83,11 +80,10 @@ namespace SqlPad
 
 		public bool IsBusy
 		{
-			get { return _isBusy; }
+			get { return _pageModel.IsRunning; }
 			private set
 			{
-				_isBusy = value;
-				_pageModel.DocumentHeader = DocumentHeader;
+				_pageModel.IsRunning = value;
 				MainWindow.NotifyTaskStatus();
 			}
 		}
@@ -105,34 +101,6 @@ namespace SqlPad
 		public TextEditorAdapter EditorAdapter { get; private set; }
 
 		public WorkDocument WorkDocument { get; private set; }
-
-		public string DocumentHeader
-		{
-			get
-			{
-				var builder = new StringBuilder();
-				if (WorkDocument.File == null)
-				{
-					builder.Append(InitialDocumentHeader);
-				}
-				else
-				{
-					builder.Append(WorkDocument.File.Name);
-
-					if (IsDirty)
-					{
-						builder.Append("*");
-					}
-				}
-
-				if (IsBusy)
-				{
-					builder.Append(" (running)");
-				}
-
-				return builder.ToString();
-			}
-		}
 
 		public bool IsDirty { get { return Editor.IsModified; } }
 
@@ -168,7 +136,8 @@ namespace SqlPad
 			{
 				WorkDocument = new WorkDocument
 				{
-					ConnectionName = usedConnection.Name
+					ConnectionName = usedConnection.Name,
+					HeaderBackgroundColorCode = Colors.White.ToString()
 				};
 
 				WorkDocumentCollection.AddDocument(WorkDocument);
@@ -225,7 +194,14 @@ namespace SqlPad
 				Editor.IsModified = WorkDocument.IsModified;
 			}
 
-			_pageModel.DocumentHeader = DocumentHeader;
+			_pageModel.DocumentHeaderToolTip = WorkDocument.File == null ? "Unsaved" : WorkDocument.File.FullName;
+
+			if (String.IsNullOrEmpty(WorkDocument.DocumentTitle))
+			{
+				_pageModel.DocumentHeader = WorkDocument.File == null ? InitialDocumentHeader : WorkDocument.File.Name;
+			}
+
+			_pageModel.IsModified = WorkDocument.IsModified;
 
 			DataContext = _pageModel;
 
@@ -290,10 +266,21 @@ namespace SqlPad
 
 		private void InitializeTabItem()
 		{
-			var header = new ContentControl { ContextMenu = CreateTabItemHeaderContextMenu() };
-			
-			var contentBinding = new Binding("DocumentHeader") { Source = _pageModel, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged };
+			var header =
+				new EditableTabHeaderControl
+				{
+					ContextMenu = CreateTabItemHeaderContextMenu(),
+					Template = (ControlTemplate)Resources["EditableTabHeaderControlTemplate"]
+				};
+
+			var contentBinding = new Binding("DocumentHeader") { Source = _pageModel, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged, Mode = BindingMode.TwoWay };
 			header.SetBinding(ContentProperty, contentBinding);
+			var isModifiedBinding = new Binding("IsModified") { Source = _pageModel, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged };
+			header.SetBinding(EditableTabHeaderControl.IsModifiedProperty, isModifiedBinding);
+			var isRunningBinding = new Binding("IsRunning") { Source = _pageModel, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged };
+			header.SetBinding(EditableTabHeaderControl.IsRunningProperty, isRunningBinding);
+			var toolTipBinding = new Binding("DocumentHeaderToolTip") { Source = _pageModel, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged };
+			header.SetBinding(ToolTipProperty, toolTipBinding);
 
 			TabItem =
 				new TabItem
@@ -438,15 +425,6 @@ namespace SqlPad
 			ReParse();
 		}
 
-		private ScrollViewer GetResultGridScrollViewer()
-		{
-			var border = VisualTreeHelper.GetChild(ResultGrid, 0) as Decorator;
-			if (border == null)
-				return null;
-
-			return border.Child as ScrollViewer;
-		}
-
 		private void SaveCommandExecutedHandler(object sender, ExecutedRoutedEventArgs args)
 		{
 			Save();
@@ -487,6 +465,7 @@ namespace SqlPad
 			}
 			else
 			{
+				_pageModel.DocumentHeaderToolTip = WorkDocument.File.FullName;
 				InitializeFileWatcher();
 				WorkDocumentCollection.AddRecentDocument(WorkDocument);
 			}
@@ -559,8 +538,12 @@ namespace SqlPad
 		private void SaveDocument()
 		{
 			WithDisabledFileWatcher(() => Editor.Save(WorkDocument.File.FullName));
-			WorkDocument.IsModified = false;
-			_pageModel.DocumentHeader = DocumentHeader;
+			_pageModel.IsModified = WorkDocument.IsModified = false;
+
+			if (WorkDocument.DocumentTitle == InitialDocumentHeader)
+			{
+				_pageModel.DocumentHeader = WorkDocument.File.Name;
+			}
 		}
 
 		private void SelectionChangedHandler(object sender, EventArgs eventArgs)
@@ -1406,8 +1389,7 @@ namespace SqlPad
 				return;
 			}
 
-			WorkDocument.IsModified = IsDirty;
-			_pageModel.DocumentHeader = DocumentHeader;
+			_pageModel.IsModified = WorkDocument.IsModified = IsDirty;
 
 			Parse();
 		}
@@ -1571,8 +1553,7 @@ namespace SqlPad
 				Editor.Document.EndUpdate();
 			}
 
-			WorkDocument.IsModified = IsDirty;
-			_pageModel.DocumentHeader = DocumentHeader;
+			_pageModel.IsModified = WorkDocument.IsModified = IsDirty;
 
 			if (_completionWindow != null && _completionWindow.CompletionList.ListBox.Items.Count == 0)
 			{

@@ -22,6 +22,38 @@
 				</StackPanel>
 			</MenuItem.Header>
 		</MenuItem>
+
+		<ControlTemplate x:Key="EditableTabHeaderControlTemplate" TargetType="{x:Type sqlPad:EditableTabHeaderControl}">
+			<StackPanel Orientation="Horizontal">
+				<Grid>
+					<TextBox x:Name="PART_TabHeader"
+							 Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Content, Mode=TwoWay}"
+							 Visibility="Collapsed" />
+					<TextBlock x:Name="PART_TextBlock"
+					           Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Content, Mode=TwoWay}" />
+				</Grid>
+				<TextBlock x:Name="PART_ModifiedNotification" Text="*" Visibility="Collapsed" />
+				<TextBlock x:Name="PART_RunningNotification" Text=" (running)" Visibility="Collapsed" />
+			</StackPanel>
+			<ControlTemplate.Triggers>
+				<Trigger Property="EditModeEnabled" Value="True">
+					<Trigger.Setters>
+						<Setter TargetName="PART_TabHeader" Property="Visibility" Value="Visible" />
+						<Setter TargetName="PART_TextBlock" Property="Visibility" Value="Collapsed" />
+					</Trigger.Setters>
+				</Trigger>
+				<Trigger Property="IsModified" Value="True">
+					<Trigger.Setters>
+						<Setter TargetName="PART_ModifiedNotification" Property="Visibility" Value="Visible" />
+					</Trigger.Setters>
+				</Trigger>
+				<Trigger Property="IsRunning" Value="True">
+					<Trigger.Setters>
+						<Setter TargetName="PART_RunningNotification" Property="Visibility" Value="Visible" />
+					</Trigger.Setters>
+				</Trigger>
+			</ControlTemplate.Triggers>
+		</ControlTemplate>
 	</UserControl.Resources>
 	<Grid>
 		<Grid.CommandBindings>

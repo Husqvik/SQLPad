@@ -11,7 +11,8 @@ namespace SqlPad.DragDrop
 {
 	public class DragDropHelper
 	{
-		private readonly DataFormat _format = DataFormats.GetDataFormat("DragDropItemsControl");
+		public const string DragDropFormatName = "DragDropItemsControl";
+		private readonly DataFormat _format = DataFormats.GetDataFormat(DragDropFormatName);
 		private Point _initialMousePosition;
 		private Vector _initialMouseOffset;
 		private object _draggedData;
@@ -92,10 +93,10 @@ namespace SqlPad.DragDrop
 			{
 				return;
 			}
-			
-			if (Equals(e.NewValue, true))
+
+			dropTarget.AllowDrop = Equals(e.NewValue, true);
+			if (dropTarget.AllowDrop)
 			{
-				dropTarget.AllowDrop = true;
 				dropTarget.PreviewDrop += Instance.DropTarget_PreviewDrop;
 				dropTarget.PreviewDragEnter += Instance.DropTarget_PreviewDragEnter;
 				dropTarget.PreviewDragOver += Instance.DropTarget_PreviewDragOver;
@@ -103,7 +104,6 @@ namespace SqlPad.DragDrop
 			}
 			else
 			{
-				dropTarget.AllowDrop = false;
 				dropTarget.PreviewDrop -= Instance.DropTarget_PreviewDrop;
 				dropTarget.PreviewDragEnter -= Instance.DropTarget_PreviewDragEnter;
 				dropTarget.PreviewDragOver -= Instance.DropTarget_PreviewDragOver;
@@ -142,8 +142,13 @@ namespace SqlPad.DragDrop
 			{
 				return;
 			}
-			
+
 			if (!IsMovementBigEnough(_initialMousePosition, e.GetPosition(_topWindow)))
+			{
+				return;
+			}
+
+			if (!CanDrag(_draggedData))
 			{
 				return;
 			}
@@ -158,7 +163,7 @@ namespace SqlPad.DragDrop
 			_topWindow.DragOver += TopWindow_DragOver;
 			_topWindow.DragLeave += TopWindow_DragLeave;
 
-			System.Windows.DragDrop.DoDragDrop((DependencyObject) sender, data, DragDropEffects.Move);
+			System.Windows.DragDrop.DoDragDrop((DependencyObject)sender, data, DragDropEffects.Move);
 
 			// Without this call, there would be a bug in the following scenario: Click on a data item, and drag
 			// the mouse very fast outside of the window. When doing this really fast, for some reason I don't get 
@@ -180,6 +185,21 @@ namespace SqlPad.DragDrop
 			_draggedData = null;
 		}
 
+		private bool CanDrag(object draggedItem)
+		{
+			var tabItem = draggedItem as TabItem;
+			if (tabItem != null)
+			{
+				var editableHeader = tabItem.Header as EditableTabHeaderControl;
+				if (editableHeader != null && editableHeader.EditModeEnabled)
+				{
+					return false;
+				}
+			}
+
+			return true;
+		}
+
 		private void DropTarget_PreviewDragEnter(object sender, DragEventArgs e)
 		{
 			var draggedItem = e.Data.GetData(_format.Name);
@@ -188,12 +208,15 @@ namespace SqlPad.DragDrop
 				return;
 			}
 
-			_targetItemsControl = (ItemsControl) sender;
+			if (CanDrag(draggedItem))
+			{
+				_targetItemsControl = (ItemsControl)sender;
 
-			DecideDropTarget(e);
+				DecideDropTarget(e);
 
-			ShowDraggedAdorner(e.GetPosition(_topWindow));
-			CreateInsertionAdorner();
+				ShowDraggedAdorner(e.GetPosition(_topWindow));
+				CreateInsertionAdorner();
+			}
 
 			e.Handled = true;
 		}
@@ -222,23 +245,26 @@ namespace SqlPad.DragDrop
 				return;
 			}
 
-			var indexRemoved = -1;
-
-			if ((e.Effects & DragDropEffects.Move) != 0)
+			if (CanDrag(draggedItem))
 			{
-				indexRemoved = RemoveItemFromItemsControl(_sourceItemsControl, draggedItem);
+				var indexRemoved = -1;
+
+				if ((e.Effects & DragDropEffects.Move) != 0)
+				{
+					indexRemoved = RemoveItemFromItemsControl(_sourceItemsControl, draggedItem);
+				}
+
+				var isItemDropAfterItsOriginalPosition = indexRemoved != -1 && Equals(_sourceItemsControl, _targetItemsControl) && indexRemoved < _insertionIndex;
+				if (isItemDropAfterItsOriginalPosition)
+				{
+					_insertionIndex--;
+				}
+
+				InsertItemInItemsControl(_targetItemsControl, draggedItem, _insertionIndex);
+
+				RemoveDraggedAdorner();
+				RemoveInsertionAdorner();
 			}
-
-			var isItemDropAfterItsOriginalPosition = indexRemoved != -1 && Equals(_sourceItemsControl, _targetItemsControl) && indexRemoved < _insertionIndex;
-			if (isItemDropAfterItsOriginalPosition)
-			{
-				_insertionIndex--;
-			}
-
-			InsertItemInItemsControl(_targetItemsControl, draggedItem, _insertionIndex);
-
-			RemoveDraggedAdorner();
-			RemoveInsertionAdorner();
 
 			e.Handled = true;
 		}
@@ -251,7 +277,11 @@ namespace SqlPad.DragDrop
 				return;
 			}
 
-			RemoveInsertionAdorner();			
+			if (CanDrag(draggedItem))
+			{
+				RemoveInsertionAdorner();
+			}
+			
 			e.Handled = true;
 		}
 
@@ -305,8 +335,9 @@ namespace SqlPad.DragDrop
 
 		private bool IsDropDataTypeAllowed(object draggedItem)
 		{
-			bool isDropDataTypeAllowed;
 			var collectionSource = _targetItemsControl.ItemsSource;
+			
+			bool isDropDataTypeAllowed;
 			if (draggedItem != null)
 			{
 				if (collectionSource != null)
