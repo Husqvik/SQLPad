@@ -29,7 +29,7 @@ namespace SqlPad.Oracle.Test
 		[Test(Description = @"")]
 		public void TestJoinTypeSuggestion()
 		{
-			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, "SELECT I.*, INVOICES.ID FROM HUSQVIK.INVOICELINES I ", 52).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, "SELECT I.*, INVOICES.ID FROM HUSQVIK.INVOICELINES I ", 52, true, OracleCodeCompletionCategory.JoinMethod).ToArray();
 			// TODO: Filter out outer types depending of nullable columns
 			items.Length.ShouldBe(5);
 			items[0].Name.ShouldBe("JOIN");
@@ -306,7 +306,7 @@ FROM
 		{
 			const string query1 = @"SELECT NULL FROM SELECTION S LEFT JOIN RESPONDENTBUCKET ON S.RESPONDENTBUCKET_ID = RESPONDENTBUCKET.RESPONDENTBUCKET_ID ";
 
-			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 120).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 120, true, OracleCodeCompletionCategory.JoinMethod).ToArray();
 			items.Length.ShouldBe(5);
 			items[0].Name.ShouldBe("JOIN");
 			items[0].Text.ShouldBe("JOIN");
@@ -782,7 +782,9 @@ se";
 			const string query1 = @"SELECT * FROM ""CaseUnknownTable"" OR";
 
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 35).ToList();
-			items.Count.ShouldBe(0);
+			items.Count.ShouldBe(1);
+			items[0].Name.ShouldBe("ORDER BY");
+			items[0].StatementNode.ShouldNotBe(null);
 		}
 
 		[Test(Description = @"")]
@@ -1565,6 +1567,60 @@ se";
 			items[0].Name.ShouldBe("ROWID");
 			items[0].Text.ShouldBe("ROWID");
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.PseudoColumn);
+		}
+
+		[Test(Description = @"")]
+		public void TestKeywordCompletion()
+		{
+			const string statement = @"SELECT * FROM DUAL ";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 19, true, OracleCodeCompletionCategory.Keyword).ToList();
+			items.Count.ShouldBe(3);
+			items[0].Name.ShouldBe("GROUP BY");
+			items[0].StatementNode.ShouldBe(null);
+			items[1].Name.ShouldBe("ORDER BY");
+			items[1].StatementNode.ShouldBe(null);
+			items[2].Name.ShouldBe("WHERE");
+			items[2].StatementNode.ShouldBe(null);
+		}
+
+		[Test(Description = @"")]
+		public void TestKeywordCompletionAfterGroupByClause()
+		{
+			const string statement = @"SELECT * FROM DUAL GROUP BY 1 ";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 30, true, OracleCodeCompletionCategory.Keyword).ToList();
+			items.Count.ShouldBe(2);
+			items[0].Name.ShouldBe("HAVING");
+			items[0].StatementNode.ShouldBe(null);
+			items[1].Name.ShouldBe("ORDER BY");
+			items[1].StatementNode.ShouldBe(null);
+		}
+
+		[Test(Description = @"")]
+		public void TestKeywordCompletionAfterWhereClauseWhemTyping()
+		{
+			const string statement = @"SELECT * FROM DUAL WHERE 1 = 1 GR";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 33, false, OracleCodeCompletionCategory.Keyword).ToList();
+			items.Count.ShouldBe(1);
+			items[0].Name.ShouldBe("GROUP BY");
+			items[0].StatementNode.ShouldNotBe(null);
+		}
+
+		[Test(Description = @"")]
+		public void TestKeywordCompletionWhenKeywordAlreadyInPlace()
+		{
+			const string statement = @"SELECT * FROM DUAL ORDER BY 1";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 22, false, OracleCodeCompletionCategory.Keyword).ToList();
+			items.Count.ShouldBe(0);
+		}
+		
+		[Test(Description = @"")]
+		public void TestKeywordCompletionInAnalyticClause()
+		{
+			const string statement = @"SELECT COUNT(*) OVER (P) FROM DUAL";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 23, false, OracleCodeCompletionCategory.Keyword).ToList();
+			items.Count.ShouldBe(1);
+			items[0].Name.ShouldBe("PARTITION BY");
+			items[0].StatementNode.ShouldNotBe(null);
 		}
 
 		public class OracleCodeCompletionTypeTest

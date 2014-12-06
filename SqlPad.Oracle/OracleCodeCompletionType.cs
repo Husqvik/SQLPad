@@ -10,8 +10,10 @@ namespace SqlPad.Oracle
 {
 	internal class OracleCodeCompletionType
 	{
-		private readonly OracleSqlParser _parser = new OracleSqlParser();
 		private static readonly char[] Separators = { ' ', '\t', '\r', '\n', '\u00A0' };
+		private static readonly OracleSqlParser Parser = new OracleSqlParser();
+
+		private readonly List<SuggestedKeywordClause> _keywordsClauses = new List<SuggestedKeywordClause>();
 
 		public int CursorPosition { get; private set; }
 
@@ -67,9 +69,11 @@ namespace SqlPad.Oracle
 
 		public ICollection<string> TerminalCandidates { get; private set; }
 
+		public ICollection<SuggestedKeywordClause> KeywordsClauses { get { return _keywordsClauses; } }
+
 		private bool Any
 		{
-			get { return Schema || SchemaDataObject || PipelinedFunction || SchemaDataObjectReference || Column || AllColumns || JoinType || JoinCondition || SchemaProgram || DatabaseLink || Sequence || PackageFunction || SpecialFunctionParameter; }
+			get { return Schema || SchemaDataObject || PipelinedFunction || SchemaDataObjectReference || Column || AllColumns || JoinType || JoinCondition || SchemaProgram || DatabaseLink || Sequence || PackageFunction || SpecialFunctionParameter || _keywordsClauses.Count > 0; }
 		}
 
 		public bool ExistsTerminalValue { get { return !String.IsNullOrEmpty(TerminalValuePartUntilCaret); } }
@@ -103,13 +107,14 @@ namespace SqlPad.Oracle
 
 			var requiredOffsetAfterToken = nearestTerminal.Id.IsZeroOffsetTerminalId() ? 0 : 1;
 			var isCursorAfterToken = nearestTerminal.SourcePosition.IndexEnd + requiredOffsetAfterToken < cursorPosition;
+			var atAdHocTemporaryTerminal = false;
 			if (isCursorAfterToken)
 			{
 				var unparsedTextBetweenTokenAndCursor = statementText.Substring(nearestTerminal.SourcePosition.IndexEnd + 1, cursorPosition - nearestTerminal.SourcePosition.IndexEnd - 1).Trim();
 				var extraUnparsedTokens = unparsedTextBetweenTokenAndCursor.Split(Separators, StringSplitOptions.RemoveEmptyEntries);
 				if (extraUnparsedTokens.Length > 0)
 				{
-					TerminalCandidates = new HashSet<string>(_parser.GetTerminalCandidates(nearestTerminal));
+					TerminalCandidates = new HashSet<string>(Parser.GetTerminalCandidates(nearestTerminal));
 					if (TerminalCandidates.Count == 0 || extraUnparsedTokens.Length > 1)
 					{
 						InUnparsedData = true;
@@ -125,6 +130,7 @@ namespace SqlPad.Oracle
 					precedingTerminal = nearestTerminal;
 					nearestTerminal = CurrentTerminal = new StatementGrammarNode(NodeType.Terminal, Statement, new OracleToken(TerminalValueUnderCursor, cursorPosition - TerminalValuePartUntilCaret.Length));
 					Statement.RootNode.AddChildNodes(nearestTerminal);
+					atAdHocTemporaryTerminal = true;
 
 					if (!String.IsNullOrEmpty(TerminalValueUnderCursor) && nearestTerminal.SourcePosition.ContainsIndex(cursorPosition))
 					{
@@ -135,11 +141,7 @@ namespace SqlPad.Oracle
 			else
 			{
 				CurrentTerminal = nearestTerminal;
-
-				if (nearestTerminal.Id.IsIdentifierOrAlias())
-				{
-					ResolveCurrentTerminalValue(nearestTerminal);
-				}
+				ResolveCurrentTerminalValue(nearestTerminal);
 			}
 
 			var effectiveTerminal = Statement.GetNearestTerminalToPosition(cursorPosition, n => !n.Id.In(Terminals.RightParenthesis, Terminals.Comma, Terminals.Semicolon)) ?? nearestTerminal;
@@ -168,7 +170,17 @@ namespace SqlPad.Oracle
 				ResolveCurrentTerminalValue(precedingTerminal);
 			}
 
-			TerminalCandidates = new HashSet<string>(_parser.GetTerminalCandidates(terminalCandidateSourceToken));
+			if (TerminalCandidates == null)
+			{
+				TerminalCandidates = new HashSet<string>(Parser.GetTerminalCandidates(terminalCandidateSourceToken));
+			}
+
+			CurrentQueryBlock = SemanticModel.GetQueryBlock(nearestTerminal);
+
+			var inSelectList = (atAdHocTemporaryTerminal ? precedingTerminal : EffectiveTerminal).GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.SelectList) != null;
+			var keywordClauses = TerminalCandidates.Where(c => c.In(Terminals.Where, Terminals.Group, Terminals.Having, Terminals.Order) || (inSelectList && c == Terminals.Partition))
+				.Select(CreateKeywordClause);
+			_keywordsClauses.AddRange(keywordClauses);
 
 			var isCursorBetweenTwoTerminalsWithPrecedingIdentifierWithoutPrefix = IsCursorTouchingIdentifier && !ReferenceIdentifier.HasObjectIdentifier;
 			Schema = TerminalCandidates.Contains(Terminals.SchemaIdentifier) || isCursorBetweenTwoTerminalsWithPrecedingIdentifierWithoutPrefix;
@@ -205,7 +217,6 @@ namespace SqlPad.Oracle
 
 			PackageFunction = !String.IsNullOrEmpty(ReferenceIdentifier.ObjectIdentifierOriginalValue) && TerminalCandidates.Contains(Terminals.Identifier);
 
-			CurrentQueryBlock = SemanticModel.GetQueryBlock(nearestTerminal);
 			var inMainQueryBlockOrMainObjectReference = CurrentQueryBlock == SemanticModel.MainQueryBlock || (CurrentQueryBlock == null && SemanticModel.MainObjectReferenceContainer.MainObjectReference != null);
 			Sequence = inMainQueryBlockOrMainObjectReference && (nearestTerminal.IsWithinSelectClause() || !nearestTerminal.IsWithinExpression() || nearestTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.InsertValuesClause) != null);
 
@@ -214,6 +225,26 @@ namespace SqlPad.Oracle
 			UpdateSetColumn = TerminalCandidates.Contains(Terminals.Identifier) && (isWithinUpdateSetNonTerminal || isAfterSetTerminal);
 
 			ColumnAlias = Column && nearestTerminal.IsWithinOrderByClause();
+		}
+
+		private SuggestedKeywordClause CreateKeywordClause(string terminalId)
+		{
+			var keywordClause = new SuggestedKeywordClause {TerminalId = terminalId };
+			switch (terminalId)
+			{
+				case Terminals.Where:
+					 return keywordClause.WithText("WHERE");
+				case Terminals.Group:
+					return keywordClause.WithText("GROUP BY");
+				case Terminals.Having:
+					return keywordClause.WithText("HAVING");
+				case Terminals.Order:
+					return keywordClause.WithText("ORDER BY");
+				case Terminals.Partition:
+					return keywordClause.WithText("PARTITION BY");
+				default:
+					throw new NotSupportedException(String.Format("Terminal ID '{0}' not supported. ", terminalId));
+			}
 		}
 
 		private void ResolveCurrentTerminalValue(StatementGrammarNode terminal)
@@ -425,6 +456,18 @@ namespace SqlPad.Oracle
 			}
 
 			return builder.ToString();
+		}
+	}
+
+	public struct SuggestedKeywordClause
+	{
+		public string TerminalId;
+		public string Text { get; private set; }
+
+		public SuggestedKeywordClause WithText(string text)
+		{
+			Text = text;
+			return this;
 		}
 	}
 }
