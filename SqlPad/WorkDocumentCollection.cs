@@ -318,6 +318,7 @@ namespace SqlPad
 		{
 			DocumentId = Guid.NewGuid();
 			TabIndex = -1;
+			HeaderBackgroundColorCode = "#FFFFFFFF";
 		}
 
 		private List<bool> FoldingStatesInternal

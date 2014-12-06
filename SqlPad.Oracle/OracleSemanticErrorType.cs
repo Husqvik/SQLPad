@@ -3,6 +3,10 @@ namespace SqlPad.Oracle
 	public static class OracleSemanticErrorType
 	{
 		public const string None = null;
+		public const string ClauseNotAllowed = "Clause not allowed";
+		public const string ConnectByClauseRequired = "CONNECT BY clause required in this query block";
+		public const string InvalidDateLiteral = "Invalid date literal";
+		public const string InvalidTimestampLiteral = "Invalid timestamp literal";
 		public const string AmbiguousReference = "Ambiguous reference";
 		public const string InvalidParameterCount = "Invalid parameter count";
 		public const string MissingParenthesis = "Missing parenthesis";
@@ -12,6 +16,12 @@ namespace SqlPad.Oracle
 		public const string ObjectStatusInvalid = "Object is invalid or unusable";
 		public const string ObjectCannotBeUsed = "Object cannot be used here";
 		public const string InvalidColumnCount = "Invalid column count";
+	}
+
+	public static class OracleSemanticErrorTooltipText
+	{
+		public const string InvalidDateLiteral = "ANSI format of DATE literal must be YYYY-MM-DD";
+		public const string InvalidTimestampLiteral = "ANSI format of TIMESTAMP literal must be YYYY-MM-DD HH24:MI:SS[.1-9 digits] [time zone definition]";
 	}
 
 	public static class OracleSuggestionType

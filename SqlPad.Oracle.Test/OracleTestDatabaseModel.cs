@@ -364,7 +364,12 @@ namespace SqlPad.Oracle.Test
 			builtInFunctionPackage.Functions.Add(noParenthesisFunctionMetadata);
 
 			var reservedWordFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues("SYS", "STANDARD", "ROWNUM"), false, false, false, false, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeParenthesis, true);
+			reservedWordFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata(null, 0, ParameterDirection.ReturnValue, "NUMBER", OracleObjectIdentifier.Empty, false));
 			builtInFunctionPackage.Functions.Add(reservedWordFunctionMetadata);
+
+			var levelFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, IdentifierBuiltInProgramLevel, false, false, false, false, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeParenthesis, true);
+			levelFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata(null, 0, ParameterDirection.ReturnValue, "NUMBER", OracleObjectIdentifier.Empty, false));
+			builtInFunctionPackage.Functions.Add(levelFunctionMetadata);
 
 			var nvlFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues("SYS", "STANDARD", "NVL"), false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
 			nvlFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata(null, 0, ParameterDirection.ReturnValue, "VARCHAR2", OracleObjectIdentifier.Empty, false));

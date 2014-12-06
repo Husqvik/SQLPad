@@ -1615,6 +1615,57 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		}
 
 		[Test(Description = @"")]
+		public void TestDateAndTimeStampLiteralInvalidFormat()
+		{
+			const string sqlText = @"SELECT DATE'2014-12-06 17:50:42', TIMESTAMP'2014-12-06', DATE'-2014-12-06', TIMESTAMP'+2014-12-06 17:50:42 CET' FROM DUAL";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var invalidNodes = validationModel.IdentifierNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToArray();
+			invalidNodes.Length.ShouldBe(2);
+			invalidNodes[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidDateLiteral);
+			invalidNodes[0].ToolTipText.ShouldBe(OracleSemanticErrorTooltipText.InvalidDateLiteral);
+			invalidNodes[0].Node.Token.Value.ShouldBe("'2014-12-06 17:50:42'");
+			invalidNodes[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidTimestampLiteral);
+			invalidNodes[1].ToolTipText.ShouldBe(OracleSemanticErrorTooltipText.InvalidTimestampLiteral);
+			invalidNodes[1].Node.Token.Value.ShouldBe("'2014-12-06'");
+		}
+
+		[Test(Description = @"")]
+		public void TestLevelFunctionWithoutConnectByClause()
+		{
+			const string sqlText = @"SELECT LEVEL FROM DUAL";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var programNodeValidity = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToArray();
+			programNodeValidity.Length.ShouldBe(1);
+			programNodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.ConnectByClauseRequired);
+			programNodeValidity[0].ToolTipText.ShouldBe(OracleSemanticErrorType.ConnectByClauseRequired);
+			programNodeValidity[0].Node.Token.Value.ShouldBe("LEVEL");
+		}
+
+		[Test(Description = @"")]
+		public void TestLevelFunctionOutsideQueryBlock()
+		{
+			const string sqlText = @"UPDATE DUAL SET DUMMY = LEVEL";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var programNodeValidity = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToArray();
+			programNodeValidity.Length.ShouldBe(1);
+			programNodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.ConnectByClauseRequired);
+			programNodeValidity[0].ToolTipText.ShouldBe(OracleSemanticErrorType.ConnectByClauseRequired);
+			programNodeValidity[0].Node.Token.Value.ShouldBe("LEVEL");
+		}
+
+		[Test(Description = @"")]
 		public void TestColumnResolutionFromTableCollectionExpressionUsingCollectionType()
 		{
 			const string sqlText = @"SELECT PLAN_TABLE_OUTPUT, COLUMN_VALUE FROM TABLE(DBMS_XPLAN.DISPLAY_CURSOR(NULL, NULL, 'ALLSTATS LAST ADVANCED')) T1, TABLE(SYS.ODCIRAWLIST(HEXTORAW('ABCDEF'), HEXTORAW('A12345'), HEXTORAW('F98765'))) T2";

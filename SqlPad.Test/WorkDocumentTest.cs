@@ -46,7 +46,7 @@ namespace SqlPad.Test
 
 			var fileInfo = new FileInfo(Path.Combine(TempDirectoryName, "WorkArea", WorkDocumentCollection.ConfigurationFileName));
 			fileInfo.Exists.ShouldBe(true);
-			fileInfo.Length.ShouldBe(292);
+			fileInfo.Length.ShouldBe(304);
 
 			WorkDocumentCollection.Configure();
 			WorkDocumentCollection.WorkingDocuments.Count.ShouldBe(1);

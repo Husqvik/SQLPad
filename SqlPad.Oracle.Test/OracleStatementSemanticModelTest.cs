@@ -926,7 +926,7 @@ FROM
 		[Test(Description = @"")]
 		public void TestListAggregationFunction()
 		{
-			const string query1 = @"SELECT LISTAGG(LEVEL, ', ') WITHIN GROUP (ORDER BY ROWNUM) FROM DUAL";
+			const string query1 = @"SELECT LISTAGG(ROWNUM, ', ') WITHIN GROUP (ORDER BY ROWNUM) FROM DUAL";
 
 			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
 			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);

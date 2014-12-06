@@ -62,6 +62,8 @@ namespace SqlPad.Oracle
 		
 		public StatementGrammarNode ModelClause { get; set; }
 
+		public StatementGrammarNode HierarchicalQueryClause { get; set; }
+
 		public OracleStatement Statement { get; set; }
 
 		public IList<OracleSelectListColumn> Columns { get; private set; }
@@ -114,5 +116,18 @@ namespace SqlPad.Oracle
 				return programReferences.Concat(sequenceReferences).Concat(columnReferences).Concat(objectReferences);
 			}
 		}
+	}
+
+	public struct OracleLiteral
+	{
+		public LiteralType Type;
+		
+		public StatementGrammarNode Terminal;
+	}
+
+	public enum LiteralType
+	{
+		Date,
+		Timestamp
 	}
 }

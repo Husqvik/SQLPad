@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
@@ -8,6 +9,9 @@ namespace SqlPad.Oracle
 {
 	public class OracleStatementValidator : IStatementValidator
 	{
+		private static readonly Regex DateValidator = new Regex(@"^(?<Year>[+-]?\s*[0-9]{1,4})\s*-\s*(?<Month>[0-9]{1,2})\s*-\s*(?<Day>[0-9]{1,2})\s*$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+		private static readonly Regex TimestampValidator = new Regex(@"^(?<Year>[+-]?\s*[0-9]{1,4})\s*-\s*(?<Month>[0-9]{1,2})\s*-\s*(?<Day>[0-9]{1,2})\s*(?<Hour>[0-9]{1,2})\s*:\s*(?<Minute>[0-9]{1,2})\s*:\s*(?<Second>[0-9]{1,2})\s*(\.\s*(?<Fraction>[0-9]{1,9}))?\s*(((?<OffsetHour>[+-]\s*[0-9]{1,2})\s*:\s*(?<OffsetMinutes>[0-9]{1,2}))|(?<Timezone>[a-zA-Z]+))?$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
 		public IStatementSemanticModel BuildSemanticModel(string statementText, StatementBase statementBase, IDatabaseModel databaseModel)
 		{
 			return new OracleStatementSemanticModel(statementText, (OracleStatement)statementBase, (OracleDatabaseModelBase)databaseModel);
@@ -106,7 +110,109 @@ namespace SqlPad.Oracle
 
 			ValidateConcatenatedQueryBlocks(validationModel);
 
+			ValidateLiterals(validationModel);
+			
 			return validationModel;
+		}
+
+		private void ValidateLiterals(OracleValidationModel validationModel)
+		{
+			foreach (var literal in validationModel.SemanticModel.Literals.Where(l => !IsLiteralValid(l)))
+			{
+				string errorType;
+				string tooltipText;
+				switch (literal.Type)
+				{
+					case LiteralType.Date:
+						errorType = OracleSemanticErrorType.InvalidDateLiteral;
+						tooltipText = OracleSemanticErrorTooltipText.InvalidDateLiteral;
+						break;
+					case LiteralType.Timestamp:
+						errorType = OracleSemanticErrorType.InvalidTimestampLiteral;
+						tooltipText = OracleSemanticErrorTooltipText.InvalidTimestampLiteral;
+						break;
+					default:
+						throw new NotSupportedException();
+				}
+
+				var validationData = new SemanticErrorNodeValidationData(errorType, tooltipText) {IsRecognized = true, Node = literal.Terminal};
+				validationModel.IdentifierNodeValidity[literal.Terminal] = validationData;
+			}
+		}
+
+		private bool IsLiteralValid(OracleLiteral literal)
+		{
+			var value = literal.Terminal.Token.Value.ToPlainString();
+
+			Match match;
+			switch (literal.Type)
+			{
+				case LiteralType.Date:
+					match = DateValidator.Match(value);
+					return IsDateValid(match.Groups["Year"].Value, match.Groups["Month"].Value, match.Groups["Day"].Value);
+				case LiteralType.Timestamp:
+					match = TimestampValidator.Match(value);
+
+					if (!match.Success || !IsDateValid(match.Groups["Year"].Value, match.Groups["Month"].Value, match.Groups["Day"].Value))
+					{
+						return false;
+					}
+
+					int hour;
+					if (!Int32.TryParse(match.Groups["Hour"].Value, out hour) || hour < 0 || hour > 23)
+					{
+						return false;
+					}
+
+					if (!IsBetweenZeroAndFiftyNine(match.Groups["Minute"].Value) || !IsBetweenZeroAndFiftyNine(match.Groups["Second"].Value))
+					{
+						return false;
+					}
+
+					var hourOffsetGroup = match.Groups["HourOffset"];
+					if (hourOffsetGroup.Success)
+					{
+						var hourOffset = Int32.Parse(hourOffsetGroup.Value.Replace(" ", null));
+						if (hourOffset < -12 || hourOffset > 14)
+						{
+							return false;
+						}
+
+						var minuteOffset = Int32.Parse(match.Groups["MinuteOffset"].Value);
+						if (minuteOffset < 0 || minuteOffset > 59 || (minuteOffset > 0 && hourOffset == 14))
+						{
+							return false;
+						}
+					}
+
+					return true;
+				default:
+					throw new NotSupportedException();
+			}
+		}
+
+		private bool IsBetweenZeroAndFiftyNine(string stringValue)
+		{
+			int value;
+			return Int32.TryParse(stringValue, out value) && value >= 0 && value < 60;
+		}
+
+		private bool IsDateValid(string year, string month, string day)
+		{
+			int yearValue;
+			if (!Int32.TryParse(year.Replace(" ", null), out yearValue) || yearValue < -4712 || yearValue > 9999)
+			{
+				return false;
+			}
+
+			int monthValue;
+			if (!Int32.TryParse(month, out monthValue) || monthValue < 1 || monthValue > 12)
+			{
+				return false;
+			}
+
+			int dayValue;
+			return Int32.TryParse(day, out dayValue) || dayValue >= 1 || dayValue <= DateTime.DaysInMonth(yearValue, monthValue);
 		}
 
 		private void ValidateConcatenatedQueryBlocks(OracleValidationModel validationModel)
@@ -135,15 +241,15 @@ namespace SqlPad.Oracle
 		{
 			ResolveColumnNodeValidities(validationModel, referenceContainer);
 
-			foreach (var functionReference in referenceContainer.ProgramReferences)
+			foreach (var programReference in referenceContainer.ProgramReferences)
 			{
-				if (functionReference.DatabaseLinkNode == null)
+				if (programReference.DatabaseLinkNode == null)
 				{
-					ValidateLocalProgramReference(functionReference, validationModel);
+					ValidateLocalProgramReference(programReference, validationModel);
 				}
 				else
 				{
-					ValidateDatabaseLinkReference(validationModel.ProgramNodeValidity, functionReference);
+					ValidateDatabaseLinkReference(validationModel.ProgramNodeValidity, programReference);
 				}
 			}
 
@@ -227,6 +333,21 @@ namespace SqlPad.Oracle
 				{
 					semanticError = OracleSemanticErrorType.InvalidParameterCount;
 				}
+				else if (programReference.Metadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramLevel)
+				{
+					if (programReference.Owner == null || programReference.Owner.HierarchicalQueryClause == null ||
+					    programReference.Owner.HierarchicalQueryClause.GetDescendantByPath(NonTerminals.HierarchicalQueryConnectByClause) == null)
+					{
+						validationModel.ProgramNodeValidity[programReference.FunctionIdentifierNode] =
+							new SemanticErrorNodeValidationData(OracleSemanticErrorType.ConnectByClauseRequired, OracleSemanticErrorType.ConnectByClauseRequired)
+							{
+								IsRecognized = true,
+								Node = programReference.FunctionIdentifierNode
+							};
+
+						return;
+					}
+				}
 				else if (programReference.Metadata.DisplayType == OracleProgramMetadata.DisplayTypeParenthesis)
 				{
 					semanticError = OracleSemanticErrorType.MissingParenthesis;
@@ -279,7 +400,7 @@ namespace SqlPad.Oracle
 
 			return String.IsNullOrEmpty(errorMessage)
 				? null
-				: new InvalidIdentifierNodeValidationData(errorMessage) { IsRecognized = true, Node = node };
+				: new SemanticErrorNodeValidationData(OracleSemanticErrorType.InvalidIdentifier, errorMessage) { IsRecognized = true, Node = node };
 		}
 
 		public static bool IsValidBindVariableIdentifier(string identifier)
@@ -592,16 +713,18 @@ namespace SqlPad.Oracle
 		}
 	}
 
-	public class InvalidIdentifierNodeValidationData : NodeValidationData
+	public class SemanticErrorNodeValidationData : NodeValidationData
 	{
 		private readonly string _toolTipText;
+		private readonly string _semanticErrorType;
 
-		public InvalidIdentifierNodeValidationData(string toolTipText)
+		public SemanticErrorNodeValidationData(string semanticErrorType, string toolTipText)
 		{
 			_toolTipText = toolTipText;
+			_semanticErrorType = semanticErrorType;
 		}
 
-		public override string SemanticErrorType { get { return OracleSemanticErrorType.InvalidIdentifier; } }
+		public override string SemanticErrorType { get { return _semanticErrorType; } }
 
 		public override string ToolTipText
 		{
