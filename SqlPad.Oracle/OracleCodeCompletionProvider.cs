@@ -267,9 +267,12 @@ namespace SqlPad.Oracle
 				completionItems = completionItems.Concat(GenerateCommonTableExpressionReferenceItems(semanticModel, null, null, extraOffset));
 			}
 
-			if (completionType.Column)
+			if (completionType.Column || completionType.SpecialFunctionParameter)
 			{
-				completionItems = completionItems.Concat(GenerateSelectListItems(referenceContainers, cursorPosition, oracleDatabaseModel, completionType, forcedInvokation));
+				if (completionType.Column)
+				{
+					completionItems = completionItems.Concat(GenerateSelectListItems(referenceContainers, cursorPosition, oracleDatabaseModel, completionType, forcedInvokation));
+				}
 
 				var functionOverloads = ResolveFunctionOverloads(referenceContainers, currentNode, cursorPosition);
 				var specificFunctionParameterCodeCompletionItems = CodeCompletionSearchHelper.ResolveSpecificFunctionParameterCodeCompletionItems(currentNode, functionOverloads, oracleDatabaseModel);

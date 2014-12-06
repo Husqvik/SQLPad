@@ -1022,7 +1022,7 @@ se";
 			items[5].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
 		}
 
-		[Test(Description = @""), Ignore]
+		[Test(Description = @"")]
 		public void TestCryptoHashSpecialParameterWithExistingLiteralCompletion()
 		{
 			const string statement = @"SELECT DBMS_CRYPTO.HASH(HEXTORAW ('FF'), 1) FROM DUAL";
@@ -1584,6 +1584,7 @@ se";
 				completionType.JoinCondition.ShouldBe(true);
 				completionType.SchemaDataObject.ShouldBe(false);
 				completionType.ColumnAlias.ShouldBe(false);
+				completionType.SpecialFunctionParameter.ShouldBe(false);
 			}
 
 			[Test(Description = @""), Ignore]
@@ -1594,6 +1595,7 @@ se";
 				completionType.JoinCondition.ShouldBe(true);
 				completionType.SchemaDataObject.ShouldBe(false);
 				completionType.ColumnAlias.ShouldBe(false);
+				completionType.SpecialFunctionParameter.ShouldBe(false);
 			}
 
 			[Test(Description = @"")]
@@ -1603,6 +1605,7 @@ se";
 				var completionType = InitializeCodeCompletionType(statement, statement.Length - 1);
 				completionType.JoinCondition.ShouldBe(false);
 				completionType.ColumnAlias.ShouldBe(false);
+				completionType.SpecialFunctionParameter.ShouldBe(false);
 			}
 
 			[Test(Description = @"")]
@@ -1617,6 +1620,7 @@ se";
 				completionType.Column.ShouldBe(true);
 				completionType.AllColumns.ShouldBe(false);
 				completionType.ColumnAlias.ShouldBe(false);
+				completionType.SpecialFunctionParameter.ShouldBe(true);
 			}
 
 			[Test(Description = @"")]
@@ -1631,6 +1635,7 @@ se";
 				completionType.Column.ShouldBe(true);
 				completionType.AllColumns.ShouldBe(false);
 				completionType.ColumnAlias.ShouldBe(false);
+				completionType.SpecialFunctionParameter.ShouldBe(true);
 			}
 
 			[Test(Description = @"")]
@@ -1646,6 +1651,7 @@ se";
 				completionType.SchemaDataObject.ShouldBe(false);
 				//completionType.SchemaDataObjectReference.ShouldBe(true);
 				completionType.ColumnAlias.ShouldBe(false);
+				completionType.SpecialFunctionParameter.ShouldBe(false);
 			}
 			
 			[Test(Description = @"")]
@@ -1662,6 +1668,7 @@ se";
 				completionType.PackageFunction.ShouldBe(false);
 				completionType.SchemaDataObject.ShouldBe(false);
 				completionType.ColumnAlias.ShouldBe(false);
+				completionType.SpecialFunctionParameter.ShouldBe(false);
 			}
 
 			[Test(Description = @"")]
@@ -1678,6 +1685,7 @@ se";
 				completionType.SchemaDataObjectReference.ShouldBe(false);
 				completionType.DatabaseLink.ShouldBe(true);
 				completionType.ColumnAlias.ShouldBe(false);
+				completionType.SpecialFunctionParameter.ShouldBe(false);
 			}
 
 			[Test(Description = @"")]
@@ -1686,6 +1694,7 @@ se";
 				const string statement = @"SELECT LENGTH(DUMMY) COLUMN_NAME FROM DUAL ORDER BY C";
 				var completionType = InitializeCodeCompletionType(statement, 53);
 				completionType.ColumnAlias.ShouldBe(true);
+				completionType.SpecialFunctionParameter.ShouldBe(false);
 			}
 
 			[Test(Description = @"")]
@@ -1694,6 +1703,7 @@ se";
 				const string statement = @"SELECT * FROM SELECTION WHERE SELECTIONNAME IN (SELECT * FROM SELE)";
 				var completionType = InitializeCodeCompletionType(statement, 66);
 				completionType.SchemaDataObject.ShouldBe(true);
+				completionType.SpecialFunctionParameter.ShouldBe(false);
 			}
 
 			[Test(Description = @"")]
@@ -1702,6 +1712,7 @@ se";
 				const string statement = @"SELECT * FROM SELECTION JOIN RESPONDENTBUCKET ON SELECTION.RESPONDENTBUCKET_ID = RESPONDENTBUCKET.RESPONDENTBUCKET_ID J";
 				var completionType = InitializeCodeCompletionType(statement, 119);
 				completionType.JoinType.ShouldBe(true);
+				completionType.SpecialFunctionParameter.ShouldBe(false);
 			}
 
 			[Test(Description = @"")]

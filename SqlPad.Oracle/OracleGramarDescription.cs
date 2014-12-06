@@ -490,6 +490,7 @@ namespace SqlPad.Oracle
 			public const string OpaqueFormatSpecification = "OpaqueFormatSpecification";
 			public const string OpaqueFormatSpecificationOrUsingClobSubquery = "OpaqueFormatSpecificationOrUsingClobSubquery";
 			public const string OptionalParameter = "OptionalParameter";
+			public const string OptionalParameterExpression = "OptionalParameterExpression";
 			public const string OptionalParameterExpressionCommaChainedList = "OptionalParameterExpressionCommaChainedList";
 			public const string OptionalParameterExpressionList = "OptionalParameterExpressionList";
 			public const string OrderByClause = "OrderByClause";

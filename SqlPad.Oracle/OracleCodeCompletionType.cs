@@ -42,6 +42,8 @@ namespace SqlPad.Oracle
 		public bool DatabaseLink { get; private set; }
 		
 		public bool ColumnAlias { get; private set; }
+
+		public bool SpecialFunctionParameter { get; private set; }
 		
 		public bool InsertIntoColumns { get; private set; }
 		
@@ -67,7 +69,7 @@ namespace SqlPad.Oracle
 
 		private bool Any
 		{
-			get { return Schema || SchemaDataObject || PipelinedFunction || SchemaDataObjectReference || Column || AllColumns || JoinType || JoinCondition || SchemaProgram || DatabaseLink || Sequence || PackageFunction; }
+			get { return Schema || SchemaDataObject || PipelinedFunction || SchemaDataObjectReference || Column || AllColumns || JoinType || JoinCondition || SchemaProgram || DatabaseLink || Sequence || PackageFunction || SpecialFunctionParameter; }
 		}
 
 		public bool ExistsTerminalValue { get { return !String.IsNullOrEmpty(TerminalValuePartUntilCaret); } }
@@ -175,6 +177,13 @@ namespace SqlPad.Oracle
 			if (isCurrentClauseSupported)
 			{
 				SchemaProgram = Column = TerminalCandidates.Contains(Terminals.Identifier) || isCursorBetweenTwoTerminalsWithPrecedingIdentifierWithoutPrefix;
+
+				var functionParameterOptionalExpression = EffectiveTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.OptionalParameterExpressionList, NonTerminals.OptionalParameterExpression);
+				if (functionParameterOptionalExpression != null)
+				{
+					var functionParameterExpression = functionParameterOptionalExpression.GetDescendantByPath(NonTerminals.Expression);
+					SpecialFunctionParameter = functionParameterExpression != null && functionParameterExpression.TerminalCount == 1 && (functionParameterExpression.FirstTerminalNode.Id.IsLiteral() || functionParameterExpression.FirstTerminalNode.Id == Terminals.Identifier);
+				}
 			}
 			
 			DatabaseLink = TerminalCandidates.Contains(Terminals.DatabaseLinkIdentifier);

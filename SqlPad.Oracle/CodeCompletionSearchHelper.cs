@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
+using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 
 namespace SqlPad.Oracle
 {
@@ -29,7 +30,7 @@ namespace SqlPad.Oracle
 		{
 			var completionItems = new List<ICodeCompletionItem>();
 			var specificFunctionOverloads = functionOverloads.Where(m => SpecificCodeCompletionFunctionIdentifiers.Contains(m.ProgramMetadata.Identifier)).ToArray();
-			if (specificFunctionOverloads.Length == 0 || !currentNode.Id.In(Terminals.StringLiteral, Terminals.LeftParenthesis, Terminals.Comma))
+			if (specificFunctionOverloads.Length == 0 || !currentNode.Id.In(Terminals.StringLiteral, Terminals.NumberLiteral, Terminals.LeftParenthesis, Terminals.Comma))
 			{
 				return completionItems;
 			}
@@ -95,7 +96,7 @@ namespace SqlPad.Oracle
 
 			var dbmsCrptoHashFunctionOverload = specificFunctionOverloads
 				.FirstOrDefault(o => o.CurrentParameterIndex == 1 && o.ProgramMetadata.Identifier.In(OracleDatabaseModelBase.IdentifierDbmsCryptoHash));
-			if (dbmsCrptoHashFunctionOverload != null && HasSingleStringLiteralParameterOrNoParameterToken(dbmsCrptoHashFunctionOverload))
+			if (dbmsCrptoHashFunctionOverload != null && HasSingleNumberLiteralParameterOrNoParameterToken(dbmsCrptoHashFunctionOverload))
 			{
 				completionItems.Add(BuildParameterCompletionItem(currentNode, "1", "1 - DBMS_CRYPTO.HASH_MD4 - MD4", false));
 				completionItems.Add(BuildParameterCompletionItem(currentNode, "2", "2 - DBMS_CRYPTO.HASH_MD5 - MD5", false));
@@ -117,7 +118,7 @@ namespace SqlPad.Oracle
 				}
 				else if (sysContextFunctionOverload.CurrentParameterIndex == 1 && sysContextFunctionOverload.ProgramMetadata.Parameters[sysContextFunctionOverload.CurrentParameterIndex + 1].DataType == "VARCHAR2")
 				{
-					var firstParameter = sysContextFunctionOverload.ProgramReference.ParameterNodes[0];
+					var firstParameter = sysContextFunctionOverload.ProgramReference.ParameterNodes[0].GetDescendantByPath(NonTerminals.Expression);
 					var contextNamespace = HasSingleStringLiteralParameterOrNoParameterToken(sysContextFunctionOverload, 0) ? firstParameter.ChildNodes[0].Token.Value.ToUpperInvariant() : null;
 					if (contextNamespace.ToPlainString() == ContextNamespaceUserEnvironment)
 					{
@@ -214,6 +215,16 @@ namespace SqlPad.Oracle
 
 		private static bool HasSingleStringLiteralParameterOrNoParameterToken(OracleCodeCompletionFunctionOverload functionOverload, int? parameterIndex = null)
 		{
+			return HasSingleLiteralParameterOrNoParameterToken(functionOverload, Terminals.StringLiteral, parameterIndex);
+		}
+
+		private static bool HasSingleNumberLiteralParameterOrNoParameterToken(OracleCodeCompletionFunctionOverload functionOverload, int? parameterIndex = null)
+		{
+			return HasSingleLiteralParameterOrNoParameterToken(functionOverload, Terminals.NumberLiteral, parameterIndex);
+		}
+
+		private static bool HasSingleLiteralParameterOrNoParameterToken(OracleCodeCompletionFunctionOverload functionOverload, string literalTerminalId, int? parameterIndex)
+		{
 			parameterIndex = parameterIndex ?? functionOverload.CurrentParameterIndex;
 			if (parameterIndex >= functionOverload.ProgramReference.ParameterNodes.Count)
 			{
@@ -221,7 +232,8 @@ namespace SqlPad.Oracle
 			}
 
 			var firstParameter = functionOverload.ProgramReference.ParameterNodes[parameterIndex.Value];
-			return firstParameter.ChildNodes.Count == 1 && firstParameter.ChildNodes[0].Id == Terminals.StringLiteral;
+			var parameterExpression = firstParameter.GetDescendantByPath(NonTerminals.Expression);
+			return parameterExpression != null && parameterExpression.ChildNodes.Count == 1 && parameterExpression.ChildNodes[0].Id == literalTerminalId;
 		}
 
 		private static OracleCodeCompletionItem BuildParameterCompletionItem(StatementGrammarNode node, string parameterValue, string description, bool addApostrophes = true)

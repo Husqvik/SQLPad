@@ -2847,9 +2847,17 @@
     <Rule StartingNonTerminal="OptionalParameterExpressionList">
       <Sequences>
         <Sequence>
+          <NonTerminal Id="OptionalParameterExpression" />
+          <NonTerminal Id="OptionalParameterExpressionCommaChainedList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="OptionalParameterExpression">
+      <Sequences>
+        <Sequence>
           <NonTerminal Id="OptionalParameter" IsOptional="true" />
           <NonTerminal Id="Expression" />
-          <NonTerminal Id="OptionalParameterExpressionCommaChainedList" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
