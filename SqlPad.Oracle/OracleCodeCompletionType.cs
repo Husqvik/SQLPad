@@ -10,7 +10,6 @@ namespace SqlPad.Oracle
 {
 	internal class OracleCodeCompletionType
 	{
-		private static readonly char[] Separators = { ' ', '\t', '\r', '\n', '\u00A0' };
 		private static readonly OracleSqlParser Parser = new OracleSqlParser();
 
 		private readonly List<SuggestedKeywordClause> _keywordsClauses = new List<SuggestedKeywordClause>();
@@ -110,12 +109,13 @@ namespace SqlPad.Oracle
 			var atAdHocTemporaryTerminal = false;
 			if (isCursorAfterToken)
 			{
-				var unparsedTextBetweenTokenAndCursor = statementText.Substring(nearestTerminal.SourcePosition.IndexEnd + 1, cursorPosition - nearestTerminal.SourcePosition.IndexEnd - 1).Trim();
-				var extraUnparsedTokens = unparsedTextBetweenTokenAndCursor.Split(Separators, StringSplitOptions.RemoveEmptyEntries);
+				var unparsedTextBetweenTokenAndCursor = statementText.Substring(nearestTerminal.SourcePosition.IndexEnd + 1, cursorPosition - nearestTerminal.SourcePosition.IndexEnd - 1);
+				var unparsedEndTrimmedTextBetweenTokenAndCursor = unparsedTextBetweenTokenAndCursor.TrimEnd();
+				var extraUnparsedTokens = unparsedEndTrimmedTextBetweenTokenAndCursor.TrimStart().Split(TextSegment.Separators, StringSplitOptions.RemoveEmptyEntries);
 				if (extraUnparsedTokens.Length > 0)
 				{
 					TerminalCandidates = new HashSet<string>(Parser.GetTerminalCandidates(nearestTerminal));
-					if (TerminalCandidates.Count == 0 || extraUnparsedTokens.Length > 1)
+					if (TerminalCandidates.Count == 0 || extraUnparsedTokens.Length > 1 || unparsedEndTrimmedTextBetweenTokenAndCursor.Length < unparsedTextBetweenTokenAndCursor.Length)
 					{
 						InUnparsedData = true;
 						return;
@@ -459,6 +459,7 @@ namespace SqlPad.Oracle
 		}
 	}
 
+	[DebuggerDisplay("SuggestedKeywordClause (TerminalId={TerminalId}; Text={Text})")]
 	public struct SuggestedKeywordClause
 	{
 		public string TerminalId;

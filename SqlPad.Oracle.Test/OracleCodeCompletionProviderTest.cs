@@ -1623,6 +1623,14 @@ se";
 			items[0].StatementNode.ShouldNotBe(null);
 		}
 
+		[Test(Description = @"")]
+		public void TestKeywordCompletionInAnalyticClauseAfterUnparsedToken()
+		{
+			const string statement = @"SELECT COUNT(*) OVER (PART ) FROM DUAL";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 27, true, OracleCodeCompletionCategory.Keyword).ToList();
+			items.Count.ShouldBe(0);
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)

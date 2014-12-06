@@ -15,6 +15,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.CodeCompletion;
+using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Folding;
 using Microsoft.Win32;
 using SqlPad.Commands;
@@ -360,11 +361,21 @@ namespace SqlPad
 
 			Editor.TextArea.TextEntering += TextEnteringHandler;
 			Editor.TextArea.TextEntered += TextEnteredHandler;
+			Editor.Document.Changing += DocumentChangingHandler;
 
 			Editor.TextArea.Caret.PositionChanged += CaretPositionChangedHandler;
 			Editor.TextArea.SelectionChanged += SelectionChangedHandler;
 
 			EditorAdapter = new TextEditorAdapter(Editor);
+		}
+
+		private void DocumentChangingHandler(object sender, DocumentChangeEventArgs args)
+		{
+			if (args.InsertedText.IndexOfAny(TextSegment.Separators, 0, args.InsertionLength) != -1 ||
+			    args.RemovedText.IndexOfAny(TextSegment.Separators, 0, args.RemovalLength) != -1)
+			{
+				DisableCodeCompletion();
+			}
 		}
 
 		private void InitializeSpecificCommandBindings()
@@ -598,13 +609,12 @@ namespace SqlPad
 		{
 			ChangeDeleteLineCommandInputGesture();
 
-			var commandBindings = Editor.TextArea.DefaultInputHandler.Editing.CommandBindings;
-			commandBindings.Add(new CommandBinding(GenericCommands.DuplicateText, GenericCommandHandler.DuplicateText));
-			commandBindings.Add(new CommandBinding(GenericCommands.BlockComment, GenericCommandHandler.HandleBlockComments));
-			commandBindings.Add(new CommandBinding(GenericCommands.LineComment, GenericCommandHandler.HandleLineComments));
-			commandBindings.Add(new CommandBinding(GenericCommands.MultiNodeEdit, EditMultipleNodes));
+			Editor.TextArea.CommandBindings.Add(new CommandBinding(GenericCommands.DuplicateText, GenericCommandHandler.DuplicateText));
+			Editor.TextArea.CommandBindings.Add(new CommandBinding(GenericCommands.BlockComment, GenericCommandHandler.HandleBlockComments));
+			Editor.TextArea.CommandBindings.Add(new CommandBinding(GenericCommands.LineComment, GenericCommandHandler.HandleLineComments));
+			Editor.TextArea.CommandBindings.Add(new CommandBinding(GenericCommands.MultiNodeEdit, EditMultipleNodes));
 
-			commandBindings.Add(new CommandBinding(DiagnosticCommands.ShowTokenCommand, ShowTokenCommandExecutionHandler));
+			Editor.TextArea.CommandBindings.Add(new CommandBinding(DiagnosticCommands.ShowTokenCommand, ShowTokenCommandExecutionHandler));
 		}
 
 		private void CanExecuteShowCodeCompletionHandler(object sender, CanExecuteRoutedEventArgs args)

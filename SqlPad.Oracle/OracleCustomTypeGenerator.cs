@@ -269,24 +269,27 @@ namespace SqlPad.Oracle
 
 		private static void CreateOracleCollectionType(ModuleBuilder customTypeModuleBuilder, OracleTypeCollection collectionType, IDictionary<string, Type> customTypes)
 		{
-			Type targetType;
+			var targetType = typeof(object);
 			var enclosingCharacter = String.Empty;
-			if (String.IsNullOrEmpty(collectionType.ElementDataType.FullyQualifiedName.Owner))
+			if (collectionType.ElementDataType != null)
 			{
-				targetType = MapOracleTypeToNetType(collectionType.ElementDataType.FullyQualifiedName);
-
-				if (targetType == typeof (string))
+				if (String.IsNullOrEmpty(collectionType.ElementDataType.FullyQualifiedName.Owner))
 				{
-					enclosingCharacter = "'";
-				}
-			}
-			else if (customTypes.TryGetValue(collectionType.ElementDataType.FullyQualifiedName.ToString().Replace("\"", null), out targetType))
-			{
+					targetType = MapOracleTypeToNetType(collectionType.ElementDataType.FullyQualifiedName);
 
-			}
-			else
-			{
-				targetType = typeof(object);
+					if (targetType == typeof (string))
+					{
+						enclosingCharacter = "'";
+					}
+				}
+				else
+				{
+					Type targetCustomType;
+					if (customTypes.TryGetValue(collectionType.ElementDataType.FullyQualifiedName.ToString().Replace("\"", null), out targetCustomType))
+					{
+						targetType = targetCustomType;
+					}
+				}
 			}
 
 			var baseFactoryType = typeof(OracleTableValueFactoryBase<>);
