@@ -1022,6 +1022,20 @@ se";
 			items[5].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
 		}
 
+		[Test(Description = @""), Ignore]
+		public void TestCryptoHashSpecialParameterWithExistingLiteralCompletion()
+		{
+			const string statement = @"SELECT DBMS_CRYPTO.HASH(HEXTORAW ('FF'), 1) FROM DUAL";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 42).ToList();
+			items.Count.ShouldBe(6);
+			items[0].Name.ShouldBe("1 - DBMS_CRYPTO.HASH_MD4 - MD4");
+			items[0].Text.ShouldBe("1");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+			items[5].Name.ShouldBe("6 - DBMS_CRYPTO.HASH_SH512 - SH512");
+			items[5].Text.ShouldBe("6");
+			items[5].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+		}
+
 		[Test(Description = @"")]
 		public void TestTableIdentifierAndAllTableColumnCompletion()
 		{
@@ -1542,11 +1556,11 @@ se";
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.PackageFunction);
 		}
 
-		[Test(Description = @""), Ignore]
+		[Test(Description = @"")]
 		public void TestRowIdCodeCompletionWhenOnlyChoice()
 		{
 			const string statement = @"SELECT DUAL.ROWI FROM DUAL";
-			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 17).ToList();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 16).ToList();
 			items.Count.ShouldBe(1);
 			items[0].Name.ShouldBe("ROWID");
 			items[0].Text.ShouldBe("ROWID");

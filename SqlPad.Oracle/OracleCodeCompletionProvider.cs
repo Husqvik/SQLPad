@@ -486,7 +486,8 @@ namespace SqlPad.Oracle
 						(objectIdentifierNode == null && String.IsNullOrEmpty(partialName) ||
 						(c.Name != partialName.ToQuotedIdentifier() && CodeCompletionSearchHelper.IsMatch(c.Name, partialName))))
 					.Select(c => new { TableReference = t, Column = c }))
-					.GroupBy(c => c.Column.Name).ToDictionary(g => g.Key ?? String.Empty, g => g.Select(o => o.TableReference).ToArray());
+					.GroupBy(c => c.Column.Name)
+					.ToDictionary(g => g.Key ?? String.Empty, g => g.Select(o => o.TableReference).ToArray());
 
 			var suggestedColumns = new List<Tuple<string, OracleObjectIdentifier>>();
 			foreach (var columnCandidate in columnCandidates)
@@ -495,15 +496,16 @@ namespace SqlPad.Oracle
 					.Select(objectIdentifier => new Tuple<string, OracleObjectIdentifier>(columnCandidate.Key, objectIdentifier)));
 			}
 
-			var rowIdItems = columnCandidates.Values.SelectMany(v => v)
-				.Select(o => new { o.FullyQualifiedObjectName, DataObject = o.SchemaObject.GetTargetSchemaObject() as OracleTable })
-				.Distinct()
-				.Where(o => o.DataObject != null && o.DataObject.Organization.In(OrganizationType.Heap, OrganizationType.Index) &&
-							suggestedColumns.Select(t => t.Item2).Contains(o.FullyQualifiedObjectName) &&
-							CodeCompletionSearchHelper.IsMatch(OracleColumn.RowId, partialName))
-				.Select(o => CreateColumnCodeCompletionItem(OracleColumn.RowId, objectIdentifierNode == null ? o.FullyQualifiedObjectName.ToString() : null, nodeToReplace, OracleCodeCompletionCategory.PseudoColumn));
+			var suggestedItems = suggestedColumns.Select(t => CreateColumnCodeCompletionItem(t.Item1, objectIdentifierNode == null ? t.Item2.ToString() : null, nodeToReplace));
 
-			var suggestedItems = rowIdItems.Concat(suggestedColumns.Select(t => CreateColumnCodeCompletionItem(t.Item1, objectIdentifierNode == null ? t.Item2.ToString() : null, nodeToReplace)));
+			if (CodeCompletionSearchHelper.IsMatch(OracleColumn.RowId, partialName))
+			{
+				var rowIdItems = tableReferences.Select(r => new { r.FullyQualifiedObjectName, DataObject = r.SchemaObject.GetTargetSchemaObject() as OracleTable })
+					.Where(t => t.DataObject != null && t.DataObject.Organization.In(OrganizationType.Heap, OrganizationType.Index))
+					.Distinct()
+					.Select(t => CreateColumnCodeCompletionItem(OracleColumn.RowId, objectIdentifierNode == null ? t.FullyQualifiedObjectName.ToString() : null, nodeToReplace, OracleCodeCompletionCategory.PseudoColumn));
+				suggestedItems = suggestedItems.Concat(rowIdItems);
+			}
 
 			if (partialName == null && currentNode.IsWithinSelectClause() && currentNode.GetParentExpression().GetParentExpression() == null)
 			{
