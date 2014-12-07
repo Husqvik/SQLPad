@@ -9,6 +9,8 @@ namespace SqlPad.Oracle
 	public class OracleSelectListColumn : OracleReferenceContainer
 	{
 		private OracleColumn _columnDescription;
+		private StatementGrammarNode _aliasNode;
+		private string _normalizedName;
 
 		public OracleSelectListColumn(OracleStatementSemanticModel semanticModel, OracleSelectListColumn asteriskColumn)
 			: base(semanticModel)
@@ -45,8 +47,8 @@ namespace SqlPad.Oracle
 				if (!String.IsNullOrEmpty(ExplicitNormalizedName))
 					return ExplicitNormalizedName;
 
-				if (AliasNode != null)
-					return AliasNode.Token.Value.ToQuotedIdentifier();
+				if (_aliasNode != null)
+					return _normalizedName;
 
 				return _columnDescription == null
 					? null
@@ -61,7 +63,20 @@ namespace SqlPad.Oracle
 			get { return !IsAsterisk && HasExplicitDefinition && RootNode.LastTerminalNode.Id == Terminals.ColumnAlias; }
 		}
 
-		public StatementGrammarNode AliasNode { get; set; }
+		public StatementGrammarNode AliasNode
+		{
+			get { return _aliasNode; }
+			set
+			{
+				if (value == _aliasNode)
+				{
+					return;
+				}
+
+				_aliasNode = value;
+				_normalizedName = _aliasNode == null ? null : _aliasNode.Token.Value.ToQuotedIdentifier();
+			}
+		}
 
 		public StatementGrammarNode RootNode { get; set; }
 		

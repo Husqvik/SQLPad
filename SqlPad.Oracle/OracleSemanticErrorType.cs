@@ -20,8 +20,8 @@ namespace SqlPad.Oracle
 
 	public static class OracleSemanticErrorTooltipText
 	{
-		public const string InvalidDateLiteral = "ANSI format of DATE literal must be YYYY-MM-DD";
-		public const string InvalidTimestampLiteral = "ANSI format of TIMESTAMP literal must be YYYY-MM-DD HH24:MI:SS[.1-9 digits] [time zone definition]";
+		public const string InvalidDateLiteral = "ANSI format of DATE literal must be [-]YYYY-MM-DD";
+		public const string InvalidTimestampLiteral = "ANSI format of TIMESTAMP literal must be [-]YYYY-MM-DD HH24:MI:SS[.1-9 digits] [time zone definition]";
 	}
 
 	public static class OracleSuggestionType

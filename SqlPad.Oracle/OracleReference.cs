@@ -21,7 +21,7 @@ namespace SqlPad.Oracle
 
 		public abstract string Name { get; }
 
-		public string NormalizedName { get { return Name.ToQuotedIdentifier(); } }
+		public virtual string NormalizedName { get { return Name.ToQuotedIdentifier(); } }
 
 		public QueryBlockPlacement Placement { get; set; }
 

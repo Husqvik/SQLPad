@@ -86,8 +86,6 @@ namespace SqlPad
 				: GetFollowingNode(node.ParentNode);
 		}
 		
-		//public StatementGrammarNode NextTerminal { get; private set; }
-
 		public StatementGrammarNode FirstTerminalNode { get; private set; }
 
 		public StatementGrammarNode LastTerminalNode { get; private set; }
@@ -364,21 +362,6 @@ namespace SqlPad
 			return null;
 		}
 		
-		/*private void ResolveLinks()
-		{
-			StatementGrammarNode previousTerminal = null;
-			foreach (var terminal in Terminals)
-			{
-				if (previousTerminal != null)
-				{
-					terminal.PrecedingTerminal = previousTerminal;
-					previousTerminal.NextTerminal = terminal;
-				}
-
-				previousTerminal = terminal;
-			}
-		}*/
-
 		public int RemoveLastChildNodeIfOptional()
 		{
 			if (Type == NodeType.Terminal)

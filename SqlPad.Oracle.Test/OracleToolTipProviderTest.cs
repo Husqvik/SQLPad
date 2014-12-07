@@ -552,6 +552,30 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestToolTipOverInvalidDateLiteral()
+		{
+			const string query = "SELECT DATE'' FROM DUAL";
+			_documentRepository.UpdateStatements(query);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 12);
+
+			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.DataContext.ShouldBe(OracleSemanticErrorTooltipText.InvalidDateLiteral);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestToolTipOverInvalidTimestampLiteral()
+		{
+			const string query = "SELECT TIMESTAMP'' FROM DUAL";
+			_documentRepository.UpdateStatements(query);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 17);
+
+			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.DataContext.ShouldBe(OracleSemanticErrorTooltipText.InvalidTimestampLiteral);
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestNonQualifiedColumnReferenceOverDatabaseLink()
 		{
 			const string query = "SELECT NAME FROM SELECTION@HQ_PDB_LOOPBACK, DUAL";

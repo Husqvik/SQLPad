@@ -7,6 +7,9 @@ namespace SqlPad.Oracle
 	[DebuggerDisplay("OracleColumnReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; Object={ObjectNode == null ? null : ObjectNode.Token.Value}; Column={ColumnNode.Token.Value})")]
 	public class OracleColumnReference : OracleReference
 	{
+		private StatementGrammarNode _columnNode;
+		private string _normalizedName;
+
 		public OracleColumnReference(OracleReferenceContainer referenceContainer)
 		{
 			ColumnNodeObjectReferences = new HashSet<OracleObjectWithColumnsReference>();
@@ -14,11 +17,29 @@ namespace SqlPad.Oracle
 			SetContainer(referenceContainer);
 		}
 
-		public override string Name { get { return ColumnNode.Token.Value; } }
+		public override string Name { get { return _columnNode.Token.Value; } }
 
-		public bool ReferencesAllColumns { get { return ColumnNode.Token.Value == "*"; } }
+		public override string NormalizedName
+		{
+			get { return _normalizedName; }
+		}
 
-		public StatementGrammarNode ColumnNode { get; set; }
+		public bool ReferencesAllColumns { get { return _columnNode.Token.Value == "*"; } }
+
+		public StatementGrammarNode ColumnNode
+		{
+			get { return _columnNode; }
+			set
+			{
+				if (_columnNode == value)
+				{
+					return;
+				}
+
+				_columnNode = value;
+				_normalizedName = _columnNode == null ? null : _columnNode.Token.Value.ToQuotedIdentifier();
+			}
+		}
 
 		public ICollection<OracleObjectWithColumnsReference> ColumnNodeObjectReferences { get; private set; }
 

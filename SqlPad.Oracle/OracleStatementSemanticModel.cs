@@ -115,7 +115,7 @@ namespace SqlPad.Oracle
 		private void Initialize()
 		{
 			var queryBlocks = new List<OracleQueryBlock>();
-			foreach (var terminal in Statement.RootNode.Terminals)
+			foreach (var terminal in Statement.AllTerminals)
 			{
 				if (terminal.Id == Terminals.Select && terminal.ParentNode.Id == NonTerminals.QueryBlock)
 				{
@@ -129,10 +129,6 @@ namespace SqlPad.Oracle
 						_literals.Add(literal);
 					}
 				}
-				/*else if (terminal.Id == Terminals.Level && terminal.ParentNode.Id == NonTerminals.Expression)
-				{
-					
-				}*/
 			}
 
 			_queryBlockNodes = queryBlocks
@@ -1450,7 +1446,7 @@ namespace SqlPad.Oracle
 
 		private void FindJoinColumnReferences(OracleQueryBlock queryBlock)
 		{
-			var fromClauses = queryBlock.RootNode.GetDescendantsWithinSameQuery(NonTerminals.FromClause);
+			var fromClauses = GetAllFromClauses(queryBlock.RootNode.GetDescendantByPath(NonTerminals.FromClause));
 			foreach (var fromClause in fromClauses)
 			{
 				var joinClauses = fromClause.GetPathFilterDescendants(n => n.Id != NonTerminals.NestedQuery && n.Id != NonTerminals.FromClause, NonTerminals.JoinClause);
@@ -1469,6 +1465,15 @@ namespace SqlPad.Oracle
 						_joinClauseColumnReferences.Add(joinReferenceContainer.ColumnReferences);
 					}
 				}
+			}
+		}
+
+		private IEnumerable<StatementGrammarNode> GetAllFromClauses(StatementGrammarNode parentFromClause)
+		{
+			while (parentFromClause != null)
+			{
+				yield return parentFromClause;
+				parentFromClause = parentFromClause.GetDescendantByPath(NonTerminals.FromClauseChained, NonTerminals.FromClause);
 			}
 		}
 
