@@ -1986,7 +1986,7 @@
   
     <Rule StartingNonTerminal="SelectList">
       <Sequences>
-        <Sequence Comment="*">
+        <Sequence Comment="All row source columns">
           <Terminal Id="Asterisk" />
         </Sequence>
         <Sequence>

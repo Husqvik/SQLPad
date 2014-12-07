@@ -1446,7 +1446,7 @@ namespace SqlPad.Oracle
 
 		private void FindJoinColumnReferences(OracleQueryBlock queryBlock)
 		{
-			var fromClauses = GetAllFromClauses(queryBlock.RootNode.GetDescendantByPath(NonTerminals.FromClause));
+			var fromClauses = GetAllChainedClausesByPath(queryBlock.RootNode.GetDescendantByPath(NonTerminals.FromClause), null, NonTerminals.FromClauseChained, NonTerminals.FromClause);
 			foreach (var fromClause in fromClauses)
 			{
 				var joinClauses = fromClause.GetPathFilterDescendants(n => n.Id != NonTerminals.NestedQuery && n.Id != NonTerminals.FromClause, NonTerminals.JoinClause);
@@ -1468,12 +1468,18 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		private IEnumerable<StatementGrammarNode> GetAllFromClauses(StatementGrammarNode parentFromClause)
+		private IEnumerable<StatementGrammarNode> GetAllChainedClausesByPath(StatementGrammarNode initialialSearchedClause, Func<StatementGrammarNode, StatementGrammarNode> getChainedRootFunction, params string[] chainNonTerminalIds)
 		{
-			while (parentFromClause != null)
+			while (initialialSearchedClause != null)
 			{
-				yield return parentFromClause;
-				parentFromClause = parentFromClause.GetDescendantByPath(NonTerminals.FromClauseChained, NonTerminals.FromClause);
+				yield return initialialSearchedClause;
+
+				if (getChainedRootFunction != null)
+				{
+					initialialSearchedClause = getChainedRootFunction(initialialSearchedClause);
+				}
+
+				initialialSearchedClause = initialialSearchedClause.GetDescendantByPath(chainNonTerminalIds);
 			}
 		}
 
@@ -1604,7 +1610,7 @@ namespace SqlPad.Oracle
 			}
 			else
 			{
-				var columnExpressions = queryBlock.SelectList.GetDescendantsWithinSameQuery(NonTerminals.AliasedExpressionOrAllTableColumns);
+				var columnExpressions = GetAllChainedClausesByPath(queryBlock.SelectList.GetDescendantByPath(NonTerminals.AliasedExpressionOrAllTableColumns), n => n.ParentNode, NonTerminals.SelectExpressionExpressionChainedList, NonTerminals.AliasedExpressionOrAllTableColumns);
 				foreach (var columnExpression in columnExpressions)
 				{
 					var columnAliasNode = columnExpression.LastTerminalNode != null && columnExpression.LastTerminalNode.Id == Terminals.ColumnAlias
