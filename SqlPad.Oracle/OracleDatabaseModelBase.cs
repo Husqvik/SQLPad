@@ -63,7 +63,7 @@ namespace SqlPad.Oracle
 
 		public abstract event EventHandler RefreshStarted;
 
-		public abstract event EventHandler RefreshFinished;
+		public abstract event EventHandler RefreshCompleted;
 
 		public abstract string DatabaseDomainName { get; }
 

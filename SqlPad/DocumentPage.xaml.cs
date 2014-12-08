@@ -429,7 +429,7 @@ namespace SqlPad
 			DatabaseModel.Disconnected += DatabaseModelInitializationFailedHandler;
 			DatabaseModel.InitializationFailed += DatabaseModelInitializationFailedHandler;
 			DatabaseModel.RefreshStarted += DatabaseModelRefreshStartedHandler;
-			DatabaseModel.RefreshFinished += DatabaseModelRefreshFinishedHandler;
+			DatabaseModel.RefreshCompleted += DatabaseModelRefreshCompletedHandler;
 
 			DatabaseModel.Initialize();
 
@@ -596,7 +596,7 @@ namespace SqlPad
 			Dispatcher.Invoke(() => ProgressBar.IsIndeterminate = true);
 		}
 
-		private void DatabaseModelRefreshFinishedHandler(object sender, EventArgs eventArgs)
+		private void DatabaseModelRefreshCompletedHandler(object sender, EventArgs eventArgs)
 		{
 			Dispatcher.Invoke(() =>
 			                  {

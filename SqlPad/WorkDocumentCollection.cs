@@ -399,7 +399,8 @@ namespace SqlPad
 				SelectionLength = SelectionLength,
 				SelectionStart = SelectionStart,
 				VisualLeft = VisualLeft,
-				VisualTop = VisualTop
+				VisualTop = VisualTop,
+				HeaderBackgroundColorCode = HeaderBackgroundColorCode
 			};
 		}
 	}

@@ -911,7 +911,7 @@ Note
 		public override Task Refresh(bool force = false)
 		{
 			RefreshStarted(this, EventArgs.Empty);
-			RefreshFinished(this, EventArgs.Empty);
+			RefreshCompleted(this, EventArgs.Empty);
 			var taskCompletionSource = new TaskCompletionSource<object>();
 			taskCompletionSource.SetResult(null);
 			return taskCompletionSource.Task;
@@ -934,7 +934,7 @@ Note
 
 		public override event EventHandler RefreshStarted = delegate { };
 
-		public override event EventHandler RefreshFinished = delegate { };
+		public override event EventHandler RefreshCompleted = delegate { };
 
 		public override StatementExecutionResult ExecuteStatement(StatementExecutionModel executionModel)
 		{

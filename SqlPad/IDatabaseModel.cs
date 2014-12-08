@@ -38,7 +38,7 @@ namespace SqlPad
 
 		event EventHandler RefreshStarted;
 
-		event EventHandler RefreshFinished;
+		event EventHandler RefreshCompleted;
 
 		StatementExecutionResult ExecuteStatement(StatementExecutionModel executionModel);
 

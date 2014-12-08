@@ -78,8 +78,66 @@ namespace SqlPad.Oracle
 
 			InitializeUserConnection();
 
+			InternalRefreshStarted += InternalRefreshStartedHandler;
+			InternalRefreshCompleted += InternalRefreshCompletedHandler;
+
 			//_customTypeGenerator = OracleCustomTypeGenerator.GetCustomTypeGenerator(connectionString.Name);
 		}
+
+		private static event EventHandler InternalRefreshStarted = delegate { };
+		private static event EventHandler InternalRefreshCompleted = delegate { };
+
+		private void InternalRefreshStartedHandler(object sender, EventArgs eventArgs)
+		{
+			var refreshedModel = GetDatabaseModelIfDifferentCompatibleInstance(sender);
+			if (refreshedModel == null)
+			{
+				return;
+			}
+
+			_isRefreshing = true;
+			RaiseEvent(RefreshStarted);
+		}
+
+		private void InternalRefreshCompletedHandler(object sender, EventArgs eventArgs)
+		{
+			var refreshedModel = GetDatabaseModelIfDifferentCompatibleInstance(sender);
+			if (refreshedModel == null)
+			{
+				return;
+			}
+
+			_dataDictionary = refreshedModel._dataDictionary;
+			_allFunctionMetadata = refreshedModel._allFunctionMetadata;
+
+			Trace.WriteLine(String.Format("{0} - Metadata for '{1}' has been retrieved from the cache. ", DateTime.Now, CachedConnectionStringName));
+
+			lock (ActiveDataModelRefresh)
+			{
+				List<RefreshModel> refreshModels;
+				if (WaitingDataModelRefresh.TryGetValue(CachedConnectionStringName, out refreshModels))
+				{
+					var modelIndex = refreshModels.FindIndex(m => m.DatabaseModel == this);
+					if (modelIndex != -1)
+					{
+						refreshModels[modelIndex].TaskCompletionSource.SetResult(_dataDictionary);
+						refreshModels.RemoveAt(modelIndex);
+					}
+				}
+			}
+
+			_isRefreshing = false;
+			RaiseEvent(RefreshCompleted);
+		}
+
+		private OracleDatabaseModel GetDatabaseModelIfDifferentCompatibleInstance(object sender)
+		{
+			var refreshedModel = (OracleDatabaseModel)sender;
+			return sender == this || ConnectionString.ConnectionString != refreshedModel.ConnectionString.ConnectionString
+				? null
+				: refreshedModel;
+		}
+
 
 		private void InitializeUserConnection()
 		{
@@ -266,37 +324,15 @@ namespace SqlPad.Oracle
 					Trace.WriteLine(String.Format("{0} - Cache for '{1}' is being loaded by other requester. Waiting until operation finishes. ", DateTime.Now, CachedConnectionStringName));
 
 					RaiseEvent(RefreshStarted);
-					return taskCompletionSource.Task.ContinueWith(t => RefreshTaskFinishedHandler(t.Result));
+					return taskCompletionSource.Task;
 				}
 
 				ActiveDataModelRefresh.Add(CachedConnectionStringName);
-
-				if (_backgroundTask == null)
-				{
-					ExecuteActionAsync(() => LoadSchemaObjectMetadata(force));
-				}
-				else
-				{
-					_backgroundTask = _backgroundTask.ContinueWith(
-						t =>
-						{
-							t.Dispose();
-							LoadSchemaObjectMetadata(force);
-						});
-				}
 			}
 
+			ExecuteActionAsync(() => LoadSchemaObjectMetadata(force));
+
 			return _backgroundTask;
-		}
-
-		private void RefreshTaskFinishedHandler(OracleDataDictionary dataDictionary)
-		{
-			_dataDictionary = dataDictionary;
-			BuildAllFunctionMetadata();
-
-			RaiseEvent(RefreshFinished);
-
-			Trace.WriteLine(String.Format("{0} - Metadata for '{1}' has been retrieved from the cache. ", DateTime.Now, CachedConnectionStringName));
 		}
 
 		public async override Task<ExplainPlanResult> ExplainPlanAsync(string statement, CancellationToken cancellationToken)
@@ -436,7 +472,7 @@ namespace SqlPad.Oracle
 		
 		public override event EventHandler RefreshStarted;
 
-		public override event EventHandler RefreshFinished;
+		public override event EventHandler RefreshCompleted;
 
 		public override bool IsExecuting { get { return _isExecuting; } }
 
@@ -459,7 +495,7 @@ namespace SqlPad.Oracle
 				if (_isRefreshing)
 				{
 					_isRefreshing = false;
-					RaiseEvent(RefreshFinished);
+					RaiseEvent(RefreshCompleted);
 				}
 
 				if (_backgroundTask.Status == TaskStatus.Running)
@@ -475,7 +511,7 @@ namespace SqlPad.Oracle
 			Initialized = null;
 			InitializationFailed = null;
 			RefreshStarted = null;
-			RefreshFinished = null;
+			RefreshCompleted = null;
 			
 			_userConnection.Dispose();
 
@@ -987,55 +1023,28 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		private void RaiseRefreshEvents()
+		private void RemoveActiveRefreshTask()
 		{
 			lock (ActiveDataModelRefresh)
 			{
-				List<RefreshModel> refreshModels;
-				if (!WaitingDataModelRefresh.TryGetValue(CachedConnectionStringName, out refreshModels))
-					return;
-
-				foreach (var refreshModel in refreshModels)
-				{
-					refreshModel.DatabaseModel._dataDictionary = _dataDictionary;
-					refreshModel.DatabaseModel.BuildAllFunctionMetadata();
-					refreshModel.DatabaseModel.RaiseEvent(refreshModel.DatabaseModel.RefreshFinished);
-					refreshModel.DatabaseModel.RaiseEvent(refreshModel.DatabaseModel.RefreshStarted);
-				}
-			}
-		}
-
-		private void SetRefreshTaskResults()
-		{
-			lock (ActiveDataModelRefresh)
-			{
-				List<RefreshModel> refreshModels;
-				if (WaitingDataModelRefresh.TryGetValue(CachedConnectionStringName, out refreshModels))
-				{
-					foreach (var refreshModel in refreshModels)
-					{
-						refreshModel.TaskCompletionSource.SetResult(_dataDictionary);
-					}
-
-					refreshModels.Clear();
-				}
-
+				InternalRefreshCompleted(this, EventArgs.Empty);
 				ActiveDataModelRefresh.Remove(CachedConnectionStringName);
 			}
 		}
 
 		private void LoadSchemaObjectMetadata(bool force)
 		{
+			InternalRefreshStarted(this, EventArgs.Empty);
 			TryLoadSchemaObjectMetadataFromCache();
 
 			var isRefreshDone = !IsRefreshNeeded && !force;
 			if (isRefreshDone)
 			{
-				SetRefreshTaskResults();
+				RemoveActiveRefreshTask();
 				return;
 			}
 
-			RaiseRefreshEvents();
+			InternalRefreshStarted(this, EventArgs.Empty);
 
 			var reason = force ? "has been forced to refresh" : (_dataDictionary.Timestamp > DateTime.MinValue ? "has expired" : "does not exist or is corrupted");
 			Trace.WriteLine(String.Format("{0} - Cache for '{1}' {2}. Cache refresh started. ", DateTime.Now, CachedConnectionStringName, reason));
@@ -1045,7 +1054,7 @@ namespace SqlPad.Oracle
 
 			var isRefreshSuccessful = RefreshSchemaObjectMetadata();
 
-			SetRefreshTaskResults();
+			RemoveActiveRefreshTask();
 
 			if (isRefreshSuccessful)
 			{
@@ -1060,7 +1069,7 @@ namespace SqlPad.Oracle
 			}
 
 			_isRefreshing = false;
-			RaiseEvent(RefreshFinished);
+			RaiseEvent(RefreshCompleted);
 		}
 
 		private bool RefreshSchemaObjectMetadata()
@@ -1159,7 +1168,6 @@ namespace SqlPad.Oracle
 			{
 				try
 				{
-					RaiseEvent(RefreshStarted);
 					var stopwatch = Stopwatch.StartNew();
 					_dataDictionary = CachedDataDictionaries[CachedConnectionStringName] = OracleDataDictionary.Deserialize(stream);
 					Trace.WriteLine(String.Format("{0} - Cache for '{1}' loaded in {2}", DateTime.Now, CachedConnectionStringName, stopwatch.Elapsed));
@@ -1171,7 +1179,6 @@ namespace SqlPad.Oracle
 				finally
 				{
 					stream.Dispose();
-					RaiseEvent(RefreshFinished);
 				}
 			}
 

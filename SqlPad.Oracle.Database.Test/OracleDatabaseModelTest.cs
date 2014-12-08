@@ -35,7 +35,7 @@ namespace SqlPad.Oracle.Database.Test
 				var refreshStartedResetEvent = new ManualResetEvent(false);
 				var refreshFinishedResetEvent = new ManualResetEvent(false);
 				databaseModel.RefreshStarted += (sender, args) => refreshStartedResetEvent.Set();
-				databaseModel.RefreshFinished += (sender, args) => refreshFinishedResetEvent.Set();
+				databaseModel.RefreshCompleted += (sender, args) => refreshFinishedResetEvent.Set();
 				databaseModel.Initialize();
 				refreshStartedResetEvent.WaitOne();
 
