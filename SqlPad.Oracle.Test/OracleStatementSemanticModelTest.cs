@@ -989,6 +989,25 @@ FROM
 		}
 
 		[Test(Description = @"")]
+		public void TestTableCollectionExpressionColumnUsingPackageFunction()
+		{
+			const string query1 = @"SELECT COLUMN_VALUE FROM TABLE(SQLPAD.PIPELINED_FUNCTION(SYSDATE, SYSDATE)";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			var queryBlock = semanticModel.QueryBlocks.Single();
+			queryBlock.ObjectReferences.Count.ShouldBe(1);
+			var objectReference = queryBlock.ObjectReferences.First();
+			objectReference.ShouldBeTypeOf<OracleTableCollectionReference>();
+			((OracleTableCollectionReference)objectReference).ProgramMetadata.ShouldNotBe(null);
+
+			queryBlock.Columns.Count.ShouldBe(1);
+			queryBlock.Columns[0].ColumnReferences.Count.ShouldBe(1);
+			queryBlock.Columns[0].ColumnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
+		}
+
+		[Test(Description = @"")]
 		public void TestXmlTableReference()
 		{
 			const string query1 = @"SELECT * FROM XMLTABLE('for $i in $RSS_DATA/rss/channel/item return $i' PASSING HTTPURITYPE('http://servis.idnes.cz/rss.asp?c=zpravodaj').GETXML() AS RSS_DATA COLUMNS SEQ# FOR ORDINALITY, TITLE VARCHAR2(4000) PATH 'title', DESCRIPTION CLOB PATH 'description') T";

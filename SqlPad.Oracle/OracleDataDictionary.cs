@@ -181,7 +181,7 @@ namespace SqlPad.Oracle
 			var oracleFunctionParameterMetadataType = Serializer.Add(typeof(OracleProgramParameterMetadata), false);
 			oracleFunctionMetadataType.AsReferenceDefault = true;
 			oracleFunctionParameterMetadataType.UseConstructor = false;
-			oracleFunctionParameterMetadataType.Add("Name", "Position", "DataType", "CustomDataType", "Direction", "IsOptional");
+			oracleFunctionParameterMetadataType.Add("Name", "Position", "Sequence", "DataLevel", "DataType", "CustomDataType", "Direction", "IsOptional");
 		}
 
 		public OracleDataDictionary(IDictionary<OracleObjectIdentifier, OracleSchemaObject> schemaObjects, IDictionary<OracleObjectIdentifier, OracleDatabaseLink> databaseLinks, IDictionary<string, OracleProgramMetadata> nonSchemaFunctionMetadata, IEnumerable<string> characterSets, IDictionary<int, string> statisticsKeys, IDictionary<string, string> systemParameters, DateTime timestamp)

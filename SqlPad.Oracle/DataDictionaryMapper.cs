@@ -189,6 +189,8 @@ namespace SqlPad.Oracle
 
 			var parameterName = OracleReaderValueConvert.ToString(reader["ARGUMENT_NAME"]);
 			var position = Convert.ToInt32(reader["POSITION"]);
+			var sequence = Convert.ToInt32(reader["SEQUENCE"]);
+			var dataLevel = Convert.ToInt32(reader["DATA_LEVEL"]);
 			var dataType = OracleReaderValueConvert.ToString(reader["DATA_TYPE"]);
 			var typeOwner = OracleReaderValueConvert.ToString(reader["TYPE_OWNER"]);
 			var typeName = OracleReaderValueConvert.ToString(reader["TYPE_NAME"]);
@@ -211,7 +213,7 @@ namespace SqlPad.Oracle
 			}
 
 			return new KeyValuePair<OracleProgramIdentifier, OracleProgramParameterMetadata>(
-				identifier, new OracleProgramParameterMetadata(parameterName, position, direction, dataType, OracleObjectIdentifier.Create(typeOwner, typeName), isOptional));
+				identifier, new OracleProgramParameterMetadata(parameterName, position, sequence, dataLevel, direction, dataType, OracleObjectIdentifier.Create(typeOwner, typeName), isOptional));
 		}
 
 		private static OracleProgramIdentifier CreateFunctionIdentifierFromReaderValues(object owner, object package, object name, object overload)

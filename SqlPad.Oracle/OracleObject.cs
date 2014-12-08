@@ -218,12 +218,10 @@ namespace SqlPad.Oracle
 		{
 			var constructorMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(FullyQualifiedName.Owner, null, FullyQualifiedName.Name), false, false, false, false, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeParenthesis, false);
 			var constructorParameters = Attributes.Select(
-				(a, i) => new OracleProgramParameterMetadata(a.Name.ToSimpleIdentifier(), i + 1, ParameterDirection.Input, GetFunctionParameterTypeName(a.DataType), GetFunctionParameterCustomTypeIdentifier(a.DataType), false));
+				(a, i) => new OracleProgramParameterMetadata(a.Name.ToSimpleIdentifier(), i + 1, i + 1, 0, ParameterDirection.Input, GetFunctionParameterTypeName(a.DataType), GetFunctionParameterCustomTypeIdentifier(a.DataType), false));
 
-			var returnParameter = new OracleProgramParameterMetadata(null, 0, ParameterDirection.ReturnValue, TypeCodeObject, FullyQualifiedName, false);
-			constructorParameters = Enumerable.Repeat(returnParameter, 1)
-				.Concat(constructorParameters);
-			
+			var returnParameter = new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TypeCodeObject, FullyQualifiedName, false);
+			constructorMetadata.Parameters.Add(returnParameter);
 			constructorMetadata.Parameters.AddRange(constructorParameters);
 			return constructorMetadata;
 		}
@@ -265,8 +263,8 @@ namespace SqlPad.Oracle
 				: ElementDataType.FullyQualifiedName.ToString();
 			
 			var constructorMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(FullyQualifiedName.Owner, null, FullyQualifiedName.Name), false, false, false, false, false, false, 0, UpperBound ?? Int32.MaxValue, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeParenthesis, false);
-			constructorMetadata.Parameters.Add(new OracleProgramParameterMetadata(null, 0, ParameterDirection.ReturnValue, null, FullyQualifiedName, false));
-			constructorMetadata.Parameters.Add(new OracleProgramParameterMetadata(String.Format("array of {0}", elementTypeLabel), 1, ParameterDirection.Input, String.Empty, OracleObjectIdentifier.Empty, true));
+			constructorMetadata.Parameters.Add(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, null, FullyQualifiedName, false));
+			constructorMetadata.Parameters.Add(new OracleProgramParameterMetadata(String.Format("array of {0}", elementTypeLabel), 1, 1, 0, ParameterDirection.Input, String.Empty, OracleObjectIdentifier.Empty, true));
 			constructorMetadata.Owner = this;
 			
 			return constructorMetadata;

@@ -57,12 +57,12 @@ namespace SqlPad.Oracle
 
 		public int MinimumArguments
 		{
-			get { return Parameters.Count > 1 ? Parameters.Count(p => !p.IsOptional) - 1 : (_metadataMinimumArguments ?? 0); }
+			get { return Parameters.Count(p => p.DataLevel == 0) > 1 ? Parameters.Count(p => !p.IsOptional && p.DataLevel == 0) - 1 : (_metadataMinimumArguments ?? 0); }
 		}
 
 		public int MaximumArguments
 		{
-			get { return Parameters.Count > 1 && _metadataMaximumArguments == null ? Parameters.Count - 1 : (_metadataMaximumArguments ?? 0); }
+			get { return Parameters.Count(p => p.DataLevel == 0) > 1 && _metadataMaximumArguments == null ? Parameters.Count(p => p.DataLevel == 0) - 1 : (_metadataMaximumArguments ?? 0); }
 		}
 
 		public bool IsPackageFunction
@@ -77,13 +77,15 @@ namespace SqlPad.Oracle
 		public OracleSchemaObject Owner { get; set; }
 	}
 
-	[DebuggerDisplay("OracleProgramParameterMetadata (Name={Name}; Position={Position}; DataType={DataType}; Direction={Direction}; IsOptional={IsOptional})")]
+	[DebuggerDisplay("OracleProgramParameterMetadata (Name={Name}; Position={Position}; Sequence={Sequence}; DataLevel={DataLevel}; DataType={DataType}; CustomDataType={CustomDataType}; Direction={Direction}; IsOptional={IsOptional})")]
 	public class OracleProgramParameterMetadata
 	{
-		internal OracleProgramParameterMetadata(string name, int position, ParameterDirection direction, string dataType, OracleObjectIdentifier customDataType, bool isOptional)
+		internal OracleProgramParameterMetadata(string name, int position, int sequence, int dataLevel, ParameterDirection direction, string dataType, OracleObjectIdentifier customDataType, bool isOptional)
 		{
 			Name = name;
 			Position = position;
+			Sequence = sequence;
+			DataLevel = dataLevel;
 			DataType = dataType;
 			CustomDataType = customDataType;
 			Direction = direction;
@@ -93,6 +95,10 @@ namespace SqlPad.Oracle
 		public string Name { get; private set; }
 
 		public int Position { get; private set; }
+		
+		public int Sequence { get; private set; }
+		
+		public int DataLevel { get; private set; }
 
 		public string DataType { get; private set; }
 		

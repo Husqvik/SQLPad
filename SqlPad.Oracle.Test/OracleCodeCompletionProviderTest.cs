@@ -622,12 +622,17 @@ FROM
 			const string query1 = @"SELECT HUSQVIK.SQLPAD. FROM DUAL";
 
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 22).ToArray();
-			items.Length.ShouldBe(1);
-			items[0].Name.ShouldBe("SQLPAD_FUNCTION");
-			items[0].Text.ShouldBe("SQLPAD_FUNCTION()");
+			items.Length.ShouldBe(2);
+			items[0].Name.ShouldBe("PIPELINED_FUNCTION");
+			items[0].Text.ShouldBe("PIPELINED_FUNCTION()");
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.PackageFunction);
 			items[0].CaretOffset.ShouldBe(-1);
 			items[0].StatementNode.ShouldBe(null);
+			items[1].Name.ShouldBe("SQLPAD_FUNCTION");
+			items[1].Text.ShouldBe("SQLPAD_FUNCTION()");
+			items[1].Category.ShouldBe(OracleCodeCompletionCategory.PackageFunction);
+			items[1].CaretOffset.ShouldBe(-1);
+			items[1].StatementNode.ShouldBe(null);
 		}
 
 		[Test(Description = @"")]

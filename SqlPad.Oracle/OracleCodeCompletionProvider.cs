@@ -52,7 +52,7 @@ namespace SqlPad.Oracle
 						{
 							Name = metadata.Identifier.FullyQualifiedIdentifier,
 							Parameters = metadata.Parameters
-								.Where(p => p.Direction != ParameterDirection.ReturnValue)
+								.Where(p => p.Direction != ParameterDirection.ReturnValue && p.DataLevel == 0)
 								.Select(p => String.Format("{0}{1}", p.Name, String.IsNullOrEmpty(p.FullDataTypeName) ? null : String.Format(": {0}", p.FullDataTypeName)))
 								.ToArray(),
 							CurrentParameterIndex = fo.CurrentParameterIndex,

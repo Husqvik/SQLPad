@@ -79,36 +79,50 @@ namespace SqlPad.Oracle
 			var collectionType = schemaObject as OracleTypeCollection;
 			if (collectionType != null)
 			{
-				var column =
-					new OracleColumn
-					{
-						Name = "\"COLUMN_VALUE\"",
-						DataType = collectionType.ElementDataType,
-						Nullable = true
-					};
-
-				_columns.Add(column);
+				_columns.Add(BuildColumnValueColumn(collectionType.ElementDataType));
 			}
-			else if (ProgramMetadata != null)
+			else if (ProgramMetadata != null && ProgramMetadata.Parameters.Count > 1 &&
+			         (ProgramMetadata.Parameters[0].DataType == "TABLE" || ProgramMetadata.Parameters[0].DataType == "VARRAY"))
 			{
-				var returnComplexTypeParameter = ProgramMetadata.Parameters.SingleOrDefault(p => p.Direction == ParameterDirection.ReturnValue && p.DataType == OracleTypeBase.TypeCodeObject);
-				if (returnComplexTypeParameter != null &&
-				    Owner.SemanticModel.DatabaseModel.AllObjects.TryGetValue(returnComplexTypeParameter.CustomDataType, out schemaObject))
+				var returnParameter = ProgramMetadata.Parameters.SingleOrDefault(p => p.Direction == ParameterDirection.ReturnValue && p.DataLevel == 1 && p.Position == 1);
+				if (returnParameter != null)
 				{
-					var columns = ((OracleTypeObject)schemaObject).Attributes
-						.Select(a =>
-							new OracleColumn
-							{
-								DataType = a.DataType,
-								Nullable = true,
-								Name = a.Name
-							});
+					if (returnParameter.DataType == OracleTypeBase.TypeCodeObject)
+					{
+						if (Owner.SemanticModel.DatabaseModel.AllObjects.TryGetValue(returnParameter.CustomDataType, out schemaObject))
+						{
+							var columns = ((OracleTypeObject)schemaObject).Attributes
+								.Select(a =>
+									new OracleColumn
+									{
+										DataType = a.DataType,
+										Nullable = true,
+										Name = a.Name
+									});
 
-					_columns.AddRange(columns);
+							_columns.AddRange(columns);
+						}
+					}
+					else if (Owner.SemanticModel.DatabaseModel.AllObjects.TryGetValue(ProgramMetadata.Parameters[0].CustomDataType, out schemaObject))
+					{
+						_columns.Add(BuildColumnValueColumn(((OracleTypeCollection)schemaObject).ElementDataType));
+					}
 				}
 			}
 
 			return _columns.AsReadOnly();
+		}
+
+		private static OracleColumn BuildColumnValueColumn(OracleDataType columnType)
+		{
+			var column =
+				new OracleColumn
+				{
+					Name = "\"COLUMN_VALUE\"",
+					DataType = columnType,
+					Nullable = true
+				};
+			return column;
 		}
 	}
 

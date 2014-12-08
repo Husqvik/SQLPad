@@ -1709,6 +1709,23 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		}
 
 		[Test(Description = @"")]
+		public void TestPipelinedFunctionReturningCollection()
+		{
+			const string sqlText = @"SELECT COLUMN_VALUE FROM TABLE(SQLPAD.PIPELINED_FUNCTION(SYSDATE, SYSDATE))";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var programNodeValidity = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			programNodeValidity.Count.ShouldBe(2);
+			programNodeValidity[0].IsRecognized.ShouldBe(true);
+			programNodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
+			programNodeValidity[1].IsRecognized.ShouldBe(true);
+			programNodeValidity[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
+		}
+
+		[Test(Description = @"")]
 		public void TestColumnResolutionFromXmlTable()
 		{
 			const string sqlText = @"SELECT SEQ#, TITLE, DESCRIPTION FROM XMLTABLE('for $i in $RSS_DATA/rss/channel/item return $i' PASSING HTTPURITYPE('http://servis.idnes.cz/rss.asp?c=zpravodaj').GETXML() AS RSS_DATA COLUMNS SEQ# FOR ORDINALITY, TITLE VARCHAR2(4000) PATH 'title', DESCRIPTION CLOB PATH 'description') T";
