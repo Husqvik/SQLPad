@@ -107,8 +107,21 @@ namespace SqlPad
 				}
 
 				_documentPage.WorkDocument.DocumentTitle = value;
+				SetDocumentModifiedIfSqlx();
+				
 				RaisePropertyChanged("DocumentHeader");
 			}
+		}
+
+		private void SetDocumentModifiedIfSqlx()
+		{
+			if (!_documentPage.WorkDocument.IsSqlx || _documentPage.WorkDocument.IsModified)
+			{
+				return;
+			}
+
+			_documentPage.WorkDocument.IsModified = IsModified = true;
+			RaisePropertyChanged("IsModified");
 		}
 
 		public string DateTimeFormat
@@ -122,7 +135,14 @@ namespace SqlPad
 			get { return _documentPage.WorkDocument.HeaderBackgroundColorCode; }
 			set
 			{
+				if (_documentPage.WorkDocument.HeaderBackgroundColorCode == value)
+				{
+					return;
+				}
+
 				_documentPage.WorkDocument.HeaderBackgroundColorCode = value;
+				SetDocumentModifiedIfSqlx();
+				
 				RaisePropertyChanged("HeaderBackgroundColorCode");
 			}
 		}

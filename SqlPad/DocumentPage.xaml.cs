@@ -31,7 +31,7 @@ namespace SqlPad
 		private const string MaskWrapByQuote = "\"{0}\"";
 		private const string QuoteCharacter = "\"";
 		private const string DoubleQuotes = "\"\"";
-		public const string FileMaskDefault = "SQL Files (*.sql)|*.sql|All (*.*)|*";
+		public const string FileMaskDefault = "SQL files (*.sql)|*.sql|SQL Pad files (*.sqlx)|*.sqlx|Text files(*.txt)|*.txt|All files (*.*)|*";
 
 		private SqlDocumentRepository _sqlDocumentRepository;
 		private IInfrastructureFactory _infrastructureFactory;
@@ -103,7 +103,7 @@ namespace SqlPad
 
 		public WorkDocument WorkDocument { get; private set; }
 
-		public bool IsDirty { get { return Editor.IsModified; } }
+		public bool IsDirty { get { return Editor.IsModified || WorkDocument.IsModified; } }
 
 		public IDatabaseModel DatabaseModel { get; private set; }
 
@@ -152,7 +152,10 @@ namespace SqlPad
 
 				if (!WorkDocument.IsModified && WorkDocument.File != null && WorkDocument.File.Exists)
 				{
-					WorkDocument.Text = File.ReadAllText(WorkDocument.File.FullName);
+					WorkDocument.Text = WorkDocument.IsSqlx
+						? WorkDocumentCollection.LoadDocumentFromFile(WorkDocument.File.FullName).Text
+						: File.ReadAllText(WorkDocument.File.FullName);
+					
 					InitializeFileWatcher();
 				}
 
@@ -462,17 +465,21 @@ namespace SqlPad
 
 		public bool SaveAs()
 		{
-			var dialog = new SaveFileDialog { Filter = FileMaskDefault };
+			var dialog = new SaveFileDialog { Filter = FileMaskDefault, OverwritePrompt = true };
 			if (dialog.ShowDialog() != true)
 			{
 				return false;
 			}
 
 			WorkDocument.DocumentFileName = dialog.FileName;
+			var documentTitle = WorkDocument.DocumentTitle;
+			var isModified = WorkDocument.IsModified;
 
 			if (!SafeActionWithUserError(SaveDocument))
 			{
 				WorkDocument.DocumentFileName = null;
+				WorkDocument.DocumentTitle = documentTitle;
+				WorkDocument.IsModified = isModified;
 			}
 			else
 			{
@@ -548,12 +555,27 @@ namespace SqlPad
 
 		private void SaveDocument()
 		{
-			WithDisabledFileWatcher(() => Editor.Save(WorkDocument.File.FullName));
-			_pageModel.IsModified = WorkDocument.IsModified = false;
-
 			if (WorkDocument.DocumentTitle == InitialDocumentHeader)
 			{
 				_pageModel.DocumentHeader = WorkDocument.File.Name;
+			}
+
+			WithDisabledFileWatcher(SaveDocumentInternal);
+		}
+
+		private void SaveDocumentInternal()
+		{
+			_pageModel.IsModified = WorkDocument.IsModified = false;
+
+			if (WorkDocument.IsSqlx)
+			{
+				SaveWorkingDocument();
+				WorkDocumentCollection.SaveDocumentAsFile(WorkDocument);
+				Editor.IsModified = false;
+			}
+			else
+			{
+				Editor.Save(WorkDocument.File.FullName);
 			}
 		}
 
@@ -1646,7 +1668,7 @@ namespace SqlPad
 
 		private void ExportToCsv(object sender, ExecutedRoutedEventArgs args)
 		{
-			var dialog = new SaveFileDialog { Filter = "CSV Files (*.csv)|*.csv|All Files (*.*)|*" };
+			var dialog = new SaveFileDialog { Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*", OverwritePrompt = true };
 			if (dialog.ShowDialog() != true)
 			{
 				return;

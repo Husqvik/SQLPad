@@ -1027,14 +1027,13 @@ namespace SqlPad.Oracle
 		{
 			lock (ActiveDataModelRefresh)
 			{
-				InternalRefreshCompleted(this, EventArgs.Empty);
+				RaiseEvent(InternalRefreshCompleted);
 				ActiveDataModelRefresh.Remove(CachedConnectionStringName);
 			}
 		}
 
 		private void LoadSchemaObjectMetadata(bool force)
 		{
-			InternalRefreshStarted(this, EventArgs.Empty);
 			TryLoadSchemaObjectMetadataFromCache();
 
 			var isRefreshDone = !IsRefreshNeeded && !force;
@@ -1044,13 +1043,12 @@ namespace SqlPad.Oracle
 				return;
 			}
 
-			InternalRefreshStarted(this, EventArgs.Empty);
-
 			var reason = force ? "has been forced to refresh" : (_dataDictionary.Timestamp > DateTime.MinValue ? "has expired" : "does not exist or is corrupted");
 			Trace.WriteLine(String.Format("{0} - Cache for '{1}' {2}. Cache refresh started. ", DateTime.Now, CachedConnectionStringName, reason));
 
-			RaiseEvent(RefreshStarted);
 			_isRefreshing = true;
+			RaiseEvent(InternalRefreshStarted);
+			RaiseEvent(RefreshStarted);
 
 			var isRefreshSuccessful = RefreshSchemaObjectMetadata();
 
@@ -1163,14 +1161,17 @@ namespace SqlPad.Oracle
 			if (CachedDataDictionaries.TryGetValue(CachedConnectionStringName, out dataDictionary))
 			{
 				_dataDictionary = dataDictionary;
+				BuildAllFunctionMetadata();
 			}
 			else if (MetadataCache.TryLoadDatabaseModelCache(CachedConnectionStringName, out stream))
 			{
 				try
 				{
+					RaiseEvent(RefreshStarted);
 					var stopwatch = Stopwatch.StartNew();
 					_dataDictionary = CachedDataDictionaries[CachedConnectionStringName] = OracleDataDictionary.Deserialize(stream);
 					Trace.WriteLine(String.Format("{0} - Cache for '{1}' loaded in {2}", DateTime.Now, CachedConnectionStringName, stopwatch.Elapsed));
+					BuildAllFunctionMetadata();
 				}
 				catch (Exception e)
 				{
@@ -1179,24 +1180,31 @@ namespace SqlPad.Oracle
 				finally
 				{
 					stream.Dispose();
+					RaiseEvent(RefreshCompleted);
 				}
 			}
-
-			BuildAllFunctionMetadata();
 
 			_cacheLoaded = true;
 		}
 
 		private void BuildAllFunctionMetadata()
 		{
-			var functionMetadata = _dataDictionary.AllObjects.Values
-				.OfType<IFunctionCollection>()
-				.SelectMany(o => o.Functions);
+			try
+			{
+				var functionMetadata = _dataDictionary.AllObjects.Values
+					.OfType<IFunctionCollection>()
+					.SelectMany(o => o.Functions);
 
-			functionMetadata = FilterFunctionsWithUnavailableMetadataInOracle11(functionMetadata)
-				.Concat(_dataDictionary.NonSchemaFunctionMetadata.Values);
+				functionMetadata = FilterFunctionsWithUnavailableMetadataInOracle11(functionMetadata)
+					.Concat(_dataDictionary.NonSchemaFunctionMetadata.Values);
 
-			_allFunctionMetadata = functionMetadata.ToLookup(m => m.Identifier);
+				_allFunctionMetadata = functionMetadata.ToLookup(m => m.Identifier);
+			}
+			catch (Exception e)
+			{
+				_dataDictionary = OracleDataDictionary.EmptyDictionary;
+				Trace.WriteLine("All function metadata lookup initialization from cache failed: " + e);
+			}
 		}
 
 		private IEnumerable<OracleProgramMetadata> FilterFunctionsWithUnavailableMetadataInOracle11(IEnumerable<OracleProgramMetadata> functions)

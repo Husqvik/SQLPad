@@ -310,7 +310,15 @@ namespace SqlPad
 
 		private DocumentPage OpenExistingFile(string fileName)
 		{
-			var document = new WorkDocument { DocumentFileName = fileName };
+			if (!File.Exists(fileName))
+			{
+				return null;
+			}
+
+			var document = WorkDocument.IsSqlxFile(fileName)
+				? WorkDocumentCollection.LoadDocumentFromFile(fileName)
+				: new WorkDocument {DocumentFileName = fileName};
+			
 			return OpenExistingWorkDocument(document);
 		}
 

@@ -251,10 +251,10 @@ namespace SqlPad
 
 		private void SaveTextAsClickHandler(object sender, RoutedEventArgs args)
 		{
-			var filterSettings = "Text Files (*.txt)|*.txt|All Files (*.*)|*";
+			var filterSettings = "Text files (*.txt)|*.txt|All files (*.*)|*";
 			if (_isXml)
 			{
-				filterSettings = String.Format("XML Files (*.xml)|*.xml|{0}", filterSettings);
+				filterSettings = String.Format("XML files (*.xml)|*.xml|{0}", filterSettings);
 			}
 
 			var dialog = new SaveFileDialog { Filter = filterSettings, OverwritePrompt = true };
@@ -269,7 +269,7 @@ namespace SqlPad
 
 		private void SaveRawAsClickHandler(object sender, RoutedEventArgs args)
 		{
-			var dialog = new SaveFileDialog { Filter = "All Files (*.*)|*", OverwritePrompt = true };
+			var dialog = new SaveFileDialog { Filter = "All files (*.*)|*", OverwritePrompt = true };
 			if (dialog.ShowDialog() != true)
 			{
 				return;

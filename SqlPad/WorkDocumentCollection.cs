@@ -272,6 +272,22 @@ namespace SqlPad
 			}
 		}
 
+		public static void SaveDocumentAsFile(WorkDocument workDocument)
+		{
+			using (var file = File.Create(workDocument.File.FullName))
+			{
+				Serializer.Serialize(file, workDocument);
+			}
+		}
+
+		public static WorkDocument LoadDocumentFromFile(string fileName)
+		{
+			using (var file = File.OpenRead(fileName))
+			{
+				return (WorkDocument)Serializer.Deserialize(file, null, typeof(WorkDocument));
+			}
+		}
+
 		public static void SetApplicationWindowProperties(Window window)
 		{
 			Instance._windowProperties = new WindowProperties(window);
@@ -312,6 +328,7 @@ namespace SqlPad
 	[DebuggerDisplay("WorkDocument (DocumentFileName={DocumentFileName}; TabIndex={TabIndex}; ConnectionName={ConnectionName}; SchemaName={SchemaName})")]
 	public class WorkDocument
 	{
+		private const string ExtensionSqlx = ".SQLX";
 		private List<bool> _foldingStates;
 
 		public WorkDocument()
@@ -329,6 +346,21 @@ namespace SqlPad
 		public IList<bool> FoldingStates
 		{
 			get { return FoldingStatesInternal.AsReadOnly(); }
+		}
+
+		public bool IsSqlx
+		{
+			get { return File != null && IsSqlxExtension(File.Extension); }
+		}
+
+		public static bool IsSqlxFile(string fileName)
+		{
+			return IsSqlxExtension(new FileInfo(fileName).Extension);
+		}
+
+		private static bool IsSqlxExtension(string extension)
+		{
+			return extension.ToUpperInvariant() == ExtensionSqlx;
 		}
 
 		public void UpdateFoldingStates(IEnumerable<bool> foldingStates)
