@@ -903,6 +903,12 @@ namespace SqlPad.Oracle
 					case "Array":
 						value = reader.GetOracleValue(i);
 						break;
+					case "Date":
+						var oracleDate = reader.GetOracleDate(i);
+						value = oracleDate.IsNull
+							? new OracleDateTime()
+							: new OracleDateTime(oracleDate.Year, oracleDate.Month, oracleDate.Day, oracleDate.Hour, oracleDate.Minute, oracleDate.Second);
+						break;
 					default:
 						value = reader.GetValue(i);
 						break;

@@ -228,6 +228,7 @@ namespace SqlPad.Oracle
 	public class OracleTimestamp
 	{
 		private readonly OracleTimeStamp _oracleTimeStamp;
+		private readonly OracleDateTime _dateTime;
 
 		private const BindingFlags BindingFlagsPrivateInstanceField = BindingFlags.Instance | BindingFlags.NonPublic;
 		private static readonly Dictionary<Type, FieldInfo> FractionPrecisionFields =
@@ -241,6 +242,11 @@ namespace SqlPad.Oracle
 		public OracleTimestamp(OracleTimeStamp timeStamp)
 		{
 			_oracleTimeStamp = timeStamp;
+
+			if (!timeStamp.IsNull)
+			{
+				_dateTime = new OracleDateTime(timeStamp.Year, timeStamp.Month, timeStamp.Day, timeStamp.Hour, timeStamp.Minute, timeStamp.Second);
+			}
 		}
 
 		public bool IsNull { get { return _oracleTimeStamp.IsNull; } }
@@ -249,13 +255,13 @@ namespace SqlPad.Oracle
 		{
 			return _oracleTimeStamp.IsNull
 				? String.Empty
-				: FormatValue(_oracleTimeStamp.Value, _oracleTimeStamp.Nanosecond, GetFractionPrecision(_oracleTimeStamp));
+				: FormatValue(_dateTime, _oracleTimeStamp.Nanosecond, GetFractionPrecision(_oracleTimeStamp));
 		}
 
-		internal static string FormatValue(DateTime dateTime, int nanoseconds, int fractionPrecision)
+		internal static string FormatValue(OracleDateTime dateTime, int nanoseconds, int fractionPrecision)
 		{
 			var fractionPart = nanoseconds.ToString(CultureInfo.InvariantCulture).PadRight(9, '0').Substring(0, fractionPrecision);
-			return String.Format("{0}{1}", CellValueConverter.FormatDateTime(dateTime), String.IsNullOrEmpty(fractionPart) ? null : String.Format(".{0}", fractionPart));
+			return String.Format("{0}{1}", dateTime, String.IsNullOrEmpty(fractionPart) ? null : String.Format(".{0}", fractionPart));
 		}
 
 		internal static int GetFractionPrecision<T>(T value)
@@ -264,13 +270,49 @@ namespace SqlPad.Oracle
 		}
 	}
 
+	public class OracleDateTime
+	{
+		public DateTime Value { get; private set; }
+
+		public bool IsNull { get; private set; }
+
+		public bool IsBeforeCrist { get; private set; }
+
+		public OracleDateTime()
+		{
+			IsNull = true;
+		}
+
+		public OracleDateTime(int year, int month, int day, int hour, int minute, int second)
+		{
+			Value = new DateTime(Math.Abs(year), month, day, hour, minute, second);
+			IsBeforeCrist = year < 0;
+		}
+
+		public override string ToString()
+		{
+			if (IsNull)
+			{
+				return String.Empty;
+			}
+
+			return String.Format("{0}{1}", IsBeforeCrist ? "BC " : null, CellValueConverter.FormatDateTime(Value));
+		}
+	}
+
 	public class OracleTimestampWithTimeZone
 	{
 		private readonly OracleTimeStampTZ _oracleTimeStamp;
+		private readonly OracleDateTime _dateTime;
 
 		public OracleTimestampWithTimeZone(OracleTimeStampTZ timeStamp)
 		{
 			_oracleTimeStamp = timeStamp;
+
+			if (!timeStamp.IsNull)
+			{
+				_dateTime = new OracleDateTime(timeStamp.Year, timeStamp.Month, timeStamp.Day, timeStamp.Hour, timeStamp.Minute, timeStamp.Second);
+			}
 		}
 
 		public bool IsNull { get { return _oracleTimeStamp.IsNull; } }
@@ -279,17 +321,23 @@ namespace SqlPad.Oracle
 		{
 			return _oracleTimeStamp.IsNull
 				? String.Empty
-				: String.Format("{0} {1}", OracleTimestamp.FormatValue(_oracleTimeStamp.Value, _oracleTimeStamp.Nanosecond, OracleTimestamp.GetFractionPrecision(_oracleTimeStamp)), _oracleTimeStamp.TimeZone);
+				: String.Format("{0} {1}", OracleTimestamp.FormatValue(_dateTime, _oracleTimeStamp.Nanosecond, OracleTimestamp.GetFractionPrecision(_oracleTimeStamp)), _oracleTimeStamp.TimeZone);
 		}
 	}
 
 	public class OracleTimestampWithLocalTimeZone
 	{
 		private readonly OracleTimeStampLTZ _oracleTimeStamp;
+		private readonly OracleDateTime _dateTime;
 
 		public OracleTimestampWithLocalTimeZone(OracleTimeStampLTZ timeStamp)
 		{
 			_oracleTimeStamp = timeStamp;
+
+			if (!timeStamp.IsNull)
+			{
+				_dateTime = new OracleDateTime(timeStamp.Year, timeStamp.Month, timeStamp.Day, timeStamp.Hour, timeStamp.Minute, timeStamp.Second);
+			}
 		}
 
 		public bool IsNull { get { return _oracleTimeStamp.IsNull; } }
@@ -298,7 +346,7 @@ namespace SqlPad.Oracle
 		{
 			return _oracleTimeStamp.IsNull
 				? String.Empty
-				: OracleTimestamp.FormatValue(_oracleTimeStamp.Value, _oracleTimeStamp.Nanosecond, OracleTimestamp.GetFractionPrecision(_oracleTimeStamp));
+				: OracleTimestamp.FormatValue(_dateTime, _oracleTimeStamp.Nanosecond, OracleTimestamp.GetFractionPrecision(_oracleTimeStamp));
 		}
 	}
 

@@ -14,10 +14,6 @@ namespace SqlPad
 
 			var columnHeader = (ColumnHeader)parameter;
 			var convertedValue = columnHeader.ValueConverter.ConvertToCellValue(value);
-			if (convertedValue is DateTime)
-			{
-				return FormatDateTime((DateTime)value);
-			}
 
 			try
 			{

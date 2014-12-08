@@ -142,7 +142,7 @@ namespace SqlPad.Oracle.Database.Test
 			var executionModel =
 					new StatementExecutionModel
 					{
-						StatementText = "SELECT TO_BLOB(RAWTOHEX('BLOB')), TO_CLOB('" + clobParameter + "'), TO_NCLOB('NCLOB DATA'), DATA_DEFAULT, TIMESTAMP'2014-11-01 14:16:32.123456789 CET' AT TIME ZONE '02:00', TIMESTAMP'2014-11-01 14:16:32.123456789', 0.1234567890123456789012345678901234567891, XMLTYPE('<root/>'), 1.23456789012345678901234567890123456789E-125 FROM ALL_TAB_COLS WHERE OWNER = 'SYS' AND TABLE_NAME = 'DUAL'",
+						StatementText = "SELECT TO_BLOB(RAWTOHEX('BLOB')), TO_CLOB('" + clobParameter + "'), TO_NCLOB('NCLOB DATA'), DATA_DEFAULT, TIMESTAMP'2014-11-01 14:16:32.123456789 CET' AT TIME ZONE '02:00', TIMESTAMP'2014-11-01 14:16:32.123456789', 0.1234567890123456789012345678901234567891, XMLTYPE('<root/>'), 1.23456789012345678901234567890123456789E-125, DATE'-4712-01-01' FROM ALL_TAB_COLS WHERE OWNER = 'SYS' AND TABLE_NAME = 'DUAL'",
 						BindVariables = new BindVariableModel[0],
 						GatherExecutionStatistics = true
 					};
@@ -153,7 +153,7 @@ namespace SqlPad.Oracle.Database.Test
 				
 				result.ExecutedSuccessfully.ShouldBe(true);
 
-				result.ColumnHeaders.Count.ShouldBe(9);
+				result.ColumnHeaders.Count.ShouldBe(10);
 				result.ColumnHeaders[0].DatabaseDataType.ShouldBe("Blob");
 				result.ColumnHeaders[1].DatabaseDataType.ShouldBe("Clob");
 				result.ColumnHeaders[2].DatabaseDataType.ShouldBe("NClob");
@@ -163,6 +163,7 @@ namespace SqlPad.Oracle.Database.Test
 				result.ColumnHeaders[6].DatabaseDataType.ShouldBe("Decimal");
 				result.ColumnHeaders[7].DatabaseDataType.ShouldBe("XmlType");
 				result.ColumnHeaders[8].DatabaseDataType.ShouldBe("Decimal");
+				result.ColumnHeaders[9].DatabaseDataType.ShouldBe("Date");
 
 				result.InitialResultSet.Count.ShouldBe(1);
 				var firstRow = result.InitialResultSet[0];
@@ -194,6 +195,8 @@ namespace SqlPad.Oracle.Database.Test
 				xmlValue.Preview.ShouldBe("<root/>\u2026");
 				firstRow[8].ShouldBeTypeOf<OracleNumber>();
 				firstRow[8].ToString().ShouldBe("1.23456789012345678901234567890123456789E-125");
+				firstRow[9].ShouldBeTypeOf<OracleDateTime>();
+				firstRow[9].ToString().ShouldBe("BC 1/1/4712 12:00:00 AM");
 			}
 		}
 
@@ -203,7 +206,7 @@ namespace SqlPad.Oracle.Database.Test
 			var executionModel =
 					new StatementExecutionModel
 					{
-						StatementText = "SELECT EMPTY_BLOB(), EMPTY_CLOB(), CAST(NULL AS TIMESTAMP WITH TIME ZONE), CAST(NULL AS TIMESTAMP), CAST(NULL AS DECIMAL), NVL2(XMLTYPE('<root/>'), null, XMLTYPE('<root/>')) FROM DUAL",
+						StatementText = "SELECT EMPTY_BLOB(), EMPTY_CLOB(), CAST(NULL AS TIMESTAMP WITH TIME ZONE), CAST(NULL AS TIMESTAMP), CAST(NULL AS DATE), CAST(NULL AS DECIMAL), NVL2(XMLTYPE('<root/>'), null, XMLTYPE('<root/>')) FROM DUAL",
 						BindVariables = new BindVariableModel[0],
 						GatherExecutionStatistics = true
 					};
@@ -214,13 +217,14 @@ namespace SqlPad.Oracle.Database.Test
 
 				result.ExecutedSuccessfully.ShouldBe(true);
 
-				result.ColumnHeaders.Count.ShouldBe(6);
+				result.ColumnHeaders.Count.ShouldBe(7);
 				result.ColumnHeaders[0].DatabaseDataType.ShouldBe("Blob");
 				result.ColumnHeaders[1].DatabaseDataType.ShouldBe("Clob");
 				result.ColumnHeaders[2].DatabaseDataType.ShouldBe("TimeStampTZ");
 				result.ColumnHeaders[3].DatabaseDataType.ShouldBe("TimeStamp");
-				result.ColumnHeaders[4].DatabaseDataType.ShouldBe("Decimal");
-				result.ColumnHeaders[5].DatabaseDataType.ShouldBe("XmlType");
+				result.ColumnHeaders[4].DatabaseDataType.ShouldBe("Date");
+				result.ColumnHeaders[5].DatabaseDataType.ShouldBe("Decimal");
+				result.ColumnHeaders[6].DatabaseDataType.ShouldBe("XmlType");
 
 				result.InitialResultSet.Count.ShouldBe(1);
 				var firstRow = result.InitialResultSet[0];
@@ -235,10 +239,12 @@ namespace SqlPad.Oracle.Database.Test
 				firstRow[2].ToString().ShouldBe(String.Empty);
 				firstRow[3].ShouldBeTypeOf<OracleTimestamp>();
 				firstRow[3].ToString().ShouldBe(String.Empty);
-				firstRow[4].ShouldBeTypeOf<OracleNumber>();
+				firstRow[4].ShouldBeTypeOf<OracleDateTime>();
 				firstRow[4].ToString().ShouldBe(String.Empty);
-				firstRow[5].ShouldBeTypeOf<OracleXmlValue>();
+				firstRow[5].ShouldBeTypeOf<OracleNumber>();
 				firstRow[5].ToString().ShouldBe(String.Empty);
+				firstRow[6].ShouldBeTypeOf<OracleXmlValue>();
+				firstRow[6].ToString().ShouldBe(String.Empty);
 			}
 		}
 

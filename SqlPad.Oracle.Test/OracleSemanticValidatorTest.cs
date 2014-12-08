@@ -1634,6 +1634,25 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		}
 
 		[Test(Description = @"")]
+		public void TestInvalidDateAndTimeStampLiteralStartingWithSpace()
+		{
+			const string sqlText = @"SELECT DATE' 2014-12-06', TIMESTAMP' 2014-12-06 17:50:42' FROM DUAL";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var invalidNodes = validationModel.IdentifierNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToArray();
+			invalidNodes.Length.ShouldBe(2);
+			invalidNodes[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidDateLiteral);
+			invalidNodes[0].ToolTipText.ShouldBe(OracleSemanticErrorTooltipText.InvalidDateLiteral);
+			invalidNodes[0].Node.Token.Value.ShouldBe("' 2014-12-06'");
+			invalidNodes[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidTimestampLiteral);
+			invalidNodes[1].ToolTipText.ShouldBe(OracleSemanticErrorTooltipText.InvalidTimestampLiteral);
+			invalidNodes[1].Node.Token.Value.ShouldBe("' 2014-12-06 17:50:42'");
+		}
+
+		[Test(Description = @"")]
 		public void TestLevelFunctionWithoutConnectByClause()
 		{
 			const string sqlText = @"SELECT LEVEL FROM DUAL";
