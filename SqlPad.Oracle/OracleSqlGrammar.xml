@@ -2264,6 +2264,15 @@
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
+          <Terminal Id="Collect" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="DistinctModifier" IsOptional="true" />
+          <NonTerminal Id="Expression" />
+          <NonTerminal Id="OrderByClause" IsOptional="true" />
+          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
+        </Sequence>
+        <Sequence>
           <Terminal Id="Identifier" />
           <Terminal Id="LeftBracket" />
           <NonTerminal Id="ConditionOrExpressionList" />
@@ -4110,18 +4119,26 @@
           <Terminal Id="Order" />
           <Terminal Id="Siblings" IsOptional="true" />
           <Terminal Id="By" />
-          <NonTerminal Id="OrderExpression" />
+          <NonTerminal Id="OrderExpressionList" />
         </Sequence>
       </Sequences>
     </Rule>
 
+    <Rule StartingNonTerminal="OrderExpressionList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="OrderExpression" />
+          <NonTerminal Id="OrderExpressionChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
     <Rule StartingNonTerminal="OrderExpression">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="OrderExpressionType" />
+          <NonTerminal Id="Expression" />
           <NonTerminal Id="SortOrder" IsOptional="true" />
           <NonTerminal Id="NullsClause" IsOptional="true" />
-          <NonTerminal Id="OrderExpressionChained" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -4130,19 +4147,8 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Comma" />
-          <NonTerminal Id="OrderExpression" />
+          <NonTerminal Id="OrderExpressionList" />
           <NonTerminal Id="OrderExpressionChained" IsOptional="true" />
-        </Sequence>
-      </Sequences>
-    </Rule>
-
-    <Rule StartingNonTerminal="OrderExpressionType">
-      <Sequences>
-        <Sequence>
-          <NonTerminal Id="Expression" />
-        </Sequence>
-        <Sequence>
-          <Terminal Id="ColumnAlias" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -4913,7 +4919,7 @@
           <NonTerminal Id="DepthOrBreadth" />
           <Terminal Id="First" />
           <Terminal Id="By" />
-          <NonTerminal Id="OrderExpression" />
+          <NonTerminal Id="OrderExpressionList" />
           <Terminal Id="Set" />
           <Terminal Id="Identifier" />
         </Sequence>
@@ -10142,6 +10148,9 @@
     <!-- LISTAGG function -->
     <Terminal Id="ListAggregation" Value="LISTAGG" />
     <Terminal Id="Within" Value="WITHIN" />
+    
+    <!-- COLLECT function -->
+    <Terminal Id="Collect" Value="COLLECT" />
 
     <!-- EXTRACT function -->
     <Terminal Id="Extract" Value="EXTRACT" />

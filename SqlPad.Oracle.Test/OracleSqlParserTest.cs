@@ -2234,6 +2234,16 @@ FROM
 			terminals[8].Id.ShouldBe(Terminals.Identifier);
 		}
 
+		[Test(Description = @"")]
+		public void TestCollectionFunction()
+		{
+			const string statement1 = "SELECT COLLECT(UNIQUE ROWNUM || 'X' ORDER BY ROWNUM + 1 DESC NULLS LAST, 1) || NULL FROM SELECTION WHERE ROWNUM <= 10";
+
+			var statements = Parser.Parse(statement1).ToArray();
+			var statement = statements.Single().Validate();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+		}
+
 		public class IsRuleValid
 		{
 			[Test(Description = @"")]
@@ -2390,6 +2400,7 @@ FROM
 						Terminals.Case,
 						Terminals.Cast,
 						Terminals.CharacterCode,
+						Terminals.Collect,
 						Terminals.Colon,
 						Terminals.ConnectByRoot,
 						Terminals.Count,

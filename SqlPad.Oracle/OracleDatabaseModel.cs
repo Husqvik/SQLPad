@@ -1039,7 +1039,6 @@ namespace SqlPad.Oracle
 			var isRefreshDone = !IsRefreshNeeded && !force;
 			if (isRefreshDone)
 			{
-				RemoveActiveRefreshTask();
 				return;
 			}
 
@@ -1172,6 +1171,7 @@ namespace SqlPad.Oracle
 					_dataDictionary = CachedDataDictionaries[CachedConnectionStringName] = OracleDataDictionary.Deserialize(stream);
 					Trace.WriteLine(String.Format("{0} - Cache for '{1}' loaded in {2}", DateTime.Now, CachedConnectionStringName, stopwatch.Elapsed));
 					BuildAllFunctionMetadata();
+					RemoveActiveRefreshTask();
 				}
 				catch (Exception e)
 				{
