@@ -360,9 +360,8 @@ namespace SqlPad.Oracle
 		{
 			var currentNode = completionType.EffectiveTerminal;
 			
-			var prefixedColumnReference = currentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference);
-			var columnIdentifierFollowing = !completionType.IsNewExpressionWithInvalidGrammar && currentNode.Id != Terminals.Identifier && prefixedColumnReference != null && prefixedColumnReference.GetDescendants(Terminals.Identifier).FirstOrDefault() != null;
-			if (columnIdentifierFollowing || currentNode.Id.IsLiteral())
+			var objectOrSchemaIdentifierFollowing = !completionType.IsNewExpressionWithInvalidGrammar && currentNode.Id != Terminals.Identifier && currentNode.Id.In(Terminals.ObjectIdentifier, Terminals.SchemaIdentifier);
+			if (objectOrSchemaIdentifierFollowing || currentNode.Id.IsLiteral())
 			{
 				return EmptyCollection;
 			}
@@ -530,7 +529,7 @@ namespace SqlPad.Oracle
 
 			if (partialName == null && currentNode.IsWithinSelectClause() && currentNode.GetParentExpression().GetParentExpression() == null)
 			{
-				suggestedItems = suggestedItems.Concat(CreateAsteriskColumnCompletionItems(tableReferences, objectIdentifierNode != null, currentNode));
+				suggestedItems = suggestedItems.Concat(CreateAsteriskColumnCompletionItems(tableReferences, objectIdentifierNode != null, nodeToReplace));
 			}
 
 			if (objectIdentifierNode == null)

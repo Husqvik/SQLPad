@@ -364,7 +364,7 @@ FROM
 		{
 			const string query1 = @"SELECT SELECTION.NAME FROM SELECTION";
 
-			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 8).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 8, true, OracleCodeCompletionCategory.Column).ToArray();
 			items.Length.ShouldBe(0);
 		}
 
@@ -377,10 +377,13 @@ FROM
 			items.Length.ShouldBe(3);
 			items[0].Name.ShouldBe("NAME");
 			items[0].Text.ShouldBe("NAME");
+			items[0].StatementNode.ShouldBe(null);
 			items[1].Name.ShouldBe("PROJECT_ID");
 			items[1].Text.ShouldBe("PROJECT_ID");
+			items[1].StatementNode.ShouldBe(null);
 			items[2].Name.ShouldBe(OracleColumn.RowId);
 			items[2].Text.ShouldBe(OracleColumn.RowId);
+			items[2].StatementNode.ShouldBe(null);
 		}
 
 		[Test(Description = @"")]
@@ -399,6 +402,15 @@ FROM
 
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 9).ToArray();
 			items.Length.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
+		public void TestUniqueOrDistinctKeywordSuggestion()
+		{
+			const string query1 = @"SELECT ";
+
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 7, true, OracleCodeCompletionCategory.Keyword).ToArray();
+			items.Length.ShouldBe(2);
 		}
 
 		[Test(Description = @"")]
@@ -467,6 +479,7 @@ FROM
 
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 43).ToArray();
 			items.Length.ShouldBeGreaterThan(0);
+			items[0].StatementNode.ShouldBe(null);
 		}
 
 		[Test(Description = @"")]
@@ -474,7 +487,7 @@ FROM
 		{
 			const string query1 = @"SELECT  FROM (SELECT HUSQVIK.SELECTION.NAME FROM HUSQVIK.SELECTION), HUSQVIK.SELECTION";
 
-			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 7).Where(FilterProgramItems).Where(i => !i.Name.Contains("HUSQVIK.SELECTION") && !i.Category.In(OracleCodeCompletionCategory.DatabaseSchema, OracleCodeCompletionCategory.SchemaObject, OracleCodeCompletionCategory.BuiltInFunction)).ToArray();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 7).Where(FilterProgramItems).Where(i => !i.Name.Contains("HUSQVIK.SELECTION") && !i.Category.In(OracleCodeCompletionCategory.DatabaseSchema, OracleCodeCompletionCategory.SchemaObject, OracleCodeCompletionCategory.BuiltInFunction, OracleCodeCompletionCategory.Keyword)).ToArray();
 			items.Length.ShouldBe(0);
 		}
 
@@ -489,6 +502,7 @@ FROM
 			items[0].Text.ShouldBe("RESPONDENTBUCKET_ID, S.SELECTION_ID, S.PROJECT_ID, S.NAME");
 			items[4].Name.ShouldBe(OracleColumn.RowId);
 			items[5].Name.ShouldBe("SELECTION_ID");
+			items[5].StatementNode.ShouldBe(null);
 		}
 
 		[Test(Description = @"")]
@@ -797,10 +811,10 @@ se";
 		{
 			const string statement = @"SELECT SQLPAD.SQLPAD_FUNCTION(D) FROM DUAL";
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 31).ToList();
-			items.Count.ShouldBe(8);
+			items.Count.ShouldBe(9);
 			items[0].Text.ShouldBe("DUAL.DUMMY");
-			items[7].Name.ShouldBe("DUMP");
-			items[7].Text.ShouldBe("DUMP()");
+			items[8].Name.ShouldBe("DUMP");
+			items[8].Text.ShouldBe("DUMP()");
 		}
 
 		[Test(Description = @"")]
@@ -1019,7 +1033,7 @@ se";
 		public void TestCryptoHashSpecialParameterCompletion()
 		{
 			const string statement = @"SELECT DBMS_CRYPTO.HASH(HEXTORAW ('FF'), ) FROM DUAL";
-			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 41).ToList();
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 41, true, OracleCodeCompletionCategory.FunctionParameter).ToList();
 			items.Count.ShouldBe(6);
 			items[0].Name.ShouldBe("1 - DBMS_CRYPTO.HASH_MD4 - MD4");
 			items[0].Text.ShouldBe("1");
@@ -1634,6 +1648,24 @@ se";
 			const string statement = @"SELECT COUNT(*) OVER (PART ) FROM DUAL";
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 27, true, OracleCodeCompletionCategory.Keyword).ToList();
 			items.Count.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
+		public void TestCompletionNodeToReplaceWhenSuggestingAsterisk()
+		{
+			const string statement = @"SELECT SELECTION. FROM SELECTION";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 17, true, OracleCodeCompletionCategory.AllColumns).ToList();
+			items.Count.ShouldBe(1);
+			items[0].StatementNode.ShouldBe(null);
+		}
+
+		[Test(Description = @"")]
+		public void TestCompletionNodeToReplaceJustAfterDotAfterObjectQualifierWhenColumnStartsNotAtCaret()
+		{
+			const string statement = @"SELECT SELECTION. CREATED FROM SELECTION";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 17).ToList();
+			items.Count.ShouldBeGreaterThan(5);
+			items[0].StatementNode.ShouldBe(null);
 		}
 
 		public class OracleCodeCompletionTypeTest

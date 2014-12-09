@@ -178,7 +178,7 @@ namespace SqlPad.Oracle
 			CurrentQueryBlock = SemanticModel.GetQueryBlock(nearestTerminal);
 
 			var inSelectList = (atAdHocTemporaryTerminal ? precedingTerminal : EffectiveTerminal).GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.SelectList) != null;
-			var keywordClauses = TerminalCandidates.Where(c => c.In(Terminals.Where, Terminals.Group, Terminals.Having, Terminals.Order) || (inSelectList && c == Terminals.Partition))
+			var keywordClauses = TerminalCandidates.Where(c => c.In(Terminals.Where, Terminals.Group, Terminals.Having, Terminals.Order, Terminals.Distinct, Terminals.Unique) || (inSelectList && c == Terminals.Partition))
 				.Select(CreateKeywordClause);
 			_keywordsClauses.AddRange(keywordClauses);
 
@@ -232,12 +232,13 @@ namespace SqlPad.Oracle
 			var keywordClause = new SuggestedKeywordClause {TerminalId = terminalId };
 			switch (terminalId)
 			{
+				case Terminals.Distinct:
+				case Terminals.Unique:
 				case Terminals.Where:
-					 return keywordClause.WithText("WHERE");
+				case Terminals.Having:
+					return keywordClause.WithText(terminalId.ToUpperInvariant());
 				case Terminals.Group:
 					return keywordClause.WithText("GROUP BY");
-				case Terminals.Having:
-					return keywordClause.WithText("HAVING");
 				case Terminals.Order:
 					return keywordClause.WithText("ORDER BY");
 				case Terminals.Partition:

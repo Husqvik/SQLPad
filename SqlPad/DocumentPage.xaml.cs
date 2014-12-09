@@ -17,6 +17,7 @@ using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Folding;
+using ICSharpCode.AvalonEdit.Rendering;
 using Microsoft.Win32;
 using SqlPad.Commands;
 using SqlPad.FindReplace;
@@ -1495,12 +1496,20 @@ namespace SqlPad
 			if (_isToolTipOpenByShortCut)
 				return;
 
-			var position = Editor.GetPositionFromPoint(e.GetPosition(Editor));
+			var visualPosition = e.GetPosition(Editor.TextArea.TextView);
+			var position = Editor.TextArea.TextView.GetPosition(visualPosition);
 			if (!position.HasValue || _sqlDocumentRepository.Statements == null)
+			{
 				return;
+			}
 
+			var contentWidth = Editor.TextArea.TextView.GetVisualPosition(position.Value, VisualYPosition.Baseline).X;
+			if (visualPosition.X > contentWidth)
+			{
+				return;
+			}
+			
 			var offset = Editor.Document.GetOffset(position.Value.Line, position.Value.Column);
-			//var lineByOffset = Editor.Document.GetLineByOffset(offset);
 
 			var toolTip = _toolTipProvider.GetToolTip(_sqlDocumentRepository, offset);
 			if (toolTip == null)
