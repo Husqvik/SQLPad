@@ -1496,15 +1496,17 @@ namespace SqlPad
 			if (_isToolTipOpenByShortCut)
 				return;
 
-			var visualPosition = e.GetPosition(Editor.TextArea.TextView);
-			var position = Editor.TextArea.TextView.GetPosition(visualPosition);
+			var visualPosition = e.GetPosition(Editor);
+			var position = Editor.GetPositionFromPoint(visualPosition);
 			if (!position.HasValue || _sqlDocumentRepository.Statements == null)
 			{
 				return;
 			}
 
-			var contentWidth = Editor.TextArea.TextView.GetVisualPosition(position.Value, VisualYPosition.Baseline).X;
-			if (visualPosition.X > contentWidth)
+			var visualLine = Editor.TextArea.TextView.GetVisualLine(position.Value.Line);
+			var textLine = visualLine.GetTextLine(position.Value.VisualColumn, position.Value.IsAtEndOfLine);
+			var textVisualPosition = e.GetPosition(Editor.TextArea.TextView);
+			if (textVisualPosition.X > textLine.Width)
 			{
 				return;
 			}
