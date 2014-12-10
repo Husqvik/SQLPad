@@ -660,8 +660,7 @@ namespace SqlPad.Oracle
 					.Where(o => o.OwnerNode != null && IsSchemaObjectInCurrentSchemaOrAccessibleByPublicSynonym(o.SchemaObject));
 				foreach (var reference in otherRedundantOwnerReferences)
 				{
-					var terminals = reference.RootNode.Terminals.TakeWhile(t => t != reference.ObjectNode);
-					CreateRedundantTerminalGroup(terminals);
+					CreateRedundantTerminalGroup(new[] { reference.OwnerNode, reference.OwnerNode.FollowingTerminal });
 				}
 
 				foreach (var columnReference in queryBlock.AllColumnReferences.Where(c => c.ObjectNode != null && c.RootNode != null))

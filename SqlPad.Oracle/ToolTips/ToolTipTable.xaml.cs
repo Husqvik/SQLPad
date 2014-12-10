@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 
 namespace SqlPad.Oracle.ToolTips
 {
@@ -143,6 +145,36 @@ namespace SqlPad.Oracle.ToolTips
 		public Visibility InMemoryAllocationStatusVisible
 		{
 			get { return InMemoryAllocatedBytes.HasValue ? Visibility.Visible : Visibility.Collapsed; }
+		}
+	}
+
+	public class InMemoryAllocationStatusConverter : IMultiValueConverter
+	{
+		public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+		{
+			var allocatedInMemoryBytes = (long?)values[0];
+			var storageBytes = (long?)values[1];
+			var nonPopulatedBytes = (long?)values[2];
+			var populationStatus = (string)values[3];
+			if (!allocatedInMemoryBytes.HasValue || !storageBytes.HasValue || !nonPopulatedBytes.HasValue || String.IsNullOrEmpty(populationStatus))
+			{
+				return ValueConverter.ValueNotAvailable;
+			}
+
+			var populatedRatio = Math.Round(((decimal)storageBytes.Value - nonPopulatedBytes.Value) / storageBytes.Value * 100, 2);
+			var isPopulating = populationStatus == "STARTED";
+			var populationStatusLabel = isPopulating ? " - ongoing" : null;
+			var populatedRatioLabel = populatedRatio < 100 || isPopulating ? String.Format("{0} %", populatedRatio) : null;
+			var populationStatusDetail = populatedRatio == 100 && populationStatusLabel == null
+				? null
+				: String.Format("({0}{1})", populatedRatioLabel, populationStatusLabel);
+
+			return String.Format("{0} {1}", DataSpaceConverter.PrettyPrint(allocatedInMemoryBytes.Value), populationStatusDetail);
+		}
+
+		public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+		{
+			throw new NotImplementedException();
 		}
 	}
 }

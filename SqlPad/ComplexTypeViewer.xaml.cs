@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections;
 using System.Globalization;
-using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Data;
 
 namespace SqlPad
@@ -30,7 +27,11 @@ namespace SqlPad
 
 		public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
 		{
-			return CellValueConverter.Convert(values[0], targetType, values[1], culture);
+			// TODO: Remove this workaround when unset dependency property is explained
+			var columnHeader = values[1] as ColumnHeader;
+			return columnHeader == null
+				? values[0]
+				: CellValueConverter.Convert(values[0], targetType, values[1], culture);
 		}
 
 		public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)

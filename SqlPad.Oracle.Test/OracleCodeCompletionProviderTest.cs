@@ -1593,13 +1593,16 @@ se";
 		{
 			const string statement = @"SELECT * FROM DUAL ";
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 19, true, OracleCodeCompletionCategory.Keyword).ToList();
-			items.Count.ShouldBe(3);
-			items[0].Name.ShouldBe("GROUP BY");
-			items[0].StatementNode.ShouldBe(null);
-			items[1].Name.ShouldBe("ORDER BY");
-			items[1].StatementNode.ShouldBe(null);
-			items[2].Name.ShouldBe("WHERE");
-			items[2].StatementNode.ShouldBe(null);
+			items.Count.ShouldBe(7);
+			items[0].Name.ShouldBe("CONNECT BY");
+			items[1].Name.ShouldBe("GROUP BY");
+			items[2].Name.ShouldBe("INTERSECT");
+			items[3].Name.ShouldBe("MINUS");
+			items[4].Name.ShouldBe("ORDER BY");
+			items[5].Name.ShouldBe("UNION");
+			items[6].Name.ShouldBe("WHERE");
+
+			items.ForEach(i => i.StatementNode.ShouldBe(null));
 		}
 
 		[Test(Description = @"")]
@@ -1607,11 +1610,14 @@ se";
 		{
 			const string statement = @"SELECT * FROM DUAL GROUP BY 1 ";
 			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 30, true, OracleCodeCompletionCategory.Keyword).ToList();
-			items.Count.ShouldBe(2);
+			items.Count.ShouldBe(5);
 			items[0].Name.ShouldBe("HAVING");
-			items[0].StatementNode.ShouldBe(null);
-			items[1].Name.ShouldBe("ORDER BY");
-			items[1].StatementNode.ShouldBe(null);
+			items[1].Name.ShouldBe("INTERSECT");
+			items[2].Name.ShouldBe("MINUS");
+			items[3].Name.ShouldBe("ORDER BY");
+			items[4].Name.ShouldBe("UNION");
+
+			items.ForEach(i => i.StatementNode.ShouldBe(null));
 		}
 
 		[Test(Description = @"")]

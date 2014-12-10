@@ -764,6 +764,21 @@ FROM
 		}
 
 		[Test(Description = @"")]
+		public void TestRedundantTerminalsWithSchemaQualifiedFunction()
+		{
+			const string query1 = @"SELECT DUMMY, HUSQVIK.SQLPAD_FUNCTION FROM DUAL";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			var redundantTerminals = semanticModel.RedundantSymbolGroups.SelectMany(g => g).OrderBy(t => t.SourcePosition.IndexStart).ToArray();
+			redundantTerminals.Length.ShouldBe(2);
+			redundantTerminals[0].Id.ShouldBe(Terminals.ObjectIdentifier);
+			redundantTerminals[0].Token.Value.ShouldBe("HUSQVIK");
+			redundantTerminals[1].Id.ShouldBe(Terminals.Dot);
+		}
+
+		[Test(Description = @"")]
 		public void TestRedundantTerminalsWithConcatenatedSubquery()
 		{
 			const string query1 = @"SELECT DUMMY, DUMMY FROM DUAL UNION SELECT DUMMY, DUMMY FROM DUAL";

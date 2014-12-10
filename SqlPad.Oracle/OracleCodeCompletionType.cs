@@ -12,6 +12,21 @@ namespace SqlPad.Oracle
 	{
 		private static readonly OracleSqlParser Parser = new OracleSqlParser();
 
+		private static readonly HashSet<string> AvailableKeywordsToSuggest =
+			new HashSet<string>
+			{
+				Terminals.Where,
+				Terminals.Group,
+				Terminals.Having,
+				Terminals.Order,
+				Terminals.Distinct,
+				Terminals.Unique,
+				Terminals.Union,
+				Terminals.Intersect,
+				Terminals.SetMinus,
+				Terminals.Connect
+			};
+
 		private readonly List<SuggestedKeywordClause> _keywordsClauses = new List<SuggestedKeywordClause>();
 
 		public int CursorPosition { get; private set; }
@@ -178,7 +193,7 @@ namespace SqlPad.Oracle
 			CurrentQueryBlock = SemanticModel.GetQueryBlock(nearestTerminal);
 
 			var inSelectList = (atAdHocTemporaryTerminal ? precedingTerminal : EffectiveTerminal).GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.SelectList) != null;
-			var keywordClauses = TerminalCandidates.Where(c => c.In(Terminals.Where, Terminals.Group, Terminals.Having, Terminals.Order, Terminals.Distinct, Terminals.Unique) || (inSelectList && c == Terminals.Partition))
+			var keywordClauses = TerminalCandidates.Where(c => AvailableKeywordsToSuggest.Contains(c) || (inSelectList && c == Terminals.Partition))
 				.Select(CreateKeywordClause);
 			_keywordsClauses.AddRange(keywordClauses);
 
@@ -236,6 +251,8 @@ namespace SqlPad.Oracle
 				case Terminals.Unique:
 				case Terminals.Where:
 				case Terminals.Having:
+				case Terminals.Intersect:
+				case Terminals.Union:
 					return keywordClause.WithText(terminalId.ToUpperInvariant());
 				case Terminals.Group:
 					return keywordClause.WithText("GROUP BY");
@@ -243,6 +260,10 @@ namespace SqlPad.Oracle
 					return keywordClause.WithText("ORDER BY");
 				case Terminals.Partition:
 					return keywordClause.WithText("PARTITION BY");
+				case Terminals.Connect:
+					return keywordClause.WithText("CONNECT BY");
+				case Terminals.SetMinus:
+					return keywordClause.WithText("MINUS");
 				default:
 					throw new NotSupportedException(String.Format("Terminal ID '{0}' not supported. ", terminalId));
 			}

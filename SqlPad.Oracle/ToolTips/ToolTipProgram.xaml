@@ -1,0 +1,55 @@
+﻿<UserControl x:Class="SqlPad.Oracle.ToolTips.ToolTipProgram"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:sqlPad="clr-namespace:SqlPad;assembly=SqlPad"
+             xmlns:toolTips="clr-namespace:SqlPad.Oracle.ToolTips"
+             mc:Ignorable="d" 
+             d:DesignHeight="160" d:DesignWidth="240"
+			 Padding="4">
+    <StackPanel>
+		<StackPanel.Resources>
+			<sqlPad:BooleanLabelConverter x:Key="BooleanConverter" />
+			<toolTips:AuthIdConverter x:Key="AuthIdConverter" />
+			<toolTips:ProgramTypeConverter x:Key="ProgramTypeConverter" />
+		</StackPanel.Resources>
+		<GroupBox BorderThickness="0">
+			<GroupBox.Header>
+				<TextBlock x:Name="LabelTitle" FontWeight="Bold"/>
+			</GroupBox.Header>
+			<Grid Margin="4">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="96"/>
+					<ColumnDefinition/>
+				</Grid.ColumnDefinitions>
+				<Grid.RowDefinitions>
+					<RowDefinition />
+					<RowDefinition />
+					<RowDefinition />
+					<RowDefinition />
+					<RowDefinition />
+					<RowDefinition />
+					<RowDefinition />
+					<RowDefinition />
+				</Grid.RowDefinitions>
+				<TextBlock Grid.Row="0" Grid.Column="0" Text="Type: " />
+				<TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Path=DataContext, RelativeSource={RelativeSource Self}, Converter={StaticResource ProgramTypeConverter}}" />
+				<TextBlock Grid.Row="1" Grid.Column="0" Text="Aggregate: " />
+				<TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding IsAggregate, Converter={StaticResource BooleanConverter}}" />
+				<TextBlock Grid.Row="2" Grid.Column="0" Text="Analytic: " />
+				<TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding IsAnalytic, Converter={StaticResource BooleanConverter}}" />
+				<TextBlock Grid.Row="3" Grid.Column="0" Text="Pipelined: " />
+				<TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding IsPipelined, Converter={StaticResource BooleanConverter}}" />
+				<TextBlock Grid.Row="4" Grid.Column="0" Text="Parallel: " />
+				<TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding ParallelSupport, Converter={StaticResource BooleanConverter}}" />
+				<TextBlock Grid.Row="5" Grid.Column="0" Text="Deterministic: " />
+				<TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding IsDeterministic, Converter={StaticResource BooleanConverter}}" />
+				<TextBlock Grid.Row="6" Grid.Column="0" Text="Offloadable: " />
+				<TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding IsOffloadable, Converter={StaticResource BooleanConverter}}" />
+				<TextBlock Grid.Row="7" Grid.Column="0" Text="Auth ID: " />
+				<TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding AuthId, Converter={StaticResource AuthIdConverter}}" />
+			</Grid>
+		</GroupBox>
+	</StackPanel>
+</UserControl>

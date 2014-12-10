@@ -24,8 +24,8 @@ namespace SqlPad.Oracle.ToolTips
 		private int _distinctValueCount;
 		private int _nullValueCount;
 		private int? _sampleSize;
-		private object _minimumValue;
-		private object _maximumValue;
+		//private object _minimumValue;
+		//private object _maximumValue;
 		private DateTime _lastAnalyzed;
 		private int _averageValueSize;
 		private string _inMemoryCompression;

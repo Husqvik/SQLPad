@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:sqlPad="clr-namespace:SqlPad;assembly=SqlPad"
+             xmlns:toolTips="clr-namespace:SqlPad.Oracle.ToolTips"
              mc:Ignorable="d" 
              d:DesignHeight="192" d:DesignWidth="240"
 			 Padding="4">
@@ -13,7 +14,7 @@
 			<sqlPad:BooleanLabelConverter x:Key="BooleanConverter" />
 			<sqlPad:NumericConverter x:Key="NumericConverter" />
 			<sqlPad:DataSpaceConverter x:Key="DataSpaceConverter" />
-			<sqlPad:InMemoryAllocationStatusConverter x:Key="InMemoryAllocationStatusConverter" />
+			<toolTips:InMemoryAllocationStatusConverter x:Key="InMemoryAllocationStatusConverter" />
 		</StackPanel.Resources>
 		<GroupBox BorderThickness="0">
 			<GroupBox.Header>

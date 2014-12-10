@@ -76,12 +76,13 @@ namespace SqlPad.Oracle
 						if (columnReference == null)
 						{
 							var functionToolTip = GetFunctionToolTip(semanticModel, node);
-							var typeToolTip = GetTypeToolTip(semanticModel, node);
 							if (functionToolTip != null)
 							{
-								tip = functionToolTip;
+								return functionToolTip;
 							}
-							else if (typeToolTip != null)
+
+							var typeToolTip = GetTypeToolTip(semanticModel, node);
+							if (typeToolTip != null)
 							{
 								tip = typeToolTip;
 							}
@@ -212,10 +213,12 @@ namespace SqlPad.Oracle
 			return schemaObject.FullyQualifiedName + " (" + CultureInfo.InvariantCulture.TextInfo.ToTitleCase(schemaObject.Type.ToLower()) + ")";
 		}
 
-		private string GetFunctionToolTip(OracleStatementSemanticModel semanticModel, StatementGrammarNode terminal)
+		private ToolTipProgram GetFunctionToolTip(OracleStatementSemanticModel semanticModel, StatementGrammarNode terminal)
 		{
 			var functionReference = semanticModel.GetProgramReference(terminal);
-			return functionReference == null || functionReference.DatabaseLinkNode != null || functionReference.Metadata == null ? null : functionReference.Metadata.Identifier.FullyQualifiedIdentifier;
+			return functionReference == null || functionReference.DatabaseLinkNode != null || functionReference.Metadata == null
+				? null
+				: new ToolTipProgram(functionReference.Metadata.Identifier.FullyQualifiedIdentifier, functionReference.Metadata);
 		}
 
 		private OracleSchemaObject GetSchemaObject(OracleQueryBlock queryBlock, StatementGrammarNode terminal)

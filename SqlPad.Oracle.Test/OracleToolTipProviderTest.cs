@@ -325,8 +325,9 @@ namespace SqlPad.Oracle.Test
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 8);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
-			toolTip.Control.DataContext.ShouldBe("SYS.STANDARD.COALESCE");
+			toolTip.Control.ShouldBeTypeOf<ToolTipProgram>();
+			var metadata = (OracleProgramMetadata)toolTip.Control.DataContext;
+			metadata.Identifier.FullyQualifiedIdentifier.ShouldBe("SYS.STANDARD.COALESCE");
 		}
 
 		[Test(Description = @""), STAThread]
@@ -606,8 +607,9 @@ namespace SqlPad.Oracle.Test
 
 			var toolTipFunction = _toolTipProvider.GetToolTip(_documentRepository, 84);
 
-			toolTipFunction.Control.ShouldBeTypeOf<ToolTipObject>();
-			toolTipFunction.Control.DataContext.ShouldBe("HUSQVIK.SQLPAD_FUNCTION");
+			toolTipFunction.Control.ShouldBeTypeOf<ToolTipProgram>();
+			var metadata = (OracleProgramMetadata)toolTipFunction.Control.DataContext;
+			metadata.Identifier.FullyQualifiedIdentifier.ShouldBe("HUSQVIK.SQLPAD_FUNCTION");
 
 			var toolTipType = _toolTipProvider.GetToolTip(_documentRepository, 101);
 			toolTipType.Control.ShouldBeTypeOf<ToolTipObject>();
