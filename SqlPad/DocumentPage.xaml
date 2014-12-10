@@ -240,6 +240,7 @@
 				          HeadersVisibility="None"
 				          HorizontalGridLinesBrush="LightGray"
 				          VerticalGridLinesBrush="LightGray"
+						  KeyDown="ResultGridKeyDownHandler"
 						  ScrollViewer.ScrollChanged="ResultGridScrollChangedHandler"
 				          MouseDoubleClick="ResultGridMouseDoubleClickHandler">
 					<DataGrid.CommandBindings>

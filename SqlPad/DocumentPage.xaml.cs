@@ -1821,6 +1821,11 @@ namespace SqlPad
 				IsBusy = false;
 			}
 		}
+
+		private void ResultGridKeyDownHandler(object sender, KeyEventArgs e)
+		{
+			e.Handled = true;
+		}
 	}
 
 	internal struct ActionResult
