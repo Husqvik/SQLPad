@@ -2244,6 +2244,16 @@ FROM
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 		}
 
+		[Test(Description = @"")]
+		public void TestFunctionSupportingWithinGroupClause()
+		{
+			const string statement1 = "SELECT CUME_DIST(1, 1) WITHIN GROUP (ORDER BY 0, 1), RANK(1) WITHIN GROUP (ORDER BY NULL), DENSE_RANK(1) WITHIN GROUP (ORDER BY NULL), PERCENTILE_CONT(0) WITHIN GROUP (ORDER BY 1), PERCENTILE_DISC(0) WITHIN GROUP (ORDER BY 1) FROM DUAL";
+
+			var statements = Parser.Parse(statement1).ToArray();
+			var statement = statements.Single().Validate();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+		}
+
 		public class IsRuleValid
 		{
 			[Test(Description = @"")]
@@ -2404,8 +2414,10 @@ FROM
 						Terminals.Colon,
 						Terminals.ConnectByRoot,
 						Terminals.Count,
+						Terminals.CumulativeDistribution,
 						Terminals.Cursor,
 						Terminals.Date,
+						Terminals.DenseRank,
 						Terminals.Distinct,
 						Terminals.Extract,
 						Terminals.FirstValue,
@@ -2426,7 +2438,10 @@ FROM
 						Terminals.Null,
 						Terminals.NumberLiteral,
 						Terminals.ObjectIdentifier,
+						Terminals.PercentileContinuousDistribution,
+						Terminals.PercentileDiscreteDistribution,
 						Terminals.Prior,
+						Terminals.Rank,
 						Terminals.RowIdPseudoColumn,
 						Terminals.RowNumberPseudoColumn,
 						Terminals.SchemaIdentifier,

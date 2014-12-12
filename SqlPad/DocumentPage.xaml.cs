@@ -17,7 +17,6 @@ using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Folding;
-using ICSharpCode.AvalonEdit.Rendering;
 using Microsoft.Win32;
 using SqlPad.Commands;
 using SqlPad.FindReplace;

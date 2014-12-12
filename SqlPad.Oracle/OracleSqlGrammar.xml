@@ -4466,7 +4466,7 @@
           <NonTerminal Id="AnalyticOrKeepClauseOrModelAggregateFunctionExpression" IsOptional="true" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="ListAggregationClause" />
+          <NonTerminal Id="WithinGroupAggregationClause" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -4527,10 +4527,10 @@
       </Sequences>
     </Rule>
 
-    <Rule StartingNonTerminal="ListAggregationClause">
+    <Rule StartingNonTerminal="WithinGroupAggregationClause">
       <Sequences>
         <Sequence>
-          <Terminal Id="ListAggregation" />
+          <NonTerminal Id="WithinGroupAggregationFunction" />
           <NonTerminal Id="ParenthesisEnclosedExpressionListWithMandatoryExpressions" />
           <Terminal Id="Within" />
           <Terminal Id="Group" />
@@ -4538,6 +4538,29 @@
           <NonTerminal Id="OrderByClause" />
           <Terminal Id="RightParenthesis" />
           <NonTerminal Id="OverQueryPartitionClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="WithinGroupAggregationFunction">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="ListAggregation" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="CumulativeDistribution" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Rank" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="DenseRank" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="PercentileContinuousDistribution" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="PercentileDiscreteDistribution" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -10144,10 +10167,6 @@
     <Terminal Id="Empty" Value="EMPTY" />
     <Terminal Id="Except" Value="EXCEPT" />
     <Terminal Id="SubMultiset" Value="SUBMULTISET" />
-
-    <!-- LISTAGG function -->
-    <Terminal Id="ListAggregation" Value="LISTAGG" />
-    <Terminal Id="Within" Value="WITHIN" />
     
     <!-- COLLECT function -->
     <Terminal Id="Collect" Value="COLLECT" />
@@ -10245,6 +10264,15 @@
     <Terminal Id="ConnectByRoot" Value="CONNECT_BY_ROOT" />
     <Terminal Id="NoCycle" Value="NOCYCLE" />
     
+    <!-- Within group functions -->
+    <Terminal Id="Within" Value="WITHIN" />
+    <Terminal Id="ListAggregation" Value="LISTAGG" />
+    <Terminal Id="CumulativeDistribution" Value="CUME_DIST" />
+    <Terminal Id="Rank" Value="RANK" />
+    <Terminal Id="DenseRank" Value="DENSE_RANK" />
+    <Terminal Id="PercentileContinuousDistribution" Value="PERCENTILE_DISC" />
+    <Terminal Id="PercentileDiscreteDistribution" Value="PERCENTILE_CONT" />
+    
     <!-- Aggregate functions -->
     <Terminal Id="Count" Value="COUNT" AllowQuotedNotation ="true" />
     <Terminal Id="Min" Value="MIN" AllowQuotedNotation ="true" />
@@ -10269,7 +10297,6 @@
     <Terminal Id="Row" Value="ROW" IsReservedWord="true" />
     <Terminal Id="Ignore" Value="IGNORE" />
     <Terminal Id="Keep" Value="KEEP" />
-    <Terminal Id="DenseRank" Value="DENSE_RANK" />
 
     <!-- Pivot clause -->
     <Terminal Id="Pivot" Value="PIVOT" />
