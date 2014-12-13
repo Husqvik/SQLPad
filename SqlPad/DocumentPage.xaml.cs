@@ -1131,14 +1131,14 @@ namespace SqlPad
 
 				var parenthesisTerminal = _sqlDocumentRepository.Statements == null
 					? null
-					: _sqlDocumentRepository.ExecuteStatementAction(s => s.GetTerminalAtPosition(Editor.CaretOffset, n => n.Token.Value.In("(", ")")));
+					: _sqlDocumentRepository.ExecuteStatementAction(s => s.GetTerminalAtPosition(Editor.CaretOffset, n => n.Token.Value.In("(", ")", "[", "]", "{", "}")));
 
 				if (parenthesisTerminal != null)
 				{
 					var childNodes = parenthesisTerminal.ParentNode.ChildNodes.ToList();
 					var index = childNodes.IndexOf(parenthesisTerminal);
-					var increment = parenthesisTerminal.Token.Value == "(" ? 1 : -1;
-					var otherParenthesis = parenthesisTerminal.Token.Value == "(" ? ")" : "(";
+					var increment = parenthesisTerminal.Token.Value.In("(", "[", "{") ? 1 : -1;
+					var otherParenthesis = GetOppositeParenthesisOrBracket(parenthesisTerminal.Token.Value);
 
 					while (0 <= index && index < childNodes.Count)
 					{
@@ -1162,6 +1162,27 @@ namespace SqlPad
 			_colorizingTransformer.SetHighlightParenthesis(parenthesisNodes);
 
 			RedrawNodes(oldNodes.Concat(parenthesisNodes));
+		}
+
+		private string GetOppositeParenthesisOrBracket(string parenthesisOrBracket)
+		{
+			switch (parenthesisOrBracket)
+			{
+				case "(":
+					return ")";
+				case ")":
+					return "(";
+				case "[":
+					return "]";
+				case "]":
+					return "[";
+				case "{":
+					return "}";
+				case "}":
+					return "{";
+				default:
+					throw new ArgumentException("invalid parenthesis symbol", "parenthesisOrBracket");
+			}
 		}
 
 		private void ShowHideBindVariableList()

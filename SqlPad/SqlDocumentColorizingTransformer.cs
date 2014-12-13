@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows;
 using System.Windows.Media;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Rendering;
@@ -269,11 +268,6 @@ namespace SqlPad
 			ProcessNodeCollectionAtLine(line, _lineNodesWithSuggestion,
 				element => element.TextRunProperties.SetTextDecorations(Resources.WaveWarningUnderline));
 
-			foreach (var parenthesisNode in _highlightParenthesis)
-			{
-				ProcessNodeAtLine(line, parenthesisNode.SourcePosition, element => element.TextRunProperties.SetTextDecorations(TextDecorations.Underline));
-			}
-
 			ProcessNodeCollectionAtLine(line, _lineComments,
 				element =>
 				{
@@ -288,6 +282,8 @@ namespace SqlPad
 
 				var colorStartOffset = Math.Max(line.Offset, statement.SourcePosition.IndexStart);
 				var colorEndOffset = Math.Min(line.EndOffset, statement.SourcePosition.IndexEnd + 1);
+
+				SetActiveParenthesisBrush(line);
 
 				ChangeLinePart(
 					colorStartOffset,
@@ -326,6 +322,16 @@ namespace SqlPad
 						new SourcePosition { IndexStart = highlightSegment.IndextStart, IndexEnd = highlightSegment.IndextStart + highlightSegment.Length - 1 },
 						element => element.BackgroundBrush = highlightSegment.DisplayOptions == DisplayOptions.Usage ? HighlightUsageBrush : HighlightDefinitionBrush);
 				}
+			}
+
+			SetActiveParenthesisBrush(line);
+		}
+
+		private void SetActiveParenthesisBrush(ISegment line)
+		{
+			foreach (var parenthesisNode in _highlightParenthesis)
+			{
+				ProcessNodeAtLine(line, parenthesisNode.SourcePosition, element => element.BackgroundBrush = Brushes.CornflowerBlue);
 			}
 		}
 
