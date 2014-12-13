@@ -904,6 +904,18 @@ FROM
 		}
 
 		[Test(Description = @"")]
+		public void TestModelBuildWithSimpleDatabaseLinkIncludingInstanceName()
+		{
+			const string query1 = @"SELECT COUNT(*) FROM DUAL, DUAL@""HQ_PDB@LOOPBACK""";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			var objectReferences = semanticModel.QueryBlocks.Single().ObjectReferences.ToArray();
+			objectReferences.Length.ShouldBe(2);
+		}
+
+		[Test(Description = @"")]
 		public void TestStoredProcedureIsIgnoredInSql()
 		{
 			const string query1 = @"SELECT SQLPAD.SQLPAD_PROCEDURE() FROM DUAL";

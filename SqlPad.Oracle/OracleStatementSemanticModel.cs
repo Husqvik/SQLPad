@@ -272,7 +272,7 @@ namespace SqlPad.Oracle
 								commonTableExpressions.AddRange(cteReferences.Where(n => n.Value == tableName));
 							}
 
-							OracleSchemaObject schemaObject = null;
+							OracleSchemaObject localSchemaObject = null;
 							var referenceType = ReferenceType.CommonTableExpression;
 							if (commonTableExpressions.Count == 0)
 							{
@@ -281,9 +281,9 @@ namespace SqlPad.Oracle
 								var objectName = objectIdentifierNode.Token.Value;
 								var owner = schemaTerminal == null ? null : schemaTerminal.Token.Value;
 
-								if (databaseLinkNode == null && !IsSimpleModel)
+								if (!IsSimpleModel)
 								{
-									schemaObject = _databaseModel.GetFirstSchemaObject<OracleDataObject>(_databaseModel.GetPotentialSchemaObjectIdentifiers(owner, objectName));
+									localSchemaObject = _databaseModel.GetFirstSchemaObject<OracleDataObject>(_databaseModel.GetPotentialSchemaObjectIdentifiers(owner, objectName));
 								}
 							}
 
@@ -296,7 +296,8 @@ namespace SqlPad.Oracle
 									ObjectNode = objectIdentifierNode,
 									DatabaseLinkNode = databaseLinkNode,
 									AliasNode = objectReferenceAlias,
-									SchemaObject = schemaObject
+									LocalSchemaObject = localSchemaObject,
+									SchemaObject = databaseLinkNode == null ? localSchemaObject : null
 								};
 
 							queryBlock.ObjectReferences.Add(objectReference);
@@ -944,26 +945,33 @@ namespace SqlPad.Oracle
 			foreach (var databaseLinkReference in queryBlock.DatabaseLinkReferences)
 			{
 				var databaseLinkBuilder = new StringBuilder(128);
-				var linkLengthUntilInstanceQualifier = 0;
+				var databaseLinkWithoutInstanceBuilder = new StringBuilder(128);
 				var includesDomain = false;
 				var hasInstanceDefinition = false;
 				foreach (var terminal in databaseLinkReference.DatabaseLinkNode.Terminals)
 				{
-					if (terminal.Id == Terminals.Dot || (terminal.Id == Terminals.DatabaseLinkIdentifier && terminal.Token.Value.Contains('.')))
+					var isLinkIdentifier = terminal.Id == Terminals.DatabaseLinkIdentifier;
+					if (terminal.Id == Terminals.Dot || (isLinkIdentifier && terminal.Token.Value.Contains('.')))
 					{
 						includesDomain = true;
 					}
 
-					if (terminal.Id == Terminals.AtCharacter)
+					var characterIndex = 0;
+					if (terminal.Id == Terminals.AtCharacter || (isLinkIdentifier && (characterIndex = terminal.Token.Value.IndexOf('@')) != -1))
 					{
 						hasInstanceDefinition = true;
+
+						if (isLinkIdentifier)
+						{
+							databaseLinkWithoutInstanceBuilder.Append(terminal.Token.Value.Substring(0, characterIndex).Trim('"'));
+						}
 					}
 
-					databaseLinkBuilder.Append(terminal.Token.Value);
+					databaseLinkBuilder.Append(terminal.Token.Value.Trim('"'));
 
 					if (!hasInstanceDefinition)
 					{
-						linkLengthUntilInstanceQualifier = databaseLinkBuilder.Length;
+						databaseLinkWithoutInstanceBuilder.Append(terminal.Token.Value);
 					}
 				}
 
@@ -971,15 +979,14 @@ namespace SqlPad.Oracle
 
 				if (hasInstanceDefinition)
 				{
-					var databaseLinkNameWithoutInstance = databaseLinkBuilder.ToString(0, linkLengthUntilInstanceQualifier);
-					potentialIdentifiers.AddRange(_databaseModel.GetPotentialSchemaObjectIdentifiers(null, databaseLinkNameWithoutInstance));
+					potentialIdentifiers.AddRange(_databaseModel.GetPotentialSchemaObjectIdentifiers(null, databaseLinkWithoutInstanceBuilder.ToString()));
 				}
 
 				if (!includesDomain && !String.IsNullOrEmpty(DatabaseModel.DatabaseDomainName))
 				{
-					databaseLinkBuilder.Append(".");
-					databaseLinkBuilder.Append(DatabaseModel.DatabaseDomainName.ToUpperInvariant());
-					potentialIdentifiers.AddRange(_databaseModel.GetPotentialSchemaObjectIdentifiers(null, databaseLinkBuilder.ToString()));
+					databaseLinkWithoutInstanceBuilder.Append(".");
+					databaseLinkWithoutInstanceBuilder.Append(DatabaseModel.DatabaseDomainName.ToUpperInvariant());
+					potentialIdentifiers.AddRange(_databaseModel.GetPotentialSchemaObjectIdentifiers(null, databaseLinkWithoutInstanceBuilder.ToString()));
 				}
 
 				databaseLinkReference.DatabaseLink = _databaseModel.GetFirstDatabaseLink(potentialIdentifiers.ToArray());

@@ -973,7 +973,7 @@ namespace SqlPad.Oracle
 				DatabaseProperties[_connectionString.ConnectionString] =
 					new DatabaseProperty
 					{
-						DomainName = connection.DatabaseDomainName,
+						DomainName = connection.DatabaseDomainName == "null" ? null : connection.DatabaseDomainName,
 						Version = connection.ServerVersion
 					};
 			}
