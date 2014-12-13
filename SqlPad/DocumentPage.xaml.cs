@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -71,7 +72,7 @@ namespace SqlPad
 		private ConnectionStringSettings _connectionString;
 		private Dictionary<string, BindVariableConfiguration> _currentBindVariables = new Dictionary<string, BindVariableConfiguration>();
 		
-		private readonly SqlFoldingStrategy _foldingStrategy;
+		//private readonly SqlFoldingStrategy _foldingStrategy;
 
 		internal TabItem TabItem { get; private set; }
 		
@@ -111,7 +112,7 @@ namespace SqlPad
 		{
 			InitializeComponent();
 
-			_foldingStrategy = new SqlFoldingStrategy(FoldingManager.Install(Editor.TextArea), Editor);
+			//_foldingStrategy = new SqlFoldingStrategy(FoldingManager.Install(Editor.TextArea), Editor);
 
 			_toolTip.PlacementTarget = Editor.TextArea;
 			_contextActionMenu.PlacementTarget = Editor;
@@ -511,7 +512,7 @@ namespace SqlPad
 			WorkDocument.VisualLeft = textView.ScrollOffset.X;
 			WorkDocument.VisualTop = textView.ScrollOffset.Y;
 
-			_foldingStrategy.Store(WorkDocument);
+			//_foldingStrategy.Store(WorkDocument);
 
 			if (RowDefinitionEditor.ActualHeight > 0)
 			{
@@ -1135,7 +1136,7 @@ namespace SqlPad
 
 				if (parenthesisTerminal != null)
 				{
-					var childNodes = parenthesisTerminal.ParentNode.ChildNodes.ToList();
+					var childNodes = parenthesisTerminal.ParentNode.ChildNodes;
 					var index = childNodes.IndexOf(parenthesisTerminal);
 					var increment = parenthesisTerminal.Token.Value.In("(", "[", "{") ? 1 : -1;
 					var otherParenthesis = GetOppositeParenthesisOrBracket(parenthesisTerminal.Token.Value);
@@ -1145,23 +1146,58 @@ namespace SqlPad
 						index += increment;
 
 						if (index < 0 || index >= childNodes.Count)
+						{
 							break;
+						}
 
 						var otherParenthesisTerminal = childNodes[index];
 						if (otherParenthesisTerminal.Token != null && otherParenthesisTerminal.Token.Value == otherParenthesis)
 						{
 							parenthesisNodes.Add(parenthesisTerminal);
 							parenthesisNodes.Add(otherParenthesisTerminal);
+
+							var scrollOffset = Editor.TextArea.TextView.ScrollOffset;
+							var position = Editor.TextArea.TextView.GetPosition(new Point(scrollOffset.X, scrollOffset.Y));
+							var offset = position == null ? Editor.Document.TextLength : Editor.Document.GetOffset(position.Value.Location);
+							var firstVisibleLine = Editor.Document.GetLineByOffset(offset);
+
+							if (increment == -1 && otherParenthesisTerminal.SourcePosition.IndexStart < firstVisibleLine.Offset)
+							{
+								var otherParenthesisLine = Editor.Document.GetLineByOffset(otherParenthesisTerminal.SourcePosition.IndexStart);
+
+								var toolTipBuilder = new StringBuilder();
+								var previousTextLine = otherParenthesisLine.PreviousLine;
+								while (previousTextLine != null)
+								{
+									if (previousTextLine.Length > 0)
+									{
+										toolTipBuilder.AppendLine(Editor.Document.GetText(previousTextLine));
+										break;
+									}
+
+									previousTextLine = previousTextLine.PreviousLine;
+								}
+
+								var lastLine = Editor.Document.GetText(otherParenthesisLine.Offset, otherParenthesisTerminal.SourcePosition.IndexStart + 1 - otherParenthesisLine.Offset);
+								toolTipBuilder.Append(lastLine);
+
+								_toolTip.Content = new TextBlock { FontFamily = Editor.FontFamily, FontSize = Editor.FontSize, Text = toolTipBuilder.ToString() };
+								_toolTip.Placement = PlacementMode.Relative;
+								_toolTip.HorizontalOffset = Editor.TextArea.LeftMargins.Sum(m => m.DesiredSize.Width);
+								_toolTip.VerticalOffset = -28;
+								_toolTip.IsOpen = true;
+							}
+
 							break;
 						}
 					}
 				}
 			}
 
-			var oldNodes = _colorizingTransformer.HighlightParenthesis.ToArray();
+			var oldParenthesisNodes = _colorizingTransformer.HighlightParenthesis.ToArray();
 			_colorizingTransformer.SetHighlightParenthesis(parenthesisNodes);
 
-			RedrawNodes(oldNodes.Concat(parenthesisNodes));
+			RedrawNodes(oldParenthesisNodes.Concat(parenthesisNodes));
 		}
 
 		private string GetOppositeParenthesisOrBracket(string parenthesisOrBracket)
@@ -1496,7 +1532,7 @@ namespace SqlPad
 
 			if (_isInitialParsing)
 			{
-				_foldingStrategy.Restore(WorkDocument);
+				//_foldingStrategy.Restore(WorkDocument);
 				_isInitialParsing = false;
 			}
 
