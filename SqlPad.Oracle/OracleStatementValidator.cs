@@ -108,7 +108,7 @@ namespace SqlPad.Oracle
 				}
 			}
 
-			ValidateConcatenatedQueryBlocks(validationModel);
+			ValidateQueryBlocks(validationModel);
 
 			ValidateLiterals(validationModel);
 			
@@ -220,24 +220,39 @@ namespace SqlPad.Oracle
 			return Int32.TryParse(day, out dayValue) || dayValue >= 1 || dayValue <= DateTime.DaysInMonth(yearValue, monthValue);
 		}
 
-		private void ValidateConcatenatedQueryBlocks(OracleValidationModel validationModel)
+		private void ValidateQueryBlocks(OracleValidationModel validationModel)
 		{
-			foreach (var queryBlock in validationModel.SemanticModel.QueryBlocks.Where(qb => qb.PrecedingConcatenatedQueryBlock == null && qb.FollowingConcatenatedQueryBlock != null))
+			foreach (var queryBlock in validationModel.SemanticModel.QueryBlocks)
 			{
-				var firstQueryBlockColumnCount = queryBlock.Columns.Count(c => !c.IsAsterisk);
-				foreach (var concatenatedQueryBlock in queryBlock.AllFollowingConcatenatedQueryBlocks)
-				{
-					var concatenatedQueryBlockColumnCount = concatenatedQueryBlock.Columns.Count(c => !c.IsAsterisk);
-					if (concatenatedQueryBlockColumnCount != firstQueryBlockColumnCount && concatenatedQueryBlockColumnCount > 0)
-					{
-						validationModel.InvalidNonTerminals[queryBlock.SelectList] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount);
-						foreach (var invalidColumnCountQueryBlock in queryBlock.AllFollowingConcatenatedQueryBlocks)
-						{
-							validationModel.InvalidNonTerminals[invalidColumnCountQueryBlock.SelectList] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount);
-						}
+				ValidateConcatenatedQueryBlocks(validationModel, queryBlock);
 
-						break;
+				if (queryBlock.Type == QueryBlockType.ScalarSubquery && queryBlock.OrderByClause != null)
+				{
+					validationModel.InvalidNonTerminals[queryBlock.OrderByClause] = new InvalidNodeValidationData(OracleSemanticErrorType.ClauseNotAllowed);
+				}
+			}
+		}
+
+		private static void ValidateConcatenatedQueryBlocks(OracleValidationModel validationModel, OracleQueryBlock queryBlock)
+		{
+			if (queryBlock.PrecedingConcatenatedQueryBlock != null || queryBlock.FollowingConcatenatedQueryBlock == null)
+			{
+				return;
+			}
+			
+			var firstQueryBlockColumnCount = queryBlock.Columns.Count(c => !c.IsAsterisk);
+			foreach (var concatenatedQueryBlock in queryBlock.AllFollowingConcatenatedQueryBlocks)
+			{
+				var concatenatedQueryBlockColumnCount = concatenatedQueryBlock.Columns.Count(c => !c.IsAsterisk);
+				if (concatenatedQueryBlockColumnCount != firstQueryBlockColumnCount && concatenatedQueryBlockColumnCount > 0)
+				{
+					validationModel.InvalidNonTerminals[queryBlock.SelectList] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount);
+					foreach (var invalidColumnCountQueryBlock in queryBlock.AllFollowingConcatenatedQueryBlocks)
+					{
+						validationModel.InvalidNonTerminals[invalidColumnCountQueryBlock.SelectList] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount);
 					}
+
+					break;
 				}
 			}
 		}
@@ -632,6 +647,7 @@ namespace SqlPad.Oracle
 		public InvalidNodeValidationData(string semanticError = OracleSemanticErrorType.None)
 		{
 			_semanticError = semanticError;
+			IsRecognized = true;
 		}
 
 		public override string SemanticErrorType { get { return _semanticError; } }

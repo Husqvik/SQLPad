@@ -1773,5 +1773,20 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 				v.SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 			});
 		}
+
+		[Test(Description = @"")]
+		public void TestOrderByClauseWithinScalarSubquery()
+		{
+			const string sqlText = @"SELECT (SELECT 1 FROM (SELECT 1 FROM DUAL ORDER BY DUMMY) ORDER BY DUMMY) FROM DUAL";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var invalidNonTerminals = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			invalidNonTerminals.Count.ShouldBe(1);
+			invalidNonTerminals[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.ClauseNotAllowed);
+			invalidNonTerminals[0].ToolTipText.ShouldBe(OracleSemanticErrorType.ClauseNotAllowed);
+		}
 	}
 }
