@@ -59,8 +59,8 @@ namespace SqlPad.Oracle
 		{
 			get
 			{
-				return ((IEnumerable<OracleReferenceContainer>)_queryBlockNodes.Values)
-					.Concat(_queryBlockNodes.Values.SelectMany(qb => qb.Columns))
+				return _queryBlockNodes.Values
+					.Concat(_queryBlockNodes.Values.SelectMany(qb => qb.ChildContainers))
 					.Concat(_insertTargets)
 					.Concat(Enumerable.Repeat(MainObjectReferenceContainer, 1));
 			}
@@ -461,8 +461,17 @@ namespace SqlPad.Oracle
 					continue;
 				}
 
-				var measureColumns = new List<OracleColumn>();
+				var identifiers = new List<StatementGrammarNode>();
+				var partitionExpressions = modelColumnClauses.GetDescendantByPath(NonTerminals.ModelColumnClausesPartitionByExpressionList, NonTerminals.ParenthesisEnclosedAliasedExpressionList);
+				if (partitionExpressions != null)
+				{
+					identifiers.AddRange(GetIdentifiers(partitionExpressions));
+				}
 
+				var dimensionExpressionList = modelColumnClauses.ChildNodes[modelColumnClauses.ChildNodes.Count - 3];
+				identifiers.AddRange(GetIdentifiers(dimensionExpressionList));
+				
+				var measureColumns = new List<OracleColumn>();
 				var parenthesisEnclosedAliasedExpressionList = modelColumnClauses.ChildNodes[modelColumnClauses.ChildNodes.Count - 1];
 				foreach (var aliasedExpression in parenthesisEnclosedAliasedExpressionList.GetDescendants(NonTerminals.AliasedExpression))
 				{
@@ -486,11 +495,18 @@ namespace SqlPad.Oracle
 					column.DataType = dataType ?? OracleDataType.Empty;
 
 					measureColumns.Add(column);
+
+					identifiers.AddRange(GetIdentifiers(aliasedExpression));
 				}
 
-				var sqlModelReference = new OracleSqlModelReference(measureColumns, queryBlock.ObjectReferences);
+				queryBlock.ModelReference = new OracleSqlModelReference(this, measureColumns, queryBlock.ObjectReferences);
+
+				ResolveColumnAndFunctionReferenceFromIdentifiers(null, queryBlock.ModelReference.ModelSourceReferenceContainer, identifiers, QueryBlockPlacement.Model, null);
+				ResolveColumnObjectReferences(queryBlock.ModelReference.ModelSourceReferenceContainer.ColumnReferences, queryBlock.ModelReference.ModelSourceReferenceContainer.ObjectReferences, new OracleDataObjectReference[0]);
+				ResolveFunctionReferences(queryBlock.ModelReference.ModelSourceReferenceContainer.ProgramReferences);
+
 				queryBlock.ObjectReferences.Clear();
-				queryBlock.ObjectReferences.Add(sqlModelReference);
+				queryBlock.ObjectReferences.Add(queryBlock.ModelReference);
 
 				for (var i = queryBlock.Columns.Count - 1; i >= 0; i--)
 				{
@@ -502,13 +518,18 @@ namespace SqlPad.Oracle
 
 					if (column.RootNode.TerminalCount == 1)
 					{
-						_asteriskTableReferences[column] = new[] { sqlModelReference };
+						_asteriskTableReferences[column] = new[] { queryBlock.ModelReference };
 						break;
 					}
 					
 					_asteriskTableReferences.Remove(column);
 				}
 			}
+		}
+
+		private IEnumerable<StatementGrammarNode> GetIdentifiers(StatementGrammarNode nonTerminal)
+		{
+			return nonTerminal.GetDescendantsWithinSameQuery(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Count, Terminals.Level, NonTerminals.AggregateFunction, NonTerminals.AnalyticFunction, NonTerminals.WithinGroupAggregationFunction);
 		}
 
 		private void ResolveInlineViewOrCommonTableExpressionRelations()
@@ -1646,8 +1667,7 @@ namespace SqlPad.Oracle
 					}
 					else
 					{
-						var columnGrammarLookup = columnExpression.GetDescendantsWithinSameQuery(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Count, Terminals.Level, NonTerminals.AggregateFunction, NonTerminals.AnalyticFunction, NonTerminals.WithinGroupAggregationFunction)
-							.ToLookup(n => n.Id, n => n);
+						var columnGrammarLookup = GetIdentifiers(columnExpression).ToLookup(n => n.Id, n => n);
 
 						var identifiers = columnGrammarLookup[Terminals.Identifier].Concat(columnGrammarLookup[Terminals.RowIdPseudoColumn]).Concat(columnGrammarLookup[Terminals.Level]).ToArray();
 

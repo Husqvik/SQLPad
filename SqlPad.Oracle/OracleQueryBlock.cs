@@ -67,7 +67,23 @@ namespace SqlPad.Oracle
 		public OracleStatement Statement { get; set; }
 
 		public IList<OracleSelectListColumn> Columns { get; private set; }
-		
+
+		public OracleSqlModelReference ModelReference { get; set; }
+
+		public IEnumerable<OracleReferenceContainer> ChildContainers
+		{
+			get
+			{
+				var containers = (IEnumerable<OracleReferenceContainer>)Columns;
+				if (ModelReference != null)
+				{
+					containers = containers.Concat(Enumerable.Repeat(ModelReference.ModelSourceReferenceContainer, 1));
+				}
+
+				return containers;
+			}
+		}
+
 		public IEnumerable<OracleProgramReference> AllProgramReferences { get { return Columns.SelectMany(c => c.ProgramReferences).Concat(ProgramReferences); } }
 
 		public IEnumerable<OracleColumnReference> AllColumnReferences { get { return Columns.SelectMany(c => c.ColumnReferences).Concat(ColumnReferences); } }

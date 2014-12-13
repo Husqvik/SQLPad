@@ -4,9 +4,9 @@ using System.Diagnostics;
 
 namespace SqlPad.Oracle
 {
-	public abstract class OracleReferenceContainer
+	public class OracleReferenceContainer
 	{
-		protected OracleReferenceContainer(OracleStatementSemanticModel semanticModel)
+		public OracleReferenceContainer(OracleStatementSemanticModel semanticModel)
 		{
 			if (semanticModel == null)
 			{

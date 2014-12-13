@@ -72,6 +72,7 @@ namespace SqlPad.Oracle
 		GroupBy,
 		Having,
 		Join,
-		OrderBy
+		OrderBy,
+		Model
 	}
 }

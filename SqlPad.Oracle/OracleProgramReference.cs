@@ -150,15 +150,16 @@ namespace SqlPad.Oracle
 		}
 	}
 
-	[DebuggerDisplay("OracleSqlModelReference (Columns={SourceReferences.Count})")]
+	[DebuggerDisplay("OracleSqlModelReference (Columns={Columns.Count})")]
 	public class OracleSqlModelReference : OracleSpecialTableReference
 	{
-		public ICollection<OracleDataObjectReference> SourceReferences { get; private set; }
+		public OracleReferenceContainer ModelSourceReferenceContainer { get; private set; }
 
-		public OracleSqlModelReference(IEnumerable<OracleColumn> columns, ICollection<OracleDataObjectReference> sourceReferences)
+		public OracleSqlModelReference(OracleStatementSemanticModel semanticModel, IEnumerable<OracleColumn> columns, IEnumerable<OracleDataObjectReference> sourceReferences)
 			: base(ReferenceType.SqlModel, columns)
 		{
-			SourceReferences = sourceReferences;
+			ModelSourceReferenceContainer = new OracleReferenceContainer(semanticModel);
+			ModelSourceReferenceContainer.ObjectReferences.AddRange(sourceReferences);
 		}
 	}
 
