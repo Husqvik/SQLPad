@@ -2030,6 +2030,23 @@ MODEL
 		}
 
 		[Test(Description = @"")]
+		public void TestModelClauseWithRuleWithCountAsterisk()
+		{
+			const string statement1 =
+@"SELECT
+	*
+FROM DUAL
+MODEL
+	DIMENSION BY (0 D)
+	MEASURES (0 M1, 0 M2)
+	RULES (M1[ANY] = COUNT(*)[D BETWEEN 0 AND 1])";
+
+			var statements = Parser.Parse(statement1);
+			var statement = statements.Single().Validate();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+		}
+
+		[Test(Description = @"")]
 		public void TestComplexHierarchicalQuery()
 		{
 			const string statement1 =

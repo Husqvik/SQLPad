@@ -1514,12 +1514,20 @@
     <Rule StartingNonTerminal="ModelRulesClauseAssignmentList">
       <Sequences>
         <Sequence>
+          <NonTerminal Id="ModelRulesClauseAssignment" />
+          <NonTerminal Id="CommaChainedModelRulesClauseAssignmentList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ModelRulesClauseAssignment">
+      <Sequences>
+        <Sequence>
           <NonTerminal Id="UpdateOrUpsertAll" IsOptional="true" />
           <NonTerminal Id="CellAssignment" />
           <NonTerminal Id="OrderByClause" IsOptional="true" />
           <Terminal Id="MathEquals" />
           <NonTerminal Id="Expression" />
-          <NonTerminal Id="CommaChainedModelRulesClauseAssignmentList" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -4458,7 +4466,7 @@
         <Sequence>
           <Terminal Id="Count" />
           <NonTerminal Id="CountAsteriskParameter" />
-          <NonTerminal Id="AnalyticOrKeepClause" IsOptional="true" />
+          <NonTerminal Id="AnalyticOrKeepClauseOrModelAggregateFunctionExpression" IsOptional="true" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="AggregateFunction" />

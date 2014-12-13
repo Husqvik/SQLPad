@@ -444,6 +444,7 @@ namespace SqlPad.Oracle
 			public const string ModelColumnClausesPartitionByExpressionList = "ModelColumnClausesPartitionByExpressionList";
 			public const string ModelIterateClause = "ModelIterateClause";
 			public const string ModelRulesClause = "ModelRulesClause";
+			public const string ModelRulesClauseAssignment = "ModelRulesClauseAssignment";
 			public const string ModelRulesClauseAssignmentList = "ModelRulesClauseAssignmentList";
 			public const string ModelRulesClauseRulesPart = "ModelRulesClauseRulesPart";
 			public const string MultiColumnForLoop = "MultiColumnForLoop";
