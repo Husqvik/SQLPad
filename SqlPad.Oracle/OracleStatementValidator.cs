@@ -443,6 +443,13 @@ namespace SqlPad.Oracle
 		{
 			foreach (var columnReference in referenceContainer.ColumnReferences.Where(columnReference => columnReference.SelectListColumn == null || columnReference.SelectListColumn.HasExplicitDefinition))
 			{
+				var isAsterisk = columnReference.SelectListColumn != null && columnReference.SelectListColumn.IsAsterisk;
+				var sourceObjectReferences = columnReference.SelectListColumn == null
+						? referenceContainer.ObjectReferences
+						: columnReference.SelectListColumn.Owner.ObjectReferences;
+
+				var databaseLinkReferenceCount = sourceObjectReferences.Count(r => r.DatabaseLinkNode != null);
+
 				if (columnReference.ValidObjectReference == null || columnReference.ValidObjectReference.DatabaseLinkNode == null)
 				{
 					// Schema
@@ -467,38 +474,40 @@ namespace SqlPad.Oracle
 							};
 					}
 
-					var sourceObjectReferences = columnReference.SelectListColumn == null
-						? referenceContainer.ObjectReferences
-						: columnReference.SelectListColumn.Owner.ObjectReferences;
-
-					var noDatabaseLinkReferences = sourceObjectReferences.All(r => r.DatabaseLinkNode == null);
-					var canColumnBeValidated = columnReference.ObjectNode != null || noDatabaseLinkReferences;
-					var isAsterisk = columnReference.SelectListColumn != null && columnReference.SelectListColumn.IsAsterisk;
-
-					if (canColumnBeValidated)
+					// Column
+					var isColumnRecognized = isAsterisk || columnReference.ColumnNodeObjectReferences.Count > 0;
+					if (isColumnRecognized || databaseLinkReferenceCount == 0)
 					{
-						// Column
 						validationModel.ColumnNodeValidity[columnReference.ColumnNode] =
 							new ColumnNodeValidationData(columnReference)
 							{
-								IsRecognized = isAsterisk || columnReference.ColumnNodeObjectReferences.Count > 0,
+								IsRecognized = isColumnRecognized,
 								Node = columnReference.ColumnNode
 							};
 					}
-					else if (columnReference.ObjectNode == null && sourceObjectReferences.Count > 1 && !isAsterisk)
+					else if (databaseLinkReferenceCount > 0 && sourceObjectReferences.Count > 1)
 					{
-						validationModel.ColumnNodeValidity[columnReference.ColumnNode] =
-							new SuggestionData(OracleSuggestionType.PotentialDatabaseLink)
-							{
-								IsRecognized = true,
-								Node = columnReference.ColumnNode
-							};
+						ResolveDatabaseLinkQualifierSuggestion(validationModel, columnReference, isAsterisk);
 					}
 				}
-				else
+				else if (databaseLinkReferenceCount > 1)
 				{
 					ValidateDatabaseLinkReference(validationModel.ObjectNodeValidity, columnReference.ValidObjectReference);
+					ResolveDatabaseLinkQualifierSuggestion(validationModel, columnReference, isAsterisk);
 				}
+			}
+		}
+
+		private static void ResolveDatabaseLinkQualifierSuggestion(OracleValidationModel validationModel, OracleColumnReference columnReference, bool isAsterisk)
+		{
+			if (columnReference.ObjectNode == null && !isAsterisk)
+			{
+				validationModel.ColumnNodeValidity[columnReference.ColumnNode] =
+					new SuggestionData(OracleSuggestionType.PotentialDatabaseLink)
+					{
+						IsRecognized = true,
+						Node = columnReference.ColumnNode
+					};
 			}
 		}
 

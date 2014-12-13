@@ -37,8 +37,6 @@ namespace SqlPad.Oracle
 
 		public OracleSchemaObject SchemaObject { get; set; }
 
-		public OracleSchemaObject LocalSchemaObject { get; set; }
-
 		public OracleSelectListColumn SelectListColumn { get; set; }
 
 		public void SetContainer(OracleReferenceContainer container)

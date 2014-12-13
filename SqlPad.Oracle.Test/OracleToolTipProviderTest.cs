@@ -579,7 +579,7 @@ namespace SqlPad.Oracle.Test
 		[Test(Description = @""), STAThread]
 		public void TestNonQualifiedColumnReferenceOverDatabaseLink()
 		{
-			const string query = "SELECT NAME FROM SELECTION@HQ_PDB_LOOPBACK, DUAL";
+			const string query = "SELECT NAME FROM SELECTION@HQ_PDB_LOOPBACK, DUAL@HQ_PDB_LOOPBACK";
 			_documentRepository.UpdateStatements(query);
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 8);

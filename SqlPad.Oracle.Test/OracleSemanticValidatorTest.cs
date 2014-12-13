@@ -1575,7 +1575,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		[Test(Description = @"")]
 		public void TestColumnSuggestionOverDatabaseLink()
 		{
-			const string sqlText = @"SELECT NAME FROM SELECTION@HQ_PDB_LOOPBACK, DUAL";
+			const string sqlText = @"SELECT NAME FROM SELECTION@HQ_PDB_LOOPBACK, DUAL@HQ_PDB_LOOPBACK";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
@@ -1589,6 +1589,35 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		}
 
 		[Test(Description = @"")]
+		public void TestColumnSuggestionOverDatabaseLinkWhenSameColumnAvailableFromLocalReference()
+		{
+			const string sqlText = @"SELECT DUMMY FROM DUAL, DUAL@HQ_PDB_LOOPBACK";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var columnNodes = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToArray();
+			columnNodes.Length.ShouldBe(1);
+			columnNodes[0].IsRecognized.ShouldBe(true);
+			columnNodes[0].SuggestionType.ShouldBe(OracleSuggestionType.None);
+			columnNodes[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
+		}
+
+		[Test(Description = @"")]
+		public void TestNoColumnSuggestionOverDatabaseLinkWhenOnlySingleObjectReferenced()
+		{
+			const string sqlText = @"SELECT DUMMY FROM DUAL@HQ_PDB_LOOPBACK";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var columnNodes = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToArray();
+			columnNodes.Length.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
 		public void TestAsteriskColumnSuggestionOverDatabaseLink()
 		{
 			const string sqlText = @"SELECT * FROM SELECTION@HQ_PDB_LOOPBACK";
@@ -1597,8 +1626,10 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
-			var columnNodes = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToArray();
-			columnNodes.Length.ShouldBe(0);
+			var columnValidationData = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToArray();
+			columnValidationData.Length.ShouldBe(1);
+			columnValidationData[0].IsRecognized.ShouldBe(true);
+			columnValidationData[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
 		[Test(Description = @"")]

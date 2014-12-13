@@ -296,7 +296,6 @@ namespace SqlPad.Oracle
 									ObjectNode = objectIdentifierNode,
 									DatabaseLinkNode = databaseLinkNode,
 									AliasNode = objectReferenceAlias,
-									LocalSchemaObject = localSchemaObject,
 									SchemaObject = databaseLinkNode == null ? localSchemaObject : null
 								};
 
