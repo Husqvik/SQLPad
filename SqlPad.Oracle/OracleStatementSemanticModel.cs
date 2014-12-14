@@ -461,32 +461,23 @@ namespace SqlPad.Oracle
 					continue;
 				}
 
-				var identifiers = new List<StatementGrammarNode>();
 				var partitionExpressions = modelColumnClauses.GetDescendantByPath(NonTerminals.ModelColumnClausesPartitionByExpressionList, NonTerminals.ParenthesisEnclosedAliasedExpressionList);
-				var sqlModelColumns = new List<OracleColumn>();
-				var directColumnReferenceDictionary = new Dictionary<StatementGrammarNode, OracleColumn>();
+				var sqlModelColumns = new List<OracleSelectListColumn>();
 				if (partitionExpressions != null)
 				{
-					sqlModelColumns.AddRange(GatherSqlModelColumns(partitionExpressions, identifiers, directColumnReferenceDictionary));
+					sqlModelColumns.AddRange(GatherSqlModelColumns(queryBlock.ObjectReferences, partitionExpressions));
 				}
 
 				var dimensionExpressionList = modelColumnClauses.ChildNodes[modelColumnClauses.ChildNodes.Count - 3];
-				var dimensionColumns = GatherSqlModelColumns(dimensionExpressionList, identifiers, directColumnReferenceDictionary);
-				var dimensionColumnObjectReference = new OracleSpecialTableReference(ReferenceType.SqlModel, dimensionColumns);
+				var dimensionColumns = GatherSqlModelColumns(queryBlock.ObjectReferences, dimensionExpressionList);
+				var dimensionColumnObjectReference = new OracleSpecialTableReference(ReferenceType.SqlModel, dimensionColumns.Select(c => c.ColumnDescription));
 				sqlModelColumns.AddRange(dimensionColumns);
 				
 				var parenthesisEnclosedAliasedExpressionList = modelColumnClauses.ChildNodes[modelColumnClauses.ChildNodes.Count - 1];
-				var measureColumns = GatherSqlModelColumns(parenthesisEnclosedAliasedExpressionList, identifiers, directColumnReferenceDictionary);
+				var measureColumns = GatherSqlModelColumns(queryBlock.ObjectReferences, parenthesisEnclosedAliasedExpressionList);
 				sqlModelColumns.AddRange(measureColumns);
 
 				queryBlock.ModelReference = new OracleSqlModelReference(this, sqlModelColumns, queryBlock.ObjectReferences);
-
-				ResolveSqlModelReferences(queryBlock.ModelReference.SourceReferenceContainer, identifiers);
-
-				foreach (var columnReference in queryBlock.ModelReference.SourceReferenceContainer.ColumnReferences.Where(c => c.RootNode.TerminalCount == 1 && c.ValidObjectReference != null && c.ColumnNodeColumnReferences.Count == 1))
-				{
-					directColumnReferenceDictionary[columnReference.ColumnNode].DataType = columnReference.ColumnNodeColumnReferences.First().DataType;
-				}
 
 				var ruleDimensionIdentifiers = new List<StatementGrammarNode>();
 				var ruleMeasureIdentifiers = new List<StatementGrammarNode>();
@@ -559,50 +550,29 @@ namespace SqlPad.Oracle
 			ResolveFunctionReferences(referenceContainer.ProgramReferences);
 		}
 
-		private List<OracleColumn> GatherSqlModelColumns(StatementGrammarNode parenthesisEnclosedAliasedExpressionList, List<StatementGrammarNode> identifiers, Dictionary<StatementGrammarNode, OracleColumn> directReferenceColumns)
+		private List<OracleSelectListColumn> GatherSqlModelColumns(ICollection<OracleDataObjectReference> objectReferences, StatementGrammarNode parenthesisEnclosedAliasedExpressionList)
 		{
-			var measureColumns = new List<OracleColumn>();
+			var measureColumns = new List<OracleSelectListColumn>();
 
 			foreach (var aliasedExpression in parenthesisEnclosedAliasedExpressionList.GetDescendants(NonTerminals.AliasedExpression))
 			{
-				identifiers.AddRange(GetIdentifiers(aliasedExpression));
-
-				var column = CreateSqlModelColumn(aliasedExpression);
+				var sqlModelColumn =
+					new OracleSelectListColumn(this, null)
+					{
+						RootNode = aliasedExpression,
+						AliasNode = aliasedExpression.GetDescendantByPath(NonTerminals.ColumnAsAlias, Terminals.ColumnAlias)
+					};
 
 				var lastnode = aliasedExpression.ChildNodes[aliasedExpression.ChildNodes.Count - 1];
 				var aliasTerminalOffset = lastnode.Id == NonTerminals.ColumnAsAlias ? lastnode.TerminalCount : 0;
-				if (aliasedExpression.TerminalCount - aliasTerminalOffset == 1 && aliasedExpression.FirstTerminalNode.Id == Terminals.Identifier)
-				{
-					directReferenceColumns.Add(aliasedExpression.FirstTerminalNode, column);
-				}
+				sqlModelColumn.IsDirectReference = aliasedExpression.TerminalCount - aliasTerminalOffset == 1 && aliasedExpression.FirstTerminalNode.Id == Terminals.Identifier;
 
-				measureColumns.Add(column);
+				sqlModelColumn.ObjectReferences.AddRange(objectReferences);
+				ResolveSqlModelReferences(sqlModelColumn, GetIdentifiers(aliasedExpression).ToArray());
+				measureColumns.Add(sqlModelColumn);
 			}
 
 			return measureColumns;
-		}
-
-		private static OracleColumn CreateSqlModelColumn(StatementGrammarNode aliasedExpression)
-		{
-			var column = new OracleColumn {Nullable = true};
-
-			var expressionAliasNode = aliasedExpression.GetDescendantByPath(NonTerminals.ColumnAsAlias, Terminals.ColumnAlias);
-			if (expressionAliasNode == null)
-			{
-				var expressionNode = aliasedExpression.GetDescendantByPath(NonTerminals.Expression);
-				if (expressionNode.TerminalCount == 1 && expressionNode.FirstTerminalNode.Id == Terminals.Identifier)
-				{
-					column.Name = expressionNode.FirstTerminalNode.Token.Value.ToQuotedIdentifier();
-				}
-			}
-			else
-			{
-				column.Name = expressionAliasNode.Token.Value.ToQuotedIdentifier();
-			}
-
-			var dataType = OracleSelectListColumn.TryResolveDataTypeFromAliasedExpression(aliasedExpression);
-			column.DataType = dataType ?? OracleDataType.Empty;
-			return column;
 		}
 
 		private IEnumerable<StatementGrammarNode> GetIdentifiers(StatementGrammarNode nonTerminal)

@@ -151,9 +151,11 @@ namespace SqlPad.Oracle
 	}
 
 	[DebuggerDisplay("OracleSqlModelReference (Columns={Columns.Count})")]
-	public class OracleSqlModelReference : OracleSpecialTableReference
+	public class OracleSqlModelReference : OracleDataObjectReference
 	{
-		private readonly List<OracleReferenceContainer> _childContainers = new List<OracleReferenceContainer>(); 
+		private readonly IReadOnlyList<OracleSelectListColumn> _sqlModelColumns;
+		private ICollection<OracleColumn> _columns;
+		private readonly List<OracleReferenceContainer> _childContainers = new List<OracleReferenceContainer>();
 
 		public OracleReferenceContainer SourceReferenceContainer { get; private set; }
 
@@ -166,10 +168,19 @@ namespace SqlPad.Oracle
 			get { return _childContainers.AsReadOnly(); }
 		}
 
-		public OracleSqlModelReference(OracleStatementSemanticModel semanticModel, IEnumerable<OracleColumn> columns, IEnumerable<OracleDataObjectReference> sourceReferences)
-			: base(ReferenceType.SqlModel, columns)
+		public OracleSqlModelReference(OracleStatementSemanticModel semanticModel, IReadOnlyList<OracleSelectListColumn> columns, IEnumerable<OracleDataObjectReference> sourceReferences)
+			: base(ReferenceType.SqlModel)
 		{
+			_sqlModelColumns = columns;
+			
 			SourceReferenceContainer = new OracleReferenceContainer(semanticModel);
+			foreach (var column in columns)
+			{
+				SourceReferenceContainer.ColumnReferences.AddRange(column.ColumnReferences);
+				SourceReferenceContainer.ProgramReferences.AddRange(column.ProgramReferences);
+				SourceReferenceContainer.TypeReferences.AddRange(column.TypeReferences);
+			}
+			
 			SourceReferenceContainer.ObjectReferences.AddRange(sourceReferences);
 
 			DimensionReferenceContainer = new OracleReferenceContainer(semanticModel);
@@ -178,6 +189,11 @@ namespace SqlPad.Oracle
 			_childContainers.Add(SourceReferenceContainer);
 			_childContainers.Add(DimensionReferenceContainer);
 			_childContainers.Add(MeasuresReferenceContainer);
+		}
+
+		public override ICollection<OracleColumn> Columns
+		{
+			get { return _columns ?? (_columns = _sqlModelColumns.Select(c => c.ColumnDescription).ToArray()); }
 		}
 	}
 
