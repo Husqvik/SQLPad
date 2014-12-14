@@ -77,7 +77,7 @@ namespace SqlPad.Oracle
 				var containers = (IEnumerable<OracleReferenceContainer>)Columns;
 				if (ModelReference != null)
 				{
-					containers = containers.Concat(Enumerable.Repeat(ModelReference.ModelSourceReferenceContainer, 1));
+					containers = containers.Concat(ModelReference.ChildContainers);
 				}
 
 				return containers;

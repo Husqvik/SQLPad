@@ -93,7 +93,7 @@ Wrap current query block as inline view
 
 Wrap current query block as common table expression
 
-Unquote command - makes all query block columns case insensitive
+Unquote - makes all query block columns case insensitive
 
 Unnest inline view
 

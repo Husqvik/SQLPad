@@ -1185,11 +1185,12 @@ FROM (SELECT 1 C1, 2 C2, 3 C3 FROM DUAL)
 MODEL
 	PARTITION BY (C1, C4)
 	DIMENSION BY (C2, C5)
-	MEASURES (C3 MEASURE1, DBMS_RANDOM.VALUE() MEASURE2, C6, XMLTYPE() MEASURE4)
+	MEASURES (C3 MEASURE1, DBMS_RANDOM.VALUE() MEASURE2, C6, XMLTYPE('<root/>') MEASURE4)
 	RULES (
 		MEASURE1[ANY, ANY] = C6[CV(C2), CV(C4)],
 		MEASURE2[ANY, ANY] = MEASURE5[DBMS_RANDOM.VALUE(), DBMS_RANDOM.VALUE],
-		MEASURE3[ANY, ANY] = AVG(MEASURE1)[C2 BETWEEN 0 AND 1, C4 BETWEEN 0 AND 1]
+		MEASURE3[C1 > C5, ANY] = AVG(NVL(MEASURE1, 0))[C2 BETWEEN 0 AND 1, C4 BETWEEN 0 AND 1],
+		MEASURE4[NVL(C1, 0), NULL] = XMLTYPE('<root/>')
     )";
 
 			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
@@ -1205,10 +1206,20 @@ MODEL
 			objectReferences[0].Columns.Count.ShouldBe(4);
 
 			outerQueryBlock.ModelReference.ShouldNotBe(null);
-			var sqlModelContainer = outerQueryBlock.ModelReference.ModelSourceReferenceContainer;
-			sqlModelContainer.ColumnReferences.Count.ShouldBe(6);
-			sqlModelContainer.ProgramReferences.Count.ShouldBe(1);
-			sqlModelContainer.TypeReferences.Count.ShouldBe(1);
+			var sourceReferenceContainer = outerQueryBlock.ModelReference.SourceReferenceContainer;
+			sourceReferenceContainer.ColumnReferences.Count.ShouldBe(6);
+			sourceReferenceContainer.ProgramReferences.Count.ShouldBe(1);
+			sourceReferenceContainer.TypeReferences.Count.ShouldBe(1);
+
+			var dimensionReferenceContainer = outerQueryBlock.ModelReference.DimensionReferenceContainer;
+			dimensionReferenceContainer.ColumnReferences.Count.ShouldBe(7);
+			dimensionReferenceContainer.ProgramReferences.Count.ShouldBe(5);
+			dimensionReferenceContainer.TypeReferences.Count.ShouldBe(0);
+
+			var measuresReferenceContainer = outerQueryBlock.ModelReference.MeasuresReferenceContainer;
+			measuresReferenceContainer.ColumnReferences.Count.ShouldBe(7);
+			measuresReferenceContainer.ProgramReferences.Count.ShouldBe(2);
+			measuresReferenceContainer.TypeReferences.Count.ShouldBe(1);
 		}
 	}
 }

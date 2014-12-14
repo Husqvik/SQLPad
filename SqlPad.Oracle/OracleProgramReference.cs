@@ -153,13 +153,31 @@ namespace SqlPad.Oracle
 	[DebuggerDisplay("OracleSqlModelReference (Columns={Columns.Count})")]
 	public class OracleSqlModelReference : OracleSpecialTableReference
 	{
-		public OracleReferenceContainer ModelSourceReferenceContainer { get; private set; }
+		private readonly List<OracleReferenceContainer> _childContainers = new List<OracleReferenceContainer>(); 
+
+		public OracleReferenceContainer SourceReferenceContainer { get; private set; }
+
+		public OracleReferenceContainer DimensionReferenceContainer { get; private set; }
+		
+		public OracleReferenceContainer MeasuresReferenceContainer { get; private set; }
+
+		public IReadOnlyCollection<OracleReferenceContainer> ChildContainers
+		{
+			get { return _childContainers.AsReadOnly(); }
+		}
 
 		public OracleSqlModelReference(OracleStatementSemanticModel semanticModel, IEnumerable<OracleColumn> columns, IEnumerable<OracleDataObjectReference> sourceReferences)
 			: base(ReferenceType.SqlModel, columns)
 		{
-			ModelSourceReferenceContainer = new OracleReferenceContainer(semanticModel);
-			ModelSourceReferenceContainer.ObjectReferences.AddRange(sourceReferences);
+			SourceReferenceContainer = new OracleReferenceContainer(semanticModel);
+			SourceReferenceContainer.ObjectReferences.AddRange(sourceReferences);
+
+			DimensionReferenceContainer = new OracleReferenceContainer(semanticModel);
+			MeasuresReferenceContainer = new OracleReferenceContainer(semanticModel);
+
+			_childContainers.Add(SourceReferenceContainer);
+			_childContainers.Add(DimensionReferenceContainer);
+			_childContainers.Add(MeasuresReferenceContainer);
 		}
 	}
 

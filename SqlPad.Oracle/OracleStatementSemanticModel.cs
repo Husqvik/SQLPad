@@ -463,47 +463,51 @@ namespace SqlPad.Oracle
 
 				var identifiers = new List<StatementGrammarNode>();
 				var partitionExpressions = modelColumnClauses.GetDescendantByPath(NonTerminals.ModelColumnClausesPartitionByExpressionList, NonTerminals.ParenthesisEnclosedAliasedExpressionList);
+				//var partitionColumns = new List<OracleColumn>();
 				if (partitionExpressions != null)
 				{
-					identifiers.AddRange(GetIdentifiers(partitionExpressions));
+					/*partitionColumns = */GatherSqlModelColumns(partitionExpressions, identifiers);
 				}
 
 				var dimensionExpressionList = modelColumnClauses.ChildNodes[modelColumnClauses.ChildNodes.Count - 3];
-				identifiers.AddRange(GetIdentifiers(dimensionExpressionList));
+				var dimensionColumns = GatherSqlModelColumns(dimensionExpressionList, identifiers);
+				var dimensionColumnObjectReference = new OracleSpecialTableReference(ReferenceType.SqlModel, dimensionColumns);
 				
-				var measureColumns = new List<OracleColumn>();
 				var parenthesisEnclosedAliasedExpressionList = modelColumnClauses.ChildNodes[modelColumnClauses.ChildNodes.Count - 1];
-				foreach (var aliasedExpression in parenthesisEnclosedAliasedExpressionList.GetDescendants(NonTerminals.AliasedExpression))
-				{
-					var column = new OracleColumn { Nullable = true };
-
-					var expressionAliasNode = aliasedExpression.GetDescendantByPath(NonTerminals.ColumnAsAlias, Terminals.ColumnAlias);
-					if (expressionAliasNode == null)
-					{
-						var expressionNode = aliasedExpression.GetDescendantByPath(NonTerminals.Expression);
-						if (expressionNode.TerminalCount == 1 && expressionNode.FirstTerminalNode.Id == Terminals.Identifier)
-						{
-							column.Name = expressionNode.FirstTerminalNode.Token.Value.ToQuotedIdentifier();
-						}
-					}
-					else
-					{
-						column.Name = expressionAliasNode.Token.Value.ToQuotedIdentifier();
-					}
-
-					var dataType = OracleSelectListColumn.TryResolveDataTypeFromAliasedExpression(aliasedExpression, false);
-					column.DataType = dataType ?? OracleDataType.Empty;
-
-					measureColumns.Add(column);
-
-					identifiers.AddRange(GetIdentifiers(aliasedExpression));
-				}
+				var measureColumns = GatherSqlModelColumns(parenthesisEnclosedAliasedExpressionList, identifiers);
 
 				queryBlock.ModelReference = new OracleSqlModelReference(this, measureColumns, queryBlock.ObjectReferences);
 
-				ResolveColumnAndFunctionReferenceFromIdentifiers(null, queryBlock.ModelReference.ModelSourceReferenceContainer, identifiers, QueryBlockPlacement.Model, null);
-				ResolveColumnObjectReferences(queryBlock.ModelReference.ModelSourceReferenceContainer.ColumnReferences, queryBlock.ModelReference.ModelSourceReferenceContainer.ObjectReferences, new OracleDataObjectReference[0]);
-				ResolveFunctionReferences(queryBlock.ModelReference.ModelSourceReferenceContainer.ProgramReferences);
+				ResolveSqlModelReferences(queryBlock.ModelReference.SourceReferenceContainer, identifiers);
+
+				var ruleDimensionIdentifiers = new List<StatementGrammarNode>();
+				var ruleMeasureIdentifiers = new List<StatementGrammarNode>();
+				var modelRulesClauseAssignmentList = modelColumnClauses.ParentNode.GetDescendantByPath(NonTerminals.ModelRulesClause, NonTerminals.ModelRulesClauseAssignmentList);
+				foreach (var modelRulesClauseAssignment in modelRulesClauseAssignmentList.GetDescendants(NonTerminals.ModelRulesClauseAssignment))
+				{
+					var cellAssignment = modelRulesClauseAssignment.GetDescendantByPath(NonTerminals.CellAssignment);
+					ruleDimensionIdentifiers.AddRange(GetIdentifiers(cellAssignment.GetDescendantByPath(NonTerminals.MultiColumnForLoopOrConditionOrExpressionOrSingleColumnForLoopList)));
+					ruleMeasureIdentifiers.Add(cellAssignment.FirstTerminalNode);
+
+					var assignmentExpression = modelRulesClauseAssignment.GetDescendantByPath(NonTerminals.Expression);
+					foreach (var identifier in GetIdentifiers(assignmentExpression))
+					{
+						if (identifier.GetPathFilterAncestor(n => n.Id != NonTerminals.ModelRulesClauseAssignment, NonTerminals.ConditionOrExpressionList) == null)
+						{
+							ruleMeasureIdentifiers.Add(identifier);
+						}
+						else
+						{
+							ruleDimensionIdentifiers.Add(identifier);
+						}
+					}
+				}
+
+				queryBlock.ModelReference.DimensionReferenceContainer.ObjectReferences.Add(dimensionColumnObjectReference);
+				ResolveSqlModelReferences(queryBlock.ModelReference.DimensionReferenceContainer, ruleDimensionIdentifiers);
+
+				queryBlock.ModelReference.MeasuresReferenceContainer.ObjectReferences.Add(queryBlock.ModelReference);
+				ResolveSqlModelReferences(queryBlock.ModelReference.MeasuresReferenceContainer, ruleMeasureIdentifiers);
 
 				queryBlock.ObjectReferences.Clear();
 				queryBlock.ObjectReferences.Add(queryBlock.ModelReference);
@@ -525,6 +529,53 @@ namespace SqlPad.Oracle
 					_asteriskTableReferences.Remove(column);
 				}
 			}
+		}
+
+		private void ResolveSqlModelReferences(OracleReferenceContainer referenceContainer, ICollection<StatementGrammarNode> identifiers)
+		{
+			ResolveColumnAndFunctionReferenceFromIdentifiers(null, referenceContainer, identifiers.Where(t => t.Id.In(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level)), QueryBlockPlacement.Model, null);
+			var grammarSpecificFunctions = identifiers.Where(t => t.Id.In(Terminals.Count, NonTerminals.AggregateFunction));
+			CreateGrammarSpecificFunctionReferences(grammarSpecificFunctions, null, referenceContainer.ProgramReferences, null);
+			
+			ResolveColumnObjectReferences(referenceContainer.ColumnReferences, referenceContainer.ObjectReferences, new OracleDataObjectReference[0]);
+			ResolveFunctionReferences(referenceContainer.ProgramReferences);
+		}
+
+		private List<OracleColumn> GatherSqlModelColumns(StatementGrammarNode parenthesisEnclosedAliasedExpressionList, List<StatementGrammarNode> identifiers)
+		{
+			var measureColumns = new List<OracleColumn>();
+
+			foreach (var aliasedExpression in parenthesisEnclosedAliasedExpressionList.GetDescendants(NonTerminals.AliasedExpression))
+			{
+				measureColumns.Add(CreateSqlModelColumn(aliasedExpression));
+
+				identifiers.AddRange(GetIdentifiers(aliasedExpression));
+			}
+
+			return measureColumns;
+		}
+
+		private static OracleColumn CreateSqlModelColumn(StatementGrammarNode aliasedExpression)
+		{
+			var column = new OracleColumn {Nullable = true};
+
+			var expressionAliasNode = aliasedExpression.GetDescendantByPath(NonTerminals.ColumnAsAlias, Terminals.ColumnAlias);
+			if (expressionAliasNode == null)
+			{
+				var expressionNode = aliasedExpression.GetDescendantByPath(NonTerminals.Expression);
+				if (expressionNode.TerminalCount == 1 && expressionNode.FirstTerminalNode.Id == Terminals.Identifier)
+				{
+					column.Name = expressionNode.FirstTerminalNode.Token.Value.ToQuotedIdentifier();
+				}
+			}
+			else
+			{
+				column.Name = expressionAliasNode.Token.Value.ToQuotedIdentifier();
+			}
+
+			var dataType = OracleSelectListColumn.TryResolveDataTypeFromAliasedExpression(aliasedExpression, false);
+			column.DataType = dataType ?? OracleDataType.Empty;
+			return column;
 		}
 
 		private IEnumerable<StatementGrammarNode> GetIdentifiers(StatementGrammarNode nonTerminal)
