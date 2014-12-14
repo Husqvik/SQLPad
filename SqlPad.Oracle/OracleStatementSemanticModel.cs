@@ -449,13 +449,13 @@ namespace SqlPad.Oracle
 		{
 			foreach (var queryBlock in _queryBlockNodes.Values)
 			{
-				queryBlock.ModelClause = queryBlock.RootNode.GetDescendantByPath(NonTerminals.ModelClause);
-				if (queryBlock.ModelClause == null)
+				var modelClause = queryBlock.RootNode.GetDescendantByPath(NonTerminals.ModelClause);
+				if (modelClause == null)
 				{
 					continue;
 				}
 
-				var modelColumnClauses = queryBlock.ModelClause.GetDescendantByPath(NonTerminals.MainModel, NonTerminals.ModelColumnClauses);
+				var modelColumnClauses = modelClause.GetDescendantByPath(NonTerminals.MainModel, NonTerminals.ModelColumnClauses);
 				if (modelColumnClauses == null || modelColumnClauses.ChildNodes.Count < 5)
 				{
 					continue;
@@ -473,11 +473,17 @@ namespace SqlPad.Oracle
 				var dimensionColumnObjectReference = new OracleSpecialTableReference(ReferenceType.SqlModel, dimensionColumns.Select(c => c.ColumnDescription));
 				sqlModelColumns.AddRange(dimensionColumns);
 				
-				var parenthesisEnclosedAliasedExpressionList = modelColumnClauses.ChildNodes[modelColumnClauses.ChildNodes.Count - 1];
-				var measureColumns = GatherSqlModelColumns(queryBlock.ObjectReferences, parenthesisEnclosedAliasedExpressionList);
+				var measureParenthesisEnclosedAliasedExpressionList = modelColumnClauses.ChildNodes[modelColumnClauses.ChildNodes.Count - 1];
+				var measureColumns = GatherSqlModelColumns(queryBlock.ObjectReferences, measureParenthesisEnclosedAliasedExpressionList);
 				sqlModelColumns.AddRange(measureColumns);
 
-				queryBlock.ModelReference = new OracleSqlModelReference(this, sqlModelColumns, queryBlock.ObjectReferences);
+				queryBlock.ModelReference =
+					new OracleSqlModelReference(this, sqlModelColumns, queryBlock.ObjectReferences)
+					{
+						Owner = queryBlock,
+						RootNode = modelClause,
+						MeasureExpressionList = measureParenthesisEnclosedAliasedExpressionList
+					};
 
 				var ruleDimensionIdentifiers = new List<StatementGrammarNode>();
 				var ruleMeasureIdentifiers = new List<StatementGrammarNode>();

@@ -152,8 +152,19 @@ namespace SqlPad.Oracle.Commands
 		internal static IEnumerable<OracleDataObjectReference> GetParentObjectReferences(OracleQueryBlock referredQueryBlock)
 		{
 			return referredQueryBlock.SemanticModel.QueryBlocks
-				.SelectMany(qb => qb.ObjectReferences)
-				.Where(o => o.QueryBlocks.Count == 1 && o.QueryBlocks.First() == referredQueryBlock);
+				.SelectMany(GetInlineViewObjectReferences)
+				.Where(o => o.QueryBlocks.First() == referredQueryBlock);
+		}
+
+		private static IEnumerable<OracleDataObjectReference> GetInlineViewObjectReferences(OracleQueryBlock queryBlock)
+		{
+			var objectReferences = queryBlock.ObjectReferences.AsEnumerable();
+			if (queryBlock.ModelReference != null)
+			{
+				objectReferences = objectReferences.Concat(queryBlock.ModelReference.SourceReferenceContainer.ObjectReferences);
+			}
+
+			return objectReferences.Where(o => o.QueryBlocks.Count == 1);
 		}
 
 		private void AddColumnAliasToQueryBlock(string columnName, string alias, OracleReference objectReference)

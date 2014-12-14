@@ -6,7 +6,7 @@ The primary reason for it was to find out why there are not any SQL editors with
 like programming IDEs with their intellisense and semantic analysis. To disprove it's not/hardly possible.
 
 Features
-========
+--------
 SQLPad is mainly inspired by ReSharper plugin to Visual Studio and LINQPad. Provides lightweight editor
 but aims at thorough semantic analysis and refactoring features. The main driving factor is to reduce
 dummy monkey work to minimum while focusing to results or analysis of a problem.
@@ -22,7 +22,7 @@ the parser, analyzer, validator and other vendor specific components. As of now 
 Since the implementation is still very experimental there are tons of missing features. Primary focus of implementation are queries, then DML. But there is some DDL supported at least by grammar.
 
 Commands
-========
+--------
 CTRL + Minus               - Go to previous edit
 
 CTRL + SHIFT + Minus       - Go to next edit
@@ -86,7 +86,7 @@ CTRL + SHIFT + U           - Set text to upper case
 CTRL + SHIFT + L           - Set text to lower case
 
 Context actions
-===============
+---------------
 @SELECT:
 
 Wrap current query block as inline view

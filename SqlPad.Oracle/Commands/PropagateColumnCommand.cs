@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using SqlPad.Commands;
+using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
 namespace SqlPad.Oracle.Commands
 {
@@ -69,9 +70,21 @@ namespace SqlPad.Oracle.Commands
 
 		private void AddColumnToQueryBlock(OracleQueryBlock queryBlock, string columnName)
 		{
-			foreach (var parentDataObjectReference in AliasCommandHelper.GetParentObjectReferences(queryBlock).Where(r => r.QueryBlocks.Count == 1))
+			foreach (var parentDataObjectReference in AliasCommandHelper.GetParentObjectReferences(queryBlock))
 			{
 				var parentQueryBlock = parentDataObjectReference.Owner;
+				if (parentQueryBlock.ModelReference != null && parentQueryBlock.ModelReference.MeasureExpressionList != null && parentQueryBlock.ModelReference.MeasureExpressionList.LastTerminalNode != null)
+				{
+					ExecutionContext.SegmentsToReplace.Add(
+						new TextSegment
+						{
+							IndextStart = parentQueryBlock.ModelReference.MeasureExpressionList.LastTerminalNode.Id == Terminals.RightParenthesis
+								? parentQueryBlock.ModelReference.MeasureExpressionList.LastTerminalNode.SourcePosition.IndexStart
+								: parentQueryBlock.ModelReference.MeasureExpressionList.LastTerminalNode.SourcePosition.IndexEnd + 1,
+							Text = ", " + columnName
+						});
+				}
+
 				var isNotReferencedByAsterisk = parentQueryBlock.Columns.Count(c => c.IsAsterisk) == 0;
 				if (isNotReferencedByAsterisk)
 				{

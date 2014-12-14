@@ -195,6 +195,8 @@ namespace SqlPad.Oracle
 		{
 			get { return _columns ?? (_columns = _sqlModelColumns.Select(c => c.ColumnDescription).ToArray()); }
 		}
+
+		public StatementGrammarNode MeasureExpressionList { get; set; }
 	}
 
 	public abstract class OracleProgramReferenceBase : OracleReference

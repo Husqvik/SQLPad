@@ -1490,5 +1490,38 @@ SELECT * FROM DUAL";
 
 			_editor.Text.ShouldBe(expectedResult);
 		}
+
+		[Test(Description = @""), STAThread]
+		public void TestPropagateCommandWithQueryBlockWithModelClause()
+		{
+			const string statementText =
+@"SELECT
+	C1, M1
+FROM (SELECT 1 C1, 2 C2 FROM DUAL)
+MODEL
+	DIMENSION BY (C1)
+	MEASURES (0 M1)
+	RULES (
+		M1[ANY] = DBMS_RANDOM.VALUE
+	)";
+			_editor.Text = statementText;
+			_editor.CaretOffset = 36;
+
+			CanExecuteCommand(OracleCommands.PropagateColumn).ShouldBe(true);
+			ExecuteCommand(OracleCommands.PropagateColumn);
+
+			const string expectedResult =
+@"SELECT
+	C1, M1, C2
+FROM (SELECT 1 C1, 2 C2 FROM DUAL)
+MODEL
+	DIMENSION BY (C1)
+	MEASURES (0 M1, C2)
+	RULES (
+		M1[ANY] = DBMS_RANDOM.VALUE
+	)";
+
+			_editor.Text.ShouldBe(expectedResult);
+		}
 	}
 }
