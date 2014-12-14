@@ -1600,6 +1600,12 @@
     
     <Rule StartingNonTerminal="ConditionOrExpressionOrSingleColumnForLoopList">
       <Sequences>
+        <Sequence Comment="'Dimension identifier IS ANY' is not mentioned in the documentation. It can be also enclosed in parentheses. ">
+          <NonTerminal Id="TargetDimension" />
+          <Terminal Id="Is" />
+          <Terminal Id="Any" />
+          <NonTerminal Id="CommaChainedConditionOrExpressionOrSingleColumnForLoopList" IsOptional="true" />
+        </Sequence>
         <Sequence>
           <NonTerminal Id="Condition" />
           <NonTerminal Id="CommaChainedConditionOrExpressionOrSingleColumnForLoopList" IsOptional="true" />
@@ -1612,9 +1618,22 @@
           <NonTerminal Id="SingleColumnForLoop" />
           <NonTerminal Id="CommaChainedConditionOrExpressionOrSingleColumnForLoopList" IsOptional="true" />
         </Sequence>
-        <Sequence Comment="ANY is not mentioned in the documentation">
+        <Sequence Comment="ANY is not mentioned in the documentation. ">
           <Terminal Id="Any" />
           <NonTerminal Id="CommaChainedConditionOrExpressionOrSingleColumnForLoopList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="TargetDimension">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Identifier" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="TargetDimension" />
+          <Terminal Id="RightParenthesis" />
         </Sequence>
       </Sequences>
     </Rule>

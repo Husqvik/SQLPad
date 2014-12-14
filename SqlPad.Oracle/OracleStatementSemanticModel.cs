@@ -463,20 +463,22 @@ namespace SqlPad.Oracle
 
 				var identifiers = new List<StatementGrammarNode>();
 				var partitionExpressions = modelColumnClauses.GetDescendantByPath(NonTerminals.ModelColumnClausesPartitionByExpressionList, NonTerminals.ParenthesisEnclosedAliasedExpressionList);
-				//var partitionColumns = new List<OracleColumn>();
+				var sqlModelColumns = new List<OracleColumn>();
 				if (partitionExpressions != null)
 				{
-					/*partitionColumns = */GatherSqlModelColumns(partitionExpressions, identifiers);
+					sqlModelColumns.AddRange(GatherSqlModelColumns(partitionExpressions, identifiers));
 				}
 
 				var dimensionExpressionList = modelColumnClauses.ChildNodes[modelColumnClauses.ChildNodes.Count - 3];
 				var dimensionColumns = GatherSqlModelColumns(dimensionExpressionList, identifiers);
 				var dimensionColumnObjectReference = new OracleSpecialTableReference(ReferenceType.SqlModel, dimensionColumns);
+				sqlModelColumns.AddRange(dimensionColumns);
 				
 				var parenthesisEnclosedAliasedExpressionList = modelColumnClauses.ChildNodes[modelColumnClauses.ChildNodes.Count - 1];
 				var measureColumns = GatherSqlModelColumns(parenthesisEnclosedAliasedExpressionList, identifiers);
+				sqlModelColumns.AddRange(measureColumns);
 
-				queryBlock.ModelReference = new OracleSqlModelReference(this, measureColumns, queryBlock.ObjectReferences);
+				queryBlock.ModelReference = new OracleSqlModelReference(this, sqlModelColumns, queryBlock.ObjectReferences);
 
 				ResolveSqlModelReferences(queryBlock.ModelReference.SourceReferenceContainer, identifiers);
 

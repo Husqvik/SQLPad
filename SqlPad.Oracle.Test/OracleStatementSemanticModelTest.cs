@@ -1192,19 +1192,22 @@ MODEL
 			var objectReferences = queryBlock.ObjectReferences.ToArray();
 			objectReferences.Length.ShouldBe(1);
 			objectReferences[0].ShouldBeTypeOf<OracleSqlModelReference>();
-			objectReferences[0].Columns.Count.ShouldBe(3);
+			objectReferences[0].Columns.Count.ShouldBe(4);
 			
-			queryBlock.Columns.Count.ShouldBe(4);
+			queryBlock.Columns.Count.ShouldBe(5);
 			queryBlock.Columns[0].IsAsterisk.ShouldBe(true);
-			queryBlock.Columns[1].NormalizedName.ShouldBe("\"C1\"");
+			queryBlock.Columns[1].NormalizedName.ShouldBe("\"KEY\"");
 			queryBlock.Columns[1].ColumnDescription.DataType.ShouldNotBe(null);
-			queryBlock.Columns[1].ColumnDescription.FullTypeName.ShouldBe("VARCHAR2");
-			queryBlock.Columns[1].IsDirectReference.ShouldBe(true);
-			queryBlock.Columns[2].NormalizedName.ShouldBe("\"C2\"");
+			queryBlock.Columns[1].ColumnDescription.FullTypeName.ShouldBe("NUMBER");
+			queryBlock.Columns[2].NormalizedName.ShouldBe("\"C1\"");
 			queryBlock.Columns[2].ColumnDescription.DataType.ShouldNotBe(null);
+			queryBlock.Columns[2].ColumnDescription.FullTypeName.ShouldBe("VARCHAR2");
 			queryBlock.Columns[2].IsDirectReference.ShouldBe(true);
-			queryBlock.Columns[3].NormalizedName.ShouldBe("\"C3\"");
+			queryBlock.Columns[3].NormalizedName.ShouldBe("\"C2\"");
+			queryBlock.Columns[3].ColumnDescription.DataType.ShouldNotBe(null);
 			queryBlock.Columns[3].IsDirectReference.ShouldBe(true);
+			queryBlock.Columns[4].NormalizedName.ShouldBe("\"C3\"");
+			queryBlock.Columns[4].IsDirectReference.ShouldBe(true);
 		}
 
 		[Test(Description = @"")]
@@ -1230,12 +1233,12 @@ MODEL
 
 			semanticModel.QueryBlocks.Count.ShouldBe(2);
 			var outerQueryBlock = semanticModel.QueryBlocks.OrderBy(qb => qb.RootNode.Level).First();
-			outerQueryBlock.Columns.Count.ShouldBe(5);
+			outerQueryBlock.Columns.Count.ShouldBe(9);
 
 			var objectReferences = outerQueryBlock.ObjectReferences.ToArray();
 			objectReferences.Length.ShouldBe(1);
 			objectReferences[0].ShouldBeTypeOf<OracleSqlModelReference>();
-			objectReferences[0].Columns.Count.ShouldBe(4);
+			objectReferences[0].Columns.Count.ShouldBe(8);
 
 			outerQueryBlock.ModelReference.ShouldNotBe(null);
 			var sourceReferenceContainer = outerQueryBlock.ModelReference.SourceReferenceContainer;
@@ -1252,6 +1255,36 @@ MODEL
 			measuresReferenceContainer.ColumnReferences.Count.ShouldBe(7);
 			measuresReferenceContainer.ProgramReferences.Count.ShouldBe(2);
 			measuresReferenceContainer.TypeReferences.Count.ShouldBe(1);
+		}
+
+		[Test(Description = @"")]
+		public void TestSqlModelOutputColumns()
+		{
+			const string query1 =
+@"SELECT
+	*
+FROM (SELECT 1 C1, 2 C2, 3 C3 FROM DUAL)
+MODEL
+	PARTITION BY (C1 P1, 0 P2)
+	DIMENSION BY (C2 D1, 0 D2)
+	MEASURES (C3 M1)
+	RULES (
+		M1[D1 IS ANY, (D2) IS ANY] = DBMS_RANDOM.VALUE
+    )";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.QueryBlocks.Count.ShouldBe(2);
+			var outerQueryBlock = semanticModel.QueryBlocks.OrderBy(qb => qb.RootNode.Level).First();
+			outerQueryBlock.Columns.Count.ShouldBe(6);
+			outerQueryBlock.Columns[0].IsAsterisk.ShouldBe(true);
+			outerQueryBlock.Columns[1].NormalizedName.ShouldBe("\"P1\"");
+			outerQueryBlock.Columns[2].NormalizedName.ShouldBe("\"P2\"");
+			outerQueryBlock.Columns[3].NormalizedName.ShouldBe("\"D1\"");
+			outerQueryBlock.Columns[4].NormalizedName.ShouldBe("\"D2\"");
+			outerQueryBlock.Columns[5].NormalizedName.ShouldBe("\"M1\"");
 		}
 	}
 }
