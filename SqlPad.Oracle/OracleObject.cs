@@ -100,7 +100,7 @@ namespace SqlPad.Oracle
 	{
 		public const string NormalizedColumnNameCurrentValue = "\"CURRVAL\"";
 		public const string NormalizedColumnNameNextValue = "\"NEXTVAL\"";
-		private readonly Dictionary<string, OracleColumn> _columns = new Dictionary<string, OracleColumn>();
+		private readonly IReadOnlyList<OracleColumn> _columns;
 
 		public OracleSequence()
 		{
@@ -116,11 +116,15 @@ namespace SqlPad.Oracle
 						}
 				};
 
-			_columns.Add(NormalizedColumnNameNextValue, nextValueColumn);
-			_columns.Add(NormalizedColumnNameCurrentValue, nextValueColumn.Clone(NormalizedColumnNameCurrentValue));
+			_columns =
+				new List<OracleColumn>
+				{
+					nextValueColumn,
+					nextValueColumn.Clone(NormalizedColumnNameCurrentValue)
+				}.AsReadOnly();
 		}
 
-		public ICollection<OracleColumn> Columns { get { return _columns.Values; } }
+		public IReadOnlyList<OracleColumn> Columns { get { return _columns; } }
 
 		public decimal CurrentValue { get; set; }
 

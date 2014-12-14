@@ -9,7 +9,7 @@ namespace SqlPad.Oracle
 	{
 		private readonly List<OracleQueryBlock> _queryBlocks = new List<OracleQueryBlock>();
 
-		public abstract ICollection<OracleColumn> Columns { get; }
+		public abstract IReadOnlyList<OracleColumn> Columns { get; }
 
 		public virtual ICollection<OracleQueryBlock> QueryBlocks { get { return _queryBlocks; } }
 
@@ -19,7 +19,7 @@ namespace SqlPad.Oracle
 	[DebuggerDisplay("OracleDataObjectReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; Table={Type != SqlPad.Oracle.ReferenceType.InlineView ? ObjectNode.Token.Value : \"<Nested subquery>\"}; Alias={AliasNode == null ? null : AliasNode.Token.Value}; Type={Type})")]
 	public class OracleDataObjectReference : OracleObjectWithColumnsReference
 	{
-		private List<OracleColumn> _columns;
+		private IReadOnlyList<OracleColumn> _columns;
 		private readonly ReferenceType _referenceType;
 		private readonly List<OracleQueryBlock> _queryBlocks = new List<OracleQueryBlock>();
 
@@ -40,31 +40,32 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		public override ICollection<OracleColumn> Columns
+		public override IReadOnlyList<OracleColumn> Columns
 		{
 			get
 			{
+				if (_columns != null)
+					return _columns;
+
+				var columns = new List<OracleColumn>();
 				if (Type == ReferenceType.SchemaObject)
 				{
 					var dataObject = SchemaObject.GetTargetSchemaObject() as OracleDataObject;
 					if (dataObject != null)
 					{
-						return dataObject.Columns.Values;
+						columns.AddRange(dataObject.Columns.Values);
 					}
 				}
+				else
+				{
+					var queryColumns = QueryBlocks.SelectMany(qb => qb.Columns)
+						.Where(c => !c.IsAsterisk)
+						.Select(c => c.ColumnDescription);
 
-				if (_columns != null)
-					return _columns;
+					columns.AddRange(queryColumns);
+				}
 
-				_columns = new List<OracleColumn>();
-
-				var queryColumns = QueryBlocks.SelectMany(qb => qb.Columns)
-					.Where(c => !c.IsAsterisk)
-					.Select(c => c.ColumnDescription);
-
-				_columns.AddRange(queryColumns);
-
-				return _columns;
+				return _columns = columns.AsReadOnly();
 			}
 		}
 		

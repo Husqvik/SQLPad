@@ -34,7 +34,7 @@ namespace SqlPad.Oracle
 	{
 		public override string Name { get { return ObjectNode.Token.Value; } }
 
-		public override ICollection<OracleColumn> Columns
+		public override IReadOnlyList<OracleColumn> Columns
 		{
 			get { return ((OracleSequence)SchemaObject).Columns; }
 		}
@@ -48,7 +48,7 @@ namespace SqlPad.Oracle
 	[DebuggerDisplay("OracleTableCollectionReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; ObjectIdentifier={ObjectNode.Token.Value})")]
 	public class OracleTableCollectionReference : OracleDataObjectReference
 	{
-		private List<OracleColumn> _columns;
+		private IReadOnlyList<OracleColumn> _columns;
 		
 		public OracleProgramReference PipelinedFunctionReference { get; private set; }
 
@@ -66,20 +66,20 @@ namespace SqlPad.Oracle
 			get { return OracleObjectIdentifier.Create(null, Name); }
 		}
 
-		public override ICollection<OracleColumn> Columns
+		public override IReadOnlyList<OracleColumn> Columns
 		{
 			get { return _columns ?? BuildColumns(); }
 		}
 
-		private ICollection<OracleColumn> BuildColumns()
+		private IReadOnlyList<OracleColumn> BuildColumns()
 		{
-			_columns = new List<OracleColumn>();
+			var columns = new List<OracleColumn>();
 
 			var schemaObject = SchemaObject.GetTargetSchemaObject();
 			var collectionType = schemaObject as OracleTypeCollection;
 			if (collectionType != null)
 			{
-				_columns.Add(BuildColumnValueColumn(collectionType.ElementDataType));
+				columns.Add(BuildColumnValueColumn(collectionType.ElementDataType));
 			}
 			else if (ProgramMetadata != null && ProgramMetadata.Parameters.Count > 1 &&
 			         (ProgramMetadata.Parameters[0].DataType == "TABLE" || ProgramMetadata.Parameters[0].DataType == "VARRAY"))
@@ -91,7 +91,7 @@ namespace SqlPad.Oracle
 					{
 						if (Owner.SemanticModel.DatabaseModel.AllObjects.TryGetValue(returnParameter.CustomDataType, out schemaObject))
 						{
-							var columns = ((OracleTypeObject)schemaObject).Attributes
+							var attributeColumns = ((OracleTypeObject)schemaObject).Attributes
 								.Select(a =>
 									new OracleColumn
 									{
@@ -100,17 +100,17 @@ namespace SqlPad.Oracle
 										Name = a.Name
 									});
 
-							_columns.AddRange(columns);
+							columns.AddRange(attributeColumns);
 						}
 					}
 					else if (Owner.SemanticModel.DatabaseModel.AllObjects.TryGetValue(ProgramMetadata.Parameters[0].CustomDataType, out schemaObject))
 					{
-						_columns.Add(BuildColumnValueColumn(((OracleTypeCollection)schemaObject).ElementDataType));
+						columns.Add(BuildColumnValueColumn(((OracleTypeCollection)schemaObject).ElementDataType));
 					}
 				}
 			}
 
-			return _columns.AsReadOnly();
+			return _columns = columns.AsReadOnly();
 		}
 
 		private static OracleColumn BuildColumnValueColumn(OracleDataType columnType)
@@ -129,7 +129,7 @@ namespace SqlPad.Oracle
 	[DebuggerDisplay("OracleSpecialTableReference (Alias={Name})")]
 	public class OracleSpecialTableReference : OracleDataObjectReference
 	{
-		private readonly ICollection<OracleColumn> _columns;
+		private readonly IReadOnlyList<OracleColumn> _columns;
 
 		public OracleSpecialTableReference(ReferenceType referenceType, IEnumerable<OracleColumn> columns)
 			: base(referenceType)
@@ -144,7 +144,7 @@ namespace SqlPad.Oracle
 			get { return OracleObjectIdentifier.Create(null, Name); }
 		}
 
-		public override ICollection<OracleColumn> Columns
+		public override IReadOnlyList<OracleColumn> Columns
 		{
 			get { return _columns; }
 		}
@@ -154,7 +154,7 @@ namespace SqlPad.Oracle
 	public class OracleSqlModelReference : OracleDataObjectReference
 	{
 		private readonly IReadOnlyList<OracleSelectListColumn> _sqlModelColumns;
-		private ICollection<OracleColumn> _columns;
+		private IReadOnlyList<OracleColumn> _columns;
 		private readonly List<OracleReferenceContainer> _childContainers = new List<OracleReferenceContainer>();
 
 		public OracleReferenceContainer SourceReferenceContainer { get; private set; }
@@ -191,7 +191,7 @@ namespace SqlPad.Oracle
 			_childContainers.Add(MeasuresReferenceContainer);
 		}
 
-		public override ICollection<OracleColumn> Columns
+		public override IReadOnlyList<OracleColumn> Columns
 		{
 			get { return _columns ?? (_columns = _sqlModelColumns.Select(c => c.ColumnDescription).ToArray()); }
 		}
