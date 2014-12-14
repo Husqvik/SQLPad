@@ -1829,6 +1829,22 @@ se";
 				InitializeCodeCompletionType(statement, 7);
 			}
 
+			[Test(Description = @"")]
+			public void TestCodeCompletionTypeWhenWritingInsertIntoTarget()
+			{
+				const string statement = @"INSERT INTO S";
+				var completionType = InitializeCodeCompletionType(statement, 13);
+				completionType.SchemaDataObject.ShouldBe(true);
+			}
+
+			[Test(Description = @"")]
+			public void TestCodeCompletionTypeWhenInvokedAfterInsertInto()
+			{
+				const string statement = @"INSERT INTO ";
+				var completionType = InitializeCodeCompletionType(statement, 12);
+				completionType.SchemaDataObject.ShouldBe(true);
+			}
+
 			public class ReferenceIdentifierTest
 			{
 				public class SelectList
