@@ -939,7 +939,18 @@ MODEL
 	MEASURES (C2 MEASURE1)
 	RULES (
 		MEASURE1[ANY] = DBMS_RANDOM.VALUE(), DBMS_RANDOM
-    );";
+    )";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.QueryBlocks.Count.ShouldBe(2);
+		}
+
+		[Test(Description = @"")]
+		public void TestModelBuildWithUnfinishedSqlModelMeasure()
+		{
+			const string query1 = @"SELECT * FROM (SELECT * FROM DUAL) MODEL DIMENSION BY (0 C1) MEASURES (0 C2, , 0 C3) RULES (C2[ANY] = 0)";
 
 			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
 			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
@@ -1248,11 +1259,23 @@ MODEL
 
 			var dimensionReferenceContainer = outerQueryBlock.ModelReference.DimensionReferenceContainer;
 			dimensionReferenceContainer.ColumnReferences.Count.ShouldBe(7);
+			dimensionReferenceContainer.ColumnReferences[0].ColumnNode.Token.Value.ShouldBe("C2");
+			dimensionReferenceContainer.ColumnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
+			dimensionReferenceContainer.ColumnReferences[1].ColumnNode.Token.Value.ShouldBe("C4");
+			dimensionReferenceContainer.ColumnReferences[1].ColumnNodeColumnReferences.Count.ShouldBe(0);
+			
 			dimensionReferenceContainer.ProgramReferences.Count.ShouldBe(5);
 			dimensionReferenceContainer.TypeReferences.Count.ShouldBe(0);
 
 			var measuresReferenceContainer = outerQueryBlock.ModelReference.MeasuresReferenceContainer;
 			measuresReferenceContainer.ColumnReferences.Count.ShouldBe(7);
+			measuresReferenceContainer.ColumnReferences[0].ColumnNode.Token.Value.ShouldBe("MEASURE1");
+			measuresReferenceContainer.ColumnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
+			measuresReferenceContainer.ColumnReferences[1].ColumnNode.Token.Value.ShouldBe("C6");
+			measuresReferenceContainer.ColumnReferences[1].ColumnNodeColumnReferences.Count.ShouldBe(1);
+			measuresReferenceContainer.ColumnReferences[4].ColumnNode.Token.Value.ShouldBe("MEASURE3");
+			measuresReferenceContainer.ColumnReferences[4].ColumnNodeColumnReferences.Count.ShouldBe(0);
+
 			measuresReferenceContainer.ProgramReferences.Count.ShouldBe(2);
 			measuresReferenceContainer.TypeReferences.Count.ShouldBe(1);
 		}

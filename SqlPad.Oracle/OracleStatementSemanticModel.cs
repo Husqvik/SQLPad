@@ -482,6 +482,11 @@ namespace SqlPad.Oracle
 				var ruleDimensionIdentifiers = new List<StatementGrammarNode>();
 				var ruleMeasureIdentifiers = new List<StatementGrammarNode>();
 				var modelRulesClauseAssignmentList = modelColumnClauses.ParentNode.GetDescendantByPath(NonTerminals.ModelRulesClause, NonTerminals.ModelRulesClauseAssignmentList);
+				if (modelRulesClauseAssignmentList == null)
+				{
+					continue;
+				}
+
 				foreach (var modelRulesClauseAssignment in modelRulesClauseAssignmentList.GetDescendants(NonTerminals.ModelRulesClauseAssignment))
 				{
 					var cellAssignment = modelRulesClauseAssignment.GetDescendantByPath(NonTerminals.CellAssignment);
@@ -565,7 +570,15 @@ namespace SqlPad.Oracle
 
 				var lastnode = aliasedExpression.ChildNodes[aliasedExpression.ChildNodes.Count - 1];
 				var aliasTerminalOffset = lastnode.Id == NonTerminals.ColumnAsAlias ? lastnode.TerminalCount : 0;
-				sqlModelColumn.IsDirectReference = aliasedExpression.TerminalCount - aliasTerminalOffset == 1 && aliasedExpression.FirstTerminalNode.Id == Terminals.Identifier;
+				if (aliasedExpression.TerminalCount - aliasTerminalOffset == 1 && aliasedExpression.FirstTerminalNode.Id == Terminals.Identifier)
+				{
+					sqlModelColumn.IsDirectReference = true;
+
+					if (aliasedExpression.TerminalCount == 1)
+					{
+						sqlModelColumn.AliasNode = aliasedExpression.FirstTerminalNode;
+					}
+				}
 
 				sqlModelColumn.ObjectReferences.AddRange(objectReferences);
 				ResolveSqlModelReferences(sqlModelColumn, GetIdentifiers(aliasedExpression).ToArray());
