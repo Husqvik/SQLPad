@@ -752,6 +752,17 @@ FROM
 		}
 
 		[Test(Description = @"")]
+		public void TestUnusedColumnRedundantTerminalsWhenCombinedWithCommonTableExpressionUsingInlineView()
+		{
+			const string query1 = @"WITH CTE AS (SELECT VAL FROM (SELECT 1 VAL FROM DUAL)) SELECT 1 OUTPUT_COLUMN, VAL FROM (SELECT VAL FROM CTE)";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
 		public void TestUnusedColumnRedundantTerminalsWithAsteriskReference()
 		{
 			const string query1 = @"SELECT * FROM (SELECT 1 C1, 2 C2 FROM DUAL)";
@@ -913,6 +924,27 @@ FROM
 
 			var objectReferences = semanticModel.QueryBlocks.Single().ObjectReferences.ToArray();
 			objectReferences.Length.ShouldBe(2);
+		}
+
+		[Test(Description = @"")]
+		public void TestModelBuildWithUnfinishedSqlModelRule()
+		{
+			const string query1 =
+@"SELECT
+	*
+FROM (SELECT 1 C1, 2 C2 FROM DUAL)
+MODEL
+
+	DIMENSION BY (C1)
+	MEASURES (C2 MEASURE1)
+	RULES (
+		MEASURE1[ANY] = DBMS_RANDOM.VALUE(), DBMS_RANDOM
+    );";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.QueryBlocks.Count.ShouldBe(2);
 		}
 
 		[Test(Description = @"")]

@@ -72,7 +72,7 @@ namespace SqlPad.Oracle
 			{
 				return _queryBlockNodes.Values
 					.Where(qb => qb.Type == QueryBlockType.Normal)
-					.OrderBy(qb => qb.RootNode.SourcePosition.IndexStart)
+					.OrderBy(qb => qb.RootNode.Level)
 					.FirstOrDefault();
 			}
 		}
@@ -486,10 +486,20 @@ namespace SqlPad.Oracle
 				foreach (var modelRulesClauseAssignment in modelRulesClauseAssignmentList.GetDescendants(NonTerminals.ModelRulesClauseAssignment))
 				{
 					var cellAssignment = modelRulesClauseAssignment.GetDescendantByPath(NonTerminals.CellAssignment);
-					ruleDimensionIdentifiers.AddRange(GetIdentifiers(cellAssignment.GetDescendantByPath(NonTerminals.MultiColumnForLoopOrConditionOrExpressionOrSingleColumnForLoopList)));
+					var assignmentDimensionList = cellAssignment.GetDescendantByPath(NonTerminals.MultiColumnForLoopOrConditionOrExpressionOrSingleColumnForLoopList);
+					if (assignmentDimensionList != null)
+					{
+						ruleDimensionIdentifiers.AddRange(GetIdentifiers(assignmentDimensionList));
+					}
+					
 					ruleMeasureIdentifiers.Add(cellAssignment.FirstTerminalNode);
 
 					var assignmentExpression = modelRulesClauseAssignment.GetDescendantByPath(NonTerminals.Expression);
+					if (assignmentExpression == null)
+					{
+						continue;
+					}
+					
 					foreach (var identifier in GetIdentifiers(assignmentExpression))
 					{
 						if (identifier.GetPathFilterAncestor(n => n.Id != NonTerminals.ModelRulesClauseAssignment, NonTerminals.ConditionOrExpressionList) == null)
