@@ -53,9 +53,17 @@ namespace SqlPad.Oracle
 					{
 						name = String.Format("{0}({1}{2})", name, dataType.Precision == null ? "*" : Convert.ToString(dataType.Precision), decimalScale);
 					}
+					
 					break;
 				case "RAW":
 					name = String.Format("{0}({1})", name, dataType.Length);
+					break;
+				case "TIMESTAMP":
+					if (dataType.Scale.HasValue)
+					{
+						name = String.Format("{0}({1})", name, dataType.Scale);
+					}
+					
 					break;
 			}
 

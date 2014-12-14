@@ -1,6 +1,5 @@
 using System;
 using System.Diagnostics;
-using System.Linq;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
 namespace SqlPad.Oracle
@@ -124,7 +123,7 @@ namespace SqlPad.Oracle
 			return _columnDescription;
 		}
 
-		internal static OracleDataType TryResolveDataTypeFromAliasedExpression(StatementGrammarNode aliasedExpressionNode, bool includeLengthPrecisionAndScale = true)
+		internal static OracleDataType TryResolveDataTypeFromAliasedExpression(StatementGrammarNode aliasedExpressionNode)
 		{
 			if (aliasedExpressionNode == null || aliasedExpressionNode.TerminalCount == 0)
 			{
@@ -148,18 +147,14 @@ namespace SqlPad.Oracle
 
 					if (tokenValue[0] == 'n' || tokenValue[0] == 'N')
 					{
-						literalInferredDataTypeName = includeLengthPrecisionAndScale ? "NCHAR" : "NVARCHAR2";
+						literalInferredDataTypeName = "NCHAR";
 					}
 					else
 					{
-						literalInferredDataTypeName = includeLengthPrecisionAndScale ? "CHAR" : "VARCHAR2";
-						literalInferredDataType.Unit = DataUnit.Character;
+						literalInferredDataTypeName = "CHAR";
 					}
 
-					if (includeLengthPrecisionAndScale)
-					{
-						literalInferredDataType.Length = tokenValue.ToPlainString().Length;
-					}
+					literalInferredDataType.Length = tokenValue.ToPlainString().Length;
 
 					break;
 				case Terminals.NumberLiteral:
@@ -170,7 +165,7 @@ namespace SqlPad.Oracle
 
 					literalInferredDataTypeName = "NUMBER";
 
-					if (includeLengthPrecisionAndScale)
+					/*if (includeLengthPrecisionAndScale)
 					{
 						literalInferredDataType.Precision = GetNumberPrecision(tokenValue);
 						int? scale = null;
@@ -184,7 +179,7 @@ namespace SqlPad.Oracle
 						}
 
 						literalInferredDataType.Scale = scale;
-					}
+					}*/
 					
 					break;
 				case Terminals.Date:
@@ -198,6 +193,7 @@ namespace SqlPad.Oracle
 					if (aliasedExpressionNode.TerminalCount == 2 + expectedTerminalCountOffset)
 					{
 						literalInferredDataTypeName = "TIMESTAMP";
+						literalInferredDataType.Scale = 9;
 					}
 
 					break;
@@ -212,7 +208,7 @@ namespace SqlPad.Oracle
 			return literalInferredDataType;
 		}
 
-		private static int? GetNumberPrecision(string value)
+		/*private static int? GetNumberPrecision(string value)
 		{
 			if (value.Any(c => c.In('e', 'E')))
 			{
@@ -220,7 +216,7 @@ namespace SqlPad.Oracle
 			}
 
 			return value.Count(Char.IsDigit);
-		}
+		}*/
 
 		public OracleSelectListColumn AsImplicit(OracleSelectListColumn asteriskColumn)
 		{

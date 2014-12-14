@@ -227,7 +227,7 @@ FROM
 			columns[2].HasExplicitDefinition.ShouldBe(true);
 			columns[2].IsDirectReference.ShouldBe(false);
 			columns[2].ColumnDescription.DataType.FullyQualifiedName.Name.ShouldBe("NUMBER");
-			columns[2].ColumnDescription.FullTypeName.ShouldBe("NUMBER(1)");
+			columns[2].ColumnDescription.FullTypeName.ShouldBe("NUMBER");
 
 			var outerBlock = queryBlocks[1];
 			outerBlock.ObjectReferences.Count.ShouldBe(1);
@@ -247,7 +247,7 @@ FROM
 			columns[2].HasExplicitDefinition.ShouldBe(true);
 			columns[2].IsDirectReference.ShouldBe(true);
 			columns[2].ColumnDescription.DataType.FullyQualifiedName.Name.ShouldBe("NUMBER");
-			columns[2].ColumnDescription.FullTypeName.ShouldBe("NUMBER(1)");
+			columns[2].ColumnDescription.FullTypeName.ShouldBe("NUMBER");
 		}
 
 		[Test(Description = @"")]
@@ -632,13 +632,13 @@ FROM
 			var columns = queryBlock.Columns.ToList();
 			columns.ForEach(c => c.ColumnDescription.ShouldNotBe(null));
 			columns.ForEach(c => c.ColumnDescription.Nullable.ShouldBe(false));
-			columns[0].ColumnDescription.FullTypeName.ShouldBe("NUMBER(6, 3)");
-			columns[1].ColumnDescription.FullTypeName.ShouldBe("CHAR(7 CHAR)");
+			columns[0].ColumnDescription.FullTypeName.ShouldBe("NUMBER");
+			columns[1].ColumnDescription.FullTypeName.ShouldBe("CHAR(7)");
 			columns[2].ColumnDescription.FullTypeName.ShouldBe("NCHAR(7)");
-			columns[3].ColumnDescription.FullTypeName.ShouldBe("NUMBER(3)");
+			columns[3].ColumnDescription.FullTypeName.ShouldBe("NUMBER");
 			columns[4].ColumnDescription.FullTypeName.ShouldBe("NUMBER");
 			columns[5].ColumnDescription.FullTypeName.ShouldBe("DATE");
-			columns[6].ColumnDescription.FullTypeName.ShouldBe("TIMESTAMP");
+			columns[6].ColumnDescription.FullTypeName.ShouldBe("TIMESTAMP(9)");
 		}
 
 		[Test(Description = @"")]
@@ -655,10 +655,10 @@ FROM
 			queryBlock.Columns.Count.ShouldBe(2);
 			queryBlock.Columns[0].ColumnDescription.ShouldNotBe(null);
 			queryBlock.Columns[0].ColumnDescription.Name.ShouldBe("\"CONSTANT1\"");
-			queryBlock.Columns[0].ColumnDescription.FullTypeName.ShouldBe("NUMBER(6, 3)");
+			queryBlock.Columns[0].ColumnDescription.FullTypeName.ShouldBe("NUMBER");
 			queryBlock.Columns[1].ColumnDescription.ShouldNotBe(null);
 			queryBlock.Columns[1].ColumnDescription.Name.ShouldBe("\"CONSTANT2\"");
-			queryBlock.Columns[1].ColumnDescription.FullTypeName.ShouldBe("NUMBER(6, 3)");
+			queryBlock.Columns[1].ColumnDescription.FullTypeName.ShouldBe("NUMBER");
 		}
 
 		[Test(Description = @"")]
@@ -1201,7 +1201,7 @@ MODEL
 			queryBlock.Columns[1].ColumnDescription.FullTypeName.ShouldBe("NUMBER");
 			queryBlock.Columns[2].NormalizedName.ShouldBe("\"C1\"");
 			queryBlock.Columns[2].ColumnDescription.DataType.ShouldNotBe(null);
-			queryBlock.Columns[2].ColumnDescription.FullTypeName.ShouldBe("VARCHAR2");
+			queryBlock.Columns[2].ColumnDescription.FullTypeName.ShouldBe("CHAR(13)");
 			queryBlock.Columns[2].IsDirectReference.ShouldBe(true);
 			queryBlock.Columns[3].NormalizedName.ShouldBe("\"C2\"");
 			queryBlock.Columns[3].ColumnDescription.DataType.ShouldNotBe(null);
@@ -1265,8 +1265,8 @@ MODEL
 	*
 FROM (SELECT 1 C1, 2 C2, 3 C3 FROM DUAL)
 MODEL
-	PARTITION BY (C1 P1, 0 P2)
-	DIMENSION BY (C2 D1, 0 D2)
+	PARTITION BY (C1 P1, 'PARTITION2' P2)
+	DIMENSION BY (C2 D1, N'DIMENSION2' D2)
 	MEASURES (C3 M1)
 	RULES (
 		M1[D1 IS ANY, (D2) IS ANY] = DBMS_RANDOM.VALUE
@@ -1281,9 +1281,13 @@ MODEL
 			outerQueryBlock.Columns.Count.ShouldBe(6);
 			outerQueryBlock.Columns[0].IsAsterisk.ShouldBe(true);
 			outerQueryBlock.Columns[1].NormalizedName.ShouldBe("\"P1\"");
+			outerQueryBlock.Columns[1].ColumnDescription.FullTypeName.ShouldBe("NUMBER");
 			outerQueryBlock.Columns[2].NormalizedName.ShouldBe("\"P2\"");
+			outerQueryBlock.Columns[2].ColumnDescription.FullTypeName.ShouldBe("CHAR(10)");
 			outerQueryBlock.Columns[3].NormalizedName.ShouldBe("\"D1\"");
+			outerQueryBlock.Columns[3].ColumnDescription.FullTypeName.ShouldBe("NUMBER");
 			outerQueryBlock.Columns[4].NormalizedName.ShouldBe("\"D2\"");
+			outerQueryBlock.Columns[4].ColumnDescription.FullTypeName.ShouldBe("NCHAR(10)");
 			outerQueryBlock.Columns[5].NormalizedName.ShouldBe("\"M1\"");
 		}
 	}

@@ -464,23 +464,29 @@ namespace SqlPad.Oracle
 				var identifiers = new List<StatementGrammarNode>();
 				var partitionExpressions = modelColumnClauses.GetDescendantByPath(NonTerminals.ModelColumnClausesPartitionByExpressionList, NonTerminals.ParenthesisEnclosedAliasedExpressionList);
 				var sqlModelColumns = new List<OracleColumn>();
+				var directColumnReferenceDictionary = new Dictionary<StatementGrammarNode, OracleColumn>();
 				if (partitionExpressions != null)
 				{
-					sqlModelColumns.AddRange(GatherSqlModelColumns(partitionExpressions, identifiers));
+					sqlModelColumns.AddRange(GatherSqlModelColumns(partitionExpressions, identifiers, directColumnReferenceDictionary));
 				}
 
 				var dimensionExpressionList = modelColumnClauses.ChildNodes[modelColumnClauses.ChildNodes.Count - 3];
-				var dimensionColumns = GatherSqlModelColumns(dimensionExpressionList, identifiers);
+				var dimensionColumns = GatherSqlModelColumns(dimensionExpressionList, identifiers, directColumnReferenceDictionary);
 				var dimensionColumnObjectReference = new OracleSpecialTableReference(ReferenceType.SqlModel, dimensionColumns);
 				sqlModelColumns.AddRange(dimensionColumns);
 				
 				var parenthesisEnclosedAliasedExpressionList = modelColumnClauses.ChildNodes[modelColumnClauses.ChildNodes.Count - 1];
-				var measureColumns = GatherSqlModelColumns(parenthesisEnclosedAliasedExpressionList, identifiers);
+				var measureColumns = GatherSqlModelColumns(parenthesisEnclosedAliasedExpressionList, identifiers, directColumnReferenceDictionary);
 				sqlModelColumns.AddRange(measureColumns);
 
 				queryBlock.ModelReference = new OracleSqlModelReference(this, sqlModelColumns, queryBlock.ObjectReferences);
 
 				ResolveSqlModelReferences(queryBlock.ModelReference.SourceReferenceContainer, identifiers);
+
+				foreach (var columnReference in queryBlock.ModelReference.SourceReferenceContainer.ColumnReferences.Where(c => c.RootNode.TerminalCount == 1 && c.ValidObjectReference != null && c.ColumnNodeColumnReferences.Count == 1))
+				{
+					directColumnReferenceDictionary[columnReference.ColumnNode].DataType = columnReference.ColumnNodeColumnReferences.First().DataType;
+				}
 
 				var ruleDimensionIdentifiers = new List<StatementGrammarNode>();
 				var ruleMeasureIdentifiers = new List<StatementGrammarNode>();
@@ -553,15 +559,24 @@ namespace SqlPad.Oracle
 			ResolveFunctionReferences(referenceContainer.ProgramReferences);
 		}
 
-		private List<OracleColumn> GatherSqlModelColumns(StatementGrammarNode parenthesisEnclosedAliasedExpressionList, List<StatementGrammarNode> identifiers)
+		private List<OracleColumn> GatherSqlModelColumns(StatementGrammarNode parenthesisEnclosedAliasedExpressionList, List<StatementGrammarNode> identifiers, Dictionary<StatementGrammarNode, OracleColumn> directReferenceColumns)
 		{
 			var measureColumns = new List<OracleColumn>();
 
 			foreach (var aliasedExpression in parenthesisEnclosedAliasedExpressionList.GetDescendants(NonTerminals.AliasedExpression))
 			{
-				measureColumns.Add(CreateSqlModelColumn(aliasedExpression));
-
 				identifiers.AddRange(GetIdentifiers(aliasedExpression));
+
+				var column = CreateSqlModelColumn(aliasedExpression);
+
+				var lastnode = aliasedExpression.ChildNodes[aliasedExpression.ChildNodes.Count - 1];
+				var aliasTerminalOffset = lastnode.Id == NonTerminals.ColumnAsAlias ? lastnode.TerminalCount : 0;
+				if (aliasedExpression.TerminalCount - aliasTerminalOffset == 1 && aliasedExpression.FirstTerminalNode.Id == Terminals.Identifier)
+				{
+					directReferenceColumns.Add(aliasedExpression.FirstTerminalNode, column);
+				}
+
+				measureColumns.Add(column);
 			}
 
 			return measureColumns;
@@ -585,7 +600,7 @@ namespace SqlPad.Oracle
 				column.Name = expressionAliasNode.Token.Value.ToQuotedIdentifier();
 			}
 
-			var dataType = OracleSelectListColumn.TryResolveDataTypeFromAliasedExpression(aliasedExpression, false);
+			var dataType = OracleSelectListColumn.TryResolveDataTypeFromAliasedExpression(aliasedExpression);
 			column.DataType = dataType ?? OracleDataType.Empty;
 			return column;
 		}
