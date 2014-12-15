@@ -981,6 +981,32 @@ namespace SqlPad.Oracle
 			var precedingQueryBlock = _queryBlockNodes[parentQueryBlockNode];
 			precedingQueryBlock.FollowingConcatenatedQueryBlock = queryBlock;
 			queryBlock.PrecedingConcatenatedQueryBlock = precedingQueryBlock;
+
+			var setOperation = queryBlock.RootNode.ParentNode.ParentNode[0];
+			if (precedingQueryBlock.Type != QueryBlockType.CommonTableExpression || setOperation == null || setOperation.TerminalCount != 2 || setOperation[0].Id != Terminals.Union || setOperation[1].Id != Terminals.All)
+			{
+				return;
+			}
+
+			queryBlock.AliasNode = null;
+
+			var anchorReferences = queryBlock.ObjectReferences.Where(r => r.Type == ReferenceType.SchemaObject && r.OwnerNode == null && r.DatabaseLinkNode == null && r.FullyQualifiedObjectName.NormalizedName == precedingQueryBlock.NormalizedAlias).ToArray();
+			foreach(var anchorReference in anchorReferences)
+			{
+				queryBlock.ObjectReferences.Remove(anchorReference);
+
+				var newAnchorReference =
+					new OracleDataObjectReference(ReferenceType.CommonTableExpression)
+					{
+						Owner = queryBlock,
+						RootNode = anchorReference.RootNode,
+						ObjectNode = anchorReference.ObjectNode,
+						AliasNode = anchorReference.AliasNode
+					};
+
+				newAnchorReference.QueryBlocks.Add(queryBlock);
+				queryBlock.ObjectReferences.Add(newAnchorReference);
+			}
 		}
 
 		private void ResolveJoinReferences()

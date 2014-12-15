@@ -85,6 +85,15 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestNavigateToColumnDefinitionWithCommonTableExpressionExplicitColumnNames()
+		{
+			const string query = "WITH GENERATOR(VAL) AS (SELECT 1 FROM DUAL UNION ALL SELECT VAL + 1 FROM GENERATOR WHERE VAL <= 10) SELECT VAL FROM GENERATOR";
+
+			var targetIndex = _navigationService.NavigateToDefinition(GetDocumentRepository(query), 90);
+			targetIndex.ShouldBe(60);
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestNavigateToObjectDefinition()
 		{
 			const string query = "SELECT P.NAME, P.PROJECT_ID FROM (SELECT PROJECT.NAME, PROJECT.PROJECT_ID FROM PROJECT) P";

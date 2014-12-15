@@ -183,9 +183,16 @@ namespace SqlPad.Oracle.Commands
 				nodes.Add(dataObjectReference.AliasNode);
 			}
 
-			if (objectReference.QueryBlocks.Count == 1 && objectReference.Type == ReferenceType.CommonTableExpression)
+			if (objectReference.QueryBlocks.Count == 1 && objectReference.Type == ReferenceType.CommonTableExpression )
 			{
-				nodes.Add(objectReference.QueryBlocks.Single().AliasNode);
+				var referencedQueryBlock = objectReference.QueryBlocks.First();
+				nodes.Add(referencedQueryBlock.AliasNode);
+
+				if (referencedQueryBlock.FollowingConcatenatedQueryBlock != null)
+				{
+					var recursiveQueryBlockReferences = referencedQueryBlock.FollowingConcatenatedQueryBlock.ObjectReferences.Where(r => r.Type == ReferenceType.CommonTableExpression && r.QueryBlocks.Count == 1 && r.QueryBlocks.First() == referencedQueryBlock.FollowingConcatenatedQueryBlock);
+					nodes.AddRange(recursiveQueryBlockReferences.Select(r => r.ObjectNode));
+				}
 			}
 
 			return objectReference.Owner.AllColumnReferences.Where(c => c.ObjectNode != null && c.ObjectNodeObjectReferences.Count == 1 && c.ObjectNodeObjectReferences.Single() == objectReference)
@@ -266,7 +273,10 @@ namespace SqlPad.Oracle.Commands
 			if (childColumn == null)
 				return nodes;
 
-			nodes = new List<StatementGrammarNode>{ childColumn.AliasNode };
+			if (childColumn.AliasNode != null)
+			{
+				nodes = nodes.Concat(Enumerable.Repeat(childColumn.AliasNode, 1));
+			}
 
 			if (childColumn.IsDirectReference && childColumn.ColumnReferences.Count > 0 && childColumn.ColumnReferences.All(cr => cr.ColumnNodeColumnReferences.Count == 1))
 			{

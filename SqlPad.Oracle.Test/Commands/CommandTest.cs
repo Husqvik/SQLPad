@@ -363,6 +363,17 @@ WHERE
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestFindColumnUsagesInRecursiveCommonTableExpression()
+		{
+			var foundSegments = FindUsagesOrdered("WITH GENERATOR(VAL) AS (SELECT 1 FROM DUAL UNION ALL SELECT VAL + 1 FROM GENERATOR WHERE VAL <= 10) SELECT VAL FROM GENERATOR", 90);
+			foundSegments.Count.ShouldBe(2);
+			foundSegments[0].IndextStart.ShouldBe(60);
+			foundSegments[0].Length.ShouldBe(3);
+			foundSegments[1].IndextStart.ShouldBe(89);
+			foundSegments[1].Length.ShouldBe(3);
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestFindColumnUsagesOfComputedColumnAtUsage()
 		{
 			var foundSegments = FindUsagesOrdered(FindUsagesStatementText, 80);
@@ -401,6 +412,19 @@ WHERE
 			
 			var foundSegments = FindUsagesOrdered(statement, 72);
 			ValidateCommonResults2(foundSegments);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestFindObjectUsagesAtRecursiveCommonTableExpressionDefinition()
+		{
+			var foundSegments = FindUsagesOrdered("WITH GENERATOR(VAL) AS (SELECT 1 FROM DUAL UNION ALL SELECT VAL + 1 FROM GENERATOR WHERE VAL <= 10) SELECT VAL FROM GENERATOR", 6);
+			foundSegments.Count.ShouldBe(3);
+			foundSegments[0].IndextStart.ShouldBe(5);
+			foundSegments[0].Length.ShouldBe(9);
+			foundSegments[1].IndextStart.ShouldBe(73);
+			foundSegments[1].Length.ShouldBe(9);
+			foundSegments[2].IndextStart.ShouldBe(116);
+			foundSegments[2].Length.ShouldBe(9);
 		}
 
 		private void ValidateCommonResults2(List<TextSegment> foundSegments)

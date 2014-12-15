@@ -1313,5 +1313,33 @@ MODEL
 			outerQueryBlock.Columns[4].ColumnDescription.FullTypeName.ShouldBe("NCHAR(10)");
 			outerQueryBlock.Columns[5].NormalizedName.ShouldBe("\"M1\"");
 		}
+
+		[Test(Description = @"")]
+		public void TestRecursiveCommonTableExpression()
+		{
+			const string query1 = @"WITH GENERATOR(VAL) AS (SELECT 1 FROM DUAL UNION ALL SELECT VAL + 1 FROM GENERATOR WHERE VAL <= 10) SELECT VAL FROM	GENERATOR";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.QueryBlocks.Count.ShouldBe(3);
+			var queryBlocks = semanticModel.QueryBlocks.OrderBy(qb => qb.RootNode.SourcePosition.IndexStart).ToArray();
+			queryBlocks[0].ColumnReferences.Count.ShouldBe(0);
+			queryBlocks[0].ObjectReferences.Count.ShouldBe(1);
+			queryBlocks[0].ObjectReferences.First().Type.ShouldBe(ReferenceType.SchemaObject);
+
+			queryBlocks[1].ColumnReferences.Count.ShouldBe(1);
+			var columnReference = queryBlocks[1].ColumnReferences[0];
+			columnReference.ColumnNodeObjectReferences.Count.ShouldBe(1);
+			columnReference.ColumnNodeObjectReferences.First().Type.ShouldBe(ReferenceType.CommonTableExpression);
+			queryBlocks[1].Columns.Count.ShouldBe(1);
+			queryBlocks[1].Columns[0].ColumnReferences.Count.ShouldBe(1);
+			columnReference = queryBlocks[1].Columns[0].ColumnReferences[0];
+			columnReference.ColumnNodeObjectReferences.Count.ShouldBe(1);
+			columnReference.ColumnNodeObjectReferences.First().Type.ShouldBe(ReferenceType.CommonTableExpression);
+			
+			queryBlocks[1].ObjectReferences.Count.ShouldBe(1);
+			queryBlocks[1].ObjectReferences.First().Type.ShouldBe(ReferenceType.CommonTableExpression);
+		}
 	}
 }

@@ -58,6 +58,7 @@ namespace SqlPad
 		private bool _isInitialParsing = true;
 		private bool _enableCodeComplete;
 		private bool _isToolTipOpenByShortCut;
+		private bool _isToolTipOpenByCaretChange;
 		private bool _gatherExecutionStatistics;
 		
 		private readonly ToolTip _toolTip = new ToolTip();
@@ -776,8 +777,8 @@ namespace SqlPad
 
 			var rectangle = Editor.TextArea.Caret.CalculateCaretRectangle();
 			_toolTip.Placement = PlacementMode.Relative;
-			_toolTip.HorizontalOffset = rectangle.Left;
-			_toolTip.VerticalOffset = rectangle.Top + Editor.TextArea.TextView.DefaultLineHeight;
+			_toolTip.HorizontalOffset = rectangle.Left - Editor.TextArea.TextView.HorizontalOffset;
+			_toolTip.VerticalOffset = rectangle.Top - Editor.TextArea.TextView.VerticalOffset + Editor.TextArea.TextView.DefaultLineHeight;
 			_toolTip.IsOpen = true;
 		}
 
@@ -1127,6 +1128,8 @@ namespace SqlPad
 		{
 			EditorNavigationService.RegisterDocumentCursorPosition(WorkDocument, Editor.CaretOffset);
 
+			_isToolTipOpenByCaretChange = false;
+
 			CloseToolTipWhenNotOpenByShortCut();
 
 			var parenthesisNodes = new List<StatementGrammarNode>();
@@ -1195,6 +1198,8 @@ namespace SqlPad
 								_toolTip.HorizontalOffset = Editor.TextArea.LeftMargins.Sum(m => m.DesiredSize.Width);
 								_toolTip.VerticalOffset = -28;
 								_toolTip.IsOpen = true;
+
+								_isToolTipOpenByCaretChange = true;
 							}
 
 							break;
@@ -1558,7 +1563,7 @@ namespace SqlPad
 
 		void MouseHoverHandler(object sender, MouseEventArgs e)
 		{
-			if (_isToolTipOpenByShortCut)
+			if (_isToolTipOpenByShortCut || _isToolTipOpenByCaretChange)
 				return;
 
 			var visualPosition = e.GetPosition(Editor);
@@ -1597,14 +1602,18 @@ namespace SqlPad
 
 		private void CloseToolTipWhenNotOpenByShortCut()
 		{
-			if (!_isToolTipOpenByShortCut)
+			if (!_isToolTipOpenByShortCut && !_isToolTipOpenByCaretChange)
+			{
 				_toolTip.IsOpen = false;
+			}
 		}
 
 		private void ContextMenuOpeningHandler(object sender, ContextMenuEventArgs args)
 		{
 			if (!PopulateContextActionMenu())
+			{
 				args.Handled = true;
+			}
 		}
 
 		private void DisableCodeCompletion()

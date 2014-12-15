@@ -77,7 +77,9 @@ namespace SqlPad.Oracle
 
 			if (!selectListColumn.IsDirectReference)
 			{
-				return selectListColumn.AliasNode.SourcePosition.IndexStart;
+				return selectListColumn.AliasNode == null
+					? selectListColumn.RootNode.SourcePosition.IndexStart
+					: selectListColumn.AliasNode.SourcePosition.IndexStart;
 			}
 
 			var columnReference = selectListColumn.ColumnReferences.Single();
