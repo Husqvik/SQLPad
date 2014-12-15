@@ -89,9 +89,9 @@ namespace SqlPad
 			}
 		}
 
-		private MainWindow MainWindow
+		private static MainWindow MainWindow
 		{
-			get { return (MainWindow)Window.GetWindow(this); }
+			get { return (MainWindow)Application.Current.MainWindow; }
 		}
 
 		internal bool IsSelectedPage
@@ -115,7 +115,7 @@ namespace SqlPad
 
 			_toolTip.PlacementTarget = Editor.TextArea;
 			_contextActionMenu.PlacementTarget = Editor;
-
+			
 			ComboBoxConnection.IsEnabled = ConfigurationProvider.ConnectionStrings.Count > 1;
 			ComboBoxConnection.ItemsSource = ConfigurationProvider.ConnectionStrings;
 			ComboBoxConnection.SelectedIndex = 0;
