@@ -284,6 +284,7 @@ namespace SqlPad
 				var colorEndOffset = Math.Min(line.EndOffset, statement.SourcePosition.IndexEnd + 1);
 
 				SetActiveParenthesisBrush(line);
+				SetHighlightedSegmentBrush(line);
 
 				ChangeLinePart(
 					colorStartOffset,
@@ -316,15 +317,20 @@ namespace SqlPad
 						));*/
 					});
 
-				foreach (var highlightSegment in _highlightSegments.SelectMany(s => s))
-				{
-					ProcessNodeAtLine(line,
-						new SourcePosition { IndexStart = highlightSegment.IndextStart, IndexEnd = highlightSegment.IndextStart + highlightSegment.Length - 1 },
-						element => element.BackgroundBrush = highlightSegment.DisplayOptions == DisplayOptions.Usage ? HighlightUsageBrush : HighlightDefinitionBrush);
-				}
+				SetHighlightedSegmentBrush(line);
 			}
 
 			SetActiveParenthesisBrush(line);
+		}
+
+		private void SetHighlightedSegmentBrush(ISegment line)
+		{
+			foreach (var highlightSegment in _highlightSegments.SelectMany(s => s))
+			{
+				ProcessNodeAtLine(line,
+					new SourcePosition {IndexStart = highlightSegment.IndextStart, IndexEnd = highlightSegment.IndextStart + highlightSegment.Length - 1},
+					element => element.BackgroundBrush = highlightSegment.DisplayOptions == DisplayOptions.Usage ? HighlightUsageBrush : HighlightDefinitionBrush);
+			}
 		}
 
 		private void SetActiveParenthesisBrush(ISegment line)

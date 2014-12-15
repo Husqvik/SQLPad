@@ -17,7 +17,6 @@ using System.Windows.Media;
 using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;
-using ICSharpCode.AvalonEdit.Folding;
 using Microsoft.Win32;
 using SqlPad.Commands;
 using SqlPad.FindReplace;
@@ -1009,6 +1008,7 @@ namespace SqlPad
 		public void Dispose()
 		{
 			ConfigurationProvider.ConfigurationChanged -= ConfigurationChangedHandler;
+			MainWindow.DocumentTabControl.SelectionChanged -= DocumentTabControlSelectionChangedHandler;
 
 			if (_documentFileWatcher != null)
 			{
@@ -1093,6 +1093,8 @@ namespace SqlPad
 		{
 			if (_isInitializing)
 			{
+				MainWindow.DocumentTabControl.SelectionChanged += DocumentTabControlSelectionChangedHandler;
+
 				if (WorkDocument.EditorGridRowHeight > 0)
 				{
 					RowDefinitionEditor.Height = new GridLength(WorkDocument.EditorGridRowHeight);
@@ -1116,9 +1118,16 @@ namespace SqlPad
 			}
 		}
 
+		private void DocumentTabControlSelectionChangedHandler(object sender, SelectionChangedEventArgs selectionChangedEventArgs)
+		{
+			CloseToolTipWhenNotOpenByShortCut();
+		}
+
 		private void CaretPositionChangedHandler(object sender, EventArgs eventArgs)
 		{
 			EditorNavigationService.RegisterDocumentCursorPosition(WorkDocument, Editor.CaretOffset);
+
+			CloseToolTipWhenNotOpenByShortCut();
 
 			var parenthesisNodes = new List<StatementGrammarNode>();
 
@@ -1581,7 +1590,12 @@ namespace SqlPad
 			e.Handled = true;
 		}
 
-		void MouseHoverStoppedHandler(object sender, MouseEventArgs e)
+		private void MouseHoverStoppedHandler(object sender, MouseEventArgs e)
+		{
+			CloseToolTipWhenNotOpenByShortCut();
+		}
+
+		private void CloseToolTipWhenNotOpenByShortCut()
 		{
 			if (!_isToolTipOpenByShortCut)
 				_toolTip.IsOpen = false;
