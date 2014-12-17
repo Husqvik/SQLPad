@@ -67,6 +67,8 @@ namespace SqlPad.Oracle
 		
 		public StatementGrammarNode HierarchicalQueryClause { get; set; }
 
+		public StatementGrammarNode ExplicitColumnNameList { get; set; }
+
 		public OracleStatement Statement { get; set; }
 
 		public IReadOnlyList<OracleSelectListColumn> Columns { get { return _columns; } }

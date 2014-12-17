@@ -16,7 +16,7 @@ namespace SqlPad.Oracle
 		private readonly List<RedundantTerminalGroup> _redundantTerminalGroups = new List<RedundantTerminalGroup>();
 		private readonly OracleDatabaseModelBase _databaseModel;
 		private readonly Dictionary<OracleSelectListColumn, ICollection<OracleDataObjectReference>> _asteriskTableReferences = new Dictionary<OracleSelectListColumn, ICollection<OracleDataObjectReference>>();
-		private readonly Dictionary<OracleQueryBlock, IList<string>> _commonTableExpressionExplicititColumnNames = new Dictionary<OracleQueryBlock, IList<string>>();
+		private readonly Dictionary<OracleQueryBlock, IList<string>> _commonTableExpressionExplicitColumnNames = new Dictionary<OracleQueryBlock, IList<string>>();
 		private readonly List<IList<OracleColumnReference>> _joinClauseColumnReferences = new List<IList<OracleColumnReference>>();
 		private readonly Dictionary<OracleQueryBlock, ICollection<StatementGrammarNode>> _accessibleQueryBlockRoot = new Dictionary<OracleQueryBlock, ICollection<StatementGrammarNode>>();
 		private readonly Dictionary<OracleDataObjectReference, ICollection<KeyValuePair<StatementGrammarNode, string>>> _objectReferenceCteRootNodes = new Dictionary<OracleDataObjectReference, ICollection<KeyValuePair<StatementGrammarNode, string>>>();
@@ -635,7 +635,7 @@ namespace SqlPad.Oracle
 
 		private void ApplyExplicitCommonTableExpressionColumnNames()
 		{
-			foreach (var kvp in _commonTableExpressionExplicititColumnNames)
+			foreach (var kvp in _commonTableExpressionExplicitColumnNames)
 			{
 				var columnIndex = 0;
 				foreach (var column in kvp.Key.Columns.Where(c => !c.IsAsterisk))
@@ -1692,14 +1692,14 @@ namespace SqlPad.Oracle
 
 			if (queryBlock.Type == QueryBlockType.CommonTableExpression)
 			{
-				var parenthesisEnclosedColumnListNode = queryBlock.AliasNode.ParentNode.GetDescendantByPath(NonTerminals.ParenthesisEnclosedIdentifierList);
-				if (parenthesisEnclosedColumnListNode != null)
+				queryBlock.ExplicitColumnNameList = queryBlock.AliasNode.ParentNode.GetDescendantByPath(NonTerminals.ParenthesisEnclosedIdentifierList);
+				if (queryBlock.ExplicitColumnNameList != null)
 				{
 					var commonTableExpressionExplicitColumnNameList = new List<string>(
-						parenthesisEnclosedColumnListNode.GetDescendants(Terminals.Identifier)
+						queryBlock.ExplicitColumnNameList.GetDescendants(Terminals.Identifier)
 							.Select(t => t.Token.Value.ToQuotedIdentifier()));
 
-					_commonTableExpressionExplicititColumnNames.Add(queryBlock, commonTableExpressionExplicitColumnNameList);
+					_commonTableExpressionExplicitColumnNames.Add(queryBlock, commonTableExpressionExplicitColumnNameList);
 				}
 			}
 

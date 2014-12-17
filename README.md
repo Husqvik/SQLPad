@@ -150,7 +150,8 @@ Add columns (hold SHIFT to select specific column)
 Requirements
 ------------
 .NET 4.5
-Oracle Data Access Components 12c - 32 bit - unmanaged driver only (due to certain limitations of managed driver, e. g., lack of UDTs and XML types support)
+
+[Oracle Data Access Components 12c - 32 bit](http://www.oracle.com/technetwork/topics/dotnet/downloads/net-downloads-160392.html) - unmanaged driver only (due to certain limitations of managed driver, e. g., lack of UDTs and XML types support)
 
 Configuration
 -------------
