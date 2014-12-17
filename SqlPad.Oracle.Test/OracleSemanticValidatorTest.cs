@@ -1788,5 +1788,43 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			invalidNonTerminals[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.ClauseNotAllowed);
 			invalidNonTerminals[0].ToolTipText.ShouldBe(OracleSemanticErrorType.ClauseNotAllowed);
 		}
+
+		[Test(Description = @"")]
+		public void TestDatabaseLinkPropagatedColumnUsingAsterisk()
+		{
+			const string sqlText = @"SELECT DUMMY FROM (SELECT * FROM DUAL@HQ_PDB_LOOPBACK)";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var columnValidities = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			columnValidities.Count.ShouldBe(2);
+			columnValidities[0].IsRecognized.ShouldBe(true);
+			columnValidities[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
+			columnValidities[1].IsRecognized.ShouldBe(true);
+			columnValidities[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
+			columnValidities[1].SuggestionType.ShouldBe(OracleSuggestionType.UseExplicitColumnList);
+			columnValidities[1].ToolTipText.ShouldBe(OracleSuggestionType.UseExplicitColumnList);
+		}
+
+		[Test(Description = @"")]
+		public void TestDatabaseLinkPropagatedColumnUsingObjectQualifiedAsterisk()
+		{
+			const string sqlText = @"SELECT DUMMY FROM (SELECT DUAL.* FROM DUAL@HQ_PDB_LOOPBACK)";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var columnValidities = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			columnValidities.Count.ShouldBe(2);
+			columnValidities[0].IsRecognized.ShouldBe(true);
+			columnValidities[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
+			columnValidities[1].IsRecognized.ShouldBe(true);
+			columnValidities[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
+			columnValidities[1].SuggestionType.ShouldBe(OracleSuggestionType.UseExplicitColumnList);
+			columnValidities[1].ToolTipText.ShouldBe(OracleSuggestionType.UseExplicitColumnList);
+		}
 	}
 }

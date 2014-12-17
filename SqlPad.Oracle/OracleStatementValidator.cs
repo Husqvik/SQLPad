@@ -191,13 +191,13 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		private bool IsBetweenZeroAndFiftyNine(string stringValue)
+		private static bool IsBetweenZeroAndFiftyNine(string stringValue)
 		{
 			int value;
 			return Int32.TryParse(stringValue, out value) && value >= 0 && value < 60;
 		}
 
-		private bool IsDateValid(string year, string month, string day, bool allowYearZero)
+		private static bool IsDateValid(string year, string month, string day, bool allowYearZero)
 		{
 			int yearValue;
 			if (!Int32.TryParse(year.Replace(" ", null), out yearValue) || yearValue < -4712 || yearValue > 9999)
@@ -220,7 +220,7 @@ namespace SqlPad.Oracle
 			return Int32.TryParse(day, out dayValue) || dayValue >= 1 || dayValue <= DateTime.DaysInMonth(yearValue, monthValue);
 		}
 
-		private void ValidateQueryBlocks(OracleValidationModel validationModel)
+		private static void ValidateQueryBlocks(OracleValidationModel validationModel)
 		{
 			foreach (var queryBlock in validationModel.SemanticModel.QueryBlocks)
 			{
@@ -229,6 +229,19 @@ namespace SqlPad.Oracle
 				if (queryBlock.Type == QueryBlockType.ScalarSubquery && queryBlock.OrderByClause != null)
 				{
 					validationModel.InvalidNonTerminals[queryBlock.OrderByClause] = new InvalidNodeValidationData(OracleSemanticErrorType.ClauseNotAllowed);
+				}
+
+				if (queryBlock.AsteriskColumns.Count > 0 && queryBlock.ObjectReferences.Any(r => r.DatabaseLinkNode != null))
+				{
+					foreach (var asteriskColumn in queryBlock.AsteriskColumns)
+					{
+						var columnNode = asteriskColumn.ColumnReferences.Single().ColumnNode;
+						INodeValidationData validationData;
+						if (!validationModel.ColumnNodeValidity.TryGetValue(columnNode, out validationData) || validationData.SemanticErrorType == OracleSemanticErrorType.None)
+						{
+							validationModel.ColumnNodeValidity[asteriskColumn.RootNode] = new SuggestionData(OracleSuggestionType.UseExplicitColumnList) { IsRecognized = true };
+						}
+					}
 				}
 			}
 		}
@@ -240,10 +253,10 @@ namespace SqlPad.Oracle
 				return;
 			}
 			
-			var firstQueryBlockColumnCount = queryBlock.Columns.Count(c => !c.IsAsterisk);
+			var firstQueryBlockColumnCount = queryBlock.Columns.Count - queryBlock.AsteriskColumns.Count;
 			foreach (var concatenatedQueryBlock in queryBlock.AllFollowingConcatenatedQueryBlocks)
 			{
-				var concatenatedQueryBlockColumnCount = concatenatedQueryBlock.Columns.Count(c => !c.IsAsterisk);
+				var concatenatedQueryBlockColumnCount = concatenatedQueryBlock.Columns.Count - concatenatedQueryBlock.AsteriskColumns.Count;
 				if (concatenatedQueryBlockColumnCount != firstQueryBlockColumnCount && concatenatedQueryBlockColumnCount > 0)
 				{
 					validationModel.InvalidNonTerminals[queryBlock.SelectList] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount);
@@ -456,9 +469,23 @@ namespace SqlPad.Oracle
 
 		private void ResolveColumnNodeValidities(OracleValidationModel validationModel, OracleReferenceContainer referenceContainer)
 		{
+			if (referenceContainer.ColumnReferences.Count == 0)
+			{
+				return;
+			}
+
+			var queryBlock = referenceContainer as OracleQueryBlock;
+			var selectColumn = referenceContainer as OracleSelectListColumn;
+			if (selectColumn != null)
+			{
+				queryBlock = selectColumn.Owner;
+			}
+
+			var hasRemoteAsteriskReferences = queryBlock != null && queryBlock.HasRemoteAsteriskReferences;
+
 			foreach (var columnReference in referenceContainer.ColumnReferences.Where(columnReference => columnReference.SelectListColumn == null || columnReference.SelectListColumn.HasExplicitDefinition))
 			{
-				var isAsterisk = columnReference.SelectListColumn != null && columnReference.SelectListColumn.IsAsterisk;
+				var isAsterisk = columnReference.ReferencesAllColumns;
 				var sourceObjectReferences = columnReference.SelectListColumn == null
 						? referenceContainer.ObjectReferences
 						: columnReference.SelectListColumn.Owner.ObjectReferences;
@@ -496,7 +523,7 @@ namespace SqlPad.Oracle
 						validationModel.ColumnNodeValidity[columnReference.ColumnNode] =
 							new ColumnNodeValidationData(columnReference)
 							{
-								IsRecognized = isColumnRecognized,
+								IsRecognized = isColumnRecognized || hasRemoteAsteriskReferences,
 								Node = columnReference.ColumnNode
 							};
 					}

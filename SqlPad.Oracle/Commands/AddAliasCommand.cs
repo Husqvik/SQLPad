@@ -98,7 +98,7 @@ namespace SqlPad.Oracle.Commands
 			var prefixedColumnReferences = CurrentQueryBlock.AllColumnReferences
 				.Where(c => (c.OwnerNode != null || c.ObjectNode != null) && c.ColumnNodeObjectReferences.Count == 1 && c.ColumnNodeObjectReferences.Single() == _currentObjectReference);
 
-			var asteriskColumnReferences = CurrentQueryBlock.Columns.Where(c => c.IsAsterisk).SelectMany(c => c.ColumnReferences)
+			var asteriskColumnReferences = CurrentQueryBlock.AsteriskColumns.SelectMany(c => c.ColumnReferences)
 				.Where(c => c.ObjectNodeObjectReferences.Count == 1 && c.ObjectNodeObjectReferences.Single() == _currentObjectReference);
 
 			foreach (var columnReference in prefixedColumnReferences.Concat(asteriskColumnReferences))

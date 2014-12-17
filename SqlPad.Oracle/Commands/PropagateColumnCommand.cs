@@ -85,7 +85,7 @@ namespace SqlPad.Oracle.Commands
 						});
 				}
 
-				var isNotReferencedByAsterisk = parentQueryBlock.Columns.Count(c => c.IsAsterisk) == 0;
+				var isNotReferencedByAsterisk = parentQueryBlock.AsteriskColumns.Count == 0;
 				if (isNotReferencedByAsterisk)
 				{
 					var lastColumn = parentQueryBlock.Columns.LastOrDefault(c => c.HasExplicitDefinition);

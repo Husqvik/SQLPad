@@ -9,16 +9,23 @@ namespace SqlPad.Oracle
 	public class OracleQueryBlock : OracleReferenceContainer
 	{
 		private OracleDataObjectReference _selfObjectReference;
+		private bool? _hasRemoteAsteriskReferences;
+		private readonly List<OracleSelectListColumn> _columns = new List<OracleSelectListColumn>();
+		private readonly List<OracleSelectListColumn> _asteriskColumns = new List<OracleSelectListColumn>();
 
 		public OracleQueryBlock(OracleStatementSemanticModel semanticModel) : base(semanticModel)
 		{
-			Columns = new List<OracleSelectListColumn>();
 			AccessibleQueryBlocks = new List<OracleQueryBlock>();
 		}
 
 		public OracleDataObjectReference SelfObjectReference
 		{
 			get { return _selfObjectReference ?? BuildSelfObjectReference(); }
+		}
+
+		public bool HasRemoteAsteriskReferences
+		{
+			get { return _hasRemoteAsteriskReferences ?? (_hasRemoteAsteriskReferences = HasRemoteAsteriskReferencesInternal(this)).Value; }
 		}
 
 		private OracleDataObjectReference BuildSelfObjectReference()
@@ -42,8 +49,6 @@ namespace SqlPad.Oracle
 
 		public QueryBlockType Type { get; set; }
 		
-		public bool HasAsteriskClause { get; set; }
-
 		public StatementGrammarNode RootNode { get; set; }
 
 		public StatementGrammarNode WhereClause { get; set; }
@@ -64,7 +69,9 @@ namespace SqlPad.Oracle
 
 		public OracleStatement Statement { get; set; }
 
-		public IList<OracleSelectListColumn> Columns { get; private set; }
+		public IReadOnlyList<OracleSelectListColumn> Columns { get { return _columns; } }
+		
+		public IReadOnlyCollection<OracleSelectListColumn> AsteriskColumns { get { return _asteriskColumns; } }
 
 		public OracleSqlModelReference ModelReference { get; set; }
 
@@ -129,6 +136,37 @@ namespace SqlPad.Oracle
 				var objectReferences = ObjectReferences.Where(p => p.DatabaseLinkNode != null);
 				return programReferences.Concat(sequenceReferences).Concat(columnReferences).Concat(objectReferences);
 			}
+		}
+
+		public void AddSelectListColumn(OracleSelectListColumn column, int? index = null)
+		{
+			if (index.HasValue)
+			{
+				_columns.Insert(index.Value, column);
+			}
+			else
+			{
+				_columns.Add(column);
+			}
+
+			if (column.IsAsterisk)
+			{
+				_asteriskColumns.Add(column);
+			}
+		}
+
+		public int IndexOf(OracleSelectListColumn column)
+		{
+			return _columns.IndexOf(column);
+		}
+
+		private static bool HasRemoteAsteriskReferencesInternal(OracleQueryBlock queryBlock)
+		{
+			var hasRemoteAsteriskReferences = queryBlock._asteriskColumns.Any(c => (c.RootNode.TerminalCount == 1 && queryBlock.ObjectReferences.Any(r => r.DatabaseLinkNode != null)) || (c.ColumnReferences.Any(r => r.ValidObjectReference != null && r.ValidObjectReference.DatabaseLinkNode != null)));
+
+			OracleQueryBlock childQueryBlock;
+			return hasRemoteAsteriskReferences ||
+				   queryBlock.ObjectReferences.Any(o => o.QueryBlocks.Count == 1 && (childQueryBlock = o.QueryBlocks.First()) != queryBlock && HasRemoteAsteriskReferencesInternal(childQueryBlock));
 		}
 	}
 

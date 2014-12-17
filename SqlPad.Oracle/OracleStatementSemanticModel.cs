@@ -532,14 +532,8 @@ namespace SqlPad.Oracle
 				queryBlock.ObjectReferences.Clear();
 				queryBlock.ObjectReferences.Add(queryBlock.ModelReference);
 
-				for (var i = queryBlock.Columns.Count - 1; i >= 0; i--)
+				foreach (var column in queryBlock.AsteriskColumns)
 				{
-					var column = queryBlock.Columns[i];
-					if (!column.IsAsterisk)
-					{
-						continue;
-					}
-
 					if (column.RootNode.TerminalCount == 1)
 					{
 						_asteriskTableReferences[column] = new[] { queryBlock.ModelReference };
@@ -956,7 +950,7 @@ namespace SqlPad.Oracle
 					continue;
 				
 				queryBlock.ParentCorrelatedQueryBlock = GetQueryBlock(parentExpression);
-				foreach (var asteriskColumn in queryBlock.Columns.Where(c => c.IsAsterisk))
+				foreach (var asteriskColumn in queryBlock.AsteriskColumns)
 				{
 					asteriskColumn.RegisterOuterReference();
 				}
@@ -1112,7 +1106,7 @@ namespace SqlPad.Oracle
 			{
 				var asteriskColumn = asteriskTableReference.Key;
 				var ownerQueryBlock = asteriskColumn.Owner;
-				var columnIndex = ownerQueryBlock.Columns.IndexOf(asteriskColumn);
+				var columnIndex = ownerQueryBlock.IndexOf(asteriskColumn);
 				
 				foreach (var objectReference in asteriskTableReference.Value)
 				{
@@ -1179,7 +1173,7 @@ namespace SqlPad.Oracle
 
 						exposedColumn.ColumnReferences.Add(columnReference);
 
-						ownerQueryBlock.Columns.Insert(++columnIndex, exposedColumn);
+						ownerQueryBlock.AddSelectListColumn(exposedColumn, ++columnIndex);
 					}
 				}
 			}
@@ -1719,13 +1713,11 @@ namespace SqlPad.Oracle
 					IsAsterisk = true
 				};
 
-				queryBlock.HasAsteriskClause = true;
-
 				column.ColumnReferences.Add(CreateColumnReference(column, queryBlock, column, QueryBlockPlacement.SelectList, asteriskNode, null));
 
 				_asteriskTableReferences[column] = new List<OracleDataObjectReference>(queryBlock.ObjectReferences);
 
-				queryBlock.Columns.Add(column);
+				queryBlock.AddSelectListColumn(column);
 			}
 			else
 			{
@@ -1783,7 +1775,7 @@ namespace SqlPad.Oracle
 						CreateGrammarSpecificFunctionReferences(grammarSpecificFunctions, queryBlock, column.ProgramReferences, column);
 					}
 
-					queryBlock.Columns.Add(column);
+					queryBlock.AddSelectListColumn(column);
 				}
 			}
 		}

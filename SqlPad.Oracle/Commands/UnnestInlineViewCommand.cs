@@ -77,7 +77,7 @@ namespace SqlPad.Oracle.Commands
 
 			ExecutionContext.SegmentsToReplace.Add(segmentToRemove);
 
-			var objectPrefixAsteriskColumns = _parentQueryBlock.Columns.Where(c => c.IsAsterisk && c.ColumnReferences.Count == 1 && c.ColumnReferences[0].ObjectNode != null &&
+			var objectPrefixAsteriskColumns = _parentQueryBlock.AsteriskColumns.Where(c => c.ColumnReferences.Count == 1 && c.ColumnReferences[0].ObjectNode != null &&
 																				   c.ColumnReferences[0].ObjectNodeObjectReferences.Count == 1 && c.ColumnReferences[0].ObjectNodeObjectReferences.First().QueryBlocks.Count == 1 &&
 																				   c.ColumnReferences[0].ObjectNodeObjectReferences.First().QueryBlocks.First() == CurrentQueryBlock);
 

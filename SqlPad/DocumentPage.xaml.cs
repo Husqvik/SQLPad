@@ -1121,7 +1121,9 @@ namespace SqlPad
 
 		private void DocumentTabControlSelectionChangedHandler(object sender, SelectionChangedEventArgs selectionChangedEventArgs)
 		{
-			CloseToolTipWhenNotOpenByShortCut();
+			_toolTip.IsOpen = false;
+			_isToolTipOpenByCaretChange = false;
+			_isToolTipOpenByShortCut = false;
 		}
 
 		private void CaretPositionChangedHandler(object sender, EventArgs eventArgs)
