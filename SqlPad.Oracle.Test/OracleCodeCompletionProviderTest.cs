@@ -1674,6 +1674,39 @@ se";
 			items[0].StatementNode.ShouldBe(null);
 		}
 
+		[Test(Description = @"")]
+		public void TestSequencePseudoColumnSuggestion()
+		{
+			const string statement = @"SELECT TEST_SEQ.N FROM DUAL";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 17).ToList();
+			items.Count.ShouldBe(1);
+			items[0].Name.ShouldBe("NEXTVAL");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.PseudoColumn);
+			items[0].StatementNode.ShouldNotBe(null);
+		}
+
+		[Test(Description = @"")]
+		public void TestSequencePseudoColumnSuggestionRightAfterDot()
+		{
+			const string statement = @"SELECT TEST_SEQ. FROM DUAL";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 16).ToList();
+			items.Count.ShouldBe(2);
+			items[0].Name.ShouldBe("CURRVAL");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.PseudoColumn);
+			items[0].StatementNode.ShouldBe(null);
+			items[1].Name.ShouldBe("NEXTVAL");
+			items[1].Category.ShouldBe(OracleCodeCompletionCategory.PseudoColumn);
+			items[1].StatementNode.ShouldBe(null);
+		}
+
+		[Test(Description = @"")]
+		public void TestSequencePseudoColumnSuggestionWhenAlreadyInPlace()
+		{
+			const string statement = @"SELECT TEST_SEQ.NEXTVAL FROM DUAL";
+			var items = _codeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 17).ToList();
+			items.Count.ShouldBe(0);
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)

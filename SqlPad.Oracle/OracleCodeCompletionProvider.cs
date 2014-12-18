@@ -377,17 +377,31 @@ namespace SqlPad.Oracle
 			var functionReference = programReferences.SingleOrDefault(f => f.FunctionIdentifierNode == currentNode);
 			var addParameterList = functionReference == null || functionReference.ParameterListNode == null;
 
-			var tableReferences = (ICollection<OracleDataObjectReference>)referenceContainers.SelectMany(c => c.ObjectReferences).ToArray();
+			var tableReferenceSource = (ICollection<OracleObjectWithColumnsReference>)referenceContainers.SelectMany(c => c.ObjectReferences).ToArray();
+
 			var suggestedFunctions = Enumerable.Empty<ICodeCompletionItem>();
+			var suggestedItems = Enumerable.Empty<ICodeCompletionItem>();
 			if (objectIdentifierNode != null)
 			{
 				var objectName = objectIdentifierNode.Token.Value;
 				var fullyQualifiedName = OracleObjectIdentifier.Create(schemaName, objectName);
-				tableReferences = tableReferences
+				tableReferenceSource = tableReferenceSource
 					.Where(t => t.FullyQualifiedObjectName == fullyQualifiedName || (String.IsNullOrEmpty(fullyQualifiedName.Owner) && fullyQualifiedName.NormalizedName == t.FullyQualifiedObjectName.NormalizedName))
 					.ToArray();
 
-				if (tableReferences.Count == 0 && (partialName != null || currentNode.SourcePosition.IndexEnd < cursorPosition))
+				OracleSchemaObject schemaObject;
+				if (tableReferenceSource.Count == 0 && databaseModel.AllObjects.TryGetFirstValue(out schemaObject, databaseModel.GetPotentialSchemaObjectIdentifiers(fullyQualifiedName)))
+				{
+					var sequence = schemaObject.GetTargetSchemaObject() as OracleSequence;
+					if (sequence != null)
+					{
+						suggestedItems = sequence.Columns
+							.Where(c => c.Name != currentName.ToQuotedIdentifier() && CodeCompletionSearchHelper.IsMatch(c.Name, partialName))
+							.Select(c => CreateColumnCodeCompletionItem(c.Name.ToSimpleIdentifier(), null, nodeToReplace, OracleCodeCompletionCategory.PseudoColumn));
+					}
+				}
+
+				if (tableReferenceSource.Count == 0 && (partialName != null || currentNode.SourcePosition.IndexEnd < cursorPosition))
 				{
 					if (String.IsNullOrEmpty(schemaName))
 					{
@@ -499,15 +513,15 @@ namespace SqlPad.Oracle
 					.Concat(suggestedFunctions);
 			}
 
-			var columnCandidates = tableReferences
+			var columnCandidates = tableReferenceSource
 				.SelectMany(t => t.Columns
 					.Where(c =>
 						(currentNode.Id != Terminals.Identifier || c.Name != currentNode.Token.Value.ToQuotedIdentifier()) &&
 						(objectIdentifierNode == null && String.IsNullOrEmpty(partialName) ||
 						(c.Name != partialName.ToQuotedIdentifier() && CodeCompletionSearchHelper.IsMatch(c.Name, partialName))))
-					.Select(c => new { TableReference = t, Column = c }))
+					.Select(c => new { ObjectReference = t, Column = c }))
 					.GroupBy(c => c.Column.Name)
-					.ToDictionary(g => g.Key ?? String.Empty, g => g.Select(o => o.TableReference).ToArray());
+					.ToDictionary(g => g.Key ?? String.Empty, g => g.Select(o => o.ObjectReference).ToArray());
 
 			var suggestedColumns = new List<Tuple<string, OracleObjectIdentifier>>();
 			foreach (var columnCandidate in columnCandidates)
@@ -516,11 +530,13 @@ namespace SqlPad.Oracle
 					.Select(objectIdentifier => new Tuple<string, OracleObjectIdentifier>(columnCandidate.Key, objectIdentifier)));
 			}
 
-			var suggestedItems = suggestedColumns.Select(t => CreateColumnCodeCompletionItem(t.Item1, objectIdentifierNode == null ? t.Item2.ToString() : null, nodeToReplace));
+			var rowSourceColumnItems = suggestedColumns.Select(t => CreateColumnCodeCompletionItem(t.Item1, objectIdentifierNode == null ? t.Item2.ToString() : null, nodeToReplace));
+			suggestedItems = suggestedItems.Concat(rowSourceColumnItems);
 
 			if (CodeCompletionSearchHelper.IsMatch(OracleColumn.RowId, partialName))
 			{
-				var rowIdItems = tableReferences.Select(r => new { r.FullyQualifiedObjectName, DataObject = r.SchemaObject.GetTargetSchemaObject() as OracleTable })
+				var rowIdItems = tableReferenceSource
+					.Select(r => new { r.FullyQualifiedObjectName, DataObject = r.SchemaObject.GetTargetSchemaObject() as OracleTable })
 					.Where(t => t.DataObject != null && t.DataObject.Organization.In(OrganizationType.Heap, OrganizationType.Index))
 					.Distinct()
 					.Select(t => CreateColumnCodeCompletionItem(OracleColumn.RowId, objectIdentifierNode == null ? t.FullyQualifiedObjectName.ToString() : null, nodeToReplace, OracleCodeCompletionCategory.PseudoColumn));
@@ -529,12 +545,12 @@ namespace SqlPad.Oracle
 
 			if (partialName == null && currentNode.IsWithinSelectClause() && currentNode.GetParentExpression().GetParentExpression() == null)
 			{
-				suggestedItems = suggestedItems.Concat(CreateAsteriskColumnCompletionItems(tableReferences, objectIdentifierNode != null, nodeToReplace));
+				suggestedItems = suggestedItems.Concat(CreateAsteriskColumnCompletionItems(tableReferenceSource, objectIdentifierNode != null, nodeToReplace));
 			}
 
 			if (objectIdentifierNode == null)
 			{
-				var queryBlockReferencedObjects = tableReferences.Where(r => !String.IsNullOrEmpty(r.FullyQualifiedObjectName.ToString())).ToArray();
+				var queryBlockReferencedObjects = tableReferenceSource.Where(r => !String.IsNullOrEmpty(r.FullyQualifiedObjectName.ToString())).ToArray();
 				var referencedObjectCompletionData = queryBlockReferencedObjects
 					.Select(r =>
 						new ObjectReferenceCompletionData
@@ -589,7 +605,7 @@ namespace SqlPad.Oracle
 					});
 		}
 
-		private IEnumerable<OracleCodeCompletionItem> CreateAsteriskColumnCompletionItems(IEnumerable<OracleDataObjectReference> tables, bool skipFirstObjectIdentifier, StatementGrammarNode nodeToReplace)
+		private IEnumerable<OracleCodeCompletionItem> CreateAsteriskColumnCompletionItems(IEnumerable<OracleObjectWithColumnsReference> tables, bool skipFirstObjectIdentifier, StatementGrammarNode nodeToReplace)
 		{
 			var builder = new StringBuilder();
 			

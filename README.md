@@ -158,7 +158,7 @@ Configuration
 
 #####SqlPad.exe.config
 
-Connection string must be Oracle ADO.NET compliant.
+Connection string must be Oracle ADO.NET compliant, see [http://www.oracle.com/technetwork/topics/dotnet/downloads/install121012-2088160.html](http://www.oracle.com/technetwork/topics/dotnet/downloads/install121012-2088160.html).
 
 	<connectionStrings>
 		<clear/>
