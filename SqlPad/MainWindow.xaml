@@ -5,7 +5,7 @@
 		xmlns:dragDrop="clr-namespace:SqlPad.DragDrop"
         xmlns:findReplace="clr-namespace:SqlPad.FindReplace"
         xmlns:commands="clr-namespace:SqlPad.Commands"
-        Title="SQL Pad 0.2 ALPHA" Height="640" Width="960"
+        Height="640" Width="960"
 		MinWidth="640" MinHeight="360"
 		ResizeMode="CanResizeWithGrip"
 		Drop="DropObjectHandler">

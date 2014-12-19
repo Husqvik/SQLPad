@@ -1,15 +1,23 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using System.Text;
 
 namespace SqlPad
 {
 	public partial class App
 	{
+		public static readonly string VersionTimestamp;
+		public static readonly string Version;
+
 		static App()
 		{
 			AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionHandler;
+			var assembly = typeof(App).Assembly;
+			Version = assembly.GetName().Version.ToString();
+			var buildInfo = assembly.GetCustomAttribute<AssemblyBuildInfo>();
+			VersionTimestamp = buildInfo.VersionTimestampString;
 		}
 
 		internal static void CreateErrorLog(object exceptionObject)

@@ -87,7 +87,7 @@ CTRL + SHIFT + L           - Set text to lower case
 
 Context actions
 ---------------
-@SELECT:
+#####@SELECT:
 
 Wrap current query block as inline view
 
@@ -106,7 +106,7 @@ Clean redundant symbols
 Add CREATE TABLE AS
 
 
-@Identifier:
+#####@Identifier:
 
 Clean redundant symbols
 
@@ -121,29 +121,29 @@ Add missing column
 Add to GROUP BY
 
 
-@Row source:
+#####@Row source:
 
 Add alias
 
 Create script
 
 
-@Bind variable:
+#####@Bind variable:
 
 Convert to literal
 
 
-@Literal
+#####@Literal
 
 Convert to bind variable
 
 
-@*
+#####@*
 
 Expand asterisk (hold SHIFT to select specific column)
 
 
-@INTO
+#####@INTO
 
 Add columns (hold SHIFT to select specific column)
 

@@ -322,14 +322,60 @@ namespace SqlPad.Oracle
 			{
 				if (sequenceReference.DatabaseLinkNode == null)
 				{
-					var semanticError = !sequenceReference.Placement.In(QueryBlockPlacement.None, QueryBlockPlacement.SelectList) ? OracleSemanticErrorType.ObjectCannotBeUsed : OracleSemanticErrorType.None;
-					validationModel.ObjectNodeValidity[sequenceReference.ObjectNode] = new InvalidNodeValidationData(semanticError) { IsRecognized = true, Node = sequenceReference.ObjectNode };
+					var mainQueryBlockOrderByClause = GetOrderByClauseIfWithinMainQueryBlock(sequenceReference);
+					var isWithinMainQueryBlockWithOrderByClause = mainQueryBlockOrderByClause != null;
+					if (isWithinMainQueryBlockWithOrderByClause || !sequenceReference.Placement.In(QueryBlockPlacement.None, QueryBlockPlacement.SelectList) ||
+					    IsNotWithinMainQueryBlock(sequenceReference))
+					{
+						validationModel.InvalidNonTerminals[sequenceReference.RootNode] =
+							new InvalidNodeValidationData(OracleSemanticErrorType.ObjectCannotBeUsed)
+							{
+								IsRecognized = true, Node = sequenceReference.RootNode
+							};
+
+						if (isWithinMainQueryBlockWithOrderByClause)
+						{
+							validationModel.InvalidNonTerminals[mainQueryBlockOrderByClause] =
+							new InvalidNodeValidationData(OracleSemanticErrorType.ClauseNotAllowed)
+							{
+								IsRecognized = true,
+								Node = mainQueryBlockOrderByClause
+							};
+						}
+					}
 				}
 				else
 				{
 					ValidateDatabaseLinkReference(validationModel.ObjectNodeValidity, sequenceReference);
 				}
 			}
+		}
+
+		private static bool IsNotWithinMainQueryBlock(OracleReference reference)
+		{
+			return reference.Owner != null && reference.Owner != reference.Owner.SemanticModel.MainQueryBlock;
+		}
+
+		private static StatementGrammarNode GetOrderByClauseIfWithinMainQueryBlock(OracleReference reference)
+		{
+			var queryBlock = reference.Owner;
+			if (queryBlock == null || queryBlock != queryBlock.SemanticModel.MainQueryBlock)
+			{
+				return null;
+			}
+			
+			if (queryBlock.OrderByClause != null)
+			{
+				return queryBlock.OrderByClause;
+			}
+
+			if (queryBlock.PrecedingConcatenatedQueryBlock == null)
+			{
+				return null;
+			}
+
+			var firstQueryBlock = queryBlock.AllPrecedingConcatenatedQueryBlocks.LastOrDefault();
+			return firstQueryBlock == null ? null :  firstQueryBlock.OrderByClause;
 		}
 
 		private static void ValidateDatabaseLinkReference(IDictionary<StatementGrammarNode, INodeValidationData> nodeValidityDictionary, OracleReference databaseLinkReference)
@@ -484,14 +530,8 @@ namespace SqlPad.Oracle
 				return;
 			}
 
-			var queryBlock = referenceContainer as OracleQueryBlock;
-			var selectColumn = referenceContainer as OracleSelectListColumn;
-			if (selectColumn != null)
-			{
-				queryBlock = selectColumn.Owner;
-			}
-
-			var hasRemoteAsteriskReferences = queryBlock != null && queryBlock.HasRemoteAsteriskReferences;
+			var firstReference = referenceContainer.ColumnReferences[0];
+			var hasRemoteAsteriskReferences = firstReference.Owner != null && firstReference.Owner.HasRemoteAsteriskReferences;
 
 			foreach (var columnReference in referenceContainer.ColumnReferences.Where(columnReference => columnReference.SelectListColumn == null || columnReference.SelectListColumn.HasExplicitDefinition))
 			{

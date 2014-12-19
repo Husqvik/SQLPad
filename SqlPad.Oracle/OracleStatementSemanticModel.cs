@@ -9,6 +9,7 @@ namespace SqlPad.Oracle
 {
 	public class OracleStatementSemanticModel : IStatementSemanticModel
 	{
+		private OracleQueryBlock _mainQueryBlock;
 		private Dictionary<StatementGrammarNode, OracleQueryBlock> _queryBlockNodes = new Dictionary<StatementGrammarNode, OracleQueryBlock>();
 		private readonly List<OracleInsertTarget> _insertTargets = new List<OracleInsertTarget>();
 		private readonly List<OracleLiteral> _literals = new List<OracleLiteral>();
@@ -70,10 +71,11 @@ namespace SqlPad.Oracle
 		{
 			get
 			{
-				return _queryBlockNodes.Values
-					.Where(qb => qb.Type == QueryBlockType.Normal)
-					.OrderBy(qb => qb.RootNode.Level)
-					.FirstOrDefault();
+				return _mainQueryBlock ??
+				       (_mainQueryBlock = _queryBlockNodes.Values
+					       .Where(qb => qb.Type == QueryBlockType.Normal)
+					       .OrderBy(qb => qb.RootNode.Level)
+					       .FirstOrDefault());
 			}
 		}
 

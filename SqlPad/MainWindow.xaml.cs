@@ -20,6 +20,8 @@ namespace SqlPad
 	/// </summary>
 	public partial class MainWindow
 	{
+		private const string TitleTemplate = "SQL Pad {0} ALPHA ({1})";
+
 		private readonly FindReplaceManager _findReplaceManager;
 		private readonly List<TextEditorAdapter> _editorAdapters = new List<TextEditorAdapter>();
 		private readonly ContextMenu _recentDocumentsMenu;
@@ -35,6 +37,8 @@ namespace SqlPad
 			}
 
 			InitializeComponent();
+
+			Title = String.Format(TitleTemplate, App.Version, App.VersionTimestamp);
 
 			_recentDocumentsMenu = (ContextMenu)Resources["RecentFileMenu"];
 			_recentDocumentsMenu.PlacementTarget = this;

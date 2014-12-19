@@ -1121,6 +1121,49 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		}
 
 		[Test(Description = @"")]
+		public void TestSequenceCombinedWithOrderByClause()
+		{
+			const string sqlText = "SELECT TEST_SEQ.NEXTVAL FROM DUAL ORDER BY 1";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var nodeValidityDictionary = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var nonTerminalValidity = nodeValidityDictionary.Values.ToList();
+			nonTerminalValidity.Count.ShouldBe(2);
+			nonTerminalValidity[0].IsRecognized.ShouldBe(true);
+			nonTerminalValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.ObjectCannotBeUsed);
+			nonTerminalValidity[0].ToolTipText.ShouldBe(OracleSemanticErrorType.ObjectCannotBeUsed);
+			nonTerminalValidity[0].Node.ShouldNotBe(null);
+			nonTerminalValidity[0].Node.TerminalCount.ShouldBe(3);
+			nonTerminalValidity[1].IsRecognized.ShouldBe(true);
+			nonTerminalValidity[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.ClauseNotAllowed);
+			nonTerminalValidity[1].ToolTipText.ShouldBe(OracleSemanticErrorType.ClauseNotAllowed);
+			nonTerminalValidity[1].Node.ShouldNotBe(null);
+			nonTerminalValidity[1].Node.TerminalCount.ShouldBe(3);
+		}
+
+		[Test(Description = @"")]
+		public void TestSequenceWithinSubquery()
+		{
+			const string sqlText = "SELECT NEXTVAL FROM (SELECT TEST_SEQ.NEXTVAL FROM DUAL)";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var nodeValidityDictionary = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var nonTerminalValidity = nodeValidityDictionary.Values.ToList();
+			nonTerminalValidity.Count.ShouldBe(1);
+			nonTerminalValidity[0].IsRecognized.ShouldBe(true);
+			nonTerminalValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.ObjectCannotBeUsed);
+			nonTerminalValidity[0].ToolTipText.ShouldBe(OracleSemanticErrorType.ObjectCannotBeUsed);
+			nonTerminalValidity[0].Node.ShouldNotBe(null);
+			nonTerminalValidity[0].Node.TerminalCount.ShouldBe(3);
+		}
+
+		[Test(Description = @"")]
 		public void TestColumnValidityNodesWithSequence()
 		{
 			const string sqlText = "SELECT TEST_SEQ.NEXTVAL, HUSQVIK.TEST_SEQ.\"NEXTVAL\", SYNONYM_TO_TEST_SEQ.CURRVAL FROM DUAL WHERE TEST_SEQ.\"CURRVAL\" < TEST_SEQ.NEXTVAL";
@@ -1129,18 +1172,22 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
-			var nodeValidityDictionary = validationModel.ObjectNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
-			var objectNodeValidity = nodeValidityDictionary.Values.ToList();
-			objectNodeValidity.Count.ShouldBe(7);
-			objectNodeValidity.ForEach(n => n.IsRecognized.ShouldBe(true));
-			objectNodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
-			objectNodeValidity[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
-			objectNodeValidity[2].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
-			objectNodeValidity[3].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
-			objectNodeValidity[4].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
-			objectNodeValidity[5].SemanticErrorType.ShouldBe(OracleSemanticErrorType.ObjectCannotBeUsed);
-			objectNodeValidity[6].SemanticErrorType.ShouldBe(OracleSemanticErrorType.ObjectCannotBeUsed);
-			objectNodeValidity[6].ToolTipText.ShouldBe("Object cannot be used here");
+			var nodeValidityDictionary = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var nonTerminalValidity = nodeValidityDictionary.Values.ToList();
+			nonTerminalValidity.Count.ShouldBe(2);
+			nonTerminalValidity.ForEach(n => n.IsRecognized.ShouldBe(true));
+			nonTerminalValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.ObjectCannotBeUsed);
+			nonTerminalValidity[0].ToolTipText.ShouldBe(OracleSemanticErrorType.ObjectCannotBeUsed);
+			nonTerminalValidity[0].Node.ShouldNotBe(null);
+			nonTerminalValidity[0].Node.TerminalCount.ShouldBe(3);
+			nonTerminalValidity[0].Node.SourcePosition.IndexStart.ShouldBe(97);
+			nonTerminalValidity[0].Node.SourcePosition.Length.ShouldBe(18);
+			nonTerminalValidity[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.ObjectCannotBeUsed);
+			nonTerminalValidity[1].ToolTipText.ShouldBe(OracleSemanticErrorType.ObjectCannotBeUsed);
+			nonTerminalValidity[1].Node.ShouldNotBe(null);
+			nonTerminalValidity[1].Node.TerminalCount.ShouldBe(3);
+			nonTerminalValidity[1].Node.SourcePosition.IndexStart.ShouldBe(118);
+			nonTerminalValidity[1].Node.SourcePosition.Length.ShouldBe(16);
 
 			nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
 			var columnNodeValidity = nodeValidityDictionary.Values.ToList();

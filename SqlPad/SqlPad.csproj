@@ -96,6 +96,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="AssemblyBuildInfo.cs" />
     <Compile Include="BinaryDataHelper.cs" />
     <Compile Include="BindVariableModel.cs" />
     <Compile Include="CellValueConverter.cs" />
