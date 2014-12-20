@@ -2271,6 +2271,26 @@ FROM
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 		}
 
+		[Test(Description = @"")]
+		public void TestObsoleteTheClause()
+		{
+			const string statement1 = "SELECT * FROM THE(SELECT SQLPAD.PIPELINED_FUNCTION() FROM DUAL)";
+
+			var statements = Parser.Parse(statement1).ToArray();
+			var statement = statements.Single().Validate();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+		}
+
+		[Test(Description = @"")]
+		public void TestTableCollectionExpressionWithSubquery()
+		{
+			const string statement1 = "SELECT * FROM TABLE(SELECT SQLPAD.PIPELINED_FUNCTION() FROM DUAL)(+) AS OF TIMESTAMP SYSDATE - 0.01 ALIAS";
+
+			var statements = Parser.Parse(statement1).ToArray();
+			var statement = statements.Single().Validate();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+		}
+
 		public class IsRuleValid
 		{
 			[Test(Description = @"")]
