@@ -1093,9 +1093,27 @@
         <Sequence>
           <NonTerminal Id="ReturnOrReturning" />
           <NonTerminal Id="ExpressionList" />
+          <NonTerminal Id="IntoVariableClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="IntoVariableClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="BulkCollect" IsOptional="true" />
           <Terminal Id="Into" />
           <NonTerminal Id="BindVariableExpression" />
           <NonTerminal Id="BindVariableExpressionCommaChainedList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="BulkCollect">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Bulk" />
+          <Terminal Id="Collect" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -1467,6 +1485,7 @@
           <Terminal Id="Select" />
           <NonTerminal Id="DistinctModifier" IsOptional="true" />
           <NonTerminal Id="SelectList" />
+          <NonTerminal Id="IntoVariableClause" IsOptional="true" />
           <Terminal Id="From" />
           <NonTerminal Id="FromClause" />
           <NonTerminal Id="WhereClause" IsOptional="true" />
@@ -6610,7 +6629,53 @@
       </Sequences>
     </Rule>
     
-      <Rule StartingNonTerminal="PlSqlWhileLoopStatement">
+    <Rule StartingNonTerminal="PlSqlAssignmentStatement">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="AssignmentStatementTarget" />
+          <Terminal Id="AssignmentOperator" />
+          <NonTerminal Id="Expression" />
+          <Terminal Id="Semicolon" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AssignmentStatementTarget">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Identifier" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="Expression" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ObjectPrefix" IsOptional="true" />
+          <Terminal Id="Identifier" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="PlSqlBlock">
+      <Sequences>
+        <Sequence>
+          <!--<NonTerminal Id="PlSqlLabelList" IsOptional="true" />-->
+          <NonTerminal Id="ProgramDeclareSection" IsOptional="true" />
+          <NonTerminal Id="ProgramBody" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="PlSqlGoToStatement">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="GoTo" />
+          <Terminal Id="LabelIdentifier" />
+          <Terminal Id="Semicolon" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="PlSqlWhileLoopStatement">
       <Sequences>
         <Sequence>
           <Terminal Id="While" />
@@ -6689,7 +6754,7 @@
     <Rule StartingNonTerminal="CursorIdentifierOrHostVariable">
       <Sequences>
         <Sequence>
-          <Terminal Id="Identifier" />
+          <Terminal Id="CursorIdentifier" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="BindVariableExpression" />
@@ -10955,23 +11020,6 @@
     <Terminal Id="Until" Value="UNTIL" />
     <Terminal Id="NonAvailableValues" Value="NAV" />
 
-    <!-- Oracle 12c specific -->
-    <!-- Cross/outer apply clause -->
-    <Terminal Id="Apply" Value="APPLY" />
-
-    <!-- Lateral join -->
-    <Terminal Id="Lateral" Value="LATERAL" />
-
-    <!-- Flashback period for -->
-    <Terminal Id="Period" Value="PERIOD" />
-
-    <!-- Row limiting clause -->
-    <Terminal Id="Offset" Value="OFFSET" />
-    <Terminal Id="Ties" Value="TIES" />
-    <Terminal Id="Next" Value="NEXT" />
-    <Terminal Id="Fetch" Value="FETCH" />
-    <Terminal Id="Percent" Value="PERCENT" />
-
     <!-- Subquery factoring search and cycle -->
     <Terminal Id="Cycle" Value="CYCLE" />
     <Terminal Id="Search" Value="SEARCH" />
@@ -11331,5 +11379,25 @@
     <Terminal Id="CharacterCode" Value="CHR" />
     <Terminal Id="NationalCharacterSet" Value="NCHAR_CS" />
     <Terminal Id="The" Value="THE" />
+    
+    <!-- PL/SQL -->
+    <Terminal Id="Bulk" Value="BULK" />
+  
+    <!-- Oracle 12c specific -->
+    <!-- Cross/outer apply clause -->
+    <Terminal Id="Apply" Value="APPLY" />
+
+    <!-- Lateral join -->
+    <Terminal Id="Lateral" Value="LATERAL" />
+
+    <!-- Flashback period for -->
+    <Terminal Id="Period" Value="PERIOD" />
+
+    <!-- Row limiting clause -->
+    <Terminal Id="Offset" Value="OFFSET" />
+    <Terminal Id="Ties" Value="TIES" />
+    <Terminal Id="Next" Value="NEXT" />
+    <Terminal Id="Fetch" Value="FETCH" />
+    <Terminal Id="Percent" Value="PERCENT" />
  </Terminals>
 </SqlGrammar>

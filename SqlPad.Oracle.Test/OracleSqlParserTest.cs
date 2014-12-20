@@ -2291,6 +2291,26 @@ FROM
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 		}
 
+		[Test(Description = @"")]
+		public void TestSelectIntoScalarVariable()
+		{
+			const string statement1 = "SELECT DUMMY, DUMMY INTO :X, :Y FROM DUAL";
+
+			var statements = Parser.Parse(statement1).ToArray();
+			var statement = statements.Single().Validate();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+		}
+
+		[Test(Description = @"")]
+		public void TestSelectIntoCollectionVariable()
+		{
+			const string statement1 = "SELECT SELECTION_ID, NAME BULK COLLECT INTO :X, :Y FROM SELECTION";
+
+			var statements = Parser.Parse(statement1).ToArray();
+			var statement = statements.Single().Validate();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+		}
+
 		public class IsRuleValid
 		{
 			[Test(Description = @"")]
@@ -2330,7 +2350,7 @@ FROM
 				var node = Parser.Parse(statement1).Single().RootNode.LastTerminalNode;
 				var terminalCandidates = Parser.GetTerminalCandidates(node).OrderBy(t => t).ToArray();
 
-				var expectedTerminals = new[] { Terminals.Comma, Terminals.From };
+				var expectedTerminals = new[] { Terminals.Bulk, Terminals.Comma, Terminals.From, Terminals.Into };
 				terminalCandidates.ShouldBe(expectedTerminals);
 			}
 
@@ -2341,7 +2361,7 @@ FROM
 				var node = Parser.Parse(statement2).Single().RootNode.LastTerminalNode;
 				var terminalCandidates = Parser.GetTerminalCandidates(node).OrderBy(t => t).ToArray();
 
-				var expectedTerminals = new[] { Terminals.As, Terminals.ColumnAlias, Terminals.Comma, Terminals.From, Terminals.MathDivide, Terminals.MathFactor, Terminals.MathMinus, Terminals.MathPlus, Terminals.OperatorConcatenation };
+				var expectedTerminals = new[] { Terminals.As, Terminals.Bulk, Terminals.ColumnAlias, Terminals.Comma, Terminals.From, Terminals.Into, Terminals.MathDivide, Terminals.MathFactor, Terminals.MathMinus, Terminals.MathPlus, Terminals.OperatorConcatenation };
 				terminalCandidates.ShouldBe(expectedTerminals);
 			}
 
