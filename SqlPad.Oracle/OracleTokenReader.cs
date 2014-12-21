@@ -12,9 +12,6 @@ namespace SqlPad.Oracle
 	{
 		private readonly TextReader _sqlReader;
 
-		private readonly HashSet<char> _singleCharacterTerminals =
-			new HashSet<char> { '(', ')', ',', ';', '+', '@', '[', ']' };
-
 		private OracleTokenReader(TextReader sqlReader)
 		{
 			if (sqlReader == null)
@@ -56,21 +53,21 @@ namespace SqlPad.Oracle
 			char? candidateCharacter = null;
 			char? quotingInitializer = null;
 
-			var specialMode = new SpecialModeFlags();
+			var specialMode = new SpecialMode();
 			var flags = new RecognizedFlags();
+			var previousFlags = new RecognizedFlags();
 
 			int characterCode;
 			while ((characterCode = _sqlReader.Read()) != -1)
 			{
 				index++;
 				var character = (char)characterCode;
-				var isSign = character == '+' || character == '-';
 
-				var previousFlags = flags;
-				FindFlags(specialMode, character, out flags);
+				flags.CopyToPrevious(previousFlags);
+				FindFlags(specialMode, character, flags);
 
 				var isBlank = flags.IsSpace || flags.IsLineTerminator;
-				var isSingleCharacterTerminal = _singleCharacterTerminals.Contains(character);
+				var isSingleCharacterTerminal = character == ',' || character == '(' || character == ')' || character == '+' || character == ';' || character == '@' || character == '[' || character == ']';
 				var characterYielded = false;
 				
 				if (flags.BlockCommentBeginCandidate && previousFlags.IsLineTerminator)
@@ -84,7 +81,7 @@ namespace SqlPad.Oracle
 						builder.Append("\n/\n");
 						candidateCharacter = null;
 						yield return BuildToken(builder, index, null);
-						previousFlags.Reset();
+						previousFlags.BlockCommentBeginCandidate = false;
 					}
 
 					sqlPlusTerminatorCandidate = false;
@@ -123,7 +120,7 @@ namespace SqlPad.Oracle
 					candidateCharacter = null;
 				}
 
-				if (specialMode.InString)
+				if ((specialMode.Flags & SpecialModeFlags.InString) != 0)
 				{
 					var isSimpleStringTerminator = !inQuotedString && previousFlags.StringEndCandidate && character != '\'';
 					var isQuotedStringTerminator = inQuotedString && character == '\'' && IsQuotedStringClosingCharacter(quotingInitializer.Value, previousFlags.Character);
@@ -136,19 +133,19 @@ namespace SqlPad.Oracle
 						var addedCharacter = isQuotedStringTerminator ? (char?)character : null;
 						yield return BuildToken(builder, index - indexOffset, addedCharacter);
 
-						specialMode.InString = false;
+						specialMode.Flags &= ~SpecialModeFlags.InString;
 						inQuotedString = false;
 						quotingInitializer = null;
 						characterYielded = isQuotedStringTerminator;
 
-						FindFlags(specialMode, character, out flags);
+						FindFlags(specialMode, character, flags);
 					}
 					else if (previousFlags.StringEndCandidate && flags.StringEndCandidate && character == '\'')
 					{
 						flags.StringEndCandidate = false;
 					}
 				}
-				else if (!specialMode.IsEnabled && character == '\'')
+				else if (specialMode.Flags == 0 && character == '\'')
 				{
 					AppendCandidateCharacter(builder, ref candidateCharacter);
 
@@ -159,10 +156,10 @@ namespace SqlPad.Oracle
 
 					inQuotedString = previousFlags.QuotedStringCandidate;
 
-					specialMode.InString = true;
+					specialMode.Flags |= SpecialModeFlags.InString;
 				}
 
-				if (previousFlags.BlockCommentBeginCandidate && !specialMode.IsEnabled)
+				if (previousFlags.BlockCommentBeginCandidate && specialMode.Flags == 0)
 				{
 					if (builder.Length > 0)
 					{
@@ -171,7 +168,7 @@ namespace SqlPad.Oracle
 
 					if (character == '*')
 					{
-						specialMode.CommentType = CommentType.Block;
+						specialMode.Flags |= SpecialModeFlags.InBlockComment;
 						AppendCandidateCharacter(builder, ref candidateCharacter);
 					}
 					else
@@ -184,7 +181,7 @@ namespace SqlPad.Oracle
 					flags.BlockCommentEndCandidate = false;
 				}
 
-				if (previousFlags.LineCommentCandidate && !specialMode.IsEnabled)
+				if (previousFlags.LineCommentCandidate && specialMode.Flags == 0)
 				{
 					if (builder.Length > 0)
 					{
@@ -195,7 +192,7 @@ namespace SqlPad.Oracle
 
 					if (character == '-')
 					{
-						specialMode.CommentType = CommentType.Line;
+						specialMode.Flags |= SpecialModeFlags.InLineComment;
 					}
 					else
 					{
@@ -241,7 +238,8 @@ namespace SqlPad.Oracle
 				{
 					if (!specialMode.InExponent && previousFlags.ExponentCandidate)
 					{
-						if (flags.IsDigit || isSign)
+						var isSign = character == '+' || character == '-';
+						if (isSign || flags.IsDigit)
 						{
 							specialMode.InExponent = true;
 
@@ -329,7 +327,7 @@ namespace SqlPad.Oracle
 					}
 				}
 
-				if (specialMode.InQuotedIdentifier && character == '"')
+				if ((specialMode.Flags & SpecialModeFlags.InQuotedIdentifier) != 0 && character == '"')
 				{
 					AppendCandidateCharacter(builder, ref candidateCharacter);
 
@@ -339,9 +337,9 @@ namespace SqlPad.Oracle
 					}
 
 					characterYielded = true;
-					specialMode.InQuotedIdentifier = false;
+					specialMode.Flags &= ~SpecialModeFlags.InQuotedIdentifier;
 				}
-				else if (!specialMode.IsEnabled && character == '"')
+				else if (specialMode.Flags == 0 && character == '"')
 				{
 					AppendCandidateCharacter(builder, ref candidateCharacter);
 
@@ -350,65 +348,7 @@ namespace SqlPad.Oracle
 						yield return BuildToken(builder, index - 1, null);
 					}
 
-					specialMode.InQuotedIdentifier = true;
-				}
-
-				if (!specialMode.IsEnabled && (isBlank || isSingleCharacterTerminal || character == '*'))
-				{
-					specialMode.InNumber = false;
-
-					AppendCandidateCharacter(builder, ref candidateCharacter);
-					
-					if (builder.Length > 0)
-					{
-						yield return BuildToken(builder, index - 1, null);
-					}
-
-					if (!isBlank)
-					{
-						characterYielded = true;
-						yield return BuildToken(character, index);
-					}
-
-					previousFlags.Reset();
-				}
-				
-				if (flags.IsLineTerminator && specialMode.CommentType == CommentType.Line)
-				{
-					if (includeCommentBlocks)
-					{
-						yield return BuildToken(builder, index, character, CommentType.Line);
-					}
-					else
-					{
-						builder.Clear();
-					}
-
-					characterYielded = true;
-					specialMode.CommentType = CommentType.None;
-					candidateCharacter = null;
-				}
-
-				if (previousFlags.BlockCommentEndCandidate && specialMode.CommentType == CommentType.Block)
-				{
-					if (character == '/')
-					{
-						specialMode.CommentType = CommentType.None;
-
-						if (includeCommentBlocks)
-						{
-							yield return BuildToken(builder, index, character, CommentType.Block);
-						}
-						else
-						{
-							builder.Clear();
-						}
-
-						characterYielded = true;
-					}
-
-					candidateCharacter = null;
-					flags.BlockCommentBeginCandidate = false;
+					specialMode.Flags |= SpecialModeFlags.InQuotedIdentifier;
 				}
 
 				if (previousFlags.RelationalOperatorCandidate)
@@ -450,45 +390,98 @@ namespace SqlPad.Oracle
 						builder.Append(candidateCharacter.Value);
 						indexOffset = 0;
 						characterYielded = true;
+						flags.ConcatenationCandidate = false;
 					}
 
 					yield return BuildToken(builder, index - indexOffset, null);
 
-					if (characterYielded)
-					{
-						flags.ConcatenationCandidate = false;
-					}
-
 					candidateCharacter = null;
 				}
 
-				var candidateMode = flags.ConcatenationCandidate || flags.OptionalParameterCandidate || flags.LineCommentCandidate || flags.BlockCommentBeginCandidate ||
-									flags.RelationalOperatorCandidate || flags.IsDecimalCandidate || flags.ExponentCandidate || flags.AssignmentOperatorCandidate || flags.LabelMarkerCandidate;
+				if (specialMode.Flags == 0 && (isBlank || isSingleCharacterTerminal || character == '*'))
+				{
+					specialMode.InNumber = false;
+
+					AppendCandidateCharacter(builder, ref candidateCharacter);
+					
+					if (builder.Length > 0)
+					{
+						yield return BuildToken(builder, index - 1, null);
+					}
+
+					if (!isBlank)
+					{
+						characterYielded = true;
+						yield return BuildToken(character, index);
+					}
+				}
+				
+				if (flags.IsLineTerminator && (specialMode.Flags & SpecialModeFlags.InLineComment) != 0)
+				{
+					if (includeCommentBlocks)
+					{
+						yield return BuildToken(builder, index, character, CommentType.Line);
+					}
+					else
+					{
+						builder.Clear();
+					}
+
+					characterYielded = true;
+					specialMode.Flags &= ~(SpecialModeFlags.InBlockComment | SpecialModeFlags.InLineComment);
+					candidateCharacter = null;
+				}
+
+				if (previousFlags.BlockCommentEndCandidate && (specialMode.Flags & SpecialModeFlags.InBlockComment) != 0)
+				{
+					if (character == '/')
+					{
+						specialMode.Flags &= ~(SpecialModeFlags.InBlockComment | SpecialModeFlags.InLineComment);
+
+						if (includeCommentBlocks)
+						{
+							yield return BuildToken(builder, index, character, CommentType.Block);
+						}
+						else
+						{
+							builder.Clear();
+						}
+
+						characterYielded = true;
+					}
+
+					candidateCharacter = null;
+					flags.BlockCommentBeginCandidate = false;
+				}
 
 				if (!characterYielded)
 				{
-					if (candidateMode && !specialMode.IsEnabled)
+					var candidateMode = flags.ConcatenationCandidate || flags.OptionalParameterCandidate || flags.LineCommentCandidate || flags.BlockCommentBeginCandidate ||
+										flags.RelationalOperatorCandidate || flags.IsDecimalCandidate || flags.ExponentCandidate || flags.AssignmentOperatorCandidate || flags.LabelMarkerCandidate;
+
+					if (candidateMode && specialMode.Flags == 0)
 					{
 						candidateCharacter = character;
 					}
-					else if (!isBlank || specialMode.IsEnabled)
+					else if (!isBlank || specialMode.Flags > 0)
 					{
 						builder.Append(character);
 					}
 				}
 			}
 
-			if (specialMode.CommentType == CommentType.None || includeCommentBlocks)
+			var commentType = (CommentType)(specialMode.Flags & (SpecialModeFlags.InLineComment | SpecialModeFlags.InBlockComment));
+			if (commentType == CommentType.None || includeCommentBlocks)
 			{
 				var indexOffset = candidateCharacter.HasValue ? 1 : 0;
 				if (builder.Length > 0)
 				{
-					yield return new OracleToken(builder.ToString(), index - builder.Length - indexOffset, specialMode.CommentType);
+					yield return new OracleToken(builder.ToString(), index - builder.Length - indexOffset, commentType);
 				}
 
 				if (candidateCharacter.HasValue)
 				{
-					yield return new OracleToken(new String(candidateCharacter.Value, 1), index - indexOffset, specialMode.CommentType);
+					yield return new OracleToken(new String(candidateCharacter.Value, 1), index - indexOffset, commentType);
 				}
 			}
 		}
@@ -538,62 +531,69 @@ namespace SqlPad.Oracle
 			return token;
 		}
 
-		private static void FindFlags(SpecialModeFlags specialMode, char character, out RecognizedFlags flags)
+		private static void FindFlags(SpecialMode specialMode, char character, RecognizedFlags flags)
 		{
-			flags = new RecognizedFlags { Character = character };
+			flags.Reset();
+			flags.Character = character;
+
+			var specialModeFlags = specialMode.Flags;
+			var inBlockComment = (specialModeFlags & SpecialModeFlags.InBlockComment) != 0;
+			var notInComment = !inBlockComment && (specialModeFlags & SpecialModeFlags.InLineComment) == 0;
+			var inString = (specialModeFlags & SpecialModeFlags.InString) != 0;
+			var notInSpecialMode = specialModeFlags == 0;
 
 			switch (character)
 			{
 				case '/':
-					flags.BlockCommentBeginCandidate = specialMode.CommentType == CommentType.None;
+					flags.BlockCommentBeginCandidate = notInComment;
 					break;
 				case '*':
-					flags.BlockCommentEndCandidate = specialMode.CommentType == CommentType.Block;
+					flags.BlockCommentEndCandidate = inBlockComment;
 					break;
 				case '-':
-					flags.LineCommentCandidate = specialMode.CommentType == CommentType.None;
+					flags.LineCommentCandidate = notInComment;
 					break;
 				case '|':
-					flags.ConcatenationCandidate = !specialMode.IsEnabled;
+					flags.ConcatenationCandidate = notInSpecialMode;
 					break;
 				case '=':
-					flags.OptionalParameterCandidate = !specialMode.IsEnabled;
+					flags.OptionalParameterCandidate = notInSpecialMode;
 					break;
 				case ':':
-					flags.AssignmentOperatorCandidate = !specialMode.IsEnabled;
+					flags.AssignmentOperatorCandidate = notInSpecialMode;
 					break;
 				case '>':
 				case '<':
-					flags.LabelMarkerCandidate = !specialMode.IsEnabled;
-					flags.RelationalOperatorCandidate = !specialMode.IsEnabled;
+					flags.LabelMarkerCandidate = notInSpecialMode;
+					flags.RelationalOperatorCandidate = notInSpecialMode;
 					break;
 				case '^':
 				case '!':
-					flags.RelationalOperatorCandidate = !specialMode.IsEnabled;
+					flags.RelationalOperatorCandidate = notInSpecialMode;
 					break;
 				case 'e':
 				case 'E':
-					flags.ExponentCandidate = specialMode.InNumber && !specialMode.IsEnabled;
+					flags.ExponentCandidate = specialMode.InNumber && notInSpecialMode;
 					break;
 				case 'd':
 				case 'D':
 				case 'f':
 				case 'F':
-					flags.IsDataTypePostFix = specialMode.InNumber && !specialMode.IsEnabled;
+					flags.IsDataTypePostFix = specialMode.InNumber && notInSpecialMode;
 					break;
 				case 'n':
 				case 'N':
-					flags.UnicodeCandidate = !specialMode.InString;
+					flags.UnicodeCandidate = !inString;
 					break;
 				case 'q':
 				case 'Q':
-					flags.QuotedStringCandidate = !specialMode.InString;
+					flags.QuotedStringCandidate = !inString;
 					break;
 				case '\'':
-					flags.StringEndCandidate = specialMode.InString;
+					flags.StringEndCandidate = inString;
 					break;
 				case '.':
-					flags.IsDecimalCandidate = !specialMode.IsEnabled;
+					flags.IsDecimalCandidate = notInSpecialMode;
 					break;
 				case ' ':
 				case '\u00A0':
@@ -653,25 +653,40 @@ namespace SqlPad.Oracle
 				IsDigit = false;
 				IsDataTypePostFix = false;
 			}
+
+			public void CopyToPrevious(RecognizedFlags target)
+			{
+				target.Character = Character;
+				target.IsSpace = IsSpace;
+				target.IsLineTerminator = IsLineTerminator;
+				target.IsDecimalCandidate = IsDecimalCandidate;
+				target.LineCommentCandidate = LineCommentCandidate;
+				target.BlockCommentBeginCandidate = BlockCommentBeginCandidate;
+				target.BlockCommentEndCandidate = BlockCommentEndCandidate;
+				target.ConcatenationCandidate = ConcatenationCandidate;
+				target.OptionalParameterCandidate = OptionalParameterCandidate;
+				target.RelationalOperatorCandidate = RelationalOperatorCandidate;
+				target.QuotedStringCandidate = QuotedStringCandidate;
+				target.UnicodeCandidate = UnicodeCandidate;
+				target.StringEndCandidate = StringEndCandidate;
+				target.ExponentCandidate = ExponentCandidate;
+				target.AssignmentOperatorCandidate = AssignmentOperatorCandidate;
+				target.LabelMarkerCandidate = LabelMarkerCandidate;
+				target.IsDigit = IsDigit;
+				target.IsDataTypePostFix = IsDataTypePostFix;
+			}
 		}
 
-		[DebuggerDisplay("SpecialModeFlags (InString={InString}; CommentType={CommentType}; InQuotedIdentifier={InQuotedIdentifier}")]
-		private struct SpecialModeFlags
+		[DebuggerDisplay("SpecialMode (InString={InString}; CommentType={CommentType}; InQuotedIdentifier={InQuotedIdentifier}")]
+		private struct SpecialMode
 		{
-			private bool _inNumber;
+			public SpecialModeFlags Flags;
 
-			public bool InString;
-			public CommentType CommentType;
-			public bool InQuotedIdentifier;
+			private bool _inNumber;
 
 			public bool InPostfixedNumber;
 			public bool InDecimalNumber;
 			public bool InExponent;
-
-			public bool IsEnabled
-			{
-				get { return InString || CommentType != CommentType.None || InQuotedIdentifier; }
-			}
 
 			public bool InNumber
 			{
@@ -688,6 +703,15 @@ namespace SqlPad.Oracle
 					InExponent = false;
 				}
 			}
+		}
+
+		[Flags]
+		private enum SpecialModeFlags
+		{
+			InLineComment = 1,
+			InBlockComment = 2,
+			InString = 4,
+			InQuotedIdentifier = 8,
 		}
 	}
 }
