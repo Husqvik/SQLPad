@@ -444,6 +444,14 @@ namespace SqlPad.Oracle.Test
 			tokens.ShouldBe(new[] { "SELECT", "1", "FROM", "DUAL", "FOR", "UPDATE", "WAIT", "10E-0" });
 		}
 
+		[Test(Description = "Tests exponential number as last token. ")]
+		public void TestExponentialNumberWithSign()
+		{
+			const string testQuery = "SELECT 1e0 FROM DUAL";
+			var tokens = GetTokenValuesFromOracleSql(testQuery);
+			tokens.ShouldBe(new[] { "SELECT", "1e0", "FROM", "DUAL" });
+		}
+
 		[Test(Description = "Tests division character surrounded by space. ")]
 		public void TestDivisionCharacterSurroundedBySpace()
 		{
@@ -506,6 +514,30 @@ namespace SqlPad.Oracle.Test
 			const string testQuery = "SELECT\u00A0DateToSend\u00A0FROM\u00A0Circular";
 			var tokens = GetTokenValuesFromOracleSql(testQuery);
 			tokens.ShouldBe(new[] { "SELECT", "DateToSend", "FROM", "Circular" });
+		}
+
+		[Test(Description = "Tests assignment operator. ")]
+		public void TestAssignmentOperator()
+		{
+			const string testQuery = "BEGIN :X:=1; END;";
+			var tokens = GetTokenValuesFromOracleSql(testQuery);
+			tokens.ShouldBe(new[] { "BEGIN", ":", "X", ":=", "1", ";", "END", ";" });
+		}
+
+		[Test(Description = "Tests PL/SQL label markers. ")]
+		public void TestPlSqlLabelMarkers()
+		{
+			const string testQuery = "BEGIN <<LABEL1>>NULL; END;";
+			var tokens = GetTokenValuesFromOracleSql(testQuery);
+			tokens.ShouldBe(new[] { "BEGIN", "<<", "LABEL1", ">>", "NULL", ";", "END", ";" });
+		}
+
+		[Test(Description = "Tests double dot operator. ")]
+		public void TestDoubleDotOperator()
+		{
+			const string testQuery = "BEGIN FOR I IN 1..10 LOOP NULL; END LOOP; END;";
+			var tokens = GetTokenValuesFromOracleSql(testQuery);
+			tokens.ShouldBe(new[] { "BEGIN", "FOR", "I", "IN", "1", "..", "10", "LOOP", "NULL", ";", "END", "LOOP", ";", "END", ";" });
 		}
 
 		[Test(Description = "Tests SQL Plus statement terminator. ")]

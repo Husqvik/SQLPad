@@ -13,7 +13,7 @@ namespace SqlPad.Oracle
 		private readonly TextReader _sqlReader;
 
 		private readonly HashSet<char> _singleCharacterTerminals =
-			new HashSet<char> { '(', ')', ',', ';', '+', '@', ':', '[', ']' };
+			new HashSet<char> { '(', ')', ',', ';', '+', '@', '[', ']' };
 
 		private OracleTokenReader(TextReader sqlReader)
 		{
@@ -64,8 +64,6 @@ namespace SqlPad.Oracle
 			{
 				index++;
 				var character = (char)characterCode;
-				var isNumericCharacter = characterCode >= 48 && characterCode <= 57;
-				var isNumericPostfix = character == 'f' || character == 'F' || character == 'd' || character == 'D';
 				var isSign = character == '+' || character == '-';
 
 				var previousFlags = flags;
@@ -205,14 +203,118 @@ namespace SqlPad.Oracle
 					}
 				}
 
-				if (!specialMode.IsEnabled && specialMode.InNumber && !specialMode.InExponent && previousFlags.ExponentCandidate)
+				if (flags.IsDecimalCandidate)
 				{
-					if (isNumericCharacter || isSign)
+					if (previousFlags.IsDecimalCandidate)
 					{
-						specialMode.InExponent = true;
+						if (builder.Length > 0)
+						{
+							yield return BuildToken(builder, index - 2, null);
+						}
 
-						isSingleCharacterTerminal = false;
-						flags.LineCommentCandidate = false;
+						AppendCandidateCharacter(builder, ref candidateCharacter);
+
+						yield return BuildToken(builder, index, character);
+
+						specialMode.InNumber = false;
+						flags.IsDecimalCandidate = false;
+						characterYielded = true;
+					}
+					else if (specialMode.InDecimalNumber || (!specialMode.InNumber && builder.Length > 0))
+					{
+						AppendCandidateCharacter(builder, ref candidateCharacter);
+						
+						if (builder.Length > 0)
+						{
+							yield return BuildToken(builder, index - 1, null);
+						}
+
+						specialMode.InNumber = false;
+					}
+				}
+
+				if (builder.Length == 0 && flags.IsDigit)
+				{
+					specialMode.InNumber = true;
+				}
+				else if (specialMode.InNumber && !flags.IsDecimalCandidate)
+				{
+					if (!specialMode.InExponent && previousFlags.ExponentCandidate)
+					{
+						if (flags.IsDigit || isSign)
+						{
+							specialMode.InExponent = true;
+
+							isSingleCharacterTerminal = false;
+							flags.LineCommentCandidate = false;
+						}
+						else
+						{
+							if (builder.Length > 0)
+							{
+								yield return BuildToken(builder, index - 2, null);
+							}
+
+							specialMode.InNumber = false;
+						}
+
+						AppendCandidateCharacter(builder, ref candidateCharacter);
+					}
+					else if (!flags.ExponentCandidate && !flags.IsDigit)
+					{
+						if (specialMode.InPostfixedNumber || !flags.IsDataTypePostFix)
+						{
+							AppendCandidateCharacter(builder, ref candidateCharacter);
+
+							if (builder.Length > 0)
+							{
+								yield return BuildToken(builder, index - 1, null);
+							}
+
+							specialMode.InNumber = false;
+							flags.ExponentCandidate = false;
+						}
+						else if (!specialMode.InPostfixedNumber && flags.IsDataTypePostFix)
+						{
+							specialMode.InPostfixedNumber = true;
+						}
+					}
+				}
+
+				if (previousFlags.IsDecimalCandidate)
+				{
+					if (specialMode.InNumber && !specialMode.InDecimalNumber)
+					{
+						AppendCandidateCharacter(builder, ref candidateCharacter);
+						specialMode.InDecimalNumber = true;
+					}
+					else if (candidateCharacter.HasValue)
+					{
+						yield return BuildToken(candidateCharacter.Value, index - 1);
+						specialMode.InNumber = false;
+						candidateCharacter = null;
+					}
+				}
+
+				if (flags.AssignmentOperatorCandidate && builder.Length > 0)
+				{
+					yield return BuildToken(builder, index - 1, null);
+				}
+				
+				if (previousFlags.AssignmentOperatorCandidate)
+				{
+					if (character == '=')
+					{
+						AppendCandidateCharacter(builder, ref candidateCharacter);
+
+						if (builder.Length > 0)
+						{
+							yield return BuildToken(builder, index, character);
+						}
+
+						flags.OptionalParameterCandidate = false;
+
+						characterYielded = true;
 					}
 					else
 					{
@@ -221,54 +323,10 @@ namespace SqlPad.Oracle
 							yield return BuildToken(builder, index - 2, null);
 						}
 
-						specialMode.InNumber = false;
-					}
-
-					AppendCandidateCharacter(builder, ref candidateCharacter);
-				}
-				else if (!specialMode.IsEnabled && specialMode.InNumber && (specialMode.InExponent || !flags.ExponentCandidate) && ((flags.IsDecimalCandidate && specialMode.InDecimalNumber) || !isNumericCharacter))
-				{
-					if (flags.IsDecimalCandidate && !specialMode.InDecimalNumber)
-					{
-						specialMode.InDecimalNumber = true;
-						flags.IsDecimalCandidate = false;
-					}
-					else if (specialMode.InPostfixedNumber || !isNumericPostfix)
-					{
-						AppendCandidateCharacter(builder, ref candidateCharacter);
-
-						if (builder.Length > 0)
-						{
-							yield return BuildToken(builder, index - 1, null);
-						}
-
-						specialMode.InNumber = false;
-					}
-					else if (!specialMode.InPostfixedNumber && isNumericPostfix)
-					{
-						specialMode.InPostfixedNumber = true;
-					}
-				}
-
-				if (!specialMode.IsEnabled && previousFlags.IsDecimalCandidate)
-				{
-					if (builder.Length > 0)
-					{
-						yield return BuildToken(builder, index - 2, null);
-					}
-
-					if (isNumericCharacter)
-					{
-						AppendCandidateCharacter(builder, ref candidateCharacter);
-						specialMode.InNumber = true;
-					}
-					else
-					{
 						yield return BuildToken(previousFlags.Character, index - 1);
-						specialMode.InNumber = false;
-					}
 
-					candidateCharacter = null;
+						candidateCharacter = null;
+					}
 				}
 
 				if (specialMode.InQuotedIdentifier && character == '"')
@@ -360,7 +418,7 @@ namespace SqlPad.Oracle
 						yield return BuildToken(builder, index - 2, null);
 					}
 
-					if (character == '=' || (character == '>' && previousFlags.Character == '<'))
+					if (character == '=' || (character == '>' && previousFlags.Character == '<') || (previousFlags.LabelMarkerCandidate && character == previousFlags.Character))
 					{
 						builder.Append(previousFlags.Character);
 						yield return BuildToken(builder, index, character);
@@ -374,6 +432,7 @@ namespace SqlPad.Oracle
 					candidateCharacter = null;
 
 					flags.RelationalOperatorCandidate = false;
+					flags.LabelMarkerCandidate = false;
 					flags.OptionalParameterCandidate = false;
 				}
 
@@ -404,15 +463,10 @@ namespace SqlPad.Oracle
 				}
 
 				var candidateMode = flags.ConcatenationCandidate || flags.OptionalParameterCandidate || flags.LineCommentCandidate || flags.BlockCommentBeginCandidate ||
-				                    flags.RelationalOperatorCandidate || flags.IsDecimalCandidate || flags.ExponentCandidate;
+									flags.RelationalOperatorCandidate || flags.IsDecimalCandidate || flags.ExponentCandidate || flags.AssignmentOperatorCandidate || flags.LabelMarkerCandidate;
 
 				if (!characterYielded)
 				{
-					if (!specialMode.IsEnabled && !specialMode.InNumber && isNumericCharacter && builder.Length == 0 && !candidateCharacter.HasValue)
-					{
-						specialMode.InNumber = true;
-					}
-
 					if (candidateMode && !specialMode.IsEnabled)
 					{
 						candidateCharacter = character;
@@ -458,7 +512,7 @@ namespace SqlPad.Oracle
 
 		private static void AppendCandidateCharacter(StringBuilder builder, ref char? candidateCharacter)
 		{
-			if (!candidateCharacter.HasValue)
+			if (candidateCharacter == null)
 				return;
 
 			builder.Append(candidateCharacter.Value);
@@ -505,8 +559,14 @@ namespace SqlPad.Oracle
 				case '=':
 					flags.OptionalParameterCandidate = !specialMode.IsEnabled;
 					break;
+				case ':':
+					flags.AssignmentOperatorCandidate = !specialMode.IsEnabled;
+					break;
 				case '>':
 				case '<':
+					flags.LabelMarkerCandidate = !specialMode.IsEnabled;
+					flags.RelationalOperatorCandidate = !specialMode.IsEnabled;
+					break;
 				case '^':
 				case '!':
 					flags.RelationalOperatorCandidate = !specialMode.IsEnabled;
@@ -514,6 +574,12 @@ namespace SqlPad.Oracle
 				case 'e':
 				case 'E':
 					flags.ExponentCandidate = specialMode.InNumber && !specialMode.IsEnabled;
+					break;
+				case 'd':
+				case 'D':
+				case 'f':
+				case 'F':
+					flags.IsDataTypePostFix = specialMode.InNumber && !specialMode.IsEnabled;
 					break;
 				case 'n':
 				case 'N':
@@ -538,6 +604,9 @@ namespace SqlPad.Oracle
 				case '\n':
 					flags.IsLineTerminator = true;
 					break;
+				default:
+					flags.IsDigit = character >= 48 && character <= 57;
+					break;
 			}
 		}
 
@@ -555,10 +624,14 @@ namespace SqlPad.Oracle
 			public bool ConcatenationCandidate;
 			public bool OptionalParameterCandidate;
 			public bool RelationalOperatorCandidate;
+			public bool LabelMarkerCandidate;
 			public bool QuotedStringCandidate;
 			public bool StringEndCandidate;
 			public bool ExponentCandidate;
 			public bool UnicodeCandidate;
+			public bool AssignmentOperatorCandidate;
+			public bool IsDigit;
+			public bool IsDataTypePostFix;
 
 			public void Reset()
 			{
@@ -575,6 +648,10 @@ namespace SqlPad.Oracle
 				UnicodeCandidate = false;
 				StringEndCandidate = false;
 				ExponentCandidate = false;
+				AssignmentOperatorCandidate = false;
+				LabelMarkerCandidate = false;
+				IsDigit = false;
+				IsDataTypePostFix = false;
 			}
 		}
 
