@@ -67,7 +67,7 @@ namespace SqlPad.Oracle
 				FindFlags(specialMode, character, flags);
 
 				var isBlank = flags.IsSpace || flags.IsLineTerminator;
-				var isSingleCharacterTerminal = character == ',' || character == '(' || character == ')' || character == '+' || character == ';' || character == '@' || character == '[' || character == ']';
+				var isSingleCharacterTerminal = character == ',' || character == '(' || character == ')' || character == '+' || character == ';' || character == '@' || character == '[' || character == ']' || character == '%';
 				var characterYielded = false;
 				
 				if (flags.BlockCommentBeginCandidate && previousFlags.IsLineTerminator)

@@ -7,7 +7,7 @@ using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 namespace SqlPad.Oracle.Test
 {
 	[TestFixture]
-	public class StatementDescriptionNodeTest
+	public class StatementGrammarNodeTest
     {
 		private readonly OracleSqlParser _parser = new OracleSqlParser();
 		private StatementGrammarNode _rootNode;

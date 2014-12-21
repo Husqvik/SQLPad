@@ -429,13 +429,14 @@ namespace SqlPad.Oracle
 				foreach (ISqlGrammarRuleSequenceItem item in sequence.Items)
 				{
 					var tokenOffset = tokenStartOffset + workingTerminalCount;
-					if (tokenOffset >= tokenBuffer.Count && !item.IsRequired)
+					var isNodeRequired = item.IsRequired;
+					if (tokenOffset >= tokenBuffer.Count && !isNodeRequired)
 					{
 						continue;
 					}
 
 					var childNodeId = item.Id;
-					if (childNodeId == nonTerminalId && !item.IsRequired && workingTerminalCount == 0)
+					if (childNodeId == nonTerminalId && !isNodeRequired && workingTerminalCount == 0)
 					{
 						continue;
 					}
@@ -453,7 +454,7 @@ namespace SqlPad.Oracle
 						TryParseInvalidGrammar(tryBestCandidates, () => ProceedNonTerminal(statement, childNodeId, level + 1, bestCandidateOffset, false, tokenBuffer, cancellationToken), ref nestedResult, workingNodes, bestCandidateNodes, ref workingTerminalCount);
 
 						var isNestedNodeValid = nestedResult.Status == ProcessingStatus.Success;
-						if (item.IsRequired || isNestedNodeValid)
+						if (isNodeRequired || isNestedNodeValid)
 						{
 							result.Status = nestedResult.Status;
 						}
@@ -463,7 +464,7 @@ namespace SqlPad.Oracle
 							{
 								Id = childNodeId,
 								Level = level,
-								IsRequired = item.IsRequired,
+								IsRequired = isNodeRequired,
 								IsGrammarValid = isNestedNodeValid
 							};
 
@@ -524,11 +525,11 @@ namespace SqlPad.Oracle
 
 						var terminalResult = IsTokenValid(statement, terminalReference, level, tokenOffset, tokenBuffer);
 
-						TryParseInvalidGrammar(tryBestCandidates, () => IsTokenValid(statement, terminalReference, level, bestCandidateOffset, tokenBuffer), ref terminalResult, workingNodes, bestCandidateNodes, ref workingTerminalCount);
+						TryParseInvalidGrammar(tryBestCandidates && isNodeRequired, () => IsTokenValid(statement, terminalReference, level, bestCandidateOffset, tokenBuffer), ref terminalResult, workingNodes, bestCandidateNodes, ref workingTerminalCount);
 
 						if (terminalResult.Status == ProcessingStatus.SequenceNotFound)
 						{
-							if (terminalReference.IsRequired)
+							if (isNodeRequired)
 							{
 								result.Status = ProcessingStatus.SequenceNotFound;
 								break;

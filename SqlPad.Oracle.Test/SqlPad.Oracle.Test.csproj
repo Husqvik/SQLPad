@@ -97,7 +97,7 @@
     <Compile Include="OracleStatementSemanticModelTest.cs" />
     <Compile Include="OracleTokenReaderTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="StatementDescriptionNodeTest.cs" />
+    <Compile Include="StatementGrammarNodeTest.cs" />
     <Compile Include="TestFixture.cs" />
   </ItemGroup>
   <ItemGroup>

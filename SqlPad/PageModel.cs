@@ -212,13 +212,11 @@ namespace SqlPad
 				_databaseOutputBuilder.Clear();
 			}
 
-			if (String.IsNullOrEmpty(output))
+			if (!String.IsNullOrEmpty(output))
 			{
-				return;
+				_databaseOutputBuilder.AppendLine(output);
 			}
 			
-			_databaseOutputBuilder.AppendLine(output);
-
 			RaisePropertyChanged("DatabaseOutput");
 		}
 

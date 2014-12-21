@@ -522,6 +522,9 @@ namespace SqlPad.Oracle.Test
 			const string testQuery = "BEGIN :X:=1; END;";
 			var tokens = GetTokenValuesFromOracleSql(testQuery);
 			tokens.ShouldBe(new[] { "BEGIN", ":", "X", ":=", "1", ";", "END", ";" });
+
+			var tokenIndexes = GetTokenIndexesFromOracleSql(testQuery);
+			tokenIndexes.ShouldBe(new[] { 0, 6, 7, 8, 10, 11, 13, 16 });
 		}
 
 		[Test(Description = "Tests PL/SQL label markers. ")]
@@ -530,6 +533,9 @@ namespace SqlPad.Oracle.Test
 			const string testQuery = "BEGIN <<LABEL1>>NULL; END;";
 			var tokens = GetTokenValuesFromOracleSql(testQuery);
 			tokens.ShouldBe(new[] { "BEGIN", "<<", "LABEL1", ">>", "NULL", ";", "END", ";" });
+
+			var tokenIndexes = GetTokenIndexesFromOracleSql(testQuery);
+			tokenIndexes.ShouldBe(new[] { 0, 6, 8, 14, 16, 20, 22, 25 });
 		}
 
 		[Test(Description = "Tests double dot operator. ")]
@@ -538,6 +544,17 @@ namespace SqlPad.Oracle.Test
 			const string testQuery = "BEGIN FOR I IN 1..10 LOOP NULL; END LOOP; END;";
 			var tokens = GetTokenValuesFromOracleSql(testQuery);
 			tokens.ShouldBe(new[] { "BEGIN", "FOR", "I", "IN", "1", "..", "10", "LOOP", "NULL", ";", "END", "LOOP", ";", "END", ";" });
+
+			var tokenIndexes = GetTokenIndexesFromOracleSql(testQuery);
+			tokenIndexes.ShouldBe(new[] { 0, 6, 10, 12, 15, 16, 18, 21, 26, 30, 32, 36, 40, 42, 45 });
+		}
+
+		[Test(Description = "Tests cursor function. ")]
+		public void TestCursorFunction()
+		{
+			const string testQuery = "BEGIN DBMS_OUTPUT.PUT_LINE(SQL%ROWCOUNT); END;";
+			var tokens = GetTokenValuesFromOracleSql(testQuery);
+			tokens.ShouldBe(new[] { "BEGIN", "DBMS_OUTPUT", ".", "PUT_LINE", "(", "SQL", "%", "ROWCOUNT", ")", ";", "END", ";" });
 		}
 
 		[Test(Description = "Tests SQL Plus statement terminator. ")]

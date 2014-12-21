@@ -268,22 +268,22 @@ WHERE
 
 		public const string FetchDatabaseOutput =
 @"DECLARE
-	line_count NUMBER := 32767;
-	dest_offset INTEGER := 0;
+	line_count NUMBER;
 	lines DBMSOUTPUT_LINESARRAY;
-	line_length INTEGER;
 	line_content VARCHAR2(32767);
 BEGIN
-	DBMS_LOB.CREATETEMPORARY(:output_clob, TRUE); 
-    DBMS_LOB.OPEN(:output_clob, DBMS_LOB.LOB_READWRITE);
+	DBMS_LOB.CREATETEMPORARY(lob_loc => :output_clob, cache => TRUE); 
+    DBMS_LOB.OPEN(lob_loc => :output_clob, open_mode => DBMS_LOB.LOB_READWRITE);
 
-	DBMS_OUTPUT.GET_LINES(lines, line_count);
+	DBMS_OUTPUT.GET_LINES(lines => lines, numlines => line_count);
 
     FOR i IN 1..line_count LOOP
 		line_content := lines(i);
-		line_length := LENGTH(line_content);
-        DBMS_LOB.WRITEAPPEND(:output_clob, line_length, line_content);
-        dest_offset := dest_offset + line_length;
+		IF i < line_count THEN
+			line_content := line_content || CHR(10);
+		END IF;
+
+        DBMS_LOB.WRITEAPPEND(lob_loc => :output_clob, amount => LENGTH(line_content), buffer => line_content);
     END LOOP;
 END;";
 		

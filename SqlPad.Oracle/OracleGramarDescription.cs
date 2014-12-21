@@ -12,7 +12,9 @@ namespace SqlPad.Oracle
 		/// </summary>
 		public static class NonTerminals
 		{
+			public const string Accessor = "Accessor";
 			public const string AccessorList = "AccessorList";
+			public const string AccessorListChained = "AccessorListChained";
 			public const string AggregateFunction = "AggregateFunction";
 			public const string AggregateFunctionCall = "AggregateFunctionCall";
 			public const string AggregateFunctionParameter = "AggregateFunctionParameter";
@@ -39,6 +41,7 @@ namespace SqlPad.Oracle
 			public const string AnyChainedList = "AnyChainedList";
 			public const string AsAliasOrEvaluatedNameExpression = "AsAliasOrEvaluatedNameExpression";
 			public const string AsDataType = "AsDataType";
+			public const string AssignmentOperatorOrDefault = "AssignmentOperatorOrDefault";
 			public const string AssignmentStatementTarget = "AssignmentStatementTarget";
 			public const string AsSubquery = "AsSubquery";
 			public const string AsXmlAlias = "AsXmlAlias";
@@ -56,12 +59,14 @@ namespace SqlPad.Oracle
 			public const string BetweenSystemChangeNumberOrTimestampOrPeriodForBetween = "BetweenSystemChangeNumberOrTimestampOrPeriodForBetween";
 			public const string BindVariableExpression = "BindVariableExpression";
 			public const string BindVariableExpressionCommaChainedList = "BindVariableExpressionCommaChainedList";
+			public const string BooleanExpression = "BooleanExpression";
 			public const string BufferPoolType = "BufferPoolType";
 			public const string BulkCollect = "BulkCollect";
 			public const string ByteOrChar = "ByteOrChar";
 			public const string ByValue = "ByValue";
 			public const string CacheOrNoCache = "CacheOrNoCache";
 			public const string CallIntoClause = "CallIntoClause";
+			public const string CallSpecification = "CallSpecification";
 			public const string CallStatement = "CallStatement";
 			public const string CascadeConstraints = "CascadeConstraints";
 			public const string CascadeOrSetNull = "CascadeOrSetNull";
@@ -140,6 +145,7 @@ namespace SqlPad.Oracle
 			public const string ConditionOrExpressionList = "ConditionOrExpressionList";
 			public const string ConditionOrExpressionListOrSingleColumnForLoopListOrMultiColumnForLoop = "ConditionOrExpressionListOrSingleColumnForLoopListOrMultiColumnForLoop";
 			public const string ConditionOrExpressionOrSingleColumnForLoopList = "ConditionOrExpressionOrSingleColumnForLoopList";
+			public const string ConstantDeclaration = "ConstantDeclaration";
 			public const string ConstraintName = "ConstraintName";
 			public const string ConstraintOnDeleteClause = "ConstraintOnDeleteClause";
 			public const string ConstraintReferencesClause = "ConstraintReferencesClause";
@@ -161,7 +167,7 @@ namespace SqlPad.Oracle
 			public const string CrossOrOuterApplyClause = "CrossOrOuterApplyClause";
 			public const string CurrentEditionOrSpecificEdition = "CurrentEditionOrSpecificEdition";
 			public const string CurrentUserOrDefiner = "CurrentUserOrDefiner";
-			public const string CursorDeclaration = "CursorDeclaration";
+			public const string CursorBooleanFunction = "CursorBooleanFunction";
 			public const string CursorIdentifierOrHostVariable = "CursorIdentifierOrHostVariable";
 			public const string CycleOrNoCycle = "CycleOrNoCycle";
 			public const string DatabaseLink = "DatabaseLink";
@@ -194,6 +200,7 @@ namespace SqlPad.Oracle
 			public const string DeleteStatement = "DeleteStatement";
 			public const string DepthOrBreadth = "DepthOrBreadth";
 			public const string DistinctModifier = "DistinctModifier";
+			public const string DmlStatement = "DmlStatement";
 			public const string DmlTableExpressionClause = "DmlTableExpressionClause";
 			public const string DocumentOrContent = "DocumentOrContent";
 			public const string DropCluster = "DropCluster";
@@ -224,6 +231,7 @@ namespace SqlPad.Oracle
 			public const string EscapeClause = "EscapeClause";
 			public const string EvaluationEdition = "EvaluationEdition";
 			public const string EvaluationEditionClause = "EvaluationEditionClause";
+			public const string ExceptionDeclaration = "ExceptionDeclaration";
 			public const string ExplainPlanStatement = "ExplainPlanStatement";
 			public const string ExplicitPhysicalOrganization = "ExplicitPhysicalOrganization";
 			public const string ExplicitPhysicalOrganizationType = "ExplicitPhysicalOrganizationType";
@@ -247,6 +255,9 @@ namespace SqlPad.Oracle
 			public const string ExternalTableDataPropeties = "ExternalTableDataPropeties";
 			public const string ExternalTableDirectoryLocation = "ExternalTableDirectoryLocation";
 			public const string ExtractElement = "ExtractElement";
+			public const string FieldDefinition = "FieldDefinition";
+			public const string FieldDefinitionList = "FieldDefinitionList";
+			public const string FieldDefinitionListChained = "FieldDefinitionListChained";
 			public const string FirstOrAll = "FirstOrAll";
 			public const string FirstOrLast = "FirstOrLast";
 			public const string FirstOrNext = "FirstOrNext";
@@ -258,6 +269,8 @@ namespace SqlPad.Oracle
 			public const string FlashbackQueryClause = "FlashbackQueryClause";
 			public const string FlashbackVersionsClause = "FlashbackVersionsClause";
 			public const string FlashCachePoolType = "FlashCachePoolType";
+			public const string ForAllBoundsClause = "ForAllBoundsClause";
+			public const string ForAllIndicesBoundsBetweenCondition = "ForAllIndicesBoundsBetweenCondition";
 			public const string ForceTransactionIdentifier = "ForceTransactionIdentifier";
 			public const string ForUpdateClause = "ForUpdateClause";
 			public const string ForUpdateColumn = "ForUpdateColumn";
@@ -267,7 +280,6 @@ namespace SqlPad.Oracle
 			public const string ForUpdateWaitClause = "ForUpdateWaitClause";
 			public const string FromClause = "FromClause";
 			public const string FromClauseChained = "FromClauseChained";
-			public const string FunctionDeclaration = "FunctionDeclaration";
 			public const string FunctionModifier = "FunctionModifier";
 			public const string FunctionModifiers = "FunctionModifiers";
 			public const string FunctionTypeDefinition = "FunctionTypeDefinition";
@@ -298,6 +310,7 @@ namespace SqlPad.Oracle
 			public const string HierarchicalQueryStartWithClause = "HierarchicalQueryStartWithClause";
 			public const string IdentifiedByClause = "IdentifiedByClause";
 			public const string IdentifierList = "IdentifierList";
+			public const string IdentifierOrDefault = "IdentifierOrDefault";
 			public const string IdentifierOrParenthesisEnclosedIdentifierList = "IdentifierOrParenthesisEnclosedIdentifierList";
 			public const string IdentifierOrStringLiteralOrNumberLiteral = "IdentifierOrStringLiteralOrNumberLiteral";
 			public const string IdentityGeneratedAlwaysOrByDefault = "IdentityGeneratedAlwaysOrByDefault";
@@ -375,7 +388,6 @@ namespace SqlPad.Oracle
 			public const string ItemDeclaration = "ItemDeclaration";
 			public const string ItemList1 = "ItemList1";
 			public const string ItemList1Chained = "ItemList1Chained";
-			public const string ItemList2 = "ItemList2";
 			public const string JoinClause = "JoinClause";
 			public const string JoinColumnsOrCondition = "JoinColumnsOrCondition";
 			public const string JsonColumnDefinition = "JsonColumnDefinition";
@@ -488,6 +500,7 @@ namespace SqlPad.Oracle
 			public const string NextDateTimeExpressionOrRepeatInterval = "NextDateTimeExpressionOrRepeatInterval";
 			public const string NoForce = "NoForce";
 			public const string NoLog = "NoLog";
+			public const string NotNull = "NotNull";
 			public const string NullNaNOrInfinite = "NullNaNOrInfinite";
 			public const string NullsClause = "NullsClause";
 			public const string NumericOrDecimalOrDec = "NumericOrDecimalOrDec";
@@ -534,6 +547,9 @@ namespace SqlPad.Oracle
 			public const string ParallelDegree = "ParallelDegree";
 			public const string ParallelPartitionDefinition = "ParallelPartitionDefinition";
 			public const string ParallelPartitionType = "ParallelPartitionType";
+			public const string ParameterDeclaration = "ParameterDeclaration";
+			public const string ParameterDeclarationList = "ParameterDeclarationList";
+			public const string ParameterDeclarationListChained = "ParameterDeclarationListChained";
 			public const string ParenthesisEnclosedAggregationFunctionParameters = "ParenthesisEnclosedAggregationFunctionParameters";
 			public const string ParenthesisEnclosedAliasedExpressionList = "ParenthesisEnclosedAliasedExpressionList";
 			public const string ParenthesisEnclosedExpression = "ParenthesisEnclosedExpression";
@@ -563,6 +579,7 @@ namespace SqlPad.Oracle
 			public const string ParenthesisEnclosedRangePartitionListOrSubpartitionClause = "ParenthesisEnclosedRangePartitionListOrSubpartitionClause";
 			public const string ParenthesisEnclosedReferencePartitionDescriptionList = "ParenthesisEnclosedReferencePartitionDescriptionList";
 			public const string ParenthesisEnclosedRelationalProperties = "ParenthesisEnclosedRelationalProperties";
+			public const string ParenthesisEnclosedStringLiteral = "ParenthesisEnclosedStringLiteral";
 			public const string ParenthesisEnclosedStringOrIntegerLiteralList = "ParenthesisEnclosedStringOrIntegerLiteralList";
 			public const string ParenthesisEnclosedTableSpaceIdentifier = "ParenthesisEnclosedTableSpaceIdentifier";
 			public const string PartialOrFull = "PartialOrFull";
@@ -591,24 +608,24 @@ namespace SqlPad.Oracle
 			public const string PlSqlAssignmentStatement = "PlSqlAssignmentStatement";
 			public const string PlSqlBasicLoopStatement = "PlSqlBasicLoopStatement";
 			public const string PlSqlBlock = "PlSqlBlock";
-			public const string PlSqlCaseStatement = "PlSqlCaseStatement";
+			public const string PlSqlBlockDeclareSection = "PlSqlBlockDeclareSection";
+			public const string PlSqlBooleanExpression = "PlSqlBooleanExpression";
 			public const string PlSqlCloseStatement = "PlSqlCloseStatement";
-			public const string PlSqlCollectionMethodCall = "PlSqlCollectionMethodCall";
 			public const string PlSqlContinueStatement = "PlSqlContinueStatement";
-			public const string PlSqlCursorForLoopStatement = "PlSqlCursorForLoopStatement";
+			public const string PlSqlElseClause = "PlSqlElseClause";
+			public const string PlSqlElseIfClause = "PlSqlElseIfClause";
+			public const string PlSqlElseIfClauseList = "PlSqlElseIfClauseList";
 			public const string PlSqlExceptionClause = "PlSqlExceptionClause";
 			public const string PlSqlExceptionHandlerList = "PlSqlExceptionHandlerList";
-			public const string PlSqlExecuteImmediateStatement = "PlSqlExecuteImmediateStatement";
 			public const string PlSqlExitStatement = "PlSqlExitStatement";
-			public const string PlSqlFetchStatement = "PlSqlFetchStatement";
-			public const string PlSqlForAllStatement = "PlSqlForAllStatement";
+			public const string PlSqlExpression = "PlSqlExpression";
 			public const string PlSqlForLoopStatement = "PlSqlForLoopStatement";
 			public const string PlSqlFunctionSource = "PlSqlFunctionSource";
 			public const string PlSqlGoToStatement = "PlSqlGoToStatement";
 			public const string PlSqlIfStatement = "PlSqlIfStatement";
+			public const string PlSqlLabel = "PlSqlLabel";
+			public const string PlSqlLabelList = "PlSqlLabelList";
 			public const string PlSqlNullStatement = "PlSqlNullStatement";
-			public const string PlSqlOpenForStatement = "PlSqlOpenForStatement";
-			public const string PlSqlOpenStatement = "PlSqlOpenStatement";
 			public const string PlSqlPipeRowStatement = "PlSqlPipeRowStatement";
 			public const string PlSqlProcedureCall = "PlSqlProcedureCall";
 			public const string PlSqlRaiseStatement = "PlSqlRaiseStatement";
@@ -617,11 +634,12 @@ namespace SqlPad.Oracle
 			public const string PlSqlSqlStatement = "PlSqlSqlStatement";
 			public const string PlSqlStatement = "PlSqlStatement";
 			public const string PlSqlStatementList = "PlSqlStatementList";
-			public const string PlSqlStatementOrPragmaDefinition = "PlSqlStatementOrPragmaDefinition";
-			public const string PlSqlStatementOrPragmaDefinitionList = "PlSqlStatementOrPragmaDefinitionList";
+			public const string PlSqlStatementOrInlinePragma = "PlSqlStatementOrInlinePragma";
+			public const string PlSqlStatementOrInlinePragmaList = "PlSqlStatementOrInlinePragmaList";
 			public const string PlSqlStatementType = "PlSqlStatementType";
+			public const string PlSqlWhenBooleanExpression = "PlSqlWhenBooleanExpression";
 			public const string PlSqlWhileLoopStatement = "PlSqlWhileLoopStatement";
-			public const string PragmaDefinition = "PragmaDefinition";
+			public const string PragmaType = "PragmaType";
 			public const string PrecedingOnlyClause = "PrecedingOnlyClause";
 			public const string PrecedingOnlyOrBetweenPrecedingAndFollowing = "PrecedingOnlyOrBetweenPrecedingAndFollowing";
 			public const string PrecedingOrFollowing = "PrecedingOrFollowing";
@@ -629,7 +647,6 @@ namespace SqlPad.Oracle
 			public const string PrefixedAsterisk = "PrefixedAsterisk";
 			public const string PrefixedColumnReference = "PrefixedColumnReference";
 			public const string PreserveTable = "PreserveTable";
-			public const string ProcedureDeclaration = "ProcedureDeclaration";
 			public const string ProgramBody = "ProgramBody";
 			public const string ProgramDeclareSection = "ProgramDeclareSection";
 			public const string ProgramImplentationDeclaration = "ProgramImplentationDeclaration";
@@ -646,6 +663,7 @@ namespace SqlPad.Oracle
 			public const string RangeValuesClause = "RangeValuesClause";
 			public const string ReadOnly = "ReadOnly";
 			public const string ReadOnlyOrCheckOption = "ReadOnlyOrCheckOption";
+			public const string RecordTypeDefinition = "RecordTypeDefinition";
 			public const string RecoverableOrUnrecoverable = "RecoverableOrUnrecoverable";
 			public const string ReferenceModel = "ReferenceModel";
 			public const string ReferenceModelList = "ReferenceModelList";
@@ -660,6 +678,9 @@ namespace SqlPad.Oracle
 			public const string ReliesOnClause = "ReliesOnClause";
 			public const string RelyOrNoRely = "RelyOrNoRely";
 			public const string RenameStatement = "RenameStatement";
+			public const string Restriction = "Restriction";
+			public const string RestrictionList = "RestrictionList";
+			public const string RestrictionListChained = "RestrictionListChained";
 			public const string ResultCacheClause = "ResultCacheClause";
 			public const string RetentionOption = "RetentionOption";
 			public const string ReturningClause = "ReturningClause";
@@ -678,6 +699,7 @@ namespace SqlPad.Oracle
 			public const string RowOrRows = "RowOrRows";
 			public const string RowsOrRange = "RowsOrRange";
 			public const string SampleClause = "SampleClause";
+			public const string SaveExceptions = "SaveExceptions";
 			public const string SavepointStatement = "SavepointStatement";
 			public const string Scale = "Scale";
 			public const string SchemaCheckOrNoSchemaCheck = "SchemaCheckOrNoSchemaCheck";
@@ -789,6 +811,7 @@ namespace SqlPad.Oracle
 			public const string UnconditionalOrConditional = "UnconditionalOrConditional";
 			public const string UniqueDimensionOrSingleReference = "UniqueDimensionOrSingleReference";
 			public const string UniqueOrBitmap = "UniqueOrBitmap";
+			public const string UnitKind = "UnitKind";
 			public const string UnitPostfix = "UnitPostfix";
 			public const string UnlimitedOrIntegerLiteral = "UnlimitedOrIntegerLiteral";
 			public const string UnpivotClause = "UnpivotClause";
@@ -814,12 +837,15 @@ namespace SqlPad.Oracle
 			public const string UsingNationalCharacterSet = "UsingNationalCharacterSet";
 			public const string WaitOrNowait = "WaitOrNowait";
 			public const string ValidateOrNoValidate = "ValidateOrNoValidate";
+			public const string Values = "Values";
+			public const string VariableDeclaration = "VariableDeclaration";
+			public const string VariableDeclarationConstraintAndDefaultValue = "VariableDeclarationConstraintAndDefaultValue";
+			public const string VariableDeclarationDefaultValue = "VariableDeclarationDefaultValue";
 			public const string VariableElementArrayColumnProperties = "VariableElementArrayColumnProperties";
 			public const string VariableElementArrayColumnPropertiesOrLargeObjectPartitioningStorage = "VariableElementArrayColumnPropertiesOrLargeObjectPartitioningStorage";
 			public const string VariableElementArrayColumnPropertiesOrLargeObjectPartitioningStorageList = "VariableElementArrayColumnPropertiesOrLargeObjectPartitioningStorageList";
 			public const string VariableElementArrayColumnPropertiesOrLargeObjectStorageClause = "VariableElementArrayColumnPropertiesOrLargeObjectStorageClause";
 			public const string VariableElementArrayStorageClause = "VariableElementArrayStorageClause";
-			public const string WhenBooleanExpression = "WhenBooleanExpression";
 			public const string WhereClause = "WhereClause";
 			public const string ViewBequeath = "ViewBequeath";
 			public const string ViewEditioning = "ViewEditioning";
@@ -883,10 +909,12 @@ namespace SqlPad.Oracle
 		{
 			public const string A = "A";
 			public const string Access = "Access";
+			public const string Accessible = "Accessible";
 			public const string Add = "Add";
 			public const string Advanced = "Advanced";
 			public const string Advice = "Advice";
 			public const string After = "After";
+			public const string Aggregate = "Aggregate";
 			public const string All = "All";
 			public const string Alter = "Alter";
 			public const string Always = "Always";
@@ -899,11 +927,13 @@ namespace SqlPad.Oracle
 			public const string As = "As";
 			public const string Asc = "Asc";
 			public const string Ascii = "Ascii";
+			public const string AssignmentOperator = "AssignmentOperator";
 			public const string Asterisk = "Asterisk";
 			public const string Asynchronous = "Asynchronous";
 			public const string At = "At";
 			public const string AtCharacter = "AtCharacter";
 			public const string Audit = "Audit";
+			public const string AuthorizationIdentity = "AuthorizationIdentity";
 			public const string Auto = "Auto";
 			public const string Automatic = "Automatic";
 			public const string Avg = "Avg";
@@ -911,6 +941,7 @@ namespace SqlPad.Oracle
 			public const string BasicFile = "BasicFile";
 			public const string Batch = "Batch";
 			public const string Before = "Before";
+			public const string Begin = "Begin";
 			public const string Beginning = "Beginning";
 			public const string Bequeath = "Bequeath";
 			public const string Between = "Between";
@@ -952,10 +983,12 @@ namespace SqlPad.Oracle
 			public const string Conditional = "Conditional";
 			public const string Connect = "Connect";
 			public const string ConnectByRoot = "ConnectByRoot";
+			public const string Constant = "Constant";
 			public const string Constraint = "Constraint";
 			public const string Constraints = "Constraints";
 			public const string Content = "Content";
 			public const string Context = "Context";
+			public const string Continue = "Continue";
 			public const string Count = "Count";
 			public const string Create = "Create";
 			public const string Creation = "Creation";
@@ -965,6 +998,7 @@ namespace SqlPad.Oracle
 			public const string CumulativeDistribution = "CumulativeDistribution";
 			public const string Current = "Current";
 			public const string Cursor = "Cursor";
+			public const string CursorIdentifier = "CursorIdentifier";
 			public const string Cycle = "Cycle";
 			public const string Data = "Data";
 			public const string Database = "Database";
@@ -979,6 +1013,7 @@ namespace SqlPad.Oracle
 			public const string DbaRecycleBin = "DbaRecycleBin";
 			public const string Dec = "Dec";
 			public const string Decimal = "Decimal";
+			public const string Declare = "Declare";
 			public const string Decrypt = "Decrypt";
 			public const string Deduplicate = "Deduplicate";
 			public const string Default = "Default";
@@ -990,6 +1025,7 @@ namespace SqlPad.Oracle
 			public const string DenseRank = "DenseRank";
 			public const string Depth = "Depth";
 			public const string Desc = "Desc";
+			public const string Deterministic = "Deterministic";
 			public const string Dimension = "Dimension";
 			public const string DirectLoad = "DirectLoad";
 			public const string Disable = "Disable";
@@ -999,6 +1035,7 @@ namespace SqlPad.Oracle
 			public const string Document = "Document";
 			public const string Dot = "Dot";
 			public const string Double = "Double";
+			public const string DoubleDotOperator = "DoubleDotOperator";
 			public const string Drop = "Drop";
 			public const string Duplicate = "Duplicate";
 			public const string Edition = "Edition";
@@ -1006,6 +1043,7 @@ namespace SqlPad.Oracle
 			public const string Editioning = "Editioning";
 			public const string Element = "Element";
 			public const string Else = "Else";
+			public const string ElseIf = "ElseIf";
 			public const string Empty = "Empty";
 			public const string Enable = "Enable";
 			public const string EnableAll = "EnableAll";
@@ -1021,11 +1059,14 @@ namespace SqlPad.Oracle
 			public const string Events = "Events";
 			public const string Exa = "Exa";
 			public const string Except = "Except";
+			public const string Exception = "Exception";
+			public const string ExceptionIdentifier = "ExceptionIdentifier";
 			public const string Exceptions = "Exceptions";
 			public const string Exclude = "Exclude";
 			public const string Excluding = "Excluding";
 			public const string Exclusive = "Exclusive";
 			public const string Exists = "Exists";
+			public const string Exit = "Exit";
 			public const string Explain = "Explain";
 			public const string External = "External";
 			public const string Extract = "Extract";
@@ -1043,6 +1084,7 @@ namespace SqlPad.Oracle
 			public const string Force = "Force";
 			public const string Foreign = "Foreign";
 			public const string Format = "Format";
+			public const string Found = "Found";
 			public const string FreeList = "FreeList";
 			public const string FreeLists = "FreeLists";
 			public const string FreePools = "FreePools";
@@ -1052,6 +1094,7 @@ namespace SqlPad.Oracle
 			public const string Generated = "Generated";
 			public const string Giga = "Giga";
 			public const string Global = "Global";
+			public const string GoTo = "GoTo";
 			public const string Grant = "Grant";
 			public const string Group = "Group";
 			public const string Grouping = "Grouping";
@@ -1067,6 +1110,7 @@ namespace SqlPad.Oracle
 			public const string Identified = "Identified";
 			public const string Identifier = "Identifier";
 			public const string Identity = "Identity";
+			public const string If = "If";
 			public const string Ignore = "Ignore";
 			public const string Immediate = "Immediate";
 			public const string In = "In";
@@ -1095,6 +1139,7 @@ namespace SqlPad.Oracle
 			public const string Invisible = "Invisible";
 			public const string Is = "Is";
 			public const string Isolation = "Isolation";
+			public const string IsOpen = "IsOpen";
 			public const string Iterate = "Iterate";
 			public const string Join = "Join";
 			public const string Json = "Json";
@@ -1107,6 +1152,7 @@ namespace SqlPad.Oracle
 			public const string Key = "Key";
 			public const string Keys = "Keys";
 			public const string Kilo = "Kilo";
+			public const string LabelIdentifier = "LabelIdentifier";
 			public const string Lag = "Lag";
 			public const string LargeObject = "LargeObject";
 			public const string Last = "Last";
@@ -1116,6 +1162,7 @@ namespace SqlPad.Oracle
 			public const string Lead = "Lead";
 			public const string Left = "Left";
 			public const string LeftBracket = "LeftBracket";
+			public const string LeftLabelMarker = "LeftLabelMarker";
 			public const string LeftParenthesis = "LeftParenthesis";
 			public const string Less = "Less";
 			public const string Level = "Level";
@@ -1138,6 +1185,7 @@ namespace SqlPad.Oracle
 			public const string Log = "Log";
 			public const string Logging = "Logging";
 			public const string Long = "Long";
+			public const string Loop = "Loop";
 			public const string Low = "Low";
 			public const string Main = "Main";
 			public const string Mapping = "Mapping";
@@ -1211,6 +1259,7 @@ namespace SqlPad.Oracle
 			public const string NoSchemaCheck = "NoSchemaCheck";
 			public const string NoSort = "NoSort";
 			public const string Not = "Not";
+			public const string NotFound = "NotFound";
 			public const string Nowait = "Nowait";
 			public const string NoValidate = "NoValidate";
 			public const string Null = "Null";
@@ -1240,11 +1289,13 @@ namespace SqlPad.Oracle
 			public const string Order = "Order";
 			public const string Ordinality = "Ordinality";
 			public const string Organization = "Organization";
+			public const string Out = "Out";
 			public const string Outer = "Outer";
 			public const string Over = "Over";
 			public const string Overflow = "Overflow";
 			public const string Package = "Package";
 			public const string Parallel = "Parallel";
+			public const string ParallelEnable = "ParallelEnable";
 			public const string ParameterIdentifier = "ParameterIdentifier";
 			public const string Partition = "Partition";
 			public const string Partitions = "Partitions";
@@ -1252,6 +1303,7 @@ namespace SqlPad.Oracle
 			public const string Path = "Path";
 			public const string Pctfree = "Pctfree";
 			public const string Percent = "Percent";
+			public const string PercentCharacter = "PercentCharacter";
 			public const string PercentFree = "PercentFree";
 			public const string PercentileContinuousDistribution = "PercentileContinuousDistribution";
 			public const string PercentileDiscreteDistribution = "PercentileDiscreteDistribution";
@@ -1261,6 +1313,8 @@ namespace SqlPad.Oracle
 			public const string PercentVersion = "PercentVersion";
 			public const string Period = "Period";
 			public const string Peta = "Peta";
+			public const string Pipe = "Pipe";
+			public const string Pipelined = "Pipelined";
 			public const string Pivot = "Pivot";
 			public const string Plan = "Plan";
 			public const string Policy = "Policy";
@@ -1275,11 +1329,13 @@ namespace SqlPad.Oracle
 			public const string Public = "Public";
 			public const string Purge = "Purge";
 			public const string Query = "Query";
+			public const string Raise = "Raise";
 			public const string Range = "Range";
 			public const string Rank = "Rank";
 			public const string Raw = "Raw";
 			public const string Read = "Read";
 			public const string Reads = "Reads";
+			public const string Record = "Record";
 			public const string Recoverable = "Recoverable";
 			public const string Recycle = "Recycle";
 			public const string RecycleBin = "RecycleBin";
@@ -1302,6 +1358,7 @@ namespace SqlPad.Oracle
 			public const string Revoke = "Revoke";
 			public const string Right = "Right";
 			public const string RightBracket = "RightBracket";
+			public const string RightLabelMarker = "RightLabelMarker";
 			public const string RightParenthesis = "RightParenthesis";
 			public const string Rollback = "Rollback";
 			public const string Rollup = "Rollup";
@@ -1388,6 +1445,7 @@ namespace SqlPad.Oracle
 			public const string Trigger = "Trigger";
 			public const string True = "True";
 			public const string Type = "Type";
+			public const string TypeIdentifier = "TypeIdentifier";
 			public const string Unbounded = "Unbounded";
 			public const string Unconditional = "Unconditional";
 			public const string Union = "Union";
@@ -1418,6 +1476,7 @@ namespace SqlPad.Oracle
 			public const string Versions = "Versions";
 			public const string When = "When";
 			public const string Where = "Where";
+			public const string While = "While";
 			public const string View = "View";
 			public const string Virtual = "Virtual";
 			public const string Visible = "Visible";
@@ -1455,9 +1514,9 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		private static readonly HashSet<string> AllTerminalsInternal = new HashSet<string> { Terminals.A, Terminals.Access, Terminals.Add, Terminals.Advanced, Terminals.Advice, Terminals.After, Terminals.All, Terminals.Alter, Terminals.Always, Terminals.And, Terminals.Any, Terminals.Apply, Terminals.Archival, Terminals.Archive, Terminals.Array, Terminals.As, Terminals.Asc, Terminals.Ascii, Terminals.Asterisk, Terminals.Asynchronous, Terminals.At, Terminals.AtCharacter, Terminals.Audit, Terminals.Auto, Terminals.Automatic, Terminals.Avg, Terminals.Basic, Terminals.BasicFile, Terminals.Batch, Terminals.Before, Terminals.Beginning, Terminals.Bequeath, Terminals.Between, Terminals.BindVariableIdentifier, Terminals.Bitmap, Terminals.Block, Terminals.Body, Terminals.Breadth, Terminals.BufferPool, Terminals.Bulk, Terminals.By, Terminals.Byte, Terminals.Cache, Terminals.Call, Terminals.Capacity, Terminals.Cascade, Terminals.Case, Terminals.Cast, Terminals.CellFlashCache, Terminals.Char, Terminals.Character, Terminals.CharacterCode, Terminals.Check, Terminals.Chunk, Terminals.Close, Terminals.Cluster, Terminals.Clustering, Terminals.Collect, Terminals.Colon, Terminals.Column, Terminals.ColumnAlias, Terminals.Columns, Terminals.Comma, Terminals.Comment, Terminals.Commit, Terminals.Committed, Terminals.Compress, Terminals.Compute, Terminals.Conditional, Terminals.Connect, Terminals.ConnectByRoot, Terminals.Constraint, Terminals.Constraints, Terminals.Content, Terminals.Context, Terminals.Count, Terminals.Create, Terminals.Creation, Terminals.Critical, Terminals.Cross, Terminals.Cube, Terminals.CumulativeDistribution, Terminals.Current, Terminals.Cursor, Terminals.Cycle, Terminals.Data, Terminals.Database, Terminals.DatabaseLinkIdentifier, Terminals.DatabaseTimezone, Terminals.DataDefinitionLanguage, Terminals.DataManipulationLanguage, Terminals.DataTypeIdentifier, Terminals.Date, Terminals.Day, Terminals.Days, Terminals.DbaRecycleBin, Terminals.Dec, Terminals.Decimal, Terminals.Decrypt, Terminals.Deduplicate, Terminals.Default, Terminals.Defaults, Terminals.Deferrable, Terminals.Deferred, Terminals.Delete, Terminals.DeleteAll, Terminals.DenseRank, Terminals.Depth, Terminals.Desc, Terminals.Dimension, Terminals.DirectLoad, Terminals.Disable, Terminals.DisableAll, Terminals.Distinct, Terminals.Distribute, Terminals.Document, Terminals.Dot, Terminals.Double, Terminals.Drop, Terminals.Duplicate, Terminals.Edition, Terminals.Editionable, Terminals.Editioning, Terminals.Element, Terminals.Else, Terminals.Empty, Terminals.Enable, Terminals.EnableAll, Terminals.Encoding, Terminals.Encrypt, Terminals.End, Terminals.EntityEscaping, Terminals.Error, Terminals.Errors, Terminals.Escape, Terminals.Evaluate, Terminals.EvaluatedName, Terminals.Events, Terminals.Exa, Terminals.Except, Terminals.Exceptions, Terminals.Exclude, Terminals.Excluding, Terminals.Exclusive, Terminals.Exists, Terminals.Explain, Terminals.External, Terminals.Extract, Terminals.False, Terminals.Fast, Terminals.Fetch, Terminals.FileSystemLikeLogging, Terminals.First, Terminals.FirstValue, Terminals.Flashback, Terminals.FlashCache, Terminals.Float, Terminals.Following, Terminals.For, Terminals.Force, Terminals.Foreign, Terminals.Format, Terminals.FreeList, Terminals.FreeLists, Terminals.FreePools, Terminals.From, Terminals.Full, Terminals.Function, Terminals.Generated, Terminals.Giga, Terminals.Global, Terminals.Grant, Terminals.Group, Terminals.Grouping, Terminals.Groups, Terminals.Guard, Terminals.Hash, Terminals.HashKeys, Terminals.Having, Terminals.Heap, Terminals.Hide, Terminals.High, Terminals.Hour, Terminals.Identified, Terminals.Identifier, Terminals.Identity, Terminals.Ignore, Terminals.Immediate, Terminals.In, Terminals.Include, Terminals.Including, Terminals.Increment, Terminals.Indent, Terminals.Index, Terminals.Indexing, Terminals.IndexType, Terminals.Indicator, Terminals.IndicatorVariableIdentifier, Terminals.InformationLifecycleManagement, Terminals.Initial, Terminals.Initially, Terminals.InitialTransactions, Terminals.InMemory, Terminals.Inner, Terminals.Insert, Terminals.Integer, Terminals.IntegerLiteral, Terminals.Interleaved, Terminals.Intersect, Terminals.Interval, Terminals.Into, Terminals.Invisible, Terminals.Is, Terminals.Isolation, Terminals.Iterate, Terminals.Join, Terminals.Json, Terminals.JsonExists, Terminals.JsonQuery, Terminals.JsonTable, Terminals.JsonValue, Terminals.Keep, Terminals.KeepDuplicates, Terminals.Key, Terminals.Keys, Terminals.Kilo, Terminals.Lag, Terminals.LargeObject, Terminals.Last, Terminals.LastValue, Terminals.Lateral, Terminals.Lax, Terminals.Lead, Terminals.Left, Terminals.LeftBracket, Terminals.LeftParenthesis, Terminals.Less, Terminals.Level, Terminals.Levels, Terminals.Like, Terminals.LikeUcs2, Terminals.LikeUcs4, Terminals.LikeUnicode, Terminals.Limit, Terminals.Linear, Terminals.Link, Terminals.List, Terminals.ListAggregation, Terminals.Load, Terminals.Local, Terminals.Locator, Terminals.Lock, Terminals.Locked, Terminals.Locking, Terminals.Log, Terminals.Logging, Terminals.Long, Terminals.Low, Terminals.Main, Terminals.Mapping, Terminals.Matched, Terminals.Materialized, Terminals.MathDivide, Terminals.MathEquals, Terminals.MathFactor, Terminals.MathGreatherThan, Terminals.MathGreatherThanOrEquals, Terminals.MathInfinite, Terminals.MathLessThan, Terminals.MathLessThanOrEquals, Terminals.MathMinus, Terminals.MathNotANumber, Terminals.MathNotEqualsC, Terminals.MathNotEqualsCircumflex, Terminals.MathNotEqualsSql, Terminals.MathPlus, Terminals.Max, Terminals.MaximumExtents, Terminals.MaximumSize, Terminals.MaximumTransactions, Terminals.MaximumValue, Terminals.Measures, Terminals.Medium, Terminals.Mega, Terminals.Member, Terminals.MemberFunctionIdentifier, Terminals.MemoryCompression, Terminals.Merge, Terminals.Min, Terminals.MinimumExtents, Terminals.MinimumValue, Terminals.Mining, Terminals.Minute, Terminals.Mode, Terminals.Model, Terminals.Month, Terminals.Months, Terminals.Movement, Terminals.Multiset, Terminals.Name, Terminals.National, Terminals.NationalCharacterSet, Terminals.Natural, Terminals.NChar, Terminals.NegationOrNull, Terminals.Nested, Terminals.New, Terminals.Next, Terminals.No, Terminals.NoCache, Terminals.Nocompress, Terminals.NoCompress, Terminals.NoCycle, Terminals.NoEntityEscaping, Terminals.NoKeep, Terminals.NoLogging, Terminals.NoMapping, Terminals.NoMaximumValue, Terminals.NoMinimumValue, Terminals.NonAvailableValues, Terminals.None, Terminals.NonEditionable, Terminals.NoOrder, Terminals.NoParallel, Terminals.NoPartition, Terminals.NoRely, Terminals.NoRowDependencies, Terminals.NoSchemaCheck, Terminals.NoSort, Terminals.Not, Terminals.Nowait, Terminals.NoValidate, Terminals.Null, Terminals.Nulls, Terminals.Number, Terminals.NumberLiteral, Terminals.Numeric, Terminals.NVarchar, Terminals.NVarchar2, Terminals.Object, Terminals.ObjectAlias, Terminals.ObjectIdentifier, Terminals.ObjectIdentifierIndex, Terminals.Of, Terminals.Off, Terminals.Offset, Terminals.Oltp, Terminals.On, Terminals.Online, Terminals.Only, Terminals.Operations, Terminals.Operator, Terminals.OperatorConcatenation, Terminals.Option, Terminals.OptionalParameterOperator, Terminals.Or, Terminals.Order, Terminals.Ordinality, Terminals.Organization, Terminals.Outer, Terminals.Over, Terminals.Overflow, Terminals.Package, Terminals.Parallel, Terminals.ParameterIdentifier, Terminals.Partition, Terminals.Partitions, Terminals.Passing, Terminals.Path, Terminals.Pctfree, Terminals.Percent, Terminals.PercentFree, Terminals.PercentileContinuousDistribution, Terminals.PercentileDiscreteDistribution, Terminals.PercentIncrease, Terminals.PercentThreshold, Terminals.PercentUsed, Terminals.PercentVersion, Terminals.Period, Terminals.Peta, Terminals.Pivot, Terminals.Plan, Terminals.Policy, Terminals.Preceding, Terminals.Precision, Terminals.Preserve, Terminals.Pretty, Terminals.Primary, Terminals.Prior, Terminals.Priority, Terminals.Procedure, Terminals.Public, Terminals.Purge, Terminals.Query, Terminals.Range, Terminals.Rank, Terminals.Raw, Terminals.Read, Terminals.Reads, Terminals.Recoverable, Terminals.Recycle, Terminals.RecycleBin, Terminals.Ref, Terminals.Reference, Terminals.References, Terminals.Refresh, Terminals.Reject, Terminals.Rely, Terminals.Rename, Terminals.Repeat, Terminals.Replace, Terminals.Resource, Terminals.ResultCache, Terminals.Resumable, Terminals.Retention, Terminals.Return, Terminals.Returning, Terminals.Reverse, Terminals.Revoke, Terminals.Right, Terminals.RightBracket, Terminals.RightParenthesis, Terminals.Rollback, Terminals.Rollup, Terminals.Row, Terminals.RowDependencies, Terminals.RowIdPseudoColumn, Terminals.RowNumberPseudoColumn, Terminals.Rows, Terminals.Rules, Terminals.Salt, Terminals.Sample, Terminals.Savepoint, Terminals.SchemaCheck, Terminals.SchemaIdentifier, Terminals.Search, Terminals.Second, Terminals.SecureFile, Terminals.Seed, Terminals.Segment, Terminals.Select, Terminals.Semicolon, Terminals.Sequence, Terminals.Sequential, Terminals.Serializable, Terminals.Session, Terminals.SessionTimezone, Terminals.Set, Terminals.SetMinus, Terminals.Sets, Terminals.Share, Terminals.Show, Terminals.Siblings, Terminals.Single, Terminals.Size, Terminals.Skip, Terminals.Smallint, Terminals.Snapshot, Terminals.Some, Terminals.Sort, Terminals.Space, Terminals.SqlPlusTerminator, Terminals.Standalone, Terminals.StandardDeviation, Terminals.Start, Terminals.StatementId, Terminals.Statistics, Terminals.Storage, Terminals.Store, Terminals.Strict, Terminals.StringLiteral, Terminals.SubMultiset, Terminals.Subpartition, Terminals.Subpartitions, Terminals.Substitutable, Terminals.Sum, Terminals.Supplemental, Terminals.Sync, Terminals.Synchronous, Terminals.Synonym, Terminals.System, Terminals.SystemChangeNumber, Terminals.SystemDate, Terminals.Table, Terminals.Tables, Terminals.TableSpace, Terminals.Template, Terminals.Temporary, Terminals.Tera, Terminals.Than, Terminals.The, Terminals.Then, Terminals.Tier, Terminals.Ties, Terminals.Time, Terminals.Timeout, Terminals.Timestamp, Terminals.TimezoneAbbreviation, Terminals.TimezoneHour, Terminals.TimezoneMinute, Terminals.TimezoneRegion, Terminals.To, Terminals.Transaction, Terminals.Treat, Terminals.Trigger, Terminals.True, Terminals.Type, Terminals.Unbounded, Terminals.Unconditional, Terminals.Union, Terminals.Unique, Terminals.UniversalRowId, Terminals.Unlimited, Terminals.Unpivot, Terminals.Unrecoverable, Terminals.Until, Terminals.Unusable, Terminals.Update, Terminals.Upsert, Terminals.Usable, Terminals.Use, Terminals.User, Terminals.Using, Terminals.Wait, Terminals.Validate, Terminals.Value, Terminals.Values, Terminals.Varchar, Terminals.Varchar2, Terminals.VariableElementArray, Terminals.Variance, Terminals.Varying, Terminals.WellFormed, Terminals.Version, Terminals.Versions, Terminals.When, Terminals.Where, Terminals.View, Terminals.Virtual, Terminals.Visible, Terminals.With, Terminals.Within, Terminals.Without, Terminals.Work, Terminals.Wrapper, Terminals.Write, Terminals.Xml, Terminals.XmlAggregate, Terminals.XmlAlias, Terminals.XmlAttributes, Terminals.XmlCast, Terminals.XmlColumnValue, Terminals.XmlElement, Terminals.XmlExists, Terminals.XmlForest, Terminals.XmlNamespaces, Terminals.XmlParse, Terminals.XmlQuery, Terminals.XmlRoot, Terminals.XmlSerialize, Terminals.XmlTable, Terminals.XmlType, Terminals.Year, Terminals.Years, Terminals.Yes, Terminals.Zone, Terminals.ZoneMap };
+		private static readonly HashSet<string> AllTerminalsInternal = new HashSet<string> { Terminals.A, Terminals.Access, Terminals.Accessible, Terminals.Add, Terminals.Advanced, Terminals.Advice, Terminals.After, Terminals.Aggregate, Terminals.All, Terminals.Alter, Terminals.Always, Terminals.And, Terminals.Any, Terminals.Apply, Terminals.Archival, Terminals.Archive, Terminals.Array, Terminals.As, Terminals.Asc, Terminals.Ascii, Terminals.AssignmentOperator, Terminals.Asterisk, Terminals.Asynchronous, Terminals.At, Terminals.AtCharacter, Terminals.Audit, Terminals.AuthorizationIdentity, Terminals.Auto, Terminals.Automatic, Terminals.Avg, Terminals.Basic, Terminals.BasicFile, Terminals.Batch, Terminals.Before, Terminals.Begin, Terminals.Beginning, Terminals.Bequeath, Terminals.Between, Terminals.BindVariableIdentifier, Terminals.Bitmap, Terminals.Block, Terminals.Body, Terminals.Breadth, Terminals.BufferPool, Terminals.Bulk, Terminals.By, Terminals.Byte, Terminals.Cache, Terminals.Call, Terminals.Capacity, Terminals.Cascade, Terminals.Case, Terminals.Cast, Terminals.CellFlashCache, Terminals.Char, Terminals.Character, Terminals.CharacterCode, Terminals.Check, Terminals.Chunk, Terminals.Close, Terminals.Cluster, Terminals.Clustering, Terminals.Collect, Terminals.Colon, Terminals.Column, Terminals.ColumnAlias, Terminals.Columns, Terminals.Comma, Terminals.Comment, Terminals.Commit, Terminals.Committed, Terminals.Compress, Terminals.Compute, Terminals.Conditional, Terminals.Connect, Terminals.ConnectByRoot, Terminals.Constant, Terminals.Constraint, Terminals.Constraints, Terminals.Content, Terminals.Context, Terminals.Continue, Terminals.Count, Terminals.Create, Terminals.Creation, Terminals.Critical, Terminals.Cross, Terminals.Cube, Terminals.CumulativeDistribution, Terminals.Current, Terminals.Cursor, Terminals.CursorIdentifier, Terminals.Cycle, Terminals.Data, Terminals.Database, Terminals.DatabaseLinkIdentifier, Terminals.DatabaseTimezone, Terminals.DataDefinitionLanguage, Terminals.DataManipulationLanguage, Terminals.DataTypeIdentifier, Terminals.Date, Terminals.Day, Terminals.Days, Terminals.DbaRecycleBin, Terminals.Dec, Terminals.Decimal, Terminals.Declare, Terminals.Decrypt, Terminals.Deduplicate, Terminals.Default, Terminals.Defaults, Terminals.Deferrable, Terminals.Deferred, Terminals.Delete, Terminals.DeleteAll, Terminals.DenseRank, Terminals.Depth, Terminals.Desc, Terminals.Deterministic, Terminals.Dimension, Terminals.DirectLoad, Terminals.Disable, Terminals.DisableAll, Terminals.Distinct, Terminals.Distribute, Terminals.Document, Terminals.Dot, Terminals.Double, Terminals.DoubleDotOperator, Terminals.Drop, Terminals.Duplicate, Terminals.Edition, Terminals.Editionable, Terminals.Editioning, Terminals.Element, Terminals.Else, Terminals.ElseIf, Terminals.Empty, Terminals.Enable, Terminals.EnableAll, Terminals.Encoding, Terminals.Encrypt, Terminals.End, Terminals.EntityEscaping, Terminals.Error, Terminals.Errors, Terminals.Escape, Terminals.Evaluate, Terminals.EvaluatedName, Terminals.Events, Terminals.Exa, Terminals.Except, Terminals.Exception, Terminals.ExceptionIdentifier, Terminals.Exceptions, Terminals.Exclude, Terminals.Excluding, Terminals.Exclusive, Terminals.Exists, Terminals.Exit, Terminals.Explain, Terminals.External, Terminals.Extract, Terminals.False, Terminals.Fast, Terminals.Fetch, Terminals.FileSystemLikeLogging, Terminals.First, Terminals.FirstValue, Terminals.Flashback, Terminals.FlashCache, Terminals.Float, Terminals.Following, Terminals.For, Terminals.Force, Terminals.Foreign, Terminals.Format, Terminals.Found, Terminals.FreeList, Terminals.FreeLists, Terminals.FreePools, Terminals.From, Terminals.Full, Terminals.Function, Terminals.Generated, Terminals.Giga, Terminals.Global, Terminals.GoTo, Terminals.Grant, Terminals.Group, Terminals.Grouping, Terminals.Groups, Terminals.Guard, Terminals.Hash, Terminals.HashKeys, Terminals.Having, Terminals.Heap, Terminals.Hide, Terminals.High, Terminals.Hour, Terminals.Identified, Terminals.Identifier, Terminals.Identity, Terminals.If, Terminals.Ignore, Terminals.Immediate, Terminals.In, Terminals.Include, Terminals.Including, Terminals.Increment, Terminals.Indent, Terminals.Index, Terminals.Indexing, Terminals.IndexType, Terminals.Indicator, Terminals.IndicatorVariableIdentifier, Terminals.InformationLifecycleManagement, Terminals.Initial, Terminals.Initially, Terminals.InitialTransactions, Terminals.InMemory, Terminals.Inner, Terminals.Insert, Terminals.Integer, Terminals.IntegerLiteral, Terminals.Interleaved, Terminals.Intersect, Terminals.Interval, Terminals.Into, Terminals.Invisible, Terminals.Is, Terminals.Isolation, Terminals.IsOpen, Terminals.Iterate, Terminals.Join, Terminals.Json, Terminals.JsonExists, Terminals.JsonQuery, Terminals.JsonTable, Terminals.JsonValue, Terminals.Keep, Terminals.KeepDuplicates, Terminals.Key, Terminals.Keys, Terminals.Kilo, Terminals.LabelIdentifier, Terminals.Lag, Terminals.LargeObject, Terminals.Last, Terminals.LastValue, Terminals.Lateral, Terminals.Lax, Terminals.Lead, Terminals.Left, Terminals.LeftBracket, Terminals.LeftLabelMarker, Terminals.LeftParenthesis, Terminals.Less, Terminals.Level, Terminals.Levels, Terminals.Like, Terminals.LikeUcs2, Terminals.LikeUcs4, Terminals.LikeUnicode, Terminals.Limit, Terminals.Linear, Terminals.Link, Terminals.List, Terminals.ListAggregation, Terminals.Load, Terminals.Local, Terminals.Locator, Terminals.Lock, Terminals.Locked, Terminals.Locking, Terminals.Log, Terminals.Logging, Terminals.Long, Terminals.Loop, Terminals.Low, Terminals.Main, Terminals.Mapping, Terminals.Matched, Terminals.Materialized, Terminals.MathDivide, Terminals.MathEquals, Terminals.MathFactor, Terminals.MathGreatherThan, Terminals.MathGreatherThanOrEquals, Terminals.MathInfinite, Terminals.MathLessThan, Terminals.MathLessThanOrEquals, Terminals.MathMinus, Terminals.MathNotANumber, Terminals.MathNotEqualsC, Terminals.MathNotEqualsCircumflex, Terminals.MathNotEqualsSql, Terminals.MathPlus, Terminals.Max, Terminals.MaximumExtents, Terminals.MaximumSize, Terminals.MaximumTransactions, Terminals.MaximumValue, Terminals.Measures, Terminals.Medium, Terminals.Mega, Terminals.Member, Terminals.MemberFunctionIdentifier, Terminals.MemoryCompression, Terminals.Merge, Terminals.Min, Terminals.MinimumExtents, Terminals.MinimumValue, Terminals.Mining, Terminals.Minute, Terminals.Mode, Terminals.Model, Terminals.Month, Terminals.Months, Terminals.Movement, Terminals.Multiset, Terminals.Name, Terminals.National, Terminals.NationalCharacterSet, Terminals.Natural, Terminals.NChar, Terminals.NegationOrNull, Terminals.Nested, Terminals.New, Terminals.Next, Terminals.No, Terminals.NoCache, Terminals.Nocompress, Terminals.NoCompress, Terminals.NoCycle, Terminals.NoEntityEscaping, Terminals.NoKeep, Terminals.NoLogging, Terminals.NoMapping, Terminals.NoMaximumValue, Terminals.NoMinimumValue, Terminals.NonAvailableValues, Terminals.None, Terminals.NonEditionable, Terminals.NoOrder, Terminals.NoParallel, Terminals.NoPartition, Terminals.NoRely, Terminals.NoRowDependencies, Terminals.NoSchemaCheck, Terminals.NoSort, Terminals.Not, Terminals.NotFound, Terminals.Nowait, Terminals.NoValidate, Terminals.Null, Terminals.Nulls, Terminals.Number, Terminals.NumberLiteral, Terminals.Numeric, Terminals.NVarchar, Terminals.NVarchar2, Terminals.Object, Terminals.ObjectAlias, Terminals.ObjectIdentifier, Terminals.ObjectIdentifierIndex, Terminals.Of, Terminals.Off, Terminals.Offset, Terminals.Oltp, Terminals.On, Terminals.Online, Terminals.Only, Terminals.Operations, Terminals.Operator, Terminals.OperatorConcatenation, Terminals.Option, Terminals.OptionalParameterOperator, Terminals.Or, Terminals.Order, Terminals.Ordinality, Terminals.Organization, Terminals.Out, Terminals.Outer, Terminals.Over, Terminals.Overflow, Terminals.Package, Terminals.Parallel, Terminals.ParallelEnable, Terminals.ParameterIdentifier, Terminals.Partition, Terminals.Partitions, Terminals.Passing, Terminals.Path, Terminals.Pctfree, Terminals.Percent, Terminals.PercentCharacter, Terminals.PercentFree, Terminals.PercentileContinuousDistribution, Terminals.PercentileDiscreteDistribution, Terminals.PercentIncrease, Terminals.PercentThreshold, Terminals.PercentUsed, Terminals.PercentVersion, Terminals.Period, Terminals.Peta, Terminals.Pipe, Terminals.Pipelined, Terminals.Pivot, Terminals.Plan, Terminals.Policy, Terminals.Preceding, Terminals.Precision, Terminals.Preserve, Terminals.Pretty, Terminals.Primary, Terminals.Prior, Terminals.Priority, Terminals.Procedure, Terminals.Public, Terminals.Purge, Terminals.Query, Terminals.Raise, Terminals.Range, Terminals.Rank, Terminals.Raw, Terminals.Read, Terminals.Reads, Terminals.Record, Terminals.Recoverable, Terminals.Recycle, Terminals.RecycleBin, Terminals.Ref, Terminals.Reference, Terminals.References, Terminals.Refresh, Terminals.Reject, Terminals.Rely, Terminals.Rename, Terminals.Repeat, Terminals.Replace, Terminals.Resource, Terminals.ResultCache, Terminals.Resumable, Terminals.Retention, Terminals.Return, Terminals.Returning, Terminals.Reverse, Terminals.Revoke, Terminals.Right, Terminals.RightBracket, Terminals.RightLabelMarker, Terminals.RightParenthesis, Terminals.Rollback, Terminals.Rollup, Terminals.Row, Terminals.RowDependencies, Terminals.RowIdPseudoColumn, Terminals.RowNumberPseudoColumn, Terminals.Rows, Terminals.Rules, Terminals.Salt, Terminals.Sample, Terminals.Savepoint, Terminals.SchemaCheck, Terminals.SchemaIdentifier, Terminals.Search, Terminals.Second, Terminals.SecureFile, Terminals.Seed, Terminals.Segment, Terminals.Select, Terminals.Semicolon, Terminals.Sequence, Terminals.Sequential, Terminals.Serializable, Terminals.Session, Terminals.SessionTimezone, Terminals.Set, Terminals.SetMinus, Terminals.Sets, Terminals.Share, Terminals.Show, Terminals.Siblings, Terminals.Single, Terminals.Size, Terminals.Skip, Terminals.Smallint, Terminals.Snapshot, Terminals.Some, Terminals.Sort, Terminals.Space, Terminals.SqlPlusTerminator, Terminals.Standalone, Terminals.StandardDeviation, Terminals.Start, Terminals.StatementId, Terminals.Statistics, Terminals.Storage, Terminals.Store, Terminals.Strict, Terminals.StringLiteral, Terminals.SubMultiset, Terminals.Subpartition, Terminals.Subpartitions, Terminals.Substitutable, Terminals.Sum, Terminals.Supplemental, Terminals.Sync, Terminals.Synchronous, Terminals.Synonym, Terminals.System, Terminals.SystemChangeNumber, Terminals.SystemDate, Terminals.Table, Terminals.Tables, Terminals.TableSpace, Terminals.Template, Terminals.Temporary, Terminals.Tera, Terminals.Than, Terminals.The, Terminals.Then, Terminals.Tier, Terminals.Ties, Terminals.Time, Terminals.Timeout, Terminals.Timestamp, Terminals.TimezoneAbbreviation, Terminals.TimezoneHour, Terminals.TimezoneMinute, Terminals.TimezoneRegion, Terminals.To, Terminals.Transaction, Terminals.Treat, Terminals.Trigger, Terminals.True, Terminals.Type, Terminals.TypeIdentifier, Terminals.Unbounded, Terminals.Unconditional, Terminals.Union, Terminals.Unique, Terminals.UniversalRowId, Terminals.Unlimited, Terminals.Unpivot, Terminals.Unrecoverable, Terminals.Until, Terminals.Unusable, Terminals.Update, Terminals.Upsert, Terminals.Usable, Terminals.Use, Terminals.User, Terminals.Using, Terminals.Wait, Terminals.Validate, Terminals.Value, Terminals.Values, Terminals.Varchar, Terminals.Varchar2, Terminals.VariableElementArray, Terminals.Variance, Terminals.Varying, Terminals.WellFormed, Terminals.Version, Terminals.Versions, Terminals.When, Terminals.Where, Terminals.While, Terminals.View, Terminals.Virtual, Terminals.Visible, Terminals.With, Terminals.Within, Terminals.Without, Terminals.Work, Terminals.Wrapper, Terminals.Write, Terminals.Xml, Terminals.XmlAggregate, Terminals.XmlAlias, Terminals.XmlAttributes, Terminals.XmlCast, Terminals.XmlColumnValue, Terminals.XmlElement, Terminals.XmlExists, Terminals.XmlForest, Terminals.XmlNamespaces, Terminals.XmlParse, Terminals.XmlQuery, Terminals.XmlRoot, Terminals.XmlSerialize, Terminals.XmlTable, Terminals.XmlType, Terminals.Year, Terminals.Years, Terminals.Yes, Terminals.Zone, Terminals.ZoneMap };
 			
-		private static readonly HashSet<string> IdentifiersInternal = new HashSet<string> { Terminals.BindVariableIdentifier, Terminals.DatabaseLinkIdentifier, Terminals.DataTypeIdentifier, Terminals.Identifier, Terminals.IndicatorVariableIdentifier, Terminals.MemberFunctionIdentifier, Terminals.ObjectIdentifier, Terminals.ObjectIdentifierIndex, Terminals.ParameterIdentifier, Terminals.SchemaIdentifier };
+		private static readonly HashSet<string> IdentifiersInternal = new HashSet<string> { Terminals.BindVariableIdentifier, Terminals.CursorIdentifier, Terminals.DatabaseLinkIdentifier, Terminals.DataTypeIdentifier, Terminals.ExceptionIdentifier, Terminals.Identifier, Terminals.IndicatorVariableIdentifier, Terminals.LabelIdentifier, Terminals.MemberFunctionIdentifier, Terminals.ObjectIdentifier, Terminals.ObjectIdentifierIndex, Terminals.ParameterIdentifier, Terminals.SchemaIdentifier, Terminals.TypeIdentifier };
 
 		internal static readonly ICollection<string> ReservedWords = new HashSet<string> { "ACCESS", "ADD", "ALL", "ALTER", "AND", "ANY", "ASC", "AUDIT", "BETWEEN", "BY", "CHAR", "CHECK", "CLUSTER", "COLUMN", "COMMENT", "COMPRESS", "CONNECT", "CREATE", "CURRENT", "DATE", "DECIMAL", "DEFAULT", "DELETE", "DESC", "DISTINCT", "DROP", "ELSE", "EXCLUSIVE", "EXISTS", "FLOAT", "FOR", "FROM", "GRANT", "GROUP", "HAVING", "IDENTIFIED", "IMMEDIATE", "IN", "INDEX", "INSERT", "INTEGER", "INTERSECT", "INTO", "IS", "LEVEL", "LIKE", "LOCK", "LONG", "MINUS", "MODE", "NOCOMPRESS", "NOT", "NOWAIT", "NULL", "NUMBER", "OF", "ON", "OPTION", "OR", "ORDER", "PCTFREE", "PRIOR", "PUBLIC", "RAW", "RENAME", "RESOURCE", "REVOKE", "ROW", "ROWID", "ROWNUM", "ROWS", "SELECT", "SET", "SHARE", "SIZE", "SMALLINT", "SOME", "START", "SYNONYM", "SYSDATE", "TABLE", "THEN", "TO", "TRIGGER", "UNION", "UNIQUE", "UPDATE", "USER", "VALUES", "VARCHAR", "VARCHAR2", "WHERE", "VIEW", "WITH" };
 		

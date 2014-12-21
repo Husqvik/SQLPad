@@ -2311,6 +2311,93 @@ FROM
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 		}
 
+		[Ignore]
+		public class PlSql
+		{
+			[Test(Description = @"")]
+			public void TestAnonymousPlSqlBlock()
+			{
+				const string statement1 =
+@"<<LABEL1>>
+DECLARE
+	TYPE type1 IS RECORD (field1 NUMBER(4) NOT NULL := 10, field2 VARCHAR2(30) NOT NULL DEFAULT 'Administration', field3 NUMBER(6) := 200);
+	record1 type1;
+
+	constant1 CONSTANT NUMBER NOT NULL := 123;
+	variable1 NUMBER NOT NULL := 456;
+	exception1 EXCEPTION;
+BEGIN
+	NULL;
+	<<LABEL1>>
+	DBMS_OUTPUT.PUT_LINE(a => 'Current time: ' || SYSTIMESTAMP());
+	UPDATE T SET ID = NULL WHERE 1 = 0;
+	FOR i IN 1..10 LOOP
+		DBMS_OUTPUT.PUT_LINE(a => 'i = ' || i);
+	END LOOP;
+	WHILE 0 + 1 = 1 + 1 LOOP
+		EXIT;
+	END LOOP;
+
+	IF SQL%ISOPEN THEN DBMS_OUTPUT.PUT_LINE(a => 'Open');
+	ELSIF SQL%FOUND THEN DBMS_OUTPUT.PUT_LINE(a => 'Found');
+	ELSIF SQL%NOTFOUND THEN DBMS_OUTPUT.PUT_LINE(a => 'Not found');
+	END IF;
+END;";
+
+				var statement = Parser.Parse(statement1).Single().Validate();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			}
+
+			[Test(Description = @"")]
+			public void TestDummyPlSql2()
+			{
+				const string statement1 =
+@"BEGIN NULL; END;
+/
+BEGIN NULL; END;
+/
+";
+
+				var statements = Parser.Parse(statement1).ToList();
+				statements.ForEach(s =>
+				{
+					s.Validate();
+					s.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				});
+			}
+
+			[Test(Description = @"")]
+			public void TestCreateFunction()
+			{
+				const string statement1 =
+@"CREATE FUNCTION GENERATEDAYS(DATE_FROM IN DATE, DATE_TO IN DATE) RETURN SYS.ODCIDATELIST PIPELINED
+IS
+	DATE_COLLECTION$ SYS.ODCIDATELIST;
+BEGIN
+    SELECT
+    	DAY --BULK COLLECT INTO DATE_COLLECTION$
+    FROM (
+        SELECT TRUNC(DATE_FROM + COUNTER) DAY
+        FROM (
+        	SELECT (LEVEL-1) COUNTER FROM DUAL
+        		CONNECT BY LEVEL <= (TRUNC(DATE_TO) - TRUNC(DATE_FROM))
+        )
+    )
+    WHERE DAY < TRUNC(DATE_TO);
+
+    IF (DATE_COLLECTION$ IS NOT NULL AND DATE_COLLECTION$.COUNT > 0) THEN
+        FOR I IN 1..DATE_COLLECTION$.COUNT
+        LOOP
+            PIPE ROW (DATE_COLLECTION$(I));
+        END LOOP;
+    END IF;
+END;";
+
+				var statement = Parser.Parse(statement1).Single().Validate();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			}
+		}
+
 		public class IsRuleValid
 		{
 			[Test(Description = @"")]
@@ -2382,7 +2469,7 @@ FROM
 			{
 				var terminalCandidates = Parser.GetTerminalCandidates(null).OrderBy(t => t).ToArray();
 
-				var expectedTerminals = new[] { Terminals.Alter, Terminals.Call, Terminals.Comment, Terminals.Commit, Terminals.Create, Terminals.Delete, Terminals.Drop, Terminals.Explain, Terminals.Insert, Terminals.LeftParenthesis, Terminals.Lock, Terminals.Merge, Terminals.Purge, Terminals.Rename, Terminals.Rollback, Terminals.Savepoint, Terminals.Select, Terminals.Set, Terminals.Update, Terminals.With };
+				var expectedTerminals = new[] { Terminals.Alter, /*Terminals.Begin,*/ Terminals.Call, Terminals.Comment, Terminals.Commit, Terminals.Create, /*Terminals.Declare,*/ Terminals.Delete, Terminals.Drop, Terminals.Explain, Terminals.Insert, /*Terminals.LeftLabelMarker,*/ Terminals.LeftParenthesis, Terminals.Lock, Terminals.Merge, Terminals.Purge, Terminals.Rename, Terminals.Rollback, Terminals.Savepoint, Terminals.Select, Terminals.Set, Terminals.Update, Terminals.With };
 				terminalCandidates.ShouldBe(expectedTerminals);
 			}
 
