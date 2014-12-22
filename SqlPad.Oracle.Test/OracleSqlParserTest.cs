@@ -2311,7 +2311,6 @@ FROM
 			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 		}
 
-		[Ignore]
 		public class PlSql
 		{
 			[Test(Description = @"")]
@@ -2326,6 +2325,9 @@ DECLARE
 	constant1 CONSTANT NUMBER NOT NULL := 123;
 	variable1 NUMBER NOT NULL := 456;
 	exception1 EXCEPTION;
+
+	cursor1 SYS_REFCURSOR;
+	dummy1 VARCHAR2(4000);
 BEGIN
 	NULL;
 	<<LABEL1>>
@@ -2342,6 +2344,25 @@ BEGIN
 	ELSIF SQL%FOUND THEN DBMS_OUTPUT.PUT_LINE(a => 'Found');
 	ELSIF SQL%NOTFOUND THEN DBMS_OUTPUT.PUT_LINE(a => 'Not found');
 	END IF;
+
+	CASE variable1
+		WHEN 456 THEN DBMS_OUTPUT.PUT_LINE(a => 'Default');
+		WHEN 457 THEN DBMS_OUTPUT.PUT_LINE(a => 'Non-default');
+		ELSE DBMS_OUTPUT.PUT_LINE(a => 'Fallback');
+	END CASE;
+
+	CASE
+		WHEN variable1 = 456 THEN DBMS_OUTPUT.PUT_LINE(a => 'Default');
+		WHEN variable1 = 457 THEN DBMS_OUTPUT.PUT_LINE(a => 'Non-default');
+		ELSE DBMS_OUTPUT.PUT_LINE(a => 'Fallback');
+	END CASE;
+
+	OPEN cursor1 FOR 'SELECT DUMMY FROM DUAL';
+ 
+	LOOP
+		FETCH cursor1 INTO dummy1;
+		EXIT WHEN cursor1%NOTFOUND;
+	END LOOP;
 END;";
 
 				var statement = Parser.Parse(statement1).Single().Validate();
@@ -2373,6 +2394,12 @@ BEGIN NULL; END;
 @"CREATE FUNCTION GENERATEDAYS(DATE_FROM IN DATE, DATE_TO IN DATE) RETURN SYS.ODCIDATELIST PIPELINED
 IS
 	DATE_COLLECTION$ SYS.ODCIDATELIST;
+	exception1 EXCEPTION;
+	PRAGMA AUTONOMOUS_TRANSACTION;
+	--PRAGMA RESTRICT_REFERENCES(DEFAULT, TRUST, WNPS);
+	PRAGMA EXCEPTION_INIT(exception1, -1553);
+	--PRAGMA SERIALLY_REUSABLE;
+	PRAGMA UDF;
 BEGIN
     SELECT
     	DAY --BULK COLLECT INTO DATE_COLLECTION$
@@ -2391,6 +2418,8 @@ BEGIN
             PIPE ROW (DATE_COLLECTION$(I));
         END LOOP;
     END IF;
+
+	EXECUTE IMMEDIATE 'SELECT :P1, :P2 FROM DUAL' USING DATE_FROM, DATE_TO;
 END;";
 
 				var statement = Parser.Parse(statement1).Single().Validate();
@@ -2469,7 +2498,7 @@ END;";
 			{
 				var terminalCandidates = Parser.GetTerminalCandidates(null).OrderBy(t => t).ToArray();
 
-				var expectedTerminals = new[] { Terminals.Alter, /*Terminals.Begin,*/ Terminals.Call, Terminals.Comment, Terminals.Commit, Terminals.Create, /*Terminals.Declare,*/ Terminals.Delete, Terminals.Drop, Terminals.Explain, Terminals.Insert, /*Terminals.LeftLabelMarker,*/ Terminals.LeftParenthesis, Terminals.Lock, Terminals.Merge, Terminals.Purge, Terminals.Rename, Terminals.Rollback, Terminals.Savepoint, Terminals.Select, Terminals.Set, Terminals.Update, Terminals.With };
+				var expectedTerminals = new[] { Terminals.Alter, Terminals.Begin, Terminals.Call, Terminals.Comment, Terminals.Commit, Terminals.Create, Terminals.Declare, Terminals.Delete, Terminals.Drop, Terminals.Explain, Terminals.Insert, Terminals.LeftLabelMarker, Terminals.LeftParenthesis, Terminals.Lock, Terminals.Merge, Terminals.Purge, Terminals.Rename, Terminals.Rollback, Terminals.Savepoint, Terminals.Select, Terminals.Set, Terminals.Update, Terminals.With };
 				terminalCandidates.ShouldBe(expectedTerminals);
 			}
 

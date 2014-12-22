@@ -242,7 +242,7 @@ namespace SqlPad.Oracle
 
 		private static OracleProgramMetadata TryFindProgramOverload(IEnumerable<OracleProgramMetadata> functionMetadataCollection, string normalizedName, int parameterCount)
 		{
-			return functionMetadataCollection.Where(m => m.Type == ProgramType.Function && m.Identifier.Name == normalizedName)
+			return functionMetadataCollection.Where(m => m != null && m.Type == ProgramType.Function && m.Identifier.Name == normalizedName)
 				.OrderBy(m => Math.Abs(parameterCount - m.Parameters.Count + 1))
 				.FirstOrDefault();
 		}

@@ -20,7 +20,7 @@
     <StartSymbol Id="CommentStatement" />
     <StartSymbol Id="AlterStatement" />
     <StartSymbol Id="CallStatement" />
-    <!--<StartSymbol Id="PlSqlBlockStatement" />-->
+    <StartSymbol Id="PlSqlBlockStatement" />
   </StartSymbols>
 
   <Terminators>
@@ -1104,8 +1104,7 @@
         <Sequence>
           <NonTerminal Id="BulkCollect" IsOptional="true" />
           <Terminal Id="Into" />
-          <NonTerminal Id="BindVariableExpression" />
-          <NonTerminal Id="BindVariableExpressionCommaChainedList" IsOptional="true" />
+          <NonTerminal Id="BindVariableExpressionOrPlSqlIdentifierList" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -1119,12 +1118,20 @@
       </Sequences>
     </Rule>
 
-    <Rule StartingNonTerminal="BindVariableExpressionCommaChainedList">
+    <Rule StartingNonTerminal="BindVariableExpressionOrPlSqlIdentifierList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="BindVariableExpressionOrPlSqlIdentifier" />
+          <NonTerminal Id="BindVariableExpressionOrPlSqlIdentifierCommaChainedList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="BindVariableExpressionOrPlSqlIdentifierCommaChainedList">
       <Sequences>
         <Sequence>
           <Terminal Id="Comma" />
-          <NonTerminal Id="BindVariableExpression" />
-          <NonTerminal Id="BindVariableExpressionCommaChainedList" IsOptional="true" />
+          <NonTerminal Id="BindVariableExpressionOrPlSqlIdentifierList" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -2131,6 +2138,17 @@
       </Sequences>
     </Rule>
 
+    <Rule StartingNonTerminal="BindVariableExpressionOrPlSqlIdentifier">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="BindVariableExpression" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="PlSqlIdentifier" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
     <Rule StartingNonTerminal="BindVariableExpression">
       <Sequences>
         <Sequence>
@@ -5969,9 +5987,9 @@
         <Sequence>
           <NonTerminal Id="CreateMaterializedViewLog" />
         </Sequence>
-        <!--<Sequence>
+        <Sequence>
           <NonTerminal Id="CreateFunction" />
-        </Sequence>-->
+        </Sequence>
         <!-- TODO: Create other objects -->
       </Sequences>
     </Rule>
@@ -6432,9 +6450,9 @@
         <Sequence>
           <NonTerminal Id="Item1" />
         </Sequence>
-        <!--<Sequence>
+        <Sequence>
           <NonTerminal Id="PragmaDefinition" />
-        </Sequence>-->
+        </Sequence>
       </Sequences>
     </Rule>
     
@@ -6637,12 +6655,7 @@
           <Terminal Id="RightParenthesis" />
         </Sequence>
         <Sequence>
-          <Terminal Id="Inline" />
-          <Terminal Id="LeftParenthesis" />
-          <Terminal Id="Identifier" />
-          <Terminal Id="Comma" />
-          <Terminal Id="StringLiteral" />
-          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="PragmaTypeInline" />
         </Sequence>
         <Sequence>
           <Terminal Id="SeriallyReusable" />
@@ -6652,11 +6665,34 @@
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="IdentifierOrDefault" />
           <Terminal Id="Comma" />
-          <Terminal Id="RestrictionList" />
+          <NonTerminal Id="RestrictionList" />
           <Terminal Id="RightParenthesis" />
         </Sequence>
         <Sequence>
           <Terminal Id="UserDefinedFunction" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PragmaTypeInline">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Inline" />
+          <Terminal Id="LeftParenthesis" />
+          <Terminal Id="Identifier" />
+          <Terminal Id="Comma" />
+          <Terminal Id="StringLiteral" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="InlinePragma">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Pragma" />
+          <NonTerminal Id="PragmaTypeInline" />
+          <Terminal Id="Semicolon" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -6733,9 +6769,9 @@
         <Sequence>
           <NonTerminal Id="Item2" />
         </Sequence>
-        ~1~<Sequence>
+        <Sequence>
           <NonTerminal Id="PragmaDefinition" />
-        </Sequence>@1@
+        </Sequence>
       </Sequences>
     </Rule>-->
     
@@ -6974,9 +7010,9 @@
         <Sequence>
           <NonTerminal Id="PlSqlBasicLoopStatement" />
         </Sequence>
-        <!--<Sequence>
+        <Sequence>
           <NonTerminal Id="PlSqlCaseStatement" />
-        </Sequence>-->
+        </Sequence>
         <Sequence>
           <NonTerminal Id="PlSqlCloseStatement" />
         </Sequence>
@@ -6988,22 +7024,22 @@
         </Sequence>
         <!--<Sequence>
           <NonTerminal Id="PlSqlCursorForLoopStatement" />
-        </Sequence>
+        </Sequence>-->
         <Sequence>
           <NonTerminal Id="PlSqlExecuteImmediateStatement" />
-        </Sequence>-->
+        </Sequence>
         <Sequence>
           <NonTerminal Id="PlSqlExitStatement" />
         </Sequence>
-        <!--<Sequence>
+        <Sequence>
           <NonTerminal Id="PlSqlFetchStatement" />
-        </Sequence>-->
+        </Sequence>
         <Sequence>
           <NonTerminal Id="PlSqlForLoopStatement" />
         </Sequence>
-        <!--<Sequence>
+        <Sequence>
           <NonTerminal Id="PlSqlForAllStatement" />
-        </Sequence>-->
+        </Sequence>
         <Sequence>
           <NonTerminal Id="PlSqlGoToStatement" />
         </Sequence>
@@ -7013,12 +7049,12 @@
         <Sequence>
           <NonTerminal Id="PlSqlNullStatement" />
         </Sequence>
-        <!--<Sequence>
+        <Sequence>
           <NonTerminal Id="PlSqlOpenStatement" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="PlSqlOpenForStatement" />
-        </Sequence>-->
+        </Sequence>
         <Sequence>
           <NonTerminal Id="PlSqlPipeRowStatement" />
         </Sequence>
@@ -7042,6 +7078,227 @@
         </Sequence>
         <Sequence>
           <NonTerminal Id="PlSqlWhileLoopStatement" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PlSqlOpenStatement">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Open" />
+          <Terminal Id="CursorIdentifier" />
+          <NonTerminal Id="PlSqlParenthesisEnclosedExpressionList" IsOptional="true" />
+          <Terminal Id="Semicolon" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PlSqlParenthesisEnclosedExpressionList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="PlSqlExpressionList" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PlSqlExpressionList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="PlSqlExpression" />
+          <NonTerminal Id="PlSqlExpressionListChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PlSqlExpressionListChained">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="PlSqlExpressionList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PlSqlOpenForStatement">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Open" />
+          <NonTerminal Id="BindVariableExpressionOrPlSqlIdentifier" />
+          <Terminal Id="For" />
+          <NonTerminal Id="SelectStatementOrDynamicSqlString" />
+          <NonTerminal Id="UsingClause" IsOptional="true" />
+          <Terminal Id="Semicolon" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SelectStatementOrDynamicSqlString">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="StringLiteral" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="SelectStatement" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PlSqlCaseStatement">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Case" />
+          <NonTerminal Id="PlSqlSearchedCaseExpressionBranch" />
+          <NonTerminal Id="PlSqlCaseExpressionElseBranch" IsOptional="true" />
+          <Terminal Id="End" />
+          <Terminal Id="Case" />
+          <Terminal Id="LabelIdentifier" IsOptional="true" />
+          <Terminal Id="Semicolon" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Case" />
+          <NonTerminal Id="PlSqlExpression" />
+          <NonTerminal Id="PlSqlSimpleCaseExpressionBranch" />
+          <NonTerminal Id="PlSqlCaseExpressionElseBranch" IsOptional="true" />
+          <Terminal Id="End" />
+          <Terminal Id="Case" />
+          <Terminal Id="LabelIdentifier" IsOptional="true" />
+          <Terminal Id="Semicolon" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PlSqlSearchedCaseExpressionBranch">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="When" />
+          <NonTerminal Id="PlSqlBooleanExpression" />
+          <Terminal Id="Then" />
+          <NonTerminal Id="PlSqlStatement" />
+          <NonTerminal Id="PlSqlSearchedCaseExpressionBranch" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PlSqlSimpleCaseExpressionBranch">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="When" />
+          <NonTerminal Id="PlSqlExpression" />
+          <Terminal Id="Then" />
+          <NonTerminal Id="PlSqlStatement" />
+          <NonTerminal Id="PlSqlSimpleCaseExpressionBranch" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PlSqlCaseExpressionElseBranch">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Else" />
+          <NonTerminal Id="PlSqlStatement" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PlSqlFetchStatement">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Fetch" />
+          <NonTerminal Id="BindVariableExpressionOrPlSqlIdentifier" />
+          <NonTerminal Id="PlSqlFetchIntoClause" />
+          <Terminal Id="Semicolon" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PlSqlFetchIntoClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Into" />
+          <NonTerminal Id="BindVariableExpressionOrPlSqlIdentifierList" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="BulkCollect" />
+          <Terminal Id="Into" />
+          <NonTerminal Id="BindVariableExpressionOrPlSqlIdentifierList" />
+          <NonTerminal Id="PlSqlFetchLimitClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PlSqlFetchLimitClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Limit" />
+          <NonTerminal Id="PlSqlExpression" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PlSqlExecuteImmediateStatement">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Execute" />
+          <Terminal Id="Immediate" />
+          <Terminal Id="StringLiteral" />
+          <NonTerminal Id="PlSqlExecuteImmediateInputOutputClause" IsOptional="true" />
+          <Terminal Id="Semicolon" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="PlSqlExecuteImmediateInputOutputClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="IntoVariableClause" />
+          <NonTerminal Id="UsingClause" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="UsingClause" />
+          <NonTerminal Id="DynamicReturningClause" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="DynamicReturningClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="DynamicReturningClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ReturnOrReturning" />
+          <NonTerminal Id="IntoVariableClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="UsingClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Using" />
+          <NonTerminal Id="BindArgumentList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="BindArgumentList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="In" IsOptional="true" />
+          <Terminal Id="Out" IsOptional="true" />
+          <NonTerminal Id="PlSqlExpression" />
+          <NonTerminal Id="BindArgumentListChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="BindArgumentListChained">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="BindArgumentList" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -7437,7 +7694,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="When" />
-          <NonTerminal Id="BooleanExpression" />
+          <NonTerminal Id="PlSqlBooleanExpression" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -7446,19 +7703,8 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Close" />
-          <NonTerminal Id="CursorIdentifierOrHostVariable" />
+          <NonTerminal Id="BindVariableExpressionOrPlSqlIdentifier" />
           <Terminal Id="Semicolon" />
-        </Sequence>
-      </Sequences>
-    </Rule>
-    
-    <Rule StartingNonTerminal="CursorIdentifierOrHostVariable">
-      <Sequences>
-        <Sequence>
-          <Terminal Id="CursorIdentifier" />
-        </Sequence>
-        <Sequence>
-          <NonTerminal Id="BindVariableExpression" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -7505,9 +7751,9 @@
         <Sequence>
           <NonTerminal Id="PlSqlStatement" />
         </Sequence>
-        <!--<Sequence>
+        <Sequence>
           <NonTerminal Id="InlinePragma" />
-        </Sequence>-->
+        </Sequence>
       </Sequences>
     </Rule>
     
@@ -12122,6 +12368,24 @@
     <Terminal Id="ParallelEnable" Value="PARALLEL_ENABLE" />
     <Terminal Id="Aggregate" Value="AGGREGATE" />
     <Terminal Id="Pipelined" Value="PIPELINED" />
+    <Terminal Id="Language" Value="LANGUAGE" />
+    <Terminal Id="Java" Value="JAVA" />
+    <Terminal Id="Pragma" Value="PRAGMA" />
+    <Terminal Id="AutonomousTransaction" Value="AUTONOMOUS_TRANSACTION" />
+    <Terminal Id="ExceptionInit" Value="EXCEPTION_INIT" />
+    <Terminal Id="Inline" Value="INLINE" />
+    <Terminal Id="SeriallyReusable" Value="SERIALLY_REUSABLE" />
+    <Terminal Id="RestrictReferences" Value="RESTRICT_REFERENCES" />
+    <Terminal Id="UserDefinedFunction" Value="UDF" />
+    <Terminal Id="ReadNoDatabaseState" Value="RNDS" />
+    <Terminal Id="WriteNoDatabaseState" Value="WNDS" />
+    <Terminal Id="ReadNoPackageState" Value="RNPS" />
+    <Terminal Id="WriteNoPackageState" Value="WNPS" />
+    <Terminal Id="ForAll" Value="FORALL" />
+    <Terminal Id="Trust" Value="TRUST" />
+    <Terminal Id="Execute" Value="EXECUTE" />
+    <Terminal Id="NoCopy" Value="NOCOPY" />
+    <Terminal Id="Open" Value="OPEN" />
     <Terminal Id="AssignmentOperator" Value=":=" />
     <Terminal Id="DoubleDotOperator" Value=".." />
     <Terminal Id="PercentCharacter" Value="%" />
@@ -12131,6 +12395,7 @@
     <Terminal Id="CursorIdentifier" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
     <Terminal Id="ExceptionIdentifier" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
     <Terminal Id="TypeIdentifier" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
+    <Terminal Id="PlSqlIdentifier" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
   
     <!-- Oracle 12c specific -->
     <!-- Cross/outer apply clause -->
