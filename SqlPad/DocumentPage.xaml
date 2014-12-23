@@ -13,6 +13,7 @@
 	<UserControl.Resources>
 		<sqlPad:SelectedIndexConverter x:Key="SelectedIndexConverter" />
 		<sqlPad:ColorCodeToColorConverter x:Key="ColorCodeToColorConverter" />
+		<sqlPad:PrettyPrintNumericConverter x:Key="PrettyPrintNumericConverter" />
 
 		<MenuItem x:Key="ColorPickerMenuItem">
 			<MenuItem.Header>
@@ -240,7 +241,7 @@
 				          HeadersVisibility="None"
 				          HorizontalGridLinesBrush="LightGray"
 				          VerticalGridLinesBrush="LightGray"
-						  KeyDown="ResultGridKeyDownHandler"
+						  KeyDown="ReadOnlyGridKeyDownHandler"
 						  ScrollViewer.ScrollChanged="ResultGridScrollChangedHandler"
 				          MouseDoubleClick="ResultGridMouseDoubleClickHandler">
 					<DataGrid.CommandBindings>
@@ -264,12 +265,13 @@
 					<DataGrid ItemsSource="{Binding SessionExecutionStatistics}"
 							  AutoGenerateColumns="False"
 							  CanUserDeleteRows ="False"
+							  KeyDown="ReadOnlyGridKeyDownHandler"
 							  HorizontalGridLinesBrush="LightGray"
 							  VerticalGridLinesBrush="LightGray">
 						<DataGrid.Columns>
 							<DataGridTextColumn Header="Name" Binding="{Binding Path=Name}"
 												EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}" />
-							<DataGridTextColumn Header="Value" Binding="{Binding Path=Value}"
+							<DataGridTextColumn Header="Value" Binding="{Binding Path=Value, Converter={StaticResource PrettyPrintNumericConverter}}"
 												HeaderStyle="{StaticResource HeaderStyleRightAlign}"
 												CellStyle="{StaticResource CellStyleRightAlign}"
 												EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}" />

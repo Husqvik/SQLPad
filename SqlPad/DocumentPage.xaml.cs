@@ -1903,9 +1903,13 @@ namespace SqlPad
 			}
 		}
 
-		private void ResultGridKeyDownHandler(object sender, KeyEventArgs e)
+		private void ReadOnlyGridKeyDownHandler(object sender, KeyEventArgs e)
 		{
-			e.Handled = true;
+			var keyCode = e.Key;
+			if (!keyCode.In(Key.F4, Key.Escape, Key.System))
+			{
+				e.Handled = true;
+			}
 		}
 	}
 

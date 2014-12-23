@@ -139,6 +139,14 @@ namespace SqlPad
 		}
 	}
 
+	public class PrettyPrintNumericConverter : ValueConverter
+	{
+		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			return ((decimal)value).ToString("N0");
+		}
+	}
+
 	public abstract class ValueConverter : IValueConverter
 	{
 		public static string ValueNotAvailable = "N/A";
