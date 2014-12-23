@@ -934,6 +934,7 @@ namespace SqlPad.Oracle
 			public const string XmlTableColumnDefinition = "XmlTableColumnDefinition";
 			public const string XmlTableColumnList = "XmlTableColumnList";
 			public const string XmlTableColumnListChained = "XmlTableColumnListChained";
+			public const string XmlTableColumnListClause = "XmlTableColumnListClause";
 			public const string XmlTableColumnPathClause = "XmlTableColumnPathClause";
 			public const string XmlTableOptions = "XmlTableOptions";
 			public const string XmlTypeSequenceByRef = "XmlTypeSequenceByRef";

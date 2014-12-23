@@ -79,7 +79,7 @@ namespace SqlPad.Oracle
 			var collectionType = schemaObject as OracleTypeCollection;
 			if (collectionType != null)
 			{
-				columns.Add(BuildColumnValueColumn(collectionType.ElementDataType));
+				columns.Add(OracleDatabaseModelBase.BuildColumnValueColumn(collectionType.ElementDataType));
 			}
 			else if (ProgramMetadata != null && ProgramMetadata.Parameters.Count > 1 &&
 			         (ProgramMetadata.Parameters[0].DataType == "TABLE" || ProgramMetadata.Parameters[0].DataType == "VARRAY"))
@@ -105,24 +105,12 @@ namespace SqlPad.Oracle
 					}
 					else if (Owner.SemanticModel.DatabaseModel.AllObjects.TryGetValue(ProgramMetadata.Parameters[0].CustomDataType, out schemaObject))
 					{
-						columns.Add(BuildColumnValueColumn(((OracleTypeCollection)schemaObject).ElementDataType));
+						columns.Add(OracleDatabaseModelBase.BuildColumnValueColumn(((OracleTypeCollection)schemaObject).ElementDataType));
 					}
 				}
 			}
 
 			return _columns = columns.AsReadOnly();
-		}
-
-		private static OracleColumn BuildColumnValueColumn(OracleDataType columnType)
-		{
-			var column =
-				new OracleColumn
-				{
-					Name = "\"COLUMN_VALUE\"",
-					DataType = columnType,
-					Nullable = true
-				};
-			return column;
 		}
 	}
 

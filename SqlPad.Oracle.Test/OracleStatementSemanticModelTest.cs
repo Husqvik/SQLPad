@@ -1108,6 +1108,23 @@ MODEL
 		}
 
 		[Test(Description = @"")]
+		public void TestXmlTableReferenceWithoutColumnListSpecification()
+		{
+			const string query1 = @"SELECT * FROM XMLTABLE('for $i in $RSS_DATA/rss/channel/item return $i' PASSING HTTPURITYPE('http://servis.idnes.cz/rss.asp?c=zpravodaj').GETXML() AS RSS_DATA)";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			var queryBlock = semanticModel.QueryBlocks.Single();
+			var columns = queryBlock.Columns.ToArray();
+			columns.Length.ShouldBe(2);
+			columns[0].IsAsterisk.ShouldBe(true);
+			columns[1].ColumnDescription.Name.ShouldBe("\"COLUMN_VALUE\"");
+			columns[1].ColumnDescription.Nullable.ShouldBe(true);
+			columns[1].ColumnDescription.FullTypeName.ShouldBe("SYS.XMLTYPE");
+		}
+
+		[Test(Description = @"")]
 		public void TestJsonTableReference()
 		{
 			const string query1 =

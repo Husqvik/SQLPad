@@ -1279,6 +1279,25 @@ FROM
 			// TODO: Precise assertions
 		}
 
+		[Test(Description = @"Tests XMLTABLE function without column specification. ")]
+		public void TestXmlTableFunctionWithoutColumnListSpecification()
+		{
+			const string query1 =
+@"SELECT
+    *
+FROM
+    XMLTABLE(
+        XMLNAMESPACES('http://sqlpad.com/test1' AS test1, DEFAULT '', 'http://sqlpad.com/test2' AS ""test2""),
+        '//Root/Item'
+        PASSING XMLTYPE('<Root><Item Attribute=""A1"">Item11</Item><Item Attribute=""B2"">Item2</Item><Item Attribute=""C3"">Item3</Item></Root>')
+    )";
+
+			var result = Parser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+		}
+
 		[Test(Description = @"Tests XMLQUERY function. ")]
 		public void TestXmlQueryFunction()
 		{

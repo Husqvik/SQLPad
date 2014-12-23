@@ -9,6 +9,7 @@ namespace SqlPad.Oracle
 	public class OracleDataType : OracleObject
 	{
 		public static readonly OracleDataType Empty = new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(String.Empty, String.Empty) };
+		public static readonly OracleDataType XmlType = new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(OracleDatabaseModelBase.SchemaSys, OracleTypeBase.TypeCodeXml) };
 
 		public int? Length { get; set; }
 

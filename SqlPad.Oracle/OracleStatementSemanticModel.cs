@@ -386,38 +386,45 @@ namespace SqlPad.Oracle
 			}
 
 			var columns = new List<OracleColumn>();
-			foreach (var xmlTableColumn in xmlTableClause.GetDescendants(NonTerminals.XmlTableColumn).Where(n => n.TerminalCount >= 1 && n.FirstTerminalNode.Id == Terminals.ColumnAlias))
+
+			var columnListClause = xmlTableClause.GetDescendantByPath(NonTerminals.XmlTableOptions, NonTerminals.XmlTableColumnListClause);
+			if (columnListClause == null)
 			{
-				var columnAlias = xmlTableColumn.ChildNodes[0];
-
-				var column =
-					new OracleColumn
-					{
-						Name = columnAlias.Token.Value.ToQuotedIdentifier(),
-						Nullable = true,
-						DataType = OracleDataType.Empty
-					};
-
+				var column = OracleDatabaseModelBase.BuildColumnValueColumn(OracleDataType.XmlType);
 				columns.Add(column);
-
-				var xmlTableColumnDefinition = xmlTableColumn.GetDescendantByPath(NonTerminals.XmlTableColumnDefinition);
-				if (xmlTableColumnDefinition != null && !TryAssingnColumnForOrdinality(column, xmlTableColumnDefinition.ChildNodes))
+			}
+			else
+			{
+				foreach (var xmlTableColumn in columnListClause.GetDescendants(NonTerminals.XmlTableColumn).Where(n => n.TerminalCount >= 1 && n.FirstTerminalNode.Id == Terminals.ColumnAlias))
 				{
-					var dataTypeOrXmlTypeNode = xmlTableColumnDefinition.GetDescendantByPath(NonTerminals.DataTypeOrXmlType);
-					if (dataTypeOrXmlTypeNode != null)
+					var columnAlias = xmlTableColumn.ChildNodes[0];
+
+					var column =
+						new OracleColumn
+						{
+							Name = columnAlias.Token.Value.ToQuotedIdentifier(),
+							Nullable = true,
+							DataType = OracleDataType.Empty
+						};
+
+					columns.Add(column);
+
+					var xmlTableColumnDefinition = xmlTableColumn.GetDescendantByPath(NonTerminals.XmlTableColumnDefinition);
+					if (xmlTableColumnDefinition != null && !TryAssingnColumnForOrdinality(column, xmlTableColumnDefinition.ChildNodes))
 					{
-						var dataTypeNode = dataTypeOrXmlTypeNode.ChildNodes[0];
-						if (dataTypeNode.Id == Terminals.XmlType)
+						var dataTypeOrXmlTypeNode = xmlTableColumnDefinition.GetDescendantByPath(NonTerminals.DataTypeOrXmlType);
+						if (dataTypeOrXmlTypeNode != null)
 						{
-							column.DataType =
-								new OracleDataType
-								{
-									FullyQualifiedName = OracleObjectIdentifier.Create(OracleDatabaseModelBase.SchemaSys, OracleTypeBase.TypeCodeXml)
-								};
-						}
-						else if (dataTypeNode.Id == NonTerminals.DataType)
-						{
-							column.DataType = OracleDataType.FromDataTypeNode(dataTypeNode);
+							var dataTypeNode = dataTypeOrXmlTypeNode.ChildNodes[0];
+							switch (dataTypeNode.Id)
+							{
+								case Terminals.XmlType:
+									column.DataType = OracleDataType.XmlType;
+									break;
+								case NonTerminals.DataType:
+									column.DataType = OracleDataType.FromDataTypeNode(dataTypeNode);
+									break;
+							}
 						}
 					}
 				}
