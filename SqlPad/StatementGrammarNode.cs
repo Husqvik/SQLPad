@@ -220,6 +220,22 @@ namespace SqlPad
 			return node;
 		}
 
+		public StatementGrammarNode GetDescendantByIndex(params int[] indexes)
+		{
+			var node = this;
+			foreach (var index in indexes)
+			{
+				if (node == null || node._childNodes.Count <= index)
+				{
+					return null;
+				}
+
+				node = node._childNodes[index];
+			}
+
+			return node;
+		}
+
 		public IEnumerable<StatementGrammarNode> GetDescendants(params string[] descendantNodeIds)
 		{
 			return GetPathFilterDescendants(null, descendantNodeIds);

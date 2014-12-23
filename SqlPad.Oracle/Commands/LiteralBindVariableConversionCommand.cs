@@ -59,7 +59,8 @@ namespace SqlPad.Oracle.Commands
 		private static bool CanConvertCurrentTerminal(StatementGrammarNode currentTerminal)
 		{
 			return currentTerminal.Id.In(Terminals.NumberLiteral, Terminals.StringLiteral) &&
-			       currentTerminal.RootNode.Id.In(NonTerminals.SelectStatement, NonTerminals.UpdateStatement, NonTerminals.DeleteStatement, NonTerminals.InsertStatement);
+			       currentTerminal.RootNode.GetDescendantByIndex(0, 0).Id.In(NonTerminals.SelectStatement, NonTerminals.UpdateStatement, NonTerminals.DeleteStatement, NonTerminals.InsertStatement, NonTerminals.MergeStatement) ||
+				   currentTerminal.RootNode.Id == NonTerminals.PlSqlBlockStatement;
 		}
 
 		private LiteralBindVariableConversionCommand(CommandExecutionContext executionContext, IReadOnlyList<StatementGrammarNode> literalTerminals, string requiredPrecedingTerminalId)

@@ -794,7 +794,13 @@ namespace SqlPad.Oracle
 			ResolveMainObjectReferenceInsert();
 			ResolveMainObjectReferenceUpdateOrDelete();
 
-			var whereClauseRootNode = Statement.RootNode.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.WhereClause);
+			var rootNode = Statement.RootNode.GetDescendantByIndex(0, 0);
+			if (rootNode == null)
+			{
+				return;
+			}
+
+			var whereClauseRootNode = rootNode.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.WhereClause);
 			if (whereClauseRootNode != null)
 			{
 				var whereClauseIdentifiers = whereClauseRootNode.GetDescendantsWithinSameQuery(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level);
@@ -810,7 +816,13 @@ namespace SqlPad.Oracle
 
 		private void ResolveMainObjectReferenceUpdateOrDelete()
 		{
-			var tableReferenceNode = Statement.RootNode.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.TableReference);
+			var rootNode = Statement.RootNode.GetDescendantByIndex(0, 0);
+			if (rootNode == null)
+			{
+				return;
+			}
+
+			var tableReferenceNode = rootNode.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.TableReference);
 			if (tableReferenceNode == null)
 			{
 				return;
@@ -833,12 +845,12 @@ namespace SqlPad.Oracle
 				MainObjectReferenceContainer.MainObjectReference = MainQueryBlock.SelfObjectReference;
 			}
 
-			if (Statement.RootNode.FirstTerminalNode.Id != Terminals.Update)
+			if (rootNode.FirstTerminalNode.Id != Terminals.Update)
 			{
 				return;
 			}
 
-			var updateListNode = Statement.RootNode.GetDescendantByPath(NonTerminals.UpdateSetClause, NonTerminals.UpdateSetColumnsOrObjectValue);
+			var updateListNode = rootNode.GetDescendantByPath(NonTerminals.UpdateSetClause, NonTerminals.UpdateSetColumnsOrObjectValue);
 			if (updateListNode == null)
 			{
 				return;

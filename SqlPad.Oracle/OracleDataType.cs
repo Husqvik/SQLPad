@@ -128,33 +128,27 @@ namespace SqlPad.Oracle
 			var owner = dataTypeNode.FirstTerminalNode.Id == Terminals.SchemaIdentifier
 				? dataTypeNode.FirstTerminalNode.Token.Value
 				: String.Empty;
-			
-			var definitionNode = dataTypeNode.GetDescendantByPath(NonTerminals.DataTypeDefinition);
-			if (definitionNode == null)
-			{
-				return Empty;
-			}
 
 			var dataType = new OracleDataType();
 
-			var isVarying = definitionNode.GetDescendantByPath(Terminals.Varying) != null;
+			var isVarying = dataTypeNode.GetDescendantByPath(Terminals.Varying) != null;
 
 			string name;
-			switch (definitionNode.FirstTerminalNode.Id)
+			switch (dataTypeNode.FirstTerminalNode.Id)
 			{
 				case Terminals.Double:
 					name = "BINARY_DOUBLE";
 					break;
 				case Terminals.Long:
-					name = definitionNode.ChildNodes.Count > 1 && definitionNode.ChildNodes[1].Id == Terminals.Raw
+					name = dataTypeNode.ChildNodes.Count > 1 && dataTypeNode.ChildNodes[1].Id == Terminals.Raw
 						? "LONG RAW"
 						: "LONG";
 					break;
 				case Terminals.Interval:
-					var yearToMonthNode = definitionNode.GetDescendantByPath(NonTerminals.YearToMonthOrDayToSecond, NonTerminals.YearOrMonth);
+					var yearToMonthNode = dataTypeNode.GetDescendantByPath(NonTerminals.YearToMonthOrDayToSecond, NonTerminals.YearOrMonth);
 					if (yearToMonthNode == null)
 					{
-						var dayToSecondNode = definitionNode.GetDescendantByPath(NonTerminals.YearToMonthOrDayToSecond, NonTerminals.YearOrMonth);
+						var dayToSecondNode = dataTypeNode.GetDescendantByPath(NonTerminals.YearToMonthOrDayToSecond, NonTerminals.YearOrMonth);
 						if (dayToSecondNode == null)
 						{
 							name = String.Empty;
@@ -177,13 +171,13 @@ namespace SqlPad.Oracle
 					name = isVarying ? "VARCHAR2" : "CHAR";
 					break;
 				default:
-					name = definitionNode.FirstTerminalNode.Token.Value.ToUpperInvariant();
+					name = dataTypeNode.FirstTerminalNode.Token.Value.ToUpperInvariant();
 					break;
 			}
 
 			dataType.FullyQualifiedName = OracleObjectIdentifier.Create(owner, name);
 
-			var simplePrecisionNode = definitionNode.GetSingleDescendant(NonTerminals.DataTypeSimplePrecision);
+			var simplePrecisionNode = dataTypeNode.GetSingleDescendant(NonTerminals.DataTypeSimplePrecision);
 			if (simplePrecisionNode != null)
 			{
 				var simplePrecisionValueTerminal = simplePrecisionNode.GetDescendantByPath(Terminals.IntegerLiteral);
@@ -193,9 +187,9 @@ namespace SqlPad.Oracle
 				}
 			}
 
-			TryResolveVarcharDetails(dataType, definitionNode);
+			TryResolveVarcharDetails(dataType, dataTypeNode);
 
-			TryResolveNumericPrecisionAndScale(definitionNode, dataType);
+			TryResolveNumericPrecisionAndScale(dataTypeNode, dataType);
 
 			return dataType;
 		}
