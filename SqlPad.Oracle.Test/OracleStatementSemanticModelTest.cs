@@ -959,6 +959,16 @@ MODEL
 		}
 
 		[Test(Description = @"")]
+		public void TestModelBuildWhileTypingSchemaQualifiedObjectWithinUpdateStatement()
+		{
+			const string query1 = @"UPDATE HUSQVIK.";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			semanticModel.MainQueryBlock.ShouldBe(null);
+		}
+
+		[Test(Description = @"")]
 		public void TestStoredProcedureIsIgnoredInSql()
 		{
 			const string query1 = @"SELECT SQLPAD.SQLPAD_PROCEDURE() FROM DUAL";

@@ -1422,15 +1422,16 @@
     <Rule StartingNonTerminal="MergeSetColumnEqualsExpressionOrOrDefaultValueList">
       <Sequences>
         <Sequence>
+          <NonTerminal Id="Prefix" IsOptional="true" />
           <Terminal Id="Identifier" />
           <Terminal Id="MathEquals" />
           <NonTerminal Id="ExpressionOrOrDefaultValue" />
-          <NonTerminal Id="MergeSetColumnEqualsExpressionOrOrDefaultValueCommaChainedList" IsOptional="true" />
+          <NonTerminal Id="MergeSetColumnEqualsExpressionOrDefaultValueCommaChainedList" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
 
-    <Rule StartingNonTerminal="MergeSetColumnEqualsExpressionOrOrDefaultValueCommaChainedList">
+    <Rule StartingNonTerminal="MergeSetColumnEqualsExpressionOrDefaultValueCommaChainedList">
       <Sequences>
         <Sequence>
           <Terminal Id="Comma" />
@@ -1469,36 +1470,36 @@
           <Terminal Id="Insert" />
           <NonTerminal Id="ParenthesisEnclosedIdentifierList" IsOptional="true" />
           <Terminal Id="Values" />
-          <NonTerminal Id="ParenthesisEnclosedMergeInsertValuesExpressionOrOrDefaultValueList" />
+          <NonTerminal Id="ParenthesisEnclosedMergeInsertValuesExpressionOrDefaultValueList" />
           <NonTerminal Id="WhereClause" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
 
-    <Rule StartingNonTerminal="ParenthesisEnclosedMergeInsertValuesExpressionOrOrDefaultValueList">
+    <Rule StartingNonTerminal="ParenthesisEnclosedMergeInsertValuesExpressionOrDefaultValueList">
       <Sequences>
         <Sequence>
           <Terminal Id="LeftParenthesis" />
-          <NonTerminal Id="MergeInsertValuesExpressionOrOrDefaultValueList" />
+          <NonTerminal Id="MergeInsertValuesExpressionOrDefaultValueList" />
           <Terminal Id="RightParenthesis" />
         </Sequence>
       </Sequences>
     </Rule>
 
-    <Rule StartingNonTerminal="MergeInsertValuesExpressionOrOrDefaultValueList">
+    <Rule StartingNonTerminal="MergeInsertValuesExpressionOrDefaultValueList">
       <Sequences>
         <Sequence>
           <NonTerminal Id="ExpressionOrOrDefaultValue" />
-          <NonTerminal Id="MergeSetColumnEqualsExpressionOrOrDefaultValueCommaChainedList" IsOptional="true" />
+          <NonTerminal Id="MergeInsertValuesExpressionOrDefaultValueCommaChainedList" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
 
-    <Rule StartingNonTerminal="MergeInsertValuesExpressionOrOrDefaultValueCommaChainedList">
+    <Rule StartingNonTerminal="MergeInsertValuesExpressionOrDefaultValueCommaChainedList">
       <Sequences>
         <Sequence>
           <Terminal Id="Comma" />
-          <NonTerminal Id="MergeInsertValuesExpressionOrOrDefaultValueList" />
+          <NonTerminal Id="MergeInsertValuesExpressionOrDefaultValueList" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -8104,7 +8105,7 @@
           <NonTerminal Id="ForAllIndicesBoundsBetweenCondition" IsOptional="true" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="Values" />
+          <Terminal Id="Values" />
           <Terminal Id="Of" />
           <Terminal Id="PlSqlIdentifier" />
         </Sequence>
@@ -13188,6 +13189,8 @@
     <Terminal Id="BinaryInteger" Value="BINARY_INTEGER" />
     <Terminal Id="ReliesOn" Value="RELIES_ON" />
     <Terminal Id="Others" Value="OTHERS" />
+    <Terminal Id="Indices" Value="INDICES" />
+    <Terminal Id="Save" Value="SAVE" />
     <Terminal Id="AssignmentOperator" Value=":=" />
     <Terminal Id="DoubleDotOperator" Value=".." />
     <Terminal Id="PercentCharacter" Value="%" />

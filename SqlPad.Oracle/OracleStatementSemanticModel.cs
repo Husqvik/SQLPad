@@ -847,7 +847,7 @@ namespace SqlPad.Oracle
 				var objectReferenceAlias = innerTableReference.ParentNode.ChildNodes.SingleOrDefault(n => n.Id == Terminals.ObjectAlias);
 				MainObjectReferenceContainer.MainObjectReference = CreateDataObjectReference(tableReferenceNode, objectIdentifier, objectReferenceAlias);
 			}
-			else
+			else if (MainQueryBlock != null)
 			{
 				MainObjectReferenceContainer.MainObjectReference = MainQueryBlock.SelfObjectReference;
 			}

@@ -2552,6 +2552,24 @@ END test_package_body;";
 				var statement = Parser.Parse(statement1).Single().Validate();
 				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 			}
+
+			[Test(Description = @"")]
+			public void TestForAllStatement()
+			{
+				const string statement1 =
+@"BEGIN
+	FORALL i IN INDICES OF cust_tab SAVE EXCEPTIONS
+		INSERT INTO valid_orders (cust_name, amount)
+		VALUES (cust_tab(i), amount_tab(i));
+
+	FORALL i IN VALUES OF rejected_order_tab
+		INSERT INTO rejected_orders (cust_name, amount)
+		VALUES (cust_tab(i), amount_tab(i));
+END;";
+
+				var statement = Parser.Parse(statement1).Single().Validate();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			}
 		}
 
 		public class IsRuleValid
@@ -3038,6 +3056,19 @@ END test_package_body;";
 
 					var terminals = statement.AllTerminals.ToArray();
 					terminals.Length.ShouldBe(28);
+				}
+
+				[Test(Description = @"")]
+				public void TestMergeWithObjectPrefixes()
+				{
+					const string statement1 = @"MERGE INTO HUSQVIK.T USING SYS.DUAL ON (1 = 1) WHEN MATCHED THEN UPDATE SET HUSQVIK.T.PARENT_ID = SYS.DUAL.DUMMY WHERE 1 = 0 WHEN NOT MATCHED THEN INSERT (ID, PARENT_ID) VALUES (NULL, NULL) WHERE 1 = 0";
+					var statements = Parser.Parse(statement1);
+					statements.Count.ShouldBe(1);
+					var statement = statements.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+
+					var terminals = statement.AllTerminals.ToArray();
+					terminals.Length.ShouldBe(55);
 				}
 			}
 
