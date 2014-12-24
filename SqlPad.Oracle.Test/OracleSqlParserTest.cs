@@ -2474,7 +2474,7 @@ END;";
 			public void TestCreateFunction()
 			{
 				const string statement1 =
-@"CREATE OR REPLACE EDITIONABLE FUNCTION TEST_FUNCTION RETURN VARCHAR2 IS BEGIN RETURN NULL; END;";
+@"CREATE OR REPLACE EDITIONABLE FUNCTION TEST_FUNCTION RETURN VARCHAR2 RESULT_CACHE RELIES_ON (HUSQVIK.SELECTION, PROJECT) IS BEGIN RETURN NULL; END;";
 
 				var statement = Parser.Parse(statement1).Single().Validate();
 				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
@@ -2508,6 +2508,46 @@ END;";
 	no_comm EXCEPTION; 
 	no_sal EXCEPTION; 
 END emp_mgmt;";
+
+				var statement = Parser.Parse(statement1).Single().Validate();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			}
+
+			[Test(Description = @"")]
+			public void TestCreatePackageBody()
+			{
+				const string statement1 =
+@"CREATE OR REPLACE PACKAGE BODY test_package_body IS
+	
+	CURSOR cursor1(selection_id IN NUMBER, PROJECT_ID NUMBER) RETURN selection%ROWTYPE IS SELECT * FROM selection;
+	
+	PROCEDURE p1 IS
+	BEGIN
+		dbms_output.put_line('procedure executed. ');
+	END p1;
+
+	FUNCTION f1 RETURN NUMBER IS
+	BEGIN
+		dbms_output.put_line('function executed. ');
+		RETURN 0;
+	END f1;
+
+	PROCEDURE p2 IS
+	BEGIN
+		NULL;
+	END p1;
+	
+BEGIN
+	dbms_output.put_line('package initialized. ');
+	PRAGMA INLINE(p2, 'NO');
+	PRAGMA UDF;
+EXCEPTION
+	WHEN ZERO_DIVIDE THEN
+		DBMS_OUTPUT.PUT_LINE('division by zero');
+	WHEN OTHERS THEN
+		DBMS_OUTPUT.PUT_LINE('It''s broken. ');
+		RAISE;
+END test_package_body;";
 
 				var statement = Parser.Parse(statement1).Single().Validate();
 				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
