@@ -21,6 +21,7 @@ namespace SqlPad.Oracle
 		internal const int OracleErrorCodeUserInvokedCancellation = 1013;
 		internal const int OracleErrorCodeNotConnectedToOracle = 3114;
 		internal const int OracleErrorCodeEndOfFileOnCommunicationChannel = 3113;
+		internal const int OracleErrorCodeSuccessWithCompilationError = 24344;
 		internal const int InitialLongFetchSize = 131072;
 		private const string ModuleNameSqlPadDatabaseModel = "SQLPad database model";
 		private const string OracleDataAccessRegistryPath = @"Software\Oracle\ODP.NET";
@@ -52,7 +53,9 @@ namespace SqlPad.Oracle
 		private string _userTransactionId;
 		private IsolationLevel _userTransactionIsolationLevel;
 		private int _userCommandChildNumber;
+		private bool _userCommandInformationAvailable;
 		private SessionExecutionStatisticsUpdater _executionStatisticsUpdater;
+		private readonly CompilationErrorModelUpdater _compilationErrorModelUpdater = new CompilationErrorModelUpdater();
 
 		private static readonly Dictionary<string, OracleDataDictionary> CachedDataDictionaries = new Dictionary<string, OracleDataDictionary>();
 		private static readonly Dictionary<string, OracleDatabaseModel> DatabaseModels = new Dictionary<string, OracleDatabaseModel>();
@@ -141,15 +144,35 @@ namespace SqlPad.Oracle
 
 		private void InitializeUserConnection()
 		{
-			if (_userConnection != null)
-			{
-				_userConnection.Dispose();
-			}
+			DisposeUserConnection();
 
 			_isInitialized = false;
 			_databaseOutputEnabled = false;
 
 			_userConnection = new OracleConnection(_connectionString.ConnectionString);
+			_userConnection.InfoMessage += UserConnectionInfoMessageHandler;
+		}
+
+		private void UserConnectionInfoMessageHandler(object sender, OracleInfoMessageEventArgs args)
+		{
+			var containsCompilationError = args.Errors.Cast<OracleError>().Any(e => e.Number == OracleErrorCodeSuccessWithCompilationError);
+			if (containsCompilationError)
+			{
+				_userCommandInformationAvailable = true;
+			}
+
+			Trace.WriteLine(args.ToString());
+		}
+
+		private void DisposeUserConnection()
+		{
+			if (_userConnection == null)
+			{
+				return;
+			}
+			
+			_userConnection.InfoMessage -= UserConnectionInfoMessageHandler;
+			_userConnection.Dispose();
 		}
 
 		private void TimerElapsedHandler(object sender, ElapsedEventArgs elapsedEventArgs)
@@ -512,8 +535,8 @@ namespace SqlPad.Oracle
 			InitializationFailed = null;
 			RefreshStarted = null;
 			RefreshCompleted = null;
-			
-			_userConnection.Dispose();
+
+			DisposeUserConnection();
 
 			if (DatabaseModels.ContainsValue(this))
 			{
@@ -594,6 +617,8 @@ namespace SqlPad.Oracle
 
 		private async Task<StatementExecutionResult> ExecuteUserStatement(StatementExecutionModel executionModel, CancellationToken cancellationToken)
 		{
+			_userCommandInformationAvailable = false;
+
 			if (EnsureUserConnectionOpen())
 			{
 				InitializeSession();
@@ -644,10 +669,11 @@ namespace SqlPad.Oracle
 				new StatementExecutionResult
 				{
 					AffectedRowCount = _userDataReader.RecordsAffected,
-					DatabaseOutput = await FetchDatabaseOutput(cancellationToken),
+					DatabaseOutput = await RetrieveDatabaseOutput(cancellationToken),
 					ExecutedSuccessfully = true,
 					ColumnHeaders = GetColumnHeadersFromReader(_userDataReader),
-					InitialResultSet = await FetchRecordsFromReader(_userDataReader, executionModel.InitialFetchRowCount, false).EnumerateAsync(cancellationToken)
+					InitialResultSet = await FetchRecordsFromReader(_userDataReader, executionModel.InitialFetchRowCount, false).EnumerateAsync(cancellationToken),
+					CompilationErrors = _userCommandInformationAvailable ? await RetrieveCompilationErrors(cancellationToken) : new CompilationError[0]
 				};
 		}
 
@@ -778,7 +804,13 @@ namespace SqlPad.Oracle
 			return StatementExecutionResult.Empty;
 		}
 
-		private async Task<string> FetchDatabaseOutput(CancellationToken cancellationToken)
+		private Task<IReadOnlyList<CompilationError>> RetrieveCompilationErrors(CancellationToken cancellationToken)
+		{
+			return UpdateModelAsync(cancellationToken, true, _compilationErrorModelUpdater)
+				.ContinueWith(t => _compilationErrorModelUpdater.Errors, cancellationToken);
+		}
+
+		private async Task<string> RetrieveDatabaseOutput(CancellationToken cancellationToken)
 		{
 			if (!_databaseOutputEnabled)
 			{

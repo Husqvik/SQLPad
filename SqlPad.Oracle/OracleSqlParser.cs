@@ -324,7 +324,7 @@ namespace SqlPad.Oracle
 
 					result = newResult;
 
-					if (!TerminatorIds.Contains(result.Nodes[result.Nodes.Count - 1].FirstTerminalNode.Id) && tokenBuffer.Count > result.Nodes.Sum(n => n.TerminalCount))
+					if (!TerminatorIds.Contains(result.Nodes[result.Nodes.Count - 1].LastTerminalNode.Id) && tokenBuffer.Count > result.Nodes.Sum(n => n.TerminalCount))
 					{
 						result.Status = ProcessingStatus.SequenceNotFound;
 					}

@@ -2432,10 +2432,28 @@ BEGIN NULL; END;
 			}
 
 			[Test(Description = @"")]
+			public void TestPlSqlAndSqlCombined()
+			{
+				const string statement1 =
+@"BEGIN NULL; END;
+
+SELECT * FROM DUAL";
+
+				var statements = Parser.Parse(statement1).ToList();
+				statements.Count.ShouldBe(2);
+
+				statements.ForEach(s =>
+				{
+					s.Validate();
+					s.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				});
+			}
+
+			[Test(Description = @"")]
 			public void TestCreatePipelinedFunction()
 			{
 				const string statement1 =
-@"CREATE FUNCTION GENERATEDAYS(DATE_FROM IN DATE, DATE_TO IN DATE, p3 VARCHAR2 DEFAULT NULL) RETURN SYS.ODCIDATELIST PIPELINED
+@"CREATE FUNCTION GENERATEDAYS(DATE_FROM IN DATE, DATE_TO IN DATE, p3 VARCHAR2 DEFAULT NULL, p4 SYS.DUMMY%ROWTYPE) RETURN SYS.ODCIDATELIST PIPELINED
 IS
 	DATE_COLLECTION$ SYS.ODCIDATELIST;
 	exception1 EXCEPTION;
@@ -2527,6 +2545,7 @@ END emp_mgmt;";
 	END p1;
 
 	FUNCTION f1 RETURN NUMBER IS
+		recordType1 SYS.DUAL%ROWTYPE;
 	BEGIN
 		dbms_output.put_line('function executed. ');
 		RETURN 0;
@@ -2566,6 +2585,15 @@ END test_package_body;";
 		INSERT INTO rejected_orders (cust_name, amount)
 		VALUES (cust_tab(i), amount_tab(i));
 END;";
+
+				var statement = Parser.Parse(statement1).Single().Validate();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			}
+
+			[Test(Description = @""), Ignore]
+			public void TestProcedureCall()
+			{
+				const string statement1 = @"BEGIN P1(1); END;";
 
 				var statement = Parser.Parse(statement1).Single().Validate();
 				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);

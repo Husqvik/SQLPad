@@ -232,6 +232,47 @@ namespace SqlPad.Oracle
 		}
 	}
 
+	internal class CompilationErrorModelUpdater : DataModelUpdater<ModelBase>
+	{
+		private readonly List<CompilationError> _errors = new List<CompilationError>();
+
+		public IReadOnlyList<CompilationError> Errors { get { return _errors.AsReadOnly(); } } 
+
+		public CompilationErrorModelUpdater()
+			: base(null)
+		{
+		}
+
+		public override void InitializeCommand(OracleCommand command)
+		{
+			_errors.Clear();
+			command.CommandText = DatabaseCommands.GetCompilationErrors;
+		}
+
+		public override void MapReaderData(OracleDataReader reader)
+		{
+			while (reader.Read())
+			{
+				var error =
+					new CompilationError
+					{
+						Line = Convert.ToInt32(reader["LINE"]),
+						Column = Convert.ToInt32(reader["POSITION"]),
+						Message = (string)reader["TEXT"],
+						Severity = (string)reader["ATTRIBUTE"],
+						Code = Convert.ToInt32(reader["MESSAGE_NUMBER"]),
+					};
+
+				_errors.Add(error);
+			}
+		}
+
+		public override bool HasScalarResult
+		{
+			get { return false; }
+		}
+	}
+
 	internal class TableInMemorySpaceAllocationModelUpdater : DataModelUpdater<TableDetailsModel>
 	{
 		private readonly OracleObjectIdentifier _objectIdentifier;

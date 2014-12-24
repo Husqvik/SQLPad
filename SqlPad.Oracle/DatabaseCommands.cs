@@ -296,6 +296,7 @@ END;";
 		public const string GetContextData = "SELECT NAMESPACE, ATTRIBUTE FROM GLOBAL_CONTEXT UNION SELECT NAMESPACE, ATTRIBUTE FROM SESSION_CONTEXT";
 		public const string GetSystemParameters = "SELECT NAME, VALUE FROM V$PARAMETER WHERE NAME IN ('max_string_size')";
 		public const string GetLocalTransactionId = "SELECT DBMS_TRANSACTION.LOCAL_TRANSACTION_ID TRANSACTION_ID FROM SYS.DUAL";
+		public const string GetCompilationErrors = "SELECT OWNER, NAME, TYPE, SEQUENCE, LINE, POSITION, TEXT, ATTRIBUTE, MESSAGE_NUMBER FROM ALL_ERRORS WHERE 1 = 1 ORDER BY SEQUENCE";
 
 		private static string ToInValueList(params string[] values)
 		{

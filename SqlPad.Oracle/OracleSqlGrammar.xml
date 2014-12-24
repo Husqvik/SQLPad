@@ -2652,7 +2652,7 @@
       </Sequences>
     </Rule>
 
-    <Rule StartingNonTerminal="DataTypeWithoutConstraint">
+    <Rule StartingNonTerminal="PlSqlDataTypeWithoutConstraint">
       <Sequences>
         <Sequence>
           <Terminal Id="Raw" />
@@ -2742,8 +2742,10 @@
           <Terminal Id="UniversalRowId" />
         </Sequence>
         <Sequence>
+          <Terminal Id="Ref" IsOptional="true" />
           <NonTerminal Id="SchemaPrefix" IsOptional="true" />
           <Terminal Id="DataTypeIdentifier" />
+          <NonTerminal Id="PercentCharacterTypeOrRowType" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -6492,7 +6494,7 @@
           <NonTerminal Id="IsOrAs" />
           <NonTerminal Id="ProgramDeclareSection" />
           <NonTerminal Id="PackageBodyInitializeSection" IsOptional="true" />
-          <NonTerminal Id="PackageEnd" Comment="This non-terminal cannot be inlined because of possible grammar reversion - 'END package_identifier;' can be parsed as variable declaration and parser accepts at least same number of terminals when attempting to revert grammar node. " />
+          <NonTerminal Id="ProgramEnd" Comment="This non-terminal cannot be inlined because of possible grammar reversion - 'END package_identifier;' can be parsed as variable declaration and parser accepts at least same number of terminals when attempting to revert grammar node. " />
         </Sequence>
       </Sequences>
     </Rule>
@@ -6538,12 +6540,12 @@
           <NonTerminal Id="CommonProgramModifier" IsOptional="true" />
           <NonTerminal Id="IsOrAs" />
           <NonTerminal Id="ItemList1" />
-          <NonTerminal Id="PackageEnd" Comment="This non-terminal cannot be inlined because of possible grammar reversion - 'END package_identifier;' can be parsed as variable declaration and parser accepts at least same number of terminals when attempting to revert grammar node. " />
+          <NonTerminal Id="ProgramEnd" Comment="This non-terminal cannot be inlined because of possible grammar reversion - 'END package_identifier;' can be parsed as variable declaration and parser accepts at least same number of terminals when attempting to revert grammar node. " />
         </Sequence>
       </Sequences>
     </Rule>
     
-    <Rule StartingNonTerminal="PackageEnd">
+    <Rule StartingNonTerminal="ProgramEnd">
       <Sequences>
         <Sequence>
           <Terminal Id="End" />
@@ -6570,7 +6572,7 @@
           <Terminal Id="Identifier" />
           <NonTerminal Id="ParenthesisEnclosedParameterDeclarationList" IsOptional="true" />
           <Terminal Id="Return" />
-          <NonTerminal Id="DataTypeWithoutConstraint" />
+          <NonTerminal Id="PlSqlDataTypeWithoutConstraint" />
           <NonTerminal Id="FunctionModifiers" IsOptional="true" />
           <NonTerminal Id="FunctionTypeDefinition" />
         </Sequence>
@@ -6603,7 +6605,7 @@
           <Terminal Id="In" IsOptional="true" />
           <Terminal Id="Out" />
           <Terminal Id="NoCopy" IsOptional="true" />
-          <NonTerminal Id="DataTypeWithoutConstraint" />
+          <NonTerminal Id="PlSqlDataTypeWithoutConstraint" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="CursorParameterDeclaration" />
@@ -6616,7 +6618,7 @@
         <Sequence>
           <Terminal Id="ParameterIdentifier" />
           <Terminal Id="In" IsOptional="true" />
-          <NonTerminal Id="DataTypeWithoutConstraint" />
+          <NonTerminal Id="PlSqlDataTypeWithoutConstraint" />
           <NonTerminal Id="VariableDeclarationDefaultValue" IsOptional="true" />
         </Sequence>
       </Sequences>
@@ -6955,7 +6957,7 @@
           <Terminal Id="SubType" />
           <Terminal Id="DataTypeIdentifier" />
           <Terminal Id="Is" />
-          <NonTerminal Id="DataTypeWithoutConstraint" />
+          <NonTerminal Id="PlSqlDataTypeWithoutConstraint" />
           <NonTerminal Id="SubTypeConstraintOrCharacterSet" IsOptional="true" />
           <NonTerminal Id="NotNull" IsOptional="true" />
           <Terminal Id="Semicolon" />
@@ -7110,13 +7112,21 @@
       <Sequences>
         <Sequence>
           <Terminal Id="CursorIdentifier" Comment="Table, view, cursor or cursor variable" />
-          <Terminal Id="PercentCharacter" />
-          <Terminal Id="RowType" />
+          <NonTerminal Id="ObjectRowType" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="ObjectPrefix" IsOptional="true" />
           <Terminal Id="Identifier" Comment="Record type or instance" />
           <NonTerminal Id="RecordType" IsOptional="true" Comment="Used with record instance" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ObjectRowType">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="PercentCharacter" />
+          <Terminal Id="RowType" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -7126,6 +7136,17 @@
         <Sequence>
           <Terminal Id="PercentCharacter" />
           <Terminal Id="Type" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="PercentCharacterTypeOrRowType">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="RecordType" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ObjectRowType" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -7144,9 +7165,9 @@
       <Sequences>
         <Sequence>
           <Terminal Id="PlSqlIdentifier" />
+          <NonTerminal Id="Prefix" IsOptional="true" />
           <Terminal Id="PlSqlIdentifier" />
-          <Terminal Id="PercentCharacter" />
-          <Terminal Id="Type" />
+          <NonTerminal Id="PercentCharacterTypeOrRowType" />
           <Terminal Id="Semicolon" />
         </Sequence>
       </Sequences>
@@ -7254,7 +7275,7 @@
           <Terminal Id="Identifier" />
           <NonTerminal Id="ParenthesisEnclosedParameterDeclarationList" IsOptional="true" />
           <Terminal Id="Return" />
-          <NonTerminal Id="DataTypeWithoutConstraint" />
+          <NonTerminal Id="PlSqlDataTypeWithoutConstraint" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -7694,9 +7715,7 @@
           <NonTerminal Id="PlSqlStatement"/>
           <NonTerminal Id="PlSqlStatementOrInlinePragmaList" IsOptional="true" />
           <NonTerminal Id="PlSqlExceptionClause" IsOptional="true" />
-          <Terminal Id="End" />
-          <Terminal Id="Identifier" IsOptional="true" />
-          <Terminal Id="Semicolon" />
+          <NonTerminal Id="ProgramEnd"/>
         </Sequence>
       </Sequences>
     </Rule>
@@ -8131,11 +8150,11 @@
     <Rule StartingNonTerminal="PlSqlExpression">
       <Sequences>
         <Sequence>
+          <NonTerminal Id="PlSqlBooleanExpression" />
+        </Sequence>
+        <Sequence>
           <NonTerminal Id="Expression" />
         </Sequence>
-        <!--<Sequence>
-          <NonTerminal Id="PlSqlBooleanExpression" />
-        </Sequence>-->
         <Sequence>
           <Terminal Id="CursorIdentifier" />
           <Terminal Id="PercentCharacter" />
@@ -8361,7 +8380,7 @@
         <Sequence>
           <NonTerminal Id="AssignmentStatementTarget" />
           <Terminal Id="AssignmentOperator" />
-          <NonTerminal Id="Expression" />
+          <NonTerminal Id="PlSqlExpression" />
           <Terminal Id="Semicolon" />
         </Sequence>
       </Sequences>
@@ -8434,7 +8453,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Return" />
-          <NonTerminal Id="Expression" IsOptional="true" />
+          <NonTerminal Id="PlSqlExpression" IsOptional="true" />
           <Terminal Id="Semicolon" />
         </Sequence>
       </Sequences>
@@ -13137,22 +13156,22 @@
     
     <!-- PL/SQL -->
     <Terminal Id="Bulk" Value="BULK" />
-    <Terminal Id="Begin" Value="BEGIN" />
+    <Terminal Id="Begin" Value="BEGIN" IsReservedWord="true" />
     <Terminal Id="Loop" Value="LOOP" />
     <Terminal Id="Continue" Value="CONTINUE" />
     <Terminal Id="Exit" Value="EXIT" />
     <Terminal Id="GoTo" Value="GOTO" />
     <Terminal Id="Raise" Value="RAISE" />
     <Terminal Id="While" Value="WHILE" />
-    <Terminal Id="Exception" Value="EXCEPTION" />
+    <Terminal Id="Exception" Value="EXCEPTION" IsReservedWord="true" />
     <Terminal Id="Pipe" Value="PIPE" />
-    <Terminal Id="If" Value="IF" />
+    <Terminal Id="If" Value="IF" IsReservedWord="true" />
     <Terminal Id="ElseIf" Value="ELSIF" />
     <Terminal Id="Found" Value="FOUND" />
     <Terminal Id="NotFound" Value="NOTFOUND" />
     <Terminal Id="IsOpen" Value="ISOPEN" />
     <Terminal Id="Constant" Value="CONSTANT" />
-    <Terminal Id="Declare" Value="DECLARE" />
+    <Terminal Id="Declare" Value="DECLARE" IsReservedWord="true" />
     <Terminal Id="Record" Value="RECORD" />
     <Terminal Id="Out" Value="OUT" />
     <Terminal Id="AuthorizationIdentity" Value="AUTHID" />

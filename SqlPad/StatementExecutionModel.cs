@@ -18,7 +18,7 @@ namespace SqlPad
 		public string StatementText { get; set; }
 		
 		public ICollection<BindVariableModel> BindVariables { get; set; }
-		
+
 		public bool GatherExecutionStatistics { get; set; }
 		
 		public int InitialFetchRowCount { get; set; }
@@ -44,6 +44,8 @@ namespace SqlPad
 		public IReadOnlyList<object[]> InitialResultSet { get; set; }
 		
 		public string DatabaseOutput { get; set; }
+
+		public IReadOnlyList<CompilationError> CompilationErrors { get; set; }
 	}
 
 	[DebuggerDisplay("SessionExecutionStatisticsRecord (Name={Name}; Value={Value})")]
@@ -106,5 +108,18 @@ namespace SqlPad
 		{
 			throw new NotSupportedException();
 		}
+	}
+
+	public class CompilationError
+	{
+		public int Code { get; set; }
+
+		public int Line { get; set; }
+
+		public int Column { get; set; }
+
+		public string Message { get; set; }
+
+		public string Severity { get; set; }
 	}
 }
