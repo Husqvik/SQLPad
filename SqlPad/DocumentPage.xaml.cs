@@ -1906,7 +1906,7 @@ namespace SqlPad
 		private void ReadOnlyGridKeyDownHandler(object sender, KeyEventArgs e)
 		{
 			var keyCode = e.Key;
-			if (!keyCode.In(Key.F4, Key.Escape, Key.System))
+			if (!keyCode.In(Key.F4, Key.F5, Key.Escape, Key.System))
 			{
 				e.Handled = true;
 			}

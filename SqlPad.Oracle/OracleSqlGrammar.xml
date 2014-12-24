@@ -6632,17 +6632,136 @@
     
     <Rule StartingNonTerminal="TypeDefinition">
       <Sequences>
-        <!--<Sequence>
+        <Sequence>
+          <Terminal Id="Type" />
+          <Terminal Id="TypeIdentifier" />
+          <Terminal Id="Is" />
+          <NonTerminal Id="TypeDefinitionSpecification" />
+          <Terminal Id="Semicolon" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="SubTypeDefinition" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="TypeDefinitionSpecification">
+      <Sequences>
+        <Sequence>
           <NonTerminal Id="CollectionTypeDefinition" />
-        </Sequence>-->
+        </Sequence>
         <Sequence>
           <NonTerminal Id="RecordTypeDefinition" />
         </Sequence>
-        <!--<Sequence>
-          <NonTerminal Id="ReferenceCursorTypeDefinition" />
-        </Sequence>-->
         <Sequence>
-          <NonTerminal Id="SubTypeDefinition" />
+          <NonTerminal Id="ReferenceCursorTypeDefinition" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="CollectionTypeDefinition">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="AssociativeArrayTypeDefinition" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="VaryingArrayTypeDefinition" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="NestedTableTypeDefinition" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AssociativeArrayTypeDefinition">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="NestedTableTypeDefinition" />
+          <Terminal Id="Index" />
+          <Terminal Id="By" />
+          <NonTerminal Id="AssociativeArrayIndexType" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AssociativeArrayIndexType">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="PlsInteger" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="BinaryInteger" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="VarcharOrVarchar2OrString" />
+          <NonTerminal Id="ParenthesisEnclosedIntegerLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Long" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="RowTypeDefinition" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="VarcharOrVarchar2OrString">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Varchar" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Varchar2" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="String" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="VaryingArrayTypeDefinition">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="VaryingArray" />
+          <NonTerminal Id="ParenthesisEnclosedIntegerLiteral" />
+          <Terminal Id="Of" />
+          <Terminal Id="Ref" IsOptional="true" />
+          <NonTerminal Id="DataType" />
+          <NonTerminal Id="NotNull" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ParenthesisEnclosedIntegerLiteral">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <Terminal Id="IntegerLiteral" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="VaryingArray">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="VariableElementArray" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Varying" IsOptional="true" />
+          <Terminal Id="Array" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="NestedTableTypeDefinition">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Table" />
+          <Terminal Id="Of" />
+          <Terminal Id="Ref" IsOptional="true" />
+          <NonTerminal Id="DataType" />
+          <NonTerminal Id="NotNull" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -6650,14 +6769,20 @@
     <Rule StartingNonTerminal="RecordTypeDefinition">
       <Sequences>
         <Sequence>
-          <Terminal Id="Type" />
-          <Terminal Id="TypeIdentifier" />
-          <Terminal Id="Is" />
           <Terminal Id="Record" />
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="FieldDefinitionList" />
           <Terminal Id="RightParenthesis" />
-          <Terminal Id="Semicolon" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ReferenceCursorTypeDefinition">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Ref" />
+          <Terminal Id="Cursor" />
+          <NonTerminal Id="ReturnRowTypeDefinition" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -6764,9 +6889,17 @@
           <Terminal Id="Cursor" />
           <Terminal Id="CursorIdentifier" />
           <NonTerminal Id="ParenthesisEnclosedCursorParameterDeclarationList" IsOptional="true" />
+          <NonTerminal Id="ReturnRowTypeDefinition" />
+          <Terminal Id="Semicolon" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ReturnRowTypeDefinition">
+      <Sequences>
+        <Sequence>
           <Terminal Id="Return" />
           <NonTerminal Id="RowTypeDefinition" />
-          <Terminal Id="Semicolon" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -6807,6 +6940,7 @@
           <Terminal Id="RowType" />
         </Sequence>
         <Sequence>
+          <NonTerminal Id="ObjectPrefix" IsOptional="true" />
           <Terminal Id="Identifier" Comment="Record type or instance" />
           <NonTerminal Id="RecordType" IsOptional="true" Comment="Used with record instance" />
         </Sequence>
@@ -12717,6 +12851,8 @@
     <Terminal Id="Updating" Value="UPDATING" />
     <Terminal Id="Deleting" Value="DELETING" />
     <Terminal Id="SubType" Value="SUBTYPE" />
+    <Terminal Id="PlsInteger" Value="PLS_INTEGER" />
+    <Terminal Id="BinaryInteger" Value="BINARY_INTEGER" />
     <Terminal Id="AssignmentOperator" Value=":=" />
     <Terminal Id="DoubleDotOperator" Value=".." />
     <Terminal Id="PercentCharacter" Value="%" />

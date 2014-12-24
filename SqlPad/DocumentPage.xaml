@@ -59,6 +59,7 @@
 	<Grid>
 		<Grid.CommandBindings>
 			<CommandBinding Command="commands:GenericCommands.CancelUserAction" Executed="CancelUserActionHandler" CanExecute="CanExecuteCancelUserActionHandler" />
+			<CommandBinding Command="commands:GenericCommands.RefreshDatabaseModel" Executed="RefreshDatabaseModel" />
 		</Grid.CommandBindings>
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto" />
@@ -146,7 +147,6 @@
 						<CommandBinding Command="commands:GenericCommands.NavigateToNextUsage" Executed="NavigateToNextHighlightedUsage" />
 						<CommandBinding Command="commands:GenericCommands.NavigateToPreviousUsage" Executed="NavigateToPreviousHighlightedUsage" />
 						<CommandBinding Command="commands:GenericCommands.NavigateToQueryBlockRoot" Executed="NavigateToQueryBlockRoot" />
-						<CommandBinding Command="commands:GenericCommands.RefreshDatabaseModel" Executed="RefreshDatabaseModel" />
 						<CommandBinding Command="commands:GenericCommands.Save" Executed="SaveCommandExecutedHandler" />
 						<CommandBinding Command="commands:GenericCommands.ShowCodeCompletionOption" Executed="ShowCodeCompletionOptions" CanExecute="CanExecuteShowCodeCompletionHandler" />
 						<CommandBinding Command="commands:GenericCommands.ShowFunctionOverload" Executed="ShowFunctionOverloads" />

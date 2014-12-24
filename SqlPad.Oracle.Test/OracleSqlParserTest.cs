@@ -2355,6 +2355,16 @@ DECLARE
 
 	SUBTYPE double_digit IS PLS_INTEGER RANGE 10..99;
 	SUBTYPE special_clob IS CLOB CHARACTER SET NCHAR_CS NOT NULL;
+
+	TYPE refCursorType1 IS REF CURSOR RETURN selection%ROWTYPE; -- strong type
+	TYPE refCursorType2 IS REF CURSOR;							-- weak type
+
+	cursor1  refCursor1; -- strong cursor variable
+	cursor2  refCursor2; -- weak cursor variable
+
+	TYPE associativeArrayType1 IS TABLE OF NUMBER INDEX BY VARCHAR2(64); -- associative array type indexed by string
+	TYPE varrayType1 IS VARRAY(4) OF VARCHAR2(15); -- varying array type
+	TYPE nestedTableType1 IS TABLE OF type1; -- nested table type
 BEGIN
 	NULL;
 	<<LABEL1>>

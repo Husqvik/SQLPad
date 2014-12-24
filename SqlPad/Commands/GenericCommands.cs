@@ -36,7 +36,7 @@ namespace SqlPad.Commands
 		public static RoutedCommand FindUsages = new RoutedCommand("FindUsages", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.F11, ModifierKeys.Alt | ModifierKeys.Shift) });
 		public static RoutedCommand FetchAllRows = new RoutedCommand("FetchAllRows", typeof(DataGrid));
 		public static RoutedCommand CancelUserAction = new RoutedCommand("CancelUserAction", typeof(Grid), new InputGestureCollection { new KeyGesture(Key.Escape) });
-		public static RoutedCommand RefreshDatabaseModel = new RoutedCommand("RefreshDatabaseModel", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.F5) });
+		public static RoutedCommand RefreshDatabaseModel = new RoutedCommand("RefreshDatabaseModel", typeof(Grid), new InputGestureCollection { new KeyGesture(Key.F5) });
 		public static RoutedCommand CreateNewPage = new RoutedCommand("CreateNewPage", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.T, ModifierKeys.Control) });
 	}
 }
