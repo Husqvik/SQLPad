@@ -6098,6 +6098,8 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Create" />
+          <NonTerminal Id="OrReplace" IsOptional="true" />
+          <NonTerminal Id="EditionableOrNonEditionable" IsOptional="true" />
           <NonTerminal Id="CreatePlSqlObjectClause" />
           <Terminal Id="SqlPlusTerminator" IsOptional="true" />
         </Sequence>
@@ -6108,6 +6110,12 @@
       <Sequences>
         <Sequence>
           <NonTerminal Id="CreateFunction" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="CreateProcedure" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="CreatePackage" />
         </Sequence>
         <!-- TODO: Create other objects -->
       </Sequences>
@@ -6441,12 +6449,63 @@
       </Sequences>
     </Rule>
     
+    <!-- CREATE PROCEDURE -->
+    <Rule StartingNonTerminal="CreateProcedure">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Procedure" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="Identifier" />
+          <NonTerminal Id="ParenthesisEnclosedParameterDeclarationList" IsOptional="true" />
+          <NonTerminal Id="CommonProgramModifier" IsOptional="true" />
+          <NonTerminal Id="IsOrAs" />
+          <NonTerminal Id="ProgramImplentationDeclaration" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="CommonProgramModifier">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="InvokerRightsClause" />
+          <NonTerminal Id="AccessibleByClause" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="InvokerRightsClause" />
+          <NonTerminal Id="AccessibleByClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <!-- CREATE PACKAGE -->
+    <Rule StartingNonTerminal="CreatePackage">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Package" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="Identifier" />
+          <NonTerminal Id="CommonProgramModifier" IsOptional="true" />
+          <NonTerminal Id="IsOrAs" />
+          <NonTerminal Id="ItemList1" />
+          <NonTerminal Id="PackageEnd" Comment="This non-terminal cannot be inlined because of possible grammar reversion - 'END package_identifier;' can be parsed as variable declaration and parser accepts at least same number of terminals when attempting to revert grammar node. " />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="PackageEnd">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="End" />
+          <Terminal Id="Identifier" IsOptional="true" />
+          <Terminal Id="Semicolon" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
     <!-- CREATE FUNCTION -->
     <Rule StartingNonTerminal="CreateFunction">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="OrReplace" IsOptional="true" />
-          <NonTerminal Id="EditionableOrNonEditionable" IsOptional="true" />
           <Terminal Id="Function" />
           <NonTerminal Id="PlSqlFunctionSource" />
         </Sequence>
@@ -6460,7 +6519,7 @@
           <Terminal Id="Identifier" />
           <NonTerminal Id="ParenthesisEnclosedParameterDeclarationList" IsOptional="true" />
           <Terminal Id="Return" />
-          <NonTerminal Id="DataType" />
+          <NonTerminal Id="DataTypeWithoutConstraint" />
           <NonTerminal Id="FunctionModifiers" IsOptional="true" />
           <NonTerminal Id="FunctionTypeDefinition" />
         </Sequence>
@@ -6541,9 +6600,11 @@
       <Sequences>
         <Sequence>
           <Terminal Id="External" />
+          <Terminal Id="Semicolon" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="CallSpecification" />
+          <Terminal Id="Semicolon" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="ProgramDeclareSection" IsOptional="true" />
@@ -6610,23 +6671,23 @@
       </Sequences>
     </Rule>
     
-    <Rule StartingNonTerminal="Item1"><!-- TODO -->
+    <Rule StartingNonTerminal="Item1">
       <Sequences>
         <Sequence>
           <NonTerminal Id="TypeDefinition" />
         </Sequence>
-        <!--<Sequence>
+        <Sequence>
           <NonTerminal Id="CursorDeclaration" />
-        </Sequence>-->
+        </Sequence>
         <Sequence>
           <NonTerminal Id="ItemDeclaration" />
         </Sequence>
-        <!--<Sequence>
+        <Sequence>
           <NonTerminal Id="FunctionDeclaration" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="ProcedureDeclaration" />
-        </Sequence>-->
+        </Sequence>
       </Sequences>
     </Rule>
     
@@ -6854,9 +6915,7 @@
         <Sequence>
           <NonTerminal Id="ConstantDeclaration" />
         </Sequence>
-        <Sequence>
-          <NonTerminal Id="CursorVariableDeclaration" />
-        </Sequence>
+        <!-- CursorVariableDeclaration has same grammar as any other variable -->
         <Sequence>
           <NonTerminal Id="ExceptionDeclaration" />
         </Sequence>
@@ -6883,7 +6942,7 @@
       </Sequences>
     </Rule>
 
-    <Rule StartingNonTerminal="CursorVariableDeclaration">
+    <Rule StartingNonTerminal="CursorDeclaration">
       <Sequences>
         <Sequence>
           <Terminal Id="Cursor" />
@@ -7021,6 +7080,73 @@
         </Sequence>
         <Sequence>
           <Terminal Id="Default" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="FunctionDeclaration">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="FunctionHeading" />
+          <NonTerminal Id="FunctionDeclarationModifiers" IsOptional="true" />
+          <Terminal Id="Semicolon" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="FunctionHeading">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Function" />
+          <Terminal Id="Identifier" />
+          <NonTerminal Id="ParenthesisEnclosedParameterDeclarationList" IsOptional="true" />
+          <Terminal Id="Return" />
+          <NonTerminal Id="DataTypeWithoutConstraint" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="FunctionDeclarationModifiers">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="FunctionDeclarationModifier" />
+          <NonTerminal Id="FunctionDeclarationModifiers" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="FunctionDeclarationModifier">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Deterministic" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Pipelined" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="ParallelEnable" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="ResultCache" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ProcedureDeclaration">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ProcedureHeading" />
+          <Terminal Id="Semicolon" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ProcedureHeading">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Procedure" />
+          <Terminal Id="Identifier" />
+          <NonTerminal Id="ParenthesisEnclosedParameterDeclarationList" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -7204,15 +7330,10 @@
     <Rule StartingNonTerminal="FunctionModifier">
       <Sequences>
         <Sequence>
-          <Terminal Id="AuthorizationIdentity" />
-          <NonTerminal Id="CurrentUserOrDefiner" />
+          <NonTerminal Id="InvokerRightsClause" />
         </Sequence>
         <Sequence>
-          <Terminal Id="Accessible" />
-          <Terminal Id="By" />
-          <Terminal Id="LeftParenthesis" />
-          <NonTerminal Id="AccessorList" />
-          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="AccessibleByClause" />
         </Sequence>
         <Sequence>
           <Terminal Id="Deterministic" />
@@ -7224,6 +7345,27 @@
         <Sequence>
           <Terminal Id="ResultCache" />
           <NonTerminal Id="ReliesOnClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="InvokerRightsClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="AuthorizationIdentity" />
+          <NonTerminal Id="CurrentUserOrDefiner" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AccessibleByClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Accessible" />
+          <Terminal Id="By" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="AccessorList" />
+          <Terminal Id="RightParenthesis" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -12671,6 +12813,8 @@
     <Terminal Id="Months" Value="MONTHS" />
     <Terminal Id="Years" Value="YEARS" />
     <Terminal Id="Access" Value="ACCESS" IsReservedWord="true" />
+    <Terminal Id="CurrentUser" Value="CURRENT_USER" />
+    <Terminal Id="Definer" Value="DEFINER" />
     
     <!-- Comment -->
     <Terminal Id="Audit" Value="AUDIT" IsReservedWord="true" />

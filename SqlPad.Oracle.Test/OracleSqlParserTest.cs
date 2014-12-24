@@ -2432,7 +2432,7 @@ BEGIN NULL; END;
 			}
 
 			[Test(Description = @"")]
-			public void TestCreateFunction()
+			public void TestCreatePipelinedFunction()
 			{
 				const string statement1 =
 @"CREATE FUNCTION GENERATEDAYS(DATE_FROM IN DATE, DATE_TO IN DATE, p3 VARCHAR2 DEFAULT NULL) RETURN SYS.ODCIDATELIST PIPELINED
@@ -2446,7 +2446,7 @@ IS
 	PRAGMA UDF;
 BEGIN
     SELECT
-    	DAY --BULK COLLECT INTO DATE_COLLECTION$
+    	DAY BULK COLLECT INTO DATE_COLLECTION$
     FROM (
         SELECT TRUNC(DATE_FROM + COUNTER) DAY
         FROM (
@@ -2465,6 +2465,49 @@ BEGIN
 
 	EXECUTE IMMEDIATE 'SELECT :P1, :P2 FROM DUAL' USING DATE_FROM, DATE_TO;
 END;";
+
+				var statement = Parser.Parse(statement1).Single().Validate();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			}
+
+			[Test(Description = @"")]
+			public void TestCreateFunction()
+			{
+				const string statement1 =
+@"CREATE OR REPLACE EDITIONABLE FUNCTION TEST_FUNCTION RETURN VARCHAR2 IS BEGIN RETURN NULL; END;";
+
+				var statement = Parser.Parse(statement1).Single().Validate();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			}
+
+			[Test(Description = @"")]
+			public void TestCreateProcedure()
+			{
+				const string statement1 =
+@"CREATE OR REPLACE NONEDITIONABLE PROCEDURE TEST_PROCEDURE AUTHID DEFINER ACCESSIBLE BY (TYPE HUSQVIK.TEST_TYPE, TEST_FUNCTION) IS EXTERNAL;";
+
+				var statement = Parser.Parse(statement1).Single().Validate();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			}
+
+			[Test(Description = @"")]
+			public void TestCreatePackage()
+			{
+				const string statement1 =
+@"CREATE OR REPLACE PACKAGE emp_mgmt AS
+	FUNCTION hire (last_name VARCHAR2, job_id VARCHAR2, manager_id NUMBER, salary NUMBER, commission_pct NUMBER, department_id NUMBER)
+		RETURN NUMBER; 
+	FUNCTION create_dept(department_id NUMBER, location_id NUMBER)
+		RETURN NUMBER; 
+	
+	PROCEDURE remove_emp(employee_id NUMBER);
+	PROCEDURE remove_dept(department_id NUMBER);
+	PROCEDURE increase_sal(employee_id NUMBER, salary_incr NUMBER);
+	PROCEDURE increase_comm(employee_id NUMBER, comm_incr NUMBER);
+
+	no_comm EXCEPTION; 
+	no_sal EXCEPTION; 
+END emp_mgmt;";
 
 				var statement = Parser.Parse(statement1).Single().Validate();
 				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
