@@ -169,7 +169,7 @@ namespace SqlPad.Oracle
 			StatementGrammarNode currentTerminal;
 
 			var completionItems = Enumerable.Empty<ICodeCompletionItem>();
-			var statement = (OracleStatement)sqlDocumentRepository.Statements.SingleOrDefault(s => s.GetNodeAtPosition(cursorPosition) != null);
+			var statement = (OracleStatement)sqlDocumentRepository.Statements.LastOrDefault(s => s.GetNodeAtPosition(cursorPosition) != null);
 
 			if (statement == null)
 			{
