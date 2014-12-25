@@ -42,6 +42,8 @@ namespace SqlPad.Oracle
 		}
 
 		public NodeType Type { get { return NodeType.Terminal; } }
+		
+		public SqlGrammarTerminal Terminal;
 	}
 
 	[DebuggerDisplay("SqlGrammarRuleSequenceNonTerminal (Id={Id}, IsOptional={IsOptional})")]
@@ -53,6 +55,8 @@ namespace SqlPad.Oracle
 		}
 
 		public NodeType Type { get { return NodeType.NonTerminal; } }
+
+		public SqlGrammarRuleSequence[] Sequences;
 	}
 
 	public interface ISqlGrammarRuleSequenceItem

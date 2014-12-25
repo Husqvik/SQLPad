@@ -1944,6 +1944,7 @@ FROM
         PRIME_NUMBER
     ) PRIME_NUMBER_DATA
 MODEL
+	RETURN UPDATED ROWS
     DIMENSION BY (ROW_NUMBER)
     MEASURES
     (
@@ -1993,6 +1994,40 @@ MODEL
     RULES ITERATE (12)
     (
         cell[Iteration_Number] = Iteration_Number
+    )";
+
+			var statements = Parser.Parse(statement1);
+			var statement = statements.Single().Validate();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+		}
+
+		[Test(Description = @"")]
+		public void TestModelClauseWithDimensionFromToWithDecrement()
+		{
+			const string statement1 =
+@"SELECT * FROM DUAL
+MODEL
+    DIMENSION BY (0 dimension_column)
+    MEASURES (0 cell)
+    RULES ITERATE (12) (
+        cell[FOR dimension_column FROM 9 TO 5 DECREMENT 2] = 1
+    )";
+
+			var statements = Parser.Parse(statement1);
+			var statement = statements.Single().Validate();
+			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+		}
+
+		[Test(Description = @"")]
+		public void TestModelClauseWithDimensionInLiteralList()
+		{
+			const string statement1 =
+@"SELECT * FROM DUAL
+MODEL
+    DIMENSION BY (0 dimension_column)
+    MEASURES (0 cell)
+    RULES ITERATE (12) (
+        cell[FOR dimension_column IN (0, 10)] = 1
     )";
 
 			var statements = Parser.Parse(statement1);
@@ -2359,10 +2394,11 @@ DECLARE
 	TYPE refCursorType1 IS REF CURSOR RETURN selection%ROWTYPE; -- strong type
 	TYPE refCursorType2 IS REF CURSOR;							-- weak type
 
-	cursor1  refCursor1; -- strong cursor variable
-	cursor2  refCursor2; -- weak cursor variable
+	refCursor1 refCursorType1; -- strong cursor variable
+	refCursor2 refCursorType2; -- weak cursor variable
 
-	TYPE associativeArrayType1 IS TABLE OF NUMBER INDEX BY VARCHAR2(64); -- associative array type indexed by string
+	TYPE associativeArrayType1 IS TABLE OF NUMBER INDEX BY VARCHAR2(64); -- associative array type indexed by VARCHAR2
+	TYPE associativeArrayType2 IS TABLE OF NUMBER INDEX BY STRING(64); -- associative array type indexed by STRING
 	TYPE varrayType1 IS VARRAY(4) OF VARCHAR2(15); -- varying array type
 	TYPE nestedTableType1 IS TABLE OF type1; -- nested table type
 BEGIN
@@ -2594,6 +2630,42 @@ END;";
 			public void TestProcedureCall()
 			{
 				const string statement1 = @"BEGIN P1(1); END;";
+
+				var statement = Parser.Parse(statement1).Single().Validate();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			}
+
+			[Test(Description = @""), Ignore]
+			public void TestNestedProcedureCall()
+			{
+				const string statement1 = @"DECLARE PROCEDURE P1(P1 NUMBER) IS BEGIN NULL; END; BEGIN P1(1)/*NULL*/; END;";
+
+				var statement = Parser.Parse(statement1).Single().Validate();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			}
+
+			[Test(Description = @"")]
+			public void TestCaseAndEndLabelCombination()
+			{
+				const string statement1 = @"BEGIN CASE 0 WHEN 0 THEN NULL; END CASE; END LABEL;";
+
+				var statement = Parser.Parse(statement1).Single().Validate();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			}
+
+			[Test(Description = @"")]
+			public void TestRowCountCursorFunction()
+			{
+				const string statement1 = @"DECLARE x NUMBER; BEGIN x := SQL%ROWCOUNT; END;";
+
+				var statement = Parser.Parse(statement1).Single().Validate();
+				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			}
+
+			[Test(Description = @"")]
+			public void TestBulkRowCountCursorFunction()
+			{
+				const string statement1 = @"DECLARE x NUMBER; BEGIN x := SQL%BULK_ROWCOUNT(1); END;";
 
 				var statement = Parser.Parse(statement1).Single().Validate();
 				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
@@ -4390,7 +4462,7 @@ PARTITION BY RANGE (AMOUNT_SOLD) (
 				{
 					const string statementText =
 						@"CREATE MATERIALIZED VIEW LOG ON TEST_TABLE 
-WITH ROWID, SEQUENCE (LIST_PRICE, MIN_PRICE, CATEGORY_ID), PRIMARY KEY
+WITH ROWID, SEQUENCE (LIST_PRICE, MIN_PRICE, CATEGORY_ID), PRIMARY KEY, OBJECT ID
 INCLUDING NEW VALUES";
 
 					var result = Parser.Parse(statementText);
@@ -4409,6 +4481,19 @@ PCTFREE 5
 TABLESPACE TABLESPACE_01
 STORAGE (INITIAL 10K)
 PURGE REPEAT INTERVAL '5' DAY";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void CreateMaterializedViewLogWithImmediateAsynchronousPurge()
+				{
+					const string statementText =
+						@"CREATE MATERIALIZED VIEW LOG ON TEST_TABLE PURGE IMMEDIATE ASYNCHRONOUS";
 
 					var result = Parser.Parse(statementText);
 
@@ -4623,6 +4708,18 @@ PURGE REPEAT INTERVAL '5' DAY";
 				public void TestAlterSessionSetEvents()
 				{
 					const string statementText = @"ALTER SESSION SET EVENTS '10053 trace name context forever, level 2'";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterSessionAdviseNothing()
+				{
+					const string statementText = @"ALTER SESSION ADVISE NOTHING";
 
 					var result = Parser.Parse(statementText);
 

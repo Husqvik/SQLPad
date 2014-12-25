@@ -173,7 +173,7 @@
     <Rule StartingNonTerminal="AlterSessionOption">
       <Sequences>
         <Sequence>
-          <Terminal Id="Advice" />
+          <Terminal Id="Advise" />
           <NonTerminal Id="CommitOrRollbackOrNothing" />
         </Sequence>
         <Sequence>
@@ -1766,7 +1766,7 @@
           <Terminal Id="Increment" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="Decrement" />
+          <Terminal Id="Decrement" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -1794,7 +1794,7 @@
     <Rule StartingNonTerminal="LiteralList">
       <Sequences>
         <Sequence>
-          <Terminal Id="Literal" />
+          <NonTerminal Id="Literal" />
           <NonTerminal Id="CommaChainedLiteralList" IsOptional="true" />
         </Sequence>
       </Sequences>
@@ -2742,6 +2742,9 @@
           <Terminal Id="UniversalRowId" />
         </Sequence>
         <Sequence>
+          <Terminal Id="Clob" />
+        </Sequence>
+        <Sequence>
           <Terminal Id="Ref" IsOptional="true" />
           <NonTerminal Id="SchemaPrefix" IsOptional="true" />
           <Terminal Id="DataTypeIdentifier" />
@@ -2850,6 +2853,9 @@
         <Sequence>
           <Terminal Id="UniversalRowId" />
           <NonTerminal Id="DataTypeSimplePrecision" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Clob" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="SchemaPrefix" IsOptional="true" />
@@ -6302,6 +6308,17 @@
         </Sequence>
       </Sequences>
     </Rule>
+    
+    <Rule StartingNonTerminal="SynchronousOrAsynchronous">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Synchronous" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Asynchronous" />
+        </Sequence>
+      </Sequences>
+    </Rule>
 
     <Rule StartingNonTerminal="NextDateTimeExpressionOrRepeatInterval">
       <Sequences>
@@ -6864,7 +6881,7 @@
           <Terminal Id="Long" />
         </Sequence>
         <Sequence>
-          <Terminal Id="RowTypeDefinition" />
+          <NonTerminal Id="RowTypeDefinition" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -7450,35 +7467,6 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
-    <!--<Rule StartingNonTerminal="ItemList2">
-      <Sequences>
-        <Sequence>
-          <NonTerminal Id="Item2" />
-          <NonTerminal Id="ItemList2Chained" IsOptional="true" />
-        </Sequence>
-      </Sequences>
-    </Rule>
-    
-    <Rule StartingNonTerminal="ItemList2Chained">
-      <Sequences>
-        <Sequence>
-          <NonTerminal Id="Item2OrPragmaDefinition" />
-          <NonTerminal Id="ItemList2Chained" IsOptional="true" />
-        </Sequence>
-      </Sequences>
-    </Rule>
-    
-    <Rule StartingNonTerminal="Item2OrPragmaDefinition">
-      <Sequences>
-        <Sequence>
-          <NonTerminal Id="Item2" />
-        </Sequence>
-        <Sequence>
-          <NonTerminal Id="PragmaDefinition" />
-        </Sequence>
-      </Sequences>
-    </Rule>-->
     
     <Rule StartingNonTerminal="IsOrAs">
       <Sequences>
@@ -8150,15 +8138,15 @@
     <Rule StartingNonTerminal="PlSqlExpression">
       <Sequences>
         <Sequence>
+          <Terminal Id="CursorIdentifier" />
+          <Terminal Id="PercentCharacter" />
+          <NonTerminal Id="RowCountOrBulkRowCount" />
+        </Sequence>
+        <Sequence>
           <NonTerminal Id="PlSqlBooleanExpression" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="Expression" />
-        </Sequence>
-        <Sequence>
-          <Terminal Id="CursorIdentifier" />
-          <Terminal Id="PercentCharacter" />
-          <NonTerminal Id="RowCountOrBulkRowCount" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -11285,14 +11273,15 @@
           <Terminal Id="Index" />
           <NonTerminal Id="IndexOrganizedTableClause" />
         </Sequence>
-        <Sequence>
+        <!-- TODO -->
+        <!--<Sequence>
           <Terminal Id="External" />
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="ExternalTableAccessDriverType" IsOptional="true" />
           <NonTerminal Id="ExternalTableDataPropeties" />
           <Terminal Id="RightParenthesis" />
           <NonTerminal Id="ErrorLoggingRejectLimit" IsOptional="true" />
-        </Sequence>
+        </Sequence>-->
       </Sequences>
     </Rule>
 
@@ -11388,11 +11377,12 @@
     
     <Rule StartingNonTerminal="OpaqueFormatSpecificationOrUsingClobSubquery">
       <Sequences>
-        <Sequence>
+        <!-- TODO -->
+        <!--<Sequence>
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="OpaqueFormatSpecification" />
           <Terminal Id="RightParenthesis" />
-        </Sequence>
+        </Sequence>-->
         <Sequence>
           <Terminal Id="Using" />
           <Terminal Id="Clob" />
@@ -12791,6 +12781,8 @@
     <Terminal Id="Iterate" Value="ITERATE" />
     <Terminal Id="Until" Value="UNTIL" />
     <Terminal Id="NonAvailableValues" Value="NAV" />
+    <Terminal Id="Decrement" Value="DECREMENT" />
+    <Terminal Id="Updated" Value="UPDATED" />
 
     <!-- Subquery factoring search and cycle -->
     <Terminal Id="Cycle" Value="CYCLE" />
@@ -13024,6 +13016,13 @@
     <Terminal Id="Access" Value="ACCESS" IsReservedWord="true" />
     <Terminal Id="CurrentUser" Value="CURRENT_USER" />
     <Terminal Id="Definer" Value="DEFINER" />
+    <Terminal Id="Id" Value="ID" />
+    <Terminal Id="Directory" Value="DIRECTORY" />
+    <Terminal Id="Location" Value="LOCATION" />
+    <Terminal Id="Parameters" Value="PARAMETERS" />
+    <Terminal Id="Clob" Value="CLOB" />
+    <Terminal Id="Modification" Value="MODIFICATION" />
+    <Terminal Id="Partial" Value="PARTIAL" />
     
     <!-- Comment -->
     <Terminal Id="Audit" Value="AUDIT" IsReservedWord="true" />
@@ -13063,7 +13062,7 @@
     <Terminal Id="Unusable" Value="UNUSABLE" />
     
     <!-- Alter session -->
-    <Terminal Id="Advice" Value="ADVICE" />
+    <Terminal Id="Advise" Value="ADVISE" />
     <Terminal Id="Close" Value="CLOSE" />
     <Terminal Id="Sync" Value="SYNC" />
     <Terminal Id="Guard" Value="GUARD" />
@@ -13073,6 +13072,7 @@
     <Terminal Id="Database" Value="DATABASE" />
     <Terminal Id="Link" Value="LINK" />
     <Terminal Id="Events" Value="EVENTS" />
+    <Terminal Id="Nothing" Value="NOTHING" />
 
     <!-- Call -->
     <Terminal Id="Call" Value="CALL" />
@@ -13171,6 +13171,8 @@
     <Terminal Id="NotFound" Value="NOTFOUND" />
     <Terminal Id="IsOpen" Value="ISOPEN" />
     <Terminal Id="Constant" Value="CONSTANT" />
+    <Terminal Id="RowCount" Value="ROWCOUNT" />
+    <Terminal Id="BulkRowCount" Value="BULK_ROWCOUNT" />
     <Terminal Id="Declare" Value="DECLARE" IsReservedWord="true" />
     <Terminal Id="Record" Value="RECORD" />
     <Terminal Id="Out" Value="OUT" />
@@ -13210,6 +13212,7 @@
     <Terminal Id="Others" Value="OTHERS" />
     <Terminal Id="Indices" Value="INDICES" />
     <Terminal Id="Save" Value="SAVE" />
+    <Terminal Id="String" Value="STRING" />
     <Terminal Id="AssignmentOperator" Value=":=" />
     <Terminal Id="DoubleDotOperator" Value=".." />
     <Terminal Id="PercentCharacter" Value="%" />
