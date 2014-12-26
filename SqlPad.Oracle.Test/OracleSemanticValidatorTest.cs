@@ -21,7 +21,7 @@ namespace SqlPad.Oracle.Test
 		{
 			const string query = "SELECT * FROM SYS.DUAL, HUSQVIK.COUNTRY, HUSQVIK.INVALID, INVALID.ORDERS, V$SESSION";
 			var statement = _oracleSqlParser.Parse(query).Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			
 			var validationModel = BuildValidationModel(query, statement);
 
@@ -43,7 +43,7 @@ namespace SqlPad.Oracle.Test
 		{
 			const string query = "WITH XXX1 AS (SELECT 1 FROM XXX1) SELECT * FROM XXX1, SYS.XXX1, \"XXX1\", \"xXX1\", \"PUBLIC\".DUAL";
 			var statement = _oracleSqlParser.Parse(query).Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			
 			var validationModel = BuildValidationModel(query, statement);
 
@@ -65,7 +65,7 @@ namespace SqlPad.Oracle.Test
 			const string sqlText = "WITH XXX AS (SELECT 3 COL FROM DUAL CTE_OUTER_ALIAS_1) SELECT VP1 COL1, (SELECT 1 FROM XXX SC_ALIAS_1) SCALARSUBQUERY FROM (WITH YYY AS (SELECT 1 FROM SYS.DUAL CTE_INNER_ALIAS_1), ZZZ AS (SELECT 2 FROM DUAL CTE_INNER_ALIAS_2), FFF AS (SELECT 4 FROM XXX CTE_INNER_ALIAS_3) SELECT COL + 1 VP1 FROM (SELECT TABLE_ALIAS_1.COL, TABLE_ALIAS_2.DUMMY || TABLE_ALIAS_2.DUMMY NOT_DUMMY FROM XXX TABLE_ALIAS_1, DUAL TABLE_ALIAS_2) TABLE_ALIAS_3) SUBQUERY";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 			
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.ObjectNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -79,7 +79,7 @@ namespace SqlPad.Oracle.Test
 		{
 			const string sqlText = "WITH CTE AS (SELECT 1 FROM DUAL) SELECT CTE.*, SYS.DUAL.*, DUAL.*, HUSQVIK.CTE.* FROM DUAL CROSS JOIN CTE";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			
 			var validationModel = BuildValidationModel(sqlText, statement);
 			
@@ -103,7 +103,7 @@ namespace SqlPad.Oracle.Test
 			const string sqlText = "WITH CTE AS (SELECT 1 COLUMN1, VAL COLUMN2, DUMMY COLUMN3 FROM DUAL) SELECT COLUMN1, 'X' || CTE.COLUMN1, CTE.VAL, CTE.COLUMN2, SYS.DUAL.COLUMN1, DUAL.VAL, DUAL.DUMMY FROM CTE, INVALID_TABLE";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 			
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			
 			var validationModel = BuildValidationModel(sqlText, statement);
 			
@@ -127,7 +127,7 @@ namespace SqlPad.Oracle.Test
 			const string sqlText = "WITH CTE AS (SELECT DUMMY VAL FROM DUAL) SELECT DUAL.VAL FROM CTE, DUAL";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 			
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			
 			var validationModel = BuildValidationModel(sqlText, statement);
 			
@@ -144,7 +144,7 @@ namespace SqlPad.Oracle.Test
 			const string sqlText = @"SELECT SYS.DUAL.DUMMY FROM SYS.DUAL, ""PUBLIC"".DUAL";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 			
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			
 			var validationModel = BuildValidationModel(sqlText, statement);
 			
@@ -160,7 +160,7 @@ namespace SqlPad.Oracle.Test
 			const string sqlText = @"SELECT DUAL.DUMMY FROM SYS.DUAL, ""PUBLIC"".DUAL";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 
@@ -176,7 +176,7 @@ namespace SqlPad.Oracle.Test
 			const string query1 = "SELECT T2.DUMMY FROM (SELECT DUMMY FROM DUAL) T2, DUAL";
 			var statement = _oracleSqlParser.Parse(query1).Single();
 			
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			
 			var validationModel = BuildValidationModel(query1, statement);
 			
@@ -189,7 +189,7 @@ namespace SqlPad.Oracle.Test
 			const string query2 = "SELECT DUMMY FROM (SELECT DUMMY FROM DUAL) t2, Dual";
 			statement = _oracleSqlParser.Parse(query2).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			validationModel = BuildValidationModel(query2, statement);
 
@@ -211,7 +211,7 @@ namespace SqlPad.Oracle.Test
 			const string sqlText = "SELECT ID, NAME, DUMMY FROM (SELECT * FROM COUNTRY)";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 
@@ -230,7 +230,7 @@ namespace SqlPad.Oracle.Test
 			const string sqlText = "SELECT ID, NAME, DUMMY FROM (SELECT COUNTRY.* FROM COUNTRY)";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 
@@ -249,7 +249,7 @@ namespace SqlPad.Oracle.Test
 			const string sqlText = "SELECT ID, NAME, DUMMY FROM (COUNTRY)";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 
@@ -267,7 +267,7 @@ namespace SqlPad.Oracle.Test
 			const string sqlText = "SELECT SELECTION.DUMMY FROM SELECTION";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 
@@ -284,7 +284,7 @@ namespace SqlPad.Oracle.Test
 			const string sqlText = "SELECT PROJECT_ID, SELECTION_ID, RESPONDENTBUCKET_ID, DUMMY FROM (SELECT * FROM (SELECT * FROM SELECTION))";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 
@@ -305,7 +305,7 @@ namespace SqlPad.Oracle.Test
 			const string sqlText = "SELECT NULL FROM DUAL WHERE HUSQVIK.COUNTRY.ID = SELECTION.ID AND SYS.DUAL.DUMMY = DUMMY";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 
@@ -329,7 +329,7 @@ JOIN TARGETGROUP TG ON RB.TARGETGROUP_ID = TG.TARGETGROUP_ID
 JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			
 			var statement = (OracleStatement)_oracleSqlParser.Parse(sqlText).Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var objectNodeValidity = BuildValidationModel(sqlText, statement)
 				.ObjectNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -358,7 +358,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			var sqlText = String.Format(@"SELECT NULL FROM SELECTION {0} JOIN RESPONDENTBUCKET RB ON SELECTION.RESPONDENTBUCKET_ID = RB.RESPONDENTBUCKET_ID", joinType);
 			
 			var statement = (OracleStatement)_oracleSqlParser.Parse(sqlText).Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var objectNodeValidity = BuildValidationModel(sqlText, statement)
 				.ObjectNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -377,7 +377,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT NAME FROM (SELECT S.NAME, RB.NAME FROM SELECTION S JOIN RESPONDENTBUCKET RB ON S.RESPONDENTBUCKET_ID = RB.RESPONDENTBUCKET_ID)";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 
@@ -396,7 +396,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT COUNT(COUNT) OVER (), COUNT, HUSQVIK.COUNT, HUSQVIK.COUNT() FROM FTEST";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 
@@ -427,7 +427,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT TO_CHAR(1) FROM DUAL";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 
@@ -447,7 +447,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT COUNT(1, 2) FROM DUAL";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 
@@ -465,7 +465,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT NULLIF(COUNT(DUMMY) OVER (), 1) FROM DUAL";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 
@@ -483,7 +483,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT DUMMY FROM (SELECT DUMMY, COUNT(*) OVER () ROW_COUNT FROM (SELECT DUMMY FROM DUAL))";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 
@@ -497,7 +497,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT SYS_GUID(), SYS_GUID(123), SYS_GUID, SYSGUID() FROM DUAL";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 
@@ -525,7 +525,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT SESSIONTIMEZONE() FROM DUAL";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 
@@ -547,7 +547,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT COALESCE(SELECTION.RESPONDENTBUCKET_ID, SELECTION.SELECTION_ID) FROM SELECTION";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 
@@ -563,7 +563,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT NVL(LAST_VALUE(DUMMY) OVER (), 'Replacement') FROM DUAL";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 
@@ -585,7 +585,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "WITH T1 AS (SELECT 1 A FROM DUAL), T2 AS (SELECT 1 B FROM T1) SELECT B FROM T2";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 
@@ -603,7 +603,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "WITH T1 AS (SELECT 1 A FROM T2), T2 AS (SELECT 1 B FROM T1) SELECT B FROM T2";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 
@@ -621,7 +621,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT * FROM HUSQVIK.SELECTION ORDER BY HUSQVIK.SELECTION.NAME, SELECTION.NAME, DUAL.DUMMY, SELECTION_ID, UNDEFINED_COLUMN, UPPER(''), UNDEFINED_FUNCTION()";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.ObjectNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -665,7 +665,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT DUMMY NOT_DUMMY FROM DUAL ORDER BY NOT_DUMMY";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -685,7 +685,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT DUMMY NOT_DUMMY, DUMMY FROM DUAL ORDER BY DUMMY";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -708,7 +708,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT NAME, SELECTION_ID NAME FROM SELECTION ORDER BY NAME";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -731,7 +731,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT NAME X FROM SELECTION UNION ALL SELECT NAME FROM SELECTION ORDER BY NAME";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -754,7 +754,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT RESPONDENTBUCKET_ID ID FROM RESPONDENTBUCKET UNION ALL SELECT TARGETGROUP_ID ID FROM TARGETGROUP UNION ALL SELECT PROJECT_ID FROM PROJECT ORDER BY ID";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -780,7 +780,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT RESPONDENTBUCKET_ID ID FROM RESPONDENTBUCKET UNION ALL SELECT TARGETGROUP_ID FROM TARGETGROUP UNION ALL SELECT PROJECT_ID FROM PROJECT ORDER BY ID";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -806,7 +806,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "WITH CTE AS (SELECT DUMMY FROM DUAL) SELECT	DUMMY FROM CTE T1";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -822,7 +822,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT GREATEST(1, 2, 3) FROM DUAL";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -838,7 +838,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT * FROM (SELECT 1 NAME, 2 NAME FROM DUAL)";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -854,7 +854,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT SQLPAD_FUNCTION() WITH_PARENTHESES, SQLPAD_FUNCTION WITHOUT_PARENTHESES FROM DUAL";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -872,7 +872,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT SELECTION.ROWID FROM SELECTION, PROJECT";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -888,7 +888,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT HUSQVIK.COUNT() OVER () FROM DUAL";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 
@@ -907,7 +907,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT * FROM DUAL D WHERE EXISTS (SELECT NULL FROM DUAL WHERE DUMMY = D.DUMMY)";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.ObjectNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -929,7 +929,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT (SELECT ID FROM INVOICES WHERE ID = S.SELECTION_ID) FROM SELECTION S WHERE EXISTS (SELECT NULL FROM INVOICES WHERE ID = SELECTION_ID)";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.ObjectNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -951,7 +951,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT DBMS_RANDOM.STRING('X', 16) FROM DUAL";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -981,7 +981,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		{
 			var statement = _oracleSqlParser.Parse(statementText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(statementText, statement);
 			var nodeValidityDictionary = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -999,7 +999,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT UNCOMPILABLE_FUNCTION() FROM DUAL";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -1015,7 +1015,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT UNCOMPILABLE_PACKAGE.FUNCTION() FROM DUAL";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -1033,7 +1033,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT NVL2(DUMMY, 'X', 'NOT DUMMY') FROM DUAL";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var databaseModel = new OracleTestDatabaseModel();
 			databaseModel.AllObjects.Clear();
@@ -1052,7 +1052,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT XMLTYPE('<Root/>'), SYS.XMLTYPE('<Root/>') FROM DUAL WHERE XMLTYPE('<Root/>') IS NOT NULL";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -1072,7 +1072,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT SYS.ODCIARGDESC(1) FROM DUAL";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -1094,7 +1094,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT SYS.ODCIRAWLIST(NULL, NULL) FROM DUAL";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -1110,7 +1110,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT SYS.ODCIARGDESCLIST() FROM DUAL";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -1126,7 +1126,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT TEST_SEQ.NEXTVAL FROM DUAL ORDER BY 1";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -1150,7 +1150,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT NEXTVAL FROM (SELECT TEST_SEQ.NEXTVAL FROM DUAL)";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -1169,7 +1169,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT TEST_SEQ.NEXTVAL, HUSQVIK.TEST_SEQ.\"NEXTVAL\", SYNONYM_TO_TEST_SEQ.CURRVAL FROM DUAL WHERE TEST_SEQ.\"CURRVAL\" < TEST_SEQ.NEXTVAL";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -1202,7 +1202,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT TEST_SEQ.UNDEFINED_COLUMN FROM DUAL";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -1218,7 +1218,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT SQLPAD_FUNCTION@UNDEFINED_DB_LINK FROM DUAL";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -1237,7 +1237,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT * FROM SELECTION@UNDEFINED_DB_LINK";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.ObjectNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -1256,7 +1256,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT TEST_SEQ.NEXTVAL@UNDEFINED_DB_LINK FROM DUAL";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.ObjectNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -1286,7 +1286,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT \"\" FROM DUAL";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.IdentifierNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -1303,7 +1303,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT :999999, :9 FROM DUAL";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.IdentifierNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -1320,7 +1320,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT * FROM (SELECT * FROM DUAL, DUAL X)";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -1338,7 +1338,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT TO_CHAR FROM (SELECT TO_CHAR('') FROM DUAL)";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -1360,7 +1360,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "UPDATE (SELECT * FROM SELECTION) SET NAME = 'Dummy selection' WHERE SELECTION_ID = 0";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -1376,7 +1376,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "INSERT INTO SELECTION (RESPONDENTBUCKET_ID, NAME) SELECT RESPONDENTBUCKET_ID, NAME FROM SELECTION";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -1389,7 +1389,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "INSERT INTO SELECTION (RESPONDENTBUCKET_ID, NAME) SELECT RESPONDENTBUCKET_ID, NAME, PROJECT_ID FROM SELECTION";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -1407,7 +1407,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "INSERT INTO SELECTION (RESPONDENTBUCKET_ID, NAME) SELECT * FROM SELECTION";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -1425,7 +1425,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "INSERT INTO SELECTION SELECT RESPONDENTBUCKET_ID, NAME, PROJECT_ID FROM SELECTION";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -1441,7 +1441,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "INSERT INTO SELECTION (SELECTION_ID, SELECTIONNAME, RESPONDENTBUCKET_ID) VALUES (SQLPAD_FUNCTION, XMLTYPE(), TEST_SEQ.NEXTVAL)";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -1467,7 +1467,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "INSERT INTO SELECTION";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			statement.ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.ObjectNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -1482,7 +1482,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT 1, 2 FROM DUAL UNION ALL SELECT 1 FROM DUAL";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -1497,7 +1497,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT 1 FROM DUAL UNION ALL SELECT 2 FROM DUAL UNION ALL SELECT 3, 4 FROM DUAL;";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -1512,7 +1512,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT ROUND(RATIO_TO_REPORT(COUNT(*)) OVER (PARTITION BY TRUNC(NULL, 'HH')) * 100, 2) PERCENT FROM DUAL";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -1527,7 +1527,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT VAL + 1 VAL, VAL ALIAS FROM (SELECT 1 VAL FROM DUAL) ORDER BY VAL";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -1542,7 +1542,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT VAL + 1 VAL, VAL FROM (SELECT 1 VAL FROM DUAL) ORDER BY VAL";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -1568,7 +1568,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT XMLELEMENT(NAME \"VeryLongXmlAliasVeryLongXmlAlias\", NULL) VAL1, XMLELEMENT(NAME VeryLongXmlAliasVeryLongXmlAlias, NULL) VAL2 FROM DUAL";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.IdentifierNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
@@ -1581,7 +1581,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = "SELECT XMLELEMENT(NAME \"\", NULL) VAL FROM DUAL";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValiditities = validationModel.IdentifierNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(nv => nv.Value).ToArray();
@@ -1595,7 +1595,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = @"SELECT UNDEFINEDPACKAGE.FUNCTION() FROM DUAL";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodesWithSemanticError = validationModel.GetNodesWithSemanticError().Select(kvp => kvp.Value).ToArray();
@@ -1608,7 +1608,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = @"SELECT * FROM HUSQVIK.SELECTION@HQ_PDB_LOOPBACK";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var objectNodes = validationModel.ObjectNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToArray();
@@ -1625,7 +1625,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = @"SELECT NAME FROM SELECTION@HQ_PDB_LOOPBACK, DUAL@HQ_PDB_LOOPBACK";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var columnNodes = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToArray();
@@ -1641,7 +1641,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = @"SELECT DUMMY FROM DUAL, DUAL@HQ_PDB_LOOPBACK";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var columnNodes = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToArray();
@@ -1657,7 +1657,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = @"SELECT DUMMY FROM DUAL@HQ_PDB_LOOPBACK";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var columnNodes = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToArray();
@@ -1670,7 +1670,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = @"SELECT * FROM SELECTION@HQ_PDB_LOOPBACK";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var columnValidationData = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToArray();
@@ -1685,7 +1685,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = @"SELECT SELECTION.NAME FROM SELECTION@HQ_PDB_LOOPBACK";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var columnNodes = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToArray();
@@ -1698,7 +1698,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = @"SELECT DATE'2014-12-06 17:50:42', TIMESTAMP'2014-12-06', DATE'-2014-12-06', TIMESTAMP'+2014-12-06 17:50:42 CET' FROM DUAL";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var invalidNodes = validationModel.IdentifierNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToArray();
@@ -1717,7 +1717,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = @"SELECT DATE' 2014-12-06', TIMESTAMP' 2014-12-06 17:50:42' FROM DUAL";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var invalidNodes = validationModel.IdentifierNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToArray();
@@ -1736,7 +1736,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = @"SELECT LEVEL FROM DUAL";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var programNodeValidity = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToArray();
@@ -1752,7 +1752,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = @"UPDATE DUAL SET DUMMY = LEVEL";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var programNodeValidity = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToArray();
@@ -1768,7 +1768,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = @"SELECT PLAN_TABLE_OUTPUT, COLUMN_VALUE FROM TABLE(DBMS_XPLAN.DISPLAY_CURSOR(NULL, NULL, 'ALLSTATS LAST ADVANCED')) T1, TABLE(SYS.ODCIRAWLIST(HEXTORAW('ABCDEF'), HEXTORAW('A12345'), HEXTORAW('F98765'))) T2";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var columnNodeValidity = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToArray();
@@ -1792,7 +1792,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = @"SELECT COLUMN_VALUE FROM TABLE(SQLPAD.PIPELINED_FUNCTION(SYSDATE, SYSDATE))";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var programNodeValidity = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
@@ -1809,7 +1809,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = @"SELECT SEQ#, TITLE, DESCRIPTION FROM XMLTABLE('for $i in $RSS_DATA/rss/channel/item return $i' PASSING HTTPURITYPE('http://servis.idnes.cz/rss.asp?c=zpravodaj').GETXML() AS RSS_DATA COLUMNS SEQ# FOR ORDINALITY, TITLE VARCHAR2(4000) PATH 'title', DESCRIPTION CLOB PATH 'description') T";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var columnNodeValidity = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
@@ -1827,7 +1827,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = @"SELECT (SELECT 1 FROM (SELECT 1 FROM DUAL ORDER BY DUMMY) ORDER BY DUMMY) FROM DUAL";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var invalidNonTerminals = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
@@ -1842,7 +1842,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = @"SELECT DUMMY FROM (SELECT * FROM DUAL@HQ_PDB_LOOPBACK)";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var columnValidities = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
@@ -1861,7 +1861,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = @"SELECT DUMMY FROM (SELECT DUAL.* FROM DUAL@HQ_PDB_LOOPBACK)";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var columnValidities = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
@@ -1880,7 +1880,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			const string sqlText = @"WITH CTE(C1) AS (SELECT 1, 2 FROM DUAL) SELECT C1 FROM CTE";
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var cteQueryBlock = validationModel.SemanticModel.QueryBlocks.Single(qb => qb.Type == QueryBlockType.CommonTableExpression);

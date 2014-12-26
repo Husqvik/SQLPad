@@ -278,7 +278,7 @@ namespace SqlPad
 			var statementsAtLine = _statements.Where(s => s.SourcePosition.IndexStart <= line.EndOffset && s.SourcePosition.IndexEnd >= line.Offset);
 			foreach (var statement in statementsAtLine)
 			{
-				var backgroundColor = statement.ProcessingStatus == ProcessingStatus.Success ? ValidStatementBackgroundBrush : InvalidStatementBackgroundBrush;
+				var backgroundColor = statement.ParseStatus == ParseStatus.Success ? ValidStatementBackgroundBrush : InvalidStatementBackgroundBrush;
 
 				var colorStartOffset = Math.Max(line.Offset, statement.SourcePosition.IndexStart);
 				var colorEndOffset = Math.Min(line.EndOffset, statement.SourcePosition.IndexEnd + 1);

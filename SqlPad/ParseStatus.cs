@@ -1,6 +1,6 @@
 ﻿namespace SqlPad
 {
-	public enum ProcessingStatus
+	public enum ParseStatus
 	{
 		Success,
 		SequenceNotFound

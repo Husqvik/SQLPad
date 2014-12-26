@@ -24,7 +24,7 @@ namespace SqlPad.Oracle.Test
 				var result = Parser.Parse(OracleTokenReader.Create(reader));
 				result.ShouldNotBe(null);
 
-				result.ToList().ForEach(s => s.ProcessingStatus.ShouldBe(ProcessingStatus.Success));
+				result.ToList().ForEach(s => s.ParseStatus.ShouldBe(ParseStatus.Success));
 			}
 		}
 
@@ -94,7 +94,7 @@ namespace SqlPad.Oracle.Test
 			result.ShouldNotBe(null);
 			result.Count.ShouldBe(1);
 			var statement = result.Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			var rootToken = statement.RootNode;
 			var terminals = rootToken.Terminals.ToArray();
 
@@ -164,7 +164,7 @@ namespace SqlPad.Oracle.Test
 			result.Count.ShouldBe(1);
 			var statement = result.Single().Validate();
 			statement.RootNode.ChildNodes.Count.ShouldBe(1);
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			statement.ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 			var terminals = statement.AllTerminals.ToArray();
 			terminals.Length.ShouldBe(2);
 			terminals[0].Id.ShouldBe(Terminals.Select);
@@ -179,7 +179,7 @@ namespace SqlPad.Oracle.Test
 
 			result.Count.ShouldBe(1);
 			var statement = result.Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -193,7 +193,7 @@ namespace SqlPad.Oracle.Test
 			result.Count.ShouldBe(1);
 			var statement = result.Single().Validate();
 			statement.RootNode.ChildNodes.Count.ShouldBe(1);
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			statement.ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 			var terminals = statement.AllTerminals.ToArray();
 			terminals.Length.ShouldBe(3);
 			terminals[0].Id.ShouldBe(Terminals.Select);
@@ -208,7 +208,7 @@ namespace SqlPad.Oracle.Test
 			result.Count.ShouldBe(1);
 			statement = result.Single().Validate();
 			statement.RootNode.ChildNodes.Count.ShouldBe(1);
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			statement.ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 
 			terminals = statement.AllTerminals.ToArray();
 			terminals.Length.ShouldBe(1);
@@ -222,8 +222,8 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(sqlText).ToArray();
 
 			result.Length.ShouldBe(2);
-			result[0].ProcessingStatus.ShouldBe(ProcessingStatus.Success);
-			result[1].ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result[0].ParseStatus.ShouldBe(ParseStatus.Success);
+			result[1].ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
 		[Test(Description = @"Tests query. ")]
@@ -233,7 +233,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(sqlText);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 		}
 
 		[Test(Description = @"Tests simple query with common table expression. ")]
@@ -243,7 +243,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(sqlText);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -255,7 +255,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(sqlText);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -267,7 +267,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(sqlText);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -279,7 +279,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 
@@ -287,7 +287,7 @@ namespace SqlPad.Oracle.Test
 			result = Parser.Parse(query2);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 
 			// TODO: Precise assertions
 		}
@@ -299,7 +299,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 
@@ -307,7 +307,7 @@ namespace SqlPad.Oracle.Test
 			result = Parser.Parse(query2);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 
@@ -315,7 +315,7 @@ namespace SqlPad.Oracle.Test
 			result = Parser.Parse(query3);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 
@@ -323,7 +323,7 @@ namespace SqlPad.Oracle.Test
 			result = Parser.Parse(query4);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 
 			// TODO: Precise assertions
 
@@ -331,7 +331,7 @@ namespace SqlPad.Oracle.Test
 			result = Parser.Parse(query5);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var terminals = result.Single().AllTerminals.ToList();
 
@@ -351,7 +351,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 
@@ -359,7 +359,7 @@ namespace SqlPad.Oracle.Test
 			result = Parser.Parse(query2);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -372,7 +372,7 @@ namespace SqlPad.Oracle.Test
 
 			result.Count.ShouldBe(1);
 			var statement = result.Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			statement.RootNode.ShouldBe(null);
 		}
 
@@ -384,12 +384,12 @@ namespace SqlPad.Oracle.Test
 
 			result.Count.ShouldBe(2);
 			var firstStatement = result.First();
-			firstStatement.Validate().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			firstStatement.Validate().ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 			firstStatement.RootNode.ChildNodes.Count.ShouldBe(1);
 			firstStatement.AllTerminals.Count().ShouldBe(4);
 
 			var secondStatement = result.Last();
-			secondStatement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			secondStatement.ParseStatus.ShouldBe(ParseStatus.Success);
 			secondStatement.RootNode.ChildNodes.Count.ShouldBe(1);
 			secondStatement.AllTerminals.Count().ShouldBe(4);
 		}
@@ -401,7 +401,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
 		[Test(Description = @"Tests flashback clauses. ")]
@@ -411,13 +411,13 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			const string query2 = @"SELECT * FROM T1 VERSIONS BETWEEN TIMESTAMP TIMESTAMP'2014-02-20 00:00:00' AND DATE'2014-02-20'";
 			result = Parser.Parse(query2);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
 		[Test(Description = @"Tests chained asterisk clause. ")]
@@ -427,7 +427,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
 		[Test(Description = @"Tests LIKE clause. ")]
@@ -437,7 +437,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().Validate().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().Validate().ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
 		[Test(Description = @"Tests NOT LIKE clause. ")]
@@ -447,7 +447,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().Validate().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().Validate().ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
 		[Test(Description = @"Tests IN clause with subquery. ")]
@@ -457,7 +457,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
 		[Test(Description = @"Tests scalar subquery clause. ")]
@@ -467,7 +467,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
 		[Test(Description = @"Tests join clauses. ")]
@@ -477,7 +477,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var terminals = result.Single().AllTerminals.ToArray();
 			terminals.Length.ShouldBe(38);
@@ -503,13 +503,13 @@ namespace SqlPad.Oracle.Test
 			result = Parser.Parse(query2);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			const string query3 = @"SELECT 1 FROM DUAL T1 LEFT OUTER JOIN DUAL T2 PARTITION BY (T2.DUMMY, DUMMY, (DUMMY, DUMMY)) ON (T1.DUMMY = T2.DUMMY)";
 			result = Parser.Parse(query3);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 		}
 
 		[Test(Description = @"Tests order by clause. ")]
@@ -519,7 +519,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
 		[Test(Description = @"Tests hierarchical query clauses. ")]
@@ -529,13 +529,13 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			const string query2 = @"SELECT LEVEL FROM DUAL START WITH 1 = 1 CONNECT BY NOCYCLE LEVEL <= 5 AND 1 = 1";
 			result = Parser.Parse(query2);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
 		[Test(Description = @"Tests group by rollup, cube and grouping sets clauses. ")]
@@ -545,7 +545,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 
@@ -553,7 +553,7 @@ namespace SqlPad.Oracle.Test
 			result = Parser.Parse(query2);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 
@@ -561,7 +561,7 @@ namespace SqlPad.Oracle.Test
 			result = Parser.Parse(query3);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -573,7 +573,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 
@@ -581,7 +581,7 @@ namespace SqlPad.Oracle.Test
 			result = Parser.Parse(query2);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 
@@ -589,7 +589,7 @@ namespace SqlPad.Oracle.Test
 			result = Parser.Parse(query3);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 
 			// TODO: Precise assertions
 
@@ -597,7 +597,7 @@ namespace SqlPad.Oracle.Test
 			result = Parser.Parse(query4);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 
 			// TODO: Precise assertions
 		}
@@ -609,7 +609,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -621,7 +621,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -633,7 +633,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 
 			// TODO: Precise assertions
 		}
@@ -645,7 +645,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -657,7 +657,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 
@@ -665,7 +665,7 @@ namespace SqlPad.Oracle.Test
 			result = Parser.Parse(query2);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 
@@ -673,7 +673,7 @@ namespace SqlPad.Oracle.Test
 			result = Parser.Parse(query3);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 
 			// TODO: Precise assertions
 		}
@@ -686,7 +686,7 @@ namespace SqlPad.Oracle.Test
 
 			result.Count.ShouldBe(1);
 			var statement = result.Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var terminals = statement.AllTerminals.ToArray();
 			terminals[1].Id.ShouldBe(Terminals.SchemaIdentifier);
@@ -701,7 +701,7 @@ namespace SqlPad.Oracle.Test
 
 			result.Count.ShouldBe(1);
 			var statement = result.Single().Validate();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var terminals = statement.AllTerminals.ToArray();
 			terminals[1].Id.ShouldBe(Terminals.SchemaIdentifier);
@@ -719,7 +719,7 @@ namespace SqlPad.Oracle.Test
 
 			result.Count.ShouldBe(1);
 			var statement = result.Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -732,7 +732,7 @@ namespace SqlPad.Oracle.Test
 
 			result.Count.ShouldBe(1);
 			var statement = result.Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 
@@ -741,7 +741,7 @@ namespace SqlPad.Oracle.Test
 
 			result.Count.ShouldBe(1);
 			statement = result.Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 
@@ -750,7 +750,7 @@ namespace SqlPad.Oracle.Test
 
 			result.Count.ShouldBe(1);
 			statement = result.Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 
@@ -759,7 +759,7 @@ namespace SqlPad.Oracle.Test
 
 			result.Count.ShouldBe(1);
 			statement = result.Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -772,7 +772,7 @@ namespace SqlPad.Oracle.Test
 
 			result.Count.ShouldBe(1);
 			var statement = result.Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var terminals = statement.AllTerminals.ToArray();
 			terminals[3].Id.ShouldBe(Terminals.Identifier);
@@ -783,7 +783,7 @@ namespace SqlPad.Oracle.Test
 
 			result.Count.ShouldBe(1);
 			statement = result.Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			terminals = statement.AllTerminals.ToArray();
 			terminals[1].Id.ShouldBe(Terminals.Identifier);
@@ -798,7 +798,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 
@@ -806,7 +806,7 @@ namespace SqlPad.Oracle.Test
 			result = Parser.Parse(query2);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 
@@ -814,7 +814,7 @@ namespace SqlPad.Oracle.Test
 			result = Parser.Parse(query3);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -826,7 +826,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().Validate().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().Validate().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -838,7 +838,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -850,7 +850,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 
@@ -858,7 +858,7 @@ namespace SqlPad.Oracle.Test
 			result = Parser.Parse(query2);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -870,7 +870,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 
@@ -878,7 +878,7 @@ namespace SqlPad.Oracle.Test
 			result = Parser.Parse(query2);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 
@@ -886,7 +886,7 @@ namespace SqlPad.Oracle.Test
 			result = Parser.Parse(query3);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -898,7 +898,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 
@@ -906,7 +906,7 @@ namespace SqlPad.Oracle.Test
 			result = Parser.Parse(query2);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 
@@ -914,7 +914,7 @@ namespace SqlPad.Oracle.Test
 			result = Parser.Parse(query3);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 			
@@ -922,7 +922,7 @@ namespace SqlPad.Oracle.Test
 			result = Parser.Parse(query4);
 
 			result.Count.ShouldBe(1);
-			result.Single().Validate().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			result.Single().Validate().ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 
 			// TODO: Precise assertions
 
@@ -930,7 +930,7 @@ namespace SqlPad.Oracle.Test
 			result = Parser.Parse(query5);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 
@@ -938,7 +938,7 @@ namespace SqlPad.Oracle.Test
 			result = Parser.Parse(query6);
 
 			result.Count.ShouldBe(1);
-			result.Single().Validate().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			result.Single().Validate().ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 
 			// TODO: Precise assertions
 
@@ -946,7 +946,7 @@ namespace SqlPad.Oracle.Test
 			result = Parser.Parse(query7);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 
@@ -954,7 +954,7 @@ namespace SqlPad.Oracle.Test
 			result = Parser.Parse(query8);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -966,7 +966,7 @@ namespace SqlPad.Oracle.Test
 
 			var statements = Parser.Parse(statement1);
 			var statement = statements.Single().Validate();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			statement.ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 		}
 
 		[Test(Description = @"Tests table collection expression. ")]
@@ -976,7 +976,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().Validate().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().Validate().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -988,7 +988,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().Validate().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().Validate().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -1000,7 +1000,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().Validate().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().Validate().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -1012,7 +1012,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().Validate().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			result.Single().Validate().ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 
 			// TODO: Precise assertions
 		}
@@ -1024,7 +1024,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().Validate().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			result.Single().Validate().ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 
 			// TODO: Precise assertions
 		}
@@ -1036,7 +1036,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 			
@@ -1044,7 +1044,7 @@ namespace SqlPad.Oracle.Test
 			result = Parser.Parse(query2);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -1056,7 +1056,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -1068,7 +1068,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -1080,7 +1080,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -1092,7 +1092,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -1104,7 +1104,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().Validate().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().Validate().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -1117,7 +1117,7 @@ namespace SqlPad.Oracle.Test
 
 			result.Count.ShouldBe(1);
 			var statement = (OracleStatement)result.Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var bindVariableTerminalCount = statement.BindVariables.SelectMany(c => c.Nodes).Count();
 			bindVariableTerminalCount.ShouldBe(5);
@@ -1137,7 +1137,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -1149,7 +1149,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -1161,7 +1161,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().Validate().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			result.Single().Validate().ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 
 			// TODO: Precise assertions
 		}
@@ -1173,7 +1173,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -1185,7 +1185,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().Validate().ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			result.Single().Validate().ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 
 			// TODO: Precise assertions
 		}
@@ -1197,7 +1197,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -1209,7 +1209,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -1221,7 +1221,7 @@ namespace SqlPad.Oracle.Test
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -1249,7 +1249,7 @@ WHERE
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -1274,7 +1274,7 @@ FROM
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -1295,7 +1295,7 @@ FROM
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
 		[Test(Description = @"Tests XMLQUERY function. ")]
@@ -1319,7 +1319,7 @@ FROM DUAL";
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -1331,7 +1331,7 @@ FROM DUAL";
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -1343,7 +1343,7 @@ FROM DUAL";
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -1355,7 +1355,7 @@ FROM DUAL";
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -1367,7 +1367,7 @@ FROM DUAL";
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -1379,7 +1379,7 @@ FROM DUAL";
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -1391,7 +1391,7 @@ FROM DUAL";
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -1403,7 +1403,7 @@ FROM DUAL";
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -1415,7 +1415,7 @@ FROM DUAL";
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
-			result.Single().ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -1428,7 +1428,7 @@ FROM DUAL";
 
 			result.Count.ShouldBe(1);
 			var statement = result.Single().Validate();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			statement.ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 			var terminals = statement.AllTerminals.ToArray();
 			terminals.Length.ShouldBe(6);
 			terminals[3].Id.ShouldBe(Terminals.ObjectIdentifier);
@@ -1440,7 +1440,7 @@ FROM DUAL";
 
 			result.Count.ShouldBe(1);
 			statement = result.Single().Validate();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			statement.ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 			terminals = statement.AllTerminals.ToArray();
 			terminals.Length.ShouldBe(9);
 			terminals[3].Id.ShouldBe(Terminals.ObjectIdentifier);
@@ -1456,7 +1456,7 @@ FROM DUAL";
 
 			result.Count.ShouldBe(1);
 			statement = result.Single().Validate();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			terminals = statement.AllTerminals.ToArray();
 			terminals.Length.ShouldBe(5);
 			terminals[3].Id.ShouldBe(Terminals.ObjectIdentifier);
@@ -1467,7 +1467,7 @@ FROM DUAL";
 
 			result.Count.ShouldBe(1);
 			statement = result.Single().Validate();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			statement.ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 			terminals = statement.AllTerminals.ToArray();
 			terminals.Length.ShouldBe(7);
 		}
@@ -1480,7 +1480,7 @@ FROM DUAL";
 
 			result.Count.ShouldBe(1);
 			var statement = result.Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			statement.ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 			var terminals = statement.AllTerminals.ToArray();
 			terminals.Length.ShouldBe(7);
 
@@ -1491,7 +1491,7 @@ FROM DUAL";
 
 			result.Count.ShouldBe(1);
 			statement = result.Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			statement.ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 			terminals = statement.AllTerminals.ToArray();
 			terminals.Length.ShouldBe(9);
 
@@ -1502,7 +1502,7 @@ FROM DUAL";
 
 			result.Count.ShouldBe(1);
 			statement = result.Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			statement.ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 			statement.RootNode.ChildNodes.Count.ShouldBe(1);
 			var rootNode = statement.RootNode;
 			
@@ -1540,7 +1540,7 @@ FROM DUAL";
 
 			result.Count.ShouldBe(1);
 			var statement = result.Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			statement.ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 
 			statement.RootNode.ChildNodes.Count.ShouldBe(1);
 			var rootNode = statement.RootNode;
@@ -1583,7 +1583,7 @@ FROM DUAL";
 
 			result.Count.ShouldBe(1);
 			var statement = result.Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var terminals = statement.AllTerminals.ToArray();
 			terminals.Length.ShouldBe(6);
@@ -1599,7 +1599,7 @@ FROM DUAL";
 
 			result.Count.ShouldBe(1);
 			var statement = result.Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -1612,7 +1612,7 @@ FROM DUAL";
 
 			result.Count.ShouldBe(1);
 			var statement = result.Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -1625,7 +1625,7 @@ FROM DUAL";
 
 			result.Count.ShouldBe(1);
 			var statement = result.Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
 		}
@@ -1638,7 +1638,7 @@ FROM DUAL";
 
 			result.Count.ShouldBe(1);
 			var statement = result.Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			statement.ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 
 			statement.RootNode.ChildNodes.Count.ShouldBe(1);
 			var rootNode = statement.RootNode;
@@ -1662,7 +1662,7 @@ FROM DUAL";
 
 			result.Count.ShouldBe(1);
 			var statement = result.Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			statement.ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 
 			statement.RootNode.ChildNodes.Count.ShouldBe(1);
 			var rootNode = statement.RootNode;
@@ -1679,7 +1679,7 @@ FROM DUAL";
 
 			result.Count.ShouldBe(1);
 			var statement = result.Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			statement.ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 		}
 
 		[Test(Description = @"")]
@@ -1690,7 +1690,7 @@ FROM DUAL";
 
 			result.Count.ShouldBe(1);
 			var statement = result.Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			statement.ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 		}
 
 		[Test(Description = @"")]
@@ -1701,12 +1701,12 @@ FROM DUAL";
 
 			result.Count.ShouldBe(2);
 			var statements = result.ToArray();
-			statements[0].ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statements[0].ParseStatus.ShouldBe(ParseStatus.Success);
 			statements[0].SourcePosition.IndexStart.ShouldBe(0);
 			statements[0].SourcePosition.IndexEnd.ShouldBe(18);
 			statements[0].SourcePosition.Length.ShouldBe(19);
 			
-			statements[1].ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			statements[1].ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 			statements[1].SourcePosition.IndexStart.ShouldBe(20);
 			statements[1].SourcePosition.IndexEnd.ShouldBe(20);
 			statements[1].SourcePosition.Length.ShouldBe(1);
@@ -1720,7 +1720,7 @@ FROM DUAL";
 
 			result.Count.ShouldBe(1);
 			var statement = result.Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			statement.ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 		}
 
 		[Test(Description = @"")]
@@ -1731,7 +1731,7 @@ FROM DUAL";
 
 			result.Count.ShouldBe(1);
 			var statement = result.Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
 		[TestCase("LEFT", Terminals.Left)]
@@ -1744,7 +1744,7 @@ FROM DUAL";
 
 			result.Count.ShouldBe(1);
 			var statement = result.Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			var rootNode = statement.RootNode;
 
 			var terminals = rootNode.Terminals.ToArray();
@@ -1761,7 +1761,7 @@ FROM DUAL";
 
 			result.Count.ShouldBe(1);
 			var statement = result.Single().Validate();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			statement.ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 
 			var terminals = statement.RootNode.Terminals.ToArray();
 			terminals.Length.ShouldBe(16);
@@ -1786,7 +1786,7 @@ FROM DUAL";
 
 			var statements = Parser.Parse(statement1);
 			var statement = statements.Single().Validate();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			
 			var terminals = statement.RootNode.Terminals.ToArray();
 			terminals.Length.ShouldBe(7);
@@ -1826,7 +1826,7 @@ FROM DUAL";
 
 			var statements = Parser.Parse(statement1);
 			var statement = statements.Single().Validate();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			statement.ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 		}
 
 		[Test(Description = @"")]
@@ -1836,7 +1836,7 @@ FROM DUAL";
 
 			var statements = Parser.Parse(statement1);
 			var statement = statements.Single().Validate();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			statement.ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 		}
 
 		[Test(Description = @"")]
@@ -1846,7 +1846,7 @@ FROM DUAL";
 
 			var statements = Parser.Parse(statement1);
 			var statement = statements.Single().Validate();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
 		[Test(Description = @"")]
@@ -1856,7 +1856,7 @@ FROM DUAL";
 
 			var statements = Parser.Parse(statement1);
 			var statement = statements.Single().Validate();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
 		[Test(Description = @"")]
@@ -1866,7 +1866,7 @@ FROM DUAL";
 
 			var statements = Parser.Parse(statement1);
 			var statement = statements.Single().Validate();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
 		[Test(Description = @"")]
@@ -1880,7 +1880,7 @@ FROM DUAL";
 
 			var statements = Parser.Parse(statement1);
 			var statement = statements.Single().Validate();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
 		[Test(Description = @"")]
@@ -1890,7 +1890,7 @@ FROM DUAL";
 
 			var statements = Parser.Parse(statement1);
 			var statement = statements.Single().Validate();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
 		[Test(Description = @"")]
@@ -1900,7 +1900,7 @@ FROM DUAL";
 
 			var statements = Parser.Parse(statement1);
 			var statement = statements.Single().Validate();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
 		[Test(Description = @"")]
@@ -1910,7 +1910,7 @@ FROM DUAL";
 
 			var statements = Parser.Parse(statement1);
 			var statement = statements.Single().Validate();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
 		[Test(Description = @"")]
@@ -1972,7 +1972,7 @@ MODEL
 
 			var statements = Parser.Parse(statement1);
 			var statement = statements.Single().Validate();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
 		[Test(Description = @"")]
@@ -1998,7 +1998,7 @@ MODEL
 
 			var statements = Parser.Parse(statement1);
 			var statement = statements.Single().Validate();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
 		[Test(Description = @"")]
@@ -2015,7 +2015,7 @@ MODEL
 
 			var statements = Parser.Parse(statement1);
 			var statement = statements.Single().Validate();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
 		[Test(Description = @"")]
@@ -2032,7 +2032,7 @@ MODEL
 
 			var statements = Parser.Parse(statement1);
 			var statement = statements.Single().Validate();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
 		[Test(Description = @"")]
@@ -2059,7 +2059,7 @@ ORDER BY
 
 			var statements = Parser.Parse(statement1);
 			var statement = statements.Single().Validate();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
 		[Test(Description = @"")]
@@ -2080,7 +2080,7 @@ MODEL
 
 			var statements = Parser.Parse(statement1);
 			var statement = statements.Single().Validate();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
 		[Test(Description = @"")]
@@ -2097,7 +2097,7 @@ MODEL
 
 			var statements = Parser.Parse(statement1);
 			var statement = statements.Single().Validate();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
 		[Test(Description = @"")]
@@ -2125,7 +2125,7 @@ ORDER BY
 
 			var statements = Parser.Parse(statement1);
 			var statement = statements.Single().Validate();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
 		[Test(Description = @"")]
@@ -2135,7 +2135,7 @@ ORDER BY
 
 			var statements = Parser.Parse(statement1);
 			var statement = statements.Single().Validate();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
 		[Test(Description = @"")]
@@ -2145,7 +2145,7 @@ ORDER BY
 
 			var statements = Parser.Parse(statement1);
 			var statement = statements.Single().Validate();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
 		[Test(Description = @"")]
@@ -2155,7 +2155,7 @@ ORDER BY
 
 			var statements = Parser.Parse(statement1);
 			var statement = statements.Single().Validate();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			statement.ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 		}
 
 		[Test(Description = @"")]
@@ -2166,9 +2166,9 @@ ORDER BY
 			var statements = Parser.Parse(statement1).ToArray();
 			statements.Length.ShouldBe(2);
 			var statement = statements[0].Validate();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			statement = statements[1].Validate();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
 		[Test(Description = @"")]
@@ -2178,7 +2178,7 @@ ORDER BY
 
 			var statements = Parser.Parse(statement1).ToArray();
 			var statement = statements.Single().Validate();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
 		[Test(Description = @"")]
@@ -2188,7 +2188,7 @@ ORDER BY
 
 			var statements = Parser.Parse(statement1).ToArray();
 			var statement = statements.Single().Validate();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
 		[Test(Description = @"")]
@@ -2198,7 +2198,7 @@ ORDER BY
 
 			var statements = Parser.Parse(statement1).ToArray();
 			var statement = statements.Single().Validate();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
 		[Test(Description = @"")]
@@ -2208,7 +2208,7 @@ ORDER BY
 
 			var statements = Parser.Parse(statement1).ToArray();
 			var statement = statements.Single().Validate();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
 		[Test(Description = @"")]
@@ -2218,7 +2218,7 @@ ORDER BY
 
 			var statements = Parser.Parse(statement1).ToArray();
 			var statement = statements.Single().Validate();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
 		[Test(Description = @"")]
@@ -2228,7 +2228,7 @@ ORDER BY
 
 			var statements = Parser.Parse(statement1).ToArray();
 			var statement = statements.Single().Validate();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
 		[Test(Description = @"")]
@@ -2276,7 +2276,7 @@ FROM
 
 			var statements = Parser.Parse(statement1).ToArray();
 			var statement = statements.Single().Validate();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
 		[Test(Description = @"")]
@@ -2286,7 +2286,7 @@ FROM
 
 			var statements = Parser.Parse(statement1).ToArray();
 			var statement = statements.Single().Validate();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
 		[Test(Description = @"")]
@@ -2296,7 +2296,7 @@ FROM
 
 			var statements = Parser.Parse(statement1).ToArray();
 			var statement = statements.Single().Validate();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.SequenceNotFound);
+			statement.ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 
 			var terminals = statement.RootNode.Terminals.ToArray();
 			terminals[3].Id.ShouldBe(Terminals.ObjectIdentifier);
@@ -2312,7 +2312,7 @@ FROM
 
 			var statements = Parser.Parse(statement1).ToArray();
 			var statement = statements.Single().Validate();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
 		[Test(Description = @"")]
@@ -2322,7 +2322,7 @@ FROM
 
 			var statements = Parser.Parse(statement1).ToArray();
 			var statement = statements.Single().Validate();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
 		[Test(Description = @"")]
@@ -2332,7 +2332,7 @@ FROM
 
 			var statements = Parser.Parse(statement1).ToArray();
 			var statement = statements.Single().Validate();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
 		[Test(Description = @"")]
@@ -2342,7 +2342,7 @@ FROM
 
 			var statements = Parser.Parse(statement1).ToArray();
 			var statement = statements.Single().Validate();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
 		[Test(Description = @"")]
@@ -2352,7 +2352,7 @@ FROM
 
 			var statements = Parser.Parse(statement1).ToArray();
 			var statement = statements.Single().Validate();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
 		[Test(Description = @"")]
@@ -2362,7 +2362,7 @@ FROM
 
 			var statements = Parser.Parse(statement1).ToArray();
 			var statement = statements.Single().Validate();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
 		public class PlSql
@@ -2446,7 +2446,7 @@ BEGIN
 END;";
 
 				var statement = Parser.Parse(statement1).Single().Validate();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
 			[Test(Description = @"")]
@@ -2463,7 +2463,7 @@ BEGIN NULL; END;
 				statements.ForEach(s =>
 				{
 					s.Validate();
-					s.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					s.ParseStatus.ShouldBe(ParseStatus.Success);
 				});
 			}
 
@@ -2481,7 +2481,7 @@ SELECT * FROM DUAL";
 				statements.ForEach(s =>
 				{
 					s.Validate();
-					s.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					s.ParseStatus.ShouldBe(ParseStatus.Success);
 				});
 			}
 
@@ -2521,7 +2521,7 @@ BEGIN
 END;";
 
 				var statement = Parser.Parse(statement1).Single().Validate();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
 			[Test(Description = @"")]
@@ -2531,7 +2531,7 @@ END;";
 @"CREATE OR REPLACE EDITIONABLE FUNCTION TEST_FUNCTION RETURN VARCHAR2 RESULT_CACHE RELIES_ON (HUSQVIK.SELECTION, PROJECT) IS BEGIN RETURN NULL; END;";
 
 				var statement = Parser.Parse(statement1).Single().Validate();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
 			[Test(Description = @"")]
@@ -2541,7 +2541,7 @@ END;";
 @"CREATE OR REPLACE NONEDITIONABLE PROCEDURE TEST_PROCEDURE AUTHID DEFINER ACCESSIBLE BY (TYPE HUSQVIK.TEST_TYPE, TEST_FUNCTION) IS EXTERNAL;";
 
 				var statement = Parser.Parse(statement1).Single().Validate();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
 			[Test(Description = @"")]
@@ -2564,7 +2564,7 @@ END;";
 END emp_mgmt;";
 
 				var statement = Parser.Parse(statement1).Single().Validate();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
 			[Test(Description = @"")]
@@ -2605,7 +2605,7 @@ EXCEPTION
 END test_package_body;";
 
 				var statement = Parser.Parse(statement1).Single().Validate();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
 			[Test(Description = @"")]
@@ -2623,7 +2623,7 @@ END test_package_body;";
 END;";
 
 				var statement = Parser.Parse(statement1).Single().Validate();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
 			[Test(Description = @"")]
@@ -2632,7 +2632,7 @@ END;";
 				const string statement1 = @"BEGIN P1(1); END;";
 
 				var statement = Parser.Parse(statement1).Single().Validate();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
 			[Test(Description = @"")]
@@ -2641,7 +2641,7 @@ END;";
 				const string statement1 = @"DECLARE PROCEDURE P1(P1 NUMBER) IS BEGIN NULL; END; BEGIN P1(1)/*NULL*/; END;";
 
 				var statement = Parser.Parse(statement1).Single().Validate();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
 			[Test(Description = @""), Ignore]
@@ -2650,7 +2650,7 @@ END;";
 				const string statement1 = @"BEGIN CASE 0 WHEN 0 THEN NULL; END CASE; END LABEL;";
 
 				var statement = Parser.Parse(statement1).Single().Validate();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
 			[Test(Description = @"")]
@@ -2659,7 +2659,7 @@ END;";
 				const string statement1 = @"DECLARE x NUMBER; BEGIN x := SQL%ROWCOUNT; END;";
 
 				var statement = Parser.Parse(statement1).Single().Validate();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
 			[Test(Description = @"")]
@@ -2668,7 +2668,7 @@ END;";
 				const string statement1 = @"DECLARE x NUMBER; BEGIN x := SQL%BULK_ROWCOUNT(1); END;";
 
 				var statement = Parser.Parse(statement1).Single().Validate();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 		}
 
@@ -2898,7 +2898,7 @@ END;";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 					var terminals = statement.AllTerminals.ToArray();
 					terminals.Length.ShouldBe(5);
@@ -2918,7 +2918,7 @@ END;";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 					var terminals = statement.AllTerminals.ToArray();
 					terminals.Length.ShouldBe(3);
@@ -2936,7 +2936,7 @@ END;";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 					var terminals = statement.AllTerminals.ToArray();
 					terminals.Length.ShouldBe(5);
@@ -2960,7 +2960,7 @@ END;";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 					var terminals = statement.AllTerminals.ToArray();
 					terminals.Length.ShouldBe(4);
@@ -2980,7 +2980,7 @@ END;";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 					var terminals = statement.AllTerminals.ToArray();
 					terminals.Length.ShouldBe(4);
@@ -3003,7 +3003,7 @@ END;";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 					var terminals = statement.AllTerminals.ToArray();
 					terminals.Length.ShouldBe(2);
@@ -3020,7 +3020,7 @@ END;";
 				{
 					const string statement1 = @"SET TRANSACTION READ ONLY NAME 'Toronto'";
 					var statement = Parser.Parse(statement1).Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 					var terminalCandidates = statement.AllTerminals.ToArray();
 					terminalCandidates.Length.ShouldBe(6);
@@ -3037,7 +3037,7 @@ END;";
 				{
 					const string statement1 = @"SET TRANSACTION ISOLATION LEVEL READ COMMITTED";
 					var statement = Parser.Parse(statement1).Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 					var terminalCandidates = statement.AllTerminals.ToArray();
 					terminalCandidates.Length.ShouldBe(6);
@@ -3054,7 +3054,7 @@ END;";
 				{
 					const string statement1 = @"SET TRANSACTION USE ROLLBACK SEGMENT ROLLBACK_SEGMENT NAME 'HQ Transaction'";
 					var statement = Parser.Parse(statement1).Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 					var terminalCandidates = statement.AllTerminals.ToArray();
 					terminalCandidates.Length.ShouldBe(8);
@@ -3081,7 +3081,7 @@ END;";
 					var statements = Parser.Parse(statement1);
 					statements.Count.ShouldBe(1);
 					var statement = statements.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 					var terminals = statement.AllTerminals.ToArray();
 					terminals.Length.ShouldBe(25);
@@ -3097,7 +3097,7 @@ END;";
 					var statements = Parser.Parse(statement1);
 					statements.Count.ShouldBe(1);
 					var statement = statements.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 					var terminals = statement.AllTerminals.ToArray();
 					terminals.Length.ShouldBe(62);
@@ -3110,7 +3110,7 @@ END;";
 					var statements = Parser.Parse(statement1);
 					statements.Count.ShouldBe(1);
 					var statement = statements.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 					var terminals = statement.AllTerminals.ToArray();
 					terminals.Length.ShouldBe(33);
@@ -3126,7 +3126,7 @@ END;";
 					var statements = Parser.Parse(statement1);
 					statements.Count.ShouldBe(1);
 					var statement = statements.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 					var terminals = statement.AllTerminals.ToArray();
 					terminals.Length.ShouldBe(47);
@@ -3139,7 +3139,7 @@ END;";
 					var statements = Parser.Parse(statement1);
 					statements.Count.ShouldBe(1);
 					var statement = statements.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 					var terminals = statement.AllTerminals.ToArray();
 					terminals.Length.ShouldBe(49);
@@ -3152,7 +3152,7 @@ END;";
 					var statements = Parser.Parse(statement1);
 					statements.Count.ShouldBe(1);
 					var statement = statements.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 					var terminals = statement.AllTerminals.ToArray();
 					terminals.Length.ShouldBe(28);
@@ -3165,7 +3165,7 @@ END;";
 					var statements = Parser.Parse(statement1);
 					statements.Count.ShouldBe(1);
 					var statement = statements.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 					var terminals = statement.AllTerminals.ToArray();
 					terminals.Length.ShouldBe(55);
@@ -3187,7 +3187,7 @@ LOG ERRORS INTO ERR$_ERRORLOGTEST ('COMMAND TAG 1') REJECT LIMIT UNLIMITED;";
 					var statements = Parser.Parse(statement1);
 					statements.Count.ShouldBe(1);
 					var statement = statements.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 					var terminals = statement.AllTerminals.ToArray();
 					terminals.Length.ShouldBe(66);
@@ -3207,7 +3207,7 @@ FROM DUAL CONNECT BY LEVEL <= 3";
 					var statements = Parser.Parse(statement1);
 					statements.Count.ShouldBe(1);
 					var statement = statements.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 					var terminals = statement.AllTerminals.ToArray();
 					terminals.Length.ShouldBe(72);
@@ -3229,7 +3229,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 					var statements = Parser.Parse(statement1);
 					statements.Count.ShouldBe(1);
 					var statement = statements.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 					var terminals = statement.AllTerminals.ToArray();
 					terminals.Length.ShouldBe(37);
@@ -3250,7 +3250,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 					var terminals = statement.AllTerminals.ToArray();
 					terminals.Length.ShouldBe(6);
@@ -3272,7 +3272,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 					var terminals = statement.AllTerminals.ToArray();
 					terminals.Length.ShouldBe(5);
@@ -3296,7 +3296,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 					var terminals = statement.AllTerminals.ToArray();
 					terminals.Length.ShouldBe(6);
@@ -3318,7 +3318,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 					var terminals = statement.AllTerminals.ToArray();
 					terminals.Length.ShouldBe(4);
@@ -3341,7 +3341,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 					var terminals = statement.AllTerminals.ToArray();
 					terminals.Length.ShouldBe(7);
@@ -3364,7 +3364,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 					var terminals = statement.AllTerminals.ToArray();
 					terminals.Length.ShouldBe(8);
@@ -3388,7 +3388,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 					var terminals = statement.AllTerminals.ToArray();
 					terminals.Length.ShouldBe(3);
@@ -3410,7 +3410,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 					var terminals = statement.AllTerminals.ToArray();
 					terminals.Length.ShouldBe(6);
@@ -3435,7 +3435,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 					var terminals = statement.AllTerminals.ToArray();
 					terminals.Length.ShouldBe(9);
@@ -3463,7 +3463,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 					var terminals = statement.AllTerminals.ToArray();
 					terminals.Length.ShouldBe(8);
@@ -3490,7 +3490,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 					var terminals = statement.AllTerminals.ToArray();
 					terminals.Length.ShouldBe(5);
@@ -3511,7 +3511,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 					var terminals = statement.AllTerminals.ToArray();
 					terminals.Length.ShouldBe(5);
@@ -3532,7 +3532,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 					var terminals = statement.AllTerminals.ToArray();
 					terminals.Length.ShouldBe(5);
@@ -3553,7 +3553,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 					var terminals = statement.AllTerminals.ToArray();
 					terminals.Length.ShouldBe(3);
@@ -3576,7 +3576,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 
 				result.Count.ShouldBe(1);
 				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 				var terminals = statement.AllTerminals.ToArray();
 				terminals.Length.ShouldBe(18);
@@ -3613,7 +3613,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 
 				result.Count.ShouldBe(1);
 				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 				var terminals = statement.AllTerminals.ToArray();
 				terminals.Length.ShouldBe(4);
@@ -3636,7 +3636,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 
 				result.Count.ShouldBe(1);
 				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 				var terminals = statement.AllTerminals.ToArray();
 				terminals.Length.ShouldBe(8);
@@ -3660,7 +3660,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 
 				result.Count.ShouldBe(1);
 				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 				var terminals = statement.AllTerminals.ToArray();
 				terminals.Length.ShouldBe(10);
@@ -3702,7 +3702,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 					var terminals = statement.AllTerminals.ToArray();
 					terminals.Length.ShouldBe(92);
@@ -3731,7 +3731,7 @@ TABLESPACE TBS_HQ_PDB";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
 				[Test(Description = @"")]
@@ -3750,7 +3750,7 @@ SELECT * FROM DUAL";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
 				[Test(Description = @"")]
@@ -3762,7 +3762,7 @@ SELECT * FROM DUAL";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
 				[Test(Description = @"")]
@@ -3774,7 +3774,7 @@ SELECT * FROM DUAL";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
 				[Test(Description = @"")]
@@ -3786,7 +3786,7 @@ SELECT * FROM DUAL";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
 				[Test(Description = @"")]
@@ -3806,7 +3806,7 @@ SELECT * FROM DUAL";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
 				[Test(Description = @"")]
@@ -3824,7 +3824,7 @@ SELECT * FROM DUAL";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
 				[Test(Description = @"")]
@@ -3845,7 +3845,7 @@ TABLESPACE TBS_HQ_PDB";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
 				[Test(Description = @"")]
@@ -3872,7 +3872,7 @@ TABLESPACE TBS_MSSM";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
 				[Test(Description = @"")]
@@ -3897,7 +3897,7 @@ TABLESPACE TBS_MSSM";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
 				[Test(Description = @"")]
@@ -3933,7 +3933,7 @@ STORE AS BASICFILE TEST_LOB_SEGMENT (
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
 				[Test(Description = @"")]
@@ -3957,7 +3957,7 @@ VARRAY VARRAY_COLUMN2
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
 				[Test(Description = @"")]
@@ -3992,7 +3992,7 @@ NESTED TABLE NESTED_TABLE_COLUMN
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
 				[Test(Description = @"")]
@@ -4010,7 +4010,7 @@ NESTED TABLE NESTED_TABLE_COLUMN
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
 				[Test(Description = @"")]
@@ -4022,7 +4022,7 @@ NESTED TABLE NESTED_TABLE_COLUMN
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
 				[Test(Description = @"")]
@@ -4034,7 +4034,7 @@ NESTED TABLE NESTED_TABLE_COLUMN
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
 				[Test(Description = @"")]
@@ -4061,7 +4061,7 @@ PARTITION BY RANGE (TIME_ID) (
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
 				[Test(Description = @"")]
@@ -4087,7 +4087,7 @@ PARTITION BY LIST (NLS_TERRITORY) (
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
 				[Test(Description = @"")]
@@ -4116,7 +4116,7 @@ PARTITIONS 4 STORE IN (TABLESPACE_1, TABLESPACE_2, TABLESPACE_3, TABLESPACE_4)";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
 				[Test(Description = @"")]
@@ -4128,7 +4128,7 @@ PARTITIONS 4 STORE IN (TABLESPACE_1, TABLESPACE_2, TABLESPACE_3, TABLESPACE_4)";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
 				[Test(Description = @"")]
@@ -4150,7 +4150,7 @@ PARTITION BY REFERENCE (FK_PRODUCT_ID)";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
 				[Test(Description = @"")]
@@ -4168,7 +4168,7 @@ PARTITION BY SYSTEM (
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
 				[Test(Description = @"")]
@@ -4201,7 +4201,7 @@ SUBPARTITION BY HASH (CHANNEL_ID) (
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
 				[Test(Description = @"")]
@@ -4232,7 +4232,7 @@ PARTITION BY RANGE (CREDIT_LIMIT)
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
 				[Test(Description = @"")]
@@ -4244,7 +4244,7 @@ PARTITION BY RANGE (CREDIT_LIMIT)
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
 				[Test(Description = @"")]
@@ -4256,7 +4256,7 @@ PARTITION BY RANGE (CREDIT_LIMIT)
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
 				[Test(Description = @"")]
@@ -4301,7 +4301,7 @@ PARTITION BY RANGE (C3)
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
 				[Test(Description = @"")]
@@ -4328,7 +4328,7 @@ TABLESPACE TBS_HQ_PDB";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
 				[Test(Description = @"")]
@@ -4340,7 +4340,7 @@ TABLESPACE TBS_HQ_PDB";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
 				[Test(Description = @"")]
@@ -4352,7 +4352,7 @@ TABLESPACE TBS_HQ_PDB";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
 				[Test(Description = @"")]
@@ -4364,7 +4364,7 @@ TABLESPACE TBS_HQ_PDB";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 			}
 
@@ -4385,7 +4385,7 @@ NOLOGGING";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 			}
 
@@ -4410,7 +4410,7 @@ SELECT SELECTION_ID, NAME, PROJECT_ID, RESPONDENTBUCKET_ID, SYS_GUID() GUID FROM
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
 				[Test(Description = @"")]
@@ -4422,7 +4422,7 @@ SELECT SELECTION_ID, NAME, PROJECT_ID, RESPONDENTBUCKET_ID, SYS_GUID() GUID FROM
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 			}
 
@@ -4451,7 +4451,7 @@ PARTITION BY RANGE (AMOUNT_SOLD) (
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 			}
 
@@ -4469,7 +4469,7 @@ INCLUDING NEW VALUES";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
 				[Test(Description = @"")]
@@ -4486,7 +4486,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
 				[Test(Description = @"")]
@@ -4499,7 +4499,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
 				[Test(Description = @"")]
@@ -4511,7 +4511,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 			}
 
@@ -4526,7 +4526,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 					var terminals = statement.AllTerminals.ToArray();
 					terminals.Length.ShouldBe(24);
@@ -4569,7 +4569,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 					var terminals = statement.AllTerminals.ToArray();
 					terminals.Length.ShouldBe(13);
@@ -4604,7 +4604,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 					var terminals = statement.AllTerminals.ToArray();
 					terminals.Length.ShouldBe(9);
@@ -4629,7 +4629,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
 				[Test(Description = @"")]
@@ -4641,7 +4641,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
 				[Test(Description = @"")]
@@ -4653,7 +4653,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
 				[Test(Description = @"")]
@@ -4665,7 +4665,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
 				[Test(Description = @"")]
@@ -4677,7 +4677,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
 				[Test(Description = @"")]
@@ -4689,7 +4689,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
 				[Test(Description = @"")]
@@ -4701,7 +4701,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
 				[Test(Description = @"")]
@@ -4713,7 +4713,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
 				[Test(Description = @"")]
@@ -4725,7 +4725,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
-					statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 			}
 		}
@@ -4741,7 +4741,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 
 				result.Count.ShouldBe(1);
 				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 				var terminals = statement.AllTerminals.ToArray();
 				terminals.Length.ShouldBe(5);
@@ -4765,7 +4765,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 
 				result.Count.ShouldBe(1);
 				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 				var terminals = statement.AllTerminals.ToArray();
 				terminals.Length.ShouldBe(13);
@@ -4797,7 +4797,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 
 				result.Count.ShouldBe(1);
 				var statement = result.Single();
-				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 				var terminals = statement.AllTerminals.ToArray();
 				terminals.Length.ShouldBe(22);

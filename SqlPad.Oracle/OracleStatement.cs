@@ -6,7 +6,7 @@ using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 
 namespace SqlPad.Oracle
 {
-	[DebuggerDisplay("OracleStatement (ProcessingStatus={ProcessingStatus}; ChildNodes={RootNode == null ? 0 : RootNode.ChildNodes.Count})")]
+	[DebuggerDisplay("OracleStatement (ParseStatus={ParseStatus}; ChildNodes={RootNode == null ? 0 : RootNode.ChildNodes.Count})")]
 	public class OracleStatement : StatementBase
 	{
 		private ICollection<BindVariableConfiguration> _bindVariables;
@@ -14,7 +14,7 @@ namespace SqlPad.Oracle
 		public static readonly OracleStatement EmptyStatement =
 			new OracleStatement
 			{
-				ProcessingStatus = ProcessingStatus.Success,
+				ParseStatus = ParseStatus.Success,
 				SourcePosition = new SourcePosition { IndexStart = -1, IndexEnd = -1 }
 			};
 

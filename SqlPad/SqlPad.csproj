@@ -179,8 +179,8 @@
     <Compile Include="IValidationModel.cs" />
     <Compile Include="NodeType.cs" />
     <Compile Include="StatementBase.cs" />
-    <Compile Include="ProcessingResult.cs" />
-    <Compile Include="ProcessingStatus.cs" />
+    <Compile Include="ParseResult.cs" />
+    <Compile Include="ParseStatus.cs" />
     <Compile Include="Resources.cs" />
     <Compile Include="Snippet.cs">
       <DependentUpon>Snippet.xsd</DependentUpon>

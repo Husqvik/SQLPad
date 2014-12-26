@@ -3,10 +3,10 @@ using System.Diagnostics;
 
 namespace SqlPad
 {
-	[DebuggerDisplay("ProcessingResult (Status={Status}{Nodes == null ? \"\" : \", Nodes=\" + System.Linq.Enumerable.Count(Nodes), nq})")]
-	public struct ProcessingResult
+	[DebuggerDisplay("ParseResult (Status={Status}{Nodes == null ? \"\" : \", Nodes=\" + System.Linq.Enumerable.Count(Nodes), nq})")]
+	public struct ParseResult
 	{
-		public ProcessingStatus Status;
+		public ParseStatus Status;
 
 		public string NodeId;
 

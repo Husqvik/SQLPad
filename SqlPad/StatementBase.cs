@@ -11,7 +11,7 @@ namespace SqlPad
 		private ICollection<StatementGrammarNode> _allTerminals;
 		private ICollection<StatementGrammarNode> _invalidGrammarNodes;
 
-		public ProcessingStatus ProcessingStatus { get; set; }
+		public ParseStatus ParseStatus { get; set; }
 
 		public StatementGrammarNode RootNode { get; set; }
 

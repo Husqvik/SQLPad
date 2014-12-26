@@ -21,7 +21,7 @@ namespace SqlPad.Oracle.Test
 			result.Count.ShouldBe(1);
 
 			var oracleStatement = result.Single();
-			oracleStatement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			oracleStatement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			_rootNode = oracleStatement.RootNode;
 		}

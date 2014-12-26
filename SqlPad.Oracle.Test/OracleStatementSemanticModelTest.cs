@@ -53,7 +53,7 @@ FROM
 	CTE1 JOIN CTE2 ON CTE1.ID = CTE2.ID";
 
 			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
 
@@ -83,7 +83,7 @@ FROM
 			const string query1 = @"SELECT SELECTION.* FROM SELECTION JOIN HUSQVIK.PROJECT P ON SELECTION.PROJECT_ID = P.PROJECT_ID";
 
 			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
 
@@ -102,7 +102,7 @@ FROM
 			const string query1 = @"SELECT S.* FROM SELECTION S JOIN HUSQVIK.PROJECT P ON S.PROJECT_ID = P.PROJECT_ID";
 
 			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
 
@@ -121,7 +121,7 @@ FROM
 			const string query1 = @"SELECT * FROM PROJECT";
 
 			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
 
@@ -149,7 +149,7 @@ FROM
 			const string query1 = @"SELECT COUNT(*) OVER (), AVG(1) OVER (), LAST_VALUE(DUMMY IGNORE NULLS) OVER () FROM DUAL";
 
 			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
 
@@ -180,7 +180,7 @@ FROM
 			const string query1 = @"SELECT LAG(DUMMY, 1, 'Replace') IGNORE NULLS OVER (ORDER BY NULL) FROM DUAL";
 
 			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
 
@@ -203,7 +203,7 @@ FROM
 			const string query1 = @"SELECT RESPONDENTBUCKET_ID, SELECTION_NAME, MY_NUMBER_COLUMN FROM (SELECT RESPONDENTBUCKET_ID, NAME SELECTION_NAME, 1 MY_NUMBER_COLUMN FROM SELECTION)";
 
 			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
 			var queryBlocks = semanticModel.QueryBlocks.ToArray();
@@ -256,7 +256,7 @@ FROM
 			const string query1 = @"SELECT * FROM (SELECT * FROM SELECTION)";
 
 			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
 			var queryBlocks = semanticModel.QueryBlocks.ToArray();
@@ -293,7 +293,7 @@ FROM
 			const string query1 = @"SELECT MAX(CASE WHEN 'Option' IN ('Value1', 'Value2') THEN 1 END) FROM DUAL";
 
 			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
 
@@ -317,7 +317,7 @@ FROM
 			const string query1 = @"SELECT * FROM SELECTION ORDER BY NAME";
 
 			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
 
@@ -337,7 +337,7 @@ FROM
 			const string query1 = @"SELECT SELECTION.*, SELECTION.* FROM SELECTION ORDER BY NAME";
 
 			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
 
@@ -357,7 +357,7 @@ FROM
 			const string query1 = @"SELECT NULL FROM DUAL D1 JOIN DUAL D2 ON D1.DUMMY = D2.DUMMY ORDER BY DUMMY";
 
 			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
 
@@ -377,7 +377,7 @@ FROM
 			const string query1 = @"SELECT * FROM SELECTION@HQ_PDB_LOOPBACK";
 
 			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
 
@@ -398,7 +398,7 @@ FROM
 			const string query1 = @"SELECT * FROM SELECTION@TESTHOST";
 
 			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
 
@@ -419,7 +419,7 @@ FROM
 			const string query1 = @"SELECT * FROM SELECTION@TESTHOST";
 
 			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var databaseModel = new OracleTestDatabaseModel { CurrentDatabaseDomainNameInternal = null };
 
@@ -1323,7 +1323,7 @@ MODEL
     )";
 
 			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
-			statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.Count.ShouldBe(2);
