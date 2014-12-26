@@ -1652,7 +1652,7 @@ namespace SqlPad.Oracle
 
 		internal static readonly ICollection<string> ReservedWordsSql = new HashSet<string> { "ACCESS", "ADD", "ALL", "ALTER", "AND", "ANY", "ASC", "AUDIT", "BETWEEN", "BY", "CHAR", "CHECK", "CLUSTER", "COLUMN", "COMMENT", "COMPRESS", "CONNECT", "CREATE", "CURRENT", "DATE", "DECIMAL", "DEFAULT", "DELETE", "DESC", "DISTINCT", "DROP", "ELSE", "EXCLUSIVE", "EXISTS", "FLOAT", "FOR", "FROM", "GRANT", "GROUP", "HAVING", "IDENTIFIED", "IMMEDIATE", "IN", "INDEX", "INSERT", "INTEGER", "INTERSECT", "INTO", "IS", "LEVEL", "LIKE", "LOCK", "LONG", "MINUS", "MODE", "NOCOMPRESS", "NOT", "NOWAIT", "NULL", "NUMBER", "OF", "ON", "OPTION", "OR", "ORDER", "PCTFREE", "PRIOR", "PUBLIC", "RAW", "RENAME", "RESOURCE", "REVOKE", "ROW", "ROWID", "ROWNUM", "ROWS", "SELECT", "SET", "SHARE", "SIZE", "SMALLINT", "SOME", "START", "SYNONYM", "SYSDATE", "TABLE", "THEN", "TO", "TRIGGER", "UNION", "UNIQUE", "UPDATE", "USER", "VALUES", "VARCHAR", "VARCHAR2", "WHERE", "VIEW", "WITH" };
 		
-		internal static readonly ICollection<string> ReservedWordsPlSql = new HashSet<string> { "BEGIN", "DECLARE", "END", "EXCEPTION", "IF" };
+		internal static readonly ICollection<string> ReservedWordsPlSql = new HashSet<string> { "BEGIN", "CASE", "DECLARE", "END", "EXCEPTION", "IF", "WHEN" };
 		
 		private static readonly HashSet<string> LiteralsInternal = new HashSet<string> { Terminals.IntegerLiteral, Terminals.NumberLiteral, Terminals.StringLiteral };
 

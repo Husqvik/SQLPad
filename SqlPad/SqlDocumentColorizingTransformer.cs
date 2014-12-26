@@ -245,7 +245,7 @@ namespace SqlPad
 						brush = ErrorBrush;
 					else if (_redundantTerminals.Contains(terminal))
 						brush = RedundantBrush;
-					else if (_parser.IsReservedWord(terminal.Token.Value))
+					else if (terminal.IsReservedWord)
 						brush = KeywordBrush;
 					else if (_parser.IsLiteral(terminal.Id))
 						brush = LiteralBrush;

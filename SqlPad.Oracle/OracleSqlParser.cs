@@ -20,6 +20,7 @@ namespace SqlPad.Oracle
 		private static readonly HashSet<string> TerminatorIds;
 		private static readonly HashSet<string> TerminatorValues;
 		private static readonly SqlGrammarRuleSequenceNonTerminal[] AvailableNonTerminals;
+		private static readonly Regex IdentifierMatcher;
 		
 		static OracleSqlParser()
 		{
@@ -48,6 +49,8 @@ namespace SqlPad.Oracle
 				Terminals.Add(terminal.Id, terminal);
 			}
 
+			IdentifierMatcher = Terminals[OracleGrammarDescription.Terminals.Identifier].RegexMatcher;
+
 			foreach (var rule in oracleGrammar.Rules)
 			{
 				foreach (var item in rule.Sequences.SelectMany(s => s.Items))
@@ -71,15 +74,9 @@ namespace SqlPad.Oracle
 			TerminatorValues = new HashSet<string>(TerminatorIds.Select(id => Terminals[id].Value));
 		}
 
-		public static bool IsValidIdentifier(string identifier)
+		public static bool IsValidIdentifier(string identifier, ReservedWordScope scope = ReservedWordScope.Sql)
 		{
-			return Regex.IsMatch(identifier, Terminals[OracleGrammarDescription.Terminals.Identifier].RegexValue) &&
-			       !identifier.IsReservedWord();
-		}
-
-		public bool IsReservedWord(string value)
-		{
-			return value.IsReservedWord();
+			return IdentifierMatcher.IsMatch(identifier) && !identifier.IsReservedWord(scope);
 		}
 
 		public bool IsLiteral(string terminalId)
@@ -623,12 +620,12 @@ namespace SqlPad.Oracle
 			return terminalCount;
 		}
 
-		private static void TryParseInvalidGrammar(bool preconditionsValid, Func<ParseResult> getForceParseProcessingResultFunction, ref ParseResult parseResult, List<StatementGrammarNode> workingNodes, IEnumerable<StatementGrammarNode> bestCandidateNodes, ref int workingTerminalCount)
+		private static void TryParseInvalidGrammar(bool preconditionsValid, Func<ParseResult> getForceParseResultFunction, ref ParseResult parseResult, IList<StatementGrammarNode> workingNodes, IEnumerable<StatementGrammarNode> bestCandidateNodes, ref int workingTerminalCount)
 		{
 			if (!preconditionsValid || parseResult.Status == ParseStatus.Success)
 				return;
 
-			var bestCandidateResult = getForceParseProcessingResultFunction();
+			var bestCandidateResult = getForceParseResultFunction();
 			if (bestCandidateResult.Status == ParseStatus.SequenceNotFound)
 				return;
 
@@ -658,7 +655,7 @@ namespace SqlPad.Oracle
 			return node;
 		}
 
-		private static int TryRevertOptionalToken(Func<int, ParseResult> getAlternativeProcessingResultFunction, ref ParseResult currentResult, IList<StatementGrammarNode> workingNodes)
+		private static int TryRevertOptionalToken(Func<int, ParseResult> getAlternativeParseResultFunction, ref ParseResult currentResult, IList<StatementGrammarNode> workingNodes)
 		{
 			var optionalNodeCandidate = workingNodes.Count > 0 ? workingNodes[workingNodes.Count - 1].LastTerminalNode : null;
 			if (optionalNodeCandidate != null && optionalNodeCandidate.IsRequired)
@@ -679,7 +676,7 @@ namespace SqlPad.Oracle
 			}
 
 			var optionalTerminalCount = optionalNodeCandidate.TerminalCount;
-			var newResult = getAlternativeProcessingResultFunction(optionalTerminalCount);
+			var newResult = getAlternativeParseResultFunction(optionalTerminalCount);
 
 			var effectiveTerminalCount = newResult.Status == ParseStatus.SequenceNotFound ? newResult.BestCandidateTerminalCount : newResult.TerminalCount;
 			var revertNode = effectiveTerminalCount >= optionalTerminalCount &&
@@ -722,7 +719,7 @@ namespace SqlPad.Oracle
 				{
 					var tokenValue = currentToken.UpperInvariantValue;
 					tokenIsValid = String.CompareOrdinal(terminal.Value, tokenValue) == 0 || (terminal.AllowQuotedNotation && tokenValue.Length == terminal.Value.Length + 2 && tokenValue[0] == '"' && tokenValue[tokenValue.Length - 1] == '"' && String.CompareOrdinal(tokenValue.Substring(1, tokenValue.Length - 2), terminal.Value) == 0);
-					isReservedWord = tokenIsValid && terminal.ReservedWord > 0;
+					isReservedWord = tokenIsValid && (scope == ReservedWordScope.Sql ? terminal.ReservedWord == ReservedWordType.Sql : terminal.ReservedWord > 0);
 				}
 				else
 				{

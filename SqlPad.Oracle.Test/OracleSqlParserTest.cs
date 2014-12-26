@@ -139,6 +139,8 @@ namespace SqlPad.Oracle.Test
 			terminals[2].IsReservedWord.ShouldBe(false);
 			terminals[3].Id.ShouldBe(Terminals.NumberLiteral);
 			terminals[3].Token.Value.ShouldBe("1");
+			terminals[16].Id.ShouldBe(Terminals.End);
+			terminals[16].IsReservedWord.ShouldBe(false);
 		}
 
 		[Test(Description = @"Tests complex mathematic expressions. ")]
@@ -2633,18 +2635,23 @@ END;";
 
 				var statement = Parser.Parse(statement1).Single().Validate();
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+				var terminals = statement.RootNode.Terminals.ToArray();
+				terminals.Length.ShouldBe(8);
+				terminals[0].IsReservedWord.ShouldBe(true);
+				terminals[6].IsReservedWord.ShouldBe(true);
 			}
 
 			[Test(Description = @"")]
 			public void TestNestedProcedureCall()
 			{
-				const string statement1 = @"DECLARE PROCEDURE P1(P1 NUMBER) IS BEGIN NULL; END; BEGIN P1(1)/*NULL*/; END;";
+				const string statement1 = @"DECLARE PROCEDURE P1(P1 NUMBER) IS BEGIN NULL; END; BEGIN P1(1); END;";
 
 				var statement = Parser.Parse(statement1).Single().Validate();
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
-			[Test(Description = @""), Ignore]
+			[Test(Description = @"")]
 			public void TestCaseAndEndLabelCombination()
 			{
 				const string statement1 = @"BEGIN CASE 0 WHEN 0 THEN NULL; END CASE; END LABEL;";

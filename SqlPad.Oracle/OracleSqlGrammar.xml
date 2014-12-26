@@ -8606,6 +8606,7 @@
     <Rule StartingNonTerminal="ExceptionIdentifierList">
       <Sequences>
         <Sequence>
+          <NonTerminal Id="Prefix" IsOptional="true" />
           <Terminal Id="ExceptionIdentifier" />
           <NonTerminal Id="ExceptionIdentifierListChained" IsOptional="true" />
         </Sequence>
@@ -12648,8 +12649,8 @@
     <Terminal Id="Of" Value="OF" ReservedWord="Sql" />
     
     <!-- Case expression -->
-    <Terminal Id="Case" Value="CASE" />
-    <Terminal Id="When" Value="WHEN" />
+    <Terminal Id="Case" Value="CASE" ReservedWord="PlSql" />
+    <Terminal Id="When" Value="WHEN" ReservedWord="PlSql" />
     <Terminal Id="Then" Value="THEN" ReservedWord="Sql" />
     <Terminal Id="Else" Value="ELSE" ReservedWord="Sql" />
     <Terminal Id="End" Value="END" ReservedWord="PlSql" />
