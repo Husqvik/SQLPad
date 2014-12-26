@@ -15,7 +15,7 @@ namespace SqlPad.Oracle
 	{
 		private static readonly Assembly LocalAssembly = typeof(OracleSqlParser).Assembly;
 		private static readonly XmlSerializer XmlSerializer = new XmlSerializer(typeof(SqlGrammar));
-		private static readonly Dictionary<string, SqlGrammarRuleSequence[]> StartingNonTerminalSequences;
+		private static readonly Dictionary<string, SqlGrammarRule> NonTerminalRules;
 		private static readonly Dictionary<string, SqlGrammarTerminal> Terminals;
 		private static readonly HashSet<string> TerminatorIds;
 		private static readonly HashSet<string> TerminatorValues;
@@ -29,13 +29,13 @@ namespace SqlPad.Oracle
 				oracleGrammar = (SqlGrammar)XmlSerializer.Deserialize(grammarReader);
 			}
 
-			StartingNonTerminalSequences = new Dictionary<string, SqlGrammarRuleSequence[]>();
+			NonTerminalRules = new Dictionary<string, SqlGrammarRule>();
 			foreach (var rule in oracleGrammar.Rules)
 			{
-				if (StartingNonTerminalSequences.ContainsKey(rule.StartingNonTerminal))
+				if (NonTerminalRules.ContainsKey(rule.StartingNonTerminal))
 					throw new InvalidOperationException(String.Format("Rule with starting non-terminal '{0}' has been already defined. ", rule.StartingNonTerminal));
 
-				StartingNonTerminalSequences.Add(rule.StartingNonTerminal, rule.Sequences);
+				NonTerminalRules.Add(rule.StartingNonTerminal, rule);
 			}
 
 			Terminals = new Dictionary<string, SqlGrammarTerminal>();
@@ -48,21 +48,25 @@ namespace SqlPad.Oracle
 				Terminals.Add(terminal.Id, terminal);
 			}
 
-			foreach (var item in oracleGrammar.Rules.SelectMany(r => r.Sequences).SelectMany(s => s.Items))
+			foreach (var rule in oracleGrammar.Rules)
 			{
-				var nonTerminal = item as SqlGrammarRuleSequenceNonTerminal;
-				if (nonTerminal != null)
+				foreach (var item in rule.Sequences.SelectMany(s => s.Items))
 				{
-					nonTerminal.Sequences = StartingNonTerminalSequences[nonTerminal.Id];
-				}
-				else
-				{
-					var terminalReference = (SqlGrammarRuleSequenceTerminal)item;
-					terminalReference.Terminal = Terminals[terminalReference.Id];
+					var nonTerminal = item as SqlGrammarRuleSequenceNonTerminal;
+					if (nonTerminal != null)
+					{
+						nonTerminal.TargetRule = NonTerminalRules[nonTerminal.Id];
+					}
+					else
+					{
+						var terminalReference = (SqlGrammarRuleSequenceTerminal)item;
+						terminalReference.Terminal = Terminals[terminalReference.Id];
+					}
 				}
 			}
 
 			AvailableNonTerminals = oracleGrammar.StartSymbols.Select(s => CreateInitialNonTerminal(s.Id)).ToArray();
+
 			TerminatorIds = new HashSet<string>(oracleGrammar.Terminators.Select(t => t.Id));
 			TerminatorValues = new HashSet<string>(TerminatorIds.Select(id => Terminals[id].Value));
 		}
@@ -102,7 +106,7 @@ namespace SqlPad.Oracle
 		{
 			var tokenBuffer = new List<OracleToken>(tokens);
 			var nonTerminal = CreateInitialNonTerminal(nonTerminalId);
-			var result = ProceedNonTerminal(null, nonTerminal, 0, 0, false, tokenBuffer, CancellationToken.None);
+			var result = ProceedNonTerminal(null, nonTerminal, 0, 0, false, tokenBuffer, nonTerminal.TargetRule.Scope, CancellationToken.None);
 			return result.Status == ProcessingStatus.Success &&
 			       result.Nodes.Sum(n => n.TerminalCount) == tokenBuffer.Count &&
 			       result.Nodes.All(n => n.AllChildNodes.All(c => c.IsGrammarValid));
@@ -183,11 +187,11 @@ namespace SqlPad.Oracle
 				return;
 
 			var matchParent = false;
-			var compatibleSequences = StartingNonTerminalSequences[parent.Id].SelectMany(s => GetCompatibleSequences(s, parent));
+			var compatibleSequences = NonTerminalRules[parent.Id].Sequences.SelectMany(s => GetCompatibleSequences(s, parent));
 
 			if (parent.ParentNode != null)
 			{
-				compatibleSequences = compatibleSequences.Union(StartingNonTerminalSequences[parent.ParentNode.Id].SelectMany(s => GetCompatibleSequences(s, parent)));
+				compatibleSequences = compatibleSequences.Union(NonTerminalRules[parent.ParentNode.Id].Sequences.SelectMany(s => GetCompatibleSequences(s, parent)));
 			}
 
 			var childNodeIndex = parent.ChildNodes.IndexOf(node);
@@ -252,13 +256,13 @@ namespace SqlPad.Oracle
 			return isInputSequence
 				? Enumerable.Repeat(sequence, 1)
 				: inputItems.Where(i => i.Type == NodeType.NonTerminal)
-					.SelectMany(i => StartingNonTerminalSequences[i.Id])
+					.SelectMany(i => NonTerminalRules[i.Id].Sequences)
 					.SelectMany(s => GetCompatibleSequences(s, parentNode));
 		}
 
 		private void GatherCandidatesFromNonterminal(SqlGrammarRuleSequenceNonTerminal nonTerminal, ICollection<string> candidates)
 		{
-			foreach (var sequence in nonTerminal.Sequences)
+			foreach (var sequence in nonTerminal.TargetRule.Sequences)
 			{
 				foreach (ISqlGrammarRuleSequenceItem item in sequence.Items)
 				{
@@ -317,7 +321,7 @@ namespace SqlPad.Oracle
 
 				foreach (var nonTerminal in AvailableNonTerminals)
 				{
-					var newResult = ProceedNonTerminal(statement, nonTerminal, 1, 0, false, tokenBuffer, cancellationToken);
+					var newResult = ProceedNonTerminal(statement, nonTerminal, 1, 0, false, tokenBuffer, nonTerminal.TargetRule.Scope, cancellationToken);
 
 					//if (newResult.Nodes.SelectMany(n => n.AllChildNodes).Any(n => n.Terminals.Count() != n.TerminalCount))
 					//	throw new ApplicationException("StatementGrammarNode TerminalCount value is invalid. ");
@@ -410,8 +414,13 @@ namespace SqlPad.Oracle
 			return new StatementCollection(oracleSqlCollection, commentNodes);
 		}
 
-		private static ProcessingResult ProceedNonTerminal(OracleStatement statement, SqlGrammarRuleSequenceNonTerminal nonTerminal, int level, int tokenStartOffset, bool tokenReverted, IList<OracleToken> tokenBuffer, CancellationToken cancellationToken)
+		private static ProcessingResult ProceedNonTerminal(OracleStatement statement, SqlGrammarRuleSequenceNonTerminal nonTerminal, int level, int tokenStartOffset, bool tokenReverted, IList<OracleToken> tokenBuffer, ReservedWordScope scope, CancellationToken cancellationToken)
 		{
+			if (nonTerminal.TargetRule.Scope != ReservedWordScope.Inherit)
+			{
+				scope = nonTerminal.TargetRule.Scope;
+			}
+
 			var bestCandidateNodes = new List<StatementGrammarNode>();
 			var workingNodes = new List<StatementGrammarNode>();
 			var nonTerminalId = nonTerminal.Id;
@@ -426,7 +435,7 @@ namespace SqlPad.Oracle
 			var workingTerminalCount = 0;
 			var bestCandidateTerminalCount = 0;
 
-			foreach (var sequence in nonTerminal.Sequences)
+			foreach (var sequence in nonTerminal.TargetRule.Sequences)
 			{
 				cancellationToken.ThrowIfCancellationRequested();
 
@@ -457,12 +466,12 @@ namespace SqlPad.Oracle
 					var childNonTerminal = item as SqlGrammarRuleSequenceNonTerminal;
 					if (item.Type == NodeType.NonTerminal)
 					{
-						var nestedResult = ProceedNonTerminal(statement, childNonTerminal, level + 1, tokenOffset, false, tokenBuffer, cancellationToken);
+						var nestedResult = ProceedNonTerminal(statement, childNonTerminal, level + 1, tokenOffset, false, tokenBuffer, scope, cancellationToken);
 
-						var optionalTokenReverted = TryRevertOptionalToken(optionalTerminalCount => ProceedNonTerminal(statement, childNonTerminal, level + 1, tokenOffset - optionalTerminalCount, true, tokenBuffer, cancellationToken), ref nestedResult, workingNodes);
+						var optionalTokenReverted = TryRevertOptionalToken(optionalTerminalCount => ProceedNonTerminal(statement, childNonTerminal, level + 1, tokenOffset - optionalTerminalCount, true, tokenBuffer, scope, cancellationToken), ref nestedResult, workingNodes);
 						workingTerminalCount -= optionalTokenReverted;
 
-						TryParseInvalidGrammar(tryBestCandidates, () => ProceedNonTerminal(statement, childNonTerminal, level + 1, bestCandidateOffset, false, tokenBuffer, cancellationToken), ref nestedResult, workingNodes, bestCandidateNodes, ref workingTerminalCount);
+						TryParseInvalidGrammar(tryBestCandidates, () => ProceedNonTerminal(statement, childNonTerminal, level + 1, bestCandidateOffset, false, tokenBuffer, scope, cancellationToken), ref nestedResult, workingNodes, bestCandidateNodes, ref workingTerminalCount);
 
 						var isNestedNodeValid = nestedResult.Status == ProcessingStatus.Success;
 						if (isNodeRequired || isNestedNodeValid)
@@ -534,9 +543,9 @@ namespace SqlPad.Oracle
 					{
 						var terminalReference = (SqlGrammarRuleSequenceTerminal)item;
 
-						var terminalResult = IsTokenValid(statement, terminalReference, level, tokenOffset, tokenBuffer);
+						var terminalResult = IsTokenValid(statement, terminalReference, level, tokenOffset, tokenBuffer, scope);
 
-						TryParseInvalidGrammar(tryBestCandidates && isNodeRequired, () => IsTokenValid(statement, terminalReference, level, bestCandidateOffset, tokenBuffer), ref terminalResult, workingNodes, bestCandidateNodes, ref workingTerminalCount);
+						TryParseInvalidGrammar(tryBestCandidates && isNodeRequired, () => IsTokenValid(statement, terminalReference, level, bestCandidateOffset, tokenBuffer, scope), ref terminalResult, workingNodes, bestCandidateNodes, ref workingTerminalCount);
 
 						if (terminalResult.Status == ProcessingStatus.SequenceNotFound)
 						{
@@ -675,7 +684,7 @@ namespace SqlPad.Oracle
 			return nodeToRemove.TerminalCount;
 		}
 
-		private static ProcessingResult IsTokenValid(StatementBase statement, SqlGrammarRuleSequenceTerminal terminalReference, int level, int tokenOffset, IList<OracleToken> tokenBuffer)
+		private static ProcessingResult IsTokenValid(StatementBase statement, SqlGrammarRuleSequenceTerminal terminalReference, int level, int tokenOffset, IList<OracleToken> tokenBuffer, ReservedWordScope scope)
 		{
 			var tokenIsValid = false;
 			IList<StatementGrammarNode> nodes = null;
@@ -691,11 +700,22 @@ namespace SqlPad.Oracle
 				{
 					var tokenValue = currentToken.UpperInvariantValue;
 					tokenIsValid = String.CompareOrdinal(terminal.Value, tokenValue) == 0 || (terminal.AllowQuotedNotation && tokenValue.Length == terminal.Value.Length + 2 && tokenValue[0] == '"' && tokenValue[tokenValue.Length - 1] == '"' && String.CompareOrdinal(tokenValue.Substring(1, tokenValue.Length - 2), terminal.Value) == 0);
-					isReservedWord = tokenIsValid && terminal.IsReservedWord;
+					isReservedWord = tokenIsValid && terminal.ReservedWord > 0;
 				}
 				else
 				{
-					tokenIsValid = terminal.RegexMatcher.IsMatch(currentToken.Value) && (terminalReference.AllowReservedWord || !OracleGrammarDescription.ReservedWords.Contains(currentToken.UpperInvariantValue));
+					tokenIsValid = terminal.RegexMatcher.IsMatch(currentToken.Value);
+					if (tokenIsValid && !terminalReference.AllowReservedWord)
+					{
+						var isNotReservedWord = !OracleGrammarDescription.ReservedWordsSql.Contains(currentToken.UpperInvariantValue);
+
+						if (isNotReservedWord && (scope == ReservedWordScope.PlSqlBody || scope == ReservedWordScope.PlSqlDeclaration))
+						{
+							isNotReservedWord = !OracleGrammarDescription.ReservedWordsPlSql.Contains(currentToken.UpperInvariantValue);
+						}
+
+						tokenIsValid &= isNotReservedWord;
+					}
 				}
 
 				if (tokenIsValid)
@@ -789,7 +809,8 @@ namespace SqlPad.Oracle
 
 		private static SqlGrammarRuleSequenceNonTerminal CreateInitialNonTerminal(string nonTerminalId)
 		{
-			return new SqlGrammarRuleSequenceNonTerminal { Id = nonTerminalId, Sequences = StartingNonTerminalSequences[nonTerminalId] };
+			var rule = NonTerminalRules[nonTerminalId];
+			return new SqlGrammarRuleSequenceNonTerminal { Id = nonTerminalId, TargetRule = rule };
 		}
 	}
 }

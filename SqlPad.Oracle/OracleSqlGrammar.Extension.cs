@@ -4,10 +4,6 @@ using System.Text.RegularExpressions;
 
 namespace SqlPad.Oracle
 {
-	public partial class SqlGrammar
-	{
-	}
-
 	[DebuggerDisplay("SqlGrammarStartSymbol (Id={Id})")]
 	public partial class SqlGrammarStartSymbol
 	{
@@ -56,7 +52,7 @@ namespace SqlPad.Oracle
 
 		public NodeType Type { get { return NodeType.NonTerminal; } }
 
-		public SqlGrammarRuleSequence[] Sequences;
+		public SqlGrammarRule TargetRule;
 	}
 
 	public interface ISqlGrammarRuleSequenceItem

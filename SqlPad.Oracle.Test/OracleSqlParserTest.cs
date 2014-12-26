@@ -2504,7 +2504,7 @@ BEGIN
     FROM (
         SELECT TRUNC(DATE_FROM + COUNTER) DAY
         FROM (
-        	SELECT (LEVEL-1) COUNTER FROM DUAL
+        	SELECT (LEVEL - 1) COUNTER FROM DUAL
         		CONNECT BY LEVEL <= (TRUNC(DATE_TO) - TRUNC(DATE_FROM))
         )
     )
@@ -2626,7 +2626,7 @@ END;";
 				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 			}
 
-			[Test(Description = @""), Ignore]
+			[Test(Description = @"")]
 			public void TestProcedureCall()
 			{
 				const string statement1 = @"BEGIN P1(1); END;";
@@ -2635,7 +2635,7 @@ END;";
 				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 			}
 
-			[Test(Description = @""), Ignore]
+			[Test(Description = @"")]
 			public void TestNestedProcedureCall()
 			{
 				const string statement1 = @"DECLARE PROCEDURE P1(P1 NUMBER) IS BEGIN NULL; END; BEGIN P1(1)/*NULL*/; END;";
@@ -2644,7 +2644,7 @@ END;";
 				statement.ProcessingStatus.ShouldBe(ProcessingStatus.Success);
 			}
 
-			[Test(Description = @"")]
+			[Test(Description = @""), Ignore]
 			public void TestCaseAndEndLabelCombination()
 			{
 				const string statement1 = @"BEGIN CASE 0 WHEN 0 THEN NULL; END CASE; END LABEL;";

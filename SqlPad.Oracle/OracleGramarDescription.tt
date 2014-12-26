@@ -9,7 +9,7 @@
 <#@ import namespace="System.IO" #>
 <#@ output extension=".cs" #>
 <#
-	const string xmlNamespace = "{http://husqvik.com/SqlPad/2014/02}";
+	const string xmlNamespace = "{http://husqvik.com/SqlPad/2014/08/Oracle}";
 	var grammarDescriptionPath = Path.Combine(Path.GetDirectoryName(Host.TemplateFile), @"OracleSqlGrammar.xml");
 	var grammarXml = XDocument.Load(grammarDescriptionPath);
 #>
@@ -51,7 +51,8 @@ namespace SqlPad.Oracle
 		var identifierTerminalIds = terminalElements.Where(e => e.Attribute("Id").Value.Contains("Identifier")).Select(e => e.Attribute("Id").Value).OrderBy(id => id);
 		var aliasTerminalIds = terminalElements.Where(e => e.Attribute("Id").Value.Contains("Alias")).Select(e => e.Attribute("Id").Value).OrderBy(id => id);
 		var literalTerminalIds = terminalElements.Where(e => e.Attribute("Id").Value.Contains("Literal")).Select(e => e.Attribute("Id").Value).OrderBy(id => id);
-		var reservedWords = terminalElements.Where(e => e.Attribute("IsReservedWord") != null && e.Attribute("IsReservedWord").Value.ToLowerInvariant() == "true").Select(e => "\"" + e.Attribute("Value").Value.ToUpperInvariant() + "\"").OrderBy(id => id);
+		var reservedWordsSql = terminalElements.Where(e => e.Attribute("ReservedWord") != null && e.Attribute("ReservedWord").Value == "Sql").Select(e => "\"" + e.Attribute("Value").Value.ToUpperInvariant() + "\"").OrderBy(id => id);
+		var reservedWordsPlSql = terminalElements.Where(e => IsPlSqlReserved(e.Attribute("ReservedWord"))).Select(e => "\"" + e.Attribute("Value").Value.ToUpperInvariant() + "\"").OrderBy(id => id);
 #>
 
 		/// <summary>
@@ -79,7 +80,9 @@ namespace SqlPad.Oracle
 			
 		private static readonly HashSet<string> IdentifiersInternal = new HashSet<string> { <#= String.Join(", ", identifierTerminalIds.Select(id => "Terminals." + id)) #> };
 
-		internal static readonly ICollection<string> ReservedWords = new HashSet<string> { <#= String.Join(", ", reservedWords) #> };
+		internal static readonly ICollection<string> ReservedWordsSql = new HashSet<string> { <#= String.Join(", ", reservedWordsSql) #> };
+		
+		internal static readonly ICollection<string> ReservedWordsPlSql = new HashSet<string> { <#= String.Join(", ", reservedWordsPlSql) #> };
 		
 		private static readonly HashSet<string> LiteralsInternal = new HashSet<string> { <#= String.Join(", ", literalTerminalIds.Select(id => "Terminals." + id)) #> };
 
@@ -126,9 +129,11 @@ namespace SqlPad.Oracle
 			get { return IdentifiersInternal; }
 		}
 
-		public static bool IsReservedWord(this string value)
+		public static bool IsReservedWord(this string value, ReservedWordScope scope = ReservedWordScope.Sql)
 		{
-			return ReservedWords.Contains(value.ToUpperInvariant());
+			var invariantString = value.ToUpperInvariant();
+			var isSqlReserved = ReservedWordsSql.Contains(invariantString);
+			return isSqlReserved || ((scope == ReservedWordScope.PlSqlDeclaration || scope == ReservedWordScope.PlSqlBody) && ReservedWordsPlSql.Contains(invariantString));
 		}
 
 		public static bool IsIdentifier(this string terminalId)
@@ -157,3 +162,12 @@ namespace SqlPad.Oracle
 		}
 	}
 }
+<#+
+    private bool IsPlSqlReserved(XAttribute reservedWordAttribute)
+    {
+		if (reservedWordAttribute == null)
+			return false;
+
+        return reservedWordAttribute.Value == "PlSql" || reservedWordAttribute.Value == "PlSqlDeclaration" || reservedWordAttribute.Value == "PlSqlBody";
+    }
+#>

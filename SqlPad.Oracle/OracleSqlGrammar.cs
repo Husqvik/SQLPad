@@ -20,8 +20,8 @@ namespace SqlPad.Oracle {
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://husqvik.com/SqlPad/2014/02")]
-    [System.Xml.Serialization.XmlRootAttribute(Namespace="http://husqvik.com/SqlPad/2014/02", IsNullable=false)]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://husqvik.com/SqlPad/2014/08/Oracle")]
+    [System.Xml.Serialization.XmlRootAttribute(Namespace="http://husqvik.com/SqlPad/2014/08/Oracle", IsNullable=false)]
     public partial class SqlGrammar {
         
         private SqlGrammarStartSymbol[] startSymbolsField;
@@ -108,7 +108,7 @@ namespace SqlPad.Oracle {
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://husqvik.com/SqlPad/2014/02")]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://husqvik.com/SqlPad/2014/08/Oracle")]
     public partial class SqlGrammarStartSymbol {
         
         private string idField;
@@ -130,7 +130,7 @@ namespace SqlPad.Oracle {
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://husqvik.com/SqlPad/2014/02")]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://husqvik.com/SqlPad/2014/08/Oracle")]
     public partial class SqlGrammarTerminator {
         
         private string idField;
@@ -152,12 +152,18 @@ namespace SqlPad.Oracle {
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://husqvik.com/SqlPad/2014/02")]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://husqvik.com/SqlPad/2014/08/Oracle")]
     public partial class SqlGrammarRule {
         
         private SqlGrammarRuleSequence[] sequencesField;
         
         private string startingNonTerminalField;
+        
+        private string commentField;
+        
+        private ReservedWordScope scopeField;
+        
+        private bool scopeFieldSpecified;
         
         /// <remarks/>
         [System.Xml.Serialization.XmlArrayItemAttribute("Sequence", IsNullable=false)]
@@ -180,6 +186,39 @@ namespace SqlPad.Oracle {
                 this.startingNonTerminalField = value;
             }
         }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string Comment {
+            get {
+                return this.commentField;
+            }
+            set {
+                this.commentField = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public ReservedWordScope Scope {
+            get {
+                return this.scopeField;
+            }
+            set {
+                this.scopeField = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        public bool ScopeSpecified {
+            get {
+                return this.scopeFieldSpecified;
+            }
+            set {
+                this.scopeFieldSpecified = value;
+            }
+        }
     }
     
     /// <remarks/>
@@ -187,7 +226,7 @@ namespace SqlPad.Oracle {
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://husqvik.com/SqlPad/2014/02")]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://husqvik.com/SqlPad/2014/08/Oracle")]
     public partial class SqlGrammarRuleSequence {
         
         private object[] itemsField;
@@ -223,7 +262,7 @@ namespace SqlPad.Oracle {
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://husqvik.com/SqlPad/2014/02")]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://husqvik.com/SqlPad/2014/08/Oracle")]
     public partial class SqlGrammarRuleSequenceNonTerminal {
         
         private string idField;
@@ -284,7 +323,7 @@ namespace SqlPad.Oracle {
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://husqvik.com/SqlPad/2014/02")]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://husqvik.com/SqlPad/2014/08/Oracle")]
     public partial class SqlGrammarRuleSequenceTerminal {
         
         private string idField;
@@ -382,9 +421,28 @@ namespace SqlPad.Oracle {
     /// <remarks/>
     [System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.0.30319.33440")]
     [System.SerializableAttribute()]
+    [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://husqvik.com/SqlPad/2014/08/Oracle")]
+    public enum ReservedWordScope {
+        
+        /// <remarks/>
+        Inherit,
+        
+        /// <remarks/>
+        Sql,
+        
+        /// <remarks/>
+        PlSqlDeclaration,
+        
+        /// <remarks/>
+        PlSqlBody,
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.0.30319.33440")]
+    [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://husqvik.com/SqlPad/2014/02")]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://husqvik.com/SqlPad/2014/08/Oracle")]
     public partial class SqlGrammarTerminal {
         
         private SqlGrammarTerminalSynonym[] synonymsField;
@@ -393,9 +451,9 @@ namespace SqlPad.Oracle {
         
         private string valueField;
         
-        private bool isReservedWordField;
+        private ReservedWordType reservedWordField;
         
-        private bool isReservedWordFieldSpecified;
+        private bool reservedWordFieldSpecified;
         
         private string regexValueField;
         
@@ -440,23 +498,23 @@ namespace SqlPad.Oracle {
         
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
-        public bool IsReservedWord {
+        public ReservedWordType ReservedWord {
             get {
-                return this.isReservedWordField;
+                return this.reservedWordField;
             }
             set {
-                this.isReservedWordField = value;
+                this.reservedWordField = value;
             }
         }
         
         /// <remarks/>
         [System.Xml.Serialization.XmlIgnoreAttribute()]
-        public bool IsReservedWordSpecified {
+        public bool ReservedWordSpecified {
             get {
-                return this.isReservedWordFieldSpecified;
+                return this.reservedWordFieldSpecified;
             }
             set {
-                this.isReservedWordFieldSpecified = value;
+                this.reservedWordFieldSpecified = value;
             }
         }
         
@@ -510,7 +568,7 @@ namespace SqlPad.Oracle {
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://husqvik.com/SqlPad/2014/02")]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://husqvik.com/SqlPad/2014/08/Oracle")]
     public partial class SqlGrammarTerminalSynonym {
         
         private string idField;
@@ -525,5 +583,27 @@ namespace SqlPad.Oracle {
                 this.idField = value;
             }
         }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.0.30319.33440")]
+    [System.SerializableAttribute()]
+    [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://husqvik.com/SqlPad/2014/08/Oracle")]
+    public enum ReservedWordType {
+        
+        /// <remarks/>
+        NotReserved,
+        
+        /// <remarks/>
+        Sql,
+        
+        /// <remarks/>
+        PlSql,
+        
+        /// <remarks/>
+        PlSqlDeclaration,
+        
+        /// <remarks/>
+        PlSqlBody,
     }
 }
