@@ -222,6 +222,7 @@ namespace SqlPad.Oracle
 			public const string DmlStatement = "DmlStatement";
 			public const string DmlTableExpressionClause = "DmlTableExpressionClause";
 			public const string DocumentOrContent = "DocumentOrContent";
+			public const string DotRecordAttributeChained = "DotRecordAttributeChained";
 			public const string DropCluster = "DropCluster";
 			public const string DropContext = "DropContext";
 			public const string DropIndex = "DropIndex";
@@ -683,6 +684,7 @@ namespace SqlPad.Oracle
 			public const string PlSqlNullStatement = "PlSqlNullStatement";
 			public const string PlSqlOpenForStatement = "PlSqlOpenForStatement";
 			public const string PlSqlOpenStatement = "PlSqlOpenStatement";
+			public const string PlSqlParenthesisEnclosedExpression = "PlSqlParenthesisEnclosedExpression";
 			public const string PlSqlParenthesisEnclosedExpressionList = "PlSqlParenthesisEnclosedExpressionList";
 			public const string PlSqlPipeRowStatement = "PlSqlPipeRowStatement";
 			public const string PlSqlProcedureCall = "PlSqlProcedureCall";

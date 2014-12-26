@@ -112,7 +112,7 @@ namespace SqlPad.Oracle.Database.Test
 			var rows = result.InitialResultSet.ToArray();
 			rows.Length.ShouldBe(1);
 			rows[0].Length.ShouldBe(1);
-			rows[0][0].ShouldBe("X");
+			rows[0][0].ToString().ShouldBe("X");
 
 			databaseModel.FetchRecords(1).Any().ShouldBe(false);
 

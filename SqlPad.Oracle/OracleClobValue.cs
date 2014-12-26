@@ -122,6 +122,44 @@ namespace SqlPad.Oracle
 		}
 	}
 
+	public class OracleSimpleValue : ILargeTextValue
+	{
+		private readonly string _value;
+
+		public OracleSimpleValue(object value)
+		{
+			_value = Convert.ToString(value);
+		}
+
+		public string DataTypeName
+		{
+			get { throw new NotImplementedException(); }
+		}
+
+		public long Length
+		{
+			get { return _value.Length; }
+		}
+
+		public string GetChunk(int offset, int length)
+		{
+			return _value.Substring(offset, length);
+		}
+
+		public bool IsEditable { get { return false; } }
+		
+		public void Prefetch() { }
+
+		public string Preview { get { return _value; } }
+		
+		public string Value { get { return _value; } }
+
+		public override string ToString()
+		{
+			return _value;
+		}
+	}
+
 	public class OracleClobValue : OracleLargeTextValue, IDisposable
 	{
 		private readonly OracleClob _clob;

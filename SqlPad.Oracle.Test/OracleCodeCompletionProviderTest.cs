@@ -1707,6 +1707,15 @@ se";
 			items.Count.ShouldBe(0);
 		}
 
+		[Test(Description = @"")]
+		public void TestCodeCompletionTypeWhenInvokedAfterSet()
+		{
+			const string statement = @"UPDATE HUSQVIK.SELECTION SET ";
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 29).ToList();
+			items.Count.ShouldBeGreaterThan(0);
+			items[0].StatementNode.ShouldBe(null);
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)

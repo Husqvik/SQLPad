@@ -286,7 +286,7 @@ namespace SqlPad.Oracle
 
 			if (completionType.UpdateSetColumn && semanticModel.MainObjectReferenceContainer.MainObjectReference != null)
 			{
-				completionItems = completionItems.Concat(GenerateUpdateSetColumnItems(currentTerminal, semanticModel.MainObjectReferenceContainer.MainObjectReference, completionType));
+				completionItems = completionItems.Concat(GenerateUpdateSetColumnItems(semanticModel.MainObjectReferenceContainer.MainObjectReference, completionType));
 			}
 
 			if (completionType.DatabaseLink)
@@ -343,7 +343,7 @@ namespace SqlPad.Oracle
 					});
 		}
 
-		private IEnumerable<ICodeCompletionItem> GenerateUpdateSetColumnItems(StatementGrammarNode currentTerminal, OracleDataObjectReference targetDataObject, OracleCodeCompletionType completionType)
+		private IEnumerable<ICodeCompletionItem> GenerateUpdateSetColumnItems(OracleDataObjectReference targetDataObject, OracleCodeCompletionType completionType)
 		{
 			return targetDataObject.Columns
 				.Where(c => completionType.TerminalValueUnderCursor.ToQuotedIdentifier() != c.Name && CodeCompletionSearchHelper.IsMatch(c.Name, completionType.TerminalValuePartUntilCaret))
@@ -352,7 +352,7 @@ namespace SqlPad.Oracle
 					Name = c.Name.ToSimpleIdentifier(),
 					Text = c.Name.ToSimpleIdentifier(),
 					Category = OracleCodeCompletionCategory.Column,
-					StatementNode = currentTerminal
+					StatementNode = completionType.ReferenceIdentifier.IdentifierUnderCursor
 				});
 		}
 

@@ -2677,6 +2677,77 @@ END;";
 				var statement = Parser.Parse(statement1).Single().Validate();
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
+
+			[Test(Description = @"")]
+			public void TestVariableDeclarationAfterCursorDefinition()
+			{
+				const string statement1 = @"DECLARE CURSOR c1 IS SELECT * FROM DUAL; x NUMBER; BEGIN NULL; END;";
+
+				var statement = Parser.Parse(statement1).Single().Validate();
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
+			}
+
+			[Test(Description = @"")]
+			public void TestCursorDefinitionAfterProcedureDefiniton()
+			{
+				const string statement1 = @"DECLARE PROCEDURE P1 IS BEGIN NULL; END; CURSOR c1 IS SELECT * FROM DUAL; BEGIN NULL; END;";
+
+				var statement = Parser.Parse(statement1).First().Validate();
+				statement.ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
+				statement.SourcePosition.IndexStart.ShouldBe(0);
+			}
+
+			[Test(Description = @"")]
+			public void TestMultipleStatementsWithinCaseBranches()
+			{
+				const string statement1 =
+@"BEGIN
+	CASE 6
+		WHEN 6 THEN
+			DBMS_OUTPUT.PUT_LINE('Branch 6-1');
+			DBMS_OUTPUT.PUT_LINE('Branch 6-2');
+		WHEN 12 THEN
+			DBMS_OUTPUT.PUT_LINE('Branch 12-1');
+			DBMS_OUTPUT.PUT_LINE('Branch 12-2');
+		ELSE
+			DBMS_OUTPUT.PUT_LINE('Else 1');
+			DBMS_OUTPUT.PUT_LINE('Else 2');
+	END CASE;
+END;";
+
+				var statement = Parser.Parse(statement1).Single().Validate();
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
+			}
+
+			[Test(Description = @"")]
+			public void TestRecordWithCollectionAttributeAssignment()
+			{
+				const string statement1 =
+@"CREATE PROCEDURE test_procedure
+IS
+	TYPE t_inner_record IS RECORD(i1 VARCHAR2(200), i2 VARCHAR2(200));
+	TYPE t_inner_record_collection IS TABLE OF t_inner_record INDEX BY PLS_INTEGER;
+	TYPE t_record IS RECORD(v1 VARCHAR2(200), v2 t_inner_record, v3 t_inner_record_collection);
+	record t_record;
+	
+	FUNCTION get_record (p IN NUMBER) RETURN t_record
+	IS
+		inner_record t_record;
+	BEGIN
+		inner_record.v1 := 'XXX';
+		inner_record.v2.i1 := 'YYY';
+		inner_record.v3(1).i2 := 'ZZZ';
+		RETURN inner_record;
+	END;
+BEGIN
+	record := get_record(1);
+	DBMS_OUTPUT.PUT_LINE(get_record(1).v2.i1);	
+	DBMS_OUTPUT.PUT_LINE(get_record(1).v3(1).i2);	
+END;";
+
+				var statement = Parser.Parse(statement1).Single().Validate();
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
+			}
 		}
 
 		public class IsRuleValid

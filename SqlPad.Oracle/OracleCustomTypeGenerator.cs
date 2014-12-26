@@ -615,10 +615,5 @@ namespace SqlPad.Oracle
 		{
 			return new OracleUdtStatus[elementCount];
 		}
-	}/*
-		public override string ToString()
-		{
-			return String.Format("{0}(ARGTYPE={1}, TABLENAME={2}, TABLESCHEMA={3}, COLNAME={4}, TABLEPARTITIONLOWER={5}, TABLEPARTITIONUPPER={6}, CARDINALITY={7})", "SYS.ODCIARGDESC", ARGTYPE, TABLENAME, TABLESCHEMA, COLNAME, TABLEPARTITIONLOWER, TABLEPARTITIONUPPER, CARDINALITY);
-		}
-	}*/
+	}
 }

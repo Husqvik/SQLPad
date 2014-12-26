@@ -977,6 +977,14 @@ namespace SqlPad.Oracle
 							? new OracleDateTime()
 							: new OracleDateTime(oracleDate.Year, oracleDate.Month, oracleDate.Day, oracleDate.Hour, oracleDate.Minute, oracleDate.Second);
 						break;
+					case "Char":
+					case "NChar":
+					case "Varchar":
+					case "Varchar2":
+					case "NVarchar":
+					case "NVarchar2":
+						value = new OracleSimpleValue(reader.GetValue(i));
+						break;
 					default:
 						value = reader.GetValue(i);
 						break;

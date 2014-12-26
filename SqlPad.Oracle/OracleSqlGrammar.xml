@@ -1309,6 +1309,7 @@
     <Rule StartingNonTerminal="SetColumnEqualsExpressionOrNestedQueryOrDefaultValue">
       <Sequences>
         <Sequence>
+          <NonTerminal Id="Prefix" IsOptional="true" />
           <Terminal Id="Identifier" />
           <Terminal Id="MathEquals" />
           <NonTerminal Id="ExpressionOrNestedQueryOrDefaultValue" />
@@ -6741,12 +6742,13 @@
     
     <Rule StartingNonTerminal="Item2">
       <Sequences>
-        <Sequence>
+        <!-- Invalid documentation - CursorDeclaration and CursorDefinition cannot occur after function or procedure definition. -->
+        <!--<Sequence>
           <NonTerminal Id="CursorDeclaration" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="CursorDefinition" />
-        </Sequence>
+        </Sequence>-->
         <Sequence>
           <NonTerminal Id="FunctionDeclaration" />
         </Sequence>
@@ -6798,6 +6800,9 @@
         </Sequence>
         <Sequence>
           <NonTerminal Id="CursorDeclaration" />
+        </Sequence>
+        <Sequence Comment="Not in documentation but valid">
+          <NonTerminal Id="CursorDefinition" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="ItemDeclaration" />
@@ -7935,7 +7940,7 @@
           <Terminal Id="When" />
           <NonTerminal Id="PlSqlBooleanExpression" />
           <Terminal Id="Then" />
-          <NonTerminal Id="PlSqlStatement" />
+          <NonTerminal Id="PlSqlStatementList" />
           <NonTerminal Id="PlSqlSearchedCaseExpressionBranch" IsOptional="true" />
         </Sequence>
       </Sequences>
@@ -7947,7 +7952,7 @@
           <Terminal Id="When" />
           <NonTerminal Id="PlSqlExpression" />
           <Terminal Id="Then" />
-          <NonTerminal Id="PlSqlStatement" />
+          <NonTerminal Id="PlSqlStatementList" />
           <NonTerminal Id="PlSqlSimpleCaseExpressionBranch" IsOptional="true" />
         </Sequence>
       </Sequences>
@@ -7957,7 +7962,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Else" />
-          <NonTerminal Id="PlSqlStatement" />
+          <NonTerminal Id="PlSqlStatementList" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -8386,13 +8391,29 @@
       <Sequences>
         <Sequence>
           <Terminal Id="PlSqlIdentifier" />
-          <Terminal Id="LeftParenthesis" />
-          <NonTerminal Id="Expression" />
-          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="PlSqlParenthesisEnclosedExpression" IsOptional="true" />
+          <NonTerminal Id="DotRecordAttributeChained" IsOptional="true" />
         </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DotRecordAttributeChained">
+      <Sequences>
         <Sequence>
-          <NonTerminal Id="ObjectPrefix" IsOptional="true" />
-          <Terminal Id="Identifier" />
+          <Terminal Id="Dot" />
+          <Terminal Id="PlSqlIdentifier" />
+          <NonTerminal Id="PlSqlParenthesisEnclosedExpression" IsOptional="true" />
+          <NonTerminal Id="DotRecordAttributeChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PlSqlParenthesisEnclosedExpression">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="PlSqlExpression" />
+          <Terminal Id="RightParenthesis" />
         </Sequence>
       </Sequences>
     </Rule>
