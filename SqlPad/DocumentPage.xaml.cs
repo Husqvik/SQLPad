@@ -825,7 +825,7 @@ namespace SqlPad
 			}
 			else
 			{
-				executionModel.StatementText = statement.RootNode.GetStatementSubstring(Editor.Text);
+				executionModel.StatementText = statement.RootNode.GetText(Editor.Text);
 				executionModel.BindVariables = _pageModel.BindVariables;
 			}
 

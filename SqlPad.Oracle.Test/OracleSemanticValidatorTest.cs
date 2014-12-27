@@ -1395,9 +1395,9 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
 			var semanticErrorNodes = nodeValidityDictionary.Values.Where(v => v.SemanticErrorType != null).ToList();
 			semanticErrorNodes.Count.ShouldBe(2);
-			semanticErrorNodes[0].Node.GetStatementSubstring(sqlText).ShouldBe("(RESPONDENTBUCKET_ID, NAME)");
+			semanticErrorNodes[0].Node.GetText(sqlText).ShouldBe("(RESPONDENTBUCKET_ID, NAME)");
 			semanticErrorNodes[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidColumnCount);
-			semanticErrorNodes[1].Node.GetStatementSubstring(sqlText).ShouldBe("RESPONDENTBUCKET_ID, NAME, PROJECT_ID");
+			semanticErrorNodes[1].Node.GetText(sqlText).ShouldBe("RESPONDENTBUCKET_ID, NAME, PROJECT_ID");
 			semanticErrorNodes[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidColumnCount);
 		}
 
@@ -1413,9 +1413,9 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
 			var semanticErrorNodes = nodeValidityDictionary.Values.Where(v => v.SemanticErrorType != null).ToList();
 			semanticErrorNodes.Count.ShouldBe(2);
-			semanticErrorNodes[0].Node.GetStatementSubstring(sqlText).ShouldBe("(RESPONDENTBUCKET_ID, NAME)");
+			semanticErrorNodes[0].Node.GetText(sqlText).ShouldBe("(RESPONDENTBUCKET_ID, NAME)");
 			semanticErrorNodes[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidColumnCount);
-			semanticErrorNodes[1].Node.GetStatementSubstring(sqlText).ShouldBe("*");
+			semanticErrorNodes[1].Node.GetText(sqlText).ShouldBe("*");
 			semanticErrorNodes[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidColumnCount);
 		}
 
@@ -1431,7 +1431,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
 			var semanticErrorNodes = nodeValidityDictionary.Values.Where(v => v.SemanticErrorType != null).ToList();
 			semanticErrorNodes.Count.ShouldBe(1);
-			semanticErrorNodes[0].Node.GetStatementSubstring(sqlText).ShouldBe("RESPONDENTBUCKET_ID, NAME, PROJECT_ID");
+			semanticErrorNodes[0].Node.GetText(sqlText).ShouldBe("RESPONDENTBUCKET_ID, NAME, PROJECT_ID");
 			semanticErrorNodes[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidColumnCount);
 		}
 

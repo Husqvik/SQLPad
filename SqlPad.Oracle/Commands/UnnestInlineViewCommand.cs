@@ -66,7 +66,7 @@ namespace SqlPad.Oracle.Commands
 			var sourceFromClause = CurrentQueryBlock.RootNode.GetDescendantByPath(NonTerminals.FromClause);
 			if (sourceFromClause != null)
 			{
-				segmentToRemove.Text = sourceFromClause.GetStatementSubstring(ExecutionContext.StatementText);
+				segmentToRemove.Text = sourceFromClause.GetText(ExecutionContext.StatementText);
 			}
 
 			if (nodeToRemove.SourcePosition.IndexStart > 0 &&
@@ -87,7 +87,7 @@ namespace SqlPad.Oracle.Commands
 				                        {
 					                        IndextStart = objectPrefixAsteriskColumn.RootNode.SourcePosition.IndexStart,
 											Length = objectPrefixAsteriskColumn.RootNode.SourcePosition.Length,
-											Text = CurrentQueryBlock.SelectList.GetStatementSubstring(ExecutionContext.StatementText)
+											Text = CurrentQueryBlock.SelectList.GetText(ExecutionContext.StatementText)
 				                        };
 
 				ExecutionContext.SegmentsToReplace.Add(asteriskToReplace);
@@ -99,7 +99,7 @@ namespace SqlPad.Oracle.Commands
 				var whereConditionNode = CurrentQueryBlock.WhereClause.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.Condition);
 				if (whereConditionNode != null)
 				{
-					whereCondition = whereConditionNode.GetStatementSubstring(ExecutionContext.StatementText);
+					whereCondition = whereConditionNode.GetText(ExecutionContext.StatementText);
 				}
 			}
 
@@ -137,7 +137,7 @@ namespace SqlPad.Oracle.Commands
 		{
 			if (column.HasExplicitDefinition)
 			{
-				var columnExpression = column.RootNode.GetDescendantsWithinSameQuery(NonTerminals.Expression).First().GetStatementSubstring(statementText);
+				var columnExpression = column.RootNode.GetDescendantsWithinSameQuery(NonTerminals.Expression).First().GetText(statementText);
 				var offset = column.RootNode.SourcePosition.IndexStart;
 
 				foreach (var columnReference in column.ColumnReferences

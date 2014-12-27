@@ -241,6 +241,20 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestTableObjectToolTipInUpdateSetClause()
+		{
+			const string query = "UPDATE HUSQVIK.SELECTION SET SELECTION.PROJECT_ID = HUSQVIK.SELECTION.PROJECT_ID WHERE 1 = 0";
+			_documentRepository.UpdateStatements(query);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 32);
+
+			toolTip.Control.ShouldBeTypeOf<ToolTipTable>();
+			toolTip.Control.DataContext.ShouldBeTypeOf<TableDetailsModel>();
+			var dataModel = (TableDetailsModel)toolTip.Control.DataContext;
+			dataModel.Title.ShouldBe("HUSQVIK.SELECTION (Table)");
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestSynonymReferencedObjectToolTip()
 		{
 			const string query = "SELECT * FROM V$SESSION";

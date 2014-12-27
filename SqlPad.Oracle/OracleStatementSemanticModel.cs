@@ -1314,6 +1314,11 @@ namespace SqlPad.Oracle
 			return AllReferenceContainers.SelectMany(c => c.SequenceReferences).SingleOrDefault(c => c.ObjectNode == sequenceIdentifer);
 		}
 
+		public T GetReference<T>(StatementGrammarNode objectIdentifer) where T : OracleReference
+		{
+			return AllReferenceContainers.SelectMany(c => c.AllReferences).OfType<T>().FirstOrDefault(c => c.ObjectNode == objectIdentifer);
+		}
+
 		public OracleQueryBlock GetQueryBlock(StatementGrammarNode node)
 		{
 			var queryBlockNode = node.GetAncestor(NonTerminals.QueryBlock);

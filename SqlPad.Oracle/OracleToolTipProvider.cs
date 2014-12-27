@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -41,23 +40,11 @@ namespace SqlPad.Oracle
 				switch (node.Id)
 				{
 					case Terminals.ObjectIdentifier:
-						var objectReference = GetObjectReference(queryBlock, semanticModel, node);
-						var schemaObject = GetSchemaObject(queryBlock, node);
-						if (objectReference != null)
-						{
-							return BuildObjectTooltip(semanticModel.DatabaseModel, objectReference);
-						}
-						
-						if (schemaObject != null)
-						{
-							tip = GetFullSchemaObjectToolTip(schemaObject);
-						}
-						else
-						{
-							return null;
-						}
+						var objectReference = GetObjectReference(semanticModel, node);
+						return objectReference == null
+							? null
+							: BuildObjectTooltip(semanticModel.DatabaseModel, objectReference);
 
-						break;
 					case Terminals.Min:
 					case Terminals.Max:
 					case Terminals.Sum:
@@ -151,42 +138,45 @@ namespace SqlPad.Oracle
 			return typeReference == null || typeReference.DatabaseLinkNode != null ? null : GetFullSchemaObjectToolTip(typeReference.SchemaObject);
 		}
 
-		private IToolTip BuildObjectTooltip(OracleDatabaseModelBase databaseModel, OracleObjectWithColumnsReference objectReference)
+		private IToolTip BuildObjectTooltip(OracleDatabaseModelBase databaseModel, OracleReference reference)
 		{
-			string simpleToolTip;
-			if (objectReference.Type == ReferenceType.SchemaObject)
+			var simpleToolTip = GetFullSchemaObjectToolTip(reference.SchemaObject);
+			if (String.IsNullOrEmpty(simpleToolTip))
 			{
-				simpleToolTip = GetFullSchemaObjectToolTip(objectReference.SchemaObject);
-				if (String.IsNullOrEmpty(simpleToolTip))
+				return null;
+			}
+			
+			var objectReference = reference as OracleObjectWithColumnsReference;
+			if (objectReference != null)
+			{
+				if (objectReference.Type == ReferenceType.SchemaObject)
 				{
-					return null;
-				}
-
-				IToolTip toolTip = new ToolTipObject { DataContext = simpleToolTip };
-				var schemaObject = objectReference.SchemaObject.GetTargetSchemaObject();
-				if (schemaObject != null)
-				{
-					switch (schemaObject.Type)
+					IToolTip toolTip = new ToolTipObject {DataContext = simpleToolTip};
+					var schemaObject = objectReference.SchemaObject.GetTargetSchemaObject();
+					if (schemaObject != null)
 					{
-						case OracleSchemaObjectType.Table:
-							var dataModel = new TableDetailsModel { Title = simpleToolTip };
-							databaseModel.UpdateTableDetailsAsync(schemaObject.FullyQualifiedName, dataModel, CancellationToken.None);
-							return new ToolTipTable(dataModel);
-						case OracleSchemaObjectType.Sequence:
-							return new ToolTipSequence(simpleToolTip, (OracleSequence)schemaObject);
+						switch (schemaObject.Type)
+						{
+							case OracleSchemaObjectType.Table:
+								var dataModel = new TableDetailsModel {Title = simpleToolTip};
+								databaseModel.UpdateTableDetailsAsync(schemaObject.FullyQualifiedName, dataModel, CancellationToken.None);
+								return new ToolTipTable(dataModel);
+							case OracleSchemaObjectType.Sequence:
+								return new ToolTipSequence(simpleToolTip, (OracleSequence)schemaObject);
+						}
 					}
+
+					return toolTip;
 				}
 
-				return toolTip;
-			}
-
-			if (objectReference.Type == ReferenceType.TableCollection)
-			{
-				simpleToolTip = GetFullSchemaObjectToolTip(objectReference.SchemaObject);
-			}
-			else
-			{
-				simpleToolTip = objectReference.FullyQualifiedObjectName + " (" + objectReference.Type.ToCategoryLabel() + ")";
+				if (objectReference.Type == ReferenceType.TableCollection)
+				{
+					simpleToolTip = GetFullSchemaObjectToolTip(objectReference.SchemaObject);
+				}
+				else
+				{
+					simpleToolTip = objectReference.FullyQualifiedObjectName + " (" + objectReference.Type.ToCategoryLabel() + ")";
+				}
 			}
 			
 			return new ToolTipObject { DataContext = simpleToolTip };
@@ -221,50 +211,16 @@ namespace SqlPad.Oracle
 				: new ToolTipProgram(functionReference.Metadata.Identifier.FullyQualifiedIdentifier, functionReference.Metadata);
 		}
 
-		private OracleSchemaObject GetSchemaObject(OracleQueryBlock queryBlock, StatementGrammarNode terminal)
+		private OracleReference GetObjectReference(OracleStatementSemanticModel semanticModel, StatementGrammarNode terminal)
 		{
-			if (queryBlock == null)
+			var objectReference = semanticModel.GetReference<OracleReference>(terminal);
+			var columnReference = objectReference as OracleColumnReference;
+			if (columnReference != null)
 			{
-				return null;
+				objectReference = columnReference.ValidObjectReference;
 			}
 
-			return queryBlock.AllProgramReferences
-				.Cast<OracleReference>()
-				.Concat(queryBlock.AllSequenceReferences)
-				.Where(f => f.ObjectNode == terminal)
-				.Select(f => f.SchemaObject)
-				.FirstOrDefault();
-		}
-
-		private OracleObjectWithColumnsReference GetObjectReference(OracleQueryBlock queryBlock, OracleStatementSemanticModel semanticModel, StatementGrammarNode terminal)
-		{
-			if (queryBlock == null)
-			{
-				if (semanticModel.MainObjectReferenceContainer.MainObjectReference != null && semanticModel.MainObjectReferenceContainer.MainObjectReference.ObjectNode == terminal)
-				{
-					return semanticModel.MainObjectReferenceContainer.MainObjectReference;
-				}
-
-				var insertValuesObjectReference = GetObjectReferenceFromColumn(semanticModel.InsertTargets.SelectMany(t => t.ColumnReferences), terminal);
-
-				return insertValuesObjectReference ?? semanticModel.InsertTargets
-					.Select(t => t.DataObjectReference)
-					.SingleOrDefault(o => o != null && o.ObjectNode == terminal);
-			}
-
-			var objectReference = GetObjectReferenceFromColumn(queryBlock.AllColumnReferences, terminal);
-
-			objectReference = objectReference ?? queryBlock.ObjectReferences.FirstOrDefault(o => o.ObjectNode == terminal);
-			return objectReference == null || objectReference.DatabaseLinkNode != null
-				? null
-				: objectReference;
-		}
-
-		private OracleObjectWithColumnsReference GetObjectReferenceFromColumn(IEnumerable<OracleColumnReference> columnReferences, StatementGrammarNode objectIdentifier)
-		{
-			return columnReferences.Where(c => c.ObjectNode == objectIdentifier && c.ValidObjectReference != null)
-					.Select(c => c.ValidObjectReference)
-					.FirstOrDefault();
+			return objectReference;
 		}
 
 		private OracleDatabaseLink GetDatabaseLink(OracleQueryBlock queryBlock, StatementGrammarNode terminal)

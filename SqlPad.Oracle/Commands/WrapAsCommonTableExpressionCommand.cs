@@ -70,7 +70,7 @@ namespace SqlPad.Oracle.Commands
 			}
 
 			builder.Append(tableAlias + " AS (");
-			builder.Append(queryBlock.RootNode.GetStatementSubstring(ExecutionContext.StatementText));
+			builder.Append(queryBlock.RootNode.GetText(ExecutionContext.StatementText));
 			builder.Append(")");
 
 			if (CurrentQueryBlock.Type == QueryBlockType.CommonTableExpression)

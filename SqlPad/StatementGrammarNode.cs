@@ -189,9 +189,9 @@ namespace SqlPad
 			}
 		}
 
-		public string GetStatementSubstring(string statementText)
+		public string GetText(string sourceText)
 		{
-			return statementText.Substring(SourcePosition.IndexStart, SourcePosition.Length);
+			return sourceText.Substring(SourcePosition.IndexStart, SourcePosition.Length);
 		}
 
 		public IEnumerable<StatementGrammarNode> GetPathFilterDescendants(Func<StatementGrammarNode, bool> pathFilter, params string[] descendantNodeIds)

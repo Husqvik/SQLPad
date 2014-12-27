@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace SqlPad.Oracle
 {
@@ -33,6 +34,11 @@ namespace SqlPad.Oracle
 		public ICollection<OracleProgramReference> ProgramReferences { get; private set; }
 
 		public ICollection<OracleDataObjectReference> ObjectReferences { get; private set; }
+
+		public IEnumerable<OracleReference> AllReferences
+		{
+			get { return ((IEnumerable<OracleReference>)TypeReferences).Concat(SequenceReferences).Concat(ColumnReferences).Concat(ProgramReferences).Concat(ObjectReferences); }
+		}
 	}
 
 	[DebuggerDisplay("OracleMainObjectReferenceContainer (MainObjectReference={MainObjectReference})")]

@@ -6516,10 +6516,31 @@
           <Terminal Id="Body" />
           <NonTerminal Id="SchemaPrefix" IsOptional="true" />
           <Terminal Id="Identifier" />
+          <NonTerminal Id="PackageBodyDefinition" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="PackageBodyDefinition">
+      <Sequences>
+        <Sequence>
           <NonTerminal Id="IsOrAs" />
           <NonTerminal Id="ProgramDeclareSection" />
           <NonTerminal Id="PackageBodyInitializeSection" IsOptional="true" />
           <NonTerminal Id="ProgramEnd" Comment="This non-terminal cannot be inlined because of possible grammar reversion - 'END package_identifier;' can be parsed as variable declaration and parser accepts at least same number of terminals when attempting to revert grammar node. " />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Wrapped" />
+          <NonTerminal Id="WrappedCode" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="WrappedCode">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="WrappedToken" AllowReservedWord="true" />
+          <NonTerminal Id="WrappedCode" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -13250,6 +13271,7 @@
     <Terminal Id="Indices" Value="INDICES" />
     <Terminal Id="Save" Value="SAVE" />
     <Terminal Id="String" Value="STRING" />
+    <Terminal Id="Wrapped" Value="WRAPPED" />
     <Terminal Id="AssignmentOperator" Value=":=" />
     <Terminal Id="DoubleDotOperator" Value=".." />
     <Terminal Id="PercentCharacter" Value="%" />
@@ -13260,6 +13282,7 @@
     <Terminal Id="ExceptionIdentifier" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
     <Terminal Id="TypeIdentifier" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
     <Terminal Id="PlSqlIdentifier" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
+    <Terminal Id="WrappedToken" RegexValue="^(?!\n/\n).*$" />
   
     <!-- Oracle 12c specific -->
     <!-- Cross/outer apply clause -->

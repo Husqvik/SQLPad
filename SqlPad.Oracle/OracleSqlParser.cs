@@ -629,11 +629,6 @@ namespace SqlPad.Oracle
 			if (bestCandidateResult.Status == ParseStatus.SequenceNotFound)
 				return;
 
-			if (parseResult.Nodes != null && parseResult.Nodes.Count == 0)
-			{
-				//return;
-			}
-
 			workingTerminalCount = CreateNewNodeList(bestCandidateNodes, workingNodes);
 
 			var lastWorkingNode = workingNodes[workingNodes.Count - 1];
