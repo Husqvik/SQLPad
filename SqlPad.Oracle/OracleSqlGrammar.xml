@@ -1309,10 +1309,18 @@
     <Rule StartingNonTerminal="SetColumnEqualsExpressionOrNestedQueryOrDefaultValue">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="Prefix" IsOptional="true" />
-          <Terminal Id="Identifier" />
+          <NonTerminal Id="PrefixedUpdatedColumnReference" />
           <Terminal Id="MathEquals" />
           <NonTerminal Id="ExpressionOrNestedQueryOrDefaultValue" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PrefixedUpdatedColumnReference">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="Prefix" IsOptional="true" />
+          <Terminal Id="Identifier" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -1423,8 +1431,7 @@
     <Rule StartingNonTerminal="MergeSetColumnEqualsExpressionOrOrDefaultValueList">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="Prefix" IsOptional="true" />
-          <Terminal Id="Identifier" />
+          <NonTerminal Id="PrefixedUpdatedColumnReference" />
           <Terminal Id="MathEquals" />
           <NonTerminal Id="ExpressionOrOrDefaultValue" />
           <NonTerminal Id="MergeSetColumnEqualsExpressionOrDefaultValueCommaChainedList" IsOptional="true" />

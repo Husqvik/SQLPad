@@ -864,7 +864,14 @@ namespace SqlPad.Oracle
 			}
 
 			var identifiers = updateListNode.GetDescendantsWithinSameQuery(Terminals.Identifier, Terminals.Level);
-			ResolveColumnAndFunctionReferenceFromIdentifiers(null, MainObjectReferenceContainer, identifiers, QueryBlockPlacement.None, null);
+			ResolveColumnAndFunctionReferenceFromIdentifiers(null, MainObjectReferenceContainer, identifiers, QueryBlockPlacement.None, null, GetPrefixNonTerminalFromPrefixedUpdatedColumnReference);
+		}
+
+		private StatementGrammarNode GetPrefixNonTerminalFromPrefixedUpdatedColumnReference(StatementGrammarNode identifier)
+		{
+			return identifier.ParentNode.Id == NonTerminals.PrefixedUpdatedColumnReference
+				? identifier.ParentNode.GetDescendantByPath(NonTerminals.Prefix)
+				: GetPrefixNodeFromPrefixedColumnReference(identifier);
 		}
 
 		private void ResolveMainObjectReferenceInsert()
@@ -936,10 +943,7 @@ namespace SqlPad.Oracle
 		private OracleDataObjectReference CreateDataObjectReference(StatementGrammarNode rootNode, StatementGrammarNode objectIdentifier, StatementGrammarNode aliasNode)
 		{
 			var queryTableExpressionNode = objectIdentifier.ParentNode;
-
-			var schemaPrefixNode = queryTableExpressionNode.ChildNodes[0].Id == Terminals.SchemaIdentifier
-				? queryTableExpressionNode.ChildNodes[0]
-				: null;
+			var schemaPrefixNode = queryTableExpressionNode.GetDescendantByPath(NonTerminals.SchemaPrefix, Terminals.SchemaIdentifier);
 
 			OracleSchemaObject schemaObject = null;
 			if (!IsSimpleModel)
@@ -1671,11 +1675,13 @@ namespace SqlPad.Oracle
 			return sourceNode.GetDescendantsWithinSameQuery(Terminals.Count, NonTerminals.AggregateFunction, NonTerminals.AnalyticFunction, NonTerminals.WithinGroupAggregationFunction);
 		}
 
-		private void ResolveColumnAndFunctionReferenceFromIdentifiers(OracleQueryBlock queryBlock, OracleReferenceContainer referenceContainer, IEnumerable<StatementGrammarNode> identifiers, QueryBlockPlacement placement, OracleSelectListColumn selectListColumn)
+		private void ResolveColumnAndFunctionReferenceFromIdentifiers(OracleQueryBlock queryBlock, OracleReferenceContainer referenceContainer, IEnumerable<StatementGrammarNode> identifiers, QueryBlockPlacement placement, OracleSelectListColumn selectListColumn, Func<StatementGrammarNode, StatementGrammarNode> getPrefixNonTerminalFromIdentiferFunction = null)
 		{
 			foreach (var identifier in identifiers)
 			{
-				var prefixNonTerminal = GetPrefixNodeFromPrefixedColumnReference(identifier);
+				var prefixNonTerminal = getPrefixNonTerminalFromIdentiferFunction == null
+					? GetPrefixNodeFromPrefixedColumnReference(identifier)
+					: getPrefixNonTerminalFromIdentiferFunction(identifier);
 
 				var functionCallNodes = GetFunctionCallNodes(identifier);
 				if (functionCallNodes.Length == 0)

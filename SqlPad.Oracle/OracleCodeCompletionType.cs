@@ -238,7 +238,7 @@ namespace SqlPad.Oracle
 			var inMainQueryBlockOrMainObjectReference = CurrentQueryBlock == SemanticModel.MainQueryBlock || (CurrentQueryBlock == null && SemanticModel.MainObjectReferenceContainer.MainObjectReference != null);
 			Sequence = inMainQueryBlockOrMainObjectReference && (nearestTerminal.IsWithinSelectClause() || !nearestTerminal.IsWithinExpression() || nearestTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.InsertValuesClause) != null);
 
-			var isWithinUpdateSetNonTerminal = nearestTerminal.ParentNode.Id == NonTerminals.SetColumnEqualsExpressionOrNestedQueryOrDefaultValue || nearestTerminal.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBoundary, NonTerminals.SetColumnListEqualsNestedQuery) != null;
+			var isWithinUpdateSetNonTerminal = nearestTerminal.ParentNode.Id == NonTerminals.PrefixedUpdatedColumnReference || nearestTerminal.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBoundary, NonTerminals.SetColumnListEqualsNestedQuery) != null;
 			var isAfterSetTerminal = nearestTerminal.Id == Terminals.Set && isCursorAfterToken;
 			UpdateSetColumn = TerminalCandidates.Contains(Terminals.Identifier) && (isWithinUpdateSetNonTerminal || isAfterSetTerminal);
 

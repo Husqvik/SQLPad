@@ -1368,5 +1368,22 @@ MODEL
 			queryBlocks[1].ObjectReferences.Count.ShouldBe(1);
 			queryBlocks[1].ObjectReferences.First().Type.ShouldBe(ReferenceType.CommonTableExpression);
 		}
+
+		[Test(Description = @"")]
+		public void TestFullyQualifiedColumnNameResolutionInUpdateStatement()
+		{
+			const string query1 = @"UPDATE HUSQVIK.SELECTION SET SELECTION.PROJECT_ID = HUSQVIK.SELECTION.PROJECT_ID WHERE 1 = 0";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			var mainObjectReference = semanticModel.MainObjectReferenceContainer.MainObjectReference;
+			mainObjectReference.ShouldNotBe(null);
+
+			semanticModel.MainObjectReferenceContainer.ColumnReferences.Count.ShouldBe(2);
+			var sourceColumn = semanticModel.MainObjectReferenceContainer.ColumnReferences[1];
+			sourceColumn.ColumnNodeColumnReferences.Count.ShouldBe(1);
+			sourceColumn.ObjectNodeObjectReferences.Count.ShouldBe(1);
+		}
 	}
 }
