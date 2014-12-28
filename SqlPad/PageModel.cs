@@ -15,6 +15,7 @@ namespace SqlPad
 		private readonly DocumentPage _documentPage;
 		private readonly ObservableCollection<object[]> _resultRowItems = new ObservableCollection<object[]>();
 		private readonly ObservableCollection<string> _schemas = new ObservableCollection<string>();
+		private readonly ObservableCollection<CompilationError> _compilationErrors = new ObservableCollection<CompilationError>();
 		private readonly SessionExecutionStatisticsCollection _sessionExecutionStatistics = new SessionExecutionStatisticsCollection();
 		private readonly StringBuilder _databaseOutputBuilder = new StringBuilder();
 		private ConnectionStringSettings _currentConnection;
@@ -45,6 +46,7 @@ namespace SqlPad
 		{
 			_documentPage = documentPage;
 			_sessionExecutionStatistics.CollectionChanged += (sender, args) => RaisePropertyChanged("ExecutionStatisticsAvailable");
+			_compilationErrors.CollectionChanged += (sender, args) => RaisePropertyChanged("CompilationErrorsVisible");
 			SetUpSessionExecutionStatisticsFilter();
 			SetUpSessionExecutionStatisticsSorting();
 		}
@@ -169,6 +171,11 @@ namespace SqlPad
 		public Visibility ExecutionStatisticsAvailable
 		{
 			get { return _sessionExecutionStatistics.Count > 0 ? Visibility.Visible : Visibility.Collapsed; }
+		}
+
+		public Visibility CompilationErrorsVisible
+		{
+			get { return _compilationErrors.Count > 0 ? Visibility.Visible : Visibility.Collapsed; }
 		}
 
 		public bool ShowAllSessionExecutionStatistics
@@ -334,6 +341,8 @@ namespace SqlPad
 		public ObservableCollection<object[]> ResultRowItems { get { return _resultRowItems; } }
 
 		public ObservableCollection<string> Schemas { get { return _schemas; } }
+
+		public ObservableCollection<CompilationError> CompilationErrors { get { return _compilationErrors; } }
 
 		public SessionExecutionStatisticsCollection SessionExecutionStatistics { get { return _sessionExecutionStatistics; } }
 

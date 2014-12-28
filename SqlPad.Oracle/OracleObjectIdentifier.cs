@@ -26,6 +26,11 @@ namespace SqlPad.Oracle
 			NormalizedName = name.ToQuotedIdentifier();
 		}
 
+		public bool HasOwner
+		{
+			get { return !String.IsNullOrEmpty(Owner); }
+		}
+
 		public static OracleObjectIdentifier Create(string owner, string name)
 		{
 			return new OracleObjectIdentifier(owner, name);
@@ -77,14 +82,14 @@ namespace SqlPad.Oracle
 		#region Overrides of ValueType
 		public override string ToString()
 		{
-			var ownerPrefix = String.IsNullOrEmpty(Owner) ? null : Owner.ToSimpleIdentifier() + ".";
+			var ownerPrefix = !HasOwner ? null : Owner.ToSimpleIdentifier() + ".";
 			return ownerPrefix + Name.ToSimpleIdentifier();
 		}
 		#endregion
 
 		public string ToNormalizedString()
 		{
-			var ownerPrefix = String.IsNullOrEmpty(NormalizedOwner) ? null : NormalizedOwner + ".";
+			var ownerPrefix = !HasOwner ? null : NormalizedOwner + ".";
 			return ownerPrefix + NormalizedName;
 		}
 

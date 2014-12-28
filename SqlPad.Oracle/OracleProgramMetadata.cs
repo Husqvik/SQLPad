@@ -108,7 +108,7 @@ namespace SqlPad.Oracle
 
 		public bool IsOptional { get; private set; }
 
-		public string FullDataTypeName { get { return String.IsNullOrEmpty(CustomDataType.Owner) ? DataType.Trim('"') : CustomDataType.ToString(); } }
+		public string FullDataTypeName { get { return !CustomDataType.HasOwner ? DataType.Trim('"') : CustomDataType.ToString(); } }
 	}
 
 	public enum ParameterDirection

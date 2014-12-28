@@ -17,14 +17,14 @@ namespace SqlPad.Oracle.Test
 		private static readonly OracleSqlParser Parser = new OracleSqlParser();
 
 		[Test(Description = @"")]
-		public void Test1()
+		public void TestComplexStatementParsing()
 		{
 			using (var reader = File.OpenText(@"TestFiles\SqlStatements1.sql"))
 			{
-				var result = Parser.Parse(OracleTokenReader.Create(reader));
-				result.ShouldNotBe(null);
+				var statements = Parser.Parse(OracleTokenReader.Create(reader));
+				statements.Count.ShouldBe(18);
 
-				result.ToList().ForEach(s => s.ParseStatus.ShouldBe(ParseStatus.Success));
+				statements.ToList().ForEach(s => s.ParseStatus.ShouldBe(ParseStatus.Success));
 			}
 		}
 
@@ -1722,6 +1722,13 @@ FROM DUAL";
 
 			result.Count.ShouldBe(1);
 			var statement = result.Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
+
+			const string query2 = @"SELECT 1 + CASE WHEN FROM DUAL";
+			result = Parser.Parse(query2);
+
+			result.Count.ShouldBe(1);
+			statement = result.Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 		}
 
@@ -4671,6 +4678,45 @@ PURGE REPEAT INTERVAL '5' DAY";
 
 		public class Alter
 		{
+			public class AlterProgram
+			{
+				[Test(Description = @"")]
+				public void TestAlterProcedureNonEditionable()
+				{
+					const string statementText = @"ALTER PROCEDURE procedure1 NONEDITIONABLE";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterProcedureCompile()
+				{
+					const string statementText = @"ALTER PROCEDURE procedure1 COMPILE DEBUG PLSCOPE_SETTINGS = 'IDENTIFIERS:ALL' PLSQL_CODE_TYPE=INTERPRETED PLSQL_OPTIMIZE_LEVEL=1 PLSQL_WARNINGS ='ENABLE:(5000,5001,5002)', 'DISABLE:(6000,6001)' PLSQL_CCFLAGS = 'debug:TRUE' REUSE SETTINGS";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterPackageCompile()
+				{
+					const string statementText = @"ALTER PACKAGE package1 COMPILE DEBUG BODY;";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+			}
+
 			public class AlterSession
 			{
 				[Test(Description = @"")]

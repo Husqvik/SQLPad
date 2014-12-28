@@ -390,7 +390,7 @@ namespace SqlPad.Oracle
 
 		private static void ResolveDataUnit(OracleDataType dataType, object characterUsedValue)
 		{
-			dataType.Unit = String.IsNullOrEmpty(dataType.FullyQualifiedName.Owner) && dataType.FullyQualifiedName.NormalizedName.In("\"VARCHAR\"", "\"VARCHAR2\"")
+			dataType.Unit = !dataType.FullyQualifiedName.HasOwner && dataType.FullyQualifiedName.NormalizedName.In("\"VARCHAR\"", "\"VARCHAR2\"")
 				? (string)characterUsedValue == "C" ? DataUnit.Character : DataUnit.Byte
 				: DataUnit.NotApplicable;
 		}

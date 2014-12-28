@@ -134,9 +134,9 @@ namespace SqlPad.Oracle
 
 		public OracleObjectIdentifier[] GetPotentialSchemaObjectIdentifiers(OracleObjectIdentifier identifier)
 		{
-			return String.IsNullOrEmpty(identifier.Owner)
-				? GetCurrentAndPublicSchemaIdentifiers(identifier.NormalizedName)
-				: new[] { identifier };
+			return identifier.HasOwner
+				? new[] { identifier }
+				: GetCurrentAndPublicSchemaIdentifiers(identifier.NormalizedName);
 		}
 
 		public OracleObjectIdentifier[] GetPotentialSchemaObjectIdentifiers(string owner, string name)

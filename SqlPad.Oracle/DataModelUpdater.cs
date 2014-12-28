@@ -235,18 +235,24 @@ namespace SqlPad.Oracle
 	internal class CompilationErrorModelUpdater : DataModelUpdater<ModelBase>
 	{
 		private readonly List<CompilationError> _errors = new List<CompilationError>();
+		
+		private readonly string _owner;
+		private readonly string _objectName;
 
 		public IReadOnlyList<CompilationError> Errors { get { return _errors.AsReadOnly(); } } 
 
-		public CompilationErrorModelUpdater()
+		public CompilationErrorModelUpdater(OracleObjectIdentifier objectIdentifier)
 			: base(null)
 		{
+			_owner = objectIdentifier.Owner.Trim('"');
+			_objectName = objectIdentifier.Name.Trim('"');
 		}
 
 		public override void InitializeCommand(OracleCommand command)
 		{
-			_errors.Clear();
 			command.CommandText = DatabaseCommands.GetCompilationErrors;
+			command.AddSimpleParameter("OWNER", _owner);
+			command.AddSimpleParameter("NAME", _objectName);
 		}
 
 		public override void MapReaderData(OracleDataReader reader)
@@ -256,6 +262,9 @@ namespace SqlPad.Oracle
 				var error =
 					new CompilationError
 					{
+						Owner = _owner,
+						ObjectName = _objectName,
+						ObjectType = (string)reader["TYPE"],
 						Line = Convert.ToInt32(reader["LINE"]),
 						Column = Convert.ToInt32(reader["POSITION"]),
 						Message = (string)reader["TEXT"],

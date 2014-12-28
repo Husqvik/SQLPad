@@ -273,21 +273,21 @@ namespace SqlPad.Oracle
 			var enclosingCharacter = String.Empty;
 			if (collectionType.ElementDataType != null)
 			{
-				if (String.IsNullOrEmpty(collectionType.ElementDataType.FullyQualifiedName.Owner))
-				{
-					targetType = MapOracleTypeToNetType(collectionType.ElementDataType.FullyQualifiedName);
-
-					if (targetType == typeof (string))
-					{
-						enclosingCharacter = "'";
-					}
-				}
-				else
+				if (collectionType.ElementDataType.FullyQualifiedName.HasOwner)
 				{
 					Type targetCustomType;
 					if (customTypes.TryGetValue(collectionType.ElementDataType.FullyQualifiedName.ToString().Replace("\"", null), out targetCustomType))
 					{
 						targetType = targetCustomType;
+					}
+				}
+				else
+				{
+					targetType = MapOracleTypeToNetType(collectionType.ElementDataType.FullyQualifiedName);
+
+					if (targetType == typeof(string))
+					{
+						enclosingCharacter = "'";
 					}
 				}
 			}

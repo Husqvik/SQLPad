@@ -470,7 +470,7 @@ namespace SqlPad.Oracle
 					}
 
 					var childNodeId = item.Id;
-					if (childNodeId == nonTerminalId && !isNodeRequired && workingTerminalCount == 0)
+					if (!isNodeRequired && workingTerminalCount == 0 && String.CompareOrdinal(childNodeId, nonTerminalId) == 0)
 					{
 						continue;
 					}
@@ -478,7 +478,7 @@ namespace SqlPad.Oracle
 					var bestCandidateOffset = tokenStartOffset + bestCandidateTerminalCount;
 					var tryBestCandidates = bestCandidatesCompatible && !tokenReverted && bestCandidateTerminalCount > workingTerminalCount;
 					var childNonTerminal = item as SqlGrammarRuleSequenceNonTerminal;
-					if (item.Type == NodeType.NonTerminal)
+					if (childNonTerminal != null)
 					{
 						var nestedResult = ProceedNonTerminal(context, childNonTerminal, level + 1, tokenOffset, false,  scope);
 
@@ -525,7 +525,7 @@ namespace SqlPad.Oracle
 
 							alternativeNode.AddChildNodes(bestCandidatePosition.Values);
 
-							if (workingNodes.Count != bestCandidateNodes.Count || optionalTokenReverted > 0 || nestedResult.Status == ParseStatus.SequenceNotFound)
+							if (optionalTokenReverted > 0 || !isNestedNodeValid || workingNodes.Count != bestCandidateNodes.Count)
 							{
 								bestCandidateTerminalCount = CreateNewNodeList(workingNodes, bestCandidateNodes);
 							}
@@ -536,7 +536,7 @@ namespace SqlPad.Oracle
 							bestCandidatesCompatible = true;
 						}
 
-						if (nestedResult.Nodes.Count > 0 && isNestedNodeValid)
+						if (isNestedNodeValid && nestedResult.Nodes.Count > 0)
 						{
 							nestedNode.AddChildNodes(nestedResult.Nodes);
 							workingNodes.Add(nestedNode);
@@ -584,7 +584,7 @@ namespace SqlPad.Oracle
 				if (result.Status == ParseStatus.Success)
 				{
 					#region CASE WHEN issue
-					if (bestCandidateNodes.Count > 0)
+					if (bestCandidateTerminalCount > workingTerminalCount)
 					{
 						var currentTerminalCount = bestCandidateNodes.SelectMany(n => n.Terminals).TakeWhile(t => !t.Id.IsIdentifierOrAlias() && !t.Id.IsLiteral()).Count();
 						if (currentTerminalCount > workingTerminalCount)
@@ -673,8 +673,15 @@ namespace SqlPad.Oracle
 			var optionalTerminalCount = optionalNodeCandidate.TerminalCount;
 			var newResult = getAlternativeParseResultFunction(optionalTerminalCount);
 
-			var effectiveTerminalCount = newResult.Status == ParseStatus.SequenceNotFound ? newResult.BestCandidateTerminalCount : newResult.TerminalCount;
-			var revertNode = effectiveTerminalCount >= optionalTerminalCount &&
+			var effectiveTerminalCount = newResult.Status == ParseStatus.SequenceNotFound
+				? newResult.BestCandidateTerminalCount
+				: newResult.TerminalCount;
+			
+			var allowTerminalCountReversion = optionalTerminalCount == 1
+				? effectiveTerminalCount > optionalTerminalCount
+				: effectiveTerminalCount >= optionalTerminalCount;
+			
+			var revertNode = allowTerminalCountReversion &&
 							 effectiveTerminalCount > currentResult.TerminalCount;
 
 			if (!revertNode)

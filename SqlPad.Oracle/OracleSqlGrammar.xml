@@ -157,7 +157,117 @@
         <Sequence>
           <NonTerminal Id="AlterSession" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="AlterProcedure" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="AlterFunction" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="AlterPackage" />
+        </Sequence>
         <!-- TODO: Add other objects -->
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AlterPackage">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Package" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="AlterPackageOption" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AlterPackageOption">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="EditionableOrNonEditionable" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="AlterPackageCompileOption" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AlterPackageCompileOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Compile" />
+          <Terminal Id="Debug" IsOptional="true" />
+          <NonTerminal Id="PackagePart" IsOptional="true" />
+          <NonTerminal Id="AlterSetOptionList" IsOptional="true" />
+          <NonTerminal Id="ReuseSettings" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PackagePart">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Package" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Specification" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Body" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AlterProcedure">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Procedure" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="AlterProgramOption" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AlterFunction">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Function" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="AlterProgramOption" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AlterProgramOption">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="EditionableOrNonEditionable" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="AlterProgramCompileOption" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AlterProgramCompileOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Compile" />
+          <Terminal Id="Debug" IsOptional="true" />
+          <NonTerminal Id="AlterSetOptionList" IsOptional="true" />
+          <NonTerminal Id="ReuseSettings" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ReuseSettings">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Reuse" />
+          <Terminal Id="Settings" />
+        </Sequence>
       </Sequences>
     </Rule>
 
@@ -215,7 +325,7 @@
         </Sequence>
         <Sequence>
           <Terminal Id="Set" />
-          <NonTerminal Id="AlterSesionSetOptions" />
+          <NonTerminal Id="AlterSessionSetOptions" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -229,7 +339,7 @@
       </Sequences>
     </Rule>
     
-    <Rule StartingNonTerminal="AlterSesionSetOptions">
+    <Rule StartingNonTerminal="AlterSessionSetOptions">
       <Sequences>
         <Sequence>
           <Terminal Id="Edition" />
@@ -241,26 +351,26 @@
           <Terminal Id="StringLiteral" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="AlterSesionSetOptionList" />
+          <NonTerminal Id="AlterSetOptionList" />
         </Sequence>
       </Sequences>
     </Rule>
     
-    <Rule StartingNonTerminal="AlterSesionSetOptionList">
+    <Rule StartingNonTerminal="AlterSetOptionList">
       <Sequences>
         <Sequence>
           <Terminal Id="Identifier" />
           <Terminal Id="MathEquals" />
-          <NonTerminal Id="IdentifierOrStringLiteralOrNumberLiteral" />
-          <NonTerminal Id="AlterSesionSetOptionList" IsOptional="true" />
+          <NonTerminal Id="IdentifierOrStringLiteralListOrNumberLiteral" />
+          <NonTerminal Id="AlterSetOptionList" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
     
-    <Rule StartingNonTerminal="IdentifierOrStringLiteralOrNumberLiteral">
+    <Rule StartingNonTerminal="IdentifierOrStringLiteralListOrNumberLiteral">
       <Sequences>
         <Sequence>
-          <Terminal Id="StringLiteral" />
+          <NonTerminal Id="StringLiteralList" />
         </Sequence>
         <Sequence>
           <Terminal Id="NumberLiteral" />
@@ -268,6 +378,24 @@
         </Sequence>
         <Sequence>
           <Terminal Id="Identifier" AllowReservedWord="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="StringLiteralList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="StringLiteral" />
+          <NonTerminal Id="StringLiteralListChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="StringLiteralListChained">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="StringLiteralList" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -6486,7 +6614,7 @@
         <Sequence>
           <Terminal Id="Procedure" />
           <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="Identifier" />
+          <Terminal Id="ObjectIdentifier" />
           <NonTerminal Id="ParenthesisEnclosedParameterDeclarationList" IsOptional="true" />
           <NonTerminal Id="CommonProgramModifier" IsOptional="true" />
           <NonTerminal Id="IsOrAs" />
@@ -6515,7 +6643,7 @@
           <Terminal Id="Package" />
           <Terminal Id="Body" />
           <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="Identifier" />
+          <Terminal Id="ObjectIdentifier" />
           <NonTerminal Id="PackageBodyDefinition" />
         </Sequence>
       </Sequences>
@@ -6582,7 +6710,7 @@
         <Sequence>
           <Terminal Id="Package" />
           <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="Identifier" />
+          <Terminal Id="ObjectIdentifier" />
           <NonTerminal Id="CommonProgramModifier" IsOptional="true" />
           <NonTerminal Id="IsOrAs" />
           <NonTerminal Id="ItemList1" />
@@ -6615,7 +6743,7 @@
       <Sequences>
         <Sequence>
           <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="Identifier" />
+          <Terminal Id="ObjectIdentifier" />
           <NonTerminal Id="ParenthesisEnclosedParameterDeclarationList" IsOptional="true" />
           <Terminal Id="Return" />
           <NonTerminal Id="PlSqlDataTypeWithoutConstraint" />
@@ -13118,6 +13246,13 @@
     <Terminal Id="Indexing" Value="INDEXING" />
     <Terminal Id="Usable" Value="USABLE" />
     <Terminal Id="Unusable" Value="UNUSABLE" />
+
+    <!-- Alter -->
+    <Terminal Id="Compile" Value="COMPILE" />
+    <Terminal Id="Debug" Value="DEBUG" />
+    <Terminal Id="Specification" Value="SPECIFICATION" />
+    <Terminal Id="Reuse" Value="REUSE" />
+    <Terminal Id="Settings" Value="SETTINGS" />
     
     <!-- Alter session -->
     <Terminal Id="Advise" Value="ADVISE" />

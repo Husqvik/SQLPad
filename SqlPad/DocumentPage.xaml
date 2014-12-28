@@ -238,6 +238,7 @@
 				          RowHeight="21"
 				          CanUserSortColumns="False"
 						  CanUserDeleteRows ="False"
+						  CanUserAddRows="False"
 				          HeadersVisibility="None"
 				          HorizontalGridLinesBrush="LightGray"
 				          VerticalGridLinesBrush="LightGray"
@@ -265,6 +266,7 @@
 					<DataGrid ItemsSource="{Binding SessionExecutionStatistics}"
 							  AutoGenerateColumns="False"
 							  CanUserDeleteRows ="False"
+							  CanUserAddRows="False"
 							  KeyDown="ReadOnlyGridKeyDownHandler"
 							  HorizontalGridLinesBrush="LightGray"
 							  VerticalGridLinesBrush="LightGray">
@@ -287,6 +289,36 @@
 					</StackPanel>
 					<sqlPad:ScrollingTextBox Text="{Binding DatabaseOutput, Mode=OneWay}" FontFamily="Consolas" IsReadOnly="True" IsReadOnlyCaretVisible="True" />
 				</DockPanel>
+			</TabItem>
+			<TabItem Header="_Errors" Visibility="{Binding CompilationErrorsVisible}">
+				<DataGrid ItemsSource="{Binding CompilationErrors}"
+							  AutoGenerateColumns="False"
+							  CanUserDeleteRows ="False"
+							  CanUserAddRows="False"
+							  KeyDown="ReadOnlyGridKeyDownHandler"
+							  HorizontalGridLinesBrush="LightGray"
+							  VerticalGridLinesBrush="LightGray">
+					<DataGrid.Columns>
+						<DataGridTextColumn Header="Owner" Binding="{Binding Path=Owner}"
+						                    EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}" />
+						<DataGridTextColumn Header="Object" Binding="{Binding Path=ObjectName}"
+						                    EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}" />
+						<DataGridTextColumn Header="Object type" Binding="{Binding Path=ObjectType}"
+						                    EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}" />
+						<DataGridTextColumn Header="Severity" Binding="{Binding Path=Severity}"
+						                    EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}" />
+						<DataGridTextColumn Header="Line" Binding="{Binding Path=Line}"
+						                    HeaderStyle="{StaticResource HeaderStyleRightAlign}"
+						                    CellStyle="{StaticResource CellStyleRightAlign}"
+						                    EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}" />
+						<DataGridTextColumn Header="Column" Binding="{Binding Path=Column}"
+						                    HeaderStyle="{StaticResource HeaderStyleRightAlign}"
+						                    CellStyle="{StaticResource CellStyleRightAlign}"
+						                    EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}" />
+						<DataGridTextColumn Header="Message" Binding="{Binding Path=Message}"
+						                    EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}" />
+					</DataGrid.Columns>
+				</DataGrid>
 			</TabItem>
 		</TabControl>
 		<StatusBar x:Name="StatusBar" Grid.Row="4" Grid.Column="0">

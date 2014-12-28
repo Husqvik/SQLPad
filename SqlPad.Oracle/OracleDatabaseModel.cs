@@ -53,9 +53,8 @@ namespace SqlPad.Oracle
 		private string _userTransactionId;
 		private IsolationLevel _userTransactionIsolationLevel;
 		private int _userCommandChildNumber;
-		private bool _userCommandInformationAvailable;
+		private bool _userCommandHasCompilationErrors;
 		private SessionExecutionStatisticsUpdater _executionStatisticsUpdater;
-		private readonly CompilationErrorModelUpdater _compilationErrorModelUpdater = new CompilationErrorModelUpdater();
 
 		private static readonly Dictionary<string, OracleDataDictionary> CachedDataDictionaries = new Dictionary<string, OracleDataDictionary>();
 		private static readonly Dictionary<string, OracleDatabaseModel> DatabaseModels = new Dictionary<string, OracleDatabaseModel>();
@@ -158,10 +157,12 @@ namespace SqlPad.Oracle
 			var containsCompilationError = args.Errors.Cast<OracleError>().Any(e => e.Number == OracleErrorCodeSuccessWithCompilationError);
 			if (containsCompilationError)
 			{
-				_userCommandInformationAvailable = true;
+				_userCommandHasCompilationErrors = true;
 			}
-
-			Trace.WriteLine(args.ToString());
+			else
+			{
+				Trace.WriteLine(args.ToString());
+			}
 		}
 
 		private void DisposeUserConnection()
@@ -617,7 +618,7 @@ namespace SqlPad.Oracle
 
 		private async Task<StatementExecutionResult> ExecuteUserStatement(StatementExecutionModel executionModel, CancellationToken cancellationToken)
 		{
-			_userCommandInformationAvailable = false;
+			_userCommandHasCompilationErrors = false;
 
 			if (EnsureUserConnectionOpen())
 			{
@@ -635,13 +636,7 @@ namespace SqlPad.Oracle
 				_userTransaction = _userConnection.BeginTransaction();
 			}
 
-			/*if (executionModel.GatherExecutionStatistics)
-			{
-				_userCommand.CommandText = "ALTER SESSION SET STATISTICS_LEVEL = ALL";
-				_userCommand.ExecuteNonQuery();
-			}*/
-
-			_userCommand.CommandText = executionModel.StatementText;
+			_userCommand.CommandText = executionModel.StatementText.Replace("\r", null);
 			_userCommand.InitialLONGFetchSize = InitialLongFetchSize;
 
 			foreach (var variable in executionModel.BindVariables)
@@ -673,7 +668,7 @@ namespace SqlPad.Oracle
 					ExecutedSuccessfully = true,
 					ColumnHeaders = GetColumnHeadersFromReader(_userDataReader),
 					InitialResultSet = await FetchRecordsFromReader(_userDataReader, executionModel.InitialFetchRowCount, false).EnumerateAsync(cancellationToken),
-					CompilationErrors = _userCommandInformationAvailable ? await RetrieveCompilationErrors(cancellationToken) : new CompilationError[0]
+					CompilationErrors = _userCommandHasCompilationErrors ? await RetrieveCompilationErrors(executionModel.Statement, cancellationToken) : new CompilationError[0]
 				};
 		}
 
@@ -804,10 +799,24 @@ namespace SqlPad.Oracle
 			return StatementExecutionResult.Empty;
 		}
 
-		private Task<IReadOnlyList<CompilationError>> RetrieveCompilationErrors(CancellationToken cancellationToken)
+		private Task<IReadOnlyList<CompilationError>> RetrieveCompilationErrors(StatementBase statement, CancellationToken cancellationToken)
 		{
-			return UpdateModelAsync(cancellationToken, true, _compilationErrorModelUpdater)
-				.ContinueWith(t => _compilationErrorModelUpdater.Errors, cancellationToken);
+			OracleObjectIdentifier objectIdentifier;
+			if (OracleStatement.TryGetPlSqlUnitName(statement, out objectIdentifier))
+			{
+				if (!objectIdentifier.HasOwner)
+				{
+					objectIdentifier = OracleObjectIdentifier.Create(_currentSchema, objectIdentifier.Name);
+				}
+
+				var compilationErrorUpdater = new CompilationErrorModelUpdater(objectIdentifier);
+				return UpdateModelAsync(cancellationToken, true, compilationErrorUpdater)
+					.ContinueWith(t => compilationErrorUpdater.Errors, cancellationToken);
+			}
+			
+			var taskCompletionSource = new TaskCompletionSource<IReadOnlyList<CompilationError>>();
+			taskCompletionSource.SetResult(new CompilationError[0]);
+			return taskCompletionSource.Task;
 		}
 
 		private async Task<string> RetrieveDatabaseOutput(CancellationToken cancellationToken)

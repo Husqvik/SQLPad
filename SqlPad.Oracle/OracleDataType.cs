@@ -19,7 +19,7 @@ namespace SqlPad.Oracle
 
 		public DataUnit Unit { get; set; }
 
-		public bool IsPrimitive { get { return String.IsNullOrEmpty(FullyQualifiedName.Owner); } }
+		public bool IsPrimitive { get { return !FullyQualifiedName.HasOwner; } }
 
 		public static string ResolveFullTypeName(OracleDataType dataType, int? characterSize = null)
 		{

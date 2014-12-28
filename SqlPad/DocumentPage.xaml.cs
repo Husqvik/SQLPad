@@ -817,7 +817,13 @@ namespace SqlPad
 		{
 			var statement = _sqlDocumentRepository.Statements.GetStatementAtPosition(Editor.CaretOffset);
 
-			var executionModel = new StatementExecutionModel { GatherExecutionStatistics = _gatherExecutionStatistics };
+			var executionModel =
+				new StatementExecutionModel
+				{
+					Statement = statement,
+					GatherExecutionStatistics = _gatherExecutionStatistics
+				};
+			
 			if (Editor.SelectionLength > 0)
 			{
 				executionModel.StatementText = Editor.SelectedText;
@@ -835,6 +841,7 @@ namespace SqlPad
 		private void InitializeViewBeforeCommandExecution()
 		{
 			_pageModel.ResultRowItems.Clear();
+			_pageModel.CompilationErrors.Clear();
 			_pageModel.GridRowInfoVisibility = Visibility.Collapsed;
 			_pageModel.StatementExecutedSuccessfullyStatusMessageVisibility = Visibility.Collapsed;
 			_pageModel.TextExecutionPlan = null;
@@ -895,6 +902,12 @@ namespace SqlPad
 				else if (IsTabAlwaysVisible(previousSelectedTab))
 				{
 					TabControlResult.SelectedItem = previousSelectedTab;
+				}
+
+				if (innerTask.Result.CompilationErrors.Count > 0)
+				{
+					_pageModel.CompilationErrors.AddRange(innerTask.Result.CompilationErrors);
+					TabControlResult.SelectedIndex = 4;
 				}
 
 				if (innerTask.Result.ColumnHeaders.Count == 0)

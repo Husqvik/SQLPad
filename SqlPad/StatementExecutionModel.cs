@@ -16,6 +16,8 @@ namespace SqlPad
 		}
 
 		public string StatementText { get; set; }
+
+		public StatementBase Statement { get; set; }
 		
 		public ICollection<BindVariableModel> BindVariables { get; set; }
 
@@ -112,6 +114,12 @@ namespace SqlPad
 
 	public class CompilationError
 	{
+		public string Owner { get; set; }
+
+		public string ObjectName { get; set; }
+
+		public string ObjectType { get; set; }
+
 		public int Code { get; set; }
 
 		public int Line { get; set; }
