@@ -1894,5 +1894,23 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			invalidNonTerminals[1].ToolTipText.ShouldBe(OracleSemanticErrorType.InvalidColumnCount);
 			invalidNonTerminals[1].Node.ShouldBe(cteQueryBlock.SelectList);
 		}
+
+		[Test(Description = @"")]
+		public void TestScalarSubqueryWithMultipleColumns()
+		{
+			const string sqlText = @"SELECT (SELECT 1, 2 FROM DUAL) FROM DUAL";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var cteQueryBlock = validationModel.SemanticModel.QueryBlocks.Single(qb => qb.Type == QueryBlockType.ScalarSubquery);
+
+			var invalidNonTerminals = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			invalidNonTerminals.Count.ShouldBe(1);
+			invalidNonTerminals[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidColumnCount);
+			invalidNonTerminals[0].ToolTipText.ShouldBe(OracleSemanticErrorType.InvalidColumnCount);
+			invalidNonTerminals[0].Node.ShouldBe(cteQueryBlock.SelectList);
+		}
 	}
 }

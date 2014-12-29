@@ -10,7 +10,7 @@ using System.Windows.Data;
 
 namespace SqlPad
 {
-	public class PageModel : ModelBase
+	public class PageModel : EditorInfoModel
 	{
 		private readonly DocumentPage _documentPage;
 		private readonly ObservableCollection<object[]> _resultRowItems = new ObservableCollection<object[]>();
@@ -23,12 +23,8 @@ namespace SqlPad
 		private ICollection<BindVariableModel> _bindVariables;
 		private bool _isModified;
 		private bool _isRunning;
-		private int _currentLine;
-		private int _currentColumn;
 		private int _affectedRowCount = -1;
-		private int? _selectionLength;
 		private Visibility _statementExecutedSuccessfullyStatusMessageVisibility = Visibility.Collapsed;
-		private Visibility _selectionTextVisibility = Visibility.Collapsed;
 		private Visibility _productionLabelVisibility = Visibility.Collapsed;
 		private Visibility _bindVariableListVisibility = Visibility.Collapsed;
 		private Visibility _gridRowInfoVisibity = Visibility.Collapsed;
@@ -229,12 +225,6 @@ namespace SqlPad
 
 		public string DatabaseOutput { get { return _databaseOutputBuilder.ToString(); } }
 
-		public int CurrentLine
-		{
-			get { return _currentLine; }
-			set { UpdateValueAndRaisePropertyChanged(ref _currentLine, value); }
-		}
-
 		public int AffectedRowCount
 		{
 			get { return _affectedRowCount; }
@@ -253,24 +243,6 @@ namespace SqlPad
 			get { return _affectedRowCount == -1 ? Visibility.Collapsed : Visibility.Visible; }
 		}
 
-		public int CurrentColumn
-		{
-			get { return _currentColumn; }
-			set { UpdateValueAndRaisePropertyChanged(ref _currentColumn, value); }
-		}
-
-		public int? SelectionLength
-		{
-			get { return _selectionLength; }
-			set
-			{
-				if (UpdateValueAndRaisePropertyChanged(ref _selectionLength, value))
-				{
-					SelectionTextVisibility = _selectionLength == null ? Visibility.Collapsed : Visibility.Visible;
-				}
-			}
-		}
-
 		public Visibility StatementExecutedSuccessfullyStatusMessageVisibility
 		{
 			get { return _statementExecutedSuccessfullyStatusMessageVisibility; }
@@ -281,12 +253,6 @@ namespace SqlPad
 					RaisePropertyChanged("StatementExecutionInfoSeparatorVisibility");
 				}
 			}
-		}
-
-		public Visibility SelectionTextVisibility
-		{
-			get { return _selectionTextVisibility; }
-			set { UpdateValueAndRaisePropertyChanged(ref _selectionTextVisibility, value); }
 		}
 
 		public Visibility ProductionLabelVisibility

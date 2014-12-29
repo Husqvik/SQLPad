@@ -149,8 +149,8 @@ namespace SqlPad.Oracle.Test
 		{
 			const string query1 = @"SELECT 1 FROM DUAL ALIAS";
 
-			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 20).ToArray();
-			actions.Length.ShouldBe(0);
+			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 20).Count(a => a.Name == UnnestInlineViewCommand.Title);
+			actions.ShouldBe(0);
 		}
 
 		[Test(Description = @""), STAThread]

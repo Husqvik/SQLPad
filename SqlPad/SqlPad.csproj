@@ -110,6 +110,7 @@
     <Compile Include="DragDrop\DragDropHelper.cs" />
     <Compile Include="DragDrop\DraggedAdorner.cs" />
     <Compile Include="EditableTabHeaderControl.cs" />
+    <Compile Include="EditorInfoModel.cs" />
     <Compile Include="EditorNavigationService.cs" />
     <Compile Include="ILargeTextValue.cs" />
     <Compile Include="DragDrop\InsertionAdorner.cs" />

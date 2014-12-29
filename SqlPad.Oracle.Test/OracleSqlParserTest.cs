@@ -3647,6 +3647,25 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 					terminals[1].Id.ShouldBe(Terminals.Context);
 					terminals[2].Id.ShouldBe(Terminals.ObjectIdentifier);
 				}
+
+				[Test(Description = @"")]
+				public void TestDropDirectory()
+				{
+					const string statementText = @"DROP DIRECTORY TEST_DIRECTORY";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+					var terminals = statement.AllTerminals.ToArray();
+					terminals.Length.ShouldBe(3);
+
+					terminals[0].Id.ShouldBe(Terminals.Drop);
+					terminals[1].Id.ShouldBe(Terminals.Directory);
+					terminals[2].Id.ShouldBe(Terminals.ObjectIdentifier);
+				}
 			}
 		}
 
@@ -4672,6 +4691,32 @@ PURGE REPEAT INTERVAL '5' DAY";
 					terminals[10].Id.ShouldBe(Terminals.ObjectIdentifier);
 					terminals[11].Id.ShouldBe(Terminals.AtCharacter);
 					terminals[12].Id.ShouldBe(Terminals.DatabaseLinkIdentifier);
+				}
+			}
+
+			public class CreateDirectory
+			{
+				[Test(Description = @"")]
+				public void TestCreateDirectory()
+				{
+					const string statementText = @"CREATE OR REPLACE DIRECTORY TEST_DIRECTORY AS '\\host\directory\subdirectory'";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+					var terminals = statement.AllTerminals.ToArray();
+					terminals.Length.ShouldBe(7);
+
+					terminals[0].Id.ShouldBe(Terminals.Create);
+					terminals[1].Id.ShouldBe(Terminals.Or);
+					terminals[2].Id.ShouldBe(Terminals.Replace);
+					terminals[3].Id.ShouldBe(Terminals.Directory);
+					terminals[4].Id.ShouldBe(Terminals.ObjectIdentifier);
+					terminals[5].Id.ShouldBe(Terminals.As);
+					terminals[6].Id.ShouldBe(Terminals.StringLiteral);
 				}
 			}
 		}

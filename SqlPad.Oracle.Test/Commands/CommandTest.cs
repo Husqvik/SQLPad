@@ -188,9 +188,46 @@ WHERE
 			_editor.Text = @"SELECT S.RESPONDENTBUCKET_ID, S.SELECTION_ID, PROJECT_ID, NAME, 1 FROM SELECTION S";
 			_editor.CaretOffset = 0;
 
+			CanExecuteCommand(OracleCommands.WrapAsInlineView).ShouldBe(true);
 			ExecuteCommand(OracleCommands.WrapAsInlineView, new TestCommandSettings(new CommandSettingsModel { Value = "IV" } ));
 
 			_editor.Text.ShouldBe(@"SELECT IV.RESPONDENTBUCKET_ID, IV.SELECTION_ID, IV.PROJECT_ID, IV.NAME FROM (SELECT S.RESPONDENTBUCKET_ID, S.SELECTION_ID, PROJECT_ID, NAME, 1 FROM SELECTION S) IV");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestWrapAsInlineViewCommandWithoutAlias()
+		{
+			_editor.Text = @"SELECT S.RESPONDENTBUCKET_ID, S.SELECTION_ID, PROJECT_ID, NAME, 1 FROM SELECTION S";
+			_editor.CaretOffset = 0;
+
+			CanExecuteCommand(OracleCommands.WrapAsInlineView).ShouldBe(true);
+			ExecuteCommand(OracleCommands.WrapAsInlineView, new TestCommandSettings(new CommandSettingsModel()));
+
+			_editor.Text.ShouldBe(@"SELECT RESPONDENTBUCKET_ID, SELECTION_ID, PROJECT_ID, NAME FROM (SELECT S.RESPONDENTBUCKET_ID, S.SELECTION_ID, PROJECT_ID, NAME, 1 FROM SELECTION S)");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestTableReferenceWrapAsInlineView()
+		{
+			_editor.Text = @"SELECT S.RESPONDENTBUCKET_ID, S.SELECTION_ID, PROJECT_ID, NAME, 1 FROM SELECTION S";
+			_editor.CaretOffset = 82;
+
+			CanExecuteCommand(OracleCommands.WrapAsInlineView).ShouldBe(true);
+			ExecuteCommand(OracleCommands.WrapAsInlineView);
+
+			_editor.Text.ShouldBe(@"SELECT S.RESPONDENTBUCKET_ID, S.SELECTION_ID, PROJECT_ID, NAME, 1 FROM (SELECT RESPONDENTBUCKET_ID, SELECTION_ID, PROJECT_ID, NAME FROM SELECTION) S");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestTableReferenceWrapAsInlineViewWithXmlTable()
+		{
+			_editor.Text = @"SELECT * FROM XMLTABLE('for $i in $RSS_DATA/rss/channel/item return $i' PASSING HTTPURITYPE('http://servis.idnes.cz/rss.asp?c=zpravodaj').GETXML() AS RSS_DATA COLUMNS SEQ# FOR ORDINALITY, TITLE VARCHAR2(4000) PATH 'title', DESCRIPTION CLOB PATH 'description')";
+			_editor.CaretOffset = 17;
+
+			CanExecuteCommand(OracleCommands.WrapAsInlineView).ShouldBe(true);
+			ExecuteCommand(OracleCommands.WrapAsInlineView);
+
+			_editor.Text.ShouldBe(@"SELECT * FROM (SELECT SEQ#, TITLE, DESCRIPTION FROM XMLTABLE('for $i in $RSS_DATA/rss/channel/item return $i' PASSING HTTPURITYPE('http://servis.idnes.cz/rss.asp?c=zpravodaj').GETXML() AS RSS_DATA COLUMNS SEQ# FOR ORDINALITY, TITLE VARCHAR2(4000) PATH 'title', DESCRIPTION CLOB PATH 'description'))");
 		}
 
 		[Test(Description = @""), STAThread]

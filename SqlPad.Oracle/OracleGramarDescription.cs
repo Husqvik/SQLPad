@@ -168,6 +168,7 @@ namespace SqlPad.Oracle
 			public const string ConstraintStateExceptionClause = "ConstraintStateExceptionClause";
 			public const string CountAsteriskParameter = "CountAsteriskParameter";
 			public const string CreateCluster = "CreateCluster";
+			public const string CreateDirectory = "CreateDirectory";
 			public const string CreateFunction = "CreateFunction";
 			public const string CreateIndex = "CreateIndex";
 			public const string CreateMaterializedViewLog = "CreateMaterializedViewLog";

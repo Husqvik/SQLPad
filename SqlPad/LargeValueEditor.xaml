@@ -44,6 +44,22 @@
 						<Button Content="Save as..." Padding="6,0,6,0" Click="SaveTextAsClickHandler" />
 						<CheckBox x:Name="CheckBoxWordWrap" Content="Word wrap" VerticalAlignment="Center" />
 					</StackPanel>
+					<StatusBar DockPanel.Dock="Bottom">
+						<StatusBarItem>
+							<StackPanel x:Name="EditorInfoPanel" Orientation="Horizontal" sqlPad:MarginSetter.Margin="2,0,2,0">
+								<TextBlock>
+									<Run Text="Line: " />
+									<Run Text="{Binding CurrentLine}" />
+									<Run Text=" Column: " />
+									<Run Text="{Binding CurrentColumn}" />
+								</TextBlock>
+								<TextBlock Visibility="{Binding SelectionTextVisibility}">
+									<Run Text=" Selection: " />
+									<Run Text="{Binding SelectionLength}" />
+								</TextBlock>
+							</StackPanel>
+						</StatusBarItem>
+					</StatusBar>
 					<avalonedit:TextEditor x:Name="TextEditor"
 										   FontFamily="Consolas"
 										   ShowLineNumbers="True"

@@ -842,6 +842,9 @@
         <Sequence>
           <Terminal Id="Sequence" />
         </Sequence>
+        <Sequence>
+          <Terminal Id="Directory" />
+        </Sequence>
       </Sequences>
     </Rule>
 
@@ -6292,10 +6295,26 @@
         <Sequence>
           <NonTerminal Id="CreateMaterializedViewLog" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="CreateDirectory" />
+        </Sequence>
         <!-- TODO: Create other objects -->
       </Sequences>
     </Rule>
 
+    <!-- CREATE DIRECTORY -->
+    <Rule StartingNonTerminal="CreateDirectory">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="OrReplace" IsOptional="true" />
+          <Terminal Id="Directory" />
+          <Terminal Id="ObjectIdentifier" />
+          <Terminal Id="As" />
+          <Terminal Id="StringLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
     <!-- CREATE MATERIALIZED VIEW LOG -->
     <Rule StartingNonTerminal="CreateMaterializedViewLog">
       <Sequences>

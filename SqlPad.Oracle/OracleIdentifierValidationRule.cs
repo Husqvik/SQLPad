@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
 using System.Windows.Controls;
 
 namespace SqlPad.Oracle
@@ -7,8 +8,11 @@ namespace SqlPad.Oracle
 	{
 		public override ValidationResult Validate(object value, CultureInfo cultureInfo)
 		{
-			return new ValidationResult(OracleSqlParser.IsValidIdentifier((string)value), "Identifier contains characters that are not allowed, starts with a number, has more than 30 characters or matches a reserved word. ");
+			var identifier = (string)value;
+			return new ValidationResult(AllowEmpty && String.IsNullOrEmpty(identifier) || OracleSqlParser.IsValidIdentifier(identifier), "Identifier contains characters that are not allowed, starts with a number, has more than 30 characters or matches a reserved word. ");
 		}
+
+		public bool AllowEmpty { get; set; }
 	}
 
 	public class OracleBindVariableIdentifierValidationRule : ValidationRule
