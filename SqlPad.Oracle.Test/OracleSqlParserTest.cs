@@ -2794,10 +2794,15 @@ END;";
 			{
 				const string statement1 = @"SELECT 1 A";
 				var node = Parser.Parse(statement1).Single().RootNode.LastTerminalNode;
-				var terminalCandidates = Parser.GetTerminalCandidates(node).OrderBy(t => t).ToArray();
+				var terminalCandidates = Parser.GetTerminalCandidates(node).OrderBy(t => t.Id).ToArray();
 
-				var expectedTerminals = new[] { Terminals.Bulk, Terminals.Comma, Terminals.From, Terminals.Into };
-				terminalCandidates.ShouldBe(expectedTerminals);
+				terminalCandidates.Length.ShouldBe(4);
+				terminalCandidates[0].Id.ShouldBe(Terminals.Bulk);
+				terminalCandidates[0].FollowingMandatoryCandidates.Count.ShouldBe(1);
+				terminalCandidates[0].FollowingMandatoryCandidates[0].ShouldBe(Terminals.Collect);
+				terminalCandidates[1].Id.ShouldBe(Terminals.Comma);
+				terminalCandidates[2].Id.ShouldBe(Terminals.From);
+				terminalCandidates[3].Id.ShouldBe(Terminals.Into);
 			}
 
 			[Test(Description = @"")]
@@ -2805,7 +2810,7 @@ END;";
 			{
 				const string statement2 = @"SELECT 1";
 				var node = Parser.Parse(statement2).Single().RootNode.LastTerminalNode;
-				var terminalCandidates = Parser.GetTerminalCandidates(node).OrderBy(t => t).ToArray();
+				var terminalCandidates = Parser.GetTerminalCandidates(node).Select(c => c.Id).OrderBy(t => t).ToArray();
 
 				var expectedTerminals = new[] { Terminals.As, Terminals.Bulk, Terminals.ColumnAlias, Terminals.Comma, Terminals.From, Terminals.Into, Terminals.MathDivide, Terminals.MathFactor, Terminals.MathMinus, Terminals.MathPlus, Terminals.OperatorConcatenation };
 				terminalCandidates.ShouldBe(expectedTerminals);
@@ -2816,7 +2821,7 @@ END;";
 			{
 				const string statement2 = @"SELECT OBJECT_PREFIX.";
 				var node = Parser.Parse(statement2).Single().RootNode.LastTerminalNode;
-				var terminalCandidates = Parser.GetTerminalCandidates(node).OrderBy(t => t).ToArray();
+				var terminalCandidates = Parser.GetTerminalCandidates(node).Select(c => c.Id).OrderBy(t => t).ToArray();
 
 				// TODO: Wrong, at least ObjectIdentifier should be available in addition
 				var expectedTerminals = new[] { Terminals.Asterisk, Terminals.Identifier, Terminals.RowIdPseudoColumn };
@@ -2826,7 +2831,7 @@ END;";
 			[Test(Description = @"")]
 			public void TestTerminalCandidatesWithNullNode()
 			{
-				var terminalCandidates = Parser.GetTerminalCandidates(null).OrderBy(t => t).ToArray();
+				var terminalCandidates = Parser.GetTerminalCandidates(null).Select(c => c.Id).OrderBy(t => t).ToArray();
 
 				var expectedTerminals = new[] { Terminals.Alter, Terminals.Begin, Terminals.Call, Terminals.Comment, Terminals.Commit, Terminals.Create, Terminals.Declare, Terminals.Delete, Terminals.Drop, Terminals.Explain, Terminals.Insert, Terminals.LeftLabelMarker, Terminals.LeftParenthesis, Terminals.Lock, Terminals.Merge, Terminals.Purge, Terminals.Rename, Terminals.Rollback, Terminals.Savepoint, Terminals.Select, Terminals.Set, Terminals.Update, Terminals.With };
 				terminalCandidates.ShouldBe(expectedTerminals);
@@ -2837,7 +2842,7 @@ END;";
 			{
 				const string statement1 = @"SELECT * FROM SELECTION S FULL";
 				var node = Parser.Parse(statement1).Single().RootNode.LastTerminalNode;
-				var terminalCandidates = Parser.GetTerminalCandidates(node).OrderBy(t => t).ToArray();
+				var terminalCandidates = Parser.GetTerminalCandidates(node).Select(c => c.Id).OrderBy(t => t).ToArray();
 				var expectedTerminals = new[] { Terminals.Join, Terminals.Outer };
 				terminalCandidates.ShouldBe(expectedTerminals);
 			}
@@ -2847,7 +2852,7 @@ END;";
 			{
 				const string statement1 = @"SELECT * FROM SELECTION";
 				var node = Parser.Parse(statement1).Single().RootNode.LastTerminalNode;
-				var terminalCandidates = Parser.GetTerminalCandidates(node).OrderBy(t => t).ToArray();
+				var terminalCandidates = Parser.GetTerminalCandidates(node).Select(c => c.Id).OrderBy(t => t).ToArray();
 
 				var expectedTerminals =
 					new[]
@@ -2892,7 +2897,7 @@ END;";
 			{
 				const string statement1 = @"SELECT CASE WHEN S.";
 				var node = Parser.Parse(statement1).Single().RootNode.LastTerminalNode;
-				var terminalCandidates = Parser.GetTerminalCandidates(node).OrderBy(t => t).ToArray();
+				var terminalCandidates = Parser.GetTerminalCandidates(node).Select(c => c.Id).OrderBy(t => t).ToArray();
 				var expectedTerminals = new[] { Terminals.Identifier, Terminals.RowIdPseudoColumn };
 				terminalCandidates.ShouldBe(expectedTerminals);
 			}
@@ -2902,7 +2907,7 @@ END;";
 			{
 				const string statement1 = @"SELECT D FROM DUAL";
 				var node = Parser.Parse(statement1).Single().RootNode.FirstTerminalNode;
-				var terminalCandidates = Parser.GetTerminalCandidates(node).OrderBy(t => t).ToArray();
+				var terminalCandidates = Parser.GetTerminalCandidates(node).Select(c => c.Id).OrderBy(t => t).ToArray();
 
 				var expectedTerminals =
 					new[]
@@ -4463,6 +4468,31 @@ TABLESPACE TBS_HQ_PDB";
 				public void TestInformationLifecycleManagementClause()
 				{
 					const string statementText = @"CREATE TABLE TEST_TABLE (C NUMBER) ILM ADD POLICY TIER TO TBS_HQ_PDB READ ONLY SEGMENT AFTER 2 YEARS OF CREATION";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestCreateExternalTableUsingDataPump()
+				{
+					const string statementText =
+@"CREATE TABLE DATAPUMP_TMP
+ORGANIZATION EXTERNAL (
+	TYPE ORACLE_DATAPUMP DEFAULT DIRECTORY TMP
+	ACCESS PARAMETERS (
+		COMPRESSION ENABLED HIGH
+		ENCRYPTION DISABLED
+		VERSION '12.1'
+		LOGFILE TMP: 'tmp_table.dmp.log'
+	)
+	LOCATION ('tmp_table.dmp')
+)
+AS
+SELECT * FROM ALL_OBJECTS";
 
 					var result = Parser.Parse(statementText);
 

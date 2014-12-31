@@ -51,19 +51,24 @@ namespace SqlPad.Oracle
 
 			IdentifierMatcher = Terminals[OracleGrammarDescription.Terminals.Identifier].RegexMatcher;
 
-			foreach (var rule in oracleGrammar.Rules)
+			foreach (var sequence in oracleGrammar.Rules.SelectMany(r => r.Sequences))
 			{
-				foreach (var item in rule.Sequences.SelectMany(s => s.Items))
+				for (var i = 0; i < sequence.Items.Length; i++)
 				{
+					var item = sequence.Items[i];
 					var nonTerminal = item as SqlGrammarRuleSequenceNonTerminal;
 					if (nonTerminal != null)
 					{
 						nonTerminal.TargetRule = NonTerminalRules[nonTerminal.Id];
+						nonTerminal.ParentSequence = sequence;
+						nonTerminal.SequenceIndex = i;
 					}
 					else
 					{
 						var terminalReference = (SqlGrammarRuleSequenceTerminal)item;
 						terminalReference.Terminal = Terminals[terminalReference.Id];
+						terminalReference.ParentSequence = sequence;
+						terminalReference.SequenceIndex = i;
 					}
 				}
 			}
@@ -161,9 +166,9 @@ namespace SqlPad.Oracle
 			return Task.Factory.StartNew(() => ProceedGrammar(tokens, cancellationToken), cancellationToken);
 		}
 
-		public ICollection<string> GetTerminalCandidates(StatementGrammarNode node)
+		public ICollection<TerminalCandidate> GetTerminalCandidates(StatementGrammarNode node)
 		{
-			var candidates = new HashSet<string>();
+			var candidates = new HashSet<TerminalCandidate>();
 
 			var nonTerminalIds = new List<SqlGrammarRuleSequenceNonTerminal>();
 			if (node != null)
@@ -188,7 +193,7 @@ namespace SqlPad.Oracle
 			return candidates;
 		}
 
-		private void MatchNode(StatementGrammarNode node, ICollection<string> candidates)
+		private void MatchNode(StatementGrammarNode node, ICollection<TerminalCandidate> candidates)
 		{
 			var parent = node.ParentNode;
 			if (parent == null)
@@ -268,7 +273,7 @@ namespace SqlPad.Oracle
 					.SelectMany(s => GetCompatibleSequences(s, parentNode));
 		}
 
-		private void GatherCandidatesFromNonterminal(SqlGrammarRuleSequenceNonTerminal nonTerminal, ICollection<string> candidates)
+		private void GatherCandidatesFromNonterminal(SqlGrammarRuleSequenceNonTerminal nonTerminal, ICollection<TerminalCandidate> candidates)
 		{
 			foreach (var sequence in nonTerminal.TargetRule.Sequences)
 			{
@@ -284,7 +289,32 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		private void GatherCandidatesFromGrammarItem(ISqlGrammarRuleSequenceItem item, ICollection<string> candidates)
+		private bool GetFollowingMandatoryCandidates(ISqlGrammarRuleSequenceItem item, List<string> followingMandatoryCandidates)
+		{
+			if (!item.IsRequired)
+			{
+				return false;
+			}
+
+			if (item.Type == NodeType.Terminal)
+			{
+				var terminal = ((SqlGrammarRuleSequenceTerminal)item).Terminal;
+				if (terminal.IsFixed && terminal.Value.Length > 1)
+				{
+					followingMandatoryCandidates.Add(item.Id);
+					return true;
+				}
+
+				return false;
+			}
+
+			var nonTerminal = (SqlGrammarRuleSequenceNonTerminal)item;
+			return nonTerminal.TargetRule.Sequences.Length == 1 &&
+				   nonTerminal.TargetRule.Sequences[0].Items
+					   .All(childItem => GetFollowingMandatoryCandidates((ISqlGrammarRuleSequenceItem)childItem, followingMandatoryCandidates));
+		}
+
+		private void GatherCandidatesFromGrammarItem(ISqlGrammarRuleSequenceItem item, ICollection<TerminalCandidate> candidates)
 		{
 			var nonTerminal = item as SqlGrammarRuleSequenceNonTerminal;
 			if (nonTerminal != null)
@@ -293,7 +323,22 @@ namespace SqlPad.Oracle
 			}
 			else if (!TerminatorIds.Contains(item.Id))
 			{
-				candidates.Add(item.Id);
+				List<string> followingMandatoryCandidates = null;
+				var terminal = ((SqlGrammarRuleSequenceTerminal)item).Terminal;
+				if (terminal.IsFixed)
+				{
+					followingMandatoryCandidates = new List<string>();
+
+					for (var j = item.SequenceIndex + 1; j < item.ParentSequence.Items.Length; j++)
+					{
+						if (!GetFollowingMandatoryCandidates((ISqlGrammarRuleSequenceItem)item.ParentSequence.Items[j], followingMandatoryCandidates))
+						{
+							break;
+						}
+					}
+				}
+
+				candidates.Add(new TerminalCandidate(item.Id, followingMandatoryCandidates));
 			}
 		}
 
@@ -839,6 +884,47 @@ namespace SqlPad.Oracle
 			public OracleStatement Statement;
 			public IList<OracleToken> TokenBuffer;
 			public CancellationToken CancellationToken;
+		}
+	}
+
+	public struct TerminalCandidate
+	{
+		private static readonly string[] EmptyFollowingCandidates = new string[0];
+
+		public readonly string Id;
+
+		public readonly IReadOnlyList<string> FollowingMandatoryCandidates;
+
+		public TerminalCandidate(string id, List<string> followingIds)
+		{
+			Id = id;
+			FollowingMandatoryCandidates = followingIds == null ? EmptyFollowingCandidates : (IReadOnlyList<string>)followingIds.AsReadOnly();
+		}
+
+		public bool Equals(TerminalCandidate other)
+		{
+			return string.Equals(Id, other.Id);
+		}
+
+		public override bool Equals(object obj)
+		{
+			if (ReferenceEquals(null, obj)) return false;
+			return obj is TerminalCandidate && Equals((TerminalCandidate)obj);
+		}
+
+		public override int GetHashCode()
+		{
+			return (Id != null ? Id.GetHashCode() : 0);
+		}
+
+		public static implicit operator string(TerminalCandidate candidate)
+		{
+			return candidate.Id;
+		}
+
+		public static implicit operator TerminalCandidate(string id)
+		{
+			return new TerminalCandidate(id, null);
 		}
 	}
 }

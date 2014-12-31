@@ -11478,15 +11478,34 @@
           <Terminal Id="Index" />
           <NonTerminal Id="IndexOrganizedTableClause" />
         </Sequence>
-        <!-- TODO -->
-        <!--<Sequence>
+        <Sequence>
           <Terminal Id="External" />
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="ExternalTableAccessDriverType" IsOptional="true" />
           <NonTerminal Id="ExternalTableDataPropeties" />
           <Terminal Id="RightParenthesis" />
           <NonTerminal Id="ErrorLoggingRejectLimit" IsOptional="true" />
-        </Sequence>-->
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ExternalTableAccessDriverType">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Type" />
+          <NonTerminal Id="ExternalTableAccessDriver" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ExternalTableAccessDriver">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="OracleLoader" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="OracleDataPump" />
+        </Sequence>
       </Sequences>
     </Rule>
 
@@ -11564,7 +11583,7 @@
           <NonTerminal Id="ExternalTableAccessParameters" IsOptional="true" />
           <Terminal Id="Location" />
           <Terminal Id="LeftParenthesis" />
-          <NonTerminal Id="ExternalTableDirectoryLocation" />
+          <NonTerminal Id="ExternalTableFileLocation" />
           <Terminal Id="RightParenthesis" />
         </Sequence>
       </Sequences>
@@ -11582,12 +11601,11 @@
     
     <Rule StartingNonTerminal="OpaqueFormatSpecificationOrUsingClobSubquery">
       <Sequences>
-        <!-- TODO -->
-        <!--<Sequence>
+        <Sequence>
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="OpaqueFormatSpecification" />
           <Terminal Id="RightParenthesis" />
-        </Sequence>-->
+        </Sequence>
         <Sequence>
           <Terminal Id="Using" />
           <Terminal Id="Clob" />
@@ -11595,23 +11613,132 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
-    <Rule StartingNonTerminal="ExternalTableDirectoryLocation">
+
+    <Rule StartingNonTerminal="OpaqueFormatSpecification">
+      <Sequences>
+        <!--<Sequence>
+          <NonTerminal Id="ExternalTableRecordFormatInfo" IsOptional="true" />
+          <NonTerminal Id="ExternalTableFieldDefinitions" IsOptional="true" />
+          <NonTerminal Id="ExternalTableColumnTransforms" IsOptional="true" />
+        </Sequence>-->
+        <Sequence>
+          <NonTerminal Id="DataPumpFormatSpecificationParameters" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DataPumpFormatSpecificationParameters">
       <Sequences>
         <Sequence>
-          <Terminal Id="Identifier" />
-          <Terminal Id="Semicolon" />
+          <NonTerminal Id="DataPumpFormatSpecificationParameter" />
+          <NonTerminal Id="DataPumpFormatSpecificationParameters" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DataPumpFormatSpecificationParameter">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Encryption" />
+          <NonTerminal Id="EnabledOrDisabled" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="NoLogFile" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="LogFile" />
+          <NonTerminal Id="DirectoryPrefix" IsOptional="true" />
           <Terminal Id="StringLiteral" />
-          <NonTerminal Id="CommaChainedExternalTableDirectoryLocation" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Compression" />
+          <NonTerminal Id="DataPumpCompressionEnabledOrDisabled" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Version" />
+          <NonTerminal Id="DataPumpVersion" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DataPumpVersion">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Compatible" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Latest" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="StringLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DataPumpCompressionEnabledOrDisabled">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Enabled" />
+          <NonTerminal Id="DataPumpCompressionLevel" IsOptional="true" Comment="Mandatory in documentation" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Disabled" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DataPumpCompressionLevel">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Basic" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Low" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Medium" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="High" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DirectoryPrefix">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="ObjectIdentifier" />
+          <Terminal Id="Colon" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="EnabledOrDisabled">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Enabled" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Disabled" />
         </Sequence>
       </Sequences>
     </Rule>
     
-    <Rule StartingNonTerminal="CommaChainedExternalTableDirectoryLocation">
+    <Rule StartingNonTerminal="ExternalTableFileLocation">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="DirectoryPrefix" IsOptional="true" />
+          <Terminal Id="StringLiteral" />
+          <NonTerminal Id="CommaChainedExternalTableFileLocation" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="CommaChainedExternalTableFileLocation">
       <Sequences>
         <Sequence>
           <Terminal Id="Comma" />
-          <NonTerminal Id="ExternalTableDirectoryLocation" />
+          <NonTerminal Id="ExternalTableFileLocation" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -13228,6 +13355,18 @@
     <Terminal Id="Clob" Value="CLOB" />
     <Terminal Id="Modification" Value="MODIFICATION" />
     <Terminal Id="Partial" Value="PARTIAL" />
+    
+    <!-- External table opaque format specification -->
+    <Terminal Id="OracleLoader" Value="ORACLE_LOADER" />
+    <Terminal Id="OracleDataPump" Value="ORACLE_DATAPUMP" />
+    <Terminal Id="Encryption" Value="ENCRYPTION" />
+    <Terminal Id="NoLogFile" Value="NOLOGFILE" />
+    <Terminal Id="LogFile" Value="LOGFILE" />
+    <Terminal Id="Compression" Value="COMPRESSION" />
+    <Terminal Id="Compatible" Value="COMPATIBLE" />
+    <Terminal Id="Latest" Value="LATEST" />
+    <Terminal Id="Enabled" Value="ENABLED" />
+    <Terminal Id="Disabled" Value="DISABLED" />
     
     <!-- Comment -->
     <Terminal Id="Audit" Value="AUDIT" ReservedWord="Sql" />

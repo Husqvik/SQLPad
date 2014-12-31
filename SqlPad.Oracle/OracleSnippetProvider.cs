@@ -40,7 +40,7 @@ namespace SqlPad.Oracle
 			if (String.IsNullOrWhiteSpace(textToReplace))
 				return EmptyCollection;
 			
-			var candidates = _oracleParser.GetTerminalCandidates(currentNode);
+			var candidates = _oracleParser.GetTerminalCandidates(currentNode).Select(c => c.Id);
 
 			return Snippets.SnippetCollection.Where(s => s.Name.ToUpperInvariant().Contains(textToReplace.ToUpperInvariant()) &&
 			                                             (s.AllowedTerminals.Length == 0 || s.AllowedTerminals.Select(t => t.Id).Intersect(candidates).Any()))

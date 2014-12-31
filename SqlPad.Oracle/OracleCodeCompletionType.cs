@@ -81,7 +81,7 @@ namespace SqlPad.Oracle
 
 		public OracleQueryBlock CurrentQueryBlock { get; private set; }
 
-		public ICollection<string> TerminalCandidates { get; private set; }
+		public ICollection<TerminalCandidate> TerminalCandidates { get; private set; }
 
 		public ICollection<SuggestedKeywordClause> KeywordsClauses { get { return _keywordsClauses; } }
 
@@ -129,7 +129,7 @@ namespace SqlPad.Oracle
 				var extraUnparsedTokens = unparsedEndTrimmedTextBetweenTokenAndCursor.TrimStart().Split(TextSegment.Separators, StringSplitOptions.RemoveEmptyEntries);
 				if (extraUnparsedTokens.Length > 0)
 				{
-					TerminalCandidates = new HashSet<string>(Parser.GetTerminalCandidates(nearestTerminal));
+					TerminalCandidates = Parser.GetTerminalCandidates(nearestTerminal);
 					if (TerminalCandidates.Count == 0 || extraUnparsedTokens.Length > 1 || unparsedEndTrimmedTextBetweenTokenAndCursor.Length < unparsedTextBetweenTokenAndCursor.Length)
 					{
 						InUnparsedData = true;
@@ -187,7 +187,7 @@ namespace SqlPad.Oracle
 
 			if (TerminalCandidates == null)
 			{
-				TerminalCandidates = new HashSet<string>(Parser.GetTerminalCandidates(terminalCandidateSourceToken));
+				TerminalCandidates = Parser.GetTerminalCandidates(terminalCandidateSourceToken);
 			}
 
 			CurrentQueryBlock = SemanticModel.GetQueryBlock(nearestTerminal);
@@ -245,10 +245,10 @@ namespace SqlPad.Oracle
 			ColumnAlias = Column && nearestTerminal.IsWithinOrderByClause();
 		}
 
-		private SuggestedKeywordClause CreateKeywordClause(string terminalId)
+		private SuggestedKeywordClause CreateKeywordClause(TerminalCandidate candidate)
 		{
-			var keywordClause = new SuggestedKeywordClause {TerminalId = terminalId };
-			switch (terminalId)
+			var keywordClause = new SuggestedKeywordClause { TerminalId = candidate.Id };
+			switch (candidate.Id)
 			{
 				case Terminals.Distinct:
 				case Terminals.Unique:
@@ -256,7 +256,7 @@ namespace SqlPad.Oracle
 				case Terminals.Having:
 				case Terminals.Intersect:
 				case Terminals.Union:
-					return keywordClause.WithText(terminalId.ToUpperInvariant());
+					return keywordClause.WithText(candidate.Id.ToUpperInvariant());
 				case Terminals.Group:
 					return keywordClause.WithText("GROUP BY");
 				case Terminals.Order:
@@ -268,7 +268,7 @@ namespace SqlPad.Oracle
 				case Terminals.SetMinus:
 					return keywordClause.WithText("MINUS");
 				default:
-					throw new NotSupportedException(String.Format("Terminal ID '{0}' not supported. ", terminalId));
+					throw new NotSupportedException(String.Format("Terminal ID '{0}' not supported. ", candidate.Id));
 			}
 		}
 

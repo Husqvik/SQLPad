@@ -27,6 +27,8 @@ namespace SqlPad.Oracle
 		}
 
 		internal Regex RegexMatcher { get; private set; }
+
+		internal bool IsFixed { get { return RegexMatcher == null; } }
 	}
 
 	[DebuggerDisplay("SqlGrammarRuleSequenceTerminal (Id={Id}, IsOptional={IsOptional})")]
@@ -38,6 +40,10 @@ namespace SqlPad.Oracle
 		}
 
 		public NodeType Type { get { return NodeType.Terminal; } }
+
+		public SqlGrammarRuleSequence ParentSequence { get; set; }
+
+		public int SequenceIndex { get; set; }
 		
 		public SqlGrammarTerminal Terminal;
 	}
@@ -52,6 +58,10 @@ namespace SqlPad.Oracle
 
 		public NodeType Type { get { return NodeType.NonTerminal; } }
 
+		public SqlGrammarRuleSequence ParentSequence { get; set; }
+
+		public int SequenceIndex { get; set; }
+		
 		public SqlGrammarRule TargetRule;
 	}
 
@@ -62,5 +72,9 @@ namespace SqlPad.Oracle
 		string Id { get; }
 
 		bool IsRequired { get; }
+
+		SqlGrammarRuleSequence ParentSequence { get; }
+		
+		int SequenceIndex { get; }
 	}
 }
