@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -51,6 +52,9 @@ namespace SqlPad.Oracle
 
 			IdentifierMatcher = Terminals[OracleGrammarDescription.Terminals.Identifier].RegexMatcher;
 
+			var missingTerminals = new HashSet<string>();
+			var missingNonTerminals = new HashSet<string>();
+
 			foreach (var sequence in oracleGrammar.Rules.SelectMany(r => r.Sequences))
 			{
 				for (var i = 0; i < sequence.Items.Length; i++)
@@ -59,18 +63,55 @@ namespace SqlPad.Oracle
 					var nonTerminal = item as SqlGrammarRuleSequenceNonTerminal;
 					if (nonTerminal != null)
 					{
-						nonTerminal.TargetRule = NonTerminalRules[nonTerminal.Id];
+						SqlGrammarRule rule;
+						if (NonTerminalRules.TryGetValue(nonTerminal.Id, out rule))
+						{
+							nonTerminal.TargetRule = rule;
+						}
+						else
+						{
+							missingNonTerminals.Add(nonTerminal.Id);
+						}
+
 						nonTerminal.ParentSequence = sequence;
 						nonTerminal.SequenceIndex = i;
 					}
 					else
 					{
 						var terminalReference = (SqlGrammarRuleSequenceTerminal)item;
-						terminalReference.Terminal = Terminals[terminalReference.Id];
+
+						SqlGrammarTerminal terminal;
+						if (Terminals.TryGetValue(terminalReference.Id, out terminal))
+						{
+							terminalReference.Terminal = terminal;
+						}
+						else
+						{
+							missingTerminals.Add(terminalReference.Id);
+						}
+						
 						terminalReference.ParentSequence = sequence;
 						terminalReference.SequenceIndex = i;
 					}
 				}
+			}
+
+			var exceptionMessageBuilder = new StringBuilder();
+			if (missingNonTerminals.Count > 0)
+			{
+				exceptionMessageBuilder.Append("Missing rules for non-terminal IDs: ");
+				exceptionMessageBuilder.AppendLine(String.Join(", ", missingNonTerminals));
+			}
+
+			if (missingTerminals.Count > 0)
+			{
+				exceptionMessageBuilder.Append("Missing specifications for terminal IDs: ");
+				exceptionMessageBuilder.Append(String.Join(", ", missingTerminals));
+			}
+
+			if (exceptionMessageBuilder.Length > 0)
+			{
+				throw new InvalidOperationException(String.Format("Grammar description is invalid. {0}{1}", Environment.NewLine, exceptionMessageBuilder));
 			}
 
 			AvailableNonTerminals = oracleGrammar.StartSymbols.Select(s => CreateInitialNonTerminal(s.Id)).ToArray();

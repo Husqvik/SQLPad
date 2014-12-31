@@ -2857,12 +2857,6 @@
           <Terminal Id="Real" />
         </Sequence>
         <Sequence>
-          <Terminal Id="Blob" />
-        </Sequence>
-        <Sequence>
-          <Terminal Id="Clob" />
-        </Sequence>
-        <Sequence>
           <Terminal Id="NClob" />
         </Sequence>
         <Sequence>
@@ -2879,6 +2873,9 @@
         </Sequence>
         <Sequence>
           <Terminal Id="UniversalRowId" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Blob" />
         </Sequence>
         <Sequence>
           <Terminal Id="Clob" />
@@ -2967,12 +2964,6 @@
           <Terminal Id="Real" />
         </Sequence>
         <Sequence>
-          <Terminal Id="Blob" />
-        </Sequence>
-        <Sequence>
-          <Terminal Id="Clob" />
-        </Sequence>
-        <Sequence>
           <Terminal Id="NClob" />
         </Sequence>
         <Sequence>
@@ -2992,6 +2983,9 @@
         <Sequence>
           <Terminal Id="UniversalRowId" />
           <NonTerminal Id="DataTypeSimplePrecision" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Blob" />
         </Sequence>
         <Sequence>
           <Terminal Id="Clob" />
@@ -11616,13 +11610,858 @@
 
     <Rule StartingNonTerminal="OpaqueFormatSpecification">
       <Sequences>
-        <!--<Sequence>
+        <Sequence>
+          <NonTerminal Id="DataPumpFormatSpecificationParameters" />
+        </Sequence>
+        <Sequence>
           <NonTerminal Id="ExternalTableRecordFormatInfo" IsOptional="true" />
           <NonTerminal Id="ExternalTableFieldDefinitions" IsOptional="true" />
           <NonTerminal Id="ExternalTableColumnTransforms" IsOptional="true" />
-        </Sequence>-->
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ExternalTableColumnTransforms">
+      <Sequences>
         <Sequence>
-          <NonTerminal Id="DataPumpFormatSpecificationParameters" />
+          <Terminal Id="Column" />
+          <Terminal Id="Transforms" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="ExternalTableColumnTransformList" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ExternalTableColumnTransformList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ExternalTableColumnTransform" />
+          <NonTerminal Id="ExternalTableColumnTransformListChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ExternalTableColumnTransform">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Identifier" />
+          <Terminal Id="From" />
+          <NonTerminal Id="ExternalTableColumnTransformType" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ExternalTableColumnTransformType">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Null" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Constant" />
+          <Terminal Id="StringLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Concat" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="FieldIdentifierOrConstantStringList" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="LargeObjectFile" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="FieldIdentifierOrConstantStringList" />
+          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="ExternalTableColumnTransformLargeObjectFileAttributeList" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="StartOf" />
+          <Terminal Id="Identifier" />
+          <NonTerminal Id="ParenthesisEnclosedIntegerLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ExternalTableColumnTransformLargeObjectFileAttributeList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="From" />
+          <NonTerminal Id="ParenthesisEnclosedIdentifierList" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Clob" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Blob" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="CharacterSet" />
+          <Terminal Id="MathEquals" />
+          <Terminal Id="Identifier" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="FieldIdentifierOrConstantStringList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Constant" />
+          <Terminal Id="StringLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Identifier" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ExternalTableColumnTransformListChained">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="ExternalTableColumnTransformList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ExternalTableFieldDefinitions">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Fields" />
+          <Terminal Id="IgnoreCharactersAfterEndOfRecord" IsOptional="true" />
+          <NonTerminal Id="CommaSeparatedValueOptions" IsOptional="true" />
+          <NonTerminal Id="DelimiterSpecification" IsOptional="true" />
+          <NonTerminal Id="TrimSpecification" IsOptional="true" />
+          <NonTerminal Id="AllFieldsOverrideTheseFields" IsOptional="true" />
+          <NonTerminal Id="MissingFieldValuesAreNull" IsOptional="true" />
+          <NonTerminal Id="RejectRowsWithAllNullFields" IsOptional="true" />
+          <NonTerminal Id="DateFormatMask" IsOptional="true" />
+          <NonTerminal Id="NullIfOrNoNullIf" IsOptional="true" />
+          <NonTerminal Id="ParenthesisEnclosedExternalTableFieldList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ParenthesisEnclosedExternalTableFieldList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="ExternalTableFieldList" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ExternalTableFieldList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ExternalTableField" />
+          <NonTerminal Id="ExternalTableFieldListChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ExternalTableField">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Identifier" />
+          <NonTerminal Id="PositionSpecification" IsOptional="true" />
+          <NonTerminal Id="DataTypeSpecification" IsOptional="true" />
+          <NonTerminal Id="InitializationSpecification" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="DataTypeSpecification">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Unsigned" IsOptional="true" />
+          <Terminal Id="Integer" />
+          <Terminal Id="External" IsOptional="true" />
+          <NonTerminal Id="ParenthesisEnclosedIntegerLiteral" IsOptional="true" />
+          <NonTerminal Id="DelimiterSpecification" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="DecimalOrZoned" />
+          <NonTerminal Id="ExternalSpecificationOrPrecisionAndScale" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="OracleDate" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="OracleNumber" />
+          <Terminal Id="Counted" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Float" />
+          <Terminal Id="External" IsOptional="true" />
+          <NonTerminal Id="ParenthesisEnclosedIntegerLiteral" IsOptional="true" />
+          <NonTerminal Id="DelimiterSpecification" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Double" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="BinaryFloat" />
+          <Terminal Id="External" IsOptional="true" />
+          <NonTerminal Id="ParenthesisEnclosedIntegerLiteral" IsOptional="true" />
+          <NonTerminal Id="DelimiterSpecification" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="BinaryDouble" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Raw" />
+          <NonTerminal Id="ParenthesisEnclosedIntegerLiteral" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Char" />
+          <NonTerminal Id="ParenthesisEnclosedIntegerLiteral" IsOptional="true" />
+          <NonTerminal Id="DelimiterSpecification" IsOptional="true" />
+          <NonTerminal Id="TrimSpecification" IsOptional="true" />
+          <NonTerminal Id="DateFormatSpecification" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="VaryingCharacterOrRawDataType" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="LengthOfLengthPrefix" IsOptional="true" />
+          <Terminal Id="IntegerLiteral" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="DateFormatSpecification">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="DateFormat" IsOptional="true" />
+          <NonTerminal Id="DateFormatType" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="DateFormatType">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Interval" />
+          <NonTerminal Id="ExternalTableFieldTypeYearToMonthOrDayToSecond" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="DateOrTimestampSpecification" />
+          <Terminal Id="Mask" />
+          <Terminal Id="DoubleQuotedString" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="DateOrTimestampSpecification">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Date" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Timestamp" />
+          <NonTerminal Id="WithTimeZone" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ExternalTableFieldTypeYearToMonthOrDayToSecond">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="YearToMonth" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="DayToSecond" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ExternalSpecificationOrPrecisionAndScale">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="External" />
+          <NonTerminal Id="ParenthesisEnclosedIntegerLiteral" IsOptional="true" />
+          <NonTerminal Id="DelimiterSpecification" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="LengthOfLengthPrefix" IsOptional="true" />
+          <Terminal Id="IntegerLiteral" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="LengthOfLengthPrefix">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="IntegerLiteral" />
+          <Terminal Id="Comma" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="DecimalOrZoned">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Decimal" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Zoned" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="VaryingCharacterOrRawDataType">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Varchar" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Varraw" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="VarcharC" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="VarrawC" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="InitializationSpecification">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="DefaultIf" />
+          <NonTerminal Id="ExternalTableConditionSpecification" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="NullIf" />
+          <NonTerminal Id="ExternalTableConditionSpecification" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ExternalTableConditionSpecification">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ExternalTableCondition" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ExternalTableConditionSpecification" />
+          <NonTerminal Id="ExternalTableConditionSpecificationChained" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="ExternalTableConditionSpecification" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ExternalTableCondition">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="IdentifierOrPositionRange" />
+          <!--<NonTerminal Id="ExternalTableConditionLogicalOperator" />--><!-- TODO -->
+          <NonTerminal Id="StringLiteralOrBlanks" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="ExternalTableCondition" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ExternalTableCondition" />
+          <Terminal Id="And" />
+          <NonTerminal Id="ExternalTableCondition" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="StringLiteralOrBlanks">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="StringLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Blanks" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="IdentifierOrPositionRange">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Identifier" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <Terminal Id="IntegerLiteral" />
+          <Terminal Id="Colon" />
+          <Terminal Id="IntegerLiteral" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ExternalTableConditionSpecificationChained">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="LogicalOperator" />
+          <NonTerminal Id="ExternalTableConditionSpecification" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="PositionSpecification">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Position" IsOptional="true" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="StartPositionOrPositionIncrement" />
+          <NonTerminal Id="ColonOrMinus" />
+          <Terminal Id="IntegerLiteral" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ColonOrMinus">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Colon" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="MathMinus" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="StartPositionOrPositionIncrement">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Asterisk" />
+          <NonTerminal Id="PositionIncrement" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="PositionIncrement">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="MathPlusOrMinus" />
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="MathPlusOrMinus">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="MathPlus" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="MathMinus" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ExternalTableFieldListChained">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="ExternalTableFieldList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="DelimiterSpecification">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Enclosed" />
+          <Terminal Id="By" />
+          <Terminal Id="StringLiteral" />
+          <NonTerminal Id="AndStringLiteral" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Terminated" />
+          <Terminal Id="By" />
+          <NonTerminal Id="StringLiteralOrWhitespace" />
+          <NonTerminal Id="EnclosedByClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="EnclosedByClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Optionally" IsOptional="true" />
+          <Terminal Id="Enclosed" />
+          <Terminal Id="By" />
+          <Terminal Id="StringLiteral" />
+          <NonTerminal Id="AndStringLiteral" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="StringLiteralOrWhitespace">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="StringLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Whitespace" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AndStringLiteral">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="And" />
+          <Terminal Id="StringLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="TrimSpecification">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftRightTrim" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="NoTrim" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="LeftTrim" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="RightTrim" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="SqlLoaderTrim" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AllFieldsOverrideTheseFields">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="All" />
+          <Terminal Id="Fields" />
+          <Terminal Id="Override" />
+          <Terminal Id="These" />
+          <Terminal Id="Fields" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="MissingFieldValuesAreNull">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Missing" />
+          <Terminal Id="Field" />
+          <Terminal Id="Values" />
+          <Terminal Id="Are" />
+          <Terminal Id="Null" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="RejectRowsWithAllNullFields">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Reject" />
+          <Terminal Id="Rows" />
+          <Terminal Id="With" />
+          <Terminal Id="All" />
+          <Terminal Id="Null" />
+          <Terminal Id="Fields" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="DateFormatMask">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="DateFormat" />
+          <NonTerminal Id="DateOrTimestamp" IsOptional="true" />
+          <Terminal Id="Mask" />
+          <Terminal Id="StringLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="DateOrTimestamp">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Date" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Timestamp" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+      
+    <Rule StartingNonTerminal="NullIfOrNoNullIf">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="NullIf" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="NoNullIf" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="CommaSeparatedValueOptions">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="CommaSeparatedValue" />
+          <NonTerminal Id="WithOrWithoutEmbedded" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="WithOrWithoutEmbedded">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="WithOrWithout" />
+          <Terminal Id="Embedded" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ExternalTableRecordFormatInfo">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Records" />
+          <NonTerminal Id="ExternalTableRecordType" />
+          <NonTerminal Id="RecordSpecificationOptions" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="RecordSpecificationOptions">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="RecordSpecificationOption" />
+          <NonTerminal Id="RecordSpecificationOptions" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="RecordSpecificationOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="CharacterSet" />
+          <Terminal Id="StringLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Preprocessor" />
+          <NonTerminal Id="DirectoryPrefix" IsOptional="true" />
+          <Terminal Id="StringLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Language" />
+          <Terminal Id="StringLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Territory" />
+          <Terminal Id="StringLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Data" />
+          <Terminal Id="Is" />
+          <NonTerminal Id="LittleOrBig" />
+          <Terminal Id="Endian" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="ByteOrderMark" />
+          <NonTerminal Id="CheckOrNoCheck" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="String" />
+          <Terminal Id="Sizes" />
+          <Terminal Id="Are" />
+          <Terminal Id="In" />
+          <NonTerminal Id="BytesOrCharacters" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Load" />
+          <Terminal Id="When" />
+          <NonTerminal Id="ExternalTableConditionSpecification" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="OutputFileSpecifications" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="ReadSize" />
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="DisableDirectoryLinkCheck" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="DateCache" />
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Skip" />
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="FieldNames" />
+          <NonTerminal Id="FieldNameOption" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="InputOutputOptions" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="DirectInputOutputOrNoDirectInputOutput" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="DirectNetworkFileSystemEnable" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="DirectNetworkFileSystemDisable" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="DirectNetworkFileSystemReadBuffers" />
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="OutputFileSpecifications">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="OutputFileSpecification" />
+          <NonTerminal Id="OutputFileSpecifications" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="OutputFileSpecification">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="NoBadFile" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="BadFile" />
+          <NonTerminal Id="DirectoryPrefix" IsOptional="true" />
+          <Terminal Id="StringLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="NoDiscardFile" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="DiscardFile" />
+          <NonTerminal Id="DirectoryPrefix" IsOptional="true" />
+          <Terminal Id="StringLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="NoLogFile" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="LogFile" />
+          <NonTerminal Id="DirectoryPrefix" IsOptional="true" />
+          <Terminal Id="StringLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DirectInputOutputOrNoDirectInputOutput">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="DirectInputOutput" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="NoDirectInputOutput" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="FieldNameOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="First" />
+          <Terminal Id="File" />
+          <Terminal Id="Ignore" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="All" />
+          <Terminal Id="Files" />
+          <Terminal Id="Ignore" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="None" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="BytesOrCharacters">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Bytes" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Characters" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="CheckOrNoCheck">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Check" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="NoCheck" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="LittleOrBig">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Little" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Big" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ExternalTableRecordType">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Fixed" />
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Variable" />
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Delimited" />
+          <Terminal Id="By" />
+          <NonTerminal Id="NewLineOrStringLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="NewLineOrStringLiteral">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="NewLine" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="StringLiteral" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -13353,6 +14192,7 @@
     <Terminal Id="Location" Value="LOCATION" />
     <Terminal Id="Parameters" Value="PARAMETERS" />
     <Terminal Id="Clob" Value="CLOB" />
+    <Terminal Id="Blob" Value="BLOB" />
     <Terminal Id="Modification" Value="MODIFICATION" />
     <Terminal Id="Partial" Value="PARTIAL" />
     
@@ -13367,7 +14207,82 @@
     <Terminal Id="Latest" Value="LATEST" />
     <Terminal Id="Enabled" Value="ENABLED" />
     <Terminal Id="Disabled" Value="DISABLED" />
-    
+    <Terminal Id="Records" Value="RECORDS" />
+    <Terminal Id="CharacterSet" Value="CHARACTERSET" />
+    <Terminal Id="Preprocessor" Value="PREPROCESSOR" />
+    <Terminal Id="Territory" Value="TERRITORY" />
+    <Terminal Id="Endian" Value="ENDIAN" />
+    <Terminal Id="ByteOrderMark" Value="BYTEORDERMARK" />
+    <Terminal Id="Sizes" Value="SIZES" />
+    <Terminal Id="Are" Value="ARE" />
+    <Terminal Id="ReadSize" Value="READSIZE" />
+    <Terminal Id="DisableDirectoryLinkCheck" Value="DISABLE_DIRECTORY_LINK_CHECK" />
+    <Terminal Id="DateCache" Value="DATE_CACHE" />
+    <Terminal Id="FieldNames" Value="FIELD_NAMES" />
+    <Terminal Id="InputOutputOptions" Value="IO_OPTIONS" />
+    <Terminal Id="DirectNetworkFileSystemEnable" Value="DNFS_ENABLE" />
+    <Terminal Id="DirectNetworkFileSystemDisable" Value="DNFS_DISABLE" />
+    <Terminal Id="DirectNetworkFileSystemReadBuffers" Value="DNFS_READBUFFERS" />
+    <Terminal Id="DirectInputOutput" Value="DIRECTIO" />
+    <Terminal Id="NoDirectInputOutput" Value="NODIRECTIO" />
+    <Terminal Id="File" Value="FILE" ReservedWord="Sql" />
+    <Terminal Id="Files" Value="FILES" />
+    <Terminal Id="Bytes" Value="BYTES" />
+    <Terminal Id="Characters" Value="CHARACTERS" />
+    <Terminal Id="NoCheck" Value="NOCHECK" />
+    <Terminal Id="Little" Value="LITTLE" />
+    <Terminal Id="Big" Value="BIG" />
+    <Terminal Id="Fixed" Value="FIXED" />
+    <Terminal Id="Variable" Value="VARIABLE" />
+    <Terminal Id="Delimited" Value="DELIMITED" />
+    <Terminal Id="NewLine" Value="NEWLINE" />
+    <Terminal Id="Fields" Value="FIELDS" />
+    <Terminal Id="IgnoreCharactersAfterEndOfRecord" Value="IGNORE_CHARS_AFTER_EOR" />
+    <Terminal Id="Enclosed" Value="ENCLOSED" />
+    <Terminal Id="Terminated" Value="TERMINATED" />
+    <Terminal Id="Optionally" Value="OPTIONALLY" />
+    <Terminal Id="Whitespace" Value="WHITESPACE" />
+    <Terminal Id="LeftRightTrim" Value="LRTRIM" />
+    <Terminal Id="NoTrim" Value="NOTRIM" />
+    <Terminal Id="LeftTrim" Value="LTRIM" />
+    <Terminal Id="RightTrim" Value="RTRIM" />
+    <Terminal Id="SqlLoaderTrim" Value="LDRTRIM" />
+    <Terminal Id="Override" Value="OVERRIDE" />
+    <Terminal Id="These" Value="THESE" />
+    <Terminal Id="Missing" Value="MISSING" />
+    <Terminal Id="Field" Value="FIELD" />
+    <Terminal Id="DateFormat" Value="DATE_FORMAT" />
+    <Terminal Id="Mask" Value="MASK" />
+    <Terminal Id="NullIf" Value="NULLIF" />
+    <Terminal Id="NoNullIf" Value="NONULLIF" />
+    <Terminal Id="CommaSeparatedValue" Value="CSV" />
+    <Terminal Id="WithOrWithout" Value="WITHORWITHOUT" />
+    <Terminal Id="Embedded" Value="EMBEDDED" />
+    <Terminal Id="Transforms" Value="TRANSFORMS" />
+    <Terminal Id="Concat" Value="CONCAT" />
+    <Terminal Id="LargeObjectFile" Value="LOBFILE" />
+    <Terminal Id="StartOf" Value="STARTOF" />
+    <Terminal Id="Unsigned" Value="UNSIGNED" />
+    <Terminal Id="OracleDate" Value="ORACLE_DATE" />
+    <Terminal Id="OracleNumber" Value="ORACLE_NUMBER" />
+    <Terminal Id="Counted" Value="COUNTED" />
+    <Terminal Id="BinaryFloat" Value="BINARY_FLOAT" />
+    <Terminal Id="BinaryDouble" Value="BINARY_DOUBLE" />
+    <Terminal Id="Zoned" Value="ZONED" />
+    <Terminal Id="Varraw" Value="VARRAW" />
+    <Terminal Id="VarcharC" Value="VARCHARC" />
+    <Terminal Id="VarrawC" Value="VARRAWC" />
+    <Terminal Id="DefaultIf" Value="DEFAULTIF" />
+    <Terminal Id="Position" Value="POSITION" />
+    <Terminal Id="YearToMonth" Value="YEAR_TO_MONTH" />
+    <Terminal Id="DayToSecond" Value="DAY_TO_SECOND" />
+    <Terminal Id="NoBadFile" Value="NOBADFILE" />
+    <Terminal Id="BadFile" Value="BADFILE" />
+    <Terminal Id="NoDiscardFile" Value="NODISCARDFILE" />
+    <Terminal Id="DiscardFile" Value="DISCARDFILE" />
+    <Terminal Id="Blanks" Value="BLANKS" />
+    <Terminal Id="DoubleQuotedString" RegexValue="^&quot;[^&quot;]*&quot;$" />
+
     <!-- Comment -->
     <Terminal Id="Audit" Value="AUDIT" ReservedWord="Sql" />
     <Terminal Id="IndexType" Value="INDEXTYPE" />
