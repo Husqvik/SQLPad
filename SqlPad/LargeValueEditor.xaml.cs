@@ -21,7 +21,6 @@ namespace SqlPad
 		private readonly FindReplaceManager _findReplaceManager;
 		private readonly ILargeValue _largeValue;
 		private readonly ILargeBinaryValue _largeBinaryValue;
-		private readonly EditorInfoModel _editorInfoModel = new EditorInfoModel();
 		private bool _isXml;
 
 		public LargeValueEditor(string columnName, ILargeValue largeValue)
@@ -30,16 +29,12 @@ namespace SqlPad
 
 			SetMaximumHeight();
 
-			TextEditor.TextArea.Caret.PositionChanged += CaretPositionChangedHandler;
-			TextEditor.TextArea.SelectionChanged += SelectionChangedHandler;
-
 			HexEditor.TextArea.TextView.ElementGenerators.Clear();
 
 			_findReplaceManager = (FindReplaceManager)Resources["FindReplaceManager"];
 			_findReplaceManager.OwnerWindow = this;
 
 			Title = columnName;
-			EditorInfoPanel.DataContext = _editorInfoModel;
 
 			_largeValue = largeValue;
 			_largeBinaryValue = _largeValue as ILargeBinaryValue;
@@ -119,18 +114,6 @@ namespace SqlPad
 				Messages.ShowError(this, e.Message);
 				Close();
 			}
-		}
-
-		private void CaretPositionChangedHandler(object sender, EventArgs eventArgs)
-		{
-			var location = TextEditor.Document.GetLocation(TextEditor.CaretOffset);
-			_editorInfoModel.CurrentLine = location.Line;
-			_editorInfoModel.CurrentColumn = location.Column;
-		}
-
-		private void SelectionChangedHandler(object sender, EventArgs eventArgs)
-		{
-			_editorInfoModel.SelectionLength = TextEditor.SelectionLength == 0 ? null : (int?)TextEditor.SelectionLength;
 		}
 
 		private bool TryOpenPdf()

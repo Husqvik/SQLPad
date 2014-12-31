@@ -7,17 +7,17 @@ namespace SqlPad.DragDrop
 {
 	public class DraggedAdorner : Adorner
 	{
-		private readonly ContentPresenter contentPresenter;
-		private double left;
-		private double top;
-		private readonly AdornerLayer adornerLayer;
+		private readonly ContentPresenter _contentPresenter;
+		private readonly AdornerLayer _adornerLayer;
+		private double _left;
+		private double _top;
 
 		public DraggedAdorner(object dragDropData, DataTemplate dragDropTemplate, UIElement adornedElement, AdornerLayer adornerLayer)
 			: base(adornedElement)
 		{
-			this.adornerLayer = adornerLayer;
+			_adornerLayer = adornerLayer;
 
-			this.contentPresenter =
+			_contentPresenter =
 				new ContentPresenter
 				{
 					Content = dragDropData,
@@ -25,35 +25,35 @@ namespace SqlPad.DragDrop
 					Opacity = 0.7
 				};
 
-			this.adornerLayer.Add(this);
+			_adornerLayer.Add(this);
 		}
 
 		public void SetPosition(double left, double top)
 		{
-			this.left = left - 1;
-			this.top = top + 13;
-			
-			if (this.adornerLayer != null)
+			_left = left - 1;
+			_top = top + 13;
+
+			if (_adornerLayer != null)
 			{
-				this.adornerLayer.Update(this.AdornedElement);
+				_adornerLayer.Update(AdornedElement);
 			}
 		}
 
 		protected override Size MeasureOverride(Size constraint)
 		{
-			this.contentPresenter.Measure(constraint);
-			return this.contentPresenter.DesiredSize;
+			_contentPresenter.Measure(constraint);
+			return _contentPresenter.DesiredSize;
 		}
 
 		protected override Size ArrangeOverride(Size finalSize)
 		{
-			this.contentPresenter.Arrange(new Rect(finalSize));
+			_contentPresenter.Arrange(new Rect(finalSize));
 			return finalSize;
 		}
 
 		protected override Visual GetVisualChild(int index)
 		{
-			return this.contentPresenter;
+			return _contentPresenter;
 		}
 
 		protected override int VisualChildrenCount
@@ -65,14 +65,14 @@ namespace SqlPad.DragDrop
 		{
 			var result = new GeneralTransformGroup();
 			result.Children.Add(base.GetDesiredTransform(transform));
-			result.Children.Add(new TranslateTransform(this.left, this.top));
+			result.Children.Add(new TranslateTransform(_left, _top));
 
 			return result;
 		}
 
 		public void Detach()
 		{
-			this.adornerLayer.Remove(this);
+			_adornerLayer.Remove(this);
 		}
 	}
 }

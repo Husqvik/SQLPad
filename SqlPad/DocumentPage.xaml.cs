@@ -368,7 +368,6 @@ namespace SqlPad
 			Editor.Document.Changing += DocumentChangingHandler;
 
 			Editor.TextArea.Caret.PositionChanged += CaretPositionChangedHandler;
-			Editor.TextArea.SelectionChanged += SelectionChangedHandler;
 
 			EditorAdapter = new TextEditorAdapter(Editor);
 		}
@@ -578,11 +577,6 @@ namespace SqlPad
 			{
 				Editor.Save(WorkDocument.File.FullName);
 			}
-		}
-
-		private void SelectionChangedHandler(object sender, EventArgs eventArgs)
-		{
-			_pageModel.SelectionLength = Editor.SelectionLength == 0 ? null : (int?)Editor.SelectionLength;
 		}
 
 		private void DatabaseModelInitializedHandler(object sender, EventArgs args)
@@ -1154,10 +1148,6 @@ namespace SqlPad
 			CloseToolTipWhenNotOpenByShortCut();
 
 			var parenthesisNodes = new List<StatementGrammarNode>();
-
-			var location = Editor.Document.GetLocation(Editor.CaretOffset);
-			_pageModel.CurrentLine = location.Line;
-			_pageModel.CurrentColumn = location.Column;
 
 			if (!_isParsing)
 			{

@@ -3,7 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
              xmlns:sqlPad="clr-namespace:SqlPad"
              xmlns:commands="clr-namespace:SqlPad.Commands"
              xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
@@ -128,7 +127,7 @@
 					<ColumnDefinition Width="Auto" />
 					<ColumnDefinition Width="*" />
 				</Grid.ColumnDefinitions>
-				<avalonedit:TextEditor x:Name="Editor"
+				<sqlPad:SqlTextEditor x:Name="Editor"
 				                       FontFamily="Consolas"
 				                       ShowLineNumbers="True"
 				                       TextChanged="EditorTextChangedHandler"
@@ -137,7 +136,7 @@
 				                       PreviewKeyDown="EditorKeyDownHandler"
 				                       PreviewKeyUp="EditorKeyUpHandler"
 				                       MouseHoverStopped="MouseHoverStoppedHandler">
-					<avalonedit:TextEditor.CommandBindings>
+					<sqlPad:SqlTextEditor.CommandBindings>
 						<CommandBinding Command="commands:GenericCommands.CreateNewPage" Executed="CreateNewPage" />
 						<CommandBinding Command="commands:GenericCommands.FindUsages" Executed="FindUsages" />
 						<CommandBinding Command="commands:GenericCommands.FormatStatement" Executed="FormatStatement" />
@@ -150,9 +149,9 @@
 						<CommandBinding Command="commands:GenericCommands.Save" Executed="SaveCommandExecutedHandler" />
 						<CommandBinding Command="commands:GenericCommands.ShowCodeCompletionOption" Executed="ShowCodeCompletionOptions" CanExecute="CanExecuteShowCodeCompletionHandler" />
 						<CommandBinding Command="commands:GenericCommands.ShowFunctionOverload" Executed="ShowFunctionOverloads" />
-					</avalonedit:TextEditor.CommandBindings>
+					</sqlPad:SqlTextEditor.CommandBindings>
 
-					<avalonedit:TextEditor.ContextMenu>
+					<sqlPad:SqlTextEditor.ContextMenu>
 						<ContextMenu>
 							<MenuItem Command="Undo" />
 							<MenuItem Command="Redo" />
@@ -161,9 +160,9 @@
 							<MenuItem Command="Copy" />
 							<MenuItem Command="Paste" />
 						</ContextMenu>
-					</avalonedit:TextEditor.ContextMenu>
+					</sqlPad:SqlTextEditor.ContextMenu>
 
-					<avalonedit:TextEditor.Style>
+					<sqlPad:SqlTextEditor.Style>
 						<Style>
 							<Style.Triggers>
 								<DataTrigger Binding="{Binding ElementName=BindVariableList, Path=Visibility}" Value="0">
@@ -174,8 +173,8 @@
 								</DataTrigger>
 							</Style.Triggers>
 						</Style>
-					</avalonedit:TextEditor.Style>
-				</avalonedit:TextEditor>
+					</sqlPad:SqlTextEditor.Style>
+				</sqlPad:SqlTextEditor>
 				<GridSplitter Grid.Column="1" Width="4" HorizontalAlignment="Center" ShowsPreview="True" VerticalAlignment="Stretch" Background="DimGray" Visibility="{Binding ElementName=BindVariableList, Path=Visibility}" />
 				<ScrollViewer Grid.Column="2" x:Name="BindVariableList" Visibility="{Binding Path=BindVariableListVisibility}" VerticalScrollBarVisibility="Auto" DataContext="{Binding}">
 					<StackPanel>
@@ -341,13 +340,13 @@
 				<StackPanel Orientation="Horizontal" sqlPad:MarginSetter.Margin="2,0,2,0">
 					<TextBlock>
 						<Run Text="Line: " />
-						<Run Text="{Binding CurrentLine}" />
+						<Run Text="{Binding ElementName=Editor, Path=CurrentLine, Mode=OneWay}" />
 						<Run Text=" Column: " />
-						<Run Text="{Binding CurrentColumn}" />
+						<Run Text="{Binding ElementName=Editor, Path=CurrentColumn, Mode=OneWay}" />
 					</TextBlock>
-					<TextBlock Visibility="{Binding SelectionTextVisibility}">
+					<TextBlock Visibility="{Binding ElementName=Editor, Path=CurrentSelectionLength, Mode=OneWay, Converter={StaticResource ObjectToVisibilityConverter}}">
 						<Run Text=" Selection: " />
-						<Run Text="{Binding SelectionLength}" />
+						<Run Text="{Binding ElementName=Editor, Path=CurrentSelectionLength, Mode=OneWay}" />
 					</TextBlock>
 				</StackPanel>
 			</StatusBarItem>

@@ -1,12 +1,12 @@
 ﻿<Window x:Class="SqlPad.LargeValueEditor"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
 		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 		xmlns:findReplace="clr-namespace:SqlPad.FindReplace"
 		xmlns:sqlPad="clr-namespace:SqlPad"
 		xmlns:moonPdfLib="clr-namespace:MoonPdfLib;assembly=MoonPdfLib"
+		xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
 		mc:Ignorable="d"
 		d:DesignHeight="640" d:DesignWidth="320"
         Width="Auto" Height="Auto" MinHeight="320" MinWidth="480"
@@ -49,23 +49,23 @@
 							<StackPanel x:Name="EditorInfoPanel" Orientation="Horizontal" sqlPad:MarginSetter.Margin="2,0,2,0">
 								<TextBlock>
 									<Run Text="Line: " />
-									<Run Text="{Binding CurrentLine}" />
+									<Run Text="{Binding ElementName=TextEditor, Path=CurrentLine, Mode=OneWay}" />
 									<Run Text=" Column: " />
-									<Run Text="{Binding CurrentColumn}" />
+									<Run Text="{Binding ElementName=TextEditor, Path=CurrentColumn, Mode=OneWay}" />
 								</TextBlock>
-								<TextBlock Visibility="{Binding SelectionTextVisibility}">
+								<TextBlock Visibility="{Binding ElementName=TextEditor, Path=CurrentSelectionLength, Mode=OneWay, Converter={StaticResource ObjectToVisibilityConverter}}">
 									<Run Text=" Selection: " />
-									<Run Text="{Binding SelectionLength}" />
+									<Run Text="{Binding ElementName=TextEditor, Path=CurrentSelectionLength, Mode=OneWay}" />
 								</TextBlock>
 							</StackPanel>
 						</StatusBarItem>
 					</StatusBar>
-					<avalonedit:TextEditor x:Name="TextEditor"
+					<sqlPad:SqlTextEditor x:Name="TextEditor"
 										   FontFamily="Consolas"
 										   ShowLineNumbers="True"
 										   IsReadOnly="True"
 										   WordWrap="{Binding ElementName=CheckBoxWordWrap, Path=IsChecked}">
-						<avalonedit:TextEditor.ContextMenu>
+						<sqlPad:SqlTextEditor.ContextMenu>
 							<ContextMenu>
 								<MenuItem Command="Undo" />
 								<MenuItem Command="Redo" />
@@ -74,8 +74,8 @@
 								<MenuItem Command="Copy" />
 								<MenuItem Command="Paste" />
 							</ContextMenu>
-						</avalonedit:TextEditor.ContextMenu>
-					</avalonedit:TextEditor>
+						</sqlPad:SqlTextEditor.ContextMenu>
+					</sqlPad:SqlTextEditor>
 				</DockPanel>
 			</TabItem>
 			<TabItem x:Name="TabRaw" Header="Raw" Visibility="Collapsed">
@@ -84,9 +84,7 @@
 						<Button x:Name="ButtonSaveRawAs" Content="Save as..." Padding="6,0,6,0" Click="SaveRawAsClickHandler" Visibility="Collapsed" />
 					</StackPanel>
 					<Grid>
-						<avalonedit:TextEditor x:Name="HexEditor"
-											   FontFamily="Consolas"
-											   IsReadOnly="True" />
+						<avalonedit:TextEditor x:Name="HexEditor" FontFamily="Consolas" IsReadOnly="True" />
 						<StackPanel x:Name="LoadingNotification" VerticalAlignment="Center" Width="240" sqlPad:MarginSetter.Margin="0,8,0,8">
 							<TextBlock Text="Loading..." FontSize="16" HorizontalAlignment="Center" />
 							<ProgressBar x:Name="BinaryValueLoadingProgress" Height="24" IsIndeterminate="True" />

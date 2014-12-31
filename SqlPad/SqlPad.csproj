@@ -107,10 +107,10 @@
     <Compile Include="Configuration.cs">
       <DependentUpon>Configuration.xsd</DependentUpon>
     </Compile>
+    <Compile Include="DataSpaceConverter.cs" />
     <Compile Include="DragDrop\DragDropHelper.cs" />
     <Compile Include="DragDrop\DraggedAdorner.cs" />
     <Compile Include="EditableTabHeaderControl.cs" />
-    <Compile Include="EditorInfoModel.cs" />
     <Compile Include="EditorNavigationService.cs" />
     <Compile Include="ILargeTextValue.cs" />
     <Compile Include="DragDrop\InsertionAdorner.cs" />
@@ -142,6 +142,7 @@
     <Compile Include="PageModel.cs" />
     <Compile Include="DatabaseProviderConfiguration.cs" />
     <Compile Include="SqlFoldingStrategy.cs" />
+    <Compile Include="SqlTextEditor.cs" />
     <Compile Include="StatementCommentNode.cs" />
     <Compile Include="StatementExecutionModel.cs" />
     <Compile Include="StatementNode.cs" />

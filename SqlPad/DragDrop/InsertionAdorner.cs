@@ -6,11 +6,13 @@ namespace SqlPad.DragDrop
 {
 	public class InsertionAdorner : Adorner
 	{
-		private readonly bool isSeparatorHorizontal;
-		public bool IsInFirstHalf { get; set; }
-		private readonly AdornerLayer adornerLayer;
 		private static readonly Pen Pen;
 		private static readonly PathGeometry Triangle;
+
+		private readonly bool _isSeparatorHorizontal;
+		private readonly AdornerLayer _adornerLayer;
+		
+		public bool IsInFirstHalf { get; set; }
 
 		static InsertionAdorner()
 		{
@@ -36,12 +38,12 @@ namespace SqlPad.DragDrop
 		public InsertionAdorner(bool isSeparatorHorizontal, bool isInFirstHalf, UIElement adornedElement, AdornerLayer adornerLayer)
 			: base(adornedElement)
 		{
-			this.isSeparatorHorizontal = isSeparatorHorizontal;
-			this.IsInFirstHalf = isInFirstHalf;
-			this.adornerLayer = adornerLayer;
-			this.IsHitTestVisible = false;
+			_isSeparatorHorizontal = isSeparatorHorizontal;
+			IsInFirstHalf = isInFirstHalf;
+			_adornerLayer = adornerLayer;
+			IsHitTestVisible = false;
 
-			this.adornerLayer.Add(this);
+			_adornerLayer.Add(this);
 		}
 
 		protected override void OnRender(DrawingContext drawingContext)
@@ -52,7 +54,7 @@ namespace SqlPad.DragDrop
 			CalculateStartAndEndPoint(out startPoint, out endPoint);
 			drawingContext.DrawLine(Pen, startPoint, endPoint);
 
-			if (this.isSeparatorHorizontal)
+			if (_isSeparatorHorizontal)
 			{
 				DrawTriangle(drawingContext, startPoint, 0);
 				DrawTriangle(drawingContext, endPoint, 180);
@@ -80,32 +82,36 @@ namespace SqlPad.DragDrop
 			startPoint = new Point();
 			endPoint = new Point();
 
-			var width = this.AdornedElement.RenderSize.Width;
-			var height = this.AdornedElement.RenderSize.Height;
+			var width = AdornedElement.RenderSize.Width;
+			var height = AdornedElement.RenderSize.Height;
 
-			if (this.isSeparatorHorizontal)
+			if (_isSeparatorHorizontal)
 			{
 				endPoint.X = width;
-				if (!this.IsInFirstHalf)
+				if (IsInFirstHalf)
 				{
-					startPoint.Y = height;
-					endPoint.Y = height;
+					return;
 				}
+				
+				startPoint.Y = height;
+				endPoint.Y = height;
 			}
 			else
 			{
 				endPoint.Y = height;
-				if (!this.IsInFirstHalf)
+				if (IsInFirstHalf)
 				{
-					startPoint.X = width;
-					endPoint.X = width;
+					return;
 				}
+				
+				startPoint.X = width;
+				endPoint.X = width;
 			}
 		}
 
 		public void Detach()
 		{
-			this.adornerLayer.Remove(this);
+			_adornerLayer.Remove(this);
 		}
 	}
 }

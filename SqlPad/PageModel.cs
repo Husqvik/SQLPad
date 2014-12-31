@@ -10,7 +10,7 @@ using System.Windows.Data;
 
 namespace SqlPad
 {
-	public class PageModel : EditorInfoModel
+	public class PageModel : ModelBase
 	{
 		private readonly DocumentPage _documentPage;
 		private readonly ObservableCollection<object[]> _resultRowItems = new ObservableCollection<object[]>();
