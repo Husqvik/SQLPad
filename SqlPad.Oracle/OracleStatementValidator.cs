@@ -401,25 +401,29 @@ namespace SqlPad.Oracle
 				isRecognized = true;
 				if (programReference.ParameterListNode != null)
 				{
-					var maximumParameterCount = programReference.Metadata.MinimumArguments > 0 && programReference.Metadata.MaximumArguments == 0
-						? Int32.MaxValue
-						: programReference.Metadata.MaximumArguments;
+					var isCollectionConstructor = programReference.SchemaObject as OracleTypeCollection != null;
+					if (!isCollectionConstructor)
+					{
+						var maximumParameterCount = programReference.Metadata.MinimumArguments > 0 && programReference.Metadata.MaximumArguments == 0
+							? Int32.MaxValue
+							: programReference.Metadata.MaximumArguments;
 
-					// TODO: Handle optional parameters
-					var parameterListSemanticError = OracleSemanticErrorType.None;
-					if ((programReference.ParameterNodes.Count < programReference.Metadata.MinimumArguments) ||
-					    (programReference.ParameterNodes.Count > maximumParameterCount))
-					{
-						parameterListSemanticError = OracleSemanticErrorType.InvalidParameterCount;
-					}
-					else if (programReference.Metadata.DisplayType == OracleProgramMetadata.DisplayTypeNoParenthesis)
-					{
-						parameterListSemanticError = OracleSemanticErrorType.NonParenthesisFunction;
-					}
+						// TODO: Handle optional parameters
+						var parameterListSemanticError = OracleSemanticErrorType.None;
+						if ((programReference.ParameterNodes.Count < programReference.Metadata.MinimumArguments) ||
+						    (programReference.ParameterNodes.Count > maximumParameterCount))
+						{
+							parameterListSemanticError = OracleSemanticErrorType.InvalidParameterCount;
+						}
+						else if (programReference.Metadata.DisplayType == OracleProgramMetadata.DisplayTypeNoParenthesis)
+						{
+							parameterListSemanticError = OracleSemanticErrorType.NonParenthesisFunction;
+						}
 
-					if (parameterListSemanticError != OracleSemanticErrorType.None)
-					{
-						validationModel.ProgramNodeValidity[programReference.ParameterListNode] = new InvalidNodeValidationData(parameterListSemanticError) { IsRecognized = true };
+						if (parameterListSemanticError != OracleSemanticErrorType.None)
+						{
+							validationModel.ProgramNodeValidity[programReference.ParameterListNode] = new InvalidNodeValidationData(parameterListSemanticError) {IsRecognized = true};
+						}
 					}
 				}
 				else if (programReference.Metadata.MinimumArguments > 0)

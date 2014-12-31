@@ -64,7 +64,18 @@
 										   FontFamily="Consolas"
 										   ShowLineNumbers="True"
 										   IsReadOnly="True"
-										   WordWrap="{Binding ElementName=CheckBoxWordWrap, Path=IsChecked}" />
+										   WordWrap="{Binding ElementName=CheckBoxWordWrap, Path=IsChecked}">
+						<avalonedit:TextEditor.ContextMenu>
+							<ContextMenu>
+								<MenuItem Command="Undo" />
+								<MenuItem Command="Redo" />
+								<Separator/>
+								<MenuItem Command="Cut" />
+								<MenuItem Command="Copy" />
+								<MenuItem Command="Paste" />
+							</ContextMenu>
+						</avalonedit:TextEditor.ContextMenu>
+					</avalonedit:TextEditor>
 				</DockPanel>
 			</TabItem>
 			<TabItem x:Name="TabRaw" Header="Raw" Visibility="Collapsed">
