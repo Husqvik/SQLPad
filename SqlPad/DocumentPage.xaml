@@ -296,6 +296,7 @@
 							  CanUserDeleteRows ="False"
 							  CanUserAddRows="False"
 							  KeyDown="ReadOnlyGridKeyDownHandler"
+							  MouseDoubleClick="ErrorListMouseDoubleClickHandler"
 							  HorizontalGridLinesBrush="LightGray"
 							  VerticalGridLinesBrush="LightGray">
 					<DataGrid.Columns>

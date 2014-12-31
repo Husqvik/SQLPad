@@ -434,12 +434,10 @@ namespace SqlPad.Oracle
 				{
 					command.BindByName = true;
 
-					connection.Open();
+					OracleTransaction transaction = null;
 
-					using (var transaction = connection.BeginTransaction())
+					try
 					{
-						SetCurrentSchema(command);
-
 						foreach (var updater in updaters)
 						{
 							command.Parameters.Clear();
@@ -451,6 +449,16 @@ namespace SqlPad.Oracle
 							{
 								if (updater.IsValid)
 								{
+									if (EnsureConnectionOpen(connection))
+									{
+										using (var setSchemaCommand = connection.CreateCommand())
+										{
+											SetCurrentSchema(setSchemaCommand);
+										}
+										
+										transaction = connection.BeginTransaction();
+									}
+
 									if (updater.HasScalarResult)
 									{
 										var result = await command.ExecuteScalarAsynchronous(cancellationToken);
@@ -465,24 +473,31 @@ namespace SqlPad.Oracle
 									}
 								}
 							}
-							catch (Exception exception)
+							catch (OracleException exception)
 							{
-								var oracleException = exception as OracleException;
-								if (oracleException != null && oracleException.Number == OracleErrorCodeUserInvokedCancellation)
-								{
-									continue;
-								}
-
-								Trace.WriteLine("Update model failed: " + exception);
-
-								if (!suppressException)
+								if (exception.Number != OracleErrorCodeUserInvokedCancellation)
 								{
 									throw;
 								}
 							}
 						}
+					}
+					catch (Exception exception)
+					{
+						Trace.WriteLine("Update model failed: " + exception);
 
-						transaction.Rollback();
+						if (!suppressException)
+						{
+							throw;
+						}
+					}
+					finally
+					{
+						if (transaction != null)
+						{
+							transaction.Rollback();
+							transaction.Dispose();
+						}
 					}
 				}
 			}
@@ -590,16 +605,24 @@ namespace SqlPad.Oracle
 
 		private bool EnsureUserConnectionOpen()
 		{
-			if (_userConnection.State == ConnectionState.Open)
+			var isConnectionStateChanged = EnsureConnectionOpen(_userConnection);
+			if (isConnectionStateChanged)
+			{
+				_userConnection.ModuleName = ModuleNameSqlPadDatabaseModel;
+				_userConnection.ActionName = "User query";
+			}
+
+			return isConnectionStateChanged;
+		}
+
+		private static bool EnsureConnectionOpen(OracleConnection connection)
+		{
+			if (connection.State == ConnectionState.Open)
 			{
 				return false;
 			}
 
-			_userConnection.Open();
-
-			_userConnection.ModuleName = ModuleNameSqlPadDatabaseModel;
-			_userConnection.ActionName = "User query";
-
+			connection.Open();
 			return true;
 		}
 
@@ -799,24 +822,11 @@ namespace SqlPad.Oracle
 			return StatementExecutionResult.Empty;
 		}
 
-		private Task<IReadOnlyList<CompilationError>> RetrieveCompilationErrors(StatementBase statement, CancellationToken cancellationToken)
+		private async Task<IReadOnlyList<CompilationError>> RetrieveCompilationErrors(StatementBase statement, CancellationToken cancellationToken)
 		{
-			OracleObjectIdentifier objectIdentifier;
-			if (OracleStatement.TryGetPlSqlUnitName(statement, out objectIdentifier))
-			{
-				if (!objectIdentifier.HasOwner)
-				{
-					objectIdentifier = OracleObjectIdentifier.Create(_currentSchema, objectIdentifier.Name);
-				}
-
-				var compilationErrorUpdater = new CompilationErrorModelUpdater(objectIdentifier);
-				return UpdateModelAsync(cancellationToken, true, compilationErrorUpdater)
-					.ContinueWith(t => compilationErrorUpdater.Errors, cancellationToken);
-			}
-			
-			var taskCompletionSource = new TaskCompletionSource<IReadOnlyList<CompilationError>>();
-			taskCompletionSource.SetResult(new CompilationError[0]);
-			return taskCompletionSource.Task;
+			var compilationErrorUpdater = new CompilationErrorModelUpdater(statement, _currentSchema);
+			await UpdateModelAsync(cancellationToken, true, compilationErrorUpdater);
+			return compilationErrorUpdater.Errors;
 		}
 
 		private async Task<string> RetrieveDatabaseOutput(CancellationToken cancellationToken)

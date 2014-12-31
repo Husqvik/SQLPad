@@ -55,7 +55,7 @@ FROM (
 			NVL(MAX(NULLIF(AGGREGATE, 'NO')), 'NO') AGGREGATE,
 			NVL(MAX(NULLIF(OFFLOADABLE, 'NO')), 'NO') OFFLOADABLE,
 			CASE
-				WHEN NAME = 'LAG' THEN 1 -- probably invalid metadata
+				WHEN NAME = 'LAG' THEN 1 -- incorrect metadata
 				ELSE MIN(MINARGS)
 			END MINARGS,
 			MAX(MAXARGS) MAXARGS,

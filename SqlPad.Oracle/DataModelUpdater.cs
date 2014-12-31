@@ -238,12 +238,26 @@ namespace SqlPad.Oracle
 		
 		private readonly string _owner;
 		private readonly string _objectName;
+		private readonly StatementBase _statement;
 
 		public IReadOnlyList<CompilationError> Errors { get { return _errors.AsReadOnly(); } } 
 
-		public CompilationErrorModelUpdater(OracleObjectIdentifier objectIdentifier)
+		public CompilationErrorModelUpdater(StatementBase statement, string currentSchema)
 			: base(null)
 		{
+			_statement = statement;
+			
+			OracleObjectIdentifier objectIdentifier;
+			if (!OracleStatement.TryGetPlSqlUnitName(statement, out objectIdentifier))
+			{
+				return;
+			}
+			
+			if (!objectIdentifier.HasOwner)
+			{
+				objectIdentifier = OracleObjectIdentifier.Create(currentSchema, objectIdentifier.Name);
+			}
+
 			_owner = objectIdentifier.Owner.Trim('"');
 			_objectName = objectIdentifier.Name.Trim('"');
 		}
@@ -265,20 +279,21 @@ namespace SqlPad.Oracle
 						Owner = _owner,
 						ObjectName = _objectName,
 						ObjectType = (string)reader["TYPE"],
-						Line = Convert.ToInt32(reader["LINE"]),
+						Line = Convert.ToInt32(reader["LINE"]) - 1,
 						Column = Convert.ToInt32(reader["POSITION"]),
 						Message = (string)reader["TEXT"],
 						Severity = (string)reader["ATTRIBUTE"],
 						Code = Convert.ToInt32(reader["MESSAGE_NUMBER"]),
+						Statement = _statement
 					};
 
 				_errors.Add(error);
 			}
 		}
 
-		public override bool HasScalarResult
+		public override bool IsValid
 		{
-			get { return false; }
+			get { return !String.IsNullOrEmpty(_objectName); }
 		}
 	}
 

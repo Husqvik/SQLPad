@@ -752,7 +752,7 @@ namespace SqlPad
 
 		private void NavigateToOffset(int? offset)
 		{
-			if (!offset.HasValue)
+			if (offset == null)
 				return;
 			
 			Editor.CaretOffset = offset.Value;
@@ -906,7 +906,13 @@ namespace SqlPad
 
 				if (innerTask.Result.CompilationErrors.Count > 0)
 				{
-					_pageModel.CompilationErrors.AddRange(innerTask.Result.CompilationErrors);
+					var lineOffset = Editor.GetLineNumberByOffset(executionModel.Statement.SourcePosition.IndexStart);
+					foreach (var error in innerTask.Result.CompilationErrors)
+					{
+						error.Line += lineOffset;
+						_pageModel.CompilationErrors.Add(error);
+					}
+
 					TabControlResult.SelectedIndex = 4;
 				}
 
@@ -1923,6 +1929,27 @@ namespace SqlPad
 			{
 				e.Handled = true;
 			}
+		}
+
+		private void ErrorListMouseDoubleClickHandler(object sender, MouseButtonEventArgs e)
+		{
+			var errorUnderCursor = (CompilationError)((DataGrid)sender).CurrentItem;
+			if (errorUnderCursor == null)
+			{
+				return;
+			}
+
+			var failedStatementSourcePosition = errorUnderCursor.Statement.RootNode.SourcePosition;
+			var isStatementUnchanged = _sqlDocumentRepository.Statements.Any(s => failedStatementSourcePosition == s.SourcePosition);
+			if (!isStatementUnchanged)
+			{
+				return;
+			}
+
+			Editor.TextArea.Caret.Line = errorUnderCursor.Line;
+			Editor.TextArea.Caret.Column = errorUnderCursor.Column;
+			Editor.ScrollToCaret();
+			Editor.Focus();
 		}
 	}
 

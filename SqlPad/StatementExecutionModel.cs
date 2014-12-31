@@ -112,6 +112,7 @@ namespace SqlPad
 		}
 	}
 
+	[DebuggerDisplay("CompilationError (Object={Owner + \".\" + ObjectName}; ObjectType={ObjectType}; Severity={Severity}; Line={Line}; Column={Column}; Message={Message})")]
 	public class CompilationError
 	{
 		public string Owner { get; set; }
@@ -129,5 +130,7 @@ namespace SqlPad
 		public string Message { get; set; }
 
 		public string Severity { get; set; }
+		
+		public StatementBase Statement { get; set; }
 	}
 }
