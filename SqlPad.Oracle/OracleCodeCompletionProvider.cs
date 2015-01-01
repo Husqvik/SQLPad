@@ -46,7 +46,7 @@ namespace SqlPad.Oracle
 				fo =>
 				{
 					var metadata = fo.ProgramMetadata;
-					var returnParameter = metadata.Parameters.FirstOrDefault();
+					var returnParameter = metadata.ReturnParameter;
 					return
 						new FunctionOverloadDescription
 						{
@@ -377,7 +377,10 @@ namespace SqlPad.Oracle
 			var functionReference = programReferences.SingleOrDefault(f => f.FunctionIdentifierNode == currentNode);
 			var addParameterList = functionReference == null || functionReference.ParameterListNode == null;
 
-			var tableReferenceSource = (ICollection<OracleObjectWithColumnsReference>)referenceContainers.SelectMany(c => c.ObjectReferences).ToArray();
+			var tableReferenceSource = (ICollection<OracleObjectWithColumnsReference>)referenceContainers
+				.SelectMany(c => c.ObjectReferences)
+				.Where(o => !completionType.InQueryBlockFromClause || completionType.CursorPosition > o.RootNode.SourcePosition.IndexEnd)
+				.ToArray();
 
 			var suggestedFunctions = Enumerable.Empty<ICodeCompletionItem>();
 			var suggestedItems = Enumerable.Empty<ICodeCompletionItem>();

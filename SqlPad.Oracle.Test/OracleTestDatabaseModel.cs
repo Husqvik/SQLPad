@@ -205,7 +205,7 @@ namespace SqlPad.Oracle.Test
 			#region SYS.DBMS_XPLAN
 			var dbmsXPlan = (OraclePackage)AllObjectsInternal.Single(o => o.Name == "\"DBMS_XPLAN\"" && o.Owner == OwnerNameSys);
 			var displayCursorFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues("SYS", "DBMS_XPLAN", "DISPLAY_CURSOR"), false, false, true, false, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, false);
-			displayCursorFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, "TABLE", OracleObjectIdentifier.Create(SchemaSys, "DBMS_XPLAN_TYPE_TABLE"), false));
+			displayCursorFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, OracleTypeCollection.OracleCollectionTypeNestedTable, OracleObjectIdentifier.Create(SchemaSys, "DBMS_XPLAN_TYPE_TABLE"), false));
 			displayCursorFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata(null, 1, 1, 1, ParameterDirection.ReturnValue, "OBJECT", OracleObjectIdentifier.Create(SchemaSys, "DBMS_XPLAN_TYPE"), false));
 			displayCursorFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata("SQL_ID", 1, 1, 0, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, true));
 			displayCursorFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata("CURSOR_CHILD_NUMBER", 2, 2, 0, ParameterDirection.Input, "NUMBER", OracleObjectIdentifier.Empty, true));
@@ -297,7 +297,7 @@ namespace SqlPad.Oracle.Test
 			sqlPadPackage.Functions.Add(packageSqlPadFunctionMetadata);
 
 			var packageSqlPadPipelinedFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), "SQLPAD", "PIPELINED_FUNCTION"), false, false, true, false, false, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
-			packageSqlPadPipelinedFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, "TABLE", OracleObjectIdentifier.Create(OwnerNameSys, "ODCIDATELIST"), false));
+			packageSqlPadPipelinedFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, OracleTypeCollection.OracleCollectionTypeNestedTable, OracleObjectIdentifier.Create(OwnerNameSys, "ODCIDATELIST"), false));
 			packageSqlPadPipelinedFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata(null, 1, 1, 1, ParameterDirection.ReturnValue, "DATE", OracleObjectIdentifier.Empty, false));
 			packageSqlPadPipelinedFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata("DATE_FROM", 1, 1, 0, ParameterDirection.Input, "DATE", OracleObjectIdentifier.Empty, false));
 			packageSqlPadPipelinedFunctionMetadata.Parameters.Add(new OracleProgramParameterMetadata("DATE_TO", 2, 2, 0, ParameterDirection.Input, "DATE", OracleObjectIdentifier.Empty, false));
@@ -1018,6 +1018,8 @@ Note
 		public override void CommitTransaction() { }
 
 		public override void RollbackTransaction() { }
+		
+		public override void CloseActiveReader() { }
 
 		public override Task<ExplainPlanResult> ExplainPlanAsync(string statement, CancellationToken cancellationToken)
 		{

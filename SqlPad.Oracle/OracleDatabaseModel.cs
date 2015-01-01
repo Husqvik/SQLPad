@@ -288,6 +288,11 @@ namespace SqlPad.Oracle
 			_userTransaction = null;
 		}
 
+		public override void CloseActiveReader()
+		{
+			DisposeCommandAndReader();
+		}
+
 		public override ICollection<string> Schemas { get { return _schemas; } }
 		
 		public override ICollection<string> AllSchemas { get { return _allSchemas; } }
@@ -1254,7 +1259,7 @@ namespace SqlPad.Oracle
 					.OfType<IFunctionCollection>()
 					.SelectMany(o => o.Functions);
 
-				functionMetadata = FilterFunctionsWithUnavailableMetadataInOracle11(functionMetadata)
+				functionMetadata = FilterFunctionsWithUnavailableMetadata(functionMetadata)
 					.Concat(_dataDictionary.NonSchemaFunctionMetadata.Values);
 
 				_allFunctionMetadata = functionMetadata.ToLookup(m => m.Identifier);
@@ -1266,7 +1271,7 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		private IEnumerable<OracleProgramMetadata> FilterFunctionsWithUnavailableMetadataInOracle11(IEnumerable<OracleProgramMetadata> functions)
+		private IEnumerable<OracleProgramMetadata> FilterFunctionsWithUnavailableMetadata(IEnumerable<OracleProgramMetadata> functions)
 		{
 			return functions.Where(m => m != null && m.Type == ProgramType.Function);
 		} 

@@ -16,6 +16,7 @@ namespace SqlPad.Oracle
 		public const string ObjectStatusInvalid = "Object is invalid or unusable";
 		public const string ObjectCannotBeUsed = "Object cannot be used here";
 		public const string InvalidColumnCount = "Invalid column count";
+		public const string FunctionReturningRowSetRequired = "Function must return a row set";
 	}
 
 	public static class OracleSemanticErrorTooltipText

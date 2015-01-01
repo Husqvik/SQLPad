@@ -1878,6 +1878,8 @@ namespace SqlPad
 			Task<ExplainPlanResult> innerTask = null;
 			using (_statementExecutionCancellationTokenSource = new CancellationTokenSource())
 			{
+				DatabaseModel.CloseActiveReader();
+
 				var actionResult = await SafeTimedActionAsync(() => innerTask = DatabaseModel.ExplainPlanAsync(statementText, _statementExecutionCancellationTokenSource.Token));
 				
 				UpdateStatusBarElapsedExecutionTime(actionResult.Elapsed);

@@ -50,14 +50,12 @@ namespace SqlPad.Oracle
 	{
 		private IReadOnlyList<OracleColumn> _columns;
 		
-		public OracleProgramReference PipelinedFunctionReference { get; private set; }
+		public OracleProgramReference RowSourceFunctionReference { get; private set; }
 
-		public OracleTableCollectionReference(OracleProgramReference pipelinedFunctionReference) : base(ReferenceType.TableCollection)
+		public OracleTableCollectionReference(OracleProgramReference rowSourceFunctionReference) : base(ReferenceType.TableCollection)
 		{
-			PipelinedFunctionReference = pipelinedFunctionReference;
+			RowSourceFunctionReference = rowSourceFunctionReference;
 		}
-
-		public OracleProgramMetadata ProgramMetadata { get { return PipelinedFunctionReference.Metadata; } }
 
 		public override string Name { get { return AliasNode == null ? null : AliasNode.Token.Value; } }
 
@@ -74,6 +72,7 @@ namespace SqlPad.Oracle
 		private IReadOnlyList<OracleColumn> BuildColumns()
 		{
 			var columns = new List<OracleColumn>();
+			var programMetadata = RowSourceFunctionReference == null ? null : RowSourceFunctionReference.Metadata;
 
 			var schemaObject = SchemaObject.GetTargetSchemaObject();
 			var collectionType = schemaObject as OracleTypeCollection;
@@ -81,10 +80,10 @@ namespace SqlPad.Oracle
 			{
 				columns.Add(OracleDatabaseModelBase.BuildColumnValueColumn(collectionType.ElementDataType));
 			}
-			else if (ProgramMetadata != null && ProgramMetadata.Parameters.Count > 1 &&
-			         (ProgramMetadata.Parameters[0].DataType == "TABLE" || ProgramMetadata.Parameters[0].DataType == "VARRAY"))
+			else if (programMetadata != null && programMetadata.Parameters.Count > 1 &&
+					 (programMetadata.Parameters[0].DataType == OracleTypeCollection.OracleCollectionTypeNestedTable || programMetadata.Parameters[0].DataType == OracleTypeCollection.OracleCollectionTypeVarryingArray))
 			{
-				var returnParameter = ProgramMetadata.Parameters.SingleOrDefault(p => p.Direction == ParameterDirection.ReturnValue && p.DataLevel == 1 && p.Position == 1);
+				var returnParameter = programMetadata.Parameters.SingleOrDefault(p => p.Direction == ParameterDirection.ReturnValue && p.DataLevel == 1 && p.Position == 1);
 				if (returnParameter != null)
 				{
 					if (returnParameter.DataType == OracleTypeBase.TypeCodeObject)
@@ -103,7 +102,7 @@ namespace SqlPad.Oracle
 							columns.AddRange(attributeColumns);
 						}
 					}
-					else if (Owner.SemanticModel.DatabaseModel.AllObjects.TryGetValue(ProgramMetadata.Parameters[0].CustomDataType, out schemaObject))
+					else if (Owner.SemanticModel.DatabaseModel.AllObjects.TryGetValue(programMetadata.Parameters[0].CustomDataType, out schemaObject))
 					{
 						columns.Add(OracleDatabaseModelBase.BuildColumnValueColumn(((OracleTypeCollection)schemaObject).ElementDataType));
 					}

@@ -37,6 +37,11 @@ namespace SqlPad.Oracle
 
 		public IList<OracleProgramParameterMetadata> Parameters { get { return _parameters ?? (_parameters = new List<OracleProgramParameterMetadata>()); } }
 
+		public OracleProgramParameterMetadata ReturnParameter
+		{
+			get { return Type == ProgramType.Procedure || Parameters.Count == 0 ? null : Parameters[0]; }
+		}
+
 		public bool IsBuiltIn { get; private set; }
 		
 		public ProgramType Type { get; private set; }

@@ -277,7 +277,7 @@ namespace SqlPad.Oracle
 			ResolveDataUnit(dataType, reader["CHARACTER_SET_NAME"]);
 
 			collectionType.ElementDataType = dataType;
-			collectionType.CollectionType = (string)reader["COLL_TYPE"] == "TABLE" ? OracleCollectionType.Table : OracleCollectionType.VarryingArray ;
+			collectionType.CollectionType = (string)reader["COLL_TYPE"] == OracleTypeCollection.OracleCollectionTypeNestedTable ? OracleCollectionType.Table : OracleCollectionType.VarryingArray;
 			collectionType.UpperBound = OracleReaderValueConvert.ToInt32(reader["UPPER_BOUND"]);
 
 			return collectionType;

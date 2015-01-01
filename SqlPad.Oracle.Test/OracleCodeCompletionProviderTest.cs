@@ -1708,12 +1708,27 @@ se";
 		}
 
 		[Test(Description = @"")]
-		public void TestCodeCompletionTypeWhenInvokedAfterSet()
+		public void TestCodeCompletionWhenInvokedAfterSet()
 		{
 			const string statement = @"UPDATE HUSQVIK.SELECTION SET ";
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 29).ToList();
 			items.Count.ShouldBeGreaterThan(0);
 			items[0].StatementNode.ShouldBe(null);
+		}
+
+		[Test(Description = @"")]
+		public void TestTableReferenceColumnCompletionWhenColumnExistsButInaccessible()
+		{
+			const string statement =
+@"SELECT
+	*
+FROM
+	XMLTABLE('/root' PASSING XML_DAT)
+	CROSS JOIN
+		(SELECT XMLTYPE('<root>value</root>') XML_DATA FROM DUAL)";
+
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 51).ToList();
+			items.Count.ShouldBe(0);
 		}
 
 		public class OracleCodeCompletionTypeTest

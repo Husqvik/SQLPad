@@ -254,6 +254,9 @@ namespace SqlPad.Oracle
 	[DebuggerDisplay("OracleTypeCollection (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
 	public class OracleTypeCollection : OracleTypeBase, IFunctionCollection
 	{
+		public const string OracleCollectionTypeNestedTable = "TABLE";
+		public const string OracleCollectionTypeVarryingArray = "VARRAY";
+
 		public override string TypeCode { get { return TypeCodeCollection; } }
 
 		public OracleCollectionType CollectionType { get; set; }
@@ -265,9 +268,10 @@ namespace SqlPad.Oracle
 			var elementTypeLabel = ElementDataType.IsPrimitive
 				? ElementDataType.FullyQualifiedName.Name.Trim('"')
 				: ElementDataType.FullyQualifiedName.ToString();
-			
+
+			var returnParameterType = CollectionType == OracleCollectionType.Table ? OracleCollectionTypeNestedTable : OracleCollectionTypeVarryingArray;
 			var constructorMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(FullyQualifiedName.Owner, null, FullyQualifiedName.Name), false, false, false, false, false, false, 0, UpperBound ?? Int32.MaxValue, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeParenthesis, false);
-			constructorMetadata.Parameters.Add(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, null, FullyQualifiedName, false));
+			constructorMetadata.Parameters.Add(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, returnParameterType, FullyQualifiedName, false));
 			constructorMetadata.Parameters.Add(new OracleProgramParameterMetadata(String.Format("array of {0}", elementTypeLabel), 1, 1, 0, ParameterDirection.Input, String.Empty, OracleObjectIdentifier.Empty, true));
 			constructorMetadata.Owner = this;
 			

@@ -33,30 +33,43 @@ namespace SqlPad.Oracle
 
 			var objectReferences = oracleSemanticModel.QueryBlocks.SelectMany(qb => qb.ObjectReferences)
 				.Concat(mainObjectReferences)
-				.Concat(oracleSemanticModel.InsertTargets.SelectMany(t => t.ObjectReferences))
-				.Where(tr => tr.Type.In(ReferenceType.CommonTableExpression, ReferenceType.SchemaObject));
+				.Concat(oracleSemanticModel.InsertTargets.SelectMany(t => t.ObjectReferences));
 			
 			foreach (var objectReference in objectReferences)
 			{
-				if (objectReference.Type == ReferenceType.CommonTableExpression)
+				switch (objectReference.Type)
 				{
-					validationModel.ObjectNodeValidity[objectReference.ObjectNode] = new NodeValidationData { IsRecognized = true };
-					continue;
-				}
+					case ReferenceType.CommonTableExpression:
+						validationModel.ObjectNodeValidity[objectReference.ObjectNode] = new NodeValidationData { IsRecognized = true };
+						break;
 
-				if (objectReference.DatabaseLinkNode == null)
-				{
-					if (objectReference.OwnerNode != null)
-					{
-						var isRecognized = !semanticModel.IsSimpleModel && ((OracleDatabaseModelBase)semanticModel.DatabaseModel).ExistsSchema(objectReference.OwnerNode.Token.Value);
-						validationModel.ObjectNodeValidity[objectReference.OwnerNode] = new NodeValidationData { IsRecognized = isRecognized };
-					}
+					case ReferenceType.TableCollection:
+						var tableCollectionReference = (OracleTableCollectionReference)objectReference;
+						if (tableCollectionReference.RowSourceFunctionReference != null && tableCollectionReference.RowSourceFunctionReference.Metadata != null &&
+							!tableCollectionReference.RowSourceFunctionReference.Metadata.ReturnParameter.DataType.In(OracleTypeCollection.OracleCollectionTypeNestedTable, OracleTypeCollection.OracleCollectionTypeVarryingArray))
+						{
+							validationModel.ProgramNodeValidity[tableCollectionReference.RowSourceFunctionReference.FunctionIdentifierNode] = new InvalidNodeValidationData(OracleSemanticErrorType.FunctionReturningRowSetRequired) { Node = tableCollectionReference.RowSourceFunctionReference.FunctionIdentifierNode };
+						}
+						
+						break;
 
-					validationModel.ObjectNodeValidity[objectReference.ObjectNode] = new NodeValidationData { IsRecognized = objectReference.SchemaObject != null, Node = objectReference.ObjectNode };
-				}
-				else
-				{
-					ValidateDatabaseLinkReference(validationModel.ObjectNodeValidity, objectReference);
+					case ReferenceType.SchemaObject:
+						if (objectReference.DatabaseLinkNode == null)
+						{
+							if (objectReference.OwnerNode != null)
+							{
+								var isRecognized = !semanticModel.IsSimpleModel && ((OracleDatabaseModelBase)semanticModel.DatabaseModel).ExistsSchema(objectReference.OwnerNode.Token.Value);
+								validationModel.ObjectNodeValidity[objectReference.OwnerNode] = new NodeValidationData { IsRecognized = isRecognized };
+							}
+
+							validationModel.ObjectNodeValidity[objectReference.ObjectNode] = new NodeValidationData { IsRecognized = objectReference.SchemaObject != null, Node = objectReference.ObjectNode };
+						}
+						else
+						{
+							ValidateDatabaseLinkReference(validationModel.ObjectNodeValidity, objectReference);
+						}
+						
+						break;
 				}
 			}
 
@@ -97,13 +110,13 @@ namespace SqlPad.Oracle
 
 					if (insertTarget.ColumnListNode != null)
 					{
-						validationModel.ColumnNodeValidity[insertTarget.ColumnListNode] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) {IsRecognized = true, Node = insertTarget.ColumnListNode};
+						validationModel.ColumnNodeValidity[insertTarget.ColumnListNode] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) { Node = insertTarget.ColumnListNode };
 					}
 
 					var sourceDataNode = insertTarget.ValueList ?? insertTarget.RowSource.SelectList;
 					if (sourceDataNode != null)
 					{
-						validationModel.ColumnNodeValidity[sourceDataNode] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) {IsRecognized = true, Node = sourceDataNode};
+						validationModel.ColumnNodeValidity[sourceDataNode] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) { Node = sourceDataNode };
 					}
 				}
 			}
@@ -239,7 +252,7 @@ namespace SqlPad.Oracle
 						INodeValidationData validationData;
 						if (!validationModel.ColumnNodeValidity.TryGetValue(columnNode, out validationData) || validationData.SemanticErrorType == OracleSemanticErrorType.None)
 						{
-							validationModel.ColumnNodeValidity[asteriskColumn.RootNode] = new SuggestionData(OracleSuggestionType.UseExplicitColumnList) { IsRecognized = true };
+							validationModel.ColumnNodeValidity[asteriskColumn.RootNode] = new SuggestionData(OracleSuggestionType.UseExplicitColumnList) { IsRecognized = true, Node = asteriskColumn.RootNode };
 						}
 					}
 				}
@@ -314,7 +327,7 @@ namespace SqlPad.Oracle
 						node = typeReference.ParameterListNode;
 					}
 
-					validationModel.ProgramNodeValidity[node] = new InvalidNodeValidationData(semanticError) { IsRecognized = true, Node = node };
+					validationModel.ProgramNodeValidity[node] = new InvalidNodeValidationData(semanticError) { Node = node };
 				}
 				else
 				{
@@ -332,19 +345,12 @@ namespace SqlPad.Oracle
 					    IsNotWithinMainQueryBlock(sequenceReference))
 					{
 						validationModel.InvalidNonTerminals[sequenceReference.RootNode] =
-							new InvalidNodeValidationData(OracleSemanticErrorType.ObjectCannotBeUsed)
-							{
-								IsRecognized = true, Node = sequenceReference.RootNode
-							};
+							new InvalidNodeValidationData(OracleSemanticErrorType.ObjectCannotBeUsed) { Node = sequenceReference.RootNode };
 
 						if (isWithinMainQueryBlockWithOrderByClause)
 						{
 							validationModel.InvalidNonTerminals[mainQueryBlockOrderByClause] =
-							new InvalidNodeValidationData(OracleSemanticErrorType.ClauseNotAllowed)
-							{
-								IsRecognized = true,
-								Node = mainQueryBlockOrderByClause
-							};
+							new InvalidNodeValidationData(OracleSemanticErrorType.ClauseNotAllowed) { Node = mainQueryBlockOrderByClause };
 						}
 					}
 				}
@@ -422,7 +428,7 @@ namespace SqlPad.Oracle
 
 						if (parameterListSemanticError != OracleSemanticErrorType.None)
 						{
-							validationModel.ProgramNodeValidity[programReference.ParameterListNode] = new InvalidNodeValidationData(parameterListSemanticError) { IsRecognized = true, Node = programReference.ParameterListNode };
+							validationModel.ProgramNodeValidity[programReference.ParameterListNode] = new InvalidNodeValidationData(parameterListSemanticError) { Node = programReference.ParameterListNode };
 						}
 					}
 				}
@@ -452,7 +458,7 @@ namespace SqlPad.Oracle
 
 				if (programReference.AnalyticClauseNode != null && !programReference.Metadata.IsAnalytic)
 				{
-					validationModel.ProgramNodeValidity[programReference.AnalyticClauseNode] = new InvalidNodeValidationData(OracleSemanticErrorType.AnalyticClauseNotSupported) { IsRecognized = true, Node = programReference.AnalyticClauseNode };
+					validationModel.ProgramNodeValidity[programReference.AnalyticClauseNode] = new InvalidNodeValidationData(OracleSemanticErrorType.AnalyticClauseNotSupported) { Node = programReference.AnalyticClauseNode };
 				}
 			}
 
@@ -467,7 +473,10 @@ namespace SqlPad.Oracle
 				semanticError = OracleSemanticErrorType.ObjectStatusInvalid;
 			}
 
-			validationModel.ProgramNodeValidity[programReference.FunctionIdentifierNode] = new InvalidNodeValidationData(semanticError) { IsRecognized = isRecognized, Node = programReference.FunctionIdentifierNode };
+			if (!validationModel.ProgramNodeValidity.ContainsKey(programReference.FunctionIdentifierNode))
+			{
+				validationModel.ProgramNodeValidity[programReference.FunctionIdentifierNode] = new InvalidNodeValidationData(semanticError) { IsRecognized = isRecognized, Node = programReference.FunctionIdentifierNode };
+			}
 		}
 
 		private string GetCompilationError(OracleProgramReferenceBase reference)

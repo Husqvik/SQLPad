@@ -1912,5 +1912,23 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			invalidNonTerminals[0].ToolTipText.ShouldBe(OracleSemanticErrorType.InvalidColumnCount);
 			invalidNonTerminals[0].Node.ShouldBe(cteQueryBlock.SelectList);
 		}
+
+		[Test(Description = @"")]
+		public void TestTableCollectionExpressionWithIncompatibleFunction()
+		{
+			const string sqlText = @"SELECT * FROM TABLE(NVL(1, 1))";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			var programValidityItems = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			programValidityItems.Count.ShouldBe(1);
+			programValidityItems[0].IsRecognized.ShouldBe(true);
+			programValidityItems[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.FunctionReturningRowSetRequired);
+			programValidityItems[0].ToolTipText.ShouldBe(OracleSemanticErrorType.FunctionReturningRowSetRequired);
+			programValidityItems[0].Node.Token.Value.ShouldBe("NVL");
+		}
 	}
 }

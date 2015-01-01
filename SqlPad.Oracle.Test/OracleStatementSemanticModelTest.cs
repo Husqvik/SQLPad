@@ -1080,7 +1080,9 @@ MODEL
 			queryBlock.ObjectReferences.Count.ShouldBe(1);
 			var objectReference = queryBlock.ObjectReferences.First();
 			objectReference.ShouldBeTypeOf<OracleTableCollectionReference>();
-			((OracleTableCollectionReference)objectReference).ProgramMetadata.ShouldNotBe(null);
+			var tableCollectionReference = (OracleTableCollectionReference)objectReference;
+			tableCollectionReference.RowSourceFunctionReference.ShouldNotBe(null);
+			tableCollectionReference.RowSourceFunctionReference.Metadata.ShouldNotBe(null);
 
 			queryBlock.Columns.Count.ShouldBe(1);
 			queryBlock.Columns[0].ColumnReferences.Count.ShouldBe(1);
@@ -1384,6 +1386,66 @@ MODEL
 			var sourceColumn = semanticModel.MainObjectReferenceContainer.ColumnReferences[1];
 			sourceColumn.ColumnNodeColumnReferences.Count.ShouldBe(1);
 			sourceColumn.ObjectNodeObjectReferences.Count.ShouldBe(1);
+		}
+
+		[Test(Description = @"")]
+		public void TestXmlTablePassingExpressionWithInaccessibleReference()
+		{
+			const string query1 =
+@"SELECT
+	*
+FROM
+	(SELECT XMLTYPE('<value>value 1</value>') XML_DATA1 FROM DUAL)
+	CROSS JOIN
+		XMLTABLE('/root' PASSING '<root>' || XML_DATA1 || XML_DATA2 || '</root>')
+	CROSS JOIN
+		(SELECT XMLTYPE('<value>value 2</value>') XML_DATA2 FROM DUAL)";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			var queryBlock = semanticModel.MainQueryBlock;
+			queryBlock.ShouldNotBe(null);
+
+			var columnReferences = queryBlock.ColumnReferences.Where(c => c.Placement == QueryBlockPlacement.TableReference).ToArray();
+			columnReferences.Length.ShouldBe(2);
+			columnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
+			columnReferences[1].ColumnNodeColumnReferences.Count.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
+		public void TestJsonTablePassingExpressionWithInaccessibleReference()
+		{
+			const string query1 =
+@"SELECT
+	*
+FROM
+	(SELECT '""Value 1"", ""Value 2"", ""Value 3""' JSON_DATA1 FROM DUAL)
+	CROSS JOIN
+		JSON_TABLE(
+			'[' || JSON_DATA1 || ', ' || JSON_DATA2 || ']', '$[*]'
+			DEFAULT 'invalid data' ON ERROR
+			COLUMNS (
+				SEQ$ FOR ORDINALITY,
+				VALUE VARCHAR2 PATH '$'
+			)
+		)
+	CROSS JOIN (
+		SELECT '""Value 4"", ""Value 5"", ""Value 6""' JSON_DATA2 FROM DUAL
+	)";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			var queryBlock = semanticModel.MainQueryBlock;
+			queryBlock.ShouldNotBe(null);
+
+			var columnReferences = queryBlock.ColumnReferences.Where(c => c.Placement == QueryBlockPlacement.TableReference).ToArray();
+			columnReferences.Length.ShouldBe(2);
+			columnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
+			columnReferences[1].ColumnNodeColumnReferences.Count.ShouldBe(0);
 		}
 	}
 }

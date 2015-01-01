@@ -57,6 +57,8 @@ namespace SqlPad
 		void CommitTransaction();
 
 		void RollbackTransaction();
+
+		void CloseActiveReader();
 	}
 
 	public class ColumnHeader

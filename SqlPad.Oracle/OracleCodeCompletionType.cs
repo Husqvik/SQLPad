@@ -67,6 +67,8 @@ namespace SqlPad.Oracle
 
 		public bool InComment { get; private set; }
 
+		public bool InQueryBlockFromClause { get; private set; }
+
 		public bool IsCursorTouchingIdentifier { get; private set; }
 
 		public bool IsNewExpressionWithInvalidGrammar { get; private set; }
@@ -216,14 +218,14 @@ namespace SqlPad.Oracle
 			DatabaseLink = TerminalCandidates.Contains(Terminals.DatabaseLinkIdentifier);
 			JoinType = !isCursorTouchingTwoTerminals && TerminalCandidates.Contains(Terminals.Join);
 
-			var isWithinFromClause = effectiveTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.FromClause) != null || effectiveTerminal.Id == Terminals.From;
+			InQueryBlockFromClause = effectiveTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.FromClause) != null || (effectiveTerminal.Id == Terminals.From && effectiveTerminal.ParentNode.Id == NonTerminals.QueryBlock);
 			var isWithinJoinCondition = nearestTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.JoinClause, NonTerminals.JoinColumnsOrCondition) != null;
 			var isAfterUpdateOrDeleteTerminal = (nearestTerminal.Id.In(Terminals.Update, Terminals.Delete) || (nearestTerminal.Id == Terminals.From && nearestTerminal.PrecedingTerminal != null && nearestTerminal.PrecedingTerminal.Id == Terminals.Delete)) && isCursorAfterToken;
 			var isWithinQueryBlock = nearestTerminal.GetAncestor(NonTerminals.QueryBlock) != null;
 			var isWithinMainObjectReference = nearestTerminal.GetAncestor(NonTerminals.TableReference) != null && !isWithinQueryBlock;
 			var isInInsertIntoTableReference = nearestTerminal.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBoundary, NonTerminals.DmlTableExpressionClause) != null ||
 			                                   (nearestTerminal.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBoundary, NonTerminals.InsertIntoClause) != null && nearestTerminal.Id == Terminals.Into && isCursorAfterToken);
-			SchemaDataObject = (isWithinFromClause || isAfterUpdateOrDeleteTerminal || isWithinMainObjectReference || isInInsertIntoTableReference) && !isWithinJoinCondition && TerminalCandidates.Contains(Terminals.ObjectIdentifier);
+			SchemaDataObject = (InQueryBlockFromClause || isAfterUpdateOrDeleteTerminal || isWithinMainObjectReference || isInInsertIntoTableReference) && !isWithinJoinCondition && TerminalCandidates.Contains(Terminals.ObjectIdentifier);
 
 			var isWithinJoinClause = nearestTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.FromClause, NonTerminals.JoinClause) != null;
 			JoinCondition = isWithinJoinClause && isCursorAfterToken && (TerminalCandidates.Contains(Terminals.On) || nearestTerminal.Id == Terminals.On);
@@ -231,7 +233,7 @@ namespace SqlPad.Oracle
 			var isWithinSelectList = (nearestTerminal.Id == Terminals.Select && isCursorAfterToken) || nearestTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.SelectList) != null;
 			AllColumns = isWithinSelectList && TerminalCandidates.Contains(Terminals.Asterisk);
 
-			SchemaDataObjectReference = !isWithinFromClause && (TerminalCandidates.Contains(Terminals.ObjectIdentifier) || isCursorBetweenTwoTerminalsWithPrecedingIdentifierWithoutPrefix);
+			SchemaDataObjectReference = !InQueryBlockFromClause && (TerminalCandidates.Contains(Terminals.ObjectIdentifier) || isCursorBetweenTwoTerminalsWithPrecedingIdentifierWithoutPrefix);
 
 			PackageFunction = !String.IsNullOrEmpty(ReferenceIdentifier.ObjectIdentifierOriginalValue) && TerminalCandidates.Contains(Terminals.Identifier);
 
