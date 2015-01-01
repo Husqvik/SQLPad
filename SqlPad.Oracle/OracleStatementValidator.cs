@@ -273,10 +273,10 @@ namespace SqlPad.Oracle
 				var concatenatedQueryBlockColumnCount = concatenatedQueryBlock.Columns.Count - concatenatedQueryBlock.AsteriskColumns.Count;
 				if (concatenatedQueryBlockColumnCount != firstQueryBlockColumnCount && concatenatedQueryBlockColumnCount > 0)
 				{
-					validationModel.InvalidNonTerminals[queryBlock.SelectList] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount);
+					validationModel.InvalidNonTerminals[queryBlock.SelectList] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) { Node = queryBlock.SelectList };
 					foreach (var invalidColumnCountQueryBlock in queryBlock.AllFollowingConcatenatedQueryBlocks)
 					{
-						validationModel.InvalidNonTerminals[invalidColumnCountQueryBlock.SelectList] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount);
+						validationModel.InvalidNonTerminals[invalidColumnCountQueryBlock.SelectList] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) { Node = invalidColumnCountQueryBlock.SelectList };
 					}
 
 					break;
@@ -422,7 +422,7 @@ namespace SqlPad.Oracle
 
 						if (parameterListSemanticError != OracleSemanticErrorType.None)
 						{
-							validationModel.ProgramNodeValidity[programReference.ParameterListNode] = new InvalidNodeValidationData(parameterListSemanticError) {IsRecognized = true};
+							validationModel.ProgramNodeValidity[programReference.ParameterListNode] = new InvalidNodeValidationData(parameterListSemanticError) { IsRecognized = true, Node = programReference.ParameterListNode };
 						}
 					}
 				}
@@ -647,22 +647,37 @@ namespace SqlPad.Oracle
 
 		public IDictionary<StatementGrammarNode, INodeValidationData> InvalidNonTerminals { get { return _invalidNonTerminals; } }
 
-		public IEnumerable<KeyValuePair<StatementGrammarNode, INodeValidationData>> GetNodesWithSemanticError()
+		public IEnumerable<INodeValidationData> AllNodes
 		{
-			return _columnNodeValidity
-				.Concat(_objectNodeValidity)
-				.Concat(_programNodeValidity)
-				.Concat(_identifierNodeValidity)
-				.Concat(_invalidNonTerminals)
-				.Where(nv => nv.Value.SemanticErrorType != OracleSemanticErrorType.None)
-				.Select(nv => new KeyValuePair<StatementGrammarNode, INodeValidationData>(nv.Key, nv.Value));
+			get
+			{
+				return _columnNodeValidity
+					.Concat(_objectNodeValidity)
+					.Concat(_programNodeValidity)
+					.Concat(_identifierNodeValidity)
+					.Concat(_invalidNonTerminals)
+					.Select(nv => nv.Value);
+			}
 		}
 
-		public IEnumerable<KeyValuePair<StatementGrammarNode, INodeValidationData>> GetNodesWithSuggestion()
+		public IEnumerable<INodeValidationData> Errors
 		{
-			return _columnNodeValidity
-				.Where(nv => nv.Value.SuggestionType != OracleSuggestionType.None)
-				.Select(nv => new KeyValuePair<StatementGrammarNode, INodeValidationData>(nv.Key, nv.Value));
+			get { return AllNodes.Where(nv => !nv.IsRecognized || nv.SemanticErrorType != OracleSemanticErrorType.None); }
+		}
+
+		public IEnumerable<INodeValidationData> SemanticErrors
+		{
+			get { return AllNodes.Where(nv => nv.SemanticErrorType != OracleSemanticErrorType.None); }
+		}
+
+		public IEnumerable<INodeValidationData> Suggestions
+		{
+			get
+			{
+				return _columnNodeValidity
+					.Where(nv => nv.Value.SuggestionType != OracleSuggestionType.None)
+					.Select(nv => nv.Value);
+			}
 		}
 	}
 

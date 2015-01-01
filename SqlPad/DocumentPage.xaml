@@ -145,6 +145,8 @@
 						<CommandBinding Command="commands:GenericCommands.NavigateToDefinitionRoot" Executed="NavigateToDefinition" />
 						<CommandBinding Command="commands:GenericCommands.NavigateToNextUsage" Executed="NavigateToNextHighlightedUsage" />
 						<CommandBinding Command="commands:GenericCommands.NavigateToPreviousUsage" Executed="NavigateToPreviousHighlightedUsage" />
+						<CommandBinding Command="commands:GenericCommands.NavigateToNextError" Executed="NavigateToNextError" />
+						<CommandBinding Command="commands:GenericCommands.NavigateToPreviousError" Executed="NavigateToPreviousError" />
 						<CommandBinding Command="commands:GenericCommands.NavigateToQueryBlockRoot" Executed="NavigateToQueryBlockRoot" />
 						<CommandBinding Command="commands:GenericCommands.Save" Executed="SaveCommandExecutedHandler" />
 						<CommandBinding Command="commands:GenericCommands.ShowCodeCompletionOption" Executed="ShowCodeCompletionOptions" CanExecute="CanExecuteShowCodeCompletionHandler" />

@@ -45,6 +45,10 @@ CTRL + ALT + PageUp        - Navigate to previous highlight
 
 CTRL + ALT + PageDown      - Navigate to next highlight
 
+SHIFT + ALT + PageUp        - Navigate to previous error
+
+SHIFT + ALT + PageDown      - Navigate to next error
+
 CTRL + ALT + Home          - Navigate to query block root (related SELECT keyword)
 
 F12				           - Navigate to definition, e. g., when column is propagated via multiple inline views
@@ -120,6 +124,8 @@ Add missing column
 
 Add to GROUP BY
 
+Wrap current query block as inline view
+
 
 #####@Row source:
 
@@ -146,6 +152,10 @@ Expand asterisk (hold SHIFT to select specific column)
 #####@INTO
 
 Add columns (hold SHIFT to select specific column)
+
+#####@XMLTABLE, JSONTABLE, TABLE
+
+Wrap current query block as inline view
 
 Requirements
 ------------

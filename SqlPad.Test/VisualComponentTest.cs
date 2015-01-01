@@ -70,7 +70,7 @@ namespace SqlPad.Test
 		{
 			InitializeApplicationWindow();
 
-			_editor.Document.Insert(0, "SELECT\n\t:BIND_VARIABLE, UNDEFINED, DUMMY AMBIGUOUS,\n\tSQLPAD_FUNCTION('Invalid parameter 1', 'Invalid parameter 2')\nFROM DUAL, DUAL D;\nSELECT *");
+			_editor.Document.Insert(0, "SELECT\n\t:BIND_VARIABLE, UNDEFINED, DUMMY AMBIGUOUS,\n\tSQLPAD_FUNCTION('Invalid parameter 1', 'Invalid parameter 2')\nFROM DUAL, DUAL D;\nSELECT *;\n\nSELECT 1 FROM DUAL UNION ALL SELECT 2 FROM DUAL UNION ALL SELECT 3, 4 FROM DUAL;");
 			_editor.CaretOffset = 50;
 
 			Wait(0.1);

@@ -24,13 +24,13 @@ namespace SqlPad.Oracle
 
 			var validationModel = (OracleValidationModel)sqlDocumentRepository.ValidationModels[node.Statement];
 
-			var nodeSemanticError = validationModel.GetNodesWithSemanticError()
-				.Concat(validationModel.GetNodesWithSuggestion())
-				.FirstOrDefault(n => node.HasAncestor(n.Key, true));
+			var nodeSemanticError = validationModel.SemanticErrors
+				.Concat(validationModel.Suggestions)
+				.FirstOrDefault(v => node.HasAncestor(v.Node, true));
 			
-			if (nodeSemanticError.Key != null)
+			if (nodeSemanticError != null)
 			{
-				tip = nodeSemanticError.Value.ToolTipText;
+				tip = nodeSemanticError.ToolTipText;
 			}
 			else
 			{

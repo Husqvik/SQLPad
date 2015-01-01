@@ -23,6 +23,8 @@ namespace SqlPad.Commands
 		public static RoutedCommand MultiNodeEdit = new RoutedCommand("EditMultipleNodes", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.F6, ModifierKeys.Shift) });
 		public static RoutedCommand NavigateToPreviousUsage = new RoutedCommand("NavigateToPreviousHighlightedUsage", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.PageUp, ModifierKeys.Control | ModifierKeys.Alt) });
 		public static RoutedCommand NavigateToNextUsage = new RoutedCommand("NavigateToNextHighlightedUsage", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.PageDown, ModifierKeys.Control | ModifierKeys.Alt) });
+		public static RoutedCommand NavigateToPreviousError = new RoutedCommand("NavigateToPreviousError", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.PageUp, ModifierKeys.Shift | ModifierKeys.Alt) });
+		public static RoutedCommand NavigateToNextError = new RoutedCommand("NavigateToNextError", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.PageDown, ModifierKeys.Shift | ModifierKeys.Alt) });
 		public static RoutedCommand NavigateToQueryBlockRoot = new RoutedCommand("NavigateToQueryBlockRoot", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.Home, ModifierKeys.Control | ModifierKeys.Alt) });
 		public static RoutedCommand NavigateToDefinitionRoot = new RoutedCommand("NavigateToDefinition", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.F12) });
 		public static RoutedCommand ExecuteDatabaseCommand = new RoutedCommand("ExecuteDatabaseCommand", typeof(Grid), new InputGestureCollection { new KeyGesture(Key.F9), new KeyGesture(Key.Enter, ModifierKeys.Control) });

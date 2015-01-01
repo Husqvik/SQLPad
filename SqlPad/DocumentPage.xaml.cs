@@ -1047,6 +1047,35 @@ namespace SqlPad
 			}
 		}
 
+		private void NavigateToNextError(object sender, ExecutedRoutedEventArgs args)
+		{
+			NavigateToError(nodes => nodes.Where(n => n.SourcePosition.IndexStart > Editor.CaretOffset).OrderBy(n => n.SourcePosition.IndexStart));
+		}
+
+		private void NavigateToPreviousError(object sender, ExecutedRoutedEventArgs args)
+		{
+			NavigateToError(nodes => nodes.Where(n => n.SourcePosition.IndexEnd < Editor.CaretOffset).OrderByDescending(n => n.SourcePosition.IndexStart));
+		}
+
+		private void NavigateToError(Func<IEnumerable<StatementGrammarNode>, IOrderedEnumerable<StatementGrammarNode>> getOrderedNodesFunction)
+		{
+			if (_sqlDocumentRepository.StatementText != Editor.Text)
+			{
+				return;
+			}
+
+			var sourceNodes = _sqlDocumentRepository.ValidationModels.Values
+				.SelectMany(vm => vm.Errors)
+				.Select(e => e.Node);
+
+			var error = getOrderedNodesFunction(sourceNodes).FirstOrDefault();
+			if (error != null)
+			{
+				Editor.CaretOffset = error.SourcePosition.IndexStart;
+				Editor.ScrollToCaret();
+			}
+		}
+
 		private void FindUsages(object sender, ExecutedRoutedEventArgs args)
 		{
 			var findUsagesCommandHandler = _infrastructureFactory.CommandFactory.FindUsagesCommandHandler;

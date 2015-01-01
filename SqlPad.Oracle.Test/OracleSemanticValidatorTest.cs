@@ -1598,7 +1598,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
-			var nodesWithSemanticError = validationModel.GetNodesWithSemanticError().Select(kvp => kvp.Value).ToArray();
+			var nodesWithSemanticError = validationModel.SemanticErrors.ToArray();
 			nodesWithSemanticError.Length.ShouldBe(0);
 		}
 

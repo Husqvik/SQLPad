@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using ICSharpCode.AvalonEdit;
 
@@ -44,6 +46,62 @@ namespace SqlPad
 
 			SetValue(CurrentLineKey, location.Line);
 			SetValue(CurrentColumnKey, location.Column);
+		}
+
+		public bool TryRemoveBlockComment()
+		{
+			const int commentHeadingLength = 2;
+			var commentRemoved = false;
+
+			if (SelectionLength == 0)
+			{
+				if (Text.Length - CaretOffset >= commentHeadingLength && CaretOffset >= commentHeadingLength &&
+					Text.Substring(CaretOffset - commentHeadingLength, 4) == "/**/")
+				{
+					commentRemoved = true;
+					Document.Remove(CaretOffset - commentHeadingLength, 4);
+				}
+
+				if (Text.Length - CaretOffset >= 2 * commentHeadingLength &&
+					Text.Substring(CaretOffset, 4) == "/**/")
+				{
+					commentRemoved = true;
+					Document.Remove(CaretOffset, 4);
+				}
+			}
+			else if (Text.Length - SelectionStart >= commentHeadingLength && SelectionStart + SelectionLength > commentHeadingLength &&
+					 Text.Substring(SelectionStart, commentHeadingLength) == "/*" &&
+					 Text.Substring(SelectionStart + SelectionLength - commentHeadingLength, commentHeadingLength) == "*/")
+			{
+				commentRemoved = true;
+				Document.Remove(SelectionStart + SelectionLength - commentHeadingLength, commentHeadingLength);
+				Document.Remove(SelectionStart, commentHeadingLength);
+			}
+
+			return commentRemoved;
+		}
+
+		public void ReplaceTextSegments(ICollection<TextSegment> textSegments)
+		{
+			Document.BeginUpdate();
+
+			foreach (var textSegment in textSegments.OrderByDescending(s => s.IndextStart).ThenByDescending(s => s.Length))
+			{
+				Document.Replace(textSegment.IndextStart, textSegment.Length, textSegment.Text);
+			}
+
+			Document.EndUpdate();
+		}
+
+		public void ScrollToCaret()
+		{
+			var location = Document.GetLocation(CaretOffset);
+			ScrollTo(location.Line, location.Column);
+		}
+
+		public int GetLineNumberByOffset(int offset)
+		{
+			return Document.GetLineByOffset(offset).LineNumber;
 		}
 	}
 }

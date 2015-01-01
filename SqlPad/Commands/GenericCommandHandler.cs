@@ -10,9 +10,9 @@ namespace SqlPad.Commands
 	{
 		private const string LineCommentPrefix = "--";
 
-		private static TextEditor GetEditorFromSender(object sender)
+		private static SqlTextEditor GetEditorFromSender(object sender)
 		{
-			return (TextEditor)((TextArea)sender).TextView.Services.GetService(typeof(TextEditor));
+			return (SqlTextEditor)((TextArea)sender).TextView.Services.GetService(typeof(TextEditor));
 		}
 
 		public static ExecutedRoutedEventHandler CreateRoutedEditCommandHandler(CommandExecutionHandler handler, Func<SqlDocumentRepository> getDocumentRepositoryFunction)
@@ -24,7 +24,7 @@ namespace SqlPad.Commands
 					};
 		}
 
-		public static void ExecuteEditCommand(SqlDocumentRepository documentRepository, TextEditor editor, Action<CommandExecutionContext> executionHandler)
+		public static void ExecuteEditCommand(SqlDocumentRepository documentRepository, SqlTextEditor editor, Action<CommandExecutionContext> executionHandler)
 		{
 			if (documentRepository.StatementText != editor.Text)
 				return;
@@ -34,7 +34,7 @@ namespace SqlPad.Commands
 			UpdateDocument(editor, executionContext);
 		}
 
-		public static void UpdateDocument(TextEditor editor, CommandExecutionContext executionContext)
+		public static void UpdateDocument(SqlTextEditor editor, CommandExecutionContext executionContext)
 		{
 			var caretOffset = editor.CaretOffset;
 			var selectionLength = editor.SelectionLength;

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Text;
@@ -48,7 +49,7 @@ namespace SqlPad
 		private static void BuildErrorLog(object exception, DocumentPage page)
 		{
 			var logBuilder = new StringBuilder("Unhandled exception occurred at ");
-			logBuilder.Append(DateTime.Now.ToLongTimeString());
+			logBuilder.Append(DateTime.Now.ToString(CultureInfo.InvariantCulture));
 			logBuilder.AppendLine(". ");
 			logBuilder.AppendLine("Exception: ");
 			logBuilder.AppendLine(exception.ToString());

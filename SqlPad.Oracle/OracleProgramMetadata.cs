@@ -57,12 +57,22 @@ namespace SqlPad.Oracle
 
 		public int MinimumArguments
 		{
-			get { return Parameters.Count > 0 ? Parameters.Count(p => !p.IsOptional && p.DataLevel == 0) - 1 : (_metadataMinimumArguments ?? 0); }
+			get
+			{
+				return Parameters.Count > 0
+					? Parameters.Count(p => !p.IsOptional && p.DataLevel == 0) - 1
+					: (_metadataMinimumArguments ?? 0);
+			}
 		}
 
 		public int MaximumArguments
 		{
-			get { return Parameters.Count > 0 ? Parameters.Count(p => p.DataLevel == 0) - 1 : (_metadataMaximumArguments ?? 0); }
+			get
+			{
+				return Parameters.Count > 0 && _metadataMaximumArguments != 0
+					? Parameters.Count(p => p.DataLevel == 0) - 1
+					: (_metadataMaximumArguments ?? 0);
+			}
 		}
 
 		public bool IsPackageFunction

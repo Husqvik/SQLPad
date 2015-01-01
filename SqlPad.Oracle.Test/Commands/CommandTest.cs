@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ICSharpCode.AvalonEdit;
 using NUnit.Framework;
 using Shouldly;
 using SqlPad.Commands;
@@ -13,7 +12,7 @@ namespace SqlPad.Oracle.Test.Commands
 	public class CommandTest
 	{
 		private SqlDocumentRepository _documentRepository;
-		private TextEditor _editor;
+		private SqlTextEditor _editor;
 
 		private const string FindUsagesStatementText =
 @"SELECT
@@ -83,7 +82,7 @@ WHERE
 		[SetUp]
 		public void SetUp()
 		{
-			_editor = new TextEditor();
+			_editor = new SqlTextEditor();
 			_documentRepository = TestFixture.CreateDocumentRepository();
 		}
 

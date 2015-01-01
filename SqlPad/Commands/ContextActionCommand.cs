@@ -2,17 +2,16 @@ using System;
 using System.Threading;
 using System.Windows;
 using System.Windows.Input;
-using ICSharpCode.AvalonEdit;
 
 namespace SqlPad.Commands
 {
 	internal class ContextActionCommand : ICommand
 	{
-		private readonly TextEditor _textEditor;
+		private readonly SqlTextEditor _textEditor;
 		
 		public IContextAction ContextAction { get; private set; }
 
-		public ContextActionCommand(TextEditor textEditor, IContextAction contextAction)
+		public ContextActionCommand(SqlTextEditor textEditor, IContextAction contextAction)
 		{
 			if (textEditor == null)
 				throw new ArgumentNullException("textEditor");

@@ -1,5 +1,4 @@
 ﻿using System;
-using ICSharpCode.AvalonEdit;
 using NUnit.Framework;
 using Shouldly;
 using SqlPad.Commands;
@@ -9,12 +8,12 @@ namespace SqlPad.Test
 	[TestFixture] 
 	public class EditorTest
 	{
-		private TextEditor _editor;
+		private SqlTextEditor _editor;
 
 		[SetUp]
 		public void SetUp()
 		{
-			_editor = new TextEditor();
+			_editor = new SqlTextEditor();
 		}
 
 		[Test(Description = @""), STAThread]

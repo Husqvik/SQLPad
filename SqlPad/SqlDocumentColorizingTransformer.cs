@@ -157,8 +157,8 @@ namespace SqlPad
 		private void BuildLineNodeWithSemanticErrorOrInvalidGrammarDictionary(ITextRunConstructionContext context)
 		{
 			var semanticErrorOrInvalidGrammarNodeEnumerator = _validationModels.Values
-				.SelectMany(vm => vm.GetNodesWithSemanticError())
-				.Select(kvp => kvp.Key)
+				.SelectMany(vm => vm.SemanticErrors)
+				.Select(nv => nv.Node)
 				.Concat(_statements.SelectMany(s => s.InvalidGrammarNodes))
 				.OrderBy(n => n.SourcePosition.IndexStart)
 				.GetEnumerator();
@@ -169,8 +169,8 @@ namespace SqlPad
 		private void BuildLineNodeWithSuggestionDictionary(ITextRunConstructionContext context)
 		{
 			var suggestionNodeEnumerator = _validationModels.Values
-				.SelectMany(vm => vm.GetNodesWithSuggestion())
-				.Select(kvp => kvp.Key)
+				.SelectMany(vm => vm.Suggestions)
+				.Select(nv => nv.Node)
 				.OrderBy(n => n.SourcePosition.IndexStart)
 				.GetEnumerator();
 

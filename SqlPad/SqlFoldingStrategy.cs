@@ -1,5 +1,4 @@
 using System.Linq;
-using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.Folding;
 
 namespace SqlPad
@@ -7,9 +6,9 @@ namespace SqlPad
 	public class SqlFoldingStrategy
 	{
 		private readonly FoldingManager _foldingManager;
-		private readonly TextEditor _editor;
+		private readonly SqlTextEditor _editor;
 
-		public SqlFoldingStrategy(FoldingManager foldingManager, TextEditor editor)
+		public SqlFoldingStrategy(FoldingManager foldingManager, SqlTextEditor editor)
 		{
 			_foldingManager = foldingManager;
 			_editor = editor;
