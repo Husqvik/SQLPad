@@ -99,5 +99,34 @@ END;";
 			foldingSections[4].IsNested.ShouldBe(false);
 			foldingSections[4].Placeholder.ShouldBe(OracleFoldingSectionProvider.FoldingSectionPlaceholderPlSqlBlock);
 		}
+
+		[Test(Description = @"")]
+		public void TestPlSqlExceptionFoldingSections()
+		{
+			const string statement =
+@"BEGIN
+	DBMS_OUTPUT.PUT_LINE('Body output. ');
+	
+	EXCEPTION
+		WHEN NO_DATA_FOUND
+			THEN DBMS_OUTPUT.PUT_LINE('Specific exception output. ');
+		WHEN OTHERS
+			THEN DBMS_OUTPUT.PUT_LINE('Generic exception output. ');
+END;";
+
+			var tokens = ((ITokenReader)OracleTokenReader.Create(statement)).GetTokens();
+
+			var foldingSections = _provider.GetFoldingSections(tokens).ToArray();
+			foldingSections.Length.ShouldBe(2);
+			foldingSections[0].FoldingStart.ShouldBe(0);
+			foldingSections[0].FoldingEnd.ShouldBe(227);
+			foldingSections[0].IsNested.ShouldBe(false);
+			foldingSections[0].Placeholder.ShouldBe(OracleFoldingSectionProvider.FoldingSectionPlaceholderPlSqlBlock);
+
+			foldingSections[1].FoldingStart.ShouldBe(52);
+			foldingSections[1].FoldingEnd.ShouldBe(221);
+			foldingSections[1].IsNested.ShouldBe(true);
+			foldingSections[1].Placeholder.ShouldBe(OracleFoldingSectionProvider.FoldingSectionPlaceholderException);
+		}
     }
 }

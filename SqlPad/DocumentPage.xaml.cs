@@ -1589,7 +1589,10 @@ namespace SqlPad
 
 		private void ParseDoneUiHandler()
 		{
-			_foldingStrategy.UpdateFoldings(_sqlDocumentRepository.Statements);
+			if (String.CompareOrdinal(_sqlDocumentRepository.StatementText, Editor.Text) == 0)
+			{
+				_foldingStrategy.UpdateFoldings(_sqlDocumentRepository.Statements);
+			}
 
 			if (_isInitialParsing)
 			{
@@ -1602,7 +1605,7 @@ namespace SqlPad
 
 			ShowHideBindVariableList();
 
-			if (_enableCodeComplete && _completionWindow == null && IsSelectedPage && _sqlDocumentRepository.StatementText == Editor.Text)
+			if (_enableCodeComplete && _completionWindow == null && IsSelectedPage && String.CompareOrdinal(_sqlDocumentRepository.StatementText, Editor.Text) == 0)
 			{
 				CreateCodeCompletionWindow(false);
 			}

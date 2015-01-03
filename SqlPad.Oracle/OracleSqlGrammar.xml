@@ -11659,7 +11659,7 @@
         </Sequence>
         <Sequence>
           <Terminal Id="Constant" />
-          <Terminal Id="StringLiteral" />
+          <NonTerminal Id="QuotedStringLiteral" />
         </Sequence>
         <Sequence>
           <Terminal Id="Concat" />
@@ -11706,7 +11706,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Constant" />
-          <Terminal Id="StringLiteral" />
+          <NonTerminal Id="QuotedStringLiteral" />
           <NonTerminal Id="FieldIdentifierOrConstantStringListChained" IsOptional="true" />
         </Sequence>
         <Sequence>
@@ -11859,12 +11859,12 @@
         <Sequence>
           <NonTerminal Id="DateOrTimestampSpecification" />
           <Terminal Id="Mask" />
-          <NonTerminal Id="QuotedString" />
+          <NonTerminal Id="QuotedStringLiteral" />
         </Sequence>
       </Sequences>
     </Rule>
     
-    <Rule StartingNonTerminal="QuotedString">
+    <Rule StartingNonTerminal="QuotedStringLiteral">
       <Sequences>
         <Sequence>
           <Terminal Id="DoubleQuotedStringLiteral" />
@@ -11969,7 +11969,7 @@
         <Sequence>
           <NonTerminal Id="IdentifierOrPositionRange" />
           <NonTerminal Id="ExternalTableConditionLogicalOperator" />
-          <NonTerminal Id="QuotedStringOrBlanks" />
+          <NonTerminal Id="QuotedStringLiteralOrBlanks" />
           <NonTerminal Id="ExternalTableConditionChained" IsOptional="true" />
         </Sequence>
         <Sequence>
@@ -12001,10 +12001,10 @@
       </Sequences>
     </Rule>
     
-    <Rule StartingNonTerminal="QuotedStringOrBlanks">
+    <Rule StartingNonTerminal="QuotedStringLiteralOrBlanks">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="QuotedString" />
+          <NonTerminal Id="QuotedStringLiteral" />
         </Sequence>
         <Sequence>
           <Terminal Id="Blanks" />
@@ -12097,13 +12097,13 @@
         <Sequence>
           <Terminal Id="Enclosed" />
           <Terminal Id="By" />
-          <Terminal Id="StringLiteral" />
-          <NonTerminal Id="AndStringLiteral" IsOptional="true" />
+          <NonTerminal Id="QuotedStringLiteral" />
+          <NonTerminal Id="AndQuotedStringLiteral" IsOptional="true" />
         </Sequence>
         <Sequence>
           <Terminal Id="Terminated" />
           <Terminal Id="By" />
-          <NonTerminal Id="StringLiteralOrWhitespace" />
+          <NonTerminal Id="QuotedStringLiteralOrWhitespace" />
           <NonTerminal Id="EnclosedByClause" IsOptional="true" />
         </Sequence>
       </Sequences>
@@ -12115,16 +12115,16 @@
           <Terminal Id="Optionally" IsOptional="true" />
           <Terminal Id="Enclosed" />
           <Terminal Id="By" />
-          <Terminal Id="StringLiteral" />
-          <NonTerminal Id="AndStringLiteral" IsOptional="true" />
+          <NonTerminal Id="QuotedStringLiteral" />
+          <NonTerminal Id="AndQuotedStringLiteral" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
     
-    <Rule StartingNonTerminal="StringLiteralOrWhitespace">
+    <Rule StartingNonTerminal="QuotedStringLiteralOrWhitespace">
       <Sequences>
         <Sequence>
-          <Terminal Id="StringLiteral" />
+          <NonTerminal Id="QuotedStringLiteral" />
         </Sequence>
         <Sequence>
           <Terminal Id="Whitespace" />
@@ -12132,11 +12132,11 @@
       </Sequences>
     </Rule>
     
-    <Rule StartingNonTerminal="AndStringLiteral">
+    <Rule StartingNonTerminal="AndQuotedStringLiteral">
       <Sequences>
         <Sequence>
           <Terminal Id="And" />
-          <Terminal Id="StringLiteral" />
+          <NonTerminal Id="QuotedStringLiteral" />
         </Sequence>
       </Sequences>
     </Rule>
