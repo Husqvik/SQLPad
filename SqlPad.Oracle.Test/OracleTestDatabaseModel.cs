@@ -916,7 +916,7 @@ Note
 					new SessionExecutionStatisticsRecord { Name = StatisticsDescriptionSqlNetRoundtripsToOrFromClient, Value = 2 }
 				};
 
-			return CreateFinishedTask(statistics);
+			return Task.FromResult(statistics);
 		}
 
 		public override void RefreshIfNeeded()
@@ -935,7 +935,7 @@ Note
 
 		public override Task Initialize()
 		{
-			return CreateFinishedTask<object>(null);
+			return Task.FromResult<object>(null);
 		}
 
 		public override bool IsFresh { get { return true; } }
@@ -975,7 +975,7 @@ Note
 			dataModel.IsPartitioned = false;
 			dataModel.IsTemporary = false;
 
-			return CreateFinishedTask<object>(null);
+			return Task.FromResult<object>(null);
 		}
 
 		public override Task UpdateColumnDetailsAsync(OracleObjectIdentifier objectIdentifier, string columnName, ColumnDetailsModel dataModel, CancellationToken cancellationToken)
@@ -991,7 +991,7 @@ Note
 			var previousValue = 0d;
 			dataModel.HistogramValues = Enumerable.Repeat(new Random(), dataModel.HistogramBucketCount).Select(r => (previousValue += r.NextDouble())).ToArray();
 
-			return CreateFinishedTask<object>(null);
+			return Task.FromResult<object>(null);
 		}
 
 		public override Task<IReadOnlyList<string>> GetRemoteTableColumnsAsync(string databaseLink, OracleObjectIdentifier schemaObject, CancellationToken cancellationToken)
@@ -1003,7 +1003,7 @@ Note
 					"\"RemoteColumn2\""
 				};
 
-			return CreateFinishedTask((IReadOnlyList<string>)remoteColumns.AsReadOnly());
+			return Task.FromResult((IReadOnlyList<string>)remoteColumns.AsReadOnly());
 		}
 		
 		public override IEnumerable<object[]> FetchRecords(int rowCount)
@@ -1030,24 +1030,17 @@ Note
 					ResultSet = new ReadOnlyCollection<object[]>(new List<object[]>(FetchRecords(1)))
 				};
 
-			return CreateFinishedTask(explainPlanResult);
+			return Task.FromResult(explainPlanResult);
 		}
 
 		public override Task<string> GetActualExecutionPlanAsync(CancellationToken cancellationToken)
 		{
-			return CreateFinishedTask(DummyPlanText);
+			return Task.FromResult(DummyPlanText);
 		}
 
 		public override Task<string> GetObjectScriptAsync(OracleSchemaObject schemaObject, CancellationToken cancellationToken, bool suppressUserCancellationException = true)
 		{
-			return CreateFinishedTask(SelectionTableCreateScript);
-		}
-
-		private Task<TResult> CreateFinishedTask<TResult>(TResult result)
-		{
-			var source = new TaskCompletionSource<TResult>();
-			source.SetResult(result);
-			return source.Task;
+			return Task.FromResult(SelectionTableCreateScript);
 		}
 
 		public override bool CanFetch { get { return true; } }

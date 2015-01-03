@@ -205,12 +205,11 @@ namespace SqlPad
 
 		private static void BuildLineNodeDictionary<TNode>(IEnumerator<TNode> nodeEnumerator, ITextRunConstructionContext context, IDictionary<DocumentLine, ICollection<TNode>> dictionary) where TNode : StatementNode
 		{
-			if (!nodeEnumerator.MoveNext())
-				return;
+			var nodesAvailable = nodeEnumerator.MoveNext();
 
 			foreach (var line in context.Document.Lines)
 			{
-				if (nodeEnumerator.Current == null)
+				if (!nodesAvailable)
 					break;
 
 				var singleLineTerminals = new List<TNode>();
@@ -225,8 +224,10 @@ namespace SqlPad
 
 					if (line.EndOffset < nodeEnumerator.Current.SourcePosition.IndexEnd)
 						break;
+
+					nodesAvailable = nodeEnumerator.MoveNext();
 				}
-				while (nodeEnumerator.MoveNext());
+				while (nodesAvailable);
 			}
 		}
 

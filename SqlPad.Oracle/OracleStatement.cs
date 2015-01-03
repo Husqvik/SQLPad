@@ -24,26 +24,6 @@ namespace SqlPad.Oracle
 			get { return _bindVariables ?? (_bindVariables = BuildBindVariableCollection()); }
 		}
 
-		public override IEnumerable<FoldingSection> Sections
-		{
-			get
-			{
-				return RootNode == null
-					? base.Sections
-					: RootNode.GetDescendants(NonTerminals.NestedQuery, NonTerminals.Subquery)
-						.Where(n => n.Id == NonTerminals.NestedQuery || n.ParentNode.Id != NonTerminals.NestedQuery)
-						.Select(n =>
-							new FoldingSection
-							{
-								FoldingStart = n.SourcePosition.IndexStart,
-								FoldingEnd = n.SourcePosition.IndexEnd + 1,
-								Node = n,
-								IsNestedSection = n.ParentNode.ParentNode != null,
-								Placeholder = "Subquery"
-							});
-			}
-		}
-
 		private ICollection<BindVariableConfiguration> BuildBindVariableCollection()
 		{
 			return BuildBindVariableIdentifierTerminalLookup()

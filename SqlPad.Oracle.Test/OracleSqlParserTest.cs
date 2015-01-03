@@ -4500,6 +4500,52 @@ SELECT * FROM ALL_OBJECTS";
 					var statement = result.Single();
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
+
+				[Test(Description = @"")]
+				public void TestCreateExternalTableUsingDataLoader()
+				{
+					const string statementText =
+@"CREATE TABLE HUSQVIK.SAMPLINGLOGS (
+   TIMESTAMP TIMESTAMP(4),
+   MESSAGE VARCHAR2(4000),
+   OTHER VARCHAR2(4000),
+   VODKA VARCHAR2(255),
+   LOB_COLUMN BLOB
+)
+ORGANIZATION EXTERNAL (
+    TYPE ORACLE_LOADER
+    DEFAULT DIRECTORY SAMPLINGLOGS
+    ACCESS PARAMETERS (
+        RECORDS DELIMITED BY NEWLINE
+        PREPROCESSOR PREPROCESSORS: 'GetSamplingQueueLogContents.cmd'
+        NOBADFILE NODISCARDFILE NOLOGFILE
+		LOAD WHEN ((OTHER != '0') AND OTHER = BLANKS) OR MESSAGE != BLANKS AND (1:40) != ""-""
+        DISABLE_DIRECTORY_LINK_CHECK
+        FIELDS TERMINATED BY '|'
+        MISSING FIELD VALUES ARE NULL
+        REJECT ROWS WITH ALL NULL FIELDS
+        (
+            ""TIMESTAMP"" CHAR DATE_FORMAT TIMESTAMP MASK 'YYYY-MM-DD HH24:MI:SS.FF4',
+            MESSAGE,
+            OTHER DEFAULTIF MESSAGE = BLANKS,
+            TMP VARRAWC(32000) NULLIF MESSAGE = BLANKS
+        )
+        COLUMN TRANSFORMS (
+            VODKA FROM CONCAT(CONSTANT 'value 1, ', ""TIMESTAMP"", CONSTANT ', value2'),
+            LOB_COLUMN FROM LOBFILE (TMP) FROM (SAMPLINGLOGS)
+        )
+    )
+    LOCATION ('SamplingQueueService_2014-10-21_Info.txt')
+)
+--PARALLEL
+REJECT LIMIT UNLIMITED";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
 			}
 
 			public class CreateIndex

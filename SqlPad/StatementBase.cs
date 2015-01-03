@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace SqlPad
 {
 	public abstract class StatementBase
 	{
-		private static readonly FoldingSection[] EmptySectionCollection = new FoldingSection[0];
-
 		private ICollection<StatementGrammarNode> _allTerminals;
 		private ICollection<StatementGrammarNode> _invalidGrammarNodes;
 
@@ -35,11 +34,6 @@ namespace SqlPad
 		public SourcePosition SourcePosition { get; set; }
 
 		public abstract ICollection<BindVariableConfiguration> BindVariables { get; }
-
-		public virtual IEnumerable<FoldingSection> Sections
-		{
-			get { return EmptySectionCollection; }
-		}
 
 		public ICollection<StatementGrammarNode> InvalidGrammarNodes
 		{
@@ -102,6 +96,7 @@ namespace SqlPad
 		}
 	}
 
+	[DebuggerDisplay("FoldingSection (Placeholder={Placeholder}; Range={FoldingStart + \"-\" + FoldingEnd})")]
 	public class FoldingSection
 	{
 		public int FoldingStart { get; set; }
@@ -110,8 +105,6 @@ namespace SqlPad
 		
 		public string Placeholder { get; set; }
 		
-		public StatementGrammarNode Node { get; set; }
-		
-		public bool IsNestedSection { get; set; }
+		public bool IsNested { get; set; }
 	}
 }

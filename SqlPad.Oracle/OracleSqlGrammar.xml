@@ -11707,9 +11707,20 @@
         <Sequence>
           <Terminal Id="Constant" />
           <Terminal Id="StringLiteral" />
+          <NonTerminal Id="FieldIdentifierOrConstantStringListChained" IsOptional="true" />
         </Sequence>
         <Sequence>
           <Terminal Id="Identifier" />
+          <NonTerminal Id="FieldIdentifierOrConstantStringListChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="FieldIdentifierOrConstantStringListChained">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="FieldIdentifierOrConstantStringList" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -11848,7 +11859,18 @@
         <Sequence>
           <NonTerminal Id="DateOrTimestampSpecification" />
           <Terminal Id="Mask" />
-          <Terminal Id="DoubleQuotedString" />
+          <NonTerminal Id="QuotedString" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="QuotedString">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="DoubleQuotedStringLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="StringLiteral" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -11933,28 +11955,11 @@
       <Sequences>
         <Sequence>
           <Terminal Id="DefaultIf" />
-          <NonTerminal Id="ExternalTableConditionSpecification" />
-        </Sequence>
-        <Sequence>
-          <Terminal Id="NullIf" />
-          <NonTerminal Id="ExternalTableConditionSpecification" />
-        </Sequence>
-      </Sequences>
-    </Rule>
-    
-    <Rule StartingNonTerminal="ExternalTableConditionSpecification">
-      <Sequences>
-        <Sequence>
           <NonTerminal Id="ExternalTableCondition" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="ExternalTableConditionSpecification" />
-          <NonTerminal Id="ExternalTableConditionSpecificationChained" IsOptional="true" />
-        </Sequence>
-        <Sequence>
-          <Terminal Id="LeftParenthesis" />
-          <NonTerminal Id="ExternalTableConditionSpecification" />
-          <Terminal Id="RightParenthesis" />
+          <Terminal Id="NullIf" />
+          <NonTerminal Id="ExternalTableCondition" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -11963,26 +11968,43 @@
       <Sequences>
         <Sequence>
           <NonTerminal Id="IdentifierOrPositionRange" />
-          <!--<NonTerminal Id="ExternalTableConditionLogicalOperator" />--><!-- TODO -->
-          <NonTerminal Id="StringLiteralOrBlanks" />
+          <NonTerminal Id="ExternalTableConditionLogicalOperator" />
+          <NonTerminal Id="QuotedStringOrBlanks" />
+          <NonTerminal Id="ExternalTableConditionChained" IsOptional="true" />
         </Sequence>
         <Sequence>
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="ExternalTableCondition" />
           <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="ExternalTableConditionChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ExternalTableConditionLogicalOperator">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="MathEquals" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="ExternalTableCondition" />
-          <Terminal Id="And" />
+          <Terminal Id="MathNotEqualsC" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ExternalTableConditionChained">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="LogicalOperator" />
           <NonTerminal Id="ExternalTableCondition" />
         </Sequence>
       </Sequences>
     </Rule>
     
-    <Rule StartingNonTerminal="StringLiteralOrBlanks">
+    <Rule StartingNonTerminal="QuotedStringOrBlanks">
       <Sequences>
         <Sequence>
-          <Terminal Id="StringLiteral" />
+          <NonTerminal Id="QuotedString" />
         </Sequence>
         <Sequence>
           <Terminal Id="Blanks" />
@@ -11993,23 +12015,14 @@
     <Rule StartingNonTerminal="IdentifierOrPositionRange">
       <Sequences>
         <Sequence>
-          <Terminal Id="Identifier" />
-        </Sequence>
-        <Sequence>
           <Terminal Id="LeftParenthesis" />
           <Terminal Id="IntegerLiteral" />
           <Terminal Id="Colon" />
           <Terminal Id="IntegerLiteral" />
           <Terminal Id="RightParenthesis" />
         </Sequence>
-      </Sequences>
-    </Rule>
-    
-    <Rule StartingNonTerminal="ExternalTableConditionSpecificationChained">
-      <Sequences>
         <Sequence>
-          <NonTerminal Id="LogicalOperator" />
-          <NonTerminal Id="ExternalTableConditionSpecification" />
+          <Terminal Id="Identifier" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -12294,7 +12307,7 @@
         <Sequence>
           <Terminal Id="Load" />
           <Terminal Id="When" />
-          <NonTerminal Id="ExternalTableConditionSpecification" />
+          <NonTerminal Id="ExternalTableCondition" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="OutputFileSpecifications" />
@@ -13653,24 +13666,9 @@
     <Terminal Id="MathFactor" Value="*" />
     <Terminal Id="MathDivide" Value="/" />
     <Terminal Id="MathEquals" Value="=" />
-    <Terminal Id="MathNotEqualsC" Value="!=">
-      <Synonyms>
-        <Synonym Id="MathNotEqualsSql" />
-        <Synonym Id="MathNotEqualsCircumflex" />
-      </Synonyms>
-    </Terminal>
-    <Terminal Id="MathNotEqualsSql" Value="&lt;&gt;">
-      <Synonyms>
-        <Synonym Id="MathNotEqualsC" />
-        <Synonym Id="MathNotEqualsCircumflex" />
-      </Synonyms>
-    </Terminal>
-    <Terminal Id="MathNotEqualsCircumflex" Value="^=">
-      <Synonyms>
-        <Synonym Id="MathNotEqualsSql" />
-        <Synonym Id="MathNotEqualsC" />
-      </Synonyms>
-    </Terminal>
+    <Terminal Id="MathNotEqualsC" Value="!=" />
+    <Terminal Id="MathNotEqualsSql" Value="&lt;&gt;" />
+    <Terminal Id="MathNotEqualsCircumflex" Value="^=" />
     <Terminal Id="MathGreatherThan" Value="&gt;" />
     <Terminal Id="MathGreatherThanOrEquals" Value="&gt;=" />
     <Terminal Id="MathLessThan" Value="&lt;" />
@@ -13689,31 +13687,15 @@
     <Terminal Id="Space" RegexValue="[:space:]+" />
     <Terminal Id="Union" Value="UNION" ReservedWord="Sql" />
     <Terminal Id="All" Value="ALL" ReservedWord="Sql" />
-    <Terminal Id="Any" Value="ANY" ReservedWord="Sql">
-      <Synonyms>
-        <Synonym Id="Some"/>
-      </Synonyms>
-    </Terminal>
-    <Terminal Id="Some" Value="SOME" ReservedWord="Sql">
-      <Synonyms>
-        <Synonym Id="Any"/>
-      </Synonyms>
-    </Terminal>
+    <Terminal Id="Any" Value="ANY" ReservedWord="Sql" />
+    <Terminal Id="Some" Value="SOME" ReservedWord="Sql" />
     <Terminal Id="In" Value="IN" ReservedWord="Sql" />
     <Terminal Id="Set" Value="SET" ReservedWord="Sql" />
     <Terminal Id="SetMinus" Value="MINUS" ReservedWord="Sql" />
     <Terminal Id="Intersect" Value="INTERSECT" ReservedWord="Sql" />
     <Terminal Id="Select" Value="SELECT" ReservedWord="Sql" />
-    <Terminal Id="Distinct" Value="DISTINCT" ReservedWord="Sql">
-      <Synonyms>
-        <Synonym Id="Unique" />
-      </Synonyms>
-    </Terminal>
-    <Terminal Id="Unique" Value="UNIQUE" ReservedWord="Sql">
-      <Synonyms>
-        <Synonym Id="Distinct" />
-      </Synonyms>
-    </Terminal>
+    <Terminal Id="Distinct" Value="DISTINCT" ReservedWord="Sql" />
+    <Terminal Id="Unique" Value="UNIQUE" ReservedWord="Sql" />
     <Terminal Id="From" Value="FROM" ReservedWord="Sql" />
     <Terminal Id="Null" Value="NULL" ReservedWord="Sql" />
     <Terminal Id="And" Value="AND" ReservedWord="Sql" />
@@ -14281,7 +14263,7 @@
     <Terminal Id="NoDiscardFile" Value="NODISCARDFILE" />
     <Terminal Id="DiscardFile" Value="DISCARDFILE" />
     <Terminal Id="Blanks" Value="BLANKS" />
-    <Terminal Id="DoubleQuotedString" RegexValue="^&quot;[^&quot;]*&quot;$" />
+    <Terminal Id="DoubleQuotedStringLiteral" RegexValue="^&quot;[^&quot;]*&quot;$" />
 
     <!-- Comment -->
     <Terminal Id="Audit" Value="AUDIT" ReservedWord="Sql" />

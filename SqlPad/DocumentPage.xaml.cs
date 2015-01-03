@@ -17,6 +17,7 @@ using System.Windows.Media;
 using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;
+using ICSharpCode.AvalonEdit.Folding;
 using Microsoft.Win32;
 using SqlPad.Commands;
 using SqlPad.FindReplace;
@@ -72,7 +73,7 @@ namespace SqlPad
 		private ConnectionStringSettings _connectionString;
 		private Dictionary<string, BindVariableConfiguration> _currentBindVariables = new Dictionary<string, BindVariableConfiguration>();
 		
-		//private readonly SqlFoldingStrategy _foldingStrategy;
+		private readonly SqlFoldingStrategy _foldingStrategy;
 
 		internal TabItem TabItem { get; private set; }
 		
@@ -112,7 +113,7 @@ namespace SqlPad
 		{
 			InitializeComponent();
 
-			//_foldingStrategy = new SqlFoldingStrategy(FoldingManager.Install(Editor.TextArea), Editor);
+			_foldingStrategy = new SqlFoldingStrategy(FoldingManager.Install(Editor.TextArea), Editor);
 
 			_toolTip.PlacementTarget = Editor.TextArea;
 			_contextActionMenu.PlacementTarget = Editor;
@@ -511,7 +512,7 @@ namespace SqlPad
 			WorkDocument.VisualLeft = textView.ScrollOffset.X;
 			WorkDocument.VisualTop = textView.ScrollOffset.Y;
 
-			//_foldingStrategy.Store(WorkDocument);
+			_foldingStrategy.Store(WorkDocument);
 
 			if (RowDefinitionEditor.ActualHeight > 0)
 			{
@@ -1564,17 +1565,23 @@ namespace SqlPad
 			if (IsParsingSynchronous)
 			{
 				_sqlDocumentRepository.UpdateStatements(Editor.Text);
-				ParseDoneHandler();
+				ParseDoneHandler(true);
 			}
 			else
 			{
 				_sqlDocumentRepository.UpdateStatementsAsync(Editor.Text, _parsingCancellationTokenSource.Token)
-					.ContinueWith(t => ParseDoneHandler());
+					.ContinueWith(t => ParseDoneHandler(t.Status == TaskStatus.RanToCompletion));
 			}
 		}
 
-		private void ParseDoneHandler()
+		private void ParseDoneHandler(bool completedSuccessfully)
 		{
+			if (!completedSuccessfully)
+			{
+				_isParsing = false;
+				return;
+			}
+
 			_colorizingTransformer.SetDocumentRepository(_sqlDocumentRepository);
 
 			Dispatcher.Invoke(ParseDoneUiHandler);
@@ -1582,11 +1589,11 @@ namespace SqlPad
 
 		private void ParseDoneUiHandler()
 		{
-			//_foldingStrategy.UpdateFoldings(_sqlDocumentRepository.Statements);
+			_foldingStrategy.UpdateFoldings(_sqlDocumentRepository.Statements);
 
 			if (_isInitialParsing)
 			{
-				//_foldingStrategy.Restore(WorkDocument);
+				_foldingStrategy.Restore(WorkDocument);
 				_isInitialParsing = false;
 			}
 

@@ -27,7 +27,6 @@ namespace SqlPad.Oracle
 		private readonly OracleDatabaseModelBase _databaseModel;
 		private readonly Dictionary<OracleSelectListColumn, ICollection<OracleDataObjectReference>> _asteriskTableReferences = new Dictionary<OracleSelectListColumn, ICollection<OracleDataObjectReference>>();
 		private readonly Dictionary<OracleQueryBlock, IList<string>> _commonTableExpressionExplicitColumnNames = new Dictionary<OracleQueryBlock, IList<string>>();
-		private readonly List<IList<OracleColumnReference>> _joinClauseColumnReferences = new List<IList<OracleColumnReference>>();
 		private readonly Dictionary<OracleQueryBlock, ICollection<StatementGrammarNode>> _accessibleQueryBlockRoot = new Dictionary<OracleQueryBlock, ICollection<StatementGrammarNode>>();
 		private readonly Dictionary<OracleDataObjectReference, ICollection<KeyValuePair<StatementGrammarNode, string>>> _objectReferenceCteRootNodes = new Dictionary<OracleDataObjectReference, ICollection<KeyValuePair<StatementGrammarNode, string>>>();
 		
@@ -1063,24 +1062,6 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		private void ResolveJoinReferences()
-		{
-			foreach (var joinClauseColumnReferences in _joinClauseColumnReferences)
-			{
-				var queryBlock = joinClauseColumnReferences[0].Owner;
-				foreach (var columnReference in joinClauseColumnReferences)
-				{
-					var fromClauseNode = columnReference.ColumnNode.GetAncestor(NonTerminals.FromClause);
-					var relatedTableReferences = queryBlock.ObjectReferences
-						.Where(t => t.RootNode.SourcePosition.IndexStart >= fromClauseNode.SourcePosition.IndexStart &&
-									t.RootNode.SourcePosition.IndexEnd <= columnReference.ColumnNode.SourcePosition.IndexStart).ToArray();
-
-					queryBlock.ColumnReferences.Add(columnReference);
-					ResolveColumnObjectReferences(new [] { columnReference }, relatedTableReferences, new OracleDataObjectReference[0]);
-				}
-			}
-		}
-
 		private void ResolveReferences()
 		{
 			foreach (var queryBlock in _queryBlockNodes.Values)
@@ -1098,8 +1079,6 @@ namespace SqlPad.Oracle
 
 				ResolveDatabaseLinks(queryBlock);
 			}
-
-			ResolveJoinReferences();
 		}
 
 		private void ResolveDatabaseLinks(OracleQueryBlock queryBlock)
@@ -1396,9 +1375,19 @@ namespace SqlPad.Oracle
 					}
 				}
 
-				var effectiveAccessibleRowSourceReferences = columnReference.Placement == QueryBlockPlacement.TableReference
-					? accessibleRowSourceReferences.Where(r => r.RootNode.SourcePosition.IndexEnd < columnReference.RootNode.SourcePosition.IndexStart)
-					: accessibleRowSourceReferences;
+				IEnumerable<OracleDataObjectReference> effectiveAccessibleRowSourceReferences = accessibleRowSourceReferences;
+				if (columnReference.Placement == QueryBlockPlacement.Join || columnReference.Placement == QueryBlockPlacement.TableReference)
+				{
+					effectiveAccessibleRowSourceReferences = effectiveAccessibleRowSourceReferences
+								.Where(r => r.RootNode.SourcePosition.IndexEnd < columnReference.RootNode.SourcePosition.IndexStart);
+
+					if (columnReference.Placement == QueryBlockPlacement.Join)
+					{
+						var effectiveFromClause = columnReference.RootNode.GetAncestor(NonTerminals.FromClause);
+						effectiveAccessibleRowSourceReferences = effectiveAccessibleRowSourceReferences
+							.Where(r => r.RootNode.GetAncestor(NonTerminals.FromClause) == effectiveFromClause);
+					}
+				}
 
 				ResolveColumnReference(effectiveAccessibleRowSourceReferences, columnReference, false);
 				if (columnReference.ColumnNodeObjectReferences.Count == 0)
@@ -1639,13 +1628,7 @@ namespace SqlPad.Oracle
 						continue;
 
 					var identifiers = joinCondition.GetDescendants(Terminals.Identifier);
-					var joinReferenceContainer = new OracleMainObjectReferenceContainer(this);
-					ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, joinReferenceContainer, identifiers, QueryBlockPlacement.Join, null);
-
-					if (joinReferenceContainer.ColumnReferences.Count > 0)
-					{
-						_joinClauseColumnReferences.Add(joinReferenceContainer.ColumnReferences);
-					}
+					ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock, identifiers, QueryBlockPlacement.Join, null);
 				}
 			}
 		}

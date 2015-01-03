@@ -124,6 +124,7 @@
     <Compile Include="OracleDatabaseModelBase.cs" />
     <Compile Include="OracleDataDictionary.cs" />
     <Compile Include="OracleDataType.cs" />
+    <Compile Include="OracleFoldingSectionProvider.cs" />
     <Compile Include="OracleFunctionMatcher.cs" />
     <Compile Include="OracleProgramMetadata.cs" />
     <Compile Include="OracleProgramIdentifier.cs" />

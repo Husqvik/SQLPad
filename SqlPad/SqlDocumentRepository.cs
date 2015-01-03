@@ -11,10 +11,11 @@ namespace SqlPad
 	{
 		private readonly object _lockObject = new object();
 		private IDictionary<StatementBase, IValidationModel> _validationModels = new Dictionary<StatementBase, IValidationModel>();
+		//private IDictionary<StatementBase, IValidationModel> _precedingValidationModels = new Dictionary<StatementBase, IValidationModel>();
 		private readonly ISqlParser _parser;
 		private readonly IStatementValidator _validator;
 		private readonly IDatabaseModel _databaseModel;
-		private StatementCollection _statements = new StatementCollection(new StatementBase[0], new StatementCommentNode[0]);
+		private StatementCollection _statements = new StatementCollection(new StatementBase[0], new IToken[0], new StatementCommentNode[0]);
 
 		public StatementCollection Statements
 		{
@@ -52,18 +53,18 @@ namespace SqlPad
 		{
 			try
 			{
-				var statements = await _parser.ParseAsync(statementText, cancellationToken);
-				var validationModels = await Task.Factory.StartNew(() => BuildValidationModels(statements, statementText), cancellationToken);
-
-				UpdateStatementsInternal(statementText, () => statements, (c, t) => validationModels);
+				await _parser.ParseAsync(statementText, cancellationToken)
+					.ContinueWith(t => new { Statements = t.Result, ValidationModels = BuildValidationModels(t.Result, statementText) }, cancellationToken)
+					.ContinueWith(t => UpdateStatementsInternal(statementText, () => t.Result.Statements, (c, text) => t.Result.ValidationModels), cancellationToken);
 			}
 			catch (OperationCanceledException)
 			{
-				
+				throw;
 			}
 			catch (Exception exception)
 			{
 				App.CreateErrorLog(exception);
+				throw;
 			}
 		}
 
@@ -80,10 +81,32 @@ namespace SqlPad
 			lock (_lockObject)
 			{
 				_statements = statements;
+				//_precedingValidationModels = _validationModels;
 				_validationModels = validationModels;
 				StatementText = statementText;
 			}
 		}
+
+		/*public IValidationModel GetPrecedingValidationModel(int cursorPosition)
+		{
+			if (_precedingValidationModels.Count != _validationModels.Count)
+			{
+				return null;
+			}
+
+			var currentModel = _validationModels.Values.SingleOrDefault(m => m.Statement.SourcePosition.ContainsIndex(cursorPosition));
+			if (currentModel == null)
+			{
+				return null;
+			}
+
+			var precedingModel = _precedingValidationModels.Values.SingleOrDefault(
+				m => m.Statement.SourcePosition.IndexStart == currentModel.Statement.SourcePosition.IndexStart &&
+				     m.Statement.SourcePosition.Length < currentModel.Statement.SourcePosition.Length &&
+				     m.Statement.RootNode.TerminalCount == currentModel.Statement.RootNode.TerminalCount);
+
+			return precedingModel;
+		}*/
 
 		public void ExecuteStatementAction(Action<StatementCollection> action)
 		{

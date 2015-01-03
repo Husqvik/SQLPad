@@ -22,6 +22,7 @@ namespace SqlPad.Oracle
 		private static readonly HashSet<string> TerminatorValues;
 		private static readonly SqlGrammarRuleSequenceNonTerminal[] AvailableNonTerminals;
 		private static readonly Regex IdentifierMatcher;
+		private static readonly OracleFoldingSectionProvider FoldingSectionProvider = new OracleFoldingSectionProvider();
 		
 		static OracleSqlParser()
 		{
@@ -385,6 +386,7 @@ namespace SqlPad.Oracle
 
 		private static StatementCollection ProceedGrammar(IEnumerable<OracleToken> tokens, CancellationToken cancellationToken)
 		{
+			var allTokens = new List<IToken>();
 			var tokenBuffer = new List<OracleToken>();
 			var commentBuffer = new List<OracleToken>();
 
@@ -398,6 +400,8 @@ namespace SqlPad.Oracle
 				{
 					commentBuffer.Add(token);
 				}
+
+				allTokens.Add(token);
 			}
 
 			var oracleSqlCollection = new List<StatementBase>();
@@ -405,7 +409,7 @@ namespace SqlPad.Oracle
 			if (tokenBuffer.Count == 0)
 			{
 				oracleSqlCollection.Add(OracleStatement.EmptyStatement);
-				return new StatementCollection(oracleSqlCollection, commentBuffer.Select(c => new StatementCommentNode(null, c)));
+				return new StatementCollection(oracleSqlCollection, allTokens, commentBuffer.Select(c => new StatementCommentNode(null, c)));
 			}
 			
 			do
@@ -511,7 +515,7 @@ namespace SqlPad.Oracle
 
 			var commentNodes = AddCommentNodes(oracleSqlCollection, commentBuffer);
 
-			return new StatementCollection(oracleSqlCollection, commentNodes);
+			return new StatementCollection(oracleSqlCollection, allTokens, commentNodes, FoldingSectionProvider);
 		}
 
 		private static ParseResult ProceedNonTerminal(ParseContext context, SqlGrammarRuleSequenceNonTerminal nonTerminal, int level, int tokenStartOffset, bool tokenReverted, ReservedWordScope scope)

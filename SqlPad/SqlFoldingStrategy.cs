@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using ICSharpCode.AvalonEdit.Folding;
 
@@ -16,9 +17,9 @@ namespace SqlPad
 
 		public void UpdateFoldings(StatementCollection statements)
 		{
-			var foldings = statements.SelectMany(s => s.Sections)
+			var foldings = statements.FoldingSections
 				.Where(IsMultilineOrNestedSection)
-				.Select(s => new NewFolding(s.FoldingStart, s.FoldingEnd) {Name = s.Placeholder});
+				.Select(s => new NewFolding(s.FoldingStart, s.FoldingEnd) { Name = s.Placeholder });
 			
 			_foldingManager.UpdateFoldings(foldings, -1);
 		}
@@ -39,7 +40,12 @@ namespace SqlPad
 
 		private bool IsMultilineOrNestedSection(FoldingSection section)
 		{
-			return section.IsNestedSection || _editor.GetLineNumberByOffset(section.FoldingStart) != _editor.GetLineNumberByOffset(section.FoldingEnd);
+			return section.IsNested || _editor.GetLineNumberByOffset(section.FoldingStart) != _editor.GetLineNumberByOffset(section.FoldingEnd);
 		}
+	}
+
+	public interface IFoldingSectionProvider
+	{
+		IEnumerable<FoldingSection> GetFoldingSections(IEnumerable<IToken> tokens);
 	}
 }
