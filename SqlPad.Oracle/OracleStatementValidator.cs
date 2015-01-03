@@ -162,8 +162,13 @@ namespace SqlPad.Oracle
 			{
 				case LiteralType.Date:
 					match = DateValidator.Match(value);
-					return IsDateValid(match.Groups["Year"].Value, match.Groups["Month"].Value, match.Groups["Day"].Value, false);
+					return !literal.IsMultibyte && IsDateValid(match.Groups["Year"].Value, match.Groups["Month"].Value, match.Groups["Day"].Value, false);
 				case LiteralType.Timestamp:
+					if (literal.IsMultibyte)
+					{
+						return false;
+					}
+
 					match = TimestampValidator.Match(value);
 
 					if (!match.Success || !IsDateValid(match.Groups["Year"].Value, match.Groups["Month"].Value, match.Groups["Day"].Value, true))

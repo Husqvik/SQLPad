@@ -1731,6 +1731,42 @@ FROM
 			items.Count.ShouldBe(0);
 		}
 
+		[Test(Description = @"")]
+		public void TestObjectSuggestionWhenUsingUnfinishedQuotedIdentifier()
+		{
+			const string testQuery = "SELECT * FROM \"CaseSensitive";
+
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, testQuery, 28).ToArray();
+			items.Length.ShouldBe(1);
+			items[0].Name.ShouldBe("\"CaseSensitiveTable\"");
+			items[0].Text.ShouldBe("\"CaseSensitiveTable\"");
+			items[0].StatementNode.ShouldNotBe(null);
+		}
+
+		[Test(Description = @"")]
+		public void TestSchemaQualifiedObjectSuggestionWhenUsingUnfinishedQuotedIdentifier()
+		{
+			const string testQuery = "SELECT * FROM HUSQVIK.\"CaseSensitive";
+
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, testQuery, 36).ToArray();
+			items.Length.ShouldBe(1);
+			items[0].Name.ShouldBe("\"CaseSensitiveTable\"");
+			items[0].Text.ShouldBe("\"CaseSensitiveTable\"");
+			items[0].StatementNode.ShouldNotBe(null);
+		}
+
+		[Test(Description = @"")]
+		public void TestColumnSuggestionWhenUsingUnfinishedQuotedIdentifier()
+		{
+			const string testQuery = "SELECT * FROM \"CaseSensitiveTable\" WHERE \"CaseSensitiveCol";
+
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, testQuery, 58).ToArray();
+			items.Length.ShouldBe(1);
+			items[0].Name.ShouldBe("\"CaseSensitiveTable\".\"CaseSensitiveColumn\"");
+			items[0].Text.ShouldBe("\"CaseSensitiveTable\".\"CaseSensitiveColumn\"");
+			items[0].StatementNode.ShouldNotBe(null);
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)

@@ -1408,7 +1408,7 @@ namespace SqlPad
 
 					break;
 				case "\"":
-					pairCharacterHandled = !PreviousPairCharacterExists(text, '"', '"') && IsNextCharacterBlank();
+					pairCharacterHandled = !PreviousPairCharacterExists(text, '"', '"') && IsNextCharacterBlank() && _sqlDocumentRepository.CanAddPairCharacter(Editor.CaretOffset, '"');
 					if (pairCharacterHandled)
 					{
 						InsertPairCharacter("\"\"");
@@ -1416,7 +1416,7 @@ namespace SqlPad
 					
 					break;
 				case "'":
-					pairCharacterHandled = !PreviousPairCharacterExists(text, '\'', '\'') && IsNextCharacterBlank();
+					pairCharacterHandled = !PreviousPairCharacterExists(text, '\'', '\'') && IsNextCharacterBlank() && _sqlDocumentRepository.CanAddPairCharacter(Editor.CaretOffset, '\'');
 					if (pairCharacterHandled)
 					{
 						InsertPairCharacter("''");
@@ -1589,7 +1589,8 @@ namespace SqlPad
 
 		private void ParseDoneUiHandler()
 		{
-			if (String.CompareOrdinal(_sqlDocumentRepository.StatementText, Editor.Text) == 0)
+			var hasTextChanged = String.CompareOrdinal(_sqlDocumentRepository.StatementText, Editor.Text) != 0;
+			if (!hasTextChanged)
 			{
 				_foldingStrategy.UpdateFoldings(_sqlDocumentRepository.Statements);
 			}
@@ -1600,12 +1601,17 @@ namespace SqlPad
 				_isInitialParsing = false;
 			}
 
+			if (hasTextChanged)
+			{
+				return;
+			}
+
 			Editor.TextArea.TextView.Redraw();
 			_isParsing = false;
 
 			ShowHideBindVariableList();
 
-			if (_enableCodeComplete && _completionWindow == null && IsSelectedPage && String.CompareOrdinal(_sqlDocumentRepository.StatementText, Editor.Text) == 0)
+			if (_enableCodeComplete && _completionWindow == null && IsSelectedPage)
 			{
 				CreateCodeCompletionWindow(false);
 			}

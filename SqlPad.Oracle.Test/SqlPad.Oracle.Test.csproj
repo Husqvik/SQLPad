@@ -90,7 +90,7 @@
     <Compile Include="OracleTestDatabaseModel.cs" />
     <Compile Include="OracleTestInfrastructureFactory.cs" />
     <Compile Include="OracleToolTipProviderTest.cs" />
-    <Compile Include="OracleSemanticValidatorTest.cs" />
+    <Compile Include="OracleStatementValidatorTest.cs" />
     <Compile Include="OracleSqlParserTest.cs" />
     <Compile Include="OracleContextActionProviderTest.cs" />
     <Compile Include="OracleStatementFormatterTest.cs" />

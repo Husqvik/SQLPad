@@ -927,6 +927,28 @@ FROM
 		}
 
 		[Test(Description = @"")]
+		public void TestModelBuildWithDateLiteralWithInvalidQuotedString()
+		{
+			const string query1 = @"SELECT DATE q'2014-10-04' FROM DUAL";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.QueryBlocks.Count.ShouldBe(1);
+		}
+
+		[Test(Description = @"")]
+		public void TestModelBuildWithTimestampLiteralWithInvalidQuotedString()
+		{
+			const string query1 = @"SELECT TIMESTAMP q'2014-10-04' FROM DUAL";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.QueryBlocks.Count.ShouldBe(1);
+		}
+
+		[Test(Description = @"")]
 		public void TestModelBuildWithUnfinishedSqlModelRule()
 		{
 			const string query1 =

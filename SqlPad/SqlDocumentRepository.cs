@@ -123,5 +123,11 @@ namespace SqlPad
 				return function(Statements);
 			}
 		}
+
+		public bool CanAddPairCharacter(int caretOffset, char character)
+		{
+			var token = Statements.Tokens.FirstOrDefault(t => caretOffset >= t.Index && caretOffset <= t.Index + t.Value.Length);
+			return token == null || _parser.CanAddPairCharacter(token.Value, character);
+		}
 	}
 }

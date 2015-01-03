@@ -370,7 +370,7 @@ namespace SqlPad.Oracle
 
 			var objectIdentifierNode = completionType.ReferenceIdentifier.ObjectIdentifier;
 			var partialName = completionType.ReferenceIdentifier.IdentifierEffectiveValue;
-			var currentName = completionType.ReferenceIdentifier.IdentifierOriginalValue;
+			var currentName = MakeSaveQuotedIdentifier(completionType.ReferenceIdentifier.IdentifierOriginalValue);
 			var nodeToReplace = completionType.ReferenceIdentifier.IdentifierUnderCursor;
 			var schemaName = completionType.ReferenceIdentifier.SchemaIdentifierOriginalValue;
 
@@ -399,7 +399,7 @@ namespace SqlPad.Oracle
 					if (sequence != null)
 					{
 						suggestedItems = sequence.Columns
-							.Where(c => c.Name != currentName.ToQuotedIdentifier() && CodeCompletionSearchHelper.IsMatch(c.Name, partialName))
+							.Where(c => c.Name != currentName && CodeCompletionSearchHelper.IsMatch(c.Name, partialName))
 							.Select(c => CreateColumnCodeCompletionItem(c.Name.ToSimpleIdentifier(), null, nodeToReplace, OracleCodeCompletionCategory.PseudoColumn));
 					}
 				}
@@ -519,7 +519,7 @@ namespace SqlPad.Oracle
 			var columnCandidates = tableReferenceSource
 				.SelectMany(t => t.Columns
 					.Where(c =>
-						(currentNode.Id != Terminals.Identifier || c.Name != currentNode.Token.Value.ToQuotedIdentifier()) &&
+						(currentNode.Id != Terminals.Identifier || c.Name != currentName) &&
 						(objectIdentifierNode == null && String.IsNullOrEmpty(partialName) ||
 						(c.Name != partialName.ToQuotedIdentifier() && CodeCompletionSearchHelper.IsMatch(c.Name, partialName))))
 					.Select(c => new { ObjectReference = t, Column = c }))
@@ -553,7 +553,7 @@ namespace SqlPad.Oracle
 
 			if (objectIdentifierNode == null)
 			{
-				var queryBlockReferencedObjects = tableReferenceSource.Where(r => !String.IsNullOrEmpty(r.FullyQualifiedObjectName.ToString())).ToArray();
+				var queryBlockReferencedObjects = tableReferenceSource.Where(r => CodeCompletionSearchHelper.IsMatch(r.FullyQualifiedObjectName.Name, partialName)).ToArray();
 				var referencedObjectCompletionData = queryBlockReferencedObjects
 					.Select(r =>
 						new ObjectReferenceCompletionData
@@ -782,15 +782,18 @@ namespace SqlPad.Oracle
 
 		private IEnumerable<ICodeCompletionItem> CreateObjectItems(IEnumerable<ObjectReferenceCompletionData> objects, string objectNamePart, StatementGrammarNode node, int categoryOffset = 0, int insertOffset = 0)
 		{
+			var safeObjectPartQuotedIdentifier = MakeSaveQuotedIdentifier(objectNamePart);
+			var safeTokeValueQuotedIdentifier = node == null ? null : MakeSaveQuotedIdentifier(node.Token.Value);
+			var objectNamePartUpperInvariant = objectNamePart == null ? String.Empty : objectNamePart.ToUpperInvariant();
 			return objects
-				.Where(o => MakeSaveQuotedIdentifier(objectNamePart) != o.Identifier2 &&
-							(node == null || node.Token.Value.ToQuotedIdentifier() != o.Identifier2) && CodeCompletionSearchHelper.IsMatch(o.Identifier2, objectNamePart))
+				.Where(o => String.CompareOrdinal(safeObjectPartQuotedIdentifier, o.Identifier2) != 0 &&
+							(node == null || String.CompareOrdinal(safeTokeValueQuotedIdentifier, o.Identifier2) != 0) && CodeCompletionSearchHelper.IsMatch(o.Identifier2, objectNamePart))
 				.Select(o =>
 					new OracleCodeCompletionItem
 					{
 						Name = o.CompletionText,
 						Text = o.CompletionText + o.TextPostFix,
-						Priority = String.IsNullOrEmpty(objectNamePart) || o.CompletionText.TrimStart('"').ToUpperInvariant().StartsWith(objectNamePart.ToUpperInvariant()) ? 0 : 1,
+						Priority = String.IsNullOrEmpty(objectNamePart) || o.CompletionText.TrimStart('"').ToUpperInvariant().StartsWith(objectNamePartUpperInvariant) ? 0 : 1,
 						StatementNode = node,
 						Category = o.Category,
 						InsertOffset = insertOffset,

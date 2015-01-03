@@ -51,8 +51,15 @@ namespace SqlPad.Oracle
 				return oracleString;
 			}
 
+			bool isQuotedString;
+			var trimToIndex = GetTrimIndex(oracleString, out isQuotedString);
+			return oracleString.Substring(trimToIndex, oracleString.Length - trimToIndex - (isQuotedString ? 2 : 1));
+		}
+
+		internal static int GetTrimIndex(string oracleString, out bool isQuotedString)
+		{
 			var trimToIndex = 1;
-			var isQuotedString = false;
+			isQuotedString = false;
 			if (oracleString[0] == 'n' || oracleString[0] == 'N')
 			{
 				if ((oracleString[1] == 'q' || oracleString[1] == 'Q'))
@@ -71,7 +78,7 @@ namespace SqlPad.Oracle
 				isQuotedString = true;
 			}
 
-			return oracleString.Substring(trimToIndex, oracleString.Length - trimToIndex - (isQuotedString ? 2 : 1));
+			return trimToIndex;
 		}
 
 		public static string ToOracleString(this string value)

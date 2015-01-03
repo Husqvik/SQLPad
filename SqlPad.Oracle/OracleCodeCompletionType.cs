@@ -121,6 +121,8 @@ namespace SqlPad.Oracle
 
 			SemanticModel = (OracleStatementSemanticModel)documentRepository.ValidationModels[Statement].SemanticModel;
 
+			CurrentQueryBlock = SemanticModel.GetQueryBlock(nearestTerminal);
+
 			var requiredOffsetAfterToken = nearestTerminal.Id.IsZeroOffsetTerminalId() ? 0 : 1;
 			var isCursorAfterToken = nearestTerminal.SourcePosition.IndexEnd + requiredOffsetAfterToken < cursorPosition;
 			var atAdHocTemporaryTerminal = false;
@@ -146,8 +148,14 @@ namespace SqlPad.Oracle
 					TerminalValuePartUntilCaret = TerminalValueUnderCursor;
 					precedingTerminal = nearestTerminal;
 					nearestTerminal = CurrentTerminal = new StatementGrammarNode(NodeType.Terminal, Statement, new OracleToken(TerminalValueUnderCursor, cursorPosition - TerminalValuePartUntilCaret.Length));
-					Statement.RootNode.AddChildNodes(nearestTerminal);
+					precedingTerminal.ParentNode.Clone().AddChildNodes(nearestTerminal);
 					atAdHocTemporaryTerminal = true;
+
+					if (nearestTerminal.Token.Value[0] == '"')
+					{
+						nearestTerminal.Id = Terminals.Identifier;
+						ReferenceIdentifier = BuildReferenceIdentifier(nearestTerminal.ParentNode.GetDescendants(Terminals.SchemaIdentifier, Terminals.ObjectIdentifier, Terminals.Identifier).ToArray());
+					}
 
 					if (!String.IsNullOrEmpty(TerminalValueUnderCursor) && nearestTerminal.SourcePosition.ContainsIndex(cursorPosition))
 					{
@@ -191,8 +199,6 @@ namespace SqlPad.Oracle
 			{
 				TerminalCandidates = Parser.GetTerminalCandidates(terminalCandidateSourceToken);
 			}
-
-			CurrentQueryBlock = SemanticModel.GetQueryBlock(nearestTerminal);
 
 			var inSelectList = (atAdHocTemporaryTerminal ? precedingTerminal : EffectiveTerminal).GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.SelectList) != null;
 			var keywordClauses = TerminalCandidates.Where(c => AvailableKeywordsToSuggest.Contains(c) || (inSelectList && c == Terminals.Partition))
@@ -282,7 +288,7 @@ namespace SqlPad.Oracle
 
 		private void AnalyzeObjectReferencePrefixes(StatementGrammarNode effectiveTerminal)
 		{
-			if (effectiveTerminal == null)
+			if (effectiveTerminal == null || ReferenceIdentifier.CursorPosition > 0)
 			{
 				return;
 			}
@@ -446,8 +452,15 @@ namespace SqlPad.Oracle
 				return null;
 
 			return terminal.SourcePosition.IndexEnd < CursorPosition
-				? terminal.Token.Value
+				? TrimQuoteIfInvalidQuotedIdentifier(terminal.Token.Value)
 				: terminal.Token.Value.Substring(0, CursorPosition - terminal.SourcePosition.IndexStart).Trim('"');
+		}
+
+		private string TrimQuoteIfInvalidQuotedIdentifier(string value)
+		{
+			return value[0] == '"' && value[value.Length - 1] != '"'
+				? value.TrimStart('"')
+				: value;
 		}
 
 		private StatementGrammarNode GetTerminalIfUnderCursor(StatementGrammarNode terminal)

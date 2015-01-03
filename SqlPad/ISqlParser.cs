@@ -12,5 +12,7 @@ namespace SqlPad
 		bool IsLiteral(string terminalId);
 
 		bool IsAlias(string terminalId);
+
+		bool CanAddPairCharacter(string tokenValue, char character);
 	}
 }

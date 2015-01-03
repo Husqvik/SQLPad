@@ -137,7 +137,7 @@ namespace SqlPad.Oracle
 				else if (terminal.ParentNode.Id == NonTerminals.Expression && (terminal.Id == Terminals.Date || terminal.Id == Terminals.Timestamp))
 				{
 					var literal = CreateLiteral(terminal);
-					if (literal.Terminal.Id == Terminals.StringLiteral)
+					if (literal.Terminal != null && literal.Terminal.Id == Terminals.StringLiteral)
 					{
 						_literals.Add(literal);
 					}

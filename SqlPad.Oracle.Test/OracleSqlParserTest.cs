@@ -5077,6 +5077,22 @@ PURGE REPEAT INTERVAL '5' DAY";
 			}
 		}
 
+		public class CanAddPairCharacter
+		{
+			[Test(Description = @"")]
+			public void TestCanAddPairCharacter()
+			{
+				Parser.CanAddPairCharacter("n'VODKA", '\'').ShouldBe(false);
+				Parser.CanAddPairCharacter("nq'VODKA", '\'').ShouldBe(false);
+				Parser.CanAddPairCharacter("q'VODKA", '\'').ShouldBe(false);
+				Parser.CanAddPairCharacter("'VODKA", '\'').ShouldBe(false);
+				Parser.CanAddPairCharacter("VODKA", '\'').ShouldBe(true);
+				Parser.CanAddPairCharacter("nqVODKA", '\'').ShouldBe(true);
+				Parser.CanAddPairCharacter("qVODKA", '\'').ShouldBe(true);
+				Parser.CanAddPairCharacter("'", '\'').ShouldBe(false);
+			}
+		}
+
 		private static OracleTokenReader CreateTokenReader(string sqlText)
 		{
 			Trace.WriteLine("SQL text: " + sqlText);

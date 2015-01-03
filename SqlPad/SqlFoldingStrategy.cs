@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Linq;
 using ICSharpCode.AvalonEdit.Folding;
 
@@ -42,10 +41,5 @@ namespace SqlPad
 		{
 			return section.IsNested || _editor.GetLineNumberByOffset(section.FoldingStart) != _editor.GetLineNumberByOffset(section.FoldingEnd);
 		}
-	}
-
-	public interface IFoldingSectionProvider
-	{
-		IEnumerable<FoldingSection> GetFoldingSections(IEnumerable<IToken> tokens);
 	}
 }

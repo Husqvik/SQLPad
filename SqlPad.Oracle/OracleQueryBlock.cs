@@ -177,6 +177,19 @@ namespace SqlPad.Oracle
 		public LiteralType Type;
 		
 		public StatementGrammarNode Terminal;
+
+		public bool IsMultibyte
+		{
+			get
+			{
+				if (Terminal == null || Terminal.Id != OracleGrammarDescription.Terminals.StringLiteral)
+				{
+					return false;
+				}
+
+				return Terminal.Token.Value[0] == 'n' || Terminal.Token.Value[0] == 'N';
+			}
+		}
 	}
 
 	public enum LiteralType

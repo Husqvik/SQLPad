@@ -11,9 +11,12 @@ namespace SqlPad
 	public class WorkDocumentCollection
 	{
 		internal const string ConfigurationFileName = "WorkDocuments.dat";
+		private const string ConfigurationBackupFileName = "WorkDocuments.backup.dat";
 		private const string LockFileName = "Configuration.lock";
 		private const int MaxRecentDocumentCount = 16;
 		private static string _fileName = GetWorkingDocumentConfigurationFileName(ConfigurationProvider.FolderNameWorkArea);
+		private static string _backupFileName;
+		private static bool _allowBackupOverwrite = true;
 		private static FileStream _lockFile;
 		private static readonly RuntimeTypeModel Serializer;
 		private static WorkDocumentCollection _instance;
@@ -26,6 +29,8 @@ namespace SqlPad
 
 		static WorkDocumentCollection()
 		{
+			ConfigureBackupFile();
+
 			Serializer = TypeModel.Create();
 			var workingDocumentCollectionType = Serializer.Add(typeof(WorkDocumentCollection), false);
 			workingDocumentCollectionType.UseConstructor = false;
@@ -62,19 +67,9 @@ namespace SqlPad
 				Trace.WriteLine("Configuration lock aquire failed: " + e);
 			}
 
-			if (File.Exists(_fileName))
+			if (!ReadConfiguration(_fileName))
 			{
-				using (var file = File.OpenRead(_fileName))
-				{
-					try
-					{
-						_instance = (WorkDocumentCollection)Serializer.Deserialize(file, _instance, typeof(WorkDocumentCollection));
-					}
-					catch (Exception e)
-					{
-						Trace.WriteLine("WorkDocumentCollection deserialization failed: " + e);
-					}
-				}
+				_allowBackupOverwrite = ReadConfiguration(_backupFileName);
 			}
 
 			if (_instance == null)
@@ -100,10 +95,40 @@ namespace SqlPad
 			}
 		}
 
+		private static bool ReadConfiguration(string fileName)
+		{
+			if (!File.Exists(fileName))
+			{
+				return true;
+			}
+			
+			using (var file = File.OpenRead(fileName))
+			{
+				try
+				{
+					_instance = (WorkDocumentCollection)Serializer.Deserialize(file, _instance, typeof(WorkDocumentCollection));
+					Trace.WriteLine(String.Format("WorkDocumentCollection successfully loaded from '{0}'. ", fileName));
+					return true;
+				}
+				catch (Exception e)
+				{
+					Trace.WriteLine(String.Format("WorkDocumentCollection deserialization from '{0}' failed: {1}", fileName, e));
+				}
+			}
+
+			return false;
+		}
+
 		public static void Configure()
 		{
 			_instance = null;
 			_fileName = GetWorkingDocumentConfigurationFileName(ConfigurationProvider.FolderNameWorkArea);
+			ConfigureBackupFile();
+		}
+
+		private static void ConfigureBackupFile()
+		{
+			_backupFileName = Path.Combine(ConfigurationProvider.FolderNameWorkArea, ConfigurationBackupFileName);
 		}
 
 		public static void ReleaseConfigurationLock()
@@ -265,9 +290,20 @@ namespace SqlPad
 
 			lock (Instance)
 			{
+				_allowBackupOverwrite &= File.Exists(_fileName);
+				if (_allowBackupOverwrite)
+				{
+					File.Copy(_fileName, _backupFileName, true);
+				}
+
 				using (var file = File.Create(_fileName))
 				{
 					Serializer.Serialize(file, Instance);
+				}
+
+				if (_allowBackupOverwrite)
+				{
+					File.Delete(_backupFileName);
 				}
 			}
 		}

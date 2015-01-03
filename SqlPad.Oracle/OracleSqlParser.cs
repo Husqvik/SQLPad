@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -14,6 +15,7 @@ namespace SqlPad.Oracle
 {
 	public class OracleSqlParser : ISqlParser
 	{
+		private const char SingleQuote = '\'';
 		private static readonly Assembly LocalAssembly = typeof(OracleSqlParser).Assembly;
 		private static readonly XmlSerializer XmlSerializer = new XmlSerializer(typeof(SqlGrammar));
 		private static readonly Dictionary<string, SqlGrammarRule> NonTerminalRules;
@@ -22,7 +24,6 @@ namespace SqlPad.Oracle
 		private static readonly HashSet<string> TerminatorValues;
 		private static readonly SqlGrammarRuleSequenceNonTerminal[] AvailableNonTerminals;
 		private static readonly Regex IdentifierMatcher;
-		private static readonly OracleFoldingSectionProvider FoldingSectionProvider = new OracleFoldingSectionProvider();
 		
 		static OracleSqlParser()
 		{
@@ -134,6 +135,23 @@ namespace SqlPad.Oracle
 		public bool IsAlias(string terminalId)
 		{
 			return terminalId.IsAlias();
+		}
+
+		public bool CanAddPairCharacter(string tokenValue, char character)
+		{
+			switch (character)
+			{
+				case SingleQuote:
+					bool isQuotedString;
+					var trimToIndex = OracleExtensions.GetTrimIndex(tokenValue, out isQuotedString) - (isQuotedString ? 2 : 1);
+					return tokenValue[0] != SingleQuote && (trimToIndex == 0 || tokenValue[trimToIndex] != SingleQuote);
+				
+				case '"':
+					return tokenValue[0] != '"';
+				
+				default:
+					return true;
+			}
 		}
 
 		public bool IsRuleValid(string nonTerminalId, string text)
@@ -409,7 +427,7 @@ namespace SqlPad.Oracle
 			if (tokenBuffer.Count == 0)
 			{
 				oracleSqlCollection.Add(OracleStatement.EmptyStatement);
-				return new StatementCollection(oracleSqlCollection, allTokens, commentBuffer.Select(c => new StatementCommentNode(null, c)));
+				return new OracleStatementCollection(oracleSqlCollection, allTokens, commentBuffer.Select(c => new StatementCommentNode(null, c)));
 			}
 			
 			do
@@ -515,7 +533,7 @@ namespace SqlPad.Oracle
 
 			var commentNodes = AddCommentNodes(oracleSqlCollection, commentBuffer);
 
-			return new StatementCollection(oracleSqlCollection, allTokens, commentNodes, FoldingSectionProvider);
+			return new OracleStatementCollection(oracleSqlCollection, allTokens, commentNodes);
 		}
 
 		private static ParseResult ProceedNonTerminal(ParseContext context, SqlGrammarRuleSequenceNonTerminal nonTerminal, int level, int tokenStartOffset, bool tokenReverted, ReservedWordScope scope)
@@ -932,6 +950,7 @@ namespace SqlPad.Oracle
 		}
 	}
 
+	[DebuggerDisplay("TerminalCandidate (Id={Id}; FollowingMandatoryCandidates={System.String.Join(\", \", FollowingMandatoryCandidates)})")]
 	public struct TerminalCandidate
 	{
 		private static readonly string[] EmptyFollowingCandidates = new string[0];

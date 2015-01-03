@@ -6,7 +6,7 @@ using Shouldly;
 namespace SqlPad.Oracle.Test
 {
 	[TestFixture]
-	public class OracleSemanticValidatorTest
+	public class OracleStatementValidatorTest
 	{
 		private readonly OracleSqlParser _oracleSqlParser = new OracleSqlParser();
 		private readonly OracleStatementValidator _statementValidator = new OracleStatementValidator();
@@ -1728,6 +1728,25 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			invalidNodes[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidTimestampLiteral);
 			invalidNodes[1].ToolTipText.ShouldBe(OracleSemanticErrorTooltipText.InvalidTimestampLiteral);
 			invalidNodes[1].Node.Token.Value.ShouldBe("' 2014-12-06 17:50:42'");
+		}
+
+		[Test(Description = @"")]
+		public void TestInvalidDateAndTimeStampLiteralUsingMultiByteStrings()
+		{
+			const string sqlText = @"SELECT DATE N'2014-12-06', TIMESTAMP n'2014-12-06 17:50:42' FROM DUAL";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var invalidNodes = validationModel.IdentifierNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToArray();
+			invalidNodes.Length.ShouldBe(2);
+			invalidNodes[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidDateLiteral);
+			invalidNodes[0].ToolTipText.ShouldBe(OracleSemanticErrorTooltipText.InvalidDateLiteral);
+			invalidNodes[0].Node.Token.Value.ShouldBe("N'2014-12-06'");
+			invalidNodes[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidTimestampLiteral);
+			invalidNodes[1].ToolTipText.ShouldBe(OracleSemanticErrorTooltipText.InvalidTimestampLiteral);
+			invalidNodes[1].Node.Token.Value.ShouldBe("n'2014-12-06 17:50:42'");
 		}
 
 		[Test(Description = @"")]

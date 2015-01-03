@@ -84,4 +84,19 @@ namespace SqlPad.Oracle
 				: OracleObjectIdentifier.Create(schemaIdentifierTerminal, objectIdentifierTerminal, null);
 		}
 	}
+
+	public class OracleStatementCollection : StatementCollection
+	{
+		private static readonly OracleFoldingSectionProvider FoldingSectionProvider = new OracleFoldingSectionProvider();
+
+		public OracleStatementCollection(IList<StatementBase> statements, IReadOnlyList<IToken> tokens, IEnumerable<StatementCommentNode> comments)
+			: base(statements, tokens, comments)
+		{
+		}
+
+		public override IEnumerable<FoldingSection> FoldingSections
+		{
+			get { return FoldingSectionProvider.GetFoldingSections(Tokens); }
+		}
+	}
 }
