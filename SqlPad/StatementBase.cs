@@ -7,7 +7,7 @@ namespace SqlPad
 {
 	public abstract class StatementBase
 	{
-		private ICollection<StatementGrammarNode> _allTerminals;
+		private IReadOnlyList<StatementGrammarNode> _allTerminals;
 		private ICollection<StatementGrammarNode> _invalidGrammarNodes;
 
 		public ParseStatus ParseStatus { get; set; }
@@ -65,7 +65,7 @@ namespace SqlPad
 			}
 		}
 
-		public ICollection<StatementGrammarNode> AllTerminals
+		public IReadOnlyList<StatementGrammarNode> AllTerminals
 		{
 			get { return _allTerminals ?? (_allTerminals = BuildTerminalCollection()); }
 		}
@@ -74,9 +74,10 @@ namespace SqlPad
 			get { return RootNode == null ? null : (TerminatorNode ?? RootNode.LastTerminalNode); }
 		}
 
-		private ICollection<StatementGrammarNode> BuildTerminalCollection()
+		private IReadOnlyList<StatementGrammarNode> BuildTerminalCollection()
 		{
-			return new HashSet<StatementGrammarNode>(RootNode == null ? Enumerable.Empty<StatementGrammarNode>() : RootNode.Terminals);
+			var terminals = RootNode == null ? Enumerable.Empty<StatementGrammarNode>() : RootNode.Terminals;
+			return terminals.ToArray();
 		}
 
 		public StatementGrammarNode GetNodeAtPosition(int position, Func<StatementGrammarNode, bool> filter = null)

@@ -1967,7 +1967,7 @@ namespace SqlPad
 				return;
 			}
 
-			var failedStatementSourcePosition = errorUnderCursor.Statement.RootNode.SourcePosition;
+			var failedStatementSourcePosition = errorUnderCursor.Statement.SourcePosition;
 			var isStatementUnchanged = _sqlDocumentRepository.Statements.Any(s => failedStatementSourcePosition == s.SourcePosition);
 			if (!isStatementUnchanged)
 			{

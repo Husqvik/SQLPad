@@ -445,8 +445,6 @@ namespace SqlPad.Oracle {
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://husqvik.com/SqlPad/2014/08/Oracle")]
     public partial class SqlGrammarTerminal {
         
-        private SqlGrammarTerminalSynonym[] synonymsField;
-        
         private string idField;
         
         private string valueField;
@@ -462,17 +460,6 @@ namespace SqlPad.Oracle {
         private bool allowQuotedNotationField;
         
         private bool allowQuotedNotationFieldSpecified;
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlArrayItemAttribute("Synonym", IsNullable=false)]
-        public SqlGrammarTerminalSynonym[] Synonyms {
-            get {
-                return this.synonymsField;
-            }
-            set {
-                this.synonymsField = value;
-            }
-        }
         
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
@@ -559,28 +546,6 @@ namespace SqlPad.Oracle {
             }
             set {
                 this.allowQuotedNotationFieldSpecified = value;
-            }
-        }
-    }
-    
-    /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.0.30319.33440")]
-    [System.SerializableAttribute()]
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://husqvik.com/SqlPad/2014/08/Oracle")]
-    public partial class SqlGrammarTerminalSynonym {
-        
-        private string idField;
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public string Id {
-            get {
-                return this.idField;
-            }
-            set {
-                this.idField = value;
             }
         }
     }

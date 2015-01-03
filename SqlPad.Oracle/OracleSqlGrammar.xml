@@ -6732,7 +6732,7 @@
       </Sequences>
     </Rule>
     
-    <Rule StartingNonTerminal="ProgramEnd">
+    <Rule StartingNonTerminal="ProgramEnd" Scope="PlSqlBody">
       <Sequences>
         <Sequence>
           <Terminal Id="End" />
