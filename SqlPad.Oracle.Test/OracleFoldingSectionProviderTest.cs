@@ -160,5 +160,41 @@ END L3;";
 			foldingSections[2].IsNested.ShouldBe(true);
 			foldingSections[2].Placeholder.ShouldBe(OracleFoldingSectionProvider.FoldingSectionPlaceholderPlSqlBlock);
 		}
+
+		[Test(Description = @"")]
+		public void TestPlSqlBodyFoldingSectionWithStatementsWithSameEndingAsProgramUnit()
+		{
+			const string statement =
+@"BEGIN
+	IF TRUE
+		THEN NULL;
+	END IF;
+	
+	BEGIN
+		LOOP
+			EXIT;
+		END LOOP;
+		
+		CASE 1
+			WHEN 1 THEN NULL;
+		END CASE;
+	END;
+END;";
+
+			var tokens = ((ITokenReader)OracleTokenReader.Create(statement)).GetTokens();
+
+			var foldingSections = _provider.GetFoldingSections(tokens).ToArray();
+			foldingSections.Length.ShouldBe(2);
+			foldingSections[0].FoldingStart.ShouldBe(0);
+			foldingSections[0].FoldingEnd.ShouldBe(143);
+			foldingSections[0].IsNested.ShouldBe(false);
+			foldingSections[0].Placeholder.ShouldBe(OracleFoldingSectionProvider.FoldingSectionPlaceholderPlSqlBlock);
+
+			foldingSections.Length.ShouldBe(2);
+			foldingSections[1].FoldingStart.ShouldBe(45);
+			foldingSections[1].FoldingEnd.ShouldBe(137);
+			foldingSections[1].IsNested.ShouldBe(true);
+			foldingSections[1].Placeholder.ShouldBe(OracleFoldingSectionProvider.FoldingSectionPlaceholderPlSqlBlock);
+		}
     }
 }

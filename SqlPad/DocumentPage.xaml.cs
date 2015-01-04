@@ -115,6 +115,7 @@ namespace SqlPad
 			InitializeComponent();
 
 			_foldingStrategy = new SqlFoldingStrategy(FoldingManager.Install(Editor.TextArea), Editor);
+			_foldingStrategy.FoldingMargin.ContextMenu = (ContextMenu)Resources["FoldingActionMenu"];
 
 			_toolTip.PlacementTarget = Editor.TextArea;
 			_contextActionMenu.PlacementTarget = Editor;
@@ -2058,6 +2059,34 @@ namespace SqlPad
 			Editor.TextArea.Caret.Column = errorUnderCursor.Column;
 			Editor.ScrollToCaret();
 			Editor.Focus();
+		}
+
+		private void ExpandAllFoldingsExecutedHandler(object sender, ExecutedRoutedEventArgs e)
+		{
+			SetAllFoldingIsFolded(false);
+		}
+
+		private void CollapseAllFoldingsExecutedHandler(object sender, ExecutedRoutedEventArgs e)
+		{
+			SetAllFoldingIsFolded(true);
+		}
+
+		private void SetAllFoldingIsFolded(bool isFolded)
+		{
+			foreach (var foldingSection in _foldingStrategy.FoldingManager.AllFoldings)
+			{
+				foldingSection.IsFolded = isFolded;
+			}
+		}
+
+		private void CollapseAllFoldingsCanExecuteHandler(object sender, CanExecuteRoutedEventArgs e)
+		{
+			e.CanExecute = _foldingStrategy.FoldingManager.AllFoldings.Any(f => !f.IsFolded);
+		}
+
+		private void ExpandAllFoldingsCanExecuteHandler(object sender, CanExecuteRoutedEventArgs e)
+		{
+			e.CanExecute = _foldingStrategy.FoldingManager.AllFoldings.Any(f => f.IsFolded);
 		}
 	}
 

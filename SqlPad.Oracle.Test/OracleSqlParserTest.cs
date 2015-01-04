@@ -2723,33 +2723,6 @@ END;";
 			}
 
 			[Test(Description = @"")]
-			public void TestPlSqlBodyReservedWordsInDeclareClause()
-			{
-				const string statement1 =
-@"DECLARE
-	LOOP INT;
-	WHILE INT;
-	RAISE INT;
-	EXIT INT;
-	--GOTO INT;
-BEGIN
-	BEGIN
-		BEGIN
-			--LOOP := 1;
-			--WHILE := 1;
-			--GOTO := 1;
-			--RAISE := 1;
-			--EXIT := 1;
-			NULL;
-		END L1;
-	END L2;
-END L3;";
-
-				var statement = Parser.Parse(statement1).First().Validate();
-				statement.ParseStatus.ShouldBe(ParseStatus.Success);
-			}
-
-			[Test(Description = @"")]
 			public void TestMultipleStatementsWithinCaseBranches()
 			{
 				const string statement1 =

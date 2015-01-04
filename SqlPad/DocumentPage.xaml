@@ -14,6 +14,16 @@
 		<sqlPad:ColorCodeToColorConverter x:Key="ColorCodeToColorConverter" />
 		<sqlPad:PrettyPrintNumericConverter x:Key="PrettyPrintNumericConverter" />
 
+		<ContextMenu x:Key="FoldingActionMenu">
+			<ContextMenu.CommandBindings>
+				<CommandBinding Command="commands:GenericCommands.ExpandAllFoldings" Executed="ExpandAllFoldingsExecutedHandler" CanExecute="ExpandAllFoldingsCanExecuteHandler" />
+				<CommandBinding Command="commands:GenericCommands.CollapseAllFoldings" Executed="CollapseAllFoldingsExecutedHandler" CanExecute="CollapseAllFoldingsCanExecuteHandler" />
+			</ContextMenu.CommandBindings>
+			
+			<MenuItem Header="_Expand all" Command="commands:GenericCommands.ExpandAllFoldings" />
+			<MenuItem Header="_Collapse all" Command="commands:GenericCommands.CollapseAllFoldings" />
+		</ContextMenu>
+
 		<MenuItem x:Key="ColorPickerMenuItem">
 			<MenuItem.Header>
 				<StackPanel Orientation="Horizontal">
@@ -322,6 +332,9 @@
 					</DataGrid.Columns>
 				</DataGrid>
 			</TabItem>
+			<!--<TabItem Header="E_xecution plan">
+				
+			</TabItem>-->
 		</TabControl>
 		<StatusBar x:Name="StatusBar" Grid.Row="4" Grid.Column="0">
 			<StatusBar.ItemsPanel>

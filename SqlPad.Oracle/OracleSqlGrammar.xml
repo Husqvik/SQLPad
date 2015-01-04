@@ -14412,12 +14412,12 @@
     <!-- PL/SQL -->
     <Terminal Id="Bulk" Value="BULK" />
     <Terminal Id="Begin" Value="BEGIN" ReservedWord="PlSql" />
-    <Terminal Id="Loop" Value="LOOP" ReservedWord="PlSqlBody" />
+    <Terminal Id="Loop" Value="LOOP" />
     <Terminal Id="Continue" Value="CONTINUE" />
-    <Terminal Id="Exit" Value="EXIT" ReservedWord="PlSqlBody" />
-    <Terminal Id="GoTo" Value="GOTO" ReservedWord="PlSql" />
-    <Terminal Id="Raise" Value="RAISE" ReservedWord="PlSqlBody" />
-    <Terminal Id="While" Value="WHILE" ReservedWord="PlSqlBody" />
+    <Terminal Id="Exit" Value="EXIT" />
+    <Terminal Id="GoTo" Value="GOTO" />
+    <Terminal Id="Raise" Value="RAISE" />
+    <Terminal Id="While" Value="WHILE" />
     <Terminal Id="Exception" Value="EXCEPTION" ReservedWord="PlSql" />
     <Terminal Id="Pipe" Value="PIPE" />
     <Terminal Id="If" Value="IF" ReservedWord="PlSql" />

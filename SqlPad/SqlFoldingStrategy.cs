@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Windows.Input;
 using ICSharpCode.AvalonEdit.Folding;
 
 namespace SqlPad
@@ -9,10 +10,30 @@ namespace SqlPad
 
 		public FoldingManager FoldingManager { get; private set; }
 
+		public FoldingMargin FoldingMargin { get; private set; }
+
 		public SqlFoldingStrategy(FoldingManager foldingManager, SqlTextEditor editor)
 		{
 			FoldingManager = foldingManager;
+			FoldingMargin = editor.TextArea.LeftMargins.OfType<FoldingMargin>().SingleOrDefault();
+
 			_editor = editor;
+
+			editor.TextArea.MouseRightButtonUp += TextAreaMouseRightButtonUpHandler;
+		}
+
+		private void TextAreaMouseRightButtonUpHandler(object sender, MouseButtonEventArgs mouseButtonEventArgs)
+		{
+			if (FoldingMargin.ContextMenu == null)
+			{
+				return;
+			}
+
+			var position = Mouse.GetPosition(FoldingMargin);
+			if (position.X >= 0 && position.X <= FoldingMargin.ActualWidth && position.Y >= 0 && position.Y <= FoldingMargin.ActualHeight)
+			{
+				FoldingMargin.ContextMenu.IsOpen = true;
+			}
 		}
 
 		public void UpdateFoldings(StatementCollection statements)

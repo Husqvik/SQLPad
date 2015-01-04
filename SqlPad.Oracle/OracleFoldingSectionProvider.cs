@@ -57,13 +57,9 @@ namespace SqlPad.Oracle
 					}
 				}
 
-				if (String.CompareOrdinal(token.UpperInvariantValue, TerminalValues.Begin) == 0)
-				{
-					foldingContext.OpenScope(TerminalValues.Begin);
-					foldingContext.AddFolding(FoldingSectionPlaceholderPlSqlBlock, StackKeyPlSql, token.Index);
-				}
-				else if ((isSemicolon || (String.CompareOrdinal(followingToken.Value, TerminalValues.Semicolon) == 0) && !OracleGrammarDescription.ReservedWordsPlSqlBody.Contains(token.UpperInvariantValue)) &&
-				         String.CompareOrdinal(precedingToken.UpperInvariantValue, TerminalValues.End) == 0)
+				var isPrecedingEnd = String.CompareOrdinal(precedingToken.UpperInvariantValue, TerminalValues.End) == 0;
+				var isBeginToken = String.CompareOrdinal(token.UpperInvariantValue, TerminalValues.Begin) == 0;
+				if (isPrecedingEnd)
 				{
 					if (i > 1 && foldingContext.TryFinishFoldingSection(FoldingSectionPlaceholderException, StackKeyPlSql, (OracleToken)tokenArray[i - 2], out foldingSection))
 					{
@@ -77,6 +73,18 @@ namespace SqlPad.Oracle
 					}
 
 					foldingContext.CloseScope(TerminalValues.Begin);
+				}
+				else if (isBeginToken ||
+				         String.CompareOrdinal(token.UpperInvariantValue, TerminalValues.If) == 0 ||
+				         String.CompareOrdinal(token.UpperInvariantValue, TerminalValues.Case) == 0 ||
+				         String.CompareOrdinal(token.UpperInvariantValue, TerminalValues.Loop) == 0)
+				{
+					foldingContext.OpenScope(TerminalValues.Begin);
+
+					if (isBeginToken)
+					{
+						foldingContext.AddFolding(FoldingSectionPlaceholderPlSqlBlock, StackKeyPlSql, token.Index);
+					}
 				}
 
 				if (String.CompareOrdinal(token.UpperInvariantValue, TerminalValues.Exception) == 0)
