@@ -1054,7 +1054,7 @@ namespace SqlPad.Oracle.Test
 		[Test(Description = @"Tests CAST function with target type names reserved as keyword. ")]
 		public void TestCastFunctionWithKeywords()
 		{
-			const string query1 = @"SELECT CAST(SYSTIMESTAMP AS TIMESTAMP(9) WITH TIME ZONE), CAST(SYS_EXTRACT_UTC(SYSTIMESTAMP) AS DATE) VALIDATIONTIMESTAMP, CAST(1 AS FLOAT), CAST(1 AS INTEGER), CAST(1 AS INTEGER), CAST(1 AS LONG), CAST(1 AS CHAR), CAST(1 AS VARCHAR(1 CHAR)), CAST(1 AS VARCHAR2(1)), CAST(1 AS SMALLINT), CAST(1 AS DECIMAL), CAST(1 AS NUMBER), CAST(1 AS RAW(1)) FROM DUAL";
+			const string query1 = @"SELECT CAST(SYSTIMESTAMP AS TIMESTAMP(9) WITH TIME ZONE), CAST(SYS_EXTRACT_UTC(SYSTIMESTAMP) AS DATE) VALIDATIONTIMESTAMP, CAST(1 AS FLOAT), CAST(1 AS INTEGER), CAST(1 AS INTEGER), CAST(1 AS LONG), CAST(1 AS CHAR), CAST(1 AS VARCHAR(1 CHAR)), CAST(1 AS VARCHAR2(1)), CAST(1 AS SMALLINT), CAST(1 AS DECIMAL), CAST(1 AS NUMBER), CAST(1 AS RAW(1)), CAST(NULL AS ROWID) FROM DUAL";
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
@@ -2702,6 +2702,51 @@ END;";
 				var statement = Parser.Parse(statement1).First().Validate();
 				statement.ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 				statement.SourcePosition.IndexStart.ShouldBe(0);
+			}
+
+			[Test(Description = @"")]
+			public void TestRowIdParameterAndVariable()
+			{
+				const string statement1 = @"CREATE OR REPLACE PROCEDURE P1 (P ROWID) IS V ROWID; BEGIN NULL; END;";
+
+				var statement = Parser.Parse(statement1).First().Validate();
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
+			}
+
+			[Test(Description = @"")]
+			public void TestExecuteImmediateWithExpressionParameter()
+			{
+				const string statement1 = @"BEGIN EXECUTE IMMEDIATE 'SELECT ' || (1 + 1) || ' FROM DUAL'; END;";
+
+				var statement = Parser.Parse(statement1).First().Validate();
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
+			}
+
+			[Test(Description = @"")]
+			public void TestPlSqlBodyReservedWordsInDeclareClause()
+			{
+				const string statement1 =
+@"DECLARE
+	LOOP INT;
+	WHILE INT;
+	RAISE INT;
+	EXIT INT;
+	--GOTO INT;
+BEGIN
+	BEGIN
+		BEGIN
+			--LOOP := 1;
+			--WHILE := 1;
+			--GOTO := 1;
+			--RAISE := 1;
+			--EXIT := 1;
+			NULL;
+		END L1;
+	END L2;
+END L3;";
+
+				var statement = Parser.Parse(statement1).First().Validate();
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
 			[Test(Description = @"")]

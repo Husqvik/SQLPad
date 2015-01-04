@@ -41,11 +41,8 @@ namespace SqlPad.Oracle
 
 		private IEnumerable<IGrouping<string, StatementGrammarNode>> BuildBindVariableIdentifierTerminalLookup()
 		{
-			var sourceTerminals = RootNode == null
-				? new StatementGrammarNode[0]
-				: RootNode.Terminals.Where(t => t.Id == Terminals.BindVariableIdentifier);
-
-			return sourceTerminals.ToLookup(t => t.Token.Value.ToNormalizedBindVariableIdentifier());
+			return AllTerminals.Where(t => t.Id == Terminals.BindVariableIdentifier)
+				.ToLookup(t => t.Token.Value.ToNormalizedBindVariableIdentifier());
 		}
 
 		public static bool TryGetPlSqlUnitName(StatementBase statement, out OracleObjectIdentifier objectIdentifier)

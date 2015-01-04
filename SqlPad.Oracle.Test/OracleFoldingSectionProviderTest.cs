@@ -128,5 +128,37 @@ END;";
 			foldingSections[1].IsNested.ShouldBe(true);
 			foldingSections[1].Placeholder.ShouldBe(OracleFoldingSectionProvider.FoldingSectionPlaceholderException);
 		}
+
+		[Test(Description = @"")]
+		public void TestPlSqlBodyFoldingSectionWithLabeledEnding()
+		{
+			const string statement =
+@"BEGIN
+	BEGIN
+		BEGIN
+			NULL;
+		END L1;
+	END L2;
+END L3;";
+
+			var tokens = ((ITokenReader)OracleTokenReader.Create(statement)).GetTokens();
+
+			var foldingSections = _provider.GetFoldingSections(tokens).ToArray();
+			foldingSections.Length.ShouldBe(3);
+			foldingSections[0].FoldingStart.ShouldBe(0);
+			foldingSections[0].FoldingEnd.ShouldBe(62);
+			foldingSections[0].IsNested.ShouldBe(false);
+			foldingSections[0].Placeholder.ShouldBe(OracleFoldingSectionProvider.FoldingSectionPlaceholderPlSqlBlock);
+
+			foldingSections[1].FoldingStart.ShouldBe(8);
+			foldingSections[1].FoldingEnd.ShouldBe(53);
+			foldingSections[1].IsNested.ShouldBe(true);
+			foldingSections[1].Placeholder.ShouldBe(OracleFoldingSectionProvider.FoldingSectionPlaceholderPlSqlBlock);
+
+			foldingSections[2].FoldingStart.ShouldBe(17);
+			foldingSections[2].FoldingEnd.ShouldBe(43);
+			foldingSections[2].IsNested.ShouldBe(true);
+			foldingSections[2].Placeholder.ShouldBe(OracleFoldingSectionProvider.FoldingSectionPlaceholderPlSqlBlock);
+		}
     }
 }

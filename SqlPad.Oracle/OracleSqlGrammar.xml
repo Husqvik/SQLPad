@@ -2872,6 +2872,9 @@
           <Terminal Id="Varying" IsOptional="true" />
         </Sequence>
         <Sequence>
+          <Terminal Id="RowIdDataType" />
+        </Sequence>
+        <Sequence>
           <Terminal Id="UniversalRowId" />
         </Sequence>
         <Sequence>
@@ -2979,6 +2982,9 @@
           <Terminal Id="Character" />
           <Terminal Id="Varying" IsOptional="true" />
           <NonTerminal Id="DataTypeSimplePrecision" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="RowIdDataType" />
         </Sequence>
         <Sequence>
           <Terminal Id="UniversalRowId" />
@@ -8176,7 +8182,7 @@
         <Sequence>
           <Terminal Id="Execute" />
           <Terminal Id="Immediate" />
-          <Terminal Id="StringLiteral" />
+          <NonTerminal Id="PlSqlExpression" />
           <NonTerminal Id="PlSqlExecuteImmediateInputOutputClause" IsOptional="true" />
           <Terminal Id="Semicolon" />
         </Sequence>
@@ -13715,6 +13721,7 @@
     <Terminal Id="Column" Value="COLUMN" ReservedWord="Sql" />
     <Terminal Id="RowNumberPseudoColumn" Value="ROWNUM" ReservedWord="Sql" />
     <Terminal Id="RowIdPseudoColumn" Value="ROWID" ReservedWord="Sql" />
+    <Terminal Id="RowIdDataType" Value="ROWID" ReservedWord="Sql" />
     <Terminal Id="Identifier" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
     <Terminal Id="MemberFunctionIdentifier" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
     <Terminal Id="DatabaseLinkIdentifier" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
@@ -14405,12 +14412,12 @@
     <!-- PL/SQL -->
     <Terminal Id="Bulk" Value="BULK" />
     <Terminal Id="Begin" Value="BEGIN" ReservedWord="PlSql" />
-    <Terminal Id="Loop" Value="LOOP" />
+    <Terminal Id="Loop" Value="LOOP" ReservedWord="PlSqlBody" />
     <Terminal Id="Continue" Value="CONTINUE" />
-    <Terminal Id="Exit" Value="EXIT" />
-    <Terminal Id="GoTo" Value="GOTO" />
-    <Terminal Id="Raise" Value="RAISE" />
-    <Terminal Id="While" Value="WHILE" />
+    <Terminal Id="Exit" Value="EXIT" ReservedWord="PlSqlBody" />
+    <Terminal Id="GoTo" Value="GOTO" ReservedWord="PlSql" />
+    <Terminal Id="Raise" Value="RAISE" ReservedWord="PlSqlBody" />
+    <Terminal Id="While" Value="WHILE" ReservedWord="PlSqlBody" />
     <Terminal Id="Exception" Value="EXCEPTION" ReservedWord="PlSql" />
     <Terminal Id="Pipe" Value="PIPE" />
     <Terminal Id="If" Value="IF" ReservedWord="PlSql" />

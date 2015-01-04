@@ -838,9 +838,14 @@ namespace SqlPad.Oracle
 					{
 						var isNotReservedWord = !OracleGrammarDescription.ReservedWordsSql.Contains(currentToken.UpperInvariantValue);
 
-						if (isNotReservedWord && (scope == ReservedWordScope.PlSqlBody || scope == ReservedWordScope.PlSqlDeclaration))
+						if (isNotReservedWord && scope == ReservedWordScope.PlSqlBody)
 						{
-							isNotReservedWord = !OracleGrammarDescription.ReservedWordsPlSql.Contains(currentToken.UpperInvariantValue);
+							isNotReservedWord = !OracleGrammarDescription.ReservedWordsPlSqlBody.Contains(currentToken.UpperInvariantValue);
+						}
+
+						if (isNotReservedWord && scope == ReservedWordScope.PlSqlDeclaration)
+						{
+							isNotReservedWord = !OracleGrammarDescription.ReservedWordsPlSqlDeclaration.Contains(currentToken.UpperInvariantValue);
 						}
 
 						tokenIsValid &= isNotReservedWord;
