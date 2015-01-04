@@ -642,7 +642,7 @@ namespace SqlPad
 
 		private void ShowCodeCompletionOptions(object sender, ExecutedRoutedEventArgs e)
 		{
-			CreateCodeCompletionWindow(true);
+			CreateCodeCompletionWindow(true, Editor.CaretOffset);
 		}
 
 		private void CanExecuteCancelUserActionHandler(object sender, CanExecuteRoutedEventArgs args)
@@ -1457,11 +1457,11 @@ namespace SqlPad
 			}
 		}
 
-		private async void CreateCodeCompletionWindow(bool forcedInvokation)
+		private async void CreateCodeCompletionWindow(bool forcedInvokation, int caretOffset)
 		{
-			var items = await _codeCompletionProvider.ResolveItems(_sqlDocumentRepository, DatabaseModel, Editor.Text, Editor.CaretOffset, forcedInvokation)
+			var items = await Task.Factory.StartNew(() => _codeCompletionProvider.ResolveItems(_sqlDocumentRepository, DatabaseModel, caretOffset, forcedInvokation)
 				.Select(i => new CompletionData(i))
-				.EnumerateAsync(CancellationToken.None);
+				.ToArray());
 
 			if (_sqlDocumentRepository.StatementText != Editor.Text)
 			{
@@ -1601,19 +1601,20 @@ namespace SqlPad
 				_isInitialParsing = false;
 			}
 
+			_isParsing = false;
+
 			if (hasTextChanged)
 			{
 				return;
 			}
 
 			Editor.TextArea.TextView.Redraw();
-			_isParsing = false;
 
 			ShowHideBindVariableList();
 
 			if (_enableCodeComplete && _completionWindow == null && IsSelectedPage)
 			{
-				CreateCodeCompletionWindow(false);
+				CreateCodeCompletionWindow(false, Editor.CaretOffset);
 			}
 		}
 

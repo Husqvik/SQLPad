@@ -148,16 +148,16 @@ namespace SqlPad.Oracle
 		internal ICollection<ICodeCompletionItem> ResolveItems(IDatabaseModel databaseModel, string statementText, int cursorPosition, bool forcedInvokation = true, params string[] categories)
 		{
 			var documentStore = new SqlDocumentRepository(_parser, new OracleStatementValidator(), databaseModel, statementText);
-			var sourceItems = ResolveItems(documentStore, databaseModel, statementText, cursorPosition, forcedInvokation);
+			var sourceItems = ResolveItems(documentStore, databaseModel, cursorPosition, forcedInvokation);
 			return sourceItems.Where(i => categories.Length == 0 || categories.Contains(i.Category)).ToArray();
 		}
 
-		public ICollection<ICodeCompletionItem> ResolveItems(SqlDocumentRepository sqlDocumentRepository, IDatabaseModel databaseModel, string statementText, int cursorPosition, bool forcedInvokation)
+		public ICollection<ICodeCompletionItem> ResolveItems(SqlDocumentRepository sqlDocumentRepository, IDatabaseModel databaseModel, int cursorPosition, bool forcedInvokation)
 		{
 			if (sqlDocumentRepository == null || sqlDocumentRepository.Statements == null)
 				return EmptyCollection;
 
-			var completionType = new OracleCodeCompletionType(sqlDocumentRepository, statementText, cursorPosition);
+			var completionType = new OracleCodeCompletionType(sqlDocumentRepository, sqlDocumentRepository.StatementText, cursorPosition);
 			//completionType.PrintResults();
 
 			if (completionType.InComment)
@@ -589,7 +589,7 @@ namespace SqlPad.Oracle
 		private bool FilterOtherSchemaObject(OracleSchemaObject schemaObject, bool sequencesAllowed)
 		{
 			var targetObject = schemaObject.GetTargetSchemaObject();
-			return targetObject != null && (targetObject.Type == OracleSchemaObjectType.Type || (sequencesAllowed && targetObject.Type == OracleSchemaObjectType.Sequence));
+			return targetObject != null && (targetObject.Type == OracleSchemaObjectType.Type || (sequencesAllowed && String.CompareOrdinal(targetObject.Type, OracleSchemaObjectType.Sequence) == 0));
 		}
 
 		private IEnumerable<OracleCodeCompletionItem> CreateJoinTypeCompletionItems(OracleCodeCompletionType completionType)

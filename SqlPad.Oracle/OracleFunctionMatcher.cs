@@ -19,7 +19,7 @@ namespace SqlPad.Oracle
 
 		public FunctionMatchResult GetMatchResult(OracleProgramMetadata programMetadata, string quotedCurrentSchema)
 		{
-			var isSchemaMatched = _ownerMatch == null || (_ownerMatch.Value != null && _ownerMatch.Value == String.Empty && programMetadata.Identifier.Owner == quotedCurrentSchema) ||
+			var isSchemaMatched = _ownerMatch == null || (_ownerMatch.Value != null && _ownerMatch.Value.Length == 0 && String.CompareOrdinal(programMetadata.Identifier.Owner, quotedCurrentSchema) == 0) ||
 			                      _ownerMatch.IsMatch(programMetadata).Any();
 			var matchResult =
 				new FunctionMatchResult
@@ -70,6 +70,7 @@ namespace SqlPad.Oracle
 
 	internal abstract class MatchElement<TElement>
 	{
+		private static readonly string[] EmptyArray = new string[0];
 		private readonly string _quotedValue;
 		private readonly string _rawUpperInvariantValue;
 		private string _deniedValue;
@@ -108,17 +109,17 @@ namespace SqlPad.Oracle
 		{
 			var elements = Selector(element);
 			return elements == null
-				? Enumerable.Empty<string>()
+				? EmptyArray
 				: elements.Where(IsElementMatch);
 		}
 
 		private bool IsElementMatch(string elementValue)
 		{
-			var valueMatches = elementValue == _quotedValue ||
+			var valueMatches = String.CompareOrdinal(elementValue, _quotedValue) == 0 ||
 			                   (AllowStartWithMatch && elementValue.ToRawUpperInvariant().StartsWith(_rawUpperInvariantValue)) ||
 			                   (AllowPartialMatch && CodeCompletionSearchHelper.IsMatch(elementValue, Value));
 
-			return valueMatches && (String.IsNullOrEmpty(DeniedValue) || elementValue != _quotedDeniedValue);
+			return valueMatches && (String.IsNullOrEmpty(DeniedValue) || String.CompareOrdinal(elementValue, _quotedDeniedValue) != 0);
 		}
 	}
 
