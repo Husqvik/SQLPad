@@ -5,12 +5,13 @@ namespace SqlPad
 {
 	public class SqlFoldingStrategy
 	{
-		private readonly FoldingManager _foldingManager;
 		private readonly SqlTextEditor _editor;
+
+		public FoldingManager FoldingManager { get; private set; }
 
 		public SqlFoldingStrategy(FoldingManager foldingManager, SqlTextEditor editor)
 		{
-			_foldingManager = foldingManager;
+			FoldingManager = foldingManager;
 			_editor = editor;
 		}
 
@@ -20,17 +21,17 @@ namespace SqlPad
 				.Where(IsMultilineOrNestedSection)
 				.Select(s => new NewFolding(s.FoldingStart, s.FoldingEnd) { Name = s.Placeholder });
 			
-			_foldingManager.UpdateFoldings(foldings, -1);
+			FoldingManager.UpdateFoldings(foldings, -1);
 		}
 
 		public void Store(WorkDocument workDocument)
 		{
-			workDocument.UpdateFoldingStates(_foldingManager.AllFoldings.Select(f => f.IsFolded));
+			workDocument.UpdateFoldingStates(FoldingManager.AllFoldings.Select(f => f.IsFolded));
 		}
 
 		public void Restore(WorkDocument workDocument)
 		{
-			var foldingEnumerator = _foldingManager.AllFoldings.GetEnumerator();
+			var foldingEnumerator = FoldingManager.AllFoldings.GetEnumerator();
 			foreach (var isFolded in workDocument.FoldingStates.Where(s => foldingEnumerator.MoveNext()))
 			{
 				foldingEnumerator.Current.IsFolded = isFolded;

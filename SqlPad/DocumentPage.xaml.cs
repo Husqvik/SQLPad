@@ -32,6 +32,7 @@ namespace SqlPad
 		private const string MaskWrapByQuote = "\"{0}\"";
 		private const string QuoteCharacter = "\"";
 		private const string DoubleQuotes = "\"\"";
+		private const int MaximumToolTipLines = 32;
 		public const string FileMaskDefault = "SQL files (*.sql)|*.sql|SQL Pad files (*.sqlx)|*.sqlx|Text files(*.txt)|*.txt|All files (*.*)|*";
 
 		private SqlDocumentRepository _sqlDocumentRepository;
@@ -1637,10 +1638,21 @@ namespace SqlPad
 			{
 				return;
 			}
-			
-			var offset = Editor.Document.GetOffset(position.Value.Line, position.Value.Column);
 
-			var toolTip = _toolTipProvider.GetToolTip(_sqlDocumentRepository, offset);
+			object toolTip;
+			var offset = Editor.Document.GetOffset(position.Value.Line, position.Value.Column);
+			var foldingSection = _foldingStrategy.FoldingManager.GetFoldingsContaining(offset).FirstOrDefault(s => s.IsFolded);
+			if (foldingSection != null)
+			{
+				toolTip = FormatFoldingSectionToolTip(foldingSection);
+				_toolTip.FontFamily = new FontFamily("Consolas");
+			}
+			else
+			{
+				toolTip = _toolTipProvider.GetToolTip(_sqlDocumentRepository, offset);
+				_toolTip.FontFamily = new FontFamily("Segoe UI");
+			}
+			
 			if (toolTip == null)
 				return;
 
@@ -1650,6 +1662,64 @@ namespace SqlPad
 			_toolTip.Content = toolTip;
 			_toolTip.IsOpen = true;
 			e.Handled = true;
+		}
+
+		private string FormatFoldingSectionToolTip(ICSharpCode.AvalonEdit.Document.TextSegment foldingSection)
+		{
+			var startLine = Editor.Document.GetLineByOffset(foldingSection.StartOffset);
+			var endLine = Editor.Document.GetLineByOffset(foldingSection.EndOffset);
+			var textLines = endLine.LineNumber - startLine.LineNumber + 1;
+			var isTooLong = textLines > MaximumToolTipLines;
+			if (isTooLong)
+			{
+				endLine = Editor.Document.GetLineByNumber(startLine.LineNumber + MaximumToolTipLines - 1);
+			}
+
+			var indent = foldingSection.StartOffset > startLine.Offset
+				? Editor.Document.GetText(startLine.Offset, foldingSection.StartOffset - startLine.Offset)
+				: String.Empty;
+			
+			var allowTrim = indent.Length > 0 && indent.All(c => c == ' ' || c == '\t');
+
+			var line = startLine.NextLine;
+			while (allowTrim && line.LineNumber <= endLine.LineNumber)
+			{
+				allowTrim &= line.Length == 0 || Editor.Document.GetText(line.Offset, line.Length).StartsWith(indent);
+				line = line.NextLine;
+			}
+
+			var builder = new StringBuilder();
+			line = startLine;
+			while (line != null && line.LineNumber <= endLine.LineNumber)
+			{
+				var endOffset = Math.Min(line.EndOffset, foldingSection.EndOffset);
+
+				string lineText;
+				if (line.LineNumber > startLine.LineNumber)
+				{
+					builder.AppendLine();
+					
+					lineText = allowTrim && line.Length > 0
+						? Editor.Document.GetText(line.Offset + indent.Length, endOffset - line.Offset - indent.Length)
+						: Editor.Document.GetText(line.Offset, endOffset - line.Offset);
+				}
+				else
+				{
+					var startOffset = Math.Max(line.Offset, foldingSection.StartOffset);
+					lineText = Editor.Document.GetText(startOffset, endOffset - startOffset);
+				}
+
+				builder.Append(lineText);
+				line = line.NextLine;
+			}
+
+			if (isTooLong)
+			{
+				builder.AppendLine();
+				builder.Append("...");
+			}
+
+			return builder.ToString();
 		}
 
 		private void MouseHoverStoppedHandler(object sender, MouseEventArgs e)

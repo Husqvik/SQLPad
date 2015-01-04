@@ -53,14 +53,15 @@ namespace SqlPad
 			{
 				if (childNode.IsGrammarValid)
 				{
-					foreach (var nestedChildMode in GetInvalidGrammerNodes(childNode))
+					var nestedNodes = GetInvalidGrammerNodes(childNode).Where(n => n.LastTerminalNode != null);
+					foreach (var nestedChildMode in nestedNodes)
 					{
-						yield return nestedChildMode;
+						yield return nestedChildMode.LastTerminalNode.ParentNode;
 					}
 				}
-				else
+				else if (childNode.LastTerminalNode != null)
 				{
-					yield return childNode;
+					yield return childNode.LastTerminalNode.ParentNode;
 				}
 			}
 		}
