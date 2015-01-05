@@ -1290,7 +1290,7 @@
     <Rule StartingNonTerminal="BindVariableExpressionOrPlSqlIdentifierList">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="BindVariableExpressionOrPlSqlIdentifier" />
+          <NonTerminal Id="BindVariableExpressionOrPlSqlTarget" />
           <NonTerminal Id="BindVariableExpressionOrPlSqlIdentifierCommaChainedList" IsOptional="true" />
         </Sequence>
       </Sequences>
@@ -2313,13 +2313,13 @@
       </Sequences>
     </Rule>
 
-    <Rule StartingNonTerminal="BindVariableExpressionOrPlSqlIdentifier">
+    <Rule StartingNonTerminal="BindVariableExpressionOrPlSqlTarget">
       <Sequences>
         <Sequence>
           <NonTerminal Id="BindVariableExpression" />
         </Sequence>
         <Sequence>
-          <Terminal Id="PlSqlIdentifier" />
+          <NonTerminal Id="AssignmentStatementTarget" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -2888,6 +2888,18 @@
           <NonTerminal Id="SchemaPrefix" IsOptional="true" />
           <Terminal Id="DataTypeIdentifier" />
           <NonTerminal Id="PercentCharacterTypeOrRowType" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="PlSqlDataType">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="String" />
+          <NonTerminal Id="DataTypeVarcharSimplePrecision" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="DataType" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -7194,7 +7206,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Identifier" />
-          <NonTerminal Id="DataType" />
+          <NonTerminal Id="PlSqlDataType" />
           <NonTerminal Id="VariableDeclarationConstraintAndDefaultValue" IsOptional="true" />
         </Sequence>
       </Sequences>
@@ -7233,7 +7245,7 @@
         <Sequence>
           <Terminal Id="Identifier" />
           <Terminal Id="Constant" />
-          <NonTerminal Id="DataType" />
+          <NonTerminal Id="PlSqlDataType" />
           <NonTerminal Id="NotNull" IsOptional="true" />
           <NonTerminal Id="AssignmentOperatorOrDefault" />
           <NonTerminal Id="PlSqlExpression" />
@@ -8065,7 +8077,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Open" />
-          <NonTerminal Id="BindVariableExpressionOrPlSqlIdentifier" />
+          <NonTerminal Id="BindVariableExpressionOrPlSqlTarget" />
           <Terminal Id="For" />
           <NonTerminal Id="SelectStatementOrDynamicSqlString" />
           <NonTerminal Id="UsingClause" IsOptional="true" />
@@ -8146,7 +8158,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Fetch" />
-          <NonTerminal Id="BindVariableExpressionOrPlSqlIdentifier" />
+          <NonTerminal Id="BindVariableExpressionOrPlSqlTarget" />
           <NonTerminal Id="PlSqlFetchIntoClause" />
           <Terminal Id="Semicolon" />
         </Sequence>
@@ -8705,7 +8717,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Close" />
-          <NonTerminal Id="BindVariableExpressionOrPlSqlIdentifier" />
+          <NonTerminal Id="BindVariableExpressionOrPlSqlTarget" />
           <Terminal Id="Semicolon" />
         </Sequence>
       </Sequences>

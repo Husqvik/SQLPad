@@ -141,17 +141,11 @@ namespace SqlPad.Oracle
 		private IToolTip BuildObjectTooltip(OracleDatabaseModelBase databaseModel, OracleReference reference)
 		{
 			var simpleToolTip = GetFullSchemaObjectToolTip(reference.SchemaObject);
-			if (String.IsNullOrEmpty(simpleToolTip))
-			{
-				return null;
-			}
-			
 			var objectReference = reference as OracleObjectWithColumnsReference;
 			if (objectReference != null)
 			{
 				if (objectReference.Type == ReferenceType.SchemaObject)
 				{
-					IToolTip toolTip = new ToolTipObject {DataContext = simpleToolTip};
 					var schemaObject = objectReference.SchemaObject.GetTargetSchemaObject();
 					if (schemaObject != null)
 					{
@@ -165,11 +159,8 @@ namespace SqlPad.Oracle
 								return new ToolTipSequence(simpleToolTip, (OracleSequence)schemaObject);
 						}
 					}
-
-					return toolTip;
 				}
-
-				if (objectReference.Type == ReferenceType.TableCollection)
+				else if (objectReference.Type == ReferenceType.TableCollection)
 				{
 					simpleToolTip = GetFullSchemaObjectToolTip(objectReference.SchemaObject);
 				}
@@ -178,8 +169,10 @@ namespace SqlPad.Oracle
 					simpleToolTip = objectReference.FullyQualifiedObjectName + " (" + objectReference.Type.ToCategoryLabel() + ")";
 				}
 			}
-			
-			return new ToolTipObject { DataContext = simpleToolTip };
+
+			return String.IsNullOrEmpty(simpleToolTip)
+				? null
+				: new ToolTipObject {DataContext = simpleToolTip};
 		}
 
 		private static string GetFullSchemaObjectToolTip(OracleSchemaObject schemaObject)

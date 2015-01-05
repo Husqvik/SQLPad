@@ -2498,7 +2498,7 @@ SELECT * FROM DUAL";
 			public void TestCreatePipelinedFunction()
 			{
 				const string statement1 =
-@"CREATE FUNCTION GENERATEDAYS(DATE_FROM IN DATE, DATE_TO IN DATE, p3 VARCHAR2 DEFAULT NULL, p4 SYS.DUMMY%ROWTYPE) RETURN SYS.ODCIDATELIST PIPELINED
+@"CREATE FUNCTION GENERATEDAYS(DATE_FROM IN DATE, DATE_TO IN DATE, p3 VARCHAR2 DEFAULT NULL, p4 SYS.DUAL%ROWTYPE, p5 STRING) RETURN SYS.ODCIDATELIST PIPELINED
 IS
 	DATE_COLLECTION$ SYS.ODCIDATELIST;
 	exception1 EXCEPTION;
@@ -2507,6 +2507,9 @@ IS
 	PRAGMA EXCEPTION_INIT(exception1, -1553);
 	--PRAGMA SERIALLY_REUSABLE;
 	PRAGMA UDF;
+
+	variable1 STRING(30) DEFAULT 'ABC';
+	constant1 CONSTANT STRING(30) NOT NULL DEFAULT 'DEF';
 BEGIN
     SELECT
     	DAY BULK COLLECT INTO DATE_COLLECTION$
@@ -2717,6 +2720,21 @@ END;";
 			public void TestExecuteImmediateWithExpressionParameter()
 			{
 				const string statement1 = @"BEGIN EXECUTE IMMEDIATE 'SELECT ' || (1 + 1) || ' FROM DUAL'; END;";
+
+				var statement = Parser.Parse(statement1).First().Validate();
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
+			}
+
+			[Test(Description = @"")]
+			public void TestCollectionTargetWithinIntoClause()
+			{
+				const string statement1 =
+@"DECLARE
+	TEST_ARRAY SYS.ODCIVARCHAR2LIST := SYS.ODCIVARCHAR2LIST();
+BEGIN
+	TEST_ARRAY.EXTEND;
+	SELECT DUMMY INTO TEST_ARRAY(TEST_ARRAY.LAST) FROM DUAL;
+END;";
 
 				var statement = Parser.Parse(statement1).First().Validate();
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);

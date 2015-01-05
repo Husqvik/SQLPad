@@ -443,6 +443,18 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestInlineViewToolTip()
+		{
+			const string query = "SELECT INLINEVIEW.DUMMY FROM (SELECT DUAL.DUMMY FROM DUAL) INLINEVIEW";
+			_documentRepository.UpdateStatements(query);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 16);
+
+			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.DataContext.ShouldBe("INLINEVIEW (Inline View)");
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestXmlTableColumnQualifierToolTip()
 		{
 			const string query = "SELECT VALUE FROM XMLTABLE('/root' PASSING XMLTYPE('<root>value</root>') COLUMNS VALUE VARCHAR2(10) PATH '.') XML_DATA";

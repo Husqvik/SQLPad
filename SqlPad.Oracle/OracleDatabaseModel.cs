@@ -274,7 +274,14 @@ namespace SqlPad.Oracle
 				return;
 			}
 
-			action(_userTransaction);
+			try
+			{
+				action(_userTransaction);
+			}
+			catch (Exception e)
+			{
+				Trace.WriteLine("Transaction action failed: " + e);
+			}
 
 			_userTransactionId = null;
 			_userTransactionIsolationLevel = IsolationLevel.Unspecified;
@@ -664,7 +671,7 @@ namespace SqlPad.Oracle
 				_userTransaction = _userConnection.BeginTransaction();
 			}
 
-			_userCommand.CommandText = executionModel.StatementText.Replace("\r", null);
+			_userCommand.CommandText = executionModel.StatementText.Replace("\r\n", "\n");
 			_userCommand.InitialLONGFetchSize = InitialLongFetchSize;
 
 			foreach (var variable in executionModel.BindVariables)

@@ -369,12 +369,13 @@ namespace SqlPad
 					return;
 				}
 
-				documentPage =  OpenExistingFile(documentCursorPosition.Document.DocumentFileName);
+				documentPage = OpenExistingFile(documentCursorPosition.Document.DocumentFileName);
 			}
 
 			EditorNavigationService.IsEnabled = false;
 			documentPage.Editor.CaretOffset = documentCursorPosition.CursorPosition;
 			DocumentTabControl.SelectedItem = documentPage.TabItem;
+			documentPage.Editor.ScrollToCaret();
 			EditorNavigationService.IsEnabled = true;
 		}
 

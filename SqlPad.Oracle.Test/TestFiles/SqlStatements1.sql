@@ -2158,8 +2158,14 @@ FROM
   ) CONST_VIEW;
 
 
-CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
+  CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 
+	TYPE REVERSED_INTEREST_CURSOR IS REF CURSOR RETURN "AccountEntries"%ROWTYPE;
+
+	AE_COLUMN_VALIDATION_DATE CONSTANT STRING(30) := 'ValidationDate';
+	AE_COLUMN_ACCOUNTING_DATE CONSTANT STRING(30) := 'AccountingDate';
+
+/*******************************************************************************/  
 	-- internal function to get a lock handle
 	-- (private for use by request_lock and release_lock)
 	FUNCTION "GetHandle" (lock_name IN VARCHAR2) RETURN VARCHAR2 IS
@@ -2168,89 +2174,108 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 		DBMS_LOCK.ALLOCATE_UNIQUE (
 			lockname => lock_name,
 			lockhandle => lock_handle,
-	    expiration_secs => 864000); -- 10 days
+			expiration_secs => 864000); -- 10 days
 		RETURN lock_handle;
 	END "GetHandle";
 
+/*******************************************************************************/	
 	-- wrapper function to Request a lock; returns a lock handle
 	PROCEDURE "RequestLock"(lock_name IN VARCHAR2) IS
 		lock_status NUMBER;
-  BEGIN
+	BEGIN
 		lock_status := DBMS_LOCK.REQUEST(
-    lockhandle => "GetHandle"(lock_name),
-    lockmode => DBMS_LOCK.X_MODE, -- eXclusive
-    timeout => DBMS_LOCK.MAXWAIT, -- wait forever
-    release_on_commit => FALSE);
-  CASE lock_status
-    WHEN 0 THEN NULL;
-    WHEN 2 THEN CUSTOM_ORACLE_EXCEPTIONS."RaiseException"('LockDeadlockDetected', null);
-    WHEN 4 THEN CUSTOM_ORACLE_EXCEPTIONS."RaiseException"('LockAlreadyObtained', null);
-    ELSE CUSTOM_ORACLE_EXCEPTIONS."RaiseException"('LockRequestFailed', lock_status);
-  END CASE;
+		lockhandle => "GetHandle"(lock_name),
+		lockmode => DBMS_LOCK.X_MODE, -- eXclusive
+		timeout => DBMS_LOCK.MAXWAIT, -- wait forever
+		release_on_commit => FALSE);
+	CASE lock_status
+		WHEN 0 THEN NULL;
+		WHEN 2 THEN CUSTOM_ORACLE_EXCEPTIONS."RaiseException"('LockDeadlockDetected', null);
+		WHEN 4 THEN CUSTOM_ORACLE_EXCEPTIONS."RaiseException"('LockAlreadyObtained', null);
+		ELSE CUSTOM_ORACLE_EXCEPTIONS."RaiseException"('LockRequestFailed', lock_status);
+	END CASE;
 	END "RequestLock";
 
+/*******************************************************************************/
 	-- wrapper to release a lock; call with the lock handle obtained previously
 	PROCEDURE "ReleaseLock" (lock_name IN VARCHAR2) IS
 		lock_status NUMBER;
 	BEGIN
 		lock_status := DBMS_LOCK.RELEASE(
-    lockhandle => "GetHandle"(lock_name));
-  IF lock_status > 0 THEN
+		lockhandle => "GetHandle"(lock_name));
+	IF lock_status > 0 THEN
 	 CUSTOM_ORACLE_EXCEPTIONS."RaiseException"('LockReleaseFailed', lock_status);
-  END IF;
+	END IF;
 
 	END "ReleaseLock";
 
+/*******************************************************************************/
 	FUNCTION "GenerateNewStatementNumber" (ACCOUNT "Accounts"%ROWTYPE)
 		RETURN VARCHAR2 IS NEW_STATEMENT_NUMBER VARCHAR2(20);
 	BEGIN
 		RETURN STATEMENTNUMBER_SEQ.NEXTVAL;
 	END;
 
+/*******************************************************************************/
 	PROCEDURE "CancelStatements" (ACCOUNT_ID IN NUMBER, DATE_TO IN DATE)
 	AS
-	ACCOUNTED_EXPECTATION_COUNT NUMBER := 0;
+		ACCOUNTED_EXPECTATION_COUNT NUMBER := 0;
+		CANCELLED_STATEMENS$ T_NUMBER_ARRAY;
 	BEGIN
 		
 		IF DATE_TO <= TRUNC(SYSTEMTIME) THEN
 			CUSTOM_ORACLE_EXCEPTIONS."RaiseException"('StatementWithDueDayCancel', NULL);
 		END IF;      
 
-		SELECT COUNT("Id") INTO ACCOUNTED_EXPECTATION_COUNT 
-		FROM "Expectations" WHERE "Statement_Id" IN ( SELECT "Id" FROM "Statements" WHERE "Account_Id" = ACCOUNT_ID AND "AccountingPeriodEndDate" < TRUNC(DATE_TO));
+		SELECT COUNT(*) INTO ACCOUNTED_EXPECTATION_COUNT
+		FROM "Statements" 
+		JOIN "Expectations" ON "Statements"."Id" = "Expectations"."Statement_Id" 
+		WHERE
+			"Statements"."Account_Id" = ACCOUNT_ID
+			AND "Statements"."AccountingPeriodEndDate" > TRUNC(DATE_TO)
+			AND "Expectations"."Status" =  APPLICATIONVALUES.ES_ACCOUNTED;
 
 		IF ACCOUNTED_EXPECTATION_COUNT > 0 THEN
 			CUSTOM_ORACLE_EXCEPTIONS."RaiseException"('StatementAlreadyAccounted', NULL);
 		END IF;
 
-		UPDATE "Statements" SET "Status" = APPLICATIONVALUES.SS_CANCELLED /*Canceled*/ WHERE "Account_Id" = ACCOUNT_ID AND "AccountingPeriodEndDate" > TRUNC(DATE_TO);
+		UPDATE "Statements" SET "Status" = APPLICATIONVALUES.SS_CANCELLED 
+		WHERE "Account_Id" = ACCOUNT_ID AND "AccountingPeriodEndDate" >= TRUNC(DATE_TO)
+		RETURNING "Id" 
+		BULK COLLECT INTO CANCELLED_STATEMENS$;
+		
+		IF CANCELLED_STATEMENS$ IS NOT NULL AND CANCELLED_STATEMENS$.COUNT > 0 THEN
 
-		UPDATE "Expectations" E SET "Status" = APPLICATIONVALUES.ES_CREATED, "Statement_Id" = NULL
-		WHERE "Id" IN (
-										SELECT E."Id" 
-										FROM "Statements" S
-										JOIN "Expectations" E ON S."Id" = E."Statement_Id"
-										WHERE S."Account_Id" = ACCOUNT_ID AND S."Status" = APPLICATIONVALUES.SS_CANCELLED /*Cancelled*/
-									);
+			UPDATE "Expectations" SET "Status" = APPLICATIONVALUES.ES_CREATED, "Statement_Id" = NULL
+			WHERE "Statement_Id" IN (SELECT COLUMN_VALUE FROM TABLE(CANCELLED_STATEMENS$))
+				AND "Status" IN (APPLICATIONVALUES.ES_STATED);
+
+			UPDATE "AccountEntries" SET "Status" = APPLICATIONVALUES.AES_CREATED, "Statement_Id" = NULL
+			WHERE "Statement_Id" IN (SELECT COLUMN_VALUE FROM TABLE(CANCELLED_STATEMENS$));
+
+		END IF;
+
 	END;
 
-	FUNCTION "GetDateFromDueDay"(DUE_DAY IN INTEGER)
+/*******************************************************************************/
+	FUNCTION "GetDateFromDueDay"(DUE_DAY IN INTEGER, MONTH_DATE DATE)
 		RETURN DATE IS RESULT_DATE DATE;
-		TODAY DATE := TRUNC(SYSTEMTIME);
+		FIRST_DATE_IN_MONTH DATE := TRUNC(MONTH_DATE, 'MONTH');
 		MONTH_LAST_DAY INTEGER;
 		VALID_DUE_DAY INTEGER := DUE_DAY;
 	BEGIN
 
-		MONTH_LAST_DAY := EXTRACT(DAY FROM LAST_DAY(TODAY));
+		MONTH_LAST_DAY := EXTRACT(DAY FROM LAST_DAY(FIRST_DATE_IN_MONTH));
 
 		IF VALID_DUE_DAY > MONTH_LAST_DAY THEN
 			VALID_DUE_DAY := MONTH_LAST_DAY;
 		END IF;
 
-		RESULT_DATE := TODAY - EXTRACT(DAY FROM TODAY) + VALID_DUE_DAY;
+		RESULT_DATE := (FIRST_DATE_IN_MONTH-1) + VALID_DUE_DAY;
 		RETURN RESULT_DATE;
 	END;
 
+/*******************************************************************************/
 	FUNCTION "CorrectToBusinessDayDown" (SEARCH_DATE IN DATE) RETURN DATE 
 	IS
 		BUSINESS_DAY DATE;
@@ -2287,6 +2312,7 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 		RETURN BUSINESS_DAY; 
 	END;
 
+/*******************************************************************************/
 	FUNCTION "CorrectToBusinessDayUp" (SEARCH_DATE IN DATE) RETURN DATE 
 	IS
 		BUSINESS_DAY DATE;
@@ -2322,6 +2348,7 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 		RETURN BUSINESS_DAY; 
 	END;
 
+/*******************************************************************************/
 	FUNCTION "GetStatementMinimumPayment" (ACCOUNT_ID NUMBER, PERIOD_DATE DATE, EXTRA_AMOUNT NUMBER, PLANNED_PAYMENT NUMBER)
 	RETURN NUMBER IS MINIMUM_PAYMENT NUMBER := 0;
 		TEMPLATE "Templates"%ROWTYPE;
@@ -2347,7 +2374,11 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 			IF PLANNED_PAYMENT IS NULL THEN
 				CUSTOM_ORACLE_EXCEPTIONS."RaiseException"('NoPaymentPlanAmountFound', NULL);
 			END IF;
-      MINIMUM_PAYMENT := PLANNED_PAYMENT;
+
+			MINIMUM_PAYMENT := PLANNED_PAYMENT;
+			--IF EXPECTED_BALANCE < 0 THEN 
+			--  MINIMUM_PAYMENT := PLANNED_PAYMENT;
+			--END IF;
 		END IF;
 
 		-- MinimumPositiveAmount criteria
@@ -2389,6 +2420,7 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 		RETURN ROUND(MINIMUM_PAYMENT);
 	END;
 
+/*******************************************************************************/ 
 	FUNCTION "GetPlannedPayment" (ACCOUNT_ID NUMBER, PERIOD_DATE DATE)
 		RETURN NUMBER IS PLANNED_PAYMENT NUMBER;
 		TRUNCATED_DATE DATE := TRUNC(PERIOD_DATE);
@@ -2422,6 +2454,7 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 
 	END "GetPlannedPayment";
 
+/*******************************************************************************/ 
 	FUNCTION "GetRelatedTemplate" (ACCOUNT_ID NUMBER, PERIOD_DATE DATE)
 	RETURN "Templates"%ROWTYPE IS TEMPLATE "Templates"%ROWTYPE;
 	BEGIN
@@ -2439,14 +2472,15 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 
 	END "GetRelatedTemplate";
 
+/*******************************************************************************/
 	PROCEDURE "SearchEntriesToReverse"(ACCOUNT_ID IN NUMBER, TARGET_DATE IN DATE, TARGET_BALANCE IN NUMBER, RETURNED_ENTRIES OUT T_OUT_CURSOR)
 	AS
 		USED_TARGET_DATE DATE := TARGET_DATE;
 		USED_TARGET_BALANCE NUMBER := TARGET_BALANCE;
 	BEGIN
 		IF (TARGET_DATE IS NULL AND TARGET_BALANCE IS NULL) OR
-           (TARGET_DATE IS NOT NULL AND TARGET_BALANCE IS NOT NULL) THEN
-		   CUSTOM_ORACLE_EXCEPTIONS."RaiseException"('InvalidParameterValue', NULL);
+					 (TARGET_DATE IS NOT NULL AND TARGET_BALANCE IS NOT NULL) THEN
+			 CUSTOM_ORACLE_EXCEPTIONS."RaiseException"('InvalidParameterValue', NULL);
 		END IF;
 
 /*
@@ -2463,14 +2497,31 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 
 		OPEN RETURNED_ENTRIES FOR
 		SELECT
-			AEV."Id", AEV."TransactionType", AEV."Created", AEV."CreatedBy", AEV."ValidFrom", AEV."ValidTo", AEV."Amount", AEV."Visibility", AEV."Status",
-			AEV."Balance", AEV."InterestPercent", AEV."AccountingDate", AEV."Statement_Id", AEV."Account_Id", AEV."OriginalEntry_Id", AEV."LastChange_ChangedBy", AEV."LastChange_Changed"
+			AEV."Id", 
+			AEV."TransactionType", 
+			AEV."Created", 
+			AEV."CreatedBy", 
+			AEV."ValidFrom", 
+			AEV."ValidTo", 
+			AEV."Amount", 
+			AEV."Visibility", 
+			AEV."Status",
+			AEV."Balance", 
+			AEV."InterestPercent", 
+			AEV."AccountingDate", 
+			AEV."ValidationDate", 
+			AEV."Statement_Id", 
+			AEV."Account_Id", 
+			AEV."OriginalEntry_Id", 
+			AEV."LastChange_ChangedBy", 
+			AEV."LastChange_Changed"
 		FROM "AccountEntryView" AEV
 		WHERE "Account_Id" = ACCOUNT_ID
 			AND "AccountingDate" >= USED_TARGET_DATE
 			AND ("MaximumBalanceAfterReversal" < USED_TARGET_BALANCE OR "MaximumBalanceAfterReversal" IS NULL);
 	END;
 
+/*******************************************************************************/
 	PROCEDURE "CreateHistoryChangeEntry"(TABLE_NAME IN VARCHAR2, COLUMN_NAME IN VARCHAR2, RECORD_ID IN VARCHAR2, NUMERIC_VALUE IN NUMBER, STRING_VALUE IN VARCHAR2, DATE_VALUE IN TIMESTAMP,
 		RESPONSIBLE IN VARCHAR2, MODIFICATION_DATE IN TIMESTAMP, USER_CHANGE IN INTEGER, STRING_CODE IN VARCHAR2, LOG_MESSAGE_PRIORITY IN INTEGER)
 	AS
@@ -2479,10 +2530,11 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 		VALUES (HISTORICALCHANGES_SEQ.NEXTVAL, TABLE_NAME, COLUMN_NAME, RECORD_ID, NUMERIC_VALUE, STRING_VALUE, DATE_VALUE, MODIFICATION_DATE, SYSTEMTIME, DBMS_TRANSACTION.LOCAL_TRANSACTION_ID, CURRENTUSER, RESPONSIBLE, USER_CHANGE, STRING_CODE, LOG_MESSAGE_PRIORITY);
 	END;
 
+/*******************************************************************************/
 	PROCEDURE "CreateStatement" (INVOICE_DATE IN DATE, ACCOUNT "Accounts"%ROWTYPE, IS_PREVIEW IN NUMBER, NEW_STATEMENT_ID OUT NUMBER, IS_FULL_STATEMENT OUT NUMBER)
 	AS
 		PREVIOUS_STATEMENT "Statements"%ROWTYPE;
-		PREVIOUS_EVENT_DATE DATE := ACCOUNT."TimeValidity_ValidFrom";
+		PREVIOUS_EVENT_DATE DATE := TRUNC(ACCOUNT."TimeValidity_ValidFrom");
 		LAST_STATEMENT_DUE_DATE DATE := ACCOUNT."TimeValidity_ValidFrom" - 1; -- Only entries accounted before this date can be stated.
 
 		TYPE T_ACCOUNTING_RECORD IS RECORD (ENTRY_ID NUMBER, EXPECTATION_ID NUMBER, TRANSACTION_TYPE INTEGER, ACCOUNTING_DATE DATE, AMOUNT NUMBER, BALANCE NUMBER);
@@ -2516,6 +2568,7 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 		MINIMUM_PAYMENT NUMBER := 0;
 		PLANNED_PAYMENT NUMBER;
 		PREVIOUS_DEBT NUMBER := 0;
+		PREVIOUS_STATEMENT_INCOME NUMBER := 0;
 		CURRENT_STATEMENT "Statements"%ROWTYPE;
 		MINIMUM_PAYMENT_SETTINGS NUMBER;
 		SECTION_TITLE CLOB;
@@ -2529,7 +2582,7 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 
 		-- account has right status
 		IF ACCOUNT."Status" NOT IN (APPLICATIONVALUES.AS_ACTIVE, APPLICATIONVALUES.AS_CLOSED, APPLICATIONVALUES.AS_INACTIVE) THEN
-			MAINTENANCE."LogMessage"(LOG_WARN, 'The account ''' || ACCOUNT."Id" || ''' is not active nor closed therefore statement will not be created. ', NULL, NULL, NULL);
+			MAINTENANCE."LogWarn"('The account ''' || ACCOUNT."Id" || ''' is not active nor closed therefore statement will not be created. ');
 			IS_FULL_STATEMENT := APPLICATIONVALUES.FST_SNC_WRONGACCSTATUS;
 			RETURN;
 		END IF;
@@ -2567,7 +2620,7 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 					RETURN;
 				END IF;
 
-				PREVIOUS_EVENT_DATE := TRUNC(PREVIOUS_STATEMENT."Created");
+				PREVIOUS_EVENT_DATE := PREVIOUS_STATEMENT."Created";
 			END IF;
 
 			-- last statements after account final closure
@@ -2587,7 +2640,7 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 
 		-- next statement in month -> will be stated next month
 		ELSE
-			MAINTENANCE."LogMessage"(LOG_INFO, 'Statement already exists, any new incoming invoice will be stated on next statement. ', NULL, NULL, NULL);
+			MAINTENANCE."LogInfo"('Statement already exists, any new incoming invoice will be stated on next statement. ');
 			IS_FULL_STATEMENT := APPLICATIONVALUES.FST_SNC_NextStExists;
 		END IF;
 
@@ -2597,7 +2650,7 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 			-- Select entries to be stated into a collection
 			SELECT "Id", NULL, "TransactionType", "AccountingDate", "Amount", "Balance" BULK COLLECT INTO ENTRY_COLLECTION$ 
 			FROM "AccountEntries"
-			WHERE "Status" IN (APPLICATIONVALUES.AES_CREATED, APPLICATIONVALUES.AES_STATEDONEXPECTATION) AND "Account_Id" = ACCOUNT."Id" AND "Visibility" = 1 /*Visible*/
+			WHERE "Status" IN (APPLICATIONVALUES.AES_CREATED, APPLICATIONVALUES.AES_STATEDONEXPECTATION) AND "Account_Id" = ACCOUNT."Id" AND "Visibility" = APPLICATIONVALUES.AEV_Visible /*Visible*/
 				AND ("AccountingDate" <= PREVIOUS_STATEMENT."AccountingPeriodEndDate" OR IS_FULL_STATEMENT = APPLICATIONVALUES.FST_SC_FinalStatement /*Closing statement*/)
 			ORDER BY "AccountingDate", "Id";
 
@@ -2607,17 +2660,18 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 			IF (IS_FULL_STATEMENT != APPLICATIONVALUES.FST_SC_FinalStatement) THEN
 				SELECT * BULK COLLECT INTO EXPECTATION_COLLECTION$ 
 				FROM (
-					SELECT * 
-					FROM ( 
-						SELECT "Id" ID, NULL, "TransactionType", "AccountingDate" ORDERING_DATE, "Amount", "Balance" 
+					SELECT ENTRY_ID, EXPECTATION_ID, "TransactionType", ACCOUNTING_DATE, "Amount", "Balance"  
+					FROM 
+					( 
+						SELECT "Id" ENTRY_ID, NULL EXPECTATION_ID, "TransactionType", "AccountingDate" ACCOUNTING_DATE, "Created" CREATED_DATE, "Amount", "Balance" 
 						FROM "AccountEntries"
-						WHERE "Status" IN (APPLICATIONVALUES.AES_CREATED) AND "Account_Id" = ACCOUNT."Id" AND "AccountingDate" > LAST_STATEMENT_DUE_DATE AND "Visibility" = 1 /*Visible*/
+						WHERE "Status" IN (APPLICATIONVALUES.AES_CREATED) AND "Account_Id" = ACCOUNT."Id" AND "AccountingDate" > LAST_STATEMENT_DUE_DATE AND "Visibility" = APPLICATIONVALUES.AEV_Visible /*Visible*/
 						UNION ALL
-						SELECT NULL ID, E."Id", E."TransactionType", E."Created" ORDERING_DATE, E."Amount", 0 
+						SELECT NULL ENTRY_ID, E."Id" EXPECTATION_ID, E."TransactionType", /*E."Created"*/ STATEMENT_DUE_DATE ACCOUNTING_DATE, "Created" CREATED_DATE, E."Amount", 0 
 						FROM "Expectations" E
 						WHERE "Status" IN (APPLICATIONVALUES.ES_CREATED) AND "Account_Id" = ACCOUNT."Id" AND TRUNC("Created") <= STATEMENT_DUE_DATE
 					)
-					ORDER BY ORDERING_DATE, ID
+					ORDER BY TRUNC(ACCOUNTING_DATE), TRUNC(CREATED_DATE), ENTRY_ID, EXPECTATION_ID
 				);
 			END IF;
 
@@ -2627,6 +2681,11 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 					MINIMUM_PAYMENT := MINIMUM_PAYMENT + EXPECTATION_COLLECTION$(I).AMOUNT;
 				END IF;
 			END LOOP;
+			
+			-- count expected closing balance
+			--FOR I IN 1..EXPECTATION_COLLECTION$.COUNT LOOP
+			--	MINIMUM_PAYMENT := MINIMUM_PAYMENT + EXPECTATION_COLLECTION$(I).AMOUNT;
+			--END LOOP;
 
 			-- get Minimum statement payment amount from SystemSetting table
 			MINIMUM_PAYMENT_SETTINGS := "GetSystemSettingsNumberValue"('MinimumStatementPaymentAmount');
@@ -2640,7 +2699,6 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 			IF (MINIMUM_PAYMENT > 0 AND MINIMUM_PAYMENT < MINIMUM_PAYMENT_SETTINGS) THEN
 				MINIMUM_PAYMENT := MINIMUM_PAYMENT_SETTINGS;
 			END IF;
-
 			--
 			CURRENT_PERIOD_START_DATE := PREVIOUS_STATEMENT."AccountingPeriodEndDate" + 1;
 
@@ -2652,15 +2710,18 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 			-- add debt from previous statement
 			IF PREVIOUS_STATEMENT."Id" IS NOT NULL AND PREVIOUS_STATEMENT."Status" <> APPLICATIONVALUES.SS_PAID THEN
 
-				SELECT NVL(SUM(AE."Amount"), 0) INTO PREVIOUS_DEBT FROM "AccountEntries" AE
-				WHERE (AE."TransactionType" = APPLICATIONVALUES.TT_INCOME /*Income*/  OR AE."TransactionType" = APPLICATIONVALUES.TT_REVERSEDPAYMENT /*Reversed Payment*/) 
-					AND AE."AccountingDate" > TRUNC(PREVIOUS_STATEMENT."Created")
-					AND AE."Account_Id" = ACCOUNT."Id";
-
-				PREVIOUS_DEBT := PREVIOUS_STATEMENT."MinimumPayment" + PREVIOUS_STATEMENT."PreviousDebt" - PREVIOUS_DEBT;
+				PREVIOUS_STATEMENT_INCOME := "CalculateIncome"(ACCOUNT."Id",TRUNC(PREVIOUS_STATEMENT."Created"), SYSTEMTIME);
+				
+				-- TODO: do we need include previous debt of previous statement?
+				PREVIOUS_DEBT := PREVIOUS_STATEMENT."MinimumPayment" /*+ PREVIOUS_STATEMENT."PreviousDebt"*/ - PREVIOUS_STATEMENT_INCOME;
 				IF PREVIOUS_DEBT < 0 THEN 
 					PREVIOUS_DEBT := 0;
 				END IF;
+			END IF;
+
+			-- set statement status
+			IF (STATEMENT_STATUS = APPLICATIONVALUES.SS_APPROVED AND MINIMUM_PAYMENT = 0) THEN  
+				STATEMENT_STATUS := APPLICATIONVALUES.SS_PAID;
 			END IF;
 
 			-- Create statement record
@@ -2744,33 +2805,15 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 
 			-- Update entries which have status 1 (Created), set statement ID and status 'StatedOnHistory'.
 			UPDATE "AccountEntries" SET "Statement_Id" = NEW_STATEMENT_ID, "Status" = ENTRY_STATUS, "LastChange_Changed" = SYSTEMTIME, "LastChange_ChangedBy" = CURRENTUSER
-			WHERE "Status" = APPLICATIONVALUES.AES_CREATED /*Created*/ AND "Account_Id" = ACCOUNT."Id" AND "AccountingDate" <= PREVIOUS_STATEMENT."AccountingPeriodEndDate" AND "Visibility" = 1 /*Visible*/;
+			WHERE "Status" = APPLICATIONVALUES.AES_CREATED /*Created*/ AND "Account_Id" = ACCOUNT."Id" AND "AccountingDate" <= PREVIOUS_STATEMENT."AccountingPeriodEndDate" AND "Visibility" = APPLICATIONVALUES.AEV_Visible /*Visible*/;
 
 			-- Update entries which have status 2 (StatedOnExpectation), set status'StatedOnHistory'.
 			UPDATE "AccountEntries" SET "Status" = ENTRY_STATUS, "LastChange_Changed" = SYSTEMTIME, "LastChange_ChangedBy" = CURRENTUSER
-			WHERE "Status" = APPLICATIONVALUES.AES_STATEDONEXPECTATION /*StatedOnExpectation*/ AND "Account_Id" = ACCOUNT."Id" AND "AccountingDate" <= PREVIOUS_STATEMENT."AccountingPeriodEndDate" AND "Visibility" = 1 /*Visible*/;
+			WHERE "Status" = APPLICATIONVALUES.AES_STATEDONEXPECTATION /*StatedOnExpectation*/ AND "Account_Id" = ACCOUNT."Id" AND "AccountingDate" <= PREVIOUS_STATEMENT."AccountingPeriodEndDate" AND "Visibility" = APPLICATIONVALUES.AEV_Visible /*Visible*/;
 
 		END IF; /*history section*/
 
 		DBMS_OUTPUT.PUT_LINE(EXPECTATION_COLLECTION$.COUNT || ' expectations selected. ');
-
-/*
-			-- get balance in case there is no historical section
-			IF ENTRY_COLLECTION$.COUNT = 0 THEN
-			
-				BEGIN
-					SELECT "Balance" INTO LAST_HISTORY_BALANCE 
-					FROM (
-						SELECT "Balance" 
-						FROM "AccountEntries" 
-						WHERE "Account_Id" = ACCOUNT."Id" AND "AccountingDate" <= PREVIOUS_STATEMENT."AccountingPeriodEndDate"  ORDER BY "Id" DESC
-					) WHERE ROWNUM = 1;
-				
-					EXCEPTION WHEN NO_DATA_FOUND THEN
-						LAST_HISTORY_BALANCE := 0;
-				END;
-			END IF;
-*/
 
 		-- expectation section
 		IF EXPECTATION_COLLECTION$.COUNT > 0 THEN
@@ -2819,8 +2862,8 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 			FROM "AccountChangeLog"
 			WHERE ("Account_Id" = ACCOUNT."Id" OR "Account_Id" IS NULL) 
 				AND "LanguageCode" = ACCOUNT."Culture_LanguageCode" 
-				AND TRUNC("ValidFrom") > TRUNC(PREVIOUS_EVENT_DATE)
-				AND TRUNC("ValidFrom") <= TRUNC(SYSTEMTIME)
+				AND "ValidFrom" > PREVIOUS_EVENT_DATE
+				AND "ValidFrom" <= SYSTEMTIME
 				AND "LogType" = APPLICATIONVALUES.LT_EXTERNAL /* External comment or log */;
 
 			-- Delete old statement preview for the account if exists.
@@ -2829,6 +2872,7 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 
 	END "CreateStatement";
 
+/*******************************************************************************/
 	FUNCTION "CorrectToBusinessDay" (DUE_DATE DATE, CALCULATION_TYPE INT) RETURN DATE 
 	AS
 	BEGIN
@@ -2840,6 +2884,7 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 		END CASE;
 	END;
 
+/*******************************************************************************/
 	FUNCTION "GetNewStatementDueDate" (ACCOUNT "Accounts"%ROWTYPE) RETURN DATE 
 	IS
 		STATEMENT_DUE_DATE DATE;
@@ -2852,12 +2897,12 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 	BEGIN
 
 		StatementDueDateCalcType := "GetSystemSettingsNumberValue"('StatementDueDateCalculationMethod');
-		STATEMENT_DUE_DATE := "GetDateFromDueDay"(ACCOUNT."DueDay");
+		STATEMENT_DUE_DATE := "GetDateFromDueDay"(ACCOUNT."DueDay", SYSTEMTIME);
 		NEXT_STATEMENT_OFFSET_DAYS := "GetSystemSettingsNumberValue"('NextStatementOffsetDays');
 
 		BUSINESS_DUE_DATE := "CorrectToBusinessDay"(STATEMENT_DUE_DATE, StatementDueDateCalcType);
 		WHILE (BUSINESS_DUE_DATE <= TODAY + NEXT_STATEMENT_OFFSET_DAYS) LOOP
-			BUSINESS_DUE_DATE := "CorrectToBusinessDay"(ADD_MONTHS(STATEMENT_DUE_DATE, COUNTER), StatementDueDateCalcType);
+			BUSINESS_DUE_DATE := "CorrectToBusinessDay"("GetDateFromDueDay"(ACCOUNT."DueDay", ADD_MONTHS(STATEMENT_DUE_DATE, COUNTER)), StatementDueDateCalcType);
 			COUNTER := COUNTER + 1;
 			IF (COUNTER = 14) THEN
 				CUSTOM_ORACLE_EXCEPTIONS."RaiseException"('NotValidStmDueDateFound', NULL);
@@ -2867,6 +2912,7 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 		RETURN BUSINESS_DUE_DATE;
 	END "GetNewStatementDueDate";
 
+/*******************************************************************************/
 	FUNCTION "GetPreviousStatement" (ACCOUNT_ID IN NUMBER, FROM_DATE IN DATE)
 		RETURN "Statements"%ROWTYPE IS PREVIOUS_STATEMENT "Statements"%ROWTYPE;
 	BEGIN
@@ -2877,7 +2923,8 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 			WHERE "AccountingPeriodEndDate" < FROM_DATE 
 				AND "Account_Id" = ACCOUNT_ID 
 				AND "Status" IN (APPLICATIONVALUES.SS_APPROVED,APPLICATIONVALUES.SS_PAID) 
-			ORDER BY "DueDate" DESC
+--			ORDER BY "DueDate" DESC
+			ORDER BY "AccountingPeriodEndDate" DESC
 		)
 		WHERE ROWNUM = 1;
 
@@ -2888,6 +2935,7 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 
 	END "GetPreviousStatement";
 
+/*******************************************************************************/
 	FUNCTION "GetRelatedStatement" (ACCOUNT "Accounts"%ROWTYPE, FROM_DATE DATE)
 		RETURN "Statements"%ROWTYPE IS RELATED_STATEMENT "Statements"%ROWTYPE;
 	BEGIN
@@ -2896,7 +2944,7 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 		(
 			SELECT * 
 			FROM "Statements" 
-			WHERE "AccountingPeriodEndDate" > FROM_DATE 
+			WHERE "AccountingPeriodEndDate" >= FROM_DATE 
 				AND "Account_Id" = ACCOUNT."Id" 
 				AND "Status" IN (APPLICATIONVALUES.SS_APPROVED,APPLICATIONVALUES.SS_PAID) 
 			ORDER BY "AccountingPeriodEndDate"
@@ -2910,30 +2958,85 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 
 	END "GetRelatedStatement";
 
-	PROCEDURE "CalculateAccountDailyInterests"(ACCOUNT_ID IN INTEGER, DATE_TO IN DATE ) AS 
-		-- 
-		lastBalance NUMBER(20,2);
-		lastInterestDate DATE;
-
-		-- "Interest" collection
-		TYPE T_ENTRY IS RECORD (InterestDate DATE, Balance NUMBER(20,2), InterestRate NUMBER(20, 2), YearLength INTEGER);
-		TYPE T_ENTRIES IS TABLE OF T_ENTRY INDEX BY BINARY_INTEGER;
-		ENTRY_COLLECTION$ T_ENTRIES;
-
+/*******************************************************************************/
+	FUNCTION "GetLastInterestForAccount"(ACCOUNT_ID NUMBER) RETURN DATE AS
+		LAST_DATE DATE;
 	BEGIN
-		-- first interest date
-		SELECT MAX("InterestDate") INTO lastInterestDate
+		SELECT MAX("InterestDate") INTO LAST_DATE
 		FROM "Interests"
 		WHERE "Account_Id" = ACCOUNT_ID;
 
-		IF (lastInterestDate IS NULL) THEN
+		IF (LAST_DATE IS NULL) THEN
 			BEGIN
-				SELECT "TimeValidity_ValidFrom" - 1 INTO lastInterestDate
+				SELECT "TimeValidity_ValidFrom" - 1 INTO LAST_DATE
 				FROM "Accounts" WHERE "Id" = ACCOUNT_ID;
 				EXCEPTION WHEN NO_DATA_FOUND THEN 
 					CUSTOM_ORACLE_EXCEPTIONS."RaiseException"('AccountStartDateValidity', NULL);
 			END;
 		END IF;
+		
+		RETURN LAST_DATE;
+	END;
+
+/*******************************************************************************/
+	FUNCTION "GetLastBalanceForAccount"(ACCOUNT_ID IN NUMBER, ACCOUNTING_DATE IN DATE) RETURN NUMBER AS
+		--LAST_BALANCE NUMBER;
+		ACCOUNT_VALID_FROM_DATE DATE;
+		--ACCOUNTING_DATE DATE := TRUNC(DATE_FROM);
+		PREVIOUS_BALANCE NUMBER := 0;
+		DAY_BALANCE NUMBER := 0;
+	BEGIN
+	
+		BEGIN
+			SELECT TRUNC("TimeValidity_ValidFrom") INTO ACCOUNT_VALID_FROM_DATE
+			FROM "Accounts" WHERE "Id" = ACCOUNT_ID;
+			EXCEPTION WHEN NO_DATA_FOUND THEN 
+				CUSTOM_ORACLE_EXCEPTIONS."RaiseException"('AccountDoesntExist', NULL);
+		END;
+
+		IF (TRUNC(ACCOUNTING_DATE) < ACCOUNT_VALID_FROM_DATE) THEN
+			RETURN 0;
+		END IF;
+
+		BEGIN
+			SELECT "Balance" INTO PREVIOUS_BALANCE
+			FROM
+			(
+				SELECT "Balance"
+				FROM "AccountEntryView"
+				WHERE 
+					"Account_Id" = ACCOUNT_ID 
+					AND TRUNC("AccountingDate") < TRUNC(ACCOUNTING_DATE)
+				ORDER BY "AccountingDate" DESC, "Id" DESC
+			) WHERE ROWNUM = 1;
+		EXCEPTION WHEN NO_DATA_FOUND THEN 
+			PREVIOUS_BALANCE := 0;
+		END;
+		
+		-- day balance
+		SELECT NVL(SUM("Amount"), 0) INTO DAY_BALANCE
+		FROM "AccountEntryView"
+		WHERE "Account_Id" = ACCOUNT_ID 
+			AND TRUNC("AccountingDate") = TRUNC(ACCOUNTING_DATE)
+		AND "TransactionType" IN (APPLICATIONVALUES.TT_INCOME, APPLICATIONVALUES.TT_MANUALCORRECTION, APPLICATIONVALUES.TT_REVERSEDPAYMENT);
+
+		--RETURN LAST_BALANCE;
+		RETURN PREVIOUS_BALANCE+DAY_BALANCE;
+ 
+	END;  
+
+/*******************************************************************************/
+	PROCEDURE "CalculateAccountDailyInterests"(ACCOUNT_ID IN INTEGER, DATE_TO IN DATE ) AS 
+		-- 
+		lastBalance NUMBER(20,2);
+		lastInterestDate DATE;
+
+		INTEREST_COLLECTION$ INTEREST_CALC_TABLE;
+
+	BEGIN
+		
+		-- last interest date
+		lastInterestDate := "GetLastInterestForAccount"(ACCOUNT_ID);
 
 		dbms_output.put_line('LastInterestDate: '||lastInterestDate);
 		dbms_output.put_line('DateTo: '||DATE_TO); 
@@ -2943,133 +3046,33 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 			RETURN;
 		END IF;
 
-/*
 		-- last balance for day
-		BEGIN
-			SELECT "Balance" INTO lastBalance
-			FROM "AccountEntries"
-			WHERE "Id" = (
-				SELECT MAX("Id")
-				FROM "AccountEntries"
-				WHERE "AccountingDate" = ( 
-					SELECT MAX("AccountingDate") 
-					FROM "AccountEntries" 
-					WHERE "Account_Id" = account_Id AND "AccountingDate" <= TRUNC(lastInterestDate)
-					) 
-					AND ("Account_Id" = account_Id)
-				);             
-			EXCEPTION WHEN NO_DATA_FOUND THEN 
-				lastBalance := 0;
-		END;
- */
-
- --/*
-		-- last balance for day
-		BEGIN
-		SELECT "Balance" INTO lastBalance
-		FROM
-		(
-			SELECT "Balance"
-			FROM "AccountEntryView"
-			WHERE "Account_Id" = account_Id AND "AccountingDate" <= TRUNC(lastInterestDate)
-			ORDER BY "AccountingDate" DESC, "Id" DESC
-		) WHERE ROWNUM = 1;
-		EXCEPTION WHEN NO_DATA_FOUND THEN 
-				lastBalance := 0;
-		END;
- --*/
-
+		lastBalance := "GetLastBalanceForAccount"(ACCOUNT_ID, lastInterestDate);
 		dbms_output.put_line('Last balance: '||lastBalance);
 
-		-- bulk   BULK COLLECT INTO ENTRY_COLLECTION$ 
-		SELECT
-			ACCOUNTING_VALUES.Accounting_Date,
-			CASE
-				WHEN T."MaximumInterestBasedAmount" < ACCOUNTING_VALUES.Day_Balance THEN T."MaximumInterestBasedAmount"
-				ELSE ACCOUNTING_VALUES.Day_Balance
-			END Day_Balance,
-			CASE
-				WHEN ACCOUNTING_VALUES.DAY_BALANCE IS NULL THEN NULL
-				WHEN ACCOUNTING_VALUES.DAY_BALANCE = 0 THEN 0
-				WHEN ACCOUNTING_VALUES.DAY_BALANCE > 0 THEN T."PositiveInterestRate"+BI."Value"
-				ELSE T."NegativeInterestRate"+BI."Value"
-			END INTEREST,
-			to_number((trunc (ACCOUNTING_VALUES.Accounting_Date,'yyyy')+ interval '1' year-1)- (trunc (ACCOUNTING_VALUES.Accounting_Date,'yyyy')))+1 YEAR_LENGTH
-		BULK COLLECT INTO ENTRY_COLLECTION$
-		FROM
+		lastInterestDate := lastInterestDate+1;
+
+		SELECT INTEREST_CALC_TYPE(BALANCE, AMOUNT, RATE, DAY)
+		BULK COLLECT INTO INTEREST_COLLECTION$
+		FROM TABLE("CalculateAccountDayInterests"(ACCOUNT_ID, lastInterestDate, DATE_TO, lastBalance, AE_COLUMN_ACCOUNTING_DATE));
 		
-			-- accounting days
-			(SELECT
-				ENTRY_DAYS.ACCOUNT_ID,
-				ENTRY_DAYS.ACCOUNTING_DATE,
-				ENTRY_DAYS.DAY_AMOUNT,
-				ENTRY_DAYS.ENTRY_COUNT,
-				AE."Balance" RAW_BALANCE,
-				NVL(LAST_VALUE(AE."Balance" IGNORE NULLS) OVER (ORDER BY ENTRY_DAYS.ACCOUNTING_DATE), lastBalance) DAY_BALANCE
-			FROM
-			
-				-- entry days
-				(SELECT
-					ACCOUNT_DAYS.ACCOUNT_ID,
-					MAX("Id") ENTRY_ID,
-					ACCOUNT_DAYS.DAY ACCOUNTING_DATE,
-					NVL(SUM("Amount"), 0) DAY_AMOUNT,
-					COUNT("Id") ENTRY_COUNT
-				FROM			
-					(SELECT 
-						ACCOUNT_ID, 
-						DAY 
-					FROM
-						(SELECT
-							ACCOUNT_ID, -- AccountId parameter
-							TRUNC(lastInterestDate) + LEVEL DAY -- last entry accounting date - 1 parameter
-						FROM DUAL CONNECT BY LEVEL < (SELECT TRUNC(date_to) - TRUNC(lastInterestDate) FROM DUAL)) 
-					WHERE rownum < TRUNC(date_to) - TRUNC(lastInterestDate)
-					) ACCOUNT_DAYS  -- days to generate parameter
-					LEFT JOIN "AccountEntryView" AE    -- accounting entries
-							ON ACCOUNT_DAYS.ACCOUNT_ID = AE."Account_Id" AND ACCOUNT_DAYS.DAY = AE."AccountingDate" + 
-								CASE -- other than income amount must be effectively postponed by one day
-									WHEN AE."TransactionType" = APPLICATIONVALUES.TT_INCOME /*income*/ THEN 0
-									WHEN AE."TransactionType" = APPLICATIONVALUES.TT_MANUALCORRECTION /*manual correction*/ THEN 0
-									WHEN AE."TransactionType" = APPLICATIONVALUES.TT_REVERSEDPAYMENT /*reversed payment*/ THEN 0
-									ELSE 1
-								END 
-					GROUP BY ACCOUNT_DAYS.ACCOUNT_ID, DAY
-				) ENTRY_DAYS,
-				"AccountEntryView" AE    -- accounting entries
-			WHERE
-				ENTRY_DAYS.ENTRY_ID = AE."Id"(+)
-			) ACCOUNTING_VALUES,
-			
-			-- other tables
-			"BaseInterests" BI,
-			"AccountTemplates" AT,
-			"Templates" T
-		WHERE
-			-- link base interests
-			ACCOUNTING_VALUES.ACCOUNTING_DATE >= BI."TimeValidity_ValidFrom" AND (ACCOUNTING_VALUES.ACCOUNTING_DATE <= BI."TimeValidity_ValidTo" OR BI."TimeValidity_ValidTo" IS NULL)
-			-- link account templates
-			AND ACCOUNTING_VALUES.ACCOUNT_ID = AT."Account_Id"
-			AND ACCOUNTING_VALUES.ACCOUNTING_DATE >= AT."TimeValidity_ValidFrom" AND (ACCOUNTING_VALUES.ACCOUNTING_DATE <= AT."TimeValidity_ValidTo" OR AT."TimeValidity_ValidTo" IS NULL)
-			-- link templates
-			AND AT."Template_Id" = T."Id"  
-			AND ACCOUNTING_VALUES.DAY_BALANCE <> 0
-		ORDER BY
-			ACCOUNTING_VALUES.ACCOUNT_ID,
-			ACCOUNTING_VALUES.ACCOUNTING_DATE;
-
 		-- insert into tables
-		FORALL ROW_NUMBER IN 1..ENTRY_COLLECTION$.COUNT
-		INSERT INTO "Interests" ("Id", "Amount", "InterestDate", "InterestRate", "Account_Id")
-		VALUES (SYS_GUID(), 
-			-- (balance * interest) / (100 * daysPerYear)
-			(ENTRY_COLLECTION$(ROW_NUMBER).Balance*ENTRY_COLLECTION$(ROW_NUMBER).InterestRate)/(100*ENTRY_COLLECTION$(ROW_NUMBER).YearLength),
-			ENTRY_COLLECTION$(ROW_NUMBER).InterestDate, 
-			ENTRY_COLLECTION$(ROW_NUMBER).InterestRate,
-			ACCOUNT_ID);
-
+		IF INTEREST_COLLECTION$ IS NOT NULL AND INTEREST_COLLECTION$.COUNT > 0 THEN 
+		
+			FORALL ROW_NUMBER IN 1..INTEREST_COLLECTION$.COUNT
+			INSERT INTO "Interests" ("Id", "Balance", "Amount", "InterestDate", "InterestRate", "Account_Id")
+			VALUES (
+				SYS_GUID(), 
+				INTEREST_COLLECTION$(ROW_NUMBER).Balance,
+				INTEREST_COLLECTION$(ROW_NUMBER).Amount,
+				INTEREST_COLLECTION$(ROW_NUMBER).Day, 
+				INTEREST_COLLECTION$(ROW_NUMBER).Rate,
+				ACCOUNT_ID);
+		
+		END IF;
 	END "CalculateAccountDailyInterests";
 
+/*******************************************************************************/
 	PROCEDURE "AccountExpectations"(DATE_TO IN DATE) AS
 		expectation "Expectations"%Rowtype;
 		PAYMENT_ID NUMBER;
@@ -3150,7 +3153,7 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 			BEGIN
 				INSERT INTO "AccountEntries" (
 					"TransactionType", 
-					"ValidFrom", "ValidTo", "AccountingDate", 
+					"ValidFrom", "ValidTo", "AccountingDate", "ValidationDate", 
 					"Amount",
 					"Visibility",
 					"Status",
@@ -3161,9 +3164,9 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 					"Expectation_Id")
 				VALUES (
 					expectation."TransactionType",
-					expectation.accountingDate, expectation.accountingDate, expectation.accountingDate,
+					expectation.accountingDate, expectation.accountingDate, expectation.accountingDate, expectation.accountingDate,
 					expectation."Amount",
-					1, -- visibility = visible
+					APPLICATIONVALUES.AEV_VISIBLE , -- visibility = visible
 					APPLICATIONVALUES.AES_CREATED, -- status = created
 					expectation."Account_Id",
 					NULL,
@@ -3174,7 +3177,7 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 
 			EXCEPTION
 				WHEN OTHERS THEN
-					MAINTENANCE."LogMessage"(LOG_ERROR, SQLERRM, NULL, NULL, NULL);
+					MAINTENANCE."LogError"(SQLERRM);
 					CONTINUE;
 			END;
 
@@ -3182,7 +3185,7 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 			WHERE "Id" = expectation."Id";
 
 			-- insert blocked transaction (paymentID is null, will be updated when expectation is paid to CAB)
-			IF (expectation."PaymentDate" > DATE_TO AND expectation."TransactionType" = APPLICATIONVALUES.TT_OUTCOME /*outcome*/ AND expectation."BlockedTransactionId" IS NULL) THEN
+			IF (expectation."PaymentDate" > DATE_TO AND expectation."TransactionType" = APPLICATIONVALUES.TT_OUTCOME /*outcome*/ AND expectation."BlockedTransactionId" IS NULL AND expectation.realAmount != 0) THEN
 				INSERT INTO "BlockedTransactions" ("Id", "Amount", "LastChange_Changed", "LastChange_ChangedBy", "Account_Id", "Expectation_Id", "Payment_Id")
 				VALUES (
 					BLOCKEDTRANSACTIONS_SEQ.NEXTVAL,
@@ -3237,7 +3240,7 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 				
 			-- update blocked transaction (accounting is done before payment to CAB)
 			ELSE
-				UPDATE "BlockedTransactions" SET "Payment_Id" = PAYMENT_ID WHERE "Id" = expectation."BlockedTransactionId";
+				UPDATE "BlockedTransactions" SET "Payment_Id" = PAYMENT_ID, "LastChange_Changed" = SYSTEMTIME, "LastChange_ChangedBy" = CURRENTUSER WHERE "Id" = expectation."BlockedTransactionId";
 			END IF;
 
 		END LOOP;
@@ -3247,7 +3250,8 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 		
 	END "AccountExpectations"; 
 
-	PROCEDURE "AccountInterestsForAccount"(ACCOUNT_ID IN NUMBER, DATE_TO IN DATE) AS
+/*******************************************************************************/
+	PROCEDURE "AccountInterestsForAccount"(ACCOUNT_ID IN NUMBER, DATE_TO IN DATE, FORCE_ACCOUNTING IN BOOLEAN DEFAULT FALSE) AS
 		accountEntryId NUMBER;
 
 		accountValidTo DATE;
@@ -3335,19 +3339,25 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 			INNER JOIN "AccountTemplates" AT ON T."Id" = AT."Template_Id"
 			WHERE 
 				AT."Account_Id" = ACCOUNT_ID
-				AND (AT."TimeValidity_ValidFrom" <= DATE_TO AND (AT."TimeValidity_ValidTo" >= DATE_TO OR AT."TimeValidity_ValidTo" IS NULL));
+				AND (TRUNC(AT."TimeValidity_ValidFrom") <= TRUNC(DATE_TO) AND (TRUNC(AT."TimeValidity_ValidTo") >= TRUNC(DATE_TO) OR AT."TimeValidity_ValidTo" IS NULL));
 			EXCEPTION WHEN NO_DATA_FOUND THEN
 				CUSTOM_ORACLE_EXCEPTIONS."RaiseException"('NotValidTemplateForDate', NULL);
 		END;
 		
-		IF (accountValidTo IS NOT NULL AND accountValidTo <= DATE_TO) THEN
-			POS_BOOK_DATE := accountValidTo-1;
-			NEG_BOOK_DATE := accountValidTo-1;
-			countInterestsTo := accountValidTo;
-		ELSE
-			POS_BOOK_DATE := "GetInterestBookingDate"(ACCOUNT_ID, DATE_TO, posBookingMethod);
-			NEG_BOOK_DATE := "GetInterestBookingDate"(ACCOUNT_ID, DATE_TO, negBookingMethod);
+		IF FORCE_ACCOUNTING = TRUE THEN
+			POS_BOOK_DATE := DATE_TO;
+			NEG_BOOK_DATE := DATE_TO;
 			countInterestsTo := DATE_TO;
+		ELSE
+			IF (accountValidTo IS NOT NULL AND accountValidTo <= DATE_TO) THEN
+				POS_BOOK_DATE := accountValidTo/*-1*/;
+				NEG_BOOK_DATE := accountValidTo/*-1*/;
+				countInterestsTo := accountValidTo;
+			ELSE
+				POS_BOOK_DATE := "GetInterestBookingDate"(ACCOUNT_ID, DATE_TO, posBookingMethod);
+				NEG_BOOK_DATE := "GetInterestBookingDate"(ACCOUNT_ID, DATE_TO, negBookingMethod);
+				countInterestsTo := DATE_TO;
+			END IF;
 		END IF;
 
 		-- calculate daily interests
@@ -3361,6 +3371,7 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 				"ValidFrom", 
 				"ValidTo", 
 				"AccountingDate", 
+				"ValidationDate",
 				"Amount",
 				"Visibility",
 				"Status",
@@ -3373,8 +3384,9 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 				interest.valid_from, 
 				interest.valid_to, 
 				TRUNC(interest.accounting_date),
+				TRUNC(interest.accounting_date),
 				interest.amount,
-				1, -- Visibility = Visible
+				APPLICATIONVALUES.AEV_VISIBLE, -- Visibility = Visible
 				APPLICATIONVALUES.AES_CREATED, -- Status = Created
 				interest.interest_rate,
 				ACCOUNT_ID,
@@ -3392,6 +3404,7 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 		END LOOP;
 	END "AccountInterestsForAccount";
 
+/*******************************************************************************/
 	PROCEDURE "AccountInterests"(DATE_TO IN DATE) AS
 		CURSOR accCur IS
 			SELECT A."Id"
@@ -3407,7 +3420,7 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 					"AccountInterestsForAccount"(acc."Id", DATE_TO);
 				EXCEPTION
 				WHEN OTHERS THEN
-						MAINTENANCE."LogMessage"(LOG_ERROR, SQLERRM, NULL, NULL, NULL);
+						MAINTENANCE."LogError"(SQLERRM);
 						CONTINUE;
 				END;
 			END LOOP;
@@ -3415,9 +3428,9 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 
 	END "AccountInterests";
 
+/*******************************************************************************/
 	PROCEDURE "CreateReminders"(DATE_TO IN DATE, ACCOUNTS_TO_CLOSE OUT T_OUT_CURSOR) AS
 		
-		reminderDelay NUMBER;
 		reminderDays NUMBER;
 		reminderCount NUMBER;
 		reminderMinimumPayment NUMBER;
@@ -3431,132 +3444,128 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 			
 		accountsToClose T_NUMBER_ARRAY := T_NUMBER_ARRAY();
 
-		CURSOR statementsCur(dateTo DATE, reminderPassedDate DATE) IS
-		SELECT
-			statement_id,
-			reminder_id,
-			account_id,
-			due_date,
-			amount,
-			reminder_number,
-			reference_number,
-			reminder_fee,
-			previous_debt,
-			created,
-			account_status,
-			income,
-			income - (previous_debt + amount) difference
-			FROM
-			(
-		SELECT
-			"Statements"."Id" statement_id,
-			"Reminders"."Id" reminder_id,
-			NVL("Reminders"."ReminderNumber", 0) reminder_number,
-			"Statements"."Account_Id" account_id,
-			NVL("Reminders"."DueDate", "Statements"."DueDate") due_date,
-			"Statements"."MinimumPayment" amount,
-			"Accounts"."ReferenceNumber" reference_number,
-			Templates."ReminderFee" reminder_fee,
-			"Statements"."PreviousDebt" previous_debt,
-			"Statements"."Created" created,
-			"Accounts"."Status" account_status,
-			 (SELECT NVL(SUM("Amount"), 0)
-					FROM "AccountEntries" 
-					WHERE "AccountEntries"."Account_Id" = "Accounts"."Id"
-						AND ("AccountingDate" BETWEEN TRUNC("Statements"."Created") AND TRUNC(dateTo))
-  						AND ("TransactionType" = APPLICATIONVALUES.TT_INCOME /*Income*/ OR "TransactionType" = APPLICATIONVALUES.TT_REVERSEDPAYMENT /*ReversedPayment*/)
-			) income
-					
-		FROM "Statements"
+		processedStatementId NUMBER := 0;
+
+		CURSOR statementsCur(dateTo DATE) IS
+		SELECT * 
+		FROM
+		(
+			SELECT
+				"Statements"."Id" "Statement_Id",
+				"Statements"."Account_Id" "Account_Id",
+				--"Statements"."Created",
+				--"Statements"."Status",
+				--"Statements"."DueDate" "Statement_DueDate",
+				"Statements"."MinimumPayment",
+				--"Statements"."PreviousDebt",
+				"Reminders"."Id" "Reminder_Id", 
+				NVL("Reminders"."ReminderNumber", 0) "ReminderNumber",
+				--"Reminders"."DueDate" "Reminder_DueDate",
+				NVL("Reminders"."DueDate", "Statements"."DueDate") "DueDate",
+				--Income.Income "Income",
+				NVL(Income.Income,0) - "Statements"."MinimumPayment" "Difference",
+				TO_NUMBER("SystemSettings"."Value") "ReminderDelay",
+				Templates."ReminderFee",
+				"Accounts"."ReferenceNumber",
+				"Accounts"."Status" "AccountStatus"
+			FROM "Statements"
+			LEFT JOIN TABLE(customeraccount."Incomes"(TRUNC("Statements"."Created"), TRUNC(dateTo))) Income ON Income.Account_Id = "Statements"."Account_Id"
 			LEFT JOIN "Reminders" ON "Statements"."Id" = "Reminders"."Statement_Id"
 			INNER JOIN "Accounts" ON "Statements"."Account_Id" = "Accounts"."Id"
-			INNER JOIN (SELECT 
-							T."ReminderFee",
-							AT."Account_Id"
-						FROM "Templates" T
-						INNER JOIN "AccountTemplates" AT ON T."Id" = AT."Template_Id"
-						WHERE AT."TimeValidity_ValidFrom" <= TRUNC(dateTo) AND (AT."TimeValidity_ValidTo" >= TRUNC(dateTo) OR AT."TimeValidity_ValidTo" IS NULL)
-				) Templates ON "Statements"."Account_Id" = Templates."Account_Id"
-			WHERE (("Reminders"."Status" IS NULL) OR ("Reminders"."Status" IN (APPLICATIONVALUES.RS_CREATED, APPLICATIONVALUES.RS_STATED)))
-				AND "Statements"."Status" = APPLICATIONVALUES.SS_APPROVED --approved
-				AND "Accounts"."Status" IN(APPLICATIONVALUES.AS_ACTIVE, APPLICATIONVALUES.AS_CLOSING) -- valid, closing
-				AND "Statements"."EnableReminders" = 1 -- reminders are enabled
+			INNER JOIN "SystemSettings" ON "SystemSettings"."Key" = 'ReminderDelay'
+			INNER JOIN 
+			(
+				SELECT 
+					T."ReminderFee",
+					AT."Account_Id"
+				FROM "Templates" T
+				INNER JOIN "AccountTemplates" AT ON T."Id" = AT."Template_Id"
+				WHERE AT."TimeValidity_ValidFrom" <= TRUNC(dateTo) AND (AT."TimeValidity_ValidTo" >= TRUNC(dateTo) OR AT."TimeValidity_ValidTo" IS NULL)
+			) Templates ON "Statements"."Account_Id" = Templates."Account_Id"
+			WHERE 
+				(("Reminders"."Status" IS NULL) OR ("Reminders"."Status" IN (APPLICATIONVALUES.RS_CREATED, APPLICATIONVALUES.RS_STATED)))
+				AND "Statements"."Status" = APPLICATIONVALUES.SS_APPROVED 
+				AND "Accounts"."Status" IN(APPLICATIONVALUES.AS_ACTIVE, APPLICATIONVALUES.AS_CLOSING, APPLICATIONVALUES.AS_INACTIVE) 
+				AND "Statements"."EnableReminders" = APPLICATIONVALUES.SRS_ENABLED 
 				AND ("Statements"."Account_Id" = NVL(CURRENTACCOUNTID, "Statements"."Account_Id"))
-			)	
-			 WHERE
-				(income - (previous_debt + amount) >= 0)
-				OR ((income - (previous_debt + amount) < 0) AND (due_date < reminderPassedDate) AND (account_status IN (APPLICATIONVALUES.AS_ACTIVE, APPLICATIONVALUES.AS_CLOSING))) ;
+		)
+		WHERE "DueDate" < dateTo-"ReminderDelay"
+			AND "Difference" < 0
+				
+		ORDER BY "Account_Id", "ReminderNumber" desc
+		;
 		
 	BEGIN
 
-		reminderDelay := "GetSystemSettingsNumberValue"('ReminderDelay'); 
 		reminderDays := "GetSystemSettingsNumberValue"('ReminderDays');
 		reminderCount := "GetSystemSettingsNumberValue"('ReminderCount');
 		reminderMinimumPayment := "GetSystemSettingsNumberValue"('MinimumReminderAmount');
 
-		FOR statement IN statementsCur(date_To, DATE_TO - reminderDelay)
+		FOR statement IN statementsCur(date_To)
 		LOOP
-	
-			-- income OK
-			IF (statement.difference >= 0) THEN
-		
-				-- update statement status
-				UPDATE "Statements" SET "Status" = APPLICATIONVALUES.SS_PAID /*paid*/
-				WHERE "Id" = statement.statement_id;
-				
-				-- update reminder status (if there is open reminder)
-				IF (statement.reminder_id IS NOT NULL) THEN
-					UPDATE "Reminders" SET "Status" = APPLICATIONVALUES.SS_PAID /*paid*/
-					WHERE "Id" = statement.reminder_id;
-				END IF;
-			END IF;
 
+			-- check, that we process only one reminder for one statement
+			IF processedStatementId = statement."Statement_Id" THEN
+				MAINTENANCE."LogWarn"('Another reminder for statement (ID=' || statement."Statement_Id" || ') has already been processed. Reminder (ID=' || statement."Reminder_Id" || ') is in wrong status. ' , NULL, statement."Account_Id", MAINTENANCE.SYSTEM_LOG_TYPE_REMINDER);
+				CONTINUE;
+			END IF;
+	
 			-- income NOT OK AND last reminder passed
-			IF (statement.difference < 0 AND statement.reminder_number >= reminderCount) THEN
+			IF (statement."ReminderNumber" >= reminderCount) THEN
 				
-				IF (statement.account_status = APPLICATIONVALUES.AS_ACTIVE /*active*/ ) THEN
-					IF NOT (statement.account_id MEMBER OF accountsToClose) THEN
+				IF (statement."AccountStatus" = APPLICATIONVALUES.AS_ACTIVE) THEN
+					IF NOT (statement."Account_Id" MEMBER OF accountsToClose) THEN
 						accountsToClose.EXTEND;
-						accountsToClose(accountsToClose.LAST) := statement.account_id;
+						accountsToClose(accountsToClose.LAST) := statement."Account_Id";
 					END IF;
 				END IF;
 
-				UPDATE "Reminders" SET "Status" = APPLICATIONVALUES.RS_UNPAID /*unpaid*/
-				WHERE "Id" = statement.reminder_id;
+				UPDATE "Reminders" SET "Status" = APPLICATIONVALUES.RS_UNPAID 
+				WHERE "Id" = statement."Reminder_Id";
 
 			END IF;
 
 			-- income NOT OK AND last reminder not passed -> new reminder is created
-			IF (statement.difference < 0 AND statement.reminder_number < reminderCount AND statement.account_status = APPLICATIONVALUES.AS_ACTIVE /*active*/) THEN
+			IF (statement."ReminderNumber" < reminderCount AND statement."AccountStatus" IN (APPLICATIONVALUES.AS_ACTIVE, APPLICATIONVALUES.AS_INACTIVE)) THEN
 				
 				reminderDueDate := DATE_TO + reminderDays;
 				reminderDueDate := "CorrectToBusinessDayUp"(reminderDueDate);
-				reminderAmount := ABS(statement.difference);
+				reminderAmount := ABS(statement."Difference");
 				
 				IF(reminderAmount < reminderMinimumPayment) THEN
 					reminderAmount := reminderMinimumPayment;
 				END IF;
 
-				INSERT INTO "Expectations" ("PaymentDate", "Status", "ReferenceNumber", "Amount", "Created", "TransactionType", "LastChange_Changed", "LastChange_ChangedBy", "Account_Id", "Statement_Id")
-				VALUES(null, APPLICATIONVALUES.ES_CREATED /*created*/, statement.reference_number, -statement.reminder_fee, SYSTEMTIME , APPLICATIONVALUES.TT_REMINDERFEE /*ReminderFee*/, SYSTEMTIME, 'reminderBatch', statement.account_id, null)
-				RETURNING "Id" INTO expectationID; -- The expectation ID
-						
-				INSERT INTO "Reminders" ("Id", "DueDate", "Amount", "Created", "ReminderNumber", "Status", "FeeExpectation_Id", "Statement_Id")
-				VALUES(REMINDERS_SEQ.NEXTVAL, reminderDueDate, reminderAmount, SYSTEMTIME, statement.reminder_number+1, APPLICATIONVALUES.RS_CREATED /*valid*/, expectationID, statement.statement_id);
+				-- last reaminder for account has already been processed, account will be set to "Closing" status
+				-- no new reminder is created for the account
+				IF NOT (statement."Account_Id" MEMBER OF accountsToClose) THEN
 				
+					-- create reminder fee
+					INSERT INTO "Expectations" ("PaymentDate", "Status", "ReferenceNumber", "Amount", "Created", "TransactionType", "LastChange_Changed", "LastChange_ChangedBy", "Account_Id", "Statement_Id")
+					VALUES(null, APPLICATIONVALUES.ES_CREATED , statement."ReferenceNumber", -statement."ReminderFee", SYSTEMTIME , APPLICATIONVALUES.TT_REMINDERFEE, SYSTEMTIME, 'reminderBatch', statement."Account_Id", null)
+					RETURNING "Id" INTO expectationID; 
+						
+					-- create reminder
+					INSERT INTO "Reminders" ("Id", "DueDate", "Amount", "Created", "ReminderNumber", "Status", "FeeExpectation_Id", "Statement_Id")
+					VALUES(REMINDERS_SEQ.NEXTVAL, reminderDueDate, reminderAmount, SYSTEMTIME, statement."ReminderNumber"+1, APPLICATIONVALUES.RS_CREATED, expectationID, statement."Statement_Id");
+				
+				END IF;
+
 				-- update reminder status (if there is open reminder)
-				IF (statement.reminder_id IS NOT NULL) THEN
-					UPDATE "Reminders" SET "Status" = APPLICATIONVALUES.RS_UNPAID /*unpaid*/
-					WHERE "Id" = statement.reminder_id;
+				IF (statement."Reminder_Id" IS NOT NULL) THEN
+					UPDATE "Reminders" SET "Status" = APPLICATIONVALUES.RS_UNPAID
+					WHERE "Id" = statement."Reminder_Id";
 				END IF;
 
 			END IF;
+
+			processedStatementId := statement."Statement_Id";
 
 		END LOOP;
 
 		COMMIT;
 
-		-- open cursor with accounts to clos
+		-- open cursor with accounts to close
 		IF (accountsToClose.COUNT() > 0) THEN
 			OPEN ACCOUNTS_TO_CLOSE FOR  
 				SELECT "Accounts".*
@@ -3573,6 +3582,8 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 		END IF; 
 
 	END "CreateReminders";
+
+/******************************************************************************/
 
 	FUNCTION "GetInterestBookingDate"(ACCOUNT_ID IN NUMBER, DATE_TO IN DATE, BOOKING_METHOD IN NUMBER)
 		RETURN DATE IS BOOKING_DUE_DATE DATE;
@@ -3636,6 +3647,7 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 		RETURN BOOKING_DUE_DATE;
 	END "GetInterestBookingDate";  
 
+/*******************************************************************************/
 	FUNCTION "GetBalance"( ACCOUNT_ID IN NUMBER, DATE_TO IN DATE ) RETURN NUMBER AS
 		balance NUMBER;
 	BEGIN
@@ -3653,6 +3665,7 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 	RETURN balance;
 	END "GetBalance";
 
+/*******************************************************************************/
 	PROCEDURE "UpdateTemplate"(OLD_TEMPLATE_CODE IN VARCHAR2, NEW_TEMPLATE_CODE IN VARCHAR2)
 	AS
 		OLD_TEMPLATE_ID NUMBER;
@@ -3675,7 +3688,8 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 
 	END "UpdateTemplate";
 
-  PROCEDURE "GetXmlReminders"(XML_REMINDERS OUT T_OUT_CURSOR)
+/*******************************************************************************/
+	PROCEDURE "GetXmlReminders"(XML_REMINDERS OUT T_OUT_CURSOR)
 	AS
 	BEGIN
 		OPEN XML_REMINDERS FOR
@@ -3685,6 +3699,7 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 
 	END "GetXmlReminders";
 
+/*******************************************************************************/
 	PROCEDURE "MatchPayments"(MATCHED_PAYMENT_COUNT OUT INTEGER)
 	AS
 		CURSOR MATCHED_PAYMENTT_CURSOR IS
@@ -3748,7 +3763,6 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 			WHERE P."Status" = APPLICATIONVALUES.PS_IMPORTED /*Imported*/ 
 				AND P."PaymentType" = APPLICATIONVALUES.PT_INCOMINGPAYMENT /*Incoming payment*/
 		) MATCHED_PAYMENTS
-		--WHERE ACCOUNT_ID = NVL(CURRENTACCOUNTID, ACCOUNT_ID)
 		WHERE ACCOUNT_ID = NVL(CURRENTACCOUNTID, ACCOUNT_ID) OR (ACCOUNT_ID IS NULL AND NVL(CURRENTACCOUNTID, ACCOUNT_ID) IS NULL)
 
 		
@@ -3770,26 +3784,27 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 			IF MATCHED_PAYMENT.IS_MATCH = 'Y' THEN
 				BEGIN
 
-					INSERT INTO "AccountEntries" ("TransactionType", "ValidFrom", "ValidTo", "AccountingDate", "Amount", "Visibility", "Status", "Account_Id", "Statement_Id", "LastChange_Changed", "LastChange_ChangedBy")
-					VALUES (MATCHED_PAYMENT.TRANSACTION_TYPE, MATCHED_PAYMENT.PAYMENT_DATE, MATCHED_PAYMENT.PAYMENT_DATE, MATCHED_PAYMENT.PAYMENT_DATE, MATCHED_PAYMENT."Amount", 1 /*Visible*/,
+					INSERT INTO "AccountEntries" ("TransactionType", "ValidFrom", "ValidTo", "AccountingDate",  "ValidationDate", "Amount", "Visibility", "Status", "Account_Id", "Statement_Id", "LastChange_Changed", "LastChange_ChangedBy")
+					VALUES (MATCHED_PAYMENT.TRANSACTION_TYPE, MATCHED_PAYMENT.PAYMENT_DATE, MATCHED_PAYMENT.PAYMENT_DATE,  MATCHED_PAYMENT.PAYMENT_DATE, MATCHED_PAYMENT.PAYMENT_DATE, MATCHED_PAYMENT."Amount", APPLICATIONVALUES.AEV_VISIBLE /*Visible*/,
 						APPLICATIONVALUES.AES_CREATED /*Created*/, MATCHED_PAYMENT.ACCOUNT_ID, NULL, SYSTEMTIME, CURRENTUSER) RETURNING "Id" INTO ENTRY_ID;
 
 				EXCEPTION
 
-					WHEN CUSTOM_ORACLE_EXCEPTIONS.AccountEntrySqcCorrupted13 THEN /* AccountEntrySequenceCorrupted: Last earlier entry hasn not been found and Last balance is <> 0. */
+					WHEN CUSTOM_ORACLE_EXCEPTIONS.AccountEntrySqcCorrupted12 OR CUSTOM_ORACLE_EXCEPTIONS.AccountEntrySqcCorrupted13 OR CUSTOM_ORACLE_EXCEPTIONS.AccountEntrySqcCorrupted14 THEN 
 						UPDATE "Payments" SET "Status" = APPLICATIONVALUES.PS_AESequenceCorrupted /*AccountEntrySequenceCorrupted*/ WHERE "Id" = MATCHED_PAYMENT.PAYMENT_ID;
-						MAINTENANCE."LogMessage"('ERROR', SQLERRM, NULL, MATCHED_PAYMENT.PAYMENT_ID, 'PAYMENT');
+						MAINTENANCE."LogError"(SQLERRM, NULL, MATCHED_PAYMENT.PAYMENT_ID, MAINTENANCE.SYSTEM_LOG_TYPE_PAYMENT);
 						CONTINUE;
 
 					WHEN OTHERS THEN
-						MAINTENANCE."LogMessage"('ERROR', SQLERRM, NULL, MATCHED_PAYMENT.PAYMENT_ID, 'PAYMENT');
+						UPDATE "Payments" SET "Status" = APPLICATIONVALUES.PS_FAILED /*Failed*/ WHERE "Id" = MATCHED_PAYMENT.PAYMENT_ID;
+						MAINTENANCE."LogError"(SQLERRM, NULL, MATCHED_PAYMENT.PAYMENT_ID, MAINTENANCE.SYSTEM_LOG_TYPE_PAYMENT);
 						CONTINUE;
 				END;
 
 				IF MATCHED_PAYMENT.IS_INVOICE_MATCH = 'Y' THEN
-					MAINTENANCE."LogMessage"(LOG_INFO, 'Payment (Reference number: ''' || MATCHED_PAYMENT.PAYMENT_REFERENCE || ''') is matched by an expectaction reference number. ', NULL, NULL, NULL);
+					MAINTENANCE."LogInfo"('Payment (Reference number: ''' || MATCHED_PAYMENT.PAYMENT_REFERENCE || ''') is matched by an expectaction reference number. ');
 				ELSE
-					MAINTENANCE."LogMessage"(LOG_INFO, 'Payment (Reference number: ''' || MATCHED_PAYMENT.PAYMENT_REFERENCE || '''; Customer ID: ''' || MATCHED_PAYMENT.ACCOUNT_DEBTOR || ''') processed successfully. ', NULL, NULL, NULL);
+					MAINTENANCE."LogInfo"('Payment (Reference number: ''' || MATCHED_PAYMENT.PAYMENT_REFERENCE || '''; Customer ID: ''' || MATCHED_PAYMENT.ACCOUNT_DEBTOR || ''') processed successfully. ');
 				END IF;
 
 				UPDATE "Payments" SET "Status" = APPLICATIONVALUES.PS_PROCESSED /*Processed*/, "AccountEntry_Id" = ENTRY_ID WHERE "Id" = MATCHED_PAYMENT.PAYMENT_ID;
@@ -3810,31 +3825,34 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 
 					IF ACCOUNT_BALANCE >= REQUIRED_DEPOSIT THEN
 						UPDATE "Accounts" SET "Status" =  APPLICATIONVALUES.AS_ACTIVE /*Active*/ WHERE "Id" = MATCHED_PAYMENT.ACCOUNT_ID;
-						MAINTENANCE."LogMessage"(LOG_INFO, 'Account (Reference number: ''' || MATCHED_PAYMENT.ACCOUNT_REFERENCE || ''') has been activated. ', NULL, NULL, NULL);
+						MAINTENANCE."LogInfo"('Account (Reference number: ''' || MATCHED_PAYMENT.ACCOUNT_REFERENCE || ''') has been activated. ');
 					END IF;
 				END IF;
 
 			ELSIF MATCHED_PAYMENT.IS_REFERENCE_MATCH = 'N' THEN 
-				MAINTENANCE."LogMessage"('ERROR', 'Payment (Reference number: ''' || MATCHED_PAYMENT.PAYMENT_REFERENCE || ''') cannot be matched because no account with the same reference number was found. ', NULL, MATCHED_PAYMENT.PAYMENT_ID, 'PAYMENT');
+				MAINTENANCE."LogError"('Payment (Reference number: ''' || MATCHED_PAYMENT.PAYMENT_REFERENCE || ''') cannot be matched because no account with the same reference number was found. ', NULL, MATCHED_PAYMENT.PAYMENT_ID, MAINTENANCE.SYSTEM_LOG_TYPE_PAYMENT);
 				UPDATE "Payments" SET "Status" = APPLICATIONVALUES.PS_FAILED WHERE "Id" = MATCHED_PAYMENT.PAYMENT_ID;
+			
 			ELSIF MATCHED_PAYMENT.IS_REFERENCE_MATCH = 'Y' AND MATCHED_PAYMENT.IS_CURRENCY_MATCH = 'N' THEN
-				MAINTENANCE."LogMessage"('ERROR', 'Payment (Reference number: ''' || MATCHED_PAYMENT.PAYMENT_REFERENCE || '''; Customer ID: ''' || MATCHED_PAYMENT.ACCOUNT_DEBTOR || ''') cannot be matched because the payment currency (' || MATCHED_PAYMENT.PAYMENT_CURRENCY || ') differs from account currency (' || MATCHED_PAYMENT.ACCOUNT_CURRENCY || '). ', NULL,  MATCHED_PAYMENT.PAYMENT_ID, 'PAYMENT');
-				UPDATE "Payments" SET "Status" = APPLICATIONVALUES.PS_FAILED /*Failed*/ WHERE "Id" = MATCHED_PAYMENT.PAYMENT_ID;
-			ELSIF MATCHED_PAYMENT.ACCOUNT_STATUS = APPLICATIONVALUES.AS_CLOSED /*Closed*/ THEN
-				begin
-				MAINTENANCE."LogMessage"('ERROR', 'Payment (Reference number: ''' || MATCHED_PAYMENT.PAYMENT_REFERENCE || '''; Customer ID: ''' || MATCHED_PAYMENT.ACCOUNT_DEBTOR || ''') cannot be matched because the account is closed. ', NULL, MATCHED_PAYMENT.PAYMENT_ID, 'PAYMENT');
-				UPDATE "Payments" SET "Status" = APPLICATIONVALUES.PS_FAILED /*Failed*/ WHERE "Id" = MATCHED_PAYMENT.PAYMENT_ID;
-				end;
+				MAINTENANCE."LogError"('Payment (Reference number: ''' || MATCHED_PAYMENT.PAYMENT_REFERENCE || '''; Customer ID: ''' || MATCHED_PAYMENT.ACCOUNT_DEBTOR || ''') cannot be matched because the payment currency (' || MATCHED_PAYMENT.PAYMENT_CURRENCY || ') differs from account currency (' || MATCHED_PAYMENT.ACCOUNT_CURRENCY || '). ', NULL,  MATCHED_PAYMENT.PAYMENT_ID, MAINTENANCE.SYSTEM_LOG_TYPE_PAYMENT);
+				UPDATE "Payments" SET "Status" = APPLICATIONVALUES.PS_FAILED WHERE "Id" = MATCHED_PAYMENT.PAYMENT_ID;
+			
+			ELSIF MATCHED_PAYMENT.ACCOUNT_STATUS = APPLICATIONVALUES.AS_CLOSED THEN
+				MAINTENANCE."LogError"('Payment (Reference number: ''' || MATCHED_PAYMENT.PAYMENT_REFERENCE || '''; Customer ID: ''' || MATCHED_PAYMENT.ACCOUNT_DEBTOR || ''') cannot be matched because the account is closed. ', NULL, MATCHED_PAYMENT.PAYMENT_ID, MAINTENANCE.SYSTEM_LOG_TYPE_PAYMENT);
+				UPDATE "Payments" SET "Status" = APPLICATIONVALUES.PS_FAILED WHERE "Id" = MATCHED_PAYMENT.PAYMENT_ID;
+
 			ELSIF MATCHED_PAYMENT.IS_BEFORE_ACCOUNT_VALIDITY = 'Y' THEN
-				begin
-				MAINTENANCE."LogMessage"('PAYMENT', 'Payment (Reference number: ''' || MATCHED_PAYMENT.PAYMENT_REFERENCE || '''; Customer ID: ''' || MATCHED_PAYMENT.ACCOUNT_DEBTOR || ''') cannot be matched because the payment date is before account start date. ', NULL, MATCHED_PAYMENT.PAYMENT_ID, 'PAYMENT');
-				UPDATE "Payments" SET "Status" = APPLICATIONVALUES.PS_FAILED /*Failed*/ WHERE "Id" = MATCHED_PAYMENT.PAYMENT_ID;
-				end;
+				MAINTENANCE."LogError"('Payment (Reference number: ''' || MATCHED_PAYMENT.PAYMENT_REFERENCE || '''; Customer ID: ''' || MATCHED_PAYMENT.ACCOUNT_DEBTOR || ''') cannot be matched because the payment date is before account start date. ', NULL, MATCHED_PAYMENT.PAYMENT_ID, MAINTENANCE.SYSTEM_LOG_TYPE_PAYMENT);
+				UPDATE "Payments" SET "Status" = APPLICATIONVALUES.PS_FAILED WHERE "Id" = MATCHED_PAYMENT.PAYMENT_ID;
+
 			END IF;
 		END LOOP;
+
+		"PayStatements"(SYSTEMTIME);
 	END "MatchPayments";
 
-    PROCEDURE "GetXmlAnnualStatement"(ACCOUNT_ID IN NUMBER, YEAR IN NUMBER, XML_ANNUAL_STATEMENT OUT T_OUT_CURSOR)
+/*******************************************************************************/
+		PROCEDURE "GetXmlAnnualStatement"(ACCOUNT_ID IN NUMBER, YEAR IN NUMBER, XML_ANNUAL_STATEMENT OUT T_OUT_CURSOR)
 	AS
 	BEGIN
 		OPEN XML_ANNUAL_STATEMENT FOR
@@ -3842,11 +3860,12 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 			FROM "AccountEntries" e 
 			LEFT JOIN "Statements" s ON s."Id" = e."Statement_Id"
 			WHERE e."Account_Id" = ACCOUNT_ID
-				AND e."Visibility" = 1
+				AND e."Visibility" = APPLICATIONVALUES.AEV_Visible
 				AND EXTRACT(YEAR FROM e."AccountingDate") = YEAR
 			ORDER BY e."AccountingDate", e."Id";
 	END "GetXmlAnnualStatement";
 
+/*******************************************************************************/
 	PROCEDURE "CreateIncomeStatements"(REPORTING_YEAR NUMBER) 
 	AS
 		 now DATE;
@@ -3890,7 +3909,8 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 
 	END;
 
-		PROCEDURE "GetXmlIncomeStatements"(REPORTING_YEAR NUMBER, XML_INCOME_STATEMENTS OUT T_OUT_CURSOR) AS
+/*******************************************************************************/
+	PROCEDURE "GetXmlIncomeStatements"(REPORTING_YEAR NUMBER, XML_INCOME_STATEMENTS OUT T_OUT_CURSOR) AS
 	BEGIN
 
 		OPEN XML_INCOME_STATEMENTS FOR
@@ -3939,6 +3959,7 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 		"Companies" com;
 	END;
 
+/*******************************************************************************/
 	FUNCTION "GetSystemSettingsNumberValue"(SYSTEM_SETTINGS_KEY VARCHAR2) RETURN NUMBER AS
 		numberValue NUMBER;
 		stringValue VARCHAR2(2000);
@@ -3948,6 +3969,7 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 		RETURN numberValue;
 	END;
 	
+/*******************************************************************************/
 	FUNCTION "GetSystemSettingsStringValue"(SYSTEM_SETTINGS_KEY VARCHAR2) RETURN VARCHAR2 AS	
 	stringValue VARCHAR2(2000);
 	BEGIN
@@ -3959,10 +3981,904 @@ CREATE OR REPLACE PACKAGE BODY CUSTOMERACCOUNT AS
 		RETURN stringValue;
 	END;
 
+/*******************************************************************************/
 	PROCEDURE "GetGlExportShipmentNumber" (SHIPMENT_NUMBER OUT INTEGER) IS
 	BEGIN
 		SELECT GLSHIPMENTEXPORTNUMBER_SEQ.nextval INTO SHIPMENT_NUMBER FROM dual;
 	END;
+	
+/*******************************************************************************/
+	FUNCTION "CalculateIncome"(ACCOUNT_ID IN NUMBER, DATE_FROM DATE, DATE_TO DATE) RETURN NUMBER AS
+	accountIncome NUMBER;
+	BEGIN
 
+		BEGIN
+			SELECT incomeTable.Income INTO accountIncome
+			FROM TABLE(customeraccount."Incomes"(DATE_FROM, DATE_TO)) incomeTable
+			WHERE incomeTable.Account_Id = "CalculateIncome".ACCOUNT_ID;
+
+			EXCEPTION WHEN NO_DATA_FOUND THEN accountIncome := 0;
+		END;
+
+		IF (accountIncome IS NULL) THEN accountIncome := 0;
+		END IF;
+		
+		RETURN accountIncome;
+	END;
+
+/*******************************************************************************/
+	PROCEDURE "PayStatements"(DATE_TO IN DATE) IS
+		
+		CURSOR statementsCur(dateTo DATE) IS
+			SELECT "Statements"."Id" "Id" --statement_id,
+			FROM "Statements"
+			JOIN "Accounts" ON "Statements"."Account_Id" = "Accounts"."Id"
+			JOIN TABLE(CUSTOMERACCOUNT."Incomes"("Statements"."Created", dateTo)) Income ON Income.Account_Id = "Statements"."Account_Id"
+			WHERE "Statements"."Status" = APPLICATIONVALUES.SS_APPROVED
+				AND Income.Income >= "Statements"."MinimumPayment"
+				AND "Accounts"."Status" IN (APPLICATIONVALUES.AS_ACTIVE, APPLICATIONVALUES.AS_CLOSING, APPLICATIONVALUES.AS_INACTIVE)
+				AND ("Statements"."Account_Id" = NVL(CURRENTACCOUNTID, "Statements"."Account_Id"))
+			ORDER BY "Statements"."Account_Id", "Statements"."Created" DESC;
+
+	BEGIN
+	
+		FOR statement IN statementsCur(DATE_TO)
+		LOOP 
+			UPDATE "Statements" SET "Status" = APPLICATIONVALUES.SS_PAID 
+			WHERE "Id" = statement."Id";
+
+			UPDATE "Reminders" SET "Status" = APPLICATIONVALUES.RS_PAID 
+			WHERE "Statement_Id" = statement."Id"
+				AND "Status" IN (APPLICATIONVALUES.RS_CREATED, APPLICATIONVALUES.RS_STATED);
+		END LOOP;
+	 
+	END;
+
+/*******************************************************************************/
+	FUNCTION "Incomes"(DATE_FROM DATE, DATE_TO DATE) RETURN ACCOUNT_INCOME_TABLE PIPELINED AS
+		TYPE INCOME_RECORD IS RECORD (ACCOUNT_ID NUMBER, INCOME NUMBER);
+		TYPE INCOME_RECORDS IS TABLE OF INCOME_RECORD INDEX BY BINARY_INTEGER;
+		INCOME_COLLECTION$ INCOME_RECORDS; 
+	BEGIN
+		SELECT "Account_Id", SUM("Amount") BULK COLLECT INTO INCOME_COLLECTION$
+		FROM "AccountEntries"
+		WHERE "Visibility" = APPLICATIONVALUES.AEV_VISIBLE
+			AND TRUNC("ValidationDate") >= TRUNC(DATE_FROM)
+			AND TRUNC("ValidationDate") <= TRUNC(DATE_TO)
+			AND 
+				(
+					("TransactionType" = APPLICATIONVALUES.TT_INCOME)
+					OR 
+					("TransactionType" = APPLICATIONVALUES.TT_REVERSEDPAYMENT)
+					OR
+					("TransactionType" = APPLICATIONVALUES.TT_MANUALCORRECTION)
+					OR
+					("TransactionType" = APPLICATIONVALUES.TT_REFUND)
+					OR
+					("TransactionType" = APPLICATIONVALUES.TT_OUTCOME AND "Amount" > 0)
+--				OR 
+--				("TransactionType" = APPLICATIONVALUES.TT_INTEREST AND "Amount" > 0)
+				)
+		GROUP BY "Account_Id";
+		
+		FOR i IN 1..INCOME_COLLECTION$.COUNT
+		LOOP 
+			PIPE ROW (ACCOUNT_INCOME_TYPE(INCOME_COLLECTION$(i).Account_Id, INCOME_COLLECTION$(i).income));
+		END LOOP;
+	
+		RETURN;      
+	END;
+
+	/*******************************************************************************/	
+	FUNCTION "GetInterestAccountingDates"(ACCOUNT_ID IN NUMBER, DATE_FROM IN DATE, DATE_TO IN DATE) RETURN SYS_REFCURSOR AS
+		CUR SYS_REFCURSOR;
+	BEGIN
+		OPEN CUR FOR 
+			SELECT *
+			FROM
+			(
+				WITH interestDates AS
+				(
+					SELECT "Positive", "Negative" 
+					FROM 
+					(
+						SELECT
+							CUSTOMERACCOUNT."GetInterestBookingDate"(ACCOUNT_ID, DAY, PIBM) "Positive",
+							CUSTOMERACCOUNT."GetInterestBookingDate"(ACCOUNT_ID, DAY, NIBM) "Negative"
+						FROM
+						(
+							SELECT 
+								DAYS.*,
+								"PositiveInterestBookingMethod" PIBM,
+								"NegativeInterestBookingMethod" NIBM
+							FROM
+							(
+								--SELECT
+								--	ACCOUNT_ID ACCOUNT_ID, 
+								--	(TRUNC(DATE_FROM) + LEVEL)-1 DAY 
+								--FROM DUAL CONNECT BY LEVEL < (SELECT TRUNC(DATE_TO) - TRUNC(DATE_FROM) FROM DUAL)
+								SELECT ACCOUNT_ID ACCOUNT_ID,	COLUMN_VALUE DAY
+								FROM TABLE(CUSTOMERACCOUNT."GenerateDays"(TRUNC(DATE_FROM), TRUNC(DATE_TO)+1))
+							) DAYS
+							JOIN "AccountTemplates" AT ON AT."Account_Id" = DAYS.ACCOUNT_ID 
+							JOIN "Templates" T ON AT."Template_Id" = T."Id"
+							WHERE
+								TRUNC(AT."TimeValidity_ValidFrom") <= DAYS.DAY 
+								AND (TRUNC(AT."TimeValidity_ValidTo") >= DAYS.DAY OR AT."TimeValidity_ValidTo" IS NULL)
+						) BOOKING
+					)
+				)
+				SELECT DISTINCT "Positive" BOOK_DATE, SIGN(1) BOOK_TYPE FROM interestDates
+				UNION 
+				SELECT DISTINCT "Negative", SIGN(-1) FROM interestDates
+			)
+			WHERE BOOK_DATE >= DATE_FROM AND BOOK_DATE <= DATE_TO
+			ORDER BY BOOK_DATE;
+
+			RETURN CUR;
+	END;
+
+/*******************************************************************************/
+	PROCEDURE "ReverseEntry"(ENTRY_ID NUMBER) AS
+		ENTRY_ROW "AccountEntries"%RowType;
+	BEGIN
+		SELECT * INTO ENTRY_ROW FROM "AccountEntries" WHERE "Id" = ENTRY_ID;
+			
+		INSERT INTO "AccountEntries" ("TransactionType", "ValidFrom", "ValidTo", "AccountingDate", "ValidationDate", "Amount", "Visibility", 
+			"Status", "Account_Id", "Statement_Id", "Expectation_Id", "OriginalEntry_Id", "LastChange_Changed", "LastChange_ChangedBy")
+		VALUES (ENTRY_ROW."TransactionType", TRUNC(SYSTEMTIME), TRUNC(SYSTEMTIME), TRUNC(SYSTEMTIME), TRUNC(ENTRY_ROW."AccountingDate"), (-1)*(ENTRY_ROW."Amount"), APPLICATIONVALUES.AEV_VISIBLE,
+			APPLICATIONVALUES.AES_CREATED, ENTRY_ROW."Account_Id", NULL, NULL, ENTRY_ROW."Id", SYSTEMTIME, CURRENTUSER);
+	END;
+	
+/*******************************************************************************/
+	PROCEDURE "PayStatement" (STATEMENT_ID IN NUMBER) AS
+		TYPE T_REMINDER_RECORD IS RECORD (ID NUMBER, MINIMUM_PAYMENT NUMBER, INCOME_TILL_CREATE NUMBER, INCOME_TILL_DUE_DATE NUMBER, FEE_EXPECTATION_ID NUMBER, FEE_ENTRY_ID NUMBER);
+		TYPE T_REMINDERS_RECORDS IS TABLE OF T_REMINDER_RECORD INDEX BY BINARY_INTEGER;
+		REMINDERS$ T_REMINDERS_RECORDS;
+				 
+	BEGIN
+	
+		-- pay statement 
+		UPDATE "Statements" SET "Status" = APPLICATIONVALUES.SS_PAID
+		WHERE "Id" = STATEMENT_ID;
+		
+		-- get statement reminders
+		SELECT
+			R."Id",
+			S."MinimumPayment",
+			CUSTOMERACCOUNT."CalculateIncome"(S."Account_Id", S."Created", R."Created") "IncomeTillCreate",
+			CUSTOMERACCOUNT."CalculateIncome"(S."Account_Id", S."Created", R."DueDate" + TO_NUMBER(SS."Value")) "IncomeTillDueDate",
+			R."FeeExpectation_Id",
+			AE."Id"
+		BULK COLLECT INTO REMINDERS$
+		FROM "Reminders" R
+		JOIN "Statements" S ON R."Statement_Id" = S."Id" AND S."Id" = STATEMENT_ID
+		JOIN "SystemSettings" SS ON SS."Key" = 'ReminderDelay'
+		JOIN "Expectations" E ON R."FeeExpectation_Id" = E."Id"
+		LEFT JOIN "AccountEntries" AE ON E."Id" = AE."Expectation_Id"
+		ORDER BY R."Id";
+		
+		IF REMINDERS$.COUNT > 0 THEN
+			FOR I IN REMINDERS$.FIRST .. REMINDERS$.LAST
+			LOOP
+
+				-- cancel reminder
+				IF (REMINDERS$(I).INCOME_TILL_CREATE >= REMINDERS$(I).MINIMUM_PAYMENT) THEN
+					UPDATE "Reminders" SET "Status" = APPLICATIONVALUES.RS_CANCELLED WHERE "Id" = REMINDERS$(I).ID;
+					
+					-- cancel fee expectation, which is not accounted yet
+					IF (REMINDERS$(I).FEE_ENTRY_ID IS NULL) THEN
+						UPDATE "Expectations" SET "Status" = APPLICATIONVALUES.ES_CANCELLED
+						WHERE "Id" = REMINDERS$(I).FEE_EXPECTATION_ID;
+						
+					-- reverse accounted fee
+					ELSE
+						"ReverseEntry"(REMINDERS$(I).FEE_ENTRY_ID);
+					END IF;
+
+					CONTINUE;
+						
+				END IF;
+				
+				-- pay reminder
+				IF (REMINDERS$(I).INCOME_TILL_DUE_DATE >= REMINDERS$(I).MINIMUM_PAYMENT) THEN
+					UPDATE "Reminders" SET "Status" = APPLICATIONVALUES.RS_PAID WHERE "Id" = REMINDERS$(I).ID;
+				END IF;
+				
+			END LOOP;
+		END IF;
+		
+	END;
+
+/*******************************************************************************/
+	--PROCEDURE "ReverseAccountInterests"(ACCOUNT_ID IN NUMBER, DATE_FROM IN DATE) AS
+	FUNCTION "ReverseAccountInterests"(ACCOUNT_ID IN NUMBER, DATE_FROM IN DATE) RETURN DATE AS
+		--ACCOUNTED_INTERESTS$ T_NUMBER_ARRAY;
+		--REVERSED_INTEREST_CURSOR T_OUT_CURSOR;
+		FIRST_REVERSED_DATE DATE := DATE_FROM;
+		TYPE T_INTEREST IS RECORD(ENTRY_ID NUMBER, VALID_FROM DATE);
+		TYPE T_INTERESTS IS TABLE OF T_INTEREST;
+		ACCOUNTED_INTERESTS$ T_INTERESTS;
+	BEGIN
+		
+		-- get accounted interests
+		SELECT AE."Id", AE."ValidFrom"
+		BULK COLLECT INTO ACCOUNTED_INTERESTS$
+		FROM "AccountEntries" AE
+		LEFT OUTER JOIN "AccountEntries" REVERSED_AE ON AE."Id" = REVERSED_AE."OriginalEntry_Id"
+		WHERE AE."Account_Id" = ACCOUNT_ID
+			AND AE."OriginalEntry_Id" IS NULL 
+			AND REVERSED_AE."Id" IS NULL
+			AND AE."TransactionType" = APPLICATIONVALUES.TT_INTEREST
+			AND TRUNC(AE."AccountingDate") >= TRUNC(DATE_FROM)
+		ORDER BY AE."Id";
+			
+		-- reverse accounted interests
+		IF ACCOUNTED_INTERESTS$.COUNT > 0 THEN
+			FOR I IN ACCOUNTED_INTERESTS$.FIRST .. ACCOUNTED_INTERESTS$.LAST
+			LOOP
+				"ReverseEntry"(ACCOUNTED_INTERESTS$(I).ENTRY_ID);
+				IF (ACCOUNTED_INTERESTS$(I).VALID_FROM < FIRST_REVERSED_DATE) THEN
+					FIRST_REVERSED_DATE := ACCOUNTED_INTERESTS$(I).VALID_FROM;
+				END IF;
+			END LOOP;
+		END IF;
+
+		-- open ref cursor
+		--OPEN REVERSED_INTEREST_CURSOR FOR
+		--	SELECT COLUMN_VALUE AS "Id" FROM TABLE (ACCOUNTED_INTERESTS$);
+
+		RETURN FIRST_REVERSED_DATE;
+
+	END;
+
+/*******************************************************************************/
+	PROCEDURE "CancelAccountStatements"(ACCOUNT_ID IN NUMBER, DATE_FROM IN DATE) AS
+		CANCELLED_STATEMENS$ T_NUMBER_ARRAY;
+		CANCELLED_REMINDER_FEES$ T_NUMBER_ARRAY;
+		ACCOUNTED_REMINDER_FEES$ T_NUMBER_ARRAY;
+	BEGIN
+		
+		-- cancell statements, which has been created later than DATE_FROM
+		UPDATE "Statements" SET "Status" = APPLICATIONVALUES.SS_CANCELLED
+		WHERE "Account_Id" = ACCOUNT_ID
+			AND TRUNC("Created") >= TRUNC(DATE_FROM)
+			AND "Status" IN (APPLICATIONVALUES.SS_APPROVED, APPLICATIONVALUES.SS_PAID)
+		RETURNING "Id" 
+		BULK COLLECT INTO CANCELLED_STATEMENS$;
+
+		-- change status of expectations and account entries
+		IF CANCELLED_STATEMENS$ IS NOT NULL AND CANCELLED_STATEMENS$.COUNT > 0 THEN
+
+			UPDATE "Expectations" SET "Status" = APPLICATIONVALUES.ES_CREATED, "Statement_Id" = NULL
+			WHERE "Statement_Id" IN (SELECT COLUMN_VALUE FROM TABLE(CANCELLED_STATEMENS$))
+				AND "Status" IN (APPLICATIONVALUES.ES_STATED);
+
+			UPDATE "AccountEntries" SET "Status" = APPLICATIONVALUES.AES_CREATED, "Statement_Id" = NULL
+			WHERE "Statement_Id" IN (SELECT COLUMN_VALUE FROM TABLE(CANCELLED_STATEMENS$));
+
+		END IF;
+		
+		-- cancell reminders of cancelled statements
+		IF CANCELLED_STATEMENS$ IS NOT NULL AND CANCELLED_STATEMENS$.COUNT > 0 THEN
+			UPDATE "Reminders" SET "Status" = APPLICATIONVALUES.RS_CANCELLED
+			WHERE "Statement_Id" IN (SELECT COLUMN_VALUE FROM TABLE(CANCELLED_STATEMENS$))
+			RETURNING "FeeExpectation_Id" BULK COLLECT INTO CANCELLED_REMINDER_FEES$;
+		END IF;
+
+		-- cancell not accounted reminder fees
+		IF CANCELLED_REMINDER_FEES$ IS NOT NULL AND CANCELLED_REMINDER_FEES$.COUNT > 0 THEN
+			UPDATE "Expectations" SET "Status" = APPLICATIONVALUES.ES_CANCELLED
+			WHERE "Id" IN (SELECT COLUMN_VALUE FROM TABLE(CANCELLED_REMINDER_FEES$))
+				AND "Status" IN (APPLICATIONVALUES.ES_CREATED, APPLICATIONVALUES.ES_STATED);
+		END IF;
+			
+		-- get already accounted fees
+		IF CANCELLED_REMINDER_FEES$ IS NOT NULL AND CANCELLED_REMINDER_FEES$.COUNT > 0 THEN
+			SELECT "Id" 
+			BULK COLLECT INTO ACCOUNTED_REMINDER_FEES$
+			FROM "AccountEntries" AE
+			WHERE "Expectation_Id" IN ((SELECT COLUMN_VALUE FROM TABLE(CANCELLED_REMINDER_FEES$)));
+		END IF;
+
+		-- reverse accounted fees
+		IF ACCOUNTED_REMINDER_FEES$ IS NOT NULL AND ACCOUNTED_REMINDER_FEES$.COUNT > 0 THEN
+			FOR I IN ACCOUNTED_REMINDER_FEES$.FIRST .. ACCOUNTED_REMINDER_FEES$.LAST
+			LOOP
+				"ReverseEntry"(ACCOUNTED_REMINDER_FEES$(I));
+			END LOOP;
+		END IF;
+
+		-- reverse interests
+		--"ReverseAccountInterests"(ACCOUNT_ID, DATE_FROM);
+
+	END;
+
+/*******************************************************************************/
+	PROCEDURE "HandleUnpaidStatements"(ACCOUNT_ID IN NUMBER, DATE_FROM DATE) AS
+
+		TYPE T_STATEMENT_RECORD IS RECORD (ID NUMBER, MINIMUM_PAYMENT NUMBER, INCOME NUMBER);
+		TYPE T_STATEMENT_RECORDS IS TABLE OF T_STATEMENT_RECORD INDEX BY BINARY_INTEGER;
+		UNPAID_STATEMENTS$ T_STATEMENT_RECORDS;
+
+		CANCELLED_STATEMENS$ T_NUMBER_ARRAY;
+		CANCELLED_REMINDER_FEES$ T_NUMBER_ARRAY;
+	BEGIN
+
+		"CancelAccountStatements"(ACCOUNT_ID, DATE_FROM);
+
+		-- get unpaid statements
+		SELECT *
+		BULK COLLECT INTO UNPAID_STATEMENTS$
+		FROM
+		(
+			SELECT 
+				S."Id", 
+				S."MinimumPayment", 
+				CUSTOMERACCOUNT."CalculateIncome"(S."Account_Id", S."AccountingPeriodStartDate", SYSTEMTIME) "Income"
+			FROM "Statements" S
+			WHERE S."Account_Id" = ACCOUNT_ID
+				AND S."Status" IN (APPLICATIONVALUES.SS_APPROVED/*, APPLICATIONVALUES.SS_PAID*/)
+			ORDER BY S."Created"
+		)
+		WHERE "Income" >= "MinimumPayment";
+
+		-- go through unpaid statements and pay them
+		IF (UNPAID_STATEMENTS$.COUNT > 0) THEN
+			FOR I IN UNPAID_STATEMENTS$.FIRST .. UNPAID_STATEMENTS$.LAST 
+			LOOP
+				"PayStatement"(UNPAID_STATEMENTS$(I).ID);
+			END LOOP;
+		END IF;
+		
+	END;
+
+/*******************************************************************************/  
+	FUNCTION "CalculateInterestCompBalance"(ACCOUNT_ID IN NUMBER, LAST_BALANCE IN NUMBER, DATE_FROM IN DATE, DATE_TO IN DATE) RETURN NUMBER
+	AS
+		AMOUNT_SUM NUMBER;
+	BEGIN
+		SELECT NVL(SUM("Amount"), 0)  INTO AMOUNT_SUM
+		FROM "AccountEntries"
+		WHERE "Account_Id" = ACCOUNT_ID 
+			AND "ValidationDate" >= TRUNC(DATE_FROM)
+			AND "ValidationDate" < TRUNC(DATE_TO);
+			
+		RETURN LAST_BALANCE+AMOUNT_SUM;
+	END;
+
+/*******************************************************************************/  
+	FUNCTION "CalculateInterestCompensation"(ACCOUNT_ID IN NUMBER, DATE_FROM IN DATE, DATE_TO IN DATE, LAST_BALANCE IN NUMBER) RETURN INTEREST_CALC_TABLE PIPELINED AS
+		INTEREST_COLLECTION$ INTEREST_CALC_TABLE;
+		--LAST_BALANCE NUMBER;
+	BEGIN
+
+		SELECT INTEREST_CALC_TYPE
+		(
+			MAXIMUM_DAY_BALANCE,
+			(MAXIMUM_DAY_BALANCE*INTEREST)/(100*YEAR_LENGTH),
+			INTEREST,
+			VALIDATION_DATE
+		)
+		BULK COLLECT INTO INTEREST_COLLECTION$
+		FROM
+		(
+			SELECT
+				ACCOUNT_ID,
+				VALIDATION_DATE,
+				DAY_AMOUNT,
+				DAY_BALANCE,
+				CASE
+					WHEN T."MaximumInterestBasedAmount" < ACCOUNTING_VALUES.Day_Balance THEN T."MaximumInterestBasedAmount"
+					ELSE ACCOUNTING_VALUES.Day_Balance
+				END MAXIMUM_DAY_BALANCE,
+				CASE
+					WHEN DAY_BALANCE IS NULL THEN NULL
+					WHEN ACCOUNTING_VALUES.DAY_BALANCE = 0 THEN 0
+					WHEN ACCOUNTING_VALUES.DAY_BALANCE > 0 THEN T."PositiveInterestRate"+BI."Value"
+					ELSE T."NegativeInterestRate"+BI."Value"
+				END INTEREST,
+				TO_NUMBER((TRUNC (ACCOUNTING_VALUES.VALIDATION_DATE,'yyyy')+ INTERVAL '1' YEAR-1)- (TRUNC(ACCOUNTING_VALUES.VALIDATION_DATE,'yyyy')))+1 YEAR_LENGTH
+			FROM
+				(
+					SELECT
+						ACCOUNT_ID,
+						VALIDATION_DATE,
+						DAY_AMOUNT,
+						SUM (DAY_AMOUNT + CASE WHEN TRUNC(VALIDATION_DATE) = TRUNC(DATE_FROM) THEN LAST_BALANCE ELSE 0 END) OVER (ORDER BY VALIDATION_DATE) DAY_BALANCE
+					FROM
+					(
+						SELECT
+							ACCOUNT_ID,
+							TRUNC(DAY) VALIDATION_DATE,
+							NVL(SUM("Amount"), 0) DAY_AMOUNT
+						FROM
+						(
+							SELECT 
+								ACCOUNT_ID,
+								DAY
+							FROM
+							(
+								SELECT
+									ACCOUNT_ID ACCOUNT_ID, -- AccountId parameter
+									TRUNC(DATE_FROM-1) + LEVEL DAY -- last entry accounting date - 1 parameter
+								FROM DUAL CONNECT BY LEVEL <= (SELECT TRUNC(DATE_TO) - TRUNC(DATE_FROM) FROM DUAL)
+							) 
+							WHERE rownum <= TRUNC(DATE_TO) - TRUNC(DATE_FROM)
+						) -- days to generate parameter
+					
+						LEFT JOIN (
+								SELECT 	"Account_Id",
+										"Amount",
+										"ValidationDate" + CASE -- other than income amount must be effectively postponed by one day
+												WHEN "TransactionType" = APPLICATIONVALUES.TT_INTEREST THEN 1
+												ELSE 0
+										END "ValidDate"
+								FROM "AccountEntries"
+								WHERE "Account_Id" = ACCOUNT_ID 						
+									AND TRUNC("ValidationDate") >= TRUNC(DATE_FROM)
+							) AE ON ACCOUNT_ID = AE."Account_Id" AND DAY = AE."ValidDate"
+						GROUP BY ACCOUNT_ID, DAY
+					)
+				) ACCOUNTING_VALUES,
+			
+				-- other tables
+				"BaseInterests" BI,
+				"AccountTemplates" AT,
+				"Templates" T
+			WHERE
+			
+				-- link base interests
+				ACCOUNTING_VALUES.VALIDATION_DATE >= BI."TimeValidity_ValidFrom" AND (ACCOUNTING_VALUES.VALIDATION_DATE <= BI."TimeValidity_ValidTo" OR BI."TimeValidity_ValidTo" IS NULL)
+			
+				-- link account templates
+				AND ACCOUNTING_VALUES.ACCOUNT_ID = AT."Account_Id"
+				AND ACCOUNTING_VALUES.VALIDATION_DATE >= AT."TimeValidity_ValidFrom" AND (ACCOUNTING_VALUES.VALIDATION_DATE <= AT."TimeValidity_ValidTo" OR AT."TimeValidity_ValidTo" IS NULL)
+			
+				-- link templates
+				AND AT."Template_Id" = T."Id"
+			ORDER BY VALIDATION_DATE
+		);
+		
+		FOR i IN 1..INTEREST_COLLECTION$.COUNT
+		LOOP 
+				PIPE ROW (INTEREST_CALC_TYPE(INTEREST_COLLECTION$(i).BALANCE, INTEREST_COLLECTION$(i).AMOUNT, INTEREST_COLLECTION$(i).RATE, INTEREST_COLLECTION$(i).DAY));
+		END LOOP;
+			 
+		RETURN;
+	END; 
+
+/*******************************************************************************/
+	PROCEDURE "CreateInterestCompensation"(ACCOUNT_DATA IN "Accounts"%ROWTYPE, DATE_FROM IN DATE, INTEREST_ACCOUNTING_DAYS IN SYS_REFCURSOR) AS
+		ACCOUNT_ID NUMBER := ACCOUNT_DATA."Id";
+		COMPENSATION NUMBER := 0;
+--		LAST_INTEREST_DATE DATE;
+		INTEREST_COLLECTION$ INTEREST_CALC_TABLE;
+		INSERTED_INTERESTS$ T_NUMBER_ARRAY;
+		COMPENSATION_ENTRY_ID NUMBER;
+
+		TYPE T_INTEREST_ACCOUNTING_DAY IS RECORD (ACCOUNTING_DAY DATE, INTEREST_SIGN INT);
+--		INTEREST_ACCOUNTING_DAYS SYS_REFCURSOR;
+		INTEREST_ACCOUNTING_DAY T_INTEREST_ACCOUNTING_DAY;
+
+		CALCULATE_COMPENSATION_FROM DATE := DATE_FROM;
+		PREVIOUS_ACCOUNTING_DATE DATE := NULL;
+
+		--/* DEBUG
+
+		TYPE T_XX IS RECORD (InterestDate DATE, Balance NUMBER(20,5), Amount NUMBER(20,5));
+		TYPE T_XXT IS TABLE OF T_XX INDEX BY BINARY_INTEGER;
+		--TYPE T_XXT IS TABLE OF INTEREST_CALC_TYPE INDEX BY BINARY_INTEGER;
+		XXT T_XXT;
+
+		--*/
+		
+		LAST_BALANCE_BEFORE_CALC NUMBER := 0;
+		LAST_BALANCE NUMBER := 0;
+
+		CALCULATE_FROM DATE := DATE_FROM;
+		LAST_POS_ACC_DATE DATE := DATE_FROM;
+		LAST_NEG_ACC_DATE DATE := DATE_FROM;
+	BEGIN
+		LAST_BALANCE_BEFORE_CALC := "GetLastBalanceForAccount"(ACCOUNT_ID, DATE_FROM-1);
+		
+		LOOP 
+    FETCH INTEREST_ACCOUNTING_DAYS
+    INTO  INTEREST_ACCOUNTING_DAY;
+    EXIT WHEN INTEREST_ACCOUNTING_DAYS%NOTFOUND; 
+
+			IF (INTEREST_ACCOUNTING_DAY.INTEREST_SIGN = -1) THEN CALCULATE_COMPENSATION_FROM := LAST_NEG_ACC_DATE;
+			ELSE CALCULATE_COMPENSATION_FROM := LAST_POS_ACC_DATE;
+			END IF;
+			
+			LAST_BALANCE := "CalculateInterestCompBalance"(ACCOUNT_ID, LAST_BALANCE_BEFORE_CALC, DATE_FROM, CALCULATE_COMPENSATION_FROM-1);
+			
+			SELECT INTEREST_CALC_TYPE(BALANCE, AMOUNT, RATE, DAY)
+			BULK COLLECT INTO INTEREST_COLLECTION$
+			FROM TABLE("CalculateAccountDayInterests"(ACCOUNT_ID, CALCULATE_COMPENSATION_FROM, INTEREST_ACCOUNTING_DAY.ACCOUNTING_DAY+1, LAST_BALANCE, AE_COLUMN_VALIDATION_DATE))
+			WHERE SIGN(AMOUNT) = INTEREST_ACCOUNTING_DAY.INTEREST_SIGN;
+				
+			IF (INTEREST_COLLECTION$ IS NOT NULL AND INTEREST_COLLECTION$.COUNT > 0) THEN
+
+
+				--/* DBUG
+
+					FOR I IN INTEREST_COLLECTION$.FIRST .. INTEREST_COLLECTION$.LAST 
+					LOOP
+						XXT(I).InterestDate := INTEREST_COLLECTION$(I).DAY; 
+						XXT(I).Balance := INTEREST_COLLECTION$(I).BALANCE; 
+						XXT(I).Amount := INTEREST_COLLECTION$(I).AMOUNT;
+					END LOOP;
+
+				--*/
+			
+				-- get sum of compensations
+				SELECT SUM(AMOUNT) INTO COMPENSATION
+				FROM TABLE(INTEREST_COLLECTION$);
+						
+				IF COMPENSATION IS NOT NULL THEN 
+				
+					-- save compensation entry
+					INSERT INTO "AccountEntries" ("TransactionType", "ValidFrom", "ValidTo", "AccountingDate", "ValidationDate", "Amount", "Visibility", 
+						"Status", "Account_Id", "Statement_Id", "Expectation_Id", "OriginalEntry_Id", "LastChange_Changed", "LastChange_ChangedBy")
+					--VALUES (APPLICATIONVALUES.TT_INTEREST, TRUNC(DATE_FROM), TRUNC(LAST_INTEREST_DATE), TRUNC(SYSTEMTIME), TRUNC(SYSTEMTIME), COMPENSATION, APPLICATIONVALUES.AEV_VISIBLE,
+					VALUES (APPLICATIONVALUES.TT_INTEREST, TRUNC(DATE_FROM), TRUNC(INTEREST_ACCOUNTING_DAY.ACCOUNTING_DAY), TRUNC(SYSTEMTIME), TRUNC(INTEREST_ACCOUNTING_DAY.ACCOUNTING_DAY), COMPENSATION, APPLICATIONVALUES.AEV_VISIBLE,
+						APPLICATIONVALUES.AES_CREATED, ACCOUNT_ID, NULL, NULL, NULL, SYSTEMTIME, CURRENTUSER)
+					RETURNING "Id" INTO COMPENSATION_ENTRY_ID;
+				
+					-- save day compensations
+					IF COMPENSATION_ENTRY_ID IS NOT NULL THEN
+						FORALL I IN INTEREST_COLLECTION$.FIRST .. INTEREST_COLLECTION$.LAST 
+							INSERT INTO "InterestCompensations" ("Day", "Balance", "Amount", "Rate", "Account_Id", "AccountEntry_Id")
+							VALUES (INTEREST_COLLECTION$(I).DAY, INTEREST_COLLECTION$(I).BALANCE, INTEREST_COLLECTION$(I).AMOUNT, INTEREST_COLLECTION$(I).RATE, ACCOUNT_ID, COMPENSATION_ENTRY_ID)
+							RETURNING "Id" BULK COLLECT INTO INSERTED_INTERESTS$;
+					END IF;
+
+					IF (INTEREST_ACCOUNTING_DAY.INTEREST_SIGN = -1) THEN LAST_NEG_ACC_DATE := INTEREST_ACCOUNTING_DAY.ACCOUNTING_DAY+1;
+					ELSE LAST_POS_ACC_DATE := INTEREST_ACCOUNTING_DAY.ACCOUNTING_DAY+1;
+					END IF;
+				
+				END IF;
+			
+			END IF;
+
+			PREVIOUS_ACCOUNTING_DATE := INTEREST_ACCOUNTING_DAY.ACCOUNTING_DAY;
+
+			COMMIT;
+
+			
+		
+		END LOOP;
+		CLOSE INTEREST_ACCOUNTING_DAYS;
+
+	END;
+
+/*******************************************************************************/
+	PROCEDURE "CreateDailyInterestComp"(ACCOUNT_ID IN NUMBER, FIRST_INSERT_DATE DATE) AS
+		LATEST_DATE DATE;
+		INTEREST_COLLECTION$ INTEREST_CALC_TABLE;
+	BEGIN
+	
+		-- last interest date
+		LATEST_DATE := "GetLastInterestForAccount"(ACCOUNT_ID);
+		IF(ROUND(SYSTEMTIME) <= ROUND(LATEST_DATE)) THEN
+			dbms_output.put_line('DateTo ('||SYSTEMTIME||') is less or equal than last interest date ('||LATEST_DATE||')');
+			RETURN;
+		END IF;
+		
+		SELECT INTEREST_CALC_TYPE(BALANCE, AMOUNT, RATE, DAY)
+		BULK COLLECT INTO INTEREST_COLLECTION$
+		FROM TABLE("CalculateInterestCompensation"(ACCOUNT_ID, FIRST_INSERT_DATE, SYSTEMTIME, 0))
+		WHERE DAY > LATEST_DATE;
+		
+		FORALL I IN INTEREST_COLLECTION$.FIRST .. INTEREST_COLLECTION$.LAST
+			INSERT INTO "Interests" ("Id", "Balance", "Amount", "InterestDate", "InterestRate", "Account_Id")
+			VALUES (
+				SYS_GUID(),
+				INTEREST_COLLECTION$(I).BALANCE,
+				INTEREST_COLLECTION$(I).AMOUNT,
+				INTEREST_COLLECTION$(I).DAY,
+				INTEREST_COLLECTION$(I).RATE,
+				ACCOUNT_ID
+			);
+	END;
+
+/*******************************************************************************/
+	PROCEDURE "InsertEntries"(ACCOUNT_ID IN NUMBER, INSERTED_ENTRIES_LIST IN ACCOUNT_ENTRY_TABLE, RESULT_CURSOR OUT SYS_REFCURSOR) AS
+			 
+		FIRST_INSERTED_DATE DATE;
+		LAST_INSERTED_DATE DATE;
+				
+		ENTRIES_TO_REVERSE T_OUT_CURSOR;
+		INSERTED_ENTRIES T_NUMBER_ARRAY := T_NUMBER_ARRAY();
+		
+		TYPE T_ENTRIES_TO_REVERSE_RECORD IS RECORD (ENTRY_ID NUMBER, TRANSACTION_TYPE INTEGER, STATUS NUMBER, CREATED DATE, ACCOUNTING_DATE DATE, AMOUNT NUMBER, EXPECTATION_ID NUMBER, EXPECTATION_STATEMENT_ID NUMBER, REMINDER_ID NUMBER);
+		TYPE T_ENTRIES_TO_REVERSE_RECORDS IS TABLE OF T_ENTRIES_TO_REVERSE_RECORD INDEX BY BINARY_INTEGER;
+		ENTRIES_TO_REVERSE$ T_ENTRIES_TO_REVERSE_RECORDS;
+		
+		REMINDER_STATUS NUMBER;
+		ACCOUNT_DATA "Accounts"%ROWTYPE;
+		DEBIT_INVOICE_STATEMENT "Statements"%ROWTYPE;
+		STATEMENT_CREATED_DATE DATE := NULL;
+		LAST_ACCOUNTED_INTEREST_DATE DATE := NULL;
+
+		DATE_FROM DATE;
+		--LAST_INTEREST_DATE DATE := SYSTEMTIME; ??
+		--CALCULATE_INTEREST_FROM DATE;
+
+		INTEREST_ACCOUNTING_DAYS SYS_REFCURSOR;
+	BEGIN
+
+		-- get account 
+		BEGIN
+			SELECT * INTO ACCOUNT_DATA FROM "Accounts" 
+			WHERE "Id" = ACCOUNT_ID;
+			
+			EXCEPTION WHEN NO_DATA_FOUND THEN 
+				CUSTOM_ORACLE_EXCEPTIONS."RaiseException"('AccountDoesntExist', NULL);
+		END;
+
+		-- check, that at least one entry should be inserted
+		IF INSERTED_ENTRIES_LIST.COUNT = 0 THEN 
+			RETURN;
+		END IF;
+
+		-- get latest date
+		SELECT TRUNC(VALIDATION_DATE) INTO FIRST_INSERTED_DATE 
+		FROM (SELECT VALIDATION_DATE FROM TABLE(INSERTED_ENTRIES_LIST) ORDER BY VALIDATION_DATE)
+		WHERE rowNum = 1;
+
+		-- handle credit note 
+		IF (INSERTED_ENTRIES_LIST.COUNT = 1 AND INSERTED_ENTRIES_LIST(1).TRANSACTION_TYPE = APPLICATIONVALUES.TT_OUTCOMECANCELLATION) THEN
+			
+			SELECT *
+			INTO DEBIT_INVOICE_STATEMENT
+			FROM "Statements" 
+			WHERE 
+				"Account_Id" = ACCOUNT_ID
+				AND TRUNC("AccountingPeriodEndDate") = TRUNC(INSERTED_ENTRIES_LIST(1).VALIDATION_DATE);
+
+			IF (DEBIT_INVOICE_STATEMENT."Created" IS NOT NULL) THEN 
+				STATEMENT_CREATED_DATE := DEBIT_INVOICE_STATEMENT."Created";
+			END IF;
+
+		END  IF;
+
+		-- check FIRST_INSERTED_DATE
+		IF (FIRST_INSERTED_DATE < TRUNC(ACCOUNT_DATA."TimeValidity_ValidFrom")) THEN
+			CUSTOM_ORACLE_EXCEPTIONS."RaiseException"('ValidDateOutOfAccValidity', NULL);
+		END IF;
+
+		-- get lastest date
+		SELECT TRUNC(VALIDATION_DATE) INTO LAST_INSERTED_DATE 
+		FROM (SELECT VALIDATION_DATE FROM TABLE(INSERTED_ENTRIES_LIST) ORDER BY VALIDATION_DATE DESC)
+		WHERE RowNum = 1;
+
+		IF (ACCOUNT_DATA."TimeValidity_ValidTo" IS NOT NULL AND LAST_INSERTED_DATE > TRUNC(ACCOUNT_DATA."TimeValidity_ValidTo")) THEN
+			 CUSTOM_ORACLE_EXCEPTIONS."RaiseException"('ValidDateOutOfAccValidity', NULL);
+		END IF;
+
+		IF (LAST_INSERTED_DATE > SYSTEMTIME) THEN
+			CUSTOM_ORACLE_EXCEPTIONS."RaiseException"('FutureValidationDate', NULL);
+		END IF;
+
+		IF (ACCOUNT_DATA."Status" = APPLICATIONVALUES.AS_CLOSED) THEN
+			CUSTOM_ORACLE_EXCEPTIONS."RaiseException"('AccountHasBeenClosedAlready', NULL);
+		END IF;
+
+		-- get entries for reverse
+		SELECT  AE."Id",
+						AE."TransactionType",
+						AE."Status",
+						AE."Created",
+						AE."AccountingDate",
+						AE."Amount",
+						AE."Expectation_Id",
+						E."Statement_Id",
+						R."Id"
+		BULK COLLECT INTO ENTRIES_TO_REVERSE$
+		FROM "AccountEntries" AE
+		LEFT JOIN "Expectations" E ON AE."Expectation_Id" = E."Id" 
+		LEFT JOIN "Reminders" R ON AE."Expectation_Id" = R."FeeExpectation_Id"
+		WHERE
+			AE."Account_Id" = ACCOUNT_ID
+			AND "AccountingDate" > FIRST_INSERTED_DATE
+		ORDER BY AE."Id";
+
+		-- insert entries
+		FOR I IN INSERTED_ENTRIES_LIST.FIRST .. INSERTED_ENTRIES_LIST.LAST
+		LOOP 
+			
+			INSERTED_ENTRIES.EXTEND;
+
+			INSERT INTO "AccountEntries" ("TransactionType", "ValidFrom", "ValidTo", "AccountingDate", "ValidationDate", "Amount", "Visibility", 
+				"Status", "Account_Id", "Statement_Id", "LastChange_Changed", "LastChange_ChangedBy")
+			VALUES (INSERTED_ENTRIES_LIST(I).TRANSACTION_TYPE, TRUNC(SYSTEMTIME), TRUNC(SYSTEMTIME), TRUNC(SYSTEMTIME), INSERTED_ENTRIES_LIST(I).VALIDATION_DATE, INSERTED_ENTRIES_LIST(I).AMOUNT, APPLICATIONVALUES.AEV_VISIBLE,
+				APPLICATIONVALUES.AES_CREATED , ACCOUNT_ID, NULL, SYSTEMTIME, CURRENTUSER) RETURNING "Id" INTO INSERTED_ENTRIES(INSERTED_ENTRIES.LAST);
+
+			"CreateHistoryChangeEntry"('AccountEntries', 'Amount', INSERTED_ENTRIES(INSERTED_ENTRIES.LAST), INSERTED_ENTRIES_LIST(I).AMOUNT, NULL, NULL, CURRENTUSER, INSERTED_ENTRIES_LIST(I).VALIDATION_DATE, 0, 'InsertEntry', 13);
+						
+		END LOOP;  
+
+		-- get date from
+		IF STATEMENT_CREATED_DATE IS NOT NULL THEN DATE_FROM := STATEMENT_CREATED_DATE;
+		ELSE DATE_FROM := FIRST_INSERTED_DATE;
+		END IF;
+
+		-- get interest accounting dates
+		INTEREST_ACCOUNTING_DAYS := "GetInterestAccountingDates"(ACCOUNT_ID, DATE_FROM, SYSTEMTIME);
+
+		-- handle statuses statements    
+		"HandleUnpaidStatements"(ACCOUNT_ID, DATE_FROM);  
+
+		-- reverse interests
+		LAST_ACCOUNTED_INTEREST_DATE := "ReverseAccountInterests"(ACCOUNT_ID, DATE_FROM);
+		
+		-- delete not accounted interests
+		DELETE FROM "Interests" 
+		WHERE "InterestEntry_Id" IS NULL 
+			AND "InterestDate" >= FIRST_INSERTED_DATE 
+			AND "Account_Id" = ACCOUNT_ID;
+
+		-- set rigth date for compensation
+		IF TRUNC(FIRST_INSERTED_DATE) < TRUNC(LAST_ACCOUNTED_INTEREST_DATE) THEN
+			LAST_ACCOUNTED_INTEREST_DATE := FIRST_INSERTED_DATE;
+		END IF; 
+
+		-- calculate compensation
+		"CreateInterestCompensation"(ACCOUNT_DATA, LAST_ACCOUNTED_INTEREST_DATE, INTEREST_ACCOUNTING_DAYS);
+
+		-- count interests with new values
+		"CreateDailyInterestComp"(ACCOUNT_ID, FIRST_INSERTED_DATE);
+
+		-- return inserted entries list
+		OPEN RESULT_CURSOR FOR
+			SELECT COLUMN_VALUE AS "Id" FROM TABLE (INSERTED_ENTRIES);
+
+	END;
+
+/*******************************************************************************/
+FUNCTION "CalculateAccountDayInterests"(ACCOUNT_ID IN NUMBER, DATE_FROM IN DATE, DATE_TO IN DATE, PREVIOUS_BALANCE IN NUMBER, ACCOUNT_ENTRY_COLUMN IN STRING) RETURN INTEREST_CALC_TABLE PIPELINED AS
+	
+	-- "Interest" collection
+	TYPE T_ENTRY IS RECORD (InterestDate DATE, Balance NUMBER(20,2), InterestRate NUMBER(20, 2), YearLength INTEGER);
+	TYPE T_ENTRIES IS TABLE OF T_ENTRY INDEX BY BINARY_INTEGER;
+	ENTRY_COLLECTION$ T_ENTRIES;
+	
+	INTEREST_COLLECTION$ INTEREST_CALC_TABLE;
+	
+BEGIN
+
+	-- check allowed colum names
+	IF (ACCOUNT_ENTRY_COLUMN != AE_COLUMN_ACCOUNTING_DATE) AND (ACCOUNT_ENTRY_COLUMN != AE_COLUMN_VALIDATION_DATE) THEN
+		RETURN;
+	END IF;
+	
+
+	--LAST_INTEREST_DATE := DATE_FROM+1;
+	SELECT INTEREST_CALC_TYPE
+	(
+		MAXIMUM_DAY_BALANCE,
+		(MAXIMUM_DAY_BALANCE*INTEREST)/(100*YEAR_LENGTH),
+		INTEREST,
+		VALIDATION_DATE
+	)
+		BULK COLLECT INTO INTEREST_COLLECTION$
+		FROM
+		(
+		SELECT
+			CASE
+				WHEN T."MaximumInterestBasedAmount" < ACCOUNTING_VALUES.DAY_BALANCE THEN T."MaximumInterestBasedAmount"
+				ELSE ACCOUNTING_VALUES.DAY_BALANCE
+			END MAXIMUM_DAY_BALANCE,
+			TO_NUMBER((TRUNC(ACCOUNTING_VALUES.ACCOUNTING_DATE,'yyyy')+ interval '1' year-1) - (TRUNC(ACCOUNTING_VALUES.ACCOUNTING_DATE,'yyyy')))+1 YEAR_LENGTH,
+			CASE
+				WHEN ACCOUNTING_VALUES.DAY_BALANCE IS NULL THEN NULL
+				WHEN ACCOUNTING_VALUES.DAY_BALANCE = 0 THEN 0
+				WHEN ACCOUNTING_VALUES.DAY_BALANCE > 0 THEN T."PositiveInterestRate"+BI."Value"
+				ELSE T."NegativeInterestRate"+BI."Value"
+			END INTEREST,
+			ACCOUNTING_VALUES.ACCOUNTING_DATE VALIDATION_DATE
+			
+		FROM
+			-- accounting days
+			(
+			SELECT
+		
+			--day_amount,
+			SUM(DAY_AMOUNT) OVER (ORDER BY ACCOUNTING_DATE RANGE UNBOUNDED PRECEDING) DAY_BALANCE,
+			DAYS.*
+	
+	FROM
+	(	
+				SELECT
+					ACCOUNT_DAYS.ACCOUNT_ID,
+					ACCOUNT_DAYS.DAY ACCOUNTING_DATE,
+					CASE WHEN TRUNC(DAY) = TRUNC(DATE_FROM) THEN NVL(SUM("Amount"), 0) + PREVIOUS_BALANCE
+					ELSE NVL(SUM("Amount"), 0) 
+					END DAY_AMOUNT
+				FROM			
+					(
+
+						SELECT ACCOUNT_ID ACCOUNT_ID,	COLUMN_VALUE DAY
+						FROM TABLE(CUSTOMERACCOUNT."GenerateDays"(TRUNC(DATE_FROM), TRUNC(DATE_TO)))
+						
+					) ACCOUNT_DAYS  -- days to generate parameter
+					LEFT JOIN "AccountEntryView" AE    -- accounting entries
+							ON ACCOUNT_DAYS.ACCOUNT_ID = AE."Account_Id" AND ACCOUNT_DAYS.DAY = 
+							CASE 
+								WHEN ACCOUNT_ENTRY_COLUMN = AE_COLUMN_VALIDATION_DATE THEN AE."ValidationDate" 
+								WHEN ACCOUNT_ENTRY_COLUMN = AE_COLUMN_ACCOUNTING_DATE THEN AE."AccountingDate" 
+							END + 
+								CASE -- other than income amount must be effectively postponed by one day
+									WHEN AE."TransactionType" = APPLICATIONVALUES.TT_INCOME THEN 0
+									WHEN AE."TransactionType" = APPLICATIONVALUES.TT_MANUALCORRECTION THEN 0
+									WHEN AE."TransactionType" = APPLICATIONVALUES.TT_REVERSEDPAYMENT THEN 0
+--									WHEN AE."TransactionType" IN (SELECT COLUMN_VALUE FROM TABLE(INTEREST_INCOME_TRANS_TYPES)) THEN 0						
+									ELSE 1
+								END 
+					GROUP BY ACCOUNT_DAYS.ACCOUNT_ID, DAY
+					ORDER BY DAY
+	) DAYS
+	ORDER BY ACCOUNTING_DATE
+			
+				
+			) ACCOUNTING_VALUES,
+			
+			-- other tables
+			"BaseInterests" BI,
+			"AccountTemplates" AT,
+			"Templates" T
+		WHERE
+			-- link base interests
+			ACCOUNTING_VALUES.ACCOUNTING_DATE >= BI."TimeValidity_ValidFrom" AND (ACCOUNTING_VALUES.ACCOUNTING_DATE <= BI."TimeValidity_ValidTo" OR BI."TimeValidity_ValidTo" IS NULL)
+			-- link account templates
+			AND ACCOUNTING_VALUES.ACCOUNT_ID = AT."Account_Id"
+			AND ACCOUNTING_VALUES.ACCOUNTING_DATE >= AT."TimeValidity_ValidFrom" AND (ACCOUNTING_VALUES.ACCOUNTING_DATE <= AT."TimeValidity_ValidTo" OR AT."TimeValidity_ValidTo" IS NULL)
+			-- link templates
+			AND AT."Template_Id" = T."Id"  
+			AND ACCOUNTING_VALUES.DAY_BALANCE <> 0
+		ORDER BY
+			ACCOUNTING_VALUES.ACCOUNT_ID,
+			ACCOUNTING_VALUES.ACCOUNTING_DATE
+		);
+		
+		IF INTEREST_COLLECTION$ IS NOT NULL AND INTEREST_COLLECTION$.COUNT > 0 THEN
+			
+			-- insert into tables
+			FOR I IN 1..INTEREST_COLLECTION$.COUNT
+			LOOP
+				PIPE ROW (INTEREST_CALC_TYPE(
+					INTEREST_COLLECTION$(I).Balance, 
+					INTEREST_COLLECTION$(I).Amount, 
+					INTEREST_COLLECTION$(I).Rate, 
+					INTEREST_COLLECTION$(I).Day
+				));
+			END LOOP;
+			
+		END IF;
+END;
+
+/*******************************************************************************/
+	FUNCTION "GenerateDays"(DATE_FROM IN DATE, DATE_TO IN DATE) RETURN T_DATE_ARRAY /*PIPELINED*/ AS
+		DATE_COLLECTION$ T_DATE_ARRAY;
+	BEGIN
+	
+		SELECT DAY
+		BULK COLLECT INTO DATE_COLLECTION$
+		FROM
+		(
+			SELECT TRUNC(DATE_FROM + COUNTER) DAY
+			FROM (SELECT (LEVEL-1) COUNTER FROM DUAL CONNECT BY LEVEL <= (TRUNC(DATE_TO) - TRUNC(DATE_FROM)))
+		)
+		WHERE DAY < TRUNC(DATE_TO);
+		
+		IF (DATE_COLLECTION$ IS NOT NULL AND DATE_COLLECTION$.COUNT > 0) THEN RETURN DATE_COLLECTION$;
+		ELSE RETURN T_DATE_ARRAY();
+		END IF;
+
+	END;
+
+/*******************************************************************************/
 END CUSTOMERACCOUNT;
 /

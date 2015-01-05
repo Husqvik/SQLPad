@@ -72,9 +72,9 @@ namespace SqlPad.Oracle
 			public const string BindArgumentList = "BindArgumentList";
 			public const string BindArgumentListChained = "BindArgumentListChained";
 			public const string BindVariableExpression = "BindVariableExpression";
-			public const string BindVariableExpressionOrPlSqlIdentifier = "BindVariableExpressionOrPlSqlIdentifier";
 			public const string BindVariableExpressionOrPlSqlIdentifierCommaChainedList = "BindVariableExpressionOrPlSqlIdentifierCommaChainedList";
 			public const string BindVariableExpressionOrPlSqlIdentifierList = "BindVariableExpressionOrPlSqlIdentifierList";
+			public const string BindVariableExpressionOrPlSqlTarget = "BindVariableExpressionOrPlSqlTarget";
 			public const string BufferPoolType = "BufferPoolType";
 			public const string BulkCollect = "BulkCollect";
 			public const string ByteOrChar = "ByteOrChar";
@@ -726,6 +726,7 @@ namespace SqlPad.Oracle
 			public const string PlSqlConditionalPredicate = "PlSqlConditionalPredicate";
 			public const string PlSqlContinueStatement = "PlSqlContinueStatement";
 			public const string PlSqlCursorForLoopStatement = "PlSqlCursorForLoopStatement";
+			public const string PlSqlDataType = "PlSqlDataType";
 			public const string PlSqlDataTypeWithoutConstraint = "PlSqlDataTypeWithoutConstraint";
 			public const string PlSqlElseClause = "PlSqlElseClause";
 			public const string PlSqlElseIfClause = "PlSqlElseIfClause";
