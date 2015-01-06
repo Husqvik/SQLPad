@@ -15,6 +15,7 @@ namespace SqlPad.Oracle
 			Terminals.RowIdPseudoColumn,
 			Terminals.Count,
 			Terminals.Level,
+			Terminals.User,
 			NonTerminals.AggregateFunction,
 			NonTerminals.AnalyticFunction,
 			NonTerminals.WithinGroupAggregationFunction
@@ -388,7 +389,7 @@ namespace SqlPad.Oracle
 			var inputExpression = jsonTableClause.GetDescendantByPath(NonTerminals.Expression);
 			if (inputExpression != null)
 			{
-				var identifiers = GetIdentifiers(inputExpression, Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level);
+				var identifiers = GetIdentifiers(inputExpression, Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.User);
 				ResolveColumnAndFunctionReferenceFromIdentifiers(null, queryBlock, identifiers, QueryBlockPlacement.TableReference, null);
 			}
 
@@ -457,7 +458,7 @@ namespace SqlPad.Oracle
 			var xmlTablePassingClause = xmlTableOptions.GetDescendantByPath(NonTerminals.XmlPassingClause, NonTerminals.ExpressionAsXmlAliasWithMandatoryAsList);
 			if (xmlTablePassingClause != null)
 			{
-				var identifiers = GetIdentifiers(xmlTablePassingClause, Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level);
+				var identifiers = GetIdentifiers(xmlTablePassingClause, Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.User);
 				ResolveColumnAndFunctionReferenceFromIdentifiers(null, queryBlock, identifiers, QueryBlockPlacement.TableReference, null);
 			}
 

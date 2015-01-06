@@ -324,7 +324,7 @@ namespace SqlPad.Oracle
 						Name = t.Text,
 						Text = t.Text,
 						Category = OracleCodeCompletionCategory.Keyword,
-						StatementNode = completionType.CurrentTerminal,
+						StatementNode = completionType.ReferenceIdentifier.IdentifierUnderCursor ?? completionType.CurrentTerminal,
 						CategoryPriority = 1
 					});
 		}

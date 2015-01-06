@@ -1767,6 +1767,26 @@ FROM
 			items[0].StatementNode.ShouldNotBe(null);
 		}
 
+		[Test(Description = @"")]
+		public void TestKeywordSuggestionJustBeforeClosingParenthesis()
+		{
+			const string testQuery = "SELECT COUNT(D) FROM DUAL";
+
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, testQuery, 14, false, OracleCodeCompletionCategory.Keyword).ToArray();
+			items.Length.ShouldBeGreaterThan(0);
+			items[0].StatementNode.ShouldNotBe(null);
+			items[0].StatementNode.Token.Value.ShouldBe("D");
+		}
+
+		[Test(Description = @"")]
+		public void TestColumnSuggestionAtReservedWordRepresentingFunction()
+		{
+			const string testQuery = "SELECT USER FROM DUAL";
+
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, testQuery, 10).ToArray();
+			items.Length.ShouldBe(0);
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)

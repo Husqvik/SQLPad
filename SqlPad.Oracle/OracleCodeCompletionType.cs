@@ -316,7 +316,7 @@ namespace SqlPad.Oracle
 			var prefixedColumnReference = effectiveTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference);
 			var prefix = effectiveTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression && n.Id != NonTerminals.AliasedExpressionOrAllTableColumns, NonTerminals.Prefix);
 			var lookupNode = prefixedColumnReference ?? prefix;
-			if (lookupNode == null && effectiveTerminal.Id == Terminals.Asterisk)
+			if (lookupNode == null && effectiveTerminal.Id.In(Terminals.Asterisk, Terminals.User, Terminals.SystemDate, Terminals.Level, Terminals.RowIdPseudoColumn, Terminals.Null))
 			{
 				lookupNode = effectiveTerminal.ParentNode;
 			}
@@ -329,7 +329,7 @@ namespace SqlPad.Oracle
 			if (lookupNode == null)
 				return;
 
-			var identifiers = lookupNode.GetPathFilterDescendants(n => n.Id != NonTerminals.Expression && n.Id != NonTerminals.AliasedExpressionOrAllTableColumns, Terminals.SchemaIdentifier, Terminals.ObjectIdentifier, Terminals.Identifier, Terminals.Asterisk).ToList();
+			var identifiers = lookupNode.GetPathFilterDescendants(n => n.Id != NonTerminals.Expression && n.Id != NonTerminals.AliasedExpressionOrAllTableColumns, Terminals.SchemaIdentifier, Terminals.ObjectIdentifier, Terminals.Identifier, Terminals.Asterisk, Terminals.User, Terminals.SystemDate, Terminals.Level, Terminals.RowIdPseudoColumn, Terminals.Null).ToList();
 			ReferenceIdentifier = BuildReferenceIdentifier(identifiers);
 		}
 
@@ -340,7 +340,7 @@ namespace SqlPad.Oracle
 				{
 					SchemaIdentifier = GetIdentifierTokenValue(identifiers, Terminals.SchemaIdentifier),
 					ObjectIdentifier = GetIdentifierTokenValue(identifiers, Terminals.ObjectIdentifier),
-					Identifier = GetIdentifierTokenValue(identifiers, Terminals.Identifier) ?? GetIdentifierTokenValue(identifiers, Terminals.Asterisk),
+					Identifier = GetIdentifierTokenValue(identifiers, Terminals.Identifier, Terminals.Asterisk, Terminals.User, Terminals.SystemDate, Terminals.Level, Terminals.RowIdPseudoColumn, Terminals.Null),
 					CursorPosition = CursorPosition
 				};
 		}
@@ -355,9 +355,9 @@ namespace SqlPad.Oracle
 			ReferenceIdentifier = BuildReferenceIdentifier(identifiers);
 		}
 
-		private StatementGrammarNode GetIdentifierTokenValue(IEnumerable<StatementGrammarNode> identifiers, string identifierId)
+		private StatementGrammarNode GetIdentifierTokenValue(IEnumerable<StatementGrammarNode> identifiers, params string[] identifierIds)
 		{
-			return identifiers.FirstOrDefault(i => i.Id == identifierId);
+			return identifiers.FirstOrDefault(i => i.Id.In(identifierIds));
 		}
 
 		public void PrintResults()

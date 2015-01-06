@@ -26,10 +26,10 @@ namespace SqlPad.Oracle.ExecutionPlan
 		public async Task ExplainAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
 		{
 			var rootItem = await _databaseModel.ExplainPlanAsync(executionModel, cancellationToken);
-
 			if (rootItem != null)
 			{
-				Viewer.ItemsSource = new[] { rootItem };
+				Viewer.Items.Clear();
+				Viewer.Items.Add(rootItem);
 			}
 		}
 	}

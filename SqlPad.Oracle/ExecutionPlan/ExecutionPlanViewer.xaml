@@ -51,7 +51,7 @@
 			<Setter Property="Template">
 				<Setter.Value>
 					<ControlTemplate TargetType="{x:Type TreeViewItem}">
-						<Grid>
+						<Grid Name="RootGrid">
 							<Grid.ColumnDefinitions>
 								<ColumnDefinition Width="28"/>
 								<ColumnDefinition MinWidth="19" Width="Auto"/>
@@ -67,6 +67,7 @@
 							<TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" FontFamily="Arial" FontSize="12" FontWeight="Bold" Padding="0,0,2,0" Foreground="DarkBlue">
 								<Run Text="{Binding ExecutionOrder}" /><Run Text="." />
 							</TextBlock>
+							<Rectangle Name="SelectionEdge"  Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Grid.ColumnSpan="4" SnapsToDevicePixels="True"/>
 							<Rectangle Grid.Row="0" Grid.Column="1" Margin="9,1,0,0" Height="1" Stroke="#DCDCDC" SnapsToDevicePixels="True"/>
 							<Rectangle x:Name="VerticalLine" Grid.Row="0" Grid.Column="1" Width="1" Stroke="#DCDCDC" Margin="0,0,1,0" Grid.RowSpan="2" SnapsToDevicePixels="true" Fill="White"/>
 							<ToggleButton Margin="-1,0,0,0" x:Name="Expander" Grid.Row="0" Grid.Column="1" Style="{StaticResource ExpandCollapseToggleStyle}" IsChecked="{Binding Path=IsExpanded, RelativeSource={RelativeSource TemplatedParent}}" ClickMode="Press"/>
@@ -104,7 +105,8 @@
 								<Setter TargetName="PART_Header" Property="MinHeight" Value="19"/>
 							</MultiTrigger>
 							<Trigger Property="IsSelected" Value="true">
-								<Setter TargetName="ContentBorder" Property="Background" Value="Yellow"/>
+								<Setter TargetName="RootGrid" Property="Background" Value="Yellow"/>
+								<Setter TargetName="SelectionEdge" Property="Stroke" Value="Black"/>
 								<!--<Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.HighlightTextBrushKey}}"/>-->
 							</Trigger>
 							<MultiTrigger>
@@ -112,8 +114,8 @@
 									<Condition Property="IsSelected" Value="true"/>
 									<Condition Property="IsSelectionActive" Value="false"/>
 								</MultiTrigger.Conditions>
-								<Setter TargetName="ContentBorder" Property="Background" Value="LightGray"/>
-								<Setter Property="Foreground" Value="White"/>
+								<Setter TargetName="RootGrid" Property="Background" Value="LightGray"/>
+								<!--<Setter Property="Foreground" Value="White"/>-->
 							</MultiTrigger>
 							<Trigger Property="IsEnabled" Value="false">
 								<Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>

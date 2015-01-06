@@ -431,7 +431,7 @@ namespace SqlPad.Oracle
 							parameterListSemanticError = OracleSemanticErrorType.NonParenthesisFunction;
 						}
 
-						if (parameterListSemanticError != OracleSemanticErrorType.None)
+						if (parameterListSemanticError != OracleSemanticErrorType.None && programReference.ParameterListNode.AllChildNodes.All(n => n.IsGrammarValid))
 						{
 							validationModel.ProgramNodeValidity[programReference.ParameterListNode] = new InvalidNodeValidationData(parameterListSemanticError) { Node = programReference.ParameterListNode };
 						}
