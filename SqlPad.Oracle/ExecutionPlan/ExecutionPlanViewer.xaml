@@ -126,7 +126,7 @@
 			</Setter>
 		</Style>
 	</UserControl.Resources>
-	
+
 	<TreeView x:Name="Viewer">
 		<TreeView.Resources>
 			<Style x:Key="PlanItemBaseStyle" TargetType="TextBlock">
@@ -177,15 +177,24 @@
 					<Setter Property="FontSize" Value="11"/>
 				</Style.Setters>
 			</Style>
+
+			<RoutedCommand x:Key="CommandSaveContentAsPng"/>
 		</TreeView.Resources>
-		
+
+		<!--<TreeView.ContextMenu>
+			<ContextMenu>
+				<ContextMenu.CommandBindings>
+					<CommandBinding Command="{StaticResource CommandSaveContentAsPng}" CanExecute="SaveAsPngCanExecuteHandler" Executed="SaveAsPngCanExecutedHandler"/>
+				</ContextMenu.CommandBindings>
+
+				<MenuItem Header="Save as PNG" Command="{StaticResource CommandSaveContentAsPng}" />
+			</ContextMenu>
+		</TreeView.ContextMenu>-->
+
 		<TreeView.ItemTemplate>
-			<HierarchicalDataTemplate ItemsSource="{Binding ChildItems}">
+			<HierarchicalDataTemplate ItemsSource="{Binding ChildItems}" DataType="executionPlan:ExecutionPlanItem">
 				<StackPanel>
 					<StackPanel Orientation="Horizontal">
-						<!--<TextBlock Style="{StaticResource ItemHeaderBold}">
-							<Run Text="{Binding ExecutionOrder}"/><Run Text=". "/>
-						</TextBlock>-->
 						<TextBlock Style="{StaticResource ColoredItemHeaderBold}">
 							<Run Text="{Binding Operation}"/>
 							<Run Text=" " />

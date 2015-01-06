@@ -304,18 +304,18 @@ namespace SqlPad.Oracle.ModelDataProviders
 		}
 	}
 
-	internal class ObjectScriptDataProvider : IModelDataProvider
+	internal class ObjectScriptDataProvider : ModelDataProvider<ModelBase>
 	{
 		private readonly OracleSchemaObject _schemaObject;
 
 		public string ScriptText { get; private set; }
 
-		public ObjectScriptDataProvider(OracleSchemaObject schemaObject)
+		public ObjectScriptDataProvider(OracleSchemaObject schemaObject) : base(null)
 		{
 			_schemaObject = schemaObject;
 		}
 
-		public void InitializeCommand(OracleCommand command)
+		public override void InitializeCommand(OracleCommand command)
 		{
 			command.CommandText = DatabaseCommands.GetObjectScriptCommand;
 			command.AddSimpleParameter("OBJECT_TYPE", _schemaObject.Type.ToUpperInvariant());
@@ -323,22 +323,15 @@ namespace SqlPad.Oracle.ModelDataProviders
 			command.AddSimpleParameter("SCHEMA", _schemaObject.FullyQualifiedName.Owner.Trim('"'));
 		}
 
-		public void MapReaderData(OracleDataReader reader)
-		{
-			throw new NotSupportedException();
-		}
-
-		public void MapScalarValue(object value)
+		public override void MapScalarValue(object value)
 		{
 			ScriptText = (string)value;
 		}
 
-		public bool HasScalarResult { get { return true; } }
-		
-		public bool IsValid { get { return true; } }
+		public override bool HasScalarResult { get { return true; } }
 	}
 
-	internal class DisplayCursorDataProvider : IModelDataProvider
+	internal class DisplayCursorDataProvider : ModelDataProvider<ModelBase>
 	{
 		private readonly string _sqlId;
 		private readonly int? _childNumber;
@@ -346,30 +339,31 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public string PlanText { get; private set; }
 
-		private DisplayCursorDataProvider()
+		private DisplayCursorDataProvider() : base(null)
 		{
 			_displayLastCursor = true;
 		}
 
 		public DisplayCursorDataProvider(string sqlId, int childNumber)
+			: base(null)
 		{
 			_sqlId = sqlId;
 			_childNumber = childNumber;
 		}
 
-		public static IModelDataProvider CreateDisplayLastCursorUpdater()
+		public static IModelDataProvider CreateDisplayLastDataProvider()
 		{
 			return new DisplayCursorDataProvider();
 		}
 
-		public void InitializeCommand(OracleCommand command)
+		public override void InitializeCommand(OracleCommand command)
 		{
 			command.CommandText = DatabaseCommands.GetExecutionPlanText;
 			command.AddSimpleParameter("SQL_ID", _sqlId);
 			command.AddSimpleParameter("CHILD_NUMBER", _childNumber);
 		}
 
-		public void MapReaderData(OracleDataReader reader)
+		public override void MapReaderData(OracleDataReader reader)
 		{
 			var builder = new StringBuilder();
 
@@ -381,25 +375,18 @@ namespace SqlPad.Oracle.ModelDataProviders
 			PlanText = builder.ToString();
 		}
 
-		public void MapScalarValue(object value)
-		{
-			throw new NotSupportedException();
-		}
-
-		public bool HasScalarResult { get { return false; } }
-
-		public bool IsValid
+		public override bool IsValid
 		{
 			get { return _displayLastCursor || _sqlId != null; }
 		}
 	}
 
-	internal class RemoteTableColumnDataProvider : IModelDataProvider
+	internal class RemoteTableColumnDataProvider : ModelDataProvider<ModelBase>
 	{
 		private readonly List<string> _columns = new List<string>();
 		private readonly string _commandText;
 
-		public RemoteTableColumnDataProvider(string databaseLink, OracleObjectIdentifier objectIdentifer)
+		public RemoteTableColumnDataProvider(string databaseLink, OracleObjectIdentifier objectIdentifer) : base(null)
 		{
 			_commandText = String.Format("SELECT * FROM {0}@{1} WHERE 1 = 0", objectIdentifer.ToNormalizedString(), databaseLink);
 		}
@@ -409,26 +396,17 @@ namespace SqlPad.Oracle.ModelDataProviders
 			get { return _columns.AsReadOnly(); }
 		}
 
-		public void InitializeCommand(OracleCommand command)
+		public override void InitializeCommand(OracleCommand command)
 		{
 			command.CommandText = _commandText;
 		}
 
-		public void MapReaderData(OracleDataReader reader)
+		public override void MapReaderData(OracleDataReader reader)
 		{
 			var columnNames = OracleDatabaseModel.GetColumnHeadersFromReader(reader)
 				.Select(h => String.Format("\"{0}\"", h.Name));
 
 			_columns.AddRange(columnNames);
 		}
-
-		public void MapScalarValue(object value)
-		{
-			throw new NotImplementedException();
-		}
-
-		public bool HasScalarResult { get { return false; } }
-		
-		public bool IsValid { get { return true; } }
 	}
 }

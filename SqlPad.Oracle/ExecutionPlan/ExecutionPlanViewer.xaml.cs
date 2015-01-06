@@ -1,12 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using System.Xml.Linq;
+using Microsoft.Win32;
 
 namespace SqlPad.Oracle.ExecutionPlan
 {
@@ -31,6 +37,55 @@ namespace SqlPad.Oracle.ExecutionPlan
 				Viewer.Items.Clear();
 				Viewer.Items.Add(rootItem);
 			}
+		}
+
+		private void SaveContentAsPng(string fileName)
+		{
+			var content = (TreeViewItem)(Viewer.ItemContainerGenerator.ContainerFromItem(Viewer.Items[0]));
+			var actualWidth = content.ActualWidth;
+			var actualHeight = content.ActualHeight;
+
+			var renderTarget = new RenderTargetBitmap((int)Math.Ceiling(actualWidth), (int)Math.Ceiling(actualHeight), 96, 96, PixelFormats.Pbgra32);
+			var sourceBrush = new VisualBrush(content);
+
+			var drawingVisual = new DrawingVisual();
+			using (var drawingContext = drawingVisual.RenderOpen())
+			{
+				drawingContext.DrawRectangle(sourceBrush, null, new Rect(new Point(0, 0), new Point(actualWidth, actualHeight)));
+			}
+
+			renderTarget.Render(drawingVisual);
+
+			var encoder = new PngBitmapEncoder();
+			encoder.Frames.Add(BitmapFrame.Create(renderTarget));
+
+			try
+			{
+				using (var stream = File.Create(fileName))
+				{
+					encoder.Save(stream);
+				}
+			}
+			catch (Exception e)
+			{
+				Messages.ShowError(Window.GetWindow(this), e.Message);
+			}
+		}
+
+		private void SaveAsPngCanExecuteHandler(object sender, CanExecuteRoutedEventArgs e)
+		{
+			e.CanExecute = Viewer.HasItems;
+		}
+
+		private void SaveAsPngCanExecutedHandler(object sender, ExecutedRoutedEventArgs e)
+		{
+			var dialog = new SaveFileDialog { Filter = "PNG files (*.png)|*.png|All files (*.*)|*", OverwritePrompt = true };
+			if (dialog.ShowDialog() != true)
+			{
+				return;
+			}
+
+			SaveContentAsPng(dialog.FileName);
 		}
 	}
 

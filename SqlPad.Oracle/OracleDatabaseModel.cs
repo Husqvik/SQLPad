@@ -51,10 +51,8 @@ namespace SqlPad.Oracle
 		private OracleTransaction _userTransaction;
 		//private readonly OracleCustomTypeGenerator _customTypeGenerator;
 		private int _userSessionId;
-		private string _userCommandSqlId;
 		private string _userTransactionId;
 		private IsolationLevel _userTransactionIsolationLevel;
-		private int _userCommandChildNumber;
 		private bool _userCommandHasCompilationErrors;
 		private SessionExecutionStatisticsDataProvider _executionStatisticsDataProvider;
 
@@ -231,6 +229,10 @@ namespace SqlPad.Oracle
 			_backgroundTask = Task.Factory.StartNew(action);
 		}
 
+		internal string UserCommandSqlId { get; private set; }
+		
+		internal int UserCommandChildNumber { get; private set; }
+
 		public override ILookup<OracleProgramIdentifier, OracleProgramMetadata> AllFunctionMetadata { get { return _allFunctionMetadata; } }
 
 		protected override IDictionary<string, OracleProgramMetadata> NonSchemaBuiltInFunctionMetadata { get { return _dataDictionary.NonSchemaFunctionMetadata; } }
@@ -397,7 +399,7 @@ namespace SqlPad.Oracle
 
 		public async override Task<string> GetActualExecutionPlanAsync(CancellationToken cancellationToken)
 		{
-			var displayCursorUpdater = new DisplayCursorDataProvider(_userCommandSqlId, _userCommandChildNumber);
+			var displayCursorUpdater = new DisplayCursorDataProvider(UserCommandSqlId, UserCommandChildNumber);
 			await UpdateModelAsync(cancellationToken, true, displayCursorUpdater);
 			return displayCursorUpdater.PlanText;
 		}
@@ -719,14 +721,14 @@ namespace SqlPad.Oracle
 						{
 							if (reader.Read())
 							{
-								_userCommandSqlId = (string)reader["SQL_ID"];
-								_userCommandChildNumber = Convert.ToInt32(reader["SQL_CHILD_NUMBER"]);
+								UserCommandSqlId = (string)reader["SQL_ID"];
+								UserCommandChildNumber = Convert.ToInt32(reader["SQL_CHILD_NUMBER"]);
 								_userTransactionId = OracleReaderValueConvert.ToString(reader["TRANSACTION_ID"]);
 								_userTransactionIsolationLevel = (IsolationLevel)Convert.ToInt32(reader["TRANSACTION_ISOLATION_LEVEL"]);
 							}
 							else
 							{
-								_userCommandSqlId = null;
+								UserCommandSqlId = null;
 							}
 						}
 

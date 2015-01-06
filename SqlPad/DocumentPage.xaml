@@ -194,16 +194,16 @@
 						<ItemsControl MinWidth="160" ItemsSource="{Binding Path=BindVariables}">
 
 							<ItemsControl.Resources>
-								<DataTemplate x:Key="TextBoxTemplate">
+								<DataTemplate x:Key="TextBoxTemplate" DataType="sqlPad:BindVariableModel">
 									<TextBox Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}" />
 								</DataTemplate>
-								<DataTemplate x:Key="DatePickerTemplate">
+								<DataTemplate x:Key="DatePickerTemplate" DataType="sqlPad:BindVariableModel">
 									<xctk:DateTimePicker Value="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}" Format="Custom" FormatString="{Binding ElementName=BindVariableList, Path=DataContext.DateTimeFormat}" />
 								</DataTemplate>
 							</ItemsControl.Resources>
 
 							<ItemsControl.ItemTemplate>
-								<DataTemplate>
+								<DataTemplate DataType="sqlPad:BindVariableModel">
 									<Grid sqlPad:MarginSetter.Margin="2,2,2,2">
 										<Grid.ColumnDefinitions>
 											<ColumnDefinition Width="2*" />

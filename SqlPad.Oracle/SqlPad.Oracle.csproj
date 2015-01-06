@@ -109,6 +109,7 @@
     <Compile Include="ExecutionPlan\ExecutionPlanViewer.xaml.cs">
       <DependentUpon>ExecutionPlanViewer.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ModelDataProviders\CursorExecutionStatisticsDataProvider.cs" />
     <Compile Include="ModelDataProviders\ExplainPlanDataProvider.cs" />
     <Compile Include="ModelDataProviders\IModelDataProvider.cs" />
     <Compile Include="OracleBindVariable.cs" />

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Xml.Linq;
 using Oracle.DataAccess.Client;
@@ -40,6 +41,8 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		private class LoadExplainPlanDataProviderInternal : ModelDataProvider<ExplainPlanModelInternal>
 		{
+			private readonly ExecutionPlanBuilder _planBuilder = new ExecutionPlanBuilder();
+
 			public LoadExplainPlanDataProviderInternal(ExplainPlanModelInternal model) : base(model)
 			{
 			}
@@ -52,100 +55,8 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 			public override void MapReaderData(OracleDataReader reader)
 			{
-				var treeItemDictionary = new Dictionary<int, ExecutionPlanItem>();
-				ExecutionPlanItem startItem = null;
-				
-				while (reader.Read())
-				{
-					var time = OracleReaderValueConvert.ToInt32(reader["TIME"]);
-					var otherData = OracleReaderValueConvert.ToString(reader["OTHER_XML"]);
-					var parentId = OracleReaderValueConvert.ToInt32(reader["PARENT_ID"]);
-					var item =
-						new ExecutionPlanItem
-						{
-							Id = Convert.ToInt32(reader["ID"]),
-							Depth = Convert.ToInt32(reader["DEPTH"]),
-							Operation = (string)reader["OPERATION"],
-							Options = OracleReaderValueConvert.ToString(reader["OPTIONS"]),
-							Optimizer = OracleReaderValueConvert.ToString(reader["OPTIMIZER"]),
-							ObjectOwner = OracleReaderValueConvert.ToString(reader["OBJECT_OWNER"]),
-							ObjectName = OracleReaderValueConvert.ToString(reader["OBJECT_NAME"]),
-							ObjectAlias = OracleReaderValueConvert.ToString(reader["OBJECT_ALIAS"]),
-							ObjectType = OracleReaderValueConvert.ToString(reader["OBJECT_TYPE"]),
-							Cost = OracleReaderValueConvert.ToInt64(reader["COST"]),
-							Cardinality = OracleReaderValueConvert.ToInt64(reader["CARDINALITY"]),
-							Bytes = OracleReaderValueConvert.ToInt64(reader["BYTES"]),
-							PartitionStart = OracleReaderValueConvert.ToString(reader["PARTITION_START"]),
-							PartitionStop = OracleReaderValueConvert.ToString(reader["PARTITION_STOP"]),
-							Distribution = OracleReaderValueConvert.ToString(reader["DISTRIBUTION"]),
-							CpuCost = OracleReaderValueConvert.ToInt64(reader["CPU_COST"]),
-							IoCost = OracleReaderValueConvert.ToInt64(reader["IO_COST"]),
-							TempSpace = OracleReaderValueConvert.ToInt64(reader["TEMP_SPACE"]),
-							AccessPredicates = OracleReaderValueConvert.ToString(reader["ACCESS_PREDICATES"]),
-							FilterPredicates = OracleReaderValueConvert.ToString(reader["FILTER_PREDICATES"]),
-							Time = time.HasValue ? TimeSpan.FromSeconds(time.Value) : (TimeSpan?)null,
-							QueryBlockName = OracleReaderValueConvert.ToString(reader["QBLOCK_NAME"]),
-							Other = String.IsNullOrEmpty(otherData) ? null : XElement.Parse(otherData)
-						};
-
-					if (parentId.HasValue)
-					{
-						treeItemDictionary[parentId.Value].AddChildItem(item);
-					}
-
-					if (startItem == null || item.Depth > startItem.Depth)
-					{
-						startItem = item;
-					}
-
-					treeItemDictionary.Add(item.Id, item);
-				}
-
-				if (treeItemDictionary.Count > 0)
-				{
-					DataModel.RootItem = treeItemDictionary[0];
-
-					var leafItems = treeItemDictionary.Values.Where(v => v.IsLeaf).ToList();
-					var startNode = leafItems[0];
-					leafItems.RemoveAt(0);
-
-					var executionOrder = 0;
-					ResolveExecutionOrder(leafItems, startNode, null, ref executionOrder);
-				}
+				DataModel.RootItem = _planBuilder.Build(reader);
 			}
-		}
-
-		private static void ResolveExecutionOrder(List<ExecutionPlanItem> leafItems, ExecutionPlanItem nextItem, ExecutionPlanItem breakAtItem, ref int executionOrder)
-		{
-			do
-			{
-				if (nextItem == breakAtItem)
-				{
-					return;
-				}
-
-				nextItem.ExecutionOrder = ++executionOrder;
-				if (nextItem.Parent == null)
-				{
-					return;
-				}
-
-				nextItem = nextItem.Parent;
-				var allChildrenExecuted = nextItem.ChildItems.Count(i => i.ExecutionOrder == 0) == 0;
-				if (!allChildrenExecuted)
-				{
-					var otherBranchItemIndex = leafItems.FindIndex(i => i.IsChildFrom(nextItem));
-					if (otherBranchItemIndex == -1)
-					{
-						return;
-					}
-
-					var otherBranchLeafItem = leafItems[otherBranchItemIndex];
-					leafItems.RemoveAt(otherBranchItemIndex);
-
-					ResolveExecutionOrder(leafItems, otherBranchLeafItem, nextItem, ref executionOrder);
-				}
-			} while (true);
 		}
 
 		private class ExplainPlanModelInternal : ModelBase
@@ -164,6 +75,124 @@ namespace SqlPad.Oracle.ModelDataProviders
 				ExecutionPlanKey = executionPlanKey;
 				TargetTableName = targetTableIdentifier.ToString();
 			}
+		}
+	}
+
+	internal class ExecutionPlanBuilder : ExecutionPlanBuilderBase<ExecutionPlanItem> { }
+
+	internal class ExecutionPlanBuilderBase<TItem> where TItem : ExecutionPlanItem, new()
+	{
+		private readonly Dictionary<int, TItem> _treeItemDictionary = new Dictionary<int, TItem>();
+		private readonly List<ExecutionPlanItem> _leafItems = new List<ExecutionPlanItem>();
+		private int _currentExecutionStep;
+
+		public TItem Build(OracleDataReader reader)
+		{
+			Initialize();
+
+			while (reader.Read())
+			{
+				var parentId = OracleReaderValueConvert.ToInt32(reader["PARENT_ID"]);
+				var item = CreatePlanItem(reader);
+
+				FillData(reader, item);
+
+				if (parentId.HasValue)
+				{
+					_treeItemDictionary[parentId.Value].AddChildItem(item);
+				}
+
+				_treeItemDictionary.Add(item.Id, item);
+			}
+
+			if (_treeItemDictionary.Count == 0)
+			{
+				return null;
+			}
+
+			_leafItems.AddRange(_treeItemDictionary.Values.Where(v => v.IsLeaf));
+			var startNode = _leafItems[0];
+			_leafItems.RemoveAt(0);
+
+			ResolveExecutionOrder(startNode, null);
+
+			return _treeItemDictionary[0];
+		}
+
+		private void Initialize()
+		{
+			_currentExecutionStep = 0;
+			_treeItemDictionary.Clear();
+			_leafItems.Clear();
+		}
+
+		protected virtual void FillData(IDataRecord reader, TItem item) { }
+
+		private static TItem CreatePlanItem(IDataRecord reader)
+		{
+			var time = OracleReaderValueConvert.ToInt32(reader["TIME"]);
+			var otherData = OracleReaderValueConvert.ToString(reader["OTHER_XML"]);
+
+			return
+				new TItem
+				{
+					Id = Convert.ToInt32(reader["ID"]),
+					Depth = Convert.ToInt32(reader["DEPTH"]),
+					Operation = (string)reader["OPERATION"],
+					Options = OracleReaderValueConvert.ToString(reader["OPTIONS"]),
+					Optimizer = OracleReaderValueConvert.ToString(reader["OPTIMIZER"]),
+					ObjectOwner = OracleReaderValueConvert.ToString(reader["OBJECT_OWNER"]),
+					ObjectName = OracleReaderValueConvert.ToString(reader["OBJECT_NAME"]),
+					ObjectAlias = OracleReaderValueConvert.ToString(reader["OBJECT_ALIAS"]),
+					ObjectType = OracleReaderValueConvert.ToString(reader["OBJECT_TYPE"]),
+					Cost = OracleReaderValueConvert.ToInt64(reader["COST"]),
+					Cardinality = OracleReaderValueConvert.ToInt64(reader["CARDINALITY"]),
+					Bytes = OracleReaderValueConvert.ToInt64(reader["BYTES"]),
+					PartitionStart = OracleReaderValueConvert.ToString(reader["PARTITION_START"]),
+					PartitionStop = OracleReaderValueConvert.ToString(reader["PARTITION_STOP"]),
+					Distribution = OracleReaderValueConvert.ToString(reader["DISTRIBUTION"]),
+					CpuCost = OracleReaderValueConvert.ToInt64(reader["CPU_COST"]),
+					IoCost = OracleReaderValueConvert.ToInt64(reader["IO_COST"]),
+					TempSpace = OracleReaderValueConvert.ToInt64(reader["TEMP_SPACE"]),
+					AccessPredicates = OracleReaderValueConvert.ToString(reader["ACCESS_PREDICATES"]),
+					FilterPredicates = OracleReaderValueConvert.ToString(reader["FILTER_PREDICATES"]),
+					Time = time.HasValue ? TimeSpan.FromSeconds(time.Value) : (TimeSpan?)null,
+					QueryBlockName = OracleReaderValueConvert.ToString(reader["QBLOCK_NAME"]),
+					Other = String.IsNullOrEmpty(otherData) ? null : XElement.Parse(otherData)
+				};
+		}
+
+		private void ResolveExecutionOrder(ExecutionPlanItem nextItem, ExecutionPlanItem breakAtItem)
+		{
+			do
+			{
+				if (nextItem == breakAtItem)
+				{
+					return;
+				}
+
+				nextItem.ExecutionOrder = ++_currentExecutionStep;
+				if (nextItem.Parent == null)
+				{
+					return;
+				}
+
+				nextItem = nextItem.Parent;
+				var allChildrenExecuted = nextItem.ChildItems.Count(i => i.ExecutionOrder == 0) == 0;
+				if (!allChildrenExecuted)
+				{
+					var otherBranchItemIndex = _leafItems.FindIndex(i => i.IsChildFrom(nextItem));
+					if (otherBranchItemIndex == -1)
+					{
+						return;
+					}
+
+					var otherBranchLeafItem = _leafItems[otherBranchItemIndex];
+					_leafItems.RemoveAt(otherBranchItemIndex);
+
+					ResolveExecutionOrder(otherBranchLeafItem, nextItem);
+				}
+			} while (true);
 		}
 	}
 }

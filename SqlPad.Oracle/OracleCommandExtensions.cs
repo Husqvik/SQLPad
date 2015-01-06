@@ -152,7 +152,7 @@ namespace SqlPad.Oracle
 
 		public static string ToString(object value)
 		{
-			return value.IsNull() ? null : (string)value;
+			return value.IsNull() ? String.Empty : (string)value;
 		}
 
 		public static bool? ToBoolean(object value)

@@ -22,6 +22,17 @@ namespace SqlPad.Oracle.Database.Test
 		private readonly ConnectionStringSettings _connectionString = new ConnectionStringSettings("TestConnection", "DATA SOURCE=HQ_PDB_TCP;PASSWORD=oracle;USER ID=HUSQVIK");
 		private static readonly OracleObjectIdentifier ExplainPlanTableIdentifier = OracleObjectIdentifier.Create(null, "TOAD_PLAN_TABLE");
 
+		private const string ExplainPlanTestQuery =
+@"SELECT /*+ gather_plan_statistics */
+    *
+FROM
+    (SELECT ROWNUM VAL FROM DUAL) T1,
+    (SELECT ROWNUM VAL FROM DUAL) T2,
+    (SELECT ROWNUM VAL FROM DUAL) T3
+WHERE
+    T1.VAL = T2.VAL AND
+    T2.VAL = T3.VAL";
+
 		[Test]
 		public void TestModelInitialization()
 		{
@@ -252,7 +263,7 @@ namespace SqlPad.Oracle.Database.Test
 		}
 
 		[Test]
-		public void TestColumnDetailsModelUpdater()
+		public void TestColumnDetailDataProvider()
 		{
 			var model = new ColumnDetailsModel();
 			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
@@ -271,7 +282,7 @@ namespace SqlPad.Oracle.Database.Test
 		}
 
 		[Test]
-		public void TestTableDetailsModelUpdater()
+		public void TestTableDetailDataProvider()
 		{
 			var model = new TableDetailsModel();
 
@@ -283,7 +294,7 @@ namespace SqlPad.Oracle.Database.Test
 
 			model.AverageRowSize.ShouldBe(2);
 			model.BlockCount.ShouldBe(1);
-			model.ClusterName.ShouldBe(null);
+			model.ClusterName.ShouldBe(String.Empty);
 			model.Compression.ShouldBe("Disabled");
 			model.IsPartitioned.ShouldBe(false);
 			model.IsTemporary.ShouldBe(false);
@@ -294,7 +305,7 @@ namespace SqlPad.Oracle.Database.Test
 		}
 
 		[Test]
-		public void TestRemoteTableColumnsUpdater()
+		public void TestRemoteTableColumnDataProvider()
 		{
 			IReadOnlyList<string> remoteTableColumns;
 
@@ -313,80 +324,123 @@ namespace SqlPad.Oracle.Database.Test
 		}
 
 		[Test]
-		public void TestTableSpaceAllocationModelUpdater()
+		public void TestTableSpaceAllocationDataProvider()
 		{
 			var model = new TableDetailsModel();
-			var tableSpaceAllocationUpdater = new TableSpaceAllocationDataProvider(model, new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"DUAL\""));
+			var tableSpaceAllocationDataProvider = new TableSpaceAllocationDataProvider(model, new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"DUAL\""));
 
-			ExecuteUpdater(tableSpaceAllocationUpdater);
+			ExecuteDataProvider(tableSpaceAllocationDataProvider);
 
 			model.AllocatedBytes.ShouldBe(65536);
 		}
 
 		[Test]
-		public void TestDisplayCursorUpdater()
+		public void TestDisplayCursorDataProvider()
 		{
-			var displayCursorUpdater = (DisplayCursorDataProvider)DisplayCursorDataProvider.CreateDisplayLastCursorUpdater();
-			ExecuteUpdater(displayCursorUpdater);
+			var displayCursorDataProvider = (DisplayCursorDataProvider)DisplayCursorDataProvider.CreateDisplayLastDataProvider();
+			ExecuteDataProvider(displayCursorDataProvider);
 
-			displayCursorUpdater.PlanText.ShouldNotBe(null);
-			Trace.WriteLine(displayCursorUpdater.PlanText);
+			displayCursorDataProvider.PlanText.ShouldNotBe(null);
+			Trace.WriteLine(displayCursorDataProvider.PlanText);
 		}
 
 		[Test]
-		public void TestExplainPlanUpdater()
+		public void TestExplainPlanDataProvider()
 		{
-			const string testQuery =
-@"SELECT
-    *
-FROM
-    (SELECT ROWNUM VAL FROM DUAL) T1,
-    (SELECT ROWNUM VAL FROM DUAL) T2,
-    (SELECT ROWNUM VAL FROM DUAL) T3
-WHERE
-    T1.VAL = T2.VAL AND
-    T2.VAL = T3.VAL";
+			var explainPlanDataProvider = new ExplainPlanDataProvider(ExplainPlanTestQuery, "TestQuery", ExplainPlanTableIdentifier);
+			ExecuteDataProvider(explainPlanDataProvider.CreateExplainPlanUpdater, explainPlanDataProvider.LoadExplainPlanUpdater);
 
-			var explainPlanUpdater = new ExplainPlanDataProvider(testQuery, "TestQuery", ExplainPlanTableIdentifier);
-			ExecuteUpdater(explainPlanUpdater.CreateExplainPlanUpdater, explainPlanUpdater.LoadExplainPlanUpdater);
+			explainPlanDataProvider.RootItem.ShouldNotBe(null);
+			explainPlanDataProvider.RootItem.Operation.ShouldBe("SELECT STATEMENT");
+			explainPlanDataProvider.RootItem.ExecutionOrder.ShouldBe(12);
+			explainPlanDataProvider.RootItem.ChildItems.Count.ShouldBe(1);
+			explainPlanDataProvider.RootItem.ChildItems[0].ExecutionOrder.ShouldBe(11);
+			explainPlanDataProvider.RootItem.ChildItems[0].Operation.ShouldBe("HASH JOIN");
+			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems.Count.ShouldBe(2);
+			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[0].ExecutionOrder.ShouldBe(7);
+			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[0].Operation.ShouldBe("MERGE JOIN");
+			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[0].ChildItems.Count.ShouldBe(2);
+			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[0].ChildItems[0].ExecutionOrder.ShouldBe(3);
+			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[0].ChildItems[0].Operation.ShouldBe("VIEW");
+			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[0].ChildItems[0].ChildItems.Count.ShouldBe(1);
+			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[0].ChildItems[0].ChildItems[0].ExecutionOrder.ShouldBe(2);
+			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[0].ChildItems[0].ChildItems[0].Operation.ShouldBe("COUNT");
+			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[0].ChildItems[0].ChildItems[0].ChildItems.Count.ShouldBe(1);
+			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[0].ChildItems[0].ChildItems[0].ChildItems[0].ExecutionOrder.ShouldBe(1);
+			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[0].ChildItems[0].ChildItems[0].ChildItems[0].Operation.ShouldBe("FAST DUAL");
+			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[0].ChildItems[0].ChildItems[0].ChildItems[0].ChildItems.Count.ShouldBe(0);
+			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[0].ChildItems[1].ExecutionOrder.ShouldBe(6);
+			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[0].ChildItems[1].Operation.ShouldBe("VIEW");
+			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[0].ChildItems[1].ChildItems.Count.ShouldBe(1);
+			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[0].ChildItems[1].ChildItems[0].ExecutionOrder.ShouldBe(5);
+			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[0].ChildItems[1].ChildItems[0].Operation.ShouldBe("COUNT");
+			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[0].ChildItems[1].ChildItems[0].ChildItems.Count.ShouldBe(1);
+			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[0].ChildItems[1].ChildItems[0].ChildItems[0].ExecutionOrder.ShouldBe(4);
+			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[0].ChildItems[1].ChildItems[0].ChildItems[0].Operation.ShouldBe("FAST DUAL");
+			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[0].ChildItems[1].ChildItems[0].ChildItems[0].ChildItems.Count.ShouldBe(0);
+			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[1].ExecutionOrder.ShouldBe(10);
+			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[1].Operation.ShouldBe("VIEW");
+			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[1].ChildItems.Count.ShouldBe(1);
+			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[1].ChildItems[0].ExecutionOrder.ShouldBe(9);
+			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[1].ChildItems[0].Operation.ShouldBe("COUNT");
+			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[1].ChildItems[0].ChildItems.Count.ShouldBe(1);
+			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[1].ChildItems[0].ChildItems[0].ExecutionOrder.ShouldBe(8);
+			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[1].ChildItems[0].ChildItems[0].Operation.ShouldBe("FAST DUAL");
+			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[1].ChildItems[0].ChildItems[0].ChildItems.Count.ShouldBe(0);
+		}
 
-			explainPlanUpdater.RootItem.ShouldNotBe(null);
-			explainPlanUpdater.RootItem.Operation.ShouldBe("SELECT STATEMENT");
-			explainPlanUpdater.RootItem.ExecutionOrder.ShouldBe(12);
-			explainPlanUpdater.RootItem.ChildItems.Count.ShouldBe(1);
-			explainPlanUpdater.RootItem.ChildItems[0].ExecutionOrder.ShouldBe(11);
-			explainPlanUpdater.RootItem.ChildItems[0].Operation.ShouldBe("HASH JOIN");
-			explainPlanUpdater.RootItem.ChildItems[0].ChildItems.Count.ShouldBe(2);
-			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[0].ExecutionOrder.ShouldBe(7);
-			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[0].Operation.ShouldBe("MERGE JOIN");
-			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[0].ChildItems.Count.ShouldBe(2);
-			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[0].ChildItems[0].ExecutionOrder.ShouldBe(3);
-			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[0].ChildItems[0].Operation.ShouldBe("VIEW");
-			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[0].ChildItems[0].ChildItems.Count.ShouldBe(1);
-			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[0].ChildItems[0].ChildItems[0].ExecutionOrder.ShouldBe(2);
-			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[0].ChildItems[0].ChildItems[0].Operation.ShouldBe("COUNT");
-			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[0].ChildItems[0].ChildItems[0].ChildItems.Count.ShouldBe(1);
-			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[0].ChildItems[0].ChildItems[0].ChildItems[0].ExecutionOrder.ShouldBe(1);
-			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[0].ChildItems[0].ChildItems[0].ChildItems[0].Operation.ShouldBe("FAST DUAL");
-			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[0].ChildItems[0].ChildItems[0].ChildItems[0].ChildItems.Count.ShouldBe(0);
-			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[0].ChildItems[1].ExecutionOrder.ShouldBe(6);
-			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[0].ChildItems[1].Operation.ShouldBe("VIEW");
-			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[0].ChildItems[1].ChildItems.Count.ShouldBe(1);
-			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[0].ChildItems[1].ChildItems[0].ExecutionOrder.ShouldBe(5);
-			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[0].ChildItems[1].ChildItems[0].Operation.ShouldBe("COUNT");
-			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[0].ChildItems[1].ChildItems[0].ChildItems.Count.ShouldBe(1);
-			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[0].ChildItems[1].ChildItems[0].ChildItems[0].ExecutionOrder.ShouldBe(4);
-			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[0].ChildItems[1].ChildItems[0].ChildItems[0].Operation.ShouldBe("FAST DUAL");
-			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[0].ChildItems[1].ChildItems[0].ChildItems[0].ChildItems.Count.ShouldBe(0);
-			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[1].ExecutionOrder.ShouldBe(10);
-			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[1].Operation.ShouldBe("VIEW");
-			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[1].ChildItems.Count.ShouldBe(1);
-			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[1].ChildItems[0].ExecutionOrder.ShouldBe(9);
-			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[1].ChildItems[0].Operation.ShouldBe("COUNT");
-			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[1].ChildItems[0].ChildItems.Count.ShouldBe(1);
-			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[1].ChildItems[0].ChildItems[0].ExecutionOrder.ShouldBe(8);
-			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[1].ChildItems[0].ChildItems[0].Operation.ShouldBe("FAST DUAL");
-			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[1].ChildItems[0].ChildItems[0].ChildItems.Count.ShouldBe(0);
+		[Test]
+		public void TestCursorExecutionStatisticsDataProvider()
+		{
+			CursorExecutionStatisticsDataProvider executionStatisticsDataProvider;
+
+			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
+			{
+				var executionModel =
+					new StatementExecutionModel
+					{
+						BindVariables = new BindVariableModel[0],
+						StatementText = ExplainPlanTestQuery
+					};
+
+				databaseModel.ExecuteStatement(executionModel);
+
+				executionStatisticsDataProvider = new CursorExecutionStatisticsDataProvider(databaseModel.UserCommandSqlId, databaseModel.UserCommandChildNumber);
+			}
+
+			ExecuteDataProvider(executionStatisticsDataProvider);
+
+			var allItems = new List<ExecutionStatisticsPlanItem> { executionStatisticsDataProvider.RootItem };
+			allItems.AddRange(executionStatisticsDataProvider.RootItem.AllChildItems.Cast<ExecutionStatisticsPlanItem>().OrderBy(i => i.Id));
+
+			var hashJoin = allItems[1];
+			hashJoin.Operation.ShouldBe("HASH JOIN");
+			hashJoin.Executions.ShouldBeGreaterThan(0);
+			hashJoin.LastStarts.ShouldNotBe(null);
+			hashJoin.TotalStarts.ShouldNotBe(null);
+			hashJoin.LastOutputRows.ShouldNotBe(null);
+			hashJoin.TotalOutputRows.ShouldNotBe(null);
+			hashJoin.LastConsistentReadBufferGets.ShouldNotBe(null);
+			hashJoin.TotalConsistentReadBufferGets.ShouldNotBe(null);
+			hashJoin.LastCurrentReadBufferGets.ShouldNotBe(null);
+			hashJoin.TotalCurrentReadBufferGets.ShouldNotBe(null);
+			hashJoin.LastDiskReads.ShouldNotBe(null);
+			hashJoin.TotalDiskReads.ShouldNotBe(null);
+			hashJoin.LastDiskWrites.ShouldNotBe(null);
+			hashJoin.TotalDiskWrites.ShouldNotBe(null);
+			hashJoin.LastElapsedTime.ShouldNotBe(null);
+			hashJoin.TotalElapsedTime.ShouldNotBe(null);
+			hashJoin.WorkAreaSizingPolicy.ShouldNotBe(null);
+			hashJoin.EstimatedOptimalSizeBytes.ShouldNotBe(null);
+			hashJoin.EstimatedOnePassSizeBytes.ShouldNotBe(null);
+			hashJoin.LastMemoryUsedBytes.ShouldNotBe(null);
+			hashJoin.LastExecutionMethod.ShouldNotBe(null);
+			hashJoin.LastParallelDegree.ShouldNotBe(null);
+			hashJoin.TotalWorkAreaExecutions.ShouldNotBe(null);
+			hashJoin.OptimalWorkAreaExecutions.ShouldNotBe(null);
+			hashJoin.OnePassWorkAreaExecutions.ShouldNotBe(null);
+			hashJoin.MultiPassWorkAreaExecutions.ShouldNotBe(null);
+			hashJoin.ActiveTime.ShouldNotBe(null);
 		}
 
 		[Test]
@@ -443,11 +497,11 @@ FROM (
 ORDER BY
 	ID";
 
-			var explainPlanUpdater = new ExplainPlanDataProvider(testQuery, "TestQuery", ExplainPlanTableIdentifier);
-			ExecuteUpdater(explainPlanUpdater.CreateExplainPlanUpdater, explainPlanUpdater.LoadExplainPlanUpdater);
+			var explainPlanDataProvider = new ExplainPlanDataProvider(testQuery, "TestQuery", ExplainPlanTableIdentifier);
+			ExecuteDataProvider(explainPlanDataProvider.CreateExplainPlanUpdater, explainPlanDataProvider.LoadExplainPlanUpdater);
 
-			var allItems = new List<ExecutionPlanItem> { explainPlanUpdater.RootItem };
-			allItems.AddRange(explainPlanUpdater.RootItem.AllChildItems.OrderBy(i => i.Id));
+			var allItems = new List<ExecutionPlanItem> { explainPlanDataProvider.RootItem };
+			allItems.AddRange(explainPlanDataProvider.RootItem.AllChildItems.OrderBy(i => i.Id));
 
 			var executionOrder = allItems.Select(i => i.ExecutionOrder).ToArray();
 			var expectedExecutionOrder = new [] { 19, 4, 3, 2, 1, 7, 6, 5, 10, 9, 8, 18, 12, 11, 17, 16, 15, 14, 13 };
@@ -455,7 +509,7 @@ ORDER BY
 			executionOrder.ShouldBe(expectedExecutionOrder);
 		}
 
-		private void ExecuteUpdater(params IModelDataProvider[] updaters)
+		private void ExecuteDataProvider(params IModelDataProvider[] updaters)
 		{
 			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
 			{

@@ -55,7 +55,14 @@ namespace SqlPad
 	{
 		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			return value == null ? Visibility.Collapsed : Visibility.Visible;
+			if (value == null)
+			{
+				return Visibility.Collapsed;
+			}
+
+			return ReferenceEquals(value, String.Empty)
+				? Visibility.Collapsed
+				: Visibility.Visible;
 		}
 	}
 
