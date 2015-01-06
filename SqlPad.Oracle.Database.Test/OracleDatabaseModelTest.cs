@@ -449,7 +449,7 @@ ORDER BY
 			allItems.AddRange(explainPlanUpdater.RootItem.AllChildItems.OrderBy(i => i.Id));
 
 			var executionOrder = allItems.Select(i => i.ExecutionOrder).ToArray();
-			var expectedExecutionOrder = new [] { 19, 12, 11, 10, 9, 15, 14, 13, 18, 17, 16, 8, 7, 6, 5, 4, 3, 2, 1 };
+			var expectedExecutionOrder = new [] { 19, 4, 3, 2, 1, 7, 6, 5, 10, 9, 8, 18, 12, 11, 17, 16, 15, 14, 13 };
 
 			executionOrder.ShouldBe(expectedExecutionOrder);
 		}

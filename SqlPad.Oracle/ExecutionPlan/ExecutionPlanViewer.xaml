@@ -126,23 +126,31 @@
 				</Style.Setters>
 			</Style>
 
-			<Style x:Key="ItemHeaderStyle" TargetType="TextBlock" BasedOn="{StaticResource PlanItemBaseStyle}">
+			<Style x:Key="ItemHeaderBold" TargetType="TextBlock" BasedOn="{StaticResource PlanItemBaseStyle}">
 				<Style.Setters>
 					<Setter Property="Foreground" Value="DarkBlue"/>
 					<Setter Property="FontSize" Value="12"/>
 					<Setter Property="FontWeight" Value="Bold"/>
 				</Style.Setters>
 			</Style>
-			<Style x:Key="OptimizerStyle" TargetType="TextBlock" BasedOn="{StaticResource PlanItemBaseStyle}">
+			<Style x:Key="ColoredItemHeaderBold" TargetType="TextBlock" BasedOn="{StaticResource ItemHeaderBold}">
+				<Style.Triggers>
+					<DataTrigger Binding="{Binding Operation}" Value="TABLE ACCESS">
+						<DataTrigger.Setters>
+							<Setter Property="Foreground" Value="Red"/>
+						</DataTrigger.Setters>
+					</DataTrigger>
+				</Style.Triggers>
+			</Style>
+			<Style x:Key="ItemHeader" TargetType="TextBlock" BasedOn="{StaticResource PlanItemBaseStyle}">
 				<Style.Setters>
 					<Setter Property="Foreground" Value="DarkBlue"/>
 					<Setter Property="FontSize" Value="12"/>
 				</Style.Setters>
 			</Style>
-			<Style x:Key="ObjectLabelStyle" TargetType="TextBlock" BasedOn="{StaticResource PlanItemBaseStyle}">
+			<Style x:Key="ItemHeaderOther" TargetType="TextBlock" BasedOn="{StaticResource PlanItemBaseStyle}">
 				<Style.Setters>
-					<Setter Property="Foreground" Value="DarkBlue"/>
-					<Setter Property="FontSize" Value="11"/>
+					<Setter Property="FontSize" Value="12"/>
 				</Style.Setters>
 			</Style>
 			<Style x:Key="PlanStatisticValueStyle" TargetType="TextBlock" BasedOn="{StaticResource PlanItemBaseStyle}">
@@ -168,31 +176,37 @@
 			<HierarchicalDataTemplate ItemsSource="{Binding ChildItems}">
 				<StackPanel>
 					<StackPanel Orientation="Horizontal">
-						<TextBlock Style="{StaticResource ItemHeaderStyle}">
-							<Run Text="{Binding ExecutionOrder}"/><Run Text="."/>
+						<TextBlock Style="{StaticResource ItemHeaderBold}">
+							<Run Text="{Binding ExecutionOrder}"/><Run Text=". "/>
+						</TextBlock>
+						<TextBlock Style="{StaticResource ColoredItemHeaderBold}">
 							<Run Text="{Binding Operation}"/>
 							<Run Text=" " />
 						</TextBlock>
-						<TextBlock Style="{StaticResource OptimizerStyle}" Visibility="{Binding Optimizer, Converter={StaticResource ObjectToVisibilityConverter}}">
-							<Run Text="{Binding Optimizer}" Foreground="DarkBlue" />
-							<Run Text=" "/>
-						</TextBlock>
-						<TextBlock Style="{StaticResource ItemHeaderStyle}" Visibility="{Binding Options, Converter={StaticResource ObjectToVisibilityConverter}}">
+						<TextBlock Style="{StaticResource ColoredItemHeaderBold}" Visibility="{Binding Options, Converter={StaticResource ObjectToVisibilityConverter}}">
 							<Run Text="{Binding Options}"/>
 							<Run Text=" "/>
 						</TextBlock>
-						<TextBlock Style="{StaticResource ObjectLabelStyle}" Visibility="{Binding ObjectOwner, Converter={StaticResource ObjectToVisibilityConverter}}">
+						<TextBlock Style="{StaticResource ItemHeaderBold}" Visibility="{Binding ObjectType, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="{Binding ObjectType}"/>
+							<Run Text=" "/>
+						</TextBlock>
+						<TextBlock Style="{StaticResource ItemHeader}" Visibility="{Binding Optimizer, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="{Binding Optimizer}" />
+							<Run Text=" "/>
+						</TextBlock>
+						<TextBlock Style="{StaticResource ItemHeader}" Visibility="{Binding ObjectOwner, Converter={StaticResource ObjectToVisibilityConverter}}">
 							<Run Text="{Binding ObjectOwner}" /><Run Text="."/>
 						</TextBlock>
-						<TextBlock Style="{StaticResource ObjectLabelStyle}" Visibility="{Binding ObjectName, Converter={StaticResource ObjectToVisibilityConverter}}">
+						<TextBlock Style="{StaticResource ItemHeader}" Visibility="{Binding ObjectName, Converter={StaticResource ObjectToVisibilityConverter}}">
 							<Run Text="{Binding ObjectName}"/>
 							<Run Text=" "/>
 						</TextBlock>
-						<TextBlock Style="{StaticResource ObjectLabelStyle}" Visibility="{Binding ObjectAlias, Converter={StaticResource ObjectToVisibilityConverter}}">
+						<TextBlock Style="{StaticResource ItemHeader}" Visibility="{Binding ObjectAlias, Converter={StaticResource ObjectToVisibilityConverter}}">
 							<Run Text="{Binding ObjectAlias}"/>
 							<Run Text=" "/>
 						</TextBlock>
-						<TextBlock Style="{StaticResource OtherLabelStyle}" Visibility="{Binding QueryBlockName, Converter={StaticResource ObjectToVisibilityConverter}}">
+						<TextBlock Style="{StaticResource ItemHeaderOther}" Visibility="{Binding QueryBlockName, Converter={StaticResource ObjectToVisibilityConverter}}">
 							<Run Text="Query Block: "/>
 							<Run Text="{Binding QueryBlockName}"/>
 						</TextBlock>

@@ -529,20 +529,21 @@ namespace SqlPad.Oracle
 					treeItemDictionary.Add(item.Id, item);
 				}
 
-				if (startItem != null)
+				if (treeItemDictionary.Count > 0)
 				{
 					DataModel.RootItem = treeItemDictionary[0];
 
-					var itemDepthLookup = treeItemDictionary.Values.ToLookup(i => i.Depth);
+					var leafItems = treeItemDictionary.Values.Where(v => v.IsLeaf).ToList();
+					var startNode = leafItems[0];
+					leafItems.RemoveAt(0);
 
 					var executionOrder = 0;
-					var maxDepth = startItem.Depth;
-					ResolveExecutionOrder(itemDepthLookup, startItem, null, maxDepth, ref executionOrder);
+					ResolveExecutionOrder(leafItems, startNode, null, ref executionOrder);
 				}
 			}
 		}
 
-		private static void ResolveExecutionOrder(ILookup<int, ExecutionPlanItem> itemDepthLookup, ExecutionPlanItem nextItem, ExecutionPlanItem breakAtItem, int maxDepth, ref int executionOrder)
+		private static void ResolveExecutionOrder(List<ExecutionPlanItem> leafItems, ExecutionPlanItem nextItem, ExecutionPlanItem breakAtItem, ref int executionOrder)
 		{
 			foreach (var item in nextItem.Parent.ChildItems.Where(i => i.ExecutionOrder == 0))
 			{
@@ -568,19 +569,16 @@ namespace SqlPad.Oracle
 				var allChildrenExecuted = nextItem.ChildItems.Count(i => i.ExecutionOrder == 0) == 0;
 				if (!allChildrenExecuted)
 				{
-					ExecutionPlanItem otherBranchDeepestItem;
-					var lookupDepth = maxDepth;
-					do
-					{
-						otherBranchDeepestItem = itemDepthLookup[lookupDepth].FirstOrDefault(n => n.ExecutionOrder == 0 && n.IsChildFrom(nextItem));
-					} while (otherBranchDeepestItem == null && --lookupDepth > 0);
-
-					if (otherBranchDeepestItem == null)
+					var otherBranchItemIndex = leafItems.FindIndex(i => i.IsChildFrom(nextItem));
+					if (otherBranchItemIndex == -1)
 					{
 						return;
 					}
-					
-					ResolveExecutionOrder(itemDepthLookup, otherBranchDeepestItem, nextItem, maxDepth, ref executionOrder);
+
+					var otherBranchLeafItem = leafItems[otherBranchItemIndex];
+					leafItems.RemoveAt(otherBranchItemIndex);
+
+					ResolveExecutionOrder(leafItems, otherBranchLeafItem, nextItem, ref executionOrder);
 				}
 			} while (true);
 		}
