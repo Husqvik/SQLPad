@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Configuration;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
+using SqlPad.Oracle.ExecutionPlan;
 using SqlPad.Oracle.ToolTips;
 
 namespace SqlPad.Oracle.Test
@@ -754,7 +755,7 @@ namespace SqlPad.Oracle.Test
 				Attributes =
 					new []
 					{
-						new OracleTypeAttribute { Name = "\"PLAN_TABLE_OUTPUT\"", DataType = BuildPrimitiveDataType("VARCHAR2", 300, dataUnit: DataUnit.Byte) },
+						new OracleTypeAttribute { Name = "\"PLAN_TABLE_OUTPUT\"", DataType = BuildPrimitiveDataType("VARCHAR2", 300, dataUnit: DataUnit.Byte) }
 					}
 			},
 			new OracleTypeCollection
@@ -1021,16 +1022,35 @@ Note
 		
 		public override void CloseActiveReader() { }
 
-		public override Task<ExplainPlanResult> ExplainPlanAsync(string statement, CancellationToken cancellationToken)
+		public override Task<ExecutionPlanItem> ExplainPlanAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
 		{
-			var explainPlanResult =
-				new ExplainPlanResult
+			var rootItem =
+				new ExecutionPlanItem
 				{
-					ColumnHeaders = ColumnHeaders,
-					ResultSet = new ReadOnlyCollection<object[]>(new List<object[]>(FetchRecords(1)))
+					Operation = "Operation",
+					Options = "Options",
+					Optimizer = "Optimizer",
+					ObjectOwner = "ObjectOwner",
+					ObjectName = "ObjectName",
+					ObjectAlias = "ObjectAlias",
+					ObjectType = "ObjectType",
+					Cost = 1234,
+					Cardinality = 5678,
+					Bytes = 9123,
+					PartitionStart = "PartitionStart",
+					PartitionStop = "PartitionStop",
+					Distribution = "Distribution",
+					CpuCost = 9876,
+					IoCost = 123,
+					TempSpace = 54321,
+					AccessPredicates = "AccessPredicates",
+					FilterPredicates = "FilterPredicates",
+					Time = TimeSpan.FromSeconds(144),
+					QueryBlockName = "QueryBlockName",
+					Other = null
 				};
 
-			return Task.FromResult(explainPlanResult);
+			return Task.FromResult(rootItem);
 		}
 
 		public override Task<string> GetActualExecutionPlanAsync(CancellationToken cancellationToken)

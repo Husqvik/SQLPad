@@ -332,9 +332,7 @@
 					</DataGrid.Columns>
 				</DataGrid>
 			</TabItem>
-			<!--<TabItem Header="E_xecution plan">
-				
-			</TabItem>-->
+			<TabItem Header="E_xecution plan" x:Name="TabExecutionPlan" Visibility="{Binding ExecutionPlanAvailable}" />
 		</TabControl>
 		<StatusBar x:Name="StatusBar" Grid.Row="4" Grid.Column="0">
 			<StatusBar.ItemsPanel>

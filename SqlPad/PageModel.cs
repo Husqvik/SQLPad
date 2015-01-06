@@ -29,6 +29,7 @@ namespace SqlPad
 		private Visibility _bindVariableListVisibility = Visibility.Collapsed;
 		private Visibility _gridRowInfoVisibity = Visibility.Collapsed;
 		private Visibility _transactionControlVisibity = Visibility.Collapsed;
+		private Visibility _executionPlanAvailable = Visibility.Collapsed;
 		private Visibility _reconnectOptionVisibility = Visibility.Collapsed;
 		private Visibility _schemaComboBoxVisibility = Visibility.Collapsed;
 		private Visibility _connectProgressBarVisibility = Visibility.Visible;
@@ -277,6 +278,12 @@ namespace SqlPad
 		{
 			get { return _reconnectOptionVisibility; }
 			set { UpdateValueAndRaisePropertyChanged(ref _reconnectOptionVisibility, value); }
+		}
+
+		public Visibility ExecutionPlanAvailable
+		{
+			get { return _executionPlanAvailable; }
+			set { UpdateValueAndRaisePropertyChanged(ref _executionPlanAvailable, value); }
 		}
 
 		public string ConnectionErrorMessage

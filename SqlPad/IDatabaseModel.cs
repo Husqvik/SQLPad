@@ -44,8 +44,6 @@ namespace SqlPad
 
 		Task<StatementExecutionResult> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken);
 
-		Task<ExplainPlanResult> ExplainPlanAsync(string statement, CancellationToken cancellationToken);
-
 		Task<ICollection<SessionExecutionStatisticsRecord>> GetExecutionStatisticsAsync(CancellationToken cancellationToken);
 
 		Task<string> GetActualExecutionPlanAsync(CancellationToken cancellationToken);

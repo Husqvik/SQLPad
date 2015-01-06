@@ -11,6 +11,7 @@ using System.Timers;
 using Microsoft.Win32;
 using Oracle.DataAccess.Client;
 using Oracle.DataAccess.Types;
+using SqlPad.Oracle.ExecutionPlan;
 using SqlPad.Oracle.ToolTips;
 using Timer = System.Timers.Timer;
 
@@ -371,28 +372,20 @@ namespace SqlPad.Oracle
 			return _backgroundTask;
 		}
 
-		public async override Task<ExplainPlanResult> ExplainPlanAsync(string statement, CancellationToken cancellationToken)
+		public async override Task<ExecutionPlanItem> ExplainPlanAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
 		{
 			if (String.IsNullOrEmpty(OracleConfiguration.Configuration.ExecutionPlan.TargetTable.Name))
 			{
 				throw new InvalidOperationException("OracleConfiguration/ExecutionPlan/TargetTable[Name] is missing. ");
 			}
 
-			var planKey = Convert.ToString(statement.GetHashCode());
+			var planKey = Convert.ToString(executionModel.StatementText.GetHashCode());
 			var targetTableIdentifier = OracleObjectIdentifier.Create(OracleConfiguration.Configuration.ExecutionPlan.TargetTable.Schema, OracleConfiguration.Configuration.ExecutionPlan.TargetTable.Name);
-			var explainPlanUpdater = new ExplainPlanUpdater(statement, planKey, targetTableIdentifier);
+			var explainPlanUpdater = new ExplainPlanUpdater(executionModel.StatementText, planKey, targetTableIdentifier);
 
-			try
-			{
-				_isExecuting = true;
-				await UpdateModelAsync(cancellationToken, true, explainPlanUpdater.CreateExplainPlanUpdater, explainPlanUpdater.LoadExplainPlanUpdater);
-			}
-			finally
-			{
-				_isExecuting = false;
-			}
+			await UpdateModelAsync(cancellationToken, false, explainPlanUpdater.CreateExplainPlanUpdater, explainPlanUpdater.LoadExplainPlanUpdater);
 
-			return explainPlanUpdater.ExplainPlanResult;
+			return explainPlanUpdater.RootItem;
 		}
 
 		public override async Task<ICollection<SessionExecutionStatisticsRecord>> GetExecutionStatisticsAsync(CancellationToken cancellationToken)

@@ -4,6 +4,7 @@ using System.Configuration;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using SqlPad.Oracle.ExecutionPlan;
 using SqlPad.Oracle.ToolTips;
 
 namespace SqlPad.Oracle
@@ -83,7 +84,7 @@ namespace SqlPad.Oracle
 
 		public abstract IEnumerable<object[]> FetchRecords(int rowCount);
 
-		public abstract Task<ExplainPlanResult> ExplainPlanAsync(string statement, CancellationToken cancellationToken);
+		public abstract Task<ExecutionPlanItem> ExplainPlanAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken);
 
 		public abstract Task<string> GetActualExecutionPlanAsync(CancellationToken cancellationToken);
 

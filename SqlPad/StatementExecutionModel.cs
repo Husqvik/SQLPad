@@ -26,13 +26,6 @@ namespace SqlPad
 		public int InitialFetchRowCount { get; set; }
 	}
 
-	public struct ExplainPlanResult
-	{
-		public IReadOnlyCollection<ColumnHeader> ColumnHeaders { get; set; }
-
-		public IReadOnlyCollection<object[]> ResultSet { get; set; }
-	}
-
 	public struct StatementExecutionResult
 	{
 		public static readonly StatementExecutionResult Empty = new StatementExecutionResult { AffectedRowCount = -1 };

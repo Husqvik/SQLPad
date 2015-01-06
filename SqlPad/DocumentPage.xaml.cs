@@ -43,6 +43,7 @@ namespace SqlPad
 		private IStatementFormatter _statementFormatter;
 		private IToolTipProvider _toolTipProvider;
 		private INavigationService _navigationService;
+		private IExecutionPlanViewer _executionPlanViewer;
 
 		private MultiNodeEditor _multiNodeEditor;
 		private CancellationTokenSource _statementExecutionCancellationTokenSource;
@@ -430,6 +431,8 @@ namespace SqlPad
 
 			DatabaseModel = _infrastructureFactory.CreateDatabaseModel(ConfigurationProvider.ConnectionStrings[_connectionString.Name]);
 			_sqlDocumentRepository = new SqlDocumentRepository(_infrastructureFactory.CreateParser(), _infrastructureFactory.CreateStatementValidator(), DatabaseModel);
+			_executionPlanViewer = _infrastructureFactory.CreateExecutionPlanViewer(DatabaseModel);
+			TabExecutionPlan.Content = _executionPlanViewer.Control;
 
 			DatabaseModel.Initialized += DatabaseModelInitializedHandler;
 			DatabaseModel.Disconnected += DatabaseModelInitializationFailedHandler;
@@ -1957,30 +1960,26 @@ namespace SqlPad
 
 		private async Task ExecuteExplainPlan()
 		{
-			_gatherExecutionStatistics = false;
+			_pageModel.ExecutionPlanAvailable = Visibility.Collapsed;
 
-			InitializeViewBeforeCommandExecution();
+			var statementModel = BuildStatementExecutionModel();
 
-			var statementText = BuildStatementExecutionModel().StatementText;
-
-			Task<ExplainPlanResult> innerTask = null;
 			using (_statementExecutionCancellationTokenSource = new CancellationTokenSource())
 			{
-				DatabaseModel.CloseActiveReader();
+				var actionResult = await SafeTimedActionAsync(() => _executionPlanViewer.ExplainAsync(statementModel, _statementExecutionCancellationTokenSource.Token));
 
-				var actionResult = await SafeTimedActionAsync(() => innerTask = DatabaseModel.ExplainPlanAsync(statementText, _statementExecutionCancellationTokenSource.Token));
-				
 				UpdateStatusBarElapsedExecutionTime(actionResult.Elapsed);
-				
-				if (!actionResult.IsSuccessful)
+
+				if (actionResult.IsSuccessful)
+				{
+					_pageModel.ExecutionPlanAvailable = Visibility.Visible;
+					TabControlResult.SelectedItem = TabExecutionPlan;
+				}
+				else
 				{
 					Messages.ShowError(MainWindow, actionResult.Exception.Message);
-					return;
 				}
 			}
-
-			InitializeResultGrid(innerTask.Result.ColumnHeaders);
-			_pageModel.ResultRowItems.AddRange(innerTask.Result.ResultSet);
 		}
 
 		private void CreateNewPage(object sender, ExecutedRoutedEventArgs e)
@@ -2090,7 +2089,7 @@ namespace SqlPad
 		}
 	}
 
-	internal struct ActionResult
+	public struct ActionResult
 	{
 		public bool IsSuccessful { get { return Exception == null; } }
 		

@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Xml.Linq;
 using Oracle.DataAccess.Client;
+using SqlPad.Oracle.ExecutionPlan;
 using SqlPad.Oracle.ToolTips;
 
 namespace SqlPad.Oracle
@@ -441,7 +443,7 @@ namespace SqlPad.Oracle
 		
 		public IDataModelUpdater LoadExplainPlanUpdater { get; private set; }
 
-		public ExplainPlanResult ExplainPlanResult { get { return _dataMmodel.ExplainPlanResult; } }
+		public ExecutionPlanItem RootItem { get { return _dataMmodel.RootItem; } }
 
 		public ExplainPlanUpdater(string statementText, string planKey, OracleObjectIdentifier targetTableIdentifier)
 		{
@@ -478,12 +480,48 @@ namespace SqlPad.Oracle
 
 			public override void MapReaderData(OracleDataReader reader)
 			{
-				DataModel.ExplainPlanResult =
-					new ExplainPlanResult
+				var treeItemDictionary = new Dictionary<int, ExecutionPlanItem>();
+				
+				while (reader.Read())
+				{
+					var time = OracleReaderValueConvert.ToInt32(reader["TIME"]);
+					var otherData = OracleReaderValueConvert.ToString(reader["OTHER_XML"]);
+					var parentId = OracleReaderValueConvert.ToInt32(reader["PARENT_ID"]);
+					var item =
+						new ExecutionPlanItem
+						{
+							Operation = (string)reader["OPERATION"],
+							Options = OracleReaderValueConvert.ToString(reader["OPTIONS"]),
+							Optimizer = OracleReaderValueConvert.ToString(reader["OPTIMIZER"]),
+							ObjectOwner = OracleReaderValueConvert.ToString(reader["OBJECT_OWNER"]),
+							ObjectName = OracleReaderValueConvert.ToString(reader["OBJECT_NAME"]),
+							ObjectAlias = OracleReaderValueConvert.ToString(reader["OBJECT_ALIAS"]),
+							ObjectType = OracleReaderValueConvert.ToString(reader["OBJECT_TYPE"]),
+							Cost = OracleReaderValueConvert.ToInt64(reader["COST"]),
+							Cardinality = OracleReaderValueConvert.ToInt64(reader["CARDINALITY"]),
+							Bytes = OracleReaderValueConvert.ToInt64(reader["BYTES"]),
+							PartitionStart = OracleReaderValueConvert.ToString(reader["PARTITION_START"]),
+							PartitionStop = OracleReaderValueConvert.ToString(reader["PARTITION_STOP"]),
+							Distribution = OracleReaderValueConvert.ToString(reader["DISTRIBUTION"]),
+							CpuCost = OracleReaderValueConvert.ToInt64(reader["CPU_COST"]),
+							IoCost = OracleReaderValueConvert.ToInt64(reader["IO_COST"]),
+							TempSpace = OracleReaderValueConvert.ToInt64(reader["TEMP_SPACE"]),
+							AccessPredicates = OracleReaderValueConvert.ToString(reader["ACCESS_PREDICATES"]),
+							FilterPredicates = OracleReaderValueConvert.ToString(reader["FILTER_PREDICATES"]),
+							Time = time.HasValue ? TimeSpan.FromSeconds(time.Value) : (TimeSpan?)null,
+							QueryBlockName = OracleReaderValueConvert.ToString(reader["QBLOCK_NAME"]),
+							Other = String.IsNullOrEmpty(otherData) ? null : XElement.Parse(otherData)
+						};
+
+					if (parentId.HasValue)
 					{
-						ColumnHeaders = OracleDatabaseModel.GetColumnHeadersFromReader(reader),
-						ResultSet = OracleDatabaseModel.FetchRecordsFromReader(reader, Int32.MaxValue, true).ToArray()
-					};
+						treeItemDictionary[parentId.Value].AddChildItem(item);
+					}
+
+					treeItemDictionary.Add(Convert.ToInt32(reader["ID"]), item);
+				}
+
+				DataModel.RootItem = treeItemDictionary[0];
 			}
 		}
 
@@ -495,7 +533,7 @@ namespace SqlPad.Oracle
 			
 			public string TargetTableName { get; private set; }
 
-			public ExplainPlanResult ExplainPlanResult { get; set; }
+			public ExecutionPlanItem RootItem { get; set; }
 			
 			public ExplainPlanModelInternal(string statementText, string executionPlanKey, OracleObjectIdentifier targetTableIdentifier)
 			{

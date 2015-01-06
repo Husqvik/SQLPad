@@ -1,6 +1,7 @@
 ﻿using System.Configuration;
 using SqlPad.Commands;
 using SqlPad.Oracle.Commands;
+using SqlPad.Oracle.ExecutionPlan;
 
 namespace SqlPad.Oracle
 {
@@ -70,6 +71,11 @@ namespace SqlPad.Oracle
 		public INavigationService CreateNavigationService()
 		{
 			return new OracleNavigationService();
+		}
+
+		public IExecutionPlanViewer CreateExecutionPlanViewer(IDatabaseModel databaseModel)
+		{
+			return new ExecutionPlanViewer((OracleDatabaseModelBase)databaseModel);
 		}
 		#endregion
 	}

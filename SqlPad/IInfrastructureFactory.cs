@@ -1,4 +1,7 @@
 ﻿using System.Configuration;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Controls;
 using SqlPad.Commands;
 
 namespace SqlPad
@@ -28,6 +31,8 @@ namespace SqlPad
 		IToolTipProvider CreateToolTipProvider();
 
 		INavigationService CreateNavigationService();
+
+		IExecutionPlanViewer CreateExecutionPlanViewer(IDatabaseModel databaseModel);
 	}
 
 	public interface INavigationService
@@ -40,5 +45,12 @@ namespace SqlPad
 	public interface IMultiNodeEditorDataProvider
 	{
 		MultiNodeEditorData GetMultiNodeEditorData(IDatabaseModel databaseModel, string sqlText, int currentPosition, int selectionStart, int selectionLength);
+	}
+
+	public interface IExecutionPlanViewer
+	{
+		Task<ActionResult> ExplainAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken);
+
+		Control Control { get; }
 	}
 }
