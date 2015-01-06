@@ -109,13 +109,15 @@
     <Compile Include="ExecutionPlan\ExecutionPlanViewer.xaml.cs">
       <DependentUpon>ExecutionPlanViewer.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ModelDataProviders\ExplainPlanDataProvider.cs" />
+    <Compile Include="ModelDataProviders\IModelDataProvider.cs" />
     <Compile Include="OracleBindVariable.cs" />
     <Compile Include="OracleConfiguration.cs">
       <DependentUpon>OracleConfiguration.xsd</DependentUpon>
     </Compile>
     <Compile Include="DatabaseCommands.cs" />
     <Compile Include="DataDictionaryMapper.cs" />
-    <Compile Include="DataModelUpdater.cs" />
+    <Compile Include="ModelDataProviders\DataModelUpdater.cs" />
     <Compile Include="OracleClobValue.cs" />
     <Compile Include="OracleCodeCompletionItem.cs" />
     <Compile Include="OracleCodeCompletionProvider.cs" />
@@ -169,6 +171,7 @@
     <Compile Include="OracleTokenReader.cs" />
     <Compile Include="OracleToolTipProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ModelDataProviders\SessionExecutionStatisticsDataProvider.cs" />
     <Compile Include="ToolTips\ToolTipProgram.xaml.cs">
       <DependentUpon>ToolTipProgram.xaml</DependentUpon>
     </Compile>

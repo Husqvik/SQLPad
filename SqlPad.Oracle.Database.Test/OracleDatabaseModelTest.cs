@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using Shouldly;
 using SqlPad.Oracle.ExecutionPlan;
+using SqlPad.Oracle.ModelDataProviders;
 using SqlPad.Oracle.ToolTips;
 using SqlPad.Test;
 
@@ -315,7 +316,7 @@ namespace SqlPad.Oracle.Database.Test
 		public void TestTableSpaceAllocationModelUpdater()
 		{
 			var model = new TableDetailsModel();
-			var tableSpaceAllocationUpdater = new TableSpaceAllocationModelUpdater(model, new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"DUAL\""));
+			var tableSpaceAllocationUpdater = new TableSpaceAllocationDataProvider(model, new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"DUAL\""));
 
 			ExecuteUpdater(tableSpaceAllocationUpdater);
 
@@ -325,7 +326,7 @@ namespace SqlPad.Oracle.Database.Test
 		[Test]
 		public void TestDisplayCursorUpdater()
 		{
-			var displayCursorUpdater = (DisplayCursorUpdater)DisplayCursorUpdater.CreateDisplayLastCursorUpdater();
+			var displayCursorUpdater = (DisplayCursorDataProvider)DisplayCursorDataProvider.CreateDisplayLastCursorUpdater();
 			ExecuteUpdater(displayCursorUpdater);
 
 			displayCursorUpdater.PlanText.ShouldNotBe(null);
@@ -346,7 +347,7 @@ WHERE
     T1.VAL = T2.VAL AND
     T2.VAL = T3.VAL";
 
-			var explainPlanUpdater = new ExplainPlanUpdater(testQuery, "TestQuery", ExplainPlanTableIdentifier);
+			var explainPlanUpdater = new ExplainPlanDataProvider(testQuery, "TestQuery", ExplainPlanTableIdentifier);
 			ExecuteUpdater(explainPlanUpdater.CreateExplainPlanUpdater, explainPlanUpdater.LoadExplainPlanUpdater);
 
 			explainPlanUpdater.RootItem.ShouldNotBe(null);
@@ -442,7 +443,7 @@ FROM (
 ORDER BY
 	ID";
 
-			var explainPlanUpdater = new ExplainPlanUpdater(testQuery, "TestQuery", ExplainPlanTableIdentifier);
+			var explainPlanUpdater = new ExplainPlanDataProvider(testQuery, "TestQuery", ExplainPlanTableIdentifier);
 			ExecuteUpdater(explainPlanUpdater.CreateExplainPlanUpdater, explainPlanUpdater.LoadExplainPlanUpdater);
 
 			var allItems = new List<ExecutionPlanItem> { explainPlanUpdater.RootItem };
@@ -454,7 +455,7 @@ ORDER BY
 			executionOrder.ShouldBe(expectedExecutionOrder);
 		}
 
-		private void ExecuteUpdater(params IDataModelUpdater[] updaters)
+		private void ExecuteUpdater(params IModelDataProvider[] updaters)
 		{
 			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
 			{

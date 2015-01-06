@@ -12,6 +12,7 @@ using Microsoft.Win32;
 using Oracle.DataAccess.Client;
 using Oracle.DataAccess.Types;
 using SqlPad.Oracle.ExecutionPlan;
+using SqlPad.Oracle.ModelDataProviders;
 using SqlPad.Oracle.ToolTips;
 using Timer = System.Timers.Timer;
 
@@ -55,7 +56,7 @@ namespace SqlPad.Oracle
 		private IsolationLevel _userTransactionIsolationLevel;
 		private int _userCommandChildNumber;
 		private bool _userCommandHasCompilationErrors;
-		private SessionExecutionStatisticsUpdater _executionStatisticsUpdater;
+		private SessionExecutionStatisticsDataProvider _executionStatisticsDataProvider;
 
 		private static readonly Dictionary<string, OracleDataDictionary> CachedDataDictionaries = new Dictionary<string, OracleDataDictionary>();
 		private static readonly Dictionary<string, OracleDatabaseModel> DatabaseModels = new Dictionary<string, OracleDatabaseModel>();
@@ -381,7 +382,7 @@ namespace SqlPad.Oracle
 
 			var planKey = Convert.ToString(executionModel.StatementText.GetHashCode());
 			var targetTableIdentifier = OracleObjectIdentifier.Create(OracleConfiguration.Configuration.ExecutionPlan.TargetTable.Schema, OracleConfiguration.Configuration.ExecutionPlan.TargetTable.Name);
-			var explainPlanUpdater = new ExplainPlanUpdater(executionModel.StatementText, planKey, targetTableIdentifier);
+			var explainPlanUpdater = new ExplainPlanDataProvider(executionModel.StatementText, planKey, targetTableIdentifier);
 
 			await UpdateModelAsync(cancellationToken, false, explainPlanUpdater.CreateExplainPlanUpdater, explainPlanUpdater.LoadExplainPlanUpdater);
 
@@ -390,48 +391,48 @@ namespace SqlPad.Oracle
 
 		public override async Task<ICollection<SessionExecutionStatisticsRecord>> GetExecutionStatisticsAsync(CancellationToken cancellationToken)
 		{
-			await UpdateModelAsync(cancellationToken, true, _executionStatisticsUpdater.SessionEndExecutionStatisticsUpdater);
-			return _executionStatisticsUpdater.ExecutionStatistics;
+			await UpdateModelAsync(cancellationToken, true, _executionStatisticsDataProvider.SessionEndExecutionStatisticsDataProvider);
+			return _executionStatisticsDataProvider.ExecutionStatistics;
 		}
 
 		public async override Task<string> GetActualExecutionPlanAsync(CancellationToken cancellationToken)
 		{
-			var displayCursorUpdater = new DisplayCursorUpdater(_userCommandSqlId, _userCommandChildNumber);
+			var displayCursorUpdater = new DisplayCursorDataProvider(_userCommandSqlId, _userCommandChildNumber);
 			await UpdateModelAsync(cancellationToken, true, displayCursorUpdater);
 			return displayCursorUpdater.PlanText;
 		}
 
 		public async override Task<string> GetObjectScriptAsync(OracleSchemaObject schemaObject, CancellationToken cancellationToken, bool suppressUserCancellationException = true)
 		{
-			var scriptUpdater = new ObjectScriptUpdater(schemaObject);
+			var scriptUpdater = new ObjectScriptDataProvider(schemaObject);
 			await UpdateModelAsync(cancellationToken, false, scriptUpdater);
 			return scriptUpdater.ScriptText;
 		}
 
 		public async override Task UpdateTableDetailsAsync(OracleObjectIdentifier objectIdentifier, TableDetailsModel dataModel, CancellationToken cancellationToken)
 		{
-			var tableDetailsUpdater = new TableDetailsModelUpdater(dataModel, objectIdentifier);
-			var tableSpaceAllocationUpdater = new TableSpaceAllocationModelUpdater(dataModel, objectIdentifier);
-			var tableInMemorySpaceAllocationUpdater = new TableInMemorySpaceAllocationModelUpdater(dataModel, objectIdentifier, VersionString);
+			var tableDetailsUpdater = new TableDetailDataProvider(dataModel, objectIdentifier);
+			var tableSpaceAllocationUpdater = new TableSpaceAllocationDataProvider(dataModel, objectIdentifier);
+			var tableInMemorySpaceAllocationUpdater = new TableInMemorySpaceAllocationDataProvider(dataModel, objectIdentifier, VersionString);
 			await UpdateModelAsync(cancellationToken, true, tableDetailsUpdater, tableSpaceAllocationUpdater, tableInMemorySpaceAllocationUpdater);
 		}
 
 		public async override Task UpdateColumnDetailsAsync(OracleObjectIdentifier objectIdentifier, string columnName, ColumnDetailsModel dataModel, CancellationToken cancellationToken)
 		{
-			var columnDetailsUpdater = new ColumnDetailsModelUpdater(dataModel, objectIdentifier, columnName.Trim('"'));
-			var columnHistogramUpdater = new ColumnDetailsHistogramUpdater(dataModel, objectIdentifier, columnName.Trim('"'));
-			var columnInMemoryDetailsUpdater = new ColumnInMemoryDetailsModelUpdater(dataModel, objectIdentifier, columnName.Trim('"'), VersionString);
+			var columnDetailsUpdater = new ColumnDetailDataProvider(dataModel, objectIdentifier, columnName.Trim('"'));
+			var columnHistogramUpdater = new ColumnDetailHistogramDataProvider(dataModel, objectIdentifier, columnName.Trim('"'));
+			var columnInMemoryDetailsUpdater = new ColumnDetailInMemoryDataProvider(dataModel, objectIdentifier, columnName.Trim('"'), VersionString);
 			await UpdateModelAsync(cancellationToken, true, columnDetailsUpdater, columnHistogramUpdater, columnInMemoryDetailsUpdater);
 		}
 
 		public async override Task<IReadOnlyList<string>> GetRemoteTableColumnsAsync(string databaseLink, OracleObjectIdentifier schemaObject, CancellationToken cancellationToken)
 		{
-			var remoteTableColumnsUpdater = new RemoteTableColumnsUpdater(databaseLink, schemaObject);
+			var remoteTableColumnsUpdater = new RemoteTableColumnDataProvider(databaseLink, schemaObject);
 			await UpdateModelAsync(cancellationToken, false, remoteTableColumnsUpdater);
 			return remoteTableColumnsUpdater.Columns;
 		}
 
-		private async Task UpdateModelAsync(CancellationToken cancellationToken, bool suppressException, params IDataModelUpdater[] updaters)
+		private async Task UpdateModelAsync(CancellationToken cancellationToken, bool suppressException, params IModelDataProvider[] updaters)
 		{
 			using (var connection = new OracleConnection(_oracleConnectionString.ConnectionString))
 			{
@@ -467,7 +468,7 @@ namespace SqlPad.Oracle
 									if (updater.HasScalarResult)
 									{
 										var result = await command.ExecuteScalarAsynchronous(cancellationToken);
-										updater.MapScalarData(result);
+										updater.MapScalarValue(result);
 									}
 									else
 									{
@@ -674,8 +675,8 @@ namespace SqlPad.Oracle
 
 			if (executionModel.GatherExecutionStatistics)
 			{
-				_executionStatisticsUpdater = new SessionExecutionStatisticsUpdater(StatisticsKeys, _userSessionId);
-				await UpdateModelAsync(cancellationToken, true, _executionStatisticsUpdater.SessionBeginExecutionStatisticsUpdater);
+				_executionStatisticsDataProvider = new SessionExecutionStatisticsDataProvider(StatisticsKeys, _userSessionId);
+				await UpdateModelAsync(cancellationToken, true, _executionStatisticsDataProvider.SessionBeginExecutionStatisticsDataProvider);
 			}
 
 			_userDataReader = await _userCommand.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken);
@@ -829,7 +830,7 @@ namespace SqlPad.Oracle
 
 		private async Task<IReadOnlyList<CompilationError>> RetrieveCompilationErrors(StatementBase statement, CancellationToken cancellationToken)
 		{
-			var compilationErrorUpdater = new CompilationErrorModelUpdater(statement, _currentSchema);
+			var compilationErrorUpdater = new CompilationErrorDataProvider(statement, _currentSchema);
 			await UpdateModelAsync(cancellationToken, true, compilationErrorUpdater);
 			return compilationErrorUpdater.Errors;
 		}
