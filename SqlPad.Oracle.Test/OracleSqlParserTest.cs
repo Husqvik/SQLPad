@@ -2374,6 +2374,16 @@ FROM
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
+		[Test(Description = @"")]
+		public void TestUserFunction()
+		{
+			const string statement1 = "SELECT USER FROM DUAL";
+
+			var statements = Parser.Parse(statement1).ToArray();
+			var statement = statements.Single().Validate();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+		}
+
 		public class PlSql
 		{
 			[Test(Description = @"")]
@@ -2996,6 +3006,7 @@ END;";
 						Terminals.Timestamp,
 						Terminals.Treat,
 						Terminals.Unique,
+						Terminals.User,
 						Terminals.Variance,
 						Terminals.XmlAggregate,
 						Terminals.XmlCast,

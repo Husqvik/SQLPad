@@ -545,13 +545,6 @@ namespace SqlPad.Oracle
 
 		private static void ResolveExecutionOrder(List<ExecutionPlanItem> leafItems, ExecutionPlanItem nextItem, ExecutionPlanItem breakAtItem, ref int executionOrder)
 		{
-			foreach (var item in nextItem.Parent.ChildItems.Where(i => i.ExecutionOrder == 0))
-			{
-				item.ExecutionOrder = ++executionOrder;
-			}
-
-			nextItem = nextItem.Parent;
-
 			do
 			{
 				if (nextItem == breakAtItem)

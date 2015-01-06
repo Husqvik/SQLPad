@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Xml.Linq;
 
 namespace SqlPad.Oracle.ExecutionPlan
@@ -33,7 +34,7 @@ namespace SqlPad.Oracle.ExecutionPlan
 		}
 	}
 
-	[DebuggerDisplay("ExecutionPlanItem (Operation={Operation}, Depth={Depth}, ExecutionOrder={ExecutionOrder})")]
+	[DebuggerDisplay("ExecutionPlanItem (Id={Id}; Operation={Operation}; Depth={Depth}; IsLeaf={IsLeaf}; ExecutionOrder={ExecutionOrder})")]
 	public class ExecutionPlanItem
 	{
 		private readonly List<ExecutionPlanItem> _childItems = new List<ExecutionPlanItem>();
@@ -112,13 +113,13 @@ namespace SqlPad.Oracle.ExecutionPlan
 			do
 			{
 				item = item.Parent;
-			} while (item != null && item.Parent != parent);
+			} while (item != null && item != parent);
 
 			return item != null;
 		}
 	}
 
-	/*class TreeViewLineConverter : IValueConverter
+	class TreeViewLineConverter : IValueConverter
 	{
 		public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
 		{
@@ -131,5 +132,5 @@ namespace SqlPad.Oracle.ExecutionPlan
 		{
 			return false;
 		}
-	}*/
+	}
 }

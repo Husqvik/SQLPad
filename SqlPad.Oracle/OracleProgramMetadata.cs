@@ -64,8 +64,11 @@ namespace SqlPad.Oracle
 		{
 			get
 			{
-				return Parameters.Count > 0 && _metadataMinimumArguments == null
+				var properMetadataMinimumArgumentCount = Parameters.Count > 0
 					? Parameters.Count(p => !p.IsOptional && p.DataLevel == 0) - 1
+					: (int?)null;
+				return properMetadataMinimumArgumentCount.HasValue && (_metadataMinimumArguments == null || properMetadataMinimumArgumentCount < _metadataMinimumArguments)
+					? properMetadataMinimumArgumentCount.Value
 					: (_metadataMinimumArguments ?? 0);
 			}
 		}
