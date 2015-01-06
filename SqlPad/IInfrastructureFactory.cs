@@ -49,7 +49,7 @@ namespace SqlPad
 
 	public interface IExecutionPlanViewer
 	{
-		Task<ActionResult> ExplainAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken);
+		Task ExplainAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken);
 
 		Control Control { get; }
 	}

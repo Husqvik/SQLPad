@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Shouldly;
+using SqlPad.Oracle.ExecutionPlan;
 using SqlPad.Oracle.ToolTips;
 using SqlPad.Test;
 
@@ -16,8 +17,9 @@ namespace SqlPad.Oracle.Database.Test
 	[TestFixture]
 	public class OracleDatabaseModelTest : TemporaryDirectoryTestFixture
 	{
-		private readonly ConnectionStringSettings _connectionString = new ConnectionStringSettings("TestConnection", "DATA SOURCE=HQ_PDB_TCP;PASSWORD=oracle;USER ID=HUSQVIK");
 		private const string LoopbackDatabaseLinkName = "HQ_PDB";
+		private readonly ConnectionStringSettings _connectionString = new ConnectionStringSettings("TestConnection", "DATA SOURCE=HQ_PDB_TCP;PASSWORD=oracle;USER ID=HUSQVIK");
+		private static readonly OracleObjectIdentifier ExplainPlanTableIdentifier = OracleObjectIdentifier.Create(null, "TOAD_PLAN_TABLE");
 
 		[Test]
 		public void TestModelInitialization()
@@ -330,11 +332,133 @@ namespace SqlPad.Oracle.Database.Test
 			Trace.WriteLine(displayCursorUpdater.PlanText);
 		}
 
-		private void ExecuteUpdater(IDataModelUpdater columnDetailsUpdater)
+		[Test]
+		public void TestExplainPlanUpdater()
+		{
+			const string testQuery =
+@"SELECT
+    *
+FROM
+    (SELECT ROWNUM VAL FROM DUAL) T1,
+    (SELECT ROWNUM VAL FROM DUAL) T2,
+    (SELECT ROWNUM VAL FROM DUAL) T3
+WHERE
+    T1.VAL = T2.VAL AND
+    T2.VAL = T3.VAL";
+
+			var explainPlanUpdater = new ExplainPlanUpdater(testQuery, "TestQuery", ExplainPlanTableIdentifier);
+			ExecuteUpdater(explainPlanUpdater.CreateExplainPlanUpdater, explainPlanUpdater.LoadExplainPlanUpdater);
+
+			explainPlanUpdater.RootItem.ShouldNotBe(null);
+			explainPlanUpdater.RootItem.Operation.ShouldBe("SELECT STATEMENT");
+			explainPlanUpdater.RootItem.ExecutionOrder.ShouldBe(12);
+			explainPlanUpdater.RootItem.ChildItems.Count.ShouldBe(1);
+			explainPlanUpdater.RootItem.ChildItems[0].ExecutionOrder.ShouldBe(11);
+			explainPlanUpdater.RootItem.ChildItems[0].Operation.ShouldBe("HASH JOIN");
+			explainPlanUpdater.RootItem.ChildItems[0].ChildItems.Count.ShouldBe(2);
+			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[0].ExecutionOrder.ShouldBe(7);
+			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[0].Operation.ShouldBe("MERGE JOIN");
+			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[0].ChildItems.Count.ShouldBe(2);
+			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[0].ChildItems[0].ExecutionOrder.ShouldBe(3);
+			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[0].ChildItems[0].Operation.ShouldBe("VIEW");
+			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[0].ChildItems[0].ChildItems.Count.ShouldBe(1);
+			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[0].ChildItems[0].ChildItems[0].ExecutionOrder.ShouldBe(2);
+			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[0].ChildItems[0].ChildItems[0].Operation.ShouldBe("COUNT");
+			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[0].ChildItems[0].ChildItems[0].ChildItems.Count.ShouldBe(1);
+			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[0].ChildItems[0].ChildItems[0].ChildItems[0].ExecutionOrder.ShouldBe(1);
+			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[0].ChildItems[0].ChildItems[0].ChildItems[0].Operation.ShouldBe("FAST DUAL");
+			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[0].ChildItems[0].ChildItems[0].ChildItems[0].ChildItems.Count.ShouldBe(0);
+			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[0].ChildItems[1].ExecutionOrder.ShouldBe(6);
+			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[0].ChildItems[1].Operation.ShouldBe("VIEW");
+			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[0].ChildItems[1].ChildItems.Count.ShouldBe(1);
+			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[0].ChildItems[1].ChildItems[0].ExecutionOrder.ShouldBe(5);
+			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[0].ChildItems[1].ChildItems[0].Operation.ShouldBe("COUNT");
+			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[0].ChildItems[1].ChildItems[0].ChildItems.Count.ShouldBe(1);
+			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[0].ChildItems[1].ChildItems[0].ChildItems[0].ExecutionOrder.ShouldBe(4);
+			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[0].ChildItems[1].ChildItems[0].ChildItems[0].Operation.ShouldBe("FAST DUAL");
+			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[0].ChildItems[1].ChildItems[0].ChildItems[0].ChildItems.Count.ShouldBe(0);
+			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[1].ExecutionOrder.ShouldBe(10);
+			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[1].Operation.ShouldBe("VIEW");
+			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[1].ChildItems.Count.ShouldBe(1);
+			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[1].ChildItems[0].ExecutionOrder.ShouldBe(9);
+			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[1].ChildItems[0].Operation.ShouldBe("COUNT");
+			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[1].ChildItems[0].ChildItems.Count.ShouldBe(1);
+			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[1].ChildItems[0].ChildItems[0].ExecutionOrder.ShouldBe(8);
+			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[1].ChildItems[0].ChildItems[0].Operation.ShouldBe("FAST DUAL");
+			explainPlanUpdater.RootItem.ChildItems[0].ChildItems[1].ChildItems[0].ChildItems[0].ChildItems.Count.ShouldBe(0);
+		}
+
+		[Test]
+		public void TestComplextExplainExecutionOrder()
+		{
+			const string testQuery =
+@"WITH PLAN_SOURCE AS (
+	SELECT
+		OPERATION, OPTIONS, ID, PARENT_ID, DEPTH, CASE WHEN PARENT_ID IS NULL THEN 1 ELSE POSITION END POSITION
+	FROM V$SQL_PLAN
+	WHERE SQL_ID = :SQL_ID AND CHILD_NUMBER = :CHILD_NUMBER)
+SELECT
+	OPERATION, OPTIONS,
+	ID,
+	DEPTH, POSITION, CHILDREN_COUNT, TMP, TREEPATH, TREEPATH_SUM
+FROM (
+	SELECT
+		OPERATION,
+		OPTIONS,
+		ID,
+		DEPTH,
+		POSITION,
+		CHILDREN_COUNT,
+		(SELECT NVL(SUM(CHILDREN_COUNT), 0) FROM PLAN_SOURCE CHILDREN WHERE PARENT_ID = PLAN_DATA.PARENT_ID AND POSITION < PLAN_DATA.POSITION) TMP,
+		TREEPATH,
+		(SELECT
+			SUM(
+				SUBSTR(
+			        TREEPATH,
+			        INSTR(TREEPATH, '|', 1, LEVEL) + 1,
+			        INSTR(TREEPATH, '|', 1, LEVEL + 1) - INSTR(TREEPATH, '|', 1, LEVEL) - 1
+			    )
+		    ) AS TOKEN
+		FROM
+			DUAL
+		CONNECT BY
+			LEVEL <= LENGTH(TREEPATH) - LENGTH(REPLACE(TREEPATH, '|', NULL))
+		) TREEPATH_SUM
+	FROM (
+		SELECT
+			LPAD('-', 2 * DEPTH, '-') || OPERATION OPERATION,
+			SYS_CONNECT_BY_PATH(POSITION, '|') || '|' TREEPATH,
+			OPTIONS,
+			ID, PARENT_ID, DEPTH, POSITION,
+			(SELECT COUNT(*) FROM PLAN_SOURCE CHILDREN START WITH ID = PLAN_SOURCE.ID CONNECT BY PRIOR ID = PARENT_ID) CHILDREN_COUNT
+		FROM
+			PLAN_SOURCE
+		START WITH
+			PARENT_ID IS NULL
+		CONNECT BY
+			PARENT_ID = PRIOR ID		
+	) PLAN_DATA
+) RICH_PLAN_DATA
+ORDER BY
+	ID";
+
+			var explainPlanUpdater = new ExplainPlanUpdater(testQuery, "TestQuery", ExplainPlanTableIdentifier);
+			ExecuteUpdater(explainPlanUpdater.CreateExplainPlanUpdater, explainPlanUpdater.LoadExplainPlanUpdater);
+
+			var allItems = new List<ExecutionPlanItem> { explainPlanUpdater.RootItem };
+			allItems.AddRange(explainPlanUpdater.RootItem.AllChildItems.OrderBy(i => i.Id));
+
+			var executionOrder = allItems.Select(i => i.ExecutionOrder).ToArray();
+			var expectedExecutionOrder = new [] { 19, 12, 11, 10, 9, 15, 14, 13, 18, 17, 16, 8, 7, 6, 5, 4, 3, 2, 1 };
+
+			executionOrder.ShouldBe(expectedExecutionOrder);
+		}
+
+		private void ExecuteUpdater(params IDataModelUpdater[] updaters)
 		{
 			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
 			{
-				var task = (Task)typeof(OracleDatabaseModel).GetMethod("UpdateModelAsync", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(databaseModel, new object[] { CancellationToken.None, false, new[] { columnDetailsUpdater } });
+				var task = (Task)typeof (OracleDatabaseModel).GetMethod("UpdateModelAsync", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(databaseModel, new object[] { CancellationToken.None, false, updaters });
 				task.Wait();
 			}
 		}

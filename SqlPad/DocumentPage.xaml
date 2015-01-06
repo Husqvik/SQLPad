@@ -12,7 +12,7 @@
 	<UserControl.Resources>
 		<sqlPad:SelectedIndexConverter x:Key="SelectedIndexConverter" />
 		<sqlPad:ColorCodeToColorConverter x:Key="ColorCodeToColorConverter" />
-		<sqlPad:PrettyPrintNumericConverter x:Key="PrettyPrintNumericConverter" />
+		<sqlPad:PrettyPrintIntegerConverter x:Key="PrettyPrintNumericConverter" />
 
 		<ContextMenu x:Key="FoldingActionMenu">
 			<ContextMenu.CommandBindings>

@@ -2089,7 +2089,7 @@ namespace SqlPad
 		}
 	}
 
-	public struct ActionResult
+	internal struct ActionResult
 	{
 		public bool IsSuccessful { get { return Exception == null; } }
 		

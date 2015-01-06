@@ -9,6 +9,7 @@
              d:DesignHeight="300" d:DesignWidth="300">
 	<UserControl.Resources>
 		<sqlPad:DataSpaceConverter x:Key="DataSpaceConverter" />
+		<sqlPad:PrettyPrintIntegerConverter x:Key="PrettyPrintNumericConverter" />
 		<sqlPad:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
 
 		<!--<executionPlan:TreeViewLineConverter x:Key="LineConverter"/>-->
@@ -118,79 +119,126 @@
 		</Style>-->
 	</UserControl.Resources>
 	<TreeView x:Name="Viewer">
+		<TreeView.Resources>
+			<Style x:Key="PlanItemBaseStyle" TargetType="TextBlock">
+				<Style.Setters>
+					<Setter Property="FontFamily" Value="Arial"/>
+				</Style.Setters>
+			</Style>
+
+			<Style x:Key="ItemHeaderStyle" TargetType="TextBlock" BasedOn="{StaticResource PlanItemBaseStyle}">
+				<Style.Setters>
+					<Setter Property="Foreground" Value="DarkBlue"/>
+					<Setter Property="FontSize" Value="12"/>
+					<Setter Property="FontWeight" Value="Bold"/>
+				</Style.Setters>
+			</Style>
+			<Style x:Key="OptimizerStyle" TargetType="TextBlock" BasedOn="{StaticResource PlanItemBaseStyle}">
+				<Style.Setters>
+					<Setter Property="Foreground" Value="DarkBlue"/>
+					<Setter Property="FontSize" Value="12"/>
+				</Style.Setters>
+			</Style>
+			<Style x:Key="ObjectLabelStyle" TargetType="TextBlock" BasedOn="{StaticResource PlanItemBaseStyle}">
+				<Style.Setters>
+					<Setter Property="Foreground" Value="DarkBlue"/>
+					<Setter Property="FontSize" Value="11"/>
+				</Style.Setters>
+			</Style>
+			<Style x:Key="PlanStatisticValueStyle" TargetType="TextBlock" BasedOn="{StaticResource PlanItemBaseStyle}">
+				<Style.Setters>
+					<Setter Property="Foreground" Value="DarkRed"/>
+					<Setter Property="FontSize" Value="11"/>
+				</Style.Setters>
+			</Style>
+			<Style x:Key="OtherLabelStyle" TargetType="TextBlock" BasedOn="{StaticResource PlanItemBaseStyle}">
+				<Style.Setters>
+					<Setter Property="FontSize" Value="11"/>
+				</Style.Setters>
+			</Style>
+		</TreeView.Resources>
+		
 		<TreeView.ItemContainerStyle>
 			<Style TargetType="{x:Type TreeViewItem}">
 				<Setter Property="IsExpanded" Value="True" />
 			</Style>
 		</TreeView.ItemContainerStyle>
+		
 		<TreeView.ItemTemplate>
 			<HierarchicalDataTemplate ItemsSource="{Binding ChildItems}">
 				<StackPanel>
 					<StackPanel Orientation="Horizontal">
-						<TextBlock FontWeight="Bold" Foreground="DarkBlue">
+						<TextBlock Style="{StaticResource ItemHeaderStyle}">
+							<Run Text="{Binding ExecutionOrder}"/><Run Text="."/>
 							<Run Text="{Binding Operation}"/>
 							<Run Text=" " />
 						</TextBlock>
-						<TextBlock Visibility="{Binding Optimizer, Converter={StaticResource ObjectToVisibilityConverter}}">
+						<TextBlock Style="{StaticResource OptimizerStyle}" Visibility="{Binding Optimizer, Converter={StaticResource ObjectToVisibilityConverter}}">
 							<Run Text="{Binding Optimizer}" Foreground="DarkBlue" />
 							<Run Text=" "/>
 						</TextBlock>
-						<TextBlock FontWeight="Bold" Foreground="DarkBlue" Visibility="{Binding Options, Converter={StaticResource ObjectToVisibilityConverter}}">
+						<TextBlock Style="{StaticResource ItemHeaderStyle}" Visibility="{Binding Options, Converter={StaticResource ObjectToVisibilityConverter}}">
 							<Run Text="{Binding Options}"/>
 							<Run Text=" "/>
 						</TextBlock>
-						<TextBlock Foreground="DarkBlue" Visibility="{Binding ObjectOwner, Converter={StaticResource ObjectToVisibilityConverter}}">
+						<TextBlock Style="{StaticResource ObjectLabelStyle}" Visibility="{Binding ObjectOwner, Converter={StaticResource ObjectToVisibilityConverter}}">
 							<Run Text="{Binding ObjectOwner}" /><Run Text="."/>
 						</TextBlock>
-						<TextBlock Text="{Binding ObjectName}" Foreground="DarkBlue" Visibility="{Binding ObjectName, Converter={StaticResource ObjectToVisibilityConverter}}" />
-						<TextBlock Text="{Binding ObjectAlias}" Foreground="DarkBlue" Visibility="{Binding ObjectAlias, Converter={StaticResource ObjectToVisibilityConverter}}" />
-					</StackPanel>
-					<StackPanel Orientation="Horizontal">
-						<TextBlock Foreground="DarkRed" Visibility="{Binding Cost, Converter={StaticResource ObjectToVisibilityConverter}}">
-							<Run Text="Cost: "/>
-							<Run Text="{Binding Cost}"/>
-							<Run Text=" " />
+						<TextBlock Style="{StaticResource ObjectLabelStyle}" Visibility="{Binding ObjectName, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="{Binding ObjectName}"/>
+							<Run Text=" "/>
 						</TextBlock>
-						<TextBlock Foreground="DarkRed" Visibility="{Binding Cardinality, Converter={StaticResource ObjectToVisibilityConverter}}">
-							<Run Text="Cardinality: "/>
-							<Run Text="{Binding Cardinality}"/>
-							<Run Text=" " />
+						<TextBlock Style="{StaticResource ObjectLabelStyle}" Visibility="{Binding ObjectAlias, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="{Binding ObjectAlias}"/>
+							<Run Text=" "/>
 						</TextBlock>
-						<TextBlock Foreground="DarkRed" Visibility="{Binding Bytes, Converter={StaticResource ObjectToVisibilityConverter}}">
-							<Run Text="Data Volume: "/>
-							<Run Text="{Binding Bytes, Converter={StaticResource DataSpaceConverter}}"/>
-							<Run Text=" " />
-						</TextBlock>
-						<TextBlock Foreground="DarkRed" Visibility="{Binding TempSpace, Converter={StaticResource ObjectToVisibilityConverter}}">
-							<Run Text="Temp: "/>
-							<Run Text="{Binding TempSpace, Converter={StaticResource DataSpaceConverter}}"/>
-							<Run Text=" " />
-						</TextBlock>
-						<TextBlock Foreground="DarkRed" Visibility="{Binding Time, Converter={StaticResource ObjectToVisibilityConverter}}">
-							<Run Text="Time: "/>
-							<Run Text="{Binding Time}"/>
-							<Run Text=" " />
-						</TextBlock>
-						<TextBlock Foreground="DarkRed" Visibility="{Binding CpuCost, Converter={StaticResource ObjectToVisibilityConverter}}">
-							<Run Text="CPU Cost: "/>
-							<Run Text="{Binding CpuCost}"/>
-							<Run Text=" " />
-						</TextBlock>
-						<TextBlock Foreground="DarkRed" Visibility="{Binding IoCost, Converter={StaticResource ObjectToVisibilityConverter}}">
-							<Run Text="IO Cost: "/>
-							<Run Text="{Binding IoCost}"/>
-							<Run Text=" " />
-						</TextBlock>
-						<TextBlock Visibility="{Binding QueryBlockName, Converter={StaticResource ObjectToVisibilityConverter}}">
+						<TextBlock Style="{StaticResource OtherLabelStyle}" Visibility="{Binding QueryBlockName, Converter={StaticResource ObjectToVisibilityConverter}}">
 							<Run Text="Query Block: "/>
 							<Run Text="{Binding QueryBlockName}"/>
 						</TextBlock>
 					</StackPanel>
-					<TextBlock Visibility="{Binding AccessPredicates, Converter={StaticResource ObjectToVisibilityConverter}}">
+					<StackPanel Orientation="Horizontal">
+						<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding Cost, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="Cost: "/>
+							<Run Text="{Binding Cost, Converter={StaticResource PrettyPrintNumericConverter}}"/>
+							<Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding Cardinality, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="Cardinality: "/>
+							<Run Text="{Binding Cardinality, Converter={StaticResource PrettyPrintNumericConverter}}"/>
+							<Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding Bytes, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="Data Volume: "/>
+							<Run Text="{Binding Bytes, Converter={StaticResource DataSpaceConverter}}"/>
+							<Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding TempSpace, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="Temp: "/>
+							<Run Text="{Binding TempSpace, Converter={StaticResource DataSpaceConverter}}"/>
+							<Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding Time, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="Time: "/>
+							<Run Text="{Binding Time}"/>
+							<Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding CpuCost, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="CPU Cost: "/>
+							<Run Text="{Binding CpuCost, Converter={StaticResource PrettyPrintNumericConverter}}"/>
+							<Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding IoCost, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="IO Cost: "/>
+							<Run Text="{Binding IoCost, Converter={StaticResource PrettyPrintNumericConverter}}"/>
+							<Run Text=" " />
+						</TextBlock>
+					</StackPanel>
+					<TextBlock Style="{StaticResource OtherLabelStyle}" Visibility="{Binding AccessPredicates, Converter={StaticResource ObjectToVisibilityConverter}}">
 						<Run Text="Access Predicates:"/>
 						<Run Text="{Binding AccessPredicates}"/>
 					</TextBlock>
-					<TextBlock Visibility="{Binding FilterPredicates, Converter={StaticResource ObjectToVisibilityConverter}}">
+					<TextBlock Style="{StaticResource OtherLabelStyle}" Visibility="{Binding FilterPredicates, Converter={StaticResource ObjectToVisibilityConverter}}">
 						<Run Text="Filter Predicates:"/>
 						<Run Text="{Binding FilterPredicates}"/>
 					</TextBlock>

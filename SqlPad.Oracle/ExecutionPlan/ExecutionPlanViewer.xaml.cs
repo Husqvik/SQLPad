@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Controls;
@@ -20,35 +22,29 @@ namespace SqlPad.Oracle.ExecutionPlan
 			_databaseModel = databaseModel;
 		}
 
-		public async Task<ActionResult> ExplainAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
+		public async Task ExplainAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
 		{
-			ExecutionPlanItem rootItem = null;
-			var actionResult = new ActionResult();
-			var now = DateTime.Now;
-
-			try
-			{
-				rootItem = await _databaseModel.ExplainPlanAsync(executionModel, cancellationToken);
-			}
-			catch (Exception e)
-			{
-				actionResult.Exception = e;
-			}
-
-			actionResult.Elapsed = DateTime.Now - now;
+			var rootItem = await _databaseModel.ExplainPlanAsync(executionModel, cancellationToken);
 
 			if (rootItem != null)
 			{
 				Viewer.ItemsSource = new[] { rootItem };
 			}
-
-			return actionResult;
 		}
 	}
 
+	[DebuggerDisplay("ExecutionPlanItem (Operation={Operation}, Depth={Depth}, ExecutionOrder={ExecutionOrder})")]
 	public class ExecutionPlanItem
 	{
 		private readonly List<ExecutionPlanItem> _childItems = new List<ExecutionPlanItem>();
+
+		public int ExecutionOrder { get; set; }
+		
+		public int Id { get; set; }
+
+		public int Depth { get; set; }
+		
+		public bool IsLeaf { get { return _childItems.Count == 0; } }
 		
 		public string Operation { get; set; }
 		
@@ -99,10 +95,26 @@ namespace SqlPad.Oracle.ExecutionPlan
 			get { return _childItems.AsReadOnly(); }
 		}
 
+		public IEnumerable<ExecutionPlanItem> AllChildItems
+		{
+			get { return _childItems.Concat(_childItems.SelectMany(i => i.AllChildItems)); }
+		}
+
 		public void AddChildItem(ExecutionPlanItem childItem)
 		{
 			_childItems.Add(childItem);
 			childItem.Parent = this;
+		}
+
+		public bool IsChildFrom(ExecutionPlanItem parent)
+		{
+			var item = this;
+			do
+			{
+				item = item.Parent;
+			} while (item != null && item.Parent != parent);
+
+			return item != null;
 		}
 	}
 

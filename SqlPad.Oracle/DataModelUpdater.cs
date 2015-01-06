@@ -460,7 +460,7 @@ namespace SqlPad.Oracle
 
 			public override void InitializeCommand(OracleCommand command)
 			{
-				command.CommandText = String.Format("EXPLAIN PLAN SET STATEMENT_ID = '{0}' INTO {1} FOR {2}", DataModel.ExecutionPlanKey, DataModel.TargetTableName, DataModel.StatementText);
+				command.CommandText = String.Format("EXPLAIN PLAN SET STATEMENT_ID = '{0}' INTO {1} FOR\n{2}", DataModel.ExecutionPlanKey, DataModel.TargetTableName, DataModel.StatementText);
 			}
 
 			public override void MapReaderData(OracleDataReader reader) { }
@@ -481,6 +481,7 @@ namespace SqlPad.Oracle
 			public override void MapReaderData(OracleDataReader reader)
 			{
 				var treeItemDictionary = new Dictionary<int, ExecutionPlanItem>();
+				ExecutionPlanItem startItem = null;
 				
 				while (reader.Read())
 				{
@@ -490,6 +491,8 @@ namespace SqlPad.Oracle
 					var item =
 						new ExecutionPlanItem
 						{
+							Id = Convert.ToInt32(reader["ID"]),
+							Depth = Convert.ToInt32(reader["DEPTH"]),
 							Operation = (string)reader["OPERATION"],
 							Options = OracleReaderValueConvert.ToString(reader["OPTIONS"]),
 							Optimizer = OracleReaderValueConvert.ToString(reader["OPTIMIZER"]),
@@ -518,11 +521,68 @@ namespace SqlPad.Oracle
 						treeItemDictionary[parentId.Value].AddChildItem(item);
 					}
 
-					treeItemDictionary.Add(Convert.ToInt32(reader["ID"]), item);
+					if (startItem == null || item.Depth > startItem.Depth)
+					{
+						startItem = item;
+					}
+
+					treeItemDictionary.Add(item.Id, item);
 				}
 
-				DataModel.RootItem = treeItemDictionary[0];
+				if (startItem != null)
+				{
+					DataModel.RootItem = treeItemDictionary[0];
+
+					var itemDepthLookup = treeItemDictionary.Values.ToLookup(i => i.Depth);
+
+					var executionOrder = 0;
+					var maxDepth = startItem.Depth;
+					ResolveExecutionOrder(itemDepthLookup, startItem, null, maxDepth, ref executionOrder);
+				}
 			}
+		}
+
+		private static void ResolveExecutionOrder(ILookup<int, ExecutionPlanItem> itemDepthLookup, ExecutionPlanItem nextItem, ExecutionPlanItem breakAtItem, int maxDepth, ref int executionOrder)
+		{
+			foreach (var item in nextItem.Parent.ChildItems.Where(i => i.ExecutionOrder == 0))
+			{
+				item.ExecutionOrder = ++executionOrder;
+			}
+
+			nextItem = nextItem.Parent;
+
+			do
+			{
+				if (nextItem == breakAtItem)
+				{
+					return;
+				}
+
+				nextItem.ExecutionOrder = ++executionOrder;
+				if (nextItem.Parent == null)
+				{
+					return;
+				}
+
+				nextItem = nextItem.Parent;
+				var allChildrenExecuted = nextItem.ChildItems.Count(i => i.ExecutionOrder == 0) == 0;
+				if (!allChildrenExecuted)
+				{
+					ExecutionPlanItem otherBranchDeepestItem;
+					var lookupDepth = maxDepth;
+					do
+					{
+						otherBranchDeepestItem = itemDepthLookup[lookupDepth].FirstOrDefault(n => n.ExecutionOrder == 0 && n.IsChildFrom(nextItem));
+					} while (otherBranchDeepestItem == null && --lookupDepth > 0);
+
+					if (otherBranchDeepestItem == null)
+					{
+						return;
+					}
+					
+					ResolveExecutionOrder(itemDepthLookup, otherBranchDeepestItem, nextItem, maxDepth, ref executionOrder);
+				}
+			} while (true);
 		}
 
 		private class ExplainPlanModelInternal : ModelBase
