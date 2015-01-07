@@ -4,7 +4,6 @@ using System.Configuration;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using SqlPad.Oracle.ExecutionPlan;
 using SqlPad.Oracle.ToolTips;
 
@@ -1018,7 +1017,7 @@ Note
 
 		public override void CommitTransaction() { }
 
-		public override void RollbackTransaction() { }
+		public override Task RollbackTransaction() { return Task.FromResult(0); }
 		
 		public override void CloseActiveReader() { }
 

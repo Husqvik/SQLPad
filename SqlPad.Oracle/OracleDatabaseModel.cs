@@ -266,9 +266,9 @@ namespace SqlPad.Oracle
 			ExecuteUserTransactionAction(t => t.Commit());
 		}
 
-		public override void RollbackTransaction()
+		public override Task RollbackTransaction()
 		{
-			ExecuteUserTransactionAction(t => t.Rollback());
+			return Task.Factory.StartNew(() => ExecuteUserTransactionAction(t => t.Rollback()));
 		}
 
 		private void ExecuteUserTransactionAction(Action<OracleTransaction> action)
@@ -278,14 +278,7 @@ namespace SqlPad.Oracle
 				return;
 			}
 
-			try
-			{
-				action(_userTransaction);
-			}
-			catch (Exception e)
-			{
-				Trace.WriteLine("Transaction action failed: " + e);
-			}
+			action(_userTransaction);
 
 			_userTransactionId = null;
 			_userTransactionIsolationLevel = IsolationLevel.Unspecified;

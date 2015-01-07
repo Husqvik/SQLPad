@@ -21,6 +21,7 @@ namespace SqlPad
 		private ConnectionStringSettings _currentConnection;
 		private string _currentSchema;
 		private ICollection<BindVariableModel> _bindVariables;
+		private bool _isTransactionControlEnabled = true;
 		private bool _isModified;
 		private bool _isRunning;
 		private int _affectedRowCount = -1;
@@ -77,6 +78,12 @@ namespace SqlPad
 			set { UpdateValueAndRaisePropertyChanged(ref _transactionControlVisibity, value); }
 		}
 
+		public bool IsTransactionControlEnabled
+		{
+			get { return _isTransactionControlEnabled; }
+			set { UpdateValueAndRaisePropertyChanged(ref _isTransactionControlEnabled, value); }
+		}
+		
 		public bool IsModified
 		{
 			get { return _isModified; }

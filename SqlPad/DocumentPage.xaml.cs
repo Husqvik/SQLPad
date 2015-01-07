@@ -1998,13 +1998,23 @@ namespace SqlPad
 			Editor.Focus();
 		}
 
-		private void ButtonRollbackTransactionClickHandler(object sender, RoutedEventArgs e)
+		private async void ButtonRollbackTransactionClickHandler(object sender, RoutedEventArgs e)
 		{
-			SafeActionWithUserError(() =>
+			_pageModel.IsTransactionControlEnabled = false;
+			
+			var actionResult = await SafeTimedActionAsync(() => DatabaseModel.RollbackTransaction());
+			if (!actionResult.IsSuccessful)
 			{
-				DatabaseModel.RollbackTransaction();
+				Messages.ShowError(MainWindow, actionResult.Exception.Message);
+			}
+			else
+			{
 				_pageModel.TransactionControlVisibity = Visibility.Collapsed;
-			});
+			}
+
+			UpdateStatusBarElapsedExecutionTime(actionResult.Elapsed);
+
+			_pageModel.IsTransactionControlEnabled = true;
 
 			Editor.Focus();
 		}

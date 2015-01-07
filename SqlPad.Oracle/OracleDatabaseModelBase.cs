@@ -74,7 +74,7 @@ namespace SqlPad.Oracle
 
 		public abstract void CommitTransaction();
 
-		public abstract void RollbackTransaction();
+		public abstract Task RollbackTransaction();
 		
 		public abstract void CloseActiveReader();
 

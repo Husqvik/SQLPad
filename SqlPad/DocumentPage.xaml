@@ -88,7 +88,7 @@
 				<RowDefinition />
 				<RowDefinition Height="Auto" />
 			</Grid.RowDefinitions>
-			<StackPanel Visibility="{Binding TransactionControlVisibity}" HorizontalAlignment="Left" Orientation="Horizontal" sqlPad:MarginSetter.Margin="2,1,0,3">
+			<StackPanel Visibility="{Binding TransactionControlVisibity}" IsEnabled="{Binding IsTransactionControlEnabled}" HorizontalAlignment="Left" Orientation="Horizontal" sqlPad:MarginSetter.Margin="2,1,0,3">
 				<Button Content="Commit" Padding="6,0,6,0" Click="ButtonCommitTransactionClickHandler" />
 				<Button Content="Rollback" Padding="6,0,6,0" Click="ButtonRollbackTransactionClickHandler" />
 			</StackPanel>

@@ -54,7 +54,7 @@ namespace SqlPad
 
 		void CommitTransaction();
 
-		void RollbackTransaction();
+		Task RollbackTransaction();
 
 		void CloseActiveReader();
 	}

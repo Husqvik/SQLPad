@@ -53,7 +53,6 @@
 					<ControlTemplate TargetType="{x:Type TreeViewItem}">
 						<Grid Name="RootGrid">
 							<Grid.ColumnDefinitions>
-								<ColumnDefinition Width="28"/>
 								<ColumnDefinition MinWidth="19" Width="Auto"/>
 								<ColumnDefinition Width="Auto"/>
 								<ColumnDefinition Width="*"/>
@@ -63,19 +62,21 @@
 								<RowDefinition/>
 							</Grid.RowDefinitions>
 
-							<!-- Connecting Lines -->
-							<TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" FontFamily="Arial" FontSize="12" FontWeight="Bold" Padding="0,0,2,0" Foreground="DarkBlue">
-								<Run Text="{Binding ExecutionOrder}" /><Run Text="." />
-							</TextBlock>
 							<Rectangle Name="SelectionEdge"  Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Grid.ColumnSpan="4" SnapsToDevicePixels="True"/>
-							<Rectangle Grid.Row="0" Grid.Column="1" Margin="9,1,0,0" Height="1" Stroke="#DCDCDC" SnapsToDevicePixels="True"/>
-							<Rectangle x:Name="VerticalLine" Grid.Row="0" Grid.Column="1" Width="1" Stroke="#DCDCDC" Margin="0,0,1,0" Grid.RowSpan="2" SnapsToDevicePixels="true" Fill="White"/>
-							<ToggleButton Margin="-1,0,0,0" x:Name="Expander" Grid.Row="0" Grid.Column="1" Style="{StaticResource ExpandCollapseToggleStyle}" IsChecked="{Binding Path=IsExpanded, RelativeSource={RelativeSource TemplatedParent}}" ClickMode="Press"/>
+							<!-- Connecting Lines -->
+							<Rectangle Grid.Row="0" Grid.Column="0" Margin="9,1,0,0" Height="1" Stroke="#DCDCDC" SnapsToDevicePixels="True"/>
+							<Rectangle x:Name="VerticalLine" Grid.Row="0" Grid.Column="0" Width="1" Stroke="#DCDCDC" Margin="0,0,1,0" Grid.RowSpan="2" SnapsToDevicePixels="true" Fill="White"/>
+							<ToggleButton Margin="-1,0,0,0" x:Name="Expander" Grid.Row="0" Grid.Column="0" Style="{StaticResource ExpandCollapseToggleStyle}" IsChecked="{Binding Path=IsExpanded, RelativeSource={RelativeSource TemplatedParent}}" ClickMode="Press"/>
 
-							<Border Name="ContentBorder" Grid.Row="0" Grid.Column="2" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
-								<ContentPresenter x:Name="PART_Header" ContentSource="Header" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" MinWidth="20"/>
+							<Border Name="ContentBorder" Grid.Row="0" Grid.Column="1" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
+								<StackPanel Orientation="Horizontal">
+									<TextBlock VerticalAlignment="Center" HorizontalAlignment="Right" FontFamily="Arial" FontSize="12" FontWeight="Bold" Padding="3,0,3,0" Foreground="DarkBlue">
+										<Run Text="{Binding ExecutionOrder}" /><Run Text=". " />
+									</TextBlock>
+									<ContentPresenter x:Name="PART_Header" ContentSource="Header" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" MinWidth="20"/>
+								</StackPanel>
 							</Border>
-							<ItemsPresenter x:Name="ItemsHost" Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2"/>
+							<ItemsPresenter x:Name="ItemsHost" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2"/>
 						</Grid>
 						<ControlTemplate.Triggers>
 
