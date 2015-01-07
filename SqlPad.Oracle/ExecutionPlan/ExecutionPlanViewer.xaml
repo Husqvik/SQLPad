@@ -181,7 +181,7 @@
 			<RoutedCommand x:Key="CommandSaveContentAsPng"/>
 		</TreeView.Resources>
 
-		<!--<TreeView.ContextMenu>
+		<TreeView.ContextMenu>
 			<ContextMenu>
 				<ContextMenu.CommandBindings>
 					<CommandBinding Command="{StaticResource CommandSaveContentAsPng}" CanExecute="SaveAsPngCanExecuteHandler" Executed="SaveAsPngCanExecutedHandler"/>
@@ -189,7 +189,7 @@
 
 				<MenuItem Header="Save as PNG" Command="{StaticResource CommandSaveContentAsPng}" />
 			</ContextMenu>
-		</TreeView.ContextMenu>-->
+		</TreeView.ContextMenu>
 
 		<TreeView.ItemTemplate>
 			<HierarchicalDataTemplate ItemsSource="{Binding ChildItems}" DataType="executionPlan:ExecutionPlanItem">

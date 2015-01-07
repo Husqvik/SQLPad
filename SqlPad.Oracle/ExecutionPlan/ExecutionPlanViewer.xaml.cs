@@ -42,22 +42,19 @@ namespace SqlPad.Oracle.ExecutionPlan
 		private void SaveContentAsPng(string fileName)
 		{
 			var content = (TreeViewItem)(Viewer.ItemContainerGenerator.ContainerFromItem(Viewer.Items[0]));
-			var actualWidth = content.ActualWidth;
-			var actualHeight = content.ActualHeight;
+			var presentationSource = PresentationSource.FromVisual(content);
+			var dpiX = 96.0 * presentationSource.CompositionTarget.TransformToDevice.M11;
+			var dpiY = 96.0 * presentationSource.CompositionTarget.TransformToDevice.M22;
+			var renderTarget = new RenderTargetBitmap((int)Math.Ceiling(content.RenderSize.Width), (int)Math.Ceiling(content.RenderSize.Height), dpiX, dpiY, PixelFormats.Pbgra32);
 
-			var renderTarget = new RenderTargetBitmap((int)Math.Ceiling(actualWidth), (int)Math.Ceiling(actualHeight), 96, 96, PixelFormats.Pbgra32);
-			var sourceBrush = new VisualBrush(content);
+			content.Measure(content.RenderSize);
+			content.Arrange(new Rect(content.RenderSize));
 
-			var drawingVisual = new DrawingVisual();
-			using (var drawingContext = drawingVisual.RenderOpen())
-			{
-				drawingContext.DrawRectangle(sourceBrush, null, new Rect(new Point(0, 0), new Point(actualWidth, actualHeight)));
-			}
-
-			renderTarget.Render(drawingVisual);
+			renderTarget.Render(content);
 
 			var encoder = new PngBitmapEncoder();
-			encoder.Frames.Add(BitmapFrame.Create(renderTarget));
+			var bitmapFrame = BitmapFrame.Create(renderTarget);
+			encoder.Frames.Add(bitmapFrame);
 
 			try
 			{
