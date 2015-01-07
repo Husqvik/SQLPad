@@ -452,15 +452,8 @@ namespace SqlPad.Oracle
 				return null;
 
 			return terminal.SourcePosition.IndexEnd < CursorPosition
-				? TrimQuoteIfInvalidQuotedIdentifier(terminal.Token.Value)
+				? terminal.Token.Value.Trim('"')
 				: terminal.Token.Value.Substring(0, CursorPosition - terminal.SourcePosition.IndexStart).Trim('"');
-		}
-
-		private string TrimQuoteIfInvalidQuotedIdentifier(string value)
-		{
-			return value[0] == '"' && value[value.Length - 1] != '"'
-				? value.TrimStart('"')
-				: value;
 		}
 
 		private StatementGrammarNode GetTerminalIfUnderCursor(StatementGrammarNode terminal)

@@ -1787,6 +1787,15 @@ FROM
 			items.Length.ShouldBe(0);
 		}
 
+		[Test(Description = @"")]
+		public void TestSuggestionAfterOpeningQuoteInOrderByClause()
+		{
+			const string testQuery = "SELECT * FROM DUAL ORDER BY \"";
+
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, testQuery, 29).ToArray();
+			items.Length.ShouldBeGreaterThan(0);
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)
