@@ -278,7 +278,15 @@ namespace SqlPad.Oracle
 				return;
 			}
 
-			action(_userTransaction);
+			try
+			{
+				_isExecuting = true;
+				action(_userTransaction);
+			}
+			finally
+			{
+				_isExecuting = false;
+			}
 
 			_userTransactionId = null;
 			_userTransactionIsolationLevel = IsolationLevel.Unspecified;

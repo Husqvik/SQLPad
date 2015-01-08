@@ -652,7 +652,7 @@ namespace SqlPad
 
 		private void CanExecuteCancelUserActionHandler(object sender, CanExecuteRoutedEventArgs args)
 		{
-			args.CanExecute = DatabaseModel.IsExecuting || IsBusy;
+			args.CanExecute = _statementExecutionCancellationTokenSource != null;
 		}
 
 		private void CancelUserActionHandler(object sender, ExecutedRoutedEventArgs args)
@@ -691,15 +691,12 @@ namespace SqlPad
 
 			using (_statementExecutionCancellationTokenSource = new CancellationTokenSource())
 			{
-				while (DatabaseModel.CanFetch)
+				while (!_statementExecutionCancellationTokenSource.IsCancellationRequested && DatabaseModel.CanFetch)
 				{
-					if (_statementExecutionCancellationTokenSource.Token.IsCancellationRequested)
-					{
-						break;
-					}
-
 					await FetchNextRows();
 				}
+
+				_statementExecutionCancellationTokenSource = null;
 			}
 
 			IsBusy = false;
@@ -726,7 +723,7 @@ namespace SqlPad
 
 				if (_gatherExecutionStatistics)
 				{
-					_pageModel.SessionExecutionStatistics.MergeWith(await DatabaseModel.GetExecutionStatisticsAsync(CancellationToken.None));
+					_pageModel.SessionExecutionStatistics.MergeWith(await DatabaseModel.GetExecutionStatisticsAsync(_statementExecutionCancellationTokenSource.Token));
 				}
 			}
 		}
@@ -808,7 +805,12 @@ namespace SqlPad
 			IsBusy = true;
 			
 			var executionModel = BuildStatementExecutionModel();
-			await ExecuteDatabaseCommand(executionModel);
+
+			using (_statementExecutionCancellationTokenSource = new CancellationTokenSource())
+			{
+				await ExecuteDatabaseCommand(executionModel);
+				_statementExecutionCancellationTokenSource = null;
+			}
 
 			IsBusy = false;
 		}
@@ -872,68 +874,65 @@ namespace SqlPad
 			InitializeViewBeforeCommandExecution();
 
 			Task<StatementExecutionResult> innerTask = null;
-			using (_statementExecutionCancellationTokenSource = new CancellationTokenSource())
+			var actionResult = await SafeTimedActionAsync(() => innerTask = DatabaseModel.ExecuteStatementAsync(executionModel, _statementExecutionCancellationTokenSource.Token));
+
+			_pageModel.TransactionControlVisibity = DatabaseModel.HasActiveTransaction ? Visibility.Visible : Visibility.Collapsed;
+
+			if (!actionResult.IsSuccessful)
 			{
-				var actionResult = await SafeTimedActionAsync(() => innerTask = DatabaseModel.ExecuteStatementAsync(executionModel, _statementExecutionCancellationTokenSource.Token));
-
-				_pageModel.TransactionControlVisibity = DatabaseModel.HasActiveTransaction ? Visibility.Visible : Visibility.Collapsed;
-
-				if (!actionResult.IsSuccessful)
-				{
-					Messages.ShowError(MainWindow, actionResult.Exception.Message);
-					return;
-				}
-
-				if (!innerTask.Result.ExecutedSuccessfully)
-				{
-					return;
-				}
-
-				UpdateStatusBarElapsedExecutionTime(actionResult.Elapsed);
-
-				_pageModel.WriteDatabaseOutput(innerTask.Result.DatabaseOutput);
-
-				if (_gatherExecutionStatistics)
-				{
-					_pageModel.TextExecutionPlan = await DatabaseModel.GetActualExecutionPlanAsync(_statementExecutionCancellationTokenSource.Token);
-					_pageModel.SessionExecutionStatistics.MergeWith(await DatabaseModel.GetExecutionStatisticsAsync(_statementExecutionCancellationTokenSource.Token));
-					TabControlResult.SelectedItem = previousSelectedTab;
-				}
-				else if (IsTabAlwaysVisible(previousSelectedTab))
-				{
-					TabControlResult.SelectedItem = previousSelectedTab;
-				}
-
-				if (innerTask.Result.CompilationErrors.Count > 0)
-				{
-					var lineOffset = Editor.GetLineNumberByOffset(executionModel.Statement.SourcePosition.IndexStart);
-					foreach (var error in innerTask.Result.CompilationErrors)
-					{
-						error.Line += lineOffset;
-						_pageModel.CompilationErrors.Add(error);
-					}
-
-					TabControlResult.SelectedIndex = 4;
-				}
-
-				if (innerTask.Result.ColumnHeaders.Count == 0)
-				{
-					if (innerTask.Result.AffectedRowCount == - 1)
-					{
-						_pageModel.StatementExecutedSuccessfullyStatusMessageVisibility = Visibility.Visible;
-					}
-					else
-					{
-						_pageModel.AffectedRowCount = innerTask.Result.AffectedRowCount;
-					}
-
-					return;
-				}
-
-				InitializeResultGrid(innerTask.Result.ColumnHeaders);
-
-				AppendRows(innerTask.Result.InitialResultSet);
+				Messages.ShowError(MainWindow, actionResult.Exception.Message);
+				return;
 			}
+
+			if (!innerTask.Result.ExecutedSuccessfully)
+			{
+				return;
+			}
+
+			UpdateStatusBarElapsedExecutionTime(actionResult.Elapsed);
+
+			_pageModel.WriteDatabaseOutput(innerTask.Result.DatabaseOutput);
+
+			if (_gatherExecutionStatistics)
+			{
+				_pageModel.TextExecutionPlan = await DatabaseModel.GetActualExecutionPlanAsync(_statementExecutionCancellationTokenSource.Token);
+				_pageModel.SessionExecutionStatistics.MergeWith(await DatabaseModel.GetExecutionStatisticsAsync(_statementExecutionCancellationTokenSource.Token));
+				TabControlResult.SelectedItem = previousSelectedTab;
+			}
+			else if (IsTabAlwaysVisible(previousSelectedTab))
+			{
+				TabControlResult.SelectedItem = previousSelectedTab;
+			}
+
+			if (innerTask.Result.CompilationErrors.Count > 0)
+			{
+				var lineOffset = Editor.GetLineNumberByOffset(executionModel.Statement.SourcePosition.IndexStart);
+				foreach (var error in innerTask.Result.CompilationErrors)
+				{
+					error.Line += lineOffset;
+					_pageModel.CompilationErrors.Add(error);
+				}
+
+				TabControlResult.SelectedIndex = 4;
+			}
+
+			if (innerTask.Result.ColumnHeaders.Count == 0)
+			{
+				if (innerTask.Result.AffectedRowCount == - 1)
+				{
+					_pageModel.StatementExecutedSuccessfullyStatusMessageVisibility = Visibility.Visible;
+				}
+				else
+				{
+					_pageModel.AffectedRowCount = innerTask.Result.AffectedRowCount;
+				}
+
+				return;
+			}
+
+			InitializeResultGrid(innerTask.Result.ColumnHeaders);
+
+			AppendRows(innerTask.Result.InitialResultSet);
 		}
 
 		private void UpdateStatusBarElapsedExecutionTime(TimeSpan timeSpan)
@@ -2001,6 +2000,7 @@ namespace SqlPad
 		private async void ButtonRollbackTransactionClickHandler(object sender, RoutedEventArgs e)
 		{
 			_pageModel.IsTransactionControlEnabled = false;
+			IsBusy = true;
 			
 			var actionResult = await SafeTimedActionAsync(() => DatabaseModel.RollbackTransaction());
 			if (!actionResult.IsSuccessful)
@@ -2015,6 +2015,8 @@ namespace SqlPad
 			UpdateStatusBarElapsedExecutionTime(actionResult.Elapsed);
 
 			_pageModel.IsTransactionControlEnabled = true;
+
+			IsBusy = false;
 
 			Editor.Focus();
 		}
@@ -2032,12 +2034,16 @@ namespace SqlPad
 				return;
 			}
 
+			IsBusy = true;
+
 			using (_statementExecutionCancellationTokenSource = new CancellationTokenSource())
 			{
-				IsBusy = true;
 				await FetchNextRows();
-				IsBusy = false;
+
+				_statementExecutionCancellationTokenSource = null;
 			}
+
+			IsBusy = false;
 		}
 
 		private void ReadOnlyGridKeyDownHandler(object sender, KeyEventArgs e)
