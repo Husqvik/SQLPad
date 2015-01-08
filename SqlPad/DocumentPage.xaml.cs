@@ -856,6 +856,11 @@ namespace SqlPad
 
 			_pageModel.AffectedRowCount = -1;
 
+			SelectDefaultTabIfNeeded();
+		}
+
+		private void SelectDefaultTabIfNeeded()
+		{
 			if (!IsTabAlwaysVisible(TabControlResult.SelectedItem))
 			{
 				TabControlResult.SelectedIndex = 0;
@@ -1959,6 +1964,8 @@ namespace SqlPad
 
 		private async Task ExecuteExplainPlan()
 		{
+			SelectDefaultTabIfNeeded();
+
 			_pageModel.ExecutionPlanAvailable = Visibility.Collapsed;
 
 			var statementModel = BuildStatementExecutionModel();

@@ -484,10 +484,12 @@ namespace SqlPad.Oracle
 							}
 							catch (OracleException exception)
 							{
-								if (exception.Number != OracleErrorCodeUserInvokedCancellation)
+								if (exception.Number == OracleErrorCodeUserInvokedCancellation)
 								{
-									throw;
+									break;
 								}
+								
+								throw;
 							}
 						}
 					}
