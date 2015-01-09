@@ -8,6 +8,8 @@ namespace SqlPad
 	[DebuggerDisplay("{ToString()}")]
 	public class StatementGrammarNode : StatementNode
 	{
+		public static readonly IReadOnlyCollection<StatementGrammarNode> EmptyArray = new StatementGrammarNode[0];
+
 		private readonly List<StatementGrammarNode> _childNodes = new List<StatementGrammarNode>();
 		private List<StatementCommentNode> _commentNodes;
 

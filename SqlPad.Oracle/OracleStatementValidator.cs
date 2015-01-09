@@ -326,7 +326,7 @@ namespace SqlPad.Oracle
 					var node = typeReference.ObjectNode;
 					var targetTypeObject = typeReference.SchemaObject.GetTargetSchemaObject() as OracleTypeObject;
 					if (semanticError == OracleSemanticErrorType.None && targetTypeObject != null &&
-						targetTypeObject.TypeCode == OracleTypeBase.TypeCodeObject && targetTypeObject.Attributes.Count != typeReference.ParameterNodes.Count)
+						targetTypeObject.TypeCode == OracleTypeBase.TypeCodeObject && targetTypeObject.Attributes.Count != typeReference.ParameterReferences.Count)
 					{
 						semanticError = OracleSemanticErrorType.InvalidParameterCount;
 						node = typeReference.ParameterListNode;
@@ -421,8 +421,8 @@ namespace SqlPad.Oracle
 
 						// TODO: Handle optional parameters
 						var parameterListSemanticError = OracleSemanticErrorType.None;
-						if ((programReference.ParameterNodes.Count < programReference.Metadata.MinimumArguments) ||
-						    (programReference.ParameterNodes.Count > maximumParameterCount))
+						if ((programReference.ParameterReferences.Count < programReference.Metadata.MinimumArguments) ||
+						    (programReference.ParameterReferences.Count > maximumParameterCount))
 						{
 							parameterListSemanticError = OracleSemanticErrorType.InvalidParameterCount;
 						}
@@ -434,6 +434,32 @@ namespace SqlPad.Oracle
 						if (parameterListSemanticError != OracleSemanticErrorType.None && programReference.ParameterListNode.AllChildNodes.All(n => n.IsGrammarValid))
 						{
 							validationModel.ProgramNodeValidity[programReference.ParameterListNode] = new InvalidNodeValidationData(parameterListSemanticError) { Node = programReference.ParameterListNode };
+						}
+
+						var namedParameterExists = false;
+						foreach (var parameterReference in programReference.ParameterReferences)
+						{
+							if (parameterReference.OptionalIdentifierTerminal != null)
+							{
+								namedParameterExists = true;
+
+								OracleProgramParameterMetadata parameterMetadata;
+								if (String.IsNullOrEmpty(programReference.Metadata.Identifier.Owner) || programReference.Metadata.Owner.FullyQualifiedName == OracleDatabaseModelBase.BuiltInFunctionPackageIdentifier)
+								{
+									validationModel.IdentifierNodeValidity[parameterReference.OptionalIdentifierTerminal] =
+										new InvalidNodeValidationData(OracleSemanticErrorType.NamedParameterNotAllowed) { Node = parameterReference.OptionalIdentifierTerminal };
+								}
+								else if (!programReference.Metadata.NamedParameter.TryGetValue(parameterReference.OptionalIdentifierTerminal.Token.Value.ToQuotedIdentifier(), out parameterMetadata))
+								{
+									validationModel.IdentifierNodeValidity[parameterReference.OptionalIdentifierTerminal] =
+										new NodeValidationData { IsRecognized = false, Node = parameterReference.OptionalIdentifierTerminal };
+								}
+							}
+							else if (namedParameterExists)
+							{
+								validationModel.InvalidNonTerminals[parameterReference.ParameterNode] =
+									new InvalidNodeValidationData(OracleSemanticErrorType.PositionalParameterNotAllowed) { Node = parameterReference.ParameterNode };
+							}
 						}
 					}
 				}

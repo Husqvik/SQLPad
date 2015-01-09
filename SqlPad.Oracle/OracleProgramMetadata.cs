@@ -17,6 +17,7 @@ namespace SqlPad.Oracle
 		private readonly int? _metadataMaximumArguments;
 
 		private List<OracleProgramParameterMetadata> _parameters;
+		private Dictionary<string, OracleProgramParameterMetadata> _parameterDictionary;
 
 		internal OracleProgramMetadata(ProgramType type, OracleProgramIdentifier identifier, bool isAnalytic, bool isAggregate, bool isPipelined, bool isOffloadable, bool parallelSupport, bool isDeterministic, int? metadataMinimumArguments, int? metadataMaximumArguments, AuthId authId, string displayType, bool isBuiltIn)
 		{
@@ -35,7 +36,45 @@ namespace SqlPad.Oracle
 			IsBuiltIn = isBuiltIn;
 		}
 
-		public IList<OracleProgramParameterMetadata> Parameters { get { return _parameters ?? (_parameters = new List<OracleProgramParameterMetadata>()); } }
+		public IReadOnlyList<OracleProgramParameterMetadata> Parameters
+		{
+			get
+			{
+				EnsureParameterCollection();
+
+				return _parameters;
+			}
+		}
+
+		public IReadOnlyDictionary<string, OracleProgramParameterMetadata> NamedParameter
+		{
+			get { return _parameterDictionary ?? BuildParameterDictionary(); }
+		}
+
+		public void AddParameter(OracleProgramParameterMetadata parameterMetadata)
+		{
+			AddParameters(Enumerable.Repeat(parameterMetadata, 1));
+		}
+
+		public void AddParameters(IEnumerable<OracleProgramParameterMetadata> parameterMetadata)
+		{
+			EnsureParameterCollection();
+
+			_parameters.AddRange(parameterMetadata);
+		}
+
+		private void EnsureParameterCollection()
+		{
+			if (_parameters == null)
+			{
+				_parameters = new List<OracleProgramParameterMetadata>();
+			}
+		}
+
+		private IReadOnlyDictionary<string, OracleProgramParameterMetadata> BuildParameterDictionary()
+		{
+			return _parameterDictionary = Parameters.Where(p => p.Direction != ParameterDirection.ReturnValue).ToDictionary(p => p.Name);
+		}
 
 		public OracleProgramParameterMetadata ReturnParameter
 		{

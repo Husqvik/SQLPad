@@ -17,6 +17,8 @@ namespace SqlPad.Oracle
 		public const string ObjectCannotBeUsed = "Object cannot be used here";
 		public const string InvalidColumnCount = "Invalid column count";
 		public const string FunctionReturningRowSetRequired = "Function must return a row set";
+		public const string NamedParameterNotAllowed = "Named parameter not allowed";
+		public const string PositionalParameterNotAllowed = "A positional parameter association may not follow a named association";
 	}
 
 	public static class OracleSemanticErrorTooltipText

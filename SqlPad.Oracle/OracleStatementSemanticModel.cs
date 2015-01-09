@@ -1256,7 +1256,7 @@ namespace SqlPad.Oracle
 					DatabaseLinkNode = functionReference.DatabaseLinkNode,
 					DatabaseLink = functionReference.DatabaseLink,
 					Owner = functionReference.Owner,
-					ParameterNodes = functionReference.ParameterNodes,
+					ParameterReferences = functionReference.ParameterReferences,
 					ParameterListNode = functionReference.ParameterListNode,
 					RootNode = functionReference.RootNode,
 					SchemaObject = schemaObject,
@@ -1275,7 +1275,7 @@ namespace SqlPad.Oracle
 				: programReference.FullyQualifiedObjectName.NormalizedOwner;
 
 			var originalIdentifier = OracleProgramIdentifier.CreateFromValues(owner, programReference.FullyQualifiedObjectName.NormalizedName, programReference.NormalizedName);
-			var parameterCount = programReference.ParameterNodes == null ? 0 : programReference.ParameterNodes.Count;
+			var parameterCount = programReference.ParameterReferences == null ? 0 : programReference.ParameterReferences.Count;
 			var result = _databaseModel.GetProgramMetadata(originalIdentifier, parameterCount, true);
 			if (result.Metadata == null && !String.IsNullOrEmpty(originalIdentifier.Package) && String.IsNullOrEmpty(programReference.FullyQualifiedObjectName.NormalizedOwner))
 			{
@@ -1521,7 +1521,7 @@ namespace SqlPad.Oracle
 					Placement = columnReference.Placement,
 					AnalyticClauseNode = null,
 					ParameterListNode = null,
-					ParameterNodes = null
+					ParameterReferences = null
 				};
 
 			UpdateFunctionReferenceWithMetadata(programReference);
@@ -1875,7 +1875,8 @@ namespace SqlPad.Oracle
 						Owner = queryBlock,
 						AnalyticClauseNode = analyticClauseNode,
 						ParameterListNode = parameterList,
-						ParameterNodes = parameterNodes.AsReadOnly(),
+						ParameterReferences = parameterNodes
+							.Select(n => new ProgramParameterReference {ParameterNode = n}).ToArray(),
 						SelectListColumn = selectListColumn
 					};
 
@@ -1899,8 +1900,7 @@ namespace SqlPad.Oracle
 						n => !n.Id.In(NonTerminals.NestedQuery, NonTerminals.ParenthesisEnclosedAggregationFunctionParameters, NonTerminals.AggregateFunctionCall, NonTerminals.AnalyticFunctionCall, NonTerminals.AnalyticClause),
 						NonTerminals.ExpressionList, NonTerminals.OptionalParameterExpressionList)
 					.Select(n => n.ChildNodes.FirstOrDefault())
-					.ToArray()
-				: null;
+				: StatementGrammarNode.EmptyArray;
 
 			var functionReference =
 				new OracleProgramReference
@@ -1912,7 +1912,13 @@ namespace SqlPad.Oracle
 					Placement = placement,
 					AnalyticClauseNode = analyticClauseNode,
 					ParameterListNode = parameterList,
-					ParameterNodes = parameterExpressionRootNodes,
+					ParameterReferences = parameterExpressionRootNodes
+						.Select(n =>
+							new ProgramParameterReference
+							{
+								ParameterNode = n,
+								OptionalIdentifierTerminal = n.FirstTerminalNode != null && n.FirstTerminalNode.Id == Terminals.ParameterIdentifier ? n.FirstTerminalNode : null
+							}).ToArray(),
 					SelectListColumn = selectListColumn
 				};
 

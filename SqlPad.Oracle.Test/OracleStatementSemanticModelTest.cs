@@ -194,7 +194,7 @@ FROM
 			lagFunction.AnalyticClauseNode.ShouldNotBe(null);
 			lagFunction.SelectListColumn.ShouldNotBe(null);
 			lagFunction.ParameterListNode.ShouldNotBe(null);
-			lagFunction.ParameterNodes.Count.ShouldBe(3);
+			lagFunction.ParameterReferences.Count.ShouldBe(3);
 		}
 
 		[Test(Description = @"")]
@@ -307,8 +307,8 @@ FROM
 			maxFunction.AnalyticClauseNode.ShouldBe(null);
 			maxFunction.SelectListColumn.ShouldNotBe(null);
 			maxFunction.ParameterListNode.ShouldNotBe(null);
-			maxFunction.ParameterNodes.ShouldNotBe(null);
-			maxFunction.ParameterNodes.Count.ShouldBe(1);
+			maxFunction.ParameterReferences.ShouldNotBe(null);
+			maxFunction.ParameterReferences.Count.ShouldBe(1);
 		}
 
 		[Test(Description = @"")]
@@ -570,7 +570,7 @@ FROM
 			functionReference.AnalyticClauseNode.ShouldBe(null);
 			functionReference.SelectListColumn.ShouldNotBe(null);
 			functionReference.ParameterListNode.ShouldBe(null);
-			functionReference.ParameterNodes.ShouldBe(null);
+			functionReference.ParameterReferences.ShouldBe(null);
 			functionReference.RootNode.FirstTerminalNode.Token.Value.ShouldBe("SYS");
 			functionReference.RootNode.LastTerminalNode.Token.Value.ShouldBe("VALUE");
 		}
@@ -1021,8 +1021,8 @@ MODEL
 			programReference.AnalyticClauseNode.ShouldBe(null);
 			programReference.SelectListColumn.ShouldBe(null);
 			programReference.ParameterListNode.ShouldNotBe(null);
-			programReference.ParameterNodes.ShouldNotBe(null);
-			programReference.ParameterNodes.Count.ShouldBe(1);
+			programReference.ParameterReferences.ShouldNotBe(null);
+			programReference.ParameterReferences.Count.ShouldBe(1);
 		}
 
 		[Test(Description = @"")]
@@ -1042,8 +1042,8 @@ MODEL
 			programReference.AnalyticClauseNode.ShouldBe(null);
 			programReference.SelectListColumn.ShouldNotBe(null);
 			programReference.ParameterListNode.ShouldNotBe(null);
-			programReference.ParameterNodes.ShouldNotBe(null);
-			programReference.ParameterNodes.Count.ShouldBe(2);
+			programReference.ParameterReferences.ShouldNotBe(null);
+			programReference.ParameterReferences.Count.ShouldBe(2);
 		}
 
 		[Test(Description = @"")]
@@ -1072,14 +1072,14 @@ MODEL
 			programReferences[0].RootNode.FirstTerminalNode.Id.ShouldBe(Terminals.ObjectIdentifier);
 			programReferences[0].RootNode.LastTerminalNode.Id.ShouldBe(Terminals.RightParenthesis);
 			programReferences[0].ParameterListNode.ShouldNotBe(null);
-			programReferences[0].ParameterNodes.ShouldNotBe(null);
-			programReferences[0].ParameterNodes.Count.ShouldBe(3);
+			programReferences[0].ParameterReferences.ShouldNotBe(null);
+			programReferences[0].ParameterReferences.Count.ShouldBe(3);
 			programReferences[1].RootNode.ShouldNotBe(null);
 			programReferences[1].RootNode.FirstTerminalNode.Id.ShouldBe(Terminals.ObjectIdentifier);
 			programReferences[1].RootNode.LastTerminalNode.Id.ShouldBe(Terminals.RightParenthesis);
 			programReferences[1].ParameterListNode.ShouldNotBe(null);
-			programReferences[1].ParameterNodes.ShouldNotBe(null);
-			programReferences[1].ParameterNodes.Count.ShouldBe(3);
+			programReferences[1].ParameterReferences.ShouldNotBe(null);
+			programReferences[1].ParameterReferences.Count.ShouldBe(3);
 			programReferences[2].Metadata.ShouldNotBe(null);
 			programReferences[2].Metadata.Identifier.Name.ShouldBe("\"HEXTORAW\"");
 			programReferences[3].Metadata.ShouldNotBe(null);

@@ -118,7 +118,7 @@ namespace SqlPad.Oracle
 				}
 				else if (sysContextFunctionOverload.CurrentParameterIndex == 1 && sysContextFunctionOverload.ProgramMetadata.Parameters[sysContextFunctionOverload.CurrentParameterIndex + 1].DataType == "VARCHAR2")
 				{
-					var firstParameter = sysContextFunctionOverload.ProgramReference.ParameterNodes[0].GetDescendantByPath(NonTerminals.Expression);
+					var firstParameter = sysContextFunctionOverload.ProgramReference.ParameterReferences[0].ParameterNode.GetDescendantByPath(NonTerminals.Expression);
 					var contextNamespace = HasSingleStringLiteralParameterOrNoParameterToken(sysContextFunctionOverload, 0) ? firstParameter.ChildNodes[0].Token.Value.ToUpperInvariant() : null;
 					if (contextNamespace.ToPlainString() == ContextNamespaceUserEnvironment)
 					{
@@ -226,13 +226,13 @@ namespace SqlPad.Oracle
 		private static bool HasSingleLiteralParameterOrNoParameterToken(OracleCodeCompletionFunctionOverload functionOverload, string literalTerminalId, int? parameterIndex)
 		{
 			parameterIndex = parameterIndex ?? functionOverload.CurrentParameterIndex;
-			if (parameterIndex >= functionOverload.ProgramReference.ParameterNodes.Count)
+			if (parameterIndex >= functionOverload.ProgramReference.ParameterReferences.Count)
 			{
-				return functionOverload.ProgramReference.ParameterNodes.Count == parameterIndex;
+				return functionOverload.ProgramReference.ParameterReferences.Count == parameterIndex;
 			}
 
-			var firstParameter = functionOverload.ProgramReference.ParameterNodes[parameterIndex.Value];
-			var parameterExpression = firstParameter.GetDescendantByPath(NonTerminals.Expression);
+			var firstParameter = functionOverload.ProgramReference.ParameterReferences[parameterIndex.Value];
+			var parameterExpression = firstParameter.ParameterNode.GetDescendantByPath(NonTerminals.Expression);
 			return parameterExpression != null && parameterExpression.ChildNodes.Count == 1 && parameterExpression.ChildNodes[0].Id == literalTerminalId;
 		}
 

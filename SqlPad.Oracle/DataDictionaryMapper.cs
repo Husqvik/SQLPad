@@ -148,7 +148,7 @@ namespace SqlPad.Oracle
 
 				if (functionMetadata != null)
 				{
-					functionMetadata.Parameters.Add(functionIdentifierParameterMetadata.Value);
+					functionMetadata.AddParameter(functionIdentifierParameterMetadata.Value);
 				}
 			}
 
@@ -213,7 +213,7 @@ namespace SqlPad.Oracle
 			}
 
 			return new KeyValuePair<OracleProgramIdentifier, OracleProgramParameterMetadata>(
-				identifier, new OracleProgramParameterMetadata(parameterName, position, sequence, dataLevel, direction, dataType, OracleObjectIdentifier.Create(typeOwner, typeName), isOptional));
+				identifier, new OracleProgramParameterMetadata(QualifyStringObject(parameterName), position, sequence, dataLevel, direction, dataType, OracleObjectIdentifier.Create(typeOwner, typeName), isOptional));
 		}
 
 		private static OracleProgramIdentifier CreateFunctionIdentifierFromReaderValues(object owner, object package, object name, object overload)

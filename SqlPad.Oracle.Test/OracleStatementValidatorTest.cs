@@ -1949,5 +1949,37 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			programValidityItems[0].ToolTipText.ShouldBe(OracleSemanticErrorType.FunctionReturningRowSetRequired);
 			programValidityItems[0].Node.Token.Value.ShouldBe("NVL");
 		}
+
+		[Test(Description = @"")]
+		public void TestFunctionParameterErrors()
+		{
+			const string sqlText = @"SELECT TO_CHAR(left => 2), DBMS_XPLAN.DISPLAY_CURSOR(sql_idx => NULL, dummy + 1) FROM DUAL";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			var identifierValidityItems = validationModel.IdentifierNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			identifierValidityItems.Count.ShouldBe(2);
+			identifierValidityItems[0].IsRecognized.ShouldBe(true);
+			identifierValidityItems[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.NamedParameterNotAllowed);
+			identifierValidityItems[0].ToolTipText.ShouldBe(OracleSemanticErrorType.NamedParameterNotAllowed);
+			identifierValidityItems[0].Node.Token.Value.ShouldBe("left");
+
+			identifierValidityItems[1].IsRecognized.ShouldBe(false);
+			identifierValidityItems[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
+			identifierValidityItems[1].Node.Token.Value.ShouldBe("sql_idx");
+
+			var invalidNonTerminalItems = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			invalidNonTerminalItems.Count.ShouldBe(1);
+
+			invalidNonTerminalItems[0].IsRecognized.ShouldBe(true);
+			invalidNonTerminalItems[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.PositionalParameterNotAllowed);
+			invalidNonTerminalItems[0].ToolTipText.ShouldBe(OracleSemanticErrorType.PositionalParameterNotAllowed);
+			invalidNonTerminalItems[0].Node.TerminalCount.ShouldBe(3);
+			invalidNonTerminalItems[0].Node.FirstTerminalNode.Token.Value.ShouldBe("dummy");
+			invalidNonTerminalItems[0].Node.LastTerminalNode.Token.Value.ShouldBe("1");
+		}
 	}
 }

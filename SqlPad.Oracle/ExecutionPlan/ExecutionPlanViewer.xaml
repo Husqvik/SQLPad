@@ -154,6 +154,15 @@
 							<Setter Property="Foreground" Value="Red"/>
 						</MultiDataTrigger.Setters>
 					</MultiDataTrigger>
+					<MultiDataTrigger>
+						<MultiDataTrigger.Conditions>
+							<Condition Binding="{Binding Operation}" Value="MAT_VIEW ACCESS"/>
+							<Condition Binding="{Binding Options}" Value="FULL"/>
+						</MultiDataTrigger.Conditions>
+						<MultiDataTrigger.Setters>
+							<Setter Property="Foreground" Value="Red"/>
+						</MultiDataTrigger.Setters>
+					</MultiDataTrigger>
 				</Style.Triggers>
 			</Style>
 			<Style x:Key="ItemHeader" TargetType="TextBlock" BasedOn="{StaticResource PlanItemBaseStyle}">

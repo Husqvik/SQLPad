@@ -190,8 +190,15 @@ namespace SqlPad.Oracle
 	{
 		public StatementGrammarNode ParameterListNode { get; set; }
 
-		public IList<StatementGrammarNode> ParameterNodes { get; set; }
+		public IReadOnlyList<ProgramParameterReference> ParameterReferences { get; set; }
 
 		public abstract OracleProgramMetadata Metadata { get; set; }
+	}
+
+	public struct ProgramParameterReference
+	{
+		public StatementGrammarNode OptionalIdentifierTerminal { get; set; }
+
+		public StatementGrammarNode ParameterNode { get; set; }
 	}
 }

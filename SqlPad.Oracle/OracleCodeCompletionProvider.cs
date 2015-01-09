@@ -53,7 +53,7 @@ namespace SqlPad.Oracle
 							Name = metadata.Identifier.FullyQualifiedIdentifier,
 							Parameters = metadata.Parameters
 								.Where(p => p.Direction != ParameterDirection.ReturnValue && p.DataLevel == 0)
-								.Select(p => String.Format("{0}{1}", p.Name, String.IsNullOrEmpty(p.FullDataTypeName) ? null : String.Format(": {0}", p.FullDataTypeName)))
+								.Select(p => String.Format("{0}{1}", p.Name.ToSimpleIdentifier(), String.IsNullOrEmpty(p.FullDataTypeName) ? null : String.Format(": {0}", p.FullDataTypeName)))
 								.ToArray(),
 							CurrentParameterIndex = fo.CurrentParameterIndex,
 							ReturnedDatatype = returnParameter == null ? null : returnParameter.FullDataTypeName,
@@ -88,7 +88,7 @@ namespace SqlPad.Oracle
 			}
 
 			var currentParameterIndex = -1;
-			if (programReferenceBase.ParameterNodes != null)
+			if (programReferenceBase.ParameterReferences != null)
 			{
 				var lookupNode = node.Type == NodeType.Terminal ? node : node.GetNearestTerminalToPosition(cursorPosition);
 
@@ -107,10 +107,10 @@ namespace SqlPad.Oracle
 
 				if (lookupNode != null)
 				{
-					var parameterNode = programReferenceBase.ParameterNodes.FirstOrDefault(f => lookupNode.HasAncestor(f));
-					currentParameterIndex = parameterNode == null
-						? programReferenceBase.ParameterNodes.Count
-						: programReferenceBase.ParameterNodes.ToList().IndexOf(parameterNode);
+					var parameterReference = programReferenceBase.ParameterReferences.FirstOrDefault(f => lookupNode.HasAncestor(f.ParameterNode));
+					currentParameterIndex = parameterReference.ParameterNode == null
+						? programReferenceBase.ParameterReferences.Count
+						: programReferenceBase.ParameterReferences.ToList().IndexOf(parameterReference);
 				}
 			}
 

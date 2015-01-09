@@ -225,8 +225,8 @@ namespace SqlPad.Oracle
 				(a, i) => new OracleProgramParameterMetadata(a.Name.ToSimpleIdentifier(), i + 1, i + 1, 0, ParameterDirection.Input, GetFunctionParameterTypeName(a.DataType), GetFunctionParameterCustomTypeIdentifier(a.DataType), false));
 
 			var returnParameter = new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TypeCodeObject, FullyQualifiedName, false);
-			constructorMetadata.Parameters.Add(returnParameter);
-			constructorMetadata.Parameters.AddRange(constructorParameters);
+			constructorMetadata.AddParameter(returnParameter);
+			constructorMetadata.AddParameters(constructorParameters);
 			return constructorMetadata;
 		}
 
@@ -271,8 +271,8 @@ namespace SqlPad.Oracle
 
 			var returnParameterType = CollectionType == OracleCollectionType.Table ? OracleCollectionTypeNestedTable : OracleCollectionTypeVarryingArray;
 			var constructorMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(FullyQualifiedName.Owner, null, FullyQualifiedName.Name), false, false, false, false, false, false, 0, UpperBound ?? Int32.MaxValue, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeParenthesis, false);
-			constructorMetadata.Parameters.Add(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, returnParameterType, FullyQualifiedName, false));
-			constructorMetadata.Parameters.Add(new OracleProgramParameterMetadata(String.Format("array of {0}", elementTypeLabel), 1, 1, 0, ParameterDirection.Input, String.Empty, OracleObjectIdentifier.Empty, true));
+			constructorMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, returnParameterType, FullyQualifiedName, false));
+			constructorMetadata.AddParameter(new OracleProgramParameterMetadata(String.Format("array of {0}", elementTypeLabel), 1, 1, 0, ParameterDirection.Input, String.Empty, OracleObjectIdentifier.Empty, true));
 			constructorMetadata.Owner = this;
 			
 			return constructorMetadata;
