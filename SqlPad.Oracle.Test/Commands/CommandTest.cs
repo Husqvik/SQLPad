@@ -1583,5 +1583,50 @@ MODEL
 
 			_editor.Text.ShouldBe(expectedResult);
 		}
+
+		[Test(Description = @""), STAThread]
+		public void TestConvertOrderByColumnReferences()
+		{
+			const string statementText = @"SELECT T.*, '[' || NAME || ']' FROM (SELECT NAME FROM SELECTION) T ORDER BY 1, 2";
+			_editor.Text = statementText;
+			_editor.CaretOffset = 67;
+
+			CanExecuteCommand(OracleCommands.ConvertOrderByNumberColumnReferences).ShouldBe(true);
+			ExecuteCommand(OracleCommands.ConvertOrderByNumberColumnReferences);
+
+			const string expectedResult = @"SELECT T.*, '[' || NAME || ']' FROM (SELECT NAME FROM SELECTION) T ORDER BY T.NAME, '[' || NAME || ']'";
+
+			_editor.Text.ShouldBe(expectedResult);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestConvertOrderByColumnReferencesWithInvalidColumnNumber()
+		{
+			const string statementText = @"SELECT T.*, '[' || NAME || ']' FROM (SELECT NAME FROM SELECTION) T ORDER BY 1, 3";
+			_editor.Text = statementText;
+			_editor.CaretOffset = 67;
+
+			CanExecuteCommand(OracleCommands.ConvertOrderByNumberColumnReferences).ShouldBe(true);
+			ExecuteCommand(OracleCommands.ConvertOrderByNumberColumnReferences);
+
+			const string expectedResult = @"SELECT T.*, '[' || NAME || ']' FROM (SELECT NAME FROM SELECTION) T ORDER BY T.NAME, 3";
+
+			_editor.Text.ShouldBe(expectedResult);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestConvertOrderByColumnReferencesAtSpecificColumn()
+		{
+			const string statementText = @"SELECT T.*, '[' || NAME || ']' FROM (SELECT NAME FROM SELECTION) T ORDER BY 1, 2";
+			_editor.Text = statementText;
+			_editor.CaretOffset = 79;
+
+			CanExecuteCommand(OracleCommands.ConvertOrderByNumberColumnReferences).ShouldBe(true);
+			ExecuteCommand(OracleCommands.ConvertOrderByNumberColumnReferences);
+
+			const string expectedResult = @"SELECT T.*, '[' || NAME || ']' FROM (SELECT NAME FROM SELECTION) T ORDER BY 1, '[' || NAME || ']'";
+
+			_editor.Text.ShouldBe(expectedResult);
+		}
 	}
 }

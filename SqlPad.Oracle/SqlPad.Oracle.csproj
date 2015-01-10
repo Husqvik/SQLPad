@@ -87,6 +87,7 @@
     <Compile Include="Commands\AddMissingColumnCommand.cs" />
     <Compile Include="Commands\LiteralBindVariableConversionCommand.cs" />
     <Compile Include="Commands\BindVariableLiteralConversionCommand.cs" />
+    <Compile Include="Commands\ConvertOrderByNumberColumnReferencesCommand.cs" />
     <Compile Include="Commands\UnquoteCommand.cs" />
     <Compile Include="Commands\CreateScriptCommand.cs" />
     <Compile Include="Commands\AddInsertIntoColumnListCommand.cs" />

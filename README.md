@@ -138,6 +138,8 @@ Create script
 
 Convert to literal
 
+ConvertOrderByNumberColumnReferences
+
 
 #####@Literal
 
@@ -156,6 +158,10 @@ Add columns (hold SHIFT to select specific column)
 #####@XMLTABLE, JSONTABLE, TABLE
 
 Wrap current query block as inline view
+
+#####@ORDER, BY:
+
+ConvertOrderByNumberColumnReferences
 
 Requirements
 ------------
