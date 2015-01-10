@@ -84,7 +84,7 @@ namespace SqlPad.Oracle
 
 		public abstract IEnumerable<object[]> FetchRecords(int rowCount);
 
-		public abstract Task<ExecutionPlanItem> ExplainPlanAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken);
+		public abstract Task<ExecutionPlanItemCollection> ExplainPlanAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken);
 
 		public abstract Task<string> GetActualExecutionPlanAsync(CancellationToken cancellationToken);
 

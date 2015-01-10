@@ -350,43 +350,45 @@ WHERE
 			var explainPlanDataProvider = new ExplainPlanDataProvider(ExplainPlanTestQuery, "TestQuery", ExplainPlanTableIdentifier);
 			ExecuteDataProvider(explainPlanDataProvider.CreateExplainPlanUpdater, explainPlanDataProvider.LoadExplainPlanUpdater);
 
-			explainPlanDataProvider.RootItem.ShouldNotBe(null);
-			explainPlanDataProvider.RootItem.Operation.ShouldBe("SELECT STATEMENT");
-			explainPlanDataProvider.RootItem.ExecutionOrder.ShouldBe(12);
-			explainPlanDataProvider.RootItem.ChildItems.Count.ShouldBe(1);
-			explainPlanDataProvider.RootItem.ChildItems[0].ExecutionOrder.ShouldBe(11);
-			explainPlanDataProvider.RootItem.ChildItems[0].Operation.ShouldBe("HASH JOIN");
-			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems.Count.ShouldBe(2);
-			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[0].ExecutionOrder.ShouldBe(7);
-			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[0].Operation.ShouldBe("MERGE JOIN");
-			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[0].ChildItems.Count.ShouldBe(2);
-			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[0].ChildItems[0].ExecutionOrder.ShouldBe(3);
-			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[0].ChildItems[0].Operation.ShouldBe("VIEW");
-			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[0].ChildItems[0].ChildItems.Count.ShouldBe(1);
-			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[0].ChildItems[0].ChildItems[0].ExecutionOrder.ShouldBe(2);
-			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[0].ChildItems[0].ChildItems[0].Operation.ShouldBe("COUNT");
-			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[0].ChildItems[0].ChildItems[0].ChildItems.Count.ShouldBe(1);
-			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[0].ChildItems[0].ChildItems[0].ChildItems[0].ExecutionOrder.ShouldBe(1);
-			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[0].ChildItems[0].ChildItems[0].ChildItems[0].Operation.ShouldBe("FAST DUAL");
-			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[0].ChildItems[0].ChildItems[0].ChildItems[0].ChildItems.Count.ShouldBe(0);
-			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[0].ChildItems[1].ExecutionOrder.ShouldBe(6);
-			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[0].ChildItems[1].Operation.ShouldBe("VIEW");
-			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[0].ChildItems[1].ChildItems.Count.ShouldBe(1);
-			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[0].ChildItems[1].ChildItems[0].ExecutionOrder.ShouldBe(5);
-			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[0].ChildItems[1].ChildItems[0].Operation.ShouldBe("COUNT");
-			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[0].ChildItems[1].ChildItems[0].ChildItems.Count.ShouldBe(1);
-			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[0].ChildItems[1].ChildItems[0].ChildItems[0].ExecutionOrder.ShouldBe(4);
-			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[0].ChildItems[1].ChildItems[0].ChildItems[0].Operation.ShouldBe("FAST DUAL");
-			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[0].ChildItems[1].ChildItems[0].ChildItems[0].ChildItems.Count.ShouldBe(0);
-			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[1].ExecutionOrder.ShouldBe(10);
-			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[1].Operation.ShouldBe("VIEW");
-			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[1].ChildItems.Count.ShouldBe(1);
-			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[1].ChildItems[0].ExecutionOrder.ShouldBe(9);
-			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[1].ChildItems[0].Operation.ShouldBe("COUNT");
-			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[1].ChildItems[0].ChildItems.Count.ShouldBe(1);
-			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[1].ChildItems[0].ChildItems[0].ExecutionOrder.ShouldBe(8);
-			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[1].ChildItems[0].ChildItems[0].Operation.ShouldBe("FAST DUAL");
-			explainPlanDataProvider.RootItem.ChildItems[0].ChildItems[1].ChildItems[0].ChildItems[0].ChildItems.Count.ShouldBe(0);
+			var rootItem = explainPlanDataProvider.ItemCollection.RootItem;
+			explainPlanDataProvider.ItemCollection.AllItems.Count.ShouldBe(12);
+			rootItem.ShouldNotBe(null);
+			rootItem.Operation.ShouldBe("SELECT STATEMENT");
+			rootItem.ExecutionOrder.ShouldBe(12);
+			rootItem.ChildItems.Count.ShouldBe(1);
+			rootItem.ChildItems[0].ExecutionOrder.ShouldBe(11);
+			rootItem.ChildItems[0].Operation.ShouldBe("HASH JOIN");
+			rootItem.ChildItems[0].ChildItems.Count.ShouldBe(2);
+			rootItem.ChildItems[0].ChildItems[0].ExecutionOrder.ShouldBe(7);
+			rootItem.ChildItems[0].ChildItems[0].Operation.ShouldBe("MERGE JOIN");
+			rootItem.ChildItems[0].ChildItems[0].ChildItems.Count.ShouldBe(2);
+			rootItem.ChildItems[0].ChildItems[0].ChildItems[0].ExecutionOrder.ShouldBe(3);
+			rootItem.ChildItems[0].ChildItems[0].ChildItems[0].Operation.ShouldBe("VIEW");
+			rootItem.ChildItems[0].ChildItems[0].ChildItems[0].ChildItems.Count.ShouldBe(1);
+			rootItem.ChildItems[0].ChildItems[0].ChildItems[0].ChildItems[0].ExecutionOrder.ShouldBe(2);
+			rootItem.ChildItems[0].ChildItems[0].ChildItems[0].ChildItems[0].Operation.ShouldBe("COUNT");
+			rootItem.ChildItems[0].ChildItems[0].ChildItems[0].ChildItems[0].ChildItems.Count.ShouldBe(1);
+			rootItem.ChildItems[0].ChildItems[0].ChildItems[0].ChildItems[0].ChildItems[0].ExecutionOrder.ShouldBe(1);
+			rootItem.ChildItems[0].ChildItems[0].ChildItems[0].ChildItems[0].ChildItems[0].Operation.ShouldBe("FAST DUAL");
+			rootItem.ChildItems[0].ChildItems[0].ChildItems[0].ChildItems[0].ChildItems[0].ChildItems.Count.ShouldBe(0);
+			rootItem.ChildItems[0].ChildItems[0].ChildItems[1].ExecutionOrder.ShouldBe(6);
+			rootItem.ChildItems[0].ChildItems[0].ChildItems[1].Operation.ShouldBe("VIEW");
+			rootItem.ChildItems[0].ChildItems[0].ChildItems[1].ChildItems.Count.ShouldBe(1);
+			rootItem.ChildItems[0].ChildItems[0].ChildItems[1].ChildItems[0].ExecutionOrder.ShouldBe(5);
+			rootItem.ChildItems[0].ChildItems[0].ChildItems[1].ChildItems[0].Operation.ShouldBe("COUNT");
+			rootItem.ChildItems[0].ChildItems[0].ChildItems[1].ChildItems[0].ChildItems.Count.ShouldBe(1);
+			rootItem.ChildItems[0].ChildItems[0].ChildItems[1].ChildItems[0].ChildItems[0].ExecutionOrder.ShouldBe(4);
+			rootItem.ChildItems[0].ChildItems[0].ChildItems[1].ChildItems[0].ChildItems[0].Operation.ShouldBe("FAST DUAL");
+			rootItem.ChildItems[0].ChildItems[0].ChildItems[1].ChildItems[0].ChildItems[0].ChildItems.Count.ShouldBe(0);
+			rootItem.ChildItems[0].ChildItems[1].ExecutionOrder.ShouldBe(10);
+			rootItem.ChildItems[0].ChildItems[1].Operation.ShouldBe("VIEW");
+			rootItem.ChildItems[0].ChildItems[1].ChildItems.Count.ShouldBe(1);
+			rootItem.ChildItems[0].ChildItems[1].ChildItems[0].ExecutionOrder.ShouldBe(9);
+			rootItem.ChildItems[0].ChildItems[1].ChildItems[0].Operation.ShouldBe("COUNT");
+			rootItem.ChildItems[0].ChildItems[1].ChildItems[0].ChildItems.Count.ShouldBe(1);
+			rootItem.ChildItems[0].ChildItems[1].ChildItems[0].ChildItems[0].ExecutionOrder.ShouldBe(8);
+			rootItem.ChildItems[0].ChildItems[1].ChildItems[0].ChildItems[0].Operation.ShouldBe("FAST DUAL");
+			rootItem.ChildItems[0].ChildItems[1].ChildItems[0].ChildItems[0].ChildItems.Count.ShouldBe(0);
 		}
 
 		[Test]
@@ -410,8 +412,8 @@ WHERE
 
 			ExecuteDataProvider(executionStatisticsDataProvider);
 
-			var allItems = new List<ExecutionStatisticsPlanItem> { executionStatisticsDataProvider.RootItem };
-			allItems.AddRange(executionStatisticsDataProvider.RootItem.AllChildItems.Cast<ExecutionStatisticsPlanItem>().OrderBy(i => i.Id));
+			var allItems = executionStatisticsDataProvider.ItemCollection.AllItems.Values.ToArray();
+			allItems.Length.ShouldBe(12);
 
 			var hashJoin = allItems[1];
 			hashJoin.Operation.ShouldBe("HASH JOIN");
@@ -500,10 +502,7 @@ ORDER BY
 			var explainPlanDataProvider = new ExplainPlanDataProvider(testQuery, "TestQuery", ExplainPlanTableIdentifier);
 			ExecuteDataProvider(explainPlanDataProvider.CreateExplainPlanUpdater, explainPlanDataProvider.LoadExplainPlanUpdater);
 
-			var allItems = new List<ExecutionPlanItem> { explainPlanDataProvider.RootItem };
-			allItems.AddRange(explainPlanDataProvider.RootItem.AllChildItems.OrderBy(i => i.Id));
-
-			var executionOrder = allItems.Select(i => i.ExecutionOrder).ToArray();
+			var executionOrder = explainPlanDataProvider.ItemCollection.AllItems.Values.Select(i => i.ExecutionOrder).ToArray();
 			var expectedExecutionOrder = new [] { 19, 4, 3, 2, 1, 7, 6, 5, 10, 9, 8, 18, 12, 11, 17, 16, 15, 14, 13 };
 
 			executionOrder.ShouldBe(expectedExecutionOrder);

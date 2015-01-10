@@ -1037,7 +1037,7 @@ Note
 		
 		public override void CloseActiveReader() { }
 
-		public override Task<ExecutionPlanItem> ExplainPlanAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
+		public override Task<ExecutionPlanItemCollection> ExplainPlanAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
 		{
 			var rootItem =
 				new ExecutionPlanItem
@@ -1065,7 +1065,10 @@ Note
 					Other = null
 				};
 
-			return Task.FromResult(rootItem);
+			var planItemCollection = new ExecutionPlanItemCollection { rootItem };
+			planItemCollection.Freeze();
+
+			return Task.FromResult(planItemCollection);
 		}
 
 		public override Task<string> GetActualExecutionPlanAsync(CancellationToken cancellationToken)

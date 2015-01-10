@@ -13,7 +13,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 		private readonly string _sqlId;
 		private readonly int? _childNumber;
 
-		public ExecutionStatisticsPlanItem RootItem { get; private set; }
+		public ExecutionStatisticsPlanItemCollection ItemCollection { get; private set; }
 
 		public CursorExecutionStatisticsDataProvider(string sqlId, int childNumber)
 			: base(null)
@@ -31,11 +31,11 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public override void MapReaderData(OracleDataReader reader)
 		{
-			RootItem = _executionStatisticsBuilder.Build(reader);
+			ItemCollection = _executionStatisticsBuilder.Build(reader);
 		}
 	}
 
-	internal class CursorExecutionStatisticsBuilder : ExecutionPlanBuilderBase<ExecutionStatisticsPlanItem>
+	internal class CursorExecutionStatisticsBuilder : ExecutionPlanBuilderBase<ExecutionStatisticsPlanItemCollection, ExecutionStatisticsPlanItem>
 	{
 		private static readonly TextInfo TextInfo = CultureInfo.InvariantCulture.TextInfo;
 
@@ -75,6 +75,8 @@ namespace SqlPad.Oracle.ModelDataProviders
 			item.LastTemporarySizeBytes = OracleReaderValueConvert.ToInt64(reader["LAST_TEMPSEG_SIZE"]);
 		}
 	}
+
+	public class ExecutionStatisticsPlanItemCollection : ExecutionPlanItemCollectionBase<ExecutionStatisticsPlanItem> { }
 
 	[DebuggerDisplay("ExecutionStatisticsPlanItem (Id={Id}; Operation={Operation}; Depth={Depth}; IsLeaf={IsLeaf}; ExecutionOrder={ExecutionOrder})")]
 	public class ExecutionStatisticsPlanItem : ExecutionPlanItem

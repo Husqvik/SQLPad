@@ -16,7 +16,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 		
 		public IModelDataProvider LoadExplainPlanUpdater { get; private set; }
 
-		public ExecutionPlanItem RootItem { get { return _dataMmodel.RootItem; } }
+		public ExecutionPlanItemCollection ItemCollection { get { return _dataMmodel.ItemCollection; } }
 
 		public ExplainPlanDataProvider(string statementText, string planKey, OracleObjectIdentifier targetTableIdentifier)
 		{
@@ -55,7 +55,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 			public override void MapReaderData(OracleDataReader reader)
 			{
-				DataModel.RootItem = _planBuilder.Build(reader);
+				DataModel.ItemCollection = _planBuilder.Build(reader);
 			}
 		}
 
@@ -67,7 +67,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 			
 			public string TargetTableName { get; private set; }
 
-			public ExecutionPlanItem RootItem { get; set; }
+			public ExecutionPlanItemCollection ItemCollection { get; set; }
 			
 			public ExplainPlanModelInternal(string statementText, string executionPlanKey, OracleObjectIdentifier targetTableIdentifier)
 			{
@@ -78,52 +78,26 @@ namespace SqlPad.Oracle.ModelDataProviders
 		}
 	}
 
-	internal class ExecutionPlanBuilder : ExecutionPlanBuilderBase<ExecutionPlanItem> { }
+	internal class ExecutionPlanBuilder : ExecutionPlanBuilderBase<ExecutionPlanItemCollection, ExecutionPlanItem> { }
 
-	internal class ExecutionPlanBuilderBase<TItem> where TItem : ExecutionPlanItem, new()
+	internal abstract class ExecutionPlanBuilderBase<TCollection, TItem> where TCollection : ExecutionPlanItemCollectionBase<TItem>, new() where TItem : ExecutionPlanItem, new()
 	{
-		private readonly Dictionary<int, TItem> _treeItemDictionary = new Dictionary<int, TItem>();
-		private readonly List<ExecutionPlanItem> _leafItems = new List<ExecutionPlanItem>();
-		private int _currentExecutionStep;
-
-		public TItem Build(OracleDataReader reader)
+		public TCollection Build(OracleDataReader reader)
 		{
-			Initialize();
+			var planItemCollection = new TCollection();
 
 			while (reader.Read())
 			{
-				var parentId = OracleReaderValueConvert.ToInt32(reader["PARENT_ID"]);
 				var item = CreatePlanItem(reader);
 
 				FillData(reader, item);
 
-				if (parentId.HasValue)
-				{
-					_treeItemDictionary[parentId.Value].AddChildItem(item);
-				}
-
-				_treeItemDictionary.Add(item.Id, item);
+				planItemCollection.Add(item);
 			}
 
-			if (_treeItemDictionary.Count == 0)
-			{
-				return null;
-			}
+			planItemCollection.Freeze();
 
-			_leafItems.AddRange(_treeItemDictionary.Values.Where(v => v.IsLeaf));
-			var startNode = _leafItems[0];
-			_leafItems.RemoveAt(0);
-
-			ResolveExecutionOrder(startNode, null);
-
-			return _treeItemDictionary[0];
-		}
-
-		private void Initialize()
-		{
-			_currentExecutionStep = 0;
-			_treeItemDictionary.Clear();
-			_leafItems.Clear();
+			return planItemCollection;
 		}
 
 		protected virtual void FillData(IDataRecord reader, TItem item) { }
@@ -137,6 +111,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 				new TItem
 				{
 					Id = Convert.ToInt32(reader["ID"]),
+					ParentId = OracleReaderValueConvert.ToInt32(reader["PARENT_ID"]),
 					Depth = Convert.ToInt32(reader["DEPTH"]),
 					Operation = (string)reader["OPERATION"],
 					Options = OracleReaderValueConvert.ToString(reader["OPTIONS"]),
@@ -160,39 +135,6 @@ namespace SqlPad.Oracle.ModelDataProviders
 					QueryBlockName = OracleReaderValueConvert.ToString(reader["QBLOCK_NAME"]),
 					Other = String.IsNullOrEmpty(otherData) ? null : XElement.Parse(otherData)
 				};
-		}
-
-		private void ResolveExecutionOrder(ExecutionPlanItem nextItem, ExecutionPlanItem breakAtItem)
-		{
-			do
-			{
-				if (nextItem == breakAtItem)
-				{
-					return;
-				}
-
-				nextItem.ExecutionOrder = ++_currentExecutionStep;
-				if (nextItem.Parent == null)
-				{
-					return;
-				}
-
-				nextItem = nextItem.Parent;
-				var allChildrenExecuted = nextItem.ChildItems.Count(i => i.ExecutionOrder == 0) == 0;
-				if (!allChildrenExecuted)
-				{
-					var otherBranchItemIndex = _leafItems.FindIndex(i => i.IsChildFrom(nextItem));
-					if (otherBranchItemIndex == -1)
-					{
-						return;
-					}
-
-					var otherBranchLeafItem = _leafItems[otherBranchItemIndex];
-					_leafItems.RemoveAt(otherBranchItemIndex);
-
-					ResolveExecutionOrder(otherBranchLeafItem, nextItem);
-				}
-			} while (true);
 		}
 	}
 }

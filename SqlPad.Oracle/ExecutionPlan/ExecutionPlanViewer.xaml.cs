@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -31,11 +32,11 @@ namespace SqlPad.Oracle.ExecutionPlan
 
 		public async Task ExplainAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
 		{
-			var rootItem = await _databaseModel.ExplainPlanAsync(executionModel, cancellationToken);
-			if (rootItem != null)
+			var itemCollection = await _databaseModel.ExplainPlanAsync(executionModel, cancellationToken);
+			if (itemCollection.RootItem != null)
 			{
 				Viewer.Items.Clear();
-				Viewer.Items.Add(rootItem);
+				Viewer.Items.Add(itemCollection.RootItem);
 			}
 		}
 
@@ -86,6 +87,102 @@ namespace SqlPad.Oracle.ExecutionPlan
 		}
 	}
 
+	public class ExecutionPlanItemCollection : ExecutionPlanItemCollectionBase<ExecutionPlanItem> { }
+
+	public abstract class ExecutionPlanItemCollectionBase<T> : IEnumerable<T> where T : ExecutionPlanItem
+	{
+		private readonly Dictionary<int, T> _allItems = new Dictionary<int, T>();
+		private readonly List<ExecutionPlanItem> _leafItems = new List<ExecutionPlanItem>();
+
+		private int _currentExecutionStep;
+
+		public T RootItem { get; private set; }
+
+		public IReadOnlyDictionary<int, T> AllItems { get { return _allItems; } }
+
+		public void Add(T item)
+		{
+			if (_currentExecutionStep > 0)
+			{
+				throw new InvalidOperationException("Item cannot be added because the collection is frozen. ");
+			}
+
+			if (item.ParentId.HasValue)
+			{
+				_allItems[item.ParentId.Value].AddChildItem(item);
+			}
+			else
+			{
+				if (_allItems.Count > 0)
+				{
+					throw new InvalidOperationException("Root item can be added only as the first item. ");
+				}
+
+				RootItem = item;
+			}
+
+			_allItems.Add(item.Id, item);
+		}
+
+		public void Freeze()
+		{
+			if (_allItems.Count == 0)
+			{
+				return;
+			}
+
+			_leafItems.AddRange(_allItems.Values.Where(v => v.IsLeaf));
+			var startNode = _leafItems[0];
+			_leafItems.RemoveAt(0);
+
+			ResolveExecutionOrder(startNode, null);
+		}
+
+		private void ResolveExecutionOrder(ExecutionPlanItem nextItem, ExecutionPlanItem breakAtItem)
+		{
+			do
+			{
+				if (nextItem == breakAtItem)
+				{
+					return;
+				}
+
+				nextItem.ExecutionOrder = ++_currentExecutionStep;
+				if (nextItem.Parent == null)
+				{
+					return;
+				}
+
+				nextItem = nextItem.Parent;
+				var allChildrenExecuted = nextItem.ChildItems.Count(i => i.ExecutionOrder == 0) == 0;
+				if (!allChildrenExecuted)
+				{
+					var otherBranchItemIndex = _leafItems.FindIndex(i => i.IsChildFrom(nextItem));
+					if (otherBranchItemIndex == -1)
+					{
+						return;
+					}
+
+					var otherBranchLeafItem = _leafItems[otherBranchItemIndex];
+					_leafItems.RemoveAt(otherBranchItemIndex);
+
+					ResolveExecutionOrder(otherBranchLeafItem, nextItem);
+				}
+			} while (true);
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		public IEnumerator<T> GetEnumerator()
+		{
+			return _allItems.Values.GetEnumerator();
+		}
+	}
+
+
 	[DebuggerDisplay("ExecutionPlanItem (Id={Id}; Operation={Operation}; Depth={Depth}; IsLeaf={IsLeaf}; ExecutionOrder={ExecutionOrder})")]
 	public class ExecutionPlanItem
 	{
@@ -94,6 +191,8 @@ namespace SqlPad.Oracle.ExecutionPlan
 		public int ExecutionOrder { get; set; }
 		
 		public int Id { get; set; }
+		
+		public int? ParentId { get; set; }
 
 		public int Depth { get; set; }
 		

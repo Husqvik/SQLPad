@@ -376,7 +376,7 @@ namespace SqlPad.Oracle
 			return _backgroundTask;
 		}
 
-		public async override Task<ExecutionPlanItem> ExplainPlanAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
+		public async override Task<ExecutionPlanItemCollection> ExplainPlanAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
 		{
 			if (String.IsNullOrEmpty(OracleConfiguration.Configuration.ExecutionPlan.TargetTable.Name))
 			{
@@ -389,7 +389,7 @@ namespace SqlPad.Oracle
 
 			await UpdateModelAsync(cancellationToken, false, explainPlanUpdater.CreateExplainPlanUpdater, explainPlanUpdater.LoadExplainPlanUpdater);
 
-			return explainPlanUpdater.RootItem;
+			return explainPlanUpdater.ItemCollection;
 		}
 
 		public override async Task<ICollection<SessionExecutionStatisticsRecord>> GetExecutionStatisticsAsync(CancellationToken cancellationToken)
@@ -664,6 +664,7 @@ namespace SqlPad.Oracle
 			EnsureDatabaseOutput();
 
 			_userCommand.BindByName = true;
+			_userCommand.AddToStatementCache = false;
 
 			if (_userTransaction == null)
 			{
