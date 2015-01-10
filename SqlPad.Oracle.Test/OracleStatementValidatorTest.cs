@@ -1981,5 +1981,25 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			invalidNonTerminalItems[0].Node.FirstTerminalNode.Token.Value.ShouldBe("dummy");
 			invalidNonTerminalItems[0].Node.LastTerminalNode.Token.Value.ShouldBe("1");
 		}
+
+		[Test(Description = @"")]
+		public void TestInvalidOrderByColumnIndex()
+		{
+			const string sqlText = @"SELECT T.*, '[' || NAME || ']' FROM (SELECT NAME FROM SELECTION) T ORDER BY 3, 2, 1, 4";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			var programValidityItems = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			programValidityItems.Count.ShouldBe(5);
+			programValidityItems[3].IsRecognized.ShouldBe(true);
+			programValidityItems[3].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidColumnIndex);
+			programValidityItems[3].Node.Token.Value.ShouldBe("3");
+			programValidityItems[4].IsRecognized.ShouldBe(true);
+			programValidityItems[4].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidColumnIndex);
+			programValidityItems[4].Node.Token.Value.ShouldBe("4");
+		}
 	}
 }

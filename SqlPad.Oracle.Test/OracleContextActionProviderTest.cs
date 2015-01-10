@@ -380,7 +380,7 @@ namespace SqlPad.Oracle.Test
 		{
 			const string query1 = @"SELECT T.*, '[' || NAME || ']' FROM (SELECT NAME FROM SELECTION) T ORDER BY 1, 2";
 
-			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 79).SingleOrDefault(a => a.Name == ConvertOrderByNumberColumnReferencesCommand.Title);
+			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 77).SingleOrDefault(a => a.Name == ConvertOrderByNumberColumnReferencesCommand.Title);
 			action.ShouldNotBe(null);
 		}
 

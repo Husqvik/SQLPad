@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using SqlPad.Commands;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
-using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 
 namespace SqlPad.Oracle.Commands
 {
@@ -14,6 +13,11 @@ namespace SqlPad.Oracle.Commands
 		private ConvertOrderByNumberColumnReferencesCommand(CommandExecutionContext executionContext)
 			: base(executionContext)
 		{
+		}
+
+		protected override Func<StatementGrammarNode, bool> CurrentNodeFilterFunction
+		{
+			get { return n => n.Id != Terminals.Comma; }
 		}
 
 		protected override CommandCanExecuteResult CanExecute()
@@ -28,22 +32,14 @@ namespace SqlPad.Oracle.Commands
 				return StatementGrammarNode.EmptyArray;
 			}
 
+			var columnIndexReferences = CurrentQueryBlock.OrderByColumnIndexReferences.Where(r => r.Terminal == CurrentNode);
 			if (CurrentNode.ParentNode == CurrentQueryBlock.OrderByClause)
 			{
-				return CurrentQueryBlock.OrderByClause.GetDescendantsWithinSameQuery(NonTerminals.OrderExpression)
-					.Where(IsColumnIndex);
+				columnIndexReferences = CurrentQueryBlock.OrderByColumnIndexReferences;
 			}
 
-			return CurrentNode.Id == Terminals.NumberLiteral && CurrentNode.ParentNode.ParentNode.Id == NonTerminals.OrderExpression && IsColumnIndex(CurrentNode.ParentNode.ParentNode)
-				? Enumerable.Repeat(CurrentNode.ParentNode.ParentNode, 1)
-				: StatementGrammarNode.EmptyArray;
-		}
-
-		private bool IsColumnIndex(StatementGrammarNode orderExpression)
-		{
-			return orderExpression.TerminalCount == 1 && orderExpression.FirstTerminalNode.Id == Terminals.NumberLiteral &&
-			       orderExpression.FirstTerminalNode.Token.Value.IndexOf('.') == -1 &&
-				   Convert.ToInt32(orderExpression.FirstTerminalNode.Token.Value) <= CurrentQueryBlock.Columns.Count(c => !c.IsAsterisk);
+			return columnIndexReferences.Where(r => r.IsValid)
+				.Select(r => r.Terminal);
 		}
 
 		protected override void Execute()

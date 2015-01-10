@@ -180,7 +180,7 @@ namespace SqlPad
 		private void BuildUnrecognizedTerminalHashset()
 		{
 			var notRecognizedTerminals = _validationModels.Values
-				.SelectMany(vm => vm.ObjectNodeValidity.Concat(vm.ProgramNodeValidity).Concat(vm.ColumnNodeValidity))
+				.SelectMany(vm => vm.ObjectNodeValidity.Concat(vm.ProgramNodeValidity).Concat(vm.ColumnNodeValidity).Concat(vm.IdentifierNodeValidity))
 				.Where(kvp => !kvp.Value.IsRecognized)
 				.Select(kvp => kvp.Key);
 

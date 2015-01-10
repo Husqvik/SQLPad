@@ -275,6 +275,15 @@ namespace SqlPad.Oracle
 				{
 					validationModel.InvalidNonTerminals[queryBlock.SelectList] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) { Node = queryBlock.SelectList };
 				}
+
+				if (queryBlock.OrderByClause != null && (queryBlock.Type == QueryBlockType.CommonTableExpression || queryBlock.Type == QueryBlockType.Normal))
+				{
+					foreach (var invalidColumnIndexReference in queryBlock.OrderByColumnIndexReferences.Where(r => !r.IsValid))
+					{
+						validationModel.ColumnNodeValidity[invalidColumnIndexReference.Terminal] =
+							new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnIndex) {Node = invalidColumnIndexReference.Terminal};
+					}
+				}
 			}
 		}
 

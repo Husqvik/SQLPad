@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
+using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 
 namespace SqlPad.Oracle
 {
@@ -170,6 +172,46 @@ namespace SqlPad.Oracle
 			return hasRemoteAsteriskReferences ||
 				   queryBlock.ObjectReferences.Any(o => o.QueryBlocks.Count == 1 && (childQueryBlock = o.QueryBlocks.First()) != queryBlock && HasRemoteAsteriskReferencesInternal(childQueryBlock));
 		}
+
+		public IEnumerable<OracleOrderByColumnIndexReference> OrderByColumnIndexReferences
+		{
+			get
+			{
+				return OrderByClause == null
+					? Enumerable.Empty<OracleOrderByColumnIndexReference>()
+					: OrderByClause.GetDescendantsWithinSameQuery(NonTerminals.OrderExpression)
+						.Select(GetColumnIndexReference).Where(r => r.ColumnIndex != OracleOrderByColumnIndexReference.None.ColumnIndex);
+			}
+		}
+
+		private OracleOrderByColumnIndexReference GetColumnIndexReference(StatementGrammarNode orderExpression)
+		{
+			if (orderExpression.TerminalCount != 1 || orderExpression.FirstTerminalNode.Id != Terminals.NumberLiteral ||
+			    orderExpression.FirstTerminalNode.Token.Value.IndexOf('.') != -1)
+			{
+				return OracleOrderByColumnIndexReference.None;
+			}
+
+			var columnIndex = Convert.ToInt32(orderExpression.FirstTerminalNode.Token.Value);
+			return
+				new OracleOrderByColumnIndexReference
+				{
+					ColumnIndex = columnIndex,
+					Terminal = orderExpression.FirstTerminalNode,
+					IsValid = columnIndex <= _columns.Count - _asteriskColumns.Count
+				};
+		}
+	}
+
+	public struct OracleOrderByColumnIndexReference
+	{
+		public static readonly OracleOrderByColumnIndexReference None = new OracleOrderByColumnIndexReference { ColumnIndex = -1 };
+
+		public int ColumnIndex { get; set; }
+
+		public StatementGrammarNode Terminal { get; set; }
+
+		public bool IsValid { get; set; }
 	}
 
 	public struct OracleLiteral
@@ -182,7 +224,7 @@ namespace SqlPad.Oracle
 		{
 			get
 			{
-				if (Terminal == null || Terminal.Id != OracleGrammarDescription.Terminals.StringLiteral)
+				if (Terminal == null || Terminal.Id != Terminals.StringLiteral)
 				{
 					return false;
 				}
