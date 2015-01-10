@@ -385,11 +385,11 @@ namespace SqlPad.Oracle
 
 			var planKey = Convert.ToString(executionModel.StatementText.GetHashCode());
 			var targetTableIdentifier = OracleObjectIdentifier.Create(OracleConfiguration.Configuration.ExecutionPlan.TargetTable.Schema, OracleConfiguration.Configuration.ExecutionPlan.TargetTable.Name);
-			var explainPlanUpdater = new ExplainPlanDataProvider(executionModel.StatementText, planKey, targetTableIdentifier);
+			var explainPlanDataProvider = new ExplainPlanDataProvider(executionModel.StatementText, planKey, targetTableIdentifier);
 
-			await UpdateModelAsync(cancellationToken, false, explainPlanUpdater.CreateExplainPlanUpdater, explainPlanUpdater.LoadExplainPlanUpdater);
+			await UpdateModelAsync(cancellationToken, false, explainPlanDataProvider.CreateExplainPlanUpdater, explainPlanDataProvider.LoadExplainPlanUpdater);
 
-			return explainPlanUpdater.ItemCollection;
+			return explainPlanDataProvider.ItemCollection;
 		}
 
 		public override async Task<ICollection<SessionExecutionStatisticsRecord>> GetExecutionStatisticsAsync(CancellationToken cancellationToken)
@@ -398,41 +398,43 @@ namespace SqlPad.Oracle
 			return _executionStatisticsDataProvider.ExecutionStatistics;
 		}
 
-		public async override Task<string> GetActualExecutionPlanAsync(CancellationToken cancellationToken)
+		public async override Task<ExecutionStatisticsPlanItemCollection> GetCursorExecutionStatisticsAsync(CancellationToken cancellationToken)
 		{
-			var displayCursorUpdater = new DisplayCursorDataProvider(UserCommandSqlId, UserCommandChildNumber);
-			await UpdateModelAsync(cancellationToken, true, displayCursorUpdater);
-			return displayCursorUpdater.PlanText;
+			var cursorExecutionStatisticsDataProvider = new CursorExecutionStatisticsDataProvider(UserCommandSqlId, UserCommandChildNumber);
+			var displayCursorDataProvider = new DisplayCursorDataProvider(UserCommandSqlId, UserCommandChildNumber);
+			await UpdateModelAsync(cancellationToken, true, cursorExecutionStatisticsDataProvider, displayCursorDataProvider);
+			cursorExecutionStatisticsDataProvider.ItemCollection.PlanText = displayCursorDataProvider.PlanText;
+			return cursorExecutionStatisticsDataProvider.ItemCollection;
 		}
 
 		public async override Task<string> GetObjectScriptAsync(OracleSchemaObject schemaObject, CancellationToken cancellationToken, bool suppressUserCancellationException = true)
 		{
-			var scriptUpdater = new ObjectScriptDataProvider(schemaObject);
-			await UpdateModelAsync(cancellationToken, false, scriptUpdater);
-			return scriptUpdater.ScriptText;
+			var scriptDataProvider = new ObjectScriptDataProvider(schemaObject);
+			await UpdateModelAsync(cancellationToken, false, scriptDataProvider);
+			return scriptDataProvider.ScriptText;
 		}
 
 		public async override Task UpdateTableDetailsAsync(OracleObjectIdentifier objectIdentifier, TableDetailsModel dataModel, CancellationToken cancellationToken)
 		{
-			var tableDetailsUpdater = new TableDetailDataProvider(dataModel, objectIdentifier);
+			var tableDetailDataProvider = new TableDetailDataProvider(dataModel, objectIdentifier);
 			var tableSpaceAllocationUpdater = new TableSpaceAllocationDataProvider(dataModel, objectIdentifier);
 			var tableInMemorySpaceAllocationUpdater = new TableInMemorySpaceAllocationDataProvider(dataModel, objectIdentifier, VersionString);
-			await UpdateModelAsync(cancellationToken, true, tableDetailsUpdater, tableSpaceAllocationUpdater, tableInMemorySpaceAllocationUpdater);
+			await UpdateModelAsync(cancellationToken, true, tableDetailDataProvider, tableSpaceAllocationUpdater, tableInMemorySpaceAllocationUpdater);
 		}
 
 		public async override Task UpdateColumnDetailsAsync(OracleObjectIdentifier objectIdentifier, string columnName, ColumnDetailsModel dataModel, CancellationToken cancellationToken)
 		{
-			var columnDetailsUpdater = new ColumnDetailDataProvider(dataModel, objectIdentifier, columnName.Trim('"'));
+			var columnDetailDataProvider = new ColumnDetailDataProvider(dataModel, objectIdentifier, columnName.Trim('"'));
 			var columnHistogramUpdater = new ColumnDetailHistogramDataProvider(dataModel, objectIdentifier, columnName.Trim('"'));
 			var columnInMemoryDetailsUpdater = new ColumnDetailInMemoryDataProvider(dataModel, objectIdentifier, columnName.Trim('"'), VersionString);
-			await UpdateModelAsync(cancellationToken, true, columnDetailsUpdater, columnHistogramUpdater, columnInMemoryDetailsUpdater);
+			await UpdateModelAsync(cancellationToken, true, columnDetailDataProvider, columnHistogramUpdater, columnInMemoryDetailsUpdater);
 		}
 
 		public async override Task<IReadOnlyList<string>> GetRemoteTableColumnsAsync(string databaseLink, OracleObjectIdentifier schemaObject, CancellationToken cancellationToken)
 		{
-			var remoteTableColumnsUpdater = new RemoteTableColumnDataProvider(databaseLink, schemaObject);
-			await UpdateModelAsync(cancellationToken, false, remoteTableColumnsUpdater);
-			return remoteTableColumnsUpdater.Columns;
+			var remoteTableColumnDataProvider = new RemoteTableColumnDataProvider(databaseLink, schemaObject);
+			await UpdateModelAsync(cancellationToken, false, remoteTableColumnDataProvider);
+			return remoteTableColumnDataProvider.Columns;
 		}
 
 		private async Task UpdateModelAsync(CancellationToken cancellationToken, bool suppressException, params IModelDataProvider[] updaters)

@@ -86,7 +86,7 @@ namespace SqlPad.Oracle
 
 		public abstract Task<ExecutionPlanItemCollection> ExplainPlanAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken);
 
-		public abstract Task<string> GetActualExecutionPlanAsync(CancellationToken cancellationToken);
+		public abstract Task<ExecutionStatisticsPlanItemCollection> GetCursorExecutionStatisticsAsync(CancellationToken cancellationToken);
 
 		public abstract Task<string> GetObjectScriptAsync(OracleSchemaObject schemaObject, CancellationToken cancellationToken, bool suppressUserCancellationException = true);
 

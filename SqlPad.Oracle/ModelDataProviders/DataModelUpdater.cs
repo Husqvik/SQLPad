@@ -351,7 +351,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 			_childNumber = childNumber;
 		}
 
-		public static IModelDataProvider CreateDisplayLastDataProvider()
+		public static DisplayCursorDataProvider CreateDisplayLastCursorDataProvider()
 		{
 			return new DisplayCursorDataProvider();
 		}

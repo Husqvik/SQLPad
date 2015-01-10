@@ -107,10 +107,12 @@
     <Compile Include="Commands\ResolveAmbiguousColumnCommand.cs" />
     <Compile Include="Commands\AddAliasCommand.cs" />
     <Compile Include="Commands\OracleCommandFactory.cs" />
+    <Compile Include="ExecutionPlan\ExecutionPlanItemCollection.cs" />
     <Compile Include="ExecutionPlan\ExecutionPlanViewer.xaml.cs">
       <DependentUpon>ExecutionPlanViewer.xaml</DependentUpon>
     </Compile>
     <Compile Include="ModelDataProviders\CursorExecutionStatisticsDataProvider.cs" />
+    <Compile Include="ExecutionPlan\ExecutionStatisticsPlanItemCollection.cs" />
     <Compile Include="ModelDataProviders\ExplainPlanDataProvider.cs" />
     <Compile Include="ModelDataProviders\IModelDataProvider.cs" />
     <Compile Include="OracleBindVariable.cs" />

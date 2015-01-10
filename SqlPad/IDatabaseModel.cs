@@ -46,8 +46,6 @@ namespace SqlPad
 
 		Task<ICollection<SessionExecutionStatisticsRecord>> GetExecutionStatisticsAsync(CancellationToken cancellationToken);
 
-		Task<string> GetActualExecutionPlanAsync(CancellationToken cancellationToken);
-
 		IEnumerable<object[]> FetchRecords(int rowCount);
 
 		bool HasActiveTransaction { get; }

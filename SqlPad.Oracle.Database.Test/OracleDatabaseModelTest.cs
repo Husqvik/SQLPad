@@ -20,7 +20,6 @@ namespace SqlPad.Oracle.Database.Test
 	{
 		private const string LoopbackDatabaseLinkName = "HQ_PDB";
 		private readonly ConnectionStringSettings _connectionString = new ConnectionStringSettings("TestConnection", "DATA SOURCE=HQ_PDB_TCP;PASSWORD=oracle;USER ID=HUSQVIK");
-		private static readonly OracleObjectIdentifier ExplainPlanTableIdentifier = OracleObjectIdentifier.Create(null, "TOAD_PLAN_TABLE");
 
 		private const string ExplainPlanTestQuery =
 @"SELECT /*+ gather_plan_statistics */
@@ -32,6 +31,11 @@ FROM
 WHERE
     T1.VAL = T2.VAL AND
     T2.VAL = T3.VAL";
+
+		static OracleDatabaseModelTest()
+		{
+			OracleConfiguration.Configuration.ExecutionPlan.TargetTable.Name = "TOAD_PLAN_TABLE";
+		}
 
 		[Test]
 		public void TestModelInitialization()
@@ -130,14 +134,15 @@ WHERE
 
 			databaseModel.FetchRecords(1).Any().ShouldBe(false);
 
-			var displayCursorTask = databaseModel.GetActualExecutionPlanAsync(CancellationToken.None);
+			var displayCursorTask = databaseModel.GetCursorExecutionStatisticsAsync(CancellationToken.None);
 			displayCursorTask.Wait();
 
-			displayCursorTask.Result.ShouldNotBe(null);
+			var planItemCollection = displayCursorTask.Result;
+			planItemCollection.PlanText.ShouldNotBe(null);
 
-			Trace.WriteLine("Display cursor output: " + Environment.NewLine + displayCursorTask.Result + Environment.NewLine);
+			Trace.WriteLine("Display cursor output: " + Environment.NewLine + planItemCollection.PlanText + Environment.NewLine);
 
-			displayCursorTask.Result.Length.ShouldBeGreaterThan(100);
+			planItemCollection.PlanText.Length.ShouldBeGreaterThan(100);
 
 			var task = databaseModel.GetExecutionStatisticsAsync(CancellationToken.None);
 			task.Wait();
@@ -337,7 +342,7 @@ WHERE
 		[Test]
 		public void TestDisplayCursorDataProvider()
 		{
-			var displayCursorDataProvider = (DisplayCursorDataProvider)DisplayCursorDataProvider.CreateDisplayLastDataProvider();
+			var displayCursorDataProvider = DisplayCursorDataProvider.CreateDisplayLastCursorDataProvider();
 			ExecuteDataProvider(displayCursorDataProvider);
 
 			displayCursorDataProvider.PlanText.ShouldNotBe(null);
@@ -347,11 +352,22 @@ WHERE
 		[Test]
 		public void TestExplainPlanDataProvider()
 		{
-			var explainPlanDataProvider = new ExplainPlanDataProvider(ExplainPlanTestQuery, "TestQuery", ExplainPlanTableIdentifier);
-			ExecuteDataProvider(explainPlanDataProvider.CreateExplainPlanUpdater, explainPlanDataProvider.LoadExplainPlanUpdater);
+			Task<ExecutionPlanItemCollection> task;
+			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
+			{
+				var executionModel =
+					new StatementExecutionModel
+					{
+						BindVariables = new BindVariableModel[0],
+						StatementText = ExplainPlanTestQuery
+					};
 
-			var rootItem = explainPlanDataProvider.ItemCollection.RootItem;
-			explainPlanDataProvider.ItemCollection.AllItems.Count.ShouldBe(12);
+				task = databaseModel.ExplainPlanAsync(executionModel, CancellationToken.None);
+				task.Wait();
+			}
+
+			var rootItem = task.Result.RootItem;
+			task.Result.AllItems.Count.ShouldBe(12);
 			rootItem.ShouldNotBe(null);
 			rootItem.Operation.ShouldBe("SELECT STATEMENT");
 			rootItem.ExecutionOrder.ShouldBe(12);
@@ -394,8 +410,7 @@ WHERE
 		[Test]
 		public void TestCursorExecutionStatisticsDataProvider()
 		{
-			CursorExecutionStatisticsDataProvider executionStatisticsDataProvider;
-
+			Task<ExecutionStatisticsPlanItemCollection> task;
 			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
 			{
 				var executionModel =
@@ -407,12 +422,11 @@ WHERE
 
 				databaseModel.ExecuteStatement(executionModel);
 
-				executionStatisticsDataProvider = new CursorExecutionStatisticsDataProvider(databaseModel.UserCommandSqlId, databaseModel.UserCommandChildNumber);
+				task = databaseModel.GetCursorExecutionStatisticsAsync(CancellationToken.None);
+				task.Wait();
 			}
 
-			ExecuteDataProvider(executionStatisticsDataProvider);
-
-			var allItems = executionStatisticsDataProvider.ItemCollection.AllItems.Values.ToArray();
+			var allItems = task.Result.AllItems.Values.ToArray();
 			allItems.Length.ShouldBe(12);
 
 			var hashJoin = allItems[1];
@@ -498,11 +512,22 @@ FROM (
 ) RICH_PLAN_DATA
 ORDER BY
 	ID";
+			
+			Task<ExecutionPlanItemCollection> task;
+			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
+			{
+				var executionModel =
+					new StatementExecutionModel
+					{
+						BindVariables = new BindVariableModel[0],
+						StatementText = testQuery
+					};
 
-			var explainPlanDataProvider = new ExplainPlanDataProvider(testQuery, "TestQuery", ExplainPlanTableIdentifier);
-			ExecuteDataProvider(explainPlanDataProvider.CreateExplainPlanUpdater, explainPlanDataProvider.LoadExplainPlanUpdater);
+				task = databaseModel.ExplainPlanAsync(executionModel, CancellationToken.None);
+				task.Wait();
+			}
 
-			var executionOrder = explainPlanDataProvider.ItemCollection.AllItems.Values.Select(i => i.ExecutionOrder).ToArray();
+			var executionOrder = task.Result.AllItems.Values.Select(i => i.ExecutionOrder).ToArray();
 			var expectedExecutionOrder = new [] { 19, 4, 3, 2, 1, 7, 6, 5, 10, 9, 8, 18, 12, 11, 17, 16, 15, 14, 13 };
 
 			executionOrder.ShouldBe(expectedExecutionOrder);

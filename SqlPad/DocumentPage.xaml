@@ -8,7 +8,7 @@
              xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              Loaded="PageLoadedHandler"
              mc:Ignorable="d"
-             d:DesignHeight="320" d:DesignWidth="480">
+             d:DesignHeight="320" d:DesignWidth="480" d:DataContext="{d:DesignInstance sqlPad:PageModel}">
 	<UserControl.Resources>
 		<sqlPad:SelectedIndexConverter x:Key="SelectedIndexConverter" />
 		<sqlPad:ColorCodeToColorConverter x:Key="ColorCodeToColorConverter" />
@@ -267,9 +267,6 @@
 						</ContextMenu>
 					</DataGrid.ContextMenu>
 				</DataGrid>
-			</TabItem>
-			<TabItem Header="_Actual plan" Visibility="{Binding IsExecutionPlanAvailable}">
-				<TextBox Text="{Binding TextExecutionPlan}" FontFamily="Consolas" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" IsReadOnly="True" IsReadOnlyCaretVisible="True" />
 			</TabItem>
 			<TabItem Header="_Statistics" Visibility="{Binding ExecutionStatisticsAvailable}">
 				<DockPanel>

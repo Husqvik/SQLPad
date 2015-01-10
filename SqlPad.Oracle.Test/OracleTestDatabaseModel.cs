@@ -1039,31 +1039,8 @@ Note
 
 		public override Task<ExecutionPlanItemCollection> ExplainPlanAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
 		{
-			var rootItem =
-				new ExecutionPlanItem
-				{
-					Operation = "Operation",
-					Options = "Options",
-					Optimizer = "Optimizer",
-					ObjectOwner = "ObjectOwner",
-					ObjectName = "ObjectName",
-					ObjectAlias = "ObjectAlias",
-					ObjectType = "ObjectType",
-					Cost = 1234,
-					Cardinality = 5678,
-					Bytes = 9123,
-					PartitionStart = "PartitionStart",
-					PartitionStop = "PartitionStop",
-					Distribution = "Distribution",
-					CpuCost = 9876,
-					IoCost = 123,
-					TempSpace = 54321,
-					AccessPredicates = "AccessPredicates",
-					FilterPredicates = "FilterPredicates",
-					Time = TimeSpan.FromSeconds(144),
-					QueryBlockName = "QueryBlockName",
-					Other = null
-				};
+			var rootItem = new ExecutionPlanItem();
+			SetBasePlanItemData(rootItem);
 
 			var planItemCollection = new ExecutionPlanItemCollection { rootItem };
 			planItemCollection.Freeze();
@@ -1071,9 +1048,41 @@ Note
 			return Task.FromResult(planItemCollection);
 		}
 
-		public override Task<string> GetActualExecutionPlanAsync(CancellationToken cancellationToken)
+		private static void SetBasePlanItemData(ExecutionPlanItem planItem)
 		{
-			return Task.FromResult(DummyPlanText);
+			planItem.Operation = "Operation";
+			planItem.Options = "Options";
+			planItem.Optimizer = "Optimizer";
+			planItem.ObjectOwner = "ObjectOwner";
+			planItem.ObjectName = "ObjectName";
+			planItem.ObjectAlias = "ObjectAlias";
+			planItem.ObjectType = "ObjectType";
+			planItem.Cost = 1234;
+			planItem.Cardinality = 5678;
+			planItem.Bytes = 9123;
+			planItem.PartitionStart = "PartitionStart";
+			planItem.PartitionStop = "PartitionStop";
+			planItem.Distribution = "Distribution";
+			planItem.CpuCost = 9876;
+			planItem.IoCost = 123;
+			planItem.TempSpace = 54321;
+			planItem.AccessPredicates = "AccessPredicates";
+			planItem.FilterPredicates = "FilterPredicates";
+			planItem.Time = TimeSpan.FromSeconds(144);
+			planItem.QueryBlockName = "QueryBlockName";
+			planItem.Other = null;
+		}
+
+		public override Task<ExecutionStatisticsPlanItemCollection> GetCursorExecutionStatisticsAsync(CancellationToken cancellationToken)
+		{
+			var rootItem = new ExecutionStatisticsPlanItem();
+			SetBasePlanItemData(rootItem);
+
+			var planItemCollection = new ExecutionStatisticsPlanItemCollection { rootItem };
+			planItemCollection.PlanText = DummyPlanText;
+			planItemCollection.Freeze();
+
+			return Task.FromResult(planItemCollection);
 		}
 
 		public override Task<string> GetObjectScriptAsync(OracleSchemaObject schemaObject, CancellationToken cancellationToken, bool suppressUserCancellationException = true)

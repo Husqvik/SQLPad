@@ -34,7 +34,6 @@ namespace SqlPad
 		private Visibility _reconnectOptionVisibility = Visibility.Collapsed;
 		private Visibility _schemaComboBoxVisibility = Visibility.Collapsed;
 		private Visibility _connectProgressBarVisibility = Visibility.Visible;
-		private string _textExecutionPlan;
 		private string _dateTimeFormat;
 		private string _connectionErrorMessage;
 		private string _documentHeaderToolTip;
@@ -151,25 +150,6 @@ namespace SqlPad
 				
 				RaisePropertyChanged("HeaderBackgroundColorCode");
 			}
-		}
-
-		public string TextExecutionPlan
-		{
-			get { return _textExecutionPlan; }
-			set
-			{
-				if (!UpdateValueAndRaisePropertyChanged(ref _textExecutionPlan, value))
-				{
-					return;
-				}
-				
-				RaisePropertyChanged("IsExecutionPlanAvailable");
-			}
-		}
-
-		public Visibility IsExecutionPlanAvailable
-		{
-			get { return String.IsNullOrEmpty(_textExecutionPlan) ? Visibility.Collapsed : Visibility.Visible; }
 		}
 
 		public Visibility ExecutionStatisticsAvailable

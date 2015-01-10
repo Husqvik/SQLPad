@@ -51,6 +51,8 @@ namespace SqlPad
 	{
 		Task ExplainAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken);
 
+		Task ShowActualAsync(CancellationToken cancellationToken);
+
 		Control Control { get; }
 	}
 }

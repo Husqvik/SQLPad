@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Linq;
 using System.Xml.Linq;
 using Oracle.DataAccess.Client;
 using SqlPad.Oracle.ExecutionPlan;

@@ -845,8 +845,8 @@ namespace SqlPad
 			_pageModel.ResultRowItems.Clear();
 			_pageModel.CompilationErrors.Clear();
 			_pageModel.GridRowInfoVisibility = Visibility.Collapsed;
+			_pageModel.ExecutionPlanAvailable = Visibility.Collapsed;
 			_pageModel.StatementExecutedSuccessfullyStatusMessageVisibility = Visibility.Collapsed;
-			_pageModel.TextExecutionPlan = null;
 			_pageModel.SessionExecutionStatistics.Clear();
 			_pageModel.WriteDatabaseOutput(String.Empty);
 
@@ -869,7 +869,7 @@ namespace SqlPad
 
 		private bool IsTabAlwaysVisible(object tabItem)
 		{
-			return TabControlResult.Items.IndexOf(tabItem).In(0, 3);
+			return TabControlResult.Items.IndexOf(tabItem).In(0, 2);
 		}
 
 		private async Task ExecuteDatabaseCommand(StatementExecutionModel executionModel)
@@ -900,7 +900,8 @@ namespace SqlPad
 
 			if (_gatherExecutionStatistics)
 			{
-				_pageModel.TextExecutionPlan = await DatabaseModel.GetActualExecutionPlanAsync(_statementExecutionCancellationTokenSource.Token);
+				await _executionPlanViewer.ShowActualAsync(_statementExecutionCancellationTokenSource.Token);
+				_pageModel.ExecutionPlanAvailable = Visibility.Visible;
 				_pageModel.SessionExecutionStatistics.MergeWith(await DatabaseModel.GetExecutionStatisticsAsync(_statementExecutionCancellationTokenSource.Token));
 				TabControlResult.SelectedItem = previousSelectedTab;
 			}
@@ -918,7 +919,7 @@ namespace SqlPad
 					_pageModel.CompilationErrors.Add(error);
 				}
 
-				TabControlResult.SelectedIndex = 4;
+				TabControlResult.SelectedIndex = 3;
 			}
 
 			if (innerTask.Result.ColumnHeaders.Count == 0)
