@@ -9,8 +9,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using Microsoft.Win32;
+#if ORACLE_MANAGED_DATA_ACCESS_CLIENT
+using Oracle.ManagedDataAccess.Client;
+using Oracle.ManagedDataAccess.Types;
+#else
 using Oracle.DataAccess.Client;
 using Oracle.DataAccess.Types;
+#endif
 using SqlPad.Oracle.ExecutionPlan;
 using SqlPad.Oracle.ModelDataProviders;
 using SqlPad.Oracle.ToolTips;
@@ -997,9 +1002,11 @@ namespace SqlPad.Oracle
 					case "Decimal":
 						value = new OracleNumber(reader.GetOracleDecimal(i));
 						break;
+					#if !ORACLE_MANAGED_DATA_ACCESS_CLIENT
 					case "XmlType":
 						value = new OracleXmlValue(reader.GetOracleXmlType(i));
 						break;
+					#endif
 					case "Object":
 					case "Array":
 						value = reader.GetOracleValue(i);

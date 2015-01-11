@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !ORACLE_MANAGED_DATA_ACCESS_CLIENT
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -617,3 +618,4 @@ namespace SqlPad.Oracle
 		}
 	}
 }
+#endif

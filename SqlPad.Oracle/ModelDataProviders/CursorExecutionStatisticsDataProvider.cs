@@ -1,7 +1,11 @@
 using System;
 using System.Data;
 using System.Globalization;
+#if ORACLE_MANAGED_DATA_ACCESS_CLIENT
+using Oracle.ManagedDataAccess.Client;
+#else
 using Oracle.DataAccess.Client;
+#endif
 using SqlPad.Oracle.ExecutionPlan;
 
 namespace SqlPad.Oracle.ModelDataProviders

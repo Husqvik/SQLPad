@@ -1,5 +1,9 @@
 using System;
+#if ORACLE_MANAGED_DATA_ACCESS_CLIENT
+using Oracle.ManagedDataAccess.Client;
+#else
 using Oracle.DataAccess.Client;
+#endif
 
 namespace SqlPad.Oracle.ModelDataProviders
 {

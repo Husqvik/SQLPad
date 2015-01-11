@@ -2,7 +2,11 @@ using System;
 using System.Data;
 using System.Threading;
 using System.Threading.Tasks;
+#if ORACLE_MANAGED_DATA_ACCESS_CLIENT
+using Oracle.ManagedDataAccess.Client;
+#else
 using Oracle.DataAccess.Client;
+#endif
 
 namespace SqlPad.Oracle
 {

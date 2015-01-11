@@ -154,6 +154,7 @@ WHERE
 			Trace.WriteLine("Execution statistics output: " + Environment.NewLine + statistics + Environment.NewLine);
 		}
 
+		#if !ORACLE_MANAGED_DATA_ACCESS_CLIENT
 		[Test]
 		public void TestDataTypesFetch()
 		{
@@ -266,6 +267,7 @@ WHERE
 				firstRow[6].ToString().ShouldBe(String.Empty);
 			}
 		}
+		#endif
 
 		[Test]
 		public void TestColumnDetailDataProvider()

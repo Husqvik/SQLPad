@@ -2,8 +2,13 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
+#if ORACLE_MANAGED_DATA_ACCESS_CLIENT
+using Oracle.ManagedDataAccess.Client;
+using Oracle.ManagedDataAccess.Types;
+#else
 using Oracle.DataAccess.Client;
 using Oracle.DataAccess.Types;
+#endif
 
 namespace SqlPad.Oracle
 {
@@ -82,6 +87,7 @@ namespace SqlPad.Oracle
 		}
 	}
 
+	#if !ORACLE_MANAGED_DATA_ACCESS_CLIENT
 	public class OracleXmlValue : OracleLargeTextValue, IDisposable
 	{
 		private readonly OracleXmlType _xmlType;
@@ -121,6 +127,7 @@ namespace SqlPad.Oracle
 			_xmlType.Dispose();
 		}
 	}
+	#endif
 
 	public class OracleSimpleValue : ILargeTextValue
 	{

@@ -50,8 +50,7 @@ namespace SqlPad.Oracle.Commands
 
 		private bool ExistNamedColumns()
 		{
-			var expandedColumns = new List<string>();
-			FillColumnNames(expandedColumns);
+			var expandedColumns = FillColumnNames();
 			return expandedColumns.Count > 0;
 		}
 
@@ -64,8 +63,7 @@ namespace SqlPad.Oracle.Commands
 			_settingsModel.TextInputVisibility = Visibility.Collapsed;
 			_settingsModel.BooleanOptionsVisibility = Visibility.Visible;
 
-			var columnNames = new List<string>();
-			FillColumnNames(columnNames);
+			var columnNames = FillColumnNames();
 
 			foreach (var column in columnNames)
 			{
@@ -137,11 +135,12 @@ namespace SqlPad.Oracle.Commands
 				};
 		}
 
-		private void FillColumnNames(List<string> columnNames)
+		private IReadOnlyList<string> FillColumnNames()
 		{
-			columnNames.AddRange(_insertTarget.DataObjectReference.Columns
+			return _insertTarget.DataObjectReference.Columns
 				.Where(c => !String.IsNullOrEmpty(c.Name))
-				.Select(c => c.Name.ToSimpleIdentifier()));
+				.Select(c => c.Name.ToSimpleIdentifier())
+				.ToArray();
 		}
 	}
 }

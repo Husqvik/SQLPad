@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Data;
 using System.Diagnostics;
 using System.Linq;
-using Oracle.DataAccess.Client;
 
 namespace SqlPad.Oracle
 {
@@ -155,17 +155,17 @@ namespace SqlPad.Oracle
 			return functionMetadataLookup;
 		}
 
-		private static KeyValuePair<int, string> MapStatisticsKey(OracleDataReader reader)
+		private static KeyValuePair<int, string> MapStatisticsKey(IDataRecord reader)
 		{
 			return new KeyValuePair<int, string>(Convert.ToInt32(reader["STATISTIC#"]), (string)reader["DISPLAY_NAME"]);
 		}
 
-		private static KeyValuePair<string, string> MapContextData(OracleDataReader reader)
+		private static KeyValuePair<string, string> MapContextData(IDataRecord reader)
 		{
 			return new KeyValuePair<string, string>((string)reader["NAMESPACE"], (string)reader["ATTRIBUTE"]);
 		}
 
-		private static OracleProgramMetadata MapProgramMetadata(OracleDataReader reader, bool isBuiltIn)
+		private static OracleProgramMetadata MapProgramMetadata(IDataRecord reader, bool isBuiltIn)
 		{
 			var identifier = CreateFunctionIdentifierFromReaderValues(reader["OWNER"], reader["PACKAGE_NAME"], reader["PROGRAM_NAME"], reader["OVERLOAD"]);
 			var type = Convert.ToBoolean(reader["IS_FUNCTION"]) ? ProgramType.Function : ProgramType.Procedure;
@@ -183,7 +183,7 @@ namespace SqlPad.Oracle
 			return new OracleProgramMetadata(type, identifier, isAnalytic, isAggregate, isPipelined, isOffloadable, parallelSupport, isDeterministic, metadataMinimumArguments, metadataMaximumArguments, authId, displayType, isBuiltIn);
 		}
 
-		private KeyValuePair<OracleProgramIdentifier, OracleProgramParameterMetadata> MapProgramParameterMetadata(OracleDataReader reader)
+		private KeyValuePair<OracleProgramIdentifier, OracleProgramParameterMetadata> MapProgramParameterMetadata(IDataRecord reader)
 		{
 			var identifier = CreateFunctionIdentifierFromReaderValues(reader["OWNER"], reader["PACKAGE_NAME"], reader["PROGRAM_NAME"], reader["OVERLOAD"]);
 
@@ -221,7 +221,7 @@ namespace SqlPad.Oracle
 			return OracleProgramIdentifier.CreateFromValues(owner == DBNull.Value ? null : QualifyStringObject(owner), package == DBNull.Value ? null : QualifyStringObject(package), QualifyStringObject(name), Convert.ToInt32(overload));
 		}
 
-		private OracleTypeObject MapTypeAttributes(OracleDataReader reader)
+		private OracleTypeObject MapTypeAttributes(IDataRecord reader)
 		{
 			var typeFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(reader["OWNER"]), QualifyStringObject(reader["TYPE_NAME"]));
 			OracleSchemaObject typeObject;
@@ -255,7 +255,7 @@ namespace SqlPad.Oracle
 			return type;
 		}
 
-		private OracleTypeCollection MapCollectionTypeAttributes(OracleDataReader reader)
+		private OracleTypeCollection MapCollectionTypeAttributes(IDataRecord reader)
 		{
 			var typeFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(reader["OWNER"]), QualifyStringObject(reader["TYPE_NAME"]));
 			OracleSchemaObject typeObject;
@@ -283,7 +283,7 @@ namespace SqlPad.Oracle
 			return collectionType;
 		}
 
-		private OracleDatabaseLink MapDatabaseLink(OracleDataReader reader)
+		private OracleDatabaseLink MapDatabaseLink(IDataRecord reader)
 		{
 			var databaseLinkFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(reader["OWNER"]), QualifyStringObject(reader["DB_LINK"]));
 			return
@@ -296,12 +296,12 @@ namespace SqlPad.Oracle
 				};
 		}
 
-		private KeyValuePair<string, string> MapParameter(OracleDataReader reader)
+		private KeyValuePair<string, string> MapParameter(IDataRecord reader)
 		{
 			return new KeyValuePair<string, string>((string)reader["NAME"], OracleReaderValueConvert.ToString(reader["VALUE"]));
 		}
 
-		private OracleSequence MapSequence(OracleDataReader reader)
+		private OracleSequence MapSequence(IDataRecord reader)
 		{
 			var sequenceFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(reader["SEQUENCE_OWNER"]), QualifyStringObject(reader["SEQUENCE_NAME"]));
 			OracleSchemaObject sequenceObject;
@@ -320,13 +320,13 @@ namespace SqlPad.Oracle
 			return sequence;
 		}
 
-		private static KeyValuePair<OracleObjectIdentifier, string> MapConstraintColumn(OracleDataReader reader)
+		private static KeyValuePair<OracleObjectIdentifier, string> MapConstraintColumn(IDataRecord reader)
 		{
 			var column = (string)reader["COLUMN_NAME"];
 			return new KeyValuePair<OracleObjectIdentifier, string>(OracleObjectIdentifier.Create(QualifyStringObject(reader["OWNER"]), QualifyStringObject(reader["CONSTRAINT_NAME"])), column[0] == '"' ? column : QualifyStringObject(column));
 		}
 
-		private KeyValuePair<OracleConstraint, OracleObjectIdentifier> MapConstraintWithReferenceIdentifier(OracleDataReader reader)
+		private KeyValuePair<OracleConstraint, OracleObjectIdentifier> MapConstraintWithReferenceIdentifier(IDataRecord reader)
 		{
 			var remoteConstraintIdentifier = OracleObjectIdentifier.Empty;
 			var owner = QualifyStringObject(reader["OWNER"]);
@@ -363,7 +363,7 @@ namespace SqlPad.Oracle
 			return new KeyValuePair<OracleConstraint, OracleObjectIdentifier>(constraint, remoteConstraintIdentifier);
 		}
 
-		private static KeyValuePair<OracleObjectIdentifier, OracleColumn> MapTableColumn(OracleDataReader reader)
+		private static KeyValuePair<OracleObjectIdentifier, OracleColumn> MapTableColumn(IDataRecord reader)
 		{
 			var dataTypeIdentifier = OracleObjectIdentifier.Create(QualifyStringObject(reader["DATA_TYPE_OWNER"]), QualifyStringObject(reader["DATA_TYPE"]));
 			var dataType =
@@ -395,7 +395,7 @@ namespace SqlPad.Oracle
 				: DataUnit.NotApplicable;
 		}
 
-		private OracleSchemaObject MapSynonymTarget(OracleDataReader reader)
+		private OracleSchemaObject MapSynonymTarget(IDataRecord reader)
 		{
 			var synonymFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(reader["OWNER"]), QualifyStringObject(reader["SYNONYM_NAME"]));
 			OracleSchemaObject synonymObject;
@@ -418,7 +418,7 @@ namespace SqlPad.Oracle
 			return synonymObject;
 		}
 
-		private object MapTable(OracleDataReader reader)
+		private object MapTable(IDataRecord reader)
 		{
 			var tableFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(reader["OWNER"]), QualifyStringObject(reader["TABLE_NAME"]));
 			OracleSchemaObject schemaObject;
@@ -432,7 +432,7 @@ namespace SqlPad.Oracle
 			return table;
 		}
 
-		private object MapSchemaObject(OracleDataReader reader)
+		private object MapSchemaObject(IDataRecord reader)
 		{
 			var objectTypeIdentifer = OracleObjectIdentifier.Create(QualifyStringObject(reader["OWNER"]), QualifyStringObject(reader["OBJECT_NAME"]));
 			var objectType = (string)reader["OBJECT_TYPE"];
@@ -461,7 +461,7 @@ namespace SqlPad.Oracle
 			return schemaObject;
 		}
 
-		private static OracleTypeBase MapSchemaType(OracleDataReader reader)
+		private static OracleTypeBase MapSchemaType(IDataRecord reader)
 		{
 			OracleTypeBase schemaType;
 			var typeType = (string)reader["TYPECODE"];
