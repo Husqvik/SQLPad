@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -103,42 +104,31 @@ namespace SqlPad.Oracle.ExecutionPlan
 		}
 	}
 
-	internal class ExecutionPlanViewerModel : ModelBase
+	internal class LastExecutionWorkAreaInfoConverter : ValueConverter
 	{
-		private Visibility _cursorStatisticsOptionsVisibility = Visibility.Collapsed;
-		private string _textExecutionPlan;
-		private int _totalExecutions;
-
-		public int TotalExecutions
+		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			get { return _totalExecutions; }
-			set { UpdateValueAndRaisePropertyChanged(ref _totalExecutions, value); }
+			var planItem = value as ExecutionStatisticsPlanItem;
+			return planItem == null || planItem.LastMemoryUsedBytes == null
+				? String.Empty
+				: String.Format("{0} ({1}, {2})", DataSpaceConverter.PrettyPrint(planItem.LastMemoryUsedBytes.Value), planItem.LastExecutionMethod, planItem.WorkAreaSizingPolicy);
 		}
+	}
 
-		public Visibility CursorStatisticsOptionsVisibility
+	internal class CumulativeExecutionWorkAreaInfoConverter : ValueConverter
+	{
+		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			get { return _cursorStatisticsOptionsVisibility; }
-			set { UpdateValueAndRaisePropertyChanged(ref _cursorStatisticsOptionsVisibility, value); }
-		}
-
-		public string TextExecutionPlan
-		{
-			get { return _textExecutionPlan; }
-			set
-			{
-				if (!UpdateValueAndRaisePropertyChanged(ref _textExecutionPlan, value))
-				{
-					return;
-				}
-
-				RaisePropertyChanged("IsExecutionPlanAvailable");
-			}
+			var planItem = value as ExecutionStatisticsPlanItem;
+			return planItem == null || planItem.LastMemoryUsedBytes == null
+				? String.Empty
+				: String.Format("{0} total/{1} optimal/{2} one-pass/{3} multi-pass", planItem.TotalWorkAreaExecutions, planItem.OptimalWorkAreaExecutions, planItem.OnePassWorkAreaExecutions, planItem.MultiPassWorkAreaExecutions);
 		}
 	}
 
 	internal class TreeViewLineConverter : IValueConverter
 	{
-		public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			var item = (TreeViewItem)value;
 			var itemsControl = ItemsControl.ItemsControlFromItemContainer(item);

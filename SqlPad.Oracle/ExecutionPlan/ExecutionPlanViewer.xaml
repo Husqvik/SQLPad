@@ -11,6 +11,8 @@
 		<sqlPad:DataSpaceConverter x:Key="DataSpaceConverter" />
 		<sqlPad:PrettyPrintIntegerConverter x:Key="PrettyPrintNumericConverter" />
 		<sqlPad:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
+		<executionPlan:LastExecutionWorkAreaInfoConverter x:Key="LastExecutionWorkAreaInfoConverter" />
+		<executionPlan:CumulativeExecutionWorkAreaInfoConverter x:Key="CumulativeExecutionWorkAreaInfoConverter" />
 
 		<Style x:Key="PlanItemBaseStyle" TargetType="TextBlock">
 			<Style.Setters>
@@ -102,6 +104,11 @@
 							<Run Text="{Binding LastDiskWrites, Converter={StaticResource PrettyPrintNumericConverter}}"/>
 							<Run Text=" " />
 				</TextBlock>
+				<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding LastElapsedTime, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="Elapsed: "/>
+							<Run Text="{Binding LastElapsedTime}"/>
+							<Run Text=" " />
+				</TextBlock>
 				<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding LastMemoryUsedBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
 							<Run Text="Memory: "/>
 							<Run Text="{Binding LastMemoryUsedBytes, Converter={StaticResource DataSpaceConverter}}"/>
@@ -112,9 +119,14 @@
 							<Run Text="{Binding LastTemporarySizeBytes, Converter={StaticResource DataSpaceConverter}}"/>
 							<Run Text=" " />
 				</TextBlock>
-				<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding LastElapsedTime, Converter={StaticResource ObjectToVisibilityConverter}}">
-							<Run Text="Elapsed: "/>
-							<Run Text="{Binding LastElapsedTime}"/>
+				<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding LastMemoryUsedBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="Work areas: "/>
+							<Run Text="{Binding Converter={StaticResource LastExecutionWorkAreaInfoConverter}, Mode=OneWay}"/>
+							<Run Text=" " />
+				</TextBlock>
+				<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding LastParallelDegree, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="DOP: "/>
+							<Run Text="{Binding LastParallelDegree}"/>
 							<Run Text=" " />
 				</TextBlock>
 			</StackPanel>
@@ -162,6 +174,11 @@
 							<Run Text="{Binding TotalElapsedTime}"/>
 							<Run Text=" " />
 				</TextBlock>
+				<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding TotalWorkAreaExecutions, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="Work area executions: "/>
+							<Run Text="{Binding Converter={StaticResource CumulativeExecutionWorkAreaInfoConverter}, Mode=OneWay}"/>
+							<Run Text=" " />
+				</TextBlock>
 			</StackPanel>
 		</DataTemplate>
 
@@ -202,8 +219,11 @@
 				</StackPanel>
 				<StackPanel Orientation="Horizontal">
 					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding Cost, Converter={StaticResource ObjectToVisibilityConverter}}">
-							<Run Text="Cost: "/>
-							<Run Text="{Binding Cost, Converter={StaticResource PrettyPrintNumericConverter}}"/>
+							<Run Text="Cost: " />
+							<Run Text="{Binding Cost, Converter={StaticResource PrettyPrintNumericConverter}}" /><Run Text=" " />
+					</TextBlock>
+					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding CostPercent, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="("/><Run Text="{Binding CostPercent}"/><Run Text=" %) " />
 							<Run Text=" " />
 					</TextBlock>
 					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding Cardinality, Converter={StaticResource ObjectToVisibilityConverter}}">
@@ -285,8 +305,11 @@
 				</StackPanel>
 				<StackPanel Orientation="Horizontal">
 					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding Cost, Converter={StaticResource ObjectToVisibilityConverter}}">
-							<Run Text="Cost: "/>
-							<Run Text="{Binding Cost, Converter={StaticResource PrettyPrintNumericConverter}}"/>
+							<Run Text="Cost: " />
+							<Run Text="{Binding Cost, Converter={StaticResource PrettyPrintNumericConverter}}" /><Run Text=" " />
+					</TextBlock>
+					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding CostPercent, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="("/><Run Text="{Binding CostPercent}"/><Run Text=" %) " />
 							<Run Text=" " />
 					</TextBlock>
 					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding Cardinality, Converter={StaticResource ObjectToVisibilityConverter}}">

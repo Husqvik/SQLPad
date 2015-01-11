@@ -63,7 +63,7 @@ namespace SqlPad.Oracle.ExecutionPlan
 
 		public int? MultiPassWorkAreaExecutions { get; set; }
 
-		public TimeSpan? ActiveTime { get; set; }
+		public TimeSpan? ActiveWorkAreaTime { get; set; }
 
 		public long? MaxTemporarySizeBytes { get; set; }
 

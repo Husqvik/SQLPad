@@ -51,7 +51,20 @@ namespace SqlPad.Oracle.ExecutionPlan
 				return;
 			}
 
-			_leafItems.AddRange(_allItems.Values.Where(v => v.IsLeaf));
+			foreach (var item in _allItems.Values)
+			{
+				if (item.IsLeaf)
+				{
+					_leafItems.Add(item);
+				}
+
+				var costPercent = item.Cost.HasValue && RootItem.Cost.HasValue
+					? (int?)Math.Round(item.Cost.Value / (decimal)RootItem.Cost * 100)
+					: null;
+
+				item.CostPercent = costPercent;
+			}
+
 			var startNode = _leafItems[0];
 			_leafItems.RemoveAt(0);
 
@@ -109,6 +122,8 @@ namespace SqlPad.Oracle.ExecutionPlan
 		private readonly List<ExecutionPlanItem> _childItems = new List<ExecutionPlanItem>();
 
 		public int ExecutionOrder { get; set; }
+		
+		public int? CostPercent { get; set; }
 
 		public int Id { get; set; }
 

@@ -456,7 +456,7 @@ WHERE
 			hashJoin.OptimalWorkAreaExecutions.ShouldNotBe(null);
 			hashJoin.OnePassWorkAreaExecutions.ShouldNotBe(null);
 			hashJoin.MultiPassWorkAreaExecutions.ShouldNotBe(null);
-			hashJoin.ActiveTime.ShouldNotBe(null);
+			hashJoin.ActiveWorkAreaTime.ShouldNotBe(null);
 		}
 
 		[Test]
