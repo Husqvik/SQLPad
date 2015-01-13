@@ -169,6 +169,8 @@ WHERE
 
 			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
 			{
+				databaseModel.Initialize().Wait();
+
 				var result = databaseModel.ExecuteStatement(executionModel);
 				
 				result.ExecutedSuccessfully.ShouldBe(true);
@@ -233,6 +235,8 @@ WHERE
 
 			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
 			{
+				databaseModel.Initialize().Wait();
+				
 				var result = databaseModel.ExecuteStatement(executionModel);
 
 				result.ExecutedSuccessfully.ShouldBe(true);
@@ -312,6 +316,33 @@ WHERE
 		}
 
 		[Test]
+		public void TestIndexDetailDataProvider()
+		{
+			var model = new TableDetailsModel();
+
+			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
+			{
+				databaseModel.Initialize().Wait();
+				databaseModel.UpdateTableDetailsAsync(new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"COL$\""), model, CancellationToken.None).Wait();
+			}
+
+			model.IndexDetails.Count.ShouldBe(3);
+			var indexDetails = model.IndexDetails.ToList();
+			indexDetails.ForEach(i =>
+			{
+				i.Blocks.ShouldBeGreaterThan(0);
+				i.Bytes.ShouldBeGreaterThan(0);
+				i.ClusteringFactor.ShouldBeGreaterThan(0);
+				i.LastAnalyzed.ShouldBeGreaterThan(DateTime.MinValue);
+				i.Owner.ShouldNotBe(null);
+				i.Name.ShouldNotBe(null);
+				i.Rows.ShouldBeGreaterThan(0);
+				i.SampleRows.ShouldBeGreaterThan(0);
+				i.Status.ShouldBe("VALID");
+			});
+		}
+
+		[Test]
 		public void TestRemoteTableColumnDataProvider()
 		{
 			IReadOnlyList<string> remoteTableColumns;
@@ -357,6 +388,8 @@ WHERE
 			Task<ExecutionPlanItemCollection> task;
 			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
 			{
+				databaseModel.Initialize().Wait();
+				
 				var executionModel =
 					new StatementExecutionModel
 					{
@@ -415,6 +448,8 @@ WHERE
 			Task<ExecutionStatisticsPlanItemCollection> task;
 			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
 			{
+				databaseModel.Initialize().Wait();
+
 				var executionModel =
 					new StatementExecutionModel
 					{
@@ -518,6 +553,8 @@ ORDER BY
 			Task<ExecutionPlanItemCollection> task;
 			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
 			{
+				databaseModel.Initialize().Wait();
+
 				var executionModel =
 					new StatementExecutionModel
 					{
@@ -539,6 +576,8 @@ ORDER BY
 		{
 			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
 			{
+				databaseModel.Initialize().Wait();
+
 				var task = (Task)typeof (OracleDatabaseModel).GetMethod("UpdateModelAsync", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(databaseModel, new object[] { CancellationToken.None, false, updaters });
 				task.Wait();
 			}

@@ -424,7 +424,8 @@ namespace SqlPad.Oracle
 			var tableDetailDataProvider = new TableDetailDataProvider(dataModel, objectIdentifier);
 			var tableSpaceAllocationUpdater = new TableSpaceAllocationDataProvider(dataModel, objectIdentifier);
 			var tableInMemorySpaceAllocationUpdater = new TableInMemorySpaceAllocationDataProvider(dataModel, objectIdentifier, VersionString);
-			await UpdateModelAsync(cancellationToken, true, tableDetailDataProvider, tableSpaceAllocationUpdater, tableInMemorySpaceAllocationUpdater);
+			var indexDetailDataProvider = new IndexDetailDataProvider(dataModel, objectIdentifier);
+			await UpdateModelAsync(cancellationToken, true, tableDetailDataProvider, tableSpaceAllocationUpdater, tableInMemorySpaceAllocationUpdater, indexDetailDataProvider);
 		}
 
 		public async override Task UpdateColumnDetailsAsync(OracleObjectIdentifier objectIdentifier, string columnName, ColumnDetailsModel dataModel, CancellationToken cancellationToken)

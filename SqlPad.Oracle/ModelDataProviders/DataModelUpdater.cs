@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 #if ORACLE_MANAGED_DATA_ACCESS_CLIENT
@@ -194,6 +195,53 @@ namespace SqlPad.Oracle.ModelDataProviders
 		public override bool HasScalarResult
 		{
 			get { return true; }
+		}
+	}
+
+	internal class IndexDetailDataProvider : ModelDataProvider<TableDetailsModel>
+	{
+		private static readonly TextInfo TextInfo = CultureInfo.CurrentUICulture.TextInfo;
+		private readonly OracleObjectIdentifier _objectIdentifier;
+
+		public IndexDetailDataProvider(TableDetailsModel dataModel, OracleObjectIdentifier objectIdentifier)
+			: base(dataModel)
+		{
+			_objectIdentifier = objectIdentifier;
+		}
+
+		public override void InitializeCommand(OracleCommand command)
+		{
+			command.CommandText = String.Format(DatabaseCommands.IndexDescription);
+			command.AddSimpleParameter("TABLE_OWNER", _objectIdentifier.Owner.Trim('"'));
+			command.AddSimpleParameter("TABLE_NAME", _objectIdentifier.Name.Trim('"'));
+		}
+
+		public override void MapReaderData(OracleDataReader reader)
+		{
+			while (reader.Read())
+			{
+				var indexDetails =
+					new IndexDetailsModel
+					{
+						Owner = (string)reader["OWNER"],
+						Name = (string)reader["INDEX_NAME"],
+						Type = TextInfo.ToTitleCase((string)reader["INDEX_TYPE"]),
+						IsUnique = (string)reader["UNIQUENESS"] == "UNIQUE",
+						Compression = TextInfo.ToTitleCase(OracleReaderValueConvert.ToString(reader["COMPRESSION"])),
+						PrefixLength = OracleReaderValueConvert.ToInt32(reader["PREFIX_LENGTH"]),
+						Logging = (string)reader["LOGGING"] == "LOGGING",
+						ClusteringFactor = OracleReaderValueConvert.ToInt64(reader["CLUSTERING_FACTOR"]),
+						Status = TextInfo.ToTitleCase((string)reader["STATUS"]),
+						Rows = OracleReaderValueConvert.ToInt64(reader["NUM_ROWS"]),
+						SampleRows = OracleReaderValueConvert.ToInt64(reader["SAMPLE_SIZE"]),
+						LastAnalyzed = OracleReaderValueConvert.ToDateTime(reader["LAST_ANALYZED"]),
+						Blocks = OracleReaderValueConvert.ToInt32(reader["BLOCKS"]),
+						Bytes = OracleReaderValueConvert.ToInt64(reader["BYTES"])
+						// Degree
+					};
+
+				DataModel.IndexDetails.Add(indexDetails);
+			}
 		}
 	}
 

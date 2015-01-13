@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
@@ -32,6 +34,15 @@ namespace SqlPad.Oracle.ToolTips
 		private bool? _isTemporary;
 		private bool? _isPartitioned;
 		private long? _allocatedBytes;
+
+		private readonly ObservableCollection<IndexDetailsModel> _indexDetails = new ObservableCollection<IndexDetailsModel>();
+
+		public TableDetailsModel()
+		{
+			_indexDetails.CollectionChanged += (sender, args) => RaisePropertyChanged("IndexDetailsVisibility");
+		}
+
+		public ICollection<IndexDetailsModel> IndexDetails { get { return _indexDetails; } } 
 
 		public string Title { get; set; }
 
@@ -101,9 +112,14 @@ namespace SqlPad.Oracle.ToolTips
 			set { UpdateValueAndRaisePropertyChanged(ref _isTemporary, value); }
 		}
 
-		public Visibility ClusterNameVisible
+		public Visibility ClusterNameVisibility
 		{
 			get { return String.IsNullOrEmpty(_clusterName) ? Visibility.Collapsed : Visibility.Visible; }
+		}
+
+		public Visibility IndexDetailsVisibility
+		{
+			get { return _indexDetails.Count > 0 ? Visibility.Visible : Visibility.Collapsed; }
 		}
 
 		public long? AllocatedBytes
@@ -148,6 +164,37 @@ namespace SqlPad.Oracle.ToolTips
 		}
 	}
 
+	public class IndexDetailsModel
+	{
+		public string Owner { get; set; }
+		
+		public string Name { get; set; }
+		
+		public string Type { get; set; }
+		
+		public bool IsUnique { get; set; }
+		
+		public string Compression { get; set; }
+		
+		public int? PrefixLength { get; set; }
+		
+		public bool Logging { get; set; }
+		
+		public long? ClusteringFactor { get; set; }
+		
+		public string Status { get; set; }
+		
+		public long? Rows { get; set; }
+		
+		public long? SampleRows { get; set; }
+		
+		public DateTime? LastAnalyzed { get; set; }
+		
+		public int? Blocks { get; set; }
+		
+		public long? Bytes { get; set; }
+	}
+	
 	public class InMemoryAllocationStatusConverter : IMultiValueConverter
 	{
 		public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)

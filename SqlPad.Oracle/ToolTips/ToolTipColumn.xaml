@@ -11,7 +11,7 @@
 		<StackPanel.Resources>
 			<sqlPad:DateTimeLabelConverter x:Key="DateTimeConverter" />
 			<sqlPad:BooleanLabelConverter x:Key="BooleanConverter" />
-			<sqlPad:NumericConverter x:Key="NumericConverter" />
+			<sqlPad:PrettyPrintIntegerConverter x:Key="PrettyPrintIntegerConverter" />
 		</StackPanel.Resources>
 		<GroupBox BorderThickness="0">
 			<GroupBox.Header>
@@ -43,13 +43,13 @@
 				<TextBlock Grid.Row="3" Grid.Column="0" Text="Nullable: " />
 				<TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Nullable, Converter={StaticResource BooleanConverter}}" />
 				<TextBlock Grid.Row="4" Grid.Column="0" Text="Distinct values: " />
-				<TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding DistinctValueCount, Converter={StaticResource NumericConverter}}" />
+				<TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding DistinctValueCount, Converter={StaticResource PrettyPrintIntegerConverter}}" />
 				<TextBlock Grid.Row="5" Grid.Column="0" Text="Null values: " />
-				<TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding NullValueCount, Converter={StaticResource NumericConverter}}" />
+				<TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding NullValueCount, Converter={StaticResource PrettyPrintIntegerConverter}}" />
 				<TextBlock Grid.Row="6" Grid.Column="0" Text="Sample size: " />
-				<TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding SampleSize, Converter={StaticResource NumericConverter}}" />
+				<TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding SampleSize, Converter={StaticResource PrettyPrintIntegerConverter}}" />
 				<TextBlock Grid.Row="7" Grid.Column="0" Text="Average bytes: " />
-				<TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding AverageValueSize, Converter={StaticResource NumericConverter}}" />
+				<TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding AverageValueSize, Converter={StaticResource PrettyPrintIntegerConverter}}" />
 				<TextBlock Grid.Row="8" Grid.Column="0" Text="Last analyzed: " />
 				<TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding LastAnalyzed, Converter={StaticResource DateTimeConverter}}" />
 				<TextBlock Grid.Row="9" Grid.Column="0" Text="In-memory compression: " Visibility="{Binding InMemoryCompressionVisible}" />

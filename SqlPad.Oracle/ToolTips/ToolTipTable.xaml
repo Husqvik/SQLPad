@@ -6,15 +6,37 @@
              xmlns:sqlPad="clr-namespace:SqlPad;assembly=SqlPad"
              xmlns:toolTips="clr-namespace:SqlPad.Oracle.ToolTips"
              mc:Ignorable="d" 
-             d:DesignHeight="192" d:DesignWidth="240"
-			 Padding="4">
+             d:DesignHeight="294" d:DesignWidth="240"
+			 Padding="4" d:DataContext="{d:DesignInstance toolTips:TableDetailsModel}">
     <StackPanel>
 		<StackPanel.Resources>
 			<sqlPad:DateTimeLabelConverter x:Key="DateTimeConverter" />
 			<sqlPad:BooleanLabelConverter x:Key="BooleanConverter" />
-			<sqlPad:NumericConverter x:Key="NumericConverter" />
+			<sqlPad:PrettyPrintIntegerConverter x:Key="PrettyPrintIntegerConverter" />
 			<sqlPad:DataSpaceConverter x:Key="DataSpaceConverter" />
 			<toolTips:InMemoryAllocationStatusConverter x:Key="InMemoryAllocationStatusConverter" />
+
+			<ControlTemplate x:Key="DataGridCellControlTemplate" TargetType="{x:Type DataGridCell}">
+				<Border Padding="2,0,2,0">
+					<ContentPresenter />
+				</Border>
+			</ControlTemplate>
+
+			<Style x:Key="CellStyleRightAlign">
+				<Setter Property="Block.TextAlignment" Value="Right" />
+				<Setter Property="DataGridCell.Template" Value="{StaticResource DataGridCellControlTemplate}" />
+			</Style>
+			
+			<Style x:Key="HeaderStyleRightAlign">
+				<Setter Property="Control.HorizontalContentAlignment" Value="Right" />
+				<Setter Property="Control.Background" Value="Transparent" />
+				<Setter Property="Control.Padding" Value="4,2,4,2" />
+				<Setter Property="Control.FontWeight" Value="Medium" />
+			</Style>
+
+			<Style TargetType="{x:Type DataGridCell}">
+				<Setter Property="Template" Value="{StaticResource DataGridCellControlTemplate}" />
+			</Style>
 		</StackPanel.Resources>
 		<GroupBox BorderThickness="0">
 			<GroupBox.Header>
@@ -23,7 +45,7 @@
 			<Grid Margin="4">
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="Auto"/>
-					<ColumnDefinition/>
+					<ColumnDefinition />
 				</Grid.ColumnDefinitions>
 				<Grid.RowDefinitions>
 					<RowDefinition />
@@ -49,13 +71,13 @@
 				<TextBlock Grid.Row="3" Grid.Column="0" Text="Temporary: " />
 				<TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding IsTemporary, Converter={StaticResource BooleanConverter}}" />
 				<TextBlock Grid.Row="4" Grid.Column="0" Text="Blocks: " />
-				<TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding BlockCount, Converter={StaticResource NumericConverter}}" />
+				<TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding BlockCount, Converter={StaticResource PrettyPrintIntegerConverter}}" />
 				<TextBlock Grid.Row="5" Grid.Column="0" Text="Space: " />
 				<TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding AllocatedBytes, Converter={StaticResource DataSpaceConverter}}" />
 				<TextBlock Grid.Row="6" Grid.Column="0" Text="Rows: " />
-				<TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding RowCount, Converter={StaticResource NumericConverter}}" />
+				<TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding RowCount, Converter={StaticResource PrettyPrintIntegerConverter}}" />
 				<TextBlock Grid.Row="7" Grid.Column="0" Text="Avg. row bytes: " />
-				<TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding AverageRowSize, Converter={StaticResource NumericConverter}}" />
+				<TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding AverageRowSize, Converter={StaticResource PrettyPrintIntegerConverter}}" />
 				<TextBlock Grid.Row="8" Grid.Column="0" Text="Compression: " />
 				<TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding Compression}" />
 				<TextBlock Grid.Row="9" Grid.Column="0" Text="Last analyzed: " />
@@ -73,9 +95,68 @@
 				</TextBlock>
 				<TextBlock Grid.Row="11" Grid.Column="0" Text="In-memory compression: " Visibility="{Binding InMemoryAllocationStatusVisible}" />
 				<TextBlock Grid.Row="11" Grid.Column="1" Text="{Binding InMemoryCompression}" Visibility="{Binding InMemoryAllocationStatusVisible}" />
-				<TextBlock Grid.Row="12" Grid.Column="0" Text="Cluster: " Visibility="{Binding ClusterNameVisible}" />
-				<TextBlock Grid.Row="12" Grid.Column="1" Text="{Binding ClusterName}" Visibility="{Binding ClusterNameVisible}" />
+				<TextBlock Grid.Row="12" Grid.Column="0" Text="Cluster: " Visibility="{Binding ClusterNameVisibility}" />
+				<TextBlock Grid.Row="12" Grid.Column="1" Text="{Binding ClusterName}" Visibility="{Binding ClusterNameVisibility}" />
 			</Grid>
+		</GroupBox>
+		<GroupBox Header="Indexes: " FontWeight="Bold" Visibility="{Binding IndexDetailsVisibility}" Padding="0,4,0,0">
+			<DataGrid Visibility="{Binding IndexDetailsVisibility}" ItemsSource="{Binding IndexDetails}"
+			          FontWeight="Normal" Background="Transparent" AutoGenerateColumns="False" RowBackground="Transparent" RowHeaderWidth="0"
+			          HorizontalGridLinesBrush="LightGray" VerticalGridLinesBrush="LightGray" IsReadOnly="True"
+			          CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False"
+			          CanUserResizeColumns="False" CanUserResizeRows="False" CanUserSortColumns="False">
+				<DataGrid.ColumnHeaderStyle>
+					<Style TargetType="DataGridColumnHeader">
+						<Style.Setters>
+							<Setter Property="Background" Value="Transparent" />
+							<Setter Property="Padding" Value="4,2,4,2" />
+							<Setter Property="FontWeight" Value="Medium" />
+						</Style.Setters>
+					</Style>
+				</DataGrid.ColumnHeaderStyle>
+				<DataGrid.Columns>
+					<DataGridTemplateColumn Header="Identifier">
+						<DataGridTemplateColumn.CellTemplate>
+							<DataTemplate DataType="toolTips:IndexDetailsModel">
+								<TextBlock>
+									<Run Text="{Binding Owner}" /><Run Text="." /><Run Text="{Binding Name}" />
+								</TextBlock>
+							</DataTemplate>
+						</DataGridTemplateColumn.CellTemplate>
+					</DataGridTemplateColumn>
+					<DataGridTextColumn Header="Type" Binding="{Binding Type}" />
+					<!--<DataGridTextColumn Header="Uniqueness" Binding="{Binding IsUnique, Converter={StaticResource BooleanConverter}}" />-->
+					<DataGridCheckBoxColumn Header="Uniqueness" Binding="{Binding IsUnique}" />
+					<DataGridTextColumn Header="Status" Binding="{Binding Status}" />
+					<DataGridTextColumn Header="Compression" Binding="{Binding Compression}" />
+					<DataGridTextColumn Header="Prefix length"
+					                    Binding="{Binding PrefixLength, Converter={StaticResource PrettyPrintIntegerConverter}}"
+					                    HeaderStyle="{StaticResource HeaderStyleRightAlign}"
+					                    CellStyle="{StaticResource CellStyleRightAlign}" />
+					<!--<DataGridTextColumn Header="Logging" Binding="{Binding Logging, Converter={StaticResource BooleanConverter}}" />-->
+					<DataGridCheckBoxColumn Header="Logging" Binding="{Binding Logging}" />
+					<DataGridTextColumn Header="Clustering factor"
+					                    Binding="{Binding ClusteringFactor, Converter={StaticResource PrettyPrintIntegerConverter}}"
+										HeaderStyle="{StaticResource HeaderStyleRightAlign}"
+					                    CellStyle="{StaticResource CellStyleRightAlign}" />
+					<DataGridTextColumn Header="Rows" Binding="{Binding Rows, Converter={StaticResource PrettyPrintIntegerConverter}}"
+					                    HeaderStyle="{StaticResource HeaderStyleRightAlign}"
+					                    CellStyle="{StaticResource CellStyleRightAlign}" />
+					<DataGridTextColumn Header="Sample rows"
+					                    Binding="{Binding SampleRows, Converter={StaticResource PrettyPrintIntegerConverter}}"
+					                    HeaderStyle="{StaticResource HeaderStyleRightAlign}"
+					                    CellStyle="{StaticResource CellStyleRightAlign}" />
+					<DataGridTextColumn Header="Blocks"
+					                    Binding="{Binding Blocks, Converter={StaticResource PrettyPrintIntegerConverter}}"
+					                    HeaderStyle="{StaticResource HeaderStyleRightAlign}"
+					                    CellStyle="{StaticResource CellStyleRightAlign}" />
+					<DataGridTextColumn Header="Space" Binding="{Binding Bytes, Converter={StaticResource DataSpaceConverter}}"
+					                    HeaderStyle="{StaticResource HeaderStyleRightAlign}"
+					                    CellStyle="{StaticResource CellStyleRightAlign}" />
+					<DataGridTextColumn Header="Last analyzed"
+					                    Binding="{Binding LastAnalyzed, Converter={StaticResource DateTimeConverter}}" />
+				</DataGrid.Columns>
+			</DataGrid>
 		</GroupBox>
 	</StackPanel>
 </UserControl>

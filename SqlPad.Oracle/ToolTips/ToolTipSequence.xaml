@@ -9,9 +9,8 @@
 			 Padding="4">
     <StackPanel>
 		<StackPanel.Resources>
-			<sqlPad:DateTimeLabelConverter x:Key="DateTimeConverter" />
 			<sqlPad:BooleanLabelConverter x:Key="BooleanConverter" />
-			<sqlPad:NumericConverter x:Key="NumericConverter" />
+			<sqlPad:PrettyPrintIntegerConverter x:Key="PrettyPrintIntegerConverter" />
 		</StackPanel.Resources>
 		<GroupBox BorderThickness="0">
 			<GroupBox.Header>
@@ -32,15 +31,15 @@
 					<RowDefinition />
 				</Grid.RowDefinitions>
 				<TextBlock Grid.Row="0" Grid.Column="0" Text="Current value: " />
-				<TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding CurrentValue}" />
+				<TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding CurrentValue, Converter={StaticResource PrettyPrintIntegerConverter}}" />
 				<TextBlock Grid.Row="1" Grid.Column="0" Text="Increment: " />
-				<TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Increment}" />
+				<TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Increment, Converter={StaticResource PrettyPrintIntegerConverter}}" />
 				<TextBlock Grid.Row="2" Grid.Column="0" Text="Minimum value: " />
-				<TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding MinimumValue}" />
+				<TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding MinimumValue, Converter={StaticResource PrettyPrintIntegerConverter}}" />
 				<TextBlock Grid.Row="3" Grid.Column="0" Text="Maximum value: " />
-				<TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding MaximumValue}" />
+				<TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding MaximumValue, Converter={StaticResource PrettyPrintIntegerConverter}}" />
 				<TextBlock Grid.Row="4" Grid.Column="0" Text="Cached values: " />
-				<TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding CacheSize}" />
+				<TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding CacheSize, Converter={StaticResource PrettyPrintIntegerConverter}}" />
 				<TextBlock Grid.Row="5" Grid.Column="0" Text="Ordered: " />
 				<TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding IsOrdered, Converter={StaticResource BooleanConverter}}" />
 				<TextBlock Grid.Row="6" Grid.Column="0" Text="Can cycle: " />

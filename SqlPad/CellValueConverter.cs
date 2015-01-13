@@ -126,7 +126,7 @@ namespace SqlPad
 	{
 		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			return System.Convert.ToDecimal(value).ToString("N0");
+			return value == null ? ValueNotAvailable : System.Convert.ToDecimal(value).ToString("N0");
 		}
 	}
 
