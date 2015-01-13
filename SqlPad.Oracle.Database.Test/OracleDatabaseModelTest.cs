@@ -338,7 +338,9 @@ WHERE
 				i.Name.ShouldNotBe(null);
 				i.Rows.ShouldBeGreaterThan(0);
 				i.SampleRows.ShouldBeGreaterThan(0);
-				i.Status.ShouldBe("VALID");
+				i.Status.ShouldBe("Valid");
+				i.Compression.ShouldBe("Disabled");
+				i.Type.ShouldBe("Normal");
 			});
 		}
 

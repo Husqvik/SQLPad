@@ -48,6 +48,48 @@ namespace SqlPad.Oracle
 		public IEnumerable<OracleForeignKeyConstraint> ForeignKeys { get { return Constraints.OfType<OracleForeignKeyConstraint>(); } }
 	}
 
+	[DebuggerDisplay("OracleMaterializedView (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
+	public class OracleMaterializedView : OracleTable
+	{
+		public string TableName { get; set; }
+
+		public bool IsUpdatable { get; set; }
+		
+		public bool IsPrebuilt { get; set; }
+
+		public string Query { get; set; }
+		
+		public string RefreshGroup { get; set; }
+
+		public MaterializedViewRefreshMode RefreshMode { get; set; }
+
+		// TODO: Make proper enum
+		public string RefreshMethod { get; set; }
+
+		public MaterializedViewRefreshType RefreshType { get; set; }
+		
+		public DateTime? StartWith { get; set; }
+
+		public DateTime? Next { get; set; }
+		
+		public DateTime? LastRefresh { get; set; }
+
+		public override string Type { get { return OracleSchemaObjectType.MaterializedView; } }
+	}
+
+	public enum MaterializedViewRefreshMode
+	{
+		OnDemand,
+		OnCommit
+	}
+
+	public enum MaterializedViewRefreshType
+	{
+		Fast,
+		Complete,
+		Force
+	}
+
 	[DebuggerDisplay("OracleView (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
 	public class OracleView : OracleDataObject
 	{
@@ -304,6 +346,7 @@ namespace SqlPad.Oracle
 	{
 		public const string Table = "TABLE";
 		public const string View = "VIEW";
+		public const string MaterializedView = "MATERIALIZED VIEW";
 		public const string Synonym = "SYNONYM";
 		public const string Sequence = "SEQUENCE";
 		public const string Function = "FUNCTION";

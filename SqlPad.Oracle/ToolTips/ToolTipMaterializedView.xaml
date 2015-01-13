@@ -1,0 +1,60 @@
+﻿<UserControl x:Class="SqlPad.Oracle.ToolTips.ToolTipMaterializedView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:sqlPad="clr-namespace:SqlPad;assembly=SqlPad"
+             xmlns:toolTips="clr-namespace:SqlPad.Oracle.ToolTips"
+             mc:Ignorable="d" 
+             d:DesignHeight="472" d:DesignWidth="240"
+			 Padding="4" d:DataContext="{d:DesignInstance toolTips:MaterializedViewDetailsModel}">
+    <StackPanel>
+		<StackPanel.Resources>
+			<sqlPad:BooleanLabelConverter x:Key="BooleanConverter" />
+			<sqlPad:DateTimeLabelConverter x:Key="DateTimeLabelConverter" />
+			<sqlPad:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
+			<toolTips:MaterializedViewPropertyConverter x:Key="MaterializedViewPropertyConverter" />
+		</StackPanel.Resources>
+		<GroupBox BorderThickness="0">
+			<GroupBox.Header>
+				<TextBlock Text="{Binding MaterializedViewTitle}" FontWeight="Bold"/>
+			</GroupBox.Header>
+			<Grid Margin="4" DataContext="{Binding MaterializedView}">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="96"/>
+					<ColumnDefinition/>
+				</Grid.ColumnDefinitions>
+				<Grid.RowDefinitions>
+					<RowDefinition />
+					<RowDefinition />
+					<RowDefinition />
+					<RowDefinition />
+					<RowDefinition />
+					<RowDefinition />
+					<RowDefinition />
+					<RowDefinition Height="Auto" />
+					<RowDefinition Height="Auto" />
+				</Grid.RowDefinitions>
+				<TextBlock Grid.Row="0" Grid.Column="0" Text="Refresh mode: " />
+				<TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding RefreshMode, Converter={StaticResource MaterializedViewPropertyConverter}}" />
+				<TextBlock Grid.Row="1" Grid.Column="0" Text="Refresh type: " />
+				<TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding RefreshType}" />
+				<TextBlock Grid.Row="2" Grid.Column="0" Text="Refresh method: " />
+				<TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding RefreshMethod, Converter={StaticResource MaterializedViewPropertyConverter}}" />
+				<TextBlock Grid.Row="3" Grid.Column="0" Text="Last refresh: " />
+				<TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding LastRefresh, Converter={StaticResource DateTimeLabelConverter}}" />
+				<TextBlock Grid.Row="4" Grid.Column="0" Text="Start with: " />
+				<TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding StartWith, Converter={StaticResource DateTimeLabelConverter}}" />
+				<TextBlock Grid.Row="5" Grid.Column="0" Text="Next refresh: " />
+				<TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding Next, Converter={StaticResource DateTimeLabelConverter}}" />
+				<TextBlock Grid.Row="6" Grid.Column="0" Text="Is prebuilt: " />
+				<TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding IsPrebuilt, Converter={StaticResource BooleanConverter}}" />
+				<TextBlock Grid.Row="7" Grid.Column="0" Text="Is updatable: " />
+				<TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding IsUpdatable, Converter={StaticResource BooleanConverter}}" />
+				<TextBlock Grid.Row="8" Grid.Column="0" Text="Refresh group: " Visibility="{Binding RefreshGroup, Converter={StaticResource ObjectToVisibilityConverter}}" />
+				<TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding RefreshGroup}" Visibility="{Binding RefreshGroup, Converter={StaticResource ObjectToVisibilityConverter}}" />
+			</Grid>
+		</GroupBox>
+		<toolTips:ToolTipTable Padding="0" />
+	</StackPanel>
+</UserControl>

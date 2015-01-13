@@ -149,12 +149,19 @@ namespace SqlPad.Oracle
 					var schemaObject = objectReference.SchemaObject.GetTargetSchemaObject();
 					if (schemaObject != null)
 					{
+						TableDetailsModel dataModel;
+
 						switch (schemaObject.Type)
 						{
-							case OracleSchemaObjectType.Table:
-								var dataModel = new TableDetailsModel {Title = simpleToolTip};
+							case OracleSchemaObjectType.MaterializedView:
+								var materializedView = (OracleMaterializedView)schemaObject;
+								dataModel = new MaterializedViewDetailsModel { MaterializedViewTitle = simpleToolTip, Title = GetObjectTitle(OracleObjectIdentifier.Create(materializedView.Owner, materializedView.TableName), OracleSchemaObjectType.Table), MaterializedView = materializedView };
 								databaseModel.UpdateTableDetailsAsync(schemaObject.FullyQualifiedName, dataModel, CancellationToken.None);
-								return new ToolTipTable(dataModel);
+								return new ToolTipMaterializedView { DataContext = dataModel };
+							case OracleSchemaObjectType.Table:
+								dataModel = new TableDetailsModel { Title = simpleToolTip };
+								databaseModel.UpdateTableDetailsAsync(schemaObject.FullyQualifiedName, dataModel, CancellationToken.None);
+								return new ToolTipTable { DataContext = dataModel };
 							case OracleSchemaObjectType.Sequence:
 								return new ToolTipSequence(simpleToolTip, (OracleSequence)schemaObject);
 						}
@@ -193,7 +200,12 @@ namespace SqlPad.Oracle
 			if (schemaObject == null)
 				return null;
 
-			return schemaObject.FullyQualifiedName + " (" + CultureInfo.InvariantCulture.TextInfo.ToTitleCase(schemaObject.Type.ToLower()) + ")";
+			return GetObjectTitle(schemaObject.FullyQualifiedName, schemaObject.Type);
+		}
+
+		private static string GetObjectTitle(OracleObjectIdentifier schemaObjectIdentifier, string objectType)
+		{
+			return schemaObjectIdentifier + " (" + CultureInfo.InvariantCulture.TextInfo.ToTitleCase(objectType.ToLower()) + ")";
 		}
 
 		private ToolTipProgram GetFunctionToolTip(OracleStatementSemanticModel semanticModel, StatementGrammarNode terminal)

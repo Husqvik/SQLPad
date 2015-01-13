@@ -200,7 +200,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 	internal class IndexDetailDataProvider : ModelDataProvider<TableDetailsModel>
 	{
-		private static readonly TextInfo TextInfo = CultureInfo.CurrentUICulture.TextInfo;
+		private static readonly TextInfo TextInfo = CultureInfo.InvariantCulture.TextInfo;
 		private readonly OracleObjectIdentifier _objectIdentifier;
 
 		public IndexDetailDataProvider(TableDetailsModel dataModel, OracleObjectIdentifier objectIdentifier)
@@ -220,24 +220,26 @@ namespace SqlPad.Oracle.ModelDataProviders
 		{
 			while (reader.Read())
 			{
+				var degreeOfParallelismRaw = (string)reader["DEGREE"];
 				var indexDetails =
 					new IndexDetailsModel
 					{
 						Owner = (string)reader["OWNER"],
 						Name = (string)reader["INDEX_NAME"],
-						Type = TextInfo.ToTitleCase((string)reader["INDEX_TYPE"]),
+						Type = TextInfo.ToTitleCase(((string)reader["INDEX_TYPE"]).ToLowerInvariant()),
 						IsUnique = (string)reader["UNIQUENESS"] == "UNIQUE",
-						Compression = TextInfo.ToTitleCase(OracleReaderValueConvert.ToString(reader["COMPRESSION"])),
+						Compression = TextInfo.ToTitleCase(((string)reader["COMPRESSION"]).ToLowerInvariant()),
 						PrefixLength = OracleReaderValueConvert.ToInt32(reader["PREFIX_LENGTH"]),
 						Logging = (string)reader["LOGGING"] == "LOGGING",
 						ClusteringFactor = OracleReaderValueConvert.ToInt64(reader["CLUSTERING_FACTOR"]),
-						Status = TextInfo.ToTitleCase((string)reader["STATUS"]),
+						Status = TextInfo.ToTitleCase(((string)reader["STATUS"]).ToLowerInvariant()),
 						Rows = OracleReaderValueConvert.ToInt64(reader["NUM_ROWS"]),
 						SampleRows = OracleReaderValueConvert.ToInt64(reader["SAMPLE_SIZE"]),
 						LastAnalyzed = OracleReaderValueConvert.ToDateTime(reader["LAST_ANALYZED"]),
 						Blocks = OracleReaderValueConvert.ToInt32(reader["BLOCKS"]),
-						Bytes = OracleReaderValueConvert.ToInt64(reader["BYTES"])
-						// Degree
+						LeafBlocks = OracleReaderValueConvert.ToInt32(reader["LEAF_BLOCKS"]),
+						Bytes = OracleReaderValueConvert.ToInt64(reader["BYTES"]),
+						DegreeOfParallelism = degreeOfParallelismRaw == "DEFAULT" ? (int?)null : Convert.ToInt32(degreeOfParallelismRaw.Trim())
 					};
 
 				DataModel.IndexDetails.Add(indexDetails);
@@ -370,7 +372,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 		public override void InitializeCommand(OracleCommand command)
 		{
 			command.CommandText = DatabaseCommands.GetObjectScriptCommand;
-			command.AddSimpleParameter("OBJECT_TYPE", _schemaObject.Type.ToUpperInvariant());
+			command.AddSimpleParameter("OBJECT_TYPE", _schemaObject.Type.Replace(' ', '_').ToUpperInvariant());
 			command.AddSimpleParameter("NAME", _schemaObject.FullyQualifiedName.Name.Trim('"'));
 			command.AddSimpleParameter("SCHEMA", _schemaObject.FullyQualifiedName.Owner.Trim('"'));
 		}

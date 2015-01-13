@@ -468,6 +468,9 @@ namespace SqlPad.Oracle
 								{
 									if (EnsureConnectionOpen(connection))
 									{
+										connection.ModuleName = ModuleNameSqlPadDatabaseModel;
+										connection.ActionName = "Model data provider";
+
 										using (var setSchemaCommand = connection.CreateCommand())
 										{
 											SetCurrentSchema(setSchemaCommand);

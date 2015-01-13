@@ -10,11 +10,9 @@ namespace SqlPad.Oracle.ToolTips
 {
 	public partial class ToolTipTable : IToolTip
 	{
-		public ToolTipTable(TableDetailsModel dataModel)
+		public ToolTipTable()
 		{
 			InitializeComponent();
-
-			DataContext = dataModel;
 		}
 
 		public UserControl Control { get { return this; } }
@@ -193,6 +191,10 @@ namespace SqlPad.Oracle.ToolTips
 		public int? Blocks { get; set; }
 		
 		public long? Bytes { get; set; }
+		
+		public int? LeafBlocks { get; set; }
+		
+		public int? DegreeOfParallelism { get; set; }
 	}
 	
 	public class InMemoryAllocationStatusConverter : IMultiValueConverter

@@ -22,10 +22,11 @@ namespace SqlPad.Oracle
 			_allObjects.Clear();
 
 			var schemaTypeMetadataSource = _databaseModel.ExecuteReader(DatabaseCommands.SelectTypesCommandText, MapSchemaType);
+			var schemaTypeAndMateralizedViewMetadataSource = schemaTypeMetadataSource.Concat(_databaseModel.ExecuteReader(DatabaseCommands.SelectMaterializedViewCommand, MapMaterializedView));
 
-			foreach (var schemaType in schemaTypeMetadataSource)
+			foreach (var schemaObject in schemaTypeAndMateralizedViewMetadataSource)
 			{
-				AddSchemaObjectToDictionary(_allObjects, schemaType);
+				AddSchemaObjectToDictionary(_allObjects, schemaObject);
 			}
 
 			_databaseModel.ExecuteReader(DatabaseCommands.SelectAllObjectsCommandText, MapSchemaObject).ToArray();
@@ -441,27 +442,36 @@ namespace SqlPad.Oracle
 			var lastDdl = (DateTime)reader["LAST_DDL_TIME"];
 			var isTemporary = (string)reader["TEMPORARY"] == "Y";
 
-			OracleSchemaObject schemaObject;
-			if (objectType == OracleSchemaObjectType.Type)
+			OracleSchemaObject schemaObject = null;
+			switch (objectType)
 			{
-				if (_allObjects.TryGetValue(objectTypeIdentifer, out schemaObject))
-				{
-					schemaObject.Created = created;
-					schemaObject.IsTemporary = isTemporary;
-					schemaObject.IsValid = isValid;
-					schemaObject.LastDdl = lastDdl;
-				}
-			}
-			else
-			{
-				schemaObject = OracleObjectFactory.CreateSchemaObjectMetadata(objectType, objectTypeIdentifer.NormalizedOwner, objectTypeIdentifer.NormalizedName, isValid, created, lastDdl, isTemporary);
-				AddSchemaObjectToDictionary(_allObjects, schemaObject);
+				case OracleSchemaObjectType.Table:
+					if (_allObjects.TryGetValue(objectTypeIdentifer, out schemaObject))
+					{
+						goto case OracleSchemaObjectType.MaterializedView;
+					}
+					
+					goto default;
+				case OracleSchemaObjectType.MaterializedView:
+				case OracleSchemaObjectType.Type:
+					if (schemaObject == null && _allObjects.TryGetValue(objectTypeIdentifer, out schemaObject))
+					{
+						schemaObject.Created = created;
+						schemaObject.IsTemporary = isTemporary;
+						schemaObject.IsValid = isValid;
+						schemaObject.LastDdl = lastDdl;
+					}
+					break;
+				default:
+					schemaObject = OracleObjectFactory.CreateSchemaObjectMetadata(objectType, objectTypeIdentifer.NormalizedOwner, objectTypeIdentifer.NormalizedName, isValid, created, lastDdl, isTemporary);
+					AddSchemaObjectToDictionary(_allObjects, schemaObject);
+					break;
 			}
 
 			return schemaObject;
 		}
 
-		private static OracleTypeBase MapSchemaType(IDataRecord reader)
+		private static OracleSchemaObject MapSchemaType(IDataRecord reader)
 		{
 			OracleTypeBase schemaType;
 			var typeType = (string)reader["TYPECODE"];
@@ -483,6 +493,45 @@ namespace SqlPad.Oracle
 			schemaType.FullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(reader["OWNER"]), QualifyStringObject(reader["TYPE_NAME"]));
 
 			return schemaType;
+		}
+
+		private static OracleSchemaObject MapMaterializedView(IDataRecord reader)
+		{
+			var refreshModeRaw = (string)reader["REFRESH_MODE"];
+
+			var materializedView =
+				new OracleMaterializedView
+				{
+					FullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(reader["OWNER"]), QualifyStringObject(reader["NAME"])),
+					TableName = (string)reader["TABLE_NAME"],
+					IsPrebuilt = (string)reader["OWNER"] == "YES",
+					IsUpdatable = (string)reader["OWNER"] == "YES",
+					LastRefresh = OracleReaderValueConvert.ToDateTime(reader["LAST_REFRESH"]),
+					Next = OracleReaderValueConvert.ToDateTime(reader["NEXT"]),
+					Query = (string)reader["QUERY"],
+					RefreshGroup = OracleReaderValueConvert.ToString(reader["REFRESH_GROUP"]),
+					RefreshMethod = (string)reader["REFRESH_METHOD"],
+					RefreshMode = refreshModeRaw == "DEMAND" ? MaterializedViewRefreshMode.OnDemand : MaterializedViewRefreshMode.OnCommit,
+					RefreshType = MapMaterializedViewRefreshType((string)reader["TYPE"]),
+					StartWith = OracleReaderValueConvert.ToDateTime(reader["START_WITH"])
+				};
+
+			return materializedView;
+		}
+
+		private static MaterializedViewRefreshType MapMaterializedViewRefreshType(string type)
+		{
+			switch (type)
+			{
+				case "FAST":
+					return MaterializedViewRefreshType.Fast;
+				case "COMPLETE":
+					return MaterializedViewRefreshType.Complete;
+				case "FORCE":
+					return MaterializedViewRefreshType.Force;
+				default:
+					throw new NotSupportedException(String.Format("Type '{0}' is not supported. ", type));
+			}
 		}
 
 		private static void AddSchemaObjectToDictionary(IDictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects, OracleSchemaObject schemaObject)

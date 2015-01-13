@@ -181,6 +181,9 @@
     <Compile Include="ToolTips\ToolTipProgram.xaml.cs">
       <DependentUpon>ToolTipProgram.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ToolTips\ToolTipMaterializedView.xaml.cs">
+      <DependentUpon>ToolTipMaterializedView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ToolTips\ToolTipSequence.xaml.cs">
       <DependentUpon>ToolTipSequence.xaml</DependentUpon>
     </Compile>
@@ -240,6 +243,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="ToolTips\ToolTipProgram.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="ToolTips\ToolTipMaterializedView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

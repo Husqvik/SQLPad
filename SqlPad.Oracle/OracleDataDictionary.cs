@@ -165,6 +165,11 @@ namespace SqlPad.Oracle
 			oracleTableType.AsReferenceDefault = true;
 			oracleTableType.Add("IsInternal");
 
+			oracleTableType.AddSubType(101, typeof(OracleMaterializedView));
+			var oracleMaterializedViewType = Serializer.Add(typeof(OracleMaterializedView), false);
+			oracleMaterializedViewType.AsReferenceDefault = true;
+			oracleMaterializedViewType.Add("TableName", "IsUpdatable", "IsPrebuilt", "RefreshMode", "RefreshType", "RefreshMethod", "RefreshGroup", "LastRefresh", "StartWith", "Next", "Query");
+
 			var oracleViewType = Serializer.Add(typeof(OracleView), false);
 			oracleViewType.AsReferenceDefault = true;
 			oracleViewType.Add("StatementText");
