@@ -138,6 +138,10 @@
 					                    Binding="{Binding ClusteringFactor, Converter={StaticResource PrettyPrintIntegerConverter}}"
 										HeaderStyle="{StaticResource HeaderStyleRightAlign}"
 					                    CellStyle="{StaticResource CellStyleRightAlign}" />
+					<DataGridTextColumn Header="Distinct keys"
+					                    Binding="{Binding DistinctKeys, Converter={StaticResource PrettyPrintIntegerConverter}}"
+					                    HeaderStyle="{StaticResource HeaderStyleRightAlign}"
+					                    CellStyle="{StaticResource CellStyleRightAlign}" />
 					<DataGridTextColumn Header="Sample rows"
 					                    Binding="{Binding SampleRows, Converter={StaticResource PrettyPrintIntegerConverter}}"
 					                    HeaderStyle="{StaticResource HeaderStyleRightAlign}"

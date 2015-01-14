@@ -82,6 +82,14 @@ namespace SqlPad
 		}
 	}
 
+	public class StringConverter : ValueConverter
+	{
+		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			return String.IsNullOrEmpty((string)value) ? ValueNotAvailable : value;
+		}
+	}
+
 	public class BooleanLabelConverter : ValueConverter
 	{
 		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)

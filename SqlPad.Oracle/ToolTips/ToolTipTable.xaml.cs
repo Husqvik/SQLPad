@@ -195,6 +195,8 @@ namespace SqlPad.Oracle.ToolTips
 		public int? LeafBlocks { get; set; }
 		
 		public int? DegreeOfParallelism { get; set; }
+		
+		public long? DistinctKeys { get; set; }
 	}
 	
 	public class InMemoryAllocationStatusConverter : IMultiValueConverter

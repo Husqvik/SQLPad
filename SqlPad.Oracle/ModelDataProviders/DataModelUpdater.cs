@@ -235,6 +235,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 						Status = TextInfo.ToTitleCase(((string)reader["STATUS"]).ToLowerInvariant()),
 						Rows = OracleReaderValueConvert.ToInt64(reader["NUM_ROWS"]),
 						SampleRows = OracleReaderValueConvert.ToInt64(reader["SAMPLE_SIZE"]),
+						DistinctKeys = OracleReaderValueConvert.ToInt64(reader["DISTINCT_KEYS"]),
 						LastAnalyzed = OracleReaderValueConvert.ToDateTime(reader["LAST_ANALYZED"]),
 						Blocks = OracleReaderValueConvert.ToInt32(reader["BLOCKS"]),
 						LeafBlocks = OracleReaderValueConvert.ToInt32(reader["LEAF_BLOCKS"]),
