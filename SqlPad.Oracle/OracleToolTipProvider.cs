@@ -103,7 +103,7 @@ namespace SqlPad.Oracle
 			var validObjectReference = columnReference.ValidObjectReference;
 			var isSchemaObject = validObjectReference.Type == ReferenceType.SchemaObject;
 			var targetSchemaObject = isSchemaObject ? validObjectReference.SchemaObject.GetTargetSchemaObject() : null;
-			if (!isSchemaObject || targetSchemaObject.Type != OracleSchemaObjectType.Table)
+			if (!isSchemaObject || !targetSchemaObject.Type.In(OracleSchemaObjectType.Table, OracleSchemaObjectType.MaterializedView))
 			{
 				var objectPrefix = columnReference.ObjectNode == null && !String.IsNullOrEmpty(validObjectReference.FullyQualifiedObjectName.Name)
 					? String.Format("{0}.", validObjectReference.FullyQualifiedObjectName)
