@@ -507,7 +507,7 @@ namespace SqlPad.Oracle
 					IsPrebuilt = (string)reader["OWNER"] == "YES",
 					IsUpdatable = (string)reader["OWNER"] == "YES",
 					LastRefresh = OracleReaderValueConvert.ToDateTime(reader["LAST_REFRESH"]),
-					Next = OracleReaderValueConvert.ToDateTime(reader["NEXT"]),
+					Next = OracleReaderValueConvert.ToString(reader["NEXT"]),
 					Query = (string)reader["QUERY"],
 					RefreshGroup = OracleReaderValueConvert.ToString(reader["REFRESH_GROUP"]),
 					RefreshMethod = (string)reader["REFRESH_METHOD"],

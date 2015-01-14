@@ -46,7 +46,7 @@
 				<TextBlock Grid.Row="4" Grid.Column="0" Text="Start with: " />
 				<TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding StartWith, Converter={StaticResource DateTimeLabelConverter}}" />
 				<TextBlock Grid.Row="5" Grid.Column="0" Text="Next refresh: " />
-				<TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding Next, Converter={StaticResource DateTimeLabelConverter}}" />
+				<TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding Next, Converter={StaticResource ObjectToVisibilityConverter}}" />
 				<TextBlock Grid.Row="6" Grid.Column="0" Text="Is prebuilt: " />
 				<TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding IsPrebuilt, Converter={StaticResource BooleanConverter}}" />
 				<TextBlock Grid.Row="7" Grid.Column="0" Text="Is updatable: " />

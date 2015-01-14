@@ -70,7 +70,7 @@ namespace SqlPad.Oracle
 		
 		public DateTime? StartWith { get; set; }
 
-		public DateTime? Next { get; set; }
+		public string Next { get; set; }
 		
 		public DateTime? LastRefresh { get; set; }
 
