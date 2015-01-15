@@ -102,9 +102,14 @@ namespace SqlPad
 		
 		public bool IsGrammarValid { get; set; }
 
-		public IList<StatementGrammarNode> ChildNodes { get { return _childNodes.AsReadOnly(); } }
+		public IReadOnlyList<StatementGrammarNode> ChildNodes { get { return _childNodes.AsReadOnly(); } }
 
 		public ICollection<StatementCommentNode> Comments { get { return _commentNodes ?? (_commentNodes = new List<StatementCommentNode>()); } }
+
+		public int IndexOf(StatementGrammarNode childNode)
+		{
+			return _childNodes.IndexOf(childNode);
+		}
 
 		protected override SourcePosition BuildSourcePosition()
 		{

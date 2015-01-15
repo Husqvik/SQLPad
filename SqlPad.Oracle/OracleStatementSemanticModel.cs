@@ -28,6 +28,7 @@ namespace SqlPad.Oracle
 		private readonly OracleDatabaseModelBase _databaseModel;
 		private readonly Dictionary<OracleSelectListColumn, ICollection<OracleDataObjectReference>> _asteriskTableReferences = new Dictionary<OracleSelectListColumn, ICollection<OracleDataObjectReference>>();
 		private readonly Dictionary<OracleQueryBlock, IList<string>> _commonTableExpressionExplicitColumnNames = new Dictionary<OracleQueryBlock, IList<string>>();
+		private readonly Dictionary<OracleQueryBlock, List<StatementGrammarNode>> _queryBlockTerminals = new Dictionary<OracleQueryBlock, List<StatementGrammarNode>>();
 		private readonly Dictionary<OracleQueryBlock, ICollection<StatementGrammarNode>> _accessibleQueryBlockRoot = new Dictionary<OracleQueryBlock, ICollection<StatementGrammarNode>>();
 		private readonly Dictionary<OracleDataObjectReference, ICollection<KeyValuePair<StatementGrammarNode, string>>> _objectReferenceCteRootNodes = new Dictionary<OracleDataObjectReference, ICollection<KeyValuePair<StatementGrammarNode, string>>>();
 		
@@ -129,11 +130,23 @@ namespace SqlPad.Oracle
 		private void Initialize()
 		{
 			var queryBlocks = new List<OracleQueryBlock>();
+			var queryBlockTerminalListQueue = new Stack<KeyValuePair<OracleQueryBlock, List<StatementGrammarNode>>>();
+			var queryBlockTerminalList = new KeyValuePair<OracleQueryBlock, List<StatementGrammarNode>>();
+			
 			foreach (var terminal in Statement.AllTerminals)
 			{
 				if (terminal.Id == Terminals.Select && terminal.ParentNode.Id == NonTerminals.QueryBlock)
 				{
-					queryBlocks.Add(new OracleQueryBlock(this) { RootNode = terminal.ParentNode, Statement = Statement });
+					var queryBlock = new OracleQueryBlock(this) { RootNode = terminal.ParentNode, Statement = Statement };
+					queryBlocks.Add(queryBlock);
+
+					if (queryBlockTerminalList.Key != null)
+					{
+						queryBlockTerminalListQueue.Push(queryBlockTerminalList);
+					}
+
+					queryBlockTerminalList = new KeyValuePair<OracleQueryBlock, List<StatementGrammarNode>>(queryBlock, new List<StatementGrammarNode>());
+					_queryBlockTerminals.Add(queryBlock, queryBlockTerminalList.Value);
 				}
 				else if (terminal.ParentNode.Id == NonTerminals.Expression && (terminal.Id == Terminals.Date || terminal.Id == Terminals.Timestamp))
 				{
@@ -141,6 +154,16 @@ namespace SqlPad.Oracle
 					if (literal.Terminal != null && literal.Terminal.Id == Terminals.StringLiteral)
 					{
 						_literals.Add(literal);
+					}
+				}
+
+				if (queryBlockTerminalList.Key != null)
+				{
+					queryBlockTerminalList.Value.Add(terminal);
+
+					if (terminal == queryBlockTerminalList.Key.RootNode.LastTerminalNode && queryBlockTerminalListQueue.Count > 0)
+					{
+						queryBlockTerminalList = queryBlockTerminalListQueue.Pop();
 					}
 				}
 			}
@@ -1779,6 +1802,11 @@ namespace SqlPad.Oracle
 			else
 			{
 				var columnExpressions = GetAllChainedClausesByPath(queryBlock.SelectList.GetDescendantByPath(NonTerminals.AliasedExpressionOrAllTableColumns), n => n.ParentNode, NonTerminals.SelectExpressionExpressionChainedList, NonTerminals.AliasedExpressionOrAllTableColumns);
+				var columnExpressionsIdentifierLookup = _queryBlockTerminals[queryBlock]
+					.Where(t => t.SourcePosition.IndexStart >= queryBlock.SelectList.SourcePosition.IndexStart && t.SourcePosition.IndexEnd <= queryBlock.SelectList.SourcePosition.IndexEnd &&
+					            (StandardIdentifierIds.Contains(t.Id) || t.ParentNode.Id.In(NonTerminals.AggregateFunction, NonTerminals.AnalyticFunction, NonTerminals.WithinGroupAggregationFunction)))
+					.ToLookup(t => t.GetAncestor(NonTerminals.AliasedExpressionOrAllTableColumns));
+				
 				foreach (var columnExpression in columnExpressions)
 				{
 					var columnAliasNode = columnExpression.LastTerminalNode != null && columnExpression.LastTerminalNode.Id == Terminals.ColumnAlias
@@ -1809,9 +1837,8 @@ namespace SqlPad.Oracle
 					}
 					else
 					{
-						var columnGrammarLookup = GetIdentifiers(columnExpression).ToLookup(n => n.Id, n => n);
-
-						var identifiers = columnGrammarLookup[Terminals.Identifier].Concat(columnGrammarLookup[Terminals.RowIdPseudoColumn]).Concat(columnGrammarLookup[Terminals.Level]).ToArray();
+						var columnExpressionIdentifiers = columnExpressionsIdentifierLookup[columnExpression].ToArray();
+						var identifiers = columnExpressionIdentifiers.Where(t => t.Id.In(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level)).ToArray();
 
 						var previousColumnReferences = column.ColumnReferences.Count;
 						ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, column, identifiers, QueryBlockPlacement.SelectList, column);
@@ -1828,7 +1855,9 @@ namespace SqlPad.Oracle
 							column.AliasNode = identifiers[0];
 						}
 
-						var grammarSpecificFunctions = columnGrammarLookup[Terminals.Count].Concat(columnGrammarLookup[NonTerminals.AggregateFunction]).Concat(columnGrammarLookup[NonTerminals.AnalyticFunction]).Concat(columnGrammarLookup[NonTerminals.WithinGroupAggregationFunction]);
+						var grammarSpecificFunctions = columnExpressionIdentifiers.Where(t => t.Id == Terminals.Count)
+							.Concat(columnExpressionIdentifiers.Where(t => t.ParentNode.Id.In(NonTerminals.AggregateFunction, NonTerminals.AnalyticFunction, NonTerminals.WithinGroupAggregationFunction)).Select(t => t.ParentNode));
+
 						CreateGrammarSpecificFunctionReferences(grammarSpecificFunctions, queryBlock, column.ProgramReferences, column);
 					}
 

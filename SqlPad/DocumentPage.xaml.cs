@@ -19,6 +19,7 @@ using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Folding;
 using Microsoft.Win32;
+//using SqlPad.Bookmarks;
 using SqlPad.Commands;
 using SqlPad.FindReplace;
 using MessageBox = System.Windows.MessageBox;
@@ -76,6 +77,7 @@ namespace SqlPad
 		private Dictionary<string, BindVariableConfiguration> _currentBindVariables = new Dictionary<string, BindVariableConfiguration>();
 		
 		private readonly SqlFoldingStrategy _foldingStrategy;
+		//private readonly BookmarkMargin _bookmarkMargin;
 
 		internal TabItem TabItem { get; private set; }
 		
@@ -115,6 +117,8 @@ namespace SqlPad
 		{
 			InitializeComponent();
 
+			//_bookmarkMargin = new BookmarkMargin(Editor);
+			//Editor.TextArea.LeftMargins.Add(_bookmarkMargin);
 			_foldingStrategy = new SqlFoldingStrategy(FoldingManager.Install(Editor.TextArea), Editor);
 			_foldingStrategy.FoldingMargin.ContextMenu = (ContextMenu)Resources["FoldingActionMenu"];
 
@@ -431,6 +435,7 @@ namespace SqlPad
 
 			DatabaseModel = _infrastructureFactory.CreateDatabaseModel(ConfigurationProvider.ConnectionStrings[_connectionString.Name]);
 			_sqlDocumentRepository = new SqlDocumentRepository(_infrastructureFactory.CreateParser(), _infrastructureFactory.CreateStatementValidator(), DatabaseModel);
+			//_bookmarkMargin.DocumentRepository = _sqlDocumentRepository;
 			_executionPlanViewer = _infrastructureFactory.CreateExecutionPlanViewer(DatabaseModel);
 			TabExecutionPlan.Content = _executionPlanViewer.Control;
 
@@ -1200,7 +1205,7 @@ namespace SqlPad
 				if (parenthesisTerminal != null)
 				{
 					var childNodes = parenthesisTerminal.ParentNode.ChildNodes;
-					var index = childNodes.IndexOf(parenthesisTerminal);
+					var index = parenthesisTerminal.ParentNode.IndexOf(parenthesisTerminal);
 					var increment = parenthesisTerminal.Token.Value.In("(", "[", "{") ? 1 : -1;
 					var otherParenthesis = GetOppositeParenthesisOrBracket(parenthesisTerminal.Token.Value);
 
@@ -1481,28 +1486,28 @@ namespace SqlPad
 			CreateCompletionWindow(items);
 		}
 
-		private void CreateSnippetCompletionWindow(IEnumerable<CompletionData> items)
+		private void CreateSnippetCompletionWindow(ICollection<CompletionData> items)
 		{
 			CreateCompletionWindow(items);
 		}
 
-		private void CreateCompletionWindow(IEnumerable<CompletionData> items)
+		private void CreateCompletionWindow(ICollection<CompletionData> items)
 		{
+			if (items.Count == 0)
+			{
+				return;
+			}
+
 			var completionWindow =
 				new CompletionWindow(Editor.TextArea)
 				{
 					SizeToContent = SizeToContent.WidthAndHeight,
 					ResizeMode = ResizeMode.NoResize
 				};
-			
+
 			var listItems = completionWindow.CompletionList.CompletionData;
 
 			listItems.AddRange(items);
-
-			if (listItems.Count == 0)
-			{
-				return;
-			}
 			
 			_completionWindow = completionWindow;
 			_completionWindow.Closed += delegate { _completionWindow = null; };

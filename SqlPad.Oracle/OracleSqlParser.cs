@@ -267,7 +267,7 @@ namespace SqlPad.Oracle
 				compatibleSequences = compatibleSequences.Union(NonTerminalRules[parent.ParentNode.Id].Sequences.SelectMany(s => GetCompatibleSequences(s, parent)));
 			}
 
-			var childNodeIndex = parent.ChildNodes.IndexOf(node);
+			var childNodeIndex = parent.IndexOf(node);
 
 			foreach (var sequence in compatibleSequences)
 			{
@@ -349,7 +349,7 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		private bool GetFollowingMandatoryCandidates(ISqlGrammarRuleSequenceItem item, List<string> followingMandatoryCandidates)
+		private static bool GetFollowingMandatoryCandidates(ISqlGrammarRuleSequenceItem item, ICollection<string> followingMandatoryCandidates)
 		{
 			if (!item.IsRequired)
 			{
