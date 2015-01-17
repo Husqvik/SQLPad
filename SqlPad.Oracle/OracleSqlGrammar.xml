@@ -3666,9 +3666,17 @@
     <Rule StartingNonTerminal="FromClause">
       <Sequences>
         <Sequence>
+          <NonTerminal Id="TableReferenceJoinClause" />
+          <NonTerminal Id="FromClauseChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="TableReferenceJoinClause">
+      <Sequences>
+        <Sequence>
           <NonTerminal Id="TableReference" />
           <NonTerminal Id="JoinClause" IsOptional="true" />
-          <NonTerminal Id="FromClauseChained" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>

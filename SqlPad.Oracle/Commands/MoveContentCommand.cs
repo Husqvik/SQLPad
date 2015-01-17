@@ -1,6 +1,8 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Windows.Input;
 using SqlPad.Commands;
+using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 
 namespace SqlPad.Oracle.Commands
@@ -44,8 +46,9 @@ namespace SqlPad.Oracle.Commands
 		{
 			NonTerminals.OptionalParameterExpression,
 			NonTerminals.AliasedExpressionOrAllTableColumns,
-			NonTerminals.OrderExpressionList,
-			NonTerminals.GroupingClause
+			NonTerminals.OrderExpression,
+			NonTerminals.GroupingClause,
+			NonTerminals.TableReferenceJoinClause
 		};
 
 		private void MoveContent()
@@ -53,7 +56,7 @@ namespace SqlPad.Oracle.Commands
 			if (_executionContext.DocumentRepository == null)
 				return;
 
-			var currentNode = _executionContext.DocumentRepository.Statements.GetTerminalAtPosition(_executionContext.CaretOffset);
+			var currentNode = _executionContext.DocumentRepository.Statements.GetTerminalAtPosition(_executionContext.CaretOffset, t => t.Id != Terminals.Comma);
 			if (currentNode == null)
 				return;
 
@@ -127,9 +130,30 @@ namespace SqlPad.Oracle.Commands
 				: SourcePosition.Create(nodeToExchange.SourcePosition.IndexStart, GetLastNonChainingNodePosition(nodeToExchange, movedNode.ParentNode.Id));
 		}
 
-		private int GetLastNonChainingNodePosition(StatementGrammarNode nodeToExchange, string chainingNodeId)
+		private static int GetLastNonChainingNodePosition(StatementGrammarNode nodeToExchange, string chainingNodeId)
 		{
-			return nodeToExchange.ChildNodes.TakeWhile(n => n.Id != chainingNodeId || n != nodeToExchange.ChildNodes[nodeToExchange.ChildNodes.Count - 1]).First().SourcePosition.IndexEnd;
+			StatementGrammarNode previousNode = null;
+			foreach (var node in nodeToExchange.ChildNodes)
+			{
+				if (node.Id == chainingNodeId)
+				{
+					return GetLastNodeIndexEnd(previousNode);
+				}
+
+				previousNode = node;
+			}
+
+			return GetLastNodeIndexEnd(previousNode);
+		}
+
+		private static int GetLastNodeIndexEnd(StatementNode previousNode)
+		{
+			if (previousNode == null)
+			{
+				throw new InvalidOperationException("Grammar is unsupported. Chaining node cannot be the first child node. ");
+			}
+
+			return previousNode.SourcePosition.IndexEnd;
 		}
 
 		private enum Direction

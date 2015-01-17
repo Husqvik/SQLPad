@@ -884,6 +884,59 @@ WHERE
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestMoveFromClauseDown()
+		{
+			_editor.Text =
+@"SELECT
+	*
+FROM
+	DUAL D1
+	JOIN DUAL D2 ON D1.DUMMY = D2.DUMMY,
+	DUAL D3";
+			_editor.CaretOffset = 64;
+
+			ExecuteCommand(MoveContentCommand.MoveContentDown);
+
+const string expectedResult =
+@"SELECT
+	*
+FROM
+	DUAL D3,
+	DUAL D1
+	JOIN DUAL D2 ON D1.DUMMY = D2.DUMMY";
+			
+			_editor.Text.ShouldBe(expectedResult);
+			_editor.CaretOffset.ShouldBe(75);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestMoveFromClauseUp()
+		{
+			_editor.Text =
+@"SELECT
+	*
+FROM
+	DUAL D3,
+	DUAL D1
+	JOIN DUAL D2 ON D1.DUMMY = D2.DUMMY";
+
+			_editor.CaretOffset = 45;
+
+			ExecuteCommand(MoveContentCommand.MoveContentUp);
+
+			const string expectedResult =
+@"SELECT
+	*
+FROM
+	DUAL D1
+	JOIN DUAL D2 ON D1.DUMMY = D2.DUMMY,
+	DUAL D3";
+			
+			_editor.Text.ShouldBe(expectedResult);
+			_editor.CaretOffset.ShouldBe(34);
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestAddToGroupByCommandWithoutExistingGroupByClause()
 		{
 			_editor.Text = @"SELECT SELECTION.PROJECT_ID, COUNT(*) PROJECT_SELECTIONS FROM SELECTION";

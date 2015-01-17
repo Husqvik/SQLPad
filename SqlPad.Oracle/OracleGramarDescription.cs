@@ -957,6 +957,7 @@ namespace SqlPad.Oracle
 			public const string TablePartitioningType = "TablePartitioningType";
 			public const string TableProperties = "TableProperties";
 			public const string TableReference = "TableReference";
+			public const string TableReferenceJoinClause = "TableReferenceJoinClause";
 			public const string TableSpaceIdentifier = "TableSpaceIdentifier";
 			public const string TargetDimension = "TargetDimension";
 			public const string TemporaryTableOnCommitClause = "TemporaryTableOnCommitClause";
