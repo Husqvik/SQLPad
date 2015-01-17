@@ -42,6 +42,7 @@ namespace SqlPad.Oracle.Commands
 
 		private static readonly string[] SupportedNodeIds =
 		{
+			NonTerminals.OptionalParameterExpression,
 			NonTerminals.AliasedExpressionOrAllTableColumns,
 			NonTerminals.OrderExpressionList,
 			NonTerminals.GroupingClause
