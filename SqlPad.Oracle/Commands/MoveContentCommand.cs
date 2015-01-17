@@ -48,7 +48,9 @@ namespace SqlPad.Oracle.Commands
 			NonTerminals.AliasedExpressionOrAllTableColumns,
 			NonTerminals.OrderExpression,
 			NonTerminals.GroupingClause,
-			NonTerminals.TableReferenceJoinClause
+			NonTerminals.TableReferenceJoinClause,
+			NonTerminals.PlSqlStatementOrInlinePragma,
+			NonTerminals.PlSqlStatementOrPragma
 		};
 
 		private void MoveContent()
@@ -62,15 +64,54 @@ namespace SqlPad.Oracle.Commands
 
 			var movedNode = SupportedNodeIds.Select(id => currentNode.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBoundary, id))
 				.FirstOrDefault(n => n != null);
-			if (movedNode == null)
-				return;
 
-			var positionToExchange = GetPositionToExchange(movedNode);
+			SourcePosition positionToExchange;
+			int movedContextIndexEnd;
+			int movedContentLength;
+			if (movedNode == null)
+			{
+				if (currentNode.Statement.ParseStatus == ParseStatus.SequenceNotFound)
+				{
+					return;
+				}
+
+				movedNode = currentNode.Statement.RootNode;
+
+				var statementIndex = _executionContext.DocumentRepository.Statements.IndexOf(currentNode.Statement);
+				int statementIndexToExchange;
+				if (_direction == Direction.Up)
+				{
+					statementIndexToExchange = statementIndex == 0
+						? -1
+						: statementIndex - 1;
+				}
+				else
+				{
+					statementIndexToExchange = statementIndex == _executionContext.DocumentRepository.Statements.Count - 1
+						? -1
+						: statementIndex + 1;
+				}
+
+				if (statementIndexToExchange == -1)
+				{
+					return;
+				}
+
+				positionToExchange = _executionContext.DocumentRepository.Statements[statementIndexToExchange].SourcePosition;
+
+				movedContextIndexEnd = currentNode.Statement.SourcePosition.IndexEnd;
+				movedContentLength = currentNode.Statement.SourcePosition.Length;
+			}
+			else
+			{
+				positionToExchange = GetPositionToExchange(movedNode);
+
+				movedContextIndexEnd = GetLastNonChainingNodePosition(movedNode, movedNode.ParentNode.Id);
+				movedContentLength = movedContextIndexEnd - movedNode.SourcePosition.IndexStart + 1;
+			}
+
 			if (positionToExchange == SourcePosition.Empty)
 				return;
-
-			var movedContextIndexEnd = GetLastNonChainingNodePosition(movedNode, movedNode.ParentNode.Id);
-			var movedContentLength = movedContextIndexEnd - movedNode.SourcePosition.IndexStart + 1;
 
 			_executionContext.SegmentsToReplace
 				.Add(new TextSegment

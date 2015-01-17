@@ -49,7 +49,10 @@ namespace SqlPad.Commands
 			}
 
 			if (caretOffsetChanged)
+			{
 				editor.CaretOffset = executionContext.CaretOffset;
+				editor.ScrollToCaret();
+			}
 		}
 
 		public static void DuplicateText(object sender, ExecutedRoutedEventArgs args)
