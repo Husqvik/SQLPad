@@ -345,7 +345,12 @@ namespace SqlPad.Oracle
 
 		private bool IsRefreshNeeded
 		{
-			get { return _dataDictionary.Timestamp.AddMinutes(ConfigurationProvider.Configuration.DataModel.DataModelRefreshPeriod) < DateTime.Now; }
+			get { return DataDictionaryValidityTimestamp < DateTime.Now; }
+		}
+
+		private DateTime DataDictionaryValidityTimestamp
+		{
+			get { return _dataDictionary.Timestamp.AddMinutes(ConfigurationProvider.Configuration.DataModel.DataModelRefreshPeriod); }
 		}
 
 		private string CachedConnectionStringName
@@ -1123,6 +1128,7 @@ namespace SqlPad.Oracle
 			var isRefreshDone = !IsRefreshNeeded && !force;
 			if (isRefreshDone)
 			{
+				Trace.WriteLine(String.Format("{0} - Cache for '{1}' is valid until {2}. ", DateTime.Now, CachedConnectionStringName, DataDictionaryValidityTimestamp));
 				return;
 			}
 

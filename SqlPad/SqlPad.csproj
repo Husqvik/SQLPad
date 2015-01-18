@@ -99,6 +99,7 @@
     <Compile Include="AssemblyBuildInfo.cs" />
     <Compile Include="BinaryDataHelper.cs" />
     <Compile Include="BindVariableModel.cs" />
+    <Compile Include="Bookmarks\IconMargin.cs" />
     <Compile Include="CellValueConverter.cs" />
     <Compile Include="ComplexTypeViewer.xaml.cs">
       <DependentUpon>ComplexTypeViewer.xaml</DependentUpon>

@@ -19,7 +19,7 @@ using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Folding;
 using Microsoft.Win32;
-//using SqlPad.Bookmarks;
+using SqlPad.Bookmarks;
 using SqlPad.Commands;
 using SqlPad.FindReplace;
 using MessageBox = System.Windows.MessageBox;
@@ -77,7 +77,7 @@ namespace SqlPad
 		private Dictionary<string, BindVariableConfiguration> _currentBindVariables = new Dictionary<string, BindVariableConfiguration>();
 		
 		private readonly SqlFoldingStrategy _foldingStrategy;
-		//private readonly BookmarkMargin _bookmarkMargin;
+		private readonly IconMargin _iconMargin;
 
 		internal TabItem TabItem { get; private set; }
 		
@@ -117,8 +117,8 @@ namespace SqlPad
 		{
 			InitializeComponent();
 
-			//_bookmarkMargin = new BookmarkMargin(Editor);
-			//Editor.TextArea.LeftMargins.Add(_bookmarkMargin);
+			_iconMargin = new IconMargin(Editor);
+			//Editor.TextArea.LeftMargins.Add(_iconMargin);
 			_foldingStrategy = new SqlFoldingStrategy(FoldingManager.Install(Editor.TextArea), Editor);
 			_foldingStrategy.FoldingMargin.ContextMenu = (ContextMenu)Resources["FoldingActionMenu"];
 
@@ -435,7 +435,7 @@ namespace SqlPad
 
 			DatabaseModel = _infrastructureFactory.CreateDatabaseModel(ConfigurationProvider.ConnectionStrings[_connectionString.Name]);
 			_sqlDocumentRepository = new SqlDocumentRepository(_infrastructureFactory.CreateParser(), _infrastructureFactory.CreateStatementValidator(), DatabaseModel);
-			//_bookmarkMargin.DocumentRepository = _sqlDocumentRepository;
+			_iconMargin.DocumentRepository = _sqlDocumentRepository;
 			_executionPlanViewer = _infrastructureFactory.CreateExecutionPlanViewer(DatabaseModel);
 			TabExecutionPlan.Content = _executionPlanViewer.Control;
 
