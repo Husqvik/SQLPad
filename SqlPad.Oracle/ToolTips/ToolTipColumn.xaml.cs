@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -33,6 +34,20 @@ namespace SqlPad.Oracle.ToolTips
 		private int _histogramBucketCount;
 		private double _histogramHeight;
 		private PointCollection _histogramPoints;
+
+		private readonly ObservableCollection<ConstraintDetailsModel> _constraintDetails = new ObservableCollection<ConstraintDetailsModel>();
+
+		public ColumnDetailsModel()
+		{
+			_constraintDetails.CollectionChanged += delegate { RaisePropertyChanged("ConstraintDetailsVisibility"); };
+		}
+
+		public Visibility ConstraintDetailsVisibility
+		{
+			get { return _constraintDetails.Count > 0 ? Visibility.Visible : Visibility.Collapsed; }
+		}
+
+		public ICollection<ConstraintDetailsModel> ConstraintDetails { get { return _constraintDetails; } } 
 
 		public string Owner { get; set; }
 
@@ -243,5 +258,28 @@ namespace SqlPad.Oracle.ToolTips
 
 			return smoothedValues;
 		}
+	}
+
+	public class ConstraintDetailsModel
+	{
+		public string Owner { get; set; }
+
+		public string Name { get; set; }
+
+		public string Type { get; set; }
+		
+		public string SearchCondition { get; set; }
+		
+		public string DeleteRule { get; set; }
+		
+		public bool IsEnabled { get; set; }
+
+		public bool IsDeferrable { get; set; }
+
+		public bool IsDeferred { get; set; }
+		
+		public bool IsValidated { get; set; }
+		
+		public DateTime LastChange { get; set; }
 	}
 }

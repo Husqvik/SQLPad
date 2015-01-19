@@ -12,12 +12,17 @@ namespace SqlPad.Oracle
 {
 	public static class OracleCommandExtensions
 	{
-		internal static OracleCommand AddSimpleParameter(this OracleCommand command, string parameterName, object value, string databaseType = null)
+		internal static OracleCommand AddSimpleParameter(this OracleCommand command, string parameterName, object value, string databaseType = null, int? size = null)
 		{
 			var parameter = command.CreateParameter();
 			parameter.ParameterName = parameterName;
 			parameter.Direction = System.Data.ParameterDirection.InputOutput;
 			parameter.Value = Equals(value, String.Empty) ? null : value;
+
+			if (size.HasValue)
+			{
+				parameter.Size = size.Value;
+			}
 
 			switch (databaseType)
 			{

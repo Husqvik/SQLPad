@@ -302,8 +302,28 @@ END;";
 		public const string GetLocalTransactionId = "SELECT DBMS_TRANSACTION.LOCAL_TRANSACTION_ID TRANSACTION_ID FROM SYS.DUAL";
 		public const string GetCompilationErrors = "SELECT TYPE, SEQUENCE, LINE, POSITION, TEXT, ATTRIBUTE, MESSAGE_NUMBER FROM ALL_ERRORS WHERE OWNER = :OWNER AND NAME = :NAME ORDER BY SEQUENCE";
 		public const string IndexDescription = "SELECT ALL_INDEXES.OWNER, INDEX_NAME, INDEX_TYPE, UNIQUENESS, COMPRESSION, PREFIX_LENGTH, LOGGING, CLUSTERING_FACTOR, STATUS, NUM_ROWS, LEAF_BLOCKS, SAMPLE_SIZE, DISTINCT_KEYS, LAST_ANALYZED, DEGREE, SEGMENT_TYPE, BLOCKS, BYTES FROM ALL_INDEXES JOIN DBA_SEGMENTS ON ALL_INDEXES.OWNER = DBA_SEGMENTS.OWNER AND INDEX_NAME = SEGMENT_NAME WHERE TABLE_OWNER = :TABLE_OWNER AND TABLE_NAME = :TABLE_NAME ORDER BY ALL_INDEXES.OWNER, INDEX_NAME";
-		public const string ColumnConstraintDescription = "SELECT ALL_CONSTRAINTS.CONSTRAINT_NAME, CONSTRAINT_TYPE, SEARCH_CONDITION, DELETE_RULE, STATUS, DEFERRABLE, DEFERRED, VALIDATED, LAST_CHANGE FROM ALL_CONS_COLUMNS JOIN ALL_CONSTRAINTS ON ALL_CONS_COLUMNS.OWNER = ALL_CONSTRAINTS.OWNER AND ALL_CONS_COLUMNS.CONSTRAINT_NAME = ALL_CONSTRAINTS.CONSTRAINT_NAME WHERE ALL_CONSTRAINTS.OWNER = :OWNER AND ALL_CONSTRAINTS.TABLE_NAME = :TABLE_NAME AND COLUMN_NAME = :COLUMN_NAME";
+		public const string ColumnConstraintDescription = "SELECT ALL_CONSTRAINTS.OWNER, ALL_CONSTRAINTS.CONSTRAINT_NAME, CONSTRAINT_TYPE, SEARCH_CONDITION, DELETE_RULE, STATUS, DEFERRABLE, DEFERRED, VALIDATED, LAST_CHANGE FROM ALL_CONS_COLUMNS JOIN ALL_CONSTRAINTS ON ALL_CONS_COLUMNS.OWNER = ALL_CONSTRAINTS.OWNER AND ALL_CONS_COLUMNS.CONSTRAINT_NAME = ALL_CONSTRAINTS.CONSTRAINT_NAME WHERE ALL_CONSTRAINTS.OWNER = :OWNER AND ALL_CONSTRAINTS.TABLE_NAME = :TABLE_NAME AND COLUMN_NAME = :COLUMN_NAME";
 		public const string SelectMaterializedViewCommand = "SELECT OWNER, NAME, TABLE_NAME, MASTER_VIEW, MASTER_OWNER, MASTER, MASTER_LINK, CAN_USE_LOG, UPDATABLE, REFRESH_METHOD, LAST_REFRESH, ERROR, FR_OPERATIONS, CR_OPERATIONS, TYPE, NEXT, START_WITH, REFRESH_GROUP, UPDATE_TRIG, UPDATE_LOG, QUERY, MASTER_ROLLBACK_SEG, STATUS, REFRESH_MODE, PREBUILT FROM ALL_SNAPSHOTS";
+		
+		public const string StartDebuggee = "BEGIN :debug_session_id := dbms_debug.initialize; dbms_debug.debug_on; END;";
+		public const string StartDebugger =
+@"DECLARE
+	run_info DBMS_DEBUG.RUNTIME_INFO; 
+BEGIN
+	dbms_debug.attach_session(:debug_session_id);
+	:synchronize_status := dbms_debug.synchronize(run_info, 0);
+	:breakpoint := run_info.breakpoint;
+	:interpreterdepth := run_info.interpreterdepth;
+	:line := run_info.line#;
+	:oer := run_info.oer;
+	:reason := run_info.reason;
+	:stackdepth := run_info.stackdepth;
+	:terminated := run_info.terminated;
+	--:program_... := run_info.program....;
+END;";
+
+		public const string DebuggerContinue = "BEGIN :continue_status := dbms_debug.continue(:current_line, :break_flags, dbms_debug.info_getlineinfo + dbms_debug.info_getbreakpoint + dbms_debug.info_getstackdepth + dbms_debug.info_getoerinfo); END;";
+		public const string DetachDebugger = "BEGIN dbms_debug.detach_session; END;";
 
 		private static string ToInValueList(params string[] values)
 		{

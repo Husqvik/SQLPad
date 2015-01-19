@@ -345,6 +345,40 @@ WHERE
 		}
 
 		[Test]
+		public void TestConstraintDetailDataProvider()
+		{
+			var model = new ColumnDetailsModel();
+
+			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
+			{
+				databaseModel.Initialize().Wait();
+				databaseModel.UpdateColumnDetailsAsync(new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"XS$OBJ\""), "TENANT", model, CancellationToken.None).Wait();
+			}
+
+			model.ConstraintDetails.Count.ShouldBe(2);
+			var constraintDetails = model.ConstraintDetails.ToList();
+			constraintDetails[0].DeleteRule.ShouldBe(String.Empty);
+			constraintDetails[0].IsDeferrable.ShouldBe(false);
+			constraintDetails[0].IsDeferred.ShouldBe(false);
+			constraintDetails[0].IsEnabled.ShouldBe(true);
+			constraintDetails[0].Owner.ShouldBe("SYS");
+			constraintDetails[0].Name.ShouldNotBe(null);
+			constraintDetails[0].LastChange.ShouldBeGreaterThan(DateTime.MinValue);
+			constraintDetails[0].SearchCondition.ShouldBe(String.Empty);
+			constraintDetails[0].Type.ShouldBe("Unique key");
+
+			constraintDetails[1].DeleteRule.ShouldBe("No Action");
+			constraintDetails[1].IsDeferrable.ShouldBe(false);
+			constraintDetails[1].IsDeferred.ShouldBe(false);
+			constraintDetails[1].IsEnabled.ShouldBe(true);
+			constraintDetails[1].Owner.ShouldBe("SYS");
+			constraintDetails[1].Name.ShouldNotBe(null);
+			constraintDetails[1].LastChange.ShouldBeGreaterThan(DateTime.MinValue);
+			constraintDetails[1].SearchCondition.ShouldBe(String.Empty);
+			constraintDetails[1].Type.ShouldBe("Referential integrity");
+		}
+
+		[Test]
 		public void TestRemoteTableColumnDataProvider()
 		{
 			IReadOnlyList<string> remoteTableColumns;

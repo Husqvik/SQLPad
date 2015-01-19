@@ -49,6 +49,75 @@ namespace SqlPad.Oracle.ModelDataProviders
 		}
 	}
 
+	internal class ColumnConstraintDataProvider : ModelDataProvider<ColumnDetailsModel>
+	{
+		private static readonly TextInfo TextInfo = CultureInfo.InvariantCulture.TextInfo;
+
+		private readonly OracleObjectIdentifier _objectIdentifier;
+		private readonly string _columnName;
+
+		public ColumnConstraintDataProvider(ColumnDetailsModel dataModel, OracleObjectIdentifier objectIdentifier, string columnName)
+			: base(dataModel)
+		{
+			_objectIdentifier = objectIdentifier;
+			_columnName = columnName;
+		}
+
+		public override void InitializeCommand(OracleCommand command)
+		{
+			command.CommandText = DatabaseCommands.ColumnConstraintDescription;
+			command.AddSimpleParameter("OWNER", _objectIdentifier.Owner.Trim('"'));
+			command.AddSimpleParameter("TABLE_NAME", _objectIdentifier.Name.Trim('"'));
+			command.AddSimpleParameter("COLUMN_NAME", _columnName);
+			command.InitialLONGFetchSize = 32767;
+		}
+
+		public override void MapReaderData(OracleDataReader reader)
+		{
+			while (reader.Read())
+			{
+				var deleteRuleRaw = OracleReaderValueConvert.ToString(reader["DELETE_RULE"]);
+				var constraintDetail =
+					new ConstraintDetailsModel
+					{
+						Owner = (string)reader["OWNER"],
+						Name = (string)reader["CONSTRAINT_NAME"],
+						Type = GetConstraintType((string)reader["CONSTRAINT_TYPE"]),
+						SearchCondition = OracleReaderValueConvert.ToString(reader["SEARCH_CONDITION"]),
+						DeleteRule = TextInfo.ToTitleCase(deleteRuleRaw.ToLowerInvariant()),
+						IsEnabled = (string)reader["STATUS"] == "ENABLED",
+						IsDeferrable = (string)reader["DEFERRABLE"] == "DEFERRABLE",
+						IsDeferred = (string)reader["DEFERRED"] == "DEFERRED",
+						IsValidated = (string)reader["VALIDATED"] == "VALIDATED",
+						LastChange = (DateTime)reader["LAST_CHANGE"]
+					};
+
+				DataModel.ConstraintDetails.Add(constraintDetail);
+			}
+		}
+
+		private string GetConstraintType(string code)
+		{
+			switch (code)
+			{
+				case "C":
+					return "Check";
+				case "P":
+					return "Primary key";
+				case "U":
+					return "Unique key";
+				case "R":
+					return "Referential integrity";
+				case "V":
+					return "With check option";
+				case "O":
+					return "With read only";
+				default:
+					throw new NotSupportedException(String.Format("Constraint type '{0}' is not supported. ", code));
+			}
+		}
+	}
+
 	internal class ColumnDetailHistogramDataProvider : ModelDataProvider<ColumnDetailsModel>
 	{
 		private readonly OracleObjectIdentifier _objectIdentifier;

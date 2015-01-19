@@ -100,7 +100,7 @@
 			</Grid>
 		</GroupBox>
 		<GroupBox Header="Indexes: " FontWeight="Bold" Visibility="{Binding IndexDetailsVisibility}" Padding="0,4,0,0">
-			<DataGrid Visibility="{Binding IndexDetailsVisibility}" ItemsSource="{Binding IndexDetails}"
+			<DataGrid ItemsSource="{Binding IndexDetails}"
 			          FontWeight="Normal" Background="Transparent" AutoGenerateColumns="False" RowBackground="Transparent" RowHeaderWidth="0"
 			          HorizontalGridLinesBrush="LightGray" VerticalGridLinesBrush="LightGray" IsReadOnly="True"
 			          CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False"

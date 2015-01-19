@@ -436,9 +436,10 @@ namespace SqlPad.Oracle
 		public async override Task UpdateColumnDetailsAsync(OracleObjectIdentifier objectIdentifier, string columnName, ColumnDetailsModel dataModel, CancellationToken cancellationToken)
 		{
 			var columnDetailDataProvider = new ColumnDetailDataProvider(dataModel, objectIdentifier, columnName.Trim('"'));
+			var columnConstraintDataProvider = new ColumnConstraintDataProvider(dataModel, objectIdentifier, columnName.Trim('"'));
 			var columnHistogramUpdater = new ColumnDetailHistogramDataProvider(dataModel, objectIdentifier, columnName.Trim('"'));
 			var columnInMemoryDetailsUpdater = new ColumnDetailInMemoryDataProvider(dataModel, objectIdentifier, columnName.Trim('"'), VersionString);
-			await UpdateModelAsync(cancellationToken, true, columnDetailDataProvider, columnHistogramUpdater, columnInMemoryDetailsUpdater);
+			await UpdateModelAsync(cancellationToken, true, columnDetailDataProvider, columnConstraintDataProvider, columnHistogramUpdater, columnInMemoryDetailsUpdater);
 		}
 
 		public async override Task<IReadOnlyList<string>> GetRemoteTableColumnsAsync(string databaseLink, OracleObjectIdentifier schemaObject, CancellationToken cancellationToken)
@@ -700,6 +701,9 @@ namespace SqlPad.Oracle
 				_executionStatisticsDataProvider = new SessionExecutionStatisticsDataProvider(StatisticsKeys, _userSessionId);
 				await UpdateModelAsync(cancellationToken, true, _executionStatisticsDataProvider.SessionBeginExecutionStatisticsDataProvider);
 			}
+
+			//var debuggerSession = new OracleDebuggerSession(_userConnection);
+			//debuggerSession.Start();
 
 			_userDataReader = await _userCommand.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken);
 

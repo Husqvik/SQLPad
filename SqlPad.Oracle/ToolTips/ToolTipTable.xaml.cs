@@ -37,7 +37,7 @@ namespace SqlPad.Oracle.ToolTips
 
 		public TableDetailsModel()
 		{
-			_indexDetails.CollectionChanged += (sender, args) => RaisePropertyChanged("IndexDetailsVisibility");
+			_indexDetails.CollectionChanged += delegate { RaisePropertyChanged("IndexDetailsVisibility"); };
 		}
 
 		public ICollection<IndexDetailsModel> IndexDetails { get { return _indexDetails; } } 
