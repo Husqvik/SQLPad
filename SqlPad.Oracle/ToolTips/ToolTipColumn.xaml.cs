@@ -31,6 +31,7 @@ namespace SqlPad.Oracle.ToolTips
 		private int _averageValueSize;
 		private string _inMemoryCompression;
 		private string _histogramType;
+		private string _comment;
 		private int _histogramBucketCount;
 		private double _histogramHeight;
 		private PointCollection _histogramPoints;
@@ -98,12 +99,12 @@ namespace SqlPad.Oracle.ToolTips
 			{
 				if (UpdateValueAndRaisePropertyChanged(ref _inMemoryCompression, value))
 				{
-					RaisePropertyChanged("InMemoryCompressionVisible");
+					RaisePropertyChanged("InMemoryCompressionVisibility");
 				}
 			}
 		}
 
-		public Visibility InMemoryCompressionVisible
+		public Visibility InMemoryCompressionVisibility
 		{
 			get { return String.IsNullOrEmpty(_inMemoryCompression) ? Visibility.Collapsed : Visibility.Visible; }
 		}
@@ -148,6 +149,23 @@ namespace SqlPad.Oracle.ToolTips
 			set { HistogramPoints = ConvertToPointCollection(NormalizeHistogramValues(value)); }
 		}
 
+		public string Comment
+		{
+			get { return _comment; }
+			set
+			{
+				if (UpdateValueAndRaisePropertyChanged(ref _comment, value))
+				{
+					RaisePropertyChanged("CommentVisibility");
+				}
+			}
+		}
+
+		public Visibility CommentVisibility
+		{
+			get { return String.IsNullOrEmpty(_comment) ? Visibility.Collapsed : Visibility.Visible; }
+		}
+
 		private PointCollection ConvertToPointCollection(IList<double> values, bool smooth = false)
 		{
 			if (smooth)
@@ -158,13 +176,12 @@ namespace SqlPad.Oracle.ToolTips
 			var max = values.Max();
 
 			var points = new PointCollection {new Point(0, max)};
-			// first point (lower-left corner)
-			// middle points
+
 			for (var i = 0; i < values.Count; i++)
 			{
 				points.Add(new Point(i, max - values[i]));
 			}
-			// last point (lower-right corner)
+
 			points.Add(new Point(values.Count - 1, max));
 
 			return points;

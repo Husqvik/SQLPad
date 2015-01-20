@@ -32,6 +32,7 @@ namespace SqlPad.Oracle.ToolTips
 		private bool? _isTemporary;
 		private bool? _isPartitioned;
 		private long? _allocatedBytes;
+		private string _comment;
 
 		private readonly ObservableCollection<IndexDetailsModel> _indexDetails = new ObservableCollection<IndexDetailsModel>();
 
@@ -159,6 +160,23 @@ namespace SqlPad.Oracle.ToolTips
 		public Visibility InMemoryAllocationStatusVisible
 		{
 			get { return InMemoryAllocatedBytes.HasValue ? Visibility.Visible : Visibility.Collapsed; }
+		}
+
+		public string Comment
+		{
+			get { return _comment; }
+			set
+			{
+				if (UpdateValueAndRaisePropertyChanged(ref _comment, value))
+				{
+					RaisePropertyChanged("CommentVisibility");
+				}
+			}
+		}
+
+		public Visibility CommentVisibility
+		{
+			get { return String.IsNullOrEmpty(_comment) ? Visibility.Collapsed : Visibility.Visible; }
 		}
 	}
 

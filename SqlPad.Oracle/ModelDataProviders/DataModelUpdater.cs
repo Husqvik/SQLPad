@@ -46,6 +46,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 			DataModel.AverageValueSize = Convert.ToInt32(reader["AVG_COL_LEN"]);
 			DataModel.HistogramBucketCount = Convert.ToInt32(reader["NUM_BUCKETS"]);
 			DataModel.HistogramType = (string)reader["HISTOGRAM"];
+			DataModel.Comment = OracleReaderValueConvert.ToString(reader["COMMENTS"]);
 		}
 	}
 
@@ -236,6 +237,34 @@ namespace SqlPad.Oracle.ModelDataProviders
 			DataModel.ClusterName = OracleReaderValueConvert.ToString(reader["CLUSTER_NAME"]);
 			DataModel.IsTemporary = (string)reader["TEMPORARY"] == "Y";
 			DataModel.IsPartitioned = (string)reader["PARTITIONED"] == "YES";
+		}
+	}
+
+	internal class TableCommentDataProvider : ModelDataProvider<TableDetailsModel>
+	{
+		private readonly OracleObjectIdentifier _objectIdentifier;
+
+		public TableCommentDataProvider(TableDetailsModel dataModel, OracleObjectIdentifier objectIdentifier)
+			: base(dataModel)
+		{
+			_objectIdentifier = objectIdentifier;
+		}
+
+		public override void InitializeCommand(OracleCommand command)
+		{
+			command.CommandText = String.Format(DatabaseCommands.GetTableCommentCommand);
+			command.AddSimpleParameter("OWNER", _objectIdentifier.Owner.Trim('"'));
+			command.AddSimpleParameter("TABLE_NAME", _objectIdentifier.Name.Trim('"'));
+		}
+
+		public override void MapReaderData(OracleDataReader reader)
+		{
+			if (!reader.Read())
+			{
+				return;
+			}
+
+			DataModel.Comment = OracleReaderValueConvert.ToString(reader["COMMENTS"]);
 		}
 	}
 
