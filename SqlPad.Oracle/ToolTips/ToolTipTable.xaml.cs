@@ -18,7 +18,12 @@ namespace SqlPad.Oracle.ToolTips
 		public UserControl Control { get { return this; } }
 	}
 
-	public class TableDetailsModel : ModelBase
+	public interface IModelWithComment
+	{
+		string Comment { get; set; }
+	}
+
+	public class TableDetailsModel : ModelBase, IModelWithComment
 	{
 		private int? _rowCount;
 		private int? _blockCount;

@@ -50,14 +50,14 @@ namespace SqlPad.Oracle.ModelDataProviders
 		}
 	}
 
-	internal class ColumnConstraintDataProvider : ModelDataProvider<ColumnDetailsModel>
+	internal class ConstraintDataProvider : ModelDataProvider<ModelWithConstraints>
 	{
 		private static readonly TextInfo TextInfo = CultureInfo.InvariantCulture.TextInfo;
 
 		private readonly OracleObjectIdentifier _objectIdentifier;
 		private readonly string _columnName;
 
-		public ColumnConstraintDataProvider(ColumnDetailsModel dataModel, OracleObjectIdentifier objectIdentifier, string columnName)
+		public ConstraintDataProvider(ModelWithConstraints dataModel, OracleObjectIdentifier objectIdentifier, string columnName)
 			: base(dataModel)
 		{
 			_objectIdentifier = objectIdentifier;
@@ -66,10 +66,19 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public override void InitializeCommand(OracleCommand command)
 		{
-			command.CommandText = DatabaseCommands.ColumnConstraintDescription;
 			command.AddSimpleParameter("OWNER", _objectIdentifier.Owner.Trim('"'));
 			command.AddSimpleParameter("TABLE_NAME", _objectIdentifier.Name.Trim('"'));
-			command.AddSimpleParameter("COLUMN_NAME", _columnName);
+
+			if (String.IsNullOrEmpty(_columnName))
+			{
+				command.CommandText = DatabaseCommands.TableConstraintDescription;
+			}
+			else
+			{
+				command.CommandText = DatabaseCommands.ColumnConstraintDescription;
+				command.AddSimpleParameter("COLUMN_NAME", _columnName);
+			}
+
 			command.InitialLONGFetchSize = 32767;
 		}
 
@@ -240,11 +249,11 @@ namespace SqlPad.Oracle.ModelDataProviders
 		}
 	}
 
-	internal class TableCommentDataProvider : ModelDataProvider<TableDetailsModel>
+	internal class CommentDataProvider : ModelDataProvider<IModelWithComment>
 	{
 		private readonly OracleObjectIdentifier _objectIdentifier;
 
-		public TableCommentDataProvider(TableDetailsModel dataModel, OracleObjectIdentifier objectIdentifier)
+		public CommentDataProvider(IModelWithComment dataModel, OracleObjectIdentifier objectIdentifier)
 			: base(dataModel)
 		{
 			_objectIdentifier = objectIdentifier;

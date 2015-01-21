@@ -20,7 +20,24 @@ namespace SqlPad.Oracle.ToolTips
 		public UserControl Control { get { return this; } }
 	}
 
-	public class ColumnDetailsModel : ModelBase
+	public abstract class ModelWithConstraints : ModelBase
+	{
+		private readonly ObservableCollection<ConstraintDetailsModel> _constraintDetails = new ObservableCollection<ConstraintDetailsModel>();
+
+		protected ModelWithConstraints()
+		{
+			_constraintDetails.CollectionChanged += delegate { RaisePropertyChanged("ConstraintDetailsVisibility"); };
+		}
+
+		public Visibility ConstraintDetailsVisibility
+		{
+			get { return _constraintDetails.Count > 0 ? Visibility.Visible : Visibility.Collapsed; }
+		}
+
+		public ICollection<ConstraintDetailsModel> ConstraintDetails { get { return _constraintDetails; } } 
+	}
+
+	public class ColumnDetailsModel : ModelWithConstraints
 	{
 		private int _distinctValueCount;
 		private int _nullValueCount;
@@ -35,20 +52,6 @@ namespace SqlPad.Oracle.ToolTips
 		private int _histogramBucketCount;
 		private double _histogramHeight;
 		private PointCollection _histogramPoints;
-
-		private readonly ObservableCollection<ConstraintDetailsModel> _constraintDetails = new ObservableCollection<ConstraintDetailsModel>();
-
-		public ColumnDetailsModel()
-		{
-			_constraintDetails.CollectionChanged += delegate { RaisePropertyChanged("ConstraintDetailsVisibility"); };
-		}
-
-		public Visibility ConstraintDetailsVisibility
-		{
-			get { return _constraintDetails.Count > 0 ? Visibility.Visible : Visibility.Collapsed; }
-		}
-
-		public ICollection<ConstraintDetailsModel> ConstraintDetails { get { return _constraintDetails; } } 
 
 		public string Owner { get; set; }
 

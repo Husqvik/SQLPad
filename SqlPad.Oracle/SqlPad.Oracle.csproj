@@ -136,8 +136,10 @@
     <Compile Include="OracleDatabaseModelBase.cs" />
     <Compile Include="OracleDataDictionary.cs" />
     <Compile Include="OracleDataType.cs" />
+    <Compile Include="OracleDebugger.cs" />
     <Compile Include="OracleFoldingSectionProvider.cs" />
     <Compile Include="OracleFunctionMatcher.cs" />
+    <Compile Include="OraclePlSqlStatementSemanticModel.cs" />
     <Compile Include="OracleProgramMetadata.cs" />
     <Compile Include="OracleProgramIdentifier.cs" />
     <Compile Include="OracleObjectFactory.cs" />
@@ -186,6 +188,12 @@
     </Compile>
     <Compile Include="ToolTips\ToolTipSequence.xaml.cs">
       <DependentUpon>ToolTipSequence.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ToolTips\ConstraintList.xaml.cs">
+      <DependentUpon>ConstraintList.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ToolTips\ToolTipView.xaml.cs">
+      <DependentUpon>ToolTipView.xaml</DependentUpon>
     </Compile>
     <Compile Include="ToolTips\ToolTipTable.xaml.cs">
       <DependentUpon>ToolTipTable.xaml</DependentUpon>
@@ -251,6 +259,14 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="ToolTips\ToolTipSequence.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="ToolTips\ConstraintList.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="ToolTips\ToolTipView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

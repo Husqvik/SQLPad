@@ -1,0 +1,62 @@
+﻿<UserControl x:Class="SqlPad.Oracle.ToolTips.ConstraintList"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:sqlPad="clr-namespace:SqlPad;assembly=SqlPad"
+             xmlns:toolTips="clr-namespace:SqlPad.Oracle.ToolTips"
+             mc:Ignorable="d" 
+             d:DesignHeight="60" d:DesignWidth="584"
+			 Padding="4">
+	<UserControl.Resources>
+		<sqlPad:DateTimeLabelConverter x:Key="DateTimeConverter" />
+
+		<ControlTemplate x:Key="DataGridCellControlTemplate" TargetType="{x:Type DataGridCell}">
+			<Border Padding="2,0,2,0">
+				<ContentPresenter />
+			</Border>
+		</ControlTemplate>
+
+		<Style TargetType="{x:Type DataGridCell}">
+			<Setter Property="Template" Value="{StaticResource DataGridCellControlTemplate}" />
+		</Style>
+	</UserControl.Resources>
+	<GroupBox Header="Constraints: " FontWeight="Bold" Padding="0,4,0,0">
+		<DataGrid x:Name="DataGrid"
+				  FontWeight="Normal" Background="Transparent" AutoGenerateColumns="False" RowBackground="Transparent"
+		          RowHeaderWidth="0"
+		          HorizontalGridLinesBrush="LightGray" VerticalGridLinesBrush="LightGray" IsReadOnly="True"
+		          CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False"
+		          CanUserResizeColumns="False" CanUserResizeRows="False" CanUserSortColumns="False">
+			<DataGrid.ColumnHeaderStyle>
+				<Style TargetType="DataGridColumnHeader">
+					<Style.Setters>
+						<Setter Property="Background" Value="Transparent" />
+						<Setter Property="Padding" Value="4,2,4,2" />
+						<Setter Property="FontWeight" Value="Medium" />
+					</Style.Setters>
+				</Style>
+			</DataGrid.ColumnHeaderStyle>
+			<DataGrid.Columns>
+				<DataGridTemplateColumn Header="Identifier">
+					<DataGridTemplateColumn.CellTemplate>
+						<DataTemplate DataType="toolTips:ConstraintDetailsModel">
+							<TextBlock>
+									<Run Text="{Binding Owner}" /><Run Text="." /><Run Text="{Binding Name}" />
+							</TextBlock>
+						</DataTemplate>
+					</DataGridTemplateColumn.CellTemplate>
+				</DataGridTemplateColumn>
+				<DataGridTextColumn Header="Type" Binding="{Binding Type}" />
+				<DataGridTextColumn Header="Search condition" Binding="{Binding SearchCondition}" />
+				<DataGridTextColumn Header="Delete rule" Binding="{Binding DeleteRule}" />
+				<DataGridCheckBoxColumn Header="Enabled" Binding="{Binding IsEnabled}" />
+				<DataGridCheckBoxColumn Header="Validated" Binding="{Binding IsValidated}" />
+				<DataGridCheckBoxColumn Header="Deferrable" Binding="{Binding IsDeferrable}" />
+				<DataGridCheckBoxColumn Header="Deferred" Binding="{Binding IsDeferred}" />
+				<DataGridTextColumn Header="Last change"
+					                    Binding="{Binding LastChange, Converter={StaticResource DateTimeConverter}}" />
+			</DataGrid.Columns>
+		</DataGrid>
+	</GroupBox>
+</UserControl>

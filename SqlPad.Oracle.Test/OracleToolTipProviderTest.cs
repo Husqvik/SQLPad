@@ -132,6 +132,7 @@ namespace SqlPad.Oracle.Test
 			dataModel.Name.ShouldBe("CORRELATION_VALUE");
 			dataModel.DataType.ShouldBe("NUMBER(*, 5)");
 			dataModel.Nullable.ShouldBe(false);
+			dataModel.Comment.ShouldBe("This is a column comment. ");
 		}
 
 		[Test(Description = @""), STAThread]
@@ -252,6 +253,8 @@ namespace SqlPad.Oracle.Test
 			toolTip.Control.DataContext.ShouldBeTypeOf<TableDetailsModel>();
 			var dataModel = (TableDetailsModel)toolTip.Control.DataContext;
 			dataModel.Title.ShouldBe("HUSQVIK.SELECTION (Table)");
+			dataModel.Comment.ShouldBe("This is a table comment. ");
+			dataModel.IndexDetails.Count.ShouldBeGreaterThan(0);
 		}
 
 		[Test(Description = @""), STAThread]
@@ -262,8 +265,12 @@ namespace SqlPad.Oracle.Test
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 20);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
-			toolTip.Control.DataContext.ShouldBe("\"PUBLIC\".V$SESSION (Synonym) => SYS.V_$SESSION (View)");
+			toolTip.Control.ShouldBeTypeOf<ToolTipView>();
+			toolTip.Control.DataContext.ShouldBeTypeOf<ViewDetailsModel>();
+			var dataModel = (ViewDetailsModel)toolTip.Control.DataContext;
+			dataModel.Title.ShouldBe("\"PUBLIC\".V$SESSION (Synonym) => SYS.V_$SESSION (View)");
+			dataModel.Comment.ShouldBe("This is a view comment. ");
+			dataModel.ConstraintDetails.Count.ShouldBeGreaterThan(0);
 		}
 
 		[Test(Description = @""), STAThread]

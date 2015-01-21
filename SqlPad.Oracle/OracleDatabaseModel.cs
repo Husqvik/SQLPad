@@ -428,16 +428,23 @@ namespace SqlPad.Oracle
 		{
 			var tableDetailDataProvider = new TableDetailDataProvider(dataModel, objectIdentifier);
 			var tableSpaceAllocationUpdater = new TableSpaceAllocationDataProvider(dataModel, objectIdentifier);
-			var tableCommentDataProvider = new TableCommentDataProvider(dataModel, objectIdentifier);
+			var tableCommentDataProvider = new CommentDataProvider(dataModel, objectIdentifier);
 			var tableInMemorySpaceAllocationUpdater = new TableInMemorySpaceAllocationDataProvider(dataModel, objectIdentifier, VersionString);
 			var indexDetailDataProvider = new IndexDetailDataProvider(dataModel, objectIdentifier);
 			await UpdateModelAsync(cancellationToken, true, tableDetailDataProvider, tableCommentDataProvider, tableSpaceAllocationUpdater, tableInMemorySpaceAllocationUpdater, indexDetailDataProvider);
 		}
 
+		public async override Task UpdateViewDetailsAsync(OracleObjectIdentifier objectIdentifier, ViewDetailsModel dataModel, CancellationToken cancellationToken)
+		{
+			var viewCommentDataProvider = new CommentDataProvider(dataModel, objectIdentifier);
+			var columnConstraintDataProvider = new ConstraintDataProvider(dataModel, objectIdentifier, null);
+			await UpdateModelAsync(cancellationToken, true, viewCommentDataProvider, columnConstraintDataProvider);
+		}
+
 		public async override Task UpdateColumnDetailsAsync(OracleObjectIdentifier objectIdentifier, string columnName, ColumnDetailsModel dataModel, CancellationToken cancellationToken)
 		{
 			var columnDetailDataProvider = new ColumnDetailDataProvider(dataModel, objectIdentifier, columnName.Trim('"'));
-			var columnConstraintDataProvider = new ColumnConstraintDataProvider(dataModel, objectIdentifier, columnName.Trim('"'));
+			var columnConstraintDataProvider = new ConstraintDataProvider(dataModel, objectIdentifier, columnName.Trim('"'));
 			var columnHistogramUpdater = new ColumnDetailHistogramDataProvider(dataModel, objectIdentifier, columnName.Trim('"'));
 			var columnInMemoryDetailsUpdater = new ColumnDetailInMemoryDataProvider(dataModel, objectIdentifier, columnName.Trim('"'), VersionString);
 			await UpdateModelAsync(cancellationToken, true, columnDetailDataProvider, columnConstraintDataProvider, columnHistogramUpdater, columnInMemoryDetailsUpdater);

@@ -3862,6 +3862,7 @@
       <Sequences>
         <Sequence>
           <NonTerminal Id="ReadOnly" />
+          <NonTerminal Id="ConstraintName" IsOptional="true" />
         </Sequence>
         <Sequence>
           <Terminal Id="Check" />

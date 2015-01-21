@@ -89,4 +89,13 @@ namespace SqlPad
 			Exception = exception;
 		}
 	}
+
+	public interface IDebuggerSession
+	{
+		void Start();
+
+		void Continue();
+
+		void Detach();
+	}
 }

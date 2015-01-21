@@ -162,6 +162,10 @@ namespace SqlPad.Oracle
 								dataModel = new TableDetailsModel { Title = simpleToolTip };
 								databaseModel.UpdateTableDetailsAsync(schemaObject.FullyQualifiedName, dataModel, CancellationToken.None);
 								return new ToolTipTable { DataContext = dataModel };
+							case OracleSchemaObjectType.View:
+								var viewDetailModel = new ViewDetailsModel { Title = simpleToolTip };
+								databaseModel.UpdateViewDetailsAsync(schemaObject.FullyQualifiedName, viewDetailModel, CancellationToken.None);
+								return new ToolTipView { DataContext = viewDetailModel };
 							case OracleSchemaObjectType.Sequence:
 								return new ToolTipSequence(simpleToolTip, (OracleSequence)schemaObject);
 						}

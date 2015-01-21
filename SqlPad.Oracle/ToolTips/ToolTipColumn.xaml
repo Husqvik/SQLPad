@@ -13,16 +13,6 @@
 			<sqlPad:DateTimeLabelConverter x:Key="DateTimeConverter" />
 			<sqlPad:BooleanLabelConverter x:Key="BooleanConverter" />
 			<sqlPad:PrettyPrintIntegerConverter x:Key="PrettyPrintIntegerConverter" />
-
-			<ControlTemplate x:Key="DataGridCellControlTemplate" TargetType="{x:Type DataGridCell}">
-				<Border Padding="2,0,2,0">
-					<ContentPresenter />
-				</Border>
-			</ControlTemplate>
-
-			<Style TargetType="{x:Type DataGridCell}">
-				<Setter Property="Template" Value="{StaticResource DataGridCellControlTemplate}" />
-			</Style>
 		</StackPanel.Resources>
 		<GroupBox BorderThickness="0">
 			<GroupBox.Header>
@@ -34,9 +24,9 @@
 					<ColumnDefinition/>
 				</Grid.ColumnDefinitions>
 				<Grid.RowDefinitions>
-					<RowDefinition />
-					<RowDefinition />
 					<RowDefinition Height="Auto" />
+					<RowDefinition />
+					<RowDefinition />
 					<RowDefinition />
 					<RowDefinition />
 					<RowDefinition />
@@ -46,12 +36,11 @@
 					<RowDefinition />
 					<RowDefinition Height="Auto" />
 				</Grid.RowDefinitions>
-				<TextBlock Grid.Row="0" Grid.Column="0" Text="Owner: " />
-				<TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Owner}" />
-				<TextBlock Grid.Row="1" Grid.Column="0" Text="Name: " />
-				<TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Name}" />
-				<TextBlock Grid.Row="2" Grid.Column="0" Text="Comment: " Visibility="{Binding CommentVisibility}" />
-				<TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Comment}" Visibility="{Binding CommentVisibility}" />
+				<TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Text="{Binding Comment}" Visibility="{Binding CommentVisibility}" />
+				<TextBlock Grid.Row="1" Grid.Column="0" Text="Owner: " />
+				<TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Owner}" />
+				<TextBlock Grid.Row="2" Grid.Column="0" Text="Name: " />
+				<TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Name}" />
 				<TextBlock Grid.Row="3" Grid.Column="0" Text="Data type: " />
 				<TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding DataType}" />
 				<TextBlock Grid.Row="4" Grid.Column="0" Text="Nullable: " />
@@ -71,43 +60,7 @@
 			</Grid>
 		</GroupBox>
 
-		<GroupBox Header="Constraints: " FontWeight="Bold" Visibility="{Binding ConstraintDetailsVisibility}" Padding="0,4,0,0">
-			<DataGrid ItemsSource="{Binding ConstraintDetails}"
-			          FontWeight="Normal" Background="Transparent" AutoGenerateColumns="False" RowBackground="Transparent" RowHeaderWidth="0"
-			          HorizontalGridLinesBrush="LightGray" VerticalGridLinesBrush="LightGray" IsReadOnly="True"
-			          CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False"
-			          CanUserResizeColumns="False" CanUserResizeRows="False" CanUserSortColumns="False">
-				<DataGrid.ColumnHeaderStyle>
-					<Style TargetType="DataGridColumnHeader">
-						<Style.Setters>
-							<Setter Property="Background" Value="Transparent" />
-							<Setter Property="Padding" Value="4,2,4,2" />
-							<Setter Property="FontWeight" Value="Medium" />
-						</Style.Setters>
-					</Style>
-				</DataGrid.ColumnHeaderStyle>
-				<DataGrid.Columns>
-					<DataGridTemplateColumn Header="Identifier">
-						<DataGridTemplateColumn.CellTemplate>
-							<DataTemplate DataType="toolTips:ConstraintDetailsModel">
-								<TextBlock>
-									<Run Text="{Binding Owner}" /><Run Text="." /><Run Text="{Binding Name}" />
-								</TextBlock>
-							</DataTemplate>
-						</DataGridTemplateColumn.CellTemplate>
-					</DataGridTemplateColumn>
-					<DataGridTextColumn Header="Type" Binding="{Binding Type}" />
-					<DataGridTextColumn Header="Search condition" Binding="{Binding SearchCondition}" />
-					<DataGridTextColumn Header="Delete rule" Binding="{Binding DeleteRule}" />
-					<DataGridCheckBoxColumn Header="Enabled" Binding="{Binding IsEnabled}" />
-					<DataGridCheckBoxColumn Header="Deferrable" Binding="{Binding IsDeferrable}" />
-					<DataGridCheckBoxColumn Header="Deferred" Binding="{Binding IsDeferred}" />
-					<DataGridCheckBoxColumn Header="Validated" Binding="{Binding IsValidated}" />
-					<DataGridTextColumn Header="Last change"
-					                    Binding="{Binding LastChange, Converter={StaticResource DateTimeConverter}}" />
-				</DataGrid.Columns>
-			</DataGrid>
-		</GroupBox>
+		<toolTips:ConstraintList Padding="0" Constraints="{Binding ConstraintDetails}" Visibility="{Binding ConstraintDetailsVisibility}" />
 
 		<GroupBox BorderThickness="0" Visibility="{Binding HistogramVisibility}">
 			<GroupBox.Header>

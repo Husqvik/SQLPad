@@ -990,6 +990,54 @@ Note
 			dataModel.Organization = "Index";
 			dataModel.IsPartitioned = false;
 			dataModel.IsTemporary = false;
+			dataModel.Comment = "This is a table comment. ";
+
+			var indexDetails =
+				new IndexDetailsModel
+				{
+					Blocks = 123,
+					Bytes = 123456,
+					ClusteringFactor = 444,
+					Compression = "Enabled",
+					DegreeOfParallelism = 2,
+					DistinctKeys = 1444,
+					IsUnique = false,
+					LastAnalyzed = new DateTime(2015, 1, 20, 21, 28, 12),
+					LeafBlocks = 114,
+					Logging = true,
+					Name = "TEST_INDEX",
+					Owner = "HUSQVIK",
+					PrefixLength = 2,
+					Rows = 2000,
+					SampleRows = 333,
+					Status = "Valid",
+					Type = "Normal"
+				};
+
+			dataModel.IndexDetails.Add(indexDetails);
+
+			return Task.FromResult<object>(null);
+		}
+
+		public override Task UpdateViewDetailsAsync(OracleObjectIdentifier schemaObject, ViewDetailsModel dataModel, CancellationToken cancellationToken)
+		{
+			dataModel.Comment = "This is a view comment. ";
+
+			var constraint =
+				new ConstraintDetailsModel
+				{
+					DeleteRule = "Cascade",
+					IsDeferrable = true,
+					IsDeferred = true,
+					IsEnabled = true,
+					IsValidated = true,
+					LastChange = new DateTime(2015, 1, 20, 21, 31, 12),
+					Name = "TEST_CONSTRAINT",
+					Owner = "HUSQVIK",
+					Type = "Reference integrity"
+				};
+
+			dataModel.ConstraintDetails.Add(constraint);
 
 			return Task.FromResult<object>(null);
 		}
@@ -1001,6 +1049,7 @@ Note
 			dataModel.SampleSize = 12346;
 			dataModel.AverageValueSize = 7;
 			dataModel.NullValueCount = 1344;
+			dataModel.Comment = "This is a column comment. ";
 			dataModel.HistogramBucketCount = 6;
 			dataModel.HistogramType = "Frequency";
 

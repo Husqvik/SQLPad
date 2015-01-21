@@ -20,7 +20,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 		bool IsValid { get; }
 	}
 
-	internal abstract class ModelDataProvider<TModel> : IModelDataProvider where TModel : ModelBase
+	internal abstract class ModelDataProvider<TModel> : IModelDataProvider
 	{
 		protected TModel DataModel { get; private set; }
 

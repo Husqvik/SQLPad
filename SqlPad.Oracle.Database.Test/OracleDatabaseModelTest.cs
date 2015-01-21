@@ -419,6 +419,47 @@ WHERE
 		}
 
 		[Test]
+		public void TestViewDetailDataProvider()
+		{
+			var model = new ViewDetailsModel();
+
+			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
+			{
+				databaseModel.Initialize().Wait();
+				databaseModel.UpdateViewDetailsAsync(new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"DBA_DV_STATUS\""), model, CancellationToken.None).Wait();
+			}
+
+			model.ConstraintDetails.Count.ShouldBe(1);
+			var constraint = model.ConstraintDetails.Single();
+			constraint.Owner.ShouldBe("SYS");
+			constraint.Name.ShouldNotBeEmpty();
+			constraint.Type.ShouldBe("With read only");
+			constraint.DeleteRule.ShouldBeEmpty();
+			constraint.SearchCondition.ShouldBeEmpty();
+			constraint.IsDeferrable.ShouldBe(false);
+			constraint.IsDeferred.ShouldBe(false);
+			constraint.IsValidated.ShouldBe(false);
+			constraint.IsEnabled.ShouldBe(true);
+			constraint.LastChange.ShouldBeGreaterThan(DateTime.MinValue);
+			model.Comment.ShouldBe(null);
+		}
+
+		[Test]
+		public void TestViewCommentDataProvider()
+		{
+			var model = new ViewDetailsModel();
+
+			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
+			{
+				databaseModel.Initialize().Wait();
+				databaseModel.UpdateViewDetailsAsync(new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"ALL_COL_PRIVS\""), model, CancellationToken.None).Wait();
+			}
+
+			model.ConstraintDetails.Count.ShouldBe(0);
+			model.Comment.ShouldBe("Grants on columns for which the user is the grantor, grantee, owner,\n or an enabled role or PUBLIC is the grantee");
+		}
+
+		[Test]
 		public void TestExplainPlanDataProvider()
 		{
 			Task<ExecutionPlanItemCollection> task;
