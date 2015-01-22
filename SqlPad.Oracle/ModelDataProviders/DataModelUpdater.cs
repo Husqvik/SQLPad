@@ -46,7 +46,6 @@ namespace SqlPad.Oracle.ModelDataProviders
 			DataModel.AverageValueSize = Convert.ToInt32(reader["AVG_COL_LEN"]);
 			DataModel.HistogramBucketCount = Convert.ToInt32(reader["NUM_BUCKETS"]);
 			DataModel.HistogramType = (string)reader["HISTOGRAM"];
-			DataModel.Comment = OracleReaderValueConvert.ToString(reader["COMMENTS"]);
 		}
 	}
 
@@ -252,18 +251,29 @@ namespace SqlPad.Oracle.ModelDataProviders
 	internal class CommentDataProvider : ModelDataProvider<IModelWithComment>
 	{
 		private readonly OracleObjectIdentifier _objectIdentifier;
+		private readonly string _columnName;
 
-		public CommentDataProvider(IModelWithComment dataModel, OracleObjectIdentifier objectIdentifier)
+		public CommentDataProvider(IModelWithComment dataModel, OracleObjectIdentifier objectIdentifier, string columnName)
 			: base(dataModel)
 		{
 			_objectIdentifier = objectIdentifier;
+			_columnName = columnName;
 		}
 
 		public override void InitializeCommand(OracleCommand command)
 		{
-			command.CommandText = String.Format(DatabaseCommands.GetTableCommentCommand);
 			command.AddSimpleParameter("OWNER", _objectIdentifier.Owner.Trim('"'));
 			command.AddSimpleParameter("TABLE_NAME", _objectIdentifier.Name.Trim('"'));
+
+			if (String.IsNullOrEmpty(_columnName))
+			{
+				command.CommandText = String.Format(DatabaseCommands.GetTableCommentCommand);
+			}
+			else
+			{
+				command.CommandText = String.Format(DatabaseCommands.GetColumnCommentCommand);
+				command.AddSimpleParameter("COLUMN_NAME", _columnName);
+			}
 		}
 
 		public override void MapReaderData(OracleDataReader reader)

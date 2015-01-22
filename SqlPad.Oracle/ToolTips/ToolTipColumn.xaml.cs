@@ -37,7 +37,7 @@ namespace SqlPad.Oracle.ToolTips
 		public ICollection<ConstraintDetailsModel> ConstraintDetails { get { return _constraintDetails; } } 
 	}
 
-	public class ColumnDetailsModel : ModelWithConstraints
+	public class ColumnDetailsModel : ModelWithConstraints, IModelWithComment
 	{
 		private int _distinctValueCount;
 		private int _nullValueCount;

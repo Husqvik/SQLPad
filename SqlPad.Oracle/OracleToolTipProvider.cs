@@ -103,33 +103,51 @@ namespace SqlPad.Oracle
 			var validObjectReference = columnReference.ValidObjectReference;
 			var isSchemaObject = validObjectReference.Type == ReferenceType.SchemaObject;
 			var targetSchemaObject = isSchemaObject ? validObjectReference.SchemaObject.GetTargetSchemaObject() : null;
-			if (!isSchemaObject || !targetSchemaObject.Type.In(OracleSchemaObjectType.Table, OracleSchemaObjectType.MaterializedView))
-			{
-				var objectPrefix = columnReference.ObjectNode == null && !String.IsNullOrEmpty(validObjectReference.FullyQualifiedObjectName.Name)
-					? String.Format("{0}.", validObjectReference.FullyQualifiedObjectName)
-					: null;
 
-				var qualifiedColumnName = isSchemaObject && targetSchemaObject.Type == OracleSchemaObjectType.Sequence
-					? null
-					: String.Format("{0}{1} ", objectPrefix, columnReference.Name.ToSimpleIdentifier());
-				
-				var tip = String.Format("{0}{1} {2}{3}", qualifiedColumnName, columnReference.ColumnDescription.FullTypeName, columnReference.ColumnDescription.Nullable ? null : "NOT ", "NULL");
-				return new ToolTipObject { DataContext = tip };
+			if (isSchemaObject)
+			{
+				ColumnDetailsModel dataModel;
+				switch (targetSchemaObject.Type)
+				{
+					case OracleSchemaObjectType.Table:
+					case OracleSchemaObjectType.MaterializedView:
+						dataModel = BuildColumnDetailsModel(databaseModel, columnReference);
+						return new ToolTipColumn(dataModel);
+
+					case OracleSchemaObjectType.View:
+						dataModel = BuildColumnDetailsModel(databaseModel, columnReference);
+						return new ToolTipViewColumn(dataModel);
+				}
 			}
 
-			var tableOwner = targetSchemaObject.FullyQualifiedName;
+			var objectPrefix = columnReference.ObjectNode == null && !String.IsNullOrEmpty(validObjectReference.FullyQualifiedObjectName.Name)
+				? String.Format("{0}.", validObjectReference.FullyQualifiedObjectName)
+				: null;
+
+			var qualifiedColumnName = isSchemaObject && targetSchemaObject.Type == OracleSchemaObjectType.Sequence
+				? null
+				: String.Format("{0}{1} ", objectPrefix, columnReference.Name.ToSimpleIdentifier());
+
+			var tip = String.Format("{0}{1} {2}{3}", qualifiedColumnName, columnReference.ColumnDescription.FullTypeName, columnReference.ColumnDescription.Nullable ? null : "NOT ", "NULL");
+			return new ToolTipObject {DataContext = tip};
+		}
+
+		private static ColumnDetailsModel BuildColumnDetailsModel(OracleDatabaseModelBase databaseModel, OracleColumnReference columnReference)
+		{
+			var columnOwner = columnReference.ValidObjectReference.SchemaObject.GetTargetSchemaObject().FullyQualifiedName;
+
 			var dataModel =
 				new ColumnDetailsModel
 				{
-					Owner = tableOwner.ToString(),
+					Owner = columnOwner.ToString(),
 					Name = columnReference.Name.ToSimpleIdentifier(),
 					Nullable = columnReference.ColumnDescription.Nullable,
 					DataType = columnReference.ColumnDescription.FullTypeName,
 				};
 
-			databaseModel.UpdateColumnDetailsAsync(tableOwner, columnReference.ColumnDescription.Name, dataModel, CancellationToken.None);
+			databaseModel.UpdateColumnDetailsAsync(columnOwner, columnReference.ColumnDescription.Name, dataModel, CancellationToken.None);
 
-			return new ToolTipColumn(dataModel);
+			return dataModel;
 		}
 
 		private static string GetTypeToolTip(OracleStatementSemanticModel semanticModel, StatementGrammarNode node)

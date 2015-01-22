@@ -578,10 +578,11 @@ namespace SqlPad.Oracle.Test
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(OwnerNameSys, "\"DUAL\""),
 				Organization = OrganizationType.Heap,
-				Columns = new Dictionary<string, OracleColumn>
-				             {
-					             { "\"DUMMY\"", new OracleColumn { Name = "\"DUMMY\"", CharacterSize = 1, DataType = BuildPrimitiveDataType("VARCHAR2", 1, dataUnit: DataUnit.Byte) } }
-				             }
+				Columns =
+					new Dictionary<string, OracleColumn>
+					{
+						{ "\"DUMMY\"", new OracleColumn { Name = "\"DUMMY\"", CharacterSize = 1, DataType = BuildPrimitiveDataType("VARCHAR2", 1, dataUnit: DataUnit.Byte) } }
+					}
 			},
 			new OracleView
 			{
@@ -592,103 +593,117 @@ namespace SqlPad.Oracle.Test
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"COUNTRY\""),
 				Organization = OrganizationType.Heap,
-				Columns = new Dictionary<string, OracleColumn>
-				          {
-					          { "\"ID\"", new OracleColumn { Name = "\"ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0) } },
-							  { "\"NAME\"", new OracleColumn { Name = "\"NAME\"", CharacterSize = 50, DataType = BuildPrimitiveDataType("VARCHAR2", 50, dataUnit: DataUnit.Byte) } }
-				          }
+				Columns =
+					new Dictionary<string, OracleColumn>
+					{
+						{ "\"ID\"", new OracleColumn { Name = "\"ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0) } },
+						{ "\"NAME\"", new OracleColumn { Name = "\"NAME\"", CharacterSize = 50, DataType = BuildPrimitiveDataType("VARCHAR2", 50, dataUnit: DataUnit.Byte) } }
+					}
 			},
 			new OracleTable
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"ORDERS\""),
 				Organization = OrganizationType.Heap,
-				Columns = new Dictionary<string, OracleColumn>
-				          {
-					          { "\"ID\"", new OracleColumn { Name = "\"ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0) } }
-				          }
+				Columns =
+					new Dictionary<string, OracleColumn>
+					{
+						{ "\"ID\"", new OracleColumn { Name = "\"ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0) } }
+					}
 			},
 			new OracleTable
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"INVOICES\""),
 				Organization = OrganizationType.Heap,
-				Columns = new Dictionary<string, OracleColumn>
-				          {
-					          { "\"ID\"", new OracleColumn { Name = "\"ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0) } },
-					          { "\"DUEDATE\"", new OracleColumn { Name = "\"DUEDATE\"", DataType = BuildPrimitiveDataType("DATE") } }
-				          }
+				Columns =
+					new Dictionary<string, OracleColumn>
+					{
+						{ "\"ID\"", new OracleColumn { Name = "\"ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0) } },
+						{ "\"DUEDATE\"", new OracleColumn { Name = "\"DUEDATE\"", DataType = BuildPrimitiveDataType("DATE") } }
+					}
 			},
 			new OracleTable
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"INVOICELINES\""),
 				Organization = OrganizationType.Heap,
-				Columns = new Dictionary<string, OracleColumn>
-				          {
-					          { "\"ID\"", new OracleColumn { Name = "\"ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0) } },
-					          { "\"INVOICE_ID\"", new OracleColumn { Name = "\"INVOICE_ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0) } },
-							  { "\"AMOUNT\"", new OracleColumn { Name = "\"AMOUNT\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 20, scale: 2) } },
-							  { "\"CORRELATION_VALUE\"", new OracleColumn { Name = "\"CORRELATION_VALUE\"", DataType = BuildPrimitiveDataType("NUMBER", scale: 5) } },
-							  { "\"CaseSensitiveColumn\"", new OracleColumn { Name = "\"CaseSensitiveColumn\"", DataType = BuildPrimitiveDataType("NVARCHAR2"), CharacterSize = 30 } },
-							  { "\"DASH-COLUMN\"", new OracleColumn { Name = "\"DASH-COLUMN\"", DataType = BuildPrimitiveDataType("RAW", 8) } }
-				          }
+				Columns =
+					new Dictionary<string, OracleColumn>
+					{
+						{ "\"ID\"", new OracleColumn { Name = "\"ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0) } },
+						{ "\"INVOICE_ID\"", new OracleColumn { Name = "\"INVOICE_ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0) } },
+						{ "\"AMOUNT\"", new OracleColumn { Name = "\"AMOUNT\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 20, scale: 2) } },
+						{ "\"CORRELATION_VALUE\"", new OracleColumn { Name = "\"CORRELATION_VALUE\"", DataType = BuildPrimitiveDataType("NUMBER", scale: 5) } },
+						{ "\"CaseSensitiveColumn\"", new OracleColumn { Name = "\"CaseSensitiveColumn\"", DataType = BuildPrimitiveDataType("NVARCHAR2"), CharacterSize = 30 } },
+						{ "\"DASH-COLUMN\"", new OracleColumn { Name = "\"DASH-COLUMN\"", DataType = BuildPrimitiveDataType("RAW", 8) } }
+					}
 			},
 			new OracleTable
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"CaseSensitiveTable\""),
 				Organization = OrganizationType.Heap,
-				Columns = new Dictionary<string, OracleColumn>
-				          {
-					          { "\"CaseSensitiveColumn\"", new OracleColumn { Name = "\"CaseSensitiveColumn\"", DataType = BuildPrimitiveDataType("RAW", 4000) } }
-				          }
+				Columns =
+					new Dictionary<string, OracleColumn>
+					{
+						{ "\"CaseSensitiveColumn\"", new OracleColumn { Name = "\"CaseSensitiveColumn\"", DataType = BuildPrimitiveDataType("RAW", 4000) } }
+					}
 			},
 			new OracleView
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"VIEW_INSTANTSEARCH\""),
 				Organization = OrganizationType.NotApplicable,
+				Columns =
+					new Dictionary<string, OracleColumn>
+					{
+						{ "\"CUSTOMER_ID\"", new OracleColumn { Name = "\"CUSTOMER_ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9) } }
+					}
 			},
 			new OracleTable
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"TARGETGROUP\""),
 				Organization = OrganizationType.Heap,
-				Columns = new Dictionary<string, OracleColumn>
-				          {
-					          { "\"TARGETGROUP_ID\"", new OracleColumn { Name = "\"TARGETGROUP_ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0) } },
-					          { "\"PROJECT_ID\"", new OracleColumn { Name = "\"PROJECT_ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0) } },
-							  { "\"NAME\"", new OracleColumn { Name = "\"NAME\"", DataType = BuildPrimitiveDataType("VARCHAR2", 50, dataUnit: DataUnit.Byte), CharacterSize = 50 } }
-				          }
+				Columns =
+					new Dictionary<string, OracleColumn>
+					{
+						{ "\"TARGETGROUP_ID\"", new OracleColumn { Name = "\"TARGETGROUP_ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0) } },
+						{ "\"PROJECT_ID\"", new OracleColumn { Name = "\"PROJECT_ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0) } },
+						{ "\"NAME\"", new OracleColumn { Name = "\"NAME\"", DataType = BuildPrimitiveDataType("VARCHAR2", 50, dataUnit: DataUnit.Byte), CharacterSize = 50 } }
+					}
 			},
 			new OracleTable
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"PROJECT\""),
 				Organization = OrganizationType.Heap,
-				Columns = new Dictionary<string, OracleColumn>
-				          {
-					          { "\"NAME\"", new OracleColumn { Name = "\"NAME\"", CharacterSize = 50, DataType = BuildPrimitiveDataType("VARCHAR2", 50, dataUnit: DataUnit.Byte) } },
-					          { "\"PROJECT_ID\"", new OracleColumn { Name = "\"PROJECT_ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0) } }
-				          }
+				Columns =
+					new Dictionary<string, OracleColumn>
+					{
+						{ "\"NAME\"", new OracleColumn { Name = "\"NAME\"", CharacterSize = 50, DataType = BuildPrimitiveDataType("VARCHAR2", 50, dataUnit: DataUnit.Byte) } },
+						{ "\"PROJECT_ID\"", new OracleColumn { Name = "\"PROJECT_ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0) } }
+					}
 			},
 			new OracleTable
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"RESPONDENTBUCKET\""),
 				Organization = OrganizationType.Heap,
-				Columns = new Dictionary<string, OracleColumn>
-				          {
-							  { "\"RESPONDENTBUCKET_ID\"", new OracleColumn { Name = "\"RESPONDENTBUCKET_ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0) } },
-					          { "\"TARGETGROUP_ID\"", new OracleColumn { Name = "\"TARGETGROUP_ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0) } },
-					          { "\"PROJECT_ID\"", new OracleColumn { Name = "\"PROJECT_ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0) } },
-							  { "\"NAME\"", new OracleColumn { Name = "\"NAME\"", CharacterSize = 50, DataType = BuildPrimitiveDataType("VARCHAR2", 50, dataUnit: DataUnit.Byte) } }
-				          }
+				Columns =
+					new Dictionary<string, OracleColumn>
+					{
+						{ "\"RESPONDENTBUCKET_ID\"", new OracleColumn { Name = "\"RESPONDENTBUCKET_ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0) } },
+						{ "\"TARGETGROUP_ID\"", new OracleColumn { Name = "\"TARGETGROUP_ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0) } },
+						{ "\"PROJECT_ID\"", new OracleColumn { Name = "\"PROJECT_ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0) } },
+						{ "\"NAME\"", new OracleColumn { Name = "\"NAME\"", CharacterSize = 50, DataType = BuildPrimitiveDataType("VARCHAR2", 50, dataUnit: DataUnit.Byte) } }
+					}
 			},
 			new OracleTable
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"SELECTION\""),
 				Organization = OrganizationType.Heap,
-				Columns = new Dictionary<string, OracleColumn>
-				          {
-							  { "\"RESPONDENTBUCKET_ID\"", new OracleColumn { Name = "\"RESPONDENTBUCKET_ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0), Nullable = true } },
-					          { "\"SELECTION_ID\"", new OracleColumn { Name = "\"SELECTION_ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0), Nullable = false } },
-					          { "\"PROJECT_ID\"", new OracleColumn { Name = "\"PROJECT_ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0), Nullable = false } },
-							  { "\"NAME\"", new OracleColumn { Name = "\"NAME\"", CharacterSize = 50, Nullable = false, DataType = BuildPrimitiveDataType("VARCHAR2", 50, dataUnit: DataUnit.Byte) } }
-				          }
+				Columns =
+					new Dictionary<string, OracleColumn>
+					{
+						{ "\"RESPONDENTBUCKET_ID\"", new OracleColumn { Name = "\"RESPONDENTBUCKET_ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0), Nullable = true } },
+						{ "\"SELECTION_ID\"", new OracleColumn { Name = "\"SELECTION_ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0), Nullable = false } },
+						{ "\"PROJECT_ID\"", new OracleColumn { Name = "\"PROJECT_ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0), Nullable = false } },
+						{ "\"NAME\"", new OracleColumn { Name = "\"NAME\"", CharacterSize = 50, Nullable = false, DataType = BuildPrimitiveDataType("VARCHAR2", 50, dataUnit: DataUnit.Byte) } }
+					}
 			},
 			new OraclePackage
 			{

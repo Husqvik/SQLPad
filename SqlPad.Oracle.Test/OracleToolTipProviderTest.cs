@@ -101,6 +101,22 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestSchemaViewColumnToolTip()
+		{
+			const string query = "SELECT CUSTOMER_ID FROM VIEW_INSTANTSEARCH";
+			_documentRepository.UpdateStatements(query);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 8);
+
+			toolTip.Control.ShouldBeTypeOf<ToolTipViewColumn>();
+			var dataModel = (ColumnDetailsModel)toolTip.Control.DataContext;
+			dataModel.Owner.ShouldBe("HUSQVIK.VIEW_INSTANTSEARCH");
+			dataModel.Name.ShouldBe("CUSTOMER_ID");
+			dataModel.DataType.ShouldBe("NUMBER(9)");
+			dataModel.Comment.ShouldBe("This is a column comment. ");
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestDecimalColumnTypeToolTip()
 		{
 			const string query = "SELECT AMOUNT FROM INVOICELINES";
