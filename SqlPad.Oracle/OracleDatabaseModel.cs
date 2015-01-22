@@ -430,8 +430,9 @@ namespace SqlPad.Oracle
 			var tableSpaceAllocationUpdater = new TableSpaceAllocationDataProvider(dataModel, objectIdentifier);
 			var tableCommentDataProvider = new CommentDataProvider(dataModel, objectIdentifier, null);
 			var tableInMemorySpaceAllocationUpdater = new TableInMemorySpaceAllocationDataProvider(dataModel, objectIdentifier, VersionString);
-			var indexDetailDataProvider = new IndexDetailDataProvider(dataModel, objectIdentifier);
-			await UpdateModelAsync(cancellationToken, true, tableDetailDataProvider, tableCommentDataProvider, tableSpaceAllocationUpdater, tableInMemorySpaceAllocationUpdater, indexDetailDataProvider);
+			var indexDetailDataProvider = new IndexDetailDataProvider(dataModel, objectIdentifier, null);
+			var indexColumnDataProvider = new IndexColumnDataProvider(dataModel, objectIdentifier, null);
+			await UpdateModelAsync(cancellationToken, true, tableDetailDataProvider, tableCommentDataProvider, tableSpaceAllocationUpdater, tableInMemorySpaceAllocationUpdater, indexDetailDataProvider, indexColumnDataProvider);
 		}
 
 		public async override Task UpdateViewDetailsAsync(OracleObjectIdentifier objectIdentifier, ViewDetailsModel dataModel, CancellationToken cancellationToken)
@@ -443,13 +444,14 @@ namespace SqlPad.Oracle
 
 		public async override Task UpdateColumnDetailsAsync(OracleObjectIdentifier objectIdentifier, string columnName, ColumnDetailsModel dataModel, CancellationToken cancellationToken)
 		{
-			var rawColumnName = columnName.Trim('"');
-			var columnDetailDataProvider = new ColumnDetailDataProvider(dataModel, objectIdentifier, rawColumnName);
-			var columnCommentDataProvider = new CommentDataProvider(dataModel, objectIdentifier, rawColumnName);
-			var columnConstraintDataProvider = new ConstraintDataProvider(dataModel, objectIdentifier, rawColumnName);
-			var columnHistogramUpdater = new ColumnDetailHistogramDataProvider(dataModel, objectIdentifier, rawColumnName);
-			var columnInMemoryDetailsUpdater = new ColumnDetailInMemoryDataProvider(dataModel, objectIdentifier, rawColumnName, VersionString);
-			await UpdateModelAsync(cancellationToken, true, columnDetailDataProvider, columnCommentDataProvider, columnConstraintDataProvider, columnHistogramUpdater, columnInMemoryDetailsUpdater);
+			var columnDetailDataProvider = new ColumnDetailDataProvider(dataModel, objectIdentifier, columnName);
+			var columnCommentDataProvider = new CommentDataProvider(dataModel, objectIdentifier, columnName);
+			var columnConstraintDataProvider = new ConstraintDataProvider(dataModel, objectIdentifier, columnName);
+			var columnIndexesDataProvider = new IndexDetailDataProvider(dataModel, objectIdentifier, columnName);
+			var indexColumnDataProvider = new IndexColumnDataProvider(dataModel, objectIdentifier, columnName);
+			var columnHistogramUpdater = new ColumnDetailHistogramDataProvider(dataModel, objectIdentifier, columnName);
+			var columnInMemoryDetailsUpdater = new ColumnDetailInMemoryDataProvider(dataModel, objectIdentifier, columnName, VersionString);
+			await UpdateModelAsync(cancellationToken, true, columnDetailDataProvider, columnCommentDataProvider, columnConstraintDataProvider, columnIndexesDataProvider, indexColumnDataProvider, columnHistogramUpdater, columnInMemoryDetailsUpdater);
 		}
 
 		public async override Task<IReadOnlyList<string>> GetRemoteTableColumnsAsync(string databaseLink, OracleObjectIdentifier schemaObject, CancellationToken cancellationToken)

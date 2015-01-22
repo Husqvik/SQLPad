@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -18,12 +19,17 @@ namespace SqlPad.Oracle.ToolTips
 		public UserControl Control { get { return this; } }
 	}
 
+	public interface IModelWithIndexes
+	{
+		ICollection<IndexDetailsModel> IndexDetails { get; } 
+	}
+
 	public interface IModelWithComment
 	{
 		string Comment { get; set; }
 	}
 
-	public class TableDetailsModel : ModelBase, IModelWithComment
+	public class TableDetailsModel : ModelBase, IModelWithComment, IModelWithIndexes
 	{
 		private int? _rowCount;
 		private int? _blockCount;
@@ -185,8 +191,15 @@ namespace SqlPad.Oracle.ToolTips
 		}
 	}
 
-	public class IndexDetailsModel
+	public class IndexDetailsModel : ModelBase
 	{
+		private readonly ObservableCollection<IndexColumnModel> _indexColumns = new ObservableCollection<IndexColumnModel>();
+
+		public IndexDetailsModel()
+		{
+			_indexColumns.CollectionChanged += delegate { RaisePropertyChanged("IndexColumns"); };
+		}
+
 		public string Owner { get; set; }
 		
 		public string Name { get; set; }
@@ -220,6 +233,26 @@ namespace SqlPad.Oracle.ToolTips
 		public int? DegreeOfParallelism { get; set; }
 		
 		public long? DistinctKeys { get; set; }
+
+		public ICollection<IndexColumnModel> Columns { get { return _indexColumns; } }
+
+		public string IndexColumns
+		{
+			get { return String.Join(", ", _indexColumns.Select(c => String.Format("{0}{1}", c.ColumnName, c.SortOrder == SortOrder.Descending ? SortOrder.Descending.ToString() : null))); }
+		}
+	}
+
+	public class IndexColumnModel
+	{
+		public string ColumnName { get; set; }
+		
+		public SortOrder SortOrder { get; set; }
+	}
+
+	public enum SortOrder
+	{
+		Ascending,
+		Descending
 	}
 	
 	public class InMemoryAllocationStatusConverter : IMultiValueConverter

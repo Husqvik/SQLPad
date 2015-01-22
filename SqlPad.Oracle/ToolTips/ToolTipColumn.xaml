@@ -62,6 +62,8 @@
 
 		<toolTips:ConstraintList Padding="0" Constraints="{Binding ConstraintDetails}" Visibility="{Binding ConstraintDetailsVisibility}" />
 
+		<toolTips:IndexList Padding="0" Indexes="{Binding IndexDetails}" Visibility="{Binding IndexDetailsVisibility}" />
+
 		<GroupBox BorderThickness="0" Visibility="{Binding HistogramVisibility}">
 			<GroupBox.Header>
 				<TextBlock Text="Histogram" FontWeight="Bold"/>

@@ -54,8 +54,7 @@
 				<DataGridCheckBoxColumn Header="Validated" Binding="{Binding IsValidated}" />
 				<DataGridCheckBoxColumn Header="Deferrable" Binding="{Binding IsDeferrable}" />
 				<DataGridCheckBoxColumn Header="Deferred" Binding="{Binding IsDeferred}" />
-				<DataGridTextColumn Header="Last change"
-					                    Binding="{Binding LastChange, Converter={StaticResource DateTimeConverter}}" />
+				<DataGridTextColumn Header="Last change" Binding="{Binding LastChange, Converter={StaticResource DateTimeConverter}}" />
 			</DataGrid.Columns>
 		</DataGrid>
 	</GroupBox>

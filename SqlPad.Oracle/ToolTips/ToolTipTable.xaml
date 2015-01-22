@@ -101,70 +101,7 @@
 				<TextBlock Grid.Row="13" Grid.Column="1" Text="{Binding ClusterName}" Visibility="{Binding ClusterNameVisibility}" />
 			</Grid>
 		</GroupBox>
-		<GroupBox Header="Indexes: " FontWeight="Bold" Visibility="{Binding IndexDetailsVisibility}" Padding="0,4,0,0">
-			<DataGrid ItemsSource="{Binding IndexDetails}"
-			          FontWeight="Normal" Background="Transparent" AutoGenerateColumns="False" RowBackground="Transparent" RowHeaderWidth="0"
-			          HorizontalGridLinesBrush="LightGray" VerticalGridLinesBrush="LightGray" IsReadOnly="True"
-			          CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False"
-			          CanUserResizeColumns="False" CanUserResizeRows="False" CanUserSortColumns="False">
-				<DataGrid.ColumnHeaderStyle>
-					<Style TargetType="DataGridColumnHeader">
-						<Style.Setters>
-							<Setter Property="Background" Value="Transparent" />
-							<Setter Property="Padding" Value="4,2,4,2" />
-							<Setter Property="FontWeight" Value="Medium" />
-						</Style.Setters>
-					</Style>
-				</DataGrid.ColumnHeaderStyle>
-				<DataGrid.Columns>
-					<DataGridTemplateColumn Header="Identifier">
-						<DataGridTemplateColumn.CellTemplate>
-							<DataTemplate DataType="toolTips:IndexDetailsModel">
-								<TextBlock>
-									<Run Text="{Binding Owner}" /><Run Text="." /><Run Text="{Binding Name}" />
-								</TextBlock>
-							</DataTemplate>
-						</DataGridTemplateColumn.CellTemplate>
-					</DataGridTemplateColumn>
-					<DataGridTextColumn Header="Type" Binding="{Binding Type}" />
-					<DataGridCheckBoxColumn Header="Uniqueness" Binding="{Binding IsUnique}" />
-					<DataGridTextColumn Header="Status" Binding="{Binding Status}" />
-					<DataGridTextColumn Header="Leaf blocks"
-					                    Binding="{Binding LeafBlocks, Converter={StaticResource PrettyPrintIntegerConverter}}"
-					                    HeaderStyle="{StaticResource HeaderStyleRightAlign}"
-					                    CellStyle="{StaticResource CellStyleRightAlign}" />
-					<DataGridTextColumn Header="Rows" Binding="{Binding Rows, Converter={StaticResource PrettyPrintIntegerConverter}}"
-					                    HeaderStyle="{StaticResource HeaderStyleRightAlign}"
-					                    CellStyle="{StaticResource CellStyleRightAlign}" />
-					<DataGridTextColumn Header="Clustering factor"
-					                    Binding="{Binding ClusteringFactor, Converter={StaticResource PrettyPrintIntegerConverter}}"
-										HeaderStyle="{StaticResource HeaderStyleRightAlign}"
-					                    CellStyle="{StaticResource CellStyleRightAlign}" />
-					<DataGridTextColumn Header="Distinct keys"
-					                    Binding="{Binding DistinctKeys, Converter={StaticResource PrettyPrintIntegerConverter}}"
-					                    HeaderStyle="{StaticResource HeaderStyleRightAlign}"
-					                    CellStyle="{StaticResource CellStyleRightAlign}" />
-					<DataGridTextColumn Header="Sample rows"
-					                    Binding="{Binding SampleRows, Converter={StaticResource PrettyPrintIntegerConverter}}"
-					                    HeaderStyle="{StaticResource HeaderStyleRightAlign}"
-					                    CellStyle="{StaticResource CellStyleRightAlign}" />
-					<DataGridTextColumn Header="Blocks"
-					                    Binding="{Binding Blocks, Converter={StaticResource PrettyPrintIntegerConverter}}"
-					                    HeaderStyle="{StaticResource HeaderStyleRightAlign}"
-					                    CellStyle="{StaticResource CellStyleRightAlign}" />
-					<DataGridTextColumn Header="Space" Binding="{Binding Bytes, Converter={StaticResource DataSpaceConverter}}"
-					                    HeaderStyle="{StaticResource HeaderStyleRightAlign}"
-					                    CellStyle="{StaticResource CellStyleRightAlign}" />
-					<DataGridTextColumn Header="Compression" Binding="{Binding Compression}" />
-					<DataGridTextColumn Header="Prefix length"
-					                    Binding="{Binding PrefixLength, Converter={StaticResource PrettyPrintIntegerConverter}}"
-					                    HeaderStyle="{StaticResource HeaderStyleRightAlign}"
-					                    CellStyle="{StaticResource CellStyleRightAlign}" />
-					<DataGridCheckBoxColumn Header="Logging" Binding="{Binding Logging}" />
-					<DataGridTextColumn Header="Last analyzed"
-					                    Binding="{Binding LastAnalyzed, Converter={StaticResource DateTimeConverter}}" />
-				</DataGrid.Columns>
-			</DataGrid>
-		</GroupBox>
+		
+		<toolTips:IndexList Padding="0" Indexes="{Binding IndexDetails}" Visibility="{Binding IndexDetailsVisibility}" />
 	</StackPanel>
 </UserControl>

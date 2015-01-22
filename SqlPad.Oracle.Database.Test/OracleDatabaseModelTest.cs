@@ -293,6 +293,25 @@ WHERE
 		}
 
 		[Test]
+		public void TestColumnIndexAndConstraintDetails()
+		{
+			var model = new ColumnDetailsModel();
+			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
+			{
+				databaseModel.Initialize().Wait();
+				databaseModel.UpdateColumnDetailsAsync(new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"COL$\""), "\"OBJ#\"", model, CancellationToken.None).Wait();
+			}
+
+			model.IndexDetails.Count.ShouldBe(3);
+			var indexes = model.IndexDetails.ToArray();
+			indexes[0].IndexColumns.ShouldBe("OBJ#, NAME");
+			indexes[1].IndexColumns.ShouldBe("OBJ#, COL#");
+			indexes[2].IndexColumns.ShouldBe("OBJ#, INTCOL#");
+			
+			model.ConstraintDetails.Count.ShouldBe(1);
+		}
+
+		[Test]
 		public void TestTableDetailDataProvider()
 		{
 			var model = new TableDetailsModel();
@@ -342,6 +361,10 @@ WHERE
 				i.Compression.ShouldBe("Disabled");
 				i.Type.ShouldBe("Normal");
 			});
+
+			indexDetails[0].IndexColumns.ShouldBe("OBJ#, NAME");
+			indexDetails[1].IndexColumns.ShouldBe("OBJ#, COL#");
+			indexDetails[2].IndexColumns.ShouldBe("OBJ#, INTCOL#");
 		}
 
 		[Test]

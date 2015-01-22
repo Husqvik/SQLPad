@@ -37,7 +37,7 @@ namespace SqlPad.Oracle.ToolTips
 		public ICollection<ConstraintDetailsModel> ConstraintDetails { get { return _constraintDetails; } } 
 	}
 
-	public class ColumnDetailsModel : ModelWithConstraints, IModelWithComment
+	public class ColumnDetailsModel : ModelWithConstraints, IModelWithComment, IModelWithIndexes
 	{
 		private int _distinctValueCount;
 		private int _nullValueCount;
@@ -52,6 +52,15 @@ namespace SqlPad.Oracle.ToolTips
 		private int _histogramBucketCount;
 		private double _histogramHeight;
 		private PointCollection _histogramPoints;
+
+		private readonly ObservableCollection<IndexDetailsModel> _indexDetails = new ObservableCollection<IndexDetailsModel>();
+
+		public ColumnDetailsModel()
+		{
+			_indexDetails.CollectionChanged += delegate { RaisePropertyChanged("IndexDetailsVisibility"); };
+		}
+
+		public ICollection<IndexDetailsModel> IndexDetails { get { return _indexDetails; } } 
 
 		public string Owner { get; set; }
 
@@ -169,7 +178,12 @@ namespace SqlPad.Oracle.ToolTips
 			get { return String.IsNullOrEmpty(_comment) ? Visibility.Collapsed : Visibility.Visible; }
 		}
 
-		private PointCollection ConvertToPointCollection(IList<double> values, bool smooth = false)
+		public Visibility IndexDetailsVisibility
+		{
+			get { return _indexDetails.Count > 0 ? Visibility.Visible : Visibility.Collapsed; }
+		}
+
+		private static PointCollection ConvertToPointCollection(IList<double> values, bool smooth = false)
 		{
 			if (smooth)
 			{
@@ -219,7 +233,7 @@ namespace SqlPad.Oracle.ToolTips
 			}
 		}
 
-		private IList<double> ComputeHorizontalHistogramChartValues(IList<double> originalValues)
+		private static IList<double> ComputeHorizontalHistogramChartValues(IList<double> originalValues)
 		{
 			var histogramValues = originalValues;
 			double ratio;
@@ -259,7 +273,7 @@ namespace SqlPad.Oracle.ToolTips
 			return histogramValues;
 		}
 
-		private IList<double> SmoothHistogram(IList<double> originalValues)
+		private static IList<double> SmoothHistogram(IList<double> originalValues)
 		{
 			var smoothedValues = new double[originalValues.Count];
 
@@ -267,12 +281,8 @@ namespace SqlPad.Oracle.ToolTips
 
 			for (var bin = 1; bin < originalValues.Count - 1; bin++)
 			{
-				double smoothedValue = 0;
-				for (var i = 0; i < mask.Length; i++)
-				{
-					smoothedValue += originalValues[bin - 1 + i] * mask[i];
-				}
-				
+				var smoothedValue = mask.Select((t, i) => originalValues[bin - 1 + i] * t).Sum();
+
 				smoothedValues[bin] = smoothedValue;
 			}
 

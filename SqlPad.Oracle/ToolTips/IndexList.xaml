@@ -1,0 +1,106 @@
+﻿<UserControl x:Class="SqlPad.Oracle.ToolTips.IndexList"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:sqlPad="clr-namespace:SqlPad;assembly=SqlPad"
+             xmlns:toolTips="clr-namespace:SqlPad.Oracle.ToolTips"
+             mc:Ignorable="d" 
+             d:DesignHeight="60" d:DesignWidth="584"
+			 Padding="4">
+	<UserControl.Resources>
+		<sqlPad:DateTimeLabelConverter x:Key="DateTimeConverter" />
+		<sqlPad:BooleanLabelConverter x:Key="BooleanConverter" />
+		<sqlPad:PrettyPrintIntegerConverter x:Key="PrettyPrintIntegerConverter" />
+		<sqlPad:DataSpaceConverter x:Key="DataSpaceConverter" />
+
+		<ControlTemplate x:Key="DataGridCellControlTemplate" TargetType="{x:Type DataGridCell}">
+			<Border Padding="2,0,2,0">
+				<ContentPresenter />
+			</Border>
+		</ControlTemplate>
+
+		<Style x:Key="CellStyleRightAlign">
+			<Setter Property="Block.TextAlignment" Value="Right" />
+			<Setter Property="DataGridCell.Template" Value="{StaticResource DataGridCellControlTemplate}" />
+		</Style>
+
+		<Style x:Key="HeaderStyleRightAlign">
+			<Setter Property="Control.HorizontalContentAlignment" Value="Right" />
+			<Setter Property="Control.Background" Value="Transparent" />
+			<Setter Property="Control.Padding" Value="4,2,4,2" />
+			<Setter Property="Control.FontWeight" Value="Medium" />
+		</Style>
+
+		<Style TargetType="{x:Type DataGridCell}">
+			<Setter Property="Template" Value="{StaticResource DataGridCellControlTemplate}" />
+		</Style>
+	</UserControl.Resources>
+	<GroupBox Header="Indexes: " FontWeight="Bold" Padding="0,4,0,0">
+		<DataGrid x:Name="DataGrid"
+		          FontWeight="Normal" Background="Transparent" AutoGenerateColumns="False" RowBackground="Transparent"
+		          RowHeaderWidth="0"
+		          HorizontalGridLinesBrush="LightGray" VerticalGridLinesBrush="LightGray" IsReadOnly="True"
+		          CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False"
+		          CanUserResizeColumns="False" CanUserResizeRows="False" CanUserSortColumns="False">
+			<DataGrid.ColumnHeaderStyle>
+				<Style TargetType="DataGridColumnHeader">
+					<Style.Setters>
+						<Setter Property="Background" Value="Transparent" />
+						<Setter Property="Padding" Value="4,2,4,2" />
+						<Setter Property="FontWeight" Value="Medium" />
+					</Style.Setters>
+				</Style>
+			</DataGrid.ColumnHeaderStyle>
+			<DataGrid.Columns>
+				<DataGridTemplateColumn Header="Identifier">
+					<DataGridTemplateColumn.CellTemplate>
+						<DataTemplate DataType="toolTips:IndexDetailsModel">
+							<TextBlock>
+								<Run Text="{Binding Owner}" /><Run Text="." /><Run Text="{Binding Name}" />
+							</TextBlock>
+						</DataTemplate>
+					</DataGridTemplateColumn.CellTemplate>
+				</DataGridTemplateColumn>
+				<DataGridTextColumn Header="Columns" Binding="{Binding IndexColumns}" />
+				<DataGridTextColumn Header="Type" Binding="{Binding Type}" />
+				<DataGridCheckBoxColumn Header="Uniqueness" Binding="{Binding IsUnique}" />
+				<DataGridTextColumn Header="Status" Binding="{Binding Status}" />
+				<DataGridTextColumn Header="Leaf blocks"
+				                    Binding="{Binding LeafBlocks, Converter={StaticResource PrettyPrintIntegerConverter}}"
+				                    HeaderStyle="{StaticResource HeaderStyleRightAlign}"
+				                    CellStyle="{StaticResource CellStyleRightAlign}" />
+				<DataGridTextColumn Header="Rows" Binding="{Binding Rows, Converter={StaticResource PrettyPrintIntegerConverter}}"
+				                    HeaderStyle="{StaticResource HeaderStyleRightAlign}"
+				                    CellStyle="{StaticResource CellStyleRightAlign}" />
+				<DataGridTextColumn Header="Clustering factor"
+				                    Binding="{Binding ClusteringFactor, Converter={StaticResource PrettyPrintIntegerConverter}}"
+				                    HeaderStyle="{StaticResource HeaderStyleRightAlign}"
+				                    CellStyle="{StaticResource CellStyleRightAlign}" />
+				<DataGridTextColumn Header="Distinct keys"
+				                    Binding="{Binding DistinctKeys, Converter={StaticResource PrettyPrintIntegerConverter}}"
+				                    HeaderStyle="{StaticResource HeaderStyleRightAlign}"
+				                    CellStyle="{StaticResource CellStyleRightAlign}" />
+				<DataGridTextColumn Header="Sample rows"
+				                    Binding="{Binding SampleRows, Converter={StaticResource PrettyPrintIntegerConverter}}"
+				                    HeaderStyle="{StaticResource HeaderStyleRightAlign}"
+				                    CellStyle="{StaticResource CellStyleRightAlign}" />
+				<DataGridTextColumn Header="Blocks"
+				                    Binding="{Binding Blocks, Converter={StaticResource PrettyPrintIntegerConverter}}"
+				                    HeaderStyle="{StaticResource HeaderStyleRightAlign}"
+				                    CellStyle="{StaticResource CellStyleRightAlign}" />
+				<DataGridTextColumn Header="Space" Binding="{Binding Bytes, Converter={StaticResource DataSpaceConverter}}"
+				                    HeaderStyle="{StaticResource HeaderStyleRightAlign}"
+				                    CellStyle="{StaticResource CellStyleRightAlign}" />
+				<DataGridTextColumn Header="Compression" Binding="{Binding Compression}" />
+				<DataGridTextColumn Header="Prefix length"
+				                    Binding="{Binding PrefixLength, Converter={StaticResource PrettyPrintIntegerConverter}}"
+				                    HeaderStyle="{StaticResource HeaderStyleRightAlign}"
+				                    CellStyle="{StaticResource CellStyleRightAlign}" />
+				<DataGridCheckBoxColumn Header="Logging" Binding="{Binding Logging}" />
+				<DataGridTextColumn Header="Last analyzed"
+				                    Binding="{Binding LastAnalyzed, Converter={StaticResource DateTimeConverter}}" />
+			</DataGrid.Columns>
+		</DataGrid>
+	</GroupBox>
+</UserControl>

@@ -29,7 +29,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 			command.CommandText = DatabaseCommands.GetColumnStatisticsCommand;
 			command.AddSimpleParameter("OWNER", _objectIdentifier.Owner.Trim('"'));
 			command.AddSimpleParameter("TABLE_NAME", _objectIdentifier.Name.Trim('"'));
-			command.AddSimpleParameter("COLUMN_NAME", _columnName);
+			command.AddSimpleParameter("COLUMN_NAME", _columnName.Trim('"'));
 		}
 
 		public override void MapReaderData(OracleDataReader reader)
@@ -75,7 +75,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 			else
 			{
 				command.CommandText = DatabaseCommands.ColumnConstraintDescription;
-				command.AddSimpleParameter("COLUMN_NAME", _columnName);
+				command.AddSimpleParameter("COLUMN_NAME", _columnName.Trim('"'));
 			}
 
 			command.InitialLONGFetchSize = 32767;
@@ -144,7 +144,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 			command.CommandText = DatabaseCommands.GetColumnHistogramCommand;
 			command.AddSimpleParameter("OWNER", _objectIdentifier.Owner.Trim('"'));
 			command.AddSimpleParameter("TABLE_NAME", _objectIdentifier.Name.Trim('"'));
-			command.AddSimpleParameter("COLUMN_NAME", _columnName);
+			command.AddSimpleParameter("COLUMN_NAME", _columnName.Trim('"'));
 		}
 
 		public override void MapReaderData(OracleDataReader reader)
@@ -184,7 +184,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 			command.CommandText = DatabaseCommands.GetColumnInMemoryDetailsCommand;
 			command.AddSimpleParameter("OWNER", _objectIdentifier.Owner.Trim('"'));
 			command.AddSimpleParameter("TABLE_NAME", _objectIdentifier.Name.Trim('"'));
-			command.AddSimpleParameter("COLUMN_NAME", _columnName);
+			command.AddSimpleParameter("COLUMN_NAME", _columnName.Trim('"'));
 		}
 
 		public override void MapReaderData(OracleDataReader reader)
@@ -272,7 +272,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 			else
 			{
 				command.CommandText = String.Format(DatabaseCommands.GetColumnCommentCommand);
-				command.AddSimpleParameter("COLUMN_NAME", _columnName);
+				command.AddSimpleParameter("COLUMN_NAME", _columnName.Trim('"'));
 			}
 		}
 
@@ -315,15 +315,17 @@ namespace SqlPad.Oracle.ModelDataProviders
 		}
 	}
 
-	internal class IndexDetailDataProvider : ModelDataProvider<TableDetailsModel>
+	internal class IndexDetailDataProvider : ModelDataProvider<IModelWithIndexes>
 	{
 		private static readonly TextInfo TextInfo = CultureInfo.InvariantCulture.TextInfo;
+		private readonly string _columnName;
 		private readonly OracleObjectIdentifier _objectIdentifier;
 
-		public IndexDetailDataProvider(TableDetailsModel dataModel, OracleObjectIdentifier objectIdentifier)
+		public IndexDetailDataProvider(IModelWithIndexes dataModel, OracleObjectIdentifier objectIdentifier, string columnName)
 			: base(dataModel)
 		{
 			_objectIdentifier = objectIdentifier;
+			_columnName = columnName;
 		}
 
 		public override void InitializeCommand(OracleCommand command)
@@ -331,6 +333,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 			command.CommandText = String.Format(DatabaseCommands.IndexDescription);
 			command.AddSimpleParameter("TABLE_OWNER", _objectIdentifier.Owner.Trim('"'));
 			command.AddSimpleParameter("TABLE_NAME", _objectIdentifier.Name.Trim('"'));
+			command.AddSimpleParameter("COLUMN_NAME", String.IsNullOrEmpty(_columnName) ? null : _columnName.Trim('"'));
 		}
 
 		public override void MapReaderData(OracleDataReader reader)
@@ -361,6 +364,51 @@ namespace SqlPad.Oracle.ModelDataProviders
 					};
 
 				DataModel.IndexDetails.Add(indexDetails);
+			}
+		}
+	}
+
+	internal class IndexColumnDataProvider : ModelDataProvider<IModelWithIndexes>
+	{
+		private readonly OracleObjectIdentifier _objectIdentifier;
+		private readonly string _columnName;
+		private Dictionary<OracleObjectIdentifier, IndexDetailsModel> _indexes;
+
+		public IndexColumnDataProvider(IModelWithIndexes dataModel, OracleObjectIdentifier objectIdentifier, string columnName)
+			: base(dataModel)
+		{
+			_objectIdentifier = objectIdentifier;
+			_columnName = columnName;
+		}
+
+		public override void InitializeCommand(OracleCommand command)
+		{
+			command.CommandText = DatabaseCommands.IndexColumnDescription;
+			command.AddSimpleParameter("OWNER", _objectIdentifier.Owner.Trim('"'));
+			command.AddSimpleParameter("TABLE_NAME", _objectIdentifier.Name.Trim('"'));
+			command.AddSimpleParameter("COLUMN_NAME", String.IsNullOrEmpty(_columnName) ? null : _columnName.Trim('"'));
+
+			_indexes = DataModel.IndexDetails.ToDictionary(i => OracleObjectIdentifier.Create(i.Owner, i.Name));
+		}
+
+		public override void MapReaderData(OracleDataReader reader)
+		{
+			while (reader.Read())
+			{
+				var indexOwner = (string)reader["INDEX_OWNER"];
+				var indexName = (string)reader["INDEX_NAME"];
+				var indexIdentifier = OracleObjectIdentifier.Create(indexOwner, indexName);
+
+				var indexModel = _indexes[indexIdentifier];
+
+				var indexColumn =
+					new IndexColumnModel
+					{
+						ColumnName = (string)reader["COLUMN_NAME"],
+						SortOrder = (string)reader["DESCEND"] == "ASC" ? SortOrder.Ascending : SortOrder.Descending
+					};
+
+				indexModel.Columns.Add(indexColumn);
 			}
 		}
 	}
