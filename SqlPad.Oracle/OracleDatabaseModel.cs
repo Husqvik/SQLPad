@@ -240,7 +240,7 @@ namespace SqlPad.Oracle
 
 		public override ILookup<OracleProgramIdentifier, OracleProgramMetadata> AllFunctionMetadata { get { return _allFunctionMetadata; } }
 
-		protected override IDictionary<string, OracleProgramMetadata> NonSchemaBuiltInFunctionMetadata { get { return _dataDictionary.NonSchemaFunctionMetadata; } }
+		protected override ILookup<OracleProgramIdentifier, OracleProgramMetadata> NonSchemaBuiltInFunctionMetadata { get { return _dataDictionary.NonSchemaFunctionMetadata; } }
 
 		public override ConnectionStringSettings ConnectionString { get { return _connectionString; } }
 
@@ -1188,13 +1188,13 @@ namespace SqlPad.Oracle
 				_allFunctionMetadata = builtInFunctions.Concat(userFunctions.Where(f => f.Type == ProgramType.Function))
 					.ToLookup(m => m.Identifier);
 
-				var nonSchemaBuiltInFunctionMetadata = new Dictionary<string, OracleProgramMetadata>();
+				var nonSchemaBuiltInFunctionMetadata = new List<OracleProgramMetadata>();
 
 				foreach (var programMetadata in builtInFunctions.Concat(userFunctions))
 				{
 					if (String.IsNullOrEmpty(programMetadata.Identifier.Owner))
 					{
-						nonSchemaBuiltInFunctionMetadata.Add(programMetadata.Identifier.Name, programMetadata);
+						nonSchemaBuiltInFunctionMetadata.Add(programMetadata);
 						continue;
 					}
 
@@ -1302,7 +1302,7 @@ namespace SqlPad.Oracle
 					.SelectMany(o => o.Functions);
 
 				functionMetadata = FilterFunctionsWithUnavailableMetadata(functionMetadata)
-					.Concat(_dataDictionary.NonSchemaFunctionMetadata.Values);
+					.Concat(_dataDictionary.NonSchemaFunctionMetadata.SelectMany(g => g));
 
 				_allFunctionMetadata = functionMetadata.ToLookup(m => m.Identifier);
 			}

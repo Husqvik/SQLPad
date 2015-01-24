@@ -19,6 +19,7 @@ namespace SqlPad.Oracle.Database.Test
 	public class OracleDatabaseModelTest : TemporaryDirectoryTestFixture
 	{
 		private const string LoopbackDatabaseLinkName = "HQ_PDB";
+		private const string ExplainPlanTableName = "TOAD_PLAN_TABLE";
 		private readonly ConnectionStringSettings _connectionString = new ConnectionStringSettings("TestConnection", "DATA SOURCE=HQ_PDB_TCP;PASSWORD=oracle;USER ID=HUSQVIK");
 
 		private const string ExplainPlanTestQuery =
@@ -34,7 +35,7 @@ WHERE
 
 		static OracleDatabaseModelTest()
 		{
-			OracleConfiguration.Configuration.ExecutionPlan.TargetTable.Name = "TOAD_PLAN_TABLE";
+			OracleConfiguration.Configuration.ExecutionPlan.TargetTable.Name = ExplainPlanTableName;
 		}
 
 		[Test]
@@ -290,6 +291,39 @@ WHERE
 			model.LastAnalyzed.ShouldBeGreaterThan(DateTime.MinValue);
 			model.NullValueCount.ShouldBe(0);
 			model.SampleSize.ShouldBe(1);
+		}
+
+		[Test]
+		public void TestSpecialFunctionSemanticValidity()
+		{
+			const string testQuery =
+@"SELECT
+	CUME_DIST(1, 1) WITHIN GROUP (ORDER BY NULL),
+	RANK(1) WITHIN GROUP (ORDER BY NULL),
+	DENSE_RANK(1) WITHIN GROUP (ORDER BY NULL),
+	PERCENTILE_CONT(0) WITHIN GROUP (ORDER BY NULL),
+	PERCENTILE_DISC(0) WITHIN GROUP (ORDER BY NULL),
+	COALESCE(NULL, NULL, 0)
+FROM
+	TABLE(DBMS_XPLAN.DISPLAY_CURSOR(NULL, NULL, 'ALLSTATS LAST ADVANCED')) T1, TABLE(SYS.ODCIRAWLIST(HEXTORAW('ABCDEF'), HEXTORAW('A12345'), HEXTORAW('F98765'))) T2";
+
+			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
+			{
+				databaseModel.Initialize().Wait();
+				if (!databaseModel.IsFresh)
+				{
+					var refreshFinishedResetEvent = new ManualResetEvent(false);
+					databaseModel.RefreshCompleted += delegate { refreshFinishedResetEvent.Set(); };
+					refreshFinishedResetEvent.WaitOne(TimeSpan.FromSeconds(30));
+				}
+
+				var statement = new OracleSqlParser().Parse(testQuery).Single();
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+				var validator = new OracleStatementValidator();
+				var validationModel = validator.BuildValidationModel(validator.BuildSemanticModel(testQuery, statement, databaseModel));
+				validationModel.SemanticErrors.Count().ShouldBe(0);
+			}
 		}
 
 		[Test]

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using ProtoBuf.Meta;
 
 namespace SqlPad.Oracle
@@ -12,7 +13,6 @@ namespace SqlPad.Oracle
 
 		private static readonly IDictionary<OracleObjectIdentifier, OracleSchemaObject> InitialDictionary = BuildEmptyReadOnlyDictionary<OracleObjectIdentifier, OracleSchemaObject>();
 		private static readonly IDictionary<OracleObjectIdentifier, OracleDatabaseLink> InitialDatabaseLinkDictionary = BuildEmptyReadOnlyDictionary<OracleObjectIdentifier, OracleDatabaseLink>();
-		private static readonly IDictionary<string, OracleProgramMetadata> InitialNonSchemaFunctionMetadataDictionary = BuildEmptyReadOnlyDictionary<string, OracleProgramMetadata>();
 		private static readonly IDictionary<int, string> InitialStatisticsKeys = BuildEmptyReadOnlyDictionary<int, string>();
 		private static readonly IDictionary<string, string> InitialSystemParameters = BuildEmptyReadOnlyDictionary<string, string>();
 		private static readonly HashSet<string> InitialCharacterSetCollection = new HashSet<string>();
@@ -21,10 +21,12 @@ namespace SqlPad.Oracle
 
 		private readonly IDictionary<OracleObjectIdentifier, OracleSchemaObject> _allObjects;
 		private readonly IDictionary<OracleObjectIdentifier, OracleDatabaseLink> _databaseLinks;
-		private readonly IDictionary<string, OracleProgramMetadata> _nonSchemaFunctionMetadata;
+		private readonly ICollection<OracleProgramMetadata> _nonSchemaFunctionMetadata;
 		private readonly IDictionary<int, string> _statisticsKeys;
 		private readonly IDictionary<string, string> _systemParameters;
 		private readonly HashSet<string> _characterSets;
+
+		private ILookup<OracleProgramIdentifier, OracleProgramMetadata> _nonSchemaFunctionMetadataLookup;
 
 		public DateTime Timestamp { get; private set; }
 
@@ -38,9 +40,15 @@ namespace SqlPad.Oracle
 			get { return _databaseLinks ?? InitialDatabaseLinkDictionary; }
 		}
 
-		public IDictionary<string, OracleProgramMetadata> NonSchemaFunctionMetadata
+		public ILookup<OracleProgramIdentifier, OracleProgramMetadata> NonSchemaFunctionMetadata
 		{
-			get { return _nonSchemaFunctionMetadata ?? InitialNonSchemaFunctionMetadataDictionary; }
+			get { return _nonSchemaFunctionMetadataLookup ?? BuildNonSchemaFunctionMetadata(); }
+		}
+
+		private ILookup<OracleProgramIdentifier, OracleProgramMetadata> BuildNonSchemaFunctionMetadata()
+		{
+			var nonSchemaFunctionMetadata = _nonSchemaFunctionMetadata ?? Enumerable.Empty<OracleProgramMetadata>();
+			return _nonSchemaFunctionMetadataLookup = nonSchemaFunctionMetadata.ToLookup(m => m.Identifier);
 		}
 
 		public ICollection<string> CharacterSets
@@ -189,11 +197,12 @@ namespace SqlPad.Oracle
 			oracleFunctionParameterMetadataType.Add("Name", "Position", "Sequence", "DataLevel", "DataType", "CustomDataType", "Direction", "IsOptional");
 		}
 
-		public OracleDataDictionary(IDictionary<OracleObjectIdentifier, OracleSchemaObject> schemaObjects, IDictionary<OracleObjectIdentifier, OracleDatabaseLink> databaseLinks, IDictionary<string, OracleProgramMetadata> nonSchemaFunctionMetadata, IEnumerable<string> characterSets, IDictionary<int, string> statisticsKeys, IDictionary<string, string> systemParameters, DateTime timestamp)
+		public OracleDataDictionary(IDictionary<OracleObjectIdentifier, OracleSchemaObject> schemaObjects, IDictionary<OracleObjectIdentifier, OracleDatabaseLink> databaseLinks, IEnumerable<OracleProgramMetadata> nonSchemaFunctionMetadata, IEnumerable<string> characterSets, IDictionary<int, string> statisticsKeys, IDictionary<string, string> systemParameters, DateTime timestamp)
 		{
 			_allObjects = new ReadOnlyDictionary<OracleObjectIdentifier, OracleSchemaObject>(schemaObjects);
 			_databaseLinks = new ReadOnlyDictionary<OracleObjectIdentifier, OracleDatabaseLink>(databaseLinks);
-			_nonSchemaFunctionMetadata = new ReadOnlyDictionary<string, OracleProgramMetadata>(nonSchemaFunctionMetadata);
+			_nonSchemaFunctionMetadata = new List<OracleProgramMetadata>(nonSchemaFunctionMetadata);
+			_nonSchemaFunctionMetadataLookup = _nonSchemaFunctionMetadata.ToLookup(m => m.Identifier);
 			_characterSets = new HashSet<string>(characterSets);
 			_statisticsKeys = new ReadOnlyDictionary<int, string>(statisticsKeys);
 			_systemParameters = new ReadOnlyDictionary<string, string>(systemParameters);

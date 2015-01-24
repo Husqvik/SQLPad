@@ -23,7 +23,7 @@ namespace SqlPad.Oracle.Test
 		private static readonly HashSet<string> SchemasInternal = new HashSet<string> { OwnerNameSys, "\"SYSTEM\"", InitialSchema };
 		private static readonly HashSet<string> AllSchemasInternal = new HashSet<string>(SchemasInternal) { OwnerNameSys, "\"SYSTEM\"", InitialSchema, SchemaPublic };
 		private static readonly ILookup<OracleProgramIdentifier, OracleProgramMetadata> AllFunctionMetadataInternal;
-		private static readonly Dictionary<string, OracleProgramMetadata> NonSchemaBuiltInFunctionMetadataInternal;
+		private static readonly ILookup<OracleProgramIdentifier, OracleProgramMetadata> NonSchemaBuiltInFunctionMetadataInternal;
 		private static readonly HashSet<string> CharacterSetsInternal = new HashSet<string> { "US7ASCII", "WE8ISO8859P1" };
 
 		private const int StatisticsCodeSessionLogicalReads = 12;
@@ -442,7 +442,7 @@ namespace SqlPad.Oracle.Test
 			AllFunctionMetadataInternal = allFunctionMetadata.Where(f => f.Type == ProgramType.Function).ToLookup(m => m.Identifier);
 			NonSchemaBuiltInFunctionMetadataInternal = allFunctionMetadata
 				.Where(m => String.IsNullOrEmpty(m.Identifier.Owner))
-				.ToDictionary(m => m.Identifier.Name, m => m);
+				.ToLookup(m => m.Identifier);
 			#endregion
 
 			Instance = new OracleTestDatabaseModel { CurrentSchema = InitialSchema };
@@ -570,7 +570,7 @@ namespace SqlPad.Oracle.Test
 
 		public override ILookup<OracleProgramIdentifier, OracleProgramMetadata> AllFunctionMetadata { get { return AllFunctionMetadataInternal; } }
 
-		protected override IDictionary<string, OracleProgramMetadata> NonSchemaBuiltInFunctionMetadata { get { return NonSchemaBuiltInFunctionMetadataInternal; } }
+		protected override ILookup<OracleProgramIdentifier, OracleProgramMetadata> NonSchemaBuiltInFunctionMetadata { get { return NonSchemaBuiltInFunctionMetadataInternal; } }
 
 		private static readonly HashSet<OracleSchemaObject> AllObjectsInternal = new HashSet<OracleSchemaObject>
 		{

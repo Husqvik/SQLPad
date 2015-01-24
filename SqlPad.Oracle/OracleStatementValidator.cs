@@ -421,7 +421,7 @@ namespace SqlPad.Oracle
 				isRecognized = true;
 				if (programReference.ParameterListNode != null)
 				{
-					var isCollectionConstructor = programReference.SchemaObject as OracleTypeCollection != null;
+					var isCollectionConstructor = programReference.SchemaObject is OracleTypeCollection;
 					if (!isCollectionConstructor)
 					{
 						var maximumParameterCount = programReference.Metadata.MinimumArguments > 0 && programReference.Metadata.MaximumArguments == 0

@@ -58,7 +58,7 @@ namespace SqlPad.Oracle.ExecutionPlan
 					_leafItems.Add(item);
 				}
 
-				var costPercent = item.Cost.HasValue && RootItem.Cost.HasValue
+				var costPercent = item.Cost.HasValue && RootItem.Cost.HasValue && RootItem.Cost > 0
 					? (int?)Math.Round(item.Cost.Value / (decimal)RootItem.Cost * 100)
 					: null;
 

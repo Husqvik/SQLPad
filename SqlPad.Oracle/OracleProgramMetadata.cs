@@ -106,7 +106,7 @@ namespace SqlPad.Oracle
 				var properMetadataMinimumArgumentCount = Parameters.Count > 0
 					? Parameters.Count(p => !p.IsOptional && p.DataLevel == 0) - 1
 					: (int?)null;
-				return properMetadataMinimumArgumentCount.HasValue && (_metadataMinimumArguments == null || properMetadataMinimumArgumentCount < _metadataMinimumArguments)
+				return properMetadataMinimumArgumentCount > 0 && (_metadataMinimumArguments == null || properMetadataMinimumArgumentCount < _metadataMinimumArguments)
 					? properMetadataMinimumArgumentCount.Value
 					: (_metadataMinimumArguments ?? 0);
 			}

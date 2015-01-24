@@ -106,7 +106,7 @@ namespace SqlPad.Oracle
 
 		public abstract ILookup<OracleProgramIdentifier, OracleProgramMetadata> AllFunctionMetadata { get; }
 
-		protected abstract IDictionary<string, OracleProgramMetadata> NonSchemaBuiltInFunctionMetadata { get; }
+		protected abstract ILookup<OracleProgramIdentifier, OracleProgramMetadata> NonSchemaBuiltInFunctionMetadata { get; }
 
 		public abstract IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjects { get; }
 
@@ -166,7 +166,7 @@ namespace SqlPad.Oracle
 			return AllSchemas.Contains(schemaName.ToQuotedIdentifier());
 		}
 
-		public ProgramMetadataResult GetProgramMetadata(OracleProgramIdentifier identifier, int parameterCount, bool forceBuiltInFunction)
+		public ProgramMetadataResult GetProgramMetadata(OracleProgramIdentifier identifier, int parameterCount, bool forceBuiltInFunction, bool hasAnalyticClause)
 		{
 			var result = new ProgramMetadataResult();
 
@@ -179,15 +179,12 @@ namespace SqlPad.Oracle
 					TryGetSchemaObjectProgramMetadata(schemaObject, out programMetadataSource);
 				}
 
-				result.Metadata = TryFindProgramOverload(programMetadataSource, identifier.Name, parameterCount);
+				result.Metadata = TryFindProgramOverload(programMetadataSource, identifier.Name, parameterCount, hasAnalyticClause);
 
 				if (result.Metadata == null)
 				{
-					OracleProgramMetadata nonSchemaProgramMetadata;
-					if (NonSchemaBuiltInFunctionMetadata.TryGetValue(identifier.Name, out nonSchemaProgramMetadata))
-					{
-						result.Metadata = TryFindProgramOverload(Enumerable.Repeat(nonSchemaProgramMetadata, 1), identifier.Name, parameterCount);
-					}
+					var nonSchemaBuiltInFunctionIdentifier = OracleProgramIdentifier.CreateBuiltIn(identifier.Name);
+					result.Metadata = TryFindProgramOverload(NonSchemaBuiltInFunctionMetadata[nonSchemaBuiltInFunctionIdentifier], identifier.Name, parameterCount, hasAnalyticClause);
 				}
 
 				result.SchemaObject = schemaObject;
@@ -201,7 +198,7 @@ namespace SqlPad.Oracle
 					return result;
 
 				result.SchemaObject = schemaObject;
-				result.Metadata = TryFindProgramOverload(programMetadataSource, identifier.Name, parameterCount);
+				result.Metadata = TryFindProgramOverload(programMetadataSource, identifier.Name, parameterCount, hasAnalyticClause);
 			}
 
 			return result;
@@ -260,10 +257,11 @@ namespace SqlPad.Oracle
 			return false;
 		}
 
-		private static OracleProgramMetadata TryFindProgramOverload(IEnumerable<OracleProgramMetadata> functionMetadataCollection, string normalizedName, int parameterCount)
+		private static OracleProgramMetadata TryFindProgramOverload(IEnumerable<OracleProgramMetadata> functionMetadataCollection, string normalizedName, int parameterCount, bool hasAnalyticClause)
 		{
 			return functionMetadataCollection.Where(m => m != null && m.Type == ProgramType.Function && m.Identifier.Name == normalizedName)
 				.OrderBy(m => Math.Abs(parameterCount - m.Parameters.Count + 1))
+				.ThenBy(m => hasAnalyticClause ? !m.IsAnalytic : m.IsAnalytic)
 				.FirstOrDefault();
 		}
 	}

@@ -24,6 +24,17 @@ namespace SqlPad.Oracle
 			}
 		}
 
+		public static OracleProgramIdentifier CreateBuiltIn(string name)
+		{
+			return
+				new OracleProgramIdentifier
+				{
+					Owner = String.Empty,
+					Package = String.Empty,
+					Name = name
+				};
+		}
+
 		public static OracleProgramIdentifier CreateFromValues(string owner, string package, string name, int overload = 0)
 		{
 			return new OracleProgramIdentifier
