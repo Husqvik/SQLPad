@@ -289,6 +289,16 @@ namespace SqlPad
 				: ParentNode.GetPathFilterAncestor(pathFilter, ancestorNodeId);
 		}
 
+		public StatementGrammarNode GetPathFilterAncestor(Func<StatementGrammarNode, bool> pathFilter, Func<StatementGrammarNode, bool> ancestorPredicate)
+		{
+			if (ParentNode == null || (pathFilter != null && !pathFilter(ParentNode)))
+				return null;
+
+			return ancestorPredicate(ParentNode)
+				? ParentNode
+				: ParentNode.GetPathFilterAncestor(pathFilter, ancestorPredicate);
+		}
+
 		public StatementGrammarNode GetAncestor(string ancestorNodeId, bool includeSelf = false)
 		{
 			return GetPathFilterAncestor(null, ancestorNodeId, includeSelf);

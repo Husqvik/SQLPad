@@ -811,10 +811,10 @@ se";
 		{
 			const string statement = @"SELECT SQLPAD.SQLPAD_FUNCTION(D) FROM DUAL";
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 31).ToList();
-			items.Count.ShouldBe(9);
+			items.Count.ShouldBe(8);
 			items[0].Text.ShouldBe("DUAL.DUMMY");
-			items[8].Name.ShouldBe("DUMP");
-			items[8].Text.ShouldBe("DUMP()");
+			items[7].Name.ShouldBe("DUMP");
+			items[7].Text.ShouldBe("DUMP()");
 		}
 
 		[Test(Description = @"")]
@@ -1965,6 +1965,14 @@ FROM
 				const string statement = @"INSERT INTO ";
 				var completionType = InitializeCodeCompletionType(statement, 12);
 				completionType.SchemaDataObject.ShouldBe(true);
+			}
+
+			[Test(Description = @"")]
+			public void TestKeywordClauseCodeCompletionTypeWhenInvokedWithinNonAggregateFunction()
+			{
+				const string statement = @"SELECT NVL() FROM DUAL";
+				var completionType = InitializeCodeCompletionType(statement, 11);
+				completionType.KeywordsClauses.Count.ShouldBe(0);
 			}
 
 			public class ReferenceIdentifierTest

@@ -19,8 +19,6 @@ namespace SqlPad.Oracle
 				Terminals.Group,
 				Terminals.Having,
 				Terminals.Order,
-				Terminals.Distinct,
-				Terminals.Unique,
 				Terminals.Union,
 				Terminals.Intersect,
 				Terminals.SetMinus,
@@ -68,6 +66,8 @@ namespace SqlPad.Oracle
 		public bool InComment { get; private set; }
 
 		public bool InQueryBlockFromClause { get; private set; }
+
+		public bool InSelectList { get; private set; }
 
 		public bool IsCursorTouchingIdentifier { get; private set; }
 
@@ -200,10 +200,9 @@ namespace SqlPad.Oracle
 				TerminalCandidates = Parser.GetTerminalCandidates(terminalCandidateSourceToken);
 			}
 
-			var inSelectList = (atAdHocTemporaryTerminal ? precedingTerminal : EffectiveTerminal).GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.SelectList) != null;
-			var keywordClauses = TerminalCandidates.Where(c => AvailableKeywordsToSuggest.Contains(c) || (inSelectList && c == Terminals.Partition))
-				.Select(CreateKeywordClause);
-			_keywordsClauses.AddRange(keywordClauses);
+			InSelectList = (atAdHocTemporaryTerminal ? precedingTerminal : EffectiveTerminal).GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.SelectList) != null;
+
+			ResolveSuggestedKeywords();
 
 			var isCursorBetweenTwoTerminalsWithPrecedingIdentifierWithoutPrefix = IsCursorTouchingIdentifier && !ReferenceIdentifier.HasObjectIdentifier;
 			Schema = TerminalCandidates.Contains(Terminals.SchemaIdentifier) || isCursorBetweenTwoTerminalsWithPrecedingIdentifierWithoutPrefix;
@@ -251,6 +250,25 @@ namespace SqlPad.Oracle
 			UpdateSetColumn = TerminalCandidates.Contains(Terminals.Identifier) && (isWithinUpdateSetNonTerminal || isAfterSetTerminal);
 
 			ColumnAlias = Column && nearestTerminal.IsWithinOrderByClause();
+		}
+
+		private void ResolveSuggestedKeywords()
+		{
+			var aggregateFunctionCallNode = EffectiveTerminal.GetPathFilterAncestor(
+				n => n.Id != NonTerminals.QueryBlock,
+				n => n.Id == NonTerminals.AggregateFunctionCall ||
+				     (n.Id == NonTerminals.ColumnReference && n.GetDescendantByPath(NonTerminals.ParenthesisEnclosedAggregationFunctionParameters) != null));
+			
+			var supportDistinct = EffectiveTerminal.Id == Terminals.Select;
+			if (aggregateFunctionCallNode != null)
+			{
+				var programReference = SemanticModel.GetProgramReference(aggregateFunctionCallNode.FirstTerminalNode);
+				supportDistinct = programReference != null && programReference.Metadata != null && programReference.Metadata.IsAggregate;
+			}
+
+			var keywordClauses = TerminalCandidates.Where(c => AvailableKeywordsToSuggest.Contains(c.Id) || (InSelectList && c.Id == Terminals.Partition) || (supportDistinct && c.Id.In(Terminals.Distinct, Terminals.Unique)))
+				.Select(CreateKeywordClause);
+			_keywordsClauses.AddRange(keywordClauses);
 		}
 
 		private SuggestedKeywordClause CreateKeywordClause(TerminalCandidate candidate)
