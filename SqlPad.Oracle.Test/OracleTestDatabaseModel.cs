@@ -1000,6 +1000,7 @@ Note
 			dataModel.BlockCount = 544;
 			dataModel.RowCount = 8312;
 			dataModel.AllocatedBytes = 22546891;
+			dataModel.LargeObjectBytes = 1546891;
 			dataModel.Compression = "Disabled";
 			dataModel.InMemoryCompression = "Disabled";
 			dataModel.Organization = "Index";

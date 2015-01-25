@@ -7,7 +7,7 @@
              xmlns:toolTips="clr-namespace:SqlPad.Oracle.ToolTips"
              mc:Ignorable="d" 
              d:DesignHeight="60" d:DesignWidth="584"
-			 Padding="4">
+			 Padding="4" d:DataContext="{d:DesignInstance toolTips:ConstraintDetailsModel}">
 	<UserControl.Resources>
 		<sqlPad:DateTimeLabelConverter x:Key="DateTimeConverter" />
 

@@ -14,6 +14,7 @@
 			<sqlPad:BooleanLabelConverter x:Key="BooleanConverter" />
 			<sqlPad:PrettyPrintIntegerConverter x:Key="PrettyPrintIntegerConverter" />
 			<sqlPad:DataSpaceConverter x:Key="DataSpaceConverter" />
+			<sqlPad:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter"/>
 			<toolTips:InMemoryAllocationStatusConverter x:Key="InMemoryAllocationStatusConverter" />
 
 			<ControlTemplate x:Key="DataGridCellControlTemplate" TargetType="{x:Type DataGridCell}">
@@ -49,6 +50,7 @@
 				</Grid.ColumnDefinitions>
 				<Grid.RowDefinitions>
 					<RowDefinition Height="Auto" />
+					<RowDefinition Height="Auto" />
 					<RowDefinition />
 					<RowDefinition />
 					<RowDefinition />
@@ -64,28 +66,35 @@
 					<RowDefinition Height="Auto" />
 				</Grid.RowDefinitions>
 				<TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Text="{Binding Comment}" Visibility="{Binding CommentVisibility}" />
-				<TextBlock Grid.Row="1" Grid.Column="0" Text="Organization: " />
-				<TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Organization}" />
-				<TextBlock Grid.Row="2" Grid.Column="0" Text="Partitioned: " />
-				<TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding IsPartitioned, Converter={StaticResource BooleanConverter}}" />
-				<TextBlock Grid.Row="3" Grid.Column="0" Text="Parallel degree: " />
-				<TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding ParallelDegree}" />
-				<TextBlock Grid.Row="4" Grid.Column="0" Text="Temporary: " />
-				<TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding IsTemporary, Converter={StaticResource BooleanConverter}}" />
-				<TextBlock Grid.Row="5" Grid.Column="0" Text="Blocks: " />
-				<TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding BlockCount, Converter={StaticResource PrettyPrintIntegerConverter}}" />
-				<TextBlock Grid.Row="6" Grid.Column="0" Text="Space: " />
-				<TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding AllocatedBytes, Converter={StaticResource DataSpaceConverter}}" />
-				<TextBlock Grid.Row="7" Grid.Column="0" Text="Rows: " />
-				<TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding RowCount, Converter={StaticResource PrettyPrintIntegerConverter}}" />
-				<TextBlock Grid.Row="8" Grid.Column="0" Text="Avg. row bytes: " />
-				<TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding AverageRowSize, Converter={StaticResource PrettyPrintIntegerConverter}}" />
-				<TextBlock Grid.Row="9" Grid.Column="0" Text="Compression: " />
-				<TextBlock Grid.Row="9" Grid.Column="1" Text="{Binding Compression}" />
-				<TextBlock Grid.Row="10" Grid.Column="0" Text="Last analyzed: " />
-				<TextBlock Grid.Row="10" Grid.Column="1" Text="{Binding LastAnalyzed, Converter={StaticResource DateTimeConverter}}" />
-				<TextBlock Grid.Row="11" Grid.Column="0" Text="In-memory space: " Visibility="{Binding InMemoryAllocationStatusVisible}" />
-				<TextBlock Grid.Row="11" Grid.Column="1" Visibility="{Binding InMemoryAllocationStatusVisible}">
+				<TextBlock Grid.Row="1" Grid.Column="0" Text="Tablespace: " Visibility="{Binding TablespaceNameVisibility}" />
+				<TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding TablespaceName}" Visibility="{Binding TablespaceNameVisibility}" />
+				<TextBlock Grid.Row="2" Grid.Column="0" Text="Organization: " />
+				<TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Organization}" />
+				<TextBlock Grid.Row="3" Grid.Column="0" Text="Partitioned: " />
+				<TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding IsPartitioned, Converter={StaticResource BooleanConverter}}" />
+				<TextBlock Grid.Row="4" Grid.Column="0" Text="Parallel degree: " />
+				<TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding ParallelDegree}" />
+				<TextBlock Grid.Row="5" Grid.Column="0" Text="Temporary: " />
+				<TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding IsTemporary, Converter={StaticResource BooleanConverter}}" />
+				<TextBlock Grid.Row="6" Grid.Column="0" Text="Blocks: " />
+				<TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding BlockCount, Converter={StaticResource PrettyPrintIntegerConverter}}" />
+				<TextBlock Grid.Row="7" Grid.Column="0" Text="Space: " />
+				<StackPanel Grid.Row="7" Grid.Column="1" Orientation="Horizontal">
+					<TextBlock Text="{Binding AllocatedBytes, Converter={StaticResource DataSpaceConverter}}" />
+					<TextBlock Visibility="{Binding LargeObjectBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
+						<Run Text=" (LOB: "/><Run Text="{Binding LargeObjectBytes, Converter={StaticResource DataSpaceConverter}}"/><Run Text=")"/>
+					</TextBlock>
+				</StackPanel>
+				<TextBlock Grid.Row="8" Grid.Column="0" Text="Rows: " />
+				<TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding RowCount, Converter={StaticResource PrettyPrintIntegerConverter}}" />
+				<TextBlock Grid.Row="9" Grid.Column="0" Text="Avg. row bytes: " />
+				<TextBlock Grid.Row="9" Grid.Column="1" Text="{Binding AverageRowSize, Converter={StaticResource PrettyPrintIntegerConverter}}" />
+				<TextBlock Grid.Row="10" Grid.Column="0" Text="Compression: " />
+				<TextBlock Grid.Row="10" Grid.Column="1" Text="{Binding Compression}" />
+				<TextBlock Grid.Row="11" Grid.Column="0" Text="Last analyzed: " />
+				<TextBlock Grid.Row="11" Grid.Column="1" Text="{Binding LastAnalyzed, Converter={StaticResource DateTimeConverter}}" />
+				<TextBlock Grid.Row="12" Grid.Column="0" Text="In-memory space: " Visibility="{Binding InMemoryAllocationStatusVisibility}" />
+				<TextBlock Grid.Row="12" Grid.Column="1" Visibility="{Binding InMemoryAllocationStatusVisibility}">
 					<TextBlock.Text>
 						<MultiBinding Converter="{StaticResource InMemoryAllocationStatusConverter}">
 							<Binding Path="InMemoryAllocatedBytes" />
@@ -95,10 +104,10 @@
 						</MultiBinding>
 					</TextBlock.Text>
 				</TextBlock>
-				<TextBlock Grid.Row="12" Grid.Column="0" Text="In-memory compression: " Visibility="{Binding InMemoryAllocationStatusVisible}" />
-				<TextBlock Grid.Row="12" Grid.Column="1" Text="{Binding InMemoryCompression}" Visibility="{Binding InMemoryAllocationStatusVisible}" />
-				<TextBlock Grid.Row="13" Grid.Column="0" Text="Cluster: " Visibility="{Binding ClusterNameVisibility}" />
-				<TextBlock Grid.Row="13" Grid.Column="1" Text="{Binding ClusterName}" Visibility="{Binding ClusterNameVisibility}" />
+				<TextBlock Grid.Row="13" Grid.Column="0" Text="In-memory compression: " Visibility="{Binding InMemoryAllocationStatusVisibility}" />
+				<TextBlock Grid.Row="13" Grid.Column="1" Text="{Binding InMemoryCompression}" Visibility="{Binding InMemoryAllocationStatusVisibility}" />
+				<TextBlock Grid.Row="14" Grid.Column="0" Text="Cluster: " Visibility="{Binding ClusterNameVisibility}" />
+				<TextBlock Grid.Row="14" Grid.Column="1" Text="{Binding ClusterName}" Visibility="{Binding ClusterNameVisibility}" />
 			</Grid>
 		</GroupBox>
 		

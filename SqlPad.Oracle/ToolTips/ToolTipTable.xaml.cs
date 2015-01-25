@@ -38,11 +38,13 @@ namespace SqlPad.Oracle.ToolTips
 		private string _clusterName;
 		private string _parallelDegree;
 		private string _inMemoryCompression;
+		private string _tablespaceName;
 		private DateTime? _lastAnalyzed;
 		private int? _averageRowSize;
 		private bool? _isTemporary;
 		private bool? _isPartitioned;
 		private long? _allocatedBytes;
+		private long? _largeObjectBytes;
 		private string _comment;
 
 		private readonly ObservableCollection<IndexDetailsModel> _indexDetails = new ObservableCollection<IndexDetailsModel>();
@@ -72,6 +74,18 @@ namespace SqlPad.Oracle.ToolTips
 		{
 			get { return _compression; }
 			set { UpdateValueAndRaisePropertyChanged(ref _compression, value); }
+		}
+
+		public string TablespaceName
+		{
+			get { return _tablespaceName; }
+			set
+			{
+				if (UpdateValueAndRaisePropertyChanged(ref _tablespaceName, value))
+				{
+					RaisePropertyChanged("TablespaceNameVisibility");
+				}
+			}
 		}
 
 		public string Organization
@@ -105,7 +119,7 @@ namespace SqlPad.Oracle.ToolTips
 			{
 				if (UpdateValueAndRaisePropertyChanged(ref _clusterName, value))
 				{
-					RaisePropertyChanged("ClusterNameVisible");
+					RaisePropertyChanged("ClusterNameVisibility");
 				}
 			}
 		}
@@ -127,6 +141,11 @@ namespace SqlPad.Oracle.ToolTips
 			get { return String.IsNullOrEmpty(_clusterName) ? Visibility.Collapsed : Visibility.Visible; }
 		}
 
+		public Visibility TablespaceNameVisibility
+		{
+			get { return String.IsNullOrEmpty(_tablespaceName) ? Visibility.Collapsed : Visibility.Visible; }
+		}
+
 		public Visibility IndexDetailsVisibility
 		{
 			get { return _indexDetails.Count > 0 ? Visibility.Visible : Visibility.Collapsed; }
@@ -136,6 +155,12 @@ namespace SqlPad.Oracle.ToolTips
 		{
 			get { return _allocatedBytes; }
 			set { UpdateValueAndRaisePropertyChanged(ref _allocatedBytes, value); }
+		}
+
+		public long? LargeObjectBytes
+		{
+			get { return _largeObjectBytes; }
+			set { UpdateValueAndRaisePropertyChanged(ref _largeObjectBytes, value); }
 		}
 
 		public string InMemoryCompression
@@ -165,10 +190,10 @@ namespace SqlPad.Oracle.ToolTips
 			RaisePropertyChanged("StorageBytes");
 			RaisePropertyChanged("NonPopulatedBytes");
 			RaisePropertyChanged("InMemoryPopulationStatus");
-			RaisePropertyChanged("InMemoryAllocationStatusVisible");
+			RaisePropertyChanged("InMemoryAllocationStatusVisibility");
 		}
 
-		public Visibility InMemoryAllocationStatusVisible
+		public Visibility InMemoryAllocationStatusVisibility
 		{
 			get { return InMemoryAllocatedBytes.HasValue ? Visibility.Visible : Visibility.Collapsed; }
 		}
@@ -235,6 +260,8 @@ namespace SqlPad.Oracle.ToolTips
 		public long? DistinctKeys { get; set; }
 
 		public ICollection<IndexColumnModel> Columns { get { return _indexColumns; } }
+
+		public string TablespaceName { get; set; }
 
 		public string IndexColumns
 		{

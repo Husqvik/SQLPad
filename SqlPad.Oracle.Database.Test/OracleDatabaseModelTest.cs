@@ -463,6 +463,7 @@ FROM
 			ExecuteDataProvider(tableSpaceAllocationDataProvider);
 
 			model.AllocatedBytes.ShouldBe(65536);
+			model.LargeObjectBytes.ShouldBe(null);
 		}
 
 		[Test]

@@ -166,6 +166,7 @@ namespace SqlPad.Oracle.Test
 			dataModel.AverageRowSize.ShouldBe(237);
 			dataModel.BlockCount.ShouldBe(544);
 			dataModel.AllocatedBytes.ShouldBe(22546891);
+			dataModel.LargeObjectBytes.ShouldBe(1546891);
 			dataModel.ClusterName.ShouldBe(null);
 			dataModel.ClusterNameVisibility.ShouldBe(Visibility.Collapsed);
 			dataModel.Compression.ShouldBe("Disabled");

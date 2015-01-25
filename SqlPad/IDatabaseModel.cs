@@ -96,6 +96,12 @@ namespace SqlPad
 
 		void Continue();
 
+		void StepNextLine();
+
+		void StepInto();
+
+		void StepOut();
+
 		void Detach();
 	}
 }

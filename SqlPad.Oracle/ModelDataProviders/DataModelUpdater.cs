@@ -243,6 +243,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 			DataModel.Organization = OracleReaderValueConvert.ToString(reader["ORGANIZATION"]);
 			DataModel.ParallelDegree = OracleReaderValueConvert.ToString(reader["DEGREE"]);
 			DataModel.ClusterName = OracleReaderValueConvert.ToString(reader["CLUSTER_NAME"]);
+			DataModel.TablespaceName = OracleReaderValueConvert.ToString(reader["TABLESPACE_NAME"]);
 			DataModel.IsTemporary = (string)reader["TEMPORARY"] == "Y";
 			DataModel.IsPartitioned = (string)reader["PARTITIONED"] == "YES";
 		}
@@ -304,14 +305,15 @@ namespace SqlPad.Oracle.ModelDataProviders
 			command.AddSimpleParameter("TABLE_NAME", _objectIdentifier.Name.Trim('"'));
 		}
 
-		public override void MapScalarValue(object value)
+		public override void MapReaderData(OracleDataReader reader)
 		{
-			DataModel.AllocatedBytes = OracleReaderValueConvert.ToInt64(value);
-		}
+			if (!reader.Read())
+			{
+				return;
+			}
 
-		public override bool HasScalarResult
-		{
-			get { return true; }
+			DataModel.LargeObjectBytes = OracleReaderValueConvert.ToInt64(reader["LOB_BYTES"]);
+			DataModel.AllocatedBytes = OracleReaderValueConvert.ToInt64(reader["IN_ROW_BYTES"]) + (DataModel.LargeObjectBytes ?? 0);
 		}
 	}
 
@@ -360,7 +362,8 @@ namespace SqlPad.Oracle.ModelDataProviders
 						Blocks = OracleReaderValueConvert.ToInt32(reader["BLOCKS"]),
 						LeafBlocks = OracleReaderValueConvert.ToInt32(reader["LEAF_BLOCKS"]),
 						Bytes = OracleReaderValueConvert.ToInt64(reader["BYTES"]),
-						DegreeOfParallelism = degreeOfParallelismRaw == "DEFAULT" ? (int?)null : Convert.ToInt32(degreeOfParallelismRaw.Trim())
+						DegreeOfParallelism = degreeOfParallelismRaw == "DEFAULT" ? (int?)null : Convert.ToInt32(degreeOfParallelismRaw.Trim()),
+						TablespaceName = OracleReaderValueConvert.ToString(reader["TABLESPACE_NAME"])
 					};
 
 				DataModel.IndexDetails.Add(indexDetails);

@@ -51,7 +51,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 			public override void InitializeCommand(OracleCommand command)
 			{
-				command.CommandText = String.Format(DatabaseCommands.ExplainPlanBase, DataModel.TargetTableName);
+				command.CommandText = String.Format(DatabaseCommands.ExplainPlan, DataModel.TargetTableName);
 				command.AddSimpleParameter("STATEMENT_ID", DataModel.ExecutionPlanKey);
 			}
 

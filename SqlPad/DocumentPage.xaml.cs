@@ -1980,6 +1980,8 @@ namespace SqlPad
 			{
 				var actionResult = await SafeTimedActionAsync(() => _executionPlanViewer.ExplainAsync(statementModel, _statementExecutionCancellationTokenSource.Token));
 
+				_statementExecutionCancellationTokenSource = null;
+
 				UpdateStatusBarElapsedExecutionTime(actionResult.Elapsed);
 
 				if (actionResult.IsSuccessful)
