@@ -259,7 +259,7 @@ namespace SqlPad.Oracle
 				n => n.Id == NonTerminals.AggregateFunctionCall ||
 				     (n.Id == NonTerminals.ColumnReference && n.GetDescendantByPath(NonTerminals.ParenthesisEnclosedAggregationFunctionParameters) != null));
 			
-			var supportDistinct = EffectiveTerminal.Id == Terminals.Select;
+			var supportDistinct = EffectiveTerminal.ParentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, n => n.Id == NonTerminals.AggregateFunctionCall || n.Id == NonTerminals.ColumnReference) == null;
 			if (aggregateFunctionCallNode != null)
 			{
 				var programReference = SemanticModel.GetProgramReference(aggregateFunctionCallNode.FirstTerminalNode);

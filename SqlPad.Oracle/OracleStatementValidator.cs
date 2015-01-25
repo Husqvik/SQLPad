@@ -445,6 +445,11 @@ namespace SqlPad.Oracle
 							validationModel.ProgramNodeValidity[programReference.ParameterListNode] = new InvalidNodeValidationData(parameterListSemanticError) { Node = programReference.ParameterListNode };
 						}
 
+						if (programReference.Placement.In(QueryBlockPlacement.GroupBy, QueryBlockPlacement.Where, QueryBlockPlacement.Join) && (programReference.Metadata.IsAggregate || programReference.Metadata.IsAnalytic))
+						{
+							semanticError = OracleSemanticErrorType.GroupFunctionNotAllowed;
+						}
+
 						var namedParameterExists = false;
 						foreach (var parameterReference in programReference.ParameterReferences)
 						{

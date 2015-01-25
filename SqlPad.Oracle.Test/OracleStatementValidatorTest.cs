@@ -2001,5 +2001,34 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			programValidityItems[4].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidColumnIndex);
 			programValidityItems[4].Node.Token.Value.ShouldBe("4");
 		}
+
+		[Test(Description = @"")]
+		public void TestAggregateFunctionsInDifferentQueryBlockClauses()
+		{
+			const string sqlText = @"SELECT COUNT(T1.DUMMY) FROM DUAL T1 JOIN DUAL T2 ON COUNT(T1.DUMMY) = COUNT(T2.DUMMY) WHERE COUNT(T1.DUMMY) = 1 GROUP BY COUNT(T1.DUMMY) HAVING COUNT(T1.DUMMY) = 1 ORDER BY COUNT(T1.DUMMY)";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			var programValidityNodes = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			programValidityNodes.Count.ShouldBe(7);
+			programValidityNodes[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
+			programValidityNodes[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.GroupFunctionNotAllowed);
+			programValidityNodes[1].Node.SourcePosition.IndexStart.ShouldBe(52);
+			programValidityNodes[1].Node.SourcePosition.IndexEnd.ShouldBe(56);
+			programValidityNodes[2].SemanticErrorType.ShouldBe(OracleSemanticErrorType.GroupFunctionNotAllowed);
+			programValidityNodes[2].Node.SourcePosition.IndexStart.ShouldBe(70);
+			programValidityNodes[2].Node.SourcePosition.IndexEnd.ShouldBe(74);
+			programValidityNodes[3].SemanticErrorType.ShouldBe(OracleSemanticErrorType.GroupFunctionNotAllowed);
+			programValidityNodes[3].Node.SourcePosition.IndexStart.ShouldBe(92);
+			programValidityNodes[3].Node.SourcePosition.IndexEnd.ShouldBe(96);
+			programValidityNodes[4].SemanticErrorType.ShouldBe(OracleSemanticErrorType.GroupFunctionNotAllowed);
+			programValidityNodes[4].Node.SourcePosition.IndexStart.ShouldBe(121);
+			programValidityNodes[4].Node.SourcePosition.IndexEnd.ShouldBe(125);
+			programValidityNodes[5].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
+			programValidityNodes[6].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
+		}
 	}
 }

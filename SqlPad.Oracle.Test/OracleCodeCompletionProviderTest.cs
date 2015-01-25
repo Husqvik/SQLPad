@@ -1975,6 +1975,14 @@ FROM
 				completionType.KeywordsClauses.Count.ShouldBe(0);
 			}
 
+			[Test(Description = @"")]
+			public void TestKeywordClauseCodeCompletionTypeWhenTypingSelectDistinct()
+			{
+				const string statement = @"SELECT DIS";
+				var completionType = InitializeCodeCompletionType(statement, 10);
+				completionType.KeywordsClauses.Count.ShouldBe(2);
+			}
+
 			public class ReferenceIdentifierTest
 			{
 				public class SelectList
