@@ -116,7 +116,7 @@ namespace SqlPad.Oracle
 		{
 			get
 			{
-				return Parameters.Count > 0 && _metadataMaximumArguments != 0
+				return Parameters.Count > 1 && _metadataMaximumArguments != 0
 					? Parameters.Count(p => p.DataLevel == 0) - 1
 					: (_metadataMaximumArguments ?? 0);
 			}
