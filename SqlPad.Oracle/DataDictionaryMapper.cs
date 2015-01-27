@@ -21,6 +21,7 @@ namespace SqlPad.Oracle
 		{
 			_allObjects.Clear();
 
+			var stopwatch = Stopwatch.StartNew();
 			var schemaTypeMetadataSource = _databaseModel.ExecuteReader(DatabaseCommands.SelectTypesCommandText, MapSchemaType);
 			var schemaTypeAndMateralizedViewMetadataSource = schemaTypeMetadataSource.Concat(_databaseModel.ExecuteReader(DatabaseCommands.SelectMaterializedViewCommand, MapMaterializedView));
 
@@ -29,11 +30,23 @@ namespace SqlPad.Oracle
 				AddSchemaObjectToDictionary(_allObjects, schemaObject);
 			}
 
+			Trace.WriteLine(String.Format("Fetch types and materialized views metadata finished in {0}. ", stopwatch.Elapsed));
+			stopwatch.Restart();
+
 			_databaseModel.ExecuteReader(DatabaseCommands.SelectAllObjectsCommandText, MapSchemaObject).ToArray();
+
+			Trace.WriteLine(String.Format("Fetch all objects metadata finished in {0}. ", stopwatch.Elapsed));
+			stopwatch.Restart();
 
 			_databaseModel.ExecuteReader(DatabaseCommands.SelectTablesCommandText, MapTable).ToArray();
 
+			Trace.WriteLine(String.Format("Fetch tables metadata finished in {0}. ", stopwatch.Elapsed));
+			stopwatch.Restart();
+
 			_databaseModel.ExecuteReader(DatabaseCommands.SelectSynonymTargetsCommandText, MapSynonymTarget).ToArray();
+
+			Trace.WriteLine(String.Format("Fetch synonyms metadata finished in {0}. ", stopwatch.Elapsed));
+			stopwatch.Restart();
 
 			var columnMetadataSource = _databaseModel.ExecuteReader(DatabaseCommands.SelectTableColumnsCommandText, MapTableColumn);
 
@@ -47,6 +60,9 @@ namespace SqlPad.Oracle
 				dataObject.Columns.Add(columnMetadata.Value.Name, columnMetadata.Value);
 			}
 
+			Trace.WriteLine(String.Format("Fetch table column metadata in {0}. ", stopwatch.Elapsed));
+			stopwatch.Restart();
+
 			var constraintSource = _databaseModel.ExecuteReader(DatabaseCommands.SelectConstraintsCommandText, MapConstraintWithReferenceIdentifier)
 				.Where(c => c.Key != null)
 				.ToArray();
@@ -56,6 +72,9 @@ namespace SqlPad.Oracle
 			{
 				constraints[constraintPair.Key.FullyQualifiedName] = constraintPair.Key;
 			}
+
+			Trace.WriteLine(String.Format("Fetch constraint metadata finished in {0}. ", stopwatch.Elapsed));
+			stopwatch.Restart();
 
 			var constraintColumns = _databaseModel.ExecuteReader(DatabaseCommands.SelectConstraintColumnsCommandText, MapConstraintColumn)
 				.GroupBy(c => c.Key)
@@ -82,23 +101,41 @@ namespace SqlPad.Oracle
 				foreignKeyConstraint.ReferenceConstraint = referenceConstraint;
 			}
 
+			Trace.WriteLine(String.Format("Fetch column constraint metadata finished in {0}. ", stopwatch.Elapsed));
+			stopwatch.Restart();
+
 			_databaseModel.ExecuteReader(DatabaseCommands.SelectSequencesCommandText, MapSequence).ToArray();
+
+			Trace.WriteLine(String.Format("Fetch sequence metadata finished in {0}. ", stopwatch.Elapsed));
+			stopwatch.Restart();
 
 			_databaseModel.ExecuteReader(DatabaseCommands.SelectTypeAttributesCommandText, MapTypeAttributes).ToArray();
 
+			Trace.WriteLine(String.Format("Fetch type attribute metadata finished in {0}. ", stopwatch.Elapsed));
+			stopwatch.Restart();
+
 			_databaseModel.ExecuteReader(DatabaseCommands.SelectCollectionTypeAttributesCommandText, MapCollectionTypeAttributes).ToArray();
+
+			Trace.WriteLine(String.Format("Fetch collection attribute metadata finished in {0}. ", stopwatch.Elapsed));
+			stopwatch.Restart();
 
 			return new ReadOnlyDictionary<OracleObjectIdentifier, OracleSchemaObject>(_allObjects);
 		}
 
 		public ILookup<OracleProgramIdentifier, OracleProgramMetadata> GetUserFunctionMetadata()
 		{
-			return GetFunctionMetadataCollection(DatabaseCommands.UserFunctionMetadataCommandText, DatabaseCommands.UserFunctionParameterMetadataCommandText, false);
+			var stopwatch = Stopwatch.StartNew();
+			var metadata = GetFunctionMetadataCollection(DatabaseCommands.UserFunctionMetadataCommandText, DatabaseCommands.UserFunctionParameterMetadataCommandText, false);
+			Trace.WriteLine(String.Format("GetUserFunctionMetadata finished in {0}. ", stopwatch.Elapsed));
+			return metadata;
 		}
 
 		public ILookup<OracleProgramIdentifier, OracleProgramMetadata> GetBuiltInFunctionMetadata()
 		{
-			return GetFunctionMetadataCollection(DatabaseCommands.BuiltInFunctionMetadataCommandText, DatabaseCommands.BuiltInFunctionParameterMetadataCommandText, true);
+			var stopwatch = Stopwatch.StartNew();
+			var metadata = GetFunctionMetadataCollection(DatabaseCommands.BuiltInFunctionMetadataCommandText, DatabaseCommands.BuiltInFunctionParameterMetadataCommandText, true);
+			Trace.WriteLine(String.Format("GetBuiltInFunctionMetadata finished in {0}. ", stopwatch.Elapsed));
+			return metadata;
 		}
 
 		public ILookup<string, string> GetContextData()

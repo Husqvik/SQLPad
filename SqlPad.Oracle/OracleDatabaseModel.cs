@@ -1188,6 +1188,8 @@ namespace SqlPad.Oracle
 				_allFunctionMetadata = builtInFunctions.Concat(userFunctions.Where(f => f.Type == ProgramType.Function))
 					.ToLookup(m => m.Identifier);
 
+				var stopwatch = Stopwatch.StartNew();
+
 				var nonSchemaBuiltInFunctionMetadata = new List<OracleProgramMetadata>();
 
 				foreach (var programMetadata in builtInFunctions.Concat(userFunctions))
@@ -1224,6 +1226,8 @@ namespace SqlPad.Oracle
 					}
 				}
 
+				Trace.WriteLine(String.Format("Function and procedure metadata schema object mapping finished in {0}. ", stopwatch.Elapsed));
+
 				var databaseLinks = _dataDictionaryMapper.GetDatabaseLinks();
 				var characterSets = _dataDictionaryMapper.GetCharacterSets();
 				var statisticsKeys = SafeFetchDictionary(_dataDictionaryMapper.GetStatisticsKeys, "DataDictionaryMapper.GetStatisticsKeys failed: ");
@@ -1231,9 +1235,12 @@ namespace SqlPad.Oracle
 
 				_dataDictionary = new OracleDataDictionary(allObjects, databaseLinks, nonSchemaBuiltInFunctionMetadata, characterSets, statisticsKeys, systemParameters, lastRefresh);
 
+				Trace.WriteLine(String.Format("{0} - Data dictionary metada cache has been initialized successfully. ", DateTime.Now));
+
 				//_customTypeGenerator.GenerateCustomTypeAssembly(_dataDictionary);
 
 				CachedDataDictionaries[CachedConnectionStringName] = _dataDictionary;
+
 				return true;
 			}
 			catch(Exception e)
