@@ -32,6 +32,11 @@ namespace SqlPad.Oracle.ExecutionPlan
 		public async Task ShowActualAsync(CancellationToken cancellationToken)
 		{
 			var itemCollection = await _databaseModel.GetCursorExecutionStatisticsAsync(cancellationToken);
+			if (itemCollection == null)
+			{
+				return;
+			}
+			
 			SetRootItem(itemCollection.RootItem);
 			_viewModel.CursorStatisticsOptionsVisibility = Visibility.Visible;
 			_viewModel.TextExecutionPlan = itemCollection.PlanText;
@@ -43,7 +48,11 @@ namespace SqlPad.Oracle.ExecutionPlan
 			_viewModel.TextExecutionPlan = null;
 			_viewModel.CursorStatisticsOptionsVisibility = Visibility.Collapsed;
 			var itemCollection = await _databaseModel.ExplainPlanAsync(executionModel, cancellationToken);
-			SetRootItem(itemCollection.RootItem);
+
+			if (itemCollection != null)
+			{
+				SetRootItem(itemCollection.RootItem);
+			}
 		}
 
 		private void SetRootItem(ExecutionPlanItem rootItem)

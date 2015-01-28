@@ -132,7 +132,7 @@ namespace SqlPad
 			InitializeGenericCommandBindings();
 
 			_timerReParse.Elapsed += (sender, args) => Dispatcher.Invoke(Parse);
-			_timerExecutionMonitor.Elapsed += (sender, args) => Dispatcher.Invoke(() => TextExecutionTime.Text = FormatElapsedMilliseconds(_stopWatch.Elapsed));
+			_timerExecutionMonitor.Elapsed += delegate { UpdateTimerMessage(); };
 
 			_pageModel = new PageModel(this) { DateTimeFormat = ConfigurationProvider.Configuration.ResultGrid.DateFormat };
 
@@ -220,6 +220,7 @@ namespace SqlPad
 
 			InitializeTabItem();
 		}
+		
 		private void InitializeFileWatcher()
 		{
 			_documentFileWatcher =
@@ -231,6 +232,12 @@ namespace SqlPad
 
 			_documentFileWatcher.Changed += DocumentFileWatcherChangedHandler;
 			_documentFileWatcher.Deleted += (sender, args) => Dispatcher.BeginInvoke(new Action(() => DocumentFileWatcherDeletedHandler(args.FullPath)));
+		}
+
+		private void UpdateTimerMessage()
+		{
+			var cancellationTokenSource = _statementExecutionCancellationTokenSource;
+			_pageModel.UpdateTimerMessage(_stopWatch.Elapsed, cancellationTokenSource != null && cancellationTokenSource.IsCancellationRequested);
 		}
 
 		private void DocumentFileWatcherDeletedHandler(string fullFileName)
@@ -896,11 +903,11 @@ namespace SqlPad
 
 			if (!innerTask.Result.ExecutedSuccessfully)
 			{
+				_pageModel.NotifyExecutionCanceled();
 				return;
 			}
 
-			UpdateStatusBarElapsedExecutionTime(actionResult.Elapsed);
-
+			_pageModel.UpdateTimerMessage(actionResult.Elapsed, false);
 			_pageModel.WriteDatabaseOutput(innerTask.Result.DatabaseOutput);
 
 			if (_gatherExecutionStatistics)
@@ -946,11 +953,6 @@ namespace SqlPad
 			AppendRows(innerTask.Result.InitialResultSet);
 		}
 
-		private void UpdateStatusBarElapsedExecutionTime(TimeSpan timeSpan)
-		{
-			TextExecutionTime.Text = FormatElapsedMilliseconds(timeSpan);
-		}
-
 		private async Task<ActionResult> SafeTimedActionAsync(Func<Task> action)
 		{
 			var actionResult = new ActionResult();
@@ -979,25 +981,6 @@ namespace SqlPad
 			{
 				return exception;
 			}
-		}
-
-		private static string FormatElapsedMilliseconds(TimeSpan timeSpan)
-		{
-			string formattedValue;
-			if (timeSpan.TotalMilliseconds < 1000)
-			{
-				formattedValue = String.Format("{0} {1}", (int)timeSpan.TotalMilliseconds, "ms");
-			}
-			else if (timeSpan.TotalMilliseconds < 60000)
-			{
-				formattedValue = String.Format("{0} {1}", Math.Round(timeSpan.TotalMilliseconds / 1000, 2), "s");
-			}
-			else
-			{
-				formattedValue = String.Format("{0:00}:{1:00}", (int)timeSpan.TotalMinutes, timeSpan.Seconds);
-			}
-
-			return formattedValue;
 		}
 
 		private void InitializeResultGrid(IEnumerable<ColumnHeader> columnHeaders)
@@ -1980,19 +1963,26 @@ namespace SqlPad
 			{
 				var actionResult = await SafeTimedActionAsync(() => _executionPlanViewer.ExplainAsync(statementModel, _statementExecutionCancellationTokenSource.Token));
 
-				_statementExecutionCancellationTokenSource = null;
-
-				UpdateStatusBarElapsedExecutionTime(actionResult.Elapsed);
-
-				if (actionResult.IsSuccessful)
+				if (_statementExecutionCancellationTokenSource.IsCancellationRequested)
 				{
-					_pageModel.ExecutionPlanAvailable = Visibility.Visible;
-					TabControlResult.SelectedItem = TabExecutionPlan;
+					_pageModel.NotifyExecutionCanceled();
 				}
 				else
 				{
-					Messages.ShowError(MainWindow, actionResult.Exception.Message);
+					_pageModel.UpdateTimerMessage(actionResult.Elapsed, false);
+
+					if (actionResult.IsSuccessful)
+					{
+						_pageModel.ExecutionPlanAvailable = Visibility.Visible;
+						TabControlResult.SelectedItem = TabExecutionPlan;
+					}
+					else
+					{
+						Messages.ShowError(MainWindow, actionResult.Exception.Message);
+					}
 				}
+
+				_statementExecutionCancellationTokenSource = null;
 			}
 		}
 
@@ -2027,7 +2017,7 @@ namespace SqlPad
 				_pageModel.TransactionControlVisibity = Visibility.Collapsed;
 			}
 
-			UpdateStatusBarElapsedExecutionTime(actionResult.Elapsed);
+			_pageModel.UpdateTimerMessage(actionResult.Elapsed, false);
 
 			_pageModel.IsTransactionControlEnabled = true;
 

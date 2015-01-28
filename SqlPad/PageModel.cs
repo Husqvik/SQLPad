@@ -37,6 +37,7 @@ namespace SqlPad
 		private string _dateTimeFormat;
 		private string _connectionErrorMessage;
 		private string _documentHeaderToolTip;
+		private string _executionTimerMessage;
 		private bool _showAllSessionExecutionStatistics;
 
 		public PageModel(DocumentPage documentPage)
@@ -99,6 +100,44 @@ namespace SqlPad
 		{
 			get { return _documentHeaderToolTip; }
 			set { UpdateValueAndRaisePropertyChanged(ref _documentHeaderToolTip, value); }
+		}
+
+		public string ExecutionTimerMessage
+		{
+			get { return _executionTimerMessage; }
+		}
+
+		public void NotifyExecutionCanceled()
+		{
+			_executionTimerMessage = "Canceled";
+
+			RaisePropertyChanged("ExecutionTimerMessage");
+		}
+
+		public void UpdateTimerMessage(TimeSpan timeSpan, bool isCanceling)
+		{
+			string formattedValue;
+			if (timeSpan.TotalMilliseconds < 1000)
+			{
+				formattedValue = String.Format("{0} {1}", (int)timeSpan.TotalMilliseconds, "ms");
+			}
+			else if (timeSpan.TotalMilliseconds < 60000)
+			{
+				formattedValue = String.Format("{0} {1}", Math.Round(timeSpan.TotalMilliseconds / 1000, 2), "s");
+			}
+			else
+			{
+				formattedValue = String.Format("{0:00}:{1:00}", (int)timeSpan.TotalMinutes, timeSpan.Seconds);
+			}
+
+			if (isCanceling)
+			{
+				formattedValue = String.Format("Canceling... {0}", formattedValue);
+			}
+
+			_executionTimerMessage = formattedValue;
+
+			RaisePropertyChanged("ExecutionTimerMessage");
 		}
 
 		public string DocumentHeader

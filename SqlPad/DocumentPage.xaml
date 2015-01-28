@@ -362,9 +362,7 @@
 			</StatusBarItem>
 			<Separator Grid.Column="1" />
 			<StatusBarItem Grid.Column="2">
-				<StackPanel Orientation="Horizontal">
-					<TextBlock x:Name="TextExecutionTime" />
-				</StackPanel>
+				<TextBlock Text="{Binding ExecutionTimerMessage, Mode=OneWay}" />
 			</StatusBarItem>
 			<Separator Grid.Column="3" Visibility="{Binding StatementExecutionInfoSeparatorVisibility}" />
 			<StatusBarItem Grid.Column="4">
