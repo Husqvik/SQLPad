@@ -1796,6 +1796,15 @@ FROM
 			items.Length.ShouldBeGreaterThan(0);
 		}
 
+		[Test(Description = @"")]
+		public void TestForcedSuggestionWhenChainingCondition()
+		{
+			const string testQuery = "SELECT * FROM V$SESSION WHERE SID = 72 AND ";
+
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, testQuery, 43).ToArray();
+			items.Length.ShouldBeGreaterThan(0);
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)
