@@ -45,6 +45,8 @@ namespace SqlPad.Oracle
 							? null
 							: BuildObjectTooltip(semanticModel.DatabaseModel, objectReference);
 
+					case Terminals.Asterisk:
+						return BuildAsteriskToolTip(queryBlock, node);
 					case Terminals.Min:
 					case Terminals.Max:
 					case Terminals.Sum:
@@ -96,6 +98,14 @@ namespace SqlPad.Oracle
 			}
 
 			return String.IsNullOrEmpty(tip) ? null : new ToolTipObject { DataContext = tip };
+		}
+
+		private IToolTip BuildAsteriskToolTip(OracleQueryBlock queryBlock, StatementGrammarNode asteriskTerminal)
+		{
+			var asteriskColumn = queryBlock.AsteriskColumns.SingleOrDefault(c => c.RootNode.LastTerminalNode == asteriskTerminal);
+			return asteriskColumn == null
+				? null
+				: new ToolTipAsterisk { Columns = queryBlock.Columns.Where(c => c.AsteriskColumn == asteriskColumn).Select(c => c.ColumnDescription) };
 		}
 
 		private static IToolTip BuildColumnToolTip(OracleDatabaseModelBase databaseModel, OracleColumnReference columnReference)

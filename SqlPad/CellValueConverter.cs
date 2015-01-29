@@ -43,7 +43,7 @@ namespace SqlPad
 		}
 	}
 
-	public class SelectedIndexConverter : ValueConverter
+	public class SelectedIndexConverter : ValueConverterBase
 	{
 		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
@@ -51,7 +51,7 @@ namespace SqlPad
 		}
 	}
 
-	public class ObjectToVisibilityConverter : ValueConverter
+	public class ObjectToVisibilityConverter : ValueConverterBase
 	{
 		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
@@ -66,7 +66,7 @@ namespace SqlPad
 		}
 	}
 
-	public class DateTimeLabelConverter : ValueConverter
+	public class DateTimeLabelConverter : ValueConverterBase
 	{
 		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
@@ -74,7 +74,7 @@ namespace SqlPad
 		}
 	}
 
-	public class NumericConverter : ValueConverter
+	public class NumericConverter : ValueConverterBase
 	{
 		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
@@ -82,7 +82,7 @@ namespace SqlPad
 		}
 	}
 
-	public class StringConverter : ValueConverter
+	public class StringConverter : ValueConverterBase
 	{
 		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
@@ -90,7 +90,7 @@ namespace SqlPad
 		}
 	}
 
-	public class BooleanLabelConverter : ValueConverter
+	public class BooleanLabelConverter : ValueConverterBase
 	{
 		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
@@ -130,7 +130,7 @@ namespace SqlPad
 		}
 	}
 
-	public class PrettyPrintIntegerConverter : ValueConverter
+	public class PrettyPrintIntegerConverter : ValueConverterBase
 	{
 		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
@@ -138,7 +138,7 @@ namespace SqlPad
 		}
 	}
 
-	public abstract class ValueConverter : IValueConverter
+	public abstract class ValueConverterBase : IValueConverter
 	{
 		public static string ValueNotAvailable = "N/A";
 

@@ -3,7 +3,7 @@ using System.Globalization;
 
 namespace SqlPad
 {
-	public class DataSpaceConverter : ValueConverter
+	public class DataSpaceConverter : ValueConverterBase
 	{
 		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{

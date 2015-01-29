@@ -18,7 +18,7 @@ namespace SqlPad.Oracle.ToolTips
 		public UserControl Control { get { return this; } }
 	}
 
-	public class AuthIdConverter : ValueConverter
+	public class AuthIdConverter : ValueConverterBase
 	{
 		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
@@ -30,7 +30,7 @@ namespace SqlPad.Oracle.ToolTips
 		}
 	}
 
-	public class ProgramTypeConverter : ValueConverter
+	public class ProgramTypeConverter : ValueConverterBase
 	{
 		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{

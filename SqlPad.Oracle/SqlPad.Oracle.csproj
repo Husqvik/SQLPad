@@ -183,6 +183,9 @@
     <Compile Include="ToolTips\IndexList.xaml.cs">
       <DependentUpon>IndexList.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ToolTips\ToolTipAsterisk.xaml.cs">
+      <DependentUpon>ToolTipAsterisk.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ToolTips\ToolTipViewColumn.xaml.cs">
       <DependentUpon>ToolTipViewColumn.xaml</DependentUpon>
     </Compile>
@@ -259,6 +262,10 @@
     <Page Include="ToolTips\IndexList.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="ToolTips\ToolTipAsterisk.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="ToolTips\ToolTipViewColumn.xaml">
       <Generator>MSBuild:Compile</Generator>

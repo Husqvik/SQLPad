@@ -21,7 +21,7 @@ namespace SqlPad.Oracle.ToolTips
 		public string MaterializedViewTitle { get; set; }
 	}
 
-	internal class MaterializedViewPropertyConverter : ValueConverter
+	internal class MaterializedViewPropertyConverter : ValueConverterBase
 	{
 		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{

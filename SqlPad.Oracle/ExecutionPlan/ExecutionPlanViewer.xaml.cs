@@ -113,7 +113,7 @@ namespace SqlPad.Oracle.ExecutionPlan
 		}
 	}
 
-	internal class LastExecutionWorkAreaInfoConverter : ValueConverter
+	internal class LastExecutionWorkAreaInfoConverter : ValueConverterBase
 	{
 		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
@@ -124,7 +124,7 @@ namespace SqlPad.Oracle.ExecutionPlan
 		}
 	}
 
-	internal class CumulativeExecutionWorkAreaInfoConverter : ValueConverter
+	internal class CumulativeExecutionWorkAreaInfoConverter : ValueConverterBase
 	{
 		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{

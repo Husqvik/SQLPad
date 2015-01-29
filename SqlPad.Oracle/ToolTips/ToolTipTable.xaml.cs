@@ -292,7 +292,7 @@ namespace SqlPad.Oracle.ToolTips
 			var populationStatus = (string)values[3];
 			if (!allocatedInMemoryBytes.HasValue || !storageBytes.HasValue || !nonPopulatedBytes.HasValue || String.IsNullOrEmpty(populationStatus))
 			{
-				return ValueConverter.ValueNotAvailable;
+				return ValueConverterBase.ValueNotAvailable;
 			}
 
 			var populatedRatio = Math.Round(((decimal)storageBytes.Value - nonPopulatedBytes.Value) / storageBytes.Value * 100, 2);
