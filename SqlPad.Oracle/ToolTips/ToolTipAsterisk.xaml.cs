@@ -1,6 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Controls;
 
 namespace SqlPad.Oracle.ToolTips
@@ -12,10 +11,32 @@ namespace SqlPad.Oracle.ToolTips
 			InitializeComponent();
 		}
 
-		public IEnumerable<OracleColumn> Columns
+		public IEnumerable<OracleColumnModel> Columns
 		{
-			get { return (IEnumerable<OracleColumn>)ItemsControl.ItemsSource; }
-			set { ItemsControl.ItemsSource = value; }
+			get
+			{
+				var sourceModels = (IEnumerable<OracleColumnViewModel>)ItemsControl.ItemsSource;
+				return sourceModels.Where(m => !m.IsSeparator);
+			}
+			set
+			{
+				var columnViewModels = new List<OracleColumnViewModel>();
+
+				OracleColumnModel previousModel = null;
+				foreach (var model in value)
+				{
+					if (previousModel != null && previousModel.RowSourceName != model.RowSourceName)
+					{
+						columnViewModels.Add(OracleColumnViewModel.CreateSeparator());
+					}
+
+					columnViewModels.Add(OracleColumnViewModel.FromDataModel(model));
+					
+					previousModel = model;
+				}
+
+				ItemsControl.ItemsSource = columnViewModels;
+			}
 		}
 
 		public UserControl Control
@@ -24,11 +45,36 @@ namespace SqlPad.Oracle.ToolTips
 		}
 	}
 
-	internal class SimpleColumnNameConverter : ValueConverterBase
+	public class OracleColumnModel
 	{
-		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		public int ColumnIndex { get; set; }
+
+		public string Name { get; set; }
+
+		public string FullTypeName { get; set; }
+
+		public string RowSourceName { get; set; }
+	}
+
+	internal class OracleColumnViewModel : OracleColumnModel
+	{
+		public bool IsSeparator { get; private set; }
+
+		public static OracleColumnViewModel CreateSeparator()
 		{
-			return ((string)value).ToSimpleIdentifier();
+			return new OracleColumnViewModel { IsSeparator = true };
+		}
+
+		public static OracleColumnViewModel FromDataModel(OracleColumnModel model)
+		{
+			return
+				new OracleColumnViewModel
+				{
+					ColumnIndex = model.ColumnIndex,
+					FullTypeName = model.FullTypeName,
+					Name = model.Name.ToSimpleIdentifier(),
+					RowSourceName = model.RowSourceName
+				};
 		}
 	}
 }

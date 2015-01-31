@@ -985,7 +985,15 @@ Note
 
 		public override StatementExecutionResult ExecuteStatement(StatementExecutionModel executionModel)
 		{
-			return new StatementExecutionResult { ExecutedSuccessfully = true, ColumnHeaders = ColumnHeaders, InitialResultSet = FetchRecords(1).ToArray() };
+			return
+				new StatementExecutionResult
+				{
+					ExecutedSuccessfully = true, 
+					ColumnHeaders = ColumnHeaders,
+					InitialResultSet = FetchRecords(1).ToArray(),
+					CompilationErrors = new CompilationError[0],
+					DatabaseOutput = "Test database output"
+				};
 		}
 
 		public override Task<StatementExecutionResult> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)

@@ -671,6 +671,29 @@ namespace SqlPad.Oracle.Test
 			toolTipSequence.LabelTitle.Text.ShouldBe("HUSQVIK.SYNONYM_TO_TEST_SEQ (Synonym) => HUSQVIK.TEST_SEQ (Sequence)");
 		}
 
+		[Test(Description = @""), STAThread]
+		public void TestAsteriskTooltip()
+		{
+			const string query = "SELECT * FROM SELECTION";
+			_documentRepository.UpdateStatements(query);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 7);
+			toolTip.Control.ShouldBeTypeOf<ToolTipAsterisk>();
+			var toolTipSequence = (ToolTipAsterisk)toolTip.Control;
+			var columns = toolTipSequence.Columns.ToArray();
+			columns.Length.ShouldBe(4);
+			columns[0].Name.ShouldBe("RESPONDENTBUCKET_ID");
+			columns[0].FullTypeName.ShouldBe("NUMBER(9)");
+			columns[0].RowSourceName.ShouldBe("SELECTION");
+			columns[0].ColumnIndex.ShouldBe(1);
+			columns[1].Name.ShouldBe("SELECTION_ID");
+			columns[1].FullTypeName.ShouldBe("NUMBER(9)");
+			columns[2].Name.ShouldBe("PROJECT_ID");
+			columns[2].FullTypeName.ShouldBe("NUMBER(9)");
+			columns[3].Name.ShouldBe("NAME");
+			columns[3].FullTypeName.ShouldBe("VARCHAR2(50 BYTE)");
+		}
+
 		private static string GetTextFromTextBlock(TextBlock textBlock)
 		{
 			var inlines = textBlock.Inlines.Select(GetTextFromInline);

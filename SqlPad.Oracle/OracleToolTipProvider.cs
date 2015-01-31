@@ -105,7 +105,23 @@ namespace SqlPad.Oracle
 			var asteriskColumn = queryBlock.AsteriskColumns.SingleOrDefault(c => c.RootNode.LastTerminalNode == asteriskTerminal);
 			return asteriskColumn == null
 				? null
-				: new ToolTipAsterisk { Columns = queryBlock.Columns.Where(c => c.AsteriskColumn == asteriskColumn).Select(c => c.ColumnDescription) };
+				: new ToolTipAsterisk
+				{
+					Columns = queryBlock.Columns.Where(c => c.AsteriskColumn == asteriskColumn)
+						.Select((c, i) =>
+						{
+							var validObjectReference = c.ColumnReferences.Single().ValidObjectReference;
+
+							return
+								new OracleColumnModel
+								{
+									Name = c.ColumnDescription.Name,
+									FullTypeName = c.ColumnDescription.FullTypeName,
+									ColumnIndex = i + 1,
+									RowSourceName = validObjectReference == null ? String.Empty : validObjectReference.FullyQualifiedObjectName.ToString()
+								};
+						})
+				};
 		}
 
 		private static IToolTip BuildColumnToolTip(OracleDatabaseModelBase databaseModel, OracleColumnReference columnReference)

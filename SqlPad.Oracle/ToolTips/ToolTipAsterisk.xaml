@@ -3,20 +3,40 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:oracle="clr-namespace:SqlPad.Oracle"
              xmlns:toolTips="clr-namespace:SqlPad.Oracle.ToolTips"
              mc:Ignorable="d" 
              d:DesignHeight="28" d:DesignWidth="200">
 	<ItemsControl x:Name="ItemsControl">
+		
 		<ItemsControl.Resources>
-			<toolTips:SimpleColumnNameConverter x:Key="SimpleColumnNameConverter" />
-		</ItemsControl.Resources>
-		<ItemsControl.ItemTemplate>
-			<DataTemplate DataType="oracle:OracleColumn">
+			<DataTemplate x:Key="ColumnModelDataTemplate" DataType="toolTips:OracleColumnModel">
 				<TextBlock>
-					<Run Text="{Binding Path=Name, Converter={StaticResource SimpleColumnNameConverter}, Mode=OneWay}" />
+					<Run Text="{Binding Path=ColumnIndex, Mode=OneWay}"/><Run Text="."/>
+					<Run Text="{Binding Path=RowSourceName, Mode=OneWay}" /><Run Text="."/><Run Text="{Binding Path=Name, Mode=OneWay}" />
 					<Run Text="{Binding Path=FullTypeName, Mode=OneWay}" />
 				</TextBlock>
+			</DataTemplate>
+			<DataTemplate x:Key="SeparatorTemplate">
+				<Separator />
+			</DataTemplate>
+		</ItemsControl.Resources>
+		
+		<ItemsControl.ItemTemplate>
+			<DataTemplate DataType="toolTips:OracleColumnModel">
+				<ContentControl Content="{Binding}">
+					<ContentControl.Style>
+						<Style TargetType="ContentControl">
+							<Style.Triggers>
+								<DataTrigger Binding="{Binding Path=IsSeparator}" Value="true">
+									<Setter Property="ContentTemplate" Value="{StaticResource SeparatorTemplate}" />
+								</DataTrigger>
+								<DataTrigger Binding="{Binding Path=IsSeparator}" Value="false">
+									<Setter Property="ContentTemplate" Value="{StaticResource ColumnModelDataTemplate}" />
+								</DataTrigger>
+							</Style.Triggers>
+						</Style>
+					</ContentControl.Style>
+				</ContentControl>
 			</DataTemplate>
 		</ItemsControl.ItemTemplate>
     </ItemsControl>
