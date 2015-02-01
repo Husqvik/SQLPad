@@ -166,7 +166,75 @@
         <Sequence>
           <NonTerminal Id="AlterPackage" />
         </Sequence>
+        <!--<Sequence>
+          <NonTerminal Id="AlterTable" />
+        </Sequence>-->
         <!-- TODO: Add other objects -->
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AlterTable">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Table" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="AlterTableOption" IsOptional="true" />
+          <NonTerminal Id="AlterTableEnableDisableOptions" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AlterTableOption">
+      <Sequences>
+        <!--<Sequence>
+          <NonTerminal Id="AlterTableProperties" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ColumnClauses" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ConstraintClauses" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="AlterTablePartitioning" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="AlterExternalTable" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="MoveTableClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ModifyOpaqueType" />
+        </Sequence>-->
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AlterTableEnableDisableOptions">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="AlterTableEnableDisableOption" />
+          <NonTerminal Id="AlterTableEnableDisableOptions" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AlterTableEnableDisableOption">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="EnableOrDisable" />
+          <Terminal Id="Table" />
+          <Terminal Id="Lock" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="EnableOrDisable" />
+          <Terminal Id="All" />
+          <Terminal Id="Triggers" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="EnableDisableClause" />
+        </Sequence>
       </Sequences>
     </Rule>
 
@@ -14340,6 +14408,7 @@
     <Terminal Id="Specification" Value="SPECIFICATION" />
     <Terminal Id="Reuse" Value="REUSE" />
     <Terminal Id="Settings" Value="SETTINGS" />
+    <Terminal Id="Triggers" Value="TRIGGERS" />
     
     <!-- Alter session -->
     <Terminal Id="Advise" Value="ADVISE" />
