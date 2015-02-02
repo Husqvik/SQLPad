@@ -187,10 +187,10 @@
 
     <Rule StartingNonTerminal="AlterTableOption">
       <Sequences>
-        <!--<Sequence>
+        <Sequence>
           <NonTerminal Id="AlterTableProperties" />
         </Sequence>
-        <Sequence>
+        <!--<Sequence>
           <NonTerminal Id="ColumnClauses" />
         </Sequence>
         <Sequence>
@@ -208,6 +208,133 @@
         <Sequence>
           <NonTerminal Id="ModifyOpaqueType" />
         </Sequence>-->
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AlterTableProperties">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Read" />
+          <Terminal Id="Only" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Read" />
+          <Terminal Id="Write" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="ReKey" />
+          <NonTerminal Id="ColumnDefinitionEncryptionClause" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="No" IsOptional="true" />
+          <Terminal Id="Row" />
+          <Terminal Id="Archival" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Add" />
+          <NonTerminal Id="AttributeClusteringClause" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Modify" />
+          <Terminal Id="Clustering" />
+          <NonTerminal Id="ClusteringWhen" IsOptional="true" />
+          <NonTerminal Id="ZoneMapClause" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Drop" />
+          <Terminal Id="Clustering" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ShrinkClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="AlterTableStandardProperties" />
+          <!--<NonTerminal Id="AlterIndexOrganizedTableClauses" IsOptional="true" />
+          <NonTerminal Id="AlterXmlSchemaClause" IsOptional="true" />-->
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AlterTableStandardProperties">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Rename" />
+          <Terminal Id="To" />
+          <Terminal Id="ObjectIdentifier" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="AlterTableStandardPropertyList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AlterTableStandardPropertyList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="AlterTableStandardProperty" />
+          <NonTerminal Id="AlterTableStandardPropertyList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AlterTableStandardProperty">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="PhysicalAttributesClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="LoggingClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="TableCompression" />
+        </Sequence>
+        <!--<Sequence>
+          <NonTerminal Id="InMemoryAlterTableClause" />
+        </Sequence>-->
+        <Sequence>
+          <NonTerminal Id="InformationLifecycleManagementClause" />
+        </Sequence>
+        <!--<Sequence>
+          <NonTerminal Id="SupplementalTableLogging" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="AllocateExtentClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="DeallocateUnusedClause" />
+        </Sequence>-->
+        <Sequence>
+          <NonTerminal Id="CacheOrNoCache" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ResultCacheClause" />
+        </Sequence>
+        <!--<Sequence>
+          <NonTerminal Id="UpgradeTableClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="RecordsPerBlockClause" />
+        </Sequence>-->
+        <Sequence>
+          <NonTerminal Id="ParallelClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="RowMovementClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="FlashbackArchiveClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ShrinkClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Shrink" />
+          <Terminal Id="Space" />
+          <Terminal Id="Compact" IsOptional="true" />
+          <Terminal Id="Cascade" IsOptional="true" />
+        </Sequence>
       </Sequences>
     </Rule>
 
@@ -11114,7 +11241,7 @@
           <Terminal Id="Encrypt" />
           <NonTerminal Id="UsingEncryptionAlgorithm" IsOptional="true" />
           <NonTerminal Id="IdentifiedByClause" IsOptional="true" />
-          <Terminal Id="StringLiteral" IsOptional="true" />
+          <Terminal Id="StringLiteral" IsOptional="true" Comment="Integrity algorithm" />
           <NonTerminal Id="EncryptionSalt" IsOptional="true" />
         </Sequence>
       </Sequences>
@@ -14409,6 +14536,10 @@
     <Terminal Id="Reuse" Value="REUSE" />
     <Terminal Id="Settings" Value="SETTINGS" />
     <Terminal Id="Triggers" Value="TRIGGERS" />
+    <Terminal Id="ReKey" Value="REKEY" />
+    <Terminal Id="Modify" Value="MODIFY" ReservedWord="Sql" />
+    <Terminal Id="Shrink" Value="SHRINK" />
+    <Terminal Id="Compact" Value="COMPACT" />
     
     <!-- Alter session -->
     <Terminal Id="Advise" Value="ADVISE" />
