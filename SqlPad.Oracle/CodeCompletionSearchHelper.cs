@@ -206,7 +206,7 @@ namespace SqlPad.Oracle
 			completionItems.Add(BuildParameterCompletionItem(currentNode, "DL", "DL - long date format - NLS dependent"));
 			completionItems.Add(BuildParameterCompletionItem(currentNode, "DS", "DS - short date format - NLS dependent"));
 			completionItems.Add(BuildParameterCompletionItem(currentNode, "TS", "TS - short time format - NLS dependent"));
-			completionItems.Add(BuildParameterCompletionItem(currentNode, "YYYY-MM-DD", String.Format("YYYY-MM-DD - ISO date - {0}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"))));
+			completionItems.Add(BuildParameterCompletionItem(currentNode, "YYYY-MM-DD", String.Format("YYYY-MM-DD - ISO date - {0}", DateTime.Now.ToString("yyyy-MM-dd"))));
 			completionItems.Add(BuildParameterCompletionItem(currentNode, "YYYY-MM-DD HH24:MI:SS", String.Format("YYYY-MM-DD HH24:MI:SS - ISO date time - {0}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"))));
 			completionItems.Add(BuildParameterCompletionItem(currentNode, "YYYY-MM-DD\"T\"HH24:MI:SS", String.Format("YYYY-MM-DD\"T\"HH24:MI:SS - XML date time - {0}", DateTime.Now.ToString("yyyy-MM-dd\"T\"HH:mm:ss"))));
 			completionItems.Add(BuildParameterCompletionItem(currentNode, "YYYY-MM-DD HH24:MI:SS.FF9 TZH:TZM", String.Format("YYYY-MM-DD HH24:MI:SS.FF9 TZH:TZM - {0}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff000 zzz"))));

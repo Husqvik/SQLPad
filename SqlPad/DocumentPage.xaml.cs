@@ -2108,6 +2108,61 @@ namespace SqlPad
 		{
 			e.CanExecute = _foldingStrategy.FoldingManager.AllFoldings.Any(f => f.IsFolded);
 		}
+
+		private void ResultGridSelectedCellsChangedHandler(object sender, SelectedCellsChangedEventArgs e)
+		{
+			if (ResultGrid.SelectedCells.Count <= 1)
+			{
+				_pageModel.SelectedCellInfoVisibility = Visibility.Collapsed;
+				return;
+			}
+
+			var sum = 0m;
+			var count = 0;
+			foreach (var selectedCell in ResultGrid.SelectedCells)
+			{
+				var stringValue = ((object[])selectedCell.Item)[selectedCell.Column.DisplayIndex].ToString();
+				if (String.IsNullOrEmpty(stringValue))
+				{
+					continue;
+				}
+
+				decimal value;
+				if (Decimal.TryParse(stringValue, out value))
+				{
+					sum += value;
+				}
+				else
+				{
+					_pageModel.SelectedCellInfoVisibility = Visibility.Collapsed;
+					return;
+				}
+
+				count++;
+			}
+
+			_pageModel.SelectedCellValueCount = count;
+			_pageModel.SelectedCellSum = sum;
+			_pageModel.SelectedCellAverage = sum / count;
+			_pageModel.SelectedCellInfoVisibility = Visibility.Visible;
+		}
+
+		private void ColumnHeaderMouseClickHandler(object sender, RoutedEventArgs e)
+		{
+			var header = e.OriginalSource as DataGridColumnHeader;
+			if (header == null)
+			{
+				return;
+			}
+
+			ResultGrid.SelectedCells.Clear();
+
+			var cells = ResultGrid.Items.Cast<object[]>()
+				.Select(r => new DataGridCellInfo(r, header.Column));
+
+			ResultGrid.SelectedCells.AddRange(cells);
+			ResultGrid.Focus();
+		}
 	}
 
 	internal struct ActionResult

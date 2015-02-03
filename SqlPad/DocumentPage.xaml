@@ -240,33 +240,47 @@
 		              VerticalAlignment="Center" Background="DimGray" />
 		<TabControl x:Name="TabControlResult" Grid.Column="0" Grid.Row="3" GiveFeedback="TabControlResultGiveFeedbackHandler">
 			<TabItem Header="_Result set">
-				<DataGrid x:Name="ResultGrid"
-				          AutoGenerateColumns="False"
-				          ItemsSource="{Binding ResultRowItems}"
-				          MaxColumnWidth="{Binding ElementName=ResultGrid, Path=ActualWidth}"
-				          VirtualizingStackPanel.VirtualizationMode="Recycling"
-				          EnableColumnVirtualization="True"
-				          RowHeight="21"
-				          CanUserSortColumns="False"
-						  CanUserDeleteRows ="False"
-						  CanUserAddRows="False"
-				          HeadersVisibility="None"
-				          HorizontalGridLinesBrush="LightGray"
-				          VerticalGridLinesBrush="LightGray"
-						  KeyDown="ReadOnlyGridKeyDownHandler"
-						  ScrollViewer.ScrollChanged="ResultGridScrollChangedHandler"
-				          MouseDoubleClick="ResultGridMouseDoubleClickHandler">
-					<DataGrid.CommandBindings>
-						<CommandBinding Command="commands:GenericCommands.ExportToCsv" Executed="ExportToCsv" CanExecute="CanExportToCsv" />
-						<CommandBinding Command="commands:GenericCommands.FetchAllRows" Executed="FetchAllRows" CanExecute="CanFetchAllRows" />
-					</DataGrid.CommandBindings>
-					<DataGrid.ContextMenu>
-						<ContextMenu>
-							<MenuItem Header="_Fetch all" Command="commands:GenericCommands.FetchAllRows" />
-							<MenuItem Header="_Export to CSV..." Command="commands:GenericCommands.ExportToCsv" />
-						</ContextMenu>
-					</DataGrid.ContextMenu>
-				</DataGrid>
+				<DockPanel LastChildFill="True">
+					<StackPanel DockPanel.Dock="Bottom" Visibility="{Binding SelectedCellInfoVisibility}" Orientation="Horizontal" HorizontalAlignment="Right">
+						<TextBlock>
+							<Run Text="Count: "/><Run Text="{Binding SelectedCellValueCount}"/>
+							<Run Text=" Sum: "/><Run Text="{Binding SelectedCellSum}"/>
+							<Run Text=" Average: "/><Run Text="{Binding SelectedCellAverage}"/>
+						</TextBlock>
+					</StackPanel>
+					<DataGrid x:Name="ResultGrid"
+							  AutoGenerateColumns="False"
+							  ItemsSource="{Binding ResultRowItems}"
+							  MaxColumnWidth="{Binding ElementName=ResultGrid, Path=ActualWidth}"
+							  VirtualizingStackPanel.VirtualizationMode="Recycling"
+							  EnableColumnVirtualization="True"
+							  RowHeight="21"
+							  CanUserSortColumns="False"
+							  CanUserDeleteRows ="False"
+							  CanUserAddRows="False"
+							  HeadersVisibility="None"
+							  IsTextSearchEnabled="True"
+							  SelectionMode="Extended"
+							  SelectionUnit="CellOrRowHeader"
+							  HorizontalGridLinesBrush="LightGray"
+							  VerticalGridLinesBrush="LightGray"
+							  KeyDown="ReadOnlyGridKeyDownHandler"
+							  SelectedCellsChanged="ResultGridSelectedCellsChangedHandler"
+							  ScrollViewer.ScrollChanged="ResultGridScrollChangedHandler"
+							  MouseDoubleClick="ResultGridMouseDoubleClickHandler"
+							  DataGridColumnHeader.Click="ColumnHeaderMouseClickHandler">
+						<DataGrid.CommandBindings>
+							<CommandBinding Command="commands:GenericCommands.ExportToCsv" Executed="ExportToCsv" CanExecute="CanExportToCsv" />
+							<CommandBinding Command="commands:GenericCommands.FetchAllRows" Executed="FetchAllRows" CanExecute="CanFetchAllRows" />
+						</DataGrid.CommandBindings>
+						<DataGrid.ContextMenu>
+							<ContextMenu>
+								<MenuItem Header="_Fetch all" Command="commands:GenericCommands.FetchAllRows" />
+								<MenuItem Header="_Export to CSV..." Command="commands:GenericCommands.ExportToCsv" />
+							</ContextMenu>
+						</DataGrid.ContextMenu>
+					</DataGrid>
+				</DockPanel>
 			</TabItem>
 			<TabItem Header="_Statistics" Visibility="{Binding ExecutionStatisticsAvailable}">
 				<DockPanel>

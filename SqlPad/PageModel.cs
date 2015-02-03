@@ -25,6 +25,10 @@ namespace SqlPad
 		private bool _isModified;
 		private bool _isRunning;
 		private int _affectedRowCount = -1;
+		private int _selectedCellValueCount;
+		private decimal _selectedCellSum;
+		private decimal _selectedCellAverage;
+		private Visibility _selectedCellInfoVisibility = Visibility.Collapsed;
 		private Visibility _statementExecutedSuccessfullyStatusMessageVisibility = Visibility.Collapsed;
 		private Visibility _productionLabelVisibility = Visibility.Collapsed;
 		private Visibility _bindVariableListVisibility = Visibility.Collapsed;
@@ -378,6 +382,30 @@ namespace SqlPad
 		{
 			get { return _schemaComboBoxVisibility; }
 			set { UpdateValueAndRaisePropertyChanged(ref _schemaComboBoxVisibility, value); }
+		}
+		
+		public Visibility SelectedCellInfoVisibility
+		{
+			get { return _selectedCellInfoVisibility; }
+			set { UpdateValueAndRaisePropertyChanged(ref _selectedCellInfoVisibility, value); }
+		}
+
+		public int SelectedCellValueCount
+		{
+			get { return _selectedCellValueCount; }
+			set { UpdateValueAndRaisePropertyChanged(ref _selectedCellValueCount, value); }
+		}
+
+		public decimal SelectedCellSum
+		{
+			get { return _selectedCellSum; }
+			set { UpdateValueAndRaisePropertyChanged(ref _selectedCellSum, value); }
+		}
+
+		public decimal SelectedCellAverage
+		{
+			get { return _selectedCellAverage; }
+			set { UpdateValueAndRaisePropertyChanged(ref _selectedCellAverage, value); }
 		}
 
 		public void ResetSchemas()
