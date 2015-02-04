@@ -244,7 +244,11 @@
 					<StackPanel DockPanel.Dock="Bottom" Visibility="{Binding SelectedCellInfoVisibility}" Orientation="Horizontal" HorizontalAlignment="Right">
 						<TextBlock>
 							<Run Text="Count: "/><Run Text="{Binding SelectedCellValueCount}"/>
+						</TextBlock>
+						<TextBlock Visibility="{Binding SelectedCellNumericInfoVisibility}">
 							<Run Text=" Sum: "/><Run Text="{Binding SelectedCellSum}"/>
+						</TextBlock>
+						<TextBlock Visibility="{Binding SelectedCellNumericInfoVisibility}">
 							<Run Text=" Average: "/><Run Text="{Binding SelectedCellAverage}"/>
 						</TextBlock>
 					</StackPanel>

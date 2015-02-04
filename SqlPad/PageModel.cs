@@ -29,6 +29,7 @@ namespace SqlPad
 		private decimal _selectedCellSum;
 		private decimal _selectedCellAverage;
 		private Visibility _selectedCellInfoVisibility = Visibility.Collapsed;
+		private Visibility _selectedCellNumericInfoVisibility = Visibility.Collapsed;
 		private Visibility _statementExecutedSuccessfullyStatusMessageVisibility = Visibility.Collapsed;
 		private Visibility _productionLabelVisibility = Visibility.Collapsed;
 		private Visibility _bindVariableListVisibility = Visibility.Collapsed;
@@ -388,6 +389,12 @@ namespace SqlPad
 		{
 			get { return _selectedCellInfoVisibility; }
 			set { UpdateValueAndRaisePropertyChanged(ref _selectedCellInfoVisibility, value); }
+		}
+
+		public Visibility SelectedCellNumericInfoVisibility
+		{
+			get { return _selectedCellNumericInfoVisibility; }
+			set { UpdateValueAndRaisePropertyChanged(ref _selectedCellNumericInfoVisibility, value); }
 		}
 
 		public int SelectedCellValueCount

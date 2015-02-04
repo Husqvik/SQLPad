@@ -119,6 +119,7 @@ namespace SqlPad
 
 			_iconMargin = new IconMargin(Editor);
 			//Editor.TextArea.LeftMargins.Add(_iconMargin);
+			//Editor.TextArea.LeftMargins.Add(new ModificationNotificationMargin(Editor));
 			_foldingStrategy = new SqlFoldingStrategy(FoldingManager.Install(Editor.TextArea), Editor);
 			_foldingStrategy.FoldingMargin.ContextMenu = (ContextMenu)Resources["FoldingActionMenu"];
 
@@ -2119,6 +2120,7 @@ namespace SqlPad
 
 			var sum = 0m;
 			var count = 0;
+			var invalidNumberDetected = false;
 			foreach (var selectedCell in ResultGrid.SelectedCells)
 			{
 				var stringValue = ((object[])selectedCell.Item)[selectedCell.Column.DisplayIndex].ToString();
@@ -2128,22 +2130,31 @@ namespace SqlPad
 				}
 
 				decimal value;
-				if (Decimal.TryParse(stringValue, out value))
+				if (Decimal.TryParse(stringValue, NumberStyles.Number, CultureInfo.InvariantCulture, out value))
 				{
 					sum += value;
 				}
 				else
 				{
-					_pageModel.SelectedCellInfoVisibility = Visibility.Collapsed;
-					return;
+					invalidNumberDetected = true;
 				}
 
 				count++;
 			}
 
 			_pageModel.SelectedCellValueCount = count;
-			_pageModel.SelectedCellSum = sum;
-			_pageModel.SelectedCellAverage = sum / count;
+
+			if (count > 0)
+			{
+				_pageModel.SelectedCellSum = sum;
+				_pageModel.SelectedCellAverage = sum / count;
+				_pageModel.SelectedCellNumericInfoVisibility = invalidNumberDetected ? Visibility.Collapsed : Visibility.Visible;
+			}
+			else
+			{
+				_pageModel.SelectedCellNumericInfoVisibility = Visibility.Collapsed;
+			}
+
 			_pageModel.SelectedCellInfoVisibility = Visibility.Visible;
 		}
 
