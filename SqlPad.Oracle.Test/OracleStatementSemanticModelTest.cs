@@ -1506,5 +1506,39 @@ FROM
 			queryBlock.ColumnReferences[1].ColumnNodeColumnReferences.Count.ShouldBe(1);
 			queryBlock.ColumnReferences[1].ColumnNodeColumnReferences.Single().Name.ShouldBe("\"PROJECT_ID\"");
 		}
+
+		[Test(Description = @"")]
+		public void TestColumnReferencesInRecursiveSearchFirstClauseAndInSubquery()
+		{
+			const string query1 =
+@"WITH CTE(VAL) AS (
+	SELECT 1 FROM DUAL
+	UNION ALL
+	SELECT VAL + 1 FROM CTE WHERE VAL < 5
+)
+SEARCH DEPTH FIRST BY VAL SET SEQ#
+SELECT * FROM CTE";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
+
+			var queryBlock = semanticModel.MainQueryBlock;
+			queryBlock.ShouldNotBe(null);
+
+			queryBlock.Columns.Count.ShouldBe(3);
+			queryBlock.Columns[0].IsAsterisk.ShouldBe(true);
+			queryBlock.Columns[1].NormalizedName.ShouldBe("\"VAL\"");
+			queryBlock.Columns[2].NormalizedName.ShouldBe("\"SEQ#\"");
+			queryBlock.Columns[2].ColumnDescription.FullTypeName.ShouldBe("NUMBER");
+
+			queryBlock.ObjectReferences.Count.ShouldBe(1);
+			var cteQueryBlock = queryBlock.ObjectReferences.Single().QueryBlocks.Single();
+			cteQueryBlock.Columns.Count.ShouldBe(2);
+			cteQueryBlock.Columns[0].NormalizedName.ShouldBe("\"VAL\"");
+			cteQueryBlock.Columns[1].NormalizedName.ShouldBe("\"SEQ#\"");
+			cteQueryBlock.Columns[1].ColumnDescription.FullTypeName.ShouldBe("NUMBER");
+		}
 	}
 }

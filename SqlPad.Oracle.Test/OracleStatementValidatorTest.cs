@@ -2030,5 +2030,26 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			programValidityNodes[5].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 			programValidityNodes[6].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
+
+		[Test(Description = @"")]
+		public void TestRecursiveQueryWithSearchFirstClause()
+		{
+			const string sqlText =
+@"WITH CTE(VAL) AS (
+	SELECT 1 FROM DUAL
+	UNION ALL
+	SELECT VAL + 1 FROM CTE WHERE VAL < 5
+)
+SEARCH DEPTH FIRST BY VAL SET SEQ#
+SELECT * FROM CTE";
+			
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			validationModel.InvalidNonTerminals.Count.ShouldBe(0);
+		}
 	}
 }

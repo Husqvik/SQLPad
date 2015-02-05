@@ -5766,7 +5766,7 @@
           <Terminal Id="By" />
           <NonTerminal Id="OrderExpressionList" />
           <Terminal Id="Set" />
-          <Terminal Id="Identifier" />
+          <Terminal Id="ColumnAlias" />
         </Sequence>
       </Sequences>
     </Rule>

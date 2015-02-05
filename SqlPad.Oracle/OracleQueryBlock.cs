@@ -79,6 +79,8 @@ namespace SqlPad.Oracle
 
 		public OracleSqlModelReference ModelReference { get; set; }
 
+		public OracleSelectListColumn RecursiveSequenceColumn { get; set; }
+
 		public IEnumerable<OracleReferenceContainer> ChildContainers
 		{
 			get

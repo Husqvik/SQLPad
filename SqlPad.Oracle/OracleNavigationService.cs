@@ -21,10 +21,17 @@ namespace SqlPad.Oracle
 		{
 			var terminal = documentRepository.Statements.GetTerminalAtPosition(currentPosition, n => !n.Id.IsZeroOffsetTerminalId());
 			if (terminal == null || !terminal.Id.In(Terminals.Identifier, Terminals.ObjectIdentifier))
+			{
 				return null;
+			}
 
 			var semanticModel = (OracleStatementSemanticModel)documentRepository.ValidationModels[terminal.Statement].SemanticModel;
 			var queryBlock = semanticModel.GetQueryBlock(currentPosition);
+
+			if (queryBlock == null)
+			{
+				return null;
+			}
 
 			switch (terminal.Id)
 			{

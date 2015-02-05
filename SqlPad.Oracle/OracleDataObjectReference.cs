@@ -21,7 +21,6 @@ namespace SqlPad.Oracle
 	{
 		private IReadOnlyList<OracleColumn> _columns;
 		private readonly ReferenceType _referenceType;
-		private readonly List<OracleQueryBlock> _queryBlocks = new List<OracleQueryBlock>();
 
 		public OracleDataObjectReference(ReferenceType referenceType)
 		{
@@ -45,7 +44,9 @@ namespace SqlPad.Oracle
 			get
 			{
 				if (_columns != null)
+				{
 					return _columns;
+				}
 
 				var columns = new List<OracleColumn>();
 				if (Type == ReferenceType.SchemaObject)
@@ -71,8 +72,6 @@ namespace SqlPad.Oracle
 		
 		public StatementGrammarNode AliasNode { get; set; }
 		
-		public override ICollection<OracleQueryBlock> QueryBlocks { get { return _queryBlocks; } }
-
 		public override ReferenceType Type { get { return _referenceType; } }
 	}
 }

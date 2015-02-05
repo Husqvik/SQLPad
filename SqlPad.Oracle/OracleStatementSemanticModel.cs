@@ -353,6 +353,8 @@ namespace SqlPad.Oracle
 				FindJoinColumnReferences(queryBlock);
 
 				FindHierarchicalClauseReferences(queryBlock);
+
+				FindRecursiveQueryReferences(queryBlock);
 			}
 
 			ResolveInlineViewOrCommonTableExpressionRelations();
@@ -368,6 +370,50 @@ namespace SqlPad.Oracle
 			BuildDmlModel();
 			
 			ResolveRedundantTerminals();
+		}
+
+		private void FindRecursiveQueryReferences(OracleQueryBlock queryBlock)
+		{
+			if (queryBlock.Type != QueryBlockType.CommonTableExpression)
+			{
+				return;
+			}
+
+			var subqueryComponentNode = queryBlock.RootNode.GetAncestor(NonTerminals.SubqueryComponent);
+			var searchClause = subqueryComponentNode.GetDescendantByPath(NonTerminals.SubqueryFactoringSearchClause);
+			if (searchClause == null || searchClause.LastTerminalNode.Id != Terminals.ColumnAlias)
+			{
+				return;
+			}
+
+			var recursiveSequenceColumn =
+				new OracleSelectListColumn(this, null)
+				{
+					Owner = queryBlock,
+					RootNode = searchClause.LastTerminalNode,
+					AliasNode = searchClause.LastTerminalNode,
+					ColumnDescription =
+						new OracleColumn
+						{
+							Name = searchClause.LastTerminalNode.Token.Value.ToQuotedIdentifier(),
+							DataType = OracleDataType.NumberType
+						}
+				};
+			
+			queryBlock.AddSelectListColumn(recursiveSequenceColumn);
+			queryBlock.RecursiveSequenceColumn = recursiveSequenceColumn;
+
+			var orderExpressionListNode = subqueryComponentNode.GetDescendantByPath(NonTerminals.OrderExpressionList);
+			if (orderExpressionListNode == null)
+			{
+				return;
+			}
+
+			/*var herarchicalQueryClauseIdentifiers = queryBlock.HierarchicalQueryClause.GetDescendantsWithinSameQuery(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level);
+			ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock, herarchicalQueryClauseIdentifiers, QueryBlockPlacement.ConnectBy, null);
+
+			var herarchicalQueryClauseGrammarSpecificFunctions = GetGrammarSpecificFunctionNodes(queryBlock.HierarchicalQueryClause);
+			CreateGrammarSpecificFunctionReferences(herarchicalQueryClauseGrammarSpecificFunctions, queryBlock, queryBlock.ProgramReferences, QueryBlockPlacement.ConnectBy, null);*/
 		}
 
 		private OracleSpecialTableReference ResolveJsonTableReference(OracleQueryBlock queryBlock, StatementGrammarNode tableReferenceNonterminal)
@@ -497,12 +543,7 @@ namespace SqlPad.Oracle
 			    enumerator.MoveNext() && enumerator.Current.Id == Terminals.Ordinality &&
 			    !enumerator.MoveNext())
 			{
-				column.DataType =
-					new OracleDataType
-					{
-						FullyQualifiedName = OracleObjectIdentifier.Create(null, "NUMBER")
-					};
-
+				column.DataType = OracleDataType.NumberType;
 				return true;
 			}
 
@@ -718,19 +759,33 @@ namespace SqlPad.Oracle
 
 		private void ApplyExplicitCommonTableExpressionColumnNames()
 		{
-			foreach (var kvp in _commonTableExpressionExplicitColumnNames)
+			foreach (var queryBlocks in _commonTableExpressionExplicitColumnNames.Keys.ToArray())
 			{
-				var columnIndex = 0;
-				foreach (var column in kvp.Key.Columns.Where(c => !c.IsAsterisk))
-				{
-					if (kvp.Value.Count == columnIndex)
-					{
-						break;
-					}
-
-					column.ExplicitNormalizedName = kvp.Value[columnIndex++];
-				}
+				ApplyExplicitCommonTableExpressionColumnNames(queryBlocks);
 			}
+		}
+
+		private void ApplyExplicitCommonTableExpressionColumnNames(OracleQueryBlock queryBlock)
+		{
+			IList<string> columnNames;
+			if (queryBlock.Type != QueryBlockType.CommonTableExpression ||
+				!_commonTableExpressionExplicitColumnNames.TryGetValue(queryBlock, out columnNames))
+			{
+				return;
+			}
+
+			var columnIndex = 0;
+			foreach (var column in queryBlock.Columns.Where(c => !c.IsAsterisk))
+			{
+				if (columnNames.Count == columnIndex)
+				{
+					break;
+				}
+
+				column.ExplicitNormalizedName = columnNames[columnIndex++];
+			}
+
+			_commonTableExpressionExplicitColumnNames.Remove(queryBlock);
 		}
 
 		private void ResolveRedundantTerminals()
@@ -1186,7 +1241,7 @@ namespace SqlPad.Oracle
 				var asteriskColumn = asteriskTableReference.Key;
 				var ownerQueryBlock = asteriskColumn.Owner;
 				var columnIndex = ownerQueryBlock.IndexOf(asteriskColumn);
-				
+
 				foreach (var objectReference in asteriskTableReference.Value)
 				{
 					IEnumerable<OracleSelectListColumn> exposedColumns;
@@ -1216,6 +1271,12 @@ namespace SqlPad.Oracle
 								});
 							break;
 						case ReferenceType.CommonTableExpression:
+							foreach (var queryBlock in objectReference.QueryBlocks)
+							{
+								ApplyExplicitCommonTableExpressionColumnNames(queryBlock);
+							}
+
+							goto case ReferenceType.InlineView;
 						case ReferenceType.InlineView:
 							var columns = new List<OracleSelectListColumn>();
 							foreach (var column in objectReference.QueryBlocks.SelectMany(qb => qb.Columns).Where(c => !c.IsAsterisk))
@@ -1524,7 +1585,7 @@ namespace SqlPad.Oracle
 					break;
 			}
 
-			if (newColumnReferences.Count <= 0)
+			if (newColumnReferences.Count == 0)
 			{
 				return;
 			}
@@ -1836,13 +1897,14 @@ namespace SqlPad.Oracle
 					var columnAliasNode = columnExpression.LastTerminalNode != null && columnExpression.LastTerminalNode.Id == Terminals.ColumnAlias
 						? columnExpression.LastTerminalNode
 						: null;
-					
-					var column = new OracleSelectListColumn(this, null)
-					{
-						AliasNode = columnAliasNode,
-						RootNode = columnExpression,
-						Owner = queryBlock
-					};
+
+					var column =
+						new OracleSelectListColumn(this, null)
+						{
+							AliasNode = columnAliasNode,
+							RootNode = columnExpression,
+							Owner = queryBlock
+						};
 
 					var asteriskNode = columnExpression.LastTerminalNode != null && columnExpression.LastTerminalNode.Id == Terminals.Asterisk
 						? columnExpression.LastTerminalNode

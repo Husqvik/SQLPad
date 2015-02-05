@@ -225,8 +225,10 @@ namespace SqlPad.Oracle
 				{
 					AliasNode = AliasNode,
 					RootNode = RootNode,
+					ExplicitNormalizedName = ExplicitNormalizedName,
 					IsDirectReference = true,
-					_columnDescription = _columnDescription
+					_columnDescription = _columnDescription,
+					_normalizedName = _normalizedName
 				};
 		}
 	}

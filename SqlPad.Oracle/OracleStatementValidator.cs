@@ -265,7 +265,8 @@ namespace SqlPad.Oracle
 				if (queryBlock.Type == QueryBlockType.CommonTableExpression && queryBlock.ExplicitColumnNameList != null)
 				{
 					var explicitNamedColumnCount = queryBlock.Columns.Count(c => !String.IsNullOrEmpty(c.ExplicitNormalizedName));
-					if (explicitNamedColumnCount > 0 && explicitNamedColumnCount != queryBlock.Columns.Count - queryBlock.AsteriskColumns.Count)
+					var recursiveSequenceColumnCount = queryBlock.RecursiveSequenceColumn == null ? 0 : 1;
+					if (explicitNamedColumnCount > 0 && explicitNamedColumnCount != queryBlock.Columns.Count - queryBlock.AsteriskColumns.Count - recursiveSequenceColumnCount)
 					{
 						validationModel.InvalidNonTerminals[queryBlock.ExplicitColumnNameList] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) { Node = queryBlock.ExplicitColumnNameList };
 						validationModel.InvalidNonTerminals[queryBlock.SelectList] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) { Node = queryBlock.SelectList };
