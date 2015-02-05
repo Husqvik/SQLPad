@@ -190,10 +190,10 @@
         <Sequence>
           <NonTerminal Id="AlterTableProperties" />
         </Sequence>
-        <!--<Sequence>
-          <NonTerminal Id="ColumnClauses" />
-        </Sequence>
         <Sequence>
+          <NonTerminal Id="AlterTableColumnClauses" />
+        </Sequence>
+        <!--<Sequence>
           <NonTerminal Id="ConstraintClauses" />
         </Sequence>
         <Sequence>
@@ -208,6 +208,242 @@
         <Sequence>
           <NonTerminal Id="ModifyOpaqueType" />
         </Sequence>-->
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AlterTableColumnClauses">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ColumnModificationList" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="RenameColumnClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ModifyCollectionRetrievalList" />
+        </Sequence>
+        <!--<Sequence>
+          <NonTerminal Id="ModifyLobStorageClauseList" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="AlterVarryingArrayColumnProperties" />
+        </Sequence>-->
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ColumnModificationList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ColumnModification" />
+          <NonTerminal Id="ColumnModificationList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ColumnModification">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="AddColumnClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ModifyColumnClause" />
+        </Sequence>
+        <!--<Sequence>
+          <NonTerminal Id="DropColumnClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="AddPeriodClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="DropPeriodClause" />
+        </Sequence>-->
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ModifyColumnClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Modify" />
+          <NonTerminal Id="ModifyColumnClauseOption" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ModifyColumnClauseOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="ModifyColumnPropertiesOrModifyVirtualColumnPropertiesOrModifyColumnVisibilityList" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ModifyColumnSubstitutable" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ModifyColumnSubstitutable">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Column" />
+          <Terminal Id="Identifier" />
+          <Terminal Id="Not" IsOptional="true" />
+          <Terminal Id="Substitutable" />
+          <Terminal Id="At" />
+          <Terminal Id="All" />
+          <Terminal Id="Levels" />
+          <Terminal Id="Force" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ModifyColumnPropertiesOrModifyVirtualColumnPropertiesOrModifyColumnVisibilityList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ModifyColumnPropertiesOrModifyVirtualColumnPropertiesOrModifyColumnVisibility" />
+          <NonTerminal Id="ChainedModifyColumnPropertiesOrModifyVirtualColumnPropertiesOrModifyColumnVisibility" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ChainedModifyColumnPropertiesOrModifyVirtualColumnPropertiesOrModifyColumnVisibility">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="ModifyColumnPropertiesOrModifyVirtualColumnPropertiesOrModifyColumnVisibilityList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ModifyColumnPropertiesOrModifyVirtualColumnPropertiesOrModifyColumnVisibility">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ModifyVirtualColumnProperties" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ModifyColumnProperties" />
+        </Sequence>
+        <!--<Sequence>
+          <NonTerminal Id="ModifyColumnVisibility" />
+        </Sequence>-->
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ModifyColumnProperties">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Identifier" />
+          <NonTerminal Id="DataType" IsOptional="true" />
+          <NonTerminal Id="ColumnDefinitionDefaultClauseOrIdentityClauseOrDropIdentity" IsOptional="true" />
+          <NonTerminal Id="ColumnDefinitionEncryptionClauseOrDecrypt" IsOptional="true" />
+          <NonTerminal Id="ColumnDefinitionInlineConstraintDefinition" IsOptional="true" />
+          <NonTerminal Id="LargeObjectStorageClause" IsOptional="true" />
+          <!--<NonTerminal Id="AlterXmlSchemaClause" IsOptional="true" />-->
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ColumnDefinitionEncryptionClauseOrDecrypt">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ColumnDefinitionEncryptionClause" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Decrypt" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ColumnDefinitionDefaultClauseOrIdentityClauseOrDropIdentity">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ColumnDefinitionDefaultClauseOrIdentityClause" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Drop" />
+          <Terminal Id="Identity" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ModifyVirtualColumnProperties">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Identifier" />
+          <NonTerminal Id="DataType" IsOptional="true" />
+          <NonTerminal Id="GeneratedAlways" IsOptional="true" />
+          <Terminal Id="As" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="Expression" />
+          <Terminal Id="RightParenthesis" />
+          <Terminal Id="Virtual" IsOptional="true" />
+          <NonTerminal Id="EvaluationEditionClause" IsOptional="true" Comment="Mandatory in documentation" />
+          <NonTerminal Id="UnusableEditionClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AddColumnClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Add" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="VirtualColumnDefinitionOrColumnDefinitionList" />
+          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="ColumnProperties" IsOptional="true" />
+          <!--<NonTerminal Id="OutOfLinePartitionStorageList" IsOptional="true" />-->
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="VirtualColumnDefinitionOrColumnDefinitionList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="VirtualColumnDefinitionOrColumnDefinition" />
+          <NonTerminal Id="ChainedVirtualColumnDefinitionOrColumnDefinition" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ChainedVirtualColumnDefinitionOrColumnDefinition">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="VirtualColumnDefinitionOrColumnDefinitionList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ModifyCollectionRetrievalList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ModifyCollectionRetrieval" />
+          <NonTerminal Id="ModifyCollectionRetrievalList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ModifyCollectionRetrieval">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Modify" />
+          <Terminal Id="Nested" />
+          <Terminal Id="Table" />
+          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="NestedTableReturnType" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="RenameColumnClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Rename" />
+          <Terminal Id="Column" />
+          <Terminal Id="Identifier" />
+          <Terminal Id="To" />
+          <Terminal Id="Identifier" />
+        </Sequence>
       </Sequences>
     </Rule>
     
@@ -288,9 +524,9 @@
         <Sequence>
           <NonTerminal Id="TableCompression" />
         </Sequence>
-        <!--<Sequence>
-          <NonTerminal Id="InMemoryAlterTableClause" />
-        </Sequence>-->
+        <Sequence>
+          <NonTerminal Id="InMemoryTableClause" />
+        </Sequence>
         <Sequence>
           <NonTerminal Id="InformationLifecycleManagementClause" />
         </Sequence>
@@ -10942,6 +11178,14 @@
         <Sequence>
           <NonTerminal Id="SupplementalLoggingProperties" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="VirtualColumnDefinitionOrColumnDefinition" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="VirtualColumnDefinitionOrColumnDefinition">
+      <Sequences>
         <Sequence>
           <NonTerminal Id="VirtualColumnDefinition" />
         </Sequence>
