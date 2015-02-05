@@ -814,6 +814,18 @@ FROM
 		}
 
 		[Test(Description = @"")]
+		public void TestRedundantTerminalsWithDistinctSubquery()
+		{
+			const string query1 = @"SELECT COUNT(*) FROM (SELECT DISTINCT X, Y FROM COORDINATES)";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			var redundantTerminals = semanticModel.RedundantSymbolGroups.SelectMany(g => g).OrderBy(t => t.SourcePosition.IndexStart).ToArray();
+			redundantTerminals.Length.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
 		public void TestRedundantTerminalsOfUnreferencedAsteriskClause()
 		{
 			const string query1 = @"SELECT DUMMY FROM (SELECT DUAL.*, SELECTION.* FROM DUAL, SELECTION)";
@@ -1468,6 +1480,31 @@ FROM
 			columnReferences.Length.ShouldBe(2);
 			columnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
 			columnReferences[1].ColumnNodeColumnReferences.Count.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
+		public void TestColumnReferencesInConnectByClause()
+		{
+			const string query1 = @"SELECT NULL FROM SELECTION CONNECT BY SELECTION_ID > PROJECT_ID";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			var queryBlock = semanticModel.MainQueryBlock;
+			queryBlock.ShouldNotBe(null);
+
+			var selectionTableIdentifier = OracleObjectIdentifier.Create(null, "SELECTION");
+
+			queryBlock.ColumnReferences.Count.ShouldBe(2);
+			queryBlock.ColumnReferences[0].ValidObjectReference.ShouldNotBe(null);
+			queryBlock.ColumnReferences[0].ValidObjectReference.FullyQualifiedObjectName.ShouldBe(selectionTableIdentifier);
+			queryBlock.ColumnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
+			queryBlock.ColumnReferences[0].ColumnNodeColumnReferences.Single().Name.ShouldBe("\"SELECTION_ID\"");
+			queryBlock.ColumnReferences[1].ValidObjectReference.ShouldNotBe(null);
+			queryBlock.ColumnReferences[1].ValidObjectReference.FullyQualifiedObjectName.ShouldBe(selectionTableIdentifier);
+			queryBlock.ColumnReferences[1].ColumnNodeColumnReferences.Count.ShouldBe(1);
+			queryBlock.ColumnReferences[1].ColumnNodeColumnReferences.Single().Name.ShouldBe("\"PROJECT_ID\"");
 		}
 	}
 }

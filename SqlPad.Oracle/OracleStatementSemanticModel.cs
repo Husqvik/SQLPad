@@ -351,6 +351,8 @@ namespace SqlPad.Oracle
 				FindWhereGroupByHavingReferences(queryBlock);
 
 				FindJoinColumnReferences(queryBlock);
+
+				FindHierarchicalClauseReferences(queryBlock);
 			}
 
 			ResolveInlineViewOrCommonTableExpressionRelations();
@@ -505,6 +507,20 @@ namespace SqlPad.Oracle
 			}
 
 			return false;
+		}
+
+		private void FindHierarchicalClauseReferences(OracleQueryBlock queryBlock)
+		{
+			if (queryBlock.HierarchicalQueryClause == null)
+			{
+				return;
+			}
+
+			var herarchicalQueryClauseIdentifiers = queryBlock.HierarchicalQueryClause.GetDescendantsWithinSameQuery(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level);
+			ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock, herarchicalQueryClauseIdentifiers, QueryBlockPlacement.ConnectBy, null);
+
+			var herarchicalQueryClauseGrammarSpecificFunctions = GetGrammarSpecificFunctionNodes(queryBlock.HierarchicalQueryClause);
+			CreateGrammarSpecificFunctionReferences(herarchicalQueryClauseGrammarSpecificFunctions, queryBlock, queryBlock.ProgramReferences, QueryBlockPlacement.ConnectBy, null);
 		}
 
 		private void ResolveModelClause()
@@ -726,7 +742,7 @@ namespace SqlPad.Oracle
 
 		private void ResolveRedundantSelectListColumns()
 		{
-			foreach (var queryBlock in _queryBlockNodes.Values.Where(qb => qb != MainQueryBlock))
+			foreach (var queryBlock in _queryBlockNodes.Values.Where(qb => qb != MainQueryBlock && !qb.HasDistinctResultSet))
 			{
 				var redundantColumns = 0;
 				foreach (var column in queryBlock.Columns.Where(c => c.HasExplicitDefinition && !c.IsReferenced))
