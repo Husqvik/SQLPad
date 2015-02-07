@@ -717,6 +717,29 @@ FROM
 			redundantTerminals[6].Id.ShouldBe(Terminals.Identifier);
 			redundantTerminals[7].Id.ShouldBe(Terminals.ColumnAlias);
 		}
+		[Test(Description = @""), Ignore]
+		public void TestUnusedCommonTableExpression()
+		{
+			const string query1 =
+@"WITH CTE1(DUMMY) AS (
+	SELECT 0 DUMMY FROM DUAL
+	UNION ALL
+	SELECT 1 + DUMMY FROM CTE1 WHERE DUMMY < 5
+)
+SEARCH DEPTH FIRST BY DUMMY SET SEQ#
+SELECT * FROM DUAL";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.RedundantSymbolGroups.Count.ShouldBe(1);
+			var terminalGroup = semanticModel.RedundantSymbolGroups.Single();
+			terminalGroup.Count.ShouldBe(32);
+			terminalGroup[0].Token.Value.ShouldBe("WITH");
+			terminalGroup[0].Token.Index.ShouldBe(0);
+			terminalGroup[31].Token.Value.ShouldBe(")");
+			terminalGroup[31].Token.Index.ShouldBe(107);
+		}
 
 		[Test(Description = @"")]
 		public void TestUnusedColumnRedundantTerminalsWithAllQueryBlockColumns()

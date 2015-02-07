@@ -13,6 +13,7 @@ namespace SqlPad.Oracle
 		private OracleDataObjectReference _selfObjectReference;
 		private bool? _hasRemoteAsteriskReferences;
 		private readonly List<OracleSelectListColumn> _columns = new List<OracleSelectListColumn>();
+		private readonly List<OracleSelectListColumn> _attachedColumns = new List<OracleSelectListColumn>();
 		private readonly List<OracleSelectListColumn> _asteriskColumns = new List<OracleSelectListColumn>();
 
 		public OracleQueryBlock(OracleStatementSemanticModel semanticModel) : base(semanticModel)
@@ -72,14 +73,18 @@ namespace SqlPad.Oracle
 		public StatementGrammarNode ExplicitColumnNameList { get; set; }
 		
 		public StatementGrammarNode RecursiveSearchClause { get; set; }
-
-		public OracleSelectListColumn RecursiveSequenceColumn { get; set; }
+		
+		public StatementGrammarNode RecursiveCycleClause { get; set; }
 
 		public OracleStatement Statement { get; set; }
 		
 		public bool IsRecursive { get; set; }
+		
+		public bool IsRedundant { get; set; }
 
 		public IReadOnlyList<OracleSelectListColumn> Columns { get { return _columns; } }
+
+		public IReadOnlyList<OracleSelectListColumn> AttachedColumns { get { return _attachedColumns; } }
 		
 		public IReadOnlyCollection<OracleSelectListColumn> AsteriskColumns { get { return _asteriskColumns; } }
 
@@ -148,8 +153,19 @@ namespace SqlPad.Oracle
 			}
 		}
 
+		public void AddAttachedColumn(OracleSelectListColumn column)
+		{
+			_columns.Add(column);
+			_attachedColumns.Add(column);
+		}
+
 		public void AddSelectListColumn(OracleSelectListColumn column, int? index = null)
 		{
+			if (_attachedColumns.Count > 0)
+			{
+				throw new InvalidOperationException("Query block has attached columns associated. ");
+			}
+
 			if (index.HasValue)
 			{
 				_columns.Insert(index.Value, column);

@@ -2032,7 +2032,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		}
 
 		[Test(Description = @"")]
-		public void TestRecursiveQueryWithRecursiveSearchClause()
+		public void TestRecursiveQueryWithRecursiveClauses()
 		{
 			const string sqlText =
 @"WITH CTE(VAL) AS (
@@ -2041,6 +2041,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 	SELECT VAL + 1 FROM CTE WHERE VAL < 5
 )
 SEARCH DEPTH FIRST BY VAL SET SEQ#
+CYCLE DUMMY SET CYCLE# TO 'X' DEFAULT 'O'
 SELECT * FROM CTE";
 			
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
@@ -2053,14 +2054,15 @@ SELECT * FROM CTE";
 		}
 
 		[Test(Description = @"")]
-		public void TestQueryWithInvalidRecursiveSearchClauseAndReference()
+		public void TestQueryWithInvalidRecursiveClausesAndReferences()
 		{
 			const string sqlText =
 @"WITH CTE AS (
 	SELECT DUMMY DUMMY1, 2 DUMMY2 FROM DUAL
 )
 SEARCH DEPTH FIRST BY DUMMY1, DUMMY2, DUMMY3 SET DUMMY3
-SELECT DUMMY1, DUMMY2, DUMMY3 FROM CTE";
+CYCLE DUMMY2, DUMMY3 SET DUMMY4 TO 'X' DEFAULT 'O'
+SELECT DUMMY1, DUMMY2, DUMMY3, DUMMY4 FROM CTE";
 			
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
@@ -2072,7 +2074,7 @@ SELECT DUMMY1, DUMMY2, DUMMY3 FROM CTE";
 			var invalidNonterminal = validationModel.InvalidNonTerminals.Values.Single();
 			invalidNonterminal.SemanticErrorType.ShouldBe(OracleSemanticErrorType.MissingWithClauseColumnAliasList);
 
-			validationModel.ColumnNodeValidity.Count.ShouldBe(7);
+			validationModel.ColumnNodeValidity.Count.ShouldBe(10);
 			var columnValidityNodes = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
 			columnValidityNodes[0].Node.Token.Value.ShouldBe("DUMMY");
 			columnValidityNodes[0].IsRecognized.ShouldBe(true);
@@ -2082,12 +2084,18 @@ SELECT DUMMY1, DUMMY2, DUMMY3 FROM CTE";
 			columnValidityNodes[2].IsRecognized.ShouldBe(true);
 			columnValidityNodes[3].Node.Token.Value.ShouldBe("DUMMY3");
 			columnValidityNodes[3].IsRecognized.ShouldBe(false);
-			columnValidityNodes[4].Node.Token.Value.ShouldBe("DUMMY1");
+			columnValidityNodes[4].Node.Token.Value.ShouldBe("DUMMY2");
 			columnValidityNodes[4].IsRecognized.ShouldBe(true);
-			columnValidityNodes[5].Node.Token.Value.ShouldBe("DUMMY2");
-			columnValidityNodes[5].IsRecognized.ShouldBe(true);
-			columnValidityNodes[6].Node.Token.Value.ShouldBe("DUMMY3");
-			columnValidityNodes[6].IsRecognized.ShouldBe(false);
+			columnValidityNodes[5].Node.Token.Value.ShouldBe("DUMMY3");
+			columnValidityNodes[5].IsRecognized.ShouldBe(false);
+			columnValidityNodes[6].Node.Token.Value.ShouldBe("DUMMY1");
+			columnValidityNodes[6].IsRecognized.ShouldBe(true);
+			columnValidityNodes[7].Node.Token.Value.ShouldBe("DUMMY2");
+			columnValidityNodes[7].IsRecognized.ShouldBe(true);
+			columnValidityNodes[8].Node.Token.Value.ShouldBe("DUMMY3");
+			columnValidityNodes[8].IsRecognized.ShouldBe(false);
+			columnValidityNodes[9].Node.Token.Value.ShouldBe("DUMMY4");
+			columnValidityNodes[9].IsRecognized.ShouldBe(false);
 		}
 	}
 }

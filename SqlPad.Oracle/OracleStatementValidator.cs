@@ -267,8 +267,7 @@ namespace SqlPad.Oracle
 					if (queryBlock.ExplicitColumnNameList != null)
 					{
 						var explicitNamedColumnCount = queryBlock.Columns.Count(c => !String.IsNullOrEmpty(c.ExplicitNormalizedName));
-						var recursiveSequenceColumnCount = queryBlock.RecursiveSequenceColumn == null ? 0 : 1;
-						if (explicitNamedColumnCount > 0 && explicitNamedColumnCount != queryBlock.Columns.Count - queryBlock.AsteriskColumns.Count - recursiveSequenceColumnCount)
+						if (explicitNamedColumnCount > 0 && explicitNamedColumnCount != queryBlock.Columns.Count - queryBlock.AsteriskColumns.Count - queryBlock.AttachedColumns.Count)
 						{
 							validationModel.InvalidNonTerminals[queryBlock.ExplicitColumnNameList] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) { Node = queryBlock.ExplicitColumnNameList };
 							validationModel.InvalidNonTerminals[queryBlock.SelectList] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) { Node = queryBlock.SelectList };
@@ -301,9 +300,8 @@ namespace SqlPad.Oracle
 			{
 				return;
 			}
-			
-			var recursiveSequenceColumnCount = queryBlock.RecursiveSequenceColumn == null ? 0 : 1;
-			var firstQueryBlockColumnCount = queryBlock.Columns.Count - queryBlock.AsteriskColumns.Count - recursiveSequenceColumnCount;
+
+			var firstQueryBlockColumnCount = queryBlock.Columns.Count - queryBlock.AsteriskColumns.Count - queryBlock.AttachedColumns.Count;
 			foreach (var concatenatedQueryBlock in queryBlock.AllFollowingConcatenatedQueryBlocks)
 			{
 				var concatenatedQueryBlockColumnCount = concatenatedQueryBlock.Columns.Count - concatenatedQueryBlock.AsteriskColumns.Count;
