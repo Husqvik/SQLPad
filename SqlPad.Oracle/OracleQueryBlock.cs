@@ -76,6 +76,8 @@ namespace SqlPad.Oracle
 		public OracleSelectListColumn RecursiveSequenceColumn { get; set; }
 
 		public OracleStatement Statement { get; set; }
+		
+		public bool IsRecursive { get; set; }
 
 		public IReadOnlyList<OracleSelectListColumn> Columns { get { return _columns; } }
 		

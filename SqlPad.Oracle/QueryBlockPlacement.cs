@@ -11,6 +11,7 @@ namespace SqlPad.Oracle
 		Join,
 		OrderBy,
 		Model,
-		ConnectBy
+		ConnectBy,
+		RecursiveSearchClause
 	}
 }

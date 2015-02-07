@@ -302,7 +302,8 @@ namespace SqlPad.Oracle
 				return;
 			}
 			
-			var firstQueryBlockColumnCount = queryBlock.Columns.Count - queryBlock.AsteriskColumns.Count;
+			var recursiveSequenceColumnCount = queryBlock.RecursiveSequenceColumn == null ? 0 : 1;
+			var firstQueryBlockColumnCount = queryBlock.Columns.Count - queryBlock.AsteriskColumns.Count - recursiveSequenceColumnCount;
 			foreach (var concatenatedQueryBlock in queryBlock.AllFollowingConcatenatedQueryBlocks)
 			{
 				var concatenatedQueryBlockColumnCount = concatenatedQueryBlock.Columns.Count - concatenatedQueryBlock.AsteriskColumns.Count;

@@ -353,11 +353,11 @@ namespace SqlPad.Oracle
 				FindJoinColumnReferences(queryBlock);
 
 				FindHierarchicalClauseReferences(queryBlock);
-
-				FindRecursiveQueryReferences(queryBlock);
 			}
 
 			ResolveInlineViewOrCommonTableExpressionRelations();
+
+			FindRecursiveQueryReferences();
 
 			ResolveModelClause();
 
@@ -372,48 +372,51 @@ namespace SqlPad.Oracle
 			ResolveRedundantTerminals();
 		}
 
-		private void FindRecursiveQueryReferences(OracleQueryBlock queryBlock)
+		private void FindRecursiveQueryReferences()
 		{
-			if (queryBlock.Type != QueryBlockType.CommonTableExpression)
+			foreach (var queryBlock in _queryBlockNodes.Values.Where(qb => qb.Type == QueryBlockType.CommonTableExpression))
 			{
-				return;
-			}
-
-			var subqueryComponentNode = queryBlock.RootNode.GetAncestor(NonTerminals.SubqueryComponent);
-			queryBlock.RecursiveSearchClause = subqueryComponentNode.GetDescendantByPath(NonTerminals.SubqueryFactoringSearchClause);
-			if (queryBlock.RecursiveSearchClause == null || queryBlock.RecursiveSearchClause.LastTerminalNode.Id != Terminals.ColumnAlias)
-			{
-				return;
-			}
-
-			var recursiveSequenceColumn =
-				new OracleSelectListColumn(this, null)
+				var subqueryComponentNode = queryBlock.RootNode.GetAncestor(NonTerminals.SubqueryComponent);
+				queryBlock.RecursiveSearchClause = subqueryComponentNode.GetDescendantByPath(NonTerminals.SubqueryFactoringSearchClause);
+				if (queryBlock.RecursiveSearchClause == null)
 				{
-					Owner = queryBlock,
-					RootNode = queryBlock.RecursiveSearchClause.LastTerminalNode,
-					AliasNode = queryBlock.RecursiveSearchClause.LastTerminalNode,
-					ColumnDescription =
-						new OracleColumn
-						{
-							Name = queryBlock.RecursiveSearchClause.LastTerminalNode.Token.Value.ToQuotedIdentifier(),
-							DataType = OracleDataType.NumberType
-						}
-				};
-			
-			queryBlock.AddSelectListColumn(recursiveSequenceColumn);
-			queryBlock.RecursiveSequenceColumn = recursiveSequenceColumn;
+					continue;
+				}
 
-			var orderExpressionListNode = subqueryComponentNode.GetDescendantByPath(NonTerminals.OrderExpressionList);
-			if (orderExpressionListNode == null)
-			{
-				return;
+				var orderExpressionListNode = queryBlock.RecursiveSearchClause.GetDescendantByPath(NonTerminals.OrderExpressionList);
+				if (orderExpressionListNode == null)
+				{
+					continue;
+				}
+
+				var herarchicalQueryClauseIdentifiers = orderExpressionListNode.GetDescendantsWithinSameQuery(Terminals.Identifier);
+				ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock, herarchicalQueryClauseIdentifiers, QueryBlockPlacement.RecursiveSearchClause, null);
+
+				var herarchicalQueryClauseGrammarSpecificFunctions = GetGrammarSpecificFunctionNodes(orderExpressionListNode);
+				CreateGrammarSpecificFunctionReferences(herarchicalQueryClauseGrammarSpecificFunctions, queryBlock, queryBlock.ProgramReferences, QueryBlockPlacement.RecursiveSearchClause, null);
+
+				if (queryBlock.RecursiveSearchClause.LastTerminalNode.Id != Terminals.ColumnAlias  || !queryBlock.IsRecursive)
+				{
+					continue;
+				}
+
+				var recursiveSequenceColumn =
+					new OracleSelectListColumn(this, null)
+					{
+						Owner = queryBlock,
+						RootNode = queryBlock.RecursiveSearchClause.LastTerminalNode,
+						AliasNode = queryBlock.RecursiveSearchClause.LastTerminalNode,
+						ColumnDescription =
+							new OracleColumn
+							{
+								Name = queryBlock.RecursiveSearchClause.LastTerminalNode.Token.Value.ToQuotedIdentifier(),
+								DataType = OracleDataType.NumberType
+							}
+					};
+
+				queryBlock.AddSelectListColumn(recursiveSequenceColumn);
+				queryBlock.RecursiveSequenceColumn = recursiveSequenceColumn;
 			}
-
-			/*var herarchicalQueryClauseIdentifiers = queryBlock.HierarchicalQueryClause.GetDescendantsWithinSameQuery(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level);
-			ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock, herarchicalQueryClauseIdentifiers, QueryBlockPlacement.ConnectBy, null);
-
-			var herarchicalQueryClauseGrammarSpecificFunctions = GetGrammarSpecificFunctionNodes(queryBlock.HierarchicalQueryClause);
-			CreateGrammarSpecificFunctionReferences(herarchicalQueryClauseGrammarSpecificFunctions, queryBlock, queryBlock.ProgramReferences, QueryBlockPlacement.ConnectBy, null);*/
 		}
 
 		private OracleSpecialTableReference ResolveJsonTableReference(OracleQueryBlock queryBlock, StatementGrammarNode tableReferenceNonterminal)
@@ -1155,6 +1158,8 @@ namespace SqlPad.Oracle
 				newAnchorReference.QueryBlocks.Add(queryBlock);
 				queryBlock.ObjectReferences.Add(newAnchorReference);
 			}
+
+			precedingQueryBlock.IsRecursive = true;
 		}
 
 		private void ResolveReferences()
@@ -1491,13 +1496,24 @@ namespace SqlPad.Oracle
 					}
 				}
 
-				ResolveColumnReference(effectiveAccessibleRowSourceReferences, columnReference, false);
-				if (columnReference.ColumnNodeObjectReferences.Count == 0)
+				if (columnReference.Placement == QueryBlockPlacement.RecursiveSearchClause)
 				{
-					ResolveColumnReference(parentCorrelatedRowSourceReferences, columnReference, true);
+					var matchedColumns = columnReference.Owner.Columns.Where(c => !c.IsAsterisk && c != columnReference.Owner.RecursiveSequenceColumn && c.NormalizedName == columnReference.NormalizedName)
+						.Join(columnReference.Owner.SelfObjectReference.Columns, c => c.NormalizedName, c => c.Name, (sc, c) => c);
+					
+					columnReference.ColumnNodeColumnReferences.AddRange(matchedColumns);
+				}
+				else
+				{
+					ResolveColumnReference(effectiveAccessibleRowSourceReferences, columnReference, false);
+					if (columnReference.ColumnNodeObjectReferences.Count == 0)
+					{
+						ResolveColumnReference(parentCorrelatedRowSourceReferences, columnReference, true);
+					}
 				}
 
-				var referencesSelectListColumn = columnReference.Placement == QueryBlockPlacement.OrderBy && columnReference.ColumnNodeObjectReferences.Count == 0 &&
+				var referencesSelectListColumn = (columnReference.Placement == QueryBlockPlacement.OrderBy || columnReference.Placement == QueryBlockPlacement.RecursiveSearchClause) &&
+				                                 columnReference.ColumnNodeObjectReferences.Count == 0 &&
 				                                 columnReference.OwnerNode == null && columnReference.ColumnNodeColumnReferences.Count > 0;
 				if (referencesSelectListColumn)
 				{
