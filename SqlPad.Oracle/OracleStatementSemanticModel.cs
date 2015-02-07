@@ -380,8 +380,8 @@ namespace SqlPad.Oracle
 			}
 
 			var subqueryComponentNode = queryBlock.RootNode.GetAncestor(NonTerminals.SubqueryComponent);
-			var searchClause = subqueryComponentNode.GetDescendantByPath(NonTerminals.SubqueryFactoringSearchClause);
-			if (searchClause == null || searchClause.LastTerminalNode.Id != Terminals.ColumnAlias)
+			queryBlock.RecursiveSearchClause = subqueryComponentNode.GetDescendantByPath(NonTerminals.SubqueryFactoringSearchClause);
+			if (queryBlock.RecursiveSearchClause == null || queryBlock.RecursiveSearchClause.LastTerminalNode.Id != Terminals.ColumnAlias)
 			{
 				return;
 			}
@@ -390,12 +390,12 @@ namespace SqlPad.Oracle
 				new OracleSelectListColumn(this, null)
 				{
 					Owner = queryBlock,
-					RootNode = searchClause.LastTerminalNode,
-					AliasNode = searchClause.LastTerminalNode,
+					RootNode = queryBlock.RecursiveSearchClause.LastTerminalNode,
+					AliasNode = queryBlock.RecursiveSearchClause.LastTerminalNode,
 					ColumnDescription =
 						new OracleColumn
 						{
-							Name = searchClause.LastTerminalNode.Token.Value.ToQuotedIdentifier(),
+							Name = queryBlock.RecursiveSearchClause.LastTerminalNode.Token.Value.ToQuotedIdentifier(),
 							DataType = OracleDataType.NumberType
 						}
 				};

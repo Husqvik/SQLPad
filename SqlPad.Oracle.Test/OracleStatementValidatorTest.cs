@@ -2032,7 +2032,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		}
 
 		[Test(Description = @"")]
-		public void TestRecursiveQueryWithSearchFirstClause()
+		public void TestRecursiveQueryWithRecursiveSearchClause()
 		{
 			const string sqlText =
 @"WITH CTE(VAL) AS (
@@ -2050,6 +2050,38 @@ SELECT * FROM CTE";
 			var validationModel = BuildValidationModel(sqlText, statement);
 
 			validationModel.InvalidNonTerminals.Count.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
+		public void TestQueryWithInvalidRecursiveSearchClauseAndReference()
+		{
+			const string sqlText =
+@"WITH CTE AS (
+	SELECT DUMMY DUMMY1, 2 DUMMY2 FROM DUAL
+)
+SEARCH DEPTH FIRST BY DUMMY1, DUMMY2, DUMMY3 SET SEQ#
+SELECT DUMMY1, DUMMY2, SEQ# FROM CTE";
+			
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			validationModel.InvalidNonTerminals.Count.ShouldBe(1);
+			var invalidNonterminal = validationModel.InvalidNonTerminals.Values.Single();
+			invalidNonterminal.SemanticErrorType.ShouldBe(OracleSemanticErrorType.MissingWithClauseColumnAliasList);
+
+			/*validationModel.ColumnNodeValidity.Count.ShouldBe(8);
+			var columnValidityNodes = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			columnValidityNodes[2].Node.Token.Value.ShouldBe("DUMMY1");
+			columnValidityNodes[2].IsRecognized.ShouldBe(true);
+			columnValidityNodes[3].Node.Token.Value.ShouldBe("DUMMY2");
+			columnValidityNodes[3].IsRecognized.ShouldBe(true);
+			columnValidityNodes[4].Node.Token.Value.ShouldBe("DUMMY3");
+			columnValidityNodes[4].IsRecognized.ShouldBe(false);
+			columnValidityNodes[7].Node.Token.Value.ShouldBe("SEQ#");
+			columnValidityNodes[7].IsRecognized.ShouldBe(false);*/
 		}
 	}
 }

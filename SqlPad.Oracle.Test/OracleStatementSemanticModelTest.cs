@@ -1508,7 +1508,7 @@ FROM
 		}
 
 		[Test(Description = @"")]
-		public void TestColumnReferencesInRecursiveSearchFirstClauseAndInSubquery()
+		public void TestColumnReferencesInRecursiveSearchClauseAndInSubquery()
 		{
 			const string query1 =
 @"WITH CTE(VAL) AS (

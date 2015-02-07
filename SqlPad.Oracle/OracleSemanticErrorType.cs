@@ -21,6 +21,7 @@ namespace SqlPad.Oracle
 		public const string PositionalParameterNotAllowed = "A positional parameter association may not follow a named association";
 		public const string InvalidColumnIndex = "Invalid column index";
 		public const string GroupFunctionNotAllowed = "Group function is not allowed here";
+		public const string MissingWithClauseColumnAliasList = "WITH clause element did not have a column alias list";
 	}
 
 	public static class OracleSemanticErrorTooltipText

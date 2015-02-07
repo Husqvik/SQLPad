@@ -70,6 +70,10 @@ namespace SqlPad.Oracle
 		public StatementGrammarNode HierarchicalQueryClause { get; set; }
 
 		public StatementGrammarNode ExplicitColumnNameList { get; set; }
+		
+		public StatementGrammarNode RecursiveSearchClause { get; set; }
+
+		public OracleSelectListColumn RecursiveSequenceColumn { get; set; }
 
 		public OracleStatement Statement { get; set; }
 
@@ -78,8 +82,6 @@ namespace SqlPad.Oracle
 		public IReadOnlyCollection<OracleSelectListColumn> AsteriskColumns { get { return _asteriskColumns; } }
 
 		public OracleSqlModelReference ModelReference { get; set; }
-
-		public OracleSelectListColumn RecursiveSequenceColumn { get; set; }
 
 		public IEnumerable<OracleReferenceContainer> ChildContainers
 		{

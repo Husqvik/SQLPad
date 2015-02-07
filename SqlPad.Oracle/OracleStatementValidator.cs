@@ -262,14 +262,21 @@ namespace SqlPad.Oracle
 					}
 				}
 
-				if (queryBlock.Type == QueryBlockType.CommonTableExpression && queryBlock.ExplicitColumnNameList != null)
+				if (queryBlock.Type == QueryBlockType.CommonTableExpression)
 				{
-					var explicitNamedColumnCount = queryBlock.Columns.Count(c => !String.IsNullOrEmpty(c.ExplicitNormalizedName));
-					var recursiveSequenceColumnCount = queryBlock.RecursiveSequenceColumn == null ? 0 : 1;
-					if (explicitNamedColumnCount > 0 && explicitNamedColumnCount != queryBlock.Columns.Count - queryBlock.AsteriskColumns.Count - recursiveSequenceColumnCount)
+					if (queryBlock.ExplicitColumnNameList != null)
 					{
-						validationModel.InvalidNonTerminals[queryBlock.ExplicitColumnNameList] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) { Node = queryBlock.ExplicitColumnNameList };
-						validationModel.InvalidNonTerminals[queryBlock.SelectList] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) { Node = queryBlock.SelectList };
+						var explicitNamedColumnCount = queryBlock.Columns.Count(c => !String.IsNullOrEmpty(c.ExplicitNormalizedName));
+						var recursiveSequenceColumnCount = queryBlock.RecursiveSequenceColumn == null ? 0 : 1;
+						if (explicitNamedColumnCount > 0 && explicitNamedColumnCount != queryBlock.Columns.Count - queryBlock.AsteriskColumns.Count - recursiveSequenceColumnCount)
+						{
+							validationModel.InvalidNonTerminals[queryBlock.ExplicitColumnNameList] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) { Node = queryBlock.ExplicitColumnNameList };
+							validationModel.InvalidNonTerminals[queryBlock.SelectList] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) { Node = queryBlock.SelectList };
+						}
+					}
+					else if (queryBlock.RecursiveSearchClause != null)
+					{
+						validationModel.InvalidNonTerminals[queryBlock.RecursiveSearchClause] = new InvalidNodeValidationData(OracleSemanticErrorType.MissingWithClauseColumnAliasList) { Node = queryBlock.RecursiveSearchClause };
 					}
 				}
 				else if (queryBlock.Type == QueryBlockType.ScalarSubquery && queryBlock.Columns.Count - queryBlock.AsteriskColumns.Count > 1)
