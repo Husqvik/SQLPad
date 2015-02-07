@@ -5607,15 +5607,15 @@
       <Sequences>
         <Sequence>
           <Terminal Id="As" />
-          <NonTerminal Id="StringOrIntegerLiteralOrParenthesisEnclosedStringOrIntegerLiteralList" />
+          <NonTerminal Id="StringOrNumberLiteralOrParenthesisEnclosedStringOrIntegerLiteralList" />
         </Sequence>
       </Sequences>
     </Rule>
 
-    <Rule StartingNonTerminal="StringOrIntegerLiteralOrParenthesisEnclosedStringOrIntegerLiteralList">
+    <Rule StartingNonTerminal="StringOrNumberLiteralOrParenthesisEnclosedStringOrIntegerLiteralList">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="StringOrIntegerLiteral" />
+          <NonTerminal Id="StringOrNumberLiteral" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="ParenthesisEnclosedStringOrIntegerLiteralList" />
@@ -5627,26 +5627,26 @@
       <Sequences>
         <Sequence>
           <Terminal Id="LeftParenthesis" />
-          <NonTerminal Id="StringOrIntegerLiteralList" />
+          <NonTerminal Id="StringOrNumberLiteralList" />
           <Terminal Id="RightParenthesis" />
         </Sequence>
       </Sequences>
     </Rule>
 
-    <Rule StartingNonTerminal="StringOrIntegerLiteralList">
+    <Rule StartingNonTerminal="StringOrNumberLiteralList">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="StringOrIntegerLiteral"/>
-          <NonTerminal Id="StringOrIntegerLiteralListChained" IsOptional="true" />
+          <NonTerminal Id="StringOrNumberLiteral"/>
+          <NonTerminal Id="StringOrNumberLiteralListChained" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
 
-    <Rule StartingNonTerminal="StringOrIntegerLiteralListChained">
+    <Rule StartingNonTerminal="StringOrNumberLiteralListChained">
       <Sequences>
         <Sequence>
           <Terminal Id="Comma"/>
-          <NonTerminal Id="StringOrIntegerLiteralList"/>
+          <NonTerminal Id="StringOrNumberLiteralList"/>
         </Sequence>
       </Sequences>
     </Rule>
@@ -5791,20 +5791,20 @@
           <Terminal Id="Set" />
           <Terminal Id="ColumnAlias" />
           <Terminal Id="To" />
-          <NonTerminal Id="StringOrIntegerLiteral" />
+          <NonTerminal Id="StringOrNumberLiteral" />
           <Terminal Id="Default" />
-          <NonTerminal Id="StringOrIntegerLiteral" />
+          <NonTerminal Id="StringOrNumberLiteral" />
         </Sequence>
       </Sequences>
     </Rule>
 
-    <Rule StartingNonTerminal="StringOrIntegerLiteral">
+    <Rule StartingNonTerminal="StringOrNumberLiteral">
       <Sequences>
         <Sequence>
           <Terminal Id="StringLiteral" />
         </Sequence>
         <Sequence>
-          <Terminal Id="IntegerLiteral" />
+          <Terminal Id="NumberLiteral" />
         </Sequence>
       </Sequences>
     </Rule>

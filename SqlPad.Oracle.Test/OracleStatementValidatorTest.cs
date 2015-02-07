@@ -2,6 +2,7 @@
 using System.Linq;
 using NUnit.Framework;
 using Shouldly;
+using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 
 namespace SqlPad.Oracle.Test
 {
@@ -2041,7 +2042,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 	SELECT VAL + 1 FROM CTE WHERE VAL < 5
 )
 SEARCH DEPTH FIRST BY VAL SET SEQ#
-CYCLE DUMMY SET CYCLE# TO 'X' DEFAULT 'O'
+CYCLE DUMMY SET CYCLE# TO 'X' DEFAULT 0.0E+000
 SELECT * FROM CTE";
 			
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
@@ -2061,7 +2062,7 @@ SELECT * FROM CTE";
 	SELECT DUMMY DUMMY1, 2 DUMMY2 FROM DUAL
 )
 SEARCH DEPTH FIRST BY DUMMY1, DUMMY2, DUMMY3 SET DUMMY3
-CYCLE DUMMY2, DUMMY3 SET DUMMY4 TO 'X' DEFAULT 'O'
+CYCLE DUMMY2, DUMMY3 SET DUMMY4 TO 'String length <> 1' DEFAULT ''
 SELECT DUMMY1, DUMMY2, DUMMY3, DUMMY4 FROM CTE";
 			
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
@@ -2070,9 +2071,12 @@ SELECT DUMMY1, DUMMY2, DUMMY3, DUMMY4 FROM CTE";
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 
-			validationModel.InvalidNonTerminals.Count.ShouldBe(1);
-			var invalidNonterminal = validationModel.InvalidNonTerminals.Values.Single();
-			invalidNonterminal.SemanticErrorType.ShouldBe(OracleSemanticErrorType.MissingWithClauseColumnAliasList);
+			validationModel.InvalidNonTerminals.Count.ShouldBe(2);
+			var invalidNonterminals = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			invalidNonterminals[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.MissingWithClauseColumnAliasList);
+			invalidNonterminals[0].Node.Id.ShouldBe(NonTerminals.SubqueryFactoringSearchClause);
+			invalidNonterminals[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.MissingWithClauseColumnAliasList);
+			invalidNonterminals[1].Node.Id.ShouldBe(NonTerminals.SubqueryFactoringCycleClause);
 
 			validationModel.ColumnNodeValidity.Count.ShouldBe(10);
 			var columnValidityNodes = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
@@ -2096,6 +2100,15 @@ SELECT DUMMY1, DUMMY2, DUMMY3, DUMMY4 FROM CTE";
 			columnValidityNodes[8].IsRecognized.ShouldBe(false);
 			columnValidityNodes[9].Node.Token.Value.ShouldBe("DUMMY4");
 			columnValidityNodes[9].IsRecognized.ShouldBe(false);
+
+			validationModel.IdentifierNodeValidity.Count.ShouldBe(2);
+			var identifierNodes = validationModel.IdentifierNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			identifierNodes.ForEach(
+				i =>
+				{
+					i.IsRecognized.ShouldBe(true);
+					i.SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidCycleMarkValue);
+				});
 		}
 	}
 }

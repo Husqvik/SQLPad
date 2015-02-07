@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
@@ -273,9 +274,44 @@ namespace SqlPad.Oracle
 							validationModel.InvalidNonTerminals[queryBlock.SelectList] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) { Node = queryBlock.SelectList };
 						}
 					}
-					else if (queryBlock.RecursiveSearchClause != null)
+					else
 					{
-						validationModel.InvalidNonTerminals[queryBlock.RecursiveSearchClause] = new InvalidNodeValidationData(OracleSemanticErrorType.MissingWithClauseColumnAliasList) { Node = queryBlock.RecursiveSearchClause };
+						if (queryBlock.RecursiveSearchClause != null)
+						{
+							validationModel.InvalidNonTerminals[queryBlock.RecursiveSearchClause] = new InvalidNodeValidationData(OracleSemanticErrorType.MissingWithClauseColumnAliasList) { Node = queryBlock.RecursiveSearchClause };
+						}
+
+						if (queryBlock.RecursiveCycleClause != null)
+						{
+							validationModel.InvalidNonTerminals[queryBlock.RecursiveCycleClause] = new InvalidNodeValidationData(OracleSemanticErrorType.MissingWithClauseColumnAliasList) { Node = queryBlock.RecursiveCycleClause };
+						}
+					}
+
+					if (queryBlock.RecursiveCycleClause != null)
+					{
+						var cycleMarkLiterals = queryBlock.RecursiveCycleClause.ChildNodes.Where(n => n.Id == NonTerminals.StringOrNumberLiteral);
+						foreach (var cycleMarkLiteral in cycleMarkLiterals)
+						{
+							var isValid = false;
+							if (cycleMarkLiteral.FirstTerminalNode.Id == Terminals.StringLiteral)
+							{
+								var value = cycleMarkLiteral.FirstTerminalNode.Token.Value.ToPlainString();
+								isValid = value.Length == 1;
+							}
+							else
+							{
+								decimal value;
+								if (Decimal.TryParse(cycleMarkLiteral.FirstTerminalNode.Token.Value, NumberStyles.Float, CultureInfo.InvariantCulture, out value))
+								{
+									isValid = value <= 9 && value == Math.Floor(value);
+								}
+							}
+
+							if (!isValid)
+							{
+								validationModel.IdentifierNodeValidity[cycleMarkLiteral.FirstTerminalNode] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidCycleMarkValue) { Node = cycleMarkLiteral.FirstTerminalNode };
+							}
+						}
 					}
 				}
 				else if (queryBlock.Type == QueryBlockType.ScalarSubquery && queryBlock.Columns.Count - queryBlock.AsteriskColumns.Count > 1)
