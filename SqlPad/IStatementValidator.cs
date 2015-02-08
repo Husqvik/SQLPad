@@ -34,6 +34,7 @@ namespace SqlPad
 	public enum RedundancyType
 	{
 		Qualifier,
-		UnusedColumn
+		UnusedColumn,
+		UnusedQueryBlock
 	}
 }

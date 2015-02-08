@@ -10,7 +10,6 @@
              mc:Ignorable="d"
              d:DesignHeight="320" d:DesignWidth="480" d:DataContext="{d:DesignInstance sqlPad:PageModel}">
 	<UserControl.Resources>
-		<sqlPad:SelectedIndexConverter x:Key="SelectedIndexConverter" />
 		<sqlPad:ColorCodeToColorConverter x:Key="ColorCodeToColorConverter" />
 		<sqlPad:PrettyPrintIntegerConverter x:Key="PrettyPrintNumericConverter" />
 
@@ -392,7 +391,7 @@
 					<TextBlock Text="Command executed successfully " Visibility="{Binding StatementExecutedSuccessfullyStatusMessageVisibility}" />
 					<TextBlock Visibility="{Binding GridRowInfoVisibility}">
 						<Run Text="Row " />
-						<Run Text="{Binding ElementName=ResultGrid, Path=SelectedIndex, Mode=OneWay, Converter={StaticResource SelectedIndexConverter}}" />
+						<Run Text="{Binding Path=CurrentRowIndex, Mode=OneWay}" />
 						<Run Text=" of " />
 						<Run Text="{Binding ElementName=ResultGrid, Path=Items.Count, Mode=OneWay}" />
 					</TextBlock>

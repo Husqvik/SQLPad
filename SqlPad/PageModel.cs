@@ -25,6 +25,7 @@ namespace SqlPad
 		private bool _isModified;
 		private bool _isRunning;
 		private int _affectedRowCount = -1;
+		private int _currentRowIndex = 1;
 		private int _selectedCellValueCount;
 		private decimal _selectedCellSum;
 		private decimal _selectedCellAverage;
@@ -397,6 +398,12 @@ namespace SqlPad
 			set { UpdateValueAndRaisePropertyChanged(ref _selectedCellNumericInfoVisibility, value); }
 		}
 
+		public int CurrentRowIndex
+		{
+			get { return _currentRowIndex; }
+			set { UpdateValueAndRaisePropertyChanged(ref _currentRowIndex, value); }
+		}
+		
 		public int SelectedCellValueCount
 		{
 			get { return _selectedCellValueCount; }

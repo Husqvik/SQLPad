@@ -868,6 +868,7 @@ namespace SqlPad
 			ResultGrid.HeadersVisibility = DataGridHeadersVisibility.None;
 
 			_pageModel.AffectedRowCount = -1;
+			_pageModel.CurrentRowIndex = 0;
 
 			SelectDefaultTabIfNeeded();
 		}
@@ -2112,6 +2113,10 @@ namespace SqlPad
 
 		private void ResultGridSelectedCellsChangedHandler(object sender, SelectedCellsChangedEventArgs e)
 		{
+			_pageModel.CurrentRowIndex = ResultGrid.CurrentCell.Item == null
+				? 0
+				: ResultGrid.Items.IndexOf(ResultGrid.CurrentCell.Item) + 1;
+
 			if (ResultGrid.SelectedCells.Count <= 1)
 			{
 				_pageModel.SelectedCellInfoVisibility = Visibility.Collapsed;

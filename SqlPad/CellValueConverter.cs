@@ -43,14 +43,6 @@ namespace SqlPad
 		}
 	}
 
-	public class SelectedIndexConverter : ValueConverterBase
-	{
-		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-		{
-			return (int)value + 1;
-		}
-	}
-
 	public class ObjectToVisibilityConverter : ValueConverterBase
 	{
 		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
