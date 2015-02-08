@@ -578,7 +578,7 @@ namespace SqlPad.Oracle
 					}
 
 					var childNodeId = item.Id;
-					if (!isNodeRequired && workingTerminalCount == 0 && String.CompareOrdinal(childNodeId, nonTerminalId) == 0)
+					if (!isNodeRequired && workingTerminalCount == 0 && String.Equals(childNodeId, nonTerminalId))
 					{
 						continue;
 					}
@@ -828,7 +828,7 @@ namespace SqlPad.Oracle
 				if (String.IsNullOrEmpty(terminal.RegexValue))
 				{
 					var tokenValue = currentToken.UpperInvariantValue;
-					tokenIsValid = String.CompareOrdinal(terminal.Value, tokenValue) == 0 || (terminal.AllowQuotedNotation && tokenValue.Length == terminal.Value.Length + 2 && tokenValue[0] == '"' && tokenValue[tokenValue.Length - 1] == '"' && String.CompareOrdinal(tokenValue.Substring(1, tokenValue.Length - 2), terminal.Value) == 0);
+					tokenIsValid = String.Equals(terminal.Value, tokenValue) || (terminal.AllowQuotedNotation && tokenValue.Length == terminal.Value.Length + 2 && tokenValue[0] == '"' && tokenValue[tokenValue.Length - 1] == '"' && String.Equals(tokenValue.Substring(1, tokenValue.Length - 2), terminal.Value));
 					isReservedWord = tokenIsValid && (scope == ReservedWordScope.Sql ? terminal.ReservedWord == ReservedWordType.Sql : terminal.ReservedWord > 0);
 				}
 				else

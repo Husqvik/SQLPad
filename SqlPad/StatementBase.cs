@@ -7,6 +7,7 @@ namespace SqlPad
 {
 	public abstract class StatementBase
 	{
+		private static readonly StatementGrammarNode[] EmptyNodes = new StatementGrammarNode[0];
 		private IReadOnlyList<StatementGrammarNode> _allTerminals;
 		private ICollection<StatementGrammarNode> _invalidGrammarNodes;
 
@@ -43,7 +44,7 @@ namespace SqlPad
 		private ICollection<StatementGrammarNode> BuildInvalidGrammarNodeCollection()
 		{
 			return RootNode == null
-				? new StatementGrammarNode[0]
+				? EmptyNodes
 				: GetInvalidGrammerNodes(RootNode).ToArray();
 		}
 
@@ -77,8 +78,7 @@ namespace SqlPad
 
 		private IReadOnlyList<StatementGrammarNode> BuildTerminalCollection()
 		{
-			var terminals = RootNode == null ? Enumerable.Empty<StatementGrammarNode>() : RootNode.Terminals;
-			return terminals.ToArray();
+			return RootNode == null ? EmptyNodes : RootNode.Terminals.ToArray();
 		}
 
 		public StatementGrammarNode GetNodeAtPosition(int position, Func<StatementGrammarNode, bool> filter = null)

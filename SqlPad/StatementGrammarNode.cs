@@ -11,6 +11,7 @@ namespace SqlPad
 		public static readonly IReadOnlyCollection<StatementGrammarNode> EmptyArray = new StatementGrammarNode[0];
 
 		private readonly List<StatementGrammarNode> _childNodes = new List<StatementGrammarNode>();
+		private IReadOnlyList<StatementGrammarNode> _terminals;
 		private List<StatementCommentNode> _commentNodes;
 
 		public int TerminalCount { get; private set; }
@@ -130,13 +131,38 @@ namespace SqlPad
 			return new SourcePosition { IndexStart = indexStart, IndexEnd = indexEnd };
 		}
 
-		public IEnumerable<StatementGrammarNode> Terminals 
+		public IReadOnlyList<StatementGrammarNode> Terminals 
 		{
-			get
+			get { return _terminals ?? GatherTerminals(); }
+		}
+
+		private IReadOnlyList<StatementGrammarNode> GatherTerminals()
+		{
+			var statementGrammarNodes = new StatementGrammarNode[TerminalCount];
+			var offset = 0;
+
+			GatherNodeTerminals(this, statementGrammarNodes, ref offset);
+			
+			return _terminals = statementGrammarNodes;
+		}
+
+		private static void GatherChildNodeTerminals(StatementGrammarNode node, StatementGrammarNode[] targetArray, ref int offset)
+		{
+			foreach (var childNode in node.ChildNodes)
 			{
-				return Type == NodeType.Terminal
-					? Enumerable.Repeat(this, 1)
-					: ChildNodes.SelectMany(t => t.Terminals);
+				GatherNodeTerminals(childNode, targetArray, ref offset);
+			}
+		}
+
+		private static void GatherNodeTerminals(StatementGrammarNode childNode, StatementGrammarNode[] targetArray, ref int offset)
+		{
+			if (childNode.Type == NodeType.Terminal)
+			{
+				targetArray[offset++] = childNode;
+			}
+			else
+			{
+				GatherChildNodeTerminals(childNode, targetArray, ref offset);
 			}
 		}
 
