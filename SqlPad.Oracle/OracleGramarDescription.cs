@@ -172,6 +172,9 @@ namespace SqlPad.Oracle
 			public const string CommitWriteClause = "CommitWriteClause";
 			public const string CommonProgramModifier = "CommonProgramModifier";
 			public const string CommonSequenceOption = "CommonSequenceOption";
+			public const string CommonTableExpression = "CommonTableExpression";
+			public const string CommonTableExpressionList = "CommonTableExpressionList";
+			public const string CommonTableExpressionListChained = "CommonTableExpressionListChained";
 			public const string ConcatenatedSubquery = "ConcatenatedSubquery";
 			public const string Condition = "Condition";
 			public const string ConditionalInsertClause = "ConditionalInsertClause";
@@ -948,8 +951,6 @@ namespace SqlPad.Oracle
 			public const string SubpartitionTemplate = "SubpartitionTemplate";
 			public const string SubpartitionType = "SubpartitionType";
 			public const string Subquery = "Subquery";
-			public const string SubqueryComponent = "SubqueryComponent";
-			public const string SubqueryComponentChained = "SubqueryComponentChained";
 			public const string SubqueryFactoringClause = "SubqueryFactoringClause";
 			public const string SubqueryFactoringCycleClause = "SubqueryFactoringCycleClause";
 			public const string SubqueryFactoringSearchClause = "SubqueryFactoringSearchClause";

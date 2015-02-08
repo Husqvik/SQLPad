@@ -31,6 +31,7 @@ namespace SqlPad.Oracle
 		private readonly Dictionary<OracleQueryBlock, List<StatementGrammarNode>> _queryBlockTerminals = new Dictionary<OracleQueryBlock, List<StatementGrammarNode>>();
 		private readonly Dictionary<OracleQueryBlock, ICollection<StatementGrammarNode>> _accessibleQueryBlockRoot = new Dictionary<OracleQueryBlock, ICollection<StatementGrammarNode>>();
 		private readonly Dictionary<OracleDataObjectReference, ICollection<KeyValuePair<StatementGrammarNode, string>>> _objectReferenceCteRootNodes = new Dictionary<OracleDataObjectReference, ICollection<KeyValuePair<StatementGrammarNode, string>>>();
+		private readonly Dictionary<OracleQueryBlock, HashSet<OracleQueryBlock>> _dataObjectDependentQueryBlocks = new Dictionary<OracleQueryBlock, HashSet<OracleQueryBlock>>();
 		
 		private OracleQueryBlock _mainQueryBlock;
 		private Dictionary<StatementGrammarNode, OracleQueryBlock> _queryBlockNodes = new Dictionary<StatementGrammarNode, OracleQueryBlock>();
@@ -135,7 +136,7 @@ namespace SqlPad.Oracle
 			
 			foreach (var terminal in Statement.AllTerminals)
 			{
-				if (terminal.Id == Terminals.Select && terminal.ParentNode.Id == NonTerminals.QueryBlock)
+				if (terminal.Id == Terminals.Select && String.Equals(terminal.ParentNode.Id, NonTerminals.QueryBlock))
 				{
 					var queryBlock = new OracleQueryBlock(this) { RootNode = terminal.ParentNode, Statement = Statement };
 					queryBlocks.Add(queryBlock);
@@ -148,10 +149,11 @@ namespace SqlPad.Oracle
 					queryBlockTerminalList = new KeyValuePair<OracleQueryBlock, List<StatementGrammarNode>>(queryBlock, new List<StatementGrammarNode>());
 					_queryBlockTerminals.Add(queryBlock, queryBlockTerminalList.Value);
 				}
-				else if (terminal.ParentNode.Id == NonTerminals.Expression && (terminal.Id == Terminals.Date || terminal.Id == Terminals.Timestamp))
+				else if (String.Equals(terminal.ParentNode.Id, NonTerminals.Expression) &&
+				         (String.Equals(terminal.Id, Terminals.Date) || String.Equals(terminal.Id, Terminals.Timestamp)))
 				{
 					var literal = CreateLiteral(terminal);
-					if (literal.Terminal != null && literal.Terminal.Id == Terminals.StringLiteral)
+					if (literal.Terminal != null && String.Equals(literal.Terminal.Id, Terminals.StringLiteral))
 					{
 						_literals.Add(literal);
 					}
@@ -188,11 +190,12 @@ namespace SqlPad.Oracle
 					queryBlock.Type = QueryBlockType.ScalarSubquery;
 				}
 
-				var commonTableExpression = queryBlockRoot.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBoundary, NonTerminals.SubqueryComponent);
+				var commonTableExpression = queryBlockRoot.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBoundary, NonTerminals.CommonTableExpression);
 				if (commonTableExpression != null)
 				{
 					queryBlock.AliasNode = commonTableExpression.ChildNodes[0];
 					queryBlock.Type = QueryBlockType.CommonTableExpression;
+					_dataObjectDependentQueryBlocks.Add(queryBlock, new HashSet<OracleQueryBlock>());
 				}
 				else
 				{
@@ -383,7 +386,7 @@ namespace SqlPad.Oracle
 
 		private void FindRecusiveCycleReferences(OracleQueryBlock queryBlock)
 		{
-			var subqueryComponentNode = queryBlock.RootNode.GetAncestor(NonTerminals.SubqueryComponent);
+			var subqueryComponentNode = queryBlock.RootNode.GetAncestor(NonTerminals.CommonTableExpression);
 			queryBlock.RecursiveCycleClause = subqueryComponentNode.GetDescendantByPath(NonTerminals.SubqueryFactoringCycleClause);
 			if (queryBlock.RecursiveCycleClause == null)
 			{
@@ -427,7 +430,7 @@ namespace SqlPad.Oracle
 
 		private void FindRecusiveSearchReferences(OracleQueryBlock queryBlock)
 		{
-			var subqueryComponentNode = queryBlock.RootNode.GetAncestor(NonTerminals.SubqueryComponent);
+			var subqueryComponentNode = queryBlock.RootNode.GetAncestor(NonTerminals.CommonTableExpression);
 			queryBlock.RecursiveSearchClause = subqueryComponentNode.GetDescendantByPath(NonTerminals.SubqueryFactoringSearchClause);
 			if (queryBlock.RecursiveSearchClause == null)
 			{
@@ -786,13 +789,21 @@ namespace SqlPad.Oracle
 					else if (_objectReferenceCteRootNodes.ContainsKey(nestedQueryReference))
 					{
 						var commonTableExpressionNode = _objectReferenceCteRootNodes[nestedQueryReference];
+						var nestedTableFullyQualifiedName = OracleObjectIdentifier.Create(null, nestedQueryReference.ObjectNode.Token.Value);
 						foreach (var referencedQueryBlock in commonTableExpressionNode
-							.Where(nodeName => OracleObjectIdentifier.Create(null, nodeName.Value) == OracleObjectIdentifier.Create(null, nestedQueryReference.ObjectNode.Token.Value)))
+							.Where(nodeName => OracleObjectIdentifier.Create(null, nodeName.Value) == nestedTableFullyQualifiedName))
 						{
 							var cteQueryBlockNode = referencedQueryBlock.Key.GetDescendants(NonTerminals.QueryBlock).FirstOrDefault();
 							if (cteQueryBlockNode != null)
 							{
-								nestedQueryReference.QueryBlocks.Add(_queryBlockNodes[cteQueryBlockNode]);
+								var referredQueryBlock = _queryBlockNodes[cteQueryBlockNode];
+								nestedQueryReference.QueryBlocks.Add(referredQueryBlock);
+
+								HashSet<OracleQueryBlock> dependentQueryBlocks;
+								if (_dataObjectDependentQueryBlocks.TryGetValue(referredQueryBlock, out dependentQueryBlocks))
+								{
+									dependentQueryBlocks.Add(nestedQueryReference.Owner);
+								}
 							}
 						}
 					}
@@ -851,7 +862,28 @@ namespace SqlPad.Oracle
 
 		private void ResolveRedundantCommonTableExpressions()
 		{
-			
+			foreach (var queryBlockDependentQueryBlocks in _dataObjectDependentQueryBlocks.Where(qbs => qbs.Value.Count == 0))
+			{
+				queryBlockDependentQueryBlocks.Key.IsRedundant = true;
+
+				var commonTableExpression = queryBlockDependentQueryBlocks.Key.RootNode.GetAncestor(NonTerminals.CommonTableExpression);
+				var redundantTerminals = new List<StatementGrammarNode>();
+				var precedingTerminal = commonTableExpression.PrecedingTerminal;
+				var followingTerminal = commonTableExpression.FollowingTerminal;
+				if (followingTerminal != null && String.Equals(followingTerminal.Id, Terminals.Comma))
+				{
+					redundantTerminals.AddRange(commonTableExpression.Terminals);
+					redundantTerminals.Add(followingTerminal);
+				}
+				else if (String.Equals(precedingTerminal.Id, Terminals.Comma) || String.Equals(precedingTerminal.Id, Terminals.With))
+				{
+					redundantTerminals.Add(precedingTerminal);
+					redundantTerminals.AddRange(commonTableExpression.Terminals);
+				}
+
+				var terminalGroup = new RedundantTerminalGroup(redundantTerminals, RedundancyType.UnusedQueryBlock);
+				_redundantTerminalGroups.Add(terminalGroup);
+			}
 		}
 
 		private void ResolveRedundantSelectListColumns()
@@ -859,9 +891,10 @@ namespace SqlPad.Oracle
 			foreach (var queryBlock in _queryBlockNodes.Values.Where(qb => qb != MainQueryBlock && !qb.HasDistinctResultSet))
 			{
 				var redundantColumns = 0;
-				foreach (var column in queryBlock.Columns.Where(c => c.HasExplicitDefinition && !c.IsReferenced))
+				var explicitSelectListColumns = queryBlock.Columns.Where(c => c.HasExplicitDefinition).ToArray();
+				foreach (var column in explicitSelectListColumns.Where(c => !c.IsReferenced))
 				{
-					if (++redundantColumns == queryBlock.Columns.Count - queryBlock.AttachedColumns.Count)
+					if (++redundantColumns == explicitSelectListColumns.Length - queryBlock.AttachedColumns.Count)
 					{
 						break;
 					}
@@ -1195,9 +1228,17 @@ namespace SqlPad.Oracle
 				return;
 			}
 
-			queryBlock.AliasNode = null;
+			var anchorReferences = queryBlock.ObjectReferences
+				.Where(r => r.Type == ReferenceType.SchemaObject && r.OwnerNode == null && r.DatabaseLinkNode == null && r.FullyQualifiedObjectName.NormalizedName == precedingQueryBlock.NormalizedAlias)
+				.ToArray();
+			if (anchorReferences.Length == 0)
+			{
+				return;
+			}
 
-			var anchorReferences = queryBlock.ObjectReferences.Where(r => r.Type == ReferenceType.SchemaObject && r.OwnerNode == null && r.DatabaseLinkNode == null && r.FullyQualifiedObjectName.NormalizedName == precedingQueryBlock.NormalizedAlias).ToArray();
+			queryBlock.AliasNode = null;
+			_dataObjectDependentQueryBlocks.Remove(queryBlock);
+
 			foreach(var anchorReference in anchorReferences)
 			{
 				queryBlock.ObjectReferences.Remove(anchorReference);
@@ -2167,15 +2208,15 @@ namespace SqlPad.Oracle
 		private IEnumerable<KeyValuePair<StatementGrammarNode, string>> GetCommonTableExpressionReferences(StatementGrammarNode node)
 		{
 			var queryRoot = node.GetAncestor(NonTerminals.NestedQuery);
-			var subQueryCompondentNode = node.GetAncestor(NonTerminals.SubqueryComponent);
+			var subQueryCompondentNode = node.GetAncestor(NonTerminals.CommonTableExpressionList);
 			var cteReferencesWithinSameClause = new List<KeyValuePair<StatementGrammarNode, string>>();
 			if (subQueryCompondentNode != null)
 			{
-				var cteNodeWithinSameClause = subQueryCompondentNode.GetAncestor(NonTerminals.SubqueryComponent);
+				var cteNodeWithinSameClause = subQueryCompondentNode.GetAncestor(NonTerminals.CommonTableExpressionList);
 				while (cteNodeWithinSameClause != null)
 				{
 					cteReferencesWithinSameClause.Add(GetCteNameNode(cteNodeWithinSameClause));
-					cteNodeWithinSameClause = cteNodeWithinSameClause.GetAncestor(NonTerminals.SubqueryComponent);
+					cteNodeWithinSameClause = cteNodeWithinSameClause.GetAncestor(NonTerminals.CommonTableExpressionList);
 				}
 
 				if (node.Level - queryRoot.Level > node.Level - subQueryCompondentNode.Level)
@@ -2188,16 +2229,17 @@ namespace SqlPad.Oracle
 				return cteReferencesWithinSameClause;
 
 			var commonTableExpressions = queryRoot
-				.GetPathFilterDescendants(n => n.Id != NonTerminals.QueryBlock, NonTerminals.SubqueryComponent)
+				.GetPathFilterDescendants(n => n.Id != NonTerminals.QueryBlock, NonTerminals.CommonTableExpressionList)
 				.Select(GetCteNameNode);
 			return commonTableExpressions
 				.Concat(cteReferencesWithinSameClause)
 				.Concat(GetCommonTableExpressionReferences(queryRoot));
 		}
 
-		private KeyValuePair<StatementGrammarNode, string> GetCteNameNode(StatementGrammarNode cteNode)
+		private KeyValuePair<StatementGrammarNode, string> GetCteNameNode(StatementGrammarNode cteListNode)
 		{
-			var objectIdentifierNode = cteNode.ChildNodes.FirstOrDefault();
+			var cteNode = cteListNode[0];
+			var objectIdentifierNode = cteNode[0];
 			var cteName = objectIdentifierNode == null ? null : objectIdentifierNode.Token.Value.ToQuotedIdentifier();
 			return new KeyValuePair<StatementGrammarNode, string>(cteNode, cteName);
 		}

@@ -61,12 +61,12 @@ namespace SqlPad.Oracle.Commands
 			}
 			else if (CurrentQueryBlock.Type == QueryBlockType.CommonTableExpression)
 			{
-				startIndex = CurrentQueryBlock.RootNode.GetAncestor(NonTerminals.SubqueryComponent).SourcePosition.IndexStart;
+				startIndex = CurrentQueryBlock.RootNode.GetAncestor(NonTerminals.CommonTableExpression).SourcePosition.IndexStart;
 			}
 			else
 			{
 				builder.Append(", ");
-				startIndex = lastCte.RootNode.GetAncestor(NonTerminals.SubqueryComponent).SourcePosition.IndexEnd + 1;
+				startIndex = lastCte.RootNode.GetAncestor(NonTerminals.CommonTableExpression).SourcePosition.IndexEnd + 1;
 			}
 
 			builder.Append(tableAlias + " AS (");

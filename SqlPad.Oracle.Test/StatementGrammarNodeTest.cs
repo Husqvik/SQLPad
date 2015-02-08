@@ -30,10 +30,10 @@ namespace SqlPad.Oracle.Test
 		public void TestGetPathFilterDescendants()
 		{
 			var rootNestedQuery = _rootNode.GetDescendantByIndex(0, 0, 0);
-			var commonTableExpressions = rootNestedQuery.GetPathFilterDescendants(n => n.Id != NonTerminals.NestedQuery, NonTerminals.SubqueryComponent).ToArray();
+			var commonTableExpressions = rootNestedQuery.GetPathFilterDescendants(n => n.Id != NonTerminals.NestedQuery, NonTerminals.CommonTableExpression).ToArray();
 			commonTableExpressions.Length.ShouldBe(1);
 
-			commonTableExpressions = _rootNode.GetDescendants(NonTerminals.SubqueryComponent).ToArray();
+			commonTableExpressions = _rootNode.GetDescendants(NonTerminals.CommonTableExpression).ToArray();
 			commonTableExpressions.Length.ShouldBe(4);
 		}
 

@@ -4429,12 +4429,21 @@
       <Sequences>
         <Sequence>
           <Terminal Id="With" />
-          <NonTerminal Id="SubqueryComponent" />
+          <NonTerminal Id="CommonTableExpressionList" />
         </Sequence>
       </Sequences>
     </Rule>
     
-    <Rule StartingNonTerminal="SubqueryComponent">
+    <Rule StartingNonTerminal="CommonTableExpressionList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="CommonTableExpression" />
+          <NonTerminal Id="CommonTableExpressionListChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="CommonTableExpression">
       <Sequences>
         <Sequence>
           <Terminal Id="ObjectAlias" Tag="SubQueryName" Comment="Sub query name" />
@@ -4445,7 +4454,6 @@
           <Terminal Id="RightParenthesis" />
           <NonTerminal Id="SubqueryFactoringSearchClause" IsOptional="true" />
           <NonTerminal Id="SubqueryFactoringCycleClause" IsOptional="true" />
-          <NonTerminal Id="SubqueryComponentChained" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -4469,11 +4477,11 @@
       </Sequences>
     </Rule>
     
-    <Rule StartingNonTerminal="SubqueryComponentChained">
+    <Rule StartingNonTerminal="CommonTableExpressionListChained">
       <Sequences>
         <Sequence>
           <Terminal Id="Comma" />
-          <NonTerminal Id="SubqueryComponent" />
+          <NonTerminal Id="CommonTableExpressionList" />
         </Sequence>
       </Sequences>
     </Rule>

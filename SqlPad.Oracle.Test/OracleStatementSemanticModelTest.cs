@@ -717,7 +717,8 @@ FROM
 			redundantTerminals[6].Id.ShouldBe(Terminals.Identifier);
 			redundantTerminals[7].Id.ShouldBe(Terminals.ColumnAlias);
 		}
-		[Test(Description = @""), Ignore]
+
+		[Test(Description = @"")]
 		public void TestUnusedCommonTableExpression()
 		{
 			const string query1 =
@@ -737,8 +738,52 @@ SELECT * FROM DUAL";
 			terminalGroup.Count.ShouldBe(32);
 			terminalGroup[0].Token.Value.ShouldBe("WITH");
 			terminalGroup[0].Token.Index.ShouldBe(0);
-			terminalGroup[31].Token.Value.ShouldBe(")");
-			terminalGroup[31].Token.Index.ShouldBe(107);
+			terminalGroup[31].Token.Value.ShouldBe("SEQ#");
+			terminalGroup[31].Token.Index.ShouldBe(142);
+		}
+
+		[Test(Description = @"")]
+		public void TestUnusedCommonTableExpressionWhenReferenced()
+		{
+			const string query1 = @"WITH CTE AS (SELECT DUMMY DUMMY1, 2 DUMMY2 FROM DUAL) SELECT * FROM CTE";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
+		public void TestMultipleUnusedCommonTableExpression()
+		{
+			const string query1 =
+@"WITH CTE1(DUMMY) AS (
+	SELECT 0 DUMMY FROM DUAL
+	UNION ALL
+	SELECT 1 + DUMMY FROM CTE1 WHERE DUMMY < 5
+)
+SEARCH DEPTH FIRST BY DUMMY SET SEQ#
+CYCLE DUMMY SET CYCLE TO 1 DEFAULT 0,
+CTE_DUMMY AS (
+	SELECT * FROM DUAL
+)
+SELECT * FROM DUAL";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.RedundantSymbolGroups.Count.ShouldBe(2);
+			var terminalGroups = semanticModel.RedundantSymbolGroups.ToArray();
+			terminalGroups[0].Count.ShouldBe(9);
+			terminalGroups[0][0].Token.Value.ShouldBe(",");
+			terminalGroups[0][0].Token.Index.ShouldBe(184);
+			terminalGroups[0][8].Token.Value.ShouldBe(")");
+			terminalGroups[0][8].Token.Index.ShouldBe(224);
+			terminalGroups[1].Count.ShouldBe(40);
+			terminalGroups[1][0].Token.Value.ShouldBe("CTE1");
+			terminalGroups[1][0].Token.Index.ShouldBe(5);
+			terminalGroups[1][39].Token.Value.ShouldBe(",");
+			terminalGroups[1][39].Token.Index.ShouldBe(184);
 		}
 
 		[Test(Description = @"")]
