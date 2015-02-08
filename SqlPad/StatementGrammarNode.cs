@@ -229,7 +229,33 @@ namespace SqlPad
 
 		public IEnumerable<StatementGrammarNode> GetPathFilterDescendants(Func<StatementGrammarNode, bool> pathFilter, params string[] descendantNodeIds)
 		{
-			return GetChildNodes(pathFilter).Where(t => descendantNodeIds == null || descendantNodeIds.Length == 0 || descendantNodeIds.Contains(t.Id));
+			return GetPathFilterDescendants(this, pathFilter, descendantNodeIds);
+		}
+
+		private static IEnumerable<StatementGrammarNode> GetPathFilterDescendants(StatementGrammarNode node, Func<StatementGrammarNode, bool> pathFilter, params string[] descendantNodeIds)
+		{
+			foreach (var childNode in node.ChildNodes)
+			{
+				if (pathFilter != null && !pathFilter(childNode))
+				{
+					continue;
+				}
+
+				if (descendantNodeIds == null || descendantNodeIds.Length == 0 || descendantNodeIds.Contains(childNode.Id))
+				{
+					yield return childNode;
+				}
+
+				if (childNode.Type == NodeType.Terminal)
+				{
+					continue;
+				}
+				
+				foreach (var descendant in GetPathFilterDescendants(childNode, pathFilter, descendantNodeIds))
+				{
+					yield return descendant;
+				}
+			}
 		}
 
 		public StatementGrammarNode GetSingleDescendant(params string[] descendantNodeIds)

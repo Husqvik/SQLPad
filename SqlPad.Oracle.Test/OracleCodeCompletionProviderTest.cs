@@ -3,6 +3,7 @@ using System.Linq;
 using NUnit.Framework;
 using Shouldly;
 using System;
+using System.Diagnostics;
 
 namespace SqlPad.Oracle.Test
 {
@@ -12,6 +13,28 @@ namespace SqlPad.Oracle.Test
 		private static readonly OracleCodeCompletionProvider CodeCompletionProvider = new OracleCodeCompletionProvider();
 		private readonly SqlDocumentRepository _documentRepository = TestFixture.CreateDocumentRepository();
 		private static readonly Func<ICodeCompletionItem, bool> FilterProgramItems = i => !i.Category.In(OracleCodeCompletionCategory.PackageFunction, OracleCodeCompletionCategory.Package, OracleCodeCompletionCategory.SchemaFunction, OracleCodeCompletionCategory.BuiltInFunction);
+
+		[Test(Description = @"")]
+		public void TestCodeCompletionAfterEachCharacter()
+		{
+			const string query =
+@"WITH CTE(VAL) AS (
+	SELECT 1 FROM DUAL
+	UNION ALL
+	SELECT VAL + 1 FROM CTE WHERE VAL < 5
+)
+SEARCH DEPTH FIRST BY VAL SET SEQ#
+CYCLE VAL SET CYCLE# TO 'X' DEFAULT 'O'
+SELECT * FROM CTE JOIN DUAL ON TO_CHAR(VAL) <> DUMMY CROSS APPLY (SELECT * FROM DUAL) T2 WHERE VAL = SEQ# AND CYCLE# = 'O' ORDER BY SEQ# DESC, VAL";
+
+			for (var i = 1; i < query.Length; i++)
+			{
+				var effectiveQuery = query.Substring(0, i);
+				var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, effectiveQuery, effectiveQuery.Length);
+
+				Trace.WriteLine(String.Format("Caret position: {0}; Suggested items: {1}", effectiveQuery.Length, items.Count));
+			}
+		}
 
 		[Test(Description = @"")]
 		public void TestObjectSuggestionWithSchema()
