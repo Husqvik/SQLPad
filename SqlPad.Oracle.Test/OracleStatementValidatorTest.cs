@@ -2110,5 +2110,19 @@ SELECT DUMMY1, DUMMY2, DUMMY3, DUMMY4 FROM CTE";
 					i.SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidCycleMarkValue);
 				});
 		}
+
+		[Test(Description = @"")]
+		public void TestValidationModelBuildWithOrderByPostfixedNumber()
+		{
+			const string sqlText = @"SELECT * FROM DUAL ORDER BY 1d";
+			
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			validationModel.InvalidNonTerminals.Count.ShouldBe(0);
+		}
 	}
 }

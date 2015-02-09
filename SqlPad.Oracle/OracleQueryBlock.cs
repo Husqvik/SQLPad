@@ -210,13 +210,13 @@ namespace SqlPad.Oracle
 
 		private OracleOrderByColumnIndexReference GetColumnIndexReference(StatementGrammarNode orderExpression)
 		{
+			int columnIndex;
 			if (orderExpression.TerminalCount != 1 || orderExpression.FirstTerminalNode.Id != Terminals.NumberLiteral ||
-			    orderExpression.FirstTerminalNode.Token.Value.IndexOf('.') != -1)
+				orderExpression.FirstTerminalNode.Token.Value.IndexOf('.') != -1 || !Int32.TryParse(orderExpression.FirstTerminalNode.Token.Value, out columnIndex))
 			{
 				return OracleOrderByColumnIndexReference.None;
 			}
 
-			var columnIndex = Convert.ToInt32(orderExpression.FirstTerminalNode.Token.Value);
 			return
 				new OracleOrderByColumnIndexReference
 				{
