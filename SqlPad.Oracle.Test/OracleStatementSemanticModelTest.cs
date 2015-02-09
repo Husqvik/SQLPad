@@ -1608,5 +1608,31 @@ SELECT * FROM CTE";
 			cteQueryBlock.Columns[1].NormalizedName.ShouldBe("\"SEQ#\"");
 			cteQueryBlock.Columns[1].ColumnDescription.FullTypeName.ShouldBe("NUMBER");
 		}
+
+		[Test(Description = @"")]
+		public void TestCrossApplyColumnReference()
+		{
+			const string query1 = @"SELECT DUMMY C1, C2 FROM DUAL T1 CROSS APPLY (SELECT DUMMY C2 FROM DUAL T2 WHERE DUMMY <> T1.DUMMY) T2";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			var queryBlock = semanticModel.MainQueryBlock;
+			queryBlock.ShouldNotBe(null);
+
+			queryBlock.ObjectReferences.Count.ShouldBe(2);
+			var dualTableReference = queryBlock.ObjectReferences.First();
+			var crossApliedTableReference = queryBlock.ObjectReferences.Last();
+			crossApliedTableReference.QueryBlocks.Count.ShouldBe(1);
+			var crossApliedQueryBlock = crossApliedTableReference.QueryBlocks.Single();
+			crossApliedQueryBlock.ColumnReferences.Count.ShouldBe(2);
+			crossApliedQueryBlock.ColumnReferences[1].FullyQualifiedObjectName.ShouldBe(OracleObjectIdentifier.Create(null, "T1"));
+			crossApliedQueryBlock.ColumnReferences[1].ObjectNodeObjectReferences.Count.ShouldBe(1);
+			crossApliedQueryBlock.ColumnReferences[1].ObjectNodeObjectReferences.Single().ShouldBe(dualTableReference);
+			crossApliedQueryBlock.ColumnReferences[1].ColumnNodeObjectReferences.Count.ShouldBe(1);
+			crossApliedQueryBlock.ColumnReferences[1].ColumnNodeObjectReferences.Single().ShouldBe(dualTableReference);
+			crossApliedQueryBlock.ColumnReferences[1].ColumnNodeColumnReferences.Count.ShouldBe(1);
+		}
 	}
 }

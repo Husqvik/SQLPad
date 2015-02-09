@@ -778,6 +778,8 @@ namespace SqlPad.Oracle
 			{
 				ResolveConcatenatedQueryBlocks(queryBlock);
 
+				ResolveCrossAndOuterAppliedTableReferences(queryBlock);
+
 				ResolveParentCorrelatedQueryBlock(queryBlock);
 
 				foreach (var nestedQueryReference in queryBlock.ObjectReferences.Where(t => t.Type != ReferenceType.SchemaObject))
@@ -1185,6 +1187,25 @@ namespace SqlPad.Oracle
 				};
 		}
 
+		private void ResolveCrossAndOuterAppliedTableReferences(OracleQueryBlock queryBlock)
+		{
+			var tableReferenceJoinClause = queryBlock.RootNode.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.TableReferenceJoinClause);
+			var isApplied = queryBlock.RootNode.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.CrossOrOuterApplyClause) != null;
+			if (tableReferenceJoinClause == null || !isApplied)
+			{
+				return;
+			}
+
+			var appliedTableReferenceNode = tableReferenceJoinClause[0];
+			if (appliedTableReferenceNode == null)
+			{
+				return;
+			}
+
+			var parentCorrelatedQueryBlock = GetQueryBlock(tableReferenceJoinClause);
+			queryBlock.CrossOrOuterApplyReference = parentCorrelatedQueryBlock.ObjectReferences.SingleOrDefault(o => o.RootNode == appliedTableReferenceNode);
+		}
+
 		private void ResolveParentCorrelatedQueryBlock(OracleQueryBlock queryBlock, bool allowMoreThanOneLevel = false)
 		{
 			var nestedQueryRoot = queryBlock.RootNode.ParentNode.ParentNode;
@@ -1267,12 +1288,19 @@ namespace SqlPad.Oracle
 
 				ResolveFunctionReferences(queryBlock.AllProgramReferences);
 
-				var parentCorrelatedQueryBlockObjectReferences = queryBlock.ParentCorrelatedQueryBlock == null
-					? new OracleDataObjectReference[0]
-					: queryBlock.ParentCorrelatedQueryBlock.ObjectReferences;
+				var correlatedReferences = new List<OracleDataObjectReference>();
+				if (queryBlock.ParentCorrelatedQueryBlock != null)
+				{
+					correlatedReferences.AddRange(queryBlock.ParentCorrelatedQueryBlock.ObjectReferences);
+				}
+
+				if (queryBlock.CrossOrOuterApplyReference != null)
+				{
+					correlatedReferences.Add(queryBlock.CrossOrOuterApplyReference);
+				}
 
 				var columnReferences = queryBlock.AllColumnReferences.Where(c => c.SelectListColumn == null || c.SelectListColumn.HasExplicitDefinition);
-				ResolveColumnObjectReferences(columnReferences, queryBlock.ObjectReferences, parentCorrelatedQueryBlockObjectReferences);
+				ResolveColumnObjectReferences(columnReferences, queryBlock.ObjectReferences, correlatedReferences);
 
 				ResolveDatabaseLinks(queryBlock);
 			}
@@ -1687,7 +1715,7 @@ namespace SqlPad.Oracle
 				case ReferenceType.InlineView:
 				case ReferenceType.CommonTableExpression:
 					var selectListColumns = rowSourceReference.QueryBlocks.SelectMany(qb => qb.Columns)
-						.Where(c => c.NormalizedName == columnReference.NormalizedName && (columnReference.ObjectNode == null || columnReference.FullyQualifiedObjectName.NormalizedName == rowSourceReference.FullyQualifiedObjectName.NormalizedName));
+						.Where(c => String.Equals(c.NormalizedName, columnReference.NormalizedName) && (columnReference.ObjectNode == null ||  String.Equals(columnReference.FullyQualifiedObjectName.NormalizedName, rowSourceReference.FullyQualifiedObjectName.NormalizedName)));
 
 					foreach (var selectListColumn in selectListColumns)
 					{

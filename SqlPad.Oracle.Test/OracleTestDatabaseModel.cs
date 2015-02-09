@@ -24,6 +24,7 @@ namespace SqlPad.Oracle.Test
 		private static readonly HashSet<string> AllSchemasInternal = new HashSet<string>(SchemasInternal) { OwnerNameSys, "\"SYSTEM\"", InitialSchema, SchemaPublic };
 		private static readonly ILookup<OracleProgramIdentifier, OracleProgramMetadata> AllFunctionMetadataInternal;
 		private static readonly ILookup<OracleProgramIdentifier, OracleProgramMetadata> NonSchemaBuiltInFunctionMetadataInternal;
+		private static readonly ILookup<OracleProgramIdentifier, OracleProgramMetadata> BuiltInPackageFunctionMetadataInternal;
 		private static readonly HashSet<string> CharacterSetsInternal = new HashSet<string> { "US7ASCII", "WE8ISO8859P1" };
 
 		private const int StatisticsCodeSessionLogicalReads = 12;
@@ -316,7 +317,7 @@ namespace SqlPad.Oracle.Test
 			asPdfPackageFunctionMetadata.Owner = asPdfPackage;
 
 			#region SYS.STANDARD
-			var builtInFunctionPackage = (OraclePackage)AllObjectsInternal.Single(o => o.Name == PackageBuiltInFunction && o.Owner == OwnerNameSys);
+			var builtInFunctionPackage = (OraclePackage)AllObjectsInternal.Single(o => o.FullyQualifiedName == BuiltInFunctionPackageIdentifier);
 			var truncFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, IdentifierBuiltInProgramTrunc, false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
 			truncFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, "DATE", OracleObjectIdentifier.Empty, false));
 			truncFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"LEFT\"", 1, 1, 0, ParameterDirection.Input, "DATE", OracleObjectIdentifier.Empty, false));
@@ -389,6 +390,7 @@ namespace SqlPad.Oracle.Test
 
 			var levelFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, IdentifierBuiltInProgramLevel, false, false, false, false, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeParenthesis, true);
 			levelFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, "NUMBER", OracleObjectIdentifier.Empty, false));
+			levelFunctionMetadata.Owner = builtInFunctionPackage;
 			builtInFunctionPackage.Functions.Add(levelFunctionMetadata);
 
 			var nvlFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues("SYS", "STANDARD", "NVL"), false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
@@ -442,6 +444,10 @@ namespace SqlPad.Oracle.Test
 			AllFunctionMetadataInternal = allFunctionMetadata.Where(f => f.Type == ProgramType.Function).ToLookup(m => m.Identifier);
 			NonSchemaBuiltInFunctionMetadataInternal = allFunctionMetadata
 				.Where(m => String.IsNullOrEmpty(m.Identifier.Owner))
+				.ToLookup(m => m.Identifier);
+
+			BuiltInPackageFunctionMetadataInternal = allFunctionMetadata
+				.Where(m => m.Owner != null && m.Owner.FullyQualifiedName == BuiltInFunctionPackageIdentifier)
 				.ToLookup(m => m.Identifier);
 			#endregion
 
@@ -571,6 +577,8 @@ namespace SqlPad.Oracle.Test
 		public override ILookup<OracleProgramIdentifier, OracleProgramMetadata> AllFunctionMetadata { get { return AllFunctionMetadataInternal; } }
 
 		protected override ILookup<OracleProgramIdentifier, OracleProgramMetadata> NonSchemaBuiltInFunctionMetadata { get { return NonSchemaBuiltInFunctionMetadataInternal; } }
+
+		protected override ILookup<OracleProgramIdentifier, OracleProgramMetadata> BuiltInPackageFunctionMetadata { get { return BuiltInPackageFunctionMetadataInternal; } }
 
 		private static readonly HashSet<OracleSchemaObject> AllObjectsInternal = new HashSet<OracleSchemaObject>
 		{

@@ -107,6 +107,8 @@ namespace SqlPad.Oracle
 		public abstract ILookup<OracleProgramIdentifier, OracleProgramMetadata> AllFunctionMetadata { get; }
 
 		protected abstract ILookup<OracleProgramIdentifier, OracleProgramMetadata> NonSchemaBuiltInFunctionMetadata { get; }
+		
+		protected abstract ILookup<OracleProgramIdentifier, OracleProgramMetadata> BuiltInPackageFunctionMetadata { get; }
 
 		public abstract IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjects { get; }
 
@@ -171,12 +173,20 @@ namespace SqlPad.Oracle
 			var result = new ProgramMetadataResult();
 
 			OracleSchemaObject schemaObject;
-			ICollection<OracleProgramMetadata> programMetadataSource = new List<OracleProgramMetadata>();
+			IEnumerable<OracleProgramMetadata> programMetadataSource = new List<OracleProgramMetadata>();
 			if (String.IsNullOrEmpty(identifier.Package) && (forceBuiltInFunction || String.IsNullOrEmpty(identifier.Owner)))
 			{
 				if (AllObjects.TryGetValue(BuiltInFunctionPackageIdentifier, out schemaObject))
 				{
-					TryGetSchemaObjectProgramMetadata(schemaObject, out programMetadataSource);
+					var programIdentifier =
+						new OracleProgramIdentifier
+						{
+							Owner = BuiltInFunctionPackageIdentifier.Owner,
+							Package = BuiltInFunctionPackageIdentifier.Name,
+							Name = identifier.Name
+						};
+					
+					programMetadataSource = BuiltInPackageFunctionMetadata[programIdentifier];
 				}
 
 				result.Metadata = TryFindProgramOverload(programMetadataSource, identifier.Name, parameterCount, hasAnalyticClause);
@@ -243,13 +253,13 @@ namespace SqlPad.Oracle
 				: schemaObject;
 		}
 
-		private static bool TryGetSchemaObjectProgramMetadata(OracleSchemaObject schemaObject, out ICollection<OracleProgramMetadata> functionMetadata)
+		private static bool TryGetSchemaObjectProgramMetadata(OracleSchemaObject schemaObject, out IEnumerable<OracleProgramMetadata> functionMetadata)
 		{
 			var targetObject = schemaObject.GetTargetSchemaObject();
-			var functions = targetObject as IFunctionCollection;
-			if (functions != null)
+			var functionContainer = targetObject as IFunctionCollection;
+			if (functionContainer != null)
 			{
-				functionMetadata = functions.Functions;
+				functionMetadata = functionContainer.Functions;
 				return true;
 			}
 

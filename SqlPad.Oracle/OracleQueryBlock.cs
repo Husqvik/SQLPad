@@ -75,6 +75,8 @@ namespace SqlPad.Oracle
 		public StatementGrammarNode RecursiveSearchClause { get; set; }
 		
 		public StatementGrammarNode RecursiveCycleClause { get; set; }
+		
+		public OracleDataObjectReference CrossOrOuterApplyReference { get; set; }
 
 		public OracleStatement Statement { get; set; }
 		

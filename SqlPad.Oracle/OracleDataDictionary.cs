@@ -27,6 +27,7 @@ namespace SqlPad.Oracle
 		private readonly HashSet<string> _characterSets;
 
 		private ILookup<OracleProgramIdentifier, OracleProgramMetadata> _nonSchemaFunctionMetadataLookup;
+		private ILookup<OracleProgramIdentifier, OracleProgramMetadata> _builtInPackageFunctionMetadata;
 
 		public DateTime Timestamp { get; private set; }
 
@@ -43,6 +44,21 @@ namespace SqlPad.Oracle
 		public ILookup<OracleProgramIdentifier, OracleProgramMetadata> NonSchemaFunctionMetadata
 		{
 			get { return _nonSchemaFunctionMetadataLookup ?? BuildNonSchemaFunctionMetadata(); }
+		}
+
+		public ILookup<OracleProgramIdentifier, OracleProgramMetadata> BuiltInPackageFunctionMetadata
+		{
+			get { return _builtInPackageFunctionMetadata ?? BuildBuiltInPackageFunctionMetadata(); }
+		}
+
+		private ILookup<OracleProgramIdentifier, OracleProgramMetadata> BuildBuiltInPackageFunctionMetadata()
+		{
+			OracleSchemaObject standardPackage;
+			var functions = AllObjects.TryGetValue(OracleDatabaseModelBase.BuiltInFunctionPackageIdentifier, out standardPackage)
+				? ((OraclePackage)standardPackage).Functions
+				: new List<OracleProgramMetadata>();
+
+			return _builtInPackageFunctionMetadata = functions.ToLookup(m => m.Identifier);
 		}
 
 		private ILookup<OracleProgramIdentifier, OracleProgramMetadata> BuildNonSchemaFunctionMetadata()

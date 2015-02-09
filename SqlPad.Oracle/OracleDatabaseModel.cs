@@ -242,6 +242,8 @@ namespace SqlPad.Oracle
 
 		protected override ILookup<OracleProgramIdentifier, OracleProgramMetadata> NonSchemaBuiltInFunctionMetadata { get { return _dataDictionary.NonSchemaFunctionMetadata; } }
 
+		protected override ILookup<OracleProgramIdentifier, OracleProgramMetadata> BuiltInPackageFunctionMetadata { get { return _dataDictionary.BuiltInPackageFunctionMetadata; } }
+
 		public override ConnectionStringSettings ConnectionString { get { return _connectionString; } }
 
 		public override bool IsInitialized { get { return _isInitialized; } }
@@ -715,7 +717,7 @@ namespace SqlPad.Oracle
 			}
 
 			//var debuggerSession = new OracleDebuggerSession(_userConnection);
-			//debuggerSession.Start();
+			//Task.Factory.StartNew(debuggerSession.Start);
 
 			_userDataReader = await _userCommand.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken);
 
