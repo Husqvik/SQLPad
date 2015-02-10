@@ -59,16 +59,17 @@ namespace SqlPad.Oracle.Commands
 					? null
 					: String.Format("{0}.", columnReference.ValidObjectReference.FullyQualifiedObjectName);
 				
-				var expressionText = column.HasExplicitDefinition
+				var expressionText = column.HasExplicitDefinition && !column.HasExplicitAlias
 					? column.RootNode.GetText(ExecutionContext.StatementText)
 					: String.Format("{0}{1}", prefix, column.NormalizedName.ToSimpleIdentifier());
 
-				yield return new TextSegment
-				{
-					IndextStart = node.SourcePosition.IndexStart,
-					Length = node.SourcePosition.Length,
-					Text = expressionText
-				};
+				yield return
+					new TextSegment
+					{
+						IndextStart = node.SourcePosition.IndexStart,
+						Length = node.SourcePosition.Length,
+						Text = expressionText
+					};
 			}
 		}
 	}

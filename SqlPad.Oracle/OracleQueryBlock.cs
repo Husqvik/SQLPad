@@ -211,8 +211,9 @@ namespace SqlPad.Oracle
 		private OracleOrderByColumnIndexReference GetColumnIndexReference(StatementGrammarNode orderExpression)
 		{
 			int columnIndex;
-			if (orderExpression.TerminalCount != 1 || orderExpression.FirstTerminalNode.Id != Terminals.NumberLiteral ||
-				orderExpression.FirstTerminalNode.Token.Value.IndexOf('.') != -1 || !Int32.TryParse(orderExpression.FirstTerminalNode.Token.Value, out columnIndex))
+			var expression = orderExpression.GetDescendantByPath(NonTerminals.Expression);
+			if (expression == null || expression.TerminalCount != 1 || expression.FirstTerminalNode.Id != Terminals.NumberLiteral ||
+				expression.FirstTerminalNode.Token.Value.IndexOf('.') != -1 || !Int32.TryParse(expression.FirstTerminalNode.Token.Value, out columnIndex))
 			{
 				return OracleOrderByColumnIndexReference.None;
 			}
@@ -221,7 +222,7 @@ namespace SqlPad.Oracle
 				new OracleOrderByColumnIndexReference
 				{
 					ColumnIndex = columnIndex,
-					Terminal = orderExpression.FirstTerminalNode,
+					Terminal = expression.FirstTerminalNode,
 					IsValid = columnIndex <= _columns.Count - _asteriskColumns.Count
 				};
 		}

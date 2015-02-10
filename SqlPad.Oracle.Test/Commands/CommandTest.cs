@@ -1681,5 +1681,20 @@ MODEL
 
 			_editor.Text.ShouldBe(expectedResult);
 		}
+
+		[Test(Description = @""), STAThread]
+		public void TestConvertOrderByColumnReferencesWithColumnAliasAndDescendingOrder()
+		{
+			const string statementText = @"SELECT COUNT(*) TOTALS FROM DUAL GROUP BY DUMMY ORDER BY 1 DESC";
+			_editor.Text = statementText;
+			_editor.CaretOffset = 57;
+
+			CanExecuteCommand(OracleCommands.ConvertOrderByNumberColumnReferences).ShouldBe(true);
+			ExecuteCommand(OracleCommands.ConvertOrderByNumberColumnReferences);
+
+			const string expectedResult = @"SELECT COUNT(*) TOTALS FROM DUAL GROUP BY DUMMY ORDER BY TOTALS DESC";
+
+			_editor.Text.ShouldBe(expectedResult);
+		}
 	}
 }
