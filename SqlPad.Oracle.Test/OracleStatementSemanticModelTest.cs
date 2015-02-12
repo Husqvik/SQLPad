@@ -981,6 +981,23 @@ SELECT * FROM DUAL";
 		}
 
 		[Test(Description = @"")]
+		public void TestRedundantCommonTableExpressionWithConcatenatedQueryBlock()
+		{
+			const string query1 =
+@"WITH CTE(C1, C2) AS (
+	SELECT 1, 2 FROM DUAL UNION ALL
+	SELECT 1, 2 FROM DUAL
+)
+SELECT * FROM CTE";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			var redundantTerminals = semanticModel.RedundantSymbolGroups.SelectMany(g => g).OrderBy(t => t.SourcePosition.IndexStart).ToArray();
+			redundantTerminals.Length.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
 		public void TestFullyQualifiedTableOverDatabaseLink()
 		{
 			const string query1 = @"SELECT * FROM HUSQVIK.SELECTION@HQ_PDB_LOOPBACK";

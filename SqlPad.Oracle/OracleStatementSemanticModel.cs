@@ -864,7 +864,7 @@ namespace SqlPad.Oracle
 
 		private void ResolveRedundantCommonTableExpressions()
 		{
-			foreach (var queryBlockDependentQueryBlocks in _dataObjectDependentQueryBlocks.Where(qbs => qbs.Value.Count == 0))
+			foreach (var queryBlockDependentQueryBlocks in _dataObjectDependentQueryBlocks.Where(qbs => qbs.Key.PrecedingConcatenatedQueryBlock == null && qbs.Value.Count == 0))
 			{
 				queryBlockDependentQueryBlocks.Key.IsRedundant = true;
 
