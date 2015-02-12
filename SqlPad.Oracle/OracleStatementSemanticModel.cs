@@ -31,7 +31,7 @@ namespace SqlPad.Oracle
 		private readonly Dictionary<OracleQueryBlock, List<StatementGrammarNode>> _queryBlockTerminals = new Dictionary<OracleQueryBlock, List<StatementGrammarNode>>();
 		private readonly Dictionary<OracleQueryBlock, ICollection<StatementGrammarNode>> _accessibleQueryBlockRoot = new Dictionary<OracleQueryBlock, ICollection<StatementGrammarNode>>();
 		private readonly Dictionary<OracleDataObjectReference, ICollection<KeyValuePair<StatementGrammarNode, string>>> _objectReferenceCteRootNodes = new Dictionary<OracleDataObjectReference, ICollection<KeyValuePair<StatementGrammarNode, string>>>();
-		private readonly Dictionary<OracleQueryBlock, HashSet<OracleQueryBlock>> _dataObjectDependentQueryBlocks = new Dictionary<OracleQueryBlock, HashSet<OracleQueryBlock>>();
+		private readonly HashSet<OracleQueryBlock> _unreferencedQueryBlocks = new HashSet<OracleQueryBlock>();
 		
 		private OracleQueryBlock _mainQueryBlock;
 		private Dictionary<StatementGrammarNode, OracleQueryBlock> _queryBlockNodes = new Dictionary<StatementGrammarNode, OracleQueryBlock>();
@@ -195,7 +195,6 @@ namespace SqlPad.Oracle
 				{
 					queryBlock.AliasNode = commonTableExpression.ChildNodes[0];
 					queryBlock.Type = QueryBlockType.CommonTableExpression;
-					_dataObjectDependentQueryBlocks.Add(queryBlock, new HashSet<OracleQueryBlock>());
 				}
 				else
 				{
@@ -782,6 +781,14 @@ namespace SqlPad.Oracle
 
 				ResolveParentCorrelatedQueryBlock(queryBlock);
 
+				if (queryBlock.Type == QueryBlockType.CommonTableExpression && queryBlock.PrecedingConcatenatedQueryBlock == null)
+				{
+					_unreferencedQueryBlocks.Add(queryBlock);
+				}
+			}
+
+			foreach (var queryBlock in _queryBlockNodes.Values)
+			{
 				foreach (var nestedQueryReference in queryBlock.ObjectReferences.Where(t => t.Type != ReferenceType.SchemaObject))
 				{
 					if (nestedQueryReference.Type == ReferenceType.InlineView)
@@ -801,11 +808,7 @@ namespace SqlPad.Oracle
 								var referredQueryBlock = _queryBlockNodes[cteQueryBlockNode];
 								nestedQueryReference.QueryBlocks.Add(referredQueryBlock);
 
-								HashSet<OracleQueryBlock> dependentQueryBlocks;
-								if (_dataObjectDependentQueryBlocks.TryGetValue(referredQueryBlock, out dependentQueryBlocks))
-								{
-									dependentQueryBlocks.Add(nestedQueryReference.Owner);
-								}
+								_unreferencedQueryBlocks.Remove(referredQueryBlock);
 							}
 						}
 					}
@@ -864,11 +867,11 @@ namespace SqlPad.Oracle
 
 		private void ResolveRedundantCommonTableExpressions()
 		{
-			foreach (var queryBlockDependentQueryBlocks in _dataObjectDependentQueryBlocks.Where(qbs => qbs.Key.PrecedingConcatenatedQueryBlock == null && qbs.Value.Count == 0))
+			foreach (var queryBlockDependentQueryBlocks in _unreferencedQueryBlocks)
 			{
-				queryBlockDependentQueryBlocks.Key.IsRedundant = true;
+				queryBlockDependentQueryBlocks.IsRedundant = true;
 
-				var commonTableExpression = queryBlockDependentQueryBlocks.Key.RootNode.GetAncestor(NonTerminals.CommonTableExpression);
+				var commonTableExpression = queryBlockDependentQueryBlocks.RootNode.GetAncestor(NonTerminals.CommonTableExpression);
 				var redundantTerminals = new List<StatementGrammarNode>();
 				var precedingTerminal = commonTableExpression.PrecedingTerminal;
 				var followingTerminal = commonTableExpression.FollowingTerminal;
@@ -1258,7 +1261,6 @@ namespace SqlPad.Oracle
 			}
 
 			queryBlock.AliasNode = null;
-			_dataObjectDependentQueryBlocks.Remove(queryBlock);
 
 			foreach(var anchorReference in anchorReferences)
 			{
