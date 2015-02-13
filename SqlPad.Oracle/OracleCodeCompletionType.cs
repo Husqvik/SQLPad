@@ -121,8 +121,6 @@ namespace SqlPad.Oracle
 
 			SemanticModel = (OracleStatementSemanticModel)documentRepository.ValidationModels[Statement].SemanticModel;
 
-			CurrentQueryBlock = SemanticModel.GetQueryBlock(nearestTerminal);
-
 			var requiredOffsetAfterToken = nearestTerminal.Id.IsZeroOffsetTerminalId() ? 0 : 1;
 			var isCursorAfterToken = nearestTerminal.SourcePosition.IndexEnd + requiredOffsetAfterToken < cursorPosition;
 			var atAdHocTemporaryTerminal = false;
@@ -170,7 +168,10 @@ namespace SqlPad.Oracle
 			}
 
 			var effectiveTerminal = Statement.GetNearestTerminalToPosition(cursorPosition, n => !n.Id.In(Terminals.RightParenthesis, Terminals.Comma, Terminals.Semicolon)) ?? nearestTerminal;
+			CurrentQueryBlock = SemanticModel.GetQueryBlock(effectiveTerminal);
+			
 			AnalyzeObjectReferencePrefixes(effectiveTerminal);
+			var isCursorAfterEffectiveTerminal = cursorPosition > effectiveTerminal.SourcePosition.IndexEnd + 1;
 
 			if (precedingTerminal == null && nearestTerminal != Statement.RootNode.FirstTerminalNode)
 			{
@@ -234,8 +235,8 @@ namespace SqlPad.Oracle
 			                                   (nearestTerminal.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBoundary, NonTerminals.InsertIntoClause) != null && nearestTerminal.Id == Terminals.Into && isCursorAfterToken);
 			SchemaDataObject = (InQueryBlockFromClause || isAfterUpdateOrDeleteTerminal || isWithinMainObjectReference || isInInsertIntoTableReference) && !isWithinJoinCondition && TerminalCandidates.Contains(Terminals.ObjectIdentifier);
 
-			var isWithinJoinClause = nearestTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.FromClause, NonTerminals.JoinClause) != null;
-			JoinCondition = isWithinJoinClause && isCursorAfterToken && (TerminalCandidates.Contains(Terminals.On) || nearestTerminal.Id == Terminals.On);
+			var isWithinJoinClause = effectiveTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.FromClause, NonTerminals.JoinClause) != null;
+			JoinCondition = isWithinJoinClause && isCursorAfterEffectiveTerminal && (TerminalCandidates.Contains(Terminals.On) || nearestTerminal.Id == Terminals.On);
 
 			var isWithinSelectList = (nearestTerminal.Id == Terminals.Select && isCursorAfterToken) || nearestTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.SelectList) != null;
 			AllColumns = isWithinSelectList && TerminalCandidates.Contains(Terminals.Asterisk);

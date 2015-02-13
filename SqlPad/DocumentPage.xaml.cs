@@ -64,6 +64,7 @@ namespace SqlPad
 		private bool _isToolTipOpenByShortCut;
 		private bool _isToolTipOpenByCaretChange;
 		private bool _gatherExecutionStatistics;
+		private bool _isSelectingCells;
 		
 		private readonly ToolTip _toolTip = new ToolTip();
 		private readonly PageModel _pageModel;
@@ -2113,6 +2114,11 @@ namespace SqlPad
 
 		private void ResultGridSelectedCellsChangedHandler(object sender, SelectedCellsChangedEventArgs e)
 		{
+			if (_isSelectingCells)
+			{
+				return;
+			}
+
 			_pageModel.CurrentRowIndex = ResultGrid.CurrentCell.Item == null
 				? 0
 				: ResultGrid.Items.IndexOf(ResultGrid.CurrentCell.Item) + 1;
@@ -2176,7 +2182,12 @@ namespace SqlPad
 			var cells = ResultGrid.Items.Cast<object[]>()
 				.Select(r => new DataGridCellInfo(r, header.Column));
 
+			_isSelectingCells = true;
+			
 			ResultGrid.SelectedCells.AddRange(cells);
+
+			_isSelectingCells = false;
+
 			ResultGrid.Focus();
 		}
 	}

@@ -1828,6 +1828,15 @@ FROM
 			items.Length.ShouldBeGreaterThan(0);
 		}
 
+		[Test(Description = @"")]
+		public void TestJoinConditionSuggestionBeforeClosingParenthesis()
+		{
+			const string testQuery = @"SELECT NULL FROM DUAL WHERE EXISTS (SELECT NULL FROM DUAL T1 JOIN DUAL T2 )";
+
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, testQuery, 74).ToArray();
+			items.Length.ShouldBe(1);
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)
