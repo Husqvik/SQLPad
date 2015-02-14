@@ -75,7 +75,7 @@ namespace SqlPad.Oracle
 			get
 			{
 				return _queryBlockNodes.Values
-					.Concat(_queryBlockNodes.Values.SelectMany(qb => qb.ChildContainers))
+					.SelectMany(qb => Enumerable.Repeat(qb, 1).Concat(qb.ChildContainers))
 					.Concat(_insertTargets)
 					.Concat(Enumerable.Repeat(MainObjectReferenceContainer, 1));
 			}
@@ -1544,22 +1544,22 @@ namespace SqlPad.Oracle
 
 		public OracleColumnReference GetColumnReference(StatementGrammarNode columnIdentifer)
 		{
-			return AllReferenceContainers.SelectMany(c => c.ColumnReferences).SingleOrDefault(c => c.ColumnNode == columnIdentifer);
+			return AllReferenceContainers.SelectMany(c => c.ColumnReferences).FilterRecursiveReferences().SingleOrDefault(c => c.ColumnNode == columnIdentifer);
 		}
 
 		public OracleProgramReference GetProgramReference(StatementGrammarNode identifer)
 		{
-			return AllReferenceContainers.SelectMany(c => c.ProgramReferences).SingleOrDefault(c => c.FunctionIdentifierNode == identifer);
+			return AllReferenceContainers.SelectMany(c => c.ProgramReferences).FilterRecursiveReferences().SingleOrDefault(c => c.FunctionIdentifierNode == identifer);
 		}
 
 		public OracleTypeReference GetTypeReference(StatementGrammarNode typeIdentifer)
 		{
-			return AllReferenceContainers.SelectMany(c => c.TypeReferences).SingleOrDefault(c => c.ObjectNode == typeIdentifer);
+			return AllReferenceContainers.SelectMany(c => c.TypeReferences).FilterRecursiveReferences().SingleOrDefault(c => c.ObjectNode == typeIdentifer);
 		}
 
 		public OracleSequenceReference GetSequenceReference(StatementGrammarNode sequenceIdentifer)
 		{
-			return AllReferenceContainers.SelectMany(c => c.SequenceReferences).SingleOrDefault(c => c.ObjectNode == sequenceIdentifer);
+			return AllReferenceContainers.SelectMany(c => c.SequenceReferences).FilterRecursiveReferences().SingleOrDefault(c => c.ObjectNode == sequenceIdentifer);
 		}
 
 		public T GetReference<T>(StatementGrammarNode objectIdentifer) where T : OracleReference

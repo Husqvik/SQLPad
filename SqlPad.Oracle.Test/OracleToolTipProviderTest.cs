@@ -152,6 +152,43 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestRecursiveSearchColumnReferenceToolTip()
+		{
+			const string query =
+@"WITH CTE(VAL) AS (
+	SELECT 1 FROM DUAL
+	UNION ALL
+	SELECT VAL + 1 FROM CTE WHERE VAL < 5
+)
+SEARCH DEPTH FIRST BY VAL SET SEQ#
+SELECT * FROM CTE";
+
+			_documentRepository.UpdateStatements(query);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 119);
+
+			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestObjectReferenceToolTipInRecursiveAnchorQueryBlock()
+		{
+			const string query =
+@"WITH CTE(VAL) AS (
+	SELECT 1 FROM DUAL
+	UNION ALL
+	SELECT VAL + 1 FROM CTE WHERE VAL < 5
+)
+SELECT * FROM CTE";
+
+			_documentRepository.UpdateStatements(query);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 35);
+
+			toolTip.Control.ShouldBeTypeOf<ToolTipTable>();
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestTableObjectToolTip()
 		{
 			const string query = "SELECT NAME FROM SELECTION";
