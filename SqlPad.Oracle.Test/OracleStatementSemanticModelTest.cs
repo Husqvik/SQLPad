@@ -327,7 +327,7 @@ FROM
 			var columnReferences = semanticModel.QueryBlocks.Single().AllColumnReferences.ToArray();
 			columnReferences.Length.ShouldBe(6);
 			var orderByName = columnReferences[5];
-			orderByName.Placement.ShouldBe(QueryBlockPlacement.OrderBy);
+			orderByName.Placement.ShouldBe(StatementPlacement.OrderBy);
 			orderByName.ColumnNodeColumnReferences.Count.ShouldBe(1);
 		}
 
@@ -347,7 +347,7 @@ FROM
 			var columnReferences = semanticModel.QueryBlocks.Single().AllColumnReferences.ToArray();
 			columnReferences.Length.ShouldBe(11);
 			var orderByName = columnReferences[10];
-			orderByName.Placement.ShouldBe(QueryBlockPlacement.OrderBy);
+			orderByName.Placement.ShouldBe(StatementPlacement.OrderBy);
 			orderByName.ColumnNodeColumnReferences.Count.ShouldBe(2);
 		}
 
@@ -367,7 +367,7 @@ FROM
 			var columnReferences = semanticModel.QueryBlocks.Single().AllColumnReferences.OrderBy(r => r.ColumnNode.SourcePosition.IndexStart).ToArray();
 			columnReferences.Length.ShouldBe(3);
 			var orderByDummy = columnReferences[2];
-			orderByDummy.Placement.ShouldBe(QueryBlockPlacement.OrderBy);
+			orderByDummy.Placement.ShouldBe(StatementPlacement.OrderBy);
 			orderByDummy.ColumnNodeColumnReferences.Count.ShouldBe(2);
 		}
 
@@ -1527,7 +1527,7 @@ FROM
 			var queryBlock = semanticModel.MainQueryBlock;
 			queryBlock.ShouldNotBe(null);
 
-			var columnReferences = queryBlock.ColumnReferences.Where(c => c.Placement == QueryBlockPlacement.TableReference).ToArray();
+			var columnReferences = queryBlock.ColumnReferences.Where(c => c.Placement == StatementPlacement.TableReference).ToArray();
 			columnReferences.Length.ShouldBe(2);
 			columnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
 			columnReferences[1].ColumnNodeColumnReferences.Count.ShouldBe(0);
@@ -1561,7 +1561,7 @@ FROM
 			var queryBlock = semanticModel.MainQueryBlock;
 			queryBlock.ShouldNotBe(null);
 
-			var columnReferences = queryBlock.ColumnReferences.Where(c => c.Placement == QueryBlockPlacement.TableReference).ToArray();
+			var columnReferences = queryBlock.ColumnReferences.Where(c => c.Placement == StatementPlacement.TableReference).ToArray();
 			columnReferences.Length.ShouldBe(2);
 			columnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
 			columnReferences[1].ColumnNodeColumnReferences.Count.ShouldBe(0);
@@ -1650,6 +1650,23 @@ SELECT * FROM CTE";
 			crossApliedQueryBlock.ColumnReferences[1].ColumnNodeObjectReferences.Count.ShouldBe(1);
 			crossApliedQueryBlock.ColumnReferences[1].ColumnNodeObjectReferences.Single().ShouldBe(dualTableReference);
 			crossApliedQueryBlock.ColumnReferences[1].ColumnNodeColumnReferences.Count.ShouldBe(1);
+		}
+
+		[Test(Description = @"")]
+		public void TestInsertIntoSelfReferenceWithinValuesClause()
+		{
+			const string query1 = @"INSERT INTO PROJECT (PROJECT_ID) VALUES (PROJECT_ID)";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.InsertTargets.Count.ShouldBe(1);
+			var insertTarget = semanticModel.InsertTargets.Single();
+			insertTarget.ColumnReferences.Count.ShouldBe(2);
+			var columnReferences = insertTarget.ColumnReferences.OrderBy(c => c.ColumnNode.SourcePosition.IndexStart).ToArray();
+			columnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
+			columnReferences[1].ColumnNodeColumnReferences.Count.ShouldBe(0);
 		}
 	}
 }

@@ -1837,6 +1837,21 @@ FROM
 			items.Length.ShouldBe(1);
 		}
 
+		[Test(Description = @"")]
+		public void TestCommonTableExpressionSuggestionWhenContainsConcatenatedSuquery()
+		{
+			const string testQuery =
+@"WITH CTE1 AS (
+	SELECT 1, 'W', 3 FROM DUAL UNION ALL
+	SELECT 2, 'N', 4 FROM DUAL UNION ALL
+	SELECT 3, 'N', 8 FROM DUAL
+)
+SELECT * FROM CTE";
+
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, testQuery, 143).ToArray();
+			items.Length.ShouldBe(1);
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)

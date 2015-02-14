@@ -850,7 +850,7 @@ namespace SqlPad.Oracle
 		{
 			// TODO: Make proper resolution of CTE accessibility
 			return model.QueryBlocks
-						.Where(qb => qb.Type == QueryBlockType.CommonTableExpression && referenceNamePart.ToQuotedIdentifier() != qb.NormalizedAlias && CodeCompletionSearchHelper.IsMatch(qb.Alias, referenceNamePart))
+						.Where(qb => qb.Type == QueryBlockType.CommonTableExpression && qb.PrecedingConcatenatedQueryBlock == null && referenceNamePart.ToQuotedIdentifier() != qb.NormalizedAlias && CodeCompletionSearchHelper.IsMatch(qb.Alias, referenceNamePart))
 						.Select(qb => new OracleCodeCompletionItem
 						{
 							Name = qb.Alias,

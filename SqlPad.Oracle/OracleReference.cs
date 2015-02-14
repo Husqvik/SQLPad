@@ -23,7 +23,7 @@ namespace SqlPad.Oracle
 
 		public virtual string NormalizedName { get { return Name.ToQuotedIdentifier(); } }
 
-		public QueryBlockPlacement Placement { get; set; }
+		public StatementPlacement Placement { get; set; }
 
 		public OracleQueryBlock Owner { get; set; }
 

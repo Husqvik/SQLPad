@@ -1,8 +1,9 @@
 namespace SqlPad.Oracle
 {
-	public enum QueryBlockPlacement
+	public enum StatementPlacement
 	{
 		None,
+		ValuesClause,
 		SelectList,
 		TableReference,
 		Where,

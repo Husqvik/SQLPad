@@ -398,7 +398,7 @@ namespace SqlPad.Oracle
 				{
 					var mainQueryBlockOrderByClause = GetOrderByClauseIfWithinMainQueryBlock(sequenceReference);
 					var isWithinMainQueryBlockWithOrderByClause = mainQueryBlockOrderByClause != null;
-					if (isWithinMainQueryBlockWithOrderByClause || !sequenceReference.Placement.In(QueryBlockPlacement.None, QueryBlockPlacement.SelectList) ||
+					if (isWithinMainQueryBlockWithOrderByClause || !sequenceReference.Placement.In(StatementPlacement.None, StatementPlacement.ValuesClause, StatementPlacement.SelectList) ||
 					    IsNotWithinMainQueryBlock(sequenceReference))
 					{
 						validationModel.InvalidNonTerminals[sequenceReference.RootNode] =
@@ -488,7 +488,7 @@ namespace SqlPad.Oracle
 							validationModel.ProgramNodeValidity[programReference.ParameterListNode] = new InvalidNodeValidationData(parameterListSemanticError) { Node = programReference.ParameterListNode };
 						}
 
-						if (programReference.Placement.In(QueryBlockPlacement.GroupBy, QueryBlockPlacement.Where, QueryBlockPlacement.Join) && (programReference.Metadata.IsAggregate || programReference.Metadata.IsAnalytic))
+						if (programReference.Placement.In(StatementPlacement.GroupBy, StatementPlacement.Where, StatementPlacement.Join) && (programReference.Metadata.IsAggregate || programReference.Metadata.IsAnalytic))
 						{
 							semanticError = OracleSemanticErrorType.GroupFunctionNotAllowed;
 						}
