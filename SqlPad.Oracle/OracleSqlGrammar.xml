@@ -166,9 +166,9 @@
         <Sequence>
           <NonTerminal Id="AlterPackage" />
         </Sequence>
-        <!--<Sequence>
+        <Sequence>
           <NonTerminal Id="AlterTable" />
-        </Sequence>-->
+        </Sequence>
         <!-- TODO: Add other objects -->
       </Sequences>
     </Rule>
@@ -193,21 +193,171 @@
         <Sequence>
           <NonTerminal Id="AlterTableColumnClauses" />
         </Sequence>
-        <!--<Sequence>
+        <Sequence>
           <NonTerminal Id="ConstraintClauses" />
         </Sequence>
-        <Sequence>
+        <!--<Sequence>
           <NonTerminal Id="AlterTablePartitioning" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="AlterExternalTable" />
-        </Sequence>
+        </Sequence>-->
         <Sequence>
-          <NonTerminal Id="MoveTableClause" />
+          <Terminal Id="Move" />
+          <Terminal Id="Online" IsOptional="true" />
+          <NonTerminal Id="MoveTableClause" IsOptional="true" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="ModifyOpaqueType" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ModifyOpaqueType">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Modify" />
+          <Terminal Id="Opaque" />
+          <Terminal Id="Type" />
+          <Terminal Id="Identifier" />
+          <Terminal Id="Store" />
+          <NonTerminal Id="ParenthesisEnclosedIdentifierList" /><!-- TODO: Check schema prefix -->
+          <Terminal Id="Unpacked" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="MoveTableClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="MoveTableOption" />
+          <NonTerminal Id="MoveTableClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="MoveTableOption">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="SegmentAttributesClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="TableCompression" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="IndexOrganizedTableClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ParallelClause" />
+        </Sequence>
+        <!--<Sequence>
+          <NonTerminal Id="LargeObjectStorageClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="VarryingArrayColumnProperties" />
         </Sequence>-->
+        <Sequence>
+          <NonTerminal Id="AllowDisallowClustering" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AllowDisallowClustering">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Allow" />
+          <Terminal Id="Clustering" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Disallow" />
+          <Terminal Id="Clustering" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ConstraintClauses">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Add" />
+          <NonTerminal Id="OutOfLineConstraintDefinitionListOrOutOfLineReferenceConstraint" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Modify" />
+          <NonTerminal Id="ModifyConstraintClause" />
+          <NonTerminal Id="ConstraintState" />
+          <Terminal Id="Cascade" IsOptional="true" />
+        </Sequence>
+         <Sequence>
+          <Terminal Id="Rename" />
+          <Terminal Id="Constraint" />
+          <Terminal Id="ObjectIdentifier" />
+          <Terminal Id="To" />
+          <Terminal Id="ObjectIdentifier" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Drop" />
+          <NonTerminal Id="DropConstraintClause" />
+          <Terminal Id="Online" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ModifyConstraintClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Primary" />
+          <Terminal Id="Key" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Unique" />
+          <NonTerminal Id="ParenthesisEnclosedIdentifierList" /><!-- TODO: Check expressions in FBI -->
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Constraint" />
+          <Terminal Id="ObjectIdentifier" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="DropConstraintClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Primary" />
+          <Terminal Id="Key" />
+          <Terminal Id="Cascade" IsOptional="true" />
+          <NonTerminal Id="KeepOrDropIndex" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Unique" />
+          <NonTerminal Id="ParenthesisEnclosedIdentifierList" /><!-- TODO: Check expressions in FBI -->
+          <Terminal Id="Cascade" IsOptional="true" />
+          <NonTerminal Id="KeepOrDropIndex" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Constraint" />
+          <Terminal Id="ObjectIdentifier" />
+          <Terminal Id="Cascade" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="OutOfLineConstraintDefinitionListOrOutOfLineReferenceConstraint">
+      <Sequences>
+        <!--<Sequence>
+          <NonTerminal Id="NamedOutOfLineReferenceConstraintDefinition" />
+        </Sequence>-->
+        <Sequence>
+          <NonTerminal Id="OutOfLineConstraintDefinitionList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="OutOfLineConstraintDefinitionList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="NamedOutOfLineConstraint" />
+          <NonTerminal Id="OutOfLineConstraintDefinitionList" IsOptional="true" />
+        </Sequence>
       </Sequences>
     </Rule>
     
@@ -535,10 +685,10 @@
         </Sequence>
         <Sequence>
           <NonTerminal Id="AllocateExtentClause" />
-        </Sequence>
+        </Sequence>-->
         <Sequence>
           <NonTerminal Id="DeallocateUnusedClause" />
-        </Sequence>-->
+        </Sequence>
         <Sequence>
           <NonTerminal Id="CacheOrNoCache" />
         </Sequence>
@@ -559,6 +709,25 @@
         </Sequence>
         <Sequence>
           <NonTerminal Id="FlashbackArchiveClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="DeallocateUnusedClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Deallocate" />
+          <Terminal Id="Unused" />
+          <NonTerminal Id="KeepSize" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="KeepSize">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Keep" />
+          <NonTerminal Id="SizeClause" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -11686,8 +11855,8 @@
           <NonTerminal Id="RelyOrNoRely" IsOptional="true" />
           <NonTerminal Id="UsingIndexClause" IsOptional="true" />
           <NonTerminal Id="EnableOrDisable" IsOptional="true" />
-          <NonTerminal Id="ValidateOrNoValidate" IsOptional="true" /><!-- VALIDATE and NOVALIDATE are supported only in VIEW clauses not in TABLE clauses -->
-          <!--<NonTerminal Id="ConstraintStateExceptionClause" IsOptional="true" />-->
+          <NonTerminal Id="ValidateOrNoValidate" IsOptional="true" Comment="Supported only in VIEW clauses not in TABLE clauses" />
+          <NonTerminal Id="ConstraintStateExceptionClause" IsOptional="true" Comment="Allowed only in ALTER TABLE" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -14792,6 +14961,13 @@
     <Terminal Id="Modify" Value="MODIFY" ReservedWord="Sql" />
     <Terminal Id="Shrink" Value="SHRINK" />
     <Terminal Id="Compact" Value="COMPACT" />
+    <Terminal Id="Move" Value="MOVE" />
+    <Terminal Id="Allow" Value="ALLOW" />
+    <Terminal Id="Disallow" Value="DISALLOW" />
+    <Terminal Id="Opaque" Value="OPAQUE" />
+    <Terminal Id="Unpacked" Value="UNPACKED" />
+    <Terminal Id="Deallocate" Value="DEALLOCATE" />
+    <Terminal Id="Unused" Value="UNUSED" />
     
     <!-- Alter session -->
     <Terminal Id="Advise" Value="ADVISE" />

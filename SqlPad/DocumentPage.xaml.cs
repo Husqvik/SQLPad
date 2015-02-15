@@ -2123,6 +2123,11 @@ namespace SqlPad
 				? 0
 				: ResultGrid.Items.IndexOf(ResultGrid.CurrentCell.Item) + 1;
 
+			CalculateSelectedCellStatistics();
+		}
+
+		private void CalculateSelectedCellStatistics()
+		{
 			if (ResultGrid.SelectedCells.Count <= 1)
 			{
 				_pageModel.SelectedCellInfoVisibility = Visibility.Collapsed;
@@ -2187,6 +2192,10 @@ namespace SqlPad
 			ResultGrid.SelectedCells.AddRange(cells);
 
 			_isSelectingCells = false;
+
+			_pageModel.CurrentRowIndex = ResultGrid.SelectedCells.Count + 1;
+
+			CalculateSelectedCellStatistics();
 
 			ResultGrid.Focus();
 		}

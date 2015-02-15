@@ -5025,6 +5025,153 @@ PURGE REPEAT INTERVAL '5' DAY";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 			}
+
+			public class AlterTable
+			{
+				[Test(Description = @"")]
+				public void TestAlterTableDisableAllTriggers()
+				{
+					const string statementText = @"ALTER TABLE test_table DISABLE ALL TRIGGERS";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterTableRenameColumn()
+				{
+					const string statementText = @"ALTER TABLE test_table RENAME COLUMN old_name TO new_name";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterTableDeallocateUnused()
+				{
+					const string statementText = @"ALTER TABLE test_table DEALLOCATE UNUSED KEEP 1G";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterTableAddColumns()
+				{
+					const string statementText = @"ALTER TABLE countries ADD (duty_pct NUMBER(2, 2) CHECK (duty_pct < 10.5), visa_needed VARCHAR2(3))";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @""), Ignore]
+				public void TestAlterTableAddVirtualColumn()
+				{
+					const string statementText = @"ALTER TABLE emp2 ADD (income AS (salary + (salary * commission_pct)))";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterTableModifyColumnType()
+				{
+					const string statementText = @"ALTER TABLE countries MODIFY (duty_pct NUMBER(3, 2))";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterTableModifySegmentAttributes()
+				{
+					const string statementText = @"ALTER TABLE employees PCTFREE 30 PCTUSED 60";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterTableModifyColumnEncryption()
+				{
+					const string statementText = @"ALTER TABLE employees MODIFY (salary ENCRYPT USING 'AES256' 'NOMAC')";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterTableRenameConstraint()
+				{
+					const string statementText = @"ALTER TABLE customers RENAME CONSTRAINT cust_fname_nn TO cust_firstname_nn;";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterTableDropPrimaryKey()
+				{
+					const string statementText = @"ALTER TABLE departments DROP PRIMARY KEY CASCADE;";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterTableDropConstraint()
+				{
+					const string statementText = @"ALTER TABLE departments DROP CONSTRAINT pk_dept CASCADE";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterTableDropUniqueConstraint()
+				{
+					const string statementText = @"ALTER TABLE departments DROP UNIQUE (c1, c2, c3)";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+			}
 		}
 
 		public class Purge

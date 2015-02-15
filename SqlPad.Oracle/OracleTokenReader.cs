@@ -11,6 +11,8 @@ namespace SqlPad.Oracle
 	public class OracleTokenReader : IDisposable, ITokenReader
 	{
 		private const int EmptyCharacterCode = -1;
+		private const char SingleQuoteCharacter = '\'';
+		private const char AsteriskCharacter = '*';
 
 		private readonly TextReader _sqlReader;
 
@@ -82,7 +84,7 @@ namespace SqlPad.Oracle
 					{
 						builder.Append("\n/\n");
 						candidateCharacterCode = EmptyCharacterCode;
-						yield return BuildToken(builder, index, null);
+						yield return BuildToken(builder, index);
 						previousFlags.BlockCommentBeginCandidate = false;
 					}
 
@@ -105,7 +107,7 @@ namespace SqlPad.Oracle
 				{
 					if (builder.Length > 0)
 					{
-						yield return BuildToken(builder, index - 2, null);
+						yield return BuildToken(builder, index - 2);
 					}
 
 					builder.Append(previousFlags.Character);
@@ -118,23 +120,27 @@ namespace SqlPad.Oracle
 						flags.RelationalOperatorCandidate = false;
 					}
 
-					yield return BuildToken(builder, index - indexOffset, null);
+					yield return BuildToken(builder, index - indexOffset);
 
 					candidateCharacterCode = EmptyCharacterCode;
 				}
 
 				if ((specialMode.Flags & SpecialModeFlags.InString) != 0)
 				{
-					var isSimpleStringTerminator = !inQuotedString && previousFlags.StringEndCandidate && character != '\'';
-					var isQuotedStringTerminator = inQuotedString && character == '\'' && IsQuotedStringClosingCharacter(quotingInitializer.Value, previousFlags.Character);
+					var isSimpleStringTerminator = !inQuotedString && previousFlags.StringEndCandidate && character != SingleQuoteCharacter;
+					var isQuotedStringTerminator = inQuotedString && character == SingleQuoteCharacter && IsQuotedStringClosingCharacter(quotingInitializer.Value, previousFlags.Character);
 
 					if (isSimpleStringTerminator || isQuotedStringTerminator)
 					{
 						AppendCandidateCharacter(builder, ref candidateCharacterCode);
 
 						var indexOffset = isQuotedStringTerminator ? 0 : 1;
-						var addedCharacter = isQuotedStringTerminator ? (char?)character : null;
-						yield return BuildToken(builder, index - indexOffset, addedCharacter);
+						if (isQuotedStringTerminator)
+						{
+							builder.Append(character);
+						}
+
+						yield return BuildToken(builder, index - indexOffset);
 
 						specialMode.Flags &= ~SpecialModeFlags.InString;
 						inQuotedString = false;
@@ -143,18 +149,18 @@ namespace SqlPad.Oracle
 
 						FindFlags(specialMode, character, flags);
 					}
-					else if (previousFlags.StringEndCandidate && flags.StringEndCandidate && character == '\'')
+					else if (previousFlags.StringEndCandidate && flags.StringEndCandidate && character == SingleQuoteCharacter)
 					{
 						flags.StringEndCandidate = false;
 					}
 				}
-				else if (specialMode.Flags == 0 && character == '\'')
+				else if (specialMode.Flags == 0 && character == SingleQuoteCharacter)
 				{
 					AppendCandidateCharacter(builder, ref candidateCharacterCode);
 
 					if (builder.Length > 0 && !previousFlags.QuotedStringCandidate && !previousFlags.UnicodeCandidate)
 					{
-						yield return BuildToken(builder, index - 1, null);
+						yield return BuildToken(builder, index - 1);
 					}
 
 					inQuotedString = previousFlags.QuotedStringCandidate;
@@ -166,10 +172,10 @@ namespace SqlPad.Oracle
 				{
 					if (builder.Length > 0)
 					{
-						yield return BuildToken(builder, index - 2, null);
+						yield return BuildToken(builder, index - 2);
 					}
 
-					if (character == '*')
+					if (character == AsteriskCharacter)
 					{
 						specialMode.Flags |= SpecialModeFlags.InBlockComment;
 						AppendCandidateCharacter(builder, ref candidateCharacterCode);
@@ -188,7 +194,7 @@ namespace SqlPad.Oracle
 				{
 					if (builder.Length > 0)
 					{
-						yield return BuildToken(builder, index - 2, null);
+						yield return BuildToken(builder, index - 2);
 					}
 
 					AppendCandidateCharacter(builder, ref candidateCharacterCode);
@@ -199,7 +205,7 @@ namespace SqlPad.Oracle
 					}
 					else
 					{
-						yield return BuildToken(builder, index - 1, null);
+						yield return BuildToken(builder, index - 1);
 					}
 				}
 
@@ -209,12 +215,14 @@ namespace SqlPad.Oracle
 					{
 						if (builder.Length > 0)
 						{
-							yield return BuildToken(builder, index - 2, null);
+							yield return BuildToken(builder, index - 2);
 						}
 
 						AppendCandidateCharacter(builder, ref candidateCharacterCode);
 
-						yield return BuildToken(builder, index, character);
+						builder.Append(character);
+						
+						yield return BuildToken(builder, index);
 
 						specialMode.InNumber = false;
 						flags.IsDecimalCandidate = false;
@@ -226,7 +234,7 @@ namespace SqlPad.Oracle
 						
 						if (builder.Length > 0)
 						{
-							yield return BuildToken(builder, index - 1, null);
+							yield return BuildToken(builder, index - 1);
 						}
 
 						specialMode.InNumber = false;
@@ -253,7 +261,7 @@ namespace SqlPad.Oracle
 						{
 							if (builder.Length > 0)
 							{
-								yield return BuildToken(builder, index - 2, null);
+								yield return BuildToken(builder, index - 2);
 							}
 
 							specialMode.InNumber = false;
@@ -269,7 +277,7 @@ namespace SqlPad.Oracle
 
 							if (builder.Length > 0)
 							{
-								yield return BuildToken(builder, index - 1, null);
+								yield return BuildToken(builder, index - 1);
 							}
 
 							specialMode.InNumber = false;
@@ -299,7 +307,7 @@ namespace SqlPad.Oracle
 
 				if (flags.AssignmentOperatorCandidate && builder.Length > 0)
 				{
-					yield return BuildToken(builder, index - 1, null);
+					yield return BuildToken(builder, index - 1);
 				}
 				
 				if (previousFlags.AssignmentOperatorCandidate)
@@ -310,7 +318,8 @@ namespace SqlPad.Oracle
 
 						if (builder.Length > 0)
 						{
-							yield return BuildToken(builder, index, character);
+							builder.Append(character);
+							yield return BuildToken(builder, index);
 						}
 
 						flags.OptionalParameterCandidate = false;
@@ -321,7 +330,7 @@ namespace SqlPad.Oracle
 					{
 						if (builder.Length > 0)
 						{
-							yield return BuildToken(builder, index - 2, null);
+							yield return BuildToken(builder, index - 2);
 						}
 
 						yield return BuildToken(previousFlags.Character, index - 1);
@@ -336,7 +345,8 @@ namespace SqlPad.Oracle
 
 					if (builder.Length > 0)
 					{
-						yield return BuildToken(builder, index, character);
+						builder.Append(character);
+						yield return BuildToken(builder, index);
 					}
 
 					characterYielded = true;
@@ -348,7 +358,7 @@ namespace SqlPad.Oracle
 
 					if (builder.Length > 0)
 					{
-						yield return BuildToken(builder, index - 1, null);
+						yield return BuildToken(builder, index - 1);
 					}
 
 					specialMode.Flags |= SpecialModeFlags.InQuotedIdentifier;
@@ -358,13 +368,14 @@ namespace SqlPad.Oracle
 				{
 					if (builder.Length > 0)
 					{
-						yield return BuildToken(builder, index - 2, null);
+						yield return BuildToken(builder, index - 2);
 					}
 
 					if (character == '=' || (character == '>' && previousFlags.Character == '<') || (previousFlags.LabelMarkerCandidate && character == previousFlags.Character))
 					{
 						builder.Append(previousFlags.Character);
-						yield return BuildToken(builder, index, character);
+						builder.Append(character);
+						yield return BuildToken(builder, index);
 						characterYielded = true;
 					}
 					else
@@ -383,7 +394,7 @@ namespace SqlPad.Oracle
 				{
 					if (builder.Length > 0)
 					{
-						yield return BuildToken(builder, index - 2, null);
+						yield return BuildToken(builder, index - 2);
 					}
 
 					builder.Append(previousFlags.Character);
@@ -397,12 +408,12 @@ namespace SqlPad.Oracle
 						flags.ConcatenationCandidate = false;
 					}
 
-					yield return BuildToken(builder, index - indexOffset, null);
+					yield return BuildToken(builder, index - indexOffset);
 
 					candidateCharacterCode = EmptyCharacterCode;
 				}
 
-				if (specialMode.Flags == 0 && (isBlank || isSingleCharacterTerminal || character == '*'))
+				if (specialMode.Flags == 0 && (isBlank || isSingleCharacterTerminal || character == AsteriskCharacter))
 				{
 					specialMode.InNumber = false;
 
@@ -410,7 +421,7 @@ namespace SqlPad.Oracle
 					
 					if (builder.Length > 0)
 					{
-						yield return BuildToken(builder, index - 1, null);
+						yield return BuildToken(builder, index - 1);
 					}
 
 					if (!isBlank)
@@ -424,7 +435,8 @@ namespace SqlPad.Oracle
 				{
 					if (includeCommentBlocks)
 					{
-						yield return BuildToken(builder, index, character, CommentType.Line);
+						builder.Append(character);
+						yield return BuildToken(builder, index, CommentType.Line);
 					}
 					else
 					{
@@ -444,7 +456,8 @@ namespace SqlPad.Oracle
 
 						if (includeCommentBlocks)
 						{
-							yield return BuildToken(builder, index, character, CommentType.Block);
+							builder.Append(character);
+							yield return BuildToken(builder, index, CommentType.Block);
 						}
 						else
 						{
@@ -521,13 +534,8 @@ namespace SqlPad.Oracle
 			return new OracleToken(character.ToString(CultureInfo.InvariantCulture), index - 1);	
 		}
 
-		private static OracleToken BuildToken(StringBuilder builder, int index, char? currentCharacter, CommentType commentType = CommentType.None)
+		private static OracleToken BuildToken(StringBuilder builder, int index, CommentType commentType = CommentType.None)
 		{
-			if (currentCharacter.HasValue)
-			{
-				builder.Append(currentCharacter);
-			}
-
 			var value = builder.ToString();
 			var token = new OracleToken(value, index - value.Length, commentType);
 
@@ -552,7 +560,7 @@ namespace SqlPad.Oracle
 				case '/':
 					flags.BlockCommentBeginCandidate = notInComment;
 					break;
-				case '*':
+				case AsteriskCharacter:
 					flags.BlockCommentEndCandidate = inBlockComment;
 					break;
 				case '-':
@@ -594,7 +602,7 @@ namespace SqlPad.Oracle
 				case 'Q':
 					flags.QuotedStringCandidate = !inString;
 					break;
-				case '\'':
+				case SingleQuoteCharacter:
 					flags.StringEndCandidate = inString;
 					break;
 				case '.':
