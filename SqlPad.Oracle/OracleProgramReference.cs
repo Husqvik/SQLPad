@@ -59,9 +59,9 @@ namespace SqlPad.Oracle
 
 		public override string Name { get { return AliasNode == null ? null : AliasNode.Token.Value; } }
 
-		public override OracleObjectIdentifier FullyQualifiedObjectName
+		protected override OracleObjectIdentifier BuildFullyQualifiedObjectName()
 		{
-			get { return OracleObjectIdentifier.Create(null, Name); }
+			return OracleObjectIdentifier.Create(null, Name);
 		}
 
 		public override IReadOnlyList<OracleColumn> Columns
@@ -126,9 +126,9 @@ namespace SqlPad.Oracle
 
 		public override string Name { get { return AliasNode == null ? null : AliasNode.Token.Value; } }
 
-		public override OracleObjectIdentifier FullyQualifiedObjectName
+		protected override OracleObjectIdentifier BuildFullyQualifiedObjectName()
 		{
-			get { return OracleObjectIdentifier.Create(null, Name); }
+			return OracleObjectIdentifier.Create(null, Name);
 		}
 
 		public override IReadOnlyList<OracleColumn> Columns

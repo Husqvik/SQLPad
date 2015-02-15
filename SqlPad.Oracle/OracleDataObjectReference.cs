@@ -29,14 +29,11 @@ namespace SqlPad.Oracle
 
 		public override string Name { get { throw new NotImplementedException(); } }
 
-		public override OracleObjectIdentifier FullyQualifiedObjectName
+		protected override OracleObjectIdentifier BuildFullyQualifiedObjectName()
 		{
-			get
-			{
-				return OracleObjectIdentifier.Create(
+			return OracleObjectIdentifier.Create(
 					AliasNode == null ? OwnerNode : null,
 					Type == ReferenceType.InlineView ? null : ObjectNode, AliasNode);
-			}
 		}
 
 		public override IReadOnlyList<OracleColumn> Columns

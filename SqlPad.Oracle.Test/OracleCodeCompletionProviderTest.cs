@@ -1852,6 +1852,21 @@ SELECT * FROM CTE";
 			items.Length.ShouldBe(1);
 		}
 
+		[Test(Description = @"")]
+		public void TestDataObjectSuggestionWhenNameContainsReservedWord()
+		{
+			const string testQuery =
+@"WITH ALL_DATA AS (
+	SELECT * FROM DUAL
+)
+SELECT * FROM ALL";
+
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, testQuery, 61).ToArray();
+			items.Length.ShouldBe(1);
+			items[0].Name.ShouldBe("ALL_DATA");
+			items[0].StatementNode.ShouldNotBe(null);
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)

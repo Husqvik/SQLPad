@@ -10,15 +10,27 @@ namespace SqlPad.Oracle
 	[DebuggerDisplay("OracleQueryBlock (Alias={Alias}; Type={Type}; RootNode={RootNode}; Columns={Columns.Count})")]
 	public class OracleQueryBlock : OracleReferenceContainer
 	{
-		private OracleDataObjectReference _selfObjectReference;
-		private bool? _hasRemoteAsteriskReferences;
 		private readonly List<OracleSelectListColumn> _columns = new List<OracleSelectListColumn>();
 		private readonly List<OracleSelectListColumn> _attachedColumns = new List<OracleSelectListColumn>();
 		private readonly List<OracleSelectListColumn> _asteriskColumns = new List<OracleSelectListColumn>();
+		
+		private OracleDataObjectReference _selfObjectReference;
+		private bool? _hasRemoteAsteriskReferences;
+		private ILookup<string, OracleSelectListColumn> _namedColumns;
 
 		public OracleQueryBlock(OracleStatementSemanticModel semanticModel) : base(semanticModel)
 		{
 			AccessibleQueryBlocks = new List<OracleQueryBlock>();
+		}
+
+		private bool IsFrozen
+		{
+			get { return _namedColumns != null; }
+		}
+
+		public ILookup<string, OracleSelectListColumn> NamedColumns
+		{
+			get { return _namedColumns ?? (_namedColumns = _columns.Concat(_attachedColumns).ToLookup(c => c.NormalizedName)); }
 		}
 
 		public OracleDataObjectReference SelfObjectReference
@@ -157,6 +169,8 @@ namespace SqlPad.Oracle
 
 		public void AddAttachedColumn(OracleSelectListColumn column)
 		{
+			CheckIfFrozen();
+
 			_columns.Add(column);
 			_attachedColumns.Add(column);
 		}
@@ -167,6 +181,8 @@ namespace SqlPad.Oracle
 			{
 				throw new InvalidOperationException("Query block has attached columns associated. ");
 			}
+
+			CheckIfFrozen();
 
 			if (index.HasValue)
 			{
@@ -180,6 +196,14 @@ namespace SqlPad.Oracle
 			if (column.IsAsterisk)
 			{
 				_asteriskColumns.Add(column);
+			}
+		}
+
+		private void CheckIfFrozen()
+		{
+			if (IsFrozen)
+			{
+				throw new InvalidOperationException("Query block has been frozen. ");
 			}
 		}
 

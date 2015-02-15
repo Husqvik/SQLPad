@@ -6,15 +6,21 @@ namespace SqlPad.Oracle
 	public abstract class OracleReference
 	{
 		private OracleReferenceContainer _container;
+		private OracleObjectIdentifier? _fullyQualifiedName;
 
 		protected OracleReference()
 		{
 			ObjectNodeObjectReferences = new HashSet<OracleObjectWithColumnsReference>();
 		}
 
-		public virtual OracleObjectIdentifier FullyQualifiedObjectName
+		public OracleObjectIdentifier FullyQualifiedObjectName
 		{
-			get { return OracleObjectIdentifier.Create(OwnerNode, ObjectNode, null); }
+			get { return _fullyQualifiedName ?? (_fullyQualifiedName = BuildFullyQualifiedObjectName()).Value; }
+		}
+
+		protected virtual OracleObjectIdentifier BuildFullyQualifiedObjectName()
+		{
+			return OracleObjectIdentifier.Create(OwnerNode, ObjectNode, null);
 		}
 
 		public bool HasExplicitDefinition { get { return SelectListColumn == null || SelectListColumn.HasExplicitDefinition; } }

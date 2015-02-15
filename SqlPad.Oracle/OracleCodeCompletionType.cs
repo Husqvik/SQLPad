@@ -149,9 +149,12 @@ namespace SqlPad.Oracle
 					precedingTerminal.ParentNode.Clone().AddChildNodes(nearestTerminal);
 					atAdHocTemporaryTerminal = true;
 
-					if (nearestTerminal.Token.Value[0] == '"')
+					nearestTerminal.Id = nearestTerminal.Token.Value[0] == '"'
+						? Terminals.Identifier
+						: GetIdentifierCandidate();
+
+					if (nearestTerminal.Id != null)
 					{
-						nearestTerminal.Id = Terminals.Identifier;
 						ReferenceIdentifier = BuildReferenceIdentifier(nearestTerminal.ParentNode.GetDescendants(Terminals.SchemaIdentifier, Terminals.ObjectIdentifier, Terminals.Identifier).ToArray());
 					}
 
@@ -253,6 +256,17 @@ namespace SqlPad.Oracle
 			UpdateSetColumn = TerminalCandidates.Contains(Terminals.Identifier) && (isWithinUpdateSetNonTerminal || isAfterSetTerminal);
 
 			ColumnAlias = Column && nearestTerminal.IsWithinOrderByClause();
+		}
+
+		private string GetIdentifierCandidate()
+		{
+			return TerminalCandidates.Contains(Terminals.Identifier)
+				? Terminals.Identifier
+				: TerminalCandidates.Contains(Terminals.ObjectIdentifier)
+					? Terminals.ObjectIdentifier
+					: TerminalCandidates.Contains(Terminals.SchemaIdentifier)
+						? Terminals.SchemaIdentifier
+						: null;
 		}
 
 		private void ResolveSuggestedKeywords()

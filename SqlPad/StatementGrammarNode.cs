@@ -273,7 +273,7 @@ namespace SqlPad
 					return null;
 				}
 
-				node = node._childNodes.SingleOrDefault(n => n.Id == id);
+				node = node._childNodes.SingleOrDefault(n => String.Equals(n.Id, id));
 			}
 
 			return node;
@@ -307,7 +307,7 @@ namespace SqlPad
 
 		private int? GetAncestorDistance(string ancestorNodeId, int level)
 		{
-			if (Id == ancestorNodeId)
+			if (String.Equals(Id, ancestorNodeId))
 				return level;
 			
 			return ParentNode != null ? ParentNode.GetAncestorDistance(ancestorNodeId, level + 1) : null;
@@ -330,13 +330,13 @@ namespace SqlPad
 
 		public StatementGrammarNode GetPathFilterAncestor(Func<StatementGrammarNode, bool> pathFilter, string ancestorNodeId, bool includeSelf = false)
 		{
-			if (includeSelf && Id == ancestorNodeId)
+			if (includeSelf && String.Equals(Id, ancestorNodeId))
 				return this;
 
 			if (ParentNode == null || (pathFilter != null && !pathFilter(ParentNode)))
 				return null;
 
-			return ParentNode.Id == ancestorNodeId
+			return String.Equals(ParentNode.Id, ancestorNodeId)
 				? ParentNode
 				: ParentNode.GetPathFilterAncestor(pathFilter, ancestorNodeId);
 		}

@@ -136,7 +136,7 @@ namespace SqlPad.Oracle
 			
 			foreach (var terminal in Statement.AllTerminals)
 			{
-				if (terminal.Id == Terminals.Select && String.Equals(terminal.ParentNode.Id, NonTerminals.QueryBlock))
+				if (String.Equals(terminal.Id, Terminals.Select) && String.Equals(terminal.ParentNode.Id, NonTerminals.QueryBlock))
 				{
 					var queryBlock = new OracleQueryBlock(this) { RootNode = terminal.ParentNode, Statement = Statement };
 					queryBlocks.Add(queryBlock);
@@ -1668,7 +1668,7 @@ namespace SqlPad.Oracle
 				if (columnReference.ObjectNode != null &&
 				    (rowSourceReference.FullyQualifiedObjectName == columnReference.FullyQualifiedObjectName ||
 				     (columnReference.OwnerNode == null &&
-				      rowSourceReference.Type == ReferenceType.SchemaObject && rowSourceReference.FullyQualifiedObjectName.NormalizedName == columnReference.FullyQualifiedObjectName.NormalizedName)))
+				      rowSourceReference.Type == ReferenceType.SchemaObject && String.Equals(rowSourceReference.FullyQualifiedObjectName.NormalizedName, columnReference.FullyQualifiedObjectName.NormalizedName))))
 				{
 					columnReference.ObjectNodeObjectReferences.Add(rowSourceReference);
 					columnReference.IsCorrelated = correlatedRowSources;
@@ -1716,9 +1716,12 @@ namespace SqlPad.Oracle
 					break;
 				case ReferenceType.InlineView:
 				case ReferenceType.CommonTableExpression:
-					var selectListColumns = rowSourceReference.QueryBlocks.SelectMany(qb => qb.Columns)
-						.Where(c => String.Equals(c.NormalizedName, columnReference.NormalizedName) && (columnReference.ObjectNode == null || String.Equals(columnReference.FullyQualifiedObjectName.NormalizedName, rowSourceReference.FullyQualifiedObjectName.NormalizedName)));
+					if (columnReference.ObjectNode != null && !String.Equals(columnReference.FullyQualifiedObjectName.NormalizedName, rowSourceReference.FullyQualifiedObjectName.NormalizedName))
+					{
+						break;
+					}
 
+					var selectListColumns = rowSourceReference.QueryBlocks.SelectMany(qb => qb.NamedColumns[columnReference.NormalizedName]);
 					foreach (var selectListColumn in selectListColumns)
 					{
 						newColumnReferences.Add(selectListColumn.ColumnDescription);
@@ -1743,8 +1746,9 @@ namespace SqlPad.Oracle
 
 		private IEnumerable<OracleColumn> GetColumnReferenceMatchingColumns(OracleDataObjectReference rowSourceReference, OracleColumnReference columnReference)
 		{
-			return rowSourceReference.Columns
-				.Where(c => c.Name == columnReference.NormalizedName && (columnReference.ObjectNode == null || IsTableReferenceValid(columnReference, rowSourceReference)));
+			return columnReference.ObjectNode == null || IsTableReferenceValid(columnReference, rowSourceReference)
+				? rowSourceReference.Columns.Where(c => c.Name == columnReference.NormalizedName)
+				: Enumerable.Empty<OracleColumn>();
 		}
 
 		private void TryColumnReferenceAsProgramOrSequenceReference(OracleColumnReference columnReference)
