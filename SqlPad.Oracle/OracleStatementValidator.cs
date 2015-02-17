@@ -267,7 +267,7 @@ namespace SqlPad.Oracle
 				{
 					if (queryBlock.ExplicitColumnNameList != null)
 					{
-						var explicitNamedColumnCount = queryBlock.Columns.Count(c => !String.IsNullOrEmpty(c.ExplicitNormalizedName));
+						var explicitNamedColumnCount = GetExplicitNamedColumnCount(queryBlock);
 						if (explicitNamedColumnCount > 0 && explicitNamedColumnCount != queryBlock.Columns.Count - queryBlock.AsteriskColumns.Count - queryBlock.AttachedColumns.Count)
 						{
 							validationModel.InvalidNonTerminals[queryBlock.ExplicitColumnNameList] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) { Node = queryBlock.ExplicitColumnNameList };
@@ -330,6 +330,11 @@ namespace SqlPad.Oracle
 			}
 		}
 
+		private static int GetExplicitNamedColumnCount(OracleQueryBlock queryBlock)
+		{
+			return queryBlock.Columns.Count(c => !String.IsNullOrEmpty(c.ExplicitNormalizedName));
+		}
+
 		private static void ValidateConcatenatedQueryBlocks(OracleValidationModel validationModel, OracleQueryBlock queryBlock)
 		{
 			if (queryBlock.PrecedingConcatenatedQueryBlock != null || queryBlock.FollowingConcatenatedQueryBlock == null)
@@ -337,13 +342,30 @@ namespace SqlPad.Oracle
 				return;
 			}
 
-			var firstQueryBlockColumnCount = queryBlock.Columns.Count - queryBlock.AsteriskColumns.Count - queryBlock.AttachedColumns.Count;
+			var referenceColumnCount = queryBlock.Columns.Count - queryBlock.AsteriskColumns.Count - queryBlock.AttachedColumns.Count;
+			var validityNode = queryBlock.SelectList;
+			if (queryBlock.Type == QueryBlockType.CommonTableExpression && queryBlock.ExplicitColumnNameList != null)
+			{
+				var explicitColumnCount = GetExplicitNamedColumnCount(queryBlock);
+				if (explicitColumnCount > 0)
+				{
+					referenceColumnCount = explicitColumnCount;
+					validityNode = queryBlock.ExplicitColumnNameList;
+				}
+			}
+
 			foreach (var concatenatedQueryBlock in queryBlock.AllFollowingConcatenatedQueryBlocks)
 			{
 				var concatenatedQueryBlockColumnCount = concatenatedQueryBlock.Columns.Count - concatenatedQueryBlock.AsteriskColumns.Count;
-				if (concatenatedQueryBlockColumnCount != firstQueryBlockColumnCount && concatenatedQueryBlockColumnCount > 0)
+				if (concatenatedQueryBlockColumnCount == referenceColumnCount || concatenatedQueryBlockColumnCount == 0)
 				{
-					validationModel.InvalidNonTerminals[queryBlock.SelectList] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) { Node = queryBlock.SelectList };
+					continue;
+				}
+
+				validationModel.InvalidNonTerminals[validityNode] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) { Node = validityNode };
+
+				if (String.Equals(validityNode.Id, NonTerminals.SelectList))
+				{
 					foreach (var invalidColumnCountQueryBlock in queryBlock.AllFollowingConcatenatedQueryBlocks)
 					{
 						validationModel.InvalidNonTerminals[invalidColumnCountQueryBlock.SelectList] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) { Node = invalidColumnCountQueryBlock.SelectList };
@@ -351,6 +373,8 @@ namespace SqlPad.Oracle
 
 					break;
 				}
+				
+				validationModel.InvalidNonTerminals[concatenatedQueryBlock.SelectList] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) { Node = concatenatedQueryBlock.SelectList };
 			}
 		}
 

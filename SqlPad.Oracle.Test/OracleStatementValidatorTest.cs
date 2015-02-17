@@ -1916,6 +1916,42 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		}
 
 		[Test(Description = @"")]
+		public void TestDicrepancyBetweenColumnsAndCommonTableExpressionExplicitColumnListWhenWithinConcatenatedQueryBlock()
+		{
+			const string sqlText =
+@"WITH CTE(C1, C2) AS (
+	SELECT 1, 2 FROM DUAL UNION ALL
+	SELECT 2, 2 FROM DUAL UNION ALL
+	SELECT 3, 2 FROM DUAL UNION ALL
+	SELECT 4, 2 FROM DUAL UNION ALL
+	SELECT 5 FROM DUAL
+)
+SELECT * FROM CTE";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var cteQueryBlocks = validationModel.SemanticModel.QueryBlocks
+				.Where(qb => qb.Type == QueryBlockType.CommonTableExpression)
+				.OrderBy(qb => qb.RootNode.SourcePosition.IndexStart)
+				.ToArray();
+
+			cteQueryBlocks.Length.ShouldBe(5);
+
+			var invalidNonTerminals = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			invalidNonTerminals.Count.ShouldBe(2);
+			invalidNonTerminals[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidColumnCount);
+			invalidNonTerminals[0].ToolTipText.ShouldBe(OracleSemanticErrorType.InvalidColumnCount);
+			invalidNonTerminals[0].Node.ShouldBe(cteQueryBlocks[0].ExplicitColumnNameList);
+			invalidNonTerminals[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidColumnCount);
+			invalidNonTerminals[1].ToolTipText.ShouldBe(OracleSemanticErrorType.InvalidColumnCount);
+			invalidNonTerminals[1].Node.ShouldBe(cteQueryBlocks[4].SelectList);
+			invalidNonTerminals[1].Node.TerminalCount.ShouldBe(1);
+			invalidNonTerminals[1].Node.FirstTerminalNode.Token.Value.ShouldBe("5");
+		}
+
+		[Test(Description = @"")]
 		public void TestScalarSubqueryWithMultipleColumns()
 		{
 			const string sqlText = @"SELECT (SELECT 1, 2 FROM DUAL) FROM DUAL";
