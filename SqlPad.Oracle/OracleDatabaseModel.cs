@@ -748,7 +748,7 @@ namespace SqlPad.Oracle
 				using (var command = connection.CreateCommand())
 				{
 					command.BindByName = true;
-					command.CommandText = DatabaseCommands.GetExecutionPlanIdentifiers;
+					command.CommandText = DatabaseCommands.SelectExecutionPlanIdentifiersCommandText;
 					command.AddSimpleParameter("SID", _userSessionId);
 
 					try
@@ -785,7 +785,7 @@ namespace SqlPad.Oracle
 		{
 			using (var command = _userConnection.CreateCommand())
 			{
-				command.CommandText = DatabaseCommands.GetLocalTransactionId;
+				command.CommandText = DatabaseCommands.SelectLocalTransactionIdCommandText;
 				_userTransactionId = OracleReaderValueConvert.ToString(await command.ExecuteScalarAsynchronous(cancellationToken));
 				_userTransactionIsolationLevel = String.IsNullOrEmpty(_userTransactionId) ? IsolationLevel.Unspecified : IsolationLevel.ReadCommitted;
 			}
@@ -884,7 +884,7 @@ namespace SqlPad.Oracle
 
 			using (var command = _userConnection.CreateCommand())
 			{
-				command.CommandText = DatabaseCommands.FetchDatabaseOutput;
+				command.CommandText = DatabaseCommands.FetchDatabaseOutputCommandText;
 
 				using (var parameter = command.CreateParameter())
 				{

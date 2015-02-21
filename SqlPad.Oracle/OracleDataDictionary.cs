@@ -103,6 +103,7 @@ namespace SqlPad.Oracle
 			oracleObjectType.AddSubType(102, typeof(OracleConstraint));
 			oracleObjectType.AddSubType(103, typeof(OracleDatabaseLink));
 			oracleObjectType.AddSubType(104, typeof(OracleDataType));
+			oracleObjectType.AddSubType(105, typeof(OraclePartitionBase));
 
 			var oracleSchemaObjectType = Serializer.Add(typeof(OracleSchemaObject), false);
 			oracleSchemaObjectType.AsReferenceDefault = true;
@@ -133,6 +134,20 @@ namespace SqlPad.Oracle
 			var oracleUniqueConstraintType = Serializer.Add(typeof(OracleUniqueConstraint), true);
 			oracleUniqueConstraintType.AsReferenceDefault = true;
 			oracleUniqueConstraintType.AddSubType(101, typeof(OraclePrimaryKeyConstraint));
+
+			var oraclePartitionBaseType = Serializer.Add(typeof(OraclePartitionBase), false);
+			oraclePartitionBaseType.AsReferenceDefault = true;
+			oraclePartitionBaseType.Add("Name", "Position");
+
+			oraclePartitionBaseType.AddSubType(101, typeof(OraclePartition));
+			oraclePartitionBaseType.AddSubType(102, typeof(OracleSubPartition));
+
+			var oraclePartitionType = Serializer.Add(typeof(OraclePartition), false);
+			oraclePartitionType.AsReferenceDefault = true;
+			oraclePartitionType.Add("_subPartitions");
+
+			var oracleSubPartitionType = Serializer.Add(typeof(OracleSubPartition), false);
+			oracleSubPartitionType.AsReferenceDefault = true;
 
 			oracleSchemaObjectType.AddSubType(101, typeof(OracleTypeBase));
 			oracleSchemaObjectType.AddSubType(102, typeof(OracleDataObject));
@@ -187,7 +202,7 @@ namespace SqlPad.Oracle
 			oracleDataObjectType.AddSubType(102, typeof(OracleView));
 			var oracleTableType = Serializer.Add(typeof(OracleTable), false);
 			oracleTableType.AsReferenceDefault = true;
-			oracleTableType.Add("IsInternal");
+			oracleTableType.Add("IsInternal", "_partitions");
 
 			oracleTableType.AddSubType(101, typeof(OracleMaterializedView));
 			var oracleMaterializedViewType = Serializer.Add(typeof(OracleMaterializedView), false);

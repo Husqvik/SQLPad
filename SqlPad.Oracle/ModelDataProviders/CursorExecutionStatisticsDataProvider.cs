@@ -27,7 +27,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public override void InitializeCommand(OracleCommand command)
 		{
-			command.CommandText = DatabaseCommands.GetCursorExecutionStatistics;
+			command.CommandText = DatabaseCommands.SelectCursorExecutionStatisticsCommandText;
 			command.AddSimpleParameter("SQL_ID", _sqlId);
 			command.AddSimpleParameter("CHILD_NUMBER", _childNumber);
 		}

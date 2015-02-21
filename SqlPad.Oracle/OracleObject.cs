@@ -114,6 +114,8 @@ namespace SqlPad.Oracle
 	[DebuggerDisplay("OracleTable (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
 	public class OracleTable : OracleDataObject
 	{
+		private Dictionary<string, OraclePartition> _partitions;
+
 		public bool IsInternal { get; set; }
 
 		public OracleColumn RowIdPseudoColumn
@@ -135,6 +137,28 @@ namespace SqlPad.Oracle
 		}
 
 		public override string Type { get { return OracleSchemaObjectType.Table; } }
+
+		public IDictionary<string, OraclePartition> Partitions { get { return _partitions ?? (_partitions = new Dictionary<string, OraclePartition>()); } }
+	}
+
+	public abstract class OraclePartitionBase : OracleObject
+	{
+		public string Name { get; set; }
+
+		public int Position { get; set; }
+	}
+
+	[DebuggerDisplay("OraclePartition (Name={Name}; Position={Position})")]
+	public class OraclePartition : OraclePartitionBase
+	{
+		private Dictionary<string, OracleSubPartition> _subPartitions;
+
+		public IDictionary<string, OracleSubPartition> SubPartitions { get { return _subPartitions ?? (_subPartitions = new Dictionary<string, OracleSubPartition>()); } }
+	}
+
+	[DebuggerDisplay("OracleSubPartition (Name={Name}; Position={Position})")]
+	public class OracleSubPartition : OraclePartitionBase
+	{
 	}
 
 	[DebuggerDisplay("OracleSequence (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]

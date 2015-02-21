@@ -23,7 +23,7 @@ namespace SqlPad.Oracle
 
 			var stopwatch = Stopwatch.StartNew();
 			var schemaTypeMetadataSource = _databaseModel.ExecuteReader(DatabaseCommands.SelectTypesCommandText, MapSchemaType);
-			var schemaTypeAndMateralizedViewMetadataSource = schemaTypeMetadataSource.Concat(_databaseModel.ExecuteReader(DatabaseCommands.SelectMaterializedViewCommand, MapMaterializedView));
+			var schemaTypeAndMateralizedViewMetadataSource = schemaTypeMetadataSource.Concat(_databaseModel.ExecuteReader(DatabaseCommands.SelectMaterializedViewCommandText, MapMaterializedView));
 
 			foreach (var schemaObject in schemaTypeAndMateralizedViewMetadataSource)
 			{
@@ -41,6 +41,16 @@ namespace SqlPad.Oracle
 			_databaseModel.ExecuteReader(DatabaseCommands.SelectTablesCommandText, MapTable).ToArray();
 
 			Trace.WriteLine(String.Format("Fetch tables metadata finished in {0}. ", stopwatch.Elapsed));
+			stopwatch.Restart();
+
+			_databaseModel.ExecuteReader(DatabaseCommands.SelectPartitionsCommandText, MapPartitions).ToArray();
+
+			Trace.WriteLine(String.Format("Fetch table partition metadata finished in {0}. ", stopwatch.Elapsed));
+			stopwatch.Restart();
+
+			_databaseModel.ExecuteReader(DatabaseCommands.SelectSubPartitionsCommandText, MapSubPartitions).ToArray();
+
+			Trace.WriteLine(String.Format("Fetch table sub-partition metadata finished in {0}. ", stopwatch.Elapsed));
 			stopwatch.Restart();
 
 			_databaseModel.ExecuteReader(DatabaseCommands.SelectSynonymTargetsCommandText, MapSynonymTarget).ToArray();
@@ -125,7 +135,7 @@ namespace SqlPad.Oracle
 		public ILookup<OracleProgramIdentifier, OracleProgramMetadata> GetUserFunctionMetadata()
 		{
 			var stopwatch = Stopwatch.StartNew();
-			var metadata = GetFunctionMetadataCollection(DatabaseCommands.UserFunctionMetadataCommandText, DatabaseCommands.UserFunctionParameterMetadataCommandText, false);
+			var metadata = GetFunctionMetadataCollection(DatabaseCommands.SelectUserFunctionMetadataCommandText, DatabaseCommands.SelectUserFunctionParameterMetadataCommandText, false);
 			Trace.WriteLine(String.Format("GetUserFunctionMetadata finished in {0}. ", stopwatch.Elapsed));
 			return metadata;
 		}
@@ -133,14 +143,14 @@ namespace SqlPad.Oracle
 		public ILookup<OracleProgramIdentifier, OracleProgramMetadata> GetBuiltInFunctionMetadata()
 		{
 			var stopwatch = Stopwatch.StartNew();
-			var metadata = GetFunctionMetadataCollection(DatabaseCommands.BuiltInFunctionMetadataCommandText, DatabaseCommands.BuiltInFunctionParameterMetadataCommandText, true);
+			var metadata = GetFunctionMetadataCollection(DatabaseCommands.SelectBuiltInFunctionMetadataCommandText, DatabaseCommands.SelectBuiltInFunctionParameterMetadataCommandText, true);
 			Trace.WriteLine(String.Format("GetBuiltInFunctionMetadata finished in {0}. ", stopwatch.Elapsed));
 			return metadata;
 		}
 
 		public ILookup<string, string> GetContextData()
 		{
-			return _databaseModel.ExecuteReader(DatabaseCommands.GetContextData, MapContextData).ToLookup(r => r.Key, r => r.Value);
+			return _databaseModel.ExecuteReader(DatabaseCommands.SelectContextDataCommandText, MapContextData).ToLookup(r => r.Key, r => r.Value);
 		}
 
 		public IEnumerable<string> GetSchemaNames()
@@ -150,14 +160,14 @@ namespace SqlPad.Oracle
 
 		public IEnumerable<string> GetCharacterSets()
 		{
-			return _databaseModel.ExecuteReader(DatabaseCommands.GetCharacterSets, r => ((string)r["VALUE"]));
+			return _databaseModel.ExecuteReader(DatabaseCommands.SelectCharacterSetsCommandText, r => ((string)r["VALUE"]));
 		}
 
 		public IEnumerable<KeyValuePair<int, string>> GetStatisticsKeys()
 		{
 			var command = _databaseModel.VersionMajor == OracleDatabaseModelBase.VersionMajorOracle12c
-				? DatabaseCommands.GetStatisticsKeys
-				: DatabaseCommands.GetStatisticsKeysOracle11;
+				? DatabaseCommands.SelectStatisticsKeysCommandText
+				: DatabaseCommands.SelectStatisticsKeysOracle11CommandText;
 			
 			return _databaseModel.ExecuteReader(command, MapStatisticsKey);
 		}
@@ -170,7 +180,7 @@ namespace SqlPad.Oracle
 
 		public IEnumerable<KeyValuePair<string, string>> GetSystemParameters()
 		{
-			return _databaseModel.ExecuteReader(DatabaseCommands.GetSystemParameters, MapParameter);
+			return _databaseModel.ExecuteReader(DatabaseCommands.SelectSystemParametersCommandText, MapParameter);
 		}
 
 		private ILookup<OracleProgramIdentifier, OracleProgramMetadata> GetFunctionMetadataCollection(string selectFunctionMetadataCommandText, string selectParameterMetadataCommandText, bool isBuiltIn)
@@ -456,7 +466,7 @@ namespace SqlPad.Oracle
 			return synonymObject;
 		}
 
-		private object MapTable(IDataRecord reader)
+		private OracleTable MapTable(IDataRecord reader)
 		{
 			var tableFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(reader["OWNER"]), QualifyStringObject(reader["TABLE_NAME"]));
 			OracleSchemaObject schemaObject;
@@ -468,6 +478,55 @@ namespace SqlPad.Oracle
 			var table = (OracleTable)schemaObject;
 			table.Organization = (OrganizationType)Enum.Parse(typeof(OrganizationType), (string)reader["ORGANIZATION"]);
 			return table;
+		}
+		private OraclePartition MapPartitions(IDataRecord reader)
+		{
+			var ownerTable = GetTableForPartition(reader);
+			if (ownerTable == null)
+			{
+				return null;
+			}
+
+			var partition =
+				new OraclePartition
+				{
+					Name = QualifyStringObject(reader["PARTITION_NAME"]),
+					Position = Convert.ToInt32(reader["PARTITION_POSITION"])
+				};
+
+			ownerTable.Partitions.Add(partition.Name, partition);
+
+			return partition;
+		}
+
+		private OracleTable GetTableForPartition(IDataRecord reader)
+		{
+			var tableFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(reader["TABLE_OWNER"]), QualifyStringObject(reader["TABLE_NAME"]));
+			OracleSchemaObject schemaObject;
+			return _allObjects.TryGetValue(tableFullyQualifiedName, out schemaObject)
+				? (OracleTable)schemaObject
+				: null;
+		}
+
+		private OracleSubPartition MapSubPartitions(IDataRecord reader)
+		{
+			var ownerTable = GetTableForPartition(reader);
+			if (ownerTable == null)
+			{
+				return null;
+			}
+
+			var subPartition =
+				new OracleSubPartition
+				{
+					Name = QualifyStringObject(reader["SUBPARTITION_NAME"]),
+					Position = Convert.ToInt32(reader["SUBPARTITION_POSITION"])
+				};
+
+			var ownerPartition = ownerTable.Partitions[QualifyStringObject(reader["PARTITION_NAME"])];
+			ownerPartition.SubPartitions.Add(subPartition.Name, subPartition);
+
+			return subPartition;
 		}
 
 		private object MapSchemaObject(IDataRecord reader)

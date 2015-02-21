@@ -37,7 +37,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 			public override void InitializeCommand(OracleCommand command)
 			{
-				command.CommandText = DatabaseCommands.GetSessionsStatistics;
+				command.CommandText = DatabaseCommands.SelectSessionsStatisticsCommandText;
 				command.AddSimpleParameter("SID", DataModel.SessionId);
 
 				DataModel.StatisticsRecords.Clear();
