@@ -78,7 +78,7 @@
 										Binding="{Binding LastAnalyzed, Converter={StaticResource DateTimeConverter}}" />
 				</DataGrid.Columns>
 			</DataGrid>
-			<TextBlock Visibility="{Binding MorePartitionsExistMessageVisibility, Mode=OneWay}" FontWeight="Normal">
+			<TextBlock Visibility="{Binding MorePartitionsExistMessageVisibility, Mode=OneWay}" FontWeight="Normal" Margin="4,1,0,0">
 				<Run Text="Showing only " /><Run Text="{Binding VisiblePartitionCount, Mode=OneWay}" /><Run Text=" of " /><Run Text="{Binding PartitionCount, Mode=OneWay}" /><Run Text=" partitions. " />
 			</TextBlock>
 		</StackPanel>

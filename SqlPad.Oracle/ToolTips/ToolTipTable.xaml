@@ -6,7 +6,7 @@
              xmlns:sqlPad="clr-namespace:SqlPad;assembly=SqlPad"
              xmlns:toolTips="clr-namespace:SqlPad.Oracle.ToolTips"
              mc:Ignorable="d" 
-             d:DesignHeight="380" d:DesignWidth="240"
+             d:DesignHeight="424" d:DesignWidth="240"
 			 Padding="4" d:DataContext="{d:DesignInstance toolTips:TableDetailsModel}">
     <StackPanel>
 		<StackPanel.Resources>
@@ -61,6 +61,8 @@
 					<RowDefinition />
 					<RowDefinition />
 					<RowDefinition />
+					<RowDefinition />
+					<RowDefinition />
 					<RowDefinition Height="Auto" />
 					<RowDefinition Height="Auto" />
 					<RowDefinition Height="Auto" />
@@ -87,14 +89,18 @@
 				</StackPanel>
 				<TextBlock Grid.Row="8" Grid.Column="0" Text="Rows: " />
 				<TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding RowCount, Converter={StaticResource PrettyPrintIntegerConverter}}" />
-				<TextBlock Grid.Row="9" Grid.Column="0" Text="Avg. row bytes: " />
-				<TextBlock Grid.Row="9" Grid.Column="1" Text="{Binding AverageRowSize, Converter={StaticResource PrettyPrintIntegerConverter}}" />
-				<TextBlock Grid.Row="10" Grid.Column="0" Text="Compression: " />
-				<TextBlock Grid.Row="10" Grid.Column="1" Text="{Binding Compression}" />
-				<TextBlock Grid.Row="11" Grid.Column="0" Text="Last analyzed: " />
-				<TextBlock Grid.Row="11" Grid.Column="1" Text="{Binding LastAnalyzed, Converter={StaticResource DateTimeConverter}}" />
-				<TextBlock Grid.Row="12" Grid.Column="0" Text="In-memory space: " Visibility="{Binding InMemoryAllocationStatusVisibility}" />
-				<TextBlock Grid.Row="12" Grid.Column="1" Visibility="{Binding InMemoryAllocationStatusVisibility}">
+				<TextBlock Grid.Row="9" Grid.Column="0" Text="Sample rows: " />
+				<TextBlock Grid.Row="9" Grid.Column="1" Text="{Binding SampleRows, Converter={StaticResource PrettyPrintIntegerConverter}}" />
+				<TextBlock Grid.Row="10" Grid.Column="0" Text="Avg. row bytes: " />
+				<TextBlock Grid.Row="10" Grid.Column="1" Text="{Binding AverageRowSize, Converter={StaticResource PrettyPrintIntegerConverter}}" />
+				<TextBlock Grid.Row="11" Grid.Column="0" Text="Compression: " />
+				<TextBlock Grid.Row="11" Grid.Column="1" Text="{Binding Compression}" />
+				<TextBlock Grid.Row="12" Grid.Column="0" Text="Logging: " />
+				<TextBlock Grid.Row="12" Grid.Column="1" Text="{Binding Logging, Converter={StaticResource BooleanConverter}}" />
+				<TextBlock Grid.Row="13" Grid.Column="0" Text="Last analyzed: " />
+				<TextBlock Grid.Row="13" Grid.Column="1" Text="{Binding LastAnalyzed, Converter={StaticResource DateTimeConverter}}" />
+				<TextBlock Grid.Row="14" Grid.Column="0" Text="In-memory space: " Visibility="{Binding InMemoryAllocationStatusVisibility}" />
+				<TextBlock Grid.Row="14" Grid.Column="1" Visibility="{Binding InMemoryAllocationStatusVisibility}">
 					<TextBlock.Text>
 						<MultiBinding Converter="{StaticResource InMemoryAllocationStatusConverter}">
 							<Binding Path="InMemoryAllocatedBytes" />
@@ -104,10 +110,10 @@
 						</MultiBinding>
 					</TextBlock.Text>
 				</TextBlock>
-				<TextBlock Grid.Row="13" Grid.Column="0" Text="In-memory compression: " Visibility="{Binding InMemoryAllocationStatusVisibility}" />
-				<TextBlock Grid.Row="13" Grid.Column="1" Text="{Binding InMemoryCompression}" Visibility="{Binding InMemoryAllocationStatusVisibility}" />
-				<TextBlock Grid.Row="14" Grid.Column="0" Text="Cluster: " Visibility="{Binding ClusterNameVisibility}" />
-				<TextBlock Grid.Row="14" Grid.Column="1" Text="{Binding ClusterName}" Visibility="{Binding ClusterNameVisibility}" />
+				<TextBlock Grid.Row="15" Grid.Column="0" Text="In-memory compression: " Visibility="{Binding InMemoryAllocationStatusVisibility}" />
+				<TextBlock Grid.Row="15" Grid.Column="1" Text="{Binding InMemoryCompression}" Visibility="{Binding InMemoryAllocationStatusVisibility}" />
+				<TextBlock Grid.Row="16" Grid.Column="0" Text="Cluster: " Visibility="{Binding ClusterNameVisibility}" />
+				<TextBlock Grid.Row="16" Grid.Column="1" Text="{Binding ClusterName}" Visibility="{Binding ClusterNameVisibility}" />
 			</Grid>
 		</GroupBox>
 		

@@ -39,7 +39,7 @@ namespace SqlPad.Oracle.ToolTips
 		private string _tablespaceName;
 		private DateTime? _lastAnalyzed;
 		private int? _averageRowSize;
-		private bool _logging;
+		private bool? _logging;
 
 		public long? RowCount
 		{
@@ -53,7 +53,7 @@ namespace SqlPad.Oracle.ToolTips
 			set { UpdateValueAndRaisePropertyChanged(ref _sampleRows, value); }
 		}
 
-		public bool Logging
+		public bool? Logging
 		{
 			get { return _logging; }
 			set { UpdateValueAndRaisePropertyChanged(ref _logging, value); }
@@ -154,6 +154,7 @@ namespace SqlPad.Oracle.ToolTips
 		{
 			get { return _partitionDetailsDictionary.Count > MaxVisiblePartitionCount ? Visibility.Visible : Visibility.Collapsed; }
 		}
+		
 		public int VisiblePartitionCount
 		{
 			get { return MaxVisiblePartitionCount; }

@@ -212,6 +212,11 @@ SELECT * FROM CTE";
 			dataModel.LastAnalyzed.ShouldBe(new DateTime(2014, 8, 19, 6, 18, 12));
 			dataModel.Organization.ShouldBe("Index");
 			dataModel.RowCount.ShouldBe(8312);
+			dataModel.SampleRows.ShouldBe(5512);
+			dataModel.Logging.ShouldBe(true);
+
+			dataModel.PartitionCount.ShouldBe(2);
+			dataModel.PartitionDetailsVisibility.ShouldBe(Visibility.Visible);
 		}
 
 		[Test(Description = @""), STAThread]

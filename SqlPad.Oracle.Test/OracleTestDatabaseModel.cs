@@ -1015,6 +1015,8 @@ Note
 			dataModel.LastAnalyzed = new DateTime(2014, 8, 19, 6, 18, 12);
 			dataModel.BlockCount = 544;
 			dataModel.RowCount = 8312;
+			dataModel.SampleRows = 5512;
+			dataModel.Logging = true;
 			dataModel.AllocatedBytes = 22546891;
 			dataModel.LargeObjectBytes = 1546891;
 			dataModel.Compression = "Disabled";
@@ -1046,7 +1048,38 @@ Note
 					Type = "Normal"
 				};
 
+			var partition1Details =
+				new PartitionDetailsModel
+				{
+					Name = "PARTITION_1",
+					TablespaceName = "TEST_TABLESPACE_1",
+					AverageRowSize = 237,
+					LastAnalyzed = new DateTime(2015, 2, 22, 16, 22, 13),
+					BlockCount = 272,
+					RowCount = 4162,
+					SampleRows = 4162,
+					Compression = "Basic",
+					HighValue = "'Partition key 1', 2"
+				};
+
+			var partition2Details =
+				new PartitionDetailsModel
+				{
+					Name = "PARTITION_2",
+					TablespaceName = "TEST_TABLESPACE_2",
+					AverageRowSize = 237,
+					LastAnalyzed = new DateTime(2015, 2, 22, 16, 22, 14),
+					BlockCount = 272,
+					RowCount = 4162,
+					SampleRows = 4162,
+					Compression = "Disabled",
+					Logging = true,
+					HighValue = "'Partition key 2', 2"
+				};
+
 			dataModel.IndexDetails.Add(indexDetails);
+			dataModel.AddPartition(partition1Details);
+			dataModel.AddPartition(partition2Details);
 
 			return Task.FromResult<object>(null);
 		}

@@ -235,6 +235,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 				return;
 			}
 
+			var loggingRaw = reader["LOGGING"];
 			DataModel.RowCount = OracleReaderValueConvert.ToInt32(reader["NUM_ROWS"]);
 			DataModel.LastAnalyzed = OracleReaderValueConvert.ToDateTime(reader["LAST_ANALYZED"]);
 			DataModel.AverageRowSize = OracleReaderValueConvert.ToInt32(reader["AVG_ROW_LEN"]);
@@ -245,7 +246,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 			DataModel.ClusterName = OracleReaderValueConvert.ToString(reader["CLUSTER_NAME"]);
 			DataModel.TablespaceName = OracleReaderValueConvert.ToString(reader["TABLESPACE_NAME"]);
 			DataModel.SampleRows = OracleReaderValueConvert.ToInt64(reader["SAMPLE_SIZE"]);
-			DataModel.Logging = (string)reader["LOGGING"] == "YES";
+			DataModel.Logging = loggingRaw == DBNull.Value ? (bool?)null : (string)loggingRaw == "YES";
 			DataModel.IsTemporary = (string)reader["TEMPORARY"] == "Y";
 			DataModel.IsPartitioned = (string)reader["PARTITIONED"] == "YES";
 		}
