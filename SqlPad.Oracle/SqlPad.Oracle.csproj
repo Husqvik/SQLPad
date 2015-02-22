@@ -181,6 +181,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ModelDataProviders\SessionExecutionStatisticsDataProvider.cs" />
     <Compile Include="StatementPlacement.cs" />
+    <Compile Include="ToolTips\PartitionList.xaml.cs">
+      <DependentUpon>PartitionList.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ToolTips\IndexList.xaml.cs">
       <DependentUpon>IndexList.xaml</DependentUpon>
     </Compile>
@@ -259,6 +262,10 @@
     <Page Include="ExecutionPlan\ExecutionPlanViewer.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ToolTips\PartitionList.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="ToolTips\IndexList.xaml">
       <Generator>MSBuild:Compile</Generator>

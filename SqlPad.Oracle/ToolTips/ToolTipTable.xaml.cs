@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Globalization;
 using System.Linq;
 using System.Windows;
@@ -29,39 +30,33 @@ namespace SqlPad.Oracle.ToolTips
 		string Comment { get; set; }
 	}
 
-	public class TableDetailsModel : ModelBase, IModelWithComment, IModelWithIndexes
+	public abstract class SegmentDetailsModelBase : ModelBase
 	{
-		private int? _rowCount;
+		private long? _rowCount;
+		private long? _sampleRows;
 		private int? _blockCount;
 		private string _compression;
-		private string _organization;
-		private string _clusterName;
-		private string _parallelDegree;
-		private string _inMemoryCompression;
 		private string _tablespaceName;
 		private DateTime? _lastAnalyzed;
 		private int? _averageRowSize;
-		private bool? _isTemporary;
-		private bool? _isPartitioned;
-		private long? _allocatedBytes;
-		private long? _largeObjectBytes;
-		private string _comment;
+		private bool _logging;
 
-		private readonly ObservableCollection<IndexDetailsModel> _indexDetails = new ObservableCollection<IndexDetailsModel>();
-
-		public TableDetailsModel()
-		{
-			_indexDetails.CollectionChanged += delegate { RaisePropertyChanged("IndexDetailsVisibility"); };
-		}
-
-		public ICollection<IndexDetailsModel> IndexDetails { get { return _indexDetails; } } 
-
-		public string Title { get; set; }
-
-		public int? RowCount
+		public long? RowCount
 		{
 			get { return _rowCount; }
 			set { UpdateValueAndRaisePropertyChanged(ref _rowCount, value); }
+		}
+
+		public long? SampleRows
+		{
+			get { return _sampleRows; }
+			set { UpdateValueAndRaisePropertyChanged(ref _sampleRows, value); }
+		}
+
+		public bool Logging
+		{
+			get { return _logging; }
+			set { UpdateValueAndRaisePropertyChanged(ref _logging, value); }
 		}
 
 		public int? BlockCount
@@ -88,18 +83,6 @@ namespace SqlPad.Oracle.ToolTips
 			}
 		}
 
-		public string Organization
-		{
-			get { return _organization; }
-			set { UpdateValueAndRaisePropertyChanged(ref _organization, value); }
-		}
-
-		public string ParallelDegree
-		{
-			get { return _parallelDegree; }
-			set { UpdateValueAndRaisePropertyChanged(ref _parallelDegree, value); }
-		}
-
 		public DateTime? LastAnalyzed
 		{
 			get { return _lastAnalyzed; }
@@ -110,6 +93,94 @@ namespace SqlPad.Oracle.ToolTips
 		{
 			get { return _averageRowSize; }
 			set { UpdateValueAndRaisePropertyChanged(ref _averageRowSize, value); }
+		}
+
+		public Visibility TablespaceNameVisibility
+		{
+			get { return String.IsNullOrEmpty(_tablespaceName) ? Visibility.Collapsed : Visibility.Visible; }
+		}
+	}
+
+	public class TableDetailsModel : SegmentDetailsModelBase, IModelWithComment, IModelWithIndexes
+	{
+		public const int MaxVisiblePartitionCount = 16;
+
+		private string _organization;
+		private string _clusterName;
+		private string _parallelDegree;
+		private string _inMemoryCompression;
+		private bool? _isTemporary;
+		private bool? _isPartitioned;
+		private long? _allocatedBytes;
+		private long? _largeObjectBytes;
+		private string _comment;
+
+		private readonly ObservableCollection<IndexDetailsModel> _indexDetails = new ObservableCollection<IndexDetailsModel>();
+		private readonly ObservableCollection<PartitionDetailsModel> _visiblePartitionDetails = new ObservableCollection<PartitionDetailsModel>();
+		private readonly Dictionary<string, PartitionDetailsModel> _partitionDetailsDictionary = new Dictionary<string, PartitionDetailsModel>();
+
+		public TableDetailsModel()
+		{
+			_indexDetails.CollectionChanged += delegate { RaisePropertyChanged("IndexDetailsVisibility"); };
+			_visiblePartitionDetails.CollectionChanged += VisiblePartitionDetailsCollectionChangedHandler;
+		}
+
+		private void VisiblePartitionDetailsCollectionChangedHandler(object sender, NotifyCollectionChangedEventArgs args)
+		{
+			RaisePropertyChanged("PartitionDetailsVisibility");
+		}
+
+		public ICollection<IndexDetailsModel> IndexDetails { get { return _indexDetails; } }
+
+		public ICollection<PartitionDetailsModel> VisiblePartitionDetails { get { return _visiblePartitionDetails; } }
+
+		public void AddPartition(PartitionDetailsModel partition)
+		{
+			_partitionDetailsDictionary.Add(partition.Name, partition);
+
+			if (_visiblePartitionDetails.Count < MaxVisiblePartitionCount)
+			{
+				_visiblePartitionDetails.Add(partition);
+			}
+			else
+			{
+				RaisePropertyChanged("MorePartitionsExistMessageVisibility");
+				RaisePropertyChanged("VisiblePartitionCount");
+				RaisePropertyChanged("PartitionCount");
+			}
+		}
+
+		public Visibility MorePartitionsExistMessageVisibility
+		{
+			get { return _partitionDetailsDictionary.Count > MaxVisiblePartitionCount ? Visibility.Visible : Visibility.Collapsed; }
+		}
+		public int VisiblePartitionCount
+		{
+			get { return MaxVisiblePartitionCount; }
+		}
+
+		public int PartitionCount
+		{
+			get { return _partitionDetailsDictionary.Count; }
+		}
+
+		public PartitionDetailsModel GetPartitions(string partitionName)
+		{
+			return _partitionDetailsDictionary[partitionName];
+		}
+
+		public string Title { get; set; }
+
+		public string Organization
+		{
+			get { return _organization; }
+			set { UpdateValueAndRaisePropertyChanged(ref _organization, value); }
+		}
+
+		public string ParallelDegree
+		{
+			get { return _parallelDegree; }
+			set { UpdateValueAndRaisePropertyChanged(ref _parallelDegree, value); }
 		}
 
 		public string ClusterName
@@ -141,14 +212,14 @@ namespace SqlPad.Oracle.ToolTips
 			get { return String.IsNullOrEmpty(_clusterName) ? Visibility.Collapsed : Visibility.Visible; }
 		}
 
-		public Visibility TablespaceNameVisibility
-		{
-			get { return String.IsNullOrEmpty(_tablespaceName) ? Visibility.Collapsed : Visibility.Visible; }
-		}
-
 		public Visibility IndexDetailsVisibility
 		{
 			get { return _indexDetails.Count > 0 ? Visibility.Visible : Visibility.Collapsed; }
+		}
+
+		public Visibility PartitionDetailsVisibility
+		{
+			get { return _visiblePartitionDetails.Count > 0 ? Visibility.Visible : Visibility.Collapsed; }
 		}
 
 		public long? AllocatedBytes

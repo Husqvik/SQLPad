@@ -244,6 +244,8 @@ namespace SqlPad.Oracle.ModelDataProviders
 			DataModel.ParallelDegree = OracleReaderValueConvert.ToString(reader["DEGREE"]);
 			DataModel.ClusterName = OracleReaderValueConvert.ToString(reader["CLUSTER_NAME"]);
 			DataModel.TablespaceName = OracleReaderValueConvert.ToString(reader["TABLESPACE_NAME"]);
+			DataModel.SampleRows = OracleReaderValueConvert.ToInt64(reader["SAMPLE_SIZE"]);
+			DataModel.Logging = (string)reader["LOGGING"] == "YES";
 			DataModel.IsTemporary = (string)reader["TEMPORARY"] == "Y";
 			DataModel.IsPartitioned = (string)reader["PARTITIONED"] == "YES";
 		}
@@ -371,6 +373,111 @@ namespace SqlPad.Oracle.ModelDataProviders
 		}
 	}
 
+	internal class PartitionDataProvider
+	{
+		private static readonly TextInfo TextInfo = CultureInfo.InvariantCulture.TextInfo;
+
+		public IModelDataProvider PartitionDetailDataProvider { get; private set; }
+		
+		public IModelDataProvider SubPartitionDetailDataProvider { get; private set; }
+
+		public PartitionDataProvider(TableDetailsModel dataModel, OracleObjectIdentifier objectIdentifier)
+		{
+			var owner = objectIdentifier.Owner.Trim('"');
+			var tableName = objectIdentifier.Name.Trim('"');
+			PartitionDetailDataProvider = new PartitionDetailDataProviderInternal(dataModel, owner, tableName);
+			SubPartitionDetailDataProvider = new SubPartitionDetailDataProviderInternal(dataModel, owner, tableName);
+		}
+
+		private static void MapSegmentData(OracleDataReader reader, PartitionDetailsModelBase model)
+		{
+			model.HighValue = OracleReaderValueConvert.ToString(reader["HIGH_VALUE"]);
+			model.TablespaceName = OracleReaderValueConvert.ToString(reader["TABLESPACE_NAME"]);
+			model.Logging = (string)reader["LOGGING"] == "YES";
+			model.Compression = TextInfo.ToTitleCase(((string)reader["COMPRESSION"]).ToLowerInvariant());
+			model.RowCount = OracleReaderValueConvert.ToInt64(reader["NUM_ROWS"]);
+			model.SampleRows = OracleReaderValueConvert.ToInt64(reader["SAMPLE_SIZE"]);
+			model.LastAnalyzed = OracleReaderValueConvert.ToDateTime(reader["LAST_ANALYZED"]);
+			model.BlockCount = OracleReaderValueConvert.ToInt32(reader["BLOCKS"]);
+			model.AverageRowSize = OracleReaderValueConvert.ToInt32(reader["AVG_ROW_LEN"]);
+		}
+
+		private class PartitionDetailDataProviderInternal : ModelDataProvider<TableDetailsModel>
+		{
+			private readonly string _owner;
+			private readonly string _tableName;
+
+			public PartitionDetailDataProviderInternal(TableDetailsModel dataModel, string owner, string tableName)
+				: base(dataModel)
+			{
+				_tableName = tableName;
+				_owner = owner;
+			}
+
+			public override void InitializeCommand(OracleCommand command)
+			{
+				command.CommandText = String.Format(DatabaseCommands.SelectTablePartitionDetailsCommandText);
+				command.AddSimpleParameter("TABLE_OWNER", _owner);
+				command.AddSimpleParameter("TABLE_NAME", _tableName);
+				command.InitialLONGFetchSize = 255;
+			}
+
+			public override void MapReaderData(OracleDataReader reader)
+			{
+				while (reader.Read())
+				{
+					var partitionDetails =
+						new PartitionDetailsModel
+						{
+							Name = (string)reader["PARTITION_NAME"]
+						};
+
+					MapSegmentData(reader, partitionDetails);
+
+					DataModel.AddPartition(partitionDetails);
+				}
+			}
+		}
+
+		private class SubPartitionDetailDataProviderInternal : ModelDataProvider<TableDetailsModel>
+		{
+			private readonly string _owner;
+			private readonly string _tableName;
+
+			public SubPartitionDetailDataProviderInternal(TableDetailsModel dataModel, string owner, string tableName)
+				: base(dataModel)
+			{
+				_tableName = tableName;
+				_owner = owner;
+			}
+
+			public override void InitializeCommand(OracleCommand command)
+			{
+				command.CommandText = String.Format(DatabaseCommands.SelectTableSubPartitionsDetailsCommandText);
+				command.AddSimpleParameter("TABLE_OWNER", _owner);
+				command.AddSimpleParameter("TABLE_NAME", _tableName);
+				command.InitialLONGFetchSize = 255;
+			}
+
+			public override void MapReaderData(OracleDataReader reader)
+			{
+				while (reader.Read())
+				{
+					var subPartitionDetails =
+						new SubPartitionDetailsModel
+						{
+							Name = (string)reader["SUBPARTITION_NAME"]
+						};
+
+					MapSegmentData(reader, subPartitionDetails);
+
+					var partition = DataModel.GetPartitions((string)reader["PARTITION_NAME"]);
+					partition.SubPartitionDetails.Add(subPartitionDetails);
+				}
+			}
+		}
+	}
+
 	internal class IndexColumnDataProvider : ModelDataProvider<IModelWithIndexes>
 	{
 		private readonly OracleObjectIdentifier _objectIdentifier;
@@ -402,7 +509,11 @@ namespace SqlPad.Oracle.ModelDataProviders
 				var indexName = (string)reader["INDEX_NAME"];
 				var indexIdentifier = OracleObjectIdentifier.Create(indexOwner, indexName);
 
-				var indexModel = _indexes[indexIdentifier];
+				IndexDetailsModel indexModel;
+				if (!_indexes.TryGetValue(indexIdentifier, out indexModel))
+				{
+					continue;
+				}
 
 				var indexColumn =
 					new IndexColumnModel

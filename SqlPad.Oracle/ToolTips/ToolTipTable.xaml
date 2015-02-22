@@ -6,7 +6,7 @@
              xmlns:sqlPad="clr-namespace:SqlPad;assembly=SqlPad"
              xmlns:toolTips="clr-namespace:SqlPad.Oracle.ToolTips"
              mc:Ignorable="d" 
-             d:DesignHeight="314" d:DesignWidth="240"
+             d:DesignHeight="380" d:DesignWidth="240"
 			 Padding="4" d:DataContext="{d:DesignInstance toolTips:TableDetailsModel}">
     <StackPanel>
 		<StackPanel.Resources>
@@ -112,5 +112,7 @@
 		</GroupBox>
 		
 		<toolTips:IndexList Padding="0" Indexes="{Binding IndexDetails}" Visibility="{Binding IndexDetailsVisibility}" />
+		
+		<toolTips:PartitionList Padding="0" TableDetails="{Binding}" Visibility="{Binding PartitionDetailsVisibility}" />
 	</StackPanel>
 </UserControl>

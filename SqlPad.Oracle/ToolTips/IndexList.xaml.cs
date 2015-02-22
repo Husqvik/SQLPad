@@ -20,8 +20,8 @@ namespace SqlPad.Oracle.ToolTips
 
 		private static void PropertyChangedCallbackHandler(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
 		{
-			var constraintList = (IndexList)dependencyObject;
-			constraintList.DataGrid.ItemsSource = (IEnumerable<IndexDetailsModel>)args.NewValue;
+			var indexList = (IndexList)dependencyObject;
+			indexList.DataGrid.ItemsSource = (IEnumerable<IndexDetailsModel>)args.NewValue;
 		}
 	}
 }
