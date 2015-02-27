@@ -344,6 +344,8 @@ namespace SqlPad.Oracle
 							{
 								_objectReferenceCteRootNodes[objectReference] = commonTableExpressions;
 							}
+
+							FindExplicitPartitionReferences(queryTableExpression, objectReference);
 						}
 					}
 				}
@@ -372,6 +374,44 @@ namespace SqlPad.Oracle
 			BuildDmlModel();
 			
 			ResolveRedundantTerminals();
+		}
+
+		private static void FindExplicitPartitionReferences(StatementGrammarNode queryTableExpression, OracleDataObjectReference objectReference)
+		{
+			var explicitPartitionIdentifier = queryTableExpression.GetDescendantByPath(NonTerminals.PartitionOrDatabaseLink, NonTerminals.PartitionExtensionClause, NonTerminals.PartitionNameOrKeySet, Terminals.ObjectIdentifier);
+			if (explicitPartitionIdentifier == null)
+			{
+				return;
+			}
+
+			var table = (OracleTable)objectReference.SchemaObject.GetTargetSchemaObject();
+
+			objectReference.PartitionReference =
+				new OraclePartitionReference
+				{
+					RootNode = explicitPartitionIdentifier.ParentNode.ParentNode,
+					ObjectNode = explicitPartitionIdentifier,
+				};
+
+			var partitionName = objectReference.PartitionReference.Name.ToQuotedIdentifier();
+			if (table == null)
+			{
+				return;
+			}
+
+			var isSubPartition = objectReference.PartitionReference.RootNode.FirstTerminalNode.Id == Terminals.Subpartition;
+			if (isSubPartition)
+			{
+				OracleSubPartition subPartition = null;
+				table.Partitions.Values.FirstOrDefault(p => p.SubPartitions.TryGetValue(partitionName, out subPartition));
+				objectReference.PartitionReference.Partition = subPartition;
+			}
+			else
+			{
+				OraclePartition partition;
+				table.Partitions.TryGetValue(partitionName, out partition);
+				objectReference.PartitionReference.Partition = partition;
+			}
 		}
 
 		private void FindRecursiveQueryReferences()
@@ -2194,7 +2234,7 @@ namespace SqlPad.Oracle
 
 		private static StatementGrammarNode GetDatabaseLinkFromQueryTableExpression(StatementGrammarNode queryTableExpression)
 		{
-			var partitionOrDatabaseLink = queryTableExpression.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.PartitionOrDatabaseLink);
+			var partitionOrDatabaseLink = queryTableExpression.GetDescendantByPath(NonTerminals.PartitionOrDatabaseLink);
 			return partitionOrDatabaseLink == null
 				? null
 				: GetDatabaseLinkFromNode(partitionOrDatabaseLink);

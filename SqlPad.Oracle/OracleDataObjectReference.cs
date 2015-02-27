@@ -16,6 +16,16 @@ namespace SqlPad.Oracle
 		public abstract ReferenceType Type { get; }
 	}
 
+	public class OraclePartitionReference : OracleReference
+	{
+		public override string Name
+		{
+			get { return ObjectNode.Token.Value; }
+		}
+
+		public OraclePartitionBase Partition { get; set; }
+	}
+
 	[DebuggerDisplay("OracleDataObjectReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; Table={Type != SqlPad.Oracle.ReferenceType.InlineView ? ObjectNode.Token.Value : \"<Nested subquery>\"}; Alias={AliasNode == null ? null : AliasNode.Token.Value}; Type={Type})")]
 	public class OracleDataObjectReference : OracleObjectWithColumnsReference
 	{
@@ -28,6 +38,8 @@ namespace SqlPad.Oracle
 		}
 
 		public override string Name { get { throw new NotImplementedException(); } }
+
+		public OraclePartitionReference PartitionReference { get; set; }
 
 		protected override OracleObjectIdentifier BuildFullyQualifiedObjectName()
 		{

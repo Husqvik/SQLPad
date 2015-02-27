@@ -72,6 +72,11 @@ namespace SqlPad.Oracle
 						
 						break;
 				}
+
+				if (objectReference.PartitionReference != null && objectReference.PartitionReference.Partition == null)
+				{
+					validationModel.ObjectNodeValidity[objectReference.PartitionReference.ObjectNode] = new NodeValidationData { Node = objectReference.PartitionReference.ObjectNode };
+				}
 			}
 
 			foreach (var referenceContainer in oracleSemanticModel.AllReferenceContainers)
