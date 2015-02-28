@@ -43,6 +43,7 @@
 					  HorizontalGridLinesBrush="LightGray" VerticalGridLinesBrush="LightGray" IsReadOnly="True"
 					  CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False"
 					  CanUserResizeColumns="False" CanUserResizeRows="False" CanUserSortColumns="False"
+					  RowDetailsVisibilityMode="Visible"
 					  ItemsSource="{Binding VisiblePartitionDetails}">
 				<DataGrid.ColumnHeaderStyle>
 					<Style TargetType="DataGridColumnHeader">
@@ -77,6 +78,57 @@
 					<DataGridTextColumn Header="Last analyzed"
 										Binding="{Binding LastAnalyzed, Converter={StaticResource DateTimeConverter}}" />
 				</DataGrid.Columns>
+				<DataGrid.RowDetailsTemplate>
+					<DataTemplate DataType="toolTips:PartitionDetailsModel">
+						<GroupBox Header="Subpartitions: " FontWeight="Bold" Padding="0,4,0,0" Margin="0,2,0,0" Visibility="{Binding SubPartitionDetailsVisibility}" >
+							<StackPanel>
+								<DataGrid FontWeight="Normal" Background="Transparent" AutoGenerateColumns="False" RowBackground="Transparent"
+										  RowHeaderWidth="0"
+										  HorizontalGridLinesBrush="LightGray" VerticalGridLinesBrush="LightGray" IsReadOnly="True"
+										  CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False"
+										  CanUserResizeColumns="False" CanUserResizeRows="False" CanUserSortColumns="False"
+										  ItemsSource="{Binding SubPartitionDetails}">
+									<DataGrid.ColumnHeaderStyle>
+										<Style TargetType="DataGridColumnHeader">
+											<Style.Setters>
+												<Setter Property="Background" Value="Transparent" />
+												<Setter Property="Padding" Value="4,2,4,2" />
+												<Setter Property="FontWeight" Value="Medium" />
+											</Style.Setters>
+										</Style>
+									</DataGrid.ColumnHeaderStyle>
+									<DataGrid.Columns>
+										<DataGridTextColumn Header="Name" Binding="{Binding Name}" />
+										<DataGridTextColumn Header="Tablespace" Binding="{Binding TablespaceName}" />
+										<DataGridTextColumn Header="High value" Binding="{Binding HighValue}" />
+										<DataGridTextColumn Header="Rows" Binding="{Binding RowCount, Converter={StaticResource PrettyPrintIntegerConverter}}"
+												HeaderStyle="{StaticResource HeaderStyleRightAlign}"
+												CellStyle="{StaticResource CellStyleRightAlign}" />
+										<DataGridTextColumn Header="Average row bytes"
+												Binding="{Binding AverageRowSize, Converter={StaticResource PrettyPrintIntegerConverter}}"
+												HeaderStyle="{StaticResource HeaderStyleRightAlign}"
+												CellStyle="{StaticResource CellStyleRightAlign}" />
+										<DataGridTextColumn Header="Sample rows"
+												Binding="{Binding SampleRows, Converter={StaticResource PrettyPrintIntegerConverter}}"
+												HeaderStyle="{StaticResource HeaderStyleRightAlign}"
+												CellStyle="{StaticResource CellStyleRightAlign}" />
+										<DataGridTextColumn Header="Blocks"
+												Binding="{Binding BlockCount, Converter={StaticResource PrettyPrintIntegerConverter}}"
+												HeaderStyle="{StaticResource HeaderStyleRightAlign}"
+												CellStyle="{StaticResource CellStyleRightAlign}" />
+										<DataGridTextColumn Header="Compression" Binding="{Binding Compression}" />
+										<DataGridCheckBoxColumn Header="Logging" Binding="{Binding Logging}" />
+										<DataGridTextColumn Header="Last analyzed"
+												Binding="{Binding LastAnalyzed, Converter={StaticResource DateTimeConverter}}" />
+									</DataGrid.Columns>
+								</DataGrid>
+								<TextBlock Visibility="{Binding MoreSubPartitionsExistMessageVisibility, Mode=OneWay}" FontWeight="Normal" Margin="4,1,0,0">
+									<Run Text="Showing only " /><Run Text="{Binding VisibleSubPartitionCount, Mode=OneWay}" /><Run Text=" of " /><Run Text="{Binding SubPartitionCount, Mode=OneWay}" /><Run Text=" sub-partitions. " />
+								</TextBlock>
+							</StackPanel>
+						</GroupBox>
+					</DataTemplate>
+				</DataGrid.RowDetailsTemplate>
 			</DataGrid>
 			<TextBlock Visibility="{Binding MorePartitionsExistMessageVisibility, Mode=OneWay}" FontWeight="Normal" Margin="4,1,0,0">
 				<Run Text="Showing only " /><Run Text="{Binding VisiblePartitionCount, Mode=OneWay}" /><Run Text=" of " /><Run Text="{Binding PartitionCount, Mode=OneWay}" /><Run Text=" partitions. " />

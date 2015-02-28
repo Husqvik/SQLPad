@@ -473,7 +473,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 					MapSegmentData(reader, subPartitionDetails);
 
 					var partition = DataModel.GetPartitions((string)reader["PARTITION_NAME"]);
-					partition.SubPartitionDetails.Add(subPartitionDetails);
+					partition.AddSubPartition(subPartitionDetails);
 				}
 			}
 		}
