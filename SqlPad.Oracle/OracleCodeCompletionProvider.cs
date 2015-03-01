@@ -239,7 +239,7 @@ namespace SqlPad.Oracle
 					if (joinedTableReferenceNodes.Length == 1)
 					{
 						var joinedTableReference = completionType.CurrentQueryBlock.ObjectReferences.SingleOrDefault(t => t.RootNode == joinedTableReferenceNodes[0]);
-						if (joinedTableReference != null)
+						if (joinedTableReference != null && (joinedTableReference.Type != ReferenceType.InlineView || joinedTableReference.AliasNode != null))
 						{
 							foreach (var parentTableReference in completionType.CurrentQueryBlock.ObjectReferences
 								.Where(t => t.RootNode.SourcePosition.IndexStart < joinedTableReference.RootNode.SourcePosition.IndexStart &&

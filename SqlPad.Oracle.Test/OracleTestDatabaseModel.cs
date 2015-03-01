@@ -627,7 +627,64 @@ namespace SqlPad.Oracle.Test
 					{
 						{ "\"ID\"", new OracleColumn { Name = "\"ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0) } },
 						{ "\"DUEDATE\"", new OracleColumn { Name = "\"DUEDATE\"", DataType = BuildPrimitiveDataType("DATE") } }
+					},
+				Partitions =
+				{
+					{
+						"\"P2014\"",
+						new OraclePartition
+						{
+							Name = "\"P2014\"",
+							Position = 1,
+							SubPartitions =
+							{
+								{
+									"\"P2014_PRIVATE\"",
+									new OracleSubPartition
+									{
+										Name = "\"P2014_PRIVATE\"",
+										Position = 1
+									}
+								},
+								{
+									"\"P2014_ENTERPRISE\"",
+									new OracleSubPartition
+									{
+										Name = "\"P2014_ENTERPRISE\"",
+										Position = 2
+									}
+								}
+							}
+						}
+					},
+					{
+						"\"P2015\"",
+						new OraclePartition
+						{
+							Name = "\"P2015\"",
+							Position = 1,
+							SubPartitions =
+							{
+								{
+									"\"P2015_PRIVATE\"",
+									new OracleSubPartition
+									{
+										Name = "\"P2015_PRIVATE\"",
+										Position = 1
+									}
+								},
+								{
+									"\"P2015_ENTERPRISE\"",
+									new OracleSubPartition
+									{
+										Name = "\"P2015_ENTERPRISE\"",
+										Position = 2
+									}
+								}
+							}
+						}
 					}
+				}
 			},
 			new OracleTable
 			{

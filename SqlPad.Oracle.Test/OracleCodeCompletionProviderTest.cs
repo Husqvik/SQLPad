@@ -1867,6 +1867,26 @@ SELECT * FROM ALL";
 			items[0].StatementNode.ShouldNotBe(null);
 		}
 
+		[Test(Description = @""), Ignore]
+		public void TestFunctionSuggestionBeforeStringParameter()
+		{
+			const string testQuery = @"SELECT DBMS_CRYPTO.HASH(HEXTO '', 1) FROM DUAL";
+
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, testQuery, 29).ToArray();
+			items.Length.ShouldBe(1);
+			items[0].Name.ShouldBe("HEXTORAW");
+			items[0].StatementNode.ShouldNotBe(null);
+		}
+
+		[Test(Description = @"")]
+		public void TestJoinConditionSuggestionWithNonAliasedInlineView()
+		{
+			const string testQuery = @"SELECT * FROM SELECTION LEFT JOIN (SELECT 1 SELECTION_ID FROM DUAL) ON ";
+
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, testQuery, 71).ToArray();
+			items.Length.ShouldBe(0);
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)

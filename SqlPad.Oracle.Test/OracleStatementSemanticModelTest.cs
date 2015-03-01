@@ -1668,5 +1668,33 @@ SELECT * FROM CTE";
 			columnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
 			columnReferences[1].ColumnNodeColumnReferences.Count.ShouldBe(0);
 		}
+
+		[Test(Description = @"")]
+		public void TestPartitionAndSubpartitionReferences()
+		{
+			const string sqlText = @"SELECT * FROM INVOICES PARTITION (P2015), INVOICES PARTITION (P2016), INVOICES SUBPARTITION (P2015_PRIVATE), INVOICES SUBPARTITION (P2016_ENTERPRISE), INVOICES PARTITION (P2015_PRIVATE), INVOICES SUBPARTITION (P2015)";
+			var statement = (OracleStatement)_oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = new OracleStatementSemanticModel(sqlText, statement, TestFixture.DatabaseModel);
+			semanticModel.QueryBlocks.Count.ShouldBe(1);
+			var queryBlock = semanticModel.MainQueryBlock;
+
+			queryBlock.ObjectReferences.Count.ShouldBe(6);
+			var objectReferences = queryBlock.ObjectReferences.ToList();
+			objectReferences.ForEach(r => r.PartitionReference.ShouldNotBe(null));
+			
+			objectReferences[0].PartitionReference.Partition.ShouldNotBe(null);
+			objectReferences[0].PartitionReference.Partition.Name.ShouldBe("\"P2015\"");
+			objectReferences[0].PartitionReference.RootNode.ShouldNotBe(null);
+			objectReferences[0].PartitionReference.RootNode.FirstTerminalNode.Token.Value.ShouldBe("PARTITION");
+			objectReferences[0].PartitionReference.RootNode.LastTerminalNode.Token.Value.ShouldBe(")");
+			objectReferences[1].PartitionReference.Partition.ShouldBe(null);
+			objectReferences[2].PartitionReference.Partition.ShouldNotBe(null);
+			objectReferences[3].PartitionReference.Partition.ShouldBe(null);
+			objectReferences[4].PartitionReference.Partition.ShouldBe(null);
+			objectReferences[5].PartitionReference.Partition.ShouldBe(null);
+		}
 	}
 }

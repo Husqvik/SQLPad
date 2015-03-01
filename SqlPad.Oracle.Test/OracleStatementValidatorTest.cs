@@ -2160,5 +2160,39 @@ SELECT DUMMY1, DUMMY2, DUMMY3, DUMMY4 FROM CTE";
 
 			validationModel.InvalidNonTerminals.Count.ShouldBe(0);
 		}
+
+		[Test(Description = @"")]
+		public void TestPartitionAndSubpartitionReferences()
+		{
+			const string sqlText = @"SELECT * FROM INVOICES PARTITION (P2015), INVOICES PARTITION (P2016), INVOICES SUBPARTITION (P2015_PRIVATE), INVOICES SUBPARTITION (P2016_ENTERPRISE), INVOICES PARTITION (P2015_PRIVATE), INVOICES SUBPARTITION (P2015)";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			var objectValidityItems = validationModel.ObjectNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			objectValidityItems.Count.ShouldBe(10);
+			objectValidityItems[0].IsRecognized.ShouldBe(true);
+			objectValidityItems[0].Node.Token.Value.ShouldBe("INVOICES");
+			objectValidityItems[1].IsRecognized.ShouldBe(true);
+			objectValidityItems[1].Node.Token.Value.ShouldBe("INVOICES");
+			objectValidityItems[2].IsRecognized.ShouldBe(false);
+			objectValidityItems[2].Node.Token.Value.ShouldBe("P2016");
+			objectValidityItems[3].IsRecognized.ShouldBe(true);
+			objectValidityItems[3].Node.Token.Value.ShouldBe("INVOICES");
+			objectValidityItems[4].IsRecognized.ShouldBe(true);
+			objectValidityItems[4].Node.Token.Value.ShouldBe("INVOICES");
+			objectValidityItems[5].IsRecognized.ShouldBe(false);
+			objectValidityItems[5].Node.Token.Value.ShouldBe("P2016_ENTERPRISE");
+			objectValidityItems[6].IsRecognized.ShouldBe(true);
+			objectValidityItems[6].Node.Token.Value.ShouldBe("INVOICES");
+			objectValidityItems[7].IsRecognized.ShouldBe(false);
+			objectValidityItems[7].Node.Token.Value.ShouldBe("P2015_PRIVATE");
+			objectValidityItems[8].IsRecognized.ShouldBe(true);
+			objectValidityItems[8].Node.Token.Value.ShouldBe("INVOICES");
+			objectValidityItems[9].IsRecognized.ShouldBe(false);
+			objectValidityItems[9].Node.Token.Value.ShouldBe("P2015");
+		}
 	}
 }

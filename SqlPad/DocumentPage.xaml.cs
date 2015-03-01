@@ -2193,7 +2193,7 @@ namespace SqlPad
 
 			_isSelectingCells = false;
 
-			_pageModel.CurrentRowIndex = ResultGrid.SelectedCells.Count + 1;
+			_pageModel.CurrentRowIndex = ResultGrid.SelectedCells.Count;
 
 			CalculateSelectedCellStatistics();
 
