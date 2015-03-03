@@ -248,7 +248,6 @@ namespace SqlPad.Oracle.ModelDataProviders
 			DataModel.SampleRows = OracleReaderValueConvert.ToInt64(reader["SAMPLE_SIZE"]);
 			DataModel.Logging = loggingRaw == DBNull.Value ? (bool?)null : (string)loggingRaw == "YES";
 			DataModel.IsTemporary = (string)reader["TEMPORARY"] == "Y";
-			DataModel.IsPartitioned = (string)reader["PARTITIONED"] == "YES";
 		}
 	}
 

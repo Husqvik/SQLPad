@@ -53,6 +53,16 @@ namespace SqlPad.Oracle
 			Trace.WriteLine(String.Format("Fetch table sub-partition metadata finished in {0}. ", stopwatch.Elapsed));
 			stopwatch.Restart();
 
+			_databaseModel.ExecuteReader(DatabaseCommands.SelectTablePartitionKeysCommandText, r => MapPartitionKeys(r, t => t.PartitionKeyColumns)).ToArray();
+
+			Trace.WriteLine(String.Format("Fetch table partition key metadata finished in {0}. ", stopwatch.Elapsed));
+			stopwatch.Restart();
+
+			_databaseModel.ExecuteReader(DatabaseCommands.SelectTableSubPartitionKeysCommandText, r => MapPartitionKeys(r, t => t.SubPartitionKeyColumns)).ToArray();
+
+			Trace.WriteLine(String.Format("Fetch table sub-partition key metadata finished in {0}. ", stopwatch.Elapsed));
+			stopwatch.Restart();
+
 			_databaseModel.ExecuteReader(DatabaseCommands.SelectSynonymTargetsCommandText, MapSynonymTarget).ToArray();
 
 			Trace.WriteLine(String.Format("Fetch synonyms metadata finished in {0}. ", stopwatch.Elapsed));
@@ -479,6 +489,7 @@ namespace SqlPad.Oracle
 			table.Organization = (OrganizationType)Enum.Parse(typeof(OrganizationType), (string)reader["ORGANIZATION"]);
 			return table;
 		}
+		
 		private OraclePartition MapPartitions(IDataRecord reader)
 		{
 			var ownerTable = GetTableForPartition(reader);
@@ -497,6 +508,19 @@ namespace SqlPad.Oracle
 			ownerTable.Partitions.Add(partition.Name, partition);
 
 			return partition;
+		}
+
+		private OracleTable MapPartitionKeys(IDataRecord reader, Func<OracleTable, ICollection<string>> getKeyCollectionFunction)
+		{
+			var ownerTable = GetTableForPartition(reader);
+			if (ownerTable == null)
+			{
+				return null;
+			}
+
+			getKeyCollectionFunction(ownerTable).Add(QualifyStringObject(reader["COLUMN_NAME"]));
+
+			return ownerTable;
 		}
 
 		private OracleTable GetTableForPartition(IDataRecord reader)

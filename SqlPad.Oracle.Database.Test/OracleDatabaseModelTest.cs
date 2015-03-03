@@ -366,7 +366,6 @@ FROM
 			model.BlockCount.ShouldBe(1);
 			model.ClusterName.ShouldBe(String.Empty);
 			model.Compression.ShouldBe("Disabled");
-			model.IsPartitioned.ShouldBe(false);
 			model.IsTemporary.ShouldBe(false);
 			model.LastAnalyzed.ShouldBeGreaterThan(DateTime.MinValue);
 			model.Organization.ShouldBe("Heap");

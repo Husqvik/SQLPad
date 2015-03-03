@@ -110,7 +110,6 @@ namespace SqlPad.Oracle.ToolTips
 		private string _parallelDegree;
 		private string _inMemoryCompression;
 		private bool? _isTemporary;
-		private bool? _isPartitioned;
 		private long? _allocatedBytes;
 		private long? _largeObjectBytes;
 		private string _comment;
@@ -172,6 +171,10 @@ namespace SqlPad.Oracle.ToolTips
 
 		public string Title { get; set; }
 
+		public string PartitionKeys { get; set; }
+
+		public string SubPartitionKeys { get; set; }
+
 		public string Organization
 		{
 			get { return _organization; }
@@ -194,12 +197,6 @@ namespace SqlPad.Oracle.ToolTips
 					RaisePropertyChanged("ClusterNameVisibility");
 				}
 			}
-		}
-
-		public bool? IsPartitioned
-		{
-			get { return _isPartitioned; }
-			set { UpdateValueAndRaisePropertyChanged(ref _isPartitioned, value); }
 		}
 
 		public bool? IsTemporary

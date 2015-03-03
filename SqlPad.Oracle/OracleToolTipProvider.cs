@@ -199,11 +199,22 @@ namespace SqlPad.Oracle
 						{
 							case OracleSchemaObjectType.MaterializedView:
 								var materializedView = (OracleMaterializedView)schemaObject;
-								dataModel = new MaterializedViewDetailsModel { MaterializedViewTitle = simpleToolTip, Title = GetObjectTitle(OracleObjectIdentifier.Create(materializedView.Owner, materializedView.TableName), OracleSchemaObjectType.Table), MaterializedView = materializedView };
+								dataModel =
+									new MaterializedViewDetailsModel
+									{
+										MaterializedViewTitle = simpleToolTip,
+										Title = GetObjectTitle(OracleObjectIdentifier.Create(materializedView.Owner, materializedView.TableName), OracleSchemaObjectType.Table),
+										MaterializedView = materializedView
+									};
+
+								SetPartitionKeys(dataModel, materializedView);
+								
 								databaseModel.UpdateTableDetailsAsync(schemaObject.FullyQualifiedName, dataModel, CancellationToken.None);
 								return new ToolTipMaterializedView { DataContext = dataModel };
 							case OracleSchemaObjectType.Table:
 								dataModel = new TableDetailsModel { Title = simpleToolTip };
+								SetPartitionKeys(dataModel, (OracleTable)schemaObject);
+								
 								databaseModel.UpdateTableDetailsAsync(schemaObject.FullyQualifiedName, dataModel, CancellationToken.None);
 								return new ToolTipTable { DataContext = dataModel };
 							case OracleSchemaObjectType.View:
@@ -228,6 +239,12 @@ namespace SqlPad.Oracle
 			return String.IsNullOrEmpty(simpleToolTip)
 				? null
 				: new ToolTipObject {DataContext = simpleToolTip};
+		}
+
+		private static void SetPartitionKeys(TableDetailsModel tableDetails, OracleTable table)
+		{
+			tableDetails.PartitionKeys = String.Join(", ", table.PartitionKeyColumns.Select(c => c.ToSimpleIdentifier()));
+			tableDetails.SubPartitionKeys = String.Join(", ", table.SubPartitionKeyColumns.Select(c => c.ToSimpleIdentifier()));
 		}
 
 		private static string GetFullSchemaObjectToolTip(OracleSchemaObject schemaObject)

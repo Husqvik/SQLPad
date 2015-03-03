@@ -202,7 +202,7 @@ namespace SqlPad.Oracle
 			oracleDataObjectType.AddSubType(102, typeof(OracleView));
 			var oracleTableType = Serializer.Add(typeof(OracleTable), false);
 			oracleTableType.AsReferenceDefault = true;
-			oracleTableType.Add("IsInternal", "_partitions");
+			oracleTableType.Add("IsInternal", "Partitions", "PartitionKeyColumns", "SubPartitionKeyColumns");
 
 			oracleTableType.AddSubType(101, typeof(OracleMaterializedView));
 			var oracleMaterializedViewType = Serializer.Add(typeof(OracleMaterializedView), false);

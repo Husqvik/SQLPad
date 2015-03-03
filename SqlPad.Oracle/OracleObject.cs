@@ -44,7 +44,7 @@ namespace SqlPad.Oracle
 		public ICollection<OracleConstraint> Constraints { get; set; }
 
 		public IDictionary<string, OracleColumn> Columns { get; set; }
-		
+
 		public IEnumerable<OracleForeignKeyConstraint> ForeignKeys { get { return Constraints.OfType<OracleForeignKeyConstraint>(); } }
 	}
 
@@ -114,7 +114,12 @@ namespace SqlPad.Oracle
 	[DebuggerDisplay("OracleTable (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
 	public class OracleTable : OracleDataObject
 	{
-		private Dictionary<string, OraclePartition> _partitions;
+		public OracleTable()
+		{
+			Partitions = new Dictionary<string, OraclePartition>();
+			PartitionKeyColumns = new List<string>();
+			SubPartitionKeyColumns = new List<string>();
+		}
 
 		public bool IsInternal { get; set; }
 
@@ -138,7 +143,11 @@ namespace SqlPad.Oracle
 
 		public override string Type { get { return OracleSchemaObjectType.Table; } }
 
-		public IDictionary<string, OraclePartition> Partitions { get { return _partitions ?? (_partitions = new Dictionary<string, OraclePartition>()); } }
+		public IDictionary<string, OraclePartition> Partitions { get; set; }
+
+		public ICollection<string> PartitionKeyColumns { get; set; }
+
+		public ICollection<string> SubPartitionKeyColumns { get; set; }
 	}
 
 	public abstract class OraclePartitionBase : OracleObject

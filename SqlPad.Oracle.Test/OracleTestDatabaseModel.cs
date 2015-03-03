@@ -628,6 +628,8 @@ namespace SqlPad.Oracle.Test
 						{ "\"ID\"", new OracleColumn { Name = "\"ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0) } },
 						{ "\"DUEDATE\"", new OracleColumn { Name = "\"DUEDATE\"", DataType = BuildPrimitiveDataType("DATE") } }
 					},
+				PartitionKeyColumns = new List<string> { "\"ID\"" },
+				SubPartitionKeyColumns = new List<string> { "\"DUEDATE\"" },
 				Partitions =
 				{
 					{
@@ -1079,7 +1081,8 @@ Note
 			dataModel.Compression = "Disabled";
 			dataModel.InMemoryCompression = "Disabled";
 			dataModel.Organization = "Index";
-			dataModel.IsPartitioned = false;
+			dataModel.PartitionKeys = "COLUMN1, COLUMN2";
+			dataModel.SubPartitionKeys = "COLUMN3, COLUMN4";
 			dataModel.IsTemporary = false;
 			dataModel.Comment = "This is a table comment. ";
 
