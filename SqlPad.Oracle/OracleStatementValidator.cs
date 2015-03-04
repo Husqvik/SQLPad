@@ -252,7 +252,7 @@ namespace SqlPad.Oracle
 
 				if (queryBlock.Type == QueryBlockType.ScalarSubquery && queryBlock.OrderByClause != null)
 				{
-					validationModel.InvalidNonTerminals[queryBlock.OrderByClause] = new InvalidNodeValidationData(OracleSemanticErrorType.ClauseNotAllowed);
+					validationModel.InvalidNonTerminals[queryBlock.OrderByClause] = new InvalidNodeValidationData(OracleSemanticErrorType.ClauseNotAllowed) { Node = queryBlock.OrderByClause };
 				}
 
 				if (queryBlock.AsteriskColumns.Count > 0 && queryBlock.ObjectReferences.Any(r => r.DatabaseLinkNode != null))

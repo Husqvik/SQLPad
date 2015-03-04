@@ -1854,6 +1854,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			invalidNonTerminals.Count.ShouldBe(1);
 			invalidNonTerminals[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.ClauseNotAllowed);
 			invalidNonTerminals[0].ToolTipText.ShouldBe(OracleSemanticErrorType.ClauseNotAllowed);
+			invalidNonTerminals[0].Node.ShouldNotBe(null);
 		}
 
 		[Test(Description = @"")]
