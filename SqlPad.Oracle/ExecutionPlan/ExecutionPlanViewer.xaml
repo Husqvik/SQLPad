@@ -256,6 +256,13 @@
 							<Run Text="{Binding IoCost, Converter={StaticResource PrettyPrintNumericConverter}}"/>
 							<Run Text=" " />
 					</TextBlock>
+					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding PartitionStart, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="Partitions: "/>
+							<Run Text="{Binding PartitionStart}"/>
+							<Run Text="-" />
+							<Run Text="{Binding PartitionStop}"/>
+							<Run Text=" " />
+					</TextBlock>
 				</StackPanel>
 				<TextBlock Style="{StaticResource OtherLabelStyle}" Visibility="{Binding AccessPredicates, Converter={StaticResource ObjectToVisibilityConverter}}">
 						<Run Text="Access Predicates:"/>
@@ -340,6 +347,13 @@
 					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding IoCost, Converter={StaticResource ObjectToVisibilityConverter}}">
 							<Run Text="IO Cost: "/>
 							<Run Text="{Binding IoCost, Converter={StaticResource PrettyPrintNumericConverter}}"/>
+							<Run Text=" " />
+					</TextBlock>
+					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding PartitionStart, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="Partitions: "/>
+							<Run Text="{Binding PartitionStart}"/>
+							<Run Text="-" />
+							<Run Text="{Binding PartitionStop}"/>
 							<Run Text=" " />
 					</TextBlock>
 				</StackPanel>

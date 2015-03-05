@@ -1887,6 +1887,36 @@ SELECT * FROM ALL";
 			items.Length.ShouldBe(0);
 		}
 
+		[Test(Description = @"")]
+		public void TestCodeCompletionForExplicitPartition()
+		{
+			const string statement = @"SELECT * FROM INVOICES PARTITION (P)";
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 35).ToArray();
+			items.Length.ShouldBe(2);
+			items[0].Name.ShouldBe("P2014");
+			items[0].StatementNode.ShouldNotBe(null);
+			items[0].StatementNode.Token.Value.ShouldBe("P");
+			items[1].Name.ShouldBe("P2015");
+			items[1].StatementNode.ShouldNotBe(null);
+			items[1].StatementNode.Token.Value.ShouldBe("P");
+		}
+
+		[Test(Description = @"")]
+		public void TestCodeCompletionForExplicitSubPartition()
+		{
+			const string statement = @"SELECT * FROM INVOICES SUBPARTITION ()";
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 37).ToArray();
+			items.Length.ShouldBe(4);
+			items[0].Name.ShouldBe("P2014_ENTERPRISE");
+			items[0].StatementNode.ShouldBe(null);
+			items[1].Name.ShouldBe("P2014_PRIVATE");
+			items[1].StatementNode.ShouldBe(null);
+			items[2].Name.ShouldBe("P2015_ENTERPRISE");
+			items[2].StatementNode.ShouldBe(null);
+			items[3].Name.ShouldBe("P2015_PRIVATE");
+			items[3].StatementNode.ShouldBe(null);
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)
@@ -2072,6 +2102,26 @@ SELECT * FROM ALL";
 				const string statement = @"SELECT DIS";
 				var completionType = InitializeCodeCompletionType(statement, 10);
 				completionType.KeywordsClauses.Count.ShouldBe(2);
+			}
+
+			[Test(Description = @"")]
+			public void TestCodeCompletionTypeForExplicitPartition()
+			{
+				const string statement = @"SELECT * FROM INVOICES PARTITION (P)";
+				var completionType = InitializeCodeCompletionType(statement, 35);
+				completionType.ExplicitPartition.ShouldBe(true);
+				completionType.ExplicitSubPartition.ShouldBe(false);
+			}
+
+			[Test(Description = @"")]
+			public void TestCodeCompletionTypeForExplicitSubPartition()
+			{
+				const string statement = @"SELECT * FROM INVOICES SUBPARTITION ()";
+				var completionType = InitializeCodeCompletionType(statement, 37);
+				completionType.ExplicitPartition.ShouldBe(false);
+				completionType.ExplicitSubPartition.ShouldBe(true);
+				completionType.SchemaDataObject.ShouldBe(false);
+				completionType.JoinType.ShouldBe(false);
 			}
 
 			public class ReferenceIdentifierTest

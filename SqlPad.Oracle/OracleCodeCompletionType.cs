@@ -57,6 +57,10 @@ namespace SqlPad.Oracle
 		
 		public bool ColumnAlias { get; private set; }
 
+		public bool ExplicitPartition { get; private set; }
+		
+		public bool ExplicitSubPartition { get; private set; }
+
 		public bool SpecialFunctionParameter { get; private set; }
 		
 		public bool InsertIntoColumns { get; private set; }
@@ -89,7 +93,7 @@ namespace SqlPad.Oracle
 
 		private bool Any
 		{
-			get { return Schema || SchemaDataObject || PipelinedFunction || SchemaDataObjectReference || Column || AllColumns || JoinType || JoinCondition || SchemaProgram || DatabaseLink || Sequence || PackageFunction || SpecialFunctionParameter || _keywordsClauses.Count > 0; }
+			get { return Schema || SchemaDataObject || PipelinedFunction || SchemaDataObjectReference || Column || AllColumns || JoinType || JoinCondition || SchemaProgram || DatabaseLink || Sequence || PackageFunction || SpecialFunctionParameter || ExplicitPartition || ExplicitSubPartition || _keywordsClauses.Count > 0; }
 		}
 
 		public bool ExistsTerminalValue { get { return !String.IsNullOrEmpty(TerminalValuePartUntilCaret); } }
@@ -206,7 +210,28 @@ namespace SqlPad.Oracle
 
 			InSelectList = (atAdHocTemporaryTerminal ? precedingTerminal : EffectiveTerminal).GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.SelectList) != null;
 
-			ResolveSuggestedKeywords();
+			var invalidGrammarFilteredNearestTerminal = Statement.GetNearestTerminalToPosition(cursorPosition, n => n.Id != Terminals.ObjectAlias);
+			var isWithinExplicitPartitionClause = invalidGrammarFilteredNearestTerminal.ParentNode.Id == NonTerminals.PartitionNameOrKeySet && (invalidGrammarFilteredNearestTerminal != nearestTerminal || TerminalCandidates.Contains(Terminals.ObjectIdentifier));
+			ExplicitPartition = isWithinExplicitPartitionClause && invalidGrammarFilteredNearestTerminal.ParentNode.ParentNode.FirstTerminalNode.Id == Terminals.Partition;
+			ExplicitSubPartition = isWithinExplicitPartitionClause && invalidGrammarFilteredNearestTerminal.ParentNode.ParentNode.FirstTerminalNode.Id == Terminals.Subpartition;
+			if (isWithinExplicitPartitionClause)
+			{
+				if (EffectiveTerminal.Id == Terminals.ObjectIdentifier)
+				{
+					ReferenceIdentifier = BuildReferenceIdentifier(new[] { EffectiveTerminal });
+				}
+
+				if (invalidGrammarFilteredNearestTerminal != nearestTerminal)
+				{
+					EffectiveTerminal = invalidGrammarFilteredNearestTerminal;
+					TerminalValuePartUntilCaret = null;
+				}
+			}
+
+			if (!isWithinExplicitPartitionClause)
+			{
+				ResolveSuggestedKeywords();
+			}
 
 			var isCursorBetweenTwoTerminalsWithPrecedingIdentifierWithoutPrefix = IsCursorTouchingIdentifier && !ReferenceIdentifier.HasObjectIdentifier;
 			Schema = TerminalCandidates.Contains(Terminals.SchemaIdentifier) || isCursorBetweenTwoTerminalsWithPrecedingIdentifierWithoutPrefix;
@@ -225,9 +250,9 @@ namespace SqlPad.Oracle
 					SpecialFunctionParameter = functionParameterExpression != null && functionParameterExpression.TerminalCount == 1 && (functionParameterExpression.FirstTerminalNode.Id.IsLiteral() || functionParameterExpression.FirstTerminalNode.Id == Terminals.Identifier);
 				}
 			}
-			
+
 			DatabaseLink = TerminalCandidates.Contains(Terminals.DatabaseLinkIdentifier);
-			JoinType = !isCursorTouchingTwoTerminals && TerminalCandidates.Contains(Terminals.Join);
+			JoinType = !isCursorTouchingTwoTerminals && !isWithinExplicitPartitionClause && TerminalCandidates.Contains(Terminals.Join);
 
 			InQueryBlockFromClause = effectiveTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.FromClause) != null || (effectiveTerminal.Id == Terminals.From && effectiveTerminal.ParentNode.Id == NonTerminals.QueryBlock);
 			var isWithinJoinCondition = nearestTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.JoinClause, NonTerminals.JoinColumnsOrCondition) != null;
@@ -236,7 +261,7 @@ namespace SqlPad.Oracle
 			var isWithinMainObjectReference = nearestTerminal.GetAncestor(NonTerminals.TableReference) != null && !isWithinQueryBlock;
 			var isInInsertIntoTableReference = nearestTerminal.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBoundary, NonTerminals.DmlTableExpressionClause) != null ||
 			                                   (nearestTerminal.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBoundary, NonTerminals.InsertIntoClause) != null && nearestTerminal.Id == Terminals.Into && isCursorAfterToken);
-			SchemaDataObject = (InQueryBlockFromClause || isAfterUpdateOrDeleteTerminal || isWithinMainObjectReference || isInInsertIntoTableReference) && !isWithinJoinCondition && TerminalCandidates.Contains(Terminals.ObjectIdentifier);
+			SchemaDataObject = (InQueryBlockFromClause || isAfterUpdateOrDeleteTerminal || isWithinMainObjectReference || isInInsertIntoTableReference) && !isWithinJoinCondition && !isWithinExplicitPartitionClause && TerminalCandidates.Contains(Terminals.ObjectIdentifier);
 
 			var isWithinJoinClause = effectiveTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.FromClause, NonTerminals.JoinClause) != null;
 			JoinCondition = isWithinJoinClause && isCursorAfterEffectiveTerminal && (TerminalCandidates.Contains(Terminals.On) || nearestTerminal.Id == Terminals.On);
@@ -405,7 +430,7 @@ namespace SqlPad.Oracle
 				return;
 			}
 
-			var builder = new StringBuilder(255);
+			var builder = new StringBuilder(512);
 			builder.Append("TerminalValueUnderCursor: '");
 			builder.Append(TerminalValueUnderCursor);
 			builder.Append("'; ");

@@ -306,11 +306,48 @@ namespace SqlPad.Oracle
 				completionItems = completionItems.Concat(databaseLinkItems);
 			}
 
+			if (completionType.ExplicitPartition || completionType.ExplicitSubPartition)
+			{
+				var tableReferenceNode = completionType.EffectiveTerminal.GetAncestor(NonTerminals.TableReference);
+				var tableReference = referenceContainers.SelectMany(c => c.ObjectReferences).SingleOrDefault(o => o.RootNode == tableReferenceNode && o.SchemaObject != null);
+				if (tableReference != null)
+				{
+					completionItems = completionItems.Concat(GenerateTablePartitionItems(tableReference, completionType, completionType.ExplicitSubPartition));
+				}
+			}
+
 			completionItems = completionItems.Concat(GenerateKeywordItems(completionType));
 
 			return completionItems.OrderItems().ToArray();
 
 			// TODO: Add option to search all/current/public schemas
+		}
+
+		private static IEnumerable<OracleCodeCompletionItem> GenerateTablePartitionItems(OracleDataObjectReference tableReference, OracleCodeCompletionType completionType, bool subPartitions)
+		{
+			var table = tableReference.SchemaObject.GetTargetSchemaObject() as OracleTable;
+			if (table == null)
+			{
+				return Enumerable.Empty<OracleCodeCompletionItem>();
+			}
+
+			var sourcePartitions = subPartitions
+				? table.Partitions.Values.SelectMany(p => p.SubPartitions.Values)
+				: (IEnumerable<OraclePartitionBase>)table.Partitions.Values;
+
+			var partitions = sourcePartitions
+				.Where(p => (String.IsNullOrEmpty(completionType.TerminalValueUnderCursor) || completionType.TerminalValueUnderCursor.ToQuotedIdentifier() != p.Name) &&
+				            CodeCompletionSearchHelper.IsMatch(p.Name, completionType.TerminalValuePartUntilCaret))
+				.Select(l =>
+					new OracleCodeCompletionItem
+					{
+						Name = l.Name.ToSimpleIdentifier(),
+						Text = l.Name.ToSimpleIdentifier(),
+						Category = subPartitions ? OracleCodeCompletionCategory.Subpartition : OracleCodeCompletionCategory.Partition,
+						StatementNode = completionType.ReferenceIdentifier.IdentifierUnderCursor
+					});
+			
+			return partitions;
 		}
 
 		private IEnumerable<ICodeCompletionItem> GenerateKeywordItems(OracleCodeCompletionType completionType)

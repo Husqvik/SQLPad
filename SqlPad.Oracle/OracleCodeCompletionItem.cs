@@ -82,6 +82,8 @@ namespace SqlPad.Oracle
 		public const string SchemaFunction = "Schema function";
 		public const string Package = "Package";
 		public const string DatabaseLink = "Database link";
+		public const string Partition = "Partition";
+		public const string Subpartition = "Sub-partition";
 		public const string FunctionParameter = "Function parameter";
 		public const string BuiltInFunction = "Built-in function";
 		public const string XmlTable = "XML Table";
