@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -30,9 +29,6 @@ namespace SqlPad
 	public partial class DocumentPage : IDisposable
 	{
 		private const string InitialDocumentHeader = "New";
-		private const string MaskWrapByQuote = "\"{0}\"";
-		private const string QuoteCharacter = "\"";
-		private const string DoubleQuotes = "\"\"";
 		private const int MaximumToolTipLines = 32;
 		public const string FileMaskDefault = "SQL files (*.sql)|*.sql|SQL Pad files (*.sqlx)|*.sqlx|Text files(*.txt)|*.txt|All files (*.*)|*";
 
@@ -54,7 +50,6 @@ namespace SqlPad
 		private readonly SqlDocumentColorizingTransformer _colorizingTransformer = new SqlDocumentColorizingTransformer();
 		private readonly ContextMenu _contextActionMenu = new ContextMenu { Placement = PlacementMode.Relative };
 
-		private static readonly CellValueConverter CellValueConverter = new CellValueConverter();
 		private static readonly ColorCodeToBrushConverter TabHeaderBackgroundBrushConverter = new ColorCodeToBrushConverter();
 
 		private bool _isParsing;
@@ -64,7 +59,6 @@ namespace SqlPad
 		private bool _isToolTipOpenByShortCut;
 		private bool _isToolTipOpenByCaretChange;
 		private bool _gatherExecutionStatistics;
-		private bool _isSelectingCells;
 		
 		private readonly ToolTip _toolTip = new ToolTip();
 		private readonly PageModel _pageModel;
@@ -219,6 +213,7 @@ namespace SqlPad
 			_pageModel.IsModified = WorkDocument.IsModified;
 
 			DataContext = _pageModel;
+			OutputViewer.DataModel = _pageModel;
 
 			InitializeTabItem();
 		}
@@ -446,7 +441,8 @@ namespace SqlPad
 			_sqlDocumentRepository = new SqlDocumentRepository(_infrastructureFactory.CreateParser(), _infrastructureFactory.CreateStatementValidator(), DatabaseModel);
 			_iconMargin.DocumentRepository = _sqlDocumentRepository;
 			_executionPlanViewer = _infrastructureFactory.CreateExecutionPlanViewer(DatabaseModel);
-			TabExecutionPlan.Content = _executionPlanViewer.Control;
+			
+			OutputViewer.SetupExecutionPlanViewer(_executionPlanViewer);
 
 			DatabaseModel.Initialized += DatabaseModelInitializedHandler;
 			DatabaseModel.Disconnected += DatabaseModelInitializationFailedHandler;
@@ -693,13 +689,12 @@ namespace SqlPad
 			GenericCommandHandler.ExecuteEditCommand(_sqlDocumentRepository, Editor, _statementFormatter.SingleLineExecutionHandler.ExecutionHandler);
 		}
 
-		private void CanFetchAllRows(object sender, CanExecuteRoutedEventArgs canExecuteRoutedEventArgs)
+		private void CanFetchAllRowsHandler(object sender, CanExecuteRoutedEventArgs canExecuteRoutedEventArgs)
 		{
 			canExecuteRoutedEventArgs.CanExecute = CanFetchNextRows();
-			canExecuteRoutedEventArgs.ContinueRouting = canExecuteRoutedEventArgs.CanExecute;
 		}
 
-		private async void FetchAllRows(object sender, ExecutedRoutedEventArgs args)
+		private async void FetchAllRowsHandler(object sender, EventArgs args)
 		{
 			IsBusy = true;
 
@@ -856,41 +851,16 @@ namespace SqlPad
 
 		private void InitializeViewBeforeCommandExecution()
 		{
-			_pageModel.ResultRowItems.Clear();
-			_pageModel.CompilationErrors.Clear();
-			_pageModel.GridRowInfoVisibility = Visibility.Collapsed;
-			_pageModel.ExecutionPlanAvailable = Visibility.Collapsed;
-			_pageModel.StatementExecutedSuccessfullyStatusMessageVisibility = Visibility.Collapsed;
-			_pageModel.SessionExecutionStatistics.Clear();
-			_pageModel.WriteDatabaseOutput(String.Empty);
-
 			TextMoreRowsExist.Visibility = Visibility.Collapsed;
-
-			ResultGrid.HeadersVisibility = DataGridHeadersVisibility.None;
 
 			_pageModel.AffectedRowCount = -1;
 			_pageModel.CurrentRowIndex = 0;
 
-			SelectDefaultTabIfNeeded();
-		}
-
-		private void SelectDefaultTabIfNeeded()
-		{
-			if (!IsTabAlwaysVisible(TabControlResult.SelectedItem))
-			{
-				TabControlResult.SelectedIndex = 0;
-			}
-		}
-
-		private bool IsTabAlwaysVisible(object tabItem)
-		{
-			return TabControlResult.Items.IndexOf(tabItem).In(0, 2);
+			OutputViewer.Initialize();
 		}
 
 		private async Task ExecuteDatabaseCommand(StatementExecutionModel executionModel)
 		{
-			var previousSelectedTab = TabControlResult.SelectedItem;
-
 			InitializeViewBeforeCommandExecution();
 
 			Task<StatementExecutionResult> innerTask = null;
@@ -918,11 +888,11 @@ namespace SqlPad
 				await _executionPlanViewer.ShowActualAsync(_statementExecutionCancellationTokenSource.Token);
 				_pageModel.ExecutionPlanAvailable = Visibility.Visible;
 				_pageModel.SessionExecutionStatistics.MergeWith(await DatabaseModel.GetExecutionStatisticsAsync(_statementExecutionCancellationTokenSource.Token));
-				TabControlResult.SelectedItem = previousSelectedTab;
+				OutputViewer.SelectPreviousTab();
 			}
-			else if (IsTabAlwaysVisible(previousSelectedTab))
+			else if (OutputViewer.IsPreviousTabAlwaysVisible)
 			{
-				TabControlResult.SelectedItem = previousSelectedTab;
+				OutputViewer.SelectPreviousTab();
 			}
 
 			if (innerTask.Result.CompilationErrors.Count > 0)
@@ -934,7 +904,7 @@ namespace SqlPad
 					_pageModel.CompilationErrors.Add(error);
 				}
 
-				TabControlResult.SelectedIndex = 3;
+				OutputViewer.ShowCompilationErrors();
 			}
 
 			if (innerTask.Result.ColumnHeaders.Count == 0)
@@ -988,37 +958,10 @@ namespace SqlPad
 
 		private void InitializeResultGrid(IEnumerable<ColumnHeader> columnHeaders)
 		{
-			ResultGrid.Columns.Clear();
-
-			foreach (var columnHeader in columnHeaders)
-			{
-				var columnTemplate = CreateDataGridTextColumnTemplate(columnHeader);
-				ResultGrid.Columns.Add(columnTemplate);
-			}
+			OutputViewer.Initialize(columnHeaders);
 
 			_pageModel.GridRowInfoVisibility = Visibility.Visible;
-			ResultGrid.HeadersVisibility = DataGridHeadersVisibility.Column;
-
 			_pageModel.ResultRowItems.Clear();
-		}
-
-		internal static DataGridTextColumn CreateDataGridTextColumnTemplate(ColumnHeader columnHeader)
-		{
-			var columnTemplate =
-				new DataGridTextColumn
-				{
-					Header = columnHeader.Name.Replace("_", "__"),
-					Binding = new Binding(String.Format("[{0}]", columnHeader.ColumnIndex)) { Converter = CellValueConverter, ConverterParameter = columnHeader },
-					EditingElementStyle = (Style)Application.Current.Resources["CellTextBoxStyleReadOnly"]
-				};
-
-			if (columnHeader.DataType.In(typeof(Decimal), typeof(Int16), typeof(Int32), typeof(Int64), typeof(Byte)))
-			{
-				columnTemplate.HeaderStyle = (Style)Application.Current.Resources["HeaderStyleRightAlign"];
-				columnTemplate.CellStyle = (Style)Application.Current.Resources["CellStyleRightAlign"];
-			}
-
-			return columnTemplate;
 		}
 
 		public void Dispose()
@@ -1859,47 +1802,6 @@ namespace SqlPad
 			return Editor.Text[Editor.CaretOffset] == currentCharacter && Editor.Text[Editor.CaretOffset - 1] == previousCharacter;
 		}
 
-		private void ResultGridMouseDoubleClickHandler(object sender, MouseButtonEventArgs e)
-		{
-			ShowLargeValueEditor(ResultGrid);
-		}
-
-		internal static void ShowLargeValueEditor(DataGrid dataGrid)
-		{
-			var currentRow = (object[])dataGrid.CurrentItem;
-			if (currentRow == null || dataGrid.CurrentColumn == null)
-				return;
-
-			var cellValue = currentRow[dataGrid.CurrentColumn.DisplayIndex];
-			var largeValue = cellValue as ILargeValue;
-			if (largeValue != null)
-			{
-				new LargeValueEditor(dataGrid.CurrentColumn.Header.ToString(), largeValue) { Owner = Window.GetWindow(dataGrid) }.ShowDialog();
-			}
-		}
-
-		private void CanExportToCsv(object sender, CanExecuteRoutedEventArgs args)
-		{
-			args.CanExecute = ResultGrid.Items.Count > 0;
-		}
-
-		private void ExportToCsv(object sender, ExecutedRoutedEventArgs args)
-		{
-			var dialog = new SaveFileDialog { Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*", OverwritePrompt = true };
-			if (dialog.ShowDialog() != true)
-			{
-				return;
-			}
-
-			SafeActionWithUserError(() =>
-			{
-				using (var file = File.CreateText(dialog.FileName))
-				{
-					ExportToCsv(file);
-				}
-			});
-		}
-
 		internal static bool SafeActionWithUserError(Action action)
 		{
 			try
@@ -1914,39 +1816,6 @@ namespace SqlPad
 			}
 		}
 
-		private void ExportToCsv(TextWriter writer)
-		{
-			var orderedColumns = ResultGrid.Columns
-				.OrderBy(c => c.DisplayIndex)
-				.ToArray();
-
-			var columnHeaders = orderedColumns
-				.Select(c => String.Format(MaskWrapByQuote, c.Header.ToString().Replace("__", "_").Replace(QuoteCharacter, DoubleQuotes)));
-
-			const string separator = ";";
-			var headerLine = String.Join(separator, columnHeaders);
-			writer.WriteLine(headerLine);
-
-			var converterParameters = orderedColumns
-				.Select(c => ((Binding)((DataGridTextColumn)c).Binding).ConverterParameter)
-				.ToArray();
-
-			foreach (object[] rowValues in ResultGrid.Items)
-			{
-				var contentLine = String.Join(separator, rowValues.Select((t, i) => FormatCsvValue(t, converterParameters[i])));
-				writer.WriteLine(contentLine);
-			}
-		}
-
-		private static string FormatCsvValue(object value, object converterParameter)
-		{
-			if (value == DBNull.Value)
-				return null;
-
-			var stringValue = CellValueConverter.Convert(value, typeof(String), converterParameter, CultureInfo.CurrentUICulture).ToString();
-			return String.Format(MaskWrapByQuote, stringValue.Replace(QuoteCharacter, DoubleQuotes));
-		}
-
 		private async void ExecuteExplainPlanCommandHandler(object sender, ExecutedRoutedEventArgs args)
 		{
 			IsBusy = true;
@@ -1956,7 +1825,7 @@ namespace SqlPad
 
 		private async Task ExecuteExplainPlan()
 		{
-			SelectDefaultTabIfNeeded();
+			OutputViewer.SelectDefaultTabIfNeeded();
 
 			_pageModel.ExecutionPlanAvailable = Visibility.Collapsed;
 
@@ -1977,7 +1846,7 @@ namespace SqlPad
 					if (actionResult.IsSuccessful)
 					{
 						_pageModel.ExecutionPlanAvailable = Visibility.Visible;
-						TabControlResult.SelectedItem = TabExecutionPlan;
+						OutputViewer.ShowExecutionPlan();
 					}
 					else
 					{
@@ -2029,15 +1898,9 @@ namespace SqlPad
 			Editor.Focus();
 		}
 
-		private void TabControlResultGiveFeedbackHandler(object sender, GiveFeedbackEventArgs e)
+		private async void FetchNextRowsHandler(object sender, EventArgs e)
 		{
-			e.Handled = true;
-		}
-
-
-		private async void ResultGridScrollChangedHandler(object sender, ScrollChangedEventArgs e)
-		{
-			if (!CanFetchNextRows() || e.VerticalOffset + e.ViewportHeight != e.ExtentHeight)
+			if (!CanFetchNextRows())
 			{
 				return;
 			}
@@ -2054,32 +1917,17 @@ namespace SqlPad
 			IsBusy = false;
 		}
 
-		private void ReadOnlyGridKeyDownHandler(object sender, KeyEventArgs e)
+		private void CompilationErrorHandler(object sender, CompilationErrorArgs e)
 		{
-			var keyCode = e.Key;
-			if (!keyCode.In(Key.F4, Key.F5, Key.Escape, Key.System))
-			{
-				e.Handled = true;
-			}
-		}
-
-		private void ErrorListMouseDoubleClickHandler(object sender, MouseButtonEventArgs e)
-		{
-			var errorUnderCursor = (CompilationError)((DataGrid)sender).CurrentItem;
-			if (errorUnderCursor == null)
-			{
-				return;
-			}
-
-			var failedStatementSourcePosition = errorUnderCursor.Statement.SourcePosition;
+			var failedStatementSourcePosition = e.CompilationError.Statement.SourcePosition;
 			var isStatementUnchanged = _sqlDocumentRepository.Statements.Any(s => failedStatementSourcePosition == s.SourcePosition);
 			if (!isStatementUnchanged)
 			{
 				return;
 			}
 
-			Editor.TextArea.Caret.Line = errorUnderCursor.Line;
-			Editor.TextArea.Caret.Column = errorUnderCursor.Column;
+			Editor.TextArea.Caret.Line = e.CompilationError.Line;
+			Editor.TextArea.Caret.Column = e.CompilationError.Column;
 			Editor.ScrollToCaret();
 			Editor.Focus();
 		}
@@ -2110,94 +1958,6 @@ namespace SqlPad
 		private void ExpandAllFoldingsCanExecuteHandler(object sender, CanExecuteRoutedEventArgs e)
 		{
 			e.CanExecute = _foldingStrategy.FoldingManager.AllFoldings.Any(f => f.IsFolded);
-		}
-
-		private void ResultGridSelectedCellsChangedHandler(object sender, SelectedCellsChangedEventArgs e)
-		{
-			if (_isSelectingCells)
-			{
-				return;
-			}
-
-			_pageModel.CurrentRowIndex = ResultGrid.CurrentCell.Item == null
-				? 0
-				: ResultGrid.Items.IndexOf(ResultGrid.CurrentCell.Item) + 1;
-
-			CalculateSelectedCellStatistics();
-		}
-
-		private void CalculateSelectedCellStatistics()
-		{
-			if (ResultGrid.SelectedCells.Count <= 1)
-			{
-				_pageModel.SelectedCellInfoVisibility = Visibility.Collapsed;
-				return;
-			}
-
-			var sum = 0m;
-			var count = 0;
-			var invalidNumberDetected = false;
-			foreach (var selectedCell in ResultGrid.SelectedCells)
-			{
-				var stringValue = ((object[])selectedCell.Item)[selectedCell.Column.DisplayIndex].ToString();
-				if (String.IsNullOrEmpty(stringValue))
-				{
-					continue;
-				}
-
-				decimal value;
-				if (Decimal.TryParse(stringValue, NumberStyles.Number, CultureInfo.InvariantCulture, out value))
-				{
-					sum += value;
-				}
-				else
-				{
-					invalidNumberDetected = true;
-				}
-
-				count++;
-			}
-
-			_pageModel.SelectedCellValueCount = count;
-
-			if (count > 0)
-			{
-				_pageModel.SelectedCellSum = sum;
-				_pageModel.SelectedCellAverage = sum / count;
-				_pageModel.SelectedCellNumericInfoVisibility = invalidNumberDetected ? Visibility.Collapsed : Visibility.Visible;
-			}
-			else
-			{
-				_pageModel.SelectedCellNumericInfoVisibility = Visibility.Collapsed;
-			}
-
-			_pageModel.SelectedCellInfoVisibility = Visibility.Visible;
-		}
-
-		private void ColumnHeaderMouseClickHandler(object sender, RoutedEventArgs e)
-		{
-			var header = e.OriginalSource as DataGridColumnHeader;
-			if (header == null)
-			{
-				return;
-			}
-
-			ResultGrid.SelectedCells.Clear();
-
-			var cells = ResultGrid.Items.Cast<object[]>()
-				.Select(r => new DataGridCellInfo(r, header.Column));
-
-			_isSelectingCells = true;
-			
-			ResultGrid.SelectedCells.AddRange(cells);
-
-			_isSelectingCells = false;
-
-			_pageModel.CurrentRowIndex = ResultGrid.SelectedCells.Count;
-
-			CalculateSelectedCellStatistics();
-
-			ResultGrid.Focus();
 		}
 	}
 

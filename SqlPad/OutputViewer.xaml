@@ -1,0 +1,125 @@
+﻿<UserControl x:Class="SqlPad.OutputViewer"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:sqlPad="clr-namespace:SqlPad"
+             xmlns:commands="clr-namespace:SqlPad.Commands"
+             mc:Ignorable="d" 
+             d:DesignHeight="140" d:DesignWidth="300" d:DataContext="{d:DesignInstance sqlPad:PageModel}">
+	<UserControl.Resources>
+		<sqlPad:PrettyPrintIntegerConverter x:Key="PrettyPrintNumericConverter" />
+	</UserControl.Resources>
+
+	<TabControl x:Name="TabControlResult" GiveFeedback="TabControlResultGiveFeedbackHandler">
+		<TabItem Header="_Result set">
+			<DockPanel LastChildFill="True">
+				<StackPanel DockPanel.Dock="Bottom" Visibility="{Binding SelectedCellInfoVisibility}" Orientation="Horizontal" HorizontalAlignment="Right">
+					<TextBlock>
+							<Run Text="Count: "/><Run Text="{Binding SelectedCellValueCount}"/>
+					</TextBlock>
+					<TextBlock Visibility="{Binding SelectedCellNumericInfoVisibility}">
+							<Run Text=" Sum: "/><Run Text="{Binding SelectedCellSum}"/>
+					</TextBlock>
+					<TextBlock Visibility="{Binding SelectedCellNumericInfoVisibility}">
+							<Run Text=" Average: "/><Run Text="{Binding SelectedCellAverage}"/>
+					</TextBlock>
+				</StackPanel>
+				<DataGrid x:Name="ResultGrid"
+							  AutoGenerateColumns="False"
+							  ItemsSource="{Binding ResultRowItems}"
+							  MaxColumnWidth="{Binding ElementName=ResultGrid, Path=ActualWidth}"
+							  VirtualizingStackPanel.VirtualizationMode="Recycling"
+							  EnableColumnVirtualization="True"
+							  RowHeight="21"
+							  CanUserSortColumns="False"
+							  CanUserDeleteRows ="False"
+							  CanUserAddRows="False"
+							  HeadersVisibility="None"
+							  IsTextSearchEnabled="True"
+							  SelectionMode="Extended"
+							  SelectionUnit="CellOrRowHeader"
+							  HorizontalGridLinesBrush="LightGray"
+							  VerticalGridLinesBrush="LightGray"
+							  KeyDown="ReadOnlyGridKeyDownHandler"
+							  SelectedCellsChanged="ResultGridSelectedCellsChangedHandler"
+							  ScrollViewer.ScrollChanged="ResultGridScrollChangedHandler"
+							  MouseDoubleClick="ResultGridMouseDoubleClickHandler"
+							  DataGridColumnHeader.Click="ColumnHeaderMouseClickHandler">
+					<DataGrid.CommandBindings>
+						<CommandBinding Command="commands:GenericCommands.ExportToCsv" Executed="ExportToCsvHandler" CanExecute="CanExportToCsvHandler" />
+						<CommandBinding Command="commands:GenericCommands.FetchAllRows" Executed="FetchAllRowsHandler" CanExecute="CanFetchAllRowsHandler" />
+					</DataGrid.CommandBindings>
+					<DataGrid.ContextMenu>
+						<ContextMenu>
+							<MenuItem Header="_Fetch all" Command="commands:GenericCommands.FetchAllRows" />
+							<MenuItem Header="_Export to CSV..." Command="commands:GenericCommands.ExportToCsv" />
+						</ContextMenu>
+					</DataGrid.ContextMenu>
+				</DataGrid>
+			</DockPanel>
+		</TabItem>
+		<TabItem Header="_Statistics" Visibility="{Binding ExecutionStatisticsAvailable}">
+			<DockPanel>
+				<CheckBox DockPanel.Dock="Right" Margin="4" Content="Show _All" IsChecked="{Binding ShowAllSessionExecutionStatistics}" />
+				<DataGrid ItemsSource="{Binding SessionExecutionStatistics}"
+							  AutoGenerateColumns="False"
+							  CanUserDeleteRows ="False"
+							  CanUserAddRows="False"
+							  KeyDown="ReadOnlyGridKeyDownHandler"
+							  HorizontalGridLinesBrush="LightGray"
+							  VerticalGridLinesBrush="LightGray">
+					<DataGrid.Columns>
+						<DataGridTextColumn Header="Name" Binding="{Binding Path=Name}"
+												EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}" />
+						<DataGridTextColumn Header="Value" Binding="{Binding Path=Value, Converter={StaticResource PrettyPrintNumericConverter}}"
+												HeaderStyle="{StaticResource HeaderStyleRightAlign}"
+												CellStyle="{StaticResource CellStyleRightAlign}"
+												EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}" />
+					</DataGrid.Columns>
+				</DataGrid>
+			</DockPanel>
+		</TabItem>
+		<TabItem Header="_Output">
+			<DockPanel>
+				<StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
+					<CheckBox Margin="4" Content="_Enable" IsChecked="{Binding EnableDatabaseOutput}" />
+					<CheckBox Margin="4" Content="_Keep history" IsChecked="{Binding KeepDatabaseOutputHistory}" />
+				</StackPanel>
+				<sqlPad:ScrollingTextBox Text="{Binding DatabaseOutput, Mode=OneWay}" FontFamily="Consolas" IsReadOnly="True" IsReadOnlyCaretVisible="True" />
+			</DockPanel>
+		</TabItem>
+		<TabItem Header="_Errors" Visibility="{Binding CompilationErrorsVisible}">
+			<DataGrid ItemsSource="{Binding CompilationErrors}"
+							  AutoGenerateColumns="False"
+							  CanUserDeleteRows ="False"
+							  CanUserAddRows="False"
+							  KeyDown="ReadOnlyGridKeyDownHandler"
+							  MouseDoubleClick="ErrorListMouseDoubleClickHandler"
+							  HorizontalGridLinesBrush="LightGray"
+							  VerticalGridLinesBrush="LightGray">
+				<DataGrid.Columns>
+					<DataGridTextColumn Header="Owner" Binding="{Binding Path=Owner}"
+						                    EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}" />
+					<DataGridTextColumn Header="Object" Binding="{Binding Path=ObjectName}"
+						                    EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}" />
+					<DataGridTextColumn Header="Object type" Binding="{Binding Path=ObjectType}"
+						                    EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}" />
+					<DataGridTextColumn Header="Severity" Binding="{Binding Path=Severity}"
+						                    EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}" />
+					<DataGridTextColumn Header="Line" Binding="{Binding Path=Line}"
+						                    HeaderStyle="{StaticResource HeaderStyleRightAlign}"
+						                    CellStyle="{StaticResource CellStyleRightAlign}"
+						                    EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}" />
+					<DataGridTextColumn Header="Column" Binding="{Binding Path=Column}"
+						                    HeaderStyle="{StaticResource HeaderStyleRightAlign}"
+						                    CellStyle="{StaticResource CellStyleRightAlign}"
+						                    EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}" />
+					<DataGridTextColumn Header="Message" Binding="{Binding Path=Message}"
+						                    EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}" />
+				</DataGrid.Columns>
+			</DataGrid>
+		</TabItem>
+		<TabItem Header="E_xecution plan" x:Name="TabExecutionPlan" Visibility="{Binding ExecutionPlanAvailable}" />
+	</TabControl>
+</UserControl>

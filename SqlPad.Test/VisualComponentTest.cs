@@ -264,9 +264,9 @@ SELECT T.* FROM T@HQ_PDB";
 						new ColumnHeader { ColumnIndex = 1, DatabaseDataType = "Date", DataType = typeof(DateTime), Name = "DUMMY_WITH_UNDERSCORES", ValueConverter = TestColumnValueConverter.Instance }
 					};
 
-			var documentPage = new DocumentPage();
-			documentPage.GetType().InvokeMember("InitializeResultGrid", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.InvokeMethod, null, documentPage, new object[] { columnHeaders });
-			documentPage.ResultGrid.ItemsSource =
+			var outputViewer = new OutputViewer();
+			outputViewer.Initialize(columnHeaders);
+			outputViewer.ResultGrid.ItemsSource =
 				new[]
 					{
 						new object[] {"Value \"1\"", new DateTime(2014, 8, 16, 22, 25, 34)},
@@ -276,7 +276,7 @@ SELECT T.* FROM T@HQ_PDB";
 			var stringBuilder = new StringBuilder();
 			using (var writer = new StringWriter(stringBuilder))
 			{
-				documentPage.GetType().InvokeMember("ExportToCsv", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.InvokeMethod, null, documentPage, new object[] { writer });
+				outputViewer.GetType().InvokeMember("ExportToCsv", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.InvokeMethod, null, outputViewer, new object[] { writer });
 			}
 
 			var result = stringBuilder.ToString();

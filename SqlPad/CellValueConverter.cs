@@ -8,6 +8,8 @@ namespace SqlPad
 {
 	public class CellValueConverter : IValueConverter
 	{
+		public static readonly CellValueConverter Instance = new CellValueConverter();
+
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			if (value == DBNull.Value)

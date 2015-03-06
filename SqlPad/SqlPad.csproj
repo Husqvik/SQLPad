@@ -120,6 +120,9 @@
     </Compile>
     <Compile Include="Messages.cs" />
     <Compile Include="ModelBase.cs" />
+    <Compile Include="OutputViewer.xaml.cs">
+      <DependentUpon>OutputViewer.xaml</DependentUpon>
+    </Compile>
     <Compile Include="PasswordDialog.xaml.cs">
       <DependentUpon>PasswordDialog.xaml</DependentUpon>
     </Compile>
@@ -230,6 +233,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="OutputViewer.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="PasswordDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

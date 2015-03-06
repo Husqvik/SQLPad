@@ -91,7 +91,7 @@ namespace SqlPad
 				{
 					TabCollection.Visibility = Visibility.Visible;
 					TabControl.SelectedItem = TabCollection;
-					var columnTemplate = DocumentPage.CreateDataGridTextColumnTemplate(collectionValue.ColumnHeader);
+					var columnTemplate = OutputViewer.CreateDataGridTextColumnTemplate(collectionValue.ColumnHeader);
 					CollectionViewer.Columns.Add(columnTemplate);
 					CollectionViewer.ItemsSource = collectionValue.Records.Cast<object>().Select(r => new [] { r }).ToArray();
 				}
@@ -281,7 +281,7 @@ namespace SqlPad
 
 		private void CollectionViewerMouseDoubleClickHandler(object sender, MouseButtonEventArgs e)
 		{
-			DocumentPage.ShowLargeValueEditor(CollectionViewer);
+			OutputViewer.ShowLargeValueEditor(CollectionViewer);
 		}
 	}
 }
