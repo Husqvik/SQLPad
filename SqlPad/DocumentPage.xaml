@@ -284,7 +284,7 @@
 						<Run Text="Row " />
 						<Run Text="{Binding Path=CurrentRowIndex, Mode=OneWay}" />
 						<Run Text=" of " />
-						<Run Text="{Binding ElementName=ResultGrid, Path=Items.Count, Mode=OneWay}" />
+						<Run Text="{Binding Path=ResultRowItems.Count, Mode=OneWay}" />
 					</TextBlock>
 					<TextBlock Text=" (more rows exist)" x:Name="TextMoreRowsExist" Visibility="Collapsed" />
 				</StackPanel>

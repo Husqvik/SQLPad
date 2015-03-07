@@ -525,9 +525,9 @@ namespace SqlPad.Oracle
 							}
 						}
 					}
-					catch (Exception exception)
+					catch (Exception e)
 					{
-						Trace.WriteLine("Update model failed: " + exception);
+						Trace.WriteLine(String.Format("Update model failed: {0}", e));
 
 						if (!suppressException)
 						{
@@ -637,6 +637,28 @@ namespace SqlPad.Oracle
 
 				command.CommandText = "SELECT SYS_CONTEXT('USERENV', 'SID') SID FROM SYS.DUAL";
 				_userSessionId = Convert.ToInt32(command.ExecuteScalar());
+
+				var startupScript = OracleConfiguration.Configuration.StartupScript;
+				if (String.IsNullOrWhiteSpace(startupScript))
+				{
+					return;
+				}
+				
+				var statements = new OracleSqlParser().Parse(startupScript);
+				foreach (var statement in statements)
+				{
+					command.CommandText = statement.RootNode.GetText(startupScript);
+
+					try
+					{
+						command.ExecuteNonQuery();
+						Trace.WriteLine(String.Format("Startup script command '{0}' executed successfully. ", command.CommandText));
+					}
+					catch (Exception e)
+					{
+						Trace.WriteLine(String.Format("Startup script command '{0}' failed: {1}", command.CommandText, e));
+					}
+				}
 			}
 		}
 
@@ -775,7 +797,7 @@ namespace SqlPad.Oracle
 					}
 					catch (OracleException e)
 					{
-						Trace.WriteLine("Execution plan identifers and transaction status could not been fetched: " + e);
+						Trace.WriteLine(String.Format("Execution plan identifers and transaction status could not been fetched: {0}", e));
 						return e;
 					}
 				}
@@ -1170,7 +1192,7 @@ namespace SqlPad.Oracle
 				}
 				catch (Exception e)
 				{
-					Trace.WriteLine("Storing metadata cache failed: " + e);
+					Trace.WriteLine(String.Format("Storing metadata cache failed: {0}", e));
 				}
 			}
 
@@ -1248,7 +1270,7 @@ namespace SqlPad.Oracle
 			}
 			catch(Exception e)
 			{
-				Trace.WriteLine("Oracle data dictionary refresh failed: " + e);
+				Trace.WriteLine(String.Format("Oracle data dictionary refresh failed: {0}", e));
 				return false;
 			}
 		}
@@ -1291,7 +1313,7 @@ namespace SqlPad.Oracle
 				}
 				catch (Exception e)
 				{
-					Trace.WriteLine("Oracle data dictionary cache deserialization failed: " + e);
+					Trace.WriteLine(String.Format("Oracle data dictionary cache deserialization failed: {0}", e));
 				}
 				finally
 				{
@@ -1319,7 +1341,7 @@ namespace SqlPad.Oracle
 			catch (Exception e)
 			{
 				_dataDictionary = OracleDataDictionary.EmptyDictionary;
-				Trace.WriteLine("All function metadata lookup initialization from cache failed: " + e);
+				Trace.WriteLine(String.Format("All function metadata lookup initialization from cache failed: {0}", e));
 			}
 		}
 
@@ -1349,7 +1371,7 @@ namespace SqlPad.Oracle
 			}
 			catch(Exception e)
 			{
-				Trace.WriteLine("Database model initialization failed: " + e);
+				Trace.WriteLine(String.Format("Database model initialization failed: {0}", e));
 
 				if (InitializationFailed != null)
 				{

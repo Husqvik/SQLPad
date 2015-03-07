@@ -26,6 +26,8 @@ namespace SqlPad.Oracle {
         
         private OracleConfigurationExecutionPlan executionPlanField;
         
+        private string startupScriptField;
+        
         /// <remarks/>
         public OracleConfigurationExecutionPlan ExecutionPlan {
             get {
@@ -33,6 +35,16 @@ namespace SqlPad.Oracle {
             }
             set {
                 this.executionPlanField = value;
+            }
+        }
+        
+        /// <remarks/>
+        public string StartupScript {
+            get {
+                return this.startupScriptField;
+            }
+            set {
+                this.startupScriptField = value;
             }
         }
     }

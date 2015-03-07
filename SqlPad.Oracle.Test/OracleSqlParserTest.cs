@@ -5077,7 +5077,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 				}
 
 				[Test(Description = @""), Ignore]
-				public void TestAlterTableAddVirtualColumn()
+				public void TestAlterTableAddVirtualColumnWithoutExplicitTypeDefinition()
 				{
 					const string statementText = @"ALTER TABLE emp2 ADD (income AS (salary + (salary * commission_pct)))";
 

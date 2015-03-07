@@ -523,9 +523,7 @@
           <NonTerminal Id="DataType" IsOptional="true" />
           <NonTerminal Id="GeneratedAlways" IsOptional="true" />
           <Terminal Id="As" />
-          <Terminal Id="LeftParenthesis" />
-          <NonTerminal Id="Expression" />
-          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="ParenthesisEnclosedExpression" />
           <Terminal Id="Virtual" IsOptional="true" />
           <NonTerminal Id="EvaluationEditionClause" IsOptional="true" Comment="Mandatory in documentation" />
           <NonTerminal Id="UnusableEditionClause" IsOptional="true" />
@@ -11380,9 +11378,7 @@
           <NonTerminal Id="VisibleOrInvisible" IsOptional="true" />
           <NonTerminal Id="GeneratedAlways" IsOptional="true" />
           <Terminal Id="As" />
-          <Terminal Id="LeftParenthesis" />
-          <NonTerminal Id="Expression" />
-          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="ParenthesisEnclosedExpression" />
           <Terminal Id="Virtual" IsOptional="true" />
           <NonTerminal Id="EvaluationEditionClause" IsOptional="true" />
           <NonTerminal Id="UnusableEditionClause" IsOptional="true" />
