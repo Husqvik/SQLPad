@@ -295,14 +295,23 @@ namespace SqlPad
 				return;
 			}
 
-			ResultGrid.SelectedCells.Clear();
+			if (Keyboard.Modifiers != ModifierKeys.Shift)
+			{
+				ResultGrid.SelectedCells.Clear();
+			}
+
+			_isSelectingCells = true;
 
 			var cells = ResultGrid.Items.Cast<object[]>()
 				.Select(r => new DataGridCellInfo(r, header.Column));
 
-			_isSelectingCells = true;
-
-			ResultGrid.SelectedCells.AddRange(cells);
+			foreach (var cell in cells)
+			{
+				if (!ResultGrid.SelectedCells.Contains(cell))
+				{
+					ResultGrid.SelectedCells.Add(cell);
+				}
+			}
 
 			_isSelectingCells = false;
 

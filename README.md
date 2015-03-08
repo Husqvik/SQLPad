@@ -1,4 +1,4 @@
-SQLPad 0.2.0.109
+SQLPad 0.2.0.110
 ================
 
 SQLPad is an experimental SQL editor focused to quick and comfortable work.
@@ -138,7 +138,7 @@ Create script
 
 Convert to literal
 
-ConvertOrderByNumberColumnReferences
+Convert ORDER BY number column reference
 
 
 #####@Literal
@@ -161,7 +161,7 @@ Wrap current query block as inline view
 
 #####@ORDER, BY:
 
-ConvertOrderByNumberColumnReferences
+Convert ORDER BY number column reference
 
 Requirements
 ------------
