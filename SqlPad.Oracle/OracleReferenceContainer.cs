@@ -37,7 +37,15 @@ namespace SqlPad.Oracle
 
 		public IEnumerable<OracleReference> AllReferences
 		{
-			get { return ((IEnumerable<OracleReference>)TypeReferences).Concat(SequenceReferences).Concat(ColumnReferences).Concat(ProgramReferences).Concat(ObjectReferences); }
+			get
+			{
+				return ((IEnumerable<OracleReference>) TypeReferences)
+					.Concat(SequenceReferences)
+					.Concat(ColumnReferences)
+					.Concat(ProgramReferences)
+					.Concat(ObjectReferences)
+					.Concat(ObjectReferences.Where(r => r.PartitionReference != null).Select(r => r.PartitionReference));
+			}
 		}
 	}
 

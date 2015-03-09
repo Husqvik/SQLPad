@@ -24,6 +24,8 @@ namespace SqlPad.Oracle
 		}
 
 		public OraclePartitionBase Partition { get; set; }
+		
+		public OracleDataObjectReference DataObjectReference { get; set; }
 	}
 
 	[DebuggerDisplay("OracleDataObjectReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; Table={Type != SqlPad.Oracle.ReferenceType.InlineView ? ObjectNode.Token.Value : \"<Nested subquery>\"}; Alias={AliasNode == null ? null : AliasNode.Token.Value}; Type={Type})")]

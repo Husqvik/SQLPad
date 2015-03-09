@@ -1686,6 +1686,7 @@ SELECT * FROM CTE";
 			objectReferences.ForEach(r => r.PartitionReference.ShouldNotBe(null));
 			
 			objectReferences[0].PartitionReference.Partition.ShouldNotBe(null);
+			objectReferences[0].PartitionReference.DataObjectReference.ShouldNotBe(null);
 			objectReferences[0].PartitionReference.Partition.Name.ShouldBe("\"P2015\"");
 			objectReferences[0].PartitionReference.RootNode.ShouldNotBe(null);
 			objectReferences[0].PartitionReference.RootNode.FirstTerminalNode.Token.Value.ShouldBe("PARTITION");

@@ -412,6 +412,8 @@ namespace SqlPad.Oracle
 				table.Partitions.TryGetValue(partitionName, out partition);
 				objectReference.PartitionReference.Partition = partition;
 			}
+
+			objectReference.PartitionReference.DataObjectReference = objectReference;
 		}
 
 		private void FindRecursiveQueryReferences()

@@ -23,7 +23,7 @@ namespace SqlPad.Oracle.ToolTips
 		private static void TableDetailsPropertyChangedCallbackHandler(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
 		{
 			var partitionList = (PartitionList)dependencyObject;
-			partitionList.DataContext = (TableDetailsModel)args.NewValue;
+			partitionList.DataContext = args.NewValue;
 		}
 	}
 
