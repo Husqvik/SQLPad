@@ -1068,6 +1068,20 @@ Note
 			return Task.Factory.StartNew(() => ExecuteStatement(executionModel), cancellationToken);
 		}
 
+		public override Task UpdatePartitionDetailsAsync(PartitionDetailsModel dataModel, CancellationToken cancellationToken)
+		{
+			SetPartitionDetails(dataModel);
+
+			return Task.FromResult<object>(null);
+		}
+
+		public override Task UpdateSubPartitionDetailsAsync(SubPartitionDetailsModel dataModel, CancellationToken cancellationToken)
+		{
+			SetPartitionDetails(dataModel);
+
+			return Task.FromResult<object>(null);
+		}
+
 		public override Task UpdateTableDetailsAsync(OracleObjectIdentifier objectIdentifier, TableDetailsModel dataModel, CancellationToken cancellationToken)
 		{
 			dataModel.AverageRowSize = 237;
@@ -1111,16 +1125,10 @@ Note
 			var partition1Details =
 				new PartitionDetailsModel
 				{
-					Name = "PARTITION_1",
-					TablespaceName = "TEST_TABLESPACE_1",
-					AverageRowSize = 237,
-					LastAnalyzed = new DateTime(2015, 2, 22, 16, 22, 13),
-					BlockCount = 272,
-					RowCount = 4162,
-					SampleRows = 4162,
-					Compression = "Basic",
-					HighValue = "'Partition key 1', 2"
+					Name = "PARTITION_1"
 				};
+
+			SetPartitionDetails(partition1Details);
 
 			var partition2Details =
 				new PartitionDetailsModel
@@ -1142,6 +1150,18 @@ Note
 			dataModel.AddPartition(partition2Details);
 
 			return Task.FromResult<object>(null);
+		}
+
+		private void SetPartitionDetails(PartitionDetailsModelBase dataModel)
+		{
+			dataModel.TablespaceName = "TEST_TABLESPACE_1";
+			dataModel.AverageRowSize = 237;
+			dataModel.LastAnalyzed = new DateTime(2015, 2, 22, 16, 22, 13);
+			dataModel.BlockCount = 272;
+			dataModel.RowCount = 4162;
+			dataModel.SampleRows = 4162;
+			dataModel.Compression = "Basic";
+			dataModel.HighValue = "'Partition key 1', 2";
 		}
 
 		public override Task UpdateViewDetailsAsync(OracleObjectIdentifier schemaObject, ViewDetailsModel dataModel, CancellationToken cancellationToken)

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -383,13 +384,29 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public PartitionDataProvider(TableDetailsModel dataModel, OracleObjectIdentifier objectIdentifier)
 		{
-			var owner = objectIdentifier.Owner.Trim('"');
-			var tableName = objectIdentifier.Name.Trim('"');
-			PartitionDetailDataProvider = new PartitionDetailDataProviderInternal(dataModel, owner, tableName);
-			SubPartitionDetailDataProvider = new SubPartitionDetailDataProviderInternal(dataModel, owner, tableName);
+			PartitionDetailDataProvider = new PartitionDetailDataProviderInternal(dataModel, objectIdentifier);
+			SubPartitionDetailDataProvider = new SubPartitionDetailDataProviderInternal(dataModel, objectIdentifier);
 		}
 
-		private static void MapSegmentData(OracleDataReader reader, PartitionDetailsModelBase model)
+		public PartitionDataProvider(PartitionDetailsModel dataModel)
+		{
+			PartitionDetailDataProvider = new PartitionDetailDataProviderInternal(dataModel);
+			SubPartitionDetailDataProvider = new SubPartitionDetailDataProviderInternal(dataModel);
+		}
+
+		public PartitionDataProvider(SubPartitionDetailsModel dataModel)
+		{
+			SubPartitionDetailDataProvider = new SubPartitionDetailDataProviderInternal(dataModel);
+		}
+
+		private static void InitializeCommand(OracleCommand command, OracleObjectIdentifier partitionOwner)
+		{
+			command.AddSimpleParameter("TABLE_OWNER", partitionOwner.Owner.Trim('"'));
+			command.AddSimpleParameter("TABLE_NAME", partitionOwner.Name.Trim('"'));
+			command.InitialLONGFetchSize = 255;
+		}
+		
+		private static void MapSegmentData(IDataRecord reader, PartitionDetailsModelBase model)
 		{
 			model.HighValue = OracleReaderValueConvert.ToString(reader["HIGH_VALUE"]);
 			model.TablespaceName = OracleReaderValueConvert.ToString(reader["TABLESPACE_NAME"]);
@@ -404,29 +421,35 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		private class PartitionDetailDataProviderInternal : ModelDataProvider<TableDetailsModel>
 		{
-			private readonly string _owner;
-			private readonly string _tableName;
+			private readonly OracleObjectIdentifier _partitionOwner;
+			private readonly PartitionDetailsModel _partitionDataModel;
 
-			public PartitionDetailDataProviderInternal(TableDetailsModel dataModel, string owner, string tableName)
+			public PartitionDetailDataProviderInternal(TableDetailsModel dataModel, OracleObjectIdentifier partitionOwner)
 				: base(dataModel)
 			{
-				_tableName = tableName;
-				_owner = owner;
+				_partitionOwner = partitionOwner;
+			}
+
+			public PartitionDetailDataProviderInternal(PartitionDetailsModel dataModel)
+				: base(null)
+			{
+				_partitionDataModel = dataModel;
+				_partitionOwner = dataModel.Owner;
 			}
 
 			public override void InitializeCommand(OracleCommand command)
 			{
 				command.CommandText = String.Format(DatabaseCommands.SelectTablePartitionDetailsCommandText);
-				command.AddSimpleParameter("TABLE_OWNER", _owner);
-				command.AddSimpleParameter("TABLE_NAME", _tableName);
-				command.InitialLONGFetchSize = 255;
+				PartitionDataProvider.InitializeCommand(command, _partitionOwner);
+
+				command.AddSimpleParameter("PARTITION_NAME", _partitionDataModel == null ? null : _partitionDataModel.Name);
 			}
 
 			public override void MapReaderData(OracleDataReader reader)
 			{
 				while (reader.Read())
 				{
-					var partitionDetails =
+					var partitionDetails = _partitionDataModel ??
 						new PartitionDetailsModel
 						{
 							Name = (string)reader["PARTITION_NAME"]
@@ -434,36 +457,54 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 					MapSegmentData(reader, partitionDetails);
 
-					DataModel.AddPartition(partitionDetails);
+					if (_partitionDataModel == null)
+					{
+						DataModel.AddPartition(partitionDetails);
+					}
 				}
 			}
 		}
 
 		private class SubPartitionDetailDataProviderInternal : ModelDataProvider<TableDetailsModel>
 		{
-			private readonly string _owner;
-			private readonly string _tableName;
+			private readonly OracleObjectIdentifier _subPartitionOwner;
+			private readonly PartitionDetailsModel _partitionDataModel;
+			private readonly SubPartitionDetailsModel _subPartitionDataModel;
 
-			public SubPartitionDetailDataProviderInternal(TableDetailsModel dataModel, string owner, string tableName)
+			public SubPartitionDetailDataProviderInternal(TableDetailsModel dataModel, OracleObjectIdentifier partitionOwner)
 				: base(dataModel)
 			{
-				_tableName = tableName;
-				_owner = owner;
+				_subPartitionOwner = partitionOwner;
+			}
+
+			public SubPartitionDetailDataProviderInternal(PartitionDetailsModel dataModel)
+				: base(null)
+			{
+				_subPartitionOwner = dataModel.Owner;
+				_partitionDataModel = dataModel;
+			}
+
+			public SubPartitionDetailDataProviderInternal(SubPartitionDetailsModel dataModel)
+				: base(null)
+			{
+				_subPartitionOwner = dataModel.Owner;
+				_subPartitionDataModel = dataModel;
 			}
 
 			public override void InitializeCommand(OracleCommand command)
 			{
 				command.CommandText = String.Format(DatabaseCommands.SelectTableSubPartitionsDetailsCommandText);
-				command.AddSimpleParameter("TABLE_OWNER", _owner);
-				command.AddSimpleParameter("TABLE_NAME", _tableName);
-				command.InitialLONGFetchSize = 255;
+				PartitionDataProvider.InitializeCommand(command, _subPartitionOwner);
+
+				command.AddSimpleParameter("PARTITION_NAME", _partitionDataModel == null ? null : _partitionDataModel.Name);
+				command.AddSimpleParameter("SUBPARTITION_NAME", _subPartitionDataModel == null ? null : _subPartitionDataModel.Name);
 			}
 
 			public override void MapReaderData(OracleDataReader reader)
 			{
 				while (reader.Read())
 				{
-					var subPartitionDetails =
+					var subPartitionDetails = _subPartitionDataModel ??
 						new SubPartitionDetailsModel
 						{
 							Name = (string)reader["SUBPARTITION_NAME"]
@@ -471,8 +512,11 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 					MapSegmentData(reader, subPartitionDetails);
 
-					var partition = DataModel.GetPartitions((string)reader["PARTITION_NAME"]);
-					partition.AddSubPartition(subPartitionDetails);
+					if (_subPartitionDataModel == null)
+					{
+						var partition = _partitionDataModel ?? DataModel.GetPartitions((string)reader["PARTITION_NAME"]);
+						partition.AddSubPartition(subPartitionDetails);
+					}
 				}
 			}
 		}

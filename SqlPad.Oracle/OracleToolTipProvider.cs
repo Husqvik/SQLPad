@@ -236,9 +236,39 @@ namespace SqlPad.Oracle
 				}
 			}
 
+			var partitionReference = reference as OraclePartitionReference;
+			if (partitionReference != null && partitionReference.Partition != null)
+			{
+				var subPartition = partitionReference.Partition as OracleSubPartition;
+				if (subPartition != null)
+				{
+					var subPartitionDetail = new SubPartitionDetailsModel();
+
+					SetBasePartitionData(subPartitionDetail, partitionReference);
+
+					databaseModel.UpdateSubPartitionDetailsAsync(subPartitionDetail, CancellationToken.None);
+					//return new ToolTipPartition(subPartitionDetail);
+				}
+				else
+				{
+					var partitionDetail = new PartitionDetailsModel();
+
+					SetBasePartitionData(partitionDetail, partitionReference);
+					
+					databaseModel.UpdatePartitionDetailsAsync(partitionDetail, CancellationToken.None);
+					return new ToolTipPartition(partitionDetail);
+				}
+			}
+
 			return String.IsNullOrEmpty(simpleToolTip)
 				? null
-				: new ToolTipObject {DataContext = simpleToolTip};
+				: new ToolTipObject { DataContext = simpleToolTip };
+		}
+
+		private static void SetBasePartitionData(PartitionDetailsModelBase dataModel, OraclePartitionReference partitionReference)
+		{
+			dataModel.Owner = partitionReference.DataObjectReference.SchemaObject.FullyQualifiedName;
+			dataModel.Name = partitionReference.NormalizedName.Trim('"');
 		}
 
 		private static void SetPartitionKeys(TableDetailsModel tableDetails, OracleTable table)

@@ -426,6 +426,18 @@ namespace SqlPad.Oracle
 			return scriptDataProvider.ScriptText;
 		}
 
+		public async override Task UpdatePartitionDetailsAsync(PartitionDetailsModel dataModel, CancellationToken cancellationToken)
+		{
+			var partitionDataProvider = new PartitionDataProvider(dataModel);
+			await UpdateModelAsync(cancellationToken, true, partitionDataProvider.PartitionDetailDataProvider, partitionDataProvider.SubPartitionDetailDataProvider);
+		}
+
+		public async override Task UpdateSubPartitionDetailsAsync(SubPartitionDetailsModel dataModel, CancellationToken cancellationToken)
+		{
+			var partitionDataProvider = new PartitionDataProvider(dataModel);
+			await UpdateModelAsync(cancellationToken, true, partitionDataProvider.SubPartitionDetailDataProvider);
+		}
+
 		public async override Task UpdateTableDetailsAsync(OracleObjectIdentifier objectIdentifier, TableDetailsModel dataModel, CancellationToken cancellationToken)
 		{
 			var tableDetailDataProvider = new TableDetailDataProvider(dataModel, objectIdentifier);

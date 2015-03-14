@@ -29,6 +29,8 @@ namespace SqlPad.Oracle.ToolTips
 
 	public abstract class PartitionDetailsModelBase : SegmentDetailsModelBase
 	{
+		public OracleObjectIdentifier Owner { get; set; }
+
 		public string Name { get; set; }
 
 		public string HighValue { get; set; }
