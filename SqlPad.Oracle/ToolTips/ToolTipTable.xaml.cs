@@ -40,6 +40,8 @@ namespace SqlPad.Oracle.ToolTips
 		private DateTime? _lastAnalyzed;
 		private int? _averageRowSize;
 		private bool? _logging;
+		private long? _allocatedBytes;
+		private long? _largeObjectBytes;
 
 		public long? RowCount
 		{
@@ -99,6 +101,18 @@ namespace SqlPad.Oracle.ToolTips
 		{
 			get { return String.IsNullOrEmpty(_tablespaceName) ? Visibility.Collapsed : Visibility.Visible; }
 		}
+
+		public long? AllocatedBytes
+		{
+			get { return _allocatedBytes; }
+			set { UpdateValueAndRaisePropertyChanged(ref _allocatedBytes, value); }
+		}
+
+		public long? LargeObjectBytes
+		{
+			get { return _largeObjectBytes; }
+			set { UpdateValueAndRaisePropertyChanged(ref _largeObjectBytes, value); }
+		}
 	}
 
 	public class TableDetailsModel : SegmentDetailsModelBase, IModelWithComment, IModelWithIndexes
@@ -110,8 +124,6 @@ namespace SqlPad.Oracle.ToolTips
 		private string _parallelDegree;
 		private string _inMemoryCompression;
 		private bool? _isTemporary;
-		private long? _allocatedBytes;
-		private long? _largeObjectBytes;
 		private string _comment;
 
 		private readonly ObservableCollection<IndexDetailsModel> _indexDetails = new ObservableCollection<IndexDetailsModel>();
@@ -218,18 +230,6 @@ namespace SqlPad.Oracle.ToolTips
 		public Visibility PartitionDetailsVisibility
 		{
 			get { return _visiblePartitionDetails.Count > 0 ? Visibility.Visible : Visibility.Collapsed; }
-		}
-
-		public long? AllocatedBytes
-		{
-			get { return _allocatedBytes; }
-			set { UpdateValueAndRaisePropertyChanged(ref _allocatedBytes, value); }
-		}
-
-		public long? LargeObjectBytes
-		{
-			get { return _largeObjectBytes; }
-			set { UpdateValueAndRaisePropertyChanged(ref _largeObjectBytes, value); }
 		}
 
 		public string InMemoryCompression
