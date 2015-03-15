@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Windows;
@@ -34,17 +35,19 @@ namespace SqlPad.Oracle.ToolTips
 		public string Name { get; set; }
 
 		public string HighValue { get; set; }
+		
+		public Type Type { get { return GetType(); } }
 	}
 
 	public class PartitionDetailsModel : PartitionDetailsModelBase
 	{
-		public const int MaxVisibleSubPartitionCount = 4;
-
 		private readonly ObservableCollection<SubPartitionDetailsModel> _visibleSubPartitionDetails = new ObservableCollection<SubPartitionDetailsModel>();
 		private readonly Dictionary<string, SubPartitionDetailsModel> _subPartitionDetailsDictionary = new Dictionary<string, SubPartitionDetailsModel>();
+		private readonly int _maxVisibleSubPartitionCount;
 
-		public PartitionDetailsModel()
+		public PartitionDetailsModel(int maxVisibleSubPartitionCount = 4)
 		{
+			_maxVisibleSubPartitionCount = maxVisibleSubPartitionCount;
 			_visibleSubPartitionDetails.CollectionChanged += VisibleSubPartitionDetailsCollectionChangedHandler;
 		}
 
@@ -59,7 +62,7 @@ namespace SqlPad.Oracle.ToolTips
 		{
 			_subPartitionDetailsDictionary.Add(subPartition.Name, subPartition);
 
-			if (_visibleSubPartitionDetails.Count < MaxVisibleSubPartitionCount)
+			if (_visibleSubPartitionDetails.Count < _maxVisibleSubPartitionCount)
 			{
 				_visibleSubPartitionDetails.Add(subPartition);
 			}
@@ -78,12 +81,12 @@ namespace SqlPad.Oracle.ToolTips
 
 		public Visibility MoreSubPartitionsExistMessageVisibility
 		{
-			get { return _subPartitionDetailsDictionary.Count > MaxVisibleSubPartitionCount ? Visibility.Visible : Visibility.Collapsed; }
+			get { return _subPartitionDetailsDictionary.Count > _maxVisibleSubPartitionCount ? Visibility.Visible : Visibility.Collapsed; }
 		}
 
 		public int VisibleSubPartitionCount
 		{
-			get { return MaxVisibleSubPartitionCount; }
+			get { return _maxVisibleSubPartitionCount; }
 		}
 
 		public int SubPartitionCount

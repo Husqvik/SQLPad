@@ -247,17 +247,15 @@ namespace SqlPad.Oracle
 					SetBasePartitionData(subPartitionDetail, partitionReference);
 
 					databaseModel.UpdateSubPartitionDetailsAsync(subPartitionDetail, CancellationToken.None);
-					//return new ToolTipPartition(subPartitionDetail);
+					return new ToolTipPartition(subPartitionDetail);
 				}
-				else
-				{
-					var partitionDetail = new PartitionDetailsModel();
+				
+				var partitionDetail = new PartitionDetailsModel(16);
 
-					SetBasePartitionData(partitionDetail, partitionReference);
+				SetBasePartitionData(partitionDetail, partitionReference);
 					
-					databaseModel.UpdatePartitionDetailsAsync(partitionDetail, CancellationToken.None);
-					return new ToolTipPartition(partitionDetail);
-				}
+				databaseModel.UpdatePartitionDetailsAsync(partitionDetail, CancellationToken.None);
+				return new ToolTipPartition(partitionDetail);
 			}
 
 			return String.IsNullOrEmpty(simpleToolTip)

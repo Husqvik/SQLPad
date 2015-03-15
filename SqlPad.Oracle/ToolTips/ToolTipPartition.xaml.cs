@@ -4,7 +4,7 @@ namespace SqlPad.Oracle.ToolTips
 {
 	public partial class ToolTipPartition : IToolTip
 	{
-		public ToolTipPartition(PartitionDetailsModel dataModel)
+		public ToolTipPartition(PartitionDetailsModelBase dataModel)
 		{
 			InitializeComponent();
 
