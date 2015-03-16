@@ -3904,9 +3904,7 @@
         </Sequence>
         <Sequence>
           <Terminal Id="NegationOrNull" />
-          <Terminal Id="LeftParenthesis" />
-          <NonTerminal Id="Condition" />
-          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="ParenthesisEnclosedCondition" />
           <NonTerminal Id="ChainedCondition" IsOptional="true" />
         </Sequence>
         <Sequence>
@@ -4014,6 +4012,16 @@
           <Terminal Id="Of" IsOptional="true" />
           <NonTerminal Id="PrefixedColumnReference" />
           <NonTerminal Id="ChainedCondition" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ParenthesisEnclosedCondition">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="Condition" />
+          <Terminal Id="RightParenthesis" />
         </Sequence>
       </Sequences>
     </Rule>

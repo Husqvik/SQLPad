@@ -59,6 +59,7 @@ namespace SqlPad.Oracle
 					case Terminals.Lead:
 					case Terminals.Lag:
 					case Terminals.ListAggregation:
+					case Terminals.NegationOrNull:
 					case Terminals.RowIdPseudoColumn:
 					case Terminals.Identifier:
 						var columnReference = semanticModel.GetColumnReference(node);

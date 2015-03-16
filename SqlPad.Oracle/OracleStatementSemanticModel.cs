@@ -653,7 +653,7 @@ namespace SqlPad.Oracle
 				return;
 			}
 
-			var herarchicalQueryClauseIdentifiers = queryBlock.HierarchicalQueryClause.GetDescendantsWithinSameQuery(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level);
+			var herarchicalQueryClauseIdentifiers = queryBlock.HierarchicalQueryClause.GetDescendantsWithinSameQuery(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level, Terminals.NegationOrNull);
 			ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock, herarchicalQueryClauseIdentifiers, StatementPlacement.ConnectBy, null);
 
 			var herarchicalQueryClauseGrammarSpecificFunctions = GetGrammarSpecificFunctionNodes(queryBlock.HierarchicalQueryClause);
@@ -1918,7 +1918,7 @@ namespace SqlPad.Oracle
 					if (joinCondition == null)
 						continue;
 
-					var identifiers = joinCondition.GetDescendants(Terminals.Identifier);
+					var identifiers = joinCondition.GetDescendants(Terminals.Identifier, Terminals.NegationOrNull);
 					ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock, identifiers, StatementPlacement.Join, null);
 
 					var joinCondifitionClauseGrammarSpecificFunctions = GetGrammarSpecificFunctionNodes(joinCondition);
@@ -1947,7 +1947,7 @@ namespace SqlPad.Oracle
 			queryBlock.WhereClause = queryBlock.RootNode.GetDescendantByPath(NonTerminals.WhereClause);
 			if (queryBlock.WhereClause != null)
 			{
-				var whereClauseIdentifiers = queryBlock.WhereClause.GetDescendantsWithinSameQuery(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level);
+				var whereClauseIdentifiers = queryBlock.WhereClause.GetDescendantsWithinSameQuery(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level, Terminals.NegationOrNull);
 				ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock, whereClauseIdentifiers, StatementPlacement.Where, null);
 
 				var whereClauseGrammarSpecificFunctions = GetGrammarSpecificFunctionNodes(queryBlock.WhereClause);
@@ -1972,7 +1972,7 @@ namespace SqlPad.Oracle
 				return;
 			}
 
-			identifiers = queryBlock.HavingClause.GetDescendantsWithinSameQuery(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level);
+			identifiers = queryBlock.HavingClause.GetDescendantsWithinSameQuery(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level, Terminals.NegationOrNull);
 			ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock, identifiers, StatementPlacement.Having, null);
 
 			var havingClauseGrammarSpecificFunctions = GetGrammarSpecificFunctionNodes(queryBlock.HavingClause);
@@ -2113,7 +2113,7 @@ namespace SqlPad.Oracle
 					else
 					{
 						var columnExpressionIdentifiers = columnExpressionsIdentifierLookup[columnExpression].ToArray();
-						var identifiers = columnExpressionIdentifiers.Where(t => t.Id.In(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level)).ToArray();
+						var identifiers = columnExpressionIdentifiers.Where(t => t.Id.In(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level, Terminals.NegationOrNull)).ToArray();
 
 						var previousColumnReferences = column.ColumnReferences.Count;
 						ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, column, identifiers, StatementPlacement.SelectList, column);
@@ -2191,21 +2191,37 @@ namespace SqlPad.Oracle
 
 		private static StatementGrammarNode[] GetFunctionCallNodes(StatementGrammarNode identifier)
 		{
-			return identifier.ParentNode.ChildNodes.Where(n => n.Id.In(NonTerminals.ParenthesisEnclosedAggregationFunctionParameters, NonTerminals.AnalyticClause)).ToArray();
+			return String.Equals(identifier.Id, Terminals.NegationOrNull)
+				? new [] { identifier.ParentNode.GetDescendantByPath(NonTerminals.ParenthesisEnclosedCondition) }
+				: identifier.ParentNode.ChildNodes.Where(n => n.Id.In(NonTerminals.ParenthesisEnclosedAggregationFunctionParameters, NonTerminals.AnalyticClause)).ToArray();
 		}
 
 		private static OracleProgramReference CreateProgramReference(OracleReferenceContainer container, OracleQueryBlock queryBlock, OracleSelectListColumn selectListColumn, StatementPlacement placement, StatementGrammarNode identifierNode, StatementGrammarNode prefixNonTerminal, ICollection<StatementGrammarNode> functionCallNodes)
 		{
 			var analyticClauseNode = functionCallNodes.SingleOrDefault(n => n.Id == NonTerminals.AnalyticClause);
+			var isLnNvl = String.Equals(identifierNode.Id, Terminals.NegationOrNull);
 
-			var parameterList = functionCallNodes.SingleOrDefault(n => n.Id == NonTerminals.ParenthesisEnclosedAggregationFunctionParameters);
-			var parameterExpressionRootNodes = parameterList != null
-				? parameterList
-					.GetPathFilterDescendants(
-						n => !n.Id.In(NonTerminals.NestedQuery, NonTerminals.ParenthesisEnclosedAggregationFunctionParameters, NonTerminals.AggregateFunctionCall, NonTerminals.AnalyticFunctionCall, NonTerminals.AnalyticClause),
-						NonTerminals.ExpressionList, NonTerminals.OptionalParameterExpressionList)
-					.Select(n => n.ChildNodes.FirstOrDefault())
-				: StatementGrammarNode.EmptyArray;
+			var parameterList = functionCallNodes.SingleOrDefault(n =>
+				isLnNvl
+					? String.Equals(n.Id, NonTerminals.ParenthesisEnclosedCondition)
+					: String.Equals(n.Id, NonTerminals.ParenthesisEnclosedAggregationFunctionParameters));
+
+			IEnumerable<StatementGrammarNode> parameterExpressionRootNodes = StatementGrammarNode.EmptyArray;
+			if (parameterList != null)
+			{
+				if (isLnNvl)
+				{
+					parameterExpressionRootNodes = Enumerable.Repeat(parameterList.GetDescendantByPath(NonTerminals.Condition), 1);
+				}
+				else
+				{
+					parameterExpressionRootNodes = parameterList
+						.GetPathFilterDescendants(
+							n => !n.Id.In(NonTerminals.NestedQuery, NonTerminals.ParenthesisEnclosedAggregationFunctionParameters, NonTerminals.AggregateFunctionCall, NonTerminals.AnalyticFunctionCall, NonTerminals.AnalyticClause),
+							NonTerminals.ExpressionList, NonTerminals.OptionalParameterExpressionList)
+						.Select(n => n.ChildNodes.FirstOrDefault());
+				}
+			}
 
 			var functionReference =
 				new OracleProgramReference
