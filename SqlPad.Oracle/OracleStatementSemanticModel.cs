@@ -16,6 +16,7 @@ namespace SqlPad.Oracle
 			Terminals.Count,
 			Terminals.Level,
 			Terminals.User,
+			Terminals.NegationOrNull,
 			NonTerminals.AggregateFunction,
 			NonTerminals.AnalyticFunction,
 			NonTerminals.WithinGroupAggregationFunction
@@ -653,7 +654,7 @@ namespace SqlPad.Oracle
 				return;
 			}
 
-			var herarchicalQueryClauseIdentifiers = queryBlock.HierarchicalQueryClause.GetDescendantsWithinSameQuery(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level, Terminals.NegationOrNull);
+			var herarchicalQueryClauseIdentifiers = queryBlock.HierarchicalQueryClause.GetDescendantsWithinSameQuery(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level);
 			ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock, herarchicalQueryClauseIdentifiers, StatementPlacement.ConnectBy, null);
 
 			var herarchicalQueryClauseGrammarSpecificFunctions = GetGrammarSpecificFunctionNodes(queryBlock.HierarchicalQueryClause);
@@ -1918,7 +1919,7 @@ namespace SqlPad.Oracle
 					if (joinCondition == null)
 						continue;
 
-					var identifiers = joinCondition.GetDescendants(Terminals.Identifier, Terminals.NegationOrNull);
+					var identifiers = joinCondition.GetDescendants(Terminals.Identifier);
 					ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock, identifiers, StatementPlacement.Join, null);
 
 					var joinCondifitionClauseGrammarSpecificFunctions = GetGrammarSpecificFunctionNodes(joinCondition);
@@ -1947,7 +1948,7 @@ namespace SqlPad.Oracle
 			queryBlock.WhereClause = queryBlock.RootNode.GetDescendantByPath(NonTerminals.WhereClause);
 			if (queryBlock.WhereClause != null)
 			{
-				var whereClauseIdentifiers = queryBlock.WhereClause.GetDescendantsWithinSameQuery(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level, Terminals.NegationOrNull);
+				var whereClauseIdentifiers = queryBlock.WhereClause.GetDescendantsWithinSameQuery(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level);
 				ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock, whereClauseIdentifiers, StatementPlacement.Where, null);
 
 				var whereClauseGrammarSpecificFunctions = GetGrammarSpecificFunctionNodes(queryBlock.WhereClause);
@@ -1972,7 +1973,7 @@ namespace SqlPad.Oracle
 				return;
 			}
 
-			identifiers = queryBlock.HavingClause.GetDescendantsWithinSameQuery(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level, Terminals.NegationOrNull);
+			identifiers = queryBlock.HavingClause.GetDescendantsWithinSameQuery(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level);
 			ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock, identifiers, StatementPlacement.Having, null);
 
 			var havingClauseGrammarSpecificFunctions = GetGrammarSpecificFunctionNodes(queryBlock.HavingClause);
@@ -1997,7 +1998,7 @@ namespace SqlPad.Oracle
 		private IEnumerable<StatementGrammarNode> GetGrammarSpecificFunctionNodes(StatementGrammarNode sourceNode, Func<StatementGrammarNode, bool> filter = null)
 		{
 			return sourceNode.GetPathFilterDescendants(n => NodeFilters.BreakAtNestedQueryBoundary(n) && (filter == null || filter(n)),
-				Terminals.Count, NonTerminals.AggregateFunction, NonTerminals.AnalyticFunction, NonTerminals.WithinGroupAggregationFunction);
+				Terminals.Count, Terminals.NegationOrNull, NonTerminals.AggregateFunction, NonTerminals.AnalyticFunction, NonTerminals.WithinGroupAggregationFunction);
 		}
 
 		private void ResolveColumnAndFunctionReferenceFromIdentifiers(OracleQueryBlock queryBlock, OracleReferenceContainer referenceContainer, IEnumerable<StatementGrammarNode> identifiers, StatementPlacement placement, OracleSelectListColumn selectListColumn, Func<StatementGrammarNode, StatementGrammarNode> getPrefixNonTerminalFromIdentiferFunction = null)
@@ -2113,7 +2114,7 @@ namespace SqlPad.Oracle
 					else
 					{
 						var columnExpressionIdentifiers = columnExpressionsIdentifierLookup[columnExpression].ToArray();
-						var identifiers = columnExpressionIdentifiers.Where(t => t.Id.In(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level, Terminals.NegationOrNull)).ToArray();
+						var identifiers = columnExpressionIdentifiers.Where(t => t.Id.In(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level)).ToArray();
 
 						var previousColumnReferences = column.ColumnReferences.Count;
 						ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, column, identifiers, StatementPlacement.SelectList, column);
@@ -2130,7 +2131,7 @@ namespace SqlPad.Oracle
 							column.AliasNode = identifiers[0];
 						}
 
-						var grammarSpecificFunctions = columnExpressionIdentifiers.Where(t => t.Id == Terminals.Count)
+						var grammarSpecificFunctions = columnExpressionIdentifiers.Where(t => String.Equals(t.Id, Terminals.Count) || String.Equals(t.Id, Terminals.NegationOrNull))
 							.Concat(columnExpressionIdentifiers.Where(t => t.ParentNode.Id.In(NonTerminals.AggregateFunction, NonTerminals.AnalyticFunction, NonTerminals.WithinGroupAggregationFunction)).Select(t => t.ParentNode));
 
 						CreateGrammarSpecificFunctionReferences(grammarSpecificFunctions, queryBlock, column.ProgramReferences, StatementPlacement.SelectList, column);
@@ -2145,22 +2146,28 @@ namespace SqlPad.Oracle
 		{
 			foreach (var identifierNode in grammarSpecificFunctions.Select(n => n.FirstTerminalNode).Distinct())
 			{
-				var rootNode = identifierNode.GetAncestor(NonTerminals.AnalyticFunctionCall) ?? identifierNode.GetAncestor(NonTerminals.WithinGroupAggregationClause) ?? identifierNode.GetAncestor(NonTerminals.AggregateFunctionCall);
+				var rootNode = String.Equals(identifierNode.Id, Terminals.NegationOrNull)
+					? identifierNode.GetAncestor(NonTerminals.Condition)
+					: identifierNode.GetAncestor(NonTerminals.AnalyticFunctionCall) ?? identifierNode.GetAncestor(NonTerminals.WithinGroupAggregationClause) ?? identifierNode.GetAncestor(NonTerminals.AggregateFunctionCall);
+				
 				var analyticClauseNode = rootNode.GetDescendants(NonTerminals.AnalyticClause).FirstOrDefault();
 
-				var parameterList = rootNode.ChildNodes.SingleOrDefault(n => n.Id.In(NonTerminals.ParenthesisEnclosedExpressionListWithMandatoryExpressions, NonTerminals.CountAsteriskParameter, NonTerminals.AggregateFunctionParameter, NonTerminals.ParenthesisEnclosedExpressionListWithIgnoreNulls));
+				var parameterList = rootNode.ChildNodes.SingleOrDefault(n => n.Id.In(NonTerminals.ParenthesisEnclosedExpressionListWithMandatoryExpressions, NonTerminals.CountAsteriskParameter, NonTerminals.AggregateFunctionParameter, NonTerminals.ParenthesisEnclosedExpressionListWithIgnoreNulls, NonTerminals.ParenthesisEnclosedCondition));
 				var parameterNodes = new List<StatementGrammarNode>();
 				StatementGrammarNode firstParameterExpression = null;
 				if (parameterList != null)
 				{
 					switch (parameterList.Id)
 					{
+						case NonTerminals.ParenthesisEnclosedCondition:
+							parameterNodes.Add(parameterList.GetDescendantByPath(NonTerminals.Condition));
+							break;
 						case NonTerminals.CountAsteriskParameter:
-							parameterNodes.Add(parameterList.ChildNodes.SingleOrDefault(n => n.Id == Terminals.Asterisk));
+							parameterNodes.Add(parameterList.GetDescendantByPath(Terminals.Asterisk));
 							break;
 						case NonTerminals.AggregateFunctionParameter:
 						case NonTerminals.ParenthesisEnclosedExpressionListWithIgnoreNulls:
-							firstParameterExpression = parameterList.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.Expression);
+							firstParameterExpression = parameterList.GetDescendantByPath(NonTerminals.Expression);
 							parameterNodes.Add(firstParameterExpression);
 							goto default;
 						default:
@@ -2191,36 +2198,23 @@ namespace SqlPad.Oracle
 
 		private static StatementGrammarNode[] GetFunctionCallNodes(StatementGrammarNode identifier)
 		{
-			return String.Equals(identifier.Id, Terminals.NegationOrNull)
-				? new [] { identifier.ParentNode.GetDescendantByPath(NonTerminals.ParenthesisEnclosedCondition) }
-				: identifier.ParentNode.ChildNodes.Where(n => n.Id.In(NonTerminals.ParenthesisEnclosedAggregationFunctionParameters, NonTerminals.AnalyticClause)).ToArray();
+			return identifier.ParentNode.ChildNodes.Where(n => n.Id.In(NonTerminals.ParenthesisEnclosedAggregationFunctionParameters, NonTerminals.AnalyticClause)).ToArray();
 		}
 
 		private static OracleProgramReference CreateProgramReference(OracleReferenceContainer container, OracleQueryBlock queryBlock, OracleSelectListColumn selectListColumn, StatementPlacement placement, StatementGrammarNode identifierNode, StatementGrammarNode prefixNonTerminal, ICollection<StatementGrammarNode> functionCallNodes)
 		{
 			var analyticClauseNode = functionCallNodes.SingleOrDefault(n => n.Id == NonTerminals.AnalyticClause);
-			var isLnNvl = String.Equals(identifierNode.Id, Terminals.NegationOrNull);
 
-			var parameterList = functionCallNodes.SingleOrDefault(n =>
-				isLnNvl
-					? String.Equals(n.Id, NonTerminals.ParenthesisEnclosedCondition)
-					: String.Equals(n.Id, NonTerminals.ParenthesisEnclosedAggregationFunctionParameters));
+			var parameterList = functionCallNodes.SingleOrDefault(n => String.Equals(n.Id, NonTerminals.ParenthesisEnclosedAggregationFunctionParameters));
 
 			IEnumerable<StatementGrammarNode> parameterExpressionRootNodes = StatementGrammarNode.EmptyArray;
 			if (parameterList != null)
 			{
-				if (isLnNvl)
-				{
-					parameterExpressionRootNodes = Enumerable.Repeat(parameterList.GetDescendantByPath(NonTerminals.Condition), 1);
-				}
-				else
-				{
-					parameterExpressionRootNodes = parameterList
-						.GetPathFilterDescendants(
-							n => !n.Id.In(NonTerminals.NestedQuery, NonTerminals.ParenthesisEnclosedAggregationFunctionParameters, NonTerminals.AggregateFunctionCall, NonTerminals.AnalyticFunctionCall, NonTerminals.AnalyticClause),
-							NonTerminals.ExpressionList, NonTerminals.OptionalParameterExpressionList)
-						.Select(n => n.ChildNodes.FirstOrDefault());
-				}
+				parameterExpressionRootNodes = parameterList
+					.GetPathFilterDescendants(
+						n => !n.Id.In(NonTerminals.NestedQuery, NonTerminals.ParenthesisEnclosedAggregationFunctionParameters, NonTerminals.AggregateFunctionCall, NonTerminals.AnalyticFunctionCall, NonTerminals.AnalyticClause),
+						NonTerminals.ExpressionList, NonTerminals.OptionalParameterExpressionList)
+					.Select(n => n.ChildNodes.FirstOrDefault());
 			}
 
 			var functionReference =
