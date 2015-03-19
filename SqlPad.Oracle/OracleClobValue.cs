@@ -81,7 +81,10 @@ namespace SqlPad.Oracle
 				return;
 			}
 			
-			BuildPreview();
+			if (_preview == null)
+			{
+				BuildPreview();
+			}
 
 			_value = IsNull ? String.Empty : GetValue();
 		}
