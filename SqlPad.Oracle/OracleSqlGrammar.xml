@@ -788,12 +788,12 @@
         <Sequence>
           <NonTerminal Id="InformationLifecycleManagementClause" />
         </Sequence>
-        <!--<Sequence>
+        <Sequence>
           <NonTerminal Id="SupplementalTableLogging" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="AllocateExtentClause" />
-        </Sequence>-->
+        </Sequence>
         <Sequence>
           <NonTerminal Id="DeallocateUnusedClause" />
         </Sequence>
@@ -803,12 +803,12 @@
         <Sequence>
           <NonTerminal Id="ResultCacheClause" />
         </Sequence>
-        <!--<Sequence>
+        <Sequence>
           <NonTerminal Id="UpgradeTableClause" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="RecordsPerBlockClause" />
-        </Sequence>-->
+        </Sequence>
         <Sequence>
           <NonTerminal Id="ParallelClause" />
         </Sequence>
@@ -817,6 +817,150 @@
         </Sequence>
         <Sequence>
           <NonTerminal Id="FlashbackArchiveClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SupplementalTableLogging">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Add" />
+          <NonTerminal Id="AddSupplementalLogList" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Drop" />
+          <NonTerminal Id="DropSupplementalLogList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DropSupplementalLogList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="DropSupplementalLoggingProperties" />
+          <NonTerminal Id="DropSupplementalLogListChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DropSupplementalLoggingProperties">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Supplemental" />
+          <Terminal Id="Log" />
+          <NonTerminal Id="SupplementalLogGroupIdentifierOrSupplementalIdKeyClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SupplementalLogGroupIdentifierOrSupplementalIdKeyClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Group" />
+          <Terminal Id="Identifier" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="SupplementalIdKeyClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DropSupplementalLogListChained">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="DropSupplementalLogList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AddSupplementalLogList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="SupplementalLoggingProperties" />
+          <NonTerminal Id="AddSupplementalLogListChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AddSupplementalLogListChained">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="AddSupplementalLogList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AllocateExtentClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Allocate" />
+          <Terminal Id="Extent" />
+          <NonTerminal Id="ParenthesisEnclosedAllocateExtentOptionList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ParenthesisEnclosedAllocateExtentOptionList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="AllocateExtentOptionList" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AllocateExtentOptionList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Size" />
+          <NonTerminal Id="SizeClause" />
+          <NonTerminal Id="AllocateExtentOptionList" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="DataFile" />
+          <Terminal Id="StringLiteral" />
+          <NonTerminal Id="AllocateExtentOptionList" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Instance" />
+          <Terminal Id="IntegerLiteral" />
+          <NonTerminal Id="AllocateExtentOptionList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="RecordsPerBlockClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Minimize" />
+          <Terminal Id="RecordsPerBlock" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="NoMinimize" />
+          <Terminal Id="RecordsPerBlock" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="UpgradeTableClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Upgrade" />
+          <NonTerminal Id="IncludingData" />
+          <NonTerminal Id="ColumnProperties" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="IncludingData">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Not" IsOptional="true" />
+          <Terminal Id="Including" />
+          <Terminal Id="Data" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -12108,6 +12252,17 @@
     <Rule StartingNonTerminal="SupplementalLogGroupClauseOrSupplementalIdKeyClause">
       <Sequences>
         <Sequence>
+          <NonTerminal Id="SupplementalLogGroupClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="SupplementalIdKeyClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SupplementalLogGroupClause">
+      <Sequences>
+        <Sequence>
           <Terminal Id="Group" />
           <Terminal Id="Identifier" />
           <Terminal Id="LeftParenthesis" />
@@ -12115,6 +12270,11 @@
           <Terminal Id="RightParenthesis" />
           <Terminal Id="Always" IsOptional="true" />
         </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SupplementalIdKeyClause">
+      <Sequences>
         <Sequence>
           <Terminal Id="Data" />
           <Terminal Id="LeftParenthesis" />
@@ -15103,6 +15263,14 @@
     <Terminal Id="Unused" Value="UNUSED" />
     <Terminal Id="Checkpoint" Value="CHECKPOINT" />
     <Terminal Id="Invalidate" Value="INVALIDATE" />
+    <Terminal Id="Minimize" Value="MINIMIZE" />
+    <Terminal Id="RecordsPerBlock" Value="RECORDS_PER_BLOCK" />
+    <Terminal Id="NoMinimize" Value="NOMINIMIZE" />
+    <Terminal Id="Upgrade" Value="UPGRADE" />
+    <Terminal Id="Allocate" Value="ALLOCATE" />
+    <Terminal Id="Extent" Value="EXTENT" />
+    <Terminal Id="DataFile" Value="DATAFILE" />
+    <Terminal Id="Instance" Value="INSTANCE" />
     
     <!-- Alter session -->
     <Terminal Id="Advise" Value="ADVISE" />

@@ -5284,6 +5284,47 @@ PURGE REPEAT INTERVAL '5' DAY";
 					var statement = result.Single();
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
+
+				[Test(Description = @"")]
+				public void TestAlterTableNoMinimizeRecordsPerBlockAndUpgrade()
+				{
+					const string statementText = @"ALTER TABLE TEST_TABLE NOMINIMIZE RECORDS_PER_BLOCK UPGRADE NOT INCLUDING DATA";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterTableAllocateExtent()
+				{
+					const string statementText = @"ALTER TABLE TEST_TABLE ALLOCATE EXTENT (SIZE 1E DATAFILE 'datafile01.dat' INSTANCE 1)";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterTableAddDropSupplementalLogging()
+				{
+					const string statementText =
+@"ALTER TABLE TEST_TABLE
+	ADD SUPPLEMENTAL LOG GROUP G2 (C1 NO LOG, C2) ALWAYS
+	ADD SUPPLEMENTAL LOG DATA (FOREIGN KEY, UNIQUE) COLUMNS
+	DROP SUPPLEMENTAL LOG DATA (PRIMARY KEY) COLUMNS
+	DROP SUPPLEMENTAL LOG GROUP G1";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
 			}
 		}
 
