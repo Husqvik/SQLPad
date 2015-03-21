@@ -290,14 +290,16 @@ namespace SqlPad.Oracle.ModelDataProviders
 		}
 	}
 
-	internal class TableSpaceAllocationDataProvider : ModelDataProvider<TableDetailsModel>
+	internal class TableSpaceAllocationDataProvider : ModelDataProvider<SegmentDetailsModelBase>
 	{
 		private readonly OracleObjectIdentifier _objectIdentifier;
-		
-		public TableSpaceAllocationDataProvider(TableDetailsModel dataModel,  OracleObjectIdentifier objectIdentifier)
+		private readonly string _partitionName;
+
+		public TableSpaceAllocationDataProvider(SegmentDetailsModelBase dataModel, OracleObjectIdentifier objectIdentifier, string partitionName)
 			: base(dataModel)
 		{
 			_objectIdentifier = objectIdentifier;
+			_partitionName = partitionName;
 		}
 
 		public override void InitializeCommand(OracleCommand command)
@@ -305,6 +307,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 			command.CommandText = DatabaseCommands.SelectTableAllocatedBytesCommandText;
 			command.AddSimpleParameter("OWNER", _objectIdentifier.Owner.Trim('"'));
 			command.AddSimpleParameter("TABLE_NAME", _objectIdentifier.Name.Trim('"'));
+			command.AddSimpleParameter("PARTITION_NAME", _partitionName.Trim('"'));
 		}
 
 		public override void MapReaderData(OracleDataReader reader)

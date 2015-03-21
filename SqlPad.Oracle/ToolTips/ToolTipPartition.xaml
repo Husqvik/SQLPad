@@ -13,6 +13,8 @@
 			<sqlPad:BooleanLabelConverter x:Key="BooleanConverter" />
 			<sqlPad:PrettyPrintIntegerConverter x:Key="PrettyPrintIntegerConverter" />
 			<sqlPad:DateTimeLabelConverter x:Key="DateTimeConverter" />
+			<sqlPad:DataSpaceConverter x:Key="DataSpaceConverter" />
+			<sqlPad:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter"/>
 
 			<ControlTemplate x:Key="DataGridCellControlTemplate" TargetType="{x:Type DataGridCell}">
 				<Border Padding="2,0,2,0">
@@ -86,12 +88,12 @@
 					<TextBlock Grid.Row="2" Grid.Column="0" Text="Blocks: " />
 					<TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding BlockCount, Converter={StaticResource PrettyPrintIntegerConverter}}" />
 					<TextBlock Grid.Row="3" Grid.Column="0" Text="Space: " />
-					<!--<StackPanel Grid.Row="3" Grid.Column="1" Orientation="Horizontal">
+					<StackPanel Grid.Row="3" Grid.Column="1" Orientation="Horizontal">
 						<TextBlock Text="{Binding AllocatedBytes, Converter={StaticResource DataSpaceConverter}}" />
 						<TextBlock Visibility="{Binding LargeObjectBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
 						<Run Text=" (LOB: "/><Run Text="{Binding LargeObjectBytes, Converter={StaticResource DataSpaceConverter}}"/><Run Text=")"/>
 						</TextBlock>
-					</StackPanel>-->
+					</StackPanel>
 					<TextBlock Grid.Row="4" Grid.Column="0" Text="Rows: " />
 					<TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding RowCount, Converter={StaticResource PrettyPrintIntegerConverter}}" />
 					<TextBlock Grid.Row="5" Grid.Column="0" Text="Sample rows: " />

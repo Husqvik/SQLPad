@@ -466,7 +466,7 @@ WHERE
 		public void TestTableSpaceAllocationDataProvider()
 		{
 			var model = new TableDetailsModel();
-			var tableSpaceAllocationDataProvider = new TableSpaceAllocationDataProvider(model, new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"DUAL\""));
+			var tableSpaceAllocationDataProvider = new TableSpaceAllocationDataProvider(model, new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"DUAL\""), String.Empty);
 
 			ExecuteDataProvider(tableSpaceAllocationDataProvider);
 

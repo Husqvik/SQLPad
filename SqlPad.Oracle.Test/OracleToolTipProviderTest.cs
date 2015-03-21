@@ -738,6 +738,36 @@ SELECT * FROM CTE";
 			columns[3].FullTypeName.ShouldBe("VARCHAR2(50 BYTE)");
 		}
 
+		[Test(Description = @""), STAThread]
+		public void TestExplicitPartitionTooltip()
+		{
+			const string query = "SELECT * FROM INVOICES PARTITION (P2015)";
+			_documentRepository.UpdateStatements(query);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 34);
+			toolTip.Control.ShouldBeTypeOf<ToolTipPartition>();
+			var toolTipPartition = (ToolTipPartition)toolTip.Control;
+			toolTipPartition.DataContext.ShouldBeTypeOf<PartitionDetailsModel>();
+			var dataModel = (PartitionDetailsModel)toolTipPartition.DataContext;
+			dataModel.Name.ShouldBe("P2015");
+			dataModel.Owner.ShouldBe(OracleObjectIdentifier.Create("HUSQVIK", "INVOICES"));
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestExplicitSubPartitionTooltip()
+		{
+			const string query = "SELECT * FROM INVOICES SUBPARTITION (P2015_ENTERPRISE)";
+			_documentRepository.UpdateStatements(query);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 37);
+			toolTip.Control.ShouldBeTypeOf<ToolTipPartition>();
+			var toolTipPartition = (ToolTipPartition)toolTip.Control;
+			toolTipPartition.DataContext.ShouldBeTypeOf<SubPartitionDetailsModel>();
+			var dataModel = (SubPartitionDetailsModel)toolTipPartition.DataContext;
+			dataModel.Name.ShouldBe("P2015_ENTERPRISE");
+			dataModel.Owner.ShouldBe(OracleObjectIdentifier.Create("HUSQVIK", "INVOICES"));
+		}
+
 		private static string GetTextFromTextBlock(TextBlock textBlock)
 		{
 			var inlines = textBlock.Inlines.Select(GetTextFromInline);

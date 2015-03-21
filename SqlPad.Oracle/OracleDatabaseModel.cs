@@ -429,19 +429,21 @@ namespace SqlPad.Oracle
 		public async override Task UpdatePartitionDetailsAsync(PartitionDetailsModel dataModel, CancellationToken cancellationToken)
 		{
 			var partitionDataProvider = new PartitionDataProvider(dataModel);
-			await UpdateModelAsync(cancellationToken, true, partitionDataProvider.PartitionDetailDataProvider, partitionDataProvider.SubPartitionDetailDataProvider);
+			var tableSpaceAllocationUpdater = new TableSpaceAllocationDataProvider(dataModel, dataModel.Owner, dataModel.Name);
+			await UpdateModelAsync(cancellationToken, true, partitionDataProvider.PartitionDetailDataProvider, partitionDataProvider.SubPartitionDetailDataProvider, tableSpaceAllocationUpdater);
 		}
 
 		public async override Task UpdateSubPartitionDetailsAsync(SubPartitionDetailsModel dataModel, CancellationToken cancellationToken)
 		{
 			var partitionDataProvider = new PartitionDataProvider(dataModel);
-			await UpdateModelAsync(cancellationToken, true, partitionDataProvider.SubPartitionDetailDataProvider);
+			var tableSpaceAllocationUpdater = new TableSpaceAllocationDataProvider(dataModel, dataModel.Owner, dataModel.Name);
+			await UpdateModelAsync(cancellationToken, true, partitionDataProvider.SubPartitionDetailDataProvider, tableSpaceAllocationUpdater);
 		}
 
 		public async override Task UpdateTableDetailsAsync(OracleObjectIdentifier objectIdentifier, TableDetailsModel dataModel, CancellationToken cancellationToken)
 		{
 			var tableDetailDataProvider = new TableDetailDataProvider(dataModel, objectIdentifier);
-			var tableSpaceAllocationUpdater = new TableSpaceAllocationDataProvider(dataModel, objectIdentifier);
+			var tableSpaceAllocationUpdater = new TableSpaceAllocationDataProvider(dataModel, objectIdentifier, String.Empty);
 			var tableCommentDataProvider = new CommentDataProvider(dataModel, objectIdentifier, null);
 			var tableInMemorySpaceAllocationUpdater = new TableInMemorySpaceAllocationDataProvider(dataModel, objectIdentifier, VersionString);
 			var indexDetailDataProvider = new IndexDetailDataProvider(dataModel, objectIdentifier, null);
