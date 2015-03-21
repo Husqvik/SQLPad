@@ -5118,6 +5118,90 @@ PURGE REPEAT INTERVAL '5' DAY";
 				}
 
 				[Test(Description = @"")]
+				public void TestAlterTableDropSingleColumn()
+				{
+					const string statementText = @"ALTER TABLE TEST_TABLE DROP COLUMN C3 INVALIDATE CASCADE CONSTRAINTS CHECKPOINT 123";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterTableDropMultipleColumns()
+				{
+					const string statementText = @"ALTER TABLE TEST_TABLE DROP (C2, C3)";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterTableSetSingleColumnUnused()
+				{
+					const string statementText = @"ALTER TABLE TEST_TABLE SET UNUSED COLUMN C3 CASCADE CONSTRAINTS ONLINE";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterTableDropColumnsContinue()
+				{
+					const string statementText = @"ALTER TABLE TEST_TABLE DROP COLUMNS CONTINUE CHECKPOINT 123";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterTableDropUnusedColumns()
+				{
+					const string statementText = @"ALTER TABLE TEST_TABLE DROP UNUSED COLUMNS";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterTableAddPeriod()
+				{
+					const string statementText = @"ALTER TABLE TEST_TABLE ADD (PERIOD FOR C5 (C3, C4))";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterTableDropPeriod()
+				{
+					const string statementText = @"ALTER TABLE TEST_TABLE DROP (PERIOD FOR C4)";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
 				public void TestAlterTableModifyColumnType()
 				{
 					const string statementText = @"ALTER TABLE countries MODIFY (duty_pct NUMBER(3, 2))";

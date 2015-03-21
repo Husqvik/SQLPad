@@ -398,7 +398,7 @@
         <Sequence>
           <NonTerminal Id="ModifyColumnClause" />
         </Sequence>
-        <!--<Sequence>
+        <Sequence>
           <NonTerminal Id="DropColumnClause" />
         </Sequence>
         <Sequence>
@@ -406,7 +406,99 @@
         </Sequence>
         <Sequence>
           <NonTerminal Id="DropPeriodClause" />
-        </Sequence>-->
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AddPeriodClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Add" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="PeriodDefinition" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DropPeriodClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Drop" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="PeriodForColumn" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DropColumnClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Set" />
+          <Terminal Id="Unused" />
+          <NonTerminal Id="SingleColumnOrParenthesisEnclosedColumnList" />
+          <NonTerminal Id="InvalidateAndOrCascadeConstraints" IsOptional="true" />
+          <Terminal Id="Online" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Drop" />
+          <NonTerminal Id="DropColumnOption" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DropColumnOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Unused" />
+          <Terminal Id="Columns" />
+          <NonTerminal Id="CheckpointNumber" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Columns" />
+          <Terminal Id="Continue" />
+          <NonTerminal Id="CheckpointNumber" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="SingleColumnOrParenthesisEnclosedColumnList" />
+          <NonTerminal Id="InvalidateAndOrCascadeConstraints" IsOptional="true" />
+          <NonTerminal Id="CheckpointNumber" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="CheckpointNumber">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Checkpoint" />
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SingleColumnOrParenthesisEnclosedColumnList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Column" />
+          <Terminal Id="Identifier" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ParenthesisEnclosedIdentifierList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="InvalidateAndOrCascadeConstraints" Comment="Cyclic definition in documentation">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Invalidate" />
+          <NonTerminal Id="CascadeConstraints" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="CascadeConstraints" />
+          <Terminal Id="Invalidate" IsOptional="true" />
+        </Sequence>
       </Sequences>
     </Rule>
     
@@ -11779,10 +11871,18 @@
     <Rule StartingNonTerminal="PeriodDefinition">
       <Sequences>
         <Sequence>
+          <NonTerminal Id="PeriodForColumn" />
+          <NonTerminal Id="ParenthesisEnclosedPeriodStartEndColumns" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PeriodForColumn">
+      <Sequences>
+        <Sequence>
           <Terminal Id="Period" />
           <Terminal Id="For" />
           <Terminal Id="Identifier" />
-          <NonTerminal Id="ParenthesisEnclosedPeriodStartEndColumns" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -15001,6 +15101,8 @@
     <Terminal Id="Unpacked" Value="UNPACKED" />
     <Terminal Id="Deallocate" Value="DEALLOCATE" />
     <Terminal Id="Unused" Value="UNUSED" />
+    <Terminal Id="Checkpoint" Value="CHECKPOINT" />
+    <Terminal Id="Invalidate" Value="INVALIDATE" />
     
     <!-- Alter session -->
     <Terminal Id="Advise" Value="ADVISE" />
