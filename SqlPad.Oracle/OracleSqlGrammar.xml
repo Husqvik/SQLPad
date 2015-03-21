@@ -427,6 +427,9 @@
           <Terminal Id="RightParenthesis" />
         </Sequence>
         <Sequence>
+          <NonTerminal Id="ModifyColumnPropertiesOrModifyVirtualColumnPropertiesOrModifyColumnVisibility" />
+        </Sequence>
+        <Sequence>
           <NonTerminal Id="ModifyColumnSubstitutable" />
         </Sequence>
       </Sequences>
@@ -468,14 +471,23 @@
     <Rule StartingNonTerminal="ModifyColumnPropertiesOrModifyVirtualColumnPropertiesOrModifyColumnVisibility">
       <Sequences>
         <Sequence>
+          <NonTerminal Id="ModifyColumnVisibility" />
+        </Sequence>
+        <Sequence>
           <NonTerminal Id="ModifyVirtualColumnProperties" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="ModifyColumnProperties" />
         </Sequence>
-        <!--<Sequence>
-          <NonTerminal Id="ModifyColumnVisibility" />
-        </Sequence>-->
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ModifyColumnVisibility">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Identifier" />
+          <NonTerminal Id="VisibleOrInvisible" />
+        </Sequence>
       </Sequences>
     </Rule>
     
@@ -538,6 +550,12 @@
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="VirtualColumnDefinitionOrColumnDefinitionList" />
           <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="ColumnProperties" IsOptional="true" />
+          <!--<NonTerminal Id="OutOfLinePartitionStorageList" IsOptional="true" />-->
+        </Sequence>
+        <Sequence Comment="Not in documentation">
+          <Terminal Id="Add" />
+          <NonTerminal Id="VirtualColumnDefinitionOrColumnDefinition" />
           <NonTerminal Id="ColumnProperties" IsOptional="true" />
           <!--<NonTerminal Id="OutOfLinePartitionStorageList" IsOptional="true" />-->
         </Sequence>
@@ -11382,7 +11400,18 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Identifier" />
-          <NonTerminal Id="DataType" IsOptional="true" />
+          <NonTerminal Id="DataType" />
+          <NonTerminal Id="VisibleOrInvisible" IsOptional="true" />
+          <NonTerminal Id="GeneratedAlways" IsOptional="true" />
+          <Terminal Id="As" />
+          <NonTerminal Id="ParenthesisEnclosedExpression" />
+          <Terminal Id="Virtual" IsOptional="true" />
+          <NonTerminal Id="EvaluationEditionClause" IsOptional="true" />
+          <NonTerminal Id="UnusableEditionClause" IsOptional="true" />
+          <NonTerminal Id="ColumnDefinitionInlineConstraintDefinition" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Identifier" />
           <NonTerminal Id="VisibleOrInvisible" IsOptional="true" />
           <NonTerminal Id="GeneratedAlways" IsOptional="true" />
           <Terminal Id="As" />

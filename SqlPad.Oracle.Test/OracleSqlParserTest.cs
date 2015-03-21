@@ -5076,7 +5076,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @""), Ignore]
+				[Test(Description = @"")]
 				public void TestAlterTableAddVirtualColumnWithoutExplicitTypeDefinition()
 				{
 					const string statementText = @"ALTER TABLE emp2 ADD (income AS (salary + (salary * commission_pct)))";
@@ -5086,6 +5086,35 @@ PURGE REPEAT INTERVAL '5' DAY";
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterTableAddSingleVirtualColumnWithoutExplicitTypeDefinition()
+				{
+					const string statementText = @"ALTER TABLE TEST_TABLE ADD C3 AS (C1 + (C1 * C2))";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterTableModifySingleColumnInvisible()
+				{
+					const string statementText = @"ALTER TABLE TEST_TABLE MODIFY C3 INVISIBLE";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+					var terminals = statement.AllTerminals.ToArray();
+					terminals.Length.ShouldBe(6);
+
+					terminals[5].Id.ShouldBe(Terminals.Invisible);
 				}
 
 				[Test(Description = @"")]
