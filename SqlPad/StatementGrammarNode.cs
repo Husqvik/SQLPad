@@ -60,13 +60,14 @@ namespace SqlPad
 
 		private StatementGrammarNode GetPrecedingNode(StatementGrammarNode node)
 		{
-			if (node.ParentNode == null)
+			var parentNode = node.ParentNode;
+			if (parentNode == null)
 				return null;
 
-			var index = node.ParentNode._childNodes.IndexOf(node) - 1;
+			var index = parentNode._childNodes.IndexOf(node) - 1;
 			return index >= 0
-				? node.ParentNode._childNodes[index]
-				: GetPrecedingNode(node.ParentNode);
+				? parentNode._childNodes[index]
+				: GetPrecedingNode(parentNode);
 		}
 
 		public StatementGrammarNode FollowingTerminal

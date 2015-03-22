@@ -42,6 +42,7 @@ namespace SqlPad.Oracle.ToolTips
 		private bool? _logging;
 		private long? _allocatedBytes;
 		private long? _largeObjectBytes;
+		private string _inMemoryCompression;
 
 		public long? RowCount
 		{
@@ -113,6 +114,12 @@ namespace SqlPad.Oracle.ToolTips
 			get { return _largeObjectBytes; }
 			set { UpdateValueAndRaisePropertyChanged(ref _largeObjectBytes, value); }
 		}
+
+		public string InMemoryCompression
+		{
+			get { return _inMemoryCompression; }
+			set { UpdateValueAndRaisePropertyChanged(ref _inMemoryCompression, value); }
+		}
 	}
 
 	public class TableDetailsModel : SegmentDetailsModelBase, IModelWithComment, IModelWithIndexes
@@ -122,7 +129,6 @@ namespace SqlPad.Oracle.ToolTips
 		private string _organization;
 		private string _clusterName;
 		private string _parallelDegree;
-		private string _inMemoryCompression;
 		private bool? _isTemporary;
 		private string _comment;
 
@@ -230,12 +236,6 @@ namespace SqlPad.Oracle.ToolTips
 		public Visibility PartitionDetailsVisibility
 		{
 			get { return _visiblePartitionDetails.Count > 0 ? Visibility.Visible : Visibility.Collapsed; }
-		}
-
-		public string InMemoryCompression
-		{
-			get { return _inMemoryCompression; }
-			set { UpdateValueAndRaisePropertyChanged(ref _inMemoryCompression, value); }
 		}
 
 		public long? InMemoryAllocatedBytes { get; private set; }

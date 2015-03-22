@@ -428,14 +428,14 @@ namespace SqlPad.Oracle
 
 		public async override Task UpdatePartitionDetailsAsync(PartitionDetailsModel dataModel, CancellationToken cancellationToken)
 		{
-			var partitionDataProvider = new PartitionDataProvider(dataModel);
+			var partitionDataProvider = new PartitionDataProvider(dataModel, VersionString);
 			var tableSpaceAllocationUpdater = new TableSpaceAllocationDataProvider(dataModel, dataModel.Owner, dataModel.Name);
 			await UpdateModelAsync(cancellationToken, true, partitionDataProvider.PartitionDetailDataProvider, partitionDataProvider.SubPartitionDetailDataProvider, tableSpaceAllocationUpdater);
 		}
 
 		public async override Task UpdateSubPartitionDetailsAsync(SubPartitionDetailsModel dataModel, CancellationToken cancellationToken)
 		{
-			var partitionDataProvider = new PartitionDataProvider(dataModel);
+			var partitionDataProvider = new PartitionDataProvider(dataModel, VersionString);
 			var tableSpaceAllocationUpdater = new TableSpaceAllocationDataProvider(dataModel, dataModel.Owner, dataModel.Name);
 			await UpdateModelAsync(cancellationToken, true, partitionDataProvider.SubPartitionDetailDataProvider, tableSpaceAllocationUpdater);
 		}
@@ -448,7 +448,7 @@ namespace SqlPad.Oracle
 			var tableInMemorySpaceAllocationUpdater = new TableInMemorySpaceAllocationDataProvider(dataModel, objectIdentifier, VersionString);
 			var indexDetailDataProvider = new IndexDetailDataProvider(dataModel, objectIdentifier, null);
 			var indexColumnDataProvider = new IndexColumnDataProvider(dataModel, objectIdentifier, null);
-			var partitionDataProvider = new PartitionDataProvider(dataModel, objectIdentifier);
+			var partitionDataProvider = new PartitionDataProvider(dataModel, objectIdentifier, VersionString);
 			await UpdateModelAsync(cancellationToken, true, tableDetailDataProvider, tableCommentDataProvider, tableSpaceAllocationUpdater, tableInMemorySpaceAllocationUpdater, indexDetailDataProvider, indexColumnDataProvider, partitionDataProvider.PartitionDetailDataProvider, partitionDataProvider.SubPartitionDetailDataProvider);
 		}
 

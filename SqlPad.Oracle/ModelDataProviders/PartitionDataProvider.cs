@@ -15,21 +15,22 @@ namespace SqlPad.Oracle.ModelDataProviders
 		
 		public IModelDataProvider SubPartitionDetailDataProvider { get; private set; }
 
-		public PartitionDataProvider(TableDetailsModel dataModel, OracleObjectIdentifier objectIdentifier)
+		public PartitionDataProvider(TableDetailsModel dataModel, OracleObjectIdentifier objectIdentifier, string oracleVersion)
 		{
-			PartitionDetailDataProvider = new PartitionDetailDataProviderInternal(dataModel, objectIdentifier);
-			SubPartitionDetailDataProvider = new SubPartitionDetailDataProviderInternal(dataModel, objectIdentifier);
+			var hasInMemorySupport = InMemoryHelper.HasInMemorySupport(oracleVersion);
+			PartitionDetailDataProvider = new PartitionDetailDataProviderInternal(dataModel, objectIdentifier, hasInMemorySupport);
+			SubPartitionDetailDataProvider = new SubPartitionDetailDataProviderInternal(dataModel, objectIdentifier, hasInMemorySupport);
 		}
 
-		public PartitionDataProvider(PartitionDetailsModel dataModel)
+		public PartitionDataProvider(PartitionDetailsModel dataModel, string oracleVersion)
 		{
 			PartitionDetailDataProvider = new PartitionDetailDataProviderInternal(dataModel);
-			SubPartitionDetailDataProvider = new SubPartitionDetailDataProviderInternal(dataModel);
+			SubPartitionDetailDataProvider = new SubPartitionDetailDataProviderInternal(dataModel, InMemoryHelper.HasInMemorySupport(oracleVersion));
 		}
 
-		public PartitionDataProvider(SubPartitionDetailsModel dataModel)
+		public PartitionDataProvider(SubPartitionDetailsModel dataModel, string oracleVersion)
 		{
-			SubPartitionDetailDataProvider = new SubPartitionDetailDataProviderInternal(dataModel);
+			SubPartitionDetailDataProvider = new SubPartitionDetailDataProviderInternal(dataModel, InMemoryHelper.HasInMemorySupport(oracleVersion));
 		}
 
 		private static void InitializeCommand(OracleCommand command, OracleObjectIdentifier partitionOwner)
@@ -51,17 +52,26 @@ namespace SqlPad.Oracle.ModelDataProviders
 			model.LastAnalyzed = OracleReaderValueConvert.ToDateTime(reader["LAST_ANALYZED"]);
 			model.BlockCount = OracleReaderValueConvert.ToInt32(reader["BLOCKS"]);
 			model.AverageRowSize = OracleReaderValueConvert.ToInt32(reader["AVG_ROW_LEN"]);
+			model.InMemoryCompression = OracleReaderValueConvert.ToString(reader["INMEMORY_COMPRESSION"]);
+		}
+
+		private static string BuildCommandText(string commandTextBase, bool hasInMemorySupport)
+		{
+			var inMemoryColumn = hasInMemorySupport ? "NVL(INITCAP(INMEMORY_COMPRESSION), 'No in-memory')" : "'Not supported'";
+			return String.Format(commandTextBase, inMemoryColumn);
 		}
 
 		private class PartitionDetailDataProviderInternal : ModelDataProvider<TableDetailsModel>
 		{
 			private readonly OracleObjectIdentifier _partitionOwner;
 			private readonly PartitionDetailsModel _partitionDataModel;
+			private readonly bool _includeInMemorySettings;
 
-			public PartitionDetailDataProviderInternal(TableDetailsModel dataModel, OracleObjectIdentifier partitionOwner)
+			public PartitionDetailDataProviderInternal(TableDetailsModel dataModel, OracleObjectIdentifier partitionOwner, bool includeInMemorySettings)
 				: base(dataModel)
 			{
 				_partitionOwner = partitionOwner;
+				_includeInMemorySettings = includeInMemorySettings;
 			}
 
 			public PartitionDetailDataProviderInternal(PartitionDetailsModel dataModel)
@@ -73,7 +83,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 			public override void InitializeCommand(OracleCommand command)
 			{
-				command.CommandText = String.Format(DatabaseCommands.SelectTablePartitionDetailsCommandText);
+				command.CommandText = BuildCommandText(DatabaseCommands.SelectTablePartitionDetailsCommandTextBase, _includeInMemorySettings);
 				PartitionDataProvider.InitializeCommand(command, _partitionOwner);
 
 				command.AddSimpleParameter("PARTITION_NAME", _partitionDataModel == null ? null : _partitionDataModel.Name);
@@ -104,30 +114,34 @@ namespace SqlPad.Oracle.ModelDataProviders
 			private readonly OracleObjectIdentifier _subPartitionOwner;
 			private readonly PartitionDetailsModel _partitionDataModel;
 			private readonly SubPartitionDetailsModel _subPartitionDataModel;
+			private readonly bool _includeInMemorySettings;
 
-			public SubPartitionDetailDataProviderInternal(TableDetailsModel dataModel, OracleObjectIdentifier partitionOwner)
+			public SubPartitionDetailDataProviderInternal(TableDetailsModel dataModel, OracleObjectIdentifier partitionOwner, bool includeInMemorySettings)
 				: base(dataModel)
 			{
 				_subPartitionOwner = partitionOwner;
+				_includeInMemorySettings = includeInMemorySettings;
 			}
 
-			public SubPartitionDetailDataProviderInternal(PartitionDetailsModel dataModel)
+			public SubPartitionDetailDataProviderInternal(PartitionDetailsModel dataModel, bool includeInMemorySettings)
 				: base(null)
 			{
 				_subPartitionOwner = dataModel.Owner;
 				_partitionDataModel = dataModel;
+				_includeInMemorySettings = includeInMemorySettings;
 			}
 
-			public SubPartitionDetailDataProviderInternal(SubPartitionDetailsModel dataModel)
+			public SubPartitionDetailDataProviderInternal(SubPartitionDetailsModel dataModel, bool includeInMemorySettings)
 				: base(null)
 			{
 				_subPartitionOwner = dataModel.Owner;
 				_subPartitionDataModel = dataModel;
+				_includeInMemorySettings = includeInMemorySettings;
 			}
 
 			public override void InitializeCommand(OracleCommand command)
 			{
-				command.CommandText = String.Format(DatabaseCommands.SelectTableSubPartitionsDetailsCommandText);
+				command.CommandText = BuildCommandText(DatabaseCommands.SelectTableSubPartitionsDetailsCommandTextBase, _includeInMemorySettings);
 				PartitionDataProvider.InitializeCommand(command, _subPartitionOwner);
 
 				command.AddSimpleParameter("PARTITION_NAME", _partitionDataModel == null ? null : _partitionDataModel.Name);
