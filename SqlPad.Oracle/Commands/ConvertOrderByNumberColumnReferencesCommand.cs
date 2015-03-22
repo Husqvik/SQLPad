@@ -8,7 +8,7 @@ namespace SqlPad.Oracle.Commands
 {
 	internal class ConvertOrderByNumberColumnReferencesCommand : OracleCommandBase
 	{
-		public const string Title = "Convert to expressions";
+		public const string Title = "Convert to expression";
 
 		private ConvertOrderByNumberColumnReferencesCommand(CommandExecutionContext executionContext)
 			: base(executionContext)
@@ -55,7 +55,7 @@ namespace SqlPad.Oracle.Commands
 				var columnIndex = Convert.ToInt32(node.FirstTerminalNode.Token.Value) - 1;
 				var column = columns[columnIndex];
 				var columnReference = column.ColumnReferences.FirstOrDefault();
-				var prefix = columnReference == null || columnReference.ValidObjectReference == null
+				var prefix = columnReference == null || columnReference.ValidObjectReference == null || column.HasExplicitAlias
 					? null
 					: String.Format("{0}.", columnReference.ValidObjectReference.FullyQualifiedObjectName);
 				

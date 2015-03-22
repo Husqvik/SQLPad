@@ -1666,6 +1666,21 @@ MODEL
 
 			_editor.Text.ShouldBe(expectedResult);
 		}
+		
+		[Test(Description = @""), STAThread]
+		public void TestConvertOrderByColumnReferencesWithAliasedDirectColumnReference()
+		{
+			const string statementText = @"SELECT DUMMY NOT_DUMMY FROM DUAL ORDER BY 1";
+			_editor.Text = statementText;
+			_editor.CaretOffset = 42;
+
+			CanExecuteCommand(OracleCommands.ConvertOrderByNumberColumnReferences).ShouldBe(true);
+			ExecuteCommand(OracleCommands.ConvertOrderByNumberColumnReferences);
+
+			const string expectedResult = @"SELECT DUMMY NOT_DUMMY FROM DUAL ORDER BY NOT_DUMMY";
+
+			_editor.Text.ShouldBe(expectedResult);
+		}
 
 		[Test(Description = @""), STAThread]
 		public void TestConvertOrderByColumnReferencesAtSpecificColumn()
