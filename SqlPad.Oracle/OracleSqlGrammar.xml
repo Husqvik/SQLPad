@@ -743,8 +743,25 @@
         </Sequence>
         <Sequence>
           <NonTerminal Id="AlterTableStandardProperties" />
-          <!--<NonTerminal Id="AlterIndexOrganizedTableClauses" IsOptional="true" />
-          <NonTerminal Id="AlterXmlSchemaClause" IsOptional="true" />-->
+          <!--<NonTerminal Id="AlterIndexOrganizedTableClauses" IsOptional="true" />-->
+          <!--<NonTerminal Id="AlterXmlSchemaClause" IsOptional="true" />-->
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AlterXmlSchemaClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Allow" />
+          <Terminal Id="AnySchema" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Allow" />
+          <Terminal Id="NonSchema" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Disallow" />
+          <Terminal Id="NonSchema" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -4858,7 +4875,26 @@
       <Sequences>
         <Sequence>
           <Terminal Id="With" />
+          <NonTerminal Id="PlSqlDeclarations" />
+          <NonTerminal Id="CommonTableExpressionList" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="With" />
+          <NonTerminal Id="PlSqlDeclarations" IsOptional="true" />
           <NonTerminal Id="CommonTableExpressionList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PlSqlDeclarations">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="FunctionDefinition" />
+          <NonTerminal Id="PlSqlDeclarations" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ProcedureDefinition" />
+          <NonTerminal Id="PlSqlDeclarations" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -15271,6 +15307,8 @@
     <Terminal Id="Extent" Value="EXTENT" />
     <Terminal Id="DataFile" Value="DATAFILE" />
     <Terminal Id="Instance" Value="INSTANCE" />
+    <Terminal Id="AnySchema" Value="ANYSCHEMA" />
+    <Terminal Id="NonSchema" Value="NONSCHEMA" />
     
     <!-- Alter session -->
     <Terminal Id="Advise" Value="ADVISE" />

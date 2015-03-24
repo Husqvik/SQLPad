@@ -915,22 +915,25 @@ namespace SqlPad.Oracle
 				queryBlockDependentQueryBlocks.IsRedundant = true;
 
 				var commonTableExpression = queryBlockDependentQueryBlocks.RootNode.GetAncestor(NonTerminals.CommonTableExpression);
-				var redundantTerminals = new List<StatementGrammarNode>();
+				List<StatementGrammarNode> redundantTerminals = null;
 				var precedingTerminal = commonTableExpression.PrecedingTerminal;
 				var followingTerminal = commonTableExpression.FollowingTerminal;
 				if (followingTerminal != null && String.Equals(followingTerminal.Id, Terminals.Comma))
 				{
-					redundantTerminals.AddRange(commonTableExpression.Terminals);
-					redundantTerminals.Add(followingTerminal);
+					redundantTerminals = new List<StatementGrammarNode>(commonTableExpression.Terminals) { followingTerminal };
 				}
-				else if (String.Equals(precedingTerminal.Id, Terminals.Comma) || String.Equals(precedingTerminal.Id, Terminals.With))
+				else if (precedingTerminal != null &&
+				         (String.Equals(precedingTerminal.Id, Terminals.Comma) || String.Equals(precedingTerminal.Id, Terminals.With)))
 				{
-					redundantTerminals.Add(precedingTerminal);
+					redundantTerminals = new List<StatementGrammarNode> { precedingTerminal };
 					redundantTerminals.AddRange(commonTableExpression.Terminals);
 				}
 
-				var terminalGroup = new RedundantTerminalGroup(redundantTerminals, RedundancyType.UnusedQueryBlock);
-				_redundantTerminalGroups.Add(terminalGroup);
+				if (redundantTerminals != null)
+				{
+					var terminalGroup = new RedundantTerminalGroup(redundantTerminals, RedundancyType.UnusedQueryBlock);
+					_redundantTerminalGroups.Add(terminalGroup);
+				}
 			}
 		}
 

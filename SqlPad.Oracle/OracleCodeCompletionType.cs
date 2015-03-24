@@ -210,10 +210,10 @@ namespace SqlPad.Oracle
 
 			InSelectList = (atAdHocTemporaryTerminal ? precedingTerminal : EffectiveTerminal).GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.SelectList) != null;
 
-			var invalidGrammarFilteredNearestTerminal = Statement.GetNearestTerminalToPosition(cursorPosition, n => n.Id != Terminals.ObjectAlias);
-			var isWithinExplicitPartitionClause = invalidGrammarFilteredNearestTerminal.ParentNode.Id == NonTerminals.PartitionNameOrKeySet && (invalidGrammarFilteredNearestTerminal != nearestTerminal || TerminalCandidates.Contains(Terminals.ObjectIdentifier));
-			ExplicitPartition = isWithinExplicitPartitionClause && invalidGrammarFilteredNearestTerminal.ParentNode.ParentNode.FirstTerminalNode.Id == Terminals.Partition;
-			ExplicitSubPartition = isWithinExplicitPartitionClause && invalidGrammarFilteredNearestTerminal.ParentNode.ParentNode.FirstTerminalNode.Id == Terminals.Subpartition;
+			var invalidGrammarFilteredNearestTerminal = Statement.GetNearestTerminalToPosition(cursorPosition, n => !String.Equals(n.Id, Terminals.ObjectAlias));
+			var isWithinExplicitPartitionClause = invalidGrammarFilteredNearestTerminal != null && String.Equals(invalidGrammarFilteredNearestTerminal.ParentNode.Id, NonTerminals.PartitionNameOrKeySet) && (invalidGrammarFilteredNearestTerminal != nearestTerminal || TerminalCandidates.Contains(Terminals.ObjectIdentifier));
+			ExplicitPartition = isWithinExplicitPartitionClause && String.Equals(invalidGrammarFilteredNearestTerminal.ParentNode.ParentNode.FirstTerminalNode.Id, Terminals.Partition);
+			ExplicitSubPartition = isWithinExplicitPartitionClause && String.Equals(invalidGrammarFilteredNearestTerminal.ParentNode.ParentNode.FirstTerminalNode.Id, Terminals.Subpartition);
 			if (isWithinExplicitPartitionClause)
 			{
 				if (EffectiveTerminal.Id == Terminals.ObjectIdentifier)

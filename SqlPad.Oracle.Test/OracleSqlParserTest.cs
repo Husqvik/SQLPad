@@ -2801,6 +2801,22 @@ END;";
 				var statement = Parser.Parse(statement1).Single().Validate();
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
+
+			[Test(Description = @"")]
+			public void TestWithPlSqlDeclaration()
+			{
+				const string statement1 =
+@"WITH
+	PROCEDURE CHECK_INPUT(P NUMBER) IS BEGIN DBMS_OUTPUT.PUT_LINE('Parameter value ' || P || ' checked. '); END;
+	FUNCTION F1(P IN NUMBER) RETURN NUMBER AS BEGIN CHECK_INPUT(P); RETURN DBMS_RANDOM.VALUE + P; END;
+	FUNCTION F2(P IN NUMBER) RETURN NUMBER AS BEGIN CHECK_INPUT(P); RETURN 5 * P + P / 2; END;
+	CTE AS (SELECT 5 VAL FROM DUAL)
+SELECT F1(VAL), F2(VAL + 1) FROM CTE";
+
+				var statements = Parser.Parse(statement1).ToArray();
+				var statement = statements.Single().Validate();
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
+			}
 		}
 
 		public class IsRuleValid
@@ -5325,6 +5341,30 @@ PURGE REPEAT INTERVAL '5' DAY";
 					var statement = result.Single();
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
+
+				/*[Test(Description = @"")]
+				public void TestAlterTableAlterXmlSchemaAllowAnySchema()
+				{
+					const string statementText = @"ALTER TABLE TEST_TABLE NOCACHE ALLOW ANYSCHEMA";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterTableAlterXmlSchemaDisallowNonSchema()
+				{
+					const string statementText = @"ALTER TABLE TEST_TABLE NOCACHE DISALLOW NONSCHEMA";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}*/
 			}
 		}
 
