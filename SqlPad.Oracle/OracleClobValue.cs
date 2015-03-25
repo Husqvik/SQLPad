@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Reflection;
+using System.Text;
 #if ORACLE_MANAGED_DATA_ACCESS_CLIENT
 using Oracle.ManagedDataAccess.Client;
 using Oracle.ManagedDataAccess.Types;
@@ -45,7 +47,11 @@ namespace SqlPad.Oracle
 				return String.Empty;
 			}
 
-			var preview = GetChunk(0, PreviewLength + 1);
+			var builder = new StringBuilder(PreviewLength + 1);
+			GetChunk(builder, 0, PreviewLength + 1);
+			
+			var preview = builder.ToString();
+			
 			var indexFirstLineBreak = preview.IndexOf('\n', 0, preview.Length < PreviewLength ? preview.Length : PreviewLength);
 			if (preview.Length > PreviewLength || indexFirstLineBreak != -1)
 			{
@@ -67,7 +73,7 @@ namespace SqlPad.Oracle
 
 		protected abstract string GetValue();
 
-		public abstract string GetChunk(int offset, int length);
+		public abstract void GetChunk(StringBuilder stringBuilder, int offset, int length);
 
 		public override string ToString()
 		{
@@ -118,11 +124,11 @@ namespace SqlPad.Oracle
 			_previewLength = previewLength;
 		}
 
-		public override string GetChunk(int offset, int length)
+		public override void GetChunk(StringBuilder stringBuilder, int offset, int length)
 		{
 			var characters = new char[length];
 			var characterCount = _xmlType.GetStream().Read(characters, 0, length);
-			return new string(characters, 0, characterCount);
+			stringBuilder.Append(characters, 0, characterCount);
 		}
 
 		public void Dispose()
@@ -151,9 +157,9 @@ namespace SqlPad.Oracle
 			get { return _value.Length; }
 		}
 
-		public string GetChunk(int offset, int length)
+		public void GetChunk(StringBuilder stringBuilder, int offset, int length)
 		{
-			return _value.Substring(offset, length);
+			stringBuilder.Append(_value.Substring(offset, length));
 		}
 
 		public bool IsEditable { get { return false; } }
@@ -172,6 +178,8 @@ namespace SqlPad.Oracle
 
 	public class OracleClobValue : OracleLargeTextValue, IDisposable
 	{
+		private const int MaximumChunkSize = 16777216;
+
 		private readonly OracleClob _clob;
 		private readonly int _previewLength;
 		private readonly string _dataTypeName;
@@ -189,7 +197,21 @@ namespace SqlPad.Oracle
 
 		protected override string GetValue()
 		{
-			return _clob.Value;
+			var totalLength = (int)_clob.Length / 2;
+			var builder = new StringBuilder(totalLength);
+			var offset = 0;
+
+			_clob.Seek(0, SeekOrigin.Begin);
+
+			int remainingLength;
+			while ((remainingLength = totalLength - offset) > 0)
+			{
+				var chunkLength = Math.Min(MaximumChunkSize, remainingLength);
+				GetChunk(builder, 0, chunkLength);
+				offset = builder.Length;
+			}
+
+			return builder.ToString();
 		}
 
 		public OracleClobValue(string dataTypeName, OracleClob clob, int previewLength = DefaultPreviewLength)
@@ -199,11 +221,11 @@ namespace SqlPad.Oracle
 			_dataTypeName = dataTypeName;
 		}
 
-		public override string GetChunk(int offset, int length)
+		public override void GetChunk(StringBuilder stringBuilder, int offset, int length)
 		{
 			var characters = new char[length];
 			var characterCount = _clob.Read(characters, offset, length);
-			return new string(characters, 0, characterCount);
+			stringBuilder.Append(characters, 0, characterCount);
 		}
 
 		public void Dispose()

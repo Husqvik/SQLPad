@@ -305,7 +305,7 @@ SELECT T.* FROM T@HQ_PDB";
 			public long Length { get { return TextValue.Length; } }
 			public string Preview { get { throw new NotImplementedException(); } }
 			public string Value { get { return TextValue; } }
-			public string GetChunk(int offset, int length)
+			public void GetChunk(StringBuilder stringBuilder, int offset, int length)
 			{
 				throw new NotImplementedException();
 			}

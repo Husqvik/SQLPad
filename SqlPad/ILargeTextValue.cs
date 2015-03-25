@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 
 namespace SqlPad
 {
@@ -20,7 +21,7 @@ namespace SqlPad
 
 		string Value { get; }
 
-		string GetChunk(int offset, int length);
+		void GetChunk(StringBuilder stringBuilder, int offset, int length);
 	}
 
 	public interface ILargeBinaryValue : ILargeValue
