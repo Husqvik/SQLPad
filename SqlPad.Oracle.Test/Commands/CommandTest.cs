@@ -1186,6 +1186,21 @@ FROM
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestResolveAmbiguousColumnCommandWhenAtComma()
+		{
+			_editor.Text = @"SELECT DUMMY, 1 FROM DUAL T1, DUAL T2";
+			_editor.CaretOffset = 12;
+
+			var actions = new OracleContextActionProvider().GetContextActions(TestFixture.DatabaseModel, _editor.Text, _editor.CaretOffset).Where(a => a.Name.StartsWith("Resolve as")).ToArray();
+
+			actions.Length.ShouldBe(2);
+			CanExecuteCommand(actions[0].ExecutionHandler).ShouldBe(true);
+			ExecuteCommand(actions[0].ExecutionHandler);
+
+			_editor.Text.ShouldBe(@"SELECT T1.DUMMY, 1 FROM DUAL T1, DUAL T2");
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestGenerateMissingColumnsCommand()
 		{
 			_editor.Text = @"SELECT NOT_EXISTING_COLUMN FROM SELECTION";

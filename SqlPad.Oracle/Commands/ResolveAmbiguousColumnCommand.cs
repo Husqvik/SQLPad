@@ -47,7 +47,7 @@ namespace SqlPad.Oracle.Commands
 
 		protected override Func<StatementGrammarNode, bool> CurrentNodeFilterFunction
 		{
-			get { return n => !n.Id.In(Terminals.RightParenthesis); }
+			get { return n => !n.Id.In(Terminals.RightParenthesis, Terminals.Comma); }
 		}
 
 		protected override void Execute()
