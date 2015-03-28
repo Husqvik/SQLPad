@@ -4788,10 +4788,317 @@
         <Sequence>
           <NonTerminal Id="UnpivotClause" />
         </Sequence>
-        <!-- TODO: Row pattern clause -->
-        <!--<Sequence>
+        <Sequence>
           <NonTerminal Id="RowPatternClause" />
-        </Sequence>-->
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="RowPatternClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="MatchRecognize" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="RowPatternPartitionBy" IsOptional="true" />
+          <NonTerminal Id="RowPatternOrderBy" IsOptional="true" />
+          <NonTerminal Id="RowPatternMeasures" IsOptional="true" />
+          <NonTerminal Id="RowPatternRowsPerMatch" IsOptional="true" />
+          <NonTerminal Id="RowPatternSkipTo" IsOptional="true" />
+          <Terminal Id="Pattern" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="RowPattern" />
+          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="RowPatternSubsetClause" IsOptional="true" />
+          <Terminal Id="Define" />
+          <NonTerminal Id="RowPatternDefinitionList" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="RowPattern">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="RowPatternTerm" />
+          <NonTerminal Id="RowPatternChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="RowPatternChained">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="VerticalBarCharacter" />
+          <NonTerminal Id="RowPattern" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="RowPatternTerm">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="RowPatternFactor" />
+          <NonTerminal Id="RowPatternTerm" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="RowPatternFactor">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="RowPatternPrimary" />
+          <NonTerminal Id="RowPatternQuantifier" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="RowPatternQuantifier">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Asterisk" />
+          <Terminal Id="QuestionMark" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="MathPlus" />
+          <Terminal Id="QuestionMark" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="QuestionMark" />
+          <Terminal Id="QuestionMark" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="LeftBrace" />
+          <Terminal Id="IntegerLiteral" IsOptional="true" />
+          <Terminal Id="Comma" />
+          <Terminal Id="IntegerLiteral" IsOptional="true" />
+          <Terminal Id="RightBrace" />
+          <Terminal Id="QuestionMark" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="LeftBrace" />
+          <Terminal Id="IntegerLiteral" />
+          <Terminal Id="RightBrace" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="RowPatternPrimary">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Identifier" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="DollarCharacter" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="CircumflexCharacter" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="RowPattern" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="LeftBrace" />
+          <Terminal Id="MathMinus" />
+          <NonTerminal Id="RowPattern" />
+          <Terminal Id="MathMinus" />
+          <Terminal Id="RightBrace" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Permute" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="RowPatternList" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="RowPatternList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="RowPattern" />
+          <NonTerminal Id="RowPatternListChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="RowPatternListChained">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="RowPatternList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="RowPatternSubsetClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Subset" />
+          <NonTerminal Id="RowPatternSubsetItemList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="RowPatternSubsetItemList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="RowPatternSubsetItem" />
+          <NonTerminal Id="RowPatternSubsetItemListChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="RowPatternSubsetItem">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Identifier" />
+          <Terminal Id="MathEquals" />
+          <NonTerminal Id="ParenthesisEnclosedIdentifierList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="RowPatternSubsetItemListChained">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="RowPatternSubsetItemList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="RowPatternDefinitionList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="RowPatternDefinition" />
+          <NonTerminal Id="RowPatternDefinitionListChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="RowPatternDefinition">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Identifier" />
+          <Terminal Id="As" />
+          <NonTerminal Id="Condition" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="RowPatternDefinitionListChained">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="RowPatternDefinitionList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="RowPatternSkipTo">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="After" />
+          <Terminal Id="Match" />
+          <Terminal Id="Skip" />
+          <NonTerminal Id="RowPatternSkipToOption" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="RowPatternSkipToOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="To" />
+          <Terminal Id="Next" />
+          <Terminal Id="Row" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Past" />
+          <Terminal Id="Last" />
+          <Terminal Id="Row" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="To" />
+          <NonTerminal Id="FirstOrLast" IsOptional="true" />
+          <Terminal Id="Identifier" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="RowPatternRowsPerMatch">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="One" />
+          <Terminal Id="Row" />
+          <Terminal Id="Per" />
+          <Terminal Id="Match" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="All" />
+          <Terminal Id="Rows" />
+          <Terminal Id="Per" />
+          <Terminal Id="Match" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="RowPatternPartitionBy">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Partition" />
+          <Terminal Id="By" />
+          <NonTerminal Id="IdentifierList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="RowPatternOrderBy">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Order" />
+          <Terminal Id="By" />
+          <NonTerminal Id="IdentifierList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="RowPatternMeasures">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Measures" />
+          <NonTerminal Id="RowPatternMeasureColumnList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="RowPatternMeasureColumnList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="RowPatternMeasureColumn" />
+          <NonTerminal Id="RowPatternMeasureColumnListChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="RowPatternMeasureColumn">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="Expression" />
+          <Terminal Id="As" />
+          <Terminal Id="ColumnAlias" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="RowPatternMeasureColumnListChained">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="RowPatternMeasureColumnList" />
+        </Sequence>
       </Sequences>
     </Rule>
 
@@ -15072,6 +15379,23 @@
     <Terminal Id="NonAvailableValues" Value="NAV" />
     <Terminal Id="Decrement" Value="DECREMENT" />
     <Terminal Id="Updated" Value="UPDATED" />
+    
+    <!-- Row pattern clause -->
+    <Terminal Id="MatchRecognize" Value="MATCH_RECOGNIZE" />
+    <Terminal Id="Pattern" Value="PATTERN" />
+    <Terminal Id="Define" Value="DEFINE" />
+    <Terminal Id="Permute" Value="PERMUTE" />
+    <Terminal Id="Subset" Value="SUBSET" />
+    <Terminal Id="Match" Value="MATCH" />
+    <Terminal Id="Past" Value="PAST" />
+    <Terminal Id="One" Value="ONE" />
+    <Terminal Id="Per" Value="PER" />
+    <Terminal Id="QuestionMark" Value="?" />
+    <Terminal Id="LeftBrace" Value="{" />
+    <Terminal Id="RightBrace" Value="}" />
+    <Terminal Id="CircumflexCharacter" Value="^" />
+    <Terminal Id="DollarCharacter" Value="$" />
+    <Terminal Id="VerticalBarCharacter" Value="|" />
 
     <!-- Subquery factoring search and cycle -->
     <Terminal Id="Cycle" Value="CYCLE" />

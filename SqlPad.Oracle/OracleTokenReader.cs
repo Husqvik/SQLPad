@@ -71,7 +71,7 @@ namespace SqlPad.Oracle
 				FindFlags(specialMode, character, flags);
 
 				var isBlank = flags.IsSpace || flags.IsLineTerminator;
-				var isSingleCharacterTerminal = character == ',' || character == '(' || character == ')' || character == '+' || character == ';' || character == '@' || character == '[' || character == ']' || character == '%';
+				var isSingleCharacterTerminal = character == ',' || character == '(' || character == ')' || character == '+' || character == ';' || character == '@' || character == '[' || character == ']' || character == '{' || character == '}' || character == '%' || character == '?';
 				var characterYielded = false;
 				
 				if (flags.BlockCommentBeginCandidate && previousFlags.IsLineTerminator)
@@ -399,10 +399,9 @@ namespace SqlPad.Oracle
 
 					builder.Append(previousFlags.Character);
 					var indexOffset = 1;
-					var candidateCharacter = (char)candidateCharacterCode;
-					if (candidateCharacter == '|')
+					if (character == '|')
 					{
-						builder.Append(candidateCharacter);
+						builder.Append(character);
 						indexOffset = 0;
 						characterYielded = true;
 						flags.ConcatenationCandidate = false;

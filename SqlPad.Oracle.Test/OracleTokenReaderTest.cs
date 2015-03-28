@@ -568,6 +568,17 @@ namespace SqlPad.Oracle.Test
 			tokenIndexes.ShouldBe(new[] { 0, 5, 8 });
 		}
 
+		[Test(Description = "Tests row pattern matching terminals. ")]
+		public void TestRowPatternMatchingTerminals()
+		{
+			const string testQuery = "A|B?C{D}^E";
+			var tokens = GetTokenValuesFromOracleSql(testQuery);
+			tokens.ShouldBe(new[] { "A", "|", "B", "?", "C", "{", "D", "}", "^", "E" });
+
+			var tokenIndexes = GetTokenIndexesFromOracleSql(testQuery);
+			tokenIndexes.ShouldBe(new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
+		}
+
 		private string[] GetTokenValuesFromOracleSql(string sqlText, bool includeCommentBlocks = false)
 		{
 			return GetTokensFromOracleSql(sqlText, includeCommentBlocks).Select(t => t.Value).ToArray();

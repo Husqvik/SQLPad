@@ -2817,6 +2817,37 @@ SELECT F1(VAL), F2(VAL + 1) FROM CTE";
 				var statement = statements.Single().Validate();
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
+
+			[Test(Description = @"")]
+			public void TestBasicRowPatternMatching()
+			{
+				const string statement1 =
+@"SELECT
+	*
+FROM
+	Ticker
+	MATCH_RECOGNIZE (
+		 PARTITION BY symbol
+		 ORDER BY tstamp
+		 MEASURES
+			STRT.tstamp AS start_tstamp,
+			LAST(DOWN.tstamp) AS bottom_tstamp,
+			LAST(UP.tstamp) AS end_tstamp
+		 ONE ROW PER MATCH
+		 AFTER MATCH SKIP TO LAST UP
+		 PATTERN (STRT DOWN+ UP+)
+		 DEFINE
+			DOWN AS DOWN.price < PREV(DOWN.price),
+			UP AS UP.price > PREV(UP.price)
+	) MR
+ORDER BY
+	MR.symbol,
+	MR.start_tstamp";
+
+				var statements = Parser.Parse(statement1).ToArray();
+				var statement = statements.Single().Validate();
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
+			}
 		}
 
 		public class IsRuleValid
@@ -2932,6 +2963,7 @@ SELECT F1(VAL), F2(VAL + 1) FROM CTE";
 						Terminals.Intersect,
 						Terminals.Join,
 						Terminals.Left,
+						Terminals.MatchRecognize,
 						Terminals.Model,
 						Terminals.Natural,
 						Terminals.ObjectAlias,
