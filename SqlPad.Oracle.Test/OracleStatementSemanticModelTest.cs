@@ -918,6 +918,44 @@ SELECT * FROM DUAL";
 		}
 
 		[Test(Description = @"")]
+		public void TestRedundantColumnAlias()
+		{
+			const string query1 = @"SELECT DUAL.DUMMY DUMMY, DUMMY DUMMY FROM DUAL";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			var terminalGroups = semanticModel.RedundantSymbolGroups.Where(g => g.RedundancyType == RedundancyType.RedundantColumnAlias).ToArray();
+			terminalGroups.Length.ShouldBe(2);
+			terminalGroups[0].Count.ShouldBe(1);
+			terminalGroups[0][0].Token.Index.ShouldBe(18);
+			terminalGroups[0][0].Token.Value.ShouldBe("DUMMY");
+
+			terminalGroups[1].Count.ShouldBe(1);
+			terminalGroups[1][0].Token.Index.ShouldBe(31);
+			terminalGroups[1][0].Token.Value.ShouldBe("DUMMY");
+		}
+
+		[Test(Description = @"")]
+		public void TestRedundantObjectAlias()
+		{
+			const string query1 = @"SELECT DUMMY FROM DUAL DUAL, SYS.DUAL DUAL";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			var terminalGroups = semanticModel.RedundantSymbolGroups.Where(g => g.RedundancyType == RedundancyType.RedundantObjectAlias).ToArray();
+			terminalGroups.Length.ShouldBe(2);
+			terminalGroups[0].Count.ShouldBe(1);
+			terminalGroups[0][0].Token.Index.ShouldBe(23);
+			terminalGroups[0][0].Token.Value.ShouldBe("DUAL");
+
+			terminalGroups[1].Count.ShouldBe(1);
+			terminalGroups[1][0].Token.Index.ShouldBe(38);
+			terminalGroups[1][0].Token.Value.ShouldBe("DUAL");
+		}
+
+		[Test(Description = @"")]
 		public void TestCommonTableExpressionColumnNameList()
 		{
 			const string query1 = @"WITH GENERATOR(C1, C2, C3, C4) AS (SELECT 1, DUAL.*, 3, DUMMY FROM DUAL) SELECT C1, C2, C3, C4 FROM GENERATOR";

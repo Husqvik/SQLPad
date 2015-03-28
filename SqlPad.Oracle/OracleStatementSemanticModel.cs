@@ -906,6 +906,8 @@ namespace SqlPad.Oracle
 			ResolveRedundantSelectListColumns();
 			
 			ResolveRedundantQualifiers();
+			
+			ResolveRedundantAliases();
 		}
 
 		private void ResolveRedundantCommonTableExpressions()
@@ -1013,7 +1015,7 @@ namespace SqlPad.Oracle
 						foreach (var objectReference in ownerNameObjectReference.Where(o => o.SchemaObject.Owner == DatabaseModel.CurrentSchema.ToQuotedIdentifier()))
 						{
 							var terminals = objectReference.RootNode.Terminals.TakeWhile(t => t != objectReference.ObjectNode);
-							CreateRedundantTerminalGroup(terminals);
+							CreateRedundantTerminalGroup(terminals, RedundancyType.Qualifier);
 							removedObjectReferenceOwners.Add(objectReference);
 						}
 					}
@@ -1023,7 +1025,7 @@ namespace SqlPad.Oracle
 					.Where(o => o.OwnerNode != null && IsSchemaObjectInCurrentSchemaOrAccessibleByPublicSynonym(o.SchemaObject));
 				foreach (var reference in otherRedundantOwnerReferences)
 				{
-					CreateRedundantTerminalGroup(new[] { reference.OwnerNode, reference.OwnerNode.FollowingTerminal });
+					CreateRedundantTerminalGroup(new[] { reference.OwnerNode, reference.OwnerNode.FollowingTerminal }, RedundancyType.Qualifier);
 				}
 
 				foreach (var columnReference in queryBlock.AllColumnReferences.Where(c => c.ObjectNode != null && c.RootNode != null))
@@ -1034,7 +1036,7 @@ namespace SqlPad.Oracle
 						if (columnReference.OwnerNode != null && removedObjectReferenceOwners.Contains(columnReference.ValidObjectReference))
 						{
 							var redundantSchemaPrefixTerminals = columnReference.RootNode.Terminals.TakeWhile(t => t != columnReference.ObjectNode);
-							CreateRedundantTerminalGroup(redundantSchemaPrefixTerminals);
+							CreateRedundantTerminalGroup(redundantSchemaPrefixTerminals, RedundancyType.Qualifier);
 						}
 
 						continue;
@@ -1042,14 +1044,37 @@ namespace SqlPad.Oracle
 
 					var requiredNode = columnReference.IsCorrelated ? columnReference.ObjectNode : columnReference.ColumnNode;
 					var terminals = columnReference.RootNode.Terminals.TakeWhile(t => t != requiredNode);
-					CreateRedundantTerminalGroup(terminals);
+					CreateRedundantTerminalGroup(terminals, RedundancyType.Qualifier);
 				}
 			}
 		}
 
-		private void CreateRedundantTerminalGroup(IEnumerable<StatementGrammarNode> terminals)
+		private void ResolveRedundantAliases()
 		{
-			var terminalGroup = new RedundantTerminalGroup(terminals, RedundancyType.Qualifier);
+			var redundantColumnAliases = _queryBlockNodes.Values
+				.SelectMany(qb => qb.Columns)
+				.Where(c => c.IsDirectReference && c.HasExplicitAlias && String.Equals(c.NormalizedName, c.AliasNode.PrecedingTerminal.Token.Value.ToQuotedIdentifier()))
+				.Select(c => c.AliasNode);
+
+			foreach (var aliasNode in redundantColumnAliases)
+			{
+				_redundantTerminalGroups.Add(new RedundantTerminalGroup(Enumerable.Repeat(aliasNode, 1), RedundancyType.RedundantColumnAlias));
+			}
+
+			var redundantObjectAlias = AllReferenceContainers
+				.SelectMany(c => c.ObjectReferences)
+				.Where(r => r.AliasNode != null && r.Type == ReferenceType.SchemaObject && String.Equals(r.ObjectNode.Token.Value.ToQuotedIdentifier(), r.AliasNode.Token.Value.ToQuotedIdentifier()))
+				.Select(r => r.AliasNode);
+
+			foreach (var aliasNode in redundantObjectAlias)
+			{
+				_redundantTerminalGroups.Add(new RedundantTerminalGroup(Enumerable.Repeat(aliasNode, 1), RedundancyType.RedundantObjectAlias));
+			}
+		}
+
+		private void CreateRedundantTerminalGroup(IEnumerable<StatementGrammarNode> terminals, RedundancyType redundancyType)
+		{
+			var terminalGroup = new RedundantTerminalGroup(terminals, redundancyType);
 			if (terminalGroup.All(t => _redundantTerminals.Add(t)))
 			{
 				_redundantTerminalGroups.Add(terminalGroup);	

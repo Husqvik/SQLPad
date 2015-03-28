@@ -35,6 +35,8 @@ namespace SqlPad
 	{
 		Qualifier,
 		UnusedColumn,
+		RedundantColumnAlias,
+		RedundantObjectAlias,
 		UnusedQueryBlock
 	}
 }
