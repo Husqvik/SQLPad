@@ -169,7 +169,166 @@
         <Sequence>
           <NonTerminal Id="AlterTable" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="AlterProfile" />
+        </Sequence>
         <!-- TODO: Add other objects -->
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AlterProfile">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Profile" />
+          <Terminal Id="ObjectIdentifier" />
+          <Terminal Id="Limit" />
+          <NonTerminal Id="ProfileOptionList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ProfileOptionList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ResourceParameters" />
+          <NonTerminal Id="ProfileOptionList" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="PasswordParameters" />
+          <NonTerminal Id="ProfileOptionList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ResourceParameters">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="SessionPerUser" />
+          <NonTerminal Id="IntegerLiteralOrUnlimitedOrDefault" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="CpuPerSession" />
+          <NonTerminal Id="IntegerLiteralOrUnlimitedOrDefault" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="CpuPerCall" />
+          <NonTerminal Id="IntegerLiteralOrUnlimitedOrDefault" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="ConnectTime" />
+          <NonTerminal Id="IntegerLiteralOrUnlimitedOrDefault" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="IdleTime" />
+          <NonTerminal Id="IntegerLiteralOrUnlimitedOrDefault" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="LogicalReadsPerSession" />
+          <NonTerminal Id="IntegerLiteralOrUnlimitedOrDefault" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="LogicalReadsPerCall" />
+          <NonTerminal Id="IntegerLiteralOrUnlimitedOrDefault" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="CompositeLimit" />
+          <NonTerminal Id="IntegerLiteralOrUnlimitedOrDefault" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="PrivateSystemGlobalArea" />
+          <NonTerminal Id="SizeClauseOrUnlimitedOrDefault" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PasswordParameters">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="FailedLoginAttempts" />
+          <NonTerminal Id="ExpressionOrUnlimitedOrDefault" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="PasswordLifeTime" />
+          <NonTerminal Id="ExpressionOrUnlimitedOrDefault" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="PasswordReuseTime" />
+          <NonTerminal Id="ExpressionOrUnlimitedOrDefault" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="PasswordReuseMax" />
+          <NonTerminal Id="ExpressionOrUnlimitedOrDefault" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="PasswordLockTime" />
+          <NonTerminal Id="ExpressionOrUnlimitedOrDefault" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="PasswordGraceTime" />
+          <NonTerminal Id="ExpressionOrUnlimitedOrDefault" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="PasswordVerifyFunction" />
+          <NonTerminal Id="IdentifierOrNullOrDefault" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ExpressionOrUnlimitedOrDefault">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="UnlimitedOrDefault" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="Expression" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="IdentifierOrNullOrDefault">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Null" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Default" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Identifier" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="IntegerLiteralOrUnlimitedOrDefault">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="UnlimitedOrDefault" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SizeClauseOrUnlimitedOrDefault">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="SizeClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="UnlimitedOrDefault" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="UnlimitedOrDefault">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Unlimited" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Default" />
+        </Sequence>
       </Sequences>
     </Rule>
 
@@ -15309,6 +15468,23 @@
     <Terminal Id="Instance" Value="INSTANCE" />
     <Terminal Id="AnySchema" Value="ANYSCHEMA" />
     <Terminal Id="NonSchema" Value="NONSCHEMA" />
+    <Terminal Id="Profile" Value="PROFILE" />
+    <Terminal Id="SessionPerUser" Value="SESSION_PER_USER" />
+    <Terminal Id="CpuPerSession" Value="CPU_PER_SESSION" />
+    <Terminal Id="CpuPerCall" Value="CPU_PER_CALL" />
+    <Terminal Id="ConnectTime" Value="CONNECT_TIME" />
+    <Terminal Id="IdleTime" Value="IDLE_TIME" />
+    <Terminal Id="LogicalReadsPerSession" Value="LOGICAL_READS_PER_SESSION" />
+    <Terminal Id="LogicalReadsPerCall" Value="LOGICAL_READS_PER_CALL" />
+    <Terminal Id="CompositeLimit" Value="COMPOSITE_LIMIT" />
+    <Terminal Id="PrivateSystemGlobalArea" Value="PRIVATE_SGA" />
+    <Terminal Id="FailedLoginAttempts" Value="FAILED_LOGIN_ATTEMPTS" />
+    <Terminal Id="PasswordLifeTime" Value="PASSWORD_LIFE_TIME" />
+    <Terminal Id="PasswordReuseTime" Value="PASSWORD_REUSE_TIME" />
+    <Terminal Id="PasswordReuseMax" Value="PASSWORD_REUSE_MAX" />
+    <Terminal Id="PasswordLockTime" Value="PASSWORD_LOCK_TIME" />
+    <Terminal Id="PasswordGraceTime" Value="PASSWORD_GRACE_TIME" />
+    <Terminal Id="PasswordVerifyFunction" Value="PASSWORD_VERIFY_FUNCTION" />
     
     <!-- Alter session -->
     <Terminal Id="Advise" Value="ADVISE" />

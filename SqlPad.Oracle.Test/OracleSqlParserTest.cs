@@ -5042,6 +5042,37 @@ PURGE REPEAT INTERVAL '5' DAY";
 				}
 			}
 
+			public class AlterProfile
+			{
+				[Test(Description = @"")]
+				public void TestAlterProfile()
+				{
+					const string statementText = @"ALTER PROFILE TEST_PROFILE LIMIT COMPOSITE_LIMIT DEFAULT PRIVATE_SGA DEFAULT PASSWORD_GRACE_TIME DEFAULT PASSWORD_VERIFY_FUNCTION VERIFY_FUNCTION";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+					var terminals = statement.AllTerminals.ToArray();
+					terminals.Length.ShouldBe(12);
+
+					terminals[0].Id.ShouldBe(Terminals.Alter);
+					terminals[1].Id.ShouldBe(Terminals.Profile);
+					terminals[2].Id.ShouldBe(Terminals.ObjectIdentifier);
+					terminals[3].Id.ShouldBe(Terminals.Limit);
+					terminals[4].Id.ShouldBe(Terminals.CompositeLimit);
+					terminals[5].Id.ShouldBe(Terminals.Default);
+					terminals[6].Id.ShouldBe(Terminals.PrivateSystemGlobalArea);
+					terminals[7].Id.ShouldBe(Terminals.Default);
+					terminals[8].Id.ShouldBe(Terminals.PasswordGraceTime);
+					terminals[9].Id.ShouldBe(Terminals.Default);
+					terminals[10].Id.ShouldBe(Terminals.PasswordVerifyFunction);
+					terminals[11].Id.ShouldBe(Terminals.Identifier);
+				}
+			}
+
 			public class AlterTable
 			{
 				[Test(Description = @"")]
