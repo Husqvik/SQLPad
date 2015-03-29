@@ -42,7 +42,6 @@ namespace SqlPad.Oracle
 				new LineBreakSettings { NonTerminalId = NonTerminals.Condition, ChildNodeId = Terminals.Exists, BreakPosition = n => LineBreakPosition.AfterNode, GetIndentationAfter = n => 1 },
 				new LineBreakSettings { NonTerminalId = NonTerminals.SelectExpressionExpressionChainedList, ChildNodeId = Terminals.Comma, BreakPosition = n => LineBreakPosition.AfterNode },
 				new LineBreakSettings { NonTerminalId = NonTerminals.FromClauseChained, ChildNodeId = Terminals.Comma, BreakPosition = n => LineBreakPosition.AfterNode },
-				new LineBreakSettings { NonTerminalId = NonTerminals.TableReference, GetIndentationAfter = GetAfterTableReferenceIndentation },
 				new LineBreakSettings { NonTerminalId = NonTerminals.JoinClause, ChildNodeId = null, BreakPosition = n => LineBreakPosition.BeforeNode },
 				new LineBreakSettings { NonTerminalId = NonTerminals.JoinColumnsOrCondition, ChildNodeId = Terminals.On, BreakPosition = n => LineBreakPosition.BeforeNode, GetIndentationBefore = n => 1 },
 				new LineBreakSettings { NonTerminalId = NonTerminals.JoinColumnsOrCondition, ChildNodeId = NonTerminals.Condition, GetIndentationAfter = n => -1 },
@@ -60,7 +59,7 @@ namespace SqlPad.Oracle
 				new LineBreakSettings { NonTerminalId = NonTerminals.CommonTableExpression, ChildNodeId = Terminals.As, BreakPosition = n => LineBreakPosition.AfterNode },
 				new LineBreakSettings { NonTerminalId = NonTerminals.SelectStatement, ChildNodeId = Terminals.Semicolon, BreakPosition = n => LineBreakPosition.AfterNode, GetIndentationAfter = n => -1 },
 				new LineBreakSettings { NonTerminalId = NonTerminals.ConcatenatedSubquery, ChildNodeId = NonTerminals.SetOperation, BreakPosition = n => LineBreakPosition.BeforeNode | LineBreakPosition.AfterNode, GetIndentationBefore = n => -1 },
-				new LineBreakSettings { NonTerminalId = NonTerminals.QueryTableExpression, ChildNodeId = Terminals.RightParenthesis, BreakPosition = n => LineBreakPosition.BeforeNode, GetIndentationBefore = n => -2 },
+				new LineBreakSettings { NonTerminalId = NonTerminals.QueryTableExpression, ChildNodeId = Terminals.RightParenthesis, BreakPosition = n => LineBreakPosition.BeforeNode, GetIndentationBefore = n => -1 },
 				new LineBreakSettings { NonTerminalId = NonTerminals.Condition, ChildNodeId = Terminals.RightParenthesis, GetIndentationAfter = GetAfterConditionClosingParenthesisIndentation },
 				new LineBreakSettings { NonTerminalId = NonTerminals.Expression, ChildNodeId = Terminals.RightParenthesis, GetIndentationAfter = GetAfterExpressionClosingParenthesisIndentation }
 			};
@@ -89,12 +88,6 @@ namespace SqlPad.Oracle
 			return node.PrecedingTerminal != null && node.PrecedingTerminal.Id == Terminals.LeftParenthesis
 				? LineBreakPosition.BeforeNode | LineBreakPosition.AfterNode
 				: LineBreakPosition.AfterNode;
-		}
-
-		private static int GetAfterTableReferenceIndentation(StatementGrammarNode node)
-		{
-			var tableReferenceNode = node.ParentNode;
-			return tableReferenceNode.GetDescendants(NonTerminals.NestedQuery).Any() ? -1 : 0;
 		}
 
 		private static LineBreakPosition GetOrderByBreakPosition(StatementGrammarNode node)
@@ -163,7 +156,7 @@ namespace SqlPad.Oracle
 				{
 					Name = "FormatStatement",
 					DefaultGestures = GenericCommands.FormatStatement.InputGestures,
-					ExecutionHandler = ExecutionHandlerImplementation
+					ExecutionHandler = c => new StandardStatementFormatter(c).FormatStatements()
 				};
 
 			SingleLineExecutionHandler =
@@ -171,206 +164,237 @@ namespace SqlPad.Oracle
 				{
 					Name = "FormatStatementAsSingleLine",
 					DefaultGestures = GenericCommands.FormatStatementAsSingleLine.InputGestures,
-					ExecutionHandler = SingleLineExecutionHandlerImplementation
+					ExecutionHandler = c => new SingleLineStatementFormatter(c).FormatStatements()
 				};
 		}
 
-		private void SingleLineExecutionHandlerImplementation(CommandExecutionContext executionContext)
+		private abstract class StatementFormatterBase
 		{
-			ExecutionHandlerImplementationInternal(executionContext, FormatStatementsAsSingleLine);
-		}
+			protected readonly CommandExecutionContext ExecutionContext;
 
-		private void ExecutionHandlerImplementation(CommandExecutionContext executionContext)
-		{
-			ExecutionHandlerImplementationInternal(executionContext, FormatStatements);
-		}
-
-		private void ExecutionHandlerImplementationInternal(CommandExecutionContext executionContext, Func<ICollection<StatementBase>, string> formatFunction)
-		{
-			if (executionContext.DocumentRepository == null)
-				return;
-
-			var statementsToFormat = executionContext.DocumentRepository.Statements.Where(s => s.SourcePosition.IndexStart <= executionContext.SelectionEnd && s.SourcePosition.IndexEnd + 1 >= executionContext.SelectionStart && s.RootNode != null)
-				.OrderBy(s => s.SourcePosition.IndexStart)
-				.ToArray();
-
-			if (statementsToFormat.Length == 0)
-				return;
-
-			var indextStart = statementsToFormat[0].RootNode.FirstTerminalNode.SourcePosition.IndexStart;
-
-			var lastStatement = statementsToFormat[statementsToFormat.Length - 1];
-			var lastStatementIndexEnd = lastStatement.TerminatorNode == null
-				? lastStatement.RootNode.LastTerminalNode.SourcePosition.IndexEnd
-				: lastStatement.TerminatorNode.SourcePosition.IndexEnd;
-
-			var formattedStatement =
-				new TextSegment
-				{
-					Text = formatFunction(statementsToFormat),
-					IndextStart = indextStart,
-					Length = lastStatementIndexEnd - indextStart + 1,
-				};
-
-			executionContext.SegmentsToReplace.Add(formattedStatement);
-		}
-
-		private string FormatStatementsAsSingleLine(ICollection<StatementBase> formattedStatements)
-		{
-			var builder = new StringBuilder();
-
-			var statementIndex = 0;
-			foreach (var statement in formattedStatements)
+			protected StatementFormatterBase(CommandExecutionContext executionContext)
 			{
-				FormatStatementAsSingleLine(statement, builder);
+				ExecutionContext = executionContext;
+			}
 
-				if (++statementIndex < formattedStatements.Count)
+			public abstract void FormatStatements();
+
+			protected IEnumerable<StatementBase> Statements
+			{
+				get
 				{
-					builder.AppendLine();
+					var statements = ExecutionContext.DocumentRepository.Statements.Where(s => s.RootNode != null);
+					return ExecutionContext.SelectionLength == 0
+						? statements.Where(s => s.SourcePosition.ContainsIndex(ExecutionContext.CaretOffset))
+						: statements.Where(s => s.SourcePosition.IndexStart < ExecutionContext.SelectionEnd && s.SourcePosition.IndexEnd >= ExecutionContext.SelectionStart);
+				}
+			} 
+		}
+
+		private class SingleLineStatementFormatter : StatementFormatterBase
+		{
+			public SingleLineStatementFormatter(CommandExecutionContext executionContext)
+				: base(executionContext)
+			{
+			}
+
+			public override void FormatStatements()
+			{
+				foreach (var statement in Statements)
+				{
+					FormatStatementAsSingleLine(statement);
 				}
 			}
 
-			return builder.ToString();
-		}
-
-		private void FormatStatementAsSingleLine(StatementBase statement, StringBuilder builder)
-		{
-			var terminals = ((IEnumerable<StatementNode>) statement.AllTerminals).Concat(statement.Comments);
-			StatementNode precedingNode = null;
-			foreach (var terminal in terminals.OrderBy(t => t.Token.Index))
+			private void FormatStatementAsSingleLine(StatementBase statement)
 			{
-				var precedingGrammarTerminal = precedingNode as StatementGrammarNode;
-				var grammarTerminal = terminal as StatementGrammarNode;
-				if (precedingNode != null && precedingGrammarTerminal != null && !SingleLineNoSpaceAfterTerminals.Contains(precedingGrammarTerminal.Id) && grammarTerminal != null && !SingleLineNoSpaceBeforeTerminals.Contains(grammarTerminal.Id))
+				var builder = new StringBuilder();
+				IEnumerable<StatementNode> terminals = ((IEnumerable<StatementNode>)statement.AllTerminals).Concat(statement.Comments).OrderBy(t => t.Token.Index);
+				if (ExecutionContext.SelectionLength > 0)
 				{
-					builder.Append(' ');
+					terminals = terminals.Where(t => t.SourcePosition.IndexStart <= ExecutionContext.SelectionEnd && t.SourcePosition.IndexEnd + 1 >= ExecutionContext.SelectionStart);
 				}
 
-				builder.Append(terminal.Token.Value);
-
-				precedingNode = terminal;
-			}
-
-			AppendTerminatorIfExists(statement, builder);
-		}
-
-		private void AppendTerminatorIfExists(StatementBase statement, StringBuilder builder)
-		{
-			if (statement.TerminatorNode != null)
-			{
-				builder.Append(statement.TerminatorNode.Token.Value);
-			}			
-		}
-
-		private string FormatStatements(IEnumerable<StatementBase> formattedStatements)
-		{
-			var builder = new StringBuilder();
-			var skipSpaceBeforeToken = false;
-
-			foreach (var statement in formattedStatements)
-			{
-				var indentation = String.Empty;
-				FormatNode(statement.RootNode, builder, ref skipSpaceBeforeToken, ref indentation);
-
-				AppendTerminatorIfExists(statement, builder);
-			}
-
-			return builder.ToString();
-		}
-
-		private void FormatNode(StatementGrammarNode startNode, StringBuilder stringBuilder, ref bool skipSpaceBeforeToken, ref string indentation)
-		{
-			var childIndex = 0;
-			var childNodes = ((IEnumerable<StatementNode>)startNode.ChildNodes)
-				.Concat(startNode.Comments)
-				.OrderBy(n => n.SourcePosition.IndexStart);
-			
-			foreach (var childNode in childNodes)
-			{
-				var grammarNode = childNode as StatementGrammarNode;
-				if (grammarNode == null)
+				StatementNode precedingNode = null;
+				var textSegment = new TextSegment();
+				foreach (var terminal in terminals)
 				{
-					stringBuilder.Append(childNode.Token.Value);
-					continue;
-				}
-
-				var lineBreakSettings = LineBreaks.SingleOrDefault(s => s.NonTerminalId == startNode.Id && s.ChildNodeId == grammarNode.Id);
-				if (String.IsNullOrEmpty(lineBreakSettings.NonTerminalId))
-				{
-					lineBreakSettings = LineBreaks.SingleOrDefault(s => s.NonTerminalId == startNode.Id && String.IsNullOrEmpty(s.ChildNodeId));
-				}
-
-				var breakSettingsFound = !String.IsNullOrEmpty(lineBreakSettings.NonTerminalId);
-
-				var breakBefore = false;
-				var breakBeforeSettingsFound = breakSettingsFound && (!String.IsNullOrEmpty(lineBreakSettings.ChildNodeId) || childIndex == 0);
-				if (breakBeforeSettingsFound)
-				{
-					var indentationBefore = lineBreakSettings.GetIndentationBefore == null ? 0 : lineBreakSettings.GetIndentationBefore(grammarNode);
-					if (indentationBefore > 0)
+					var precedingGrammarTerminal = precedingNode as StatementGrammarNode;
+					var grammarTerminal = terminal as StatementGrammarNode;
+					if (precedingNode != null && precedingGrammarTerminal != null && !SingleLineNoSpaceAfterTerminals.Contains(precedingGrammarTerminal.Id) && grammarTerminal != null && !SingleLineNoSpaceBeforeTerminals.Contains(grammarTerminal.Id))
 					{
-						indentation += new String('\t', indentationBefore);
-					}
-					else if (indentationBefore < 0)
-					{
-						indentation = indentation.Remove(0, Math.Min(-indentationBefore, indentation.Length));
+						builder.Append(' ');
 					}
 
-					breakBefore = lineBreakSettings.BreakPosition != null && (lineBreakSettings.BreakPosition(grammarNode) & LineBreakPosition.BeforeNode) != LineBreakPosition.None;
-					if (breakBefore)
-					{
-						stringBuilder.Append(Environment.NewLine);
-						stringBuilder.Append(indentation);
+					builder.Append(terminal.Token.Value);
 
-						if (grammarNode.Type == NodeType.NonTerminal)
+					if (precedingNode == null)
+					{
+						textSegment.IndextStart = terminal.SourcePosition.IndexStart;
+					}
+
+					precedingNode = terminal;
+				}
+
+				if (precedingNode == null)
+				{
+					return;
+				}
+
+				textSegment.Length = precedingNode.SourcePosition.IndexEnd - textSegment.IndextStart + 1;
+				textSegment.Text = builder.ToString();
+
+				ExecutionContext.SegmentsToReplace.Add(textSegment);
+			}
+		}
+
+		private class StandardStatementFormatter : StatementFormatterBase
+		{
+			public StandardStatementFormatter(CommandExecutionContext executionContext) :base(executionContext)
+			{
+			}
+
+			public override void FormatStatements()
+			{
+				var skipSpaceBeforeToken = false;
+
+				foreach (var statement in Statements)
+				{
+					var builder = new StringBuilder();
+					var indentation = String.Empty;
+					var textSegment = new TextSegment { IndextStart = -1 };
+					FormatNode(statement.RootNode, builder, ref skipSpaceBeforeToken, ref indentation, ref textSegment);
+
+					textSegment.Text = builder.ToString();
+
+					ExecutionContext.SegmentsToReplace.Add(textSegment);
+				}
+			}
+
+			private void FormatNode(StatementGrammarNode startNode, StringBuilder stringBuilder, ref bool skipSpaceBeforeToken, ref string indentation, ref TextSegment textSegment)
+			{
+				var childIndex = 0;
+				var childNodes = ((IEnumerable<StatementNode>)startNode.ChildNodes)
+					.Concat(startNode.Comments)
+					.OrderBy(n => n.SourcePosition.IndexStart);
+
+				var formatSelectionOnly = ExecutionContext.SelectionLength > 0;
+
+				foreach (var childNode in childNodes)
+				{
+					if (formatSelectionOnly)
+					{
+						if (childNode.SourcePosition.IndexEnd <= ExecutionContext.SelectionStart)
 						{
-							skipSpaceBeforeToken = true;
+							continue;
+						}
+
+						if (childNode.SourcePosition.IndexStart >= ExecutionContext.SelectionEnd)
+						{
+							break;
 						}
 					}
-				}
 
-				if (grammarNode.Type == NodeType.Terminal)
-				{
-					if ((!breakSettingsFound || !breakBefore) &&
-						(!SingleCharacterTerminals.Contains(grammarNode.Id) ||
-					     OracleGrammarDescription.MathTerminals.Contains(grammarNode.Id) ||
-						 grammarNode.Id == Terminals.Colon) &&
-					    !skipSpaceBeforeToken && stringBuilder.Length > 0)
+					if (childNode.Token != null)
 					{
-						stringBuilder.Append(' ');
+						if (textSegment.IndextStart == -1)
+						{
+							textSegment.IndextStart = childNode.SourcePosition.IndexStart;
+						}
+
+						textSegment.Length = childNode.SourcePosition.IndexEnd - textSegment.IndextStart + 1;
 					}
 
-					stringBuilder.Append(grammarNode.Token.Value);
-
-					skipSpaceBeforeToken = SkipSpaceTerminalIds.Contains(grammarNode.Id) || grammarNode.Id.In(Terminals.Dot, Terminals.Colon, Terminals.AtCharacter);
-				}
-				else
-				{
-					FormatNode(grammarNode, stringBuilder, ref skipSpaceBeforeToken, ref indentation);
-				}
-
-				var breakAfterSettingsFound = breakSettingsFound && (!String.IsNullOrEmpty(lineBreakSettings.ChildNodeId) || childIndex + 1 == startNode.ChildNodes.Count);
-				if (breakAfterSettingsFound)
-				{
-					var indentationAfter = lineBreakSettings.GetIndentationAfter == null ? 0 : lineBreakSettings.GetIndentationAfter(grammarNode);
-					if (indentationAfter > 0)
+					var grammarNode = childNode as StatementGrammarNode;
+					if (grammarNode == null)
 					{
-						indentation += new String('\t', indentationAfter);
-					}
-					else if (indentationAfter < 0)
-					{
-						indentation = indentation.Remove(0, Math.Min(-indentationAfter, indentation.Length));
+						stringBuilder.Append(childNode.Token.Value);
+						continue;
 					}
 
-					if (lineBreakSettings.BreakPosition != null && (lineBreakSettings.BreakPosition(grammarNode) & LineBreakPosition.AfterNode) != LineBreakPosition.None)
+					var lineBreakSettings = LineBreaks.SingleOrDefault(s => s.NonTerminalId == startNode.Id && s.ChildNodeId == grammarNode.Id);
+					if (String.IsNullOrEmpty(lineBreakSettings.NonTerminalId))
 					{
-						stringBuilder.Append(Environment.NewLine);
-						skipSpaceBeforeToken = true;
-						stringBuilder.Append(indentation);
+						lineBreakSettings = LineBreaks.SingleOrDefault(s => s.NonTerminalId == startNode.Id && String.IsNullOrEmpty(s.ChildNodeId));
 					}
-				}
 
-				childIndex++;
+					var breakSettingsFound = !String.IsNullOrEmpty(lineBreakSettings.NonTerminalId);
+
+					var breakBefore = false;
+					var breakBeforeSettingsFound = breakSettingsFound && (!String.IsNullOrEmpty(lineBreakSettings.ChildNodeId) || childIndex == 0);
+					if (breakBeforeSettingsFound)
+					{
+						var indentationBefore = lineBreakSettings.GetIndentationBefore == null ? 0 : lineBreakSettings.GetIndentationBefore(grammarNode);
+						if (indentationBefore > 0)
+						{
+							indentation += new String('\t', indentationBefore);
+						}
+						else if (indentationBefore < 0)
+						{
+							indentation = indentation.Remove(0, Math.Min(-indentationBefore, indentation.Length));
+						}
+
+						breakBefore = lineBreakSettings.BreakPosition != null && (lineBreakSettings.BreakPosition(grammarNode) & LineBreakPosition.BeforeNode) != LineBreakPosition.None;
+						if (breakBefore)
+						{
+							stringBuilder.Append(Environment.NewLine);
+							stringBuilder.Append(indentation);
+
+							if (grammarNode.Type == NodeType.NonTerminal)
+							{
+								skipSpaceBeforeToken = true;
+							}
+						}
+					}
+
+					if (grammarNode.Type == NodeType.Terminal)
+					{
+						if ((!breakSettingsFound || !breakBefore) &&
+							(!SingleCharacterTerminals.Contains(grammarNode.Id) ||
+							 OracleGrammarDescription.MathTerminals.Contains(grammarNode.Id) ||
+							 grammarNode.Id == Terminals.Colon) &&
+							!skipSpaceBeforeToken && stringBuilder.Length > 0)
+						{
+							stringBuilder.Append(' ');
+						}
+
+						stringBuilder.Append(grammarNode.Token.Value);
+
+						skipSpaceBeforeToken = SkipSpaceTerminalIds.Contains(grammarNode.Id) || grammarNode.Id.In(Terminals.Dot, Terminals.Colon, Terminals.AtCharacter);
+
+						if (formatSelectionOnly && grammarNode.SourcePosition.IndexEnd >= ExecutionContext.SelectionEnd)
+						{
+							break;
+						}
+					}
+					else
+					{
+						FormatNode(grammarNode, stringBuilder, ref skipSpaceBeforeToken, ref indentation, ref textSegment);
+					}
+
+					var breakAfterSettingsFound = breakSettingsFound && (!String.IsNullOrEmpty(lineBreakSettings.ChildNodeId) || childIndex + 1 == startNode.ChildNodes.Count);
+					if (breakAfterSettingsFound)
+					{
+						var indentationAfter = lineBreakSettings.GetIndentationAfter == null ? 0 : lineBreakSettings.GetIndentationAfter(grammarNode);
+						if (indentationAfter > 0)
+						{
+							indentation += new String('\t', indentationAfter);
+						}
+						else if (indentationAfter < 0)
+						{
+							indentation = indentation.Remove(0, Math.Min(-indentationAfter, indentation.Length));
+						}
+
+						if (lineBreakSettings.BreakPosition != null && (lineBreakSettings.BreakPosition(grammarNode) & LineBreakPosition.AfterNode) != LineBreakPosition.None)
+						{
+							stringBuilder.Append(Environment.NewLine);
+							skipSpaceBeforeToken = true;
+							stringBuilder.Append(indentation);
+						}
+					}
+
+					childIndex++;
+				}
 			}
 		}
 	}

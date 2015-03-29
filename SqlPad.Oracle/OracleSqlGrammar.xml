@@ -5086,6 +5086,7 @@
     <Rule StartingNonTerminal="RowPatternMeasureColumn">
       <Sequences>
         <Sequence>
+          <!-- TODO: Add row_pattern_navigation_func -->
           <NonTerminal Id="Expression" />
           <Terminal Id="As" />
           <Terminal Id="ColumnAlias" />
@@ -15698,7 +15699,6 @@
     <Terminal Id="NullIf" Value="NULLIF" />
     <Terminal Id="NoNullIf" Value="NONULLIF" />
     <Terminal Id="CommaSeparatedValue" Value="CSV" />
-    <Terminal Id="WithOrWithout" Value="WITHORWITHOUT" />
     <Terminal Id="Embedded" Value="EMBEDDED" />
     <Terminal Id="Transforms" Value="TRANSFORMS" />
     <Terminal Id="Concat" Value="CONCAT" />

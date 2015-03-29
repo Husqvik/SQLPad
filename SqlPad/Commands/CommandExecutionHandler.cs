@@ -22,7 +22,9 @@ namespace SqlPad.Commands
 
 	public class CommandExecutionContext
 	{
-		public readonly ICollection<TextSegment> SegmentsToReplace = new List<TextSegment>();
+		private readonly List<TextSegment> _segmentsToReplace = new List<TextSegment>();
+
+		public IList<TextSegment> SegmentsToReplace { get { return _segmentsToReplace; } }
 
 		public string StatementText { get; private set; }
 		

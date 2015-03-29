@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using NUnit.Framework;
 using Shouldly;
 using SqlPad.Commands;
@@ -58,7 +57,7 @@ ORDER BY
 			var executionContext = new CommandExecutionContext(sourceFormat, 0, 0, 0, _documentRepository);
 			Formatter.SingleLineExecutionHandler.ExecutionHandler(executionContext);
 
-			const string expectedFormat = "SELECT SELECTION.NAME, COUNT (*) OVER (PARTITION BY NAME ORDER BY RESPONDENTBUCKET_ID, SELECTION_ID) DUMMY_COUNT, MAX (RESPONDENTBUCKET_ID) KEEP (DENSE_RANK FIRST ORDER BY PROJECT_ID, SELECTION_ID) FROM SELECTION LEFT JOIN RESPONDENTBUCKET ON SELECTION.RESPONDENTBUCKET_ID = RESPONDENTBUCKET.RESPONDENTBUCKET_ID LEFT JOIN TARGETGROUP ON RESPONDENTBUCKET.TARGETGROUP_ID = TARGETGROUP.TARGETGROUP_ID ORDER BY NAME, SELECTION_ID;";
+			const string expectedFormat = "SELECT SELECTION.NAME, COUNT (*) OVER (PARTITION BY NAME ORDER BY RESPONDENTBUCKET_ID, SELECTION_ID) DUMMY_COUNT, MAX (RESPONDENTBUCKET_ID) KEEP (DENSE_RANK FIRST ORDER BY PROJECT_ID, SELECTION_ID) FROM SELECTION LEFT JOIN RESPONDENTBUCKET ON SELECTION.RESPONDENTBUCKET_ID = RESPONDENTBUCKET.RESPONDENTBUCKET_ID LEFT JOIN TARGETGROUP ON RESPONDENTBUCKET.TARGETGROUP_ID = TARGETGROUP.TARGETGROUP_ID ORDER BY NAME, SELECTION_ID";
 
 			AssertFormattedResult(executionContext, expectedFormat);
 		}
@@ -83,9 +82,13 @@ FROM
 			var executionContext = new CommandExecutionContext(sourceFormat, 0, 0, sourceFormat.Length, _documentRepository);
 			Formatter.SingleLineExecutionHandler.ExecutionHandler(executionContext);
 
-			var expectedFormat = "SELECT DUMMY FROM DUAL;" + Environment.NewLine + "SELECT DUMMY FROM DUAL@DBLINK;";
-
-			AssertFormattedResult(executionContext, expectedFormat);
+			executionContext.SegmentsToReplace.Count.ShouldBe(2);
+			executionContext.SegmentsToReplace[0].Text.ShouldBe("SELECT DUMMY FROM DUAL");
+			executionContext.SegmentsToReplace[0].IndextStart.ShouldBe(0);
+			executionContext.SegmentsToReplace[0].Length.ShouldBe(27);
+			executionContext.SegmentsToReplace[1].Text.ShouldBe("SELECT DUMMY FROM DUAL@DBLINK");
+			executionContext.SegmentsToReplace[1].IndextStart.ShouldBe(34);
+			executionContext.SegmentsToReplace[1].Length.ShouldBe(36);
 		}
 
 		[Test(Description = @"")]
@@ -110,13 +113,12 @@ FROM
 			var formattedSegment = executionContext.SegmentsToReplace.First();
 			formattedSegment.Text.ShouldBe(expectedFormat);
 			formattedSegment.IndextStart.ShouldBe(0);
-			formattedSegment.Length.ShouldBe(executionContext.StatementText.Length);
 		}
 
-		private CommandExecutionContext ExecututeFormatCommand(string sourceFormat)
+		private CommandExecutionContext ExecututeFormatCommand(string sourceFormat, int selectionStart = 0, int selectionLength = 0)
 		{
 			_documentRepository.UpdateStatements(sourceFormat);
-			var executionContext = new CommandExecutionContext(sourceFormat, 0, 0, 0, _documentRepository);
+			var executionContext = new CommandExecutionContext(sourceFormat, 0, selectionStart, selectionLength, _documentRepository);
 			Formatter.ExecutionHandler.ExecutionHandler(executionContext);
 			return executionContext;
 		}
@@ -156,8 +158,8 @@ FROM (
 			DUMMY
 		FROM
 			DUAL
-	) X
-) X";
+		) X
+	) X";
 
 			AssertFormattedResult(executionContext, expectedFormat);
 		}
@@ -187,7 +189,7 @@ FROM (
 			DUMMY
 		FROM
 			DUAL)
-) X";
+	) X";
 
 			AssertFormattedResult(executionContext, expectedFormat);
 		}
@@ -212,6 +214,23 @@ FROM (
 		DUAL) SQ2
 FROM
 	DUAL";
+
+			AssertFormattedResult(executionContext, expectedFormat);
+		}
+
+		[Test(Description = @"")]
+		public void TestFormatSelectedText()
+		{
+			const string sourceFormat = "SELECT C1, C2, C3 FROM (SELECT 1 C1, 2 C2, 3 C3 FROM DUAL)";
+			var executionContext = ExecututeFormatCommand(sourceFormat, 0, 25);
+
+			const string expectedFormat =
+@"SELECT
+	C1,
+	C2,
+	C3
+FROM (
+	SELECT";
 
 			AssertFormattedResult(executionContext, expectedFormat);
 		}
