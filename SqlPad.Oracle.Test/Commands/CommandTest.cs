@@ -1391,7 +1391,7 @@ SELECT * FROM DUAL";
 			CanExecuteCommand(OracleCommands.Unquote).ShouldBe(true);
 			ExecuteCommand(OracleCommands.Unquote);
 
-			const string expectedResult = @"SELECT ""CaseSensitiveTable"".""CaseSensitiveColumn"" CaseSensitiveColumn FROM ""CaseSensitiveTable""";
+			const string expectedResult = @"SELECT CaseSensitiveTable.""CaseSensitiveColumn"" CaseSensitiveColumn FROM ""CaseSensitiveTable"" CaseSensitiveTable";
 
 			_editor.Text.ShouldBe(expectedResult);
 			_editor.CaretOffset.ShouldBe(0);
@@ -1422,6 +1422,20 @@ SELECT * FROM DUAL";
 			ExecuteCommand(OracleCommands.Unquote);
 
 			const string expectedResult = @"SELECT ""CaseSensitiveColumn"" Alias, ""CaseSensitiveColumn"" CaseSensitiveColumn FROM INVOICELINES";
+
+			_editor.Text.ShouldBe(expectedResult);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestUnquoteCommandWithExistingObjectQuotedAlias()
+		{
+			const string statementText = @"SELECT ""ObjectAlias"".* FROM ""CaseSensitiveTable"" ""ObjectAlias""";
+			_editor.Text = statementText;
+
+			CanExecuteCommand(OracleCommands.Unquote).ShouldBe(true);
+			ExecuteCommand(OracleCommands.Unquote);
+
+			const string expectedResult = @"SELECT ObjectAlias.* FROM ""CaseSensitiveTable"" ObjectAlias";
 
 			_editor.Text.ShouldBe(expectedResult);
 		}
