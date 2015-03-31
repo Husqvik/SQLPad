@@ -1643,13 +1643,25 @@ namespace SqlPad.Oracle
 			var queryBlockNode = node.GetAncestor(NonTerminals.QueryBlock);
 			if (queryBlockNode == null)
 			{
+				OracleQueryBlock queryBlock = null;
 				var orderByClauseNode = node.GetPathFilterAncestor(n => n.Id != NonTerminals.NestedQuery, NonTerminals.OrderByClause, true);
-				if (orderByClauseNode == null)
-					return null;
-				
-				var queryBlock = _queryBlockNodes.Values.SingleOrDefault(qb => qb.OrderByClause == orderByClauseNode);
+				if (orderByClauseNode != null)
+				{
+					queryBlock = _queryBlockNodes.Values.SingleOrDefault(qb => qb.OrderByClause == orderByClauseNode);
+				}
+				else
+				{
+					var explicitColumnListNode = node.GetPathFilterAncestor(n => n.Id != NonTerminals.NestedQuery, NonTerminals.ParenthesisEnclosedIdentifierList);
+					if (explicitColumnListNode != null)
+					{
+						queryBlock = _queryBlockNodes.Values.SingleOrDefault(qb => qb.AliasNode != null && qb.ExplicitColumnNameList == explicitColumnListNode);
+					}
+				}
+
 				if (queryBlock == null)
+				{
 					return null;
+				}
 
 				queryBlockNode = queryBlock.RootNode;
 			}

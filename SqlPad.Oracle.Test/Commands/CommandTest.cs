@@ -655,6 +655,40 @@ WHERE
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestFindColumnUsagesAtRecursiveCommonTableExpressionExplicitColumnDefinition()
+		{
+			const string statement =
+@"WITH CTE(VAL) AS (
+	SELECT 1 FROM DUAL
+	UNION ALL
+	SELECT VAL + 1 FROM CTE WHERE VAL < 10
+)
+SELECT VAL FROM CTE";
+
+			var foundSegments = FindUsagesOrdered(statement, 10);
+			foundSegments.Count.ShouldBe(1);
+
+			// TODO: Make proper implementation
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestFindObjectUsagesWithinRecursiveCommonTableExpression()
+		{
+			const string statement =
+@"WITH CTE(VAL) AS (
+	SELECT 1 FROM DUAL
+	UNION ALL
+	SELECT VAL + 1 FROM CTE WHERE VAL < 10
+)
+SELECT VAL FROM CTE";
+
+			var foundSegments = FindUsagesOrdered(statement, 75);
+			foundSegments.Count.ShouldBe(2);
+
+			// TODO: Make proper implementation
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestUnnestCommand()
 		{
 			_editor.Text = @"SELECT IV.TEST_COLUMN || ' ADDED' FROM PROJECT, (SELECT SELECTION.NAME || ' FROM INLINE_VIEW ' TEST_COLUMN FROM SELECTION) IV, RESPONDENTBUCKET";

@@ -183,10 +183,17 @@ namespace SqlPad.Oracle.Commands
 				nodes.Add(dataObjectReference.AliasNode);
 			}
 
-			if (objectReference.QueryBlocks.Count == 1 && objectReference.Type == ReferenceType.CommonTableExpression )
+			if (objectReference.QueryBlocks.Count == 1 && objectReference.Type == ReferenceType.CommonTableExpression)
 			{
 				var referencedQueryBlock = objectReference.QueryBlocks.First();
-				nodes.Add(referencedQueryBlock.AliasNode);
+				if (referencedQueryBlock.PrecedingConcatenatedQueryBlock != null && referencedQueryBlock.PrecedingConcatenatedQueryBlock.IsRecursive)
+				{
+					nodes.Add(referencedQueryBlock.PrecedingConcatenatedQueryBlock.AliasNode);
+				}
+				else
+				{
+					nodes.Add(referencedQueryBlock.AliasNode);
+				}
 
 				if (referencedQueryBlock.FollowingConcatenatedQueryBlock != null)
 				{
