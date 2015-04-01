@@ -1802,6 +1802,18 @@ FROM
 		}
 
 		[Test(Description = @"")]
+		public void TestKeywordSuggestionJustBeforeClosingParenthesisInWhereClause()
+		{
+			const string testQuery = "SELECT * FROM (SELECT * FROM DUAL WH)";
+
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, testQuery, 36, true, OracleCodeCompletionCategory.Keyword).ToArray();
+			items.Length.ShouldBe(1);
+			items[0].Text.ShouldBe("WHERE");
+			items[0].StatementNode.ShouldNotBe(null);
+			items[0].StatementNode.Token.Value.ShouldBe("WH");
+		}
+
+		[Test(Description = @"")]
 		public void TestColumnSuggestionAtReservedWordRepresentingFunction()
 		{
 			const string testQuery = "SELECT USER FROM DUAL";

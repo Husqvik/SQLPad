@@ -343,7 +343,9 @@ namespace SqlPad.Oracle
 		private void ResolveCurrentTerminalValue(StatementGrammarNode terminal)
 		{
 			TerminalValueUnderCursor = terminal.Token.Value;
-			TerminalValuePartUntilCaret = terminal.Token.Value.Substring(0, CursorPosition - terminal.SourcePosition.IndexStart).Trim('"');
+			TerminalValuePartUntilCaret = CursorPosition > terminal.SourcePosition.IndexEnd + 1
+				? String.Empty
+				: terminal.Token.Value.Substring(0, CursorPosition - terminal.SourcePosition.IndexStart).Trim('"');
 		}
 
 		private void AnalyzeObjectReferencePrefixes(StatementGrammarNode effectiveTerminal)
@@ -361,7 +363,8 @@ namespace SqlPad.Oracle
 		private void AnalyzePrefixedColumnReference(StatementGrammarNode effectiveTerminal)
 		{
 			IsNewExpressionWithInvalidGrammar = effectiveTerminal.Id == Terminals.SchemaIdentifier && effectiveTerminal.FollowingTerminal != null && effectiveTerminal.FollowingTerminal.Id == Terminals.ObjectIdentifier;
-			if (IsNewExpressionWithInvalidGrammar)
+			var isObjectAlias = String.Equals(effectiveTerminal.Id, Terminals.ObjectAlias);
+			if (IsNewExpressionWithInvalidGrammar || isObjectAlias)
 			{
 				ReferenceIdentifier =
 					new ReferenceIdentifier
@@ -369,12 +372,14 @@ namespace SqlPad.Oracle
 						Identifier = effectiveTerminal,
 						CursorPosition = CursorPosition
 					};
+
+				ResolveCurrentTerminalValue(effectiveTerminal);
 				
 				return;
 			}
 
-			var prefixedColumnReference = effectiveTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference);
-			var prefix = effectiveTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression && n.Id != NonTerminals.AliasedExpressionOrAllTableColumns, NonTerminals.Prefix);
+			var prefixedColumnReference = effectiveTerminal.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.Expression), NonTerminals.PrefixedColumnReference);
+			var prefix = effectiveTerminal.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.Expression) && !String.Equals(n.Id, NonTerminals.AliasedExpressionOrAllTableColumns), NonTerminals.Prefix);
 			var lookupNode = prefixedColumnReference ?? prefix;
 			if (lookupNode == null && effectiveTerminal.Id.In(Terminals.Asterisk, Terminals.User, Terminals.SystemDate, Terminals.Level, Terminals.RowIdPseudoColumn, Terminals.Null))
 			{
@@ -387,7 +392,9 @@ namespace SqlPad.Oracle
 			}
 
 			if (lookupNode == null)
+			{
 				return;
+			}
 
 			var identifiers = lookupNode.GetPathFilterDescendants(n => n.Id != NonTerminals.Expression && n.Id != NonTerminals.AliasedExpressionOrAllTableColumns, Terminals.SchemaIdentifier, Terminals.ObjectIdentifier, Terminals.Identifier, Terminals.Asterisk, Terminals.User, Terminals.SystemDate, Terminals.Level, Terminals.RowIdPseudoColumn, Terminals.Null).ToList();
 			ReferenceIdentifier = BuildReferenceIdentifier(identifiers);
