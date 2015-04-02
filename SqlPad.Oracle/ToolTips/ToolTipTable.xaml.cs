@@ -380,4 +380,13 @@ namespace SqlPad.Oracle.ToolTips
 			throw new NotImplementedException();
 		}
 	}
+
+	public class SimpleIdentifierConverter : ValueConverterBase
+	{
+		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			var stringValue = (string)value;
+			return String.IsNullOrEmpty(stringValue) ? ValueNotAvailable : stringValue.ToSimpleIdentifier();
+		}
+	}
 }

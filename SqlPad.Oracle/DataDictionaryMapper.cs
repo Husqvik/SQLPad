@@ -623,13 +623,13 @@ namespace SqlPad.Oracle
 				new OracleMaterializedView
 				{
 					FullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(reader["OWNER"]), QualifyStringObject(reader["NAME"])),
-					TableName = (string)reader["TABLE_NAME"],
+					TableName = QualifyStringObject(reader["TABLE_NAME"]),
 					IsPrebuilt = (string)reader["OWNER"] == "YES",
 					IsUpdatable = (string)reader["OWNER"] == "YES",
 					LastRefresh = OracleReaderValueConvert.ToDateTime(reader["LAST_REFRESH"]),
 					Next = OracleReaderValueConvert.ToString(reader["NEXT"]),
 					Query = (string)reader["QUERY"],
-					RefreshGroup = OracleReaderValueConvert.ToString(reader["REFRESH_GROUP"]),
+					RefreshGroup = QualifyStringObject(reader["REFRESH_GROUP"]),
 					RefreshMethod = (string)reader["REFRESH_METHOD"],
 					RefreshMode = refreshModeRaw == "DEMAND" ? MaterializedViewRefreshMode.OnDemand : MaterializedViewRefreshMode.OnCommit,
 					RefreshType = MapMaterializedViewRefreshType((string)reader["TYPE"]),

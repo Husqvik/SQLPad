@@ -15,6 +15,7 @@
 			<sqlPad:DateTimeLabelConverter x:Key="DateTimeLabelConverter" />
 			<sqlPad:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
 			<toolTips:MaterializedViewPropertyConverter x:Key="MaterializedViewPropertyConverter" />
+			<toolTips:SimpleIdentifierConverter x:Key="SimpleIdentifierConverter" />
 		</StackPanel.Resources>
 		<GroupBox BorderThickness="0">
 			<GroupBox.Header>
@@ -53,7 +54,7 @@
 				<TextBlock Grid.Row="7" Grid.Column="0" Text="Is updatable: " />
 				<TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding IsUpdatable, Converter={StaticResource BooleanConverter}}" />
 				<TextBlock Grid.Row="8" Grid.Column="0" Text="Refresh group: " Visibility="{Binding RefreshGroup, Converter={StaticResource ObjectToVisibilityConverter}}" />
-				<TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding RefreshGroup}" Visibility="{Binding RefreshGroup, Converter={StaticResource ObjectToVisibilityConverter}}" />
+				<TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding RefreshGroup, Converter={StaticResource SimpleIdentifierConverter}}" Visibility="{Binding RefreshGroup, Converter={StaticResource ObjectToVisibilityConverter}}" />
 			</Grid>
 		</GroupBox>
 		<toolTips:ToolTipTable Padding="0" />
