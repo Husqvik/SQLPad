@@ -1475,6 +1475,34 @@ SELECT * FROM DUAL";
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestUnquoteCommandWithObjectOverDatabaseLink()
+		{
+			const string statementText = @"SELECT ""CaseSensitiveTable"".* FROM ""CaseSensitiveTable""@HQ_PDB_LOOPBACK";
+			_editor.Text = statementText;
+
+			CanExecuteCommand(OracleCommands.Unquote).ShouldBe(true);
+			ExecuteCommand(OracleCommands.Unquote);
+
+			const string expectedResult = @"SELECT CaseSensitiveTable.* FROM ""CaseSensitiveTable""@HQ_PDB_LOOPBACK CaseSensitiveTable";
+
+			_editor.Text.ShouldBe(expectedResult);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestUnquoteCommandWithRedundantQuotes()
+		{
+			const string statementText = @"SELECT ""DUAL"".* FROM ""DUAL""";
+			_editor.Text = statementText;
+
+			CanExecuteCommand(OracleCommands.Unquote).ShouldBe(true);
+			ExecuteCommand(OracleCommands.Unquote);
+
+			const string expectedResult = @"SELECT DUAL.* FROM DUAL";
+
+			_editor.Text.ShouldBe(expectedResult);
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestConvertSingleBindVariableToLiteralCommand()
 		{
 			const string statementText = @"SELECT :1, :1 FROM DUAL";

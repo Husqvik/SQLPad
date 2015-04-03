@@ -124,13 +124,31 @@ namespace SqlPad.Oracle.Commands
 					});
 			}
 
-			_executionContext.SegmentsToReplace.Add(
-				new TextSegment
-				{
-					IndextStart = dataObjectReference.ObjectNode.SourcePosition.IndexEnd + 1,
-					Length = 0,
-					Text = " " + alias
-				});
+			var currentName = dataObjectReference.FullyQualifiedObjectName.NormalizedName;
+			var isUnquotable = !String.Equals(alias, currentName) && String.Equals(alias.ToQuotedIdentifier(), currentName);
+			TextSegment textSegment;
+			if (isUnquotable)
+			{
+				textSegment =
+						new TextSegment
+						{
+							IndextStart = dataObjectReference.ObjectNode.SourcePosition.IndexStart,
+							Length = dataObjectReference.ObjectNode.SourcePosition.Length,
+							Text = alias
+						};
+			}
+			else
+			{
+				textSegment =
+					new TextSegment
+					{
+						IndextStart = (dataObjectReference.DatabaseLinkNode ?? dataObjectReference.ObjectNode).SourcePosition.IndexEnd + 1,
+						Length = 0,
+						Text = String.Format(" {0}", alias)
+					};
+			}
+
+			_executionContext.SegmentsToReplace.Add(textSegment);
 		}
 
 		public void AddColumnAlias(StatementGrammarNode columnNode, OracleQueryBlock queryBlock, string columnNormalizedName, string alias)
