@@ -183,6 +183,28 @@
           <Terminal Id="ObjectIdentifier" />
           <Terminal Id="Limit" />
           <NonTerminal Id="ProfileOptionList" />
+          <NonTerminal Id="ContainerDatabaseOption" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ContainerDatabaseOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Container" />
+          <Terminal Id="MathEquals" />
+          <NonTerminal Id="CurrentOrAll" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="CurrentOrAll">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Current" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="All" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -5093,6 +5115,77 @@
         </Sequence>
       </Sequences>
     </Rule>
+
+    <!--row pattern recognition function-->
+    <Rule StartingNonTerminal="RowPatternNavigationFunction">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="RowPatternNavigationLogical" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="RowPatternNavigationCompound" />
+        </Sequence>
+        <!--<Sequence>
+          <NonTerminal Id="RowPatternAggregateFunction" />
+        </Sequence>-->
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="RowPatternNavigationLogical">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="RunningOrFinal" IsOptional="true" />
+          <NonTerminal Id="FirstOrLast" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="Expression" />
+          <NonTerminal Id="RowPatternNavigationOptionalOffset" IsOptional="true" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="RowPatternNavigationCompound">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="PreviousOrNext" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="RowPatternNavigationLogical" />
+          <NonTerminal Id="RowPatternNavigationOptionalOffset" IsOptional="true" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="RowPatternNavigationOptionalOffset">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="Expression" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PreviousOrNext">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Previous" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Next" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="RunningOrFinal">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Running" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Final" />
+        </Sequence>
+      </Sequences>
+    </Rule>
     
     <Rule StartingNonTerminal="RowPatternMeasureColumnListChained">
       <Sequences>
@@ -7694,7 +7787,19 @@
         <Sequence>
           <NonTerminal Id="CreateDirectory" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="CreateProfile" />
+        </Sequence>
         <!-- TODO: Create other objects -->
+      </Sequences>
+    </Rule>
+
+    <!-- CREATE PROFILE -->
+    <Rule StartingNonTerminal="CreateProfile">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="AlterProfile" />
+        </Sequence>
       </Sequences>
     </Rule>
 
@@ -15391,6 +15496,9 @@
     <Terminal Id="Past" Value="PAST" />
     <Terminal Id="One" Value="ONE" />
     <Terminal Id="Per" Value="PER" />
+    <Terminal Id="Previous" Value="PREV" />
+    <Terminal Id="Running" Value="RUNNING" />
+    <Terminal Id="Final" Value="FINAL" />
     <Terminal Id="QuestionMark" Value="?" />
     <Terminal Id="LeftBrace" Value="{" />
     <Terminal Id="RightBrace" Value="}" />
@@ -15638,6 +15746,7 @@
     <Terminal Id="Blob" Value="BLOB" />
     <Terminal Id="Modification" Value="MODIFICATION" />
     <Terminal Id="Partial" Value="PARTIAL" />
+    <Terminal Id="Container" Value="CONTAINER" />
     
     <!-- External table opaque format specification -->
     <Terminal Id="OracleLoader" Value="ORACLE_LOADER" />
