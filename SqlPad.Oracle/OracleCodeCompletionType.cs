@@ -246,7 +246,7 @@ namespace SqlPad.Oracle
 				var functionParameterOptionalExpression = EffectiveTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.OptionalParameterExpressionList, NonTerminals.OptionalParameterExpression);
 				if (functionParameterOptionalExpression != null)
 				{
-					var functionParameterExpression = functionParameterOptionalExpression.GetDescendantByPath(NonTerminals.Expression);
+					var functionParameterExpression = functionParameterOptionalExpression[NonTerminals.Expression];
 					SpecialFunctionParameter = functionParameterExpression != null && functionParameterExpression.TerminalCount == 1 && (functionParameterExpression.FirstTerminalNode.Id.IsLiteral() || functionParameterExpression.FirstTerminalNode.Id == Terminals.Identifier);
 				}
 			}
@@ -299,7 +299,7 @@ namespace SqlPad.Oracle
 			var aggregateFunctionCallNode = EffectiveTerminal.GetPathFilterAncestor(
 				n => n.Id != NonTerminals.QueryBlock,
 				n => n.Id == NonTerminals.AggregateFunctionCall ||
-				     (n.Id == NonTerminals.ColumnReference && n.GetDescendantByPath(NonTerminals.ParenthesisEnclosedAggregationFunctionParameters) != null));
+				     (n.Id == NonTerminals.ColumnReference && n[NonTerminals.ParenthesisEnclosedAggregationFunctionParameters] != null));
 			
 			var supportDistinct = EffectiveTerminal.ParentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, n => n.Id == NonTerminals.AggregateFunctionCall || n.Id == NonTerminals.ColumnReference) == null;
 			if (aggregateFunctionCallNode != null)

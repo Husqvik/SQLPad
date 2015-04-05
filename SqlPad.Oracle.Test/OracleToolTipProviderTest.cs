@@ -209,6 +209,7 @@ SELECT * FROM CTE";
 			dataModel.ClusterName.ShouldBe(null);
 			dataModel.ClusterNameVisibility.ShouldBe(Visibility.Collapsed);
 			dataModel.Compression.ShouldBe("Disabled");
+			dataModel.ParallelDegree.ShouldBe("Default");
 			dataModel.PartitionKeys.ShouldBe("COLUMN1, COLUMN2");
 			dataModel.SubPartitionKeys.ShouldBe("COLUMN3, COLUMN4");
 			dataModel.IsTemporary.ShouldBe(false);

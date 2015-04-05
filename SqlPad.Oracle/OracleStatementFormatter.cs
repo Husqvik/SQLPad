@@ -67,7 +67,7 @@ namespace SqlPad.Oracle
 		private static int GetAfterConditionClosingParenthesisIndentation(StatementGrammarNode node)
 		{
 			var conditionNode = node.ParentNode;
-			return conditionNode.GetDescendantByPath(NonTerminals.ExpressionListOrNestedQuery) == null ? 0 : -1;
+			return conditionNode[NonTerminals.ExpressionListOrNestedQuery] == null ? 0 : -1;
 		}
 
 		private static int GetAfterExpressionClosingParenthesisIndentation(StatementGrammarNode node)

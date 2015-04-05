@@ -16,9 +16,42 @@ namespace SqlPad
 
 		public int TerminalCount { get; private set; }
 
-		public StatementGrammarNode this[int index] 
+		public StatementGrammarNode this[params int[] descendantIndexes]
 		{
-			get { return _childNodes.Count > index ? _childNodes[index] : null; }
+			get
+			{
+				var node = this;
+				foreach (var index in descendantIndexes)
+				{
+					if (node == null || node._childNodes.Count <= index)
+					{
+						return null;
+					}
+
+					node = node._childNodes[index];
+				}
+
+				return node;
+			}
+		}
+
+		public StatementGrammarNode this[params string[] descendantNodeIds]
+		{
+			get
+			{
+				var node = this;
+				foreach (var id in descendantNodeIds)
+				{
+					if (node == null || node._childNodes.Count == 0)
+					{
+						return null;
+					}
+
+					node = node._childNodes.SingleOrDefault(n => String.Equals(n.Id, id));
+				}
+
+				return node;
+			}
 		}
 
 		public StatementGrammarNode(NodeType type, StatementBase statement, IToken token) : base(statement, token)
@@ -262,38 +295,6 @@ namespace SqlPad
 		public StatementGrammarNode GetSingleDescendant(params string[] descendantNodeIds)
 		{
 			return GetDescendants(descendantNodeIds).SingleOrDefault();
-		}
-
-		public StatementGrammarNode GetDescendantByPath(params string[] descendantNodeIds)
-		{
-			var node = this;
-			foreach (var id in descendantNodeIds)
-			{
-				if (node == null || node._childNodes.Count == 0)
-				{
-					return null;
-				}
-
-				node = node._childNodes.SingleOrDefault(n => String.Equals(n.Id, id));
-			}
-
-			return node;
-		}
-
-		public StatementGrammarNode GetDescendantByIndex(params int[] indexes)
-		{
-			var node = this;
-			foreach (var index in indexes)
-			{
-				if (node == null || node._childNodes.Count <= index)
-				{
-					return null;
-				}
-
-				node = node._childNodes[index];
-			}
-
-			return node;
 		}
 
 		public IEnumerable<StatementGrammarNode> GetDescendants(params string[] descendantNodeIds)

@@ -27,13 +27,8 @@ namespace SqlPad.Oracle
 
 			var validationModel = new OracleValidationModel { SemanticModel = oracleSemanticModel };
 
-			var mainObjectReference = oracleSemanticModel.MainObjectReferenceContainer.MainObjectReference;
-			var mainObjectReferences = mainObjectReference == null
-				? Enumerable.Empty<OracleDataObjectReference>()
-				: Enumerable.Repeat(mainObjectReference, 1);
-
 			var objectReferences = oracleSemanticModel.QueryBlocks.SelectMany(qb => qb.ObjectReferences)
-				.Concat(mainObjectReferences)
+				.Concat(oracleSemanticModel.MainObjectReferenceContainer.ObjectReferences)
 				.Concat(oracleSemanticModel.InsertTargets.SelectMany(t => t.ObjectReferences));
 			
 			foreach (var objectReference in objectReferences)
@@ -556,7 +551,7 @@ namespace SqlPad.Oracle
 				else if (programReference.Metadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramLevel)
 				{
 					if (programReference.Owner == null || programReference.Owner.HierarchicalQueryClause == null ||
-					    programReference.Owner.HierarchicalQueryClause.GetDescendantByPath(NonTerminals.HierarchicalQueryConnectByClause) == null)
+					    programReference.Owner.HierarchicalQueryClause[NonTerminals.HierarchicalQueryConnectByClause] == null)
 					{
 						validationModel.ProgramNodeValidity[programReference.FunctionIdentifierNode] =
 							new SemanticErrorNodeValidationData(OracleSemanticErrorType.ConnectByClauseRequired, OracleSemanticErrorType.ConnectByClauseRequired)

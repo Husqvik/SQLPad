@@ -133,7 +133,7 @@ namespace SqlPad.Oracle
 
 			var dataType = new OracleDataType();
 
-			var isVarying = dataTypeNode.GetDescendantByPath(Terminals.Varying) != null;
+			var isVarying = dataTypeNode[Terminals.Varying] != null;
 
 			string name;
 			switch (dataTypeNode.FirstTerminalNode.Id)
@@ -147,10 +147,10 @@ namespace SqlPad.Oracle
 						: "LONG";
 					break;
 				case Terminals.Interval:
-					var yearToMonthNode = dataTypeNode.GetDescendantByPath(NonTerminals.YearToMonthOrDayToSecond, NonTerminals.YearOrMonth);
+					var yearToMonthNode = dataTypeNode[NonTerminals.YearToMonthOrDayToSecond, NonTerminals.YearOrMonth];
 					if (yearToMonthNode == null)
 					{
-						var dayToSecondNode = dataTypeNode.GetDescendantByPath(NonTerminals.YearToMonthOrDayToSecond, NonTerminals.YearOrMonth);
+						var dayToSecondNode = dataTypeNode[NonTerminals.YearToMonthOrDayToSecond, NonTerminals.YearOrMonth];
 						if (dayToSecondNode == null)
 						{
 							name = String.Empty;
@@ -182,7 +182,7 @@ namespace SqlPad.Oracle
 			var simplePrecisionNode = dataTypeNode.GetSingleDescendant(NonTerminals.DataTypeSimplePrecision);
 			if (simplePrecisionNode != null)
 			{
-				var simplePrecisionValueTerminal = simplePrecisionNode.GetDescendantByPath(Terminals.IntegerLiteral);
+				var simplePrecisionValueTerminal = simplePrecisionNode[Terminals.IntegerLiteral];
 				if (simplePrecisionValueTerminal != null)
 				{
 					dataType.Length = Convert.ToInt32(simplePrecisionValueTerminal.Token.Value);
@@ -198,13 +198,13 @@ namespace SqlPad.Oracle
 
 		private static void TryResolveNumericPrecisionAndScale(StatementGrammarNode definitionNode, OracleDataType dataType)
 		{
-			var numericPrecisionScaleNode = definitionNode.GetDescendantByPath(NonTerminals.DataTypeNumericPrecisionAndScale);
+			var numericPrecisionScaleNode = definitionNode[NonTerminals.DataTypeNumericPrecisionAndScale];
 			if (numericPrecisionScaleNode == null)
 			{
 				return;
 			}
 			
-			var precisionValueTerminal = numericPrecisionScaleNode.GetDescendantByPath(NonTerminals.IntegerOrAsterisk, Terminals.IntegerLiteral);
+			var precisionValueTerminal = numericPrecisionScaleNode[NonTerminals.IntegerOrAsterisk, Terminals.IntegerLiteral];
 			if (precisionValueTerminal == null)
 			{
 				return;
@@ -212,7 +212,7 @@ namespace SqlPad.Oracle
 			
 			dataType.Precision = Convert.ToInt32(precisionValueTerminal.Token.Value);
 
-			var scaleValueTerminal = numericPrecisionScaleNode.GetDescendantByPath(NonTerminals.Scale, Terminals.IntegerLiteral);
+			var scaleValueTerminal = numericPrecisionScaleNode[NonTerminals.Scale, Terminals.IntegerLiteral];
 			if (scaleValueTerminal == null)
 			{
 				return;
@@ -234,7 +234,7 @@ namespace SqlPad.Oracle
 				return;
 			}
 			
-			var valueTerminal = varyingCharacterSimplePrecisionNode.GetDescendantByPath(Terminals.IntegerLiteral);
+			var valueTerminal = varyingCharacterSimplePrecisionNode[Terminals.IntegerLiteral];
 			if (valueTerminal == null)
 			{
 				return;
@@ -242,7 +242,7 @@ namespace SqlPad.Oracle
 			
 			dataType.Length = Convert.ToInt32(valueTerminal.Token.Value);
 
-			var byteOrCharNode = varyingCharacterSimplePrecisionNode.GetDescendantByPath(NonTerminals.ByteOrChar);
+			var byteOrCharNode = varyingCharacterSimplePrecisionNode[NonTerminals.ByteOrChar];
 			if (byteOrCharNode != null)
 			{
 				dataType.Unit = byteOrCharNode.FirstTerminalNode.Id == Terminals.Byte ? DataUnit.Byte : DataUnit.Character;

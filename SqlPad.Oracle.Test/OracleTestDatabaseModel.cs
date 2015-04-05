@@ -1099,6 +1099,7 @@ Note
 			dataModel.SubPartitionKeys = "COLUMN3, COLUMN4";
 			dataModel.IsTemporary = false;
 			dataModel.Comment = "This is a table comment. ";
+			dataModel.ParallelDegree = "Default";
 
 			var indexDetails =
 				new IndexDetailsModel
@@ -1142,7 +1143,8 @@ Note
 					SampleRows = 4162,
 					Compression = "Disabled",
 					Logging = true,
-					HighValue = "'Partition key 2', 2"
+					HighValue = "'Partition key 2', 2",
+					InMemoryCompression = "Disabled"
 				};
 
 			dataModel.IndexDetails.Add(indexDetails);
@@ -1162,6 +1164,7 @@ Note
 			dataModel.SampleRows = 4162;
 			dataModel.Compression = "Basic";
 			dataModel.HighValue = "'Partition key 1', 2";
+			dataModel.InMemoryCompression = "Disabled";
 		}
 
 		public override Task UpdateViewDetailsAsync(OracleObjectIdentifier schemaObject, ViewDetailsModel dataModel, CancellationToken cancellationToken)

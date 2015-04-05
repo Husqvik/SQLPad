@@ -2550,13 +2550,22 @@
           <Terminal Id="Merge" />
           <Terminal Id="Into" />
           <NonTerminal Id="MergeTarget" />
-          <NonTerminal Id="MergeSource" />
+          <NonTerminal Id="UsingMergeSource" />
           <Terminal Id="On" />
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="Condition" />
           <Terminal Id="RightParenthesis" />
           <NonTerminal Id="MergeUpdateInsertClause" />
           <NonTerminal Id="ErrorLoggingClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="UsingMergeSource">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Using" />
+          <NonTerminal Id="MergeSource" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -2574,7 +2583,6 @@
     <Rule StartingNonTerminal="MergeSource">
       <Sequences>
         <Sequence>
-          <Terminal Id="Using" />
           <NonTerminal Id="QueryTableExpression" />
           <NonTerminal Id="FlashbackQueryClause" IsOptional="true" />
           <Terminal Id="ObjectAlias" IsOptional="true" />

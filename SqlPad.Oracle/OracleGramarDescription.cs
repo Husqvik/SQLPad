@@ -1110,6 +1110,7 @@ namespace SqlPad.Oracle
 			public const string UsingEncryptionAlgorithm = "UsingEncryptionAlgorithm";
 			public const string UsingIndexClause = "UsingIndexClause";
 			public const string UsingIndexOption = "UsingIndexOption";
+			public const string UsingMergeSource = "UsingMergeSource";
 			public const string UsingNationalCharacterSet = "UsingNationalCharacterSet";
 			public const string WaitOrNowait = "WaitOrNowait";
 			public const string ValidateOrNoValidate = "ValidateOrNoValidate";

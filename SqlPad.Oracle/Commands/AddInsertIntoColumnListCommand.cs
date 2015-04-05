@@ -38,7 +38,7 @@ namespace SqlPad.Oracle.Commands
 			else
 			{
 				var isSingleTableInsert = CurrentNode.Id == Terminals.Insert &&
-				                          CurrentNode.ParentNode.GetDescendantByPath(NonTerminals.SingleTableInsertOrMultiTableInsert, NonTerminals.SingleTableInsert) != null;
+				                          CurrentNode.ParentNode[NonTerminals.SingleTableInsertOrMultiTableInsert, NonTerminals.SingleTableInsert] != null;
 				if (isSingleTableInsert && SemanticModel.InsertTargets.Count == 1)
 				{
 					_insertTarget = SemanticModel.InsertTargets.First();

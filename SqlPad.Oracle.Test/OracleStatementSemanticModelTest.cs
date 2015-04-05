@@ -1735,5 +1735,72 @@ SELECT * FROM CTE";
 			objectReferences[4].PartitionReference.Partition.ShouldBe(null);
 			objectReferences[5].PartitionReference.Partition.ShouldBe(null);
 		}
+
+		[Test(Description = @"")]
+		public void TestMergeSemantics()
+		{
+			const string sqlText =
+@"MERGE INTO SELECTION TARGET
+USING SELECTION SOURCE
+ON (TARGET.SELECTION_ID = SOURCE.SELECTION_ID AND SOURCE.DUMMY = 0 AND DUMMY.DUMMY = DBMS_RANDOM.NORMAL)
+WHEN MATCHED THEN
+	UPDATE SET SELECTION_ID = CASE WHEN SOURCE.SELECTION_ID = TARGET.SELECTION_ID AND SOURCE.DUMMY = DBMS_RANDOM.NORMAL AND DUMMY.DUMMY = 0 THEN NULL END
+		WHERE SOURCE.SELECTION_ID = TARGET.SELECTION_ID AND SOURCE.DUMMY = 0 AND DUMMY.DUMMY = DBMS_RANDOM.NORMAL
+	DELETE
+		WHERE SOURCE.SELECTION_ID <> TARGET.SELECTION_ID AND SOURCE.DUMMY = 0 AND DUMMY.DUMMY = DBMS_RANDOM.NORMAL
+WHEN NOT MATCHED THEN
+	INSERT (SELECTION_ID, NAME) VALUES (TEST_SEQ.NEXTVAL, DBMS_RANDOM.STRING('X', 50))
+		WHERE SOURCE.SELECTION_ID = TARGET.SELECTION_ID AND SOURCE.DUMMY = 0 AND DUMMY.DUMMY = 0";
+			
+			var statement = (OracleStatement)_oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = new OracleStatementSemanticModel(sqlText, statement, TestFixture.DatabaseModel);
+			semanticModel.MainObjectReferenceContainer.ObjectReferences.Count.ShouldBe(2);
+			var objectReferences = semanticModel.MainObjectReferenceContainer.ObjectReferences.ToList();
+			objectReferences.ForEach(o => o.SchemaObject.ShouldNotBe(null));
+
+			semanticModel.MainObjectReferenceContainer.ColumnReferences.Count.ShouldBe(24);
+			var columnReferences = semanticModel.MainObjectReferenceContainer.ColumnReferences.ToList();
+			columnReferences[0].ObjectNodeObjectReferences.Count.ShouldBe(1);
+			columnReferences[0].ColumnNodeObjectReferences.Count.ShouldBe(1);
+			columnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
+			columnReferences[0].ObjectNode.Token.Value.ShouldBe("TARGET");
+			columnReferences[0].ColumnNode.Token.Value.ShouldBe("SELECTION_ID");
+			columnReferences[1].ObjectNodeObjectReferences.Count.ShouldBe(1);
+			columnReferences[1].ColumnNodeObjectReferences.Count.ShouldBe(1);
+			columnReferences[1].ColumnNodeColumnReferences.Count.ShouldBe(1);
+			columnReferences[1].ObjectNode.Token.Value.ShouldBe("SOURCE");
+			columnReferences[1].ColumnNode.Token.Value.ShouldBe("SELECTION_ID");
+			columnReferences[2].ObjectNodeObjectReferences.Count.ShouldBe(1);
+			columnReferences[2].ColumnNodeObjectReferences.Count.ShouldBe(0);
+			columnReferences[2].ColumnNodeColumnReferences.Count.ShouldBe(0);
+			columnReferences[2].ObjectNode.Token.Value.ShouldBe("SOURCE");
+			columnReferences[2].ColumnNode.Token.Value.ShouldBe("DUMMY");
+			columnReferences[3].ObjectNodeObjectReferences.Count.ShouldBe(0);
+			columnReferences[3].ColumnNodeObjectReferences.Count.ShouldBe(0);
+			columnReferences[3].ColumnNodeColumnReferences.Count.ShouldBe(0);
+			columnReferences[3].ObjectNode.Token.Value.ShouldBe("DUMMY");
+			columnReferences[3].ColumnNode.Token.Value.ShouldBe("DUMMY");
+			columnReferences[21].ObjectNodeObjectReferences.Count.ShouldBe(1);
+			columnReferences[21].ColumnNodeObjectReferences.Count.ShouldBe(1);
+			columnReferences[21].ColumnNodeColumnReferences.Count.ShouldBe(1);
+			columnReferences[21].ObjectNode.Token.Value.ShouldBe("TARGET");
+			columnReferences[21].ColumnNode.Token.Value.ShouldBe("SELECTION_ID");
+			columnReferences[23].ObjectNodeObjectReferences.Count.ShouldBe(0);
+			columnReferences[23].ColumnNodeObjectReferences.Count.ShouldBe(0);
+			columnReferences[23].ColumnNodeColumnReferences.Count.ShouldBe(0);
+			columnReferences[23].ObjectNode.Token.Value.ShouldBe("DUMMY");
+			columnReferences[23].ColumnNode.Token.Value.ShouldBe("DUMMY");
+
+			semanticModel.MainObjectReferenceContainer.ProgramReferences.Count.ShouldBe(5);
+			var programReferences = semanticModel.MainObjectReferenceContainer.ProgramReferences.ToList();
+			programReferences.ForEach(p => p.Metadata.ShouldNotBe(null));
+
+			semanticModel.MainObjectReferenceContainer.SequenceReferences.Count.ShouldBe(1);
+			var sequenceReferences = semanticModel.MainObjectReferenceContainer.SequenceReferences.ToArray();
+			sequenceReferences[0].SchemaObject.ShouldNotBe(null);
+		}
 	}
 }

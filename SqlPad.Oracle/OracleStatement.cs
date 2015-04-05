@@ -52,7 +52,7 @@ namespace SqlPad.Oracle
 			switch (statement.RootNode.Id)
 			{
 				case NonTerminals.CreatePlSqlStatement:
-					var createPlSqlObjectClause = statement.RootNode.GetDescendantByPath(NonTerminals.CreatePlSqlObjectClause);
+					var createPlSqlObjectClause = statement.RootNode[NonTerminals.CreatePlSqlObjectClause];
 					if (createPlSqlObjectClause != null && createPlSqlObjectClause.ChildNodes.Count == 1)
 					{
 						objectIdentifier = GetObjectIdentifierFromNode(createPlSqlObjectClause);
@@ -60,7 +60,7 @@ namespace SqlPad.Oracle
 
 					break;
 				case NonTerminals.StandaloneStatement:
-					var alterObjectClause = statement.RootNode.GetDescendantByPath(NonTerminals.Statement, NonTerminals.AlterStatement, NonTerminals.AlterObjectClause);
+					var alterObjectClause = statement.RootNode[NonTerminals.Statement, NonTerminals.AlterStatement, NonTerminals.AlterObjectClause];
 					if (alterObjectClause != null && alterObjectClause.ChildNodes.Count == 1 && alterObjectClause.ChildNodes[0].Id.In(NonTerminals.AlterProcedure, NonTerminals.AlterFunction, NonTerminals.AlterPackage))
 					{
 						objectIdentifier = GetObjectIdentifierFromNode(alterObjectClause);
@@ -74,8 +74,8 @@ namespace SqlPad.Oracle
 
 		private static OracleObjectIdentifier GetObjectIdentifierFromNode(StatementGrammarNode node)
 		{
-			var schemaIdentifierTerminal = node.ChildNodes[0].GetDescendantByPath(NonTerminals.SchemaPrefix, Terminals.SchemaIdentifier);
-			var objectIdentifierTerminal = node.ChildNodes[0].GetDescendantByPath(Terminals.ObjectIdentifier);
+			var schemaIdentifierTerminal = node.ChildNodes[0][NonTerminals.SchemaPrefix, Terminals.SchemaIdentifier];
+			var objectIdentifierTerminal = node.ChildNodes[0][Terminals.ObjectIdentifier];
 			return objectIdentifierTerminal == null
 				? OracleObjectIdentifier.Empty
 				: OracleObjectIdentifier.Create(schemaIdentifierTerminal, objectIdentifierTerminal, null);

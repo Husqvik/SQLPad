@@ -235,7 +235,7 @@ namespace SqlPad.Oracle
 		private OracleOrderByColumnIndexReference GetColumnIndexReference(StatementGrammarNode orderExpression)
 		{
 			int columnIndex;
-			var expression = orderExpression.GetDescendantByPath(NonTerminals.Expression);
+			var expression = orderExpression[NonTerminals.Expression];
 			if (expression == null || expression.TerminalCount != 1 || expression.FirstTerminalNode.Id != Terminals.NumberLiteral ||
 				expression.FirstTerminalNode.Token.Value.IndexOf('.') != -1 || !Int32.TryParse(expression.FirstTerminalNode.Token.Value, out columnIndex))
 			{
