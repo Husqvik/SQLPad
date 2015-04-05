@@ -94,7 +94,7 @@ namespace SqlPad.Oracle
 			oracleObjectIdentifierType.Add("Owner", "Name", "NormalizedOwner", "NormalizedName");
 
 			var oracleColumnType = Serializer.Add(typeof(OracleColumn), false);
-			oracleColumnType.Add("Name", "DataType", "CharacterSize", "Nullable");
+			oracleColumnType.Add("Name", "DataType", "CharacterSize", "Nullable", "Virtual", "DefaultValue");
 
 			var oracleObjectType = Serializer.Add(typeof(OracleObject), false);
 			oracleObjectType.AsReferenceDefault = true;

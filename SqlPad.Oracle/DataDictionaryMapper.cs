@@ -12,6 +12,8 @@ namespace SqlPad.Oracle
 		private readonly Dictionary<OracleObjectIdentifier, OracleSchemaObject> _allObjects = new Dictionary<OracleObjectIdentifier, OracleSchemaObject>();
 		private readonly OracleDatabaseModel _databaseModel;
 
+		public const int LongFetchSize = 4096;
+
 		public DataDictionaryMapper(OracleDatabaseModel databaseModel)
 		{
 			_databaseModel = databaseModel;
@@ -442,6 +444,8 @@ namespace SqlPad.Oracle
 					Name = QualifyStringObject(reader["COLUMN_NAME"]),
 					DataType = dataType,
 					Nullable = (string)reader["NULLABLE"] == "Y",
+					Virtual = (string)reader["VIRTUAL_COLUMN"] == "YES",
+					DefaultValue = OracleReaderValueConvert.ToString(reader["DATA_DEFAULT"]),
 					CharacterSize = Convert.ToInt32(reader["CHAR_LENGTH"])
 				});
 		}

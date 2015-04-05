@@ -31,6 +31,8 @@ namespace SqlPad.Oracle.Test
 			dataModel.Name.ShouldBe("NAME");
 			dataModel.DataType.ShouldBe("VARCHAR2(50 BYTE)");
 			dataModel.Nullable.ShouldBe(false);
+			dataModel.Virtual.ShouldBe(false);
+			dataModel.DefaultValue.ShouldBe("\"DBMS_RANDOM\".\"STRING\"('X', 50)");
 			dataModel.DistinctValueCount.ShouldBe(567);
 			dataModel.SampleSize.ShouldBe(12346);
 			dataModel.AverageValueSize.ShouldBe(7);

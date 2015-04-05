@@ -68,7 +68,11 @@ namespace SqlPad.Oracle.ToolTips
 		
 		public bool Nullable { get; set; }
 		
+		public bool Virtual { get; set; }
+		
 		public string DataType { get; set; }
+		
+		public string DefaultValue { get; set; }
 		
 		public int DistinctValueCount
 		{

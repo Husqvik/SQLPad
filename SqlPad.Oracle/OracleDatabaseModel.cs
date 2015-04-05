@@ -1131,6 +1131,7 @@ namespace SqlPad.Oracle
 				{
 					command.CommandText = commandText;
 					command.BindByName = true;
+					command.InitialLONGFetchSize = DataDictionaryMapper.LongFetchSize;
 
 					connection.Open();
 

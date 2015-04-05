@@ -769,7 +769,7 @@ namespace SqlPad.Oracle.Test
 						{ "\"RESPONDENTBUCKET_ID\"", new OracleColumn { Name = "\"RESPONDENTBUCKET_ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0), Nullable = true } },
 						{ "\"SELECTION_ID\"", new OracleColumn { Name = "\"SELECTION_ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0), Nullable = false } },
 						{ "\"PROJECT_ID\"", new OracleColumn { Name = "\"PROJECT_ID\"", DataType = BuildPrimitiveDataType("NUMBER", precision: 9, scale: 0), Nullable = false } },
-						{ "\"NAME\"", new OracleColumn { Name = "\"NAME\"", CharacterSize = 50, Nullable = false, DataType = BuildPrimitiveDataType("VARCHAR2", 50, dataUnit: DataUnit.Byte) } }
+						{ "\"NAME\"", new OracleColumn { Name = "\"NAME\"", CharacterSize = 50, Nullable = false, DataType = BuildPrimitiveDataType("VARCHAR2", 50, dataUnit: DataUnit.Byte), DefaultValue = "\"DBMS_RANDOM\".\"STRING\"('X', 50)" } }
 					}
 			},
 			new OraclePackage

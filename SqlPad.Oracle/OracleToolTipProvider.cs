@@ -169,12 +169,26 @@ namespace SqlPad.Oracle
 					Owner = columnOwner.ToString(),
 					Name = columnReference.Name.ToSimpleIdentifier(),
 					Nullable = columnReference.ColumnDescription.Nullable,
+					Virtual = columnReference.ColumnDescription.Virtual,
 					DataType = columnReference.ColumnDescription.FullTypeName,
+					DefaultValue = BuildDefaultValuePreview(columnReference.ColumnDescription.DefaultValue)
 				};
 
 			databaseModel.UpdateColumnDetailsAsync(columnOwner, columnReference.ColumnDescription.Name, dataModel, CancellationToken.None);
 
 			return dataModel;
+		}
+
+		private static string BuildDefaultValuePreview(string defaultValue)
+		{
+			if (String.IsNullOrEmpty(defaultValue))
+			{
+				return ConfigurationProvider.Configuration.ResultGrid.NullPlaceholder;
+			}
+
+			return defaultValue.Length < 256
+				? defaultValue
+				: String.Format("{0}{1}", defaultValue.Substring(0, 255), OracleLargeTextValue.Ellipsis);
 		}
 
 		private static string GetTypeToolTip(OracleStatementSemanticModel semanticModel, StatementGrammarNode node)

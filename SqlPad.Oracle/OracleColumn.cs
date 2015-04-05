@@ -19,6 +19,10 @@ namespace SqlPad.Oracle
 		public int? CharacterSize { get; set; }
 
 		public bool Nullable { get; set; }
+		
+		public bool Virtual { get; set; }
+
+		public string DefaultValue { get; set; }
 
 		public OracleColumn Clone(string newName)
 		{

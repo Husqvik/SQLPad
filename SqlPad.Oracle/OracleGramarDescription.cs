@@ -337,10 +337,10 @@ namespace SqlPad.Oracle
 			public const string ExpressionList = "ExpressionList";
 			public const string ExpressionListOrNestedQuery = "ExpressionListOrNestedQuery";
 			public const string ExpressionMathOperatorChainedList = "ExpressionMathOperatorChainedList";
+			public const string ExpressionOrDefaultValue = "ExpressionOrDefaultValue";
 			public const string ExpressionOrMultiset = "ExpressionOrMultiset";
 			public const string ExpressionOrNestedQuery = "ExpressionOrNestedQuery";
 			public const string ExpressionOrNestedQueryOrDefaultValue = "ExpressionOrNestedQueryOrDefaultValue";
-			public const string ExpressionOrOrDefaultValue = "ExpressionOrOrDefaultValue";
 			public const string ExpressionOrOrDefaultValueList = "ExpressionOrOrDefaultValueList";
 			public const string ExpressionOrOrDefaultValueListChained = "ExpressionOrOrDefaultValueListChained";
 			public const string ExpressionOrUnlimitedOrDefault = "ExpressionOrUnlimitedOrDefault";

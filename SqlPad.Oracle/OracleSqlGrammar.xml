@@ -2212,7 +2212,7 @@
     <Rule StartingNonTerminal="ExpressionOrOrDefaultValueList">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="ExpressionOrOrDefaultValue" />
+          <NonTerminal Id="ExpressionOrDefaultValue" />
           <NonTerminal Id="ExpressionOrOrDefaultValueListChained" IsOptional="true" />
         </Sequence>
       </Sequences>
@@ -2614,7 +2614,7 @@
         <Sequence>
           <NonTerminal Id="PrefixedUpdatedColumnReference" />
           <Terminal Id="MathEquals" />
-          <NonTerminal Id="ExpressionOrOrDefaultValue" />
+          <NonTerminal Id="ExpressionOrDefaultValue" />
           <NonTerminal Id="MergeSetColumnEqualsExpressionOrDefaultValueCommaChainedList" IsOptional="true" />
         </Sequence>
       </Sequences>
@@ -2629,7 +2629,7 @@
       </Sequences>
     </Rule>
 
-    <Rule StartingNonTerminal="ExpressionOrOrDefaultValue">
+    <Rule StartingNonTerminal="ExpressionOrDefaultValue">
       <Sequences>
         <Sequence>
           <NonTerminal Id="Expression" />
@@ -2678,7 +2678,7 @@
     <Rule StartingNonTerminal="MergeInsertValuesExpressionOrDefaultValueList">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="ExpressionOrOrDefaultValue" />
+          <NonTerminal Id="ExpressionOrDefaultValue" />
           <NonTerminal Id="MergeInsertValuesExpressionOrDefaultValueCommaChainedList" IsOptional="true" />
         </Sequence>
       </Sequences>
