@@ -334,7 +334,7 @@ namespace SqlPad.Oracle.ToolTips
 
 		public string IndexColumns
 		{
-			get { return String.Join(", ", _indexColumns.Select(c => String.Format("{0}{1}", c.ColumnName, c.SortOrder == SortOrder.Descending ? SortOrder.Descending.ToString() : null))); }
+			get { return String.Join(", ", _indexColumns.Select(c => String.Format("{0}{1}", c.ColumnName, c.SortOrder == SortOrder.Descending ? " DESC" : null))); }
 		}
 	}
 

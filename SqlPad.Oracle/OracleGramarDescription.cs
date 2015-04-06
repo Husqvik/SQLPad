@@ -960,6 +960,7 @@ namespace SqlPad.Oracle
 			public const string SavepointStatement = "SavepointStatement";
 			public const string Scale = "Scale";
 			public const string SchemaCheckOrNoSchemaCheck = "SchemaCheckOrNoSchemaCheck";
+			public const string SchemaObject = "SchemaObject";
 			public const string SchemaPrefix = "SchemaPrefix";
 			public const string SearchedCaseExpressionBranch = "SearchedCaseExpressionBranch";
 			public const string SeedClause = "SeedClause";

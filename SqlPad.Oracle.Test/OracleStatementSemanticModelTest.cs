@@ -1750,16 +1750,19 @@ WHEN MATCHED THEN
 		WHERE SOURCE.SELECTION_ID <> TARGET.SELECTION_ID AND SOURCE.DUMMY = 0 AND DUMMY.DUMMY = DBMS_RANDOM.NORMAL
 WHEN NOT MATCHED THEN
 	INSERT (SELECTION_ID, NAME) VALUES (TEST_SEQ.NEXTVAL, DBMS_RANDOM.STRING('X', 50))
-		WHERE SOURCE.SELECTION_ID = TARGET.SELECTION_ID AND SOURCE.DUMMY = 0 AND DUMMY.DUMMY = 0";
+		WHERE SOURCE.SELECTION_ID = TARGET.SELECTION_ID AND SOURCE.DUMMY = 0 AND DUMMY.DUMMY = 0
+LOG ERRORS INTO ERRORLOG ('Statement identifier') REJECT LIMIT UNLIMITED";
 			
 			var statement = (OracleStatement)_oracleSqlParser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var semanticModel = new OracleStatementSemanticModel(sqlText, statement, TestFixture.DatabaseModel);
-			semanticModel.MainObjectReferenceContainer.ObjectReferences.Count.ShouldBe(2);
-			var objectReferences = semanticModel.MainObjectReferenceContainer.ObjectReferences.ToList();
-			objectReferences.ForEach(o => o.SchemaObject.ShouldNotBe(null));
+			semanticModel.MainObjectReferenceContainer.ObjectReferences.Count.ShouldBe(3);
+			var objectReferences = semanticModel.MainObjectReferenceContainer.ObjectReferences.ToArray();
+			objectReferences[0].SchemaObject.ShouldNotBe(null);
+			objectReferences[1].SchemaObject.ShouldNotBe(null);
+			objectReferences[2].SchemaObject.ShouldBe(null);
 
 			semanticModel.MainObjectReferenceContainer.ColumnReferences.Count.ShouldBe(24);
 			var columnReferences = semanticModel.MainObjectReferenceContainer.ColumnReferences.ToList();
@@ -1801,6 +1804,41 @@ WHEN NOT MATCHED THEN
 			semanticModel.MainObjectReferenceContainer.SequenceReferences.Count.ShouldBe(1);
 			var sequenceReferences = semanticModel.MainObjectReferenceContainer.SequenceReferences.ToArray();
 			sequenceReferences[0].SchemaObject.ShouldNotBe(null);
+		}
+
+		[Test(Description = @"")]
+		public void TestErrorLogTableReferencesInMultiTableInsert()
+		{
+			const string sqlText =
+@"INSERT ALL
+    WHEN 1 = 1 THEN
+        INTO T1(ID) VALUES (VAL)
+			LOG ERRORS INTO T1_ERRLOG ('Statement identifier')
+    WHEN VAL > 5 THEN
+        INTO T2(ID) VALUES (VAL)
+			LOG ERRORS INTO T2_ERRLOG ('Statement identifier')
+        INTO T3(ID) VALUES (VAL)
+			LOG ERRORS INTO T3_ERRLOG ('Statement identifier')
+    WHEN VAL IN (5, 6) THEN
+        INTO T4 (ID) VALUES (VAL)
+			LOG ERRORS INTO T4_ERRLOG ('Statement identifier')
+SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = new OracleStatementSemanticModel(sqlText, statement, TestFixture.DatabaseModel);
+			semanticModel.InsertTargets.Count.ShouldBe(4);
+			var insertTargets = semanticModel.InsertTargets.ToArray();
+			insertTargets[0].ObjectReferences.Count.ShouldBe(2);
+			insertTargets[0].ColumnReferences.Count.ShouldBe(2);
+			insertTargets[1].ObjectReferences.Count.ShouldBe(2);
+			insertTargets[1].ColumnReferences.Count.ShouldBe(3);
+			insertTargets[2].ObjectReferences.Count.ShouldBe(2);
+			insertTargets[2].ColumnReferences.Count.ShouldBe(2);
+			insertTargets[3].ObjectReferences.Count.ShouldBe(2);
+			insertTargets[3].ColumnReferences.Count.ShouldBe(3);
 		}
 	}
 }

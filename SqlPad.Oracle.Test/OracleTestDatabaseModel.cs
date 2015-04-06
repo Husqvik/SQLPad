@@ -1120,7 +1120,13 @@ Note
 					Rows = 2000,
 					SampleRows = 333,
 					Status = "Valid",
-					Type = "Normal"
+					Type = "Normal",
+					TablespaceName = "TEST_TABLESPACE",
+					Columns =
+					{
+						new IndexColumnModel { ColumnName = "COLUMN1", SortOrder = SortOrder.Descending },
+						new IndexColumnModel { ColumnName = "COLUMN2" }
+					}
 				};
 
 			var partition1Details =

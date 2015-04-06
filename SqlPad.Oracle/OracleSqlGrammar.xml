@@ -2382,6 +2382,14 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Into" />
+          <NonTerminal Id="SchemaObject" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="SchemaObject">
+      <Sequences>
+        <Sequence>
           <NonTerminal Id="SchemaPrefix" IsOptional="true" />
           <Terminal Id="ObjectIdentifier" />
         </Sequence>

@@ -34,6 +34,8 @@ namespace SqlPad.Oracle
 		private IReadOnlyList<OracleColumn> _columns;
 		private readonly ReferenceType _referenceType;
 
+		public static readonly OracleDataObjectReference[] EmptyArray = new OracleDataObjectReference[0];
+
 		public OracleDataObjectReference(ReferenceType referenceType)
 		{
 			_referenceType = referenceType;
