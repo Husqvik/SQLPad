@@ -4425,6 +4425,7 @@
         </Sequence>
         <Sequence>
           <NonTerminal Id="Expression" />
+          <Terminal Id="Not" IsOptional="true" />
           <Terminal Id="Between" />
           <NonTerminal Id="Expression" />
           <Terminal Id="And" />

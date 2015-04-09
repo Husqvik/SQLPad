@@ -107,7 +107,7 @@ namespace SqlPad
 				try
 				{
 					_instance = (WorkDocumentCollection)Serializer.Deserialize(file, _instance, typeof(WorkDocumentCollection));
-					Trace.WriteLine(String.Format("WorkDocumentCollection successfully loaded from '{0}'. ", fileName));
+					Trace.WriteLine(String.Format("WorkDocumentCollection ({0} document(s)) successfully loaded from '{1}'. ", _instance._workingDocuments.Count, fileName));
 					return true;
 				}
 				catch (Exception e)
