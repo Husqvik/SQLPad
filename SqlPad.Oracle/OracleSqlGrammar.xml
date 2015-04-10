@@ -5125,7 +5125,11 @@
     <Rule StartingNonTerminal="RowPatternMeasureColumn">
       <Sequences>
         <Sequence>
-          <!-- TODO: Add row_pattern_navigation_func -->
+          <NonTerminal Id="RowPatternNavigationFunction" />
+          <Terminal Id="As" />
+          <Terminal Id="ColumnAlias" />
+        </Sequence>
+        <Sequence>
           <NonTerminal Id="Expression" />
           <Terminal Id="As" />
           <Terminal Id="ColumnAlias" />
@@ -5142,9 +5146,18 @@
         <Sequence>
           <NonTerminal Id="RowPatternNavigationCompound" />
         </Sequence>
-        <!--<Sequence>
+        <Sequence>
           <NonTerminal Id="RowPatternAggregateFunction" />
-        </Sequence>-->
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="RowPatternAggregateFunction">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="RunningOrFinal" IsOptional="true" />
+          <NonTerminal Id="AggregateFunctionCall" />
+        </Sequence>
       </Sequences>
     </Rule>
     

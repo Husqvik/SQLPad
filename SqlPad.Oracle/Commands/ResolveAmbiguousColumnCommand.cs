@@ -19,7 +19,7 @@ namespace SqlPad.Oracle.Commands
 			if (currentTerminal.Id != Terminals.Identifier && currentTerminal.Id != Terminals.RowIdPseudoColumn)
 				return EmptyHandlerCollection;
 
-			var columnReference = semanticModel.QueryBlocks.SelectMany(qb => qb.AllColumnReferences).SingleOrDefault(c => c.ColumnNode == currentTerminal);
+			var columnReference = semanticModel.AllReferenceContainers.SelectMany(qb => qb.ColumnReferences).SingleOrDefault(c => c.ColumnNode == currentTerminal);
 			if (columnReference == null || columnReference.ColumnNodeObjectReferences.Count <= 1)
 				return EmptyHandlerCollection;
 
