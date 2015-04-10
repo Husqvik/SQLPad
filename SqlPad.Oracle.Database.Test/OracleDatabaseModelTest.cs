@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -211,13 +212,15 @@ WHERE
 				firstRow[5].ShouldBeTypeOf<OracleTimestamp>();
 				firstRow[5].ToString().ShouldBe("11/1/2014 2:16:32 PM.123456789");
 				firstRow[6].ShouldBeTypeOf<OracleNumber>();
-				firstRow[6].ToString().ShouldBe("0.1234567890123456789012345678901234567891");
+				var expectedValue = String.Format("0{0}1234567890123456789012345678901234567891", CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator);
+				firstRow[6].ToString().ShouldBe(expectedValue);
 				firstRow[7].ShouldBeTypeOf<OracleXmlValue>();
 				var xmlValue = (OracleXmlValue)firstRow[7];
 				xmlValue.Length.ShouldBe(8);
 				xmlValue.Preview.ShouldBe("<root/>\u2026");
 				firstRow[8].ShouldBeTypeOf<OracleNumber>();
-				firstRow[8].ToString().ShouldBe("1.23456789012345678901234567890123456789E-125");
+				expectedValue = String.Format("1{0}23456789012345678901234567890123456789E-125", CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator);
+				firstRow[8].ToString().ShouldBe(expectedValue);
 				firstRow[9].ShouldBeTypeOf<OracleDateTime>();
 				firstRow[9].ToString().ShouldBe("BC 1/1/4712 12:00:00 AM");
 			}

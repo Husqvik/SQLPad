@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -260,7 +261,7 @@ namespace SqlPad.Oracle
 					return;
 				}
 
-				InitializeSession();
+				InitializeSession(CancellationToken.None).Wait();
 			}
 		}
 
@@ -508,7 +509,7 @@ namespace SqlPad.Oracle
 
 										using (var setSchemaCommand = connection.CreateCommand())
 										{
-											SetCurrentSchema(setSchemaCommand);
+											await SetCurrentSchema(setSchemaCommand, cancellationToken);
 										}
 										
 										transaction = connection.BeginTransaction();
@@ -643,11 +644,11 @@ namespace SqlPad.Oracle
 			return clone;
 		}
 
-		private void InitializeSession()
+		private async Task InitializeSession(CancellationToken cancellationToken)
 		{
 			using (var command = _userConnection.CreateCommand())
 			{
-				SetCurrentSchema(command);
+				await SetCurrentSchema(command, cancellationToken);
 
 				command.CommandText = "SELECT SYS_CONTEXT('USERENV', 'SID') SID FROM SYS.DUAL";
 				_userSessionId = Convert.ToInt32(command.ExecuteScalar());
@@ -665,7 +666,7 @@ namespace SqlPad.Oracle
 
 					try
 					{
-						command.ExecuteNonQuery();
+						await command.ExecuteNonQueryAsynchronous(cancellationToken);
 						Trace.WriteLine(String.Format("Startup script command '{0}' executed successfully. ", command.CommandText));
 					}
 					catch (Exception e)
@@ -676,10 +677,10 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		private void SetCurrentSchema(IDbCommand command)
+		private async Task SetCurrentSchema(OracleCommand command, CancellationToken cancellationToken)
 		{
-			command.CommandText = String.Format("ALTER SESSION SET CURRENT_SCHEMA = {0}", _currentSchema);
-			command.ExecuteNonQuery();
+			command.CommandText = String.Format("ALTER SESSION SET CURRENT_SCHEMA = \"{0}\"", _currentSchema);
+			await command.ExecuteNonQueryAsynchronous(cancellationToken);
 		}
 
 		private bool EnsureUserConnectionOpen()
@@ -705,7 +706,7 @@ namespace SqlPad.Oracle
 			return true;
 		}
 
-		private void EnsureDatabaseOutput()
+		private async Task EnsureDatabaseOutput(CancellationToken cancellationToken)
 		{
 			if ((EnableDatabaseOutput && _databaseOutputEnabled) ||
 				!EnableDatabaseOutput && !_databaseOutputEnabled)
@@ -714,22 +715,34 @@ namespace SqlPad.Oracle
 			}
 
 			_userCommand.CommandText = String.Format("CALL DBMS_OUTPUT.{0}", EnableDatabaseOutput ? "ENABLE(1)" : "DISABLE()");
-			_userCommand.ExecuteNonQuery();
+			await _userCommand.ExecuteNonQueryAsynchronous(cancellationToken);
 			_databaseOutputEnabled = EnableDatabaseOutput;
+		}
+
+		private static void SetOracleGlobalization()
+		{
+			var info = OracleGlobalization.GetClientInfo();
+			var numberFormat = CultureInfo.CurrentCulture.NumberFormat;
+			var decimalSeparator = numberFormat.NumberDecimalSeparator;
+			var groupSeparator = numberFormat.NumberGroupSeparator;
+			info.NumericCharacters = String.Format("{0}{1}", decimalSeparator.Length == 1 ? decimalSeparator : ".", groupSeparator.Length == 1 ? groupSeparator : " ");
+			OracleGlobalization.SetThreadInfo(info);
 		}
 
 		private async Task<StatementExecutionResult> ExecuteUserStatement(StatementExecutionModel executionModel, CancellationToken cancellationToken)
 		{
 			_userCommandHasCompilationErrors = false;
 
+			SetOracleGlobalization();
+
 			if (EnsureUserConnectionOpen())
 			{
-				InitializeSession();
+				await InitializeSession(cancellationToken);
 			}
 
 			_userCommand = _userConnection.CreateCommand();
 
-			EnsureDatabaseOutput();
+			await EnsureDatabaseOutput(cancellationToken);
 
 			_userCommand.BindByName = true;
 			_userCommand.AddToStatementCache = false;
