@@ -218,7 +218,7 @@ namespace SqlPad.Oracle
 									new MaterializedViewDetailsModel
 									{
 										MaterializedViewTitle = simpleToolTip,
-										Title = GetObjectTitle(OracleObjectIdentifier.Create(materializedView.Owner, materializedView.TableName), OracleSchemaObjectType.Table),
+										Title = GetObjectTitle(OracleObjectIdentifier.Create(materializedView.Owner, materializedView.TableName), OracleSchemaObjectType.Table.ToLower()),
 										MaterializedView = materializedView
 									};
 
@@ -296,24 +296,43 @@ namespace SqlPad.Oracle
 			var synonym = schemaObject as OracleSynonym;
 			if (synonym != null)
 			{
-				tip = GetSchemaObjectToolTip(synonym) + " => ";
+				tip = String.Format("{0} => ", GetSchemaObjectToolTip(synonym));
 				schemaObject = synonym.SchemaObject;
 			}
 
-			return tip + GetSchemaObjectToolTip(schemaObject);
+			return String.Format("{0}{1}", tip, GetSchemaObjectToolTip(schemaObject));
 		}
 
 		private static string GetSchemaObjectToolTip(OracleSchemaObject schemaObject)
 		{
-			if (schemaObject == null)
-				return null;
+			return schemaObject == null
+				? null
+				: GetObjectTitle(schemaObject.FullyQualifiedName, GetObjectTypeLabel(schemaObject));
+		}
 
-			return GetObjectTitle(schemaObject.FullyQualifiedName, schemaObject.Type);
+		private static string GetObjectTypeLabel(OracleSchemaObject schemaObject)
+		{
+			switch (schemaObject.Type)
+			{
+				case OracleSchemaObjectType.Type:
+					if (schemaObject is OracleTypeObject)
+					{
+						return "Object type";
+					}
+
+					var collection = (OracleTypeCollection)schemaObject;
+					return collection.CollectionType == OracleCollectionType.Table
+						? "Object table"
+						: "Object varrying array";
+				
+				default:
+					return schemaObject.Type.ToLower();
+			}
 		}
 
 		private static string GetObjectTitle(OracleObjectIdentifier schemaObjectIdentifier, string objectType)
 		{
-			return schemaObjectIdentifier + " (" + CultureInfo.InvariantCulture.TextInfo.ToTitleCase(objectType.ToLower()) + ")";
+			return String.Format("{0} ({1})", schemaObjectIdentifier, CultureInfo.InvariantCulture.TextInfo.ToTitleCase(objectType));
 		}
 
 		private ToolTipProgram GetFunctionToolTip(OracleStatementSemanticModel semanticModel, StatementGrammarNode terminal)

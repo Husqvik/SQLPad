@@ -502,7 +502,7 @@ namespace SqlPad.Oracle
 							{
 								if (updater.IsValid)
 								{
-									if (EnsureConnectionOpen(connection))
+									if (await EnsureConnectionOpen(connection, cancellationToken))
 									{
 										connection.ModuleName = ModuleNameSqlPadDatabaseModel;
 										connection.ActionName = "Model data provider";
@@ -651,7 +651,7 @@ namespace SqlPad.Oracle
 				await SetCurrentSchema(command, cancellationToken);
 
 				command.CommandText = "SELECT SYS_CONTEXT('USERENV', 'SID') SID FROM SYS.DUAL";
-				_userSessionId = Convert.ToInt32(command.ExecuteScalar());
+				_userSessionId = Convert.ToInt32(await command.ExecuteScalarAsynchronous(cancellationToken));
 
 				var startupScript = OracleConfiguration.Configuration.StartupScript;
 				if (String.IsNullOrWhiteSpace(startupScript))
@@ -659,7 +659,7 @@ namespace SqlPad.Oracle
 					return;
 				}
 				
-				var statements = new OracleSqlParser().Parse(startupScript);
+				var statements = await new OracleSqlParser().ParseAsync(startupScript, cancellationToken);
 				foreach (var statement in statements)
 				{
 					command.CommandText = statement.RootNode.GetText(startupScript);
@@ -683,9 +683,9 @@ namespace SqlPad.Oracle
 			await command.ExecuteNonQueryAsynchronous(cancellationToken);
 		}
 
-		private bool EnsureUserConnectionOpen()
+		private async Task<bool> EnsureUserConnectionOpen(CancellationToken cancellationToken)
 		{
-			var isConnectionStateChanged = EnsureConnectionOpen(_userConnection);
+			var isConnectionStateChanged = await EnsureConnectionOpen(_userConnection, cancellationToken);
 			if (isConnectionStateChanged)
 			{
 				_userConnection.ModuleName = ModuleNameSqlPadDatabaseModel;
@@ -695,14 +695,14 @@ namespace SqlPad.Oracle
 			return isConnectionStateChanged;
 		}
 
-		private static bool EnsureConnectionOpen(OracleConnection connection)
+		private static async Task<bool> EnsureConnectionOpen(OracleConnection connection, CancellationToken cancellationToken)
 		{
 			if (connection.State == ConnectionState.Open)
 			{
 				return false;
 			}
 
-			connection.Open();
+			await connection.OpenAsynchronous(cancellationToken);
 			return true;
 		}
 
@@ -735,7 +735,7 @@ namespace SqlPad.Oracle
 
 			SetOracleGlobalization();
 
-			if (EnsureUserConnectionOpen())
+			if (await EnsureUserConnectionOpen(cancellationToken))
 			{
 				await InitializeSession(cancellationToken);
 			}
@@ -1288,7 +1288,7 @@ namespace SqlPad.Oracle
 
 				_dataDictionary = new OracleDataDictionary(allObjects, databaseLinks, nonSchemaBuiltInFunctionMetadata, characterSets, statisticsKeys, systemParameters, lastRefresh);
 
-				Trace.WriteLine(String.Format("{0} - Data dictionary metada cache has been initialized successfully. ", DateTime.Now));
+				Trace.WriteLine(String.Format("{0} - Data dictionary metadata cache has been initialized successfully. ", DateTime.Now));
 
 				//_customTypeGenerator.GenerateCustomTypeAssembly(_dataDictionary);
 
@@ -1375,7 +1375,7 @@ namespace SqlPad.Oracle
 
 		private IEnumerable<OracleProgramMetadata> FilterFunctionsWithUnavailableMetadata(IEnumerable<OracleProgramMetadata> functions)
 		{
-			return functions.Where(m => m != null && m.Type == ProgramType.Function);
+			return functions.Where(m => m != null && m.Type != ProgramType.Procedure);
 		} 
 
 		private void RaiseEvent(EventHandler eventHandler)

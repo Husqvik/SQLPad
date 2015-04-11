@@ -1201,26 +1201,37 @@ MODEL
 			objectReferences[1].RootNode.LastTerminalNode.Id.ShouldBe(Terminals.ObjectAlias);
 			objectReferences[1].RootNode.LastTerminalNode.Token.Value.ShouldBe("T2");
 
+			var typeReferences = queryBlock.AllTypeReferences.ToArray();
+			typeReferences.Length.ShouldBe(1);
+			typeReferences[0].RootNode.ShouldNotBe(null);
+			var terminals = typeReferences[0].RootNode.Terminals.ToArray();
+			terminals[0].Id.ShouldBe(Terminals.ObjectIdentifier);
+			terminals[0].Token.Value.ShouldBe("SYS");
+			terminals[2].Id.ShouldBe(Terminals.Identifier);
+			terminals[2].Token.Value.ShouldBe("ODCIRAWLIST");
+			typeReferences[0].RootNode.LastTerminalNode.Id.ShouldBe(Terminals.RightParenthesis);
+			typeReferences[0].ParameterListNode.ShouldNotBe(null);
+			typeReferences[0].ParameterReferences.ShouldNotBe(null);
+			typeReferences[0].ParameterReferences.Count.ShouldBe(3);
+
 			var programReferences = queryBlock.AllProgramReferences.ToArray();
-			programReferences.Length.ShouldBe(5);
+			programReferences.Length.ShouldBe(4);
 			programReferences[0].RootNode.ShouldNotBe(null);
-			programReferences[0].RootNode.FirstTerminalNode.Id.ShouldBe(Terminals.ObjectIdentifier);
+			terminals = programReferences[0].RootNode.Terminals.ToArray();
+			terminals[0].Id.ShouldBe(Terminals.ObjectIdentifier);
+			terminals[0].Token.Value.ShouldBe("DBMS_XPLAN");
+			terminals[2].Id.ShouldBe(Terminals.Identifier);
+			terminals[2].Token.Value.ShouldBe("DISPLAY_CURSOR");
 			programReferences[0].RootNode.LastTerminalNode.Id.ShouldBe(Terminals.RightParenthesis);
 			programReferences[0].ParameterListNode.ShouldNotBe(null);
 			programReferences[0].ParameterReferences.ShouldNotBe(null);
 			programReferences[0].ParameterReferences.Count.ShouldBe(3);
-			programReferences[1].RootNode.ShouldNotBe(null);
-			programReferences[1].RootNode.FirstTerminalNode.Id.ShouldBe(Terminals.ObjectIdentifier);
-			programReferences[1].RootNode.LastTerminalNode.Id.ShouldBe(Terminals.RightParenthesis);
-			programReferences[1].ParameterListNode.ShouldNotBe(null);
-			programReferences[1].ParameterReferences.ShouldNotBe(null);
-			programReferences[1].ParameterReferences.Count.ShouldBe(3);
+			programReferences[1].Metadata.ShouldNotBe(null);
+			programReferences[1].Metadata.Identifier.Name.ShouldBe("\"HEXTORAW\"");
 			programReferences[2].Metadata.ShouldNotBe(null);
 			programReferences[2].Metadata.Identifier.Name.ShouldBe("\"HEXTORAW\"");
 			programReferences[3].Metadata.ShouldNotBe(null);
 			programReferences[3].Metadata.Identifier.Name.ShouldBe("\"HEXTORAW\"");
-			programReferences[4].Metadata.ShouldNotBe(null);
-			programReferences[4].Metadata.Identifier.Name.ShouldBe("\"HEXTORAW\"");
 
 			queryBlock.Columns.Count.ShouldBe(3);
 		}

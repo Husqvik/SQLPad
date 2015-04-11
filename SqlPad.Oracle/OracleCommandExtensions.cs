@@ -62,25 +62,30 @@ namespace SqlPad.Oracle
 
 		public static Task<bool> ReadAsynchronous(this OracleDataReader reader, CancellationToken cancellationToken)
 		{
-			return ExecuteCommandAsynchronous(reader.Close, reader.Read, cancellationToken);
+			return ExecuteAsynchronous(reader.Close, reader.Read, cancellationToken);
 		}
 
 		public static Task<int> ExecuteNonQueryAsynchronous(this OracleCommand command, CancellationToken cancellationToken)
 		{
-			return ExecuteCommandAsynchronous(command.CancelIgnoreFailure, command.ExecuteNonQuery, cancellationToken);
+			return ExecuteAsynchronous(command.CancelIgnoreFailure, command.ExecuteNonQuery, cancellationToken);
 		}
 
 		public static Task<object> ExecuteScalarAsynchronous(this OracleCommand command, CancellationToken cancellationToken)
 		{
-			return ExecuteCommandAsynchronous(command.CancelIgnoreFailure, command.ExecuteScalar, cancellationToken);
+			return ExecuteAsynchronous(command.CancelIgnoreFailure, command.ExecuteScalar, cancellationToken);
 		}
 
 		public static Task<OracleDataReader> ExecuteReaderAsynchronous(this OracleCommand command, CommandBehavior behavior, CancellationToken cancellationToken)
 		{
-			return ExecuteCommandAsynchronous(command.CancelIgnoreFailure, () => command.ExecuteReader(behavior), cancellationToken);
+			return ExecuteAsynchronous(command.CancelIgnoreFailure, () => command.ExecuteReader(behavior), cancellationToken);
 		}
 
-		private static Task<T> ExecuteCommandAsynchronous<T>(Action cancellationAction, Func<T> synchronousOperation, CancellationToken cancellationToken)
+		public static Task OpenAsynchronous(this OracleConnection connection, CancellationToken cancellationToken)
+		{
+			return ExecuteAsynchronous<object>(delegate { /* ODAC does not support cancellation of a connection being opened. */ }, delegate { connection.Open(); return null; }, cancellationToken);
+		}
+
+		private static Task<T> ExecuteAsynchronous<T>(Action cancellationAction, Func<T> synchronousOperation, CancellationToken cancellationToken)
 		{
 			var source = new TaskCompletionSource<T>();
 			var registration = new CancellationTokenRegistration();

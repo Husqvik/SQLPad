@@ -185,6 +185,9 @@ namespace SqlPad.Oracle
 	public enum ProgramType
 	{
 		Procedure,
-		Function
+		Function,
+		ObjectConstructor,
+		CollectionConstructor,
+		MemberFunction
 	}
 }

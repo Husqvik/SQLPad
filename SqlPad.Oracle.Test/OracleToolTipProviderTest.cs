@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -436,7 +437,7 @@ SELECT * FROM CTE";
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 10);
 
 			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
-			toolTip.Control.DataContext.ShouldBe("\"PUBLIC\".XMLTYPE (Synonym) => SYS.XMLTYPE (Type)");
+			toolTip.Control.DataContext.ShouldBe("\"PUBLIC\".XMLTYPE (Synonym) => SYS.XMLTYPE (Object Type)");
 		}
 
 		[Test(Description = @""), STAThread]
@@ -710,12 +711,91 @@ SELECT * FROM CTE";
 
 			var toolTipType = _toolTipProvider.GetToolTip(_documentRepository, 101);
 			toolTipType.Control.ShouldBeTypeOf<ToolTipObject>();
-			toolTipType.Control.DataContext.ShouldBe("\"PUBLIC\".XMLTYPE (Synonym) => SYS.XMLTYPE (Type)");
+			toolTipType.Control.DataContext.ShouldBe("\"PUBLIC\".XMLTYPE (Synonym) => SYS.XMLTYPE (Object Type)");
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 112);
 			toolTip.Control.ShouldBeTypeOf<ToolTipSequence>();
 			var toolTipSequence = (ToolTipSequence)toolTip.Control;
 			toolTipSequence.LabelTitle.Text.ShouldBe("HUSQVIK.SYNONYM_TO_TEST_SEQ (Synonym) => HUSQVIK.TEST_SEQ (Sequence)");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestVarryingArrayConstructorToolTip()
+		{
+			const string query = "SELECT * FROM TABLE(SYS.ODCIRAWLIST(NULL))";
+			_documentRepository.UpdateStatements(query);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 30);
+			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.DataContext.ShouldBe("SYS.ODCIRAWLIST (Object Varrying Array)");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestObjectTableConstructorToolTip()
+		{
+			const string query = "SELECT * FROM TABLE(SYS.DBMS_XPLAN_TYPE_TABLE())";
+			_documentRepository.UpdateStatements(query);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 30);
+			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.DataContext.ShouldBe("SYS.DBMS_XPLAN_TYPE_TABLE (Object Table)");
+		}
+
+		public class ProgramTypeConverterTests
+		{
+			private readonly ProgramTypeConverter _converter = new ProgramTypeConverter();
+
+			[Test]
+			public void TestNullValue()
+			{
+				Convert(null).ShouldBe(ValueConverterBase.ValueNotAvailable);
+			}
+
+			[Test]
+			public void TestSqlFunctiom()
+			{
+				Convert(BuildProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(null, null, "COUNT"), true)).ShouldBe("SQL function");
+			}
+
+			[Test]
+			public void TestBuiltInPackageFunctiom()
+			{
+				Convert(BuildProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues("SYS", "STANDARD", "TRUNC"), true)).ShouldBe("Built-in package function");
+			}
+
+			[Test]
+			public void TestSchemaFunction()
+			{
+				Convert(BuildProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues("HUSQVIK", null, "SQLPAD_FUNCTION"), false)).ShouldBe("Schema function");
+			}
+
+			[Test]
+			public void TestSchemaProcedure()
+			{
+				Convert(BuildProgramMetadata(ProgramType.Procedure, OracleProgramIdentifier.CreateFromValues("HUSQVIK", null, "SQLPAD_PROCEDURE"), false)).ShouldBe("Schema procedure");
+			}
+
+			[Test]
+			public void TestPackageFunction()
+			{
+				Convert(BuildProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues("HUSQVIK", "SQLPAD", "SQLPAD_FUNCTION"), false)).ShouldBe("Package function");
+			}
+
+			[Test]
+			public void TestPackageProcedure()
+			{
+				Convert(BuildProgramMetadata(ProgramType.Procedure, OracleProgramIdentifier.CreateFromValues("HUSQVIK", "SQLPAD", "SQLPAD_PROCEDURE"), false)).ShouldBe("Package procedure");
+			}
+
+			private static OracleProgramMetadata BuildProgramMetadata(ProgramType programType, OracleProgramIdentifier programIdentifier, bool isBuiltIn)
+			{
+				return new OracleProgramMetadata(programType, programIdentifier, false, false, false, false, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, isBuiltIn);
+			}
+
+			private object Convert(OracleProgramMetadata metadata)
+			{
+				return _converter.Convert(metadata, typeof(string), null, CultureInfo.InvariantCulture);
+			}
 		}
 
 		[Test(Description = @""), STAThread]

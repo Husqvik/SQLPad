@@ -118,21 +118,17 @@ namespace SqlPad.Oracle
 			var typeReference = programReferenceBase as OracleTypeReference;
 			if (typeReference == null)
 			{
-				var collectionType = programReferenceBase.SchemaObject.GetTargetSchemaObject() as OracleTypeCollection;
-				if (collectionType == null)
-				{
-					matchedMetadata = programReferenceBase.Container.SemanticModel.DatabaseModel.AllFunctionMetadata[programReferenceBase.Metadata.Identifier]
+				matchedMetadata = programReferenceBase.Container.SemanticModel.DatabaseModel.AllFunctionMetadata[programReferenceBase.Metadata.Identifier]
 						.Where(m => m.Parameters.Count == 0 || currentParameterIndex < m.Parameters.Count - 1);
-				}
-				else
-				{
-					matchedMetadata = Enumerable.Repeat(collectionType.GetConstructorMetadata(), 1);
-					currentParameterIndex = 0;
-				}
 			}
 			else
 			{
 				matchedMetadata = Enumerable.Repeat(typeReference.Metadata, 1);
+				var collectionType = typeReference.SchemaObject.GetTargetSchemaObject() as OracleTypeCollection;
+				if (collectionType != null)
+				{
+					currentParameterIndex = 0;
+				}
 			}
 
 			return matchedMetadata

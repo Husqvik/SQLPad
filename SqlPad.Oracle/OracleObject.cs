@@ -295,7 +295,7 @@ namespace SqlPad.Oracle
 
 		protected override OracleProgramMetadata BuildConstructorMetadata()
 		{
-			var constructorMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(FullyQualifiedName.Owner, null, FullyQualifiedName.Name), false, false, false, false, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeParenthesis, false);
+			var constructorMetadata = new OracleProgramMetadata(ProgramType.ObjectConstructor, OracleProgramIdentifier.CreateFromValues(FullyQualifiedName.Owner, null, FullyQualifiedName.Name), false, false, false, false, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeParenthesis, false);
 			var constructorParameters = Attributes.Select(
 				(a, i) => new OracleProgramParameterMetadata(a.Name.ToSimpleIdentifier(), i + 1, i + 1, 0, ParameterDirection.Input, GetFunctionParameterTypeName(a.DataType), GetFunctionParameterCustomTypeIdentifier(a.DataType), false));
 
@@ -345,7 +345,7 @@ namespace SqlPad.Oracle
 				: ElementDataType.FullyQualifiedName.ToString();
 
 			var returnParameterType = CollectionType == OracleCollectionType.Table ? OracleCollectionTypeNestedTable : OracleCollectionTypeVarryingArray;
-			var constructorMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(FullyQualifiedName.Owner, null, FullyQualifiedName.Name), false, false, false, false, false, false, 0, UpperBound ?? Int32.MaxValue, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeParenthesis, false);
+			var constructorMetadata = new OracleProgramMetadata(ProgramType.CollectionConstructor, OracleProgramIdentifier.CreateFromValues(FullyQualifiedName.Owner, null, FullyQualifiedName.Name), false, false, false, false, false, false, 0, UpperBound ?? Int32.MaxValue, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeParenthesis, false);
 			constructorMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, returnParameterType, FullyQualifiedName, false));
 			constructorMetadata.AddParameter(new OracleProgramParameterMetadata(String.Format("array of {0}", elementTypeLabel), 1, 1, 0, ParameterDirection.Input, String.Empty, OracleObjectIdentifier.Empty, true));
 			constructorMetadata.Owner = this;

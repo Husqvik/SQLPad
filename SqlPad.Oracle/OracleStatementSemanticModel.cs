@@ -1632,8 +1632,11 @@ namespace SqlPad.Oracle
 			var programsTransferredToTypes = new List<OracleProgramReference>();
 			foreach (var programReference in programReferences)
 			{
-				if (UpdateFunctionReferenceWithMetadata(programReference) != null)
+				var programMetadata = UpdateFunctionReferenceWithMetadata(programReference);
+				if (programMetadata != null && programMetadata.Type != ProgramType.CollectionConstructor)
+				{
 					continue;
+				}
 
 				var typeReference = ResolveTypeReference(programReference);
 				if (typeReference == null)
@@ -1648,9 +1651,6 @@ namespace SqlPad.Oracle
 
 		private OracleTypeReference ResolveTypeReference(OracleProgramReference functionReference)
 		{
-			if (functionReference.ParameterListNode == null || functionReference.OwnerNode != null)
-				return null;
-
 			var identifierCandidates = _databaseModel.GetPotentialSchemaObjectIdentifiers(functionReference.FullyQualifiedObjectName.NormalizedName, functionReference.NormalizedName);
 
 			var schemaObject = _databaseModel.GetFirstSchemaObject<OracleTypeBase>(identifierCandidates);
