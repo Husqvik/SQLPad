@@ -98,6 +98,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 						IsDeferrable = (string)reader["DEFERRABLE"] == "DEFERRABLE",
 						IsDeferred = (string)reader["DEFERRED"] == "DEFERRED",
 						IsValidated = (string)reader["VALIDATED"] == "VALIDATED",
+						Reliability = OracleReaderValueConvert.ToString(reader["RELY"]) == "RELY" ? "Relied" : "Enforced",
 						LastChange = (DateTime)reader["LAST_CHANGE"]
 					};
 

@@ -104,24 +104,31 @@ namespace SqlPad.Oracle
 		private IToolTip BuildAsteriskToolTip(OracleQueryBlock queryBlock, StatementGrammarNode asteriskTerminal)
 		{
 			var asteriskColumn = queryBlock.AsteriskColumns.SingleOrDefault(c => c.RootNode.LastTerminalNode == asteriskTerminal);
-			return asteriskColumn == null
+			if (asteriskColumn == null)
+			{
+				return null;
+			}
+
+			var columns = queryBlock.Columns.Where(c => c.AsteriskColumn == asteriskColumn)
+				.Select((c, i) =>
+				{
+					var validObjectReference = c.ColumnReferences.Single().ValidObjectReference;
+
+					return
+						new OracleColumnModel
+						{
+							Name = c.ColumnDescription.Name,
+							FullTypeName = c.ColumnDescription.FullTypeName,
+							ColumnIndex = i + 1,
+							RowSourceName = validObjectReference == null ? String.Empty : validObjectReference.FullyQualifiedObjectName.ToString()
+						};
+				}).ToArray();
+
+			return columns.Length == 0
 				? null
 				: new ToolTipAsterisk
 				{
-					Columns = queryBlock.Columns.Where(c => c.AsteriskColumn == asteriskColumn)
-						.Select((c, i) =>
-						{
-							var validObjectReference = c.ColumnReferences.Single().ValidObjectReference;
-
-							return
-								new OracleColumnModel
-								{
-									Name = c.ColumnDescription.Name,
-									FullTypeName = c.ColumnDescription.FullTypeName,
-									ColumnIndex = i + 1,
-									RowSourceName = validObjectReference == null ? String.Empty : validObjectReference.FullyQualifiedObjectName.ToString()
-								};
-						})
+					Columns = columns
 				};
 		}
 

@@ -54,6 +54,7 @@
 				<DataGridCheckBoxColumn Header="Validated" Binding="{Binding IsValidated}" />
 				<DataGridCheckBoxColumn Header="Deferrable" Binding="{Binding IsDeferrable}" />
 				<DataGridCheckBoxColumn Header="Deferred" Binding="{Binding IsDeferred}" />
+				<DataGridTextColumn Header="Reliability" Binding="{Binding Reliability}" />
 				<DataGridTextColumn Header="Last change" Binding="{Binding LastChange, Converter={StaticResource DateTimeConverter}}" />
 			</DataGrid.Columns>
 		</DataGrid>

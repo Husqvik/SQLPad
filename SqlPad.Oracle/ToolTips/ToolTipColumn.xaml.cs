@@ -313,6 +313,8 @@ namespace SqlPad.Oracle.ToolTips
 		public bool IsDeferred { get; set; }
 		
 		public bool IsValidated { get; set; }
+
+		public string Reliability { get; set; }
 		
 		public DateTime LastChange { get; set; }
 	}

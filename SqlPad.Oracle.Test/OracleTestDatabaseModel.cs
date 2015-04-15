@@ -1185,6 +1185,7 @@ Note
 					IsDeferred = true,
 					IsEnabled = true,
 					IsValidated = true,
+					Reliability = "Enforced",
 					LastChange = new DateTime(2015, 1, 20, 21, 31, 12),
 					Name = "TEST_CONSTRAINT",
 					Owner = "HUSQVIK",
