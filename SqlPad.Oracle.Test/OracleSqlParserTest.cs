@@ -4948,6 +4948,67 @@ PURGE REPEAT INTERVAL '5' DAY";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 			}
+
+			public class CreateTablespace
+			{
+				[Test(Description = @"")]
+				public void TestCreateUndoTablespace()
+				{
+					const string statementText = @"CREATE UNDO TABLESPACE undots1 DATAFILE 'undotbs_1a.dbf' SIZE 10M AUTOEXTEND ON RETENTION GUARANTEE";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestCreateComplexTablespace()
+				{
+					const string statementText =
+@"CREATE SMALLFILE TABLESPACE encrypt_ts
+	DATAFILE
+		'$ORACLE_HOME/dbs/encrypt_df1.dbf' SIZE 1M REUSE AUTOEXTEND ON,
+		'$ORACLE_HOME/dbs/encrypt_df2.dbf' SIZE 1M REUSE AUTOEXTEND OFF
+	ENCRYPTION USING 'AES256'
+	DEFAULT STORAGE (ENCRYPT INITIAL 2m MAXSIZE 100m)
+	EXTENT MANAGEMENT LOCAL UNIFORM SIZE 1M
+	SEGMENT SPACE MANAGEMENT AUTO
+	LOGGING
+	ONLINE";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestCreateSimpleBigFileTemporaryTablespace()
+				{
+					const string statementText = @"CREATE BIGFILE TEMPORARY TABLESPACE omf_ts1";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestCreateTablespaceWithUnnamedDataFileOptions()
+				{
+					const string statementText = @"CREATE TABLESPACE omf_ts2 DATAFILE AUTOEXTEND OFF";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+			}
 		}
 
 		public class Alter
@@ -5158,6 +5219,129 @@ PURGE REPEAT INTERVAL '5' DAY";
 					terminals[12].Id.ShouldBe(Terminals.Container);
 					terminals[13].Id.ShouldBe(Terminals.MathEquals);
 					terminals[14].Id.ShouldBe(Terminals.All);
+				}
+			}
+
+			public class AlterTablespace
+			{
+				[Test(Description = @"")]
+				public void TestAlterTablespaceEndBackup()
+				{
+					const string statementText = @"ALTER TABLESPACE tbs_01 END BACKUP";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterTablespaceOffline()
+				{
+					const string statementText = @"ALTER TABLESPACE tbs_02 OFFLINE IMMEDIATE";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterTablespaceRenameDatafile()
+				{
+					const string statementText = @"ALTER TABLESPACE tbs_02 RENAME DATAFILE 'diskb:tbs_f5.dbf' TO 'diska:tbs_f5.dbf'";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterTablespaceAddDatafile()
+				{
+					const string statementText = @"ALTER TABLESPACE tbs_03 ADD DATAFILE 'tbs_f04.dbf' SIZE 100K AUTOEXTEND ON NEXT 10K MAXSIZE 100K";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterTablespaceAddTempfile()
+				{
+					const string statementText = @"ALTER TABLESPACE temp_demo ADD TEMPFILE 'temp05.dbf' SIZE 5 AUTOEXTEND ON";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterTablespaceDropTempfile()
+				{
+					const string statementText = @"ALTER TABLESPACE temp_demo DROP TEMPFILE 'temp05.dbf'";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterTablespaceShrinkTempfile()
+				{
+					const string statementText = @"ALTER TABLESPACE temp_demo SHRINK SPACE KEEP 10M";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterTablespaceAddUnnamedDatafile()
+				{
+					const string statementText = @"ALTER TABLESPACE omf_ts1 ADD DATAFILE";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterTablespaceNologging()
+				{
+					const string statementText = @"ALTER TABLESPACE tbs_03 NOLOGGING";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterTablespaceRetentionNoGuarantee()
+				{
+					const string statementText = @"ALTER TABLESPACE undots1 RETENTION NOGUARANTEE";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 			}
 
@@ -5461,6 +5645,18 @@ PURGE REPEAT INTERVAL '5' DAY";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
+				[Test(Description = @"")]
+				public void TestAlterTableAddConstraint()
+				{
+					const string statementText = @"ALTER TABLE COUNTRY ADD CONSTRAINT PK_COUNTRY PRIMARY KEY (COUNTRY_ID)";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
 				/*[Test(Description = @"")]
 				public void TestAlterTableAlterXmlSchemaAllowAnySchema()
 				{
@@ -5472,7 +5668,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 					var statement = result.Single();
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
-
+				
 				[Test(Description = @"")]
 				public void TestAlterTableAlterXmlSchemaDisallowNonSchema()
 				{
@@ -5504,7 +5700,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 				terminals.Length.ShouldBe(5);
 
 				terminals[0].Id.ShouldBe(Terminals.Purge);
-				terminals[1].Id.ShouldBe(Terminals.TableSpace);
+				terminals[1].Id.ShouldBe(Terminals.Tablespace);
 				terminals[2].Id.ShouldBe(Terminals.Identifier);
 				terminals[3].Id.ShouldBe(Terminals.User);
 				terminals[4].Id.ShouldBe(Terminals.Identifier);

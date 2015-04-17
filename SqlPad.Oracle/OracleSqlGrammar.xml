@@ -172,7 +172,192 @@
         <Sequence>
           <NonTerminal Id="AlterProfile" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="AlterTablespace" />
+        </Sequence>
         <!-- TODO: Add other objects -->
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AlterTablespace">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="TablespaceIdentifier" />
+          <NonTerminal Id="AlterTablespaceOption" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AlterTablespaceOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Default" />
+          <NonTerminal Id="TableCompression" IsOptional="true" />
+          <NonTerminal Id="InMemoryClause" IsOptional="true" />
+          <NonTerminal Id="StorageClause" IsOptional="true" />
+          <!-- TODO: Check fixed order-->
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Minimum" />
+          <Terminal Id="Extent" />
+          <NonTerminal Id="SizeClause" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Resize" />
+          <NonTerminal Id="SizeClause" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Coalesce" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Shrink" />
+          <Terminal Id="Space" />
+          <NonTerminal Id="KeepSize" IsOptional="true"/>
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Rename" />
+          <Terminal Id="To" />
+          <Terminal Id="Identifier" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Begin" />
+          <Terminal Id="Backup" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="End" />
+          <Terminal Id="Backup" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="DatafileTempfileClauses" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="LoggingClause" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="No" IsOptional="true" />
+          <Terminal Id="Force" />
+          <Terminal Id="Logging" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="TablespaceGroupClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="TablespaceStateClauses" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="AutoExtendClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="FlashbackModeClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="TablespaceRetentionClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DatafileTempfileClauses">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Add" />
+          <NonTerminal Id="DatafileOrTempfile" />
+          <NonTerminal Id="FileSpecificationList" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Drop" />
+          <NonTerminal Id="DatafileOrTempfile" />
+          <NonTerminal Id="IntegerLiteralOrStringLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Shrink" />
+          <Terminal Id="Tempfile" />
+          <NonTerminal Id="IntegerLiteralOrStringLiteral" />
+          <NonTerminal Id="KeepSize" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Rename" />
+          <Terminal Id="Datafile" />
+          <NonTerminal Id="StringLiteralList" />
+          <Terminal Id="To" />
+          <NonTerminal Id="StringLiteralList" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="DatafileOrTempfile" />
+          <NonTerminal Id="OnlineOrOffline" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="OnlineOrOffline">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Online" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Offline" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="IntegerLiteralOrStringLiteral">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="StringLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DatafileOrTempfile">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Datafile" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Tempfile" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="TablespaceStateClauses">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Online" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Offline" />
+          <NonTerminal Id="TablespaceOfflineOption" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Read" />
+          <Terminal Id="Only" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Read" />
+          <Terminal Id="Write" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Permanent" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Temporary" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="TablespaceOfflineOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Normal" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Temporary" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Immediate" />
+        </Sequence>
       </Sequences>
     </Rule>
 
@@ -372,10 +557,10 @@
           <NonTerminal Id="AlterTableProperties" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="AlterTableColumnClauses" />
+          <NonTerminal Id="ConstraintClauses" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="ConstraintClauses" />
+          <NonTerminal Id="AlterTableColumnClauses" />
         </Sequence>
         <!--<Sequence>
           <NonTerminal Id="AlterTablePartitioning" />
@@ -1113,12 +1298,11 @@
     <Rule StartingNonTerminal="AllocateExtentOptionList">
       <Sequences>
         <Sequence>
-          <Terminal Id="Size" />
-          <NonTerminal Id="SizeClause" />
+          <NonTerminal Id="SizeSpecification" />
           <NonTerminal Id="AllocateExtentOptionList" IsOptional="true" />
         </Sequence>
         <Sequence>
-          <Terminal Id="DataFile" />
+          <Terminal Id="Datafile" />
           <Terminal Id="StringLiteral" />
           <NonTerminal Id="AllocateExtentOptionList" IsOptional="true" />
         </Sequence>
@@ -1126,6 +1310,15 @@
           <Terminal Id="Instance" />
           <Terminal Id="IntegerLiteral" />
           <NonTerminal Id="AllocateExtentOptionList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SizeSpecification">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Size" />
+          <NonTerminal Id="SizeClause" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -1670,7 +1863,7 @@
           <Terminal Id="DbaRecycleBin" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="TableSpaceIdentifier" />
+          <NonTerminal Id="TablespaceIdentifier" />
           <NonTerminal Id="UserIdentifier" IsOptional="true" />
         </Sequence>
       </Sequences>
@@ -5320,7 +5513,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Constraint" />
-          <Terminal Id="Identifier" />
+          <Terminal Id="ObjectIdentifier" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -7820,7 +8013,334 @@
         <Sequence>
           <NonTerminal Id="CreateProfile" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="CreateTablespace" />
+        </Sequence>
         <!-- TODO: Create other objects -->
+      </Sequences>
+    </Rule>
+    
+    <!-- CREATE TABLESPACE -->
+    <Rule StartingNonTerminal="CreateTablespace">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="BigFileOrSmallFile" IsOptional="true" />
+          <NonTerminal Id="TablespaceTypeClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="TablespaceTypeClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="PermanentTablespaceClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="TemporaryTablespaceClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="UndoTablespaceClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="UndoTablespaceClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Undo" />
+          <NonTerminal Id="TablespaceIdentifier" />
+          <NonTerminal Id="DatafileSpecificationList" IsOptional="true" />
+          <NonTerminal Id="ExtentManagementClause" IsOptional="true" />
+          <NonTerminal Id="TablespaceRetentionClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="TablespaceRetentionClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Retention" />
+          <NonTerminal Id="GuaranteeOrNoGuarantee" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="GuaranteeOrNoGuarantee">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Guarantee" />
+        </Sequence>
+          <Sequence>
+          <Terminal Id="NoGuarantee" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="TemporaryTablespaceClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Temporary" />
+          <NonTerminal Id="TablespaceIdentifier" />
+          <NonTerminal Id="TempfileSpecificationList" IsOptional="true" />
+          <NonTerminal Id="TablespaceGroupClause" IsOptional="true" />
+          <NonTerminal Id="ExtentManagementClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="TablespaceGroupClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Tablespace" />
+          <Terminal Id="Group" />
+          <NonTerminal Id="IdentifierOrStringLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="IdentifierOrStringLiteral">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Identifier" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="StringLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="TempfileSpecificationList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Tempfile" />
+          <NonTerminal Id="FileSpecificationList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PermanentTablespaceClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="TablespaceIdentifier" />
+          <NonTerminal Id="DatafileSpecificationList" IsOptional="true" />
+          <NonTerminal Id="PermanentTablespaceOptions" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DatafileSpecificationList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Datafile" />
+          <NonTerminal Id="FileSpecificationList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="FileSpecificationList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="DatafileOrTempfileSpecification" />
+          <NonTerminal Id="FileSpecificationListChained" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="RedoLogFileSpecification" />
+          <NonTerminal Id="FileSpecificationListChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="RedoLogFileSpecification">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="StringLiteralOrParenthesisEnclosedStringLiteralList" />
+          <NonTerminal Id="SizeSpecification" IsOptional="true" />
+          <NonTerminal Id="BlockSizeClause" IsOptional="true" />
+          <Terminal Id="Reuse" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="StringLiteralOrParenthesisEnclosedStringLiteralList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="StringLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="StringLiteralList" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="BlockSizeClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="BlockSize" />
+          <NonTerminal Id="SizeClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DatafileOrTempfileSpecification">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="StringLiteral" IsOptional="true" />
+          <NonTerminal Id="SizeSpecification" IsOptional="true" />
+          <Terminal Id="Reuse" IsOptional="true" />
+          <NonTerminal Id="AutoExtendClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AutoExtendClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="AutoExtend" />
+          <NonTerminal Id="AutoExtendOption" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AutoExtendOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Off" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="On" />
+          <NonTerminal Id="NextSizeClause" IsOptional="true" />
+          <NonTerminal Id="MaximumSizeClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="FileSpecificationListChained">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="FileSpecificationList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PermanentTablespaceOptions">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="PermanentTablespaceOption" />
+          <NonTerminal Id="PermanentTablespaceOptions" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PermanentTablespaceOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Minimum" />
+          <Terminal Id="Extent" />
+          <NonTerminal Id="SizeClause" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="BlockSize" />
+          <Terminal Id="IntegerLiteral" />
+          <Terminal Id="Kilo" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="LoggingClause" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Force" />
+          <Terminal Id="Logging" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Encryption" />
+          <NonTerminal Id="UsingEncryptionAlgorithm" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Default" />
+          <NonTerminal Id="TableCompression" IsOptional="true" />
+          <NonTerminal Id="InMemoryClause" IsOptional="true" />
+          <NonTerminal Id="StorageClause" IsOptional="true" />
+          <!-- TODO: Check fixed order-->
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="OnlineOrOffline" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ExtentManagementClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="SegmentManagementClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="FlashbackModeClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="FlashbackModeClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Flashback" />
+          <NonTerminal Id="OnOrOff" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="SegmentManagementClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Segment" />
+          <Terminal Id="Space" />
+          <Terminal Id="Management" />
+          <NonTerminal Id="AutoOrManual" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AutoOrManual">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Auto" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Manual" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ExtentManagementClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Extent" />
+          <Terminal Id="Management" />
+          <Terminal Id="Local" />
+          <NonTerminal Id="LocalExtentManagementOption" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="LocalExtentManagementOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="AutoAllocate" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Uniform" />
+          <NonTerminal Id="SizeSpecification" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="BigFileOrSmallFile">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="BigFile" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="SmallFile" />
+        </Sequence>
       </Sequences>
     </Rule>
 
@@ -7881,7 +8401,7 @@
           <NonTerminal Id="PhysicalAttributesClause" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="TableSpaceIdentifier" />
+          <NonTerminal Id="TablespaceIdentifier" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="LoggingClause" />
@@ -8105,7 +8625,7 @@
           <NonTerminal Id="SizeClause" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="TableSpaceIdentifier" />
+          <NonTerminal Id="TablespaceIdentifier" />
         </Sequence>
         <Sequence>
           <Terminal Id="Index" />
@@ -10553,7 +11073,7 @@
     <Rule StartingNonTerminal="PhysicalAttributesClauseOrTableSpaceIdentifier">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="TableSpaceIdentifier" />
+          <NonTerminal Id="TablespaceIdentifier" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="PhysicalAttributesClause" />
@@ -11017,11 +11537,11 @@
     <Rule StartingNonTerminal="PartitionStorageProperty">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="TableSpaceIdentifier" />
+          <NonTerminal Id="TablespaceIdentifier" />
         </Sequence>
         <Sequence>
           <Terminal Id="Overflow" />
-          <NonTerminal Id="TableSpaceIdentifier" IsOptional="true" />
+          <NonTerminal Id="TablespaceIdentifier" IsOptional="true" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="TableCompression" />
@@ -11055,10 +11575,10 @@
       </Sequences>
     </Rule>
     
-    <Rule StartingNonTerminal="TableSpaceIdentifier">
+    <Rule StartingNonTerminal="TablespaceIdentifier">
       <Sequences>
         <Sequence>
-          <Terminal Id="TableSpace" />
+          <Terminal Id="Tablespace" />
           <Terminal Id="Identifier" />
         </Sequence>
       </Sequences>
@@ -11672,7 +12192,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="LeftParenthesis" />
-          <NonTerminal Id="TableSpaceIdentifier" />
+          <NonTerminal Id="TablespaceIdentifier" />
           <Terminal Id="RightParenthesis" />
         </Sequence>
       </Sequences>
@@ -11976,7 +12496,7 @@
     <Rule StartingNonTerminal="LargeObjectTableSpaceOrLargeObjectParameter">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="TableSpaceIdentifier" />
+          <NonTerminal Id="TablespaceIdentifier" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="LargeObjectParameters" />
@@ -14328,6 +14848,19 @@
         </Sequence>
       </Sequences>
     </Rule>
+    
+    <Rule StartingNonTerminal="InMemoryClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="InMemory" />
+          <NonTerminal Id="InMemoryParameters" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="No" />
+          <Terminal Id="InMemory" />
+        </Sequence>
+      </Sequences>
+    </Rule>
 
     <Rule StartingNonTerminal="InMemoryTableClause">
       <Sequences>
@@ -14563,7 +15096,7 @@
     <Rule StartingNonTerminal="SegmentAttribute">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="TableSpaceIdentifier" />
+          <NonTerminal Id="TablespaceIdentifier" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="PhysicalAttributesClause" />
@@ -14648,8 +15181,7 @@
           <NonTerminal Id="SizeClause" />
         </Sequence>
         <Sequence>
-          <Terminal Id="Next" />
-          <NonTerminal Id="SizeClause" />
+          <NonTerminal Id="NextSizeClause" />
         </Sequence>
         <Sequence>
           <Terminal Id="MinimumExtents" />
@@ -14660,8 +15192,7 @@
           <NonTerminal Id="UnlimitedOrIntegerLiteral" />
         </Sequence>
         <Sequence>
-          <Terminal Id="MaximumSize" />
-          <NonTerminal Id="SizeClauseOrUnlimited" />
+          <NonTerminal Id="MaximumSizeClause" />
         </Sequence>
         <Sequence>
           <Terminal Id="PercentIncrease" />
@@ -14690,6 +15221,24 @@
         </Sequence>
         <Sequence>
           <Terminal Id="Encrypt" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="NextSizeClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Next" />
+          <NonTerminal Id="SizeClauseOrUnlimited" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="MaximumSizeClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="MaximumSize" />
+          <NonTerminal Id="SizeClauseOrUnlimited" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -15061,7 +15610,7 @@
           <Terminal Id="Online" />
         </Sequence>
         <Sequence>
-          <Terminal Id="TableSpace" />
+          <Terminal Id="Tablespace" />
           <NonTerminal Id="DefaultOrIdentifier" />
         </Sequence>
         <Sequence>
@@ -15635,7 +16184,7 @@
     <Terminal Id="Editionable" Value="EDITIONABLE" />
     <Terminal Id="NonEditionable" Value="NONEDITIONABLE" />
     <Terminal Id="Creation" Value="CREATION" />
-    <Terminal Id="TableSpace" Value="TABLESPACE" />
+    <Terminal Id="Tablespace" Value="TABLESPACE" />
     <Terminal Id="PercentFree" Value="PCTFREE" />
     <Terminal Id="PercentUsed" Value="PCTUSED" />
     <Terminal Id="InitialTransactions" Value="INITRANS" />
@@ -15777,6 +16326,20 @@
     <Terminal Id="Modification" Value="MODIFICATION" />
     <Terminal Id="Partial" Value="PARTIAL" />
     <Terminal Id="Container" Value="CONTAINER" />
+    <Terminal Id="BlockSize" Value="BLOCKSIZE" />
+    <Terminal Id="AutoExtend" Value="AUTOEXTEND" />
+    <Terminal Id="Minimum" Value="MINIMUM" />
+    <Terminal Id="BigFile" Value="BIGFILE" />
+    <Terminal Id="SmallFile" Value="SMALLFILE" />
+    <Terminal Id="Offline" Value="OFFLINE" ReservedWord="Sql" />
+    <Terminal Id="Management" Value="MANAGEMENT" />
+    <Terminal Id="Manual" Value="MANUAL" />
+    <Terminal Id="AutoAllocate" Value="AUTOALLOCATE" />
+    <Terminal Id="Uniform" Value="UNIFORM" />
+    <Terminal Id="Undo" Value="UNDO" />
+    <Terminal Id="Guarantee" Value="GUARANTEE" />
+    <Terminal Id="NoGuarantee" Value="NOGUARANTEE" />
+    <Terminal Id="Tempfile" Value="TEMPFILE" />
     
     <!-- External table opaque format specification -->
     <Terminal Id="OracleLoader" Value="ORACLE_LOADER" />
@@ -15927,7 +16490,7 @@
     <Terminal Id="Upgrade" Value="UPGRADE" />
     <Terminal Id="Allocate" Value="ALLOCATE" />
     <Terminal Id="Extent" Value="EXTENT" />
-    <Terminal Id="DataFile" Value="DATAFILE" />
+    <Terminal Id="Datafile" Value="DATAFILE" />
     <Terminal Id="Instance" Value="INSTANCE" />
     <Terminal Id="AnySchema" Value="ANYSCHEMA" />
     <Terminal Id="NonSchema" Value="NONSCHEMA" />
@@ -15948,6 +16511,11 @@
     <Terminal Id="PasswordLockTime" Value="PASSWORD_LOCK_TIME" />
     <Terminal Id="PasswordGraceTime" Value="PASSWORD_GRACE_TIME" />
     <Terminal Id="PasswordVerifyFunction" Value="PASSWORD_VERIFY_FUNCTION" />
+    <Terminal Id="Resize" Value="RESIZE" />
+    <Terminal Id="Coalesce" Value="COALESCE" />
+    <Terminal Id="Backup" Value="BACKUP" />
+    <Terminal Id="Permanent" Value="PERMANENT" />
+    <Terminal Id="Normal" Value="NORMAL" />
     
     <!-- Alter session -->
     <Terminal Id="Advise" Value="ADVISE" />
