@@ -249,23 +249,26 @@ namespace SqlPad
 
 			var sum = 0m;
 			var count = 0;
-			var invalidNumberDetected = false;
+			var hasOnlyNumericValues = true;
 			foreach (var selectedCell in ResultGrid.SelectedCells)
 			{
-				var stringValue = ((object[])selectedCell.Item)[selectedCell.Column.DisplayIndex].ToString();
+				var cellValue = ((object[])selectedCell.Item)[selectedCell.Column.DisplayIndex];
+				var stringValue = cellValue.ToString();
 				if (String.IsNullOrEmpty(stringValue))
 				{
 					continue;
 				}
 
-				decimal value;
-				if (Decimal.TryParse(stringValue, NumberStyles.Number, CultureInfo.InvariantCulture, out value))
+				if (hasOnlyNumericValues)
 				{
-					sum += value;
-				}
-				else
-				{
-					invalidNumberDetected = true;
+					try
+					{
+						sum += Convert.ToDecimal(stringValue, CultureInfo.CurrentCulture);
+					}
+					catch
+					{
+						hasOnlyNumericValues = false;
+					}
 				}
 
 				count++;
@@ -277,7 +280,7 @@ namespace SqlPad
 			{
 				_pageModel.SelectedCellSum = sum;
 				_pageModel.SelectedCellAverage = sum / count;
-				_pageModel.SelectedCellNumericInfoVisibility = invalidNumberDetected ? Visibility.Collapsed : Visibility.Visible;
+				_pageModel.SelectedCellNumericInfoVisibility = hasOnlyNumericValues ? Visibility.Visible : Visibility.Collapsed;
 			}
 			else
 			{
