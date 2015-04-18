@@ -14,13 +14,10 @@ namespace SqlPad
 {
 	public partial class OutputViewer
 	{
-		private const string MaskWrapByQuote = "\"{0}\"";
-		private const string QuoteCharacter = "\"";
-		private const string DoubleQuotes = "\"\"";
-
 		private bool _isSelectingCells;
 		private PageModel _pageModel;
 		private object _previousSelectedTab;
+		private readonly CsvDataExporter _csvDataExporter = new CsvDataExporter();
 
 		public event EventHandler FetchNextRows;
 		public event EventHandler FetchAllRows;
@@ -180,44 +177,11 @@ namespace SqlPad
 
 			DocumentPage.SafeActionWithUserError(() =>
 			{
-				using (var file = File.CreateText(dialog.FileName))
+				using (var writer = File.CreateText(dialog.FileName))
 				{
-					ExportToCsv(file);
+					_csvDataExporter.Export(ResultGrid, writer);
 				}
 			});
-		}
-
-		private void ExportToCsv(TextWriter writer)
-		{
-			var orderedColumns = ResultGrid.Columns
-				.OrderBy(c => c.DisplayIndex)
-				.ToArray();
-
-			var columnHeaders = orderedColumns
-				.Select(c => String.Format(MaskWrapByQuote, c.Header.ToString().Replace("__", "_").Replace(QuoteCharacter, DoubleQuotes)));
-
-			const string separator = ";";
-			var headerLine = String.Join(separator, columnHeaders);
-			writer.WriteLine(headerLine);
-
-			var converterParameters = orderedColumns
-				.Select(c => ((Binding)((DataGridTextColumn)c).Binding).ConverterParameter)
-				.ToArray();
-
-			foreach (object[] rowValues in ResultGrid.Items)
-			{
-				var contentLine = String.Join(separator, rowValues.Select((t, i) => FormatCsvValue(t, converterParameters[i])));
-				writer.WriteLine(contentLine);
-			}
-		}
-
-		private static string FormatCsvValue(object value, object converterParameter)
-		{
-			if (value == DBNull.Value)
-				return null;
-
-			var stringValue = CellValueConverter.Instance.Convert(value, typeof(String), converterParameter, CultureInfo.CurrentUICulture).ToString();
-			return String.Format(MaskWrapByQuote, stringValue.Replace(QuoteCharacter, DoubleQuotes));
 		}
 
 		private void ResultGridMouseDoubleClickHandler(object sender, MouseButtonEventArgs e)
@@ -357,21 +321,6 @@ namespace SqlPad
 			}
 
 			CompilationError(this, new CompilationErrorArgs(errorUnderCursor));
-		}
-	}
-
-	public class CompilationErrorArgs : EventArgs
-	{
-		public CompilationError CompilationError { get; private set; }
-
-		public CompilationErrorArgs(CompilationError compilationError)
-		{
-			if (compilationError == null)
-			{
-				throw new ArgumentNullException("compilationError");
-			}
-			
-			CompilationError = compilationError;
 		}
 	}
 }

@@ -274,9 +274,10 @@ SELECT T.* FROM T@HQ_PDB";
 					};
 
 			var stringBuilder = new StringBuilder();
+			var dataExporter = new CsvDataExporter();
 			using (var writer = new StringWriter(stringBuilder))
 			{
-				outputViewer.GetType().InvokeMember("ExportToCsv", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.InvokeMethod, null, outputViewer, new object[] { writer });
+				dataExporter.Export(outputViewer.ResultGrid, writer);
 			}
 
 			var result = stringBuilder.ToString();
