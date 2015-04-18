@@ -61,6 +61,8 @@ namespace SqlPad.Oracle
 			public const string AlterTableStandardProperties = "AlterTableStandardProperties";
 			public const string AlterTableStandardProperty = "AlterTableStandardProperty";
 			public const string AlterTableStandardPropertyList = "AlterTableStandardPropertyList";
+			public const string AlterView = "AlterView";
+			public const string AlterViewOption = "AlterViewOption";
 			public const string AnalyticClause = "AnalyticClause";
 			public const string AnalyticFunction = "AnalyticFunction";
 			public const string AnalyticFunctionCall = "AnalyticFunctionCall";
@@ -700,6 +702,7 @@ namespace SqlPad.Oracle
 			public const string OltpOrQueryOrArchiveOrAllOrDirectLoadOperations = "OltpOrQueryOrArchiveOrAllOrDirectLoadOperations";
 			public const string OnlineOrOffline = "OnlineOrOffline";
 			public const string OnlyOrWithTies = "OnlyOrWithTies";
+			public const string OnlyOrWrite = "OnlyOrWrite";
 			public const string OnNull = "OnNull";
 			public const string OnOrOff = "OnOrOff";
 			public const string OpaqueFormatSpecification = "OpaqueFormatSpecification";
@@ -1118,7 +1121,6 @@ namespace SqlPad.Oracle
 			public const string ToSavepointOrForceTransactionIdentifier = "ToSavepointOrForceTransactionIdentifier";
 			public const string ToYearOrMonth = "ToYearOrMonth";
 			public const string TransactionModeOrIsolationLevelOrRollbackSegment = "TransactionModeOrIsolationLevelOrRollbackSegment";
-			public const string TransactionReadOnlyOrReadWrite = "TransactionReadOnlyOrReadWrite";
 			public const string TrimSpecification = "TrimSpecification";
 			public const string TypeDefinition = "TypeDefinition";
 			public const string TypeDefinitionSpecification = "TypeDefinitionSpecification";

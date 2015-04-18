@@ -5222,6 +5222,69 @@ PURGE REPEAT INTERVAL '5' DAY";
 				}
 			}
 
+			public class AlterView
+			{
+				[Test(Description = @"")]
+				public void TestAlterViewAddConstraint()
+				{
+					const string statementText = @"ALTER VIEW tmp ADD CONSTRAINT constraint_name PRIMARY KEY (dummy) RELY DISABLE NOVALIDATE";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterViewDropConstraint()
+				{
+					const string statementText = @"ALTER VIEW tmp DROP UNIQUE (dummy)";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterViewCompile()
+				{
+					const string statementText = @"ALTER VIEW tmp COMPILE";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterViewReadWrite()
+				{
+					const string statementText = @"ALTER VIEW tmp READ WRITE";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterViewNonEditionable()
+				{
+					const string statementText = @"ALTER VIEW tmp NONEDITIONABLE";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+			}
+
 			public class AlterTablespace
 			{
 				[Test(Description = @"")]

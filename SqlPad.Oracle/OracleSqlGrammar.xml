@@ -175,7 +175,63 @@
         <Sequence>
           <NonTerminal Id="AlterTablespace" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="AlterView" />
+        </Sequence>
         <!-- TODO: Add other objects -->
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AlterView">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="View" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="AlterViewOption" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AlterViewOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Add" />
+          <NonTerminal Id="NamedOutOfLineConstraint" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Modify" />
+          <NonTerminal Id="ConstraintName" />
+          <NonTerminal Id="RelyOrNoRely" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Drop" />
+          <NonTerminal Id="ModifyConstraintClause" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Compile" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Read" />
+          <NonTerminal Id="OnlyOrWrite" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Editionable" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="NonEditionable" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="OnlyOrWrite">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Only" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Write" />
+        </Sequence>
       </Sequences>
     </Rule>
 
@@ -332,11 +388,7 @@
         </Sequence>
         <Sequence>
           <Terminal Id="Read" />
-          <Terminal Id="Only" />
-        </Sequence>
-        <Sequence>
-          <Terminal Id="Read" />
-          <Terminal Id="Write" />
+          <NonTerminal Id="OnlyOrWrite" />
         </Sequence>
         <Sequence>
           <Terminal Id="Permanent" />
@@ -1075,11 +1127,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Read" />
-          <Terminal Id="Only" />
-        </Sequence>
-        <Sequence>
-          <Terminal Id="Read" />
-          <Terminal Id="Write" />
+          <NonTerminal Id="OnlyOrWrite" />
         </Sequence>
         <Sequence>
           <Terminal Id="ReKey" />
@@ -2282,7 +2330,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Read" />
-          <NonTerminal Id="TransactionReadOnlyOrReadWrite" />
+          <NonTerminal Id="OnlyOrWrite" />
         </Sequence>
         <Sequence>
           <Terminal Id="Isolation" />
@@ -2294,17 +2342,6 @@
           <Terminal Id="Rollback" />
           <Terminal Id="Segment" />
           <Terminal Id="Identifier" />
-        </Sequence>
-      </Sequences>
-    </Rule>
-
-    <Rule StartingNonTerminal="TransactionReadOnlyOrReadWrite">
-      <Sequences>
-        <Sequence>
-          <Terminal Id="Only" />
-        </Sequence>
-        <Sequence>
-          <Terminal Id="Write" />
         </Sequence>
       </Sequences>
     </Rule>
