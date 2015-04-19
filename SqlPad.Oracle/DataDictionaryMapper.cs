@@ -35,37 +35,37 @@ namespace SqlPad.Oracle
 			Trace.WriteLine(String.Format("Fetch types and materialized views metadata finished in {0}. ", stopwatch.Elapsed));
 			stopwatch.Restart();
 
-			_databaseModel.ExecuteReader(DatabaseCommands.SelectAllObjectsCommandText, MapSchemaObject).ToArray();
+			_databaseModel.ExecuteReader(DatabaseCommands.SelectAllObjectsCommandText, MapSchemaObject).Count();
 
 			Trace.WriteLine(String.Format("Fetch all objects metadata finished in {0}. ", stopwatch.Elapsed));
 			stopwatch.Restart();
 
-			_databaseModel.ExecuteReader(DatabaseCommands.SelectTablesCommandText, MapTable).ToArray();
+			_databaseModel.ExecuteReader(DatabaseCommands.SelectTablesCommandText, MapTable).Count();
 
 			Trace.WriteLine(String.Format("Fetch tables metadata finished in {0}. ", stopwatch.Elapsed));
 			stopwatch.Restart();
 
-			_databaseModel.ExecuteReader(DatabaseCommands.SelectPartitionsCommandText, MapPartitions).ToArray();
+			_databaseModel.ExecuteReader(DatabaseCommands.SelectPartitionsCommandText, MapPartitions).Count();
 
 			Trace.WriteLine(String.Format("Fetch table partition metadata finished in {0}. ", stopwatch.Elapsed));
 			stopwatch.Restart();
 
-			_databaseModel.ExecuteReader(DatabaseCommands.SelectSubPartitionsCommandText, MapSubPartitions).ToArray();
+			_databaseModel.ExecuteReader(DatabaseCommands.SelectSubPartitionsCommandText, MapSubPartitions).Count();
 
 			Trace.WriteLine(String.Format("Fetch table sub-partition metadata finished in {0}. ", stopwatch.Elapsed));
 			stopwatch.Restart();
 
-			_databaseModel.ExecuteReader(DatabaseCommands.SelectTablePartitionKeysCommandText, r => MapPartitionKeys(r, t => t.PartitionKeyColumns)).ToArray();
+			_databaseModel.ExecuteReader(DatabaseCommands.SelectTablePartitionKeysCommandText, r => MapPartitionKeys(r, t => t.PartitionKeyColumns)).Count();
 
 			Trace.WriteLine(String.Format("Fetch table partition key metadata finished in {0}. ", stopwatch.Elapsed));
 			stopwatch.Restart();
 
-			_databaseModel.ExecuteReader(DatabaseCommands.SelectTableSubPartitionKeysCommandText, r => MapPartitionKeys(r, t => t.SubPartitionKeyColumns)).ToArray();
+			_databaseModel.ExecuteReader(DatabaseCommands.SelectTableSubPartitionKeysCommandText, r => MapPartitionKeys(r, t => t.SubPartitionKeyColumns)).Count();
 
 			Trace.WriteLine(String.Format("Fetch table sub-partition key metadata finished in {0}. ", stopwatch.Elapsed));
 			stopwatch.Restart();
 
-			_databaseModel.ExecuteReader(DatabaseCommands.SelectSynonymTargetsCommandText, MapSynonymTarget).ToArray();
+			_databaseModel.ExecuteReader(DatabaseCommands.SelectSynonymTargetsCommandText, MapSynonymTarget).Count();
 
 			Trace.WriteLine(String.Format("Fetch synonyms metadata finished in {0}. ", stopwatch.Elapsed));
 			stopwatch.Restart();
@@ -126,17 +126,17 @@ namespace SqlPad.Oracle
 			Trace.WriteLine(String.Format("Fetch column constraint metadata finished in {0}. ", stopwatch.Elapsed));
 			stopwatch.Restart();
 
-			_databaseModel.ExecuteReader(DatabaseCommands.SelectSequencesCommandText, MapSequence).ToArray();
+			_databaseModel.ExecuteReader(DatabaseCommands.SelectSequencesCommandText, MapSequence).Count();
 
 			Trace.WriteLine(String.Format("Fetch sequence metadata finished in {0}. ", stopwatch.Elapsed));
 			stopwatch.Restart();
 
-			_databaseModel.ExecuteReader(DatabaseCommands.SelectTypeAttributesCommandText, MapTypeAttributes).ToArray();
+			_databaseModel.ExecuteReader(DatabaseCommands.SelectTypeAttributesCommandText, MapTypeAttributes).Count();
 
 			Trace.WriteLine(String.Format("Fetch type attribute metadata finished in {0}. ", stopwatch.Elapsed));
 			stopwatch.Restart();
 
-			_databaseModel.ExecuteReader(DatabaseCommands.SelectCollectionTypeAttributesCommandText, MapCollectionTypeAttributes).ToArray();
+			_databaseModel.ExecuteReader(DatabaseCommands.SelectCollectionTypeAttributesCommandText, MapCollectionTypeAttributes).Count();
 
 			Trace.WriteLine(String.Format("Fetch collection attribute metadata finished in {0}. ", stopwatch.Elapsed));
 			stopwatch.Restart();

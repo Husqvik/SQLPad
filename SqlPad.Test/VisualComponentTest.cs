@@ -287,6 +287,28 @@ SELECT T.* FROM T@HQ_PDB";
 			result.ShouldBe(expectedResult);
 		}
 
+		[Test, STAThread]
+		public void TestSqlInsertDataExporter()
+		{
+			var resultGrid = InitializeDataGrid();
+
+			var result = GetExportContent(resultGrid, new SqlInsertDataExporter());
+
+			const string expectedResult = "INSERT INTO MY_TABLE (DUMMY1, DUMMY_WITH_UNDERSCORES) VALUES ('Value \"1\"', 16.8.2014 22:25:34);\r\nINSERT INTO MY_TABLE (DUMMY1, DUMMY_WITH_UNDERSCORES) VALUES ('\"2.\"Value', 16.8.2014 00:00:00);\r\n";
+			result.ShouldBe(expectedResult);
+		}
+
+		[Test, STAThread]
+		public void TestSqlUpdateDataExporter()
+		{
+			var resultGrid = InitializeDataGrid();
+
+			var result = GetExportContent(resultGrid, new SqlUpdateDataExporter());
+
+			const string expectedResult = "UPDATE MY_TABLE SET DUMMY1 = 'Value \"1\"', DUMMY_WITH_UNDERSCORES = 16.8.2014 22:25:34;\r\nUPDATE MY_TABLE SET DUMMY1 = '\"2.\"Value', DUMMY_WITH_UNDERSCORES = 16.8.2014 00:00:00;\r\n";
+			result.ShouldBe(expectedResult);
+		}
+
 		private static string GetExportContent(DataGrid resultGrid, IDataExporter dataExporter)
 		{
 			var tempFileName = Path.GetTempFileName();
@@ -302,8 +324,8 @@ SELECT T.* FROM T@HQ_PDB";
 			var columnHeaders =
 				new[]
 				{
-					new ColumnHeader {ColumnIndex = 0, DatabaseDataType = "Varchar2", DataType = typeof (string), Name = "DUMMY1", ValueConverter = TestColumnValueConverter.Instance},
-					new ColumnHeader {ColumnIndex = 1, DatabaseDataType = "Date", DataType = typeof (DateTime), Name = "DUMMY_WITH_UNDERSCORES", ValueConverter = TestColumnValueConverter.Instance}
+					new ColumnHeader { ColumnIndex = 0, DatabaseDataType = "Varchar2", DataType = typeof (string), Name = "DUMMY1", ValueConverter = TestColumnValueConverter.Instance },
+					new ColumnHeader { ColumnIndex = 1, DatabaseDataType = "Date", DataType = typeof (DateTime), Name = "DUMMY_WITH_UNDERSCORES", ValueConverter = TestColumnValueConverter.Instance }
 				};
 
 			var outputViewer = new OutputViewer();
@@ -311,8 +333,8 @@ SELECT T.* FROM T@HQ_PDB";
 			outputViewer.ResultGrid.ItemsSource =
 				new[]
 				{
-					new object[] {"Value \"1\"", new DateTime(2014, 8, 16, 22, 25, 34)},
-					new object[] {"\"2.\"Value", new DateTime(2014, 8, 16)}
+					new object[] { "Value \"1\"", new DateTime(2014, 8, 16, 22, 25, 34) },
+					new object[] { "\"2.\"Value", new DateTime(2014, 8, 16) }
 				};
 			
 			return outputViewer.ResultGrid;

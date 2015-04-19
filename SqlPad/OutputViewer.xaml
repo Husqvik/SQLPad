@@ -13,10 +13,14 @@
 
 		<RoutedCommand x:Key="ExportToCsvCommand"/>
 		<RoutedCommand x:Key="ExportToJsonCommand"/>
+		<RoutedCommand x:Key="ExportToSqlInsertCommand"/>
+		<RoutedCommand x:Key="ExportToSqlUpdateCommand"/>
 		<RoutedCommand x:Key="ExportToXmlCommand"/>
 
 		<sqlPad:CsvDataExporter x:Key="CsvDataExporter" />
 		<sqlPad:JsonDataExporter x:Key="JsonDataExporter" />
+		<sqlPad:SqlInsertDataExporter x:Key="SqlInsertDataExporter" />
+		<sqlPad:SqlUpdateDataExporter x:Key="SqlUpdateDataExporter" />
 		<sqlPad:XmlDataExporter x:Key="XmlDataExporter" />
 	</UserControl.Resources>
 
@@ -58,6 +62,8 @@
 					<DataGrid.CommandBindings>
 						<CommandBinding Command="{StaticResource ExportToCsvCommand}" Executed="ExportDataHandler" CanExecute="CanExportDataHandler" />
 						<CommandBinding Command="{StaticResource ExportToJsonCommand}" Executed="ExportDataHandler" CanExecute="CanExportDataHandler" />
+						<CommandBinding Command="{StaticResource ExportToSqlInsertCommand}" Executed="ExportDataHandler" CanExecute="CanExportDataHandler" />
+						<CommandBinding Command="{StaticResource ExportToSqlUpdateCommand}" Executed="ExportDataHandler" CanExecute="CanExportDataHandler" />
 						<CommandBinding Command="{StaticResource ExportToXmlCommand}" Executed="ExportDataHandler" CanExecute="CanExportDataHandler" />
 						<CommandBinding Command="commands:GenericCommands.FetchAllRows" Executed="FetchAllRowsHandler" CanExecute="CanFetchAllRowsHandler" />
 					</DataGrid.CommandBindings>
@@ -67,6 +73,8 @@
 							<MenuItem Header="_Export">
 								<MenuItem Header="To _CSV..." Command="{StaticResource ExportToCsvCommand}" CommandParameter="{StaticResource CsvDataExporter}" />
 								<MenuItem Header="To _JSON..." Command="{StaticResource ExportToJsonCommand}" CommandParameter="{StaticResource JsonDataExporter}" />
+								<MenuItem Header="To SQL _INSERT..." Command="{StaticResource ExportToSqlInsertCommand}" CommandParameter="{StaticResource SqlInsertDataExporter}" />
+								<MenuItem Header="To SQL _UPDATE..." Command="{StaticResource ExportToSqlUpdateCommand}" CommandParameter="{StaticResource SqlUpdateDataExporter}" />
 								<MenuItem Header="To _XML..." Command="{StaticResource ExportToXmlCommand}" CommandParameter="{StaticResource XmlDataExporter}" />
 							</MenuItem>
 						</ContextMenu>
