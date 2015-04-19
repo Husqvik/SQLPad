@@ -11,18 +11,33 @@ using System.Windows.Data;
 
 namespace SqlPad
 {
-	public class CsvDataExporter
+	public interface IDataExporter
+	{
+		string FileNameFilter { get; }
+
+		void Export(string fileName, DataGrid dataGrid);
+
+		Task ExportAsync(string fileName, DataGrid dataGrid, CancellationToken cancellationToken);
+	}
+
+	public class CsvDataExporter : IDataExporter
 	{
 		private const string MaskWrapByQuote = "\"{0}\"";
 		private const string QuoteCharacter = "\"";
 		private const string DoubleQuotes = "\"\"";
 		private const string CsvSeparator = ";";
-		public void Export(DataGrid dataGrid, TextWriter writer)
+
+		public string FileNameFilter
 		{
-			ExportAsync(dataGrid, writer, CancellationToken.None).Wait();
+			get { return "CSV files (*.csv)|*.csv|All files (*.*)|*"; }
 		}
 
-		public Task ExportAsync(DataGrid dataGrid, TextWriter writer, CancellationToken cancellationToken)
+		public void Export(string fileName, DataGrid dataGrid)
+		{
+			ExportAsync(fileName, dataGrid, CancellationToken.None).Wait();
+		}
+
+		public Task ExportAsync(string fileName, DataGrid dataGrid, CancellationToken cancellationToken)
 		{
 			var orderedColumns = dataGrid.Columns
 					.OrderBy(c => c.DisplayIndex)
@@ -32,7 +47,6 @@ namespace SqlPad
 				.Select(c => String.Format(MaskWrapByQuote, c.Header.ToString().Replace("__", "_").Replace(QuoteCharacter, DoubleQuotes)));
 
 			var headerLine = String.Join(CsvSeparator, columnHeaders);
-			writer.WriteLine(headerLine);
 
 			var converterParameters = orderedColumns
 				.Select(c => ((Binding)((DataGridTextColumn)c).Binding).ConverterParameter)
@@ -40,17 +54,22 @@ namespace SqlPad
 
 			var rows = (IEnumerable)dataGrid.Items;
 
-			return Task.Factory.StartNew(() => ExportInternal(rows, converterParameters, writer, cancellationToken), cancellationToken);
+			return Task.Factory.StartNew(() => ExportInternal(headerLine, rows, converterParameters, fileName, cancellationToken), cancellationToken);
 		}
 
-		private void ExportInternal(IEnumerable rows, IReadOnlyList<object> converterParameters, TextWriter writer, CancellationToken cancellationToken)
+		private void ExportInternal(string headerLine, IEnumerable rows, IReadOnlyList<object> converterParameters, string fileName, CancellationToken cancellationToken)
 		{
-			foreach (object[] rowValues in rows)
+			using (var writer = File.CreateText(fileName))
 			{
-				cancellationToken.ThrowIfCancellationRequested();
+				writer.WriteLine(headerLine);
 
-				var contentLine = String.Join(CsvSeparator, rowValues.Select((t, i) => FormatCsvValue(t, converterParameters[i])));
-				writer.WriteLine(contentLine);
+				foreach (object[] rowValues in rows)
+				{
+					cancellationToken.ThrowIfCancellationRequested();
+
+					var contentLine = String.Join(CsvSeparator, rowValues.Select((t, i) => FormatCsvValue(t, converterParameters[i])));
+					writer.WriteLine(contentLine);
+				}
 			}
 		}
 

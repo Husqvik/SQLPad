@@ -255,35 +255,67 @@ SELECT T.* FROM T@HQ_PDB";
 		}
 
 		[Test, STAThread]
-		public void TestExportToCsv()
+		public void TestCsvDataExporter()
+		{
+			var resultGrid = InitializeDataGrid();
+
+			var result = GetExportContent(resultGrid, new CsvDataExporter());
+
+			const string expectedResult = "\"DUMMY1\";\"DUMMY_WITH_UNDERSCORES\"\r\n\"Value \"\"1\"\"\";\"2014-08-16T22:25:34.0000000\"\r\n\"\"\"2.\"\"Value\";\"2014-08-16T00:00:00.0000000\"\r\n";
+			result.ShouldBe(expectedResult);
+		}
+
+		[Test, STAThread]
+		public void TestJsonDataExporter()
+		{
+			var resultGrid = InitializeDataGrid();
+
+			var result = GetExportContent(resultGrid, new JsonDataExporter());
+
+			const string expectedResult = "[{\r\n\t\"DUMMY1\": 'Value \"1\"',\r\n\t\"DUMMY_WITH_UNDERSCORES\": 16.8.2014 22:25:34\r\n},\r\n{\r\n\t\"DUMMY1\": '\"2.\"Value',\r\n\t\"DUMMY_WITH_UNDERSCORES\": 16.8.2014 00:00:00\r\n}]\r\n";
+			result.ShouldBe(expectedResult);
+		}
+
+		[Test, STAThread]
+		public void TestXmlDataExporter()
+		{
+			var resultGrid = InitializeDataGrid();
+
+			var result = GetExportContent(resultGrid, new XmlDataExporter());
+
+			const string expectedResult = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<data>\r\n  <row>\r\n    <DUMMY1>Value \"1\"</DUMMY1>\r\n    <DUMMY_WITH_UNDERSCORES>16.8.2014 22:25:34</DUMMY_WITH_UNDERSCORES>\r\n  </row>\r\n  <row>\r\n    <DUMMY1>\"2.\"Value</DUMMY1>\r\n    <DUMMY_WITH_UNDERSCORES>16.8.2014 00:00:00</DUMMY_WITH_UNDERSCORES>\r\n  </row>\r\n</data>";
+			result.ShouldBe(expectedResult);
+		}
+
+		private static string GetExportContent(DataGrid resultGrid, IDataExporter dataExporter)
+		{
+			var tempFileName = Path.GetTempFileName();
+			dataExporter.Export(tempFileName, resultGrid);
+
+			var result = File.ReadAllText(tempFileName);
+			File.Delete(tempFileName);
+			return result;
+		}
+
+		private static DataGrid InitializeDataGrid()
 		{
 			var columnHeaders =
 				new[]
-					{
-						new ColumnHeader { ColumnIndex = 0, DatabaseDataType = "Varchar2", DataType = typeof(string), Name = "DUMMY1", ValueConverter = TestColumnValueConverter.Instance },
-						new ColumnHeader { ColumnIndex = 1, DatabaseDataType = "Date", DataType = typeof(DateTime), Name = "DUMMY_WITH_UNDERSCORES", ValueConverter = TestColumnValueConverter.Instance }
-					};
+				{
+					new ColumnHeader {ColumnIndex = 0, DatabaseDataType = "Varchar2", DataType = typeof (string), Name = "DUMMY1", ValueConverter = TestColumnValueConverter.Instance},
+					new ColumnHeader {ColumnIndex = 1, DatabaseDataType = "Date", DataType = typeof (DateTime), Name = "DUMMY_WITH_UNDERSCORES", ValueConverter = TestColumnValueConverter.Instance}
+				};
 
 			var outputViewer = new OutputViewer();
 			outputViewer.Initialize(columnHeaders);
 			outputViewer.ResultGrid.ItemsSource =
 				new[]
-					{
-						new object[] {"Value \"1\"", new DateTime(2014, 8, 16, 22, 25, 34)},
-						new object[] {"\"2.\"Value", new DateTime(2014, 8, 16)}
-					};
-
-			var stringBuilder = new StringBuilder();
-			var dataExporter = new CsvDataExporter();
-			using (var writer = new StringWriter(stringBuilder))
-			{
-				dataExporter.Export(outputViewer.ResultGrid, writer);
-			}
-
-			var result = stringBuilder.ToString();
-
-			const string expectedResult = "\"DUMMY1\";\"DUMMY_WITH_UNDERSCORES\"\r\n\"Value \"\"1\"\"\";\"2014-08-16T22:25:34.0000000\"\r\n\"\"\"2.\"\"Value\";\"2014-08-16T00:00:00.0000000\"\r\n";
-			result.ShouldBe(expectedResult);
+				{
+					new object[] {"Value \"1\"", new DateTime(2014, 8, 16, 22, 25, 34)},
+					new object[] {"\"2.\"Value", new DateTime(2014, 8, 16)}
+				};
+			
+			return outputViewer.ResultGrid;
 		}
 
 		[Test, STAThread]

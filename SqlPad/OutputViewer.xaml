@@ -10,6 +10,14 @@
              d:DesignHeight="140" d:DesignWidth="300" d:DataContext="{d:DesignInstance sqlPad:PageModel}">
 	<UserControl.Resources>
 		<sqlPad:PrettyPrintIntegerConverter x:Key="PrettyPrintNumericConverter" />
+
+		<RoutedCommand x:Key="ExportToCsvCommand"/>
+		<RoutedCommand x:Key="ExportToJsonCommand"/>
+		<RoutedCommand x:Key="ExportToXmlCommand"/>
+
+		<sqlPad:CsvDataExporter x:Key="CsvDataExporter" />
+		<sqlPad:JsonDataExporter x:Key="JsonDataExporter" />
+		<sqlPad:XmlDataExporter x:Key="XmlDataExporter" />
 	</UserControl.Resources>
 
 	<TabControl x:Name="TabControlResult" GiveFeedback="TabControlResultGiveFeedbackHandler">
@@ -48,13 +56,19 @@
 							  MouseDoubleClick="ResultGridMouseDoubleClickHandler"
 							  DataGridColumnHeader.Click="ColumnHeaderMouseClickHandler">
 					<DataGrid.CommandBindings>
-						<CommandBinding Command="commands:GenericCommands.ExportToCsv" Executed="ExportToCsvHandler" CanExecute="CanExportToCsvHandler" />
+						<CommandBinding Command="{StaticResource ExportToCsvCommand}" Executed="ExportDataHandler" CanExecute="CanExportDataHandler" />
+						<CommandBinding Command="{StaticResource ExportToJsonCommand}" Executed="ExportDataHandler" CanExecute="CanExportDataHandler" />
+						<CommandBinding Command="{StaticResource ExportToXmlCommand}" Executed="ExportDataHandler" CanExecute="CanExportDataHandler" />
 						<CommandBinding Command="commands:GenericCommands.FetchAllRows" Executed="FetchAllRowsHandler" CanExecute="CanFetchAllRowsHandler" />
 					</DataGrid.CommandBindings>
 					<DataGrid.ContextMenu>
 						<ContextMenu>
 							<MenuItem Header="_Fetch all" Command="commands:GenericCommands.FetchAllRows" />
-							<MenuItem Header="_Export to CSV..." Command="commands:GenericCommands.ExportToCsv" />
+							<MenuItem Header="_Export">
+								<MenuItem Header="To _CSV..." Command="{StaticResource ExportToCsvCommand}" CommandParameter="{StaticResource CsvDataExporter}" />
+								<MenuItem Header="To _JSON..." Command="{StaticResource ExportToJsonCommand}" CommandParameter="{StaticResource JsonDataExporter}" />
+								<MenuItem Header="To _XML..." Command="{StaticResource ExportToXmlCommand}" CommandParameter="{StaticResource XmlDataExporter}" />
+							</MenuItem>
 						</ContextMenu>
 					</DataGrid.ContextMenu>
 				</DataGrid>

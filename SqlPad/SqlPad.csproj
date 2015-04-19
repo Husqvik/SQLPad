@@ -109,6 +109,8 @@
     <Compile Include="Configuration.cs">
       <DependentUpon>Configuration.xsd</DependentUpon>
     </Compile>
+    <Compile Include="XmlDataExporter.cs" />
+    <Compile Include="JsonDataExporter.cs" />
     <Compile Include="CsvDataExporter.cs" />
     <Compile Include="DataSpaceConverter.cs" />
     <Compile Include="DragDrop\DragDropHelper.cs" />

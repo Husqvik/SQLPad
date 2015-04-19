@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -17,7 +16,6 @@ namespace SqlPad
 		private bool _isSelectingCells;
 		private PageModel _pageModel;
 		private object _previousSelectedTab;
-		private readonly CsvDataExporter _csvDataExporter = new CsvDataExporter();
 
 		public event EventHandler FetchNextRows;
 		public event EventHandler FetchAllRows;
@@ -152,7 +150,7 @@ namespace SqlPad
 			}
 		}
 
-		private void CanExportToCsvHandler(object sender, CanExecuteRoutedEventArgs args)
+		private void CanExportDataHandler(object sender, CanExecuteRoutedEventArgs args)
 		{
 			args.CanExecute = ResultGrid.Items.Count > 0;
 		}
@@ -167,21 +165,17 @@ namespace SqlPad
 			canExecuteRoutedEventArgs.ContinueRouting = canExecuteRoutedEventArgs.CanExecute;
 		}
 
-		private void ExportToCsvHandler(object sender, ExecutedRoutedEventArgs args)
+		private void ExportDataHandler(object sender, ExecutedRoutedEventArgs args)
 		{
-			var dialog = new SaveFileDialog { Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*", OverwritePrompt = true };
+			var dataExporter = (IDataExporter)args.Parameter;
+			var dialog = new SaveFileDialog { Filter = dataExporter.FileNameFilter, OverwritePrompt = true };
 			if (dialog.ShowDialog() != true)
 			{
 				return;
 			}
 
-			DocumentPage.SafeActionWithUserError(() =>
-			{
-				using (var writer = File.CreateText(dialog.FileName))
-				{
-					_csvDataExporter.Export(ResultGrid, writer);
-				}
-			});
+			DocumentPage.SafeActionWithUserError(
+				() => { dataExporter.Export(dialog.FileName, ResultGrid); });
 		}
 
 		private void ResultGridMouseDoubleClickHandler(object sender, MouseButtonEventArgs e)
