@@ -5719,6 +5719,18 @@ PURGE REPEAT INTERVAL '5' DAY";
 					var statement = result.Single();
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
+				
+				[Test(Description = @"")]
+				public void TestAlterTableCombineTableAttributeColumnAttributeAndConstraintClause()
+				{
+					const string statementText = @"ALTER TABLE tmp CACHE ROW ARCHIVAL ADD (c2 NUMBER) ADD CONSTRAINT pk_tmp PRIMARY KEY (dummy) NOLOGGING ADD (c3 NUMBER) READ ONLY ADD CONSTRAINT uq_tmp UNIQUE (dummy, c2)";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
 
 				/*[Test(Description = @"")]
 				public void TestAlterTableAlterXmlSchemaAllowAnySchema()

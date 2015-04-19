@@ -51,6 +51,8 @@ namespace SqlPad.Oracle
 			public const string AlterSetOptionList = "AlterSetOptionList";
 			public const string AlterStatement = "AlterStatement";
 			public const string AlterTable = "AlterTable";
+			public const string AlterTableChainedOption = "AlterTableChainedOption";
+			public const string AlterTableChainedOptions = "AlterTableChainedOptions";
 			public const string AlterTableColumnClauses = "AlterTableColumnClauses";
 			public const string AlterTableEnableDisableOption = "AlterTableEnableDisableOption";
 			public const string AlterTableEnableDisableOptions = "AlterTableEnableDisableOptions";
@@ -58,7 +60,6 @@ namespace SqlPad.Oracle
 			public const string AlterTableProperties = "AlterTableProperties";
 			public const string AlterTablespace = "AlterTablespace";
 			public const string AlterTablespaceOption = "AlterTablespaceOption";
-			public const string AlterTableStandardProperties = "AlterTableStandardProperties";
 			public const string AlterTableStandardProperty = "AlterTableStandardProperty";
 			public const string AlterTableStandardPropertyList = "AlterTableStandardPropertyList";
 			public const string AlterView = "AlterView";
@@ -145,7 +146,6 @@ namespace SqlPad.Oracle
 			public const string ColumnDefinitionInlineConstraintDefinition = "ColumnDefinitionInlineConstraintDefinition";
 			public const string ColumnIdentifierChainedList = "ColumnIdentifierChainedList";
 			public const string ColumnModification = "ColumnModification";
-			public const string ColumnModificationList = "ColumnModificationList";
 			public const string ColumnProperties = "ColumnProperties";
 			public const string ColumnProperty = "ColumnProperty";
 			public const string ColumnReference = "ColumnReference";
@@ -644,7 +644,6 @@ namespace SqlPad.Oracle
 			public const string ModelRulesClauseAssignmentList = "ModelRulesClauseAssignmentList";
 			public const string ModelRulesClauseRulesPart = "ModelRulesClauseRulesPart";
 			public const string ModifyCollectionRetrieval = "ModifyCollectionRetrieval";
-			public const string ModifyCollectionRetrievalList = "ModifyCollectionRetrievalList";
 			public const string ModifyColumnClause = "ModifyColumnClause";
 			public const string ModifyColumnClauseOption = "ModifyColumnClauseOption";
 			public const string ModifyColumnProperties = "ModifyColumnProperties";

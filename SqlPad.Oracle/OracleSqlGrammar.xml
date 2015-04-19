@@ -606,13 +606,10 @@
     <Rule StartingNonTerminal="AlterTableOption">
       <Sequences>
         <Sequence>
+          <NonTerminal Id="AlterTableChainedOptions" />
+        </Sequence>
+        <Sequence>
           <NonTerminal Id="AlterTableProperties" />
-        </Sequence>
-        <Sequence>
-          <NonTerminal Id="ConstraintClauses" />
-        </Sequence>
-        <Sequence>
-          <NonTerminal Id="AlterTableColumnClauses" />
         </Sequence>
         <!--<Sequence>
           <NonTerminal Id="AlterTablePartitioning" />
@@ -627,6 +624,29 @@
         </Sequence>
         <Sequence>
           <NonTerminal Id="ModifyOpaqueType" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AlterTableChainedOptions">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="AlterTableChainedOption" />
+          <NonTerminal Id="AlterTableChainedOptions" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AlterTableChainedOption">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="AlterTableStandardProperty" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ConstraintClauses" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="AlterTableColumnClauses" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -782,29 +802,20 @@
     <Rule StartingNonTerminal="AlterTableColumnClauses">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="ColumnModificationList" />
+          <NonTerminal Id="ColumnModification" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="RenameColumnClause" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="ModifyCollectionRetrievalList" />
+          <NonTerminal Id="ModifyCollectionRetrieval" />
         </Sequence>
         <!--<Sequence>
-          <NonTerminal Id="ModifyLobStorageClauseList" />
+          <NonTerminal Id="ModifyLobStorageClause" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="AlterVarryingArrayColumnProperties" />
         </Sequence>-->
-      </Sequences>
-    </Rule>
-    
-    <Rule StartingNonTerminal="ColumnModificationList">
-      <Sequences>
-        <Sequence>
-          <NonTerminal Id="ColumnModification" />
-          <NonTerminal Id="ColumnModificationList" IsOptional="true" />
-        </Sequence>
       </Sequences>
     </Rule>
     
@@ -1090,15 +1101,6 @@
       </Sequences>
     </Rule>
     
-    <Rule StartingNonTerminal="ModifyCollectionRetrievalList">
-      <Sequences>
-        <Sequence>
-          <NonTerminal Id="ModifyCollectionRetrieval" />
-          <NonTerminal Id="ModifyCollectionRetrievalList" IsOptional="true" />
-        </Sequence>
-      </Sequences>
-    </Rule>
-    
     <Rule StartingNonTerminal="ModifyCollectionRetrieval">
       <Sequences>
         <Sequence>
@@ -1126,17 +1128,8 @@
     <Rule StartingNonTerminal="AlterTableProperties">
       <Sequences>
         <Sequence>
-          <Terminal Id="Read" />
-          <NonTerminal Id="OnlyOrWrite" />
-        </Sequence>
-        <Sequence>
           <Terminal Id="ReKey" />
           <NonTerminal Id="ColumnDefinitionEncryptionClause" />
-        </Sequence>
-        <Sequence>
-          <Terminal Id="No" IsOptional="true" />
-          <Terminal Id="Row" />
-          <Terminal Id="Archival" />
         </Sequence>
         <Sequence>
           <Terminal Id="Add" />
@@ -1156,10 +1149,15 @@
           <NonTerminal Id="ShrinkClause" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="AlterTableStandardProperties" />
-          <!--<NonTerminal Id="AlterIndexOrganizedTableClauses" IsOptional="true" />-->
-          <!--<NonTerminal Id="AlterXmlSchemaClause" IsOptional="true" />-->
+          <Terminal Id="Rename" />
+          <Terminal Id="To" />
+          <Terminal Id="ObjectIdentifier" />
         </Sequence>
+        <!--<Sequence>
+          <NonTerminal Id="AlterTableStandardPropertyList" />
+          ~1~<NonTerminal Id="AlterIndexOrganizedTableClauses" IsOptional="true" />@1@
+          ~1~<NonTerminal Id="AlterXmlSchemaClause" IsOptional="true" />@1@
+        </Sequence>-->
       </Sequences>
     </Rule>
 
@@ -1180,19 +1178,6 @@
       </Sequences>
     </Rule>
     
-    <Rule StartingNonTerminal="AlterTableStandardProperties">
-      <Sequences>
-        <Sequence>
-          <Terminal Id="Rename" />
-          <Terminal Id="To" />
-          <Terminal Id="ObjectIdentifier" />
-        </Sequence>
-        <Sequence>
-          <NonTerminal Id="AlterTableStandardPropertyList" />
-        </Sequence>
-      </Sequences>
-    </Rule>
-    
     <Rule StartingNonTerminal="AlterTableStandardPropertyList">
       <Sequences>
         <Sequence>
@@ -1204,6 +1189,15 @@
     
     <Rule StartingNonTerminal="AlterTableStandardProperty">
       <Sequences>
+        <Sequence>
+          <Terminal Id="Read" />
+          <NonTerminal Id="OnlyOrWrite" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="No" IsOptional="true" />
+          <Terminal Id="Row" />
+          <Terminal Id="Archival" />
+        </Sequence>
         <Sequence>
           <NonTerminal Id="PhysicalAttributesClause" />
         </Sequence>
