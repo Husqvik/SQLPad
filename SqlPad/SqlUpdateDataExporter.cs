@@ -18,7 +18,7 @@ namespace SqlPad
 
 		public string FileNameFilter
 		{
-			get { return "SQL files (*.sql)|*.json|All files (*.*)|*"; }
+			get { return "SQL files (*.sql)|*.sql|All files (*.*)|*"; }
 		}
 
 		public void Export(string fileName, DataGrid dataGrid)

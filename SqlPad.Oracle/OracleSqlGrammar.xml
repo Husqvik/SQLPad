@@ -178,6 +178,9 @@
         <Sequence>
           <NonTerminal Id="AlterView" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="AlterLibrary" />
+        </Sequence>
         <!-- TODO: Add other objects -->
       </Sequences>
     </Rule>
@@ -1518,6 +1521,17 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Function" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="AlterProgramOption" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AlterLibrary">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Library" />
           <NonTerminal Id="SchemaPrefix" IsOptional="true" />
           <Terminal Id="ObjectIdentifier" />
           <NonTerminal Id="AlterProgramOption" />
@@ -8047,7 +8061,124 @@
         <Sequence>
           <NonTerminal Id="CreateTablespace" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="CreateUser" />
+        </Sequence>
         <!-- TODO: Create other objects -->
+      </Sequences>
+    </Rule>
+    
+    <!-- CREATE USER -->
+    <Rule StartingNonTerminal="CreateUser">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="User" />
+          <Terminal Id="ObjectIdentifier" />
+          <Terminal Id="Identified" />
+          <NonTerminal Id="CreateUserIdentificationType" />
+          <NonTerminal Id="CreateUserOptionList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="CreateUserOptionList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="CreateUserOption" />
+          <NonTerminal Id="CreateUserOptionList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="CreateUserOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Default" />
+          <NonTerminal Id="TablespaceIdentifier" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Temporary" />
+          <NonTerminal Id="TablespaceIdentifier" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="TablespaceQuotaList" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Profile" />
+          <Terminal Id="Identifier" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Password" />
+          <Terminal Id="Expire" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Account" />
+          <NonTerminal Id="LockOrUnlock" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Enable" />
+          <Terminal Id="Editions" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ContainerDatabaseOption" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="TablespaceQuotaList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="TablespaceQuota" />
+          <NonTerminal Id="TablespaceQuotaList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="TablespaceQuota">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Quota" />
+          <NonTerminal Id="SizeClauseOrUnlimited" />
+          <Terminal Id="On" />
+          <Terminal Id="ObjectIdentifier" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="LockOrUnlock">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Lock" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Unlock" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="CreateUserIdentificationType">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="By" />
+          <Terminal Id="Identifier" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Externally" />
+          <NonTerminal Id="AsStringLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Globally" />
+          <NonTerminal Id="AsStringLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AsStringLiteral">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="As" />
+          <Terminal Id="StringLiteral" />
+        </Sequence>
       </Sequences>
     </Rule>
     
@@ -16371,6 +16502,15 @@
     <Terminal Id="Guarantee" Value="GUARANTEE" />
     <Terminal Id="NoGuarantee" Value="NOGUARANTEE" />
     <Terminal Id="Tempfile" Value="TEMPFILE" />
+    <Terminal Id="Password" Value="PASSWORD" />
+    <Terminal Id="Expire" Value="EXPIRE" />
+    <Terminal Id="Account" Value="ACCOUNT" />
+    <Terminal Id="Editions" Value="EDITIONS" />
+    <Terminal Id="Quota" Value="QUOTA" />
+    <Terminal Id="Unlock" Value="UNLOCK" />
+    <Terminal Id="Externally" Value="EXTERNALLY" />
+    <Terminal Id="Globally" Value="GLOBALLY" />
+    <Terminal Id="Library" Value="LIBRARY" />
     
     <!-- External table opaque format specification -->
     <Terminal Id="OracleLoader" Value="ORACLE_LOADER" />

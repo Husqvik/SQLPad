@@ -5009,6 +5009,32 @@ PURGE REPEAT INTERVAL '5' DAY";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 			}
+
+			public class CreateUser
+			{
+				[Test(Description = @"")]
+				public void TestCreateUser()
+				{
+					const string statementText =
+@"CREATE USER sidney 
+    IDENTIFIED BY out_standing1 
+    DEFAULT TABLESPACE example 
+    QUOTA 10M ON example 
+    TEMPORARY TABLESPACE temp
+    QUOTA 5M ON system 
+    PROFILE app_user
+	ACCOUNT UNLOCK
+	ENABLE EDITIONS
+	CONTAINER = ALL
+    PASSWORD EXPIRE";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+			}
 		}
 
 		public class Alter
