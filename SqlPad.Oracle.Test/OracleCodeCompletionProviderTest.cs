@@ -749,6 +749,17 @@ FROM
 		}
 
 		[Test(Description = @"")]
+		public void TestResolveFunctionOverloadsWithNonSchemaAggregateAndAnalyticFunction()
+		{
+			const string query1 = @"SELECT COUNT(*) FROM DUAL";
+
+			_documentRepository.UpdateStatements(query1);
+			var items = CodeCompletionProvider.ResolveFunctionOverloads(_documentRepository, 14).ToList();
+			items.Count.ShouldBe(1);
+			items[0].IsParameterMetadataAvailable.ShouldBe(false);
+		}
+
+		[Test(Description = @"")]
 		public void TestColumnSuggestionWhenIdentifierWithQuotedNotation()
 		{
 			const string query1 = @"SELECT IL."""" FROM INVOICELINES IL";
@@ -1927,6 +1938,16 @@ SELECT * FROM ALL";
 			items[2].StatementNode.ShouldBe(null);
 			items[3].Name.ShouldBe("P2015_PRIVATE");
 			items[3].StatementNode.ShouldBe(null);
+		}
+
+		[Test(Description = @"")]
+		public void TestCodeCompletionWithSchemaQualification()
+		{
+			const string statement = @"SELECT * FROM HUSQVIK.";
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 22).ToArray();
+			items.Length.ShouldBeGreaterThan(0);
+			items[0].StatementNode.ShouldBe(null);
+			items[0].InsertOffset.ShouldBe(0);
 		}
 
 		public class OracleCodeCompletionTypeTest

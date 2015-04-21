@@ -118,8 +118,9 @@ namespace SqlPad.Oracle
 			var typeReference = programReferenceBase as OracleTypeReference;
 			if (typeReference == null)
 			{
-				matchedMetadata = programReferenceBase.Container.SemanticModel.DatabaseModel.AllFunctionMetadata[programReferenceBase.Metadata.Identifier]
-						.Where(m => m.Parameters.Count == 0 || currentParameterIndex < m.Parameters.Count - 1);
+				var programReference = (OracleProgramReference)programReferenceBase;
+				matchedMetadata = programReference.Container.SemanticModel.DatabaseModel.AllFunctionMetadata[programReference.Metadata.Identifier]
+						.Where(m => IsMetadataMatched(m, programReference, currentParameterIndex));
 			}
 			else
 			{
@@ -139,6 +140,18 @@ namespace SqlPad.Oracle
 						ProgramMetadata = m,
 						CurrentParameterIndex = currentParameterIndex
 					});
+		}
+
+		private static bool IsMetadataMatched(OracleProgramMetadata metadata, OracleProgramReference programReference, int currentParameterIndex)
+		{
+			if (metadata.Parameters.Count != 0 && currentParameterIndex >= metadata.Parameters.Count - 1)
+			{
+				return false;
+			}
+
+			var isNotAnalyticCompatible = !metadata.IsAnalytic || !String.IsNullOrEmpty(metadata.Identifier.Owner);
+			return (programReference.AnalyticClauseNode == null && isNotAnalyticCompatible) ||
+			       (programReference.AnalyticClauseNode != null && metadata.IsAnalytic);
 		}
 
 		internal ICollection<ICodeCompletionItem> ResolveItems(IDatabaseModel databaseModel, string statementText, int cursorPosition, bool forcedInvokation = true, params string[] categories)
@@ -205,7 +218,7 @@ namespace SqlPad.Oracle
 
 			var referenceContainers = GetReferenceContainers(semanticModel.MainObjectReferenceContainer, completionType.CurrentQueryBlock);
 
-			var extraOffset = currentTerminal.SourcePosition.IndexStart + currentTerminal.SourcePosition.Length == cursorPosition && currentTerminal.Id != Terminals.LeftParenthesis ? 1 : 0;
+			var extraOffset = currentTerminal.SourcePosition.ContainsIndex(cursorPosition) && !currentTerminal.Id.In(Terminals.LeftParenthesis, Terminals.Dot) ? 1 : 0;
 
 			if (completionType.SchemaDataObject)
 			{

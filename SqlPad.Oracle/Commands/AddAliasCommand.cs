@@ -106,12 +106,9 @@ namespace SqlPad.Oracle.Commands
 		public void AddObjectAlias(OracleDataObjectReference dataObjectReference, string alias)
 		{
 			var prefixedColumnReferences = dataObjectReference.Owner.AllColumnReferences
-				.Where(c => (c.OwnerNode != null || c.ObjectNode != null) && c.ColumnNodeObjectReferences.Count == 1 && c.ColumnNodeObjectReferences.Single() == dataObjectReference);
+				.Where(c => (c.OwnerNode != null || c.ObjectNode != null) && c.ObjectNodeObjectReferences.Count == 1 && c.ObjectNodeObjectReferences.Single() == dataObjectReference);
 
-			var asteriskColumnReferences = dataObjectReference.Owner.AsteriskColumns.SelectMany(c => c.ColumnReferences)
-				.Where(c => c.ObjectNodeObjectReferences.Count == 1 && c.ObjectNodeObjectReferences.Single() == dataObjectReference);
-
-			foreach (var columnReference in prefixedColumnReferences.Concat(asteriskColumnReferences))
+			foreach (var columnReference in prefixedColumnReferences)
 			{
 				var firstPrefixNode = columnReference.OwnerNode ?? columnReference.ObjectNode;
 
