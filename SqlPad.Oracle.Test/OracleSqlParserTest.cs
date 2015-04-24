@@ -5035,6 +5035,21 @@ PURGE REPEAT INTERVAL '5' DAY";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 			}
+
+			public class CreateRole
+			{
+				[Test(Description = @"")]
+				public void TestCreateRole()
+				{
+					const string statementText = @"CREATE ROLE warehouse_user IDENTIFIED GLOBALLY CONTAINER = ALL";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+			}
 		}
 
 		public class Alter
@@ -5245,6 +5260,21 @@ PURGE REPEAT INTERVAL '5' DAY";
 					terminals[12].Id.ShouldBe(Terminals.Container);
 					terminals[13].Id.ShouldBe(Terminals.MathEquals);
 					terminals[14].Id.ShouldBe(Terminals.All);
+				}
+			}
+
+			public class AlterRole
+			{
+				[Test(Description = @"")]
+				public void TestAlterRole()
+				{
+					const string statementText = @"ALTER ROLE dw_manager IDENTIFIED USING hr.admin CONTAINER = CURRENT";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 			}
 

@@ -181,7 +181,21 @@
         <Sequence>
           <NonTerminal Id="AlterLibrary" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="AlterRole" />
+        </Sequence>
         <!-- TODO: Add other objects -->
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AlterRole">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Role" />
+          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="CreateRoleIdentificationType" />
+          <NonTerminal Id="ContainerDatabaseOption" IsOptional="true" />
+        </Sequence>
       </Sequences>
     </Rule>
 
@@ -8064,7 +8078,55 @@
         <Sequence>
           <NonTerminal Id="CreateUser" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="CreateRole" />
+        </Sequence>
         <!-- TODO: Create other objects -->
+      </Sequences>
+    </Rule>
+    
+    <!-- CREATE ROLE -->
+    <Rule StartingNonTerminal="CreateRole">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Role" />
+          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="CreateRoleIdentificationType" IsOptional="true" />
+          <NonTerminal Id="ContainerDatabaseOption" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="CreateRoleIdentificationType">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Not" />
+          <Terminal Id="Identified" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Identified" />
+          <NonTerminal Id="RoleIdentificationType" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="RoleIdentificationType">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="By" />
+          <Terminal Id="Identifier" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Using" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Externally" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Globally" />
+        </Sequence>
       </Sequences>
     </Rule>
     
@@ -16511,6 +16573,7 @@
     <Terminal Id="Externally" Value="EXTERNALLY" />
     <Terminal Id="Globally" Value="GLOBALLY" />
     <Terminal Id="Library" Value="LIBRARY" />
+    <Terminal Id="Role" Value="ROLE" />
     
     <!-- External table opaque format specification -->
     <Terminal Id="OracleLoader" Value="ORACLE_LOADER" />
