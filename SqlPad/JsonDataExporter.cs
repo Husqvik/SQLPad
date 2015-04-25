@@ -25,12 +25,22 @@ namespace SqlPad
 			get { return "JSON files (*.json)|*.json|All files (*.*)|*"; }
 		}
 
-		public void Export(string fileName, DataGrid dataGrid)
+		public void ExportToClipboard(DataGrid dataGrid)
 		{
-			ExportAsync(fileName, dataGrid, CancellationToken.None).Wait();
+			ExportToFile(null, dataGrid);
 		}
 
-		public Task ExportAsync(string fileName, DataGrid dataGrid, CancellationToken cancellationToken)
+		public void ExportToFile(string fileName, DataGrid dataGrid)
+		{
+			ExportToFileAsync(fileName, dataGrid, CancellationToken.None).Wait();
+		}
+
+		public Task ExportToClipboardAsync(DataGrid dataGrid, CancellationToken cancellationToken)
+		{
+			return ExportToFileAsync(null, dataGrid, cancellationToken);
+		}
+
+		public Task ExportToFileAsync(string fileName, DataGrid dataGrid, CancellationToken cancellationToken)
 		{
 			var orderedColumns = dataGrid.Columns
 					.OrderBy(c => c.DisplayIndex)
@@ -50,39 +60,38 @@ namespace SqlPad
 
 			var rows = dataGrid.Items;
 
-			return Task.Factory.StartNew(() => ExportInternal(jsonTemplateBuilder.ToString(), rows, converterParameters, fileName, cancellationToken), cancellationToken);
+			return DataExportHelper.RunExportActionAsync(fileName, w => ExportInternal(jsonTemplateBuilder.ToString(), rows, converterParameters, w, cancellationToken));
 		}
 
-		private void ExportInternal(string jsonTemplate, ICollection rows, IReadOnlyList<object> converterParameters, string fileName, CancellationToken cancellationToken)
+		private void ExportInternal(string jsonTemplate, ICollection rows, IReadOnlyList<object> converterParameters, TextWriter writer, CancellationToken cancellationToken)
 		{
-			using (var writer = File.CreateText(fileName))
+			writer.Write('[');
+
+			var rowIndex = 1;
+			foreach (object[] rowValues in rows)
 			{
-				writer.Write('[');
+				cancellationToken.ThrowIfCancellationRequested();
 
-				var rowIndex = 1;
-				foreach (object[] rowValues in rows)
+				var values = rowValues.Select((t, i) => (object)FormatJsonValue(t, converterParameters[i])).ToArray();
+				writer.Write(jsonTemplate, values);
+
+				if (rowIndex < rows.Count)
 				{
-					cancellationToken.ThrowIfCancellationRequested();
-
-					var values = rowValues.Select((t, i) => (object)FormatJsonValue(t, converterParameters[i])).ToArray();
-					writer.Write(jsonTemplate, values);
-
-					if (rowIndex < rows.Count)
-					{
-						writer.WriteLine(',');
-					}
-
-					rowIndex++;
+					writer.WriteLine(',');
 				}
 
-				writer.WriteLine(']');
+				rowIndex++;
 			}
+
+			writer.WriteLine(']');
 		}
 
 		private static string FormatJsonValue(object value, object converterParameter)
 		{
-			if (value == DBNull.Value)
+			if (DataExportHelper.IsNull(value))
+			{
 				return "null";
+			}
 
 			if (value is ValueType)
 			{

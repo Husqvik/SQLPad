@@ -463,9 +463,11 @@ namespace SqlPad.Oracle
 		private string _preview;
 
 		public abstract string DataTypeName { get; }
+
+		public abstract bool IsNull { get; }
 		
 		public bool IsEditable { get { return false; } }
-		
+
 		public long Length { get { throw new NotSupportedException(); } }
 		
 		public void Prefetch() { }

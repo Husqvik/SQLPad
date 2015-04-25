@@ -145,7 +145,10 @@ namespace SqlPad.Oracle
 		public OracleSimpleValue(object value)
 		{
 			_value = Convert.ToString(value);
+			IsNull = value == DBNull.Value;
 		}
+
+		public bool IsNull { get; set; }
 
 		public string DataTypeName
 		{
@@ -242,6 +245,8 @@ namespace SqlPad.Oracle
 		public string DataTypeName { get { return "BLOB"; } }
 		
 		public bool IsEditable { get { return false; } }
+		
+		public bool IsNull { get { return _blob.IsNull || _blob.IsEmpty; } }
 
 		public long Length { get { return _blob.Length; } }
 
@@ -468,6 +473,8 @@ namespace SqlPad.Oracle
 
 		public bool IsEditable { get { return false; } }
 
+		public bool IsNull { get; private set; }
+
 		public long Length { get; private set; }
 
 		public byte[] Value { get { return _value; } }
@@ -475,6 +482,7 @@ namespace SqlPad.Oracle
 		public OracleLongRawValue(OracleBinary binary)
 		{
 			_value = binary.IsNull ? new byte[0] : binary.Value;
+			IsNull = binary.IsNull;
 		}
 
 		public byte[] GetChunk(int bytes)

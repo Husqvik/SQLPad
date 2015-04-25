@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
 using System.Xml;
 
@@ -12,17 +13,29 @@ namespace SqlPad
 {
 	public class XmlDataExporter : IDataExporter
 	{
+		private static readonly XmlWriterSettings XmlWriterSettings = new XmlWriterSettings { Indent = true, Encoding = Encoding.UTF8 };
+
 		public string FileNameFilter
 		{
 			get { return "XML files (*.xml)|*.xml|All files (*.*)|*"; }
 		}
 
-		public void Export(string fileName, DataGrid dataGrid)
+		public void ExportToClipboard(DataGrid dataGrid)
 		{
-			ExportAsync(fileName, dataGrid, CancellationToken.None).Wait();
+			ExportToFile(null, dataGrid);
 		}
 
-		public Task ExportAsync(string fileName, DataGrid dataGrid, CancellationToken cancellationToken)
+		public void ExportToFile(string fileName, DataGrid dataGrid)
+		{
+			ExportToFileAsync(fileName, dataGrid, CancellationToken.None).Wait();
+		}
+
+		public Task ExportToClipboardAsync(DataGrid dataGrid, CancellationToken cancellationToken)
+		{
+			return ExportToFileAsync(null, dataGrid, cancellationToken);
+		}
+
+		public Task ExportToFileAsync(string fileName, DataGrid dataGrid, CancellationToken cancellationToken)
 		{
 			var orderedColumns = dataGrid.Columns
 					.OrderBy(c => c.DisplayIndex)
@@ -41,33 +54,42 @@ namespace SqlPad
 		{
 			var columnCount = columnHeaders.Count;
 
-			using (var writer = XmlWriter.Create(fileName, new XmlWriterSettings { Indent = true, Encoding = Encoding.UTF8 }))
+			var stringBuilder = new StringBuilder();
+
+			var exportToClipboard = String.IsNullOrEmpty(fileName);
+
+			using (var xmlWriter = exportToClipboard ? XmlWriter.Create(stringBuilder, XmlWriterSettings) : XmlWriter.Create(fileName, XmlWriterSettings))
 			{
-				writer.WriteStartDocument();
-				writer.WriteStartElement("data");
+				xmlWriter.WriteStartDocument();
+				xmlWriter.WriteStartElement("data");
 
 				foreach (object[] rowValues in rows)
 				{
 					cancellationToken.ThrowIfCancellationRequested();
 
-					writer.WriteStartElement("row");
+					xmlWriter.WriteStartElement("row");
 
 					for (var i = 0; i < columnCount; i++)
 					{
-						writer.WriteElementString(columnHeaders[i], FormatXmlValue(rowValues[i]));
+						xmlWriter.WriteElementString(columnHeaders[i], FormatXmlValue(rowValues[i]));
 					}
 
-					writer.WriteEndElement();
+					xmlWriter.WriteEndElement();
 				}
 
-				writer.WriteEndElement();
-				writer.WriteEndDocument();
+				xmlWriter.WriteEndElement();
+				xmlWriter.WriteEndDocument();
+			}
+
+			if (exportToClipboard)
+			{
+				Application.Current.Dispatcher.InvokeAsync(() => Clipboard.SetText(stringBuilder.ToString()));
 			}
 		}
 
 		private static string FormatXmlValue(object value)
 		{
-			return value == DBNull.Value ? null : value.ToString();
+			return DataExportHelper.IsNull(value) ? null : value.ToString();
 		}
 	}
 }

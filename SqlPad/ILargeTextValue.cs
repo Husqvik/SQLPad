@@ -9,6 +9,8 @@ namespace SqlPad
 		string DataTypeName { get; }
 
 		bool IsEditable { get; }
+		
+		bool IsNull { get; }
 
 		long Length { get; }
 

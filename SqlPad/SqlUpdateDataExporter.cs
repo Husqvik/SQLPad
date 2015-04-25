@@ -21,12 +21,22 @@ namespace SqlPad
 			get { return "SQL files (*.sql)|*.sql|All files (*.*)|*"; }
 		}
 
-		public void Export(string fileName, DataGrid dataGrid)
+		public void ExportToClipboard(DataGrid dataGrid)
 		{
-			ExportAsync(fileName, dataGrid, CancellationToken.None).Wait();
+			ExportToFile(null, dataGrid);
 		}
 
-		public Task ExportAsync(string fileName, DataGrid dataGrid, CancellationToken cancellationToken)
+		public void ExportToFile(string fileName, DataGrid dataGrid)
+		{
+			ExportToFileAsync(fileName, dataGrid, CancellationToken.None).Wait();
+		}
+
+		public Task ExportToClipboardAsync(DataGrid dataGrid, CancellationToken cancellationToken)
+		{
+			return ExportToFileAsync(null, dataGrid, cancellationToken);
+		}
+
+		public Task ExportToFileAsync(string fileName, DataGrid dataGrid, CancellationToken cancellationToken)
 		{
 			var orderedColumns = dataGrid.Columns
 					.OrderBy(c => c.DisplayIndex)
@@ -43,32 +53,31 @@ namespace SqlPad
 
 			var rows = dataGrid.Items;
 
-			return Task.Factory.StartNew(() => ExportInternal(sqlTemplate, rows, converterParameters, fileName, cancellationToken), cancellationToken);
+			return DataExportHelper.RunExportActionAsync(fileName, w => ExportInternal(sqlTemplate, rows, converterParameters, w, cancellationToken));
 		}
 
 
 		protected abstract string BuildSqlCommandTemplate(IEnumerable<string> columnHeaders);
 
-		private void ExportInternal(string sqlTemplate, IEnumerable rows, IReadOnlyList<object> converterParameters, string fileName, CancellationToken cancellationToken)
+		private void ExportInternal(string sqlTemplate, IEnumerable rows, IReadOnlyList<object> converterParameters, TextWriter writer, CancellationToken cancellationToken)
 		{
-			using (var writer = File.CreateText(fileName))
+			foreach (object[] rowValues in rows)
 			{
-				foreach (object[] rowValues in rows)
-				{
-					cancellationToken.ThrowIfCancellationRequested();
+				cancellationToken.ThrowIfCancellationRequested();
 
-					var values = rowValues.Select((t, i) => (object)FormatSqlValue(t, converterParameters[i])).ToArray();
-					writer.WriteLine(sqlTemplate, values);
-				}
+				var values = rowValues.Select((t, i) => (object)FormatSqlValue(t, converterParameters[i])).ToArray();
+				writer.WriteLine(sqlTemplate, values);
 			}
 		}
 
 		private static string FormatSqlValue(object value, object converterParameter)
 		{
-			if (value == DBNull.Value)
+			if (DataExportHelper.IsNull(value))
+			{
 				return "NULL";
+			}
 
-			if (value is ValueType)
+			if(value is ValueType)
 			{
 				return value.ToString();
 			}

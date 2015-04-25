@@ -165,7 +165,7 @@ namespace SqlPad
 			canExecuteRoutedEventArgs.ContinueRouting = canExecuteRoutedEventArgs.CanExecute;
 		}
 
-		private void ExportDataHandler(object sender, ExecutedRoutedEventArgs args)
+		private void ExportDataFileHandler(object sender, ExecutedRoutedEventArgs args)
 		{
 			var dataExporter = (IDataExporter)args.Parameter;
 			var dialog = new SaveFileDialog { Filter = dataExporter.FileNameFilter, OverwritePrompt = true };
@@ -174,8 +174,14 @@ namespace SqlPad
 				return;
 			}
 
-			DocumentPage.SafeActionWithUserError(
-				() => { dataExporter.Export(dialog.FileName, ResultGrid); });
+			DocumentPage.SafeActionWithUserError(() => dataExporter.ExportToFile(dialog.FileName, ResultGrid));
+		}
+
+		private void ExportDataClipboardHandler(object sender, ExecutedRoutedEventArgs args)
+		{
+			var dataExporter = (IDataExporter)args.Parameter;
+
+			DocumentPage.SafeActionWithUserError(() => dataExporter.ExportToClipboard(ResultGrid));
 		}
 
 		private void ResultGridMouseDoubleClickHandler(object sender, MouseButtonEventArgs e)

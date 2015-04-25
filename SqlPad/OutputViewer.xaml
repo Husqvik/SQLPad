@@ -11,11 +11,17 @@
 	<UserControl.Resources>
 		<sqlPad:PrettyPrintIntegerConverter x:Key="PrettyPrintNumericConverter" />
 
-		<RoutedCommand x:Key="ExportToCsvCommand"/>
-		<RoutedCommand x:Key="ExportToJsonCommand"/>
-		<RoutedCommand x:Key="ExportToSqlInsertCommand"/>
-		<RoutedCommand x:Key="ExportToSqlUpdateCommand"/>
-		<RoutedCommand x:Key="ExportToXmlCommand"/>
+		<RoutedCommand x:Key="ExportToCsvFileCommand"/>
+		<RoutedCommand x:Key="ExportToJsonFileCommand"/>
+		<RoutedCommand x:Key="ExportToSqlInsertFileCommand"/>
+		<RoutedCommand x:Key="ExportToSqlUpdateFileCommand"/>
+		<RoutedCommand x:Key="ExportToXmlFileCommand"/>
+
+		<RoutedCommand x:Key="ExportToCsvClipboardCommand"/>
+		<RoutedCommand x:Key="ExportToJsonClipboardCommand"/>
+		<RoutedCommand x:Key="ExportToSqlInsertClipboardCommand"/>
+		<RoutedCommand x:Key="ExportToSqlUpdateClipboardCommand"/>
+		<RoutedCommand x:Key="ExportToXmlClipboardCommand"/>
 
 		<sqlPad:CsvDataExporter x:Key="CsvDataExporter" />
 		<sqlPad:JsonDataExporter x:Key="JsonDataExporter" />
@@ -60,22 +66,36 @@
 							  MouseDoubleClick="ResultGridMouseDoubleClickHandler"
 							  DataGridColumnHeader.Click="ColumnHeaderMouseClickHandler">
 					<DataGrid.CommandBindings>
-						<CommandBinding Command="{StaticResource ExportToCsvCommand}" Executed="ExportDataHandler" CanExecute="CanExportDataHandler" />
-						<CommandBinding Command="{StaticResource ExportToJsonCommand}" Executed="ExportDataHandler" CanExecute="CanExportDataHandler" />
-						<CommandBinding Command="{StaticResource ExportToSqlInsertCommand}" Executed="ExportDataHandler" CanExecute="CanExportDataHandler" />
-						<CommandBinding Command="{StaticResource ExportToSqlUpdateCommand}" Executed="ExportDataHandler" CanExecute="CanExportDataHandler" />
-						<CommandBinding Command="{StaticResource ExportToXmlCommand}" Executed="ExportDataHandler" CanExecute="CanExportDataHandler" />
+						<CommandBinding Command="{StaticResource ExportToCsvFileCommand}" Executed="ExportDataFileHandler" CanExecute="CanExportDataHandler" />
+						<CommandBinding Command="{StaticResource ExportToJsonFileCommand}" Executed="ExportDataFileHandler" CanExecute="CanExportDataHandler" />
+						<CommandBinding Command="{StaticResource ExportToSqlInsertFileCommand}" Executed="ExportDataFileHandler" CanExecute="CanExportDataHandler" />
+						<CommandBinding Command="{StaticResource ExportToSqlUpdateFileCommand}" Executed="ExportDataFileHandler" CanExecute="CanExportDataHandler" />
+						<CommandBinding Command="{StaticResource ExportToXmlFileCommand}" Executed="ExportDataFileHandler" CanExecute="CanExportDataHandler" />
+						
+						<CommandBinding Command="{StaticResource ExportToCsvClipboardCommand}" Executed="ExportDataClipboardHandler" CanExecute="CanExportDataHandler" />
+						<CommandBinding Command="{StaticResource ExportToJsonClipboardCommand}" Executed="ExportDataClipboardHandler" CanExecute="CanExportDataHandler" />
+						<CommandBinding Command="{StaticResource ExportToSqlInsertClipboardCommand}" Executed="ExportDataClipboardHandler" CanExecute="CanExportDataHandler" />
+						<CommandBinding Command="{StaticResource ExportToSqlUpdateClipboardCommand}" Executed="ExportDataClipboardHandler" CanExecute="CanExportDataHandler" />
+						<CommandBinding Command="{StaticResource ExportToXmlClipboardCommand}" Executed="ExportDataClipboardHandler" CanExecute="CanExportDataHandler" />
+						
 						<CommandBinding Command="commands:GenericCommands.FetchAllRows" Executed="FetchAllRowsHandler" CanExecute="CanFetchAllRowsHandler" />
 					</DataGrid.CommandBindings>
 					<DataGrid.ContextMenu>
 						<ContextMenu>
 							<MenuItem Header="_Fetch all" Command="commands:GenericCommands.FetchAllRows" />
-							<MenuItem Header="_Export">
-								<MenuItem Header="To _CSV..." Command="{StaticResource ExportToCsvCommand}" CommandParameter="{StaticResource CsvDataExporter}" />
-								<MenuItem Header="To _JSON..." Command="{StaticResource ExportToJsonCommand}" CommandParameter="{StaticResource JsonDataExporter}" />
-								<MenuItem Header="To SQL _INSERT..." Command="{StaticResource ExportToSqlInsertCommand}" CommandParameter="{StaticResource SqlInsertDataExporter}" />
-								<MenuItem Header="To SQL _UPDATE..." Command="{StaticResource ExportToSqlUpdateCommand}" CommandParameter="{StaticResource SqlUpdateDataExporter}" />
-								<MenuItem Header="To _XML..." Command="{StaticResource ExportToXmlCommand}" CommandParameter="{StaticResource XmlDataExporter}" />
+							<MenuItem Header="_Export to file">
+								<MenuItem Header="_CSV..." Command="{StaticResource ExportToCsvFileCommand}" CommandParameter="{StaticResource CsvDataExporter}" />
+								<MenuItem Header="_JSON..." Command="{StaticResource ExportToJsonFileCommand}" CommandParameter="{StaticResource JsonDataExporter}" />
+								<MenuItem Header="SQL _INSERT..." Command="{StaticResource ExportToSqlInsertFileCommand}" CommandParameter="{StaticResource SqlInsertDataExporter}" />
+								<MenuItem Header="SQL _UPDATE..." Command="{StaticResource ExportToSqlUpdateFileCommand}" CommandParameter="{StaticResource SqlUpdateDataExporter}" />
+								<MenuItem Header="_XML..." Command="{StaticResource ExportToXmlFileCommand}" CommandParameter="{StaticResource XmlDataExporter}" />
+							</MenuItem>
+							<MenuItem Header="_Export to clipboard">
+								<MenuItem Header="_CSV..." Command="{StaticResource ExportToCsvClipboardCommand}" CommandParameter="{StaticResource CsvDataExporter}" />
+								<MenuItem Header="_JSON..." Command="{StaticResource ExportToJsonClipboardCommand}" CommandParameter="{StaticResource JsonDataExporter}" />
+								<MenuItem Header="SQL _INSERT..." Command="{StaticResource ExportToSqlInsertClipboardCommand}" CommandParameter="{StaticResource SqlInsertDataExporter}" />
+								<MenuItem Header="SQL _UPDATE..." Command="{StaticResource ExportToSqlUpdateClipboardCommand}" CommandParameter="{StaticResource SqlUpdateDataExporter}" />
+								<MenuItem Header="_XML..." Command="{StaticResource ExportToXmlClipboardCommand}" CommandParameter="{StaticResource XmlDataExporter}" />
 							</MenuItem>
 						</ContextMenu>
 					</DataGrid.ContextMenu>
@@ -86,19 +106,20 @@
 			<DockPanel>
 				<CheckBox DockPanel.Dock="Right" Margin="4" Content="Show _All" IsChecked="{Binding ShowAllSessionExecutionStatistics}" />
 				<DataGrid ItemsSource="{Binding SessionExecutionStatistics}"
-							  AutoGenerateColumns="False"
-							  CanUserDeleteRows ="False"
-							  CanUserAddRows="False"
-							  KeyDown="ReadOnlyGridKeyDownHandler"
-							  HorizontalGridLinesBrush="LightGray"
-							  VerticalGridLinesBrush="LightGray">
+				          AutoGenerateColumns="False"
+				          CanUserDeleteRows="False"
+				          CanUserAddRows="False"
+				          KeyDown="ReadOnlyGridKeyDownHandler"
+				          HorizontalGridLinesBrush="LightGray"
+				          VerticalGridLinesBrush="LightGray">
 					<DataGrid.Columns>
 						<DataGridTextColumn Header="Name" Binding="{Binding Path=Name}"
-												EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}" />
-						<DataGridTextColumn Header="Value" Binding="{Binding Path=Value, Converter={StaticResource PrettyPrintNumericConverter}}"
-												HeaderStyle="{StaticResource HeaderStyleRightAlign}"
-												CellStyle="{StaticResource CellStyleRightAlign}"
-												EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}" />
+						                    EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}" />
+						<DataGridTextColumn Header="Value"
+						                    Binding="{Binding Path=Value, Converter={StaticResource PrettyPrintNumericConverter}}"
+						                    HeaderStyle="{StaticResource HeaderStyleRightAlign}"
+						                    CellStyle="{StaticResource CellStyleRightAlign}"
+						                    EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}" />
 					</DataGrid.Columns>
 				</DataGrid>
 			</DockPanel>
@@ -123,23 +144,23 @@
 							  VerticalGridLinesBrush="LightGray">
 				<DataGrid.Columns>
 					<DataGridTextColumn Header="Owner" Binding="{Binding Path=Owner}"
-						                    EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}" />
+					                    EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}" />
 					<DataGridTextColumn Header="Object" Binding="{Binding Path=ObjectName}"
-						                    EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}" />
+					                    EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}" />
 					<DataGridTextColumn Header="Object type" Binding="{Binding Path=ObjectType}"
-						                    EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}" />
+					                    EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}" />
 					<DataGridTextColumn Header="Severity" Binding="{Binding Path=Severity}"
-						                    EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}" />
+					                    EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}" />
 					<DataGridTextColumn Header="Line" Binding="{Binding Path=Line}"
-						                    HeaderStyle="{StaticResource HeaderStyleRightAlign}"
-						                    CellStyle="{StaticResource CellStyleRightAlign}"
-						                    EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}" />
+					                    HeaderStyle="{StaticResource HeaderStyleRightAlign}"
+					                    CellStyle="{StaticResource CellStyleRightAlign}"
+					                    EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}" />
 					<DataGridTextColumn Header="Column" Binding="{Binding Path=Column}"
-						                    HeaderStyle="{StaticResource HeaderStyleRightAlign}"
-						                    CellStyle="{StaticResource CellStyleRightAlign}"
-						                    EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}" />
+					                    HeaderStyle="{StaticResource HeaderStyleRightAlign}"
+					                    CellStyle="{StaticResource CellStyleRightAlign}"
+					                    EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}" />
 					<DataGridTextColumn Header="Message" Binding="{Binding Path=Message}"
-						                    EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}" />
+					                    EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}" />
 				</DataGrid.Columns>
 			</DataGrid>
 		</TabItem>

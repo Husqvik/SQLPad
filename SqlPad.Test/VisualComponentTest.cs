@@ -312,7 +312,7 @@ SELECT T.* FROM T@HQ_PDB";
 		private static string GetExportContent(DataGrid resultGrid, IDataExporter dataExporter)
 		{
 			var tempFileName = Path.GetTempFileName();
-			dataExporter.Export(tempFileName, resultGrid);
+			dataExporter.ExportToFile(tempFileName, resultGrid);
 
 			var result = File.ReadAllText(tempFileName);
 			File.Delete(tempFileName);
@@ -355,11 +355,19 @@ SELECT T.* FROM T@HQ_PDB";
 		private class TestLargeTextValue : ILargeTextValue
 		{
 			public const string TextValue = "</root>";
+
 			public string DataTypeName { get { return "CLOB"; } }
+
 			public bool IsEditable { get { return false; } }
+			
+			public bool IsNull { get { return false; } }
+
 			public long Length { get { return TextValue.Length; } }
+
 			public string Preview { get { throw new NotImplementedException(); } }
+
 			public string Value { get { return TextValue; } }
+
 			public void GetChunk(StringBuilder stringBuilder, int offset, int length)
 			{
 				throw new NotImplementedException();
