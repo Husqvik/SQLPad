@@ -130,7 +130,7 @@ namespace SqlPad.Oracle
 		{
 			var fullyQualifiedObjectTypeName = objectType.FullyQualifiedName.ToString().Replace("\"", null);
 			var customTypeClassName = String.Format("{0}.ObjectTypes.{1}", DynamicAssemblyNameBase, MakeValidMemberName(fullyQualifiedObjectTypeName));
-			var customTypeBuilder = customTypeModuleBuilder.DefineType(customTypeClassName, TypeAttributes.Public | TypeAttributes.Class, typeof(OracleCustomTypeBase), new[] { typeof(IOracleCustomType), typeof(IOracleCustomTypeFactory) });
+			var customTypeBuilder = customTypeModuleBuilder.DefineType(customTypeClassName, TypeAttributes.Public | TypeAttributes.Class, typeof(OracleCustomTypeBase), new[] { typeof(IOracleCustomType), typeof(IOracleCustomTypeFactory), typeof(INullable) });
 			AddOracleCustomTypeMappingAttribute(customTypeBuilder, fullyQualifiedObjectTypeName);
 
 			var constructorBuilder = AddConstructor(customTypeBuilder, typeof(object).GetConstructor(Type.EmptyTypes));
@@ -157,6 +157,8 @@ namespace SqlPad.Oracle
 
 				fields.Add(fieldName, fieldBuilder);
 			}
+
+			ImplementNullableInterface(customTypeBuilder, constructorBuilder);
 
 			ilGenerator = BuildOracleCustomTypeInterfaceMethod(customTypeBuilder, "FromCustomObject");
 
@@ -214,6 +216,37 @@ namespace SqlPad.Oracle
 				};
 
 			mappingTable.Add(mappingTableKey, mappingTableValue);*/
+		}
+
+		private static void ImplementNullableInterface(TypeBuilder customTypeBuilder, ConstructorInfo constructorInfo)
+		{
+			var isNullValueFieldBuilder = customTypeBuilder.DefineField("_isNull", typeof (bool), FieldAttributes.Private);
+			var isNullPropertyBuilder = customTypeBuilder.DefineProperty("IsNull", PropertyAttributes.None, CallingConventions.HasThis, typeof (bool), null);
+
+			const MethodAttributes isNullAttributes = MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.Virtual | MethodAttributes.SpecialName;
+			var isNullPropertyGetterBuilder = customTypeBuilder.DefineMethod("get_IsNull", isNullAttributes, typeof (bool), null);
+
+			var ilGenerator = isNullPropertyGetterBuilder.GetILGenerator();
+			ilGenerator.Emit(OpCodes.Ldarg_0);
+			ilGenerator.Emit(OpCodes.Ldfld, isNullValueFieldBuilder);
+			ilGenerator.Emit(OpCodes.Ret);
+
+			isNullPropertyBuilder.SetGetMethod(isNullPropertyGetterBuilder);
+
+			var nullPropertyBuilder = customTypeBuilder.DefineProperty("Null", PropertyAttributes.None, customTypeBuilder, null);
+
+			var nullPropertyGetterBuilder = customTypeBuilder.DefineMethod("get_Null", MethodAttributes.Public | MethodAttributes.Static, customTypeBuilder, null);
+			ilGenerator = nullPropertyGetterBuilder.GetILGenerator();
+			ilGenerator.DeclareLocal(customTypeBuilder);
+			ilGenerator.Emit(OpCodes.Newobj, constructorInfo);
+			ilGenerator.Emit(OpCodes.Stloc_0);
+			ilGenerator.Emit(OpCodes.Ldloc_0);
+			ilGenerator.Emit(OpCodes.Ldc_I4_1);
+			ilGenerator.Emit(OpCodes.Stfld, isNullValueFieldBuilder);
+			ilGenerator.Emit(OpCodes.Ldloc_0);
+			ilGenerator.Emit(OpCodes.Ret);
+
+			nullPropertyBuilder.SetGetMethod(nullPropertyGetterBuilder);
 		}
 
 		private static Type MapOracleTypeToNetType(OracleObjectIdentifier typeIdentifier)
