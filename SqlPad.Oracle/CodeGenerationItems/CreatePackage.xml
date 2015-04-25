@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Snippet Name="CREATE PACKAGE" Description="" xmlns="http://husqvik.com/SqlPad/2014/02" Rdbms="Oracle" Version="*">
+  <Text><![CDATA[CREATE OR REPLACE PACKAGE {0}
+IS
+  PROCEDURE {1};
+END {0};
+
+]]></Text>
+  <Description>CREATE PACKAGE</Description>
+  <Parameters>
+    <Parameter Index="0" DefaultValue="package_name" />
+    <Parameter Index="1" DefaultValue="procedure1" />
+  </Parameters>
+</Snippet>

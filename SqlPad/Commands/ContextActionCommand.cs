@@ -9,9 +9,9 @@ namespace SqlPad.Commands
 	{
 		private readonly SqlTextEditor _textEditor;
 		
-		public IContextAction ContextAction { get; private set; }
+		public ContextAction ContextAction { get; private set; }
 
-		public ContextActionCommand(SqlTextEditor textEditor, IContextAction contextAction)
+		public ContextActionCommand(SqlTextEditor textEditor, ContextAction contextAction)
 		{
 			if (textEditor == null)
 				throw new ArgumentNullException("textEditor");
@@ -27,7 +27,7 @@ namespace SqlPad.Commands
 
 		public bool CanExecute(object parameter)
 		{
-			return ContextAction.ExecutionHandler.CanExecuteHandler(ContextAction.ExecutionContext);
+			return ContextAction.ExecutionHandler.CanExecuteHandler == null || ContextAction.ExecutionHandler.CanExecuteHandler(ContextAction.ExecutionContext);
 		}
 
 		public void Execute(object parameter)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using NUnit.Framework;
 using Shouldly;
 
@@ -20,8 +21,8 @@ namespace SqlPad.Oracle.Test
 		public void TestSnippetSuggestionWithinStatementWhileTyping()
 		{
 			const string statementText = "SELECT DUMMY FROM\r\nD\r\nDUAL";
-			var snippets = SnippetProvider.GetSnippets(statementText, 21, TestFixture.DatabaseModel);
-			snippets.Count.ShouldBe(0);
+			var snippets = SnippetProvider.GetSnippets(statementText, 21, TestFixture.DatabaseModel).ToArray();
+			snippets.Length.ShouldBe(0);
 		}
 	}
 }

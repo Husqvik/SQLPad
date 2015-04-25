@@ -1691,7 +1691,7 @@ namespace SqlPad
 			_enableCodeComplete = false;
 		}
 
-		private MenuItem BuildContextMenuItem(IContextAction action)
+		private MenuItem BuildContextMenuItem(ContextAction action)
 		{
 			var menuItem =
 				new MenuItem
@@ -1716,13 +1716,52 @@ namespace SqlPad
 
 		private bool PopulateContextActionMenu()
 		{
+			return PopulateContextMenuItems(
+				c => _contextActionProvider.GetContextActions(_sqlDocumentRepository, c)
+					.Select(BuildContextMenuItem));
+		}
+
+		private void ListGenerateCodeItems(object sender, ExecutedRoutedEventArgs args)
+		{
+			if (PopulateGenerateCodeItemsMenu())
+			{
+				_contextActionMenu.IsOpen = true;
+			}
+		}
+
+		private bool PopulateGenerateCodeItemsMenu()
+		{
+			return PopulateContextMenuItems(
+				c => _codeSnippetProvider.GetCodeGenerationItems(_sqlDocumentRepository)
+					.Select(ci => CreateContextMenuItemFromCodeSnippet(ci, c)));
+		}
+
+		private MenuItem CreateContextMenuItemFromCodeSnippet(ICodeSnippet codeSnippet, CommandExecutionContext executionContext)
+		{
+			var textSegment =
+				new TextSegment
+				{
+					IndextStart = Editor.CaretOffset,
+					Text = CompletionData.FormatSnippetText(codeSnippet)
+				};
+
+			var executionHandler =
+				new CommandExecutionHandler
+				{
+					ExecutionHandler = c => c.SegmentsToReplace.Add(textSegment)
+				};
+
+			return BuildContextMenuItem(new ContextAction(codeSnippet.Name, executionHandler, executionContext));
+		}
+
+		private bool PopulateContextMenuItems(Func<CommandExecutionContext, IEnumerable<MenuItem>> buildMenuItemFunction)
+		{
 			_contextActionMenu.Items.Clear();
 
 			var executionContext = CommandExecutionContext.Create(Editor, _sqlDocumentRepository);
-			var contextActions = _contextActionProvider.GetContextActions(_sqlDocumentRepository, executionContext);
-			foreach (var contextAction in contextActions)
+			foreach (var menuItem in buildMenuItemFunction(executionContext))
 			{
-				_contextActionMenu.Items.Add(BuildContextMenuItem(contextAction));
+				_contextActionMenu.Items.Add(menuItem);
 			}
 
 			if (_contextActionMenu.Items.Count == 1)

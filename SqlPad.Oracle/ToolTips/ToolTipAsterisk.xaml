@@ -12,7 +12,7 @@
 			<DataTemplate x:Key="ColumnModelDataTemplate" DataType="toolTips:OracleColumnModel">
 				<TextBlock>
 					<Run Text="{Binding Path=ColumnIndex, Mode=OneWay}"/><Run Text="."/>
-					<Run Text="{Binding Path=RowSourceName, Mode=OneWay}" /><Run Text="."/><Run Text="{Binding Path=Name, Mode=OneWay}" />
+					<Run Text="{Binding Path=Label, Mode=OneWay}" />
 					<Run Text="{Binding Path=FullTypeName, Mode=OneWay}" />
 				</TextBlock>
 			</DataTemplate>

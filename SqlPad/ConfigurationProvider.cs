@@ -30,6 +30,7 @@ namespace SqlPad
 		private static readonly string ConfigurationFilePath = Path.Combine(FolderNameApplication, ConfigurationFileName);
 
 		private static string _folderNameSnippets = Path.Combine(FolderNameApplication, Snippets.SnippetDirectoryName);
+		private static string _folderNameCodeGenerationItems = Path.Combine(FolderNameApplication, Snippets.CodeGenerationItemDirectoryName);
 
 		private static readonly Dictionary<string, ConnectionConfiguration> InternalInfrastructureFactories;
 		
@@ -147,6 +148,8 @@ namespace SqlPad
 		
 		public static string FolderNameSnippets { get { return _folderNameSnippets; } }
 
+		public static string FolderNameCodeGenerationItems { get { return _folderNameCodeGenerationItems; } }
+
 		public static void SetUserDataFolder(string directoryName)
 		{
 			CheckDirectoryExists(directoryName);
@@ -163,6 +166,13 @@ namespace SqlPad
 			CheckDirectoryExists(directoryName);
 			
 			_folderNameSnippets = directoryName;
+		}
+
+		public static void SetCodeGenerationItemFolder(string directoryName)
+		{
+			CheckDirectoryExists(directoryName);
+
+			_folderNameCodeGenerationItems = directoryName;
 		}
 
 		private static void CheckDirectoryExists(string directoryName)

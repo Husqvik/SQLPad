@@ -34,6 +34,7 @@ namespace SqlPad.Test
 
 			var sqlPadDirectory = new Uri(Path.GetDirectoryName(typeof(Snippets).Assembly.CodeBase)).LocalPath;
 			ConfigurationProvider.SetSnippetsFolder(Path.Combine(sqlPadDirectory, Snippets.SnippetDirectoryName));
+			ConfigurationProvider.SetCodeGenerationItemFolder(Path.Combine(sqlPadDirectory, Snippets.CodeGenerationItemDirectoryName));
 			DocumentPage.IsParsingSynchronous = true;
 		}
 
@@ -90,7 +91,8 @@ SELECT T.* FROM T@HQ_PDB";
 
 			GenericCommands.FindUsages.Execute(null, _editor.TextArea);
 			GenericCommands.ExecuteDatabaseCommandWithActualExecutionPlan.Execute(null, _editor.TextArea);
-			GenericCommands.ListContextAction.Execute(null, _editor.TextArea);
+			GenericCommands.ListContextActions.Execute(null, _editor.TextArea);
+			GenericCommands.ListCodeGenerationItems.Execute(null, _editor.TextArea);
 
 			Wait(0.2);
 

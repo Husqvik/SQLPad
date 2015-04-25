@@ -8,24 +8,32 @@ namespace SqlPad
 	public static class Snippets
 	{
 		public const string SnippetDirectoryName = "Snippets";
+		public const string CodeGenerationItemDirectoryName = "CodeGenerationItems";
 
 		private static readonly XmlSerializer XmlSerializer = new XmlSerializer(typeof(Snippet));
 		private static readonly List<Snippet> SnippetCollectionInternal = new List<Snippet>();
+		private static readonly List<Snippet> CodeGenerationItemCollectionInternal = new List<Snippet>();
 
 		public static void ReloadSnippets()
 		{
-			SnippetCollectionInternal.Clear();
+			ReloadSnippetCollection(ConfigurationProvider.FolderNameSnippets, SnippetCollectionInternal);
+			ReloadSnippetCollection(ConfigurationProvider.FolderNameCodeGenerationItems, CodeGenerationItemCollectionInternal);
+		}
 
-			foreach (var snippetFile in Directory.GetFiles(ConfigurationProvider.FolderNameSnippets, "*.xml"))
+		private static void ReloadSnippetCollection(string folderName, ICollection<Snippet> snippetCollection)
+		{
+			snippetCollection.Clear();
+
+			foreach (var snippetFile in Directory.GetFiles(folderName, "*.xml"))
 			{
 				using (var reader = XmlReader.Create(snippetFile))
 				{
-					SnippetCollectionInternal.Add((Snippet)XmlSerializer.Deserialize(reader));
+					snippetCollection.Add((Snippet)XmlSerializer.Deserialize(reader));
 				}
 			}
 		}
 
-		public static ICollection<Snippet> SnippetCollection
+		public static IReadOnlyCollection<Snippet> SnippetCollection
 		{
 			get
 			{
@@ -35,6 +43,19 @@ namespace SqlPad
 				}
 
 				return SnippetCollectionInternal.AsReadOnly();
+			}
+		}
+
+		public static IReadOnlyCollection<Snippet> CodeGenerationItemCollection
+		{
+			get
+			{
+				if (CodeGenerationItemCollectionInternal.Count == 0)
+				{
+					ReloadSnippets();
+				}
+
+				return CodeGenerationItemCollectionInternal.AsReadOnly();
 			}
 		}
 	}

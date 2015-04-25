@@ -3,9 +3,9 @@
   <xs:element name="Snippet">
     <xs:complexType>
       <xs:sequence>
-        <xs:element name="Text" type="xs:string" />
-        <xs:element name="Description" type="xs:string" />
-        <xs:element name="Parameters">
+        <xs:element name="Text" type="xs:string" minOccurs="1" maxOccurs="1" />
+        <xs:element name="Description" type="xs:string" minOccurs="0" maxOccurs="1" />
+        <xs:element name="Parameters" minOccurs="0" maxOccurs="1">
           <xs:complexType>
             <xs:sequence>
               <xs:element maxOccurs="unbounded" name="Parameter">
@@ -17,7 +17,7 @@
             </xs:sequence>
           </xs:complexType>
         </xs:element>
-        <xs:element name="AllowedTerminals">
+        <xs:element name="AllowedTerminals" minOccurs="0" maxOccurs="1">
           <xs:complexType>
             <xs:sequence>
               <xs:element maxOccurs="unbounded" name="Terminal">

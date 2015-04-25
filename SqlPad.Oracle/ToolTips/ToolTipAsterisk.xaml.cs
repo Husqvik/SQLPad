@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Controls;
 
@@ -50,10 +51,12 @@ namespace SqlPad.Oracle.ToolTips
 		public int ColumnIndex { get; set; }
 
 		public string Name { get; set; }
-
+		
 		public string FullTypeName { get; set; }
 
 		public string RowSourceName { get; set; }
+
+		public string Label { get { return String.IsNullOrEmpty(RowSourceName) ? Name : String.Format("{0}.{1}", RowSourceName, Name); } }
 	}
 
 	internal class OracleColumnViewModel : OracleColumnModel

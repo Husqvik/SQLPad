@@ -1,23 +1,33 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using SqlPad.Commands;
 
 namespace SqlPad
 {
 	public interface IContextActionProvider
 	{
-		ICollection<IContextAction> GetContextActions(SqlDocumentRepository sqlDocumentRepository, CommandExecutionContext executionContext);
+		ICollection<ContextAction> GetContextActions(SqlDocumentRepository sqlDocumentRepository, CommandExecutionContext executionContext);
 
-		ICollection<IContextAction> GetAvailableRefactorings(SqlDocumentRepository sqlDocumentRepository, CommandExecutionContext executionContext);
+		ICollection<ContextAction> GetAvailableRefactorings(SqlDocumentRepository sqlDocumentRepository, CommandExecutionContext executionContext);
 	}
 
-	public interface IContextAction
+	[DebuggerDisplay("ContextAction (Name={Name})")]
+	public class ContextAction
 	{
-		string Name { get; }
-		
-		bool IsLongOperation { get; }
+		public ContextAction(string name, CommandExecutionHandler executionHandler, CommandExecutionContext executionContext, bool isLongOperation = false)
+		{
+			Name = name;
+			ExecutionHandler = executionHandler;
+			ExecutionContext = executionContext;
+			IsLongOperation = isLongOperation;
+		}
 
-		CommandExecutionHandler ExecutionHandler { get; }
-		
-		CommandExecutionContext ExecutionContext { get; }
+		public string Name { get; private set; }
+
+		public bool IsLongOperation { get; private set; }
+
+		public CommandExecutionHandler ExecutionHandler { get; private set; }
+
+		public CommandExecutionContext ExecutionContext { get; private set; }
 	}
 }

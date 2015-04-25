@@ -23,7 +23,8 @@ namespace SqlPad.Commands
 		public static RoutedCommand DuplicateText = new RoutedCommand("DuplicateText", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.D, ModifierKeys.Control) });
 		public static RoutedCommand BlockComment = new RoutedCommand("BlockComment", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.Oem2, ModifierKeys.Control | ModifierKeys.Shift) });
 		public static RoutedCommand LineComment = new RoutedCommand("LineComment", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.Oem2, ModifierKeys.Control | ModifierKeys.Alt) });
-		public static RoutedCommand ListContextAction = new RoutedCommand("ListContextActions", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.Enter, ModifierKeys.Alt) });
+		public static RoutedCommand ListContextActions = new RoutedCommand("ListContextActions", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.Enter, ModifierKeys.Alt) });
+		public static RoutedCommand ListCodeGenerationItems = new RoutedCommand("ListCodeGenerationItems", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.Insert, ModifierKeys.Alt) });
 		public static RoutedCommand MultiNodeEdit = new RoutedCommand("EditMultipleNodes", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.F6, ModifierKeys.Shift) });
 		public static RoutedCommand NavigateToPreviousUsage = new RoutedCommand("NavigateToPreviousHighlightedUsage", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.PageUp, ModifierKeys.Control | ModifierKeys.Alt) });
 		public static RoutedCommand NavigateToNextUsage = new RoutedCommand("NavigateToNextHighlightedUsage", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.PageDown, ModifierKeys.Control | ModifierKeys.Alt) });

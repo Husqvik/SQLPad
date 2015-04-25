@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Snippet Name="CREATE PROCEDURE" Description="" xmlns="http://husqvik.com/SqlPad/2014/02" Rdbms="Oracle" Version="*">
+  <Text><![CDATA[CREATE OR REPLACE PROCEDURE {0} ({1} IN VARCHAR2)
+IS
+BEGIN
+  {2};
+END {0};
+
+]]></Text>
+  <Description>CREATE PROCEDURE</Description>
+  <Parameters>
+    <Parameter Index="0" DefaultValue="procedure_name" />
+    <Parameter Index="1" DefaultValue="parameter1" />
+    <Parameter Index="2" DefaultValue="NULL" />
+  </Parameters>
+</Snippet>

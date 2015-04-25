@@ -28,13 +28,18 @@ namespace SqlPad
 
 		public CompletionData(ICodeSnippet codeSnippet)
 		{
-			var description = String.IsNullOrEmpty(codeSnippet.Description) ? null : (Environment.NewLine + codeSnippet.Description);
+			var description = String.IsNullOrEmpty(codeSnippet.Description) ? null : String.Format("{0}{1}", Environment.NewLine, codeSnippet.Description);
 
 			_snippet = codeSnippet;
 			Text = codeSnippet.Name;
 			Content = Text;
 			Description = "Code Snippet" + description;
-			_completionText = String.Format(codeSnippet.BaseText, codeSnippet.Parameters.OrderBy(p => p.Index).Select(p => p.DefaultValue).Cast<object>().ToArray());
+			_completionText = FormatSnippetText(codeSnippet);
+		}
+
+		internal static string FormatSnippetText(ICodeSnippet codeSnippet)
+		{
+			return String.Format(codeSnippet.BaseText, codeSnippet.Parameters.OrderBy(p => p.Index).Select(p => p.DefaultValue).Cast<object>().ToArray());
 		}
 
 		public StatementGrammarNode Node { get; private set; }
