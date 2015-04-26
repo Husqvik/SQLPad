@@ -47,6 +47,8 @@ namespace SqlPad.Oracle
 			public const string AlterProgramCompileOption = "AlterProgramCompileOption";
 			public const string AlterProgramOption = "AlterProgramOption";
 			public const string AlterRole = "AlterRole";
+			public const string AlterRollbackSegment = "AlterRollbackSegment";
+			public const string AlterRollbackSegmentOption = "AlterRollbackSegmentOption";
 			public const string AlterSession = "AlterSession";
 			public const string AlterSessionOption = "AlterSessionOption";
 			public const string AlterSessionSetOptions = "AlterSessionSetOptions";
@@ -227,6 +229,9 @@ namespace SqlPad.Oracle
 			public const string CreateProfile = "CreateProfile";
 			public const string CreateRole = "CreateRole";
 			public const string CreateRoleIdentificationType = "CreateRoleIdentificationType";
+			public const string CreateRollbackSegment = "CreateRollbackSegment";
+			public const string CreateRollbackSegmentOption = "CreateRollbackSegmentOption";
+			public const string CreateRollbackSegmentOptionList = "CreateRollbackSegmentOptionList";
 			public const string CreateSequence = "CreateSequence";
 			public const string CreateSqlObjectClause = "CreateSqlObjectClause";
 			public const string CreateSqlStatement = "CreateSqlStatement";
@@ -1131,6 +1136,7 @@ namespace SqlPad.Oracle
 			public const string TimeZoneOrLocal = "TimeZoneOrLocal";
 			public const string ToDayOrHourOrMinuteOrSecondWithPrecision = "ToDayOrHourOrMinuteOrSecondWithPrecision";
 			public const string ToSavepointOrForceTransactionIdentifier = "ToSavepointOrForceTransactionIdentifier";
+			public const string ToSizeClause = "ToSizeClause";
 			public const string ToYearOrMonth = "ToYearOrMonth";
 			public const string TransactionModeOrIsolationLevelOrRollbackSegment = "TransactionModeOrIsolationLevelOrRollbackSegment";
 			public const string TrimSpecification = "TrimSpecification";

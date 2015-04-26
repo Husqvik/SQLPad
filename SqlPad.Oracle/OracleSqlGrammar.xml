@@ -184,7 +184,45 @@
         <Sequence>
           <NonTerminal Id="AlterRole" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="AlterRollbackSegment" />
+        </Sequence>
         <!-- TODO: Add other objects -->
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AlterRollbackSegment">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Rollback" />
+          <Terminal Id="Segment" />
+          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="AlterRollbackSegmentOption" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AlterRollbackSegmentOption">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="OnlineOrOffline" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="StorageClause" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Shrink" />
+          <NonTerminal Id="ToSizeClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ToSizeClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="To" />
+          <NonTerminal Id="SizeClause" IsOptional="true" />
+        </Sequence>
       </Sequences>
     </Rule>
     
@@ -8081,7 +8119,43 @@
         <Sequence>
           <NonTerminal Id="CreateRole" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="CreateRollbackSegment" />
+        </Sequence>
         <!-- TODO: Create other objects -->
+      </Sequences>
+    </Rule>
+
+    <!-- CREATE ROLLBACK SEGMENT -->
+    <Rule StartingNonTerminal="CreateRollbackSegment">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Public" IsOptional="true" />
+          <Terminal Id="Rollback" />
+          <Terminal Id="Segment" />
+          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="CreateRollbackSegmentOptionList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="CreateRollbackSegmentOptionList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="CreateRollbackSegmentOption" />
+          <NonTerminal Id="CreateRollbackSegmentOptionList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="CreateRollbackSegmentOption">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="TablespaceIdentifier" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="StorageClause" />
+        </Sequence>
       </Sequences>
     </Rule>
     

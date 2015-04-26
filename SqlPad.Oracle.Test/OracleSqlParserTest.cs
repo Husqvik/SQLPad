@@ -5050,6 +5050,21 @@ PURGE REPEAT INTERVAL '5' DAY";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 			}
+
+			public class CreateRollbackSegment
+			{
+				[Test(Description = @"")]
+				public void TestCreateRollbackSegment()
+				{
+					const string statementText = @"CREATE ROLLBACK SEGMENT rollback_segment TABLESPACE tablespace1 STORAGE (INITIAL 16M)";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+			}
 		}
 
 		public class Alter
@@ -5269,6 +5284,21 @@ PURGE REPEAT INTERVAL '5' DAY";
 				public void TestAlterRole()
 				{
 					const string statementText = @"ALTER ROLE dw_manager IDENTIFIED USING hr.admin CONTAINER = CURRENT";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+			}
+
+			public class AlterRollbackSegment
+			{
+				[Test(Description = @"")]
+				public void TestAlterRollbackSegment()
+				{
+					const string statementText = @"ALTER ROLLBACK SEGMENT rollback_segment SHRINK TO 128M";
 
 					var result = Parser.Parse(statementText);
 

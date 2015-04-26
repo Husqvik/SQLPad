@@ -311,6 +311,17 @@ SELECT T.* FROM T@HQ_PDB";
 			result.ShouldBe(expectedResult);
 		}
 
+		[Test, STAThread]
+		public void TestHtmlDataExporter()
+		{
+			var resultGrid = InitializeDataGrid();
+
+			var result = GetExportContent(resultGrid, new HtmlDataExporter());
+
+			const string expectedResult = "<!DOCTYPE html><html><head><title></title></head><body><table border=\"1\" style=\"border-collapse:collapse\"><tr><th>DUMMY1</th><th>DUMMY_WITH_UNDERSCORES</th><tr><tr><td>Value \"1\"</td><td>16.8.2014 22:25:34</td><tr><tr><td>\"2.\"Value</td><td>16.8.2014 00:00:00</td><tr><table>";
+			result.ShouldBe(expectedResult);
+		}
+
 		private static string GetExportContent(DataGrid resultGrid, IDataExporter dataExporter)
 		{
 			var tempFileName = Path.GetTempFileName();

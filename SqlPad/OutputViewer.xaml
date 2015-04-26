@@ -12,18 +12,21 @@
 		<sqlPad:PrettyPrintIntegerConverter x:Key="PrettyPrintNumericConverter" />
 
 		<RoutedCommand x:Key="ExportToCsvFileCommand"/>
+		<RoutedCommand x:Key="ExportToHtmlFileCommand"/>
 		<RoutedCommand x:Key="ExportToJsonFileCommand"/>
 		<RoutedCommand x:Key="ExportToSqlInsertFileCommand"/>
 		<RoutedCommand x:Key="ExportToSqlUpdateFileCommand"/>
 		<RoutedCommand x:Key="ExportToXmlFileCommand"/>
 
 		<RoutedCommand x:Key="ExportToCsvClipboardCommand"/>
+		<RoutedCommand x:Key="ExportToHtmlClipboardCommand"/>
 		<RoutedCommand x:Key="ExportToJsonClipboardCommand"/>
 		<RoutedCommand x:Key="ExportToSqlInsertClipboardCommand"/>
 		<RoutedCommand x:Key="ExportToSqlUpdateClipboardCommand"/>
 		<RoutedCommand x:Key="ExportToXmlClipboardCommand"/>
 
 		<sqlPad:CsvDataExporter x:Key="CsvDataExporter" />
+		<sqlPad:HtmlDataExporter x:Key="HtmlDataExporter" />
 		<sqlPad:JsonDataExporter x:Key="JsonDataExporter" />
 		<sqlPad:SqlInsertDataExporter x:Key="SqlInsertDataExporter" />
 		<sqlPad:SqlUpdateDataExporter x:Key="SqlUpdateDataExporter" />
@@ -67,12 +70,14 @@
 							  DataGridColumnHeader.Click="ColumnHeaderMouseClickHandler">
 					<DataGrid.CommandBindings>
 						<CommandBinding Command="{StaticResource ExportToCsvFileCommand}" Executed="ExportDataFileHandler" CanExecute="CanExportDataHandler" />
+						<CommandBinding Command="{StaticResource ExportToHtmlFileCommand}" Executed="ExportDataFileHandler" CanExecute="CanExportDataHandler" />
 						<CommandBinding Command="{StaticResource ExportToJsonFileCommand}" Executed="ExportDataFileHandler" CanExecute="CanExportDataHandler" />
 						<CommandBinding Command="{StaticResource ExportToSqlInsertFileCommand}" Executed="ExportDataFileHandler" CanExecute="CanExportDataHandler" />
 						<CommandBinding Command="{StaticResource ExportToSqlUpdateFileCommand}" Executed="ExportDataFileHandler" CanExecute="CanExportDataHandler" />
 						<CommandBinding Command="{StaticResource ExportToXmlFileCommand}" Executed="ExportDataFileHandler" CanExecute="CanExportDataHandler" />
 						
 						<CommandBinding Command="{StaticResource ExportToCsvClipboardCommand}" Executed="ExportDataClipboardHandler" CanExecute="CanExportDataHandler" />
+						<CommandBinding Command="{StaticResource ExportToHtmlClipboardCommand}" Executed="ExportDataClipboardHandler" CanExecute="CanExportDataHandler" />
 						<CommandBinding Command="{StaticResource ExportToJsonClipboardCommand}" Executed="ExportDataClipboardHandler" CanExecute="CanExportDataHandler" />
 						<CommandBinding Command="{StaticResource ExportToSqlInsertClipboardCommand}" Executed="ExportDataClipboardHandler" CanExecute="CanExportDataHandler" />
 						<CommandBinding Command="{StaticResource ExportToSqlUpdateClipboardCommand}" Executed="ExportDataClipboardHandler" CanExecute="CanExportDataHandler" />
@@ -85,6 +90,7 @@
 							<MenuItem Header="_Fetch all" Command="commands:GenericCommands.FetchAllRows" />
 							<MenuItem Header="_Export to file">
 								<MenuItem Header="_CSV..." Command="{StaticResource ExportToCsvFileCommand}" CommandParameter="{StaticResource CsvDataExporter}" />
+								<MenuItem Header="_HTML..." Command="{StaticResource ExportToHtmlFileCommand}" CommandParameter="{StaticResource HtmlDataExporter}" />
 								<MenuItem Header="_JSON..." Command="{StaticResource ExportToJsonFileCommand}" CommandParameter="{StaticResource JsonDataExporter}" />
 								<MenuItem Header="SQL _INSERT..." Command="{StaticResource ExportToSqlInsertFileCommand}" CommandParameter="{StaticResource SqlInsertDataExporter}" />
 								<MenuItem Header="SQL _UPDATE..." Command="{StaticResource ExportToSqlUpdateFileCommand}" CommandParameter="{StaticResource SqlUpdateDataExporter}" />
@@ -92,6 +98,7 @@
 							</MenuItem>
 							<MenuItem Header="_Export to clipboard">
 								<MenuItem Header="_CSV..." Command="{StaticResource ExportToCsvClipboardCommand}" CommandParameter="{StaticResource CsvDataExporter}" />
+								<MenuItem Header="_HTML..." Command="{StaticResource ExportToHtmlClipboardCommand}" CommandParameter="{StaticResource HtmlDataExporter}" />
 								<MenuItem Header="_JSON..." Command="{StaticResource ExportToJsonClipboardCommand}" CommandParameter="{StaticResource JsonDataExporter}" />
 								<MenuItem Header="SQL _INSERT..." Command="{StaticResource ExportToSqlInsertClipboardCommand}" CommandParameter="{StaticResource SqlInsertDataExporter}" />
 								<MenuItem Header="SQL _UPDATE..." Command="{StaticResource ExportToSqlUpdateClipboardCommand}" CommandParameter="{StaticResource SqlUpdateDataExporter}" />
