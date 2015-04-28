@@ -213,8 +213,7 @@ namespace SqlPad.Oracle
 					? Enumerable.Empty<StatementGrammarNode>()
 					: queryBlock.FromClause.GetDescendantsWithinSameQuery(NonTerminals.TableReference).ToArray();
 
-				// TODO: Check possible issue within GetCommonTableExpressionReferences to remove the Distinct.
-				var cteReferences = GetCommonTableExpressionReferences(queryBlockRoot).Distinct().ToDictionary(qb => qb.Key, qb => qb.Value);
+				var cteReferences = ResolveAccessibleCommonTableExpressions(queryBlockRoot).ToDictionary(qb => qb.CteNode, qb => qb.CteAlias);
 				_accessibleQueryBlockRoot.Add(queryBlock, cteReferences.Keys);
 
 				foreach (var tableReferenceNonterminal in tableReferenceNonterminals)
@@ -2436,17 +2435,23 @@ namespace SqlPad.Oracle
 			reference.ObjectNode = prefixNonTerminal.GetSingleDescendant(Terminals.ObjectIdentifier);
 		}
 
-		private IEnumerable<KeyValuePair<StatementGrammarNode, string>> GetCommonTableExpressionReferences(StatementGrammarNode node)
+		private IEnumerable<CommonTableExpressionReference> ResolveAccessibleCommonTableExpressions(StatementGrammarNode node)
+		{
+			var accessibleAliases = new HashSet<string>();
+			return GetCommonTableExpressionReferences(node).Where(cteReference => accessibleAliases.Add(cteReference.CteAlias));
+		}
+
+		private IEnumerable<CommonTableExpressionReference> GetCommonTableExpressionReferences(StatementGrammarNode node)
 		{
 			var queryRoot = node.GetAncestor(NonTerminals.NestedQuery);
 			var subQueryCompondentNode = node.GetAncestor(NonTerminals.CommonTableExpressionList);
-			var cteReferencesWithinSameClause = new List<KeyValuePair<StatementGrammarNode, string>>();
+			var cteReferencesWithinSameClause = new List<CommonTableExpressionReference>();
 			if (subQueryCompondentNode != null)
 			{
 				var cteNodeWithinSameClause = subQueryCompondentNode.GetAncestor(NonTerminals.CommonTableExpressionList);
 				while (cteNodeWithinSameClause != null)
 				{
-					cteReferencesWithinSameClause.Add(GetCteNameNode(cteNodeWithinSameClause));
+					cteReferencesWithinSameClause.Add(GetCteReference(cteNodeWithinSameClause));
 					cteNodeWithinSameClause = cteNodeWithinSameClause.GetAncestor(NonTerminals.CommonTableExpressionList);
 				}
 
@@ -2457,22 +2462,24 @@ namespace SqlPad.Oracle
 			}
 
 			if (queryRoot == null)
+			{
 				return cteReferencesWithinSameClause;
+			}
 
 			var commonTableExpressions = queryRoot
 				.GetPathFilterDescendants(n => n.Id != NonTerminals.QueryBlock, NonTerminals.CommonTableExpressionList)
-				.Select(GetCteNameNode);
+				.Select(GetCteReference);
 			return commonTableExpressions
 				.Concat(cteReferencesWithinSameClause)
 				.Concat(GetCommonTableExpressionReferences(queryRoot));
 		}
 
-		private KeyValuePair<StatementGrammarNode, string> GetCteNameNode(StatementGrammarNode cteListNode)
+		private CommonTableExpressionReference GetCteReference(StatementGrammarNode cteListNode)
 		{
 			var cteNode = cteListNode[0];
 			var objectIdentifierNode = cteNode[0];
-			var cteName = objectIdentifierNode == null ? null : objectIdentifierNode.Token.Value.ToQuotedIdentifier();
-			return new KeyValuePair<StatementGrammarNode, string>(cteNode, cteName);
+			var cteAlias = objectIdentifierNode == null ? null : objectIdentifierNode.Token.Value.ToQuotedIdentifier();
+			return new CommonTableExpressionReference { CteNode = cteNode, CteAlias = cteAlias };
 		}
 
 		private OracleLiteral CreateLiteral(StatementGrammarNode terminal)
@@ -2483,6 +2490,12 @@ namespace SqlPad.Oracle
 					Terminal = terminal.FollowingTerminal,
 					Type = terminal.Id == Terminals.Date ? LiteralType.Date : LiteralType.Timestamp
 				};
+		}
+
+		private class CommonTableExpressionReference
+		{
+			public StatementGrammarNode CteNode;
+			public string CteAlias;
 		}
 	}
 

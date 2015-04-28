@@ -110,6 +110,9 @@
       <DependentUpon>Configuration.xsd</DependentUpon>
     </Compile>
     <Compile Include="HtmlDataExporter.cs" />
+    <Compile Include="Documentation.cs">
+      <DependentUpon>Documentation.xsd</DependentUpon>
+    </Compile>
     <Compile Include="SqlUpdateDataExporter.cs" />
     <Compile Include="SqlInsertDataExporter.cs" />
     <Compile Include="XmlDataExporter.cs" />
@@ -279,6 +282,9 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
+    <None Include="Documentation.xsd">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Snippet.xsd">
       <SubType>Designer</SubType>
     </None>

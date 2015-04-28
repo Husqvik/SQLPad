@@ -6,11 +6,12 @@ namespace SqlPad.Oracle.ToolTips
 {
 	public partial class ToolTipProgram : IToolTip
 	{
-		public ToolTipProgram(string title, OracleProgramMetadata programMetadata)
+		public ToolTipProgram(string title, string documentation, OracleProgramMetadata programMetadata)
 		{
 			InitializeComponent();
 
 			LabelTitle.Text = title;
+			LabelDocumentation.Text = documentation;
 
 			DataContext = programMetadata;
 		}

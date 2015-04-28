@@ -4,17 +4,25 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:toolTips="clr-namespace:SqlPad.Oracle.ToolTips"
+             xmlns:sqlPad="clr-namespace:SqlPad;assembly=SqlPad"
              mc:Ignorable="d" 
              d:DesignHeight="28" d:DesignWidth="200">
 	<ItemsControl x:Name="ItemsControl">
 		
 		<ItemsControl.Resources>
+			<sqlPad:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
+
 			<DataTemplate x:Key="ColumnModelDataTemplate" DataType="toolTips:OracleColumnModel">
-				<TextBlock>
-					<Run Text="{Binding Path=ColumnIndex, Mode=OneWay}"/><Run Text="."/>
-					<Run Text="{Binding Path=Label, Mode=OneWay}" />
-					<Run Text="{Binding Path=FullTypeName, Mode=OneWay}" />
-				</TextBlock>
+				<StackPanel Orientation="Horizontal">
+					<TextBlock>
+						<Run Text="{Binding Path=ColumnIndex, Mode=OneWay}"/><Run Text=". "/>
+					</TextBlock>
+					<TextBlock Visibility="{Binding Path=RowSourceName, Converter={StaticResource ObjectToVisibilityConverter}}">
+						<Run Text="{Binding Path=RowSourceName, Mode=OneWay}"/><Run Text="."/>
+					</TextBlock>
+					<TextBlock Text="{Binding Path=Name}" />
+					<TextBlock Text="{Binding Path=FullTypeName}" Margin="12, 0, 0, 0" />
+				</StackPanel>
 			</DataTemplate>
 			<DataTemplate x:Key="SeparatorTemplate">
 				<Separator />

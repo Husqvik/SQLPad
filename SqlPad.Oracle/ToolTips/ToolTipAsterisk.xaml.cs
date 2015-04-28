@@ -55,8 +55,6 @@ namespace SqlPad.Oracle.ToolTips
 		public string FullTypeName { get; set; }
 
 		public string RowSourceName { get; set; }
-
-		public string Label { get { return String.IsNullOrEmpty(RowSourceName) ? Name : String.Format("{0}.{1}", RowSourceName, Name); } }
 	}
 
 	internal class OracleColumnViewModel : OracleColumnModel

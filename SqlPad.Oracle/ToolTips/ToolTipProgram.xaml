@@ -13,6 +13,7 @@
 			<sqlPad:BooleanLabelConverter x:Key="BooleanConverter" />
 			<toolTips:AuthIdConverter x:Key="AuthIdConverter" />
 			<toolTips:ProgramTypeConverter x:Key="ProgramTypeConverter" />
+			<sqlPad:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
 		</StackPanel.Resources>
 		<GroupBox BorderThickness="0">
 			<GroupBox.Header>
@@ -24,6 +25,7 @@
 					<ColumnDefinition/>
 				</Grid.ColumnDefinitions>
 				<Grid.RowDefinitions>
+					<RowDefinition Height="Auto" />
 					<RowDefinition />
 					<RowDefinition />
 					<RowDefinition />
@@ -33,22 +35,23 @@
 					<RowDefinition />
 					<RowDefinition />
 				</Grid.RowDefinitions>
-				<TextBlock Grid.Row="0" Grid.Column="0" Text="Type: " />
-				<TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Path=DataContext, RelativeSource={RelativeSource Self}, Converter={StaticResource ProgramTypeConverter}}" />
-				<TextBlock Grid.Row="1" Grid.Column="0" Text="Aggregate: " />
-				<TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding IsAggregate, Converter={StaticResource BooleanConverter}}" />
-				<TextBlock Grid.Row="2" Grid.Column="0" Text="Analytic: " />
-				<TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding IsAnalytic, Converter={StaticResource BooleanConverter}}" />
-				<TextBlock Grid.Row="3" Grid.Column="0" Text="Pipelined: " />
-				<TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding IsPipelined, Converter={StaticResource BooleanConverter}}" />
-				<TextBlock Grid.Row="4" Grid.Column="0" Text="Parallel: " />
-				<TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding ParallelSupport, Converter={StaticResource BooleanConverter}}" />
-				<TextBlock Grid.Row="5" Grid.Column="0" Text="Deterministic: " />
-				<TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding IsDeterministic, Converter={StaticResource BooleanConverter}}" />
-				<TextBlock Grid.Row="6" Grid.Column="0" Text="Offloadable: " />
-				<TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding IsOffloadable, Converter={StaticResource BooleanConverter}}" />
-				<TextBlock Grid.Row="7" Grid.Column="0" Text="Auth ID: " />
-				<TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding AuthId, Converter={StaticResource AuthIdConverter}}" />
+				<TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" TextWrapping="Wrap" MaxWidth="400" x:Name="LabelDocumentation" Visibility="{Binding ElementName=LabelDocumentation, Path=Text, Converter={StaticResource ObjectToVisibilityConverter}}" />
+				<TextBlock Grid.Row="1" Grid.Column="0" Text="Type: " />
+				<TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Path=DataContext, RelativeSource={RelativeSource Self}, Converter={StaticResource ProgramTypeConverter}}" />
+				<TextBlock Grid.Row="2" Grid.Column="0" Text="Aggregate: " />
+				<TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding IsAggregate, Converter={StaticResource BooleanConverter}}" />
+				<TextBlock Grid.Row="3" Grid.Column="0" Text="Analytic: " />
+				<TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding IsAnalytic, Converter={StaticResource BooleanConverter}}" />
+				<TextBlock Grid.Row="4" Grid.Column="0" Text="Pipelined: " />
+				<TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding IsPipelined, Converter={StaticResource BooleanConverter}}" />
+				<TextBlock Grid.Row="5" Grid.Column="0" Text="Parallel: " />
+				<TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding ParallelSupport, Converter={StaticResource BooleanConverter}}" />
+				<TextBlock Grid.Row="6" Grid.Column="0" Text="Deterministic: " />
+				<TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding IsDeterministic, Converter={StaticResource BooleanConverter}}" />
+				<TextBlock Grid.Row="7" Grid.Column="0" Text="Offloadable: " />
+				<TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding IsOffloadable, Converter={StaticResource BooleanConverter}}" />
+				<TextBlock Grid.Row="8" Grid.Column="0" Text="Auth ID: " />
+				<TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding AuthId, Converter={StaticResource AuthIdConverter}}" />
 			</Grid>
 		</GroupBox>
 	</StackPanel>

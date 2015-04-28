@@ -822,6 +822,40 @@ SELECT * FROM CTE";
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestAsteriskTooltipWithDoubleCommonTableExpressionDefinition()
+		{
+			const string query = @"WITH CTE AS (SELECT 1 C1 FROM DUAL), CTE AS (SELECT 1 C2 FROM DUAL) SELECT * FROM CTE";
+			_documentRepository.UpdateStatements(query);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 75);
+			toolTip.Control.ShouldBeTypeOf<ToolTipAsterisk>();
+			var toolTipSequence = (ToolTipAsterisk)toolTip.Control;
+			var columns = toolTipSequence.Columns.ToArray();
+			columns.Length.ShouldBe(1);
+			columns[0].Name.ShouldBe("C1");
+			columns[0].FullTypeName.ShouldBe("NUMBER");
+			columns[0].RowSourceName.ShouldBe("CTE");
+			columns[0].ColumnIndex.ShouldBe(1);
+		}
+		
+		[Test(Description = @""), STAThread]
+		public void TestAsteriskTooltipWithDoubleCommonTableExpressionDefinitionInDifferentSubqueries()
+		{
+			const string query = @"WITH CTE AS (SELECT 1 C1 FROM DUAL) SELECT * FROM (WITH CTE AS (SELECT 1 C2 FROM DUAL) SELECT * FROM CTE) SUBQUERY";
+			_documentRepository.UpdateStatements(query);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 43);
+			toolTip.Control.ShouldBeTypeOf<ToolTipAsterisk>();
+			var toolTipSequence = (ToolTipAsterisk)toolTip.Control;
+			var columns = toolTipSequence.Columns.ToArray();
+			columns.Length.ShouldBe(1);
+			columns[0].Name.ShouldBe("C2");
+			columns[0].FullTypeName.ShouldBe("NUMBER");
+			columns[0].RowSourceName.ShouldBe("SUBQUERY");
+			columns[0].ColumnIndex.ShouldBe(1);
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestExplicitPartitionTooltip()
 		{
 			const string query = "SELECT * FROM INVOICES PARTITION (P2015)";

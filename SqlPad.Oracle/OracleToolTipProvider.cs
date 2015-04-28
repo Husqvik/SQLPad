@@ -1,7 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Xml;
+using System.Xml.Serialization;
 using SqlPad.Oracle.ToolTips;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
@@ -9,6 +14,31 @@ namespace SqlPad.Oracle
 {
 	public class OracleToolTipProvider : IToolTipProvider
 	{
+		private static readonly Dictionary<string, DocumentationFunction> SqlFunctionDocumentation = new Dictionary<string, DocumentationFunction>();
+
+		static OracleToolTipProvider()
+		{
+			var folder = new Uri(Path.GetDirectoryName(typeof(OracleToolTipProvider).Assembly.CodeBase)).LocalPath;
+			using (var reader = XmlReader.Create(Path.Combine(folder, "OracleSqlFunctionDocumentation.xml")))
+			{
+				var documentation = (Documentation)new XmlSerializer(typeof(Documentation)).Deserialize(reader);
+
+				foreach (var function in documentation.Function)
+				{
+					DocumentationFunction existingFunction;
+					var identifier = function.Name.ToQuotedIdentifier();
+					if (!SqlFunctionDocumentation.TryGetValue(identifier, out existingFunction) || function.Value.Length > existingFunction.Value.Length)
+					{
+						SqlFunctionDocumentation[identifier] = function;
+					}
+					else
+					{
+						Trace.WriteLine(String.Format("Function documentation skipped: {0}", function.Value));
+					}
+				}
+			}
+		}
+
 		public IToolTip GetToolTip(SqlDocumentRepository sqlDocumentRepository, int cursorPosition)
 		{
 			if (sqlDocumentRepository == null)
@@ -345,9 +375,20 @@ namespace SqlPad.Oracle
 		private ToolTipProgram GetFunctionToolTip(OracleStatementSemanticModel semanticModel, StatementGrammarNode terminal)
 		{
 			var functionReference = semanticModel.GetProgramReference(terminal);
-			return functionReference == null || functionReference.DatabaseLinkNode != null || functionReference.Metadata == null
-				? null
-				: new ToolTipProgram(functionReference.Metadata.Identifier.FullyQualifiedIdentifier, functionReference.Metadata);
+			if (functionReference == null || functionReference.DatabaseLinkNode != null || functionReference.Metadata == null)
+			{
+				return null;
+			}
+
+			var documentationText = String.Empty;
+			DocumentationFunction documentationFunction;
+			if ((String.IsNullOrEmpty(functionReference.Metadata.Identifier.Owner) || String.Equals(functionReference.Metadata.Identifier.Package, OracleDatabaseModelBase.PackageBuiltInFunction)) &&
+			     SqlFunctionDocumentation.TryGetValue(functionReference.Metadata.Identifier.Name, out documentationFunction))
+			{
+				documentationText = documentationFunction.Value;
+			}
+
+			return new ToolTipProgram(functionReference.Metadata.Identifier.FullyQualifiedIdentifier, documentationText, functionReference.Metadata);
 		}
 
 		private OracleReference GetObjectReference(OracleStatementSemanticModel semanticModel, StatementGrammarNode terminal)

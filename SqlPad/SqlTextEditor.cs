@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
+using System.Windows.Input;
 using ICSharpCode.AvalonEdit;
 
 namespace SqlPad
@@ -33,6 +34,7 @@ namespace SqlPad
 
 			TextArea.Caret.PositionChanged += CaretPositionChangedHandler;
 			TextArea.SelectionChanged += TextAreaSelectionChangedHandler;
+			//TextArea.PreviewMouseWheel += PreviewMouseWheelHandler;
 		}
 
 		private void TextAreaSelectionChangedHandler(object sender, EventArgs eventArgs)
@@ -102,6 +104,25 @@ namespace SqlPad
 		public int GetLineNumberByOffset(int offset)
 		{
 			return Document.GetLineByOffset(offset).LineNumber;
+		}
+
+		private void PreviewMouseWheelHandler(object sender, MouseWheelEventArgs e)
+		{
+			if (Keyboard.Modifiers != ModifierKeys.Control)
+			{
+				return;
+			}
+
+			if (e.Delta <= 0 || FontSize >= 50.0)
+			{
+				FontSize -= 1.0;
+			}
+			else if (e.Delta > 0 && FontSize > 10.0)
+			{
+				FontSize += 1.0;
+			}
+
+			e.Handled = true;
 		}
 	}
 }
