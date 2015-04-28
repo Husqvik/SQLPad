@@ -28,7 +28,8 @@ namespace SqlPad.Test
 					Text = "SELECT * FROM DUAL",
 					TabIndex = 3,
 					EnableDatabaseOutput = true,
-					KeepDatabaseOutputHistory = true
+					KeepDatabaseOutputHistory = true,
+					FontSize = 16
 				};
 
 			const int expectedActiveDocumentIndex = 666;
@@ -46,7 +47,7 @@ namespace SqlPad.Test
 
 			var fileInfo = new FileInfo(Path.Combine(TempDirectoryName, "WorkArea", WorkDocumentCollection.ConfigurationFileName));
 			fileInfo.Exists.ShouldBe(true);
-			fileInfo.Length.ShouldBe(304);
+			fileInfo.Length.ShouldBe(314);
 
 			WorkDocumentCollection.Configure();
 			WorkDocumentCollection.WorkingDocuments.Count.ShouldBe(1);
@@ -67,6 +68,7 @@ namespace SqlPad.Test
 			deserializedWorkingDocument.TabIndex.ShouldBe(newWorkingDocument.TabIndex);
 			deserializedWorkingDocument.EnableDatabaseOutput.ShouldBe(newWorkingDocument.EnableDatabaseOutput);
 			deserializedWorkingDocument.KeepDatabaseOutputHistory.ShouldBe(newWorkingDocument.KeepDatabaseOutputHistory);
+			deserializedWorkingDocument.FontSize.ShouldBe(newWorkingDocument.FontSize);
 
 			var deserializedProviderConfiguration = WorkDocumentCollection.GetProviderConfiguration(providerName);
 			providerConfiguration.ShouldNotBeSameAs(deserializedProviderConfiguration);

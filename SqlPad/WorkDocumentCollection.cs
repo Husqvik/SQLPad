@@ -38,7 +38,7 @@ namespace SqlPad
 
 			var workingDocumentType = Serializer.Add(typeof(WorkDocument), false);
 			workingDocumentType.UseConstructor = false;
-			workingDocumentType.Add("DocumentFileName", "DocumentId", "ConnectionName", "SchemaName", "CursorPosition", "SelectionStart", "SelectionLength", "IsModified", "VisualLeft", "VisualTop", "EditorGridRowHeight", "Text", "EditorGridColumnWidth", "TabIndex", "_foldingStates", "EnableDatabaseOutput", "KeepDatabaseOutputHistory", "HeaderBackgroundColorCode", "DocumentTitle");
+			workingDocumentType.Add("DocumentFileName", "DocumentId", "ConnectionName", "SchemaName", "CursorPosition", "SelectionStart", "SelectionLength", "IsModified", "VisualLeft", "VisualTop", "EditorGridRowHeight", "Text", "EditorGridColumnWidth", "TabIndex", "_foldingStates", "EnableDatabaseOutput", "KeepDatabaseOutputHistory", "HeaderBackgroundColorCode", "DocumentTitle", "_fontSize");
 
 			var windowPropertiesType = Serializer.Add(typeof(WindowProperties), false);
 			windowPropertiesType.UseConstructor = false;
@@ -361,10 +361,11 @@ namespace SqlPad
 		public WindowState State { get; private set; }
 	}
 
-	[DebuggerDisplay("WorkDocument (DocumentFileName={DocumentFileName}; TabIndex={TabIndex}; ConnectionName={ConnectionName}; SchemaName={SchemaName})")]
+	[DebuggerDisplay("WorkDocument (DocumentFileName={DocumentFileName}; TabIndex={TabIndex}; ConnectionName={ConnectionName}; SchemaName={SchemaName}); FontSize={FontSize}")]
 	public class WorkDocument
 	{
 		private const string ExtensionSqlx = ".SQLX";
+		private double _fontSize;
 		private List<bool> _foldingStates;
 
 		public WorkDocument()
@@ -445,6 +446,20 @@ namespace SqlPad
 		
 		public string HeaderBackgroundColorCode { get; set; }
 
+		public double FontSize
+		{
+			get
+			{
+				if (_fontSize == 0)
+				{
+					_fontSize = 12;
+				}
+				
+				return _fontSize;
+			}
+			set { _fontSize = value; }
+		}
+
 		public WorkDocument CloneAsRecent()
 		{
 			if (String.IsNullOrWhiteSpace(DocumentFileName))
@@ -459,6 +474,7 @@ namespace SqlPad
 				DocumentFileName = DocumentFileName,
 				DocumentTitle = DocumentTitle,
 				CursorPosition = CursorPosition,
+				FontSize = FontSize,
 				_foldingStates = _foldingStates,
 				KeepDatabaseOutputHistory = KeepDatabaseOutputHistory,
 				EnableDatabaseOutput = EnableDatabaseOutput,

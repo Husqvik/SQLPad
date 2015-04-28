@@ -203,6 +203,8 @@ namespace SqlPad
 				Editor.IsModified = WorkDocument.IsModified;
 			}
 
+			Editor.FontSize = WorkDocument.FontSize;
+
 			_pageModel.DocumentHeaderToolTip = WorkDocument.File == null ? "Unsaved" : WorkDocument.File.FullName;
 
 			if (String.IsNullOrEmpty(WorkDocument.DocumentTitle))
@@ -519,6 +521,7 @@ namespace SqlPad
 
 			WorkDocument.Text = Editor.Text;
 			WorkDocument.CursorPosition = Editor.CaretOffset;
+			WorkDocument.FontSize = Editor.FontSize;
 			WorkDocument.SelectionStart = Editor.SelectionStart;
 			WorkDocument.SelectionLength = Editor.SelectionLength;
 			WorkDocument.EnableDatabaseOutput = DatabaseModel.EnableDatabaseOutput;

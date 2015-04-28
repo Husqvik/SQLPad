@@ -13,6 +13,11 @@ namespace SqlPad
 		public static readonly DependencyPropertyKey CurrentColumnKey = DependencyProperty.RegisterReadOnly("CurrentColumn", typeof(int), typeof(SqlTextEditor), new UIPropertyMetadata(0));
 		public static readonly DependencyPropertyKey CurrentSelectionLengthKey = DependencyProperty.RegisterReadOnly("CurrentSelectionLength", typeof(int?), typeof(SqlTextEditor), new UIPropertyMetadata(null));
 
+		private const double FontSizeMin = 8;
+		private const double FontSizeMax = 72;
+
+		private static readonly double[] FontSizes = { FontSizeMin, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, FontSizeMax };
+
 		public int CurrentLine
 		{
 			get { return (int)GetValue(CurrentLineKey.DependencyProperty); }
@@ -34,7 +39,7 @@ namespace SqlPad
 
 			TextArea.Caret.PositionChanged += CaretPositionChangedHandler;
 			TextArea.SelectionChanged += TextAreaSelectionChangedHandler;
-			//TextArea.PreviewMouseWheel += PreviewMouseWheelHandler;
+			TextArea.PreviewMouseWheel += PreviewMouseWheelHandler;
 		}
 
 		private void TextAreaSelectionChangedHandler(object sender, EventArgs eventArgs)
@@ -108,18 +113,18 @@ namespace SqlPad
 
 		private void PreviewMouseWheelHandler(object sender, MouseWheelEventArgs e)
 		{
-			if (Keyboard.Modifiers != ModifierKeys.Control)
+			if (Keyboard.Modifiers != ModifierKeys.Control || e.Delta == 0)
 			{
 				return;
 			}
 
-			if (e.Delta <= 0 || FontSize >= 50.0)
+			if (e.Delta > 0 && FontSize < FontSizeMax)
 			{
-				FontSize -= 1.0;
+				FontSize = FontSizes.First(s => s > FontSize);
 			}
-			else if (e.Delta > 0 && FontSize > 10.0)
+			else if (e.Delta < 0 && FontSize > FontSizeMin)
 			{
-				FontSize += 1.0;
+				FontSize = FontSizes.Reverse().First(s => s < FontSize);
 			}
 
 			e.Handled = true;
