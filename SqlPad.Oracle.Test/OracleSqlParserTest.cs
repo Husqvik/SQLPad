@@ -1144,10 +1144,17 @@ namespace SqlPad.Oracle.Test
 			// TODO: Precise assertions
 		}
 
-		[Test(Description = @"Tests IGNORE NULLS clause. ")]
-		public void TestIgnoreNullsClause()
+		[Test(Description = @"Tests RESPECT and IGNORE NULLS clause. ")]
+		public void TestRespectAndIgnoreNullsClause()
 		{
-			const string query1 = @"SELECT ""FIRST_VALUE""(SELECTION_ID IGNORE NULLS) OVER () + 1, LAST_VALUE(SELECTION_ID) IGNORE NULLS OVER () + 1 FROM SELECTION";
+			const string query1 =
+@"SELECT
+	""FIRST_VALUE""(SELECTION_ID IGNORE NULLS) OVER () + 1,
+	FIRST_VALUE(SELECTION_ID RESPECT NULLS) OVER () + 1,
+	""LAST_VALUE""(SELECTION_ID) IGNORE NULLS OVER () + 1,
+	LAST_VALUE(SELECTION_ID) RESPECT NULLS OVER () + 1
+FROM SELECTION";
+
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);

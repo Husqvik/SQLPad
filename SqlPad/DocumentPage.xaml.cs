@@ -2001,6 +2001,16 @@ namespace SqlPad
 		{
 			e.CanExecute = _foldingStrategy.FoldingManager.AllFoldings.Any(f => f.IsFolded);
 		}
+
+		private void EditorZoomInHandler(object sender, ExecutedRoutedEventArgs e)
+		{
+			Editor.ZoomIn();
+		}
+
+		private void EditorZoomOutHandler(object sender, ExecutedRoutedEventArgs e)
+		{
+			Editor.ZoomOut();
+		}
 	}
 
 	internal struct ActionResult

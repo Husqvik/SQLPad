@@ -160,6 +160,8 @@
 						<CommandBinding Command="commands:GenericCommands.Save" Executed="SaveCommandExecutedHandler" />
 						<CommandBinding Command="commands:GenericCommands.ShowCodeCompletionOption" Executed="ShowCodeCompletionOptions" CanExecute="CanExecuteShowCodeCompletionHandler" />
 						<CommandBinding Command="commands:GenericCommands.ShowFunctionOverload" Executed="ShowFunctionOverloads" />
+						<CommandBinding Command="commands:GenericCommands.ZoomIn" Executed="EditorZoomInHandler" />
+						<CommandBinding Command="commands:GenericCommands.ZoomOut" Executed="EditorZoomOutHandler" />
 					</sqlPad:SqlTextEditor.CommandBindings>
 
 					<sqlPad:SqlTextEditor.ContextMenu>

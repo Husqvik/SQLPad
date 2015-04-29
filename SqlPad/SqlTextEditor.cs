@@ -111,6 +111,22 @@ namespace SqlPad
 			return Document.GetLineByOffset(offset).LineNumber;
 		}
 
+		public void ZoomIn()
+		{
+			if (FontSize < FontSizeMax)
+			{
+				FontSize = FontSizes.First(s => s > FontSize);
+			}
+		}
+
+		public void ZoomOut()
+		{
+			if (FontSize > FontSizeMin)
+			{
+				FontSize = FontSizes.Reverse().First(s => s < FontSize);
+			}
+		}
+
 		private void PreviewMouseWheelHandler(object sender, MouseWheelEventArgs e)
 		{
 			if (Keyboard.Modifiers != ModifierKeys.Control || e.Delta == 0)
@@ -120,11 +136,11 @@ namespace SqlPad
 
 			if (e.Delta > 0 && FontSize < FontSizeMax)
 			{
-				FontSize = FontSizes.First(s => s > FontSize);
+				ZoomIn();
 			}
 			else if (e.Delta < 0 && FontSize > FontSizeMin)
 			{
-				FontSize = FontSizes.Reverse().First(s => s < FontSize);
+				ZoomOut();
 			}
 
 			e.Handled = true;

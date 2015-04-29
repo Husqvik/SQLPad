@@ -6553,7 +6553,7 @@
         <Sequence>
           <NonTerminal Id="AnalyticFunction" />
           <NonTerminal Id="ParenthesisEnclosedExpressionListWithMandatoryExpressions" />
-          <NonTerminal Id="IgnoreNulls" IsOptional="true" />
+          <NonTerminal Id="RespectOrIgnoreNulls" IsOptional="true" />
           <NonTerminal Id="AnalyticClause" />
         </Sequence>
         <Sequence>
@@ -6569,7 +6569,7 @@
         <Sequence>
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="Expression" />
-          <NonTerminal Id="IgnoreNulls" IsOptional="true" />
+          <NonTerminal Id="RespectOrIgnoreNulls" IsOptional="true" />
           <NonTerminal Id="ExpressionCommaChainedList" IsOptional="true" />
           <Terminal Id="RightParenthesis" />
         </Sequence>
@@ -6593,8 +6593,12 @@
       </Sequences>
     </Rule>
       
-    <Rule StartingNonTerminal="IgnoreNulls">
+    <Rule StartingNonTerminal="RespectOrIgnoreNulls">
       <Sequences>
+        <Sequence>
+          <Terminal Id="Respect" />
+          <Terminal Id="Nulls" />
+        </Sequence>
         <Sequence>
           <Terminal Id="Ignore" />
           <Terminal Id="Nulls" />
@@ -16301,6 +16305,7 @@
     <Terminal Id="Preceding" Value="PRECEDING" />
     <Terminal Id="Following" Value="FOLLOWING" />
     <Terminal Id="Row" Value="ROW" ReservedWord="Sql" />
+    <Terminal Id="Respect" Value="RESPECT" />
     <Terminal Id="Ignore" Value="IGNORE" />
     <Terminal Id="Keep" Value="KEEP" />
 
