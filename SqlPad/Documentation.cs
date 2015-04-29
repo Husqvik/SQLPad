@@ -48,6 +48,8 @@ namespace SqlPad {
         
         private string nameField;
         
+        private string urlField;
+        
         private string valueField;
         
         /// <remarks/>
@@ -58,6 +60,17 @@ namespace SqlPad {
             }
             set {
                 this.nameField = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string Url {
+            get {
+                return this.urlField;
+            }
+            set {
+                this.urlField = value;
             }
         }
         
