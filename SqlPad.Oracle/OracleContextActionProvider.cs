@@ -96,7 +96,7 @@ namespace SqlPad.Oracle
 			canExecuteResult = OracleCommands.CreateScript.CanExecuteHandler(executionContext);
 			if (canExecuteResult)
 			{
-				actionList.Add(new ContextAction(CreateScriptCommand.Title, OracleCommands.CreateScript, executionContext, canExecuteResult.IsLongOperation));
+				actionList.Add(new ContextAction(CreateScriptCommand.Title, OracleCommands.CreateScript, CloneContextWithUseDefaultSettingsOption(executionContext), canExecuteResult.IsLongOperation));
 			}
 
 			if (OracleCommands.AddInsertIntoColumnList.CanExecuteHandler(executionContext))

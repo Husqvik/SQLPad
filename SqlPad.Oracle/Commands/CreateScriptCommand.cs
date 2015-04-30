@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using SqlPad.Commands;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
@@ -67,6 +68,12 @@ namespace SqlPad.Oracle.Commands
 
 		private async Task ExecuteInternal(CancellationToken cancellationToken)
 		{
+			ExecutionContext.EnsureSettingsProviderAvailable();
+
+			var settingsModel = ExecutionContext.SettingsProvider.Settings;
+
+			var storeToClipboard = settingsModel.UseDefaultSettings != null && !settingsModel.UseDefaultSettings();
+
 			var databaseModel = (OracleDatabaseModelBase)ExecutionContext.DocumentRepository.ValidationModels[CurrentNode.Statement].SemanticModel.DatabaseModel;
 
 			var script = await databaseModel.GetObjectScriptAsync(_objectReference, cancellationToken);
@@ -92,13 +99,20 @@ namespace SqlPad.Oracle.Commands
 				builder.Append(';');
 			}
 
-			var addedSegment = new TextSegment
+			if (storeToClipboard)
 			{
-				IndextStart = indextStart,
-				Text = builder.ToString()
-			};
+				Clipboard.SetText(builder.ToString());
+			}
+			else
+			{
+				var addedSegment = new TextSegment
+				{
+					IndextStart = indextStart,
+					Text = builder.ToString()
+				};
 
-			ExecutionContext.SegmentsToReplace.Add(addedSegment);
+				ExecutionContext.SegmentsToReplace.Add(addedSegment);
+			}
 		}
 	}
 }
