@@ -33,6 +33,8 @@ namespace SqlPad
 		INavigationService CreateNavigationService();
 
 		IExecutionPlanViewer CreateExecutionPlanViewer(IDatabaseModel databaseModel);
+
+		IHelpProvider CreateHelpProvider();
 	}
 
 	public interface INavigationService

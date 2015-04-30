@@ -1256,7 +1256,7 @@ FROM
 			_editor.CaretOffset = 17;
 
 			CanExecuteCommand(OracleCommands.CreateScript).ShouldBe(true);
-			ExecuteCommand(OracleCommands.CreateScript);
+			ExecuteCommand(OracleCommands.CreateScript, new TestCommandSettings(new CommandSettingsModel()));
 
 			var expectedResult = statementText + ";" + Environment.NewLine + Environment.NewLine + OracleTestDatabaseModel.SelectionTableCreateScript + ";";
 			_editor.Text.ShouldBe(expectedResult);

@@ -41,6 +41,7 @@ namespace SqlPad
 		private IToolTipProvider _toolTipProvider;
 		private INavigationService _navigationService;
 		private IExecutionPlanViewer _executionPlanViewer;
+		private IHelpProvider _createHelpProvider;
 
 		private MultiNodeEditor _multiNodeEditor;
 		private CancellationTokenSource _statementExecutionCancellationTokenSource;
@@ -434,6 +435,7 @@ namespace SqlPad
 			_statementFormatter = _infrastructureFactory.CreateSqlFormatter(new SqlFormatterOptions());
 			_toolTipProvider = _infrastructureFactory.CreateToolTipProvider();
 			_navigationService = _infrastructureFactory.CreateNavigationService();
+			_createHelpProvider = _infrastructureFactory.CreateHelpProvider();
 
 			_colorizingTransformer.SetParser(_infrastructureFactory.CreateParser());
 
@@ -2010,6 +2012,12 @@ namespace SqlPad
 		private void EditorZoomOutHandler(object sender, ExecutedRoutedEventArgs e)
 		{
 			Editor.ZoomOut();
+		}
+
+		private void ShowHelpHandler(object sender, ExecutedRoutedEventArgs e)
+		{
+			var executionContext = CommandExecutionContext.Create(Editor, _sqlDocumentRepository);
+			_createHelpProvider.ShowHelp(executionContext);
 		}
 	}
 

@@ -76,6 +76,11 @@ namespace SqlPad.Oracle
 		{
 			return new ExecutionPlanViewer((OracleDatabaseModelBase)databaseModel);
 		}
+
+		public IHelpProvider CreateHelpProvider()
+		{
+			return new OracleHelpProvider();
+		}
 		#endregion
 	}
 }

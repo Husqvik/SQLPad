@@ -162,6 +162,7 @@
 						<CommandBinding Command="commands:GenericCommands.ShowFunctionOverload" Executed="ShowFunctionOverloads" />
 						<CommandBinding Command="commands:GenericCommands.ZoomIn" Executed="EditorZoomInHandler" />
 						<CommandBinding Command="commands:GenericCommands.ZoomOut" Executed="EditorZoomOutHandler" />
+						<CommandBinding Command="commands:GenericCommands.Help" Executed="ShowHelpHandler" />
 					</sqlPad:SqlTextEditor.CommandBindings>
 
 					<sqlPad:SqlTextEditor.ContextMenu>

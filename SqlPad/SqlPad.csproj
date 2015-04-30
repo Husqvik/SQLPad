@@ -101,6 +101,7 @@
     <Compile Include="BindVariableModel.cs" />
     <Compile Include="Bookmarks\IconMargin.cs" />
     <Compile Include="CellValueConverter.cs" />
+    <Compile Include="IHelpProvider.cs" />
     <Compile Include="CompilationErrorArgs.cs" />
     <Compile Include="ComplexTypeViewer.xaml.cs">
       <DependentUpon>ComplexTypeViewer.xaml</DependentUpon>

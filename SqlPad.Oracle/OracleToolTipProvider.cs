@@ -39,6 +39,15 @@ namespace SqlPad.Oracle
 			}
 		}
 
+		public static void ShowSqlFunctionDocumentation(OracleProgramIdentifier identifier)
+		{
+			DocumentationFunction documentation;
+			if ((String.IsNullOrEmpty(identifier.Package) || String.Equals(identifier.Package, OracleDatabaseModelBase.PackageBuiltInFunction)) && SqlFunctionDocumentation.TryGetValue(identifier.Name, out documentation))
+			{
+				Process.Start(documentation.Url);
+			}
+		}
+
 		public IToolTip GetToolTip(SqlDocumentRepository sqlDocumentRepository, int cursorPosition)
 		{
 			if (sqlDocumentRepository == null)
