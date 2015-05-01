@@ -47,6 +47,17 @@ namespace SqlPad
 			return false;
 		}
 
+		public static bool AddIfNotNull<T>(this ICollection<T> collection, T item)
+		{
+			if (item == null)
+			{
+				return false;
+			}
+
+			collection.Add(item);
+			return true;
+		}
+
 		public static ICollection<T> AddRange<T>(this ICollection<T> collection, IEnumerable<T> items)
 		{
 			foreach (var item in items)

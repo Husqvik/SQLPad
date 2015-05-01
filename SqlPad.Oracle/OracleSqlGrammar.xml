@@ -3787,11 +3787,7 @@
           <NonTerminal Id="Expression" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="CastOrXmlCast" />
-          <Terminal Id="LeftParenthesis" />
-          <NonTerminal Id="ExpressionOrMultiset" />
-          <NonTerminal Id="AsDataType" />
-          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="CastOrXmlCastFunction" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
@@ -3895,6 +3891,26 @@
         </Sequence>
        <Sequence>
           <Terminal Id="XmlCast" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="CastOrXmlCastFunction">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="CastOrXmlCast" />
+          <NonTerminal Id="CastFunctionParameterClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="CastFunctionParameterClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="ExpressionOrMultiset" />
+          <NonTerminal Id="AsDataType" />
+          <Terminal Id="RightParenthesis" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -7193,6 +7209,14 @@
       <Sequences>
         <Sequence>
           <Terminal Id="XmlElement" />
+          <NonTerminal Id="XmlElementParameterClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="XmlElementParameterClause">
+      <Sequences>
+        <Sequence>
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="EntityEscapingOrNoEntityEscaping" IsOptional="true" />
           <NonTerminal Id="XmlNameOrEvaluatedName" />
@@ -7215,9 +7239,17 @@
     <Rule StartingNonTerminal="ExpressionAsXmlAliasList">
       <Sequences>
         <Sequence>
+          <NonTerminal Id="ExpressionAsXmlAlias" />
+          <NonTerminal Id="ExpressionAsXmlAliasListChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ExpressionAsXmlAlias">
+      <Sequences>
+        <Sequence>
           <NonTerminal Id="Expression" />
           <NonTerminal Id="AsXmlAlias" IsOptional="true" />
-          <NonTerminal Id="ExpressionAsXmlAliasListChained" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -7554,6 +7586,14 @@
       <Sequences>
         <Sequence>
           <Terminal Id="XmlExists" />
+          <NonTerminal Id="XmlExistsParameterClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="XmlExistsParameterClause">
+      <Sequences>
+        <Sequence>
           <Terminal Id="LeftParenthesis" />
           <Terminal Id="StringLiteral" Comment="XQuery string" />
           <NonTerminal Id="XmlPassingClause" IsOptional="true" />
@@ -7838,6 +7878,14 @@
       <Sequences>
         <Sequence>
           <Terminal Id="XmlQuery" />
+          <NonTerminal Id="XmlQueryParameterClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="XmlQueryParameterClause">
+      <Sequences>
+        <Sequence>
           <Terminal Id="LeftParenthesis" />
           <Terminal Id="StringLiteral" />
           <NonTerminal Id="XmlPassingClause" IsOptional="true" />
@@ -7852,6 +7900,14 @@
       <Sequences>
         <Sequence>
           <NonTerminal Id="XmlSimpleFunction" />
+          <NonTerminal Id="XmlSimpleFunctionParameterClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="XmlSimpleFunctionParameterClause">
+      <Sequences>
+        <Sequence>
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="ExpressionAsXmlAliasWithMandatoryAsList" />
           <Terminal Id="RightParenthesis" />
@@ -7886,6 +7942,14 @@
       <Sequences>
         <Sequence>
           <Terminal Id="XmlParse" />
+          <NonTerminal Id="XmlParseFunctionParameterClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="XmlParseFunctionParameterClause">
+      <Sequences>
+        <Sequence>
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="DocumentOrContent" />
           <NonTerminal Id="Expression" />
@@ -7910,6 +7974,14 @@
       <Sequences>
         <Sequence>
           <Terminal Id="XmlRoot" />
+          <NonTerminal Id="XmlRootFunctionParameterClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="XmlRootFunctionParameterClause">
+      <Sequences>
+        <Sequence>
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="Expression" />
           <Terminal Id="Comma" />
@@ -7925,6 +7997,14 @@
       <Sequences>
         <Sequence>
           <Terminal Id="XmlSerialize" />
+          <NonTerminal Id="XmlSerializeFunctionParameterClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="XmlSerializeFunctionParameterClause">
+      <Sequences>
+        <Sequence>
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="DocumentOrContent" />
           <NonTerminal Id="Expression" />

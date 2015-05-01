@@ -17,6 +17,15 @@ namespace SqlPad.Oracle
 			Terminals.Level,
 			Terminals.User,
 			Terminals.NegationOrNull,
+			//Terminals.XmlAggregate,
+			Terminals.XmlCast,
+			Terminals.XmlElement,
+			Terminals.XmlExists,
+			//Terminals.XmlForest,
+			Terminals.XmlParse,
+			Terminals.XmlQuery,
+			Terminals.XmlRoot,
+			Terminals.XmlSerialize,
 			NonTerminals.AggregateFunction,
 			NonTerminals.AnalyticFunction,
 			NonTerminals.WithinGroupAggregationFunction
@@ -33,6 +42,7 @@ namespace SqlPad.Oracle
 		private readonly Dictionary<OracleQueryBlock, ICollection<StatementGrammarNode>> _accessibleQueryBlockRoot = new Dictionary<OracleQueryBlock, ICollection<StatementGrammarNode>>();
 		private readonly Dictionary<OracleDataObjectReference, ICollection<KeyValuePair<StatementGrammarNode, string>>> _objectReferenceCteRootNodes = new Dictionary<OracleDataObjectReference, ICollection<KeyValuePair<StatementGrammarNode, string>>>();
 		private readonly HashSet<OracleQueryBlock> _unreferencedQueryBlocks = new HashSet<OracleQueryBlock>();
+		private readonly List<OracleProgramMetadata> _statementDefinedFunctions = new List<OracleProgramMetadata>();
 		
 		private OracleQueryBlock _mainQueryBlock;
 		private Dictionary<StatementGrammarNode, OracleQueryBlock> _queryBlockNodes = new Dictionary<StatementGrammarNode, OracleQueryBlock>();
@@ -157,6 +167,19 @@ namespace SqlPad.Oracle
 					if (literal.Terminal != null && String.Equals(literal.Terminal.Id, Terminals.StringLiteral))
 					{
 						_literals.Add(literal);
+					}
+				}
+				else if (String.Equals(terminal.Id, Terminals.With) && String.Equals(terminal.ParentNode.Id, NonTerminals.SubqueryFactoringClause))
+				{
+					var plSqlFunctionIdentifiers = terminal.ParentNode.GetDescendants(NonTerminals.PlSqlDeclarations)
+						.Select(d => d[NonTerminals.FunctionDefinition, NonTerminals.FunctionHeading, Terminals.Identifier])
+						.Where(i => i != null);
+
+					foreach (var identifier in plSqlFunctionIdentifiers)
+					{
+						// TODO: Add parameters and other metadata
+						var metadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(null, null, identifier.Token.Value), false, false, false, false, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, false);
+						_statementDefinedFunctions.Add(metadata);
 					}
 				}
 
@@ -2248,7 +2271,7 @@ namespace SqlPad.Oracle
 					{
 						column.IsAsterisk = true;
 
-						var prefixNonTerminal = asteriskNode.ParentNode.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.Prefix);
+						var prefixNonTerminal = asteriskNode.ParentNode.ChildNodes.SingleOrDefault(n => String.Equals(n.Id, NonTerminals.Prefix));
 						var columnReference = CreateColumnReference(column, queryBlock, column, StatementPlacement.SelectList, asteriskNode, prefixNonTerminal);
 						column.ColumnReferences.Add(columnReference);
 
@@ -2266,7 +2289,7 @@ namespace SqlPad.Oracle
 						if (identifiers.Length == 1)
 						{
 							var parentExpression = identifiers[0].ParentNode.ParentNode.ParentNode;
-							column.IsDirectReference = parentExpression.Id == NonTerminals.Expression && parentExpression.ChildNodes.Count == 1 && parentExpression.ParentNode.Id == NonTerminals.AliasedExpression;
+							column.IsDirectReference = String.Equals(parentExpression.Id, NonTerminals.Expression) && parentExpression.ChildNodes.Count == 1 && String.Equals(parentExpression.ParentNode.Id, NonTerminals.AliasedExpression);
 						}
 						
 						var columnReferenceAdded = column.ColumnReferences.Count > previousColumnReferences;
@@ -2275,7 +2298,7 @@ namespace SqlPad.Oracle
 							column.AliasNode = identifiers[0];
 						}
 
-						var grammarSpecificFunctions = columnExpressionIdentifiers.Where(t => String.Equals(t.Id, Terminals.Count) || String.Equals(t.Id, Terminals.NegationOrNull))
+						var grammarSpecificFunctions = columnExpressionIdentifiers.Where(t => t.Id.In(Terminals.Count, Terminals.NegationOrNull/*, Terminals.XmlAggregate*/, Terminals.XmlCast, Terminals.XmlElement, /*Terminals.XmlForest, */Terminals.XmlRoot, Terminals.XmlParse, Terminals.XmlQuery, Terminals.XmlSerialize))
 							.Concat(columnExpressionIdentifiers.Where(t => t.ParentNode.Id.In(NonTerminals.AggregateFunction, NonTerminals.AnalyticFunction, NonTerminals.WithinGroupAggregationFunction)).Select(t => t.ParentNode));
 
 						CreateGrammarSpecificFunctionReferences(grammarSpecificFunctions, queryBlock, column.ProgramReferences, StatementPlacement.SelectList, column);
@@ -2292,11 +2315,21 @@ namespace SqlPad.Oracle
 			{
 				var rootNode = String.Equals(identifierNode.Id, Terminals.NegationOrNull)
 					? identifierNode.GetAncestor(NonTerminals.Condition)
-					: identifierNode.GetAncestor(NonTerminals.AnalyticFunctionCall) ?? identifierNode.GetAncestor(NonTerminals.WithinGroupAggregationClause) ?? identifierNode.GetAncestor(NonTerminals.AggregateFunctionCall);
+					: identifierNode.GetAncestor(NonTerminals.AnalyticFunctionCall)
+					  ?? identifierNode.GetAncestor(NonTerminals.WithinGroupAggregationClause)
+					  ?? identifierNode.GetAncestor(NonTerminals.AggregateFunctionCall)
+					  ?? identifierNode.GetAncestor(NonTerminals.CastOrXmlCastFunction)
+					  ?? identifierNode.GetAncestor(NonTerminals.XmlElementClause)
+					  //?? identifierNode.GetAncestor(NonTerminals.XmlAggregateClause)
+					  ?? identifierNode.GetAncestor(NonTerminals.XmlSimpleFunctionClause)
+					  ?? identifierNode.GetAncestor(NonTerminals.XmlParseFunction)
+					  ?? identifierNode.GetAncestor(NonTerminals.XmlQueryClause)
+					  ?? identifierNode.GetAncestor(NonTerminals.XmlRootFunction)
+					  ?? identifierNode.GetAncestor(NonTerminals.XmlSerializeFunction);
 				
 				var analyticClauseNode = rootNode.GetDescendants(NonTerminals.AnalyticClause).FirstOrDefault();
 
-				var parameterList = rootNode.ChildNodes.SingleOrDefault(n => n.Id.In(NonTerminals.ParenthesisEnclosedExpressionListWithMandatoryExpressions, NonTerminals.CountAsteriskParameter, NonTerminals.AggregateFunctionParameter, NonTerminals.ParenthesisEnclosedExpressionListWithIgnoreNulls, NonTerminals.ParenthesisEnclosedCondition));
+				var parameterList = rootNode.ChildNodes.SingleOrDefault(n => n.Id.In(NonTerminals.ParenthesisEnclosedExpressionListWithMandatoryExpressions, NonTerminals.CountAsteriskParameter, NonTerminals.AggregateFunctionParameter, NonTerminals.ParenthesisEnclosedExpressionListWithIgnoreNulls, NonTerminals.ParenthesisEnclosedCondition, NonTerminals.XmlElementParameterClause, NonTerminals.XmlParseFunctionParameterClause, NonTerminals.XmlRootFunctionParameterClause, NonTerminals.XmlSerializeFunctionParameterClause, NonTerminals.XmlSimpleFunctionParameterClause, NonTerminals.XmlQueryParameterClause, NonTerminals.CastFunctionParameterClause));
 				var parameterNodes = new List<StatementGrammarNode>();
 				StatementGrammarNode firstParameterExpression = null;
 				if (parameterList != null)
@@ -2308,6 +2341,26 @@ namespace SqlPad.Oracle
 							break;
 						case NonTerminals.CountAsteriskParameter:
 							parameterNodes.Add(parameterList[Terminals.Asterisk]);
+							break;
+						case NonTerminals.CastFunctionParameterClause:
+							parameterNodes.AddIfNotNull(parameterList[NonTerminals.ExpressionOrMultiset]);
+							parameterNodes.AddIfNotNull(parameterList[NonTerminals.AsDataType, NonTerminals.DataType]);
+							break;
+						case NonTerminals.XmlQueryParameterClause:
+							parameterNodes.AddIfNotNull(parameterList[Terminals.StringLiteral]);
+							// TODO: Add passing by parameters
+							break;
+						case NonTerminals.XmlElementParameterClause:
+							var xmlElementParameter = parameterList[NonTerminals.XmlNameOrEvaluatedName];
+							if (xmlElementParameter != null)
+							{
+								//var xmlElementParameters = xmlElementExpressionList.GetPathFilterDescendants(n => !String.Equals(n.Id, NonTerminals.XmlElementClause), NonTerminals.ExpressionAsXmlAlias);
+								parameterNodes.AddIfNotNull(xmlElementParameter[Terminals.XmlAlias]);
+								parameterNodes.AddIfNotNull(xmlElementParameter[NonTerminals.Expression]);
+							}
+							break;
+						case NonTerminals.XmlSerializeFunctionParameterClause:
+							parameterNodes.AddIfNotNull(parameterList[NonTerminals.Expression]);
 							break;
 						case NonTerminals.AggregateFunctionParameter:
 						case NonTerminals.ParenthesisEnclosedExpressionListWithIgnoreNulls:

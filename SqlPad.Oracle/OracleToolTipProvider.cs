@@ -100,6 +100,11 @@ namespace SqlPad.Oracle
 					case Terminals.ListAggregation:
 					case Terminals.NegationOrNull:
 					case Terminals.RowIdPseudoColumn:
+					case Terminals.XmlElement:
+					case Terminals.XmlSerialize:
+					case Terminals.XmlParse:
+					case Terminals.XmlQuery:
+					case Terminals.XmlRoot:
 					case Terminals.Identifier:
 						var columnReference = semanticModel.GetColumnReference(node);
 						if (columnReference == null)
