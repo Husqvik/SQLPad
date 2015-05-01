@@ -13,6 +13,8 @@ namespace SqlPad.Oracle
 		private readonly List<OracleSelectListColumn> _columns = new List<OracleSelectListColumn>();
 		private readonly List<OracleSelectListColumn> _attachedColumns = new List<OracleSelectListColumn>();
 		private readonly List<OracleSelectListColumn> _asteriskColumns = new List<OracleSelectListColumn>();
+		private readonly List<OracleQueryBlock> _commonTableExpressions = new List<OracleQueryBlock>();
+		private readonly List<OracleProgramMetadata> _attachedFunctions = new List<OracleProgramMetadata>();
 		
 		private OracleDataObjectReference _selfObjectReference;
 		private bool? _hasRemoteAsteriskReferences;
@@ -96,6 +98,10 @@ namespace SqlPad.Oracle
 		
 		public bool IsRedundant { get; set; }
 
+		public IList<OracleProgramMetadata> AttachedFunctions { get { return _attachedFunctions; } }
+		
+		public IList<OracleQueryBlock> CommonTableExpressions { get { return _commonTableExpressions; } }
+		
 		public IReadOnlyList<OracleSelectListColumn> Columns { get { return _columns; } }
 
 		public IReadOnlyList<OracleSelectListColumn> AttachedColumns { get { return _attachedColumns; } }
@@ -132,7 +138,7 @@ namespace SqlPad.Oracle
 		
 		public OracleQueryBlock PrecedingConcatenatedQueryBlock { get; set; }
 
-		public OracleQueryBlock ParentCorrelatedQueryBlock { get; set; }
+		public OracleQueryBlock OuterCorrelatedQueryBlock { get; set; }
 
 		public IEnumerable<OracleQueryBlock> AllPrecedingConcatenatedQueryBlocks
 		{
