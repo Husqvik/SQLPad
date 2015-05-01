@@ -7606,6 +7606,14 @@
       <Sequences>
         <Sequence>
           <Terminal Id="JsonValue" />
+          <NonTerminal Id="JsonValueParameterClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="JsonValueParameterClause">
+      <Sequences>
+        <Sequence>
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="Expression" />
           <Terminal Id="Comma" />
@@ -7762,6 +7770,14 @@
       <Sequences>
         <Sequence>
           <Terminal Id="JsonQuery" />
+          <NonTerminal Id="JsonQueryParameterClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="JsonQueryParameterClause">
+      <Sequences>
+        <Sequence>
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="Expression" />
           <Terminal Id="Comma" />
@@ -7840,6 +7856,14 @@
       <Sequences>
         <Sequence>
           <Terminal Id="JsonExists" />
+          <NonTerminal Id="JsonExistsParameterClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="JsonExistsParameterClause">
+      <Sequences>
+        <Sequence>
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="Expression" />
           <Terminal Id="Comma" />

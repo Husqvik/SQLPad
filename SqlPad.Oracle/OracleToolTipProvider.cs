@@ -100,6 +100,9 @@ namespace SqlPad.Oracle
 					case Terminals.ListAggregation:
 					case Terminals.NegationOrNull:
 					case Terminals.RowIdPseudoColumn:
+					case Terminals.JsonQuery:
+					case Terminals.JsonExists:
+					case Terminals.JsonValue:
 					case Terminals.XmlElement:
 					case Terminals.XmlSerialize:
 					case Terminals.XmlParse:

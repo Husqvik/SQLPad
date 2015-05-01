@@ -1,4 +1,4 @@
-SQLPad 0.2.0.159
+SQLPad 0.2.0.160
 ================
 
 SQLPad is an experimental SQL editor focused to quick and comfortable work.
@@ -94,6 +94,8 @@ CTRL + SHIFT + Comma       - Decrease editor font size
 CTRL + SHIFT + Period      - Increase editor font size
 
 ALT + INSERT               - Code generation items
+
+F1                         - Show documentation (subset of SQL functions only)
 
 Context actions
 ---------------
