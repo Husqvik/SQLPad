@@ -164,7 +164,9 @@ namespace SqlPad.Oracle
 					return
 						new OracleColumnModel
 						{
-							Name = c.ColumnDescription.Name,
+							Name = String.IsNullOrEmpty(c.ColumnDescription.Name)
+								? String.Join(null, c.RootNode.Terminals.Select(t => t.Token.Value))
+								: c.ColumnDescription.Name,
 							FullTypeName = c.ColumnDescription.FullTypeName,
 							ColumnIndex = i + 1,
 							RowSourceName = validObjectReference == null ? String.Empty : validObjectReference.FullyQualifiedObjectName.ToString()
@@ -400,7 +402,7 @@ namespace SqlPad.Oracle
 			var documentationText = String.Empty;
 			DocumentationFunction documentationFunction;
 			if ((String.IsNullOrEmpty(functionReference.Metadata.Identifier.Owner) || String.Equals(functionReference.Metadata.Identifier.Package, OracleDatabaseModelBase.PackageBuiltInFunction)) &&
-			     SqlFunctionDocumentation.TryGetValue(functionReference.Metadata.Identifier.Name, out documentationFunction))
+				functionReference.Metadata.Type != ProgramType.StatementFunction && SqlFunctionDocumentation.TryGetValue(functionReference.Metadata.Identifier.Name, out documentationFunction))
 			{
 				documentationText = documentationFunction.Value;
 			}

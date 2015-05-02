@@ -1569,6 +1569,40 @@ MODEL
 		}
 
 		[Test(Description = @"")]
+		public void TestWithDefinedFunctionReferences()
+		{
+			const string query1 =
+@"WITH
+	FUNCTION F1(p IN NUMBER) RETURN NUMBER AS BEGIN RETURN DBMS_RANDOM.VALUE; END;
+	FUNCTION COUNT(p IN NUMBER) RETURN NUMBER AS BEGIN RETURN DBMS_RANDOM.VALUE; END;
+SELECT F1(ROWNUM) RESULT1, COUNT(ROWNUM), F2(ROWNUM), T.* FROM (
+	WITH
+		FUNCTION F2(p IN NUMBER) RETURN NUMBER AS BEGIN RETURN F1(p); END;
+	SELECT F2(NULL) RESULT2, F1(NULL) FROM DUAL
+) T";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.QueryBlocks.Count.ShouldBe(2);
+			var queryBlocks = semanticModel.QueryBlocks.OrderBy(qb => qb.RootNode.SourcePosition.IndexStart).ToArray();
+
+			var programReferences = queryBlocks[0].AllProgramReferences.ToArray();
+			programReferences.Length.ShouldBe(3);
+			programReferences[0].Metadata.ShouldNotBe(null);
+			programReferences[1].Metadata.ShouldNotBe(null);
+			programReferences[1].Metadata.Identifier.Name.ShouldBe("\"COUNT\"");
+			programReferences[1].Metadata.Type.ShouldBe(ProgramType.Function);
+			programReferences[1].Metadata.IsAggregate.ShouldBe(true);
+			programReferences[2].Metadata.ShouldBe(null);
+
+			programReferences = queryBlocks[1].AllProgramReferences.ToArray();
+			programReferences.Length.ShouldBe(2);
+			programReferences[0].Metadata.ShouldNotBe(null);
+			programReferences[1].Metadata.ShouldNotBe(null);
+		}
+
+		[Test(Description = @"")]
 		public void TestXmlTablePassingExpressionWithInaccessibleReference()
 		{
 			const string query1 =

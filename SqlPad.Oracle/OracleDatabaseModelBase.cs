@@ -273,7 +273,7 @@ namespace SqlPad.Oracle
 
 		private static OracleProgramMetadata TryFindProgramOverload(IEnumerable<OracleProgramMetadata> functionMetadataCollection, string normalizedName, int parameterCount, bool hasAnalyticClause)
 		{
-			return functionMetadataCollection.Where(m => m != null && m.Type != ProgramType.Procedure&& String.Equals(m.Identifier.Name, normalizedName))
+			return functionMetadataCollection.Where(m => m != null && m.Type != ProgramType.Procedure && String.Equals(m.Identifier.Name, normalizedName))
 				.OrderBy(m => Math.Abs(parameterCount - m.Parameters.Count + 1))
 				.ThenBy(m => hasAnalyticClause ? !m.IsAnalytic : m.IsAnalytic)
 				.FirstOrDefault();

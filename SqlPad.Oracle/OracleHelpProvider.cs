@@ -20,7 +20,7 @@ namespace SqlPad.Oracle
 			}
 
 			var programReference = semanticModel.GetProgramReference(terminal);
-			if (programReference == null || programReference.Metadata == null)
+			if (programReference == null || programReference.Metadata == null || programReference.Metadata.Type == ProgramType.StatementFunction)
 			{
 				return;
 			}

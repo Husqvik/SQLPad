@@ -186,6 +186,7 @@ namespace SqlPad.Oracle
 	{
 		Procedure,
 		Function,
+		StatementFunction,
 		ObjectConstructor,
 		CollectionConstructor,
 		MemberFunction

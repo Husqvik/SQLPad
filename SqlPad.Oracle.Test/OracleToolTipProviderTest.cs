@@ -856,6 +856,23 @@ SELECT * FROM CTE";
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestAsteriskTooltipWithUnnamedColumn()
+		{
+			const string query = @"SELECT * FROM (SELECT NVL(0, 0) FROM DUAL) T";
+			_documentRepository.UpdateStatements(query);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 7);
+			toolTip.Control.ShouldBeTypeOf<ToolTipAsterisk>();
+			var toolTipSequence = (ToolTipAsterisk)toolTip.Control;
+			var columns = toolTipSequence.Columns.ToArray();
+			columns.Length.ShouldBe(1);
+			columns[0].Name.ShouldBe("NVL(0,0)");
+			columns[0].FullTypeName.ShouldBe(String.Empty);
+			columns[0].RowSourceName.ShouldBe("T");
+			columns[0].ColumnIndex.ShouldBe(1);
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestExplicitPartitionTooltip()
 		{
 			const string query = "SELECT * FROM INVOICES PARTITION (P2015)";

@@ -141,6 +141,7 @@
     <Compile Include="OracleFoldingSectionProvider.cs" />
     <Compile Include="OracleFunctionMatcher.cs" />
     <Compile Include="OracleHelpProvider.cs" />
+    <Compile Include="OracleLiteral.cs" />
     <Compile Include="OraclePlSqlStatementSemanticModel.cs" />
     <Compile Include="OracleProgramMetadata.cs" />
     <Compile Include="OracleProgramIdentifier.cs" />

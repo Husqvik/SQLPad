@@ -184,9 +184,37 @@ namespace SqlPad.Oracle
 						var subqueryDefinedFunctions = new List<OracleProgramMetadata>();
 						foreach (var identifier in plSqlFunctionIdentifiers)
 						{
-							// TODO: Add parameters and other metadata
-							var metadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(null, null, identifier.Token.Value), false, false, false, false, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, false);
+							var metadata = new OracleProgramMetadata(ProgramType.StatementFunction, OracleProgramIdentifier.CreateFromValues(null, null, identifier.Token.Value), false, false, false, false, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, false);
 							subqueryDefinedFunctions.Add(metadata);
+
+							// TODO: Resolve parameter data types
+							metadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, null, OracleObjectIdentifier.Empty, false));
+
+							var parameterDeckarations = identifier.ParentNode[NonTerminals.ParenthesisEnclosedParameterDeclarationList, NonTerminals.ParameterDeclarationList];
+							if (parameterDeckarations == null)
+							{
+								continue;
+							}
+
+							var parameterIndex = 0;
+							foreach (var parameterDeclaration in parameterDeckarations.GetDescendants(NonTerminals.ParameterDeclaration))
+							{
+								var effectiveParameterDeclaration = String.Equals(parameterDeclaration[0].Id, NonTerminals.CursorParameterDeclaration)
+									? parameterDeclaration[0]
+									: parameterDeclaration;
+							
+								parameterIndex++;
+								var parameterName = effectiveParameterDeclaration[Terminals.ParameterIdentifier].Token.Value.ToQuotedIdentifier();
+								var direction = effectiveParameterDeclaration[Terminals.Out] == null ? ParameterDirection.Input : ParameterDirection.Output;
+								if (direction == ParameterDirection.Output && effectiveParameterDeclaration[Terminals.In] != null)
+								{
+									direction = ParameterDirection.InputOutput;
+								}
+
+								var isOptional = effectiveParameterDeclaration[NonTerminals.VariableDeclarationDefaultValue] != null;
+
+								metadata.AddParameter(new OracleProgramParameterMetadata(parameterName, parameterIndex, parameterIndex, 0, direction, null, OracleObjectIdentifier.Empty, isOptional));
+							}
 						}
 
 						statementDefinedFunctions.Add(queryBlockRoot, subqueryDefinedFunctions);
@@ -228,7 +256,8 @@ namespace SqlPad.Oracle
 					var ownerQueryBlockRoot = GetQueryBlockRootFromNestedQuery(nestedQuery);
 					if (ownerQueryBlockRoot != null)
 					{
-						_queryBlockNodes[ownerQueryBlockRoot].CommonTableExpressions.Add(queryBlock);
+						queryBlock.Parent = _queryBlockNodes[ownerQueryBlockRoot];
+						queryBlock.Parent.AddCommonTableExpressions(queryBlock);
 					}
 				}
 				else
@@ -238,6 +267,11 @@ namespace SqlPad.Oracle
 					{
 						queryBlock.Type = QueryBlockType.Normal;
 						queryBlock.AliasNode = selfTableReference[Terminals.ObjectAlias];
+						var parentQueryBlockRoot = selfTableReference.GetAncestor(NonTerminals.QueryBlock);
+						if (parentQueryBlockRoot != null)
+						{
+							queryBlock.Parent = _queryBlockNodes[parentQueryBlockRoot];
+						}
 					}
 				}
 
@@ -1737,20 +1771,34 @@ namespace SqlPad.Oracle
 		private OracleProgramMetadata UpdateFunctionReferenceWithMetadata(OracleProgramReference programReference)
 		{
 			if (IsSimpleModel || programReference.DatabaseLinkNode != null)
+			{
 				return null;
+			}
 
 			var owner = String.IsNullOrEmpty(programReference.FullyQualifiedObjectName.NormalizedOwner)
 				? _databaseModel.CurrentSchema
 				: programReference.FullyQualifiedObjectName.NormalizedOwner;
 
 			var originalIdentifier = OracleProgramIdentifier.CreateFromValues(owner, programReference.FullyQualifiedObjectName.NormalizedName, programReference.NormalizedName);
-			var parameterCount = programReference.ParameterReferences == null ? 0 : programReference.ParameterReferences.Count;
 			var hasAnalyticClause = programReference.AnalyticClauseNode != null;
+			var parameterCount = programReference.ParameterReferences == null ? 0 : programReference.ParameterReferences.Count;
 			var result = _databaseModel.GetProgramMetadata(originalIdentifier, parameterCount, true, hasAnalyticClause);
 			if (result.Metadata == null && !String.IsNullOrEmpty(originalIdentifier.Package) && String.IsNullOrEmpty(programReference.FullyQualifiedObjectName.NormalizedOwner))
 			{
 				var identifier = OracleProgramIdentifier.CreateFromValues(originalIdentifier.Package, null, originalIdentifier.Name);
 				result = _databaseModel.GetProgramMetadata(identifier, parameterCount, false, hasAnalyticClause);
+			}
+
+			if (result.Metadata == null && programReference.Owner != null && programReference.ObjectNode == null)
+			{
+				var attachedFunction = programReference.Owner.AccessibleAttachedFunctions
+					.OrderBy(m => Math.Abs(parameterCount - m.Parameters.Count + 1))
+					.FirstOrDefault(m => String.Equals(m.Identifier.Name, programReference.NormalizedName));
+
+				if (attachedFunction != null)
+				{
+					return programReference.Metadata = attachedFunction;
+				}
 			}
 
 			if (result.Metadata == null && String.IsNullOrEmpty(programReference.FullyQualifiedObjectName.NormalizedOwner))

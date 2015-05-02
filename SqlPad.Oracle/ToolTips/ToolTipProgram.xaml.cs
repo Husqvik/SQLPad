@@ -42,6 +42,11 @@ namespace SqlPad.Oracle.ToolTips
 
 		private static string BuildTypeLabel(OracleProgramMetadata metadata)
 		{
+			if (metadata.Type == ProgramType.StatementFunction)
+			{
+				return "Statement defined function";
+			}
+
 			var label = String.IsNullOrEmpty(metadata.Identifier.Owner)
 				? "SQL "
 				: metadata.IsBuiltIn ? "Built-in " : null;

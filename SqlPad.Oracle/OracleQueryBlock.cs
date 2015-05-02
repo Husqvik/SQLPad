@@ -99,8 +99,24 @@ namespace SqlPad.Oracle
 		public bool IsRedundant { get; set; }
 
 		public IList<OracleProgramMetadata> AttachedFunctions { get { return _attachedFunctions; } }
+
+		public IEnumerable<OracleProgramMetadata> AccessibleAttachedFunctions
+		{
+			get { return GetAccessibleAttachedFunctions(this); }
+		}
+
+		private static IEnumerable<OracleProgramMetadata> GetAccessibleAttachedFunctions(OracleQueryBlock queryBlock)
+		{
+			var attachedFunctions = (IEnumerable<OracleProgramMetadata>)queryBlock._attachedFunctions;
+			if (queryBlock.Parent != null)
+			{
+				attachedFunctions = attachedFunctions.Concat(GetAccessibleAttachedFunctions(queryBlock.Parent));
+			}
+
+			return attachedFunctions;
+		}
 		
-		public IList<OracleQueryBlock> CommonTableExpressions { get { return _commonTableExpressions; } }
+		public IReadOnlyList<OracleQueryBlock> CommonTableExpressions { get { return _commonTableExpressions; } }
 		
 		public IReadOnlyList<OracleSelectListColumn> Columns { get { return _columns; } }
 
@@ -139,6 +155,8 @@ namespace SqlPad.Oracle
 		public OracleQueryBlock PrecedingConcatenatedQueryBlock { get; set; }
 
 		public OracleQueryBlock OuterCorrelatedQueryBlock { get; set; }
+		
+		public OracleQueryBlock Parent { get; set; }
 
 		public IEnumerable<OracleQueryBlock> AllPrecedingConcatenatedQueryBlocks
 		{
@@ -179,6 +197,31 @@ namespace SqlPad.Oracle
 
 			_columns.Add(column);
 			_attachedColumns.Add(column);
+		}
+
+		public void AddCommonTableExpressions(OracleQueryBlock queryBlock)
+		{
+			if (queryBlock == null)
+			{
+				throw new ArgumentNullException("queryBlock");
+			}
+
+			if (queryBlock.Type != QueryBlockType.CommonTableExpression)
+			{
+				throw new ArgumentException("Query block must be of type 'CommonTableExpression'. ", "queryBlock");
+			}
+
+			CheckIfFrozen();
+
+			var index = _commonTableExpressions.FindIndex(qb => qb.RootNode.SourcePosition.IndexStart > queryBlock.RootNode.SourcePosition.IndexEnd);
+			if (index == -1)
+			{
+				_commonTableExpressions.Add(queryBlock);
+			}
+			else
+			{
+				_commonTableExpressions.Insert(index, queryBlock);
+			}
 		}
 
 		public void AddSelectListColumn(OracleSelectListColumn column, int? index = null)
@@ -267,31 +310,5 @@ namespace SqlPad.Oracle
 		public StatementGrammarNode Terminal { get; set; }
 
 		public bool IsValid { get; set; }
-	}
-
-	public struct OracleLiteral
-	{
-		public LiteralType Type;
-		
-		public StatementGrammarNode Terminal;
-
-		public bool IsMultibyte
-		{
-			get
-			{
-				if (Terminal == null || Terminal.Id != Terminals.StringLiteral)
-				{
-					return false;
-				}
-
-				return Terminal.Token.Value[0] == 'n' || Terminal.Token.Value[0] == 'N';
-			}
-		}
-	}
-
-	public enum LiteralType
-	{
-		Date,
-		Timestamp
 	}
 }
