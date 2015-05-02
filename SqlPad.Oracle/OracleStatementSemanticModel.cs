@@ -145,7 +145,7 @@ namespace SqlPad.Oracle
 			var queryBlocks = new List<OracleQueryBlock>();
 			var queryBlockTerminalListQueue = new Stack<KeyValuePair<OracleQueryBlock, List<StatementGrammarNode>>>();
 			var queryBlockTerminalList = new KeyValuePair<OracleQueryBlock, List<StatementGrammarNode>>();
-			var statementDefinedFunctions = new Dictionary<StatementGrammarNode, List<OracleProgramMetadata>>();
+			var statementDefinedFunctions = new Dictionary<StatementGrammarNode, IReadOnlyCollection<OracleProgramMetadata>>();
 			
 			foreach (var terminal in Statement.AllTerminals)
 			{
@@ -177,47 +177,12 @@ namespace SqlPad.Oracle
 					var queryBlockRoot = GetQueryBlockRootFromNestedQuery(nestedQueryNode);
 					if (queryBlockRoot != null)
 					{
-						var plSqlFunctionIdentifiers = terminal.ParentNode.GetDescendants(NonTerminals.PlSqlDeclarations)
+						var subqueryDefinedFunctions = terminal.ParentNode.GetDescendants(NonTerminals.PlSqlDeclarations)
 							.Select(d => d[NonTerminals.FunctionDefinition, NonTerminals.FunctionHeading, Terminals.Identifier])
-							.Where(i => i != null);
-						
-						var subqueryDefinedFunctions = new List<OracleProgramMetadata>();
-						foreach (var identifier in plSqlFunctionIdentifiers)
-						{
-							var metadata = new OracleProgramMetadata(ProgramType.StatementFunction, OracleProgramIdentifier.CreateFromValues(null, null, identifier.Token.Value), false, false, false, false, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, false);
-							subqueryDefinedFunctions.Add(metadata);
+							.Where(i => i != null)
+							.Select(ResolveProgramMetadataFromProgramDefinition);
 
-							// TODO: Resolve parameter data types
-							metadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, null, OracleObjectIdentifier.Empty, false));
-
-							var parameterDeckarations = identifier.ParentNode[NonTerminals.ParenthesisEnclosedParameterDeclarationList, NonTerminals.ParameterDeclarationList];
-							if (parameterDeckarations == null)
-							{
-								continue;
-							}
-
-							var parameterIndex = 0;
-							foreach (var parameterDeclaration in parameterDeckarations.GetDescendants(NonTerminals.ParameterDeclaration))
-							{
-								var effectiveParameterDeclaration = String.Equals(parameterDeclaration[0].Id, NonTerminals.CursorParameterDeclaration)
-									? parameterDeclaration[0]
-									: parameterDeclaration;
-							
-								parameterIndex++;
-								var parameterName = effectiveParameterDeclaration[Terminals.ParameterIdentifier].Token.Value.ToQuotedIdentifier();
-								var direction = effectiveParameterDeclaration[Terminals.Out] == null ? ParameterDirection.Input : ParameterDirection.Output;
-								if (direction == ParameterDirection.Output && effectiveParameterDeclaration[Terminals.In] != null)
-								{
-									direction = ParameterDirection.InputOutput;
-								}
-
-								var isOptional = effectiveParameterDeclaration[NonTerminals.VariableDeclarationDefaultValue] != null;
-
-								metadata.AddParameter(new OracleProgramParameterMetadata(parameterName, parameterIndex, parameterIndex, 0, direction, null, OracleObjectIdentifier.Empty, isOptional));
-							}
-						}
-
-						statementDefinedFunctions.Add(queryBlockRoot, subqueryDefinedFunctions);
+						statementDefinedFunctions.Add(queryBlockRoot, subqueryDefinedFunctions.ToArray());
 					}
 				}
 
@@ -241,12 +206,6 @@ namespace SqlPad.Oracle
 			{
 				var queryBlockRoot = queryBlock.RootNode;
 
-				var scalarSubqueryExpression = queryBlockRoot.GetAncestor(NonTerminals.Expression);
-				if (scalarSubqueryExpression != null)
-				{
-					queryBlock.Type = QueryBlockType.ScalarSubquery;
-				}
-
 				var commonTableExpression = queryBlockRoot.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBoundary, NonTerminals.CommonTableExpression);
 				if (commonTableExpression != null)
 				{
@@ -262,7 +221,7 @@ namespace SqlPad.Oracle
 				}
 				else
 				{
-					var selfTableReference = queryBlockRoot.GetAncestor(NonTerminals.TableReference);
+					var selfTableReference = queryBlockRoot.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.Expression), NonTerminals.TableReference);
 					if (selfTableReference != null)
 					{
 						queryBlock.Type = QueryBlockType.Normal;
@@ -271,6 +230,15 @@ namespace SqlPad.Oracle
 						if (parentQueryBlockRoot != null)
 						{
 							queryBlock.Parent = _queryBlockNodes[parentQueryBlockRoot];
+						}
+					}
+					else
+					{
+						var scalarSubqueryExpression = queryBlockRoot.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.TableReference), NonTerminals.Expression);
+						if (scalarSubqueryExpression != null)
+						{
+							queryBlock.Type = QueryBlockType.ScalarSubquery;
+							queryBlock.Parent = _queryBlockNodes[scalarSubqueryExpression.GetAncestor(NonTerminals.QueryBlock)];
 						}
 					}
 				}
@@ -283,6 +251,42 @@ namespace SqlPad.Oracle
 			{
 				_queryBlockNodes[kvp.Key].AttachedFunctions.AddRange(kvp.Value);
 			}
+		}
+
+		private static OracleProgramMetadata ResolveProgramMetadataFromProgramDefinition(StatementGrammarNode identifier)
+		{
+			var metadata = new OracleProgramMetadata(ProgramType.StatementFunction, OracleProgramIdentifier.CreateFromValues(null, null, identifier.Token.Value), false, false, false, false, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, false);
+
+			// TODO: Resolve parameter data types
+			metadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, null, OracleObjectIdentifier.Empty, false));
+
+			var parameterDeckarations = identifier.ParentNode[NonTerminals.ParenthesisEnclosedParameterDeclarationList, NonTerminals.ParameterDeclarationList];
+			if (parameterDeckarations == null)
+			{
+				return metadata;
+			}
+
+			var parameterIndex = 0;
+			foreach (var parameterDeclaration in parameterDeckarations.GetDescendants(NonTerminals.ParameterDeclaration))
+			{
+				var effectiveParameterDeclaration = String.Equals(parameterDeclaration[0].Id, NonTerminals.CursorParameterDeclaration)
+					? parameterDeclaration[0]
+					: parameterDeclaration;
+
+				parameterIndex++;
+				var parameterName = effectiveParameterDeclaration[Terminals.ParameterIdentifier].Token.Value.ToQuotedIdentifier();
+				var direction = effectiveParameterDeclaration[Terminals.Out] == null ? ParameterDirection.Input : ParameterDirection.Output;
+				if (direction == ParameterDirection.Output && effectiveParameterDeclaration[Terminals.In] != null)
+				{
+					direction = ParameterDirection.InputOutput;
+				}
+
+				var isOptional = effectiveParameterDeclaration[NonTerminals.VariableDeclarationDefaultValue] != null;
+
+				metadata.AddParameter(new OracleProgramParameterMetadata(parameterName, parameterIndex, parameterIndex, 0, direction, null, OracleObjectIdentifier.Empty, isOptional));
+			}
+
+			return metadata;
 		}
 
 		private static StatementGrammarNode GetQueryBlockRootFromNestedQuery(StatementGrammarNode ownerQueryNode)

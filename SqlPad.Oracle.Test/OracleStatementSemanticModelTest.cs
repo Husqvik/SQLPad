@@ -1578,15 +1578,18 @@ MODEL
 SELECT F1(ROWNUM) RESULT1, COUNT(ROWNUM), F2(ROWNUM), T.* FROM (
 	WITH
 		FUNCTION F2(p IN NUMBER) RETURN NUMBER AS BEGIN RETURN F1(p); END;
-	SELECT F2(NULL) RESULT2, F1(NULL) FROM DUAL
+		FUNCTION ""f 3""(p IN NUMBER) RETURN NUMBER AS BEGIN RETURN F1(p); END;
+	SELECT F2(NULL) RESULT2, F1(NULL), (select ""f 3""(null) from dual) FROM DUAL
 ) T";
 
 			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
 			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
 
-			semanticModel.QueryBlocks.Count.ShouldBe(2);
+			semanticModel.QueryBlocks.Count.ShouldBe(3);
 			var queryBlocks = semanticModel.QueryBlocks.OrderBy(qb => qb.RootNode.SourcePosition.IndexStart).ToArray();
 
+			queryBlocks[0].Type.ShouldBe(QueryBlockType.Normal);
+			queryBlocks[0].Alias.ShouldBe(null);
 			var programReferences = queryBlocks[0].AllProgramReferences.ToArray();
 			programReferences.Length.ShouldBe(3);
 			programReferences[0].Metadata.ShouldNotBe(null);
@@ -1596,10 +1599,19 @@ SELECT F1(ROWNUM) RESULT1, COUNT(ROWNUM), F2(ROWNUM), T.* FROM (
 			programReferences[1].Metadata.IsAggregate.ShouldBe(true);
 			programReferences[2].Metadata.ShouldBe(null);
 
+			queryBlocks[1].Type.ShouldBe(QueryBlockType.Normal);
+			queryBlocks[1].Alias.ShouldBe("T");
 			programReferences = queryBlocks[1].AllProgramReferences.ToArray();
 			programReferences.Length.ShouldBe(2);
 			programReferences[0].Metadata.ShouldNotBe(null);
 			programReferences[1].Metadata.ShouldNotBe(null);
+
+			queryBlocks[2].Type.ShouldBe(QueryBlockType.ScalarSubquery);
+			queryBlocks[2].Alias.ShouldBe(null);
+			programReferences = queryBlocks[2].AllProgramReferences.ToArray();
+			programReferences.Length.ShouldBe(1);
+			programReferences[0].Metadata.ShouldNotBe(null);
+			programReferences[0].Metadata.Identifier.Name.ShouldBe("\"f 3\"");
 		}
 
 		[Test(Description = @"")]

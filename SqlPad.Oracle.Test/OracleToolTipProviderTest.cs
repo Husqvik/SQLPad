@@ -858,7 +858,7 @@ SELECT * FROM CTE";
 		[Test(Description = @""), STAThread]
 		public void TestAsteriskTooltipWithUnnamedColumn()
 		{
-			const string query = @"SELECT * FROM (SELECT NVL(0, 0) FROM DUAL) T";
+			const string query = @"SELECT * FROM (SELECT nvl(""column name"", 0) FROM dual) T";
 			_documentRepository.UpdateStatements(query);
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 7);
@@ -866,7 +866,7 @@ SELECT * FROM CTE";
 			var toolTipSequence = (ToolTipAsterisk)toolTip.Control;
 			var columns = toolTipSequence.Columns.ToArray();
 			columns.Length.ShouldBe(1);
-			columns[0].Name.ShouldBe("NVL(0,0)");
+			columns[0].Name.ShouldBe("NVL(\"COLUMNNAME\",0)");
 			columns[0].FullTypeName.ShouldBe(String.Empty);
 			columns[0].RowSourceName.ShouldBe("T");
 			columns[0].ColumnIndex.ShouldBe(1);

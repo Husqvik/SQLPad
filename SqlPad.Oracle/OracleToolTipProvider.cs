@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml;
 using System.Xml.Serialization;
@@ -15,6 +16,7 @@ namespace SqlPad.Oracle
 	public class OracleToolTipProvider : IToolTipProvider
 	{
 		private static readonly Dictionary<string, DocumentationFunction> SqlFunctionDocumentation = new Dictionary<string, DocumentationFunction>();
+		private static readonly Regex WhitespaceRegex = new Regex(@"\s", RegexOptions.Compiled);
 
 		static OracleToolTipProvider()
 		{
@@ -165,7 +167,7 @@ namespace SqlPad.Oracle
 						new OracleColumnModel
 						{
 							Name = String.IsNullOrEmpty(c.ColumnDescription.Name)
-								? String.Join(null, c.RootNode.Terminals.Select(t => t.Token.Value))
+								? String.Join(null, c.RootNode.Terminals.Select(t => WhitespaceRegex.Replace(((OracleToken)t.Token).UpperInvariantValue, String.Empty)))
 								: c.ColumnDescription.Name,
 							FullTypeName = c.ColumnDescription.FullTypeName,
 							ColumnIndex = i + 1,
