@@ -1,54 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Xml;
-using System.Xml.Serialization;
 using SqlPad.Oracle.ToolTips;
-using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
 namespace SqlPad.Oracle
 {
 	public class OracleToolTipProvider : IToolTipProvider
 	{
-		private static readonly Dictionary<string, DocumentationFunction> SqlFunctionDocumentation = new Dictionary<string, DocumentationFunction>();
 		private static readonly Regex WhitespaceRegex = new Regex(@"\s", RegexOptions.Compiled);
-
-		static OracleToolTipProvider()
-		{
-			var folder = new Uri(Path.GetDirectoryName(typeof(OracleToolTipProvider).Assembly.CodeBase)).LocalPath;
-			using (var reader = XmlReader.Create(Path.Combine(folder, "OracleSqlFunctionDocumentation.xml")))
-			{
-				var documentation = (Documentation)new XmlSerializer(typeof(Documentation)).Deserialize(reader);
-
-				foreach (var function in documentation.Function)
-				{
-					DocumentationFunction existingFunction;
-					var identifier = function.Name.ToQuotedIdentifier();
-					if (!SqlFunctionDocumentation.TryGetValue(identifier, out existingFunction) || function.Value.Length > existingFunction.Value.Length)
-					{
-						SqlFunctionDocumentation[identifier] = function;
-					}
-					else
-					{
-						Trace.WriteLine(String.Format("Function documentation skipped: {0}", function.Value));
-					}
-				}
-			}
-		}
-
-		public static void ShowSqlFunctionDocumentation(OracleProgramIdentifier identifier)
-		{
-			DocumentationFunction documentation;
-			if ((String.IsNullOrEmpty(identifier.Package) || String.Equals(identifier.Package, OracleDatabaseModelBase.PackageBuiltInFunction)) && SqlFunctionDocumentation.TryGetValue(identifier.Name, out documentation))
-			{
-				Process.Start(documentation.Url);
-			}
-		}
 
 		public IToolTip GetToolTip(SqlDocumentRepository sqlDocumentRepository, int cursorPosition)
 		{
@@ -80,37 +41,37 @@ namespace SqlPad.Oracle
 
 				switch (node.Id)
 				{
-					case Terminals.ObjectIdentifier:
+					case OracleGrammarDescription.Terminals.ObjectIdentifier:
 						var objectReference = GetObjectReference(semanticModel, node);
 						return objectReference == null
 							? null
 							: BuildObjectTooltip(semanticModel.DatabaseModel, objectReference);
 
-					case Terminals.Asterisk:
+					case OracleGrammarDescription.Terminals.Asterisk:
 						return BuildAsteriskToolTip(queryBlock, node);
-					case Terminals.Min:
-					case Terminals.Max:
-					case Terminals.Sum:
-					case Terminals.Avg:
-					case Terminals.FirstValue:
-					case Terminals.Count:
-					case Terminals.Variance:
-					case Terminals.StandardDeviation:
-					case Terminals.LastValue:
-					case Terminals.Lead:
-					case Terminals.Lag:
-					case Terminals.ListAggregation:
-					case Terminals.NegationOrNull:
-					case Terminals.RowIdPseudoColumn:
-					case Terminals.JsonQuery:
-					case Terminals.JsonExists:
-					case Terminals.JsonValue:
-					case Terminals.XmlElement:
-					case Terminals.XmlSerialize:
-					case Terminals.XmlParse:
-					case Terminals.XmlQuery:
-					case Terminals.XmlRoot:
-					case Terminals.Identifier:
+					case OracleGrammarDescription.Terminals.Min:
+					case OracleGrammarDescription.Terminals.Max:
+					case OracleGrammarDescription.Terminals.Sum:
+					case OracleGrammarDescription.Terminals.Avg:
+					case OracleGrammarDescription.Terminals.FirstValue:
+					case OracleGrammarDescription.Terminals.Count:
+					case OracleGrammarDescription.Terminals.Variance:
+					case OracleGrammarDescription.Terminals.StandardDeviation:
+					case OracleGrammarDescription.Terminals.LastValue:
+					case OracleGrammarDescription.Terminals.Lead:
+					case OracleGrammarDescription.Terminals.Lag:
+					case OracleGrammarDescription.Terminals.ListAggregation:
+					case OracleGrammarDescription.Terminals.NegationOrNull:
+					case OracleGrammarDescription.Terminals.RowIdPseudoColumn:
+					case OracleGrammarDescription.Terminals.JsonQuery:
+					case OracleGrammarDescription.Terminals.JsonExists:
+					case OracleGrammarDescription.Terminals.JsonValue:
+					case OracleGrammarDescription.Terminals.XmlElement:
+					case OracleGrammarDescription.Terminals.XmlSerialize:
+					case OracleGrammarDescription.Terminals.XmlParse:
+					case OracleGrammarDescription.Terminals.XmlQuery:
+					case OracleGrammarDescription.Terminals.XmlRoot:
+					case OracleGrammarDescription.Terminals.Identifier:
 						var columnReference = semanticModel.GetColumnReference(node);
 						if (columnReference == null)
 						{
@@ -136,7 +97,7 @@ namespace SqlPad.Oracle
 						}
 						
 						break;
-					case Terminals.DatabaseLinkIdentifier:
+					case OracleGrammarDescription.Terminals.DatabaseLinkIdentifier:
 						var databaseLink = GetDatabaseLink(queryBlock, node);
 						if (databaseLink == null)
 							return null;
@@ -404,7 +365,7 @@ namespace SqlPad.Oracle
 			var documentationText = String.Empty;
 			DocumentationFunction documentationFunction;
 			if ((String.IsNullOrEmpty(functionReference.Metadata.Identifier.Owner) || String.Equals(functionReference.Metadata.Identifier.Package, OracleDatabaseModelBase.PackageBuiltInFunction)) &&
-				functionReference.Metadata.Type != ProgramType.StatementFunction && SqlFunctionDocumentation.TryGetValue(functionReference.Metadata.Identifier.Name, out documentationFunction))
+				functionReference.Metadata.Type != ProgramType.StatementFunction && OracleHelpProvider.SqlFunctionDocumentation.TryGetValue(functionReference.Metadata.Identifier.Name, out documentationFunction))
 			{
 				documentationText = documentationFunction.Value;
 			}
