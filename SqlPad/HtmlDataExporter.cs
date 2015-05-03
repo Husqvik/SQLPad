@@ -56,7 +56,7 @@ namespace SqlPad
 		{
 			var htmlTableRowTemplateBuilder = new StringBuilder();
 			htmlTableRowTemplateBuilder.Append("<tr>");
-			htmlTableRowTemplateBuilder.Append(String.Join(null, columnValues));
+			htmlTableRowTemplateBuilder.Append(String.Concat(columnValues));
 			htmlTableRowTemplateBuilder.Append("<tr>");
 			return htmlTableRowTemplateBuilder.ToString();
 		}

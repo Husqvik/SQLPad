@@ -525,7 +525,8 @@ namespace SqlPad.Oracle
 								namedParameterExists = true;
 
 								OracleProgramParameterMetadata parameterMetadata;
-								if (String.IsNullOrEmpty(programReference.Metadata.Identifier.Owner) || programReference.Metadata.Owner.FullyQualifiedName == OracleDatabaseModelBase.BuiltInFunctionPackageIdentifier)
+								if ((String.IsNullOrEmpty(programReference.Metadata.Identifier.Owner) || programReference.Metadata.Owner.FullyQualifiedName == OracleDatabaseModelBase.BuiltInFunctionPackageIdentifier) &&
+									programReference.Metadata.Type != ProgramType.StatementFunction)
 								{
 									validationModel.IdentifierNodeValidity[parameterReference.OptionalIdentifierTerminal] =
 										new InvalidNodeValidationData(OracleSemanticErrorType.NamedParameterNotAllowed) { Node = parameterReference.OptionalIdentifierTerminal };

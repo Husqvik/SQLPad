@@ -62,7 +62,7 @@ namespace SqlPad.Oracle.Commands
 
 			foreach (var databaseLinkReference in databaseLinkReferences)
 			{
-				var databaseLinkIdentifier = String.Join(null, databaseLinkReference.DatabaseLinkNode.Terminals.Select(t => t.Token.Value));
+				var databaseLinkIdentifier = String.Concat(databaseLinkReference.DatabaseLinkNode.Terminals.Select(t => t.Token.Value));
 				var remoteObjectIdenrifier = OracleObjectIdentifier.Create(databaseLinkReference.OwnerNode, databaseLinkReference.ObjectNode, null);
 				var columnNames = await CurrentQueryBlock.SemanticModel.DatabaseModel.GetRemoteTableColumnsAsync(databaseLinkIdentifier, remoteObjectIdenrifier, cancellationToken);
 				expandedColumns.AddRange(columnNames.Select(n => new ExpandedColumn { ColumnName = String.Format("{0}.{1}", databaseLinkReference.FullyQualifiedObjectName, n.ToSimpleIdentifier()) }));

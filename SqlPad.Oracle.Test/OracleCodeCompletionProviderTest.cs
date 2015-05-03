@@ -749,6 +749,24 @@ FROM
 		}
 
 		[Test(Description = @"")]
+		public void TestResolveFunctionOverloadsWithStatementDefinedFunction()
+		{
+			const string query1 =
+@"WITH
+	FUNCTION F1(p1 IN NUMBER, p2 IN NUMBER) RETURN NUMBER AS BEGIN RETURN DBMS_RANDOM.VALUE; END;
+SELECT F1(NULL) FROM DUAL";
+
+			_documentRepository.UpdateStatements(query1);
+			var items = CodeCompletionProvider.ResolveFunctionOverloads(_documentRepository, 112).ToList();
+			items.Count.ShouldBe(1);
+			items[0].IsParameterMetadataAvailable.ShouldBe(true);
+			items[0].Parameters.Count.ShouldBe(2);
+			items[0].CurrentParameterIndex = 1;
+			items[0].Parameters[0].ShouldBe("P1: NUMBER");
+			items[0].ReturnedDatatype.ShouldBe("NUMBER");
+		}
+
+		[Test(Description = @"")]
 		public void TestResolveFunctionOverloadsWithNonSchemaAggregateAndAnalyticFunction()
 		{
 			const string query1 = @"SELECT COUNT(*) FROM DUAL";

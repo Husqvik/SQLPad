@@ -905,7 +905,7 @@ SELECT * FROM CTE";
 		private static string GetTextFromTextBlock(TextBlock textBlock)
 		{
 			var inlines = textBlock.Inlines.Select(GetTextFromInline);
-			return String.Join(null, inlines);
+			return String.Concat(inlines);
 		}
 
 		private static string GetTextFromInline(Inline inline)
@@ -917,7 +917,7 @@ SELECT * FROM CTE";
 			}
 			
 			var bold = (Bold)inline;
-			return String.Join(null, bold.Inlines.Select(GetTextFromInline));
+			return String.Concat(bold.Inlines.Select(GetTextFromInline));
 		}
 	}
 }

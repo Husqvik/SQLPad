@@ -253,12 +253,21 @@ namespace SqlPad.Oracle
 			}
 		}
 
+		private static string ResolveParameterType(StatementGrammarNode sourceNode)
+		{
+			var returnParameterNode = sourceNode[NonTerminals.PlSqlDataTypeWithoutConstraint];
+			return returnParameterNode == null
+				? String.Empty
+				: String.Concat(returnParameterNode.Terminals.Select(t => t.Token.Value));
+		}
+
 		private static OracleProgramMetadata ResolveProgramMetadataFromProgramDefinition(StatementGrammarNode identifier)
 		{
 			var metadata = new OracleProgramMetadata(ProgramType.StatementFunction, OracleProgramIdentifier.CreateFromValues(null, null, identifier.Token.Value), false, false, false, false, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, false);
 
-			// TODO: Resolve parameter data types
-			metadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, null, OracleObjectIdentifier.Empty, false));
+			var returnParameterType = ResolveParameterType(identifier.ParentNode);
+
+			metadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, returnParameterType, OracleObjectIdentifier.Empty, false));
 
 			var parameterDeckarations = identifier.ParentNode[NonTerminals.ParenthesisEnclosedParameterDeclarationList, NonTerminals.ParameterDeclarationList];
 			if (parameterDeckarations == null)
@@ -283,7 +292,9 @@ namespace SqlPad.Oracle
 
 				var isOptional = effectiveParameterDeclaration[NonTerminals.VariableDeclarationDefaultValue] != null;
 
-				metadata.AddParameter(new OracleProgramParameterMetadata(parameterName, parameterIndex, parameterIndex, 0, direction, null, OracleObjectIdentifier.Empty, isOptional));
+				var parameterType = ResolveParameterType(effectiveParameterDeclaration);
+
+				metadata.AddParameter(new OracleProgramParameterMetadata(parameterName, parameterIndex, parameterIndex, 0, direction, parameterType, OracleObjectIdentifier.Empty, isOptional));
 			}
 
 			return metadata;

@@ -167,7 +167,7 @@ namespace SqlPad.Oracle
 						new OracleColumnModel
 						{
 							Name = String.IsNullOrEmpty(c.ColumnDescription.Name)
-								? String.Join(null, c.RootNode.Terminals.Select(t => WhitespaceRegex.Replace(((OracleToken)t.Token).UpperInvariantValue, String.Empty)))
+								? String.Concat(c.RootNode.Terminals.Select(t => WhitespaceRegex.Replace(((OracleToken)t.Token).UpperInvariantValue, String.Empty)))
 								: c.ColumnDescription.Name,
 							FullTypeName = c.ColumnDescription.FullTypeName,
 							ColumnIndex = i + 1,

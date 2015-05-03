@@ -57,7 +57,7 @@ namespace SqlPad.Oracle
 								.ToArray(),
 							CurrentParameterIndex = fo.CurrentParameterIndex,
 							ReturnedDatatype = returnParameter == null ? null : returnParameter.FullDataTypeName,
-							IsParameterMetadataAvailable = !String.IsNullOrEmpty(metadata.Identifier.Owner)
+							IsParameterMetadataAvailable = !String.IsNullOrEmpty(metadata.Identifier.Owner) || metadata.Type == ProgramType.StatementFunction
 						};
 				});
 			
@@ -114,17 +114,22 @@ namespace SqlPad.Oracle
 				}
 			}
 
-			IEnumerable<OracleProgramMetadata> matchedMetadata;
+			var matchedMetadata = new List<OracleProgramMetadata>();
 			var typeReference = programReferenceBase as OracleTypeReference;
 			if (typeReference == null)
 			{
 				var programReference = (OracleProgramReference)programReferenceBase;
-				matchedMetadata = programReference.Container.SemanticModel.DatabaseModel.AllFunctionMetadata[programReference.Metadata.Identifier]
-						.Where(m => IsMetadataMatched(m, programReference, currentParameterIndex));
+				var metadataSource = programReference.Container.SemanticModel.DatabaseModel.AllFunctionMetadata[programReference.Metadata.Identifier].ToList();
+				if (metadataSource.Count == 0 && programReference.Owner != null && programReference.ObjectNode == null && programReference.OwnerNode == null)
+				{
+					metadataSource.AddRange(programReference.Owner.AccessibleAttachedFunctions.Where(m => String.Equals(m.Identifier.Name, programReference.Metadata.Identifier.Name)));
+				}
+
+				matchedMetadata.AddRange(metadataSource.Where(m => IsMetadataMatched(m, programReference, currentParameterIndex)));
 			}
 			else
 			{
-				matchedMetadata = Enumerable.Repeat(typeReference.Metadata, 1);
+				matchedMetadata.Add(typeReference.Metadata);
 				var collectionType = typeReference.SchemaObject.GetTargetSchemaObject() as OracleTypeCollection;
 				if (collectionType != null)
 				{
