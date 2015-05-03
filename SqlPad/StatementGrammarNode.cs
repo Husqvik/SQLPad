@@ -141,6 +141,25 @@ namespace SqlPad
 
 		public ICollection<StatementCommentNode> Comments { get { return _commentNodes ?? (_commentNodes = new List<StatementCommentNode>()); } }
 
+		public bool IsRequiredIncludingParent
+		{
+			get
+			{
+				var node = this;
+				while (node != null)
+				{
+					if (!node.IsRequired)
+					{
+						return false;
+					}
+
+					node = node.ParentNode;
+				}
+
+				return true;
+			}
+		}
+
 		public int IndexOf(StatementGrammarNode childNode)
 		{
 			return _childNodes.IndexOf(childNode);

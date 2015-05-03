@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using SqlPad.Oracle.ToolTips;
+using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
 namespace SqlPad.Oracle
 {
@@ -41,37 +42,42 @@ namespace SqlPad.Oracle
 
 				switch (node.Id)
 				{
-					case OracleGrammarDescription.Terminals.ObjectIdentifier:
+					case Terminals.ObjectIdentifier:
 						var objectReference = GetObjectReference(semanticModel, node);
 						return objectReference == null
 							? null
 							: BuildObjectTooltip(semanticModel.DatabaseModel, objectReference);
 
-					case OracleGrammarDescription.Terminals.Asterisk:
+					case Terminals.Asterisk:
 						return BuildAsteriskToolTip(queryBlock, node);
-					case OracleGrammarDescription.Terminals.Min:
-					case OracleGrammarDescription.Terminals.Max:
-					case OracleGrammarDescription.Terminals.Sum:
-					case OracleGrammarDescription.Terminals.Avg:
-					case OracleGrammarDescription.Terminals.FirstValue:
-					case OracleGrammarDescription.Terminals.Count:
-					case OracleGrammarDescription.Terminals.Variance:
-					case OracleGrammarDescription.Terminals.StandardDeviation:
-					case OracleGrammarDescription.Terminals.LastValue:
-					case OracleGrammarDescription.Terminals.Lead:
-					case OracleGrammarDescription.Terminals.Lag:
-					case OracleGrammarDescription.Terminals.ListAggregation:
-					case OracleGrammarDescription.Terminals.NegationOrNull:
-					case OracleGrammarDescription.Terminals.RowIdPseudoColumn:
-					case OracleGrammarDescription.Terminals.JsonQuery:
-					case OracleGrammarDescription.Terminals.JsonExists:
-					case OracleGrammarDescription.Terminals.JsonValue:
-					case OracleGrammarDescription.Terminals.XmlElement:
-					case OracleGrammarDescription.Terminals.XmlSerialize:
-					case OracleGrammarDescription.Terminals.XmlParse:
-					case OracleGrammarDescription.Terminals.XmlQuery:
-					case OracleGrammarDescription.Terminals.XmlRoot:
-					case OracleGrammarDescription.Terminals.Identifier:
+					case Terminals.Min:
+					case Terminals.Max:
+					case Terminals.Sum:
+					case Terminals.Avg:
+					case Terminals.FirstValue:
+					case Terminals.Count:
+					case Terminals.Variance:
+					case Terminals.StandardDeviation:
+					case Terminals.LastValue:
+					case Terminals.Lead:
+					case Terminals.Lag:
+					case Terminals.ListAggregation:
+					case Terminals.CumulativeDistribution:
+					case Terminals.Rank:
+					case Terminals.DenseRank:
+					case Terminals.PercentileDiscreteDistribution:
+					case Terminals.PercentileContinuousDistribution:
+					case Terminals.NegationOrNull:
+					case Terminals.RowIdPseudoColumn:
+					case Terminals.JsonQuery:
+					case Terminals.JsonExists:
+					case Terminals.JsonValue:
+					case Terminals.XmlElement:
+					case Terminals.XmlSerialize:
+					case Terminals.XmlParse:
+					case Terminals.XmlQuery:
+					case Terminals.XmlRoot:
+					case Terminals.Identifier:
 						var columnReference = semanticModel.GetColumnReference(node);
 						if (columnReference == null)
 						{
@@ -97,7 +103,7 @@ namespace SqlPad.Oracle
 						}
 						
 						break;
-					case OracleGrammarDescription.Terminals.DatabaseLinkIdentifier:
+					case Terminals.DatabaseLinkIdentifier:
 						var databaseLink = GetDatabaseLink(queryBlock, node);
 						if (databaseLink == null)
 							return null;

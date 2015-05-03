@@ -25,16 +25,6 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		internal static IReadOnlyDictionary<string, DocumentationStatement> StatementDocumentation
-		{
-			get
-			{
-				EnsureDocumentationDictionaries();
-
-				return _statementDocumentation;
-			}
-		}
-
 		private static void EnsureDocumentationDictionaries()
 		{
 			if (_sqlFunctionDocumentation != null)
@@ -88,13 +78,29 @@ namespace SqlPad.Oracle
 				return;
 			}
 
+			EnsureDocumentationDictionaries();
+
 			var programReference = semanticModel.GetProgramReference(terminal);
-			if (programReference == null || programReference.Metadata == null || programReference.Metadata.Type == ProgramType.StatementFunction)
+			if (programReference != null && programReference.Metadata != null && programReference.Metadata.Type != ProgramType.StatementFunction)
 			{
+				ShowSqlFunctionDocumentation(programReference.Metadata.Identifier);
 				return;
 			}
 
-			ShowSqlFunctionDocumentation(programReference.Metadata.Identifier);
+			var firstThreeTerminals = terminal.RootNode.Terminals.Where(t => t.IsRequiredIncludingParent).Take(3).ToList();
+			if (!terminal.Id.IsIdentifierOrAlias() && firstThreeTerminals.IndexOf(terminal) != -1)
+			{
+				for (var i = 3; i > 0; i--)
+				{
+					var statementDocumentationKey = String.Join(" ", firstThreeTerminals.Take(i).Select(t => ((OracleToken)t.Token).UpperInvariantValue));
+					DocumentationStatement documentation;
+					if (_statementDocumentation.TryGetValue(statementDocumentationKey, out documentation))
+					{
+						Process.Start(documentation.Url);
+						return;
+					}
+				}
+			}
 		}
 
 		private static void ShowSqlFunctionDocumentation(OracleProgramIdentifier identifier)
