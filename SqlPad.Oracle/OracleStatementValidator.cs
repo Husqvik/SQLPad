@@ -245,7 +245,8 @@ namespace SqlPad.Oracle
 			{
 				ValidateConcatenatedQueryBlocks(validationModel, queryBlock);
 
-				if (queryBlock.Type == QueryBlockType.ScalarSubquery && queryBlock.OrderByClause != null)
+				if (queryBlock.OrderByClause != null &&
+				    (queryBlock.Type == QueryBlockType.ScalarSubquery || queryBlock.RootNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.QueryBlock), NonTerminals.Condition) != null))
 				{
 					validationModel.InvalidNonTerminals[queryBlock.OrderByClause] = new InvalidNodeValidationData(OracleSemanticErrorType.ClauseNotAllowed) { Node = queryBlock.OrderByClause };
 				}

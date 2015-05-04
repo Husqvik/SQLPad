@@ -1858,6 +1858,22 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		}
 
 		[Test(Description = @"")]
+		public void TestOrderByClauseWithinInClause()
+		{
+			const string sqlText = @"SELECT * FROM DUAL WHERE DUMMY IN (SELECT DUMMY FROM DUAL ORDER BY DUMMY)";
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var invalidNonTerminals = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			invalidNonTerminals.Count.ShouldBe(1);
+			invalidNonTerminals[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.ClauseNotAllowed);
+			invalidNonTerminals[0].ToolTipText.ShouldBe(OracleSemanticErrorType.ClauseNotAllowed);
+			invalidNonTerminals[0].Node.ShouldNotBe(null);
+		}
+
+		[Test(Description = @"")]
 		public void TestDatabaseLinkPropagatedColumnUsingAsterisk()
 		{
 			const string sqlText = @"SELECT DUMMY FROM (SELECT * FROM DUAL@HQ_PDB_LOOPBACK)";
