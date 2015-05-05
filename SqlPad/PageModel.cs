@@ -20,6 +20,7 @@ namespace SqlPad
 		private readonly StringBuilder _databaseOutputBuilder = new StringBuilder();
 		private ConnectionStringSettings _currentConnection;
 		private string _currentSchema;
+		private string _schemaLabel;
 		private ICollection<BindVariableModel> _bindVariables;
 		private bool _isTransactionControlEnabled = true;
 		private bool _isModified;
@@ -106,6 +107,12 @@ namespace SqlPad
 		{
 			get { return _documentHeaderToolTip; }
 			set { UpdateValueAndRaisePropertyChanged(ref _documentHeaderToolTip, value); }
+		}
+
+		public string SchemaLabel
+		{
+			get { return _schemaLabel; }
+			set { UpdateValueAndRaisePropertyChanged(ref _schemaLabel, value); }
 		}
 
 		public string ExecutionTimerMessage

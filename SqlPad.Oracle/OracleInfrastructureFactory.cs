@@ -15,6 +15,8 @@ namespace SqlPad.Oracle
 		}
 
 		#region Implementation of IInfrastructureFactory
+		public string SchemaLabel { get { return "Schema"; } }
+
 		public ICommandFactory CommandFactory { get { return _commandFactory; } }
 		
 		public ITokenReader CreateTokenReader(string sqlText)

@@ -8,6 +8,8 @@ namespace SqlPad
 {
 	public interface IInfrastructureFactory
 	{
+		string SchemaLabel { get; }
+
 		ICommandFactory CommandFactory { get; }
 
 		ITokenReader CreateTokenReader(string sqlText);

@@ -103,7 +103,9 @@
 						</DataTemplate>
 					</ComboBox.ItemTemplate>
 				</ComboBox>
-				<TextBlock Text="Schema: " VerticalAlignment="Center" Visibility="{Binding SchemaComboBoxVisibility}" Margin="6,1,4,3" />
+				<TextBlock VerticalAlignment="Center" Visibility="{Binding SchemaComboBoxVisibility}" Margin="6,1,4,3">
+					<Run Text="{Binding SchemaLabel, Mode=OneWay}"/><Run Text=": "/>
+				</TextBlock>
 				<ComboBox x:Name="ComboBoxSchema" ItemsSource="{Binding Path=Schemas}" SelectedItem="{Binding Path=CurrentSchema}" Visibility="{Binding SchemaComboBoxVisibility}" Margin="0,1,0,3" >
 					<ComboBox.ItemTemplate>
 						<DataTemplate>
