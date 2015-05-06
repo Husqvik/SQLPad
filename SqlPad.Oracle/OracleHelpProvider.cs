@@ -14,6 +14,7 @@ namespace SqlPad.Oracle
 	{
 		private static IReadOnlyDictionary<string, DocumentationFunction> _sqlFunctionDocumentation;
 		private static IReadOnlyDictionary<string, DocumentationStatement> _statementDocumentation;
+		private static IReadOnlyDictionary<OracleObjectIdentifier, DocumentationPackage> _packageDocumentation;
 
 		internal static IReadOnlyDictionary<string, DocumentationFunction> SqlFunctionDocumentation
 		{
@@ -60,6 +61,8 @@ namespace SqlPad.Oracle
 					.ToDictionary(s => s.Name);
 
 				_statementDocumentation = new ReadOnlyDictionary<string, DocumentationStatement>(statementDocumentation);
+
+				_packageDocumentation = documentation.Packages.ToDictionary(p => OracleObjectIdentifier.Create(p.Owner, p.Name));
 			}
 		}
 
@@ -87,6 +90,21 @@ namespace SqlPad.Oracle
 				return;
 			}
 
+			var objectReference = semanticModel.GetReference<OracleProgramReference>(terminal);
+			if (objectReference != null)
+			{
+				var package = objectReference.SchemaObject.GetTargetSchemaObject() as OraclePackage;
+				if (package != null)
+				{
+					DocumentationPackage packageDocumentation = null;
+					var packageDocumentationExists = _packageDocumentation.TryGetValue(package.FullyQualifiedName, out packageDocumentation);
+					if (packageDocumentationExists)
+					{
+						Process.Start(packageDocumentation.Url);
+					}
+				}
+			}
+
 			var firstThreeTerminals = terminal.RootNode.Terminals.Where(t => t.IsRequiredIncludingParent).Take(3).ToList();
 			if (!terminal.Id.IsIdentifierOrAlias() && firstThreeTerminals.IndexOf(terminal) != -1)
 			{
@@ -105,10 +123,11 @@ namespace SqlPad.Oracle
 
 		private static void ShowSqlFunctionDocumentation(OracleProgramIdentifier identifier)
 		{
-			DocumentationFunction documentation;
-			if ((String.IsNullOrEmpty(identifier.Package) || String.Equals(identifier.Package, OracleDatabaseModelBase.PackageBuiltInFunction)) && OracleHelpProvider.SqlFunctionDocumentation.TryGetValue(identifier.Name, out documentation))
+			DocumentationFunction sqlFunctionDocumentation = null;
+			var sqlFunctionDocumentationExists = (String.IsNullOrEmpty(identifier.Package) || String.Equals(identifier.Package, OracleDatabaseModelBase.PackageBuiltInFunction)) && SqlFunctionDocumentation.TryGetValue(identifier.Name, out sqlFunctionDocumentation);
+			if (sqlFunctionDocumentationExists)
 			{
-				Process.Start(documentation.Url);
+				Process.Start(sqlFunctionDocumentation.Url);
 			}
 		}
 	}
