@@ -108,6 +108,9 @@
     <Compile Include="Commands\ResolveAmbiguousColumnCommand.cs" />
     <Compile Include="Commands\AddAliasCommand.cs" />
     <Compile Include="Commands\OracleCommandFactory.cs" />
+    <Compile Include="Documentation.cs">
+      <DependentUpon>Documentation.xsd</DependentUpon>
+    </Compile>
     <Compile Include="ExecutionPlan\ExecutionPlanItemCollection.cs" />
     <Compile Include="ExecutionPlan\ExecutionPlanViewer.xaml.cs">
       <DependentUpon>ExecutionPlanViewer.xaml</DependentUpon>
@@ -227,6 +230,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="OracleConfiguration.Extensions.cs" />
+    <None Include="Documentation.xsd">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="OracleConfiguration.xsd">
       <SubType>Designer</SubType>
     </None>

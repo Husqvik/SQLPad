@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Documentation xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://husqvik.com/SqlPad/2014/02">
+<Documentation xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://husqvik.com/SqlPad/2014/08/Oracle">
   <Functions>
     <Function Name="ABS" Url="http://docs.oracle.com/database/121/SQLRF/functions009.htm">ABS returns the absolute value of n.
 This function takes as an argument any numeric data type or any nonnumeric data type that can be implicitly converted to a numeric data type. The function returns the same data type as the numeric data type of the argument.</Function>
