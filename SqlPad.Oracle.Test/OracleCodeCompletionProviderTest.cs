@@ -4,6 +4,7 @@ using NUnit.Framework;
 using Shouldly;
 using System;
 using System.Diagnostics;
+using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
 
 namespace SqlPad.Oracle.Test
 {
@@ -74,7 +75,7 @@ SELECT * FROM CTE JOIN DUAL ON TO_CHAR(VAL) <> DUMMY CROSS APPLY (SELECT * FROM 
 			items.Length.ShouldBe(2);
 			items[0].Name.ShouldBe("DUEDATE");
 			items[0].Text.ShouldBe("DUEDATE");
-			items[1].Name.ShouldBe(OracleColumn.RowId);
+			items[1].Name.ShouldBe(TerminalValues.RowIdPseudoColumn);
 		}
 
 		[Test(Description = @"")]
@@ -305,7 +306,7 @@ FROM
 			items[0].Text.ShouldBe("RESPONDENTBUCKET_ID, SELECTION.SELECTION_ID, SELECTION.PROJECT_ID, SELECTION.NAME");
 			items[1].Name.ShouldBe("NAME");
 			items[1].Text.ShouldBe("NAME");
-			items[4].Name.ShouldBe(OracleColumn.RowId);
+			items[4].Name.ShouldBe(TerminalValues.RowIdPseudoColumn);
 			items[5].Name.ShouldBe("SELECTION_ID");
 			items[5].Text.ShouldBe("SELECTION_ID");
 
@@ -404,8 +405,8 @@ FROM
 			items[1].Name.ShouldBe("PROJECT_ID");
 			items[1].Text.ShouldBe("PROJECT_ID");
 			items[1].StatementNode.ShouldBe(null);
-			items[2].Name.ShouldBe(OracleColumn.RowId);
-			items[2].Text.ShouldBe(OracleColumn.RowId);
+			items[2].Name.ShouldBe(TerminalValues.RowIdPseudoColumn);
+			items[2].Text.ShouldBe(TerminalValues.RowIdPseudoColumn);
 			items[2].StatementNode.ShouldBe(null);
 		}
 
@@ -473,7 +474,7 @@ FROM
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 19).ToArray();
 			items.Length.ShouldBe(5);
 			items[0].Name.ShouldBe("NAME");
-			items[3].Name.ShouldBe(OracleColumn.RowId);
+			items[3].Name.ShouldBe(TerminalValues.RowIdPseudoColumn);
 			items[4].Name.ShouldBe("SELECTION_ID");
 		}
 
@@ -523,7 +524,7 @@ FROM
 			items.Length.ShouldBe(6);
 			items[0].Name.ShouldBe("*");
 			items[0].Text.ShouldBe("RESPONDENTBUCKET_ID, S.SELECTION_ID, S.PROJECT_ID, S.NAME");
-			items[4].Name.ShouldBe(OracleColumn.RowId);
+			items[4].Name.ShouldBe(TerminalValues.RowIdPseudoColumn);
 			items[5].Name.ShouldBe("SELECTION_ID");
 			items[5].StatementNode.ShouldBe(null);
 		}

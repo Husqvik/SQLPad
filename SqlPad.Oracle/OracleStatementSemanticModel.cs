@@ -2011,7 +2011,7 @@ namespace SqlPad.Oracle
 					if (rowSourceReference.SchemaObject == null)
 						return;
 
-					if (columnReference.ColumnNode.Id == Terminals.RowIdPseudoColumn)
+					if (String.Equals(columnReference.ColumnNode.Id, Terminals.RowIdPseudoColumn))
 					{
 						var oracleTable = rowSourceReference.SchemaObject.GetTargetSchemaObject() as OracleTable;
 						if (oracleTable != null && oracleTable.RowIdPseudoColumn != null &&

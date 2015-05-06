@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
+using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 
 namespace SqlPad.Oracle
@@ -9,7 +10,7 @@ namespace SqlPad.Oracle
 	public class OracleDataType : OracleObject
 	{
 		public static readonly OracleDataType Empty = new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(String.Empty, String.Empty) };
-		public static readonly OracleDataType NumberType = new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(String.Empty, "NUMBER") };
+		public static readonly OracleDataType NumberType = new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(String.Empty, TerminalValues.Number) };
 		public static readonly OracleDataType XmlType = new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(OracleDatabaseModelBase.SchemaSys, OracleTypeBase.TypeCodeXml) };
 
 		public int? Length { get; set; }
@@ -22,6 +23,11 @@ namespace SqlPad.Oracle
 
 		public bool IsPrimitive { get { return !FullyQualifiedName.HasOwner; } }
 
+		public static OracleDataType CreateTimestampDataType(int precision)
+		{
+			return new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(String.Empty, TerminalValues.Timestamp), Precision = precision };
+		}
+
 		public static string ResolveFullTypeName(OracleDataType dataType, int? characterSize = null)
 		{
 			if (!dataType.IsPrimitive)
@@ -33,12 +39,12 @@ namespace SqlPad.Oracle
 			var effectiveSize = String.Empty;
 			switch (name)
 			{
-				case "NVARCHAR2":
-				case "NVARCHAR":
-				case "VARCHAR2":
-				case "VARCHAR":
-				case "NCHAR":
-				case "CHAR":
+				case TerminalValues.NVarchar2:
+				case TerminalValues.NVarchar:
+				case TerminalValues.Varchar2:
+				case TerminalValues.Varchar:
+				case TerminalValues.NChar:
+				case TerminalValues.Char:
 					var effectiveLength = characterSize ?? dataType.Length;
 					if (effectiveLength.HasValue)
 					{
@@ -48,8 +54,8 @@ namespace SqlPad.Oracle
 
 					name = String.Format("{0}{1}", name, effectiveSize);
 					break;
-				case "FLOAT":
-				case "NUMBER":
+				case TerminalValues.Float:
+				case TerminalValues.Number:
 					var decimalScale = dataType.Scale > 0 ? String.Format(", {0}", dataType.Scale) : null;
 					if (dataType.Precision > 0 || dataType.Scale > 0)
 					{
@@ -57,10 +63,10 @@ namespace SqlPad.Oracle
 					}
 					
 					break;
-				case "RAW":
+				case TerminalValues.Raw:
 					name = String.Format("{0}({1})", name, dataType.Length);
 					break;
-				case "TIMESTAMP":
+				case TerminalValues.Timestamp:
 					if (dataType.Scale.HasValue)
 					{
 						name = String.Format("{0}({1})", name, dataType.Scale);
@@ -90,7 +96,7 @@ namespace SqlPad.Oracle
 					case Terminals.Number:
 						var dataType = new OracleDataType
 						{
-							FullyQualifiedName = OracleObjectIdentifier.Create(null, "NUMBER")
+							FullyQualifiedName = OracleObjectIdentifier.Create(null, TerminalValues.Number)
 						};
 
 						TryResolveNumericPrecisionAndScale(jsonReturnTypeNode, dataType);
@@ -104,7 +110,7 @@ namespace SqlPad.Oracle
 			{
 				var dataType = new OracleDataType
 				{
-					FullyQualifiedName = OracleObjectIdentifier.Create(null, "VARCHAR2")
+					FullyQualifiedName = OracleObjectIdentifier.Create(null, TerminalValues.Varchar2)
 				};
 
 				TryResolveVarcharDetails(dataType, jsonReturnTypeNode);
@@ -139,12 +145,12 @@ namespace SqlPad.Oracle
 			switch (dataTypeNode.FirstTerminalNode.Id)
 			{
 				case Terminals.Double:
-					name = "BINARY_DOUBLE";
+					name = TerminalValues.BinaryDouble;
 					break;
 				case Terminals.Long:
 					name = dataTypeNode.ChildNodes.Count > 1 && dataTypeNode.ChildNodes[1].Id == Terminals.Raw
 						? "LONG RAW"
-						: "LONG";
+						: TerminalValues.Long;
 					break;
 				case Terminals.Interval:
 					var yearToMonthNode = dataTypeNode[NonTerminals.YearToMonthOrDayToSecond, NonTerminals.YearOrMonth];
@@ -167,10 +173,10 @@ namespace SqlPad.Oracle
 
 					break;
 				case Terminals.National:
-					name = isVarying ? "NVARCHAR2" : "NCHAR";
+					name = isVarying ? TerminalValues.NVarchar2 : TerminalValues.NChar;
 					break;
 				case Terminals.Character:
-					name = isVarying ? "VARCHAR2" : "CHAR";
+					name = isVarying ? TerminalValues.Varchar2 : TerminalValues.Char;
 					break;
 				default:
 					name = dataTypeNode.FirstTerminalNode.Token.Value.ToUpperInvariant();

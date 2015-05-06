@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
+using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
 
 namespace SqlPad.Oracle
 {
@@ -587,13 +588,13 @@ namespace SqlPad.Oracle
 			var rowSourceColumnItems = suggestedColumns.Select(t => CreateColumnCodeCompletionItem(t.Item1, objectIdentifierNode == null ? t.Item2.ToString() : null, nodeToReplace));
 			suggestedItems = suggestedItems.Concat(rowSourceColumnItems);
 
-			if (CodeCompletionSearchHelper.IsMatch(OracleColumn.RowId, partialName))
+			if (CodeCompletionSearchHelper.IsMatch(TerminalValues.RowIdDataType, partialName))
 			{
 				var rowIdItems = tableReferenceSource
 					.Select(r => new { r.FullyQualifiedObjectName, DataObject = r.SchemaObject.GetTargetSchemaObject() as OracleTable })
 					.Where(t => t.DataObject != null && t.DataObject.Organization.In(OrganizationType.Heap, OrganizationType.Index))
 					.Distinct()
-					.Select(t => CreateColumnCodeCompletionItem(OracleColumn.RowId, objectIdentifierNode == null ? t.FullyQualifiedObjectName.ToString() : null, nodeToReplace, OracleCodeCompletionCategory.PseudoColumn));
+					.Select(t => CreateColumnCodeCompletionItem(TerminalValues.RowIdDataType, objectIdentifierNode == null ? t.FullyQualifiedObjectName.ToString() : null, nodeToReplace, OracleCodeCompletionCategory.PseudoColumn));
 				suggestedItems = suggestedItems.Concat(rowIdItems);
 			}
 

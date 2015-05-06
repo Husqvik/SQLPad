@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
 
 namespace SqlPad.Oracle
 {
@@ -114,6 +115,51 @@ namespace SqlPad.Oracle
 	[DebuggerDisplay("OracleTable (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
 	public class OracleTable : OracleDataObject
 	{
+		private static readonly string RowIdNormalizedName = TerminalValues.RowIdDataType.ToQuotedIdentifier();
+
+		private readonly OracleColumn _rowSystemChangeNumberPseudoColumn =
+			new OracleColumn
+			{
+				Name = "\"ORA_ROWSCN\"",
+				DataType = OracleDataType.NumberType
+			};
+
+		private readonly OracleColumn[] _flashbackVersionColumns =
+			{
+				new OracleColumn
+				{
+					Name = "\"VERSIONS_STARTTIME\"",
+					DataType = OracleDataType.CreateTimestampDataType(0)
+				},
+				new OracleColumn
+				{
+					Name = "\"VERSIONS_ENDTIME\"",
+					DataType = OracleDataType.CreateTimestampDataType(0)
+				},
+				new OracleColumn
+				{
+					Name = "\"VERSIONS_STARTSCN\"",
+					DataType = OracleDataType.NumberType
+				},
+				new OracleColumn
+				{
+					Name = "\"VERSIONS_ENDSCN\"",
+					DataType = OracleDataType.NumberType
+				},
+				new OracleColumn
+				{
+					Name = "\"VERSIONS_OPERATION\"",
+					DataType = new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(null, TerminalValues.Varchar2), Unit = DataUnit.Byte, Length = 1 }
+				},
+				new OracleColumn
+				{
+					Name = "\"VERSIONS_XID\"",
+					DataType = new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(null, TerminalValues.Raw), Length = 8 }
+				}
+			};
+
+		private OracleColumn _rowIdPseudoColumn;
+
 		public OracleTable()
 		{
 			Partitions = new Dictionary<string, OraclePartition>();
@@ -127,18 +173,26 @@ namespace SqlPad.Oracle
 		{
 			get
 			{
-				return Organization.In(OrganizationType.Heap, OrganizationType.Index)
-					? new OracleColumn
-					  {
-						  Name = OracleColumn.RowId.ToQuotedIdentifier(),
-						  DataType =
-							new OracleDataType
-							{
-								FullyQualifiedName = OracleObjectIdentifier.Create(null, Organization == OrganizationType.Index ? "UROWID" : OracleColumn.RowId)
-							}
-					  }
+				return Organization == OrganizationType.Heap || Organization == OrganizationType.Index
+					? _rowIdPseudoColumn ?? BuildRowIdPseudoColumn()
 					: null;
 			}
+		}
+		
+		public OracleColumn RowSystemChangeNumberPseudoColumn { get { return _rowSystemChangeNumberPseudoColumn; } }
+
+		private OracleColumn BuildRowIdPseudoColumn()
+		{
+			return _rowIdPseudoColumn =
+				new OracleColumn
+				{
+					Name = RowIdNormalizedName,
+					DataType =
+						new OracleDataType
+						{
+							FullyQualifiedName = OracleObjectIdentifier.Create(null, Organization == OrganizationType.Index ? TerminalValues.UniversalRowId : TerminalValues.RowIdDataType)
+						}
+				};
 		}
 
 		public override string Type { get { return OracleSchemaObjectType.Table; } }

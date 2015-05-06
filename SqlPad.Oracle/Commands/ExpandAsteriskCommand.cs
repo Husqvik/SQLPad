@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using SqlPad.Commands;
+using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
 
 namespace SqlPad.Oracle.Commands
 {
@@ -147,7 +148,7 @@ namespace SqlPad.Oracle.Commands
 					if (includeRowId && dataObject != null &&
 					    dataObject.Organization.In(OrganizationType.Heap, OrganizationType.Index))
 					{
-						columnNames.Insert(0, GetExpandedColumn(objectReference, OracleColumn.RowId, true));
+						columnNames.Insert(0, GetExpandedColumn(objectReference, TerminalValues.RowIdDataType, true));
 					}
 				}
 				else
@@ -169,7 +170,7 @@ namespace SqlPad.Oracle.Commands
 				var rowIdColumns = CurrentQueryBlock.ObjectReferences
 					.Select(o => new { ObjectReference = o, DataObject = o.SchemaObject.GetTargetSchemaObject() as OracleTable })
 					.Where(o => o.DataObject != null && o.ObjectReference.DatabaseLinkNode == null && o.DataObject.Organization.In(OrganizationType.Heap, OrganizationType.Index))
-					.Select(o => GetExpandedColumn(o.ObjectReference, OracleColumn.RowId, true));
+					.Select(o => GetExpandedColumn(o.ObjectReference, TerminalValues.RowIdDataType, true));
 
 				columnNames.InsertRange(0, rowIdColumns);
 

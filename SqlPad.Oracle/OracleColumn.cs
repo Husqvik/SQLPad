@@ -5,8 +5,6 @@ namespace SqlPad.Oracle
 	[DebuggerDisplay("OracleColumn (Name={Name}; Type={FullTypeName})")]
 	public class OracleColumn
 	{
-		public const string RowId = "ROWID";
-
 		public OracleDataType DataType { get; set; }
 
 		public string Name { get; set; }
