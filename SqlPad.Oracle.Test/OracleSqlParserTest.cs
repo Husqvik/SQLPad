@@ -3298,6 +3298,25 @@ ORDER BY symbol, tstamp";
 					terminalCandidates[7].Id.ShouldBe(Terminals.StringLiteral);
 				}
 			}
+
+			public class SetConstraint
+			{
+				[Test(Description = @"")]
+				public void TestSetAllConstraintsImmediate()
+				{
+					const string statement1 = @"SET CONSTRAINTS ALL IMMEDIATE";
+					var statement = Parser.Parse(statement1).Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestSetNamedConstraintsDeferred()
+				{
+					const string statement1 = @"SET CONSTRAINTS emp_job_nn, emp_salary_min, hr.jhist_dept_fk@remote DEFERRED";
+					var statement = Parser.Parse(statement1).Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+			}
 		}
 
 		public class Dml
@@ -5072,6 +5091,21 @@ PURGE REPEAT INTERVAL '5' DAY";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 			}
+
+			public class CreateRestorePoint
+			{
+				[Test(Description = @"")]
+				public void TestCreateRestorePoint()
+				{
+					const string statementText = @"CREATE RESTORE POINT restore_point AS OF SCN 12345 GUARANTEE FLASHBACK DATABASE";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+			}
 		}
 
 		public class Alter
@@ -5306,6 +5340,21 @@ PURGE REPEAT INTERVAL '5' DAY";
 				public void TestAlterRollbackSegment()
 				{
 					const string statementText = @"ALTER ROLLBACK SEGMENT rollback_segment SHRINK TO 128M";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+			}
+
+			public class AlterResourceCost
+			{
+				[Test(Description = @"")]
+				public void TestAlterResourceCost()
+				{
+					const string statementText = @"ALTER RESOURCE COST PRIVATE_SGA 0 LOGICAL_READS_PER_SESSION 0 CONNECT_TIME 0 CPU_PER_SESSION 0";
 
 					var result = Parser.Parse(statementText);
 

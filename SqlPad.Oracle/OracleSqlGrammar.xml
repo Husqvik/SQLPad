@@ -90,6 +90,9 @@
         <Sequence>
           <NonTerminal Id="CallStatement" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="SetConstraintStatement" />
+        </Sequence>
       </Sequences>
     </Rule>
 
@@ -187,7 +190,50 @@
         <Sequence>
           <NonTerminal Id="AlterRollbackSegment" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="AlterResourceCost" />
+        </Sequence>
         <!-- TODO: Add other objects -->
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AlterResourceCost">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Resource" />
+          <Terminal Id="Cost" />
+          <NonTerminal Id="ResourceCostOptionList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ResourceCostOptionList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ResourceCostOption" />
+          <NonTerminal Id="ResourceCostOptionList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ResourceCostOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="CpuPerSession" />
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="ConnectTime" />
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="LogicalReadsPerSession" />
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="PrivateSystemGlobalArea" />
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
       </Sequences>
     </Rule>
 
@@ -2361,6 +2407,68 @@
           <Terminal Id="To" />
           <Terminal Id="Savepoint" IsOptional="true" />
           <Terminal Id="Identifier" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <!-- SET CONSTRAINT statement -->
+    <Rule StartingNonTerminal="SetConstraintStatement">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Set" />
+          <NonTerminal Id="ConstraintOrConstraints" />
+          <NonTerminal Id="AllOrQualifiedObjectIdentifierList" />
+          <NonTerminal Id="ImmediateOrDeferred" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AllOrQualifiedObjectIdentifierList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="All" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="QualifiedObjectIdentifierList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="QualifiedObjectIdentifierList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="QualifiedObjectIdentifier" />
+          <NonTerminal Id="QualifiedObjectIdentifierListChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="QualifiedObjectIdentifier">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="DatabaseLink" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="QualifiedObjectIdentifierListChained">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="QualifiedObjectIdentifierList"/>
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ConstraintOrConstraints">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Constraint" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Constraints" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -8230,7 +8338,47 @@
         <Sequence>
           <NonTerminal Id="CreateRollbackSegment" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="CreateRestorePoint" />
+        </Sequence>
         <!-- TODO: Create other objects -->
+      </Sequences>
+    </Rule>
+
+    <!-- CREATE RESTORE POINT -->
+    <Rule StartingNonTerminal="CreateRestorePoint">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Restore" />
+          <Terminal Id="Point" />
+          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="RestorePointAsOfClause" IsOptional="true" />
+          <NonTerminal Id="RestorePointOption" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="RestorePointOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Preserve" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Guarantee" />
+          <Terminal Id="Flashback" />
+          <Terminal Id="Database" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="RestorePointAsOfClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="As" />
+          <Terminal Id="Of" />
+          <NonTerminal Id="SystemChangeNumberOrTimestamp" />
+          <NonTerminal Id="Expression" />
+        </Sequence>
       </Sequences>
     </Rule>
 
@@ -16157,9 +16305,7 @@
           <NonTerminal Id="SchemaPrefix" IsOptional="true" />
           <Terminal Id="ObjectIdentifier" />
           <Terminal Id="For" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
-          <NonTerminal Id="DatabaseLink" IsOptional="true" />
+          <NonTerminal Id="QualifiedObjectIdentifier" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -16757,6 +16903,8 @@
     <Terminal Id="Globally" Value="GLOBALLY" />
     <Terminal Id="Library" Value="LIBRARY" />
     <Terminal Id="Role" Value="ROLE" />
+    <Terminal Id="Restore" Value="RESTORE" />
+    <Terminal Id="Point" Value="POINT" />
     
     <!-- External table opaque format specification -->
     <Terminal Id="OracleLoader" Value="ORACLE_LOADER" />
@@ -16933,6 +17081,7 @@
     <Terminal Id="Backup" Value="BACKUP" />
     <Terminal Id="Permanent" Value="PERMANENT" />
     <Terminal Id="Normal" Value="NORMAL" />
+    <Terminal Id="Cost" Value="COST" />
     
     <!-- Alter session -->
     <Terminal Id="Advise" Value="ADVISE" />
