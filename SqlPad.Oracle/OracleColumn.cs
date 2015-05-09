@@ -5,6 +5,11 @@ namespace SqlPad.Oracle
 	[DebuggerDisplay("OracleColumn (Name={Name}; Type={FullTypeName})")]
 	public class OracleColumn
 	{
+		public OracleColumn(bool isPseudoColumn = false)
+		{
+			IsPseudoColumn = isPseudoColumn;
+		}
+
 		public OracleDataType DataType { get; set; }
 
 		public string Name { get; set; }
@@ -21,17 +26,8 @@ namespace SqlPad.Oracle
 		public bool Virtual { get; set; }
 
 		public string DefaultValue { get; set; }
-
-		public OracleColumn Clone(string newName)
-		{
-			return new OracleColumn
-			       {
-					   Name = newName,
-					   Nullable = Nullable,
-					   DataType = DataType,
-					   CharacterSize = CharacterSize,
-			       };
-		}
+		
+		public bool IsPseudoColumn { get; private set; }
 	}
 
 	public enum DataUnit

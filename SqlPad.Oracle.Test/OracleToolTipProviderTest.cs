@@ -63,7 +63,7 @@ namespace SqlPad.Oracle.Test
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 8);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipColumn>();
+			toolTip.Control.ShouldBeTypeOf<ToolTipViewColumn>();
 			toolTip.Control.DataContext.ShouldBeTypeOf<ColumnDetailsModel>();
 			var dataModel = (ColumnDetailsModel)toolTip.Control.DataContext;
 			dataModel.Owner.ShouldBe("HUSQVIK.SELECTION");

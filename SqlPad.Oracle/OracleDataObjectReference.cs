@@ -72,7 +72,7 @@ namespace SqlPad.Oracle
 					if (table.Organization == OrganizationType.Heap || table.Organization == OrganizationType.Index)
 					{
 						var rowIdPseudoColumn =
-							new OracleColumn
+							new OracleColumn(true)
 							{
 								Name = RowIdNormalizedName,
 								DataType =
@@ -88,7 +88,7 @@ namespace SqlPad.Oracle
 					if (FlashbackOption == FlashbackOption.None || FlashbackOption == FlashbackOption.AsOf)
 					{
 						var rowSystemChangeNumberPseudoColumn =
-							new OracleColumn
+							new OracleColumn(true)
 							{
 								Name = "\"ORA_ROWSCN\"",
 								DataType = OracleDataType.NumberType
@@ -101,32 +101,32 @@ namespace SqlPad.Oracle
 						var flashbackVersionColumns =
 							new[]
 								{
-									new OracleColumn
+									new OracleColumn(true)
 									{
 										Name = "\"VERSIONS_STARTTIME\"",
 										DataType = OracleDataType.CreateTimestampDataType(0)
 									},
-									new OracleColumn
+									new OracleColumn(true)
 									{
 										Name = "\"VERSIONS_ENDTIME\"",
 										DataType = OracleDataType.CreateTimestampDataType(0)
 									},
-									new OracleColumn
+									new OracleColumn(true)
 									{
 										Name = "\"VERSIONS_STARTSCN\"",
 										DataType = OracleDataType.NumberType
 									},
-									new OracleColumn
+									new OracleColumn(true)
 									{
 										Name = "\"VERSIONS_ENDSCN\"",
 										DataType = OracleDataType.NumberType
 									},
-									new OracleColumn
+									new OracleColumn(true)
 									{
 										Name = "\"VERSIONS_OPERATION\"",
 										DataType = new OracleDataType {FullyQualifiedName = OracleObjectIdentifier.Create(null, TerminalValues.Varchar2), Unit = DataUnit.Byte, Length = 1}
 									},
-									new OracleColumn
+									new OracleColumn(true)
 									{
 										Name = "\"VERSIONS_XID\"",
 										DataType = new OracleDataType {FullyQualifiedName = OracleObjectIdentifier.Create(null, TerminalValues.Raw), Length = 8}

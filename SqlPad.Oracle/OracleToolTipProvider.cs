@@ -164,8 +164,10 @@ namespace SqlPad.Oracle
 					case OracleSchemaObjectType.Table:
 					case OracleSchemaObjectType.MaterializedView:
 						dataModel = BuildColumnDetailsModel(databaseModel, columnReference);
-						return new ToolTipColumn(dataModel);
-
+						return columnReference.ColumnDescription.IsPseudoColumn
+							? (IToolTip)new ToolTipViewColumn(dataModel)
+							: new ToolTipColumn(dataModel);
+							
 					case OracleSchemaObjectType.View:
 						dataModel = BuildColumnDetailsModel(databaseModel, columnReference);
 						return new ToolTipViewColumn(dataModel);

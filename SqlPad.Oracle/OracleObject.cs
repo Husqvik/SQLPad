@@ -173,11 +173,23 @@ namespace SqlPad.Oracle
 						}
 				};
 
+			var currentValueColumn =
+				new OracleColumn
+				{
+					Name = NormalizedColumnNameCurrentValue,
+					DataType =
+						new OracleDataType
+						{
+							FullyQualifiedName = OracleObjectIdentifier.Create(null, "INTEGER"),
+							Scale = 0
+						}
+				};
+
 			_columns =
 				new List<OracleColumn>
 				{
 					nextValueColumn,
-					nextValueColumn.Clone(NormalizedColumnNameCurrentValue)
+					currentValueColumn
 				}.AsReadOnly();
 		}
 
