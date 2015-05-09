@@ -1909,5 +1909,55 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 			insertTargets[3].ObjectReferences.Count.ShouldBe(2);
 			insertTargets[3].ColumnReferences.Count.ShouldBe(3);
 		}
+
+		[Test(Description = @"")]
+		public void TestFlashbackAsOfPseudocolumnReferences()
+		{
+			const string query1 = @"SELECT SELECTION_ID, ORA_ROWSCN, VERSIONS_STARTTIME, VERSIONS_ENDTIME, VERSIONS_STARTSCN, VERSIONS_ENDSCN, VERSIONS_OPERATION, VERSIONS_XID FROM SELECTION AS OF TIMESTAMP TIMESTAMP'2015-05-08 00:00:00'";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.QueryBlocks.Count.ShouldBe(1);
+
+			var columnReferences = semanticModel.QueryBlocks.Single().AllColumnReferences.ToArray();
+			columnReferences.Length.ShouldBe(8);
+
+			columnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
+			columnReferences[1].ColumnNodeColumnReferences.Count.ShouldBe(1);
+			columnReferences[2].ColumnNodeColumnReferences.Count.ShouldBe(0);
+			columnReferences[3].ColumnNodeColumnReferences.Count.ShouldBe(0);
+			columnReferences[4].ColumnNodeColumnReferences.Count.ShouldBe(0);
+			columnReferences[5].ColumnNodeColumnReferences.Count.ShouldBe(0);
+			columnReferences[6].ColumnNodeColumnReferences.Count.ShouldBe(0);
+			columnReferences[7].ColumnNodeColumnReferences.Count.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
+		public void TestFlashbackVersionsPseudocolumnReferences()
+		{
+			const string query1 = @"SELECT SELECTION_ID, ORA_ROWSCN, VERSIONS_STARTTIME, VERSIONS_ENDTIME, VERSIONS_STARTSCN, VERSIONS_ENDSCN, VERSIONS_OPERATION, VERSIONS_XID FROM SELECTION VERSIONS BETWEEN SCN MINVALUE AND MAXVALUE AS OF TIMESTAMP TIMESTAMP'2015-05-08 00:00:00'";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.QueryBlocks.Count.ShouldBe(1);
+
+			var columnReferences = semanticModel.QueryBlocks.Single().AllColumnReferences.ToArray();
+			columnReferences.Length.ShouldBe(8);
+
+			columnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
+			columnReferences[1].ColumnNodeColumnReferences.Count.ShouldBe(0);
+			columnReferences[2].ColumnNodeColumnReferences.Count.ShouldBe(1);
+			columnReferences[3].ColumnNodeColumnReferences.Count.ShouldBe(1);
+			columnReferences[4].ColumnNodeColumnReferences.Count.ShouldBe(1);
+			columnReferences[5].ColumnNodeColumnReferences.Count.ShouldBe(1);
+			columnReferences[6].ColumnNodeColumnReferences.Count.ShouldBe(1);
+			columnReferences[7].ColumnNodeColumnReferences.Count.ShouldBe(1);
+		}
 	}
 }

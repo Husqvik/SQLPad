@@ -10,7 +10,7 @@ namespace SqlPad.Oracle
 {
 	public class OracleCodeCompletionProvider : ICodeCompletionProvider
 	{
-		private readonly OracleSqlParser _parser = new OracleSqlParser();
+		private static readonly OracleSqlParser Parser = new OracleSqlParser();
 
 		private const string JoinTypeJoin = "JOIN";
 		private const string JoinTypeInnerJoin = "INNER JOIN";
@@ -162,7 +162,7 @@ namespace SqlPad.Oracle
 
 		internal ICollection<ICodeCompletionItem> ResolveItems(IDatabaseModel databaseModel, string statementText, int cursorPosition, bool forcedInvokation = true, params string[] categories)
 		{
-			var documentStore = new SqlDocumentRepository(_parser, new OracleStatementValidator(), databaseModel, statementText);
+			var documentStore = new SqlDocumentRepository(Parser, new OracleStatementValidator(), databaseModel, statementText);
 			var sourceItems = ResolveItems(documentStore, databaseModel, cursorPosition, forcedInvokation);
 			return sourceItems.Where(i => categories.Length == 0 || categories.Contains(i.Category)).ToArray();
 		}
@@ -588,15 +588,14 @@ namespace SqlPad.Oracle
 			var rowSourceColumnItems = suggestedColumns.Select(t => CreateColumnCodeCompletionItem(t.Item1, objectIdentifierNode == null ? t.Item2.ToString() : null, nodeToReplace));
 			suggestedItems = suggestedItems.Concat(rowSourceColumnItems);
 
-			if (CodeCompletionSearchHelper.IsMatch(TerminalValues.RowIdDataType, partialName))
-			{
-				var rowIdItems = tableReferenceSource
-					.Select(r => new { r.FullyQualifiedObjectName, DataObject = r.SchemaObject.GetTargetSchemaObject() as OracleTable })
-					.Where(t => t.DataObject != null && t.DataObject.Organization.In(OrganizationType.Heap, OrganizationType.Index))
-					.Distinct()
-					.Select(t => CreateColumnCodeCompletionItem(TerminalValues.RowIdDataType, objectIdentifierNode == null ? t.FullyQualifiedObjectName.ToString() : null, nodeToReplace, OracleCodeCompletionCategory.PseudoColumn));
-				suggestedItems = suggestedItems.Concat(rowIdItems);
-			}
+			var flaskbackColumns = tableReferenceSource
+				.OfType<OracleDataObjectReference>()
+				.SelectMany(r => r.PseudoColumns.Select(c => new { r.FullyQualifiedObjectName, PseudoColumn = c }))
+				.Where(c => CodeCompletionSearchHelper.IsMatch(c.PseudoColumn.Name, partialName))
+				.Select(c =>
+					CreateColumnCodeCompletionItem(GetPrettyColumnName(c.PseudoColumn.Name), objectIdentifierNode == null ? c.FullyQualifiedObjectName.ToString() : null, nodeToReplace, OracleCodeCompletionCategory.PseudoColumn));
+
+			suggestedItems = suggestedItems.Concat(flaskbackColumns);
 
 			if (partialName == null && currentNode.IsWithinSelectClause() && currentNode.GetParentExpression().GetParentExpression() == null)
 			{
@@ -636,6 +635,13 @@ namespace SqlPad.Oracle
 			}
 
 			return suggestedItems.Concat(suggestedFunctions);
+		}
+
+		internal static string GetPrettyColumnName(string normalizedColumnName)
+		{
+			return String.Equals(normalizedColumnName, OracleDataObjectReference.RowIdNormalizedName)
+				? TerminalValues.RowIdPseudoColumn
+				: normalizedColumnName.ToSimpleIdentifier();
 		}
 
 		private bool FilterOtherSchemaObject(OracleSchemaObject schemaObject, bool sequencesAllowed)

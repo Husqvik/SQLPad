@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
 
 namespace SqlPad.Oracle
 {
@@ -32,7 +33,10 @@ namespace SqlPad.Oracle
 	public class OracleDataObjectReference : OracleObjectWithColumnsReference
 	{
 		private IReadOnlyList<OracleColumn> _columns;
+		private IReadOnlyList<OracleColumn> _pseudoColumns;
 		private readonly ReferenceType _referenceType;
+
+		internal static readonly string RowIdNormalizedName = TerminalValues.RowIdPseudoColumn.ToQuotedIdentifier();
 
 		public static readonly OracleDataObjectReference[] EmptyArray = new OracleDataObjectReference[0];
 
@@ -50,6 +54,91 @@ namespace SqlPad.Oracle
 			return OracleObjectIdentifier.Create(
 					AliasNode == null ? OwnerNode : null,
 					Type == ReferenceType.InlineView ? null : ObjectNode, AliasNode);
+		}
+
+		public IReadOnlyList<OracleColumn> PseudoColumns
+		{
+			get
+			{
+				if (_pseudoColumns != null)
+				{
+					return _pseudoColumns;
+				}
+
+				var pseudoColumns = new List<OracleColumn>();
+				var table = SchemaObject.GetTargetSchemaObject() as OracleTable;
+				if (Type == ReferenceType.SchemaObject && table != null)
+				{
+					if (table.Organization == OrganizationType.Heap || table.Organization == OrganizationType.Index)
+					{
+						var rowIdPseudoColumn =
+							new OracleColumn
+							{
+								Name = RowIdNormalizedName,
+								DataType =
+									new OracleDataType
+									{
+										FullyQualifiedName = OracleObjectIdentifier.Create(null, table.Organization == OrganizationType.Index ? TerminalValues.UniversalRowId : TerminalValues.RowIdDataType)
+									}
+							};
+
+						pseudoColumns.Add(rowIdPseudoColumn);
+					}
+
+					if (FlashbackOption == FlashbackOption.None || FlashbackOption == FlashbackOption.AsOf)
+					{
+						var rowSystemChangeNumberPseudoColumn =
+							new OracleColumn
+							{
+								Name = "\"ORA_ROWSCN\"",
+								DataType = OracleDataType.NumberType
+							};
+
+						pseudoColumns.Add(rowSystemChangeNumberPseudoColumn);
+					}
+					else if ((FlashbackOption & FlashbackOption.Versions) == FlashbackOption.Versions)
+					{
+						var flashbackVersionColumns =
+							new[]
+								{
+									new OracleColumn
+									{
+										Name = "\"VERSIONS_STARTTIME\"",
+										DataType = OracleDataType.CreateTimestampDataType(0)
+									},
+									new OracleColumn
+									{
+										Name = "\"VERSIONS_ENDTIME\"",
+										DataType = OracleDataType.CreateTimestampDataType(0)
+									},
+									new OracleColumn
+									{
+										Name = "\"VERSIONS_STARTSCN\"",
+										DataType = OracleDataType.NumberType
+									},
+									new OracleColumn
+									{
+										Name = "\"VERSIONS_ENDSCN\"",
+										DataType = OracleDataType.NumberType
+									},
+									new OracleColumn
+									{
+										Name = "\"VERSIONS_OPERATION\"",
+										DataType = new OracleDataType {FullyQualifiedName = OracleObjectIdentifier.Create(null, TerminalValues.Varchar2), Unit = DataUnit.Byte, Length = 1}
+									},
+									new OracleColumn
+									{
+										Name = "\"VERSIONS_XID\"",
+										DataType = new OracleDataType {FullyQualifiedName = OracleObjectIdentifier.Create(null, TerminalValues.Raw), Length = 8}
+									}
+								};
+
+						pseudoColumns.AddRange(flashbackVersionColumns);
+					}
+				}
+
+				return _pseudoColumns = pseudoColumns.AsReadOnly();
+			}
 		}
 
 		public override IReadOnlyList<OracleColumn> Columns
@@ -84,7 +173,17 @@ namespace SqlPad.Oracle
 		}
 		
 		public StatementGrammarNode AliasNode { get; set; }
+
+		public FlashbackOption FlashbackOption { get; set; }
 		
 		public override ReferenceType Type { get { return _referenceType; } }
+	}
+
+	[Flags]
+	public enum FlashbackOption
+	{
+		None,
+		AsOf,
+		Versions
 	}
 }

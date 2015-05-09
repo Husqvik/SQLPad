@@ -456,6 +456,8 @@ namespace SqlPad.Oracle
 								_objectReferenceCteRootNodes[objectReference] = commonTableExpressions;
 							}
 
+							FindFlashbackOption(objectReference);
+
 							FindExplicitPartitionReferences(queryTableExpression, objectReference);
 						}
 					}
@@ -485,6 +487,31 @@ namespace SqlPad.Oracle
 			BuildDmlModel();
 			
 			ResolveRedundantTerminals();
+		}
+
+		private void FindFlashbackOption(OracleDataObjectReference objectReference)
+		{
+			var table = objectReference.SchemaObject.GetTargetSchemaObject() as OracleTable;
+			if (table == null)
+			{
+				return;
+			}
+
+			var flashbackQueryClause = objectReference.RootNode.GetSingleDescendant(NonTerminals.FlashbackQueryClause);
+			if (flashbackQueryClause == null)
+			{
+				return;
+			}
+
+			if (flashbackQueryClause[NonTerminals.FlashbackVersionsClause] != null)
+			{
+				objectReference.FlashbackOption |= FlashbackOption.Versions;
+			}
+
+			if (flashbackQueryClause[NonTerminals.FlashbackAsOfClause] != null)
+			{
+				objectReference.FlashbackOption |= FlashbackOption.AsOf;
+			}
 		}
 
 		private static void FindExplicitPartitionReferences(StatementGrammarNode queryTableExpression, OracleDataObjectReference objectReference)
@@ -2011,19 +2038,7 @@ namespace SqlPad.Oracle
 					if (rowSourceReference.SchemaObject == null)
 						return;
 
-					if (String.Equals(columnReference.ColumnNode.Id, Terminals.RowIdPseudoColumn))
-					{
-						var oracleTable = rowSourceReference.SchemaObject.GetTargetSchemaObject() as OracleTable;
-						if (oracleTable != null && oracleTable.RowIdPseudoColumn != null &&
-						    (columnReference.ObjectNode == null || IsTableReferenceValid(columnReference, rowSourceReference)))
-						{
-							newColumnReferences.Add(oracleTable.RowIdPseudoColumn);
-						}
-					}
-					else
-					{
-						newColumnReferences.AddRange(GetColumnReferenceMatchingColumns(rowSourceReference, columnReference));
-					}
+					newColumnReferences.AddRange(GetColumnReferenceMatchingColumns(rowSourceReference, columnReference));
 
 					break;
 				case ReferenceType.InlineView:
@@ -2059,7 +2074,7 @@ namespace SqlPad.Oracle
 		private IEnumerable<OracleColumn> GetColumnReferenceMatchingColumns(OracleDataObjectReference rowSourceReference, OracleColumnReference columnReference)
 		{
 			return columnReference.ObjectNode == null || IsTableReferenceValid(columnReference, rowSourceReference)
-				? rowSourceReference.Columns.Where(c => c.Name == columnReference.NormalizedName)
+				? rowSourceReference.Columns.Concat(rowSourceReference.PseudoColumns).Where(c => String.Equals(c.Name, columnReference.NormalizedName))
 				: Enumerable.Empty<OracleColumn>();
 		}
 
@@ -2172,8 +2187,8 @@ namespace SqlPad.Oracle
 		private bool IsTableReferenceValid(OracleColumnReference column, OracleDataObjectReference schemaObject)
 		{
 			var objectName = column.FullyQualifiedObjectName;
-			return (String.IsNullOrEmpty(objectName.NormalizedName) || objectName.NormalizedName == schemaObject.FullyQualifiedObjectName.NormalizedName) &&
-			       (String.IsNullOrEmpty(objectName.NormalizedOwner) || objectName.NormalizedOwner == schemaObject.FullyQualifiedObjectName.NormalizedOwner);
+			return (String.IsNullOrEmpty(objectName.NormalizedName) || String.Equals(objectName.NormalizedName, schemaObject.FullyQualifiedObjectName.NormalizedName)) &&
+			       (String.IsNullOrEmpty(objectName.NormalizedOwner) || String.Equals(objectName.NormalizedOwner, schemaObject.FullyQualifiedObjectName.NormalizedOwner));
 		}
 
 		private void FindJoinColumnReferences(OracleQueryBlock queryBlock)

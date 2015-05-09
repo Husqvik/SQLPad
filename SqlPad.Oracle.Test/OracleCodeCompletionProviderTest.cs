@@ -72,10 +72,11 @@ SELECT * FROM CTE JOIN DUAL ON TO_CHAR(VAL) <> DUMMY CROSS APPLY (SELECT * FROM 
 			const string testQuery = "SELECT I.*, INVOICES.ID FROM HUSQVIK.INVOICELINES I JOIN HUSQVIK.INVOICES";
 
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, testQuery, 21).ToArray();
-			items.Length.ShouldBe(2);
+			items.Length.ShouldBe(3);
 			items[0].Name.ShouldBe("DUEDATE");
 			items[0].Text.ShouldBe("DUEDATE");
-			items[1].Name.ShouldBe(TerminalValues.RowIdPseudoColumn);
+			items[1].Name.ShouldBe("ORA_ROWSCN");
+			items[2].Name.ShouldBe(TerminalValues.RowIdPseudoColumn);
 		}
 
 		[Test(Description = @"")]
@@ -230,48 +231,50 @@ FROM
 			const string query1 = @"SELECT 1,  FROM SELECTION S";
 
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 10).Where(FilterProgramItems).ToArray();
-			items.Length.ShouldBe(14);
+			items.Length.ShouldBe(15);
 			items[0].Name.ShouldBe("S.*");
 			items[0].Text.ShouldBe("S.RESPONDENTBUCKET_ID, S.SELECTION_ID, S.PROJECT_ID, S.NAME");
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.AllColumns);
 			items[1].Name.ShouldBe("S.NAME");
 			items[1].Text.ShouldBe("S.NAME");
 			items[1].Category.ShouldBe(OracleCodeCompletionCategory.Column);
-			items[2].Name.ShouldBe("S.PROJECT_ID");
-			items[2].Text.ShouldBe("S.PROJECT_ID");
-			items[2].Category.ShouldBe(OracleCodeCompletionCategory.Column);
-			items[3].Name.ShouldBe("S.RESPONDENTBUCKET_ID");
-			items[3].Text.ShouldBe("S.RESPONDENTBUCKET_ID");
+			items[2].Name.ShouldBe("S.ORA_ROWSCN");
+			items[2].Category.ShouldBe(OracleCodeCompletionCategory.PseudoColumn);
+			items[3].Name.ShouldBe("S.PROJECT_ID");
+			items[3].Text.ShouldBe("S.PROJECT_ID");
 			items[3].Category.ShouldBe(OracleCodeCompletionCategory.Column);
-			items[4].Name.ShouldBe("S.ROWID");
-			items[4].Category.ShouldBe(OracleCodeCompletionCategory.PseudoColumn);
-			items[5].Name.ShouldBe("S.SELECTION_ID");
-			items[5].Text.ShouldBe("S.SELECTION_ID");
-			items[5].Category.ShouldBe(OracleCodeCompletionCategory.Column);
+			items[4].Name.ShouldBe("S.RESPONDENTBUCKET_ID");
+			items[4].Text.ShouldBe("S.RESPONDENTBUCKET_ID");
+			items[4].Category.ShouldBe(OracleCodeCompletionCategory.Column);
+			items[5].Name.ShouldBe("S.ROWID");
+			items[5].Category.ShouldBe(OracleCodeCompletionCategory.PseudoColumn);
+			items[6].Name.ShouldBe("S.SELECTION_ID");
+			items[6].Text.ShouldBe("S.SELECTION_ID");
+			items[6].Category.ShouldBe(OracleCodeCompletionCategory.Column);
 			// Objects
-			items[6].Name.ShouldBe("S");
-			items[6].Text.ShouldBe("S");
-			items[6].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
-			// Other schema objects
-			items[7].Name.ShouldBe("INVALID_OBJECT_TYPE");
-			items[7].Text.ShouldBe("INVALID_OBJECT_TYPE()");
+			items[7].Name.ShouldBe("S");
+			items[7].Text.ShouldBe("S");
 			items[7].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
-			items[9].Name.ShouldBe("TEST_SEQ");
-			items[9].Text.ShouldBe("TEST_SEQ");
-			items[9].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
-			items[10].Name.ShouldBe("XMLTYPE");
-			items[10].Text.ShouldBe("XMLTYPE()");
+			// Other schema objects
+			items[8].Name.ShouldBe("INVALID_OBJECT_TYPE");
+			items[8].Text.ShouldBe("INVALID_OBJECT_TYPE()");
+			items[8].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
+			items[10].Name.ShouldBe("TEST_SEQ");
+			items[10].Text.ShouldBe("TEST_SEQ");
 			items[10].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
+			items[11].Name.ShouldBe("XMLTYPE");
+			items[11].Text.ShouldBe("XMLTYPE()");
+			items[11].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
 			// Schemas
-			items[11].Name.ShouldBe("HUSQVIK");
-			items[11].Text.ShouldBe("HUSQVIK");
-			items[11].Category.ShouldBe(OracleCodeCompletionCategory.DatabaseSchema);
-			items[12].Name.ShouldBe("SYS");
-			items[12].Text.ShouldBe("SYS");
+			items[12].Name.ShouldBe("HUSQVIK");
+			items[12].Text.ShouldBe("HUSQVIK");
 			items[12].Category.ShouldBe(OracleCodeCompletionCategory.DatabaseSchema);
-			items[13].Name.ShouldBe("SYSTEM");
-			items[13].Text.ShouldBe("SYSTEM");
+			items[13].Name.ShouldBe("SYS");
+			items[13].Text.ShouldBe("SYS");
 			items[13].Category.ShouldBe(OracleCodeCompletionCategory.DatabaseSchema);
+			items[14].Name.ShouldBe("SYSTEM");
+			items[14].Text.ShouldBe("SYSTEM");
+			items[14].Category.ShouldBe(OracleCodeCompletionCategory.DatabaseSchema);
 		}
 
 		[Test(Description = @"")]
@@ -301,23 +304,24 @@ FROM
 			const string query1 = @"SELECT SELECTION. FROM SELECTION, TARGETGROUP";
 
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 17).ToArray();
-			items.Length.ShouldBe(6);
+			items.Length.ShouldBe(7);
 			items[0].Name.ShouldBe("*");
 			items[0].Text.ShouldBe("RESPONDENTBUCKET_ID, SELECTION.SELECTION_ID, SELECTION.PROJECT_ID, SELECTION.NAME");
 			items[1].Name.ShouldBe("NAME");
 			items[1].Text.ShouldBe("NAME");
-			items[4].Name.ShouldBe(TerminalValues.RowIdPseudoColumn);
-			items[5].Name.ShouldBe("SELECTION_ID");
-			items[5].Text.ShouldBe("SELECTION_ID");
+			items[5].Name.ShouldBe(TerminalValues.RowIdPseudoColumn);
+			items[6].Name.ShouldBe("SELECTION_ID");
+			items[6].Text.ShouldBe("SELECTION_ID");
 
 			const string query2 = @"SELECT SELECTION.NAME FROM SELECTION, TARGETGROUP";
 
 			items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query2, 18).ToArray();
-			items.Length.ShouldBe(2);
-			items[0].Name.ShouldBe("RESPONDENTBUCKET_ID");
-			items[0].Text.ShouldBe("RESPONDENTBUCKET_ID");
-			items[1].Name.ShouldBe("SELECTION_ID");
-			items[1].Text.ShouldBe("SELECTION_ID");
+			items.Length.ShouldBe(3);
+			items[0].Name.ShouldBe("ORA_ROWSCN");
+			items[1].Name.ShouldBe("RESPONDENTBUCKET_ID");
+			items[1].Text.ShouldBe("RESPONDENTBUCKET_ID");
+			items[2].Name.ShouldBe("SELECTION_ID");
+			items[2].Text.ShouldBe("SELECTION_ID");
 
 			const string query3 = @"SELECT SELECTION.NAME FROM SELECTION, TARGETGROUP";
 
@@ -398,16 +402,17 @@ FROM
 			const string query1 = @"SELECT * FROM PROJECT P GROUP BY P.";
 
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 35).ToArray();
-			items.Length.ShouldBe(3);
+			items.Length.ShouldBe(4);
 			items[0].Name.ShouldBe("NAME");
 			items[0].Text.ShouldBe("NAME");
 			items[0].StatementNode.ShouldBe(null);
-			items[1].Name.ShouldBe("PROJECT_ID");
-			items[1].Text.ShouldBe("PROJECT_ID");
-			items[1].StatementNode.ShouldBe(null);
-			items[2].Name.ShouldBe(TerminalValues.RowIdPseudoColumn);
-			items[2].Text.ShouldBe(TerminalValues.RowIdPseudoColumn);
+			items[1].Name.ShouldBe("ORA_ROWSCN");
+			items[2].Name.ShouldBe("PROJECT_ID");
+			items[2].Text.ShouldBe("PROJECT_ID");
 			items[2].StatementNode.ShouldBe(null);
+			items[3].Name.ShouldBe(TerminalValues.RowIdPseudoColumn);
+			items[3].Text.ShouldBe(TerminalValues.RowIdPseudoColumn);
+			items[3].StatementNode.ShouldBe(null);
 		}
 
 		[Test(Description = @"")]
@@ -472,10 +477,11 @@ FROM
 			const string query1 = @"SELECT CASE WHEN S. FROM SELECTION S";
 
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 19).ToArray();
-			items.Length.ShouldBe(5);
+			items.Length.ShouldBe(6);
 			items[0].Name.ShouldBe("NAME");
-			items[3].Name.ShouldBe(TerminalValues.RowIdPseudoColumn);
-			items[4].Name.ShouldBe("SELECTION_ID");
+			items[1].Name.ShouldBe("ORA_ROWSCN");
+			items[4].Name.ShouldBe(TerminalValues.RowIdPseudoColumn);
+			items[5].Name.ShouldBe("SELECTION_ID");
 		}
 
 		[Test(Description = @"")]
@@ -521,12 +527,13 @@ FROM
 			const string query1 = @"SELECT S.NAME, S., 'My column2' FROM SELECTION S";
 
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 17).ToArray();
-			items.Length.ShouldBe(6);
+			items.Length.ShouldBe(7);
 			items[0].Name.ShouldBe("*");
 			items[0].Text.ShouldBe("RESPONDENTBUCKET_ID, S.SELECTION_ID, S.PROJECT_ID, S.NAME");
-			items[4].Name.ShouldBe(TerminalValues.RowIdPseudoColumn);
-			items[5].Name.ShouldBe("SELECTION_ID");
-			items[5].StatementNode.ShouldBe(null);
+			items[2].Name.ShouldBe("ORA_ROWSCN");
+			items[5].Name.ShouldBe(TerminalValues.RowIdPseudoColumn);
+			items[6].Name.ShouldBe("SELECTION_ID");
+			items[6].StatementNode.ShouldBe(null);
 		}
 
 		[Test(Description = @"")]
@@ -784,7 +791,7 @@ SELECT F1(NULL) FROM DUAL";
 			const string query1 = @"SELECT IL."""" FROM INVOICELINES IL";
 
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 11).ToList();
-			items.Count.ShouldBe(7);
+			items.Count.ShouldBe(8);
 			items[0].Text.ShouldBe("\"CaseSensitiveColumn\"");
 		}
 

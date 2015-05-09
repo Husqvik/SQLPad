@@ -76,7 +76,7 @@ namespace SqlPad.Oracle.Commands
 					{
 						OptionIdentifier = expandedColumn.ColumnName,
 						Description = expandedColumn.ColumnName,
-						Value = !expandedColumn.IsRowId && useDefaultSettings,
+						Value = !expandedColumn.IsPseudoColumn && useDefaultSettings,
 						Tag = expandedColumn
 					});
 			}
@@ -125,7 +125,7 @@ namespace SqlPad.Oracle.Commands
 			return textSegment;
 		}
 
-		private SourcePosition FillColumnNames(List<ExpandedColumn> columnNames, List<OracleObjectWithColumnsReference> databaseLinkReferences, bool includeRowId)
+		private SourcePosition FillColumnNames(List<ExpandedColumn> columnNames, List<OracleObjectWithColumnsReference> databaseLinkReferences, bool includePseudoColumns)
 		{
 			var sourcePosition = SourcePosition.Empty;
 			var asteriskReference = CurrentQueryBlock.Columns.FirstOrDefault(c => c.RootNode == CurrentNode);
@@ -144,11 +144,16 @@ namespace SqlPad.Oracle.Commands
 						.Where(c => !String.IsNullOrEmpty(c.Name))
 						.Select(c => GetExpandedColumn(objectReference, c.Name, false)));
 
-					var dataObject = objectReference.SchemaObject as OracleTable;
-					if (includeRowId && dataObject != null &&
-					    dataObject.Organization.In(OrganizationType.Heap, OrganizationType.Index))
+					var table = objectReference.SchemaObject.GetTargetSchemaObject() as OracleTable;
+					if (includePseudoColumns && table != null)
 					{
-						columnNames.Insert(0, GetExpandedColumn(objectReference, TerminalValues.RowIdDataType, true));
+						var expandedFlashbackColumn = ((OracleDataObjectReference)objectReference).PseudoColumns.Select(c => GetExpandedColumn(objectReference, c.Name, true));
+						columnNames.InsertRange(0, expandedFlashbackColumn);
+
+						if (table.Organization.In(OrganizationType.Heap, OrganizationType.Index))
+						{
+							columnNames.Insert(0, GetExpandedColumn(objectReference, TerminalValues.RowIdPseudoColumn, true));
+						}
 					}
 				}
 				else
@@ -164,20 +169,22 @@ namespace SqlPad.Oracle.Commands
 
 				databaseLinkReferences.AddRange(CurrentQueryBlock.ObjectReferences.Where(o => o.DatabaseLink != null));
 
-				if (!includeRowId)
+				if (!includePseudoColumns)
 					return sourcePosition;
 
-				var rowIdColumns = CurrentQueryBlock.ObjectReferences
-					.Select(o => new { ObjectReference = o, DataObject = o.SchemaObject.GetTargetSchemaObject() as OracleTable })
-					.Where(o => o.DataObject != null && o.ObjectReference.DatabaseLinkNode == null && o.DataObject.Organization.In(OrganizationType.Heap, OrganizationType.Index))
-					.Select(o => GetExpandedColumn(o.ObjectReference, TerminalValues.RowIdDataType, true));
+				var pseudoColumns = CurrentQueryBlock.ObjectReferences.SelectMany(GetPseudoColumns);
 
-				columnNames.InsertRange(0, rowIdColumns);
+				columnNames.InsertRange(0, pseudoColumns);
 
 				sourcePosition = asteriskReference.RootNode.SourcePosition;
 			}
 
 			return sourcePosition;
+		}
+
+		private static IEnumerable<ExpandedColumn> GetPseudoColumns(OracleDataObjectReference reference)
+		{
+			return reference.PseudoColumns.Select(c => GetExpandedColumn(reference, OracleCodeCompletionProvider.GetPrettyColumnName(c.Name), true));
 		}
 
 		private static OracleDataObjectReference GetObjectReference(OracleReferenceContainer column)
@@ -188,9 +195,9 @@ namespace SqlPad.Oracle.Commands
 				: null;
 		}
 
-		private static ExpandedColumn GetExpandedColumn(OracleReference objectReference, string columnName, bool isRowId)
+		private static ExpandedColumn GetExpandedColumn(OracleReference objectReference, string columnName, bool isPseudoColumn)
 		{
-			return new ExpandedColumn { ColumnName = GetColumnName(objectReference, columnName), IsRowId = isRowId };
+			return new ExpandedColumn { ColumnName = GetColumnName(objectReference, columnName), IsPseudoColumn = isPseudoColumn };
 		}
 
 		private static string GetColumnName(OracleReference objectReference, string columnName)
@@ -210,7 +217,8 @@ namespace SqlPad.Oracle.Commands
 		private struct ExpandedColumn
 		{
 			public string ColumnName { get; set; }
-			public bool IsRowId { get; set; }
+			
+			public bool IsPseudoColumn { get; set; }
 		}
 	}
 }
