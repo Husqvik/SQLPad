@@ -8341,10 +8341,50 @@
         <Sequence>
           <NonTerminal Id="CreateRestorePoint" />
         </Sequence>
+        <!--<Sequence>
+          <NonTerminal Id="CreateSchemaAuthorization" />
+        </Sequence>-->
         <!-- TODO: Create other objects -->
       </Sequences>
     </Rule>
 
+    <!-- CREATE SCHEMA AUTHORIZATION -->
+    <Rule StartingNonTerminal="CreateSchemaAuthorization">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Schema" />
+          <Terminal Id="Authorization" />
+          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaAuthorizationCreateStatementList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="SchemaAuthorizationCreateStatementList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Create" />
+          <NonTerminal Id="SchemaAuthorizationCreateObjectType" />
+          <NonTerminal Id="SchemaAuthorizationCreateStatementList" IsOptional="true" />
+        </Sequence>
+        <!--<Sequence>
+          <Terminal Id="GrantStatement" />
+          <NonTerminal Id="SchemaAuthorizationCreateStatementList" IsOptional="true" />
+        </Sequence>-->
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="SchemaAuthorizationCreateObjectType">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="CreateTable" />
+         </Sequence>
+         <Sequence>
+          <NonTerminal Id="CreateView" />
+         </Sequence>
+      </Sequences>
+    </Rule>
+    
     <!-- CREATE RESTORE POINT -->
     <Rule StartingNonTerminal="CreateRestorePoint">
       <Sequences>
@@ -16905,6 +16945,8 @@
     <Terminal Id="Role" Value="ROLE" />
     <Terminal Id="Restore" Value="RESTORE" />
     <Terminal Id="Point" Value="POINT" />
+    <Terminal Id="Schema" Value="SCHEMA" />
+    <Terminal Id="Authorization" Value="AUTHORIZATION" />
     
     <!-- External table opaque format specification -->
     <Terminal Id="OracleLoader" Value="ORACLE_LOADER" />
