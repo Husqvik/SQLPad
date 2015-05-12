@@ -8341,9 +8341,9 @@
         <Sequence>
           <NonTerminal Id="CreateRestorePoint" />
         </Sequence>
-        <!--<Sequence>
+        <Sequence>
           <NonTerminal Id="CreateSchemaAuthorization" />
-        </Sequence>-->
+        </Sequence>
         <!-- TODO: Create other objects -->
       </Sequences>
     </Rule>

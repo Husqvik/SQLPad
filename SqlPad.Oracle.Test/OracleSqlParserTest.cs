@@ -5106,6 +5106,22 @@ PURGE REPEAT INTERVAL '5' DAY";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 			}
+
+			public class CreateAuthorizationSchema
+			{
+				[Test(Description = @"")]
+				public void TestCreateAuthorizationSchema()
+				{
+					const string statementText =
+@"CREATE SCHEMA AUTHORIZATION test_schema CREATE VIEW test_view AS SELECT * FROM DUAL CREATE TABLE test_table (test_column NUMBER)";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+			}
 		}
 
 		public class Alter
