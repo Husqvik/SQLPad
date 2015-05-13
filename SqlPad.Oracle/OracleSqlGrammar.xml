@@ -8367,10 +8367,203 @@
           <NonTerminal Id="SchemaAuthorizationCreateObjectType" />
           <NonTerminal Id="SchemaAuthorizationCreateStatementList" IsOptional="true" />
         </Sequence>
-        <!--<Sequence>
-          <Terminal Id="GrantStatement" />
+        <Sequence>
+          <NonTerminal Id="GrantStatement" />
           <NonTerminal Id="SchemaAuthorizationCreateStatementList" IsOptional="true" />
-        </Sequence>-->
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="GrantStatement">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Grant" />
+          <NonTerminal Id="GrantSystemPrivilegesOrObjectPrivileges" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="GrantSystemPrivilegesOrObjectPrivileges">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="GrantObjectPrivileges" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="GrantSystemPrivileges" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="GrantObjectPrivileges">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ObjectPrivilegeList" />
+          <NonTerminal Id="OnObjectClause" />
+          <Terminal Id="To" />
+          <NonTerminal Id="GranteeClause" />
+          <NonTerminal Id="WithHierarchyOption" IsOptional="true" />
+          <NonTerminal Id="WithAdminOption" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ObjectPrivilegeList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ObjectPrivilege" />
+          <NonTerminal Id="ObjectPrivilegeListChained" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ObjectPrivilege">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="All" />
+          <Terminal Id="Privileges" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="ObjectIdentifier" AllowReservedWord="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ObjectPrivilegeListChained">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="ObjectPrivilegeList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="OnObjectClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="On" />
+          <NonTerminal Id="GrantObjectPrivilegeDefinition" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="GrantObjectPrivilegeDefinition">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Directory" />
+          <Terminal Id="ObjectIdentifier" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="SchemaPrefix" />
+          <Terminal Id="ObjectIdentifier" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Java" />
+          <NonTerminal Id="SourceOrResource" />
+          <NonTerminal Id="SchemaPrefix" />
+          <Terminal Id="ObjectIdentifier" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SourceOrResource">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Source" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Resource" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="GrantSystemPrivileges">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="SystemPrivilegeList" />
+          <Terminal Id="To" />
+          <NonTerminal Id="GranteeClause" />
+          <NonTerminal Id="WithAdminOption" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="GranteeClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="GranteeType" />
+          <NonTerminal Id="GranteeClauseChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="GranteeType">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Public" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="IdentifiedByClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="GranteeClauseChained">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="GranteeClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="SystemPrivilegeList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="SystemPrivilegeOrAllPrivileges" />
+          <NonTerminal Id="SystemPrivilegeListChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SystemPrivilegeListChained">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="SystemPrivilegeList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="SystemPrivilegeOrAllPrivileges">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="All" />
+          <Terminal Id="Privileges" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="ObjectIdentifier" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="WithHierarchyOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="With" />
+          <Terminal Id="Hierarchy" />
+          <Terminal Id="Option" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="WithAdminOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="With" />
+          <Terminal Id="Admin" />
+          <Terminal Id="Option" />
+        </Sequence>
       </Sequences>
     </Rule>
     
@@ -16947,6 +17140,10 @@
     <Terminal Id="Point" Value="POINT" />
     <Terminal Id="Schema" Value="SCHEMA" />
     <Terminal Id="Authorization" Value="AUTHORIZATION" />
+    <Terminal Id="Privileges" Value="PRIVILEGES" />
+    <Terminal Id="Source" Value="SOURCE" />
+    <Terminal Id="Hierarchy" Value="HIERARCHY" />
+    <Terminal Id="Admin" Value="ADMIN" />
     
     <!-- External table opaque format specification -->
     <Terminal Id="OracleLoader" Value="ORACLE_LOADER" />
@@ -17306,5 +17503,5 @@
     <Terminal Id="Next" Value="NEXT" />
     <Terminal Id="Fetch" Value="FETCH" />
     <Terminal Id="Percent" Value="PERCENT" />
- </Terminals>
+  </Terminals>
 </SqlGrammar>
