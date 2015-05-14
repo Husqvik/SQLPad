@@ -93,6 +93,113 @@
         <Sequence>
           <NonTerminal Id="SetConstraintStatement" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="GrantStatement" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="AnalyzeStatement" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <!-- CREATE SCHEMA AUTHORIZATION -->
+    <Rule StartingNonTerminal="AnalyzeStatement">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Analyze" />
+          <NonTerminal Id="AnalyzedObject" />
+          <NonTerminal Id="AnalyzeOption" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AnalyzedObject">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Table" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="PartitionExtensionClause" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Index" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="PartitionExtensionClause" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Cluster" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AnalyzeOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Validate" />
+          <NonTerminal Id="AnalyzeValidateOption" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="List" />
+          <Terminal Id="Chained" />
+          <Terminal Id="Rows" />
+          <NonTerminal Id="IntoClause" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Delete" />
+          <Terminal Id="System" IsOptional="true" />
+          <Terminal Id="Statistics" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AnalyzeValidateOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Ref" />
+          <Terminal Id="Update" />
+          <NonTerminal Id="SetDanglingToNull" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Cascade" />
+          <NonTerminal Id="AnalyzeValidateCascadeOption" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AnalyzeValidateCascadeOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Fast" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Complete" />
+          <NonTerminal Id="OnlineOrOffline" />
+          <NonTerminal Id="IntoClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SetDanglingToNull">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Set" />
+          <Terminal Id="Dangling" />
+          <Terminal Id="To" />
+          <Terminal Id="Null" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="IntoClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Into" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+        </Sequence>
       </Sequences>
     </Rule>
 
@@ -8402,7 +8509,7 @@
           <Terminal Id="To" />
           <NonTerminal Id="GranteeClause" />
           <NonTerminal Id="WithHierarchyOption" IsOptional="true" />
-          <NonTerminal Id="WithAdminOption" IsOptional="true" />
+          <NonTerminal Id="WithGrantOption" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -8411,7 +8518,7 @@
       <Sequences>
         <Sequence>
           <NonTerminal Id="ObjectPrivilege" />
-          <NonTerminal Id="ObjectPrivilegeListChained" />
+          <NonTerminal Id="ObjectPrivilegeListChained" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -8552,6 +8659,16 @@
         <Sequence>
           <Terminal Id="With" />
           <Terminal Id="Hierarchy" />
+          <Terminal Id="Option" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="WithGrantOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="With" />
+          <Terminal Id="Grant" />
           <Terminal Id="Option" />
         </Sequence>
       </Sequences>
@@ -17496,6 +17613,12 @@
 
     <!-- Flashback period for -->
     <Terminal Id="Period" Value="PERIOD" />
+    
+    <!-- Analyze -->
+    <Terminal Id="Analyze" Value="ANALYZE" />
+    <Terminal Id="Chained" Value="CHAINED" />
+    <Terminal Id="Complete" Value="COMPLETE" />
+    <Terminal Id="Dangling" Value="DANGLING" />
 
     <!-- Row limiting clause -->
     <Terminal Id="Offset" Value="OFFSET" />

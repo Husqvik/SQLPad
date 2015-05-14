@@ -2971,7 +2971,7 @@ ORDER BY symbol, tstamp";
 			{
 				var terminalCandidates = Parser.GetTerminalCandidates(null).Select(c => c.Id).OrderBy(t => t).ToArray();
 
-				var expectedTerminals = new[] { Terminals.Alter, Terminals.Begin, Terminals.Call, Terminals.Comment, Terminals.Commit, Terminals.Create, Terminals.Declare, Terminals.Delete, Terminals.Drop, Terminals.Explain, Terminals.Insert, Terminals.LeftLabelMarker, Terminals.LeftParenthesis, Terminals.Lock, Terminals.Merge, Terminals.Purge, Terminals.Rename, Terminals.Rollback, Terminals.Savepoint, Terminals.Select, Terminals.Set, Terminals.Update, Terminals.With };
+				var expectedTerminals = new[] { Terminals.Alter, Terminals.Analyze, Terminals.Begin, Terminals.Call, Terminals.Comment, Terminals.Commit, Terminals.Create, Terminals.Declare, Terminals.Delete, Terminals.Drop, Terminals.Explain, Terminals.Grant, Terminals.Insert, Terminals.LeftLabelMarker, Terminals.LeftParenthesis, Terminals.Lock, Terminals.Merge, Terminals.Purge, Terminals.Rename, Terminals.Rollback, Terminals.Savepoint, Terminals.Select, Terminals.Set, Terminals.Update, Terminals.With };
 				terminalCandidates.ShouldBe(expectedTerminals);
 			}
 
@@ -5109,11 +5109,17 @@ PURGE REPEAT INTERVAL '5' DAY";
 
 			public class CreateAuthorizationSchema
 			{
-				[Test(Description = @"")]
+				[Test(Description = @""), Ignore]
 				public void TestCreateAuthorizationSchema()
 				{
 					const string statementText =
-@"CREATE SCHEMA AUTHORIZATION test_schema CREATE VIEW test_view AS SELECT * FROM DUAL CREATE TABLE test_table (test_column NUMBER)";
+@"CREATE SCHEMA AUTHORIZATION test_schema
+	CREATE VIEW test_view AS SELECT * FROM DUAL
+	CREATE TABLE test_table (test_column NUMBER)
+	GRANT REFERENCES (employee_id), UPDATE (employee_id, salary, commission_pct) ON hr.employees TO oe
+	GRANT READ ON DIRECTORY bfile_dir TO hr WITH GRANT OPTION
+	GRANT ALL ON bonuses TO hr WITH GRANT OPTION
+	--GRANT CREATE ANY MATERIALIZED VIEW, ALTER ANY MATERIALIZED VIEW, DROP ANY MATERIALIZED VIEW, QUERY REWRITE, GLOBAL QUERY REWRITE TO dw_manager WITH ADMIN OPTION";
 
 					var result = Parser.Parse(statementText);
 
@@ -5913,6 +5919,21 @@ PURGE REPEAT INTERVAL '5' DAY";
 					var statement = result.Single();
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}*/
+			}
+		}
+
+		public class Analyze
+		{
+			[Test(Description = @"")]
+			public void TestAnalyzeTableDeleteStatistics()
+			{
+				const string statementText = @"ANALYZE TABLE orders DELETE STATISTICS";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 		}
 
