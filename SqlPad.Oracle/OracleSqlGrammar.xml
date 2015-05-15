@@ -163,6 +163,17 @@
           <NonTerminal Id="SetDanglingToNull" IsOptional="true" />
         </Sequence>
         <Sequence>
+          <Terminal Id="Structure" />
+          <NonTerminal Id="AnalyzeValidateCascadeClause" IsOptional="true" />
+          <NonTerminal Id="OnlineOrOffline" IsOptional="true" />
+          <NonTerminal Id="IntoClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AnalyzeValidateCascadeClause">
+      <Sequences>
+        <Sequence>
           <Terminal Id="Cascade" />
           <NonTerminal Id="AnalyzeValidateCascadeOption" IsOptional="true" />
         </Sequence>
@@ -176,8 +187,6 @@
         </Sequence>
         <Sequence>
           <Terminal Id="Complete" />
-          <NonTerminal Id="OnlineOrOffline" />
-          <NonTerminal Id="IntoClause" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -17616,6 +17625,7 @@
     
     <!-- Analyze -->
     <Terminal Id="Analyze" Value="ANALYZE" />
+    <Terminal Id="Structure" Value="STRUCTURE" />
     <Terminal Id="Chained" Value="CHAINED" />
     <Terminal Id="Complete" Value="COMPLETE" />
     <Terminal Id="Dangling" Value="DANGLING" />

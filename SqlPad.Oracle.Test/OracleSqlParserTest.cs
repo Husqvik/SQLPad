@@ -5935,6 +5935,42 @@ PURGE REPEAT INTERVAL '5' DAY";
 				var statement = result.Single();
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
+			
+			[Test(Description = @"")]
+			public void TestAnalyzeIndexValidateStructure()
+			{
+				const string statementText = @"ANALYZE INDEX inv_product_ix VALIDATE STRUCTURE";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
+			}
+
+			[Test(Description = @"")]
+			public void TestAnalyzeTableListChainedRows()
+			{
+				const string statementText = @"ANALYZE TABLE orders LIST CHAINED ROWS INTO chained_rows";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
+			}
+
+			[Test(Description = @"")]
+			public void TestAnalyzeClusterValidateStructureCascade()
+			{
+				const string statementText = @"ANALYZE CLUSTER personnel VALIDATE STRUCTURE CASCADE COMPLETE ONLINE";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
+			}
 		}
 
 		public class Purge
