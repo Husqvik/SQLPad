@@ -102,7 +102,7 @@
       </Sequences>
     </Rule>
 
-    <!-- CREATE SCHEMA AUTHORIZATION -->
+    <!-- ANALYZE -->
     <Rule StartingNonTerminal="AnalyzeStatement">
       <Sequences>
         <Sequence>
@@ -8460,7 +8460,43 @@
         <Sequence>
           <NonTerminal Id="CreateSchemaAuthorization" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="CreateParameterFile" />
+        </Sequence>
         <!-- TODO: Create other objects -->
+      </Sequences>
+    </Rule>
+    
+    <!-- CREATE PFILE -->
+    <Rule StartingNonTerminal="CreateParameterFile">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="ParameterFile" />
+          <NonTerminal Id="MathEqualsStringLiteral" IsOptional="true" />
+          <Terminal Id="From" />
+          <NonTerminal Id="ParameterFileDataSource" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="MathEqualsStringLiteral">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="MathEquals" />
+          <Terminal Id="StringLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ParameterFileDataSource">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="ServerParameterFile" />
+          <NonTerminal Id="MathEqualsStringLiteral" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Memory" />
+        </Sequence>
       </Sequences>
     </Rule>
 
@@ -17270,6 +17306,9 @@
     <Terminal Id="Source" Value="SOURCE" />
     <Terminal Id="Hierarchy" Value="HIERARCHY" />
     <Terminal Id="Admin" Value="ADMIN" />
+    <Terminal Id="ParameterFile" Value="PFILE" />
+    <Terminal Id="ServerParameterFile" Value="SPFILE" />
+    <Terminal Id="Memory" Value="MEMORY" />
     
     <!-- External table opaque format specification -->
     <Terminal Id="OracleLoader" Value="ORACLE_LOADER" />
