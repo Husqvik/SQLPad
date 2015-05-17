@@ -5134,6 +5134,33 @@ PURGE REPEAT INTERVAL '5' DAY";
 				}
 			}
 
+			public class CreateServerParameterFile
+			{
+				[Test(Description = @"")]
+				public void TestCreateServerParameterFileFromParameterFile()
+				{
+					const string statementText = @"CREATE SPFILE = 'my_init.ora' FROM PFILE = 's_params.ora'";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestCreateServerParameterFileFromMemory()
+				{
+					const string statementText = @"CREATE SPFILE FROM MEMORY";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+			}
+
 			public class CreateAuthorizationSchema
 			{
 				[Test(Description = @""), Ignore]

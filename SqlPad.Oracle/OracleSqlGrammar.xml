@@ -8463,7 +8463,34 @@
         <Sequence>
           <NonTerminal Id="CreateParameterFile" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="CreateServerParameterFile" />
+        </Sequence>
         <!-- TODO: Create other objects -->
+      </Sequences>
+    </Rule>
+    
+    <!-- CREATE SPFILE -->
+    <Rule StartingNonTerminal="CreateServerParameterFile">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="ServerParameterFile" />
+          <NonTerminal Id="MathEqualsStringLiteral" IsOptional="true" />
+          <Terminal Id="From" />
+          <NonTerminal Id="ServerParameterFileDataSource" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ServerParameterFileDataSource">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="ParameterFile" />
+          <NonTerminal Id="MathEqualsStringLiteral" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Memory" />
+        </Sequence>
       </Sequences>
     </Rule>
     

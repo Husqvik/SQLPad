@@ -247,6 +247,7 @@ namespace SqlPad.Oracle
 			public const string CreateRollbackSegmentOptionList = "CreateRollbackSegmentOptionList";
 			public const string CreateSchemaAuthorization = "CreateSchemaAuthorization";
 			public const string CreateSequence = "CreateSequence";
+			public const string CreateServerParameterFile = "CreateServerParameterFile";
 			public const string CreateSqlObjectClause = "CreateSqlObjectClause";
 			public const string CreateSqlStatement = "CreateSqlStatement";
 			public const string CreateSynonym = "CreateSynonym";
@@ -1068,6 +1069,7 @@ namespace SqlPad.Oracle
 			public const string SequenceOption = "SequenceOption";
 			public const string SequenceOptions = "SequenceOptions";
 			public const string SerializableOrReadCommitted = "SerializableOrReadCommitted";
+			public const string ServerParameterFileDataSource = "ServerParameterFileDataSource";
 			public const string SessionOrGlobal = "SessionOrGlobal";
 			public const string SetColumnEqualsExpressionOrNestedQueryOrDefaultValue = "SetColumnEqualsExpressionOrNestedQueryOrDefaultValue";
 			public const string SetColumnListEqualsNestedQuery = "SetColumnListEqualsNestedQuery";
