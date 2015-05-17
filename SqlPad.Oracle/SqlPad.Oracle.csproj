@@ -260,7 +260,7 @@
     <Content Include="OracleConfiguration.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="OracleSqlFunctionDocumentation.xml">
+    <Content Include="OracleDocumentation.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Scripts\CreateExplainPlanTable.sql">

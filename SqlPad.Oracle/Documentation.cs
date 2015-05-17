@@ -155,6 +155,8 @@ namespace SqlPad.Oracle {
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://husqvik.com/SqlPad/2014/08/Oracle")]
     public partial class DocumentationPackage {
         
+        private DocumentationPackageDescription descriptionField;
+        
         private DocumentationPackageSubProgram[] subProgramsField;
         
         private string ownerField;
@@ -162,6 +164,16 @@ namespace SqlPad.Oracle {
         private string nameField;
         
         private string urlField;
+        
+        /// <remarks/>
+        public DocumentationPackageDescription Description {
+            get {
+                return this.descriptionField;
+            }
+            set {
+                this.descriptionField = value;
+            }
+        }
         
         /// <remarks/>
         [System.Xml.Serialization.XmlArrayItemAttribute("SubProgram", IsNullable=false)]
@@ -214,11 +226,35 @@ namespace SqlPad.Oracle {
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://husqvik.com/SqlPad/2014/08/Oracle")]
+    public partial class DocumentationPackageDescription {
+        
+        private string valueField;
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlTextAttribute()]
+        public string Value {
+            get {
+                return this.valueField;
+            }
+            set {
+                this.valueField = value;
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.0.30319.33440")]
+    [System.SerializableAttribute()]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://husqvik.com/SqlPad/2014/08/Oracle")]
     public partial class DocumentationPackageSubProgram {
         
         private string nameField;
         
         private string elementIdField;
+        
+        private string valueField;
         
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
@@ -239,6 +275,17 @@ namespace SqlPad.Oracle {
             }
             set {
                 this.elementIdField = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlTextAttribute()]
+        public string Value {
+            get {
+                return this.valueField;
+            }
+            set {
+                this.valueField = value;
             }
         }
     }

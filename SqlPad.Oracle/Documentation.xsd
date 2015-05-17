@@ -37,13 +37,24 @@
               <xs:element maxOccurs="unbounded" name="Package">
                 <xs:complexType>
                   <xs:sequence>
-                    <xs:element name="SubPrograms">
+                    <xs:element name="Description">
+                      <xs:complexType>
+                        <xs:simpleContent>
+                          <xs:extension base="xs:string" />
+                        </xs:simpleContent>
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:element name="SubPrograms" minOccurs="0">
                       <xs:complexType>
                         <xs:sequence>
                           <xs:element maxOccurs="unbounded" name="SubProgram">
                             <xs:complexType>
-                              <xs:attribute name="Name" type="xs:string" use="required" />
-                              <xs:attribute name="ElementId" type="xs:string" use="required" />
+                              <xs:simpleContent>
+                                <xs:extension base="xs:string">
+                                  <xs:attribute name="Name" type="xs:string" use="required" />
+                                  <xs:attribute name="ElementId" type="xs:string" use="required" />
+                                </xs:extension>
+                              </xs:simpleContent>
                             </xs:complexType>
                           </xs:element>
                         </xs:sequence>
