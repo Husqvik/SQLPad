@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Text;
 
 namespace SqlPad.Oracle
 {
@@ -18,9 +19,21 @@ namespace SqlPad.Oracle
 		{
 			get
 			{
-				return (String.IsNullOrEmpty(Owner) ? null : Owner.ToSimpleIdentifier() + ".") +
-					   (String.IsNullOrEmpty(Package) ? null : Package.ToSimpleIdentifier() + ".") +
-					   Name.ToSimpleIdentifier();
+				var builder = new StringBuilder(100);
+				if (!String.IsNullOrEmpty(Owner))
+				{
+					builder.Append(Owner.ToSimpleIdentifier());
+					builder.Append('.');
+				}
+
+				if (!String.IsNullOrEmpty(Package))
+				{
+					builder.Append(Package.ToSimpleIdentifier());
+					builder.Append('.');
+				}
+
+				builder.Append(Name.ToSimpleIdentifier());
+				return builder.ToString();
 			}
 		}
 
@@ -46,15 +59,10 @@ namespace SqlPad.Oracle
 			};
 		}
 
-		public bool EqualsWithOverload(OracleProgramIdentifier other)
-		{
-			return string.Equals(Owner, other.Owner) && string.Equals(Name, other.Name) && string.Equals(Package, other.Package) && Overload == other.Overload;
-		}
-
 		#region Equality members
 		public bool Equals(OracleProgramIdentifier other)
 		{
-			return string.Equals(Owner, other.Owner) && string.Equals(Name, other.Name) && string.Equals(Package, other.Package);
+			return String.Equals(Owner, other.Owner) && String.Equals(Name, other.Name) && String.Equals(Package, other.Package);
 		}
 
 		public override bool Equals(object obj)

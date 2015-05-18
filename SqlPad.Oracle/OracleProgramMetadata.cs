@@ -46,7 +46,7 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		public IReadOnlyDictionary<string, OracleProgramParameterMetadata> NamedParameter
+		public IReadOnlyDictionary<string, OracleProgramParameterMetadata> NamedParameters
 		{
 			get { return _parameterDictionary ?? BuildParameterDictionary(); }
 		}

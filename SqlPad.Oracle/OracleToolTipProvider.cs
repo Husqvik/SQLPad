@@ -372,10 +372,21 @@ namespace SqlPad.Oracle
 
 			var documentationText = String.Empty;
 			DocumentationFunction documentationFunction;
+			DocumentationPackage documentationPackage;
 			if ((String.IsNullOrEmpty(functionReference.Metadata.Identifier.Owner) || String.Equals(functionReference.Metadata.Identifier.Package, OracleDatabaseModelBase.PackageBuiltInFunction)) &&
 				functionReference.Metadata.Type != ProgramType.StatementFunction && OracleHelpProvider.SqlFunctionDocumentation.TryGetValue(functionReference.Metadata.Identifier.Name, out documentationFunction))
 			{
 				documentationText = documentationFunction.Value;
+			}
+			else if (!String.IsNullOrEmpty(functionReference.Metadata.Identifier.Package) && functionReference.Metadata.Owner.GetTargetSchemaObject() != null &&
+			         OracleHelpProvider.PackageDocumentation.TryGetValue(functionReference.Metadata.Owner.GetTargetSchemaObject().FullyQualifiedName, out documentationPackage) &&
+					 documentationPackage.SubPrograms != null)
+			{
+				var program = documentationPackage.SubPrograms.SingleOrDefault(sp => String.Equals(sp.Name, functionReference.Metadata.Identifier.Name));
+				if (program != null)
+				{
+					documentationText = program.Value;
+				}
 			}
 
 			return new ToolTipProgram(functionReference.Metadata.Identifier.FullyQualifiedIdentifier, documentationText, functionReference.Metadata);

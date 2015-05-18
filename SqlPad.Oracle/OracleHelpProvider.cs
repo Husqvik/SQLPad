@@ -26,6 +26,16 @@ namespace SqlPad.Oracle
 			}
 		}
 
+		internal static IReadOnlyDictionary<OracleObjectIdentifier, DocumentationPackage> PackageDocumentation
+		{
+			get
+			{
+				EnsureDocumentationDictionaries();
+
+				return _packageDocumentation;
+			}
+		}
+
 		private static void EnsureDocumentationDictionaries()
 		{
 			if (_sqlFunctionDocumentation != null)
@@ -96,7 +106,7 @@ namespace SqlPad.Oracle
 				var package = objectReference.SchemaObject.GetTargetSchemaObject() as OraclePackage;
 				if (package != null)
 				{
-					DocumentationPackage packageDocumentation = null;
+					DocumentationPackage packageDocumentation;
 					var packageDocumentationExists = _packageDocumentation.TryGetValue(package.FullyQualifiedName, out packageDocumentation);
 					if (packageDocumentationExists)
 					{
@@ -128,6 +138,17 @@ namespace SqlPad.Oracle
 			if (sqlFunctionDocumentationExists)
 			{
 				Process.Start(sqlFunctionDocumentation.Url);
+			}
+
+			DocumentationPackage packageDocumentation;
+			var packageDocumentationExists = _packageDocumentation.TryGetValue(OracleObjectIdentifier.Create(identifier.Owner, identifier.Package), out packageDocumentation);
+			if (packageDocumentationExists)
+			{
+				var program = packageDocumentation.SubPrograms.SingleOrDefault(sp => String.Equals(sp.Name, identifier.Name));
+				if (program != null)
+				{
+					Process.Start(String.Format("{0}{1}", packageDocumentation.Url, program.ElementId));
+				}
 			}
 		}
 	}

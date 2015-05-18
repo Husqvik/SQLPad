@@ -532,7 +532,7 @@ namespace SqlPad.Oracle
 									validationModel.IdentifierNodeValidity[parameterReference.OptionalIdentifierTerminal] =
 										new InvalidNodeValidationData(OracleSemanticErrorType.NamedParameterNotAllowed) { Node = parameterReference.OptionalIdentifierTerminal };
 								}
-								else if (!programReference.Metadata.NamedParameter.TryGetValue(parameterReference.OptionalIdentifierTerminal.Token.Value.ToQuotedIdentifier(), out parameterMetadata))
+								else if (!programReference.Metadata.NamedParameters.TryGetValue(parameterReference.OptionalIdentifierTerminal.Token.Value.ToQuotedIdentifier(), out parameterMetadata))
 								{
 									validationModel.IdentifierNodeValidity[parameterReference.OptionalIdentifierTerminal] =
 										new NodeValidationData { IsRecognized = false, Node = parameterReference.OptionalIdentifierTerminal };

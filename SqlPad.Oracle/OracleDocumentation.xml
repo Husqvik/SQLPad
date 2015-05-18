@@ -1897,9 +1897,59 @@ This function is useful for organizing data according to a style sheet as you ar
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_ADVISOR&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_advis.htm">
       <Description>DBMS_ADVISOR is part of the server manageability suite of advisors, a set of expert systems that identifies and helps resolve performance problems relating to database server components.</Description>
+      <SubPrograms>
+        <SubProgram Name="&quot;ADD_SQLWKLD_REF&quot;" ElementId="#i1010471">SQL Access Advisor</SubProgram>
+        <SubProgram Name="&quot;ADD_SQLWKLD_STATEMENT&quot;" ElementId="#i1010507">SQL Access Advisor</SubProgram>
+        <SubProgram Name="&quot;ADD_STS_REF&quot;" ElementId="#CIHHGIAJ">SQL Access Advisor</SubProgram>
+        <SubProgram Name="&quot;CANCEL_TASK&quot;" ElementId="#i1001164">Segment Advisor, SQL Access Advisor</SubProgram>
+        <SubProgram Name="&quot;COPY_SQLWKLD_TO_STS&quot;" ElementId="#CIHHBECG">SQL Access Advisor</SubProgram>
+        <SubProgram Name="&quot;CREATE_FILE&quot;" ElementId="#i1010465">SQL Access Advisor</SubProgram>
+        <SubProgram Name="&quot;CREATE_OBJECT&quot;" ElementId="#i1017650">Segment Advisor</SubProgram>
+        <SubProgram Name="&quot;CREATE_SQLWKLD&quot;" ElementId="#i1010608">SQL Access Advisor</SubProgram>
+        <SubProgram Name="&quot;CREATE_TASK&quot;" ElementId="#i1001232">Segment Advisor, SQL Access Advisor</SubProgram>
+        <SubProgram Name="&quot;DELETE_SQLWKLD&quot;" ElementId="#i1014034">SQL Access Advisor</SubProgram>
+        <SubProgram Name="&quot;DELETE_SQLWKLD_REF&quot;" ElementId="#i1011747">SQL Access Advisor</SubProgram>
+        <SubProgram Name="&quot;DELETE_SQLWKLD_STATEMENT&quot;" ElementId="#i1010722">SQL Access Advisor</SubProgram>
+        <SubProgram Name="&quot;DELETE_STS_REF&quot;" ElementId="#CIHDFCBE">SQL Access Advisor</SubProgram>
+        <SubProgram Name="&quot;DELETE_TASK&quot;" ElementId="#i1004958">SQL Access Advisor</SubProgram>
+        <SubProgram Name="&quot;EXECUTE_TASK&quot;" ElementId="#CIHDFJHD">Segment Advisor, SQL Access Advisor</SubProgram>
+        <SubProgram Name="&quot;GET_REC_ATTRIBUTES&quot;" ElementId="#i1012416">SQL Access Advisor</SubProgram>
+        <SubProgram Name="&quot;GET_TASK_REPORT&quot;" ElementId="#BCFDFJDJ"></SubProgram>
+        <SubProgram Name="&quot;GET_TASK_SCRIPT&quot;" ElementId="#i1012023">SQL Access Advisor</SubProgram>
+        <SubProgram Name="&quot;IMPLEMENT_TASK&quot;" ElementId="#BCFFIEAE">SQL Access Advisor</SubProgram>
+        <SubProgram Name="&quot;IMPORT_SQLWKLD_SCHEMA&quot;" ElementId="#i1012244">SQL Access Advisor</SubProgram>
+        <SubProgram Name="&quot;IMPORT_SQLWKLD_SQLCACHE&quot;" ElementId="#i1010878">SQL Access Advisor</SubProgram>
+        <SubProgram Name="&quot;IMPORT_SQLWKLD_STS&quot;" ElementId="#i1012305">SQL Access Advisor</SubProgram>
+        <SubProgram Name="&quot;IMPORT_SQLWKLD_SUMADV&quot;" ElementId="#i1012320">SQL Access Advisor</SubProgram>
+        <SubProgram Name="&quot;IMPORT_SQLWKLD_USER&quot;" ElementId="#i1012335">SQL Access Advisor</SubProgram>
+        <SubProgram Name="&quot;INTERRUPT_TASK&quot;" ElementId="#i1012149">Segment Advisor, SQL Access Advisor</SubProgram>
+        <SubProgram Name="&quot;MARK_RECOMMENDATION&quot;" ElementId="#CIHGAHCJ">Segment Advisor, SQL Access Advisor</SubProgram>
+        <SubProgram Name="&quot;QUICK_TUNE&quot;" ElementId="#i1011111">SQL Access Advisor</SubProgram>
+        <SubProgram Name="&quot;RESET_SQLWKLD&quot;" ElementId="#CIHHHDCJ">SQL Access Advisor</SubProgram>
+        <SubProgram Name="&quot;RESET_TASK&quot;" ElementId="#i1001339">Segment Advisor, SQL Access Advisor</SubProgram>
+        <SubProgram Name="&quot;SET_DEFAULT_SQLWKLD_PARAMETER&quot;" ElementId="#i1011235">SQL Access Advisor</SubProgram>
+        <SubProgram Name="&quot;SET_DEFAULT_TASK_PARAMETER&quot;" ElementId="#i1011236">Segment Advisor, SQL Access Advisor</SubProgram>
+        <SubProgram Name="&quot;SET_SQLWKLD_PARAMETER&quot;" ElementId="#i1011237">SQL Access Advisor</SubProgram>
+        <SubProgram Name="&quot;SET_TASK_PARAMETER&quot;" ElementId="#i1001341">Segment Advisor, SQL Access Advisor</SubProgram>
+        <SubProgram Name="&quot;TUNE_MVIEW&quot;" ElementId="#i1001342">SQL Access Advisor</SubProgram>
+        <SubProgram Name="&quot;UPDATE_OBJECT&quot;" ElementId="#i1017783">Segment Advisor</SubProgram>
+        <SubProgram Name="&quot;UPDATE_REC_ATTRIBUTES&quot;" ElementId="#i1003104">SQL Access Advisor</SubProgram>
+        <SubProgram Name="&quot;UPDATE_SQLWKLD_ATTRIBUTES&quot;" ElementId="#i1011550">SQL Access Advisor</SubProgram>
+        <SubProgram Name="&quot;UPDATE_SQLWKLD_STATEMENT&quot;" ElementId="#i1011486">SQL Access Advisor</SubProgram>
+        <SubProgram Name="&quot;UPDATE_TASK_ATTRIBUTES&quot;" ElementId="#CHDHDCCB">Segment Advisor, SQL Access Advisor</SubProgram>
+      </SubPrograms>
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_ALERT&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_alert.htm">
       <Description>DBMS_ALERT supports asynchronous notification of database events (alerts). By appropriate use of this package and database triggers, an application can notify itself whenever values of interest in the database are changed.</Description>
+      <SubPrograms>
+        <SubProgram Name="&quot;REGISTER&quot;" ElementId="#CHDGHFAJ">Receives messages from an alert</SubProgram>
+        <SubProgram Name="&quot;REMOVE&quot;" ElementId="#i1001245">Disables notification from an alert</SubProgram>
+        <SubProgram Name="&quot;REMOVEALL&quot;" ElementId="#CIHDJEII">Removes all alerts for this session from the registration list</SubProgram>
+        <SubProgram Name="&quot;SET_DEFAULTS&quot;" ElementId="#i997010">Sets the polling interval</SubProgram>
+        <SubProgram Name="&quot;SIGNAL&quot;" ElementId="#i997031">Signals an alert (send message to registered sessions)</SubProgram>
+        <SubProgram Name="&quot;WAITANY&quot;" ElementId="#i997060">Waits timeout seconds to receive alert message from an alert registered for session</SubProgram>
+        <SubProgram Name="&quot;WAITONE&quot;" ElementId="#i997104">Waits timeout seconds to receive message from named alert</SubProgram>
+      </SubPrograms>
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_APP_CONT&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_app_cont.htm">
       <Description>The DBMS_APP_CONT package provides an interface to determine if the in-flight transaction on a now unavailable session committed or not, and if the last call on that session completed or not.</Description>
@@ -2024,6 +2074,11 @@ This function is useful for organizing data according to a style sheet as you ar
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_AUTO_SQLTUNE&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_autosta.htm">
       <Description>The DBMS_AUTO_SQLTUNE package is the interface for managing the Automatic SQL Tuning task. Unlike DBMS_SQLTUNE, the DBMS_AUTO_SQLTUNE package requires the DBA role.</Description>
+      <SubPrograms>
+        <SubProgram Name="&quot;EXECUTE_AUTO_TUNING_TASK&quot;" ElementId="#CIAHBDCA">Executes the Automatic SQL Tuning task immediately (SYS only)</SubProgram>
+        <SubProgram Name="&quot;REPORT_AUTO_TUNING_TASK&quot;" ElementId="#CIAEHBGA">Displays a text report of the automatic tuning task's history</SubProgram>
+        <SubProgram Name="&quot;SET_AUTO_TUNING_TASK_PARAMETER&quot;" ElementId="#BGBCGEJA">Changes a task parameter value for the daily automatic runs</SubProgram>
+      </SubPrograms>
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_AUTO_TASK_ADMIN&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_autotaskadm.htm">
       <Description>The DBMS_AUTO_TASK_ADMIN package provides an interface to AUTOTASK functionality. It is used by the DBA as well as Enterprise Manager to access the AUTOTASK controls. Enterprise Manager also uses the AUTOTASK Advisor.</Description>
@@ -2088,6 +2143,14 @@ This function is useful for organizing data according to a style sheet as you ar
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_CQ_NOTIFICATION&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_cqnotif.htm">
       <Description>The DBMS_CQ_NOTIFICATION package is part of the database change notification feature that provides the functionality to create registration on queries designated by a client application and so to receive notifications in response to DML or DDL changes on the objects associated with the queries. The notifications are published by the database when the DML or DDL transaction commits.</Description>
+      <SubPrograms>
+        <SubProgram Name="&quot;CQ_NOTIFICATION_QUERYID&quot;" ElementId="#CIHEDDIB">Returns the queryid of the most recent query that was attempted to be registered in a registration block</SubProgram>
+        <SubProgram Name="&quot;DEREGISTER&quot;" ElementId="#CHDGHEBB">De-subscribes the client with the supplied registration identifier (ID)</SubProgram>
+        <SubProgram Name="&quot;ENABLE_REG&quot;" ElementId="#CIHDAAAF">Begins a registration block using an existing registration identifier (ID)</SubProgram>
+        <SubProgram Name="&quot;NEW_REG_START&quot;" ElementId="#CIHDJEJF">Begins a new registration block</SubProgram>
+        <SubProgram Name="&quot;REG_END&quot;" ElementId="#CIHGIACA">Ends the registration boundary</SubProgram>
+        <SubProgram Name="&quot;SET_ROWID_THRESHOLD&quot;" ElementId="#CHDDIFDI">Configures the maximum number of rows of a table published in a change notification if the rows of the table are modified in a transaction</SubProgram>
+      </SubPrograms>
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_CREDENTIAL&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_credential.htm">
       <Description>The DBMS_CREDENTIAL package provides an interface for authenticating and impersonating EXTPROC callout functions, as well as external jobs, remote jobs and file watchers from the SCHEDULER.</Description>
@@ -2133,7 +2196,7 @@ This function is useful for organizing data according to a style sheet as you ar
       <Description>DBMS_CUBE_LOG contains subprograms for creating and managing logs for cubes and cube dimensions.</Description>
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_DATA_MINING&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_datmin.htm">
-      <Description>The DBMS_DATA_MININGpackage is the application programming interface for creating, evaluating, and querying data mining models.</Description>
+      <Description>The DBMS_DATA_MINING package is the application programming interface for creating, evaluating, and querying data mining models.</Description>
       <SubPrograms>
         <SubProgram Name="&quot;ADD_COST_MATRIX&quot;" ElementId="#CACGCHCE">Adds a cost matrix to a classification model</SubProgram>
         <SubProgram Name="&quot;ALTER_REVERSE_EXPRESSION&quot;" ElementId="#CACCBBJG">Changes the reverse transformation expression to an expression that you specify</SubProgram>
@@ -2169,7 +2232,7 @@ This function is useful for organizing data according to a style sheet as you ar
       </SubPrograms>
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_DATA_MINING_TRANSFORM&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_dmtran.htm">
-      <Description>DBMS_DATA_MINING_TRANSFORM implements a set of transformations that are commonly used in data mining. </Description>
+      <Description>DBMS_DATA_MINING_TRANSFORM implements a set of transformations that are commonly used in data mining.</Description>
       <SubPrograms>
         <SubProgram Name="&quot;CREATE_BIN_CAT&quot;" ElementId="#BABHJHJF">Creates a transformation definition table for categorical binning</SubProgram>
         <SubProgram Name="&quot;CREATE_BIN_NUM&quot;" ElementId="#BABCJBCG">Creates a transformation definition table for numerical binning</SubProgram>
@@ -2368,9 +2431,52 @@ This function is useful for organizing data according to a style sheet as you ar
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_DDL&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_ddl.htm">
       <Description>This package provides access to some SQL data definition language (DDL) statements from stored procedures. It also provides special administration operations that are not available as Data Definition Language statements (DDLs).</Description>
+      <SubPrograms>
+        <SubProgram Name="&quot;ALTER_COMPILE&quot;" ElementId="#i996813">Compiles the PL/SQL object</SubProgram>
+        <SubProgram Name="&quot;ALTER_TABLE_NOT_REFERENCEABLE&quot;" ElementId="#i999573">Reorganizes object tables</SubProgram>
+        <SubProgram Name="&quot;ALTER_TABLE_REFERENCEABLE&quot;" ElementId="#i998798">Reorganizes object tables</SubProgram>
+        <SubProgram Name="&quot;CREATE_WRAPPED&quot;" ElementId="#CBHFJJJC">Takes as input a single CREATE OR REPLACE statement that specifies creation of a PL/SQL package specification, package body, function, procedure, type specification or type body, generates a CREATE OR REPLACE statement with the PL/SQL source text obfuscated and executes the generated statement</SubProgram>
+        <SubProgram Name="&quot;IS_TRIGGER_FIRE_ONCE&quot;" ElementId="#BABHEEJI">Returns TRUE if the specified DML or DDL trigger is set to fire once. Otherwise, returns FALSE</SubProgram>
+        <SubProgram Name="&quot;SET_TRIGGER_FIRING_PROPERTY&quot;" ElementId="#i997004">Sets the specified DML or DDL trigger's firing property</SubProgram>
+        <SubProgram Name="&quot;WRAP&quot;" ElementId="#CBHGIDEG">Takes as input a CREATE OR REPLACE statement that specifies creation of a PL/SQL package specification, package body, function, procedure, type specification or type body and returns a CREATE OR REPLACE statement where the text of the PL/SQL unit has been obfuscated</SubProgram>
+      </SubPrograms>
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_DEBUG&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_debug.htm">
       <Description>DBMS_DEBUG is a PL/SQL interface to the PL/SQL debugger layer, Probe, in the Oracle server.</Description>
+      <SubPrograms>
+        <SubProgram Name="&quot;ATTACH_SESSION&quot;" ElementId="#i1007904">Notifies the debug session about the target debugID</SubProgram>
+        <SubProgram Name="&quot;CONTINUE&quot;" ElementId="#i1007908">Continues execution of the target program</SubProgram>
+        <SubProgram Name="&quot;DEBUG_OFF&quot;" ElementId="#CEGCBFAE">Turns debug-mode off</SubProgram>
+        <SubProgram Name="&quot;DEBUG_ON&quot;" ElementId="#i1008030">Turns debug-mode on</SubProgram>
+        <SubProgram Name="&quot;DELETE_BREAKPOINT&quot;" ElementId="#i1008592">Deletes a breakpoint</SubProgram>
+        <SubProgram Name="&quot;DELETE_OER_BREAKPOINT&quot;" ElementId="#i1010019">Deletes an OER breakpoint</SubProgram>
+        <SubProgram Name="&quot;DETACH_SESSION&quot;" ElementId="#i1008597">Stops debugging the target program</SubProgram>
+        <SubProgram Name="&quot;DISABLE_BREAKPOINT&quot;" ElementId="#i1008314">Disables a breakpoint</SubProgram>
+        <SubProgram Name="&quot;ENABLE_BREAKPOINT&quot;" ElementId="#i1008609">Activates an existing breakpoint</SubProgram>
+        <SubProgram Name="&quot;EXECUTE&quot;" ElementId="#i1008769">Executes SQL or PL/SQL in the target session</SubProgram>
+        <SubProgram Name="&quot;GET_INDEXES&quot;" ElementId="#i1008834">Returns the set of indexes for an indexed table</SubProgram>
+        <SubProgram Name="&quot;GET_MORE_SOURCE&quot;" ElementId="#i1012592">Provides additional source in the event of buffer overflow when using SHOW_SOURCE</SubProgram>
+        <SubProgram Name="&quot;GET_LINE_MAP&quot;" ElementId="#i1012851">Returns information about line numbers in a program unit</SubProgram>
+        <SubProgram Name="&quot;GET_RUNTIME_INFO&quot;" ElementId="#i1010186">Returns information about the current program</SubProgram>
+        <SubProgram Name="&quot;GET_TIMEOUT_BEHAVIOUR&quot;" ElementId="#i1012253">Returns the current timeout behavior</SubProgram>
+        <SubProgram Name="&quot;GET_VALUE&quot;" ElementId="#i1009873">Gets a value from the currently-running program</SubProgram>
+        <SubProgram Name="&quot;INITIALIZE&quot;" ElementId="#i1009075">Sets debugID in target session</SubProgram>
+        <SubProgram Name="&quot;PING&quot;" ElementId="#i1009706">Pings the target session to prevent it from timing out</SubProgram>
+        <SubProgram Name="&quot;PRINT_BACKTRACE&quot;" ElementId="#i1009079">Prints a stack backtrace</SubProgram>
+        <SubProgram Name="&quot;PRINT_INSTANTIATIONS&quot;" ElementId="#i1009499">Prints a stack backtrace</SubProgram>
+        <SubProgram Name="&quot;PROBE_VERSION&quot;" ElementId="#CEGHCGCA">Returns the version number of DBMS_DEBUG on the server</SubProgram>
+        <SubProgram Name="&quot;SELF_CHECK&quot;" ElementId="#i1009302">Performs an internal consistency check</SubProgram>
+        <SubProgram Name="&quot;SET_BREAKPOINT&quot;" ElementId="#i1009232">Sets a breakpoint in a program unit</SubProgram>
+        <SubProgram Name="&quot;SET_OER_BREAKPOINT&quot;" ElementId="#CEGCBGDG">Sets an OER breakpoint</SubProgram>
+        <SubProgram Name="&quot;SET_TIMEOUT&quot;" ElementId="#i997626">Sets the timeout value</SubProgram>
+        <SubProgram Name="&quot;SET_TIMEOUT_BEHAVIOUR&quot;" ElementId="#i1009844">Tells Probe what to do with the target session when a timeout occurs</SubProgram>
+        <SubProgram Name="&quot;SET_VALUE&quot;" ElementId="#i1009439">Sets a value in the currently-running program</SubProgram>
+        <SubProgram Name="&quot;SHOW_BREAKPOINTS&quot;" ElementId="#i1009505">Returns a listing of the current breakpoints</SubProgram>
+        <SubProgram Name="&quot;SHOW_FRAME_SOURCE&quot;" ElementId="#i1010858">Fetches the frame source</SubProgram>
+        <SubProgram Name="&quot;SHOW_SOURCE&quot;" ElementId="#i997814">Fetches program source</SubProgram>
+        <SubProgram Name="&quot;SYNCHRONIZE&quot;" ElementId="#i1009620">Waits for program to start running</SubProgram>
+        <SubProgram Name="&quot;TARGET_PROGRAM_RUNNING&quot;" ElementId="#i998630">Returns TRUE if the target session is currently executing a stored procedure, or FALSE if it is not</SubProgram>
+      </SubPrograms>
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_DEFER&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_defer.htm">
       <Description>DBMS_DEFER is the user interface to a replicated transactional deferred remote procedure call facility. Replicated applications use the calls in this interface to queue procedure calls for later transactional execution at remote nodes.</Description>
@@ -2383,15 +2489,22 @@ This function is useful for organizing data according to a style sheet as you ar
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_DESCRIBE&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_descrb.htm">
       <Description>You can use the DBMS_DESCRIBE package to get information about a PL/SQL object. When you specify an object name, DBMS_DESCRIBE returns a set of indexed tables with the results. Full name translation is performed and security checking is also checked on the final object.</Description>
+      <SubPrograms>
+        <SubProgram Name="&quot;DESCRIBE_PROCEDURE&quot;" ElementId="#i1000288">Provides a brief description of a PL/SQL stored procedure</SubProgram>
+      </SubPrograms>
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_DG&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_dg.htm">
       <Description>The DBMS_DG package allows applications to notify the primary database or the fast-start failover target database in an Oracle Data Guard broker environment to initiate a fast-start failover when the application encounters a condition that warrants a failover.</Description>
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_DIMENSION&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_dimens.htm">
       <Description>DBMS_DIMENSION enables you to verify dimension relationships and provides an alternative to the Enterprise Manager Dimension Wizard for displaying a dimension definition.</Description>
+      <SubPrograms>
+        <SubProgram Name="&quot;DESCRIBE_DIMENSION&quot;" ElementId="#i999721">Prints out the definition of the input dimension, including dimension owner and name, levels, hierarchies, and attributes</SubProgram>
+        <SubProgram Name="&quot;VALIDATE_DIMENSION&quot;" ElementId="#i998497">Verifies that the relationships specified in a dimension are correct</SubProgram>
+      </SubPrograms>
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_DISTRIBUTED_TRUST_ADMIN&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_dist_trust_adm.htm">
-      <Description>DBMS_DISTRIBUTED_TRUST_ADMINprocedures maintain the Trusted Servers List. Use these procedures to define whether a server is trusted. If a database is not trusted, Oracle refuses current user database links from the database.</Description>
+      <Description>DBMS_DISTRIBUTED_TRUST_ADMIN procedures maintain the Trusted Servers List. Use these procedures to define whether a server is trusted. If a database is not trusted, Oracle refuses current user database links from the database.</Description>
       <SubPrograms>
         <SubProgram Name="&quot;ALLOW_ALL&quot;" ElementId="#i996808">Empties the list and inserts a row indicating that all servers should be trusted</SubProgram>
         <SubProgram Name="&quot;ALLOW_SERVER&quot;" ElementId="#i996816">Enables a specific server to be allowed access even though deny all is indicated in the list</SubProgram>
@@ -2424,12 +2537,30 @@ This function is useful for organizing data according to a style sheet as you ar
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_EDITIONS_UTILITIES&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_editions_utl.htm">
       <Description>The DBMS_EDITIONS_UTILITIES package provides helper functions for edition-related operations.</Description>
       <SubPrograms>
-        <SubProgram Name="&quot;SET_EDITIONING_VIEWS_READ_ONLY&quot;" ElementId="#CBHIBDCE">Given the schema name and table name, this procedure sets the corresponding editioning views in all editions to READONLY or READ/WRITE</SubProgram>
+        <SubProgram Name="&quot;SET_EDITIONING_VIEWS_READ_ONLY&quot;" ElementId="#CBHIBDCE">Given the schema name and table name, this procedure sets the corresponding editioning views in all editions to READ ONLY or READ/WRITE</SubProgram>
         <SubProgram Name="&quot;SET_NULL_COLUMN_VALUES_TO_EXPR&quot;" ElementId="#CBHDIDEC">For use only during an edition-based redefinition (EBR) exercise</SubProgram>
       </SubPrograms>
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_EPG&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_epg.htm">
       <Description>The DBMS_EPG package implements the embedded PL/SQL gateway that enables a Web browser to invoke a PL/SQL stored procedure through an HTTP listener.</Description>
+      <SubPrograms>
+        <SubProgram Name="&quot;AUTHORIZE_DAD&quot;" ElementId="#BEJDCHGA">authorizes a DAD to invoke procedures and access document tables with a database user's privileges</SubProgram>
+        <SubProgram Name="&quot;CREATE_DAD&quot;" ElementId="#BEJJJGGJ">Creates a new DAD</SubProgram>
+        <SubProgram Name="&quot;DEAUTHORIZE_DAD&quot;" ElementId="#BEJHGAIE">Deauthorizes a DAD with regard to invoking procedures and accessing document tables with a database user's privileges</SubProgram>
+        <SubProgram Name="&quot;DELETE_DAD_ATTRIBUTE&quot;" ElementId="#BABHIEEA">Deletes a DAD attribute</SubProgram>
+        <SubProgram Name="&quot;DELETE_GLOBAL_ATTRIBUTE&quot;" ElementId="#BABGFJJG">Deletes a global attribute</SubProgram>
+        <SubProgram Name="&quot;DROP_DAD&quot;" ElementId="#BABDIGII">Drops a DAD</SubProgram>
+        <SubProgram Name="&quot;GET_ALL_DAD_ATTRIBUTES&quot;" ElementId="#BABIHBGD">Retrieves all the attributes of a DAD.</SubProgram>
+        <SubProgram Name="&quot;GET_ALL_DAD_MAPPINGS&quot;" ElementId="#BABGEIBJ">Retrieves all virtual paths to which the specified DAD is mapped.</SubProgram>
+        <SubProgram Name="&quot;GET_ALL_GLOBAL_ATTRIBUTES&quot;" ElementId="#BABEFDAC">Retrieves all global attributes and values</SubProgram>
+        <SubProgram Name="&quot;GET_DAD_ATTRIBUTE&quot;" ElementId="#BABDEJAD">Retrieves the value of a DAD attribute</SubProgram>
+        <SubProgram Name="&quot;GET_DAD_LIST&quot;" ElementId="#BABJDDEB">Retrieves a list of all DADs for an Embedded Gateway instance.</SubProgram>
+        <SubProgram Name="&quot;GET_GLOBAL_ATTRIBUTE&quot;" ElementId="#BABJEFDC">Retrieves the value of a global attribute</SubProgram>
+        <SubProgram Name="&quot;MAP_DAD&quot;" ElementId="#BABJJBIB">Maps a DAD to the specified virtual path.</SubProgram>
+        <SubProgram Name="&quot;SET_DAD_ATTRIBUTE&quot;" ElementId="#BABFFDEH">Sets the value for a DAD</SubProgram>
+        <SubProgram Name="&quot;SET_GLOBAL_ATTRIBUTE&quot;" ElementId="#BABGCCJJ">Sets the value of a global attribute</SubProgram>
+        <SubProgram Name="&quot;UNMAP_DAD&quot;" ElementId="#BABEICIC">Unmaps a DAD from the specified virtual path</SubProgram>
+      </SubPrograms>
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_ERRLOG&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_errlog.htm">
       <Description>The DBMS_ERRLOG package provides a procedure that enables you to create an error logging table so that DML operations can continue after encountering errors rather than abort and roll back. This enables you to save time and system resources.</Description>
@@ -2507,6 +2638,10 @@ This function is useful for organizing data according to a style sheet as you ar
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_FREQUENT_ITEMSET&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_frqist.htm">
       <Description>The DBMS_FREQUENT_ITEMSET package enables frequent itemset counting. The two functions are identical except in the input cursor format difference.</Description>
+      <SubPrograms>
+        <SubProgram Name="&quot;FI_HORIZONTAL&quot;" ElementId="#i1000739">Counts all frequent itemsets given a cursor for input data which is in 'HORIZONTAL' row format, support threshold, minimum itemset length, maximum itemset length, items to be included, items to be excluded</SubProgram>
+        <SubProgram Name="&quot;FI_TRANSACTIONAL&quot;" ElementId="#BHAHCCDB">Counts all frequent itemsets given a cursor for input data which is in 'TRANSACTIONAL' row format, support threshold, minimum itemset length, maximum itemset length, items to be included, items to be excluded</SubProgram>
+      </SubPrograms>
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_GOLDENGATE_AUTH&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_goldengate_auth.htm">
       <Description>The DBMS_GOLDENGATE_AUTH package provides subprograms for granting privileges to and revoking privileges from GoldenGate administrators.</Description>
@@ -2551,6 +2686,22 @@ This function is useful for organizing data according to a style sheet as you ar
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_HS_PASSTHROUGH&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_hspass.htm">
       <Description>The DBMS_HS_PASSTHROUGH PL/SQL package allows you to send a statement directly to a non-Oracle system without being interpreted by the Oracle server. This can be useful if the non-Oracle system allows operations in statements for which there is no equivalent in Oracle.</Description>
+      <SubPrograms>
+        <SubProgram Name="&quot;BIND_INOUT_VARIABLE&quot;" ElementId="#i997192">Binds IN OUT bind variables</SubProgram>
+        <SubProgram Name="&quot;BIND_INOUT_VARIABLE_RAW&quot;" ElementId="#i997273">Binds IN OUT bind variables of datatype RAW</SubProgram>
+        <SubProgram Name="&quot;BIND_OUT_VARIABLE&quot;" ElementId="#BEIHAABB">Binds an OUT variable with a PL/SQL program variable</SubProgram>
+        <SubProgram Name="&quot;BIND_OUT_VARIABLE_RAW&quot;" ElementId="#i997126">Binds an OUT variable of datatype RAW with a PL/SQL program variable</SubProgram>
+        <SubProgram Name="&quot;BIND_VARIABLE&quot;" ElementId="#BEIFIAGH">Binds an IN variable positionally with a PL/SQL program variable</SubProgram>
+        <SubProgram Name="&quot;BIND_VARIABLE_RAW&quot;" ElementId="#i996981">Binds IN variables of type RAW</SubProgram>
+        <SubProgram Name="&quot;CLOSE_CURSOR&quot;" ElementId="#i997341">Closes the cursor and releases associated memory after the SQL statement has been run at the non-Oracle system</SubProgram>
+        <SubProgram Name="&quot;EXECUTE_IMMEDIATE&quot;" ElementId="#i997379">Runs a (non-SELECT) SQL statement immediately, without bind variables</SubProgram>
+        <SubProgram Name="&quot;EXECUTE_NON_QUERY&quot;" ElementId="#i997426">Runs a (non-SELECT) SQL statement</SubProgram>
+        <SubProgram Name="&quot;FETCH_ROW&quot;" ElementId="#BEIDJGGB">Fetches rows from a query</SubProgram>
+        <SubProgram Name="&quot;GET_VALUE&quot;" ElementId="#BEIHICII">Retrieves column value from SELECT statement, or retrieves OUT bind parameters</SubProgram>
+        <SubProgram Name="&quot;GET_VALUE_RAW&quot;" ElementId="#i997609">Similar to GET_VALUE, but for datatype RAW</SubProgram>
+        <SubProgram Name="&quot;OPEN_CURSOR&quot;" ElementId="#BEIHJIAB">Opens a cursor for running a passthrough SQL statement at the non-Oracle system</SubProgram>
+        <SubProgram Name="&quot;PARSE&quot;" ElementId="#i997699">Parses SQL statement at non-Oracle system</SubProgram>
+      </SubPrograms>
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_ILM&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_ilm.htm">
       <Description>The DBMS_ILM package provides an interface for implementing Information Lifecycle Management (ILM) strategies using Automatic Data Optimization (ADO) policies.</Description>
@@ -2596,6 +2747,18 @@ This function is useful for organizing data according to a style sheet as you ar
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_JOB&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_job.htm">
       <Description>The DBMS_JOB package schedules and manages jobs in the job queue.</Description>
+      <SubPrograms>
+        <SubProgram Name="&quot;BROKEN&quot;" ElementId="#i1000521">Disables job execution</SubProgram>
+        <SubProgram Name="&quot;CHANGE&quot;" ElementId="#i1000622">Alters any of the user-definable parameters associated with a job</SubProgram>
+        <SubProgram Name="&quot;INSTANCE&quot;" ElementId="#i1000681">Assigns a job to be run by a instance</SubProgram>
+        <SubProgram Name="&quot;INTERVAL&quot;" ElementId="#i1000712">Alters the interval between executions for a specified job</SubProgram>
+        <SubProgram Name="&quot;NEXT_DATE&quot;" ElementId="#i1000769">Alters the next execution time for a specified job</SubProgram>
+        <SubProgram Name="&quot;REMOVE&quot;" ElementId="#i997008">Removes specified job from the job queue</SubProgram>
+        <SubProgram Name="&quot;RUN&quot;" ElementId="#i1000972">Forces a specified job to run</SubProgram>
+        <SubProgram Name="&quot;SUBMIT&quot;" ElementId="#i1000807">Submits a new job to the job queue</SubProgram>
+        <SubProgram Name="&quot;USER_EXPORT&quot;" ElementId="#i1000925">Re-creates a given job for export, or re-creates a given job for export with instance affinity</SubProgram>
+        <SubProgram Name="&quot;WHAT&quot;" ElementId="#i1000977">Alters the job description for a specified job</SubProgram>
+      </SubPrograms>
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_LDAP&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_ldap.htm">
       <Description>The DBMS_LDAP package lets you access data from LDAP servers.</Description>
@@ -2662,6 +2825,13 @@ This function is useful for organizing data according to a style sheet as you ar
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_LOCK&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_lock.htm">
       <Description>The DBMS_LOCK package provides an interface to Oracle Lock Management services. You can request a lock of a specific mode, give it a unique name recognizable in another procedure in the same or another instance, change the lock mode, and release it.</Description>
+      <SubPrograms>
+        <SubProgram Name="&quot;ALLOCATE_UNIQUE&quot;" ElementId="#i1002533">Allocates a unique lock ID to a named lock</SubProgram>
+        <SubProgram Name="&quot;CONVERT&quot;" ElementId="#i997083">Converts a lock from one mode to another</SubProgram>
+        <SubProgram Name="&quot;RELEASE&quot;" ElementId="#i997159">Releases a lock</SubProgram>
+        <SubProgram Name="&quot;REQUEST&quot;" ElementId="#i1002556">Requests a lock of a specific mode.</SubProgram>
+        <SubProgram Name="&quot;SLEEP&quot;" ElementId="#i997212">Puts a session to sleep for a specific time</SubProgram>
+      </SubPrograms>
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_LOGMNR&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_logmnr.htm">
       <Description>The DBMS_LOGMNR package, one of a set of LogMiner packages, contains the subprograms you use to initialize the LogMiner tool and to begin and end a LogMiner session.</Description>
@@ -2715,11 +2885,14 @@ This function is useful for organizing data according to a style sheet as you ar
         <SubProgram Name="&quot;SET_CONTEXT&quot;" ElementId="#BABEFICA">Sets the named parameter with the specified value.</SubProgram>
       </SubPrograms>
     </Package>
-    <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_METADATA&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_metada.htm">
-      <Description>The DBMS_METADATA package provides a way for you to retrieve metadata from the database dictionary as XML or creation DDL and to submit the XML to re-create the object.</Description>
-    </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_METADATA_DIFF&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_metadiff.htm">
       <Description>The DBMS_METADATA_DIFF package contains the interfaces for comparing two metadata documents in SXML format.</Description>
+      <SubPrograms>
+        <SubProgram Name="&quot;OPENC&quot;" ElementId="#CHEIGFDG">Specifies the type of objects to be compared</SubProgram>
+        <SubProgram Name="&quot;ADD_DOCUMENT&quot;" ElementId="#CHEGEICI">Specifies an SXML document to be compared</SubProgram>
+        <SubProgram Name="&quot;FETCH_CLOB&quot;" ElementId="#CHEHEAFJ">Returns a CLOB showing the differences between the two documents specified by ADD_DOCUMENT</SubProgram>
+        <SubProgram Name="&quot;CLOSE&quot;" ElementId="#CHEEHABD">Invalidates the handle returned by OPENC and cleans up associated state</SubProgram>
+      </SubPrograms>
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_MGD_ID_UTL&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_mgd_id_utl.htm">
       <Description>The DBMS_MGD_ID_UTL package contains various functions and procedures that comprise the following utility subprograms:</Description>
@@ -2784,6 +2957,20 @@ This function is useful for organizing data according to a style sheet as you ar
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_MONITOR&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_monitor.htm">
       <Description>The DBMS_MONITOR package let you use PL/SQL for controlling additional tracing and statistics gathering.</Description>
+      <SubPrograms>
+        <SubProgram Name="&quot;CLIENT_ID_STAT_DISABLE&quot;" ElementId="#i1002330">Disables statistic gathering previously enabled for a given Client Identifier</SubProgram>
+        <SubProgram Name="&quot;CLIENT_ID_STAT_ENABLE&quot;" ElementId="#CFADJJDB">Enables statistic gathering for a given Client Identifier</SubProgram>
+        <SubProgram Name="&quot;CLIENT_ID_TRACE_DISABLE&quot;" ElementId="#i1002327">Disables the trace previously enabled for a given Client Identifier globally for the database</SubProgram>
+        <SubProgram Name="&quot;CLIENT_ID_TRACE_ENABLE&quot;" ElementId="#i1002256">Enables the trace for a given Client Identifier globally for the database</SubProgram>
+        <SubProgram Name="&quot;DATABASE_TRACE_DISABLE&quot;" ElementId="#CFAHBEAD">Disables SQL trace for the whole database or a specific instance</SubProgram>
+        <SubProgram Name="&quot;DATABASE_TRACE_ENABLE&quot;" ElementId="#CFAIBHEG">Enables SQL trace for the whole database or a specific instance</SubProgram>
+        <SubProgram Name="&quot;SERV_MOD_ACT_STAT_DISABLE&quot;" ElementId="#i1003131">Disables statistic gathering enabled for a given combination of Service Name, MODULE and ACTION</SubProgram>
+        <SubProgram Name="&quot;SERV_MOD_ACT_STAT_ENABLE&quot;" ElementId="#i1002459">Enables statistic gathering for a given combination of Service Name, MODULE and ACTION</SubProgram>
+        <SubProgram Name="&quot;SERV_MOD_ACT_TRACE_DISABLE&quot;" ElementId="#i1003676">Disables the trace for ALL enabled instances for a or a given combination of Service Name, MODULE and ACTION name globally</SubProgram>
+        <SubProgram Name="&quot;SERV_MOD_ACT_TRACE_ENABLE&quot;" ElementId="#CFAGCHJC">Enables SQL tracing for a given combination of Service Name, MODULE and ACTION globally unless an instance_name is specified</SubProgram>
+        <SubProgram Name="&quot;SESSION_TRACE_DISABLE&quot;" ElementId="#i1003678">Disables the previously enabled trace for a given database session identifier (SID) on the local instance</SubProgram>
+        <SubProgram Name="&quot;SESSION_TRACE_ENABLE&quot;" ElementId="#i1003679">Enables the trace for a given database session identifier (SID) on the local instance</SubProgram>
+      </SubPrograms>
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_MVIEW&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_mview.htm">
       <Description>DBMS_MVIEW enables you to understand capabilities for materialized views and potential materialized views, including their rewrite availability. It also enables you to refresh materialized views that are not part of the same refresh group and purge logs.</Description>
@@ -2848,6 +3035,15 @@ This function is useful for organizing data according to a style sheet as you ar
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_OUTLN&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_outln.htm">
       <Description>The DBMS_OUTLN package, synonymous with OUTLN_PKG, contains the functional interface for subprograms associated with the management of stored outlines.</Description>
+      <SubPrograms>
+        <SubProgram Name="&quot;CLEAR_USED&quot;" ElementId="#i996800">Clears the outline 'used' flag</SubProgram>
+        <SubProgram Name="&quot;CREATE_OUTLINE&quot;" ElementId="#i999012">Generates outlines from the shared cursor identified by hash value and child number</SubProgram>
+        <SubProgram Name="&quot;DROP_BY_CAT&quot;" ElementId="#i998927">Drops outlines that belong to a specified category</SubProgram>
+        <SubProgram Name="&quot;DROP_UNUSED&quot;" ElementId="#i999392">Drops outlines that have never been applied in the compilation of a SQL statement</SubProgram>
+        <SubProgram Name="&quot;EXACT_TEXT_SIGNATURES&quot;" ElementId="#i998802">Updates outline signatures to those that compute based on exact text matching</SubProgram>
+        <SubProgram Name="&quot;UPDATE_BY_CAT&quot;" ElementId="#i998670">Changes the category of outlines in one category to a new category</SubProgram>
+        <SubProgram Name="&quot;UPDATE_SIGNATURES&quot;" ElementId="#i998695">Updates outline signatures to the current version's signature</SubProgram>
+      </SubPrograms>
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_OUTPUT&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_output.htm">
       <Description>The DBMS_OUTPUT package enables you to send messages from stored procedures, packages, and triggers. The package is especially useful for displaying PL/SQL debugging information.</Description>
@@ -2894,6 +3090,9 @@ This function is useful for organizing data according to a style sheet as you ar
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_PCLXUTIL&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_pclxut.htm">
       <Description>The DBMS_PCLXUTIL package provides intra-partition parallelism for creating partition-wise local indexes. DBMS_PCLXUTIL circumvents the limitation that, for local index creation, the degree of parallelism is restricted to the number of partitions as only one parallel execution server process for each partition is used.</Description>
+      <SubPrograms>
+        <SubProgram Name="&quot;BUILD_PART_INDEX&quot;" ElementId="#i996814">Provides intra-partition parallelism for creating partition-wise local indexes</SubProgram>
+      </SubPrograms>
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_PDB&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_pdb.htm">
       <Description>The DBMS_PDB package provides an interface to examine and manipulate data about pluggable databases.</Description>
@@ -2908,6 +3107,18 @@ This function is useful for organizing data according to a style sheet as you ar
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_PIPE&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_pipe.htm">
       <Description>The DBMS_PIPE package lets two or more sessions in the same instance communicate. Oracle pipes are similar in concept to the pipes used in UNIX, but Oracle pipes are not implemented using the operating system pipe mechanisms.</Description>
+      <SubPrograms>
+        <SubProgram Name="&quot;CREATE_PIPE&quot;" ElementId="#CHDEICJI">Creates a pipe (necessary for private pipes)</SubProgram>
+        <SubProgram Name="&quot;NEXT_ITEM_TYPE&quot;" ElementId="#i997213">Returns datatype of next item in buffer</SubProgram>
+        <SubProgram Name="&quot;PACK_MESSAGE&quot;" ElementId="#CHDJGGIE">Builds message in local buffer</SubProgram>
+        <SubProgram Name="&quot;PURGE&quot;" ElementId="#i997357">Purges contents of named pipe</SubProgram>
+        <SubProgram Name="&quot;RECEIVE_MESSAGE&quot;" ElementId="#i997133">Copies message from named pipe into local buffer</SubProgram>
+        <SubProgram Name="&quot;REMOVE_PIPE&quot;" ElementId="#CHDICFGD">Removes the named pipe</SubProgram>
+        <SubProgram Name="&quot;RESET_BUFFER&quot;" ElementId="#i997385">Purges contents of local buffer</SubProgram>
+        <SubProgram Name="&quot;SEND_MESSAGE&quot;" ElementId="#i997042">Sends message on named pipe: This implicitly creates a public pipe if the named pipe does not exist</SubProgram>
+        <SubProgram Name="&quot;UNIQUE_SESSION_NAME&quot;" ElementId="#i997393">Returns unique session name</SubProgram>
+        <SubProgram Name="&quot;UNPACK_MESSAGE&quot;" ElementId="#i997258">Accesses next item in buffer</SubProgram>
+      </SubPrograms>
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_PREDICTIVE_ANALYTICS&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_predan.htm">
       <Description>Data mining can discover useful information buried in vast amounts of data. However, it is often the case that both the programming interfaces and the data mining expertise required to obtain these results are too complex for use by the wide audiences that can obtain benefits from using Oracle Data Mining.</Description>
@@ -3277,12 +3488,25 @@ This function is useful for organizing data according to a style sheet as you ar
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_SERVER_ALERT&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_server_alert.htm">
       <Description>The DBMS_SERVER_ALERT package enables you to configure the Oracle Database server to issue an alert when a threshold for a specified server metric has been violated. You can configure both warning and critical thresholds for a large number of predefined metrics.</Description>
+      <SubPrograms>
+        <SubProgram Name="&quot;EXPAND_MESSAGE&quot;" ElementId="#CHDDEFDJ">Expands alert messages</SubProgram>
+        <SubProgram Name="&quot;GET_THRESHOLD&quot;" ElementId="#CHDHIEAH">Gets the current threshold settings for a specified metric</SubProgram>
+        <SubProgram Name="&quot;SET_THRESHOLD&quot;" ElementId="#CHDFHEHB">Sets the warning and critical thresholds for a specified metric</SubProgram>
+      </SubPrograms>
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_SERVICE&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_serv.htm">
       <Description>The DBMS_SERVICE package lets you create, delete, activate, and deactivate services for a single instance.</Description>
+      <SubPrograms>
+        <SubProgram Name="&quot;CREATE_SERVICE&quot;" ElementId="#i1001480">Creates service</SubProgram>
+        <SubProgram Name="&quot;DELETE_SERVICE&quot;" ElementId="#i1002210">Deletes service</SubProgram>
+        <SubProgram Name="&quot;DISCONNECT_SESSION&quot;" ElementId="#i1001968">Disconnects sessions running under this service</SubProgram>
+        <SubProgram Name="&quot;MODIFY_SERVICE&quot;" ElementId="#BABHGBBA">Modifies service</SubProgram>
+        <SubProgram Name="&quot;START_SERVICE&quot;" ElementId="#i1002164">Activates service</SubProgram>
+        <SubProgram Name="&quot;STOP_SERVICE&quot;" ElementId="#i1002724">Stops service</SubProgram>
+      </SubPrograms>
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_SESSION&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_sessio.htm">
-      <Description>This package provides access to SQL ALTERSESSION and SETROLE statements, and other session information, from PL/SQL. You can use DBMS_SESSION to set preferences and security levels.</Description>
+      <Description>This package provides access to SQL ALTER SESSION and SET ROLE statements, and other session information, from PL/SQL. You can use DBMS_SESSION to set preferences and security levels.</Description>
       <SubPrograms>
         <SubProgram Name="&quot;CLEAR_ALL_CONTEXT&quot;" ElementId="#i1009975">Clears all context information</SubProgram>
         <SubProgram Name="&quot;CLEAR_CONTEXT&quot;" ElementId="#i1009938">Clears the context</SubProgram>
@@ -3321,6 +3545,17 @@ This function is useful for organizing data according to a style sheet as you ar
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_SPACE&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_space.htm">
       <Description>The DBMS_SPACE package enables you to analyze segment growth and space requirements.</Description>
+      <SubPrograms>
+        <SubProgram Name="&quot;ASA_RECOMMENDATIONS&quot;" ElementId="#CHDDBGED">Returns recommendations/findings of segment advisor run automatically by the system or manually invoked by the user</SubProgram>
+        <SubProgram Name="&quot;CREATE_INDEX_COST&quot;" ElementId="#i1002659">Determines the cost of creating an index on an existing table</SubProgram>
+        <SubProgram Name="&quot;CREATE_TABLE_COST&quot;" ElementId="#i1003180">Determines the size of the table given various attributes</SubProgram>
+        <SubProgram Name="&quot;FREE_BLOCKS&quot;" ElementId="#i1002261">Returns information about free blocks in an object (table, index, or cluster)</SubProgram>
+        <SubProgram Name="&quot;ISDATAFILEDROPPABLE_NAME&quot;" ElementId="#BABEJBHE">Checks whether a datafile is droppable</SubProgram>
+        <SubProgram Name="&quot;OBJECT_DEPENDENT_SEGMENTS&quot;" ElementId="#i1001702">Returns the list of segments that are associated with the object</SubProgram>
+        <SubProgram Name="&quot;OBJECT_GROWTH_TREND&quot;" ElementId="#i1002179">A table function where each row describes the space usage of the object at a specific point in time</SubProgram>
+        <SubProgram Name="&quot;SPACE_USAGE&quot;" ElementId="#CACBDJIH">Returns information about free blocks in an auto segment space managed segment</SubProgram>
+        <SubProgram Name="&quot;UNUSED_SPACE&quot;" ElementId="#i1000324">Returns information about unused space in an object (table, index, or cluster)</SubProgram>
+      </SubPrograms>
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_SPACE_ADMIN&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_spadmn.htm">
       <Description>The DBMS_SPACE_ADMIN package provides functionality for locally managed tablespaces.</Description>
@@ -3384,7 +3619,7 @@ This function is useful for organizing data according to a style sheet as you ar
       </SubPrograms>
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_SQL&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_sql.htm">
-      <Description>The DBMS_SQL package provides an interface to use dynamic SQL to parse any data manipulation language (DML) or data definition language (DDL) statement using PL/SQL. For example, you can enter a DROPTABLE statement from within a stored procedure by using the PARSE Procedures supplied with the DBMS_SQL package.</Description>
+      <Description>The DBMS_SQL package provides an interface to use dynamic SQL to parse any data manipulation language (DML) or data definition language (DDL) statement using PL/SQL. For example, you can enter a DROP TABLE statement from within a stored procedure by using the PARSE Procedures supplied with the DBMS_SQL package.</Description>
       <SubPrograms>
         <SubProgram Name="&quot;BIND_ARRAY&quot;" ElementId="#i1025085">Binds a given value to a given collection</SubProgram>
         <SubProgram Name="&quot;BIND_VARIABLE&quot;" ElementId="#i1030093">Binds a given value to a given variable</SubProgram>
@@ -3413,7 +3648,7 @@ This function is useful for organizing data according to a style sheet as you ar
         <SubProgram Name="&quot;PARSE&quot;" ElementId="#i997676">Parses given statement</SubProgram>
         <SubProgram Name="&quot;RETURN_RESULT&quot;" ElementId="#CIHIICAG">Returns the result of an executed statement to the client application</SubProgram>
         <SubProgram Name="&quot;TO_CURSOR_NUMBER&quot;" ElementId="#CHDJDGDG">Takes an OPENed strongly or weakly-typed ref cursor and transforms it into a DBMS_SQL cursor number</SubProgram>
-        <SubProgram Name="&quot;TO_REFCURSOR&quot;" ElementId="#CHDFDCDE">Takes an OPENed, PARSEd, and EXECUTEd cursor and transforms/migrates it into a PL/SQL manageable REFCURSOR (a weakly-typed cursor) that can be consumed by PL/SQL native dynamic SQL switched to use native dynamic SQL</SubProgram>
+        <SubProgram Name="&quot;TO_REFCURSOR&quot;" ElementId="#CHDFDCDE">Takes an OPENed, PARSEd, and EXECUTEd cursor and transforms/migrates it into a PL/SQL manageable REF CURSOR (a weakly-typed cursor) that can be consumed by PL/SQL native dynamic SQL switched to use native dynamic SQL</SubProgram>
         <SubProgram Name="&quot;VARIABLE_VALUE&quot;" ElementId="#i998371">Returns value of named variable for given cursor</SubProgram>
       </SubPrograms>
     </Package>
@@ -3478,12 +3713,74 @@ This function is useful for organizing data according to a style sheet as you ar
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_SQLPA&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_sqlpa.htm">
       <Description>The DBMS_SQLPA package provides the interface to implement the SQL Performance Analyzer.</Description>
+      <SubPrograms>
+        <SubProgram Name="&quot;CANCEL_ANALYSIS_TASK&quot;" ElementId="#i1006894">Cancels the currently executing task analysis of one or more SQL statements</SubProgram>
+        <SubProgram Name="&quot;CREATE_ANALYSIS_TASK&quot;" ElementId="#i1006896">Creates an advisor task to process and analyze one or more SQL statements</SubProgram>
+        <SubProgram Name="&quot;DROP_ANALYSIS_TASK&quot;" ElementId="#i1006900">Drops a SQL analysis task</SubProgram>
+        <SubProgram Name="&quot;EXECUTE_ANALYSIS_TASK&quot;" ElementId="#CHEFGHHI">Executes a previously created analysis task</SubProgram>
+        <SubProgram Name="&quot;INTERRUPT_ANALYSIS_TASK&quot;" ElementId="#CHECJJHH">Interrupts the currently executing analysis task</SubProgram>
+        <SubProgram Name="&quot;REPORT_ANALYSIS_TASK&quot;" ElementId="#i1006953">Displays the results of an analysis task</SubProgram>
+        <SubProgram Name="&quot;RESET_ANALYSIS_TASK&quot;" ElementId="#i1006954">Resets the currently executing analysis task to its initial state</SubProgram>
+        <SubProgram Name="&quot;RESUME_ANALYSIS_TASK&quot;" ElementId="#CACEJGJF">Resumes a previously interrupted analysis task that was created to process a SQL tuning set.</SubProgram>
+        <SubProgram Name="&quot;SET_ANALYSIS_TASK_PARAMETER&quot;" ElementId="#CACIFFJE">Sets the SQL analysis task parameter value</SubProgram>
+        <SubProgram Name="&quot;SET_ANALYSIS_DEFAULT_PARAMETER&quot;" ElementId="#CHDEHJAB">Sets the SQL analysis task parameter default value</SubProgram>
+      </SubPrograms>
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_SQLTUNE&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_sqltun.htm">
       <Description>The DBMS_SQLTUNE package is the interface for tuning SQL on demand. The related package DBMS_AUTO_SQLTUNE package provides the interface for SQL Tuning Advisor run as an automated task.</Description>
+      <SubPrograms>
+        <SubProgram Name="&quot;ACCEPT_ALL_SQL_PROFILES&quot;" ElementId="#CACEIFDE">SQL Profile Subprograms</SubProgram>
+        <SubProgram Name="&quot;ACCEPT_SQL_PROFILE&quot;" ElementId="#i1010403">SQL Profile Subprograms</SubProgram>
+        <SubProgram Name="&quot;ADD_SQLSET_REFERENCE&quot;" ElementId="#i1006814">SQL Tuning Set Subprograms</SubProgram>
+        <SubProgram Name="&quot;ALTER_SQL_PROFILE&quot;" ElementId="#i1008294">SQL Profile Subprograms</SubProgram>
+        <SubProgram Name="&quot;CANCEL_TUNING_TASK&quot;" ElementId="#CHDCHFDB">SQL Tuning Advisor Subprograms</SubProgram>
+        <SubProgram Name="&quot;CAPTURE_CURSOR_CACHE_SQLSET&quot;" ElementId="#CACJHDDC">SQL Tuning Set Subprograms</SubProgram>
+        <SubProgram Name="&quot;CREATE_SQL_PLAN_BASELINE&quot;" ElementId="#CHDFECGH">SQL Tuning Advisor Subprograms</SubProgram>
+        <SubProgram Name="&quot;CREATE_SQLSET&quot;" ElementId="#i1006897">SQL Tuning Set Subprograms</SubProgram>
+        <SubProgram Name="&quot;CREATE_STGTAB_SQLPROF&quot;" ElementId="#CACHIGBF">SQL Profile Subprograms</SubProgram>
+        <SubProgram Name="&quot;CREATE_STGTAB_SQLSET&quot;" ElementId="#CACBCEEH">SQL Tuning Set Subprograms</SubProgram>
+        <SubProgram Name="&quot;CREATE_TUNING_TASK&quot;" ElementId="#CHDGBCDB">SQL Tuning Advisor Subprograms</SubProgram>
+        <SubProgram Name="&quot;DELETE_SQLSET&quot;" ElementId="#i1006898">SQL Tuning Set Subprograms</SubProgram>
+        <SubProgram Name="&quot;DROP_SQL_PROFILE&quot;" ElementId="#i1007819">SQL Profile Subprograms</SubProgram>
+        <SubProgram Name="&quot;DROP_SQLSET&quot;" ElementId="#i1007711">SQL Tuning Set Subprograms</SubProgram>
+        <SubProgram Name="&quot;DROP_TUNING_TASK&quot;" ElementId="#CHDIGHHA">SQL Tuning Advisor Subprograms</SubProgram>
+        <SubProgram Name="&quot;EXECUTE_TUNING_TASK&quot;" ElementId="#CHDGEJJA">SQL Tuning Advisor Subprograms</SubProgram>
+        <SubProgram Name="&quot;IMPLEMENT_TUNING_TASK&quot;" ElementId="#BABIECBJ">SQL Tuning Advisor Subprograms</SubProgram>
+        <SubProgram Name="&quot;INTERRUPT_TUNING_TASK&quot;" ElementId="#CHDFIFAF">SQL Tuning Advisor Subprograms</SubProgram>
+        <SubProgram Name="&quot;LOAD_SQLSET&quot;" ElementId="#i1006951">SQL Tuning Set Subprograms</SubProgram>
+        <SubProgram Name="&quot;PACK_STGTAB_SQLPROF&quot;" ElementId="#CACFCAEC">SQL Profile Subprograms</SubProgram>
+        <SubProgram Name="&quot;PACK_STGTAB_SQLSET&quot;" ElementId="#CACIFBAJ">SQL Tuning Set Subprograms</SubProgram>
+        <SubProgram Name="&quot;REMAP_STGTAB_SQLPROF&quot;" ElementId="#CACGGJBG">SQL Profile Subprograms</SubProgram>
+        <SubProgram Name="&quot;REMAP_STGTAB_SQLSET&quot;" ElementId="#CACIFDFG">SQL Tuning Set Subprograms</SubProgram>
+        <SubProgram Name="&quot;REMOVE_SQLSET_REFERENCE&quot;" ElementId="#i1006952">SQL Tuning Set Subprograms</SubProgram>
+        <SubProgram Name="&quot;REPORT_AUTO_TUNING_TASK&quot;" ElementId="#CACFICAE">SQL Tuning Set Subprograms</SubProgram>
+        <SubProgram Name="&quot;REPORT_SQL_DETAIL&quot;" ElementId="#CHDIDGFA">SQL Performance Reporting Subprograms</SubProgram>
+        <SubProgram Name="&quot;REPORT_TUNING_TASK&quot;" ElementId="#CHDGEIHJ">SQL Tuning Set Subprograms</SubProgram>
+        <SubProgram Name="&quot;RESET_TUNING_TASK&quot;" ElementId="#CHDJEHBG">SQL Tuning Advisor Subprograms</SubProgram>
+        <SubProgram Name="&quot;RESUME_TUNING_TASK&quot;" ElementId="#CHDJEABC">SQL Tuning Advisor Subprograms</SubProgram>
+        <SubProgram Name="&quot;SCHEDULE_TUNING_TASK&quot;" ElementId="#CACGDDAH">SQL Tuning Advisor Subprograms</SubProgram>
+        <SubProgram Name="&quot;SCRIPT_TUNING_TASK&quot;" ElementId="#CHDCHDED">SQL Tuning Advisor Subprograms</SubProgram>
+        <SubProgram Name="&quot;SELECT_CURSOR_CACHE&quot;" ElementId="#i1010615">SQL Tuning Set Subprograms</SubProgram>
+        <SubProgram Name="&quot;SELECT_SQL_TRACE&quot;" ElementId="#CACBBIEH">SQL Tuning Set Subprograms</SubProgram>
+        <SubProgram Name="&quot;SELECT_SQLSET&quot;" ElementId="#CHEHBBDF">SQL Tuning Set Subprograms</SubProgram>
+        <SubProgram Name="&quot;SELECT_WORKLOAD_REPOSITORY&quot;" ElementId="#i1009198">SQL Tuning Set Subprograms</SubProgram>
+        <SubProgram Name="&quot;SET_TUNING_TASK_PARAMETER&quot;" ElementId="#CHDGAJDB">SQL Tuning Advisor Subprograms</SubProgram>
+        <SubProgram Name="&quot;SQLTEXT_TO_SIGNATURE&quot;" ElementId="#CACHJDEG">SQL Profile Subprograms</SubProgram>
+        <SubProgram Name="&quot;UNPACK_STGTAB_SQLPROF&quot;" ElementId="#CACDIJJE">SQL Profile Subprograms</SubProgram>
+        <SubProgram Name="&quot;UNPACK_STGTAB_SQLSET&quot;" ElementId="#CACJDGFI">SQL Tuning Set Subprograms</SubProgram>
+        <SubProgram Name="&quot;UPDATE_SQLSET&quot;" ElementId="#i1007011">SQL Tuning Set Subprograms</SubProgram>
+      </SubPrograms>
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_STAT_FUNCS&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_stat_f.htm">
       <Description>The DBMS_STAT_FUNCS package provides statistical functions.</Description>
+      <SubPrograms>
+        <SubProgram Name="&quot;EXPONENTIAL_DIST_FIT&quot;" ElementId="#CJHBJIAA">Tests how well a sample of values fits an exponential distribution</SubProgram>
+        <SubProgram Name="&quot;NORMAL_DIST_FIT&quot;" ElementId="#i999113">Tests how well a sample of values fits a normal distribution</SubProgram>
+        <SubProgram Name="&quot;POISSON_DIST_FIT&quot;" ElementId="#i1000328">Tests how well a sample of values fits a Poisson distribution</SubProgram>
+        <SubProgram Name="&quot;SUMMARY&quot;" ElementId="#i999450">Summarizes a numerical column of a table</SubProgram>
+        <SubProgram Name="&quot;UNIFORM_DIST_FIT&quot;" ElementId="#i996941">Tests how well a sample of values fits a uniform distribution</SubProgram>
+        <SubProgram Name="&quot;WEIBULL_DIST_FIT&quot;" ElementId="#i999931">Tests how well a sample of values fits a Weibull distribution</SubProgram>
+      </SubPrograms>
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_STATS&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_stats.htm">
       <Description>With the DBMS_STATS package you can view and modify optimizer statistics gathered for database objects.</Description>
@@ -3601,6 +3898,19 @@ This function is useful for organizing data according to a style sheet as you ar
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_STORAGE_MAP&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_stmap.htm">
       <Description>With the DBMS_STORAGE_MAP package, you can communicate with the Oracle background process FMON to invoke mapping operations that populate mapping views. FMON communicates with operating and storage system vendor-supplied mapping libraries.</Description>
+      <SubPrograms>
+        <SubProgram Name="&quot;DROP_ALL&quot;" ElementId="#i1000132">Drops all mapping information in the shared memory of the instance</SubProgram>
+        <SubProgram Name="&quot;DROP_ELEMENT&quot;" ElementId="#i1000160">Drops the mapping information for the element defined by elemname</SubProgram>
+        <SubProgram Name="&quot;DROP_FILE&quot;" ElementId="#i1000190">Drops the file mapping information defined by filename</SubProgram>
+        <SubProgram Name="&quot;LOCK_MAP&quot;" ElementId="#i1000268">Locks the mapping information in the shared memory of the instance</SubProgram>
+        <SubProgram Name="&quot;MAP_ALL&quot;" ElementId="#i1000295">Builds the entire mapping information for all types of Oracle files (except archive logs), including all directed acyclic graph (DAG) elements</SubProgram>
+        <SubProgram Name="&quot;MAP_ELEMENT&quot;" ElementId="#i1000343">Builds mapping information for the element identified by elemname</SubProgram>
+        <SubProgram Name="&quot;MAP_FILE&quot;" ElementId="#CEGJFABB">Builds mapping information for the file identified by filename</SubProgram>
+        <SubProgram Name="&quot;MAP_OBJECT&quot;" ElementId="#i996974">Builds the mapping information for the Oracle object identified by the object name, owner, and type</SubProgram>
+        <SubProgram Name="&quot;RESTORE&quot;" ElementId="#i1000367">Loads the entire mapping information from the data dictionary into the shared memory of the instance</SubProgram>
+        <SubProgram Name="&quot;SAVE&quot;" ElementId="#i1000377">Saves information needed to regenerate the entire mapping into the data dictionary</SubProgram>
+        <SubProgram Name="&quot;UNLOCK_MAP&quot;" ElementId="#i997102">Unlocks the mapping information in the shared memory of the instance.</SubProgram>
+      </SubPrograms>
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_STREAMS&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_streams.htm">
       <Description>The DBMS_STREAMS package, one of a set of Oracle Streams packages, provides subprograms to convert ANYDATA objects into logical change record (LCR) objects, to return information about Oracle Streams attributes and Oracle Streams clients, and to annotate redo entries generated by a session with a binary tag. This tag affects the behavior of a capture process, a propagation, or an apply process whose rules include specifications for these binary tags in redo entries or LCRs.</Description>
@@ -3706,7 +4016,7 @@ This function is useful for organizing data according to a style sheet as you ar
       <Description>The DBMS_STREAMS_TABLESPACE_ADM package, one of a set of Oracle Streams packages, provides administrative interfaces for copying tablespaces between databases and moving tablespaces from one database to another. This package uses transportable tablespaces, Data Pump, the DBMS_FILE_TRANSFER package, and the DBMS_FILE_GROUP package.</Description>
       <SubPrograms>
         <SubProgram Name="&quot;ATTACH_SIMPLE_TABLESPACE&quot;" ElementId="#i1000780">Uses Data Pump to import a simple tablespace previously exported using the DBMS_STREAMS_TABLESPACE_ADM package or Data Pump export</SubProgram>
-        <SubProgram Name="&quot;ATTACH_TABLESPACES&quot;" ElementId="#i1000995">Uses Data Pump to import a self-contained tablespace set previously exported using the DBMS_STREAMS_TABLESPACE_ADM package, Data Pump export, or the Recovery Manager (RMAN) TRANSPORTTABLESPACE command</SubProgram>
+        <SubProgram Name="&quot;ATTACH_TABLESPACES&quot;" ElementId="#i1000995">Uses Data Pump to import a self-contained tablespace set previously exported using the DBMS_STREAMS_TABLESPACE_ADM package, Data Pump export, or the Recovery Manager (RMAN) TRANSPORT TABLESPACE command</SubProgram>
         <SubProgram Name="&quot;CLONE_SIMPLE_TABLESPACE&quot;" ElementId="#i1000996">Clones a simple tablespace. The tablespace can later be attached to a database.</SubProgram>
         <SubProgram Name="&quot;CLONE_TABLESPACES&quot;" ElementId="#i1000997">Clones a set of self-contained tablespaces. The tablespaces can later be attached to a database.</SubProgram>
         <SubProgram Name="&quot;DETACH_SIMPLE_TABLESPACE&quot;" ElementId="#i1000998">Detaches a simple tablespace. The tablespace can later be attached to a database.</SubProgram>
@@ -3753,23 +4063,36 @@ This function is useful for organizing data according to a style sheet as you ar
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_TRANSACTION&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_transa.htm">
       <Description>The DBMS_TRANSACTION package provides access to SQL transaction statements from stored procedures.</Description>
       <SubPrograms>
-        <SubProgram Name="&quot;ADVISE_COMMIT&quot;" ElementId="#i1000260">Equivalent to the SQL statement:ALTER SESSION ADVISE COMMIT</SubProgram>
-        <SubProgram Name="&quot;ADVISE_NOTHING&quot;" ElementId="#i1000264">Equivalent to the SQL statement:ALTER SESSION ADVISE NOTHING</SubProgram>
-        <SubProgram Name="&quot;ADVISE_ROLLBACK&quot;" ElementId="#i1000298">Equivalent to the SQL statement:ALTER SESSION ADVISE ROLLBACK</SubProgram>
-        <SubProgram Name="&quot;COMMIT&quot;" ElementId="#i1000373">Equivalent to the SQL statement:COMMIT</SubProgram>
-        <SubProgram Name="&quot;COMMIT_COMMENT&quot;" ElementId="#i1000443">Equivalent to the SQL statement:COMMIT COMMENT &lt;text&gt;</SubProgram>
-        <SubProgram Name="&quot;COMMIT_FORCE&quot;" ElementId="#i1000448">Equivalent to the SQL statement:COMMIT FORCE &lt;text&gt;, &lt;number&gt;"</SubProgram>
+        <SubProgram Name="&quot;ADVISE_COMMIT&quot;" ElementId="#i1000260">Equivalent to the SQL statement:
+ALTER SESSION ADVISE COMMIT</SubProgram>
+        <SubProgram Name="&quot;ADVISE_NOTHING&quot;" ElementId="#i1000264">Equivalent to the SQL statement:
+ALTER SESSION ADVISE NOTHING</SubProgram>
+        <SubProgram Name="&quot;ADVISE_ROLLBACK&quot;" ElementId="#i1000298">Equivalent to the SQL statement:
+ALTER SESSION ADVISE ROLLBACK</SubProgram>
+        <SubProgram Name="&quot;COMMIT&quot;" ElementId="#i1000373">Equivalent to the SQL statement:
+COMMIT</SubProgram>
+        <SubProgram Name="&quot;COMMIT_COMMENT&quot;" ElementId="#i1000443">Equivalent to the SQL statement:
+COMMIT COMMENT &lt;text&gt;</SubProgram>
+        <SubProgram Name="&quot;COMMIT_FORCE&quot;" ElementId="#i1000448">Equivalent to the SQL statement:
+COMMIT FORCE &lt;text&gt;, &lt;number&gt;"</SubProgram>
         <SubProgram Name="&quot;LOCAL_TRANSACTION_ID&quot;" ElementId="#i1000530">Returns the local (to instance) unique identifier for the current transaction</SubProgram>
         <SubProgram Name="&quot;PURGE_LOST_DB_ENTRY&quot;" ElementId="#i1000592">Enables removal of incomplete transactions from the local site when the remote database is destroyed or re-created before recovery completes</SubProgram>
         <SubProgram Name="&quot;PURGE_MIXED&quot;" ElementId="#i1000748">Deletes information about a given mixed outcome transaction</SubProgram>
-        <SubProgram Name="&quot;READ_ONLY&quot;" ElementId="#i1000791">Equivalent to the SQL statement:SET TRANSACTION READ ONLY</SubProgram>
-        <SubProgram Name="&quot;READ_WRITE&quot;" ElementId="#CIAEGFIB">equivalent to the SQL statement:SET TRANSACTION READ WRITE</SubProgram>
-        <SubProgram Name="&quot;ROLLBACK&quot;" ElementId="#i1000835">Equivalent to the SQL statement:ROLLBACK</SubProgram>
-        <SubProgram Name="&quot;ROLLBACK_FORCE&quot;" ElementId="#i1000863">Equivalent to the SQL statement:ROLLBACKFORCE&lt;text&gt;</SubProgram>
-        <SubProgram Name="&quot;ROLLBACK_SAVEPOINT&quot;" ElementId="#i1000909">Equivalent to the SQL statement:ROLLBACKTOSAVEPOINT&lt;savepoint_name&gt;</SubProgram>
-        <SubProgram Name="&quot;SAVEPOINT&quot;" ElementId="#i997017">Equivalent to the SQL statement:SAVEPOINT&lt;savepoint_name&gt;</SubProgram>
+        <SubProgram Name="&quot;READ_ONLY&quot;" ElementId="#i1000791">Equivalent to the SQL statement:
+SET TRANSACTION READ ONLY</SubProgram>
+        <SubProgram Name="&quot;READ_WRITE&quot;" ElementId="#CIAEGFIB">equivalent to the SQL statement:
+SET TRANSACTION READ WRITE</SubProgram>
+        <SubProgram Name="&quot;ROLLBACK&quot;" ElementId="#i1000835">Equivalent to the SQL statement:
+ROLLBACK</SubProgram>
+        <SubProgram Name="&quot;ROLLBACK_FORCE&quot;" ElementId="#i1000863">Equivalent to the SQL statement:
+ROLLBACK FORCE &lt;text&gt;</SubProgram>
+        <SubProgram Name="&quot;ROLLBACK_SAVEPOINT&quot;" ElementId="#i1000909">Equivalent to the SQL statement:
+ROLLBACK TO SAVEPOINT &lt;savepoint_name&gt;</SubProgram>
+        <SubProgram Name="&quot;SAVEPOINT&quot;" ElementId="#i997017">Equivalent to the SQL statement:
+SAVEPOINT &lt;savepoint_name&gt;</SubProgram>
         <SubProgram Name="&quot;STEP_ID&quot;" ElementId="#i1000520">Returns local (to local transaction) unique positive integer that orders the DML operations of a transaction</SubProgram>
-        <SubProgram Name="&quot;USE_ROLLBACK_SEGMENT&quot;" ElementId="#i1000982">Equivalent to the SQL statement:SETTRANSACTIONUSEROLLBACKSEGMENT&lt;rb_seg_name&gt;</SubProgram>
+        <SubProgram Name="&quot;USE_ROLLBACK_SEGMENT&quot;" ElementId="#i1000982">Equivalent to the SQL statement:
+SET TRANSACTION USE ROLLBACK SEGMENT &lt;rb_seg_name&gt;</SubProgram>
       </SubPrograms>
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_TRANSFORM&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_transf.htm">
@@ -3829,7 +4152,7 @@ This function is useful for organizing data according to a style sheet as you ar
         <SubProgram Name="&quot;CANONICALIZE&quot;" ElementId="#i1004667">Canonicalizes a given string</SubProgram>
         <SubProgram Name="&quot;COMMA_TO_TABLE&quot;" ElementId="#i1002468">Converts a comma-delimited list of names into a PL/SQL table of names</SubProgram>
         <SubProgram Name="&quot;COMPILE_SCHEMA&quot;" ElementId="#i1002332">Compiles all procedures, functions, packages, views and triggers in the specified schema</SubProgram>
-        <SubProgram Name="&quot;CREATE_ALTER_TYPE_ERROR_TABLE&quot;" ElementId="#i1004185">Creates an error table to be used in the EXCEPTION clause of the ALTERTYPE statement</SubProgram>
+        <SubProgram Name="&quot;CREATE_ALTER_TYPE_ERROR_TABLE&quot;" ElementId="#i1004185">Creates an error table to be used in the EXCEPTION clause of the ALTER TYPE statement</SubProgram>
         <SubProgram Name="&quot;CURRENT_INSTANCE&quot;" ElementId="#i1002512">Returns the current connected instance number</SubProgram>
         <SubProgram Name="&quot;DATA_BLOCK_ADDRESS_BLOCK&quot;" ElementId="#i1002531">Gets the block number part of a data block address</SubProgram>
         <SubProgram Name="&quot;DATA_BLOCK_ADDRESS_FILE&quot;" ElementId="#i1002627">Gets the file number part of a data block address</SubProgram>
@@ -3938,6 +4261,37 @@ This function is useful for organizing data according to a style sheet as you ar
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_WORKLOAD_REPOSITORY&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_workload_repos.htm">
       <Description>The DBMS_WORKLOAD_REPOSITORY package lets you manage the Workload Repository, performing operations such as managing snapshots and baselines.</Description>
+      <SubPrograms>
+        <SubProgram Name="&quot;ADD_COLORED_SQL&quot;" ElementId="#CHDGFJAD">Adds a colored SQL ID</SubProgram>
+        <SubProgram Name="&quot;ASH_GLOBAL_REPORT_HTML&quot;" ElementId="#CIHDBCGJ">Displays a global or Oracle Real Application Clusters (Oracle RAC) ASH Spot report in HTML format.</SubProgram>
+        <SubProgram Name="&quot;ASH_GLOBAL_REPORT_TEXT&quot;" ElementId="#CHDEFFAD">Displays a global or Oracle Real Application Clusters (Oracle RAC) ASH Spot report in Text format.</SubProgram>
+        <SubProgram Name="&quot;ASH_REPORT_HTML&quot;" ElementId="#CHDIEGBD">Displays the ASH report in HTML</SubProgram>
+        <SubProgram Name="&quot;ASH_REPORT_TEXT&quot;" ElementId="#CIHBAFCB">Displays the ASH report in text</SubProgram>
+        <SubProgram Name="&quot;AWR_DIFF_REPORT_HTML&quot;" ElementId="#CIHGFGBG">Displays the AWR Diff-Diff report in HTML</SubProgram>
+        <SubProgram Name="&quot;AWR_DIFF_REPORT_TEXT&quot;" ElementId="#CIHHBHCJ">Displays the AWR Diff-Diff report in text</SubProgram>
+        <SubProgram Name="&quot;AWR_GLOBAL_DIFF_REPORT_HTML&quot;" ElementId="#CHDIEIEA">Displays the Global AWR Compare Periods Report in HTML</SubProgram>
+        <SubProgram Name="&quot;AWR_GLOBAL_DIFF_REPORT_TEXT&quot;" ElementId="#CHDJAJGE">Displays the Global AWR Compare Periods Report in text</SubProgram>
+        <SubProgram Name="&quot;AWR_GLOBAL_REPORT_HTML&quot;" ElementId="#CHDGGHBG">Displays the Global AWR report in HTML</SubProgram>
+        <SubProgram Name="&quot;AWR_GLOBAL_REPORT_TEXT&quot;" ElementId="#CHDGEAEG">Displays the Global AWR report in text</SubProgram>
+        <SubProgram Name="&quot;AWR_REPORT_HTML&quot;" ElementId="#i1004015">Displays the AWR report in HTML</SubProgram>
+        <SubProgram Name="&quot;AWR_REPORT_TEXT&quot;" ElementId="#i1004016">Displays the AWR report in text</SubProgram>
+        <SubProgram Name="&quot;AWR_SET_REPORT_THRESHOLDS&quot;" ElementId="#CHDIDBCC">Configures specified report thresholds, including the number of rows in the report</SubProgram>
+        <SubProgram Name="&quot;AWR_SQL_REPORT_HTML&quot;" ElementId="#CIHHJCEI">Displays the AWR SQL Report in HTML format</SubProgram>
+        <SubProgram Name="&quot;AWR_SQL_REPORT_TEXT&quot;" ElementId="#CIHBACEJ">Displays the AWR SQL Report in text format</SubProgram>
+        <SubProgram Name="&quot;CREATE_BASELINE&quot;" ElementId="#i1003628">Creates a single baseline</SubProgram>
+        <SubProgram Name="&quot;CREATE_BASELINE_TEMPLATE&quot;" ElementId="#BABFHHJJ">Creates a baseline template</SubProgram>
+        <SubProgram Name="&quot;CREATE_SNAPSHOT&quot;" ElementId="#BACHIHFC">Creates a manual snapshot immediately</SubProgram>
+        <SubProgram Name="&quot;DROP_BASELINE&quot;" ElementId="#i1003190">Drops a previously-defined baseline</SubProgram>
+        <SubProgram Name="&quot;DROP_BASELINE_TEMPLATE&quot;" ElementId="#BABBIJBE">Removes a baseline template that is no longer needed</SubProgram>
+        <SubProgram Name="&quot;DROP_SNAPSHOT_RANGE&quot;" ElementId="#BACCDGDB">Drops a range of snapshots</SubProgram>
+        <SubProgram Name="&quot;MODIFY_SNAPSHOT_SETTINGS&quot;" ElementId="#BACEHJJI">Modifies the snapshot settings</SubProgram>
+        <SubProgram Name="&quot;MODIFY_BASELINE_WINDOW_SIZE&quot;" ElementId="#BABBIEDG">Modifies the window size for the Default Moving Window Baseline</SubProgram>
+        <SubProgram Name="&quot;PURGE_SQL_DETAILS&quot;" ElementId="#CHDHJICI">Purges SQL details, specifically rows from WRH$_SQLTEXT and WRH$_SQL_PLAN that do not have corresponding rows (DBID, SQL_ID) in WRH$_SQLSTAT.</SubProgram>
+        <SubProgram Name="&quot;REMOVE_COLORED_SQL&quot;" ElementId="#CHDJGBFI">Removes a colored SQL ID</SubProgram>
+        <SubProgram Name="&quot;RENAME_BASELINE&quot;" ElementId="#BABIJFJE">Renames a baseline</SubProgram>
+        <SubProgram Name="&quot;SELECT_BASELINE_METRIC&quot;" ElementId="#BABDIFIA">Shows the values of the metrics corresponding to a baseline</SubProgram>
+        <SubProgram Name="&quot;UPDATE_OBJECT_INFO&quot;" ElementId="#CHDEHHAB">Updates rows of WRH$_SEG_STAT_OBJ table that represent objects in the local database</SubProgram>
+      </SubPrograms>
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_XA&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_xa.htm">
       <Description>The DBMS_XA package contains the XA/Open interface for applications to call XA interface in PL/SQL. Using this package, application developers can switch or share transactions across SQL*Plus sessions or processes using PL/SQL.</Description>
@@ -4129,18 +4483,147 @@ The DBMS_XDB package subprograms and constants are deprecated with Oracle Databa
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_XDB_VERSION&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_xdb_ver.htm">
       <Description>Oracle XML DB versioning interfaces are found in the DBMS_XBD_VERSION package. Functions and procedures of DBMS_XDB_VERSION help to create a VCR and manage the versions in the version history.</Description>
+      <SubPrograms>
+        <SubProgram Name="&quot;CHECKIN&quot;" ElementId="#i1003739">Checks in a checked-out VCR and returns the resource id of the newly-created version</SubProgram>
+        <SubProgram Name="&quot;CHECKOUT&quot;" ElementId="#i1002044">Checks out a VCR before updating or deleting it</SubProgram>
+        <SubProgram Name="&quot;GETCONTENTSBLOBBYRESID&quot;" ElementId="#i1004044">Obtain contents as a BLOB</SubProgram>
+        <SubProgram Name="&quot;GETCONTENTSCLOBBYRESID&quot;" ElementId="#i1004065">Obtain contents as a CLOB</SubProgram>
+        <SubProgram Name="&quot;GETCONTENTSXMLBYRESID&quot;" ElementId="#i1004066">Obtain contents as an XMLType</SubProgram>
+        <SubProgram Name="&quot;GETPREDECESSORS&quot;" ElementId="#i1005110">Retrieves the list of predecessors by path name</SubProgram>
+        <SubProgram Name="&quot;GETPREDSBYRESID&quot;" ElementId="#CCHJHGAE">Retrieves the list of predecessors by resource id</SubProgram>
+        <SubProgram Name="&quot;GETRESOURCEBYRESID&quot;" ElementId="#i1002129">Obtains the resource as an XMLType, given the resource object ID</SubProgram>
+        <SubProgram Name="&quot;GETSUCCESSORS&quot;" ElementId="#i1002146">Retrieves the list of successors by path name</SubProgram>
+        <SubProgram Name="&quot;GETSUCCSBYRESID&quot;" ElementId="#i1002163">Retrieves the list of successors by resource id</SubProgram>
+        <SubProgram Name="&quot;MAKEVERSIONED&quot;" ElementId="#i1003712">Turns a regular resource whose path name is given into a version-controlled resource</SubProgram>
+        <SubProgram Name="&quot;UNCHECKOUT&quot;" ElementId="#i1003683">Checks in a checked-out resource, returns the resource id of the version before the resource is checked out</SubProgram>
+      </SubPrograms>
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_XDBRESOURCE&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_xdbresource.htm">
       <Description>The DBMS_XDBRESOURCE package provides the interface to operate on the resource's metadata and contents.</Description>
+      <SubPrograms>
+        <SubProgram Name="&quot;FREERESOURCE&quot;" ElementId="#CACCCIFC">Frees any memory associated with an XDBResource</SubProgram>
+        <SubProgram Name="&quot;GETACL&quot;" ElementId="#CHDIHBAC">Given an XDBResource, returns its ACL as string</SubProgram>
+        <SubProgram Name="&quot;GETACLDOCFROMRES&quot;" ElementId="#CACBGCAG">Returns the ACL Document for the given resource as XMLType</SubProgram>
+        <SubProgram Name="&quot;GETAUTHOR&quot;" ElementId="#CACGFHAA">Given an XDBResource, returns its author</SubProgram>
+        <SubProgram Name="&quot;GETCHARACTERSET&quot;" ElementId="#CACGGFFI">Given an XDBResource, returns its character set</SubProgram>
+        <SubProgram Name="&quot;GETCOMMENT&quot;" ElementId="#CACDGGEC">Given an XDBResource, returns its comment</SubProgram>
+        <SubProgram Name="&quot;GETCONTENTBLOB&quot;" ElementId="#CACHGDFI">Returns the contents of the resource as a BLOB</SubProgram>
+        <SubProgram Name="&quot;GETCONTENTCLOB&quot;" ElementId="#CACIDJJI">Returns the contents of the resource as a CLOB</SubProgram>
+        <SubProgram Name="&quot;GETCONTENTREF&quot;" ElementId="#CACGFDEE">Returns the contents of the resource as an XMLTypeRef</SubProgram>
+        <SubProgram Name="&quot;GETCONTENTTYPE&quot;" ElementId="#CACEECFH">Given an XDBResource, returns its content-type</SubProgram>
+        <SubProgram Name="&quot;GETCONTENTXML&quot;" ElementId="#CACIBAHB">Returns the contents of the resource as XML</SubProgram>
+        <SubProgram Name="&quot;GETCONTENTVARCHAR2&quot;" ElementId="#CACECDDJ">Returns the contents of the resource as a string</SubProgram>
+        <SubProgram Name="&quot;GETCREATIONDATE&quot;" ElementId="#CACEJJFH">Given an XDBResource, returns its creation date</SubProgram>
+        <SubProgram Name="&quot;GETCREATOR&quot;" ElementId="#CACDEBHG">Given an XDBResource, returns its creator</SubProgram>
+        <SubProgram Name="&quot;GETCUSTOMMETADATA&quot;" ElementId="#CACHBJGJ">Returns the requested custom metadata given the xpath and namespace to the metadata</SubProgram>
+        <SubProgram Name="&quot;GETDISPLAYNAME&quot;" ElementId="#CACFGHIJ">Given an XDBResource, returns its display name</SubProgram>
+        <SubProgram Name="&quot;GETLANGUAGE&quot;" ElementId="#CACIJJDI">Given an XDBResource, returns its language</SubProgram>
+        <SubProgram Name="&quot;GETLASTMODIFIER&quot;" ElementId="#CACJGDDD">Given an XDBResource, returns its last modifier</SubProgram>
+        <SubProgram Name="&quot;GETMODIFICATIONDATE&quot;" ElementId="#CACCFHHI">Given an XDBResource, returns its modification date</SubProgram>
+        <SubProgram Name="&quot;GETOWNER&quot;" ElementId="#CACIHCFH">Given an XDBResource, returns its owner.</SubProgram>
+        <SubProgram Name="&quot;GETREFCOUNT&quot;" ElementId="#CACJGCDG">Given an XDBResource, returns its reference count</SubProgram>
+        <SubProgram Name="&quot;GETVERSIONID&quot;" ElementId="#CACBJCFC">Given an XDBResource, returns its version ID.</SubProgram>
+        <SubProgram Name="&quot;HASACLCHANGED&quot;" ElementId="#CACHIAJG">Returns TRUE if the ACL of the given resource has changed, FALSE otherwise</SubProgram>
+        <SubProgram Name="&quot;HASAUTHORCHANGED&quot;" ElementId="#CACFDBAH">Returns TRUE if the ACL of the given resource has changed FALSE otherwise</SubProgram>
+        <SubProgram Name="&quot;HASCHANGED&quot;" ElementId="#CACJBEEB">Returns TRUE if the element or attribute represented by the given XPath has changed, FALSE otherwise</SubProgram>
+        <SubProgram Name="&quot;HASCHARACTERSETCHANGED&quot;" ElementId="#CACBHDBJ">Returns TRUE if the character set of the given resource has changed, FALSE otherwise</SubProgram>
+        <SubProgram Name="&quot;HASCOMMENTCHANGED&quot;" ElementId="#CACFAFGG">Returns TRUE if the comment of the given resource has changed, FALSE otherwise</SubProgram>
+        <SubProgram Name="&quot;HASCONTENTCHANGED&quot;" ElementId="#CACGHCCI">Returns TRUE if the contents of the given resource has changed, FALSE otherwise</SubProgram>
+        <SubProgram Name="&quot;HASCONTENTTYPECHANGED&quot;" ElementId="#CACJAIFD">Returns TRUE if the content-type of the given resource has changed, FALSE otherwise</SubProgram>
+        <SubProgram Name="&quot;HASCREATIONDATECHANGED&quot;" ElementId="#CACDJHEF">Returns TRUE if the creation date of the given resource has changed, FALSE otherwise</SubProgram>
+        <SubProgram Name="&quot;HASCREATORCHANGED&quot;" ElementId="#CACHAEBJ">Returns TRUE if the creator of the given resource has changed, FALSE otherwise</SubProgram>
+        <SubProgram Name="&quot;HASCUSTOMMETADATACHANGED&quot;" ElementId="#CACIHDFF">Returns TRUE if custom-metadata for this XPath has changed, FALSE otherwise</SubProgram>
+        <SubProgram Name="&quot;HASDISPLAYNAMECHANGED&quot;" ElementId="#CACDHFJI">Returns TRUE if the display name of the given resource has changed, FALSE otherwise</SubProgram>
+        <SubProgram Name="&quot;HASLANGUAGECHANGED&quot;" ElementId="#CACEEFEA">Returns TRUE if the language of the given resource has changed, FALSE otherwise</SubProgram>
+        <SubProgram Name="&quot;HASLASTMODIFIERCHANGED&quot;" ElementId="#CACFAJIG">Returns TRUE if the last modifier of the given resource has changed, FALSE otherwise</SubProgram>
+        <SubProgram Name="&quot;HASMODIFICATIONDATECHANGED&quot;" ElementId="#CACCEEJE">Returns TRUE if the modification date of the given resource has changed, FALSE otherwise</SubProgram>
+        <SubProgram Name="&quot;HASOWNERCHANGED&quot;" ElementId="#CACFEEFE">Returns TRUE if the owner of the given resource has changed, FALSE otherwise</SubProgram>
+        <SubProgram Name="&quot;HASREFCOUNTCHANGED&quot;" ElementId="#CACBHHHJ">Returns TRUE if the reference count of the given resource has changed, FALSE otherwise</SubProgram>
+        <SubProgram Name="&quot;HASVERSIONIDCHANGED&quot;" ElementId="#CACDGBDJ">Returns TRUE if the version ID of the given resource has changed, FALSE otherwise</SubProgram>
+        <SubProgram Name="&quot;ISFOLDER&quot;" ElementId="#CACDAABF">Returns TRUE if the given resource is a folder, FALSE otherwise</SubProgram>
+        <SubProgram Name="&quot;ISNULL&quot;" ElementId="#CACCBFFH">Returns TRUE if input resource is NULL, FALSE otherwise</SubProgram>
+        <SubProgram Name="&quot;MAKEDOCUMENT&quot;" ElementId="#CACJBHJI">Converts the XDBResource to a DOMDocument which can be operated on using the XMLDOM interface</SubProgram>
+        <SubProgram Name="&quot;SAVE&quot;" ElementId="#CACDEDHF">Updates the resource with any modifications</SubProgram>
+        <SubProgram Name="&quot;SETACL&quot;" ElementId="#CACFCBHJ">Sets the ACL of the given XDBResource to the path specified</SubProgram>
+        <SubProgram Name="&quot;SETAUTHOR&quot;" ElementId="#CACCDHID">Sets the author of the given XDBResource to the specified string</SubProgram>
+        <SubProgram Name="&quot;SETCHARACTERSET&quot;" ElementId="#CACEDFBD">Sets the character set of the given XDBResource to a specified character set</SubProgram>
+        <SubProgram Name="&quot;SETCOMMENT&quot;" ElementId="#CACEBGGA">Sets a comment associated with the given XDBResource</SubProgram>
+        <SubProgram Name="&quot;SETCONTENT&quot;" ElementId="#CACGJGDI">Replaces the contents of the given resource with the given CLOB</SubProgram>
+        <SubProgram Name="&quot;SETCONTENTTYPE&quot;" ElementId="#CACCAABI">Sets the content-type of the given XDBResource</SubProgram>
+        <SubProgram Name="&quot;SETCUSTOMMETADATA&quot;" ElementId="#CACBCGHE">Sets the custom metadata specified by the XPath and namespace to new data</SubProgram>
+        <SubProgram Name="&quot;SETDISPLAYNAME&quot;" ElementId="#CACGBAGE">Sets the display name of the given XDBResource</SubProgram>
+        <SubProgram Name="&quot;SETLANGUAGE&quot;" ElementId="#CACEAFGI">Sets the language of the given XDBResource</SubProgram>
+        <SubProgram Name="&quot;SETOWNER&quot;" ElementId="#CACGEHAI">Sets the owner of the given XDBResource</SubProgram>
+      </SubPrograms>
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_XDBT&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_xdbt.htm">
       <Description>The DBMS_XDBT package provides a convenient mechanism for administrators to set up a CONTEXT index on the Oracle XML DB hierarchy. The package contains procedures to create default preferences, create the index and set up automatic synchronization of the CONTEXT index</Description>
+      <SubPrograms>
+        <SubProgram Name="&quot;CONFIGUREAUTOSYNC&quot;" ElementId="#i1004832">Configures the CONTEXT index for automatic maintenance, SYNC</SubProgram>
+        <SubProgram Name="&quot;CREATEDATASTOREPREF&quot;" ElementId="#i1002408">Creates a USER datastore preference for the CONTEXT index</SubProgram>
+        <SubProgram Name="&quot;CREATEFILTERPREF&quot;" ElementId="#i1002419">Creates a filter preference for the CONTEXT index</SubProgram>
+        <SubProgram Name="&quot;CREATEINDEX&quot;" ElementId="#i1009059">Creates the CONTEXT index on the XML DB hierarchy</SubProgram>
+        <SubProgram Name="&quot;CREATELEXERPREF&quot;" ElementId="#i1002427">Creates a lexer preference for the CONTEXT index</SubProgram>
+        <SubProgram Name="&quot;CREATEPREFERENCES&quot;" ElementId="#i1004886">Creates preferences required for the CONTEXT index on the XML DB hierarchy</SubProgram>
+        <SubProgram Name="&quot;CREATESECTIONGROUPPREF&quot;" ElementId="#i1004896">Creates a storage preference for the CONTEXT index</SubProgram>
+        <SubProgram Name="&quot;CREATESTOPLISTPREF&quot;" ElementId="#i1002444">Creates a section group for the CONTEXT index</SubProgram>
+        <SubProgram Name="&quot;CREATESTORAGEPREF&quot;" ElementId="#i1002453">Creates a wordlist preference for the CONTEXT index</SubProgram>
+        <SubProgram Name="&quot;CREATEWORLDLISTPREF&quot;" ElementId="#i1004908">Creates a stoplist for the CONTEXT index</SubProgram>
+        <SubProgram Name="&quot;DROPPREFERENCES&quot;" ElementId="#i1004863">Drops any existing preferences</SubProgram>
+      </SubPrograms>
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_XDBZ&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_xdbz.htm">
       <Description>The DBMS_XDBZ package controls the Oracle XML DB repository security, which is based on Access Control Lists (ACLs).</Description>
+      <SubPrograms>
+        <SubProgram Name="&quot;DISABLE_HIERARCHY&quot;" ElementId="#CHDEFCGB">Disables repository support for the specified XMLTYPE table or view</SubProgram>
+        <SubProgram Name="&quot;ENABLE_HIERARCHY&quot;" ElementId="#i1005905">Enables repository support for the specified XMLType table or view</SubProgram>
+        <SubProgram Name="&quot;GET_ACLOID&quot;" ElementId="#i1005916">Retrieves the ACL Object ID for the specified resource</SubProgram>
+        <SubProgram Name="&quot;GET_USERID&quot;" ElementId="#i1005927">Retrieves the user ID for the specified user</SubProgram>
+        <SubProgram Name="&quot;IS_HIERARCHY_ENABLED&quot;" ElementId="#i1005938">Determines if repository support for the specified XMLType table or view is enabled</SubProgram>
+        <SubProgram Name="&quot;PURGELDAPCACHE&quot;" ElementId="#i1005953">Purges the LDAP nickname cache</SubProgram>
+      </SubPrograms>
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_XEVENT&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_xevent.htm">
       <Description>The DBMS_XEVENTpackage provides event-related types and supporting subprograms.</Description>
+      <SubPrograms>
+        <SubProgram Name="&quot;CLEAR&quot;" ElementId="#BABFACDJ">XDBHandlerList Type Subprograms</SubProgram>
+        <SubProgram Name="&quot;GETAPPLICATIONDATA&quot;" ElementId="#BABEHDCA">XDBRepositoryEvent Type Subprograms</SubProgram>
+        <SubProgram Name="&quot;GETCHILDOID&quot;" ElementId="#BABBGAID">XDBLink Type Subprograms</SubProgram>
+        <SubProgram Name="&quot;GETCURRENTUSER&quot;" ElementId="#BABECBCE">XDBEvent Type Subprograms</SubProgram>
+        <SubProgram Name="&quot;GETEVENT&quot;" ElementId="#BABICECI">XDBEvent Type Subprograms</SubProgram>
+        <SubProgram Name="&quot;GETFIRST&quot;" ElementId="#BABHBDFE">XDBHandlerList Type Subprograms</SubProgram>
+        <SubProgram Name="&quot;GETHANDLERLIST&quot;" ElementId="#BABFGBHD">XDBRepositoryEvent Type Subprograms</SubProgram>
+        <SubProgram Name="&quot;GETINTERFACE&quot;" ElementId="#BABEBJAD">XDBRepositoryEvent Type Subprograms</SubProgram>
+        <SubProgram Name="&quot;GETLANGUAGE&quot;" ElementId="#BABCHCFF">XDBHandler Type Subprograms</SubProgram>
+        <SubProgram Name="&quot;GETLINK&quot;" ElementId="#BABEICGF">XDBRepositoryEvent Type Subprograms</SubProgram>
+        <SubProgram Name="&quot;GETLOCK&quot;" ElementId="#BABJABAA">XDBRepositoryEvent Type Subprograms</SubProgram>
+        <SubProgram Name="&quot;GETNAME&quot;" ElementId="#BABGEBJA">XDBPath Type Subprograms</SubProgram>
+        <SubProgram Name="&quot;GETNAME&quot;" ElementId="#BABGEBJA">XDBHandlerList Type Subprograms</SubProgram>
+        <SubProgram Name="&quot;GETOLDRESOURCE&quot;" ElementId="#BABJBEGD">XDBRepositoryEvent Type Subprograms</SubProgram>
+        <SubProgram Name="&quot;GETOPENACCESSMODE&quot;" ElementId="#BABDIAJA">XDBRepositoryEvent Type Subprograms</SubProgram>
+        <SubProgram Name="&quot;GETOPENDENYMODE&quot;" ElementId="#BABJCABH">XDBRepositoryEvent Type Subprograms</SubProgram>
+        <SubProgram Name="&quot;GETOUTPUTSTREAM&quot;" ElementId="#BABJCJFD">XDBRepositoryEvent Type Subprograms</SubProgram>
+        <SubProgram Name="&quot;GETPARAMETER&quot;" ElementId="#BABBAJIH">XDBRepositoryEvent Type Subprograms</SubProgram>
+        <SubProgram Name="&quot;GETPARENT&quot;" ElementId="#BABFFDJC">XDBRepositoryEvent Type Subprograms</SubProgram>
+        <SubProgram Name="&quot;GETPARENTNAME&quot;" ElementId="#BABHFEDB">XDBLink Type Subprograms</SubProgram>
+        <SubProgram Name="&quot;GETPARENTOID&quot;" ElementId="#BABHCGHF">XDBLink Type Subprograms</SubProgram>
+        <SubProgram Name="&quot;GETPARENTNAME&quot;" ElementId="#BABHFEDB">XDBPath Type Subprograms</SubProgram>
+        <SubProgram Name="&quot;GETPATH&quot;" ElementId="#BABGGGFA">XDBRepositoryEvent Type Subprograms</SubProgram>
+        <SubProgram Name="&quot;GETRESOURCE&quot;" ElementId="#BABDIAIE">XDBRepositoryEvent Type Subprograms</SubProgram>
+        <SubProgram Name="&quot;GETSCHEMA&quot;" ElementId="#BABJJCHE">XDBHandler Type Subprograms</SubProgram>
+        <SubProgram Name="&quot;GETSOURCE&quot;" ElementId="#BABHCCAH">XDBHandler Type Subprograms</SubProgram>
+        <SubProgram Name="&quot;GETUPDATEBYTECOUNT&quot;" ElementId="#BABJHJHJ">XDBRepositoryEvent Type Subprograms</SubProgram>
+        <SubProgram Name="&quot;GETUPDATEBYTEOFFSET&quot;" ElementId="#BABCHBCE">XDBRepositoryEvent Type Subprograms</SubProgram>
+        <SubProgram Name="&quot;GETXDBEVENT&quot;" ElementId="#BABECEGB">XDBRepositoryEvent Type Subprograms</SubProgram>
+        <SubProgram Name="&quot;ISNULL&quot;" ElementId="#BABICCBG">XDBEvent Type Subprograms
+XDBRepositoryEvent Type Subprograms
+XDBHandlerList Type Subprograms
+XDBHandler Type Subprograms
+XDBPath Type Subprograms</SubProgram>
+        <SubProgram Name="&quot;REMOVE&quot;" ElementId="#BABJDEHE">XDBHandlerList Type Subprograms</SubProgram>
+        <SubProgram Name="&quot;SETRENDERPATH&quot;" ElementId="#BABDFFIB">XDBRepositoryEvent Type Subprograms</SubProgram>
+        <SubProgram Name="&quot;SETRENDERSTREAM&quot;" ElementId="#BABBIBDF">XDBRepositoryEvent Type Subprograms</SubProgram>
+      </SubPrograms>
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_XMLDOM&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_xmldom.htm">
       <Description>The DBMS_XMLDOM package is used to access XMLType objects, and implements the Document Object Model (DOM), an application programming interface for HTML and XML documents.</Description>
@@ -4151,17 +4634,37 @@ The DBMS_XDB package subprograms and constants are deprecated with Oracle Databa
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_XMLINDEX&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_xmlindex.htm">
       <Description>The DBMS_XMLINDEX package provides an interface to implement asychronous indexing.</Description>
       <SubPrograms>
-        <SubProgram Name="&quot;CREATEDATEINDEX&quot;" ElementId="#BABJJCGF">Creates a secondary index for date values in the VALUE column of a PATHTABLE which is the storage table of an XMLIndex</SubProgram>
-        <SubProgram Name="&quot;CREATENUMBERINDEX&quot;" ElementId="#CEGCHFGD">Creates a secondary index for number values in the VALUE column of a PATHTABLE which is the storage table of an XMLIndex</SubProgram>
+        <SubProgram Name="&quot;CREATEDATEINDEX&quot;" ElementId="#BABJJCGF">Creates a secondary index for date values in the VALUE column of a PATH TABLE which is the storage table of an XMLIndex</SubProgram>
+        <SubProgram Name="&quot;CREATENUMBERINDEX&quot;" ElementId="#CEGCHFGD">Creates a secondary index for number values in the VALUE column of a PATH TABLE which is the storage table of an XMLIndex</SubProgram>
         <SubProgram Name="&quot;DROPPARAMETER&quot;" ElementId="#BABFJCIB">Drops the XMLIndex parameter string that is associated with a given parameter identifier.</SubProgram>
         <SubProgram Name="&quot;MODIFYPARAMETER&quot;" ElementId="#BABFEAJI">Modifies the XMLIndex parameter string that is associated with a given parameter name</SubProgram>
-        <SubProgram Name="&quot;PROCESS_PENDING&quot;" ElementId="#BABGBCDD">Processes pending rows for a NONBLOCKINGALTERINDEXOPERATION on an XMLIndex</SubProgram>
+        <SubProgram Name="&quot;PROCESS_PENDING&quot;" ElementId="#BABGBCDD">Processes pending rows for a NONBLOCKING ALTER INDEX OPERATION on an XMLIndex</SubProgram>
         <SubProgram Name="&quot;REGISTERPARAMETER&quot;" ElementId="#BABDFBEI">Registers a parameter string and XMLIndex parameter string pair in XDB</SubProgram>
         <SubProgram Name="&quot;SYNCINDEX&quot;" ElementId="#CEGCHBDC">Synchronizes the index manually</SubProgram>
       </SubPrograms>
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_XMLPARSER&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_xmlpar.htm">
       <Description>Using DBMS_XMLPARSER, you can access the contents and structure of XML documents. XML describes a class of data XML document objects. It partially describes the behavior of computer programs which process them. By construction, XML documents are conforming SGML documents.</Description>
+      <SubPrograms>
+        <SubProgram Name="&quot;FREEPARSER&quot;" ElementId="#i1006286">Frees a parser object.</SubProgram>
+        <SubProgram Name="&quot;GETDOCTYPE&quot;" ElementId="#i1006330">Gets parsed DTD.</SubProgram>
+        <SubProgram Name="&quot;GETDOCUMENT&quot;" ElementId="#i1006352">Gets DOM document.</SubProgram>
+        <SubProgram Name="&quot;GETRELEASEVERSION&quot;" ElementId="#i1006375">Returns the release version of Oracle XML Parser for PL/SQL.</SubProgram>
+        <SubProgram Name="&quot;GETVALIDATIONMODE&quot;" ElementId="#i1006407">Returns validation mode.</SubProgram>
+        <SubProgram Name="&quot;NEWPARSER&quot;" ElementId="#i1007198">Returns a new parser instance</SubProgram>
+        <SubProgram Name="&quot;PARSE&quot;" ElementId="#i1006453">Parses XML stored in the given url/file.</SubProgram>
+        <SubProgram Name="&quot;PARSEBUFFER&quot;" ElementId="#i1003782">Parses XML stored in the given buffer</SubProgram>
+        <SubProgram Name="&quot;PARSECLOB&quot;" ElementId="#i1003811">Parses XML stored in the given clob</SubProgram>
+        <SubProgram Name="&quot;PARSEDTD&quot;" ElementId="#CHDGFCBA">Parses DTD stored in the given url/file</SubProgram>
+        <SubProgram Name="&quot;PARSEDTDBUFFER&quot;" ElementId="#CHDFFJDA">Parses DTD stored in the given buffer</SubProgram>
+        <SubProgram Name="&quot;PARSEDTDCLOB&quot;" ElementId="#i1003909">Parses DTD stored in the given clob</SubProgram>
+        <SubProgram Name="&quot;SETBASEDIR&quot;" ElementId="#i1003944">Sets base directory used to resolve relative URLs.</SubProgram>
+        <SubProgram Name="&quot;SETDOCTYPE&quot;" ElementId="#i1006592">Sets DTD.</SubProgram>
+        <SubProgram Name="&quot;SETERRORLOG&quot;" ElementId="#CHDHJJIG">Sets errors to be sent to the specified file</SubProgram>
+        <SubProgram Name="&quot;SETPRESERVEWHITESPACE&quot;" ElementId="#i1004028">Sets white space preserve mode</SubProgram>
+        <SubProgram Name="&quot;SETVALIDATIONMODE&quot;" ElementId="#i1004056">Sets validation mode.</SubProgram>
+        <SubProgram Name="&quot;SHOWWARNINGS&quot;" ElementId="#i1006530">Turns warnings on or off.</SubProgram>
+      </SubPrograms>
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_XMLQUERY&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_xmlque.htm">
       <Description>DBMS_XMLQUERY provides database-to-XMLType functionality. Whenever possible, use DBMS_XMLGEN, a built-in package in C, instead of DBMS_XMLQUERY.</Description>
@@ -4258,7 +4761,7 @@ The DBMS_XDB package subprograms and constants are deprecated with Oracle Databa
         <SubProgram Name="&quot;REMOVESQLNAME&quot;" ElementId="#CIADBBHJ">Removes a SQLNAME from a global element</SubProgram>
         <SubProgram Name="&quot;REMOVESQLTYPE&quot;" ElementId="#CIAJHIEJ">Removes a SQL type</SubProgram>
         <SubProgram Name="&quot;REMOVESQLTYPEMAPPING&quot;" ElementId="#CIAFFDGC">Removes the SQL type mapping for the given schema type.</SubProgram>
-        <SubProgram Name="&quot;REMOVETABLEPROPS&quot;" ElementId="#CIACFDHC">Removes the table storage properties from the CREATETABLE statement</SubProgram>
+        <SubProgram Name="&quot;REMOVETABLEPROPS&quot;" ElementId="#CIACFDHC">Removes the table storage properties from the CREATE TABLE statement</SubProgram>
         <SubProgram Name="&quot;REMOVETIMESTAMPWITHTIMEZONE&quot;" ElementId="#CIAICJCC">Removes he setting of the TimeStampWithTimeZone datatype from all dateTime typed elements in the XML schema</SubProgram>
         <SubProgram Name="&quot;SETANYSTORAGE&quot;" ElementId="#CIAGHDIF">Assigns a SQL datatype to the ANY child of the complex type with the given name</SubProgram>
         <SubProgram Name="&quot;SETDEFAULTTABLE&quot;" ElementId="#CIAHABDI">Sets the name of the table for the specified global element</SubProgram>
@@ -4268,7 +4771,7 @@ The DBMS_XDB package subprograms and constants are deprecated with Oracle Databa
         <SubProgram Name="&quot;SETSQLNAME&quot;" ElementId="#CIAHAAHA">Assigns a name to the SQL attribute that corresponds to an element defined in the XML schema</SubProgram>
         <SubProgram Name="&quot;SETSQLTYPE&quot;" ElementId="#CIAJDJGA">Assigns a SQL type to a global object</SubProgram>
         <SubProgram Name="&quot;SETSQLTYPEMAPPING&quot;" ElementId="#CIAHHFBE">Defines a mapping of schema type and SQL type</SubProgram>
-        <SubProgram Name="&quot;SETTABLEPROPS&quot;" ElementId="#CIAIJDDD">Specifies properties in the TABLE storage clause that is appended to the default CREATETABLE statement</SubProgram>
+        <SubProgram Name="&quot;SETTABLEPROPS&quot;" ElementId="#CIAIJDDD">Specifies properties in the TABLE storage clause that is appended to the default CREATE TABLE statement</SubProgram>
         <SubProgram Name="&quot;SETTIMESTAMPWITHTIMEZONE&quot;" ElementId="#CIAJFBAC">Sets the TIMESTAMPWITHTIMEZONE datatype to all dateTime typed elements in the XML schema</SubProgram>
       </SubPrograms>
     </Package>
@@ -4305,10 +4808,37 @@ The DBMS_XDB package subprograms and constants are deprecated with Oracle Databa
 The DBMS_XMLTRANSLATIONS package is deprecated with Oracle Database 12c.</Description>
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_XPLAN&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_xplan.htm">
-      <Description>The DBMS_XPLAN package provides an easy way to display the output of the EXPLAINPLAN command in several, predefined formats. You can also use the DBMS_XPLAN package to display the plan of a statement stored in the Automatic Workload Repository (AWR) or stored in a SQL tuning set. It further provides a way to display the SQL execution plan and SQL execution runtime statistics for cached SQL cursors based on the information stored in the V$SQL_PLAN and V$SQL_PLAN_STATISTICS_ALL fixed views. Finally, it displays plans from a SQL plan baseline.</Description>
+      <Description>The DBMS_XPLAN package provides an easy way to display the output of the EXPLAIN PLAN command in several, predefined formats. You can also use the DBMS_XPLAN package to display the plan of a statement stored in the Automatic Workload Repository (AWR) or stored in a SQL tuning set. It further provides a way to display the SQL execution plan and SQL execution runtime statistics for cached SQL cursors based on the information stored in the V$SQL_PLAN and V$SQL_PLAN_STATISTICS_ALL fixed views. Finally, it displays plans from a SQL plan baseline.</Description>
+      <SubPrograms>
+        <SubProgram Name="&quot;DIFF_PLAN&quot;" ElementId="#BABJIACA">Compares plans</SubProgram>
+        <SubProgram Name="&quot;DISPLAY&quot;" ElementId="#CACICEDJ">Displays the contents of the plan table</SubProgram>
+        <SubProgram Name="&quot;DISPLAY_AWR&quot;" ElementId="#i999706">Displays the contents of an execution plan stored in the AWR</SubProgram>
+        <SubProgram Name="&quot;DISPLAY_CURSOR&quot;" ElementId="#i998364">Displays the execution plan of any cursor in the cursor cache</SubProgram>
+        <SubProgram Name="&quot;DISPLAY_PLAN&quot;" ElementId="#BABFAEEG">Displays the contents of the plan table in a variety of formats with CLOB output type</SubProgram>
+        <SubProgram Name="&quot;DISPLAY_SQL_PLAN_BASELINE&quot;" ElementId="#BABFBBGC">Displays one or more execution plans for the specified SQL handle of a SQL plan baseline</SubProgram>
+        <SubProgram Name="&quot;DISPLAY_SQLSET&quot;" ElementId="#CHDCBBAB">Displays the execution plan of a given statement stored in a SQL tuning set</SubProgram>
+      </SubPrograms>
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_XSLPROCESSOR&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_xslpro.htm">
       <Description>The DBMS_XSLPROCESSOR package provides an interface to manage the contents and structure of XML documents.</Description>
+      <SubPrograms>
+        <SubProgram Name="&quot;CLOB2FILE&quot;" ElementId="#i1007362">Writes content of a CLOB into a file</SubProgram>
+        <SubProgram Name="&quot;FREEPROCESSOR&quot;" ElementId="#i1006521">Frees a processor object</SubProgram>
+        <SubProgram Name="&quot;FREESTYLESHEET&quot;" ElementId="#i1006554">Frees a stylesheet object</SubProgram>
+        <SubProgram Name="&quot;NEWPROCESSOR&quot;" ElementId="#i1006443">Returns a new processor instance</SubProgram>
+        <SubProgram Name="&quot;NEWSTYLESHEET&quot;" ElementId="#i1006587">Creates a new stylesheet from input and reference URLs</SubProgram>
+        <SubProgram Name="&quot;PROCESSXSL&quot;" ElementId="#i1003747">Transforms an input XML document</SubProgram>
+        <SubProgram Name="&quot;READ2CLOB&quot;" ElementId="#i1007244">Reads content of the file into a CLOB</SubProgram>
+        <SubProgram Name="&quot;REMOVEPARAM&quot;" ElementId="#i1006644">Removes a top-level stylesheet parameter</SubProgram>
+        <SubProgram Name="&quot;RESETPARAMS&quot;" ElementId="#i1006682">Resets the top-level stylesheet parameters</SubProgram>
+        <SubProgram Name="&quot;SELECTNODES&quot;" ElementId="#i1006718">Selects nodes from a DOM tree that match a pattern</SubProgram>
+        <SubProgram Name="&quot;SELECTSINGLENODE&quot;" ElementId="#i1006747">Selects the first node from the tree that matches a pattern</SubProgram>
+        <SubProgram Name="&quot;SETERRORLOG&quot;" ElementId="#i1003936">Sets errors to be sent to the specified file</SubProgram>
+        <SubProgram Name="&quot;SETPARAM&quot;" ElementId="#i1006818">Sets a top-level parameter in the stylesheet</SubProgram>
+        <SubProgram Name="&quot;SHOWWARNINGS&quot;" ElementId="#i1006785">Turns warnings on or off</SubProgram>
+        <SubProgram Name="&quot;TRANSFORMNODE&quot;" ElementId="#BHCDEJJA">Transforms a node in a DOM tree using a stylesheet</SubProgram>
+        <SubProgram Name="&quot;VALUEOF&quot;" ElementId="#i1004102">Gets the value of the first node that matches a pattern</SubProgram>
+      </SubPrograms>
     </Package>
     <Package Owner="&quot;SYS&quot;" Name="&quot;DBMS_XSTREAM_ADM&quot;" Url="http://docs.oracle.com/database/121/ARPLS/d_xstrm_adm.htm">
       <Description>This DBMS_XSTREAM_ADM package provides interfaces for streaming database changes between an Oracle database and other systems. XStream enables applications to stream out or stream in database changes.</Description>
