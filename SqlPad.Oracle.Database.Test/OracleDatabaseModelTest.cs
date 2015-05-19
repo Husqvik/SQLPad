@@ -127,7 +127,6 @@ WHERE
 			columnHeaders[0].DataType.ShouldBe(typeof(string));
 			columnHeaders[0].DatabaseDataType.ShouldBe("Varchar2");
 			columnHeaders[0].Name.ShouldBe("DUMMY");
-			columnHeaders[0].ValueConverter.ShouldNotBe(null);
 
 			var rows = result.InitialResultSet.ToArray();
 			rows.Length.ShouldBe(1);

@@ -448,8 +448,6 @@ namespace SqlPad.Oracle
 					Name = "COLUMN_VALUE",
 				};
 
-			_columnHeader.ValueConverter = new OracleColumnValueConverter(_columnHeader);
-
 			return _columnHeader;
 		}
 
@@ -551,11 +549,6 @@ namespace SqlPad.Oracle
 						Value = CustomTypeValueConverter.ConvertItem(fa.Field.GetValue(this), OracleLargeTextValue.DefaultPreviewLength)
 					})
 				.ToList();
-
-			attributeSource.ForEach(a =>
-			{
-				a.ColumnHeader.ValueConverter = new OracleColumnValueConverter(a.ColumnHeader);
-			});
 
 			return _attributes = attributeSource;
 		}

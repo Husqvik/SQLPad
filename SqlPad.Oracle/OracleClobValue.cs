@@ -425,6 +425,52 @@ namespace SqlPad.Oracle
 		}
 	}
 
+	public class OracleRaw : ILargeBinaryValue
+	{
+		private readonly OracleBinary _oracleBinary;
+		private readonly string _preview;
+
+		public OracleRaw(OracleBinary value)
+		{
+			_oracleBinary = value;
+			
+			if (value.IsNull)
+			{
+				_preview = String.Empty;
+				Value = new byte[0];
+			}
+			else
+			{
+				_preview = _oracleBinary.Value.ToHexString();
+				Value = _oracleBinary.Value;
+			}
+		}
+
+		public string DataTypeName { get { return "RAW"; } }
+		
+		public bool IsEditable { get { return false; } }
+		
+		public bool IsNull { get { return _oracleBinary.IsNull; } }
+
+		public long Length { get { return _oracleBinary.Length; } }
+		
+		public void Prefetch()
+		{
+		}
+
+		public byte[] Value { get; private set; }
+		
+		public byte[] GetChunk(int bytes)
+		{
+			throw new NotSupportedException();
+		}
+
+		public override string ToString()
+		{
+			return _preview;
+		}
+	}
+
 	public class OracleNumber
 	{
 		private readonly OracleDecimal _oracleDecimal;

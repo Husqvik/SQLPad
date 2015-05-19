@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -8,7 +7,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Controls;
-using System.Windows.Data;
 
 namespace SqlPad
 {
@@ -54,16 +52,12 @@ namespace SqlPad
 			jsonTemplateBuilder.AppendLine(String.Join(String.Format(",{0}", Environment.NewLine), columnHeaders));
 			jsonTemplateBuilder.Append("}}");
 
-			var converterParameters = orderedColumns
-				.Select(c => ((Binding)((DataGridTextColumn)c).Binding).ConverterParameter)
-				.ToArray();
-
 			var rows = dataGrid.Items;
 
-			return DataExportHelper.RunExportActionAsync(fileName, w => ExportInternal(jsonTemplateBuilder.ToString(), rows, converterParameters, w, cancellationToken));
+			return DataExportHelper.RunExportActionAsync(fileName, w => ExportInternal(jsonTemplateBuilder.ToString(), rows, w, cancellationToken));
 		}
 
-		private void ExportInternal(string jsonTemplate, ICollection rows, IReadOnlyList<object> converterParameters, TextWriter writer, CancellationToken cancellationToken)
+		private void ExportInternal(string jsonTemplate, ICollection rows, TextWriter writer, CancellationToken cancellationToken)
 		{
 			writer.Write('[');
 
@@ -72,7 +66,7 @@ namespace SqlPad
 			{
 				cancellationToken.ThrowIfCancellationRequested();
 
-				var values = rowValues.Select((t, i) => (object)FormatJsonValue(t, converterParameters[i])).ToArray();
+				var values = rowValues.Select((t, i) => (object)FormatJsonValue(t)).ToArray();
 				writer.Write(jsonTemplate, values);
 
 				if (rowIndex < rows.Count)
@@ -86,7 +80,7 @@ namespace SqlPad
 			writer.WriteLine(']');
 		}
 
-		private static string FormatJsonValue(object value, object converterParameter)
+		private static string FormatJsonValue(object value)
 		{
 			if (DataExportHelper.IsNull(value))
 			{
@@ -98,7 +92,7 @@ namespace SqlPad
 				return value.ToString();
 			}
 
-			var stringValue = CellValueConverter.Instance.Convert(value, typeof(String), converterParameter, CultureInfo.CurrentUICulture).ToString();
+			var stringValue = CellValueConverter.Instance.Convert(value, typeof(String), null, CultureInfo.CurrentUICulture).ToString();
 			return String.Format("'{0}'", stringValue.Replace(ApostropheCharacter, EscapedApostrophe));
 		}
 	}

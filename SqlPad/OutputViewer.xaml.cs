@@ -56,7 +56,7 @@ namespace SqlPad
 				new DataGridTextColumn
 				{
 					Header = columnHeader.Name.Replace("_", "__"),
-					Binding = new Binding(String.Format("[{0}]", columnHeader.ColumnIndex)) { Converter = CellValueConverter.Instance, ConverterParameter = columnHeader },
+					Binding = new Binding(String.Format("[{0}]", columnHeader.ColumnIndex)) { Converter = CellValueConverter.Instance },
 					EditingElementStyle = (Style)Application.Current.Resources["CellTextBoxStyleReadOnly"]
 				};
 

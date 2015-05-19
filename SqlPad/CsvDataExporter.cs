@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -9,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 
 namespace SqlPad
 {
@@ -102,16 +100,12 @@ namespace SqlPad
 
 			var headerLine = String.Join(CsvSeparator, columnHeaders);
 
-			var converterParameters = orderedColumns
-				.Select(c => ((Binding)((DataGridTextColumn)c).Binding).ConverterParameter)
-				.ToArray();
-
 			var rows = (IEnumerable)dataGrid.Items;
 
-			return DataExportHelper.RunExportActionAsync(fileName, w => ExportInternal(headerLine, rows, converterParameters, w, cancellationToken));
+			return DataExportHelper.RunExportActionAsync(fileName, w => ExportInternal(headerLine, rows, w, cancellationToken));
 		}
 
-		private void ExportInternal(string headerLine, IEnumerable rows, IReadOnlyList<object> converterParameters, TextWriter writer, CancellationToken cancellationToken)
+		private void ExportInternal(string headerLine, IEnumerable rows, TextWriter writer, CancellationToken cancellationToken)
 		{
 			writer.WriteLine(headerLine);
 
@@ -119,19 +113,19 @@ namespace SqlPad
 			{
 				cancellationToken.ThrowIfCancellationRequested();
 
-				var contentLine = String.Join(CsvSeparator, rowValues.Select((t, i) => FormatCsvValue(t, converterParameters[i])));
+				var contentLine = String.Join(CsvSeparator, rowValues.Select((t, i) => FormatCsvValue(t)));
 				writer.WriteLine(contentLine);
 			}
 		}
 
-		private static string FormatCsvValue(object value, object converterParameter)
+		private static string FormatCsvValue(object value)
 		{
 			if (DataExportHelper.IsNull(value))
 			{
 				return null;
 			}
 
-			var stringValue = CellValueConverter.Instance.Convert(value, typeof(String), converterParameter, CultureInfo.CurrentUICulture).ToString();
+			var stringValue = CellValueConverter.Instance.Convert(value, typeof(String), null, CultureInfo.CurrentUICulture).ToString();
 			return String.Format(MaskWrapByQuote, stringValue.Replace(QuoteCharacter, DoubleQuotes));
 		}
 	}

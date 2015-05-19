@@ -107,8 +107,6 @@ namespace SqlPad.Oracle.Test
 					Name = "DUMMY"
 				};
 
-			columnHeader.ValueConverter = new OracleColumnValueConverter(columnHeader);
-
 			ColumnHeaders = new List<ColumnHeader> { columnHeader };
 
 			const string tableNameDual = "\"DUAL\"";
@@ -186,10 +184,20 @@ namespace SqlPad.Oracle.Test
 			randomStringFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"LEN\"", 2, 2, 0, ParameterDirection.Input, "NUMBER", OracleObjectIdentifier.Empty, false));
 			randomStringFunctionMetadata.Owner = dbmsRandom;
 			dbmsRandom.Functions.Add(randomStringFunctionMetadata);
-			var randomStringNormalFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageDbmsRandom, "NORMAL"), false, false, false, false, true, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
-			randomStringNormalFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, "NUMBER", OracleObjectIdentifier.Empty, false));
-			randomStringNormalFunctionMetadata.Owner = dbmsRandom;
-			dbmsRandom.Functions.Add(randomStringNormalFunctionMetadata);
+			var randomNormalFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageDbmsRandom, "NORMAL"), false, false, false, false, true, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
+			randomNormalFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, "NUMBER", OracleObjectIdentifier.Empty, false));
+			randomNormalFunctionMetadata.Owner = dbmsRandom;
+			dbmsRandom.Functions.Add(randomNormalFunctionMetadata);
+			var randomValueFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageDbmsRandom, "VALUE"), false, false, false, false, true, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
+			randomValueFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, "NUMBER", OracleObjectIdentifier.Empty, false));
+			randomValueFunctionMetadata.Owner = dbmsRandom;
+			dbmsRandom.Functions.Add(randomValueFunctionMetadata);
+			var randomValueTwoParameterFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageDbmsRandom, "VALUE"), false, false, false, false, true, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
+			randomValueTwoParameterFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, "NUMBER", OracleObjectIdentifier.Empty, false));
+			randomValueTwoParameterFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"LOW\"", 1, 1, 0, ParameterDirection.Input, "NUMBER", OracleObjectIdentifier.Empty, false));
+			randomValueTwoParameterFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"HIGH\"", 2, 2, 0, ParameterDirection.Input, "NUMBER", OracleObjectIdentifier.Empty, false));
+			randomValueTwoParameterFunctionMetadata.Owner = dbmsRandom;
+			dbmsRandom.Functions.Add(randomValueTwoParameterFunctionMetadata);
 
 			synonym =
 				new OracleSynonym

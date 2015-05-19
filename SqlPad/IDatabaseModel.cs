@@ -66,13 +66,6 @@ namespace SqlPad
 		public string DatabaseDataType { get; set; }
 
 		public Type DataType { get; set; }
-
-		public IColumnValueConverter ValueConverter { get; set; }
-	}
-
-	public interface IColumnValueConverter
-	{
-		object ConvertToCellValue(object rawValue);
 	}
 
 	public class DatabaseModelConnectionErrorArgs : EventArgs

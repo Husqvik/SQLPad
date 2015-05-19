@@ -15,16 +15,13 @@ namespace SqlPad
 			if (value == DBNull.Value)
 				return ConfigurationProvider.Configuration.ResultGrid.NullPlaceholder;
 
-			var columnHeader = (ColumnHeader)parameter;
-			var convertedValue = columnHeader.ValueConverter.ConvertToCellValue(value);
-
 			try
 			{
-				var convertedStringValue = convertedValue as String ?? System.Convert.ToString(convertedValue);
+				var stringValue = value as String ?? System.Convert.ToString(value);
 
-				return String.Empty.Equals(convertedStringValue)
+				return String.Empty.Equals(stringValue)
 					? ConfigurationProvider.Configuration.ResultGrid.NullPlaceholder
-					: convertedStringValue;
+					: stringValue;
 			}
 			catch (Exception e)
 			{

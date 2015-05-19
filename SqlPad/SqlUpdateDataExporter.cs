@@ -7,7 +7,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Controls;
-using System.Windows.Data;
 
 namespace SqlPad
 {
@@ -47,30 +46,26 @@ namespace SqlPad
 
 			var sqlTemplate = BuildSqlCommandTemplate(columnHeaders);
 
-			var converterParameters = orderedColumns
-				.Select(c => ((Binding)((DataGridTextColumn)c).Binding).ConverterParameter)
-				.ToArray();
-
 			var rows = dataGrid.Items;
 
-			return DataExportHelper.RunExportActionAsync(fileName, w => ExportInternal(sqlTemplate, rows, converterParameters, w, cancellationToken));
+			return DataExportHelper.RunExportActionAsync(fileName, w => ExportInternal(sqlTemplate, rows, w, cancellationToken));
 		}
 
 
 		protected abstract string BuildSqlCommandTemplate(IEnumerable<string> columnHeaders);
 
-		private void ExportInternal(string sqlTemplate, IEnumerable rows, IReadOnlyList<object> converterParameters, TextWriter writer, CancellationToken cancellationToken)
+		private void ExportInternal(string sqlTemplate, IEnumerable rows, TextWriter writer, CancellationToken cancellationToken)
 		{
 			foreach (object[] rowValues in rows)
 			{
 				cancellationToken.ThrowIfCancellationRequested();
 
-				var values = rowValues.Select((t, i) => (object)FormatSqlValue(t, converterParameters[i])).ToArray();
+				var values = rowValues.Select((t, i) => (object)FormatSqlValue(t)).ToArray();
 				writer.WriteLine(sqlTemplate, values);
 			}
 		}
 
-		private static string FormatSqlValue(object value, object converterParameter)
+		private static string FormatSqlValue(object value)
 		{
 			if (DataExportHelper.IsNull(value))
 			{
@@ -82,7 +77,7 @@ namespace SqlPad
 				return value.ToString();
 			}
 
-			var stringValue = CellValueConverter.Instance.Convert(value, typeof(String), converterParameter, CultureInfo.CurrentUICulture).ToString();
+			var stringValue = CellValueConverter.Instance.Convert(value, typeof(String), null, CultureInfo.CurrentUICulture).ToString();
 			return String.Format("'{0}'", stringValue.Replace(ApostropheCharacter, EscapedApostrophe));
 		}
 	}

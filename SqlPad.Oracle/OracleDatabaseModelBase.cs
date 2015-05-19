@@ -286,24 +286,4 @@ namespace SqlPad.Oracle
 
 		public OracleSchemaObject SchemaObject { get; set; }
 	}
-
-	public class OracleColumnValueConverter : IColumnValueConverter
-	{
-		private readonly ColumnHeader _columnHeader;
-
-		public OracleColumnValueConverter(ColumnHeader columnHeader)
-		{
-			_columnHeader = columnHeader;
-		}
-
-		public object ConvertToCellValue(object rawValue)
-		{
-			if (_columnHeader.DatabaseDataType == "Raw")
-			{
-				return ((byte[])rawValue).ToHexString();
-			}
-
-			return rawValue;
-		}
-	}
 }

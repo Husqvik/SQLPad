@@ -963,17 +963,14 @@ namespace SqlPad.Oracle
 			var columnTypes = new ColumnHeader[reader.FieldCount];
 			for (var i = 0; i < reader.FieldCount; i++)
 			{
-				var columnHeader = new ColumnHeader
-				{
-					ColumnIndex = i,
-					Name = reader.GetName(i),
-					DataType = reader.GetFieldType(i),
-					DatabaseDataType = reader.GetDataTypeName(i)
-				};
-
-				columnHeader.ValueConverter = new OracleColumnValueConverter(columnHeader);
-
-				columnTypes[i] = columnHeader;
+				columnTypes[i] =
+					new ColumnHeader
+					{
+						ColumnIndex = i,
+						Name = reader.GetName(i),
+						DataType = reader.GetFieldType(i),
+						DatabaseDataType = reader.GetDataTypeName(i)
+					};
 			}
 
 			return columnTypes;
@@ -1063,6 +1060,9 @@ namespace SqlPad.Oracle
 						value = oracleString.IsNull
 							? String.Empty
 							: String.Format("{0}{1}", oracleString.Value, oracleString.Value.Length == InitialLongFetchSize ? OracleLargeTextValue.Ellipsis : null);
+						break;
+					case "Raw":
+						value = new OracleRaw(reader.GetOracleBinary(i));
 						break;
 					case "LongRaw":
 						value = new OracleLongRawValue(reader.GetOracleBinary(i));

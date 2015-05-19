@@ -8,7 +8,7 @@
              d:DesignHeight="300" d:DesignWidth="300">
 
 	<UserControl.Resources>
-		<sqlPad:CustomTypeAttributeCellValueConverter x:Key="ValueConverter"/>
+		<sqlPad:CellValueConverter x:Key="ValueConverter"/>
 
 		<!--<sqlPad:CustomTypeDataTemplateSelector x:Key="CustomDataTemplateSelector" />
 		<DataTemplate x:Key="PrimitiveValueTypeTemplate">
@@ -56,13 +56,8 @@
 										CellTemplateSelector="{StaticResource CustomDataTemplateSelector}"
 										CellEditingTemplateSelector="{StaticResource CustomDataEditingTemplateSelector}" />-->
 				<DataGridTextColumn Header="Value"
-									EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}">
-					<DataGridTextColumn.Binding>
-						<MultiBinding Converter="{StaticResource ValueConverter}">
-							<Binding Path="Value"/>
-							<Binding Path="ColumnHeader"/>
-						</MultiBinding>
-					</DataGridTextColumn.Binding>
+									EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}"
+									Binding="{Binding Path=Value, Converter={StaticResource ValueConverter}}">
 				</DataGridTextColumn>
 			</DataGrid.Columns>
 		</DataGrid>

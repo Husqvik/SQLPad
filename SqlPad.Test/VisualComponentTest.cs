@@ -263,7 +263,7 @@ SELECT T.* FROM T@HQ_PDB";
 
 			var result = GetExportContent(resultGrid, new CsvDataExporter());
 
-			const string expectedResult = "\"DUMMY1\";\"DUMMY_WITH_UNDERSCORES\"\r\n\"Value \"\"1\"\"\";\"2014-08-16T22:25:34.0000000\"\r\n\"\"\"2.\"\"Value\";\"2014-08-16T00:00:00.0000000\"\r\n";
+			const string expectedResult = "\"DUMMY1\";\"DUMMY_WITH_UNDERSCORES\"\r\n\"Value \"\"1\"\"\";\"16.8.2014 22:25:34\"\r\n\"\"\"2.\"\"Value\";\"16.8.2014 00:00:00\"\r\n";
 			result.ShouldBe(expectedResult);
 		}
 
@@ -337,8 +337,8 @@ SELECT T.* FROM T@HQ_PDB";
 			var columnHeaders =
 				new[]
 				{
-					new ColumnHeader { ColumnIndex = 0, DatabaseDataType = "Varchar2", DataType = typeof (string), Name = "DUMMY1", ValueConverter = TestColumnValueConverter.Instance },
-					new ColumnHeader { ColumnIndex = 1, DatabaseDataType = "Date", DataType = typeof (DateTime), Name = "DUMMY_WITH_UNDERSCORES", ValueConverter = TestColumnValueConverter.Instance }
+					new ColumnHeader { ColumnIndex = 0, DatabaseDataType = "Varchar2", DataType = typeof (string), Name = "DUMMY1" },
+					new ColumnHeader { ColumnIndex = 1, DatabaseDataType = "Date", DataType = typeof (DateTime), Name = "DUMMY_WITH_UNDERSCORES" }
 				};
 
 			var outputViewer = new OutputViewer();
@@ -389,18 +389,6 @@ SELECT T.* FROM T@HQ_PDB";
 			public void Prefetch()
 			{
 				throw new NotImplementedException();
-			}
-		}
-
-		private class TestColumnValueConverter : IColumnValueConverter
-		{
-			public static readonly TestColumnValueConverter Instance = new TestColumnValueConverter();
-
-			public object ConvertToCellValue(object rawValue)
-			{
-				return rawValue is DateTime
-					? ((DateTime)rawValue).ToString("O")
-					: rawValue;
 			}
 		}
 	}
