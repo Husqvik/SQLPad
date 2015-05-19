@@ -126,7 +126,7 @@ namespace SqlPad.Oracle
 					metadataSource.AddRange(programReference.Owner.AccessibleAttachedFunctions.Where(m => String.Equals(m.Identifier.Name, programReference.Metadata.Identifier.Name)));
 				}
 
-				matchedMetadata.AddRange(metadataSource.Where(m => IsMetadataMatched(m, programReference, currentParameterIndex)));
+				matchedMetadata.AddRange(metadataSource.Where(m => IsMetadataMatched(m, programReference, currentParameterIndex)).OrderBy(m => m.Parameters.Count));
 			}
 			else
 			{
@@ -150,7 +150,8 @@ namespace SqlPad.Oracle
 
 		private static bool IsMetadataMatched(OracleProgramMetadata metadata, OracleProgramReference programReference, int currentParameterIndex)
 		{
-			if (metadata.Parameters.Count != 0 && currentParameterIndex >= metadata.Parameters.Count - 1)
+			var isParameterlessCompatible = currentParameterIndex == 0 && metadata.NamedParameters.Count == 0;
+			if (!isParameterlessCompatible && metadata.Parameters.Count > 0 && currentParameterIndex >= metadata.NamedParameters.Count)
 			{
 				return false;
 			}

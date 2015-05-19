@@ -700,8 +700,28 @@ FROM
 			items[0].Name.ShouldBe("SYS.STANDARD.ROUND");
 			items[0].Parameters.Count.ShouldBe(2);
 			items[0].CurrentParameterIndex.ShouldBe(1);
-			items[0].ReturnedDatatype.ShouldNotBe(null);
+			items[0].ReturnedDatatype.ShouldBe("NUMBER");
 			items[0].IsParameterMetadataAvailable.ShouldBe(true);
+		}
+
+		[Test(Description = @"")]
+		public void TestResolveFunctionOverloadsWithParameterlessOverload()
+		{
+			const string query1 = @"SELECT DBMS_RANDOM.VALUE(1, 2) FROM DUAL";
+
+			_documentRepository.UpdateStatements(query1);
+			var items = CodeCompletionProvider.ResolveFunctionOverloads(_documentRepository, 25).ToList();
+			items.Count.ShouldBe(2);
+			items[0].Name.ShouldBe("SYS.DBMS_RANDOM.VALUE");
+			items[0].Parameters.Count.ShouldBe(0);
+			items[0].CurrentParameterIndex.ShouldBe(0);
+			items[0].ReturnedDatatype.ShouldBe("NUMBER");
+			items[0].IsParameterMetadataAvailable.ShouldBe(true);
+			items[1].Name.ShouldBe("SYS.DBMS_RANDOM.VALUE");
+			items[1].Parameters.Count.ShouldBe(2);
+			items[1].CurrentParameterIndex.ShouldBe(0);
+			items[1].ReturnedDatatype.ShouldBe("NUMBER");
+			items[1].IsParameterMetadataAvailable.ShouldBe(true);
 		}
 
 		[Test(Description = @"")]

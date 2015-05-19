@@ -268,11 +268,9 @@ namespace SqlPad.Oracle
 				case "BLOB":
 					targetType = typeof(OracleBlob);
 					break;
+				case "RAW":
 				case "LONG RAW":
 					targetType = typeof(OracleBinary);
-					break;
-				case "RAW":
-					targetType = typeof(byte[]);
 					break;
 				case "BFILE":
 					targetType = typeof(OracleBFile);
@@ -475,13 +473,19 @@ namespace SqlPad.Oracle
 
 		private static object ToPrintable(object value)
 		{
-			var oracleRaw = value as byte[];
-			if (oracleRaw == null)
+			var oracleRaw = value as OracleRaw;
+			var oracleLongRaw = value as OracleLongRawValue;
+			if (oracleRaw == null && oracleLongRaw == null)
 			{
 				return value;
 			}
+
+			var largeBinaryValue = (ILargeBinaryValue)oracleRaw ?? oracleLongRaw;
+
+			var hexValue = largeBinaryValue.IsNull
+				? String.Empty
+				: largeBinaryValue.Value.ToHexString();
 			
-			var hexValue = oracleRaw.ToHexString();
 			return hexValue.Length > LargeValuePreviewLength
 				? String.Format("{0}{1}", hexValue.Substring(0, LargeValuePreviewLength), OracleLargeTextValue.Ellipsis)
 				: hexValue;
@@ -528,7 +532,6 @@ namespace SqlPad.Oracle
 
 		private ICollection<CustomTypeAttributeValue> BuildAttributeCollection()
 		{
-			var columnIndex = 0;
 			var attributeSource = GetType().GetFields(BindingFlags.Instance | BindingFlags.Public)
 				.Select(f =>
 					new
@@ -537,13 +540,13 @@ namespace SqlPad.Oracle
 						Attribute = f.GetCustomAttribute<OracleObjectMappingAttribute>()
 					})
 				.Where(fa => fa.Attribute != null)
-				.Select(fa =>
+				.Select((fa, i) =>
 					new CustomTypeAttributeValue
 					{
 						ColumnHeader =
 							new ColumnHeader
 							{
-								ColumnIndex = columnIndex++,
+								ColumnIndex = i,
 								Name = fa.Attribute.AttributeName
 							},
 						Value = CustomTypeValueConverter.ConvertItem(fa.Field.GetValue(this), OracleLargeTextValue.DefaultPreviewLength)
@@ -585,7 +588,7 @@ namespace SqlPad.Oracle
 			var oracleBinary = value as OracleBinary?;
 			if (oracleBinary != null)
 			{
-				return new OracleLongRawValue(oracleBinary.Value);
+				return new OracleRaw(oracleBinary.Value);
 			}
 
 			var oracleTimestamp = value as OracleTimeStamp?;
