@@ -1138,6 +1138,16 @@ MODEL
 		}
 
 		[Test(Description = @"")]
+		public void TestModelBuildWhenSubqueryWrappedInParenthesis()
+		{
+			const string query1 = @"WITH SOURCE_DATA AS (SELECT DUMMY FROM DUAL) (SELECT DUMMY FROM SOURCE_DATA)";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			semanticModel.QueryBlocks.Count.ShouldBe(2);
+		}
+
+		[Test(Description = @"")]
 		public void TestStoredProcedureIsIgnoredInSql()
 		{
 			const string query1 = @"SELECT SQLPAD.SQLPAD_PROCEDURE() FROM DUAL";
@@ -1299,6 +1309,24 @@ MODEL
 			queryBlock.Columns.Count.ShouldBe(4);
 		}
 
+		[Test(Description = @""), Ignore]
+		public void TestCommonTableExpressionDataTypePropagationToInnerSubquery()
+		{
+			const string query1 = @"WITH SOURCE_DATA AS (SELECT DUMMY FROM DUAL) SELECT NULL FROM (SELECT DUMMY FROM SOURCE_DATA)";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.QueryBlocks.Count.ShouldBe(3);
+
+			var queryBlock = semanticModel.QueryBlocks.OrderByDescending(qb => qb.RootNode.Level).First();
+			var columns = queryBlock.Columns.ToArray();
+			columns.Length.ShouldBe(1);
+			columns[0].ColumnDescription.Name.ShouldBe("\"DUMMY\"");
+			columns[0].ColumnDescription.Nullable.ShouldBe(false);
+			columns[0].ColumnDescription.FullTypeName.ShouldBe("VARCHAR2(1 BYTE)");
+		}
+		
 		[Test(Description = @"")]
 		public void TestXmlTableReferenceWithoutColumnListSpecification()
 		{

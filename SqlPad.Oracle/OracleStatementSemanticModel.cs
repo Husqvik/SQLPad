@@ -310,7 +310,7 @@ namespace SqlPad.Oracle
 			var subquery = ownerQueryNode[NonTerminals.Subquery];
 			return subquery == null
 				? null
-				: subquery.FirstTerminalNode.ParentNode;
+				: subquery.GetDescendants(NonTerminals.QueryBlock).First();
 		}
 
 		private void Build()
