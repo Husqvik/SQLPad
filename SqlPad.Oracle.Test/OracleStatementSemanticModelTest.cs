@@ -1309,7 +1309,7 @@ MODEL
 			queryBlock.Columns.Count.ShouldBe(4);
 		}
 
-		[Test(Description = @""), Ignore]
+		[Test(Description = @"")]
 		public void TestCommonTableExpressionDataTypePropagationToInnerSubquery()
 		{
 			const string query1 = @"WITH SOURCE_DATA AS (SELECT DUMMY FROM DUAL) SELECT NULL FROM (SELECT DUMMY FROM SOURCE_DATA)";

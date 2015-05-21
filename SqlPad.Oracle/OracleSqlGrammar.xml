@@ -309,7 +309,332 @@
         <Sequence>
           <NonTerminal Id="AlterResourceCost" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="AlterSystem" />
+        </Sequence>
         <!-- TODO: Add other objects -->
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AlterSystem">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="System" />
+          <NonTerminal Id="AlterSystemOption" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AlterSystemOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Archive" />
+          <Terminal Id="Log" />
+          <NonTerminal Id="InstanceName" IsOptional="true" />
+          <NonTerminal Id="ArchiveLogOption" />
+          <NonTerminal Id="ToStringLiteral" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Checkpoint" />
+          <NonTerminal Id="LocalOrGlobal" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Check" />
+          <Terminal Id="Datafiles" />
+          <NonTerminal Id="LocalOrGlobal" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="EnableOrDisable" />
+          <Terminal Id="Distributed" />
+          <Terminal Id="Recovery" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Flush" />
+          <NonTerminal Id="AlterSystemFlushOption" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Disconnect" />
+          <Terminal Id="Session" />
+          <Terminal Id="StringLiteral" />
+          <Terminal Id="PostTransaction" IsOptional="true" />
+          <NonTerminal Id="ImmediateOrNoReplay" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Kill" />
+          <Terminal Id="Session" />
+          <Terminal Id="StringLiteral" />
+          <NonTerminal Id="ImmediateOrNoReplay" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Switch" />
+          <Terminal Id="LogFile" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Suspend" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Resume" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Quiesce" />
+          <Terminal Id="Restricted" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Unquiesce" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Start" />
+          <Terminal Id="Rolling" />
+          <Terminal Id="Migration" />
+          <Terminal Id="To" />
+          <Terminal Id="StringLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Stop" />
+          <Terminal Id="Rolling" />
+          <NonTerminal Id="MigrationOrPatch" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Start" />
+          <Terminal Id="Rolling" />
+          <Terminal Id="Patch" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="EnableOrDisable" />
+          <Terminal Id="Restricted" />
+          <Terminal Id="Session" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Set" />
+          <Terminal Id="Encryption" />
+          <Terminal Id="Wallet" />
+          <NonTerminal Id="EncryptionWalletOption" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Set" />
+          <Terminal Id="Encryption" />
+          <Terminal Id="Key" />
+          <NonTerminal Id="EncryptionKeyOption" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Shutdown" />
+          <Terminal Id="Immediate" IsOptional="true" />
+          <Terminal Id="StringLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Register" />
+        </Sequence>
+        <!--<Sequence>
+          Set clauses
+        </Sequence>-->
+        <Sequence>
+          <Terminal Id="Reset" />
+          <NonTerminal Id="AlterSystemResetClauseList" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Relocate" />
+          <Terminal Id="Client" />
+          <Terminal Id="StringLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="MigrationOrPatch">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Migration" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Patch" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="EncryptionKeyOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="DoubleQuotedStringLiteral" IsOptional="true" />
+          <NonTerminal Id="IdentifiedByDoubleQuotedStringLiteral" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="IdentifiedByDoubleQuotedStringLiteral" />
+          <NonTerminal Id="MigrateUsingQuotedStringLiteral" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="MigrateUsingQuotedStringLiteral">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Migrate" />
+          <Terminal Id="Using" />
+          <Terminal Id="DoubleQuotedStringLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="EncryptionWalletOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Open" />
+          <Terminal Id="Identified" />
+          <Terminal Id="By" />
+          <Terminal Id="DoubleQuotedStringLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Close" />
+          <NonTerminal Id="IdentifiedByDoubleQuotedStringLiteral" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="IdentifiedByDoubleQuotedStringLiteral">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Identified" />
+          <Terminal Id="By" />
+          <Terminal Id="DoubleQuotedStringLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+      
+    <Rule StartingNonTerminal="AlterSystemResetClauseList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="AlterSystemResetClause" />
+          <NonTerminal Id="AlterSystemResetClauseList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AlterSystemResetClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Identifier" />
+          <NonTerminal Id="AlterSystemResetClauseOptions" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AlterSystemResetClauseOptions">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="AlterSystemResetClauseOption" />
+          <NonTerminal Id="AlterSystemResetClauseOptions" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AlterSystemResetClauseOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Scope" />
+          <Terminal Id="MathEquals" />
+          <Terminal Id="ServerParameterFile" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="SessionId" />
+          <Terminal Id="MathEquals" />
+          <Terminal Id="StringLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ImmediateOrNoReplay">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Immediate" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="NoReplay" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AlterSystemFlushOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="SharedPool" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="BufferCache" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Redo" />
+          <Terminal Id="To" />
+          <Terminal Id="Identifier" />
+          <NonTerminal Id="NoConfirmApply" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="NoConfirmApply">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="No" IsOptional="true" />
+          <Terminal Id="Confirm" />
+          <Terminal Id="Apply" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ArchiveLogOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Sequence" />
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Change" />
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Current" />
+          <Terminal Id="NoSwitch" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Group" />
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="LogFile" />
+          <Terminal Id="StringLiteral" />
+          <NonTerminal Id="UsingBackupControlFile" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Next" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="All" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="UsingBackupControlFile">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Using" />
+          <Terminal Id="Backup" />
+          <Terminal Id="ControlFile" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ToStringLiteral">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="To" />
+          <Terminal Id="StringLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="InstanceName">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Instance" />
+          <Terminal Id="StringLiteral" />
+        </Sequence>
       </Sequences>
     </Rule>
     
@@ -17513,6 +17838,42 @@
     <Terminal Id="Permanent" Value="PERMANENT" />
     <Terminal Id="Normal" Value="NORMAL" />
     <Terminal Id="Cost" Value="COST" />
+    
+    <!-- Alter system -->
+    <Terminal Id="Datafiles" Value="DATAFILES" />
+    <Terminal Id="Distributed" Value="DISTRIBUTED" />
+    <Terminal Id="Recovery" Value="RECOVERY" />
+    <Terminal Id="Flush" Value="FLUSH" />
+    <Terminal Id="Disconnect" Value="DISCONNECT" />
+    <Terminal Id="PostTransaction" Value="POST_TRANSACTION" />
+    <Terminal Id="Kill" Value="KILL" />
+    <Terminal Id="Switch" Value="SWITCH" />
+    <Terminal Id="Suspend" Value="SUSPEND" />
+    <Terminal Id="Resume" Value="RESUME" />
+    <Terminal Id="Quiesce" Value="QUIESCE" />
+    <Terminal Id="Restricted" Value="RESTRICTED" />
+    <Terminal Id="Unquiesce" Value="UNQUIESCE" />
+    <Terminal Id="Rolling" Value="ROLLING" />
+    <Terminal Id="Migration" Value="MIGRATION" />
+    <Terminal Id="Stop" Value="STOP" />
+    <Terminal Id="Patch" Value="PATCH" />
+    <Terminal Id="Shutdown" Value="SHUTDOWN" />
+    <Terminal Id="Register" Value="REGISTER" />
+    <Terminal Id="Relocate" Value="RELOCATE" />
+    <Terminal Id="Client" Value="CLIENT" />
+    <Terminal Id="NoReplay" Value="NOREPLAY" />
+    <Terminal Id="SharedPool" Value="SHARED_POOL" />
+    <Terminal Id="BufferCache" Value="BUFFER_CACHE" />
+    <Terminal Id="Redo" Value="REDO" />
+    <Terminal Id="Confirm" Value="CONFIRM" />
+    <Terminal Id="Change" Value="CHANGE" />
+    <Terminal Id="NoSwitch" Value="NOSWITCH" />
+    <Terminal Id="ControlFile" Value="CONTROLFILE" />
+    <Terminal Id="Wallet" Value="WALLET" />
+    <Terminal Id="Reset" Value="RESET" />
+    <Terminal Id="Migrate" Value="MIGRATE" />
+    <Terminal Id="Scope" Value="SCOPE" />
+    <Terminal Id="SessionId" Value="SID" />
     
     <!-- Alter session -->
     <Terminal Id="Advise" Value="ADVISE" />

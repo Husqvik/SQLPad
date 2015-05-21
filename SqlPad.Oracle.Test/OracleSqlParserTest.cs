@@ -5225,6 +5225,239 @@ PURGE REPEAT INTERVAL '5' DAY";
 				}
 			}
 
+			public class AlterSystem
+			{
+				[Test(Description = @"")]
+				public void TestAlterSystemArchiveLogLogFile()
+				{
+					const string statementText = @"ALTER SYSTEM ARCHIVE LOG INSTANCE 'TEST_INSTANCE' LOGFILE 'TEST_LOGFILE' USING BACKUP CONTROLFILE TO 'TEST_LOCATION'";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterSystemDisableRestrictedSession()
+				{
+					const string statementText = @"ALTER SYSTEM DISABLE RESTRICTED SESSION";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterSystemSetEncryptionWalletOpen()
+				{
+					const string statementText = @"ALTER SYSTEM SET ENCRYPTION WALLET OPEN IDENTIFIED BY ""password""";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterSystemSetEncryptionKey()
+				{
+					const string statementText = @"ALTER SYSTEM SET ENCRYPTION KEY IDENTIFIED BY ""password""";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterSystemSetEncryptionWalletClose()
+				{
+					const string statementText = @"ALTER SYSTEM SET ENCRYPTION WALLET CLOSE";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterSystemFlushRedo()
+				{
+					const string statementText = @"ALTER SYSTEM FLUSH REDO TO DB_NAME NO CONFIRM APPLY";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterSystemSwitchLogFile()
+				{
+					const string statementText = @"ALTER SYSTEM SWITCH LOGFILE";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterSystemDisableDistributedRecovery()
+				{
+					const string statementText = @"ALTER SYSTEM DISABLE DISTRIBUTED RECOVERY";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterSystemRelocateClient()
+				{
+					const string statementText = @"ALTER SYSTEM RELOCATE CLIENT 'ClientName'";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterSystemReset()
+				{
+					const string statementText = @"ALTER SYSTEM RESET p1 SID = '*' SCOPE = SPFILE p2 SID = '*' SCOPE = SPFILE";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterSystemShutdownDispatcher()
+				{
+					const string statementText = @"ALTER SYSTEM SHUTDOWN IMMEDIATE 'D 001'";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterSystemQuiesceRestricted()
+				{
+					const string statementText = @"ALTER SYSTEM QUIESCE RESTRICTED";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterSystemStartRollingMigration()
+				{
+					const string statementText = @"ALTER SYSTEM START ROLLING MIGRATION TO 'ASM_version'";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterSystemStopRollingPatch()
+				{
+					const string statementText = @"ALTER SYSTEM STOP ROLLING PATCH";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterSystemCheckpointLocal()
+				{
+					const string statementText = @"ALTER SYSTEM CHECKPOINT LOCAL";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterSystemCheckDatafilesGlobal()
+				{
+					const string statementText = @"ALTER SYSTEM CHECK DATAFILES GLOBAL";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterSystemRegister()
+				{
+					const string statementText = @"ALTER SYSTEM REGISTER";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterSystemDisconnectSession()
+				{
+					const string statementText = @"ALTER SYSTEM DISCONNECT SESSION 'SID, SERIAL#' POST_TRANSACTION IMMEDIATE";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterSystemKillSession()
+				{
+					const string statementText = @"ALTER SYSTEM KILL SESSION 'SID, SERIAL#, @1' NOREPLAY";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				// TODO: Missing tests
+			}
+
 			public class AlterSession
 			{
 				[Test(Description = @"")]

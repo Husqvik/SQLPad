@@ -33,6 +33,7 @@ namespace SqlPad.Oracle
 			NonTerminals.WithinGroupAggregationFunction
 		};
 
+		private readonly Dictionary<StatementGrammarNode, OracleQueryBlock> _queryBlockNodes = new Dictionary<StatementGrammarNode, OracleQueryBlock>();
 		private readonly List<OracleInsertTarget> _insertTargets = new List<OracleInsertTarget>();
 		private readonly List<OracleLiteral> _literals = new List<OracleLiteral>();
 		private readonly HashSet<StatementGrammarNode> _redundantTerminals = new HashSet<StatementGrammarNode>();
@@ -46,7 +47,6 @@ namespace SqlPad.Oracle
 		private readonly HashSet<OracleQueryBlock> _unreferencedQueryBlocks = new HashSet<OracleQueryBlock>();
 		
 		private OracleQueryBlock _mainQueryBlock;
-		private Dictionary<StatementGrammarNode, OracleQueryBlock> _queryBlockNodes = new Dictionary<StatementGrammarNode, OracleQueryBlock>();
 
 		public OracleDatabaseModelBase DatabaseModel
 		{
@@ -142,17 +142,17 @@ namespace SqlPad.Oracle
 
 		private void Initialize()
 		{
-			var queryBlocks = new List<OracleQueryBlock>();
 			var queryBlockTerminalListQueue = new Stack<KeyValuePair<OracleQueryBlock, List<StatementGrammarNode>>>();
 			var queryBlockTerminalList = new KeyValuePair<OracleQueryBlock, List<StatementGrammarNode>>();
 			var statementDefinedFunctions = new Dictionary<StatementGrammarNode, IReadOnlyCollection<OracleProgramMetadata>>();
-			
+			var queryBlockNodes = new Dictionary<StatementGrammarNode, OracleQueryBlock>();
+
 			foreach (var terminal in Statement.AllTerminals)
 			{
 				if (String.Equals(terminal.Id, Terminals.Select) && String.Equals(terminal.ParentNode.Id, NonTerminals.QueryBlock))
 				{
 					var queryBlock = new OracleQueryBlock(this) { RootNode = terminal.ParentNode, Statement = Statement };
-					queryBlocks.Add(queryBlock);
+					queryBlockNodes.Add(queryBlock.RootNode, queryBlock);
 
 					if (queryBlockTerminalList.Key != null)
 					{
@@ -197,12 +197,7 @@ namespace SqlPad.Oracle
 				}
 			}
 
-			foreach (var queryBlock in queryBlocks.OrderByDescending(q => q.RootNode.Level))
-			{
-				_queryBlockNodes.Add(queryBlock.RootNode, queryBlock);
-			}
-
-			foreach (var queryBlock in _queryBlockNodes.Values)
+			foreach (var queryBlock in queryBlockNodes.Values)
 			{
 				var queryBlockRoot = queryBlock.RootNode;
 
@@ -215,7 +210,7 @@ namespace SqlPad.Oracle
 					var ownerQueryBlockRoot = GetQueryBlockRootFromNestedQuery(nestedQuery);
 					if (ownerQueryBlockRoot != null)
 					{
-						queryBlock.Parent = _queryBlockNodes[ownerQueryBlockRoot];
+						queryBlock.Parent = queryBlockNodes[ownerQueryBlockRoot];
 						queryBlock.Parent.AddCommonTableExpressions(queryBlock);
 					}
 				}
@@ -229,7 +224,7 @@ namespace SqlPad.Oracle
 						var parentQueryBlockRoot = selfTableReference.GetAncestor(NonTerminals.QueryBlock);
 						if (parentQueryBlockRoot != null)
 						{
-							queryBlock.Parent = _queryBlockNodes[parentQueryBlockRoot];
+							queryBlock.Parent = queryBlockNodes[parentQueryBlockRoot];
 						}
 					}
 					else
@@ -238,7 +233,7 @@ namespace SqlPad.Oracle
 						if (scalarSubqueryExpression != null)
 						{
 							queryBlock.Type = QueryBlockType.ScalarSubquery;
-							queryBlock.Parent = _queryBlockNodes[scalarSubqueryExpression.GetAncestor(NonTerminals.QueryBlock)];
+							queryBlock.Parent = queryBlockNodes[scalarSubqueryExpression.GetAncestor(NonTerminals.QueryBlock)];
 						}
 					}
 				}
@@ -249,7 +244,20 @@ namespace SqlPad.Oracle
 
 			foreach (var kvp in statementDefinedFunctions)
 			{
-				_queryBlockNodes[kvp.Key].AttachedFunctions.AddRange(kvp.Value);
+				queryBlockNodes[kvp.Key].AttachedFunctions.AddRange(kvp.Value);
+			}
+
+			var normalQueryBlocks = queryBlockNodes.Values
+				.Where(qb => qb.Type != QueryBlockType.CommonTableExpression || qb.Parent == null)
+				.OrderByDescending(qb => qb.RootNode.Level)
+				.ToArray();
+
+			var commonTableExpressions = normalQueryBlocks
+				.SelectMany(qb => qb.CommonTableExpressions.OrderByDescending(cte => cte.RootNode.Level));
+
+			foreach (var queryBlock in commonTableExpressions.Concat(normalQueryBlocks))
+			{
+				_queryBlockNodes.Add(queryBlock.RootNode, queryBlock);
 			}
 		}
 
