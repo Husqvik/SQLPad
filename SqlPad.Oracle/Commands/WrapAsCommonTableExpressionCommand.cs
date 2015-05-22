@@ -42,7 +42,9 @@ namespace SqlPad.Oracle.Commands
 			var settingsModel = ConfigureSettings();
 
 			if (!ExecutionContext.SettingsProvider.GetSettings())
+			{
 				return;
+			}
 
 			var tableAlias = settingsModel.Value;
 
@@ -70,7 +72,14 @@ namespace SqlPad.Oracle.Commands
 			}
 
 			builder.Append(tableAlias + " AS (");
-			builder.Append(queryBlock.RootNode.GetText(ExecutionContext.StatementText));
+			var subqueryIndextStart = queryBlock.RootNode.SourcePosition.IndexStart;
+			var subqueryIndexEnd = CurrentQueryBlock.OrderByClause == null
+				? CurrentQueryBlock.RootNode.SourcePosition.IndexEnd
+				: CurrentQueryBlock.OrderByClause.SourcePosition.IndexEnd;
+
+			var subqueryLength = subqueryIndexEnd - subqueryIndextStart + 1;
+			var subquery = ExecutionContext.StatementText.Substring(subqueryIndextStart, subqueryLength);
+			builder.Append(subquery);
 			builder.Append(")");
 
 			if (CurrentQueryBlock.Type == QueryBlockType.CommonTableExpression)
@@ -83,29 +92,30 @@ namespace SqlPad.Oracle.Commands
 				builder.Append(" ");	
 			}
 
-			ExecutionContext.SegmentsToReplace.Add(new TextSegment
-			{
-				IndextStart = startIndex,
-				Length = 0,
-				Text = builder.ToString()
-			});
+			ExecutionContext.SegmentsToReplace.Add(
+				new TextSegment
+				{
+					IndextStart = startIndex,
+					Length = 0,
+					Text = builder.ToString()
+				});
 			
 			builder = new StringBuilder("SELECT ");
 			var columnList = String.Join(", ", queryBlock.Columns
 				.Where(c => !c.IsAsterisk && !String.IsNullOrEmpty(c.NormalizedName))
-				.Select(c => String.Format("{0}.{1}", tableAlias, c.NormalizedName.ToSimpleIdentifier()))
-				);
+				.Select(c => String.Format("{0}.{1}", tableAlias, c.NormalizedName.ToSimpleIdentifier())));
 			
 			builder.Append(columnList);
 			builder.Append(" FROM ");
 			builder.Append(tableAlias);
 
-			ExecutionContext.SegmentsToReplace.Add(new TextSegment
-			{
-				IndextStart = queryBlock.RootNode.SourcePosition.IndexStart,
-				Length = queryBlock.RootNode.SourcePosition.Length,
-				Text = builder.ToString()
-			});
+			ExecutionContext.SegmentsToReplace.Add(
+				new TextSegment
+				{
+					IndextStart = subqueryIndextStart,
+					Length = subqueryLength,
+					Text = builder.ToString()
+				});
 		}
 	}
 }

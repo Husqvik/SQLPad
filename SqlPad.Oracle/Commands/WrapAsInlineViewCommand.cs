@@ -134,10 +134,14 @@ namespace SqlPad.Oracle.Commands
 					Text = builder.ToString()
 				});
 
+			var subqueryIndexEnd = CurrentQueryBlock.OrderByClause == null
+				? CurrentQueryBlock.RootNode.SourcePosition.IndexEnd
+				: CurrentQueryBlock.OrderByClause.SourcePosition.IndexEnd;
+			
 			ExecutionContext.SegmentsToReplace.Add(
 				new TextSegment
 				{
-					IndextStart = CurrentQueryBlock.RootNode.SourcePosition.IndexEnd + 1,
+					IndextStart = subqueryIndexEnd + 1,
 					Length = 0,
 					Text = String.IsNullOrEmpty(tableAlias) ? ")" : String.Format(") {0}", tableAlias)
 				});

@@ -206,6 +206,18 @@ WHERE
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestWrapAsInlineViewCommandWithOrderByClause()
+		{
+			_editor.Text = @"SELECT DUMMY FROM DUAL ORDER BY DUAL.DUMMY";
+			_editor.CaretOffset = 0;
+
+			CanExecuteCommand(OracleCommands.WrapAsInlineView).ShouldBe(true);
+			ExecuteCommand(OracleCommands.WrapAsInlineView, new TestCommandSettings(new CommandSettingsModel()));
+
+			_editor.Text.ShouldBe(@"SELECT DUMMY FROM (SELECT DUMMY FROM DUAL ORDER BY DUAL.DUMMY)");
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestTableReferenceWrapAsInlineView()
 		{
 			_editor.Text = @"SELECT S.RESPONDENTBUCKET_ID, S.SELECTION_ID, PROJECT_ID, NAME, 1 FROM SELECTION S";
@@ -249,6 +261,17 @@ WHERE
 			ExecuteCommand(OracleCommands.WrapAsCommonTableExpression, new TestCommandSettings(new CommandSettingsModel { Value = "MYQUERY" } ));
 
 			_editor.Text.ShouldBe(@"WITH MYQUERY AS (SELECT 1, 1 + 1 MYCOLUMN, DUMMY || '3' COLUMN3 FROM DUAL) SELECT MYQUERY.MYCOLUMN, MYQUERY.COLUMN3 FROM MYQUERY");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestBasicWrapAsCommonTableExpressionWithOrderByClause()
+		{
+			_editor.Text = "SELECT DUMMY FROM DUAL ORDER BY DUAL.DUMMY";
+			_editor.CaretOffset = 0;
+
+			ExecuteCommand(OracleCommands.WrapAsCommonTableExpression, new TestCommandSettings(new CommandSettingsModel { Value = "MYQUERY" }));
+
+			_editor.Text.ShouldBe(@"WITH MYQUERY AS (SELECT DUMMY FROM DUAL ORDER BY DUAL.DUMMY) SELECT MYQUERY.DUMMY FROM MYQUERY");
 		}
 
 		[Test(Description = @""), STAThread]
