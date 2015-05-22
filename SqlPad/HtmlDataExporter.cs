@@ -20,22 +20,22 @@ namespace SqlPad
 			get { return "HTML files (*.html)|*.html|All files (*.*)|*"; }
 		}
 
-		public void ExportToClipboard(DataGrid dataGrid)
+		public void ExportToClipboard(DataGrid dataGrid, IDataExportConverter dataExportConverter)
 		{
-			ExportToFile(null, dataGrid);
+			ExportToFile(null, dataGrid, dataExportConverter);
 		}
 
-		public void ExportToFile(string fileName, DataGrid dataGrid)
+		public void ExportToFile(string fileName, DataGrid dataGrid, IDataExportConverter dataExportConverter)
 		{
-			ExportToFileAsync(fileName, dataGrid, CancellationToken.None).Wait();
+			ExportToFileAsync(fileName, dataGrid, dataExportConverter, CancellationToken.None).Wait();
 		}
 
-		public Task ExportToClipboardAsync(DataGrid dataGrid, CancellationToken cancellationToken)
+		public Task ExportToClipboardAsync(DataGrid dataGrid, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
 		{
-			return ExportToFileAsync(null, dataGrid, cancellationToken);
+			return ExportToFileAsync(null, dataGrid, dataExportConverter, cancellationToken);
 		}
 
-		public Task ExportToFileAsync(string fileName, DataGrid dataGrid, CancellationToken cancellationToken)
+		public Task ExportToFileAsync(string fileName, DataGrid dataGrid, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
 		{
 			var orderedColumns = dataGrid.Columns
 					.OrderBy(c => c.DisplayIndex)
@@ -79,7 +79,7 @@ namespace SqlPad
 
 		private static string FormatHtmlValue(object value)
 		{
-			return DataExportHelper.IsNull(value) ? "NULL" : value.ToString();
+			return DataExportHelper.IsNull(value) ? "NULL" : value.ToString().Replace(">", "&gt;").Replace("<", "&lt;");
 		}
 	}
 }

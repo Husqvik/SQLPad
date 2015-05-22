@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -12,30 +11,27 @@ namespace SqlPad
 {
 	public abstract class SqlBaseDataExporter : IDataExporter
 	{
-		private const string ApostropheCharacter = "'";
-		private const string EscapedApostrophe = "''";
-
 		public string FileNameFilter
 		{
 			get { return "SQL files (*.sql)|*.sql|All files (*.*)|*"; }
 		}
 
-		public void ExportToClipboard(DataGrid dataGrid)
+		public void ExportToClipboard(DataGrid dataGrid, IDataExportConverter dataExportConverter)
 		{
-			ExportToFile(null, dataGrid);
+			ExportToFile(null, dataGrid, dataExportConverter);
 		}
 
-		public void ExportToFile(string fileName, DataGrid dataGrid)
+		public void ExportToFile(string fileName, DataGrid dataGrid, IDataExportConverter dataExportConverter)
 		{
-			ExportToFileAsync(fileName, dataGrid, CancellationToken.None).Wait();
+			ExportToFileAsync(fileName, dataGrid, dataExportConverter, CancellationToken.None).Wait();
 		}
 
-		public Task ExportToClipboardAsync(DataGrid dataGrid, CancellationToken cancellationToken)
+		public Task ExportToClipboardAsync(DataGrid dataGrid, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
 		{
-			return ExportToFileAsync(null, dataGrid, cancellationToken);
+			return ExportToFileAsync(null, dataGrid, dataExportConverter, cancellationToken);
 		}
 
-		public Task ExportToFileAsync(string fileName, DataGrid dataGrid, CancellationToken cancellationToken)
+		public Task ExportToFileAsync(string fileName, DataGrid dataGrid, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
 		{
 			var orderedColumns = dataGrid.Columns
 					.OrderBy(c => c.DisplayIndex)
@@ -48,37 +44,28 @@ namespace SqlPad
 
 			var rows = dataGrid.Items;
 
-			return DataExportHelper.RunExportActionAsync(fileName, w => ExportInternal(sqlTemplate, rows, w, cancellationToken));
+			return DataExportHelper.RunExportActionAsync(fileName, w => ExportInternal(sqlTemplate, rows, w, dataExportConverter, cancellationToken));
 		}
 
 
 		protected abstract string BuildSqlCommandTemplate(IEnumerable<string> columnHeaders);
 
-		private void ExportInternal(string sqlTemplate, IEnumerable rows, TextWriter writer, CancellationToken cancellationToken)
+		private void ExportInternal(string sqlTemplate, IEnumerable rows, TextWriter writer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
 		{
 			foreach (object[] rowValues in rows)
 			{
 				cancellationToken.ThrowIfCancellationRequested();
 
-				var values = rowValues.Select((t, i) => (object)FormatSqlValue(t)).ToArray();
+				var values = rowValues.Select((t, i) => (object)FormatSqlValue(t, dataExportConverter)).ToArray();
 				writer.WriteLine(sqlTemplate, values);
 			}
 		}
 
-		private static string FormatSqlValue(object value)
+		private static string FormatSqlValue(object value, IDataExportConverter dataExportConverter)
 		{
-			if (DataExportHelper.IsNull(value))
-			{
-				return "NULL";
-			}
-
-			if(value is ValueType)
-			{
-				return value.ToString();
-			}
-
-			var stringValue = CellValueConverter.Instance.Convert(value, typeof(String), null, CultureInfo.CurrentUICulture).ToString();
-			return String.Format("'{0}'", stringValue.Replace(ApostropheCharacter, EscapedApostrophe));
+			return DataExportHelper.IsNull(value)
+				? "NULL"
+				: dataExportConverter.ToSqlValue(value);
 		}
 	}
 

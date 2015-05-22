@@ -7,6 +7,7 @@ namespace SqlPad.Oracle
 {
 	public class OracleInfrastructureFactory : IInfrastructureFactory
 	{
+		private static readonly OracleDataExportConverter ExportConverter = new OracleDataExportConverter();
 		private readonly OracleCommandFactory _commandFactory = new OracleCommandFactory();
 
 		static OracleInfrastructureFactory()
@@ -16,6 +17,8 @@ namespace SqlPad.Oracle
 
 		#region Implementation of IInfrastructureFactory
 		public string SchemaLabel { get { return "Schema"; } }
+
+		public IDataExportConverter DataExportConverter { get { return ExportConverter; } }
 
 		public ICommandFactory CommandFactory { get { return _commandFactory; } }
 		

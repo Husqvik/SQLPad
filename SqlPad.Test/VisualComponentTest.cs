@@ -263,7 +263,7 @@ SELECT T.* FROM T@HQ_PDB";
 
 			var result = GetExportContent(resultGrid, new CsvDataExporter());
 
-			const string expectedResult = "\"DUMMY1\";\"DUMMY_WITH_UNDERSCORES\"\r\n\"Value \"\"1\"\"\";\"16.8.2014 22:25:34\"\r\n\"\"\"2.\"\"Value\";\"16.8.2014 00:00:00\"\r\n";
+			const string expectedResult = "\"DUMMY1\";\"DUMMY_WITH_UNDERSCORES\"\r\n\"Value \"\"1\"\" '2' <3>\";\"16.8.2014 22:25:34\"\r\n\"\"\"2.\"\"Value\";\"16.8.2014 00:00:00\"\r\n";
 			result.ShouldBe(expectedResult);
 		}
 
@@ -274,7 +274,7 @@ SELECT T.* FROM T@HQ_PDB";
 
 			var result = GetExportContent(resultGrid, new JsonDataExporter());
 
-			const string expectedResult = "[{\r\n\t\"DUMMY1\": 'Value \"1\"',\r\n\t\"DUMMY_WITH_UNDERSCORES\": 16.8.2014 22:25:34\r\n},\r\n{\r\n\t\"DUMMY1\": '\"2.\"Value',\r\n\t\"DUMMY_WITH_UNDERSCORES\": 16.8.2014 00:00:00\r\n}]\r\n";
+			const string expectedResult = "[{\r\n\t\"DUMMY1\": 'Value \"1\" \\'2\\' <3>',\r\n\t\"DUMMY_WITH_UNDERSCORES\": 16.8.2014 22:25:34\r\n},\r\n{\r\n\t\"DUMMY1\": '\"2.\"Value',\r\n\t\"DUMMY_WITH_UNDERSCORES\": 16.8.2014 00:00:00\r\n}]\r\n";
 			result.ShouldBe(expectedResult);
 		}
 
@@ -285,7 +285,7 @@ SELECT T.* FROM T@HQ_PDB";
 
 			var result = GetExportContent(resultGrid, new XmlDataExporter());
 
-			const string expectedResult = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<data>\r\n  <row>\r\n    <DUMMY1>Value \"1\"</DUMMY1>\r\n    <DUMMY_WITH_UNDERSCORES>16.8.2014 22:25:34</DUMMY_WITH_UNDERSCORES>\r\n  </row>\r\n  <row>\r\n    <DUMMY1>\"2.\"Value</DUMMY1>\r\n    <DUMMY_WITH_UNDERSCORES>16.8.2014 00:00:00</DUMMY_WITH_UNDERSCORES>\r\n  </row>\r\n</data>";
+			const string expectedResult = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<data>\r\n  <row>\r\n    <DUMMY1>Value \"1\" '2' &lt;3&gt;</DUMMY1>\r\n    <DUMMY_WITH_UNDERSCORES>16.8.2014 22:25:34</DUMMY_WITH_UNDERSCORES>\r\n  </row>\r\n  <row>\r\n    <DUMMY1>\"2.\"Value</DUMMY1>\r\n    <DUMMY_WITH_UNDERSCORES>16.8.2014 00:00:00</DUMMY_WITH_UNDERSCORES>\r\n  </row>\r\n</data>";
 			result.ShouldBe(expectedResult);
 		}
 
@@ -296,7 +296,7 @@ SELECT T.* FROM T@HQ_PDB";
 
 			var result = GetExportContent(resultGrid, new SqlInsertDataExporter());
 
-			const string expectedResult = "INSERT INTO MY_TABLE (DUMMY1, DUMMY_WITH_UNDERSCORES) VALUES ('Value \"1\"', 16.8.2014 22:25:34);\r\nINSERT INTO MY_TABLE (DUMMY1, DUMMY_WITH_UNDERSCORES) VALUES ('\"2.\"Value', 16.8.2014 00:00:00);\r\n";
+			const string expectedResult = "INSERT INTO MY_TABLE (DUMMY1, DUMMY_WITH_UNDERSCORES) VALUES ('Value \"1\" ''2'' <3>', TO_DATE('2014-08-16 22:25:34', YYYY-MM-DD HH24:MI:SS));\r\nINSERT INTO MY_TABLE (DUMMY1, DUMMY_WITH_UNDERSCORES) VALUES ('\"2.\"Value', TO_DATE('2014-08-16 00:00:00', YYYY-MM-DD HH24:MI:SS));\r\n";
 			result.ShouldBe(expectedResult);
 		}
 
@@ -307,7 +307,7 @@ SELECT T.* FROM T@HQ_PDB";
 
 			var result = GetExportContent(resultGrid, new SqlUpdateDataExporter());
 
-			const string expectedResult = "UPDATE MY_TABLE SET DUMMY1 = 'Value \"1\"', DUMMY_WITH_UNDERSCORES = 16.8.2014 22:25:34;\r\nUPDATE MY_TABLE SET DUMMY1 = '\"2.\"Value', DUMMY_WITH_UNDERSCORES = 16.8.2014 00:00:00;\r\n";
+			const string expectedResult = "UPDATE MY_TABLE SET DUMMY1 = 'Value \"1\" ''2'' <3>', DUMMY_WITH_UNDERSCORES = TO_DATE('2014-08-16 22:25:34', YYYY-MM-DD HH24:MI:SS);\r\nUPDATE MY_TABLE SET DUMMY1 = '\"2.\"Value', DUMMY_WITH_UNDERSCORES = TO_DATE('2014-08-16 00:00:00', YYYY-MM-DD HH24:MI:SS);\r\n";
 			result.ShouldBe(expectedResult);
 		}
 
@@ -318,21 +318,21 @@ SELECT T.* FROM T@HQ_PDB";
 
 			var result = GetExportContent(resultGrid, new HtmlDataExporter());
 
-			const string expectedResult = "<!DOCTYPE html><html><head><title></title></head><body><table border=\"1\" style=\"border-collapse:collapse\"><tr><th>DUMMY1</th><th>DUMMY_WITH_UNDERSCORES</th><tr><tr><td>Value \"1\"</td><td>16.8.2014 22:25:34</td><tr><tr><td>\"2.\"Value</td><td>16.8.2014 00:00:00</td><tr><table>";
+			const string expectedResult = "<!DOCTYPE html><html><head><title></title></head><body><table border=\"1\" style=\"border-collapse:collapse\"><tr><th>DUMMY1</th><th>DUMMY_WITH_UNDERSCORES</th><tr><tr><td>Value \"1\" '2' &lt;3&gt;</td><td>16.8.2014 22:25:34</td><tr><tr><td>\"2.\"Value</td><td>16.8.2014 00:00:00</td><tr><table>";
 			result.ShouldBe(expectedResult);
 		}
 
-		private static string GetExportContent(DataGrid resultGrid, IDataExporter dataExporter)
+		private string GetExportContent(DataGrid resultGrid, IDataExporter dataExporter)
 		{
 			var tempFileName = Path.GetTempFileName();
-			dataExporter.ExportToFile(tempFileName, resultGrid);
+			dataExporter.ExportToFile(tempFileName, resultGrid, _page.InfrastructureFactory.DataExportConverter);
 
 			var result = File.ReadAllText(tempFileName);
 			File.Delete(tempFileName);
 			return result;
 		}
 
-		private static DataGrid InitializeDataGrid()
+		private DataGrid InitializeDataGrid()
 		{
 			var columnHeaders =
 				new[]
@@ -341,12 +341,12 @@ SELECT T.* FROM T@HQ_PDB";
 					new ColumnHeader { ColumnIndex = 1, DatabaseDataType = "Date", DataType = typeof (DateTime), Name = "DUMMY_WITH_UNDERSCORES" }
 				};
 
-			var outputViewer = new OutputViewer();
+			var outputViewer = new OutputViewer { DataModel = new PageModel(_page) };
 			outputViewer.Initialize(columnHeaders);
 			outputViewer.ResultGrid.ItemsSource =
 				new[]
 				{
-					new object[] { "Value \"1\"", new DateTime(2014, 8, 16, 22, 25, 34) },
+					new object[] { "Value \"1\" '2' <3>", new DateTime(2014, 8, 16, 22, 25, 34) },
 					new object[] { "\"2.\"Value", new DateTime(2014, 8, 16) }
 				};
 			

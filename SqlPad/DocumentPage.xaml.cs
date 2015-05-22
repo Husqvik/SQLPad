@@ -33,14 +33,12 @@ namespace SqlPad
 		public const string FileMaskDefault = "SQL files (*.sql)|*.sql|SQL Pad files (*.sqlx)|*.sqlx|Text files(*.txt)|*.txt|All files (*.*)|*";
 
 		private SqlDocumentRepository _sqlDocumentRepository;
-		private IInfrastructureFactory _infrastructureFactory;
 		private ICodeCompletionProvider _codeCompletionProvider;
 		private ICodeSnippetProvider _codeSnippetProvider;
 		private IContextActionProvider _contextActionProvider;
 		private IStatementFormatter _statementFormatter;
 		private IToolTipProvider _toolTipProvider;
 		private INavigationService _navigationService;
-		private IExecutionPlanViewer _executionPlanViewer;
 		private IHelpProvider _createHelpProvider;
 
 		private MultiNodeEditor _multiNodeEditor;
@@ -74,6 +72,8 @@ namespace SqlPad
 		
 		private readonly SqlFoldingStrategy _foldingStrategy;
 		private readonly IconMargin _iconMargin;
+
+		internal IInfrastructureFactory InfrastructureFactory { get; private set; }
 
 		internal TabItem TabItem { get; private set; }
 		
@@ -405,7 +405,7 @@ namespace SqlPad
 
 			_specificCommandBindings.Clear();
 
-			foreach (var handler in _infrastructureFactory.CommandFactory.CommandHandlers)
+			foreach (var handler in InfrastructureFactory.CommandFactory.CommandHandlers)
 			{
 				var command = new RoutedCommand(handler.Name, typeof(TextEditor), handler.DefaultGestures);
 				var routedHandlerMethod = GenericCommandHandler.CreateRoutedEditCommandHandler(handler, () => _sqlDocumentRepository);
@@ -428,26 +428,25 @@ namespace SqlPad
 
 			var connectionConfiguration = ConfigurationProvider.GetConnectionCofiguration(_connectionString.Name);
 			_pageModel.ProductionLabelVisibility = connectionConfiguration.IsProduction ? Visibility.Visible : Visibility.Collapsed;
-			_infrastructureFactory = connectionConfiguration.InfrastructureFactory;
-			_codeCompletionProvider = _infrastructureFactory.CreateCodeCompletionProvider();
-			_codeSnippetProvider = _infrastructureFactory.CreateSnippetProvider();
-			_contextActionProvider = _infrastructureFactory.CreateContextActionProvider();
-			_statementFormatter = _infrastructureFactory.CreateSqlFormatter(new SqlFormatterOptions());
-			_toolTipProvider = _infrastructureFactory.CreateToolTipProvider();
-			_navigationService = _infrastructureFactory.CreateNavigationService();
-			_createHelpProvider = _infrastructureFactory.CreateHelpProvider();
+			InfrastructureFactory = connectionConfiguration.InfrastructureFactory;
+			_codeCompletionProvider = InfrastructureFactory.CreateCodeCompletionProvider();
+			_codeSnippetProvider = InfrastructureFactory.CreateSnippetProvider();
+			_contextActionProvider = InfrastructureFactory.CreateContextActionProvider();
+			_statementFormatter = InfrastructureFactory.CreateSqlFormatter(new SqlFormatterOptions());
+			_toolTipProvider = InfrastructureFactory.CreateToolTipProvider();
+			_navigationService = InfrastructureFactory.CreateNavigationService();
+			_createHelpProvider = InfrastructureFactory.CreateHelpProvider();
 
-			_colorizingTransformer.SetParser(_infrastructureFactory.CreateParser());
+			_colorizingTransformer.SetParser(InfrastructureFactory.CreateParser());
 
 			InitializeSpecificCommandBindings();
 
-			DatabaseModel = _infrastructureFactory.CreateDatabaseModel(ConfigurationProvider.ConnectionStrings[_connectionString.Name]);
-			_pageModel.SchemaLabel = _infrastructureFactory.SchemaLabel;
-			_sqlDocumentRepository = new SqlDocumentRepository(_infrastructureFactory.CreateParser(), _infrastructureFactory.CreateStatementValidator(), DatabaseModel);
+			DatabaseModel = InfrastructureFactory.CreateDatabaseModel(ConfigurationProvider.ConnectionStrings[_connectionString.Name]);
+			_pageModel.SchemaLabel = InfrastructureFactory.SchemaLabel;
+			_sqlDocumentRepository = new SqlDocumentRepository(InfrastructureFactory.CreateParser(), InfrastructureFactory.CreateStatementValidator(), DatabaseModel);
 			_iconMargin.DocumentRepository = _sqlDocumentRepository;
-			_executionPlanViewer = _infrastructureFactory.CreateExecutionPlanViewer(DatabaseModel);
-			
-			OutputViewer.SetupExecutionPlanViewer(_executionPlanViewer);
+
+			OutputViewer.Setup(this);
 
 			DatabaseModel.Initialized += DatabaseModelInitializedHandler;
 			DatabaseModel.Disconnected += DatabaseModelInitializationFailedHandler;
@@ -679,7 +678,7 @@ namespace SqlPad
 
 		private void ShowTokenCommandExecutionHandler(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
 		{
-			var tokens = _infrastructureFactory.CreateTokenReader(_sqlDocumentRepository.StatementText).GetTokens(true).ToArray();
+			var tokens = InfrastructureFactory.CreateTokenReader(_sqlDocumentRepository.StatementText).GetTokens(true).ToArray();
 			var message = "Parsed: " + String.Join(", ", tokens.Where(t => t.CommentType == CommentType.None).Select(t => "{" + t.Value + "}"));
 			message += Environment.NewLine + "Comments: " + String.Join(", ", tokens.Where(t => t.CommentType != CommentType.None).Select(t => "{" + t.Value + "}"));
 			MessageBox.Show(message, "Tokens", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -891,7 +890,7 @@ namespace SqlPad
 
 			if (_gatherExecutionStatistics)
 			{
-				await _executionPlanViewer.ShowActualAsync(_statementExecutionCancellationTokenSource.Token);
+				await OutputViewer.ExecutionPlanViewer.ShowActualAsync(_statementExecutionCancellationTokenSource.Token);
 				_pageModel.ExecutionPlanAvailable = Visibility.Visible;
 				_pageModel.SessionExecutionStatistics.MergeWith(await DatabaseModel.GetExecutionStatisticsAsync(_statementExecutionCancellationTokenSource.Token));
 				OutputViewer.SelectPreviousTab();
@@ -965,9 +964,6 @@ namespace SqlPad
 		private void InitializeResultGrid(IEnumerable<ColumnHeader> columnHeaders)
 		{
 			OutputViewer.Initialize(columnHeaders);
-
-			_pageModel.GridRowInfoVisibility = Visibility.Visible;
-			_pageModel.ResultRowItems.Clear();
 		}
 
 		public void Dispose()
@@ -1029,7 +1025,7 @@ namespace SqlPad
 
 		private void FindUsages(object sender, ExecutedRoutedEventArgs args)
 		{
-			var findUsagesCommandHandler = _infrastructureFactory.CommandFactory.FindUsagesCommandHandler;
+			var findUsagesCommandHandler = InfrastructureFactory.CommandFactory.FindUsagesCommandHandler;
 			var executionContext = CommandExecutionContext.Create(Editor, _sqlDocumentRepository);
 			findUsagesCommandHandler.ExecutionHandler(executionContext);
 			_colorizingTransformer.SetHighlightSegments(executionContext.SegmentsToReplace);
@@ -1070,7 +1066,7 @@ namespace SqlPad
 		{
 			if (_multiNodeEditor == null)
 			{
-				MultiNodeEditor.TryCreateMultiNodeEditor(Editor, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), DatabaseModel, out _multiNodeEditor);
+				MultiNodeEditor.TryCreateMultiNodeEditor(Editor, InfrastructureFactory.CreateMultiNodeEditorDataProvider(), DatabaseModel, out _multiNodeEditor);
 			}
 		}
 
@@ -1878,7 +1874,7 @@ namespace SqlPad
 
 			using (_statementExecutionCancellationTokenSource = new CancellationTokenSource())
 			{
-				var actionResult = await SafeTimedActionAsync(() => _executionPlanViewer.ExplainAsync(statementModel, _statementExecutionCancellationTokenSource.Token));
+				var actionResult = await SafeTimedActionAsync(() => OutputViewer.ExecutionPlanViewer.ExplainAsync(statementModel, _statementExecutionCancellationTokenSource.Token));
 
 				if (_statementExecutionCancellationTokenSource.IsCancellationRequested)
 				{

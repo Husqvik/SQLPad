@@ -16,11 +16,14 @@ namespace SqlPad
 		private bool _isSelectingCells;
 		private PageModel _pageModel;
 		private object _previousSelectedTab;
+		private DocumentPage _documentPage;
 
 		public event EventHandler FetchNextRows;
 		public event EventHandler FetchAllRows;
 		public event EventHandler<CompilationErrorArgs> CompilationError;
 		public event EventHandler<CanExecuteRoutedEventArgs> CanFetchAllRows;
+
+		public IExecutionPlanViewer ExecutionPlanViewer { get; private set; }
 
 		public PageModel DataModel
 		{
@@ -48,6 +51,9 @@ namespace SqlPad
 			}
 
 			ResultGrid.HeadersVisibility = DataGridHeadersVisibility.Column;
+			
+			_pageModel.GridRowInfoVisibility = Visibility.Visible;
+			_pageModel.ResultRowItems.Clear();
 		}
 
 		internal static DataGridTextColumn CreateDataGridTextColumnTemplate(ColumnHeader columnHeader)
@@ -83,9 +89,12 @@ namespace SqlPad
 			}
 		}
 
-		public void SetupExecutionPlanViewer(IExecutionPlanViewer executionPlanViewer)
+		public void Setup(DocumentPage documentPage)
 		{
-			TabExecutionPlan.Content = executionPlanViewer.Control;
+			_documentPage = documentPage;
+			
+			ExecutionPlanViewer = documentPage.InfrastructureFactory.CreateExecutionPlanViewer(documentPage.DatabaseModel);
+			TabExecutionPlan.Content = ExecutionPlanViewer.Control;
 		}
 
 		public void Initialize()
@@ -109,7 +118,7 @@ namespace SqlPad
 		{
 			if (!IsTabAlwaysVisible(TabControlResult.SelectedItem))
 			{
-				TabControlResult.SelectedIndex = 0;
+				TabControlResult.SelectedItem = TabResultSet;
 			}
 		}
 
@@ -133,7 +142,7 @@ namespace SqlPad
 
 		public void ShowCompilationErrors()
 		{
-			TabControlResult.SelectedIndex = 3;
+			TabControlResult.SelectedItem = TabCompilationErrors;
 		}
 
 		private void TabControlResultGiveFeedbackHandler(object sender, GiveFeedbackEventArgs e)
@@ -174,14 +183,14 @@ namespace SqlPad
 				return;
 			}
 
-			DocumentPage.SafeActionWithUserError(() => dataExporter.ExportToFile(dialog.FileName, ResultGrid));
+			DocumentPage.SafeActionWithUserError(() => dataExporter.ExportToFile(dialog.FileName, ResultGrid, _documentPage.InfrastructureFactory.DataExportConverter));
 		}
 
 		private void ExportDataClipboardHandler(object sender, ExecutedRoutedEventArgs args)
 		{
 			var dataExporter = (IDataExporter)args.Parameter;
 
-			DocumentPage.SafeActionWithUserError(() => dataExporter.ExportToClipboard(ResultGrid));
+			DocumentPage.SafeActionWithUserError(() => dataExporter.ExportToClipboard(ResultGrid, _documentPage.InfrastructureFactory.DataExportConverter));
 		}
 
 		private void ResultGridMouseDoubleClickHandler(object sender, MouseButtonEventArgs e)

@@ -101,6 +101,8 @@
     <Compile Include="BindVariableModel.cs" />
     <Compile Include="Bookmarks\IconMargin.cs" />
     <Compile Include="CellValueConverter.cs" />
+    <Compile Include="DataExportHelper.cs" />
+    <Compile Include="IDataExporter.cs" />
     <Compile Include="IHelpProvider.cs" />
     <Compile Include="CompilationErrorArgs.cs" />
     <Compile Include="ComplexTypeViewer.xaml.cs">
@@ -296,6 +298,7 @@
   <ItemGroup>
     <Content Include="Configuration.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
     </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

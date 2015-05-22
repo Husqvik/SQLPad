@@ -139,6 +139,7 @@
     <Compile Include="OracleDatabaseLink.cs" />
     <Compile Include="OracleDatabaseModelBase.cs" />
     <Compile Include="OracleDataDictionary.cs" />
+    <Compile Include="OracleDataExportConverter.cs" />
     <Compile Include="OracleDataType.cs" />
     <Compile Include="OracleDebugger.cs" />
     <Compile Include="OracleFoldingSectionProvider.cs" />

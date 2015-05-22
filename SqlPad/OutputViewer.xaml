@@ -34,7 +34,7 @@
 	</UserControl.Resources>
 
 	<TabControl x:Name="TabControlResult" GiveFeedback="TabControlResultGiveFeedbackHandler">
-		<TabItem Header="_Result set">
+		<TabItem Header="_Result set" x:Name="TabResultSet">
 			<DockPanel LastChildFill="True">
 				<StackPanel DockPanel.Dock="Bottom" Visibility="{Binding SelectedCellInfoVisibility}" Orientation="Horizontal" HorizontalAlignment="Right">
 					<TextBlock>
@@ -140,7 +140,7 @@
 				<sqlPad:ScrollingTextBox Text="{Binding DatabaseOutput, Mode=OneWay}" FontFamily="Consolas" IsReadOnly="True" IsReadOnlyCaretVisible="True" />
 			</DockPanel>
 		</TabItem>
-		<TabItem Header="_Errors" Visibility="{Binding CompilationErrorsVisible}">
+		<TabItem Header="_Errors" x:Name="TabCompilationErrors" Visibility="{Binding CompilationErrorsVisible}">
 			<DataGrid ItemsSource="{Binding CompilationErrors}"
 							  AutoGenerateColumns="False"
 							  CanUserDeleteRows ="False"

@@ -3,65 +3,12 @@ using System.Collections;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Controls;
 
 namespace SqlPad
 {
-	public interface IDataExporter
-	{
-		string FileNameFilter { get; }
-
-		void ExportToFile(string fileName, DataGrid dataGrid);
-
-		Task ExportToFileAsync(string fileName, DataGrid dataGrid, CancellationToken cancellationToken);
-		
-		void ExportToClipboard(DataGrid dataGrid);
-
-		Task ExportToClipboardAsync(DataGrid dataGrid, CancellationToken cancellationToken);
-	}
-
-	internal static class DataExportHelper
-	{
-		public static Task RunExportActionAsync(string fileName, Action<TextWriter> exportAction)
-		{
-			var stringBuilder = new StringBuilder();
-
-			return Task.Factory
-				.StartNew(() => RunExportActionInternal(fileName, stringBuilder, exportAction))
-				.ContinueWith(t => SetToClipboard(fileName, stringBuilder));
-		}
-
-		private static void SetToClipboard(string fileName, StringBuilder stringBuilder)
-		{
-			var exportToClipboard = String.IsNullOrEmpty(fileName);
-			if (exportToClipboard)
-			{
-				Application.Current.Dispatcher.InvokeAsync(() => Clipboard.SetText(stringBuilder.ToString()));
-			}
-		}
-
-		public static bool IsNull(object value)
-		{
-			var largeValue = value as ILargeValue;
-			return value == DBNull.Value ||
-			       (largeValue != null && largeValue.IsNull);
-		}
-
-		private static void RunExportActionInternal(string fileName, StringBuilder stringBuilder, Action<TextWriter> exportAction)
-		{
-			var exportToClipboard = String.IsNullOrEmpty(fileName);
-
-			using (var writer = exportToClipboard ? (TextWriter)new StringWriter(stringBuilder) : File.CreateText(fileName))
-			{
-				exportAction(writer);
-			}
-		}
-	}
-
 	public class CsvDataExporter : IDataExporter
 	{
 		private const string MaskWrapByQuote = "\"{0}\"";
@@ -74,22 +21,22 @@ namespace SqlPad
 			get { return "CSV files (*.csv)|*.csv|All files (*.*)|*"; }
 		}
 
-		public void ExportToClipboard(DataGrid dataGrid)
+		public void ExportToClipboard(DataGrid dataGrid, IDataExportConverter dataExportConverter)
 		{
-			ExportToFile(null, dataGrid);
+			ExportToFile(null, dataGrid, dataExportConverter);
 		}
 
-		public void ExportToFile(string fileName, DataGrid dataGrid)
+		public void ExportToFile(string fileName, DataGrid dataGrid, IDataExportConverter dataExportConverter)
 		{
-			ExportToFileAsync(fileName, dataGrid, CancellationToken.None).Wait();
+			ExportToFileAsync(fileName, dataGrid, dataExportConverter, CancellationToken.None).Wait();
 		}
 
-		public Task ExportToClipboardAsync(DataGrid dataGrid, CancellationToken cancellationToken)
+		public Task ExportToClipboardAsync(DataGrid dataGrid, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
 		{
-			return ExportToFileAsync(null, dataGrid, cancellationToken);
+			return ExportToFileAsync(null, dataGrid, dataExportConverter, cancellationToken);
 		}
 
-		public Task ExportToFileAsync(string fileName, DataGrid dataGrid, CancellationToken cancellationToken)
+		public Task ExportToFileAsync(string fileName, DataGrid dataGrid, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
 		{
 			var orderedColumns = dataGrid.Columns
 					.OrderBy(c => c.DisplayIndex)

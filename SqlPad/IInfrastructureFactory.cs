@@ -10,6 +10,8 @@ namespace SqlPad
 	{
 		string SchemaLabel { get; }
 
+		IDataExportConverter DataExportConverter { get; }
+
 		ICommandFactory CommandFactory { get; }
 
 		ITokenReader CreateTokenReader(string sqlText);
@@ -37,6 +39,11 @@ namespace SqlPad
 		IExecutionPlanViewer CreateExecutionPlanViewer(IDatabaseModel databaseModel);
 
 		IHelpProvider CreateHelpProvider();
+	}
+
+	public interface IDataExportConverter
+	{
+		string ToSqlValue(object value);
 	}
 
 	public interface INavigationService
