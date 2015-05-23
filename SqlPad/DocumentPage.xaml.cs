@@ -58,8 +58,8 @@ namespace SqlPad
 		private bool _isToolTipOpenByShortCut;
 		private bool _isToolTipOpenByCaretChange;
 		private bool _gatherExecutionStatistics;
-		
-		private readonly ToolTip _toolTip = new ToolTip();
+
+		private readonly Popup _popup = new Popup();
 		private readonly PageModel _pageModel;
 		private readonly Timer _timerReParse = new Timer(100);
 		private readonly Timer _timerExecutionMonitor = new Timer(100);
@@ -119,7 +119,8 @@ namespace SqlPad
 			_foldingStrategy = new SqlFoldingStrategy(FoldingManager.Install(Editor.TextArea), Editor);
 			_foldingStrategy.FoldingMargin.ContextMenu = (ContextMenu)Resources["FoldingActionMenu"];
 
-			_toolTip.PlacementTarget = Editor.TextArea;
+			_popup.PlacementTarget = Editor.TextArea;
+
 			_contextActionMenu.PlacementTarget = Editor;
 			
 			ComboBoxConnection.IsEnabled = ConfigurationProvider.ConnectionStrings.Count > 1;
@@ -783,14 +784,14 @@ namespace SqlPad
 				return;
 			}
 
-			_toolTip.Content = new FunctionOverloadList { FunctionOverloads = functionOverloads };
+			_popup.Child = new FunctionOverloadList { FunctionOverloads = functionOverloads, FontFamily = new FontFamily("Segoe UI") }.AsPopupChild();
 			_isToolTipOpenByShortCut = true;
 
 			var rectangle = Editor.TextArea.Caret.CalculateCaretRectangle();
-			_toolTip.Placement = PlacementMode.Relative;
-			_toolTip.HorizontalOffset = rectangle.Left - Editor.TextArea.TextView.HorizontalOffset;
-			_toolTip.VerticalOffset = rectangle.Top - Editor.TextArea.TextView.VerticalOffset + Editor.TextArea.TextView.DefaultLineHeight;
-			_toolTip.IsOpen = true;
+			_popup.Placement = PlacementMode.Relative;
+			_popup.HorizontalOffset = rectangle.Left - Editor.TextArea.TextView.HorizontalOffset;
+			_popup.VerticalOffset = rectangle.Top - Editor.TextArea.TextView.VerticalOffset + Editor.TextArea.TextView.DefaultLineHeight;
+			_popup.IsOpen = true;
 		}
 
 		private void CanExecuteDatabaseCommandHandler(object sender, CanExecuteRoutedEventArgs args)
@@ -857,9 +858,6 @@ namespace SqlPad
 		private void InitializeViewBeforeCommandExecution()
 		{
 			TextMoreRowsExist.Visibility = Visibility.Collapsed;
-
-			_pageModel.AffectedRowCount = -1;
-			_pageModel.CurrentRowIndex = 0;
 
 			OutputViewer.Initialize();
 		}
@@ -1110,7 +1108,7 @@ namespace SqlPad
 
 		private void DocumentTabControlSelectionChangedHandler(object sender, SelectionChangedEventArgs selectionChangedEventArgs)
 		{
-			_toolTip.IsOpen = false;
+			_popup.IsOpen = false;
 			_isToolTipOpenByCaretChange = false;
 			_isToolTipOpenByShortCut = false;
 		}
@@ -1121,7 +1119,7 @@ namespace SqlPad
 
 			_isToolTipOpenByCaretChange = false;
 
-			CloseToolTipWhenNotOpenByShortCut();
+			CloseToolTipWhenNotOpenByShortCutOrCaretChange();
 
 			var parenthesisNodes = new List<StatementGrammarNode>();
 
@@ -1180,11 +1178,11 @@ namespace SqlPad
 								var lastLine = Editor.Document.GetText(otherParenthesisLine.Offset, otherParenthesisTerminal.SourcePosition.IndexStart + 1 - otherParenthesisLine.Offset);
 								toolTipBuilder.Append(lastLine);
 
-								_toolTip.Content = new TextBlock { FontFamily = Editor.FontFamily, FontSize = Editor.FontSize, Text = toolTipBuilder.ToString() };
-								_toolTip.Placement = PlacementMode.Relative;
-								_toolTip.HorizontalOffset = Editor.TextArea.LeftMargins.Sum(m => m.DesiredSize.Width);
-								_toolTip.VerticalOffset = -28;
-								_toolTip.IsOpen = true;
+								_popup.Child = new TextBox { FontFamily = Editor.FontFamily, FontSize = Editor.FontSize, Text = toolTipBuilder.ToString(), IsReadOnly = true }.AsPopupChild();
+								_popup.Placement = PlacementMode.Relative;
+								_popup.HorizontalOffset = Editor.TextArea.LeftMargins.Sum(m => m.DesiredSize.Width);
+								_popup.VerticalOffset = -28;
+								_popup.IsOpen = true;
 
 								_isToolTipOpenByCaretChange = true;
 							}
@@ -1566,8 +1564,10 @@ namespace SqlPad
 
 		void MouseHoverHandler(object sender, MouseEventArgs e)
 		{
-			if (_isToolTipOpenByShortCut || _isToolTipOpenByCaretChange)
+			if (_isToolTipOpenByShortCut || _isToolTipOpenByCaretChange || _popup.IsOpen)
+			{
 				return;
+			}
 
 			var visualPosition = e.GetPosition(Editor);
 			var position = Editor.GetPositionFromPoint(visualPosition);
@@ -1584,28 +1584,29 @@ namespace SqlPad
 				return;
 			}
 
-			object toolTip;
 			var offset = Editor.Document.GetOffset(position.Value.Line, position.Value.Column);
 			var foldingSection = _foldingStrategy.FoldingManager.GetFoldingsContaining(offset).FirstOrDefault(s => s.IsFolded);
 			if (foldingSection != null)
 			{
-				toolTip = FormatFoldingSectionToolTip(foldingSection);
-				_toolTip.FontFamily = new FontFamily("Consolas");
+				var toolTipText = FormatFoldingSectionToolTip(foldingSection);
+				_popup.Child = new TextBox { Text = toolTipText, FontFamily = Editor.FontFamily, IsReadOnly = true }.AsPopupChild();
 			}
 			else
 			{
-				toolTip = _toolTipProvider.GetToolTip(_sqlDocumentRepository, offset);
-				_toolTip.FontFamily = new FontFamily("Segoe UI");
+				var toolTip = _toolTipProvider.GetToolTip(_sqlDocumentRepository, offset);
+				if (toolTip == null)
+				{
+					return;
+				}
+
+				toolTip.Control.FontFamily = new FontFamily("Segoe UI");
+				_popup.Child = toolTip.Control.AsPopupChild();
 			}
 			
-			if (toolTip == null)
-				return;
-
-			_toolTip.Placement = PlacementMode.Mouse;
-			_toolTip.HorizontalOffset = 0;
-			_toolTip.VerticalOffset = 0;
-			_toolTip.Content = toolTip;
-			_toolTip.IsOpen = true;
+			_popup.Placement = PlacementMode.Mouse;
+			_popup.HorizontalOffset = 0;
+			_popup.VerticalOffset = 0;
+			_popup.IsOpen = true;
 			e.Handled = true;
 		}
 
@@ -1667,16 +1668,26 @@ namespace SqlPad
 			return builder.ToString();
 		}
 
-		private void MouseHoverStoppedHandler(object sender, MouseEventArgs e)
+		private void MouseMoveHandler(object sender, MouseEventArgs e)
 		{
-			CloseToolTipWhenNotOpenByShortCut();
+			if (!_popup.IsOpen)
+			{
+				return;
+			}
+
+			var position = e.GetPosition(_popup.Child);
+
+			if (position.Y < -Editor.FontSize || position.Y > _popup.Child.RenderSize.Height || position.X < 0 || position.X > _popup.Child.RenderSize.Width)
+			{
+				CloseToolTipWhenNotOpenByShortCutOrCaretChange();
+			}
 		}
 
-		private void CloseToolTipWhenNotOpenByShortCut()
+		private void CloseToolTipWhenNotOpenByShortCutOrCaretChange()
 		{
 			if (!_isToolTipOpenByShortCut && !_isToolTipOpenByCaretChange)
 			{
-				_toolTip.IsOpen = false;
+				_popup.IsOpen = false;
 			}
 		}
 
@@ -1798,9 +1809,9 @@ namespace SqlPad
 		{
 			_isToolTipOpenByShortCut = false;
 
-			if (_toolTip != null)
+			if (_popup != null)
 			{
-				_toolTip.IsOpen = false;
+				_popup.IsOpen = false;
 			}
 
 			if (e.Key == Key.Return || e.Key == Key.Escape)

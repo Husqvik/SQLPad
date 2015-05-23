@@ -99,6 +99,8 @@ namespace SqlPad
 
 		public void Initialize()
 		{
+			_pageModel.AffectedRowCount = -1;
+			_pageModel.CurrentRowIndex = 0;
 			_pageModel.ResultRowItems.Clear();
 			_pageModel.CompilationErrors.Clear();
 			_pageModel.GridRowInfoVisibility = Visibility.Collapsed;

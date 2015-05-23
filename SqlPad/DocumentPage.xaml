@@ -145,7 +145,7 @@
 				                       MouseHover="MouseHoverHandler"
 				                       PreviewKeyDown="EditorKeyDownHandler"
 				                       PreviewKeyUp="EditorKeyUpHandler"
-				                       MouseHoverStopped="MouseHoverStoppedHandler">
+				                       MouseMove="MouseMoveHandler">
 					<sqlPad:SqlTextEditor.CommandBindings>
 						<CommandBinding Command="commands:GenericCommands.CreateNewPage" Executed="CreateNewPage" />
 						<CommandBinding Command="commands:GenericCommands.FindUsages" Executed="FindUsages" />
