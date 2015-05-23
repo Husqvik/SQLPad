@@ -3,12 +3,11 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Media;
 
 namespace SqlPad.Oracle.ToolTips
 {
-	public partial class ToolTipColumn : IToolTip
+	public partial class ToolTipColumn
 	{
 		public ToolTipColumn(ColumnDetailsModel dataModel)
 		{
@@ -16,8 +15,6 @@ namespace SqlPad.Oracle.ToolTips
 
 			DataContext = dataModel;
 		}
-
-		public UserControl Control { get { return this; } }
 	}
 
 	public abstract class ModelWithConstraints : ModelBase

@@ -1,4 +1,6 @@
-﻿using System.Windows.Controls;
+﻿using System;
+using System.Windows;
+using System.Windows.Controls;
 
 namespace SqlPad
 {
@@ -9,6 +11,10 @@ namespace SqlPad
 
 	public interface IToolTip
 	{
-		UserControl Control { get; }
+		Control Control { get; }
+
+		FrameworkElement InnerContent { get; }
+
+		event EventHandler Pin;
 	}
 }

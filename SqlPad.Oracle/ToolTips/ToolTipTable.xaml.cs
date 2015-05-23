@@ -5,19 +5,16 @@ using System.Collections.Specialized;
 using System.Globalization;
 using System.Linq;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Data;
 
 namespace SqlPad.Oracle.ToolTips
 {
-	public partial class ToolTipTable : IToolTip
+	public partial class ToolTipTable
 	{
 		public ToolTipTable()
 		{
 			InitializeComponent();
 		}
-
-		public UserControl Control { get { return this; } }
 	}
 
 	public interface IModelWithIndexes

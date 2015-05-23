@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="SqlPad.Oracle.ToolTips.ToolTipPartition"
+﻿<toolTips:PopupBase x:Class="SqlPad.Oracle.ToolTips.ToolTipPartition"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -6,7 +6,7 @@
              xmlns:sqlPad="clr-namespace:SqlPad;assembly=SqlPad"
              xmlns:toolTips="clr-namespace:SqlPad.Oracle.ToolTips"
              mc:Ignorable="d" 
-             d:DesignHeight="200" d:DesignWidth="240"
+             d:DesignHeight="208" d:DesignWidth="240"
 			 Padding="4">
     <StackPanel>
 		<StackPanel.Resources>
@@ -189,4 +189,4 @@
 			</ContentControl.Style>
 		</ContentControl>
 	</StackPanel>
-</UserControl>
+</toolTips:PopupBase>

@@ -1,17 +1,14 @@
 ﻿using System;
 using System.Windows;
-using System.Windows.Controls;
 
 namespace SqlPad.Oracle.ToolTips
 {
-	public partial class ToolTipView : IToolTip
+	public partial class ToolTipView
 	{
 		public ToolTipView()
 		{
 			InitializeComponent();
 		}
-
-		public UserControl Control { get { return this; } }
 	}
 
 	public class ViewDetailsModel : ModelWithConstraints, IModelWithComment

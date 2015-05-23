@@ -1,8 +1,6 @@
-﻿using System.Windows.Controls;
-
-namespace SqlPad.Oracle.ToolTips
+﻿namespace SqlPad.Oracle.ToolTips
 {
-	public partial class ToolTipPartition : IToolTip
+	public partial class ToolTipPartition
 	{
 		public ToolTipPartition(PartitionDetailsModelBase dataModel)
 		{
@@ -10,7 +8,5 @@ namespace SqlPad.Oracle.ToolTips
 
 			DataContext = dataModel;
 		}
-
-		public UserControl Control { get { return this; } }
 	}
 }

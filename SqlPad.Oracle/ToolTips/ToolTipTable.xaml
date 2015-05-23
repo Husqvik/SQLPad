@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="SqlPad.Oracle.ToolTips.ToolTipTable"
+﻿<toolTips:PopupBase x:Class="SqlPad.Oracle.ToolTips.ToolTipTable"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -124,4 +124,4 @@
 		
 		<toolTips:PartitionList Padding="0" TableDetails="{Binding}" Visibility="{Binding PartitionDetailsVisibility}" />
 	</StackPanel>
-</UserControl>
+</toolTips:PopupBase>

@@ -1,17 +1,20 @@
-﻿using System.Windows.Controls;
+﻿using System;
+using System.Windows;
+using System.Windows.Controls;
 
 namespace SqlPad.Oracle.ToolTips
 {
-	/// <summary>
-	/// Interaction logic for ToolTipObject.xaml
-	/// </summary>
 	public partial class ToolTipObject : IToolTip
 	{
+		public event EventHandler Pin;
+
 		public ToolTipObject()
 		{
 			InitializeComponent();
 		}
 
-		public UserControl Control { get { return this; } }
+		public Control Control { get { return this; } }
+
+		public FrameworkElement InnerContent { get { return this; } }
 	}
 }

@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Windows;
 using SqlPad;
 
 // General Information about an assembly is controlled through the following 
@@ -36,6 +37,7 @@ using SqlPad;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("0.2.0.183")]
-[assembly: AssemblyFileVersion("0.2.0.183")]
-[assembly: AssemblyBuildInfo("fa147bd", "2015-05-23 18:06:31")]
+[assembly: AssemblyVersion("0.2.0.184")]
+[assembly: AssemblyFileVersion("0.2.0.184")]
+[assembly: AssemblyBuildInfo("605ed67", "2015-05-24 00:45:19")]
+[assembly: ThemeInfo(ResourceDictionaryLocation.None, ResourceDictionaryLocation.SourceAssembly)]

@@ -1,17 +1,14 @@
 ﻿using System;
 using System.Globalization;
-using System.Windows.Controls;
 
 namespace SqlPad.Oracle.ToolTips
 {
-	public partial class ToolTipMaterializedView : IToolTip
+	public partial class ToolTipMaterializedView
 	{
 		public ToolTipMaterializedView()
 		{
 			InitializeComponent();
 		}
-
-		public UserControl Control { get { return this; } }
 	}
 
 	public class MaterializedViewDetailsModel : TableDetailsModel

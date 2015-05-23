@@ -1,9 +1,13 @@
-﻿using System.Windows.Controls;
+﻿using System;
+using System.Windows;
+using System.Windows.Controls;
 
 namespace SqlPad.Oracle.ToolTips
 {
 	public partial class ToolTipViewColumn : IToolTip
 	{
+		public event EventHandler Pin;
+
 		public ToolTipViewColumn(ColumnDetailsModel dataModel)
 		{
 			InitializeComponent();
@@ -11,6 +15,8 @@ namespace SqlPad.Oracle.ToolTips
 			DataContext = dataModel;
 		}
 
-		public UserControl Control { get { return this; } }
+		public Control Control { get { return this; } }
+
+		public FrameworkElement InnerContent { get { return this; } }
 	}
 }

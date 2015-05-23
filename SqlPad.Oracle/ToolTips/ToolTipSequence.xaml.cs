@@ -1,8 +1,6 @@
-﻿using System.Windows.Controls;
-
-namespace SqlPad.Oracle.ToolTips
+﻿namespace SqlPad.Oracle.ToolTips
 {
-	public partial class ToolTipSequence : IToolTip
+	public partial class ToolTipSequence
 	{
 		public ToolTipSequence(string title, OracleSequence sequence)
 		{
@@ -12,7 +10,5 @@ namespace SqlPad.Oracle.ToolTips
 
 			DataContext = sequence;
 		}
-
-		public UserControl Control { get { return this; } }
 	}
 }

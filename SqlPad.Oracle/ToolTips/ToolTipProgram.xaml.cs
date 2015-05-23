@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Globalization;
-using System.Windows.Controls;
 
 namespace SqlPad.Oracle.ToolTips
 {
-	public partial class ToolTipProgram : IToolTip
+	public partial class ToolTipProgram
 	{
 		public ToolTipProgram(string title, string documentation, OracleProgramMetadata programMetadata)
 		{
@@ -15,8 +14,6 @@ namespace SqlPad.Oracle.ToolTips
 
 			DataContext = programMetadata;
 		}
-
-		public UserControl Control { get { return this; } }
 	}
 
 	public class AuthIdConverter : ValueConverterBase

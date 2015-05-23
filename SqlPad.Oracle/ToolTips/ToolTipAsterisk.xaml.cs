@@ -1,12 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows;
 using System.Windows.Controls;
 
 namespace SqlPad.Oracle.ToolTips
 {
 	public partial class ToolTipAsterisk : IToolTip
 	{
+		public event EventHandler Pin;
+
+		public Control Control { get { return this; } }
+
+		public FrameworkElement InnerContent { get { return this; } }
+
 		public ToolTipAsterisk()
 		{
 			InitializeComponent();
@@ -38,11 +45,6 @@ namespace SqlPad.Oracle.ToolTips
 
 				ItemsControl.ItemsSource = columnViewModels;
 			}
-		}
-
-		public UserControl Control
-		{
-			get { return this; }
 		}
 	}
 

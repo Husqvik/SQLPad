@@ -51,6 +51,14 @@ namespace SqlPad
 				return Visibility.Collapsed;
 			}
 
+			var boolean = value as Boolean?;
+			if (boolean.HasValue)
+			{
+				return boolean.Value
+					? Visibility.Visible
+					: Visibility.Collapsed;
+			}
+
 			return ReferenceEquals(value, String.Empty)
 				? Visibility.Collapsed
 				: Visibility.Visible;

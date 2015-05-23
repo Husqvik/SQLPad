@@ -1599,6 +1599,7 @@ namespace SqlPad
 					return;
 				}
 
+				toolTip.Pin += ToolTipPinHandler;
 				toolTip.Control.FontFamily = new FontFamily("Segoe UI");
 				_popup.Child = toolTip.Control.AsPopupChild();
 			}
@@ -1608,6 +1609,35 @@ namespace SqlPad
 			_popup.VerticalOffset = 0;
 			_popup.IsOpen = true;
 			e.Handled = true;
+		}
+
+		private void ToolTipPinHandler(object sender, EventArgs eventArgs)
+		{
+			_popup.IsOpen = false;
+			
+			var toolTip = (IToolTip)sender;
+			var parent = (Decorator)VisualTreeHelper.GetParent(toolTip.Control);
+			parent.Child = null;
+
+			var window =
+				new Window
+				{
+					Title = "Information",
+					WindowStyle = WindowStyle.ToolWindow,
+					SizeToContent = SizeToContent.WidthAndHeight,
+					ShowActivated = true,
+					ShowInTaskbar = false,
+					Content =
+						new ScrollViewer
+						{
+							Content = toolTip.InnerContent,
+							HorizontalScrollBarVisibility = ScrollBarVisibility.Auto
+						},
+					Background = toolTip.Control.Background,
+					Owner = MainWindow
+				};
+			
+			window.Show();
 		}
 
 		private string FormatFoldingSectionToolTip(ICSharpCode.AvalonEdit.Document.TextSegment foldingSection)
