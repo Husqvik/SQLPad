@@ -130,7 +130,7 @@ namespace SqlPad.Oracle
 		{
 			var fullyQualifiedObjectTypeName = objectType.FullyQualifiedName.ToString().Replace("\"", null);
 			var customTypeClassName = String.Format("{0}.ObjectTypes.{1}", DynamicAssemblyNameBase, MakeValidMemberName(fullyQualifiedObjectTypeName));
-			var customTypeBuilder = customTypeModuleBuilder.DefineType(customTypeClassName, TypeAttributes.Public | TypeAttributes.Class, typeof(OracleCustomTypeBase), new[] { typeof(IOracleCustomType), typeof(IOracleCustomTypeFactory), typeof(INullable) });
+			var customTypeBuilder = customTypeModuleBuilder.DefineType(customTypeClassName, TypeAttributes.Public | TypeAttributes.Class, typeof(OracleCustomTypeBase), new[] { typeof(IOracleCustomType), typeof(IOracleCustomTypeFactory), typeof(IValue) });
 			AddOracleCustomTypeMappingAttribute(customTypeBuilder, fullyQualifiedObjectTypeName);
 
 			var constructorBuilder = AddConstructor(customTypeBuilder, typeof(object).GetConstructor(Type.EmptyTypes));
@@ -385,7 +385,7 @@ namespace SqlPad.Oracle
 		}
 	}
 
-	public class OracleValueArray<T> : IOracleCustomType, INullable, ICollectionValue
+	public class OracleValueArray<T> : IOracleCustomType, ICollectionValue
 	{
 		private const int PreviewMaxItemCount = 10;
 		private const int LargeValuePreviewLength = 16;
@@ -405,6 +405,11 @@ namespace SqlPad.Oracle
 		}
 
 		public bool IsNull { get { return Array == null; } }
+
+		public string ToLiteral()
+		{
+			throw new NotImplementedException();
+		}
 
 		public void FromCustomObject(OracleConnection connection, IntPtr pointerUdt)
 		{
@@ -473,7 +478,7 @@ namespace SqlPad.Oracle
 
 		private static object ToPrintable(object value)
 		{
-			var oracleRaw = value as OracleRaw;
+			var oracleRaw = value as OracleRawValue;
 			var oracleLongRaw = value as OracleLongRawValue;
 			if (oracleRaw == null && oracleLongRaw == null)
 			{
@@ -500,6 +505,11 @@ namespace SqlPad.Oracle
 		public abstract string DataTypeName { get; }
 
 		public abstract bool IsNull { get; }
+
+		public string ToLiteral()
+		{
+			throw new NotImplementedException();
+		}
 		
 		public bool IsEditable { get { return false; } }
 
@@ -588,7 +598,7 @@ namespace SqlPad.Oracle
 			var oracleBinary = value as OracleBinary?;
 			if (oracleBinary != null)
 			{
-				return new OracleRaw(oracleBinary.Value);
+				return new OracleRawValue(oracleBinary.Value);
 			}
 
 			var oracleTimestamp = value as OracleTimeStamp?;

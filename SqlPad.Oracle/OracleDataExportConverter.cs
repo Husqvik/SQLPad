@@ -1,24 +1,23 @@
 ﻿using System;
 
+using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
+
 namespace SqlPad.Oracle
 {
 	public class OracleDataExportConverter : IDataExportConverter
 	{
 		public string ToSqlValue(object value)
 		{
-			var stringValue = value as String;
-			if (!String.IsNullOrEmpty(stringValue))
+			var stringValue = value.ToString();
+			if (String.IsNullOrEmpty(stringValue))
 			{
-				return String.Format("'{0}'", stringValue.Replace("'", "''"));
+				return TerminalValues.Null;
 			}
 
-			if (value is DateTime)
-			{
-				var date = (DateTime)value;
-				return String.Format("TO_DATE('{0}', YYYY-MM-DD HH24:MI:SS)", date.ToString("yyyy-MM-dd HH:mm:ss"));
-			}
-
-			return value.ToString();
+			var vendorValue = value as IValue;
+			return vendorValue != null
+				? vendorValue.ToLiteral()
+				: String.Format("'{0}'", stringValue.Replace("'", "''"));
 		}
 	}
 }

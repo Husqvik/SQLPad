@@ -28,9 +28,9 @@ namespace SqlPad
 
 		public static bool IsNull(object value)
 		{
-			var largeValue = value as ILargeValue;
+			var nullable = value as IValue;
 			return value == DBNull.Value ||
-			       (largeValue != null && largeValue.IsNull);
+			       (nullable != null && nullable.IsNull);
 		}
 
 		private static void RunExportActionInternal(string fileName, StringBuilder stringBuilder, Action<TextWriter> exportAction)

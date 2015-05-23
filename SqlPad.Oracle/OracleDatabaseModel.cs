@@ -1062,7 +1062,7 @@ namespace SqlPad.Oracle
 							: String.Format("{0}{1}", oracleString.Value, oracleString.Value.Length == InitialLongFetchSize ? OracleLargeTextValue.Ellipsis : null);
 						break;
 					case "Raw":
-						value = new OracleRaw(reader.GetOracleBinary(i));
+						value = new OracleRawValue(reader.GetOracleBinary(i));
 						break;
 					case "LongRaw":
 						value = new OracleLongRawValue(reader.GetOracleBinary(i));

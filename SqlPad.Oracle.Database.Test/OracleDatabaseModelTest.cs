@@ -196,32 +196,49 @@ WHERE
 				blobValue.GetChunk(2).ShouldBe(new byte[] { 66, 76 });
 				blobValue.Value.Length.ShouldBe(4);
 				blobValue.ToString().ShouldBe("(BLOB[4 B])");
+				blobValue.ToLiteral().ShouldBe("TO_BLOB('424C4F42')");
 				firstRow[1].ShouldBeTypeOf<OracleClobValue>();
 				var expectedPreview = clobParameter.Substring(0, 1023) + OracleLargeTextValue.Ellipsis;
-				firstRow[1].ToString().ShouldBe(expectedPreview);
-				((OracleClobValue)firstRow[1]).DataTypeName.ShouldBe("CLOB");
+				var clobValue = (OracleClobValue)firstRow[1];
+				clobValue.ToString().ShouldBe(expectedPreview);
+				clobValue.DataTypeName.ShouldBe("CLOB");
+				var expectedLiteral = String.Format("TO_CLOB('{0}')", clobParameter);
+				clobValue.ToLiteral().ShouldBe(expectedLiteral);
 				firstRow[2].ShouldBeTypeOf<OracleClobValue>();
-				var clobValue = (OracleClobValue)firstRow[2];
-				clobValue.DataTypeName.ShouldBe("NCLOB");
-				clobValue.Length.ShouldBe(20);
-				clobValue.Value.ShouldBe("NCLOB DATA");
+				var nClobValue = (OracleClobValue)firstRow[2];
+				nClobValue.DataTypeName.ShouldBe("NCLOB");
+				nClobValue.Length.ShouldBe(20);
+				nClobValue.Value.ShouldBe("NCLOB DATA");
+				nClobValue.ToLiteral().ShouldBe("TO_NCLOB('NCLOB DATA')");
 				firstRow[3].ShouldBeTypeOf<string>();
 				firstRow[4].ShouldBeTypeOf<OracleTimestampWithTimeZone>();
-				firstRow[4].ToString().ShouldBe("11/1/2014 3:16:32 PM.123456789 +02:00");
+				var timestampWithTimezoneValue = (OracleTimestampWithTimeZone)firstRow[4];
+				timestampWithTimezoneValue.ToString().ShouldBe("11/1/2014 3:16:32 PM.123456789 +02:00");
+				timestampWithTimezoneValue.ToLiteral().ShouldBe("TIMESTAMP'2014-11-1 15:16:32.123456789 +02:00'");
 				firstRow[5].ShouldBeTypeOf<OracleTimestamp>();
-				firstRow[5].ToString().ShouldBe("11/1/2014 2:16:32 PM.123456789");
+				var timestampValue = (OracleTimestamp)firstRow[5];
+				timestampValue.ToString().ShouldBe("11/1/2014 2:16:32 PM.123456789");
+				timestampValue.ToLiteral().ShouldBe("TIMESTAMP'2014-11-1 14:16:32.123456789'");
 				firstRow[6].ShouldBeTypeOf<OracleNumber>();
+				var numberValue = (OracleNumber)firstRow[6];
 				var expectedValue = String.Format("0{0}1234567890123456789012345678901234567891", CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator);
-				firstRow[6].ToString().ShouldBe(expectedValue);
+				numberValue.ToString().ShouldBe(expectedValue);
+				numberValue.ToLiteral().ShouldBe("0.1234567890123456789012345678901234567891");
 				firstRow[7].ShouldBeTypeOf<OracleXmlValue>();
 				var xmlValue = (OracleXmlValue)firstRow[7];
+				xmlValue.DataTypeName.ShouldBe("XMLTYPE");
 				xmlValue.Length.ShouldBe(8);
 				xmlValue.Preview.ShouldBe("<root/>\u2026");
+				xmlValue.ToLiteral().ShouldBe("XMLTYPE('<root/>\n')");
 				firstRow[8].ShouldBeTypeOf<OracleNumber>();
+				numberValue = (OracleNumber)firstRow[8];
 				expectedValue = String.Format("1{0}23456789012345678901234567890123456789E-125", CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator);
-				firstRow[8].ToString().ShouldBe(expectedValue);
+				numberValue.ToString().ShouldBe(expectedValue);
+				numberValue.ToLiteral().ShouldBe("1.23456789012345678901234567890123456789E-125");
 				firstRow[9].ShouldBeTypeOf<OracleDateTime>();
-				firstRow[9].ToString().ShouldBe("BC 1/1/4712 12:00:00 AM");
+				var dateValue = (OracleDateTime)firstRow[9];
+				dateValue.ToString().ShouldBe("BC 1/1/4712 12:00:00 AM");
+				dateValue.ToLiteral().ShouldBe("TO_DATE('-4712-01-01 00:00:00', 'SYYYY-MM-DD HH24:MI:SS')");
 			}
 		}
 
@@ -259,19 +276,27 @@ WHERE
 				var blobValue = (OracleBlobValue)firstRow[0];
 				blobValue.Length.ShouldBe(0);
 				blobValue.ToString().ShouldBe(String.Empty);
+				blobValue.ToLiteral().ShouldBe("NULL");
 				firstRow[1].ShouldBeTypeOf<OracleClobValue>();
 				firstRow[1].ToString().ShouldBe(String.Empty);
+				((IValue)firstRow[1]).ToLiteral().ShouldBe("NULL");
 				((OracleClobValue)firstRow[1]).DataTypeName.ShouldBe("CLOB");
 				firstRow[2].ShouldBeTypeOf<OracleTimestampWithTimeZone>();
 				firstRow[2].ToString().ShouldBe(String.Empty);
+				((IValue)firstRow[2]).ToLiteral().ShouldBe("NULL");
 				firstRow[3].ShouldBeTypeOf<OracleTimestamp>();
 				firstRow[3].ToString().ShouldBe(String.Empty);
+				((IValue)firstRow[3]).ToLiteral().ShouldBe("NULL");
 				firstRow[4].ShouldBeTypeOf<OracleDateTime>();
 				firstRow[4].ToString().ShouldBe(String.Empty);
+				((IValue)firstRow[4]).ToLiteral().ShouldBe("NULL");
 				firstRow[5].ShouldBeTypeOf<OracleNumber>();
 				firstRow[5].ToString().ShouldBe(String.Empty);
+				((IValue)firstRow[5]).ToLiteral().ShouldBe("NULL");
 				firstRow[6].ShouldBeTypeOf<OracleXmlValue>();
 				firstRow[6].ToString().ShouldBe(String.Empty);
+				((IValue)firstRow[6]).ToLiteral().ShouldBe("NULL");
+
 			}
 		}
 		#endif

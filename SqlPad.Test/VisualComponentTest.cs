@@ -296,7 +296,7 @@ SELECT T.* FROM T@HQ_PDB";
 
 			var result = GetExportContent(resultGrid, new SqlInsertDataExporter());
 
-			const string expectedResult = "INSERT INTO MY_TABLE (DUMMY1, DUMMY_WITH_UNDERSCORES) VALUES ('Value \"1\" ''2'' <3>', TO_DATE('2014-08-16 22:25:34', YYYY-MM-DD HH24:MI:SS));\r\nINSERT INTO MY_TABLE (DUMMY1, DUMMY_WITH_UNDERSCORES) VALUES ('\"2.\"Value', TO_DATE('2014-08-16 00:00:00', YYYY-MM-DD HH24:MI:SS));\r\n";
+			const string expectedResult = "INSERT INTO MY_TABLE (DUMMY1, DUMMY_WITH_UNDERSCORES) VALUES ('Value \"1\" ''2'' <3>', '16.8.2014 22:25:34');\r\nINSERT INTO MY_TABLE (DUMMY1, DUMMY_WITH_UNDERSCORES) VALUES ('\"2.\"Value', '16.8.2014 00:00:00');\r\n";
 			result.ShouldBe(expectedResult);
 		}
 
@@ -307,7 +307,7 @@ SELECT T.* FROM T@HQ_PDB";
 
 			var result = GetExportContent(resultGrid, new SqlUpdateDataExporter());
 
-			const string expectedResult = "UPDATE MY_TABLE SET DUMMY1 = 'Value \"1\" ''2'' <3>', DUMMY_WITH_UNDERSCORES = TO_DATE('2014-08-16 22:25:34', YYYY-MM-DD HH24:MI:SS);\r\nUPDATE MY_TABLE SET DUMMY1 = '\"2.\"Value', DUMMY_WITH_UNDERSCORES = TO_DATE('2014-08-16 00:00:00', YYYY-MM-DD HH24:MI:SS);\r\n";
+			const string expectedResult = "UPDATE MY_TABLE SET DUMMY1 = 'Value \"1\" ''2'' <3>', DUMMY_WITH_UNDERSCORES = '16.8.2014 22:25:34';\r\nUPDATE MY_TABLE SET DUMMY1 = '\"2.\"Value', DUMMY_WITH_UNDERSCORES = '16.8.2014 00:00:00';\r\n";
 			result.ShouldBe(expectedResult);
 		}
 
@@ -374,6 +374,11 @@ SELECT T.* FROM T@HQ_PDB";
 			public bool IsEditable { get { return false; } }
 			
 			public bool IsNull { get { return false; } }
+
+			public string ToLiteral()
+			{
+				return "TO_CLOB('</root>')";
+			}
 
 			public long Length { get { return TextValue.Length; } }
 

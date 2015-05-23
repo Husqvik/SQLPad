@@ -4,13 +4,18 @@ using System.Text;
 
 namespace SqlPad
 {
-	public interface ILargeValue
+	public interface IValue
+	{
+		bool IsNull { get; }
+
+		string ToLiteral();
+	}
+
+	public interface ILargeValue : IValue
 	{
 		string DataTypeName { get; }
 
 		bool IsEditable { get; }
-		
-		bool IsNull { get; }
 
 		long Length { get; }
 
