@@ -12,36 +12,12 @@
 		<ResourceDictionary>
 			<ResourceDictionary.MergedDictionaries>
 				<ResourceDictionary Source="../Themes/Common.xaml"/>
+				<ResourceDictionary Source="../Themes/ToolTipDataGrid.xaml"/>
 			</ResourceDictionary.MergedDictionaries>
 		</ResourceDictionary>
 	</toolTips:PopupBase.Resources>
 
     <StackPanel>
-		<StackPanel.Resources>
-			<ControlTemplate x:Key="DataGridCellControlTemplate" TargetType="{x:Type DataGridCell}">
-				<Border Padding="2,0,2,0">
-					<ContentPresenter />
-				</Border>
-			</ControlTemplate>
-
-			<Style x:Key="CellStyleRightAlign">
-				<Setter Property="Block.TextAlignment" Value="Right" />
-				<Setter Property="DataGridCell.Template" Value="{StaticResource DataGridCellControlTemplate}" />
-			</Style>
-
-			<Style x:Key="HeaderStyleRightAlign">
-				<Setter Property="Control.HorizontalContentAlignment" Value="Right" />
-				<Setter Property="Control.Background" Value="Transparent" />
-				<Setter Property="Control.Padding" Value="4,2,4,2" />
-				<Setter Property="Control.FontWeight" Value="Medium" />
-			</Style>
-
-			<Style TargetType="{x:Type DataGridCell}">
-				<Setter Property="Template" Value="{StaticResource DataGridCellControlTemplate}" />
-			</Style>
-
-		</StackPanel.Resources>
-
 		<GroupBox BorderThickness="0" d:DataContext="{d:DesignInstance toolTips:PartitionDetailsModelBase}">
 			<GroupBox.Header>
 				<TextBlock FontWeight="Bold">

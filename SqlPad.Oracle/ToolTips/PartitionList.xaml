@@ -3,38 +3,20 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:sqlPad="clr-namespace:SqlPad;assembly=SqlPad"
              xmlns:toolTips="clr-namespace:SqlPad.Oracle.ToolTips"
              mc:Ignorable="d" 
              d:DesignHeight="72" d:DesignWidth="820"
 			 Padding="4"
 			 d:DataContext="{d:DesignInstance toolTips:TableDetailsModel}">
 	<UserControl.Resources>
-		<sqlPad:DateTimeLabelConverter x:Key="DateTimeConverter" />
-		<sqlPad:PrettyPrintIntegerConverter x:Key="PrettyPrintIntegerConverter" />
-
-		<ControlTemplate x:Key="DataGridCellControlTemplate" TargetType="{x:Type DataGridCell}">
-			<Border Padding="2,0,2,0">
-				<ContentPresenter />
-			</Border>
-		</ControlTemplate>
-
-		<Style x:Key="CellStyleRightAlign">
-			<Setter Property="Block.TextAlignment" Value="Right" />
-			<Setter Property="DataGridCell.Template" Value="{StaticResource DataGridCellControlTemplate}" />
-		</Style>
-
-		<Style x:Key="HeaderStyleRightAlign">
-			<Setter Property="Control.HorizontalContentAlignment" Value="Right" />
-			<Setter Property="Control.Background" Value="Transparent" />
-			<Setter Property="Control.Padding" Value="4,2,4,2" />
-			<Setter Property="Control.FontWeight" Value="Medium" />
-		</Style>
-
-		<Style TargetType="{x:Type DataGridCell}">
-			<Setter Property="Template" Value="{StaticResource DataGridCellControlTemplate}" />
-		</Style>
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceDictionary Source="../Themes/Common.xaml"/>
+				<ResourceDictionary Source="../Themes/ToolTipDataGrid.xaml"/>
+			</ResourceDictionary.MergedDictionaries>
+		</ResourceDictionary>
 	</UserControl.Resources>
+
 	<GroupBox Header="Partitions: " FontWeight="Bold" Padding="0,4,0,0">
 		<StackPanel>
 			<DataGrid x:Name="DataGrid"
@@ -102,26 +84,27 @@
 										<DataGridTextColumn Header="Name" Binding="{Binding Name}" />
 										<DataGridTextColumn Header="Tablespace" Binding="{Binding TablespaceName}" />
 										<DataGridTextColumn Header="High value" Binding="{Binding HighValue}" />
-										<DataGridTextColumn Header="Rows" Binding="{Binding RowCount, Converter={StaticResource PrettyPrintIntegerConverter}}"
-												HeaderStyle="{StaticResource HeaderStyleRightAlign}"
-												CellStyle="{StaticResource CellStyleRightAlign}" />
+										<DataGridTextColumn Header="Rows"
+										                    Binding="{Binding RowCount, Converter={StaticResource PrettyPrintIntegerConverter}}"
+										                    HeaderStyle="{StaticResource HeaderStyleRightAlign}"
+										                    CellStyle="{StaticResource CellStyleRightAlign}" />
 										<DataGridTextColumn Header="Average row bytes"
-												Binding="{Binding AverageRowSize, Converter={StaticResource PrettyPrintIntegerConverter}}"
-												HeaderStyle="{StaticResource HeaderStyleRightAlign}"
-												CellStyle="{StaticResource CellStyleRightAlign}" />
+										                    Binding="{Binding AverageRowSize, Converter={StaticResource PrettyPrintIntegerConverter}}"
+										                    HeaderStyle="{StaticResource HeaderStyleRightAlign}"
+										                    CellStyle="{StaticResource CellStyleRightAlign}" />
 										<DataGridTextColumn Header="Sample rows"
-												Binding="{Binding SampleRows, Converter={StaticResource PrettyPrintIntegerConverter}}"
-												HeaderStyle="{StaticResource HeaderStyleRightAlign}"
-												CellStyle="{StaticResource CellStyleRightAlign}" />
+										                    Binding="{Binding SampleRows, Converter={StaticResource PrettyPrintIntegerConverter}}"
+										                    HeaderStyle="{StaticResource HeaderStyleRightAlign}"
+										                    CellStyle="{StaticResource CellStyleRightAlign}" />
 										<DataGridTextColumn Header="Blocks"
-												Binding="{Binding BlockCount, Converter={StaticResource PrettyPrintIntegerConverter}}"
-												HeaderStyle="{StaticResource HeaderStyleRightAlign}"
-												CellStyle="{StaticResource CellStyleRightAlign}" />
+										                    Binding="{Binding BlockCount, Converter={StaticResource PrettyPrintIntegerConverter}}"
+										                    HeaderStyle="{StaticResource HeaderStyleRightAlign}"
+										                    CellStyle="{StaticResource CellStyleRightAlign}" />
 										<DataGridTextColumn Header="Compression" Binding="{Binding Compression}" />
 										<DataGridTextColumn Header="In-memory compression" Binding="{Binding InMemoryCompression}" />
 										<DataGridCheckBoxColumn Header="Logging" Binding="{Binding Logging}" />
 										<DataGridTextColumn Header="Last analyzed"
-												Binding="{Binding LastAnalyzed, Converter={StaticResource DateTimeConverter}}" />
+										                    Binding="{Binding LastAnalyzed, Converter={StaticResource DateTimeConverter}}" />
 									</DataGrid.Columns>
 								</DataGrid>
 								<TextBlock Visibility="{Binding MoreSubPartitionsExistMessageVisibility, Mode=OneWay}" FontWeight="Normal" Margin="4,1,0,0">

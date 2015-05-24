@@ -3,38 +3,19 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:sqlPad="clr-namespace:SqlPad;assembly=SqlPad"
              xmlns:toolTips="clr-namespace:SqlPad.Oracle.ToolTips"
              mc:Ignorable="d" 
              d:DesignHeight="60" d:DesignWidth="584"
 			 Padding="4" d:DataContext="{d:DesignInstance toolTips:IndexDetailsModel}">
 	<UserControl.Resources>
-		<sqlPad:DateTimeLabelConverter x:Key="DateTimeConverter" />
-		<sqlPad:PrettyPrintIntegerConverter x:Key="PrettyPrintIntegerConverter" />
-		<sqlPad:DataSpaceConverter x:Key="DataSpaceConverter" />
-
-		<ControlTemplate x:Key="DataGridCellControlTemplate" TargetType="{x:Type DataGridCell}">
-			<Border Padding="2,0,2,0">
-				<ContentPresenter />
-			</Border>
-		</ControlTemplate>
-
-		<Style x:Key="CellStyleRightAlign">
-			<Setter Property="Block.TextAlignment" Value="Right" />
-			<Setter Property="DataGridCell.Template" Value="{StaticResource DataGridCellControlTemplate}" />
-		</Style>
-
-		<Style x:Key="HeaderStyleRightAlign">
-			<Setter Property="Control.HorizontalContentAlignment" Value="Right" />
-			<Setter Property="Control.Background" Value="Transparent" />
-			<Setter Property="Control.Padding" Value="4,2,4,2" />
-			<Setter Property="Control.FontWeight" Value="Medium" />
-		</Style>
-
-		<Style TargetType="{x:Type DataGridCell}">
-			<Setter Property="Template" Value="{StaticResource DataGridCellControlTemplate}" />
-		</Style>
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceDictionary Source="../Themes/Common.xaml"/>
+				<ResourceDictionary Source="../Themes/ToolTipDataGrid.xaml"/>
+			</ResourceDictionary.MergedDictionaries>
+		</ResourceDictionary>
 	</UserControl.Resources>
+
 	<GroupBox Header="Indexes: " FontWeight="Bold" Padding="0,4,0,0">
 		<DataGrid x:Name="DataGrid"
 		          FontWeight="Normal" Background="Transparent" AutoGenerateColumns="False" RowBackground="Transparent"
