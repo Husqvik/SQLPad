@@ -7,6 +7,15 @@
              mc:Ignorable="d" 
              d:DesignHeight="154" d:DesignWidth="284"
 			 Padding="4" d:DataContext="{d:DesignInstance toolTips:ColumnDetailsModel}">
+
+	<UserControl.Resources>
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceDictionary Source="../Themes/Common.xaml"/>
+			</ResourceDictionary.MergedDictionaries>
+		</ResourceDictionary>
+	</UserControl.Resources>
+
     <StackPanel>
 		<GroupBox BorderThickness="0">
 			<GroupBox.Header>
@@ -23,7 +32,7 @@
 					<RowDefinition />
 					<RowDefinition />
 				</Grid.RowDefinitions>
-				<TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Text="{Binding Comment}" Visibility="{Binding CommentVisibility}" />
+				<TextBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Text="{Binding Comment}" Visibility="{Binding CommentVisibility}" Style="{StaticResource TextBoxBackgroundLessReadOnly}" />
 				<TextBlock Grid.Row="1" Grid.Column="0" Text="Owner: " />
 				<TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Owner}" />
 				<TextBlock Grid.Row="2" Grid.Column="0" Text="Name: " />

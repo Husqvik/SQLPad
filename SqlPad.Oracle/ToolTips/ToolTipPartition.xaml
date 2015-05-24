@@ -3,19 +3,21 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:sqlPad="clr-namespace:SqlPad;assembly=SqlPad"
              xmlns:toolTips="clr-namespace:SqlPad.Oracle.ToolTips"
              mc:Ignorable="d" 
              d:DesignHeight="208" d:DesignWidth="240"
 			 Padding="4">
+
+	<toolTips:PopupBase.Resources>
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceDictionary Source="../Themes/Common.xaml"/>
+			</ResourceDictionary.MergedDictionaries>
+		</ResourceDictionary>
+	</toolTips:PopupBase.Resources>
+
     <StackPanel>
 		<StackPanel.Resources>
-			<sqlPad:BooleanLabelConverter x:Key="BooleanConverter" />
-			<sqlPad:PrettyPrintIntegerConverter x:Key="PrettyPrintIntegerConverter" />
-			<sqlPad:DateTimeLabelConverter x:Key="DateTimeConverter" />
-			<sqlPad:DataSpaceConverter x:Key="DataSpaceConverter" />
-			<sqlPad:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter"/>
-
 			<ControlTemplate x:Key="DataGridCellControlTemplate" TargetType="{x:Type DataGridCell}">
 				<Border Padding="2,0,2,0">
 					<ContentPresenter />
@@ -91,7 +93,7 @@
 					<StackPanel Grid.Row="3" Grid.Column="1" Orientation="Horizontal">
 						<TextBlock Text="{Binding AllocatedBytes, Converter={StaticResource DataSpaceConverter}}" />
 						<TextBlock Visibility="{Binding LargeObjectBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text=" (LOB: "/><Run Text="{Binding LargeObjectBytes, Converter={StaticResource DataSpaceConverter}}"/><Run Text=")"/>
+							<Run Text=" (LOB: "/><Run Text="{Binding LargeObjectBytes, Converter={StaticResource DataSpaceConverter}}"/><Run Text=")"/>
 						</TextBlock>
 					</StackPanel>
 					<TextBlock Grid.Row="4" Grid.Column="0" Text="Rows: " />

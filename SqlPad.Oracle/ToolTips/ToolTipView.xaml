@@ -7,12 +7,21 @@
              mc:Ignorable="d" 
              d:DesignHeight="114" d:DesignWidth="570"
 			 Padding="4" d:DataContext="{d:DesignInstance toolTips:ViewDetailsModel}">
-    <StackPanel>
+
+	<toolTips:PopupBase.Resources>
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceDictionary Source="../Themes/Common.xaml"/>
+			</ResourceDictionary.MergedDictionaries>
+		</ResourceDictionary>
+	</toolTips:PopupBase.Resources>
+
+	<StackPanel>
 		<GroupBox BorderThickness="0">
 			<GroupBox.Header>
 				<TextBlock Text="{Binding Title}" FontWeight="Bold"/>
 			</GroupBox.Header>
-			<TextBlock Text="{Binding Comment}" Visibility="{Binding CommentVisibility}" />
+			<TextBox Text="{Binding Comment}" Visibility="{Binding CommentVisibility}" Style="{StaticResource TextBoxBackgroundLessReadOnly}" />
 		</GroupBox>
 		
 		<toolTips:ConstraintList Padding="0" Constraints="{Binding ConstraintDetails}" Visibility="{Binding ConstraintDetailsVisibility}" />

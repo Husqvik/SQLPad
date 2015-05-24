@@ -13,12 +13,12 @@ namespace SqlPad
 		
 		public static VisualBrush OutlineBoxBrush { get; private set; }
 
-		public static void Initialize(ResourceDictionary resources)
+		static Resources()
 		{
-			WaveErrorUnderline = new TextDecorationCollection { (TextDecoration)resources["WaveErrorUnderline"] };
-			WaveWarningUnderline = new TextDecorationCollection { (TextDecoration)resources["WaveWarningUnderline"] };
-			BoxedText = new TextDecorationCollection { (TextDecoration)resources["BoxedText"] };
-			OutlineBoxBrush = (VisualBrush)resources["OutlineBoxBrush"];
+			WaveErrorUnderline = new TextDecorationCollection { (TextDecoration)Application.Current.Resources["WaveErrorUnderline"] };
+			WaveWarningUnderline = new TextDecorationCollection { (TextDecoration)Application.Current.Resources["WaveWarningUnderline"] };
+			BoxedText = new TextDecorationCollection { (TextDecoration)Application.Current.Resources["BoxedText"] };
+			OutlineBoxBrush = (VisualBrush)Application.Current.Resources["OutlineBoxBrush"];
 		}
 	}
 }

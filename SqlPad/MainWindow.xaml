@@ -45,62 +45,6 @@
 			</Border>
 		</DataTemplate>
 
-		<TextDecoration x:Key="WaveErrorUnderline">
-			<TextDecoration.Pen>
-				<Pen Thickness="6">
-					<Pen.Brush>
-						<VisualBrush TileMode="Tile" Viewbox="0,-2,6,5" ViewboxUnits="Absolute" Viewport="0,-1,6,3" ViewportUnits="Absolute">
-							<VisualBrush.Visual>
-								<Path Data="M 0,1 L 1,2 2,2 4,0, 5,0 6,1" Stroke="Red" StrokeThickness="1.5"/>
-							</VisualBrush.Visual>
-						</VisualBrush>
-					</Pen.Brush>
-				</Pen>
-			</TextDecoration.Pen>
-		</TextDecoration>
-
-		<!--<TextDecoration x:Key="WaveErrorUnderline">
-			<TextDecoration.Pen>
-				<Pen Thickness="6">
-					<Pen.Brush>
-						<VisualBrush TileMode="Tile" Viewbox="0,-2,6,5" ViewboxUnits="Absolute" Viewport="0,-1,6,3" ViewportUnits="Absolute">
-							<VisualBrush.Visual>
-								<Image Source="c:\Users\Jan\Desktop\WaveLine.png" />
-							</VisualBrush.Visual>
-						</VisualBrush>
-					</Pen.Brush>
-				</Pen>
-			</TextDecoration.Pen>
-		</TextDecoration>-->
-
-		<TextDecoration x:Key="WaveWarningUnderline">
-			<TextDecoration.Pen>
-				<Pen Thickness="6">
-					<Pen.Brush>
-						<VisualBrush TileMode="Tile" Viewbox="0,-2,6,5" ViewboxUnits="Absolute" Viewport="0,-1,6,3" ViewportUnits="Absolute">
-							<VisualBrush.Visual>
-								<Path Data="M 0,1 L 1,2 2,2 4,0, 5,0 6,1" Stroke="LightSeaGreen" StrokeThickness="1.5"/>
-							</VisualBrush.Visual>
-						</VisualBrush>
-					</Pen.Brush>
-				</Pen>
-			</TextDecoration.Pen>
-		</TextDecoration>
-
-		<TextDecoration x:Key="BoxedText" PenThicknessUnit="FontRecommended">
-			<TextDecoration.Pen>
-				<Pen Thickness="1">
-					<Pen.Brush>
-						<VisualBrush TileMode="None" Viewbox="0,0,1,1" ViewboxUnits="RelativeToBoundingBox" Viewport="0,0,1,1" ViewportUnits="RelativeToBoundingBox" Stretch="Fill">
-							<VisualBrush.Visual>
-								<Rectangle Stroke="Red" Fill="Transparent" StrokeThickness="1"></Rectangle>
-							</VisualBrush.Visual>
-						</VisualBrush>
-					</Pen.Brush>
-				</Pen>
-			</TextDecoration.Pen>
-		</TextDecoration>
-
 		<!--<VisualBrush x:Key="OutlineBoxBrush" TileMode="None" Viewbox="0,0,1,1" ViewboxUnits="RelativeToBoundingBox" Viewport="0,0,1,1" ViewportUnits="RelativeToBoundingBox" Stretch="None">-->
 		<!--<VisualBrush x:Key="OutlineBoxBrush" TileMode="None" Viewbox="-3,-3,16,16" ViewboxUnits="Absolute" Viewport="-3,-3,16,16" ViewportUnits="Absolute" Stretch="None">
 			<VisualBrush.Visual>

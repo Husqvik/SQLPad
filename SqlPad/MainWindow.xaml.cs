@@ -99,8 +99,6 @@ namespace SqlPad
 
 		private void WindowLoadedHandler(object sender, RoutedEventArgs e)
 		{
-			SqlPad.Resources.Initialize(Resources);
-
 			CommandBindings.Add(new CommandBinding(GenericCommands.SaveAll, SaveAllCommandExecutedHandler));
 
 			WorkDocumentCollection.RestoreApplicationWindowProperties(this);

@@ -3,18 +3,24 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:sqlPad="clr-namespace:SqlPad;assembly=SqlPad"
              xmlns:toolTips="clr-namespace:SqlPad.Oracle.ToolTips"
 			 xmlns:oracle="clr-namespace:SqlPad.Oracle"
              mc:Ignorable="d"
              d:DesignHeight="174" d:DesignWidth="240"
 			 Padding="4" d:DataContext="{d:DesignInstance oracle:OracleProgramMetadata}">
+
+	<toolTips:PopupBase.Resources>
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceDictionary Source="../Themes/Common.xaml"/>
+			</ResourceDictionary.MergedDictionaries>
+		</ResourceDictionary>
+	</toolTips:PopupBase.Resources>
+
     <StackPanel>
 		<StackPanel.Resources>
-			<sqlPad:BooleanLabelConverter x:Key="BooleanConverter" />
 			<toolTips:AuthIdConverter x:Key="AuthIdConverter" />
 			<toolTips:ProgramTypeConverter x:Key="ProgramTypeConverter" />
-			<sqlPad:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
 		</StackPanel.Resources>
 		<GroupBox BorderThickness="0">
 			<GroupBox.Header>
@@ -36,7 +42,7 @@
 					<RowDefinition />
 					<RowDefinition />
 				</Grid.RowDefinitions>
-				<TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" TextWrapping="Wrap" MaxWidth="400" x:Name="LabelDocumentation" Visibility="{Binding ElementName=LabelDocumentation, Path=Text, Converter={StaticResource ObjectToVisibilityConverter}}" />
+				<TextBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" TextWrapping="Wrap" MaxWidth="400" x:Name="LabelDocumentation" Visibility="{Binding ElementName=LabelDocumentation, Path=Text, Converter={StaticResource ObjectToVisibilityConverter}}" Style="{StaticResource TextBoxBackgroundLessReadOnly}" HorizontalAlignment="Left" />
 				<TextBlock Grid.Row="1" Grid.Column="0" Text="Type: " />
 				<TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Path=DataContext, RelativeSource={RelativeSource Self}, Converter={StaticResource ProgramTypeConverter}}" />
 				<TextBlock Grid.Row="2" Grid.Column="0" Text="Aggregate: " />
