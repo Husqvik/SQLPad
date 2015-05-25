@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -15,8 +14,6 @@ namespace SqlPad
 		private const string MaskJsonValue = "\t\"{0}\": {{{1}}}";
 		private const string QuoteCharacter = "\"";
 		private const string EscapedQuote = "\"";
-		private const string ApostropheCharacter = "'";
-		private const string EscapedApostrophe = "\\'";
 
 		public string FileNameFilter
 		{
@@ -54,10 +51,10 @@ namespace SqlPad
 
 			var rows = dataGrid.Items;
 
-			return DataExportHelper.RunExportActionAsync(fileName, w => ExportInternal(jsonTemplateBuilder.ToString(), rows, w, cancellationToken));
+			return DataExportHelper.RunExportActionAsync(fileName, w => ExportInternal(jsonTemplateBuilder.ToString(), rows, w, dataExportConverter, cancellationToken));
 		}
 
-		private void ExportInternal(string jsonTemplate, ICollection rows, TextWriter writer, CancellationToken cancellationToken)
+		private void ExportInternal(string jsonTemplate, ICollection rows, TextWriter writer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
 		{
 			writer.Write('[');
 
@@ -66,7 +63,7 @@ namespace SqlPad
 			{
 				cancellationToken.ThrowIfCancellationRequested();
 
-				var values = rowValues.Select((t, i) => (object)FormatJsonValue(t)).ToArray();
+				var values = rowValues.Select(t => (object)FormatJsonValue(t, dataExportConverter)).ToArray();
 				writer.Write(jsonTemplate, values);
 
 				if (rowIndex < rows.Count)
@@ -80,20 +77,9 @@ namespace SqlPad
 			writer.WriteLine(']');
 		}
 
-		private static string FormatJsonValue(object value)
+		private static string FormatJsonValue(object value, IDataExportConverter dataExportConverter)
 		{
-			if (DataExportHelper.IsNull(value))
-			{
-				return "null";
-			}
-
-			if (value is ValueType)
-			{
-				return value.ToString();
-			}
-
-			var stringValue = CellValueConverter.Instance.Convert(value, typeof(String), null, CultureInfo.CurrentUICulture).ToString();
-			return String.Format("'{0}'", stringValue.Replace(ApostropheCharacter, EscapedApostrophe));
+			return DataExportHelper.IsNull(value) ? null : dataExportConverter.ToJson(value);
 		}
 	}
 }

@@ -274,7 +274,7 @@ SELECT T.* FROM T@HQ_PDB";
 
 			var result = GetExportContent(resultGrid, new JsonDataExporter());
 
-			const string expectedResult = "[{\r\n\t\"DUMMY1\": 'Value \"1\" \\'2\\' <3>',\r\n\t\"DUMMY_WITH_UNDERSCORES\": 16.8.2014 22:25:34\r\n},\r\n{\r\n\t\"DUMMY1\": '\"2.\"Value',\r\n\t\"DUMMY_WITH_UNDERSCORES\": 16.8.2014 00:00:00\r\n}]\r\n";
+			const string expectedResult = "[{\r\n\t\"DUMMY1\": 'Value \"1\" \\'2\\' <3>',\r\n\t\"DUMMY_WITH_UNDERSCORES\": '16.8.2014 22:25:34'\r\n},\r\n{\r\n\t\"DUMMY1\": '\"2.\"Value',\r\n\t\"DUMMY_WITH_UNDERSCORES\": '16.8.2014 00:00:00'\r\n}]\r\n";
 			result.ShouldBe(expectedResult);
 		}
 
@@ -375,9 +375,19 @@ SELECT T.* FROM T@HQ_PDB";
 			
 			public bool IsNull { get { return false; } }
 
-			public string ToLiteral()
+			public string ToSqlLiteral()
 			{
 				return "TO_CLOB('</root>')";
+			}
+
+			public string ToXml()
+			{
+				return TextValue;
+			}
+
+			public string ToJson()
+			{
+				return "'</root>'";
 			}
 
 			public long Length { get { return TextValue.Length; } }

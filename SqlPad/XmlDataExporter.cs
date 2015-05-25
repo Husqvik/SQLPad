@@ -47,10 +47,10 @@ namespace SqlPad
 
 			var rows = (IEnumerable)dataGrid.Items;
 
-			return Task.Factory.StartNew(() => ExportInternal(columnHeaders, rows, fileName, cancellationToken), cancellationToken);
+			return Task.Factory.StartNew(() => ExportInternal(columnHeaders, rows, fileName, dataExportConverter, cancellationToken), cancellationToken);
 		}
 
-		private void ExportInternal(IReadOnlyList<string> columnHeaders, IEnumerable rows, string fileName, CancellationToken cancellationToken)
+		private void ExportInternal(IReadOnlyList<string> columnHeaders, IEnumerable rows, string fileName, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
 		{
 			var columnCount = columnHeaders.Count;
 
@@ -71,7 +71,7 @@ namespace SqlPad
 
 					for (var i = 0; i < columnCount; i++)
 					{
-						xmlWriter.WriteElementString(columnHeaders[i], FormatXmlValue(rowValues[i]));
+						xmlWriter.WriteElementString(columnHeaders[i], FormatXmlValue(rowValues[i], dataExportConverter));
 					}
 
 					xmlWriter.WriteEndElement();
@@ -87,9 +87,9 @@ namespace SqlPad
 			}
 		}
 
-		private static string FormatXmlValue(object value)
+		private static string FormatXmlValue(object value, IDataExportConverter dataExportConverter)
 		{
-			return DataExportHelper.IsNull(value) ? null : value.ToString();
+			return DataExportHelper.IsNull(value) ? null : dataExportConverter.ToXml(value);
 		}
 	}
 }

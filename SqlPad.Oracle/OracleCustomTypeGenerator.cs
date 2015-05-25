@@ -406,7 +406,17 @@ namespace SqlPad.Oracle
 
 		public bool IsNull { get { return Array == null; } }
 
-		public string ToLiteral()
+		public string ToSqlLiteral()
+		{
+			throw new NotImplementedException();
+		}
+
+		public string ToXml()
+		{
+			throw new NotImplementedException();
+		}
+
+		public string ToJson()
 		{
 			throw new NotImplementedException();
 		}
@@ -506,11 +516,21 @@ namespace SqlPad.Oracle
 
 		public abstract bool IsNull { get; }
 
-		public string ToLiteral()
+		public string ToSqlLiteral()
 		{
 			throw new NotImplementedException();
 		}
-		
+
+		public string ToXml()
+		{
+			throw new NotImplementedException();
+		}
+
+		public string ToJson()
+		{
+			throw new NotImplementedException();
+		}
+
 		public bool IsEditable { get { return false; } }
 
 		public long Length { get { throw new NotSupportedException(); } }

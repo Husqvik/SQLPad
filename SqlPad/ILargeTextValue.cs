@@ -8,7 +8,11 @@ namespace SqlPad
 	{
 		bool IsNull { get; }
 
-		string ToLiteral();
+		string ToSqlLiteral();
+
+		string ToXml();
+		
+		string ToJson();
 	}
 
 	public interface ILargeValue : IValue

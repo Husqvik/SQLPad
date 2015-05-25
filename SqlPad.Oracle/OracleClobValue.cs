@@ -30,7 +30,17 @@ namespace SqlPad.Oracle
 		
 		public abstract bool IsNull { get; }
 
-		public abstract string ToLiteral();
+		public abstract string ToSqlLiteral();
+
+		public string ToXml()
+		{
+			return String.Format("<![CDATA[{0}]]>", Value);
+		}
+
+		public string ToJson()
+		{
+			return String.Format("'{0}'", Value.Replace("'", "\\'"));
+		}
 
 		public abstract long Length { get; }
 
@@ -112,7 +122,7 @@ namespace SqlPad.Oracle
 
 		public override bool IsNull { get { return _xmlType.IsNull; } }
 
-		public override string ToLiteral()
+		public override string ToSqlLiteral()
 		{
 			return IsNull
 				? TerminalValues.Null
@@ -161,11 +171,23 @@ namespace SqlPad.Oracle
 
 		public bool IsNull { get; private set; }
 
-		public string ToLiteral()
+		public string ToSqlLiteral()
 		{
 			return IsNull
 				? TerminalValues.Null
 				: String.Format("'{0}'", _value.Replace("'", "''"));
+		}
+
+		public string ToXml()
+		{
+			return _value;
+		}
+
+		public string ToJson()
+		{
+			return IsNull
+				? "null"
+				: String.Format("'{0}'", _value.Replace("'", "\\'"));
 		}
 
 		public string DataTypeName
@@ -211,7 +233,7 @@ namespace SqlPad.Oracle
 
 		public override bool IsNull { get { return _clob.IsNull || _clob.IsEmpty; } }
 
-		public override string ToLiteral()
+		public override string ToSqlLiteral()
 		{
 			return IsNull
 				? TerminalValues.Null
@@ -273,11 +295,21 @@ namespace SqlPad.Oracle
 		
 		public bool IsNull { get { return _blob.IsNull || _blob.IsEmpty; } }
 
-		public string ToLiteral()
+		public string ToSqlLiteral()
 		{
 			return IsNull
 				? TerminalValues.Null
 				: String.Format("TO_BLOB('{0}')", Value.ToHexString());
+		}
+
+		public string ToXml()
+		{
+			return OracleRawValue.ToXml(Value);
+		}
+
+		public string ToJson()
+		{
+			return OracleRawValue.ToJson(Value);
 		}
 
 		public long Length { get { return _blob.Length; } }
@@ -358,11 +390,25 @@ namespace SqlPad.Oracle
 
 		public bool IsNull { get { return _value.IsNull; } }
 
-		public string ToLiteral()
+		public string ToSqlLiteral()
 		{
 			return IsNull
 				? TerminalValues.Null
 				: ToLiteral(_dateTime, _value.Nanosecond, null);
+		}
+
+		public string ToXml()
+		{
+			return IsNull
+				? null
+				: ToXml(_dateTime, _value.Nanosecond);
+		}
+
+		public string ToJson()
+		{
+			return IsNull
+				? "null"
+				: ToJson(_dateTime, _value.Nanosecond, null);
 		}
 
 		public override string ToString()
@@ -390,25 +436,53 @@ namespace SqlPad.Oracle
 				timeZone = String.Format(" {0}", timeZone.Trim());
 			}
 
-			var nanosecondsExtension = nanoseconds == 0 ? null : String.Format(".{0}", nanoseconds);
+			var nanoSecondsExtension = nanoseconds == 0 ? null : String.Format(".{0}", nanoseconds.ToString("000000000"));
 
-			return String.Format("TIMESTAMP'{0}{1}-{2}-{3} {4}:{5}:{6}{7}{8}'", dateTime.IsBeforeCrist ? "-" : null, dateTime.Value.Year, dateTime.Value.Month, dateTime.Value.Day, dateTime.Value.Hour, dateTime.Value.Minute, dateTime.Value.Second, nanosecondsExtension, timeZone);
+			return String.Format("TIMESTAMP'{0}{1}-{2}-{3} {4}:{5}:{6}{7}{8}'", dateTime.IsBeforeCrist ? "-" : null, dateTime.Value.Year, dateTime.Value.Month, dateTime.Value.Day, dateTime.Value.Hour, dateTime.Value.Minute, dateTime.Value.Second, nanoSecondsExtension, timeZone);
+		}
+
+		internal static string ToXml(OracleDateTime dateTime, int nanoseconds)
+		{
+			var miliSecondsExtension = nanoseconds == 0 ? null : String.Format(".{0}", Math.Round(nanoseconds / 1E+6m).ToString("000"));
+			return String.Format("{0}{1}", dateTime.Value.ToString("yyyy-MM-ddTHH:mm:ss"), miliSecondsExtension);
+		}
+
+		internal static string ToJson(OracleDateTime dateTime, int nanoseconds, string timeZone)
+		{
+			var miliSecondsExtension = nanoseconds == 0 ? null : String.Format(".{0}", Math.Round(nanoseconds / 1E+6m).ToString("000"));
+			return String.Format("'{0}{1}{2}'", dateTime.Value.ToString("yyyy-MM-ddTHH:mm:ss"), miliSecondsExtension, String.IsNullOrEmpty(timeZone) ? null : timeZone.Trim());
 		}
 	}
 
 	public class OracleDateTime : IValue
 	{
+		public const string IsoDateDotNetFormatMask = "yyyy-MM-dd HH:mm:ss";
+		
 		private readonly DateTime _value;
 
 		public DateTime Value { get { return _value; } }
 
 		public bool IsNull { get; private set; }
 
-		public string ToLiteral()
+		public string ToSqlLiteral()
 		{
 			return IsNull
 				? TerminalValues.Null
-				: String.Format("TO_DATE('{0}{1}', 'SYYYY-MM-DD HH24:MI:SS')", IsBeforeCrist ? "-" : null, _value.ToString("yyyy-MM-dd HH:mm:ss"));
+				: String.Format("TO_DATE('{0}{1}', 'SYYYY-MM-DD HH24:MI:SS')", IsBeforeCrist ? "-" : null, _value.ToString(IsoDateDotNetFormatMask));
+		}
+
+		public string ToXml()
+		{
+			return IsNull
+				? null
+				: OracleTimestamp.ToXml(this, 0);
+		}
+
+		public string ToJson()
+		{
+			return IsNull
+				? "null"
+				: OracleTimestamp.ToJson(this, 0, null); ;
 		}
 
 		public bool IsBeforeCrist { get; private set; }
@@ -449,11 +523,25 @@ namespace SqlPad.Oracle
 
 		public bool IsNull { get { return _value.IsNull; } }
 
-		public string ToLiteral()
+		public string ToSqlLiteral()
 		{
 			return IsNull
 				? TerminalValues.Null
 				: OracleTimestamp.ToLiteral(_dateTime, _value.Nanosecond, _value.TimeZone);
+		}
+
+		public string ToXml()
+		{
+			return IsNull
+				? null
+				: OracleTimestamp.ToXml(_dateTime, _value.Nanosecond);
+		}
+
+		public string ToJson()
+		{
+			return IsNull
+				? "null"
+				: OracleTimestamp.ToJson(_dateTime, _value.Nanosecond, _value.TimeZone);
 		}
 
 		public override string ToString()
@@ -481,11 +569,25 @@ namespace SqlPad.Oracle
 
 		public bool IsNull { get { return _value.IsNull; } }
 
-		public string ToLiteral()
+		public string ToSqlLiteral()
 		{
 			return IsNull
 				? TerminalValues.Null
 				: OracleTimestamp.ToLiteral(_dateTime, _value.Nanosecond, null);
+		}
+
+		public string ToXml()
+		{
+			return IsNull
+				? null
+				: OracleTimestamp.ToXml(_dateTime, _value.Nanosecond);
+		}
+
+		public string ToJson()
+		{
+			return IsNull
+				? "null"
+				: OracleTimestamp.ToJson(_dateTime, _value.Nanosecond, null);
 		}
 
 		public override string ToString()
@@ -523,11 +625,21 @@ namespace SqlPad.Oracle
 		
 		public bool IsNull { get { return _oracleBinary.IsNull; } }
 
-		public string ToLiteral()
+		public string ToSqlLiteral()
 		{
 			return IsNull
 				? TerminalValues.Null
-				: ToLiteral(Value);
+				: ToSqlLiteral(Value);
+		}
+
+		public string ToXml()
+		{
+			return ToXml(Value);
+		}
+
+		public string ToJson()
+		{
+			return ToJson(Value);
 		}
 
 		public long Length { get { return _oracleBinary.Length; } }
@@ -548,9 +660,23 @@ namespace SqlPad.Oracle
 			return _preview;
 		}
 
-		internal static string ToLiteral(byte[] value)
+		internal static string ToSqlLiteral(byte[] value)
 		{
 			return String.Format("'{0}'", value.ToHexString());
+		}
+
+		internal static string ToXml(byte[] value)
+		{
+			return value.Length == 0
+				? null
+				: String.Format("<![CDATA[{0}]]>", Convert.ToBase64String(value));
+		}
+
+		internal static string ToJson(byte[] value)
+		{
+			return value.Length == 0
+					? "null"
+					: String.Format("'{0}'", Convert.ToBase64String(value));
 		}
 	}
 
@@ -583,7 +709,7 @@ namespace SqlPad.Oracle
 
 		public bool IsNull { get { return _oracleDecimal.IsNull; } }
 
-		public string ToLiteral()
+		public string ToSqlLiteral()
 		{
 			if (IsNull)
 			{
@@ -607,6 +733,20 @@ namespace SqlPad.Oracle
 			return literalValue;
 		}
 
+		public string ToXml()
+		{
+			return IsNull
+				? null
+				: ToSqlLiteral();
+		}
+
+		public string ToJson()
+		{
+			return IsNull
+				? "null"
+				: ToSqlLiteral();
+		}
+
 		public override string ToString()
 		{
 			return _oracleDecimal.IsNull
@@ -628,11 +768,21 @@ namespace SqlPad.Oracle
 
 		public bool IsNull { get; private set; }
 
-		public string ToLiteral()
+		public string ToSqlLiteral()
 		{
 			return IsNull
 				? TerminalValues.Null
-				: OracleRawValue.ToLiteral(_value);
+				: OracleRawValue.ToSqlLiteral(_value);
+		}
+
+		public string ToXml()
+		{
+			return OracleRawValue.ToXml(Value);
+		}
+
+		public string ToJson()
+		{
+			return OracleRawValue.ToJson(Value);
 		}
 
 		public long Length { get { return _value.Length; } }

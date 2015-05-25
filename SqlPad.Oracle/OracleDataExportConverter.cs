@@ -16,8 +16,24 @@ namespace SqlPad.Oracle
 
 			var vendorValue = value as IValue;
 			return vendorValue != null
-				? vendorValue.ToLiteral()
+				? vendorValue.ToSqlLiteral()
 				: String.Format("'{0}'", stringValue.Replace("'", "''"));
+		}
+
+		public string ToXml(object value)
+		{
+			var vendorValue = value as IValue;
+			return vendorValue != null
+				? vendorValue.ToXml()
+				: value.ToString();
+		}
+
+		public string ToJson(object value)
+		{
+			var vendorValue = value as IValue;
+			return vendorValue != null
+				? vendorValue.ToJson()
+				: String.Format("'{0}'", value.ToString().Replace("'", "\\'"));
 		}
 	}
 }

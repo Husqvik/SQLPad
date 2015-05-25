@@ -44,6 +44,10 @@ namespace SqlPad
 	public interface IDataExportConverter
 	{
 		string ToSqlValue(object value);
+
+		string ToXml(object value);
+
+		string ToJson(object value);
 	}
 
 	public interface INavigationService
