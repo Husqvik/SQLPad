@@ -893,6 +893,16 @@ namespace SqlPad.Oracle.Test
 			// TODO: Precise assertions
 		}
 
+		[Test(Description = @"Tests multiple pivot expressions including COUNT(*). ")]
+		public void TestMultiplePivotExpressionsIncludingCountAsterisk()
+		{
+			const string query1 = @"SELECT * FROM SOURCE PIVOT (SUM(DUMMY) AS SUM_DUMMY, COUNT(*) COUNT_DUMMY, AVG(DUMMY) FOR (LABEL) IN ('X' || NULL AS X, ('Y') Y, 'Z'));";
+			var result = Parser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
+		}
+
 		[Test(Description = @"Tests table reference parenthesis encapsulation. ")]
 		public void TestTableReferenceParenthesisEncapsulation()
 		{

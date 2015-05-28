@@ -7364,8 +7364,7 @@
     <Rule StartingNonTerminal="PivotAliasedAggregationFunctionList">
       <Sequences>
         <Sequence>
-          <Terminal Id="Identifier" /><!--TODO: Check possibility of user aggregation function usage (including database link) -->
-          <NonTerminal Id="ParenthesisEnclosedExpressionList" />
+          <NonTerminal Id="Expression" />
           <NonTerminal Id="ColumnAsAlias" IsOptional="true" />
           <NonTerminal Id="PivotAliasedAggregationFunctionListChained" IsOptional="true" />
         </Sequence>
@@ -7376,7 +7375,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Comma" />
-          <NonTerminal Id="ParenthesisEnclosedExpressionList" />
+          <NonTerminal Id="PivotAliasedAggregationFunctionList" />
         </Sequence>
       </Sequences>
     </Rule>
