@@ -1261,7 +1261,7 @@ MODEL
 		[Test(Description = @"")]
 		public void TestTableCollectionExpressionColumnUsingPackageFunction()
 		{
-			const string query1 = @"SELECT COLUMN_VALUE FROM TABLE(SQLPAD.PIPELINED_FUNCTION(SYSDATE, SYSDATE)";
+			const string query1 = @"SELECT COLUMN_VALUE FROM TABLE(SQLPAD.PIPELINED_FUNCTION(SYSDATE, SYSDATE))";
 
 			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
 			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
@@ -1271,8 +1271,8 @@ MODEL
 			var objectReference = queryBlock.ObjectReferences.First();
 			objectReference.ShouldBeTypeOf<OracleTableCollectionReference>();
 			var tableCollectionReference = (OracleTableCollectionReference)objectReference;
-			tableCollectionReference.RowSourceFunctionReference.ShouldNotBe(null);
-			tableCollectionReference.RowSourceFunctionReference.Metadata.ShouldNotBe(null);
+			tableCollectionReference.RowSourceReference.ShouldBeTypeOf<OracleProgramReference>();
+			((OracleProgramReference)tableCollectionReference.RowSourceReference).Metadata.ShouldNotBe(null);
 
 			queryBlock.Columns.Count.ShouldBe(1);
 			queryBlock.Columns[0].ColumnReferences.Count.ShouldBe(1);
@@ -1986,6 +1986,55 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 			columnReferences[5].ColumnNodeColumnReferences.Count.ShouldBe(1);
 			columnReferences[6].ColumnNodeColumnReferences.Count.ShouldBe(1);
 			columnReferences[7].ColumnNodeColumnReferences.Count.ShouldBe(1);
+		}
+
+		[Test(Description = @""), Ignore]
+		public void TestColumnReferenceInTableClause()
+		{
+			const string query1 = @"SELECT (SELECT LISTAGG(COLUMN_VALUE, ', ') WITHIN GROUP (ORDER BY ROWNUM) FROM TABLE(SELECTION_NAMES)) SELECTION_NAMES FROM (SELECT COLLECT(SELECTIONNAME) SELECTION_NAMES FROM SELECTION WHERE ROWNUM <= 5)";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.QueryBlocks.Count.ShouldBe(3);
+
+			var queryBlock = semanticModel.QueryBlocks.Single(qb => qb.Type == QueryBlockType.ScalarSubquery);
+			var columnReferences = queryBlock.AllColumnReferences.ToList();
+			columnReferences.Count.ShouldBe(2);
+
+			columnReferences.ForEach(r => r.ColumnNodeColumnReferences.Count.ShouldBe(1));
+		}
+
+		[Test(Description = @""), Ignore]
+		public void TestPivotTableColumnReference()
+		{
+			const string query1 =
+@"SELECT
+	INVITES_COUNT,
+	EXTERNAL_COUNT,
+	REUSE_COUNT,
+	NONE_COUNT,
+	DIRECT_COUNT
+FROM (
+	SELECT SUPPLYCHANNEL FROM SELECTION
+)
+PIVOT (
+	COUNT(SUPPLYCHANNEL) AS COUNT FOR (SUPPLYCHANNEL) IN (0 AS INVITES, 1 AS EXTERNAL, 2 AS REUSE, 3 AS NONE, 4 AS DIRECT)
+) SELECTION";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.QueryBlocks.Count.ShouldBe(2);
+
+			var columnReferences = semanticModel.MainQueryBlock.AllColumnReferences.ToList();
+			columnReferences.Count.ShouldBe(5);
+
+			columnReferences.ForEach(r => r.ColumnNodeColumnReferences.Count.ShouldBe(1));
 		}
 	}
 }

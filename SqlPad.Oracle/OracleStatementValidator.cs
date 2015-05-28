@@ -41,10 +41,11 @@ namespace SqlPad.Oracle
 
 					case ReferenceType.TableCollection:
 						var tableCollectionReference = (OracleTableCollectionReference)objectReference;
-						if (tableCollectionReference.RowSourceFunctionReference != null && tableCollectionReference.RowSourceFunctionReference.Metadata != null &&
-							!tableCollectionReference.RowSourceFunctionReference.Metadata.ReturnParameter.DataType.In(OracleTypeCollection.OracleCollectionTypeNestedTable, OracleTypeCollection.OracleCollectionTypeVarryingArray))
+						var tableCollectionProgramReference = tableCollectionReference.RowSourceReference as OracleProgramReference;
+						if (tableCollectionProgramReference != null && tableCollectionProgramReference.Metadata != null &&
+							!tableCollectionProgramReference.Metadata.ReturnParameter.DataType.In(OracleTypeCollection.OracleCollectionTypeNestedTable, OracleTypeCollection.OracleCollectionTypeVarryingArray))
 						{
-							validationModel.ProgramNodeValidity[tableCollectionReference.RowSourceFunctionReference.FunctionIdentifierNode] = new InvalidNodeValidationData(OracleSemanticErrorType.FunctionReturningRowSetRequired) { Node = tableCollectionReference.RowSourceFunctionReference.FunctionIdentifierNode };
+							validationModel.ProgramNodeValidity[tableCollectionProgramReference.FunctionIdentifierNode] = new InvalidNodeValidationData(OracleSemanticErrorType.FunctionReturningRowSetRequired) { Node = tableCollectionProgramReference.FunctionIdentifierNode };
 						}
 						
 						break;

@@ -50,11 +50,11 @@ namespace SqlPad.Oracle
 	{
 		private IReadOnlyList<OracleColumn> _columns;
 		
-		public OracleProgramReference RowSourceFunctionReference { get; private set; }
+		public OracleReference RowSourceReference { get; private set; }
 
-		public OracleTableCollectionReference(OracleProgramReference rowSourceFunctionReference) : base(ReferenceType.TableCollection)
+		public OracleTableCollectionReference(OracleReference rowSourceReference) : base(ReferenceType.TableCollection)
 		{
-			RowSourceFunctionReference = rowSourceFunctionReference;
+			RowSourceReference = rowSourceReference;
 		}
 
 		public override string Name { get { return AliasNode == null ? null : AliasNode.Token.Value; } }
@@ -72,7 +72,8 @@ namespace SqlPad.Oracle
 		private IReadOnlyList<OracleColumn> BuildColumns()
 		{
 			var columns = new List<OracleColumn>();
-			var programMetadata = RowSourceFunctionReference == null ? null : RowSourceFunctionReference.Metadata;
+			var programReference = RowSourceReference as OracleProgramReference;
+			var programMetadata = programReference == null ? null : programReference.Metadata;
 
 			var schemaObject = SchemaObject.GetTargetSchemaObject();
 			var collectionType = schemaObject as OracleTypeCollection;
