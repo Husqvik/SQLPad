@@ -207,7 +207,9 @@ namespace SqlPad
 
 			Editor.FontSize = WorkDocument.FontSize;
 
-			_pageModel.DocumentHeaderToolTip = WorkDocument.File == null ? "Unsaved" : WorkDocument.File.FullName;
+			_pageModel.DocumentHeaderToolTip = WorkDocument.File == null
+				? "Unsaved"
+				: String.Format("{0}{1}Last change: {2}", WorkDocument.File.FullName, Environment.NewLine, WorkDocument.File.LastWriteTime);
 
 			if (String.IsNullOrEmpty(WorkDocument.DocumentTitle))
 			{

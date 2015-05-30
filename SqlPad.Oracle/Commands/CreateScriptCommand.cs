@@ -43,7 +43,17 @@ namespace SqlPad.Oracle.Commands
 			if (_objectReference == null)
 			{
 				_objectReference = CurrentQueryBlock.AllProgramReferences
-					.Where(p => (p.FunctionIdentifierNode == CurrentNode && p.SchemaObject.Type == OracleSchemaObjectType.Function) || (p.ObjectNode == CurrentNode && p.SchemaObject.Type == OracleSchemaObjectType.Package))
+					.Where(p =>
+						(p.FunctionIdentifierNode == CurrentNode && p.SchemaObject.Type.In(OracleSchemaObjectType.Function, OracleSchemaObjectType.Procedure)) ||
+						(p.ObjectNode == CurrentNode && String.Equals(p.SchemaObject.Type, OracleSchemaObjectType.Package)))
+					.Select(p => p.SchemaObject)
+					.FirstOrDefault();
+			}
+
+			if (_objectReference == null)
+			{
+				_objectReference = CurrentQueryBlock.AllTypeReferences
+					.Where(p => p.ObjectNode == CurrentNode)
 					.Select(p => p.SchemaObject)
 					.FirstOrDefault();
 			}
