@@ -55,6 +55,9 @@ namespace SqlPad.Oracle
 					var createPlSqlObjectClause = statement.RootNode[NonTerminals.CreatePlSqlObjectClause];
 					if (createPlSqlObjectClause != null && createPlSqlObjectClause.ChildNodes.Count == 1)
 					{
+						var createFunctionNode = createPlSqlObjectClause[NonTerminals.CreateFunction, NonTerminals.PlSqlFunctionSource];
+						createPlSqlObjectClause = createFunctionNode ?? createPlSqlObjectClause.ChildNodes[0];
+						
 						objectIdentifier = GetObjectIdentifierFromNode(createPlSqlObjectClause);
 					}
 
@@ -63,7 +66,7 @@ namespace SqlPad.Oracle
 					var alterObjectClause = statement.RootNode[NonTerminals.Statement, NonTerminals.AlterStatement, NonTerminals.AlterObjectClause];
 					if (alterObjectClause != null && alterObjectClause.ChildNodes.Count == 1 && alterObjectClause.ChildNodes[0].Id.In(NonTerminals.AlterProcedure, NonTerminals.AlterFunction, NonTerminals.AlterPackage))
 					{
-						objectIdentifier = GetObjectIdentifierFromNode(alterObjectClause);
+						objectIdentifier = GetObjectIdentifierFromNode(alterObjectClause.ChildNodes[0]);
 					}
 
 					break;
@@ -74,8 +77,8 @@ namespace SqlPad.Oracle
 
 		private static OracleObjectIdentifier GetObjectIdentifierFromNode(StatementGrammarNode node)
 		{
-			var schemaIdentifierTerminal = node.ChildNodes[0][NonTerminals.SchemaPrefix, Terminals.SchemaIdentifier];
-			var objectIdentifierTerminal = node.ChildNodes[0][Terminals.ObjectIdentifier];
+			var schemaIdentifierTerminal = node[NonTerminals.SchemaPrefix, Terminals.SchemaIdentifier];
+			var objectIdentifierTerminal = node[Terminals.ObjectIdentifier];
 			return objectIdentifierTerminal == null
 				? OracleObjectIdentifier.Empty
 				: OracleObjectIdentifier.Create(schemaIdentifierTerminal, objectIdentifierTerminal, null);
