@@ -39,7 +39,9 @@ namespace SqlPad.Oracle
 
 		public string ToJson()
 		{
-			return String.Format("'{0}'", Value.Replace("'", "\\'"));
+			return IsNull
+				? "null"
+				: String.Format("\"{0}\"", Value.Replace("\"", "\\\""));
 		}
 
 		public abstract long Length { get; }
@@ -187,7 +189,7 @@ namespace SqlPad.Oracle
 		{
 			return IsNull
 				? "null"
-				: String.Format("'{0}'", _value.Replace("'", "\\'"));
+				: String.Format("\"{0}\"", Value.Replace("\"", "\\\""));
 		}
 
 		public string DataTypeName
@@ -450,7 +452,7 @@ namespace SqlPad.Oracle
 		internal static string ToJson(OracleDateTime dateTime, int nanoseconds, string timeZone)
 		{
 			var miliSecondsExtension = nanoseconds == 0 ? null : String.Format(".{0}", Math.Round(nanoseconds / 1E+6m).ToString("000"));
-			return String.Format("'{0}{1}{2}'", dateTime.Value.ToString("yyyy-MM-ddTHH:mm:ss"), miliSecondsExtension, String.IsNullOrEmpty(timeZone) ? null : timeZone.Trim());
+			return String.Format("\"{0}{1}{2}\"", dateTime.Value.ToString("yyyy-MM-ddTHH:mm:ss"), miliSecondsExtension, String.IsNullOrEmpty(timeZone) ? null : timeZone.Trim());
 		}
 	}
 
@@ -676,7 +678,7 @@ namespace SqlPad.Oracle
 		{
 			return value.Length == 0
 					? "null"
-					: String.Format("'{0}'", Convert.ToBase64String(value));
+					: String.Format("\"{0}\"", Convert.ToBase64String(value));
 		}
 	}
 

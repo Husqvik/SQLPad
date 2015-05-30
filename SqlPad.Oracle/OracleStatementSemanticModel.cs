@@ -2069,7 +2069,6 @@ namespace SqlPad.Oracle
 				}
 
 				IEnumerable<OracleDataObjectReference> effectiveAccessibleRowSourceReferences = accessibleRowSourceReferences;
-				// TODO: To switch
 				if (columnReference.Placement == StatementPlacement.Join || columnReference.Placement == StatementPlacement.TableReference)
 				{
 					effectiveAccessibleRowSourceReferences = effectiveAccessibleRowSourceReferences

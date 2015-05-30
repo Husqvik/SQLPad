@@ -131,12 +131,14 @@ namespace SqlPad.Oracle
 			get
 			{
 				var containers = (IEnumerable<OracleReferenceContainer>)Columns;
+				containers = containers.Concat(ObjectReferences.OfType<OraclePivotTableReference>().Select(pt => pt.SourceReferenceContainer));
+				
 				if (ModelReference != null)
 				{
 					containers = containers.Concat(ModelReference.ChildContainers);
 				}
 
-				return containers.Concat(ObjectReferences.OfType<OraclePivotTableReference>().Select(pt => pt.SourceReferenceContainer));
+				return containers;
 			}
 		}
 

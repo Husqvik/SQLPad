@@ -274,7 +274,7 @@ SELECT T.* FROM T@HQ_PDB";
 
 			var result = GetExportContent(resultGrid, new JsonDataExporter());
 
-			const string expectedResult = "[{\r\n\t\"DUMMY1\": 'Value \"1\" \\'2\\' <3>',\r\n\t\"DUMMY_WITH_UNDERSCORES\": '16.8.2014 22:25:34'\r\n},\r\n{\r\n\t\"DUMMY1\": '\"2.\"Value',\r\n\t\"DUMMY_WITH_UNDERSCORES\": '16.8.2014 00:00:00'\r\n}]\r\n";
+			const string expectedResult = "[{\r\n\t\"DUMMY1\": \"Value \\\"1\\\" '2' <3>\",\r\n\t\"DUMMY_WITH_UNDERSCORES\": \"16.8.2014 22:25:34\"\r\n},\r\n{\r\n\t\"DUMMY1\": \"\\\"2.\\\"Value\",\r\n\t\"DUMMY_WITH_UNDERSCORES\": \"16.8.2014 00:00:00\"\r\n}]\r\n";
 			result.ShouldBe(expectedResult);
 		}
 
@@ -338,7 +338,8 @@ SELECT T.* FROM T@HQ_PDB";
 				new[]
 				{
 					new ColumnHeader { ColumnIndex = 0, DatabaseDataType = "Varchar2", DataType = typeof (string), Name = "DUMMY1" },
-					new ColumnHeader { ColumnIndex = 1, DatabaseDataType = "Date", DataType = typeof (DateTime), Name = "DUMMY_WITH_UNDERSCORES" }
+					new ColumnHeader { ColumnIndex = 1, DatabaseDataType = "Date", DataType = typeof (DateTime), Name = "DUMMY_WITH_UNDERSCORES" },
+					//new ColumnHeader { ColumnIndex = 2, DatabaseDataType = "Varchar2", DataType = typeof (string), Name = "\"'\\\"><?,.;:{}[]%$#@!~^&*()_+-§'''||(1/2*3+4-CASEWHEN1<=2OR2>=1THEN5ELSE6END)" }
 				};
 
 			var outputViewer = new OutputViewer { DataModel = new PageModel(_page) };
@@ -346,8 +347,9 @@ SELECT T.* FROM T@HQ_PDB";
 			outputViewer.ResultGrid.ItemsSource =
 				new[]
 				{
-					new object[] { "Value \"1\" '2' <3>", new DateTime(2014, 8, 16, 22, 25, 34) },
-					new object[] { "\"2.\"Value", new DateTime(2014, 8, 16) }
+					new object[] {"Value \"1\" '2' <3>", new DateTime(2014, 8, 16, 22, 25, 34)},
+					new object[] {"\"2.\"Value", new DateTime(2014, 8, 16)},
+					//new object[] {"\"><?,.;:{}[]%$#@!~^&*()_+-§' ,5", new DateTime(2015, 5, 30) }
 				};
 			
 			return outputViewer.ResultGrid;

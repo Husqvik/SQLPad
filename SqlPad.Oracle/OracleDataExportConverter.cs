@@ -33,7 +33,7 @@ namespace SqlPad.Oracle
 			var vendorValue = value as IValue;
 			return vendorValue != null
 				? vendorValue.ToJson()
-				: String.Format("'{0}'", value.ToString().Replace("'", "\\'"));
+				: String.Format("\"{0}\"", value.ToString().Replace("\"", "\\\""));
 		}
 	}
 }

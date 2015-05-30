@@ -198,7 +198,7 @@ WHERE
 				blobValue.ToString().ShouldBe("(BLOB[4 B])");
 				blobValue.ToSqlLiteral().ShouldBe("TO_BLOB('424C4F42')");
 				blobValue.ToXml().ShouldBe("<![CDATA[QkxPQg==]]>");
-				blobValue.ToJson().ShouldBe("'QkxPQg=='");
+				blobValue.ToJson().ShouldBe("\"QkxPQg==\"");
 				firstRow[1].ShouldBeTypeOf<OracleClobValue>();
 				var expectedPreview = clobParameter.Substring(0, 1023) + OracleLargeTextValue.Ellipsis;
 				var clobValue = (OracleClobValue)firstRow[1];
@@ -207,7 +207,7 @@ WHERE
 				var expectedLiteral = String.Format("TO_CLOB('{0}')", clobParameter);
 				clobValue.ToSqlLiteral().ShouldBe(expectedLiteral);
 				clobValue.ToXml().ShouldBe(String.Format("<![CDATA[{0}]]>", clobParameter));
-				clobValue.ToJson().ShouldBe(String.Format("'{0}'", clobParameter));
+				clobValue.ToJson().ShouldBe(String.Format("\"{0}\"", clobParameter));
 				firstRow[2].ShouldBeTypeOf<OracleClobValue>();
 				var nClobValue = (OracleClobValue)firstRow[2];
 				nClobValue.DataTypeName.ShouldBe("NCLOB");
@@ -220,13 +220,13 @@ WHERE
 				timestampWithTimezoneValue.ToString().ShouldBe("11/1/2014 3:16:32 PM.123456789 +02:00");
 				timestampWithTimezoneValue.ToSqlLiteral().ShouldBe("TIMESTAMP'2014-11-1 15:16:32.123456789 +02:00'");
 				timestampWithTimezoneValue.ToXml().ShouldBe("2014-11-01T15:16:32.123");
-				timestampWithTimezoneValue.ToJson().ShouldBe("'2014-11-01T15:16:32.123+02:00'");
+				timestampWithTimezoneValue.ToJson().ShouldBe("\"2014-11-01T15:16:32.123+02:00\"");
 				firstRow[5].ShouldBeTypeOf<OracleTimestamp>();
 				var timestampValue = (OracleTimestamp)firstRow[5];
 				timestampValue.ToString().ShouldBe("11/1/2014 2:16:32 PM.123456789");
 				timestampValue.ToSqlLiteral().ShouldBe("TIMESTAMP'2014-11-1 14:16:32.123456789'");
 				timestampValue.ToXml().ShouldBe("2014-11-01T14:16:32.123");
-				timestampValue.ToJson().ShouldBe("'2014-11-01T14:16:32.123'");
+				timestampValue.ToJson().ShouldBe("\"2014-11-01T14:16:32.123\"");
 				firstRow[6].ShouldBeTypeOf<OracleNumber>();
 				var numberValue = (OracleNumber)firstRow[6];
 				var expectedValue = String.Format("0{0}1234567890123456789012345678901234567891", CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator);
@@ -248,7 +248,7 @@ WHERE
 				dateValue.ToString().ShouldBe("BC 1/1/4712 12:00:00 AM");
 				dateValue.ToSqlLiteral().ShouldBe("TO_DATE('-4712-01-01 00:00:00', 'SYYYY-MM-DD HH24:MI:SS')");
 				dateValue.ToXml().ShouldBe("4712-01-01T00:00:00");
-				dateValue.ToJson().ShouldBe("'4712-01-01T00:00:00'");
+				dateValue.ToJson().ShouldBe("\"4712-01-01T00:00:00\"");
 			}
 		}
 

@@ -13,7 +13,7 @@ namespace SqlPad
 	{
 		private const string MaskJsonValue = "\t\"{0}\": {{{1}}}";
 		private const string QuoteCharacter = "\"";
-		private const string EscapedQuote = "\"";
+		private const string EscapedQuote = "\\\"";
 
 		public string FileNameFilter
 		{
@@ -42,7 +42,7 @@ namespace SqlPad
 					.ToArray();
 
 			var columnHeaders = orderedColumns
-				.Select((c, i) => String.Format(MaskJsonValue, c.Header.ToString().Replace("__", "_").Replace(QuoteCharacter, EscapedQuote), i));
+				.Select((c, i) => String.Format(MaskJsonValue, c.Header.ToString().Replace("__", "_").Replace("{", "{{").Replace("}", "}}").Replace(QuoteCharacter, EscapedQuote), i));
 
 			var jsonTemplateBuilder = new StringBuilder();
 			jsonTemplateBuilder.AppendLine("{{");
@@ -79,7 +79,7 @@ namespace SqlPad
 
 		private static string FormatJsonValue(object value, IDataExportConverter dataExportConverter)
 		{
-			return DataExportHelper.IsNull(value) ? null : dataExportConverter.ToJson(value);
+			return DataExportHelper.IsNull(value) ? "null" : dataExportConverter.ToJson(value);
 		}
 	}
 }
