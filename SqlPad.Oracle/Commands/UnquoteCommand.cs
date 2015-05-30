@@ -131,7 +131,7 @@ namespace SqlPad.Oracle.Commands
 
 		private static bool IsUnquotable(string value)
 		{
-			return value.IsQuoted() && Char.IsLetter(value[1]) && value.Substring(1, value.Length - 2).All(c => Char.IsLetterOrDigit(c) || c.In('_', '$', '#'));
+			return value.IsQuoted() && Char.IsLetter(value[1]) && !value.Substring(1, value.Length - 2).RequiresQuotes();
 		}
 	}
 }

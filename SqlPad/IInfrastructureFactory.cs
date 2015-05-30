@@ -43,6 +43,8 @@ namespace SqlPad
 
 	public interface IDataExportConverter
 	{
+		string ToColumnName(string columnHeader);
+
 		string ToSqlValue(object value);
 
 		string ToXml(object value);

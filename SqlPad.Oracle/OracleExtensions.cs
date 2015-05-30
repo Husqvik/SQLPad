@@ -10,6 +10,11 @@ namespace SqlPad.Oracle
 	{
 		private const string QuoteCharacter = "\"";
 
+		public static bool RequiresQuotes(this string identifier)
+		{
+			return !AllCharactersSupportSimpleIdentifier(identifier, 0, false);
+		}
+
 		public static string ToSimpleIdentifier(this string identifier)
 		{
 			if (String.IsNullOrWhiteSpace(identifier))
@@ -17,17 +22,17 @@ namespace SqlPad.Oracle
 
 			var isNotKeyword = !identifier.CollidesWithReservedWord();
 
-			return isNotKeyword && identifier.IsQuotedWithoutCheck() && AllCharactersSupportSimpleIdentifier(identifier) ? identifier.Replace(QuoteCharacter, null) : identifier;
+			return isNotKeyword && identifier.IsQuotedWithoutCheck() && AllCharactersSupportSimpleIdentifier(identifier, 1, true) ? identifier.Replace(QuoteCharacter, null) : identifier;
 		}
 
-		private static bool AllCharactersSupportSimpleIdentifier(string identifier)
+		private static bool AllCharactersSupportSimpleIdentifier(string identifier, int offset, bool checkLowerCase)
 		{
-			if (!Char.IsLetter(identifier[1]))
+			if (!Char.IsLetter(identifier[offset]))
 			{
 				return false;
 			}
 
-			for (var i = 1; i < identifier.Length - 1; i++)
+			for (var i = offset; i < identifier.Length - offset; i++)
 			{
 				var character = identifier[i];
 				if (!Char.IsLetterOrDigit(character) && character != '_' && character != '$' && character != '#')
@@ -35,7 +40,7 @@ namespace SqlPad.Oracle
 					return false;
 				}
 
-				if (Char.IsLower(character))
+				if (checkLowerCase && Char.IsLower(character))
 				{
 					return false;
 				}

@@ -20,6 +20,18 @@ namespace SqlPad.Oracle
 				: String.Format("'{0}'", stringValue.Replace("'", "''"));
 		}
 
+		public string ToColumnName(string columnHeader)
+		{
+			if (columnHeader.Length > 30)
+			{
+				columnHeader = columnHeader.Substring(0, 30);
+			}
+			
+			return columnHeader.RequiresQuotes()
+				? String.Format("\"{0}\"", columnHeader.Replace('"', ' '))
+				: columnHeader;
+		}
+
 		public string ToXml(object value)
 		{
 			var vendorValue = value as IValue;
