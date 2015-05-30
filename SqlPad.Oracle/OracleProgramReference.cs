@@ -187,6 +187,37 @@ namespace SqlPad.Oracle
 		public StatementGrammarNode MeasureExpressionList { get; set; }
 	}
 
+	[DebuggerDisplay("OraclePivotTableReference (Columns={Columns.Count})")]
+	public class OraclePivotTableReference : OracleDataObjectReference
+	{
+		private readonly IReadOnlyList<OracleColumn> _columns;
+
+		public OracleDataObjectReference SourceReference { get; private set; }
+		
+		public OracleReferenceContainer SourceReferenceContainer { get; private set; }
+
+		public OraclePivotTableReference(OracleStatementSemanticModel semanticModel, OracleDataObjectReference sourceReference, IEnumerable<OracleSelectListColumn> columns)
+			: base(ReferenceType.PivotTable)
+		{
+			_columns = columns.Select(c => c.ColumnDescription).ToArray();
+			SourceReference = sourceReference;
+
+			RootNode = sourceReference.RootNode;
+			AliasNode = sourceReference.AliasNode;
+			sourceReference.AliasNode = null;
+			Owner = sourceReference.Owner;
+			Owner.ObjectReferences.Remove(sourceReference);
+
+			SourceReferenceContainer = new OracleReferenceContainer(semanticModel);
+			SourceReferenceContainer.ObjectReferences.Add(sourceReference);
+		}
+
+		public override IReadOnlyList<OracleColumn> Columns
+		{
+			get { return _columns; }
+		}
+	}
+
 	public abstract class OracleProgramReferenceBase : OracleReference
 	{
 		public StatementGrammarNode ParameterListNode { get; set; }

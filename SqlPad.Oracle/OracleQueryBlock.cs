@@ -136,7 +136,7 @@ namespace SqlPad.Oracle
 					containers = containers.Concat(ModelReference.ChildContainers);
 				}
 
-				return containers;
+				return containers.Concat(ObjectReferences.OfType<OraclePivotTableReference>().Select(pt => pt.SourceReferenceContainer));
 			}
 		}
 

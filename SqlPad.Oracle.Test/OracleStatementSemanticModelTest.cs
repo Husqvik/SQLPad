@@ -1458,7 +1458,7 @@ MODEL
 			queryBlock.Columns[4].IsDirectReference.ShouldBe(true);
 		}
 
-		[Test(Description = @""), Ignore]
+		[Test(Description = @"")]
 		public void TestSqlModelReferenceInnerReferences()
 		{
 			const string query1 =
@@ -2017,20 +2017,21 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 	REUSE_COUNT,
 	NONE_COUNT,
 	DIRECT_COUNT,
-	INVITES_SUM,
-	EXTERNAL_SUM,
-	REUSE_SUM,
-	NONE_SUM,
-	DIRECT_SUM
+	INVITES_MAX,
+	EXTERNAL_MAX,
+	REUSE_MAX,
+	NONE_MAX,
+	DIRECT_MAX,
+	SUPPLYCHANNEL
 FROM (
-	SELECT SUPPLYCHANNEL FROM SELECTION
-)
-PIVOT (
-	COUNT(SUPPLYCHANNEL) AS COUNT,
-	SUM(SUPPLYCHANNEL) AS SUM
-	FOR (SUPPLYCHANNEL)
-		IN (0 AS INVITES, 1 AS EXTERNAL, 2 AS REUSE, 3 AS NONE, 4 AS DIRECT)
-)";
+	SELECT MOD(LEVEL, 5) SUPPLYCHANNEL FROM DUAL CONNECT BY LEVEL <= 999
+	)
+	PIVOT (
+		COUNT(SUPPLYCHANNEL) AS COUNT,
+		MAX(SUPPLYCHANNEL) AS MAX
+		FOR (SUPPLYCHANNEL)
+			IN (0 AS INVITES, 1 AS EXTERNAL, 2 AS REUSE, 3 AS NONE, 4 AS DIRECT)
+	) PIVOT_TABLE";
 
 			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
@@ -2040,9 +2041,27 @@ PIVOT (
 			semanticModel.QueryBlocks.Count.ShouldBe(2);
 
 			var columnReferences = semanticModel.MainQueryBlock.AllColumnReferences.ToList();
-			columnReferences.Count.ShouldBe(10);
+			columnReferences.Count.ShouldBe(11);
 
-			columnReferences.ForEach(r => r.ColumnNodeColumnReferences.Count.ShouldBe(1));
+			columnReferences.Take(10).ToList().ForEach(r => r.ColumnNodeColumnReferences.Count.ShouldBe(1));
+			columnReferences.Skip(10).Single().ColumnNodeColumnReferences.Count.ShouldBe(0);
+
+			semanticModel.MainQueryBlock.ObjectReferences.Count.ShouldBe(1);
+			var pivotTableReference = (OraclePivotTableReference)semanticModel.MainQueryBlock.ObjectReferences.Single();
+			pivotTableReference.FullyQualifiedObjectName.Name.ShouldBe("PIVOT_TABLE");
+			pivotTableReference.SourceReference.Type.ShouldBe(ReferenceType.InlineView);
+			pivotTableReference.SourceReference.FullyQualifiedObjectName.Name.ShouldBe(null);
+			var pivotSourceColumnReferences = pivotTableReference.SourceReferenceContainer.ColumnReferences.ToList();
+			pivotSourceColumnReferences.Count.ShouldBe(3);
+			pivotSourceColumnReferences.ForEach(c => c.Name.ShouldBe("SUPPLYCHANNEL"));
+			pivotSourceColumnReferences.ForEach(c => c.ColumnNodeColumnReferences.Count.ShouldBe(1));
+			
+			var programReferences = pivotTableReference.SourceReferenceContainer.ProgramReferences.ToArray();
+			programReferences.Length.ShouldBe(2);
+			programReferences[0].Name.ShouldBe("COUNT");
+			programReferences[0].Metadata.ShouldNotBe(null);
+			programReferences[1].Name.ShouldBe("MAX");
+			programReferences[1].Metadata.ShouldNotBe(null);
 		}
 	}
 }

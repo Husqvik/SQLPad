@@ -13,7 +13,6 @@ namespace SqlPad.Oracle
 		{
 			Terminals.Identifier,
 			Terminals.RowIdPseudoColumn,
-			Terminals.Count,
 			Terminals.Level,
 			Terminals.User,
 			Terminals.NegationOrNull,
@@ -28,6 +27,7 @@ namespace SqlPad.Oracle
 			Terminals.XmlQuery,
 			Terminals.XmlRoot,
 			Terminals.XmlSerialize,
+			Terminals.Count,
 			NonTerminals.AggregateFunction,
 			NonTerminals.AnalyticFunction,
 			NonTerminals.WithinGroupAggregationFunction
@@ -358,14 +358,18 @@ namespace SqlPad.Oracle
 							var nestedQueryTableReferenceQueryBlock = nestedQueryTableReference.GetPathFilterDescendants(n => n.Id != NonTerminals.NestedQuery && n.Id != NonTerminals.SubqueryFactoringClause, NonTerminals.QueryBlock).FirstOrDefault();
 							if (nestedQueryTableReferenceQueryBlock != null)
 							{
-								queryBlock.ObjectReferences.Add(
+								var objectReference =
 									new OracleDataObjectReference(ReferenceType.InlineView)
 									{
 										Owner = queryBlock,
 										RootNode = tableReferenceNonterminal,
 										ObjectNode = nestedQueryTableReferenceQueryBlock,
 										AliasNode = objectReferenceAlias
-									});
+									};
+
+								queryBlock.ObjectReferences.Add(objectReference);
+
+								ResolvePivotClause(objectReference);
 							}
 
 							continue;
@@ -473,6 +477,8 @@ namespace SqlPad.Oracle
 							}
 
 							FindFlashbackOption(objectReference);
+							
+							ResolvePivotClause(objectReference);
 
 							FindExplicitPartitionReferences(queryTableExpression, objectReference);
 						}
@@ -503,6 +509,81 @@ namespace SqlPad.Oracle
 			BuildDmlModel();
 			
 			ResolveRedundantTerminals();
+		}
+
+		private void ResolvePivotClause(OracleDataObjectReference objectReference)
+		{
+			var pivotClause = objectReference.RootNode.GetSingleDescendant(NonTerminals.PivotClause);
+			if (pivotClause == null)
+			{
+				return;
+			}
+
+			var queryBlock = objectReference.Owner;
+			var columns = new List<OracleSelectListColumn>();
+			var columnNameExtensions = new List<string>();
+			var pivotExpressions = pivotClause[NonTerminals.PivotAliasedAggregationFunctionList];
+			if (pivotExpressions != null)
+			{
+				var nameExtensions = pivotExpressions.GetDescendants(NonTerminals.ColumnAsAlias)
+					.Select(n => n[Terminals.ColumnAlias])
+					.Select(n => n == null ? String.Empty : String.Format("_{0}", n.Token.Value.ToQuotedIdentifier().Trim('"')));
+
+				columnNameExtensions.AddRange(nameExtensions);
+			}
+
+			var columnDefinitions = pivotClause[NonTerminals.PivotInClause, NonTerminals.PivotExpressionsOrAnyListOrNestedQuery, NonTerminals.AliasedExpressionListOrAliasedGroupingExpressionList];
+			if (columnDefinitions != null)
+			{
+				var columnSources = columnDefinitions.GetDescendants(NonTerminals.AliasedExpression, NonTerminals.ParenthesisEnclosedExpressionListWithMandatoryExpressions).ToArray();
+				foreach (var nameExtension in columnNameExtensions)
+				{
+					foreach (var columnSource in columnSources)
+					{
+						var aliasSourceNode = String.Equals(columnSource.Id, NonTerminals.AliasedExpression)
+							? columnSource
+							: columnSource.ParentNode;
+
+						var columnAlias = aliasSourceNode[NonTerminals.ColumnAsAlias, Terminals.ColumnAlias];
+
+						var columnName = columnAlias == null
+							? String.Empty
+							: columnAlias.Token.Value.ToQuotedIdentifier();
+
+						if (!String.IsNullOrEmpty(columnName))
+						{
+							columnName = columnName.Insert(columnName.Length - 1, nameExtension);
+						}
+						
+						var column =
+							new OracleSelectListColumn(this, null)
+							{
+								Owner = queryBlock,
+								ColumnDescription =
+									new OracleColumn
+									{
+										Name = columnName,
+										DataType = OracleDataType.Empty,
+										Nullable = true
+									}
+							};
+
+						columns.Add(column);
+					}
+				}
+			}
+
+			var pivotTableReference = new OraclePivotTableReference(this, objectReference, columns);
+			queryBlock.ObjectReferences.Add(pivotTableReference);
+
+			var pivotClauseIdentifiers = GetIdentifiers(pivotClause, Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.User);
+			ResolveColumnAndFunctionReferencesFromIdentifiers(pivotTableReference.Owner, pivotTableReference.SourceReferenceContainer, pivotClauseIdentifiers, StatementPlacement.PivotClause, null);
+
+			if (pivotExpressions != null)
+			{
+				var grammarSpecificFunctions = GetGrammarSpecificFunctionNodes(pivotExpressions);
+				CreateGrammarSpecificFunctionReferences(grammarSpecificFunctions, null, pivotTableReference.SourceReferenceContainer.ProgramReferences, StatementPlacement.PivotClause, null);
+			}
 		}
 
 		private void FindFlashbackOption(OracleDataObjectReference objectReference)
@@ -917,7 +998,7 @@ namespace SqlPad.Oracle
 		private void ResolveSqlModelReferences(OracleReferenceContainer referenceContainer, ICollection<StatementGrammarNode> identifiers)
 		{
 			ResolveColumnAndFunctionReferencesFromIdentifiers(null, referenceContainer, identifiers.Where(t => t.Id.In(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level)), StatementPlacement.Model, null);
-			var grammarSpecificFunctions = identifiers.Where(t => t.Id.In(Terminals.Count, NonTerminals.AggregateFunction));
+			var grammarSpecificFunctions = identifiers.Where(t => t.Id.In(Terminals.Count, Terminals.User, NonTerminals.AggregateFunction));
 			CreateGrammarSpecificFunctionReferences(grammarSpecificFunctions, null, referenceContainer.ProgramReferences, StatementPlacement.Model, null);
 
 			ResolveColumnObjectReferences(referenceContainer.ColumnReferences, referenceContainer.ObjectReferences, OracleDataObjectReference.EmptyArray);
@@ -987,26 +1068,42 @@ namespace SqlPad.Oracle
 			{
 				foreach (var nestedQueryReference in queryBlock.ObjectReferences.Where(t => t.Type != ReferenceType.SchemaObject))
 				{
-					if (nestedQueryReference.Type == ReferenceType.InlineView)
+					switch (nestedQueryReference.Type)
 					{
-						nestedQueryReference.QueryBlocks.Add(_queryBlockNodes[nestedQueryReference.ObjectNode]);
-					}
-					else if (_objectReferenceCteRootNodes.ContainsKey(nestedQueryReference))
-					{
-						var commonTableExpressionNode = _objectReferenceCteRootNodes[nestedQueryReference];
-						var nestedTableFullyQualifiedName = OracleObjectIdentifier.Create(null, nestedQueryReference.ObjectNode.Token.Value);
-						foreach (var referencedQueryBlock in commonTableExpressionNode
-							.Where(nodeName => OracleObjectIdentifier.Create(null, nodeName.Value) == nestedTableFullyQualifiedName))
-						{
-							var cteQueryBlockNode = referencedQueryBlock.Key.GetDescendants(NonTerminals.QueryBlock).FirstOrDefault();
-							if (cteQueryBlockNode != null)
+						case ReferenceType.InlineView:
+							nestedQueryReference.QueryBlocks.Add(_queryBlockNodes[nestedQueryReference.ObjectNode]);
+							break;
+						
+						case ReferenceType.PivotTable:
+							var pivotTableReference = (OraclePivotTableReference)nestedQueryReference;
+							if (pivotTableReference.SourceReference.Type == ReferenceType.InlineView)
 							{
-								var referredQueryBlock = _queryBlockNodes[cteQueryBlockNode];
-								nestedQueryReference.QueryBlocks.Add(referredQueryBlock);
-
-								_unreferencedQueryBlocks.Remove(referredQueryBlock);
+								pivotTableReference.SourceReference.QueryBlocks.Add(_queryBlockNodes[pivotTableReference.SourceReference.ObjectNode]);
 							}
-						}
+							
+							break;
+						
+						default:
+							if (_objectReferenceCteRootNodes.ContainsKey(nestedQueryReference))
+							{
+								var commonTableExpressionNode = _objectReferenceCteRootNodes[nestedQueryReference];
+								var nestedTableFullyQualifiedName = OracleObjectIdentifier.Create(null, nestedQueryReference.ObjectNode.Token.Value);
+								
+								foreach (var referencedQueryBlock in commonTableExpressionNode
+									.Where(nodeName => OracleObjectIdentifier.Create(null, nodeName.Value) == nestedTableFullyQualifiedName))
+								{
+									var cteQueryBlockNode = referencedQueryBlock.Key.GetDescendants(NonTerminals.QueryBlock).FirstOrDefault();
+									if (cteQueryBlockNode != null)
+									{
+										var referredQueryBlock = _queryBlockNodes[cteQueryBlockNode];
+										nestedQueryReference.QueryBlocks.Add(referredQueryBlock);
+
+										_unreferencedQueryBlocks.Remove(referredQueryBlock);
+									}
+								}
+							}
+							
+							break;
 					}
 				}
 
@@ -1633,6 +1730,12 @@ namespace SqlPad.Oracle
 				var columnReferences = queryBlock.AllColumnReferences.Where(c => c.SelectListColumn == null || c.SelectListColumn.HasExplicitDefinition);
 				ResolveColumnObjectReferences(columnReferences, queryBlock.ObjectReferences, correlatedReferences);
 
+				foreach (var pivotTableReference in queryBlock.ObjectReferences.OfType<OraclePivotTableReference>())
+				{
+					ResolveColumnObjectReferences(pivotTableReference.SourceReferenceContainer.ColumnReferences, pivotTableReference.SourceReferenceContainer.ObjectReferences, OracleDataObjectReference.EmptyArray);
+					ResolveFunctionReferences(pivotTableReference.SourceReferenceContainer.ProgramReferences);
+				}
+
 				ResolveDatabaseLinks(queryBlock);
 			}
 		}
@@ -1724,6 +1827,7 @@ namespace SqlPad.Oracle
 						case ReferenceType.XmlTable:
 						case ReferenceType.JsonTable:
 						case ReferenceType.SqlModel:
+						case ReferenceType.PivotTable:
 							exposedColumns = objectReference.Columns
 								.Select(c => new OracleSelectListColumn(this, asteriskColumn)
 								{
@@ -1965,6 +2069,7 @@ namespace SqlPad.Oracle
 				}
 
 				IEnumerable<OracleDataObjectReference> effectiveAccessibleRowSourceReferences = accessibleRowSourceReferences;
+				// TODO: To switch
 				if (columnReference.Placement == StatementPlacement.Join || columnReference.Placement == StatementPlacement.TableReference)
 				{
 					effectiveAccessibleRowSourceReferences = effectiveAccessibleRowSourceReferences
@@ -2047,6 +2152,7 @@ namespace SqlPad.Oracle
 				case ReferenceType.JsonTable:
 				case ReferenceType.XmlTable:
 				case ReferenceType.SqlModel:
+				case ReferenceType.PivotTable:
 					newColumnReferences.AddRange(GetColumnReferenceMatchingColumns(rowSourceReference, columnReference));
 					break;
 				case ReferenceType.SchemaObject:
@@ -2602,8 +2708,7 @@ namespace SqlPad.Oracle
 
 		private static StatementGrammarNode GetDatabaseLinkFromNode(StatementGrammarNode node)
 		{
-			var databaseLink = node.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.DatabaseLink);
-			return databaseLink == null ? null : databaseLink.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.DatabaseLinkName);
+			return node[NonTerminals.DatabaseLink, NonTerminals.DatabaseLinkName];
 		}
 
 		private static OracleColumnReference CreateColumnReference(OracleReferenceContainer container, OracleQueryBlock queryBlock, OracleSelectListColumn selectListColumn, StatementPlacement placement, StatementGrammarNode identifierNode, StatementGrammarNode prefixNonTerminal)
@@ -2611,9 +2716,10 @@ namespace SqlPad.Oracle
 			var columnReference =
 				new OracleColumnReference(container)
 				{
-					RootNode = identifierNode.GetPathFilterAncestor(n => n.Id != NonTerminals.AliasedExpressionOrAllTableColumns, NonTerminals.PrefixedColumnReference)
-					           ?? identifierNode.GetPathFilterAncestor(n => n.Id != NonTerminals.AliasedExpressionOrAllTableColumns, NonTerminals.PrefixedAsterisk)
-							   ?? identifierNode.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryTableExpression, NonTerminals.TableCollectionInnerExpression),
+					RootNode = identifierNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.AliasedExpressionOrAllTableColumns), NonTerminals.PrefixedColumnReference)
+					           ?? identifierNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.AliasedExpressionOrAllTableColumns), NonTerminals.PrefixedAsterisk)
+							   ?? identifierNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.QueryTableExpression), NonTerminals.TableCollectionInnerExpression)
+							   ?? (String.Equals(identifierNode.ParentNode.Id, NonTerminals.IdentifierList) ? identifierNode : null),
 					ColumnNode = identifierNode,
 					DatabaseLinkNode = GetDatabaseLinkFromIdentifier(identifierNode),
 					Placement = placement,
@@ -2707,7 +2813,8 @@ namespace SqlPad.Oracle
 		TableCollection,
 		XmlTable,
 		JsonTable,
-		SqlModel
+		SqlModel,
+		PivotTable
 	}
 
 	public enum QueryBlockType

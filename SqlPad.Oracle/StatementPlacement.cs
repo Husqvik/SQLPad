@@ -6,6 +6,7 @@ namespace SqlPad.Oracle
 		ValuesClause,
 		SelectList,
 		TableReference,
+		PivotClause,
 		Where,
 		GroupBy,
 		Having,
