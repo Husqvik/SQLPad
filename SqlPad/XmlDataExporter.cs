@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -13,7 +14,14 @@ namespace SqlPad
 {
 	public class XmlDataExporter : IDataExporter
 	{
-		private static readonly XmlWriterSettings XmlWriterSettings = new XmlWriterSettings { Indent = true, Encoding = Encoding.UTF8 };
+		private const string Underscore = "_";
+		private static readonly Regex XmlElementNameFormatExpression = new Regex("[^\\w]", RegexOptions.Compiled);
+		private static readonly XmlWriterSettings XmlWriterSettings =
+			new XmlWriterSettings
+			{
+				Indent = true,
+				Encoding = Encoding.UTF8
+			};
 
 		public string FileNameFilter
 		{
@@ -37,13 +45,10 @@ namespace SqlPad
 
 		public Task ExportToFileAsync(string fileName, DataGrid dataGrid, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
 		{
-			var orderedColumns = dataGrid.Columns
+			var columnHeaders = dataGrid.Columns
 					.OrderBy(c => c.DisplayIndex)
+					.Select(c => FormatColumnHeaderAsXmlElementName(c.Header.ToString()))
 					.ToArray();
-
-			var columnHeaders = orderedColumns
-				.Select(c => c.Header.ToString().Replace("__", "_"))
-				.ToArray();
 
 			var rows = (IEnumerable)dataGrid.Items;
 
@@ -90,6 +95,18 @@ namespace SqlPad
 		private static string FormatXmlValue(object value, IDataExportConverter dataExportConverter)
 		{
 			return DataExportHelper.IsNull(value) ? null : dataExportConverter.ToXml(value);
+		}
+
+		private static string FormatColumnHeaderAsXmlElementName(string header)
+		{
+			header = header.Replace("__", Underscore);
+			header = XmlElementNameFormatExpression.Replace(header, Underscore);
+			if (Char.IsDigit(header[0]))
+			{
+				header = header.Insert(0, Underscore);
+			}
+
+			return header;
 		}
 	}
 }
