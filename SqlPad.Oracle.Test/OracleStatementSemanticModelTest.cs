@@ -1458,7 +1458,7 @@ MODEL
 			queryBlock.Columns[4].IsDirectReference.ShouldBe(true);
 		}
 
-		[Test(Description = @"")]
+		[Test(Description = @""), Ignore]
 		public void TestSqlModelReferenceInnerReferences()
 		{
 			const string query1 =
@@ -2007,7 +2007,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 			columnReferences.ForEach(r => r.ColumnNodeColumnReferences.Count.ShouldBe(1));
 		}
 
-		[Test(Description = @""), Ignore]
+		[Test(Description = @"")]
 		public void TestPivotTableColumnReference()
 		{
 			const string query1 =
@@ -2016,13 +2016,21 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 	EXTERNAL_COUNT,
 	REUSE_COUNT,
 	NONE_COUNT,
-	DIRECT_COUNT
+	DIRECT_COUNT,
+	INVITES_SUM,
+	EXTERNAL_SUM,
+	REUSE_SUM,
+	NONE_SUM,
+	DIRECT_SUM
 FROM (
 	SELECT SUPPLYCHANNEL FROM SELECTION
 )
 PIVOT (
-	COUNT(SUPPLYCHANNEL) AS COUNT FOR (SUPPLYCHANNEL) IN (0 AS INVITES, 1 AS EXTERNAL, 2 AS REUSE, 3 AS NONE, 4 AS DIRECT)
-) SELECTION";
+	COUNT(SUPPLYCHANNEL) AS COUNT,
+	SUM(SUPPLYCHANNEL) AS SUM
+	FOR (SUPPLYCHANNEL)
+		IN (0 AS INVITES, 1 AS EXTERNAL, 2 AS REUSE, 3 AS NONE, 4 AS DIRECT)
+)";
 
 			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
@@ -2032,7 +2040,7 @@ PIVOT (
 			semanticModel.QueryBlocks.Count.ShouldBe(2);
 
 			var columnReferences = semanticModel.MainQueryBlock.AllColumnReferences.ToList();
-			columnReferences.Count.ShouldBe(5);
+			columnReferences.Count.ShouldBe(10);
 
 			columnReferences.ForEach(r => r.ColumnNodeColumnReferences.Count.ShouldBe(1));
 		}
