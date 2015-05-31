@@ -2022,9 +2022,10 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 	REUSE_MAX,
 	NONE_MAX,
 	DIRECT_MAX,
+	DUMMY,
 	SUPPLYCHANNEL
 FROM (
-	SELECT MOD(LEVEL, 5) SUPPLYCHANNEL FROM DUAL CONNECT BY LEVEL <= 999
+	SELECT MOD(LEVEL, 5) SUPPLYCHANNEL, DUMMY FROM DUAL CONNECT BY LEVEL <= 999
 	)
 	PIVOT (
 		COUNT(SUPPLYCHANNEL) AS COUNT,
@@ -2041,10 +2042,10 @@ FROM (
 			semanticModel.QueryBlocks.Count.ShouldBe(2);
 
 			var columnReferences = semanticModel.MainQueryBlock.AllColumnReferences.ToList();
-			columnReferences.Count.ShouldBe(11);
+			columnReferences.Count.ShouldBe(12);
 
-			columnReferences.Take(10).ToList().ForEach(r => r.ColumnNodeColumnReferences.Count.ShouldBe(1));
-			columnReferences.Skip(10).Single().ColumnNodeColumnReferences.Count.ShouldBe(0);
+			columnReferences.Take(11).ToList().ForEach(r => r.ColumnNodeColumnReferences.Count.ShouldBe(1));
+			columnReferences.Skip(11).Single().ColumnNodeColumnReferences.Count.ShouldBe(0);
 
 			semanticModel.MainQueryBlock.ObjectReferences.Count.ShouldBe(1);
 			var pivotTableReference = (OraclePivotTableReference)semanticModel.MainQueryBlock.ObjectReferences.Single();
@@ -2062,6 +2063,8 @@ FROM (
 			programReferences[0].Metadata.ShouldNotBe(null);
 			programReferences[1].Name.ShouldBe("MAX");
 			programReferences[1].Metadata.ShouldNotBe(null);
+
+			semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
 		}
 	}
 }

@@ -199,6 +199,11 @@ namespace SqlPad.Oracle
 		public OraclePivotTableReference(OracleStatementSemanticModel semanticModel, OracleDataObjectReference sourceReference, IEnumerable<OracleSelectListColumn> columns)
 			: base(ReferenceType.PivotTable)
 		{
+			foreach (var sourceColumn in sourceReference.QueryBlocks.SelectMany(qb => qb.Columns).Where(c => !c.IsAsterisk))
+			{
+				sourceColumn.RegisterOuterReference();
+			}
+
 			_columns = columns.Select(c => c.ColumnDescription).ToArray();
 			SourceReference = sourceReference;
 

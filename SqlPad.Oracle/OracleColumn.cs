@@ -28,6 +28,18 @@ namespace SqlPad.Oracle
 		public string DefaultValue { get; set; }
 		
 		public bool IsPseudoColumn { get; private set; }
+
+		public OracleColumn Clone()
+		{
+			return
+				new OracleColumn
+				{
+					DataType = DataType,
+					Name = Name,
+					CharacterSize = CharacterSize,
+					Nullable = Nullable
+				};
+		}
 	}
 
 	public enum DataUnit

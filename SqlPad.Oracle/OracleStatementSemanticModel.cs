@@ -368,8 +368,6 @@ namespace SqlPad.Oracle
 									};
 
 								queryBlock.ObjectReferences.Add(objectReference);
-
-								ResolvePivotClause(objectReference);
 							}
 
 							continue;
@@ -478,8 +476,6 @@ namespace SqlPad.Oracle
 
 							FindFlashbackOption(objectReference);
 							
-							ResolvePivotClause(objectReference);
-
 							FindExplicitPartitionReferences(queryTableExpression, objectReference);
 						}
 					}
@@ -498,6 +494,8 @@ namespace SqlPad.Oracle
 
 			FindRecursiveQueryReferences();
 
+			ResolvePivotClauses();
+
 			ResolveModelClause();
 
 			ExposeAsteriskColumns();
@@ -509,6 +507,15 @@ namespace SqlPad.Oracle
 			BuildDmlModel();
 			
 			ResolveRedundantTerminals();
+		}
+
+		private void ResolvePivotClauses()
+		{
+			var objectReferences = _queryBlockNodes.Values.SelectMany(qb => qb.ObjectReferences).ToArray();
+			foreach (var objectReference in objectReferences)
+			{
+				ResolvePivotClause(objectReference);
+			}
 		}
 
 		private void ResolvePivotClause(OracleDataObjectReference objectReference)
@@ -570,6 +577,25 @@ namespace SqlPad.Oracle
 
 						columns.Add(column);
 					}
+				}
+			}
+
+			var pivotForColumnList = pivotClause[NonTerminals.PivotForClause, NonTerminals.IdentifierOrParenthesisEnclosedIdentifierList];
+			if (pivotForColumnList != null)
+			{
+				var groupingColumnSource = pivotForColumnList.GetDescendants(Terminals.Identifier).Select(i => i.Token.Value.ToQuotedIdentifier());
+				var groupingColumns = new HashSet<string>(groupingColumnSource);
+
+				foreach (var sourceColumn in objectReference.Columns.Where(c => !groupingColumns.Contains(c.Name)))
+				{
+					var column =
+						new OracleSelectListColumn(this, null)
+						{
+							Owner = queryBlock,
+							ColumnDescription = sourceColumn.Clone()
+						};
+					
+					columns.Add(column);
 				}
 			}
 
