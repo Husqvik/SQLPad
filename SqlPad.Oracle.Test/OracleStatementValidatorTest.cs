@@ -2211,5 +2211,46 @@ SELECT DUMMY1, DUMMY2, DUMMY3, DUMMY4 FROM CTE";
 			objectValidityItems[9].IsRecognized.ShouldBe(false);
 			objectValidityItems[9].Node.Token.Value.ShouldBe("P2015");
 		}
+
+		[Test(Description = @"")]
+		public void TestInvalidLnNvlCondition()
+		{
+			const string sqlText = @"SELECT NULL FROM DUAL WHERE LNNVL(1 <> 1) AND LNNVL((1 <> 1)) AND LNNVL(1 <> 1 AND 0 <> 0) AND LNNVL(0 BETWEEN 1 AND 2)";
+
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			validationModel.InvalidNonTerminals.Count.ShouldBe(3);
+		}
+
+		[Test(Description = @""), Ignore]
+		public void TestInvalidPivotAggregationExpression()
+		{
+			const string sqlText =
+@"SELECT
+	*
+FROM (
+	SELECT 1 VAL FROM DUAL
+	)
+	PIVOT (
+		(COUNT(VAL)) AS COUNT1,
+		(COUNT(VAL) + 1) AS COUNT2,
+		SUM(VAL + 1) AS SUM,
+		SUM(VAL) + COUNT(VAL) AS SUM
+		FOR (VAL)
+			IN (1)
+	) PT";
+
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			validationModel.InvalidNonTerminals.Count.ShouldBe(2);
+		}
 	}
 }

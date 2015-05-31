@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using SqlPad.Oracle.ToolTips;
@@ -370,13 +371,13 @@ namespace SqlPad.Oracle
 				return null;
 			}
 
-			var documentationText = String.Empty;
+			var documentationBuilder = new StringBuilder();
 			DocumentationFunction documentationFunction;
 			DocumentationPackage documentationPackage;
 			if ((String.IsNullOrEmpty(functionReference.Metadata.Identifier.Owner) || String.Equals(functionReference.Metadata.Identifier.Package, OracleDatabaseModelBase.PackageBuiltInFunction)) &&
 				functionReference.Metadata.Type != ProgramType.StatementFunction && OracleHelpProvider.SqlFunctionDocumentation.TryGetValue(functionReference.Metadata.Identifier.Name, out documentationFunction))
 			{
-				documentationText = documentationFunction.Value;
+				documentationBuilder.AppendLine(documentationFunction.Value);
 			}
 			else if (!String.IsNullOrEmpty(functionReference.Metadata.Identifier.Package) && functionReference.Metadata.Owner.GetTargetSchemaObject() != null &&
 			         OracleHelpProvider.PackageDocumentation.TryGetValue(functionReference.Metadata.Owner.GetTargetSchemaObject().FullyQualifiedName, out documentationPackage) &&
@@ -385,11 +386,11 @@ namespace SqlPad.Oracle
 				var program = documentationPackage.SubPrograms.SingleOrDefault(sp => String.Equals(sp.Name, functionReference.Metadata.Identifier.Name));
 				if (program != null)
 				{
-					documentationText = program.Value;
+					documentationBuilder.AppendLine(program.Value);
 				}
 			}
 
-			return new ToolTipProgram(functionReference.Metadata.Identifier.FullyQualifiedIdentifier, documentationText, functionReference.Metadata);
+			return new ToolTipProgram(functionReference.Metadata.Identifier.FullyQualifiedIdentifier, documentationBuilder.ToString(), functionReference.Metadata);
 		}
 
 		private OracleReference GetObjectReference(OracleStatementSemanticModel semanticModel, StatementGrammarNode terminal)

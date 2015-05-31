@@ -23,6 +23,7 @@ namespace SqlPad.Oracle
 		public const string GroupFunctionNotAllowed = "Group function is not allowed here";
 		public const string MissingWithClauseColumnAliasList = "WITH clause element did not have a column alias list";
 		public const string InvalidCycleMarkValue = "Cycle mark value and non-cycle mark value must be one byte character string values";
+		public const string IncorrectUseOfLnNvlOperator = "Incorrect use of LNNVL operator";
 	}
 
 	public static class OracleSemanticErrorTooltipText

@@ -22,6 +22,8 @@ namespace SqlPad.Oracle
 		public const string SystemParameterNameMaxStringSize = "max_string_size";
 		public const int VersionMajorOracle12c = 12;
 
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramLnNvl = OracleProgramIdentifier.CreateFromValues(null, null, "LNNVL");
+
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramRound = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "ROUND");
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramLevel = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "LEVEL");
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramSysContext = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "SYS_CONTEXT");

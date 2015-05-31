@@ -455,6 +455,9 @@ namespace SqlPad.Oracle.Test
 			var sysDateFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(null, null, "SYSDATE"), false, false, false, false, false, false, 0, 0, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNoParenthesis, true);
 			allFunctionMetadata.Add(sysDateFunctionMetadata);
 
+			var lnNvlFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, IdentifierBuiltInProgramLnNvl, false, false, false, true, false, false, 1, 0, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNoParenthesis, true);
+			allFunctionMetadata.Add(lnNvlFunctionMetadata);
+
 			AllFunctionMetadataInternal = allFunctionMetadata.Where(f => f.Type == ProgramType.Function).ToLookup(m => m.Identifier);
 			NonSchemaBuiltInFunctionMetadataInternal = allFunctionMetadata
 				.Where(m => String.IsNullOrEmpty(m.Identifier.Owner))

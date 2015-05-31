@@ -545,6 +545,16 @@ namespace SqlPad.Oracle
 									new InvalidNodeValidationData(OracleSemanticErrorType.PositionalParameterNotAllowed) { Node = parameterReference.ParameterNode };
 							}
 						}
+
+						if (programReference.Metadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramLnNvl && programReference.ParameterReferences.Count == 1)
+						{
+							var parameterNode = programReference.ParameterReferences[0].ParameterNode;
+							if (parameterNode[NonTerminals.ChainedCondition] != null || parameterNode[Terminals.Between] != null || (parameterNode[0] != null && String.Equals(parameterNode[0].Id, Terminals.LeftParenthesis)))
+							{
+								validationModel.InvalidNonTerminals[parameterNode] =
+									new InvalidNodeValidationData(OracleSemanticErrorType.IncorrectUseOfLnNvlOperator) { Node = parameterNode };
+							}
+						}
 					}
 				}
 				else if (programReference.Metadata.MinimumArguments > 0)
