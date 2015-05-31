@@ -2007,7 +2007,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 			columnReferences.ForEach(r => r.ColumnNodeColumnReferences.Count.ShouldBe(1));
 		}
 		
-		[Test(Description = @""), Ignore]
+		[Test(Description = @"")]
 		public void TestModelBuildWhenXmlTableCombinedWithFlashbackAndPivotClauses()
 		{
 			const string query1 =

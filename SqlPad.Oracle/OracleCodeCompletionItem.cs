@@ -86,9 +86,10 @@ namespace SqlPad.Oracle
 		public const string Subpartition = "Sub-partition";
 		public const string FunctionParameter = "Function parameter";
 		public const string BuiltInFunction = "Built-in function";
-		public const string XmlTable = "XML Table";
+		public const string XmlTable = "XML table";
 		public const string JsonTable = "JSON table";
 		public const string TableCollection = "Table collection";
 		public const string SqlModel = "Model clause";
+		public const string PivotTable = "Pivot table";
 	}
 }

@@ -227,6 +227,8 @@ namespace SqlPad.Oracle
 					return OracleCodeCompletionCategory.TableCollection;
 				case ReferenceType.SqlModel:
 					return OracleCodeCompletionCategory.SqlModel;
+				case ReferenceType.PivotTable:
+					return OracleCodeCompletionCategory.PivotTable;
 			}
 
 			throw new NotSupportedException(String.Format("Value '{0}' is not supported. ", type));
