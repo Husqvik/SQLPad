@@ -67,6 +67,29 @@ namespace SqlPad.Oracle
 						}
 						
 						break;
+
+					case ReferenceType.PivotTable:
+						var pivotTableCollectionReference = (OraclePivotTableReference)objectReference;
+						foreach (var aggregateFunctions in pivotTableCollectionReference.AggregateFunctions)
+						{
+							var aggregateExpression = aggregateFunctions[NonTerminals.Expression];
+							if (aggregateExpression == null)
+							{
+								continue;
+							}
+
+							while (aggregateExpression.ChildNodes.Count >= 2 && String.Equals(aggregateExpression[0].Id, Terminals.LeftParenthesis) && String.Equals(aggregateExpression[1].Id, NonTerminals.Expression))
+							{
+								aggregateExpression = aggregateExpression[1];
+							}
+
+							if (aggregateExpression[NonTerminals.ExpressionMathOperatorChainedList] != null || aggregateExpression[NonTerminals.AggregateFunctionCall] == null)
+							{
+								validationModel.InvalidNonTerminals[aggregateExpression] = new InvalidNodeValidationData(OracleSemanticErrorType.ExpectAggregateFunctionInsidePivotOperation) { Node = aggregateExpression };
+							}
+						}
+
+						break;
 				}
 
 				if (objectReference.PartitionReference != null && objectReference.PartitionReference.Partition == null)

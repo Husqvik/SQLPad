@@ -7381,9 +7381,17 @@
     <Rule StartingNonTerminal="PivotAliasedAggregationFunctionList">
       <Sequences>
         <Sequence>
+          <NonTerminal Id="PivotAliasedAggregationFunction" />
+          <NonTerminal Id="PivotAliasedAggregationFunctionListChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PivotAliasedAggregationFunction">
+      <Sequences>
+        <Sequence>
           <NonTerminal Id="Expression" />
           <NonTerminal Id="ColumnAsAlias" IsOptional="true" />
-          <NonTerminal Id="PivotAliasedAggregationFunctionListChained" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>

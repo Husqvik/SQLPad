@@ -527,15 +527,17 @@ namespace SqlPad.Oracle
 			}
 
 			var columns = new List<OracleSelectListColumn>();
+			var aggregateExpressions = new List<StatementGrammarNode>();
 			var columnNameExtensions = new List<string>();
 			var pivotExpressions = pivotClause[NonTerminals.PivotAliasedAggregationFunctionList];
 			if (pivotExpressions != null)
 			{
-				var nameExtensions = pivotExpressions.GetDescendants(NonTerminals.ColumnAsAlias)
-					.Select(n => n[Terminals.ColumnAlias])
-					.Select(n => n == null ? String.Empty : String.Format("_{0}", n.Token.Value.ToQuotedIdentifier().Trim('"')));
-
-				columnNameExtensions.AddRange(nameExtensions);
+				foreach (var pivotAggregationFunction in pivotExpressions.GetDescendants(NonTerminals.PivotAliasedAggregationFunction))
+				{
+					var aliasNode = pivotAggregationFunction[NonTerminals.ColumnAsAlias, Terminals.ColumnAlias];
+					columnNameExtensions.Add(aliasNode == null ? String.Empty : String.Format("_{0}", aliasNode.Token.Value.ToQuotedIdentifier().Trim('"')));
+					aggregateExpressions.Add(pivotAggregationFunction);
+				}
 			}
 
 			var queryBlock = objectReference.Owner;
@@ -602,7 +604,8 @@ namespace SqlPad.Oracle
 			var pivotTableReference =
 				new OraclePivotTableReference(this, objectReference, columns)
 				{
-					AliasNode = pivotClause[Terminals.ObjectAlias]
+					AliasNode = pivotClause[Terminals.ObjectAlias],
+					AggregateFunctions = aggregateExpressions.AsReadOnly()
 				};
 			
 			queryBlock.ObjectReferences.Add(pivotTableReference);
@@ -615,9 +618,6 @@ namespace SqlPad.Oracle
 				var grammarSpecificFunctions = GetGrammarSpecificFunctionNodes(pivotExpressions);
 				CreateGrammarSpecificFunctionReferences(grammarSpecificFunctions, null, pivotTableReference.SourceReferenceContainer.ProgramReferences, StatementPlacement.PivotClause, null);
 			}
-
-			ResolveColumnObjectReferences(pivotTableReference.SourceReferenceContainer.ColumnReferences, pivotTableReference.SourceReferenceContainer.ObjectReferences, OracleDataObjectReference.EmptyArray);
-			ResolveFunctionReferences(pivotTableReference.SourceReferenceContainer.ProgramReferences);
 		}
 
 		private void FindFlashbackOption(OracleDataObjectReference objectReference)
@@ -1763,6 +1763,12 @@ namespace SqlPad.Oracle
 
 				var columnReferences = queryBlock.AllColumnReferences.Where(c => c.SelectListColumn == null || c.SelectListColumn.HasExplicitDefinition);
 				ResolveColumnObjectReferences(columnReferences, queryBlock.ObjectReferences, correlatedReferences);
+
+				foreach (var pivotTableReference in queryBlock.ObjectReferences.OfType<OraclePivotTableReference>())
+				{
+					ResolveColumnObjectReferences(pivotTableReference.SourceReferenceContainer.ColumnReferences, pivotTableReference.SourceReferenceContainer.ObjectReferences, OracleDataObjectReference.EmptyArray);
+					ResolveFunctionReferences(pivotTableReference.SourceReferenceContainer.ProgramReferences);
+				}
 
 				ResolveDatabaseLinks(queryBlock);
 			}

@@ -24,6 +24,7 @@ namespace SqlPad.Oracle
 		public const string MissingWithClauseColumnAliasList = "WITH clause element did not have a column alias list";
 		public const string InvalidCycleMarkValue = "Cycle mark value and non-cycle mark value must be one byte character string values";
 		public const string IncorrectUseOfLnNvlOperator = "Incorrect use of LNNVL operator";
+		public const string ExpectAggregateFunctionInsidePivotOperation = "Expect aggregate function inside pivot operation";
 	}
 
 	public static class OracleSemanticErrorTooltipText

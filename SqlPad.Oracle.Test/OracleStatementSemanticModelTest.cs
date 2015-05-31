@@ -2101,5 +2101,28 @@ FROM (
 
 			semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
 		}
+
+		[Test(Description = @"")]
+		public void TestModelBuildWithPivotedInlineViewWithAsterisk()
+		{
+			const string query1 =
+@"SELECT
+	*
+FROM (
+		(SELECT * FROM SELECTION)
+		PIVOT (
+			COUNT(PROJECT_ID)
+			FOR (PROJECT_ID)
+				IN (0)
+		) PIVOT_TABLE
+	)";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.QueryBlocks.Count.ShouldBe(2);
+		}
 	}
 }

@@ -865,6 +865,7 @@ namespace SqlPad.Oracle
 			public const string PhysicalAttributesClauseOrTableSpaceIdentifier = "PhysicalAttributesClauseOrTableSpaceIdentifier";
 			public const string PhysicalAttributesClauseOrTableSpaceIdentifierList = "PhysicalAttributesClauseOrTableSpaceIdentifierList";
 			public const string PhysicalProperties = "PhysicalProperties";
+			public const string PivotAliasedAggregationFunction = "PivotAliasedAggregationFunction";
 			public const string PivotAliasedAggregationFunctionList = "PivotAliasedAggregationFunctionList";
 			public const string PivotAliasedAggregationFunctionListChained = "PivotAliasedAggregationFunctionListChained";
 			public const string PivotClause = "PivotClause";

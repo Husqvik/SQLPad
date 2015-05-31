@@ -2226,7 +2226,7 @@ SELECT DUMMY1, DUMMY2, DUMMY3, DUMMY4 FROM CTE";
 			validationModel.InvalidNonTerminals.Count.ShouldBe(3);
 		}
 
-		[Test(Description = @""), Ignore]
+		[Test(Description = @"")]
 		public void TestInvalidPivotAggregationExpression()
 		{
 			const string sqlText =
@@ -2238,8 +2238,8 @@ FROM (
 	PIVOT (
 		(COUNT(VAL)) AS COUNT1,
 		(COUNT(VAL) + 1) AS COUNT2,
-		SUM(VAL + 1) AS SUM,
-		SUM(VAL) + COUNT(VAL) AS SUM
+		MAX(VAL + 1) AS MAX,
+		MAX(VAL) + COUNT(VAL) AS SUM
 		FOR (VAL)
 			IN (1)
 	) PT";

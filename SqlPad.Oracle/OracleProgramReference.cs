@@ -196,6 +196,8 @@ namespace SqlPad.Oracle
 		
 		public OracleReferenceContainer SourceReferenceContainer { get; private set; }
 
+		public IReadOnlyList<StatementGrammarNode> AggregateFunctions { get; set; }
+
 		public OraclePivotTableReference(OracleStatementSemanticModel semanticModel, OracleDataObjectReference sourceReference, IEnumerable<OracleSelectListColumn> columns)
 			: base(ReferenceType.PivotTable)
 		{
