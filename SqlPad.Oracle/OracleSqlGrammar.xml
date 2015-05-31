@@ -5633,6 +5633,7 @@
         <Sequence>
           <NonTerminal Id="InnerTableReference" />
           <Terminal Id="ObjectAlias" IsOptional="true" />
+          <NonTerminal Id="PivotClauseOrUnpivotClauseOrRowPatternClause" IsOptional="true" />
         </Sequence>
         <Sequence>
           <Terminal Id="LeftParenthesis" />
@@ -5659,12 +5660,10 @@
           <NonTerminal Id="QueryTableExpression" />
           <Terminal Id="RightParenthesis" />
           <NonTerminal Id="FlashbackQueryClause" IsOptional="true" />
-          <NonTerminal Id="PivotClauseOrUnpivotClauseOrRowPatternClause" IsOptional="true" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="QueryTableExpression" />
           <NonTerminal Id="FlashbackQueryClause" IsOptional="true" />
-          <NonTerminal Id="PivotClauseOrUnpivotClauseOrRowPatternClause" IsOptional="true" />
         </Sequence>
         <Sequence>
           <Terminal Id="LeftParenthesis" />
@@ -5706,6 +5705,7 @@
           <Terminal Id="Define" />
           <NonTerminal Id="RowPatternDefinitionList" />
           <Terminal Id="RightParenthesis" />
+          <Terminal Id="ObjectAlias" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -7357,6 +7357,7 @@
           <NonTerminal Id="PivotForClause" />
           <NonTerminal Id="PivotInClause" />
           <Terminal Id="RightParenthesis" />
+          <Terminal Id="ObjectAlias" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -7470,6 +7471,7 @@
           <NonTerminal Id="PivotForClause" />
           <NonTerminal Id="UnpivotInClause" />
           <Terminal Id="RightParenthesis" />
+          <!--<Terminal Id="ObjectAlias" IsOptional="true" />-->
         </Sequence>
       </Sequences>
     </Rule>

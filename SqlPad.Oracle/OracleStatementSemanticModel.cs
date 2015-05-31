@@ -331,7 +331,7 @@ namespace SqlPad.Oracle
 
 				var tableReferenceNonterminals = queryBlock.FromClause == null
 					? StatementGrammarNode.EmptyArray
-					: queryBlock.FromClause.GetDescendantsWithinSameQuery(NonTerminals.TableReference);
+					: queryBlock.FromClause.GetDescendantsWithinSameQuery(NonTerminals.TableReference).Where(n => n[NonTerminals.TableReference] == null);
 
 				var cteReferences = ResolveAccessibleCommonTableExpressions(queryBlockRoot).ToDictionary(qb => qb.CteNode, qb => qb.CteAlias);
 				_accessibleQueryBlockRoot.Add(queryBlock, cteReferences.Keys);
@@ -599,7 +599,12 @@ namespace SqlPad.Oracle
 				}
 			}
 
-			var pivotTableReference = new OraclePivotTableReference(this, objectReference, columns);
+			var pivotTableReference =
+				new OraclePivotTableReference(this, objectReference, columns)
+				{
+					AliasNode = pivotClause[Terminals.ObjectAlias]
+				};
+			
 			queryBlock.ObjectReferences.Add(pivotTableReference);
 
 			var pivotClauseIdentifiers = GetIdentifiers(pivotClause, Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.User);

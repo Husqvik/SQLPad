@@ -2025,14 +2025,14 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 	DUMMY,
 	SUPPLYCHANNEL
 FROM (
-	SELECT MOD(LEVEL, 5) SUPPLYCHANNEL, DUMMY FROM DUAL CONNECT BY LEVEL <= 999
-	)
-	PIVOT (
-		COUNT(SUPPLYCHANNEL) AS COUNT,
-		MAX(SUPPLYCHANNEL) AS MAX
-		FOR (SUPPLYCHANNEL)
-			IN (0 AS INVITES, 1 AS EXTERNAL, 2 AS REUSE, 3 AS NONE, 4 AS DIRECT)
-	) PIVOT_TABLE";
+		(SELECT MOD(LEVEL, 5) SUPPLYCHANNEL, DUMMY FROM DUAL CONNECT BY LEVEL <= 999) SOURCE_DATA
+		PIVOT (
+			COUNT(SUPPLYCHANNEL) AS COUNT,
+			MAX(SOURCE_DATA.SUPPLYCHANNEL) AS MAX
+			FOR (SUPPLYCHANNEL)
+				IN (0 AS INVITES, 1 AS EXTERNAL, 2 AS REUSE, 3 AS NONE, 4 AS DIRECT)
+		) PIVOT_TABLE
+	)";
 
 			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
@@ -2051,7 +2051,7 @@ FROM (
 			var pivotTableReference = (OraclePivotTableReference)semanticModel.MainQueryBlock.ObjectReferences.Single();
 			pivotTableReference.FullyQualifiedObjectName.Name.ShouldBe("PIVOT_TABLE");
 			pivotTableReference.SourceReference.Type.ShouldBe(ReferenceType.InlineView);
-			pivotTableReference.SourceReference.FullyQualifiedObjectName.Name.ShouldBe(null);
+			pivotTableReference.SourceReference.FullyQualifiedObjectName.Name.ShouldBe("SOURCE_DATA");
 			var pivotSourceColumnReferences = pivotTableReference.SourceReferenceContainer.ColumnReferences.ToList();
 			pivotSourceColumnReferences.Count.ShouldBe(3);
 			pivotSourceColumnReferences.ForEach(c => c.Name.ShouldBe("SUPPLYCHANNEL"));

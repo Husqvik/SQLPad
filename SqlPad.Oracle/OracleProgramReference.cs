@@ -208,8 +208,6 @@ namespace SqlPad.Oracle
 			SourceReference = sourceReference;
 
 			RootNode = sourceReference.RootNode;
-			AliasNode = sourceReference.AliasNode;
-			sourceReference.AliasNode = null;
 			Owner = sourceReference.Owner;
 			Owner.ObjectReferences.Remove(sourceReference);
 

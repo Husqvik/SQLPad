@@ -2401,6 +2401,75 @@ FROM
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
+		[Test(Description = @"")]
+		public void TestBasicRowPatternMatchingClause()
+		{
+			const string statement1 =
+@"SELECT
+	*
+FROM
+	Ticker
+	MATCH_RECOGNIZE (
+		 PARTITION BY symbol
+		 ORDER BY tstamp
+		 MEASURES
+			STRT.tstamp AS start_tstamp,
+			LAST(DOWN.tstamp) AS bottom_tstamp,
+			LAST(UP.tstamp) AS end_tstamp
+		 ONE ROW PER MATCH
+		 AFTER MATCH SKIP TO LAST UP
+		 PATTERN (STRT DOWN+ UP+)
+		 DEFINE
+			DOWN AS DOWN.price < PREV(DOWN.price),
+			UP AS UP.price > PREV(UP.price)
+	) MR
+ORDER BY
+	MR.symbol,
+	MR.start_tstamp";
+
+			var statements = Parser.Parse(statement1).ToArray();
+			var statement = statements.Single().Validate();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+		}
+
+		[Test(Description = @"")]
+		public void TestRowPatternMatchingClauseWithNavigationFunction()
+		{
+			const string statement1 =
+@"SELECT
+	M.Symbol, M.Tstamp, M.Matchno, M.Classfr, M.Price, M.Avgp
+FROM Ticker MATCH_RECOGNIZE (
+     PARTITION BY Symbol
+     ORDER BY tstamp
+     MEASURES FINAL AVG(S.Price) AS Avgp,
+              CLASSIFIER() AS Classfr,
+              MATCH_NUMBER() AS Matchno
+     ALL ROWS PER MATCH
+     AFTER MATCH SKIP TO LAST B
+     PATTERN ( {- A -} B+ {- C+ -} )
+     SUBSET S = (A,B)
+     DEFINE
+        A AS A.Price >= 10,
+        B AS B.Price > PREV(B.Price),
+        C AS C.Price <= PREV(C.Price)
+)  M
+ORDER BY symbol, tstamp";
+
+			var statements = Parser.Parse(statement1).ToArray();
+			var statement = statements.Single().Validate();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+		}
+
+		[Test(Description = @"")]
+		public void TestNotBetweenCondition()
+		{
+			const string statement1 = @"SELECT * FROM SELECTION WHERE SELECTION_ID NOT BETWEEN 0 AND 3000000";
+
+			var statements = Parser.Parse(statement1).ToArray();
+			var statement = statements.Single().Validate();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+		}
+
 		public class PlSql
 		{
 			[Test(Description = @"")]
@@ -2829,75 +2898,6 @@ END;";
 	FUNCTION F2(P IN NUMBER) RETURN NUMBER AS BEGIN CHECK_INPUT(P); RETURN 5 * P + P / 2; END;
 	CTE AS (SELECT 5 VAL FROM DUAL)
 SELECT F1(VAL), F2(VAL + 1) FROM CTE";
-
-				var statements = Parser.Parse(statement1).ToArray();
-				var statement = statements.Single().Validate();
-				statement.ParseStatus.ShouldBe(ParseStatus.Success);
-			}
-
-			[Test(Description = @"")]
-			public void TestBasicRowPatternMatchingClause()
-			{
-				const string statement1 =
-@"SELECT
-	*
-FROM
-	Ticker
-	MATCH_RECOGNIZE (
-		 PARTITION BY symbol
-		 ORDER BY tstamp
-		 MEASURES
-			STRT.tstamp AS start_tstamp,
-			LAST(DOWN.tstamp) AS bottom_tstamp,
-			LAST(UP.tstamp) AS end_tstamp
-		 ONE ROW PER MATCH
-		 AFTER MATCH SKIP TO LAST UP
-		 PATTERN (STRT DOWN+ UP+)
-		 DEFINE
-			DOWN AS DOWN.price < PREV(DOWN.price),
-			UP AS UP.price > PREV(UP.price)
-	) MR
-ORDER BY
-	MR.symbol,
-	MR.start_tstamp";
-
-				var statements = Parser.Parse(statement1).ToArray();
-				var statement = statements.Single().Validate();
-				statement.ParseStatus.ShouldBe(ParseStatus.Success);
-			}
-
-			[Test(Description = @"")]
-			public void TestRowPatternMatchingClauseWithNavigationFunction()
-			{
-				const string statement1 =
-@"SELECT
-	M.Symbol, M.Tstamp, M.Matchno, M.Classfr, M.Price, M.Avgp
-FROM Ticker MATCH_RECOGNIZE (
-     PARTITION BY Symbol
-     ORDER BY tstamp
-     MEASURES FINAL AVG(S.Price) AS Avgp,
-              CLASSIFIER() AS Classfr,
-              MATCH_NUMBER() AS Matchno
-     ALL ROWS PER MATCH
-     AFTER MATCH SKIP TO LAST B
-     PATTERN ( {- A -} B+ {- C+ -} )
-     SUBSET S = (A,B)
-     DEFINE
-        A AS A.Price >= 10,
-        B AS B.Price > PREV(B.Price),
-        C AS C.Price <= PREV(C.Price)
-)  M
-ORDER BY symbol, tstamp";
-
-				var statements = Parser.Parse(statement1).ToArray();
-				var statement = statements.Single().Validate();
-				statement.ParseStatus.ShouldBe(ParseStatus.Success);
-			}
-
-			[Test(Description = @"")]
-			public void TestNotBetweenCondition()
-			{
-				const string statement1 = @"SELECT * FROM SELECTION WHERE SELECTION_ID NOT BETWEEN 0 AND 3000000";
 
 				var statements = Parser.Parse(statement1).ToArray();
 				var statement = statements.Single().Validate();
