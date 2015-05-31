@@ -5623,12 +5623,8 @@
     <Rule StartingNonTerminal="TableReference">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="XmlTableClause" />
-          <NonTerminal Id="ObjectAsAlias" IsOptional="true" />
-        </Sequence>
-        <Sequence>
-          <NonTerminal Id="JsonTableClause" />
-          <NonTerminal Id="ObjectAsAlias" IsOptional="true" />
+          <NonTerminal Id="InnerSpecialTableReference" />
+          <NonTerminal Id="PivotClauseOrUnpivotClauseOrRowPatternClause" IsOptional="true" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="InnerTableReference" />
@@ -5638,6 +5634,26 @@
         <Sequence>
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="TableReference" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="InnerSpecialTableReference">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="XmlTableClause" />
+          <NonTerminal Id="ObjectAsAlias" IsOptional="true" />
+          <NonTerminal Id="FlashbackQueryClause" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="JsonTableClause" />
+          <NonTerminal Id="ObjectAsAlias" IsOptional="true" />
+          <NonTerminal Id="FlashbackQueryClause" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="InnerSpecialTableReference" />
           <Terminal Id="RightParenthesis" />
         </Sequence>
       </Sequences>

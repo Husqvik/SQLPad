@@ -2006,6 +2006,41 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 
 			columnReferences.ForEach(r => r.ColumnNodeColumnReferences.Count.ShouldBe(1));
 		}
+		
+		[Test(Description = @""), Ignore]
+		public void TestModelBuildWhenXmlTableCombinedWithFlashbackAndPivotClauses()
+		{
+			const string query1 =
+@"SELECT
+	*
+FROM ((
+    XMLTABLE(
+        'let $language := $RSS_DATA/rss/channel/language
+         for $item in $RSS_DATA/rss/channel/item
+         return
+         	<data>
+         		{$language}
+         		{$item/category}
+         		{$item/pubDate}
+         		{$item/title}
+         		{$item/description}
+         		{$item/link}
+         	</data>'
+        PASSING
+            HTTPURITYPE('http://www.novinky.cz/rss2/vase-zpravy').GETXML() AS RSS_DATA
+        COLUMNS
+        	LANGUAGE VARCHAR2(10) PATH 'language'
+	) AS RSSDATA
+	AS OF TIMESTAMP SYSDATE)
+	PIVOT (COUNT(RSSDATA.LANGUAGE) FOR(LANGUAGE) IN ('cs')) RESULT)";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.QueryBlocks.Count.ShouldBe(1);
+		}
 
 		[Test(Description = @"")]
 		public void TestPivotTableColumnReference()

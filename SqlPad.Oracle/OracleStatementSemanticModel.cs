@@ -345,7 +345,7 @@ namespace SqlPad.Oracle
 						if (specialTableReference != null)
 						{
 							specialTableReference.RootNode = tableReferenceNonterminal;
-							specialTableReference.AliasNode = tableReferenceNonterminal[NonTerminals.ObjectAsAlias, Terminals.ObjectAlias];
+							specialTableReference.AliasNode = tableReferenceNonterminal[NonTerminals.InnerSpecialTableReference].GetSingleDescendant(Terminals.ObjectAlias);
 							queryBlock.ObjectReferences.Add(specialTableReference);
 						}
 					}
@@ -526,7 +526,6 @@ namespace SqlPad.Oracle
 				return;
 			}
 
-			var queryBlock = objectReference.Owner;
 			var columns = new List<OracleSelectListColumn>();
 			var columnNameExtensions = new List<string>();
 			var pivotExpressions = pivotClause[NonTerminals.PivotAliasedAggregationFunctionList];
@@ -539,6 +538,7 @@ namespace SqlPad.Oracle
 				columnNameExtensions.AddRange(nameExtensions);
 			}
 
+			var queryBlock = objectReference.Owner;
 			var columnDefinitions = pivotClause[NonTerminals.PivotInClause, NonTerminals.PivotExpressionsOrAnyListOrNestedQuery, NonTerminals.AliasedExpressionListOrAliasedGroupingExpressionList];
 			if (columnDefinitions != null)
 			{
@@ -826,7 +826,7 @@ namespace SqlPad.Oracle
 				ResolveColumnAndFunctionReferencesFromIdentifiers(null, queryBlock, identifiers, StatementPlacement.TableReference, null);
 			}
 
-			return new OracleSpecialTableReference(ReferenceType.JsonTable, columns);
+			return new OracleSpecialTableReference(ReferenceType.JsonTable, columns) { Owner = queryBlock };
 		}
 
 		private OracleSpecialTableReference ResolveXmlTableReference(OracleQueryBlock queryBlock, StatementGrammarNode tableReferenceNonterminal)
@@ -895,7 +895,7 @@ namespace SqlPad.Oracle
 				ResolveColumnAndFunctionReferencesFromIdentifiers(null, queryBlock, identifiers, StatementPlacement.TableReference, null);
 			}
 
-			return new OracleSpecialTableReference(ReferenceType.XmlTable, columns);
+			return new OracleSpecialTableReference(ReferenceType.XmlTable, columns) { Owner = queryBlock };
 		}
 
 		private static bool TryAssingnColumnForOrdinality(OracleColumn column, IEnumerable<StatementGrammarNode> forOrdinalityTerminals)

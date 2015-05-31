@@ -566,6 +566,7 @@ namespace SqlPad.Oracle
 			public const string InMemoryPriorityOption = "InMemoryPriorityOption";
 			public const string InMemoryTableClause = "InMemoryTableClause";
 			public const string InnerJoinClause = "InnerJoinClause";
+			public const string InnerSpecialTableReference = "InnerSpecialTableReference";
 			public const string InnerTableReference = "InnerTableReference";
 			public const string InParenthesisEnclosedLiteralListOrSubqueryOrWithinRange = "InParenthesisEnclosedLiteralListOrSubqueryOrWithinRange";
 			public const string InsertIntoClause = "InsertIntoClause";
