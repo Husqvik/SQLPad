@@ -207,9 +207,7 @@ namespace SqlPad
 
 			Editor.FontSize = WorkDocument.FontSize;
 
-			_pageModel.DocumentHeaderToolTip = WorkDocument.File == null
-				? "Unsaved"
-				: String.Format("{0}{1}Last change: {2}", WorkDocument.File.FullName, Environment.NewLine, WorkDocument.File.LastWriteTime);
+			UpdateDocumentHeaderToolTip();
 
 			if (String.IsNullOrEmpty(WorkDocument.DocumentTitle))
 			{
@@ -222,6 +220,13 @@ namespace SqlPad
 			OutputViewer.DataModel = _pageModel;
 
 			InitializeTabItem();
+		}
+
+		private void UpdateDocumentHeaderToolTip()
+		{
+			_pageModel.DocumentHeaderToolTip = WorkDocument.File == null
+				? "Unsaved"
+				: String.Format("{0}{1}Last change: {2}", WorkDocument.File.FullName, Environment.NewLine, WorkDocument.File.LastWriteTime);
 		}
 		
 		private void InitializeFileWatcher()
@@ -601,6 +606,8 @@ namespace SqlPad
 			{
 				Editor.Save(WorkDocument.File.FullName);
 			}
+
+			UpdateDocumentHeaderToolTip();
 		}
 
 		private void DatabaseModelInitializedHandler(object sender, EventArgs args)
