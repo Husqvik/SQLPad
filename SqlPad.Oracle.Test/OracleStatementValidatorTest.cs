@@ -2215,7 +2215,7 @@ SELECT DUMMY1, DUMMY2, DUMMY3, DUMMY4 FROM CTE";
 		[Test(Description = @"")]
 		public void TestInvalidLnNvlCondition()
 		{
-			const string sqlText = @"SELECT NULL FROM DUAL WHERE LNNVL(1 <> 1) AND LNNVL((1 <> 1)) AND LNNVL(1 <> 1 AND 0 <> 0) AND LNNVL(0 BETWEEN 1 AND 2)";
+			const string sqlText = @"SELECT NULL FROM DUAL WHERE LNNVL(1 <> 1) AND LNNVL((1 <> 1)) AND LNNVL(1 <> 1 AND 0 <> 0) AND LNNVL(0 BETWEEN 1 AND 2) AND LNNVL(DUMMY IN ('X')) AND LNNVL(DUMMY IN ('X', 'Y')) AND LNNVL(DUMMY IN (SELECT * FROM DUAL))";
 
 			var statement = _oracleSqlParser.Parse(sqlText).Single();
 
@@ -2223,7 +2223,7 @@ SELECT DUMMY1, DUMMY2, DUMMY3, DUMMY4 FROM CTE";
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 
-			validationModel.InvalidNonTerminals.Count.ShouldBe(3);
+			validationModel.InvalidNonTerminals.Count.ShouldBe(4);
 		}
 
 		[Test(Description = @"")]

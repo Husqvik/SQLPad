@@ -572,10 +572,13 @@ namespace SqlPad.Oracle
 						if (programReference.Metadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramLnNvl && programReference.ParameterReferences.Count == 1)
 						{
 							var parameterNode = programReference.ParameterReferences[0].ParameterNode;
-							if (parameterNode[NonTerminals.ChainedCondition] != null || parameterNode[Terminals.Between] != null || (parameterNode[0] != null && String.Equals(parameterNode[0].Id, Terminals.LeftParenthesis)))
+							if (parameterNode[NonTerminals.ChainedCondition] != null ||
+							    parameterNode[Terminals.Between] != null ||
+								!IsInClauseValidWithLnNvl(parameterNode) ||
+							    (parameterNode[0] != null && String.Equals(parameterNode[0].Id, Terminals.LeftParenthesis)))
 							{
 								validationModel.InvalidNonTerminals[parameterNode] =
-									new InvalidNodeValidationData(OracleSemanticErrorType.IncorrectUseOfLnNvlOperator) { Node = parameterNode };
+									new InvalidNodeValidationData(OracleSemanticErrorType.IncorrectUseOfLnNvlOperator) {Node = parameterNode};
 							}
 						}
 					}
@@ -625,6 +628,28 @@ namespace SqlPad.Oracle
 			{
 				validationModel.ProgramNodeValidity[programReference.FunctionIdentifierNode] = new InvalidNodeValidationData(semanticError) { IsRecognized = isRecognized, Node = programReference.FunctionIdentifierNode };
 			}
+		}
+
+		private bool IsInClauseValidWithLnNvl(StatementGrammarNode parameterNode)
+		{
+			if (parameterNode[Terminals.In] == null)
+			{
+				return true;
+			}
+			
+			var parameters = parameterNode[NonTerminals.ExpressionListOrNestedQuery];
+			if (parameters == null)
+			{
+				return true;
+			}
+
+			var expressionList = parameters[NonTerminals.ExpressionList];
+			if (expressionList != null && expressionList.GetDescendants(NonTerminals.ExpressionCommaChainedList).Any())
+			{
+				return false;
+			}
+
+			return true;
 		}
 
 		private string GetCompilationError(OracleProgramReferenceBase reference)
