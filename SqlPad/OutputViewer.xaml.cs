@@ -152,15 +152,6 @@ namespace SqlPad
 			e.Handled = true;
 		}
 
-		private void ReadOnlyGridKeyDownHandler(object sender, KeyEventArgs e)
-		{
-			var keyCode = e.Key;
-			if (!keyCode.In(Key.F4, Key.F5, Key.Escape, Key.System))
-			{
-				e.Handled = true;
-			}
-		}
-
 		private void CanExportDataHandler(object sender, CanExecuteRoutedEventArgs args)
 		{
 			args.CanExecute = ResultGrid.Items.Count > 0;
@@ -332,6 +323,15 @@ namespace SqlPad
 			}
 
 			CompilationError(this, new CompilationErrorArgs(errorUnderCursor));
+		}
+
+		private void ResultGridBeginningEditHandler(object sender, DataGridBeginningEditEventArgs e)
+		{
+			var textCompositionArgs = e.EditingEventArgs as TextCompositionEventArgs;
+			if (textCompositionArgs != null)
+			{
+				e.Cancel = true;
+			}
 		}
 	}
 }

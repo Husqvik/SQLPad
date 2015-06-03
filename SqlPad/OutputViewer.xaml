@@ -63,7 +63,7 @@
 							  SelectionUnit="CellOrRowHeader"
 							  HorizontalGridLinesBrush="LightGray"
 							  VerticalGridLinesBrush="LightGray"
-							  KeyDown="ReadOnlyGridKeyDownHandler"
+							  BeginningEdit="ResultGridBeginningEditHandler"
 							  SelectedCellsChanged="ResultGridSelectedCellsChangedHandler"
 							  ScrollViewer.ScrollChanged="ResultGridScrollChangedHandler"
 							  MouseDoubleClick="ResultGridMouseDoubleClickHandler"
@@ -116,7 +116,7 @@
 				          AutoGenerateColumns="False"
 				          CanUserDeleteRows="False"
 				          CanUserAddRows="False"
-				          KeyDown="ReadOnlyGridKeyDownHandler"
+				          BeginningEdit="ResultGridBeginningEditHandler"
 				          HorizontalGridLinesBrush="LightGray"
 				          VerticalGridLinesBrush="LightGray">
 					<DataGrid.Columns>
@@ -145,7 +145,7 @@
 							  AutoGenerateColumns="False"
 							  CanUserDeleteRows ="False"
 							  CanUserAddRows="False"
-							  KeyDown="ReadOnlyGridKeyDownHandler"
+							  BeginningEdit="ResultGridBeginningEditHandler"
 							  MouseDoubleClick="ErrorListMouseDoubleClickHandler"
 							  HorizontalGridLinesBrush="LightGray"
 							  VerticalGridLinesBrush="LightGray">
