@@ -2124,5 +2124,19 @@ FROM (
 
 			semanticModel.QueryBlocks.Count.ShouldBe(2);
 		}
+
+		[Test(Description = @"")]
+		public void TestOrderBySelectListReferenceWithMultipleSourceTableReferences()
+		{
+			const string query1 = @"SELECT T1.DUMMY FROM DUAL T1, DUAL T2 ORDER BY DUMMY";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.MainQueryBlock.ColumnReferences.Count.ShouldBe(1);
+			semanticModel.MainQueryBlock.ColumnReferences[0].ColumnNodeObjectReferences.Count.ShouldBe(1);
+		}
 	}
 }

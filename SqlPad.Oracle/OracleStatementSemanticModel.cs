@@ -2094,11 +2094,22 @@ namespace SqlPad.Oracle
 
 					if (columnReference.ObjectNode == null)
 					{
-						var orderByColumnAliasOrAsteriskReferences = columnReference.Owner.Columns
-							.Where(c => c.NormalizedName == columnReference.NormalizedName)
-							.Select(c => c.ColumnDescription);
+						var isSelectColumnReferred = false;
+						foreach (var column in columnReference.Owner.Columns)
+						{
+							if (String.Equals(column.NormalizedName, columnReference.NormalizedName) &&
+							    (column.HasExplicitDefinition || column.AsteriskColumn.ColumnReferences[0].ObjectNode != null))
+							{
+								columnReference.ColumnNodeColumnReferences.Add(column.ColumnDescription);
 
-						columnReference.ColumnNodeColumnReferences.AddRange(orderByColumnAliasOrAsteriskReferences);
+								isSelectColumnReferred |= column.HasExplicitDefinition;
+							}
+						}
+
+						if (isSelectColumnReferred)
+						{
+							columnReference.ColumnNodeObjectReferences.Add(columnReference.Owner.SelfObjectReference);
+						}
 					}
 				}
 
@@ -2213,16 +2224,12 @@ namespace SqlPad.Oracle
 					break;
 			}
 
-			if (newColumnReferences.Count == 0)
+			if (hasColumnReferencesToSelectList || newColumnReferences.Count == 0)
 			{
 				return;
 			}
-			
-			if (!hasColumnReferencesToSelectList)
-			{
-				columnReference.ColumnNodeColumnReferences.AddRange(newColumnReferences);
-			}
 
+			columnReference.ColumnNodeColumnReferences.AddRange(newColumnReferences);
 			columnReference.ColumnNodeObjectReferences.Add(rowSourceReference);
 		}
 
