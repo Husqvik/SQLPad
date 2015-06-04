@@ -37,15 +37,16 @@
 		<TabItem Header="_Result set" x:Name="TabResultSet">
 			<DockPanel LastChildFill="True">
 				<StackPanel DockPanel.Dock="Bottom" Visibility="{Binding SelectedCellInfoVisibility}" Orientation="Horizontal" HorizontalAlignment="Right">
-					<TextBlock>
-							<Run Text="Count: "/><Run Text="{Binding SelectedCellValueCount}"/>
-					</TextBlock>
-					<TextBlock Visibility="{Binding SelectedCellNumericInfoVisibility}">
-							<Run Text=" Sum: "/><Run Text="{Binding SelectedCellSum, ConverterCulture={x:Static globalization:CultureInfo.CurrentCulture}}"/>
-					</TextBlock>
-					<TextBlock Visibility="{Binding SelectedCellNumericInfoVisibility}">
-							<Run Text=" Average: "/><Run Text="{Binding SelectedCellAverage, ConverterCulture={x:Static globalization:CultureInfo.CurrentCulture}}"/>
-					</TextBlock>
+					<TextBlock Text="Count: " />
+					<TextBox Text="{Binding SelectedCellValueCount}" IsReadOnly="True" IsReadOnlyCaretVisible="True" BorderThickness="0" Background="Transparent" />
+					<StackPanel Orientation="Horizontal" Visibility="{Binding SelectedCellNumericInfoVisibility}">
+						<TextBlock Text=" Sum: " />
+						<TextBox Text="{Binding SelectedCellSum, ConverterCulture={x:Static globalization:CultureInfo.CurrentCulture}}" IsReadOnly="True" IsReadOnlyCaretVisible="True" BorderThickness="0" Background="Transparent" />
+					</StackPanel>
+					<StackPanel Orientation="Horizontal" Visibility="{Binding SelectedCellNumericInfoVisibility}">
+						<TextBlock Text=" Average: " />
+						<TextBox Text="{Binding SelectedCellAverage, ConverterCulture={x:Static globalization:CultureInfo.CurrentCulture}}" IsReadOnly="True" IsReadOnlyCaretVisible="True" BorderThickness="0" Background="Transparent" />
+					</StackPanel>
 				</StackPanel>
 				<DataGrid x:Name="ResultGrid"
 							  AutoGenerateColumns="False"
