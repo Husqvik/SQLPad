@@ -996,13 +996,13 @@ se";
 		{
 			const string statement = @"SELECT TO_CHAR(12.34, '9G999D00', '') FROM DUAL";
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 30).ToList();
-			items.Count.ShouldBe(9);
-			items[0].Name.ShouldBe("DL - long date format - NLS dependent");
-			items[0].Text.ShouldBe("'DL'");
+			items.Count.ShouldBe(17);
+			items[0].Name.ShouldBe("D - Day of week (1-7). ");
+			items[0].Text.ShouldBe("'D'");
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
-			items[8].Name.ShouldStartWith("YYYY-MM-DD\"T\"HH24:MI:SS - XML date time - ");
-			items[8].Text.ShouldBe("'YYYY-MM-DD\"T\"HH24:MI:SS'");
-			items[8].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+			items[16].Name.ShouldStartWith("YYYY-MM-DD\"T\"HH24:MI:SS - XML date time - ");
+			items[16].Text.ShouldBe("'YYYY-MM-DD\"T\"HH24:MI:SS'");
+			items[16].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
 		}
 
 		[Test(Description = @"")]

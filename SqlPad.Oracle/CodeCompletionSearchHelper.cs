@@ -37,7 +37,7 @@ namespace SqlPad.Oracle
 
 			var truncFunctionOverload = specificFunctionOverloads
 				.FirstOrDefault(o => o.CurrentParameterIndex == 1 && o.ProgramMetadata.Identifier.In(OracleDatabaseModelBase.IdentifierBuiltInProgramTrunc, OracleDatabaseModelBase.IdentifierBuiltInProgramRound) &&
-				                     o.ProgramMetadata.Parameters[o.CurrentParameterIndex + 1].DataType == "VARCHAR2");
+				                     String.Equals(o.ProgramMetadata.Parameters[o.CurrentParameterIndex + 1].DataType, "VARCHAR2"));
 
 			if (truncFunctionOverload != null && HasSingleStringLiteralParameterOrNoParameterToken(truncFunctionOverload))
 			{
@@ -57,16 +57,17 @@ namespace SqlPad.Oracle
 
 			var toCharFunctionOverload = specificFunctionOverloads
 				.FirstOrDefault(o => o.CurrentParameterIndex == 1 && o.ProgramMetadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramToChar &&
-									 o.ProgramMetadata.Parameters[o.CurrentParameterIndex + 1].DataType == "VARCHAR2");
+									 String.Equals(o.ProgramMetadata.Parameters[o.CurrentParameterIndex + 1].DataType, "VARCHAR2"));
 			if (toCharFunctionOverload != null && HasSingleStringLiteralParameterOrNoParameterToken(toCharFunctionOverload))
 			{
 				BuildCommonDateFormatCompletionItems(currentNode, completionItems);
-				completionItems.Add(BuildParameterCompletionItem(currentNode, "J", "J - Julian day; the number of days since January 1, 4712 BC. "));	
+				completionItems.Add(BuildParameterCompletionItem(currentNode, "J", "J - Julian day; the number of days since January 1, 4712 BC. "));
+				completionItems.Add(BuildParameterCompletionItem(currentNode, "Q", "Q - Quarter of year (1, 2, 3, 4; January - March = 1). "));
 			}
 
 			toCharFunctionOverload = specificFunctionOverloads
 				.FirstOrDefault(o => o.CurrentParameterIndex == 2 && o.ProgramMetadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramToChar &&
-				                     o.ProgramMetadata.Parameters[o.CurrentParameterIndex + 1].DataType == "VARCHAR2");
+				                     String.Equals(o.ProgramMetadata.Parameters[o.CurrentParameterIndex + 1].DataType, "VARCHAR2"));
 			if (toCharFunctionOverload != null && HasSingleStringLiteralParameterOrNoParameterToken(toCharFunctionOverload))
 			{
 				const string itemText = "NLS_NUMERIC_CHARACTERS = '<decimal separator><group separator>' NLS_CURRENCY = 'currency_symbol' NLS_ISO_CURRENCY = <territory>";
@@ -76,7 +77,7 @@ namespace SqlPad.Oracle
 
 			var toToDateOrTimestampFunctionOverload = specificFunctionOverloads
 				.FirstOrDefault(o => o.CurrentParameterIndex == 1 && o.ProgramMetadata.Identifier.In(OracleDatabaseModelBase.IdentifierBuiltInProgramToDate, OracleDatabaseModelBase.IdentifierBuiltInProgramToTimestamp, OracleDatabaseModelBase.IdentifierBuiltInProgramToTimestampWithTimeZone) &&
-									 o.ProgramMetadata.Parameters[o.CurrentParameterIndex + 1].DataType == "VARCHAR2");
+									 String.Equals(o.ProgramMetadata.Parameters[o.CurrentParameterIndex + 1].DataType, "VARCHAR2"));
 			if (toToDateOrTimestampFunctionOverload != null && HasSingleStringLiteralParameterOrNoParameterToken(toToDateOrTimestampFunctionOverload))
 			{
 				BuildCommonDateFormatCompletionItems(currentNode, completionItems);
@@ -201,7 +202,7 @@ namespace SqlPad.Oracle
 			return completionItems;
 		}
 
-		private static void BuildCommonDateFormatCompletionItems(StatementGrammarNode currentNode, List<ICodeCompletionItem> completionItems)
+		private static void BuildCommonDateFormatCompletionItems(StatementGrammarNode currentNode, ICollection<ICodeCompletionItem> completionItems)
 		{
 			completionItems.Add(BuildParameterCompletionItem(currentNode, "DL", "DL - long date format - NLS dependent"));
 			completionItems.Add(BuildParameterCompletionItem(currentNode, "DS", "DS - short date format - NLS dependent"));
@@ -211,6 +212,13 @@ namespace SqlPad.Oracle
 			completionItems.Add(BuildParameterCompletionItem(currentNode, "YYYY-MM-DD\"T\"HH24:MI:SS", String.Format("YYYY-MM-DD\"T\"HH24:MI:SS - XML date time - {0}", DateTime.Now.ToString("yyyy-MM-dd\"T\"HH:mm:ss"))));
 			completionItems.Add(BuildParameterCompletionItem(currentNode, "YYYY-MM-DD HH24:MI:SS.FF9 TZH:TZM", String.Format("YYYY-MM-DD HH24:MI:SS.FF9 TZH:TZM - {0}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff000 zzz"))));
 			completionItems.Add(BuildParameterCompletionItem(currentNode, "DY, DD MON YYYY HH24:MI:SS TZD", String.Format("DY, DD MON YYYY HH24:MI:SS TZD - {0} - NLS dependent", DateTime.Now.ToString("r"))));
+			completionItems.Add(BuildParameterCompletionItem(currentNode, "DAY", "DAY (NAME OF DAY); Day (Name of day), padded with blanks to display width of the widest name of day in the date language used for this element. "));
+			completionItems.Add(BuildParameterCompletionItem(currentNode, "D", "D - Day of week (1-7). "));
+			completionItems.Add(BuildParameterCompletionItem(currentNode, "DD", "DD - Day of month (1-31). "));
+			completionItems.Add(BuildParameterCompletionItem(currentNode, "DDD", "DDD - Day of year (1-366). "));
+			completionItems.Add(BuildParameterCompletionItem(currentNode, "MON", "MON - Abbreviated name of month. "));
+			completionItems.Add(BuildParameterCompletionItem(currentNode, "MONTH", "MONTH - Name of month, padded with blanks to display width of the widest name of month in the date language used for this element. "));
+			completionItems.Add(BuildParameterCompletionItem(currentNode, "SSSSS", "SSSSS - Seconds past midnight (0-86399). "));
 		}
 
 		private static bool HasSingleStringLiteralParameterOrNoParameterToken(OracleCodeCompletionFunctionOverload functionOverload, int? parameterIndex = null)
