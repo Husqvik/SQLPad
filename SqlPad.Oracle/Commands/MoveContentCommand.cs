@@ -62,7 +62,7 @@ namespace SqlPad.Oracle.Commands
 			if (currentNode == null)
 				return;
 
-			var movedNode = SupportedNodeIds.Select(id => currentNode.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBoundary, id))
+			var movedNode = SupportedNodeIds.Select(id => currentNode.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBlock, id))
 				.FirstOrDefault(n => n != null);
 
 			SourcePosition positionToExchange;
@@ -145,7 +145,7 @@ namespace SqlPad.Oracle.Commands
 
 		private SourcePosition FindDescendantPositionToExchange(StatementGrammarNode movedNode)
 		{
-			var nodeToExchange = movedNode.ParentNode.GetPathFilterDescendants(NodeFilters.BreakAtNestedQueryBoundary, movedNode.Id)
+			var nodeToExchange = movedNode.ParentNode.GetPathFilterDescendants(NodeFilters.BreakAtNestedQueryBlock, movedNode.Id)
 				.FirstOrDefault(n => n != movedNode);
 
 			return CreateNodePosition(movedNode, nodeToExchange);

@@ -125,7 +125,7 @@ namespace SqlPad.Oracle
 						: insertTarget.ColumnListNode.GetDescendants(Terminals.Identifier).Count();
 
 					var rowSourceColumnCount = insertTarget.RowSource == null
-						? insertTarget.ValueList.GetDescendantsWithinSameQuery(NonTerminals.ExpressionOrDefaultValue).Count()
+						? insertTarget.ValueList.GetDescendantsWithinSameQueryBlock(NonTerminals.ExpressionOrDefaultValue).Count()
 						: insertTarget.RowSource.Columns.Count(c => !c.IsAsterisk);
 
 					if (insertColumnCount == rowSourceColumnCount)

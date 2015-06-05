@@ -143,9 +143,9 @@ namespace SqlPad.Oracle
 				: identifier.ToQuotedIdentifier().ToSimpleIdentifier();
 		}
 
-		public static IEnumerable<StatementGrammarNode> GetDescendantsWithinSameQuery(this StatementGrammarNode node, params string[] descendantNodeIds)
+		public static IEnumerable<StatementGrammarNode> GetDescendantsWithinSameQueryBlock(this StatementGrammarNode node, params string[] descendantNodeIds)
 		{
-			return node.GetPathFilterDescendants(NodeFilters.BreakAtNestedQueryBoundary, descendantNodeIds);
+			return node.GetPathFilterDescendants(NodeFilters.BreakAtNestedQueryBlock, descendantNodeIds);
 		}
 
 		public static IEnumerable<T> FilterRecursiveReferences<T>(this IEnumerable<T> source) where T : OracleReference
@@ -206,7 +206,7 @@ namespace SqlPad.Oracle
 		{
 			return node == null
 				? null
-				: node.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBoundary, NonTerminals.Expression);
+				: node.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBlock, NonTerminals.Expression);
 		}
 
 		public static string ToCategoryLabel(this ReferenceType type)
@@ -243,7 +243,7 @@ namespace SqlPad.Oracle
 
 	public static class NodeFilters
 	{
-		public static bool BreakAtNestedQueryBoundary(StatementGrammarNode node)
+		public static bool BreakAtNestedQueryBlock(StatementGrammarNode node)
 		{
 			return node.Id != NonTerminals.NestedQuery;
 		}

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
+using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
 
 namespace SqlPad.Oracle
 {
@@ -201,7 +202,7 @@ namespace SqlPad.Oracle
 			{
 				var queryBlockRoot = queryBlock.RootNode;
 
-				var commonTableExpression = queryBlockRoot.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBoundary, NonTerminals.CommonTableExpression);
+				var commonTableExpression = queryBlockRoot.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBlock, NonTerminals.CommonTableExpression);
 				if (commonTableExpression != null)
 				{
 					queryBlock.AliasNode = commonTableExpression.ChildNodes[0];
@@ -331,14 +332,14 @@ namespace SqlPad.Oracle
 
 				var tableReferenceNonterminals = queryBlock.FromClause == null
 					? StatementGrammarNode.EmptyArray
-					: queryBlock.FromClause.GetDescendantsWithinSameQuery(NonTerminals.TableReference).Where(n => n[NonTerminals.TableReference] == null);
+					: queryBlock.FromClause.GetDescendantsWithinSameQueryBlock(NonTerminals.TableReference).Where(n => n[NonTerminals.TableReference] == null);
 
 				var cteReferences = ResolveAccessibleCommonTableExpressions(queryBlockRoot).ToDictionary(qb => qb.CteNode, qb => qb.CteAlias);
 				_accessibleQueryBlockRoot.Add(queryBlock, cteReferences.Keys);
 
 				foreach (var tableReferenceNonterminal in tableReferenceNonterminals)
 				{
-					var queryTableExpression = tableReferenceNonterminal.GetDescendantsWithinSameQuery(NonTerminals.QueryTableExpression).SingleOrDefault();
+					var queryTableExpression = tableReferenceNonterminal.GetDescendantsWithinSameQueryBlock(NonTerminals.QueryTableExpression).SingleOrDefault();
 					if (queryTableExpression == null)
 					{
 						var specialTableReference = ResolveXmlTableReference(queryBlock, tableReferenceNonterminal) ?? ResolveJsonTableReference(queryBlock, tableReferenceNonterminal);
@@ -420,7 +421,7 @@ namespace SqlPad.Oracle
 									
 									queryBlock.ObjectReferences.Add(tableCollectionDataObjectReference);
 
-									var identifiers = functionCallNodes.SelectMany(n => n.GetDescendantsWithinSameQuery(Terminals.Identifier));
+									var identifiers = functionCallNodes.SelectMany(n => n.GetDescendantsWithinSameQueryBlock(Terminals.Identifier));
 									ResolveColumnAndFunctionReferencesFromIdentifiers(queryBlock, queryBlock, identifiers, StatementPlacement.TableReference, null);
 								}
 							}
@@ -520,7 +521,7 @@ namespace SqlPad.Oracle
 
 		private void ResolvePivotClause(OracleDataObjectReference objectReference)
 		{
-			var pivotClause = objectReference.RootNode.GetSingleDescendant(NonTerminals.PivotClause);
+			var pivotClause = objectReference.RootNode.GetDescendantsWithinSameQueryBlock(NonTerminals.PivotClause).SingleOrDefault();
 			if (pivotClause == null)
 			{
 				return;
@@ -709,7 +710,7 @@ namespace SqlPad.Oracle
 				return;
 			}
 
-			var recursiveCycleClauseIdentifiers = identifierListNode.GetDescendantsWithinSameQuery(Terminals.Identifier);
+			var recursiveCycleClauseIdentifiers = identifierListNode.GetDescendantsWithinSameQueryBlock(Terminals.Identifier);
 			ResolveColumnAndFunctionReferencesFromIdentifiers(queryBlock, queryBlock, recursiveCycleClauseIdentifiers, StatementPlacement.RecursiveSearchOrCycleClause, null);
 
 			var herarchicalQueryClauseGrammarSpecificFunctions = GetGrammarSpecificFunctionNodes(identifierListNode);
@@ -753,7 +754,7 @@ namespace SqlPad.Oracle
 				return;
 			}
 
-			var recursiveSearchClauseIdentifiers = orderExpressionListNode.GetDescendantsWithinSameQuery(Terminals.Identifier);
+			var recursiveSearchClauseIdentifiers = orderExpressionListNode.GetDescendantsWithinSameQueryBlock(Terminals.Identifier);
 			ResolveColumnAndFunctionReferencesFromIdentifiers(queryBlock, queryBlock, recursiveSearchClauseIdentifiers, StatementPlacement.RecursiveSearchOrCycleClause, null);
 
 			var herarchicalQueryClauseGrammarSpecificFunctions = GetGrammarSpecificFunctionNodes(orderExpressionListNode);
@@ -783,7 +784,7 @@ namespace SqlPad.Oracle
 
 		private OracleSpecialTableReference ResolveJsonTableReference(OracleQueryBlock queryBlock, StatementGrammarNode tableReferenceNonterminal)
 		{
-			var jsonTableClause = tableReferenceNonterminal.GetDescendantsWithinSameQuery(NonTerminals.JsonTableClause).SingleOrDefault();
+			var jsonTableClause = tableReferenceNonterminal.GetDescendantsWithinSameQueryBlock(NonTerminals.JsonTableClause).SingleOrDefault();
 			if (jsonTableClause == null)
 			{
 				return null;
@@ -806,11 +807,11 @@ namespace SqlPad.Oracle
 				{
 					var jsonReturnTypeNode = jsonTableColumn[1];
 					column.DataType = OracleDataType.FromJsonReturnTypeNode(jsonReturnTypeNode);
-					if (column.DataType.FullyQualifiedName.Name == "VARCHAR2" && column.DataType.Length == null)
+					if (column.DataType.Length == null && String.Equals(column.DataType.FullyQualifiedName.Name, TerminalValues.Varchar2))
 					{
 						string maxStringSize;
 						if (!DatabaseModel.SystemParameters.TryGetValue(OracleDatabaseModelBase.SystemParameterNameMaxStringSize, out maxStringSize) ||
-						    maxStringSize == "STANDARD")
+						    String.Equals(maxStringSize, "STANDARD"))
 						{
 							column.DataType.Length = 4000;
 						}
@@ -834,7 +835,7 @@ namespace SqlPad.Oracle
 
 		private OracleSpecialTableReference ResolveXmlTableReference(OracleQueryBlock queryBlock, StatementGrammarNode tableReferenceNonterminal)
 		{
-			var xmlTableClause = tableReferenceNonterminal.GetDescendantsWithinSameQuery(NonTerminals.XmlTableClause).SingleOrDefault();
+			var xmlTableClause = tableReferenceNonterminal.GetDescendantsWithinSameQueryBlock(NonTerminals.XmlTableClause).SingleOrDefault();
 			if (xmlTableClause == null)
 			{
 				return null;
@@ -922,7 +923,7 @@ namespace SqlPad.Oracle
 				return;
 			}
 
-			var herarchicalQueryClauseIdentifiers = queryBlock.HierarchicalQueryClause.GetDescendantsWithinSameQuery(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level);
+			var herarchicalQueryClauseIdentifiers = queryBlock.HierarchicalQueryClause.GetDescendantsWithinSameQueryBlock(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level);
 			ResolveColumnAndFunctionReferencesFromIdentifiers(queryBlock, queryBlock, herarchicalQueryClauseIdentifiers, StatementPlacement.ConnectBy, null);
 
 			var herarchicalQueryClauseGrammarSpecificFunctions = GetGrammarSpecificFunctionNodes(queryBlock.HierarchicalQueryClause);
@@ -996,7 +997,7 @@ namespace SqlPad.Oracle
 					
 					foreach (var identifier in GetIdentifiers(assignmentExpression))
 					{
-						if (identifier.GetPathFilterAncestor(n => n.Id != NonTerminals.ModelRulesClauseAssignment, NonTerminals.ConditionOrExpressionList) == null)
+						if (identifier.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.ModelRulesClauseAssignment), NonTerminals.ConditionOrExpressionList) == null)
 						{
 							ruleMeasureIdentifiers.Add(identifier);
 						}
@@ -1053,8 +1054,8 @@ namespace SqlPad.Oracle
 					};
 
 				var lastnode = aliasedExpression.ChildNodes[aliasedExpression.ChildNodes.Count - 1];
-				var aliasTerminalOffset = lastnode.Id == NonTerminals.ColumnAsAlias ? lastnode.TerminalCount : 0;
-				if (aliasedExpression.TerminalCount - aliasTerminalOffset == 1 && aliasedExpression.FirstTerminalNode.Id == Terminals.Identifier)
+				var aliasTerminalOffset = String.Equals(lastnode.Id, NonTerminals.ColumnAsAlias) ? lastnode.TerminalCount : 0;
+				if (aliasedExpression.TerminalCount - aliasTerminalOffset == 1 && String.Equals(aliasedExpression.FirstTerminalNode.Id, Terminals.Identifier))
 				{
 					sqlModelColumn.IsDirectReference = true;
 
@@ -1079,7 +1080,7 @@ namespace SqlPad.Oracle
 				nodeIds = StandardIdentifierIds;
 			}
 
-			return nonTerminal.GetDescendantsWithinSameQuery(nodeIds);
+			return nonTerminal.GetDescendantsWithinSameQueryBlock(nodeIds);
 		}
 
 		private void ResolveInlineViewOrCommonTableExpressionRelations()
@@ -1273,7 +1274,7 @@ namespace SqlPad.Oracle
 
 		private bool TryMakeRedundantIfComma(StatementGrammarNode terminal, out StatementGrammarNode commaTerminal)
 		{
-			commaTerminal = terminal != null && terminal.Id == Terminals.Comma && _redundantTerminals.Add(terminal) ? terminal : null;
+			commaTerminal = terminal != null && String.Equals(terminal.Id, Terminals.Comma) && _redundantTerminals.Add(terminal) ? terminal : null;
 			return commaTerminal != null;
 		}
 
@@ -1389,10 +1390,10 @@ namespace SqlPad.Oracle
 				return;
 			}
 
-			var whereClauseRootNode = rootNode.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.WhereClause);
+			var whereClauseRootNode = rootNode.ChildNodes.SingleOrDefault(n => String.Equals(n.Id, NonTerminals.WhereClause));
 			if (whereClauseRootNode != null)
 			{
-				var whereClauseIdentifiers = whereClauseRootNode.GetDescendantsWithinSameQuery(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level);
+				var whereClauseIdentifiers = whereClauseRootNode.GetDescendantsWithinSameQueryBlock(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level);
 				ResolveColumnAndFunctionReferencesFromIdentifiers(null, MainObjectReferenceContainer, whereClauseIdentifiers, StatementPlacement.Where, null);
 			}
 
@@ -1464,13 +1465,13 @@ namespace SqlPad.Oracle
 				return;
 			}
 
-			var mergeConditionIdentifiers = mergeCondition.GetDescendantsWithinSameQuery(Terminals.Identifier, Terminals.RowIdPseudoColumn);
+			var mergeConditionIdentifiers = mergeCondition.GetDescendantsWithinSameQueryBlock(Terminals.Identifier, Terminals.RowIdPseudoColumn);
 			ResolveColumnAndFunctionReferencesFromIdentifiers(null, MainObjectReferenceContainer, mergeConditionIdentifiers, StatementPlacement.None, null);
 
 			var updateInsertClause = rootNode[8];
 			if (updateInsertClause != null && String.Equals(updateInsertClause.Id, NonTerminals.MergeUpdateInsertClause))
 			{
-				var updateInsertClauseIdentifiers = updateInsertClause.GetDescendantsWithinSameQuery(Terminals.Identifier, Terminals.RowIdPseudoColumn);
+				var updateInsertClauseIdentifiers = updateInsertClause.GetDescendantsWithinSameQueryBlock(Terminals.Identifier, Terminals.RowIdPseudoColumn);
 				ResolveColumnAndFunctionReferencesFromIdentifiers(null, MainObjectReferenceContainer, updateInsertClauseIdentifiers, StatementPlacement.None, null);
 			}
 
@@ -1501,7 +1502,7 @@ namespace SqlPad.Oracle
 				return;
 			}
 
-			var innerTableReference = tableReferenceNode.GetDescendantsWithinSameQuery(NonTerminals.InnerTableReference).SingleOrDefault();
+			var innerTableReference = tableReferenceNode.GetDescendantsWithinSameQueryBlock(NonTerminals.InnerTableReference).SingleOrDefault();
 			if (innerTableReference == null)
 			{
 				return;
@@ -1510,7 +1511,7 @@ namespace SqlPad.Oracle
 			var objectIdentifier = innerTableReference[NonTerminals.QueryTableExpression, Terminals.ObjectIdentifier];
 			if (objectIdentifier != null)
 			{
-				var objectReferenceAlias = innerTableReference.ParentNode.ChildNodes.SingleOrDefault(n => n.Id == Terminals.ObjectAlias);
+				var objectReferenceAlias = innerTableReference.ParentNode.ChildNodes.SingleOrDefault(n => String.Equals(n.Id, Terminals.ObjectAlias));
 				MainObjectReferenceContainer.MainObjectReference = CreateDataObjectReference(tableReferenceNode, objectIdentifier, objectReferenceAlias);
 			}
 			else if (MainQueryBlock != null)
@@ -1518,7 +1519,7 @@ namespace SqlPad.Oracle
 				MainObjectReferenceContainer.MainObjectReference = MainQueryBlock.SelfObjectReference;
 			}
 
-			if (rootNode.FirstTerminalNode.Id != Terminals.Update)
+			if (!String.Equals(rootNode.FirstTerminalNode.Id, Terminals.Update))
 			{
 				return;
 			}
@@ -1529,7 +1530,7 @@ namespace SqlPad.Oracle
 				return;
 			}
 
-			var identifiers = updateListNode.GetDescendantsWithinSameQuery(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level);
+			var identifiers = updateListNode.GetDescendantsWithinSameQueryBlock(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level);
 			ResolveColumnAndFunctionReferencesFromIdentifiers(null, MainObjectReferenceContainer, identifiers, StatementPlacement.None, null, GetPrefixNonTerminalFromPrefixedUpdatedColumnReference);
 		}
 
@@ -1542,7 +1543,7 @@ namespace SqlPad.Oracle
 
 		private void ResolveMainObjectReferenceInsert()
 		{
-			var insertIntoClauses = Statement.RootNode.GetDescendantsWithinSameQuery(NonTerminals.InsertIntoClause);
+			var insertIntoClauses = Statement.RootNode.GetDescendantsWithinSameQueryBlock(NonTerminals.InsertIntoClause);
 			foreach (var insertIntoClause in insertIntoClauses)
 			{
 				var dmlTableExpressionClause = insertIntoClause.ChildNodes.SingleOrDefault(n => String.Equals(n.Id, NonTerminals.DmlTableExpressionClause));
@@ -1580,7 +1581,7 @@ namespace SqlPad.Oracle
 					String.Equals(insertIntoClause.ParentNode.ParentNode.Id, NonTerminals.ConditionalInsertConditionBranch) &&
 					(condition = insertIntoClause.ParentNode.ParentNode[1]) != null && String.Equals(condition.Id, NonTerminals.Condition))
 				{
-					var identifiers = condition.GetDescendantsWithinSameQuery(Terminals.Identifier);
+					var identifiers = condition.GetDescendantsWithinSameQueryBlock(Terminals.Identifier);
 					ResolveColumnAndFunctionReferencesFromIdentifiers(null, sourceReferenceContainer, identifiers, StatementPlacement.None, null);
 					ResolveColumnObjectReferences(sourceReferenceContainer.ColumnReferences, sourceReferenceContainer.ObjectReferences, OracleDataObjectReference.EmptyArray);
 				}
@@ -1602,7 +1603,7 @@ namespace SqlPad.Oracle
 					var nestedQuery = insertIntoClause.ParentNode[NonTerminals.InsertValuesOrSubquery, NonTerminals.NestedQuery];
 					if (nestedQuery != null)
 					{
-						var queryBlock = nestedQuery.GetDescendantsWithinSameQuery(NonTerminals.QueryBlock).FirstOrDefault();
+						var queryBlock = nestedQuery.GetDescendantsWithinSameQueryBlock(NonTerminals.QueryBlock).FirstOrDefault();
 						if (queryBlock != null)
 						{
 							insertTarget.RowSource = _queryBlockNodes[queryBlock];
@@ -1611,7 +1612,7 @@ namespace SqlPad.Oracle
 				}
 				else
 				{
-					var identifiers = insertTarget.ValueList.GetDescendantsWithinSameQuery(Terminals.Identifier);
+					var identifiers = insertTarget.ValueList.GetDescendantsWithinSameQueryBlock(Terminals.Identifier);
 					ResolveColumnAndFunctionReferencesFromIdentifiers(null, insertTarget, identifiers, StatementPlacement.ValuesClause, null); // TODO: Fix root node is not set
 					ResolveColumnObjectReferences(insertTarget.ColumnReferences, sourceReferenceContainer.ObjectReferences, OracleDataObjectReference.EmptyArray);
 					ResolveFunctionReferences(insertTarget.ProgramReferences);
@@ -1652,8 +1653,8 @@ namespace SqlPad.Oracle
 
 		private void ResolveCrossAndOuterAppliedTableReferences(OracleQueryBlock queryBlock)
 		{
-			var tableReferenceJoinClause = queryBlock.RootNode.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.TableReferenceJoinClause);
-			var isApplied = queryBlock.RootNode.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.CrossOrOuterApplyClause) != null;
+			var tableReferenceJoinClause = queryBlock.RootNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.QueryBlock), NonTerminals.TableReferenceJoinClause);
+			var isApplied = queryBlock.RootNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.QueryBlock), NonTerminals.CrossOrOuterApplyClause) != null;
 			if (tableReferenceJoinClause == null || !isApplied)
 			{
 				return;
@@ -1675,7 +1676,7 @@ namespace SqlPad.Oracle
 			
 			foreach (var parentId in new[] { NonTerminals.Expression, NonTerminals.Condition })
 			{
-				var parentExpression = nestedQueryRoot.GetPathFilterAncestor(n => allowMoreThanOneLevel || n.Id != NonTerminals.NestedQuery, parentId);
+				var parentExpression = nestedQueryRoot.GetPathFilterAncestor(n => allowMoreThanOneLevel || !String.Equals(n.Id, NonTerminals.NestedQuery), parentId);
 				if (parentExpression == null)
 					continue;
 				
@@ -1691,11 +1692,11 @@ namespace SqlPad.Oracle
 
 		private void ResolveConcatenatedQueryBlocks(OracleQueryBlock queryBlock)
 		{
-			if (queryBlock.RootNode.ParentNode.ParentNode.Id != NonTerminals.ConcatenatedSubquery)
+			if (!String.Equals(queryBlock.RootNode.ParentNode.ParentNode.Id, NonTerminals.ConcatenatedSubquery))
 				return;
 			
 			var grandGrandParent = queryBlock.RootNode.ParentNode.ParentNode.ParentNode;
-			var parentQueryBlockNode = grandGrandParent.Id == NonTerminals.ConcatenatedSubquery
+			var parentQueryBlockNode = String.Equals(grandGrandParent.Id, NonTerminals.ConcatenatedSubquery)
 				? grandGrandParent[NonTerminals.Subquery, NonTerminals.QueryBlock]
 				: grandGrandParent[NonTerminals.QueryBlock];
 
@@ -1789,14 +1790,14 @@ namespace SqlPad.Oracle
 				var hasInstanceDefinition = false;
 				foreach (var terminal in databaseLinkReference.DatabaseLinkNode.Terminals)
 				{
-					var isLinkIdentifier = terminal.Id == Terminals.DatabaseLinkIdentifier;
-					if (terminal.Id == Terminals.Dot || (isLinkIdentifier && terminal.Token.Value.Contains('.')))
+					var isLinkIdentifier = String.Equals(terminal.Id, Terminals.DatabaseLinkIdentifier);
+					if (String.Equals(terminal.Id, Terminals.Dot) || (isLinkIdentifier && terminal.Token.Value.Contains('.')))
 					{
 						includesDomain = true;
 					}
 
 					var characterIndex = 0;
-					if (terminal.Id == Terminals.AtCharacter || (isLinkIdentifier && (characterIndex = terminal.Token.Value.IndexOf('@')) != -1))
+					if (String.Equals(terminal.Id, Terminals.AtCharacter) || (isLinkIdentifier && (characterIndex = terminal.Token.Value.IndexOf('@')) != -1))
 					{
 						hasInstanceDefinition = true;
 
@@ -2394,7 +2395,7 @@ namespace SqlPad.Oracle
 			queryBlock.WhereClause = queryBlock.RootNode[NonTerminals.WhereClause];
 			if (queryBlock.WhereClause != null)
 			{
-				var whereClauseIdentifiers = queryBlock.WhereClause.GetDescendantsWithinSameQuery(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level);
+				var whereClauseIdentifiers = queryBlock.WhereClause.GetDescendantsWithinSameQueryBlock(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level);
 				ResolveColumnAndFunctionReferencesFromIdentifiers(queryBlock, queryBlock, whereClauseIdentifiers, StatementPlacement.Where, null);
 
 				var whereClauseGrammarSpecificFunctions = GetGrammarSpecificFunctionNodes(queryBlock.WhereClause);
@@ -2419,7 +2420,7 @@ namespace SqlPad.Oracle
 				return;
 			}
 
-			identifiers = queryBlock.HavingClause.GetDescendantsWithinSameQuery(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level);
+			identifiers = queryBlock.HavingClause.GetDescendantsWithinSameQueryBlock(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level);
 			ResolveColumnAndFunctionReferencesFromIdentifiers(queryBlock, queryBlock, identifiers, StatementPlacement.Having, null);
 
 			var havingClauseGrammarSpecificFunctions = GetGrammarSpecificFunctionNodes(queryBlock.HavingClause);
@@ -2435,7 +2436,7 @@ namespace SqlPad.Oracle
 			if (queryBlock.OrderByClause == null)
 				return;
 
-			var identifiers = queryBlock.OrderByClause.GetDescendantsWithinSameQuery(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level);
+			var identifiers = queryBlock.OrderByClause.GetDescendantsWithinSameQueryBlock(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level);
 			ResolveColumnAndFunctionReferencesFromIdentifiers(queryBlock, queryBlock, identifiers, StatementPlacement.OrderBy, null);
 			var grammarSpecificFunctions = GetGrammarSpecificFunctionNodes(queryBlock.OrderByClause);
 			CreateGrammarSpecificFunctionReferences(grammarSpecificFunctions, queryBlock, queryBlock.ProgramReferences, StatementPlacement.OrderBy, null);
@@ -2443,7 +2444,7 @@ namespace SqlPad.Oracle
 
 		private IEnumerable<StatementGrammarNode> GetGrammarSpecificFunctionNodes(StatementGrammarNode sourceNode, Func<StatementGrammarNode, bool> filter = null)
 		{
-			return sourceNode.GetPathFilterDescendants(n => NodeFilters.BreakAtNestedQueryBoundary(n) && (filter == null || filter(n)),
+			return sourceNode.GetPathFilterDescendants(n => NodeFilters.BreakAtNestedQueryBlock(n) && (filter == null || filter(n)),
 				Terminals.Count, Terminals.NegationOrNull, Terminals.JsonExists, NonTerminals.AggregateFunction, NonTerminals.AnalyticFunction, NonTerminals.WithinGroupAggregationFunction);
 		}
 

@@ -278,7 +278,7 @@ namespace SqlPad.Oracle
 			{
 				return OrderByClause == null
 					? Enumerable.Empty<OracleOrderByColumnIndexReference>()
-					: OrderByClause.GetDescendantsWithinSameQuery(NonTerminals.OrderExpression)
+					: OrderByClause.GetDescendantsWithinSameQueryBlock(NonTerminals.OrderExpression)
 						.Select(GetColumnIndexReference).Where(r => r.ColumnIndex != OracleOrderByColumnIndexReference.None.ColumnIndex);
 			}
 		}

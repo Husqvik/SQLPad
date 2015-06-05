@@ -137,7 +137,7 @@ namespace SqlPad.Oracle.Commands
 		{
 			if (column.HasExplicitDefinition)
 			{
-				var columnExpression = column.RootNode.GetDescendantsWithinSameQuery(NonTerminals.Expression).First().GetText(statementText);
+				var columnExpression = column.RootNode.GetDescendantsWithinSameQueryBlock(NonTerminals.Expression).First().GetText(statementText);
 				var offset = column.RootNode.SourcePosition.IndexStart;
 
 				foreach (var columnReference in column.ColumnReferences

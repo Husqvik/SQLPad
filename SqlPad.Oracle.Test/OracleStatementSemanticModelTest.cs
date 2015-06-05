@@ -2138,5 +2138,44 @@ FROM (
 			semanticModel.MainQueryBlock.ColumnReferences.Count.ShouldBe(1);
 			semanticModel.MainQueryBlock.ColumnReferences[0].ColumnNodeObjectReferences.Count.ShouldBe(1);
 		}
+
+		[Test(Description = @"")]
+		public void TestPivotTableReferenceWithinInlineView()
+		{
+			const string query1 =
+@"SELECT
+    UNANSWERED
+FROM (
+    SELECT
+        UNANSWERED
+    FROM
+        (SELECT 1 COUNTRY_ID, 0 STATUS FROM DUAL)
+        PIVOT (
+            COUNT(*)
+            FOR (STATUS) IN (
+                0 AS UNANSWERED
+            )
+        ) RESPONDENTS
+	)";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.QueryBlocks.Count.ShouldBe(3);
+
+			semanticModel.MainQueryBlock.Columns.Count.ShouldBe(1);
+			semanticModel.MainQueryBlock.Columns[0].ColumnReferences.Count.ShouldBe(1);
+			semanticModel.MainQueryBlock.Columns[0].ColumnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
+
+			var inlineView = semanticModel.MainQueryBlock.ObjectReferences.Single().QueryBlocks.Single();
+			inlineView.Columns.Count.ShouldBe(1);
+			inlineView.Columns[0].ColumnReferences.Count.ShouldBe(1);
+			inlineView.Columns[0].ColumnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
+			inlineView.ObjectReferences.Count.ShouldBe(1);
+			var objectReference = inlineView.ObjectReferences.Single();
+			objectReference.ShouldBeTypeOf<OraclePivotTableReference>();
+		}
 	}
 }
