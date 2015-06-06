@@ -233,7 +233,10 @@ namespace SqlPad.Oracle
 						var scalarSubqueryExpression = queryBlockRoot.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.TableReference), NonTerminals.Expression);
 						if (scalarSubqueryExpression != null)
 						{
-							queryBlock.Type = QueryBlockType.ScalarSubquery;
+							queryBlock.Type = scalarSubqueryExpression[Terminals.Cursor] == null
+								? QueryBlockType.ScalarSubquery
+								: QueryBlockType.CursorParameter;
+							
 							queryBlock.Parent = queryBlockNodes[scalarSubqueryExpression.GetAncestor(NonTerminals.QueryBlock)];
 						}
 					}
@@ -353,10 +356,10 @@ namespace SqlPad.Oracle
 					else
 					{
 						var objectReferenceAlias = tableReferenceNonterminal[Terminals.ObjectAlias];
-						var nestedQueryTableReference = queryTableExpression.GetPathFilterDescendants(f => f.Id != NonTerminals.Subquery, NonTerminals.NestedQuery).SingleOrDefault();
+						var nestedQueryTableReference = queryTableExpression.GetPathFilterDescendants(f => !String.Equals(f.Id, NonTerminals.Subquery), NonTerminals.NestedQuery).SingleOrDefault();
 						if (nestedQueryTableReference != null)
 						{
-							var nestedQueryTableReferenceQueryBlock = nestedQueryTableReference.GetPathFilterDescendants(n => n.Id != NonTerminals.NestedQuery && n.Id != NonTerminals.SubqueryFactoringClause, NonTerminals.QueryBlock).FirstOrDefault();
+							var nestedQueryTableReferenceQueryBlock = nestedQueryTableReference.GetPathFilterDescendants(n => !String.Equals(n.Id, NonTerminals.NestedQuery) && !String.Equals(n.Id, NonTerminals.SubqueryFactoringClause), NonTerminals.QueryBlock).FirstOrDefault();
 							if (nestedQueryTableReferenceQueryBlock != null)
 							{
 								var objectReference =
@@ -374,8 +377,8 @@ namespace SqlPad.Oracle
 							continue;
 						}
 
-						var objectIdentifierNode = queryTableExpression[Terminals.ObjectIdentifier];
 						var databaseLinkNode = GetDatabaseLinkFromQueryTableExpression(queryTableExpression);
+						var objectIdentifierNode = queryTableExpression[Terminals.ObjectIdentifier];
 						if (objectIdentifierNode == null)
 						{
 							var tableCollection = queryTableExpression[NonTerminals.TableCollectionExpression];
@@ -388,7 +391,6 @@ namespace SqlPad.Oracle
 									var functionCallNodes = GetFunctionCallNodes(functionIdentifierNode);
 									//var tableCollectionReference = ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock, functionIdentifierNode, StatementPlacement.TableReference, null, n => prefixNonTerminal);
 									var tableCollectionReference = CreateProgramReference(queryBlock, queryBlock, null, StatementPlacement.TableReference, functionIdentifierNode, prefixNonTerminal, functionCallNodes);
-									tableCollectionReference.RootNode = functionIdentifierNode.ParentNode;
 
 									var tableCollectionDataObjectReference =
 										new OracleTableCollectionReference(tableCollectionReference)
@@ -400,10 +402,6 @@ namespace SqlPad.Oracle
 											RootNode = tableReferenceNonterminal
 										};
 
-									tableCollectionDataObjectReference.SchemaObject = tableCollectionReference.SchemaObject;
-									tableCollectionDataObjectReference.OwnerNode = tableCollectionReference.OwnerNode;
-									tableCollectionDataObjectReference.ObjectNode = tableCollectionReference.ObjectNode;
-
 									//
 									if (tableCollectionDataObjectReference.DatabaseLinkNode == null)
 									{
@@ -411,8 +409,6 @@ namespace SqlPad.Oracle
 										if (metadata != null)
 										{
 											tableCollectionDataObjectReference.SchemaObject = tableCollectionReference.SchemaObject;
-											tableCollectionDataObjectReference.OwnerNode = tableCollectionReference.OwnerNode;
-											tableCollectionDataObjectReference.ObjectNode = tableCollectionReference.ObjectNode;
 										}
 									}
 									
@@ -421,8 +417,11 @@ namespace SqlPad.Oracle
 									
 									queryBlock.ObjectReferences.Add(tableCollectionDataObjectReference);
 
-									var identifiers = functionCallNodes.SelectMany(n => n.GetDescendantsWithinSameQueryBlock(Terminals.Identifier));
-									ResolveColumnAndFunctionReferencesFromIdentifiers(queryBlock, queryBlock, identifiers, StatementPlacement.TableReference, null);
+									if (functionCallNodes.Length > 0)
+									{
+										var identifiers = functionCallNodes.SelectMany(n => n.GetDescendantsWithinSameQueryBlock(Terminals.Identifier, Terminals.User));
+										ResolveColumnAndFunctionReferencesFromIdentifiers(queryBlock, queryBlock, identifiers, StatementPlacement.TableReference, null);
+									}
 								}
 							}
 						}
@@ -2194,20 +2193,20 @@ namespace SqlPad.Oracle
 			var newColumnReferences = new List<OracleColumn>();
 			switch (rowSourceReference.Type)
 			{
+				case ReferenceType.SchemaObject:
+					if (rowSourceReference.SchemaObject == null)
+						return;
+
+					goto case ReferenceType.TableCollection;
+
 				case ReferenceType.JsonTable:
 				case ReferenceType.XmlTable:
 				case ReferenceType.SqlModel:
 				case ReferenceType.PivotTable:
-					newColumnReferences.AddRange(GetColumnReferenceMatchingColumns(rowSourceReference, columnReference));
-					break;
-				case ReferenceType.SchemaObject:
 				case ReferenceType.TableCollection:
-					if (rowSourceReference.SchemaObject == null)
-						return;
-
 					newColumnReferences.AddRange(GetColumnReferenceMatchingColumns(rowSourceReference, columnReference));
-
 					break;
+
 				case ReferenceType.InlineView:
 				case ReferenceType.CommonTableExpression:
 					if (columnReference.ObjectNode != null && !String.Equals(columnReference.FullyQualifiedObjectName.NormalizedName, rowSourceReference.FullyQualifiedObjectName.NormalizedName))
@@ -2712,7 +2711,7 @@ namespace SqlPad.Oracle
 				{
 					FunctionIdentifierNode = identifierNode,
 					DatabaseLinkNode = GetDatabaseLinkFromIdentifier(identifierNode),
-					RootNode = identifierNode.GetAncestor(NonTerminals.Expression),
+					RootNode = identifierNode.GetAncestor(NonTerminals.Expression) ?? identifierNode.GetAncestor(NonTerminals.TableCollectionInnerExpression),
 					Owner = queryBlock,
 					Placement = placement,
 					AnalyticClauseNode = analyticClauseNode,
@@ -2862,7 +2861,8 @@ namespace SqlPad.Oracle
 	{
 		Normal,
 		ScalarSubquery,
-		CommonTableExpression
+		CommonTableExpression,
+		CursorParameter
 	}
 
 	public class OracleInsertTarget : OracleReferenceContainer

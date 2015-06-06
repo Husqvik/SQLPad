@@ -55,6 +55,8 @@ namespace SqlPad.Oracle
 		public OracleTableCollectionReference(OracleReference rowSourceReference) : base(ReferenceType.TableCollection)
 		{
 			RowSourceReference = rowSourceReference;
+			OwnerNode = rowSourceReference.OwnerNode;
+			ObjectNode = rowSourceReference.ObjectNode;
 		}
 
 		public override string Name { get { return AliasNode == null ? null : AliasNode.Token.Value; } }

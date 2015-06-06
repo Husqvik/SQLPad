@@ -2252,5 +2252,19 @@ FROM (
 
 			validationModel.InvalidNonTerminals.Count.ShouldBe(2);
 		}
+
+		[Test(Description = @"")]
+		public void TestCursorParameter()
+		{
+			const string sqlText = @"SELECT * FROM TABLE(SQLPAD.CURSOR_FUNCTION(CURSOR(SELECT * FROM SELECTION WHERE ROWNUM <= 5)))";
+
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			validationModel.InvalidNonTerminals.Count.ShouldBe(0);
+		}
 	}
 }
