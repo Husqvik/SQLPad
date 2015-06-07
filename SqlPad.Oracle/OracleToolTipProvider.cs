@@ -2,7 +2,6 @@
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using SqlPad.Oracle.ToolTips;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
@@ -11,8 +10,6 @@ namespace SqlPad.Oracle
 {
 	public class OracleToolTipProvider : IToolTipProvider
 	{
-		private static readonly Regex WhitespaceRegex = new Regex(@"\s", RegexOptions.Compiled);
-
 		public IToolTip GetToolTip(SqlDocumentRepository sqlDocumentRepository, int cursorPosition)
 		{
 			if (sqlDocumentRepository == null)
@@ -135,7 +132,7 @@ namespace SqlPad.Oracle
 						new OracleColumnModel
 						{
 							Name = String.IsNullOrEmpty(c.ColumnDescription.Name)
-								? String.Concat(c.RootNode.Terminals.Select(t => WhitespaceRegex.Replace(((OracleToken)t.Token).UpperInvariantValue, String.Empty)))
+								? OracleSelectListColumn.BuildNonAliasedColumnName(c.RootNode.Terminals)
 								: c.ColumnDescription.Name,
 							FullTypeName = c.ColumnDescription.FullTypeName,
 							ColumnIndex = i + 1,

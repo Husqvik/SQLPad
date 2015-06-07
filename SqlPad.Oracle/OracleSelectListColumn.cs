@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Text.RegularExpressions;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
 namespace SqlPad.Oracle
@@ -7,6 +10,8 @@ namespace SqlPad.Oracle
 	[DebuggerDisplay("OracleSelectListColumn (Alias={AliasNode == null ? null : AliasNode.Token.Value}; IsDirectReference={IsDirectReference})")]
 	public class OracleSelectListColumn : OracleReferenceContainer
 	{
+		private static readonly Regex WhitespaceRegex = new Regex(@"\s", RegexOptions.Compiled);
+
 		private OracleColumn _columnDescription;
 		private StatementGrammarNode _aliasNode;
 		private string _normalizedName;
@@ -59,7 +64,7 @@ namespace SqlPad.Oracle
 
 		public bool HasExplicitAlias
 		{
-			get { return !IsAsterisk && HasExplicitDefinition && RootNode.LastTerminalNode.Id == Terminals.ColumnAlias; }
+			get { return !IsAsterisk && HasExplicitDefinition && String.Equals(RootNode.LastTerminalNode.Id, Terminals.ColumnAlias); }
 		}
 
 		public StatementGrammarNode AliasNode
@@ -123,6 +128,11 @@ namespace SqlPad.Oracle
 			return _columnDescription;
 		}
 
+		internal static string BuildNonAliasedColumnName(IEnumerable<StatementGrammarNode> terminals)
+		{
+			return String.Concat(terminals.Select(t => WhitespaceRegex.Replace(((OracleToken)t.Token).UpperInvariantValue, String.Empty)));
+		}
+
 		internal static OracleDataType TryResolveDataTypeFromAliasedExpression(StatementGrammarNode aliasedExpressionNode)
 		{
 			if (aliasedExpressionNode == null || aliasedExpressionNode.TerminalCount == 0)
@@ -130,7 +140,7 @@ namespace SqlPad.Oracle
 				return null;
 			}
 
-			var expectedTerminalCountOffset = aliasedExpressionNode.LastTerminalNode.Id == Terminals.ColumnAlias
+			var expectedTerminalCountOffset = String.Equals(aliasedExpressionNode.LastTerminalNode.Id, Terminals.ColumnAlias)
 				? aliasedExpressionNode.LastTerminalNode.ParentNode.ChildNodes.Count
 				: 0;
 			

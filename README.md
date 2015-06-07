@@ -1,4 +1,4 @@
-SQLPad 0.2.0.206
+SQLPad 0.2.0.207
 ================
 
 SQLPad is an experimental SQL editor focused to quick and comfortable work.
@@ -12,9 +12,10 @@ but aims at thorough semantic analysis and refactoring features. The main drivin
 dummy monkey work to minimum while focusing to results or analysis of a problem.
 
 SQLPad provides:
-* Smart code completion - schemas, objects, columns, functions, packages, sequences, types, etc.
-* Semantic analysis - validating references to various database objects, immediately notifying about errors or problems.
-* Fast overview over database object properties.
+* Smart code completion - schemas, objects, columns, functions, packages, sequences, types, etc;
+* Semantic analysis - validating references to various database objects, immediately notifying about errors or problems;
+* Fast overview over database object properties;
+* Data export to various formats.
 
 SQLPad consists of a generic core application providing the user experience and a vendor specific module implementing
 the parser, analyzer, validator and other vendor specific components. As of now the only supported vendor is Oracle (11g, 12c).

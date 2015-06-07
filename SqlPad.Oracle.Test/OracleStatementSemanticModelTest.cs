@@ -2114,7 +2114,7 @@ FROM (
 FROM (
 		(SELECT * FROM SELECTION)
 		PIVOT (
-			COUNT(PROJECT_ID)
+			COUNT(PROJECT_ID) PROJECT_COUNT
 			FOR (PROJECT_ID)
 				IN (0)
 		) PIVOT_TABLE
@@ -2126,6 +2126,13 @@ FROM (
 			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.Count.ShouldBe(2);
+
+			semanticModel.MainQueryBlock.Columns.Count.ShouldBe(5);
+			semanticModel.MainQueryBlock.Columns[0].IsAsterisk.ShouldBe(true);
+			semanticModel.MainQueryBlock.Columns[1].NormalizedName.ShouldBe("\"RESPONDENTBUCKET_ID\"");
+			semanticModel.MainQueryBlock.Columns[2].NormalizedName.ShouldBe("\"SELECTION_ID\"");
+			semanticModel.MainQueryBlock.Columns[3].NormalizedName.ShouldBe("\"NAME\"");
+			semanticModel.MainQueryBlock.Columns[4].NormalizedName.ShouldBe("\"0_PROJECT_COUNT\"");
 		}
 
 		[Test(Description = @"")]

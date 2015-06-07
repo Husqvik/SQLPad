@@ -40,7 +40,7 @@ namespace SqlPad.Oracle
 		private readonly HashSet<StatementGrammarNode> _redundantTerminals = new HashSet<StatementGrammarNode>();
 		private readonly List<RedundantTerminalGroup> _redundantTerminalGroups = new List<RedundantTerminalGroup>();
 		private readonly OracleDatabaseModelBase _databaseModel;
-		private readonly Dictionary<OracleSelectListColumn, ICollection<OracleDataObjectReference>> _asteriskTableReferences = new Dictionary<OracleSelectListColumn, ICollection<OracleDataObjectReference>>();
+		private readonly Dictionary<OracleSelectListColumn, List<OracleDataObjectReference>> _asteriskTableReferences = new Dictionary<OracleSelectListColumn, List<OracleDataObjectReference>>();
 		private readonly Dictionary<OracleQueryBlock, IList<string>> _commonTableExpressionExplicitColumnNames = new Dictionary<OracleQueryBlock, IList<string>>();
 		private readonly Dictionary<OracleQueryBlock, List<StatementGrammarNode>> _queryBlockTerminals = new Dictionary<OracleQueryBlock, List<StatementGrammarNode>>();
 		private readonly Dictionary<OracleQueryBlock, ICollection<StatementGrammarNode>> _accessibleQueryBlockRoot = new Dictionary<OracleQueryBlock, ICollection<StatementGrammarNode>>();
@@ -530,97 +530,37 @@ namespace SqlPad.Oracle
 				return;
 			}
 
-			var columns = new List<OracleSelectListColumn>();
-			var aggregateExpressions = new List<StatementGrammarNode>();
-			var columnNameExtensions = new List<string>();
-			var pivotExpressions = pivotClause[NonTerminals.PivotAliasedAggregationFunctionList];
-			if (pivotExpressions != null)
-			{
-				foreach (var pivotAggregationFunction in pivotExpressions.GetDescendants(NonTerminals.PivotAliasedAggregationFunction))
-				{
-					var aliasNode = pivotAggregationFunction[NonTerminals.ColumnAsAlias, Terminals.ColumnAlias];
-					columnNameExtensions.Add(aliasNode == null ? String.Empty : String.Format("_{0}", aliasNode.Token.Value.ToQuotedIdentifier().Trim('"')));
-					aggregateExpressions.Add(pivotAggregationFunction);
-				}
-			}
-
-			var queryBlock = objectReference.Owner;
-			var columnDefinitions = pivotClause[NonTerminals.PivotInClause, NonTerminals.PivotExpressionsOrAnyListOrNestedQuery, NonTerminals.AliasedExpressionListOrAliasedGroupingExpressionList];
-			if (columnDefinitions != null)
-			{
-				var columnSources = columnDefinitions.GetDescendants(NonTerminals.AliasedExpression, NonTerminals.ParenthesisEnclosedExpressionListWithMandatoryExpressions).ToArray();
-				foreach (var nameExtension in columnNameExtensions)
-				{
-					foreach (var columnSource in columnSources)
-					{
-						var aliasSourceNode = String.Equals(columnSource.Id, NonTerminals.AliasedExpression)
-							? columnSource
-							: columnSource.ParentNode;
-
-						var columnAlias = aliasSourceNode[NonTerminals.ColumnAsAlias, Terminals.ColumnAlias];
-
-						var columnName = columnAlias == null
-							? String.Empty
-							: columnAlias.Token.Value.ToQuotedIdentifier();
-
-						if (!String.IsNullOrEmpty(columnName))
-						{
-							columnName = columnName.Insert(columnName.Length - 1, nameExtension);
-						}
-						
-						var column =
-							new OracleSelectListColumn(this, null)
-							{
-								Owner = queryBlock,
-								ColumnDescription =
-									new OracleColumn
-									{
-										Name = columnName,
-										DataType = OracleDataType.Empty,
-										Nullable = true
-									}
-							};
-
-						columns.Add(column);
-					}
-				}
-			}
-
-			var pivotForColumnList = pivotClause[NonTerminals.PivotForClause, NonTerminals.IdentifierOrParenthesisEnclosedIdentifierList];
-			if (pivotForColumnList != null)
-			{
-				var groupingColumnSource = pivotForColumnList.GetDescendants(Terminals.Identifier).Select(i => i.Token.Value.ToQuotedIdentifier());
-				var groupingColumns = new HashSet<string>(groupingColumnSource);
-
-				foreach (var sourceColumn in objectReference.Columns.Where(c => !groupingColumns.Contains(c.Name)))
-				{
-					var column =
-						new OracleSelectListColumn(this, null)
-						{
-							Owner = queryBlock,
-							ColumnDescription = sourceColumn.Clone()
-						};
-					
-					columns.Add(column);
-				}
-			}
-
 			var pivotTableReference =
-				new OraclePivotTableReference(this, objectReference, columns)
+				new OraclePivotTableReference(this, objectReference, pivotClause)
 				{
-					AliasNode = pivotClause[Terminals.ObjectAlias],
-					AggregateFunctions = aggregateExpressions.AsReadOnly()
+					AliasNode = pivotClause[Terminals.ObjectAlias]
 				};
 			
-			queryBlock.ObjectReferences.Add(pivotTableReference);
-
 			var pivotClauseIdentifiers = GetIdentifiers(pivotClause, Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.User);
 			ResolveColumnAndFunctionReferencesFromIdentifiers(pivotTableReference.Owner, pivotTableReference.SourceReferenceContainer, pivotClauseIdentifiers, StatementPlacement.PivotClause, null);
 
+			var pivotExpressions = pivotClause[NonTerminals.PivotAliasedAggregationFunctionList];
 			if (pivotExpressions != null)
 			{
 				var grammarSpecificFunctions = GetGrammarSpecificFunctionNodes(pivotExpressions);
 				CreateGrammarSpecificFunctionReferences(grammarSpecificFunctions, null, pivotTableReference.SourceReferenceContainer.ProgramReferences, StatementPlacement.PivotClause, null);
+			}
+
+			foreach (var kvp in _asteriskTableReferences)
+			{
+				var index = kvp.Value.IndexOf(objectReference);
+				if (kvp.Value.Count == 0)
+				{
+					if (kvp.Key.ColumnReferences[0].FullyQualifiedObjectName == pivotTableReference.FullyQualifiedObjectName)
+					{
+						kvp.Value.Add(pivotTableReference);
+					}
+				}
+				else if (index != -1)
+				{
+					kvp.Value.RemoveAt(index);
+					kvp.Value.Insert(index, pivotTableReference);
+				}
 			}
 		}
 
@@ -1024,7 +964,7 @@ namespace SqlPad.Oracle
 				{
 					if (column.RootNode.TerminalCount == 1)
 					{
-						_asteriskTableReferences[column] = new[] { queryBlock.ModelReference };
+						_asteriskTableReferences[column] = new List<OracleDataObjectReference> { queryBlock.ModelReference };
 						break;
 					}
 					
@@ -2513,7 +2453,7 @@ namespace SqlPad.Oracle
 				}
 			}
 
-			if (queryBlock.SelectList.FirstTerminalNode.Id == Terminals.Asterisk)
+			if (String.Equals(queryBlock.SelectList.FirstTerminalNode.Id, Terminals.Asterisk))
 			{
 				var asteriskNode = queryBlock.SelectList.ChildNodes[0];
 				var column = new OracleSelectListColumn(this, null)
@@ -2539,7 +2479,7 @@ namespace SqlPad.Oracle
 				
 				foreach (var columnExpression in columnExpressions)
 				{
-					var columnAliasNode = columnExpression.LastTerminalNode != null && columnExpression.LastTerminalNode.Id == Terminals.ColumnAlias
+					var columnAliasNode = columnExpression.LastTerminalNode != null && String.Equals(columnExpression.LastTerminalNode.Id, Terminals.ColumnAlias)
 						? columnExpression.LastTerminalNode
 						: null;
 
@@ -2563,7 +2503,7 @@ namespace SqlPad.Oracle
 						var columnReference = CreateColumnReference(column, queryBlock, column, StatementPlacement.SelectList, asteriskNode, prefixNonTerminal);
 						column.ColumnReferences.Add(columnReference);
 
-						var tableReferences = queryBlock.ObjectReferences.Where(t => t.FullyQualifiedObjectName == columnReference.FullyQualifiedObjectName || (columnReference.ObjectNode == null && t.FullyQualifiedObjectName.NormalizedName == columnReference.FullyQualifiedObjectName.NormalizedName));
+						var tableReferences = queryBlock.ObjectReferences.Where(t => t.FullyQualifiedObjectName == columnReference.FullyQualifiedObjectName || (columnReference.ObjectNode == null && String.Equals(t.FullyQualifiedObjectName.NormalizedName, columnReference.FullyQualifiedObjectName.NormalizedName)));
 						_asteriskTableReferences[column] = new List<OracleDataObjectReference>(tableReferences);
 					}
 					else

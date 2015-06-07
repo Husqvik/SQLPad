@@ -890,6 +890,45 @@ SELECT * FROM CTE";
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestAsteriskTooltipOnQualifiedReferenceToPivotTable()
+		{
+			const string query =
+@"SELECT
+	PIVOT_TABLE.*
+FROM (
+		(SELECT * FROM SELECTION)
+		PIVOT (
+			COUNT(PROJECT_ID) PROJECT_COUNT
+			FOR (PROJECT_ID)
+				IN (0)
+		) PIVOT_TABLE
+	)";
+			_documentRepository.UpdateStatements(query);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 21);
+			toolTip.Control.ShouldBeTypeOf<ToolTipAsterisk>();
+			var toolTipSequence = (ToolTipAsterisk)toolTip.Control;
+			var columns = toolTipSequence.Columns.ToArray();
+			columns.Length.ShouldBe(4);
+			columns[0].Name.ShouldBe("RESPONDENTBUCKET_ID");
+			columns[0].FullTypeName.ShouldBe("NUMBER(9)");
+			columns[0].RowSourceName.ShouldBe("PIVOT_TABLE");
+			columns[0].ColumnIndex.ShouldBe(1);
+			columns[1].Name.ShouldBe("SELECTION_ID");
+			columns[1].FullTypeName.ShouldBe("NUMBER(9)");
+			columns[1].RowSourceName.ShouldBe("PIVOT_TABLE");
+			columns[1].ColumnIndex.ShouldBe(2);
+			columns[2].Name.ShouldBe("NAME");
+			columns[2].FullTypeName.ShouldBe("VARCHAR2(50 BYTE)");
+			columns[2].RowSourceName.ShouldBe("PIVOT_TABLE");
+			columns[2].ColumnIndex.ShouldBe(3);
+			columns[3].Name.ShouldBe("\"0_PROJECT_COUNT\"");
+			columns[3].FullTypeName.ShouldBe(String.Empty);
+			columns[3].RowSourceName.ShouldBe("PIVOT_TABLE");
+			columns[3].ColumnIndex.ShouldBe(4);
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestExplicitPartitionTooltip()
 		{
 			const string query = "SELECT * FROM INVOICES PARTITION (P2015)";
