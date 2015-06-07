@@ -1274,6 +1274,9 @@ MODEL
 			tableCollectionReference.RowSourceReference.ShouldBeTypeOf<OracleProgramReference>();
 			((OracleProgramReference)tableCollectionReference.RowSourceReference).Metadata.ShouldNotBe(null);
 
+			queryBlock.ProgramReferences.Count.ShouldBe(1);
+			queryBlock.ProgramReferences.Single().Metadata.ShouldNotBe(null);
+
 			queryBlock.Columns.Count.ShouldBe(1);
 			queryBlock.Columns[0].ColumnReferences.Count.ShouldBe(1);
 			queryBlock.Columns[0].ColumnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
@@ -2176,6 +2179,19 @@ FROM (
 			inlineView.ObjectReferences.Count.ShouldBe(1);
 			var objectReference = inlineView.ObjectReferences.Single();
 			objectReference.ShouldBeTypeOf<OraclePivotTableReference>();
+		}
+
+		[Test(Description = @"")]
+		public void TestSubqueryAsCursorParameter()
+		{
+			const string query1 = @"SELECT * FROM TABLE(SQLPAD.CURSOR_FUNCTION(0, CURSOR(SELECT SELECTION_ID, NAME, PROJECT_ID, RESPONDENTBUCKET_ID FROM SELECTION), NULL))";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
 		}
 	}
 }

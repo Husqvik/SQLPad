@@ -873,6 +873,23 @@ SELECT * FROM CTE";
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestAsteriskTooltipWithFunctionWithCursorParameter()
+		{
+			const string query = @"SELECT * FROM TABLE(SQLPAD.CURSOR_FUNCTION(0, CURSOR(SELECT * FROM SELECTION), NULL)";
+			_documentRepository.UpdateStatements(query);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 7);
+			toolTip.Control.ShouldBeTypeOf<ToolTipAsterisk>();
+			var toolTipSequence = (ToolTipAsterisk)toolTip.Control;
+			var columns = toolTipSequence.Columns.ToArray();
+			columns.Length.ShouldBe(1);
+			columns[0].Name.ShouldBe("PLAN_TABLE_OUTPUT");
+			columns[0].FullTypeName.ShouldBe("VARCHAR2(300 BYTE)");
+			columns[0].RowSourceName.ShouldBe(String.Empty);
+			columns[0].ColumnIndex.ShouldBe(1);
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestExplicitPartitionTooltip()
 		{
 			const string query = "SELECT * FROM INVOICES PARTITION (P2015)";

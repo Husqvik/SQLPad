@@ -215,7 +215,7 @@ namespace SqlPad.Oracle.Test
 			var dbmsXPlan = (OraclePackage)AllObjectsInternal.Single(o => o.Name == "\"DBMS_XPLAN\"" && o.Owner == OwnerNameSys);
 			var displayCursorFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues("SYS", "DBMS_XPLAN", "DISPLAY_CURSOR"), false, false, true, false, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, false);
 			displayCursorFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, OracleTypeCollection.OracleCollectionTypeNestedTable, OracleObjectIdentifier.Create(SchemaSys, "DBMS_XPLAN_TYPE_TABLE"), false));
-			displayCursorFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 1, 1, 1, ParameterDirection.ReturnValue, "OBJECT", OracleObjectIdentifier.Create(SchemaSys, "DBMS_XPLAN_TYPE"), false));
+			displayCursorFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 1, 1, 1, ParameterDirection.ReturnValue, OracleTypeBase.TypeCodeObject, OracleObjectIdentifier.Create(SchemaSys, "DBMS_XPLAN_TYPE"), false));
 			displayCursorFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"SQL_ID\"", 1, 1, 0, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, true));
 			displayCursorFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"CURSOR_CHILD_NUMBER\"", 2, 2, 0, ParameterDirection.Input, "NUMBER", OracleObjectIdentifier.Empty, true));
 			displayCursorFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"FORMAT\"", 3, 3, 0, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, true));
@@ -305,11 +305,20 @@ namespace SqlPad.Oracle.Test
 			packageSqlPadFunctionMetadata.Owner = sqlPadPackage;
 			sqlPadPackage.Functions.Add(packageSqlPadFunctionMetadata);
 
+			var packageSqlPadPipelinedFunctionWithCursorParameterMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), "SQLPAD", "CURSOR_FUNCTION"), false, false, true, false, false, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
+			packageSqlPadPipelinedFunctionWithCursorParameterMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 1, 0, ParameterDirection.ReturnValue, OracleTypeCollection.OracleCollectionTypeNestedTable, OracleObjectIdentifier.Create(OwnerNameSys, "DBMS_XPLAN_TYPE_TABLE"), false));
+			packageSqlPadPipelinedFunctionWithCursorParameterMetadata.AddParameter(new OracleProgramParameterMetadata(null, 1, 2, 1, ParameterDirection.ReturnValue, OracleTypeBase.TypeCodeObject, OracleObjectIdentifier.Create(OwnerNameSys, "DBMS_XPLAN_TYPE"), false));
+			packageSqlPadPipelinedFunctionWithCursorParameterMetadata.AddParameter(new OracleProgramParameterMetadata("\"I\"", 1, 3, 0, ParameterDirection.Input, "NUMBER", OracleObjectIdentifier.Empty, false));
+			packageSqlPadPipelinedFunctionWithCursorParameterMetadata.AddParameter(new OracleProgramParameterMetadata("\"C1\"", 2, 4, 0, ParameterDirection.Input, "REF CURSOR", OracleObjectIdentifier.Empty, false));
+			packageSqlPadPipelinedFunctionWithCursorParameterMetadata.AddParameter(new OracleProgramParameterMetadata("\"C2\"", 3, 28, 0, ParameterDirection.Input, "REF CURSOR", OracleObjectIdentifier.Empty, false));
+			packageSqlPadPipelinedFunctionWithCursorParameterMetadata.Owner = sqlPadPackage;
+			sqlPadPackage.Functions.Add(packageSqlPadPipelinedFunctionWithCursorParameterMetadata);
+
 			var packageSqlPadPipelinedFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), "SQLPAD", "PIPELINED_FUNCTION"), false, false, true, false, false, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
 			packageSqlPadPipelinedFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, OracleTypeCollection.OracleCollectionTypeNestedTable, OracleObjectIdentifier.Create(OwnerNameSys, "ODCIDATELIST"), false));
 			packageSqlPadPipelinedFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 1, 1, 1, ParameterDirection.ReturnValue, "DATE", OracleObjectIdentifier.Empty, false));
-			packageSqlPadPipelinedFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"DATE_FROM\"", 1, 1, 0, ParameterDirection.Input, "DATE", OracleObjectIdentifier.Empty, false));
-			packageSqlPadPipelinedFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"DATE_TO\"", 2, 2, 0, ParameterDirection.Input, "DATE", OracleObjectIdentifier.Empty, false));
+			packageSqlPadPipelinedFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"DATE_FROM\"", 1, 2, 0, ParameterDirection.Input, "DATE", OracleObjectIdentifier.Empty, false));
+			packageSqlPadPipelinedFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"DATE_TO\"", 2, 3, 0, ParameterDirection.Input, "DATE", OracleObjectIdentifier.Empty, false));
 			packageSqlPadPipelinedFunctionMetadata.Owner = sqlPadPackage;
 			sqlPadPackage.Functions.Add(packageSqlPadPipelinedFunctionMetadata);
 
