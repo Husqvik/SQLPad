@@ -849,8 +849,8 @@ namespace SqlPad.Oracle
 				var value = parameter.Value;
 				if (parameter.Value is OracleDecimal)
 				{
-					var oracleDecimal = OracleNumber.SetOutputFormat((OracleDecimal)parameter.Value);
-					value = oracleDecimal.IsNull ? String.Empty : oracleDecimal.ToString();
+					var oracleNumber = new OracleNumber((OracleDecimal)parameter.Value);
+					value = oracleNumber.IsNull ? String.Empty : oracleNumber.ToSqlLiteral();
 				}
 
 				if (parameter.Value is OracleString)
