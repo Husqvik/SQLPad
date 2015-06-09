@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using SqlPad.Oracle.DataDictionary;
 
 namespace SqlPad.Oracle.SemanticModel
 {

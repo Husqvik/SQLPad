@@ -1,6 +1,7 @@
 using System;
 using System.Data;
 using System.Xml.Linq;
+using SqlPad.Oracle.DataDictionary;
 #if ORACLE_MANAGED_DATA_ACCESS_CLIENT
 using Oracle.ManagedDataAccess.Client;
 #else

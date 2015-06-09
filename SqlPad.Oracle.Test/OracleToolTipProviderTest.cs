@@ -6,6 +6,7 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using NUnit.Framework;
 using Shouldly;
+using SqlPad.Oracle.DataDictionary;
 using SqlPad.Oracle.ToolTips;
 
 namespace SqlPad.Oracle.Test

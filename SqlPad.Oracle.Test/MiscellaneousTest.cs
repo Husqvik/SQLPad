@@ -1,5 +1,6 @@
 ﻿using NUnit.Framework;
 using Shouldly;
+using SqlPad.Oracle.DataDictionary;
 
 namespace SqlPad.Oracle.Test
 {

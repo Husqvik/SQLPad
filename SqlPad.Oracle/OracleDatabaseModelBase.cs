@@ -4,6 +4,7 @@ using System.Configuration;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using SqlPad.Oracle.DataDictionary;
 using SqlPad.Oracle.ExecutionPlan;
 using SqlPad.Oracle.ToolTips;
 

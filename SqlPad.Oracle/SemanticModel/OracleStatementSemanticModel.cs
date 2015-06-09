@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using SqlPad.Oracle.DataDictionary;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
@@ -1794,13 +1795,8 @@ namespace SqlPad.Oracle.SemanticModel
 							if (dataObject == null)
 								continue;
 
-							exposedColumns = dataObject.Columns.Values
-								.Select(c => new OracleSelectListColumn(this, asteriskColumn)
-								{
-									IsDirectReference = true,
-									ColumnDescription = c
-								});
-							break;
+							goto case ReferenceType.PivotTable;
+
 						case ReferenceType.TableCollection:
 						case ReferenceType.XmlTable:
 						case ReferenceType.JsonTable:

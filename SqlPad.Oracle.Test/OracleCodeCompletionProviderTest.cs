@@ -4,6 +4,7 @@ using NUnit.Framework;
 using Shouldly;
 using System;
 using System.Diagnostics;
+using SqlPad.Oracle.DataDictionary;
 using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
 
 namespace SqlPad.Oracle.Test

@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using SqlPad.Commands;
+using SqlPad.Oracle.DataDictionary;
 using SqlPad.Oracle.SemanticModel;
 using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
 

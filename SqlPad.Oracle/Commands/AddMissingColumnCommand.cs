@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Text;
 using SqlPad.Commands;
+using SqlPad.Oracle.DataDictionary;
 using SqlPad.Oracle.SemanticModel;
 
 namespace SqlPad.Oracle.Commands

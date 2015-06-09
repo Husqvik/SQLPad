@@ -2,6 +2,7 @@ using System;
 using System.Data;
 using System.Globalization;
 using Oracle.DataAccess.Client;
+using SqlPad.Oracle.DataDictionary;
 using SqlPad.Oracle.ToolTips;
 
 namespace SqlPad.Oracle.ModelDataProviders

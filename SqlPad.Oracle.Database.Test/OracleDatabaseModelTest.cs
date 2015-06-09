@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Shouldly;
+using SqlPad.Oracle.DataDictionary;
 using SqlPad.Oracle.ExecutionPlan;
 using SqlPad.Oracle.ModelDataProviders;
 using SqlPad.Oracle.ToolTips;

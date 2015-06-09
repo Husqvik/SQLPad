@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace SqlPad.Oracle
+namespace SqlPad.Oracle.DataDictionary
 {
 	[DebuggerDisplay("OracleColumn (Name={Name}; Type={FullTypeName})")]
 	public class OracleColumn

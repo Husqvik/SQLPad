@@ -12,6 +12,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using Oracle.DataAccess.Client;
 using Oracle.DataAccess.Types;
+using SqlPad.Oracle.DataDictionary;
 
 namespace SqlPad.Oracle
 {

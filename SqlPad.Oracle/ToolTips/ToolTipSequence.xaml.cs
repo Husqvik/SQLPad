@@ -1,4 +1,6 @@
-﻿namespace SqlPad.Oracle.ToolTips
+﻿using SqlPad.Oracle.DataDictionary;
+
+namespace SqlPad.Oracle.ToolTips
 {
 	public partial class ToolTipSequence
 	{

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace SqlPad.Oracle
+namespace SqlPad.Oracle.DataDictionary
 {
 	public abstract class OracleConstraint : OracleObject
 	{

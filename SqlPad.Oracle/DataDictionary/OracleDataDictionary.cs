@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using ProtoBuf.Meta;
 
-namespace SqlPad.Oracle
+namespace SqlPad.Oracle.DataDictionary
 {
 	public class OracleDataDictionary
 	{

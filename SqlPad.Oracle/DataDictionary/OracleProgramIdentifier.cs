@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Text;
 
-namespace SqlPad.Oracle
+namespace SqlPad.Oracle.DataDictionary
 {
 	[DebuggerDisplay("OracleProgramIdentifier (FullyQualifiedIdentifier={FullyQualifiedIdentifier}; Overload={Overload})")]
 	public struct OracleProgramIdentifier

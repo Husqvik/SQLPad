@@ -4,7 +4,7 @@ using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 
-namespace SqlPad.Oracle
+namespace SqlPad.Oracle.DataDictionary
 {
 	[DebuggerDisplay("OracleDataType (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
 	public class OracleDataType : OracleObject

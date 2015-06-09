@@ -7,6 +7,7 @@ using System.Linq;
 using System.Xml;
 using System.Xml.Serialization;
 using SqlPad.Commands;
+using SqlPad.Oracle.DataDictionary;
 using SqlPad.Oracle.SemanticModel;
 
 namespace SqlPad.Oracle

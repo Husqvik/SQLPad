@@ -4,6 +4,8 @@ using System.Collections.ObjectModel;
 using System.Data;
 using System.Diagnostics;
 using System.Linq;
+using SqlPad.Oracle.DataDictionary;
+using ParameterDirection = SqlPad.Oracle.DataDictionary.ParameterDirection;
 
 namespace SqlPad.Oracle
 {

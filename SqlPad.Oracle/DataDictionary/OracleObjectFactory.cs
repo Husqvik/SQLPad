@@ -1,6 +1,6 @@
 using System;
 
-namespace SqlPad.Oracle
+namespace SqlPad.Oracle.DataDictionary
 {
 	internal static class OracleObjectFactory
 	{
