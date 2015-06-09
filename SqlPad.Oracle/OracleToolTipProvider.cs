@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using SqlPad.Oracle.SemanticModel;
 using SqlPad.Oracle.ToolTips;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 

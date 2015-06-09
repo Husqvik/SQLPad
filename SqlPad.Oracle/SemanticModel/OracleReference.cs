@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace SqlPad.Oracle
+namespace SqlPad.Oracle.SemanticModel
 {
 	public abstract class OracleReference
 	{

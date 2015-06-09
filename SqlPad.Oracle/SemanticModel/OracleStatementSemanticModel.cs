@@ -6,7 +6,7 @@ using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
 
-namespace SqlPad.Oracle
+namespace SqlPad.Oracle.SemanticModel
 {
 	public class OracleStatementSemanticModel : IStatementSemanticModel
 	{

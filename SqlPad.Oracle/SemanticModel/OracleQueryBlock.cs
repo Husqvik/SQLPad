@@ -5,7 +5,7 @@ using System.Linq;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 
-namespace SqlPad.Oracle
+namespace SqlPad.Oracle.SemanticModel
 {
 	[DebuggerDisplay("OracleQueryBlock (Alias={Alias}; Type={Type}; RootNode={RootNode}; Columns={Columns.Count})")]
 	public class OracleQueryBlock : OracleReferenceContainer

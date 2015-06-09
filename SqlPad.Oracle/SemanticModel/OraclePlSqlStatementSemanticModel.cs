@@ -3,7 +3,7 @@ using System.Linq;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
-namespace SqlPad.Oracle
+namespace SqlPad.Oracle.SemanticModel
 {
 	public static class OracleStatementSemanticModelFactory
 	{
@@ -17,6 +17,7 @@ namespace SqlPad.Oracle
 	{
 		private readonly OracleDatabaseModelBase _databaseModel;
 		private readonly List<OraclePlSqlProgram> _programs = new List<OraclePlSqlProgram>();
+		private readonly List<OracleStatementSemanticModel> _sqlModels = new List<OracleStatementSemanticModel>();
 
 		public IDatabaseModel DatabaseModel { get { return _databaseModel; } }
 		
@@ -51,6 +52,7 @@ namespace SqlPad.Oracle
 		private void ResolveProgramDeclarations()
 		{
 			var declarationSections = Statement.RootNode.GetDescendants(NonTerminals.ProgramDeclareSection);
+			var itemDeclarations = declarationSections.SelectMany(s => s.GetDescendants(NonTerminals.ItemDeclaration));
 		}
 	}
 

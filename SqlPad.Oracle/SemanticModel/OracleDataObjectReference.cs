@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
 
-namespace SqlPad.Oracle
+namespace SqlPad.Oracle.SemanticModel
 {
 	public abstract class OracleObjectWithColumnsReference : OracleReference
 	{

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using SqlPad.Oracle.SemanticModel;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
 namespace SqlPad.Oracle

@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Text;
 using SqlPad.Commands;
+using SqlPad.Oracle.SemanticModel;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
 namespace SqlPad.Oracle.Commands

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
-namespace SqlPad.Oracle
+namespace SqlPad.Oracle.SemanticModel
 {
 	[DebuggerDisplay("OracleSelectListColumn (Alias={AliasNode == null ? null : AliasNode.Token.Value}; IsDirectReference={IsDirectReference})")]
 	public class OracleSelectListColumn : OracleReferenceContainer

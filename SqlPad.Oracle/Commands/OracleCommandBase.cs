@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using SqlPad.Commands;
+using SqlPad.Oracle.SemanticModel;
 
 namespace SqlPad.Oracle.Commands
 {

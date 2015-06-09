@@ -2,6 +2,7 @@
 using System.Linq;
 using NUnit.Framework;
 using Shouldly;
+using SqlPad.Oracle.SemanticModel;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 
 namespace SqlPad.Oracle.Test
