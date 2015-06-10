@@ -7,6 +7,7 @@ using System.Windows;
 using SqlPad.Commands;
 using SqlPad.Oracle.DataDictionary;
 using SqlPad.Oracle.SemanticModel;
+using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
 
 namespace SqlPad.Oracle.Commands
@@ -22,10 +23,15 @@ namespace SqlPad.Oracle.Commands
 		{
 		}
 
+		protected override Func<StatementGrammarNode, bool> CurrentNodeFilterFunction
+		{
+			get { return n => !n.Id.In(Terminals.Comma, Terminals.From, Terminals.Bulk, Terminals.Into); }
+		}
+
 		protected override CommandCanExecuteResult CanExecute()
 		{
 			if (CurrentNode == null || CurrentQueryBlock == null ||
-			    CurrentNode.Id != OracleGrammarDescription.Terminals.Asterisk)
+			    CurrentNode.Id != Terminals.Asterisk)
 			{
 				return false;
 			}

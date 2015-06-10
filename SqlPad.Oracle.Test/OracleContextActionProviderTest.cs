@@ -166,6 +166,24 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestExpandAsteriskCommandAvailableBeforeComma()
+		{
+			const string query1 = "SELECT SELECTION.*, 1 FROM SELECTION";
+			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 18).SingleOrDefault(a => a.Name == ExpandAsteriskCommand.Title);
+			action.ShouldNotBe(null);
+			action.Name.ShouldBe("Expand");
+		}
+		
+		[Test(Description = @""), STAThread]
+		public void TestExpandAsteriskCommandAvailableBeforeFromKeyword()
+		{
+			const string query1 = "SELECT*FROM DUAL";
+			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 7).SingleOrDefault(a => a.Name == ExpandAsteriskCommand.Title);
+			action.ShouldNotBe(null);
+			action.Name.ShouldBe("Expand");
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestToggleFullyQualifiedReferencesSuggested()
 		{
 			const string query1 = @"SELECT DUMMY FROM DUAL";
