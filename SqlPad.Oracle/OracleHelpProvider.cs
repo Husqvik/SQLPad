@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -14,11 +13,11 @@ namespace SqlPad.Oracle
 {
 	public class OracleHelpProvider : IHelpProvider
 	{
-		private static IReadOnlyDictionary<string, DocumentationFunction> _sqlFunctionDocumentation;
-		private static IReadOnlyDictionary<string, DocumentationStatement> _statementDocumentation;
+		private static ILookup<string, DocumentationFunction> _sqlFunctionDocumentation;
+		private static ILookup<string, DocumentationStatement> _statementDocumentation;
 		private static IReadOnlyDictionary<OracleObjectIdentifier, DocumentationPackage> _packageDocumentation;
 
-		internal static IReadOnlyDictionary<string, DocumentationFunction> SqlFunctionDocumentation
+		internal static ILookup<string, DocumentationFunction> SqlFunctionDocumentation
 		{
 			get
 			{
@@ -49,30 +48,10 @@ namespace SqlPad.Oracle
 			using (var reader = XmlReader.Create(Path.Combine(folder, "OracleDocumentation.xml")))
 			{
 				var documentation = (Documentation)new XmlSerializer(typeof (Documentation)).Deserialize(reader);
-				var sqlFunctionDocumentation = new Dictionary<string, DocumentationFunction>();
 
-				foreach (var function in documentation.Functions)
-				{
-					DocumentationFunction existingFunction;
-					var identifier = function.Name.ToQuotedIdentifier();
-					if (!sqlFunctionDocumentation.TryGetValue(identifier, out existingFunction) || function.Value.Length > existingFunction.Value.Length)
-					{
-						sqlFunctionDocumentation[identifier] = function;
-					}
-					else
-					{
-						Trace.WriteLine(String.Format("Function documentation skipped: {0}", function.Value));
-					}
-				}
+				_sqlFunctionDocumentation = documentation.Functions.ToLookup(f => f.Name.ToQuotedIdentifier());
 
-				_sqlFunctionDocumentation = new ReadOnlyDictionary<string, DocumentationFunction>(sqlFunctionDocumentation);
-
-				var records = new HashSet<string>();
-				var statementDocumentation = documentation.Statements
-					.Where(s => records.Add(s.Name))
-					.ToDictionary(s => s.Name);
-
-				_statementDocumentation = new ReadOnlyDictionary<string, DocumentationStatement>(statementDocumentation);
+				_statementDocumentation = documentation.Statements.ToLookup(s => s.Name);
 
 				_packageDocumentation = documentation.Packages.ToDictionary(p => OracleObjectIdentifier.Create(p.Owner, p.Name));
 			}
@@ -123,8 +102,7 @@ namespace SqlPad.Oracle
 				for (var i = 3; i > 0; i--)
 				{
 					var statementDocumentationKey = String.Join(" ", firstThreeTerminals.Take(i).Select(t => ((OracleToken)t.Token).UpperInvariantValue));
-					DocumentationStatement documentation;
-					if (_statementDocumentation.TryGetValue(statementDocumentationKey, out documentation))
+					foreach (var documentation in _statementDocumentation[statementDocumentationKey])
 					{
 						Process.Start(documentation.Url);
 						return;
@@ -135,11 +113,13 @@ namespace SqlPad.Oracle
 
 		private static void ShowSqlFunctionDocumentation(OracleProgramIdentifier identifier)
 		{
-			DocumentationFunction sqlFunctionDocumentation = null;
-			var sqlFunctionDocumentationExists = (String.IsNullOrEmpty(identifier.Package) || String.Equals(identifier.Package, OracleDatabaseModelBase.PackageBuiltInFunction)) && SqlFunctionDocumentation.TryGetValue(identifier.Name, out sqlFunctionDocumentation);
-			if (sqlFunctionDocumentationExists)
+			var isBuiltInSqlFunction = (String.IsNullOrEmpty(identifier.Package) || String.Equals(identifier.Package, OracleDatabaseModelBase.PackageBuiltInFunction));
+			if (isBuiltInSqlFunction)
 			{
-				Process.Start(sqlFunctionDocumentation.Url);
+				foreach (var documentation in SqlFunctionDocumentation[identifier.Name])
+				{
+					Process.Start(documentation.Url);
+				}
 			}
 
 			DocumentationPackage packageDocumentation;

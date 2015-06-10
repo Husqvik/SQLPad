@@ -22,6 +22,8 @@
 
 	<Style TargetType="{x:Type DataGridCell}">
 		<Setter Property="Template" Value="{StaticResource DataGridCellControlTemplate}" />
+		<!-- Disables row selection -->
+		<Setter Property="IsHitTestVisible" Value="False"/>
 	</Style>
 
 </ResourceDictionary>

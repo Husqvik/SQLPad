@@ -371,12 +371,19 @@ namespace SqlPad.Oracle
 			}
 
 			var documentationBuilder = new StringBuilder();
-			DocumentationFunction documentationFunction;
 			DocumentationPackage documentationPackage;
 			if ((String.IsNullOrEmpty(functionReference.Metadata.Identifier.Owner) || String.Equals(functionReference.Metadata.Identifier.Package, OracleDatabaseModelBase.PackageBuiltInFunction)) &&
-				functionReference.Metadata.Type != ProgramType.StatementFunction && OracleHelpProvider.SqlFunctionDocumentation.TryGetValue(functionReference.Metadata.Identifier.Name, out documentationFunction))
+				functionReference.Metadata.Type != ProgramType.StatementFunction && OracleHelpProvider.SqlFunctionDocumentation[functionReference.Metadata.Identifier.Name].Any())
 			{
-				documentationBuilder.AppendLine(documentationFunction.Value);
+				foreach (var documentationFunction in OracleHelpProvider.SqlFunctionDocumentation[functionReference.Metadata.Identifier.Name])
+				{
+					if (documentationBuilder.Length > 0)
+					{
+						documentationBuilder.AppendLine();
+					}
+
+					documentationBuilder.AppendLine(documentationFunction.Value);
+				}
 			}
 			else if (!String.IsNullOrEmpty(functionReference.Metadata.Identifier.Package) && functionReference.Metadata.Owner.GetTargetSchemaObject() != null &&
 			         OracleHelpProvider.PackageDocumentation.TryGetValue(functionReference.Metadata.Owner.GetTargetSchemaObject().FullyQualifiedName, out documentationPackage) &&

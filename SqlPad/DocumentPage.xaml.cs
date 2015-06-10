@@ -1636,11 +1636,13 @@ namespace SqlPad
 					SizeToContent = SizeToContent.WidthAndHeight,
 					ShowActivated = true,
 					ShowInTaskbar = false,
+					MaxHeight = SystemParameters.WorkArea.Height,
 					Content =
 						new ScrollViewer
 						{
 							Content = toolTip.InnerContent,
-							HorizontalScrollBarVisibility = ScrollBarVisibility.Auto
+							HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+							VerticalScrollBarVisibility = ScrollBarVisibility.Auto
 						},
 					Background = toolTip.Control.Background,
 					Owner = MainWindow

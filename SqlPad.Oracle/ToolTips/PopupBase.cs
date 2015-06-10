@@ -20,6 +20,7 @@ namespace SqlPad.Oracle.ToolTips
 		public PopupBase()
 		{
 			CommandBindings.Add(new CommandBinding(PinPopupCommand, PinHandler));
+			MaxHeight = SystemParameters.WorkArea.Height;
 		}
 
 		[Bindable(true)]

@@ -15,14 +15,20 @@
 					<Border Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}">
-						<StackPanel>
-							<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Visibility="{TemplateBinding IsPinnable, Converter={StaticResource ObjectToVisibilityConverter}}">
+						<Grid>
+							<Grid.RowDefinitions>
+								<RowDefinition Height="20" />
+								<RowDefinition Height="*" />
+							</Grid.RowDefinitions>
+							
+							<StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" Visibility="{TemplateBinding IsPinnable, Converter={StaticResource ObjectToVisibilityConverter}}">
 								<Button x:Name="ButtonPin" Content="Pin" Command="{x:Static local:PopupBase.PinPopupCommand}" />
 							</StackPanel>
 
-							<ContentPresenter />
-
-						</StackPanel>
+							<ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+								<ContentPresenter />
+							</ScrollViewer>
+						</Grid>
 					</Border>
 				</ControlTemplate>
 			</Setter.Value>
