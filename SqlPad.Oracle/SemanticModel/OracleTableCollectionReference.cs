@@ -5,7 +5,7 @@ using SqlPad.Oracle.DataDictionary;
 
 namespace SqlPad.Oracle.SemanticModel
 {
-	[DebuggerDisplay("OracleTableCollectionReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; ObjectIdentifier={ObjectNode.Token.Value})")]
+	[DebuggerDisplay("OracleTableCollectionReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; ObjectIdentifier={ObjectNode == null ? null : ObjectNode.Token.Value})")]
 	public class OracleTableCollectionReference : OracleDataObjectReference
 	{
 		private IReadOnlyList<OracleColumn> _columns;

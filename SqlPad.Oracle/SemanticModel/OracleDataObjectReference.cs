@@ -30,7 +30,7 @@ namespace SqlPad.Oracle.SemanticModel
 		public OracleDataObjectReference DataObjectReference { get; set; }
 	}
 
-	[DebuggerDisplay("OracleDataObjectReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; Table={Type != SqlPad.Oracle.ReferenceType.InlineView ? ObjectNode.Token.Value : \"<Nested subquery>\"}; Alias={AliasNode == null ? null : AliasNode.Token.Value}; Type={Type})")]
+	[DebuggerDisplay("OracleDataObjectReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; Table={Type != SqlPad.Oracle.SemanticModel.ReferenceType.InlineView ? ObjectNode.Token.Value : \"<Nested subquery>\"}; Alias={AliasNode == null ? null : AliasNode.Token.Value}; Type={Type})")]
 	public class OracleDataObjectReference : OracleObjectWithColumnsReference
 	{
 		private IReadOnlyList<OracleColumn> _columns;

@@ -252,15 +252,31 @@ namespace SqlPad.Oracle.SemanticModel
 				queryBlockNodes[kvp.Key].AttachedFunctions.AddRange(kvp.Value);
 			}
 
-			var normalQueryBlocks = queryBlockNodes.Values
+			var normalQueryBlocks = new HashSet<OracleQueryBlock>(queryBlockNodes.Values
 				.Where(qb => qb.Type != QueryBlockType.CommonTableExpression || qb.Parent == null)
-				.OrderByDescending(qb => qb.RootNode.Level)
-				.ToArray();
+				.OrderBy(qb => qb.Type)
+				.ThenByDescending(qb => qb.RootNode.Level));
 
 			var commonTableExpressions = normalQueryBlocks
-				.SelectMany(qb => qb.CommonTableExpressions.OrderByDescending(cte => cte.RootNode.Level));
+				.SelectMany(qb => qb.CommonTableExpressions.OrderByDescending(cte => cte.RootNode.Level))
+				.ToArray();
 
-			foreach (var queryBlock in commonTableExpressions.Concat(normalQueryBlocks))
+			foreach (var commonTableExpression in commonTableExpressions)
+			{
+				var childQueryBlocks = normalQueryBlocks
+					.Where(qb => qb.RootNode.HasAncestor(commonTableExpression.RootNode))
+					.ToList();
+
+				foreach (var queryBlock in childQueryBlocks)
+				{
+					_queryBlockNodes.Add(queryBlock.RootNode, queryBlock);
+					normalQueryBlocks.Remove(queryBlock);
+				}
+
+				_queryBlockNodes.Add(commonTableExpression.RootNode, commonTableExpression);
+			}
+
+			foreach (var queryBlock in normalQueryBlocks)
 			{
 				_queryBlockNodes.Add(queryBlock.RootNode, queryBlock);
 			}
@@ -502,10 +518,6 @@ namespace SqlPad.Oracle.SemanticModel
 			ResolvePivotClauses();
 
 			ResolveModelClause();
-
-			ExposeAsteriskColumns();
-
-			ApplyExplicitCommonTableExpressionColumnNames();
 
 			ResolveReferences();
 
@@ -968,7 +980,7 @@ namespace SqlPad.Oracle.SemanticModel
 						_asteriskTableReferences[column] = new List<OracleDataObjectReference> { queryBlock.ModelReference };
 						break;
 					}
-					
+
 					_asteriskTableReferences.Remove(column);
 				}
 			}
@@ -1094,14 +1106,6 @@ namespace SqlPad.Oracle.SemanticModel
 						queryBlock.AccessibleQueryBlocks.Add(_queryBlockNodes[accesibleQueryBlockRoot]);
 					}
 				}
-			}
-		}
-
-		private void ApplyExplicitCommonTableExpressionColumnNames()
-		{
-			foreach (var queryBlocks in _commonTableExpressionExplicitColumnNames.Keys.ToArray())
-			{
-				ApplyExplicitCommonTableExpressionColumnNames(queryBlocks);
 			}
 		}
 
@@ -1691,6 +1695,10 @@ namespace SqlPad.Oracle.SemanticModel
 		{
 			foreach (var queryBlock in _queryBlockNodes.Values)
 			{
+				ExposeAsteriskColumns(queryBlock);
+
+				ApplyExplicitCommonTableExpressionColumnNames(queryBlock);
+
 				ResolveOrderByReferences(queryBlock);
 
 				ResolveFunctionReferences(queryBlock.AllProgramReferences);
@@ -1777,13 +1785,16 @@ namespace SqlPad.Oracle.SemanticModel
 			}
 		}
 
-		private void ExposeAsteriskColumns()
+		private void ExposeAsteriskColumns(OracleQueryBlock queryBlock)
 		{
-			foreach (var asteriskTableReference in _asteriskTableReferences)
+			var queryBlockAsteriskColumns = _asteriskTableReferences.Where(kvp => kvp.Key.Owner == queryBlock).ToList();
+
+			foreach (var asteriskTableReference in queryBlockAsteriskColumns)
 			{
 				var asteriskColumn = asteriskTableReference.Key;
-				var ownerQueryBlock = asteriskColumn.Owner;
-				var columnIndex = ownerQueryBlock.IndexOf(asteriskColumn);
+				var columnIndex = queryBlock.IndexOf(asteriskColumn);
+
+				_asteriskTableReferences.Remove(asteriskColumn);
 
 				foreach (var objectReference in asteriskTableReference.Value)
 				{
@@ -1810,12 +1821,6 @@ namespace SqlPad.Oracle.SemanticModel
 								});
 							break;
 						case ReferenceType.CommonTableExpression:
-							foreach (var queryBlock in objectReference.QueryBlocks)
-							{
-								ApplyExplicitCommonTableExpressionColumnNames(queryBlock);
-							}
-
-							goto case ReferenceType.InlineView;
 						case ReferenceType.InlineView:
 							var columns = new List<OracleSelectListColumn>();
 							foreach (var column in objectReference.QueryBlocks.SelectMany(qb => qb.Columns).Where(c => !c.IsAsterisk))
@@ -1833,7 +1838,7 @@ namespace SqlPad.Oracle.SemanticModel
 					var exposedColumnDictionary = new Dictionary<string, OracleColumnReference>();
 					foreach (var exposedColumn in exposedColumns)
 					{
-						exposedColumn.Owner = ownerQueryBlock;
+						exposedColumn.Owner = queryBlock;
 
 						OracleColumnReference columnReference;
 						if (String.IsNullOrEmpty(exposedColumn.NormalizedName) || !exposedColumnDictionary.TryGetValue(exposedColumn.NormalizedName, out columnReference))
@@ -1852,7 +1857,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 						exposedColumn.ColumnReferences.Add(columnReference);
 
-						ownerQueryBlock.AddSelectListColumn(exposedColumn, ++columnIndex);
+						queryBlock.AddSelectListColumn(exposedColumn, ++columnIndex);
 					}
 				}
 			}
@@ -2800,9 +2805,9 @@ namespace SqlPad.Oracle.SemanticModel
 	public enum QueryBlockType
 	{
 		Normal,
-		ScalarSubquery,
+		CursorParameter,
 		CommonTableExpression,
-		CursorParameter
+		ScalarSubquery
 	}
 
 	public class OracleInsertTarget : OracleReferenceContainer

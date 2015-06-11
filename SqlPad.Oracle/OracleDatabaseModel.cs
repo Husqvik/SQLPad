@@ -862,12 +862,14 @@ namespace SqlPad.Oracle
 				
 				if (parameter.Value is OracleDate)
 				{
-					value = ((OracleDate)parameter.Value).Value;
+					var oracleDate = (OracleDate)parameter.Value;
+					value = oracleDate.IsNull ? (DateTime?)null : oracleDate.Value;
 				}
 
 				if (parameter.Value is OracleTimeStamp)
 				{
-					value = ((OracleTimeStamp)parameter.Value).Value;
+					var oracleTimeStamp = (OracleTimeStamp)parameter.Value;
+					value = oracleTimeStamp.IsNull ? (DateTime?)null : oracleTimeStamp.Value;
 				}
 
 				bindVariableModels[parameter.ParameterName].Value = value;

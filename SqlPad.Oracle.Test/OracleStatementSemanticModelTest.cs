@@ -2132,9 +2132,13 @@ FROM (
 			semanticModel.MainQueryBlock.Columns.Count.ShouldBe(5);
 			semanticModel.MainQueryBlock.Columns[0].IsAsterisk.ShouldBe(true);
 			semanticModel.MainQueryBlock.Columns[1].NormalizedName.ShouldBe("\"RESPONDENTBUCKET_ID\"");
+			semanticModel.MainQueryBlock.Columns[1].ColumnDescription.FullTypeName.ShouldBe("NUMBER(9)");
 			semanticModel.MainQueryBlock.Columns[2].NormalizedName.ShouldBe("\"SELECTION_ID\"");
+			semanticModel.MainQueryBlock.Columns[2].ColumnDescription.FullTypeName.ShouldBe("NUMBER(9)");
 			semanticModel.MainQueryBlock.Columns[3].NormalizedName.ShouldBe("\"NAME\"");
+			semanticModel.MainQueryBlock.Columns[3].ColumnDescription.FullTypeName.ShouldBe("VARCHAR2(50 BYTE)");
 			semanticModel.MainQueryBlock.Columns[4].NormalizedName.ShouldBe("\"0_PROJECT_COUNT\"");
+			semanticModel.MainQueryBlock.Columns[4].ColumnDescription.FullTypeName.ShouldBe(String.Empty);
 		}
 
 		[Test(Description = @"")]
