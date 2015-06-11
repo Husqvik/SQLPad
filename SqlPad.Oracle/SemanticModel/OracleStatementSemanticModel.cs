@@ -1818,6 +1818,7 @@ namespace SqlPad.Oracle.SemanticModel
 						case ReferenceType.SqlModel:
 						case ReferenceType.PivotTable:
 							exposedColumns = objectReference.Columns
+								.Where(c => !c.Hidden)
 								.Select(c => new OracleSelectListColumn(this, asteriskColumn)
 								{
 									IsDirectReference = true,

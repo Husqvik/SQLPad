@@ -2220,5 +2220,25 @@ FROM (
 
 			semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
 		}
+
+		[Test(Description = @"")]
+		public void TestHiddenColumnReferences()
+		{
+			const string query1 = @"SELECT HIDDEN_COLUMN, INVISIBLE_COLUMN FROM (SELECT ""CaseSensitiveTable"".*, HIDDEN_COLUMN INVISIBLE_COLUMN FROM ""CaseSensitiveTable"")";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			var columns = semanticModel.MainQueryBlock.Columns;
+			columns.Count.ShouldBe(2);
+			columns[0].NormalizedName.ShouldBe("\"HIDDEN_COLUMN\"");
+			columns[0].ColumnReferences.Count.ShouldBe(1);
+			columns[0].ColumnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(0);
+			columns[1].NormalizedName.ShouldBe("\"INVISIBLE_COLUMN\"");
+			columns[1].ColumnReferences.Count.ShouldBe(1);
+			columns[1].ColumnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
+		}
 	}
 }

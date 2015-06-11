@@ -7,45 +7,46 @@
              xmlns:sqlPad="clr-namespace:SqlPad;assembly=SqlPad"
              mc:Ignorable="d" 
              d:DesignHeight="28" d:DesignWidth="200">
-	<ItemsControl x:Name="ItemsControl">
-		
-		<ItemsControl.Resources>
-			<sqlPad:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
+	<ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+		<ItemsControl x:Name="ItemsControl">
+			<ItemsControl.Resources>
+				<sqlPad:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
 
-			<DataTemplate x:Key="ColumnModelDataTemplate" DataType="toolTips:OracleColumnModel">
-				<StackPanel Orientation="Horizontal">
-					<TextBlock>
-						<Run Text="{Binding Path=ColumnIndex, Mode=OneWay}"/><Run Text=". "/>
-					</TextBlock>
-					<TextBlock Visibility="{Binding Path=RowSourceName, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="{Binding Path=RowSourceName, Mode=OneWay}"/><Run Text="."/>
-					</TextBlock>
-					<TextBlock Text="{Binding Path=Name}" />
-					<TextBlock Text="{Binding Path=FullTypeName}" Margin="12, 0, 0, 0" />
-				</StackPanel>
-			</DataTemplate>
-			<DataTemplate x:Key="SeparatorTemplate">
-				<Separator />
-			</DataTemplate>
-		</ItemsControl.Resources>
+				<DataTemplate x:Key="ColumnModelDataTemplate" DataType="toolTips:OracleColumnModel">
+					<StackPanel Orientation="Horizontal">
+						<TextBlock>
+							<Run Text="{Binding Path=ColumnIndex, Mode=OneWay}"/><Run Text=". "/>
+						</TextBlock>
+						<TextBlock Visibility="{Binding Path=RowSourceName, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="{Binding Path=RowSourceName, Mode=OneWay}"/><Run Text="."/>
+						</TextBlock>
+						<TextBlock Text="{Binding Path=Name}" />
+						<TextBlock Text="{Binding Path=FullTypeName}" Margin="12, 0, 0, 0" />
+					</StackPanel>
+				</DataTemplate>
+				<DataTemplate x:Key="SeparatorTemplate">
+					<Separator />
+				</DataTemplate>
+			</ItemsControl.Resources>
 		
-		<ItemsControl.ItemTemplate>
-			<DataTemplate DataType="toolTips:OracleColumnModel">
-				<ContentControl Content="{Binding}">
-					<ContentControl.Style>
-						<Style TargetType="ContentControl">
-							<Style.Triggers>
-								<DataTrigger Binding="{Binding Path=IsSeparator}" Value="true">
-									<Setter Property="ContentTemplate" Value="{StaticResource SeparatorTemplate}" />
-								</DataTrigger>
-								<DataTrigger Binding="{Binding Path=IsSeparator}" Value="false">
-									<Setter Property="ContentTemplate" Value="{StaticResource ColumnModelDataTemplate}" />
-								</DataTrigger>
-							</Style.Triggers>
-						</Style>
-					</ContentControl.Style>
-				</ContentControl>
-			</DataTemplate>
-		</ItemsControl.ItemTemplate>
-    </ItemsControl>
+			<ItemsControl.ItemTemplate>
+				<DataTemplate DataType="toolTips:OracleColumnModel">
+					<ContentControl Content="{Binding}">
+						<ContentControl.Style>
+							<Style TargetType="ContentControl">
+								<Style.Triggers>
+									<DataTrigger Binding="{Binding Path=IsSeparator}" Value="true">
+										<Setter Property="ContentTemplate" Value="{StaticResource SeparatorTemplate}" />
+									</DataTrigger>
+									<DataTrigger Binding="{Binding Path=IsSeparator}" Value="false">
+										<Setter Property="ContentTemplate" Value="{StaticResource ColumnModelDataTemplate}" />
+									</DataTrigger>
+								</Style.Triggers>
+							</Style>
+						</ContentControl.Style>
+					</ContentControl>
+				</DataTemplate>
+			</ItemsControl.ItemTemplate>
+		</ItemsControl>
+	</ScrollViewer>
 </UserControl>
