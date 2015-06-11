@@ -16,20 +16,20 @@ namespace SqlPad.Oracle.ModelDataProviders
 		
 		public IModelDataProvider SubPartitionDetailDataProvider { get; private set; }
 
-		public PartitionDataProvider(TableDetailsModel dataModel, OracleObjectIdentifier objectIdentifier, string oracleVersion)
+		public PartitionDataProvider(TableDetailsModel dataModel, OracleObjectIdentifier objectIdentifier, Version oracleVersion)
 		{
 			var hasInMemorySupport = InMemoryHelper.HasInMemorySupport(oracleVersion);
 			PartitionDetailDataProvider = new PartitionDetailDataProviderInternal(dataModel, objectIdentifier, hasInMemorySupport);
 			SubPartitionDetailDataProvider = new SubPartitionDetailDataProviderInternal(dataModel, objectIdentifier, hasInMemorySupport);
 		}
 
-		public PartitionDataProvider(PartitionDetailsModel dataModel, string oracleVersion)
+		public PartitionDataProvider(PartitionDetailsModel dataModel, Version oracleVersion)
 		{
 			PartitionDetailDataProvider = new PartitionDetailDataProviderInternal(dataModel);
 			SubPartitionDetailDataProvider = new SubPartitionDetailDataProviderInternal(dataModel, InMemoryHelper.HasInMemorySupport(oracleVersion));
 		}
 
-		public PartitionDataProvider(SubPartitionDetailsModel dataModel, string oracleVersion)
+		public PartitionDataProvider(SubPartitionDetailsModel dataModel, Version oracleVersion)
 		{
 			SubPartitionDetailDataProvider = new SubPartitionDetailDataProviderInternal(dataModel, InMemoryHelper.HasInMemorySupport(oracleVersion));
 		}

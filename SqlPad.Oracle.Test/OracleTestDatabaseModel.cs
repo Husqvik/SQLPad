@@ -18,6 +18,7 @@ namespace SqlPad.Oracle.Test
 		private const string OwnerNameSys = "\"SYS\"";
 		private const string DatabaseDomainNameInternal = "sqlpad.husqvik.com";
 		private static readonly ConnectionStringSettings ConnectionStringInternal = new ConnectionStringSettings("ConnectionFake", "DATA SOURCE=HQ_PDB_TCP;PASSWORD=oracle;USER ID=HUSQVIK", "Oracle.DataAccess.Client");
+		private static readonly Version TestDatabaseVersion = new Version(12, 1, 0, 2);
 
 		private static readonly List<ColumnHeader> ColumnHeaders;
 
@@ -996,7 +997,7 @@ Note
 		private static readonly IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjectDictionary;
 
 		private static readonly IDictionary<OracleObjectIdentifier, OracleSchemaObject> ObjectsInternal;
-		
+
 		public override ConnectionStringSettings ConnectionString { get { return ConnectionStringInternal; } }
 
 		public override string CurrentSchema { get; set; }
@@ -1019,9 +1020,7 @@ Note
 
 		public override IDictionary<string, string> SystemParameters { get { return _systemParameters; } }
 
-		public override int VersionMajor { get { return 12; } }
-
-		public override string VersionString { get { return "12.1.0.2"; } }
+		public override Version Version { get { return TestDatabaseVersion; } }
 
 		public override ILookup<string, string> ContextData
 		{

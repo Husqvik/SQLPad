@@ -328,9 +328,7 @@ namespace SqlPad.Oracle
 
 		public override IDictionary<string, string> SystemParameters { get { return _dataDictionary.SystemParameters; } }
 
-		public override int VersionMajor { get { return Convert.ToInt32(DatabaseProperties[_connectionString.ConnectionString].Version.Split('.')[0]); } }
-
-		public override string VersionString { get { return DatabaseProperties[_connectionString.ConnectionString].Version; } }
+		public override Version Version { get { return DatabaseProperties[_connectionString.ConnectionString].Version; } }
 
 		public override void RefreshIfNeeded()
 		{
@@ -430,14 +428,14 @@ namespace SqlPad.Oracle
 
 		public async override Task UpdatePartitionDetailsAsync(PartitionDetailsModel dataModel, CancellationToken cancellationToken)
 		{
-			var partitionDataProvider = new PartitionDataProvider(dataModel, VersionString);
+			var partitionDataProvider = new PartitionDataProvider(dataModel, Version);
 			var tableSpaceAllocationUpdater = new TableSpaceAllocationDataProvider(dataModel, dataModel.Owner, dataModel.Name);
 			await UpdateModelAsync(cancellationToken, true, partitionDataProvider.PartitionDetailDataProvider, partitionDataProvider.SubPartitionDetailDataProvider, tableSpaceAllocationUpdater);
 		}
 
 		public async override Task UpdateSubPartitionDetailsAsync(SubPartitionDetailsModel dataModel, CancellationToken cancellationToken)
 		{
-			var partitionDataProvider = new PartitionDataProvider(dataModel, VersionString);
+			var partitionDataProvider = new PartitionDataProvider(dataModel, Version);
 			var tableSpaceAllocationUpdater = new TableSpaceAllocationDataProvider(dataModel, dataModel.Owner, dataModel.Name);
 			await UpdateModelAsync(cancellationToken, true, partitionDataProvider.SubPartitionDetailDataProvider, tableSpaceAllocationUpdater);
 		}
@@ -447,10 +445,10 @@ namespace SqlPad.Oracle
 			var tableDetailDataProvider = new TableDetailDataProvider(dataModel, objectIdentifier);
 			var tableSpaceAllocationUpdater = new TableSpaceAllocationDataProvider(dataModel, objectIdentifier, String.Empty);
 			var tableCommentDataProvider = new CommentDataProvider(dataModel, objectIdentifier, null);
-			var tableInMemorySpaceAllocationUpdater = new TableInMemorySpaceAllocationDataProvider(dataModel, objectIdentifier, VersionString);
+			var tableInMemorySpaceAllocationUpdater = new TableInMemorySpaceAllocationDataProvider(dataModel, objectIdentifier, Version);
 			var indexDetailDataProvider = new IndexDetailDataProvider(dataModel, objectIdentifier, null);
 			var indexColumnDataProvider = new IndexColumnDataProvider(dataModel, objectIdentifier, null);
-			var partitionDataProvider = new PartitionDataProvider(dataModel, objectIdentifier, VersionString);
+			var partitionDataProvider = new PartitionDataProvider(dataModel, objectIdentifier, Version);
 			await UpdateModelAsync(cancellationToken, true, tableDetailDataProvider, tableCommentDataProvider, tableSpaceAllocationUpdater, tableInMemorySpaceAllocationUpdater, indexDetailDataProvider, indexColumnDataProvider, partitionDataProvider.PartitionDetailDataProvider, partitionDataProvider.SubPartitionDetailDataProvider);
 		}
 
@@ -469,7 +467,7 @@ namespace SqlPad.Oracle
 			var columnIndexesDataProvider = new IndexDetailDataProvider(dataModel, objectIdentifier, columnName);
 			var indexColumnDataProvider = new IndexColumnDataProvider(dataModel, objectIdentifier, columnName);
 			var columnHistogramUpdater = new ColumnDetailHistogramDataProvider(dataModel, objectIdentifier, columnName);
-			var columnInMemoryDetailsUpdater = new ColumnDetailInMemoryDataProvider(dataModel, objectIdentifier, columnName, VersionString);
+			var columnInMemoryDetailsUpdater = new ColumnDetailInMemoryDataProvider(dataModel, objectIdentifier, columnName, Version);
 			await UpdateModelAsync(cancellationToken, true, columnDetailDataProvider, columnCommentDataProvider, columnConstraintDataProvider, columnIndexesDataProvider, indexColumnDataProvider, columnHistogramUpdater, columnInMemoryDetailsUpdater);
 		}
 
@@ -1130,28 +1128,30 @@ namespace SqlPad.Oracle
 			DatabaseProperty property;
 			if (!DatabaseProperties.TryGetValue(_connectionString.ConnectionString, out property))
 			{
+				var versionString = connection.ServerVersion.Remove(connection.ServerVersion.LastIndexOf('.'));
+
 				DatabaseProperties[_connectionString.ConnectionString] =
 					new DatabaseProperty
 					{
 						DomainName = connection.DatabaseDomainName == "null" ? null : connection.DatabaseDomainName,
-						Version = connection.ServerVersion
+						Version = Version.Parse(versionString)
 					};
 			}
 		}
 
-		internal IEnumerable<T> ExecuteReader<T>(string commandText, Func<OracleDataReader, T> formatFunction)
+		internal IEnumerable<T> ExecuteReader<T>(Func<Version, string> getCommandTextFunction, Func<OracleDataReader, T> formatFunction)
 		{
 			using (var connection = new OracleConnection(_oracleConnectionString.ConnectionString))
 			{
 				using (var command = connection.CreateCommand())
 				{
-					command.CommandText = commandText;
-					command.BindByName = true;
-					command.InitialLONGFetchSize = DataDictionaryMapper.LongFetchSize;
-
 					connection.Open();
 
 					EnsureDatabaseVersion(connection);
+
+					command.CommandText = getCommandTextFunction(Version);
+					command.BindByName = true;
+					command.InitialLONGFetchSize = DataDictionaryMapper.LongFetchSize;
 
 					connection.ModuleName = ModuleNameSqlPadDatabaseModel;
 					connection.ActionName = "Fetch data dictionary metadata";
@@ -1438,7 +1438,7 @@ namespace SqlPad.Oracle
 
 		private struct DatabaseProperty
 		{
-			public string Version { get; set; }
+			public Version Version { get; set; }
 			public string DomainName { get; set; }
 		}
 

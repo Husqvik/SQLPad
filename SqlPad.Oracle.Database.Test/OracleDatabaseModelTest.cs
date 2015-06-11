@@ -80,9 +80,7 @@ WHERE
 
 		private void AssertDatabaseModel(OracleDatabaseModelBase databaseModel)
 		{
-			databaseModel.VersionString.ShouldNotBe(null);
-
-			databaseModel.VersionMajor.ShouldBeGreaterThan(8);
+			databaseModel.Version.Major.ShouldBeGreaterThanOrEqualTo(11);
 
 			databaseModel.AllObjects.Count.ShouldBeGreaterThan(0);
 			Trace.WriteLine(String.Format("All object dictionary has {0} members. ", databaseModel.AllObjects.Count));

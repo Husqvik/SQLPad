@@ -26,8 +26,8 @@ namespace SqlPad.Oracle
 			_allObjects.Clear();
 
 			var stopwatch = Stopwatch.StartNew();
-			var schemaTypeMetadataSource = _databaseModel.ExecuteReader(DatabaseCommands.SelectTypesCommandText, MapSchemaType);
-			var schemaTypeAndMateralizedViewMetadataSource = schemaTypeMetadataSource.Concat(_databaseModel.ExecuteReader(DatabaseCommands.SelectMaterializedViewCommandText, MapMaterializedView));
+			var schemaTypeMetadataSource = _databaseModel.ExecuteReader(v => DatabaseCommands.SelectTypesCommandText, MapSchemaType);
+			var schemaTypeAndMateralizedViewMetadataSource = schemaTypeMetadataSource.Concat(_databaseModel.ExecuteReader(v => DatabaseCommands.SelectMaterializedViewCommandText, MapMaterializedView));
 
 			foreach (var schemaObject in schemaTypeAndMateralizedViewMetadataSource)
 			{
@@ -37,42 +37,42 @@ namespace SqlPad.Oracle
 			Trace.WriteLine(String.Format("Fetch types and materialized views metadata finished in {0}. ", stopwatch.Elapsed));
 			stopwatch.Restart();
 
-			_databaseModel.ExecuteReader(DatabaseCommands.SelectAllObjectsCommandText, MapSchemaObject).Count();
+			_databaseModel.ExecuteReader(v => DatabaseCommands.SelectAllObjectsCommandText, MapSchemaObject).Count();
 
 			Trace.WriteLine(String.Format("Fetch all objects metadata finished in {0}. ", stopwatch.Elapsed));
 			stopwatch.Restart();
 
-			_databaseModel.ExecuteReader(DatabaseCommands.SelectTablesCommandText, MapTable).Count();
+			_databaseModel.ExecuteReader(v => DatabaseCommands.SelectTablesCommandText, MapTable).Count();
 
 			Trace.WriteLine(String.Format("Fetch tables metadata finished in {0}. ", stopwatch.Elapsed));
 			stopwatch.Restart();
 
-			_databaseModel.ExecuteReader(DatabaseCommands.SelectPartitionsCommandText, MapPartitions).Count();
+			_databaseModel.ExecuteReader(v => DatabaseCommands.SelectPartitionsCommandText, MapPartitions).Count();
 
 			Trace.WriteLine(String.Format("Fetch table partition metadata finished in {0}. ", stopwatch.Elapsed));
 			stopwatch.Restart();
 
-			_databaseModel.ExecuteReader(DatabaseCommands.SelectSubPartitionsCommandText, MapSubPartitions).Count();
+			_databaseModel.ExecuteReader(v => DatabaseCommands.SelectSubPartitionsCommandText, MapSubPartitions).Count();
 
 			Trace.WriteLine(String.Format("Fetch table sub-partition metadata finished in {0}. ", stopwatch.Elapsed));
 			stopwatch.Restart();
 
-			_databaseModel.ExecuteReader(DatabaseCommands.SelectTablePartitionKeysCommandText, r => MapPartitionKeys(r, t => t.PartitionKeyColumns)).Count();
+			_databaseModel.ExecuteReader(v => DatabaseCommands.SelectTablePartitionKeysCommandText, r => MapPartitionKeys(r, t => t.PartitionKeyColumns)).Count();
 
 			Trace.WriteLine(String.Format("Fetch table partition key metadata finished in {0}. ", stopwatch.Elapsed));
 			stopwatch.Restart();
 
-			_databaseModel.ExecuteReader(DatabaseCommands.SelectTableSubPartitionKeysCommandText, r => MapPartitionKeys(r, t => t.SubPartitionKeyColumns)).Count();
+			_databaseModel.ExecuteReader(v => DatabaseCommands.SelectTableSubPartitionKeysCommandText, r => MapPartitionKeys(r, t => t.SubPartitionKeyColumns)).Count();
 
 			Trace.WriteLine(String.Format("Fetch table sub-partition key metadata finished in {0}. ", stopwatch.Elapsed));
 			stopwatch.Restart();
 
-			_databaseModel.ExecuteReader(DatabaseCommands.SelectSynonymTargetsCommandText, MapSynonymTarget).Count();
+			_databaseModel.ExecuteReader(v => DatabaseCommands.SelectSynonymTargetsCommandText, MapSynonymTarget).Count();
 
 			Trace.WriteLine(String.Format("Fetch synonyms metadata finished in {0}. ", stopwatch.Elapsed));
 			stopwatch.Restart();
 
-			var columnMetadataSource = _databaseModel.ExecuteReader(DatabaseCommands.SelectTableColumnsCommandText, MapTableColumn);
+			var columnMetadataSource = _databaseModel.ExecuteReader(v => String.Format(DatabaseCommands.SelectTableColumnsCommandTextBase, v.Major >= 12 ? ", HIDDEN_COLUMN, USER_GENERATED" : null), MapTableColumn);
 
 			foreach (var columnMetadata in columnMetadataSource)
 			{
@@ -87,7 +87,7 @@ namespace SqlPad.Oracle
 			Trace.WriteLine(String.Format("Fetch table column metadata in {0}. ", stopwatch.Elapsed));
 			stopwatch.Restart();
 
-			var constraintSource = _databaseModel.ExecuteReader(DatabaseCommands.SelectConstraintsCommandText, MapConstraintWithReferenceIdentifier)
+			var constraintSource = _databaseModel.ExecuteReader(v => DatabaseCommands.SelectConstraintsCommandText, MapConstraintWithReferenceIdentifier)
 				.Where(c => c.Key != null)
 				.ToArray();
 
@@ -100,7 +100,7 @@ namespace SqlPad.Oracle
 			Trace.WriteLine(String.Format("Fetch constraint metadata finished in {0}. ", stopwatch.Elapsed));
 			stopwatch.Restart();
 
-			var constraintColumns = _databaseModel.ExecuteReader(DatabaseCommands.SelectConstraintColumnsCommandText, MapConstraintColumn)
+			var constraintColumns = _databaseModel.ExecuteReader(v => DatabaseCommands.SelectConstraintColumnsCommandText, MapConstraintColumn)
 				.GroupBy(c => c.Key)
 				.ToDictionary(g => g.Key, g => g.Select(kvp => kvp.Value).ToList());
 
@@ -128,17 +128,17 @@ namespace SqlPad.Oracle
 			Trace.WriteLine(String.Format("Fetch column constraint metadata finished in {0}. ", stopwatch.Elapsed));
 			stopwatch.Restart();
 
-			_databaseModel.ExecuteReader(DatabaseCommands.SelectSequencesCommandText, MapSequence).Count();
+			_databaseModel.ExecuteReader(v => DatabaseCommands.SelectSequencesCommandText, MapSequence).Count();
 
 			Trace.WriteLine(String.Format("Fetch sequence metadata finished in {0}. ", stopwatch.Elapsed));
 			stopwatch.Restart();
 
-			_databaseModel.ExecuteReader(DatabaseCommands.SelectTypeAttributesCommandText, MapTypeAttributes).Count();
+			_databaseModel.ExecuteReader(v => DatabaseCommands.SelectTypeAttributesCommandText, MapTypeAttributes).Count();
 
 			Trace.WriteLine(String.Format("Fetch type attribute metadata finished in {0}. ", stopwatch.Elapsed));
 			stopwatch.Restart();
 
-			_databaseModel.ExecuteReader(DatabaseCommands.SelectCollectionTypeAttributesCommandText, MapCollectionTypeAttributes).Count();
+			_databaseModel.ExecuteReader(v => DatabaseCommands.SelectCollectionTypeAttributesCommandText, MapCollectionTypeAttributes).Count();
 
 			Trace.WriteLine(String.Format("Fetch collection attribute metadata finished in {0}. ", stopwatch.Elapsed));
 			stopwatch.Restart();
@@ -164,45 +164,45 @@ namespace SqlPad.Oracle
 
 		public ILookup<string, string> GetContextData()
 		{
-			return _databaseModel.ExecuteReader(DatabaseCommands.SelectContextDataCommandText, MapContextData).ToLookup(r => r.Key, r => r.Value);
+			return _databaseModel.ExecuteReader(v => DatabaseCommands.SelectContextDataCommandText, MapContextData).ToLookup(r => r.Key, r => r.Value);
 		}
 
 		public IEnumerable<string> GetSchemaNames()
 		{
-			return _databaseModel.ExecuteReader(DatabaseCommands.SelectAllSchemasCommandText, r => ((string)r["USERNAME"]));
+			return _databaseModel.ExecuteReader(v => DatabaseCommands.SelectAllSchemasCommandText, r => ((string)r["USERNAME"]));
 		}
 
 		public IEnumerable<string> GetCharacterSets()
 		{
-			return _databaseModel.ExecuteReader(DatabaseCommands.SelectCharacterSetsCommandText, r => ((string)r["VALUE"]));
+			return _databaseModel.ExecuteReader(v => DatabaseCommands.SelectCharacterSetsCommandText, r => ((string)r["VALUE"]));
 		}
 
 		public IEnumerable<KeyValuePair<int, string>> GetStatisticsKeys()
 		{
-			var command = _databaseModel.VersionMajor == OracleDatabaseModelBase.VersionMajorOracle12c
+			var command = _databaseModel.Version.Major >= OracleDatabaseModelBase.VersionMajorOracle12c
 				? DatabaseCommands.SelectStatisticsKeysCommandText
 				: DatabaseCommands.SelectStatisticsKeysOracle11CommandText;
-			
-			return _databaseModel.ExecuteReader(command, MapStatisticsKey);
+
+			return _databaseModel.ExecuteReader(v => command, MapStatisticsKey);
 		}
 
 		public IDictionary<OracleObjectIdentifier, OracleDatabaseLink> GetDatabaseLinks()
 		{
-			return _databaseModel.ExecuteReader(DatabaseCommands.SelectDatabaseLinksCommandText, MapDatabaseLink)
+			return _databaseModel.ExecuteReader(v => DatabaseCommands.SelectDatabaseLinksCommandText, MapDatabaseLink)
 				.ToDictionary(l => l.FullyQualifiedName, l => l);
 		}
 
 		public IEnumerable<KeyValuePair<string, string>> GetSystemParameters()
 		{
-			return _databaseModel.ExecuteReader(DatabaseCommands.SelectSystemParametersCommandText, MapParameter);
+			return _databaseModel.ExecuteReader(v => DatabaseCommands.SelectSystemParametersCommandText, MapParameter);
 		}
 
 		private ILookup<OracleProgramIdentifier, OracleProgramMetadata> GetFunctionMetadataCollection(string selectFunctionMetadataCommandText, string selectParameterMetadataCommandText, bool isBuiltIn)
 		{
-			var functionMetadataSource = _databaseModel.ExecuteReader(selectFunctionMetadataCommandText, r => MapProgramMetadata(r, isBuiltIn));
+			var functionMetadataSource = _databaseModel.ExecuteReader(v => selectFunctionMetadataCommandText, r => MapProgramMetadata(r, isBuiltIn));
 			var functionMetadataLookup = functionMetadataSource.ToLookup(m => m.Identifier);
 
-			var functionParameterMetadataSource = _databaseModel.ExecuteReader(selectParameterMetadataCommandText, MapProgramParameterMetadata);
+			var functionParameterMetadataSource = _databaseModel.ExecuteReader(v => selectParameterMetadataCommandText, MapProgramParameterMetadata);
 			foreach (var functionIdentifierParameterMetadata in functionParameterMetadataSource)
 			{
 				var functionMetadata = functionMetadataLookup[functionIdentifierParameterMetadata.Key]
@@ -447,6 +447,8 @@ namespace SqlPad.Oracle
 					DataType = dataType,
 					Nullable = (string)reader["NULLABLE"] == "Y",
 					Virtual = (string)reader["VIRTUAL_COLUMN"] == "YES",
+					Hidden = (string)reader["HIDDEN_COLUMN"] == "YES",
+					UserGenerated = (string)reader["USER_GENERATED"] == "YES",
 					DefaultValue = OracleReaderValueConvert.ToString(reader["DATA_DEFAULT"]),
 					CharacterSize = Convert.ToInt32(reader["CHAR_LENGTH"])
 				});

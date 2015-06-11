@@ -171,9 +171,9 @@ namespace SqlPad.Oracle.ModelDataProviders
 	{
 		private readonly OracleObjectIdentifier _objectIdentifier;
 		private readonly string _columnName;
-		private readonly string _oracleVersion;
+		private readonly Version _oracleVersion;
 
-		public ColumnDetailInMemoryDataProvider(ColumnDetailsModel dataModel, OracleObjectIdentifier objectIdentifier, string columnName, string oracleVersion)
+		public ColumnDetailInMemoryDataProvider(ColumnDetailsModel dataModel, OracleObjectIdentifier objectIdentifier, string columnName, Version oracleVersion)
 			: base(dataModel)
 		{
 			_objectIdentifier = objectIdentifier;
@@ -207,9 +207,9 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 	internal static class InMemoryHelper
 	{
-		public static bool HasInMemorySupport(string oracleVersion)
+		public static bool HasInMemorySupport(Version oracleVersion)
 		{
-			return String.CompareOrdinal(oracleVersion, "12.1.0.2.0") >= 0;
+			return String.CompareOrdinal(oracleVersion.ToString(), "12.1.0.2") >= 0;
 		}
 	}
 
@@ -495,9 +495,9 @@ namespace SqlPad.Oracle.ModelDataProviders
 	internal class TableInMemorySpaceAllocationDataProvider : ModelDataProvider<TableDetailsModel>
 	{
 		private readonly OracleObjectIdentifier _objectIdentifier;
-		private readonly string _oracleVersion;
+		private readonly Version _oracleVersion;
 
-		public TableInMemorySpaceAllocationDataProvider(TableDetailsModel dataModel, OracleObjectIdentifier objectIdentifier, string oracleVersion)
+		public TableInMemorySpaceAllocationDataProvider(TableDetailsModel dataModel, OracleObjectIdentifier objectIdentifier, Version oracleVersion)
 			: base(dataModel)
 		{
 			_objectIdentifier = objectIdentifier;

@@ -127,9 +127,7 @@ namespace SqlPad.Oracle
 		
 		public abstract IDictionary<string, string> SystemParameters { get; }
 
-		public abstract int VersionMajor { get; }
-		
-		public abstract string VersionString { get; }
+		public abstract Version Version { get; }
 
 		public abstract Task<ICollection<SessionExecutionStatisticsRecord>> GetExecutionStatisticsAsync(CancellationToken cancellationToken);
 

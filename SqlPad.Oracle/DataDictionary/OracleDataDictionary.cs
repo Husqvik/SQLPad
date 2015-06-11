@@ -95,7 +95,7 @@ namespace SqlPad.Oracle.DataDictionary
 
 			var oracleColumnType = Serializer.Add(typeof(OracleColumn), false);
 			oracleColumnType.UseConstructor = false;
-			oracleColumnType.Add("Name", "DataType", "CharacterSize", "Nullable", "Virtual", "DefaultValue");
+			oracleColumnType.Add("Name", "DataType", "CharacterSize", "Nullable", "Virtual", "DefaultValue", "Hidden", "UserGenerated");
 
 			var oracleObjectType = Serializer.Add(typeof(OracleObject), false);
 			oracleObjectType.AsReferenceDefault = true;
