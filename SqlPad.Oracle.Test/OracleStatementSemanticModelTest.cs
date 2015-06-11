@@ -1119,6 +1119,20 @@ MODEL
 		}
 
 		[Test(Description = @"")]
+		public void TestModelBuildWithScalarSbuqueryAsPlSqlParameter()
+		{
+			const string query1 =
+@"BEGIN
+	DBMS_OUTPUT.PUT_VALUE((SELECT COUNT(*) FROM DUAL));
+END;";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+
+		}
+
+		[Test(Description = @"")]
 		public void TestModelBuildWithUnfinishedSqlModelMeasure()
 		{
 			const string query1 = @"SELECT * FROM (SELECT * FROM DUAL) MODEL DIMENSION BY (0 C1) MEASURES (0 C2, , 0 C3) RULES (C2[ANY] = 0)";

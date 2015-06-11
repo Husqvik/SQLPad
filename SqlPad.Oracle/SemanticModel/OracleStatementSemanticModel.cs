@@ -237,8 +237,12 @@ namespace SqlPad.Oracle.SemanticModel
 							queryBlock.Type = scalarSubqueryExpression[Terminals.Cursor] == null
 								? QueryBlockType.ScalarSubquery
 								: QueryBlockType.CursorParameter;
-							
-							queryBlock.Parent = queryBlockNodes[scalarSubqueryExpression.GetAncestor(NonTerminals.QueryBlock)];
+
+							var parentQueryBlockNode = scalarSubqueryExpression.GetAncestor(NonTerminals.QueryBlock);
+							if (parentQueryBlockNode != null)
+							{
+								queryBlock.Parent = queryBlockNodes[parentQueryBlockNode];
+							}
 						}
 					}
 				}
