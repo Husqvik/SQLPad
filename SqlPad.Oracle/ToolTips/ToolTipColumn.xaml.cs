@@ -65,6 +65,10 @@ namespace SqlPad.Oracle.ToolTips
 		
 		public bool Nullable { get; set; }
 		
+		public bool Invisible { get; set; }
+		
+		public bool IsSystemGenerated { get; set; }
+		
 		public bool Virtual { get; set; }
 		
 		public string DataType { get; set; }

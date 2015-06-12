@@ -196,7 +196,9 @@ namespace SqlPad.Oracle
 					Owner = columnOwner.ToString(),
 					Name = columnReference.Name.ToSimpleIdentifier(),
 					Nullable = columnReference.ColumnDescription.Nullable,
+					Invisible = columnReference.ColumnDescription.Hidden,
 					Virtual = columnReference.ColumnDescription.Virtual,
+					IsSystemGenerated = columnReference.ColumnDescription.UserGenerated == false,
 					DataType = columnReference.ColumnDescription.FullTypeName,
 					DefaultValue = BuildDefaultValuePreview(columnReference.ColumnDescription.DefaultValue)
 				};

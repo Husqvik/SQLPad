@@ -25,7 +25,7 @@ namespace SqlPad.Oracle.DataDictionary
 		
 		public bool Virtual { get; set; }
 
-		public bool UserGenerated { get; set; }
+		public bool? UserGenerated { get; set; }
 		
 		public bool Hidden { get; set; }
 

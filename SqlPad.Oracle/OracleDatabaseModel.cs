@@ -1139,7 +1139,7 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		internal IEnumerable<T> ExecuteReader<T>(Func<Version, string> getCommandTextFunction, Func<OracleDataReader, T> formatFunction)
+		internal IEnumerable<T> ExecuteReader<T>(Func<Version, string> getCommandTextFunction, Func<Version, OracleDataReader, T> formatFunction)
 		{
 			using (var connection = new OracleConnection(_oracleConnectionString.ConnectionString))
 			{
@@ -1176,7 +1176,7 @@ namespace SqlPad.Oracle
 						{
 							while (reader.Read())
 							{
-								yield return formatFunction(reader);
+								yield return formatFunction(Version, reader);
 							}
 						}
 					}

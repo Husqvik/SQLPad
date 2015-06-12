@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                     xmlns:toolTips="clr-namespace:SqlPad.Oracle.ToolTips"
              mc:Ignorable="d" 
-             d:DesignHeight="680" d:DesignWidth="284"
+             d:DesignHeight="736" d:DesignWidth="284"
 			 Padding="4" d:DataContext="{d:DesignInstance toolTips:ColumnDetailsModel}">
     <StackPanel>
 		<StackPanel.Resources>
@@ -38,6 +38,8 @@
 					<RowDefinition />
 					<RowDefinition />
 					<RowDefinition />
+					<RowDefinition />
+					<RowDefinition Height="Auto" />
 					<RowDefinition Height="Auto" />
 				</Grid.RowDefinitions>
 				<TextBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Text="{Binding Comment}" Visibility="{Binding CommentVisibility}" Style="{StaticResource TextBoxBackgroundLessReadOnly}" />
@@ -51,20 +53,23 @@
 				<TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding Virtual, Converter={StaticResource BooleanConverter}}" />
 				<TextBlock Grid.Row="5" Grid.Column="0" Text="Nullable: " />
 				<TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding Nullable, Converter={StaticResource BooleanConverter}}" />
-				<TextBlock Grid.Row="6" Grid.Column="0" Text="Default value: " />
-				<TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding DefaultValue}" />
-				<TextBlock Grid.Row="7" Grid.Column="0" Text="Distinct values: " />
-				<TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding DistinctValueCount, Converter={StaticResource PrettyPrintIntegerConverter}}" />
-				<TextBlock Grid.Row="8" Grid.Column="0" Text="Null values: " />
-				<TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding NullValueCount, Converter={StaticResource PrettyPrintIntegerConverter}}" />
-				<TextBlock Grid.Row="9" Grid.Column="0" Text="Sample size: " />
-				<TextBlock Grid.Row="9" Grid.Column="1" Text="{Binding SampleSize, Converter={StaticResource PrettyPrintIntegerConverter}}" />
-				<TextBlock Grid.Row="10" Grid.Column="0" Text="Average bytes: " />
-				<TextBlock Grid.Row="10" Grid.Column="1" Text="{Binding AverageValueSize, Converter={StaticResource PrettyPrintIntegerConverter}}" />
-				<TextBlock Grid.Row="11" Grid.Column="0" Text="Last analyzed: " />
-				<TextBlock Grid.Row="11" Grid.Column="1" Text="{Binding LastAnalyzed, Converter={StaticResource DateTimeConverter}}" />
-				<TextBlock Grid.Row="12" Grid.Column="0" Text="In-memory compression: " Visibility="{Binding InMemoryCompressionVisibility}" />
-				<TextBlock Grid.Row="12" Grid.Column="1" Text="{Binding InMemoryCompression}" Visibility="{Binding InMemoryCompressionVisibility}" />
+				<TextBlock Grid.Row="6" Grid.Column="0" Text="Invisible: " />
+				<TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding Invisible, Converter={StaticResource BooleanConverter}}" />
+				<TextBlock Grid.Row="7" Grid.Column="0" Text="Default value: " />
+				<TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding DefaultValue}" />
+				<TextBlock Grid.Row="8" Grid.Column="0" Text="Distinct values: " />
+				<TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding DistinctValueCount, Converter={StaticResource PrettyPrintIntegerConverter}}" />
+				<TextBlock Grid.Row="9" Grid.Column="0" Text="Null values: " />
+				<TextBlock Grid.Row="9" Grid.Column="1" Text="{Binding NullValueCount, Converter={StaticResource PrettyPrintIntegerConverter}}" />
+				<TextBlock Grid.Row="10" Grid.Column="0" Text="Sample size: " />
+				<TextBlock Grid.Row="10" Grid.Column="1" Text="{Binding SampleSize, Converter={StaticResource PrettyPrintIntegerConverter}}" />
+				<TextBlock Grid.Row="11" Grid.Column="0" Text="Average bytes: " />
+				<TextBlock Grid.Row="11" Grid.Column="1" Text="{Binding AverageValueSize, Converter={StaticResource PrettyPrintIntegerConverter}}" />
+				<TextBlock Grid.Row="12" Grid.Column="0" Text="Last analyzed: " />
+				<TextBlock Grid.Row="12" Grid.Column="1" Text="{Binding LastAnalyzed, Converter={StaticResource DateTimeConverter}}" />
+				<TextBlock Grid.Row="13" Grid.Column="0" Text="In-memory compression: " Visibility="{Binding InMemoryCompressionVisibility}" />
+				<TextBlock Grid.Row="13" Grid.Column="1" Text="{Binding InMemoryCompression}" Visibility="{Binding InMemoryCompressionVisibility}" />
+				<TextBlock Grid.Row="14" Grid.Column="0" Grid.ColumnSpan="2" Text="System generated" Visibility="{Binding IsSystemGenerated, Converter={StaticResource ObjectToVisibilityConverter}}" />
 			</Grid>
 		</GroupBox>
 
