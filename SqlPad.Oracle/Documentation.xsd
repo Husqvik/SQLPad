@@ -61,7 +61,18 @@
                       </xs:complexType>
                     </xs:element>
                   </xs:sequence>
-                  <xs:attribute name="Owner" type="xs:string" use="required" />
+                  <xs:attribute name="Name" type="xs:string" use="required" />
+                  <xs:attribute name="Url" type="xs:string" use="required" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="DataDictionary">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element maxOccurs="unbounded" name="DataDictionaryObject">
+                <xs:complexType>
                   <xs:attribute name="Name" type="xs:string" use="required" />
                   <xs:attribute name="Url" type="xs:string" use="required" />
                 </xs:complexType>

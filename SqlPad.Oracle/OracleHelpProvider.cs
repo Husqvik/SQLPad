@@ -16,6 +16,7 @@ namespace SqlPad.Oracle
 		private static ILookup<string, DocumentationFunction> _sqlFunctionDocumentation;
 		private static ILookup<string, DocumentationStatement> _statementDocumentation;
 		private static IReadOnlyDictionary<OracleObjectIdentifier, DocumentationPackage> _packageDocumentation;
+		private static IReadOnlyDictionary<OracleObjectIdentifier, DocumentationDataDictionaryObject> _dataDictionaryObjects;
 
 		internal static ILookup<string, DocumentationFunction> SqlFunctionDocumentation
 		{
@@ -53,7 +54,9 @@ namespace SqlPad.Oracle
 
 				_statementDocumentation = documentation.Statements.ToLookup(s => s.Name);
 
-				_packageDocumentation = documentation.Packages.ToDictionary(p => OracleObjectIdentifier.Create(p.Owner, p.Name));
+				_packageDocumentation = documentation.Packages.ToDictionary(p => OracleObjectIdentifier.Create(OracleDatabaseModelBase.SchemaSys, p.Name));
+
+				_dataDictionaryObjects = documentation.DataDictionary.ToDictionary(o => OracleObjectIdentifier.Create(OracleDatabaseModelBase.SchemaSys, o.Name));
 			}
 		}
 
@@ -81,10 +84,11 @@ namespace SqlPad.Oracle
 				return;
 			}
 
-			var objectReference = semanticModel.GetReference<OracleProgramReference>(terminal);
+			var objectReference = semanticModel.GetReference<OracleReference>(terminal);
 			if (objectReference != null)
 			{
-				var package = objectReference.SchemaObject.GetTargetSchemaObject() as OraclePackage;
+				var targetObject = objectReference.SchemaObject.GetTargetSchemaObject();
+				var package = targetObject as OraclePackage;
 				if (package != null)
 				{
 					DocumentationPackage packageDocumentation;
@@ -92,6 +96,22 @@ namespace SqlPad.Oracle
 					if (packageDocumentationExists)
 					{
 						Process.Start(packageDocumentation.Url);
+					}
+				}
+
+				if (targetObject == null && objectReference.ObjectNodeObjectReferences.Count == 1)
+				{
+					targetObject = objectReference.ObjectNodeObjectReferences.Single().SchemaObject.GetTargetSchemaObject();
+				}
+
+				var view = targetObject as OracleView;
+				if (view != null)
+				{
+					DocumentationDataDictionaryObject dataDictionaryObject;
+					var dataDictionaryObjectDocumentationExists = _dataDictionaryObjects.TryGetValue(view.FullyQualifiedName, out dataDictionaryObject);
+					if (dataDictionaryObjectDocumentationExists)
+					{
+						Process.Start(dataDictionaryObject.Url);
 					}
 				}
 			}

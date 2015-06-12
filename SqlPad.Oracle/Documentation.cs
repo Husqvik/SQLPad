@@ -30,6 +30,8 @@ namespace SqlPad.Oracle {
         
         private DocumentationPackage[] packagesField;
         
+        private DocumentationDataDictionaryObject[] dataDictionaryField;
+        
         /// <remarks/>
         [System.Xml.Serialization.XmlArrayItemAttribute("Function", IsNullable=false)]
         public DocumentationFunction[] Functions {
@@ -60,6 +62,17 @@ namespace SqlPad.Oracle {
             }
             set {
                 this.packagesField = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlArrayItemAttribute("DataDictionaryObject", IsNullable=false)]
+        public DocumentationDataDictionaryObject[] DataDictionary {
+            get {
+                return this.dataDictionaryField;
+            }
+            set {
+                this.dataDictionaryField = value;
             }
         }
     }
@@ -159,8 +172,6 @@ namespace SqlPad.Oracle {
         
         private DocumentationPackageSubProgram[] subProgramsField;
         
-        private string ownerField;
-        
         private string nameField;
         
         private string urlField;
@@ -183,17 +194,6 @@ namespace SqlPad.Oracle {
             }
             set {
                 this.subProgramsField = value;
-            }
-        }
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public string Owner {
-            get {
-                return this.ownerField;
-            }
-            set {
-                this.ownerField = value;
             }
         }
         
@@ -286,6 +286,41 @@ namespace SqlPad.Oracle {
             }
             set {
                 this.valueField = value;
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.0.30319.33440")]
+    [System.SerializableAttribute()]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://husqvik.com/SqlPad/2014/08/Oracle")]
+    public partial class DocumentationDataDictionaryObject {
+        
+        private string nameField;
+        
+        private string urlField;
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string Name {
+            get {
+                return this.nameField;
+            }
+            set {
+                this.nameField = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string Url {
+            get {
+                return this.urlField;
+            }
+            set {
+                this.urlField = value;
             }
         }
     }
