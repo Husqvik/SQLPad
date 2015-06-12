@@ -586,6 +586,17 @@ WHERE
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestExpandAsteriskCommandWithObjectReferenceWithHiddenColumns()
+		{
+			_editor.Text = "SELECT T.* FROM \"CaseSensitiveTable\" T";
+			_editor.CaretOffset = 9;
+
+			ExecuteCommand(OracleCommands.ExpandAsterisk, new TestCommandSettings(new CommandSettingsModel()));
+
+			_editor.Text.ShouldBe("SELECT T.\"CaseSensitiveColumn\" FROM \"CaseSensitiveTable\" T");
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestExpandAsteriskCommandWithObjectReferenceOverDatabaseLink()
 		{
 			_editor.Text = "SELECT SELECTION.*, PROJECT.* FROM SELECTION, PROJECT@HQ_PDB_LOOPBACK";

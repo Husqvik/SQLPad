@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,7 +9,6 @@ using SqlPad.Commands;
 using SqlPad.Oracle.DataDictionary;
 using SqlPad.Oracle.SemanticModel;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
-using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
 
 namespace SqlPad.Oracle.Commands
 {
@@ -84,7 +84,7 @@ namespace SqlPad.Oracle.Commands
 					{
 						OptionIdentifier = expandedColumn.ColumnName,
 						Description = expandedColumn.ColumnName,
-						Value = !expandedColumn.IsPseudoColumn && useDefaultSettings,
+						Value = (!expandedColumn.IsPseudoColumn && !expandedColumn.IsHidden) && useDefaultSettings,
 						Tag = expandedColumn
 					});
 			}
@@ -150,18 +150,13 @@ namespace SqlPad.Oracle.Commands
 				{
 					columnNames.AddRange(objectReference.Columns
 						.Where(c => !String.IsNullOrEmpty(c.Name))
-						.Select(c => GetExpandedColumn(objectReference, c.Name, false)));
+						.Select(c => GetExpandedColumn(objectReference, c, false)));
 
 					var table = objectReference.SchemaObject.GetTargetSchemaObject() as OracleTable;
 					if (includePseudoColumns && table != null)
 					{
-						var expandedFlashbackColumn = ((OracleDataObjectReference)objectReference).PseudoColumns.Select(c => GetExpandedColumn(objectReference, c.Name, true));
+						var expandedFlashbackColumn = ((OracleDataObjectReference)objectReference).PseudoColumns.Select(c => GetExpandedColumn(objectReference, c, true));
 						columnNames.InsertRange(0, expandedFlashbackColumn);
-
-						if (table.Organization.In(OrganizationType.Heap, OrganizationType.Index))
-						{
-							columnNames.Insert(0, GetExpandedColumn(objectReference, TerminalValues.RowIdPseudoColumn, true));
-						}
 					}
 				}
 				else
@@ -173,7 +168,7 @@ namespace SqlPad.Oracle.Commands
 			{
 				columnNames.AddRange(CurrentQueryBlock.Columns
 					.Where(c => !c.IsAsterisk && !String.IsNullOrEmpty(c.NormalizedName) && GetObjectReference(c).DatabaseLinkNode == null)
-					.Select(c => GetExpandedColumn(GetObjectReference(c), c.NormalizedName, false)));
+					.Select(c => GetExpandedColumn(GetObjectReference(c), c.ColumnDescription, false)));
 
 				databaseLinkReferences.AddRange(CurrentQueryBlock.ObjectReferences.Where(o => o.DatabaseLink != null));
 
@@ -192,7 +187,7 @@ namespace SqlPad.Oracle.Commands
 
 		private static IEnumerable<ExpandedColumn> GetPseudoColumns(OracleDataObjectReference reference)
 		{
-			return reference.PseudoColumns.Select(c => GetExpandedColumn(reference, OracleCodeCompletionProvider.GetPrettyColumnName(c.Name), true));
+			return reference.PseudoColumns.Select(c => GetExpandedColumn(reference, c, true));
 		}
 
 		private static OracleDataObjectReference GetObjectReference(OracleReferenceContainer column)
@@ -203,9 +198,9 @@ namespace SqlPad.Oracle.Commands
 				: null;
 		}
 
-		private static ExpandedColumn GetExpandedColumn(OracleReference objectReference, string columnName, bool isPseudoColumn)
+		private static ExpandedColumn GetExpandedColumn(OracleReference objectReference, OracleColumn column, bool isPseudoColumn)
 		{
-			return new ExpandedColumn { ColumnName = GetColumnName(objectReference, columnName), IsPseudoColumn = isPseudoColumn };
+			return new ExpandedColumn { ColumnName = GetColumnName(objectReference, OracleCodeCompletionProvider.GetPrettyColumnName(column.Name)), IsPseudoColumn = isPseudoColumn, IsHidden = column.Hidden };
 		}
 
 		private static string GetColumnName(OracleReference objectReference, string columnName)
@@ -222,11 +217,14 @@ namespace SqlPad.Oracle.Commands
 			return String.Format("{0}{1}", usedObjectPrefix, simpleColumnName);
 		}
 
+		[DebuggerDisplay("ExpandedColumn (ColumnName={ColumnName}; IsPseudoColumn={IsPseudoColumn}; IsHidden={IsHidden})")]
 		private struct ExpandedColumn
 		{
 			public string ColumnName { get; set; }
 			
 			public bool IsPseudoColumn { get; set; }
+
+			public bool IsHidden { get; set; }
 		}
 	}
 }
