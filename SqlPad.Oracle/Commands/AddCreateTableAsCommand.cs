@@ -52,7 +52,7 @@ namespace SqlPad.Oracle.Commands
 					new BooleanOption
 					{
 						OptionIdentifier = CreateSeparateStatement,
-						Description = "Create separate statement",
+						DescriptionContent = "Create separate statement",
 						Value = !createTableAsAllowed,
 						IsEnabled = createTableAsAllowed
 					});

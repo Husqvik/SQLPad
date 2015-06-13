@@ -76,7 +76,7 @@ namespace SqlPad.Oracle.Commands
 					new BooleanOption
 					{
 						OptionIdentifier = column,
-						Description = column,
+						DescriptionContent = column,
 						Value = isSelected,
 						Tag = column
 					});

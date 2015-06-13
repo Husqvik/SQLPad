@@ -5,6 +5,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
 using SqlPad.Commands;
 using SqlPad.Oracle.DataDictionary;
 using SqlPad.Oracle.SemanticModel;
@@ -79,11 +81,27 @@ namespace SqlPad.Oracle.Commands
 
 			foreach (var expandedColumn in expandedColumns)
 			{
+				var descriptionContent = new TextBlock();
+
+				string extraInformation = null;
+				if (expandedColumn.IsPseudoColumn)
+				{
+					extraInformation = " (pseudocolumn)";
+					descriptionContent.Foreground = Brushes.CornflowerBlue;
+				}
+				else if (expandedColumn.IsHidden)
+				{
+					extraInformation = " (invisible)";
+					descriptionContent.Foreground = Brushes.DimGray;
+				}
+
+				descriptionContent.Text = String.Format("{0}{1}", expandedColumn.ColumnName, extraInformation);
+
 				_settingsModel.AddBooleanOption(
 					new BooleanOption
 					{
 						OptionIdentifier = expandedColumn.ColumnName,
-						Description = expandedColumn.ColumnName,
+						DescriptionContent = descriptionContent,
 						Value = (!expandedColumn.IsPseudoColumn && !expandedColumn.IsHidden) && useDefaultSettings,
 						Tag = expandedColumn
 					});
@@ -155,8 +173,8 @@ namespace SqlPad.Oracle.Commands
 					var table = objectReference.SchemaObject.GetTargetSchemaObject() as OracleTable;
 					if (includePseudoColumns && table != null)
 					{
-						var expandedFlashbackColumn = ((OracleDataObjectReference)objectReference).PseudoColumns.Select(c => GetExpandedColumn(objectReference, c, true));
-						columnNames.InsertRange(0, expandedFlashbackColumn);
+						var pseudoColumns = ((OracleDataObjectReference)objectReference).PseudoColumns.Select(c => GetExpandedColumn(objectReference, c, true));
+						columnNames.InsertRange(0, pseudoColumns);
 					}
 				}
 				else
