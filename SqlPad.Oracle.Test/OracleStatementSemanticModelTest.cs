@@ -860,6 +860,24 @@ SELECT * FROM DUAL";
 		}
 
 		[Test(Description = @"")]
+		public void TestRedundantTerminalsWithObjectQualifiedPseudoColumn()
+		{
+			const string query1 = @"SELECT T.ORA_ROWSCN, T.ROWID FROM ""CaseSensitiveTable"" T";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			var redundantTerminals = semanticModel.RedundantSymbolGroups.SelectMany(g => g).OrderBy(t => t.SourcePosition.IndexStart).ToArray();
+			redundantTerminals.Length.ShouldBe(4);
+			redundantTerminals[0].Id.ShouldBe(Terminals.ObjectIdentifier);
+			redundantTerminals[0].Token.Value.ShouldBe("T");
+			redundantTerminals[1].Id.ShouldBe(Terminals.Dot);
+			redundantTerminals[2].Id.ShouldBe(Terminals.ObjectIdentifier);
+			redundantTerminals[2].Token.Value.ShouldBe("T");
+			redundantTerminals[3].Id.ShouldBe(Terminals.Dot);
+		}
+
+		[Test(Description = @"")]
 		public void TestRedundantTerminalsWithConcatenatedSubquery()
 		{
 			const string query1 = @"SELECT DUMMY, DUMMY FROM DUAL UNION SELECT DUMMY, DUMMY FROM DUAL";

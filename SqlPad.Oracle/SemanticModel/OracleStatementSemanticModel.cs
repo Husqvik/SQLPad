@@ -1267,7 +1267,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 				foreach (var columnReference in queryBlock.AllColumnReferences.Where(c => c.ObjectNode != null && c.RootNode != null))
 				{
-					var uniqueObjectReferenceCount = queryBlock.ObjectReferences.Where(o => o.Columns.Any(c => c.Name == columnReference.NormalizedName)).Distinct().Count();
+					var uniqueObjectReferenceCount = queryBlock.ObjectReferences.Where(o => o.Columns.Concat(o.PseudoColumns).Any(c => c.Name == columnReference.NormalizedName)).Distinct().Count();
 					if (uniqueObjectReferenceCount != 1)
 					{
 						if (columnReference.OwnerNode != null && removedObjectReferenceOwners.Contains(columnReference.ValidObjectReference))
