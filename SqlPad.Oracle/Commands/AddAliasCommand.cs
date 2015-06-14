@@ -32,7 +32,11 @@ namespace SqlPad.Oracle.Commands
 			
 			if (CurrentNode.Id == Terminals.ObjectIdentifier)
 			{
-				var objectReferences = CurrentQueryBlock.ObjectReferences.Where(t => t.ObjectNode == CurrentNode).ToArray();
+				var objectReferences = CurrentQueryBlock.ObjectReferences
+					.Concat(CurrentQueryBlock.ObjectReferences.OfType<OraclePivotTableReference>().Select(p => p.SourceReference))
+					.Where(o => o.ObjectNode == CurrentNode)
+					.ToArray();
+				
 				return objectReferences.Length == 1 && (_currentObjectReference = objectReferences[0]).AliasNode == null;
 			}
 
@@ -174,7 +178,8 @@ namespace SqlPad.Oracle.Commands
 
 		private static IEnumerable<OracleDataObjectReference> GetInlineViewObjectReferences(OracleQueryBlock queryBlock)
 		{
-			var objectReferences = queryBlock.ObjectReferences.AsEnumerable();
+			var objectReferences = (IEnumerable<OracleDataObjectReference>)queryBlock.ObjectReferences;
+			objectReferences = objectReferences.Concat(objectReferences.OfType<OraclePivotTableReference>().Select(pt => pt.SourceReference));
 			if (queryBlock.ModelReference != null)
 			{
 				objectReferences = objectReferences.Concat(queryBlock.ModelReference.SourceReferenceContainer.ObjectReferences);

@@ -10,7 +10,6 @@ namespace SqlPad.Oracle.SemanticModel
 	{
 		private readonly IReadOnlyList<OracleSelectListColumn> _sqlModelColumns;
 		private IReadOnlyList<OracleColumn> _columns;
-		private readonly List<OracleReferenceContainer> _childContainers = new List<OracleReferenceContainer>();
 
 		public OracleReferenceContainer SourceReferenceContainer { get; private set; }
 
@@ -18,10 +17,7 @@ namespace SqlPad.Oracle.SemanticModel
 		
 		public OracleReferenceContainer MeasuresReferenceContainer { get; private set; }
 
-		public IReadOnlyCollection<OracleReferenceContainer> ChildContainers
-		{
-			get { return _childContainers.AsReadOnly(); }
-		}
+		public IReadOnlyCollection<OracleReferenceContainer> ChildContainers { get; private set; }
 
 		public OracleSqlModelReference(OracleStatementSemanticModel semanticModel, IReadOnlyList<OracleSelectListColumn> columns, IEnumerable<OracleDataObjectReference> sourceReferences)
 			: base(ReferenceType.SqlModel)
@@ -41,9 +37,12 @@ namespace SqlPad.Oracle.SemanticModel
 			DimensionReferenceContainer = new OracleReferenceContainer(semanticModel);
 			MeasuresReferenceContainer = new OracleReferenceContainer(semanticModel);
 
-			_childContainers.Add(SourceReferenceContainer);
-			_childContainers.Add(DimensionReferenceContainer);
-			_childContainers.Add(MeasuresReferenceContainer);
+			ChildContainers =
+				new List<OracleReferenceContainer>
+				{
+					SourceReferenceContainer,
+					DimensionReferenceContainer, MeasuresReferenceContainer
+				}.AsReadOnly();
 		}
 
 		public override IReadOnlyList<OracleColumn> Columns

@@ -143,13 +143,13 @@ namespace SqlPad.Oracle.SemanticModel
 			}
 		}
 
-		public IEnumerable<OracleProgramReference> AllProgramReferences { get { return Columns.SelectMany(c => c.ProgramReferences).Concat(ProgramReferences); } }
+		public IEnumerable<OracleProgramReference> AllProgramReferences { get { return ChildContainers.SelectMany(c => c.ProgramReferences).Concat(ProgramReferences); } }
 
-		public IEnumerable<OracleColumnReference> AllColumnReferences { get { return Columns.SelectMany(c => c.ColumnReferences).Concat(ColumnReferences); } }
+		public IEnumerable<OracleColumnReference> AllColumnReferences { get { return ChildContainers.SelectMany(c => c.ColumnReferences).Concat(ColumnReferences); } }
 
-		public IEnumerable<OracleTypeReference> AllTypeReferences { get { return Columns.SelectMany(c => c.TypeReferences).Concat(TypeReferences); } }
+		public IEnumerable<OracleTypeReference> AllTypeReferences { get { return ChildContainers.SelectMany(c => c.TypeReferences).Concat(TypeReferences); } }
 
-		public IEnumerable<OracleSequenceReference> AllSequenceReferences { get { return Columns.SelectMany(c => c.SequenceReferences).Concat(SequenceReferences); } }
+		public IEnumerable<OracleSequenceReference> AllSequenceReferences { get { return ChildContainers.SelectMany(c => c.SequenceReferences).Concat(SequenceReferences); } }
 
 		public ICollection<OracleQueryBlock> AccessibleQueryBlocks { get; private set; }
 

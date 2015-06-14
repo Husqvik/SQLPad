@@ -1718,7 +1718,7 @@ namespace SqlPad.Oracle.SemanticModel
 					correlatedReferences.Add(queryBlock.CrossOrOuterApplyReference);
 				}
 
-				var columnReferences = queryBlock.AllColumnReferences.Where(c => c.SelectListColumn == null || c.SelectListColumn.HasExplicitDefinition);
+				var columnReferences = queryBlock.AllColumnReferences.Where(c => c.Placement != StatementPlacement.Model && c.Placement != StatementPlacement.PivotClause && (c.SelectListColumn == null || c.SelectListColumn.HasExplicitDefinition));
 				ResolveColumnObjectReferences(columnReferences, queryBlock.ObjectReferences, correlatedReferences);
 
 				foreach (var pivotTableReference in queryBlock.ObjectReferences.OfType<OraclePivotTableReference>())

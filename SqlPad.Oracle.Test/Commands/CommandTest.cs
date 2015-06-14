@@ -182,6 +182,68 @@ WHERE
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestAddObjectAliasWithPivotTable()
+		{
+			_editor.Text =
+@"SELECT
+	*
+FROM
+	DUAL
+	PIVOT (
+		COUNT(DUAL.DUMMY)
+		FOR (DUMMY) IN ('X' AS X)
+	)";
+			
+			_editor.CaretOffset = 20;
+
+			CanExecuteCommand(OracleCommands.AddAlias).ShouldBe(true);
+			ExecuteCommand(OracleCommands.AddAlias, new TestCommandSettings(new CommandSettingsModel { Value = "D" }));
+
+			const string expectedText =
+@"SELECT
+	*
+FROM
+	DUAL D
+	PIVOT (
+		COUNT(D.DUMMY)
+		FOR (DUMMY) IN ('X' AS X)
+	)";
+
+			_editor.Text.ShouldBe(expectedText);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestAddColumnAliasWithPivotTable()
+		{
+			_editor.Text =
+@"SELECT
+	*
+FROM
+	(SELECT DUMMY FROM DUAL)
+	PIVOT (
+		COUNT(DUMMY)
+		FOR (DUMMY) IN ('X' AS X)
+	)";
+
+			_editor.CaretOffset = 28;
+
+			CanExecuteCommand(OracleCommands.AddAlias).ShouldBe(true);
+			ExecuteCommand(OracleCommands.AddAlias, new TestCommandSettings(new CommandSettingsModel { Value = "C1" }));
+
+			const string expectedText =
+@"SELECT
+	*
+FROM
+	(SELECT DUMMY C1 FROM DUAL)
+	PIVOT (
+		COUNT(C1)
+		FOR (C1) IN ('X' AS X)
+	)";
+
+			_editor.Text.ShouldBe(expectedText);
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestBasicWrapAsInlineViewCommand()
 		{
 			_editor.Text = @"SELECT S.RESPONDENTBUCKET_ID, S.SELECTION_ID, PROJECT_ID, NAME, 1 FROM SELECTION S";

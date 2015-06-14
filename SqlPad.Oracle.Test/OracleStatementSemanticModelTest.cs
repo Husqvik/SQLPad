@@ -2114,10 +2114,13 @@ FROM (
 			semanticModel.QueryBlocks.Count.ShouldBe(2);
 
 			var columnReferences = semanticModel.MainQueryBlock.AllColumnReferences.ToList();
-			columnReferences.Count.ShouldBe(12);
+			columnReferences.Count.ShouldBe(15);
 
-			columnReferences.Take(11).ToList().ForEach(r => r.ColumnNodeColumnReferences.Count.ShouldBe(1));
-			columnReferences.Skip(11).Single().ColumnNodeColumnReferences.Count.ShouldBe(0);
+			var unknownColumn = columnReferences[11];
+			unknownColumn.Name.ShouldBe("SUPPLYCHANNEL");
+			unknownColumn.SelectListColumn.ShouldNotBe(null);
+			unknownColumn.ColumnNodeColumnReferences.Count.ShouldBe(0);
+			columnReferences.Where(c => c != unknownColumn).ToList().ForEach(c => c.ColumnNodeColumnReferences.Count.ShouldBe(1));
 
 			semanticModel.MainQueryBlock.ObjectReferences.Count.ShouldBe(1);
 			var pivotTableReference = (OraclePivotTableReference)semanticModel.MainQueryBlock.ObjectReferences.Single();
