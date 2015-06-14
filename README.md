@@ -272,3 +272,19 @@ TargetTable - table name used for EXPLAIN PLAN function; table is not created au
 	ON COMMIT PRESERVE ROWS;
 
 	CREATE OR REPLACE PUBLIC SYNONYM EXPLAIN_PLAN FOR EXPLAIN_PLAN;
+
+SQLPad screenshots
+------------------
+#####Overview
+![SQLPad overview 1](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/Overview1.png)
+![SQLPad overview 2](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/Overview2.png)
+![SQLPad overview 3](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/Overview3.png)
+#####Tooltips
+![Table tooltip detail](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/TableTooltip.png)
+![Column tooltip detail](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/ColumnTooltip.png)
+#####Code completion
+![Code completion 1](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/CodeComplete1.png)
+![Code completion 2](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/CodeComplete2.png)
+![Code completion 3](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/CodeComplete3.png)
+#####Miscellaneous
+![Function overload list](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/FunctionOverloads.png)
