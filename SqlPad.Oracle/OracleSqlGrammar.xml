@@ -7226,7 +7226,14 @@
           <NonTerminal Id="AnalyticOrKeepClauseOrModelAggregateFunctionExpression" IsOptional="true" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="WithinGroupAggregationClause" />
+          <NonTerminal Id="WithinGroupAggregationFunction" />
+          <NonTerminal Id="ParenthesisEnclosedExpressionListWithMandatoryExpressions" />
+          <Terminal Id="Within" />
+          <Terminal Id="Group" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="OrderByClause" />
+          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="OverQueryPartitionClause" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -7283,21 +7290,6 @@
           <Terminal Id="All" IsOptional="true" />
           <Terminal Id="Asterisk" />
           <Terminal Id="RightParenthesis" />
-        </Sequence>
-      </Sequences>
-    </Rule>
-
-    <Rule StartingNonTerminal="WithinGroupAggregationClause">
-      <Sequences>
-        <Sequence>
-          <NonTerminal Id="WithinGroupAggregationFunction" />
-          <NonTerminal Id="ParenthesisEnclosedExpressionListWithMandatoryExpressions" />
-          <Terminal Id="Within" />
-          <Terminal Id="Group" />
-          <Terminal Id="LeftParenthesis" />
-          <NonTerminal Id="OrderByClause" />
-          <Terminal Id="RightParenthesis" />
-          <NonTerminal Id="OverQueryPartitionClause" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>

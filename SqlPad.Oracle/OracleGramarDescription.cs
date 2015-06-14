@@ -1272,7 +1272,6 @@ namespace SqlPad.Oracle
 			public const string WithAdminOption = "WithAdminOption";
 			public const string WithGrantOption = "WithGrantOption";
 			public const string WithHierarchyOption = "WithHierarchyOption";
-			public const string WithinGroupAggregationClause = "WithinGroupAggregationClause";
 			public const string WithinGroupAggregationFunction = "WithinGroupAggregationFunction";
 			public const string WithMaterializedZoneMap = "WithMaterializedZoneMap";
 			public const string WithOrWithout = "WithOrWithout";

@@ -391,10 +391,9 @@ namespace SqlPad.Oracle.SemanticModel
 								var tableCollectionReference = CreateProgramReference(queryBlock, queryBlock, null, StatementPlacement.TableReference, functionIdentifierNode, prefixNonTerminal, functionCallNodes);
 
 								var tableCollectionDataObjectReference =
-									new OracleTableCollectionReference(tableCollectionReference)
+									new OracleTableCollectionReference
 									{
-										Owner = queryBlock,
-										Placement = StatementPlacement.TableReference,
+										RowSourceReference = tableCollectionReference,
 										AliasNode = objectReferenceAlias,
 										DatabaseLinkNode = databaseLinkNode,
 										RootNode = tableReferenceNonterminal
@@ -2550,7 +2549,6 @@ namespace SqlPad.Oracle.SemanticModel
 				var rootNode = String.Equals(identifierNode.Id, Terminals.NegationOrNull)
 					? identifierNode.GetAncestor(NonTerminals.Condition)
 					: identifierNode.GetAncestor(NonTerminals.AnalyticFunctionCall)
-					  ?? identifierNode.GetAncestor(NonTerminals.WithinGroupAggregationClause)
 					  ?? identifierNode.GetAncestor(NonTerminals.AggregateFunctionCall)
 					  ?? identifierNode.GetAncestor(NonTerminals.CastOrXmlCastFunction)
 					  ?? identifierNode.GetAncestor(NonTerminals.XmlElementClause)
@@ -2563,9 +2561,22 @@ namespace SqlPad.Oracle.SemanticModel
 					  ?? identifierNode.GetAncestor(NonTerminals.JsonQueryClause)
 					  ?? identifierNode.GetAncestor(NonTerminals.JsonExistsClause)
 					  ?? identifierNode.GetAncestor(NonTerminals.JsonValueClause);
-				
-				var analyticClauseNode = rootNode.GetDescendants(NonTerminals.AnalyticClause).FirstOrDefault();
 
+				StatementGrammarNode analyticClauseNode;
+				switch (rootNode.Id)
+				{
+					case NonTerminals.AnalyticFunctionCall:
+						analyticClauseNode = rootNode[NonTerminals.AnalyticClause];
+						break;
+					case NonTerminals.AggregateFunctionCall:
+						analyticClauseNode = rootNode[NonTerminals.AnalyticOrKeepClauseOrModelAggregateFunctionExpression, NonTerminals.AnalyticOrKeepClause, NonTerminals.AnalyticClause]
+											 ?? rootNode[NonTerminals.OverQueryPartitionClause];
+						break;
+					default:
+						analyticClauseNode = null;
+						break;
+				}
+				
 				var parameterList = rootNode.ChildNodes.SingleOrDefault(n => n.Id.In(NonTerminals.ParenthesisEnclosedExpressionListWithMandatoryExpressions, NonTerminals.CountAsteriskParameter, NonTerminals.AggregateFunctionParameter, NonTerminals.ParenthesisEnclosedExpressionListWithIgnoreNulls, NonTerminals.ParenthesisEnclosedCondition, NonTerminals.XmlExistsParameterClause, NonTerminals.XmlElementParameterClause, NonTerminals.XmlParseFunctionParameterClause, NonTerminals.XmlRootFunctionParameterClause, NonTerminals.XmlSerializeFunctionParameterClause, NonTerminals.XmlSimpleFunctionParameterClause, NonTerminals.XmlQueryParameterClause, NonTerminals.CastFunctionParameterClause, NonTerminals.JsonQueryParameterClause, NonTerminals.JsonExistsParameterClause, NonTerminals.JsonValueParameterClause));
 				var parameterNodes = new List<StatementGrammarNode>();
 				StatementGrammarNode firstParameterExpression = null;

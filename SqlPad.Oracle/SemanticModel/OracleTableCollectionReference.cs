@@ -9,14 +9,23 @@ namespace SqlPad.Oracle.SemanticModel
 	public class OracleTableCollectionReference : OracleDataObjectReference
 	{
 		private IReadOnlyList<OracleColumn> _columns;
-		
-		public OracleReference RowSourceReference { get; private set; }
+		private OracleReference _rowSourceReference;
 
-		public OracleTableCollectionReference(OracleReference rowSourceReference) : base(ReferenceType.TableCollection)
+		public OracleReference RowSourceReference
 		{
-			RowSourceReference = rowSourceReference;
-			OwnerNode = rowSourceReference.OwnerNode;
-			ObjectNode = rowSourceReference.ObjectNode;
+			get { return _rowSourceReference; }
+			set
+			{
+				_rowSourceReference = value;
+				OwnerNode = _rowSourceReference.OwnerNode;
+				ObjectNode = _rowSourceReference.ObjectNode;
+				Owner = _rowSourceReference.Owner;
+			}
+		}
+
+		public OracleTableCollectionReference() : base(ReferenceType.TableCollection)
+		{
+			Placement = StatementPlacement.TableReference;
 		}
 
 		public override string Name { get { return AliasNode == null ? null : AliasNode.Token.Value; } }
