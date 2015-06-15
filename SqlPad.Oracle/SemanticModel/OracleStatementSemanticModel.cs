@@ -387,8 +387,7 @@ namespace SqlPad.Oracle.SemanticModel
 							{
 								var prefixNonTerminal = functionIdentifierNode.ParentNode[NonTerminals.Prefix];
 								var functionCallNodes = GetFunctionCallNodes(functionIdentifierNode);
-								//var tableCollectionReference = ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock, functionIdentifierNode, StatementPlacement.TableReference, null, n => prefixNonTerminal);
-								var tableCollectionReference = CreateProgramReference(queryBlock, queryBlock, null, StatementPlacement.TableReference, functionIdentifierNode, prefixNonTerminal, functionCallNodes);
+								var tableCollectionReference = ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock, functionIdentifierNode, StatementPlacement.TableReference, null, n => prefixNonTerminal);
 
 								var tableCollectionDataObjectReference =
 									new OracleTableCollectionReference
@@ -398,19 +397,6 @@ namespace SqlPad.Oracle.SemanticModel
 										DatabaseLinkNode = databaseLinkNode,
 										RootNode = tableReferenceNonterminal
 									};
-
-								//
-								if (tableCollectionDataObjectReference.DatabaseLinkNode == null)
-								{
-									var metadata = UpdateFunctionReferenceWithMetadata(tableCollectionReference);
-									if (metadata != null)
-									{
-										tableCollectionDataObjectReference.SchemaObject = tableCollectionReference.SchemaObject;
-									}
-								}
-
-								queryBlock.ProgramReferences.Add(tableCollectionReference);
-								//
 
 								queryBlock.ObjectReferences.Add(tableCollectionDataObjectReference);
 
@@ -1698,13 +1684,13 @@ namespace SqlPad.Oracle.SemanticModel
 		{
 			foreach (var queryBlock in _queryBlockNodes.Values)
 			{
-				ExposeAsteriskColumns(queryBlock);
-
-				ApplyExplicitCommonTableExpressionColumnNames(queryBlock);
-
 				ResolveOrderByReferences(queryBlock);
 
 				ResolveFunctionReferences(queryBlock.AllProgramReferences);
+
+				ExposeAsteriskColumns(queryBlock);
+
+				ApplyExplicitCommonTableExpressionColumnNames(queryBlock);
 
 				var correlatedReferences = new List<OracleDataObjectReference>();
 				if (queryBlock.OuterCorrelatedQueryBlock != null)
@@ -1717,16 +1703,29 @@ namespace SqlPad.Oracle.SemanticModel
 					correlatedReferences.Add(queryBlock.CrossOrOuterApplyReference);
 				}
 
-				var columnReferences = queryBlock.AllColumnReferences.Where(c => c.Placement != StatementPlacement.Model && c.Placement != StatementPlacement.PivotClause && (c.SelectListColumn == null || c.SelectListColumn.HasExplicitDefinition));
+				var columnReferences = queryBlock.AllColumnReferences
+					.Where(c => c.Placement != StatementPlacement.Model && c.Placement != StatementPlacement.PivotClause && (c.SelectListColumn == null || c.SelectListColumn.HasExplicitDefinition))
+					.ToArray();
+				
 				ResolveColumnObjectReferences(columnReferences, queryBlock.ObjectReferences, correlatedReferences);
 
-				foreach (var pivotTableReference in queryBlock.ObjectReferences.OfType<OraclePivotTableReference>())
+				ResolvePivotTableColumnReferences(queryBlock);
+
+				if (queryBlock.Type == QueryBlockType.ScalarSubquery && queryBlock.Parent != null)
 				{
-					ResolveColumnObjectReferences(pivotTableReference.SourceReferenceContainer.ColumnReferences, pivotTableReference.SourceReferenceContainer.ObjectReferences, OracleDataObjectReference.EmptyArray);
-					ResolveFunctionReferences(pivotTableReference.SourceReferenceContainer.ProgramReferences);
+					ResolveColumnObjectReferences(columnReferences.Where(c => c.Placement == StatementPlacement.TableReference), queryBlock.Parent.ObjectReferences, OracleDataObjectReference.EmptyArray);
 				}
 
 				ResolveDatabaseLinks(queryBlock);
+			}
+		}
+
+		private void ResolvePivotTableColumnReferences(OracleReferenceContainer container)
+		{
+			foreach (var pivotTableReference in container.ObjectReferences.OfType<OraclePivotTableReference>())
+			{
+				ResolveColumnObjectReferences(pivotTableReference.SourceReferenceContainer.ColumnReferences, pivotTableReference.SourceReferenceContainer.ObjectReferences, OracleDataObjectReference.EmptyArray);
+				ResolveFunctionReferences(pivotTableReference.SourceReferenceContainer.ProgramReferences);
 			}
 		}
 

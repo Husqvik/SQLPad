@@ -5,7 +5,7 @@ using SqlPad.Oracle.DataDictionary;
 
 namespace SqlPad.Oracle.SemanticModel
 {
-	[DebuggerDisplay("OracleProgramReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; Object={ObjectNode == null ? null : ObjectNode.Token.Value}; Function={FunctionIdentifierNode.Token.Value})")]
+	[DebuggerDisplay("OracleProgramReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; Object={ObjectNode == null ? null : ObjectNode.Token.Value}; Function={FunctionIdentifierNode.Token.Value}; Metadata={Metadata})")]
 	public class OracleProgramReference : OracleProgramReferenceBase
 	{
 		public override string Name { get { return FunctionIdentifierNode.Token.Value; } }
@@ -17,7 +17,7 @@ namespace SqlPad.Oracle.SemanticModel
 		public override OracleProgramMetadata Metadata { get; set; }
 	}
 
-	[DebuggerDisplay("OracleTypeReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; Type={ObjectNode.Token.Value})")]
+	[DebuggerDisplay("OracleTypeReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; Type={ObjectNode.Token.Value}; Metadata={Metadata})")]
 	public class OracleTypeReference : OracleProgramReferenceBase
 	{
 		public override string Name { get { return ObjectNode.Token.Value; } }

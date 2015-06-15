@@ -1,4 +1,4 @@
-SQLPad 0.2.0.220
+SQLPad 0.2.0.221
 ================
 
 SQLPad is an experimental SQL editor focused to quick and comfortable work.
@@ -96,7 +96,7 @@ CTRL + SHIFT + Period      - Increase editor font size
 
 ALT + INSERT               - Code generation items
 
-F1                         - Show documentation (subset of SQL functions only)
+F1                         - Show documentation (built-in SQL functions and package functions, statements, data dictionary objects)
 
 Context actions
 ---------------
@@ -288,3 +288,4 @@ SQLPad screenshots
 ![Code completion 3](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/CodeComplete3.png)
 #####Miscellaneous
 ![Function overload list](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/FunctionOverloads.png)
+![Function overload list](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/ExecutionStatistics.png)
