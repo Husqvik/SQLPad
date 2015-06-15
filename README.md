@@ -289,3 +289,4 @@ SQLPad screenshots
 #####Miscellaneous
 ![Function overload list](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/FunctionOverloads.png)
 ![Function overload list](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/ExecutionStatistics.png)
+![Function overload list](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/DatabaseOutput.png)
