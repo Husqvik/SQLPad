@@ -58,6 +58,7 @@ namespace SqlPad
 		private bool _isToolTipOpenByShortCut;
 		private bool _isToolTipOpenByCaretChange;
 		private bool _gatherExecutionStatistics;
+		private string _originalWorkDocumentContent = String.Empty;
 
 		private readonly Popup _popup = new Popup();
 		private readonly PageModel _pageModel;
@@ -66,13 +67,13 @@ namespace SqlPad
 		private readonly Stopwatch _stopWatch = new Stopwatch();
 		private readonly List<CommandBinding> _specificCommandBindings = new List<CommandBinding>();
 
+		private readonly SqlFoldingStrategy _foldingStrategy;
+		private readonly IconMargin _iconMargin;
+
 		private CompletionWindow _completionWindow;
 		private ConnectionStringSettings _connectionString;
 		private Dictionary<string, BindVariableConfiguration> _currentBindVariables = new Dictionary<string, BindVariableConfiguration>();
 		
-		private readonly SqlFoldingStrategy _foldingStrategy;
-		private readonly IconMargin _iconMargin;
-
 		internal IInfrastructureFactory InfrastructureFactory { get; private set; }
 
 		internal TabItem TabItem { get; private set; }
@@ -105,7 +106,7 @@ namespace SqlPad
 
 		public WorkDocument WorkDocument { get; private set; }
 
-		public bool IsDirty { get { return Editor.IsModified || WorkDocument.IsModified; } }
+		public bool IsDirty { get { return !String.Equals(Editor.Text, _originalWorkDocumentContent); } }
 
 		public IDatabaseModel DatabaseModel { get; private set; }
 
@@ -159,9 +160,10 @@ namespace SqlPad
 
 				if (!WorkDocument.IsModified && WorkDocument.File != null && WorkDocument.File.Exists)
 				{
-					WorkDocument.Text = WorkDocument.IsSqlx
-						? WorkDocumentCollection.LoadDocumentFromFile(WorkDocument.File.FullName).Text
-						: File.ReadAllText(WorkDocument.File.FullName);
+					WorkDocument.Text = _originalWorkDocumentContent =
+						WorkDocument.IsSqlx
+							? WorkDocumentCollection.LoadDocumentFromFile(WorkDocument.File.FullName).Text
+							: File.ReadAllText(WorkDocument.File.FullName);
 					
 					InitializeFileWatcher();
 				}
@@ -201,8 +203,6 @@ namespace SqlPad
 				Editor.CaretOffset = Editor.Document.TextLength >= WorkDocument.CursorPosition
 					? WorkDocument.CursorPosition
 					: Editor.Document.TextLength;
-
-				Editor.IsModified = WorkDocument.IsModified;
 			}
 
 			Editor.FontSize = WorkDocument.FontSize;
@@ -258,7 +258,6 @@ namespace SqlPad
 				return;
 			}
 
-			Editor.IsModified = false;
 			MainWindow.CloseDocument(this);
 		}
 
@@ -594,18 +593,18 @@ namespace SqlPad
 
 		private void SaveDocumentInternal()
 		{
-			_pageModel.IsModified = WorkDocument.IsModified = false;
-
 			if (WorkDocument.IsSqlx)
 			{
 				SaveWorkingDocument();
 				WorkDocumentCollection.SaveDocumentAsFile(WorkDocument);
-				Editor.IsModified = false;
 			}
 			else
 			{
 				Editor.Save(WorkDocument.File.FullName);
 			}
+
+			_pageModel.IsModified = WorkDocument.IsModified = false;
+			_originalWorkDocumentContent = Editor.Text;
 
 			UpdateDocumentHeaderToolTip();
 		}
@@ -977,6 +976,7 @@ namespace SqlPad
 		{
 			ConfigurationProvider.ConfigurationChanged -= ConfigurationChangedHandler;
 			MainWindow.DocumentTabControl.SelectionChanged -= DocumentTabControlSelectionChangedHandler;
+			Application.Current.Deactivated -= ApplicationDeactivatedHandler;
 
 			if (_documentFileWatcher != null)
 			{
@@ -1091,6 +1091,7 @@ namespace SqlPad
 			if (_isInitializing)
 			{
 				MainWindow.DocumentTabControl.SelectionChanged += DocumentTabControlSelectionChangedHandler;
+				Application.Current.Deactivated += ApplicationDeactivatedHandler;
 
 				if (WorkDocument.EditorGridRowHeight > 0)
 				{
@@ -1113,6 +1114,11 @@ namespace SqlPad
 			{
 				ReParse();
 			}
+		}
+
+		private void ApplicationDeactivatedHandler(object sender, EventArgs eventArgs)
+		{
+			_popup.IsOpen = false;
 		}
 
 		private void DocumentTabControlSelectionChangedHandler(object sender, SelectionChangedEventArgs selectionChangedEventArgs)
@@ -1457,6 +1463,8 @@ namespace SqlPad
 				_completionWindow.StartOffset = firstItem.Node.SourcePosition.IndexStart;
 			}
 
+			UpdateCompletionItemHighlight();
+
 			if (listItems.Count == 1)
 			{
 				_completionWindow.CompletionList.ListBox.SelectedIndex = 0;
@@ -1486,9 +1494,37 @@ namespace SqlPad
 				return;
 			}
 
-			_pageModel.IsModified = WorkDocument.IsModified = IsDirty;
+			CheckDocumentModified();
 
 			Parse();
+
+			UpdateCompletionItemHighlight();
+		}
+
+		private void UpdateCompletionItemHighlight()
+		{
+			if (_completionWindow == null)
+			{
+				return;
+			}
+			
+			var length = _completionWindow.EndOffset - _completionWindow.StartOffset;
+			if (_completionWindow.StartOffset + length > Editor.Document.TextLength)
+			{
+				length = Editor.Document.TextLength - _completionWindow.StartOffset;
+			}
+
+			var textToHighlight = Editor.Document.GetText(_completionWindow.StartOffset, length);
+
+			foreach (CompletionData item in _completionWindow.CompletionList.CompletionData)
+			{
+				item.Highlight(textToHighlight);
+			}
+		}
+
+		private void CheckDocumentModified()
+		{
+			_pageModel.IsModified = WorkDocument.IsModified = IsDirty;
 		}
 
 		private void Parse()
@@ -1838,7 +1874,7 @@ namespace SqlPad
 				Editor.Document.EndUpdate();
 			}
 
-			_pageModel.IsModified = WorkDocument.IsModified = IsDirty;
+			CheckDocumentModified();
 
 			if (_completionWindow != null && _completionWindow.CompletionList.ListBox.Items.Count == 0)
 			{

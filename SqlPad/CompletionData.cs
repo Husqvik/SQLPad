@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Linq;
+using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Media;
 using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;
@@ -24,6 +26,37 @@ namespace SqlPad
 			_insertOffset = codeCompletion.InsertOffset;
 			_caretOffset = codeCompletion.CaretOffset;
 			Description = codeCompletion.Category;
+		}
+
+		public void Highlight(string text)
+		{
+			if (String.IsNullOrEmpty(text))
+			{
+				Content = Text;
+				return;
+			}
+			
+			var startIndex = 0;
+			var textBlock = new TextBlock();
+
+			int index;
+			while ((index = Text.IndexOf(text, startIndex, StringComparison.OrdinalIgnoreCase)) != -1)
+			{
+				if (index > startIndex)
+				{
+					textBlock.Inlines.Add(Text.Substring(startIndex, index - startIndex));
+				}
+
+				textBlock.Inlines.Add(new Run { Foreground = Brushes.Red, Text = Text.Substring(index, text.Length) });
+				startIndex = index + text.Length;
+			}
+
+			if (Text.Length > startIndex)
+			{
+				textBlock.Inlines.Add(Text.Substring(startIndex));
+			}
+
+			Content = textBlock;
 		}
 
 		public CompletionData(ICodeSnippet codeSnippet)
@@ -51,7 +84,6 @@ namespace SqlPad
 
 		public string Text { get; private set; }
 
-		// Use this property if you want to show a fancy UIElement in the list.
 		public object Content { get; private set; }
 
 		public object Description { get; private set; }
