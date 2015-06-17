@@ -920,7 +920,7 @@ namespace SqlPad
 
 			if (innerTask.Result.ColumnHeaders.Count == 0)
 			{
-				if (innerTask.Result.AffectedRowCount == - 1)
+				if (innerTask.Result.AffectedRowCount == -1)
 				{
 					_pageModel.StatementExecutedSuccessfullyStatusMessageVisibility = Visibility.Visible;
 				}
@@ -1315,7 +1315,9 @@ namespace SqlPad
 			var snippets = _codeSnippetProvider.GetSnippets(_sqlDocumentRepository, Editor.Text, Editor.CaretOffset).Select(i => new CompletionData(i)).ToArray();
 			if (_completionWindow == null && snippets.Length > 0)
 			{
-				CreateSnippetCompletionWindow(snippets);
+				var startOffset = snippets[0].Snippet.SourceToReplace.IndexStart;
+				CreateCompletionWindow(snippets, startOffset);
+
 				return;
 			}
 
@@ -1427,15 +1429,10 @@ namespace SqlPad
 				return;
 			}
 
-			CreateCompletionWindow(items);
+			CreateCompletionWindow(items, null);
 		}
 
-		private void CreateSnippetCompletionWindow(ICollection<CompletionData> items)
-		{
-			CreateCompletionWindow(items);
-		}
-
-		private void CreateCompletionWindow(ICollection<CompletionData> items)
+		private void CreateCompletionWindow(ICollection<CompletionData> items, int? startOffset)
 		{
 			if (items.Count == 0)
 			{
@@ -1461,6 +1458,10 @@ namespace SqlPad
 			if (firstItem.Node != null)
 			{
 				_completionWindow.StartOffset = firstItem.Node.SourcePosition.IndexStart;
+			}
+			else if (startOffset != null)
+			{
+				_completionWindow.StartOffset = startOffset.Value;
 			}
 
 			UpdateCompletionItemHighlight();
