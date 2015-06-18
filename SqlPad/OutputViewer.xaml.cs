@@ -1,7 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -17,6 +18,7 @@ namespace SqlPad
 		private PageModel _pageModel;
 		private object _previousSelectedTab;
 		private DocumentPage _documentPage;
+		private StatementExecutionResult _executionResult;
 
 		public event EventHandler FetchNextRows;
 		public event EventHandler FetchAllRows;
@@ -40,11 +42,12 @@ namespace SqlPad
 			InitializeComponent();
 		}
 
-		public void Initialize(IEnumerable<ColumnHeader> columnHeaders)
+		public void Initialize(StatementExecutionResult executionResult)
 		{
+			_executionResult = executionResult;
 			ResultGrid.Columns.Clear();
 
-			foreach (var columnHeader in columnHeaders)
+			foreach (var columnHeader in _executionResult.ColumnHeaders)
 			{
 				var columnTemplate = CreateDataGridTextColumnTemplate(columnHeader);
 				ResultGrid.Columns.Add(columnTemplate);
@@ -157,6 +160,11 @@ namespace SqlPad
 			args.CanExecute = ResultGrid.Items.Count > 0;
 		}
 
+		private void CanGenerateCSharpQueryClassHandler(object sender, CanExecuteRoutedEventArgs args)
+		{
+			args.CanExecute = ResultGrid.Columns.Count > 0;
+		}
+
 		private void CanFetchAllRowsHandler(object sender, CanExecuteRoutedEventArgs canExecuteRoutedEventArgs)
 		{
 			if (CanFetchAllRows != null)
@@ -184,6 +192,110 @@ namespace SqlPad
 			var dataExporter = (IDataExporter)args.Parameter;
 
 			DocumentPage.SafeActionWithUserError(() => dataExporter.ExportToClipboard(ResultGrid, _documentPage.InfrastructureFactory.DataExportConverter));
+		}
+
+		private const string ExportClassTemplate =
+@"using System;
+using System.Data;
+
+public class Query
+{{
+	private IDbConnection _connection;
+	
+	private const string CommandText =
+@""{0}"";
+	
+	private IEnumerable<ResultRow> Execute()
+	{{
+		using (var command = _connection.CreateCommand())
+		{{
+			command.CommandText = CommandText;
+
+			_connection.Open();
+
+			using (var reader = command.ExecuteReader())
+			{{
+				while (reader.Read())
+				{{
+					var row =
+						new ResultRow
+						{{
+{1}
+						}};
+
+					yield return row;
+				}}
+			}}
+
+			_connection.Close();
+		}}
+	}}
+
+	private static T GetReaderValue<T>(object value)
+	{{
+		return value == DBNull.Value
+			? default(T)
+			: (T)value;
+	}}
+}}
+";
+
+		private void GenerateCSharpQuery(object sender, ExecutedRoutedEventArgs args)
+		{
+			var dialog = new SaveFileDialog { Filter = "C# files (*.cs)|*.cs|All files (*.*)|*", OverwritePrompt = true };
+			if (dialog.ShowDialog() != true)
+			{
+				return;
+			}
+
+			var columnMapBuilder = new StringBuilder();
+			var resultRowPropertyBuilder = new StringBuilder();
+
+			var index = 0;
+			foreach (var column in _executionResult.ColumnHeaders)
+			{
+				index++;
+
+				var dataTypeName = String.Equals(column.DataType.Namespace, "System")
+					? column.DataType.Name
+					: column.DataType.FullName;
+
+				if (column.DataType.IsValueType)
+				{
+					dataTypeName = String.Format("{0}?", dataTypeName);
+				}
+
+				columnMapBuilder.Append("\t\t\t\t\t\t\t");
+				columnMapBuilder.Append(column.Name);
+				columnMapBuilder.Append(" = GetReaderValue<");
+				columnMapBuilder.Append(dataTypeName);
+				columnMapBuilder.Append(">(reader[\"");
+				columnMapBuilder.Append(column.Name);
+				columnMapBuilder.Append("\"])");
+
+				if (index < ResultGrid.Columns.Count)
+				{
+					columnMapBuilder.AppendLine(",");
+				}
+
+				resultRowPropertyBuilder.Append("\tpublic ");
+				resultRowPropertyBuilder.Append(dataTypeName);
+				resultRowPropertyBuilder.Append(" ");
+				resultRowPropertyBuilder.Append(column.Name);
+				resultRowPropertyBuilder.AppendLine(" { get; set; }");
+			}
+
+			var statementText = _executionResult.Statement.StatementText.Replace("\"", "\"\"");
+			var queryClass = String.Format(ExportClassTemplate, statementText, columnMapBuilder);
+
+			using (var writer = File.CreateText(dialog.FileName))
+			{
+				writer.WriteLine(queryClass);
+				writer.WriteLine("public class ResultRow");
+				writer.WriteLine("{");
+				writer.Write(resultRowPropertyBuilder);
+				writer.WriteLine("}");
+			}
 		}
 
 		private void ResultGridMouseDoubleClickHandler(object sender, MouseButtonEventArgs e)

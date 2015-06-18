@@ -343,7 +343,8 @@ SELECT T.* FROM T@HQ_PDB";
 				};
 
 			var outputViewer = new OutputViewer { DataModel = new PageModel(_page) };
-			outputViewer.Initialize(columnHeaders);
+			var executionResult = new StatementExecutionResult { ColumnHeaders = columnHeaders };
+			outputViewer.Initialize(executionResult);
 			outputViewer.ResultGrid.ItemsSource =
 				new[]
 				{

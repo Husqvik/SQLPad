@@ -30,6 +30,8 @@ namespace SqlPad
 	{
 		public static readonly StatementExecutionResult Empty = new StatementExecutionResult { AffectedRowCount = -1 };
 
+		public StatementExecutionModel Statement { get; set; }
+		
 		public int AffectedRowCount { get; set; }
 
 		public bool ExecutedSuccessfully { get; set; }

@@ -62,8 +62,16 @@ namespace SqlPad.Oracle
 			if (toCharFunctionOverload != null && HasSingleStringLiteralParameterOrNoParameterToken(toCharFunctionOverload))
 			{
 				BuildCommonDateFormatCompletionItems(currentNode, completionItems);
-				completionItems.Add(BuildParameterCompletionItem(currentNode, "J", "J - Julian day; the number of days since January 1, 4712 BC. "));
-				completionItems.Add(BuildParameterCompletionItem(currentNode, "Q", "Q - Quarter of year (1, 2, 3, 4; January - March = 1). "));
+				completionItems.Add(BuildParameterCompletionItem(currentNode, "J", "J - Julian day; the number of days since January 1, 4712 BC"));
+				completionItems.Add(BuildParameterCompletionItem(currentNode, "Q", "Q - Quarter of year (1, 2, 3, 4; January - March = 1)"));
+				completionItems.Add(BuildParameterCompletionItem(currentNode, "WW", "WW - Week of year (1-53) where week 1 starts on the first day of the year and continues to the seventh day of the year"));
+				completionItems.Add(BuildParameterCompletionItem(currentNode, "W", "W - Week of month (1-5) where week 1 starts on the first day of the month and ends on the seventh"));
+				completionItems.Add(BuildParameterCompletionItem(currentNode, "IW", "IW - Week of year (1-52 or 1-53) based on the ISO standard"));
+				completionItems.Add(BuildParameterCompletionItem(currentNode, "E", "E - Abbreviated era name (Japanese Imperial, ROC Official, and Thai Buddha calendars)"));
+				completionItems.Add(BuildParameterCompletionItem(currentNode, "EE", "EE - Full era name (Japanese Imperial, ROC Official, and Thai Buddha calendars)"));
+				completionItems.Add(BuildParameterCompletionItem(currentNode, "CC", "CC - Century"));
+				completionItems.Add(BuildParameterCompletionItem(currentNode, "YEAR", "YEAR - Year, spelled out"));
+				completionItems.Add(BuildParameterCompletionItem(currentNode, "SYEAR", "SYEAR - Year, spelled out; prefixes BC dates with a minus sign (-)"));
 			}
 
 			toCharFunctionOverload = specificFunctionOverloads
@@ -213,13 +221,21 @@ namespace SqlPad.Oracle
 			completionItems.Add(BuildParameterCompletionItem(currentNode, "YYYY-MM-DD\"T\"HH24:MI:SS", String.Format("YYYY-MM-DD\"T\"HH24:MI:SS - XML date time - {0}", DateTime.Now.ToString("yyyy-MM-dd\"T\"HH:mm:ss"))));
 			completionItems.Add(BuildParameterCompletionItem(currentNode, "YYYY-MM-DD HH24:MI:SS.FF9 TZH:TZM", String.Format("YYYY-MM-DD HH24:MI:SS.FF9 TZH:TZM - {0}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff000 zzz"))));
 			completionItems.Add(BuildParameterCompletionItem(currentNode, "DY, DD MON YYYY HH24:MI:SS TZD", String.Format("DY, DD MON YYYY HH24:MI:SS TZD - {0} - NLS dependent", DateTime.Now.ToString("r"))));
-			completionItems.Add(BuildParameterCompletionItem(currentNode, "DAY", "DAY (NAME OF DAY); Day (Name of day), padded with blanks to display width of the widest name of day in the date language used for this element. "));
-			completionItems.Add(BuildParameterCompletionItem(currentNode, "D", "D - Day of week (1-7). "));
-			completionItems.Add(BuildParameterCompletionItem(currentNode, "DD", "DD - Day of month (1-31). "));
-			completionItems.Add(BuildParameterCompletionItem(currentNode, "DDD", "DDD - Day of year (1-366). "));
-			completionItems.Add(BuildParameterCompletionItem(currentNode, "MON", "MON - Abbreviated name of month. "));
-			completionItems.Add(BuildParameterCompletionItem(currentNode, "MONTH", "MONTH - Name of month, padded with blanks to display width of the widest name of month in the date language used for this element. "));
-			completionItems.Add(BuildParameterCompletionItem(currentNode, "SSSSS", "SSSSS - Seconds past midnight (0-86399). "));
+			completionItems.Add(BuildParameterCompletionItem(currentNode, "DAY", "DAY (NAME OF DAY); Day (Name of day), padded with blanks to display width of the widest name of day in the date language used for this element"));
+			completionItems.Add(BuildParameterCompletionItem(currentNode, "D", "D - Day of week (1-7)"));
+			completionItems.Add(BuildParameterCompletionItem(currentNode, "DD", "DD - Day of month (1-31)"));
+			completionItems.Add(BuildParameterCompletionItem(currentNode, "DDD", "DDD - Day of year (1-366)"));
+			completionItems.Add(BuildParameterCompletionItem(currentNode, "MON", "MON - Abbreviated name of month"));
+			completionItems.Add(BuildParameterCompletionItem(currentNode, "MONTH", "MONTH - Name of month, padded with blanks to display width of the widest name of month in the date language used for this element"));
+			completionItems.Add(BuildParameterCompletionItem(currentNode, "SSSSS", "SSSSS - Seconds past midnight (0-86399)"));
+			completionItems.Add(BuildParameterCompletionItem(currentNode, "RM", "RM - Roman numeral month (I-XII; January = I)"));
+			completionItems.Add(BuildParameterCompletionItem(currentNode, "TZD", "TZD - Daylight savings information; the TZD value is an abbreviated time zone string with daylight savings information. It must correspond with the region specified in TZR. "));
+			completionItems.Add(BuildParameterCompletionItem(currentNode, "TZH", "TZH - Time zone hour"));
+			completionItems.Add(BuildParameterCompletionItem(currentNode, "TZM", "TZM - Time zone minute"));
+			completionItems.Add(BuildParameterCompletionItem(currentNode, "TZR", "TZR - Time zone region information; the value must be one of the time zone regions supported in the database. "));
+			completionItems.Add(BuildParameterCompletionItem(currentNode, "Y", "Y - Last digit of year"));
+			completionItems.Add(BuildParameterCompletionItem(currentNode, "YY", "YY - Last two digits of year"));
+			completionItems.Add(BuildParameterCompletionItem(currentNode, "YYY", "YYY - Last three digits of year"));
 		}
 
 		private static bool HasSingleStringLiteralParameterOrNoParameterToken(OracleCodeCompletionFunctionOverload functionOverload, int? parameterIndex = null)

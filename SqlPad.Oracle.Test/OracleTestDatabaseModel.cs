@@ -1083,6 +1083,7 @@ Note
 			return
 				new StatementExecutionResult
 				{
+					Statement = executionModel,
 					ExecutedSuccessfully = true, 
 					ColumnHeaders = ColumnHeaders,
 					InitialResultSet = FetchRecords(1).ToArray(),

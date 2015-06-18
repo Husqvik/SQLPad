@@ -25,6 +25,8 @@
 		<RoutedCommand x:Key="ExportToSqlUpdateClipboardCommand"/>
 		<RoutedCommand x:Key="ExportToXmlClipboardCommand"/>
 
+		<RoutedCommand x:Key="GenerateCSharpQueryClassCommand"/>
+
 		<sqlPad:CsvDataExporter x:Key="CsvDataExporter" />
 		<sqlPad:HtmlDataExporter x:Key="HtmlDataExporter" />
 		<sqlPad:JsonDataExporter x:Key="JsonDataExporter" />
@@ -83,6 +85,8 @@
 						<CommandBinding Command="{StaticResource ExportToSqlInsertClipboardCommand}" Executed="ExportDataClipboardHandler" CanExecute="CanExportDataHandler" />
 						<CommandBinding Command="{StaticResource ExportToSqlUpdateClipboardCommand}" Executed="ExportDataClipboardHandler" CanExecute="CanExportDataHandler" />
 						<CommandBinding Command="{StaticResource ExportToXmlClipboardCommand}" Executed="ExportDataClipboardHandler" CanExecute="CanExportDataHandler" />
+
+						<CommandBinding Command="{StaticResource GenerateCSharpQueryClassCommand}" Executed="GenerateCSharpQuery" CanExecute="CanGenerateCSharpQueryClassHandler" />
 						
 						<CommandBinding Command="commands:GenericCommands.FetchAllRows" Executed="FetchAllRowsHandler" CanExecute="CanFetchAllRowsHandler" />
 					</DataGrid.CommandBindings>
@@ -105,6 +109,7 @@
 								<MenuItem Header="SQL _UPDATE..." Command="{StaticResource ExportToSqlUpdateClipboardCommand}" CommandParameter="{StaticResource SqlUpdateDataExporter}" />
 								<MenuItem Header="_XML..." Command="{StaticResource ExportToXmlClipboardCommand}" CommandParameter="{StaticResource XmlDataExporter}" />
 							</MenuItem>
+							<MenuItem Header="_Generate C# query class" Command="{StaticResource GenerateCSharpQueryClassCommand}" />
 						</ContextMenu>
 					</DataGrid.ContextMenu>
 				</DataGrid>

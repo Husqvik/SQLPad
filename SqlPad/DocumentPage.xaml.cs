@@ -932,7 +932,7 @@ namespace SqlPad
 				return;
 			}
 
-			InitializeResultGrid(innerTask.Result.ColumnHeaders);
+			OutputViewer.Initialize(innerTask.Result);
 
 			AppendRows(innerTask.Result.InitialResultSet);
 		}
@@ -965,11 +965,6 @@ namespace SqlPad
 			{
 				return exception;
 			}
-		}
-
-		private void InitializeResultGrid(IEnumerable<ColumnHeader> columnHeaders)
-		{
-			OutputViewer.Initialize(columnHeaders);
 		}
 
 		public void Dispose()
