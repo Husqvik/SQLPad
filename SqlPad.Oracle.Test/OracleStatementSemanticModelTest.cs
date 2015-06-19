@@ -2028,7 +2028,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 		[Test(Description = @"")]
 		public void TestColumnReferenceInTableClause()
 		{
-			const string query1 = @"SELECT (SELECT LISTAGG(COLUMN_VALUE, ', ') WITHIN GROUP (ORDER BY ROWNUM) FROM TABLE(SELECTION_NAMES)) SELECTION_NAMES FROM (SELECT COLLECT(SELECTIONNAME) SELECTION_NAMES FROM SELECTION WHERE ROWNUM <= 5)";
+			const string query1 = @"SELECT (SELECT LISTAGG(COLUMN_VALUE, ', ') WITHIN GROUP (ORDER BY ROWNUM) FROM TABLE(SELECTION_NAMES)) SELECTION_NAMES FROM (SELECT CAST(COLLECT(SELECTIONNAME) AS SYS.ODCIRAWLIST) SELECTION_NAMES FROM SELECTION WHERE ROWNUM <= 5)";
 
 			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
@@ -2259,6 +2259,32 @@ FROM (
 			columns[1].NormalizedName.ShouldBe("\"INVISIBLE_COLUMN\"");
 			columns[1].ColumnReferences.Count.ShouldBe(1);
 			columns[1].ColumnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
+		}
+
+		[Test(Description = @"")]
+		public void TestCastedColumnDataType()
+		{
+			const string query1 = @"SELECT ((CAST(NULL AS RAW(32)))) COL1, CAST(NULL AS RAW(32)) + 1 COL2, CAST(COLLECT(HEXTORAW('FF')) AS SYS.ODCIRAWLIST) COL3 FROM DUAL";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			var columns = semanticModel.MainQueryBlock.Columns;
+			columns.Count.ShouldBe(3);
+			columns[0].NormalizedName.ShouldBe("\"COL1\"");
+			columns[0].ColumnDescription.ShouldNotBe(null);
+			columns[0].ColumnDescription.FullTypeName.ShouldBe("RAW(32)");
+			columns[0].ColumnDescription.Nullable.ShouldBe(true);
+			columns[1].NormalizedName.ShouldBe("\"COL2\"");
+			columns[1].ColumnDescription.ShouldNotBe(null);
+			columns[1].ColumnDescription.FullTypeName.ShouldBe(String.Empty);
+			columns[1].ColumnDescription.Nullable.ShouldBe(true);
+			columns[2].NormalizedName.ShouldBe("\"COL3\"");
+			columns[2].ColumnDescription.ShouldNotBe(null);
+			columns[2].ColumnDescription.FullTypeName.ShouldBe("SYS.ODCIRAWLIST");
+			columns[2].ColumnDescription.Nullable.ShouldBe(true);
 		}
 	}
 }

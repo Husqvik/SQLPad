@@ -86,7 +86,7 @@ namespace SqlPad.Oracle.DataDictionary
 			}
 
 			var isVarchar = false;
-			if (jsonReturnTypeNode.Id == NonTerminals.JsonValueReturnType)
+			if (String.Equals(jsonReturnTypeNode.Id, NonTerminals.JsonValueReturnType))
 			{
 				switch (jsonReturnTypeNode.FirstTerminalNode.Id)
 				{
@@ -106,12 +106,13 @@ namespace SqlPad.Oracle.DataDictionary
 				}
 			}
 
-			if (jsonReturnTypeNode.Id == NonTerminals.JsonQueryReturnType || isVarchar)
+			if (isVarchar || String.Equals(jsonReturnTypeNode.Id, NonTerminals.JsonQueryReturnType))
 			{
-				var dataType = new OracleDataType
-				{
-					FullyQualifiedName = OracleObjectIdentifier.Create(null, TerminalValues.Varchar2)
-				};
+				var dataType =
+					new OracleDataType
+					{
+						FullyQualifiedName = OracleObjectIdentifier.Create(null, TerminalValues.Varchar2)
+					};
 
 				TryResolveVarcharDetails(dataType, jsonReturnTypeNode);
 
@@ -121,6 +122,124 @@ namespace SqlPad.Oracle.DataDictionary
 			throw new ArgumentException("Node ID must be 'JsonValueReturnType' or 'JsonQueryReturnType'. ", "jsonReturnTypeNode");
 		}
 
+		public static OracleDataType FromExpression(StatementGrammarNode expressionNode, out bool isConstant)
+		{
+			isConstant = false;
+			
+			if (expressionNode == null || expressionNode.TerminalCount == 0)
+			{
+				return null;
+			}
+
+			if (!String.Equals(expressionNode.Id, NonTerminals.Expression))
+			{
+				throw new ArgumentException("Node ID must be 'Expression'. ", "expressionNode");
+			}
+
+			StatementGrammarNode analyzedNode;
+			var isChainedExpression = expressionNode[NonTerminals.ExpressionMathOperatorChainedList] != null;
+			if (isChainedExpression)
+			{
+				return null;
+			}
+
+			if (expressionNode.ChildNodes.Count >= 2 && String.Equals(expressionNode.ChildNodes[0].Id, Terminals.LeftParenthesis) &&
+				String.Equals((analyzedNode = expressionNode.ChildNodes[1]).Id, NonTerminals.Expression))
+			{
+				return FromExpression(analyzedNode, out isConstant);
+			}
+
+			analyzedNode = expressionNode[NonTerminals.CastOrXmlCastFunction, NonTerminals.CastFunctionParameterClause, NonTerminals.AsDataType, NonTerminals.DataType];
+			if (analyzedNode != null)
+			{
+				return FromDataTypeNode(analyzedNode);
+			}
+
+			var tokenValue = expressionNode.FirstTerminalNode.Token.Value;
+			string literalInferredDataTypeName = null;
+			var literalInferredDataType = new OracleDataType();
+			switch (expressionNode.FirstTerminalNode.Id)
+			{
+				case Terminals.StringLiteral:
+					if (expressionNode.TerminalCount != 1)
+					{
+						break;
+					}
+
+					if (tokenValue[0] == 'n' || tokenValue[0] == 'N')
+					{
+						literalInferredDataTypeName = TerminalValues.NChar;
+					}
+					else
+					{
+						literalInferredDataTypeName = TerminalValues.Char;
+					}
+
+					literalInferredDataType.Length = tokenValue.ToPlainString().Length;
+
+					break;
+				case Terminals.NumberLiteral:
+					if (expressionNode.TerminalCount != 1)
+					{
+						break;
+					}
+
+					literalInferredDataTypeName = TerminalValues.Number;
+
+					/*if (includeLengthPrecisionAndScale)
+					{
+						literalInferredDataType.Precision = GetNumberPrecision(tokenValue);
+						int? scale = null;
+						if (literalInferredDataType.Precision.HasValue)
+						{
+							var indexDecimalDigit = tokenValue.IndexOf('.');
+							if (indexDecimalDigit != -1)
+							{
+								scale = tokenValue.Length - indexDecimalDigit - 1;
+							}
+						}
+
+						literalInferredDataType.Scale = scale;
+					}*/
+
+					break;
+				case Terminals.Date:
+					if (expressionNode.TerminalCount == 2)
+					{
+						literalInferredDataTypeName = TerminalValues.Date;
+					}
+
+					break;
+				case Terminals.Timestamp:
+					if (expressionNode.TerminalCount == 2)
+					{
+						literalInferredDataTypeName = TerminalValues.Timestamp;
+						literalInferredDataType.Scale = 9;
+					}
+
+					break;
+			}
+
+			if (literalInferredDataTypeName != null)
+			{
+				isConstant = true;
+				literalInferredDataType.FullyQualifiedName = OracleObjectIdentifier.Create(null, literalInferredDataTypeName);
+				return literalInferredDataType;
+			}
+
+			return null;
+		}
+
+		/*private static int? GetNumberPrecision(string value)
+		{
+			if (value.Any(c => c.In('e', 'E')))
+			{
+				return null;
+			}
+
+			return value.Count(Char.IsDigit);
+		}*/
+
 		public static OracleDataType FromDataTypeNode(StatementGrammarNode dataTypeNode)
 		{
 			if (dataTypeNode == null)
@@ -128,76 +247,77 @@ namespace SqlPad.Oracle.DataDictionary
 				throw new ArgumentNullException("dataTypeNode");
 			}
 			
-			if (dataTypeNode.Id != NonTerminals.DataType)
+			if (!String.Equals(dataTypeNode.Id, NonTerminals.DataType))
 			{
 				throw new ArgumentException("Node ID must be 'DataType'. ", "dataTypeNode");
 			}
 
-			var owner = dataTypeNode.FirstTerminalNode.Id == Terminals.SchemaIdentifier
+			var owner = String.Equals(dataTypeNode.FirstTerminalNode.Id, Terminals.SchemaIdentifier)
 				? dataTypeNode.FirstTerminalNode.Token.Value
 				: String.Empty;
 
 			var dataType = new OracleDataType();
 
-			var isVarying = dataTypeNode[Terminals.Varying] != null;
-
 			string name;
-			switch (dataTypeNode.FirstTerminalNode.Id)
+			if (String.IsNullOrEmpty(owner))
 			{
-				case Terminals.Double:
-					name = TerminalValues.BinaryDouble;
-					break;
-				case Terminals.Long:
-					name = dataTypeNode.ChildNodes.Count > 1 && dataTypeNode.ChildNodes[1].Id == Terminals.Raw
-						? "LONG RAW"
-						: TerminalValues.Long;
-					break;
-				case Terminals.Interval:
-					var yearToMonthNode = dataTypeNode[NonTerminals.YearToMonthOrDayToSecond, NonTerminals.YearOrMonth];
-					if (yearToMonthNode == null)
-					{
-						var dayToSecondNode = dataTypeNode[NonTerminals.YearToMonthOrDayToSecond, NonTerminals.YearOrMonth];
-						if (dayToSecondNode == null)
+				var isVarying = dataTypeNode[Terminals.Varying] != null;
+
+				switch (dataTypeNode.FirstTerminalNode.Id)
+				{
+					case Terminals.Double:
+						name = TerminalValues.BinaryDouble;
+						break;
+					case Terminals.Long:
+						name = dataTypeNode.ChildNodes.Count > 1 && String.Equals(dataTypeNode.ChildNodes[1].Id, Terminals.Raw)
+							? "LONG RAW"
+							: TerminalValues.Long;
+						break;
+					case Terminals.Interval:
+						var yearToMonthNode = dataTypeNode[NonTerminals.YearToMonthOrDayToSecond, NonTerminals.YearOrMonth];
+						if (yearToMonthNode == null)
 						{
-							name = String.Empty;
+							var dayToSecondNode = dataTypeNode[NonTerminals.YearToMonthOrDayToSecond, NonTerminals.YearOrMonth];
+							name = dayToSecondNode == null ? String.Empty : "INTERVAL DAY TO SECOND";
 						}
 						else
 						{
-							name = "INTERVAL DAY TO SECOND";
+							name = "INTERVAL YEAR TO MONTH";
 						}
-					}
-					else
-					{
-						name = "INTERVAL YEAR TO MONTH";
-					}
 
-					break;
-				case Terminals.National:
-					name = isVarying ? TerminalValues.NVarchar2 : TerminalValues.NChar;
-					break;
-				case Terminals.Character:
-					name = isVarying ? TerminalValues.Varchar2 : TerminalValues.Char;
-					break;
-				default:
-					name = dataTypeNode.FirstTerminalNode.Token.Value.ToUpperInvariant();
-					break;
+						break;
+					case Terminals.National:
+						name = isVarying ? TerminalValues.NVarchar2 : TerminalValues.NChar;
+						break;
+					case Terminals.Character:
+						name = isVarying ? TerminalValues.Varchar2 : TerminalValues.Char;
+						break;
+					default:
+						name = ((OracleToken)dataTypeNode.FirstTerminalNode.Token).UpperInvariantValue;
+						break;
+				}
+
+				var simplePrecisionNode = dataTypeNode.GetSingleDescendant(NonTerminals.DataTypeSimplePrecision);
+				if (simplePrecisionNode != null)
+				{
+					var simplePrecisionValueTerminal = simplePrecisionNode[Terminals.IntegerLiteral];
+					if (simplePrecisionValueTerminal != null)
+					{
+						dataType.Length = Convert.ToInt32(simplePrecisionValueTerminal.Token.Value);
+					}
+				}
+
+				TryResolveVarcharDetails(dataType, dataTypeNode);
+
+				TryResolveNumericPrecisionAndScale(dataTypeNode, dataType);
+			}
+			else
+			{
+				var identifier = dataTypeNode[Terminals.DataTypeIdentifier];
+				name = identifier == null ? String.Empty : identifier.Token.Value;
 			}
 
 			dataType.FullyQualifiedName = OracleObjectIdentifier.Create(owner, name);
-
-			var simplePrecisionNode = dataTypeNode.GetSingleDescendant(NonTerminals.DataTypeSimplePrecision);
-			if (simplePrecisionNode != null)
-			{
-				var simplePrecisionValueTerminal = simplePrecisionNode[Terminals.IntegerLiteral];
-				if (simplePrecisionValueTerminal != null)
-				{
-					dataType.Length = Convert.ToInt32(simplePrecisionValueTerminal.Token.Value);
-				}
-			}
-
-			TryResolveVarcharDetails(dataType, dataTypeNode);
-
-			TryResolveNumericPrecisionAndScale(dataTypeNode, dataType);
 
 			return dataType;
 		}
@@ -226,7 +346,7 @@ namespace SqlPad.Oracle.DataDictionary
 			
 			dataType.Scale = Convert.ToInt32(precisionValueTerminal.Token.Value);
 
-			if (scaleValueTerminal.PrecedingTerminal.Id == Terminals.MathMinus)
+			if (String.Equals(scaleValueTerminal.PrecedingTerminal.Id, Terminals.MathMinus))
 			{
 				dataType.Scale = -dataType.Scale;
 			}

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using SqlPad.Oracle.DataDictionary;
+using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
 namespace SqlPad.Oracle.SemanticModel
@@ -113,15 +114,22 @@ namespace SqlPad.Oracle.SemanticModel
 
 			if (columnDescription == null)
 			{
-				var literalInferredDataType = TryResolveDataTypeFromAliasedExpression(RootNode);
-				if (literalInferredDataType != null)
+				var expressionNode = RootNode[0];
+				if (!String.Equals(expressionNode.Id, NonTerminals.Expression))
 				{
-					_columnDescription.DataType = literalInferredDataType;
-					_columnDescription.Nullable = false;
+					expressionNode = expressionNode[0];
+				}
 
-					if (literalInferredDataType.FullyQualifiedName.Name.EndsWith("CHAR"))
+				bool isConstant;
+				var dataType = OracleDataType.FromExpression(expressionNode, out isConstant);
+				if (dataType != null)
+				{
+					_columnDescription.DataType = dataType;
+					_columnDescription.Nullable = !isConstant;
+
+					if (dataType.FullyQualifiedName.Name.EndsWith("CHAR"))
 					{
-						_columnDescription.CharacterSize = literalInferredDataType.Length;
+						_columnDescription.CharacterSize = dataType.Length;
 					}
 				}
 			}
@@ -133,101 +141,6 @@ namespace SqlPad.Oracle.SemanticModel
 		{
 			return String.Concat(terminals.Select(t => WhitespaceRegex.Replace(((OracleToken)t.Token).UpperInvariantValue, String.Empty)));
 		}
-
-		internal static OracleDataType TryResolveDataTypeFromAliasedExpression(StatementGrammarNode aliasedExpressionNode)
-		{
-			if (aliasedExpressionNode == null || aliasedExpressionNode.TerminalCount == 0)
-			{
-				return null;
-			}
-
-			var expectedTerminalCountOffset = String.Equals(aliasedExpressionNode.LastTerminalNode.Id, Terminals.ColumnAlias)
-				? aliasedExpressionNode.LastTerminalNode.ParentNode.ChildNodes.Count
-				: 0;
-			
-			var tokenValue = aliasedExpressionNode.FirstTerminalNode.Token.Value;
-			string literalInferredDataTypeName = null;
-			var literalInferredDataType = new OracleDataType();
-			switch (aliasedExpressionNode.FirstTerminalNode.Id)
-			{
-				case Terminals.StringLiteral:
-					if (aliasedExpressionNode.TerminalCount != 1 + expectedTerminalCountOffset)
-					{
-						break;
-					}
-
-					if (tokenValue[0] == 'n' || tokenValue[0] == 'N')
-					{
-						literalInferredDataTypeName = "NCHAR";
-					}
-					else
-					{
-						literalInferredDataTypeName = "CHAR";
-					}
-
-					literalInferredDataType.Length = tokenValue.ToPlainString().Length;
-
-					break;
-				case Terminals.NumberLiteral:
-					if (aliasedExpressionNode.TerminalCount != 1 + expectedTerminalCountOffset)
-					{
-						break;
-					}
-
-					literalInferredDataTypeName = "NUMBER";
-
-					/*if (includeLengthPrecisionAndScale)
-					{
-						literalInferredDataType.Precision = GetNumberPrecision(tokenValue);
-						int? scale = null;
-						if (literalInferredDataType.Precision.HasValue)
-						{
-							var indexDecimalDigit = tokenValue.IndexOf('.');
-							if (indexDecimalDigit != -1)
-							{
-								scale = tokenValue.Length - indexDecimalDigit - 1;
-							}
-						}
-
-						literalInferredDataType.Scale = scale;
-					}*/
-					
-					break;
-				case Terminals.Date:
-					if (aliasedExpressionNode.TerminalCount == 2 + expectedTerminalCountOffset)
-					{
-						literalInferredDataTypeName = "DATE";
-					}
-
-					break;
-				case Terminals.Timestamp:
-					if (aliasedExpressionNode.TerminalCount == 2 + expectedTerminalCountOffset)
-					{
-						literalInferredDataTypeName = "TIMESTAMP";
-						literalInferredDataType.Scale = 9;
-					}
-
-					break;
-			}
-
-			if (literalInferredDataTypeName == null)
-			{
-				return null;
-			}
-
-			literalInferredDataType.FullyQualifiedName = OracleObjectIdentifier.Create(null, literalInferredDataTypeName);
-			return literalInferredDataType;
-		}
-
-		/*private static int? GetNumberPrecision(string value)
-		{
-			if (value.Any(c => c.In('e', 'E')))
-			{
-				return null;
-			}
-
-			return value.Count(Char.IsDigit);
-		}*/
 
 		public OracleSelectListColumn AsImplicit(OracleSelectListColumn asteriskColumn)
 		{
