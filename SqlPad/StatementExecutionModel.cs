@@ -18,8 +18,8 @@ namespace SqlPad
 		public string StatementText { get; set; }
 
 		public StatementBase Statement { get; set; }
-		
-		public ICollection<BindVariableModel> BindVariables { get; set; }
+
+		public IReadOnlyList<BindVariableModel> BindVariables { get; set; }
 
 		public bool GatherExecutionStatistics { get; set; }
 		

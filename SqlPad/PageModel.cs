@@ -21,7 +21,7 @@ namespace SqlPad
 		private ConnectionStringSettings _currentConnection;
 		private string _currentSchema;
 		private string _schemaLabel;
-		private ICollection<BindVariableModel> _bindVariables;
+		private IReadOnlyList<BindVariableModel> _bindVariables;
 		private bool _isTransactionControlEnabled = true;
 		private bool _isModified;
 		private bool _isRunning;
@@ -331,7 +331,7 @@ namespace SqlPad
 			set { UpdateValueAndRaisePropertyChanged(ref _connectionErrorMessage, value); }
 		}
 
-		public ICollection<BindVariableModel> BindVariables
+		public IReadOnlyList<BindVariableModel> BindVariables
 		{
 			get { return _bindVariables; }
 			set

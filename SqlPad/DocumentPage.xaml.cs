@@ -1269,7 +1269,7 @@ namespace SqlPad
 			return matchedCount == _currentBindVariables.Count && matchedCount == statement.BindVariables.Count;
 		}
 
-		private ICollection<BindVariableModel> BuildBindVariableModels(IEnumerable<BindVariableConfiguration> bindVariables)
+		private IReadOnlyList<BindVariableModel> BuildBindVariableModels(IEnumerable<BindVariableConfiguration> bindVariables)
 		{
 			var configuration = WorkDocumentCollection.GetProviderConfiguration(_connectionString.ProviderName);
 
@@ -1289,7 +1289,7 @@ namespace SqlPad
 				models.Add(model);
 			}
 
-			return models;
+			return models.AsReadOnly();
 		}
 
 		private void RedrawNodes(IEnumerable<StatementGrammarNode> nodes)

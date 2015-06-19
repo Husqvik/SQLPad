@@ -201,17 +201,16 @@ using System.Data;
 public class Query
 {{
 	private IDbConnection _connection;
-	
+
 	private const string CommandText =
 @""{0}"";
-	
+{1}	
 	private IEnumerable<ResultRow> Execute()
 	{{
 		using (var command = _connection.CreateCommand())
 		{{
 			command.CommandText = CommandText;
-
-			_connection.Open();
+			{2}			_connection.Open();
 
 			using (var reader = command.ExecuteReader())
 			{{
@@ -220,7 +219,7 @@ public class Query
 					var row =
 						new ResultRow
 						{{
-{1}
+{3}
 						}};
 
 					yield return row;
@@ -250,6 +249,37 @@ public class Query
 
 			var columnMapBuilder = new StringBuilder();
 			var resultRowPropertyBuilder = new StringBuilder();
+			var bindVariableBuilder = new StringBuilder();
+			var parameterBuilder = new StringBuilder();
+
+			if (_executionResult.Statement.BindVariables.Count > 0)
+			{
+				bindVariableBuilder.AppendLine();
+				parameterBuilder.AppendLine();
+				
+				foreach (var bindVariable in _executionResult.Statement.BindVariables)
+				{
+					bindVariableBuilder.Append("\tpublic ");
+					bindVariableBuilder.Append(bindVariable.InputType);
+					bindVariableBuilder.Append(" ");
+					bindVariableBuilder.Append(bindVariable.Name);
+					bindVariableBuilder.AppendLine(" { get; set; }");
+
+					var parameterName = String.Format("parameter{0}", bindVariable.Name);
+					parameterBuilder.Append("\t\t\tvar ");
+					parameterBuilder.Append(parameterName);
+					parameterBuilder.AppendLine(" = command.CreateParameter();");
+					parameterBuilder.Append("\t\t\t");
+					parameterBuilder.Append(parameterName);
+					parameterBuilder.Append(".Value = ");
+					parameterBuilder.Append(bindVariable.Name);
+					parameterBuilder.AppendLine(";");
+					parameterBuilder.Append("\t\t\tcommand.Parameters.Add(");
+					parameterBuilder.Append(parameterName);
+					parameterBuilder.AppendLine(");");
+					parameterBuilder.AppendLine();
+				}
+			}
 
 			var index = 0;
 			foreach (var column in _executionResult.ColumnHeaders)
@@ -286,7 +316,7 @@ public class Query
 			}
 
 			var statementText = _executionResult.Statement.StatementText.Replace("\"", "\"\"");
-			var queryClass = String.Format(ExportClassTemplate, statementText, columnMapBuilder);
+			var queryClass = String.Format(ExportClassTemplate, statementText, bindVariableBuilder, parameterBuilder, columnMapBuilder);
 
 			using (var writer = File.CreateText(dialog.FileName))
 			{
