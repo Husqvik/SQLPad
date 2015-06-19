@@ -4934,6 +4934,9 @@
           <Terminal Id="Clob" />
         </Sequence>
         <Sequence>
+          <Terminal Id="Table" />
+        </Sequence>
+        <Sequence>
           <NonTerminal Id="SchemaPrefix" IsOptional="true" />
           <Terminal Id="DataTypeIdentifier" />
         </Sequence>
