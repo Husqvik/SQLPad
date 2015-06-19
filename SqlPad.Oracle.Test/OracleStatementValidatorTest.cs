@@ -311,7 +311,11 @@ namespace SqlPad.Oracle.Test
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 
-			var objectNodeValidity = validationModel.ObjectNodeValidity.Values.Select(v => v.IsRecognized).ToArray();
+			var objectNodeValidity = validationModel.ObjectNodeValidity.Values
+				.OrderBy(v => v.Node.SourcePosition.IndexStart)
+				.Select(v => v.IsRecognized)
+				.ToArray();
+			
 			objectNodeValidity.Length.ShouldBe(6);
 			objectNodeValidity[0].ShouldBe(true);
 			objectNodeValidity[1].ShouldBe(false);
@@ -2266,6 +2270,24 @@ FROM (
 			var validationModel = BuildValidationModel(sqlText, statement);
 
 			validationModel.InvalidNonTerminals.Count.ShouldBe(0);
+		}
+		
+		[Test(Description = @"")]
+		public void TestNonNestedTableColumnInTableCollectionExpression()
+		{
+			const string sqlText = @"SELECT (SELECT * FROM TABLE(DUMMY)) FROM DUAL";
+
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			var columnValidityItems = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			columnValidityItems.Count.ShouldBe(2);
+			columnValidityItems[1].IsRecognized.ShouldBe(true);
+			columnValidityItems[1].Node.Token.Value.ShouldBe("DUMMY");
+			columnValidityItems[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.CannotAccessRowsFromNonNestedTableItem);
 		}
 	}
 }

@@ -25,6 +25,7 @@ namespace SqlPad.Oracle
 		public const string InvalidCycleMarkValue = "Cycle mark value and non-cycle mark value must be one byte character string values";
 		public const string IncorrectUseOfLnNvlOperator = "Incorrect use of LNNVL operator";
 		public const string ExpectAggregateFunctionInsidePivotOperation = "Expect aggregate function inside pivot operation";
+		public const string CannotAccessRowsFromNonNestedTableItem = "Cannot access rows from a non-nested table item";
 	}
 
 	public static class OracleSemanticErrorTooltipText

@@ -28,6 +28,13 @@ namespace SqlPad.Oracle
 			var oracleSemanticModel = (OracleStatementSemanticModel)semanticModel;
 
 			var validationModel = new OracleValidationModel { SemanticModel = oracleSemanticModel };
+			
+			var databaseModel = semanticModel.IsSimpleModel ? null : (OracleDatabaseModelBase)semanticModel.DatabaseModel;
+
+			foreach (var referenceContainer in oracleSemanticModel.AllReferenceContainers)
+			{
+				ResolveContainerValidities(validationModel, referenceContainer);
+			}
 
 			var objectReferences = oracleSemanticModel.QueryBlocks.SelectMany(qb => qb.ObjectReferences)
 				.Concat(oracleSemanticModel.MainObjectReferenceContainer.ObjectReferences)
@@ -49,7 +56,20 @@ namespace SqlPad.Oracle
 						{
 							validationModel.ProgramNodeValidity[tableCollectionProgramReference.FunctionIdentifierNode] = new InvalidNodeValidationData(OracleSemanticErrorType.FunctionReturningRowSetRequired) { Node = tableCollectionProgramReference.FunctionIdentifierNode };
 						}
-						
+
+						var tableCollectionColumnReference = tableCollectionReference.RowSourceReference as OracleColumnReference;
+						if (tableCollectionColumnReference != null && databaseModel != null && tableCollectionColumnReference.ColumnDescription != null &&
+						    !String.IsNullOrEmpty(tableCollectionColumnReference.ColumnDescription.DataType.FullyQualifiedName.Name))
+						{
+							INodeValidationData validationData;
+							var collectionType = databaseModel.GetFirstSchemaObject<OracleTypeCollection>(tableCollectionColumnReference.ColumnDescription.DataType.FullyQualifiedName);
+							if (collectionType == null && validationModel.ColumnNodeValidity.TryGetValue(tableCollectionColumnReference.ColumnNode, out validationData) &&
+							    validationData.IsRecognized && String.IsNullOrEmpty(validationData.SemanticErrorType))
+							{
+								validationModel.ColumnNodeValidity[tableCollectionColumnReference.ColumnNode] = new InvalidNodeValidationData(OracleSemanticErrorType.CannotAccessRowsFromNonNestedTableItem) {Node = tableCollectionColumnReference.ColumnNode};
+							}
+						}
+
 						break;
 
 					case ReferenceType.SchemaObject:
@@ -57,7 +77,7 @@ namespace SqlPad.Oracle
 						{
 							if (objectReference.OwnerNode != null)
 							{
-								var isRecognized = !semanticModel.IsSimpleModel && ((OracleDatabaseModelBase)semanticModel.DatabaseModel).ExistsSchema(objectReference.OwnerNode.Token.Value);
+								var isRecognized = databaseModel != null && databaseModel.ExistsSchema(objectReference.OwnerNode.Token.Value);
 								validationModel.ObjectNodeValidity[objectReference.OwnerNode] = new NodeValidationData { IsRecognized = isRecognized };
 							}
 
@@ -98,11 +118,6 @@ namespace SqlPad.Oracle
 				{
 					validationModel.ObjectNodeValidity[objectReference.PartitionReference.ObjectNode] = new NodeValidationData { Node = objectReference.PartitionReference.ObjectNode };
 				}
-			}
-
-			foreach (var referenceContainer in oracleSemanticModel.AllReferenceContainers)
-			{
-				ResolveContainerValidities(validationModel, referenceContainer);
 			}
 
 			var invalidIdentifiers = oracleSemanticModel.Statement.AllTerminals
