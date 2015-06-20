@@ -473,13 +473,36 @@ namespace SqlPad.Oracle
 						if (isWithinMainQueryBlockWithOrderByClause)
 						{
 							validationModel.InvalidNonTerminals[mainQueryBlockOrderByClause] =
-							new InvalidNodeValidationData(OracleSemanticErrorType.ClauseNotAllowed) { Node = mainQueryBlockOrderByClause };
+								new InvalidNodeValidationData(OracleSemanticErrorType.ClauseNotAllowed) { Node = mainQueryBlockOrderByClause };
 						}
 					}
 				}
 				else
 				{
 					ValidateDatabaseLinkReference(validationModel.ObjectNodeValidity, sequenceReference);
+				}
+			}
+
+			foreach (var dataTypeReference in referenceContainer.DataTypeReferences)
+			{
+				if (dataTypeReference.DatabaseLinkNode == null)
+				{
+					if (dataTypeReference.SchemaObject == null)
+					{
+						validationModel.IdentifierNodeValidity[dataTypeReference.ObjectNode] =
+							new NodeValidationData { Node = dataTypeReference.ObjectNode, IsRecognized = false };
+
+						if (dataTypeReference.OwnerNode != null &&
+						    !validationModel.SemanticModel.DatabaseModel.ExistsSchema(dataTypeReference.FullyQualifiedObjectName.NormalizedOwner))
+						{
+							validationModel.IdentifierNodeValidity[dataTypeReference.OwnerNode] =
+								new NodeValidationData {Node = dataTypeReference.OwnerNode, IsRecognized = false};
+						}
+					}
+				}
+				else
+				{
+					ValidateDatabaseLinkReference(validationModel.ObjectNodeValidity, dataTypeReference);
 				}
 			}
 		}

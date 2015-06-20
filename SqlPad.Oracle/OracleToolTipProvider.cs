@@ -70,6 +70,7 @@ namespace SqlPad.Oracle
 					case Terminals.NegationOrNull:
 					case Terminals.RowIdPseudoColumn:
 					case Terminals.User:
+					case Terminals.Level:
 					case Terminals.JsonQuery:
 					case Terminals.JsonExists:
 					case Terminals.JsonValue:

@@ -21,6 +21,7 @@ namespace SqlPad.Oracle.SemanticModel
 			ProgramReferences = new List<OracleProgramReference>();
 			SequenceReferences = new List<OracleSequenceReference>();
 			ObjectReferences = new List<OracleDataObjectReference>();
+			DataTypeReferences = new List<OracleDataTypeReference>();
 		}
 
 		public OracleStatementSemanticModel SemanticModel { get; private set; }
@@ -34,6 +35,8 @@ namespace SqlPad.Oracle.SemanticModel
 		public ICollection<OracleProgramReference> ProgramReferences { get; private set; }
 
 		public ICollection<OracleDataObjectReference> ObjectReferences { get; private set; }
+
+		public ICollection<OracleDataTypeReference> DataTypeReferences { get; private set; }
 
 		public IEnumerable<OracleReference> AllReferences
 		{

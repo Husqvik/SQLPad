@@ -2285,6 +2285,8 @@ FROM (
 			columns[2].ColumnDescription.ShouldNotBe(null);
 			columns[2].ColumnDescription.FullTypeName.ShouldBe("SYS.ODCIRAWLIST");
 			columns[2].ColumnDescription.Nullable.ShouldBe(true);
+			columns[2].DataTypeReferences.Count.ShouldBe(1);
+			columns[2].DataTypeReferences.Single().SchemaObject.ShouldNotBe(null);
 		}
 	}
 }

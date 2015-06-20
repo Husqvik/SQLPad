@@ -2289,5 +2289,32 @@ FROM (
 			columnValidityItems[1].Node.Token.Value.ShouldBe("DUMMY");
 			columnValidityItems[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.CannotAccessRowsFromNonNestedTableItem);
 		}
+
+		[Test(Description = @"")]
+		public void TestDataTypeValidation()
+		{
+			const string sqlText = @"SELECT CAST(NULL AS SYS.ODCIRAWLIST), CAST(NULL AS ODCIRAWLIST), CAST(NULL AS HUSQVIK.ODCIRAWLIST), CAST(NULL AS NONEXISTING_SCHEMA.ODCIRAWLIST), CAST(NULL AS INVALID_OBJECT_TYPE) FROM DUAL";
+
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			var identifierValidityItems = validationModel.IdentifierNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			identifierValidityItems.Count.ShouldBe(4);
+			identifierValidityItems[0].IsRecognized.ShouldBe(false);
+			identifierValidityItems[0].Node.Token.Value.ShouldBe("ODCIRAWLIST");
+			identifierValidityItems[0].SemanticErrorType.ShouldBe(null);
+			identifierValidityItems[1].IsRecognized.ShouldBe(false);
+			identifierValidityItems[1].Node.Token.Value.ShouldBe("ODCIRAWLIST");
+			identifierValidityItems[1].SemanticErrorType.ShouldBe(null);
+			identifierValidityItems[2].IsRecognized.ShouldBe(false);
+			identifierValidityItems[2].Node.Token.Value.ShouldBe("NONEXISTING_SCHEMA");
+			identifierValidityItems[2].SemanticErrorType.ShouldBe(null);
+			identifierValidityItems[3].IsRecognized.ShouldBe(false);
+			identifierValidityItems[3].Node.Token.Value.ShouldBe("ODCIRAWLIST");
+			identifierValidityItems[3].SemanticErrorType.ShouldBe(null);
+		}
 	}
 }
