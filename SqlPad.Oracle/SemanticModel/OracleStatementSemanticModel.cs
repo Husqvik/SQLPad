@@ -352,144 +352,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 			foreach (var queryBlock in _queryBlockNodes.Values)
 			{
-				var queryBlockRoot = queryBlock.RootNode;
-
-				var tableReferenceNonterminals = queryBlock.FromClause == null
-					? StatementGrammarNode.EmptyArray
-					: queryBlock.FromClause.GetDescendantsWithinSameQueryBlock(NonTerminals.TableReference).Where(n => n[NonTerminals.TableReference] == null);
-
-				var cteReferences = ResolveAccessibleCommonTableExpressions(queryBlockRoot).ToDictionary(qb => qb.CteNode, qb => qb.CteAlias);
-				_accessibleQueryBlockRoot.Add(queryBlock, cteReferences.Keys);
-
-				foreach (var tableReferenceNonterminal in tableReferenceNonterminals)
-				{
-					var queryTableExpression = tableReferenceNonterminal.GetDescendantsWithinSameQueryBlock(NonTerminals.QueryTableExpression).SingleOrDefault();
-					if (queryTableExpression == null)
-					{
-						var specialTableReference = ResolveXmlTableReference(queryBlock, tableReferenceNonterminal) ?? ResolveJsonTableReference(queryBlock, tableReferenceNonterminal);
-						if (specialTableReference != null)
-						{
-							specialTableReference.RootNode = tableReferenceNonterminal;
-							specialTableReference.AliasNode = tableReferenceNonterminal[NonTerminals.InnerSpecialTableReference].GetSingleDescendant(Terminals.ObjectAlias);
-							queryBlock.ObjectReferences.Add(specialTableReference);
-						}
-					}
-					else
-					{
-						var objectReferenceAlias = tableReferenceNonterminal[Terminals.ObjectAlias];
-						var databaseLinkNode = GetDatabaseLinkFromQueryTableExpression(queryTableExpression);
-
-						var tableCollection = queryTableExpression[NonTerminals.TableCollectionExpression];
-						if (tableCollection != null)
-						{
-							var functionIdentifierNode = tableCollection.GetDescendants(Terminals.Identifier).FirstOrDefault();
-							if (functionIdentifierNode != null)
-							{
-								var prefixNonTerminal = functionIdentifierNode.ParentNode[NonTerminals.Prefix];
-								var functionCallNodes = GetFunctionCallNodes(functionIdentifierNode);
-								var tableCollectionReference = ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock, functionIdentifierNode, StatementPlacement.TableReference, null, n => prefixNonTerminal);
-
-								var tableCollectionDataObjectReference =
-									new OracleTableCollectionReference
-									{
-										RowSourceReference = tableCollectionReference,
-										AliasNode = objectReferenceAlias,
-										DatabaseLinkNode = databaseLinkNode,
-										RootNode = tableReferenceNonterminal
-									};
-
-								queryBlock.ObjectReferences.Add(tableCollectionDataObjectReference);
-
-								if (functionCallNodes.Length > 0)
-								{
-									var identifiers = functionCallNodes.SelectMany(n => n.GetDescendantsWithinSameQueryBlock(Terminals.Identifier, Terminals.User));
-									ResolveColumnAndFunctionReferencesFromIdentifiers(queryBlock, queryBlock, identifiers, StatementPlacement.TableReference, null);
-								}
-							}
-
-							continue;
-						}
-
-						var nestedQueryTableReference = queryTableExpression.GetPathFilterDescendants(f => !String.Equals(f.Id, NonTerminals.Subquery), NonTerminals.NestedQuery).SingleOrDefault();
-						if (nestedQueryTableReference != null)
-						{
-							var nestedQueryTableReferenceQueryBlock = nestedQueryTableReference.GetPathFilterDescendants(n => !String.Equals(n.Id, NonTerminals.NestedQuery) && !String.Equals(n.Id, NonTerminals.SubqueryFactoringClause), NonTerminals.QueryBlock).FirstOrDefault();
-							if (nestedQueryTableReferenceQueryBlock != null)
-							{
-								var objectReference =
-									new OracleDataObjectReference(ReferenceType.InlineView)
-									{
-										Owner = queryBlock,
-										RootNode = tableReferenceNonterminal,
-										ObjectNode = nestedQueryTableReferenceQueryBlock,
-										AliasNode = objectReferenceAlias
-									};
-
-								queryBlock.ObjectReferences.Add(objectReference);
-							}
-
-							var identifiers = queryTableExpression.GetPathFilterDescendants(n => n != nestedQueryTableReference && !String.Equals(n.Id, NonTerminals.NestedQuery), Terminals.Identifier, Terminals.User);
-							ResolveColumnAndFunctionReferencesFromIdentifiers(queryBlock, queryBlock, identifiers, StatementPlacement.TableReference, null);
-
-							continue;
-						}
-
-						var objectIdentifierNode = queryTableExpression[Terminals.ObjectIdentifier];
-						if (objectIdentifierNode != null)
-						{
-							ICollection<KeyValuePair<StatementGrammarNode, string>> commonTableExpressions = new Dictionary<StatementGrammarNode, string>();
-							var schemaTerminal = queryTableExpression[NonTerminals.SchemaPrefix];
-							if (schemaTerminal != null)
-							{
-								schemaTerminal = schemaTerminal.ChildNodes[0];
-							}
-
-							var tableName = objectIdentifierNode.Token.Value.ToQuotedIdentifier();
-							if (schemaTerminal == null)
-							{
-								commonTableExpressions.AddRange(cteReferences.Where(n => n.Value == tableName));
-							}
-
-							OracleSchemaObject localSchemaObject = null;
-							var referenceType = ReferenceType.CommonTableExpression;
-							if (commonTableExpressions.Count == 0)
-							{
-								referenceType = ReferenceType.SchemaObject;
-
-								var objectName = objectIdentifierNode.Token.Value;
-								var owner = schemaTerminal == null ? null : schemaTerminal.Token.Value;
-
-								if (HasDatabaseModel)
-								{
-									localSchemaObject = _databaseModel.GetFirstSchemaObject<OracleDataObject>(_databaseModel.GetPotentialSchemaObjectIdentifiers(owner, objectName));
-								}
-							}
-
-							var objectReference =
-								new OracleDataObjectReference(referenceType)
-								{
-									Owner = queryBlock,
-									RootNode = tableReferenceNonterminal,
-									OwnerNode = schemaTerminal,
-									ObjectNode = objectIdentifierNode,
-									DatabaseLinkNode = databaseLinkNode,
-									AliasNode = objectReferenceAlias,
-									SchemaObject = databaseLinkNode == null ? localSchemaObject : null
-								};
-
-							queryBlock.ObjectReferences.Add(objectReference);
-
-							if (commonTableExpressions.Count > 0)
-							{
-								_objectReferenceCteRootNodes[objectReference] = commonTableExpressions;
-							}
-
-							FindFlashbackOption(objectReference);
-							
-							FindExplicitPartitionReferences(queryTableExpression, objectReference);
-						}
-					}
-				}
+				FindObjectReferences(queryBlock);
 
 				FindSelectListReferences(queryBlock);
 
@@ -513,6 +376,147 @@ namespace SqlPad.Oracle.SemanticModel
 			BuildDmlModel();
 			
 			ResolveRedundantTerminals();
+		}
+
+		private void FindObjectReferences(OracleQueryBlock queryBlock)
+		{
+			var queryBlockRoot = queryBlock.RootNode;
+			var tableReferenceNonterminals = queryBlock.FromClause == null
+				? StatementGrammarNode.EmptyArray
+				: queryBlock.FromClause.GetDescendantsWithinSameQueryBlock(NonTerminals.TableReference).Where(n => n[NonTerminals.TableReference] == null);
+
+			var cteReferences = ResolveAccessibleCommonTableExpressions(queryBlockRoot).ToDictionary(qb => qb.CteNode, qb => qb.CteAlias);
+			_accessibleQueryBlockRoot.Add(queryBlock, cteReferences.Keys);
+
+			foreach (var tableReferenceNonterminal in tableReferenceNonterminals)
+			{
+				var queryTableExpression = tableReferenceNonterminal.GetDescendantsWithinSameQueryBlock(NonTerminals.QueryTableExpression).SingleOrDefault();
+				if (queryTableExpression == null)
+				{
+					var specialTableReference = ResolveXmlTableReference(queryBlock, tableReferenceNonterminal) ?? ResolveJsonTableReference(queryBlock, tableReferenceNonterminal);
+					if (specialTableReference != null)
+					{
+						specialTableReference.RootNode = tableReferenceNonterminal;
+						specialTableReference.AliasNode = tableReferenceNonterminal[NonTerminals.InnerSpecialTableReference].GetSingleDescendant(Terminals.ObjectAlias);
+						queryBlock.ObjectReferences.Add(specialTableReference);
+					}
+				}
+				else
+				{
+					var objectReferenceAlias = tableReferenceNonterminal[Terminals.ObjectAlias];
+					var databaseLinkNode = GetDatabaseLinkFromQueryTableExpression(queryTableExpression);
+
+					var tableCollection = queryTableExpression[NonTerminals.TableCollectionExpression];
+					if (tableCollection != null)
+					{
+						var functionIdentifierNode = tableCollection.GetDescendants(Terminals.Identifier).FirstOrDefault();
+						if (functionIdentifierNode != null)
+						{
+							var prefixNonTerminal = functionIdentifierNode.ParentNode[NonTerminals.Prefix];
+							var functionCallNodes = GetFunctionCallNodes(functionIdentifierNode);
+							var tableCollectionReference = ResolveColumnAndFunctionReferenceFromIdentifiers(queryBlock, queryBlock, functionIdentifierNode, StatementPlacement.TableReference, null, n => prefixNonTerminal);
+
+							var tableCollectionDataObjectReference =
+								new OracleTableCollectionReference
+								{
+									RowSourceReference = tableCollectionReference,
+									AliasNode = objectReferenceAlias,
+									DatabaseLinkNode = databaseLinkNode,
+									RootNode = tableReferenceNonterminal
+								};
+
+							queryBlock.ObjectReferences.Add(tableCollectionDataObjectReference);
+
+							if (functionCallNodes.Length > 0)
+							{
+								var identifiers = functionCallNodes.SelectMany(n => n.GetDescendantsWithinSameQueryBlock(Terminals.Identifier, Terminals.User));
+								ResolveColumnAndFunctionReferencesFromIdentifiers(queryBlock, queryBlock, identifiers, StatementPlacement.TableReference, null);
+							}
+						}
+
+						continue;
+					}
+
+					var nestedQueryTableReference = queryTableExpression.GetPathFilterDescendants(f => !String.Equals(f.Id, NonTerminals.Subquery), NonTerminals.NestedQuery).SingleOrDefault();
+					if (nestedQueryTableReference != null)
+					{
+						var nestedQueryTableReferenceQueryBlock = nestedQueryTableReference.GetPathFilterDescendants(n => !String.Equals(n.Id, NonTerminals.NestedQuery) && !String.Equals(n.Id, NonTerminals.SubqueryFactoringClause), NonTerminals.QueryBlock).FirstOrDefault();
+						if (nestedQueryTableReferenceQueryBlock != null)
+						{
+							var objectReference =
+								new OracleDataObjectReference(ReferenceType.InlineView)
+								{
+									Owner = queryBlock,
+									RootNode = tableReferenceNonterminal,
+									ObjectNode = nestedQueryTableReferenceQueryBlock,
+									AliasNode = objectReferenceAlias
+								};
+
+							queryBlock.ObjectReferences.Add(objectReference);
+						}
+
+						var identifiers = queryTableExpression.GetPathFilterDescendants(n => n != nestedQueryTableReference && !String.Equals(n.Id, NonTerminals.NestedQuery), Terminals.Identifier, Terminals.User);
+						ResolveColumnAndFunctionReferencesFromIdentifiers(queryBlock, queryBlock, identifiers, StatementPlacement.TableReference, null);
+
+						continue;
+					}
+
+					var objectIdentifierNode = queryTableExpression[Terminals.ObjectIdentifier];
+					if (objectIdentifierNode != null)
+					{
+						ICollection<KeyValuePair<StatementGrammarNode, string>> commonTableExpressions = new Dictionary<StatementGrammarNode, string>();
+						var schemaTerminal = queryTableExpression[NonTerminals.SchemaPrefix];
+						if (schemaTerminal != null)
+						{
+							schemaTerminal = schemaTerminal.ChildNodes[0];
+						}
+
+						var tableName = objectIdentifierNode.Token.Value.ToQuotedIdentifier();
+						if (schemaTerminal == null)
+						{
+							commonTableExpressions.AddRange(cteReferences.Where(n => n.Value == tableName));
+						}
+
+						OracleSchemaObject localSchemaObject = null;
+						var referenceType = ReferenceType.CommonTableExpression;
+						if (commonTableExpressions.Count == 0)
+						{
+							referenceType = ReferenceType.SchemaObject;
+
+							var objectName = objectIdentifierNode.Token.Value;
+							var owner = schemaTerminal == null ? null : schemaTerminal.Token.Value;
+
+							if (HasDatabaseModel)
+							{
+								localSchemaObject = _databaseModel.GetFirstSchemaObject<OracleDataObject>(_databaseModel.GetPotentialSchemaObjectIdentifiers(owner, objectName));
+							}
+						}
+
+						var objectReference =
+							new OracleDataObjectReference(referenceType)
+							{
+								Owner = queryBlock,
+								RootNode = tableReferenceNonterminal,
+								OwnerNode = schemaTerminal,
+								ObjectNode = objectIdentifierNode,
+								DatabaseLinkNode = databaseLinkNode,
+								AliasNode = objectReferenceAlias,
+								SchemaObject = databaseLinkNode == null ? localSchemaObject : null
+							};
+
+						queryBlock.ObjectReferences.Add(objectReference);
+
+						if (commonTableExpressions.Count > 0)
+						{
+							_objectReferenceCteRootNodes[objectReference] = commonTableExpressions;
+						}
+
+						FindFlashbackOption(objectReference);
+
+						FindExplicitPartitionReferences(queryTableExpression, objectReference);
+					}
+				}
+			}
 		}
 
 		private void ResolvePivotClauses()
@@ -2513,7 +2517,7 @@ namespace SqlPad.Oracle.SemanticModel
 					else
 					{
 						var columnExpressionIdentifiers = columnExpressionsIdentifierLookup[columnExpression].ToArray();
-						var identifiers = columnExpressionIdentifiers.Where(t => t.Id.In(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level)).ToArray();
+						var identifiers = columnExpressionIdentifiers.Where(t => t.Id.In(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level, Terminals.User)).ToArray();
 
 						var previousColumnReferences = column.ColumnReferences.Count;
 						ResolveColumnAndFunctionReferencesFromIdentifiers(queryBlock, column, identifiers, StatementPlacement.SelectList, column);
