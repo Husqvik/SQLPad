@@ -25,7 +25,7 @@ namespace SqlPad.Oracle.SemanticModel
 		
 		public string StatementText { get; private set; }
 		
-		public bool IsSimpleModel { get { return DatabaseModel == null; } }
+		public bool HasDatabaseModel { get { return DatabaseModel == null; } }
 		
 		public ICollection<RedundantTerminalGroup> RedundantSymbolGroups { get { return new RedundantTerminalGroup[0]; } }
 

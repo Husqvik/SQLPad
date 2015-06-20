@@ -33,7 +33,7 @@ namespace SqlPad.Oracle.Test
 		{
 			var statement = (OracleStatement)_oracleSqlParser.Parse("SELECT NULL FROM DUAL").Single();
 			var semanticModel = new OracleStatementSemanticModel(null, statement);
-			semanticModel.IsSimpleModel.ShouldBe(true);
+			semanticModel.HasDatabaseModel.ShouldBe(false);
 		}
 
 		[Test(Description = @"")]
@@ -59,7 +59,7 @@ FROM
 
 			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
 
-			semanticModel.IsSimpleModel.ShouldBe(false);
+			semanticModel.HasDatabaseModel.ShouldBe(true);
 			semanticModel.QueryBlocks.ShouldNotBe(null);
 			semanticModel.QueryBlocks.Count.ShouldBe(3);
 

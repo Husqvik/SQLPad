@@ -250,6 +250,8 @@ namespace SqlPad.Oracle
 
 		public override bool IsInitialized { get { return _isInitialized; } }
 
+		public override bool IsMetadataAvailable { get { return _dataDictionary != OracleDataDictionary.EmptyDictionary; } }
+
 		public override string CurrentSchema
 		{
 			get { return _currentSchema; }

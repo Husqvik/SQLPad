@@ -16,7 +16,7 @@ namespace SqlPad
 		IDatabaseModel DatabaseModel { get; }
 		StatementBase Statement { get; }
 		string StatementText { get; }
-		bool IsSimpleModel { get; }
+		bool HasDatabaseModel { get; }
 		ICollection<RedundantTerminalGroup> RedundantSymbolGroups { get; }
 	}
 

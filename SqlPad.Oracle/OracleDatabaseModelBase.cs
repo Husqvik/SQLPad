@@ -43,6 +43,8 @@ namespace SqlPad.Oracle
 		
 		public abstract bool IsInitialized { get; }
 		
+		public abstract bool IsMetadataAvailable { get; }
+		
 		public abstract string CurrentSchema { get; set; }
 		
 		public abstract ICollection<string> Schemas { get; }

@@ -71,7 +71,7 @@ namespace SqlPad.Oracle.SemanticModel
 		
 		public string StatementText { get; private set; }
 		
-		public bool IsSimpleModel { get { return _databaseModel == null; } }
+		public bool HasDatabaseModel { get { return _databaseModel != null; } }
 
 		public ICollection<OracleQueryBlock> QueryBlocks
 		{
@@ -459,7 +459,7 @@ namespace SqlPad.Oracle.SemanticModel
 								var objectName = objectIdentifierNode.Token.Value;
 								var owner = schemaTerminal == null ? null : schemaTerminal.Token.Value;
 
-								if (!IsSimpleModel)
+								if (HasDatabaseModel)
 								{
 									localSchemaObject = _databaseModel.GetFirstSchemaObject<OracleDataObject>(_databaseModel.GetPotentialSchemaObjectIdentifiers(owner, objectName));
 								}
@@ -1224,7 +1224,7 @@ namespace SqlPad.Oracle.SemanticModel
 					.ToLookup(o => o.SchemaObject.Name);
 
 				var removedObjectReferenceOwners = new HashSet<OracleDataObjectReference>();
-				if (!IsSimpleModel)
+				if (HasDatabaseModel)
 				{
 					foreach (var ownerNameObjectReference in ownerNameObjectReferences)
 					{
@@ -1570,7 +1570,7 @@ namespace SqlPad.Oracle.SemanticModel
 			var schemaPrefixNode = queryTableExpressionNode[NonTerminals.SchemaPrefix, Terminals.SchemaIdentifier];
 
 			OracleSchemaObject schemaObject = null;
-			if (!IsSimpleModel)
+			if (HasDatabaseModel)
 			{
 				var owner = schemaPrefixNode == null ? null : schemaPrefixNode.Token.Value;
 				schemaObject = _databaseModel.GetFirstSchemaObject<OracleDataObject>(_databaseModel.GetPotentialSchemaObjectIdentifiers(owner, objectIdentifier.Token.Value));
@@ -1731,7 +1731,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private void ResolveDatabaseLinks(OracleQueryBlock queryBlock)
 		{
-			if (IsSimpleModel)
+			if (!HasDatabaseModel)
 			{
 				return;
 			}
@@ -1914,7 +1914,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private OracleProgramMetadata UpdateFunctionReferenceWithMetadata(OracleProgramReference programReference)
 		{
-			if (IsSimpleModel || programReference.DatabaseLinkNode != null)
+			if (!HasDatabaseModel || programReference.DatabaseLinkNode != null)
 			{
 				return null;
 			}

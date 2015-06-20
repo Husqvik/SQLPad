@@ -1005,6 +1005,8 @@ Note
 		public override string CurrentSchema { get; set; }
 		
 		public override bool IsInitialized { get { return true; } }
+
+		public override bool IsMetadataAvailable { get { return true; } }
 		
 		public override ICollection<string> Schemas { get { return SchemasInternal; } }
 		

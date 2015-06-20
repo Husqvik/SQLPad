@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using SqlPad.Oracle.DataDictionary;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
+using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
 
 namespace SqlPad.Oracle.SemanticModel
 {
@@ -120,16 +121,16 @@ namespace SqlPad.Oracle.SemanticModel
 					expressionNode = expressionNode[0];
 				}
 
-				bool isConstant;
-				var dataType = OracleDataType.FromExpression(expressionNode, out isConstant);
-				if (dataType != null)
+				if (TryResolveDataTypeFromExpression(expressionNode, _columnDescription))
 				{
-					_columnDescription.DataType = dataType;
-					_columnDescription.Nullable = !isConstant;
-
-					if (dataType.FullyQualifiedName.Name.EndsWith("CHAR"))
+					/*if (SemanticModel.HasDatabaseModel)
 					{
-						_columnDescription.CharacterSize = dataType.Length;
+						var oracleType = SemanticModel.DatabaseModel.GetFirstSchemaObject<OracleTypeBase>(_columnDescription.DataType.FullyQualifiedName);
+					}*/
+
+					if (_columnDescription.DataType.FullyQualifiedName.Name.EndsWith("CHAR"))
+					{
+						_columnDescription.CharacterSize = _columnDescription.DataType.Length;
 					}
 				}
 			}
@@ -155,5 +156,124 @@ namespace SqlPad.Oracle.SemanticModel
 					_normalizedName = _normalizedName
 				};
 		}
+
+		public static bool TryResolveDataTypeFromExpression(StatementGrammarNode expressionNode, OracleColumn column)
+		{
+			if (expressionNode == null || expressionNode.TerminalCount == 0)
+			{
+				return false;
+			}
+
+			if (!String.Equals(expressionNode.Id, NonTerminals.Expression))
+			{
+				throw new ArgumentException("Node ID must be 'Expression'. ", "expressionNode");
+			}
+
+			StatementGrammarNode analyzedNode;
+			var isChainedExpression = expressionNode[NonTerminals.ExpressionMathOperatorChainedList] != null;
+			if (isChainedExpression)
+			{
+				return false;
+			}
+
+			if (expressionNode.ChildNodes.Count >= 2 && String.Equals(expressionNode.ChildNodes[0].Id, Terminals.LeftParenthesis) &&
+				String.Equals((analyzedNode = expressionNode.ChildNodes[1]).Id, NonTerminals.Expression))
+			{
+				return TryResolveDataTypeFromExpression(analyzedNode, column);
+			}
+
+			analyzedNode = expressionNode[NonTerminals.CastOrXmlCastFunction, NonTerminals.CastFunctionParameterClause, NonTerminals.AsDataType, NonTerminals.DataType];
+			if (analyzedNode != null)
+			{
+				column.DataType = OracleDataType.FromDataTypeNode(analyzedNode);
+				column.Nullable = true;
+				return true;
+			}
+
+			var tokenValue = expressionNode.FirstTerminalNode.Token.Value;
+			string literalInferredDataTypeName = null;
+			var literalInferredDataType = new OracleDataType();
+			switch (expressionNode.FirstTerminalNode.Id)
+			{
+				case Terminals.StringLiteral:
+					if (expressionNode.TerminalCount != 1)
+					{
+						break;
+					}
+
+					if (tokenValue[0] == 'n' || tokenValue[0] == 'N')
+					{
+						literalInferredDataTypeName = TerminalValues.NChar;
+					}
+					else
+					{
+						literalInferredDataTypeName = TerminalValues.Char;
+					}
+
+					literalInferredDataType.Length = tokenValue.ToPlainString().Length;
+
+					break;
+				case Terminals.NumberLiteral:
+					if (expressionNode.TerminalCount != 1)
+					{
+						break;
+					}
+
+					literalInferredDataTypeName = TerminalValues.Number;
+
+					/*if (includeLengthPrecisionAndScale)
+					{
+						literalInferredDataType.Precision = GetNumberPrecision(tokenValue);
+						int? scale = null;
+						if (literalInferredDataType.Precision.HasValue)
+						{
+							var indexDecimalDigit = tokenValue.IndexOf('.');
+							if (indexDecimalDigit != -1)
+							{
+								scale = tokenValue.Length - indexDecimalDigit - 1;
+							}
+						}
+
+						literalInferredDataType.Scale = scale;
+					}*/
+
+					break;
+				case Terminals.Date:
+					if (expressionNode.TerminalCount == 2)
+					{
+						literalInferredDataTypeName = TerminalValues.Date;
+					}
+
+					break;
+				case Terminals.Timestamp:
+					if (expressionNode.TerminalCount == 2)
+					{
+						literalInferredDataTypeName = TerminalValues.Timestamp;
+						literalInferredDataType.Scale = 9;
+					}
+
+					break;
+			}
+
+			if (literalInferredDataTypeName != null)
+			{
+				literalInferredDataType.FullyQualifiedName = OracleObjectIdentifier.Create(null, literalInferredDataTypeName);
+				column.DataType = literalInferredDataType;
+				column.Nullable = false;
+				return true;
+			}
+
+			return false;
+		}
+
+		/*private static int? GetNumberPrecision(string value)
+		{
+			if (value.Any(c => c.In('e', 'E')))
+			{
+				return null;
+			}
+
+			return value.Count(Char.IsDigit);
+		}*/
 	}
 }

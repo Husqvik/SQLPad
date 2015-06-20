@@ -28,8 +28,8 @@ namespace SqlPad.Oracle
 			var oracleSemanticModel = (OracleStatementSemanticModel)semanticModel;
 
 			var validationModel = new OracleValidationModel { SemanticModel = oracleSemanticModel };
-			
-			var databaseModel = semanticModel.IsSimpleModel ? null : (OracleDatabaseModelBase)semanticModel.DatabaseModel;
+
+			var databaseModel = semanticModel.HasDatabaseModel ? (OracleDatabaseModelBase)semanticModel.DatabaseModel : null;
 
 			foreach (var referenceContainer in oracleSemanticModel.AllReferenceContainers)
 			{
@@ -58,7 +58,7 @@ namespace SqlPad.Oracle
 						}
 
 						var tableCollectionColumnReference = tableCollectionReference.RowSourceReference as OracleColumnReference;
-						if (tableCollectionColumnReference != null && databaseModel != null && tableCollectionColumnReference.ColumnDescription != null &&
+						if (tableCollectionColumnReference != null && databaseModel != null && databaseModel.IsMetadataAvailable && tableCollectionColumnReference.ColumnDescription != null &&
 						    !String.IsNullOrEmpty(tableCollectionColumnReference.ColumnDescription.DataType.FullyQualifiedName.Name))
 						{
 							INodeValidationData validationData;
