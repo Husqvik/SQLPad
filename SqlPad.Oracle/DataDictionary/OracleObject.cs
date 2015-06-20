@@ -277,9 +277,9 @@ namespace SqlPad.Oracle.DataDictionary
 			Attributes = new List<OracleTypeAttribute>();
 		}
 
-		internal OracleTypeObject WithXmlTypeCode()
+		internal OracleTypeObject WithTypeCode(string typeCode)
 		{
-			_typeCode = TypeCodeXml;
+			_typeCode = typeCode;
 			return this;
 		}
 

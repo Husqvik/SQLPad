@@ -609,12 +609,14 @@ namespace SqlPad.Oracle
 
 		private static OracleSchemaObject MapSchemaType(Version version, IDataRecord reader)
 		{
+			var owner = QualifyStringObject(reader["OWNER"]);
+
 			OracleTypeBase schemaType;
 			var typeType = (string)reader["TYPECODE"];
 			switch (typeType)
 			{
 				case OracleTypeBase.TypeCodeXml:
-					schemaType = new OracleTypeObject().WithXmlTypeCode();
+					schemaType = new OracleTypeObject().WithTypeCode(OracleTypeBase.TypeCodeXml);
 					break;
 				case OracleTypeBase.TypeCodeObject:
 					schemaType = new OracleTypeObject();
@@ -623,10 +625,16 @@ namespace SqlPad.Oracle
 					schemaType = new OracleTypeCollection();
 					break;
 				default:
-					throw new NotSupportedException(string.Format("Type '{0}' is not supported. ", typeType));
+					if (!String.IsNullOrEmpty(owner))
+					{
+						throw new NotSupportedException(String.Format("Type '{0}' is not supported. ", typeType));
+					}
+					
+					schemaType = new OracleTypeObject().WithTypeCode(typeType);
+					break;
 			}
 
-			schemaType.FullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(reader["OWNER"]), QualifyStringObject(reader["TYPE_NAME"]));
+			schemaType.FullyQualifiedName = OracleObjectIdentifier.Create(owner, QualifyStringObject(reader["TYPE_NAME"]));
 
 			return schemaType;
 		}

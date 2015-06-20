@@ -123,14 +123,19 @@ namespace SqlPad.Oracle.SemanticModel
 
 				if (TryResolveDataTypeFromExpression(expressionNode, _columnDescription))
 				{
-					/*if (SemanticModel.HasDatabaseModel)
-					{
-						var oracleType = SemanticModel.DatabaseModel.GetFirstSchemaObject<OracleTypeBase>(_columnDescription.DataType.FullyQualifiedName);
-					}*/
-
 					if (_columnDescription.DataType.FullyQualifiedName.Name.EndsWith("CHAR"))
 					{
 						_columnDescription.CharacterSize = _columnDescription.DataType.Length;
+					}
+
+					if (SemanticModel.HasDatabaseModel)
+					{
+						var oracleType = SemanticModel.DatabaseModel.GetFirstSchemaObject<OracleTypeBase>(_columnDescription.DataType.FullyQualifiedName);
+						//var x = SemanticModel.DatabaseModel.AllObjects.Values.OfType<OracleTypeBase>().Where(t => String.IsNullOrEmpty(t.Owner)).OrderBy(t => t.Name).ToArray();
+						if (oracleType == null)
+						{
+							_columnDescription.DataType = OracleDataType.Empty;
+						}
 					}
 				}
 			}
