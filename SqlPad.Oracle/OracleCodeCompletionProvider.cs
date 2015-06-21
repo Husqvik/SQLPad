@@ -235,22 +235,21 @@ namespace SqlPad.Oracle
 					? currentTerminal.ParentNode.FirstTerminalNode.Token.Value
 					: databaseModel.CurrentSchema.ToQuotedIdentifier();
 
-				var currentName = completionType.TerminalValuePartUntilCaret;
-				completionItems = completionItems.Concat(GenerateSchemaDataObjectItems(oracleDatabaseModel, schemaName, currentName, terminalToReplace, insertOffset: extraOffset));
+				completionItems = completionItems.Concat(GenerateSchemaDataObjectItems(oracleDatabaseModel, schemaName, completionType.TerminalValuePartUntilCaret, terminalToReplace, insertOffset: extraOffset));
 
 				if (!completionType.ReferenceIdentifier.HasSchemaIdentifier)
 				{
-					completionItems = completionItems.Concat(GenerateSchemaDataObjectItems(oracleDatabaseModel, OracleDatabaseModelBase.SchemaPublic, currentName, terminalToReplace, insertOffset: extraOffset));
-					completionItems = completionItems.Concat(GenerateSchemaItems(currentName, terminalToReplace, extraOffset, oracleDatabaseModel));
+					completionItems = completionItems.Concat(GenerateSchemaDataObjectItems(oracleDatabaseModel, OracleDatabaseModelBase.SchemaPublic, completionType.TerminalValuePartUntilCaret, terminalToReplace, insertOffset: extraOffset));
+					completionItems = completionItems.Concat(GenerateSchemaItems(completionType.TerminalValuePartUntilCaret, terminalToReplace, extraOffset, oracleDatabaseModel));
 				}
 
-				completionItems = completionItems.Concat(GenerateCommonTableExpressionReferenceItems(semanticModel, currentName, terminalToReplace, extraOffset));
+				completionItems = completionItems.Concat(GenerateCommonTableExpressionReferenceItems(semanticModel, completionType.TerminalValuePartUntilCaret, terminalToReplace, extraOffset));
 			}
 
-			var joinClauseNode = currentTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.FromClause, NonTerminals.JoinClause);
+			var joinClauseNode = currentTerminal.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.FromClause), NonTerminals.JoinClause);
 			if (joinClauseNode != null && !cursorAtLastTerminal && currentTerminal.Id.In(Terminals.ObjectIdentifier, Terminals.ObjectAlias, Terminals.On))
 			{
-				var isNotInnerJoin = joinClauseNode.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.InnerJoinClause) == null;
+				var isNotInnerJoin = joinClauseNode.ChildNodes.SingleOrDefault(n => String.Equals(n.Id, NonTerminals.InnerJoinClause)) == null;
 				if (isNotInnerJoin || (!joinClauseNode.FirstTerminalNode.Id.In(Terminals.Cross, Terminals.Natural)))
 				{
 					var joinedTableReferenceNodes = joinClauseNode.GetPathFilterDescendants(n => !n.Id.In(NonTerminals.JoinClause, NonTerminals.NestedQuery), NonTerminals.TableReference).ToArray();
@@ -276,8 +275,8 @@ namespace SqlPad.Oracle
 				completionItems = completionItems.Concat(CreateJoinTypeCompletionItems(completionType));
 			}
 
-			if (currentTerminal.Id == Terminals.Join ||
-				(currentTerminal.Id == Terminals.ObjectAlias && currentTerminal.Token.Value.ToUpperInvariant() == Terminals.Join.ToUpperInvariant()))
+			if (String.Equals(currentTerminal.Id, Terminals.Join) ||
+				(String.Equals(currentTerminal.Id, Terminals.ObjectAlias) && String.Equals(((OracleToken)currentTerminal.Token).UpperInvariantValue, TerminalValues.Join)))
 			{
 				completionItems = completionItems.Concat(GenerateSchemaDataObjectItems(oracleDatabaseModel, databaseModel.CurrentSchema.ToQuotedIdentifier(), null, null, insertOffset: extraOffset));
 				completionItems = completionItems.Concat(GenerateSchemaDataObjectItems(oracleDatabaseModel, OracleDatabaseModelBase.SchemaPublic, null, null, insertOffset: extraOffset));
@@ -311,7 +310,7 @@ namespace SqlPad.Oracle
 			{
 				var databaseLinkItems = oracleDatabaseModel.DatabaseLinks.Values
 					.Where(l => l.FullyQualifiedName.NormalizedOwner.In(OracleDatabaseModelBase.SchemaPublic, oracleDatabaseModel.CurrentSchema.ToQuotedIdentifier()) &&
-					            (String.IsNullOrEmpty(completionType.TerminalValueUnderCursor) || completionType.TerminalValueUnderCursor.ToQuotedIdentifier() != l.FullyQualifiedName.NormalizedName) &&
+					            (String.IsNullOrEmpty(completionType.TerminalValueUnderCursor) || !String.Equals(completionType.TerminalValueUnderCursor.ToQuotedIdentifier(), l.FullyQualifiedName.NormalizedName)) &&
 								CodeCompletionSearchHelper.IsMatch(l.FullyQualifiedName.Name, completionType.TerminalValuePartUntilCaret))
 					.Select(l => new OracleCodeCompletionItem
 					             {
@@ -334,12 +333,40 @@ namespace SqlPad.Oracle
 				}
 			}
 
+			/*if (completionType.DataType)
+			{
+				completionItems = completionItems.Concat(GenerateDataTypeItems(completionType, oracleDatabaseModel));
+
+				if (!completionType.ReferenceIdentifier.HasSchemaIdentifier)
+				{
+					//completionItems = completionItems.Concat(GenerateSchemaDataObjectItems(oracleDatabaseModel, OracleDatabaseModelBase.SchemaPublic, currentName, terminalToReplace, insertOffset: extraOffset));
+					completionItems = completionItems.Concat(GenerateSchemaItems(completionType.TerminalValuePartUntilCaret, terminalToReplace, extraOffset, oracleDatabaseModel));
+				}
+			}*/
+
 			completionItems = completionItems.Concat(GenerateKeywordItems(completionType));
 
 			return completionItems.OrderItems().ToArray();
 
 			// TODO: Add option to search all/current/public schemas
 		}
+
+		/*private IEnumerable<ICodeCompletionItem> GenerateDataTypeItems(OracleCodeCompletionType completionType, OracleDatabaseModelBase databaseModel)
+		{
+			return EmptyCollection;
+
+			return databaseModel.AllObjects.Values
+				.Where(o => (o is OracleTypeBase || o.GetTargetSchemaObject() is OracleTypeBase) && )
+				.Select(t =>
+					new OracleCodeCompletionItem
+					{
+						Name = t.Text,
+						Text = t.Text,
+						Category = OracleCodeCompletionCategory.DataType,
+						StatementNode = completionType.ReferenceIdentifier.IdentifierUnderCursor ?? completionType.CurrentTerminal,
+						CategoryPriority = 1
+					});
+		}*/
 
 		private static IEnumerable<OracleCodeCompletionItem> GenerateTablePartitionItems(OracleDataObjectReference tableReference, OracleCodeCompletionType completionType, bool subPartitions)
 		{
@@ -401,7 +428,7 @@ namespace SqlPad.Oracle
 		private IEnumerable<ICodeCompletionItem> GenerateUpdateSetColumnItems(OracleDataObjectReference targetDataObject, OracleCodeCompletionType completionType)
 		{
 			return targetDataObject.Columns
-				.Where(c => completionType.TerminalValueUnderCursor.ToQuotedIdentifier() != c.Name && CodeCompletionSearchHelper.IsMatch(c.Name, completionType.TerminalValuePartUntilCaret))
+				.Where(c => !String.Equals(completionType.TerminalValueUnderCursor.ToQuotedIdentifier(), c.Name) && CodeCompletionSearchHelper.IsMatch(c.Name, completionType.TerminalValuePartUntilCaret))
 				.Select(c => new OracleCodeCompletionItem
 				{
 					Name = c.Name.ToSimpleIdentifier(),
@@ -415,7 +442,7 @@ namespace SqlPad.Oracle
 		{
 			var currentNode = completionType.EffectiveTerminal;
 			
-			var objectOrSchemaIdentifierFollowing = !completionType.IsNewExpressionWithInvalidGrammar && currentNode.Id != Terminals.Identifier && currentNode.Id.In(Terminals.ObjectIdentifier, Terminals.SchemaIdentifier);
+			var objectOrSchemaIdentifierFollowing = !completionType.IsNewExpressionWithInvalidGrammar && !String.Equals(currentNode.Id, Terminals.Identifier) && currentNode.Id.In(Terminals.ObjectIdentifier, Terminals.SchemaIdentifier);
 			if (objectOrSchemaIdentifierFollowing || currentNode.Id.IsLiteral())
 			{
 				return EmptyCollection;
@@ -454,7 +481,7 @@ namespace SqlPad.Oracle
 					if (sequence != null)
 					{
 						suggestedItems = sequence.Columns
-							.Where(c => c.Name != currentName && CodeCompletionSearchHelper.IsMatch(c.Name, partialName))
+							.Where(c => !String.Equals(c.Name, currentName) && CodeCompletionSearchHelper.IsMatch(c.Name, partialName))
 							.Select(c => CreateColumnCodeCompletionItem(c.Name.ToSimpleIdentifier(), null, nodeToReplace, OracleCodeCompletionCategory.PseudoColumn));
 					}
 				}
@@ -574,9 +601,9 @@ namespace SqlPad.Oracle
 			var columnCandidates = tableReferenceSource
 				.SelectMany(t => t.Columns
 					.Where(c =>
-						(currentNode.Id != Terminals.Identifier || c.Name != currentName) &&
+						(!String.Equals(currentNode.Id, Terminals.Identifier) || !String.Equals(c.Name, currentName)) &&
 						(objectIdentifierNode == null && String.IsNullOrEmpty(partialName) ||
-						(c.Name != partialName.ToQuotedIdentifier() && CodeCompletionSearchHelper.IsMatch(c.Name, partialName))))
+						(!String.Equals(c.Name, partialName.ToQuotedIdentifier()) && CodeCompletionSearchHelper.IsMatch(c.Name, partialName))))
 					.Select(c => new { ObjectReference = t, Column = c }))
 					.GroupBy(c => c.Column.Name)
 					.ToDictionary(g => g.Key ?? String.Empty, g => g.Select(o => o.ObjectReference).ToArray());
@@ -650,7 +677,7 @@ namespace SqlPad.Oracle
 		private bool FilterOtherSchemaObject(OracleSchemaObject schemaObject, bool sequencesAllowed)
 		{
 			var targetObject = schemaObject.GetTargetSchemaObject();
-			return targetObject != null && (targetObject.Type == OracleSchemaObjectType.Type || (sequencesAllowed && String.CompareOrdinal(targetObject.Type, OracleSchemaObjectType.Sequence) == 0));
+			return targetObject != null && (String.Equals(targetObject.Type, OracleSchemaObjectType.Type) || (sequencesAllowed && String.Equals(targetObject.Type, OracleSchemaObjectType.Sequence)));
 		}
 
 		private IEnumerable<OracleCodeCompletionItem> CreateJoinTypeCompletionItems(OracleCodeCompletionType completionType)
@@ -676,7 +703,9 @@ namespace SqlPad.Oracle
 			foreach (var table in tables)
 			{
 				if (table.Columns.Count <= 1)
+				{
 					continue;
+				}
 
 				builder.Clear();
 				var isFirstColumn = true;
@@ -701,24 +730,24 @@ namespace SqlPad.Oracle
 					skipTablePrefix = false;
 				}
 
-				yield return new OracleCodeCompletionItem
-				             {
-								 Name = (skipFirstObjectIdentifier || String.IsNullOrEmpty(table.FullyQualifiedObjectName.Name) ? String.Empty : table.FullyQualifiedObjectName + ".") + "*",
-								 Text = builder.ToString(),
-								 StatementNode = nodeToReplace,
-								 CategoryPriority = -2,
-								 Category = OracleCodeCompletionCategory.AllColumns
-				             };
+				yield return
+					new OracleCodeCompletionItem
+					{
+						Name = (skipFirstObjectIdentifier || String.IsNullOrEmpty(table.FullyQualifiedObjectName.Name) ? String.Empty : table.FullyQualifiedObjectName + ".") + "*",
+						Text = builder.ToString(),
+						StatementNode = nodeToReplace,
+						CategoryPriority = -2,
+						Category = OracleCodeCompletionCategory.AllColumns
+					};
 			}
 		}
 
 		private ICodeCompletionItem CreateColumnCodeCompletionItem(string columnName, string objectPrefix, StatementGrammarNode nodeToReplace, string category = OracleCodeCompletionCategory.Column)
 		{
-			if (!String.IsNullOrEmpty(objectPrefix))
-				objectPrefix += ".";
-
-			var text = objectPrefix + columnName.ToSimpleIdentifier();
-
+			var text = String.IsNullOrEmpty(objectPrefix)
+				? columnName.ToSimpleIdentifier()
+				: String.Format("{0}.{1}", objectPrefix, columnName.ToSimpleIdentifier());
+			
 			return new OracleCodeCompletionItem
 			       {
 					   Name = text,
@@ -732,7 +761,7 @@ namespace SqlPad.Oracle
 		private IEnumerable<ICodeCompletionItem> GenerateSchemaItems(string schemaNamePart, StatementGrammarNode node, int insertOffset, OracleDatabaseModelBase databaseModel, int priorityOffset = 0)
 		{
 			return databaseModel.AllSchemas
-				.Where(s => s != OracleDatabaseModelBase.SchemaPublic && (MakeSaveQuotedIdentifier(schemaNamePart) != s && CodeCompletionSearchHelper.IsMatch(s, schemaNamePart)))
+				.Where(s => !String.Equals(s, OracleDatabaseModelBase.SchemaPublic) && (!String.Equals(MakeSaveQuotedIdentifier(schemaNamePart), s) && CodeCompletionSearchHelper.IsMatch(s, schemaNamePart)))
 				.Select(s => new OracleCodeCompletionItem
 				             {
 								 Name = s.ToSimpleIdentifier(),
@@ -771,11 +800,11 @@ namespace SqlPad.Oracle
 						: i.Name;
 
 					var postFix = parameterList;
-					if (category == OracleCodeCompletionCategory.Package)
+					if (String.Equals(category, OracleCodeCompletionCategory.Package))
 					{
 						postFix = ".";
 					}
-					else if (i.Metadata.DisplayType == OracleProgramMetadata.DisplayTypeNoParenthesis || hasReservedWordName)
+					else if (hasReservedWordName || String.Equals(i.Metadata.DisplayType, OracleProgramMetadata.DisplayTypeNoParenthesis))
 					{
 						postFix = null;
 					}
@@ -806,7 +835,7 @@ namespace SqlPad.Oracle
 				? "ORDER BY NULL"
 				: String.Empty;
 
-			if (metadata.IsBuiltIn && metadata.Identifier.Name == "\"LISTAGG\"")
+			if (metadata.IsBuiltIn && String.Equals(metadata.Identifier.Name, "\"LISTAGG\""))
 			{
 				return " WITHIN GROUP (ORDER BY NULL)";
 			}
@@ -837,8 +866,8 @@ namespace SqlPad.Oracle
 		{
 			var safeIdentifier = MakeSaveQuotedIdentifier(schemaName);
 			return String.IsNullOrEmpty(safeIdentifier)
-				? schemaObject.Owner.In(activeSchema, OracleDatabaseModelBase.SchemaPublic)
-				: schemaObject.Owner == safeIdentifier;
+				? String.Equals(schemaObject.Owner, activeSchema) || String.Equals(schemaObject.Owner, OracleDatabaseModelBase.SchemaPublic)
+				: String.Equals(schemaObject.Owner, safeIdentifier);
 		}
 
 		private IEnumerable<ICodeCompletionItem> CreateObjectItems(IEnumerable<ObjectReferenceCompletionData> objects, string objectNamePart, StatementGrammarNode node, int categoryOffset = 0, int insertOffset = 0)
@@ -847,8 +876,8 @@ namespace SqlPad.Oracle
 			var safeTokeValueQuotedIdentifier = node == null ? null : MakeSaveQuotedIdentifier(node.Token.Value);
 			var objectNamePartUpperInvariant = objectNamePart == null ? String.Empty : objectNamePart.ToUpperInvariant();
 			return objects
-				.Where(o => String.CompareOrdinal(safeObjectPartQuotedIdentifier, o.Identifier2) != 0 &&
-							(node == null || String.CompareOrdinal(safeTokeValueQuotedIdentifier, o.Identifier2) != 0) && CodeCompletionSearchHelper.IsMatch(o.Identifier2, objectNamePart))
+				.Where(o => !String.Equals(safeObjectPartQuotedIdentifier, o.Identifier2) &&
+							(node == null || !String.Equals(safeTokeValueQuotedIdentifier, o.Identifier2)) && CodeCompletionSearchHelper.IsMatch(o.Identifier2, objectNamePart))
 				.Select(o =>
 					new OracleCodeCompletionItem
 					{
