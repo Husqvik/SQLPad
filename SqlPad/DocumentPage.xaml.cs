@@ -1574,7 +1574,7 @@ namespace SqlPad
 
 		private void ParseDoneUiHandler()
 		{
-			var hasTextChanged = String.CompareOrdinal(_sqlDocumentRepository.StatementText, Editor.Text) != 0;
+			var hasTextChanged = !String.Equals(_sqlDocumentRepository.StatementText, Editor.Text);
 			if (!hasTextChanged)
 			{
 				_foldingStrategy.UpdateFoldings(_sqlDocumentRepository.Statements);

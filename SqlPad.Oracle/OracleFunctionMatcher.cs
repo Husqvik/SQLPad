@@ -20,7 +20,7 @@ namespace SqlPad.Oracle
 
 		public FunctionMatchResult GetMatchResult(OracleProgramMetadata programMetadata, string quotedCurrentSchema)
 		{
-			var isSchemaMatched = _ownerMatch == null || (_ownerMatch.Value != null && _ownerMatch.Value.Length == 0 && String.CompareOrdinal(programMetadata.Identifier.Owner, quotedCurrentSchema) == 0) ||
+			var isSchemaMatched = _ownerMatch == null || (_ownerMatch.Value != null && _ownerMatch.Value.Length == 0 && String.Equals(programMetadata.Identifier.Owner, quotedCurrentSchema)) ||
 			                      _ownerMatch.IsMatch(programMetadata).Any();
 			var matchResult =
 				new FunctionMatchResult
@@ -116,11 +116,11 @@ namespace SqlPad.Oracle
 
 		private bool IsElementMatch(string elementValue)
 		{
-			var valueMatches = String.CompareOrdinal(elementValue, _quotedValue) == 0 ||
+			var valueMatches = String.Equals(elementValue, _quotedValue) ||
 			                   (AllowStartWithMatch && elementValue.ToRawUpperInvariant().StartsWith(_rawUpperInvariantValue)) ||
 			                   (AllowPartialMatch && CodeCompletionSearchHelper.IsMatch(elementValue, Value));
 
-			return valueMatches && (String.IsNullOrEmpty(DeniedValue) || String.CompareOrdinal(elementValue, _quotedDeniedValue) != 0);
+			return valueMatches && (String.IsNullOrEmpty(DeniedValue) || !String.Equals(elementValue, _quotedDeniedValue));
 		}
 	}
 

@@ -30,21 +30,21 @@ namespace SqlPad.Oracle
 			{
 				var token = (OracleToken)tokenArray[i];
 				var followingToken = i == tokenArray.Length - 1 ? OracleToken.Empty : (OracleToken)tokenArray[i + 1];
-				var existsPrecedingParenthesis = String.CompareOrdinal(precedingToken.Value, TerminalValues.LeftParenthesis) == 0;
+				var existsPrecedingParenthesis = String.Equals(precedingToken.Value, TerminalValues.LeftParenthesis);
 				if (existsPrecedingParenthesis)
 				{
 					foldingContext.OpenScope(TerminalValues.LeftParenthesis);
 				}
 
-				var isSelect = String.CompareOrdinal(token.UpperInvariantValue, TerminalValues.Select) == 0;
-				if (isSelect && (existsPrecedingParenthesis || String.IsNullOrEmpty(precedingToken.Value) || String.CompareOrdinal(precedingToken.Value, TerminalValues.Semicolon) == 0))
+				var isSelect = String.Equals(token.UpperInvariantValue, TerminalValues.Select);
+				if (isSelect && (existsPrecedingParenthesis || String.IsNullOrEmpty(precedingToken.Value) || String.Equals(precedingToken.Value, TerminalValues.Semicolon)))
 				{
 					foldingContext.AddFolding(FoldingSectionPlaceholderSubquery, StackKeySubquery, token.Index);
 				}
 
-				var isClosingParenthesis = String.CompareOrdinal(token.Value, TerminalValues.RightParenthesis) == 0;
-				var isSemicolon = String.CompareOrdinal(token.Value, TerminalValues.Semicolon) == 0;
-				if (isClosingParenthesis || isSemicolon || String.CompareOrdinal(token.Value, TerminalValues.SqlPlusTerminator) == 0)
+				var isClosingParenthesis = String.Equals(token.Value, TerminalValues.RightParenthesis);
+				var isSemicolon = String.Equals(token.Value, TerminalValues.Semicolon);
+				if (isClosingParenthesis || isSemicolon || String.Equals(token.Value, TerminalValues.SqlPlusTerminator))
 				{
 					if (foldingContext.TryFinishFoldingSection(StackKeySubquery, StackKeySubquery, isClosingParenthesis ? precedingToken : token, out foldingSection))
 					{
@@ -57,8 +57,8 @@ namespace SqlPad.Oracle
 					}
 				}
 
-				var isPrecedingEnd = String.CompareOrdinal(precedingToken.UpperInvariantValue, TerminalValues.End) == 0;
-				var isBeginToken = String.CompareOrdinal(token.UpperInvariantValue, TerminalValues.Begin) == 0;
+				var isPrecedingEnd = String.Equals(precedingToken.UpperInvariantValue, TerminalValues.End);
+				var isBeginToken = String.Equals(token.UpperInvariantValue, TerminalValues.Begin);
 				if (isPrecedingEnd)
 				{
 					if (i > 1 && foldingContext.TryFinishFoldingSection(FoldingSectionPlaceholderException, StackKeyPlSql, (OracleToken)tokenArray[i - 2], out foldingSection))
@@ -75,9 +75,9 @@ namespace SqlPad.Oracle
 					foldingContext.CloseScope(TerminalValues.Begin);
 				}
 				else if (isBeginToken ||
-				         String.CompareOrdinal(token.UpperInvariantValue, TerminalValues.If) == 0 ||
-				         String.CompareOrdinal(token.UpperInvariantValue, TerminalValues.Case) == 0 ||
-				         String.CompareOrdinal(token.UpperInvariantValue, TerminalValues.Loop) == 0)
+						 String.Equals(token.UpperInvariantValue, TerminalValues.If) ||
+						 String.Equals(token.UpperInvariantValue, TerminalValues.Case) ||
+						 String.Equals(token.UpperInvariantValue, TerminalValues.Loop))
 				{
 					foldingContext.OpenScope(TerminalValues.Begin);
 
@@ -87,7 +87,7 @@ namespace SqlPad.Oracle
 					}
 				}
 
-				if (String.CompareOrdinal(token.UpperInvariantValue, TerminalValues.Exception) == 0)
+				if (String.Equals(token.UpperInvariantValue, TerminalValues.Exception))
 				{
 					foldingContext.AddFolding(FoldingSectionPlaceholderException, StackKeyPlSql, token.Index);
 				}
