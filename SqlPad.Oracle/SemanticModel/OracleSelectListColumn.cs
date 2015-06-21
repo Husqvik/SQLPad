@@ -131,7 +131,6 @@ namespace SqlPad.Oracle.SemanticModel
 					if (SemanticModel.HasDatabaseModel)
 					{
 						var oracleType = SemanticModel.DatabaseModel.GetFirstSchemaObject<OracleTypeBase>(_columnDescription.DataType.FullyQualifiedName);
-						//var x = SemanticModel.DatabaseModel.AllObjects.Values.OfType<OracleTypeBase>().Where(t => String.IsNullOrEmpty(t.Owner)).OrderBy(t => t.Name).ToArray();
 						if (oracleType == null)
 						{
 							_columnDescription.DataType = OracleDataType.Empty;

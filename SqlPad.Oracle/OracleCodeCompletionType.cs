@@ -48,6 +48,8 @@ namespace SqlPad.Oracle
 		
 		public bool JoinType { get; private set; }
 		
+		public bool DataType { get; private set; }
+		
 		public bool JoinCondition { get; private set; }
 		
 		public bool SchemaProgram { get; private set; }
@@ -94,7 +96,7 @@ namespace SqlPad.Oracle
 
 		private bool Any
 		{
-			get { return Schema || SchemaDataObject || PipelinedFunction || SchemaDataObjectReference || Column || AllColumns || JoinType || JoinCondition || SchemaProgram || DatabaseLink || Sequence || PackageFunction || SpecialFunctionParameter || ExplicitPartition || ExplicitSubPartition || _keywordsClauses.Count > 0; }
+			get { return Schema || SchemaDataObject || PipelinedFunction || SchemaDataObjectReference || Column || AllColumns || JoinType || DataType || JoinCondition || SchemaProgram || DatabaseLink || Sequence || PackageFunction || SpecialFunctionParameter || ExplicitPartition || ExplicitSubPartition || _keywordsClauses.Count > 0; }
 		}
 
 		public bool ExistsTerminalValue { get { return !String.IsNullOrEmpty(TerminalValuePartUntilCaret); } }
@@ -254,6 +256,7 @@ namespace SqlPad.Oracle
 
 			DatabaseLink = TerminalCandidates.Contains(Terminals.DatabaseLinkIdentifier);
 			JoinType = !isCursorTouchingTwoTerminals && !isWithinExplicitPartitionClause && TerminalCandidates.Contains(Terminals.Join);
+			DataType = TerminalCandidates.Contains(Terminals.DataTypeIdentifier);
 
 			InQueryBlockFromClause = effectiveTerminal.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.QueryBlock), NonTerminals.FromClause) != null || (effectiveTerminal.Id == Terminals.From && effectiveTerminal.ParentNode.Id == NonTerminals.QueryBlock);
 			var isWithinJoinCondition = nearestTerminal.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.JoinClause), NonTerminals.JoinColumnsOrCondition) != null;
@@ -359,6 +362,19 @@ namespace SqlPad.Oracle
 			AnalyzePrefixedColumnReference(effectiveTerminal);
 
 			AnalyzeQueryTableExpression(effectiveTerminal);
+
+			AnalyzeDataType(effectiveTerminal);
+		}
+
+		private void AnalyzeDataType(StatementGrammarNode effectiveTerminal)
+		{
+			var dataTypeNode = effectiveTerminal.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.Expression), NonTerminals.DataType);
+			if (dataTypeNode == null)
+			{
+				return;
+			}
+
+			ReferenceIdentifier = BuildReferenceIdentifier(dataTypeNode.GetDescendants(Terminals.SchemaIdentifier, Terminals.DataTypeIdentifier).ToArray());
 		}
 
 		private void AnalyzePrefixedColumnReference(StatementGrammarNode effectiveTerminal)
@@ -407,7 +423,7 @@ namespace SqlPad.Oracle
 				new ReferenceIdentifier
 				{
 					SchemaIdentifier = GetIdentifierTokenValue(identifiers, Terminals.SchemaIdentifier),
-					ObjectIdentifier = GetIdentifierTokenValue(identifiers, Terminals.ObjectIdentifier),
+					ObjectIdentifier = GetIdentifierTokenValue(identifiers, Terminals.ObjectIdentifier, Terminals.DataTypeIdentifier),
 					Identifier = GetIdentifierTokenValue(identifiers, Terminals.Identifier, Terminals.Asterisk, Terminals.User, Terminals.SystemDate, Terminals.Level, Terminals.RowIdPseudoColumn, Terminals.Null),
 					CursorPosition = CursorPosition
 				};
@@ -477,6 +493,9 @@ namespace SqlPad.Oracle
 			builder.Append("; ");
 			builder.Append("Sequence: ");
 			builder.Append(Sequence);
+			builder.Append("; ");
+			builder.Append("Data type: ");
+			builder.Append(DataType);
 			builder.Append("; ");
 			builder.Append("InsertIntoColumns: ");
 			builder.Append(InsertIntoColumns);

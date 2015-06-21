@@ -69,6 +69,7 @@ namespace SqlPad.Oracle
 	public static class OracleCodeCompletionCategory
 	{
 		public const string Keyword = "Keyword";
+		public const string DataType = "Data type";
 		public const string DatabaseSchema = "Database Schema";
 		public const string SchemaObject = "Schema Object";
 		public const string InlineView = "Inline View";

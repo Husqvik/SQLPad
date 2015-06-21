@@ -2002,6 +2002,26 @@ SELECT * FROM ALL";
 			items[0].InsertOffset.ShouldBe(0);
 		}
 
+		[Test(Description = @"")]
+		public void TestDataTypeCodeCompletion()
+		{
+			const string statement = @"SELECT CAST(NULL AS V) FROM DUAL";
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 21).ToArray();
+			items.Length.ShouldBe(6);
+			items[0].StatementNode.ShouldNotBe(null);
+			items[0].Text.ShouldBe("HUSQVIK.INVALID_OBJECT_TYPE");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.DataType);
+			items[0].InsertOffset.ShouldBe(0);
+			items[4].StatementNode.ShouldNotBe(null);
+			items[4].Name.ShouldBe("VARCHAR2");
+			items[4].Text.ShouldBe("VARCHAR2()");
+			items[4].Category.ShouldBe(OracleCodeCompletionCategory.DataType);
+			items[4].InsertOffset.ShouldBe(0);
+			items[5].StatementNode.ShouldNotBe(null);
+			items[5].Text.ShouldBe("HUSQVIK");
+			items[5].Category.ShouldBe(OracleCodeCompletionCategory.DatabaseSchema);
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)
@@ -2020,6 +2040,7 @@ SELECT * FROM ALL";
 				completionType.SchemaDataObject.ShouldBe(false);
 				completionType.ColumnAlias.ShouldBe(false);
 				completionType.SpecialFunctionParameter.ShouldBe(false);
+				completionType.DataType.ShouldBe(false);
 			}
 
 			[Test(Description = @""), Ignore]
@@ -2041,6 +2062,7 @@ SELECT * FROM ALL";
 				completionType.JoinCondition.ShouldBe(false);
 				completionType.ColumnAlias.ShouldBe(false);
 				completionType.SpecialFunctionParameter.ShouldBe(false);
+				completionType.DataType.ShouldBe(false);
 			}
 
 			[Test(Description = @"")]
@@ -2056,6 +2078,7 @@ SELECT * FROM ALL";
 				completionType.AllColumns.ShouldBe(false);
 				completionType.ColumnAlias.ShouldBe(false);
 				completionType.SpecialFunctionParameter.ShouldBe(true);
+				completionType.DataType.ShouldBe(false);
 			}
 
 			[Test(Description = @"")]
@@ -2071,6 +2094,7 @@ SELECT * FROM ALL";
 				completionType.AllColumns.ShouldBe(false);
 				completionType.ColumnAlias.ShouldBe(false);
 				completionType.SpecialFunctionParameter.ShouldBe(true);
+				completionType.DataType.ShouldBe(false);
 			}
 
 			[Test(Description = @"")]
@@ -2087,6 +2111,7 @@ SELECT * FROM ALL";
 				//completionType.SchemaDataObjectReference.ShouldBe(true);
 				completionType.ColumnAlias.ShouldBe(false);
 				completionType.SpecialFunctionParameter.ShouldBe(false);
+				completionType.DataType.ShouldBe(false);
 			}
 			
 			[Test(Description = @"")]
@@ -2104,6 +2129,7 @@ SELECT * FROM ALL";
 				completionType.SchemaDataObject.ShouldBe(false);
 				completionType.ColumnAlias.ShouldBe(false);
 				completionType.SpecialFunctionParameter.ShouldBe(false);
+				completionType.DataType.ShouldBe(false);
 			}
 
 			[Test(Description = @"")]
@@ -2121,6 +2147,7 @@ SELECT * FROM ALL";
 				completionType.DatabaseLink.ShouldBe(true);
 				completionType.ColumnAlias.ShouldBe(false);
 				completionType.SpecialFunctionParameter.ShouldBe(false);
+				completionType.DataType.ShouldBe(false);
 			}
 
 			[Test(Description = @"")]
@@ -2130,6 +2157,7 @@ SELECT * FROM ALL";
 				var completionType = InitializeCodeCompletionType(statement, 53);
 				completionType.ColumnAlias.ShouldBe(true);
 				completionType.SpecialFunctionParameter.ShouldBe(false);
+				completionType.DataType.ShouldBe(false);
 			}
 
 			[Test(Description = @"")]
@@ -2139,6 +2167,7 @@ SELECT * FROM ALL";
 				var completionType = InitializeCodeCompletionType(statement, 66);
 				completionType.SchemaDataObject.ShouldBe(true);
 				completionType.SpecialFunctionParameter.ShouldBe(false);
+				completionType.DataType.ShouldBe(false);
 			}
 
 			[Test(Description = @"")]
@@ -2148,6 +2177,7 @@ SELECT * FROM ALL";
 				var completionType = InitializeCodeCompletionType(statement, 119);
 				completionType.JoinType.ShouldBe(true);
 				completionType.SpecialFunctionParameter.ShouldBe(false);
+				completionType.DataType.ShouldBe(false);
 			}
 
 			[Test(Description = @"")]
@@ -2163,6 +2193,7 @@ SELECT * FROM ALL";
 				const string statement = @"INSERT INTO S";
 				var completionType = InitializeCodeCompletionType(statement, 13);
 				completionType.SchemaDataObject.ShouldBe(true);
+				completionType.DataType.ShouldBe(false);
 			}
 
 			[Test(Description = @"")]
@@ -2171,6 +2202,7 @@ SELECT * FROM ALL";
 				const string statement = @"INSERT INTO ";
 				var completionType = InitializeCodeCompletionType(statement, 12);
 				completionType.SchemaDataObject.ShouldBe(true);
+				completionType.DataType.ShouldBe(false);
 			}
 
 			[Test(Description = @"")]
@@ -2179,6 +2211,7 @@ SELECT * FROM ALL";
 				const string statement = @"SELECT NVL() FROM DUAL";
 				var completionType = InitializeCodeCompletionType(statement, 11);
 				completionType.KeywordsClauses.Count.ShouldBe(0);
+				completionType.DataType.ShouldBe(false);
 			}
 
 			[Test(Description = @"")]
@@ -2187,6 +2220,7 @@ SELECT * FROM ALL";
 				const string statement = @"SELECT DIS";
 				var completionType = InitializeCodeCompletionType(statement, 10);
 				completionType.KeywordsClauses.Count.ShouldBe(2);
+				completionType.DataType.ShouldBe(false);
 			}
 
 			[Test(Description = @"")]
@@ -2196,6 +2230,7 @@ SELECT * FROM ALL";
 				var completionType = InitializeCodeCompletionType(statement, 35);
 				completionType.ExplicitPartition.ShouldBe(true);
 				completionType.ExplicitSubPartition.ShouldBe(false);
+				completionType.DataType.ShouldBe(false);
 			}
 
 			[Test(Description = @"")]
@@ -2207,6 +2242,23 @@ SELECT * FROM ALL";
 				completionType.ExplicitSubPartition.ShouldBe(true);
 				completionType.SchemaDataObject.ShouldBe(false);
 				completionType.JoinType.ShouldBe(false);
+				completionType.DataType.ShouldBe(false);
+			}
+
+			[Test(Description = @"")]
+			public void TestCodeCompletionTypeForDataType()
+			{
+				const string statement = @"SELECT CAST(NULL AS ) FROM DUAL";
+				var completionType = InitializeCodeCompletionType(statement, 20);
+				completionType.DataType.ShouldBe(true);
+			}
+
+			[Test(Description = @"")]
+			public void TestCodeCompletionTypeForDataTypeWithExistingToken()
+			{
+				const string statement = @"SELECT CAST(NULL AS NUMBER) FROM DUAL";
+				var completionType = InitializeCodeCompletionType(statement, 23);
+				completionType.DataType.ShouldBe(true);
 			}
 
 			public class ReferenceIdentifierTest
