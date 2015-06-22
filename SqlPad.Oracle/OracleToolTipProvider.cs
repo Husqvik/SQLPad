@@ -42,6 +42,7 @@ namespace SqlPad.Oracle
 
 				switch (node.Id)
 				{
+					case Terminals.DataTypeIdentifier:
 					case Terminals.ObjectIdentifier:
 						var objectReference = GetObjectReference(semanticModel, node);
 						return objectReference == null

@@ -959,6 +959,17 @@ FROM (
 			dataModel.Owner.ShouldBe(OracleObjectIdentifier.Create("HUSQVIK", "INVOICES"));
 		}
 
+		[Test(Description = @""), STAThread]
+		public void TestDataTypeTooltip()
+		{
+			const string query = "SELECT CAST(NULL AS SYS.ODCIRAWLIST) FROM DUAL";
+			_documentRepository.UpdateStatements(query);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 30);
+			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.DataContext.ShouldBe("SYS.ODCIRAWLIST (Object Varrying Array)");
+		}
+
 		private static string GetTextFromTextBlock(TextBlock textBlock)
 		{
 			var inlines = textBlock.Inlines.Select(GetTextFromInline);

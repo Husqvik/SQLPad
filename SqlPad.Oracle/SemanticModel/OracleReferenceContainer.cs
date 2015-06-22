@@ -46,6 +46,7 @@ namespace SqlPad.Oracle.SemanticModel
 					.Concat(SequenceReferences)
 					.Concat(ColumnReferences)
 					.Concat(ProgramReferences)
+					.Concat(DataTypeReferences)
 					.Concat(ObjectReferences)
 					.Concat(ObjectReferences.Where(r => r.PartitionReference != null).Select(r => r.PartitionReference));
 			}
