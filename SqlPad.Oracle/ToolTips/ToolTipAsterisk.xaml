@@ -8,22 +8,34 @@
              mc:Ignorable="d" 
              d:DesignHeight="28" d:DesignWidth="200">
 	<ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-		<ItemsControl x:Name="ItemsControl">
+		<ItemsControl x:Name="ItemsControl" Grid.IsSharedSizeScope="True">
 			<ItemsControl.Resources>
 				<sqlPad:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
 
 				<DataTemplate x:Key="ColumnModelDataTemplate" DataType="toolTips:OracleColumnModel">
-					<StackPanel Orientation="Horizontal">
-						<TextBlock>
+					<Grid>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition SharedSizeGroup="ColumnIndex" Width="Auto" />
+							<ColumnDefinition Width="*" />
+							<ColumnDefinition Width="12" />
+							<ColumnDefinition Width="Auto" />
+						</Grid.ColumnDefinitions>
+
+						<TextBlock Grid.Column="0" Margin="4,0,0,0" HorizontalAlignment="Right">
 							<Run Text="{Binding Path=ColumnIndex, Mode=OneWay}"/><Run Text=". "/>
 						</TextBlock>
-						<TextBlock Visibility="{Binding Path=RowSourceName, Converter={StaticResource ObjectToVisibilityConverter}}">
-							<Run Text="{Binding Path=RowSourceName, Mode=OneWay}"/><Run Text="."/>
-						</TextBlock>
-						<TextBlock Text="{Binding Path=Name}" />
-						<TextBlock Text="{Binding Path=FullTypeName}" Margin="12, 0, 0, 0" />
-					</StackPanel>
+
+						<StackPanel Orientation="Horizontal" Grid.Column="1">
+							<TextBlock Visibility="{Binding Path=RowSourceName, Converter={StaticResource ObjectToVisibilityConverter}}">
+								<Run Text="{Binding Path=RowSourceName, Mode=OneWay}"/><Run Text="."/>
+							</TextBlock>
+							<TextBlock Text="{Binding Path=Name}" />
+						</StackPanel>
+
+						<TextBlock Text="{Binding Path=FullTypeName}" HorizontalAlignment="Right" Grid.Column="3" Margin="0,0,4,0" />
+					</Grid>
 				</DataTemplate>
+				
 				<DataTemplate x:Key="SeparatorTemplate">
 					<Separator />
 				</DataTemplate>

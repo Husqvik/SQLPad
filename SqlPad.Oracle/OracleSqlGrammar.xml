@@ -4385,12 +4385,7 @@
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
-          <Terminal Id="Extract" />
-          <Terminal Id="LeftParenthesis" />
-          <NonTerminal Id="ExtractElement" />
-          <Terminal Id="From" />
-          <NonTerminal Id="Expression" />
-          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="ExtractFunction" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
@@ -4429,6 +4424,27 @@
           <NonTerminal Id="PrefixedColumnReference" />
           <NonTerminal Id="MultisetOperatorClauseOrTimestampAtTimeZone" IsOptional="true" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ExtractFunction">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Extract" />
+          <NonTerminal Id="ExtractFunctionParameterClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ExtractFunctionParameterClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="ExtractElement" />
+          <Terminal Id="From" />
+          <NonTerminal Id="Expression" />
+          <Terminal Id="RightParenthesis" />
         </Sequence>
       </Sequences>
     </Rule>

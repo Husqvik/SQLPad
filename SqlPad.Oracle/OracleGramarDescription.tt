@@ -14,6 +14,7 @@
 	var grammarXml = XDocument.Load(grammarDescriptionPath);
 #>
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace SqlPad.Oracle
 {
@@ -47,7 +48,7 @@ namespace SqlPad.Oracle
 
 <#
 		var terminalElements = grammarXml.Element(xmlNamespace + "SqlGrammar").Element(xmlNamespace + "Terminals").Elements().ToArray();
-		var terminalValues = terminalElements.Where(e => e.Attribute("Value") != null).Select(e => new { Id = e.Attribute("Id").Value, Value = e.Attribute("Value").Value }).OrderBy(v => v.Id);
+		var terminalValues = terminalElements.Where(e => e.Attribute("Value") != null).Select(e => new { Id = e.Attribute("Id").Value, Value = e.Attribute("Value").Value }).OrderBy(v => v.Id).ToDictionary(v => v.Id, v => v.Value);
 		var terminalIds = terminalElements.Select(e => e.Attribute("Id").Value).OrderBy(id => id);
 		var identifierTerminalIds = terminalElements.Where(e => e.Attribute("Id").Value.Contains("Identifier")).Select(e => e.Attribute("Id").Value).OrderBy(id => id);
 		var aliasTerminalIds = terminalElements.Where(e => e.Attribute("Id").Value.Contains("Alias")).Select(e => e.Attribute("Id").Value).OrderBy(id => id);
@@ -72,7 +73,7 @@ namespace SqlPad.Oracle
 
 #>
 			
-			public static ICollection<string> AllTerminals
+			public static IReadOnlyDictionary<string, string> AllTerminals
 			{
 				get { return AllTerminalsInternal; }
 			}
@@ -87,14 +88,14 @@ namespace SqlPad.Oracle
 		foreach(var terminalValue in terminalValues)
 		{
 #>
-			public const string <#=terminalValue.Id#> = "<#=terminalValue.Value.Replace("\n", @"\n") #>";
+			public const string <#=terminalValue.Key#> = "<#=terminalValue.Value.Replace("\n", @"\n") #>";
 <#
 		}
 
 #>
 		}
 
-		private static readonly HashSet<string> AllTerminalsInternal = new HashSet<string> { <#= String.Join(", ", terminalIds.Select(id => "Terminals." + id)) #> };
+		private static readonly ReadOnlyDictionary<string, string> AllTerminalsInternal = new ReadOnlyDictionary<string, string>(new Dictionary<string, string> { <#= String.Join(", ", terminalIds.Select(id => "{ Terminals." + id + ", " + (terminalValues.ContainsKey(id) ? ("TerminalValues." + id) : "null") + " }")) #> });
 			
 		private static readonly HashSet<string> IdentifiersInternal = new HashSet<string> { <#= String.Join(", ", identifierTerminalIds.Select(id => "Terminals." + id)) #> };
 

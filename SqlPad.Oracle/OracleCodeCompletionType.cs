@@ -23,7 +23,17 @@ namespace SqlPad.Oracle
 				Terminals.Union,
 				Terminals.Intersect,
 				Terminals.SetMinus,
-				Terminals.Connect
+				Terminals.Connect,
+				Terminals.Year,
+				Terminals.Month,
+				Terminals.Day,
+				Terminals.Hour,
+				Terminals.Minute,
+				Terminals.Second,
+				Terminals.TimezoneHour,
+				Terminals.TimezoneMinute,
+				Terminals.TimezoneRegion,
+				Terminals.TimezoneAbbreviation
 			};
 
 		private readonly List<SuggestedKeywordClause> _keywordsClauses = new List<SuggestedKeywordClause>();
@@ -322,13 +332,6 @@ namespace SqlPad.Oracle
 			var keywordClause = new SuggestedKeywordClause { TerminalId = candidate.Id };
 			switch (candidate.Id)
 			{
-				case Terminals.Distinct:
-				case Terminals.Unique:
-				case Terminals.Where:
-				case Terminals.Having:
-				case Terminals.Intersect:
-				case Terminals.Union:
-					return keywordClause.WithText(candidate.Id.ToUpperInvariant());
 				case Terminals.Group:
 					return keywordClause.WithText("GROUP BY");
 				case Terminals.Order:
@@ -340,7 +343,7 @@ namespace SqlPad.Oracle
 				case Terminals.SetMinus:
 					return keywordClause.WithText("MINUS");
 				default:
-					throw new NotSupportedException(String.Format("Terminal ID '{0}' not supported. ", candidate.Id));
+					return keywordClause.WithText(Terminals.AllTerminals[candidate.Id]);
 			}
 		}
 

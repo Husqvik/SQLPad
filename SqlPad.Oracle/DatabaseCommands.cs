@@ -187,7 +187,7 @@ ORDER BY
     SEQUENCE";
 
 		public static readonly string SelectTypesCommandText =
-			String.Format("SELECT OWNER, TYPE_NAME, TYPECODE, PREDEFINED, INCOMPLETE, FINAL, INSTANTIABLE, SUPERTYPE_OWNER, SUPERTYPE_NAME FROM SYS.ALL_TYPES WHERE TYPECODE IN ({0}) OR (OWNER IS NULL AND TYPECODE NOT LIKE 'PL/SQL%')",
+			String.Format("SELECT OWNER, TYPE_NAME, TYPECODE, PREDEFINED, INCOMPLETE, FINAL, INSTANTIABLE, SUPERTYPE_OWNER, SUPERTYPE_NAME FROM SYS.ALL_TYPES WHERE TYPECODE IN ({0})",
 				ToInValueList(OracleTypeBase.TypeCodeObject, OracleTypeBase.TypeCodeCollection, OracleTypeBase.TypeCodeXml));
 
 		public static readonly string SelectAllObjectsCommandText =

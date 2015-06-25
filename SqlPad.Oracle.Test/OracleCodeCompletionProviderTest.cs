@@ -2022,6 +2022,34 @@ SELECT * FROM ALL";
 			items[5].Category.ShouldBe(OracleCodeCompletionCategory.DatabaseSchema);
 		}
 
+		[Test(Description = @"")]
+		public void TestExtractElementCompletion()
+		{
+			const string statement = @"SELECT EXTRACT( FROM SYSDATE) FROM DUAL";
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 15).ToArray();
+			items.Length.ShouldBe(10);
+			items[0].StatementNode.ShouldBe(null);
+			items[0].Text.ShouldBe("DAY");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.Keyword);
+			items[9].StatementNode.ShouldBe(null);
+			items[9].Text.ShouldBe("YEAR");
+			items[9].Category.ShouldBe(OracleCodeCompletionCategory.Keyword);
+		}
+
+		[Test(Description = @"")]
+		public void TestExtractElementCompletionWithExistingToken()
+		{
+			const string statement = @"SELECT EXTRACT(DAY FROM SYSDATE) FROM DUAL";
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 15).ToArray();
+			items.Length.ShouldBe(9);
+			items[0].StatementNode.ShouldNotBe(null);
+			items[0].Text.ShouldBe("HOUR");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.Keyword);
+			items[8].StatementNode.ShouldNotBe(null);
+			items[8].Text.ShouldBe("YEAR");
+			items[8].Category.ShouldBe(OracleCodeCompletionCategory.Keyword);
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)
