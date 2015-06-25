@@ -1166,7 +1166,7 @@ se";
 		{
 			const string statement = @"UPDATE SELECTION SET PROJECT_ID = 998 WHERE E";
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 45).ToList();
-			items.Count.ShouldBe(8);
+			items.Count.ShouldBe(9);
 		}
 
 		[Test(Description = @"")]
@@ -2048,6 +2048,19 @@ SELECT * FROM ALL";
 			items[8].StatementNode.ShouldNotBe(null);
 			items[8].Text.ShouldBe("YEAR");
 			items[8].Category.ShouldBe(OracleCodeCompletionCategory.Keyword);
+		}
+
+		[Test(Description = @"")]
+		public void TestExtractFunctionCodeCompletion()
+		{
+			const string statement = @"SELECT EXTRAC FROM DUAL";
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 13).ToArray();
+			items.Length.ShouldBe(1);
+			items[0].StatementNode.ShouldNotBe(null);
+			items[0].Name.ShouldBe("EXTRACT");
+			items[0].Text.ShouldBe("EXTRACT(DAY FROM )");
+			items[0].CaretOffset.ShouldBe(-1);
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.BuiltInFunction);
 		}
 
 		public class OracleCodeCompletionTypeTest

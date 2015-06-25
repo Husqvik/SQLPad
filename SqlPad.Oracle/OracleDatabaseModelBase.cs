@@ -25,6 +25,7 @@ namespace SqlPad.Oracle
 		public const int VersionMajorOracle12c = 12;
 
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramLnNvl = OracleProgramIdentifier.CreateFromValues(null, null, "LNNVL");
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramExtract = OracleProgramIdentifier.CreateFromValues(null, null, "EXTRACT");
 
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramRound = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "ROUND");
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramLevel = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "LEVEL");

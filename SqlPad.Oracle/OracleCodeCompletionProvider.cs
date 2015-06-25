@@ -839,6 +839,10 @@ namespace SqlPad.Oracle
 					{
 						postFix = null;
 					}
+					else if (addParameterList && i.Metadata.IsBuiltIn && i.Metadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramExtract)
+					{
+						postFix = "(DAY FROM )";
+					}
 					
 					var analyticClause = addParameterList
 						? GetAdditionalFunctionClause(i.Metadata)

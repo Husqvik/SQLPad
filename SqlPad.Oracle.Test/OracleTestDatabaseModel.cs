@@ -488,6 +488,9 @@ namespace SqlPad.Oracle.Test
 			var lnNvlFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, IdentifierBuiltInProgramLnNvl, false, false, false, true, false, false, 1, 0, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNoParenthesis, true);
 			allFunctionMetadata.Add(lnNvlFunctionMetadata);
 
+			var extractFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, IdentifierBuiltInProgramExtract, false, false, false, false, false, false, 1, 0, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
+			allFunctionMetadata.Add(extractFunctionMetadata);
+
 			AllFunctionMetadataInternal = allFunctionMetadata.Where(f => f.Type == ProgramType.Function).ToLookup(m => m.Identifier);
 			NonSchemaBuiltInFunctionMetadataInternal = allFunctionMetadata
 				.Where(m => String.IsNullOrEmpty(m.Identifier.Owner))
