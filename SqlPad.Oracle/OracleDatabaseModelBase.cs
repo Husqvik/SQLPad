@@ -245,7 +245,8 @@ namespace SqlPad.Oracle
 					return result;
 
 				result.SchemaObject = schemaObject;
-				result.Metadata = TryFindProgramOverload(programMetadataSource, identifier.Name, parameterCount, hasAnalyticClause);
+				var programName = String.IsNullOrEmpty(identifier.Package) ? schemaObject.GetTargetSchemaObject().Name : identifier.Name;
+				result.Metadata = TryFindProgramOverload(programMetadataSource, programName, parameterCount, hasAnalyticClause);
 			}
 
 			return result;

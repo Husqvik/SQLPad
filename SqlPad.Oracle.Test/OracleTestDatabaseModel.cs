@@ -120,6 +120,7 @@ namespace SqlPad.Oracle.Test
 					SchemaObject = AllObjectsInternal.Single(o => o.Name == tableNameDual && o.Owner == OwnerNameSys),
 					IsValid = true
 				};
+			
 			synonym.SchemaObject.Synonyms.Add(synonym);
 			
 			AllObjectsInternal.Add(synonym);
@@ -131,6 +132,7 @@ namespace SqlPad.Oracle.Test
 					SchemaObject = AllObjectsInternal.Single(o => o.Name == "\"V_$SESSION\"" && o.Owner == OwnerNameSys),
 					IsValid = true
 				};
+			
 			synonym.SchemaObject.Synonyms.Add(synonym);
 
 			AllObjectsInternal.Add(synonym);
@@ -142,6 +144,7 @@ namespace SqlPad.Oracle.Test
 					SchemaObject = AllObjectsInternal.Single(o => o.Name == "\"XMLTYPE\"" && o.Owner == OwnerNameSys),
 					IsValid = true
 				};
+			
 			synonym.SchemaObject.Synonyms.Add(synonym);
 
 			AllObjectsInternal.Add(synonym);
@@ -153,6 +156,7 @@ namespace SqlPad.Oracle.Test
 					SchemaObject = AllObjectsInternal.Single(o => o.Name == "\"TEST_SEQ\"" && o.Owner == InitialSchema),
 					IsValid = true
 				};
+			
 			synonym.SchemaObject.Synonyms.Add(synonym);
 
 			AllObjectsInternal.Add(synonym);
@@ -164,6 +168,7 @@ namespace SqlPad.Oracle.Test
 					SchemaObject = AllObjectsInternal.Single(o => o.Name == "\"SELECTION\"" && o.Owner == InitialSchema),
 					IsValid = true
 				};
+			
 			synonym.SchemaObject.Synonyms.Add(synonym);
 
 			AllObjectsInternal.Add(synonym);
@@ -175,6 +180,19 @@ namespace SqlPad.Oracle.Test
 					SchemaObject = AllObjectsInternal.Single(o => o.Name == "\"SELECTION\"" && o.Owner == InitialSchema),
 					IsValid = true
 				};
+			
+			synonym.SchemaObject.Synonyms.Add(synonym);
+
+			AllObjectsInternal.Add(synonym);
+
+			synonym =
+				new OracleSynonym
+				{
+					FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"RAWLIST\""),
+					SchemaObject = AllObjectsInternal.Single(o => o.Name == "\"ODCIRAWLIST\"" && o.Owner == SchemaSys),
+					IsValid = true
+				};
+			
 			synonym.SchemaObject.Synonyms.Add(synonym);
 
 			AllObjectsInternal.Add(synonym);

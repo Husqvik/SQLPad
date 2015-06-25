@@ -232,7 +232,7 @@ FROM
 			const string query1 = @"SELECT 1,  FROM SELECTION S";
 
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 10).Where(FilterProgramItems).ToArray();
-			items.Length.ShouldBe(15);
+			items.Length.ShouldBe(16);
 			items[0].Name.ShouldBe("S.*");
 			items[0].Text.ShouldBe("S.RESPONDENTBUCKET_ID, S.SELECTION_ID, S.PROJECT_ID, S.NAME");
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.AllColumns);
@@ -260,22 +260,22 @@ FROM
 			items[8].Name.ShouldBe("INVALID_OBJECT_TYPE");
 			items[8].Text.ShouldBe("INVALID_OBJECT_TYPE()");
 			items[8].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
-			items[10].Name.ShouldBe("TEST_SEQ");
-			items[10].Text.ShouldBe("TEST_SEQ");
-			items[10].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
-			items[11].Name.ShouldBe("XMLTYPE");
-			items[11].Text.ShouldBe("XMLTYPE()");
+			items[11].Name.ShouldBe("TEST_SEQ");
+			items[11].Text.ShouldBe("TEST_SEQ");
 			items[11].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
+			items[12].Name.ShouldBe("XMLTYPE");
+			items[12].Text.ShouldBe("XMLTYPE()");
+			items[12].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
 			// Schemas
-			items[12].Name.ShouldBe("HUSQVIK");
-			items[12].Text.ShouldBe("HUSQVIK");
-			items[12].Category.ShouldBe(OracleCodeCompletionCategory.DatabaseSchema);
-			items[13].Name.ShouldBe("SYS");
-			items[13].Text.ShouldBe("SYS");
+			items[13].Name.ShouldBe("HUSQVIK");
+			items[13].Text.ShouldBe("HUSQVIK");
 			items[13].Category.ShouldBe(OracleCodeCompletionCategory.DatabaseSchema);
-			items[14].Name.ShouldBe("SYSTEM");
-			items[14].Text.ShouldBe("SYSTEM");
+			items[14].Name.ShouldBe("SYS");
+			items[14].Text.ShouldBe("SYS");
 			items[14].Category.ShouldBe(OracleCodeCompletionCategory.DatabaseSchema);
+			items[15].Name.ShouldBe("SYSTEM");
+			items[15].Text.ShouldBe("SYSTEM");
+			items[15].Category.ShouldBe(OracleCodeCompletionCategory.DatabaseSchema);
 		}
 
 		[Test(Description = @"")]
@@ -466,10 +466,10 @@ FROM
 			const string query1 = @"SELECT  1 FROM SYS.DUAL";
 
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 7, true, OracleCodeCompletionCategory.SchemaObject, OracleCodeCompletionCategory.Column).ToArray();
-			items.Length.ShouldBe(6);
+			items.Length.ShouldBe(7);
 			items[0].Name.ShouldBe("SYS.DUAL.DUMMY");
 			items[1].Name.ShouldBe("SYS.DUAL");
-			items[5].Name.ShouldBe("XMLTYPE");
+			items[6].Name.ShouldBe("XMLTYPE");
 		}
 
 		[Test(Description = @"")]
@@ -592,17 +592,17 @@ FROM
 			const string query1 = @"SELECT HUSQVIK. FROM DUAL";
 
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 15).ToArray();
-			items.Length.ShouldBe(10);
-			items[3].Name.ShouldBe("AS_PDF3");
-			items[3].Text.ShouldBe("AS_PDF3.");
-			items[3].Category.ShouldBe(OracleCodeCompletionCategory.Package);
-			items[3].CaretOffset.ShouldBe(0);
-			items[3].StatementNode.ShouldBe(null);
-			items[7].Name.ShouldBe("TESTFUNC");
-			items[7].Text.ShouldBe("TESTFUNC()");
-			items[7].Category.ShouldBe(OracleCodeCompletionCategory.SchemaFunction);
-			items[7].CaretOffset.ShouldBe(-1);
-			items[7].StatementNode.ShouldBe(null);
+			items.Length.ShouldBe(11);
+			items[4].Name.ShouldBe("AS_PDF3");
+			items[4].Text.ShouldBe("AS_PDF3.");
+			items[4].Category.ShouldBe(OracleCodeCompletionCategory.Package);
+			items[4].CaretOffset.ShouldBe(0);
+			items[4].StatementNode.ShouldBe(null);
+			items[8].Name.ShouldBe("TESTFUNC");
+			items[8].Text.ShouldBe("TESTFUNC()");
+			items[8].Category.ShouldBe(OracleCodeCompletionCategory.SchemaFunction);
+			items[8].CaretOffset.ShouldBe(-1);
+			items[8].StatementNode.ShouldBe(null);
 		}
 
 		[Test(Description = @"")]

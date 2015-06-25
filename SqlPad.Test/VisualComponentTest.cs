@@ -274,7 +274,7 @@ SELECT T.* FROM T@HQ_PDB";
 
 			var result = GetExportContent(resultGrid, new JsonDataExporter());
 
-			const string expectedResult = "[{\r\n\t\"DUMMY1\": \"Value \\\"1\\\" '2' <3>\",\r\n\t\"DUMMY_WITH_UNDERSCORES\": \"16.8.2014 22:25:34\"\r\n},\r\n{\r\n\t\"DUMMY1\": \"\\\"2.\\\"Value\",\r\n\t\"DUMMY_WITH_UNDERSCORES\": \"16.8.2014 00:00:00\"\r\n}]\r\n";
+			const string expectedResult = "[\r\n  {\r\n    \"DUMMY1\": \"Value \\\"1\\\" '2' <3>\",\r\n    \"DUMMY_WITH_UNDERSCORES\": \"16.8.2014 22:25:34\"\r\n  },\r\n  {\r\n    \"DUMMY1\": \"\\\"2.\\\"Value\",\r\n    \"DUMMY_WITH_UNDERSCORES\": \"16.8.2014 00:00:00\"\r\n  }\r\n]";
 			result.ShouldBe(expectedResult);
 		}
 

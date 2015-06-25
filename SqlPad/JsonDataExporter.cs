@@ -11,7 +11,7 @@ namespace SqlPad
 {
 	public class JsonDataExporter : IDataExporter
 	{
-		private const string MaskJsonValue = "\t\"{0}\": {{{1}}}";
+		private const string MaskJsonValue = "    \"{0}\": {{{1}}}";
 		private const string QuoteCharacter = "\"";
 		private const string EscapedQuote = "\\\"";
 
@@ -45,9 +45,9 @@ namespace SqlPad
 				.Select((c, i) => String.Format(MaskJsonValue, c.Header.ToString().Replace("__", "_").Replace("{", "{{").Replace("}", "}}").Replace(QuoteCharacter, EscapedQuote), i));
 
 			var jsonTemplateBuilder = new StringBuilder();
-			jsonTemplateBuilder.AppendLine("{{");
+			jsonTemplateBuilder.AppendLine("  {{");
 			jsonTemplateBuilder.AppendLine(String.Join(String.Format(",{0}", Environment.NewLine), columnHeaders));
-			jsonTemplateBuilder.Append("}}");
+			jsonTemplateBuilder.Append("  }}");
 
 			var rows = dataGrid.Items;
 
@@ -56,7 +56,7 @@ namespace SqlPad
 
 		private void ExportInternal(string jsonTemplate, ICollection rows, TextWriter writer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
 		{
-			writer.Write('[');
+			writer.WriteLine('[');
 
 			var rowIndex = 1;
 			foreach (object[] rowValues in rows)
@@ -74,7 +74,8 @@ namespace SqlPad
 				rowIndex++;
 			}
 
-			writer.WriteLine(']');
+			writer.WriteLine();
+			writer.Write(']');
 		}
 
 		private static string FormatJsonValue(object value, IDataExportConverter dataExportConverter)

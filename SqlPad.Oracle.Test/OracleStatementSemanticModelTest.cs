@@ -2190,6 +2190,21 @@ FROM (
 		}
 
 		[Test(Description = @"")]
+		public void TestColumnReferencesFromTableTypeUsingSynonym()
+		{
+			const string query1 = @"SELECT COLUMN_VALUE FROM TABLE(RAWLIST('AA', 'FF'))";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.MainQueryBlock.Columns.Count.ShouldBe(1);
+			semanticModel.MainQueryBlock.Columns[0].ColumnReferences.Count.ShouldBe(1);
+			semanticModel.MainQueryBlock.Columns[0].ColumnReferences[0].ColumnNodeObjectReferences.Count.ShouldBe(1);
+		}
+
+		[Test(Description = @"")]
 		public void TestPivotTableReferenceWithinInlineView()
 		{
 			const string query1 =
