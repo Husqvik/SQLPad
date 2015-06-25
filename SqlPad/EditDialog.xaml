@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="{Binding Path=Title, Mode=OneWay}"
 		MinHeight="240"
-		MaxHeight="768"
+		MaxHeight="960"
 		MinWidth="400"
 		Width="400"
 		ResizeMode="CanResizeWithGrip"
@@ -41,13 +41,18 @@
 					</TextBox>
 				</StackPanel>
 				<StackPanel Visibility="{Binding Path=BooleanOptionsVisibility, Mode=OneWay}">
-					<ListView Margin="2" ItemsSource="{Binding Path=BooleanOptions.Values}" BorderBrush="Transparent">
+					<ListView Margin="2" ItemsSource="{Binding Path=BooleanOptions.Values}" BorderBrush="Transparent" Grid.IsSharedSizeScope="True">
 						<ListView.ItemTemplate>
 							<DataTemplate >
-								<StackPanel Orientation="Horizontal">
-									<CheckBox IsChecked="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" IsEnabled="{Binding Path=IsEnabled}" Margin="0, 0, 8, 0" />
-									<ContentControl Content="{Binding Path=DescriptionContent, Mode=OneWay}" VerticalAlignment="Center" />
-								</StackPanel>
+								<Grid>
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition Width="Auto" />
+										<ColumnDefinition Width="*" SharedSizeGroup="DescriptionContent" />
+									</Grid.ColumnDefinitions>
+									
+									<CheckBox Grid.Column="0" IsChecked="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" IsEnabled="{Binding Path=IsEnabled}" Margin="0, 0, 8, 0" />
+									<ContentControl Grid.Column="1" Content="{Binding Path=DescriptionContent, Mode=OneWay}" VerticalAlignment="Center" />
+								</Grid>
 							</DataTemplate>
 						</ListView.ItemTemplate>
 						<ListView.Resources>

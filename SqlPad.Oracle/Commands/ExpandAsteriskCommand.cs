@@ -81,21 +81,37 @@ namespace SqlPad.Oracle.Commands
 
 			foreach (var expandedColumn in expandedColumns)
 			{
-				var descriptionContent = new TextBlock();
+				var descriptionContent = new Grid();
+				descriptionContent.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+				descriptionContent.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+				var columnNameLabel = new TextBlock();
+				descriptionContent.Children.Add(columnNameLabel);
+				
+				var dataTypeLabel =
+					new TextBlock
+					{
+						HorizontalAlignment = HorizontalAlignment.Right,
+						Text = expandedColumn.DataType,
+						Margin = new Thickness(20, 0, 0, 0)
+					};
+
+				descriptionContent.Children.Add(dataTypeLabel);
+				Grid.SetColumn(dataTypeLabel, 1);
 
 				string extraInformation = null;
 				if (expandedColumn.IsPseudoColumn)
 				{
 					extraInformation = " (pseudocolumn)";
-					descriptionContent.Foreground = Brushes.CornflowerBlue;
+					columnNameLabel.Foreground = dataTypeLabel.Foreground = Brushes.CornflowerBlue;
 				}
 				else if (expandedColumn.IsHidden)
 				{
 					extraInformation = " (invisible)";
-					descriptionContent.Foreground = Brushes.DimGray;
+					columnNameLabel.Foreground = dataTypeLabel.Foreground = Brushes.DimGray;
 				}
 
-				descriptionContent.Text = String.Format("{0}{1}", expandedColumn.ColumnName, extraInformation);
+				columnNameLabel.Text = String.Format("{0}{1}", expandedColumn.ColumnName, extraInformation);
 
 				_settingsModel.AddBooleanOption(
 					new BooleanOption
@@ -218,7 +234,7 @@ namespace SqlPad.Oracle.Commands
 
 		private static ExpandedColumn GetExpandedColumn(OracleReference objectReference, OracleColumn column, bool isPseudoColumn)
 		{
-			return new ExpandedColumn { ColumnName = GetColumnName(objectReference, OracleCodeCompletionProvider.GetPrettyColumnName(column.Name)), IsPseudoColumn = isPseudoColumn, IsHidden = column.Hidden };
+			return new ExpandedColumn { ColumnName = GetColumnName(objectReference, OracleCodeCompletionProvider.GetPrettyColumnName(column.Name)), DataType = column.FullTypeName, IsPseudoColumn = isPseudoColumn, IsHidden = column.Hidden };
 		}
 
 		private static string GetColumnName(OracleReference objectReference, string columnName)
@@ -239,6 +255,8 @@ namespace SqlPad.Oracle.Commands
 		private struct ExpandedColumn
 		{
 			public string ColumnName { get; set; }
+			
+			public string DataType { get; set; }
 			
 			public bool IsPseudoColumn { get; set; }
 
