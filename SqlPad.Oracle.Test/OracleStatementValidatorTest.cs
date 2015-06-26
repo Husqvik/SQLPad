@@ -2316,5 +2316,24 @@ FROM (
 			identifierValidityItems[3].Node.Token.Value.ShouldBe("ODCIRAWLIST");
 			identifierValidityItems[3].SemanticErrorType.ShouldBe(null);
 		}
+
+		[Test(Description = @"")]
+		public void TestExtractFunctionInvalidParameter()
+		{
+			const string sqlText = @"SELECT EXTRACT(SYSDATE) FROM DUAL";
+
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			var invalidNontTerminals = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			invalidNontTerminals.Count.ShouldBe(1);
+			invalidNontTerminals[0].IsRecognized.ShouldBe(true);
+			invalidNontTerminals[0].Node.Id.ShouldBe(NonTerminals.OptionalParameterExpression);
+			invalidNontTerminals[0].Node.FirstTerminalNode.Token.Value.ShouldBe("SYSDATE");
+			invalidNontTerminals[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.NotEnoughArgumentsForFunction);
+		}
 	}
 }

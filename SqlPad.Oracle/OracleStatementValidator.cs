@@ -621,6 +621,17 @@ namespace SqlPad.Oracle
 									new InvalidNodeValidationData(OracleSemanticErrorType.IncorrectUseOfLnNvlOperator) {Node = parameterNode};
 							}
 						}
+						else if (programReference.Metadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramExtract && programReference.ParameterReferences.Count == 1)
+						{
+							var extractElementNode = programReference.ParameterListNode[1];
+							var fromTerminal = programReference.ParameterListNode[2];
+							if (extractElementNode == null || !String.Equals(extractElementNode.Id, NonTerminals.ExtractElement) || fromTerminal == null || !String.Equals(fromTerminal.Id, Terminals.From))
+							{
+								var parameterNode = programReference.ParameterReferences[0].ParameterNode;
+								validationModel.InvalidNonTerminals[parameterNode] =
+									new InvalidNodeValidationData(OracleSemanticErrorType.NotEnoughArgumentsForFunction) { Node = parameterNode };
+							}
+						}
 					}
 				}
 				else if (programReference.Metadata.MinimumArguments > 0)

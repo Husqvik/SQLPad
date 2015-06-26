@@ -26,6 +26,7 @@ namespace SqlPad.Oracle
 		public const string IncorrectUseOfLnNvlOperator = "Incorrect use of LNNVL operator";
 		public const string ExpectAggregateFunctionInsidePivotOperation = "Expect aggregate function inside pivot operation";
 		public const string CannotAccessRowsFromNonNestedTableItem = "Cannot access rows from a non-nested table item";
+		public const string NotEnoughArgumentsForFunction = "Not enough arguments for function";
 	}
 
 	public static class OracleSemanticErrorTooltipText
