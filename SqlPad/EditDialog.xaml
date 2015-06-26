@@ -16,60 +16,92 @@
 		Loaded="LoadedHandler"
 		Icon="EmptyIcon.ico"
         ShowInTaskbar="False"
-		SizeToContent="WidthAndHeight" d:DataContext="{d:DesignInstance sqlPad:CommandSettingsModel}">
-	<Grid Margin="8">
+		SizeToContent="WidthAndHeight"
+		d:DataContext="{d:DesignInstance sqlPad:CommandSettingsModel}">
+	<Grid Margin="4">
 		<Grid.RowDefinitions>
 			<RowDefinition Height="*"></RowDefinition>
-			<RowDefinition Height="44"></RowDefinition>
+			<RowDefinition Height="40"></RowDefinition>
 		</Grid.RowDefinitions>
-		<ScrollViewer VerticalScrollBarVisibility="Auto">
-			<StackPanel Margin="8">
-				<TextBlock x:Name="Heading" Margin="2" FontWeight="Bold" Text="{Binding Path=Heading, Mode=OneWay}" />
-				<StackPanel Visibility="{Binding Path=TextInputVisibility, Mode=OneWay}">
-					<TextBlock x:Name="Description" TextWrapping="Wrap" Margin="2" Text="{Binding Path=Description, Mode=OneWay}" />
-					<TextBox x:Name="TextValue" Margin="2" Height="24" VerticalContentAlignment="Center" Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
-						<Validation.ErrorTemplate>
-							<ControlTemplate>
-								<StackPanel Width="348">
-									<AdornedElementPlaceholder x:Name="adorner" />
-									<Border x:Name="errorBorder" Background="Red" Margin="0,4,0,4" IsHitTestVisible="False">
-										<TextBlock Text="{Binding Path=ErrorContent}" Foreground="White" FontFamily="Segoe UI" Margin="8,2,8,3" TextWrapping="Wrap" VerticalAlignment="Center"/>
-									</Border>
-								</StackPanel>
-							</ControlTemplate>
-						</Validation.ErrorTemplate>
-					</TextBox>
-				</StackPanel>
-				<StackPanel Visibility="{Binding Path=BooleanOptionsVisibility, Mode=OneWay}">
-					<ListView Margin="2" ItemsSource="{Binding Path=BooleanOptions.Values}" BorderBrush="Transparent" Grid.IsSharedSizeScope="True">
-						<ListView.ItemTemplate>
-							<DataTemplate >
-								<Grid>
-									<Grid.ColumnDefinitions>
-										<ColumnDefinition Width="Auto" />
-										<ColumnDefinition Width="*" SharedSizeGroup="DescriptionContent" />
-									</Grid.ColumnDefinitions>
-									
-									<CheckBox Grid.Column="0" IsChecked="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" IsEnabled="{Binding Path=IsEnabled}" Margin="0, 0, 8, 0" />
-									<ContentControl Grid.Column="1" Content="{Binding Path=DescriptionContent, Mode=OneWay}" VerticalAlignment="Center" />
-								</Grid>
-							</DataTemplate>
-						</ListView.ItemTemplate>
-						<ListView.Resources>
-							<RoutedCommand x:Key="SelectItemCommand" />
-						</ListView.Resources>
-						<ListView.CommandBindings>
-							<CommandBinding Command="{StaticResource SelectItemCommand}" Executed="SelectItemCommandExecutedHandler" CanExecute="SelectItemCommandCanExecuteHandler" />
-						</ListView.CommandBindings>
-						<ListView.InputBindings>
-							<KeyBinding Key="Space" Command="{StaticResource SelectItemCommand}" />
-						</ListView.InputBindings>
-					</ListView>
-				</StackPanel>
+
+		<Grid Margin="4">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto"></RowDefinition>
+				<RowDefinition Height="*"></RowDefinition>
+			</Grid.RowDefinitions>
+
+			<TextBlock Grid.Row="0" x:Name="Heading" Margin="2" FontWeight="Bold" Text="{Binding Path=Heading, Mode=OneWay}" />
+			
+			<StackPanel Grid.Row="1" Visibility="{Binding Path=TextInputVisibility, Mode=OneWay}" Margin="2">
+				<TextBlock x:Name="Description" TextWrapping="Wrap" Margin="0,0,0,2" Text="{Binding Path=Description, Mode=OneWay}" />
+				<TextBox x:Name="TextValue" Height="24" VerticalContentAlignment="Center" Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
+					<Validation.ErrorTemplate>
+						<ControlTemplate>
+							<StackPanel>
+								<AdornedElementPlaceholder x:Name="AdornedElementPlaceholder" />
+								<Border Width="{Binding ElementName=AdornedElementPlaceholder, Path=AdornedElement.Parent.ActualWidth, Mode=OneWay}" Background="Red" Margin="0,4,0,4" IsHitTestVisible="False">
+									<TextBlock Text="{Binding Path=ErrorContent}" Foreground="White" FontFamily="Segoe UI" Margin="4,2,4,3" TextWrapping="Wrap" />
+								</Border>
+							</StackPanel>
+						</ControlTemplate>
+					</Validation.ErrorTemplate>
+				</TextBox>
 			</StackPanel>
-		</ScrollViewer>
+
+			<ListView Grid.Row="1" Margin="2" BorderBrush="Transparent" Grid.IsSharedSizeScope="True"
+			          VirtualizingStackPanel.IsVirtualizing="False"
+			          ItemsSource="{Binding Path=BooleanOptions.Values}"
+			          Visibility="{Binding Path=BooleanOptionsVisibility, Mode=OneWay}"
+			          ScrollViewer.CanContentScroll="True">
+						
+				<ListView.ItemsPanel>
+					<ItemsPanelTemplate>
+						<VirtualizingStackPanel />
+					</ItemsPanelTemplate>
+				</ListView.ItemsPanel>
+
+				<ListView.Template>
+					<ControlTemplate>
+						<Border BorderThickness="{TemplateBinding Border.BorderThickness}"
+								Padding="{TemplateBinding Control.Padding}"
+								BorderBrush="{TemplateBinding Border.BorderBrush}"
+								Background="{TemplateBinding Panel.Background}"
+								SnapsToDevicePixels="True">
+							<ScrollViewer Padding="{TemplateBinding Control.Padding}" Focusable="False">
+								<ItemsPresenter SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
+							</ScrollViewer>
+						</Border>
+					</ControlTemplate>
+				</ListView.Template>
+
+				<ListView.ItemTemplate>
+					<DataTemplate >
+						<Grid>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="*" SharedSizeGroup="DescriptionContent" />
+							</Grid.ColumnDefinitions>
+									
+							<CheckBox Grid.Column="0" IsChecked="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" IsEnabled="{Binding Path=IsEnabled}" Margin="0, 0, 8, 0" />
+							<ContentControl Grid.Column="1" Content="{Binding Path=DescriptionContent, Mode=OneWay}" VerticalAlignment="Center" />
+						</Grid>
+					</DataTemplate>
+				</ListView.ItemTemplate>
+				<ListView.Resources>
+					<RoutedCommand x:Key="SelectItemCommand" />
+				</ListView.Resources>
+				<ListView.CommandBindings>
+					<CommandBinding Command="{StaticResource SelectItemCommand}" Executed="SelectItemCommandExecutedHandler" CanExecute="SelectItemCommandCanExecuteHandler" />
+				</ListView.CommandBindings>
+				<ListView.InputBindings>
+					<KeyBinding Key="Space" Command="{StaticResource SelectItemCommand}" />
+				</ListView.InputBindings>
+			</ListView>
+
+		</Grid>
+
 		<StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right">
-			<Button Content="OK" Width="72" Margin="8" IsDefault="True" Click="CloseClickHandler">
+			<Button Content="OK" Width="72" Margin="6" IsDefault="True" Click="CloseClickHandler">
 				<Button.Style>
 					<Style>
 						<Setter Property="Button.IsEnabled" Value="False"/>
@@ -84,7 +116,8 @@
 					</Style>
 				</Button.Style>
 			</Button>
-			<Button Content="Cancel" Width="72" Margin="8" IsCancel="True"></Button>
+			<Button Content="Cancel" Width="72" Margin="6" IsCancel="True"></Button>
 		</StackPanel>
+
 	</Grid>
 </Window>
