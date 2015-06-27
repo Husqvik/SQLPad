@@ -2291,6 +2291,27 @@ FROM (
 		}
 
 		[Test(Description = @"")]
+		public void TestDynamicTypeInTableCollectionExpression()
+		{
+			const string sqlText = @"SELECT (SELECT COUNT(*) FROM TABLE(DYNAMIC_TABLE)) FROM (SELECT COLLECT(DUMMY) DYNAMIC_TABLE FROM DUAL)";
+
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			var columnValidityItems = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			columnValidityItems.Count.ShouldBe(2);
+			columnValidityItems[0].IsRecognized.ShouldBe(true);
+			columnValidityItems[0].Node.Token.Value.ShouldBe("DYNAMIC_TABLE");
+			columnValidityItems[0].SemanticErrorType.ShouldBe(null);
+			columnValidityItems[1].IsRecognized.ShouldBe(true);
+			columnValidityItems[1].Node.Token.Value.ShouldBe("DUMMY");
+			columnValidityItems[1].SemanticErrorType.ShouldBe(null);
+		}
+
+		[Test(Description = @"")]
 		public void TestDataTypeValidation()
 		{
 			const string sqlText = @"SELECT CAST(NULL AS SYS.ODCIRAWLIST), CAST(NULL AS ODCIRAWLIST), CAST(NULL AS HUSQVIK.ODCIRAWLIST), CAST(NULL AS NONEXISTING_SCHEMA.ODCIRAWLIST), CAST(NULL AS INVALID_OBJECT_TYPE) FROM DUAL";

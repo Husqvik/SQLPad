@@ -59,7 +59,7 @@ namespace SqlPad.Oracle
 
 						var tableCollectionColumnReference = tableCollectionReference.RowSourceReference as OracleColumnReference;
 						if (tableCollectionColumnReference != null && databaseModel != null && databaseModel.IsMetadataAvailable && tableCollectionColumnReference.ColumnDescription != null &&
-						    !String.IsNullOrEmpty(tableCollectionColumnReference.ColumnDescription.DataType.FullyQualifiedName.Name))
+						    !tableCollectionColumnReference.ColumnDescription.DataType.IsDynamic && !String.IsNullOrEmpty(tableCollectionColumnReference.ColumnDescription.DataType.FullyQualifiedName.Name))
 						{
 							INodeValidationData validationData;
 							var collectionType = databaseModel.GetFirstSchemaObject<OracleTypeCollection>(tableCollectionColumnReference.ColumnDescription.DataType.FullyQualifiedName);

@@ -2028,7 +2028,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 		[Test(Description = @"")]
 		public void TestColumnReferenceInTableClause()
 		{
-			const string query1 = @"SELECT (SELECT LISTAGG(COLUMN_VALUE, ', ') WITHIN GROUP (ORDER BY ROWNUM) FROM TABLE(SELECTION_NAMES)) SELECTION_NAMES FROM (SELECT CAST(COLLECT(SELECTIONNAME) AS SYS.ODCIRAWLIST) SELECTION_NAMES FROM SELECTION WHERE ROWNUM <= 5)";
+			const string query1 = @"SELECT (SELECT LISTAGG(COLUMN_VALUE, ', ') WITHIN GROUP (ORDER BY ROWNUM) FROM TABLE(SELECTION_NAMES)) FROM (SELECT CAST(COLLECT(SELECTIONNAME) AS SYS.ODCIRAWLIST) SELECTION_NAMES FROM SELECTION WHERE ROWNUM <= 5)";
 
 			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
@@ -2039,8 +2039,34 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 
 			var queryBlock = semanticModel.QueryBlocks.Single(qb => qb.Type == QueryBlockType.ScalarSubquery);
 			var columnReferences = queryBlock.AllColumnReferences.ToList();
-			columnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(0); // TODO: Try to propagate table column types
+			columnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
+			columnReferences[0].ColumnDescription.ShouldNotBe(null);
+			columnReferences[0].ColumnDescription.FullTypeName.ShouldBe("RAW(2000)");
 			columnReferences[1].ColumnNodeColumnReferences.Count.ShouldBe(1);
+			columnReferences[1].ColumnDescription.ShouldNotBe(null);
+			columnReferences[1].ColumnDescription.FullTypeName.ShouldBe("SYS.ODCIRAWLIST");
+		}
+		
+		[Test(Description = @"")]
+		public void TestColumnReferenceInTableClauseUsingDynamicCollectionType()
+		{
+			const string query1 = @"SELECT (SELECT LISTAGG(COLUMN_VALUE, ', ') WITHIN GROUP (ORDER BY ROWNUM) FROM TABLE(SELECTION_NAMES)) FROM (SELECT COLLECT(SELECTIONNAME) SELECTION_NAMES FROM SELECTION WHERE ROWNUM <= 5)";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.QueryBlocks.Count.ShouldBe(3);
+
+			var queryBlock = semanticModel.QueryBlocks.Single(qb => qb.Type == QueryBlockType.ScalarSubquery);
+			var columnReferences = queryBlock.AllColumnReferences.ToList();
+			columnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
+			columnReferences[0].ColumnDescription.ShouldNotBe(null);
+			columnReferences[0].ColumnDescription.FullTypeName.ShouldBe(String.Empty);
+			columnReferences[1].ColumnNodeColumnReferences.Count.ShouldBe(1);
+			columnReferences[1].ColumnDescription.ShouldNotBe(null);
+			columnReferences[1].ColumnDescription.DataType.ShouldBe(OracleDataType.DynamicType);
 		}
 		
 		[Test(Description = @"")]

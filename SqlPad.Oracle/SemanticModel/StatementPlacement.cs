@@ -1,4 +1,4 @@
-namespace SqlPad.Oracle
+namespace SqlPad.Oracle.SemanticModel
 {
 	public enum StatementPlacement
 	{

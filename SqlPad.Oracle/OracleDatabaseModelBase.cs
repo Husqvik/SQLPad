@@ -13,8 +13,6 @@ namespace SqlPad.Oracle
 {
 	public abstract class OracleDatabaseModelBase : IDatabaseModel
 	{
-		private const string ColumnNameColumnValue = "\"COLUMN_VALUE\"";
-
 		public const string SchemaPublic = "\"PUBLIC\"";
 		public const string SchemaSys = "\"SYS\"";
 		public const string SchemaSystem = "\"SYSTEM\"";
@@ -163,19 +161,6 @@ namespace SqlPad.Oracle
 		public abstract Version Version { get; }
 
 		public abstract Task<ICollection<SessionExecutionStatisticsRecord>> GetExecutionStatisticsAsync(CancellationToken cancellationToken);
-
-		public static OracleColumn BuildColumnValueColumn(OracleDataType columnType)
-		{
-			var column =
-				new OracleColumn
-				{
-					Name = ColumnNameColumnValue,
-					DataType = columnType,
-					Nullable = true
-				};
-
-			return column;
-		}
 
 		public OracleObjectIdentifier[] GetPotentialSchemaObjectIdentifiers(OracleObjectIdentifier identifier)
 		{

@@ -803,7 +803,7 @@ namespace SqlPad.Oracle.SemanticModel
 			var columnListClause = xmlTableOptions[NonTerminals.XmlTableColumnListClause];
 			if (columnListClause == null)
 			{
-				var column = OracleDatabaseModelBase.BuildColumnValueColumn(OracleDataType.XmlType);
+				var column = OracleColumn.BuildColumnValueColumn(OracleDataType.XmlType);
 				columns.Add(column);
 			}
 			else
@@ -1698,6 +1698,10 @@ namespace SqlPad.Oracle.SemanticModel
 
 				ApplyExplicitCommonTableExpressionColumnNames(queryBlock);
 
+				var columnReferences = queryBlock.AllColumnReferences
+					.Where(c => c.Placement != StatementPlacement.Model && c.Placement != StatementPlacement.PivotClause && (c.SelectListColumn == null || c.SelectListColumn.HasExplicitDefinition))
+					.ToArray();
+
 				var correlatedReferences = new List<OracleDataObjectReference>();
 				if (queryBlock.OuterCorrelatedQueryBlock != null)
 				{
@@ -1709,18 +1713,14 @@ namespace SqlPad.Oracle.SemanticModel
 					correlatedReferences.Add(queryBlock.CrossOrOuterApplyReference);
 				}
 
-				var columnReferences = queryBlock.AllColumnReferences
-					.Where(c => c.Placement != StatementPlacement.Model && c.Placement != StatementPlacement.PivotClause && (c.SelectListColumn == null || c.SelectListColumn.HasExplicitDefinition))
-					.ToArray();
+				if (queryBlock.Type == QueryBlockType.ScalarSubquery && queryBlock.Parent != null)
+				{
+					ResolveColumnObjectReferences(columnReferences.Where(c => c.Placement == StatementPlacement.TableReference), OracleDataObjectReference.EmptyArray, queryBlock.Parent.ObjectReferences);
+				}
 				
 				ResolveColumnObjectReferences(columnReferences, queryBlock.ObjectReferences, correlatedReferences);
 
 				ResolvePivotTableColumnReferences(queryBlock);
-
-				if (queryBlock.Type == QueryBlockType.ScalarSubquery && queryBlock.Parent != null)
-				{
-					ResolveColumnObjectReferences(columnReferences.Where(c => c.Placement == StatementPlacement.TableReference), queryBlock.Parent.ObjectReferences, OracleDataObjectReference.EmptyArray);
-				}
 
 				ResolveDatabaseLinks(queryBlock);
 			}

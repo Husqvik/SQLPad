@@ -121,7 +121,7 @@ namespace SqlPad.Oracle.SemanticModel
 					expressionNode = expressionNode[0];
 				}
 
-				if (TryResolveDataTypeFromExpression(expressionNode, _columnDescription))
+				if (TryResolveDataTypeFromExpression(expressionNode, _columnDescription) && !_columnDescription.DataType.IsDynamic)
 				{
 					if (_columnDescription.DataType.FullyQualifiedName.Name.EndsWith("CHAR"))
 					{
@@ -161,7 +161,7 @@ namespace SqlPad.Oracle.SemanticModel
 				};
 		}
 
-		public static bool TryResolveDataTypeFromExpression(StatementGrammarNode expressionNode, OracleColumn column)
+		private static bool TryResolveDataTypeFromExpression(StatementGrammarNode expressionNode, OracleColumn column)
 		{
 			if (expressionNode == null || expressionNode.TerminalCount == 0)
 			{
@@ -190,6 +190,13 @@ namespace SqlPad.Oracle.SemanticModel
 			if (analyzedNode != null)
 			{
 				column.DataType = OracleDataType.FromDataTypeNode(analyzedNode);
+				column.Nullable = true;
+				return true;
+			}
+
+			if (String.Equals(expressionNode.FirstTerminalNode.Id, Terminals.Collect))
+			{
+				column.DataType = OracleDataType.DynamicType;
 				column.Nullable = true;
 				return true;
 			}

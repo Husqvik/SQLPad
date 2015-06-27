@@ -5,6 +5,8 @@ namespace SqlPad.Oracle.DataDictionary
 	[DebuggerDisplay("OracleColumn (Name={Name}; Type={FullTypeName})")]
 	public class OracleColumn
 	{
+		private const string ColumnNameColumnValue = "\"COLUMN_VALUE\"";
+
 		public OracleColumn(bool isPseudoColumn = false)
 		{
 			IsPseudoColumn = isPseudoColumn;
@@ -42,6 +44,17 @@ namespace SqlPad.Oracle.DataDictionary
 					Name = Name,
 					CharacterSize = CharacterSize,
 					Nullable = Nullable
+				};
+		}
+
+		public static OracleColumn BuildColumnValueColumn(OracleDataType columnType)
+		{
+			return
+				new OracleColumn
+				{
+					Name = ColumnNameColumnValue,
+					DataType = columnType,
+					Nullable = true
 				};
 		}
 	}
