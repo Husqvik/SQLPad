@@ -970,6 +970,17 @@ FROM (
 			toolTip.Control.DataContext.ShouldBe("SYS.ODCIRAWLIST (Object Varrying Array)");
 		}
 
+		[Test(Description = @""), STAThread]
+		public void TestParameterTooltip()
+		{
+			const string query = "SELECT SQLPAD.SQLPAD_FUNCTION(p => NULL) FROM DUAL";
+			_documentRepository.UpdateStatements(query);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 30);
+			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.DataContext.ShouldBe("P: NUMBER");
+		}
+
 		private static string GetTextFromTextBlock(TextBlock textBlock)
 		{
 			var inlines = textBlock.Inlines.Select(GetTextFromInline);

@@ -115,10 +115,36 @@ namespace SqlPad.Oracle
 						tip = databaseLink.FullyQualifiedName + " (" + databaseLink.Host + ")";
 
 						break;
+
+					case Terminals.ParameterIdentifier:
+						tip = GetParameterToolTip(semanticModel, node);
+						break;
 				}
 			}
 
 			return String.IsNullOrEmpty(tip) ? null : new ToolTipObject { DataContext = tip };
+		}
+
+		private string GetParameterToolTip(OracleStatementSemanticModel semanticModel, StatementGrammarNode node)
+		{
+			Func<ProgramParameterReference, bool> parameterFilter = p => p.OptionalIdentifierTerminal == node;
+			var programReference = semanticModel.AllReferenceContainers
+				.SelectMany(c => c.AllReferences)
+				.OfType<OracleProgramReferenceBase>()
+				.SingleOrDefault(r => r.ParameterReferences.Any(parameterFilter));
+
+			if (programReference == null || programReference.Metadata == null)
+			{
+				return null;
+			}
+
+			var parameter = programReference.ParameterReferences.Single(parameterFilter);
+			
+			OracleProgramParameterMetadata parameterMetadata;
+			var parameterName = parameter.OptionalIdentifierTerminal.Token.Value.ToQuotedIdentifier();
+			return programReference.Metadata.NamedParameters.TryGetValue(parameterName, out parameterMetadata)
+				? String.Format("{0}: {1}", parameterMetadata.Name.ToSimpleIdentifier(), parameterMetadata.FullDataTypeName)
+				: null;
 		}
 
 		private IToolTip BuildAsteriskToolTip(OracleQueryBlock queryBlock, StatementGrammarNode asteriskTerminal)

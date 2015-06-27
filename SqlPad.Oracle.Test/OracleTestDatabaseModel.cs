@@ -17,11 +17,22 @@ namespace SqlPad.Oracle.Test
 
 		private const string InitialSchema = "\"HUSQVIK\"";
 		private const string OwnerNameSys = "\"SYS\"";
+		private const string TableNameDual = "\"DUAL\"";
 		private const string DatabaseDomainNameInternal = "sqlpad.husqvik.com";
 		private static readonly ConnectionStringSettings ConnectionStringInternal = new ConnectionStringSettings("ConnectionFake", "DATA SOURCE=HQ_PDB_TCP;PASSWORD=oracle;USER ID=HUSQVIK", "Oracle.DataAccess.Client");
 		private static readonly Version TestDatabaseVersion = new Version(12, 1, 0, 2);
 
-		private static readonly List<ColumnHeader> ColumnHeaders;
+		private static readonly IReadOnlyList<ColumnHeader> ColumnHeaders =
+			new List<ColumnHeader>
+			{
+				new ColumnHeader
+				{
+					ColumnIndex = 0,
+					DataType = typeof (String),
+					DatabaseDataType = TerminalValues.Varchar2,
+					Name = "DUMMY"
+				}
+			}.AsReadOnly();
 
 		private static readonly HashSet<string> SchemasInternal = new HashSet<string> { OwnerNameSys, "\"SYSTEM\"", InitialSchema };
 		private static readonly HashSet<string> AllSchemasInternal = new HashSet<string>(SchemasInternal) { OwnerNameSys, "\"SYSTEM\"", InitialSchema, SchemaPublic };
@@ -101,23 +112,12 @@ namespace SqlPad.Oracle.Test
 
 		static OracleTestDatabaseModel()
 		{
-			var columnHeader =
-				new ColumnHeader
-				{
-					ColumnIndex = 0,
-					DataType = typeof (String),
-					DatabaseDataType = TerminalValues.Varchar2,
-					Name = "DUMMY"
-				};
-
-			ColumnHeaders = new List<ColumnHeader> { columnHeader };
-
-			const string tableNameDual = "\"DUAL\"";
+			#region object synonyms
 			var synonym =
 				new OracleSynonym
 				{
-					FullyQualifiedName = OracleObjectIdentifier.Create(SchemaPublic, tableNameDual),
-					SchemaObject = AllObjectsInternal.Single(o => o.Name == tableNameDual && o.Owner == OwnerNameSys),
+					FullyQualifiedName = OracleObjectIdentifier.Create(SchemaPublic, TableNameDual),
+					SchemaObject = AllObjectsInternal.Single(o => o.Name == TableNameDual && o.Owner == OwnerNameSys),
 					IsValid = true
 				};
 			
@@ -196,6 +196,7 @@ namespace SqlPad.Oracle.Test
 			synonym.SchemaObject.Synonyms.Add(synonym);
 
 			AllObjectsInternal.Add(synonym);
+			#endregion
 
 			#region SYS.DBMS_RANDOM
 			var dbmsRandom = (OraclePackage)AllObjectsInternal.Single(o => o.Name == PackageDbmsRandom && o.Owner == OwnerNameSys);
@@ -309,6 +310,7 @@ namespace SqlPad.Oracle.Test
 					SchemaObject = AllObjectsInternal.Single(o => o.Name == "\"SQLPAD_FUNCTION\"" && o.Owner == InitialSchema),
 					IsValid = true
 				};
+			
 			synonym.SchemaObject.Synonyms.Add(synonym);
 
 			AllObjectsInternal.Add(synonym);

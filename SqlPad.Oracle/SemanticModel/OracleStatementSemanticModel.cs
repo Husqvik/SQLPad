@@ -2662,7 +2662,7 @@ namespace SqlPad.Oracle.SemanticModel
 						AnalyticClauseNode = analyticClauseNode,
 						ParameterListNode = parameterList,
 						ParameterReferences = parameterNodes
-							.Select(n => new ProgramParameterReference {ParameterNode = n}).ToArray(),
+							.Select(n => new ProgramParameterReference { ParameterNode = n }).ToArray(),
 						SelectListColumn = selectListColumn,
 						Placement = placement
 					};
@@ -2692,7 +2692,7 @@ namespace SqlPad.Oracle.SemanticModel
 					.Select(n => n.ChildNodes.FirstOrDefault());
 			}
 
-			var functionReference =
+			var programReference =
 				new OracleProgramReference
 				{
 					FunctionIdentifierNode = identifierNode,
@@ -2707,16 +2707,16 @@ namespace SqlPad.Oracle.SemanticModel
 							new ProgramParameterReference
 							{
 								ParameterNode = n,
-								OptionalIdentifierTerminal = n.FirstTerminalNode != null && n.FirstTerminalNode.Id == Terminals.ParameterIdentifier ? n.FirstTerminalNode : null
+								OptionalIdentifierTerminal = n.FirstTerminalNode != null && String.Equals(n.FirstTerminalNode.Id, Terminals.ParameterIdentifier) ? n.FirstTerminalNode : null
 							}).ToArray(),
 					SelectListColumn = selectListColumn
 				};
 
-			functionReference.SetContainer(container);
+			programReference.SetContainer(container);
 
-			AddPrefixNodes(functionReference, prefixNonTerminal);
+			AddPrefixNodes(programReference, prefixNonTerminal);
 
-			return functionReference;
+			return programReference;
 		}
 
 		private static StatementGrammarNode GetDatabaseLinkFromQueryTableExpression(StatementGrammarNode queryTableExpression)
