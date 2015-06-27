@@ -145,7 +145,13 @@ namespace SqlPad.Oracle
 			{
 				var unparsedTextBetweenTokenAndCursor = statementText.Substring(nearestTerminal.SourcePosition.IndexEnd + 1, cursorPosition - nearestTerminal.SourcePosition.IndexEnd - 1);
 				var unparsedEndTrimmedTextBetweenTokenAndCursor = unparsedTextBetweenTokenAndCursor.TrimEnd();
-				var extraUnparsedTokens = unparsedEndTrimmedTextBetweenTokenAndCursor.TrimStart().Split(TextSegment.Separators, StringSplitOptions.RemoveEmptyEntries);
+
+				OracleToken[] extraUnparsedTokens;
+				using (var tokenReader = OracleTokenReader.Create(unparsedEndTrimmedTextBetweenTokenAndCursor))
+				{
+					extraUnparsedTokens = tokenReader.GetTokens(true).ToArray();
+				}
+				
 				if (extraUnparsedTokens.Length > 0)
 				{
 					TerminalCandidates = Parser.GetTerminalCandidates(nearestTerminal);
@@ -156,7 +162,7 @@ namespace SqlPad.Oracle
 					}
 				}
 
-				TerminalValueUnderCursor = extraUnparsedTokens.FirstOrDefault();
+				TerminalValueUnderCursor = extraUnparsedTokens.FirstOrDefault().Value;
 
 				if (TerminalValueUnderCursor != null)
 				{

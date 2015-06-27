@@ -689,7 +689,7 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		[DebuggerDisplay("SpecialMode (InString={InString}; CommentType={CommentType}; InQuotedIdentifier={InQuotedIdentifier}")]
+		[DebuggerDisplay("SpecialMode (InNumber={InNumber}; InDecimalNumber={InDecimalNumber}; InPostfixedNumber={InPostfixedNumber}; InExponent={InExponent})")]
 		private struct SpecialMode
 		{
 			public SpecialModeFlags Flags;

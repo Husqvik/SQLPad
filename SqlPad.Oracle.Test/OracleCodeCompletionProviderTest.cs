@@ -2063,6 +2063,14 @@ SELECT * FROM ALL";
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.BuiltInFunction);
 		}
 
+		[Test(Description = @"")]
+		public void TestQuotedBindVariableCodeCompletionWhileTyping()
+		{
+			const string statement = @"SELECT NULL FROM DUAL WHERE DUMMY = (SELECT NULL FROM :""""";
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 57).ToArray();
+			items.Length.ShouldBe(0);
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)
