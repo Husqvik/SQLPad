@@ -881,36 +881,6 @@ namespace SqlPad.Oracle.Test
 				FullyQualifiedName = OracleObjectIdentifier.Create(OwnerNameSys, "\"XMLTYPE\""),
 				IsValid = true
 			}.WithTypeCode(OracleTypeBase.TypeCodeXml),
-			new OracleTypeObject
-			{
-				FullyQualifiedName = OracleObjectIdentifier.Create(String.Empty, "\"NUMBER\""),
-				IsValid = true
-			}.WithTypeCode(TerminalValues.Number),
-			new OracleTypeObject
-			{
-				FullyQualifiedName = OracleObjectIdentifier.Create(String.Empty, "\"CHAR\""),
-				IsValid = true
-			}.WithTypeCode(TerminalValues.Char),
-			new OracleTypeObject
-			{
-				FullyQualifiedName = OracleObjectIdentifier.Create(String.Empty, "\"NCHAR\""),
-				IsValid = true
-			}.WithTypeCode(TerminalValues.NChar),
-			new OracleTypeObject
-			{
-				FullyQualifiedName = OracleObjectIdentifier.Create(String.Empty, "\"DATE\""),
-				IsValid = true
-			}.WithTypeCode(TerminalValues.Date),
-			new OracleTypeObject
-			{
-				FullyQualifiedName = OracleObjectIdentifier.Create(String.Empty, "\"TIMESTAMP\""),
-				IsValid = true
-			}.WithTypeCode(TerminalValues.Timestamp),
-			new OracleTypeObject
-			{
-				FullyQualifiedName = OracleObjectIdentifier.Create(String.Empty, "\"RAW\""),
-				IsValid = true
-			}.WithTypeCode(TerminalValues.Raw),
 			new OracleTypeCollection
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(OwnerNameSys, "\"ODCIARGDESCLIST\""),

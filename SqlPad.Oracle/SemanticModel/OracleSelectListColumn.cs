@@ -128,7 +128,8 @@ namespace SqlPad.Oracle.SemanticModel
 						_columnDescription.CharacterSize = _columnDescription.DataType.Length;
 					}
 
-					if (SemanticModel.HasDatabaseModel)
+					var isBuiltInDataType = _columnDescription.DataType.IsPrimitive && OracleDatabaseModelBase.BuiltInDataTypes.Any(t => String.Equals(t, _columnDescription.DataType.FullyQualifiedName.Name));
+					if (!isBuiltInDataType && SemanticModel.HasDatabaseModel)
 					{
 						var oracleType = SemanticModel.DatabaseModel.GetFirstSchemaObject<OracleTypeBase>(_columnDescription.DataType.FullyQualifiedName);
 						if (oracleType == null)

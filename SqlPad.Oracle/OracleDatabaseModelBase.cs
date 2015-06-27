@@ -39,34 +39,35 @@ namespace SqlPad.Oracle
 		
 		internal static readonly OracleObjectIdentifier BuiltInFunctionPackageIdentifier = OracleObjectIdentifier.Create(SchemaSys, PackageBuiltInFunction);
 
-		internal static readonly string[] BuiltInDataTypes =
-		{
-			TerminalValues.BinaryDouble,
-			TerminalValues.BinaryFloat,
-			TerminalValues.Blob,
-			TerminalValues.Char,
-			TerminalValues.NChar,
-			TerminalValues.Clob,
-			"NCLOB",
-			TerminalValues.Date,
-			TerminalValues.Decimal,
-			"DOUBLE PRECISION",
-			TerminalValues.Float,
-			TerminalValues.Integer,
-			"INTERVAL DAY TO SECOND",
-			"INTERVAL YEAR TO MONTH",
-			TerminalValues.Number,
-			TerminalValues.Raw,
-			"REAL",
-			TerminalValues.Smallint,
-			TerminalValues.Table,
-			TerminalValues.Timestamp,
-			"TIMESTAMP WITH LOCAL TIME ZONE",
-			"TIMESTAMP WITH TIME ZONE",
-			TerminalValues.UniversalRowId,
-			TerminalValues.Varchar2,
-			TerminalValues.NVarchar2,
-		};
+		internal static readonly IReadOnlyList<string> BuiltInDataTypes =
+			new List<string>
+			{
+				TerminalValues.BinaryDouble,
+				TerminalValues.BinaryFloat,
+				TerminalValues.Blob,
+				TerminalValues.Char,
+				TerminalValues.NChar,
+				TerminalValues.Clob,
+				"NCLOB",
+				TerminalValues.Date,
+				TerminalValues.Decimal,
+				"DOUBLE PRECISION",
+				TerminalValues.Float,
+				TerminalValues.Integer,
+				"INTERVAL DAY TO SECOND",
+				"INTERVAL YEAR TO MONTH",
+				TerminalValues.Number,
+				TerminalValues.Raw,
+				"REAL",
+				TerminalValues.Smallint,
+				TerminalValues.Table,
+				TerminalValues.Timestamp,
+				"TIMESTAMP WITH LOCAL TIME ZONE",
+				"TIMESTAMP WITH TIME ZONE",
+				TerminalValues.UniversalRowId,
+				TerminalValues.Varchar2,
+				TerminalValues.NVarchar2,
+			}.AsReadOnly();
 
 		public abstract ConnectionStringSettings ConnectionString { get; }
 		
