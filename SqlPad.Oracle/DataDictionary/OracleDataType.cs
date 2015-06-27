@@ -12,9 +12,9 @@ namespace SqlPad.Oracle.DataDictionary
 		public static readonly OracleDataType Empty = new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(String.Empty, String.Empty) };
 		public static readonly OracleDataType NumberType = new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(String.Empty, TerminalValues.Number) };
 		public static readonly OracleDataType XmlType = new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(OracleDatabaseModelBase.SchemaSys, OracleTypeBase.TypeCodeXml) };
-		public static readonly OracleDataType DynamicType = new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(String.Empty, "DYNAMIC"), IsDynamic = true };
+		public static readonly OracleDataType DynamicCollectionType = new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(String.Empty, "DYNAMIC"), IsDynamicCollection = true };
 
-		public bool IsDynamic { get; private set; }
+		public bool IsDynamicCollection { get; private set; }
 
 		public int? Length { get; set; }
 

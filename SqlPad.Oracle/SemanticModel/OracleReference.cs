@@ -64,5 +64,10 @@ namespace SqlPad.Oracle.SemanticModel
 		public StatementGrammarNode DatabaseLinkNode { get; set; }
 
 		public OracleDatabaseLink DatabaseLink { get; set; }
+
+		public virtual void Accept(OracleReferenceVisitor visitor)
+		{
+			throw new NotSupportedException();
+		}
 	}
 }

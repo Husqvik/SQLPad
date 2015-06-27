@@ -15,6 +15,11 @@ namespace SqlPad.Oracle.SemanticModel
 		public StatementGrammarNode AnalyticClauseNode { get; set; }
 		
 		public override OracleProgramMetadata Metadata { get; set; }
+
+		public override void Accept(OracleReferenceVisitor visitor)
+		{
+			visitor.VisitProgramReference(this);
+		}
 	}
 
 	[DebuggerDisplay("OracleTypeReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; Type={ObjectNode.Token.Value}; Metadata={Metadata})")]
@@ -26,6 +31,11 @@ namespace SqlPad.Oracle.SemanticModel
 		{
 			get { return ((OracleTypeBase)SchemaObject.GetTargetSchemaObject()).GetConstructorMetadata(); }
 			set { throw new NotSupportedException("Metadata cannot be set. It is inferred from type attributes"); }
+		}
+
+		public override void Accept(OracleReferenceVisitor visitor)
+		{
+			visitor.VisitTypeReference(this);
 		}
 	}
 

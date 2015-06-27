@@ -121,7 +121,7 @@ namespace SqlPad.Oracle.SemanticModel
 					expressionNode = expressionNode[0];
 				}
 
-				if (TryResolveDataTypeFromExpression(expressionNode, _columnDescription) && !_columnDescription.DataType.IsDynamic)
+				if (TryResolveDataTypeFromExpression(expressionNode, _columnDescription) && !_columnDescription.DataType.IsDynamicCollection)
 				{
 					if (_columnDescription.DataType.FullyQualifiedName.Name.EndsWith("CHAR"))
 					{
@@ -196,7 +196,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 			if (String.Equals(expressionNode.FirstTerminalNode.Id, Terminals.Collect))
 			{
-				column.DataType = OracleDataType.DynamicType;
+				column.DataType = OracleDataType.DynamicCollectionType;
 				column.Nullable = true;
 				return true;
 			}

@@ -145,6 +145,7 @@
     <Compile Include="OracleFoldingSectionProvider.cs" />
     <Compile Include="OracleFunctionMatcher.cs" />
     <Compile Include="OracleHelpProvider.cs" />
+    <Compile Include="SemanticModel\OracleColumnBuilderVisitor.cs" />
     <Compile Include="SemanticModel\OracleDataTypeReference.cs" />
     <Compile Include="SemanticModel\OracleLiteral.cs" />
     <Compile Include="SemanticModel\OraclePivotTableReference.cs" />

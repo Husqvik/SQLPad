@@ -1253,13 +1253,15 @@ END;";
 			objectReferences[0].RootNode.LastTerminalNode.Id.ShouldBe(Terminals.ObjectAlias);
 			objectReferences[0].RootNode.LastTerminalNode.Token.Value.ShouldBe("T1");
 			objectReferences[0].ShouldBeTypeOf<OracleTableCollectionReference>();
-			((OracleTableCollectionReference)objectReferences[0]).RowSourceReference.ShouldBeTypeOf<OracleProgramReference>();
+			var tableCollectionReference = (OracleTableCollectionReference)objectReferences[0];
+			tableCollectionReference.RowSourceReference.ShouldBeTypeOf<OracleProgramReference>();
 			objectReferences[1].RootNode.ShouldNotBe(null);
 			objectReferences[1].RootNode.FirstTerminalNode.Id.ShouldBe(Terminals.Table);
 			objectReferences[1].RootNode.LastTerminalNode.Id.ShouldBe(Terminals.ObjectAlias);
 			objectReferences[1].RootNode.LastTerminalNode.Token.Value.ShouldBe("T2");
 			objectReferences[1].ShouldBeTypeOf<OracleTableCollectionReference>();
-			((OracleTableCollectionReference)objectReferences[1]).RowSourceReference.ShouldBeTypeOf<OracleTypeReference>();
+			tableCollectionReference = (OracleTableCollectionReference)objectReferences[1];
+			tableCollectionReference.RowSourceReference.ShouldBeTypeOf<OracleTypeReference>();
 
 			var typeReferences = queryBlock.AllTypeReferences.ToArray();
 			typeReferences.Length.ShouldBe(1);
@@ -2070,7 +2072,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 			columnReferences[0].ColumnDescription.FullTypeName.ShouldBe(String.Empty);
 			columnReferences[1].ColumnNodeColumnReferences.Count.ShouldBe(1);
 			columnReferences[1].ColumnDescription.ShouldNotBe(null);
-			columnReferences[1].ColumnDescription.DataType.ShouldBe(OracleDataType.DynamicType);
+			columnReferences[1].ColumnDescription.DataType.ShouldBe(OracleDataType.DynamicCollectionType);
 		}
 		
 		[Test(Description = @"")]
