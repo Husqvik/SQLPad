@@ -3051,6 +3051,18 @@ SELECT F1(VAL), F2(VAL + 1) FROM CTE";
 				terminalCandidates.ShouldBe(expectedTerminals);
 			}
 
+			[Test(Description = @""), Ignore]
+			public void TestTerminalCandidatesAfterLeftParenthesisWithMultiplePotentialExpressionSequnces()
+			{
+				const string statement1 = @"SELECT EXTRACT()";
+				var terminal = Parser.Parse(statement1).Single().RootNode.Terminals.ToArray()[2];
+				terminal.Id.ShouldBe(Terminals.LeftParenthesis);
+
+				var terminalCandidates = Parser.GetTerminalCandidates(terminal).Select(c => c.Id).OrderBy(t => t).ToArray();
+				
+				terminalCandidates.ShouldContain(Terminals.Day);
+			}
+
 			[Test(Description = @"")]
 			public void TestTerminalCandidatesAtNotLastNodeInTheParsedTree()
 			{

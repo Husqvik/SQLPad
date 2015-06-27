@@ -1252,10 +1252,14 @@ END;";
 			objectReferences[0].RootNode.FirstTerminalNode.Id.ShouldBe(Terminals.Table);
 			objectReferences[0].RootNode.LastTerminalNode.Id.ShouldBe(Terminals.ObjectAlias);
 			objectReferences[0].RootNode.LastTerminalNode.Token.Value.ShouldBe("T1");
+			objectReferences[0].ShouldBeTypeOf<OracleTableCollectionReference>();
+			((OracleTableCollectionReference)objectReferences[0]).RowSourceReference.ShouldBeTypeOf<OracleProgramReference>();
 			objectReferences[1].RootNode.ShouldNotBe(null);
 			objectReferences[1].RootNode.FirstTerminalNode.Id.ShouldBe(Terminals.Table);
 			objectReferences[1].RootNode.LastTerminalNode.Id.ShouldBe(Terminals.ObjectAlias);
 			objectReferences[1].RootNode.LastTerminalNode.Token.Value.ShouldBe("T2");
+			objectReferences[1].ShouldBeTypeOf<OracleTableCollectionReference>();
+			((OracleTableCollectionReference)objectReferences[1]).RowSourceReference.ShouldBeTypeOf<OracleTypeReference>();
 
 			var typeReferences = queryBlock.AllTypeReferences.ToArray();
 			typeReferences.Length.ShouldBe(1);
@@ -2228,6 +2232,12 @@ FROM (
 			semanticModel.MainQueryBlock.Columns.Count.ShouldBe(1);
 			semanticModel.MainQueryBlock.Columns[0].ColumnReferences.Count.ShouldBe(1);
 			semanticModel.MainQueryBlock.Columns[0].ColumnReferences[0].ColumnNodeObjectReferences.Count.ShouldBe(1);
+
+			semanticModel.MainQueryBlock.ObjectReferences.Count.ShouldBe(1);
+			var objectReference = semanticModel.MainQueryBlock.ObjectReferences.Single();
+			objectReference.ShouldBeTypeOf<OracleTableCollectionReference>();
+			var tableCollectionExpressionReference = (OracleTableCollectionReference)objectReference;
+			tableCollectionExpressionReference.RowSourceReference.ShouldBeTypeOf<OracleTypeReference>();
 		}
 
 		[Test(Description = @"")]

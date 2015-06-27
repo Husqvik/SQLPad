@@ -48,6 +48,7 @@ namespace SqlPad.Oracle.SemanticModel
 		private readonly Dictionary<OracleQueryBlock, List<StatementGrammarNode>> _queryBlockTerminals = new Dictionary<OracleQueryBlock, List<StatementGrammarNode>>();
 		private readonly Dictionary<OracleQueryBlock, ICollection<StatementGrammarNode>> _accessibleQueryBlockRoot = new Dictionary<OracleQueryBlock, ICollection<StatementGrammarNode>>();
 		private readonly Dictionary<OracleDataObjectReference, ICollection<KeyValuePair<StatementGrammarNode, string>>> _objectReferenceCteRootNodes = new Dictionary<OracleDataObjectReference, ICollection<KeyValuePair<StatementGrammarNode, string>>>();
+		private readonly Dictionary<OracleReference, OracleTableCollectionReference> _rowSourceTableCollectionReferences = new Dictionary<OracleReference, OracleTableCollectionReference>();
 		private readonly HashSet<OracleQueryBlock> _unreferencedQueryBlocks = new HashSet<OracleQueryBlock>();
 		
 		private OracleQueryBlock _mainQueryBlock;
@@ -428,6 +429,7 @@ namespace SqlPad.Oracle.SemanticModel
 								};
 
 							queryBlock.ObjectReferences.Add(tableCollectionDataObjectReference);
+							_rowSourceTableCollectionReferences.Add(tableCollectionReference, tableCollectionDataObjectReference);
 
 							if (functionCallNodes.Length > 0)
 							{
@@ -1885,37 +1887,49 @@ namespace SqlPad.Oracle.SemanticModel
 
 				var typeReference = ResolveTypeReference(programReference);
 				if (typeReference == null)
+				{
 					continue;
+				}
 
 				programsTransferredToTypes.Add(programReference);
 				programReference.Container.TypeReferences.Add(typeReference);
+
+				OracleTableCollectionReference tableCollectionReference;
+				if (_rowSourceTableCollectionReferences.TryGetValue(programReference, out tableCollectionReference))
+				{
+					tableCollectionReference.RowSourceReference = typeReference;
+				}
 			}
 
 			programsTransferredToTypes.ForEach(f => f.Container.ProgramReferences.Remove(f));
 		}
 
-		private OracleTypeReference ResolveTypeReference(OracleProgramReference functionReference)
+		private OracleTypeReference ResolveTypeReference(OracleProgramReference programReference)
 		{
-			var identifierCandidates = _databaseModel.GetPotentialSchemaObjectIdentifiers(functionReference.FullyQualifiedObjectName.NormalizedName, functionReference.NormalizedName);
+			var identifierCandidates = _databaseModel.GetPotentialSchemaObjectIdentifiers(programReference.FullyQualifiedObjectName.NormalizedName, programReference.NormalizedName);
 
 			var schemaObject = _databaseModel.GetFirstSchemaObject<OracleTypeBase>(identifierCandidates);
 			if (schemaObject == null)
+			{
 				return null;
+			}
 
-			return
+			var typeReference =
 				new OracleTypeReference
 				{
-					OwnerNode = functionReference.ObjectNode,
-					DatabaseLinkNode = functionReference.DatabaseLinkNode,
-					DatabaseLink = functionReference.DatabaseLink,
-					Owner = functionReference.Owner,
-					ParameterReferences = functionReference.ParameterReferences,
-					ParameterListNode = functionReference.ParameterListNode,
-					RootNode = functionReference.RootNode,
+					OwnerNode = programReference.ObjectNode,
+					DatabaseLinkNode = programReference.DatabaseLinkNode,
+					DatabaseLink = programReference.DatabaseLink,
+					Owner = programReference.Owner,
+					ParameterReferences = programReference.ParameterReferences,
+					ParameterListNode = programReference.ParameterListNode,
+					RootNode = programReference.RootNode,
 					SchemaObject = schemaObject,
-					SelectListColumn = functionReference.SelectListColumn,
-					ObjectNode = functionReference.FunctionIdentifierNode
+					SelectListColumn = programReference.SelectListColumn,
+					ObjectNode = programReference.FunctionIdentifierNode
 				};
+			
+			return typeReference;
 		}
 
 		private OracleProgramMetadata UpdateFunctionReferenceWithMetadata(OracleProgramReference programReference)
@@ -2418,7 +2432,7 @@ namespace SqlPad.Oracle.SemanticModel
 			var hasNotDatabaseLink = GetDatabaseLinkFromIdentifier(identifier) == null;
 			if (String.Equals(identifier.Id, Terminals.DataTypeIdentifier))
 			{
-				var dataTypeReference = CreateDataTypeReference(/*referenceContainer, */queryBlock, selectListColumn, placement, identifier, prefixNonTerminal);
+				var dataTypeReference = CreateDataTypeReference(queryBlock, selectListColumn, placement, identifier, prefixNonTerminal);
 				referenceContainer.DataTypeReferences.Add(dataTypeReference);
 				return dataTypeReference;
 			}
