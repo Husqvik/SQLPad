@@ -20,8 +20,14 @@ namespace SqlPad.Oracle
 		public const string PackageDbmsRandom = "\"DBMS_RANDOM\"";
 		public const string PackageDbmsCrypto = "\"DBMS_CRYPTO\"";
 		public const string SystemParameterNameMaxStringSize = "max_string_size";
+		public const string BuiltInDataTypeIntervalYearToMonth = "INTERVAL YEAR TO MONTH";
 		public const string BuiltInDataTypeIntervalDayToSecond = "INTERVAL DAY TO SECOND";
+		public const string BuiltInDataTypeTimestampWithTimeZone = "TIMESTAMP WITH TIME ZONE";
+		public const string BuiltInDataTypeTimestampWithLocalTimeZone = "TIMESTAMP WITH LOCAL TIME ZONE";
 		public const int VersionMajorOracle12c = 12;
+		public const int DefaultMaxLengthVarchar = 4000;
+		public const int DefaultMaxLengthNVarchar = 2000;
+		public const int DefaultMaxLengthRaw = 2000;
 
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramLnNvl = OracleProgramIdentifier.CreateFromValues(null, null, "LNNVL");
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramExtract = OracleProgramIdentifier.CreateFromValues(null, null, "EXTRACT");
@@ -56,15 +62,15 @@ namespace SqlPad.Oracle
 				TerminalValues.Float,
 				TerminalValues.Integer,
 				BuiltInDataTypeIntervalDayToSecond,
-				"INTERVAL YEAR TO MONTH",
+				BuiltInDataTypeIntervalYearToMonth,
 				TerminalValues.Number,
 				TerminalValues.Raw,
 				"REAL",
 				TerminalValues.Smallint,
 				TerminalValues.Table,
 				TerminalValues.Timestamp,
-				"TIMESTAMP WITH LOCAL TIME ZONE",
-				"TIMESTAMP WITH TIME ZONE",
+				BuiltInDataTypeTimestampWithLocalTimeZone,
+				BuiltInDataTypeTimestampWithTimeZone,
 				TerminalValues.UniversalRowId,
 				TerminalValues.Varchar2,
 				TerminalValues.NVarchar2,
@@ -277,6 +283,57 @@ namespace SqlPad.Oracle
 			return type == null
 				? null
 				: schemaObject;
+		}
+
+		private int _maximumVarcharLength;
+		private int _maximumNVarcharLength;
+		private int _maximumRawLength;
+
+		public int MaximumVarcharLength
+		{
+			get
+			{
+				EnsureMaximumDataTypeLimits();
+				return _maximumVarcharLength;
+			}
+		}
+
+		public int MaximumNVarcharLength
+		{
+			get
+			{
+				EnsureMaximumDataTypeLimits();
+				return _maximumNVarcharLength;
+			}
+		}
+
+		public int MaximumRawLength
+		{
+			get
+			{
+				EnsureMaximumDataTypeLimits();
+				return _maximumRawLength;
+			}
+		}
+
+		private void EnsureMaximumDataTypeLimits()
+		{
+			if (_maximumVarcharLength != 0)
+			{
+				return;
+			}
+
+			string maxStringSize;
+			if (!SystemParameters.TryGetValue(SystemParameterNameMaxStringSize, out maxStringSize) || String.Equals(maxStringSize, "STANDARD"))
+			{
+				_maximumVarcharLength = DefaultMaxLengthVarchar;
+				_maximumNVarcharLength = _maximumRawLength = DefaultMaxLengthNVarchar;
+			}
+			else
+			{
+				_maximumVarcharLength = _maximumRawLength = 32767;
+				_maximumNVarcharLength = 16383;
+			}
 		}
 
 		private static bool TryGetSchemaObjectProgramMetadata(OracleSchemaObject schemaObject, out IEnumerable<OracleProgramMetadata> functionMetadata)

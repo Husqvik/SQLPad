@@ -5088,6 +5088,14 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Comma" />
+          <NonTerminal Id="NegativeInteger" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="NegativeInteger">
+      <Sequences>
+        <Sequence>
           <Terminal Id="MathMinus" IsOptional="true" />
           <Terminal Id="IntegerLiteral" />
         </Sequence>

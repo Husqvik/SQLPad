@@ -190,7 +190,7 @@ namespace SqlPad.Oracle.SemanticModel
 			analyzedNode = expressionNode[NonTerminals.CastOrXmlCastFunction, NonTerminals.CastFunctionParameterClause, NonTerminals.AsDataType, NonTerminals.DataType];
 			if (analyzedNode != null)
 			{
-				column.DataType = OracleDataType.FromDataTypeNode(analyzedNode);
+				column.DataType = OracleReferenceBuilder.ResolveDataTypeFromNode(analyzedNode);
 				column.Nullable = true;
 				return true;
 			}

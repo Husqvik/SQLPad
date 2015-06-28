@@ -66,10 +66,10 @@ namespace SqlPad.Oracle
 		private static readonly HashSet<string> ActiveDataModelRefresh = new HashSet<string>();
 		private static readonly Dictionary<string, List<RefreshModel>> WaitingDataModelRefresh = new Dictionary<string, List<RefreshModel>>();
 
-		private OracleDatabaseModel(ConnectionStringSettings connectionString, string modulePrefix)
+		private OracleDatabaseModel(ConnectionStringSettings connectionString, string identifier)
 		{
 			_connectionString = connectionString;
-			_moduleName = String.Format("{0}{1}", modulePrefix, ModuleNameSqlPadDatabaseModelBase);
+			_moduleName = String.Format("{0}/{1}", ModuleNameSqlPadDatabaseModelBase, identifier);
 			_oracleConnectionString = new OracleConnectionStringBuilder(connectionString.ConnectionString);
 			_currentSchema = _oracleConnectionString.UserID;
 
@@ -211,18 +211,18 @@ namespace SqlPad.Oracle
 			Trace.WriteLine(String.Format("{0} assembly version {1}", OracleDataAccessComponents, typeof(OracleConnection).Assembly.FullName));
 		}
 
-		public static OracleDatabaseModel GetDatabaseModel(ConnectionStringSettings connectionString, string modulePrefix = null)
+		public static OracleDatabaseModel GetDatabaseModel(ConnectionStringSettings connectionString, string identifier = null)
 		{
 			OracleDatabaseModel databaseModel;
 			lock (DatabaseModels)
 			{
 				if (DatabaseModels.TryGetValue(connectionString.ConnectionString, out databaseModel))
 				{
-					databaseModel = databaseModel.Clone(modulePrefix);
+					databaseModel = databaseModel.Clone(identifier);
 				}
 				else
 				{
-					DatabaseModels[connectionString.ConnectionString] = databaseModel = new OracleDatabaseModel(connectionString, modulePrefix);
+					DatabaseModels[connectionString.ConnectionString] = databaseModel = new OracleDatabaseModel(connectionString, identifier);
 				}
 			}
 

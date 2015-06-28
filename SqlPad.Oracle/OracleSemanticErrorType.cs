@@ -27,6 +27,12 @@ namespace SqlPad.Oracle
 		public const string ExpectAggregateFunctionInsidePivotOperation = "Expect aggregate function inside pivot operation";
 		public const string CannotAccessRowsFromNonNestedTableItem = "Cannot access rows from a non-nested table item";
 		public const string NotEnoughArgumentsForFunction = "Not enough arguments for function";
+		public const string NumericPrecisionSpecifierOutOfRange = "Numeric precision specifier is out of range (1 to 38)";
+		public const string NumericScaleSpecifierOutOfRange = "Numeric scale specifier is out of range (-84 to 127)";
+		public const string FloatingPointPrecisionOutOfRange = "Floating point precision is out of range (1 to 126)";
+		public const string SpecifiedLengthTooLongForDatatype = "Specified length too long for its datatype";
+		public const string DatetimeOrIntervalPrecisionIsOutOfRange = "Datetime/interval precision is out of range";
+		public const string ZeroLengthColumnsNotAllowed = "Zero-length columns are not allowed";
 	}
 
 	public static class OracleSemanticErrorTooltipText

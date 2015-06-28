@@ -2,12 +2,10 @@
 using System.IO;
 using System.Reflection;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Threading;
 using ICSharpCode.AvalonEdit;
 using NUnit.Framework;
 using Shouldly;
@@ -18,9 +16,8 @@ namespace SqlPad.Test
 	[TestFixture]
 	public class VisualComponentTest
 	{
-		private static App _app;
+		private App _app;
 		private static TextEditor _editor;
-		private static string _tempDirectoryName;
 
 		[TestFixtureSetUp]
 		public void FixtureSetup()
@@ -32,68 +29,32 @@ namespace SqlPad.Test
 		[Test(Description = @""), STAThread]
 		public void RealApplicationTest()
 		{
-			var appDomain = AppDomain.CreateDomain("TestDomain", AppDomain.CurrentDomain.Evidence, AppDomain.CurrentDomain.SetupInformation);
-			appDomain.DoCallBack(RunSqlPad);
-			AppDomain.Unload(appDomain);
+			VisualTestRunner.RunTest("SqlPad.Test.VisualComponentTest, SqlPad.Test", "TestBasicSqlPadBehavior");
 		}
 
-		private static void RunSqlPad()
-		{
-			_app = new App();
-			_app.InitializeComponent();
-
-			_tempDirectoryName = TestFixture.SetupTestDirectory();
-			ConfigurationProvider.SetUserDataFolder(_tempDirectoryName);
-
-			var sqlPadDirectory = new Uri(Path.GetDirectoryName(typeof(Snippets).Assembly.CodeBase)).LocalPath;
-			ConfigurationProvider.SetSnippetsFolder(Path.Combine(sqlPadDirectory, Snippets.SnippetDirectoryName));
-			ConfigurationProvider.SetCodeGenerationItemFolder(Path.Combine(sqlPadDirectory, Snippets.CodeGenerationItemDirectoryName));
-			DocumentPage.IsParsingSynchronous = true;
-
-			_app.Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(SqlPadActivatedHandler));
-			_app.Run();
-
-			Directory.Delete(_tempDirectoryName, true);
-		}
-
-		private static void SqlPadActivatedHandler()
+		private static SqlTextEditor LoadDocument(string fileName)
 		{
 			var mainWindow = (MainWindow)Application.Current.MainWindow;
 
-			var tempFile = Path.Combine(_tempDirectoryName, "tempDocument.sql");
-			File.WriteAllText(tempFile, String.Empty);
-			mainWindow.GetType().GetMethod("OpenExistingFile", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(mainWindow, new object[] { tempFile });
+			File.WriteAllText(fileName, String.Empty);
+			mainWindow.GetType().GetMethod("OpenExistingFile", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(mainWindow, new object[] { fileName });
 
 			var page = (DocumentPage)((TabItem)mainWindow.DocumentTabControl.SelectedItem).Content;
-			_editor = page.Editor;
+			return page.Editor;
+		}
+
+		private static void TestBasicSqlPadBehavior(VisualTestContext context)
+		{
+			_editor = LoadDocument(Path.Combine(context.TestTemporaryDirectory, "tempDocument.sql"));
 
 			try
 			{
 				AssertBasicSqlPadBehavior();
 			}
-			catch (Exception e)
-			{
-				throw new ApplicationException(e.ToString());
-			}
 			finally
 			{
 				_editor.IsModified = false;
 			}
-
-			_app.Shutdown();
-		}
-
-		private static void Wait(double seconds)
-		{
-			var frame = new DispatcherFrame();
-			Task.Factory.StartNew(
-				() =>
-				{
-					Thread.Sleep(TimeSpan.FromSeconds(seconds));
-					frame.Continue = false;
-				});
-			
-			Dispatcher.PushFrame(frame);
 		}
 
 		private static void AssertBasicSqlPadBehavior()
@@ -107,12 +68,51 @@ SELECT *;
 
 SELECT 1 FROM DUAL UNION ALL SELECT 2 FROM DUAL UNION ALL SELECT 3, 4 FROM DUAL;
 
-SELECT T.* FROM T@HQ_PDB";
+SELECT T.* FROM T@HQ_PDB;
+
+SELECT
+	CAST(NULL AS NUMBER(39)),
+	CAST(NULL AS NUMBER(0)),
+	CAST(NULL AS NUMBER(38, -85)),
+	CAST(NULL AS NUMBER(38, 128)),
+	CAST(NULL AS RAW(2001)),
+	CAST(NULL AS RAW(0)),
+	CAST(NULL AS VARCHAR2(32768)),
+	CAST(NULL AS NVARCHAR2(2001)),
+	CAST(NULL AS FLOAT(127)),
+	CAST(NULL AS TIMESTAMP(10)),
+	CAST(NULL AS INTERVAL YEAR(10) TO MONTH),
+	CAST(NULL AS INTERVAL DAY(10) TO SECOND(10)),
+	CAST(NULL AS UROWID(4001)),
+	CAST(NULL AS CHAR(2001)),
+	CAST(NULL AS NCHAR(1001))
+FROM
+	DUAL;
+
+SELECT
+	CUME_DIST(1, 1) WITHIN GROUP (ORDER BY NULL),
+	RANK(1) WITHIN GROUP (ORDER BY NULL),
+	DENSE_RANK(1) WITHIN GROUP (ORDER BY NULL),
+	PERCENTILE_CONT(0) WITHIN GROUP (ORDER BY NULL),
+	PERCENTILE_DISC(0) WITHIN GROUP (ORDER BY NULL),
+	COALESCE(NULL, NULL, 0),
+	SYSTIMESTAMP(9),
+	SYSTIMESTAMP,
+	LOCALTIMESTAMP(9),
+	LOCALTIMESTAMP,
+	CURRENT_TIMESTAMP(9),
+	CURRENT_TIMESTAMP,
+	CASE WHEN LNNVL(1 <> 1) THEN 1 END,
+	EXTRACT(DAY FROM SYSDATE)
+FROM
+	TABLE(DBMS_XPLAN.DISPLAY_CURSOR(NULL, NULL, 'ALLSTATS LAST ADVANCED')) T1, TABLE(SYS.ODCIRAWLIST(HEXTORAW('ABCDEF'), HEXTORAW('A12345'), HEXTORAW('F98765'))) T2
+WHERE
+	LNNVL(1 <> 1);";
 
 			_editor.Document.Insert(0, statementText);
 			_editor.CaretOffset = 50;
 
-			Wait(0.1);
+			VisualTestRunner.Wait(0.1);
 
 			_editor.CaretOffset = 111;
 
@@ -121,7 +121,7 @@ SELECT T.* FROM T@HQ_PDB";
 			GenericCommands.ListContextActions.Execute(null, _editor.TextArea);
 			GenericCommands.ListCodeGenerationItems.Execute(null, _editor.TextArea);
 
-			Wait(0.2);
+			VisualTestRunner.Wait(0.2);
 
 			TestPairCharacterInsertion();
 
@@ -135,7 +135,7 @@ SELECT T.* FROM T@HQ_PDB";
 
 			TestPairCharacterDeletionWithCursorBetweenEmptyPair();
 
-			Wait(0.2);
+			VisualTestRunner.Wait(0.2);
 		}
 
 		private static void TestPairCharacterInsertionBeforeExistingText()
@@ -251,9 +251,8 @@ SELECT T.* FROM T@HQ_PDB";
 
 			PressBackspace();
 
-			// TODO: Fix test
-			//_editor.Text.ShouldBe(String.Empty);
-			//_editor.CaretOffset.ShouldBe(0);
+			_editor.Text.ShouldBe(String.Empty);
+			_editor.CaretOffset.ShouldBe(0);
 		}
 
 		private static void EnterText(string text)
@@ -272,6 +271,10 @@ SELECT T.* FROM T@HQ_PDB";
 				{
 					RoutedEvent = Keyboard.PreviewKeyDownEvent
 				};
+
+			_editor.TextArea.RaiseEvent(keyEventArgs);
+
+			keyEventArgs.RoutedEvent = Keyboard.KeyDownEvent;
 			
 			_editor.TextArea.RaiseEvent(keyEventArgs);
 		}

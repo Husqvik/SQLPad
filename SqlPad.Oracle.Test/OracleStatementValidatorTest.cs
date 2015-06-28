@@ -3,6 +3,7 @@ using System.Linq;
 using NUnit.Framework;
 using Shouldly;
 using SqlPad.Oracle.SemanticModel;
+using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 
 namespace SqlPad.Oracle.Test
@@ -2355,6 +2356,65 @@ FROM (
 			invalidNontTerminals[0].Node.Id.ShouldBe(NonTerminals.OptionalParameterExpression);
 			invalidNontTerminals[0].Node.FirstTerminalNode.Token.Value.ShouldBe("SYSDATE");
 			invalidNontTerminals[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.NotEnoughArgumentsForFunction);
+		}
+
+		[Test(Description = @"")]
+		public void TestInvalidDataTypesWithinCastFunction()
+		{
+			const string sqlText =
+@"SELECT
+	CAST(NULL AS NUMBER(39)),
+	CAST(NULL AS NUMBER(0)),
+	CAST(NULL AS NUMBER(38, -85)),
+	CAST(NULL AS NUMBER(38, 128)),
+	CAST(NULL AS RAW(2001)),
+	CAST(NULL AS RAW(0)),
+	CAST(NULL AS VARCHAR2(32768)),
+	CAST(NULL AS NVARCHAR2(2001)),
+	CAST(NULL AS FLOAT(127)),
+	CAST(NULL AS TIMESTAMP(10)),
+	CAST(NULL AS INTERVAL YEAR(10) TO MONTH),
+	CAST(NULL AS INTERVAL DAY(10) TO SECOND(10)),
+	CAST(NULL AS UROWID(4001)),
+	CAST(NULL AS CHAR(2001)),
+	CAST(NULL AS NCHAR(1001))
+FROM
+	DUAL";
+
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			var invalidNontTerminals = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			invalidNontTerminals.Count.ShouldBe(16);
+			invalidNontTerminals[0].IsRecognized.ShouldBe(true);
+			invalidNontTerminals[0].Node.Id.ShouldBe(Terminals.IntegerLiteral);
+			invalidNontTerminals[0].Node.Token.Value.ShouldBe("39");
+			invalidNontTerminals[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.NumericPrecisionSpecifierOutOfRange);
+			invalidNontTerminals[2].IsRecognized.ShouldBe(true);
+			invalidNontTerminals[2].Node.Id.ShouldBe(NonTerminals.NegativeInteger);
+			invalidNontTerminals[2].Node.TerminalCount.ShouldBe(2);
+			invalidNontTerminals[2].Node.FirstTerminalNode.Id.ShouldBe(Terminals.MathMinus);
+			invalidNontTerminals[2].Node.LastTerminalNode.Token.Value.ShouldBe("85");
+			invalidNontTerminals[2].SemanticErrorType.ShouldBe(OracleSemanticErrorType.NumericScaleSpecifierOutOfRange);
+			invalidNontTerminals[4].IsRecognized.ShouldBe(true);
+			invalidNontTerminals[4].Node.Id.ShouldBe(Terminals.IntegerLiteral);
+			invalidNontTerminals[4].Node.Token.Value.ShouldBe("2001");
+			invalidNontTerminals[4].SemanticErrorType.ShouldBe(OracleSemanticErrorType.SpecifiedLengthTooLongForDatatype);
+			invalidNontTerminals[5].IsRecognized.ShouldBe(true);
+			invalidNontTerminals[5].Node.Id.ShouldBe(Terminals.IntegerLiteral);
+			invalidNontTerminals[5].Node.Token.Value.ShouldBe("0");
+			invalidNontTerminals[5].SemanticErrorType.ShouldBe(OracleSemanticErrorType.ZeroLengthColumnsNotAllowed);
+			invalidNontTerminals[8].IsRecognized.ShouldBe(true);
+			invalidNontTerminals[8].Node.Id.ShouldBe(Terminals.IntegerLiteral);
+			invalidNontTerminals[8].Node.Token.Value.ShouldBe("127");
+			invalidNontTerminals[8].SemanticErrorType.ShouldBe(OracleSemanticErrorType.FloatingPointPrecisionOutOfRange);
+			invalidNontTerminals[9].IsRecognized.ShouldBe(true);
+			invalidNontTerminals[9].Node.Id.ShouldBe(Terminals.IntegerLiteral);
+			invalidNontTerminals[9].Node.Token.Value.ShouldBe("10");
+			invalidNontTerminals[9].SemanticErrorType.ShouldBe(OracleSemanticErrorType.DatetimeOrIntervalPrecisionIsOutOfRange);
 		}
 	}
 }

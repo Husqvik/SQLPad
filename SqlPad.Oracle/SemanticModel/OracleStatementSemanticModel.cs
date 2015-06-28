@@ -31,7 +31,7 @@ namespace SqlPad.Oracle.SemanticModel
 			Terminals.XmlRoot,
 			Terminals.XmlSerialize,
 			Terminals.Count,
-			Terminals.DataTypeIdentifier,
+			NonTerminals.DataType,
 			NonTerminals.AggregateFunction,
 			NonTerminals.AnalyticFunction,
 			NonTerminals.WithinGroupAggregationFunction
@@ -43,6 +43,7 @@ namespace SqlPad.Oracle.SemanticModel
 		private readonly HashSet<StatementGrammarNode> _redundantTerminals = new HashSet<StatementGrammarNode>();
 		private readonly List<RedundantTerminalGroup> _redundantTerminalGroups = new List<RedundantTerminalGroup>();
 		private readonly OracleDatabaseModelBase _databaseModel;
+		private readonly OracleReferenceBuilder _referenceBuilder;
 		private readonly Dictionary<OracleSelectListColumn, List<OracleDataObjectReference>> _asteriskTableReferences = new Dictionary<OracleSelectListColumn, List<OracleDataObjectReference>>();
 		private readonly Dictionary<OracleQueryBlock, IList<string>> _commonTableExpressionExplicitColumnNames = new Dictionary<OracleQueryBlock, IList<string>>();
 		private readonly Dictionary<OracleQueryBlock, List<StatementGrammarNode>> _queryBlockTerminals = new Dictionary<OracleQueryBlock, List<StatementGrammarNode>>();
@@ -138,6 +139,7 @@ namespace SqlPad.Oracle.SemanticModel
 			_databaseModel = databaseModel;
 
 			MainObjectReferenceContainer = new OracleMainObjectReferenceContainer(this);
+			_referenceBuilder = new OracleReferenceBuilder(this);
 
 			if (statement.RootNode == null)
 				return;
@@ -759,19 +761,10 @@ namespace SqlPad.Oracle.SemanticModel
 				if (!TryAssingnColumnForOrdinality(column, jsonTableColumn.ChildNodes.Skip(1)))
 				{
 					var jsonReturnTypeNode = jsonTableColumn[1];
-					column.DataType = OracleDataType.FromJsonReturnTypeNode(jsonReturnTypeNode);
+					column.DataType = OracleReferenceBuilder.ResolveDataTypeFromJsonReturnTypeNode(jsonReturnTypeNode);
 					if (column.DataType.Length == null && String.Equals(column.DataType.FullyQualifiedName.Name, TerminalValues.Varchar2))
 					{
-						string maxStringSize;
-						if (!DatabaseModel.SystemParameters.TryGetValue(OracleDatabaseModelBase.SystemParameterNameMaxStringSize, out maxStringSize) ||
-						    String.Equals(maxStringSize, "STANDARD"))
-						{
-							column.DataType.Length = 4000;
-						}
-						else
-						{
-							column.DataType.Length = 32767;
-						}
+						column.DataType.Length = DatabaseModel.MaximumVarcharLength;
 					}
 				}
 			}
@@ -837,7 +830,7 @@ namespace SqlPad.Oracle.SemanticModel
 									column.DataType = OracleDataType.XmlType;
 									break;
 								case NonTerminals.DataType:
-									column.DataType = OracleDataType.FromDataTypeNode(dataTypeNode);
+									column.DataType = OracleReferenceBuilder.ResolveDataTypeFromNode(dataTypeNode);
 									break;
 							}
 						}
@@ -2217,7 +2210,7 @@ namespace SqlPad.Oracle.SemanticModel
 				new OracleProgramReference
 				{
 					FunctionIdentifierNode = columnReference.ColumnNode,
-					DatabaseLinkNode = GetDatabaseLinkFromIdentifier(columnReference.ColumnNode),
+					DatabaseLinkNode = OracleReferenceBuilder.GetDatabaseLinkFromIdentifier(columnReference.ColumnNode),
 					ObjectNode = columnReference.ObjectNode,
 					OwnerNode = columnReference.OwnerNode,
 					RootNode = columnReference.RootNode,
@@ -2289,7 +2282,7 @@ namespace SqlPad.Oracle.SemanticModel
 				new OracleSequenceReference
 				{
 					ObjectNode = columnReference.ObjectNode,
-					DatabaseLinkNode = GetDatabaseLinkFromIdentifier(columnReference.ColumnNode),
+					DatabaseLinkNode = OracleReferenceBuilder.GetDatabaseLinkFromIdentifier(columnReference.ColumnNode),
 					Owner = columnReference.Owner,
 					OwnerNode = columnReference.OwnerNode,
 					RootNode = columnReference.RootNode,
@@ -2425,17 +2418,17 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private OracleReference ResolveColumnFunctionOrDataTypeReferenceFromIdentifier(OracleQueryBlock queryBlock, OracleReferenceContainer referenceContainer, StatementGrammarNode identifier, StatementPlacement placement, OracleSelectListColumn selectListColumn, Func<StatementGrammarNode, StatementGrammarNode> getPrefixNonTerminalFromIdentiferFunction = null)
 		{
-			var prefixNonTerminal = getPrefixNonTerminalFromIdentiferFunction == null
-					? GetPrefixNodeFromPrefixedColumnReference(identifier)
-					: getPrefixNonTerminalFromIdentiferFunction(identifier);
-
-			var hasNotDatabaseLink = GetDatabaseLinkFromIdentifier(identifier) == null;
-			if (String.Equals(identifier.Id, Terminals.DataTypeIdentifier))
+			var hasNotDatabaseLink = OracleReferenceBuilder.GetDatabaseLinkFromIdentifier(identifier) == null;
+			if (String.Equals(identifier.ParentNode.Id, NonTerminals.DataType))
 			{
-				var dataTypeReference = CreateDataTypeReference(queryBlock, selectListColumn, placement, identifier, prefixNonTerminal);
+				var dataTypeReference = _referenceBuilder.CreateDataTypeReference(queryBlock, selectListColumn, placement, identifier);
 				referenceContainer.DataTypeReferences.Add(dataTypeReference);
 				return dataTypeReference;
 			}
+
+			var prefixNonTerminal = getPrefixNonTerminalFromIdentiferFunction == null
+					? GetPrefixNodeFromPrefixedColumnReference(identifier)
+					: getPrefixNonTerminalFromIdentiferFunction(identifier);
 
 			var functionCallNodes = GetFunctionCallNodes(identifier);
 			var isSequencePseudoColumnCandidate = prefixNonTerminal != null && identifier.Token.Value.ToQuotedIdentifier().In(OracleSequence.NormalizedColumnNameNextValue, OracleSequence.NormalizedColumnNameCurrentValue);
@@ -2505,7 +2498,7 @@ namespace SqlPad.Oracle.SemanticModel
 				var columnExpressions = GetAllChainedClausesByPath(queryBlock.SelectList[NonTerminals.AliasedExpressionOrAllTableColumns], n => n.ParentNode, NonTerminals.SelectExpressionExpressionChainedList, NonTerminals.AliasedExpressionOrAllTableColumns);
 				var columnExpressionsIdentifierLookup = _queryBlockTerminals[queryBlock]
 					.Where(t => t.SourcePosition.IndexStart >= queryBlock.SelectList.SourcePosition.IndexStart && t.SourcePosition.IndexEnd <= queryBlock.SelectList.SourcePosition.IndexEnd &&
-					            (StandardIdentifierIds.Contains(t.Id) || t.ParentNode.Id.In(NonTerminals.AggregateFunction, NonTerminals.AnalyticFunction, NonTerminals.WithinGroupAggregationFunction)))
+					            (StandardIdentifierIds.Contains(t.Id) || t.ParentNode.Id.In(NonTerminals.AggregateFunction, NonTerminals.AnalyticFunction, NonTerminals.WithinGroupAggregationFunction, NonTerminals.DataType)))
 					.ToLookup(t => t.GetAncestor(NonTerminals.AliasedExpressionOrAllTableColumns));
 				
 				foreach (var columnExpression in columnExpressions)
@@ -2540,7 +2533,7 @@ namespace SqlPad.Oracle.SemanticModel
 					else
 					{
 						var columnExpressionIdentifiers = columnExpressionsIdentifierLookup[columnExpression].ToArray();
-						var identifiers = columnExpressionIdentifiers.Where(t => t.Id.In(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level, Terminals.User, Terminals.DataTypeIdentifier)).ToArray();
+						var identifiers = columnExpressionIdentifiers.Where(t => t.Id.In(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level, Terminals.User) || String.Equals(t.ParentNode.Id, NonTerminals.DataType)).ToArray();
 
 						var previousColumnReferences = column.ColumnReferences.Count;
 						ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(queryBlock, column, identifiers, StatementPlacement.SelectList, column);
@@ -2696,7 +2689,7 @@ namespace SqlPad.Oracle.SemanticModel
 				new OracleProgramReference
 				{
 					FunctionIdentifierNode = identifierNode,
-					DatabaseLinkNode = GetDatabaseLinkFromIdentifier(identifierNode),
+					DatabaseLinkNode = OracleReferenceBuilder.GetDatabaseLinkFromIdentifier(identifierNode),
 					RootNode = identifierNode.GetAncestor(NonTerminals.Expression) ?? identifierNode.GetAncestor(NonTerminals.TableCollectionInnerExpression),
 					Owner = queryBlock,
 					Placement = placement,
@@ -2724,41 +2717,7 @@ namespace SqlPad.Oracle.SemanticModel
 			var partitionOrDatabaseLink = queryTableExpression[NonTerminals.PartitionOrDatabaseLink];
 			return partitionOrDatabaseLink == null
 				? null
-				: GetDatabaseLinkFromNode(partitionOrDatabaseLink);
-		}
-
-		private static StatementGrammarNode GetDatabaseLinkFromIdentifier(StatementGrammarNode identifier)
-		{
-			return GetDatabaseLinkFromNode(identifier.ParentNode);
-		}
-
-		private static StatementGrammarNode GetDatabaseLinkFromNode(StatementGrammarNode node)
-		{
-			return node[NonTerminals.DatabaseLink, NonTerminals.DatabaseLinkName];
-		}
-
-		private OracleDataTypeReference CreateDataTypeReference(OracleQueryBlock queryBlock, OracleSelectListColumn selectListColumn, StatementPlacement placement, StatementGrammarNode identifierNode, StatementGrammarNode prefixNonTerminal)
-		{
-			var rootNode = identifierNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.Expression), NonTerminals.DataType);
-			
-			var dataTypeReference =
-				new OracleDataTypeReference
-				{
-					RootNode = rootNode,
-					OwnerNode = rootNode[NonTerminals.SchemaPrefix, Terminals.SchemaIdentifier],
-					ObjectNode = identifierNode,
-					DatabaseLinkNode = GetDatabaseLinkFromIdentifier(identifierNode),
-					Placement = placement,
-					Owner = queryBlock,
-					SelectListColumn = selectListColumn
-				};
-
-			if (dataTypeReference.DatabaseLinkNode == null && HasDatabaseModel)
-			{
-				dataTypeReference.SchemaObject = DatabaseModel.GetFirstSchemaObject<OracleTypeBase>(DatabaseModel.GetPotentialSchemaObjectIdentifiers(dataTypeReference.FullyQualifiedObjectName));
-			}
-
-			return dataTypeReference;
+				: OracleReferenceBuilder.GetDatabaseLinkFromNode(partitionOrDatabaseLink);
 		}
 
 		private static OracleColumnReference CreateColumnReference(OracleReferenceContainer container, OracleQueryBlock queryBlock, OracleSelectListColumn selectListColumn, StatementPlacement placement, StatementGrammarNode identifierNode, StatementGrammarNode prefixNonTerminal)
@@ -2771,7 +2730,7 @@ namespace SqlPad.Oracle.SemanticModel
 							   ?? identifierNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.QueryTableExpression), NonTerminals.TableCollectionInnerExpression)
 							   ?? (String.Equals(identifierNode.ParentNode.Id, NonTerminals.IdentifierList) ? identifierNode : null),
 					ColumnNode = identifierNode,
-					DatabaseLinkNode = GetDatabaseLinkFromIdentifier(identifierNode),
+					DatabaseLinkNode = OracleReferenceBuilder.GetDatabaseLinkFromIdentifier(identifierNode),
 					Placement = placement,
 					Owner = queryBlock,
 					SelectListColumn = selectListColumn

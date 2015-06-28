@@ -448,7 +448,7 @@ namespace SqlPad
 
 			InitializeSpecificCommandBindings();
 
-			DatabaseModel = InfrastructureFactory.CreateDatabaseModel(ConfigurationProvider.ConnectionStrings[_connectionString.Name], String.Format("{0}/", WorkDocument.Identifier));
+			DatabaseModel = InfrastructureFactory.CreateDatabaseModel(ConfigurationProvider.ConnectionStrings[_connectionString.Name], WorkDocument.Identifier);
 			_pageModel.SchemaLabel = InfrastructureFactory.SchemaLabel;
 			_sqlDocumentRepository = new SqlDocumentRepository(InfrastructureFactory.CreateParser(), InfrastructureFactory.CreateStatementValidator(), DatabaseModel);
 			_iconMargin.DocumentRepository = _sqlDocumentRepository;
