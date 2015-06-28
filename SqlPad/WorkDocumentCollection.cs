@@ -406,7 +406,7 @@ namespace SqlPad
 			FoldingStatesInternal.AddRange(foldingStates);
 		}
 
-		public string Identifier { get { return File == null ? DocumentId.ToString("N") : DocumentFileName; } }
+		public string Identifier { get { return File == null ? DocumentId.ToString("N") : File.Name; } }
 
 		public Guid DocumentId { get; private set; }
 

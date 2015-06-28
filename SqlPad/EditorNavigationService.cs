@@ -7,7 +7,7 @@ namespace SqlPad
 	public static class EditorNavigationService
 	{
 		private static readonly List<DocumentCursorPosition> DocumentCursorPositions = new List<DocumentCursorPosition>();
-		private static string _lastDocumentIdentifier;
+		private static Guid? _lastDocumentIdentifier;
 		private static int _lastCursorPosition = -1;
 
 		private static int _currentIndex;
@@ -37,9 +37,9 @@ namespace SqlPad
 				return;
 			}
 
-			var isCursorAtAdjacentPosition = Math.Abs(cursorPosition - _lastCursorPosition) <= 1 && workDocument.Identifier == _lastDocumentIdentifier;
+			var isCursorAtAdjacentPosition = Math.Abs(cursorPosition - _lastCursorPosition) <= 1 && workDocument.DocumentId == _lastDocumentIdentifier;
 
-			_lastDocumentIdentifier = workDocument.Identifier;
+			_lastDocumentIdentifier = workDocument.DocumentId;
 			_lastCursorPosition = cursorPosition;
 
 			if (isCursorAtAdjacentPosition)

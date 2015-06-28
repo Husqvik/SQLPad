@@ -27,12 +27,8 @@ namespace SqlPad.Oracle
 {
 	public class OracleDatabaseModel : OracleDatabaseModelBase
 	{
-		internal const int OracleErrorCodeUserInvokedCancellation = 1013;
-		internal const int OracleErrorCodeNotConnectedToOracle = 3114;
-		internal const int OracleErrorCodeEndOfFileOnCommunicationChannel = 3113;
-		internal const int OracleErrorCodeSuccessWithCompilationError = 24344;
 		internal const int InitialLongFetchSize = 131072;
-		private const string ModuleNameSqlPadDatabaseModel = "SQLPad database model";
+		private const string ModuleNameSqlPadDatabaseModelBase = "Database model";
 		private const string OracleDataAccessRegistryPath = @"Software\Oracle\ODP.NET";
 		private const string OracleDataAccessComponents = "Oracle Data Access Components";
 
@@ -47,6 +43,7 @@ namespace SqlPad.Oracle
 		private readonly CancellationTokenSource _backgroundTaskCancellationTokenSource = new CancellationTokenSource();
 		private ILookup<OracleProgramIdentifier, OracleProgramMetadata> _allFunctionMetadata = Enumerable.Empty<OracleProgramMetadata>().ToLookup(m => m.Identifier);
 		private readonly ConnectionStringSettings _connectionString;
+		private readonly string _moduleName;
 		private HashSet<string> _schemas = new HashSet<string>();
 		private HashSet<string> _allSchemas = new HashSet<string>();
 		private string _currentSchema;
@@ -69,9 +66,10 @@ namespace SqlPad.Oracle
 		private static readonly HashSet<string> ActiveDataModelRefresh = new HashSet<string>();
 		private static readonly Dictionary<string, List<RefreshModel>> WaitingDataModelRefresh = new Dictionary<string, List<RefreshModel>>();
 
-		private OracleDatabaseModel(ConnectionStringSettings connectionString)
+		private OracleDatabaseModel(ConnectionStringSettings connectionString, string modulePrefix)
 		{
 			_connectionString = connectionString;
+			_moduleName = String.Format("{0}{1}", modulePrefix, ModuleNameSqlPadDatabaseModelBase);
 			_oracleConnectionString = new OracleConnectionStringBuilder(connectionString.ConnectionString);
 			_currentSchema = _oracleConnectionString.UserID;
 
@@ -161,7 +159,7 @@ namespace SqlPad.Oracle
 
 		private void UserConnectionInfoMessageHandler(object sender, OracleInfoMessageEventArgs args)
 		{
-			var containsCompilationError = args.Errors.Cast<OracleError>().Any(e => e.Number == OracleErrorCodeSuccessWithCompilationError);
+			var containsCompilationError = args.Errors.Cast<OracleError>().Any(e => e.Number == (int)OracleErrorCode.SuccessWithCompilationError);
 			if (containsCompilationError)
 			{
 				_userCommandHasCompilationErrors = true;
@@ -213,16 +211,19 @@ namespace SqlPad.Oracle
 			Trace.WriteLine(String.Format("{0} assembly version {1}", OracleDataAccessComponents, typeof(OracleConnection).Assembly.FullName));
 		}
 
-		public static OracleDatabaseModel GetDatabaseModel(ConnectionStringSettings connectionString)
+		public static OracleDatabaseModel GetDatabaseModel(ConnectionStringSettings connectionString, string modulePrefix = null)
 		{
 			OracleDatabaseModel databaseModel;
-			if (DatabaseModels.TryGetValue(connectionString.ConnectionString, out databaseModel))
+			lock (DatabaseModels)
 			{
-				databaseModel = databaseModel.Clone();
-			}
-			else
-			{
-				DatabaseModels[connectionString.ConnectionString] = databaseModel = new OracleDatabaseModel(connectionString);
+				if (DatabaseModels.TryGetValue(connectionString.ConnectionString, out databaseModel))
+				{
+					databaseModel = databaseModel.Clone(modulePrefix);
+				}
+				else
+				{
+					DatabaseModels[connectionString.ConnectionString] = databaseModel = new OracleDatabaseModel(connectionString, modulePrefix);
+				}
 			}
 
 			return databaseModel;
@@ -505,7 +506,7 @@ namespace SqlPad.Oracle
 								{
 									if (await EnsureConnectionOpen(connection, cancellationToken))
 									{
-										connection.ModuleName = ModuleNameSqlPadDatabaseModel;
+										connection.ModuleName = _moduleName;
 										connection.ActionName = "Model data provider";
 
 										using (var setSchemaCommand = connection.CreateCommand())
@@ -532,7 +533,7 @@ namespace SqlPad.Oracle
 							}
 							catch (OracleException exception)
 							{
-								if (exception.Number == OracleErrorCodeUserInvokedCancellation)
+								if (exception.Number == (int)OracleErrorCode.UserInvokedCancellation)
 								{
 									break;
 								}
@@ -607,15 +608,19 @@ namespace SqlPad.Oracle
 			}
 
 			Initialized = null;
+			Disconnected = null;
 			InitializationFailed = null;
 			RefreshStarted = null;
 			RefreshCompleted = null;
 
 			DisposeUserConnection();
 
-			if (DatabaseModels.ContainsValue(this))
+			lock (DatabaseModels)
 			{
-				DatabaseModels.Remove(_connectionString.ConnectionString);
+				if (DatabaseModels.ContainsValue(this))
+				{
+					DatabaseModels.Remove(_connectionString.ConnectionString);
+				}
 			}
 		}
 
@@ -632,10 +637,10 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		public OracleDatabaseModel Clone()
+		private OracleDatabaseModel Clone(string modulePrefix)
 		{
 			var clone =
-				new OracleDatabaseModel(ConnectionString)
+				new OracleDatabaseModel(ConnectionString, modulePrefix)
 				{
 					_currentSchema = _currentSchema,
 					_dataDictionary = _dataDictionary,
@@ -689,7 +694,7 @@ namespace SqlPad.Oracle
 			var isConnectionStateChanged = await EnsureConnectionOpen(_userConnection, cancellationToken);
 			if (isConnectionStateChanged)
 			{
-				_userConnection.ModuleName = ModuleNameSqlPadDatabaseModel;
+				_userConnection.ModuleName = _moduleName;
 				_userConnection.ActionName = "User query";
 			}
 
@@ -896,7 +901,8 @@ namespace SqlPad.Oracle
 			}
 			catch (OracleException exception)
 			{
-				if (exception.Number.In(OracleErrorCodeEndOfFileOnCommunicationChannel, OracleErrorCodeNotConnectedToOracle))
+				var errorCode = (OracleErrorCode)exception.Number;
+				if (errorCode.In(OracleErrorCode.EndOfFileOnCommunicationChannel, OracleErrorCode.NotConnectedToOracle))
 				{
 					OracleSchemaResolver.Unregister(this);
 
@@ -909,7 +915,7 @@ namespace SqlPad.Oracle
 
 					throw;
 				}
-				else if (exception.Number != OracleErrorCodeUserInvokedCancellation)
+				else if (errorCode != OracleErrorCode.UserInvokedCancellation)
 				{
 					throw;
 				}
@@ -1156,7 +1162,7 @@ namespace SqlPad.Oracle
 					command.BindByName = true;
 					command.InitialLONGFetchSize = DataDictionaryMapper.LongFetchSize;
 
-					connection.ModuleName = ModuleNameSqlPadDatabaseModel;
+					connection.ModuleName = _moduleName;
 					connection.ActionName = "Fetch data dictionary metadata";
 
 					using (var task = command.ExecuteReaderAsynchronous(CommandBehavior.CloseConnection, _backgroundTaskCancellationTokenSource.Token))
@@ -1494,5 +1500,13 @@ namespace SqlPad.Oracle
 				}
 			}
 		}
+	}
+
+	internal enum OracleErrorCode
+	{
+		UserInvokedCancellation = 1013,
+		NotConnectedToOracle = 3114,
+		EndOfFileOnCommunicationChannel = 3113,
+		SuccessWithCompilationError = 24344
 	}
 }

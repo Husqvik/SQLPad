@@ -18,7 +18,7 @@ namespace SqlPad
 
 		ISqlParser CreateParser();
 
-		IDatabaseModel CreateDatabaseModel(ConnectionStringSettings connectionString);
+		IDatabaseModel CreateDatabaseModel(ConnectionStringSettings connectionString, string identifier);
 
 		IStatementValidator CreateStatementValidator();
 

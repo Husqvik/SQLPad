@@ -37,9 +37,9 @@ namespace SqlPad.Oracle
 			return new OracleStatementValidator();
 		}
 
-		public IDatabaseModel CreateDatabaseModel(ConnectionStringSettings connectionString)
+		public IDatabaseModel CreateDatabaseModel(ConnectionStringSettings connectionString, string identifier)
 		{
-			return OracleDatabaseModel.GetDatabaseModel(connectionString);
+			return OracleDatabaseModel.GetDatabaseModel(connectionString, identifier);
 		}
 
 		public ICodeCompletionProvider CreateCodeCompletionProvider()

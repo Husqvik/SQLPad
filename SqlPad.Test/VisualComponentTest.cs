@@ -18,13 +18,26 @@ namespace SqlPad.Test
 	[TestFixture]
 	public class VisualComponentTest
 	{
-		private App _app;
-		private MainWindow _mainWindow;
-		private DocumentPage _page;
-		private TextEditor _editor;
-		private string _tempDirectoryName;
+		private static App _app;
+		private static TextEditor _editor;
+		private static string _tempDirectoryName;
 
-		private void SetupEnvironment()
+		[TestFixtureSetUp]
+		public void FixtureSetup()
+		{
+			_app = new App();
+			_app.InitializeComponent();
+		}
+
+		[Test(Description = @""), STAThread]
+		public void RealApplicationTest()
+		{
+			var appDomain = AppDomain.CreateDomain("TestDomain", AppDomain.CurrentDomain.Evidence, AppDomain.CurrentDomain.SetupInformation);
+			appDomain.DoCallBack(RunSqlPad);
+			AppDomain.Unload(appDomain);
+		}
+
+		private static void RunSqlPad()
 		{
 			_app = new App();
 			_app.InitializeComponent();
@@ -36,21 +49,38 @@ namespace SqlPad.Test
 			ConfigurationProvider.SetSnippetsFolder(Path.Combine(sqlPadDirectory, Snippets.SnippetDirectoryName));
 			ConfigurationProvider.SetCodeGenerationItemFolder(Path.Combine(sqlPadDirectory, Snippets.CodeGenerationItemDirectoryName));
 			DocumentPage.IsParsingSynchronous = true;
+
+			_app.Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(SqlPadActivatedHandler));
+			_app.Run();
+
+			Directory.Delete(_tempDirectoryName, true);
 		}
 
-		private void InitializeApplicationWindow()
+		private static void SqlPadActivatedHandler()
 		{
-			SetupEnvironment();
-
-			_mainWindow = (MainWindow)(_app.MainWindow = new MainWindow());
-			_mainWindow.Show();
+			var mainWindow = (MainWindow)Application.Current.MainWindow;
 
 			var tempFile = Path.Combine(_tempDirectoryName, "tempDocument.sql");
 			File.WriteAllText(tempFile, String.Empty);
-			_mainWindow.GetType().GetMethod("OpenExistingFile", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(_mainWindow, new object[] { tempFile });
+			mainWindow.GetType().GetMethod("OpenExistingFile", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(mainWindow, new object[] { tempFile });
 
-			_page = (DocumentPage)((TabItem)_mainWindow.DocumentTabControl.SelectedItem).Content;
-			_editor = _page.Editor;
+			var page = (DocumentPage)((TabItem)mainWindow.DocumentTabControl.SelectedItem).Content;
+			_editor = page.Editor;
+
+			try
+			{
+				AssertBasicSqlPadBehavior();
+			}
+			catch (Exception e)
+			{
+				throw new ApplicationException(e.ToString());
+			}
+			finally
+			{
+				_editor.IsModified = false;
+			}
+
+			_app.Shutdown();
 		}
 
 		private static void Wait(double seconds)
@@ -66,11 +96,8 @@ namespace SqlPad.Test
 			Dispatcher.PushFrame(frame);
 		}
 
-		[Test(Description = @""), STAThread, RequiresThread]
-		public void TestBasicApplicationBehavior()
+		private static void AssertBasicSqlPadBehavior()
 		{
-			InitializeApplicationWindow();
-
 			const string statementText =
 @"SELECT
 	:BIND_VARIABLE, UNDEFINED, DUMMY AMBIGUOUS,
@@ -81,7 +108,7 @@ SELECT *;
 SELECT 1 FROM DUAL UNION ALL SELECT 2 FROM DUAL UNION ALL SELECT 3, 4 FROM DUAL;
 
 SELECT T.* FROM T@HQ_PDB";
-			
+
 			_editor.Document.Insert(0, statementText);
 			_editor.CaretOffset = 50;
 
@@ -99,9 +126,9 @@ SELECT T.* FROM T@HQ_PDB";
 			TestPairCharacterInsertion();
 
 			TestPairCharacterInsertionWhenNextCharacterIsThePairCharacter();
-			
+
 			TestPairCharacterInsertionAfterAlreadyEnteredPair();
-			
+
 			TestPairCharacterInsertionBeforeExistingText();
 
 			TestParenthesisCharacterInsertionWithinExistingParenthesis();
@@ -109,16 +136,9 @@ SELECT T.* FROM T@HQ_PDB";
 			TestPairCharacterDeletionWithCursorBetweenEmptyPair();
 
 			Wait(0.2);
-
-			_editor.IsModified = false;
-
-			_mainWindow.Close();
-			Dispatcher.CurrentDispatcher.InvokeShutdown();
-
-			Directory.Delete(_tempDirectoryName, true);
 		}
 
-		private void TestPairCharacterInsertionBeforeExistingText()
+		private static void TestPairCharacterInsertionBeforeExistingText()
 		{
 			_editor.Clear();
 			EnterText("Existing text");
@@ -134,7 +154,7 @@ SELECT T.* FROM T@HQ_PDB";
 			_editor.CaretOffset.ShouldBe(11);
 		}
 
-		private void TestPairCharacterInsertion()
+		private static void TestPairCharacterInsertion()
 		{
 			_editor.Clear();
 			
@@ -153,7 +173,7 @@ SELECT T.* FROM T@HQ_PDB";
 			_editor.CaretOffset.ShouldBe(5);
 		}
 
-		private void TestPairCharacterInsertionWhenNextCharacterIsThePairCharacter()
+		private static void TestPairCharacterInsertionWhenNextCharacterIsThePairCharacter()
 		{
 			_editor.Clear();
 
@@ -176,7 +196,7 @@ SELECT T.* FROM T@HQ_PDB";
 			_editor.CaretOffset.ShouldBe(6);
 		}
 
-		private void TestPairCharacterInsertionAfterAlreadyEnteredPair()
+		private static void TestPairCharacterInsertionAfterAlreadyEnteredPair()
 		{
 			_editor.Clear();
 
@@ -203,7 +223,7 @@ SELECT T.* FROM T@HQ_PDB";
 			_editor.CaretOffset.ShouldBe(3);
 		}
 
-		private void TestParenthesisCharacterInsertionWithinExistingParenthesis()
+		private static void TestParenthesisCharacterInsertionWithinExistingParenthesis()
 		{
 			_editor.Clear();
 
@@ -222,7 +242,7 @@ SELECT T.* FROM T@HQ_PDB";
 			_editor.CaretOffset.ShouldBe(2);
 		}
 
-		private void TestPairCharacterDeletionWithCursorBetweenEmptyPair()
+		private static void TestPairCharacterDeletionWithCursorBetweenEmptyPair()
 		{
 			_editor.Clear();
 
@@ -236,7 +256,7 @@ SELECT T.* FROM T@HQ_PDB";
 			//_editor.CaretOffset.ShouldBe(0);
 		}
 
-		private void EnterText(string text)
+		private static void EnterText(string text)
 		{
 			_editor.TextArea.RaiseEvent(
 				new TextCompositionEventArgs(
@@ -245,7 +265,7 @@ SELECT T.* FROM T@HQ_PDB";
 				);
 		}
 
-		private void PressBackspace()
+		private static void PressBackspace()
 		{
 			var keyEventArgs =
 				new KeyEventArgs(Keyboard.PrimaryDevice, PresentationSource.FromVisual(_editor), 0, Key.Back)
@@ -325,7 +345,7 @@ SELECT T.* FROM T@HQ_PDB";
 		private string GetExportContent(DataGrid resultGrid, IDataExporter dataExporter)
 		{
 			var tempFileName = Path.GetTempFileName();
-			dataExporter.ExportToFile(tempFileName, resultGrid, _page.InfrastructureFactory.DataExportConverter);
+			dataExporter.ExportToFile(tempFileName, resultGrid, new DocumentPage().InfrastructureFactory.DataExportConverter);
 
 			var result = File.ReadAllText(tempFileName);
 			File.Delete(tempFileName);
@@ -342,7 +362,7 @@ SELECT T.* FROM T@HQ_PDB";
 					//new ColumnHeader { ColumnIndex = 2, DatabaseDataType = "Varchar2", DataType = typeof (string), Name = "\"'\\\"><?,.;:{}[]%$#@!~^&*()_+-§'''||(1/2*3+4-CASEWHEN1<=2OR2>=1THEN5ELSE6END)" }
 				};
 
-			var outputViewer = new OutputViewer { DataModel = new PageModel(_page) };
+			var outputViewer = new OutputViewer { DataModel = new PageModel(new DocumentPage()) };
 			var executionResult = new StatementExecutionResult { ColumnHeaders = columnHeaders };
 			outputViewer.Initialize(executionResult);
 			outputViewer.ResultGrid.ItemsSource =
