@@ -2071,6 +2071,17 @@ SELECT * FROM ALL";
 			items.Length.ShouldBe(0);
 		}
 
+		[Test(Description = @"")]
+		public void TestIntervalCodeCompletion()
+		{
+			const string statement = @"SELECT CAST(NULL AS INTERVAL DAY TO ) FROM DUAL";
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 36).ToArray();
+			items.Length.ShouldBeGreaterThan(0);
+			items[0].Name.ShouldBe("DAY");
+			items[0].CaretOffset.ShouldBe(0);
+			items[0].StatementNode.ShouldBe(null);
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)

@@ -20,6 +20,7 @@ namespace SqlPad.Oracle
 		public const string PackageDbmsRandom = "\"DBMS_RANDOM\"";
 		public const string PackageDbmsCrypto = "\"DBMS_CRYPTO\"";
 		public const string SystemParameterNameMaxStringSize = "max_string_size";
+		public const string BuiltInDataTypeIntervalDayToSecond = "INTERVAL DAY TO SECOND";
 		public const int VersionMajorOracle12c = 12;
 
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramLnNvl = OracleProgramIdentifier.CreateFromValues(null, null, "LNNVL");
@@ -39,8 +40,8 @@ namespace SqlPad.Oracle
 		
 		internal static readonly OracleObjectIdentifier BuiltInFunctionPackageIdentifier = OracleObjectIdentifier.Create(SchemaSys, PackageBuiltInFunction);
 
-		internal static readonly IReadOnlyList<string> BuiltInDataTypes =
-			new List<string>
+		internal static readonly ICollection<string> BuiltInDataTypes =
+			new HashSet<string>
 			{
 				TerminalValues.BinaryDouble,
 				TerminalValues.BinaryFloat,
@@ -54,7 +55,7 @@ namespace SqlPad.Oracle
 				"DOUBLE PRECISION",
 				TerminalValues.Float,
 				TerminalValues.Integer,
-				"INTERVAL DAY TO SECOND",
+				BuiltInDataTypeIntervalDayToSecond,
 				"INTERVAL YEAR TO MONTH",
 				TerminalValues.Number,
 				TerminalValues.Raw,
@@ -67,7 +68,7 @@ namespace SqlPad.Oracle
 				TerminalValues.UniversalRowId,
 				TerminalValues.Varchar2,
 				TerminalValues.NVarchar2,
-			}.AsReadOnly();
+			};
 
 		public abstract ConnectionStringSettings ConnectionString { get; }
 		

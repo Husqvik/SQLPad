@@ -428,6 +428,10 @@ namespace SqlPad.Oracle
 
 		private IEnumerable<ICodeCompletionItem> GenerateKeywordItems(OracleCodeCompletionType completionType)
 		{
+			var alternativeTerminalToReplace = completionType.CurrentTerminal != null && !completionType.CurrentTerminal.Id.In(Terminals.RightParenthesis, Terminals.Comma)
+				? completionType.CurrentTerminal
+				: null;
+			
 			return completionType.KeywordsClauses
 				.Where(t => !String.Equals(t.TerminalId, completionType.TerminalValueUnderCursor, StringComparison.InvariantCultureIgnoreCase))
 				.Where(t => CodeCompletionSearchHelper.IsMatch(t.Text, completionType.TerminalValuePartUntilCaret))
@@ -437,7 +441,7 @@ namespace SqlPad.Oracle
 						Name = t.Text,
 						Text = t.Text,
 						Category = OracleCodeCompletionCategory.Keyword,
-						StatementNode = completionType.ReferenceIdentifier.IdentifierUnderCursor ?? completionType.CurrentTerminal,
+						StatementNode = completionType.ReferenceIdentifier.IdentifierUnderCursor ?? alternativeTerminalToReplace,
 						CategoryPriority = 1
 					});
 		}

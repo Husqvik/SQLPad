@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Linq;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
@@ -159,11 +160,11 @@ namespace SqlPad.Oracle.DataDictionary
 							: TerminalValues.Long;
 						break;
 					case Terminals.Interval:
-						var yearToMonthNode = dataTypeNode[NonTerminals.YearToMonthOrDayToSecond, NonTerminals.YearOrMonth];
+						var yearToMonthNode = dataTypeNode[NonTerminals.YearToMonthOrDayToSecond, NonTerminals.IntervalYearToMonth];
 						if (yearToMonthNode == null)
 						{
-							var dayToSecondNode = dataTypeNode[NonTerminals.YearToMonthOrDayToSecond, NonTerminals.YearOrMonth];
-							name = dayToSecondNode == null ? String.Empty : "INTERVAL DAY TO SECOND";
+							var dayToSecondNode = dataTypeNode[NonTerminals.YearToMonthOrDayToSecond, NonTerminals.IntervalDayToSecond];
+							name = dayToSecondNode == null ? String.Empty : OracleDatabaseModelBase.BuiltInDataTypeIntervalDayToSecond;
 						}
 						else
 						{
@@ -182,19 +183,28 @@ namespace SqlPad.Oracle.DataDictionary
 						break;
 				}
 
-				var simplePrecisionNode = dataTypeNode.GetSingleDescendant(NonTerminals.DataTypeSimplePrecision);
-				if (simplePrecisionNode != null)
+				if (String.Equals(name, OracleDatabaseModelBase.BuiltInDataTypeIntervalDayToSecond))
 				{
-					var simplePrecisionValueTerminal = simplePrecisionNode[Terminals.IntegerLiteral];
-					if (simplePrecisionValueTerminal != null)
+					var intervalPrecisions = dataTypeNode.GetDescendants(NonTerminals.DataTypeSimplePrecision).ToArray();
+					if (intervalPrecisions.Length > 0)
 					{
-						dataType.Length = Convert.ToInt32(simplePrecisionValueTerminal.Token.Value);
+						dataType.Precision = GetSimplePrecisionValue(intervalPrecisions[0]);
+
+						if (intervalPrecisions.Length == 2)
+						{
+							dataType.Scale = GetSimplePrecisionValue(intervalPrecisions[1]);
+						}
 					}
 				}
+				else
+				{
+					var simplePrecisionNode = dataTypeNode.GetSingleDescendant(NonTerminals.DataTypeSimplePrecision);
+					dataType.Length = GetSimplePrecisionValue(simplePrecisionNode);
 
-				TryResolveVarcharDetails(dataType, dataTypeNode);
+					TryResolveVarcharDetails(dataType, dataTypeNode);
 
-				TryResolveNumericPrecisionAndScale(dataTypeNode, dataType);
+					TryResolveNumericPrecisionAndScale(dataTypeNode, dataType);
+				}
 			}
 			else
 			{
@@ -205,6 +215,19 @@ namespace SqlPad.Oracle.DataDictionary
 			dataType.FullyQualifiedName = OracleObjectIdentifier.Create(owner, name);
 
 			return dataType;
+		}
+
+		private static int? GetSimplePrecisionValue(StatementGrammarNode simplePrecisionNode)
+		{
+			if (simplePrecisionNode == null)
+			{
+				return null;
+			}
+			
+			var simplePrecisionValueTerminal = simplePrecisionNode[Terminals.IntegerLiteral];
+			return simplePrecisionValueTerminal == null
+				? (int?)null
+				: Convert.ToInt32(simplePrecisionValueTerminal.Token.Value);
 		}
 
 		private static void TryResolveNumericPrecisionAndScale(StatementGrammarNode definitionNode, OracleDataType dataType)
