@@ -287,6 +287,7 @@ SQLPad screenshots
 ![Code completion 2](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/CodeComplete2.png)
 ![Code completion 3](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/CodeComplete3.png)
 #####Miscellaneous
+![Expand asterisk details](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/ExpandAsterisk.png)
 ![Function overload list](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/FunctionOverloads.png)
-![Function overload list](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/ExecutionStatistics.png)
-![Function overload list](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/DatabaseOutput.png)
+![Execution statistics](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/ExecutionStatistics.png)
+![Database output](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/DatabaseOutput.png)
