@@ -2082,6 +2082,18 @@ SELECT * FROM ALL";
 			items[0].StatementNode.ShouldBe(null);
 		}
 
+		[Test(Description = @"")]
+		public void TestAggregateMaxFunctionSuggestion()
+		{
+			const string statement = @"SELECT MA FROM DUAL";
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 9).ToArray();
+			items.Length.ShouldBe(1);
+			items[0].Name.ShouldBe("MAX");
+			items[0].Text.ShouldBe("MAX()");
+			items[0].CaretOffset.ShouldBe(-1);
+			items[0].StatementNode.ShouldNotBe(null);
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)

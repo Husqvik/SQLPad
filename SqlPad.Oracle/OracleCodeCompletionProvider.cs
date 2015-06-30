@@ -826,10 +826,11 @@ namespace SqlPad.Oracle
 				.Where(r => r.IsMatched)
 				.SelectMany(r => r.Matches.Where(v => !String.IsNullOrEmpty(v)).Select(v => new { Name = v.ToSimpleIdentifier(), r.Metadata }))
 				.GroupBy(r => r.Name)
-				.Select(g => new { Name = g.Key, g.First().Metadata })
+				.Select(g => new { Name = g.Key, MetadataCollection = g.Select(i => i.Metadata).ToArray() })
 				.Select(i =>
 				{
-					var hasReservedWordName = i.Metadata.IsBuiltIn && i.Name.CollidesWithReservedWord();
+					var metadata = i.MetadataCollection[0];
+					var hasReservedWordName = metadata.IsBuiltIn && i.Name.CollidesWithReservedWord();
 					var functionName = hasReservedWordName
 						? i.Name.Trim('"')
 						: i.Name;
@@ -839,17 +840,17 @@ namespace SqlPad.Oracle
 					{
 						postFix = ".";
 					}
-					else if (hasReservedWordName || String.Equals(i.Metadata.DisplayType, OracleProgramMetadata.DisplayTypeNoParenthesis))
+					else if (hasReservedWordName || String.Equals(metadata.DisplayType, OracleProgramMetadata.DisplayTypeNoParenthesis))
 					{
 						postFix = null;
 					}
-					else if (addParameterList && i.Metadata.IsBuiltIn && i.Metadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramExtract)
+					else if (addParameterList && metadata.IsBuiltIn && metadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramExtract)
 					{
 						postFix = "(DAY FROM )";
 					}
 					
 					var analyticClause = addParameterList
-						? GetAdditionalFunctionClause(i.Metadata)
+						? GetAdditionalFunctionClause(i.MetadataCollection)
 						: String.Empty;
 
 					return
@@ -860,7 +861,7 @@ namespace SqlPad.Oracle
 							StatementNode = node,
 							Category = category,
 							InsertOffset = insertOffset,
-							CaretOffset = hasReservedWordName || category == OracleCodeCompletionCategory.Package || i.Metadata.DisplayType == OracleProgramMetadata.DisplayTypeNoParenthesis
+							CaretOffset = hasReservedWordName || category == OracleCodeCompletionCategory.Package || metadata.DisplayType == OracleProgramMetadata.DisplayTypeNoParenthesis
 								? 0
 								: (parameterListCaretOffset - analyticClause.Length),
 							CategoryPriority = 2
@@ -868,8 +869,9 @@ namespace SqlPad.Oracle
 				});
 		}
 
-		private string GetAdditionalFunctionClause(OracleProgramMetadata metadata)
+		private string GetAdditionalFunctionClause(OracleProgramMetadata[] metadataCollection)
 		{
+			var metadata = metadataCollection[0];
 			var orderByClause = metadata.IsBuiltIn && metadata.Identifier.Name.In("\"NTILE\"", "\"ROW_NUMBER\"", "\"RANK\"", "\"DENSE_RANK\"", "\"LEAD\"", "\"LAG\"")
 				? "ORDER BY NULL"
 				: String.Empty;
@@ -879,7 +881,7 @@ namespace SqlPad.Oracle
 				return " WITHIN GROUP (ORDER BY NULL)";
 			}
 
-			if (!metadata.IsAggregate && metadata.IsAnalytic)
+			if (!metadataCollection.Any(m => m.IsAggregate) && metadata.IsAnalytic)
 			{
 				return String.Format(" OVER ({0})", orderByClause);
 			}
