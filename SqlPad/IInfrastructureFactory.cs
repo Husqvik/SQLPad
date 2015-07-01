@@ -54,9 +54,11 @@ namespace SqlPad
 
 	public interface INavigationService
 	{
-		int? NavigateToQueryBlockRoot(SqlDocumentRepository documentRepository, int currentPosition);
+		int? NavigateToQueryBlockRoot(CommandExecutionContext executionContext);
 
-		int? NavigateToDefinition(SqlDocumentRepository documentRepository, int currentPosition);
+		int? NavigateToDefinition(CommandExecutionContext executionContext);
+
+		void FindUsages(CommandExecutionContext executionContext);
 	}
 
 	public interface IMultiNodeEditorDataProvider

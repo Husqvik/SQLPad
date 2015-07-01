@@ -58,6 +58,7 @@ namespace SqlPad
 		private bool _isToolTipOpenByShortCut;
 		private bool _isToolTipOpenByCaretChange;
 		private bool _gatherExecutionStatistics;
+		private bool _isHighlightedOnFocus;
 		private string _originalWorkDocumentContent = String.Empty;
 
 		private readonly Popup _popup = new Popup();
@@ -760,13 +761,15 @@ namespace SqlPad
 
 		private void NavigateToQueryBlockRoot(object sender, ExecutedRoutedEventArgs args)
 		{
-			var queryBlockRootIndex = _navigationService.NavigateToQueryBlockRoot(_sqlDocumentRepository, Editor.CaretOffset);
+			var executionContext = CommandExecutionContext.Create(Editor, _sqlDocumentRepository);
+			var queryBlockRootIndex = _navigationService.NavigateToQueryBlockRoot(executionContext);
 			NavigateToOffset(queryBlockRootIndex);
 		}
 		
 		private void NavigateToDefinition(object sender, ExecutedRoutedEventArgs args)
 		{
-			var queryBlockRootIndex = _navigationService.NavigateToDefinition(_sqlDocumentRepository, Editor.CaretOffset);
+			var executionContext = CommandExecutionContext.Create(Editor, _sqlDocumentRepository);
+			var queryBlockRootIndex = _navigationService.NavigateToDefinition(executionContext);
 			NavigateToOffset(queryBlockRootIndex);
 		}
 
@@ -1027,12 +1030,12 @@ namespace SqlPad
 
 		private void FindUsages(object sender, ExecutedRoutedEventArgs args)
 		{
-			var findUsagesCommandHandler = InfrastructureFactory.CommandFactory.FindUsagesCommandHandler;
 			var executionContext = CommandExecutionContext.Create(Editor, _sqlDocumentRepository);
-			findUsagesCommandHandler.ExecutionHandler(executionContext);
+			_navigationService.FindUsages(executionContext);
 			_colorizingTransformer.SetHighlightSegments(executionContext.SegmentsToReplace);
 			Editor.TextArea.TextView.Redraw();
 		}
+
 		private void NavigateToPreviousHighlightedUsage(object sender, ExecutedRoutedEventArgs args)
 		{
 			var nextSegments = _colorizingTransformer.HighlightSegments
@@ -1895,8 +1898,7 @@ namespace SqlPad
 
 				if (e.Key == Key.Escape)
 				{
-					_colorizingTransformer.SetHighlightSegments(null);
-					Editor.TextArea.TextView.Redraw();
+					ClearLastHighlight();
 				}
 			}
 
@@ -1920,6 +1922,12 @@ namespace SqlPad
 					Editor.Document.Remove(Editor.CaretOffset, 1);
 				}
 			}
+		}
+
+		private void ClearLastHighlight()
+		{
+			_colorizingTransformer.SetHighlightSegments(null);
+			Editor.TextArea.TextView.Redraw();
 		}
 
 		private bool AreConsencutive(char previousCharacter, char currentCharacter)
@@ -2099,6 +2107,20 @@ namespace SqlPad
 		{
 			var executionContext = CommandExecutionContext.Create(Editor, _sqlDocumentRepository);
 			_createHelpProvider.ShowHelp(executionContext);
+		}
+
+		private void BindVariableEditorGotFocusHandler(object sender, RoutedEventArgs e)
+		{
+			var bindVariable = (BindVariableModel)((FrameworkElement)sender).Tag;
+			_isHighlightedOnFocus = true;
+		}
+
+		private void BindVariableEditorLostFocus(object sender, RoutedEventArgs e)
+		{
+			if (_isHighlightedOnFocus)
+			{
+				//ClearLastHighlight();
+			}
 		}
 	}
 

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Linq;
+using SqlPad.Commands;
+using SqlPad.Oracle.Commands;
 using SqlPad.Oracle.SemanticModel;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
@@ -7,27 +9,29 @@ namespace SqlPad.Oracle
 {
 	public class OracleNavigationService : INavigationService
 	{
-		public int? NavigateToQueryBlockRoot(SqlDocumentRepository documentRepository, int currentPosition)
+		public int? NavigateToQueryBlockRoot(CommandExecutionContext executionContext)
 		{
-			var statement = documentRepository.Statements.GetStatementAtPosition(currentPosition);
+			var documentRepository = executionContext.DocumentRepository;
+			var statement = documentRepository.Statements.GetStatementAtPosition(executionContext.CaretOffset);
 			if (statement == null)
 				return null;
 
 			var semanticModel = (OracleStatementSemanticModel)documentRepository.ValidationModels[statement].SemanticModel;
-			var queryBlock = semanticModel.GetQueryBlock(currentPosition);
+			var queryBlock = semanticModel.GetQueryBlock(executionContext.CaretOffset);
 			return queryBlock == null ? null : (int?)queryBlock.RootNode.SourcePosition.IndexStart;
 		}
 
-		public int? NavigateToDefinition(SqlDocumentRepository documentRepository, int currentPosition)
+		public int? NavigateToDefinition(CommandExecutionContext executionContext)
 		{
-			var terminal = documentRepository.Statements.GetTerminalAtPosition(currentPosition, n => !n.Id.IsZeroOffsetTerminalId());
+			var documentRepository = executionContext.DocumentRepository;
+			var terminal = documentRepository.Statements.GetTerminalAtPosition(executionContext.CaretOffset, n => !n.Id.IsZeroOffsetTerminalId());
 			if (terminal == null || !terminal.Id.In(Terminals.Identifier, Terminals.ObjectIdentifier))
 			{
 				return null;
 			}
 
 			var semanticModel = (OracleStatementSemanticModel)documentRepository.ValidationModels[terminal.Statement].SemanticModel;
-			var queryBlock = semanticModel.GetQueryBlock(currentPosition);
+			var queryBlock = semanticModel.GetQueryBlock(executionContext.CaretOffset);
 
 			if (queryBlock == null)
 			{
@@ -43,6 +47,11 @@ namespace SqlPad.Oracle
 				default:
 					throw new NotSupportedException(String.Format("Terminal '{0}' is not supported. ", terminal.Id));
 			}
+		}
+
+		public void FindUsages(CommandExecutionContext executionContext)
+		{
+			FindUsagesCommand.FindUsages.ExecutionHandler(executionContext);
 		}
 
 		private static int? NavigateToObjectDefinition(OracleQueryBlock queryBlock, StatementGrammarNode terminal)

@@ -20,11 +20,6 @@ namespace SqlPad.Oracle.Commands
 		{
 			get { return CommandHandlerCollection; }
 		}
-
-		public CommandExecutionHandler FindUsagesCommandHandler
-		{
-			get { return FindUsagesCommand.FindUsages; }
-		}
 	}
 
 	public static class OracleCommands

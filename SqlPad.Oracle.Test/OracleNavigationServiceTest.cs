@@ -1,6 +1,7 @@
 ﻿using System;
 using NUnit.Framework;
 using Shouldly;
+using SqlPad.Commands;
 
 namespace SqlPad.Oracle.Test
 {
@@ -10,10 +11,10 @@ namespace SqlPad.Oracle.Test
 		private readonly OracleNavigationService _navigationService = new OracleNavigationService();
 		private readonly SqlDocumentRepository _documentRepository = TestFixture.CreateDocumentRepository();
 
-		private SqlDocumentRepository GetDocumentRepository(string statementText)
+		private CommandExecutionContext CreateExecutionContext(string statementText, int currentPosition)
 		{
 			_documentRepository.UpdateStatements(statementText);
-			return _documentRepository;
+			return new CommandExecutionContext(statementText, currentPosition, currentPosition, currentPosition, _documentRepository);
 		}
 
 		[Test(Description = @""), STAThread]
@@ -21,7 +22,7 @@ namespace SqlPad.Oracle.Test
 		{
 			const string query = "SELECT P.NAME, P.PROJECT_ID FROM (SELECT PROJECT.NAME, PROJECT.PROJECT_ID FROM PROJECT) P";
 
-			var targetIndex = _navigationService.NavigateToQueryBlockRoot(GetDocumentRepository(query), 89);
+			var targetIndex = _navigationService.NavigateToQueryBlockRoot(CreateExecutionContext(query, 89));
 			targetIndex.ShouldBe(0);
 		}
 
@@ -30,7 +31,7 @@ namespace SqlPad.Oracle.Test
 		{
 			const string query = "SELECT P.NAME, P.PROJECT_ID FROM (SELECT PROJECT.NAME, PROJECT.PROJECT_ID FROM PROJECT) P";
 
-			var targetIndex = _navigationService.NavigateToQueryBlockRoot(GetDocumentRepository(query), 76);
+			var targetIndex = _navigationService.NavigateToQueryBlockRoot(CreateExecutionContext(query, 76));
 			targetIndex.ShouldBe(34);
 		}
 
@@ -39,7 +40,7 @@ namespace SqlPad.Oracle.Test
 		{
 			const string query = "SELECT P.NAME, P.PROJECT_ID FROM (SELECT PROJECT.NAME, PROJECT.PROJECT_ID FROM\t\r\n PROJECT) P";
 
-			var targetIndex = _navigationService.NavigateToQueryBlockRoot(GetDocumentRepository(query), 80);
+			var targetIndex = _navigationService.NavigateToQueryBlockRoot(CreateExecutionContext(query, 80));
 			targetIndex.ShouldBe(34);
 		}
 
@@ -48,7 +49,7 @@ namespace SqlPad.Oracle.Test
 		{
 			const string query = "SELECT P.NAME, P.PROJECT_ID FROM (SELECT PROJECT.NAME, PROJECT.PROJECT_ID FROM PROJECT) P ";
 
-			var targetIndex = _navigationService.NavigateToQueryBlockRoot(GetDocumentRepository(query), 90);
+			var targetIndex = _navigationService.NavigateToQueryBlockRoot(CreateExecutionContext(query, 90));
 			targetIndex.ShouldBe(null);
 		}
 
@@ -57,7 +58,7 @@ namespace SqlPad.Oracle.Test
 		{
 			const string query = "SELECT P.NAME, P.PROJECT_ID FROM (SELECT PROJECT.NAME, PROJECT.PROJECT_ID FROM PROJECT) P";
 
-			var targetIndex = _navigationService.NavigateToDefinition(GetDocumentRepository(query), 10);
+			var targetIndex = _navigationService.NavigateToDefinition(CreateExecutionContext(query, 10));
 			targetIndex.ShouldBe(49);
 		}
 
@@ -66,7 +67,7 @@ namespace SqlPad.Oracle.Test
 		{
 			const string query = "SELECT P.PROJECT_ID, P.NAME FROM (SELECT * FROM PROJECT) P";
 
-			var targetIndex = _navigationService.NavigateToDefinition(GetDocumentRepository(query), 13);
+			var targetIndex = _navigationService.NavigateToDefinition(CreateExecutionContext(query, 13));
 			targetIndex.ShouldBe(41);
 		}
 
@@ -80,7 +81,9 @@ namespace SqlPad.Oracle.Test
 			var documentRepository = new SqlDocumentRepository(new OracleSqlParser(), new OracleStatementValidator(), databaseModel);
 			documentRepository.UpdateStatements(query);
 
-			var targetIndex = _navigationService.NavigateToDefinition(documentRepository, 13);
+			const int caretOffset = 13;
+			var executionContext = new CommandExecutionContext(query, caretOffset, caretOffset, caretOffset, documentRepository);
+			var targetIndex = _navigationService.NavigateToDefinition(executionContext);
 			targetIndex.ShouldBe(null);
 		}
 
@@ -89,7 +92,7 @@ namespace SqlPad.Oracle.Test
 		{
 			const string query = "WITH GENERATOR(VAL) AS (SELECT 1 FROM DUAL UNION ALL SELECT VAL + 1 FROM GENERATOR WHERE VAL <= 10) SELECT VAL FROM GENERATOR";
 
-			var targetIndex = _navigationService.NavigateToDefinition(GetDocumentRepository(query), 90);
+			var targetIndex = _navigationService.NavigateToDefinition(CreateExecutionContext(query, 90));
 			targetIndex.ShouldBe(60);
 		}
 
@@ -98,7 +101,7 @@ namespace SqlPad.Oracle.Test
 		{
 			const string query = "SELECT P.NAME, P.PROJECT_ID FROM (SELECT PROJECT.NAME, PROJECT.PROJECT_ID FROM PROJECT) P";
 
-			var targetIndex = _navigationService.NavigateToDefinition(GetDocumentRepository(query), 7);
+			var targetIndex = _navigationService.NavigateToDefinition(CreateExecutionContext(query, 7));
 			targetIndex.ShouldBe(88);
 		}
 
@@ -107,7 +110,7 @@ namespace SqlPad.Oracle.Test
 		{
 			const string query = "SELECT P.NAME, PP.PROJECT_ID FROM PROJECT P, PROJECT PP";
 
-			var targetIndex = _navigationService.NavigateToDefinition(GetDocumentRepository(query), 7);
+			var targetIndex = _navigationService.NavigateToDefinition(CreateExecutionContext(query, 7));
 			targetIndex.ShouldBe(42);
 		}
 
@@ -117,7 +120,7 @@ namespace SqlPad.Oracle.Test
 			const string query = @"WITH CTE AS (SELECT RESPONDENTBUCKET_ID, SELECTION_ID, PROJECT_ID, NAME FROM SELECTION)
 SELECT CTE.RESPONDENTBUCKET_ID, CTE.SELECTION_ID, CTE.PROJECT_ID, CTE.NAME FROM CTE";
 
-			var targetIndex = _navigationService.NavigateToDefinition(GetDocumentRepository(query), 155);
+			var targetIndex = _navigationService.NavigateToDefinition(CreateExecutionContext(query, 155));
 			targetIndex.ShouldBe(5);
 		}
 	}
