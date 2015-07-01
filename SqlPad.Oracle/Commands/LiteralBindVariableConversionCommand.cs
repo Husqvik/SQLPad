@@ -5,6 +5,7 @@ using SqlPad.Commands;
 using SqlPad.Oracle.SemanticModel;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
+using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
 
 namespace SqlPad.Oracle.Commands
 {
@@ -121,21 +122,21 @@ namespace SqlPad.Oracle.Commands
 			switch (_requiredPrecedingTerminalId)
 			{
 				case Terminals.Date:
-					bindVariable.DataType = OracleBindVariable.DataTypeDate;
+					bindVariable.DataType = TerminalValues.Date;
 					break;
 				case Terminals.Timestamp:
-					bindVariable.DataType = OracleBindVariable.DataTypeTimestamp;
+					bindVariable.DataType = TerminalValues.Timestamp;
 					break;
 				case null:
-					if (literalTerminal.Id == Terminals.NumberLiteral)
+					if (String.Equals(literalTerminal.Id, Terminals.NumberLiteral))
 					{
-						bindVariable.DataType = OracleBindVariable.DataTypeNumber;
+						bindVariable.DataType = TerminalValues.Number;
 					}
 					else
 					{
 						bindVariable.DataType = literalTerminal.Token.Value[0].In('n', 'N')
-							? OracleBindVariable.DataTypeUnicodeVarchar2
-							: OracleBindVariable.DataTypeVarchar2;
+							? TerminalValues.NVarchar2
+							: TerminalValues.Varchar2;
 					}
 
 					break;

@@ -82,21 +82,22 @@ namespace SqlPad
 			_lineComments.Clear();
 		}
 
-		public void SetHighlightParenthesis(ICollection<StatementGrammarNode> parenthesisNodes)
+		public void SetHighlightParenthesis(IEnumerable<StatementGrammarNode> parenthesisNodes)
 		{
 			_highlightParenthesis.Clear();
 			_highlightParenthesis.AddRange(parenthesisNodes);
 		}
 
-		public void SetHighlightSegments(ICollection<TextSegment> highlightSegments)
+		public void AddHighlightSegments(ICollection<TextSegment> highlightSegments)
 		{
 			lock (_lockObject)
 			{
 				if (highlightSegments != null)
 				{
-					if (highlightSegments.Count == 0 ||
-					    _highlightSegments.SelectMany(c => c).Contains(highlightSegments.First()))
+					if (_highlightSegments.Any(c => c.Any(s => s.Equals(highlightSegments.First()))))
+					{
 						return;
+					}
 
 					_highlightSegments.Push(highlightSegments);
 				}

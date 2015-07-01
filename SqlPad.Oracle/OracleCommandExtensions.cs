@@ -8,6 +8,8 @@ using Oracle.ManagedDataAccess.Client;
 using Oracle.DataAccess.Client;
 #endif
 
+using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
+
 namespace SqlPad.Oracle
 {
 	public static class OracleCommandExtensions
@@ -16,7 +18,7 @@ namespace SqlPad.Oracle
 		{
 			var parameter = command.CreateParameter();
 			parameter.ParameterName = parameterName;
-			parameter.Direction = System.Data.ParameterDirection.InputOutput;
+			parameter.Direction = ParameterDirection.InputOutput;
 			parameter.Value = Equals(value, String.Empty) ? null : value;
 
 			if (size.HasValue)
@@ -26,31 +28,31 @@ namespace SqlPad.Oracle
 
 			switch (databaseType)
 			{
-				case OracleBindVariable.DataTypeChar:
+				case TerminalValues.Char:
 					parameter.OracleDbType = OracleDbType.Char;
 					break;
-				case OracleBindVariable.DataTypeClob:
+				case TerminalValues.Clob:
 					parameter.OracleDbType = OracleDbType.Clob;
 					break;
-				case OracleBindVariable.DataTypeTimestamp:
+				case TerminalValues.Timestamp:
 					parameter.OracleDbType = OracleDbType.TimeStamp;
 					break;
-				case OracleBindVariable.DataTypeDate:
+				case TerminalValues.Date:
 					parameter.OracleDbType = OracleDbType.Date;
 					break;
-				case OracleBindVariable.DataTypeNumber:
+				case TerminalValues.Number:
 					parameter.OracleDbType = OracleDbType.Decimal;
 					break;
-				case OracleBindVariable.DataTypeUnicodeChar:
+				case TerminalValues.NChar:
 					parameter.OracleDbType = OracleDbType.NChar;
 					break;
 				case OracleBindVariable.DataTypeUnicodeClob:
 					parameter.OracleDbType = OracleDbType.NClob;
 					break;
-				case OracleBindVariable.DataTypeUnicodeVarchar2:
+				case TerminalValues.NVarchar2:
 					parameter.OracleDbType = OracleDbType.NVarchar2;
 					break;
-				case OracleBindVariable.DataTypeVarchar2:
+				case TerminalValues.Varchar2:
 					parameter.OracleDbType = OracleDbType.Varchar2;
 					break;
 			}

@@ -6,6 +6,8 @@ using Shouldly;
 using SqlPad.Commands;
 using SqlPad.Oracle.Commands;
 
+using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
+
 namespace SqlPad.Oracle.Test.Commands
 {
 	[TestFixture]
@@ -1619,7 +1621,7 @@ SELECT * FROM DUAL";
 			_editor.Text = statementText;
 			_editor.CaretOffset = 12;
 
-			SetBindVariableAndExecute(1, "2014-10-04", OracleBindVariable.DataTypeDate);
+			SetBindVariableAndExecute(1, "2014-10-04", TerminalValues.Date);
 
 			const string expectedResult = @"SELECT DATE'2014-10-04', DATE'2014-10-04' FROM DUAL";
 
@@ -1633,14 +1635,14 @@ SELECT * FROM DUAL";
 			_editor.Text = statementText;
 			_editor.CaretOffset = 12;
 
-			SetBindVariableAndExecute(1, "2014-11-28 14:16:18", OracleBindVariable.DataTypeTimestamp);
+			SetBindVariableAndExecute(1, "2014-11-28 14:16:18", TerminalValues.Timestamp);
 
 			const string expectedResult = @"SELECT TIMESTAMP'2014-11-28 14:16:18', TIMESTAMP'2014-11-28 14:16:18' FROM DUAL";
 
 			_editor.Text.ShouldBe(expectedResult);
 		}
 
-		private void SetBindVariableAndExecute(int actionIndex, string value, string dataType = OracleBindVariable.DataTypeVarchar2)
+		private void SetBindVariableAndExecute(int actionIndex, string value, string dataType = TerminalValues.Varchar2)
 		{
 			var actions = new OracleContextActionProvider()
 					.GetContextActions(TestFixture.DatabaseModel, _editor.Text, _editor.CaretOffset)

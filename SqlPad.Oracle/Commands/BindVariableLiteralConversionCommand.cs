@@ -4,6 +4,7 @@ using System.Linq;
 using SqlPad.Commands;
 using SqlPad.Oracle.SemanticModel;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
+using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
 
 namespace SqlPad.Oracle.Commands
 {
@@ -69,13 +70,13 @@ namespace SqlPad.Oracle.Commands
 				
 				switch (_bindVariable.DataType)
 				{
-					case OracleBindVariable.DataTypeNumber:
+					case TerminalValues.Number:
 						textSegment.Text = Convert.ToString(_bindVariable.Value);
 						break;
-					case OracleBindVariable.DataTypeDate:
+					case TerminalValues.Date:
 						textSegment.Text = String.Format("DATE'{0}'", _bindVariable.Value);
 						break;
-					case OracleBindVariable.DataTypeTimestamp:
+					case TerminalValues.Timestamp:
 						textSegment.Text = String.Format("TIMESTAMP'{0}'", _bindVariable.Value);
 						break;
 					default:

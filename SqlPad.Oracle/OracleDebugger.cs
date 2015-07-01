@@ -10,6 +10,8 @@ using Oracle.DataAccess.Client;
 using Oracle.DataAccess.Types;
 #endif
 
+using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
+
 namespace SqlPad.Oracle
 {
 	public class OracleDebuggerSession : IDebuggerSession, IDisposable
@@ -32,7 +34,7 @@ namespace SqlPad.Oracle
 		public void Start()
 		{
 			_debuggedSessionCommand.CommandText = DatabaseCommands.StartDebuggee;
-			_debuggedSessionCommand.AddSimpleParameter("DEBUG_SESSION_ID", null, OracleBindVariable.DataTypeVarchar2, 12);
+			_debuggedSessionCommand.AddSimpleParameter("DEBUG_SESSION_ID", null, TerminalValues.Varchar2, 12);
 			var debuggerSessionIdParameter = _debuggedSessionCommand.Parameters[0];
 
 			_debuggedSessionCommand.ExecuteNonQuery();
@@ -60,29 +62,29 @@ namespace SqlPad.Oracle
 
 		private void AddDebugParameters(OracleCommand command)
 		{
-			command.AddSimpleParameter("DEBUG_ACTION_STATUS", null, OracleBindVariable.DataTypeNumber);
-			command.AddSimpleParameter("BREAKPOINT", null, OracleBindVariable.DataTypeNumber);
-			command.AddSimpleParameter("INTERPRETERDEPTH", null, OracleBindVariable.DataTypeNumber);
-			command.AddSimpleParameter("LINE", null, OracleBindVariable.DataTypeNumber);
-			command.AddSimpleParameter("OER", null, OracleBindVariable.DataTypeNumber);
-			command.AddSimpleParameter("REASON", null, OracleBindVariable.DataTypeNumber);
-			command.AddSimpleParameter("STACKDEPTH", null, OracleBindVariable.DataTypeNumber);
-			command.AddSimpleParameter("TERMINATED", null, OracleBindVariable.DataTypeNumber);
-			command.AddSimpleParameter("DBLINK", null, OracleBindVariable.DataTypeVarchar2, 30);
-			command.AddSimpleParameter("ENTRYPOINTNAME", null, OracleBindVariable.DataTypeVarchar2, 512);
-			command.AddSimpleParameter("OWNER", null, OracleBindVariable.DataTypeVarchar2, 30);
-			command.AddSimpleParameter("NAME", null, OracleBindVariable.DataTypeVarchar2, 30);
-			command.AddSimpleParameter("NAMESPACE", null, OracleBindVariable.DataTypeNumber);
-			command.AddSimpleParameter("LIBUNITTYPE", null, OracleBindVariable.DataTypeNumber);
+			command.AddSimpleParameter("DEBUG_ACTION_STATUS", null, TerminalValues.Number);
+			command.AddSimpleParameter("BREAKPOINT", null, TerminalValues.Number);
+			command.AddSimpleParameter("INTERPRETERDEPTH", null, TerminalValues.Number);
+			command.AddSimpleParameter("LINE", null, TerminalValues.Number);
+			command.AddSimpleParameter("OER", null, TerminalValues.Number);
+			command.AddSimpleParameter("REASON", null, TerminalValues.Number);
+			command.AddSimpleParameter("STACKDEPTH", null, TerminalValues.Number);
+			command.AddSimpleParameter("TERMINATED", null, TerminalValues.Number);
+			command.AddSimpleParameter("DBLINK", null, TerminalValues.Varchar2, 30);
+			command.AddSimpleParameter("ENTRYPOINTNAME", null, TerminalValues.Varchar2, 512);
+			command.AddSimpleParameter("OWNER", null, TerminalValues.Varchar2, 30);
+			command.AddSimpleParameter("NAME", null, TerminalValues.Varchar2, 30);
+			command.AddSimpleParameter("NAMESPACE", null, TerminalValues.Number);
+			command.AddSimpleParameter("LIBUNITTYPE", null, TerminalValues.Number);
 		}
 
 		private object GetValue(string name)
 		{
 			_debuggerSessionCommand.CommandText = DatabaseCommands.DebuggerGetValue;
 			_debuggerSessionCommand.Parameters.Clear();
-			_debuggerSessionCommand.AddSimpleParameter("RESULT", null, OracleBindVariable.DataTypeNumber);
-			_debuggerSessionCommand.AddSimpleParameter("NAME", name, OracleBindVariable.DataTypeVarchar2);
-			_debuggerSessionCommand.AddSimpleParameter("VALUE", null, OracleBindVariable.DataTypeVarchar2, 32767);
+			_debuggerSessionCommand.AddSimpleParameter("RESULT", null, TerminalValues.Number);
+			_debuggerSessionCommand.AddSimpleParameter("NAME", name, TerminalValues.Varchar2);
+			_debuggerSessionCommand.AddSimpleParameter("VALUE", null, TerminalValues.Varchar2, 32767);
 
 			_debuggerSessionCommand.ExecuteNonQuery();
 
@@ -105,7 +107,7 @@ END;";
 		{
 			_debuggerSessionCommand.CommandText = DatabaseCommands.ContinueDebugger;
 			_debuggerSessionCommand.Parameters.Clear();
-			_debuggerSessionCommand.AddSimpleParameter("BREAK_FLAGS", (int)breakFlags, OracleBindVariable.DataTypeNumber);
+			_debuggerSessionCommand.AddSimpleParameter("BREAK_FLAGS", (int)breakFlags, TerminalValues.Number);
 			AddDebugParameters(_debuggerSessionCommand);
 
 			await _debuggerSessionCommand.ExecuteNonQueryAsynchronous(cancellationToken);

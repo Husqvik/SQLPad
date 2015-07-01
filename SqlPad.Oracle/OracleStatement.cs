@@ -5,6 +5,7 @@ using System.Linq;
 using SqlPad.Oracle.DataDictionary;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
+using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
 
 namespace SqlPad.Oracle
 {
@@ -33,7 +34,7 @@ namespace SqlPad.Oracle
 					new BindVariableConfiguration
 					{
 						Name = g.Key,
-						DataType = OracleBindVariable.DataTypeVarchar2,
+						DataType = TerminalValues.Varchar2,
 						Nodes = g.ToList().AsReadOnly(),
 						DataTypes = OracleBindVariable.DataTypes
 					})

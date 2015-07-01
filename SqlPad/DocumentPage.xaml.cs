@@ -58,7 +58,6 @@ namespace SqlPad
 		private bool _isToolTipOpenByShortCut;
 		private bool _isToolTipOpenByCaretChange;
 		private bool _gatherExecutionStatistics;
-		private bool _isHighlightedOnFocus;
 		private string _originalWorkDocumentContent = String.Empty;
 
 		private readonly Popup _popup = new Popup();
@@ -1032,8 +1031,7 @@ namespace SqlPad
 		{
 			var executionContext = CommandExecutionContext.Create(Editor, _sqlDocumentRepository);
 			_navigationService.FindUsages(executionContext);
-			_colorizingTransformer.SetHighlightSegments(executionContext.SegmentsToReplace);
-			Editor.TextArea.TextView.Redraw();
+			AddHighlightSegments(executionContext.SegmentsToReplace);
 		}
 
 		private void NavigateToPreviousHighlightedUsage(object sender, ExecutedRoutedEventArgs args)
@@ -1924,9 +1922,14 @@ namespace SqlPad
 			}
 		}
 
+		private void AddHighlightSegments(ICollection<TextSegment> segments)
+		{
+			_colorizingTransformer.AddHighlightSegments(segments);
+			Editor.TextArea.TextView.Redraw();
+		}
 		private void ClearLastHighlight()
 		{
-			_colorizingTransformer.SetHighlightSegments(null);
+			_colorizingTransformer.AddHighlightSegments(null);
 			Editor.TextArea.TextView.Redraw();
 		}
 
@@ -2112,15 +2115,15 @@ namespace SqlPad
 		private void BindVariableEditorGotFocusHandler(object sender, RoutedEventArgs e)
 		{
 			var bindVariable = (BindVariableModel)((FrameworkElement)sender).Tag;
-			_isHighlightedOnFocus = true;
+			var executionContext = CommandExecutionContext.Create(Editor, _sqlDocumentRepository);
+			executionContext.CaretOffset = bindVariable.BindVariable.Nodes[0].SourcePosition.IndexStart;
+			_navigationService.FindUsages(executionContext);
+			AddHighlightSegments(executionContext.SegmentsToReplace);
 		}
 
 		private void BindVariableEditorLostFocus(object sender, RoutedEventArgs e)
 		{
-			if (_isHighlightedOnFocus)
-			{
-				//ClearLastHighlight();
-			}
+			ClearLastHighlight();
 		}
 	}
 

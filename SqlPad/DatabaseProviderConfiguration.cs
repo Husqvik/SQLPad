@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -80,8 +81,8 @@ namespace SqlPad
 			}
 		}
 
-		public IDictionary<string, Type> DataTypes { get; set; }
+		public ReadOnlyDictionary<string, Type> DataTypes { get; set; }
 		
-		public ICollection<StatementGrammarNode> Nodes { get; set; }
+		public IReadOnlyList<StatementGrammarNode> Nodes { get; set; }
 	}
 }
