@@ -30,6 +30,8 @@ namespace SqlPad
 		private int _selectedCellValueCount;
 		private decimal _selectedCellSum;
 		private decimal _selectedCellAverage;
+		private decimal _selectedCellMin;
+		private decimal _selectedCellMax;
 		private Visibility _selectedCellInfoVisibility = Visibility.Collapsed;
 		private Visibility _selectedCellNumericInfoVisibility = Visibility.Collapsed;
 		private Visibility _statementExecutedSuccessfullyStatusMessageVisibility = Visibility.Collapsed;
@@ -427,6 +429,18 @@ namespace SqlPad
 		{
 			get { return _selectedCellAverage; }
 			set { UpdateValueAndRaisePropertyChanged(ref _selectedCellAverage, value); }
+		}
+
+		public decimal SelectedCellMin
+		{
+			get { return _selectedCellMin; }
+			set { UpdateValueAndRaisePropertyChanged(ref _selectedCellMin, value); }
+		}
+
+		public decimal SelectedCellMax
+		{
+			get { return _selectedCellMax; }
+			set { UpdateValueAndRaisePropertyChanged(ref _selectedCellMax, value); }
 		}
 
 		public void ResetSchemas()

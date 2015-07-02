@@ -12,6 +12,7 @@
 		<sqlPad:PrettyPrintIntegerConverter x:Key="PrettyPrintNumericConverter" />
 
 		<RoutedCommand x:Key="ExportToCsvFileCommand"/>
+		<RoutedCommand x:Key="ExportToTsvFileCommand"/>
 		<RoutedCommand x:Key="ExportToHtmlFileCommand"/>
 		<RoutedCommand x:Key="ExportToJsonFileCommand"/>
 		<RoutedCommand x:Key="ExportToSqlInsertFileCommand"/>
@@ -19,6 +20,7 @@
 		<RoutedCommand x:Key="ExportToXmlFileCommand"/>
 
 		<RoutedCommand x:Key="ExportToCsvClipboardCommand"/>
+		<RoutedCommand x:Key="ExportToTsvClipboardCommand"/>
 		<RoutedCommand x:Key="ExportToHtmlClipboardCommand"/>
 		<RoutedCommand x:Key="ExportToJsonClipboardCommand"/>
 		<RoutedCommand x:Key="ExportToSqlInsertClipboardCommand"/>
@@ -28,6 +30,7 @@
 		<RoutedCommand x:Key="GenerateCSharpQueryClassCommand"/>
 
 		<sqlPad:CsvDataExporter x:Key="CsvDataExporter" />
+		<sqlPad:TsvDataExporter x:Key="TsvDataExporter" />
 		<sqlPad:HtmlDataExporter x:Key="HtmlDataExporter" />
 		<sqlPad:JsonDataExporter x:Key="JsonDataExporter" />
 		<sqlPad:SqlInsertDataExporter x:Key="SqlInsertDataExporter" />
@@ -39,6 +42,15 @@
 		<TabItem Header="_Result set" x:Name="TabResultSet">
 			<DockPanel LastChildFill="True">
 				<StackPanel DockPanel.Dock="Bottom" Visibility="{Binding SelectedCellInfoVisibility}" Orientation="Horizontal" HorizontalAlignment="Right">
+					<StackPanel.Resources>
+						<Style TargetType="TextBox">
+							<Setter Property="IsReadOnly" Value="True" />
+							<Setter Property="IsReadOnlyCaretVisible" Value="True" />
+							<Setter Property="BorderThickness" Value="0" />
+							<Setter Property="Background" Value="Transparent" />
+						</Style>
+					</StackPanel.Resources>
+
 					<TextBlock Text="Count: " />
 					<TextBox Text="{Binding SelectedCellValueCount}" IsReadOnly="True" IsReadOnlyCaretVisible="True" BorderThickness="0" Background="Transparent" />
 					<StackPanel Orientation="Horizontal" Visibility="{Binding SelectedCellNumericInfoVisibility}">
@@ -46,33 +58,43 @@
 						<TextBox Text="{Binding SelectedCellSum, ConverterCulture={x:Static globalization:CultureInfo.CurrentCulture}}" IsReadOnly="True" IsReadOnlyCaretVisible="True" BorderThickness="0" Background="Transparent" />
 					</StackPanel>
 					<StackPanel Orientation="Horizontal" Visibility="{Binding SelectedCellNumericInfoVisibility}">
+						<TextBlock Text=" Min: " />
+						<TextBox Text="{Binding SelectedCellMin, ConverterCulture={x:Static globalization:CultureInfo.CurrentCulture}}" IsReadOnly="True" IsReadOnlyCaretVisible="True" BorderThickness="0" Background="Transparent" />
+					</StackPanel>
+					<StackPanel Orientation="Horizontal" Visibility="{Binding SelectedCellNumericInfoVisibility}">
+						<TextBlock Text=" Max: " />
+						<TextBox Text="{Binding SelectedCellMax, ConverterCulture={x:Static globalization:CultureInfo.CurrentCulture}}" IsReadOnly="True" IsReadOnlyCaretVisible="True" BorderThickness="0" Background="Transparent" />
+					</StackPanel>
+					<StackPanel Orientation="Horizontal" Visibility="{Binding SelectedCellNumericInfoVisibility}">
 						<TextBlock Text=" Average: " />
 						<TextBox Text="{Binding SelectedCellAverage, ConverterCulture={x:Static globalization:CultureInfo.CurrentCulture}}" IsReadOnly="True" IsReadOnlyCaretVisible="True" BorderThickness="0" Background="Transparent" />
 					</StackPanel>
 				</StackPanel>
+
 				<DataGrid x:Name="ResultGrid"
-							  AutoGenerateColumns="False"
-							  ItemsSource="{Binding ResultRowItems}"
-							  MaxColumnWidth="{Binding ElementName=ResultGrid, Path=ActualWidth}"
-							  VirtualizingStackPanel.VirtualizationMode="Recycling"
-							  EnableColumnVirtualization="True"
-							  RowHeight="21"
-							  CanUserSortColumns="False"
-							  CanUserDeleteRows ="False"
-							  CanUserAddRows="False"
-							  HeadersVisibility="None"
-							  IsTextSearchEnabled="True"
-							  SelectionMode="Extended"
-							  SelectionUnit="CellOrRowHeader"
-							  HorizontalGridLinesBrush="LightGray"
-							  VerticalGridLinesBrush="LightGray"
-							  BeginningEdit="ResultGridBeginningEditHandler"
-							  SelectedCellsChanged="ResultGridSelectedCellsChangedHandler"
-							  ScrollViewer.ScrollChanged="ResultGridScrollChangedHandler"
-							  MouseDoubleClick="ResultGridMouseDoubleClickHandler"
-							  DataGridColumnHeader.Click="ColumnHeaderMouseClickHandler">
+				          AutoGenerateColumns="False"
+				          ItemsSource="{Binding ResultRowItems}"
+				          MaxColumnWidth="{Binding ElementName=ResultGrid, Path=ActualWidth}"
+				          VirtualizingStackPanel.VirtualizationMode="Recycling"
+				          EnableColumnVirtualization="True"
+				          RowHeight="21"
+				          CanUserSortColumns="False"
+				          CanUserDeleteRows="False"
+				          CanUserAddRows="False"
+				          HeadersVisibility="None"
+				          IsTextSearchEnabled="True"
+				          SelectionMode="Extended"
+				          SelectionUnit="CellOrRowHeader"
+				          HorizontalGridLinesBrush="LightGray"
+				          VerticalGridLinesBrush="LightGray"
+				          BeginningEdit="ResultGridBeginningEditHandler"
+				          SelectedCellsChanged="ResultGridSelectedCellsChangedHandler"
+				          ScrollViewer.ScrollChanged="ResultGridScrollChangedHandler"
+				          MouseDoubleClick="ResultGridMouseDoubleClickHandler"
+				          DataGridColumnHeader.Click="ColumnHeaderMouseClickHandler">
 					<DataGrid.CommandBindings>
 						<CommandBinding Command="{StaticResource ExportToCsvFileCommand}" Executed="ExportDataFileHandler" CanExecute="CanExportDataHandler" />
+						<CommandBinding Command="{StaticResource ExportToTsvFileCommand}" Executed="ExportDataFileHandler" CanExecute="CanExportDataHandler" />
 						<CommandBinding Command="{StaticResource ExportToHtmlFileCommand}" Executed="ExportDataFileHandler" CanExecute="CanExportDataHandler" />
 						<CommandBinding Command="{StaticResource ExportToJsonFileCommand}" Executed="ExportDataFileHandler" CanExecute="CanExportDataHandler" />
 						<CommandBinding Command="{StaticResource ExportToSqlInsertFileCommand}" Executed="ExportDataFileHandler" CanExecute="CanExportDataHandler" />
@@ -80,6 +102,7 @@
 						<CommandBinding Command="{StaticResource ExportToXmlFileCommand}" Executed="ExportDataFileHandler" CanExecute="CanExportDataHandler" />
 						
 						<CommandBinding Command="{StaticResource ExportToCsvClipboardCommand}" Executed="ExportDataClipboardHandler" CanExecute="CanExportDataHandler" />
+						<CommandBinding Command="{StaticResource ExportToTsvClipboardCommand}" Executed="ExportDataClipboardHandler" CanExecute="CanExportDataHandler" />
 						<CommandBinding Command="{StaticResource ExportToHtmlClipboardCommand}" Executed="ExportDataClipboardHandler" CanExecute="CanExportDataHandler" />
 						<CommandBinding Command="{StaticResource ExportToJsonClipboardCommand}" Executed="ExportDataClipboardHandler" CanExecute="CanExportDataHandler" />
 						<CommandBinding Command="{StaticResource ExportToSqlInsertClipboardCommand}" Executed="ExportDataClipboardHandler" CanExecute="CanExportDataHandler" />
@@ -95,6 +118,7 @@
 							<MenuItem Header="_Fetch all" Command="commands:GenericCommands.FetchAllRows" />
 							<MenuItem Header="_Export to file">
 								<MenuItem Header="_CSV..." Command="{StaticResource ExportToCsvFileCommand}" CommandParameter="{StaticResource CsvDataExporter}" />
+								<MenuItem Header="_Tab-separated value..." Command="{StaticResource ExportToTsvFileCommand}" CommandParameter="{StaticResource TsvDataExporter}" />
 								<MenuItem Header="_HTML..." Command="{StaticResource ExportToHtmlFileCommand}" CommandParameter="{StaticResource HtmlDataExporter}" />
 								<MenuItem Header="_JSON..." Command="{StaticResource ExportToJsonFileCommand}" CommandParameter="{StaticResource JsonDataExporter}" />
 								<MenuItem Header="SQL _INSERT..." Command="{StaticResource ExportToSqlInsertFileCommand}" CommandParameter="{StaticResource SqlInsertDataExporter}" />
@@ -103,6 +127,7 @@
 							</MenuItem>
 							<MenuItem Header="_Export to clipboard">
 								<MenuItem Header="_CSV..." Command="{StaticResource ExportToCsvClipboardCommand}" CommandParameter="{StaticResource CsvDataExporter}" />
+								<MenuItem Header="_Tab-separated value..." Command="{StaticResource ExportToTsvClipboardCommand}" CommandParameter="{StaticResource TsvDataExporter}" />
 								<MenuItem Header="_HTML..." Command="{StaticResource ExportToHtmlClipboardCommand}" CommandParameter="{StaticResource HtmlDataExporter}" />
 								<MenuItem Header="_JSON..." Command="{StaticResource ExportToJsonClipboardCommand}" CommandParameter="{StaticResource JsonDataExporter}" />
 								<MenuItem Header="SQL _INSERT..." Command="{StaticResource ExportToSqlInsertClipboardCommand}" CommandParameter="{StaticResource SqlInsertDataExporter}" />
@@ -148,13 +173,13 @@
 		</TabItem>
 		<TabItem Header="_Errors" x:Name="TabCompilationErrors" Visibility="{Binding CompilationErrorsVisible}">
 			<DataGrid ItemsSource="{Binding CompilationErrors}"
-							  AutoGenerateColumns="False"
-							  CanUserDeleteRows ="False"
-							  CanUserAddRows="False"
-							  BeginningEdit="ResultGridBeginningEditHandler"
-							  MouseDoubleClick="ErrorListMouseDoubleClickHandler"
-							  HorizontalGridLinesBrush="LightGray"
-							  VerticalGridLinesBrush="LightGray">
+			          AutoGenerateColumns="False"
+			          CanUserDeleteRows="False"
+			          CanUserAddRows="False"
+			          BeginningEdit="ResultGridBeginningEditHandler"
+			          MouseDoubleClick="ErrorListMouseDoubleClickHandler"
+			          HorizontalGridLinesBrush="LightGray"
+			          VerticalGridLinesBrush="LightGray">
 				<DataGrid.Columns>
 					<DataGridTextColumn Header="Owner" Binding="{Binding Path=Owner}"
 					                    EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}" />

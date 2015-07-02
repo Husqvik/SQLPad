@@ -356,6 +356,8 @@ public class Query
 			}
 
 			var sum = 0m;
+			var min = Decimal.MaxValue;
+			var max = Decimal.MinValue;
 			var count = 0;
 			var hasOnlyNumericValues = true;
 			foreach (var selectedCell in ResultGrid.SelectedCells)
@@ -371,7 +373,18 @@ public class Query
 				{
 					try
 					{
-						sum += Convert.ToDecimal(stringValue, CultureInfo.CurrentCulture);
+						var numericValue = Convert.ToDecimal(stringValue, CultureInfo.CurrentCulture);
+						sum += numericValue;
+
+						if (numericValue > max)
+						{
+							max = numericValue;
+						}
+
+						if (numericValue < min)
+						{
+							min = numericValue;
+						}
 					}
 					catch
 					{
@@ -387,6 +400,8 @@ public class Query
 			if (count > 0)
 			{
 				_pageModel.SelectedCellSum = sum;
+				_pageModel.SelectedCellMin = min;
+				_pageModel.SelectedCellMax = max;
 				_pageModel.SelectedCellAverage = sum / count;
 				_pageModel.SelectedCellNumericInfoVisibility = hasOnlyNumericValues ? Visibility.Visible : Visibility.Collapsed;
 			}

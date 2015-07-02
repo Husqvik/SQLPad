@@ -16,7 +16,12 @@ namespace SqlPad
 		private const string DoubleQuotes = "\"\"";
 		private const string CsvSeparator = ";";
 
-		public string FileNameFilter
+		protected virtual string Separator
+		{
+			get { return CsvSeparator; }
+		}
+
+		public virtual string FileNameFilter
 		{
 			get { return "CSV files (*.csv)|*.csv|All files (*.*)|*"; }
 		}
@@ -45,7 +50,7 @@ namespace SqlPad
 			var columnHeaders = orderedColumns
 				.Select(c => String.Format(MaskWrapByQuote, c.Header.ToString().Replace("__", "_").Replace(QuoteCharacter, DoubleQuotes)));
 
-			var headerLine = String.Join(CsvSeparator, columnHeaders);
+			var headerLine = String.Join(Separator, columnHeaders);
 
 			var rows = (IEnumerable)dataGrid.Items;
 
@@ -60,7 +65,7 @@ namespace SqlPad
 			{
 				cancellationToken.ThrowIfCancellationRequested();
 
-				var contentLine = String.Join(CsvSeparator, rowValues.Select((t, i) => FormatCsvValue(t)));
+				var contentLine = String.Join(Separator, rowValues.Select((t, i) => FormatCsvValue(t)));
 				writer.WriteLine(contentLine);
 			}
 		}

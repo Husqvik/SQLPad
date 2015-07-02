@@ -291,6 +291,17 @@ WHERE
 		}
 
 		[Test, STAThread]
+		public void TestTsvDataExporter()
+		{
+			var resultGrid = InitializeDataGrid();
+
+			var result = GetExportContent(resultGrid, new TsvDataExporter());
+
+			const string expectedResult = "\"DUMMY1\"\t\"DUMMY_WITH_UNDERSCORES\"\r\n\"Value \"\"1\"\" '2' <3>\"\t\"16.8.2014 22:25:34\"\r\n\"\"\"2.\"\"Value\"\t\"16.8.2014 00:00:00\"\r\n";
+			result.ShouldBe(expectedResult);
+		}
+
+		[Test, STAThread]
 		public void TestJsonDataExporter()
 		{
 			var resultGrid = InitializeDataGrid();
