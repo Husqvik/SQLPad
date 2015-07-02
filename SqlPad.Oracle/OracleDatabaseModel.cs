@@ -882,14 +882,6 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		public override StatementExecutionResult ExecuteStatement(StatementExecutionModel executionModel)
-		{
-			var executionTask = ExecuteStatementAsync(executionModel, CancellationToken.None);
-			executionTask.Wait();
-			
-			return executionTask.Result;
-		}
-
 		public override async Task<StatementExecutionResult> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
 		{
 			PreInitialize();

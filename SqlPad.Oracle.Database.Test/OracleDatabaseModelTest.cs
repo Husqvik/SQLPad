@@ -114,8 +114,10 @@ WHERE
 					BindVariables = new[] { new BindVariableModel(new BindVariableConfiguration { Name = "1", Value = "X" }) },
 					GatherExecutionStatistics = true
 				};
-			
-			var result = databaseModel.ExecuteStatement(executionModel);
+
+			var taskStatement = databaseModel.ExecuteStatementAsync(executionModel, CancellationToken.None);
+			taskStatement.Wait();
+			var result = taskStatement.Result;
 			result.ExecutedSuccessfully.ShouldBe(true);
 			result.AffectedRowCount.ShouldBe(-1);
 			
@@ -144,10 +146,10 @@ WHERE
 
 			planItemCollection.PlanText.Length.ShouldBeGreaterThan(100);
 
-			var task = databaseModel.GetExecutionStatisticsAsync(CancellationToken.None);
-			task.Wait();
+			var taskStatistics = databaseModel.GetExecutionStatisticsAsync(CancellationToken.None);
+			taskStatistics.Wait();
 
-			var statisticsRecords = task.Result.Where(r => r.Value != 0).ToArray();
+			var statisticsRecords = taskStatistics.Result.Where(r => r.Value != 0).ToArray();
 			statisticsRecords.Length.ShouldBeGreaterThan(0);
 
 			var statistics = String.Join(Environment.NewLine, statisticsRecords.Select(r => String.Format("{0}: {1}", r.Name.PadRight(40), r.Value)));
@@ -171,7 +173,9 @@ WHERE
 			{
 				databaseModel.Initialize().Wait();
 
-				var result = databaseModel.ExecuteStatement(executionModel);
+				var task = databaseModel.ExecuteStatementAsync(executionModel, CancellationToken.None);
+				task.Wait();
+				var result = task.Result;
 				
 				result.ExecutedSuccessfully.ShouldBe(true);
 
@@ -265,8 +269,10 @@ WHERE
 			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
 			{
 				databaseModel.Initialize().Wait();
-				
-				var result = databaseModel.ExecuteStatement(executionModel);
+
+				var task = databaseModel.ExecuteStatementAsync(executionModel, CancellationToken.None);
+				task.Wait();
+				var result = task.Result;
 
 				result.ExecutedSuccessfully.ShouldBe(true);
 
@@ -626,7 +632,7 @@ WHERE
 		[Test]
 		public void TestCursorExecutionStatisticsDataProvider()
 		{
-			Task<ExecutionStatisticsPlanItemCollection> task;
+			Task<ExecutionStatisticsPlanItemCollection> taskStatistics;
 			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
 			{
 				databaseModel.Initialize().Wait();
@@ -638,13 +644,13 @@ WHERE
 						StatementText = ExplainPlanTestQuery
 					};
 
-				databaseModel.ExecuteStatement(executionModel);
+				databaseModel.ExecuteStatementAsync(executionModel, CancellationToken.None).Wait();
 
-				task = databaseModel.GetCursorExecutionStatisticsAsync(CancellationToken.None);
-				task.Wait();
+				taskStatistics = databaseModel.GetCursorExecutionStatisticsAsync(CancellationToken.None);
+				taskStatistics.Wait();
 			}
 
-			var allItems = task.Result.AllItems.Values.ToArray();
+			var allItems = taskStatistics.Result.AllItems.Values.ToArray();
 			allItems.Length.ShouldBe(12);
 
 			var hashJoin = allItems[1];

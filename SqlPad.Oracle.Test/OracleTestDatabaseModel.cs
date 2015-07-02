@@ -20,7 +20,7 @@ namespace SqlPad.Oracle.Test
 		private const string TableNameDual = "\"DUAL\"";
 		private const string DatabaseDomainNameInternal = "sqlpad.husqvik.com";
 		private static readonly ConnectionStringSettings ConnectionStringInternal = new ConnectionStringSettings("ConnectionFake", "DATA SOURCE=HQ_PDB_TCP;PASSWORD=oracle;USER ID=HUSQVIK", "Oracle.DataAccess.Client");
-		private static readonly Version TestDatabaseVersion = new Version(12, 1, 0, 2);
+		private static readonly Version InitialTestDatabaseVersion = new Version(12, 1, 0, 2);
 
 		private static readonly IReadOnlyList<ColumnHeader> ColumnHeaders =
 			new List<ColumnHeader>
@@ -109,6 +109,7 @@ namespace SqlPad.Oracle.Test
 		private readonly IDictionary<string, string> _systemParameters = new Dictionary<string, string>(SystemParametersInternal);
 		
 		private int _generatedRowCount;
+		internal Version TestDatabaseVersion = InitialTestDatabaseVersion;
 
 		static OracleTestDatabaseModel()
 		{
@@ -1103,23 +1104,20 @@ Note
 
 		public override event EventHandler RefreshCompleted = delegate { };
 
-		public override StatementExecutionResult ExecuteStatement(StatementExecutionModel executionModel)
+		public override Task<StatementExecutionResult> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
 		{
-			return
+			var result =
 				new StatementExecutionResult
 				{
 					Statement = executionModel,
-					ExecutedSuccessfully = true, 
+					ExecutedSuccessfully = true,
 					ColumnHeaders = ColumnHeaders,
 					InitialResultSet = FetchRecords(1).ToArray(),
 					CompilationErrors = new CompilationError[0],
 					DatabaseOutput = "Test database output"
 				};
-		}
 
-		public override Task<StatementExecutionResult> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
-		{
-			return Task.Factory.StartNew(() => ExecuteStatement(executionModel), cancellationToken);
+			return Task.FromResult(result);
 		}
 
 		public override Task UpdatePartitionDetailsAsync(PartitionDetailsModel dataModel, CancellationToken cancellationToken)

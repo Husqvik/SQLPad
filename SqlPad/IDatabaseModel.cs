@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SqlPad
 {
-	public interface IDatabaseModel : IDisposable
+	public interface IDatabaseModel : IConnectionAdapter
 	{
 		ConnectionStringSettings ConnectionString { get; }
 
@@ -16,13 +16,7 @@ namespace SqlPad
 
 		ICollection<string> Schemas { get; }
 
-		bool CanFetch { get; }
-
-		bool IsExecuting { get; }
-
 		bool IsFresh { get; }
-
-		bool EnableDatabaseOutput { get; set; }
 
 		void RefreshIfNeeded();
 
@@ -40,9 +34,16 @@ namespace SqlPad
 
 		event EventHandler RefreshCompleted;
 
-		StatementExecutionResult ExecuteStatement(StatementExecutionModel executionModel);
-
 		Task<StatementExecutionResult> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken);
+	}
+
+	public interface IConnectionAdapter : IDisposable
+	{
+		bool CanFetch { get; }
+
+		bool IsExecuting { get; }
+
+		bool EnableDatabaseOutput { get; set; }
 
 		Task<ICollection<SessionExecutionStatisticsRecord>> GetExecutionStatisticsAsync(CancellationToken cancellationToken);
 

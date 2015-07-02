@@ -120,8 +120,6 @@ namespace SqlPad.Oracle
 		
 		public abstract void CloseActiveReader();
 
-		public abstract StatementExecutionResult ExecuteStatement(StatementExecutionModel executionModel);
-
 		public abstract Task<StatementExecutionResult> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken);
 
 		public abstract IEnumerable<object[]> FetchRecords(int rowCount);

@@ -15,6 +15,7 @@ namespace SqlPad.Oracle
 	{
 		private static readonly Regex DateValidator = new Regex(@"^(?<Year>([+-]\s*)?[0-9]{1,4})\s*-\s*(?<Month>[0-9]{1,2})\s*-\s*(?<Day>[0-9]{1,2})\s*$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
 		private static readonly Regex TimestampValidator = new Regex(@"^(?<Year>([+-]\s*)?[0-9]{1,4})\s*-\s*(?<Month>[0-9]{1,2})\s*-\s*(?<Day>[0-9]{1,2})\s*(?<Hour>[0-9]{1,2})\s*:\s*(?<Minute>[0-9]{1,2})\s*:\s*(?<Second>[0-9]{1,2})\s*(\.\s*(?<Fraction>[0-9]{1,9}))?\s*(((?<OffsetHour>[+-]\s*[0-9]{1,2})\s*:\s*(?<OffsetMinutes>[0-9]{1,2}))|(?<Timezone>[a-zA-Z]+))?$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+		private static readonly Version MinimumJsonSupportVersion = new Version(12, 1, 0, 2);
 
 		public IStatementSemanticModel BuildSemanticModel(string statementText, StatementBase statementBase, IDatabaseModel databaseModel)
 		{
@@ -110,6 +111,14 @@ namespace SqlPad.Oracle
 							{
 								validationModel.InvalidNonTerminals[aggregateExpression] = new InvalidNodeValidationData(OracleSemanticErrorType.ExpectAggregateFunctionInsidePivotOperation) { Node = aggregateExpression };
 							}
+						}
+
+						break;
+
+					case ReferenceType.JsonTable:
+						if (databaseModel != null && databaseModel.Version < MinimumJsonSupportVersion)
+						{
+							validationModel.InvalidNonTerminals[objectReference.RootNode] = new InvalidNodeValidationData(OracleSemanticErrorType.UnsupportedInConnectedDatabaseVersion) { Node = objectReference.RootNode };
 						}
 
 						break;

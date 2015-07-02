@@ -2416,5 +2416,36 @@ FROM
 			invalidNontTerminals[9].Node.Token.Value.ShouldBe("10");
 			invalidNontTerminals[9].SemanticErrorType.ShouldBe(OracleSemanticErrorType.DatetimeOrIntervalPrecisionIsOutOfRange);
 		}
+
+		[Test(Description = @"")]
+		public void TestJsonTableInUnsupportedOracleVersion()
+		{
+			const string sqlText =
+@"SELECT
+	*
+FROM
+	JSON_TABLE(
+			'[""Value 1"", ""Value 2"", ""Value 3""]', '$[*]'
+			DEFAULT 'invalid data' ON ERROR
+			COLUMNS (
+				SEQ$ FOR ORDINALITY,
+				VALUE VARCHAR2 PATH '$'
+			)
+		)";
+
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement, new OracleTestDatabaseModel { TestDatabaseVersion = new Version(12, 1, 0, 1) } );
+
+			var invalidNontTerminals = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			invalidNontTerminals.Count.ShouldBe(1);
+			invalidNontTerminals[0].IsRecognized.ShouldBe(true);
+			invalidNontTerminals[0].Node.Id.ShouldBe(NonTerminals.TableReference);
+			invalidNontTerminals[0].Node.FirstTerminalNode.Id.ShouldBe(Terminals.JsonTable);
+			invalidNontTerminals[0].Node.LastTerminalNode.Id.ShouldBe(Terminals.RightParenthesis);
+			invalidNontTerminals[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.UnsupportedInConnectedDatabaseVersion);
+		}
 	}
 }
