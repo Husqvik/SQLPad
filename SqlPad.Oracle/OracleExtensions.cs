@@ -247,17 +247,7 @@ namespace SqlPad.Oracle
 	{
 		public static bool BreakAtNestedQueryBlock(StatementGrammarNode node)
 		{
-			return node.Id != NonTerminals.NestedQuery;
-		}
-
-		public static bool AnyIdentifier(StatementGrammarNode node)
-		{
-			return node.Id.IsIdentifier();
-		}
-
-		public static bool In(StatementGrammarNode node, params string[] ids)
-		{
-			return node.Id.In(ids);
+			return !String.Equals(node.Id, NonTerminals.NestedQuery);
 		}
 	}
 }

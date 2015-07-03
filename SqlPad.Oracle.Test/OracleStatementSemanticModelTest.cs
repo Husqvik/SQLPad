@@ -2295,6 +2295,27 @@ FROM (
 		}
 
 		[Test(Description = @"")]
+		public void TestColumnReferenceInScalarSubqueryWithinJoinCondition()
+		{
+			const string query1 =
+@"SELECT
+	NULL
+FROM
+	SELECTION S1
+	JOIN SELECTION S2 ON S1.SELECTION_ID = S2.SELECTION_ID
+		AND S2.PROJECT_ID >= (SELECT MIN(PROJECT_ID) FROM SELECTION WHERE NAME IS NOT NULL)";
+
+			var statement = (OracleStatement)_oracleSqlParser.Parse(query1).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			var columnIdentifier = statement.AllTerminals.Single(t => t.Token.Value == "NAME");
+			var columnReference = semanticModel.GetColumnReference(columnIdentifier);
+			columnReference.ShouldNotBe(null);
+		}
+
+		[Test(Description = @"")]
 		public void TestHiddenColumnReferences()
 		{
 			const string query1 = @"SELECT HIDDEN_COLUMN, INVISIBLE_COLUMN FROM (SELECT ""CaseSensitiveTable"".*, HIDDEN_COLUMN INVISIBLE_COLUMN FROM ""CaseSensitiveTable"")";

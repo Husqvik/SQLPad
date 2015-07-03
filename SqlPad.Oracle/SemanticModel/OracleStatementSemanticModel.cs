@@ -2319,14 +2319,16 @@ namespace SqlPad.Oracle.SemanticModel
 			var fromClauses = GetAllChainedClausesByPath(queryBlock.RootNode[NonTerminals.FromClause], null, NonTerminals.FromClauseChained, NonTerminals.FromClause);
 			foreach (var fromClause in fromClauses)
 			{
-				var joinClauses = fromClause.GetPathFilterDescendants(n => n.Id != NonTerminals.NestedQuery && n.Id != NonTerminals.FromClause, NonTerminals.JoinClause);
+				var joinClauses = fromClause.GetPathFilterDescendants(n => !String.Equals(n.Id, NonTerminals.NestedQuery) && !String.Equals(n.Id, NonTerminals.FromClause), NonTerminals.JoinClause);
 				foreach (var joinClause in joinClauses)
 				{
-					var joinCondition = joinClause.GetPathFilterDescendants(n => n.Id != NonTerminals.JoinClause, NonTerminals.JoinColumnsOrCondition).SingleOrDefault();
+					var joinCondition = joinClause.GetPathFilterDescendants(n => !String.Equals(n.Id, NonTerminals.JoinClause), NonTerminals.JoinColumnsOrCondition).SingleOrDefault();
 					if (joinCondition == null)
+					{
 						continue;
+					}
 
-					var identifiers = joinCondition.GetDescendants(Terminals.Identifier);
+					var identifiers = joinCondition.GetPathFilterDescendants(NodeFilters.BreakAtNestedQueryBlock, Terminals.Identifier);
 					ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(queryBlock, queryBlock, identifiers, StatementPlacement.Join, null);
 
 					var joinCondifitionClauseGrammarSpecificFunctions = GetGrammarSpecificFunctionNodes(joinCondition);
