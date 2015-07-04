@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.Windows;
 
 namespace SqlPad.Oracle.ToolTips
@@ -12,6 +13,7 @@ namespace SqlPad.Oracle.ToolTips
 
 		public static readonly DependencyProperty ConstraintsProperty = DependencyProperty.Register("Constraints", typeof(IEnumerable<ConstraintDetailsModel>), typeof(ConstraintList), new FrameworkPropertyMetadata(PropertyChangedCallbackHandler));
 
+		[Bindable(true)]
 		public IEnumerable<ConstraintDetailsModel> Constraints
 		{
 			get { return (IEnumerable<ConstraintDetailsModel>)GetValue(ConstraintsProperty); }

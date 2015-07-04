@@ -34,7 +34,7 @@ namespace SqlPad
 
 		event EventHandler RefreshCompleted;
 
-		Task<StatementExecutionResult> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken);
+		IConnectionAdapter CreateConnectionAdapter();
 	}
 
 	public interface IConnectionAdapter : IDisposable
@@ -44,6 +44,8 @@ namespace SqlPad
 		bool IsExecuting { get; }
 
 		bool EnableDatabaseOutput { get; set; }
+
+		Task<StatementExecutionResult> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken);
 
 		Task<ICollection<SessionExecutionStatisticsRecord>> GetExecutionStatisticsAsync(CancellationToken cancellationToken);
 

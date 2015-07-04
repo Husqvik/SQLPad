@@ -22,18 +22,6 @@ namespace SqlPad.Oracle.Test
 		private static readonly ConnectionStringSettings ConnectionStringInternal = new ConnectionStringSettings("ConnectionFake", "DATA SOURCE=HQ_PDB_TCP;PASSWORD=oracle;USER ID=HUSQVIK", "Oracle.DataAccess.Client");
 		private static readonly Version InitialTestDatabaseVersion = new Version(12, 1, 0, 2);
 
-		private static readonly IReadOnlyList<ColumnHeader> ColumnHeaders =
-			new List<ColumnHeader>
-			{
-				new ColumnHeader
-				{
-					ColumnIndex = 0,
-					DataType = typeof (String),
-					DatabaseDataType = TerminalValues.Varchar2,
-					Name = "DUMMY"
-				}
-			}.AsReadOnly();
-
 		private static readonly HashSet<string> SchemasInternal = new HashSet<string> { OwnerNameSys, "\"SYSTEM\"", InitialSchema };
 		private static readonly HashSet<string> AllSchemasInternal = new HashSet<string>(SchemasInternal) { OwnerNameSys, "\"SYSTEM\"", InitialSchema, SchemaPublic };
 		private static readonly ILookup<OracleProgramIdentifier, OracleProgramMetadata> AllFunctionMetadataInternal;
@@ -1040,24 +1028,9 @@ TABLESPACE ""TBS_HQ_PDB""";
 
 		public override event EventHandler RefreshCompleted = delegate { };
 
-		public override Task<StatementExecutionResult> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
+		public override IConnectionAdapter CreateConnectionAdapter()
 		{
-			var fetchTask = OracleTestConnectionAdapter.Instance.FetchRecordsAsync(1, cancellationToken);
-			fetchTask.Wait(cancellationToken);
-
-			var result =
-				new StatementExecutionResult
-				{
-					ConnectionAdapter = OracleTestConnectionAdapter.Instance,
-					Statement = executionModel,
-					ExecutedSuccessfully = true,
-					ColumnHeaders = ColumnHeaders,
-					InitialResultSet = fetchTask.Result,
-					CompilationErrors = new CompilationError[0],
-					DatabaseOutput = "Test database output"
-				};
-
-			return Task.FromResult(result);
+			return OracleTestConnectionAdapter.Instance;
 		}
 
 		public override Task UpdatePartitionDetailsAsync(PartitionDetailsModel dataModel, CancellationToken cancellationToken)

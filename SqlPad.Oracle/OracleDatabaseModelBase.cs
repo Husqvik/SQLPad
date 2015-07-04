@@ -110,7 +110,7 @@ namespace SqlPad.Oracle
 
 		public abstract string DatabaseDomainName { get; }
 
-		public abstract Task<StatementExecutionResult> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken);
+		public abstract IConnectionAdapter CreateConnectionAdapter();
 
 		public abstract Task<ExecutionPlanItemCollection> ExplainPlanAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken);
 

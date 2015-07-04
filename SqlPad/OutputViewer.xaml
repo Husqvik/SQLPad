@@ -7,7 +7,7 @@
              xmlns:commands="clr-namespace:SqlPad.Commands"
              xmlns:globalization="clr-namespace:System.Globalization;assembly=mscorlib"
              mc:Ignorable="d" 
-             d:DesignHeight="140" d:DesignWidth="300" d:DataContext="{d:DesignInstance sqlPad:PageModel}">
+             d:DesignHeight="140" d:DesignWidth="300" d:DataContext="{d:DesignInstance sqlPad:OutputViewerModel}">
 	<UserControl.Resources>
 		<sqlPad:PrettyPrintIntegerConverter x:Key="PrettyPrintNumericConverter" />
 

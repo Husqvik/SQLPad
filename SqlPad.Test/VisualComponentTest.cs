@@ -2,7 +2,6 @@
 using System.IO;
 using System.Reflection;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -377,8 +376,8 @@ WHERE
 					//new ColumnHeader { ColumnIndex = 2, DatabaseDataType = "Varchar2", DataType = typeof (string), Name = "\"'\\\"><?,.;:{}[]%$#@!~^&*()_+-§'''||(1/2*3+4-CASEWHEN1<=2OR2>=1THEN5ELSE6END)" }
 				};
 
-			var documentPage = new DocumentPage();
-			var outputViewer = new OutputViewer { DataModel = new PageModel(documentPage) };
+			var outputViewer = new OutputViewer();
+			outputViewer.Setup(new DocumentPage());
 
 			var dataRows =
 				new[]
@@ -388,13 +387,9 @@ WHERE
 					//new object[] {"\"><?,.;:{}[]%$#@!~^&*()_+-§' ,5", new DateTime(2015, 5, 30) }
 				};
 
-			var task = documentPage.DatabaseModel.ExecuteStatementAsync(null, CancellationToken.None);
-			task.Wait();
-
 			var executionResult =
 				new StatementExecutionResult
 				{
-					ConnectionAdapter = task.Result.ConnectionAdapter,
 					ColumnHeaders = columnHeaders,
 					InitialResultSet = dataRows
 				};

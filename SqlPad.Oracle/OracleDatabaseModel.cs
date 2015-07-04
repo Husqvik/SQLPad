@@ -29,9 +29,9 @@ namespace SqlPad.Oracle
 		private const string OracleDataAccessRegistryPath = @"Software\Oracle\ODP.NET";
 		private const string OracleDataAccessComponents = "Oracle Data Access Components";
 
-		private readonly OracleConnectionStringBuilder _oracleConnectionString;
 		private readonly Timer _refreshTimer = new Timer();
 		private readonly List<OracleConnectionAdapter> _connectionAdapters = new List<OracleConnectionAdapter>();
+		private readonly string _connectionStringName;
 		private bool _isInitialized;
 		private bool _isRefreshing;
 		private bool _cacheLoaded;
@@ -39,6 +39,7 @@ namespace SqlPad.Oracle
 		private readonly CancellationTokenSource _backgroundTaskCancellationTokenSource = new CancellationTokenSource();
 		private ILookup<OracleProgramIdentifier, OracleProgramMetadata> _allFunctionMetadata = Enumerable.Empty<OracleProgramMetadata>().ToLookup(m => m.Identifier);
 		private readonly ConnectionStringSettings _connectionString;
+		private readonly string _connectionIdentifier;
 		private readonly string _moduleName;
 		private HashSet<string> _schemas = new HashSet<string>();
 		private HashSet<string> _allSchemas = new HashSet<string>();
@@ -57,15 +58,17 @@ namespace SqlPad.Oracle
 		private OracleDatabaseModel(ConnectionStringSettings connectionString, string identifier)
 		{
 			_connectionString = connectionString;
+			_connectionIdentifier = identifier;
 			_moduleName = String.Format("{0}/{1}", ModuleNameSqlPadDatabaseModelBase, identifier);
-			_oracleConnectionString = new OracleConnectionStringBuilder(connectionString.ConnectionString);
-			_currentSchema = _oracleConnectionString.UserID;
+			var oracleConnectionString = new OracleConnectionStringBuilder(connectionString.ConnectionString);
+			_currentSchema = oracleConnectionString.UserID;
+			_connectionStringName = String.Format("{0}_{1}", oracleConnectionString.DataSource, _currentSchema);
 
 			lock (ActiveDataModelRefresh)
 			{
-				if (!WaitingDataModelRefresh.ContainsKey(CachedConnectionStringName))
+				if (!WaitingDataModelRefresh.ContainsKey(_connectionStringName))
 				{
-					WaitingDataModelRefresh[CachedConnectionStringName] = new List<RefreshModel>();
+					WaitingDataModelRefresh[_connectionStringName] = new List<RefreshModel>();
 				}
 			}
 
@@ -75,8 +78,6 @@ namespace SqlPad.Oracle
 			InternalRefreshCompleted += InternalRefreshCompletedHandler;
 
 			//_customTypeGenerator = OracleCustomTypeGenerator.GetCustomTypeGenerator(connectionString.Name);
-
-			_connectionAdapters.Add(new OracleConnectionAdapter(this, identifier));
 		}
 
 		private static event EventHandler InternalRefreshStarted = delegate { };
@@ -105,12 +106,12 @@ namespace SqlPad.Oracle
 			_dataDictionary = refreshedModel._dataDictionary;
 			_allFunctionMetadata = refreshedModel._allFunctionMetadata;
 
-			Trace.WriteLine(String.Format("{0} - Metadata for '{1}' has been retrieved from the cache. ", DateTime.Now, CachedConnectionStringName));
+			Trace.WriteLine(String.Format("{0} - Metadata for '{1}' has been retrieved from the cache. ", DateTime.Now, _connectionStringName));
 
 			lock (ActiveDataModelRefresh)
 			{
 				List<RefreshModel> refreshModels;
-				if (WaitingDataModelRefresh.TryGetValue(CachedConnectionStringName, out refreshModels))
+				if (WaitingDataModelRefresh.TryGetValue(_connectionStringName, out refreshModels))
 				{
 					var modelIndex = refreshModels.FindIndex(m => m.DatabaseModel == this);
 					if (modelIndex != -1)
@@ -256,11 +257,6 @@ namespace SqlPad.Oracle
 			get { return _dataDictionary.Timestamp.AddMinutes(ConfigurationProvider.Configuration.DataModel.DataModelRefreshPeriod); }
 		}
 
-		private string CachedConnectionStringName
-		{
-			get { return _oracleConnectionString.DataSource + "_" + _oracleConnectionString.UserID; }
-		}
-
 		public override ILookup<string, string> ContextData
 		{
 			get { return _dataDictionaryMapper.GetContextData(); }
@@ -270,23 +266,35 @@ namespace SqlPad.Oracle
 		{
 			lock (ActiveDataModelRefresh)
 			{
-				if (ActiveDataModelRefresh.Contains(CachedConnectionStringName))
+				if (ActiveDataModelRefresh.Contains(_connectionStringName))
 				{
 					var taskCompletionSource = new TaskCompletionSource<OracleDataDictionary>();
-					WaitingDataModelRefresh[CachedConnectionStringName].Add(new RefreshModel { DatabaseModel = this, TaskCompletionSource = taskCompletionSource });
+					WaitingDataModelRefresh[_connectionStringName].Add(new RefreshModel { DatabaseModel = this, TaskCompletionSource = taskCompletionSource });
 
-					Trace.WriteLine(String.Format("{0} - Cache for '{1}' is being loaded by other requester. Waiting until operation finishes. ", DateTime.Now, CachedConnectionStringName));
+					Trace.WriteLine(String.Format("{0} - Cache for '{1}' is being loaded by other requester. Waiting until operation finishes. ", DateTime.Now, _connectionStringName));
 
 					RaiseEvent(RefreshStarted);
 					return taskCompletionSource.Task;
 				}
 
-				ActiveDataModelRefresh.Add(CachedConnectionStringName);
+				ActiveDataModelRefresh.Add(_connectionStringName);
 			}
 
 			ExecuteActionAsync(() => LoadSchemaObjectMetadata(force));
 
 			return _backgroundTask;
+		}
+
+		public override IConnectionAdapter CreateConnectionAdapter()
+		{
+			if (_connectionAdapters.Count > 0)
+			{
+				throw new NotSupportedException();
+			}
+
+			var connectionAdapter = new OracleConnectionAdapter(this, _connectionIdentifier);
+			_connectionAdapters.Add(connectionAdapter);
+			return connectionAdapter;
 		}
 
 		public async override Task<ExecutionPlanItemCollection> ExplainPlanAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
@@ -315,27 +323,27 @@ namespace SqlPad.Oracle
 		public async override Task UpdatePartitionDetailsAsync(PartitionDetailsModel dataModel, CancellationToken cancellationToken)
 		{
 			var partitionDataProvider = new PartitionDataProvider(dataModel, Version);
-			var tableSpaceAllocationUpdater = new TableSpaceAllocationDataProvider(dataModel, dataModel.Owner, dataModel.Name);
-			await UpdateModelAsync(cancellationToken, true, partitionDataProvider.PartitionDetailDataProvider, partitionDataProvider.SubPartitionDetailDataProvider, tableSpaceAllocationUpdater);
+			var spaceAllocationDataProvider = new TableSpaceAllocationDataProvider(dataModel, dataModel.Owner, dataModel.Name);
+			await UpdateModelAsync(cancellationToken, true, partitionDataProvider.PartitionDetailDataProvider, partitionDataProvider.SubPartitionDetailDataProvider, spaceAllocationDataProvider);
 		}
 
 		public async override Task UpdateSubPartitionDetailsAsync(SubPartitionDetailsModel dataModel, CancellationToken cancellationToken)
 		{
 			var partitionDataProvider = new PartitionDataProvider(dataModel, Version);
-			var tableSpaceAllocationUpdater = new TableSpaceAllocationDataProvider(dataModel, dataModel.Owner, dataModel.Name);
-			await UpdateModelAsync(cancellationToken, true, partitionDataProvider.SubPartitionDetailDataProvider, tableSpaceAllocationUpdater);
+			var spaceAllocationDataProvider = new TableSpaceAllocationDataProvider(dataModel, dataModel.Owner, dataModel.Name);
+			await UpdateModelAsync(cancellationToken, true, partitionDataProvider.SubPartitionDetailDataProvider, spaceAllocationDataProvider);
 		}
 
 		public async override Task UpdateTableDetailsAsync(OracleObjectIdentifier objectIdentifier, TableDetailsModel dataModel, CancellationToken cancellationToken)
 		{
 			var tableDetailDataProvider = new TableDetailDataProvider(dataModel, objectIdentifier);
-			var tableSpaceAllocationUpdater = new TableSpaceAllocationDataProvider(dataModel, objectIdentifier, String.Empty);
+			var spaceAllocationDataProvider = new TableSpaceAllocationDataProvider(dataModel, objectIdentifier, String.Empty);
 			var tableCommentDataProvider = new CommentDataProvider(dataModel, objectIdentifier, null);
-			var tableInMemorySpaceAllocationUpdater = new TableInMemorySpaceAllocationDataProvider(dataModel, objectIdentifier, Version);
+			var tableInMemorySpaceAllocationDataProvider = new TableInMemorySpaceAllocationDataProvider(dataModel, objectIdentifier, Version);
 			var indexDetailDataProvider = new IndexDetailDataProvider(dataModel, objectIdentifier, null);
 			var indexColumnDataProvider = new IndexColumnDataProvider(dataModel, objectIdentifier, null);
 			var partitionDataProvider = new PartitionDataProvider(dataModel, objectIdentifier, Version);
-			await UpdateModelAsync(cancellationToken, true, tableDetailDataProvider, tableCommentDataProvider, tableSpaceAllocationUpdater, tableInMemorySpaceAllocationUpdater, indexDetailDataProvider, indexColumnDataProvider, partitionDataProvider.PartitionDetailDataProvider, partitionDataProvider.SubPartitionDetailDataProvider);
+			await UpdateModelAsync(cancellationToken, true, tableDetailDataProvider, tableCommentDataProvider, spaceAllocationDataProvider, tableInMemorySpaceAllocationDataProvider, indexDetailDataProvider, indexColumnDataProvider, partitionDataProvider.PartitionDetailDataProvider, partitionDataProvider.SubPartitionDetailDataProvider);
 		}
 
 		public async override Task UpdateViewDetailsAsync(OracleObjectIdentifier objectIdentifier, ViewDetailsModel dataModel, CancellationToken cancellationToken)
@@ -352,9 +360,9 @@ namespace SqlPad.Oracle
 			var columnConstraintDataProvider = new ConstraintDataProvider(dataModel, objectIdentifier, columnName);
 			var columnIndexesDataProvider = new IndexDetailDataProvider(dataModel, objectIdentifier, columnName);
 			var indexColumnDataProvider = new IndexColumnDataProvider(dataModel, objectIdentifier, columnName);
-			var columnHistogramUpdater = new ColumnDetailHistogramDataProvider(dataModel, objectIdentifier, columnName);
-			var columnInMemoryDetailsUpdater = new ColumnDetailInMemoryDataProvider(dataModel, objectIdentifier, columnName, Version);
-			await UpdateModelAsync(cancellationToken, true, columnDetailDataProvider, columnCommentDataProvider, columnConstraintDataProvider, columnIndexesDataProvider, indexColumnDataProvider, columnHistogramUpdater, columnInMemoryDetailsUpdater);
+			var detailHistogramDataProvider = new ColumnDetailHistogramDataProvider(dataModel, objectIdentifier, columnName);
+			var columnInMemoryDetailsDataProvider = new ColumnDetailInMemoryDataProvider(dataModel, objectIdentifier, columnName, Version);
+			await UpdateModelAsync(cancellationToken, true, columnDetailDataProvider, columnCommentDataProvider, columnConstraintDataProvider, columnIndexesDataProvider, indexColumnDataProvider, detailHistogramDataProvider, columnInMemoryDetailsDataProvider);
 		}
 
 		public async override Task<IReadOnlyList<string>> GetRemoteTableColumnsAsync(string databaseLink, OracleObjectIdentifier schemaObject, CancellationToken cancellationToken)
@@ -364,9 +372,86 @@ namespace SqlPad.Oracle
 			return remoteTableColumnDataProvider.Columns;
 		}
 
-		private Task UpdateModelAsync(CancellationToken cancellationToken, bool suppressException, params IModelDataProvider[] updaters)
+		internal async Task UpdateModelAsync(CancellationToken cancellationToken, bool suppressException, params IModelDataProvider[] updaters)
 		{
-			return _connectionAdapters[0].UpdateModelAsync(cancellationToken, suppressException, updaters);
+			using (var connection = new OracleConnection(_connectionString.ConnectionString))
+			{
+				using (var command = connection.CreateCommand())
+				{
+					command.BindByName = true;
+
+					OracleTransaction transaction = null;
+
+					try
+					{
+						foreach (var updater in updaters)
+						{
+							command.Parameters.Clear();
+							command.CommandText = String.Empty;
+							command.CommandType = CommandType.Text;
+							updater.InitializeCommand(command);
+
+							try
+							{
+								if (updater.IsValid)
+								{
+									if (await connection.EnsureConnectionOpen(cancellationToken))
+									{
+										connection.ModuleName = _moduleName;
+										connection.ActionName = "Model data provider";
+
+										using (var setSchemaCommand = connection.CreateCommand())
+										{
+											await setSchemaCommand.SetSchema(_currentSchema, cancellationToken);
+										}
+
+										transaction = connection.BeginTransaction();
+									}
+
+									if (updater.HasScalarResult)
+									{
+										var result = await command.ExecuteScalarAsynchronous(cancellationToken);
+										updater.MapScalarValue(result);
+									}
+									else
+									{
+										using (var reader = await command.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken))
+										{
+											updater.MapReaderData(reader);
+										}
+									}
+								}
+							}
+							catch (OracleException exception)
+							{
+								if (exception.Number == (int)OracleErrorCode.UserInvokedCancellation)
+								{
+									break;
+								}
+
+								throw;
+							}
+						}
+					}
+					catch (Exception e)
+					{
+						Trace.WriteLine(String.Format("Update model failed: {0}", e));
+
+						if (!suppressException)
+						{
+							throw;
+						}
+					}
+					finally
+					{
+						if (transaction != null)
+						{
+							transaction.Rollback();
+							transaction.Dispose();
+						}
+					}
+				}
+			}
 		}
 
 		public override event EventHandler Initialized;
@@ -437,30 +522,20 @@ namespace SqlPad.Oracle
 			return clone;
 		}
 
-		public override async Task<StatementExecutionResult> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
+		internal void Disconnect(OracleException exception)
 		{
-			var connectionAdapter = _connectionAdapters[0];
+			OracleSchemaResolver.Unregister(this);
 
-			try
+			if (!_isInitialized)
 			{
-				return await connectionAdapter.ExecuteStatementAsync(executionModel, cancellationToken);
+				return;
 			}
-			catch (OracleException exception)
+
+			_isInitialized = false;
+
+			if (Disconnected != null)
 			{
-				var errorCode = (OracleErrorCode)exception.Number;
-				if (errorCode.In(OracleErrorCode.EndOfFileOnCommunicationChannel, OracleErrorCode.NotConnectedToOracle))
-				{
-					OracleSchemaResolver.Unregister(this);
-
-					_isInitialized = false;
-
-					if (Disconnected != null)
-					{
-						Disconnected(this, new DatabaseModelConnectionErrorArgs(exception));
-					}
-				}
-
-				throw;
+				Disconnected(this, new DatabaseModelConnectionErrorArgs(exception));
 			}
 		}
 
@@ -482,7 +557,7 @@ namespace SqlPad.Oracle
 
 		internal IEnumerable<T> ExecuteReader<T>(Func<Version, string> getCommandTextFunction, Func<Version, OracleDataReader, T> formatFunction)
 		{
-			using (var connection = new OracleConnection(_oracleConnectionString.ConnectionString))
+			using (var connection = new OracleConnection(_connectionString.ConnectionString))
 			{
 				using (var command = connection.CreateCommand())
 				{
@@ -530,7 +605,7 @@ namespace SqlPad.Oracle
 			lock (ActiveDataModelRefresh)
 			{
 				RaiseEvent(InternalRefreshCompleted);
-				ActiveDataModelRefresh.Remove(CachedConnectionStringName);
+				ActiveDataModelRefresh.Remove(_connectionStringName);
 			}
 		}
 
@@ -541,12 +616,12 @@ namespace SqlPad.Oracle
 			var isRefreshDone = !IsRefreshNeeded && !force;
 			if (isRefreshDone)
 			{
-				Trace.WriteLine(String.Format("{0} - Cache for '{1}' is valid until {2}. ", DateTime.Now, CachedConnectionStringName, DataDictionaryValidityTimestamp));
+				Trace.WriteLine(String.Format("{0} - Cache for '{1}' is valid until {2}. ", DateTime.Now, _connectionStringName, DataDictionaryValidityTimestamp));
 				return;
 			}
 
 			var reason = force ? "has been forced to refresh" : (_dataDictionary.Timestamp > DateTime.MinValue ? "has expired" : "does not exist or is corrupted");
-			Trace.WriteLine(String.Format("{0} - Cache for '{1}' {2}. Cache refresh started. ", DateTime.Now, CachedConnectionStringName, reason));
+			Trace.WriteLine(String.Format("{0} - Cache for '{1}' {2}. Cache refresh started. ", DateTime.Now, _connectionStringName, reason));
 
 			_isRefreshing = true;
 			RaiseEvent(InternalRefreshStarted);
@@ -560,7 +635,7 @@ namespace SqlPad.Oracle
 			{
 				try
 				{
-					MetadataCache.StoreDatabaseModelCache(CachedConnectionStringName, stream => _dataDictionary.Serialize(stream));
+					MetadataCache.StoreDatabaseModelCache(_connectionStringName, stream => _dataDictionary.Serialize(stream));
 				}
 				catch (Exception e)
 				{
@@ -636,7 +711,7 @@ namespace SqlPad.Oracle
 
 				//_customTypeGenerator.GenerateCustomTypeAssembly(_dataDictionary);
 
-				CachedDataDictionaries[CachedConnectionStringName] = _dataDictionary;
+				CachedDataDictionaries[_connectionStringName] = _dataDictionary;
 
 				return true;
 			}
@@ -667,19 +742,19 @@ namespace SqlPad.Oracle
 
 			Stream stream;
 			OracleDataDictionary dataDictionary;
-			if (CachedDataDictionaries.TryGetValue(CachedConnectionStringName, out dataDictionary))
+			if (CachedDataDictionaries.TryGetValue(_connectionStringName, out dataDictionary))
 			{
 				_dataDictionary = dataDictionary;
 				BuildAllFunctionMetadata();
 			}
-			else if (MetadataCache.TryLoadDatabaseModelCache(CachedConnectionStringName, out stream))
+			else if (MetadataCache.TryLoadDatabaseModelCache(_connectionStringName, out stream))
 			{
 				try
 				{
 					RaiseEvent(RefreshStarted);
 					var stopwatch = Stopwatch.StartNew();
-					_dataDictionary = CachedDataDictionaries[CachedConnectionStringName] = OracleDataDictionary.Deserialize(stream);
-					Trace.WriteLine(String.Format("{0} - Cache for '{1}' loaded in {2}", DateTime.Now, CachedConnectionStringName, stopwatch.Elapsed));
+					_dataDictionary = CachedDataDictionaries[_connectionStringName] = OracleDataDictionary.Deserialize(stream);
+					Trace.WriteLine(String.Format("{0} - Cache for '{1}' loaded in {2}", DateTime.Now, _connectionStringName, stopwatch.Elapsed));
 					BuildAllFunctionMetadata();
 					RemoveActiveRefreshTask();
 				}

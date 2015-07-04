@@ -42,7 +42,6 @@ namespace SqlPad
 		private IHelpProvider _createHelpProvider;
 
 		private MultiNodeEditor _multiNodeEditor;
-		private CancellationTokenSource _statementExecutionCancellationTokenSource;
 		private CancellationTokenSource _parsingCancellationTokenSource;
 		private FileSystemWatcher _documentFileWatcher;
 		private DateTime _lastDocumentFileChange;
@@ -58,13 +57,9 @@ namespace SqlPad
 		private bool _isToolTipOpenByShortCut;
 		private bool _isToolTipOpenByCaretChange;
 		private string _originalWorkDocumentContent = String.Empty;
-		private IConnectionAdapter _activeConnectionAdapter;
 
 		private readonly Popup _popup = new Popup();
-		private readonly PageModel _pageModel;
 		private readonly Timer _timerReParse = new Timer(100);
-		private readonly Timer _timerExecutionMonitor = new Timer(100);
-		private readonly Stopwatch _stopWatch = new Stopwatch();
 		private readonly List<CommandBinding> _specificCommandBindings = new List<CommandBinding>();
 
 		private readonly SqlFoldingStrategy _foldingStrategy;
@@ -73,6 +68,8 @@ namespace SqlPad
 		private CompletionWindow _completionWindow;
 		private ConnectionStringSettings _connectionString;
 		private Dictionary<string, BindVariableConfiguration> _currentBindVariables = new Dictionary<string, BindVariableConfiguration>();
+
+		internal PageModel ViewModel { get; private set; }
 		
 		internal IInfrastructureFactory InfrastructureFactory { get; private set; }
 
@@ -84,12 +81,7 @@ namespace SqlPad
 
 		public bool IsBusy
 		{
-			get { return _pageModel.IsRunning; }
-			private set
-			{
-				_pageModel.IsRunning = value;
-				App.MainWindow.NotifyTaskStatus();
-			}
+			get { return ViewModel.IsRunning; }
 		}
 
 		internal bool IsSelectedPage
@@ -126,9 +118,13 @@ namespace SqlPad
 			InitializeGenericCommandBindings();
 
 			_timerReParse.Elapsed += (sender, args) => Dispatcher.Invoke(Parse);
-			_timerExecutionMonitor.Elapsed += delegate { UpdateTimerMessage(); };
 
-			_pageModel = new PageModel(this) { DateTimeFormat = ConfigurationProvider.Configuration.ResultGrid.DateFormat };
+			ViewModel =
+				new PageModel(this)
+				{
+					ActiveOutputModel = OutputViewer.ViewModel,
+					DateTimeFormat = ConfigurationProvider.Configuration.ResultGrid.DateFormat
+				};
 
 			ConfigurationProvider.ConfigurationChanged += ConfigurationChangedHandler;
 
@@ -145,9 +141,9 @@ namespace SqlPad
 				};
 
 				WorkDocumentCollection.AddDocument(WorkDocument);
-				_pageModel.CurrentConnection = usedConnection;
+				ViewModel.CurrentConnection = usedConnection;
 
-				WorkDocument.SchemaName = _pageModel.CurrentSchema;
+				WorkDocument.SchemaName = ViewModel.CurrentSchema;
 			}
 			else
 			{
@@ -175,12 +171,12 @@ namespace SqlPad
 					}
 				}
 
-				_pageModel.CurrentConnection = usedConnection;
-				_pageModel.CurrentSchema = WorkDocument.SchemaName;
-				_pageModel.EnableDatabaseOutput = WorkDocument.EnableDatabaseOutput;
-				_pageModel.KeepDatabaseOutputHistory = WorkDocument.KeepDatabaseOutputHistory;
-				_pageModel.HeaderBackgroundColorCode = WorkDocument.HeaderBackgroundColorCode;
-				_pageModel.EnableDatabaseOutput = WorkDocument.EnableDatabaseOutput;
+				ViewModel.CurrentConnection = usedConnection;
+				ViewModel.CurrentSchema = WorkDocument.SchemaName;
+				ViewModel.HeaderBackgroundColorCode = WorkDocument.HeaderBackgroundColorCode;
+				OutputViewer.ViewModel.EnableDatabaseOutput = WorkDocument.EnableDatabaseOutput;
+				OutputViewer.ViewModel.EnableDatabaseOutput = WorkDocument.EnableDatabaseOutput;
+				OutputViewer.ViewModel.KeepDatabaseOutputHistory = WorkDocument.KeepDatabaseOutputHistory;
 
 				Editor.Text = WorkDocument.Text;
 
@@ -207,20 +203,19 @@ namespace SqlPad
 
 			if (String.IsNullOrEmpty(WorkDocument.DocumentTitle))
 			{
-				_pageModel.DocumentHeader = WorkDocument.File == null ? InitialDocumentHeader : WorkDocument.File.Name;
+				ViewModel.DocumentHeader = WorkDocument.File == null ? InitialDocumentHeader : WorkDocument.File.Name;
 			}
 
-			_pageModel.IsModified = WorkDocument.IsModified;
+			ViewModel.IsModified = WorkDocument.IsModified;
 
-			DataContext = _pageModel;
-			OutputViewer.DataModel = _pageModel;
+			DataContext = ViewModel;
 
 			InitializeTabItem();
 		}
 
 		private void UpdateDocumentHeaderToolTip()
 		{
-			_pageModel.DocumentHeaderToolTip = WorkDocument.File == null
+			ViewModel.DocumentHeaderToolTip = WorkDocument.File == null
 				? "Unsaved"
 				: String.Format("{0}{1}Last change: {2}", WorkDocument.File.FullName, Environment.NewLine, WorkDocument.File.LastWriteTime);
 		}
@@ -236,12 +231,6 @@ namespace SqlPad
 
 			_documentFileWatcher.Changed += DocumentFileWatcherChangedHandler;
 			_documentFileWatcher.Deleted += (sender, args) => Dispatcher.BeginInvoke(new Action(() => DocumentFileWatcherDeletedHandler(args.FullPath)));
-		}
-
-		private void UpdateTimerMessage()
-		{
-			var cancellationTokenSource = _statementExecutionCancellationTokenSource;
-			_pageModel.UpdateTimerMessage(_stopWatch.Elapsed, cancellationTokenSource != null && cancellationTokenSource.IsCancellationRequested);
 		}
 
 		private void DocumentFileWatcherDeletedHandler(string fullFileName)
@@ -284,7 +273,7 @@ namespace SqlPad
 
 		private void ConfigurationChangedHandler(object sender, EventArgs eventArgs)
 		{
-			_pageModel.DateTimeFormat = ConfigurationProvider.Configuration.ResultGrid.DateFormat;
+			ViewModel.DateTimeFormat = ConfigurationProvider.Configuration.ResultGrid.DateFormat;
 		}
 
 		private void InitializeTabItem()
@@ -296,13 +285,13 @@ namespace SqlPad
 					Template = (ControlTemplate)Resources["EditableTabHeaderControlTemplate"]
 				};
 
-			var contentBinding = new Binding("DocumentHeader") { Source = _pageModel, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged, Mode = BindingMode.TwoWay };
+			var contentBinding = new Binding("DocumentHeader") { Source = ViewModel, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged, Mode = BindingMode.TwoWay };
 			header.SetBinding(ContentProperty, contentBinding);
-			var isModifiedBinding = new Binding("IsModified") { Source = _pageModel, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged };
+			var isModifiedBinding = new Binding("IsModified") { Source = ViewModel, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged };
 			header.SetBinding(EditableTabHeaderControl.IsModifiedProperty, isModifiedBinding);
-			var isRunningBinding = new Binding("IsRunning") { Source = _pageModel, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged };
+			var isRunningBinding = new Binding("IsRunning") { Source = ViewModel, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged };
 			header.SetBinding(EditableTabHeaderControl.IsRunningProperty, isRunningBinding);
-			var toolTipBinding = new Binding("DocumentHeaderToolTip") { Source = _pageModel, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged };
+			var toolTipBinding = new Binding("DocumentHeaderToolTip") { Source = ViewModel, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged };
 			header.SetBinding(ToolTipProperty, toolTipBinding);
 
 			TabItem =
@@ -313,7 +302,7 @@ namespace SqlPad
 					Template = (ControlTemplate)Application.Current.Resources["TabItemControlTemplate"]
 				};
 
-			var backgroundBinding = new Binding("HeaderBackgroundColorCode") { Source = _pageModel, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged, Converter = TabHeaderBackgroundBrushConverter };
+			var backgroundBinding = new Binding("HeaderBackgroundColorCode") { Source = ViewModel, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged, Converter = TabHeaderBackgroundBrushConverter };
 			TabItem.SetBinding(BackgroundProperty, backgroundBinding);
 		}
 
@@ -368,7 +357,7 @@ namespace SqlPad
 			
 			contextMenu.Items.Add(new Separator());
 			var colorPickerMenuItem = (MenuItem)Resources["ColorPickerMenuItem"];
-			colorPickerMenuItem.DataContext = _pageModel;
+			colorPickerMenuItem.DataContext = ViewModel;
 			contextMenu.Items.Add(colorPickerMenuItem);
 			
 			return contextMenu;
@@ -427,10 +416,10 @@ namespace SqlPad
 				DatabaseModel.Dispose();
 			}
 
-			_pageModel.ResetSchemas();
+			ViewModel.ResetSchemas();
 
 			var connectionConfiguration = ConfigurationProvider.GetConnectionCofiguration(_connectionString.Name);
-			_pageModel.ProductionLabelVisibility = connectionConfiguration.IsProduction ? Visibility.Visible : Visibility.Collapsed;
+			ViewModel.ProductionLabelVisibility = connectionConfiguration.IsProduction ? Visibility.Visible : Visibility.Collapsed;
 			InfrastructureFactory = connectionConfiguration.InfrastructureFactory;
 			_codeCompletionProvider = InfrastructureFactory.CreateCodeCompletionProvider();
 			_codeSnippetProvider = InfrastructureFactory.CreateSnippetProvider();
@@ -445,7 +434,7 @@ namespace SqlPad
 			InitializeSpecificCommandBindings();
 
 			DatabaseModel = InfrastructureFactory.CreateDatabaseModel(ConfigurationProvider.ConnectionStrings[_connectionString.Name], WorkDocument.Identifier);
-			_pageModel.SchemaLabel = InfrastructureFactory.SchemaLabel;
+			ViewModel.SchemaLabel = InfrastructureFactory.SchemaLabel;
 			_sqlDocumentRepository = new SqlDocumentRepository(InfrastructureFactory.CreateParser(), InfrastructureFactory.CreateStatementValidator(), DatabaseModel);
 			_iconMargin.DocumentRepository = _sqlDocumentRepository;
 
@@ -506,7 +495,7 @@ namespace SqlPad
 			}
 			else
 			{
-				_pageModel.DocumentHeaderToolTip = WorkDocument.File.FullName;
+				ViewModel.DocumentHeaderToolTip = WorkDocument.File.FullName;
 				InitializeFileWatcher();
 				WorkDocumentCollection.AddRecentDocument(WorkDocument);
 			}
@@ -529,7 +518,9 @@ namespace SqlPad
 			WorkDocument.FontSize = Editor.FontSize;
 			WorkDocument.SelectionStart = Editor.SelectionStart;
 			WorkDocument.SelectionLength = Editor.SelectionLength;
-			WorkDocument.EnableDatabaseOutput = _pageModel.EnableDatabaseOutput;
+			
+			WorkDocument.EnableDatabaseOutput = OutputViewer.ViewModel.EnableDatabaseOutput;
+			WorkDocument.KeepDatabaseOutputHistory = OutputViewer.ViewModel.KeepDatabaseOutputHistory;
 
 			var textView = Editor.TextArea.TextView;
 			WorkDocument.VisualLeft = textView.ScrollOffset.X;
@@ -542,18 +533,16 @@ namespace SqlPad
 				WorkDocument.EditorGridRowHeight = RowDefinitionEditor.ActualHeight;
 			}
 
-			if (_pageModel.BindVariableListVisibility == Visibility.Visible)
+			if (ViewModel.BindVariableListVisibility == Visibility.Visible)
 			{
 				WorkDocument.EditorGridColumnWidth = ColumnDefinitionEditor.ActualWidth;
 			}
 
-			if (_pageModel.CurrentConnection != null)
+			if (ViewModel.CurrentConnection != null)
 			{
-				WorkDocument.ConnectionName = _pageModel.CurrentConnection.Name;
-				WorkDocument.SchemaName = _pageModel.CurrentSchema;
+				WorkDocument.ConnectionName = ViewModel.CurrentConnection.Name;
+				WorkDocument.SchemaName = ViewModel.CurrentSchema;
 			}
-
-			WorkDocument.KeepDatabaseOutputHistory = _pageModel.KeepDatabaseOutputHistory;
 		}
 
 		private void WithDisabledFileWatcher(Action action)
@@ -581,7 +570,7 @@ namespace SqlPad
 		{
 			if (WorkDocument.DocumentTitle == InitialDocumentHeader)
 			{
-				_pageModel.DocumentHeader = WorkDocument.File.Name;
+				ViewModel.DocumentHeader = WorkDocument.File.Name;
 			}
 
 			WithDisabledFileWatcher(SaveDocumentInternal);
@@ -599,7 +588,7 @@ namespace SqlPad
 				Editor.Save(WorkDocument.File.FullName);
 			}
 
-			_pageModel.IsModified = WorkDocument.IsModified = false;
+			ViewModel.IsModified = WorkDocument.IsModified = false;
 			_originalWorkDocumentContent = Editor.Text;
 
 			UpdateDocumentHeaderToolTip();
@@ -607,26 +596,26 @@ namespace SqlPad
 
 		private void DatabaseModelInitializedHandler(object sender, EventArgs args)
 		{
-			_pageModel.ConnectProgressBarVisibility = Visibility.Collapsed;
+			ViewModel.ConnectProgressBarVisibility = Visibility.Collapsed;
 			Dispatcher.Invoke(
 				() =>
 				{
-					_pageModel.SetSchemas(DatabaseModel.Schemas);
-					_pageModel.CurrentSchema = DatabaseModel.CurrentSchema;
+					ViewModel.SetSchemas(DatabaseModel.Schemas);
+					ViewModel.CurrentSchema = DatabaseModel.CurrentSchema;
 				});
 		}
 
 		private void DatabaseModelInitializationFailedHandler(object sender, DatabaseModelConnectionErrorArgs args)
 		{
-			_pageModel.ConnectProgressBarVisibility = Visibility.Collapsed;
-			_pageModel.ConnectionErrorMessage = args.Exception.Message;
-			_pageModel.ReconnectOptionVisibility = Visibility.Visible;
+			ViewModel.ConnectProgressBarVisibility = Visibility.Collapsed;
+			ViewModel.ConnectionErrorMessage = args.Exception.Message;
+			ViewModel.ReconnectOptionVisibility = Visibility.Visible;
 		}
 
 		private void ButtonReconnectClickHandler(object sender, RoutedEventArgs e)
 		{
-			_pageModel.ReconnectOptionVisibility = Visibility.Collapsed;
-			_pageModel.ConnectProgressBarVisibility = Visibility.Visible;
+			ViewModel.ReconnectOptionVisibility = Visibility.Collapsed;
+			ViewModel.ConnectProgressBarVisibility = Visibility.Visible;
 
 			if (!DatabaseModel.IsInitialized)
 			{
@@ -672,13 +661,13 @@ namespace SqlPad
 
 		private void CanExecuteCancelUserActionHandler(object sender, CanExecuteRoutedEventArgs args)
 		{
-			args.CanExecute = _statementExecutionCancellationTokenSource != null;
+			args.CanExecute = IsBusy;
 		}
 
 		private void CancelUserActionHandler(object sender, ExecutedRoutedEventArgs args)
 		{
 			Trace.WriteLine("Action is about to cancel. ");
-			_statementExecutionCancellationTokenSource.Cancel();
+			OutputViewer.Cancel();
 		}
 
 		private void ShowTokenCommandExecutionHandler(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
@@ -747,8 +736,7 @@ namespace SqlPad
 
 		private void CanExecuteDatabaseCommandHandler(object sender, CanExecuteRoutedEventArgs args)
 		{
-			var isExecuting = _activeConnectionAdapter != null && _activeConnectionAdapter.IsExecuting;
-			if (IsBusy || !DatabaseModel.IsInitialized || isExecuting || _sqlDocumentRepository.StatementText != Editor.Text)
+			if (IsBusy || !DatabaseModel.IsInitialized || OutputViewer.ConnectionAdapter.IsExecuting || _sqlDocumentRepository.StatementText != Editor.Text)
 				return;
 
 			var statement = _sqlDocumentRepository.Statements.GetStatementAtPosition(Editor.CaretOffset);
@@ -767,17 +755,8 @@ namespace SqlPad
 
 		private async void ExecuteDatabaseCommandHandlerInternal(bool gatherExecutionStatistics)
 		{
-			IsBusy = true;
-			
 			var executionModel = BuildStatementExecutionModel(gatherExecutionStatistics);
-
-			using (_statementExecutionCancellationTokenSource = new CancellationTokenSource())
-			{
-				await ExecuteDatabaseCommand(executionModel);
-				_statementExecutionCancellationTokenSource = null;
-			}
-
-			IsBusy = false;
+			await OutputViewer.ExecuteDatabaseCommandAsync(executionModel);
 		}
 
 		private StatementExecutionModel BuildStatementExecutionModel(bool gatherExecutionStatistics)
@@ -794,98 +773,15 @@ namespace SqlPad
 			if (Editor.SelectionLength > 0)
 			{
 				executionModel.StatementText = Editor.SelectedText;
-				executionModel.BindVariables = _pageModel.BindVariables.Where(c => c.BindVariable.Nodes.Any(n => n.SourcePosition.IndexStart >= Editor.SelectionStart && n.SourcePosition.IndexEnd + 1 <= Editor.SelectionStart + Editor.SelectionLength)).ToArray();
+				executionModel.BindVariables = ViewModel.BindVariables.Where(c => c.BindVariable.Nodes.Any(n => n.SourcePosition.IndexStart >= Editor.SelectionStart && n.SourcePosition.IndexEnd + 1 <= Editor.SelectionStart + Editor.SelectionLength)).ToArray();
 			}
 			else
 			{
 				executionModel.StatementText = statement.RootNode.GetText(Editor.Text);
-				executionModel.BindVariables = _pageModel.BindVariables;
+				executionModel.BindVariables = ViewModel.BindVariables;
 			}
 
 			return executionModel;
-		}
-
-		private async Task ExecuteDatabaseCommand(StatementExecutionModel executionModel)
-		{
-			OutputViewer.Initialize();
-
-			Task<StatementExecutionResult> innerTask = null;
-			var actionResult = await SafeTimedActionAsync(() => innerTask = DatabaseModel.ExecuteStatementAsync(executionModel, _statementExecutionCancellationTokenSource.Token));
-
-			if (!actionResult.IsSuccessful)
-			{
-				Messages.ShowError(actionResult.Exception.Message);
-				return;
-			}
-
-			var executionResult = innerTask.Result;
-			_activeConnectionAdapter = executionResult.ConnectionAdapter;
-
-			if (!executionResult.ExecutedSuccessfully)
-			{
-				_pageModel.NotifyExecutionCanceled();
-				return;
-			}
-
-			_pageModel.TransactionControlVisibity = _activeConnectionAdapter.HasActiveTransaction ? Visibility.Visible : Visibility.Collapsed;
-			_pageModel.UpdateTimerMessage(actionResult.Elapsed, false);
-			_pageModel.WriteDatabaseOutput(executionResult.DatabaseOutput);
-
-			if (executionResult.Statement.GatherExecutionStatistics)
-			{
-				await OutputViewer.ExecutionPlanViewer.ShowActualAsync(executionResult.ConnectionAdapter, _statementExecutionCancellationTokenSource.Token);
-				_pageModel.ExecutionPlanAvailable = Visibility.Visible;
-				_pageModel.SessionExecutionStatistics.MergeWith(await _activeConnectionAdapter.GetExecutionStatisticsAsync(_statementExecutionCancellationTokenSource.Token));
-				OutputViewer.SelectPreviousTab();
-			}
-			else if (OutputViewer.IsPreviousTabAlwaysVisible)
-			{
-				OutputViewer.SelectPreviousTab();
-			}
-
-			if (executionResult.CompilationErrors.Count > 0)
-			{
-				var lineOffset = Editor.GetLineNumberByOffset(executionModel.Statement.SourcePosition.IndexStart);
-				foreach (var error in executionResult.CompilationErrors)
-				{
-					error.Line += lineOffset;
-					_pageModel.CompilationErrors.Add(error);
-				}
-
-				OutputViewer.ShowCompilationErrors();
-			}
-
-			if (executionResult.ColumnHeaders.Count == 0)
-			{
-				if (executionResult.AffectedRowCount == -1)
-				{
-					_pageModel.StatementExecutedSuccessfullyStatusMessageVisibility = Visibility.Visible;
-				}
-				else
-				{
-					_pageModel.AffectedRowCount = executionResult.AffectedRowCount;
-				}
-
-				return;
-			}
-
-			OutputViewer.DisplayResult(executionResult);
-		}
-
-		private async Task<ActionResult> SafeTimedActionAsync(Func<Task> action)
-		{
-			var actionResult = new ActionResult();
-
-			_stopWatch.Restart();
-			_timerExecutionMonitor.Start();
-
-			actionResult.Exception = await App.SafeActionAsync(action);
-			actionResult.Elapsed = _stopWatch.Elapsed;
-			
-			_timerExecutionMonitor.Stop();
-			_stopWatch.Stop();
-			
-			return actionResult;
 		}
 
 		public void Dispose()
@@ -903,13 +799,13 @@ namespace SqlPad
 
 			_timerReParse.Stop();
 			_timerReParse.Dispose();
-			_timerExecutionMonitor.Stop();
-			_timerExecutionMonitor.Dispose();
 
 			if (_parsingCancellationTokenSource != null)
 			{
 				_parsingCancellationTokenSource.Dispose();
 			}
+
+			OutputViewer.Dispose();
 
 			if (DatabaseModel != null)
 			{
@@ -1158,7 +1054,7 @@ namespace SqlPad
 			var statement = _sqlDocumentRepository.Statements.GetStatementAtPosition(Editor.CaretOffset);
 			if (statement == null || statement.BindVariables.Count == 0)
 			{
-				_pageModel.BindVariables = new BindVariableModel[0];
+				ViewModel.BindVariables = new BindVariableModel[0];
 				_currentBindVariables.Clear();
 				return;
 			}
@@ -1169,7 +1065,7 @@ namespace SqlPad
 			}
 
 			_currentBindVariables = statement.BindVariables.ToDictionary(v => v.Name, v => v);
-			_pageModel.BindVariables = BuildBindVariableModels(statement.BindVariables);
+			ViewModel.BindVariables = BuildBindVariableModels(statement.BindVariables);
 		}
 
 		private bool ApplyBindVariables(StatementBase statement)
@@ -1440,7 +1336,7 @@ namespace SqlPad
 
 		private void CheckDocumentModified()
 		{
-			_pageModel.IsModified = WorkDocument.IsModified = IsDirty;
+			ViewModel.IsModified = WorkDocument.IsModified = IsDirty;
 		}
 
 		private void Parse()
@@ -1859,44 +1755,7 @@ namespace SqlPad
 
 		private async void ExecuteExplainPlanCommandHandler(object sender, ExecutedRoutedEventArgs args)
 		{
-			IsBusy = true;
-			await ExecuteExplainPlan();
-			IsBusy = false;
-		}
-
-		private async Task ExecuteExplainPlan()
-		{
-			OutputViewer.SelectDefaultTabIfNeeded();
-
-			_pageModel.ExecutionPlanAvailable = Visibility.Collapsed;
-
-			var statementModel = BuildStatementExecutionModel(false);
-
-			using (_statementExecutionCancellationTokenSource = new CancellationTokenSource())
-			{
-				var actionResult = await SafeTimedActionAsync(() => OutputViewer.ExecutionPlanViewer.ExplainAsync(statementModel, _statementExecutionCancellationTokenSource.Token));
-
-				if (_statementExecutionCancellationTokenSource.IsCancellationRequested)
-				{
-					_pageModel.NotifyExecutionCanceled();
-				}
-				else
-				{
-					_pageModel.UpdateTimerMessage(actionResult.Elapsed, false);
-
-					if (actionResult.IsSuccessful)
-					{
-						_pageModel.ExecutionPlanAvailable = Visibility.Visible;
-						OutputViewer.ShowExecutionPlan();
-					}
-					else
-					{
-						Messages.ShowError(actionResult.Exception.Message);
-					}
-				}
-
-				_statementExecutionCancellationTokenSource = null;
-			}
+			await OutputViewer.ExecuteExplainPlanAsync(BuildStatementExecutionModel(false));
 		}
 
 		private void CreateNewPage(object sender, ExecutedRoutedEventArgs e)
@@ -1908,8 +1767,8 @@ namespace SqlPad
 		{
 			App.SafeActionWithUserError(() =>
 			{
-				_activeConnectionAdapter.CommitTransaction();
-				_pageModel.TransactionControlVisibity = Visibility.Collapsed;
+				OutputViewer.ConnectionAdapter.CommitTransaction();
+				ViewModel.TransactionControlVisibity = Visibility.Collapsed;
 			});
 
 			Editor.Focus();
@@ -1917,24 +1776,19 @@ namespace SqlPad
 
 		private async void ButtonRollbackTransactionClickHandler(object sender, RoutedEventArgs e)
 		{
-			_pageModel.IsTransactionControlEnabled = false;
-			IsBusy = true;
+			ViewModel.IsTransactionControlEnabled = false;
 
-			var actionResult = await SafeTimedActionAsync(() => _activeConnectionAdapter.RollbackTransaction());
-			if (!actionResult.IsSuccessful)
+			var actionResult = await OutputViewer.RollbackTransactionAsync();
+			if (actionResult.IsSuccessful)
 			{
-				Messages.ShowError(actionResult.Exception.Message);
+				ViewModel.TransactionControlVisibity = Visibility.Collapsed;
 			}
 			else
 			{
-				_pageModel.TransactionControlVisibity = Visibility.Collapsed;
+				Messages.ShowError(actionResult.Exception.Message);
 			}
 
-			_pageModel.UpdateTimerMessage(actionResult.Elapsed, false);
-
-			_pageModel.IsTransactionControlEnabled = true;
-
-			IsBusy = false;
+			ViewModel.IsTransactionControlEnabled = true;
 
 			Editor.Focus();
 		}
@@ -2013,7 +1867,7 @@ namespace SqlPad
 		}
 	}
 
-	internal struct ActionResult
+	public struct ActionResult
 	{
 		public bool IsSuccessful { get { return Exception == null; } }
 		

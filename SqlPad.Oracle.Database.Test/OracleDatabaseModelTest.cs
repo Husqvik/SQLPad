@@ -115,13 +115,14 @@ WHERE
 					GatherExecutionStatistics = true
 				};
 
-			var taskStatement = databaseModel.ExecuteStatementAsync(executionModel, CancellationToken.None);
+			var connectionAdapter = (OracleConnectionAdapter)databaseModel.CreateConnectionAdapter();
+			var taskStatement = connectionAdapter.ExecuteStatementAsync(executionModel, CancellationToken.None);
 			taskStatement.Wait();
 			var result = taskStatement.Result;
 			result.ExecutedSuccessfully.ShouldBe(true);
 			result.AffectedRowCount.ShouldBe(-1);
 
-			result.ConnectionAdapter.CanFetch.ShouldBe(false);
+			connectionAdapter.CanFetch.ShouldBe(false);
 
 			var columnHeaders = result.ColumnHeaders.ToArray();
 			columnHeaders.Length.ShouldBe(1);
@@ -134,11 +135,10 @@ WHERE
 			rows[0].Length.ShouldBe(1);
 			rows[0][0].ToString().ShouldBe("X");
 
-			var task = result.ConnectionAdapter.FetchRecordsAsync(1, CancellationToken.None);
+			var task = connectionAdapter.FetchRecordsAsync(1, CancellationToken.None);
 			task.Wait();
 			task.Result.Any().ShouldBe(false);
 
-			var connectionAdapter = (OracleConnectionAdapter)result.ConnectionAdapter;
 			var displayCursorTask = connectionAdapter.GetCursorExecutionStatisticsAsync(CancellationToken.None);
 			displayCursorTask.Wait();
 
@@ -176,7 +176,8 @@ WHERE
 			{
 				databaseModel.Initialize().Wait();
 
-				var task = databaseModel.ExecuteStatementAsync(executionModel, CancellationToken.None);
+				var connectionAdapter = databaseModel.CreateConnectionAdapter();
+				var task = connectionAdapter.ExecuteStatementAsync(executionModel, CancellationToken.None);
 				task.Wait();
 				var result = task.Result;
 				
@@ -273,7 +274,8 @@ WHERE
 			{
 				databaseModel.Initialize().Wait();
 
-				var task = databaseModel.ExecuteStatementAsync(executionModel, CancellationToken.None);
+				var connectionAdapter = databaseModel.CreateConnectionAdapter();
+				var task = connectionAdapter.ExecuteStatementAsync(executionModel, CancellationToken.None);
 				task.Wait();
 				var result = task.Result;
 
@@ -647,10 +649,11 @@ WHERE
 						StatementText = ExplainPlanTestQuery
 					};
 
-				var task = databaseModel.ExecuteStatementAsync(executionModel, CancellationToken.None);
+				var connectionAdapter = (OracleConnectionAdapter)databaseModel.CreateConnectionAdapter();
+				var task = connectionAdapter.ExecuteStatementAsync(executionModel, CancellationToken.None);
 				task.Wait();
 
-				taskStatistics = ((OracleConnectionAdapter)task.Result.ConnectionAdapter).GetCursorExecutionStatisticsAsync(CancellationToken.None);
+				taskStatistics = connectionAdapter.GetCursorExecutionStatisticsAsync(CancellationToken.None);
 				taskStatistics.Wait();
 			}
 

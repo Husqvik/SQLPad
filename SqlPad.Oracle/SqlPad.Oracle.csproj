@@ -136,6 +136,7 @@
     <Compile Include="DataDictionary\OracleColumn.cs" />
     <Compile Include="OracleCommandExtensions.cs" />
     <Compile Include="DataDictionary\OracleConstraint.cs" />
+    <Compile Include="OracleConnectionAdapterBase.cs" />
     <Compile Include="OracleCustomTypeGenerator.cs" />
     <Compile Include="DataDictionary\OracleDatabaseLink.cs" />
     <Compile Include="OracleConnectionAdapter.cs" />

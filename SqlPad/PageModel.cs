@@ -1,23 +1,15 @@
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Configuration;
 using System.Linq;
-using System.Text;
 using System.Windows;
-using System.Windows.Data;
 
 namespace SqlPad
 {
 	public class PageModel : ModelBase
 	{
 		private readonly DocumentPage _documentPage;
-		private readonly ObservableCollection<object[]> _resultRowItems = new ObservableCollection<object[]>();
 		private readonly ObservableCollection<string> _schemas = new ObservableCollection<string>();
-		private readonly ObservableCollection<CompilationError> _compilationErrors = new ObservableCollection<CompilationError>();
-		private readonly SessionExecutionStatisticsCollection _sessionExecutionStatistics = new SessionExecutionStatisticsCollection();
-		private readonly StringBuilder _databaseOutputBuilder = new StringBuilder();
 		private ConnectionStringSettings _currentConnection;
 		private string _currentSchema;
 		private string _schemaLabel;
@@ -25,68 +17,22 @@ namespace SqlPad
 		private bool _isTransactionControlEnabled = true;
 		private bool _isModified;
 		private bool _isRunning;
-		private bool _enableDatabaseOutput;
-		private int _affectedRowCount = -1;
-		private int _currentRowIndex = 1;
-		private int _selectedCellValueCount;
-		private decimal _selectedCellSum;
-		private decimal _selectedCellAverage;
-		private decimal _selectedCellMin;
-		private decimal _selectedCellMax;
-		private Visibility _moreRowsExistVisibility = Visibility.Collapsed;
-		private Visibility _selectedCellInfoVisibility = Visibility.Collapsed;
-		private Visibility _selectedCellNumericInfoVisibility = Visibility.Collapsed;
-		private Visibility _statementExecutedSuccessfullyStatusMessageVisibility = Visibility.Collapsed;
+		private OutputViewerModel _activeOutputModel;
+
 		private Visibility _productionLabelVisibility = Visibility.Collapsed;
 		private Visibility _bindVariableListVisibility = Visibility.Collapsed;
-		private Visibility _gridRowInfoVisibity = Visibility.Collapsed;
 		private Visibility _transactionControlVisibity = Visibility.Collapsed;
-		private Visibility _executionPlanAvailable = Visibility.Collapsed;
 		private Visibility _reconnectOptionVisibility = Visibility.Collapsed;
 		private Visibility _schemaComboBoxVisibility = Visibility.Collapsed;
 		private Visibility _connectProgressBarVisibility = Visibility.Visible;
+		
 		private string _dateTimeFormat;
 		private string _connectionErrorMessage;
 		private string _documentHeaderToolTip;
-		private string _executionTimerMessage;
-		private bool _showAllSessionExecutionStatistics;
 
 		public PageModel(DocumentPage documentPage)
 		{
 			_documentPage = documentPage;
-			_sessionExecutionStatistics.CollectionChanged += (sender, args) => RaisePropertyChanged("ExecutionStatisticsAvailable");
-			_compilationErrors.CollectionChanged += (sender, args) => RaisePropertyChanged("CompilationErrorsVisible");
-			SetUpSessionExecutionStatisticsFilter();
-			SetUpSessionExecutionStatisticsSorting();
-		}
-
-		private void SetUpSessionExecutionStatisticsSorting()
-		{
-			var view = CollectionViewSource.GetDefaultView(_sessionExecutionStatistics);
-			view.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Ascending));
-		}
-
-		public Visibility StatementExecutionInfoSeparatorVisibility
-		{
-			get { return _gridRowInfoVisibity == Visibility.Collapsed && (AffectedRowCountVisibility == Visibility.Collapsed && StatementExecutedSuccessfullyStatusMessageVisibility == Visibility.Collapsed) ? Visibility.Collapsed : Visibility.Visible; }
-		}
-
-		public Visibility GridRowInfoVisibility
-		{
-			get { return _gridRowInfoVisibity; }
-			set
-			{
-				if (UpdateValueAndRaisePropertyChanged(ref _gridRowInfoVisibity, value))
-				{
-					RaisePropertyChanged("StatementExecutionInfoSeparatorVisibility");
-				}
-			}
-		}
-
-		public Visibility MoreRowsExistVisibility
-		{
-			get { return _moreRowsExistVisibility; }
-			set { UpdateValueAndRaisePropertyChanged(ref _moreRowsExistVisibility, value); }
 		}
 
 		public Visibility TransactionControlVisibity
@@ -123,44 +69,6 @@ namespace SqlPad
 		{
 			get { return _schemaLabel; }
 			set { UpdateValueAndRaisePropertyChanged(ref _schemaLabel, value); }
-		}
-
-		public string ExecutionTimerMessage
-		{
-			get { return _executionTimerMessage; }
-		}
-
-		public void NotifyExecutionCanceled()
-		{
-			_executionTimerMessage = "Canceled";
-
-			RaisePropertyChanged("ExecutionTimerMessage");
-		}
-
-		public void UpdateTimerMessage(TimeSpan timeSpan, bool isCanceling)
-		{
-			string formattedValue;
-			if (timeSpan.TotalMilliseconds < 1000)
-			{
-				formattedValue = String.Format("{0} {1}", (int)timeSpan.TotalMilliseconds, "ms");
-			}
-			else if (timeSpan.TotalMilliseconds < 60000)
-			{
-				formattedValue = String.Format("{0} {1}", Math.Round(timeSpan.TotalMilliseconds / 1000, 2), "s");
-			}
-			else
-			{
-				formattedValue = String.Format("{0:00}:{1:00}", (int)timeSpan.TotalMinutes, timeSpan.Seconds);
-			}
-
-			if (isCanceling)
-			{
-				formattedValue = String.Format("Canceling... {0}", formattedValue);
-			}
-
-			_executionTimerMessage = formattedValue;
-
-			RaisePropertyChanged("ExecutionTimerMessage");
 		}
 
 		public string DocumentHeader
@@ -214,97 +122,6 @@ namespace SqlPad
 			}
 		}
 
-		public Visibility ExecutionStatisticsAvailable
-		{
-			get { return _sessionExecutionStatistics.Count > 0 ? Visibility.Visible : Visibility.Collapsed; }
-		}
-
-		public Visibility CompilationErrorsVisible
-		{
-			get { return _compilationErrors.Count > 0 ? Visibility.Visible : Visibility.Collapsed; }
-		}
-
-		public bool ShowAllSessionExecutionStatistics
-		{
-			get { return _showAllSessionExecutionStatistics; }
-			set
-			{
-				if (UpdateValueAndRaisePropertyChanged(ref _showAllSessionExecutionStatistics, value))
-				{
-					SetUpSessionExecutionStatisticsFilter();
-				}
-			}
-		}
-
-		private void SetUpSessionExecutionStatisticsFilter()
-		{
-			var view = CollectionViewSource.GetDefaultView(_sessionExecutionStatistics);
-			view.Filter = _showAllSessionExecutionStatistics
-				? (Predicate<object>)null
-				: ShowActiveSessionExecutionStatisticsFilter;
-		}
-
-		public bool ShowActiveSessionExecutionStatisticsFilter(object record)
-		{
-			var statisticsRecord = (SessionExecutionStatisticsRecord)record;
-			return statisticsRecord.Value != 0;
-		}
-
-		public bool EnableDatabaseOutput
-		{
-			get { return _enableDatabaseOutput; }
-			set { UpdateValueAndRaisePropertyChanged(ref _enableDatabaseOutput, value); }
-		}
-
-		public bool KeepDatabaseOutputHistory { get; set; }
-
-		public void WriteDatabaseOutput(string output)
-		{
-			if (!KeepDatabaseOutputHistory)
-			{
-				_databaseOutputBuilder.Clear();
-			}
-
-			if (!String.IsNullOrEmpty(output))
-			{
-				_databaseOutputBuilder.AppendLine(output);
-			}
-			
-			RaisePropertyChanged("DatabaseOutput");
-		}
-
-		public string DatabaseOutput { get { return _databaseOutputBuilder.ToString(); } }
-
-		public int AffectedRowCount
-		{
-			get { return _affectedRowCount; }
-			set
-			{
-				if (!UpdateValueAndRaisePropertyChanged(ref _affectedRowCount, value))
-					return;
-				
-				RaisePropertyChanged("AffectedRowCountVisibility");
-				RaisePropertyChanged("StatementExecutionInfoSeparatorVisibility");
-			}
-		}
-
-		public Visibility AffectedRowCountVisibility
-		{
-			get { return _affectedRowCount == -1 ? Visibility.Collapsed : Visibility.Visible; }
-		}
-
-		public Visibility StatementExecutedSuccessfullyStatusMessageVisibility
-		{
-			get { return _statementExecutedSuccessfullyStatusMessageVisibility; }
-			set
-			{
-				if (UpdateValueAndRaisePropertyChanged(ref _statementExecutedSuccessfullyStatusMessageVisibility, value))
-				{
-					RaisePropertyChanged("StatementExecutionInfoSeparatorVisibility");
-				}
-			}
-		}
-
 		public Visibility ProductionLabelVisibility
 		{
 			get { return _productionLabelVisibility; }
@@ -327,12 +144,6 @@ namespace SqlPad
 		{
 			get { return _reconnectOptionVisibility; }
 			set { UpdateValueAndRaisePropertyChanged(ref _reconnectOptionVisibility, value); }
-		}
-
-		public Visibility ExecutionPlanAvailable
-		{
-			get { return _executionPlanAvailable; }
-			set { UpdateValueAndRaisePropertyChanged(ref _executionPlanAvailable, value); }
 		}
 
 		public string ConnectionErrorMessage
@@ -360,13 +171,7 @@ namespace SqlPad
 			}
 		}
 
-		public ObservableCollection<object[]> ResultRowItems { get { return _resultRowItems; } }
-
 		public ObservableCollection<string> Schemas { get { return _schemas; } }
-
-		public ObservableCollection<CompilationError> CompilationErrors { get { return _compilationErrors; } }
-
-		public SessionExecutionStatisticsCollection SessionExecutionStatistics { get { return _sessionExecutionStatistics; } }
 
 		public string CurrentSchema
 		{
@@ -402,55 +207,13 @@ namespace SqlPad
 			get { return _schemaComboBoxVisibility; }
 			set { UpdateValueAndRaisePropertyChanged(ref _schemaComboBoxVisibility, value); }
 		}
-		
-		public Visibility SelectedCellInfoVisibility
-		{
-			get { return _selectedCellInfoVisibility; }
-			set { UpdateValueAndRaisePropertyChanged(ref _selectedCellInfoVisibility, value); }
-		}
 
-		public Visibility SelectedCellNumericInfoVisibility
+		public OutputViewerModel ActiveOutputModel
 		{
-			get { return _selectedCellNumericInfoVisibility; }
-			set { UpdateValueAndRaisePropertyChanged(ref _selectedCellNumericInfoVisibility, value); }
-		}
-
-		public int CurrentRowIndex
-		{
-			get { return _currentRowIndex; }
-			set { UpdateValueAndRaisePropertyChanged(ref _currentRowIndex, value); }
+			get { return _activeOutputModel; }
+			set { UpdateValueAndRaisePropertyChanged(ref _activeOutputModel, value); }
 		}
 		
-		public int SelectedCellValueCount
-		{
-			get { return _selectedCellValueCount; }
-			set { UpdateValueAndRaisePropertyChanged(ref _selectedCellValueCount, value); }
-		}
-
-		public decimal SelectedCellSum
-		{
-			get { return _selectedCellSum; }
-			set { UpdateValueAndRaisePropertyChanged(ref _selectedCellSum, value); }
-		}
-
-		public decimal SelectedCellAverage
-		{
-			get { return _selectedCellAverage; }
-			set { UpdateValueAndRaisePropertyChanged(ref _selectedCellAverage, value); }
-		}
-
-		public decimal SelectedCellMin
-		{
-			get { return _selectedCellMin; }
-			set { UpdateValueAndRaisePropertyChanged(ref _selectedCellMin, value); }
-		}
-
-		public decimal SelectedCellMax
-		{
-			get { return _selectedCellMax; }
-			set { UpdateValueAndRaisePropertyChanged(ref _selectedCellMax, value); }
-		}
-
 		public void ResetSchemas()
 		{
 			_schemas.Clear();

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.Windows;
 
 namespace SqlPad.Oracle.ToolTips
@@ -12,6 +13,7 @@ namespace SqlPad.Oracle.ToolTips
 
 		public static readonly DependencyProperty IndexesProperty = DependencyProperty.Register("Indexes", typeof(IEnumerable<IndexDetailsModel>), typeof(IndexList), new FrameworkPropertyMetadata(PropertyChangedCallbackHandler));
 
+		[Bindable(true)]
 		public IEnumerable<IndexDetailsModel> Indexes
 		{
 			get { return (IEnumerable<IndexDetailsModel>)GetValue(IndexesProperty); }

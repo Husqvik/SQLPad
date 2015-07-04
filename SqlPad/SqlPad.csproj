@@ -101,6 +101,7 @@
     <Compile Include="BindVariableModel.cs" />
     <Compile Include="Bookmarks\IconMargin.cs" />
     <Compile Include="CellValueConverter.cs" />
+    <Compile Include="OutputViewerModel.cs" />
     <Compile Include="TsvDataExporter.cs" />
     <Compile Include="DataExportHelper.cs" />
     <Compile Include="IDataExporter.cs" />

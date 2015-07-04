@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.ComponentModel;
+using System.Windows;
 
 namespace SqlPad.Oracle.ToolTips
 {
@@ -11,6 +12,7 @@ namespace SqlPad.Oracle.ToolTips
 
 		public static readonly DependencyProperty TableDetailsProperty = DependencyProperty.Register("TableDetails", typeof(TableDetailsModel), typeof(PartitionList), new FrameworkPropertyMetadata(TableDetailsPropertyChangedCallbackHandler));
 
+		[Bindable(true)]
 		public TableDetailsModel TableDetails
 		{
 			get { return (TableDetailsModel)GetValue(TableDetailsProperty); }

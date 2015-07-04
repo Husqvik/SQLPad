@@ -41,7 +41,7 @@ namespace SqlPad.Oracle
 		private IsolationLevel _userTransactionIsolationLevel;
 		private bool _userCommandHasCompilationErrors;
 		private SessionExecutionStatisticsDataProvider _executionStatisticsDataProvider;
-		private readonly OracleDatabaseModelBase _databaseModel;
+		private readonly OracleDatabaseModel _databaseModel;
 
 		public void SwitchCurrentSchema()
 		{
@@ -58,7 +58,7 @@ namespace SqlPad.Oracle
 			_currentSchema = _databaseModel.CurrentSchema;
 		}
 
-		public OracleConnectionAdapter(OracleDatabaseModelBase databaseModel, string identifier)
+		public OracleConnectionAdapter(OracleDatabaseModel databaseModel, string identifier)
 		{
 			_databaseModel = databaseModel;
 			_connectionString = _databaseModel.ConnectionString;
@@ -112,7 +112,7 @@ namespace SqlPad.Oracle
 
 		public override async Task<ICollection<SessionExecutionStatisticsRecord>> GetExecutionStatisticsAsync(CancellationToken cancellationToken)
 		{
-			await UpdateModelAsync(cancellationToken, true, _executionStatisticsDataProvider.SessionEndExecutionStatisticsDataProvider);
+			await _databaseModel.UpdateModelAsync(cancellationToken, true, _executionStatisticsDataProvider.SessionEndExecutionStatisticsDataProvider);
 			return _executionStatisticsDataProvider.ExecutionStatistics;
 		}
 
@@ -142,12 +142,12 @@ namespace SqlPad.Oracle
 		{
 			var cursorExecutionStatisticsDataProvider = new CursorExecutionStatisticsDataProvider(_userCommandSqlId, _userCommandChildNumber);
 			var displayCursorDataProvider = new DisplayCursorDataProvider(_userCommandSqlId, _userCommandChildNumber);
-			await UpdateModelAsync(cancellationToken, true, cursorExecutionStatisticsDataProvider, displayCursorDataProvider);
+			await _databaseModel.UpdateModelAsync(cancellationToken, true, cursorExecutionStatisticsDataProvider, displayCursorDataProvider);
 			cursorExecutionStatisticsDataProvider.ItemCollection.PlanText = displayCursorDataProvider.PlanText;
 			return cursorExecutionStatisticsDataProvider.ItemCollection;
 		}
 
-		public async Task<StatementExecutionResult> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
+		public override async Task<StatementExecutionResult> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
 		{
 			PreInitialize();
 
@@ -162,6 +162,8 @@ namespace SqlPad.Oracle
 				if (errorCode.In(OracleErrorCode.EndOfFileOnCommunicationChannel, OracleErrorCode.NotConnectedToOracle))
 				{
 					InitializeUserConnection();
+
+					_databaseModel.Disconnect(exception);
 
 					throw;
 				}
@@ -186,88 +188,6 @@ namespace SqlPad.Oracle
 			DisposeCommandAndReader();
 		}
 
-		internal async Task UpdateModelAsync(CancellationToken cancellationToken, bool suppressException, params IModelDataProvider[] updaters)
-		{
-			using (var connection = new OracleConnection(_oracleConnectionString.ConnectionString))
-			{
-				using (var command = connection.CreateCommand())
-				{
-					command.BindByName = true;
-
-					OracleTransaction transaction = null;
-
-					try
-					{
-						foreach (var updater in updaters)
-						{
-							command.Parameters.Clear();
-							command.CommandText = String.Empty;
-							command.CommandType = CommandType.Text;
-							updater.InitializeCommand(command);
-
-							try
-							{
-								if (updater.IsValid)
-								{
-									if (await EnsureConnectionOpen(connection, cancellationToken))
-									{
-										connection.ModuleName = _moduleName;
-										connection.ActionName = "Model data provider";
-
-										using (var setSchemaCommand = connection.CreateCommand())
-										{
-											await SetCurrentSchema(setSchemaCommand, cancellationToken);
-										}
-
-										transaction = connection.BeginTransaction();
-									}
-
-									if (updater.HasScalarResult)
-									{
-										var result = await command.ExecuteScalarAsynchronous(cancellationToken);
-										updater.MapScalarValue(result);
-									}
-									else
-									{
-										using (var reader = await command.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken))
-										{
-											updater.MapReaderData(reader);
-										}
-									}
-								}
-							}
-							catch (OracleException exception)
-							{
-								if (exception.Number == (int)OracleErrorCode.UserInvokedCancellation)
-								{
-									break;
-								}
-
-								throw;
-							}
-						}
-					}
-					catch (Exception e)
-					{
-						Trace.WriteLine(String.Format("Update model failed: {0}", e));
-
-						if (!suppressException)
-						{
-							throw;
-						}
-					}
-					finally
-					{
-						if (transaction != null)
-						{
-							transaction.Rollback();
-							transaction.Dispose();
-						}
-					}
-				}
-			}
-		}
-		
 		private void ExecuteUserTransactionAction(Action<OracleTransaction> action)
 		{
 			if (!HasActiveTransaction)
@@ -466,7 +386,7 @@ namespace SqlPad.Oracle
 		{
 			using (var command = _userConnection.CreateCommand())
 			{
-				await SetCurrentSchema(command, cancellationToken);
+				await command.SetSchema(_currentSchema, cancellationToken);
 
 				command.CommandText = "SELECT SYS_CONTEXT('USERENV', 'SID') SID FROM SYS.DUAL";
 				_userSessionId = Convert.ToInt32(await command.ExecuteScalarAsynchronous(cancellationToken));
@@ -495,15 +415,9 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		private async Task SetCurrentSchema(OracleCommand command, CancellationToken cancellationToken)
-		{
-			command.CommandText = String.Format("ALTER SESSION SET CURRENT_SCHEMA = \"{0}\"", _currentSchema);
-			await command.ExecuteNonQueryAsynchronous(cancellationToken);
-		}
-
 		private async Task<bool> EnsureUserConnectionOpen(CancellationToken cancellationToken)
 		{
-			var isConnectionStateChanged = await EnsureConnectionOpen(_userConnection, cancellationToken);
+			var isConnectionStateChanged = await _userConnection.EnsureConnectionOpen(cancellationToken);
 			if (isConnectionStateChanged)
 			{
 				_userConnection.ModuleName = _moduleName;
@@ -511,17 +425,6 @@ namespace SqlPad.Oracle
 			}
 
 			return isConnectionStateChanged;
-		}
-
-		private static async Task<bool> EnsureConnectionOpen(OracleConnection connection, CancellationToken cancellationToken)
-		{
-			if (connection.State == ConnectionState.Open)
-			{
-				return false;
-			}
-
-			await connection.OpenAsynchronous(cancellationToken);
-			return true;
 		}
 
 		private async Task EnsureDatabaseOutput(CancellationToken cancellationToken)
@@ -581,7 +484,7 @@ namespace SqlPad.Oracle
 			if (executionModel.GatherExecutionStatistics)
 			{
 				_executionStatisticsDataProvider = new SessionExecutionStatisticsDataProvider(_databaseModel.StatisticsKeys, _userSessionId);
-				await UpdateModelAsync(cancellationToken, true, _executionStatisticsDataProvider.SessionBeginExecutionStatisticsDataProvider);
+				await _databaseModel.UpdateModelAsync(cancellationToken, true, _executionStatisticsDataProvider.SessionBeginExecutionStatisticsDataProvider);
 			}
 
 			//var debuggerSession = new OracleDebuggerSession(_userConnection);
@@ -601,7 +504,6 @@ namespace SqlPad.Oracle
 				new StatementExecutionResult
 				{
 					Statement = executionModel,
-					ConnectionAdapter = this,
 					AffectedRowCount = _userDataReader.RecordsAffected,
 					DatabaseOutput = await RetrieveDatabaseOutput(cancellationToken),
 					ExecutedSuccessfully = true,
@@ -731,7 +633,7 @@ namespace SqlPad.Oracle
 		private async Task<IReadOnlyList<CompilationError>> RetrieveCompilationErrors(StatementBase statement, CancellationToken cancellationToken)
 		{
 			var compilationErrorUpdater = new CompilationErrorDataProvider(statement, _currentSchema);
-			await UpdateModelAsync(cancellationToken, true, compilationErrorUpdater);
+			await _databaseModel.UpdateModelAsync(cancellationToken, true, compilationErrorUpdater);
 			return compilationErrorUpdater.Errors;
 		}
 
@@ -744,30 +646,5 @@ namespace SqlPad.Oracle
 				_userTransactionIsolationLevel = String.IsNullOrEmpty(_userTransactionId) ? IsolationLevel.Unspecified : IsolationLevel.ReadCommitted;
 			}
 		}
-	}
-
-	public abstract class OracleConnectionAdapterBase : IConnectionAdapter
-	{
-		public virtual void Dispose() { }
-
-		public abstract bool CanFetch { get; }
-
-		public abstract bool IsExecuting { get; }
-
-		public abstract bool EnableDatabaseOutput { get; set; }
-
-		public abstract Task<ICollection<SessionExecutionStatisticsRecord>> GetExecutionStatisticsAsync(CancellationToken cancellationToken);
-
-		public abstract Task<IReadOnlyList<object[]>> FetchRecordsAsync(int rowCount, CancellationToken cancellationToken);
-
-		public abstract bool HasActiveTransaction { get; }
-
-		public abstract void CommitTransaction();
-
-		public abstract Task RollbackTransaction();
-
-		public abstract void CloseActiveReader();
-
-		public abstract Task<ExecutionStatisticsPlanItemCollection> GetCursorExecutionStatisticsAsync(CancellationToken cancellationToken);
 	}
 }

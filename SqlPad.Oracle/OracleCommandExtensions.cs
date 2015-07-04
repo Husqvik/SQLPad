@@ -87,6 +87,23 @@ namespace SqlPad.Oracle
 			return ExecuteAsynchronous<object>(delegate { /* ODAC does not support cancellation of a connection being opened. */ }, delegate { connection.Open(); return null; }, cancellationToken);
 		}
 
+		public static async Task<bool> EnsureConnectionOpen(this OracleConnection connection, CancellationToken cancellationToken)
+		{
+			if (connection.State == ConnectionState.Open)
+			{
+				return false;
+			}
+
+			await connection.OpenAsynchronous(cancellationToken);
+			return true;
+		}
+
+		public static async Task SetSchema(this OracleCommand command, string schema, CancellationToken cancellationToken)
+		{
+			command.CommandText = String.Format("ALTER SESSION SET CURRENT_SCHEMA = \"{0}\"", schema);
+			await command.ExecuteNonQueryAsynchronous(cancellationToken);
+		}
+
 		private static Task<T> ExecuteAsynchronous<T>(Action cancellationAction, Func<T> synchronousOperation, CancellationToken cancellationToken)
 		{
 			var source = new TaskCompletionSource<T>();

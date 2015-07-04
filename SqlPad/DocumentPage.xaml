@@ -6,6 +6,7 @@
              xmlns:sqlPad="clr-namespace:SqlPad"
              xmlns:commands="clr-namespace:SqlPad.Commands"
              xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+             xmlns:configuration="clr-namespace:System.Configuration;assembly=System.Configuration"
              Loaded="PageLoadedHandler"
              mc:Ignorable="d"
              d:DesignHeight="320" d:DesignWidth="480" d:DataContext="{d:DesignInstance sqlPad:PageModel}">
@@ -98,7 +99,7 @@
 				<TextBlock Text="Connection: " VerticalAlignment="Center" Margin="0,1,4,3" />
 				<ComboBox x:Name="ComboBoxConnection" SelectedItem="{Binding Path=CurrentConnection}" Margin="0,1,0,3">
 					<ComboBox.ItemTemplate>
-						<DataTemplate>
+						<DataTemplate DataType="configuration:ConnectionStringSettings">
 							<TextBlock Text="{Binding Path=Name}" />
 						</DataTemplate>
 					</ComboBox.ItemTemplate>
@@ -276,23 +277,23 @@
 			</StatusBarItem>
 			<Separator Grid.Column="1" />
 			<StatusBarItem Grid.Column="2">
-				<TextBlock Text="{Binding ExecutionTimerMessage, Mode=OneWay}" />
+				<TextBlock Text="{Binding ActiveOutputModel.ExecutionTimerMessage, Mode=OneWay}" />
 			</StatusBarItem>
-			<Separator Grid.Column="3" Visibility="{Binding StatementExecutionInfoSeparatorVisibility}" />
+			<Separator Grid.Column="3" Visibility="{Binding ActiveOutputModel.StatementExecutionInfoSeparatorVisibility}" />
 			<StatusBarItem Grid.Column="4">
 				<StackPanel Orientation="Horizontal" sqlPad:MarginSetter.Margin="2,0,2,0">
-					<TextBlock Visibility="{Binding AffectedRowCountVisibility}">
-						<Run Text="{Binding AffectedRowCount}" />
+					<TextBlock Visibility="{Binding ActiveOutputModel.AffectedRowCountVisibility}">
+						<Run Text="{Binding ActiveOutputModel.AffectedRowCount}" />
 						<Run Text=" row(s) affected " />
 					</TextBlock>
-					<TextBlock Text="Command executed successfully " Visibility="{Binding StatementExecutedSuccessfullyStatusMessageVisibility}" />
-					<TextBlock Visibility="{Binding GridRowInfoVisibility}">
+					<TextBlock Text="Command executed successfully " Visibility="{Binding ActiveOutputModel.StatementExecutedSuccessfullyStatusMessageVisibility}" />
+					<TextBlock Visibility="{Binding ActiveOutputModel.GridRowInfoVisibility}">
 						<Run Text="Row " />
-						<Run Text="{Binding Path=CurrentRowIndex, Mode=OneWay}" />
+						<Run Text="{Binding Path=ActiveOutputModel.CurrentRowIndex, Mode=OneWay}" />
 						<Run Text=" of " />
-						<Run Text="{Binding Path=ResultRowItems.Count, Mode=OneWay}" />
+						<Run Text="{Binding Path=ActiveOutputModel.ResultRowItems.Count, Mode=OneWay}" />
 					</TextBlock>
-					<TextBlock Text=" (more rows exist)" Visibility="{Binding Path=MoreRowsExistVisibility, Mode=OneWay}" />
+					<TextBlock Text=" (more rows exist)" Visibility="{Binding Path=ActiveOutputModel.MoreRowsExistVisibility, Mode=OneWay}" />
 				</StackPanel>
 			</StatusBarItem>
 			<StatusBarItem VerticalContentAlignment="Stretch" Grid.Column="5">

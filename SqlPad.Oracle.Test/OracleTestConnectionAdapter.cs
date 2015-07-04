@@ -3,12 +3,25 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using SqlPad.Oracle.ExecutionPlan;
+using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
 
 namespace SqlPad.Oracle.Test
 {
 	internal class OracleTestConnectionAdapter : OracleConnectionAdapterBase
 	{
 		public static readonly OracleTestConnectionAdapter Instance = new OracleTestConnectionAdapter();
+
+		private static readonly IReadOnlyList<ColumnHeader> ColumnHeaders =
+			new List<ColumnHeader>
+			{
+				new ColumnHeader
+				{
+					ColumnIndex = 0,
+					DataType = typeof (String),
+					DatabaseDataType = TerminalValues.Varchar2,
+					Name = "DUMMY"
+				}
+			}.AsReadOnly();
 
 		private int _generatedRowCount;
 
@@ -17,6 +30,25 @@ namespace SqlPad.Oracle.Test
 		public override bool IsExecuting { get { return false; } }
 
 		public override bool EnableDatabaseOutput { get; set; }
+
+		public override Task<StatementExecutionResult> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
+		{
+			var fetchTask = FetchRecordsAsync(1, cancellationToken);
+			fetchTask.Wait(cancellationToken);
+
+			var result =
+				new StatementExecutionResult
+				{
+					Statement = executionModel,
+					ExecutedSuccessfully = true,
+					ColumnHeaders = ColumnHeaders,
+					InitialResultSet = fetchTask.Result,
+					CompilationErrors = new CompilationError[0],
+					DatabaseOutput = "Test database output"
+				};
+
+			return Task.FromResult(result);
+		}
 
 		public override Task<ICollection<SessionExecutionStatisticsRecord>> GetExecutionStatisticsAsync(CancellationToken cancellationToken)
 		{
