@@ -1106,6 +1106,9 @@ Note
 
 		public override Task<StatementExecutionResult> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
 		{
+			var fetchTask = FetchRecordsAsync(1, cancellationToken);
+			fetchTask.Wait(cancellationToken);
+
 			var result =
 				new StatementExecutionResult
 				{
@@ -1113,7 +1116,7 @@ Note
 					Statement = executionModel,
 					ExecutedSuccessfully = true,
 					ColumnHeaders = ColumnHeaders,
-					InitialResultSet = FetchRecords(1).ToArray(),
+					InitialResultSet = fetchTask.Result,
 					CompilationErrors = new CompilationError[0],
 					DatabaseOutput = "Test database output"
 				};
@@ -1278,10 +1281,11 @@ Note
 
 			return Task.FromResult((IReadOnlyList<string>)remoteColumns.AsReadOnly());
 		}
-		
-		public override IEnumerable<object[]> FetchRecords(int rowCount)
+
+		public override Task<IReadOnlyList<object[]>> FetchRecordsAsync(int rowCount, CancellationToken cancellationToken)
 		{
-			yield return new object[] { "Dummy Value " + ++_generatedRowCount};
+			IReadOnlyList<object[]> resultRow = new List<object[]> { new object[] { "Dummy Value " + ++_generatedRowCount } };
+			return Task.FromResult(resultRow);
 		}
 
 		public override string DatabaseDomainName { get { return CurrentDatabaseDomainNameInternal; } }

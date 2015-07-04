@@ -538,7 +538,7 @@ public class Query
 		{
 			Task<IReadOnlyList<object[]>> innerTask = null;
 			var batchSize = StatementExecutionModel.DefaultRowBatchSize - _pageModel.ResultRowItems.Count % StatementExecutionModel.DefaultRowBatchSize;
-			var exception = await App.SafeActionAsync(() => innerTask = _executionResult.ConnectionAdapter.FetchRecords(batchSize).EnumerateAsync(_statementExecutionCancellationTokenSource.Token));
+			var exception = await App.SafeActionAsync(() => innerTask = _executionResult.ConnectionAdapter.FetchRecordsAsync(batchSize, _statementExecutionCancellationTokenSource.Token));
 
 			if (exception != null)
 			{

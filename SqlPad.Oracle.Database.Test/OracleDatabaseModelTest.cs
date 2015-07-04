@@ -134,7 +134,9 @@ WHERE
 			rows[0].Length.ShouldBe(1);
 			rows[0][0].ToString().ShouldBe("X");
 
-			databaseModel.FetchRecords(1).Any().ShouldBe(false);
+			var task = databaseModel.FetchRecordsAsync(1, CancellationToken.None);
+			task.Wait();
+			task.Result.Any().ShouldBe(false);
 
 			var displayCursorTask = databaseModel.GetCursorExecutionStatisticsAsync(CancellationToken.None);
 			displayCursorTask.Wait();

@@ -33,7 +33,7 @@ namespace SqlPad.Oracle
 		private const string OracleDataAccessComponents = "Oracle Data Access Components";
 
 		private readonly OracleConnectionStringBuilder _oracleConnectionString;
-		private readonly Timer _timer = new Timer();
+		private readonly Timer _refreshTimer = new Timer();
 		private bool _isInitialized;
 		private bool _isRefreshing;
 		private bool _cacheLoaded;
@@ -181,7 +181,7 @@ namespace SqlPad.Oracle
 			_userConnection.Dispose();
 		}
 
-		private void TimerElapsedHandler(object sender, ElapsedEventArgs elapsedEventArgs)
+		private void RefreshTimerElapsedHandler(object sender, ElapsedEventArgs elapsedEventArgs)
 		{
 			SetRefreshTimerInterval();
 			RefreshIfNeeded();
@@ -189,7 +189,7 @@ namespace SqlPad.Oracle
 
 		private void SetRefreshTimerInterval()
 		{
-			_timer.Interval = ConfigurationProvider.Configuration.DataModel.DataModelRefreshPeriod * 60000;
+			_refreshTimer.Interval = ConfigurationProvider.Configuration.DataModel.DataModelRefreshPeriod * 60000;
 			Trace.WriteLine(String.Format("Data model refresh timer set: {0} minute(s). ", ConfigurationProvider.Configuration.DataModel.DataModelRefreshPeriod));
 		}
 
@@ -582,8 +582,8 @@ namespace SqlPad.Oracle
 
 		public override void Dispose()
 		{
-			_timer.Stop();
-			_timer.Dispose();
+			_refreshTimer.Stop();
+			_refreshTimer.Dispose();
 
 			RollbackTransaction();
 
@@ -794,7 +794,7 @@ namespace SqlPad.Oracle
 					DatabaseOutput = await RetrieveDatabaseOutput(cancellationToken),
 					ExecutedSuccessfully = true,
 					ColumnHeaders = GetColumnHeadersFromReader(_userDataReader),
-					InitialResultSet = await FetchRecordsFromReader(_userDataReader, executionModel.InitialFetchRowCount, false).EnumerateAsync(cancellationToken),
+					InitialResultSet = await FetchRecordsAsync(executionModel.InitialFetchRowCount, cancellationToken),
 					CompilationErrors = _userCommandHasCompilationErrors ? await RetrieveCompilationErrors(executionModel.Statement, cancellationToken) : new CompilationError[0]
 				};
 		}
@@ -979,9 +979,9 @@ namespace SqlPad.Oracle
 			return columnTypes;
 		}
 
-		public override IEnumerable<object[]> FetchRecords(int rowCount)
+		public override Task<IReadOnlyList<object[]>> FetchRecordsAsync(int rowCount, CancellationToken cancellationToken)
 		{
-			return FetchRecordsFromReader(_userDataReader, rowCount, false);
+			return FetchRecordsFromReader(_userDataReader, rowCount, false).EnumerateAsync(cancellationToken);
 		}
 
 		private static bool CanFetchFromReader(IDataReader reader)
@@ -1421,8 +1421,8 @@ namespace SqlPad.Oracle
 			RefreshIfNeeded();
 
 			SetRefreshTimerInterval();
-			_timer.Elapsed += TimerElapsedHandler;
-			_timer.Start();
+			_refreshTimer.Elapsed += RefreshTimerElapsedHandler;
+			_refreshTimer.Start();
 		}
 
 		private void LoadSchemaNames()
