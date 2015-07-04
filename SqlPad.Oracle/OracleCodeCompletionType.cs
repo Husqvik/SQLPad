@@ -275,7 +275,7 @@ namespace SqlPad.Oracle
 			DataType = TerminalCandidates.Contains(Terminals.DataTypeIdentifier);
 
 			InQueryBlockFromClause = effectiveTerminal.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.QueryBlock), NonTerminals.FromClause) != null || (effectiveTerminal.Id == Terminals.From && effectiveTerminal.ParentNode.Id == NonTerminals.QueryBlock);
-			var isWithinJoinCondition = nearestTerminal.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.JoinClause), NonTerminals.JoinColumnsOrCondition) != null;
+			var isWithinJoinCondition = effectiveTerminal.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.JoinClause) && !String.Equals(n.Id, NonTerminals.NestedQuery), NonTerminals.JoinColumnsOrCondition) != null;
 			var isAfterUpdateOrDeleteTerminal = (nearestTerminal.Id.In(Terminals.Update, Terminals.Delete) || (String.Equals(nearestTerminal.Id, Terminals.From) && nearestTerminal.PrecedingTerminal != null && String.Equals(nearestTerminal.PrecedingTerminal.Id, Terminals.Delete))) && isCursorAfterToken;
 			var isWithinQueryBlock = nearestTerminal.GetAncestor(NonTerminals.QueryBlock) != null;
 			var isWithinMainObjectReference = nearestTerminal.GetAncestor(NonTerminals.TableReference) != null && !isWithinQueryBlock;

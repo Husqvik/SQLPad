@@ -2333,6 +2333,14 @@ SELECT * FROM ALL";
 				completionType.DataType.ShouldBe(true);
 			}
 
+			[Test(Description = @"")]
+			public void TestCodeCompletionTypeInFromClauseInSubqueryWithinJoinClause()
+			{
+				const string statement = @"SELECT NULL FROM SELECTION S1 JOIN SELECTION S2 ON S1.SELECTION_ID = S2.SELECTION_ID AND S2.PROJECT_ID >= (SELECT MIN(PROJECT_ID) FROM )";
+				var completionType = InitializeCodeCompletionType(statement, 135);
+				completionType.SchemaDataObject.ShouldBe(true);
+			}
+
 			public class ReferenceIdentifierTest
 			{
 				public class SelectList
