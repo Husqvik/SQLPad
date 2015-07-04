@@ -1763,36 +1763,6 @@ namespace SqlPad
 			App.MainWindow.CreateNewDocumentPage();
 		}
 
-		private void ButtonCommitTransactionClickHandler(object sender, RoutedEventArgs e)
-		{
-			App.SafeActionWithUserError(() =>
-			{
-				OutputViewer.ConnectionAdapter.CommitTransaction();
-				ViewModel.TransactionControlVisibity = Visibility.Collapsed;
-			});
-
-			Editor.Focus();
-		}
-
-		private async void ButtonRollbackTransactionClickHandler(object sender, RoutedEventArgs e)
-		{
-			ViewModel.IsTransactionControlEnabled = false;
-
-			var actionResult = await OutputViewer.RollbackTransactionAsync();
-			if (actionResult.IsSuccessful)
-			{
-				ViewModel.TransactionControlVisibity = Visibility.Collapsed;
-			}
-			else
-			{
-				Messages.ShowError(actionResult.Exception.Message);
-			}
-
-			ViewModel.IsTransactionControlEnabled = true;
-
-			Editor.Focus();
-		}
-
 		private void CompilationErrorHandler(object sender, CompilationErrorArgs e)
 		{
 			var failedStatementSourcePosition = e.CompilationError.Statement.SourcePosition;

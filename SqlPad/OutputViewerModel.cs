@@ -20,7 +20,9 @@ namespace SqlPad
 		private string _executionTimerMessage;
 		private bool _showAllSessionExecutionStatistics;
 		private bool _enableDatabaseOutput;
+		private bool _isTransactionControlEnabled = true;
 
+		private Visibility _transactionControlVisibity = Visibility.Collapsed;
 		private Visibility _moreRowsExistVisibility = Visibility.Collapsed;
 		private Visibility _selectedCellInfoVisibility = Visibility.Collapsed;
 		private Visibility _selectedCellNumericInfoVisibility = Visibility.Collapsed;
@@ -81,6 +83,18 @@ namespace SqlPad
 		{
 			get { return _selectedCellMax; }
 			set { UpdateValueAndRaisePropertyChanged(ref _selectedCellMax, value); }
+		}
+
+		public bool IsTransactionControlEnabled
+		{
+			get { return _isTransactionControlEnabled; }
+			set { UpdateValueAndRaisePropertyChanged(ref _isTransactionControlEnabled, value); }
+		}
+
+		public Visibility TransactionControlVisibity
+		{
+			get { return _transactionControlVisibity; }
+			set { UpdateValueAndRaisePropertyChanged(ref _transactionControlVisibity, value); }
 		}
 
 		public Visibility MoreRowsExistVisibility

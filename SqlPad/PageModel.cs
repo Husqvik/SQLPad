@@ -14,14 +14,12 @@ namespace SqlPad
 		private string _currentSchema;
 		private string _schemaLabel;
 		private IReadOnlyList<BindVariableModel> _bindVariables;
-		private bool _isTransactionControlEnabled = true;
 		private bool _isModified;
 		private bool _isRunning;
 		private OutputViewerModel _activeOutputModel;
 
 		private Visibility _productionLabelVisibility = Visibility.Collapsed;
 		private Visibility _bindVariableListVisibility = Visibility.Collapsed;
-		private Visibility _transactionControlVisibity = Visibility.Collapsed;
 		private Visibility _reconnectOptionVisibility = Visibility.Collapsed;
 		private Visibility _schemaComboBoxVisibility = Visibility.Collapsed;
 		private Visibility _connectProgressBarVisibility = Visibility.Visible;
@@ -35,18 +33,6 @@ namespace SqlPad
 			_documentPage = documentPage;
 		}
 
-		public Visibility TransactionControlVisibity
-		{
-			get { return _transactionControlVisibity; }
-			set { UpdateValueAndRaisePropertyChanged(ref _transactionControlVisibity, value); }
-		}
-
-		public bool IsTransactionControlEnabled
-		{
-			get { return _isTransactionControlEnabled; }
-			set { UpdateValueAndRaisePropertyChanged(ref _isTransactionControlEnabled, value); }
-		}
-		
 		public bool IsModified
 		{
 			get { return _isModified; }

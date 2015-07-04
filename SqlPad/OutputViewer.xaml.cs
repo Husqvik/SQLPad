@@ -139,7 +139,7 @@ namespace SqlPad
 			}
 		}
 
-		public void Initialize()
+		private void Initialize()
 		{
 			_hasExecutionResult = false;
 
@@ -161,7 +161,7 @@ namespace SqlPad
 			SelectDefaultTabIfNeeded();
 		}
 
-		public void SelectDefaultTabIfNeeded()
+		private void SelectDefaultTabIfNeeded()
 		{
 			if (!IsTabAlwaysVisible(TabControlResult.SelectedItem))
 			{
@@ -169,12 +169,12 @@ namespace SqlPad
 			}
 		}
 
-		public bool IsPreviousTabAlwaysVisible
+		private bool IsPreviousTabAlwaysVisible
 		{
 			get { return _previousSelectedTab != null && IsTabAlwaysVisible(_previousSelectedTab); }
 		}
 		
-		public void SelectPreviousTab()
+		private void SelectPreviousTab()
 		{
 			if (_previousSelectedTab != null)
 			{
@@ -182,26 +182,14 @@ namespace SqlPad
 			}
 		}
 
-		public void ShowExecutionPlan()
+		private void ShowExecutionPlan()
 		{
 			TabControlResult.SelectedItem = TabExecutionPlan;
 		}
 
-		public void ShowCompilationErrors()
+		private void ShowCompilationErrors()
 		{
 			TabControlResult.SelectedItem = TabCompilationErrors;
-		}
-
-		public async Task<ActionResult> RollbackTransactionAsync()
-		{
-			IsBusy = true;
-
-			var result = await SafeTimedActionAsync(ConnectionAdapter.RollbackTransaction);
-			ViewModel.UpdateTimerMessage(result.Elapsed, false);
-			
-			IsBusy = false;
-
-			return result;
 		}
 
 		public Task ExecuteExplainPlanAsync(StatementExecutionModel executionModel)
@@ -209,7 +197,7 @@ namespace SqlPad
 			return ExecuteUsingCancellationToken(() => ExecuteExplainPlanAsyncInternal(executionModel));
 		}
 
-		public async Task ExecuteExplainPlanAsyncInternal(StatementExecutionModel executionModel)
+		private async Task ExecuteExplainPlanAsyncInternal(StatementExecutionModel executionModel)
 		{
 			SelectDefaultTabIfNeeded();
 
@@ -262,7 +250,7 @@ namespace SqlPad
 				return;
 			}
 
-			_documentPage.ViewModel.TransactionControlVisibity = ConnectionAdapter.HasActiveTransaction ? Visibility.Visible : Visibility.Collapsed;
+			ViewModel.TransactionControlVisibity = ConnectionAdapter.HasActiveTransaction ? Visibility.Visible : Visibility.Collapsed;
 			ViewModel.UpdateTimerMessage(actionResult.Elapsed, false);
 			ViewModel.WriteDatabaseOutput(executionResult.DatabaseOutput);
 
@@ -670,7 +658,7 @@ public class Query
 
 		private bool CanFetchNextRows()
 		{
-			return _hasExecutionResult && !_documentPage.IsBusy && ConnectionAdapter.CanFetch && !ConnectionAdapter.IsExecuting;
+			return _hasExecutionResult && !IsBusy && ConnectionAdapter.CanFetch && !ConnectionAdapter.IsExecuting;
 		}
 
 		private async Task FetchNextRows()
@@ -725,6 +713,42 @@ public class Query
 		{
 			_timerExecutionMonitor.Stop();
 			_timerExecutionMonitor.Dispose();
+		}
+
+		private void ButtonCommitTransactionClickHandler(object sender, RoutedEventArgs e)
+		{
+			App.SafeActionWithUserError(() =>
+			{
+				ConnectionAdapter.CommitTransaction();
+				ViewModel.TransactionControlVisibity = Visibility.Collapsed;
+			});
+
+			_documentPage.Editor.Focus();
+		}
+
+		private async void ButtonRollbackTransactionClickHandler(object sender, RoutedEventArgs e)
+		{
+			ViewModel.IsTransactionControlEnabled = false;
+
+			IsBusy = true;
+
+			var result = await SafeTimedActionAsync(ConnectionAdapter.RollbackTransaction);
+			ViewModel.UpdateTimerMessage(result.Elapsed, false);
+
+			if (result.IsSuccessful)
+			{
+				ViewModel.TransactionControlVisibity = Visibility.Collapsed;
+			}
+			else
+			{
+				Messages.ShowError(result.Exception.Message);
+			}
+
+			ViewModel.IsTransactionControlEnabled = true;
+
+			IsBusy = false;
+
+			_documentPage.Editor.Focus();
 		}
 	}
 }

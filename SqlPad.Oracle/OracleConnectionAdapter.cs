@@ -258,10 +258,7 @@ namespace SqlPad.Oracle
 			{
 				var fieldType = reader.GetDataTypeName(i);
 				fieldTypes[i] = fieldType;
-				//Trace.Write(i + ". " + fieldType + "; ");
 			}
-
-			//Trace.WriteLine(String.Empty);
 
 			for (var i = 0; i < rowCount; i++)
 			{
