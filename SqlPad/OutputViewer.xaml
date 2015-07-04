@@ -117,7 +117,7 @@
 						<ContextMenu>
 							<MenuItem Header="_Fetch all" Command="commands:GenericCommands.FetchAllRows" />
 							<MenuItem Header="_Export to file">
-								<MenuItem Header="_CSV..." Command="{StaticResource ExportToCsvFileCommand}" CommandParameter="{StaticResource CsvDataExporter}" />
+								<MenuItem Header="_Comma-separated value..." Command="{StaticResource ExportToCsvFileCommand}" CommandParameter="{StaticResource CsvDataExporter}" />
 								<MenuItem Header="_Tab-separated value..." Command="{StaticResource ExportToTsvFileCommand}" CommandParameter="{StaticResource TsvDataExporter}" />
 								<MenuItem Header="_HTML..." Command="{StaticResource ExportToHtmlFileCommand}" CommandParameter="{StaticResource HtmlDataExporter}" />
 								<MenuItem Header="_JSON..." Command="{StaticResource ExportToJsonFileCommand}" CommandParameter="{StaticResource JsonDataExporter}" />
@@ -126,7 +126,7 @@
 								<MenuItem Header="_XML..." Command="{StaticResource ExportToXmlFileCommand}" CommandParameter="{StaticResource XmlDataExporter}" />
 							</MenuItem>
 							<MenuItem Header="_Export to clipboard">
-								<MenuItem Header="_CSV..." Command="{StaticResource ExportToCsvClipboardCommand}" CommandParameter="{StaticResource CsvDataExporter}" />
+								<MenuItem Header="_Comma-separated value..." Command="{StaticResource ExportToCsvClipboardCommand}" CommandParameter="{StaticResource CsvDataExporter}" />
 								<MenuItem Header="_Tab-separated value..." Command="{StaticResource ExportToTsvClipboardCommand}" CommandParameter="{StaticResource TsvDataExporter}" />
 								<MenuItem Header="_HTML..." Command="{StaticResource ExportToHtmlClipboardCommand}" CommandParameter="{StaticResource HtmlDataExporter}" />
 								<MenuItem Header="_JSON..." Command="{StaticResource ExportToJsonClipboardCommand}" CommandParameter="{StaticResource JsonDataExporter}" />

@@ -4,13 +4,13 @@ namespace SqlPad
 {
 	public static class Messages
 	{
-		public static MessageBoxResult ShowError(string errorMessage, string caption = "Error")
+		public static MessageBoxResult ShowError(string errorMessage, string caption = "Error", Window owner = null)
 		{
-			return MessageBox.Show(errorMessage, caption, MessageBoxButton.OK, MessageBoxImage.Error);
-		}
+			if (owner == null)
+			{
+				owner = App.MainWindow;
+			}
 
-		public static MessageBoxResult ShowError(Window owner, string errorMessage, string caption = "Error")
-		{
 			return MessageBox.Show(owner, errorMessage, caption, MessageBoxButton.OK, MessageBoxImage.Error);
 		}
 	}

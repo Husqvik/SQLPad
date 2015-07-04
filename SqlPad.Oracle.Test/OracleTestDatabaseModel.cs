@@ -1109,6 +1109,7 @@ Note
 			var result =
 				new StatementExecutionResult
 				{
+					ConnectionAdapter = this,
 					Statement = executionModel,
 					ExecutedSuccessfully = true,
 					ColumnHeaders = ColumnHeaders,

@@ -32,6 +32,7 @@ namespace SqlPad
 		private decimal _selectedCellAverage;
 		private decimal _selectedCellMin;
 		private decimal _selectedCellMax;
+		private Visibility _moreRowsExistVisibility = Visibility.Collapsed;
 		private Visibility _selectedCellInfoVisibility = Visibility.Collapsed;
 		private Visibility _selectedCellNumericInfoVisibility = Visibility.Collapsed;
 		private Visibility _statementExecutedSuccessfullyStatusMessageVisibility = Visibility.Collapsed;
@@ -79,6 +80,12 @@ namespace SqlPad
 					RaisePropertyChanged("StatementExecutionInfoSeparatorVisibility");
 				}
 			}
+		}
+
+		public Visibility MoreRowsExistVisibility
+		{
+			get { return _moreRowsExistVisibility; }
+			set { UpdateValueAndRaisePropertyChanged(ref _moreRowsExistVisibility, value); }
 		}
 
 		public Visibility TransactionControlVisibity

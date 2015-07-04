@@ -376,16 +376,28 @@ WHERE
 					//new ColumnHeader { ColumnIndex = 2, DatabaseDataType = "Varchar2", DataType = typeof (string), Name = "\"'\\\"><?,.;:{}[]%$#@!~^&*()_+-§'''||(1/2*3+4-CASEWHEN1<=2OR2>=1THEN5ELSE6END)" }
 				};
 
-			var outputViewer = new OutputViewer { DataModel = new PageModel(new DocumentPage()) };
-			var executionResult = new StatementExecutionResult { ColumnHeaders = columnHeaders };
-			outputViewer.Initialize(executionResult);
-			outputViewer.ResultGrid.ItemsSource =
+			var documentPage = new DocumentPage();
+			var outputViewer = new OutputViewer { DataModel = new PageModel(documentPage) };
+
+			var dataRows =
 				new[]
 				{
 					new object[] {"Value \"1\" '2' <3>", new DateTime(2014, 8, 16, 22, 25, 34)},
 					new object[] {"\"2.\"Value", new DateTime(2014, 8, 16)},
 					//new object[] {"\"><?,.;:{}[]%$#@!~^&*()_+-§' ,5", new DateTime(2015, 5, 30) }
 				};
+
+			var executionResult =
+				new StatementExecutionResult
+				{
+					ConnectionAdapter = documentPage.DatabaseModel,
+					ColumnHeaders = columnHeaders,
+					InitialResultSet = dataRows
+				};
+			
+			outputViewer.DisplayResult(executionResult);
+
+			outputViewer.ResultGrid.ItemsSource = dataRows;
 			
 			return outputViewer.ResultGrid;
 		}

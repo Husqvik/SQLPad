@@ -789,6 +789,7 @@ namespace SqlPad.Oracle
 				new StatementExecutionResult
 				{
 					Statement = executionModel,
+					ConnectionAdapter = this,
 					AffectedRowCount = _userDataReader.RecordsAffected,
 					DatabaseOutput = await RetrieveDatabaseOutput(cancellationToken),
 					ExecutedSuccessfully = true,

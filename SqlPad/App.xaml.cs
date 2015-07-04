@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace SqlPad
 {
@@ -12,6 +13,11 @@ namespace SqlPad
 		public static readonly string VersionTimestamp;
 		public static readonly string Version;
 
+		public new static MainWindow MainWindow
+		{
+			get { return (MainWindow)Current.MainWindow; }
+		}
+
 		static App()
 		{
 			AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionHandler;
@@ -19,6 +25,34 @@ namespace SqlPad
 			Version = assembly.GetName().Version.ToString();
 			var buildInfo = assembly.GetCustomAttribute<AssemblyBuildInfo>();
 			VersionTimestamp = buildInfo.VersionTimestampString;
+		}
+
+		internal static async Task<Exception> SafeActionAsync(Func<Task> action)
+		{
+			try
+			{
+				await action();
+
+				return null;
+			}
+			catch (Exception exception)
+			{
+				return exception;
+			}
+		}
+
+		internal static bool SafeActionWithUserError(Action action)
+		{
+			try
+			{
+				action();
+				return true;
+			}
+			catch (Exception e)
+			{
+				Messages.ShowError(e.Message);
+				return false;
+			}
 		}
 
 		internal static void CreateErrorLog(object exceptionObject)

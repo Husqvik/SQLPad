@@ -111,7 +111,7 @@ namespace SqlPad
 			}
 			catch (Exception e)
 			{
-				Messages.ShowError(this, e.Message);
+				Messages.ShowError(e.Message, owner: this);
 				Close();
 			}
 		}
@@ -263,7 +263,7 @@ namespace SqlPad
 				return;
 			}
 
-			DocumentPage.SafeActionWithUserError(
+			App.SafeActionWithUserError(
 				() => File.WriteAllText(dialog.FileName, String.IsNullOrEmpty(TextEditor.SelectedText) ? TextEditor.Text : TextEditor.SelectedText));
 		}
 
@@ -275,7 +275,7 @@ namespace SqlPad
 				return;
 			}
 
-			DocumentPage.SafeActionWithUserError(
+			App.SafeActionWithUserError(
 				() => File.WriteAllBytes(dialog.FileName, _largeBinaryValue.Value));
 		}
 

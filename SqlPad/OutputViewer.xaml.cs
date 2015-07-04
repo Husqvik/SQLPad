@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -15,15 +18,14 @@ namespace SqlPad
 	public partial class OutputViewer
 	{
 		private bool _isSelectingCells;
+		private bool _hasExecutionResult;
 		private PageModel _pageModel;
 		private object _previousSelectedTab;
 		private DocumentPage _documentPage;
 		private StatementExecutionResult _executionResult;
+		private CancellationTokenSource _statementExecutionCancellationTokenSource;
 
-		public event EventHandler FetchNextRows;
-		public event EventHandler FetchAllRows;
 		public event EventHandler<CompilationErrorArgs> CompilationError;
-		public event EventHandler<CanExecuteRoutedEventArgs> CanFetchAllRows;
 
 		public IExecutionPlanViewer ExecutionPlanViewer { get; private set; }
 
@@ -37,14 +39,26 @@ namespace SqlPad
 			}
 		}
 
+		// TODO: Remove duplication
+		public bool IsBusy
+		{
+			get { return _pageModel.IsRunning; }
+			private set
+			{
+				_pageModel.IsRunning = value;
+				App.MainWindow.NotifyTaskStatus();
+			}
+		}
+
 		public OutputViewer()
 		{
 			InitializeComponent();
 		}
 
-		public void Initialize(StatementExecutionResult executionResult)
+		public void DisplayResult(StatementExecutionResult executionResult)
 		{
 			_executionResult = executionResult;
+			_hasExecutionResult = true;
 			ResultGrid.Columns.Clear();
 
 			foreach (var columnHeader in _executionResult.ColumnHeaders)
@@ -57,6 +71,8 @@ namespace SqlPad
 			
 			_pageModel.GridRowInfoVisibility = Visibility.Visible;
 			_pageModel.ResultRowItems.Clear();
+
+			AppendRows(executionResult.InitialResultSet);
 		}
 
 		internal static DataGridTextColumn CreateDataGridTextColumnTemplate(ColumnHeader columnHeader)
@@ -102,10 +118,13 @@ namespace SqlPad
 
 		public void Initialize()
 		{
+			_hasExecutionResult = false;
+
 			_pageModel.AffectedRowCount = -1;
 			_pageModel.CurrentRowIndex = 0;
 			_pageModel.ResultRowItems.Clear();
 			_pageModel.CompilationErrors.Clear();
+			_pageModel.MoreRowsExistVisibility = Visibility.Collapsed;
 			_pageModel.GridRowInfoVisibility = Visibility.Collapsed;
 			_pageModel.ExecutionPlanAvailable = Visibility.Collapsed;
 			_pageModel.StatementExecutedSuccessfullyStatusMessageVisibility = Visibility.Collapsed;
@@ -165,16 +184,6 @@ namespace SqlPad
 			args.CanExecute = ResultGrid.Columns.Count > 0;
 		}
 
-		private void CanFetchAllRowsHandler(object sender, CanExecuteRoutedEventArgs canExecuteRoutedEventArgs)
-		{
-			if (CanFetchAllRows != null)
-			{
-				CanFetchAllRows(this, canExecuteRoutedEventArgs);
-			}
-
-			canExecuteRoutedEventArgs.ContinueRouting = canExecuteRoutedEventArgs.CanExecute;
-		}
-
 		private void ExportDataFileHandler(object sender, ExecutedRoutedEventArgs args)
 		{
 			var dataExporter = (IDataExporter)args.Parameter;
@@ -184,14 +193,14 @@ namespace SqlPad
 				return;
 			}
 
-			DocumentPage.SafeActionWithUserError(() => dataExporter.ExportToFile(dialog.FileName, ResultGrid, _documentPage.InfrastructureFactory.DataExportConverter));
+			App.SafeActionWithUserError(() => dataExporter.ExportToFile(dialog.FileName, ResultGrid, _documentPage.InfrastructureFactory.DataExportConverter));
 		}
 
 		private void ExportDataClipboardHandler(object sender, ExecutedRoutedEventArgs args)
 		{
 			var dataExporter = (IDataExporter)args.Parameter;
 
-			DocumentPage.SafeActionWithUserError(() => dataExporter.ExportToClipboard(ResultGrid, _documentPage.InfrastructureFactory.DataExportConverter));
+			App.SafeActionWithUserError(() => dataExporter.ExportToClipboard(ResultGrid, _documentPage.InfrastructureFactory.DataExportConverter));
 		}
 
 		private const string ExportClassTemplate =
@@ -453,22 +462,45 @@ public class Query
 			return TabControlResult.Items.IndexOf(tabItem).In(0, 2);
 		}
 
-		private void ResultGridScrollChangedHandler(object sender, ScrollChangedEventArgs e)
+		private async void ResultGridScrollChangedHandler(object sender, ScrollChangedEventArgs e)
 		{
-			if (FetchNextRows == null || e.VerticalOffset + e.ViewportHeight != e.ExtentHeight)
+			if (e.VerticalOffset + e.ViewportHeight != e.ExtentHeight)
 			{
 				return;
 			}
 
-			FetchNextRows(this, EventArgs.Empty);
+			if (!CanFetchNextRows())
+			{
+				return;
+			}
+
+			IsBusy = true;
+
+			using (_statementExecutionCancellationTokenSource = new CancellationTokenSource())
+			{
+				await FetchNextRows();
+
+				_statementExecutionCancellationTokenSource = null;
+			}
+
+			IsBusy = false;
 		}
 
-		private void FetchAllRowsHandler(object sender, ExecutedRoutedEventArgs args)
+		private async void FetchAllRowsHandler(object sender, ExecutedRoutedEventArgs args)
 		{
-			if (FetchAllRows != null)
+			IsBusy = true;
+
+			using (_statementExecutionCancellationTokenSource = new CancellationTokenSource())
 			{
-				FetchAllRows(this, EventArgs.Empty);
+				while (!_statementExecutionCancellationTokenSource.IsCancellationRequested && _executionResult.ConnectionAdapter.CanFetch)
+				{
+					await FetchNextRows();
+				}
+
+				_statementExecutionCancellationTokenSource = null;
 			}
+
+			IsBusy = false;
 		}
 
 		private void ErrorListMouseDoubleClickHandler(object sender, MouseButtonEventArgs e)
@@ -489,6 +521,44 @@ public class Query
 			{
 				e.Cancel = true;
 			}
+		}
+
+		private void CanFetchAllRowsHandler(object sender, CanExecuteRoutedEventArgs canExecuteRoutedEventArgs)
+		{
+			canExecuteRoutedEventArgs.CanExecute = CanFetchNextRows();
+			canExecuteRoutedEventArgs.ContinueRouting = canExecuteRoutedEventArgs.CanExecute;
+		}
+
+		private bool CanFetchNextRows()
+		{
+			return !_documentPage.IsBusy && _hasExecutionResult && _executionResult.ConnectionAdapter.CanFetch && !_executionResult.ConnectionAdapter.IsExecuting;
+		}
+
+		private async Task FetchNextRows()
+		{
+			Task<IReadOnlyList<object[]>> innerTask = null;
+			var batchSize = StatementExecutionModel.DefaultRowBatchSize - _pageModel.ResultRowItems.Count % StatementExecutionModel.DefaultRowBatchSize;
+			var exception = await App.SafeActionAsync(() => innerTask = _executionResult.ConnectionAdapter.FetchRecords(batchSize).EnumerateAsync(_statementExecutionCancellationTokenSource.Token));
+
+			if (exception != null)
+			{
+				Messages.ShowError(exception.Message);
+			}
+			else
+			{
+				AppendRows(innerTask.Result);
+
+				if (_executionResult.Statement.GatherExecutionStatistics)
+				{
+					_pageModel.SessionExecutionStatistics.MergeWith(await _executionResult.ConnectionAdapter.GetExecutionStatisticsAsync(_statementExecutionCancellationTokenSource.Token));
+				}
+			}
+		}
+
+		private void AppendRows(IEnumerable<object[]> rows)
+		{
+			_pageModel.ResultRowItems.AddRange(rows);
+			_pageModel.MoreRowsExistVisibility = _executionResult.ConnectionAdapter.CanFetch ? Visibility.Visible : Visibility.Collapsed;
 		}
 	}
 }

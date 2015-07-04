@@ -88,7 +88,7 @@ namespace SqlPad.Commands
 
 		private static void ShowErrorMessage(Exception exception)
 		{
-			Messages.ShowError(Application.Current.MainWindow, "Action failed: " + Environment.NewLine + exception.Message);
+			Messages.ShowError("Action failed: " + Environment.NewLine + exception.Message);
 		}
 	}
 }

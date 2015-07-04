@@ -43,6 +43,8 @@ namespace SqlPad
 		public string DatabaseOutput { get; set; }
 
 		public IReadOnlyList<CompilationError> CompilationErrors { get; set; }
+
+		public IConnectionAdapter ConnectionAdapter { get; set; }
 	}
 
 	[DebuggerDisplay("SessionExecutionStatisticsRecord (Name={Name}; Value={Value})")]

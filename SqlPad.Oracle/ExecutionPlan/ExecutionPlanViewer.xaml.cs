@@ -92,7 +92,7 @@ namespace SqlPad.Oracle.ExecutionPlan
 			}
 			catch (Exception e)
 			{
-				Messages.ShowError(Window.GetWindow(this), e.Message);
+				Messages.ShowError(e.Message, owner: App.MainWindow);
 			}
 		}
 

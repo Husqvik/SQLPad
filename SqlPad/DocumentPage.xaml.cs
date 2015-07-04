@@ -57,7 +57,6 @@ namespace SqlPad
 		private bool _enableCodeComplete;
 		private bool _isToolTipOpenByShortCut;
 		private bool _isToolTipOpenByCaretChange;
-		private bool _gatherExecutionStatistics;
 		private string _originalWorkDocumentContent = String.Empty;
 
 		private readonly Popup _popup = new Popup();
@@ -88,18 +87,13 @@ namespace SqlPad
 			private set
 			{
 				_pageModel.IsRunning = value;
-				MainWindow.NotifyTaskStatus();
+				App.MainWindow.NotifyTaskStatus();
 			}
-		}
-
-		private static MainWindow MainWindow
-		{
-			get { return (MainWindow)Application.Current.MainWindow; }
 		}
 
 		internal bool IsSelectedPage
 		{
-			get { return Equals(((TabItem)MainWindow.DocumentTabControl.SelectedItem).Content); }
+			get { return Equals(((TabItem)App.MainWindow.DocumentTabControl.SelectedItem).Content); }
 		}
 
 		public TextEditorAdapter EditorAdapter { get; private set; }
@@ -250,15 +244,15 @@ namespace SqlPad
 
 		private void DocumentFileWatcherDeletedHandler(string fullFileName)
 		{
-			MainWindow.DocumentTabControl.SelectedItem = TabItem;
+			App.MainWindow.DocumentTabControl.SelectedItem = TabItem;
 
 			var message = String.Format("File '{0}' has been deleted. Do you want to close the document? ", fullFileName);
-			if (MessageBox.Show(MainWindow, message, "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.Yes) == MessageBoxResult.No)
+			if (MessageBox.Show(App.MainWindow, message, "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.Yes) == MessageBoxResult.No)
 			{
 				return;
 			}
 
-			MainWindow.CloseDocument(this);
+			App.MainWindow.CloseDocument(this);
 		}
 
 		private void DocumentFileWatcherChangedHandler(object sender, FileSystemEventArgs fileSystemEventArgs)
@@ -276,10 +270,10 @@ namespace SqlPad
 			Dispatcher.Invoke(
 				() =>
 				{
-					MainWindow.DocumentTabControl.SelectedItem = TabItem;
+					App.MainWindow.DocumentTabControl.SelectedItem = TabItem;
 
 					var message = String.Format("File '{0}' has been changed by another application. Do you want to load new content? ", fileSystemEventArgs.FullPath);
-					if (MessageBox.Show(MainWindow, message, "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.Yes) == MessageBoxResult.Yes)
+					if (MessageBox.Show(App.MainWindow, message, "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.Yes) == MessageBoxResult.Yes)
 					{
 						Editor.Load(fileSystemEventArgs.FullPath);
 					}
@@ -486,7 +480,7 @@ namespace SqlPad
 			if (WorkDocument.File == null)
 				return SaveAs();
 
-			SafeActionWithUserError(SaveDocument);
+			App.SafeActionWithUserError(SaveDocument);
 			return true;
 		}
 
@@ -502,7 +496,7 @@ namespace SqlPad
 			var documentTitle = WorkDocument.DocumentTitle;
 			var isModified = WorkDocument.IsModified;
 
-			if (!SafeActionWithUserError(SaveDocument))
+			if (!App.SafeActionWithUserError(SaveDocument))
 			{
 				WorkDocument.DocumentFileName = null;
 				WorkDocument.DocumentTitle = documentTitle;
@@ -703,61 +697,6 @@ namespace SqlPad
 			GenericCommandHandler.ExecuteEditCommand(_sqlDocumentRepository, Editor, _statementFormatter.SingleLineExecutionHandler.ExecutionHandler);
 		}
 
-		private void CanFetchAllRowsHandler(object sender, CanExecuteRoutedEventArgs canExecuteRoutedEventArgs)
-		{
-			canExecuteRoutedEventArgs.CanExecute = CanFetchNextRows();
-		}
-
-		private async void FetchAllRowsHandler(object sender, EventArgs args)
-		{
-			IsBusy = true;
-
-			using (_statementExecutionCancellationTokenSource = new CancellationTokenSource())
-			{
-				while (!_statementExecutionCancellationTokenSource.IsCancellationRequested && DatabaseModel.CanFetch)
-				{
-					await FetchNextRows();
-				}
-
-				_statementExecutionCancellationTokenSource = null;
-			}
-
-			IsBusy = false;
-		}
-
-		private bool CanFetchNextRows()
-		{
-			return !IsBusy && DatabaseModel.CanFetch && !DatabaseModel.IsExecuting;
-		}
-
-		private async Task FetchNextRows()
-		{
-			Task<IReadOnlyList<object[]>> innerTask = null;
-			var batchSize = StatementExecutionModel.DefaultRowBatchSize - _pageModel.ResultRowItems.Count % StatementExecutionModel.DefaultRowBatchSize;
-			var exception = await SafeActionAsync(() => innerTask = DatabaseModel.FetchRecords(batchSize).EnumerateAsync(_statementExecutionCancellationTokenSource.Token));
-
-			if (exception != null)
-			{
-				Messages.ShowError(MainWindow, exception.Message);
-			}
-			else
-			{
-				AppendRows(innerTask.Result);
-
-				if (_gatherExecutionStatistics)
-				{
-					_pageModel.SessionExecutionStatistics.MergeWith(await DatabaseModel.GetExecutionStatisticsAsync(_statementExecutionCancellationTokenSource.Token));
-				}
-			}
-		}
-
-		private void AppendRows(IEnumerable<object[]> rows)
-		{
-			_pageModel.ResultRowItems.AddRange(rows);
-			
-			TextMoreRowsExist.Visibility = DatabaseModel.CanFetch ? Visibility.Visible : Visibility.Collapsed;
-		}
-
 		private void NavigateToQueryBlockRoot(object sender, ExecutedRoutedEventArgs args)
 		{
 			var executionContext = CommandExecutionContext.Create(Editor, _sqlDocumentRepository);
@@ -815,21 +754,19 @@ namespace SqlPad
 
 		private void ExecuteDatabaseCommandWithActualExecutionPlanHandler(object sender, ExecutedRoutedEventArgs args)
 		{
-			_gatherExecutionStatistics = true;
-			ExecuteDatabaseCommandHandlerInternal();
+			ExecuteDatabaseCommandHandlerInternal(true);
 		}
 
 		private void ExecuteDatabaseCommandHandler(object sender, ExecutedRoutedEventArgs args)
 		{
-			_gatherExecutionStatistics = false;
-			ExecuteDatabaseCommandHandlerInternal();
+			ExecuteDatabaseCommandHandlerInternal(false);
 		}
 
-		private async void ExecuteDatabaseCommandHandlerInternal()
+		private async void ExecuteDatabaseCommandHandlerInternal(bool gatherExecutionStatistics)
 		{
 			IsBusy = true;
 			
-			var executionModel = BuildStatementExecutionModel();
+			var executionModel = BuildStatementExecutionModel(gatherExecutionStatistics);
 
 			using (_statementExecutionCancellationTokenSource = new CancellationTokenSource())
 			{
@@ -840,7 +777,7 @@ namespace SqlPad
 			IsBusy = false;
 		}
 
-		private StatementExecutionModel BuildStatementExecutionModel()
+		private StatementExecutionModel BuildStatementExecutionModel(bool gatherExecutionStatistics)
 		{
 			var statement = _sqlDocumentRepository.Statements.GetStatementAtPosition(Editor.CaretOffset);
 
@@ -848,7 +785,7 @@ namespace SqlPad
 				new StatementExecutionModel
 				{
 					Statement = statement,
-					GatherExecutionStatistics = _gatherExecutionStatistics
+					GatherExecutionStatistics = gatherExecutionStatistics
 				};
 			
 			if (Editor.SelectionLength > 0)
@@ -865,42 +802,37 @@ namespace SqlPad
 			return executionModel;
 		}
 
-		private void InitializeViewBeforeCommandExecution()
-		{
-			TextMoreRowsExist.Visibility = Visibility.Collapsed;
-
-			OutputViewer.Initialize();
-		}
-
 		private async Task ExecuteDatabaseCommand(StatementExecutionModel executionModel)
 		{
-			InitializeViewBeforeCommandExecution();
+			OutputViewer.Initialize();
 
 			Task<StatementExecutionResult> innerTask = null;
 			var actionResult = await SafeTimedActionAsync(() => innerTask = DatabaseModel.ExecuteStatementAsync(executionModel, _statementExecutionCancellationTokenSource.Token));
 
-			_pageModel.TransactionControlVisibity = DatabaseModel.HasActiveTransaction ? Visibility.Visible : Visibility.Collapsed;
-
 			if (!actionResult.IsSuccessful)
 			{
-				Messages.ShowError(MainWindow, actionResult.Exception.Message);
+				Messages.ShowError(actionResult.Exception.Message);
 				return;
 			}
 
-			if (!innerTask.Result.ExecutedSuccessfully)
+			var executionResult = innerTask.Result;
+			var connectionAdapter = executionResult.ConnectionAdapter;
+
+			if (!executionResult.ExecutedSuccessfully)
 			{
 				_pageModel.NotifyExecutionCanceled();
 				return;
 			}
 
+			_pageModel.TransactionControlVisibity = connectionAdapter.HasActiveTransaction ? Visibility.Visible : Visibility.Collapsed;
 			_pageModel.UpdateTimerMessage(actionResult.Elapsed, false);
-			_pageModel.WriteDatabaseOutput(innerTask.Result.DatabaseOutput);
+			_pageModel.WriteDatabaseOutput(executionResult.DatabaseOutput);
 
-			if (_gatherExecutionStatistics)
+			if (executionResult.Statement.GatherExecutionStatistics)
 			{
 				await OutputViewer.ExecutionPlanViewer.ShowActualAsync(_statementExecutionCancellationTokenSource.Token);
 				_pageModel.ExecutionPlanAvailable = Visibility.Visible;
-				_pageModel.SessionExecutionStatistics.MergeWith(await DatabaseModel.GetExecutionStatisticsAsync(_statementExecutionCancellationTokenSource.Token));
+				_pageModel.SessionExecutionStatistics.MergeWith(await connectionAdapter.GetExecutionStatisticsAsync(_statementExecutionCancellationTokenSource.Token));
 				OutputViewer.SelectPreviousTab();
 			}
 			else if (OutputViewer.IsPreviousTabAlwaysVisible)
@@ -908,10 +840,10 @@ namespace SqlPad
 				OutputViewer.SelectPreviousTab();
 			}
 
-			if (innerTask.Result.CompilationErrors.Count > 0)
+			if (executionResult.CompilationErrors.Count > 0)
 			{
 				var lineOffset = Editor.GetLineNumberByOffset(executionModel.Statement.SourcePosition.IndexStart);
-				foreach (var error in innerTask.Result.CompilationErrors)
+				foreach (var error in executionResult.CompilationErrors)
 				{
 					error.Line += lineOffset;
 					_pageModel.CompilationErrors.Add(error);
@@ -920,23 +852,21 @@ namespace SqlPad
 				OutputViewer.ShowCompilationErrors();
 			}
 
-			if (innerTask.Result.ColumnHeaders.Count == 0)
+			if (executionResult.ColumnHeaders.Count == 0)
 			{
-				if (innerTask.Result.AffectedRowCount == -1)
+				if (executionResult.AffectedRowCount == -1)
 				{
 					_pageModel.StatementExecutedSuccessfullyStatusMessageVisibility = Visibility.Visible;
 				}
 				else
 				{
-					_pageModel.AffectedRowCount = innerTask.Result.AffectedRowCount;
+					_pageModel.AffectedRowCount = executionResult.AffectedRowCount;
 				}
 
 				return;
 			}
 
-			OutputViewer.Initialize(innerTask.Result);
-
-			AppendRows(innerTask.Result.InitialResultSet);
+			OutputViewer.DisplayResult(executionResult);
 		}
 
 		private async Task<ActionResult> SafeTimedActionAsync(Func<Task> action)
@@ -946,7 +876,7 @@ namespace SqlPad
 			_stopWatch.Restart();
 			_timerExecutionMonitor.Start();
 
-			actionResult.Exception = await SafeActionAsync(action);
+			actionResult.Exception = await App.SafeActionAsync(action);
 			actionResult.Elapsed = _stopWatch.Elapsed;
 			
 			_timerExecutionMonitor.Stop();
@@ -955,24 +885,10 @@ namespace SqlPad
 			return actionResult;
 		}
 
-		private async Task<Exception> SafeActionAsync(Func<Task> action)
-		{
-			try
-			{
-				await action();
-
-				return null;
-			}
-			catch (Exception exception)
-			{
-				return exception;
-			}
-		}
-
 		public void Dispose()
 		{
 			ConfigurationProvider.ConfigurationChanged -= ConfigurationChangedHandler;
-			MainWindow.DocumentTabControl.SelectionChanged -= DocumentTabControlSelectionChangedHandler;
+			App.MainWindow.DocumentTabControl.SelectionChanged -= DocumentTabControlSelectionChangedHandler;
 			Application.Current.Deactivated -= ApplicationDeactivatedHandler;
 
 			if (_documentFileWatcher != null)
@@ -1086,7 +1002,7 @@ namespace SqlPad
 		{
 			if (_isInitializing)
 			{
-				MainWindow.DocumentTabControl.SelectionChanged += DocumentTabControlSelectionChangedHandler;
+				App.MainWindow.DocumentTabControl.SelectionChanged += DocumentTabControlSelectionChangedHandler;
 				Application.Current.Deactivated += ApplicationDeactivatedHandler;
 
 				if (WorkDocument.EditorGridRowHeight > 0)
@@ -1678,7 +1594,7 @@ namespace SqlPad
 							VerticalScrollBarVisibility = ScrollBarVisibility.Auto
 						},
 					Background = toolTip.Control.Background,
-					Owner = MainWindow
+					Owner = App.MainWindow
 				};
 			
 			window.Show();
@@ -1938,20 +1854,6 @@ namespace SqlPad
 			return Editor.Text[Editor.CaretOffset] == currentCharacter && Editor.Text[Editor.CaretOffset - 1] == previousCharacter;
 		}
 
-		internal static bool SafeActionWithUserError(Action action)
-		{
-			try
-			{
-				action();
-				return true;
-			}
-			catch (Exception e)
-			{
-				Messages.ShowError(e.Message);
-				return false;
-			}
-		}
-
 		private async void ExecuteExplainPlanCommandHandler(object sender, ExecutedRoutedEventArgs args)
 		{
 			IsBusy = true;
@@ -1965,7 +1867,7 @@ namespace SqlPad
 
 			_pageModel.ExecutionPlanAvailable = Visibility.Collapsed;
 
-			var statementModel = BuildStatementExecutionModel();
+			var statementModel = BuildStatementExecutionModel(false);
 
 			using (_statementExecutionCancellationTokenSource = new CancellationTokenSource())
 			{
@@ -1986,7 +1888,7 @@ namespace SqlPad
 					}
 					else
 					{
-						Messages.ShowError(MainWindow, actionResult.Exception.Message);
+						Messages.ShowError(actionResult.Exception.Message);
 					}
 				}
 
@@ -1996,12 +1898,12 @@ namespace SqlPad
 
 		private void CreateNewPage(object sender, ExecutedRoutedEventArgs e)
 		{
-			MainWindow.CreateNewDocumentPage();
+			App.MainWindow.CreateNewDocumentPage();
 		}
 
 		private void ButtonCommitTransactionClickHandler(object sender, RoutedEventArgs e)
 		{
-			SafeActionWithUserError(() =>
+			App.SafeActionWithUserError(() =>
 			{
 				DatabaseModel.CommitTransaction();
 				_pageModel.TransactionControlVisibity = Visibility.Collapsed;
@@ -2018,7 +1920,7 @@ namespace SqlPad
 			var actionResult = await SafeTimedActionAsync(() => DatabaseModel.RollbackTransaction());
 			if (!actionResult.IsSuccessful)
 			{
-				Messages.ShowError(MainWindow, actionResult.Exception.Message);
+				Messages.ShowError(actionResult.Exception.Message);
 			}
 			else
 			{
@@ -2032,25 +1934,6 @@ namespace SqlPad
 			IsBusy = false;
 
 			Editor.Focus();
-		}
-
-		private async void FetchNextRowsHandler(object sender, EventArgs e)
-		{
-			if (!CanFetchNextRows())
-			{
-				return;
-			}
-
-			IsBusy = true;
-
-			using (_statementExecutionCancellationTokenSource = new CancellationTokenSource())
-			{
-				await FetchNextRows();
-
-				_statementExecutionCancellationTokenSource = null;
-			}
-
-			IsBusy = false;
 		}
 
 		private void CompilationErrorHandler(object sender, CompilationErrorArgs e)

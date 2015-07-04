@@ -243,7 +243,7 @@
 		<GridSplitter Grid.Column="0" Grid.Row="2" Height="4" HorizontalAlignment="Stretch" ShowsPreview="True"
 		              VerticalAlignment="Center" Background="DimGray" />
 
-		<sqlPad:OutputViewer x:Name="OutputViewer" Grid.Column="0" Grid.Row="3" FetchNextRows="FetchNextRowsHandler" FetchAllRows="FetchAllRowsHandler" CompilationError="CompilationErrorHandler" CanFetchAllRows="CanFetchAllRowsHandler" />
+		<sqlPad:OutputViewer x:Name="OutputViewer" Grid.Column="0" Grid.Row="3" CompilationError="CompilationErrorHandler" />
 
 		<StatusBar x:Name="StatusBar" Grid.Row="4" Grid.Column="0">
 			<StatusBar.ItemsPanel>
@@ -292,7 +292,7 @@
 						<Run Text=" of " />
 						<Run Text="{Binding Path=ResultRowItems.Count, Mode=OneWay}" />
 					</TextBlock>
-					<TextBlock Text=" (more rows exist)" x:Name="TextMoreRowsExist" Visibility="Collapsed" />
+					<TextBlock Text=" (more rows exist)" Visibility="{Binding Path=MoreRowsExistVisibility, Mode=OneWay}" />
 				</StackPanel>
 			</StatusBarItem>
 			<StatusBarItem VerticalContentAlignment="Stretch" Grid.Column="5">
