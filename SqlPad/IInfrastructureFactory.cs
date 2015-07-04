@@ -70,7 +70,7 @@ namespace SqlPad
 	{
 		Task ExplainAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken);
 
-		Task ShowActualAsync(CancellationToken cancellationToken);
+		Task ShowActualAsync(IConnectionAdapter connectionAdapter, CancellationToken cancellationToken);
 
 		Control Control { get; }
 	}

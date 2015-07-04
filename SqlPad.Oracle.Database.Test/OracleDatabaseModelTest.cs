@@ -120,8 +120,8 @@ WHERE
 			var result = taskStatement.Result;
 			result.ExecutedSuccessfully.ShouldBe(true);
 			result.AffectedRowCount.ShouldBe(-1);
-			
-			databaseModel.CanFetch.ShouldBe(false);
+
+			result.ConnectionAdapter.CanFetch.ShouldBe(false);
 
 			var columnHeaders = result.ColumnHeaders.ToArray();
 			columnHeaders.Length.ShouldBe(1);
@@ -134,11 +134,12 @@ WHERE
 			rows[0].Length.ShouldBe(1);
 			rows[0][0].ToString().ShouldBe("X");
 
-			var task = databaseModel.FetchRecordsAsync(1, CancellationToken.None);
+			var task = result.ConnectionAdapter.FetchRecordsAsync(1, CancellationToken.None);
 			task.Wait();
 			task.Result.Any().ShouldBe(false);
 
-			var displayCursorTask = databaseModel.GetCursorExecutionStatisticsAsync(CancellationToken.None);
+			var connectionAdapter = (OracleConnectionAdapter)result.ConnectionAdapter;
+			var displayCursorTask = connectionAdapter.GetCursorExecutionStatisticsAsync(CancellationToken.None);
 			displayCursorTask.Wait();
 
 			var planItemCollection = displayCursorTask.Result;
@@ -148,7 +149,7 @@ WHERE
 
 			planItemCollection.PlanText.Length.ShouldBeGreaterThan(100);
 
-			var taskStatistics = databaseModel.GetExecutionStatisticsAsync(CancellationToken.None);
+			var taskStatistics = connectionAdapter.GetExecutionStatisticsAsync(CancellationToken.None);
 			taskStatistics.Wait();
 
 			var statisticsRecords = taskStatistics.Result.Where(r => r.Value != 0).ToArray();
@@ -646,9 +647,10 @@ WHERE
 						StatementText = ExplainPlanTestQuery
 					};
 
-				databaseModel.ExecuteStatementAsync(executionModel, CancellationToken.None).Wait();
+				var task = databaseModel.ExecuteStatementAsync(executionModel, CancellationToken.None);
+				task.Wait();
 
-				taskStatistics = databaseModel.GetCursorExecutionStatisticsAsync(CancellationToken.None);
+				taskStatistics = ((OracleConnectionAdapter)task.Result.ConnectionAdapter).GetCursorExecutionStatisticsAsync(CancellationToken.None);
 				taskStatistics.Wait();
 			}
 

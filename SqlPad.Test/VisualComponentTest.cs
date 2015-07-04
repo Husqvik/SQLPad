@@ -2,6 +2,7 @@
 using System.IO;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -387,10 +388,13 @@ WHERE
 					//new object[] {"\"><?,.;:{}[]%$#@!~^&*()_+-§' ,5", new DateTime(2015, 5, 30) }
 				};
 
+			var task = documentPage.DatabaseModel.ExecuteStatementAsync(null, CancellationToken.None);
+			task.Wait();
+
 			var executionResult =
 				new StatementExecutionResult
 				{
-					ConnectionAdapter = documentPage.DatabaseModel,
+					ConnectionAdapter = task.Result.ConnectionAdapter,
 					ColumnHeaders = columnHeaders,
 					InitialResultSet = dataRows
 				};

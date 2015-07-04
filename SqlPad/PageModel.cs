@@ -25,6 +25,7 @@ namespace SqlPad
 		private bool _isTransactionControlEnabled = true;
 		private bool _isModified;
 		private bool _isRunning;
+		private bool _enableDatabaseOutput;
 		private int _affectedRowCount = -1;
 		private int _currentRowIndex = 1;
 		private int _selectedCellValueCount;
@@ -251,8 +252,8 @@ namespace SqlPad
 
 		public bool EnableDatabaseOutput
 		{
-			get { return _documentPage.DatabaseModel.EnableDatabaseOutput; }
-			set { _documentPage.DatabaseModel.EnableDatabaseOutput = value; }
+			get { return _enableDatabaseOutput; }
+			set { UpdateValueAndRaisePropertyChanged(ref _enableDatabaseOutput, value); }
 		}
 
 		public bool KeepDatabaseOutputHistory { get; set; }

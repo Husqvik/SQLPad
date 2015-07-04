@@ -94,8 +94,6 @@ namespace SqlPad.Oracle
 
 		public abstract bool IsFresh { get; }
 		
-		public abstract bool EnableDatabaseOutput { get; set; }
-
 		public abstract void RefreshIfNeeded();
 
 		public abstract Task Refresh(bool force = false);
@@ -112,21 +110,9 @@ namespace SqlPad.Oracle
 
 		public abstract string DatabaseDomainName { get; }
 
-		public abstract bool HasActiveTransaction { get; }
-
-		public abstract void CommitTransaction();
-
-		public abstract Task RollbackTransaction();
-		
-		public abstract void CloseActiveReader();
-
 		public abstract Task<StatementExecutionResult> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken);
 
-		public abstract Task<IReadOnlyList<object[]>> FetchRecordsAsync(int rowCount, CancellationToken cancellationToken);
-
 		public abstract Task<ExecutionPlanItemCollection> ExplainPlanAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken);
-
-		public abstract Task<ExecutionStatisticsPlanItemCollection> GetCursorExecutionStatisticsAsync(CancellationToken cancellationToken);
 
 		public abstract Task<string> GetObjectScriptAsync(OracleSchemaObject schemaObject, CancellationToken cancellationToken, bool suppressUserCancellationException = true);
 
@@ -141,10 +127,6 @@ namespace SqlPad.Oracle
 		public abstract Task<IReadOnlyList<string>> GetRemoteTableColumnsAsync(string databaseLink, OracleObjectIdentifier schemaObject, CancellationToken cancellationToken);
 		
 		public abstract Task UpdateColumnDetailsAsync(OracleObjectIdentifier schemaObject, string columnName, ColumnDetailsModel dataModel, CancellationToken cancellationToken);
-
-		public abstract bool CanFetch { get; }
-
-		public abstract bool IsExecuting { get; }
 
 		public abstract ILookup<string, string> ContextData { get; }
 
@@ -165,8 +147,6 @@ namespace SqlPad.Oracle
 		public abstract IDictionary<string, string> SystemParameters { get; }
 
 		public abstract Version Version { get; }
-
-		public abstract Task<ICollection<SessionExecutionStatisticsRecord>> GetExecutionStatisticsAsync(CancellationToken cancellationToken);
 
 		public OracleObjectIdentifier[] GetPotentialSchemaObjectIdentifiers(OracleObjectIdentifier identifier)
 		{

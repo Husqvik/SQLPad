@@ -88,6 +88,7 @@
     <Compile Include="OracleSnippetProviderTest.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="OracleTestConnectionAdapter.cs" />
     <Compile Include="OracleTestDatabaseModel.cs" />
     <Compile Include="OracleTestInfrastructureFactory.cs" />
     <Compile Include="OracleToolTipProviderTest.cs" />

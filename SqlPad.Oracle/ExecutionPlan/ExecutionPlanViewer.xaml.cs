@@ -29,9 +29,9 @@ namespace SqlPad.Oracle.ExecutionPlan
 			DataContext = _viewModel;
 		}
 
-		public async Task ShowActualAsync(CancellationToken cancellationToken)
+		public async Task ShowActualAsync(IConnectionAdapter connectionAdapter, CancellationToken cancellationToken)
 		{
-			var itemCollection = await _databaseModel.GetCursorExecutionStatisticsAsync(cancellationToken);
+			var itemCollection = await ((OracleConnectionAdapterBase)connectionAdapter).GetCursorExecutionStatisticsAsync(cancellationToken);
 			if (itemCollection == null)
 			{
 				return;

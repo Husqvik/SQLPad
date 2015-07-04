@@ -58,6 +58,7 @@ namespace SqlPad
 		private bool _isToolTipOpenByShortCut;
 		private bool _isToolTipOpenByCaretChange;
 		private string _originalWorkDocumentContent = String.Empty;
+		private IConnectionAdapter _activeConnectionAdapter;
 
 		private readonly Popup _popup = new Popup();
 		private readonly PageModel _pageModel;
@@ -179,6 +180,7 @@ namespace SqlPad
 				_pageModel.EnableDatabaseOutput = WorkDocument.EnableDatabaseOutput;
 				_pageModel.KeepDatabaseOutputHistory = WorkDocument.KeepDatabaseOutputHistory;
 				_pageModel.HeaderBackgroundColorCode = WorkDocument.HeaderBackgroundColorCode;
+				_pageModel.EnableDatabaseOutput = WorkDocument.EnableDatabaseOutput;
 
 				Editor.Text = WorkDocument.Text;
 
@@ -527,7 +529,7 @@ namespace SqlPad
 			WorkDocument.FontSize = Editor.FontSize;
 			WorkDocument.SelectionStart = Editor.SelectionStart;
 			WorkDocument.SelectionLength = Editor.SelectionLength;
-			WorkDocument.EnableDatabaseOutput = DatabaseModel.EnableDatabaseOutput;
+			WorkDocument.EnableDatabaseOutput = _pageModel.EnableDatabaseOutput;
 
 			var textView = Editor.TextArea.TextView;
 			WorkDocument.VisualLeft = textView.ScrollOffset.X;
@@ -745,7 +747,8 @@ namespace SqlPad
 
 		private void CanExecuteDatabaseCommandHandler(object sender, CanExecuteRoutedEventArgs args)
 		{
-			if (IsBusy || !DatabaseModel.IsInitialized || DatabaseModel.IsExecuting || _sqlDocumentRepository.StatementText != Editor.Text)
+			var isExecuting = _activeConnectionAdapter != null && _activeConnectionAdapter.IsExecuting;
+			if (IsBusy || !DatabaseModel.IsInitialized || isExecuting || _sqlDocumentRepository.StatementText != Editor.Text)
 				return;
 
 			var statement = _sqlDocumentRepository.Statements.GetStatementAtPosition(Editor.CaretOffset);
@@ -816,7 +819,7 @@ namespace SqlPad
 			}
 
 			var executionResult = innerTask.Result;
-			var connectionAdapter = executionResult.ConnectionAdapter;
+			_activeConnectionAdapter = executionResult.ConnectionAdapter;
 
 			if (!executionResult.ExecutedSuccessfully)
 			{
@@ -824,15 +827,15 @@ namespace SqlPad
 				return;
 			}
 
-			_pageModel.TransactionControlVisibity = connectionAdapter.HasActiveTransaction ? Visibility.Visible : Visibility.Collapsed;
+			_pageModel.TransactionControlVisibity = _activeConnectionAdapter.HasActiveTransaction ? Visibility.Visible : Visibility.Collapsed;
 			_pageModel.UpdateTimerMessage(actionResult.Elapsed, false);
 			_pageModel.WriteDatabaseOutput(executionResult.DatabaseOutput);
 
 			if (executionResult.Statement.GatherExecutionStatistics)
 			{
-				await OutputViewer.ExecutionPlanViewer.ShowActualAsync(_statementExecutionCancellationTokenSource.Token);
+				await OutputViewer.ExecutionPlanViewer.ShowActualAsync(executionResult.ConnectionAdapter, _statementExecutionCancellationTokenSource.Token);
 				_pageModel.ExecutionPlanAvailable = Visibility.Visible;
-				_pageModel.SessionExecutionStatistics.MergeWith(await connectionAdapter.GetExecutionStatisticsAsync(_statementExecutionCancellationTokenSource.Token));
+				_pageModel.SessionExecutionStatistics.MergeWith(await _activeConnectionAdapter.GetExecutionStatisticsAsync(_statementExecutionCancellationTokenSource.Token));
 				OutputViewer.SelectPreviousTab();
 			}
 			else if (OutputViewer.IsPreviousTabAlwaysVisible)
@@ -1905,7 +1908,7 @@ namespace SqlPad
 		{
 			App.SafeActionWithUserError(() =>
 			{
-				DatabaseModel.CommitTransaction();
+				_activeConnectionAdapter.CommitTransaction();
 				_pageModel.TransactionControlVisibity = Visibility.Collapsed;
 			});
 
@@ -1916,8 +1919,8 @@ namespace SqlPad
 		{
 			_pageModel.IsTransactionControlEnabled = false;
 			IsBusy = true;
-			
-			var actionResult = await SafeTimedActionAsync(() => DatabaseModel.RollbackTransaction());
+
+			var actionResult = await SafeTimedActionAsync(() => _activeConnectionAdapter.RollbackTransaction());
 			if (!actionResult.IsSuccessful)
 			{
 				Messages.ShowError(actionResult.Exception.Message);

@@ -48,12 +48,12 @@ namespace SqlPad.Oracle.Test
 		private const int StatisticsCodeBytesReceivedViaSqlNetFromClient = 780;
 		private const int StatisticsCodeSqlNetRoundtripsToOrFromClient = 781;
 
-		private const string StatisticsDescriptionSessionLogicalReads = "session logical reads";
-		private const string StatisticsDescriptionPhysicalReadTotalBytes = "physical read total bytes";
-		private const string StatisticsDescriptionConsistentGets = "consistent gets";
-		private const string StatisticsDescriptionBytesSentViaSqlNetToClient = "bytes sent via SQL*Net to client";
-		private const string StatisticsDescriptionBytesReceivedViaSqlNetFromClient = "bytes received via SQL*Net from client";
-		private const string StatisticsDescriptionSqlNetRoundtripsToOrFromClient = "SQL*Net roundtrips to/from client";
+		internal const string StatisticsDescriptionSessionLogicalReads = "session logical reads";
+		internal const string StatisticsDescriptionPhysicalReadTotalBytes = "physical read total bytes";
+		internal const string StatisticsDescriptionConsistentGets = "consistent gets";
+		internal const string StatisticsDescriptionBytesSentViaSqlNetToClient = "bytes sent via SQL*Net to client";
+		internal const string StatisticsDescriptionBytesReceivedViaSqlNetFromClient = "bytes received via SQL*Net from client";
+		internal const string StatisticsDescriptionSqlNetRoundtripsToOrFromClient = "SQL*Net roundtrips to/from client";
 
 		private static readonly ILookup<string, string> ContextDataInternal =
 			new[]
@@ -108,7 +108,6 @@ namespace SqlPad.Oracle.Test
 		private readonly IDictionary<OracleObjectIdentifier, OracleDatabaseLink> _databaseLinks = DatabaseLinksInternal.ToDictionary(l => l.FullyQualifiedName, l => l);
 		private readonly IDictionary<string, string> _systemParameters = new Dictionary<string, string>(SystemParametersInternal);
 		
-		private int _generatedRowCount;
 		internal Version TestDatabaseVersion = InitialTestDatabaseVersion;
 
 		static OracleTestDatabaseModel()
@@ -975,51 +974,6 @@ PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1
 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
 TABLESPACE ""TBS_HQ_PDB""";
 
-		internal const string DummyPlanText =
-		@"SQL_ID  9g6pyx7qz035v, child number 0
--------------------------------------
-SELECT * FROM DUAL
- 
-Plan hash value: 272002086
- 
----------------------------------------------------------------------------
-| Id  | Operation         | Name | E-Rows |E-Bytes| Cost (%CPU)| E-Time   |
----------------------------------------------------------------------------
-|   0 | SELECT STATEMENT  |      |        |       |     2 (100)|          |
-|   1 |  TABLE ACCESS FULL| DUAL |      1 |     2 |     2   (0)| 00:00:01 |
----------------------------------------------------------------------------
- 
-Query Block Name / Object Alias (identified by operation id):
--------------------------------------------------------------
- 
-   1 - SEL$1 / DUAL@SEL$1
- 
-Outline Data
--------------
- 
-  /*+
-      BEGIN_OUTLINE_DATA
-      IGNORE_OPTIM_EMBEDDED_HINTS
-      OPTIMIZER_FEATURES_ENABLE('12.1.0.1')
-      DB_VERSION('12.1.0.1')
-      ALL_ROWS
-      OUTLINE_LEAF(@""SEL$1"")
-      FULL(@""SEL$1"" ""DUAL""@""SEL$1"")
-      END_OUTLINE_DATA
-  */
- 
-Column Projection Information (identified by operation id):
------------------------------------------------------------
- 
-   1 - ""DUAL"".""DUMMY""[VARCHAR2,1]
- 
-Note
------
-   - Warning: basic plan statistics not available. These are only collected when:
-       * hint 'gather_plan_statistics' is used for the statement or
-       * parameter 'statistics_level' is set to 'ALL', at session or system level
-";
-
 		private static readonly IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjectDictionary;
 
 		private static readonly IDictionary<OracleObjectIdentifier, OracleSchemaObject> ObjectsInternal;
@@ -1055,22 +1009,6 @@ Note
 			get { return ContextDataInternal; }
 		}
 
-		public override Task<ICollection<SessionExecutionStatisticsRecord>> GetExecutionStatisticsAsync(CancellationToken cancellationToken)
-		{
-			ICollection<SessionExecutionStatisticsRecord> statistics =
-				new[]
-				{
-					new SessionExecutionStatisticsRecord { Name = StatisticsDescriptionBytesReceivedViaSqlNetFromClient, Value = 124 },
-					new SessionExecutionStatisticsRecord { Name = StatisticsDescriptionBytesSentViaSqlNetToClient, Value = 24316 },
-					new SessionExecutionStatisticsRecord { Name = StatisticsDescriptionConsistentGets, Value = 16 },
-					new SessionExecutionStatisticsRecord { Name = StatisticsDescriptionPhysicalReadTotalBytes, Value = 1336784 },
-					new SessionExecutionStatisticsRecord { Name = StatisticsDescriptionSessionLogicalReads, Value = 16 },
-					new SessionExecutionStatisticsRecord { Name = StatisticsDescriptionSqlNetRoundtripsToOrFromClient, Value = 2 }
-				};
-
-			return Task.FromResult(statistics);
-		}
-
 		public override void RefreshIfNeeded()
 		{
 			Refresh();
@@ -1092,8 +1030,6 @@ Note
 
 		public override bool IsFresh { get { return true; } }
 
-		public override bool EnableDatabaseOutput { get; set; }
-
 		public override event EventHandler Initialized = delegate { };
 
 		public override event EventHandler<DatabaseModelConnectionErrorArgs> InitializationFailed;
@@ -1106,13 +1042,13 @@ Note
 
 		public override Task<StatementExecutionResult> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
 		{
-			var fetchTask = FetchRecordsAsync(1, cancellationToken);
+			var fetchTask = OracleTestConnectionAdapter.Instance.FetchRecordsAsync(1, cancellationToken);
 			fetchTask.Wait(cancellationToken);
 
 			var result =
 				new StatementExecutionResult
 				{
-					ConnectionAdapter = this,
+					ConnectionAdapter = OracleTestConnectionAdapter.Instance,
 					Statement = executionModel,
 					ExecutedSuccessfully = true,
 					ColumnHeaders = ColumnHeaders,
@@ -1282,65 +1218,14 @@ Note
 			return Task.FromResult((IReadOnlyList<string>)remoteColumns.AsReadOnly());
 		}
 
-		public override Task<IReadOnlyList<object[]>> FetchRecordsAsync(int rowCount, CancellationToken cancellationToken)
-		{
-			IReadOnlyList<object[]> resultRow = new List<object[]> { new object[] { "Dummy Value " + ++_generatedRowCount } };
-			return Task.FromResult(resultRow);
-		}
-
 		public override string DatabaseDomainName { get { return CurrentDatabaseDomainNameInternal; } }
-
-		public override bool HasActiveTransaction { get { return false; } }
-
-		public override void CommitTransaction() { }
-
-		public override Task RollbackTransaction() { return Task.FromResult(0); }
-		
-		public override void CloseActiveReader() { }
 
 		public override Task<ExecutionPlanItemCollection> ExplainPlanAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
 		{
 			var rootItem = new ExecutionPlanItem();
-			SetBasePlanItemData(rootItem);
+			OracleTestConnectionAdapter.SetBasePlanItemData(rootItem);
 
 			var planItemCollection = new ExecutionPlanItemCollection { rootItem };
-			planItemCollection.Freeze();
-
-			return Task.FromResult(planItemCollection);
-		}
-
-		private static void SetBasePlanItemData(ExecutionPlanItem planItem)
-		{
-			planItem.Operation = "Operation";
-			planItem.Options = "Options";
-			planItem.Optimizer = "Optimizer";
-			planItem.ObjectOwner = "ObjectOwner";
-			planItem.ObjectName = "ObjectName";
-			planItem.ObjectAlias = "ObjectAlias";
-			planItem.ObjectType = "ObjectType";
-			planItem.Cost = 1234;
-			planItem.Cardinality = 5678;
-			planItem.Bytes = 9123;
-			planItem.PartitionStart = "PartitionStart";
-			planItem.PartitionStop = "PartitionStop";
-			planItem.Distribution = "Distribution";
-			planItem.CpuCost = 9876;
-			planItem.IoCost = 123;
-			planItem.TempSpace = 54321;
-			planItem.AccessPredicates = "AccessPredicates";
-			planItem.FilterPredicates = "FilterPredicates";
-			planItem.Time = TimeSpan.FromSeconds(144);
-			planItem.QueryBlockName = "QueryBlockName";
-			planItem.Other = null;
-		}
-
-		public override Task<ExecutionStatisticsPlanItemCollection> GetCursorExecutionStatisticsAsync(CancellationToken cancellationToken)
-		{
-			var rootItem = new ExecutionStatisticsPlanItem();
-			SetBasePlanItemData(rootItem);
-
-			var planItemCollection = new ExecutionStatisticsPlanItemCollection { rootItem };
-			planItemCollection.PlanText = DummyPlanText;
 			planItemCollection.Freeze();
 
 			return Task.FromResult(planItemCollection);
@@ -1350,10 +1235,6 @@ Note
 		{
 			return Task.FromResult(SelectionTableCreateScript);
 		}
-
-		public override bool CanFetch { get { return true; } }
-		
-		public override bool IsExecuting { get { return false; } }
 
 		private static OracleDataType BuildPrimitiveDataType(string typeName, int? length = null, int? precision = null, int? scale = null, DataUnit dataUnit = DataUnit.NotApplicable)
 		{

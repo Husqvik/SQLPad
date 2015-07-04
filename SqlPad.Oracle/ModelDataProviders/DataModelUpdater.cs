@@ -637,7 +637,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public override void MapReaderData(OracleDataReader reader)
 		{
-			var columnNames = OracleDatabaseModel.GetColumnHeadersFromReader(reader)
+			var columnNames = OracleConnectionAdapter.GetColumnHeadersFromReader(reader)
 				.Select(h => String.Format("\"{0}\"", h.Name));
 
 			_columns.AddRange(columnNames);

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SqlPad
 {
-	public interface IDatabaseModel : IConnectionAdapter
+	public interface IDatabaseModel : IDisposable
 	{
 		ConnectionStringSettings ConnectionString { get; }
 
