@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -17,8 +18,12 @@ using Timer = System.Timers.Timer;
 
 namespace SqlPad
 {
+	[DebuggerDisplay("OutputViewer (Title={Title})")]
 	public partial class OutputViewer : IDisposable
 	{
+		public static readonly DependencyProperty IsPinnedProperty = DependencyProperty.Register("IsPinned", typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(false));
+		public static readonly DependencyProperty TitleProperty = DependencyProperty.Register("Title", typeof(string), typeof(OutputViewer), new FrameworkPropertyMetadata(String.Empty));
+
 		private readonly Timer _timerExecutionMonitor = new Timer(100);
 		private readonly Stopwatch _stopWatch = new Stopwatch();
 
@@ -34,6 +39,20 @@ namespace SqlPad
 		public IExecutionPlanViewer ExecutionPlanViewer { get; private set; }
 
 		public IConnectionAdapter ConnectionAdapter { get; private set; }
+
+		[Bindable(true)]
+		public bool IsPinned
+		{
+			get { return (bool)GetValue(IsPinnedProperty); }
+			set { SetValue(IsPinnedProperty, value); }
+		}
+
+		[Bindable(true)]
+		public string Title
+		{
+			get { return (string)GetValue(TitleProperty); }
+			set { SetValue(TitleProperty, value); }
+		}
 
 		private bool IsCancellationRequested
 		{
@@ -749,6 +768,15 @@ public class Query
 			IsBusy = false;
 
 			_documentPage.Editor.Focus();
+		}
+
+		private struct ActionResult
+		{
+			public bool IsSuccessful { get { return Exception == null; } }
+
+			public Exception Exception { get; set; }
+
+			public TimeSpan Elapsed { get; set; }
 		}
 	}
 }

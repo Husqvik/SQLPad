@@ -43,7 +43,18 @@ namespace SqlPad.Oracle
 		private SessionExecutionStatisticsDataProvider _executionStatisticsDataProvider;
 		private readonly OracleDatabaseModel _databaseModel;
 
-		public void SwitchCurrentSchema()
+		public OracleConnectionAdapter(OracleDatabaseModel databaseModel, string identifier)
+		{
+			_databaseModel = databaseModel;
+			_connectionString = _databaseModel.ConnectionString;
+			_moduleName = String.Format("{0}/{1}", ModuleNameSqlPadDatabaseModelBase, identifier);
+			_oracleConnectionString = new OracleConnectionStringBuilder(_databaseModel.ConnectionString.ConnectionString);
+			_currentSchema = _oracleConnectionString.UserID;
+
+			InitializeUserConnection();
+		}
+
+		internal void SwitchCurrentSchema()
 		{
 			if (_currentSchema == _databaseModel.CurrentSchema)
 			{
@@ -56,17 +67,6 @@ namespace SqlPad.Oracle
 			}
 
 			_currentSchema = _databaseModel.CurrentSchema;
-		}
-
-		public OracleConnectionAdapter(OracleDatabaseModel databaseModel, string identifier)
-		{
-			_databaseModel = databaseModel;
-			_connectionString = _databaseModel.ConnectionString;
-			_moduleName = String.Format("{0}/{1}", ModuleNameSqlPadDatabaseModelBase, identifier);
-			_oracleConnectionString = new OracleConnectionStringBuilder(_databaseModel.ConnectionString.ConnectionString);
-			_currentSchema = _oracleConnectionString.UserID;
-
-			InitializeUserConnection();
 		}
 
 		private void InitializeUserConnection()
@@ -94,11 +94,13 @@ namespace SqlPad.Oracle
 
 		public override void Dispose()
 		{
-			RollbackTransaction();
+			RollbackTransaction().Wait();
 
 			DisposeCommandAndReader();
 
 			DisposeUserConnection();
+
+			_databaseModel.RemoveConnectionAdapter(this);
 		}
 
 		public override bool CanFetch

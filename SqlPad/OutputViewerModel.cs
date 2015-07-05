@@ -13,14 +13,16 @@ namespace SqlPad
 		private int _currentRowIndex = 1;
 		private int _affectedRowCount = -1;
 
+		private bool _showAllSessionExecutionStatistics;
+		private bool _enableDatabaseOutput;
+		private bool _isTransactionControlEnabled = true;
+
 		private decimal _selectedCellSum;
 		private decimal _selectedCellAverage;
 		private decimal _selectedCellMin;
 		private decimal _selectedCellMax;
+
 		private string _executionTimerMessage;
-		private bool _showAllSessionExecutionStatistics;
-		private bool _enableDatabaseOutput;
-		private bool _isTransactionControlEnabled = true;
 
 		private Visibility _transactionControlVisibity = Visibility.Collapsed;
 		private Visibility _moreRowsExistVisibility = Visibility.Collapsed;
@@ -37,8 +39,8 @@ namespace SqlPad
 
 		public OutputViewerModel()
 		{
-			_sessionExecutionStatistics.CollectionChanged += (sender, args) => RaisePropertyChanged("ExecutionStatisticsAvailable");
-			_compilationErrors.CollectionChanged += (sender, args) => RaisePropertyChanged("CompilationErrorsVisible");
+			_sessionExecutionStatistics.CollectionChanged += delegate { RaisePropertyChanged("ExecutionStatisticsAvailable"); };
+			_compilationErrors.CollectionChanged += delegate { RaisePropertyChanged("CompilationErrorsVisible"); };
 			SetUpSessionExecutionStatisticsFilter();
 			SetUpSessionExecutionStatisticsSorting();
 		}
@@ -136,6 +138,7 @@ namespace SqlPad
 			get { return _compilationErrors.Count > 0 ? Visibility.Visible : Visibility.Collapsed; }
 		}
 
+		// TODO: Make integral part of output viewer
 		public bool EnableDatabaseOutput
 		{
 			get { return _enableDatabaseOutput; }

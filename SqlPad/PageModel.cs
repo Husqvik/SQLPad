@@ -16,7 +16,6 @@ namespace SqlPad
 		private IReadOnlyList<BindVariableModel> _bindVariables;
 		private bool _isModified;
 		private bool _isRunning;
-		private OutputViewerModel _activeOutputModel;
 
 		private Visibility _productionLabelVisibility = Visibility.Collapsed;
 		private Visibility _bindVariableListVisibility = Visibility.Collapsed;
@@ -192,12 +191,6 @@ namespace SqlPad
 		{
 			get { return _schemaComboBoxVisibility; }
 			set { UpdateValueAndRaisePropertyChanged(ref _schemaComboBoxVisibility, value); }
-		}
-
-		public OutputViewerModel ActiveOutputModel
-		{
-			get { return _activeOutputModel; }
-			set { UpdateValueAndRaisePropertyChanged(ref _activeOutputModel, value); }
 		}
 		
 		public void ResetSchemas()

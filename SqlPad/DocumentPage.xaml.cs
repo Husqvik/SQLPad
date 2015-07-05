@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
@@ -30,7 +31,10 @@ namespace SqlPad
 	{
 		private const string InitialDocumentHeader = "New";
 		private const int MaximumToolTipLines = 32;
+		private const int MaximumOutputViewersPerPage = 16;
 		public const string FileMaskDefault = "SQL files (*.sql)|*.sql|SQL Pad files (*.sqlx)|*.sqlx|Text files(*.txt)|*.txt|All files (*.*)|*";
+
+		private static readonly ColorCodeToBrushConverter TabHeaderBackgroundBrushConverter = new ColorCodeToBrushConverter();
 
 		private SqlDocumentRepository _sqlDocumentRepository;
 		private ICodeCompletionProvider _codeCompletionProvider;
@@ -45,10 +49,6 @@ namespace SqlPad
 		private CancellationTokenSource _parsingCancellationTokenSource;
 		private FileSystemWatcher _documentFileWatcher;
 		private DateTime _lastDocumentFileChange;
-		private readonly SqlDocumentColorizingTransformer _colorizingTransformer = new SqlDocumentColorizingTransformer();
-		private readonly ContextMenu _contextActionMenu = new ContextMenu { Placement = PlacementMode.Relative };
-
-		private static readonly ColorCodeToBrushConverter TabHeaderBackgroundBrushConverter = new ColorCodeToBrushConverter();
 
 		private bool _isParsing;
 		private bool _isInitializing = true;
@@ -56,11 +56,17 @@ namespace SqlPad
 		private bool _enableCodeComplete;
 		private bool _isToolTipOpenByShortCut;
 		private bool _isToolTipOpenByCaretChange;
+
+		private int _outputViewerCounter;
+		
 		private string _originalWorkDocumentContent = String.Empty;
 
 		private readonly Popup _popup = new Popup();
 		private readonly Timer _timerReParse = new Timer(100);
 		private readonly List<CommandBinding> _specificCommandBindings = new List<CommandBinding>();
+		private readonly ObservableCollection<OutputViewer> _outputViewers = new ObservableCollection<OutputViewer>();
+		private readonly SqlDocumentColorizingTransformer _colorizingTransformer = new SqlDocumentColorizingTransformer();
+		private readonly ContextMenu _contextActionMenu = new ContextMenu { Placement = PlacementMode.Relative };
 
 		private readonly SqlFoldingStrategy _foldingStrategy;
 		private readonly IconMargin _iconMargin;
@@ -97,6 +103,13 @@ namespace SqlPad
 
 		public IDatabaseModel DatabaseModel { get; private set; }
 
+		public ICollection<OutputViewer> OutputViewers { get { return _outputViewers; } }
+
+		private OutputViewer ActiveOutputViewer
+		{
+			get { return (OutputViewer)OutputViewerList.SelectedItem; }
+		}
+
 		public DocumentPage(WorkDocument workDocument = null)
 		{
 			InitializeComponent();
@@ -117,12 +130,12 @@ namespace SqlPad
 
 			InitializeGenericCommandBindings();
 
-			_timerReParse.Elapsed += (sender, args) => Dispatcher.Invoke(Parse);
+			_timerReParse.Elapsed += delegate { Dispatcher.Invoke(Parse); };
+			_outputViewers.CollectionChanged += delegate { OutputViewerList.Visibility = _outputViewers.Count > 1 ? Visibility.Visible : Visibility.Collapsed; };
 
 			ViewModel =
 				new PageModel(this)
 				{
-					ActiveOutputModel = OutputViewer.ViewModel,
 					DateTimeFormat = ConfigurationProvider.Configuration.ResultGrid.DateFormat
 				};
 
@@ -174,9 +187,6 @@ namespace SqlPad
 				ViewModel.CurrentConnection = usedConnection;
 				ViewModel.CurrentSchema = WorkDocument.SchemaName;
 				ViewModel.HeaderBackgroundColorCode = WorkDocument.HeaderBackgroundColorCode;
-				OutputViewer.ViewModel.EnableDatabaseOutput = WorkDocument.EnableDatabaseOutput;
-				OutputViewer.ViewModel.EnableDatabaseOutput = WorkDocument.EnableDatabaseOutput;
-				OutputViewer.ViewModel.KeepDatabaseOutputHistory = WorkDocument.KeepDatabaseOutputHistory;
 
 				Editor.Text = WorkDocument.Text;
 
@@ -438,7 +448,8 @@ namespace SqlPad
 			_sqlDocumentRepository = new SqlDocumentRepository(InfrastructureFactory.CreateParser(), InfrastructureFactory.CreateStatementValidator(), DatabaseModel);
 			_iconMargin.DocumentRepository = _sqlDocumentRepository;
 
-			OutputViewer.Setup(this);
+			DisposeOutputViewers();
+			AddNewOutputViewer();
 
 			DatabaseModel.Initialized += DatabaseModelInitializedHandler;
 			DatabaseModel.Disconnected += DatabaseModelInitializationFailedHandler;
@@ -449,6 +460,23 @@ namespace SqlPad
 			DatabaseModel.Initialize();
 
 			ReParse();
+		}
+
+		private void AddNewOutputViewer()
+		{
+			if (_outputViewers.Count >= MaximumOutputViewersPerPage)
+			{
+				throw new InvalidOperationException(string.Format("Maximum number of simultaneous views is {0}. ", MaximumOutputViewersPerPage));
+			}
+
+			var outputViewer = new OutputViewer { Title = String.Format("View {0}", ++_outputViewerCounter) };
+			outputViewer.ViewModel.EnableDatabaseOutput = WorkDocument.EnableDatabaseOutput;
+			outputViewer.ViewModel.KeepDatabaseOutputHistory = WorkDocument.KeepDatabaseOutputHistory;
+			outputViewer.CompilationError += CompilationErrorHandler;
+			outputViewer.Setup(this);
+			_outputViewers.Add(outputViewer);
+
+			OutputViewerList.SelectedItem = outputViewer;
 		}
 
 		private void SaveCommandExecutedHandler(object sender, ExecutedRoutedEventArgs args)
@@ -518,9 +546,9 @@ namespace SqlPad
 			WorkDocument.FontSize = Editor.FontSize;
 			WorkDocument.SelectionStart = Editor.SelectionStart;
 			WorkDocument.SelectionLength = Editor.SelectionLength;
-			
-			WorkDocument.EnableDatabaseOutput = OutputViewer.ViewModel.EnableDatabaseOutput;
-			WorkDocument.KeepDatabaseOutputHistory = OutputViewer.ViewModel.KeepDatabaseOutputHistory;
+
+			WorkDocument.EnableDatabaseOutput = ActiveOutputViewer.ViewModel.EnableDatabaseOutput;
+			WorkDocument.KeepDatabaseOutputHistory = ActiveOutputViewer.ViewModel.KeepDatabaseOutputHistory;
 
 			var textView = Editor.TextArea.TextView;
 			WorkDocument.VisualLeft = textView.ScrollOffset.X;
@@ -667,7 +695,7 @@ namespace SqlPad
 		private void CancelUserActionHandler(object sender, ExecutedRoutedEventArgs args)
 		{
 			Trace.WriteLine("Action is about to cancel. ");
-			OutputViewer.Cancel();
+			ActiveOutputViewer.Cancel();
 		}
 
 		private void ShowTokenCommandExecutionHandler(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
@@ -736,7 +764,7 @@ namespace SqlPad
 
 		private void CanExecuteDatabaseCommandHandler(object sender, CanExecuteRoutedEventArgs args)
 		{
-			if (IsBusy || !DatabaseModel.IsInitialized || OutputViewer.ConnectionAdapter.IsExecuting || _sqlDocumentRepository.StatementText != Editor.Text)
+			if (IsBusy || !DatabaseModel.IsInitialized || ActiveOutputViewer.ConnectionAdapter.IsExecuting || _sqlDocumentRepository.StatementText != Editor.Text)
 				return;
 
 			var statement = _sqlDocumentRepository.Statements.GetStatementAtPosition(Editor.CaretOffset);
@@ -755,8 +783,21 @@ namespace SqlPad
 
 		private async void ExecuteDatabaseCommandHandlerInternal(bool gatherExecutionStatistics)
 		{
+			if (ActiveOutputViewer.IsPinned)
+			{
+				try
+				{
+					AddNewOutputViewer();
+				}
+				catch (InvalidOperationException e)
+				{
+					Messages.ShowError(e.Message);
+					return;
+				}
+			}
+
 			var executionModel = BuildStatementExecutionModel(gatherExecutionStatistics);
-			await OutputViewer.ExecuteDatabaseCommandAsync(executionModel);
+			await ActiveOutputViewer.ExecuteDatabaseCommandAsync(executionModel);
 		}
 
 		private StatementExecutionModel BuildStatementExecutionModel(bool gatherExecutionStatistics)
@@ -805,12 +846,22 @@ namespace SqlPad
 				_parsingCancellationTokenSource.Dispose();
 			}
 
-			OutputViewer.Dispose();
+			DisposeOutputViewers();
 
 			if (DatabaseModel != null)
 			{
 				DatabaseModel.Dispose();
 			}
+		}
+
+		private void DisposeOutputViewers()
+		{
+			foreach (var outputViewer in _outputViewers)
+			{
+				outputViewer.Dispose();
+			}
+
+			_outputViewers.Clear();
 		}
 
 		private void NavigateToNextError(object sender, ExecutedRoutedEventArgs args)
@@ -1025,7 +1076,7 @@ namespace SqlPad
 			RedrawNodes(oldParenthesisNodes.Concat(parenthesisNodes));
 		}
 
-		private string GetOppositeParenthesisOrBracket(string parenthesisOrBracket)
+		private static string GetOppositeParenthesisOrBracket(string parenthesisOrBracket)
 		{
 			switch (parenthesisOrBracket)
 			{
@@ -1755,12 +1806,12 @@ namespace SqlPad
 
 		private async void ExecuteExplainPlanCommandHandler(object sender, ExecutedRoutedEventArgs args)
 		{
-			await OutputViewer.ExecuteExplainPlanAsync(BuildStatementExecutionModel(false));
+			await ActiveOutputViewer.ExecuteExplainPlanAsync(BuildStatementExecutionModel(false));
 		}
 
-		private void CreateNewPage(object sender, ExecutedRoutedEventArgs e)
+		private void AddNewPage(object sender, ExecutedRoutedEventArgs e)
 		{
-			App.MainWindow.CreateNewDocumentPage();
+			App.MainWindow.AddNewDocumentPage();
 		}
 
 		private void CompilationErrorHandler(object sender, CompilationErrorArgs e)
@@ -1835,14 +1886,11 @@ namespace SqlPad
 		{
 			ClearLastHighlight();
 		}
-	}
 
-	public struct ActionResult
-	{
-		public bool IsSuccessful { get { return Exception == null; } }
-		
-		public Exception Exception { get; set; }
-
-		public TimeSpan Elapsed { get; set; }
+		private void CloseOutputViewerClickHandler(object sender, RoutedEventArgs e)
+		{
+			var outputViewer = (OutputViewer)((Button)e.Source).CommandParameter;
+			_outputViewers.Remove(outputViewer);
+		}
 	}
 }

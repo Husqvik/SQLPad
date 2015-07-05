@@ -107,12 +107,12 @@ namespace SqlPad
 			{
 				foreach (var workingDocument in WorkDocumentCollection.WorkingDocuments.OrderBy(d => d.TabIndex))
 				{
-					CreateNewDocumentPage(workingDocument);
+					AddNewDocumentPage(workingDocument);
 				}
 			}
 			else
 			{
-				CreateNewDocumentPage();
+				AddNewDocumentPage();
 			}
 
 			DocumentTabControl.SelectionChanged += TabControlSelectionChangedHandler;
@@ -167,10 +167,10 @@ namespace SqlPad
 				return;
 			}
 
-			CreateNewDocumentPage();
+			AddNewDocumentPage();
 		}
 
-		public DocumentPage CreateNewDocumentPage(WorkDocument workDocument = null)
+		public DocumentPage AddNewDocumentPage(WorkDocument workDocument = null)
 		{
 			var newDocumentPage = new DocumentPage(workDocument);
 			
@@ -267,7 +267,7 @@ namespace SqlPad
 			}
 			else
 			{
-				CreateNewDocumentPage();
+				AddNewDocumentPage();
 			}
 		}
 
@@ -336,7 +336,7 @@ namespace SqlPad
 			else
 			{
 				WorkDocumentCollection.AddDocument(document);
-				documentPage = CreateNewDocumentPage(document);
+				documentPage = AddNewDocumentPage(document);
 			}
 
 			return documentPage;

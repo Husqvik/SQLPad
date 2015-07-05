@@ -30,7 +30,7 @@ namespace SqlPad.Oracle
 		private const string OracleDataAccessComponents = "Oracle Data Access Components";
 
 		private readonly Timer _refreshTimer = new Timer();
-		private readonly List<OracleConnectionAdapter> _connectionAdapters = new List<OracleConnectionAdapter>();
+		private readonly HashSet<OracleConnectionAdapter> _connectionAdapters = new HashSet<OracleConnectionAdapter>();
 		private readonly string _connectionStringName;
 		private bool _isInitialized;
 		private bool _isRefreshing;
@@ -287,14 +287,14 @@ namespace SqlPad.Oracle
 
 		public override IConnectionAdapter CreateConnectionAdapter()
 		{
-			if (_connectionAdapters.Count > 0)
-			{
-				throw new NotSupportedException();
-			}
-
 			var connectionAdapter = new OracleConnectionAdapter(this, _connectionIdentifier);
 			_connectionAdapters.Add(connectionAdapter);
 			return connectionAdapter;
+		}
+
+		internal void RemoveConnectionAdapter(OracleConnectionAdapter connectionAdapter)
+		{
+			_connectionAdapters.Remove(connectionAdapter);
 		}
 
 		public async override Task<ExecutionPlanItemCollection> ExplainPlanAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
@@ -493,12 +493,10 @@ namespace SqlPad.Oracle
 			RefreshStarted = null;
 			RefreshCompleted = null;
 
-			foreach (var adapter in _connectionAdapters)
+			foreach (var adapter in _connectionAdapters.ToArray())
 			{
 				adapter.Dispose();
 			}
-
-			_connectionAdapters.Clear();
 
 			lock (DatabaseModels)
 			{
