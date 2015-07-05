@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
@@ -21,11 +22,137 @@ namespace SqlPad
 	[DebuggerDisplay("OutputViewer (Title={Title})")]
 	public partial class OutputViewer : IDisposable
 	{
+		#region dependency properties registration
+		public static readonly DependencyProperty ShowAllSessionExecutionStatisticsProperty = DependencyProperty.Register("ShowAllSessionExecutionStatistics", typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(false));
+		public static readonly DependencyProperty EnableDatabaseOutputProperty = DependencyProperty.Register("EnableDatabaseOutput", typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(false));
 		public static readonly DependencyProperty IsPinnedProperty = DependencyProperty.Register("IsPinned", typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(false));
 		public static readonly DependencyProperty TitleProperty = DependencyProperty.Register("Title", typeof(string), typeof(OutputViewer), new FrameworkPropertyMetadata(String.Empty));
+		public static readonly DependencyProperty DatabaseOutputProperty = DependencyProperty.Register("DatabaseOutput", typeof(string), typeof(OutputViewer), new FrameworkPropertyMetadata(String.Empty));
+
+		public static readonly DependencyProperty IsTransactionControlEnabledProperty = DependencyProperty.Register("IsTransactionControlEnabled", typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(true));
+		public static readonly DependencyProperty TransactionControlVisibityProperty = DependencyProperty.Register("TransactionControlVisibity", typeof(Visibility), typeof(OutputViewer), new FrameworkPropertyMetadata(Visibility.Collapsed));
+		
+		public static readonly DependencyProperty SelectedCellNumericInfoVisibilityProperty = DependencyProperty.Register("SelectedCellNumericInfoVisibility", typeof(Visibility), typeof(OutputViewer), new FrameworkPropertyMetadata(Visibility.Collapsed));
+		public static readonly DependencyProperty SelectedCellInfoVisibilityProperty = DependencyProperty.Register("SelectedCellInfoVisibility", typeof(Visibility), typeof(OutputViewer), new FrameworkPropertyMetadata(Visibility.Collapsed));
+
+		public static readonly DependencyProperty SelectedCellValueCountProperty = DependencyProperty.Register("SelectedCellValueCount", typeof(int), typeof(OutputViewer), new FrameworkPropertyMetadata(0));
+		public static readonly DependencyProperty SelectedCellSumProperty = DependencyProperty.Register("SelectedCellSum", typeof(decimal), typeof(OutputViewer), new FrameworkPropertyMetadata(0m));
+		public static readonly DependencyProperty SelectedCellAverageProperty = DependencyProperty.Register("SelectedCellAverage", typeof(decimal), typeof(OutputViewer), new FrameworkPropertyMetadata(0m));
+		public static readonly DependencyProperty SelectedCellMinProperty = DependencyProperty.Register("SelectedCellMin", typeof(decimal), typeof(OutputViewer), new FrameworkPropertyMetadata(0m));
+		public static readonly DependencyProperty SelectedCellMaxProperty = DependencyProperty.Register("SelectedCellMax", typeof(decimal), typeof(OutputViewer), new FrameworkPropertyMetadata(0m));
+		#endregion
+
+		#region dependency property accessors
+		[Bindable(true)]
+		public bool ShowAllSessionExecutionStatistics
+		{
+			get { return (bool)GetValue(ShowAllSessionExecutionStatisticsProperty); }
+			set
+			{
+				SetValue(ShowAllSessionExecutionStatisticsProperty, value);
+				ApplySessionExecutionStatisticsFilter();
+			}
+		}
+
+		[Bindable(true)]
+		public Visibility SelectedCellNumericInfoVisibility
+		{
+			get { return (Visibility)GetValue(SelectedCellNumericInfoVisibilityProperty); }
+			private set { SetValue(SelectedCellNumericInfoVisibilityProperty, value); }
+		}
+		
+		[Bindable(true)]
+		public Visibility SelectedCellInfoVisibility
+		{
+			get { return (Visibility)GetValue(SelectedCellInfoVisibilityProperty); }
+			private set { SetValue(SelectedCellInfoVisibilityProperty, value); }
+		}
+		
+		[Bindable(true)]
+		public Visibility TransactionControlVisibity
+		{
+			get { return (Visibility)GetValue(TransactionControlVisibityProperty); }
+			private set { SetValue(TransactionControlVisibityProperty, value); }
+		}
+
+		[Bindable(true)]
+		public bool IsTransactionControlEnabled
+		{
+			get { return (bool)GetValue(IsTransactionControlEnabledProperty); }
+			private set { SetValue(IsTransactionControlEnabledProperty, value); }
+		}
+
+		[Bindable(true)]
+		public int SelectedCellValueCount
+		{
+			get { return (int)GetValue(SelectedCellValueCountProperty); }
+			private set { SetValue(SelectedCellValueCountProperty, value); }
+		}
+
+		[Bindable(true)]
+		public decimal SelectedCellSum
+		{
+			get { return (decimal)GetValue(SelectedCellSumProperty); }
+			private set { SetValue(SelectedCellSumProperty, value); }
+		}
+
+		[Bindable(true)]
+		public decimal SelectedCellAverage
+		{
+			get { return (decimal)GetValue(SelectedCellAverageProperty); }
+			private set { SetValue(SelectedCellAverageProperty, value); }
+		}
+
+		[Bindable(true)]
+		public decimal SelectedCellMin
+		{
+			get { return (decimal)GetValue(SelectedCellMinProperty); }
+			private set { SetValue(SelectedCellMinProperty, value); }
+		}
+
+		[Bindable(true)]
+		public decimal SelectedCellMax
+		{
+			get { return (decimal)GetValue(SelectedCellMaxProperty); }
+			private set { SetValue(SelectedCellMaxProperty, value); }
+		}
+
+		[Bindable(true)]
+		public bool EnableDatabaseOutput
+		{
+			get { return (bool)GetValue(EnableDatabaseOutputProperty); }
+			set { SetValue(EnableDatabaseOutputProperty, value); }
+		}
+
+		[Bindable(true)]
+		public bool IsPinned
+		{
+			get { return (bool)GetValue(IsPinnedProperty); }
+			set { SetValue(IsPinnedProperty, value); }
+		}
+
+		[Bindable(true)]
+		public string DatabaseOutput
+		{
+			get { return (string)GetValue(DatabaseOutputProperty); }
+			private set { SetValue(DatabaseOutputProperty, value); }
+		}
+
+		[Bindable(true)]
+		public string Title
+		{
+			get { return (string)GetValue(TitleProperty); }
+			set { SetValue(TitleProperty, value); }
+		}
+		#endregion
 
 		private readonly Timer _timerExecutionMonitor = new Timer(100);
 		private readonly Stopwatch _stopWatch = new Stopwatch();
+		private readonly StringBuilder _databaseOutputBuilder = new StringBuilder();
+		private readonly ObservableCollection<object[]> _resultRows = new ObservableCollection<object[]>();
+		private readonly SessionExecutionStatisticsCollection _sessionExecutionStatistics = new SessionExecutionStatisticsCollection();
+		private readonly ObservableCollection<CompilationError> _compilationErrors = new ObservableCollection<CompilationError>();
+		private readonly StatusInfoModel _statusInfo = new StatusInfoModel();
 
 		private bool _isSelectingCells;
 		private bool _hasExecutionResult;
@@ -40,20 +167,6 @@ namespace SqlPad
 
 		public IConnectionAdapter ConnectionAdapter { get; private set; }
 
-		[Bindable(true)]
-		public bool IsPinned
-		{
-			get { return (bool)GetValue(IsPinnedProperty); }
-			set { SetValue(IsPinnedProperty, value); }
-		}
-
-		[Bindable(true)]
-		public string Title
-		{
-			get { return (string)GetValue(TitleProperty); }
-			set { SetValue(TitleProperty, value); }
-		}
-
 		private bool IsCancellationRequested
 		{
 			get
@@ -63,9 +176,11 @@ namespace SqlPad
 			}
 		}
 
-		public OutputViewerModel ViewModel
+		public bool KeepDatabaseOutputHistory { get; set; }
+
+		public StatusInfoModel StatusInfo
 		{
-			get { return (OutputViewerModel)DataContext; }
+			get { return _statusInfo; }
 		}
 
 		public bool IsBusy
@@ -78,12 +193,41 @@ namespace SqlPad
 			}
 		}
 
+		public ICollection<object[]> ResultRowItems { get { return _resultRows; } }
+
+		public ICollection<SessionExecutionStatisticsRecord> SessionExecutionStatistics { get { return _sessionExecutionStatistics; } }
+
+		public ICollection<CompilationError> CompilationErrors { get { return _compilationErrors; } }
+
 		public OutputViewer()
 		{
 			InitializeComponent();
-			DataContext = new OutputViewerModel();
 			
-			_timerExecutionMonitor.Elapsed += delegate { Dispatcher.Invoke(UpdateTimerMessage); };
+			_timerExecutionMonitor.Elapsed += delegate { Dispatcher.Invoke(() => UpdateTimerMessage(_stopWatch.Elapsed, IsCancellationRequested)); };
+
+			SetUpSessionExecutionStatisticsView();
+
+			Initialize();
+		}
+
+		private void SetUpSessionExecutionStatisticsView()
+		{
+			ApplySessionExecutionStatisticsFilter();
+			SetUpSessionExecutionStatisticsSorting();
+		}
+
+		private void ApplySessionExecutionStatisticsFilter()
+		{
+			var view = CollectionViewSource.GetDefaultView(_sessionExecutionStatistics);
+			view.Filter = ShowAllSessionExecutionStatistics
+				? (Predicate<object>)null
+				: o => ((SessionExecutionStatisticsRecord)o).Value != 0;
+		}
+
+		private void SetUpSessionExecutionStatisticsSorting()
+		{
+			var view = CollectionViewSource.GetDefaultView(_sessionExecutionStatistics);
+			view.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Ascending));
 		}
 
 		public void DisplayResult(StatementExecutionResult executionResult)
@@ -100,8 +244,8 @@ namespace SqlPad
 
 			ResultGrid.HeadersVisibility = DataGridHeadersVisibility.Column;
 
-			ViewModel.GridRowInfoVisibility = Visibility.Visible;
-			ViewModel.ResultRowItems.Clear();
+			_statusInfo.ResultGridAvailable = true;
+			_resultRows.Clear();
 
 			AppendRows(executionResult.InitialResultSet);
 		}
@@ -162,16 +306,20 @@ namespace SqlPad
 		{
 			_hasExecutionResult = false;
 
-			ViewModel.AffectedRowCount = -1;
-			ViewModel.CurrentRowIndex = 0;
-			ViewModel.ResultRowItems.Clear();
-			ViewModel.CompilationErrors.Clear();
-			ViewModel.MoreRowsExistVisibility = Visibility.Collapsed;
-			ViewModel.GridRowInfoVisibility = Visibility.Collapsed;
-			ViewModel.ExecutionPlanAvailable = Visibility.Collapsed;
-			ViewModel.StatementExecutedSuccessfullyStatusMessageVisibility = Visibility.Collapsed;
-			ViewModel.SessionExecutionStatistics.Clear();
-			ViewModel.WriteDatabaseOutput(String.Empty);
+			_resultRows.Clear();
+			_compilationErrors.Clear();
+			_sessionExecutionStatistics.Clear();
+			TabCompilationErrors.Visibility = Visibility.Collapsed;
+			TabStatistics.Visibility = Visibility.Collapsed;
+			TabExecutionPlan.Visibility = Visibility.Collapsed;
+
+			_statusInfo.ResultGridAvailable = false;
+			_statusInfo.MoreRowsAvailable = false;
+			_statusInfo.DdlStatementExecutedSuccessfully = false;
+			_statusInfo.AffectedRowCount = -1;
+			_statusInfo.SelectedRowIndex = 0;
+			
+			WriteDatabaseOutput(String.Empty);
 
 			ResultGrid.HeadersVisibility = DataGridHeadersVisibility.None;
 
@@ -203,11 +351,13 @@ namespace SqlPad
 
 		private void ShowExecutionPlan()
 		{
+			TabExecutionPlan.Visibility = Visibility.Visible;
 			TabControlResult.SelectedItem = TabExecutionPlan;
 		}
 
 		private void ShowCompilationErrors()
 		{
+			TabCompilationErrors.Visibility = Visibility.Visible;
 			TabControlResult.SelectedItem = TabCompilationErrors;
 		}
 
@@ -220,21 +370,20 @@ namespace SqlPad
 		{
 			SelectDefaultTabIfNeeded();
 
-			ViewModel.ExecutionPlanAvailable = Visibility.Collapsed;
+			TabStatistics.Visibility = Visibility.Collapsed;
 
 			var actionResult = await SafeTimedActionAsync(() => ExecutionPlanViewer.ExplainAsync(executionModel, _statementExecutionCancellationTokenSource.Token));
 
 			if (_statementExecutionCancellationTokenSource.Token.IsCancellationRequested)
 			{
-				ViewModel.NotifyExecutionCanceled();
+				NotifyExecutionCanceled();
 			}
 			else
 			{
-				ViewModel.UpdateTimerMessage(actionResult.Elapsed, false);
+				UpdateTimerMessage(actionResult.Elapsed, false);
 
 				if (actionResult.IsSuccessful)
 				{
-					ViewModel.ExecutionPlanAvailable = Visibility.Visible;
 					ShowExecutionPlan();
 				}
 				else
@@ -253,6 +402,8 @@ namespace SqlPad
 		{
 			Initialize();
 
+			ConnectionAdapter.EnableDatabaseOutput = EnableDatabaseOutput;
+
 			Task<StatementExecutionResult> innerTask = null;
 			var actionResult = await SafeTimedActionAsync(() => innerTask = ConnectionAdapter.ExecuteStatementAsync(executionModel, _statementExecutionCancellationTokenSource.Token));
 
@@ -265,19 +416,22 @@ namespace SqlPad
 			var executionResult = innerTask.Result;
 			if (!executionResult.ExecutedSuccessfully)
 			{
-				ViewModel.NotifyExecutionCanceled();
+				NotifyExecutionCanceled();
 				return;
 			}
 
-			ViewModel.TransactionControlVisibity = ConnectionAdapter.HasActiveTransaction ? Visibility.Visible : Visibility.Collapsed;
-			ViewModel.UpdateTimerMessage(actionResult.Elapsed, false);
-			ViewModel.WriteDatabaseOutput(executionResult.DatabaseOutput);
+			TransactionControlVisibity = ConnectionAdapter.HasActiveTransaction ? Visibility.Visible : Visibility.Collapsed;
+
+			UpdateTimerMessage(actionResult.Elapsed, false);
+			
+			WriteDatabaseOutput(executionResult.DatabaseOutput);
 
 			if (executionResult.Statement.GatherExecutionStatistics)
 			{
 				await ExecutionPlanViewer.ShowActualAsync(ConnectionAdapter, _statementExecutionCancellationTokenSource.Token);
-				ViewModel.ExecutionPlanAvailable = Visibility.Visible;
-				ViewModel.SessionExecutionStatistics.MergeWith(await ConnectionAdapter.GetExecutionStatisticsAsync(_statementExecutionCancellationTokenSource.Token));
+				TabStatistics.Visibility = Visibility.Visible;
+				TabExecutionPlan.Visibility = Visibility.Visible;
+				_sessionExecutionStatistics.MergeWith(await ConnectionAdapter.GetExecutionStatisticsAsync(_statementExecutionCancellationTokenSource.Token));
 				SelectPreviousTab();
 			}
 			else if (IsPreviousTabAlwaysVisible)
@@ -291,7 +445,7 @@ namespace SqlPad
 				foreach (var error in executionResult.CompilationErrors)
 				{
 					error.Line += lineOffset;
-					ViewModel.CompilationErrors.Add(error);
+					_compilationErrors.Add(error);
 				}
 
 				ShowCompilationErrors();
@@ -301,17 +455,22 @@ namespace SqlPad
 			{
 				if (executionResult.AffectedRowCount == -1)
 				{
-					ViewModel.StatementExecutedSuccessfullyStatusMessageVisibility = Visibility.Visible;
+					_statusInfo.DdlStatementExecutedSuccessfully = true;
 				}
 				else
 				{
-					ViewModel.AffectedRowCount = executionResult.AffectedRowCount;
+					_statusInfo.AffectedRowCount = executionResult.AffectedRowCount;
 				}
 
 				return;
 			}
 
 			DisplayResult(executionResult);
+		}
+
+		private void NotifyExecutionCanceled()
+		{
+			_statusInfo.ExecutionTimerMessage = "Canceled";
 		}
 
 		private async Task ExecuteUsingCancellationToken(Func<Task> function)
@@ -508,7 +667,7 @@ public class Query
 				return;
 			}
 
-			ViewModel.CurrentRowIndex = ResultGrid.CurrentCell.Item == null
+			_statusInfo.SelectedRowIndex = ResultGrid.CurrentCell.Item == null
 				? 0
 				: ResultGrid.Items.IndexOf(ResultGrid.CurrentCell.Item) + 1;
 
@@ -519,7 +678,7 @@ public class Query
 		{
 			if (ResultGrid.SelectedCells.Count <= 1)
 			{
-				ViewModel.SelectedCellInfoVisibility = Visibility.Collapsed;
+				SelectedCellInfoVisibility = Visibility.Collapsed;
 				return;
 			}
 
@@ -563,22 +722,23 @@ public class Query
 				count++;
 			}
 
-			ViewModel.SelectedCellValueCount = count;
+			SelectedCellValueCount = count;
 
 			if (count > 0)
 			{
-				ViewModel.SelectedCellSum = sum;
-				ViewModel.SelectedCellMin = min;
-				ViewModel.SelectedCellMax = max;
-				ViewModel.SelectedCellAverage = sum / count;
-				ViewModel.SelectedCellNumericInfoVisibility = hasOnlyNumericValues ? Visibility.Visible : Visibility.Collapsed;
+				SelectedCellSum = sum;
+				SelectedCellMin = min;
+				SelectedCellMax = max;
+				SelectedCellAverage = sum / count;
+
+				SelectedCellNumericInfoVisibility = hasOnlyNumericValues ? Visibility.Visible : Visibility.Collapsed;
 			}
 			else
 			{
-				ViewModel.SelectedCellNumericInfoVisibility = Visibility.Collapsed;
+				SelectedCellNumericInfoVisibility = Visibility.Collapsed;
 			}
 
-			ViewModel.SelectedCellInfoVisibility = Visibility.Visible;
+			SelectedCellInfoVisibility = Visibility.Visible;
 		}
 
 		private void ColumnHeaderMouseClickHandler(object sender, RoutedEventArgs e)
@@ -609,7 +769,7 @@ public class Query
 
 			_isSelectingCells = false;
 
-			ViewModel.CurrentRowIndex = ResultGrid.SelectedCells.Count;
+			_statusInfo.SelectedRowIndex = ResultGrid.SelectedCells.Count;
 
 			CalculateSelectedCellStatistics();
 
@@ -683,7 +843,7 @@ public class Query
 		private async Task FetchNextRows()
 		{
 			Task<IReadOnlyList<object[]>> innerTask = null;
-			var batchSize = StatementExecutionModel.DefaultRowBatchSize - ViewModel.ResultRowItems.Count % StatementExecutionModel.DefaultRowBatchSize;
+			var batchSize = StatementExecutionModel.DefaultRowBatchSize - _resultRows.Count % StatementExecutionModel.DefaultRowBatchSize;
 			var exception = await App.SafeActionAsync(() => innerTask = ConnectionAdapter.FetchRecordsAsync(batchSize, _statementExecutionCancellationTokenSource.Token));
 
 			if (exception != null)
@@ -696,20 +856,15 @@ public class Query
 
 				if (_executionResult.Statement.GatherExecutionStatistics)
 				{
-					ViewModel.SessionExecutionStatistics.MergeWith(await ConnectionAdapter.GetExecutionStatisticsAsync(_statementExecutionCancellationTokenSource.Token));
+					_sessionExecutionStatistics.MergeWith(await ConnectionAdapter.GetExecutionStatisticsAsync(_statementExecutionCancellationTokenSource.Token));
 				}
 			}
 		}
 
 		private void AppendRows(IEnumerable<object[]> rows)
 		{
-			ViewModel.ResultRowItems.AddRange(rows);
-			ViewModel.MoreRowsExistVisibility = ConnectionAdapter.CanFetch ? Visibility.Visible : Visibility.Collapsed;
-		}
-
-		private void UpdateTimerMessage()
-		{
-			ViewModel.UpdateTimerMessage(_stopWatch.Elapsed, IsCancellationRequested);
+			_resultRows.AddRange(rows);
+			_statusInfo.MoreRowsAvailable = ConnectionAdapter.CanFetch;
 		}
 
 		private async Task<ActionResult> SafeTimedActionAsync(Func<Task> action)
@@ -732,6 +887,7 @@ public class Query
 		{
 			_timerExecutionMonitor.Stop();
 			_timerExecutionMonitor.Dispose();
+			ConnectionAdapter.Dispose();
 		}
 
 		private void ButtonCommitTransactionClickHandler(object sender, RoutedEventArgs e)
@@ -739,7 +895,7 @@ public class Query
 			App.SafeActionWithUserError(() =>
 			{
 				ConnectionAdapter.CommitTransaction();
-				ViewModel.TransactionControlVisibity = Visibility.Collapsed;
+				SetValue(TransactionControlVisibityProperty, Visibility.Collapsed);
 			});
 
 			_documentPage.Editor.Focus();
@@ -747,27 +903,66 @@ public class Query
 
 		private async void ButtonRollbackTransactionClickHandler(object sender, RoutedEventArgs e)
 		{
-			ViewModel.IsTransactionControlEnabled = false;
+			IsTransactionControlEnabled = false;
 
 			IsBusy = true;
 
 			var result = await SafeTimedActionAsync(ConnectionAdapter.RollbackTransaction);
-			ViewModel.UpdateTimerMessage(result.Elapsed, false);
+			UpdateTimerMessage(result.Elapsed, false);
 
 			if (result.IsSuccessful)
 			{
-				ViewModel.TransactionControlVisibity = Visibility.Collapsed;
+				TransactionControlVisibity = Visibility.Collapsed;
 			}
 			else
 			{
 				Messages.ShowError(result.Exception.Message);
 			}
 
-			ViewModel.IsTransactionControlEnabled = true;
+			IsTransactionControlEnabled = true;
 
 			IsBusy = false;
 
 			_documentPage.Editor.Focus();
+		}
+
+		private void WriteDatabaseOutput(string output)
+		{
+			if (!KeepDatabaseOutputHistory)
+			{
+				_databaseOutputBuilder.Clear();
+			}
+
+			if (!String.IsNullOrEmpty(output))
+			{
+				_databaseOutputBuilder.AppendLine(output);
+			}
+
+			DatabaseOutput = _databaseOutputBuilder.ToString();
+		}
+
+		private void UpdateTimerMessage(TimeSpan timeSpan, bool isCanceling)
+		{
+			string formattedValue;
+			if (timeSpan.TotalMilliseconds < 1000)
+			{
+				formattedValue = String.Format("{0} {1}", (int)timeSpan.TotalMilliseconds, "ms");
+			}
+			else if (timeSpan.TotalMilliseconds < 60000)
+			{
+				formattedValue = String.Format("{0} {1}", Math.Round(timeSpan.TotalMilliseconds / 1000, 2), "s");
+			}
+			else
+			{
+				formattedValue = String.Format("{0:00}:{1:00}", (int)timeSpan.TotalMinutes, timeSpan.Seconds);
+			}
+
+			if (isCanceling)
+			{
+				formattedValue = String.Format("Canceling... {0}", formattedValue);
+			}
+
+			_statusInfo.ExecutionTimerMessage = formattedValue;
 		}
 
 		private struct ActionResult

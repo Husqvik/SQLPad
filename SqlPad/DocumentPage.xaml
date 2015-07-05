@@ -247,10 +247,10 @@
 				<ColumnDefinition Width="*" />
 			</Grid.ColumnDefinitions>
 
-			<ListView x:Name="OutputViewerList"
-			          ItemsSource="{Binding RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType=sqlPad:DocumentPage}, Path=OutputViewers}"
-			          IsSynchronizedWithCurrentItem="True" Grid.Column="0">
-				<ListView.ItemTemplate>
+			<ListBox x:Name="OutputViewerList"
+			         ItemsSource="{Binding RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType=sqlPad:DocumentPage}, Path=OutputViewers}"
+			         IsSynchronizedWithCurrentItem="True" Grid.Column="0">
+				<ListBox.ItemTemplate>
 					<DataTemplate>
 						<StackPanel Orientation="Horizontal">
 							<Button Width="12" Margin="0,0,6,0" Click="CloseOutputViewerClickHandler" CommandParameter="{Binding}">
@@ -268,8 +268,8 @@
 							<TextBlock Text="{Binding Title}" />
 						</StackPanel>
 					</DataTemplate>
-				</ListView.ItemTemplate>
-			</ListView>
+				</ListBox.ItemTemplate>
+			</ListBox>
 
 			<ContentControl Content="{Binding ElementName=OutputViewerList, Path=SelectedItem}" Grid.Column="1"/>
 		</Grid>
@@ -305,23 +305,23 @@
 			</StatusBarItem>
 			<Separator Grid.Column="1" />
 			<StatusBarItem Grid.Column="2">
-				<TextBlock Text="{Binding ElementName=OutputViewerList, Path=SelectedItem.(sqlPad:OutputViewer.ViewModel).ExecutionTimerMessage, Mode=OneWay}" />
+				<TextBlock Text="{Binding ElementName=OutputViewerList, Path=SelectedItem.(sqlPad:OutputViewer.StatusInfo).ExecutionTimerMessage, Mode=OneWay}" />
 			</StatusBarItem>
-			<Separator Grid.Column="3" Visibility="{Binding ElementName=OutputViewerList, Path=SelectedItem.(sqlPad:OutputViewer.ViewModel).StatementExecutionInfoSeparatorVisibility}" />
+			<Separator Grid.Column="3" Visibility="{Binding ElementName=OutputViewerList, Mode=OneWay, Path=SelectedItem.(sqlPad:OutputViewer.StatusInfo).StatementExecutionInfoSeparatorVisibility}" />
 			<StatusBarItem Grid.Column="4">
 				<StackPanel Orientation="Horizontal" sqlPad:MarginSetter.Margin="2,0,2,0">
-					<TextBlock Visibility="{Binding ElementName=OutputViewerList, Path=SelectedItem.(sqlPad:OutputViewer.ViewModel).AffectedRowCountVisibility}">
-						<Run Text="{Binding ElementName=OutputViewerList, Path=SelectedItem.(sqlPad:OutputViewer.ViewModel).AffectedRowCount}" />
+					<TextBlock Visibility="{Binding ElementName=OutputViewerList, Mode=OneWay, Path=SelectedItem.(sqlPad:OutputViewer.StatusInfo).AffectedRowCountVisibility}">
+						<Run Text="{Binding ElementName=OutputViewerList, Mode=OneWay, Path=SelectedItem.(sqlPad:OutputViewer.StatusInfo).AffectedRowCount}" />
 						<Run Text=" row(s) affected " />
 					</TextBlock>
-					<TextBlock Text="Command executed successfully " Visibility="{Binding ElementName=OutputViewerList, Path=SelectedItem.(sqlPad:OutputViewer.ViewModel).StatementExecutedSuccessfullyStatusMessageVisibility}" />
-					<TextBlock Visibility="{Binding ElementName=OutputViewerList, Path=SelectedItem.(sqlPad:OutputViewer.ViewModel).GridRowInfoVisibility}">
+					<TextBlock Text="Command executed successfully " Visibility="{Binding ElementName=OutputViewerList, Path=SelectedItem.(sqlPad:OutputViewer.StatusInfo).DdlStatementExecutedSuccessfully, Mode=OneWay, Converter={StaticResource ObjectToVisibilityConverter}}" />
+					<TextBlock Visibility="{Binding ElementName=OutputViewerList, Path=SelectedItem.(sqlPad:OutputViewer.StatusInfo).ResultGridAvailable, Mode=OneWay, Converter={StaticResource ObjectToVisibilityConverter}}">
 						<Run Text="Row " />
-						<Run Text="{Binding ElementName=OutputViewerList, Path=SelectedItem.(sqlPad:OutputViewer.ViewModel).CurrentRowIndex, Mode=OneWay}" />
+						<Run Text="{Binding ElementName=OutputViewerList, Path=SelectedItem.(sqlPad:OutputViewer.StatusInfo).SelectedRowIndex, Mode=OneWay}" />
 						<Run Text=" of " />
-						<Run Text="{Binding ElementName=OutputViewerList, Path=SelectedItem.(sqlPad:OutputViewer.ViewModel).ResultRowItems.Count, Mode=OneWay}" />
+						<Run Text="{Binding ElementName=OutputViewerList, Path=SelectedItem.(sqlPad:OutputViewer.ResultRowItems).Count, Mode=OneWay}" />
 					</TextBlock>
-					<TextBlock Text=" (more rows exist)" Visibility="{Binding ElementName=OutputViewerList, Path=SelectedItem.(sqlPad:OutputViewer.ViewModel).MoreRowsExistVisibility, Mode=OneWay}" />
+					<TextBlock Text=" (more rows exist)" Visibility="{Binding ElementName=OutputViewerList, Path=SelectedItem.(sqlPad:OutputViewer.StatusInfo).MoreRowsAvailable, Mode=OneWay, Converter={StaticResource ObjectToVisibilityConverter}}" />
 				</StackPanel>
 			</StatusBarItem>
 			<StatusBarItem VerticalContentAlignment="Stretch" Grid.Column="5">

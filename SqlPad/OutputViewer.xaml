@@ -7,7 +7,8 @@
              xmlns:commands="clr-namespace:SqlPad.Commands"
              xmlns:globalization="clr-namespace:System.Globalization;assembly=mscorlib"
              mc:Ignorable="d" 
-             d:DesignHeight="140" d:DesignWidth="360" d:DataContext="{d:DesignInstance sqlPad:OutputViewerModel}">
+             d:DesignHeight="140" d:DesignWidth="360"
+			 DataContext="{Binding RelativeSource={RelativeSource Self}}">
 	<UserControl.Resources>
 		<sqlPad:PrettyPrintIntegerConverter x:Key="PrettyPrintNumericConverter" />
 
@@ -150,7 +151,7 @@
 					</DataGrid>
 				</DockPanel>
 			</TabItem>
-			<TabItem Header="_Statistics" Visibility="{Binding ExecutionStatisticsAvailable}">
+			<TabItem Header="_Statistics" x:Name="TabStatistics">
 				<DockPanel>
 					<CheckBox DockPanel.Dock="Right" Margin="4" Content="Show _All" IsChecked="{Binding ShowAllSessionExecutionStatistics}" />
 					<DataGrid ItemsSource="{Binding SessionExecutionStatistics}"
@@ -175,13 +176,13 @@
 			<TabItem Header="_Output">
 				<DockPanel>
 					<StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
-						<CheckBox Margin="4" Content="_Enable" IsChecked="{Binding EnableDatabaseOutput}" />
-						<CheckBox Margin="4" Content="_Keep history" IsChecked="{Binding KeepDatabaseOutputHistory}" />
+						<CheckBox Margin="4" Content="_Enable" IsChecked="{Binding RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType=sqlPad:OutputViewer}, Path=EnableDatabaseOutput}" />
+						<CheckBox Margin="4" Content="_Keep history" IsChecked="{Binding RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType=sqlPad:OutputViewer}, Path=KeepDatabaseOutputHistory}" />
 					</StackPanel>
-					<sqlPad:ScrollingTextBox Text="{Binding DatabaseOutput, Mode=OneWay}" FontFamily="Consolas" IsReadOnly="True" IsReadOnlyCaretVisible="True" />
+					<sqlPad:ScrollingTextBox Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType=sqlPad:OutputViewer}, Path=DatabaseOutput, Mode=OneWay}" FontFamily="Consolas" IsReadOnly="True" IsReadOnlyCaretVisible="True" />
 				</DockPanel>
 			</TabItem>
-			<TabItem Header="_Errors" x:Name="TabCompilationErrors" Visibility="{Binding CompilationErrorsVisible}">
+			<TabItem Header="_Errors" x:Name="TabCompilationErrors">
 				<DataGrid ItemsSource="{Binding CompilationErrors}"
 						  AutoGenerateColumns="False"
 						  CanUserDeleteRows="False"
@@ -212,7 +213,7 @@
 					</DataGrid.Columns>
 				</DataGrid>
 			</TabItem>
-			<TabItem Header="E_xecution plan" x:Name="TabExecutionPlan" Visibility="{Binding ExecutionPlanAvailable}" />
+			<TabItem Header="E_xecution plan" x:Name="TabExecutionPlan" />
 		</TabControl>
 	</DockPanel>
 </UserControl>

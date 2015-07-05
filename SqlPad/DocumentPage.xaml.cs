@@ -469,9 +469,14 @@ namespace SqlPad
 				throw new InvalidOperationException(string.Format("Maximum number of simultaneous views is {0}. ", MaximumOutputViewersPerPage));
 			}
 
-			var outputViewer = new OutputViewer { Title = String.Format("View {0}", ++_outputViewerCounter) };
-			outputViewer.ViewModel.EnableDatabaseOutput = WorkDocument.EnableDatabaseOutput;
-			outputViewer.ViewModel.KeepDatabaseOutputHistory = WorkDocument.KeepDatabaseOutputHistory;
+			var outputViewer =
+				new OutputViewer
+				{
+					Title = String.Format("View {0}", ++_outputViewerCounter),
+					EnableDatabaseOutput = WorkDocument.EnableDatabaseOutput,
+					KeepDatabaseOutputHistory = WorkDocument.KeepDatabaseOutputHistory
+				};
+			
 			outputViewer.CompilationError += CompilationErrorHandler;
 			outputViewer.Setup(this);
 			_outputViewers.Add(outputViewer);
@@ -547,8 +552,8 @@ namespace SqlPad
 			WorkDocument.SelectionStart = Editor.SelectionStart;
 			WorkDocument.SelectionLength = Editor.SelectionLength;
 
-			WorkDocument.EnableDatabaseOutput = ActiveOutputViewer.ViewModel.EnableDatabaseOutput;
-			WorkDocument.KeepDatabaseOutputHistory = ActiveOutputViewer.ViewModel.KeepDatabaseOutputHistory;
+			WorkDocument.EnableDatabaseOutput = ActiveOutputViewer.EnableDatabaseOutput;
+			WorkDocument.KeepDatabaseOutputHistory = ActiveOutputViewer.KeepDatabaseOutputHistory;
 
 			var textView = Editor.TextArea.TextView;
 			WorkDocument.VisualLeft = textView.ScrollOffset.X;
@@ -1891,6 +1896,7 @@ namespace SqlPad
 		{
 			var outputViewer = (OutputViewer)((Button)e.Source).CommandParameter;
 			_outputViewers.Remove(outputViewer);
+			outputViewer.Dispose();
 		}
 	}
 }
