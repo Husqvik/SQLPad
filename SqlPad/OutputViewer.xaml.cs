@@ -23,7 +23,7 @@ namespace SqlPad
 	public partial class OutputViewer : IDisposable
 	{
 		#region dependency properties registration
-		public static readonly DependencyProperty ShowAllSessionExecutionStatisticsProperty = DependencyProperty.Register("ShowAllSessionExecutionStatistics", typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(false));
+		public static readonly DependencyProperty ShowAllSessionExecutionStatisticsProperty = DependencyProperty.Register("ShowAllSessionExecutionStatistics", typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(ShowAllSessionExecutionStatisticsPropertyChangedCallbackHandler));
 		public static readonly DependencyProperty EnableDatabaseOutputProperty = DependencyProperty.Register("EnableDatabaseOutput", typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(false));
 		public static readonly DependencyProperty IsPinnedProperty = DependencyProperty.Register("IsPinned", typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(false));
 		public static readonly DependencyProperty TitleProperty = DependencyProperty.Register("Title", typeof(string), typeof(OutputViewer), new FrameworkPropertyMetadata(String.Empty));
@@ -47,11 +47,12 @@ namespace SqlPad
 		public bool ShowAllSessionExecutionStatistics
 		{
 			get { return (bool)GetValue(ShowAllSessionExecutionStatisticsProperty); }
-			set
-			{
-				SetValue(ShowAllSessionExecutionStatisticsProperty, value);
-				ApplySessionExecutionStatisticsFilter();
-			}
+			set { SetValue(ShowAllSessionExecutionStatisticsProperty, value); }
+		}
+
+		private static void ShowAllSessionExecutionStatisticsPropertyChangedCallbackHandler(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
+		{
+			((OutputViewer)dependencyObject).ApplySessionExecutionStatisticsFilter();
 		}
 
 		[Bindable(true)]

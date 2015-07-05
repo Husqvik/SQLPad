@@ -65,16 +65,16 @@
 						<TextBlock Text="Count: " />
 						<TextBox Text="{Binding SelectedCellValueCount}" IsReadOnly="True" IsReadOnlyCaretVisible="True" BorderThickness="0" Background="Transparent" />
 						<StackPanel Orientation="Horizontal" Visibility="{Binding SelectedCellNumericInfoVisibility}">
-							<TextBlock Text=" Sum: " />
-							<TextBox Text="{Binding SelectedCellSum, ConverterCulture={x:Static globalization:CultureInfo.CurrentCulture}}" IsReadOnly="True" IsReadOnlyCaretVisible="True" BorderThickness="0" Background="Transparent" />
-						</StackPanel>
-						<StackPanel Orientation="Horizontal" Visibility="{Binding SelectedCellNumericInfoVisibility}">
 							<TextBlock Text=" Min: " />
 							<TextBox Text="{Binding SelectedCellMin, ConverterCulture={x:Static globalization:CultureInfo.CurrentCulture}}" IsReadOnly="True" IsReadOnlyCaretVisible="True" BorderThickness="0" Background="Transparent" />
 						</StackPanel>
 						<StackPanel Orientation="Horizontal" Visibility="{Binding SelectedCellNumericInfoVisibility}">
 							<TextBlock Text=" Max: " />
 							<TextBox Text="{Binding SelectedCellMax, ConverterCulture={x:Static globalization:CultureInfo.CurrentCulture}}" IsReadOnly="True" IsReadOnlyCaretVisible="True" BorderThickness="0" Background="Transparent" />
+						</StackPanel>
+						<StackPanel Orientation="Horizontal" Visibility="{Binding SelectedCellNumericInfoVisibility}">
+							<TextBlock Text=" Sum: " />
+							<TextBox Text="{Binding SelectedCellSum, ConverterCulture={x:Static globalization:CultureInfo.CurrentCulture}}" IsReadOnly="True" IsReadOnlyCaretVisible="True" BorderThickness="0" Background="Transparent" />
 						</StackPanel>
 						<StackPanel Orientation="Horizontal" Visibility="{Binding SelectedCellNumericInfoVisibility}">
 							<TextBlock Text=" Average: " />
@@ -158,6 +158,7 @@
 							  AutoGenerateColumns="False"
 							  CanUserDeleteRows="False"
 							  CanUserAddRows="False"
+							  RowHeight="21"
 							  BeginningEdit="ResultGridBeginningEditHandler"
 							  HorizontalGridLinesBrush="LightGray"
 							  VerticalGridLinesBrush="LightGray">
@@ -187,6 +188,7 @@
 						  AutoGenerateColumns="False"
 						  CanUserDeleteRows="False"
 						  CanUserAddRows="False"
+						  RowHeight="21"
 						  BeginningEdit="ResultGridBeginningEditHandler"
 						  MouseDoubleClick="ErrorListMouseDoubleClickHandler"
 						  HorizontalGridLinesBrush="LightGray"
