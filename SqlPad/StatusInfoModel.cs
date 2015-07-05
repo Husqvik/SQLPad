@@ -20,13 +20,25 @@ namespace SqlPad
 		public bool ResultGridAvailable
 		{
 			get { return _resultGridAvailable; }
-			set { UpdateValueAndRaisePropertyChanged(ref _resultGridAvailable, value); }
+			set
+			{
+				if (UpdateValueAndRaisePropertyChanged(ref _resultGridAvailable, value))
+				{
+					RaisePropertyChanged("StatementExecutionInfoSeparatorVisibility");
+				}
+			}
 		}
 
 		public bool DdlStatementExecutedSuccessfully
 		{
 			get { return _ddlStatementExecutedSuccessfully; }
-			set { UpdateValueAndRaisePropertyChanged(ref _ddlStatementExecutedSuccessfully, value); }
+			set
+			{
+				if (UpdateValueAndRaisePropertyChanged(ref _ddlStatementExecutedSuccessfully, value))
+				{
+					RaisePropertyChanged("StatementExecutionInfoSeparatorVisibility");
+				}
+			}
 		}
 
 		public bool MoreRowsAvailable
