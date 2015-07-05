@@ -154,19 +154,20 @@ namespace SqlPad
 		private readonly SessionExecutionStatisticsCollection _sessionExecutionStatistics = new SessionExecutionStatisticsCollection();
 		private readonly ObservableCollection<CompilationError> _compilationErrors = new ObservableCollection<CompilationError>();
 		private readonly StatusInfoModel _statusInfo = new StatusInfoModel();
+		private readonly DatabaseProviderConfiguration _providerConfiguration;
+		private readonly DocumentPage _documentPage;
+		private readonly IConnectionAdapter _connectionAdapter;
 
+		private bool _isRunning;
 		private bool _isSelectingCells;
 		private bool _hasExecutionResult;
 		private object _previousSelectedTab;
-		private DocumentPage _documentPage;
 		private StatementExecutionResult _executionResult;
 		private CancellationTokenSource _statementExecutionCancellationTokenSource;
 
 		public event EventHandler<CompilationErrorArgs> CompilationError;
 
 		public IExecutionPlanViewer ExecutionPlanViewer { get; private set; }
-
-		public IConnectionAdapter ConnectionAdapter { get; private set; }
 
 		private bool IsCancellationRequested
 		{
@@ -186,10 +187,11 @@ namespace SqlPad
 
 		public bool IsBusy
 		{
-			get { return _documentPage.ViewModel.IsRunning; }
+			get { return _isRunning; }
 			private set
 			{
-				_documentPage.ViewModel.IsRunning = value;
+				_isRunning = value;
+				_documentPage.ViewModel.NotifyIsRunning();
 				App.MainWindow.NotifyTaskStatus();
 			}
 		}
@@ -200,7 +202,7 @@ namespace SqlPad
 
 		public ICollection<CompilationError> CompilationErrors { get { return _compilationErrors; } }
 
-		public OutputViewer()
+		public OutputViewer(DocumentPage documentPage)
 		{
 			InitializeComponent();
 			
@@ -209,6 +211,15 @@ namespace SqlPad
 			SetUpSessionExecutionStatisticsView();
 
 			Initialize();
+
+			_documentPage = documentPage;
+
+			_providerConfiguration = WorkDocumentCollection.GetProviderConfiguration(_documentPage.ViewModel.CurrentConnection.ProviderName);
+
+			_connectionAdapter = _documentPage.DatabaseModel.CreateConnectionAdapter();
+
+			ExecutionPlanViewer = _documentPage.InfrastructureFactory.CreateExecutionPlanViewer(_documentPage.DatabaseModel);
+			TabExecutionPlan.Content = ExecutionPlanViewer.Control;
 		}
 
 		private void SetUpSessionExecutionStatisticsView()
@@ -282,16 +293,6 @@ namespace SqlPad
 			{
 				new LargeValueEditor(dataGrid.CurrentColumn.Header.ToString(), largeValue) { Owner = Window.GetWindow(dataGrid) }.ShowDialog();
 			}
-		}
-
-		public void Setup(DocumentPage documentPage)
-		{
-			_documentPage = documentPage;
-
-			ConnectionAdapter = _documentPage.DatabaseModel.CreateConnectionAdapter();
-
-			ExecutionPlanViewer = _documentPage.InfrastructureFactory.CreateExecutionPlanViewer(documentPage.DatabaseModel);
-			TabExecutionPlan.Content = ExecutionPlanViewer.Control;
 		}
 
 		public void Cancel()
@@ -403,16 +404,20 @@ namespace SqlPad
 		{
 			Initialize();
 
-			ConnectionAdapter.EnableDatabaseOutput = EnableDatabaseOutput;
+			_connectionAdapter.EnableDatabaseOutput = EnableDatabaseOutput;
+
+			var executionHistoryRecord = new StatementExecutionHistoryEntry { StatementText = executionModel.StatementText, ExecutedAt = DateTime.Now };
 
 			Task<StatementExecutionResult> innerTask = null;
-			var actionResult = await SafeTimedActionAsync(() => innerTask = ConnectionAdapter.ExecuteStatementAsync(executionModel, _statementExecutionCancellationTokenSource.Token));
+			var actionResult = await SafeTimedActionAsync(() => innerTask = _connectionAdapter.ExecuteStatementAsync(executionModel, _statementExecutionCancellationTokenSource.Token));
 
 			if (!actionResult.IsSuccessful)
 			{
 				Messages.ShowError(actionResult.Exception.Message);
 				return;
 			}
+
+			_providerConfiguration.AddStatementExecution(executionHistoryRecord);
 
 			var executionResult = innerTask.Result;
 			if (!executionResult.ExecutedSuccessfully)
@@ -421,7 +426,7 @@ namespace SqlPad
 				return;
 			}
 
-			TransactionControlVisibity = ConnectionAdapter.HasActiveTransaction ? Visibility.Visible : Visibility.Collapsed;
+			TransactionControlVisibity = _connectionAdapter.HasActiveTransaction ? Visibility.Visible : Visibility.Collapsed;
 
 			UpdateTimerMessage(actionResult.Elapsed, false);
 			
@@ -429,10 +434,10 @@ namespace SqlPad
 
 			if (executionResult.Statement.GatherExecutionStatistics)
 			{
-				await ExecutionPlanViewer.ShowActualAsync(ConnectionAdapter, _statementExecutionCancellationTokenSource.Token);
+				await ExecutionPlanViewer.ShowActualAsync(_connectionAdapter, _statementExecutionCancellationTokenSource.Token);
 				TabStatistics.Visibility = Visibility.Visible;
 				TabExecutionPlan.Visibility = Visibility.Visible;
-				_sessionExecutionStatistics.MergeWith(await ConnectionAdapter.GetExecutionStatisticsAsync(_statementExecutionCancellationTokenSource.Token));
+				_sessionExecutionStatistics.MergeWith(await _connectionAdapter.GetExecutionStatisticsAsync(_statementExecutionCancellationTokenSource.Token));
 				SelectPreviousTab();
 			}
 			else if (IsPreviousTabAlwaysVisible)
@@ -804,7 +809,7 @@ public class Query
 
 		private async Task FetchAllRows()
 		{
-			while (ConnectionAdapter.CanFetch && !IsCancellationRequested)
+			while (_connectionAdapter.CanFetch && !IsCancellationRequested)
 			{
 				await FetchNextRows();
 			}
@@ -838,14 +843,14 @@ public class Query
 
 		private bool CanFetchNextRows()
 		{
-			return _hasExecutionResult && !IsBusy && ConnectionAdapter.CanFetch && !ConnectionAdapter.IsExecuting;
+			return _hasExecutionResult && !IsBusy && _connectionAdapter.CanFetch && !_connectionAdapter.IsExecuting;
 		}
 
 		private async Task FetchNextRows()
 		{
 			Task<IReadOnlyList<object[]>> innerTask = null;
 			var batchSize = StatementExecutionModel.DefaultRowBatchSize - _resultRows.Count % StatementExecutionModel.DefaultRowBatchSize;
-			var exception = await App.SafeActionAsync(() => innerTask = ConnectionAdapter.FetchRecordsAsync(batchSize, _statementExecutionCancellationTokenSource.Token));
+			var exception = await App.SafeActionAsync(() => innerTask = _connectionAdapter.FetchRecordsAsync(batchSize, _statementExecutionCancellationTokenSource.Token));
 
 			if (exception != null)
 			{
@@ -857,7 +862,7 @@ public class Query
 
 				if (_executionResult.Statement.GatherExecutionStatistics)
 				{
-					_sessionExecutionStatistics.MergeWith(await ConnectionAdapter.GetExecutionStatisticsAsync(_statementExecutionCancellationTokenSource.Token));
+					_sessionExecutionStatistics.MergeWith(await _connectionAdapter.GetExecutionStatisticsAsync(_statementExecutionCancellationTokenSource.Token));
 				}
 			}
 		}
@@ -865,7 +870,7 @@ public class Query
 		private void AppendRows(IEnumerable<object[]> rows)
 		{
 			_resultRows.AddRange(rows);
-			_statusInfo.MoreRowsAvailable = ConnectionAdapter.CanFetch;
+			_statusInfo.MoreRowsAvailable = _connectionAdapter.CanFetch;
 		}
 
 		private async Task<ActionResult> SafeTimedActionAsync(Func<Task> action)
@@ -888,14 +893,14 @@ public class Query
 		{
 			_timerExecutionMonitor.Stop();
 			_timerExecutionMonitor.Dispose();
-			ConnectionAdapter.Dispose();
+			_connectionAdapter.Dispose();
 		}
 
 		private void ButtonCommitTransactionClickHandler(object sender, RoutedEventArgs e)
 		{
 			App.SafeActionWithUserError(() =>
 			{
-				ConnectionAdapter.CommitTransaction();
+				_connectionAdapter.CommitTransaction();
 				SetValue(TransactionControlVisibityProperty, Visibility.Collapsed);
 			});
 
@@ -908,7 +913,7 @@ public class Query
 
 			IsBusy = true;
 
-			var result = await SafeTimedActionAsync(ConnectionAdapter.RollbackTransaction);
+			var result = await SafeTimedActionAsync(_connectionAdapter.RollbackTransaction);
 			UpdateTimerMessage(result.Elapsed, false);
 
 			if (result.IsSuccessful)

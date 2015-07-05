@@ -101,6 +101,9 @@
     <Compile Include="BindVariableModel.cs" />
     <Compile Include="Bookmarks\IconMargin.cs" />
     <Compile Include="CellValueConverter.cs" />
+    <Compile Include="StatementExecutionHistory.xaml.cs">
+      <DependentUpon>StatementExecutionHistory.xaml</DependentUpon>
+    </Compile>
     <Compile Include="StatusInfoModel.cs" />
     <Compile Include="TsvDataExporter.cs" />
     <Compile Include="DataExportHelper.cs" />
@@ -117,6 +120,7 @@
     <Compile Include="HtmlDataExporter.cs" />
     <Compile Include="SqlUpdateDataExporter.cs" />
     <Compile Include="SqlInsertDataExporter.cs" />
+    <Compile Include="WorkDocument.cs" />
     <Compile Include="XmlDataExporter.cs" />
     <Compile Include="JsonDataExporter.cs" />
     <Compile Include="CsvDataExporter.cs" />
@@ -228,6 +232,10 @@
     <Page Include="FunctionOverloadList.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="StatementExecutionHistory.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="LargeValueEditor.xaml">
       <SubType>Designer</SubType>

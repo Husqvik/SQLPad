@@ -49,6 +49,7 @@ namespace SqlPad
 		private CancellationTokenSource _parsingCancellationTokenSource;
 		private FileSystemWatcher _documentFileWatcher;
 		private DateTime _lastDocumentFileChange;
+		private DatabaseProviderConfiguration _providerConfiguration;
 
 		private bool _isParsing;
 		private bool _isInitializing = true;
@@ -87,7 +88,7 @@ namespace SqlPad
 
 		public bool IsBusy
 		{
-			get { return ViewModel.IsRunning; }
+			get { return _outputViewers.Any(v => v.IsBusy); }
 		}
 
 		internal bool IsSelectedPage
@@ -221,6 +222,21 @@ namespace SqlPad
 			DataContext = ViewModel;
 
 			InitializeTabItem();
+		}
+
+		public void InsertStatement(string statementText)
+		{
+			var insertIndex = Editor.CaretOffset;
+			var builder = new StringBuilder(statementText);
+
+			var statement = _sqlDocumentRepository.Statements.GetStatementAtPosition(Editor.CaretOffset);
+			if (statement != null && statement.RootNode != null)
+			{
+				insertIndex = statement.SourcePosition.IndexEnd + 1;
+				builder.Insert(0, Environment.NewLine, 2);
+			}
+			
+			Editor.Document.Insert(insertIndex, builder.ToString());
 		}
 
 		private void UpdateDocumentHeaderToolTip()
@@ -429,6 +445,8 @@ namespace SqlPad
 			ViewModel.ResetSchemas();
 
 			var connectionConfiguration = ConfigurationProvider.GetConnectionCofiguration(_connectionString.Name);
+			_providerConfiguration = WorkDocumentCollection.GetProviderConfiguration(_connectionString.ProviderName);
+			
 			ViewModel.ProductionLabelVisibility = connectionConfiguration.IsProduction ? Visibility.Visible : Visibility.Collapsed;
 			InfrastructureFactory = connectionConfiguration.InfrastructureFactory;
 			_codeCompletionProvider = InfrastructureFactory.CreateCodeCompletionProvider();
@@ -470,7 +488,7 @@ namespace SqlPad
 			}
 
 			var outputViewer =
-				new OutputViewer
+				new OutputViewer(this)
 				{
 					Title = String.Format("View {0}", ++_outputViewerCounter),
 					EnableDatabaseOutput = WorkDocument.EnableDatabaseOutput,
@@ -478,7 +496,6 @@ namespace SqlPad
 				};
 			
 			outputViewer.CompilationError += CompilationErrorHandler;
-			outputViewer.Setup(this);
 			_outputViewers.Add(outputViewer);
 
 			OutputViewerList.SelectedItem = outputViewer;
@@ -694,7 +711,7 @@ namespace SqlPad
 
 		private void CanExecuteCancelUserActionHandler(object sender, CanExecuteRoutedEventArgs args)
 		{
-			args.CanExecute = IsBusy;
+			args.CanExecute = ActiveOutputViewer.IsBusy;
 		}
 
 		private void CancelUserActionHandler(object sender, ExecutedRoutedEventArgs args)
@@ -769,7 +786,7 @@ namespace SqlPad
 
 		private void CanExecuteDatabaseCommandHandler(object sender, CanExecuteRoutedEventArgs args)
 		{
-			if (IsBusy || !DatabaseModel.IsInitialized || ActiveOutputViewer.ConnectionAdapter.IsExecuting || _sqlDocumentRepository.StatementText != Editor.Text)
+			if (!DatabaseModel.IsInitialized || ActiveOutputViewer.IsBusy || _sqlDocumentRepository.StatementText != Editor.Text)
 				return;
 
 			var statement = _sqlDocumentRepository.Statements.GetStatementAtPosition(Editor.CaretOffset);
@@ -796,7 +813,7 @@ namespace SqlPad
 				}
 				catch (InvalidOperationException e)
 				{
-					Messages.ShowError(e.Message);
+					MessageBox.Show(App.MainWindow, e.Message, "Information", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK);
 					return;
 				}
 			}
@@ -1143,15 +1160,13 @@ namespace SqlPad
 
 		private IReadOnlyList<BindVariableModel> BuildBindVariableModels(IEnumerable<BindVariableConfiguration> bindVariables)
 		{
-			var configuration = WorkDocumentCollection.GetProviderConfiguration(_connectionString.ProviderName);
-
 			var models = new List<BindVariableModel>();
 			foreach (var bindVariable in bindVariables)
 			{
 				var model = new BindVariableModel(bindVariable);
-				model.PropertyChanged += (sender, args) => configuration.SetBindVariable(model.BindVariable);
-				
-				var storedVariable = configuration.GetBindVariable(bindVariable.Name);
+				model.PropertyChanged += (sender, args) => _providerConfiguration.SetBindVariable(model.BindVariable);
+
+				var storedVariable = _providerConfiguration.GetBindVariable(bindVariable.Name);
 				if (storedVariable != null)
 				{
 					model.DataType = storedVariable.DataType;
@@ -1897,6 +1912,11 @@ namespace SqlPad
 			var outputViewer = (OutputViewer)((Button)e.Source).CommandParameter;
 			_outputViewers.Remove(outputViewer);
 			outputViewer.Dispose();
+		}
+
+		private void ShowExecutionHistoryExecutedHandler(object sender, ExecutedRoutedEventArgs e)
+		{
+			App.ShowExecutionHistory(_providerConfiguration.ProviderName);
 		}
 	}
 }

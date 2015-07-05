@@ -15,7 +15,6 @@ namespace SqlPad
 		private string _schemaLabel;
 		private IReadOnlyList<BindVariableModel> _bindVariables;
 		private bool _isModified;
-		private bool _isRunning;
 
 		private Visibility _productionLabelVisibility = Visibility.Collapsed;
 		private Visibility _bindVariableListVisibility = Visibility.Collapsed;
@@ -40,8 +39,12 @@ namespace SqlPad
 
 		public bool IsRunning
 		{
-			get { return _isRunning; }
-			set { UpdateValueAndRaisePropertyChanged(ref _isRunning, value); }
+			get { return _documentPage.IsBusy; }
+		}
+
+		public void NotifyIsRunning()
+		{
+			RaisePropertyChanged("IsRunning");
 		}
 
 		public string DocumentHeaderToolTip
@@ -182,8 +185,8 @@ namespace SqlPad
 				ReconnectOptionVisibility = Visibility.Collapsed;
 				ConnectProgressBarVisibility = Visibility.Visible;
 
-				_documentPage.InitializeInfrastructureComponents(value);
 				_currentConnection = value;
+				_documentPage.InitializeInfrastructureComponents(value);
 			}
 		}
 

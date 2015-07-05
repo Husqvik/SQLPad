@@ -1,0 +1,44 @@
+﻿<Window x:Class="SqlPad.StatementExecutionHistory"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		xmlns:sqlPad="clr-namespace:SqlPad"
+		mc:Ignorable="d"
+		d:DesignHeight="640" d:DesignWidth="320"
+        Width="Auto" Height="Auto" MinHeight="320" MinWidth="480"
+		WindowStartupLocation="CenterOwner"
+		Icon="EmptyIcon.ico"
+		ShowInTaskbar="False"
+		Title="Statement Execution History"
+		Closing="WindowClosingHandler"
+		DataContext="{Binding RelativeSource={RelativeSource Self}}">
+
+	<ListBox ItemsSource="{Binding ExecutionHistoryEntries}" IsSynchronizedWithCurrentItem="True">
+		<ListBox.ItemTemplate>
+			<DataTemplate DataType="sqlPad:StatementExecutionHistoryEntry">
+				<StackPanel Orientation="Horizontal" MouseDown="MouseDownHandler">
+					<StackPanel.ContextMenu>
+						<ContextMenu>
+							<ContextMenu.Resources>
+								<RoutedCommand x:Key="RemoveHistoryEntryCommand" />
+								<RoutedCommand x:Key="ClearHistoryCommand" />
+							</ContextMenu.Resources>
+
+							<ContextMenu.CommandBindings>
+								<CommandBinding Command="{StaticResource RemoveHistoryEntryCommand}" Executed="RemoveHistoryEntryExecutedHandler" />
+								<CommandBinding Command="{StaticResource ClearHistoryCommand}" Executed="ClearHistoryExecutedHandler" />
+							</ContextMenu.CommandBindings>
+
+							<MenuItem Header="_Remove" Command="{StaticResource RemoveHistoryEntryCommand}" CommandParameter="{Binding}" />
+							<MenuItem Header="_Clear all" Command="{StaticResource ClearHistoryCommand}" />
+						</ContextMenu>
+					</StackPanel.ContextMenu>
+					
+					<TextBlock Text="{Binding ExecutedAt, Converter={StaticResource DateTimeConverter}}" Width="160" />
+					<TextBlock Text="{Binding StatementText}" />
+				</StackPanel>
+			</DataTemplate>
+		</ListBox.ItemTemplate>
+	</ListBox>
+</Window>

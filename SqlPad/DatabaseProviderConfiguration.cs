@@ -3,13 +3,17 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 
 namespace SqlPad
 {
 	public class DatabaseProviderConfiguration
 	{
+		private const int MaxExecutedStatementHistoryLength = 1000;
+
 		private Dictionary<string, BindVariableConfiguration> _bindVariables;
+		private HashSet<StatementExecutionHistoryEntry> _statementExecutionHistory;
 
 		public DatabaseProviderConfiguration(string providerName)
 		{
@@ -18,9 +22,14 @@ namespace SqlPad
 
 		public string ProviderName { get; private set; }
 
-		public Dictionary<string, BindVariableConfiguration> BindVariablesInternal
+		public IDictionary<string, BindVariableConfiguration> BindVariablesInternal
 		{
 			get { return _bindVariables ?? (_bindVariables = new Dictionary<string, BindVariableConfiguration>()); }
+		}
+
+		public ICollection<StatementExecutionHistoryEntry> StatementExecutionHistory
+		{
+			get { return _statementExecutionHistory ?? (_statementExecutionHistory = new HashSet<StatementExecutionHistoryEntry>()); }
 		}
 
 		public ICollection<BindVariableConfiguration> BindVariables
@@ -39,6 +48,65 @@ namespace SqlPad
 		public void SetBindVariable(BindVariableConfiguration bindVariable)
 		{
 			BindVariablesInternal[bindVariable.Name] = bindVariable;
+		}
+
+		public void AddStatementExecution(StatementExecutionHistoryEntry entry)
+		{
+			if (!StatementExecutionHistory.Remove(entry) && StatementExecutionHistory.Count >= MaxExecutedStatementHistoryLength)
+			{
+				var recordsToRemove = StatementExecutionHistory.OrderByDescending(r => r.ExecutedAt).Skip(MaxExecutedStatementHistoryLength - 1).ToArray();
+				foreach (var oldRecord in recordsToRemove)
+				{
+					StatementExecutionHistory.Remove(oldRecord);
+				}
+
+				Trace.WriteLine(String.Format("Statement execution history limit of {0} entries has been reached. Oldest entries have been removed. ", MaxExecutedStatementHistoryLength));
+			}
+
+			StatementExecutionHistory.Add(entry);
+		}
+
+		public void RemoveStatementExecutionHistoryEntry(StatementExecutionHistoryEntry entry)
+		{
+			StatementExecutionHistory.Remove(entry);
+		}
+
+		public void ClearStatementExecutionHistory()
+		{
+			StatementExecutionHistory.Clear();
+		}
+	}
+
+	[DebuggerDisplay("StatementExecutionHistoryEntry (StatementText={StatementText}, ExecutedAt={ExecutedAt})")]
+	public class StatementExecutionHistoryEntry
+	{
+		public string StatementText { get; set; }
+
+		public DateTime ExecutedAt { get; set; }
+
+		protected bool Equals(StatementExecutionHistoryEntry other)
+		{
+			return String.Equals(StatementText, other.StatementText);
+		}
+
+		public override bool Equals(object obj)
+		{
+			if (ReferenceEquals(null, obj))
+			{
+				return false;
+			}
+
+			if (ReferenceEquals(this, obj))
+			{
+				return true;
+			}
+			
+			return obj.GetType() == GetType() && Equals((StatementExecutionHistoryEntry)obj);
+		}
+
+		public override int GetHashCode()
+		{
+			return StatementText.GetHashCode();
 		}
 	}
 

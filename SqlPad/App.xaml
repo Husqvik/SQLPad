@@ -5,6 +5,7 @@
              StartupUri="MainWindow.xaml">
     <Application.Resources>
 		<sqlPad:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
+		<sqlPad:DateTimeLabelConverter x:Key="DateTimeConverter" />
 
 		<Style x:Key="CellTextBoxStyleReadOnly">
 			<Setter Property="TextBoxBase.IsReadOnly" Value="True" />

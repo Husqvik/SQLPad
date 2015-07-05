@@ -64,6 +64,11 @@
 			</ControlTemplate.Triggers>
 		</ControlTemplate>
 	</UserControl.Resources>
+
+	<UserControl.CommandBindings>
+		<CommandBinding Command="commands:GenericCommands.ShowExecutionHistory" Executed="ShowExecutionHistoryExecutedHandler" />
+	</UserControl.CommandBindings>
+
 	<Grid>
 		<Grid.CommandBindings>
 			<CommandBinding Command="commands:GenericCommands.CancelUserAction" Executed="CancelUserActionHandler" CanExecute="CanExecuteCancelUserActionHandler" />
@@ -249,7 +254,7 @@
 
 			<ListBox x:Name="OutputViewerList"
 			         ItemsSource="{Binding RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType=sqlPad:DocumentPage}, Path=OutputViewers}"
-			         IsSynchronizedWithCurrentItem="True" Grid.Column="0">
+			         Grid.Column="0">
 				<ListBox.ItemTemplate>
 					<DataTemplate>
 						<StackPanel Orientation="Horizontal">

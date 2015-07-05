@@ -376,8 +376,7 @@ WHERE
 					//new ColumnHeader { ColumnIndex = 2, DatabaseDataType = "Varchar2", DataType = typeof (string), Name = "\"'\\\"><?,.;:{}[]%$#@!~^&*()_+-§'''||(1/2*3+4-CASEWHEN1<=2OR2>=1THEN5ELSE6END)" }
 				};
 
-			var outputViewer = new OutputViewer();
-			outputViewer.Setup(new DocumentPage());
+			var outputViewer = new OutputViewer(new DocumentPage());
 
 			var dataRows =
 				new[]

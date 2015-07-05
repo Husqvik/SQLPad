@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -12,6 +13,7 @@ namespace SqlPad
 	{
 		public static readonly string VersionTimestamp;
 		public static readonly string Version;
+		private static readonly Dictionary<string, StatementExecutionHistory> ExecutionHistoryWindows = new Dictionary<string, StatementExecutionHistory>();
 
 		public new static MainWindow MainWindow
 		{
@@ -52,6 +54,32 @@ namespace SqlPad
 			{
 				Messages.ShowError(e.Message);
 				return false;
+			}
+		}
+
+		internal static void ShowExecutionHistory(string providerName)
+		{
+			var configuration = WorkDocumentCollection.GetProviderConfiguration(providerName);
+
+			lock (ExecutionHistoryWindows)
+			{
+				StatementExecutionHistory window;
+				if (!ExecutionHistoryWindows.TryGetValue(providerName, out window))
+				{
+					ExecutionHistoryWindows[providerName] = window = new StatementExecutionHistory(providerName) { Owner = MainWindow };
+				}
+
+				window.ExecutionHistoryEntries.Clear();
+				window.ExecutionHistoryEntries.AddRange(configuration.StatementExecutionHistory);
+
+				if (window.IsVisible)
+				{
+					window.Focus();
+				}
+				else
+				{
+					window.Show();
+				}
 			}
 		}
 
