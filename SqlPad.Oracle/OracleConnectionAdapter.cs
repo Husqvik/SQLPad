@@ -49,9 +49,10 @@ namespace SqlPad.Oracle
 			_connectionString = _databaseModel.ConnectionString;
 			_moduleName = String.Format("{0}/{1}", ModuleNameSqlPadDatabaseModelBase, identifier);
 			_oracleConnectionString = new OracleConnectionStringBuilder(_databaseModel.ConnectionString.ConnectionString);
-			_currentSchema = _oracleConnectionString.UserID;
 
 			InitializeUserConnection();
+
+			SwitchCurrentSchema();
 		}
 
 		internal void SwitchCurrentSchema()

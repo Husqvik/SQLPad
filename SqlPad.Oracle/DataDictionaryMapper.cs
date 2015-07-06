@@ -692,7 +692,7 @@ namespace SqlPad.Oracle
 
 		internal static string QualifyStringObject(object stringValue)
 		{
-			return stringValue == DBNull.Value ? null : String.Format("{0}{1}{0}", "\"", stringValue);
+			return stringValue == DBNull.Value || Equals(stringValue, String.Empty) ? null : String.Format("{0}{1}{0}", "\"", stringValue);
 		}
 	}
 }
