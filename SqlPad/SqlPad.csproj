@@ -101,6 +101,7 @@
     <Compile Include="BindVariableModel.cs" />
     <Compile Include="Bookmarks\IconMargin.cs" />
     <Compile Include="CellValueConverter.cs" />
+    <Compile Include="FindReplace\TextSearchHelper.cs" />
     <Compile Include="StatementExecutionHistory.xaml.cs">
       <DependentUpon>StatementExecutionHistory.xaml</DependentUpon>
     </Compile>
