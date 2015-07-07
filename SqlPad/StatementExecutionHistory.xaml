@@ -14,31 +14,40 @@
 		Closing="WindowClosingHandler"
 		DataContext="{Binding RelativeSource={RelativeSource Self}}">
 
-	<ListBox ItemsSource="{Binding ExecutionHistoryEntries}" IsSynchronizedWithCurrentItem="True">
-		<ListBox.ItemTemplate>
-			<DataTemplate DataType="sqlPad:StatementExecutionHistoryEntry">
-				<StackPanel Orientation="Horizontal" MouseDown="MouseDownHandler">
-					<StackPanel.ContextMenu>
-						<ContextMenu>
-							<ContextMenu.Resources>
-								<RoutedCommand x:Key="RemoveHistoryEntryCommand" />
-								<RoutedCommand x:Key="ClearHistoryCommand" />
-							</ContextMenu.Resources>
+	<Grid FocusManager.FocusedElement="{Binding ElementName=SearchPhraseTextBox}">
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="*"/>
+		</Grid.RowDefinitions>
 
-							<ContextMenu.CommandBindings>
-								<CommandBinding Command="{StaticResource RemoveHistoryEntryCommand}" Executed="RemoveHistoryEntryExecutedHandler" />
-								<CommandBinding Command="{StaticResource ClearHistoryCommand}" Executed="ClearHistoryExecutedHandler" />
-							</ContextMenu.CommandBindings>
+		<TextBox x:Name="SearchPhraseTextBox" TextChanged="SearchTextChangedHandler" Margin="2" Grid.Row="0" />
+		
+		<ListBox x:Name="ListHistoryEntries" ItemsSource="{Binding ExecutionHistoryEntries}" IsSynchronizedWithCurrentItem="True" Grid.Row="1">
+			<ListBox.ItemTemplate>
+				<DataTemplate DataType="sqlPad:StatementExecutionHistoryEntry">
+					<StackPanel Orientation="Horizontal" MouseDown="MouseDownHandler">
+						<StackPanel.ContextMenu>
+							<ContextMenu>
+								<ContextMenu.Resources>
+									<RoutedCommand x:Key="RemoveHistoryEntryCommand" />
+									<RoutedCommand x:Key="ClearHistoryCommand" />
+								</ContextMenu.Resources>
 
-							<MenuItem Header="_Remove" Command="{StaticResource RemoveHistoryEntryCommand}" CommandParameter="{Binding}" />
-							<MenuItem Header="_Clear all" Command="{StaticResource ClearHistoryCommand}" />
-						</ContextMenu>
-					</StackPanel.ContextMenu>
+								<ContextMenu.CommandBindings>
+									<CommandBinding Command="{StaticResource RemoveHistoryEntryCommand}" Executed="RemoveHistoryEntryExecutedHandler" />
+									<CommandBinding Command="{StaticResource ClearHistoryCommand}" Executed="ClearHistoryExecutedHandler" />
+								</ContextMenu.CommandBindings>
+
+								<MenuItem Header="_Remove" Command="{StaticResource RemoveHistoryEntryCommand}" CommandParameter="{Binding}" />
+								<MenuItem Header="_Clear all" Command="{StaticResource ClearHistoryCommand}" />
+							</ContextMenu>
+						</StackPanel.ContextMenu>
 					
-					<TextBlock Text="{Binding ExecutedAt, Converter={StaticResource DateTimeConverter}}" Width="160" />
-					<TextBlock Text="{Binding StatementText}" />
-				</StackPanel>
-			</DataTemplate>
-		</ListBox.ItemTemplate>
-	</ListBox>
+						<TextBlock Text="{Binding ExecutedAt, Converter={StaticResource DateTimeConverter}}" Width="160" />
+						<TextBlock Text="{Binding StatementText}" />
+					</StackPanel>
+				</DataTemplate>
+			</ListBox.ItemTemplate>
+		</ListBox>
+	</Grid>
 </Window>
