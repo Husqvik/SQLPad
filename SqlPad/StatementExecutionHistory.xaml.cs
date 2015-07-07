@@ -15,6 +15,8 @@ namespace SqlPad
 {
 	public partial class StatementExecutionHistory
 	{
+		private static readonly char[] SearchPhraseSeparators = { ' ' };
+
 		private readonly ObservableCollection<StatementExecutionHistoryEntry> _historyEntries = new ObservableCollection<StatementExecutionHistoryEntry>();
 
 		private readonly DatabaseProviderConfiguration _providerConfiguration;
@@ -49,6 +51,7 @@ namespace SqlPad
 		private void WindowClosingHandler(object sender, CancelEventArgs e)
 		{
 			e.Cancel = true;
+			SearchPhraseTextBox.Text = String.Empty;
 			Hide();
 		}
 
@@ -65,20 +68,20 @@ namespace SqlPad
 			_historyEntries.Remove(entry);
 		}
 
-		private static void FindListViewItem(DependencyObject target, string searchedText)
+		private static void FindListViewItem(DependencyObject target, string regexPattern)
 		{
 			for (var i = 0; i < VisualTreeHelper.GetChildrenCount(target); i++)
 			{
 				if (target is ListViewItem || target is ListBoxItem)
 				{
-					HighlightText(target, searchedText);
+					HighlightText(target, regexPattern);
 				}
 
-				FindListViewItem(VisualTreeHelper.GetChild(target, i), searchedText);
+				FindListViewItem(VisualTreeHelper.GetChild(target, i), regexPattern);
 			}
 		}
 
-		private static void HighlightText(DependencyObject dependencyObject, string searchedText)
+		private static void HighlightText(DependencyObject dependencyObject, string regexPattern)
 		{
 			if (dependencyObject == null)
 			{
@@ -90,20 +93,20 @@ namespace SqlPad
 			{
 				for (var i = 0; i < VisualTreeHelper.GetChildrenCount(dependencyObject); i++)
 				{
-					HighlightText(VisualTreeHelper.GetChild(dependencyObject, i), searchedText);
+					HighlightText(VisualTreeHelper.GetChild(dependencyObject, i), regexPattern);
 				}
 			}
 			else
 			{
-				var regex = new Regex(String.Format("({0})", searchedText), RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 				var text = textBlock.Text;
-				if (searchedText.Length == 0)
+				if (regexPattern.Length == 0)
 				{
 					textBlock.Inlines.Clear();
 					textBlock.Inlines.Add(text);
 					return;
 				}
 
+				var regex = new Regex(regexPattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 				var substrings = regex.Split(text);
 				textBlock.Inlines.Clear();
 
@@ -124,22 +127,23 @@ namespace SqlPad
 
 		private void SearchTextChangedHandler(object sender, TextChangedEventArgs args)
 		{
-			var searchedText = SearchPhraseTextBox.Text.ToUpperInvariant();
-			
-			_collectionView.Filter = String.IsNullOrEmpty(searchedText)
+			var searchedWords = SearchPhraseTextBox.Text.ToUpperInvariant().Split(SearchPhraseSeparators, StringSplitOptions.RemoveEmptyEntries);
+
+			_collectionView.Filter = searchedWords.Length == 0
 				? (Predicate<object>)null
 				: e =>
 				{
 					var entry = (StatementExecutionHistoryEntry)e;
-					return entry.StatementText.ToUpperInvariant().Contains(searchedText) ||
-					       CellValueConverter.FormatDateTime(entry.ExecutedAt).ToUpperInvariant().Contains(searchedText);
+					var textToSearch = String.Format("{0} {1}", entry.StatementText.ToUpperInvariant(), CellValueConverter.FormatDateTime(entry.ExecutedAt).ToUpperInvariant());
+					return searchedWords.All(textToSearch.Contains);
 				};
 
 			ListHistoryEntries.UpdateLayout();
 
-			var regexPattern = RegularExpressionEscapeCharacters.Aggregate(searchedText, (p, c) => p.Replace(c, String.Format("\\{0}", c)));
+			var regexPatterns = searchedWords.Select(w => String.Format("({0})", RegularExpressionEscapeCharacters.Aggregate(w, (p, c) => p.Replace(c, String.Format("\\{0}", c)))));
+			var finalRegexPattern = String.Join("|", regexPatterns);
 
-			FindListViewItem(ListHistoryEntries, regexPattern);
+			FindListViewItem(ListHistoryEntries, finalRegexPattern);
 		}
 
 		private static readonly string[] RegularExpressionEscapeCharacters = { "*", "(", ")", "." };

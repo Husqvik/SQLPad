@@ -1911,6 +1911,11 @@ namespace SqlPad
 		{
 			var outputViewer = (OutputViewer)((Button)e.Source).CommandParameter;
 			_outputViewers.Remove(outputViewer);
+			if (ActiveOutputViewer == null)
+			{
+				OutputViewerList.SelectedItem = _outputViewers[0];
+			}
+
 			outputViewer.Dispose();
 		}
 

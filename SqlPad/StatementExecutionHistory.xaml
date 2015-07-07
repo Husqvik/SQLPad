@@ -20,7 +20,7 @@
 			<RowDefinition Height="*"/>
 		</Grid.RowDefinitions>
 
-		<TextBox x:Name="SearchPhraseTextBox" TextChanged="SearchTextChangedHandler" Margin="2" Grid.Row="0" />
+		<TextBox x:Name="SearchPhraseTextBox" TextChanged="SearchTextChangedHandler" Margin="2" Grid.Row="0" MaxLength="64" />
 		
 		<ListBox x:Name="ListHistoryEntries" ItemsSource="{Binding ExecutionHistoryEntries}" IsSynchronizedWithCurrentItem="True" Grid.Row="1">
 			<ListBox.ItemTemplate>
