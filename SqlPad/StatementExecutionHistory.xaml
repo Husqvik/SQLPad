@@ -20,8 +20,8 @@
 			<RowDefinition Height="*"/>
 		</Grid.RowDefinitions>
 
-		<TextBox x:Name="SearchPhraseTextBox" TextChanged="SearchTextChangedHandler" Margin="2" Grid.Row="0" MaxLength="64" />
-		
+		<sqlPad:SearchTextBox x:Name="SearchPhraseTextBox" Watermark="Enter search phrase" TextChanged="SearchTextChangedHandler" Margin="2" Grid.Row="0" MaxLength="64" Style="{DynamicResource SearchTextBoxStyle}" />
+
 		<ListBox x:Name="ListHistoryEntries" ItemsSource="{Binding ExecutionHistoryEntries}" IsSynchronizedWithCurrentItem="True" Grid.Row="1">
 			<ListBox.ItemTemplate>
 				<DataTemplate DataType="sqlPad:StatementExecutionHistoryEntry">
@@ -42,7 +42,7 @@
 								<MenuItem Header="_Clear all" Command="{StaticResource ClearHistoryCommand}" />
 							</ContextMenu>
 						</StackPanel.ContextMenu>
-					
+
 						<TextBlock Text="{Binding ExecutedAt, Converter={StaticResource DateTimeConverter}}" Width="160" />
 						<TextBlock Text="{Binding StatementText}" />
 					</StackPanel>

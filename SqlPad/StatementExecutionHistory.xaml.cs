@@ -6,6 +6,7 @@ using System.Linq;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Threading;
 using SqlPad.FindReplace;
 
 namespace SqlPad
@@ -77,8 +78,8 @@ namespace SqlPad
 				};
 
 			ListHistoryEntries.UpdateLayout();
-			
-			ListHistoryEntries.HighlightTextItems(TextSearchHelper.GetRegexPattern(searchedWords));
+
+			Dispatcher.BeginInvoke(DispatcherPriority.Render, new Action(() => ListHistoryEntries.HighlightTextItems(TextSearchHelper.GetRegexPattern(searchedWords))));
 		}
 	}
 }

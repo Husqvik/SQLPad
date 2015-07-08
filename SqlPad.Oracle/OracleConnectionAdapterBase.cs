@@ -15,6 +15,8 @@ namespace SqlPad.Oracle
 
 		public abstract bool EnableDatabaseOutput { get; set; }
 
+		public abstract string Identifier { get; set; }
+
 		public abstract Task<StatementExecutionResult> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken);
 
 		public abstract Task<ICollection<SessionExecutionStatisticsRecord>> GetExecutionStatisticsAsync(CancellationToken cancellationToken);

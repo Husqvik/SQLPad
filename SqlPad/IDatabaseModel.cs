@@ -45,6 +45,8 @@ namespace SqlPad
 
 		bool EnableDatabaseOutput { get; set; }
 
+		string Identifier { get; set; }
+
 		Task<StatementExecutionResult> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken);
 
 		Task<ICollection<SessionExecutionStatisticsRecord>> GetExecutionStatisticsAsync(CancellationToken cancellationToken);

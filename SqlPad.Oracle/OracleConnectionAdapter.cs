@@ -23,13 +23,16 @@ namespace SqlPad.Oracle
 	{
 		private const string ModuleNameSqlPadDatabaseModelBase = "Database model";
 
+		private static int _counter;
+
 		private readonly ConnectionStringSettings _connectionString;
-		private readonly string _moduleName;
 		private readonly OracleConnectionStringBuilder _oracleConnectionString;
 
 		private bool _isExecuting;
 		private bool _databaseOutputEnabled;
+		private string _moduleName;
 		private string _currentSchema;
+		private string _identifier;
 		private OracleConnection _userConnection;
 		private OracleDataReader _userDataReader;
 		private OracleCommand _userCommand;
@@ -43,12 +46,21 @@ namespace SqlPad.Oracle
 		private SessionExecutionStatisticsDataProvider _executionStatisticsDataProvider;
 		private readonly OracleDatabaseModel _databaseModel;
 
-		public OracleConnectionAdapter(OracleDatabaseModel databaseModel, string identifier)
+		public override string Identifier
+		{
+			get { return _identifier; }
+			set { UpdateModuleName(value); }
+		}
+
+		public OracleConnectionAdapter(OracleDatabaseModel databaseModel)
 		{
 			_databaseModel = databaseModel;
 			_connectionString = _databaseModel.ConnectionString;
-			_moduleName = String.Format("{0}/{1}", ModuleNameSqlPadDatabaseModelBase, identifier);
+
 			_oracleConnectionString = new OracleConnectionStringBuilder(_databaseModel.ConnectionString.ConnectionString);
+
+			var identifier = Convert.ToString(Interlocked.Increment(ref _counter));
+			UpdateModuleName(identifier);
 
 			InitializeUserConnection();
 
@@ -68,6 +80,12 @@ namespace SqlPad.Oracle
 			}
 
 			_currentSchema = _databaseModel.CurrentSchema;
+		}
+
+		private void UpdateModuleName(string identifier)
+		{
+			_identifier = identifier;
+			_moduleName = String.Format("{0}/{1}/{2}", ModuleNameSqlPadDatabaseModelBase, _databaseModel.ConnectionIdentifier, _identifier);
 		}
 
 		private void InitializeUserConnection()
@@ -317,9 +335,11 @@ namespace SqlPad.Oracle
 						break;
 					case "Long":
 						var oracleString = reader.GetOracleString(i);
-						value = oracleString.IsNull
+						var stringValue = oracleString.IsNull
 							? String.Empty
 							: String.Format("{0}{1}", oracleString.Value, oracleString.Value.Length == OracleDatabaseModel.InitialLongFetchSize ? OracleLargeTextValue.Ellipsis : null);
+
+						value = new OracleSimpleValue(stringValue);
 						break;
 					case "Raw":
 						value = new OracleRawValue(reader.GetOracleBinary(i));

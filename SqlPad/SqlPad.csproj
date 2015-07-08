@@ -121,6 +121,7 @@
     <Compile Include="HtmlDataExporter.cs" />
     <Compile Include="SqlUpdateDataExporter.cs" />
     <Compile Include="SqlInsertDataExporter.cs" />
+    <Compile Include="SearchTextBox.cs" />
     <Compile Include="WorkDocument.cs" />
     <Compile Include="XmlDataExporter.cs" />
     <Compile Include="JsonDataExporter.cs" />

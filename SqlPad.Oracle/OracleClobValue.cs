@@ -484,7 +484,7 @@ namespace SqlPad.Oracle
 		{
 			return IsNull
 				? "null"
-				: OracleTimestamp.ToJson(this, 0, null); ;
+				: OracleTimestamp.ToJson(this, 0, null);
 		}
 
 		public bool IsBeforeCrist { get; private set; }

@@ -31,6 +31,8 @@ namespace SqlPad.Oracle.Test
 
 		public override bool EnableDatabaseOutput { get; set; }
 
+		public override string Identifier { get; set; }
+
 		public override Task<StatementExecutionResult> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
 		{
 			var fetchTask = FetchRecordsAsync(1, cancellationToken);

@@ -221,7 +221,8 @@ WHERE
 				nClobValue.Length.ShouldBe(20);
 				nClobValue.Value.ShouldBe("NCLOB DATA");
 				nClobValue.ToSqlLiteral().ShouldBe("TO_NCLOB('NCLOB DATA')");
-				firstRow[3].ShouldBeTypeOf<string>();
+				firstRow[3].ShouldBeTypeOf<OracleSimpleValue>();
+				((OracleSimpleValue)firstRow[3]).Value.ShouldBe(String.Empty);
 				firstRow[4].ShouldBeTypeOf<OracleTimestampWithTimeZone>();
 				var timestampWithTimezoneValue = (OracleTimestampWithTimeZone)firstRow[4];
 				timestampWithTimezoneValue.ToString().ShouldBe("11/1/2014 3:16:32 PM.123456789 +02:00");

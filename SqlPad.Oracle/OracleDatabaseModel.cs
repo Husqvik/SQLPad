@@ -39,7 +39,6 @@ namespace SqlPad.Oracle
 		private readonly CancellationTokenSource _backgroundTaskCancellationTokenSource = new CancellationTokenSource();
 		private ILookup<OracleProgramIdentifier, OracleProgramMetadata> _allFunctionMetadata = Enumerable.Empty<OracleProgramMetadata>().ToLookup(m => m.Identifier);
 		private readonly ConnectionStringSettings _connectionString;
-		private readonly string _connectionIdentifier;
 		private readonly string _moduleName;
 		private HashSet<string> _schemas = new HashSet<string>();
 		private HashSet<string> _allSchemas = new HashSet<string>();
@@ -55,10 +54,12 @@ namespace SqlPad.Oracle
 		private static readonly HashSet<string> ActiveDataModelRefresh = new HashSet<string>();
 		private static readonly Dictionary<string, List<RefreshModel>> WaitingDataModelRefresh = new Dictionary<string, List<RefreshModel>>();
 
+		public string ConnectionIdentifier { get; private set; }
+
 		private OracleDatabaseModel(ConnectionStringSettings connectionString, string identifier)
 		{
 			_connectionString = connectionString;
-			_connectionIdentifier = identifier;
+			ConnectionIdentifier = identifier;
 			_moduleName = String.Format("{0}/{1}", ModuleNameSqlPadDatabaseModelBase, identifier);
 			var oracleConnectionString = new OracleConnectionStringBuilder(connectionString.ConnectionString);
 			_currentSchema = oracleConnectionString.UserID;
@@ -287,7 +288,7 @@ namespace SqlPad.Oracle
 
 		public override IConnectionAdapter CreateConnectionAdapter()
 		{
-			var connectionAdapter = new OracleConnectionAdapter(this, _connectionIdentifier);
+			var connectionAdapter = new OracleConnectionAdapter(this);
 			_connectionAdapters.Add(connectionAdapter);
 			return connectionAdapter;
 		}
