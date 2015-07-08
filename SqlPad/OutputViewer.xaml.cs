@@ -22,6 +22,8 @@ namespace SqlPad
 	[DebuggerDisplay("OutputViewer (Title={Title})")]
 	public partial class OutputViewer : IDisposable
 	{
+		private const int MaxHistoryEntrySize = 8192;
+
 		#region dependency properties registration
 		public static readonly DependencyProperty ShowAllSessionExecutionStatisticsProperty = DependencyProperty.Register("ShowAllSessionExecutionStatistics", typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(ShowAllSessionExecutionStatisticsPropertyChangedCallbackHandler));
 		public static readonly DependencyProperty EnableDatabaseOutputProperty = DependencyProperty.Register("EnableDatabaseOutput", typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(false));
@@ -417,7 +419,14 @@ namespace SqlPad
 				return;
 			}
 
-			_providerConfiguration.AddStatementExecution(executionHistoryRecord);
+			if (executionHistoryRecord.StatementText.Length <= MaxHistoryEntrySize)
+			{
+				_providerConfiguration.AddStatementExecution(executionHistoryRecord);
+			}
+			else
+			{
+				Trace.WriteLine(String.Format("Executes statement not stored in the execution history. The maximum allowed size is {0} characters while the statement has {1} characters.", MaxHistoryEntrySize, executionHistoryRecord.StatementText.Length));
+			}
 
 			var executionResult = innerTask.Result;
 			if (!executionResult.ExecutedSuccessfully)
