@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
@@ -23,6 +24,11 @@ namespace SqlPad
 			get { return _historyEntries; }
 		}
 
+		private StatementExecutionHistoryEntry SelectedEntry
+		{
+			get { return (StatementExecutionHistoryEntry)_collectionView.CurrentItem; }
+		}
+
 		public StatementExecutionHistory(string providerName)
 		{
 			InitializeComponent();
@@ -40,8 +46,7 @@ namespace SqlPad
 				return;
 			}
 
-			var entry = (StatementExecutionHistoryEntry)_collectionView.CurrentItem;
-			App.MainWindow.ActiveDocument.InsertStatement(entry.StatementText);
+			App.MainWindow.ActiveDocument.InsertStatement(SelectedEntry.StatementText);
 		}
 
 		private void WindowClosingHandler(object sender, CancelEventArgs e)
@@ -80,6 +85,11 @@ namespace SqlPad
 			ListHistoryEntries.UpdateLayout();
 
 			Dispatcher.BeginInvoke(DispatcherPriority.Render, new Action(() => ListHistoryEntries.HighlightTextItems(TextSearchHelper.GetRegexPattern(searchedWords))));
+		}
+
+		private void CopyExecutedHandler(object sender, ExecutedRoutedEventArgs e)
+		{
+			Clipboard.SetText(SelectedEntry.StatementText);
 		}
 	}
 }

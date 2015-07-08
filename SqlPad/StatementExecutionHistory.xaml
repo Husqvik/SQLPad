@@ -23,6 +23,10 @@
 		<sqlPad:SearchTextBox x:Name="SearchPhraseTextBox" Watermark="Enter search phrase" TextChanged="SearchTextChangedHandler" Margin="2" Grid.Row="0" MaxLength="64" Style="{DynamicResource SearchTextBoxStyle}" />
 
 		<ListBox x:Name="ListHistoryEntries" ItemsSource="{Binding ExecutionHistoryEntries}" IsSynchronizedWithCurrentItem="True" Grid.Row="1">
+			<ListBox.CommandBindings>
+				<CommandBinding Command="Copy" Executed="CopyExecutedHandler" />
+			</ListBox.CommandBindings>
+
 			<ListBox.ItemTemplate>
 				<DataTemplate DataType="sqlPad:StatementExecutionHistoryEntry">
 					<StackPanel Orientation="Horizontal" MouseDown="MouseDownHandler">
@@ -34,12 +38,14 @@
 								</ContextMenu.Resources>
 
 								<ContextMenu.CommandBindings>
+									<CommandBinding Command="Copy" Executed="CopyExecutedHandler" />
 									<CommandBinding Command="{StaticResource RemoveHistoryEntryCommand}" Executed="RemoveHistoryEntryExecutedHandler" />
 									<CommandBinding Command="{StaticResource ClearHistoryCommand}" Executed="ClearHistoryExecutedHandler" />
 								</ContextMenu.CommandBindings>
 
-								<MenuItem Header="_Remove" Command="{StaticResource RemoveHistoryEntryCommand}" CommandParameter="{Binding}" />
-								<MenuItem Header="_Clear all" Command="{StaticResource ClearHistoryCommand}" />
+								<MenuItem Header="_Copy" Command="Copy" />
+								<MenuItem Header="_Remove" Command="{StaticResource RemoveHistoryEntryCommand}" />
+								<MenuItem Header="C_lear all" Command="{StaticResource ClearHistoryCommand}" />
 							</ContextMenu>
 						</StackPanel.ContextMenu>
 
