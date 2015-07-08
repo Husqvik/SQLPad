@@ -78,7 +78,7 @@ namespace SqlPad
 				{
 					if (regex.Match(item).Success)
 					{
-						var run = new Run(item) { Background = Brushes.DarkGray };
+						var run = new Run(item) { Background = Brushes.Yellow };
 						textBlock.Inlines.Add(run);
 					}
 					else

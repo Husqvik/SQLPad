@@ -18,6 +18,7 @@
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto"/>
 			<RowDefinition Height="*"/>
+			<RowDefinition Height="Auto"/>
 		</Grid.RowDefinitions>
 
 		<sqlPad:SearchTextBox x:Name="SearchPhraseTextBox" Watermark="Enter search phrase" TextChanged="SearchTextChangedHandler" Margin="2" Grid.Row="0" MaxLength="64" Style="{DynamicResource SearchTextBoxStyle}" />
@@ -55,5 +56,22 @@
 				</DataTemplate>
 			</ListBox.ItemTemplate>
 		</ListBox>
+
+		<StatusBar x:Name="StatusBar" Grid.Row="2">
+			<StatusBar.ItemsPanel>
+				<ItemsPanelTemplate>
+					<Grid>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="Auto" />
+						</Grid.ColumnDefinitions>
+					</Grid>
+				</ItemsPanelTemplate>
+			</StatusBar.ItemsPanel>
+			<StatusBarItem Grid.Column="0">
+				<TextBlock x:Name="MatchedTextInfo" Margin="2">
+					<Run Text="{Binding ElementName=ListHistoryEntries, Path=Items.Count, Mode=OneWay}" /><Run Text=" statement(s) matched. " />
+				</TextBlock>
+			</StatusBarItem>
+		</StatusBar>
 	</Grid>
 </Window>
