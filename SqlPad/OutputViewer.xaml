@@ -8,6 +8,7 @@
              xmlns:globalization="clr-namespace:System.Globalization;assembly=mscorlib"
              mc:Ignorable="d" 
              d:DesignHeight="140" d:DesignWidth="360"
+			 MouseMove="OutputViewerMouseMoveHandler"
 			 DataContext="{Binding RelativeSource={RelativeSource Self}}">
 	<UserControl.Resources>
 		<sqlPad:PrettyPrintIntegerConverter x:Key="PrettyPrintNumericConverter" />
@@ -50,8 +51,32 @@
 		</StackPanel>
 
 		<TabControl x:Name="TabControlResult" GiveFeedback="TabControlResultGiveFeedbackHandler">
-			<TabItem Header="_Data grid" x:Name="TabResultSet">
+			<TabItem x:Name="TabResultSet">
+				<TabItem.Header>
+					<HeaderedContentControl x:Name="DataGridTabHeader" MouseEnter="DataGridTabHeaderMouseEnterHandler">
+						<AccessText Text="_Data grid" />
+					</HeaderedContentControl>
+				</TabItem.Header>
+
 				<DockPanel LastChildFill="True">
+					<!--<sqlPad:SearchTextBox x:Name="SearchPhraseTextBox" Watermark="Enter search phrase" DockPanel.Dock="Top" TextChanged="SearchTextChangedHandler" MaxLength="64" Width="200" HorizontalAlignment="Left" Margin="0,0,0,2">
+						<TextBox.Style>
+							<Style TargetType="TextBox">
+								<Style.Triggers>
+									<DataTrigger Binding="{Binding ElementName=ResultGrid, Path=Items.Count}" Value="0">
+										<Setter Property="Visibility" Value="Collapsed"/>
+									</DataTrigger>
+								</Style.Triggers>
+							</Style>
+						</TextBox.Style>
+					</sqlPad:SearchTextBox>-->
+
+					<Popup x:Name="DataGridTabHeaderPopup" PlacementTarget="{Binding ElementName=DataGridTabHeader}" Placement="Top">
+						<ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+							<TextBox x:Name="DataGridTabHeaderPopupTextBox" Text="{Binding LastStatementText, Mode=OneWay}" IsReadOnly="True" IsReadOnlyCaretVisible="True" Background="{StaticResource PopupBackgroundBrush}" BorderBrush="{StaticResource PopupBorderBrush}" BorderThickness="1" />
+						</ScrollViewer>
+					</Popup>
+
 					<StackPanel DockPanel.Dock="Bottom" Visibility="{Binding SelectedCellInfoVisibility}" Orientation="Horizontal" HorizontalAlignment="Right">
 						<StackPanel.Resources>
 							<Style TargetType="TextBox">

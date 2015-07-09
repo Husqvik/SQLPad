@@ -8,6 +8,9 @@
 		<sqlPad:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
 		<sqlPad:DateTimeLabelConverter x:Key="DateTimeConverter" />
 
+		<SolidColorBrush x:Key="PopupBackgroundBrush" Color="#F1F2F7"/>
+		<SolidColorBrush x:Key="PopupBorderBrush" Color="#767676"/>
+
 		<Style x:Key="CellTextBoxStyleReadOnly">
 			<Setter Property="TextBoxBase.IsReadOnly" Value="True" />
 			<Setter Property="TextBoxBase.IsReadOnlyCaretVisible" Value="True" />

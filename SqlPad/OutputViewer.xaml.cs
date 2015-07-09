@@ -14,7 +14,9 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Threading;
 using Microsoft.Win32;
+using SqlPad.FindReplace;
 using Timer = System.Timers.Timer;
 
 namespace SqlPad
@@ -28,8 +30,9 @@ namespace SqlPad
 		public static readonly DependencyProperty ShowAllSessionExecutionStatisticsProperty = DependencyProperty.Register("ShowAllSessionExecutionStatistics", typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(ShowAllSessionExecutionStatisticsPropertyChangedCallbackHandler));
 		public static readonly DependencyProperty EnableDatabaseOutputProperty = DependencyProperty.Register("EnableDatabaseOutput", typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(false));
 		public static readonly DependencyProperty IsPinnedProperty = DependencyProperty.Register("IsPinned", typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(false));
-		public static readonly DependencyProperty TitleProperty = DependencyProperty.Register("Title", typeof(string), typeof(OutputViewer), new FrameworkPropertyMetadata(String.Empty));
+		public static readonly DependencyProperty TitleProperty = DependencyProperty.Register("Title", typeof(string), typeof(OutputViewer), new FrameworkPropertyMetadata(TitlePropertyChangedCallbackHandler));
 		public static readonly DependencyProperty DatabaseOutputProperty = DependencyProperty.Register("DatabaseOutput", typeof(string), typeof(OutputViewer), new FrameworkPropertyMetadata(String.Empty));
+		public static readonly DependencyProperty LastStatementTextProperty = DependencyProperty.Register("LastStatementText", typeof(string), typeof(OutputViewer), new FrameworkPropertyMetadata(String.Empty));
 
 		public static readonly DependencyProperty IsTransactionControlEnabledProperty = DependencyProperty.Register("IsTransactionControlEnabled", typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(true));
 		public static readonly DependencyProperty TransactionControlVisibityProperty = DependencyProperty.Register("TransactionControlVisibity", typeof(Visibility), typeof(OutputViewer), new FrameworkPropertyMetadata(Visibility.Collapsed));
@@ -142,10 +145,22 @@ namespace SqlPad
 		}
 
 		[Bindable(true)]
+		public string LastStatementText
+		{
+			get { return (string)GetValue(LastStatementTextProperty); }
+			private set { SetValue(LastStatementTextProperty, value); }
+		}
+
+		[Bindable(true)]
 		public string Title
 		{
 			get { return (string)GetValue(TitleProperty); }
 			set { SetValue(TitleProperty, value); }
+		}
+
+		private static void TitlePropertyChangedCallbackHandler(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
+		{
+			((OutputViewer)dependencyObject)._connectionAdapter.Identifier = (string)args.NewValue;
 		}
 		#endregion
 
@@ -209,6 +224,8 @@ namespace SqlPad
 			InitializeComponent();
 			
 			_timerExecutionMonitor.Elapsed += delegate { Dispatcher.Invoke(() => UpdateTimerMessage(_stopWatch.Elapsed, IsCancellationRequested)); };
+
+			Application.Current.Deactivated += ApplicationDeactivatedHandler;
 
 			SetUpSessionExecutionStatisticsView();
 
@@ -325,6 +342,8 @@ namespace SqlPad
 			
 			WriteDatabaseOutput(String.Empty);
 
+			LastStatementText = String.Empty;
+
 			ResultGrid.HeadersVisibility = DataGridHeadersVisibility.None;
 
 			_previousSelectedTab = TabControlResult.SelectedItem;
@@ -408,7 +427,7 @@ namespace SqlPad
 
 			_connectionAdapter.EnableDatabaseOutput = EnableDatabaseOutput;
 
-			var executionHistoryRecord = new StatementExecutionHistoryEntry { StatementText = executionModel.StatementText, ExecutedAt = DateTime.Now };
+			var executionHistoryRecord = new StatementExecutionHistoryEntry { ExecutedAt = DateTime.Now };
 
 			Task<StatementExecutionResult> innerTask = null;
 			var actionResult = await SafeTimedActionAsync(() => innerTask = _connectionAdapter.ExecuteStatementAsync(executionModel, _statementExecutionCancellationTokenSource.Token));
@@ -418,6 +437,8 @@ namespace SqlPad
 				Messages.ShowError(actionResult.Exception.Message);
 				return;
 			}
+
+			LastStatementText = executionHistoryRecord.StatementText = executionModel.StatementText;
 
 			if (executionHistoryRecord.StatementText.Length <= MaxHistoryEntrySize)
 			{
@@ -900,6 +921,7 @@ public class Query
 
 		public void Dispose()
 		{
+			Application.Current.Deactivated -= ApplicationDeactivatedHandler;
 			_timerExecutionMonitor.Stop();
 			_timerExecutionMonitor.Dispose();
 			_connectionAdapter.Dispose();
@@ -987,6 +1009,44 @@ public class Query
 			public Exception Exception { get; set; }
 
 			public TimeSpan Elapsed { get; set; }
+		}
+
+		/*private void SearchTextChangedHandler(object sender, TextChangedEventArgs e)
+		{
+			var searchedWords = TextSearchHelper.GetSearchedWords(SearchPhraseTextBox.Text);
+			Dispatcher.BeginInvoke(DispatcherPriority.Render, new Action(() => ResultGrid.HighlightTextItems(TextSearchHelper.GetRegexPattern(searchedWords))));
+		}*/
+
+		private void DataGridTabHeaderMouseEnterHandler(object sender, MouseEventArgs e)
+		{
+			if (String.IsNullOrWhiteSpace(LastStatementText))
+			{
+				return;
+			}
+			
+			DataGridTabHeaderPopupTextBox.FontFamily = _documentPage.Editor.FontFamily;
+			DataGridTabHeaderPopupTextBox.FontSize = _documentPage.Editor.FontSize;
+			DataGridTabHeaderPopup.IsOpen = true;
+		}
+
+		private void OutputViewerMouseMoveHandler(object sender, MouseEventArgs e)
+		{
+			if (!DataGridTabHeaderPopup.IsOpen)
+			{
+				return;
+			}
+
+			var position = e.GetPosition(DataGridTabHeaderPopup.Child);
+
+			if (position.Y < 0 || position.Y > DataGridTabHeaderPopup.Child.RenderSize.Height + DataGridTabHeader.RenderSize.Height || position.X < 0 || position.X > DataGridTabHeaderPopup.Child.RenderSize.Width)
+			{
+				DataGridTabHeaderPopup.IsOpen = false;
+			}
+		}
+
+		private void ApplicationDeactivatedHandler(object sender, EventArgs eventArgs)
+		{
+			DataGridTabHeaderPopup.IsOpen = false;
 		}
 	}
 }
