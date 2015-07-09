@@ -99,6 +99,55 @@
         <Sequence>
           <NonTerminal Id="AnalyzeStatement" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="TruncateStatement" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <!-- TRUNCATE -->
+    <Rule StartingNonTerminal="TruncateStatement">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Truncate" />
+          <Terminal Id="Table" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="TruncateTableMaterializedViewLogOption" IsOptional="true" />
+          <NonTerminal Id="TruncateTableStorageOption" IsOptional="true" />
+          <Terminal Id="Cascade" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="TruncateTableMaterializedViewLogOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Preserve" />
+          <Terminal Id="Materialized" />
+          <Terminal Id="View" />
+          <Terminal Id="Log" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Purge" />
+          <Terminal Id="Materialized" />
+          <Terminal Id="View" />
+          <Terminal Id="Log" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="TruncateTableStorageOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Drop" />
+          <Terminal Id="All" IsOptional="true" />
+          <Terminal Id="Storage" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Reuse" />
+          <Terminal Id="Storage" />
+        </Sequence>
       </Sequences>
     </Rule>
 
@@ -18011,6 +18060,7 @@
     <Terminal Id="CharacterCode" Value="CHR" />
     <Terminal Id="NationalCharacterSet" Value="NCHAR_CS" />
     <Terminal Id="The" Value="THE" />
+    <Terminal Id="Truncate" Value="TRUNCATE" />
     
     <!-- PL/SQL -->
     <Terminal Id="Bulk" Value="BULK" />

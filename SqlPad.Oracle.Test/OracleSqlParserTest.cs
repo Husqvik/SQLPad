@@ -2981,7 +2981,7 @@ SELECT F1(VAL), F2(VAL + 1) FROM CTE";
 			{
 				var terminalCandidates = Parser.GetTerminalCandidates(null).Select(c => c.Id).OrderBy(t => t).ToArray();
 
-				var expectedTerminals = new[] { Terminals.Alter, Terminals.Analyze, Terminals.Begin, Terminals.Call, Terminals.Comment, Terminals.Commit, Terminals.Create, Terminals.Declare, Terminals.Delete, Terminals.Drop, Terminals.Explain, Terminals.Grant, Terminals.Insert, Terminals.LeftLabelMarker, Terminals.LeftParenthesis, Terminals.Lock, Terminals.Merge, Terminals.Purge, Terminals.Rename, Terminals.Rollback, Terminals.Savepoint, Terminals.Select, Terminals.Set, Terminals.Update, Terminals.With };
+				var expectedTerminals = new[] { Terminals.Alter, Terminals.Analyze, Terminals.Begin, Terminals.Call, Terminals.Comment, Terminals.Commit, Terminals.Create, Terminals.Declare, Terminals.Delete, Terminals.Drop, Terminals.Explain, Terminals.Grant, Terminals.Insert, Terminals.LeftLabelMarker, Terminals.LeftParenthesis, Terminals.Lock, Terminals.Merge, Terminals.Purge, Terminals.Rename, Terminals.Rollback, Terminals.Savepoint, Terminals.Select, Terminals.Set, Terminals.Truncate, Terminals.Update, Terminals.With };
 				terminalCandidates.ShouldBe(expectedTerminals);
 			}
 
@@ -6228,6 +6228,40 @@ PURGE REPEAT INTERVAL '5' DAY";
 					var statement = result.Single();
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}*/
+			}
+		}
+
+		public class Truncate
+		{
+			[Test(Description = @"")]
+			public void TestTruncateTableMinimal()
+			{
+				const string statementText = @"TRUNCATE TABLE TEST_TABLE";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+				var terminals = statement.AllTerminals.ToArray();
+				terminals.Length.ShouldBe(3);
+
+				terminals[0].Id.ShouldBe(Terminals.Truncate);
+				terminals[1].Id.ShouldBe(Terminals.Table);
+				terminals[2].Id.ShouldBe(Terminals.ObjectIdentifier);
+			}
+
+			[Test(Description = @"")]
+			public void TestTruncateTableMaximal()
+			{
+				const string statementText = @"TRUNCATE TABLE TEST_SCHEMA.TEST_TABLE PURGE MATERIALIZED VIEW LOG REUSE STORAGE CASCADE;";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 		}
 
