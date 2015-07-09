@@ -481,6 +481,9 @@ namespace SqlPad.Oracle.Test
 			var extractFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, IdentifierBuiltInProgramExtract, false, false, false, false, false, false, 1, 0, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
 			allFunctionMetadata.Add(extractFunctionMetadata);
 
+			var ratioToReportFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, IdentifierBuiltInProgramRatioToReport, true, false, false, false, false, false, 1, 1, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
+			allFunctionMetadata.Add(ratioToReportFunctionMetadata);
+
 			AllFunctionMetadataInternal = allFunctionMetadata.Where(f => f.Type == ProgramType.Function).ToLookup(m => m.Identifier);
 			NonSchemaBuiltInFunctionMetadataInternal = allFunctionMetadata
 				.Where(m => String.IsNullOrEmpty(m.Identifier.Owner))

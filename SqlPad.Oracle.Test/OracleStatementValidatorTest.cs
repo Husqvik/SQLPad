@@ -2350,12 +2350,12 @@ FROM (
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 
-			var invalidNontTerminals = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
-			invalidNontTerminals.Count.ShouldBe(1);
-			invalidNontTerminals[0].IsRecognized.ShouldBe(true);
-			invalidNontTerminals[0].Node.Id.ShouldBe(NonTerminals.OptionalParameterExpression);
-			invalidNontTerminals[0].Node.FirstTerminalNode.Token.Value.ShouldBe("SYSDATE");
-			invalidNontTerminals[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.NotEnoughArgumentsForFunction);
+			var invalidNonTerminals = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			invalidNonTerminals.Count.ShouldBe(1);
+			invalidNonTerminals[0].IsRecognized.ShouldBe(true);
+			invalidNonTerminals[0].Node.Id.ShouldBe(NonTerminals.OptionalParameterExpression);
+			invalidNonTerminals[0].Node.FirstTerminalNode.Token.Value.ShouldBe("SYSDATE");
+			invalidNonTerminals[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.NotEnoughArgumentsForFunction);
 		}
 
 		[Test(Description = @"")]
@@ -2387,34 +2387,34 @@ FROM
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 
-			var invalidNontTerminals = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
-			invalidNontTerminals.Count.ShouldBe(16);
-			invalidNontTerminals[0].IsRecognized.ShouldBe(true);
-			invalidNontTerminals[0].Node.Id.ShouldBe(Terminals.IntegerLiteral);
-			invalidNontTerminals[0].Node.Token.Value.ShouldBe("39");
-			invalidNontTerminals[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.NumericPrecisionSpecifierOutOfRange);
-			invalidNontTerminals[2].IsRecognized.ShouldBe(true);
-			invalidNontTerminals[2].Node.Id.ShouldBe(NonTerminals.NegativeInteger);
-			invalidNontTerminals[2].Node.TerminalCount.ShouldBe(2);
-			invalidNontTerminals[2].Node.FirstTerminalNode.Id.ShouldBe(Terminals.MathMinus);
-			invalidNontTerminals[2].Node.LastTerminalNode.Token.Value.ShouldBe("85");
-			invalidNontTerminals[2].SemanticErrorType.ShouldBe(OracleSemanticErrorType.NumericScaleSpecifierOutOfRange);
-			invalidNontTerminals[4].IsRecognized.ShouldBe(true);
-			invalidNontTerminals[4].Node.Id.ShouldBe(Terminals.IntegerLiteral);
-			invalidNontTerminals[4].Node.Token.Value.ShouldBe("2001");
-			invalidNontTerminals[4].SemanticErrorType.ShouldBe(OracleSemanticErrorType.SpecifiedLengthTooLongForDatatype);
-			invalidNontTerminals[5].IsRecognized.ShouldBe(true);
-			invalidNontTerminals[5].Node.Id.ShouldBe(Terminals.IntegerLiteral);
-			invalidNontTerminals[5].Node.Token.Value.ShouldBe("0");
-			invalidNontTerminals[5].SemanticErrorType.ShouldBe(OracleSemanticErrorType.ZeroLengthColumnsNotAllowed);
-			invalidNontTerminals[8].IsRecognized.ShouldBe(true);
-			invalidNontTerminals[8].Node.Id.ShouldBe(Terminals.IntegerLiteral);
-			invalidNontTerminals[8].Node.Token.Value.ShouldBe("127");
-			invalidNontTerminals[8].SemanticErrorType.ShouldBe(OracleSemanticErrorType.FloatingPointPrecisionOutOfRange);
-			invalidNontTerminals[9].IsRecognized.ShouldBe(true);
-			invalidNontTerminals[9].Node.Id.ShouldBe(Terminals.IntegerLiteral);
-			invalidNontTerminals[9].Node.Token.Value.ShouldBe("10");
-			invalidNontTerminals[9].SemanticErrorType.ShouldBe(OracleSemanticErrorType.DatetimeOrIntervalPrecisionIsOutOfRange);
+			var invalidNonTerminals = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			invalidNonTerminals.Count.ShouldBe(16);
+			invalidNonTerminals[0].IsRecognized.ShouldBe(true);
+			invalidNonTerminals[0].Node.Id.ShouldBe(Terminals.IntegerLiteral);
+			invalidNonTerminals[0].Node.Token.Value.ShouldBe("39");
+			invalidNonTerminals[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.NumericPrecisionSpecifierOutOfRange);
+			invalidNonTerminals[2].IsRecognized.ShouldBe(true);
+			invalidNonTerminals[2].Node.Id.ShouldBe(NonTerminals.NegativeInteger);
+			invalidNonTerminals[2].Node.TerminalCount.ShouldBe(2);
+			invalidNonTerminals[2].Node.FirstTerminalNode.Id.ShouldBe(Terminals.MathMinus);
+			invalidNonTerminals[2].Node.LastTerminalNode.Token.Value.ShouldBe("85");
+			invalidNonTerminals[2].SemanticErrorType.ShouldBe(OracleSemanticErrorType.NumericScaleSpecifierOutOfRange);
+			invalidNonTerminals[4].IsRecognized.ShouldBe(true);
+			invalidNonTerminals[4].Node.Id.ShouldBe(Terminals.IntegerLiteral);
+			invalidNonTerminals[4].Node.Token.Value.ShouldBe("2001");
+			invalidNonTerminals[4].SemanticErrorType.ShouldBe(OracleSemanticErrorType.SpecifiedLengthTooLongForDatatype);
+			invalidNonTerminals[5].IsRecognized.ShouldBe(true);
+			invalidNonTerminals[5].Node.Id.ShouldBe(Terminals.IntegerLiteral);
+			invalidNonTerminals[5].Node.Token.Value.ShouldBe("0");
+			invalidNonTerminals[5].SemanticErrorType.ShouldBe(OracleSemanticErrorType.ZeroLengthColumnsNotAllowed);
+			invalidNonTerminals[8].IsRecognized.ShouldBe(true);
+			invalidNonTerminals[8].Node.Id.ShouldBe(Terminals.IntegerLiteral);
+			invalidNonTerminals[8].Node.Token.Value.ShouldBe("127");
+			invalidNonTerminals[8].SemanticErrorType.ShouldBe(OracleSemanticErrorType.FloatingPointPrecisionOutOfRange);
+			invalidNonTerminals[9].IsRecognized.ShouldBe(true);
+			invalidNonTerminals[9].Node.Id.ShouldBe(Terminals.IntegerLiteral);
+			invalidNonTerminals[9].Node.Token.Value.ShouldBe("10");
+			invalidNonTerminals[9].SemanticErrorType.ShouldBe(OracleSemanticErrorType.DatetimeOrIntervalPrecisionIsOutOfRange);
 		}
 
 		[Test(Description = @"")]
@@ -2439,13 +2439,31 @@ FROM
 
 			var validationModel = BuildValidationModel(sqlText, statement, new OracleTestDatabaseModel { TestDatabaseVersion = new Version(12, 1, 0, 1) } );
 
-			var invalidNontTerminals = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
-			invalidNontTerminals.Count.ShouldBe(1);
-			invalidNontTerminals[0].IsRecognized.ShouldBe(true);
-			invalidNontTerminals[0].Node.Id.ShouldBe(NonTerminals.TableReference);
-			invalidNontTerminals[0].Node.FirstTerminalNode.Id.ShouldBe(Terminals.JsonTable);
-			invalidNontTerminals[0].Node.LastTerminalNode.Id.ShouldBe(Terminals.RightParenthesis);
-			invalidNontTerminals[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.UnsupportedInConnectedDatabaseVersion);
+			var invalidNonTerminals = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			invalidNonTerminals.Count.ShouldBe(1);
+			invalidNonTerminals[0].IsRecognized.ShouldBe(true);
+			invalidNonTerminals[0].Node.Id.ShouldBe(NonTerminals.TableReference);
+			invalidNonTerminals[0].Node.FirstTerminalNode.Id.ShouldBe(Terminals.JsonTable);
+			invalidNonTerminals[0].Node.LastTerminalNode.Id.ShouldBe(Terminals.RightParenthesis);
+			invalidNonTerminals[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.UnsupportedInConnectedDatabaseVersion);
+		}
+
+		[Test(Description = @"")]
+		public void TestOrderByNotAllowed()
+		{
+			const string sqlText = @"SELECT RATIO_TO_REPORT(NULL) OVER (ORDER BY NULL) FROM DUAL";
+
+			var statement = _oracleSqlParser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			var programNodeValidities = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			programNodeValidities.Count.ShouldBe(2);
+			programNodeValidities[1].IsRecognized.ShouldBe(true);
+			programNodeValidities[1].Node.Id.ShouldBe(NonTerminals.OrderByClause);
+			programNodeValidities[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.OrderByNotAllowedHere);
 		}
 	}
 }

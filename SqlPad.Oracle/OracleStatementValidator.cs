@@ -798,9 +798,18 @@ namespace SqlPad.Oracle
 					semanticError = OracleSemanticErrorType.MissingParenthesis;
 				}
 
-				if (programReference.AnalyticClauseNode != null && !programReference.Metadata.IsAnalytic)
+				if (programReference.AnalyticClauseNode != null)
 				{
-					validationModel.ProgramNodeValidity[programReference.AnalyticClauseNode] = new InvalidNodeValidationData(OracleSemanticErrorType.AnalyticClauseNotSupported) { Node = programReference.AnalyticClauseNode };
+					if (!programReference.Metadata.IsAnalytic)
+					{
+						validationModel.ProgramNodeValidity[programReference.AnalyticClauseNode] = new InvalidNodeValidationData(OracleSemanticErrorType.AnalyticClauseNotSupported) { Node = programReference.AnalyticClauseNode };
+					}
+
+					var orderByClause = programReference.AnalyticClauseNode[NonTerminals.OrderByClause];
+					if (programReference.Metadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramRatioToReport && orderByClause != null)
+					{
+						validationModel.ProgramNodeValidity[orderByClause] = new InvalidNodeValidationData(OracleSemanticErrorType.OrderByNotAllowedHere) { Node = orderByClause };
+					}
 				}
 			}
 
