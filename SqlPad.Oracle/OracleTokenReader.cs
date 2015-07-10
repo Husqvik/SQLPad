@@ -166,6 +166,8 @@ namespace SqlPad.Oracle
 					inQuotedString = previousFlags.QuotedStringCandidate;
 
 					specialMode.Flags |= SpecialModeFlags.InString;
+
+					previousFlags.AssignmentOperatorCandidate = false;
 				}
 
 				if (previousFlags.BlockCommentBeginCandidate && specialMode.Flags == 0)

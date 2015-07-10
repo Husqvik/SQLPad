@@ -579,6 +579,17 @@ namespace SqlPad.Oracle.Test
 			tokenIndexes.ShouldBe(new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
 		}
 
+		[Test(Description = "Tests colon followed by string literal. ")]
+		public void TestColonFollowedByStringLiteral()
+		{
+			const string testQuery = ":''";
+			var tokens = GetTokenValuesFromOracleSql(testQuery);
+			tokens.ShouldBe(new[] { ":", "''" });
+
+			var tokenIndexes = GetTokenIndexesFromOracleSql(testQuery);
+			tokenIndexes.ShouldBe(new[] { 0, 1 });
+		}
+
 		private string[] GetTokenValuesFromOracleSql(string sqlText, bool includeCommentBlocks = false)
 		{
 			return GetTokensFromOracleSql(sqlText, includeCommentBlocks).Select(t => t.Value).ToArray();

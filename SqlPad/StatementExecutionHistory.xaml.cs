@@ -84,12 +84,22 @@ namespace SqlPad
 
 			ListHistoryEntries.UpdateLayout();
 
+			HighlightText(searchedWords);
+		}
+
+		private void HighlightText(IEnumerable<string> searchedWords)
+		{
 			Dispatcher.BeginInvoke(DispatcherPriority.Render, new Action(() => ListHistoryEntries.HighlightTextItems(TextSearchHelper.GetRegexPattern(searchedWords))));
 		}
 
 		private void CopyExecutedHandler(object sender, ExecutedRoutedEventArgs e)
 		{
 			Clipboard.SetText(SelectedEntry.StatementText);
+		}
+
+		private void HistoryViewScrollChangedHandler(object sender, ScrollChangedEventArgs e)
+		{
+			HighlightText(TextSearchHelper.GetSearchedWords(SearchPhraseTextBox.Text));
 		}
 	}
 }
