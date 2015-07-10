@@ -12,6 +12,7 @@
 		ShowInTaskbar="False"
 		Title="Statement Execution History"
 		Closing="WindowClosingHandler"
+		KeyDown="WindowKeyDownHandler"
 		DataContext="{Binding RelativeSource={RelativeSource Self}}">
 
 	<Grid FocusManager.FocusedElement="{Binding ElementName=SearchPhraseTextBox}">

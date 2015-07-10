@@ -101,5 +101,13 @@ namespace SqlPad
 		{
 			HighlightText(TextSearchHelper.GetSearchedWords(SearchPhraseTextBox.Text));
 		}
+
+		private void WindowKeyDownHandler(object sender, KeyEventArgs e)
+		{
+			if (e.Key == Key.Escape && Keyboard.Modifiers == ModifierKeys.None)
+			{
+				Close();
+			}
+		}
 	}
 }
