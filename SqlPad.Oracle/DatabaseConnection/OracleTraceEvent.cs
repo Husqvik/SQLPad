@@ -8,8 +8,10 @@ namespace SqlPad.Oracle.DatabaseConnection
 	{
 		public static readonly OracleTraceEvent[] AllTraceEvents =
 		{
-			new OracleTraceEvent(10046, "Extended SQL trace", TraceEventScope.Session, "'10046 trace name context forever, level {0}'", "'10046 trace name context off'", new [] { 1, 4, 8, 12 }) { Level = 12 },
-			new OracleTraceEvent(10053, "Cost based optimizer", TraceEventScope.Session, "'10053 trace name context forever, level {0}'", "'10053 trace name context off'", new [] { 1, 2 }) { Level = 1 }
+			new OracleTraceEvent(10046, "Extended SQL trace", TraceEventScope.Session, "'10046 trace name context forever, level {0}'", "'10046 trace name context off'", false, new [] { 1, 4, 8, 12 }) { Level = 12 },
+			new OracleTraceEvent(10053, "Cost based optimizer", TraceEventScope.Session, "'10053 trace name context forever, level {0}'", "'10053 trace name context off'", false, new [] { 1, 2 }) { Level = 1 },
+			new OracleTraceEvent(10079, "Network packet content dump", TraceEventScope.Session, "'10079 trace name context forever, level {0}'", "'10079 trace name context off'", true, new [] { 1, 2, 4, 8 }) { Level = 1 },
+			new OracleTraceEvent(10104, "Hash join trace", TraceEventScope.Session, "'10104 trace name context forever, level {0}'", "'10104 trace name context off'", false, new [] { 1, 2, 10 }) { Level = 10 }
 		};
 
 		private int _level;
@@ -17,6 +19,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private readonly string _disableEventTraceParameter;
 		
 		public int EventCode { get; private set; }
+		
+		public bool RequiresDbaPrivilege { get; private set; }
 		
 		public string Title { get; private set; }
 		
@@ -43,13 +47,14 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public IReadOnlyList<int> SupportedLevels { get; private set; }
 
-		public OracleTraceEvent(int eventCode, string title, TraceEventScope scope, string enableEventTraceParameter, string disableEventTraceParameter, IReadOnlyList<int> supportedLevels)
+		public OracleTraceEvent(int eventCode, string title, TraceEventScope scope, string enableEventTraceParameter, string disableEventTraceParameter, bool requiresDbaPrivilege, IReadOnlyList<int> supportedLevels)
 		{
 			EventCode = eventCode;
 			Title = title;
 			Scope = scope;
 			_enableEventTraceParameter = enableEventTraceParameter;
 			_disableEventTraceParameter = disableEventTraceParameter;
+			RequiresDbaPrivilege = requiresDbaPrivilege;
 			SupportedLevels = supportedLevels;
 		}
 

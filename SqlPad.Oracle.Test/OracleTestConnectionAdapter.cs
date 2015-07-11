@@ -34,6 +34,11 @@ namespace SqlPad.Oracle.Test
 
 		public override string Identifier { get; set; }
 
+		public override IDatabaseModel DatabaseModel
+		{
+			get { return OracleTestDatabaseModel.Instance; }
+		}
+
 		public override string TraceFileName { get { return "OracleTestTraceFile.trc"; } }
 
 		public override Task<StatementExecutionResult> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)

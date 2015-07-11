@@ -7,6 +7,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 {
 	public abstract class OracleConnectionAdapterBase : IConnectionAdapter
 	{
+		public abstract IDatabaseModel DatabaseModel { get; }
+
 		public virtual void Dispose() { }
 
 		public abstract bool CanFetch { get; }

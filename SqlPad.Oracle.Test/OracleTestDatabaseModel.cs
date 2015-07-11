@@ -1195,6 +1195,11 @@ TABLESPACE ""TBS_HQ_PDB""";
 			return Task.FromResult((IReadOnlyList<string>)remoteColumns.AsReadOnly());
 		}
 
+		public override bool HasDbaPrivilege
+		{
+			get { return false; }
+		}
+
 		public override string DatabaseDomainName { get { return CurrentDatabaseDomainNameInternal; } }
 
 		public override Task<ExecutionPlanItemCollection> ExplainPlanAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)

@@ -83,6 +83,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 		
 		public abstract bool IsMetadataAvailable { get; }
 		
+		public abstract bool HasDbaPrivilege { get; }
+		
 		public abstract string CurrentSchema { get; set; }
 		
 		public abstract ICollection<string> Schemas { get; }

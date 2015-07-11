@@ -27,7 +27,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private static int _counter;
 
 		private readonly ConnectionStringSettings _connectionString;
-		private readonly OracleConnectionStringBuilder _oracleConnectionString;
 		private readonly List<OracleTraceEvent> _activeTraceEvents = new List<OracleTraceEvent>();
 
 		private bool _isExecuting;
@@ -55,14 +54,14 @@ namespace SqlPad.Oracle.DatabaseConnection
 			set { UpdateModuleName(value); }
 		}
 
+		public override IDatabaseModel DatabaseModel { get { return _databaseModel; } }
+
 		public override string TraceFileName { get { return _userTraceFileName; } }
 
 		public OracleConnectionAdapter(OracleDatabaseModel databaseModel)
 		{
 			_databaseModel = databaseModel;
 			_connectionString = _databaseModel.ConnectionString;
-
-			_oracleConnectionString = new OracleConnectionStringBuilder(_databaseModel.ConnectionString.ConnectionString);
 
 			var identifier = Convert.ToString(Interlocked.Increment(ref _counter));
 			UpdateModuleName(identifier);
@@ -94,6 +93,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			try
 			{
 				await ExecuteUserStatement(executionModel, cancellationToken);
+				Trace.WriteLine(String.Format("Enable trace event statement executed successfully: \n{0}", executionModel.StatementText));
 			}
 			catch
 			{
@@ -117,7 +117,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			builder.Append("END;");
 
-			return new StatementExecutionModel {StatementText = builder.ToString(), BindVariables = new BindVariableModel[0]};
+			return new StatementExecutionModel { StatementText = builder.ToString(), BindVariables = new BindVariableModel[0] };
 		}
 
 		public override async Task StopTraceEvents(CancellationToken cancellationToken)
@@ -135,6 +135,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 
 			await ExecuteUserStatement(executionModel, cancellationToken);
+			Trace.WriteLine(String.Format("Disable trace event statement executed successfully: \n{0}", executionModel.StatementText));
 		}
 
 		internal void SwitchCurrentSchema()
@@ -700,7 +701,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		private async Task<Exception> ResolveExecutionPlanIdentifiersAndTransactionStatus(CancellationToken cancellationToken)
 		{
-			using (var connection = new OracleConnection(_oracleConnectionString.ConnectionString))
+			using (var connection = new OracleConnection(_connectionString.ConnectionString))
 			{
 				using (var command = connection.CreateCommand())
 				{

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Windows;
@@ -32,7 +34,7 @@ namespace SqlPad.Oracle.DebugTrace
 
 		private readonly OracleConnectionAdapterBase _connectionAdapter;
 
-		private readonly OracleTraceEventModel[] _traceEvents = OracleTraceEvent.AllTraceEvents.Select(e => new OracleTraceEventModel { TraceEvent = e }).ToArray();
+		private readonly ObservableCollection<OracleTraceEventModel> _traceEvents = new ObservableCollection<OracleTraceEventModel>();
 
 		public Control Control { get { return this; } }
 
@@ -43,6 +45,11 @@ namespace SqlPad.Oracle.DebugTrace
 			InitializeComponent();
 
 			_connectionAdapter = connectionAdapter;
+
+			var eventSource = OracleTraceEvent.AllTraceEvents;
+			var hasDbaPrivilege = ((OracleDatabaseModelBase)connectionAdapter.DatabaseModel).HasDbaPrivilege;
+
+			_traceEvents.AddRange(eventSource.Select(e => new OracleTraceEventModel { TraceEvent = e, IsEnabled = hasDbaPrivilege || !e.RequiresDbaPrivilege }));
 		}
 
 		private void SelectItemCommandExecutedHandler(object sender, ExecutedRoutedEventArgs e)
@@ -52,10 +59,10 @@ namespace SqlPad.Oracle.DebugTrace
 			{
 				if (!newValue.HasValue)
 				{
-					newValue = !traceEvent.IsEnabled;
+					newValue = !traceEvent.IsSelected;
 				}
 
-				traceEvent.IsEnabled = newValue.Value;
+				traceEvent.IsSelected = newValue.Value;
 			}
 		}
 
@@ -69,7 +76,14 @@ namespace SqlPad.Oracle.DebugTrace
 				}
 				else
 				{
-					await _connectionAdapter.ActivateTraceEvents(_traceEvents.Where(e => e.IsEnabled).Select(e => e.TraceEvent), CancellationToken.None);
+					var selectedEvents = _traceEvents.Where(e => e.IsSelected).Select(e => e.TraceEvent).ToArray();
+					if (selectedEvents.Length == 0)
+					{
+						Messages.ShowError("Select an event first. ");
+						return;
+					}
+					
+					await _connectionAdapter.ActivateTraceEvents(selectedEvents, CancellationToken.None);
 				}
 
 				IsTracing = !IsTracing;
@@ -84,13 +98,20 @@ namespace SqlPad.Oracle.DebugTrace
 
 		private void TraceFileNameHyperlinkClickHandler(object sender, RoutedEventArgs e)
 		{
-			Process.Start("explorer.exe", "/select," + TraceFileName);
+			var arguments = File.Exists(TraceFileName)
+				? String.Format("/select,{0}", TraceFileName)
+				: String.Format("/root,{0}", new FileInfo(TraceFileName).DirectoryName);
+
+			Process.Start("explorer.exe", arguments);
 		}
 	}
 
 	public class OracleTraceEventModel
 	{
+		public bool IsSelected { get; set; }
+
 		public bool IsEnabled { get; set; }
+		
 		public OracleTraceEvent TraceEvent { get; set; }
 	}
 }

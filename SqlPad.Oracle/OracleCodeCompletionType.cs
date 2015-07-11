@@ -136,7 +136,13 @@ namespace SqlPad.Oracle
 
 			InComment = Statement.Comments.Any(c => c.SourcePosition.ContainsIndex(cursorPosition));
 
-			SemanticModel = (OracleStatementSemanticModel)documentRepository.ValidationModels[Statement].SemanticModel;
+			IValidationModel validationModel;
+			if (!documentRepository.ValidationModels.TryGetValue(Statement, out validationModel))
+			{
+				return;
+			}
+
+			SemanticModel = (OracleStatementSemanticModel)validationModel.SemanticModel;
 
 			var requiredOffsetAfterToken = nearestTerminal.Id.IsZeroOffsetTerminalId() ? 0 : 1;
 			var isCursorAfterToken = nearestTerminal.SourcePosition.IndexEnd + requiredOffsetAfterToken < cursorPosition;

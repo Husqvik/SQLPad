@@ -32,6 +32,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private readonly Timer _refreshTimer = new Timer();
 		private readonly HashSet<OracleConnectionAdapter> _connectionAdapters = new HashSet<OracleConnectionAdapter>();
 		private readonly string _connectionStringName;
+		private readonly OracleConnectionStringBuilder _oracleConnectionString;
 		private bool _isInitialized;
 		private bool _isRefreshing;
 		private bool _cacheLoaded;
@@ -61,9 +62,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 			_connectionString = connectionString;
 			ConnectionIdentifier = identifier;
 			_moduleName = String.Format("{0}/{1}", ModuleNameSqlPadDatabaseModelBase, identifier);
-			var oracleConnectionString = new OracleConnectionStringBuilder(connectionString.ConnectionString);
-			_currentSchema = oracleConnectionString.UserID;
-			_connectionStringName = String.Format("{0}_{1}", oracleConnectionString.DataSource, _currentSchema);
+			_oracleConnectionString = new OracleConnectionStringBuilder(connectionString.ConnectionString);
+			_currentSchema = _oracleConnectionString.UserID;
+			_connectionStringName = String.Format("{0}_{1}", _oracleConnectionString.DataSource, _currentSchema);
 
 			lock (ActiveDataModelRefresh)
 			{
@@ -202,6 +203,11 @@ namespace SqlPad.Oracle.DatabaseConnection
 		public override bool IsInitialized { get { return _isInitialized; } }
 
 		public override bool IsMetadataAvailable { get { return _dataDictionary != OracleDataDictionary.EmptyDictionary; } }
+
+		public override bool HasDbaPrivilege
+		{
+			get { return String.Equals(_oracleConnectionString.DBAPrivilege.ToUpperInvariant(), "SYSDBA"); }
+		}
 
 		public override string CurrentSchema
 		{
