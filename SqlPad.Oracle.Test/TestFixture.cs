@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using SqlPad.Oracle.DatabaseConnection;
 
 namespace SqlPad.Oracle.Test
 {

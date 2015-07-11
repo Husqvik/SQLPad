@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using SqlPad.Oracle.DatabaseConnection;
 
 namespace SqlPad.Oracle.DataDictionary
 {
@@ -105,7 +106,7 @@ namespace SqlPad.Oracle.DataDictionary
 
 		public bool IsPublic
 		{
-			get { return FullyQualifiedName.NormalizedOwner == OracleDatabaseModelBase.SchemaPublic; }
+			get { return String.Equals(FullyQualifiedName.NormalizedOwner, OracleDatabaseModelBase.SchemaPublic); }
 		}
 
 		public override string Type { get { return OracleSchemaObjectType.Synonym; } }

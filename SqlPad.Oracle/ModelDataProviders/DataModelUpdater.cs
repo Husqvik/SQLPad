@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using SqlPad.Oracle.DatabaseConnection;
 using SqlPad.Oracle.DataDictionary;
 #if ORACLE_MANAGED_DATA_ACCESS_CLIENT
 using Oracle.ManagedDataAccess.Client;
@@ -27,7 +28,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public override void InitializeCommand(OracleCommand command)
 		{
-			command.CommandText = DatabaseCommands.SelectColumnStatisticsCommandText;
+			command.CommandText = OracleDatabaseCommands.SelectColumnStatisticsCommandText;
 			command.AddSimpleParameter("OWNER", _objectIdentifier.Owner.Trim('"'));
 			command.AddSimpleParameter("TABLE_NAME", _objectIdentifier.Name.Trim('"'));
 			command.AddSimpleParameter("COLUMN_NAME", _columnName.Trim('"'));
@@ -71,11 +72,11 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 			if (String.IsNullOrEmpty(_columnName))
 			{
-				command.CommandText = DatabaseCommands.SelectTableConstraintDescriptionCommandText;
+				command.CommandText = OracleDatabaseCommands.SelectTableConstraintDescriptionCommandText;
 			}
 			else
 			{
-				command.CommandText = DatabaseCommands.SelectColumnConstraintDescriptionCommandText;
+				command.CommandText = OracleDatabaseCommands.SelectColumnConstraintDescriptionCommandText;
 				command.AddSimpleParameter("COLUMN_NAME", _columnName.Trim('"'));
 			}
 
@@ -143,7 +144,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public override void InitializeCommand(OracleCommand command)
 		{
-			command.CommandText = DatabaseCommands.SelectColumnHistogramCommandText;
+			command.CommandText = OracleDatabaseCommands.SelectColumnHistogramCommandText;
 			command.AddSimpleParameter("OWNER", _objectIdentifier.Owner.Trim('"'));
 			command.AddSimpleParameter("TABLE_NAME", _objectIdentifier.Name.Trim('"'));
 			command.AddSimpleParameter("COLUMN_NAME", _columnName.Trim('"'));
@@ -183,7 +184,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public override void InitializeCommand(OracleCommand command)
 		{
-			command.CommandText = DatabaseCommands.SelectColumnInMemoryDetailsCommandText;
+			command.CommandText = OracleDatabaseCommands.SelectColumnInMemoryDetailsCommandText;
 			command.AddSimpleParameter("OWNER", _objectIdentifier.Owner.Trim('"'));
 			command.AddSimpleParameter("TABLE_NAME", _objectIdentifier.Name.Trim('"'));
 			command.AddSimpleParameter("COLUMN_NAME", _columnName.Trim('"'));
@@ -225,7 +226,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public override void InitializeCommand(OracleCommand command)
 		{
-			command.CommandText = String.Format(DatabaseCommands.SelectTableDetailsCommandText);
+			command.CommandText = String.Format(OracleDatabaseCommands.SelectTableDetailsCommandText);
 			command.AddSimpleParameter("OWNER", _objectIdentifier.Owner.Trim('"'));
 			command.AddSimpleParameter("TABLE_NAME", _objectIdentifier.Name.Trim('"'));
 		}
@@ -272,11 +273,11 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 			if (String.IsNullOrEmpty(_columnName))
 			{
-				command.CommandText = String.Format(DatabaseCommands.SelectTableCommentCommandText);
+				command.CommandText = String.Format(OracleDatabaseCommands.SelectTableCommentCommandText);
 			}
 			else
 			{
-				command.CommandText = String.Format(DatabaseCommands.SelectColumnCommentCommandText);
+				command.CommandText = String.Format(OracleDatabaseCommands.SelectColumnCommentCommandText);
 				command.AddSimpleParameter("COLUMN_NAME", _columnName.Trim('"'));
 			}
 		}
@@ -306,7 +307,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public override void InitializeCommand(OracleCommand command)
 		{
-			command.CommandText = DatabaseCommands.SelectTableAllocatedBytesCommandText;
+			command.CommandText = OracleDatabaseCommands.SelectTableAllocatedBytesCommandText;
 			command.AddSimpleParameter("OWNER", _objectIdentifier.Owner.Trim('"'));
 			command.AddSimpleParameter("TABLE_NAME", _objectIdentifier.Name.Trim('"'));
 			command.AddSimpleParameter("PARTITION_NAME", _partitionName.Trim('"'));
@@ -339,7 +340,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public override void InitializeCommand(OracleCommand command)
 		{
-			command.CommandText = String.Format(DatabaseCommands.SelectIndexDescriptionCommandText);
+			command.CommandText = String.Format(OracleDatabaseCommands.SelectIndexDescriptionCommandText);
 			command.AddSimpleParameter("TABLE_OWNER", _objectIdentifier.Owner.Trim('"'));
 			command.AddSimpleParameter("TABLE_NAME", _objectIdentifier.Name.Trim('"'));
 			command.AddSimpleParameter("COLUMN_NAME", String.IsNullOrEmpty(_columnName) ? null : _columnName.Trim('"'));
@@ -393,7 +394,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public override void InitializeCommand(OracleCommand command)
 		{
-			command.CommandText = DatabaseCommands.SelectIndexColumnDescriptionCommandText;
+			command.CommandText = OracleDatabaseCommands.SelectIndexColumnDescriptionCommandText;
 			command.AddSimpleParameter("OWNER", _objectIdentifier.Owner.Trim('"'));
 			command.AddSimpleParameter("TABLE_NAME", _objectIdentifier.Name.Trim('"'));
 			command.AddSimpleParameter("COLUMN_NAME", String.IsNullOrEmpty(_columnName) ? null : _columnName.Trim('"'));
@@ -459,7 +460,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public override void InitializeCommand(OracleCommand command)
 		{
-			command.CommandText = DatabaseCommands.SelectCompilationErrorsCommandText;
+			command.CommandText = OracleDatabaseCommands.SelectCompilationErrorsCommandText;
 			command.AddSimpleParameter("OWNER", _owner);
 			command.AddSimpleParameter("NAME", _objectName);
 		}
@@ -506,7 +507,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public override void InitializeCommand(OracleCommand command)
 		{
-			command.CommandText = DatabaseCommands.SelectTableInMemoryAllocatedBytesCommandText;
+			command.CommandText = OracleDatabaseCommands.SelectTableInMemoryAllocatedBytesCommandText;
 			command.AddSimpleParameter("OWNER", _objectIdentifier.Owner.Trim('"'));
 			command.AddSimpleParameter("SEGMENT_NAME", _objectIdentifier.Name.Trim('"'));
 		}
@@ -551,7 +552,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public override void InitializeCommand(OracleCommand command)
 		{
-			command.CommandText = DatabaseCommands.SelectObjectScriptCommandText;
+			command.CommandText = OracleDatabaseCommands.SelectObjectScriptCommandText;
 			command.AddSimpleParameter("OBJECT_TYPE", _schemaObject.Type.Replace(' ', '_').ToUpperInvariant());
 			command.AddSimpleParameter("NAME", _schemaObject.FullyQualifiedName.Name.Trim('"'));
 			command.AddSimpleParameter("SCHEMA", _schemaObject.FullyQualifiedName.Owner.Trim('"'));
@@ -592,7 +593,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public override void InitializeCommand(OracleCommand command)
 		{
-			command.CommandText = DatabaseCommands.SelectExecutionPlanTextCommandText;
+			command.CommandText = OracleDatabaseCommands.SelectExecutionPlanTextCommandText;
 			command.AddSimpleParameter("SQL_ID", _sqlId);
 			command.AddSimpleParameter("CHILD_NUMBER", _childNumber);
 		}

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using SqlPad.Commands;
+using SqlPad.Oracle.DatabaseConnection;
 using SqlPad.Oracle.SemanticModel;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
@@ -45,20 +46,20 @@ namespace SqlPad.Oracle.Commands
 					{
 						IndextStart = (f.ObjectNode ?? f.FunctionIdentifierNode).SourcePosition.IndexStart,
 						Length = 0,
-						Text = f.Metadata.Identifier.Owner.ToSimpleIdentifier() + "."
+						Text = String.Format("{0}.", f.Metadata.Identifier.Owner.ToSimpleIdentifier())
 					});
 		}
 
 		private IEnumerable<TextSegment> GetMissingObjectReferenceQualifications()
 		{
 			return CurrentQueryBlock.ObjectReferences
-				.Where(o => o.OwnerNode == null && o.Type == ReferenceType.SchemaObject && o.SchemaObject != null && o.SchemaObject.FullyQualifiedName.Owner != OracleDatabaseModelBase.SchemaPublic)
+				.Where(o => o.OwnerNode == null && o.Type == ReferenceType.SchemaObject && o.SchemaObject != null && !String.Equals(o.SchemaObject.FullyQualifiedName.Owner, OracleDatabaseModelBase.SchemaPublic))
 				.Select(o =>
 					new TextSegment
 					{
 						IndextStart = o.ObjectNode.SourcePosition.IndexStart,
 						Length = 0,
-						Text = o.SchemaObject.Owner.ToSimpleIdentifier() + "."
+						Text = String.Format("{0}.", o.SchemaObject.Owner.ToSimpleIdentifier())
 					});
 		}
 
@@ -76,7 +77,7 @@ namespace SqlPad.Oracle.Commands
 				var tableReference = validObjectReference as OracleDataObjectReference;
 				if (column.OwnerNode == null && validObjectReference.Type == ReferenceType.SchemaObject &&
 					(tableReference == null || tableReference.AliasNode == null) &&
-					validObjectReference.SchemaObject != null && validObjectReference.SchemaObject.FullyQualifiedName.Owner != OracleDatabaseModelBase.SchemaPublic)
+					validObjectReference.SchemaObject != null && !String.Equals(validObjectReference.SchemaObject.FullyQualifiedName.Owner, OracleDatabaseModelBase.SchemaPublic))
 				{
 					qualificationBuilder.Append(validObjectReference.SchemaObject.Owner.ToSimpleIdentifier());
 					qualificationBuilder.Append(".");

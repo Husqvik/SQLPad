@@ -1,6 +1,7 @@
 using System;
 using System.Data;
 using System.Globalization;
+using SqlPad.Oracle.DatabaseConnection;
 #if ORACLE_MANAGED_DATA_ACCESS_CLIENT
 using Oracle.ManagedDataAccess.Client;
 #else
@@ -27,7 +28,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public override void InitializeCommand(OracleCommand command)
 		{
-			command.CommandText = DatabaseCommands.SelectCursorExecutionStatisticsCommandText;
+			command.CommandText = OracleDatabaseCommands.SelectCursorExecutionStatisticsCommandText;
 			command.AddSimpleParameter("SQL_ID", _sqlId);
 			command.AddSimpleParameter("CHILD_NUMBER", _childNumber);
 		}

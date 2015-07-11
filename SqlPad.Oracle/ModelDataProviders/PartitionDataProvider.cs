@@ -2,6 +2,7 @@ using System;
 using System.Data;
 using System.Globalization;
 using Oracle.DataAccess.Client;
+using SqlPad.Oracle.DatabaseConnection;
 using SqlPad.Oracle.DataDictionary;
 using SqlPad.Oracle.ToolTips;
 
@@ -84,7 +85,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 			public override void InitializeCommand(OracleCommand command)
 			{
-				command.CommandText = BuildCommandText(DatabaseCommands.SelectTablePartitionDetailsCommandTextBase, _includeInMemorySettings);
+				command.CommandText = BuildCommandText(OracleDatabaseCommands.SelectTablePartitionDetailsCommandTextBase, _includeInMemorySettings);
 				PartitionDataProvider.InitializeCommand(command, _partitionOwner);
 
 				command.AddSimpleParameter("PARTITION_NAME", _partitionDataModel == null ? null : _partitionDataModel.Name);
@@ -142,7 +143,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 			public override void InitializeCommand(OracleCommand command)
 			{
-				command.CommandText = BuildCommandText(DatabaseCommands.SelectTableSubPartitionsDetailsCommandTextBase, _includeInMemorySettings);
+				command.CommandText = BuildCommandText(OracleDatabaseCommands.SelectTableSubPartitionsDetailsCommandTextBase, _includeInMemorySettings);
 				PartitionDataProvider.InitializeCommand(command, _subPartitionOwner);
 
 				command.AddSimpleParameter("PARTITION_NAME", _partitionDataModel == null ? null : _partitionDataModel.Name);

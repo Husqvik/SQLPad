@@ -18,7 +18,7 @@ using Oracle.DataAccess.Client;
 using Oracle.DataAccess.Types;
 #endif
 
-namespace SqlPad.Oracle
+namespace SqlPad.Oracle.DatabaseConnection
 {
 	public class OracleConnectionAdapter : OracleConnectionAdapterBase
 	{
@@ -485,7 +485,7 @@ namespace SqlPad.Oracle
 			{
 				await command.SetSchema(_currentSchema, cancellationToken);
 
-				command.CommandText = DatabaseCommands.SelectCurrentSessionId;
+				command.CommandText = OracleDatabaseCommands.SelectCurrentSessionId;
 				_userSessionId = Convert.ToInt32(await command.ExecuteScalarAsynchronous(cancellationToken));
 
 				var startupScript = OracleConfiguration.Configuration.StartupScript;
@@ -510,7 +510,7 @@ namespace SqlPad.Oracle
 					}
 				}
 
-				command.CommandText = DatabaseCommands.SelectTraceFileFullName;
+				command.CommandText = OracleDatabaseCommands.SelectTraceFileFullName;
 
 				try
 				{
@@ -682,7 +682,7 @@ namespace SqlPad.Oracle
 
 			using (var command = _userConnection.CreateCommand())
 			{
-				command.CommandText = DatabaseCommands.FetchDatabaseOutputCommandText;
+				command.CommandText = OracleDatabaseCommands.FetchDatabaseOutputCommandText;
 
 				using (var parameter = command.CreateParameter())
 				{
@@ -705,7 +705,7 @@ namespace SqlPad.Oracle
 				using (var command = connection.CreateCommand())
 				{
 					command.BindByName = true;
-					command.CommandText = DatabaseCommands.SelectExecutionPlanIdentifiersCommandText;
+					command.CommandText = OracleDatabaseCommands.SelectExecutionPlanIdentifiersCommandText;
 					command.AddSimpleParameter("SID", _userSessionId);
 
 					try
@@ -749,7 +749,7 @@ namespace SqlPad.Oracle
 		{
 			using (var command = _userConnection.CreateCommand())
 			{
-				command.CommandText = DatabaseCommands.SelectLocalTransactionIdCommandText;
+				command.CommandText = OracleDatabaseCommands.SelectLocalTransactionIdCommandText;
 				_userTransactionId = OracleReaderValueConvert.ToString(await command.ExecuteScalarAsynchronous(cancellationToken));
 				_userTransactionIsolationLevel = String.IsNullOrEmpty(_userTransactionId) ? IsolationLevel.Unspecified : IsolationLevel.ReadCommitted;
 			}

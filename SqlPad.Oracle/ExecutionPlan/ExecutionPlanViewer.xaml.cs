@@ -10,6 +10,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Microsoft.Win32;
+using SqlPad.Oracle.DatabaseConnection;
 
 namespace SqlPad.Oracle.ExecutionPlan
 {

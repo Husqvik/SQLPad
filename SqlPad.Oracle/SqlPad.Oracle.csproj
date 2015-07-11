@@ -109,7 +109,7 @@
     <Compile Include="Commands\AddAliasCommand.cs" />
     <Compile Include="Commands\OracleCommandFactory.cs" />
     <Compile Include="DataDictionary\OracleReferenceBuilder.cs" />
-    <Compile Include="OracleTraceEvent.cs" />
+    <Compile Include="DatabaseConnection\OracleTraceEvent.cs" />
     <Compile Include="Documentation.cs">
       <DependentUpon>Documentation.xsd</DependentUpon>
     </Compile>
@@ -127,25 +127,25 @@
     <Compile Include="OracleConfiguration.cs">
       <DependentUpon>OracleConfiguration.xsd</DependentUpon>
     </Compile>
-    <Compile Include="DatabaseCommands.cs" />
-    <Compile Include="DataDictionaryMapper.cs" />
+    <Compile Include="DatabaseConnection\OracleDatabaseCommands.cs" />
+    <Compile Include="DatabaseConnection\OracleDataDictionaryMapper.cs" />
     <Compile Include="ModelDataProviders\DataModelUpdater.cs" />
-    <Compile Include="OracleClobValue.cs" />
+    <Compile Include="DatabaseConnection\OracleClobValue.cs" />
     <Compile Include="OracleCodeCompletionItem.cs" />
     <Compile Include="OracleCodeCompletionProvider.cs" />
     <Compile Include="OracleCodeCompletionType.cs" />
     <Compile Include="DataDictionary\OracleColumn.cs" />
-    <Compile Include="OracleCommandExtensions.cs" />
+    <Compile Include="DatabaseConnection\OracleCommandExtensions.cs" />
     <Compile Include="DataDictionary\OracleConstraint.cs" />
-    <Compile Include="OracleConnectionAdapterBase.cs" />
-    <Compile Include="OracleCustomTypeGenerator.cs" />
+    <Compile Include="DatabaseConnection\OracleConnectionAdapterBase.cs" />
+    <Compile Include="DatabaseConnection\OracleCustomTypeGenerator.cs" />
     <Compile Include="DataDictionary\OracleDatabaseLink.cs" />
-    <Compile Include="OracleConnectionAdapter.cs" />
-    <Compile Include="OracleDatabaseModelBase.cs" />
+    <Compile Include="DatabaseConnection\OracleConnectionAdapter.cs" />
+    <Compile Include="DatabaseConnection\OracleDatabaseModelBase.cs" />
     <Compile Include="DataDictionary\OracleDataDictionary.cs" />
     <Compile Include="OracleDataExportConverter.cs" />
     <Compile Include="DataDictionary\OracleDataType.cs" />
-    <Compile Include="OracleDebugger.cs" />
+    <Compile Include="DatabaseConnection\OracleDebugger.cs" />
     <Compile Include="OracleFoldingSectionProvider.cs" />
     <Compile Include="OracleFunctionMatcher.cs" />
     <Compile Include="OracleHelpProvider.cs" />
@@ -160,7 +160,7 @@
     <Compile Include="SemanticModel\OracleProgramReference.cs" />
     <Compile Include="SemanticModel\OracleColumnReference.cs" />
     <Compile Include="OracleContextActionProvider.cs" />
-    <Compile Include="OracleDatabaseModel.cs" />
+    <Compile Include="DatabaseConnection\OracleDatabaseModel.cs" />
     <Compile Include="OracleExtensions.cs" />
     <Compile Include="OracleGramarDescription.cs">
       <DependentUpon>OracleGramarDescription.tt</DependentUpon>

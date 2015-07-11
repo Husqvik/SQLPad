@@ -2,6 +2,7 @@
 using System.Linq;
 using NUnit.Framework;
 using Shouldly;
+using SqlPad.Oracle.DatabaseConnection;
 using SqlPad.Oracle.SemanticModel;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;

@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using SqlPad.Oracle.DatabaseConnection;
 using SqlPad.Oracle.DataDictionary;
 using SqlPad.Oracle.SemanticModel;
 using SqlPad.Oracle.ToolTips;

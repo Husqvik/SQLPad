@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using SqlPad.Oracle.DatabaseConnection;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 

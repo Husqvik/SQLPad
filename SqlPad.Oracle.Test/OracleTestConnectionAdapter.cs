@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using SqlPad.Oracle.DatabaseConnection;
 using SqlPad.Oracle.ExecutionPlan;
 using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
 

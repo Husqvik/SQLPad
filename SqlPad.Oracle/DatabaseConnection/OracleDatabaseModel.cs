@@ -20,7 +20,7 @@ using SqlPad.Oracle.ModelDataProviders;
 using SqlPad.Oracle.ToolTips;
 using Timer = System.Timers.Timer;
 
-namespace SqlPad.Oracle
+namespace SqlPad.Oracle.DatabaseConnection
 {
 	public class OracleDatabaseModel : OracleDatabaseModelBase
 	{
@@ -43,7 +43,7 @@ namespace SqlPad.Oracle
 		private HashSet<string> _schemas = new HashSet<string>();
 		private HashSet<string> _allSchemas = new HashSet<string>();
 		private string _currentSchema;
-		private readonly DataDictionaryMapper _dataDictionaryMapper;
+		private readonly OracleDataDictionaryMapper _dataDictionaryMapper;
 		private OracleDataDictionary _dataDictionary = OracleDataDictionary.EmptyDictionary;
 
 		//private readonly OracleCustomTypeGenerator _customTypeGenerator;
@@ -73,7 +73,7 @@ namespace SqlPad.Oracle
 				}
 			}
 
-			_dataDictionaryMapper = new DataDictionaryMapper(this);
+			_dataDictionaryMapper = new OracleDataDictionaryMapper(this);
 
 			InternalRefreshStarted += InternalRefreshStartedHandler;
 			InternalRefreshCompleted += InternalRefreshCompletedHandler;
@@ -566,7 +566,7 @@ namespace SqlPad.Oracle
 
 					command.CommandText = getCommandTextFunction(Version);
 					command.BindByName = true;
-					command.InitialLONGFetchSize = DataDictionaryMapper.LongFetchSize;
+					command.InitialLONGFetchSize = OracleDataDictionaryMapper.LongFetchSize;
 
 					connection.ModuleName = _moduleName;
 					connection.ActionName = "Fetch data dictionary metadata";
@@ -701,8 +701,8 @@ namespace SqlPad.Oracle
 
 				var databaseLinks = _dataDictionaryMapper.GetDatabaseLinks();
 				var characterSets = _dataDictionaryMapper.GetCharacterSets();
-				var statisticsKeys = SafeFetchDictionary(_dataDictionaryMapper.GetStatisticsKeys, "DataDictionaryMapper.GetStatisticsKeys failed: ");
-				var systemParameters = SafeFetchDictionary(_dataDictionaryMapper.GetSystemParameters, "DataDictionaryMapper.GetSystemParameters failed: ");
+				var statisticsKeys = SafeFetchDictionary(_dataDictionaryMapper.GetStatisticsKeys, "OracleDataDictionaryMapper.GetStatisticsKeys failed: ");
+				var systemParameters = SafeFetchDictionary(_dataDictionaryMapper.GetSystemParameters, "OracleDataDictionaryMapper.GetSystemParameters failed: ");
 
 				_dataDictionary = new OracleDataDictionary(allObjects, databaseLinks, nonSchemaBuiltInFunctionMetadata, characterSets, statisticsKeys, systemParameters, lastRefresh);
 
@@ -841,7 +841,7 @@ namespace SqlPad.Oracle
 		private void LoadSchemaNames()
 		{
 			_schemas = new HashSet<string>(OracleSchemaResolver.ResolveSchemas(this));
-			_allSchemas = new HashSet<string>(_schemas.Select(DataDictionaryMapper.QualifyStringObject)) { SchemaPublic };
+			_allSchemas = new HashSet<string>(_schemas.Select(OracleDataDictionaryMapper.QualifyStringObject)) { SchemaPublic };
 		}
 
 		private struct RefreshModel

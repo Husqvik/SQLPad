@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using SqlPad.Oracle.DatabaseConnection;
 using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
 
 namespace SqlPad.Oracle.DataDictionary

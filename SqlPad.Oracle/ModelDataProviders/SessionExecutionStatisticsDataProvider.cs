@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using SqlPad.Oracle.DatabaseConnection;
 #if ORACLE_MANAGED_DATA_ACCESS_CLIENT
 using Oracle.ManagedDataAccess.Client;
 #else
@@ -37,7 +38,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 			public override void InitializeCommand(OracleCommand command)
 			{
-				command.CommandText = DatabaseCommands.SelectSessionsStatisticsCommandText;
+				command.CommandText = OracleDatabaseCommands.SelectSessionsStatisticsCommandText;
 				command.AddSimpleParameter("SID", DataModel.SessionId);
 
 				DataModel.StatisticsRecords.Clear();

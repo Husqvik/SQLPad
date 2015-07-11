@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using SqlPad.Oracle.ExecutionPlan;
 
-namespace SqlPad.Oracle
+namespace SqlPad.Oracle.DatabaseConnection
 {
 	public abstract class OracleConnectionAdapterBase : IConnectionAdapter
 	{

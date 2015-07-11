@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using SqlPad.Commands;
+using SqlPad.Oracle.DatabaseConnection;
 using SqlPad.Oracle.DataDictionary;
 using SqlPad.Oracle.SemanticModel;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;

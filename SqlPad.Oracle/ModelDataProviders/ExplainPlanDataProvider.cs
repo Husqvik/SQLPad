@@ -1,6 +1,7 @@
 using System;
 using System.Data;
 using System.Xml.Linq;
+using SqlPad.Oracle.DatabaseConnection;
 using SqlPad.Oracle.DataDictionary;
 #if ORACLE_MANAGED_DATA_ACCESS_CLIENT
 using Oracle.ManagedDataAccess.Client;
@@ -52,7 +53,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 			public override void InitializeCommand(OracleCommand command)
 			{
-				command.CommandText = String.Format(DatabaseCommands.SelectExplainPlanCommandText, DataModel.TargetTableName);
+				command.CommandText = String.Format(OracleDatabaseCommands.SelectExplainPlanCommandText, DataModel.TargetTableName);
 				command.AddSimpleParameter("STATEMENT_ID", DataModel.ExecutionPlanKey);
 			}
 

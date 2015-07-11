@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows.Input;
 using SqlPad.Commands;
 using SqlPad.Oracle.Commands;
+using SqlPad.Oracle.DatabaseConnection;
 using SqlPad.Oracle.SemanticModel;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 

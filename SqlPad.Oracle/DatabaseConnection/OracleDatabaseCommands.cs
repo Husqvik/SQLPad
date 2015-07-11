@@ -2,9 +2,9 @@
 using System.Linq;
 using SqlPad.Oracle.DataDictionary;
 
-namespace SqlPad.Oracle
+namespace SqlPad.Oracle.DatabaseConnection
 {
-	internal static class DatabaseCommands
+	internal static class OracleDatabaseCommands
 	{
 		public const string SelectBuiltInFunctionMetadataCommandText =
 @"WITH PROCEDURES AS (

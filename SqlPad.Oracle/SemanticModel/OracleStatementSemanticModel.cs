@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using SqlPad.Oracle.DatabaseConnection;
 using SqlPad.Oracle.DataDictionary;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;

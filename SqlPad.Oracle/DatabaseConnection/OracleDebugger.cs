@@ -12,7 +12,7 @@ using Oracle.DataAccess.Types;
 
 using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
 
-namespace SqlPad.Oracle
+namespace SqlPad.Oracle.DatabaseConnection
 {
 	public class OracleDebuggerSession : IDebuggerSession, IDisposable
 	{
@@ -33,7 +33,7 @@ namespace SqlPad.Oracle
 
 		public void Start()
 		{
-			_debuggedSessionCommand.CommandText = DatabaseCommands.StartDebuggee;
+			_debuggedSessionCommand.CommandText = OracleDatabaseCommands.StartDebuggee;
 			_debuggedSessionCommand.AddSimpleParameter("DEBUG_SESSION_ID", null, TerminalValues.Varchar2, 12);
 			var debuggerSessionIdParameter = _debuggedSessionCommand.Parameters[0];
 
@@ -80,7 +80,7 @@ namespace SqlPad.Oracle
 
 		private object GetValue(string name)
 		{
-			_debuggerSessionCommand.CommandText = DatabaseCommands.DebuggerGetValue;
+			_debuggerSessionCommand.CommandText = OracleDatabaseCommands.DebuggerGetValue;
 			_debuggerSessionCommand.Parameters.Clear();
 			_debuggerSessionCommand.AddSimpleParameter("RESULT", null, TerminalValues.Number);
 			_debuggerSessionCommand.AddSimpleParameter("NAME", name, TerminalValues.Varchar2);
@@ -105,7 +105,7 @@ END;";
 
 		private async Task<OracleRuntimeInfo> ContinueDebugger(OracleDebugBreakFlags breakFlags, CancellationToken cancellationToken)
 		{
-			_debuggerSessionCommand.CommandText = DatabaseCommands.ContinueDebugger;
+			_debuggerSessionCommand.CommandText = OracleDatabaseCommands.ContinueDebugger;
 			_debuggerSessionCommand.Parameters.Clear();
 			_debuggerSessionCommand.AddSimpleParameter("BREAK_FLAGS", (int)breakFlags, TerminalValues.Number);
 			AddDebugParameters(_debuggerSessionCommand);
@@ -116,7 +116,7 @@ END;";
 
 		private async Task<OracleRuntimeInfo> StartDebugger(CancellationToken cancellationToken)
 		{
-			_debuggerSessionCommand.CommandText = DatabaseCommands.StartDebugger;
+			_debuggerSessionCommand.CommandText = OracleDatabaseCommands.StartDebugger;
 			_debuggerSessionCommand.AddSimpleParameter("DEBUG_SESSION_ID", _debuggerSessionId);
 			AddDebugParameters(_debuggerSessionCommand);
 
@@ -203,7 +203,7 @@ END;";
 
 		public void Detach()
 		{
-			_debuggerSessionCommand.CommandText = DatabaseCommands.DetachDebugger;
+			_debuggerSessionCommand.CommandText = OracleDatabaseCommands.DetachDebugger;
 			_debuggerSessionCommand.Parameters.Clear();
 			_debuggerSessionCommand.ExecuteNonQuery();
 		}

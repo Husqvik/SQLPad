@@ -1,5 +1,6 @@
 using System;
 using System.Data;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 #if ORACLE_MANAGED_DATA_ACCESS_CLIENT
@@ -10,7 +11,7 @@ using Oracle.DataAccess.Client;
 
 using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
 
-namespace SqlPad.Oracle
+namespace SqlPad.Oracle.DatabaseConnection
 {
 	public static class OracleCommandExtensions
 	{
@@ -157,7 +158,10 @@ namespace SqlPad.Oracle
 			{
 				command.Cancel();
 			}
-			catch { }
+			catch (Exception e)
+			{
+				Trace.WriteLine(String.Format("Command cancellation failed: {0}", e));
+			}
 		}
 	}
 

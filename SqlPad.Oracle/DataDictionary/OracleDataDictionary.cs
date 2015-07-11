@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using ProtoBuf.Meta;
+using SqlPad.Oracle.DatabaseConnection;
 
 namespace SqlPad.Oracle.DataDictionary
 {

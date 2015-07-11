@@ -14,7 +14,7 @@ using Oracle.DataAccess.Types;
 
 using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
 
-namespace SqlPad.Oracle
+namespace SqlPad.Oracle.DatabaseConnection
 {
 	public abstract class OracleLargeTextValue : ILargeTextValue
 	{
