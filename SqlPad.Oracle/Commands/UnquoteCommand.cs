@@ -127,7 +127,7 @@ namespace SqlPad.Oracle.Commands
 
 		private IEnumerable<OracleDataObjectReference> GetQuotedObjects(Func<OracleDataObjectReference, bool> objectFilter)
 		{
-			return SemanticModel.AllReferenceContainers.SelectMany(c => c.ObjectReferences).Where(o => o.ObjectNode != null && o.Type == ReferenceType.SchemaObject && IsUnquotable(o.ObjectNode.Token.Value) && objectFilter(o));
+			return SemanticModel.AllReferenceContainers.SelectMany(c => c.ObjectReferences).Where(o => o.ObjectNode != null && o.Type == ReferenceType.SchemaObject && IsUnquotable((o.AliasNode ?? o.ObjectNode).Token.Value) && objectFilter(o));
 		}
 
 		private static bool IsUnquotable(string value)

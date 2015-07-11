@@ -1601,6 +1601,15 @@ SELECT * FROM DUAL";
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestUnquoteCommandWithAsteriskAndexistingObjectAlias()
+		{
+			const string statementText = @"SELECT * FROM ""RemoteTable""@HQ_PDB_LOOPBACK REMOTE_TABLE";
+			_editor.Text = statementText;
+
+			CanExecuteCommand(OracleCommands.Unquote).ShouldBe(false);
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestConvertSingleBindVariableToLiteralCommand()
 		{
 			const string statementText = @"SELECT :1, :1 FROM DUAL";
