@@ -104,7 +104,7 @@ namespace SqlPad
 
 		public IDatabaseModel DatabaseModel { get; private set; }
 
-		public ICollection<OutputViewer> OutputViewers { get { return _outputViewers; } }
+		public IReadOnlyList<OutputViewer> OutputViewers { get { return _outputViewers; } }
 
 		private OutputViewer ActiveOutputViewer
 		{

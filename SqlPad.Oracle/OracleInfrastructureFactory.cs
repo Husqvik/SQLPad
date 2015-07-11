@@ -2,6 +2,7 @@
 using SqlPad.Commands;
 using SqlPad.Oracle.Commands;
 using SqlPad.Oracle.ExecutionPlan;
+using SqlPad.Oracle.DebugTrace;
 
 namespace SqlPad.Oracle
 {
@@ -80,6 +81,11 @@ namespace SqlPad.Oracle
 		public IExecutionPlanViewer CreateExecutionPlanViewer(IDatabaseModel databaseModel)
 		{
 			return new ExecutionPlanViewer((OracleDatabaseModelBase)databaseModel);
+		}
+
+		public ITraceViewer CreateTraceViewer(IDatabaseModel databaseModel)
+		{
+			return new OracleTraceViewer((OracleDatabaseModelBase)databaseModel);
 		}
 
 		public IHelpProvider CreateHelpProvider()

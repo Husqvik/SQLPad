@@ -185,6 +185,8 @@ namespace SqlPad
 		public event EventHandler<CompilationErrorArgs> CompilationError;
 
 		public IExecutionPlanViewer ExecutionPlanViewer { get; private set; }
+		
+		public ITraceViewer TraceViewer { get; private set; }
 
 		private bool IsCancellationRequested
 		{
@@ -213,11 +215,11 @@ namespace SqlPad
 			}
 		}
 
-		public ICollection<object[]> ResultRowItems { get { return _resultRows; } }
+		public IReadOnlyList<object[]> ResultRowItems { get { return _resultRows; } }
 
-		public ICollection<SessionExecutionStatisticsRecord> SessionExecutionStatistics { get { return _sessionExecutionStatistics; } }
+		public IReadOnlyList<SessionExecutionStatisticsRecord> SessionExecutionStatistics { get { return _sessionExecutionStatistics; } }
 
-		public ICollection<CompilationError> CompilationErrors { get { return _compilationErrors; } }
+		public IReadOnlyList<CompilationError> CompilationErrors { get { return _compilationErrors; } }
 
 		public OutputViewer(DocumentPage documentPage)
 		{
@@ -239,6 +241,9 @@ namespace SqlPad
 
 			ExecutionPlanViewer = _documentPage.InfrastructureFactory.CreateExecutionPlanViewer(_documentPage.DatabaseModel);
 			TabExecutionPlan.Content = ExecutionPlanViewer.Control;
+
+			TraceViewer = _documentPage.InfrastructureFactory.CreateTraceViewer(_documentPage.DatabaseModel);
+			TabTrace.Content = TraceViewer.Control;
 		}
 
 		private void SetUpSessionExecutionStatisticsView()

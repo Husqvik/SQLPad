@@ -37,6 +37,8 @@ namespace SqlPad
 		INavigationService CreateNavigationService();
 
 		IExecutionPlanViewer CreateExecutionPlanViewer(IDatabaseModel databaseModel);
+		
+		ITraceViewer CreateTraceViewer(IDatabaseModel databaseModel);
 
 		IHelpProvider CreateHelpProvider();
 	}
@@ -72,6 +74,11 @@ namespace SqlPad
 
 		Task ShowActualAsync(IConnectionAdapter connectionAdapter, CancellationToken cancellationToken);
 
+		Control Control { get; }
+	}
+
+	public interface ITraceViewer
+	{
 		Control Control { get; }
 	}
 }

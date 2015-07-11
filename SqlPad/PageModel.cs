@@ -159,7 +159,7 @@ namespace SqlPad
 			}
 		}
 
-		public ObservableCollection<string> Schemas { get { return _schemas; } }
+		public IReadOnlyList<string> Schemas { get { return _schemas; } }
 
 		public string CurrentSchema
 		{

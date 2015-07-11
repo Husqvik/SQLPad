@@ -91,7 +91,7 @@
 					<RoutedCommand x:Key="SelectItemCommand" />
 				</ListView.Resources>
 				<ListView.CommandBindings>
-					<CommandBinding Command="{StaticResource SelectItemCommand}" Executed="SelectItemCommandExecutedHandler" CanExecute="SelectItemCommandCanExecuteHandler" />
+					<CommandBinding Command="{StaticResource SelectItemCommand}" Executed="SelectItemCommandExecutedHandler" />
 				</ListView.CommandBindings>
 				<ListView.InputBindings>
 					<KeyBinding Key="Space" Command="{StaticResource SelectItemCommand}" />

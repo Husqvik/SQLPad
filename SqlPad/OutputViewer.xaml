@@ -7,7 +7,7 @@
              xmlns:commands="clr-namespace:SqlPad.Commands"
              xmlns:globalization="clr-namespace:System.Globalization;assembly=mscorlib"
              mc:Ignorable="d" 
-             d:DesignHeight="140" d:DesignWidth="360"
+             d:DesignHeight="140" d:DesignWidth="384"
 			 MouseMove="OutputViewerMouseMoveHandler"
 			 DataContext="{Binding RelativeSource={RelativeSource Self}}">
 	<UserControl.Resources>
@@ -241,6 +241,7 @@
 				</DataGrid>
 			</TabItem>
 			<TabItem Header="E_xecution plan" x:Name="TabExecutionPlan" />
+			<TabItem Header="_Trace" x:Name="TabTrace" Visibility="Collapsed" />
 		</TabControl>
 	</DockPanel>
 </UserControl>

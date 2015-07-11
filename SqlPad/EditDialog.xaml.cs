@@ -55,11 +55,6 @@ namespace SqlPad
 
 		public CommandSettingsModel Settings { get { return _model; } }
 
-		private void SelectItemCommandCanExecuteHandler(object sender, CanExecuteRoutedEventArgs e)
-		{
-			e.CanExecute = true;
-		}
-
 		private void SelectItemCommandExecutedHandler(object sender, ExecutedRoutedEventArgs e)
 		{
 			bool? newValue = null;

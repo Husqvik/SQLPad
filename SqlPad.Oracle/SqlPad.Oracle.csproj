@@ -239,6 +239,9 @@
     <Compile Include="ToolTips\ToolTipObject.xaml.cs">
       <DependentUpon>ToolTipObject.xaml</DependentUpon>
     </Compile>
+    <Compile Include="DebugTrace\OracleTraceViewer.xaml.cs">
+      <DependentUpon>OracleTraceViewer.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="OracleConfiguration.Extensions.cs" />
@@ -364,6 +367,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="ToolTips\ToolTipObject.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="DebugTrace\OracleTraceViewer.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
