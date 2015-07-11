@@ -109,6 +109,7 @@
     <Compile Include="Commands\AddAliasCommand.cs" />
     <Compile Include="Commands\OracleCommandFactory.cs" />
     <Compile Include="DataDictionary\OracleReferenceBuilder.cs" />
+    <Compile Include="OracleTraceEvent.cs" />
     <Compile Include="Documentation.cs">
       <DependentUpon>Documentation.xsd</DependentUpon>
     </Compile>

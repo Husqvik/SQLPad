@@ -20,13 +20,13 @@
 									<ColumnDefinition Width="Auto" SharedSizeGroup="EventLevel" />
 								</Grid.ColumnDefinitions>
 
-								<TextBlock Grid.Column="0" Text="{Binding EventCode}" VerticalAlignment="Center" Margin="0,0,6,0" />
-								<TextBlock Grid.Column="1" Text="{Binding Title}" VerticalAlignment="Center" Margin="0,0,16,0" />
-								<ComboBox Grid.Column="2" ItemsSource="{Binding SupportedLevels}" SelectedValue="{Binding Level}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Right">
+								<TextBlock Grid.Column="0" Text="{Binding TraceEvent.EventCode}" VerticalAlignment="Center" Margin="0,0,6,0" />
+								<TextBlock Grid.Column="1" Text="{Binding TraceEvent.Title}" VerticalAlignment="Center" Margin="0,0,16,0" />
+								<ComboBox Grid.Column="2" ItemsSource="{Binding TraceEvent.SupportedLevels}" SelectedValue="{Binding TraceEvent.Level}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Right">
 									<ComboBox.Style>
 										<Style TargetType="ComboBox">
 											<Style.Triggers>
-												<DataTrigger Binding="{Binding SupportedLevels}" Value="{x:Null}">
+												<DataTrigger Binding="{Binding TraceEvent.SupportedLevels}" Value="{x:Null}">
 													<Setter Property="Visibility" Value="Collapsed" />
 												</DataTrigger>
 											</Style.Triggers>
@@ -54,5 +54,21 @@
 				<KeyBinding Key="Space" Command="{StaticResource SelectItemCommand}" />
 			</ListView.InputBindings>
 		</ListView>
+
+		<Button x:Name="ButtonTrace" Content="_Start" HorizontalAlignment="Left" Width="60" Click="TraceBottonClickHandler">
+			<Button.Style>
+				<Style>
+					<Style.Triggers>
+						<DataTrigger Binding="{Binding IsTracing}" Value="True">
+							<Setter Property="Button.Content" Value="_Stop" />
+						</DataTrigger>
+					</Style.Triggers>
+				</Style>
+			</Button.Style>
+		</Button>
+		<TextBlock Text="{Binding IsTracing}" />
+		<TextBlock>
+			<Hyperlink Click="TraceFileNameHyperlinkClickHandler"><Run Text="{Binding TraceFileName}"/></Hyperlink>
+		</TextBlock>
 	</StackPanel>
 </UserControl>

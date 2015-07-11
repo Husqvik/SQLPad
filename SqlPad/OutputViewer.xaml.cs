@@ -242,7 +242,7 @@ namespace SqlPad
 			ExecutionPlanViewer = _documentPage.InfrastructureFactory.CreateExecutionPlanViewer(_documentPage.DatabaseModel);
 			TabExecutionPlan.Content = ExecutionPlanViewer.Control;
 
-			TraceViewer = _documentPage.InfrastructureFactory.CreateTraceViewer(_documentPage.DatabaseModel);
+			TraceViewer = _documentPage.InfrastructureFactory.CreateTraceViewer(_connectionAdapter);
 			TabTrace.Content = TraceViewer.Control;
 		}
 

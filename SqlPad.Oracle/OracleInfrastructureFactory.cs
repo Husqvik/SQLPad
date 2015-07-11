@@ -83,9 +83,9 @@ namespace SqlPad.Oracle
 			return new ExecutionPlanViewer((OracleDatabaseModelBase)databaseModel);
 		}
 
-		public ITraceViewer CreateTraceViewer(IDatabaseModel databaseModel)
+		public ITraceViewer CreateTraceViewer(IConnectionAdapter connectionAdapter)
 		{
-			return new OracleTraceViewer((OracleDatabaseModelBase)databaseModel);
+			return new OracleTraceViewer((OracleConnectionAdapterBase)connectionAdapter);
 		}
 
 		public IHelpProvider CreateHelpProvider()

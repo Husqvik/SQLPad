@@ -1,106 +1,96 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading;
+using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Input;
 
 namespace SqlPad.Oracle.DebugTrace
 {
 	public partial class OracleTraceViewer : ITraceViewer
 	{
-		private readonly OracleDatabaseModelBase _databaseModel;
+		public static readonly DependencyProperty IsTracingProperty = DependencyProperty.Register("IsTracing", typeof(bool), typeof(OracleTraceViewer), new FrameworkPropertyMetadata(false));
+		public static readonly DependencyProperty TraceFileNameProperty = DependencyProperty.Register("TraceFileName", typeof(string), typeof(OracleTraceViewer), new FrameworkPropertyMetadata(String.Empty));
 
-		private readonly OracleTraceEvent[] _traceEvents =
+		[Bindable(true)]
+		public bool IsTracing
 		{
-			new OracleTraceEvent(10046, "Extended SQL trace", TraceEventScope.Session, "'10046 trace name context forever, level {0}'", "'10046 trace name context off'", new [] { 1, 4, 8, 12 }) { Level = 12 },
-			new OracleTraceEvent(10053, "Cost based optimizer", TraceEventScope.Session, "'10053 trace name context forever, level {0}'", "'10053 trace name context off'", new [] { 1, 2 }) { Level = 1 }
-		};
+			get { return (bool)GetValue(IsTracingProperty); }
+			private set { SetValue(IsTracingProperty, value); }
+		}
+
+		[Bindable(true)]
+		public string TraceFileName
+		{
+			get { return (string)GetValue(TraceFileNameProperty); }
+			private set { SetValue(TraceFileNameProperty, value); }
+		}
+
+		private readonly OracleConnectionAdapterBase _connectionAdapter;
+
+		private readonly OracleTraceEventModel[] _traceEvents = OracleTraceEvent.AllTraceEvents.Select(e => new OracleTraceEventModel { TraceEvent = e }).ToArray();
 
 		public Control Control { get { return this; } }
 
-		public IReadOnlyCollection<OracleTraceEvent> TraceEvents { get { return _traceEvents; } }
+		public IReadOnlyCollection<OracleTraceEventModel> TraceEvents { get { return _traceEvents; } }
 
-		public OracleTraceViewer(OracleDatabaseModelBase databaseModel)
+		public OracleTraceViewer(OracleConnectionAdapterBase connectionAdapter)
 		{
 			InitializeComponent();
 
-			_databaseModel = databaseModel;
+			_connectionAdapter = connectionAdapter;
 		}
 
 		private void SelectItemCommandExecutedHandler(object sender, ExecutedRoutedEventArgs e)
 		{
-			
-		}
-	}
-
-	public class OracleTraceEvent : ModelBase
-	{
-		private int _level;
-		private readonly string _enableEventTraceParameter;
-		private readonly string _disableEventTraceParameter;
-		
-		public int EventCode { get; private set; }
-		
-		public string Title { get; private set; }
-		
-		public TraceEventScope Scope { get; private set; }
-
-		public int Level
-		{
-			get { return _level; }
-			set
+			bool? newValue = null;
+			foreach (OracleTraceEventModel traceEvent in ((ListView)sender).SelectedItems)
 			{
-				if (SupportedLevels == null)
+				if (!newValue.HasValue)
 				{
-					throw new InvalidOperationException(String.Format("Event trace '{0}' does not support level option. ", Title));
+					newValue = !traceEvent.IsEnabled;
 				}
 
-				if (!SupportedLevels.Contains(value))
-				{
-					throw new ArgumentException(String.Format("Level {0} is not supported. Supported levels are: {1} ", value, String.Join(", ", SupportedLevels)), "value");
-				}
-
-				UpdateValueAndRaisePropertyChanged(ref _level, value);
+				traceEvent.IsEnabled = newValue.Value;
 			}
 		}
 
+		private async void TraceBottonClickHandler(object sender, RoutedEventArgs args)
+		{
+			try
+			{
+				if (IsTracing)
+				{
+					await _connectionAdapter.StopTraceEvents(CancellationToken.None);
+				}
+				else
+				{
+					await _connectionAdapter.ActivateTraceEvents(_traceEvents.Where(e => e.IsEnabled).Select(e => e.TraceEvent), CancellationToken.None);
+				}
+
+				IsTracing = !IsTracing;
+			}
+			catch (Exception e)
+			{
+				Messages.ShowError(e.Message);
+			}
+
+			TraceFileName = _connectionAdapter.TraceFileName;
+		}
+
+		private void TraceFileNameHyperlinkClickHandler(object sender, RoutedEventArgs e)
+		{
+			Process.Start("explorer.exe", "/select," + TraceFileName);
+		}
+	}
+
+	public class OracleTraceEventModel
+	{
 		public bool IsEnabled { get; set; }
-
-		public IReadOnlyList<int> SupportedLevels { get; private set; }
-
-		public OracleTraceEvent(int eventCode, string title, TraceEventScope scope, string enableEventTraceParameter, string disableEventTraceParameter, IReadOnlyList<int> supportedLevels)
-		{
-			EventCode = eventCode;
-			Title = title;
-			Scope = scope;
-			_enableEventTraceParameter = enableEventTraceParameter;
-			_disableEventTraceParameter = disableEventTraceParameter;
-			SupportedLevels = supportedLevels;
-		}
-
-		public string CommandTextEnable
-		{
-			get
-			{
-				var parameter = SupportedLevels == null ? _enableEventTraceParameter : String.Format(_enableEventTraceParameter, Level);
-				return BuildCommandText(parameter);
-			}
-		}
-
-		public string CommandTextDisable
-		{
-			get { return BuildCommandText(_disableEventTraceParameter); }
-		}
-
-		private string BuildCommandText(string parameter)
-		{
-			return String.Format("ALTER {0} SET EVENTS {1}", Scope.ToString().ToUpperInvariant(), parameter);
-		}
-	}
-
-	public enum TraceEventScope
-	{
-		Session,
-		System
+		public OracleTraceEvent TraceEvent { get; set; }
 	}
 }

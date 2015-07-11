@@ -38,7 +38,7 @@ namespace SqlPad
 
 		IExecutionPlanViewer CreateExecutionPlanViewer(IDatabaseModel databaseModel);
 		
-		ITraceViewer CreateTraceViewer(IDatabaseModel databaseModel);
+		ITraceViewer CreateTraceViewer(IConnectionAdapter connectionAdapter);
 
 		IHelpProvider CreateHelpProvider();
 	}

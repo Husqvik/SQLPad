@@ -32,5 +32,11 @@ namespace SqlPad.Oracle
 		public abstract void CloseActiveReader();
 
 		public abstract Task<ExecutionStatisticsPlanItemCollection> GetCursorExecutionStatisticsAsync(CancellationToken cancellationToken);
+
+		public abstract Task ActivateTraceEvents(IEnumerable<OracleTraceEvent> traceEvents, CancellationToken cancellationToken);
+
+		public abstract Task StopTraceEvents(CancellationToken cancellationToken);
+
+		public abstract string TraceFileName { get; }
 	}
 }

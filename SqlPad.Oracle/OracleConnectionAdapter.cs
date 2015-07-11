@@ -5,6 +5,7 @@ using System.Data;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using SqlPad.Oracle.ExecutionPlan;
@@ -27,6 +28,7 @@ namespace SqlPad.Oracle
 
 		private readonly ConnectionStringSettings _connectionString;
 		private readonly OracleConnectionStringBuilder _oracleConnectionString;
+		private readonly List<OracleTraceEvent> _activeTraceEvents = new List<OracleTraceEvent>();
 
 		private bool _isExecuting;
 		private bool _databaseOutputEnabled;
@@ -41,6 +43,7 @@ namespace SqlPad.Oracle
 		private OracleTransaction _userTransaction;
 		private int _userSessionId;
 		private string _userTransactionId;
+		private string _userTraceFileName = String.Empty;
 		private IsolationLevel _userTransactionIsolationLevel;
 		private bool _userCommandHasCompilationErrors;
 		private SessionExecutionStatisticsDataProvider _executionStatisticsDataProvider;
@@ -51,6 +54,8 @@ namespace SqlPad.Oracle
 			get { return _identifier; }
 			set { UpdateModuleName(value); }
 		}
+
+		public override string TraceFileName { get { return _userTraceFileName; } }
 
 		public OracleConnectionAdapter(OracleDatabaseModel databaseModel)
 		{
@@ -65,6 +70,71 @@ namespace SqlPad.Oracle
 			InitializeUserConnection();
 
 			SwitchCurrentSchema();
+		}
+
+		public override async Task ActivateTraceEvents(IEnumerable<OracleTraceEvent> traceEvents, CancellationToken cancellationToken)
+		{
+			lock (_activeTraceEvents)
+			{
+				if (_activeTraceEvents.Count > 0)
+				{
+					throw new InvalidOperationException("Connection has active trace events already. ");
+				}
+
+				_activeTraceEvents.AddRange(traceEvents);
+
+				if (_activeTraceEvents.Count == 0)
+				{
+					return;
+				}
+			}
+
+			var executionModel = BuildTraceEventActionStatement(_activeTraceEvents, e => e.CommandTextEnable);
+
+			try
+			{
+				await ExecuteUserStatement(executionModel, cancellationToken);
+			}
+			catch
+			{
+				lock (_activeTraceEvents)
+				{
+					_activeTraceEvents.Clear();
+				}
+				
+				throw;
+			}
+		}
+
+		private static StatementExecutionModel BuildTraceEventActionStatement(IEnumerable<OracleTraceEvent> traceEvents, Func<OracleTraceEvent, string> getCommandTextFunc)
+		{
+			var builder = new StringBuilder("BEGIN\n");
+
+			foreach (var traceEvent in traceEvents)
+			{
+				builder.AppendLine(String.Format("\tEXECUTE IMMEDIATE '{0}';", getCommandTextFunc(traceEvent).Replace("'", "''")));
+			}
+
+			builder.Append("END;");
+
+			return new StatementExecutionModel {StatementText = builder.ToString(), BindVariables = new BindVariableModel[0]};
+		}
+
+		public override async Task StopTraceEvents(CancellationToken cancellationToken)
+		{
+			StatementExecutionModel executionModel;
+			lock (_activeTraceEvents)
+			{
+				if (_activeTraceEvents.Count == 0)
+				{
+					return;
+				}
+
+				executionModel = BuildTraceEventActionStatement(_activeTraceEvents, e => e.CommandTextDisable);
+				_activeTraceEvents.Clear();
+			}
+
+			await ExecuteUserStatement(executionModel, cancellationToken);
 		}
 
 		internal void SwitchCurrentSchema()
@@ -183,6 +253,13 @@ namespace SqlPad.Oracle
 				if (errorCode.In(OracleErrorCode.EndOfFileOnCommunicationChannel, OracleErrorCode.NotConnectedToOracle))
 				{
 					InitializeUserConnection();
+
+					_userTraceFileName = String.Empty;
+					
+					lock (_activeTraceEvents)
+					{
+						_activeTraceEvents.Clear();
+					}
 
 					_databaseModel.Disconnect(exception);
 
@@ -408,7 +485,7 @@ namespace SqlPad.Oracle
 			{
 				await command.SetSchema(_currentSchema, cancellationToken);
 
-				command.CommandText = "SELECT SYS_CONTEXT('USERENV', 'SID') SID FROM SYS.DUAL";
+				command.CommandText = DatabaseCommands.SelectCurrentSessionId;
 				_userSessionId = Convert.ToInt32(await command.ExecuteScalarAsynchronous(cancellationToken));
 
 				var startupScript = OracleConfiguration.Configuration.StartupScript;
@@ -431,6 +508,17 @@ namespace SqlPad.Oracle
 					{
 						Trace.WriteLine(String.Format("Startup script command '{0}' failed: {1}", command.CommandText, e));
 					}
+				}
+
+				command.CommandText = DatabaseCommands.SelectTraceFileFullName;
+
+				try
+				{
+					_userTraceFileName = (string)await command.ExecuteScalarAsynchronous(cancellationToken);
+				}
+				catch (Exception e)
+				{
+					Trace.WriteLine(String.Format("Trace file name retrieval failed: {0}", e));
 				}
 			}
 		}

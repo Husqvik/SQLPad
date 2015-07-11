@@ -33,6 +33,8 @@ namespace SqlPad.Oracle.Test
 
 		public override string Identifier { get; set; }
 
+		public override string TraceFileName { get { return "OracleTestTraceFile.trc"; } }
+
 		public override Task<StatementExecutionResult> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
 		{
 			var fetchTask = FetchRecordsAsync(1, cancellationToken);
@@ -50,6 +52,16 @@ namespace SqlPad.Oracle.Test
 				};
 
 			return Task.FromResult(result);
+		}
+
+		public override Task ActivateTraceEvents(IEnumerable<OracleTraceEvent> traceEvents, CancellationToken cancellationToken)
+		{
+			return Task.FromResult(0);
+		}
+
+		public override Task StopTraceEvents(CancellationToken cancellationToken)
+		{
+			return Task.FromResult(0);
 		}
 
 		public override Task<ICollection<SessionExecutionStatisticsRecord>> GetExecutionStatisticsAsync(CancellationToken cancellationToken)
