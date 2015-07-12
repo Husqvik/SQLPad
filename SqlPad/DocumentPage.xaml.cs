@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
@@ -29,6 +30,80 @@ namespace SqlPad
 {
 	public partial class DocumentPage : IDisposable
 	{
+		#region dependency properties registration
+		public static readonly DependencyProperty ConnectionStatusProperty = DependencyProperty.Register("ConnectionStatus", typeof(ConnectionStatus), typeof(DocumentPage), new FrameworkPropertyMetadata(ConnectionStatus.Connecting));
+		public static readonly DependencyProperty EnableDebugModeProperty = DependencyProperty.Register("EnableDebugMode", typeof(bool), typeof(DocumentPage), new FrameworkPropertyMetadata(true));
+		public static readonly DependencyProperty ConnectionErrorMessageProperty = DependencyProperty.Register("ConnectionErrorMessage", typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata(String.Empty));
+		public static readonly DependencyProperty SchemaLabelProperty = DependencyProperty.Register("SchemaLabel", typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata(String.Empty));
+		public static readonly DependencyProperty CurrentSchemaProperty = DependencyProperty.Register("CurrentSchema", typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata(CurrentSchemaPropertyChangedCallbackHandler));
+		public static readonly DependencyProperty CurrentConnectionProperty = DependencyProperty.Register("CurrentConnection", typeof(ConnectionStringSettings), typeof(DocumentPage), new FrameworkPropertyMetadata(CurrentConnectionPropertyChangedCallbackHandler));
+		#endregion
+
+		#region dependency property accessors
+		[Bindable(true)]
+		public ConnectionStatus ConnectionStatus
+		{
+			get { return (ConnectionStatus)GetValue(ConnectionStatusProperty); }
+			set { SetValue(ConnectionStatusProperty, value); }
+		}
+
+		[Bindable(true)]
+		public bool EnableDebugMode
+		{
+			get { return (bool)GetValue(EnableDebugModeProperty); }
+			set { SetValue(EnableDebugModeProperty, value); }
+		}
+
+		[Bindable(true)]
+		public string ConnectionErrorMessage
+		{
+			get { return (string)GetValue(ConnectionErrorMessageProperty); }
+			private set { SetValue(ConnectionErrorMessageProperty, value); }
+		}
+
+		[Bindable(true)]
+		public string SchemaLabel
+		{
+			get { return (string)GetValue(SchemaLabelProperty); }
+			private set { SetValue(SchemaLabelProperty, value); }
+		}
+
+		[Bindable(true)]
+		public string CurrentSchema
+		{
+			get { return (string)GetValue(CurrentSchemaProperty); }
+			set { SetValue(CurrentSchemaProperty, value); }
+		}
+
+		private static void CurrentSchemaPropertyChangedCallbackHandler(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
+		{
+			var newSchema = (string)args.NewValue;
+			if (String.IsNullOrEmpty(newSchema))
+			{
+				return;
+			}
+
+			var documentPage = (DocumentPage)dependencyObject;
+			documentPage.DatabaseModel.CurrentSchema = newSchema;
+			documentPage.ReParse();
+		}
+
+		[Bindable(true)]
+		public ConnectionStringSettings CurrentConnection
+		{
+			get { return (ConnectionStringSettings)GetValue(CurrentConnectionProperty); }
+			set { SetValue(CurrentConnectionProperty, value); }
+		}
+
+		private static void CurrentConnectionPropertyChangedCallbackHandler(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
+		{
+			var documentPage = (DocumentPage)dependencyObject;
+			documentPage.ConnectionStatus = ConnectionStatus.Connecting;
+			var newConnectionString = (ConnectionStringSettings)args.NewValue;
+			documentPage.InitializeInfrastructureComponents(newConnectionString);
+		}
+		#endregion
+
 		private const string InitialDocumentHeader = "New";
 		private const int MaximumToolTipLines = 32;
 		private const int MaximumOutputViewersPerPage = 16;
@@ -66,6 +141,7 @@ namespace SqlPad
 		private readonly Timer _timerReParse = new Timer(100);
 		private readonly List<CommandBinding> _specificCommandBindings = new List<CommandBinding>();
 		private readonly ObservableCollection<OutputViewer> _outputViewers = new ObservableCollection<OutputViewer>();
+		private readonly ObservableCollection<string> _schemas = new ObservableCollection<string>();
 		private readonly SqlDocumentColorizingTransformer _colorizingTransformer = new SqlDocumentColorizingTransformer();
 		private readonly ContextMenu _contextActionMenu = new ContextMenu { Placement = PlacementMode.Relative };
 
@@ -105,6 +181,8 @@ namespace SqlPad
 		public IDatabaseModel DatabaseModel { get; private set; }
 
 		public IReadOnlyList<OutputViewer> OutputViewers { get { return _outputViewers; } }
+
+		public IReadOnlyList<string> Schemas { get { return _schemas; } }
 
 		private OutputViewer ActiveOutputViewer
 		{
@@ -155,9 +233,9 @@ namespace SqlPad
 				};
 
 				WorkDocumentCollection.AddDocument(WorkDocument);
-				ViewModel.CurrentConnection = usedConnection;
+				CurrentConnection = usedConnection;
 
-				WorkDocument.SchemaName = ViewModel.CurrentSchema;
+				WorkDocument.SchemaName = CurrentSchema;
 			}
 			else
 			{
@@ -185,8 +263,8 @@ namespace SqlPad
 					}
 				}
 
-				ViewModel.CurrentConnection = usedConnection;
-				ViewModel.CurrentSchema = WorkDocument.SchemaName;
+				CurrentConnection = usedConnection;
+				CurrentSchema = WorkDocument.SchemaName;
 				ViewModel.HeaderBackgroundColorCode = WorkDocument.HeaderBackgroundColorCode;
 
 				Editor.Text = WorkDocument.Text;
@@ -433,7 +511,7 @@ namespace SqlPad
 			}
 		}
 
-		internal void InitializeInfrastructureComponents(ConnectionStringSettings connectionString)
+		private void InitializeInfrastructureComponents(ConnectionStringSettings connectionString)
 		{
 			_connectionString = connectionString;
 
@@ -442,7 +520,7 @@ namespace SqlPad
 				DatabaseModel.Dispose();
 			}
 
-			ViewModel.ResetSchemas();
+			ResetSchemas();
 
 			var connectionConfiguration = ConfigurationProvider.GetConnectionCofiguration(_connectionString.Name);
 			_providerConfiguration = WorkDocumentCollection.GetProviderConfiguration(_connectionString.ProviderName);
@@ -462,7 +540,7 @@ namespace SqlPad
 			InitializeSpecificCommandBindings();
 
 			DatabaseModel = InfrastructureFactory.CreateDatabaseModel(ConfigurationProvider.ConnectionStrings[_connectionString.Name], ViewModel.DocumentHeader);
-			ViewModel.SchemaLabel = InfrastructureFactory.SchemaLabel;
+			SchemaLabel = InfrastructureFactory.SchemaLabel;
 			_sqlDocumentRepository = new SqlDocumentRepository(InfrastructureFactory.CreateParser(), InfrastructureFactory.CreateStatementValidator(), DatabaseModel);
 			_iconMargin.DocumentRepository = _sqlDocumentRepository;
 
@@ -588,10 +666,10 @@ namespace SqlPad
 				WorkDocument.EditorGridColumnWidth = ColumnDefinitionEditor.ActualWidth;
 			}
 
-			if (ViewModel.CurrentConnection != null)
+			if (CurrentConnection != null)
 			{
-				WorkDocument.ConnectionName = ViewModel.CurrentConnection.Name;
-				WorkDocument.SchemaName = ViewModel.CurrentSchema;
+				WorkDocument.ConnectionName = CurrentConnection.Name;
+				WorkDocument.SchemaName = CurrentSchema;
 			}
 		}
 
@@ -646,26 +724,39 @@ namespace SqlPad
 
 		private void DatabaseModelInitializedHandler(object sender, EventArgs args)
 		{
-			ViewModel.ConnectProgressBarVisibility = Visibility.Collapsed;
 			Dispatcher.Invoke(
 				() =>
 				{
-					ViewModel.SetSchemas(DatabaseModel.Schemas);
-					ViewModel.CurrentSchema = DatabaseModel.CurrentSchema;
+					ConnectionStatus = ConnectionStatus.Connected;
+					SetSchemas(DatabaseModel.Schemas);
+					CurrentSchema = DatabaseModel.CurrentSchema;
 				});
+		}
+
+		private void ResetSchemas()
+		{
+			_schemas.Clear();
+			CurrentSchema = null;
+		}
+
+		private void SetSchemas(IEnumerable<string> schemas)
+		{
+			ResetSchemas();
+			_schemas.AddRange(schemas.OrderBy(s => s));
 		}
 
 		private void DatabaseModelInitializationFailedHandler(object sender, DatabaseModelConnectionErrorArgs args)
 		{
-			ViewModel.ConnectProgressBarVisibility = Visibility.Collapsed;
-			ViewModel.ConnectionErrorMessage = args.Exception.Message;
-			ViewModel.ReconnectOptionVisibility = Visibility.Visible;
+			Dispatcher.Invoke(() =>
+			{
+				ConnectionStatus = ConnectionStatus.Disconnected;
+				ConnectionErrorMessage = args.Exception.Message;
+			});
 		}
 
 		private void ButtonReconnectClickHandler(object sender, RoutedEventArgs e)
 		{
-			ViewModel.ReconnectOptionVisibility = Visibility.Collapsed;
-			ViewModel.ConnectProgressBarVisibility = Visibility.Visible;
+			ConnectionStatus = ConnectionStatus.Connecting;
 
 			if (!DatabaseModel.IsInitialized)
 			{
@@ -1923,5 +2014,12 @@ namespace SqlPad
 		{
 			App.ShowExecutionHistory(_providerConfiguration.ProviderName);
 		}
+	}
+
+	public enum ConnectionStatus
+	{
+		Disconnected,
+		Connecting,
+		Connected
 	}
 }

@@ -34,6 +34,7 @@ namespace SqlPad
 		public static readonly DependencyProperty DatabaseOutputProperty = DependencyProperty.Register("DatabaseOutput", typeof(string), typeof(OutputViewer), new FrameworkPropertyMetadata(String.Empty));
 		public static readonly DependencyProperty LastStatementTextProperty = DependencyProperty.Register("LastStatementText", typeof(string), typeof(OutputViewer), new FrameworkPropertyMetadata(String.Empty));
 
+		public static readonly DependencyProperty IsDebuggerControlEnabledProperty = DependencyProperty.Register("IsDebuggerControlEnabled", typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(false));
 		public static readonly DependencyProperty IsTransactionControlEnabledProperty = DependencyProperty.Register("IsTransactionControlEnabled", typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(true));
 		public static readonly DependencyProperty TransactionControlVisibityProperty = DependencyProperty.Register("TransactionControlVisibity", typeof(Visibility), typeof(OutputViewer), new FrameworkPropertyMetadata(Visibility.Collapsed));
 		
@@ -86,6 +87,13 @@ namespace SqlPad
 		{
 			get { return (bool)GetValue(IsTransactionControlEnabledProperty); }
 			private set { SetValue(IsTransactionControlEnabledProperty, value); }
+		}
+
+		[Bindable(true)]
+		public bool IsDebuggerControlEnabled
+		{
+			get { return (bool)GetValue(IsDebuggerControlEnabledProperty); }
+			private set { SetValue(IsDebuggerControlEnabledProperty, value); }
 		}
 
 		[Bindable(true)]
@@ -235,7 +243,7 @@ namespace SqlPad
 
 			_documentPage = documentPage;
 
-			_providerConfiguration = WorkDocumentCollection.GetProviderConfiguration(_documentPage.ViewModel.CurrentConnection.ProviderName);
+			_providerConfiguration = WorkDocumentCollection.GetProviderConfiguration(_documentPage.CurrentConnection.ProviderName);
 
 			_connectionAdapter = _documentPage.DatabaseModel.CreateConnectionAdapter();
 
@@ -1052,6 +1060,22 @@ public class Query
 		private void ApplicationDeactivatedHandler(object sender, EventArgs eventArgs)
 		{
 			DataGridTabHeaderPopup.IsOpen = false;
+		}
+
+		private void ButtonDebuggerContinueClickHandler(object sender, RoutedEventArgs e)
+		{
+		}
+
+		private void ButtonDebuggerStepIntoClickHandler(object sender, RoutedEventArgs e)
+		{
+		}
+
+		private void ButtonDebuggerStepOverClickHandler(object sender, RoutedEventArgs e)
+		{
+		}
+
+		private void ButtonDebuggerAbortClickHandler(object sender, RoutedEventArgs e)
+		{
 		}
 	}
 }

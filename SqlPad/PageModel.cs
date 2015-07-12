@@ -1,7 +1,4 @@
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Configuration;
-using System.Linq;
 using System.Windows;
 
 namespace SqlPad
@@ -9,21 +6,13 @@ namespace SqlPad
 	public class PageModel : ModelBase
 	{
 		private readonly DocumentPage _documentPage;
-		private readonly ObservableCollection<string> _schemas = new ObservableCollection<string>();
-		private ConnectionStringSettings _currentConnection;
-		private string _currentSchema;
-		private string _schemaLabel;
 		private IReadOnlyList<BindVariableModel> _bindVariables;
 		private bool _isModified;
 
 		private Visibility _productionLabelVisibility = Visibility.Collapsed;
 		private Visibility _bindVariableListVisibility = Visibility.Collapsed;
-		private Visibility _reconnectOptionVisibility = Visibility.Collapsed;
-		private Visibility _schemaComboBoxVisibility = Visibility.Collapsed;
-		private Visibility _connectProgressBarVisibility = Visibility.Visible;
 		
 		private string _dateTimeFormat;
-		private string _connectionErrorMessage;
 		private string _documentHeaderToolTip;
 
 		public PageModel(DocumentPage documentPage)
@@ -51,12 +40,6 @@ namespace SqlPad
 		{
 			get { return _documentHeaderToolTip; }
 			set { UpdateValueAndRaisePropertyChanged(ref _documentHeaderToolTip, value); }
-		}
-
-		public string SchemaLabel
-		{
-			get { return _schemaLabel; }
-			set { UpdateValueAndRaisePropertyChanged(ref _schemaLabel, value); }
 		}
 
 		public string DocumentHeader
@@ -122,24 +105,6 @@ namespace SqlPad
 			private set { UpdateValueAndRaisePropertyChanged(ref _bindVariableListVisibility, value); }
 		}
 
-		public Visibility ConnectProgressBarVisibility
-		{
-			get { return _connectProgressBarVisibility; }
-			set { UpdateValueAndRaisePropertyChanged(ref _connectProgressBarVisibility, value); }
-		}
-
-		public Visibility ReconnectOptionVisibility
-		{
-			get { return _reconnectOptionVisibility; }
-			set { UpdateValueAndRaisePropertyChanged(ref _reconnectOptionVisibility, value); }
-		}
-
-		public string ConnectionErrorMessage
-		{
-			get { return _connectionErrorMessage; }
-			set { UpdateValueAndRaisePropertyChanged(ref _connectionErrorMessage, value); }
-		}
-
 		public IReadOnlyList<BindVariableModel> BindVariables
 		{
 			get { return _bindVariables; }
@@ -156,61 +121,6 @@ namespace SqlPad
 				{
 					BindVariableListVisibility = Visibility.Visible;
 				}
-			}
-		}
-
-		public IReadOnlyList<string> Schemas { get { return _schemas; } }
-
-		public string CurrentSchema
-		{
-			get { return _currentSchema; }
-			set
-			{
-				if (value == null)
-					return;
-
-				if (!UpdateValueAndRaisePropertyChanged(ref _currentSchema, value))
-					return;
-
-				_documentPage.DatabaseModel.CurrentSchema = value;
-				_documentPage.ReParse();
-			}
-		}
-
-		public ConnectionStringSettings CurrentConnection
-		{
-			get { return _currentConnection; }
-			set
-			{
-				ReconnectOptionVisibility = Visibility.Collapsed;
-				ConnectProgressBarVisibility = Visibility.Visible;
-
-				_currentConnection = value;
-				_documentPage.InitializeInfrastructureComponents(value);
-			}
-		}
-
-		public Visibility SchemaComboBoxVisibility
-		{
-			get { return _schemaComboBoxVisibility; }
-			set { UpdateValueAndRaisePropertyChanged(ref _schemaComboBoxVisibility, value); }
-		}
-		
-		public void ResetSchemas()
-		{
-			_schemas.Clear();
-			_currentSchema = null;
-			SchemaComboBoxVisibility = Visibility.Collapsed;
-		}
-
-		public void SetSchemas(IEnumerable<string> schemas)
-		{
-			ResetSchemas();
-			_schemas.AddRange(schemas.OrderBy(s => s));
-
-			if (_schemas.Count > 0)
-			{
-				SchemaComboBoxVisibility = Visibility.Visible;
 			}
 		}
 	}

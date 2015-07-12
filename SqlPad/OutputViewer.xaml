@@ -50,6 +50,23 @@
 			<Button Content="_Rollback" Padding="6,1,6,1" Margin="0,2,0,2" Click="ButtonRollbackTransactionClickHandler" />
 		</StackPanel>
 
+		<StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
+			<StackPanel.Style>
+				<Style>
+					<Style.Triggers>
+						<DataTrigger Binding="{Binding IsDebuggerControlEnabled}" Value="False">
+							<Setter Property="StackPanel.Visibility" Value="Collapsed" />
+						</DataTrigger>
+					</Style.Triggers>
+				</Style>
+			</StackPanel.Style>
+			
+			<Button Content="_Continue" Padding="6,1,6,1" Margin="0,2,2,2" Click="ButtonDebuggerContinueClickHandler" />
+			<Button Content="_Step into" Padding="6,1,6,1" Margin="0,2,2,2" Click="ButtonDebuggerStepIntoClickHandler" />
+			<Button Content="Step _over" Padding="6,1,6,1" Margin="0,2,2,2" Click="ButtonDebuggerStepOverClickHandler" />
+			<Button Content="_Abort" Padding="6,1,6,1" Margin="0,2,0,2" Click="ButtonDebuggerAbortClickHandler" />
+		</StackPanel>
+
 		<TabControl x:Name="TabControlResult" GiveFeedback="TabControlResultGiveFeedbackHandler">
 			<TabItem x:Name="TabResultSet">
 				<TabItem.Header>

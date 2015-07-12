@@ -23,6 +23,8 @@ namespace SqlPad
 
 		public bool GatherExecutionStatistics { get; set; }
 		
+		public bool EnableDebug { get; set; }
+		
 		public int InitialFetchRowCount { get; set; }
 	}
 
