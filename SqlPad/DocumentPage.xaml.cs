@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
@@ -30,138 +29,6 @@ namespace SqlPad
 {
 	public partial class DocumentPage : IDisposable
 	{
-		#region dependency properties registration
-		public static readonly DependencyProperty ConnectionStatusProperty = DependencyProperty.Register("ConnectionStatus", typeof(ConnectionStatus), typeof(DocumentPage), new FrameworkPropertyMetadata(ConnectionStatus.Connecting));
-		public static readonly DependencyProperty EnableDebugModeProperty = DependencyProperty.Register("EnableDebugMode", typeof(bool), typeof(DocumentPage), new FrameworkPropertyMetadata(true));
-		public static readonly DependencyProperty IsProductionConnectionProperty = DependencyProperty.Register("IsProductionConnection", typeof(bool), typeof(DocumentPage), new FrameworkPropertyMetadata(false));
-		public static readonly DependencyProperty ConnectionErrorMessageProperty = DependencyProperty.Register("ConnectionErrorMessage", typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata(String.Empty));
-		public static readonly DependencyProperty DocumentHeaderBackgroundColorCodeProperty = DependencyProperty.Register("DocumentHeaderBackgroundColorCode", typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata(DocumentHeaderBackgroundColorCodePropertyChangedCallbackHandler));
-		public static readonly DependencyProperty DocumentHeaderProperty = DependencyProperty.Register("DocumentHeader", typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata(DocumentHeaderPropertyChangedCallbackHandler));
-		public static readonly DependencyProperty SchemaLabelProperty = DependencyProperty.Register("SchemaLabel", typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata(String.Empty));
-		public static readonly DependencyProperty CurrentSchemaProperty = DependencyProperty.Register("CurrentSchema", typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata(CurrentSchemaPropertyChangedCallbackHandler));
-		public static readonly DependencyProperty CurrentConnectionProperty = DependencyProperty.Register("CurrentConnection", typeof(ConnectionStringSettings), typeof(DocumentPage), new FrameworkPropertyMetadata(CurrentConnectionPropertyChangedCallbackHandler));
-		public static readonly DependencyProperty BindVariablesProperty = DependencyProperty.Register("BindVariables", typeof(IReadOnlyList<BindVariableModel>), typeof(DocumentPage), new FrameworkPropertyMetadata(new BindVariableModel[0]));
-		#endregion
-
-		#region dependency property accessors
-		[Bindable(true)]
-		public ConnectionStatus ConnectionStatus
-		{
-			get { return (ConnectionStatus)GetValue(ConnectionStatusProperty); }
-			set { SetValue(ConnectionStatusProperty, value); }
-		}
-
-		[Bindable(true)]
-		public bool EnableDebugMode
-		{
-			get { return (bool)GetValue(EnableDebugModeProperty); }
-			set { SetValue(EnableDebugModeProperty, value); }
-		}
-
-		[Bindable(true)]
-		public bool IsProductionConnection
-		{
-			get { return (bool)GetValue(IsProductionConnectionProperty); }
-			set { SetValue(IsProductionConnectionProperty, value); }
-		}
-
-		[Bindable(true)]
-		public string ConnectionErrorMessage
-		{
-			get { return (string)GetValue(ConnectionErrorMessageProperty); }
-			private set { SetValue(ConnectionErrorMessageProperty, value); }
-		}
-
-		[Bindable(true)]
-		public string DocumentHeaderBackgroundColorCode
-		{
-			get { return (string)GetValue(DocumentHeaderBackgroundColorCodeProperty); }
-			set { SetValue(DocumentHeaderBackgroundColorCodeProperty, value); }
-		}
-
-		private static void DocumentHeaderBackgroundColorCodePropertyChangedCallbackHandler(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
-		{
-			var newColorCode = (string)args.NewValue;
-			var documentPage = (DocumentPage)dependencyObject;
-			documentPage.WorkDocument.HeaderBackgroundColorCode = newColorCode;
-			documentPage.SetDocumentModifiedIfSqlx();
-		}
-
-		[Bindable(true)]
-		public string DocumentHeader
-		{
-			get { return (string)GetValue(DocumentHeaderProperty); }
-			set { SetValue(DocumentHeaderProperty, value); }
-		}
-
-		private static void DocumentHeaderPropertyChangedCallbackHandler(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
-		{
-			var newHeader = (string)args.NewValue;
-			var documentPage = (DocumentPage)dependencyObject;
-			documentPage.WorkDocument.DocumentTitle = newHeader;
-			documentPage.SetDocumentModifiedIfSqlx();
-		}
-
-		private void SetDocumentModifiedIfSqlx()
-		{
-			if (_isInitializing || !WorkDocument.IsSqlx || WorkDocument.IsModified)
-			{
-				return;
-			}
-
-			WorkDocument.IsModified = ViewModel.IsModified = true;
-		}
-
-		[Bindable(true)]
-		public string SchemaLabel
-		{
-			get { return (string)GetValue(SchemaLabelProperty); }
-			private set { SetValue(SchemaLabelProperty, value); }
-		}
-
-		[Bindable(true)]
-		public string CurrentSchema
-		{
-			get { return (string)GetValue(CurrentSchemaProperty); }
-			set { SetValue(CurrentSchemaProperty, value); }
-		}
-
-		private static void CurrentSchemaPropertyChangedCallbackHandler(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
-		{
-			var newSchema = (string)args.NewValue;
-			if (String.IsNullOrEmpty(newSchema))
-			{
-				return;
-			}
-
-			var documentPage = (DocumentPage)dependencyObject;
-			documentPage.DatabaseModel.CurrentSchema = newSchema;
-			documentPage.ReParse();
-		}
-
-		[Bindable(true)]
-		public ConnectionStringSettings CurrentConnection
-		{
-			get { return (ConnectionStringSettings)GetValue(CurrentConnectionProperty); }
-			set { SetValue(CurrentConnectionProperty, value); }
-		}
-
-		private static void CurrentConnectionPropertyChangedCallbackHandler(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
-		{
-			var newConnectionString = (ConnectionStringSettings)args.NewValue;
-			var documentPage = (DocumentPage)dependencyObject;
-			documentPage.ConnectionStatus = ConnectionStatus.Connecting;
-			documentPage.InitializeInfrastructureComponents(newConnectionString);
-		}
-
-		[Bindable(true)]
-		public IReadOnlyList<BindVariableModel> BindVariables
-		{
-			get { return (IReadOnlyList<BindVariableModel>)GetValue(BindVariablesProperty); }
-			set { SetValue(BindVariablesProperty, value); }
-		}
-		#endregion
-
 		private const string InitialDocumentHeader = "New";
 		private const int MaximumToolTipLines = 32;
 		private const int MaximumOutputViewersPerPage = 16;
@@ -210,8 +77,6 @@ namespace SqlPad
 		private CompletionWindow _completionWindow;
 		private ConnectionStringSettings _connectionString;
 
-		internal PageModel ViewModel { get; private set; }
-		
 		internal IInfrastructureFactory InfrastructureFactory { get; private set; }
 
 		internal TabItem TabItem { get; private set; }
@@ -220,15 +85,9 @@ namespace SqlPad
 
 		internal static bool IsParsingSynchronous { get; set; }
 
-		public bool IsBusy
-		{
-			get { return _outputViewers.Any(v => v.IsBusy); }
-		}
+		public bool IsBusy { get { return _outputViewers.Any(v => v.IsBusy); } }
 
-		internal bool IsSelectedPage
-		{
-			get { return Equals(((TabItem)App.MainWindow.DocumentTabControl.SelectedItem).Content); }
-		}
+		internal bool IsSelectedPage { get { return Equals(((TabItem)App.MainWindow.DocumentTabControl.SelectedItem).Content); } }
 
 		public TextEditorAdapter EditorAdapter { get; private set; }
 
@@ -242,10 +101,7 @@ namespace SqlPad
 
 		public IReadOnlyList<string> Schemas { get { return _schemas; } }
 
-		private OutputViewer ActiveOutputViewer
-		{
-			get { return (OutputViewer)OutputViewerList.SelectedItem; }
-		}
+		private OutputViewer ActiveOutputViewer { get { return (OutputViewer)OutputViewerList.SelectedItem; } }
 
 		public DocumentPage(WorkDocument workDocument = null)
 		{
@@ -269,11 +125,7 @@ namespace SqlPad
 			_timerReParse.Elapsed += delegate { Dispatcher.Invoke(Parse); };
 			_outputViewers.CollectionChanged += delegate { OutputViewerList.Visibility = _outputViewers.Count > 1 ? Visibility.Visible : Visibility.Collapsed; };
 
-			ViewModel =
-				new PageModel(this)
-				{
-					DateTimeFormat = ConfigurationProvider.Configuration.ResultGrid.DateFormat
-				};
+			DateTimeFormat = ConfigurationProvider.Configuration.ResultGrid.DateFormat;
 
 			ConfigurationProvider.ConfigurationChanged += ConfigurationChangedHandler;
 
@@ -357,7 +209,7 @@ namespace SqlPad
 				DocumentHeader = WorkDocument.DocumentTitle;
 			}
 
-			ViewModel.IsModified = WorkDocument.IsModified;
+			IsModified = WorkDocument.IsModified;
 
 			InitializeTabItem();
 		}
@@ -377,9 +229,15 @@ namespace SqlPad
 			Editor.Document.Insert(insertIndex, builder.ToString());
 		}
 
+		internal void NotifyExecutionEvent()
+		{
+			IsRunning = IsBusy;
+			App.MainWindow.NotifyTaskStatus();
+		}
+
 		private void UpdateDocumentHeaderToolTip()
 		{
-			ViewModel.DocumentHeaderToolTip = WorkDocument.File == null
+			DocumentHeaderToolTip = WorkDocument.File == null
 				? "Unsaved"
 				: String.Format("{0}{1}Last change: {2}", WorkDocument.File.FullName, Environment.NewLine, WorkDocument.File.LastWriteTime);
 		}
@@ -437,7 +295,7 @@ namespace SqlPad
 
 		private void ConfigurationChangedHandler(object sender, EventArgs eventArgs)
 		{
-			ViewModel.DateTimeFormat = ConfigurationProvider.Configuration.ResultGrid.DateFormat;
+			DateTimeFormat = ConfigurationProvider.Configuration.ResultGrid.DateFormat;
 		}
 
 		private void InitializeTabItem()
@@ -451,11 +309,11 @@ namespace SqlPad
 
 			var contentBinding = new Binding("DocumentHeader") { Source = this, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged, Mode = BindingMode.TwoWay };
 			header.SetBinding(ContentProperty, contentBinding);
-			var isModifiedBinding = new Binding("IsModified") { Source = ViewModel, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged };
+			var isModifiedBinding = new Binding("IsModified") { Source = this, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged };
 			header.SetBinding(EditableTabHeaderControl.IsModifiedProperty, isModifiedBinding);
-			var isRunningBinding = new Binding("IsRunning") { Source = ViewModel, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged };
+			var isRunningBinding = new Binding("IsRunning") { Source = this, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged };
 			header.SetBinding(EditableTabHeaderControl.IsRunningProperty, isRunningBinding);
-			var toolTipBinding = new Binding("DocumentHeaderToolTip") { Source = ViewModel, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged };
+			var toolTipBinding = new Binding("DocumentHeaderToolTip") { Source = this, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged };
 			header.SetBinding(ToolTipProperty, toolTipBinding);
 
 			TabItem =
@@ -683,7 +541,7 @@ namespace SqlPad
 			}
 			else
 			{
-				ViewModel.DocumentHeaderToolTip = WorkDocument.File.FullName;
+				DocumentHeaderToolTip = WorkDocument.File.FullName;
 				InitializeFileWatcher();
 				WorkDocumentCollection.AddRecentDocument(WorkDocument);
 			}
@@ -776,7 +634,7 @@ namespace SqlPad
 				Editor.Save(WorkDocument.File.FullName);
 			}
 
-			ViewModel.IsModified = WorkDocument.IsModified = false;
+			IsModified = WorkDocument.IsModified = false;
 			_originalWorkDocumentContent = Editor.Text;
 
 			UpdateDocumentHeaderToolTip();
@@ -1558,7 +1416,7 @@ namespace SqlPad
 
 		private void CheckDocumentModified()
 		{
-			ViewModel.IsModified = WorkDocument.IsModified = IsDirty;
+			IsModified = WorkDocument.IsModified = IsDirty;
 		}
 
 		private void Parse()

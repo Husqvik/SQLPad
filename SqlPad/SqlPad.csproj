@@ -103,6 +103,7 @@
     <Compile Include="CellValueConverter.cs" />
     <Compile Include="FindReplace\TextSearchHelper.cs" />
     <Compile Include="IDebuggerSession.cs" />
+    <Compile Include="OutputViewer.DependencyProperties.cs" />
     <Compile Include="StatementExecutionHistory.xaml.cs">
       <DependentUpon>StatementExecutionHistory.xaml</DependentUpon>
     </Compile>
@@ -162,7 +163,6 @@
     <Compile Include="FindReplace\IEditor.cs" />
     <Compile Include="InfrastructureConfigurationSection.cs" />
     <Compile Include="MarginSetter.cs" />
-    <Compile Include="PageModel.cs" />
     <Compile Include="DatabaseProviderConfiguration.cs" />
     <Compile Include="SqlFoldingStrategy.cs" />
     <Compile Include="SqlTextEditor.cs" />
@@ -290,6 +290,7 @@
     <None Include="Configuration.xsd">
       <SubType>Designer</SubType>
     </None>
+    <Compile Include="DocumentPage.DependencyProperties.cs" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
