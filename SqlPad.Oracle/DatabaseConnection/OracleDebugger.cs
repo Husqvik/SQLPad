@@ -42,12 +42,21 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public async Task<bool> IsRunning(CancellationToken cancellationToken)
 		{
-			_debuggerSessionCommand.CommandText = "BEGIN IF dbms_debug.target_program_running THEN :isRunning := 1 ELSE :isRunning = 0; END;";
+			_debuggerSessionCommand.CommandText = "BEGIN IF dbms_debug.target_program_running THEN :isRunning := 1; ELSE :isRunning := 0; END IF; END;";
 			_debuggerSessionCommand.Parameters.Clear();
-			_debuggedSessionCommand.AddSimpleParameter("ISRUNNING", null, TerminalValues.Number);
-			await _debuggedSessionCommand.ExecuteNonQueryAsynchronous(cancellationToken);
-			var isRunning = ((OracleDecimal)_debuggedSessionCommand.Parameters[0].Value).Value;
+			_debuggerSessionCommand.AddSimpleParameter("ISRUNNING", null, TerminalValues.Number);
+			await _debuggerSessionCommand.ExecuteNonQueryAsynchronous(cancellationToken);
+			var isRunning = ((OracleDecimal)_debuggerSessionCommand.Parameters[0].Value).Value;
 			return Convert.ToBoolean(isRunning);
+		}
+
+		public async Task<string> GetStackTrace(CancellationToken cancellationToken)
+		{
+			_debuggerSessionCommand.CommandText = OracleDatabaseCommands.GetDebuggerStackTrace;
+			_debuggerSessionCommand.Parameters.Clear();
+			_debuggerSessionCommand.AddSimpleParameter("OUTPUT_CLOB", null, TerminalValues.Clob);
+			await _debuggerSessionCommand.ExecuteNonQueryAsynchronous(cancellationToken);
+			return ((OracleClob)_debuggerSessionCommand.Parameters[0].Value).Value;
 		}
 
 		public async Task Start(CancellationToken cancellationToken)
@@ -145,7 +154,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return GetRuntimeInfo(_debuggerSessionCommand);
 		}
 
-		private OracleRuntimeInfo GetRuntimeInfo(OracleCommand command)
+		private static OracleRuntimeInfo GetRuntimeInfo(OracleCommand command)
 		{
 			var namespaceRaw = GetNullableValueFromOracleDecimal(command.Parameters["NAMESPACE"]);
 			var libraryUnitType = GetNullableValueFromOracleDecimal(command.Parameters["LIBUNITTYPE"]);
@@ -220,6 +229,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 			{
 				var aValue = GetValue("A");
 				Trace.WriteLine("A = " + aValue);
+				//Trace.WriteLine("Stack trace: \n" + await GetStackTrace(cancellationToken));
+				//Trace.WriteLine("Is running:" + await IsRunning(cancellationToken));
 			}
 		}
 

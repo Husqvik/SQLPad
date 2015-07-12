@@ -435,6 +435,25 @@ BEGIN
     :result := dbms_debug.get_value(:name, frame, :value, null);
 END;";
 
+		public const string GetDebuggerStackTrace =
+@"DECLARE
+	pkgs dbms_debug.backtrace_table;
+	i NUMBER;
+	line_content VARCHAR2(32767);
+BEGIN
+	dbms_debug.print_backtrace(pkgs);
+	i := pkgs.first();
+
+	DBMS_LOB.CREATETEMPORARY(lob_loc => :output_clob, cache => TRUE); 
+    DBMS_LOB.OPEN(lob_loc => :output_clob, open_mode => DBMS_LOB.LOB_READWRITE);
+
+	WHILE i IS NOT NULL LOOP
+		line_content := i || ': ' || NVL(pkgs(i).name, 'Anonymous PL/SQL block') || ' (' || pkgs(i).line# ||')' || CHR(10);
+		DBMS_LOB.WRITEAPPEND(lob_loc => :output_clob, amount => LENGTH(line_content), buffer => line_content);
+		i := pkgs.next(i);
+	END LOOP;
+END;";
+
 		private static string ToInValueList(params string[] values)
 		{
 			return String.Join(", ", values.Select(t => String.Format("'{0}'", t)));

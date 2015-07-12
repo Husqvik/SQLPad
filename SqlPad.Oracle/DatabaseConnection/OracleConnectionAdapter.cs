@@ -634,7 +634,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 					debuggerSession.StepInto(cancellationToken).Wait(cancellationToken);
 				} while (debuggerSession.RuntimeInfo.IsTerminated != true);
 
-				//Trace.WriteLine("Is running:" + debuggerSession.IsRunning()); // lock
+				/*var isRunning = debuggerSession.IsRunning(cancellationToken);
+				isRunning.Wait(cancellationToken);
+				Trace.WriteLine("Is running:" + isRunning.Result);*/
 
 				debuggerSession.Detach(cancellationToken).Wait(cancellationToken);
 			}
