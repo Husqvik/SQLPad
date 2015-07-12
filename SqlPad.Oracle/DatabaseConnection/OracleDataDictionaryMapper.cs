@@ -167,9 +167,27 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return _databaseModel.ExecuteReader(v => OracleDatabaseCommands.SelectContextDataCommandText, MapContextData).ToLookup(r => r.Key, r => r.Value);
 		}
 
-		public IEnumerable<string> GetSchemaNames()
+		public IEnumerable<OracleSchema> GetSchemaNames()
 		{
-			return _databaseModel.ExecuteReader(v => OracleDatabaseCommands.SelectAllSchemasCommandText, (v, r) => ((string)r["USERNAME"]));
+			return _databaseModel.ExecuteReader(v => String.Format(OracleDatabaseCommands.SelectAllSchemasCommandTextBase, v.Major >= 12 ? ", COMMON, ORACLE_MAINTAINED" : null), MapSchema);
+		}
+
+		private static OracleSchema MapSchema(Version version, IDataRecord reader)
+		{
+			var schema =
+				new OracleSchema
+				{
+					Name = QualifyStringObject((string)reader["USERNAME"]),
+					Created = (DateTime)reader["CREATED"]
+				};
+
+			if (version.Major >= 12)
+			{
+				schema.IsOracleMaintained = String.Equals((string)reader["ORACLE_MAINTAINED"], "Y");
+				schema.IsCommon = String.Equals((string)reader["COMMON"], "YES");
+			}
+
+			return schema;
 		}
 
 		public IEnumerable<string> GetCharacterSets()
@@ -231,15 +249,15 @@ namespace SqlPad.Oracle.DatabaseConnection
 		{
 			var identifier = CreateFunctionIdentifierFromReaderValues(reader["OWNER"], reader["PACKAGE_NAME"], reader["PROGRAM_NAME"], reader["OVERLOAD"]);
 			var type = Convert.ToBoolean(reader["IS_FUNCTION"]) ? ProgramType.Function : ProgramType.Procedure;
-			var isAnalytic = (string)reader["ANALYTIC"] == "YES";
-			var isAggregate = (string)reader["AGGREGATE"] == "YES";
-			var isPipelined = (string)reader["PIPELINED"] == "YES";
-			var isOffloadable = (string)reader["OFFLOADABLE"] == "YES";
-			var parallelSupport = (string)reader["PARALLEL"] == "YES";
-			var isDeterministic = (string)reader["DETERMINISTIC"] == "YES";
+			var isAnalytic = String.Equals((string)reader["ANALYTIC"], "YES");
+			var isAggregate = String.Equals((string)reader["AGGREGATE"], "YES");
+			var isPipelined = String.Equals((string)reader["PIPELINED"], "YES");
+			var isOffloadable = String.Equals((string)reader["OFFLOADABLE"], "YES");
+			var parallelSupport = String.Equals((string)reader["PARALLEL"], "YES");
+			var isDeterministic = String.Equals((string)reader["DETERMINISTIC"], "YES");
 			var metadataMinimumArguments = OracleReaderValueConvert.ToInt32(reader["MINARGS"]);
 			var metadataMaximumArguments = OracleReaderValueConvert.ToInt32(reader["MAXARGS"]);
-			var authId = (string)reader["AUTHID"] == "CURRENT_USER" ? AuthId.CurrentUser : AuthId.Definer;
+			var authId = String.Equals((string)reader["AUTHID"], "CURRENT_USER") ? AuthId.CurrentUser : AuthId.Definer;
 			var displayType = (string)reader["DISP_TYPE"];
 
 			return new OracleProgramMetadata(type, identifier, isAnalytic, isAggregate, isPipelined, isOffloadable, parallelSupport, isDeterministic, metadataMinimumArguments, metadataMaximumArguments, authId, displayType, isBuiltIn);
@@ -256,7 +274,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			var dataType = OracleReaderValueConvert.ToString(reader["DATA_TYPE"]);
 			var typeOwner = OracleReaderValueConvert.ToString(reader["TYPE_OWNER"]);
 			var typeName = OracleReaderValueConvert.ToString(reader["TYPE_NAME"]);
-			var isOptional = (string)reader["DEFAULTED"] == "Y";
+			var isOptional = String.Equals((string)reader["DEFAULTED"], "Y");
 			var directionRaw = (string)reader["IN_OUT"];
 			ParameterDirection direction;
 			switch (directionRaw)
@@ -309,7 +327,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				{
 					Name = QualifyStringObject(reader["ATTR_NAME"]),
 					DataType = dataType,
-					IsInherited = (string)reader["INHERITED"] == "YES"
+					IsInherited = String.Equals((string)reader["INHERITED"], "YES")
 				};
 			
 			type.Attributes.Add(attribute);
@@ -345,7 +363,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return collectionType;
 		}
 
-		private OracleDatabaseLink MapDatabaseLink(Version version, IDataRecord reader)
+		private static OracleDatabaseLink MapDatabaseLink(Version version, IDataRecord reader)
 		{
 			var databaseLinkFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(reader["OWNER"]), QualifyStringObject(reader["DB_LINK"]));
 			return
@@ -358,7 +376,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				};
 		}
 
-		private KeyValuePair<string, string> MapParameter(Version version, IDataRecord reader)
+		private static KeyValuePair<string, string> MapParameter(Version version, IDataRecord reader)
 		{
 			return new KeyValuePair<string, string>((string)reader["NAME"], OracleReaderValueConvert.ToString(reader["VALUE"]));
 		}
@@ -376,8 +394,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 			sequence.MaximumValue = Convert.ToDecimal(reader["MAX_VALUE"]);
 			sequence.Increment = Convert.ToDecimal(reader["INCREMENT_BY"]);
 			sequence.CacheSize = Convert.ToDecimal(reader["CACHE_SIZE"]);
-			sequence.CanCycle = (string)reader["CYCLE_FLAG"] == "Y";
-			sequence.IsOrdered = (string)reader["ORDER_FLAG"] == "Y";
+			sequence.CanCycle = String.Equals((string)reader["CYCLE_FLAG"], "Y");
+			sequence.IsOrdered = String.Equals((string)reader["ORDER_FLAG"], "Y");
 
 			return sequence;
 		}
@@ -444,18 +462,18 @@ namespace SqlPad.Oracle.DatabaseConnection
 				{
 					Name = QualifyStringObject(reader["COLUMN_NAME"]),
 					DataType = dataType,
-					Nullable = (string) reader["NULLABLE"] == "Y",
-					Virtual = (string) reader["VIRTUAL_COLUMN"] == "YES",
-					Hidden = (string) reader["HIDDEN_COLUMN"] == "YES",
-					UserGenerated = (string) reader["USER_GENERATED"] == "YES",
+					Nullable = String.Equals((string)reader["NULLABLE"], "Y"),
+					Virtual = String.Equals((string)reader["VIRTUAL_COLUMN"], "YES"),
+					Hidden = String.Equals((string)reader["HIDDEN_COLUMN"], "YES"),
+					UserGenerated = String.Equals((string)reader["USER_GENERATED"], "YES"),
 					DefaultValue = OracleReaderValueConvert.ToString(reader["DATA_DEFAULT"]),
 					CharacterSize = Convert.ToInt32(reader["CHAR_LENGTH"])
 				};
 
 			if (version.Major >= 12)
 			{
-				column.Hidden = (string) reader["HIDDEN_COLUMN"] == "YES";
-				column.UserGenerated = (string) reader["USER_GENERATED"] == "YES";
+				column.Hidden = String.Equals((string)reader["HIDDEN_COLUMN"], "YES");
+				column.UserGenerated = String.Equals((string)reader["USER_GENERATED"], "YES");
 			}
 			
 			return new KeyValuePair<OracleObjectIdentifier, OracleColumn>(
@@ -465,7 +483,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private static void ResolveDataUnit(OracleDataType dataType, object characterUsedValue)
 		{
 			dataType.Unit = !dataType.FullyQualifiedName.HasOwner && dataType.FullyQualifiedName.NormalizedName.In("\"VARCHAR\"", "\"VARCHAR2\"")
-				? (string)characterUsedValue == "C" ? DataUnit.Character : DataUnit.Byte
+				? String.Equals((string)characterUsedValue, "C") ? DataUnit.Character : DataUnit.Byte
 				: DataUnit.NotApplicable;
 		}
 
@@ -576,7 +594,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			var created = (DateTime)reader["CREATED"];
 			var isValid = (string)reader["STATUS"] == "VALID";
 			var lastDdl = (DateTime)reader["LAST_DDL_TIME"];
-			var isTemporary = (string)reader["TEMPORARY"] == "Y";
+			var isTemporary = String.Equals((string)reader["TEMPORARY"], "Y");
 
 			OracleSchemaObject schemaObject = null;
 			switch (objectType)
@@ -648,14 +666,14 @@ namespace SqlPad.Oracle.DatabaseConnection
 				{
 					FullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(reader["OWNER"]), QualifyStringObject(reader["NAME"])),
 					TableName = QualifyStringObject(reader["TABLE_NAME"]),
-					IsPrebuilt = (string)reader["OWNER"] == "YES",
-					IsUpdatable = (string)reader["OWNER"] == "YES",
+					IsPrebuilt = String.Equals((string)reader["OWNER"], "YES"),
+					IsUpdatable = String.Equals((string)reader["OWNER"], "YES"),
 					LastRefresh = OracleReaderValueConvert.ToDateTime(reader["LAST_REFRESH"]),
 					Next = OracleReaderValueConvert.ToString(reader["NEXT"]),
 					Query = (string)reader["QUERY"],
 					RefreshGroup = QualifyStringObject(reader["REFRESH_GROUP"]),
 					RefreshMethod = (string)reader["REFRESH_METHOD"],
-					RefreshMode = refreshModeRaw == "DEMAND" ? MaterializedViewRefreshMode.OnDemand : MaterializedViewRefreshMode.OnCommit,
+					RefreshMode = String.Equals(refreshModeRaw, "DEMAND") ? MaterializedViewRefreshMode.OnDemand : MaterializedViewRefreshMode.OnCommit,
 					RefreshType = MapMaterializedViewRefreshType((string)reader["TYPE"]),
 					StartWith = OracleReaderValueConvert.ToDateTime(reader["START_WITH"])
 				};

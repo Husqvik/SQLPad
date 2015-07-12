@@ -356,6 +356,20 @@ namespace SqlPad.Oracle.DataDictionary
 		public OracleDataType ElementDataType { get; set; }
 	}
 
+	[DebuggerDisplay("OracleSchema (Name={Name}; Created={Created}; IsOracleMaintained={IsOracleMaintained}; IsCommon={IsCommon})")]
+	public struct OracleSchema
+	{
+		public static readonly OracleSchema Public = new OracleSchema { Name = OracleDatabaseModelBase.SchemaPublic };
+
+		public string Name { get; set; }
+
+		public DateTime Created { get; set; }
+
+		public bool IsOracleMaintained { get; set; }
+		
+		public bool IsCommon { get; set; }
+	}
+
 	public enum OracleCollectionType
 	{
 		Table,

@@ -203,7 +203,7 @@ CASE
 END ORGANIZATION
 FROM SYS.ALL_TABLES";
 
-		public const string SelectAllSchemasCommandText = "SELECT USERNAME FROM SYS.ALL_USERS";
+		public const string SelectAllSchemasCommandTextBase = "SELECT USERNAME, CREATED{0} FROM SYS.ALL_USERS";
 
 		public const string SelectSynonymTargetsCommandText = "SELECT OWNER, SYNONYM_NAME, TABLE_OWNER, TABLE_NAME FROM SYS.ALL_SYNONYMS";
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Configuration;
 using System.Data;
 using System.Diagnostics;
@@ -42,7 +43,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private readonly ConnectionStringSettings _connectionString;
 		private readonly string _moduleName;
 		private HashSet<string> _schemas = new HashSet<string>();
-		private HashSet<string> _allSchemas = new HashSet<string>();
+		private IReadOnlyDictionary<string, OracleSchema> _allSchemas = new Dictionary<string, OracleSchema>();
 		private string _currentSchema;
 		private readonly OracleDataDictionaryMapper _dataDictionaryMapper;
 		private OracleDataDictionary _dataDictionary = OracleDataDictionary.EmptyDictionary;
@@ -227,7 +228,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public override ICollection<string> Schemas { get { return _schemas; } }
 		
-		public override ICollection<string> AllSchemas { get { return _allSchemas; } }
+		public override IReadOnlyDictionary<string, OracleSchema> AllSchemas { get { return _allSchemas; } }
 
 		public override IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjects { get { return _dataDictionary.AllObjects; } }
 
@@ -510,6 +511,15 @@ namespace SqlPad.Oracle.DatabaseConnection
 				if (DatabaseModels.ContainsValue(this))
 				{
 					DatabaseModels.Remove(_connectionString.ConnectionString);
+				}
+			}
+
+			lock (ActiveDataModelRefresh)
+			{
+				List<RefreshModel> refreshModels;
+				if (WaitingDataModelRefresh.TryGetValue(_connectionStringName, out refreshModels))
+				{
+					refreshModels.RemoveAll(m => m.DatabaseModel == this);
 				}
 			}
 		}
@@ -846,8 +856,11 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		private void LoadSchemaNames()
 		{
-			_schemas = new HashSet<string>(OracleSchemaResolver.ResolveSchemas(this));
-			_allSchemas = new HashSet<string>(_schemas.Select(OracleDataDictionaryMapper.QualifyStringObject)) { SchemaPublic };
+			var schemas = OracleSchemaResolver.ResolveSchemas(this);
+			_schemas = new HashSet<string>(schemas.Select(s => s.Name.Trim('"')));
+			var allSchemas = schemas.ToDictionary(s => s.Name);
+			allSchemas.Add(SchemaPublic, OracleSchema.Public);
+			_allSchemas = new ReadOnlyDictionary<string, OracleSchema>(allSchemas);
 		}
 
 		private struct RefreshModel
@@ -868,7 +881,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			private static readonly Dictionary<string, OracleSchemaResolver> ActiveResolvers = new Dictionary<string, OracleSchemaResolver>();
 
 			private readonly OracleDatabaseModel _databaseModel;
-			private IReadOnlyCollection<string> _schemas;
+			private IReadOnlyCollection<OracleSchema> _schemas;
 
 			private OracleSchemaResolver(OracleDatabaseModel databaseModel)
 			{
@@ -883,7 +896,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				}
 			}
 
-			public static IReadOnlyCollection<string> ResolveSchemas(OracleDatabaseModel databaseModel)
+			public static IReadOnlyCollection<OracleSchema> ResolveSchemas(OracleDatabaseModel databaseModel)
 			{
 				OracleSchemaResolver resolver;
 				lock (ActiveResolvers)

@@ -89,7 +89,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		
 		public abstract ICollection<string> Schemas { get; }
 
-		public abstract ICollection<string> AllSchemas { get; }
+		public abstract IReadOnlyDictionary<string, OracleSchema> AllSchemas { get; }
 
 		public virtual void Dispose() { }
 
@@ -177,7 +177,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public bool ExistsSchema(string schemaName)
 		{
-			return AllSchemas.Contains(schemaName.ToQuotedIdentifier());
+			return AllSchemas.ContainsKey(schemaName.ToQuotedIdentifier());
 		}
 
 		public ProgramMetadataResult GetProgramMetadata(OracleProgramIdentifier identifier, int parameterCount, bool forceBuiltInFunction, bool hasAnalyticClause)

@@ -796,12 +796,12 @@ namespace SqlPad.Oracle
 
 		private IEnumerable<ICodeCompletionItem> GenerateSchemaItems(string schemaNamePart, StatementGrammarNode node, int insertOffset, OracleDatabaseModelBase databaseModel, int priorityOffset = 0)
 		{
-			return databaseModel.AllSchemas
-				.Where(s => !String.Equals(s, OracleDatabaseModelBase.SchemaPublic) && (!String.Equals(MakeSaveQuotedIdentifier(schemaNamePart), s) && CodeCompletionSearchHelper.IsMatch(s, schemaNamePart)))
+			return databaseModel.AllSchemas.Values
+				.Where(s => !String.Equals(s.Name, OracleDatabaseModelBase.SchemaPublic) && (!String.Equals(MakeSaveQuotedIdentifier(schemaNamePart), s.Name) && CodeCompletionSearchHelper.IsMatch(s.Name, schemaNamePart)))
 				.Select(s => new OracleCodeCompletionItem
 				             {
-								 Name = s.ToSimpleIdentifier(),
-								 Text = s.ToSimpleIdentifier(),
+								 Name = s.Name.ToSimpleIdentifier(),
+								 Text = s.Name.ToSimpleIdentifier(),
 								 StatementNode = node,
 								 Category = OracleCodeCompletionCategory.DatabaseSchema,
 								 InsertOffset = insertOffset,
