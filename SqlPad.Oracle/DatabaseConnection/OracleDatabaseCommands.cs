@@ -381,12 +381,13 @@ ORDER BY
 		public const string SelectTraceFileFullName = "SELECT TRACEFILE FROM V$PROCESS WHERE ADDR = (SELECT PADDR FROM V$SESSION WHERE SID = SYS_CONTEXT('USERENV', 'SID'))";
 		public const string SelectCurrentSessionId = "SELECT SYS_CONTEXT('USERENV', 'SID') SID FROM SYS.DUAL";
 
-		public const string StartDebuggee = "BEGIN EXECUTE IMMEDIATE 'ALTER SESSION SET PLSQL_DEBUG=TRUE'; :debug_session_id := dbms_debug.initialize; dbms_debug.debug_on; END;";
+		public const string StartDebuggee = "BEGIN /*EXECUTE IMMEDIATE 'ALTER SESSION SET PLSQL_DEBUG=TRUE';*/ :debug_session_id := dbms_debug.initialize(diagnostics => 0); dbms_debug.debug_on; END;";
+		public const string FinalizeDebuggee = "BEGIN dbms_debug.debug_off; END;";
 		public const string StartDebugger =
 @"DECLARE
 	run_info DBMS_DEBUG.RUNTIME_INFO; 
 BEGIN
-	dbms_debug.attach_session(:debug_session_id);
+	dbms_debug.attach_session(debug_session_id => :debug_session_id, diagnostics => 0);
 	:debug_action_status := dbms_debug.synchronize(run_info, dbms_debug.info_getlineinfo + dbms_debug.info_getbreakpoint + dbms_debug.info_getstackdepth + dbms_debug.info_getoerinfo);
 	:breakpoint := run_info.breakpoint;
 	:interpreterdepth := run_info.interpreterdepth;

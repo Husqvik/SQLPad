@@ -596,8 +596,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				await _databaseModel.UpdateModelAsync(cancellationToken, true, _executionStatisticsDataProvider.SessionBeginExecutionStatisticsDataProvider);
 			}
 
-			//var debuggerSession = new OracleDebuggerSession(_userConnection);
-			//Task.Factory.StartNew(debuggerSession.Start);
+			//Task.Factory.StartNew(() => TestDebug(cancellationToken), cancellationToken).Wait(cancellationToken);
 
 			_userDataReader = await _userCommand.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken);
 
@@ -620,6 +619,25 @@ namespace SqlPad.Oracle.DatabaseConnection
 					InitialResultSet = await FetchRecordsAsync(executionModel.InitialFetchRowCount, cancellationToken),
 					CompilationErrors = _userCommandHasCompilationErrors ? await RetrieveCompilationErrors(executionModel.Statement, cancellationToken) : new CompilationError[0]
 				};
+		}
+
+		private void TestDebug(CancellationToken cancellationToken)
+		{
+			var debuggedAction = new Task(async () => _userDataReader = await _userCommand.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken));
+
+			using (var debuggerSession = new OracleDebuggerSession(_userConnection, debuggedAction))
+			{
+				debuggerSession.Start();
+
+				do
+				{
+					debuggerSession.Continue().Wait(cancellationToken);
+				} while (debuggerSession.RuntimeInfo.IsTerminated != true);
+
+				//Trace.WriteLine("Is running:" + debuggerSession.IsRunning()); // lock
+
+				debuggerSession.Detach();
+			}
 		}
 
 		private void UpdateBindVariables(StatementExecutionModel executionModel)

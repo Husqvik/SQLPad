@@ -94,7 +94,7 @@ namespace SqlPad
 	{
 		void Start();
 
-		void Continue();
+		Task Continue();
 
 		void StepNextLine();
 

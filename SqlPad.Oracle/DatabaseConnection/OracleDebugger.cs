@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using System;
+using System.Data;
 #if ORACLE_MANAGED_DATA_ACCESS_CLIENT
 using Oracle.ManagedDataAccess.Client;
 using Oracle.ManagedDataAccess.Types;
@@ -19,45 +20,57 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private readonly OracleCommand _debuggedSessionCommand;
 		private readonly OracleConnection _debuggerSession;
 		private readonly OracleCommand _debuggerSessionCommand;
-
+		private readonly Task _debuggedAction;
+		
+		private OracleRuntimeInfo _runtimeInfo;
 		private string _debuggerSessionId;
+		
+		internal OracleRuntimeInfo RuntimeInfo
+		{
+			get { return _runtimeInfo; }
+		}
 
-		public OracleDebuggerSession(OracleConnection debuggedSession)
+		public OracleDebuggerSession(OracleConnection debuggedSession, Task debuggedAction)
 		{
 			_debuggedSessionCommand = debuggedSession.CreateCommand();
 			_debuggedSessionCommand.BindByName = true;
 			_debuggerSession = (OracleConnection)debuggedSession.Clone();
 			_debuggerSessionCommand = _debuggerSession.CreateCommand();
 			_debuggerSessionCommand.BindByName = true;
+			_debuggedAction = debuggedAction;
+		}
+
+		public bool IsRunning()
+		{
+			_debuggerSessionCommand.CommandText = "BEGIN IF dbms_debug.target_program_running THEN :isRunning := 1 ELSE :isRunning = 0; END;";
+			_debuggerSessionCommand.Parameters.Clear();
+			_debuggedSessionCommand.AddSimpleParameter("ISRUNNING", null, TerminalValues.Number);
+			_debuggedSessionCommand.ExecuteNonQuery();
+			var isRunning = ((OracleDecimal)_debuggedSessionCommand.Parameters[0].Value).Value;
+			return Convert.ToBoolean(isRunning);
 		}
 
 		public void Start()
 		{
 			_debuggedSessionCommand.CommandText = OracleDatabaseCommands.StartDebuggee;
 			_debuggedSessionCommand.AddSimpleParameter("DEBUG_SESSION_ID", null, TerminalValues.Varchar2, 12);
-			var debuggerSessionIdParameter = _debuggedSessionCommand.Parameters[0];
+			var debuggedSessionIdParameter = _debuggedSessionCommand.Parameters[0];
 
 			_debuggedSessionCommand.ExecuteNonQuery();
-			_debuggerSessionId = ((OracleString)debuggerSessionIdParameter.Value).Value;
+			_debuggerSessionId = ((OracleString)debuggedSessionIdParameter.Value).Value;
 
-			var startDebuggerTask = StartDebugger(CancellationToken.None);
-			
-			var continueDebuggeeTask = ContinueDebuggee(CancellationToken.None);
+			Trace.WriteLine(String.Format("Target debug session initialized. Debug session ID = {0}", _debuggerSessionId));
 
-			startDebuggerTask.Wait();
-			var runtimeInfo = startDebuggerTask.Result;
-
-			do
+			using (var startDebuggerTask = StartDebugger(CancellationToken.None))
 			{
-				var task = ContinueDebugger(OracleDebugBreakFlags.AnyCall, CancellationToken.None);
-				task.Wait();
+				_debuggedAction.Start();
+				Trace.WriteLine("Debugged action started. ");
 
-				runtimeInfo = task.Result;
-
-				var aValue = GetValue("A");
-			} while (runtimeInfo.Reason != OracleDebugReason.KnlExit);
-
-			Detach();
+				startDebuggerTask.Wait();
+				Trace.WriteLine("Debugger attached. ");
+				_runtimeInfo = startDebuggerTask.Result;
+				_runtimeInfo.Trace();
+			}
 		}
 
 		private void AddDebugParameters(OracleCommand command)
@@ -91,18 +104,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return GetValueFromOracleString(_debuggerSessionCommand.Parameters["VALUE"]);
 		}
 
-		private async Task ContinueDebuggee(CancellationToken cancellationToken)
-		{
-			_debuggedSessionCommand.CommandText =
-@"BEGIN
-	TESTPROC;
-END;";
-
-			_debuggedSessionCommand.Parameters.Clear();
-
-			await _debuggedSessionCommand.ExecuteNonQueryAsynchronous(cancellationToken);
-		}
-
 		private async Task<OracleRuntimeInfo> ContinueDebugger(OracleDebugBreakFlags breakFlags, CancellationToken cancellationToken)
 		{
 			_debuggerSessionCommand.CommandText = OracleDatabaseCommands.ContinueDebugger;
@@ -110,6 +111,7 @@ END;";
 			_debuggerSessionCommand.AddSimpleParameter("BREAK_FLAGS", (int)breakFlags, TerminalValues.Number);
 			AddDebugParameters(_debuggerSessionCommand);
 
+			_debuggerSession.ActionName = "Continue";
 			await _debuggerSessionCommand.ExecuteNonQueryAsynchronous(cancellationToken);
 			return GetRuntimeInfo(_debuggerSessionCommand);
 		}
@@ -117,6 +119,7 @@ END;";
 		private async Task<OracleRuntimeInfo> StartDebugger(CancellationToken cancellationToken)
 		{
 			_debuggerSessionCommand.CommandText = OracleDatabaseCommands.StartDebugger;
+			_debuggerSessionCommand.Parameters.Clear();
 			_debuggerSessionCommand.AddSimpleParameter("DEBUG_SESSION_ID", _debuggerSessionId);
 			AddDebugParameters(_debuggerSessionCommand);
 
@@ -158,13 +161,13 @@ END;";
 				};
 		}
 
-		private string GetValueFromOracleString(OracleParameter parameter)
+		private static string GetValueFromOracleString(IDataParameter parameter)
 		{
 			var value = (OracleString)parameter.Value;
 			return value.IsNull ? null : value.Value;
 		}
 
-		private int GetValueFromOracleDecimal(OracleParameter parameter)
+		private static int GetValueFromOracleDecimal(IDataParameter parameter)
 		{
 			var nullableValue = GetNullableValueFromOracleDecimal(parameter);
 			if (nullableValue == null)
@@ -175,37 +178,58 @@ END;";
 			return nullableValue.Value;
 		}
 
-		private int? GetNullableValueFromOracleDecimal(OracleParameter parameter)
+		private static int? GetNullableValueFromOracleDecimal(IDataParameter parameter)
 		{
 			var value = (OracleDecimal)parameter.Value;
 			return value.IsNull ? (int?)null : Convert.ToInt32(value.Value);
 		}
 
-		public void Continue()
+		public async Task Continue()
 		{
-			
+			_debuggerSession.ActionName = "Continue";
+			_runtimeInfo = await ContinueDebugger(OracleDebugBreakFlags.AnyCall, CancellationToken.None);
+			_runtimeInfo.Trace();
+
+			// remove
+			if (_runtimeInfo.Reason != OracleDebugReason.KnlExit)
+			{
+				var aValue = GetValue("A");
+				Trace.WriteLine("A = " + aValue);
+			}
 		}
 
 		public void StepNextLine()
 		{
-
+			_debuggerSession.ActionName = "Step next line";
 		}
 
 		public void StepInto()
 		{
-
+			_debuggerSession.ActionName = "Step into";
 		}
 
 		public void StepOut()
 		{
+			_debuggerSession.ActionName = "Step out";
+		}
 
+		private void TargetDebugOff()
+		{
+			_debuggedSessionCommand.CommandText = OracleDatabaseCommands.FinalizeDebuggee;
+			_debuggedSessionCommand.Parameters.Clear();
+			_debuggedSessionCommand.ExecuteNonQuery(); // lock
 		}
 
 		public void Detach()
 		{
+			_debuggedAction.Wait();
+
 			_debuggerSessionCommand.CommandText = OracleDatabaseCommands.DetachDebugger;
 			_debuggerSessionCommand.Parameters.Clear();
+			_debuggerSession.ActionName = "Detach";
 			_debuggerSessionCommand.ExecuteNonQuery();
+
+			Trace.WriteLine("Debugger detached from target session. ");
 		}
 
 		public void Dispose()
@@ -213,11 +237,13 @@ END;";
 			_debuggedSessionCommand.Dispose();
 			_debuggerSessionCommand.Dispose();
 			_debuggerSession.Dispose();
+			
+			Trace.WriteLine("Debugger disposed. ");
 		}
 	}
 
 	[DebuggerDisplay("OracleRuntimeInfo (Reason={Reason}; IsTerminated={IsTerminated})")]
-	public struct OracleRuntimeInfo
+	internal struct OracleRuntimeInfo
 	{
 		public int? OerException { get; set; }
 		
@@ -232,6 +258,12 @@ END;";
 		public OracleProgramInfo SourceLocation { get; set; }
 		
 		public bool? IsTerminated { get; set; }
+
+		public void Trace()
+		{
+			System.Diagnostics.Trace.WriteLine(String.Format("OerException = {0}; BreakpointNumber = {1}; StackDepth = {2}; InterpreterDepth = {3}; Reason = {4}; IsTerminated = {5}", OerException, BreakpointNumber, StackDepth, InterpreterDepth, Reason, IsTerminated));
+			SourceLocation.Trace();
+		}
 	}
 
 	public struct OracleProgramInfo
@@ -249,6 +281,11 @@ END;";
 		public OracleDebugProgramNamespace? Namespace { get; set; }
 		
 		public OracleLibraryUnitType? LibraryUnitType { get; set; }
+
+		public void Trace()
+		{
+			System.Diagnostics.Trace.WriteLine(String.Format("LineNumber = {0}; DatabaseLink = {1}; EntryPointName = {2}; Owner = {3}; Name = {4}; Namespace = {5}; LibraryUnitType = {6}", LineNumber, DatabaseLink, EntryPointName, Owner, Name, Namespace, LibraryUnitType));
+		}
 	}
 
 	public enum OracleDebugReason
