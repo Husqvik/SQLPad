@@ -9,6 +9,7 @@ namespace SqlPad
 	public class WorkDocument
 	{
 		private const string ExtensionSqlx = ".SQLX";
+		public const string DefaultDocumentHeaderBackgroundColorCode = "#FFFFFFFF";
 		private double _fontSize;
 		private List<bool> _foldingStates;
 
@@ -16,7 +17,7 @@ namespace SqlPad
 		{
 			DocumentId = Guid.NewGuid();
 			TabIndex = -1;
-			HeaderBackgroundColorCode = "#FFFFFFFF";
+			HeaderBackgroundColorCode = DefaultDocumentHeaderBackgroundColorCode;
 		}
 
 		private List<bool> FoldingStatesInternal

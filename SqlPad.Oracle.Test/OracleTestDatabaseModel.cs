@@ -17,7 +17,6 @@ namespace SqlPad.Oracle.Test
 		public static readonly OracleTestDatabaseModel Instance;
 
 		private const string InitialSchema = "\"HUSQVIK\"";
-		private const string SchemaSystem = "\"SYSTEM\"";
 		private const string TableNameDual = "\"DUAL\"";
 		private const string DatabaseDomainNameInternal = "sqlpad.husqvik.com";
 		private static readonly ConnectionStringSettings ConnectionStringInternal = new ConnectionStringSettings("ConnectionFake", "DATA SOURCE=HQ_PDB_TCP;PASSWORD=oracle;USER ID=HUSQVIK", "Oracle.DataAccess.Client");
@@ -29,7 +28,7 @@ namespace SqlPad.Oracle.Test
 			{
 				{ SchemaSys, new OracleSchema { Name = SchemaSys } },
 				{ SchemaSystem, new OracleSchema { Name = SchemaSystem } },
-				{ InitialSchema, new OracleSchema { Name = InitialSchema } },
+				{ InitialSchema, new OracleSchema { Name = InitialSchema, Created = new DateTime(2014, 9, 28, 0, 25, 43) } },
 				{ SchemaPublic, new OracleSchema { Name = SchemaPublic } }
 			};
 		

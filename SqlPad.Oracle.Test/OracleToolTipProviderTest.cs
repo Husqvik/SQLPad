@@ -742,6 +742,19 @@ SELECT * FROM CTE";
 			toolTip.Control.DataContext.ShouldBe("SYS.DBMS_XPLAN_TYPE_TABLE (Object Table)");
 		}
 
+		[Test(Description = @""), STAThread]
+		public void TestSchemaToolTip()
+		{
+			const string query = "SELECT * FROM HUSQVIK.SELECTION";
+			_documentRepository.UpdateStatements(query);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 14);
+			toolTip.Control.ShouldBeTypeOf<ToolTipSchema>();
+			var schema = (OracleSchema)toolTip.Control.DataContext;
+			schema.Name.ShouldBe("\"HUSQVIK\"");
+			schema.Created.ShouldBe(new DateTime(2014, 9, 28, 0, 25, 43));
+		}
+
 		public class ProgramTypeConverterTests
 		{
 			private readonly ProgramTypeConverter _converter = new ProgramTypeConverter();

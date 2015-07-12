@@ -4,10 +4,10 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:toolTips="clr-namespace:SqlPad.Oracle.ToolTips"
-             xmlns:oracle="clr-namespace:SqlPad.Oracle"
+             xmlns:dataDictionary="clr-namespace:SqlPad.Oracle.DataDictionary"
              mc:Ignorable="d" 
              d:DesignHeight="160" d:DesignWidth="240"
-			 Padding="4" d:DataContext="{d:DesignInstance oracle:OracleSequence}">
+			 Padding="4" d:DataContext="{d:DesignInstance dataDictionary:OracleSequence}">
     <StackPanel>
 		<StackPanel.Resources>
 			<ResourceDictionary>

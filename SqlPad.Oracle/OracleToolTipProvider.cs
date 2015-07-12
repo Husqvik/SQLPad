@@ -52,6 +52,8 @@ namespace SqlPad.Oracle
 
 					case Terminals.Asterisk:
 						return BuildAsteriskToolTip(queryBlock, node);
+					case Terminals.SchemaIdentifier:
+						return BuildSchemaTooltip(semanticModel.DatabaseModel, node);
 					case Terminals.Min:
 					case Terminals.Max:
 					case Terminals.Sum:
@@ -126,7 +128,15 @@ namespace SqlPad.Oracle
 			return String.IsNullOrEmpty(tip) ? null : new ToolTipObject { DataContext = tip };
 		}
 
-		private string GetParameterToolTip(OracleStatementSemanticModel semanticModel, StatementGrammarNode node)
+		private static IToolTip BuildSchemaTooltip(OracleDatabaseModelBase databaseModel, StatementNode terminal)
+		{
+			OracleSchema schema;
+			return databaseModel.AllSchemas.TryGetValue(terminal.Token.Value.ToQuotedIdentifier(), out schema)
+				? new ToolTipSchema(schema)
+				: null;
+		}
+
+		private static string GetParameterToolTip(OracleStatementSemanticModel semanticModel, StatementGrammarNode node)
 		{
 			Func<ProgramParameterReference, bool> parameterFilter = p => p.OptionalIdentifierTerminal == node;
 			var programReference = semanticModel.AllReferenceContainers
@@ -148,7 +158,7 @@ namespace SqlPad.Oracle
 				: null;
 		}
 
-		private IToolTip BuildAsteriskToolTip(OracleQueryBlock queryBlock, StatementGrammarNode asteriskTerminal)
+		private static IToolTip BuildAsteriskToolTip(OracleQueryBlock queryBlock, StatementGrammarNode asteriskTerminal)
 		{
 			var asteriskColumn = queryBlock.AsteriskColumns.SingleOrDefault(c => c.RootNode.LastTerminalNode == asteriskTerminal);
 			if (asteriskColumn == null)
@@ -257,7 +267,7 @@ namespace SqlPad.Oracle
 			return typeReference == null || typeReference.DatabaseLinkNode != null ? null : GetFullSchemaObjectToolTip(typeReference.SchemaObject);
 		}
 
-		private IToolTip BuildObjectTooltip(OracleDatabaseModelBase databaseModel, OracleReference reference)
+		private static IToolTip BuildObjectTooltip(OracleDatabaseModelBase databaseModel, OracleReference reference)
 		{
 			var simpleToolTip = GetFullSchemaObjectToolTip(reference.SchemaObject);
 			var objectReference = reference as OracleObjectWithColumnsReference;
@@ -395,7 +405,7 @@ namespace SqlPad.Oracle
 			return String.Format("{0} ({1})", schemaObjectIdentifier, CultureInfo.InvariantCulture.TextInfo.ToTitleCase(objectType));
 		}
 
-		private ToolTipProgram GetFunctionToolTip(OracleStatementSemanticModel semanticModel, StatementGrammarNode terminal)
+		private static ToolTipProgram GetFunctionToolTip(OracleStatementSemanticModel semanticModel, StatementGrammarNode terminal)
 		{
 			var functionReference = semanticModel.GetProgramReference(terminal);
 			if (functionReference == null || functionReference.DatabaseLinkNode != null || functionReference.Metadata == null)
@@ -432,7 +442,7 @@ namespace SqlPad.Oracle
 			return new ToolTipProgram(functionReference.Metadata.Identifier.FullyQualifiedIdentifier, documentationBuilder.ToString(), functionReference.Metadata);
 		}
 
-		private OracleReference GetObjectReference(OracleStatementSemanticModel semanticModel, StatementGrammarNode terminal)
+		private static OracleReference GetObjectReference(OracleStatementSemanticModel semanticModel, StatementGrammarNode terminal)
 		{
 			var objectReference = semanticModel.GetReference<OracleReference>(terminal);
 			var columnReference = objectReference as OracleColumnReference;

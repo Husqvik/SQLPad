@@ -213,6 +213,9 @@
     <Compile Include="ToolTips\ToolTipPartition.xaml.cs">
       <DependentUpon>ToolTipPartition.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ToolTips\ToolTipSchema.xaml.cs">
+      <DependentUpon>ToolTipSchema.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ToolTips\ToolTipViewColumn.xaml.cs">
       <DependentUpon>ToolTipViewColumn.xaml</DependentUpon>
     </Compile>
@@ -332,6 +335,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="ToolTips\ToolTipPartition.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="ToolTips\ToolTipSchema.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

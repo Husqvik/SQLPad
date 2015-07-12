@@ -1,0 +1,44 @@
+﻿<UserControl x:Class="SqlPad.Oracle.ToolTips.ToolTipSchema"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:dataDictionary="clr-namespace:SqlPad.Oracle.DataDictionary"
+             mc:Ignorable="d" 
+             d:DesignHeight="80" d:DesignWidth="176"
+			 Padding="4" d:DataContext="{d:DesignInstance dataDictionary:OracleSchema}">
+
+	<UserControl.Resources>
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceDictionary Source="../Themes/Common.xaml"/>
+			</ResourceDictionary.MergedDictionaries>
+		</ResourceDictionary>
+	</UserControl.Resources>
+
+    <StackPanel>
+		<GroupBox BorderThickness="0">
+			<GroupBox.Header>
+				<TextBlock x:Name="LabelTitle" FontWeight="Bold"/>
+			</GroupBox.Header>
+			<Grid Margin="4">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="Auto"/>
+					<ColumnDefinition/>
+				</Grid.ColumnDefinitions>
+				<Grid.RowDefinitions>
+					<RowDefinition />
+					<RowDefinition />
+					<RowDefinition />
+				</Grid.RowDefinitions>
+				<TextBlock Grid.Row="0" Grid.Column="0" Text="Created: " />
+				<TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Created, Converter={StaticResource DateTimeConverter}}" />
+				<TextBlock Grid.Row="1" Grid.Column="0" Text="Container account: " />
+				<TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding IsCommon, Converter={StaticResource BooleanConverter}}" />
+				<TextBlock Grid.Row="2" Grid.Column="0" Text="Oracle maintained: " />
+				<TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding IsOracleMaintained, Converter={StaticResource BooleanConverter}}" />
+			</Grid>
+		</GroupBox>
+
+	</StackPanel>
+</UserControl>

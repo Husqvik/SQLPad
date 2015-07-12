@@ -34,6 +34,15 @@ namespace SqlPad.Oracle.Test
 			Assert.Throws<ArgumentNullException>(() => Parser.Parse((OracleTokenReader)null));
 		}
 
+		[Test(Description = @"Tests empty string. ")]
+		public void TestEmptyString()
+		{
+			var result = Parser.Parse(CreateTokenReader(String.Empty));
+
+			result.ShouldNotBe(null);
+			result.Count.ShouldBe(0);
+		}
+
 		[Test(Description = @"Tests trivial query. ")]
 		public void TestTrivialQuery()
 		{

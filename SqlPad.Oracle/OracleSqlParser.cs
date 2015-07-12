@@ -426,7 +426,11 @@ namespace SqlPad.Oracle
 
 			if (tokenBuffer.Count == 0)
 			{
-				oracleSqlCollection.Add(OracleStatement.EmptyStatement);
+				if (commentBuffer.Count > 0)
+				{
+					oracleSqlCollection.Add(OracleStatement.EmptyStatement);
+				}
+				
 				return new OracleStatementCollection(oracleSqlCollection, allTokens, commentBuffer.Select(c => new StatementCommentNode(null, c)));
 			}
 			
